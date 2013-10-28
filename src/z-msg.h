@@ -248,7 +248,7 @@ byte message_type_color(u16b type);
 /**
  * Defines the color `color` for the message type `type`.
  */
-errr message_color_define(u16b type, byte color);
+void message_color_define(u16b type, byte color);
 
 
 #endif /* !INCLUDED_Z_MSG_H */

@@ -1,0 +1,30 @@
+elly/angband unit tests
+
+This directory contains the unit tests for the Angband engine. As we refactor
+the engine to be more modular, the number of tests will grow. A unit test is a C
+program which links against angband.o and tests the desired functions. To make
+writing these tests easier, there is a header file (at /src/tests/unit-test.h)
+which defines a particular main function which runs a set of specified tests in
+sequence.
+
+Using unit-test.h:
+To use this test template, your test needs to supply four things:
+	static struct test tests[]:
+		A list of all the tests to run, terminated by a test with a
+		null name.
+	static int setup(void **data):
+		A function to set up this suite of tests; may do something like
+		preallocate file handles and such. The `data` argument points to
+		a pointer which is supplied to all unit test functions and the
+		teardown function.
+	static int teardown(void *data):
+		Clean up after the test; close file handles, etc.
+	static const char *suite_name:
+		The test suite name.
+For examples, see the /src/tests/trivial.
+
+Using unit-test-data.h:
+Since we're testing a game engine, many times we will need dummy races, classes,
+etc to pass in to functions we'd like to test. Creating these is time-consuming
+since some of the structures involved are fairly large; unit-test-data.h defines
+test objects of most types to ease this pain.

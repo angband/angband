@@ -15,9 +15,12 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
+
 #include "angband.h"
-#include "ui-menu.h"
 #include "cmds.h"
+#include "files.h"
+#include "history.h"
+#include "ui-menu.h"
 #include "wizard.h"
 
 /*
@@ -81,11 +84,11 @@ static void print_tomb(void)
 	if (p_ptr->total_winner)
 		put_str_centred(line++, 8, 8+31, "Magnificent");
 	else
-		put_str_centred(line++, 8, 8+31, "%s", c_text + cp_ptr->title[(p_ptr->lev - 1) / 5]);
+		put_str_centred(line++, 8, 8+31, "%s", cp_ptr->title[(p_ptr->lev - 1) / 5]);
 
 	line++;
 
-	put_str_centred(line++, 8, 8+31, "%s", c_name + cp_ptr->name);
+	put_str_centred(line++, 8, 8+31, "%s", cp_ptr->name);
 	put_str_centred(line++, 8, 8+31, "Level: %d", (int)p_ptr->lev);
 	put_str_centred(line++, 8, 8+31, "Exp: %d", (int)p_ptr->exp);
 	put_str_centred(line++, 8, 8+31, "AU: %d", (int)p_ptr->au);
@@ -110,7 +113,7 @@ static void death_knowledge(void)
 
 	for (i = 0; i < ALL_INVEN_TOTAL; i++)
 	{
-		o_ptr = &inventory[i];
+		o_ptr = &p_ptr->inventory[i];
 		if (!o_ptr->k_idx) continue;
 
 		object_flavor_aware(o_ptr);
@@ -125,6 +128,8 @@ static void death_knowledge(void)
 		object_flavor_aware(o_ptr);
 		object_notice_everything(o_ptr);
 	}
+
+	history_unmask_unknown();
 
 	/* Hack -- Recalculate bonuses */
 	p_ptr->update |= (PU_BONUS);
@@ -177,13 +182,10 @@ static void display_winner(void)
 /*
  * Menu command: dump character dump to file.
  */
-static void death_file(void *unused, const char *title)
+static void death_file(const char *title, int row)
 {
 	char buf[1024];
 	char ftmp[80];
-
-	(void)unused;
-	(void)title;
 
 	strnfmt(ftmp, sizeof(ftmp), "%s.txt", op_ptr->base_name);
 
@@ -210,14 +212,11 @@ static void death_file(void *unused, const char *title)
 /*
  * Menu command: view character dump and inventory.
  */
-static void death_info(void *unused, const char *title)
+static void death_info(const char *title, int row)
 {
 	int i, j, k;
 	object_type *o_ptr;
 	store_type *st_ptr = &store[STORE_HOME];
-
-	(void)unused;
-	(void)title;
 
 
 	screen_save();
@@ -305,11 +304,8 @@ static void death_info(void *unused, const char *title)
 /*
  * Menu command: peruse pre-death messages.
  */
-static void death_messages(void *unused, const char *title)
+static void death_messages(const char *title, int row)
 {
-	(void)unused;
-	(void)title;
-
 	screen_save();
 	do_cmd_messages();
 	screen_load();
@@ -318,11 +314,8 @@ static void death_messages(void *unused, const char *title)
 /*
  * Menu command: see top twenty scores.
  */
-static void death_scores(void *unused, const char *title)
+static void death_scores(const char *title, int row)
 {
-	(void)unused;
-	(void)title;
-
 	screen_save();
 	show_scores();
 	screen_load();
@@ -331,35 +324,29 @@ static void death_scores(void *unused, const char *title)
 /*
  * Menu command: examine items in the inventory.
  */
-static void death_examine(void *unused, const char *title)
+static void death_examine(const char *title, int row)
 {
 	int item;
 	cptr q, s;
-
-	(void)unused;
-	(void)title;
 
 	/* Get an item */
 	q = "Examine which item? ";
 	s = "You have nothing to examine.";
 
-	while (get_item(&item, q, s, (USE_INVEN | USE_EQUIP | IS_HARMLESS)))
+	while (get_item(&item, q, s, 0, (USE_INVEN | USE_EQUIP | IS_HARMLESS)))
 	{
-		object_type *o_ptr = &inventory[item];
+		char header[120];
 
-		/* Describe */
-		text_out_hook = text_out_to_screen;
-		screen_save();
-		Term_gotoxy(0, 0);
+		textblock *tb;
+		region area = { 0, 0, 0, 0 };
 
-		object_info_header(o_ptr);
-		if (!object_info(o_ptr, OINFO_FULL))
-			text_out("This item does not possess any special abilities.");
+		object_type *o_ptr = &p_ptr->inventory[item];
 
-		text_out_c(TERM_L_BLUE, "\n\n[Press any key to continue]\n");
-		(void)anykey();
+		tb = object_info(o_ptr, OINFO_FULL);
+		object_desc(header, sizeof(header), o_ptr, ODESC_PREFIX | ODESC_FULL);
 
-		screen_load();
+		textui_textblock_show(tb, area, format("%^s", header));
+		textblock_free(tb);
 	}
 }
 
@@ -367,22 +354,16 @@ static void death_examine(void *unused, const char *title)
 /*
  * Menu command: view character history.
  */
-static void death_history(void *unused, const char *title)
+static void death_history(const char *title, int row)
 {
-	(void)unused;
-	(void)title;
-
 	history_display();
 }
 
 /*
  * Menu command: allow spoiler generation (mainly for randarts).
  */
-static void death_spoilers(void *unused, const char *title)
+static void death_spoilers(const char *title, int row)
 {
-	(void)unused;
-	(void)title;
-
 	do_cmd_spoilers();
 }
 
@@ -390,43 +371,18 @@ static void death_spoilers(void *unused, const char *title)
  * Menu structures for the death menu. Note that Quit must always be the
  * last option, due to a hard-coded check in death_screen
  */
-static menu_type death_menu;
+static menu_type *death_menu;
 static menu_action death_actions[] =
 {
-	{ 'i', "Information",   death_info,     NULL },
-	{ 'm', "Messages",      death_messages, NULL },
-	{ 'f', "File dump",     death_file,     NULL },
-	{ 'v', "View scores",   death_scores,   NULL },
-	{ 'x', "Examine items", death_examine,  NULL },
-	{ 'h', "History",       death_history,  NULL },
-	{ 's', "Spoilers",	death_spoilers,	NULL },
-	{ 'q', "Quit",          death_examine,  NULL },
+	{ 0, 'i', "Information",   death_info      },
+	{ 0, 'm', "Messages",      death_messages  },
+	{ 0, 'f', "File dump",     death_file      },
+	{ 0, 'v', "View scores",   death_scores    },
+	{ 0, 'x', "Examine items", death_examine   },
+	{ 0, 'h', "History",       death_history   },
+	{ 0, 's', "Spoilers",      death_spoilers  },
+	{ 0, 'q', "Quit",          NULL            },
 };
-
-/* Return the tag for a menu entry */
-static char death_menu_tag(menu_type *menu, int oid)
-{
-	(void)menu;
-	return death_actions[oid].id;
-}
-
-/* Display a menu entry */
-static void death_menu_display(menu_type *menu, int oid, bool cursor, int row, int col, int width)
-{
-	byte attr = curs_attrs[CURS_KNOWN][(int)cursor];
-	(void)menu;
-	(void)width;
-	c_prt(attr, death_actions[oid].name, row, col);
-}
-
-static const menu_iter death_iter =
-{
-	death_menu_tag,
-	NULL,
-	death_menu_display,
-	NULL
-};
-
 
 
 
@@ -435,13 +391,7 @@ static const menu_iter death_iter =
  */
 void death_screen(void)
 {
-	menu_type *menu;
-	const char cmd_keys[] = { ARROW_LEFT, ARROW_RIGHT, '\0' };
 	const region area = { 51, 2, 0, N_ELEMENTS(death_actions) };
-
-	int cursor = 0;
-	ui_event_data c = EVENT_EMPTY;
-
 
 	/* Retire in the town in a good state */
 	if (p_ptr->total_winner)
@@ -473,28 +423,19 @@ void death_screen(void)
 	message_flush();
 
 
-	/* Initialize the menu */
-	menu = &death_menu;
-	WIPE(menu, menu_type);
-	menu->menu_data = death_actions;
-	menu->flags = MN_CASELESS_TAGS;
-	menu->cmd_keys = cmd_keys;
-	menu->count = N_ELEMENTS(death_actions);
 
-	menu_init(menu, MN_SKIN_SCROLL, &death_iter, &area);
-
-	while (TRUE)
+	if (!death_menu)
 	{
-		c = menu_select(&death_menu, &cursor, 0);
+		death_menu = menu_new_action(death_actions,
+				N_ELEMENTS(death_actions));
 
-		if (c.key == ESCAPE || cursor == (menu->count -1))
-		{
-			if (get_check("Do you want to quit? "))
-				break;
-		}
-		else if (c.type == EVT_SELECT && death_actions[cursor].action)
-		{
-			death_actions[cursor].action(death_actions[cursor].data, NULL);
-		}
+		death_menu->flags = MN_CASELESS_TAGS;
 	}
+
+	menu_layout(death_menu, &area);
+
+	do
+	{
+		menu_select(death_menu, 0);
+	} while (!get_check("Do you want to quit? "));
 }

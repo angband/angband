@@ -15,10 +15,14 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
+
 #include "angband.h"
+#include "cave.h"
+#include "history.h"
+#include "monster/monster.h"
 #include "object/tvalsval.h"
 #include "savefile.h"
-
+#include "squelch.h"
 
 /*
  * Read an object
@@ -32,6 +36,8 @@ static int rd_item(object_type *o_ptr)
 	byte old_ds;
 	byte tmp8u;
 	u16b tmp16u;
+
+	size_t i;
 
 	object_kind *k_ptr;
 
@@ -60,6 +66,7 @@ static int rd_item(object_type *o_ptr)
 	/* Paranoia */
 	if ((o_ptr->k_idx < 0) || (o_ptr->k_idx >= z_info->k_max))
 		return (-1);
+	o_ptr->kind = &k_info[o_ptr->k_idx];
 
 	/* Location */
 	rd_byte(&o_ptr->iy);
@@ -101,16 +108,19 @@ static int rd_item(object_type *o_ptr)
 	rd_byte(&o_ptr->origin_depth);
 	rd_u16b(&o_ptr->origin_xtra);
 
-	rd_u32b(&o_ptr->flags[0]);
-	rd_u32b(&o_ptr->flags[1]);
-	rd_u32b(&o_ptr->flags[2]);
+	/* Hack - XXX - MarbleDice - Maximum saveable flags = 96 */
+	for (i = 0; i < 12 && i < OF_SIZE; i++)
+		rd_byte(&o_ptr->flags[i]);
+	if (i < 12) strip_bytes(12 - i);
+	
 
 	memset(&o_ptr->known_flags, 0, sizeof(o_ptr->known_flags));
 	if (ver > 4)
 	{
-		rd_u32b(&o_ptr->known_flags[0]);
-		rd_u32b(&o_ptr->known_flags[1]);
-		rd_u32b(&o_ptr->known_flags[2]);
+		/* Hack - XXX - MarbleDice - Maximum saveable flags = 96 */
+		for (i = 0; i < 12 && i < OF_SIZE; i++)
+			rd_byte(&o_ptr->known_flags[i]);
+		if (i < 12) strip_bytes(12 - i);
 	}
 	else if (ver > 2)
 	{
@@ -129,6 +139,7 @@ static int rd_item(object_type *o_ptr)
 
 	/* Lookup item kind */
 	o_ptr->k_idx = lookup_kind(o_ptr->tval, o_ptr->sval);
+	assert(o_ptr->k_idx);	/* XXX-elly: handle nonfatally */
 
 	k_ptr = &k_info[o_ptr->k_idx];
 
@@ -245,7 +256,7 @@ static int rd_item(object_type *o_ptr)
 		}
 
 		/* Hack -- enforce legal pval */
-		if (e_ptr->flags[0] & (TR0_PVAL_MASK))
+		if (flags_test(e_ptr->flags, OF_SIZE, OF_PVAL_MASK, FLAG_END))
 		{
 			/* Force a meaningful pval */
 			if (!o_ptr->pval) o_ptr->pval = 1;
@@ -258,29 +269,40 @@ static int rd_item(object_type *o_ptr)
 }
 
 
-/*
+/**
  * Read RNG state
+ *
+ * There were originally 64 bytes of randomizer saved. Now we only need
+ * 32 + 5 bytes saved, so we'll read an extra 27 bytes at the end which won't
+ * be used.
  */
 int rd_randomizer(u32b version)
 {
 	int i;
+	u32b noop;
 
-	u16b tmp16u;
+	/* current value for the simple RNG */
+	rd_u32b(&Rand_value);
 
+	/* state index */
+	rd_u32b(&state_i);
 
-	/* Tmp */
-	rd_u16b(&tmp16u);
-
-	/* Place */
-	rd_u16b(&Rand_place);
-
-	/* State */
+	/* for safety, make sure state_i < RAND_DEG */
+	state_i = state_i % RAND_DEG;
+    
+	/* RNG variables */
+	rd_u32b(&z0);
+	rd_u32b(&z1);
+	rd_u32b(&z2);
+    
+	/* RNG state */
 	for (i = 0; i < RAND_DEG; i++)
-	{
-		rd_u32b(&Rand_state[i]);
-	}
+		rd_u32b(&STATE[i]);
 
-	/* Accept */
+	/* NULL padding */
+	for (i = 0; i < 59 - RAND_DEG; i++)
+		rd_u32b(&noop);
+
 	Rand_quick = FALSE;
 
 	return 0;
@@ -452,22 +474,22 @@ int rd_monster_memory(u32b version)
 	/* Read the available records */
 	for (r_idx = 0; r_idx < tmp16u; r_idx++)
 	{
-		int i;
+		size_t i;
 
 		monster_race *r_ptr = &r_info[r_idx];
 		monster_lore *l_ptr = &l_list[r_idx];
-			
-			
+
+
 		/* Count sights/deaths/kills */
 		rd_s16b(&l_ptr->sights);
 		rd_s16b(&l_ptr->deaths);
 		rd_s16b(&l_ptr->pkills);
 		rd_s16b(&l_ptr->tkills);
-		
+
 		/* Count wakes and ignores */
 		rd_byte(&l_ptr->wake);
 		rd_byte(&l_ptr->ignore);
-			
+
 		/* Count drops */
 		rd_byte(&l_ptr->drop_gold);
 		rd_byte(&l_ptr->drop_item);
@@ -481,21 +503,26 @@ int rd_monster_memory(u32b version)
 			rd_byte(&l_ptr->blows[i]);
 
 		/* Memorize flags */
-		for (i = 0; i < RACE_FLAG_STRICT_UB; i++)
-			rd_u32b(&l_ptr->flags[i]);
-		for (i = 0; i < RACE_FLAG_SPELL_STRICT_UB; i++)
-			rd_u32b(&l_ptr->spell_flags[i]);
-			
-			
+
+		/* Hack - XXX - MarbleDice - Maximum saveable flags = 96 */
+		for (i = 0; i < 12 && i < RF_SIZE; i++)
+			rd_byte(&l_ptr->flags[i]);
+		if (i < 12) strip_bytes(12 - i);
+
+		/* Hack - XXX - MarbleDice - Maximum saveable flags = 96 */
+		for (i = 0; i < 12 && i < RSF_SIZE; i++)
+			rd_byte(&l_ptr->spell_flags[i]);
+		if (i < 12) strip_bytes(12 - i);
+
+
 		/* Read the "Racial" monster limit per level */
 		rd_byte(&r_ptr->max_num);
-			
+
 		/* XXX */
 		strip_bytes(3);
 
 		/* Repair the spell lore flags */
-		for (i = 0; i < RACE_FLAG_SPELL_STRICT_UB; i++)
-			l_ptr->spell_flags[i] &= r_ptr->spell_flags[i];
+		rsf_inter(l_ptr->spell_flags, r_ptr->spell_flags);
 	}
 	
 	return 0;
@@ -680,6 +707,7 @@ int rd_player(u32b version)
 		return (-1);
 	}
 	rp_ptr = &p_info[p_ptr->prace];
+	p_ptr->race = rp_ptr;
 
 	/* Player class */
 	rd_byte(&p_ptr->pclass);
@@ -691,12 +719,14 @@ int rd_player(u32b version)
 		return (-1);
 	}
 	cp_ptr = &c_info[p_ptr->pclass];
+	p_ptr->class = cp_ptr;
 	mp_ptr = &cp_ptr->spells;
 
 
 	/* Player gender */
 	rd_byte(&p_ptr->psex);
 	sp_ptr = &sex_info[p_ptr->psex];
+	p_ptr->sex = sp_ptr;
 
 	/* Numeric name suffix */
 	rd_byte(&op_ptr->name_suffix);
@@ -792,8 +822,8 @@ int rd_player(u32b version)
 		note("Discarded unsupported timed effects");
 	}
 
-	/* # of player turns */
-	rd_u32b(&p_ptr->player_turn);
+	/* Total energy used so far */
+	rd_u32b(&p_ptr->total_energy);
 	/* # of turns spent resting */
 	rd_u32b(&p_ptr->resting_turn);
 
@@ -958,7 +988,7 @@ int rd_player_spells(u32b version)
  */
 int rd_randarts(u32b version)
 {
-	int i;
+	size_t i, j;
 	byte tmp8u;
 	s16b tmp16s;
 	u16b tmp16u;
@@ -1037,9 +1067,10 @@ int rd_randarts(u32b version)
 
 				rd_s32b(&a_ptr->cost);
 
-				rd_u32b(&a_ptr->flags[0]);
-				rd_u32b(&a_ptr->flags[1]);
-				rd_u32b(&a_ptr->flags[2]);
+				/* Hack - XXX - MarbleDice - Maximum saveable flags = 96 */
+				for (j = 0; j < 12 && j < OF_SIZE; j++)
+					rd_byte(&a_ptr->flags[j]);
+				if (j < 12) strip_bytes(OF_SIZE - j);
 
 				rd_byte(&a_ptr->level);
 				rd_byte(&a_ptr->rarity);
@@ -1056,8 +1087,8 @@ int rd_randarts(u32b version)
 				a_ptr->time.sides = time_sides;
 			}
 
-		/* Initialize only the randart names */
-		do_randart(seed_randart, FALSE);
+			/* Initialize only the randart names */
+			do_randart(seed_randart, FALSE);
 		}
 		else
 		{
@@ -1149,7 +1180,7 @@ int rd_inventory(u32b version)
 		if (n >= INVEN_WIELD)
 		{
 			/* Copy object */
-			object_copy(&inventory[n], i_ptr);
+			object_copy(&p_ptr->inventory[n], i_ptr);
 
 			/* Add the weight */
 			p_ptr->total_weight += (i_ptr->number * i_ptr->weight);
@@ -1175,7 +1206,7 @@ int rd_inventory(u32b version)
 			n = slot++;
 
 			/* Copy object */
-			object_copy(&inventory[n], i_ptr);
+			object_copy(&p_ptr->inventory[n], i_ptr);
 
 			/* Add the weight */
 			p_ptr->total_weight += (i_ptr->number * i_ptr->weight);
@@ -1185,7 +1216,7 @@ int rd_inventory(u32b version)
 		}
 	}
 
-	save_quiver_size();
+	save_quiver_size(p_ptr);
 
 	/* Success */
 	return (0);
@@ -1222,8 +1253,9 @@ int rd_stores(u32b version)
 			note("Illegal store owner!");
 			return (-1);
 		}
-		
-		st_ptr->owner = own;
+	
+		/* XXX: refactor into store.c */
+		st_ptr->owner = store_ownerbyidx(st_ptr, own);
 		
 		/* Read the items */
 		for (j = 0; j < num; j++)
@@ -1252,11 +1284,11 @@ int rd_stores(u32b version)
 				(i_ptr->k_idx))
 			{
 				int k = st_ptr->stock_num++;
-				
+
 				/* Accept the item */
 				object_copy(&st_ptr->stock[k], i_ptr);
 			}
-		}	
+		}
 	}
 
 	return 0;
@@ -1303,7 +1335,7 @@ int rd_dungeon(u32b version)
 
 	/* Header info */
 	rd_s16b(&depth);
-	rd_u16b(&tmp16u);
+	rd_u16b(&daycount);
 	rd_s16b(&py);
 	rd_s16b(&px);
 	rd_s16b(&ymax);
@@ -1431,16 +1463,16 @@ int rd_dungeon(u32b version)
 	}
 
 	/*** Success ***/
-	
+
 	/* The dungeon is ready */
 	character_dungeon = TRUE;
-	
+
 #if 0
 	/* Regenerate town in old versions */
 	if (p_ptr->depth == 0)
 		character_dungeon = FALSE;
 #endif
-	
+
 	return 0;
 }
 

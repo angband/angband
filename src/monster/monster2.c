@@ -15,10 +15,14 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
+
 #include "angband.h"
-
+#include "cave.h"
+#include "generate.h"
+#include "history.h"
 #include "object/tvalsval.h"
-
+#include "object/object.h"
+#include "target.h"
 
 /*
  * Delete a monster by index.
@@ -45,7 +49,7 @@ void delete_monster_idx(int i)
 	r_ptr->cur_num--;
 
 	/* Hack -- count the number of "reproducers" */
-	if (r_ptr->flags[1] & (RF1_MULTIPLY)) num_repro--;
+	if (rf_has(r_ptr->flags, RF_MULTIPLY)) num_repro--;
 
 
 	/* Hack -- remove target monster */
@@ -209,10 +213,10 @@ void compact_monsters(int size)
 			chance = 90;
 
 			/* Only compact "Quest" Monsters in emergencies */
-			if ((r_ptr->flags[0] & (RF0_QUESTOR)) && (cnt < 1000)) chance = 100;
+			if (rf_has(r_ptr->flags, RF_QUESTOR) && (cnt < 1000)) chance = 100;
 
 			/* Try not to compact Unique Monsters */
-			if (r_ptr->flags[0] & (RF0_UNIQUE)) chance = 99;
+			if (rf_has(r_ptr->flags, RF_UNIQUE)) chance = 99;
 
 			/* All monsters get a saving throw */
 			if (randint0(100) < chance) continue;
@@ -441,14 +445,14 @@ s16b get_mon_num(int level)
 		r_ptr = &r_info[r_idx];
 
 		/* Hack -- "unique" monsters must be "unique" */
-		if ((r_ptr->flags[0] & (RF0_UNIQUE)) &&
-		    (r_ptr->cur_num >= r_ptr->max_num))
+		if (rf_has(r_ptr->flags, RF_UNIQUE) &&
+		    r_ptr->cur_num >= r_ptr->max_num)
 		{
 			continue;
 		}
 
 		/* Depth Monsters never appear out of depth */
-		if ((r_ptr->flags[0] & (RF0_FORCE_DEPTH)) && (r_ptr->level > p_ptr->depth))
+		if (rf_has(r_ptr->flags, RF_FORCE_DEPTH) && r_ptr->level > p_ptr->depth)
 		{
 			continue;
 		}
@@ -554,7 +558,7 @@ void display_monlist(void)
 	monster_race *r2_ptr;
 
 	monster_vis *list;
-	
+
 	u16b *order;
 
 	bool in_term = (Term != angband_term[0]);
@@ -590,13 +594,20 @@ void display_monlist(void)
 	/* Scan the list of monsters on the level */
 	for (i = 1; i < (size_t)mon_max; i++)
 	{
+		monster_vis *v;
+
 		m_ptr = &mon_list[i];
+		r_ptr = &r_info[m_ptr->r_idx];
 
 		/* Only consider visible monsters */
 		if (!m_ptr->ml) continue;
 
-		/* If this is the first one of this type, count the type */
-		if (!list[m_ptr->r_idx].count) type_count++;
+		/* Take a pointer to this monster visibility entry */
+		v = &list[m_ptr->r_idx];
+
+		/* Note each monster type and save its display attr (color) */
+		if (!v->count) type_count++;
+		if (!v->attr) v->attr = m_ptr->attr ? m_ptr->attr : r_ptr->x_attr;
 		
 		/* Check for LOS
 		 * Hack - we should use (m_ptr->mflag & (MFLAG_VIEW)) here,
@@ -610,16 +621,16 @@ void display_monlist(void)
 			los_count++;
 
 			/* Increment the LOS count for this monster type */
-			list[m_ptr->r_idx].los++;
+			v->los++;
 			
 			/* Check if asleep and increment accordingly */
-			if (m_ptr->csleep) list[m_ptr->r_idx].los_asleep++;
+			if (m_ptr->csleep) v->los_asleep++;
 		}
 		/* Not in LOS so increment if asleep */
-		else if (m_ptr->csleep) list[m_ptr->r_idx].asleep++;
+		else if (m_ptr->csleep) v->asleep++;
 
 		/* Bump the count for this race, and the total count */
-		list[m_ptr->r_idx].count++;
+		v->count++;
 		total_count++;
 	}
 
@@ -684,7 +695,7 @@ void display_monlist(void)
 		}
 	}
 
-   	/* Message for monsters in LOS - even if there are none */
+	/* Message for monsters in LOS - even if there are none */
 	if (!los_count) prt(format("You can see no monsters."), 0, 0);
 	else prt(format("You can see %d monster%s", los_count, (los_count == 1
 		? ":" : "s:")), 0, 0);
@@ -703,10 +714,10 @@ void display_monlist(void)
 
 		/* Get monster race and name */
 		r_ptr = &r_info[order[i]];
-		m_name = r_name + r_ptr->name;
+		m_name = r_ptr->name;
 
 		/* Display uniques in a special colour */
-		if (r_ptr->flags[0] & RF0_UNIQUE)
+		if (rf_has(r_ptr->flags, RF_UNIQUE))
 			attr = TERM_VIOLET;
 		else if (r_ptr->level > p_ptr->depth)
 			attr = TERM_RED;
@@ -722,9 +733,11 @@ void display_monlist(void)
 			list[order[i]].los, list[order[i]].los_asleep);
 
 		/* Display the pict */
-		Term_putch(cur_x++, line, r_ptr->x_attr, r_ptr->x_char);
-		if (use_bigtile) Term_putch(cur_x++, line, 255, -1);
-		Term_putch(cur_x++, line, TERM_WHITE, ' ');
+		if ((tile_width == 1) && (tile_height == 1))
+		{
+		        Term_putch(cur_x++, line, list[order[i]].attr, r_ptr->x_char);
+			Term_putch(cur_x++, line, TERM_WHITE, ' ');
+		}
 
 		/* Print and bump line counter */
 		c_prt(attr, buf, line, cur_x);
@@ -750,7 +763,7 @@ void display_monlist(void)
 		}
 	}
 
-   	/* Message for monsters outside LOS, if there are any */
+	/* Message for monsters outside LOS, if there are any */
 	if (total_count > los_count)
 	{
 		/* Leave a blank line */
@@ -775,10 +788,10 @@ void display_monlist(void)
 
 		/* Get monster race and name */
 		r_ptr = &r_info[order[i]];
-		m_name = r_name + r_ptr->name;
+		m_name = r_ptr->name;
 
 		/* Display uniques in a special colour */
-		if (r_ptr->flags[0] & RF0_UNIQUE)
+		if (rf_has(r_ptr->flags, RF_UNIQUE))
 			attr = TERM_VIOLET;
 		else if (r_ptr->level > p_ptr->depth)
 			attr = TERM_RED;
@@ -795,9 +808,11 @@ void display_monlist(void)
 			list[order[i]].asleep);
 
 		/* Display the pict */
-		Term_putch(cur_x++, line, r_ptr->x_attr, r_ptr->x_char);
-		if (use_bigtile) Term_putch(cur_x++, line, 255, -1);
-		Term_putch(cur_x++, line, TERM_WHITE, ' ');
+		if ((tile_width == 1) && (tile_height == 1))
+		{
+		        Term_putch(cur_x++, line, list[order[i]].attr, r_ptr->x_char);
+			Term_putch(cur_x++, line, TERM_WHITE, ' ');
+		}
 
 		/* Print and bump line counter */
 		c_prt(attr, buf, line, cur_x);
@@ -901,7 +916,7 @@ void monster_desc(char *desc, size_t max, const monster_type *m_ptr, int mode)
 
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
-	cptr name = (r_name + r_ptr->name);
+	cptr name = r_ptr->name;
 
 	bool seen, pron;
 
@@ -920,8 +935,8 @@ void monster_desc(char *desc, size_t max, const monster_type *m_ptr, int mode)
 		int kind = 0x00;
 
 		/* Extract the gender (if applicable) */
-		if (r_ptr->flags[0] & (RF0_FEMALE)) kind = 0x20;
-		else if (r_ptr->flags[0] & (RF0_MALE)) kind = 0x10;
+		if (rf_has(r_ptr->flags, RF_FEMALE)) kind = 0x20;
+		else if (rf_has(r_ptr->flags, RF_MALE)) kind = 0x10;
 
 		/* Ignore the gender (if desired) */
 		if (!m_ptr || !pron) kind = 0x00;
@@ -973,8 +988,8 @@ void monster_desc(char *desc, size_t max, const monster_type *m_ptr, int mode)
 	else if ((mode & 0x02) && (mode & 0x01))
 	{
 		/* The monster is visible, so use its gender */
-		if (r_ptr->flags[0] & (RF0_FEMALE)) my_strcpy(desc, "herself", max);
-		else if (r_ptr->flags[0] & (RF0_MALE)) my_strcpy(desc, "himself", max);
+		if (rf_has(r_ptr->flags, RF_FEMALE)) my_strcpy(desc, "herself", max);
+		else if (rf_has(r_ptr->flags, RF_MALE)) my_strcpy(desc, "himself", max);
 		else my_strcpy(desc, "itself", max);
 	}
 
@@ -983,7 +998,7 @@ void monster_desc(char *desc, size_t max, const monster_type *m_ptr, int mode)
 	else
 	{
 		/* It could be a Unique */
-		if (r_ptr->flags[0] & (RF0_UNIQUE))
+		if (rf_has(r_ptr->flags, RF_UNIQUE))
 		{
 			/* Start with the name (thus nominative and objective) */
 			my_strcpy(desc, name, max);
@@ -1040,8 +1055,8 @@ void lore_do_probe(int m_idx)
 	unsigned i;
 
 	/* Know various things */
-	memset(l_ptr->flags, 255, sizeof(l_ptr->flags));
-	race_flags_assign_spell(l_ptr->spell_flags, r_ptr->spell_flags);
+	rsf_setall(l_ptr->flags);
+	rsf_copy(l_ptr->spell_flags, r_ptr->spell_flags);
 	for (i = 0; i < MONSTER_BLOW_MAX; i++)
 		l_ptr->blows[i] = MAX_UCHAR;
 
@@ -1075,7 +1090,8 @@ void lore_treasure(int m_idx, int num_item, int num_gold)
 	if (num_gold > l_ptr->drop_gold) l_ptr->drop_gold = num_gold;
 
 	/* Learn about drop quality */
-	l_ptr->flags[0] |= (RF0_DROP_GOOD | RF0_DROP_GREAT);
+	rf_on(l_ptr->flags, RF_DROP_GOOD);
+	rf_on(l_ptr->flags, RF_DROP_GREAT);
 
 	/* Update monster recall window */
 	if (p_ptr->monster_race_idx == m_ptr->r_idx)
@@ -1206,13 +1222,13 @@ void update_mon(int m_idx, bool full)
 		if (p_ptr->state.telepathy)
 		{
 			/* Empty mind, no telepathy */
-			if (r_ptr->flags[1] & (RF1_EMPTY_MIND))
+			if (rf_has(r_ptr->flags, RF_EMPTY_MIND))
 			{
 				/* Nothing! */
 			}
 
 			/* Weird mind, occasional telepathy */
-			else if (r_ptr->flags[1] & (RF1_WEIRD_MIND))
+			else if (rf_has(r_ptr->flags, RF_WEIRD_MIND))
 			{
 				/* One in ten individuals are detectable */
 				if ((m_idx % 10) == 5)
@@ -1243,24 +1259,30 @@ void update_mon(int m_idx, bool full)
 			if (d <= p_ptr->state.see_infra)
 			{
 				/* Learn about warm/cold blood */
-				l_ptr->flags[1] |= (RF1_COLD_BLOOD);
+				rf_on(l_ptr->flags, RF_COLD_BLOOD);
 				
 				/* Handle "warm blooded" monsters */
-				if (!(r_ptr->flags[1] & (RF1_COLD_BLOOD)))
+				if (!rf_has(r_ptr->flags, RF_COLD_BLOOD))
 				{
 					/* Easy to see */
 					easy = flag = TRUE;
 				}
 			}
 
+			/* See if the monster is emitting lite */
+			/*if (rf_has(r_ptr->flags, RF_HAS_LITE)) easy = flag = TRUE;*/
+
 			/* Use "illumination" */
 			if (player_can_see_bold(fy, fx))
 			{
+				/* Learn it emits light */
+				rf_on(l_ptr->flags, RF_HAS_LITE);
+
 				/* Learn about invisibility */
-				l_ptr->flags[1] |= (RF1_INVISIBLE);
+				rf_on(l_ptr->flags, RF_INVISIBLE);
 				
 				/* Handle "invisible" monsters */
-				if (r_ptr->flags[1] & (RF1_INVISIBLE))
+				if (rf_has(r_ptr->flags, RF_INVISIBLE))
 				{
 					/* See invisible */
 					if (p_ptr->state.see_inv)
@@ -1287,9 +1309,9 @@ void update_mon(int m_idx, bool full)
 		/* Learn about the monster's mind */
 		if (p_ptr->state.telepathy)
 		{
-			l_ptr->flags[1] |= (RF1_EMPTY_MIND | RF1_WEIRD_MIND | RF1_SMART | RF1_STUPID);
+			flags_set(l_ptr->flags, RF_SIZE, RF_EMPTY_MIND, RF_WEIRD_MIND, RF_SMART, RF_STUPID, FLAG_END);
 		}
-		
+
 		/* It was previously unseen */
 		if (!m_ptr->ml)
 		{
@@ -1422,7 +1444,7 @@ s16b monster_carry(int m_idx, object_type *j_ptr)
 		next_o_idx = o_ptr->next_o_idx;
 
 		/* Check for combination */
-		if (object_similar(o_ptr, j_ptr))
+		if (object_similar(o_ptr, j_ptr, OSTACK_MONSTER))
 		{
 			/* Combine the items */
 			object_absorb(o_ptr, j_ptr);
@@ -1477,6 +1499,7 @@ void monster_swap(int y1, int x1, int y2, int x2)
 
 	monster_type *m_ptr;
 
+	monster_race *r_ptr;
 
 	/* Monsters */
 	m1 = cave_m_idx[y1][x1];
@@ -1500,6 +1523,10 @@ void monster_swap(int y1, int x1, int y2, int x2)
 		/* Update monster */
 		update_mon(m1, TRUE);
 
+		/* Radiate light? */
+		r_ptr = &r_info[m_ptr->r_idx];
+		if (rf_has(r_ptr->flags, RF_HAS_LITE)) p_ptr->redraw |= PU_UPDATE_VIEW;
+
 		/* Redraw monster list */
 		p_ptr->redraw |= (PR_MONLIST);
 	}
@@ -1522,6 +1549,9 @@ void monster_swap(int y1, int x1, int y2, int x2)
 
 		/* Update the flow */
 		p_ptr->update |= (PU_UPDATE_FLOW);
+
+		/* Redraw monster list */
+		p_ptr->redraw |= (PR_MONLIST);
 	}
 
 	/* Monster 2 */
@@ -1535,6 +1565,10 @@ void monster_swap(int y1, int x1, int y2, int x2)
 
 		/* Update monster */
 		update_mon(m2, TRUE);
+
+		/* Radiate light? */
+		r_ptr = &r_info[m_ptr->r_idx];
+		if (rf_has(r_ptr->flags, RF_HAS_LITE)) p_ptr->update |= PU_UPDATE_VIEW;
 
 		/* Redraw monster list */
 		p_ptr->redraw |= (PR_MONLIST);
@@ -1558,6 +1592,9 @@ void monster_swap(int y1, int x1, int y2, int x2)
 
 		/* Update the flow */
 		p_ptr->update |= (PU_UPDATE_FLOW);
+
+		/* Redraw monster list */
+		p_ptr->redraw |= (PR_MONLIST);
 	}
 
 
@@ -1629,10 +1666,10 @@ s16b monster_place(int y, int x, monster_type *n_ptr)
 		r_ptr = &r_info[m_ptr->r_idx];
 
 		/* Hack -- Notice new multi-hued monsters */
-		if (r_ptr->flags[0] & (RF0_ATTR_MULTI)) shimmer_monsters = TRUE;
+		if (rf_has(r_ptr->flags, RF_ATTR_MULTI)) shimmer_monsters = TRUE;
 
 		/* Hack -- Count the number of "reproducers" */
-		if (r_ptr->flags[1] & (RF1_MULTIPLY)) num_repro++;
+		if (rf_has(r_ptr->flags, RF_MULTIPLY)) num_repro++;
 
 		/* Count racial occurances */
 		r_ptr->cur_num++;
@@ -1695,11 +1732,11 @@ static bool place_monster_one(int y, int x, int r_idx, bool slp)
 	if (!r_ptr->name) return (FALSE);
 
 	/* Name */
-	name = (r_name + r_ptr->name);
+	name = r_ptr->name;
 
 
 	/* Hack -- "unique" monsters must be "unique" */
-	if ((r_ptr->flags[0] & (RF0_UNIQUE)) && (r_ptr->cur_num >= r_ptr->max_num))
+	if (rf_has(r_ptr->flags, RF_UNIQUE) && r_ptr->cur_num >= r_ptr->max_num)
 	{
 		/* Cannot create */
 		return (FALSE);
@@ -1707,7 +1744,7 @@ static bool place_monster_one(int y, int x, int r_idx, bool slp)
 
 
 	/* Depth monsters may NOT be created out of depth */
-	if ((r_ptr->flags[0] & (RF0_FORCE_DEPTH)) && (p_ptr->depth < r_ptr->level))
+	if (rf_has(r_ptr->flags, RF_FORCE_DEPTH) && p_ptr->depth < r_ptr->level)
 	{
 		/* Cannot create */
 		return (FALSE);
@@ -1718,7 +1755,7 @@ static bool place_monster_one(int y, int x, int r_idx, bool slp)
 	if (r_ptr->level > p_ptr->depth)
 	{
 		/* Unique monsters */
-		if (r_ptr->flags[0] & (RF0_UNIQUE))
+		if (rf_has(r_ptr->flags, RF_UNIQUE))
 		{
 			/* Message for cheaters */
 			if (OPT(cheat_hear)) msg_format("Deep Unique (%s).", name);
@@ -1739,7 +1776,7 @@ static bool place_monster_one(int y, int x, int r_idx, bool slp)
 	}
 
 	/* Note the monster */
-	else if (r_ptr->flags[0] & (RF0_UNIQUE))
+	else if (rf_has(r_ptr->flags, RF_UNIQUE))
 	{
 		/* Unique monsters induce message */
 		if (OPT(cheat_hear)) msg_format("Unique (%s).", name);
@@ -1766,7 +1803,7 @@ static bool place_monster_one(int y, int x, int r_idx, bool slp)
 
 
 	/* Uniques get a fixed amount of HP */
-	if (r_ptr->flags[0] & (RF0_UNIQUE))
+	if (rf_has(r_ptr->flags, RF_UNIQUE))
 	{
 		n_ptr->maxhp = r_ptr->avg_hp;
 	}
@@ -1787,7 +1824,7 @@ static bool place_monster_one(int y, int x, int r_idx, bool slp)
 	n_ptr->mspeed = r_ptr->speed;
 
 	/* Hack -- small racial variety */
-	if (!(r_ptr->flags[0] & (RF0_UNIQUE)))
+	if (!rf_has(r_ptr->flags, RF_UNIQUE))
 	{
 		/* Allow some small variation per monster */
 		i = extract_energy[r_ptr->speed] / 10;
@@ -1799,7 +1836,7 @@ static bool place_monster_one(int y, int x, int r_idx, bool slp)
 	n_ptr->energy = (byte)randint0(50);
 
 	/* Force monster to wait for player */
-	if (r_ptr->flags[0] & (RF0_FORCE_SLEEP))
+	if (rf_has(r_ptr->flags, RF_FORCE_SLEEP))
 	{
 		/* Monster is still being nice */
 		n_ptr->mflag |= (MFLAG_NICE);
@@ -1807,6 +1844,9 @@ static bool place_monster_one(int y, int x, int r_idx, bool slp)
 		/* Optimize -- Repair flags */
 		repair_mflag_nice = TRUE;
 	}
+
+	/* Radiate light? */
+	if (rf_has(r_ptr->flags, RF_HAS_LITE)) p_ptr->update |= PU_UPDATE_VIEW;
 
 	/* Place the monster in the dungeon */
 	if (!monster_place(y, x, n_ptr)) return (FALSE);
@@ -1933,7 +1973,7 @@ static bool place_monster_okay(int r_idx)
 	if (z_ptr->level > r_ptr->level) return (FALSE);
 
 	/* Skip unique monsters */
-	if (z_ptr->flags[0] & (RF0_UNIQUE)) return (FALSE);
+	if (rf_has(z_ptr->flags, RF_UNIQUE)) return (FALSE);
 
 	/* Paranoia -- Skip identical monsters */
 	if (place_monster_idx == r_idx) return (FALSE);
@@ -1977,7 +2017,7 @@ bool place_monster_aux(int y, int x, int r_idx, bool slp, bool grp)
 
 
 	/* Friends for certain monsters */
-	if (r_ptr->flags[0] & (RF0_FRIENDS))
+	if (rf_has(r_ptr->flags, RF_FRIENDS))
 	{
 		/* Attempt to place a group */
 		(void)place_monster_group(y, x, r_idx, slp);
@@ -1985,7 +2025,7 @@ bool place_monster_aux(int y, int x, int r_idx, bool slp, bool grp)
 
 
 	/* Escorts for certain monsters */
-	if (r_ptr->flags[0] & (RF0_ESCORT))
+	if (rf_has(r_ptr->flags, RF_ESCORT))
 	{
 		/* Try to place several "escorts" */
 		for (i = 0; i < 50; i++)
@@ -2028,8 +2068,8 @@ bool place_monster_aux(int y, int x, int r_idx, bool slp, bool grp)
 			(void)place_monster_one(ny, nx, z, slp);
 
 			/* Place a "group" of escorts if needed */
-			if ((r_info[z].flags[0] & (RF0_FRIENDS)) ||
-			    (r_ptr->flags[0] & (RF0_ESCORTS)))
+			if (rf_has(r_info[z].flags, RF_FRIENDS) ||
+			    rf_has(r_ptr->flags, RF_ESCORTS))
 			{
 				/* Place a group of monsters */
 				(void)place_monster_group(ny, nx, z, slp);
@@ -2198,88 +2238,80 @@ static bool summon_specific_okay(int r_idx)
 	{
 		case SUMMON_ANIMAL:
 		{
-			okay = ((r_ptr->flags[2] & (RF2_ANIMAL)) &&
-			        !(r_ptr->flags[0] & (RF0_UNIQUE)));
+			okay = (rf_has(r_ptr->flags, RF_ANIMAL) &&
+			        !rf_has(r_ptr->flags, RF_UNIQUE));
 			break;
 		}
 
 		case SUMMON_SPIDER:
 		{
-			okay = ((r_ptr->d_char == 'S') &&
-			        !(r_ptr->flags[0] & (RF0_UNIQUE)));
+			okay = (r_ptr->d_char == 'S' &&
+			        !rf_has(r_ptr->flags, RF_UNIQUE));
 			break;
 		}
 
 		case SUMMON_HOUND:
 		{
-			okay = (((r_ptr->d_char == 'C') || (r_ptr->d_char == 'Z')) &&
-			        !(r_ptr->flags[0] & (RF0_UNIQUE)));
+			okay = ((r_ptr->d_char == 'C' || r_ptr->d_char == 'Z') &&
+			        !rf_has(r_ptr->flags, RF_UNIQUE));
 			break;
 		}
 
 		case SUMMON_HYDRA:
 		{
-			okay = ((r_ptr->d_char == 'M') &&
-			        !(r_ptr->flags[0] & (RF0_UNIQUE)));
+			okay = (r_ptr->d_char == 'M' &&
+			        !rf_has(r_ptr->flags, RF_UNIQUE));
 			break;
 		}
 
 		case SUMMON_ANGEL:
 		{
-			okay = ((r_ptr->d_char == 'A') &&
-			        !(r_ptr->flags[0] & (RF0_UNIQUE)) &&
-				!(r_ptr->flags[0] & (RF0_FRIEND)) &&
-				!(r_ptr->flags[0] & (RF0_FRIENDS)) &&
-				!(r_ptr->flags[0] & (RF0_ESCORT)) &&
-				!(r_ptr->flags[0] & (RF0_ESCORTS)));
+			okay = (r_ptr->d_char == 'A' &&
+			        !flags_test_all(r_ptr->flags, RF_SIZE, RF_UNIQUE,
+			                              RF_FRIEND, RF_FRIENDS, RF_ESCORT,
+			                              RF_ESCORTS, FLAG_END));
 			break;
 		}
 
 		case SUMMON_DEMON:
 		{
-			okay = ((r_ptr->flags[2] & (RF2_DEMON)) &&
-			        !(r_ptr->flags[0] & (RF0_UNIQUE)) &&
-				!(r_ptr->flags[0] & (RF0_FRIEND)) &&
-				!(r_ptr->flags[0] & (RF0_FRIENDS)) &&
-				!(r_ptr->flags[0] & (RF0_ESCORT)) &&
-				!(r_ptr->flags[0] & (RF0_ESCORTS)));
+			okay = (rf_has(r_ptr->flags, RF_DEMON) &&
+			        !flags_test_all(r_ptr->flags, RF_SIZE, RF_UNIQUE,
+			                              RF_FRIEND, RF_FRIENDS, RF_ESCORT,
+			                              RF_ESCORTS, FLAG_END));
 			break;
 		}
 
 		case SUMMON_UNDEAD:
 		{
-			okay = ((r_ptr->flags[2] & (RF2_UNDEAD)) &&
-			        !(r_ptr->flags[0] & (RF0_UNIQUE)) &&
-				!(r_ptr->flags[0] & (RF0_FRIEND)) &&
-				!(r_ptr->flags[0] & (RF0_FRIENDS)) &&
-				!(r_ptr->flags[0] & (RF0_ESCORT)) &&
-				!(r_ptr->flags[0] & (RF0_ESCORTS)));
+			okay = (rf_has(r_ptr->flags, RF_UNDEAD) &&
+			        !flags_test_all(r_ptr->flags, RF_SIZE, RF_UNIQUE,
+			                              RF_FRIEND, RF_FRIENDS, RF_ESCORT,
+			                              RF_ESCORTS, FLAG_END));
 			break;
 		}
 
 		case SUMMON_DRAGON:
 		{
-			okay = ((r_ptr->flags[2] & (RF2_DRAGON)) &&
-			        !(r_ptr->flags[0] & (RF0_UNIQUE)) &&
-				!(r_ptr->flags[0] & (RF0_FRIEND)) &&
-				!(r_ptr->flags[0] & (RF0_FRIENDS)) &&
-				!(r_ptr->flags[0] & (RF0_ESCORT)) &&
-				!(r_ptr->flags[0] & (RF0_ESCORTS)));
+			okay = (rf_has(r_ptr->flags, RF_DRAGON) &&
+			        !flags_test_all(r_ptr->flags, RF_SIZE, RF_UNIQUE,
+			                              RF_FRIEND, RF_FRIENDS, RF_ESCORT,
+			                              RF_ESCORTS, FLAG_END));
 			break;
 		}
 
 		case SUMMON_KIN:
 		{
-			okay = ((r_ptr->d_char == summon_kin_type) &&
-			        !(r_ptr->flags[0] & (RF0_UNIQUE)));
+			okay = (r_ptr->d_char == summon_kin_type &&
+			        !rf_has(r_ptr->flags, RF_UNIQUE));
 			break;
 		}
 
 		case SUMMON_HI_UNDEAD:
 		{
-			okay = ((r_ptr->d_char == 'L') ||
-			        (r_ptr->d_char == 'V') ||
-			        (r_ptr->d_char == 'W'));
+			okay = (r_ptr->d_char == 'L' ||
+			        r_ptr->d_char == 'V' ||
+			        r_ptr->d_char == 'W');
 			break;
 		}
 
@@ -2297,30 +2329,28 @@ static bool summon_specific_okay(int r_idx)
 
 		case SUMMON_WRAITH:
 		{
-			okay = ((r_ptr->d_char == 'W') &&
-			        (r_ptr->flags[0] & (RF0_UNIQUE)));
+			okay = (r_ptr->d_char == 'W' &&
+			        rf_has(r_ptr->flags, RF_UNIQUE));
 			break;
 		}
 
 		case SUMMON_UNIQUE:
 		{
-			okay = (r_ptr->flags[0] & (RF0_UNIQUE)) ? TRUE : FALSE;
+			okay = (rf_has(r_ptr->flags, RF_UNIQUE)) ? TRUE : FALSE;
 			break;
 		}
 
 		case SUMMON_MONSTER:
 		{
-			okay = (!(r_ptr->flags[0] & (RF0_UNIQUE)) &&
-				!(r_ptr->flags[0] & (RF0_FRIEND)) &&
-				!(r_ptr->flags[0] & (RF0_FRIENDS)) &&
-				!(r_ptr->flags[0] & (RF0_ESCORT)) &&
-				!(r_ptr->flags[0] & (RF0_ESCORTS)));
+			okay = (!flags_test_all(r_ptr->flags, RF_SIZE, RF_UNIQUE,
+			                              RF_FRIEND, RF_FRIENDS, RF_ESCORT,
+			                              RF_ESCORTS, FLAG_END));
 			break;
 		}
 
 		case SUMMON_MONSTERS:
 		{
-			okay = (!(r_ptr->flags[0] & (RF0_UNIQUE)));
+			okay = (!rf_has(r_ptr->flags, RF_UNIQUE));
 			break;
 		}
 	}
@@ -2576,44 +2606,43 @@ void message_pain(int m_idx, int dam)
 /* XXX Eddie This is ghastly.  The monster should have known_flags similar to in the object_type structure. */
 typedef struct {
 	int idx;
-	int flagset; /* this flagset stuff has got to go :( */
-	u32b flag;
+	int flag;
 } learn_attack_struct;
 
 static learn_attack_struct attack_table[] = {
 	/* first 14 unused */
-	{ 0, 0, 0 },
-	{ 1, 0, 0 },
-	{ 2, 0, 0 },
-	{ 3, 0, 0 },
-	{ 4, 0, 0 },
-	{ 5, 0, 0 },
-	{ 6, 0, 0 },
-	{ 7, 0, 0 },
-	{ 8, 0, 0 },
-	{ 9, 0, 0 },
-	{ 10, 0, 0 },
-	{ 11, 0, 0 },
-	{ 12, 0, 0 },
-	{ 13, 0, 0 },
-	{ DRS_FREE, 2, TR2_FREE_ACT },
-	{ DRS_MANA, 0, 0 },
-	{ DRS_RES_ACID, 1, TR1_RES_ACID },
-	{ DRS_RES_ELEC, 1, TR1_RES_ELEC },
-	{ DRS_RES_FIRE, 1, TR1_RES_FIRE },
-	{ DRS_RES_COLD, 1, TR1_RES_COLD },
-	{ DRS_RES_POIS, 1, TR1_RES_POIS },
-	{ DRS_RES_FEAR, 1, TR1_RES_FEAR },
-	{ DRS_RES_LIGHT, 1, TR1_RES_LIGHT },
-	{ DRS_RES_DARK, 1, TR1_RES_DARK },
-	{ DRS_RES_BLIND, 1, TR1_RES_BLIND },
-	{ DRS_RES_CONFU, 1, TR1_RES_CONFU },
-	{ DRS_RES_SOUND, 1, TR1_RES_SOUND },
-	{ DRS_RES_SHARD, 1, TR1_RES_SHARD },
-	{ DRS_RES_NEXUS, 1, TR1_RES_NEXUS },
-	{ DRS_RES_NETHR, 1, TR1_RES_NETHR },
-	{ DRS_RES_CHAOS, 1, TR1_RES_CHAOS },
-	{ DRS_RES_DISEN, 1, TR1_RES_DISEN },
+	{ 0, FLAG_END },
+	{ 1, FLAG_END },
+	{ 2, FLAG_END },
+	{ 3, FLAG_END },
+	{ 4, FLAG_END },
+	{ 5, FLAG_END },
+	{ 6, FLAG_END },
+	{ 7, FLAG_END },
+	{ 8, FLAG_END },
+	{ 9, FLAG_END },
+	{ 10, FLAG_END },
+	{ 11, FLAG_END },
+	{ 12, FLAG_END },
+	{ 13, FLAG_END },
+	{ DRS_FREE, OF_FREE_ACT },
+	{ DRS_MANA, FLAG_END },
+	{ DRS_RES_ACID, OF_RES_ACID },
+	{ DRS_RES_ELEC, OF_RES_ELEC },
+	{ DRS_RES_FIRE, OF_RES_FIRE },
+	{ DRS_RES_COLD, OF_RES_COLD },
+	{ DRS_RES_POIS, OF_RES_POIS },
+	{ DRS_RES_FEAR, OF_RES_FEAR },
+	{ DRS_RES_LIGHT, OF_RES_LIGHT },
+	{ DRS_RES_DARK, OF_RES_DARK },
+	{ DRS_RES_BLIND, OF_RES_BLIND },
+	{ DRS_RES_CONFU, OF_RES_CONFU },
+	{ DRS_RES_SOUND, OF_RES_SOUND },
+	{ DRS_RES_SHARD, OF_RES_SHARD },
+	{ DRS_RES_NEXUS, OF_RES_NEXUS },
+	{ DRS_RES_NETHR, OF_RES_NETHR },
+	{ DRS_RES_CHAOS, OF_RES_CHAOS },
+	{ DRS_RES_DISEN, OF_RES_DISEN },
 };
 
 /* XXX Eddie this ought to be as simple as testing visibility and/or intelligence, then or-ing a flag into m_ptr->known_flags */
@@ -2631,16 +2660,17 @@ void update_smart_learn(int m_idx, int what)
 	assert(what >= 0);
 	assert(what < (int)N_ELEMENTS(attack_table));
 	assert (attack_table[what].idx == what);
-	wieldeds_notice_flag(attack_table[what].flagset, attack_table[what].flag);
+	if (attack_table[what].flag >= FLAG_START)
+		wieldeds_notice_flag(attack_table[what].flag);
 
 	/* Not allowed to learn */
 	if (!OPT(adult_ai_learn)) return;
 
 	/* Too stupid to learn anything */
-	if (r_ptr->flags[1] & (RF1_STUPID)) return;
+	if (rf_has(r_ptr->flags, RF_STUPID)) return;
 
 	/* Not intelligent, only learn sometimes */
-	if (!(r_ptr->flags[1] & (RF1_SMART)) && (randint0(100) < 50)) return;
+	if (!rf_has(r_ptr->flags, RF_SMART) && (randint0(100) < 50)) return;
 
 
 	/* XXX XXX XXX */
@@ -2775,9 +2805,9 @@ void update_smart_learn(int m_idx, int what)
  */
 static int get_coin_type(const monster_race *r_ptr)
 {
-	const char *name = (r_name + r_ptr->name);
+	const char *name = r_ptr->name;
 
-	if (!(r_ptr->flags[2] & RF2_METAL)) return SV_GOLD_ANY;
+	if (!rf_has(r_ptr->flags, RF_METAL)) return SV_GOLD_ANY;
 
 	/* Look for textual clues */
 	if (my_stristr(name, "copper "))	return SV_COPPER;
@@ -2859,13 +2889,13 @@ void monster_death(int m_idx)
 
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
-	bool visible = (m_ptr->ml || (r_ptr->flags[0] & (RF0_UNIQUE)));
+	bool visible = (m_ptr->ml || rf_has(r_ptr->flags, RF_UNIQUE));
 
-	bool great = (r_ptr->flags[0] & (RF0_DROP_GREAT)) ? TRUE : FALSE;
-	bool good = ((r_ptr->flags[0] & (RF0_DROP_GOOD)) ? TRUE : FALSE) || great;
+	bool great = (rf_has(r_ptr->flags, RF_DROP_GREAT)) ? TRUE : FALSE;
+	bool good = (rf_has(r_ptr->flags, RF_DROP_GOOD) ? TRUE : FALSE) || great;
 
-	bool gold_ok = (!(r_ptr->flags[0] & (RF0_ONLY_ITEM)));
-	bool item_ok = (!(r_ptr->flags[0] & (RF0_ONLY_GOLD)));
+	bool gold_ok = (!rf_has(r_ptr->flags, RF_ONLY_ITEM));
+	bool item_ok = (!rf_has(r_ptr->flags, RF_ONLY_GOLD));
 
 	int force_coin = get_coin_type(r_ptr);
 
@@ -2910,13 +2940,13 @@ void monster_death(int m_idx)
 
 
 	/* Mega-Hack -- drop "winner" treasures */
-	if (r_ptr->flags[0] & (RF0_DROP_CHOSEN))
+	if (rf_has(r_ptr->flags, RF_DROP_CHOSEN))
 	{
 		/* Get local object */
 		i_ptr = &object_type_body;
 
 		/* Mega-Hack -- Make "Grond" */
-		object_prep(i_ptr, lookup_kind(TV_HAFTED, SV_GROND), 0, MAXIMISE);
+		object_prep(i_ptr, objkind_get(TV_HAFTED, SV_GROND), 0, MAXIMISE);
 		i_ptr->name1 = ART_GROND;
 		apply_magic(i_ptr, 0, TRUE, TRUE, TRUE);
 
@@ -2932,7 +2962,7 @@ void monster_death(int m_idx)
 		i_ptr = &object_type_body;
 
 		/* Mega-Hack -- Make "Morgoth" */
-		object_prep(i_ptr, lookup_kind(TV_CROWN, SV_MORGOTH), 0, MAXIMISE);
+		object_prep(i_ptr, objkind_get(TV_CROWN, SV_MORGOTH), 0, MAXIMISE);
 		i_ptr->name1 = ART_MORGOTH;
 		apply_magic(i_ptr, 0, TRUE, TRUE, TRUE);
 
@@ -2946,17 +2976,18 @@ void monster_death(int m_idx)
 
 
 	/* Determine how much we can drop */
-	if ((r_ptr->flags[0] & RF0_DROP_20) && (randint0(100) < 20)) number++;
-	if ((r_ptr->flags[0] & RF0_DROP_40) && (randint0(100) < 40)) number++;
-	if ((r_ptr->flags[0] & RF0_DROP_60) && (randint0(100) < 60)) number++;
+	if (rf_has(r_ptr->flags, RF_DROP_20) && randint0(100) < 20) number++;
+	if (rf_has(r_ptr->flags, RF_DROP_40) && randint0(100) < 40) number++;
+	if (rf_has(r_ptr->flags, RF_DROP_60) && randint0(100) < 60) number++;
 
-	if (r_ptr->flags[0] & RF0_DROP_4) number += rand_range(2, 6);
-	if (r_ptr->flags[0] & RF0_DROP_3) number += rand_range(2, 4);
-	if (r_ptr->flags[0] & RF0_DROP_2) number += rand_range(1, 3);
-	if (r_ptr->flags[0] & RF0_DROP_1) number++;
+	if (rf_has(r_ptr->flags, RF_DROP_4)) number += rand_range(2, 6);
+	if (rf_has(r_ptr->flags, RF_DROP_3)) number += rand_range(2, 4);
+	if (rf_has(r_ptr->flags, RF_DROP_2)) number += rand_range(1, 3);
+	if (rf_has(r_ptr->flags, RF_DROP_1)) number++;
 
-	/* Average monster level and current depth */
-	level = MAX(p_ptr->depth, r_ptr->level);
+	/* Take the best of average of monster level and current depth,
+	   and monster level - to reward fighting OOD monsters */
+	level = MAX((r_ptr->level + p_ptr->depth) / 2, r_ptr->level);
 
 	/* Drop some objects */
 	for (j = 0; j < number; j++)
@@ -3003,7 +3034,7 @@ void monster_death(int m_idx)
 	p_ptr->redraw |= PR_MONLIST;
 
 	/* Only process "Quest Monsters" */
-	if (!(r_ptr->flags[0] & (RF0_QUESTOR))) return;
+	if (!rf_has(r_ptr->flags, RF_QUESTOR)) return;
 
 	/* Hack -- Mark quests as complete */
 	for (i = 0; i < MAX_Q_IDX; i++)
@@ -3106,10 +3137,10 @@ bool mon_take_hit(int m_idx, int dam, bool *fear, cptr note)
 		int soundfx = MSG_KILL;
 
 		/* Play a special sound if the monster was unique */
-		if (r_ptr->flags[0] & RF0_UNIQUE) 
+		if (rf_has(r_ptr->flags, RF_UNIQUE))
 		{
 			/* Mega-Hack -- Morgoth -- see monster_death() */
-			if (r_ptr->flags[0] & RF0_DROP_CHOSEN)
+			if (rf_has(r_ptr->flags, RF_DROP_CHOSEN))
 				soundfx = MSG_KILL_KING;
 			else
 				soundfx = MSG_KILL_UNIQUE;
@@ -3131,9 +3162,7 @@ bool mon_take_hit(int m_idx, int dam, bool *fear, cptr note)
 		}
 
 		/* Death by Physical attack -- non-living monster */
-		else if ((r_ptr->flags[2] & (RF2_DEMON | RF2_UNDEAD)) ||
-		         (r_ptr->flags[1] & (RF1_STUPID)) ||
-		         (strchr("Evg", r_ptr->d_char)))
+		else if (monster_is_unusual(r_ptr))
 		{
 			message_format(soundfx, m_ptr->r_idx, "You have destroyed %s.", m_name);
 		}
@@ -3166,7 +3195,7 @@ bool mon_take_hit(int m_idx, int dam, bool *fear, cptr note)
 		}
 
 		/* When the player kills a Unique, it stays dead */
-		if (r_ptr->flags[0] & (RF0_UNIQUE))
+		if (rf_has(r_ptr->flags, RF_UNIQUE))
 		{
 			char unique_name[80];
 			r_ptr->max_num = 0;
@@ -3186,7 +3215,7 @@ bool mon_take_hit(int m_idx, int dam, bool *fear, cptr note)
 		monster_death(m_idx);
 
 		/* Recall even invisible uniques or winners */
-		if (m_ptr->ml || (r_ptr->flags[0] & (RF0_UNIQUE)))
+		if (m_ptr->ml || rf_has(r_ptr->flags, RF_UNIQUE))
 		{
 			/* Count kills this life */
 			if (l_ptr->pkills < MAX_SHORT) l_ptr->pkills++;
@@ -3233,7 +3262,7 @@ bool mon_take_hit(int m_idx, int dam, bool *fear, cptr note)
 	}
 
 	/* Sometimes a monster gets scared by damage */
-	if (!m_ptr->monfear && !(r_ptr->flags[2] & (RF2_NO_FEAR)) && (dam > 0))
+	if (!m_ptr->monfear && !rf_has(r_ptr->flags, RF_NO_FEAR) && dam > 0)
 	{
 		int percentage;
 
@@ -3267,12 +3296,8 @@ bool mon_take_hit(int m_idx, int dam, bool *fear, cptr note)
  * lore struct.  Known flags will be 1 for present, or 0 for not present.
  * Unknown flags will always be 0.
  */
-void monster_flags_known(const monster_race *r_ptr, const monster_lore *l_ptr, u32b flags[])
+void monster_flags_known(const monster_race *r_ptr, const monster_lore *l_ptr, bitflag flags[RF_SIZE])
 {
-	int i;
-
-	for (i = 0; i < RACE_FLAG_STRICT_UB; i++)
-	{
-		flags[i] = l_ptr->flags[i] & r_ptr->flags[i];
-	}
+	rf_copy(flags, r_ptr->flags);
+	rf_inter(flags, l_ptr->flags);
 }

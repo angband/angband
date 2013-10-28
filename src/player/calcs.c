@@ -16,12 +16,792 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
+
 #include "angband.h"
+#include "cave.h"
+#include "files.h"
 #include "game-event.h"
+#include "monster/monster.h"
 #include "object/tvalsval.h"
+#include "spells.h"
+#include "squelch.h"
+
+/*
+ * Stat Table (CHR) -- payment percentages
+ */
+const byte adj_chr_gold[STAT_RANGE] =
+{
+	143	/* 3 */,
+	137	/* 4 */,
+	134	/* 5 */,
+	132	/* 6 */,
+	129	/* 7 */,
+	127	/* 8 */,
+	123	/* 9 */,
+	122	/* 10 */,
+	121	/* 11 */,
+	118	/* 12 */,
+	116	/* 13 */,
+	113	/* 14 */,
+	113	/* 15 */,
+	112	/* 16 */,
+	111	/* 17 */,
+	110	/* 18/00-18/09 */,
+	108	/* 18/10-18/19 */,
+	107	/* 18/20-18/29 */,
+	106	/* 18/30-18/39 */,
+	105	/* 18/40-18/49 */,
+	104	/* 18/50-18/59 */,
+	103	/* 18/60-18/69 */,
+	102	/* 18/70-18/79 */,
+	101	/* 18/80-18/89 */,
+	100	/* 18/90-18/99 */,
+	99	/* 18/100-18/109 */,
+	97	/* 18/110-18/119 */,
+	96	/* 18/120-18/129 */,
+	95	/* 18/130-18/139 */,
+	94	/* 18/140-18/149 */,
+	93	/* 18/150-18/159 */,
+	92	/* 18/160-18/169 */,
+	91	/* 18/170-18/179 */,
+	90	/* 18/180-18/189 */,
+	90	/* 18/190-18/199 */,
+	90	/* 18/200-18/209 */,
+	90	/* 18/210-18/219 */,
+	90	/* 18/220+ */
+};
+
+/*
+ * Stat Table (INT) -- Magic devices
+ */
+static const byte adj_int_dev[STAT_RANGE] =
+{
+	0	/* 3 */,
+	0	/* 4 */,
+	0	/* 5 */,
+	0	/* 6 */,
+	0	/* 7 */,
+	1	/* 8 */,
+	1	/* 9 */,
+	1	/* 10 */,
+	1	/* 11 */,
+	1	/* 12 */,
+	1	/* 13 */,
+	1	/* 14 */,
+	2	/* 15 */,
+	2	/* 16 */,
+	2	/* 17 */,
+	3	/* 18/00-18/09 */,
+	3	/* 18/10-18/19 */,
+	3	/* 18/20-18/29 */,
+	3	/* 18/30-18/39 */,
+	3	/* 18/40-18/49 */,
+	4	/* 18/50-18/59 */,
+	4	/* 18/60-18/69 */,
+	5	/* 18/70-18/79 */,
+	5	/* 18/80-18/89 */,
+	6	/* 18/90-18/99 */,
+	6	/* 18/100-18/109 */,
+	7	/* 18/110-18/119 */,
+	7	/* 18/120-18/129 */,
+	8	/* 18/130-18/139 */,
+	8	/* 18/140-18/149 */,
+	9	/* 18/150-18/159 */,
+	9	/* 18/160-18/169 */,
+	10	/* 18/170-18/179 */,
+	10	/* 18/180-18/189 */,
+	11	/* 18/190-18/199 */,
+	11	/* 18/200-18/209 */,
+	12	/* 18/210-18/219 */,
+	13	/* 18/220+ */
+};
+
+/*
+ * Stat Table (WIS) -- Saving throw
+ */
+static const byte adj_wis_sav[STAT_RANGE] =
+{
+	0	/* 3 */,
+	0	/* 4 */,
+	0	/* 5 */,
+	0	/* 6 */,
+	0	/* 7 */,
+	1	/* 8 */,
+	1	/* 9 */,
+	1	/* 10 */,
+	1	/* 11 */,
+	1	/* 12 */,
+	1	/* 13 */,
+	1	/* 14 */,
+	2	/* 15 */,
+	2	/* 16 */,
+	2	/* 17 */,
+	3	/* 18/00-18/09 */,
+	3	/* 18/10-18/19 */,
+	3	/* 18/20-18/29 */,
+	3	/* 18/30-18/39 */,
+	3	/* 18/40-18/49 */,
+	4	/* 18/50-18/59 */,
+	4	/* 18/60-18/69 */,
+	5	/* 18/70-18/79 */,
+	5	/* 18/80-18/89 */,
+	6	/* 18/90-18/99 */,
+	7	/* 18/100-18/109 */,
+	8	/* 18/110-18/119 */,
+	9	/* 18/120-18/129 */,
+	10	/* 18/130-18/139 */,
+	11	/* 18/140-18/149 */,
+	12	/* 18/150-18/159 */,
+	13	/* 18/160-18/169 */,
+	14	/* 18/170-18/179 */,
+	15	/* 18/180-18/189 */,
+	16	/* 18/190-18/199 */,
+	17	/* 18/200-18/209 */,
+	18	/* 18/210-18/219 */,
+	19	/* 18/220+ */
+};
 
 
+/*
+ * Stat Table (DEX) -- disarming
+ */
+static const byte adj_dex_dis[STAT_RANGE] =
+{
+	0	/* 3 */,
+	0	/* 4 */,
+	0	/* 5 */,
+	0	/* 6 */,
+	0	/* 7 */,
+	0	/* 8 */,
+	0	/* 9 */,
+	0	/* 10 */,
+	0	/* 11 */,
+	0	/* 12 */,
+	1	/* 13 */,
+	1	/* 14 */,
+	1	/* 15 */,
+	2	/* 16 */,
+	2	/* 17 */,
+	4	/* 18/00-18/09 */,
+	4	/* 18/10-18/19 */,
+	4	/* 18/20-18/29 */,
+	4	/* 18/30-18/39 */,
+	5	/* 18/40-18/49 */,
+	5	/* 18/50-18/59 */,
+	5	/* 18/60-18/69 */,
+	6	/* 18/70-18/79 */,
+	6	/* 18/80-18/89 */,
+	7	/* 18/90-18/99 */,
+	8	/* 18/100-18/109 */,
+	8	/* 18/110-18/119 */,
+	8	/* 18/120-18/129 */,
+	8	/* 18/130-18/139 */,
+	8	/* 18/140-18/149 */,
+	9	/* 18/150-18/159 */,
+	9	/* 18/160-18/169 */,
+	9	/* 18/170-18/179 */,
+	9	/* 18/180-18/189 */,
+	9	/* 18/190-18/199 */,
+	10	/* 18/200-18/209 */,
+	10	/* 18/210-18/219 */,
+	10	/* 18/220+ */
+};
 
+
+/*
+ * Stat Table (INT) -- disarming
+ */
+static const byte adj_int_dis[STAT_RANGE] =
+{
+	0	/* 3 */,
+	0	/* 4 */,
+	0	/* 5 */,
+	0	/* 6 */,
+	0	/* 7 */,
+	1	/* 8 */,
+	1	/* 9 */,
+	1	/* 10 */,
+	1	/* 11 */,
+	1	/* 12 */,
+	1	/* 13 */,
+	1	/* 14 */,
+	2	/* 15 */,
+	2	/* 16 */,
+	2	/* 17 */,
+	3	/* 18/00-18/09 */,
+	3	/* 18/10-18/19 */,
+	3	/* 18/20-18/29 */,
+	4	/* 18/30-18/39 */,
+	4	/* 18/40-18/49 */,
+	5	/* 18/50-18/59 */,
+	6	/* 18/60-18/69 */,
+	7	/* 18/70-18/79 */,
+	8	/* 18/80-18/89 */,
+	9	/* 18/90-18/99 */,
+	10	/* 18/100-18/109 */,
+	10	/* 18/110-18/119 */,
+	11	/* 18/120-18/129 */,
+	12	/* 18/130-18/139 */,
+	13	/* 18/140-18/149 */,
+	14	/* 18/150-18/159 */,
+	15	/* 18/160-18/169 */,
+	16	/* 18/170-18/179 */,
+	17	/* 18/180-18/189 */,
+	18	/* 18/190-18/199 */,
+	19	/* 18/200-18/209 */,
+	19	/* 18/210-18/219 */,
+	19	/* 18/220+ */
+};
+
+/*
+ * Stat Table (DEX) -- bonus to ac (plus 128)
+ */
+static const byte adj_dex_ta[STAT_RANGE] =
+{
+	128 + -4	/* 3 */,
+	128 + -3	/* 4 */,
+	128 + -2	/* 5 */,
+	128 + -1	/* 6 */,
+	128 + 0	/* 7 */,
+	128 + 0	/* 8 */,
+	128 + 0	/* 9 */,
+	128 + 0	/* 10 */,
+	128 + 0	/* 11 */,
+	128 + 0	/* 12 */,
+	128 + 0	/* 13 */,
+	128 + 0	/* 14 */,
+	128 + 1	/* 15 */,
+	128 + 1	/* 16 */,
+	128 + 1	/* 17 */,
+	128 + 2	/* 18/00-18/09 */,
+	128 + 2	/* 18/10-18/19 */,
+	128 + 2	/* 18/20-18/29 */,
+	128 + 2	/* 18/30-18/39 */,
+	128 + 2	/* 18/40-18/49 */,
+	128 + 3	/* 18/50-18/59 */,
+	128 + 3	/* 18/60-18/69 */,
+	128 + 3	/* 18/70-18/79 */,
+	128 + 4	/* 18/80-18/89 */,
+	128 + 5	/* 18/90-18/99 */,
+	128 + 6	/* 18/100-18/109 */,
+	128 + 7	/* 18/110-18/119 */,
+	128 + 8	/* 18/120-18/129 */,
+	128 + 9	/* 18/130-18/139 */,
+	128 + 9	/* 18/140-18/149 */,
+	128 + 10	/* 18/150-18/159 */,
+	128 + 11	/* 18/160-18/169 */,
+	128 + 12	/* 18/170-18/179 */,
+	128 + 13	/* 18/180-18/189 */,
+	128 + 14	/* 18/190-18/199 */,
+	128 + 15	/* 18/200-18/209 */,
+	128 + 15	/* 18/210-18/219 */,
+	128 + 15	/* 18/220+ */
+};
+
+/*
+ * Stat Table (STR) -- bonus to dam (plus 128)
+ */
+static const byte adj_str_td[STAT_RANGE] =
+{
+	128 + -2	/* 3 */,
+	128 + -2	/* 4 */,
+	128 + -1	/* 5 */,
+	128 + -1	/* 6 */,
+	128 + 0	/* 7 */,
+	128 + 0	/* 8 */,
+	128 + 0	/* 9 */,
+	128 + 0	/* 10 */,
+	128 + 0	/* 11 */,
+	128 + 0	/* 12 */,
+	128 + 0	/* 13 */,
+	128 + 0	/* 14 */,
+	128 + 0	/* 15 */,
+	128 + 1	/* 16 */,
+	128 + 2	/* 17 */,
+	128 + 2	/* 18/00-18/09 */,
+	128 + 2	/* 18/10-18/19 */,
+	128 + 3	/* 18/20-18/29 */,
+	128 + 3	/* 18/30-18/39 */,
+	128 + 3	/* 18/40-18/49 */,
+	128 + 3	/* 18/50-18/59 */,
+	128 + 3	/* 18/60-18/69 */,
+	128 + 4	/* 18/70-18/79 */,
+	128 + 5	/* 18/80-18/89 */,
+	128 + 5	/* 18/90-18/99 */,
+	128 + 6	/* 18/100-18/109 */,
+	128 + 7	/* 18/110-18/119 */,
+	128 + 8	/* 18/120-18/129 */,
+	128 + 9	/* 18/130-18/139 */,
+	128 + 10	/* 18/140-18/149 */,
+	128 + 11	/* 18/150-18/159 */,
+	128 + 12	/* 18/160-18/169 */,
+	128 + 13	/* 18/170-18/179 */,
+	128 + 14	/* 18/180-18/189 */,
+	128 + 15	/* 18/190-18/199 */,
+	128 + 16	/* 18/200-18/209 */,
+	128 + 18	/* 18/210-18/219 */,
+	128 + 20	/* 18/220+ */
+};
+
+
+/*
+ * Stat Table (DEX) -- bonus to hit (plus 128)
+ */
+static const byte adj_dex_th[STAT_RANGE] =
+{
+	128 + -3	/* 3 */,
+	128 + -2	/* 4 */,
+	128 + -2	/* 5 */,
+	128 + -1	/* 6 */,
+	128 + -1	/* 7 */,
+	128 + 0	/* 8 */,
+	128 + 0	/* 9 */,
+	128 + 0	/* 10 */,
+	128 + 0	/* 11 */,
+	128 + 0	/* 12 */,
+	128 + 0	/* 13 */,
+	128 + 0	/* 14 */,
+	128 + 0	/* 15 */,
+	128 + 1	/* 16 */,
+	128 + 2	/* 17 */,
+	128 + 3	/* 18/00-18/09 */,
+	128 + 3	/* 18/10-18/19 */,
+	128 + 3	/* 18/20-18/29 */,
+	128 + 3	/* 18/30-18/39 */,
+	128 + 3	/* 18/40-18/49 */,
+	128 + 4	/* 18/50-18/59 */,
+	128 + 4	/* 18/60-18/69 */,
+	128 + 4	/* 18/70-18/79 */,
+	128 + 4	/* 18/80-18/89 */,
+	128 + 5	/* 18/90-18/99 */,
+	128 + 6	/* 18/100-18/109 */,
+	128 + 7	/* 18/110-18/119 */,
+	128 + 8	/* 18/120-18/129 */,
+	128 + 9	/* 18/130-18/139 */,
+	128 + 9	/* 18/140-18/149 */,
+	128 + 10	/* 18/150-18/159 */,
+	128 + 11	/* 18/160-18/169 */,
+	128 + 12	/* 18/170-18/179 */,
+	128 + 13	/* 18/180-18/189 */,
+	128 + 14	/* 18/190-18/199 */,
+	128 + 15	/* 18/200-18/209 */,
+	128 + 15	/* 18/210-18/219 */,
+	128 + 15	/* 18/220+ */
+};
+
+
+/*
+ * Stat Table (STR) -- bonus to hit (plus 128)
+ */
+static const byte adj_str_th[STAT_RANGE] =
+{
+	128 + -3	/* 3 */,
+	128 + -2	/* 4 */,
+	128 + -1	/* 5 */,
+	128 + -1	/* 6 */,
+	128 + 0	/* 7 */,
+	128 + 0	/* 8 */,
+	128 + 0	/* 9 */,
+	128 + 0	/* 10 */,
+	128 + 0	/* 11 */,
+	128 + 0	/* 12 */,
+	128 + 0	/* 13 */,
+	128 + 0	/* 14 */,
+	128 + 0	/* 15 */,
+	128 + 0	/* 16 */,
+	128 + 0	/* 17 */,
+	128 + 1	/* 18/00-18/09 */,
+	128 + 1	/* 18/10-18/19 */,
+	128 + 1	/* 18/20-18/29 */,
+	128 + 1	/* 18/30-18/39 */,
+	128 + 1	/* 18/40-18/49 */,
+	128 + 1	/* 18/50-18/59 */,
+	128 + 1	/* 18/60-18/69 */,
+	128 + 2	/* 18/70-18/79 */,
+	128 + 3	/* 18/80-18/89 */,
+	128 + 4	/* 18/90-18/99 */,
+	128 + 5	/* 18/100-18/109 */,
+	128 + 6	/* 18/110-18/119 */,
+	128 + 7	/* 18/120-18/129 */,
+	128 + 8	/* 18/130-18/139 */,
+	128 + 9	/* 18/140-18/149 */,
+	128 + 10	/* 18/150-18/159 */,
+	128 + 11	/* 18/160-18/169 */,
+	128 + 12	/* 18/170-18/179 */,
+	128 + 13	/* 18/180-18/189 */,
+	128 + 14	/* 18/190-18/199 */,
+	128 + 15	/* 18/200-18/209 */,
+	128 + 15	/* 18/210-18/219 */,
+	128 + 15	/* 18/220+ */
+};
+
+
+/*
+ * Stat Table (STR) -- weight limit in deca-pounds
+ */
+static const byte adj_str_wgt[STAT_RANGE] =
+{
+	5	/* 3 */,
+	6	/* 4 */,
+	7	/* 5 */,
+	8	/* 6 */,
+	9	/* 7 */,
+	10	/* 8 */,
+	11	/* 9 */,
+	12	/* 10 */,
+	13	/* 11 */,
+	14	/* 12 */,
+	15	/* 13 */,
+	16	/* 14 */,
+	17	/* 15 */,
+	18	/* 16 */,
+	19	/* 17 */,
+	20	/* 18/00-18/09 */,
+	22	/* 18/10-18/19 */,
+	24	/* 18/20-18/29 */,
+	26	/* 18/30-18/39 */,
+	28	/* 18/40-18/49 */,
+	30	/* 18/50-18/59 */,
+	30	/* 18/60-18/69 */,
+	30	/* 18/70-18/79 */,
+	30	/* 18/80-18/89 */,
+	30	/* 18/90-18/99 */,
+	30	/* 18/100-18/109 */,
+	30	/* 18/110-18/119 */,
+	30	/* 18/120-18/129 */,
+	30	/* 18/130-18/139 */,
+	30	/* 18/140-18/149 */,
+	30	/* 18/150-18/159 */,
+	30	/* 18/160-18/169 */,
+	30	/* 18/170-18/179 */,
+	30	/* 18/180-18/189 */,
+	30	/* 18/190-18/199 */,
+	30	/* 18/200-18/209 */,
+	30	/* 18/210-18/219 */,
+	30	/* 18/220+ */
+};
+
+
+/*
+ * Stat Table (STR) -- weapon weight limit in pounds
+ */
+const byte adj_str_hold[STAT_RANGE] =
+{
+	4	/* 3 */,
+	5	/* 4 */,
+	6	/* 5 */,
+	7	/* 6 */,
+	8	/* 7 */,
+	10	/* 8 */,
+	12	/* 9 */,
+	14	/* 10 */,
+	16	/* 11 */,
+	18	/* 12 */,
+	20	/* 13 */,
+	22	/* 14 */,
+	24	/* 15 */,
+	26	/* 16 */,
+	28	/* 17 */,
+	30	/* 18/00-18/09 */,
+	30	/* 18/10-18/19 */,
+	35	/* 18/20-18/29 */,
+	40	/* 18/30-18/39 */,
+	45	/* 18/40-18/49 */,
+	50	/* 18/50-18/59 */,
+	55	/* 18/60-18/69 */,
+	60	/* 18/70-18/79 */,
+	65	/* 18/80-18/89 */,
+	70	/* 18/90-18/99 */,
+	80	/* 18/100-18/109 */,
+	80	/* 18/110-18/119 */,
+	80	/* 18/120-18/129 */,
+	80	/* 18/130-18/139 */,
+	80	/* 18/140-18/149 */,
+	90	/* 18/150-18/159 */,
+	90	/* 18/160-18/169 */,
+	90	/* 18/170-18/179 */,
+	90	/* 18/180-18/189 */,
+	90	/* 18/190-18/199 */,
+	100	/* 18/200-18/209 */,
+	100	/* 18/210-18/219 */,
+	100	/* 18/220+ */
+};
+
+
+/*
+ * Stat Table (STR) -- digging value
+ */
+static const byte adj_str_dig[STAT_RANGE] =
+{
+	0	/* 3 */,
+	0	/* 4 */,
+	1	/* 5 */,
+	2	/* 6 */,
+	3	/* 7 */,
+	4	/* 8 */,
+	4	/* 9 */,
+	5	/* 10 */,
+	5	/* 11 */,
+	6	/* 12 */,
+	6	/* 13 */,
+	7	/* 14 */,
+	7	/* 15 */,
+	8	/* 16 */,
+	8	/* 17 */,
+	9	/* 18/00-18/09 */,
+	10	/* 18/10-18/19 */,
+	12	/* 18/20-18/29 */,
+	15	/* 18/30-18/39 */,
+	20	/* 18/40-18/49 */,
+	25	/* 18/50-18/59 */,
+	30	/* 18/60-18/69 */,
+	35	/* 18/70-18/79 */,
+	40	/* 18/80-18/89 */,
+	45	/* 18/90-18/99 */,
+	50	/* 18/100-18/109 */,
+	55	/* 18/110-18/119 */,
+	60	/* 18/120-18/129 */,
+	65	/* 18/130-18/139 */,
+	70	/* 18/140-18/149 */,
+	75	/* 18/150-18/159 */,
+	80	/* 18/160-18/169 */,
+	85	/* 18/170-18/179 */,
+	90	/* 18/180-18/189 */,
+	95	/* 18/190-18/199 */,
+	100	/* 18/200-18/209 */,
+	100	/* 18/210-18/219 */,
+	100	/* 18/220+ */
+};
+
+
+/*
+ * Stat Table (STR) -- help index into the "blow" table
+ */
+const byte adj_str_blow[STAT_RANGE] =
+{
+	3	/* 3 */,
+	4	/* 4 */,
+	5	/* 5 */,
+	6	/* 6 */,
+	7	/* 7 */,
+	8	/* 8 */,
+	9	/* 9 */,
+	10	/* 10 */,
+	11	/* 11 */,
+	12	/* 12 */,
+	13	/* 13 */,
+	14	/* 14 */,
+	15	/* 15 */,
+	16	/* 16 */,
+	17	/* 17 */,
+	20 /* 18/00-18/09 */,
+	30 /* 18/10-18/19 */,
+	40 /* 18/20-18/29 */,
+	50 /* 18/30-18/39 */,
+	60 /* 18/40-18/49 */,
+	70 /* 18/50-18/59 */,
+	80 /* 18/60-18/69 */,
+	90 /* 18/70-18/79 */,
+	100 /* 18/80-18/89 */,
+	110 /* 18/90-18/99 */,
+	120 /* 18/100-18/109 */,
+	130 /* 18/110-18/119 */,
+	140 /* 18/120-18/129 */,
+	150 /* 18/130-18/139 */,
+	160 /* 18/140-18/149 */,
+	170 /* 18/150-18/159 */,
+	180 /* 18/160-18/169 */,
+	190 /* 18/170-18/179 */,
+	200 /* 18/180-18/189 */,
+	210 /* 18/190-18/199 */,
+	220 /* 18/200-18/209 */,
+	230 /* 18/210-18/219 */,
+	240 /* 18/220+ */
+};
+
+
+/*
+ * Stat Table (DEX) -- index into the "blow" table
+ */
+static const byte adj_dex_blow[STAT_RANGE] =
+{
+	0	/* 3 */,
+	0	/* 4 */,
+	0	/* 5 */,
+	0	/* 6 */,
+	0	/* 7 */,
+	0	/* 8 */,
+	0	/* 9 */,
+	1	/* 10 */,
+	1	/* 11 */,
+	1	/* 12 */,
+	1	/* 13 */,
+	1	/* 14 */,
+	1	/* 15 */,
+	1	/* 16 */,
+	1	/* 17 */,
+	1	/* 18/00-18/09 */,
+	2	/* 18/10-18/19 */,
+	2	/* 18/20-18/29 */,
+	2	/* 18/30-18/39 */,
+	2	/* 18/40-18/49 */,
+	3	/* 18/50-18/59 */,
+	3	/* 18/60-18/69 */,
+	4	/* 18/70-18/79 */,
+	4	/* 18/80-18/89 */,
+	5	/* 18/90-18/99 */,
+	6	/* 18/100-18/109 */,
+	7	/* 18/110-18/119 */,
+	8	/* 18/120-18/129 */,
+	9	/* 18/130-18/139 */,
+	10	/* 18/140-18/149 */,
+	11	/* 18/150-18/159 */,
+	12	/* 18/160-18/169 */,
+	14	/* 18/170-18/179 */,
+	16	/* 18/180-18/189 */,
+	18	/* 18/190-18/199 */,
+	20	/* 18/200-18/209 */,
+	20	/* 18/210-18/219 */,
+	20	/* 18/220+ */
+};
+
+
+/*
+ * Stat Table (DEX) -- chance of avoiding "theft" and "falling"
+ */
+const byte adj_dex_safe[STAT_RANGE] =
+{
+	0	/* 3 */,
+	1	/* 4 */,
+	2	/* 5 */,
+	3	/* 6 */,
+	4	/* 7 */,
+	5	/* 8 */,
+	5	/* 9 */,
+	6	/* 10 */,
+	6	/* 11 */,
+	7	/* 12 */,
+	7	/* 13 */,
+	8	/* 14 */,
+	8	/* 15 */,
+	9	/* 16 */,
+	9	/* 17 */,
+	10	/* 18/00-18/09 */,
+	10	/* 18/10-18/19 */,
+	15	/* 18/20-18/29 */,
+	15	/* 18/30-18/39 */,
+	20	/* 18/40-18/49 */,
+	25	/* 18/50-18/59 */,
+	30	/* 18/60-18/69 */,
+	35	/* 18/70-18/79 */,
+	40	/* 18/80-18/89 */,
+	45	/* 18/90-18/99 */,
+	50	/* 18/100-18/109 */,
+	60	/* 18/110-18/119 */,
+	70	/* 18/120-18/129 */,
+	80	/* 18/130-18/139 */,
+	90	/* 18/140-18/149 */,
+	100	/* 18/150-18/159 */,
+	100	/* 18/160-18/169 */,
+	100	/* 18/170-18/179 */,
+	100	/* 18/180-18/189 */,
+	100	/* 18/190-18/199 */,
+	100	/* 18/200-18/209 */,
+	100	/* 18/210-18/219 */,
+	100	/* 18/220+ */
+};
+
+
+/*
+ * Stat Table (CON) -- base regeneration rate
+ */
+const byte adj_con_fix[STAT_RANGE] =
+{
+	0	/* 3 */,
+	0	/* 4 */,
+	0	/* 5 */,
+	0	/* 6 */,
+	0	/* 7 */,
+	0	/* 8 */,
+	0	/* 9 */,
+	0	/* 10 */,
+	0	/* 11 */,
+	0	/* 12 */,
+	0	/* 13 */,
+	1	/* 14 */,
+	1	/* 15 */,
+	1	/* 16 */,
+	1	/* 17 */,
+	2	/* 18/00-18/09 */,
+	2	/* 18/10-18/19 */,
+	2	/* 18/20-18/29 */,
+	2	/* 18/30-18/39 */,
+	2	/* 18/40-18/49 */,
+	3	/* 18/50-18/59 */,
+	3	/* 18/60-18/69 */,
+	3	/* 18/70-18/79 */,
+	3	/* 18/80-18/89 */,
+	3	/* 18/90-18/99 */,
+	4	/* 18/100-18/109 */,
+	4	/* 18/110-18/119 */,
+	5	/* 18/120-18/129 */,
+	6	/* 18/130-18/139 */,
+	6	/* 18/140-18/149 */,
+	7	/* 18/150-18/159 */,
+	7	/* 18/160-18/169 */,
+	8	/* 18/170-18/179 */,
+	8	/* 18/180-18/189 */,
+	8	/* 18/190-18/199 */,
+	9	/* 18/200-18/209 */,
+	9	/* 18/210-18/219 */,
+	9	/* 18/220+ */
+};
+
+
+/*
+ * Stat Table (CON) -- extra 1/100th hitpoints per level
+ */
+static const int adj_con_mhp[STAT_RANGE] =
+{
+	-250	/* 3 */,
+	-150	/* 4 */,
+	-100	/* 5 */,
+	 -75	/* 6 */,
+	 -50	/* 7 */,
+	 -25	/* 8 */,
+	 -10	/* 9 */,
+	  -5	/* 10 */,
+	   0	/* 11 */,
+	   5	/* 12 */,
+	  10	/* 13 */,
+	  25	/* 14 */,
+	  50	/* 15 */,
+	  75	/* 16 */,
+	 100	/* 17 */,
+	 150	/* 18/00-18/09 */,
+	 175	/* 18/10-18/19 */,
+	 200	/* 18/20-18/29 */,
+	 225	/* 18/30-18/39 */,
+	 250	/* 18/40-18/49 */,
+	 275	/* 18/50-18/59 */,
+	 300	/* 18/60-18/69 */,
+	 350	/* 18/70-18/79 */,
+	 400	/* 18/80-18/89 */,
+	 450	/* 18/90-18/99 */,
+	 500	/* 18/100-18/109 */,
+	 550	/* 18/110-18/119 */,
+	 600	/* 18/120-18/129 */,
+	 650	/* 18/130-18/139 */,
+	 700	/* 18/140-18/149 */,
+	 750	/* 18/150-18/159 */,
+	 800	/* 18/160-18/169 */,
+	 900	/* 18/170-18/179 */,
+	1000	/* 18/180-18/189 */,
+	1100	/* 18/190-18/199 */,
+	1250	/* 18/200-18/209 */,
+	1250	/* 18/210-18/219 */,
+	1250	/* 18/220+ */
+};
 /*
  * Calculate number of spells player should have, and forget,
  * or remember, spells until that number is properly reflected.
@@ -41,7 +821,6 @@ static void calc_spells(void)
 
 	cptr p = ((cp_ptr->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
 
-
 	/* Hack -- must be literate */
 	if (!cp_ptr->spell_book) return;
 
@@ -53,7 +832,6 @@ static void calc_spells(void)
 
 	/* Save the new_spells value */
 	old_spells = p_ptr->new_spells;
-
 
 	/* Determine the number of spells allowed */
 	levels = p_ptr->lev - cp_ptr->spell_first + 1;
@@ -82,8 +860,6 @@ static void calc_spells(void)
 
 	/* See how many spells we must forget or may learn */
 	p_ptr->new_spells = num_allowed - num_known;
-
-
 
 	/* Forget spells which are too hard */
 	for (i = PY_MAX_SPELLS - 1; i >= 0; i--)
@@ -118,7 +894,6 @@ static void calc_spells(void)
 		}
 	}
 
-
 	/* Forget spells if we know too many spells */
 	for (i = PY_MAX_SPELLS - 1; i >= 0; i--)
 	{
@@ -148,7 +923,6 @@ static void calc_spells(void)
 			p_ptr->new_spells++;
 		}
 	}
-
 
 	/* Check for spells to remember */
 	for (i = 0; i < PY_MAX_SPELLS; i++)
@@ -185,7 +959,6 @@ static void calc_spells(void)
 			p_ptr->new_spells--;
 		}
 	}
-
 
 	/* Assume no spells available */
 	k = 0;
@@ -246,8 +1019,13 @@ static void calc_mana(void)
 	bool old_cumber_armor = p_ptr->cumber_armor;
 
 	/* Hack -- Must be literate */
-	if (!cp_ptr->spell_book) return;
-
+	if (!cp_ptr->spell_book)
+	{
+		p_ptr->msp = 0;
+		p_ptr->csp = 0;
+		p_ptr->csp_frac = 0;
+		return;
+	}
 
 	/* Extract "effective" player level */
 	levels = (p_ptr->lev - cp_ptr->spell_first) + 1;
@@ -263,23 +1041,23 @@ static void calc_mana(void)
 	}
 
 	/* Process gloves for those disturbed by them */
-	if (cp_ptr->flags & CF_CUMBER_GLOVE)
+	if (player_has(PF_CUMBER_GLOVE))
 	{
-		u32b f[OBJ_FLAG_N];
+		bitflag f[OF_SIZE];
 
 		/* Assume player is not encumbered by gloves */
 		p_ptr->cumber_glove = FALSE;
 
 		/* Get the gloves */
-		o_ptr = &inventory[INVEN_HANDS];
+		o_ptr = &p_ptr->inventory[INVEN_HANDS];
 
 		/* Examine the gloves */
 		object_flags(o_ptr, f);
 
 		/* Normal gloves hurt mage-type spells */
 		if (o_ptr->k_idx &&
-		    !(f[2] & TR2_FREE_ACT) &&
-		    !((f[0] & TR0_DEX) && (o_ptr->pval > 0)) &&
+		    !of_has(f, OF_FREE_ACT) &&
+		    !(of_has(f, OF_DEX) && (o_ptr->pval > 0)) &&
 		    !(o_ptr->sval == SV_SET_OF_ALCHEMISTS_GLOVES))
 		{
 			/* Encumbered */
@@ -288,27 +1066,19 @@ static void calc_mana(void)
 			/* Reduce mana */
 			msp = (3 * msp) / 4;
 		}
-
-		/* XXX Eddie this will have to change with alchemist's gloves */
-		if (!(f[0] & TR0_DEX))
-		{
-			/* If no dex bonus, know whether gloves provide FA */
-			object_notice_flags(o_ptr, 2, TR2_FREE_ACT);
-		}
 	}
-
 
 	/* Assume player not encumbered by armor */
 	p_ptr->cumber_armor = FALSE;
 
 	/* Weigh the armor */
 	cur_wgt = 0;
-	cur_wgt += inventory[INVEN_BODY].weight;
-	cur_wgt += inventory[INVEN_HEAD].weight;
-	cur_wgt += inventory[INVEN_ARM].weight;
-	cur_wgt += inventory[INVEN_OUTER].weight;
-	cur_wgt += inventory[INVEN_HANDS].weight;
-	cur_wgt += inventory[INVEN_FEET].weight;
+	cur_wgt += p_ptr->inventory[INVEN_BODY].weight;
+	cur_wgt += p_ptr->inventory[INVEN_HEAD].weight;
+	cur_wgt += p_ptr->inventory[INVEN_ARM].weight;
+	cur_wgt += p_ptr->inventory[INVEN_OUTER].weight;
+	cur_wgt += p_ptr->inventory[INVEN_HANDS].weight;
+	cur_wgt += p_ptr->inventory[INVEN_FEET].weight;
 
 	/* Determine the weight allowance */
 	max_wgt = cp_ptr->spell_weight;
@@ -323,10 +1093,8 @@ static void calc_mana(void)
 		msp -= ((cur_wgt - max_wgt) / 10);
 	}
 
-
 	/* Mana can never be negative */
 	if (msp < 0) msp = 0;
-
 
 	/* Maximum mana has changed */
 	if (p_ptr->msp != msp)
@@ -345,7 +1113,6 @@ static void calc_mana(void)
 		p_ptr->redraw |= (PR_MANA);
 	}
 
-
 	/* Hack -- handle "xtra" mode */
 	if (character_xtra) return;
 
@@ -362,7 +1129,6 @@ static void calc_mana(void)
 			msg_print("Your hands feel more suitable for spellcasting.");
 		}
 	}
-
 
 	/* Take note when "armor state" changes */
 	if (old_cumber_armor != p_ptr->cumber_armor)
@@ -436,20 +1202,17 @@ static void calc_torch(void)
 	s16b new_light = 0;
 	int extra_light = 0;
 
-
-
 	/* Ascertain lightness if in the town */
 	if (!p_ptr->depth && ((turn % (10L * TOWN_DAWN)) < ((10L * TOWN_DAWN) / 2)))
 		burn_light = FALSE;
 
-
 	/* Examine all wielded objects, use the brightest */
 	for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
 	{
-		u32b f[OBJ_FLAG_N];
+		bitflag f[OF_SIZE];
 
 		int amt = 0;
-		object_type *o_ptr = &inventory[i];
+		object_type *o_ptr = &p_ptr->inventory[i];
 
 		/* Skip empty slots */
 		if (!o_ptr->k_idx) continue;
@@ -458,13 +1221,13 @@ static void calc_torch(void)
 		object_flags(o_ptr, f);
 
 		/* Cursed objects emit no light */
-		if (f[2] & TR2_LIGHT_CURSE)
+		if (of_has(f, OF_LIGHT_CURSE))
 			amt = 0;
 
 		/* Examine actual lights */
 		else if (o_ptr->tval == TV_LIGHT)
 		{
-			int flag_inc = (f[2] & TR2_LIGHT) ? 1 : 0;
+			int flag_inc = of_has(f, OF_LIGHT) ? 1 : 0;
 
 			/* Artifact lights provide permanent bright light */
 			if (artifact_p(o_ptr))
@@ -488,7 +1251,7 @@ static void calc_torch(void)
 		else
 		{
 			/* LIGHT flag on an non-cursed non-lights always increases radius */
-			if (f[2] & TR2_LIGHT) extra_light++;
+			if (of_has(f, OF_LIGHT)) extra_light++;
 		}
 
 		/* Alter p_ptr->cur_light if reasonable */
@@ -516,15 +1279,19 @@ static void calc_torch(void)
  * Calculate the blows a player would get, in current condition, wielding
  * "o_ptr". NOTE - this function does not take any extra blows from items
  * into account.
+ *
+ * N.B. state->num_blow is now 100x the number of blows.
  */
-int calc_blows(const object_type *o_ptr, player_state *state)
+int calc_blows(const object_type *o_ptr, player_state *state, int extra_blows)
 {
 	int blows;
 	int str_index, dex_index;
 	int div;
+	int blow_energy;
 
 	/* Enforce a minimum "weight" (tenth pounds) */
-	div = ((o_ptr->weight < cp_ptr->min_weight) ? cp_ptr->min_weight : o_ptr->weight);
+	div = ((o_ptr->weight < cp_ptr->min_weight) ? cp_ptr->min_weight :
+		o_ptr->weight);
 
 	/* Get the strength vs weight */
 	str_index = adj_str_blow[state->stat_ind[A_STR]] *
@@ -536,11 +1303,13 @@ int calc_blows(const object_type *o_ptr, player_state *state)
 	/* Index by dexterity */
 	dex_index = MIN(adj_dex_blow[state->stat_ind[A_DEX]], 11);
 
-	/* Use the blows table */
-	blows = MIN(blows_table[str_index][dex_index], cp_ptr->max_attacks);
+	/* Use the blows table to get energy per blow */
+	blow_energy = blows_table[str_index][dex_index];
+
+	blows = MIN((10000 / blow_energy), (100 * cp_ptr->max_attacks));
 
 	/* Require at least one blow */
-	return MAX(blows, 1);
+	return MAX(blows + (100 * extra_blows), 100);
 }
 
 
@@ -553,6 +1322,21 @@ static int weight_limit(player_state *state)
 
 	/* Weight limit based only on strength */
 	i = adj_str_wgt[state->stat_ind[A_STR]] * 100;
+
+	/* Return the result */
+	return (i);
+}
+
+
+/*
+ * Computes weight remaining before burdened.
+ */
+int weight_remaining()
+{
+	int i;
+
+	/* Weight limit based only on strength */
+	i = 60 * adj_str_wgt[p_ptr->state.stat_ind[A_STR]] - p_ptr->total_weight - 1;
 
 	/* Return the result */
 	return (i);
@@ -591,8 +1375,8 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 
 	object_type *o_ptr;
 
-	u32b f[OBJ_FLAG_N];
-	u32b collect_f[OBJ_FLAG_N];
+	bitflag f[OF_SIZE];
+	bitflag collect_f[OF_SIZE];
 
 
 	/*** Reset ***/
@@ -601,7 +1385,7 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 
 	/* Set various defaults */
 	state->speed = 110;
-	state->num_blow = 1;
+	state->num_blow = 100;
 
 
 	/*** Extract race/class info ***/
@@ -636,44 +1420,42 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 		else
 			object_flags(o_ptr, f);
 
-		collect_f[0] |= f[0];
-		collect_f[1] |= f[1];
-		collect_f[2] |= f[2];
+		of_union(collect_f, f);
 
 		/* Affect stats */
-		if (f[0] & TR0_STR) state->stat_add[A_STR] += o_ptr->pval;
-		if (f[0] & TR0_INT) state->stat_add[A_INT] += o_ptr->pval;
-		if (f[0] & TR0_WIS) state->stat_add[A_WIS] += o_ptr->pval;
-		if (f[0] & TR0_DEX) state->stat_add[A_DEX] += o_ptr->pval;
-		if (f[0] & TR0_CON) state->stat_add[A_CON] += o_ptr->pval;
-		if (f[0] & TR0_CHR) state->stat_add[A_CHR] += o_ptr->pval;
+		if (of_has(f, OF_STR)) state->stat_add[A_STR] += o_ptr->pval;
+		if (of_has(f, OF_INT)) state->stat_add[A_INT] += o_ptr->pval;
+		if (of_has(f, OF_WIS)) state->stat_add[A_WIS] += o_ptr->pval;
+		if (of_has(f, OF_DEX)) state->stat_add[A_DEX] += o_ptr->pval;
+		if (of_has(f, OF_CON)) state->stat_add[A_CON] += o_ptr->pval;
+		if (of_has(f, OF_CHR)) state->stat_add[A_CHR] += o_ptr->pval;
 
 		/* Affect stealth */
-		if (f[0] & TR0_STEALTH) state->skills[SKILL_STEALTH] += o_ptr->pval;
+		if (of_has(f, OF_STEALTH)) state->skills[SKILL_STEALTH] += o_ptr->pval;
 
 		/* Affect searching ability (factor of five) */
-		if (f[0] & TR0_SEARCH) state->skills[SKILL_SEARCH] += (o_ptr->pval * 5);
+		if (of_has(f, OF_SEARCH)) state->skills[SKILL_SEARCH] += (o_ptr->pval * 5);
 
 		/* Affect searching frequency (factor of five) */
-		if (f[0] & TR0_SEARCH) state->skills[SKILL_SEARCH_FREQUENCY] += (o_ptr->pval * 5);
+		if (of_has(f, OF_SEARCH)) state->skills[SKILL_SEARCH_FREQUENCY] += (o_ptr->pval * 5);
 
 		/* Affect infravision */
-		if (f[0] & TR0_INFRA) state->see_infra += o_ptr->pval;
+		if (of_has(f, OF_INFRA)) state->see_infra += o_ptr->pval;
 
 		/* Affect digging (factor of 20) */
-		if (f[0] & TR0_TUNNEL) state->skills[SKILL_DIGGING] += (o_ptr->pval * 20);
+		if (of_has(f, OF_TUNNEL)) state->skills[SKILL_DIGGING] += (o_ptr->pval * 20);
 
 		/* Affect speed */
-		if (f[0] & TR0_SPEED) state->speed += o_ptr->pval;
+		if (of_has(f, OF_SPEED)) state->speed += o_ptr->pval;
 
 		/* Affect blows */
-		if (f[0] & TR0_BLOWS) extra_blows += o_ptr->pval;
+		if (of_has(f, OF_BLOWS)) extra_blows += o_ptr->pval;
 
 		/* Affect shots */
-		if (f[0] & TR0_SHOTS) extra_shots += o_ptr->pval;
+		if (of_has(f, OF_SHOTS)) extra_shots += o_ptr->pval;
 
 		/* Affect Might */
-		if (f[0] & TR0_MIGHT) extra_might += o_ptr->pval;
+		if (of_has(f, OF_MIGHT)) extra_might += o_ptr->pval;
 
 		/* Modify the base armor class */
 		state->ac += o_ptr->ac;
@@ -714,63 +1496,63 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 	/*** Update all flags ***/
 
 	/* Good flags */
-	if (collect_f[2] & TR2_SLOW_DIGEST) state->slow_digest = TRUE;
-	if (collect_f[2] & TR2_FEATHER) state->ffall = TRUE;
-	if (collect_f[2] & TR2_REGEN) state->regenerate = TRUE;
-	if (collect_f[2] & TR2_TELEPATHY) state->telepathy = TRUE;
-	if (collect_f[2] & TR2_SEE_INVIS) state->see_inv = TRUE;
-	if (collect_f[2] & TR2_FREE_ACT) state->free_act = TRUE;
-	if (collect_f[2] & TR2_HOLD_LIFE) state->hold_life = TRUE;
+	if (of_has(collect_f, OF_SLOW_DIGEST)) state->slow_digest = TRUE;
+	if (of_has(collect_f, OF_FEATHER)) state->ffall = TRUE;
+	if (of_has(collect_f, OF_REGEN)) state->regenerate = TRUE;
+	if (of_has(collect_f, OF_TELEPATHY)) state->telepathy = TRUE;
+	if (of_has(collect_f, OF_SEE_INVIS)) state->see_inv = TRUE;
+	if (of_has(collect_f, OF_FREE_ACT)) state->free_act = TRUE;
+	if (of_has(collect_f, OF_HOLD_LIFE)) state->hold_life = TRUE;
 
 	/* Weird flags */
-	if (collect_f[2] & TR2_BLESSED) state->bless_blade = TRUE;
+	if (of_has(collect_f, OF_BLESSED)) state->bless_blade = TRUE;
 
 	/* Bad flags */
-	if (collect_f[2] & TR2_IMPACT) state->impact = TRUE;
-	if (collect_f[2] & TR2_AGGRAVATE) state->aggravate = TRUE;
-	if (collect_f[2] & TR2_TELEPORT) state->teleport = TRUE;
-	if (collect_f[2] & TR2_DRAIN_EXP) state->exp_drain = TRUE;
-	if (collect_f[2] & TR2_IMPAIR_HP) state->impair_hp = TRUE;
-	if (collect_f[2] & TR2_IMPAIR_MANA) state->impair_mana = TRUE;
-	if (collect_f[2] & TR2_AFRAID) state->afraid = TRUE;
+	if (of_has(collect_f, OF_IMPACT)) state->impact = TRUE;
+	if (of_has(collect_f, OF_AGGRAVATE)) state->aggravate = TRUE;
+	if (of_has(collect_f, OF_TELEPORT)) state->teleport = TRUE;
+	if (of_has(collect_f, OF_DRAIN_EXP)) state->exp_drain = TRUE;
+	if (of_has(collect_f, OF_IMPAIR_HP)) state->impair_hp = TRUE;
+	if (of_has(collect_f, OF_IMPAIR_MANA)) state->impair_mana = TRUE;
+	if (of_has(collect_f, OF_AFRAID)) state->afraid = TRUE;
 
 	/* Vulnerability flags */
-	if (collect_f[1] & TR1_VULN_FIRE) state->vuln_fire = TRUE;
-	if (collect_f[1] & TR1_VULN_ACID) state->vuln_acid = TRUE;
-	if (collect_f[1] & TR1_VULN_COLD) state->vuln_cold = TRUE;
-	if (collect_f[1] & TR1_VULN_ELEC) state->vuln_elec = TRUE;
+	if (of_has(collect_f, OF_VULN_FIRE)) state->vuln_fire = TRUE;
+	if (of_has(collect_f, OF_VULN_ACID)) state->vuln_acid = TRUE;
+	if (of_has(collect_f, OF_VULN_COLD)) state->vuln_cold = TRUE;
+	if (of_has(collect_f, OF_VULN_ELEC)) state->vuln_elec = TRUE;
 
 	/* Immunity flags */
-	if (collect_f[1] & TR1_IM_FIRE) state->immune_fire = TRUE;
-	if (collect_f[1] & TR1_IM_ACID) state->immune_acid = TRUE;
-	if (collect_f[1] & TR1_IM_COLD) state->immune_cold = TRUE;
-	if (collect_f[1] & TR1_IM_ELEC) state->immune_elec = TRUE;
+	if (of_has(collect_f, OF_IM_FIRE)) state->immune_fire = TRUE;
+	if (of_has(collect_f, OF_IM_ACID)) state->immune_acid = TRUE;
+	if (of_has(collect_f, OF_IM_COLD)) state->immune_cold = TRUE;
+	if (of_has(collect_f, OF_IM_ELEC)) state->immune_elec = TRUE;
 
 	/* Resistance flags */
-	if (collect_f[1] & TR1_RES_ACID) state->resist_acid = TRUE;
-	if (collect_f[1] & TR1_RES_ELEC) state->resist_elec = TRUE;
-	if (collect_f[1] & TR1_RES_FIRE) state->resist_fire = TRUE;
-	if (collect_f[1] & TR1_RES_COLD) state->resist_cold = TRUE;
-	if (collect_f[1] & TR1_RES_POIS) state->resist_pois = TRUE;
-	if (collect_f[1] & TR1_RES_FEAR) state->resist_fear = TRUE;
-	if (collect_f[1] & TR1_RES_LIGHT) state->resist_light = TRUE;
-	if (collect_f[1] & TR1_RES_DARK) state->resist_dark = TRUE;
-	if (collect_f[1] & TR1_RES_BLIND) state->resist_blind = TRUE;
-	if (collect_f[1] & TR1_RES_CONFU) state->resist_confu = TRUE;
-	if (collect_f[1] & TR1_RES_SOUND) state->resist_sound = TRUE;
-	if (collect_f[1] & TR1_RES_SHARD) state->resist_shard = TRUE;
-	if (collect_f[1] & TR1_RES_NEXUS) state->resist_nexus = TRUE;
-	if (collect_f[1] & TR1_RES_NETHR) state->resist_nethr = TRUE;
-	if (collect_f[1] & TR1_RES_CHAOS) state->resist_chaos = TRUE;
-	if (collect_f[1] & TR1_RES_DISEN) state->resist_disen = TRUE;
+	if (of_has(collect_f, OF_RES_ACID)) state->resist_acid = TRUE;
+	if (of_has(collect_f, OF_RES_ELEC)) state->resist_elec = TRUE;
+	if (of_has(collect_f, OF_RES_FIRE)) state->resist_fire = TRUE;
+	if (of_has(collect_f, OF_RES_COLD)) state->resist_cold = TRUE;
+	if (of_has(collect_f, OF_RES_POIS)) state->resist_pois = TRUE;
+	if (of_has(collect_f, OF_RES_FEAR)) state->resist_fear = TRUE;
+	if (of_has(collect_f, OF_RES_LIGHT)) state->resist_light = TRUE;
+	if (of_has(collect_f, OF_RES_DARK)) state->resist_dark = TRUE;
+	if (of_has(collect_f, OF_RES_BLIND)) state->resist_blind = TRUE;
+	if (of_has(collect_f, OF_RES_CONFU)) state->resist_confu = TRUE;
+	if (of_has(collect_f, OF_RES_SOUND)) state->resist_sound = TRUE;
+	if (of_has(collect_f, OF_RES_SHARD)) state->resist_shard = TRUE;
+	if (of_has(collect_f, OF_RES_NEXUS)) state->resist_nexus = TRUE;
+	if (of_has(collect_f, OF_RES_NETHR)) state->resist_nethr = TRUE;
+	if (of_has(collect_f, OF_RES_CHAOS)) state->resist_chaos = TRUE;
+	if (of_has(collect_f, OF_RES_DISEN)) state->resist_disen = TRUE;
 
 	/* Sustain flags */
-	if (collect_f[1] & TR1_SUST_STR) state->sustain_str = TRUE;
-	if (collect_f[1] & TR1_SUST_INT) state->sustain_int = TRUE;
-	if (collect_f[1] & TR1_SUST_WIS) state->sustain_wis = TRUE;
-	if (collect_f[1] & TR1_SUST_DEX) state->sustain_dex = TRUE;
-	if (collect_f[1] & TR1_SUST_CON) state->sustain_con = TRUE;
-	if (collect_f[1] & TR1_SUST_CHR) state->sustain_chr = TRUE;
+	if (of_has(collect_f, OF_SUST_STR)) state->sustain_str = TRUE;
+	if (of_has(collect_f, OF_SUST_INT)) state->sustain_int = TRUE;
+	if (of_has(collect_f, OF_SUST_WIS)) state->sustain_wis = TRUE;
+	if (of_has(collect_f, OF_SUST_DEX)) state->sustain_dex = TRUE;
+	if (of_has(collect_f, OF_SUST_CON)) state->sustain_con = TRUE;
+	if (of_has(collect_f, OF_SUST_CHR)) state->sustain_chr = TRUE;
 
 
 
@@ -803,14 +1585,19 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 		/* Save the new value */
 		state->stat_use[i] = use;
 
-		/* Values: 3, 4, ..., 17 */
-		if (use <= 18) ind = (use - 3);
+		/* Values: n/a */
+		if (use <= 3) ind = 0;
+
+		/* Values: 3, 4, ..., 18 */
+		else if (use <= 18) ind = (use - 3);
 
 		/* Ranges: 18/00-18/09, ..., 18/210-18/219 */
 		else if (use <= 18+219) ind = (15 + (use - 18) / 10);
 
 		/* Range: 18/220+ */
 		else ind = (37);
+
+		assert((0 <= ind) && (ind < STAT_RANGE));
 
 		/* Save the new index */
 		state->stat_ind[i] = ind;
@@ -1036,7 +1823,7 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 	/* Assume not heavy */
 	state->heavy_shoot = FALSE;
 
-	/* It is hard to carholdry a heavy bow */
+	/* It is hard to hold a heavy bow */
 	if (hold < o_ptr->weight / 10)
 	{
 		/* Hard to wield a heavy bow */
@@ -1107,7 +1894,7 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 			state->ammo_mult += extra_might;
 
 			/* Hack -- Rangers love Bows */
-			if ((cp_ptr->flags & CF_EXTRA_SHOT) &&
+			if (player_has(PF_EXTRA_SHOT) &&
 			    (state->ammo_tval == TV_ARROW))
 			{
 				/* Extra shot at level 20 */
@@ -1142,11 +1929,15 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 		state->heavy_wield = TRUE;
 	}
 
+	/* Non-object means barehanded attacks */
+	if (!o_ptr->k_idx)
+		assert(o_ptr->weight == 0);
+
 	/* Normal weapons */
-	if (o_ptr->k_idx && !state->heavy_wield)
+	if (!state->heavy_wield)
 	{
 		/* Calculate number of blows */
-		state->num_blow = calc_blows(o_ptr, state) + extra_blows;
+		state->num_blow = calc_blows(o_ptr, state, extra_blows);
 
 		/* Boost digging skill by weapon weight */
 		state->skills[SKILL_DIGGING] += (o_ptr->weight / 10);
@@ -1157,7 +1948,7 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 	state->icky_wield = FALSE;
 
 	/* Priest weapon penalty for non-blessed edged weapons */
-	if ((cp_ptr->flags & CF_BLESS_WEAPON) && (!state->bless_blade) &&
+	if (player_has(PF_BLESS_WEAPON) && (!state->bless_blade) &&
 	    ((o_ptr->tval == TV_SWORD) || (o_ptr->tval == TV_POLEARM)))
 	{
 		/* Reduce the real bonuses */
@@ -1188,7 +1979,7 @@ static void update_bonuses(void)
 
 	/*** Calculate bonuses ***/
 
-	calc_bonuses(inventory, &p_ptr->state, FALSE);
+	calc_bonuses(p_ptr->inventory, &p_ptr->state, FALSE);
 
 
 	/*** Notice changes ***/
@@ -1279,7 +2070,7 @@ static void update_bonuses(void)
 		{
 			msg_print("You have trouble wielding such a heavy bow.");
 		}
-		else if (inventory[INVEN_BOW].k_idx)
+		else if (p_ptr->inventory[INVEN_BOW].k_idx)
 		{
 			msg_print("You have no trouble wielding your bow.");
 		}
@@ -1297,7 +2088,7 @@ static void update_bonuses(void)
 		{
 			msg_print("You have trouble wielding such a heavy weapon.");
 		}
-		else if (inventory[INVEN_WIELD].k_idx)
+		else if (p_ptr->inventory[INVEN_WIELD].k_idx)
 		{
 			msg_print("You have no trouble wielding your weapon.");
 		}
@@ -1315,7 +2106,7 @@ static void update_bonuses(void)
 		{
 			msg_print("You do not feel comfortable with your weapon.");
 		}
-		else if (inventory[INVEN_WIELD].k_idx)
+		else if (p_ptr->inventory[INVEN_WIELD].k_idx)
 		{
 			msg_print("You feel comfortable with your weapon.");
 		}

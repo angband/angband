@@ -1,175 +1,140 @@
-Angband 3.1.2v2
-===============
+Angband 3.2.0
+=============
 
-We, the Angband development team, are proud to present the latest iteration
-of the game, in the form of Angband 3.1.2v2.  Like other releases in the 3.1.x
-series, this is a beta, though it should be less buggy than other 3.1.x
-releases have been.  Doubtless there will be another release in a few weeks
-time fixing the bugs found herein, but in the meantime, play.
+We, the Angband development team, are proud to present the latest 
+iteration of the game, in the form of Angband 3.2.0. Although this 
+version is the conclusion of a lot of work in the 3.1.x series, Angband 
+continues to evolve and many further changes are planned (and some are 
+in progress). This version is not entirely bug-free but hopefully 
+contains no showstoppers. Doubtless there will be another release in a 
+few weeks time fixing the bugs found herein, but in the meantime, play.
 
-Please note that this release breaks savefiles again.
-
-This release was brought to you by (in no particular order): bron, Tobias,
-Eddie Grove, Antoine, Chris Carr, MarbleDice, Erik Osheim, Stefan O'Rear,
-Peter Denison, Andi Sidwell, rhinocesaurus, and Andrew Doull, Marco and Pete
-Mack.  Other people may have contributed too; if you're missed off here,
-please file a bug at http://trac.rephial.org :)
-
+This release was brought to you by (in alphabetical order of IRC 
+nickname): Aerdan, Antony Sidwell, Erik Osheim, Elly, Aaron Bader, 
+Lebannen, Chris Carr, William Moore, Peter Denison and Andi Sidwell. 
+With special thanks to Eddie Grove for challenging us to do better and 
+helping us get there. Please see the file thanks.txt for a full list of 
+contributors.
 
 Gameplay changes
 ================
-
-Make paralysis non-cumulative (you can't be paralysed more if you're already paralysed) (#783)
-New algorithm for device failure rates, and display those rates during the inspect/aim/use/zap commands (#483, #715, #1048)
-Extensive tweaking of artifact list (http://angband.oook.cz/forum/showthread.php?t=2454)
-Various randart changes, including random activations on non-lights (#974)
-Add NPP-style quiver (#34)
-Tweaks to ID-by-use:
- - Don't display larger than normal base dice (artifacts/boosted egos) until the weapon is attacked with (#982)
- - Notice artifact status on pickup (#1052)
-Bows of Power/Accuracy should always have a good bonus (#782)
-Show stat requirements for additional blows when describing melee weapons (#922)
-Decouple chance to enchant and chance to uncurse (#1007)
-Increase variability of gold drops
-Increase prices of ego ammo by assuming +9 launcher
-Make player races a bit more varied
-Deep Descent now acts as a 2-level down Teleport Level (#1062)
-General store buys some stuff again (#288)
-Empty wands/staffs sold to stores are recharged (#229)
-Boost device damage on high device skill (#419)
-Make wands/rods of lightning bolt always beam
-Mage damage spells have lower mana usage than before, by about half, making using magic when attacking more appealing 
-Detect Invisible spell should reveal non-invisible monsters too (#1047)
-Combine priest Detect Trap and Detect Stairs prayers (#941)
-Remove destroyed levels
-Remove the self knowledge effect (#831)
-Increase odds of out-of-depth monsters
-Smeagol now has HURT_LITE (#955)
-Give rods of lightning balls IGNORE_ELEC (like wands)
-
+ #527 Add monster light
+ #716 Improve rings of Mouse and Dog
+ #731 Add no_selling option with triple gold drops
+ #759 Enable multiple barehand blows (to see effects of STR/DEX at birth)
+ #951 Increase base AC on armour; differentiate DSMs; allow ego DSMs
+ #987 Melee blows now determined by "energy per blow" instead of "blows per
+      round", aka "fractional blows"
+#1008 Resistances reduce inventory damage (also #1183)
+#1072 Remove CLW spell from rogues and magi
+#1088 Chests can no longer contain chests
+#1132 Brightness property preserved when refueling torches
+#1140 Allow selling unidentified weapons to the temple so long as they are
+      known blessed
+#1140 Make Free Action on gloves obvious to magical casters 
+#1183 Allow resists to protect inventory items from damage
+r1947 Slightly more intelligent monster casting (don't heal if full hp etc.)
+r1963 Increase rarity of zephyr hounds
+r1969 Improve pseudo-ID
+r1982 Ranged multipliers add (x3 bow with x3 slay is x6 not x9)
+r1984 Maximum device failure rate lowered to 75%
+r1985 Items in the quiver can now be destroyed by acid/fire
+r1986 DSM activation times reduced to 50
+r2024 Significantly improved balancing of item drops 
+r2030 Remove birth_money option
+      Various changes to randarts: off-weapon blows/shots/slays/brands less
+common, speed more common on boots, multiple brands/slays rated higher, speed
+rated consistently
+      Significant changes to vaults and special rooms (pits, nests etc.)
+      Caster level and spell level now affect casting speed a little bit
 
 User interface
 ==============
-
-New commands:
- - Center map (Ctrl-L)
- - Fire at nearest enemy with default ammo ('h' / TAB in roguelike) (#697)
- - Target closest monster ("'") (#374)
-Make look/target command a lot more usable, with less stuff cluttering the screen and a '?' display a la the stores (#924, #927)
-Display shots modifiers on bows in the multiplier
-Uniques are now all purple (#1000, pending full implementation of extra colours)
-Destroy command now asks 'yns' to allow squelching
-Tweak monster recall; (#743, #532, #541)
- - add damage estimates for monster spells
- - add more meaningful colours that depend on the player's state (vulnerabilities and resistances)
- - change the order of sentences
-Show player-turns on C screen and in dumps (#891)
-Add "{unseen}" to unaware items in stores (#732)
-Add price to the item list when the player is prompted to select an item to sell (#861)
-Add light sources to the quality squelch menu (#1032)
-
+ #256 Allow review of store and home contents via the knowledge menu
+ #865 Add a pager for viewing output longer than one screen
+#1092 Added option to display unique monsters in pale purple
+#1119 Display burden in the inven term window, and show lbs remaining instead
+      of percent capacity
+#1140 Money is type squelchable through the squelch menu (= s o)
+#1140 Add direction/distance to the visible item list ']'
+#1207 Show melee to-hit chance in monster recall
+r1971 Make summoning traps light blue
+r1981 Coloured messages
+r1999 Make ATTR_MULTI use the full range of colours
+r2003 Add ATTR_FLICKER to make monsters shimmer in real time (optional!)
+r2026 Allow quality squelching of DSM
+      Added support for extended character sets ("xchars")
+      Added support for expanded graphics tiles ("bigtile")
+      Revised monster colours
+      Added warning that -n switch will lose existing character unless -u is
+used in conjunction with it
+      Added Nomad's 8x16 tiles
+      Various improvements and fixes to the GTK port
+      Occasional hints on entering stores during early character levels
 
 List of bugs fixed
 ==================
+ #862 Fix inscription parsing in stores
+ #938 Fix non-maximise mode
+ #979 Prevent leakage of information about artifact flavours
+#1058 Fix energy problems on game loading
+#1071 Do not allow unIDd items to stack with identical IDd items in the object
+      list 
+#1075 Make -r option work properly again
+#1106 The psychic warriors bug (mana displayed for warriors)
+#1122 Fix a display bug with the number of dropped items in the home
+#1123 Fix an update bug with the monster list subwindow
+#1129 Fix shooting power display in stores
+#1130 Prevent the casting of forgotten spells 
+#1131 Fix squelch worthless so non-salable items are squelched, salable items
+      are not squelched, and the object knowledge menu indicates worthless
+      items which are squelched by the option with Yes*
+#1133 Do not mark object flavors {tried} on device activation failure
+#1138 Fix the cost and nutrition on Potions of *Healing*
+#1139 Fix repeating actions from actions menu
+#1140 Allow selling of Potions of Dragon Breath
+#1140 Do not display pvals for known flavors before use/ID
+#1142 Fix 100% CPU problem with x11 mode
+#1143 Fix darkness effect 
+#1144 Fix timed effect increase messages
+#1151 Level of chest items is now determined differently, reducing the chance
+      of producing items below their max depths
+#1154 Fix an issue with the message for addtional str/dex to get extra blows
+#1160 Fix memory leak
+#1167 Fix preserve off mode
+#1170 Ensure history captures all clev gains
+#1177 Fix duplication of slay info when inspecting weapons
+#1181 Make General Store only buy known items
+#1184 Fix level feelings
+#1185 Print hit messages when unarmed
+#1189 Show correct slay/brand damage when inspecting melee weapons
+#1190 Fix "bad" quality squelch
+#1195 Allow selling blessed diggers in the Temple
+#1201 Prevent ammo leaking info about launcher brands/slays
+#1209 Add safety check for artifacts with activation but no message
+r1943 Potions of life should repair CON before hp
+r1972 Fix bug when running with 100% searching
+r1983 Fix divide-by-zero crash on device activation
+r1996 Make remove curse affect items in the quiver
+      Make the -u switch work properly
 
- #294 Fix ego-item recall on object knowledge browser
- #443 Lack of HURT_LITE and HURT_ROCK are noted as resistances
- #688 Fix "learning spells" message when casting
- #641 Fix Morgoth artifacts *again*
- #708 Monster recall and object knowledge update more correctly with sleep/scare/etc effects
- #816 Random teleport no longer prints odd messages if you try to work into a store when it triggers
- #884 Don't use a turn when an item has no charges (also see #980)
- #915 Print trampling and pushing past messages only when monster is in view of the player
- #918 Warn player when melee attacks do no damage
- #920 Make permarock a different colour
- #923 Add notify_recharge option to notify on all rod/activation recharges without inscriptions
- #926 Restore artifact activations to character dumps
- #929 Avoid giving away unknown pvals in object descriptions
- #930 Fix prices of known objects with unknown pval
- #931 Turn off writing the pricing log in all circumstances
- #933 Fix ID-by-use for AC bonuses
- #935 Check that the item exists before accessing it in resistance display
- #937 Quality squelch UI fixes
- #943 Use correct symbol for wand of teleport other
- #945 Make scrolls of Darkness notice rDark as well as rBlind
- #948 Fix corrupted messages when dropping in the home
- #954 Ring of Accuracy displays (+h,+d) like everything else
- #967 Ensure that artifacts ID'd by use appear in player history
- #972 Reword origin of store items to make sense when inspected before purchase
- #975 Potion of Dragon Breath can destroy itself and cause double-delete
- #976 Fix recall of artifacts in knowledge menu (also #1065)
- #978 Stop knowledge menu leaking info via squelch settings
- #980 Don't use a turn when an ID spell/scroll/staff has nothing to ID
- #986 Don't show refuelling info for unrefuellable lights
- #988 Artifact spoilers include curses again
- #989 When artifact creation fails, fallback to great items
- #990 Inven/equip windows keep weights closer to item names
- #994 Make {wielded} inscription change to {worn} as necessary for consistency
-#1105 Fix OS X directory creation bug
-#1010 Branding now IDs the item after branding
-#1011 Fix fail behaviour of gain-one-lose-one stat potions 
-#1013 Multiple brand/slays should only print one message and only print brand messages once
-#1016 Make jewelry auto-ID properly
-#1034 Town no longer interrupts level feelings
-#1040 Object origin now shown correctly on chest-generated items
-#1042 Fix room lighting crash bug
-#1043 Rods on the floor now charge as fast as rods in inventory
-#1053 Show ring and chest mimics in monster knowledge
-#1055 Fix pval display on fixed-pval jewelry
-#1064 Stop invalid open/disarm/etc commands repeating
-#1067 Monster list updates on monster move
-#1068 Stop stat rings IDing prematurely (interim solution)
-#1070 Auto-repeat the search command
-#1081 Correct origin text for items found in chests
-#1082 Don't print messages for squelched items dropped underfoot
-#1084 Fix gold generation bug
-#1089 Fix magic missile's visual effect
-#1099 Fixed the description of the Berserker spell 
-#1103 Unarmed attacks now allow the player to learn "notice on attack" things 
-#1107 Fixed typo bug display green in 16-color GCU mode 
+Coding changes
+==============
+  #55 Introduction of unit tests
+#1102 Major bitflag rewrite
+#1121 Remove spurious bools from main-sdl.c
+r2005 Allow wizmode tweaking to specify artifact or ego type (name1/name2)
+      Destroy init1.c and salt the earth around its cities
+      Completely rewritten edit file parsers
+      Significant refactoring, removing or consolidating many globals
+      Partial rewrite of input layer and command handling
+      Added new WELL1024 RNG
+      Move to C99 compilation standards
+      More flexible quantity specification in edit files (A+BdCMD)
+      Remove the RISC OS port
 
-Fix the verb used when attacking monsters with slays/brands.
-Fix effect descriptions for unIDd food, potions and scrolls
-Describe brands on torches and flasks correctly (they do not brand melee attacks)
-Re-enable auto-stat-buying in the birth process
-Ensure it is possible to destroy wielded items with the destroy command
-r1630 fix keymap loading issue
-improvements to grammar per mailing list
-Better grammar in ID messages
-Fix possibility of infinite loop when generating ego-items
-Update description of GAIN_EXP effect
-Player melee confusion effect now triggers before monster death is checked
-Rename "Detect Hidden Doors/Traps" to "Detect Doors, Traps & Stairs"
-
-
-Misc
-====
-
-  #23 Import UnAngband's 256-colour display code
-  #43 Move names for randarts and player into names.txt
-  #46 Create missing directories on startup if necessary
- #771 make object_desc use better use of bitflags
- #934 Flags set in monster lore now mean "know the presence or absence of this flag", a la known_flags on object_type
- #939 Scale X11 port's colours to the maximum gamut
- #961 Remove the .raw files
- #984 Move artifacts to alloc_prob system, enabling max depths
- #995 Updated references to copyrights and licences (pending full help rewrite)
-#1038 Various fields in the edit files now take random values of the form "5+2d6M8"
-      (e.g. stack size, pval, to_hit, to_dam, to_ac, recharge time, number of charges)
-#1079 Fix GTK port memory leak
-      Replace all instances of "lite" and "hilite" with light and highlight (except rLite on the C screen)
-
-
-Unix
-====
-
-Comply with the FHS (#134)
-Remove debian/ directory - Debian packaging now hosted at git://git.debian.org/git/collab-maint/angband.git
-Make --no-install work again
-Make --use-private-dirs the default
-Improve the GCU port a bit:
- - added gcu subopts -a(scii) and -g(raphics)
- - fix ncurses-autoconf bug; fix gcu bg-color bug; add xterm-256color support
- - handle putty numpad (#796)
- - supports dynamic resizing (#368)
- - fix colours from 3.1.2
+Documentation changes
+=====================
+r1973 Remove obsolete references to class restrictions
+r2012 Include power rating in artifact spoiler
+      Substantial rewriting and update of in-game help files

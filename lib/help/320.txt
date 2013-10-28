@@ -1,0 +1,70 @@
+New features in Angband 3.2.0
+=============================
+
+PLEASE READ THIS, EVEN IF YOU DON'T READ ANY OF THE REST:
+
+There are some changes in this version to things that have remained 
+unchanged for many years -
+
+The AC system has been revised, so that heavy armour items offer a more 
+proportionate amount of protection for their weight. This makes them 
+more useful, but more expensive. (The concept of AC is unchanged: it 
+makes you harder to hit and reduces the damage you take from physical 
+attacks.) Those rare and special "dragonhide" armours are now more 
+useful and more varied ...
+
+In melee, the concept of "attacks per round" has changed. Attacks now 
+cost a fixed amount of "energy", dependent on your stats, class and 
+weapon. You still spend up to 100 energy attacking each turn, but unused 
+energy will be carried over to your next turn. This will result in 
+getting your next turn more quickly, when you have accumulated enough 
+energy, and means your "blows per round" can be expressed as a fraction. 
+In addition, you will stop your turn when you kill a monster and carry 
+over your remaining energy to your next turn.
+
+Resistances to fire, cold, acid and lightning will now reduce the 
+chances of items in your backpack being destroyed by those elements.
+
+Missiles with slays or brands are now slightly less awesomely effective: 
+the multiplier from the slay/brand is added to the launcher multiplier, 
+rather than multiplied by it. So a x3 bow with a x3 brand does x6 damage 
+not x9. Missiles are still a competitive form of attack though.
+
+There are now good reasons to try and clear monster pits and nests, 
+other than the experience.
+
+Artifacts are now instantly recognisable, but you will still need to 
+find out what they do by trying them out or identifying them.
+
+To reduce note-taking, you can now review the contents of the stores 
+while you are in the dungeon. Note that this does not keep track of 
+changes since you have left town, so the lists may be out-of-date by the 
+time you return!
+
+Storekeepers will offer occasional hints to young adventurers. After you 
+gain a few levels, they will greet you without presuming to offer 
+advice.
+
+There is a new "no_selling" option. Storekeepers will still happily take 
+items off your hands, but they will pay you nothing (though they will 
+still ID unknown items for you, and they will still happily sell you 
+their wares). Instead, gold found in the dungeon is increased in 
+quantity. This is a birth option and must be set before or during 
+character creation. If changed during a game, it will not take effect 
+until the next game. Note that changed birth options do not take effect 
+if you use the "quickstart" option (i.e. immediately start a new 
+character based on the previous one). If you want to play with changed 
+birth options, make sure you go right back to the start of the birth 
+process (press 'N' at the quickstart screen, then '=' to edit birth 
+options).
+
+There is another new option, to display all "unique" monsters in a 
+special (light purple) colour, so you can see at a glance that they are 
+uniques. If you like the idea but don't like the colour, you can edit it 
+by choosing "interact with colours".
+
+There is yet another new option to make certain powerful monsters and 
+items shimmer in real time (i.e. between keypresses).
+
+If you play with graphical tiles, you can now make them bigger. There is 
+also a new 8x16 tile set (thanks Nomad!).

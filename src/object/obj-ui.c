@@ -1,5 +1,5 @@
 /*
- * File: object1.c
+ * File: obj-ui.c
  * Purpose: Mainly object descriptions and generic UI functions
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
@@ -15,9 +15,11 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
-#include "angband.h"
-#include "tvalsval.h"
 
+#include "angband.h"
+#include "button.h"
+#include "tvalsval.h"
+#include "cmds.h"
 
 /*
  * Display a list of objects.  Each object may be prefixed with a label.
@@ -70,10 +72,10 @@ static void show_obj_list(int num_obj, char labels[50][80], object_type *objects
 		/* Main window */
 		row = 1;
 		col = Term->wid - 1 - max_len - ex_width;
-		
+
 		if (col < 3) col = 0;
 	}
-	
+
 	/* Column offset of the first extra field */
 	ex_offset = MIN(max_len, (size_t)(Term->wid - 1 - ex_width - col));
 
@@ -191,6 +193,7 @@ static void show_obj_list(int num_obj, char labels[50][80], object_type *objects
 void show_inven(olist_detail_t mode)
 {
 	int i, last_slot = 0;
+	int diff = weight_remaining();
 
 	object_type *o_ptr;
 
@@ -200,17 +203,30 @@ void show_inven(olist_detail_t mode)
 
    bool in_term = (mode & OLIST_WINDOW) ? TRUE : FALSE;
 
+	/* Include burden for term windows */
+	if (in_term)
+	{
+		strnfmt(labels[num_obj], sizeof(labels[num_obj]),
+		        "Burden %d.%d lb (%d.%d lb %s) ",
+		        p_ptr->total_weight / 10, p_ptr->total_weight % 10,
+		        abs(diff) / 10, abs(diff) % 10,
+		        (diff < 0 ? "overweight" : "remaining"));
+
+		objects[num_obj] = NULL;
+		num_obj++;
+	}
+
 	/* Find the last occupied inventory slot */
 	for (i = 0; i < INVEN_PACK; i++)
 	{
-		o_ptr = &inventory[i];
+		o_ptr = &p_ptr->inventory[i];
 		if (o_ptr->k_idx) last_slot = i;
 	}
 
 	/* Build the object list */
 	for (i = 0; i <= last_slot; i++)
 	{
-		o_ptr = &inventory[i];
+		o_ptr = &p_ptr->inventory[i];
 
 		/* Acceptable items get a label */
 		if (item_tester_okay(o_ptr))
@@ -255,14 +271,14 @@ void show_equip(olist_detail_t mode)
 	/* Find the last equipment slot to display */
 	for (i = INVEN_WIELD; i < ALL_INVEN_TOTAL; i++)
 	{
-		o_ptr = &inventory[i];
+		o_ptr = &p_ptr->inventory[i];
 		if (i < INVEN_TOTAL || o_ptr->k_idx) last_slot = i;
 	}
 
 	/* Build the object list */
 	for (i = INVEN_WIELD; i <= last_slot; i++)
 	{
-		o_ptr = &inventory[i];
+		o_ptr = &p_ptr->inventory[i];
 
 		/* May need a blank line to separate the quiver */
 		if (i == INVEN_TOTAL)
@@ -273,7 +289,7 @@ void show_equip(olist_detail_t mode)
 			/* Scan the rest of the items for acceptable entries */
 			for (j = i; j < last_slot; j++)
 			{
-				o_ptr = &inventory[j];
+				o_ptr = &p_ptr->inventory[j];
 				if (item_tester_okay(o_ptr)) need_spacer = TRUE;
 			}
 
@@ -381,7 +397,7 @@ bool verify_item(cptr prompt, int item)
 	/* Inventory */
 	if (item >= 0)
 	{
-		o_ptr = &inventory[item];
+		o_ptr = &p_ptr->inventory[item];
 	}
 
 	/* Floor */
@@ -406,7 +422,7 @@ bool verify_item(cptr prompt, int item)
  *
  * The item can be negative to mean "item on floor".
  */
-static bool get_item_allow(int item, bool is_harmless)
+static bool get_item_allow(int item, unsigned char ch, bool is_harmless)
 {
 	object_type *o_ptr;
 	char verify_inscrip[] = "!*";
@@ -415,14 +431,14 @@ static bool get_item_allow(int item, bool is_harmless)
 
 	/* Inventory or floor */
 	if (item >= 0)
-		o_ptr = &inventory[item];
+		o_ptr = &p_ptr->inventory[item];
 	else
 		o_ptr = &o_list[0 - item];
 
 	/* Check for a "prevention" inscription */
-	verify_inscrip[1] = p_ptr->command_cmd;
+	verify_inscrip[1] = ch;
 
-	/* Find both sets of inscriptions, add togther, and prompt that number of times */
+	/* Find both sets of inscriptions, add together, and prompt that number of times */
 	n = check_for_inscrip(o_ptr, verify_inscrip);
 
 	if (!is_harmless)
@@ -447,18 +463,18 @@ static bool get_item_allow(int item, bool is_harmless)
  * inscription of an object.
  *
  * Also, the tag "@xn" will work as well, where "n" is a tag-char,
- * and "x" is the "current" p_ptr->command_cmd code.
+ * and "x" is the action that tag will work for.
  */
-static int get_tag(int *cp, char tag)
+static int get_tag(int *cp, char tag, cmd_code cmd, bool quiver_tags)
 {
 	int i;
 	cptr s;
 
 	/* (f)ire is handled differently from all others, due to the quiver */
-	if (p_ptr->command_cmd == 'f')
+	if (quiver_tags)
 	{
 		i = QUIVER_START + tag - '0';
-		if (inventory[i].k_idx)
+		if (p_ptr->inventory[i].k_idx)
 		{
 			*cp = i;
 			return (TRUE);
@@ -469,7 +485,7 @@ static int get_tag(int *cp, char tag)
 	/* Check every object */
 	for (i = 0; i < ALL_INVEN_TOTAL; ++i)
 	{
-		object_type *o_ptr = &inventory[i];
+		object_type *o_ptr = &p_ptr->inventory[i];
 
 		/* Skip non-objects */
 		if (!o_ptr->k_idx) continue;
@@ -494,7 +510,7 @@ static int get_tag(int *cp, char tag)
 			}
 
 			/* Check the special tags */
-			if ((s[1] == p_ptr->command_cmd) && (s[2] == tag))
+			if ((cmd_lookup(s[1]) == cmd) && (s[2] == tag))
 			{
 				/* Save the actual inventory ID */
 				*cp = i;
@@ -551,10 +567,6 @@ static int get_tag(int *cp, char tag)
  *
  * If no item is selected, we do nothing to "cp", and return FALSE.
  *
- * Global "p_ptr->command_new" is used when viewing the inventory or equipment
- * to allow the user to enter a command while viewing those screens, and
- * also to induce "auto-enter" of stores, and other such stuff.
- *
  * Global "p_ptr->command_wrk" is used to choose between equip/inven/floor
  * listings.  It is equal to USE_INVEN or USE_EQUIP or USE_FLOOR, except
  * when this function is first called, when it is equal to zero, which will
@@ -566,10 +578,11 @@ static int get_tag(int *cp, char tag)
  * Note that only "acceptable" floor objects get indexes, so between two
  * commands, the indexes of floor objects may change.  XXX XXX XXX
  */
-bool get_item(int *cp, cptr pmt, cptr str, int mode)
+bool get_item(int *cp, cptr pmt, cptr str, cmd_code cmd, int mode)
 {
 	int py = p_ptr->py;
 	int px = p_ptr->px;
+	unsigned char cmdkey = cmd_lookup_key(cmd);
 
 	ui_event_data which;
 
@@ -586,8 +599,10 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 	bool use_inven = ((mode & USE_INVEN) ? TRUE : FALSE);
 	bool use_equip = ((mode & USE_EQUIP) ? TRUE : FALSE);
 	bool use_floor = ((mode & USE_FLOOR) ? TRUE : FALSE);
+	bool use_quiver = ((mode & QUIVER_TAGS) ? TRUE : FALSE);
 	bool can_squelch = ((mode & CAN_SQUELCH) ? TRUE : FALSE);
 	bool is_harmless = ((mode & IS_HARMLESS) ? TRUE : FALSE);
+	bool quiver_tags = ((mode & QUIVER_TAGS) ? TRUE : FALSE);
 
 	olist_detail_t olist_mode = 0;
 
@@ -686,6 +701,10 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 	{
 		/* Hack -- Start on equipment if requested */
 		if ((p_ptr->command_wrk == USE_EQUIP) && use_equip)
+			p_ptr->command_wrk = USE_EQUIP;
+
+		/* If we are using the quiver then start on equipment */
+		else if (use_quiver)
 			p_ptr->command_wrk = USE_EQUIP;
 
 		/* Use inventory if allowed */
@@ -998,7 +1017,7 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 						k = 0 - floor_list[0];
 
 						/* Allow player to "refuse" certain actions */
-						if (!get_item_allow(k, is_harmless))
+						if (!get_item_allow(k, cmdkey, is_harmless))
 						{
 							done = TRUE;
 							break;
@@ -1036,7 +1055,7 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 					if (!get_item_okay(k)) continue;
 
 					/* Allow player to "refuse" certain actions */
-					if (!get_item_allow(k)) continue;
+					if (!get_item_allow(k, cmdkey, is_harmless)) continue;
 
 					/* Accept that choice */
 					(*cp) = k;
@@ -1055,7 +1074,7 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 			case '7': case '8': case '9':
 			{
 				/* Look up the tag */
-				if (!get_tag(&k, which.key))
+				if (!get_tag(&k, which.key, cmd, quiver_tags))
 				{
 					bell("Illegal object choice (tag)!");
 					break;
@@ -1076,7 +1095,7 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 				}
 
 				/* Allow player to "refuse" certain actions */
-				if (!get_item_allow(k, is_harmless))
+				if (!get_item_allow(k, cmdkey, is_harmless))
 				{
 					done = TRUE;
 					break;
@@ -1105,7 +1124,7 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 				}
 
 				/* Choose the "default" slot (0) of the quiver */
-				else if(p_ptr->command_cmd == 'f')
+				else if (quiver_tags)
 					k = e1;
 
 				/* Choose "default" equipment item */
@@ -1140,7 +1159,7 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 				}
 
 				/* Allow player to "refuse" certain actions */
-				if (!get_item_allow(k, is_harmless))
+				if (!get_item_allow(k, cmdkey, is_harmless))
 				{
 					done = TRUE;
 					break;
@@ -1231,7 +1250,7 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 				}
 
 				/* Allow player to "refuse" certain actions */
-				if (!get_item_allow(k, is_harmless))
+				if (!get_item_allow(k, cmdkey, is_harmless))
 				{
 					done = TRUE;
 					break;

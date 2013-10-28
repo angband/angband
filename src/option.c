@@ -21,7 +21,7 @@
 /*
  * Option screen interface
  */
-const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
+const int option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 {
 	/* Interface */
 	{
@@ -38,7 +38,7 @@ const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 		OPT_show_lists,
 		OPT_mouse_movement,
 		OPT_mouse_buttons,
-		OPT_NONE,
+		OPT_xchars_to_file,
 		OPT_NONE,
 		OPT_NONE,
 	},
@@ -47,7 +47,7 @@ const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 	{
 		OPT_hp_changes_color,
 		OPT_highlight_player,
- 		OPT_center_player,
+		OPT_center_player,
 		OPT_show_piles,
 		OPT_show_flavors,
 		OPT_show_labels,
@@ -57,8 +57,8 @@ const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 		OPT_view_special_light,
 		OPT_view_perma_grids,
 		OPT_view_torch_grids,
-		OPT_NONE,
-		OPT_NONE,
+		OPT_animate_flicker,
+		OPT_purple_uniques,
 		OPT_NONE,
 		OPT_NONE,
 	},
@@ -87,7 +87,6 @@ const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 	{
 		OPT_birth_maximize,
 		OPT_birth_randarts,
-		OPT_birth_money,
 		OPT_birth_ai_sound,
 		OPT_birth_ai_smell,
 		OPT_birth_ai_packs,
@@ -100,7 +99,8 @@ const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 		OPT_birth_no_stacking,
 		OPT_birth_no_preserve,
 		OPT_birth_no_stairs,
-		OPT_birth_feelings
+		OPT_birth_no_feelings,
+		OPT_birth_no_selling,
 	},
 
 	/* Cheat */
@@ -196,21 +196,21 @@ static option_entry options[OPT_MAX] =
 { "highlight_player",    "Highlight the player with the cursor",        FALSE }, /* 59 */
 { "view_yellow_light",   "Use special colors for torch light",          FALSE }, /* 60 */
 { "view_bright_light",   "Use special colors for field of view",        TRUE },  /* 61 */
-{ "view_granite_light",  "Use special colors for wall grids",           FALSE }, /* 62 */
+{ "view_granite_light",  "Use special colors for wall grids",           TRUE }, /* 62 */
 { "view_special_light",  "Use special colors for floor grids",          TRUE },  /* 63 */
-{ "easy_open",           "Open/Disarm/Close without direction",         FALSE }, /* 64 */
-{ "easy_alter",          "Open/Disarm doors/traps on movement",         FALSE }, /* 65 */
-{ NULL,                  NULL,                                          FALSE }, /* 66 */
-{ "show_piles",          "Show stacks using special attr/char",         FALSE }, /* 67 */
+{ "easy_open",           "Open/Disarm/Close without direction",         TRUE }, /* 64 */
+{ "easy_alter",          "Open/Disarm doors/traps on movement",         TRUE  }, /* 65 */
+{ "animate_flicker",     "Animate multi-colored monsters and items",    FALSE }, /* 66 */
+{ "show_piles",          "Show stacks using special attr/char",         TRUE }, /* 67 */
 { "center_player",       "Center map continuously",                     FALSE }, /* 68 */
-{ NULL,                  NULL,                                          FALSE }, /* 69 */
-{ NULL,                  NULL,                                          FALSE }, /* 70 */
+{ "purple_uniques",      "Show unique monsters in a special colour",    FALSE }, /* 69 */
+{ "xchars_to_file",      "Allow accents in output files",               FALSE }, /* 70 */
 { "auto_more",           "Automatically clear '-more-' prompts",        FALSE }, /* 71 */
 { NULL,                  NULL,                                          FALSE }, /* 72 */
 { NULL,                  NULL,                                          FALSE }, /* 73 */
 { "hp_changes_color",    "Player color indicates low hit points",       FALSE }, /* 74 */
-{ "hide_squelchable",    "Hide items set as squelchable",               FALSE }, /* 75 */
-{ "squelch_worthless",   "Automatically squelch worthless items",       FALSE }, /* 76 */
+{ "hide_squelchable",    "Hide items set as squelchable",               TRUE }, /* 75 */
+{ "squelch_worthless",   "Squelch worthless item kinds",                FALSE }, /* 76 */
 { "mouse_movement",      "Allow mouse clicks to move the player",       FALSE }, /* 77 */
 { "mouse_buttons",        "Show mouse status line buttons",             FALSE }, /* 78 */
 { "notify_recharge",     "Notify on object recharge",                   FALSE }, /* 79 */
@@ -264,15 +264,15 @@ static option_entry options[OPT_MAX] =
 { NULL,                  NULL,                                          FALSE }, /* 127 */
 { "birth_maximize",      "Maximise effect of race/class bonuses",       TRUE },  /* 128 */
 { "birth_randarts",      "Randomise the artifacts (except a very few)", FALSE }, /* 129 */
-{ "birth_money",         "Start with more money instead of equipment",  FALSE }, /* 130 */
+{ NULL,                  NULL,                                          FALSE }, /* 130 */
 { "birth_ironman",       "Restrict the use of stairs/recall",           FALSE }, /* 131 */
 { "birth_no_stores",     "Restrict the use of stores/home",             FALSE }, /* 132 */
 { "birth_no_artifacts",  "Restrict creation of artifacts",              FALSE }, /* 133 */
 { "birth_no_stacking",   "Don't stack objects on the floor",            FALSE }, /* 134 */
 { "birth_no_preserve",   "Lose artifacts when leaving level",           FALSE }, /* 135 */
 { "birth_no_stairs",     "Don't generate connected stairs",             FALSE }, /* 136 */
-{ "birth_feelings",      "Don't show level feelings",                   FALSE }, /* 137 */
-{ NULL,                  NULL,                                          FALSE }, /* 138 */
+{ "birth_no_feelings",   "Don't show level feelings",                   FALSE }, /* 137 */
+{ "birth_no_selling",    "Items always sell for 0 gold",                FALSE }, /* 138 */
 { NULL,                  NULL,                                          FALSE }, /* 139 */
 { NULL,                  NULL,                                          FALSE }, /* 140 */
 { "birth_ai_sound",      "Monsters chase current location",             TRUE },  /* 141 */
@@ -327,7 +327,7 @@ static option_entry options[OPT_MAX] =
 { NULL,                  NULL,                                          FALSE }, /* 190 */
 { NULL,                  NULL,                                          FALSE }, /* 191 */
 { "adult_maximize",      "Maximize effect of race/class bonuses",       TRUE },  /* 192 */
-{ "adult_randarts",      "Randomize some of the artifacts (beta)",      FALSE }, /* 193 */
+{ "adult_randarts",      "Randomize the artifacts (except a few)",      FALSE }, /* 193 */
 { NULL,                  NULL,                                          FALSE }, /* 194 */
 { "adult_ironman",       "Restrict the use of stairs/recall",           FALSE }, /* 195 */
 { "adult_no_stores",     "Restrict the use of stores/home",             FALSE }, /* 196 */
@@ -335,8 +335,8 @@ static option_entry options[OPT_MAX] =
 { "adult_no_stacking",   "Don't stack objects on the floor",            FALSE }, /* 198 */
 { "adult_no_preserve",   "Lose artifacts when leaving level",           FALSE }, /* 199 */
 { "adult_no_stairs",     "Don't generate connected stairs",             FALSE }, /* 200 */
-{ NULL,                  NULL,                                          FALSE }, /* 201 */
-{ NULL,                  NULL,                                          FALSE }, /* 202 */
+{ "adult_no_feelings",   "Don't show level feelings",                   FALSE }, /* 201 */
+{ "adult_no_selling",    "Items always sell for 0 gold",                FALSE }, /* 202 */
 { NULL,                  NULL,                                          FALSE }, /* 203 */
 { NULL,                  NULL,                                          FALSE }, /* 204 */
 { "adult_ai_sound",      "Adult: Monsters chase current location",      TRUE },  /* 205 */
@@ -407,15 +407,27 @@ const char *option_desc(int opt)
 }
 
 /* Setup functions */
-void option_set(int opt, bool on)
+bool option_set(const char *name, bool on)
 {
-	op_ptr->opt[opt] = on;
+	size_t opt;
+	for (opt = 0; opt < OPT_ADULT; opt++)
+	{
+		if (!options[opt].name || !streq(options[opt].name, name))
+			continue;
+
+		op_ptr->opt[opt] = on;
+		if (on && opt > OPT_CHEAT && opt < OPT_ADULT)
+			op_ptr->opt[opt + (OPT_SCORE - OPT_CHEAT)] = TRUE;
+
+		return TRUE;
+	}
+
+	return FALSE;
 }
 
 void option_set_defaults(void)
 {
 	size_t opt;
-
 	for (opt = 0; opt < OPT_MAX; opt++)
 		op_ptr->opt[opt] = options[opt].normal;
 }

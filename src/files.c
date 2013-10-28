@@ -15,12 +15,15 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
+
 #include "angband.h"
-#include "object/tvalsval.h"
-#include "ui-menu.h"
-#include "game-cmd.h"
+#include "cave.h"
 #include "cmds.h"
+#include "game-cmd.h"
+#include "history.h"
+#include "object/tvalsval.h"
 #include "option.h"
+#include "ui-menu.h"
 
 #define MAX_PANEL 12
 
@@ -105,14 +108,14 @@ static cptr likert(int x, int y, byte *attr)
 /*
  * Obtain the "flags" for the player as if he was an item
  */
-void player_flags(u32b f[OBJ_FLAG_N])
+void player_flags(bitflag f[OF_SIZE])
 {
 	/* Add racial flags */
 	memcpy(f, rp_ptr->flags, sizeof(rp_ptr->flags));
 
 	/* Some classes become immune to fear at a certain plevel */
-	if ((cp_ptr->flags & CF_BRAVERY_30) && p_ptr->lev >= 30)
-		f[1] |= TR1_RES_FEAR;
+	if (player_has(PF_BRAVERY_30) && p_ptr->lev >= 30)
+		of_on(f, OF_RES_FEAR);
 }
 
 
@@ -133,7 +136,7 @@ static void display_player_equippy(int y, int x)
 	for (i = INVEN_WIELD; i < INVEN_TOTAL; ++i)
 	{
 		/* Object */
-		o_ptr = &inventory[i];
+		o_ptr = &p_ptr->inventory[i];
 
 		/* Skip empty objects */
 		if (!o_ptr->k_idx) continue;
@@ -143,7 +146,10 @@ static void display_player_equippy(int y, int x)
 		c = object_char(o_ptr);
 
 		/* Dump */
-		Term_putch(x+i-INVEN_WIELD, y, a, c);
+		if ((tile_width == 1) && (tile_height == 1))
+		{
+		        Term_putch(x+i-INVEN_WIELD, y, a, c);
+		}
 	}
 }
 
@@ -154,53 +160,52 @@ static void display_player_equippy(int y, int x)
 struct player_flag_record
 {
 	const char name[7];		/* Name of resistance/ability */
-	byte set;				/* Which field this resistance is in { 1 2 3 } */
-	u32b res_flag;			/* resistance flag bit */
-	u32b im_flag;			/* corresponding immunity bit, if any */
-	u32b vuln_flag;			/* corresponding vulnerability flag, if any */
+	int res_flag;			/* resistance flag bit */
+	int im_flag;			/* corresponding immunity bit, if any */
+	int vuln_flag;			/* corresponding vulnerability flag, if any */
 };
 
 static const struct player_flag_record player_flag_table[RES_ROWS*4] =
 {
-	{ "rAcid",	1, TR1_RES_ACID,	TR1_IM_ACID,	TR1_VULN_ACID },
-	{ "rElec",	1, TR1_RES_ELEC,	TR1_IM_ELEC,	TR1_VULN_ELEC },
-	{ "rFire",	1, TR1_RES_FIRE,	TR1_IM_FIRE,	TR1_VULN_FIRE },
-	{ "rCold",	1, TR1_RES_COLD,	TR1_IM_COLD,	TR1_VULN_COLD },
-	{ "rPois",	1, TR1_RES_POIS,	0, 0 },
-	{ "rFear",	1, TR1_RES_FEAR,	0, 0 },
-	{ "rLite",	1, TR1_RES_LIGHT,	0, 0 },
-	{ "rDark",	1, TR1_RES_DARK,	0, 0 },
-	{ "rBlnd",	1, TR1_RES_BLIND,	0, 0 },
+	{ "rAcid",	OF_RES_ACID,    OF_IM_ACID, OF_VULN_ACID },
+	{ "rElec",	OF_RES_ELEC,    OF_IM_ELEC, OF_VULN_ELEC },
+	{ "rFire",	OF_RES_FIRE,    OF_IM_FIRE, OF_VULN_FIRE },
+	{ "rCold",	OF_RES_COLD,    OF_IM_COLD, OF_VULN_COLD },
+	{ "rPois",	OF_RES_POIS,    FLAG_END,   FLAG_END },
+	{ "rFear",	OF_RES_FEAR,    FLAG_END,   FLAG_END },
+	{ "rLite",	OF_RES_LIGHT,   FLAG_END,   FLAG_END },
+	{ "rDark",	OF_RES_DARK,    FLAG_END,   FLAG_END },
+	{ "rBlnd",	OF_RES_BLIND,   FLAG_END,   FLAG_END },
 
-	{ "rConf",	1, TR1_RES_CONFU,	0, 0 },
-	{ "Sound",	1, TR1_RES_SOUND,	0, 0 },
-	{ "Shard",	1, TR1_RES_SHARD,	0, 0 },
-	{ "Nexus",	1, TR1_RES_NEXUS,	0, 0 },
-	{ "Nethr",	1, TR1_RES_NETHR,	0, 0 },
-	{ "Chaos",	1, TR1_RES_CHAOS,	0, 0 },
-	{ "Disen",	1, TR1_RES_DISEN,	0, 0 },
-	{ "S.Dig",	2, TR2_SLOW_DIGEST,	0, 0 },
-	{ "Feath",	2, TR2_FEATHER, 	0, 0 },
+	{ "rConf",	OF_RES_CONFU,   FLAG_END,   FLAG_END },
+	{ "Sound",	OF_RES_SOUND,   FLAG_END,   FLAG_END },
+	{ "Shard",	OF_RES_SHARD,   FLAG_END,   FLAG_END },
+	{ "Nexus",	OF_RES_NEXUS,   FLAG_END,   FLAG_END },
+	{ "Nethr",	OF_RES_NETHR,   FLAG_END,   FLAG_END },
+	{ "Chaos",	OF_RES_CHAOS,   FLAG_END,   FLAG_END },
+	{ "Disen",	OF_RES_DISEN,   FLAG_END,   FLAG_END },
+	{ "S.Dig",	OF_SLOW_DIGEST, FLAG_END,   FLAG_END },
+	{ "Feath",	OF_FEATHER,     FLAG_END,   FLAG_END },
 
-	{ "Light",	2, TR2_LIGHT, 		0, 0 },
-	{ "Regen",	2, TR2_REGEN, 		0, 0 },
-	{ "  ESP",	2, TR2_TELEPATHY, 	0, 0 },
-	{ "Invis",	2, TR2_SEE_INVIS, 	0, 0 },
-	{ "FrAct",	2, TR2_FREE_ACT, 	0, 0 },
-	{ "HLife",	2, TR2_HOLD_LIFE, 	0, 0 },
-	{ "ImpHP",	2, TR2_IMPAIR_HP,	0, 0 },
-	{ "ImpSP",	2, TR2_IMPAIR_MANA,	0, 0 },
-	{ " Fear",      2, TR2_AFRAID,          0, 0 },
+	{ "Light",	OF_LIGHT,       FLAG_END,   FLAG_END },
+	{ "Regen",	OF_REGEN,       FLAG_END,   FLAG_END },
+	{ "  ESP",	OF_TELEPATHY,   FLAG_END,   FLAG_END },
+	{ "Invis",	OF_SEE_INVIS,   FLAG_END,   FLAG_END },
+	{ "FrAct",	OF_FREE_ACT,    FLAG_END,   FLAG_END },
+	{ "HLife",	OF_HOLD_LIFE,   FLAG_END,   FLAG_END },
+	{ "ImpHP",	OF_IMPAIR_HP,   FLAG_END,   FLAG_END },
+	{ "ImpSP",	OF_IMPAIR_MANA, FLAG_END,   FLAG_END },
+	{ " Fear",	OF_AFRAID,      FLAG_END,   FLAG_END },
 
-	{ "Aggrv",      2, TR2_AGGRAVATE,       0, 0 },
-	{ "Stea.",	0, TR0_STEALTH,		0, 0 },
-	{ "Sear.",	0, TR0_SEARCH,		0, 0 },
-	{ "Infra",	0, TR0_INFRA,		0, 0 },
-	{ "Tunn.",	0, TR0_TUNNEL,		0, 0 },
-	{ "Speed",	0, TR0_SPEED,		0, 0 },
-	{ "Blows",	0, TR0_BLOWS,		0, 0 },
-	{ "Shots",	0, TR0_SHOTS,		0, 0 },
-	{ "Might",	0, TR0_MIGHT,		0, 0 },
+	{ "Aggrv",	OF_AGGRAVATE,   FLAG_END,   FLAG_END },
+	{ "Stea.",	OF_STEALTH,     FLAG_END,   FLAG_END },
+	{ "Sear.",	OF_SEARCH,      FLAG_END,   FLAG_END },
+	{ "Infra",	OF_INFRA,       FLAG_END,   FLAG_END },
+	{ "Tunn.",	OF_TUNNEL,      FLAG_END,   FLAG_END },
+	{ "Speed",	OF_SPEED,       FLAG_END,   FLAG_END },
+	{ "Blows",	OF_BLOWS,       FLAG_END,   FLAG_END },
+	{ "Shots",	OF_SHOTS,       FLAG_END,   FLAG_END },
+	{ "Might",	OF_MIGHT,       FLAG_END,   FLAG_END },
 };
 
 #define RES_COLS (5 + 2 + INVEN_TOTAL - INVEN_WIELD)
@@ -226,8 +231,8 @@ static void display_resistance_panel(const struct player_flag_record *resists,
 		/* repeated extraction of flags is inefficient but more natural */
 		for (j = INVEN_WIELD; j <= INVEN_TOTAL; j++)
 		{
-			object_type *o_ptr = &inventory[j];
-			u32b f[OBJ_FLAG_N];
+			object_type *o_ptr = &p_ptr->inventory[j];
+			bitflag f[OF_SIZE];
 
 			byte attr = TERM_WHITE | (j % 2) * 8; /* alternating columns */
 			char sym = '.';
@@ -235,7 +240,7 @@ static void display_resistance_panel(const struct player_flag_record *resists,
 			bool res, imm, vuln;
 
 			/* Wipe flagset */
-			C_WIPE(f, OBJ_FLAG_N, u32b);
+			of_wipe(f);
 
 			if (j < INVEN_TOTAL && o_ptr->k_idx)
 			{
@@ -249,14 +254,14 @@ static void display_resistance_panel(const struct player_flag_record *resists,
 				   here.  If we set it in player_flags(), then all callers of that
 				   function will think the infravision is caused by equipment. */
 				if (rp_ptr->infra > 0)
-					f[0] |= TR0_INFRA;
+					of_on(f, OF_INFRA);
 				if (rp_ptr->r_skills[SKILL_DIGGING] > 0)
-					f[0] |= TR0_TUNNEL;
+					of_on(f, OF_TUNNEL);
 			}
 
-			res = (0 != (f[resists[i].set] & resists[i].res_flag));
-			imm = (0 != (f[resists[i].set] & resists[i].im_flag));
-			vuln = (0 != (f[resists[i].set] & resists[i].vuln_flag));
+			res = of_has(f, resists[i].res_flag);
+			imm = of_has(f, resists[i].im_flag);
+			vuln = of_has(f, resists[i].vuln_flag);
 
 			if (imm) name_attr = TERM_GREEN;
 			else if (res && name_attr == TERM_WHITE) name_attr = TERM_L_BLUE;
@@ -265,7 +270,7 @@ static void display_resistance_panel(const struct player_flag_record *resists,
 			else if (imm) sym = '*';
 			else if (res) sym = '+';
 			else if ((j < INVEN_TOTAL) && o_ptr->k_idx && 
-				!object_flag_is_known(o_ptr, resists[i].set, resists[i].res_flag)) sym = '?';
+				!object_flag_is_known(o_ptr, resists[i].res_flag)) sym = '?';
 			Term_addch(attr, sym);
 		}
 		Term_putstr(col, row, 6, name_attr, format("%5s:", resists[i].name));
@@ -378,7 +383,10 @@ static void display_player_sust_info(void)
 	int i, row, col, stat;
 
 	object_type *o_ptr;
-	u32b f[OBJ_FLAG_N];
+	bitflag f[OF_SIZE];
+
+	int stat_flags[A_MAX];
+	int sustain_flags[A_MAX];
 
 	byte a;
 	char c;
@@ -390,20 +398,19 @@ static void display_player_sust_info(void)
 	/* Column */
 	col = 26;
 
-	/* low-level dependencies */
-	assert(TR0_STR == (1<<A_STR));
-	assert(TR0_INT == (1<<A_INT));
-	assert(TR0_WIS == (1<<A_WIS));
-	assert(TR0_DEX == (1<<A_DEX));
-	assert(TR0_CON == (1<<A_CON));
-	assert(TR0_CHR == (1<<A_CHR));
-
-	assert(TR1_SUST_STR == (1<<A_STR));
-	assert(TR1_SUST_INT == (1<<A_INT));
-	assert(TR1_SUST_WIS == (1<<A_WIS));
-	assert(TR1_SUST_DEX == (1<<A_DEX));
-	assert(TR1_SUST_CON == (1<<A_CON));
-	assert(TR1_SUST_CHR == (1<<A_CHR));
+	/* Build the stat flags tables */
+	stat_flags[A_STR] = OF_STR;
+	stat_flags[A_INT] = OF_INT;
+	stat_flags[A_WIS] = OF_WIS;
+	stat_flags[A_DEX] = OF_DEX;
+	stat_flags[A_CON] = OF_CON;
+	stat_flags[A_CHR] = OF_CHR;
+	sustain_flags[A_STR] = OF_SUST_STR;
+	sustain_flags[A_INT] = OF_SUST_INT;
+	sustain_flags[A_WIS] = OF_SUST_WIS;
+	sustain_flags[A_DEX] = OF_SUST_DEX;
+	sustain_flags[A_CON] = OF_SUST_CON;
+	sustain_flags[A_CHR] = OF_SUST_CHR;
 
 	/* Header */
 	c_put_str(TERM_WHITE, "abcdefghijkl@", row-1, col);
@@ -412,7 +419,7 @@ static void display_player_sust_info(void)
 	for (i = INVEN_WIELD; i < INVEN_TOTAL; ++i)
 	{
 		/* Get the object */
-		o_ptr = &inventory[i];
+		o_ptr = &p_ptr->inventory[i];
 
 		/* Get the "known" flags */
 		object_flags_known(o_ptr, f);
@@ -425,7 +432,7 @@ static void display_player_sust_info(void)
 			c = '.';
 
 			/* Boost */
-			if (f[0] & (1<<stat))
+			if (of_has(f, stat_flags[stat]))
 			{
 				/* Default */
 				c = '*';
@@ -452,7 +459,7 @@ static void display_player_sust_info(void)
 			}
 
 			/* Sustain */
-			if (f[1] & (1<<stat))
+			if (of_has(f, sustain_flags[stat]))
 			{
 				/* Dark green */
 				a = TERM_GREEN;
@@ -461,7 +468,7 @@ static void display_player_sust_info(void)
 				if (c == '.') c = 's';
 			}
 
-			if ((c == '.') && o_ptr->k_idx && !object_flag_is_known(o_ptr, 1, (1 << stat)))
+			if ((c == '.') && o_ptr->k_idx && !object_flag_is_known(o_ptr, sustain_flags[stat]))
 				c = '?';
 
 			/* Dump proper character */
@@ -483,7 +490,7 @@ static void display_player_sust_info(void)
 		c = '.';
 
 		/* Sustain */
-		if (f[1] & (1<<stat))
+		if (of_has(f, sustain_flags[stat]))
 		{
 			/* Dark green "s" */
 			a = TERM_GREEN;
@@ -564,7 +571,7 @@ static const char *show_title(void)
 	else if (p_ptr->total_winner || p_ptr->lev > PY_MAX_LEVEL)
 		return "***WINNER***";
 	else
-		return c_text + cp_ptr->title[(p_ptr->lev - 1) / 5];
+		return cp_ptr->title[(p_ptr->lev - 1) / 5];
 }
 
 static const char *show_adv_exp(void)
@@ -716,8 +723,8 @@ static int get_panel(int oid, data_panel *panel, size_t size)
 	ret = boundaries[1].page_rows;
 	P_I(TERM_L_BLUE, "Name",	"%y",	s2u(op_ptr->full_name), END  );
 	P_I(TERM_L_BLUE, "Sex",		"%y",	s2u(sp_ptr->title), END  );
-	P_I(TERM_L_BLUE, "Race",	"%y",	s2u(p_name + rp_ptr->name), END  );
-	P_I(TERM_L_BLUE, "Class",	"%y",	s2u(c_name + cp_ptr->name), END  );
+	P_I(TERM_L_BLUE, "Race",	"%y",	s2u(rp_ptr->name), END  );
+	P_I(TERM_L_BLUE, "Class",	"%y",	s2u(cp_ptr->name), END  );
 	P_I(TERM_L_BLUE, "Title",	"%y",	s2u(show_title()), END  );
 	P_I(TERM_L_BLUE, "HP",	"%y/%y",	i2u(p_ptr->chp), i2u(p_ptr->mhp)  );
 	P_I(TERM_L_BLUE, "SP",	"%y/%y",	i2u(p_ptr->csp), i2u(p_ptr->msp)  );
@@ -736,8 +743,8 @@ static int get_panel(int oid, data_panel *panel, size_t size)
 	P_I(TERM_L_GREEN, "Adv Exp",	"%y",	s2u(show_adv_exp()), END  );
 	P_I(TERM_L_GREEN, "MaxDepth",	"%y",	s2u(show_depth()), END  );
 	P_I(TERM_L_GREEN, "Game Turns",	"%y",	i2u(turn), END  );
-	P_I(TERM_L_GREEN, "Player Turns","%y",	i2u(p_ptr->player_turn), END  );
-	P_I(TERM_L_GREEN, "Active Turns","%y",	i2u(p_ptr->player_turn - p_ptr->resting_turn), END  );
+	P_I(TERM_L_GREEN, "Standard Turns","%y", i2u(p_ptr->total_energy / 100), END  );
+	P_I(TERM_L_GREEN, "Resting Turns","%y",	i2u(p_ptr->resting_turn), END  );
 	P_I(TERM_L_GREEN, "Gold",		"%y",	i2u(p_ptr->au), END  );
 	assert(i == boundaries[2].page_rows);
 	return ret;
@@ -749,12 +756,12 @@ static int get_panel(int oid, data_panel *panel, size_t size)
 	ret = boundaries[3].page_rows;
 	P_I(TERM_L_BLUE, "Armor", "[%y,%+y]",	i2u(p_ptr->state.dis_ac), i2u(p_ptr->state.dis_to_a)  );
 	P_I(TERM_L_BLUE, "Fight", "(%+y,%+y)",	i2u(p_ptr->state.dis_to_h), i2u(p_ptr->state.dis_to_d)  );
-	P_I(TERM_L_BLUE, "Melee", "%y",			s2u(show_melee_weapon(&inventory[INVEN_WIELD])), END  );
-	P_I(TERM_L_BLUE, "Shoot", "%y",			s2u(show_missile_weapon(&inventory[INVEN_BOW])), END  );
-	P_I(TERM_L_BLUE, "Blows", "%y/turn",	i2u(p_ptr->state.num_blow), END  );
+	P_I(TERM_L_BLUE, "Melee", "%y",		s2u(show_melee_weapon(&p_ptr->inventory[INVEN_WIELD])), END  );
+	P_I(TERM_L_BLUE, "Shoot", "%y",		s2u(show_missile_weapon(&p_ptr->inventory[INVEN_BOW])), END  );
+	P_I(TERM_L_BLUE, "Blows", "%y.%y/turn",	i2u(p_ptr->state.num_blow / 100), i2u((p_ptr->state.num_blow / 10) % 10) );
 	P_I(TERM_L_BLUE, "Shots", "%y/turn",	i2u(p_ptr->state.num_fire), END  );
-	P_I(TERM_L_BLUE, "Infra", "%y ft",		i2u(p_ptr->state.see_infra * 10), END  );
-	P_I(TERM_L_BLUE, "Speed", "%y",			s2u(show_speed()), END );
+	P_I(TERM_L_BLUE, "Infra", "%y ft",	i2u(p_ptr->state.see_infra * 10), END  );
+	P_I(TERM_L_BLUE, "Speed", "%y",		s2u(show_speed()), END );
 	P_I(TERM_L_BLUE, "Burden","%.1y lbs",	f2u(p_ptr->total_weight/10.0), END  );
 	assert(i == boundaries[3].page_rows);
 	return ret;
@@ -950,8 +957,12 @@ errr file_character(const char *path, bool full)
 
 	char o_name[80];
 
+	byte (*old_xchar_hook)(byte c) = Term->xchar_hook;
+
 	char buf[1024];
 
+	/* We use either ascii or system-specific encoding */
+ 	int encoding = OPT(xchars_to_file) ? SYSTEM_SPECIFIC : ASCII;
 
 	/* Unused parameter */
 	(void)full;
@@ -961,9 +972,8 @@ errr file_character(const char *path, bool full)
 	fp = file_open(path, MODE_WRITE, FTYPE_TEXT);
 	if (!fp) return (-1);
 
-
-	text_out_hook = text_out_to_file;
-	text_out_file = fp;
+	/* Display the requested encoding -- ASCII or system-specific */
+ 	if (!OPT(xchars_to_file)) Term->xchar_hook = NULL;
 
 	/* Begin dump */
 	file_putf(fp, "  [%s %s Character Dump]\n\n",
@@ -993,7 +1003,7 @@ errr file_character(const char *path, bool full)
 		buf[x] = '\0';
 
 		/* End the row */
-		file_putf(fp, "%s\n", buf);
+		x_file_putf(fp, encoding, "%s\n", buf);
 	}
 
 	/* Skip a line */
@@ -1022,7 +1032,7 @@ errr file_character(const char *path, bool full)
 		buf[x] = '\0';
 
 		/* End the row */
-		file_putf(fp, "%s\n", buf);
+		x_file_putf(fp, encoding, "%s\n", buf);
 	}
 
 	/* Skip a line */
@@ -1048,7 +1058,7 @@ errr file_character(const char *path, bool full)
 		buf[x] = '\0';
 
 		/* End the row */
-		file_putf(fp, "%s\n", buf);
+		x_file_putf(fp, encoding, "%s\n", buf);
 	}
 
 	/* Skip some lines */
@@ -1063,15 +1073,11 @@ errr file_character(const char *path, bool full)
 		file_putf(fp, "  [Last Messages]\n\n");
 		while (i-- > 0)
 		{
-			file_putf(fp, "> %s\n", message_str((s16b)i));
+			x_file_putf(fp, encoding, "> %s\n", message_str((s16b)i));
 		}
-		file_putf(fp, "\nKilled by %s.\n\n", p_ptr->died_from);
+		x_file_putf(fp, encoding, "\nKilled by %s.\n\n", p_ptr->died_from);
 	}
 
-
-	/* Set the indent/wrap */
-	text_out_indent = 5;
-	text_out_wrap = 72;
 
 	/* Dump the equipment */
 	file_putf(fp, "  [Character Equipment]\n\n");
@@ -1082,24 +1088,25 @@ errr file_character(const char *path, bool full)
 			file_putf(fp, "\n\n  [Character Quiver]\n\n");
 			continue;
 		}
-		object_desc(o_name, sizeof(o_name), &inventory[i],
+		object_desc(o_name, sizeof(o_name), &p_ptr->inventory[i],
 				ODESC_PREFIX | ODESC_FULL);
 
-		file_putf(fp, "%c) %s\n", index_to_label(i), o_name);
-		if (inventory[i].k_idx) object_info_chardump(&inventory[i]);
+		x_file_putf(fp, encoding, "%c) %s\n", index_to_label(i), o_name);
+		if (p_ptr->inventory[i].k_idx)
+			object_info_chardump(fp, &p_ptr->inventory[i], 5, 72);
 	}
 
 	/* Dump the inventory */
 	file_putf(fp, "\n\n  [Character Inventory]\n\n");
 	for (i = 0; i < INVEN_PACK; i++)
 	{
-		if (!inventory[i].k_idx) break;
+		if (!p_ptr->inventory[i].k_idx) break;
 
-		object_desc(o_name, sizeof(o_name), &inventory[i],
+		object_desc(o_name, sizeof(o_name), &p_ptr->inventory[i],
 					ODESC_PREFIX | ODESC_FULL);
 
-		file_putf(fp, "%c) %s\n", index_to_label(i), o_name);
-		object_info_chardump(&inventory[i]);
+		x_file_putf(fp, encoding, "%c) %s\n", index_to_label(i), o_name);
+		object_info_chardump(fp, &p_ptr->inventory[i], 5, 72);
 	}
 	file_putf(fp, "\n\n");
 
@@ -1115,16 +1122,14 @@ errr file_character(const char *path, bool full)
 		{
 			object_desc(o_name, sizeof(o_name), &st_ptr->stock[i],
 						ODESC_PREFIX | ODESC_FULL);
-			file_putf(fp, "%c) %s\n", I2A(i), o_name);
+			x_file_putf(fp, encoding, "%c) %s\n", I2A(i), o_name);
 
-			object_info_chardump(&st_ptr->stock[i]);
+			object_info_chardump(fp, &st_ptr->stock[i], 5, 72);
 		}
 
 		/* Add an empty line */
 		file_putf(fp, "\n\n");
 	}
-
-	text_out_indent = text_out_wrap = 0;
 
 	/* Dump character history */
 	dump_history(fp);
@@ -1147,6 +1152,9 @@ errr file_character(const char *path, bool full)
 
 	/* Skip some lines */
 	file_putf(fp, "\n\n");
+
+	/* Return to standard display */
+ 	Term->xchar_hook = old_xchar_hook;
 
 	file_close(fp);
 

@@ -19,6 +19,7 @@
 /*
  * Include the mid-level includes.
  */
+#include "z-bitflag.h"
 #include "z-file.h"
 #include "z-form.h"
 #include "z-util.h"
@@ -35,6 +36,7 @@
 #include "defines.h"
 #include "option.h"
 #include "types.h"
+#include "game-cmd.h"
 #include "object/constants.h"
 #include "object/types.h"
 #include "object/object.h"
@@ -42,6 +44,7 @@
 #include "player/types.h"
 #include "player/player.h"
 #include "store.h"
+#include "x-char.h"
 
 #include "ui.h"
 #include "z-type.h"

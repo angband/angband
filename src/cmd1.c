@@ -16,12 +16,19 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
+
 #include "angband.h"
-#include "object/tvalsval.h"
+#include "attack.h"
+#include "cave.h"
 #include "cmds.h"
-
-
-
+#include "generate.h"
+#include "history.h"
+#include "monster/monster.h"
+#include "object/inventory.h"
+#include "object/tvalsval.h"
+#include "object/object.h"
+#include "squelch.h"
+#include "trap.h"
 
 /*
  * Search for hidden things.  Returns true if a search was attempted, returns
@@ -59,12 +66,6 @@ bool search(bool verbose)
 		}
 
 		return FALSE;
-	}
-
-	if (chance >= 100)
-	{
-		/* Repeat is unnecessary */
-		disturb(0, 0);
 	}
 
 	/* Search the nearby grids, which are always in bounds */
@@ -166,6 +167,7 @@ static void py_pickup_gold(void)
 	object_type *o_ptr;
 
 	int sound_msg;
+	bool verbal = FALSE;
 
 	/* Allocate an array of ordinary gold objects */
 	treasure = C_ZNEW(SV_GOLD_MAX, byte);
@@ -186,6 +188,10 @@ static void py_pickup_gold(void)
 
 		/* Note that we have this kind of treasure */
 		treasure[o_ptr->sval]++;
+
+		/* Remember whether feedback message is in order */
+		if (!squelch_item_ok(o_ptr))
+			verbal = TRUE;
 
 		/* Increment total value */
 		total_gold += (s32b)o_ptr->pval;
@@ -248,7 +254,8 @@ static void py_pickup_gold(void)
 		else                       sound_msg = MSG_MONEY3;
 
 		/* Display the message */
-		message(sound_msg, 0, buf);
+		if (verbal)
+			message(sound_msg, 0, buf);
 
 		/* Add gold to purse */
 		p_ptr->au += total_gold;
@@ -287,25 +294,28 @@ static void py_pickup_aux(int o_idx, bool msg)
 	object_type *o_ptr = &o_list[o_idx];
 
 	/* Carry the object */
-	slot = inven_carry(o_ptr);
+	slot = inven_carry(p_ptr, o_ptr);
 
 	/* Handle errors (paranoia) */
 	if (slot < 0) return;
 
 	/* If we have picked up ammo which matches something in the quiver, note
 	 * that it so that we can wield it later (and suppress pick up message) */
-	if (obj_is_ammo(o_ptr)) {
+	if (obj_is_ammo(o_ptr)) 
+	{
 		int i;
-		for (i=QUIVER_START; i < QUIVER_END; i++) {
-			if (!inventory[i].k_idx) continue;
-			if (!object_similar(&inventory[i], o_ptr)) continue;
+		for (i = QUIVER_START; i < QUIVER_END; i++) 
+		{
+			if (!p_ptr->inventory[i].k_idx) continue;
+			if (!object_similar(&p_ptr->inventory[i], o_ptr,
+				OSTACK_QUIVER)) continue;
 			quiver_slot = i;
 			break;
 		}
 	}
 
 	/* Get the new object */
-	o_ptr = &inventory[slot];
+	o_ptr = &p_ptr->inventory[slot];
 
 	/* Set squelch status */
 	p_ptr->notice |= PN_SQUELCH;
@@ -315,7 +325,7 @@ static void py_pickup_aux(int o_idx, bool msg)
 
 	/* Log artifacts if found */
 	if (artifact_p(o_ptr))
-		history_add_artifact(o_ptr->name1, object_was_sensed(o_ptr));
+		history_add_artifact(o_ptr->name1, object_is_known(o_ptr), TRUE);
 
 	/* Optionally, display a message */
 	if (msg && !quiver_slot)
@@ -486,6 +496,8 @@ byte py_pickup(int pickup)
 			/* Optionally, display more information about floor items */
 			if (OPT(pickup_detail))
 			{
+				ui_event_data e;
+
 				if (!can_pickup)	p = "have no room for the following objects";
 				else if (blind)     p = "feel something on the floor";
 
@@ -505,7 +517,8 @@ byte py_pickup(int pickup)
 				if (OPT(highlight_player)) move_cursor_relative(p_ptr->py, p_ptr->px);
 
 				/* Wait for it.  Use key as next command. */
-				p_ptr->command_new = inkey();
+				e = inkey_ex();
+				Term_event_push(&e);
 
 				/* Restore screen */
 				screen_load();
@@ -554,7 +567,7 @@ byte py_pickup(int pickup)
 		/* Get an object or exit. */
 		q = "Get which item?";
 		s = "You see nothing there.";
-		if (!get_item(&item, q, s, USE_FLOOR))
+		if (!get_item(&item, q, s, CMD_PICKUP, USE_FLOOR))
 			return (objs_picked_up);
 
 		this_o_idx = 0 - item;
@@ -620,13 +633,8 @@ void move_player(int dir)
 			(cave_feat[y][x] <= FEAT_DOOR_TAIL))
 	{
 		/* Auto-repeat if not already repeating */
-		if (!p_ptr->command_rep && (p_ptr->command_arg <= 0))
-		{
-			p_ptr->command_rep = 99;
-
-			/* Reset the command count */
-			p_ptr->command_arg = 0;
-		}
+		if (cmd_get_nrepeats() == 0)
+			cmd_set_repeat(99);
 
 		do_cmd_alter_aux(dir);
 	}

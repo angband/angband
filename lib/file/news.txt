@@ -18,6 +18,4 @@
                              Geoff Hill, Charles Teague, Charles Swiger
             2.7.0 - 2.8.5:   Ben Harrison
             2.9.0 - 3.0.6:   Robert Ruehlmann
-
-        The game's documentation is currently out-of-date; be warned.
-
+           

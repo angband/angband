@@ -1,4 +1,5 @@
 #include "angband.h"
+#include "cave.h"
 #include "object/tvalsval.h"
 
 /*
@@ -113,6 +114,21 @@ bool player_can_read(void)
 	if (p_ptr->timed[TMD_AMNESIA])
 	{
 		msg_print("You can't remember how to read!");
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
+/* Determine if the player can fire with the bow */
+bool player_can_fire(void)
+{
+	object_type *o_ptr = &p_ptr->inventory[INVEN_BOW];
+
+	/* Require a usable launcher */
+	if (!o_ptr->tval || !p_ptr->state.ammo_tval)
+	{
+		msg_print("You have nothing to fire with.");
 		return FALSE;
 	}
 

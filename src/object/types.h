@@ -1,7 +1,9 @@
 #ifndef INCLUDED_OBJECT_TYPES_H
 #define INCLUDED_OBJECT_TYPES_H
 
-
+#include "z-bitflag.h"
+#include "z-quark.h"
+#include "z-rand.h"
 
 /**
  * Information about object kinds, including player knowledge.
@@ -9,12 +11,13 @@
  * TODO: split out the user-changeable bits into a separate struct so this
  * one can be read-only.
  */
-typedef struct
+typedef struct object_kind
 {
-	/** Constants **/
+	char *name;
+	char *text;
 
-	u32b name;         /**< (const char *) object_kind::name + k_name = Name */
-	u32b text;         /**< (const char *) object_kind::text + k_text = Description  */
+	struct object_kind *next;
+	u32b kidx;
 
 	byte tval;         /**< General object type (see TV_ macros) */
 	byte sval;         /**< Object sub-type (see SV_ macros) */
@@ -31,7 +34,7 @@ typedef struct
 
 	s32b cost;         /**< Object base cost */
 
-	u32b flags[OBJ_FLAG_N];		/**< Flags */
+	bitflag flags[OF_SIZE];		/**< Flags */
 
 	byte d_attr;       /**< Default object attribute */
 	char d_char;       /**< Default object character */
@@ -77,10 +80,14 @@ typedef struct
  * TODO: Fix this max_num/cur_num crap and just have a big boolean array of
  * which artifacts have been created and haven't, so this can become read-only.
  */
-typedef struct
+typedef struct artifact
 {
-	u32b name;    /**< (const char *) artifact_type::name + a_name = Name */
-	u32b text;    /**< (const char *) artifact_type::text + a_text = Description  */
+	char *name;
+	char *text;
+
+	u32b aidx;
+
+	struct artifact *next;
 
 	byte tval;    /**< General artifact type (see TV_ macros) */
 	byte sval;    /**< Artifact sub-type (see SV_ macros) */
@@ -98,7 +105,7 @@ typedef struct
 
 	s32b cost;    /**< Artifact (pseudo-)worth */
 
-	u32b flags[OBJ_FLAG_N];		/**< Flags */
+	bitflag flags[OF_SIZE];		/**< Flags */
 
 	byte level;   /** Difficulty level for activation */
 	byte rarity;  /** Unused */
@@ -111,7 +118,7 @@ typedef struct
 	bool everseen;	/**< Whether this artifact has ever been seen (this game or previous) */
 
 	u16b effect;     /**< Artifact activation (see effects.c) */
-	u32b effect_msg; /**< (const char *) artifact_type::effect_msg + a_text = Effect message */
+	char *effect_msg;
 
 	random_value time;  /**< Recharge time (if appropriate) */
 
@@ -121,14 +128,18 @@ typedef struct
 /*
  * Information about "ego-items".
  */
-typedef struct
+typedef struct ego_item
 {
-	u32b name;			/* Name (offset) */
-	u32b text;			/* Text (offset) */
+	struct ego_item *next;
+
+	char *name;
+	char *text;
+
+	u32b eidx;
 
 	s32b cost;			/* Ego-item "cost" */
 
-	u32b flags[OBJ_FLAG_N];		/**< Flags */
+	bitflag flags[OF_SIZE];		/**< Flags */
 
 	byte level;			/* Minimum level */
 	byte rarity;		/* Object rarity */
@@ -182,9 +193,10 @@ typedef struct
  * The "held_m_idx" field is used to indicate which monster, if any,
  * is holding the object.  Objects being held have "ix=0" and "iy=0".
  */
-typedef struct
+typedef struct object
 {
 	s16b k_idx;			/* Kind index (zero if "dead") */
+	struct object_kind *kind;
 
 	byte iy;			/* Y-position on map, or zero */
 	byte ix;			/* X-position on map, or zero */
@@ -199,8 +211,8 @@ typedef struct
 	byte name1;			/* Artifact type, if any */
 	byte name2;			/* Ego-Item type, if any */
 
-	u32b flags[OBJ_FLAG_N];		/**< Flags */
-	u32b known_flags[OBJ_FLAG_N];	/**< Player-known flags */
+	bitflag flags[OF_SIZE];		/**< Flags */
+	bitflag known_flags[OF_SIZE];	/**< Player-known flags */
 	u16b ident;			/* Special flags */
 
 	s16b ac;			/* Normal AC */
@@ -225,13 +237,10 @@ typedef struct
 	quark_t note;			/* Inscription index */
 } object_type;
 
-
-/**
- * Flavour type. XXX
- */
-typedef struct
-{
-	u32b text;      /* Text (offset) */
+typedef struct flavor {
+	char *text;
+	struct flavor *next;
+	unsigned int fidx;
 
 	byte tval;      /* Associated object type */
 	byte sval;      /* Associated object sub-type */
@@ -248,9 +257,9 @@ typedef struct
  */
 typedef struct
 {
-	u32b slay_flag;		/* Object flag for the slay */
-	u32b monster_flag;	/* Which monster flag(s) make it vulnerable */
-	u32b resist_flag;	/* Which monster flag(s) make it resist */
+	int slay_flag;		/* Object flag for the slay */
+	int monster_flag;	/* Which monster flag(s) make it vulnerable */
+	int resist_flag;	/* Which monster flag(s) make it resist */
 	int mult;		/* Slay multiplier */
 	const char *range_verb;	/* attack verb for ranged hits */
 	const char *melee_verb; /* attack verb for melee hits */
@@ -264,8 +273,8 @@ typedef struct
  */
 typedef struct
 {
-	u32b flags;		/* Combination of slays and brands */
-	s32b value;		/* Value of this combination */
+	bitflag flags[OF_SIZE];   /* Combination of slays and brands */
+	s32b value;            /* Value of this combination */
 } flag_cache;
 
 #endif /* INCLUDED_OBJECT_TYPES_H */

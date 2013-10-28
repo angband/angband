@@ -15,9 +15,12 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
+
 #include "angband.h"
-#include "object/tvalsval.h"
 #include "game-event.h"
+#include "game-cmd.h"
+#include "object/tvalsval.h"
+#include "squelch.h"
 
 /*
  * Support for Adam Bolt's tileset, lighting and transparency effects
@@ -35,14 +38,12 @@
  */
 int distance(int y1, int x1, int y2, int x2)
 {
-	int ay, ax;
-
 	/* Find the absolute y/x distance components */
-	ay = (y1 > y2) ? (y1 - y2) : (y2 - y1);
-	ax = (x1 > x2) ? (x1 - x2) : (x2 - x1);
+	int ay = abs(y2 - y1);
+	int ax = abs(x2 - x1);
 
-	/* Hack -- approximate the distance */
-	return ((ay > ax) ? (ay + (ax>>1)) : (ax + (ay>>1)));
+	/* Approximate the distance */
+	return ay > ax ? ay + (ax>>1) : ax + (ay>>1);
 }
 
 
@@ -497,6 +498,7 @@ static void special_lighting_floor(byte *a, char *c, enum grid_light_level light
 				if (*a == TERM_WHITE) *a = TERM_YELLOW;
 				break;
 			case GRAPHICS_ADAM_BOLT:
+			case GRAPHICS_NOMAD:
 				*c += 2;
 				break;
 			case GRAPHICS_DAVID_GERVAIS:
@@ -515,6 +517,7 @@ static void special_lighting_floor(byte *a, char *c, enum grid_light_level light
 				if (*a == TERM_WHITE) *a = TERM_L_DARK;
 				break;
 			case GRAPHICS_ADAM_BOLT:
+			case GRAPHICS_NOMAD:
 			case GRAPHICS_DAVID_GERVAIS:
 				*c += 1;
 				break;
@@ -537,6 +540,7 @@ static void special_lighting_floor(byte *a, char *c, enum grid_light_level light
 					else if (*a == TERM_L_GREEN) *a = TERM_GREEN;
 					break;
 				case GRAPHICS_ADAM_BOLT:
+				case GRAPHICS_NOMAD:
 				case GRAPHICS_DAVID_GERVAIS:
 					*c += 1;
 					break;
@@ -573,6 +577,7 @@ static void special_wall_display(byte *a, char *c, bool in_view, int feat)
 				if (*a == TERM_WHITE) *a = TERM_L_DARK;
 				break;
 			case GRAPHICS_ADAM_BOLT:
+			case GRAPHICS_NOMAD:
 			case GRAPHICS_DAVID_GERVAIS:
 				if (feat_supports_lighting(feat)) *c += 1;
 				break;
@@ -590,6 +595,7 @@ static void special_wall_display(byte *a, char *c, bool in_view, int feat)
 				if (*a == TERM_WHITE) *a = TERM_SLATE;
 				break;
 			case GRAPHICS_ADAM_BOLT:
+			case GRAPHICS_NOMAD:
 			case GRAPHICS_DAVID_GERVAIS:
 				if (feat_supports_lighting(feat)) *c += 1;
 				break;
@@ -601,6 +607,7 @@ static void special_wall_display(byte *a, char *c, bool in_view, int feat)
 		switch (use_graphics)
 		{
 			case GRAPHICS_ADAM_BOLT:
+			case GRAPHICS_NOMAD:
 				if (feat_supports_lighting(feat)) *c += 2;
 				break;
 			case GRAPHICS_DAVID_GERVAIS:
@@ -743,12 +750,23 @@ void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp)
 			byte da;
 			char dc;
 			
-			/* Desired attr & char*/
+			/* Desired attr & char */
 			da = r_ptr->x_attr;
 			dc = r_ptr->x_char;
-			
+
+			/* Turn uniques purple if desired (violet, actually) */
+			if (OPT(purple_uniques) && rf_has(r_ptr->flags,
+				RF_UNIQUE)) 
+			{
+				/* Use (light) violet attr */
+				a = TERM_L_VIOLET;
+
+				/* Use char */
+				c = dc;
+			}
+
 			/* Special attr/char codes */
-			if ((da & 0x80) && (dc & 0x80))
+			else if ((da & 0x80) && (dc & 0x80))
 			{
 				/* Use attr */
 				a = da;
@@ -758,17 +776,19 @@ void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp)
 			}
 			
 			/* Multi-hued monster */
-			else if (r_ptr->flags[0] & (RF0_ATTR_MULTI))
+			else if (rf_has(r_ptr->flags, RF_ATTR_MULTI) ||
+					 rf_has(r_ptr->flags, RF_ATTR_FLICKER))
 			{
 				/* Multi-hued attr */
-				a = randint1(15);
+				a = m_ptr->attr ? m_ptr->attr : 1;
 				
 				/* Normal char */
 				c = dc;
 			}
 			
 			/* Normal monster (not "clear" in any way) */
-			else if (!(r_ptr->flags[0] & (RF0_ATTR_CLEAR | RF0_CHAR_CLEAR)))
+			else if (!flags_test(r_ptr->flags, RF_SIZE,
+				RF_ATTR_CLEAR, RF_CHAR_CLEAR, FLAG_END))
 			{
 				/* Use attr */
 				a = da;
@@ -792,18 +812,21 @@ void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp)
 			}
 			
 			/* Normal char, Clear attr, monster */
-			else if (!(r_ptr->flags[0] & (RF0_CHAR_CLEAR)))
+			else if (!rf_has(r_ptr->flags, RF_CHAR_CLEAR))
 			{
 				/* Normal char */
 				c = dc;
 			}
 				
 			/* Normal attr, Clear char, monster */
-			else if (!(r_ptr->flags[0] & (RF0_ATTR_CLEAR)))
+			else if (!rf_has(r_ptr->flags, RF_ATTR_CLEAR))
 			{
 				/* Normal attr */
-					a = da;
+				a = da;
 			}
+
+			/* Store the drawing attr so we can use it elsewhere */
+			m_ptr->attr = a;
 		}
 	}
 
@@ -1060,13 +1083,21 @@ static void move_cursor_relative_map(int y, int x)
 		/* Location relative to panel */
 		ky = y - t->offset_y;
 
+		if (tile_height > 1)
+		{
+		        ky = tile_height * ky;
+		}
+
 		/* Verify location */
 		if ((ky < 0) || (ky >= t->hgt)) continue;
 
 		/* Location relative to panel */
 		kx = x - t->offset_x;
 
-		if (use_bigtile) kx += kx;
+		if (tile_width > 1)
+		{
+		        kx = tile_width * kx;
+		}
 
 		/* Verify location */
 		if ((kx < 0) || (kx >= t->wid)) continue;
@@ -1111,7 +1142,14 @@ void move_cursor_relative(int y, int x)
 	/* Location in window */
 	vx = kx + COL_MAP;
 
-	if (use_bigtile) vx += kx;
+	if (tile_width > 1)
+	{
+	        vx += (tile_width - 1) * kx;
+	}
+	if (tile_height > 1)
+	{
+	        vy += (tile_height - 1) * ky;
+	}
 
 	/* Go there */
 	(void)Term_gotoxy(vx, vy);
@@ -1146,15 +1184,21 @@ static void print_rel_map(char c, byte a, int y, int x)
 		/* Location relative to panel */
 		ky = y - t->offset_y;
 
+		if (tile_height > 1)
+		{
+		        ky = tile_height * ky;
+			if (ky + 1 >= t->hgt) continue;
+		}
+
 		/* Verify location */
 		if ((ky < 0) || (ky >= t->hgt)) continue;
 
 		/* Location relative to panel */
 		kx = x - t->offset_x;
 
-		if (use_bigtile)
+		if (tile_width > 1)
 		{
-			kx += kx;
+		        kx = tile_width * kx;
 			if (kx + 1 >= t->wid) continue;
 		}
 
@@ -1164,13 +1208,10 @@ static void print_rel_map(char c, byte a, int y, int x)
 		/* Hack -- Queue it */
 		Term_queue_char(t, kx, ky, a, c, 0, 0);
 
-		if (use_bigtile)
+		if ((tile_width > 1) || (tile_height > 1))
 		{
-			/* Mega-Hack : Queue dummy char */
-			if (a & 0x80)
-				Term_queue_char(t, kx+1, ky, 255, -1, 0, 0);
-			else
-				Term_queue_char(t, kx+1, ky, TERM_WHITE, ' ', 0, 0);
+		        /* Mega-Hack : Queue dummy chars */
+		        Term_big_queue_char(Term, kx, ky, a, c, 0, 0);
 		}
 	}
 }
@@ -1206,25 +1247,19 @@ void print_rel(char c, byte a, int y, int x)
 	/* Verify location */
 	if ((kx < 0) || (kx >= SCREEN_WID)) return;
 
-	/* Location in window */
-	vy = ky + ROW_MAP;
-
-	/* Location in window */
-	vx = kx + COL_MAP;
-
-	if (use_bigtile) vx += kx;
+	/* Get right position */
+	vx = COL_MAP + (tile_width * kx);
+	vy = ROW_MAP + (tile_height * ky);
 
 	/* Hack -- Queue it */
 	Term_queue_char(Term, vx, vy, a, c, 0, 0);
 
-	if (use_bigtile)
+	if ((tile_width > 1) || (tile_height > 1))
 	{
-		/* Mega-Hack : Queue dummy char */
-		if (a & 0x80)
-			Term_queue_char(Term, vx+1, vy, 255, -1, 0, 0);
-		else
-			Term_queue_char(Term, vx+1, vy, TERM_WHITE, ' ', 0, 0);
+	        /* Mega-Hack : Queue dummy chars */
+	        Term_big_queue_char(Term, vx, vy, a, c, 0, 0);
 	}
+  
 }
 
 
@@ -1343,35 +1378,29 @@ static void prt_map_aux(void)
 		if (!(op_ptr->window_flag[j] & (PW_MAP))) continue;
 
 		/* Assume screen */
-		ty = t->offset_y + t->hgt;
-		tx = t->offset_x + t->wid;
-
-		if (use_bigtile) tx = t->offset_x + (t->wid / 2);
+		ty = t->offset_y + (t->hgt / tile_height);
+		tx = t->offset_x + (t->wid / tile_width);
 
 		/* Dump the map */
 		for (y = t->offset_y, vy = 0; y < ty; vy++, y++)
 		{
+		        if (vy + tile_height - 1 >= t->hgt) continue;
 			for (x = t->offset_x, vx = 0; x < tx; vx++, x++)
 			{
 				/* Check bounds */
 				if (!in_bounds(y, x)) continue;
 
-				if (use_bigtile && (vx + 1 >= t->wid)) continue;
+				if (vx + tile_width - 1 >= t->wid) continue;
 
 				/* Determine what is there */
 				map_info(y, x, &g);
 				grid_data_as_text(&g, &a, &c, &ta, &tc);
 				Term_queue_char(t, vx, vy, a, c, ta, tc);
 
-				if (use_bigtile)
+				if ((tile_width > 1) || (tile_height > 1))
 				{
-					vx++;
-
-					/* Mega-Hack : Queue dummy char */
-					if (a & 0x80)
-						Term_queue_char(t, vx, vy, 255, -1, 0, 0);
-					else
-						Term_queue_char(t, vx, vy, TERM_WHITE, ' ', TERM_WHITE, ' ');
+					/* Mega-Hack : Queue dummy chars */
+					Term_big_queue_char(t, vx, vy, 255, -1, 0, 0);
 				}
 			}
 		}
@@ -1421,17 +1450,20 @@ void prt_map(void)
 			/* Hack -- Queue it */
 			Term_queue_char(Term, vx, vy, a, c, ta, tc);
 
-			if (use_bigtile)
+			if ((tile_width > 1) || (tile_height > 1))
 			{
-				vx++;
-
-				/* Mega-Hack : Queue dummy char */
-				if (a & 0x80)
-					Term_queue_char(Term, vx, vy, 255, -1, 0, 0);
-				else
-					Term_queue_char(Term, vx, vy, TERM_WHITE, ' ', TERM_WHITE, ' ');
+			        Term_big_queue_char(Term, vx, vy, a, c, TERM_WHITE, ' ');
+	      
+				if (tile_width > 1)
+				{
+				        vx += tile_width - 1;
+				}
 			}
 		}
+      
+		if (tile_height > 1)
+		        vy += tile_height - 1;
+      
 	}
 }
 
@@ -1607,8 +1639,14 @@ void display_map(int *cy, int *cx)
 			row = (y * map_hgt / dungeon_hgt);
 			col = (x * map_wid / dungeon_wid);
 
-			if (use_bigtile)
-				col = col & ~1;
+			if (tile_width > 1)
+			{
+			        col = col - (col % tile_width);
+			}
+			if (tile_height > 1)
+			{
+			        row = row - (row % tile_height);
+			}
 
 			/* Get the attr/char at that map location */
 			map_info(y, x, &g);
@@ -1623,12 +1661,9 @@ void display_map(int *cy, int *cx)
 				/* Add the character */
 				Term_putch(col + 1, row + 1, ta, tc);
 
-				if (use_bigtile)
+				if ((tile_width > 1) || (tile_height > 1))
 				{
-					if (ta & 0x80)
-						Term_putch(col + 2, row + 1, 255, -1);
-					else
-						Term_putch(col + 2, row + 1, TERM_WHITE, ' ');
+				        Term_big_putch(col + 1, row + 1, ta, tc);
 				}
 
 				/* Save priority */
@@ -1642,8 +1677,14 @@ void display_map(int *cy, int *cx)
 	row = (py * map_hgt / dungeon_hgt);
 	col = (px * map_wid / dungeon_wid);
 
-	if (use_bigtile)
-		col = col & ~1;
+	if (tile_width > 1)
+	{
+	        col = col - (col % tile_width);
+	}
+	if (tile_height > 1)
+	{
+		row = row - (row % tile_height);
+	}
 
 	/*** Make sure the player is visible ***/
 
@@ -1656,6 +1697,11 @@ void display_map(int *cy, int *cx)
 	/* Draw the player */
 	Term_putch(col + 1, row + 1, ta, tc);
 
+	if ((tile_width > 1) || (tile_height > 1))
+	{
+	        Term_big_putch(col + 1, row + 1, ta, tc);
+	}
+  
 	/* Return player location */
 	if (cy != NULL) (*cy) = row + 1;
 	if (cx != NULL) (*cx) = col + 1;
@@ -2267,45 +2313,18 @@ struct vinfo_hack {
 	long slopes_max[MAX_SIGHT+1][MAX_SIGHT+1];
 };
 
-
-
-/*
- * Sorting hook -- comp function -- array of long's (see below)
- *
- * We use "u" to point to an array of long integers.
- */
-static bool ang_sort_comp_hook_longs(const void *u, const void *v, int a, int b)
+static int cmp_longs(const void *a, const void *b)
 {
-	const long *x = u;
+	long x = *(const long *)a;
+	long y = *(const long *)b;
 
-	/* Unused parameter */
-	(void)v;
+	if (x < y)
+		return -1;
+	if (x > y)
+		return 1;
 
-	return (x[a] <= x[b]);
+	return 0;
 }
-
-
-/*
- * Sorting hook -- comp function -- array of long's (see below)
- *
- * We use "u" to point to an array of long integers.
- */
-static void ang_sort_swap_hook_longs(void *u, void *v, int a, int b)
-{
-	long *x = (long *)(u);
-
-	long temp;
-
-	/* Unused parameter */
-	(void)v;
-
-	/* Swap */
-	temp = x[a];
-	x[a] = x[b];
-	x[b] = temp;
-}
-
-
 
 /*
  * Save a slope
@@ -2442,17 +2461,7 @@ errr vinfo_init(void)
 		         hack->num_slopes, VINFO_MAX_SLOPES);
 	}
 
-
-	/* Sort slopes numerically */
-	ang_sort_comp = ang_sort_comp_hook_longs;
-
-	/* Sort slopes numerically */
-	ang_sort_swap = ang_sort_swap_hook_longs;
-
-	/* Sort the (unique) slopes */
-	ang_sort(hack->slopes, NULL, hack->num_slopes);
-
-
+	sort(hack->slopes, hack->num_slopes, sizeof(*hack->slopes), cmp_longs);
 
 	/* Enqueue player grid */
 	queue[queue_tail++] = &vinfo[0];
@@ -2717,7 +2726,7 @@ void update_view(void)
 
 	int pg = GRID(py,px);
 
-	int i, g, o2;
+	int i, j, k, g, o2;
 
 	int radius;
 
@@ -2771,6 +2780,56 @@ void update_view(void)
 
 	/* Handle real light */
 	if (radius > 0) ++radius;
+
+	/* Scan monster list and add monster lites */
+	for (k = 1; k < z_info->m_max; k++)
+	{
+		/* Check the k'th monster */
+		monster_type *m_ptr = &mon_list[k];
+		monster_race *r_ptr = &r_info[m_ptr->r_idx];
+
+		/* Access the location */
+		int fx = m_ptr->fx;
+		int fy = m_ptr->fy;
+		
+		bool in_los = los(p_ptr->py, p_ptr->px, fy, fx);
+
+		/* Skip dead monsters */
+		if (!m_ptr->r_idx) continue;
+
+		/* Skip monsters not carrying lite */
+		if (!rf_has(r_ptr->flags, RF_HAS_LITE)) continue;
+		
+		/* Light a 3x3 box centered on the monster */
+		for (i = -1; i <= 1; i++)
+		{
+			for (j = -1; j <= 1; j++)
+			{
+				int sy = fy + i;
+				int sx = fx + j;
+				
+				/* If the monster isn't visible we can only light open tiles */
+				if (!in_los && !cave_floor_bold(sy, sx))
+					continue;
+
+				/* If the tile is too far away we won't light it */
+				if (distance(p_ptr->py, p_ptr->px, sy, sx) > MAX_SIGHT)
+					continue;
+				
+				/* If the tile itself isn't in LOS, don't light it */
+				if (!los(p_ptr->py, p_ptr->px, sy, sx))
+					continue;
+				
+				g = GRID(sy, sx);
+
+				/* Mark the square lit and seen */
+				fast_cave_info[g] |= (CAVE_VIEW | CAVE_SEEN);
+				
+				/* Save in array */
+				fast_view_g[fast_view_n++] = g;
+			}
+		}
+	}
 
 
 	/*** Step 1 -- player grid ***/
@@ -3872,18 +3931,8 @@ void disturb(int stop_search, int unused_flag)
 	/* Unused parameter */
 	(void)unused_flag;
 
-	/* Cancel auto-commands */
-	/* p_ptr->command_new = 0; */
-
 	/* Cancel repeated commands */
-	if (p_ptr->command_rep)
-	{
-		/* Cancel */
-		p_ptr->command_rep = 0;
-
-		/* Redraw the state (later) */
-		p_ptr->redraw |= (PR_STATE);
-	}
+	cmd_cancel_repeat();
 
 	/* Cancel Resting */
 	if (p_ptr->resting)

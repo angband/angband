@@ -1,11 +1,15 @@
 #ifndef INCLUDED_PLAYER_TYPES_H
 #define INCLUDED_PLAYER_TYPES_H
 
+#include "object/types.h"
+#include "option.h"
+#include "ui-event.h"
+
 typedef struct
 {
 	s16b speed;		/* Current speed */
 
-	s16b num_blow;		/* Number of blows */
+	s16b num_blow;		/* Number of blows x100 */
 	s16b num_fire;		/* Number of shots */
 
 	byte ammo_mult;		/* Ammo multiplier */
@@ -104,7 +108,7 @@ typedef struct
  * which must be saved in the savefile precedes all the information
  * which can be recomputed as needed.
  */
-typedef struct
+typedef struct player
 {
 	s16b py;			/* Player location */
 	s16b px;			/* Player location */
@@ -113,6 +117,10 @@ typedef struct
 	byte prace;			/* Race index */
 	byte pclass;		/* Class index */
 	byte oops;			/* Unused */
+
+	const struct player_sex *sex;
+	const struct player_race *race;
+	const struct player_class *class;
 
 	byte hitdie;		/* Hit dice (sides) */
 	byte expfact;		/* Experience factor */
@@ -211,15 +219,12 @@ typedef struct
 	bool run_break_right;	/* Looking for a break (right) */
 	bool run_break_left;	/* Looking for a break (left) */
 
-	s16b command_cmd;		/* Gives identity of current command */
-	s16b command_arg;		/* Gives argument of current command */
-	s16b command_rep;		/* Gives repetition of current command */
-	s16b command_dir;		/* Gives direction of current command */
-	int  command_inv;		/* Gives item of current command */
-	ui_event_data command_cmd_ex; /* Gives additional information of current command */
-
-	s16b command_wrk;		/* See "cmd1.c" */
-	s16b command_new;		/* Hack -- command chaining XXX XXX */
+	s16b command_arg;		/* Gives argument of current command 
+					   (generally a repeat count) */
+	s16b command_wrk;		/* Used by the UI to decide whether
+					   to start off showing equipment or
+					   inventory listings when offering
+					   a choice.  See obj/obj-ui.c*/
 
 	s16b new_spells;		/* Number of spells available */
 
@@ -228,11 +233,17 @@ typedef struct
 
 	s16b cur_light;		/* Radius of light (if any) */
 
-	u32b notice;		/* Special Updates (bit flags) */
-	u32b update;		/* Pending Updates (bit flags) */
-	u32b redraw;		/* Normal Redraws (bit flags) */
+	u32b notice;		/* Bit flags for pending "special" actions to 
+				   carry out after the current "action", 
+				   such as reordering inventory, squelching, 
+				   etc. */
+	u32b update;		/* Bit flags for recalculations needed after
+				   this "action", such as HP, or visible area */
+	u32b redraw;	        /* Bit flags for things that /have/ changed,
+				   and just need to be redrawn by the UI,
+				   such as HP, Speed, etc.*/
 
-	u32b player_turn;	/* Number of player turns (including resting) */
+	u32b total_energy;	/* Total energy used (including resting) */
 	u32b resting_turn;	/* Number of player turns spent resting */
 
 	/* Generation fields (for quick start) */
@@ -249,6 +260,8 @@ typedef struct
 	u16b quiver_size;
 	u16b quiver_slots;
 	u16b quiver_remainder;
+
+	struct object *inventory;
 } player_type;
 
 
@@ -257,7 +270,7 @@ typedef struct
 /*
  * Player sex info
  */
-typedef struct
+typedef struct player_sex
 {
 	cptr title;			/* Type of sex */
 	cptr winner;		/* Name of winner */
@@ -267,11 +280,13 @@ typedef struct
 /*
  * Player racial info
  */
-typedef struct
+typedef struct player_race
 {
-	u32b name;			/* Name (offset) */
-	u32b text;			/* Text (offset) */
+	struct player_race *next;
+	const char *name;
 	
+	unsigned int ridx;
+
 	s16b r_adj[A_MAX];	/* Racial stat bonuses */
 	
 	s16b r_skills[SKILL_MAX];	/* racial skills */
@@ -298,18 +313,13 @@ typedef struct
 	
 	s16b hist;			/* Starting history index */
 	
-	u32b flags[OBJ_FLAG_N];	/* Racial flags */
-	u32b new_racial_flags; /* New Racial flags */
+	bitflag flags[OF_SIZE];   /* Racial (object) flags */
+	bitflag pflags[PF_SIZE];  /* Racial (player) flags */
 } player_race;
 
-
-/*
- * Starting equipment entry
- */
-typedef struct
+typedef struct start_item
 {
-	byte tval;	/* Item's tval */
-	byte sval;	/* Item's sval */
+	object_kind *kind;
 	byte min;	/* Minimum starting amount */
 	byte max;	/* Maximum starting amount */
 } start_item;
@@ -341,35 +351,37 @@ typedef struct
 /*
  * Player class info
  */
-typedef struct
+typedef struct player_class
 {
-	u32b name;			/* Name (offset) */
+	struct player_class *next;
+	const char *name;
+	unsigned int cidx;
 	
-	u32b title[10];		/* Titles - offset */
+	const char *title[10];    /* Titles - offset */
 	
-	s16b c_adj[A_MAX];	/* Class stat modifier */
+	s16b c_adj[A_MAX]; /* Class stat modifier */
 	
 	s16b c_skills[SKILL_MAX];	/* class skills */
 	s16b x_skills[SKILL_MAX];	/* extra skills */
 	
-	s16b c_mhp;			/* Class hit-dice adjustment */
-	s16b c_exp;			/* Class experience factor */
+	s16b c_mhp;        /* Class hit-dice adjustment */
+	s16b c_exp;        /* Class experience factor */
 	
-	u32b flags;			/* Class Flags */
+	bitflag pflags[PF_SIZE]; /* Class (player) flags */
 	
-	u16b max_attacks;	/* Maximum possible attacks */
-	u16b min_weight;	/* Minimum weapon weight for calculations */
-	u16b att_multiply;	/* Multiplier for attack calculations */
+	u16b max_attacks;  /* Maximum possible attacks */
+	u16b min_weight;   /* Minimum weapon weight for calculations */
+	u16b att_multiply; /* Multiplier for attack calculations */
 	
-	byte spell_book;	/* Tval of spell books (if any) */
-	u16b spell_stat;	/* Stat for spells (if any) */
-	u16b spell_first;	/* Level of first spell */
-	u16b spell_weight;	/* Weight that hurts spells */
+	byte spell_book;   /* Tval of spell books (if any) */
+	u16b spell_stat;   /* Stat for spells (if any) */
+	u16b spell_first;  /* Level of first spell */
+	u16b spell_weight; /* Weight that hurts spells */
 	
-	u32b sense_base;	/* Base pseudo-id value */
-	u16b sense_div;		/* Pseudo-id divisor */
+	u32b sense_base;   /* Base pseudo-id value */
+	u16b sense_div;    /* Pseudo-id divisor */
 	
-	start_item start_items[MAX_START_ITEMS];/**< The starting inventory */
+	start_item start_items[MAX_START_ITEMS]; /**< The starting inventory */
 	
 	player_magic spells; /* Magic spells */
 } player_class;
@@ -378,9 +390,11 @@ typedef struct
 /*
  * Player background information
  */
-typedef struct
+typedef struct history
 {
-	u32b text;			    /* Text (offset) */
+	struct history *nextp;
+	unsigned int hidx;
+	char *text;
 	
 	byte roll;			    /* Frequency of this entry */
 	byte chart;			    /* Chart index */

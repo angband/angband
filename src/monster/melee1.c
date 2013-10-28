@@ -15,9 +15,13 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
-#include "angband.h"
-#include "object/tvalsval.h"
 
+#include "angband.h"
+#include "attack.h"
+#include "cave.h"
+#include "monster/monster.h"
+#include "object/tvalsval.h"
+#include "spells.h"
 
 /*
  * Critical blow.  All hits that do 95% of total possible damage,
@@ -144,12 +148,12 @@ bool make_attack_normal(int m_idx)
 	char ddesc[80];
 
 	bool blinked;
-	
+
 	int sound_msg;
 
 
 	/* Not allowed to attack */
-	if (r_ptr->flags[0] & (RF0_NEVER_BLOW)) return (FALSE);
+	if (rf_has(r_ptr->flags, RF_NEVER_BLOW)) return (FALSE);
 
 
 	/* Total armor */
@@ -190,15 +194,14 @@ bool make_attack_normal(int m_idx)
 		/* Hack -- no more attacks */
 		if (!method) break;
 
-
 		/* Handle "leaving" */
 		if (p_ptr->leaving) break;
-
 
 		/* Extract visibility (before blink) */
 		if (m_ptr->ml) visible = TRUE;
 
-
+		/* Extract visibility from carrying lite */
+		if (rf_has(r_ptr->flags, RF_HAS_LITE)) visible = TRUE;
 
 		/* Extract the attack "power" */
 		switch (effect)
@@ -248,12 +251,12 @@ bool make_attack_normal(int m_idx)
 				/* Learn about the evil flag */
 				if (m_ptr->ml)
 				{
-					l_ptr->flags[2] |= (RF2_EVIL);
+					rf_on(l_ptr->flags, RF_EVIL);
 				}
 
-				if ((r_ptr->flags[2] & (RF2_EVIL)) &&
-				    (p_ptr->lev >= rlev) &&
-				    ((randint0(100) + p_ptr->lev) > 50))
+				if (rf_has(r_ptr->flags, RF_EVIL) &&
+				    p_ptr->lev >= rlev &&
+				    randint0(100) + p_ptr->lev > 50)
 				{
 					/* Message */
 					msg_format("%^s is repelled.", m_name);
@@ -327,12 +330,6 @@ bool make_attack_normal(int m_idx)
 					break;
 				}
 
-				case RBM_XXX1:
-				{
-					act = "XXX1's you.";
-					break;
-				}
-
 				case RBM_BUTT:
 				{
 					act = "butts you.";
@@ -356,12 +353,6 @@ bool make_attack_normal(int m_idx)
 					break;
 				}
 
-				case RBM_XXX2:
-				{
-					act = "XXX2's you.";
-					break;
-				}
-
 				case RBM_CRAWL:
 				{
 					act = "crawls on you.";
@@ -379,40 +370,28 @@ bool make_attack_normal(int m_idx)
 				case RBM_SPIT:
 				{
 					act = "spits on you.";
-					sound_msg = MSG_MON_SPIT; 
-					break;
-				}
-
-				case RBM_XXX3:
-				{
-					act = "XXX3's on you.";
+					sound_msg = MSG_MON_SPIT;
 					break;
 				}
 
 				case RBM_GAZE:
 				{
 					act = "gazes at you.";
-					sound_msg = MSG_MON_GAZE; 
+					sound_msg = MSG_MON_GAZE;
 					break;
 				}
 
 				case RBM_WAIL:
 				{
 					act = "wails at you.";
-					sound_msg = MSG_MON_WAIL; 
+					sound_msg = MSG_MON_WAIL;
 					break;
 				}
 
 				case RBM_SPORE:
 				{
 					act = "releases spores at you.";
-					sound_msg = MSG_MON_SPORE; 
-					break;
-				}
-
-				case RBM_XXX4:
-				{
-					act = "projects XXX4's at you.";
+					sound_msg = MSG_MON_SPORE;
 					break;
 				}
 
@@ -426,20 +405,14 @@ bool make_attack_normal(int m_idx)
 				case RBM_INSULT:
 				{
 					act = desc_insult[randint0(MAX_DESC_INSULT)];
-					sound_msg = MSG_MON_INSULT; 
+					sound_msg = MSG_MON_INSULT;
 					break;
 				}
 
 				case RBM_MOAN:
 				{
 					act = desc_moan[randint0(MAX_DESC_MOAN)];
-					sound_msg = MSG_MON_MOAN; 
-					break;
-				}
-
-				case RBM_XXX5:
-				{
-					act = "XXX5's you.";
+					sound_msg = MSG_MON_MOAN;
 					break;
 				}
 			}
@@ -477,7 +450,7 @@ bool make_attack_normal(int m_idx)
 					obvious = TRUE;
 
 					/* Hack -- Player armor reduces total damage */
-					damage -= (damage * ((ac < 150) ? ac : 150) / 250);
+					damage -= (damage * ((ac < 240) ? ac : 240) / 400);
 
 					/* Take damage */
 					take_hit(damage, ddesc);
@@ -537,7 +510,7 @@ bool make_attack_normal(int m_idx)
 						i = randint0(INVEN_PACK);
 
 						/* Obtain the item */
-						o_ptr = &inventory[i];
+						o_ptr = &p_ptr->inventory[i];
 
 						/* Skip non-objects */
 						if (!o_ptr->k_idx) continue;
@@ -637,7 +610,7 @@ bool make_attack_normal(int m_idx)
 							/* Create a new temporary object */
 							object_type o;
 							object_wipe(&o);
-							object_prep(&o, lookup_kind(TV_GOLD, SV_GOLD), 0, MINIMISE);
+							object_prep(&o, objkind_get(TV_GOLD, SV_GOLD), 0, MINIMISE);
 
 							/* Amount of gold to put in this object */
 							amt = gold > MAX_PVAL ? MAX_PVAL : gold;
@@ -691,7 +664,7 @@ bool make_attack_normal(int m_idx)
 						i = randint0(INVEN_PACK);
 
 						/* Obtain the item */
-						o_ptr = &inventory[i];
+						o_ptr = &p_ptr->inventory[i];
 
 						/* Skip non-objects */
 						if (!o_ptr->k_idx) continue;
@@ -754,7 +727,7 @@ bool make_attack_normal(int m_idx)
 						i = randint0(INVEN_PACK);
 
 						/* Get the item */
-						o_ptr = &inventory[i];
+						o_ptr = &p_ptr->inventory[i];
 
 						/* Skip non-objects */
 						if (!o_ptr->k_idx) continue;
@@ -787,17 +760,17 @@ bool make_attack_normal(int m_idx)
 
 				case RBE_EAT_LIGHT:
 				{
-					u32b f[OBJ_FLAG_N];
+					bitflag f[OF_SIZE];
 
 					/* Take damage */
 					take_hit(damage, ddesc);
 
 					/* Get the light, and its flags */
-					o_ptr = &inventory[INVEN_LIGHT];
+					o_ptr = &p_ptr->inventory[INVEN_LIGHT];
 					object_flags(o_ptr, f);
 
 					/* Drain fuel where applicable */
-					if (!(f[2] & TR2_NO_FUEL) && (o_ptr->timeout > 0))
+					if (!of_has(f, OF_NO_FUEL) && (o_ptr->timeout > 0))
 					{
 						/* Reduce fuel */
 						o_ptr->timeout -= (250 + randint1(250));
@@ -1072,7 +1045,7 @@ bool make_attack_normal(int m_idx)
 					obvious = TRUE;
 
 					/* Hack -- Reduce damage based on the player armor class */
-					damage -= (damage * ((ac < 150) ? ac : 150) / 250);
+					damage -= (damage * ((ac < 240) ? ac : 240) / 400);
 
 					/* Take damage */
 					take_hit(damage, ddesc);
@@ -1082,7 +1055,7 @@ bool make_attack_normal(int m_idx)
 					{
 						int px_old = p_ptr->px;
 						int py_old = p_ptr->py;
-						
+
 						earthquake(m_ptr->fy, m_ptr->fx, 8);
 
 						/* Stop the blows if the player is pushed away */
@@ -1102,7 +1075,7 @@ bool make_attack_normal(int m_idx)
 					take_hit(damage, ddesc);
 
 					/* XXX Eddie need a DRS for HOLD_LIFE */
-					wieldeds_notice_flag(2, TR2_HOLD_LIFE);
+					wieldeds_notice_flag(OF_HOLD_LIFE);
 
 					if (p_ptr->state.hold_life && (randint0(100) < 95))
 					{
@@ -1133,7 +1106,7 @@ bool make_attack_normal(int m_idx)
 					/* Take damage */
 					take_hit(damage, ddesc);
 
-					wieldeds_notice_flag(2, TR2_HOLD_LIFE);
+					wieldeds_notice_flag(OF_HOLD_LIFE);
 
 					if (p_ptr->state.hold_life && (randint0(100) < 90))
 					{
@@ -1165,7 +1138,7 @@ bool make_attack_normal(int m_idx)
 					/* Take damage */
 					take_hit(damage, ddesc);
 
-					wieldeds_notice_flag(2, TR2_HOLD_LIFE);
+					wieldeds_notice_flag(OF_HOLD_LIFE);
 
 					if (p_ptr->state.hold_life && (randint0(100) < 75))
 					{
@@ -1197,7 +1170,7 @@ bool make_attack_normal(int m_idx)
 					/* Take damage */
 					take_hit(damage, ddesc);
 
-					wieldeds_notice_flag(2, TR2_HOLD_LIFE);
+					wieldeds_notice_flag(OF_HOLD_LIFE);
 
 					if (p_ptr->state.hold_life && (randint0(100) < 50))
 					{
@@ -1323,11 +1296,9 @@ bool make_attack_normal(int m_idx)
 				case RBM_CLAW:
 				case RBM_BITE:
 				case RBM_STING:
-				case RBM_XXX1:
 				case RBM_BUTT:
 				case RBM_CRUSH:
 				case RBM_ENGULF:
-				case RBM_XXX2:
 
 				/* Visible monsters */
 				if (m_ptr->ml)

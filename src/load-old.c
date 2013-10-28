@@ -15,11 +15,13 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
+
 #include "angband.h"
+#include "cave.h"
+#include "history.h"
+#include "monster/monster.h"
 #include "object/tvalsval.h"
-
-
-
+#include "squelch.h"
 
 static ang_file *fff;
 
@@ -28,6 +30,10 @@ static byte	xor_byte;
 static u32b	v_check = 0L;
 static u32b	x_check = 0L;
 
+static byte sf_major;
+static byte sf_minor;
+static byte sf_patch;
+static byte sf_extra;
 
 /*
  * Hack -- Show information on the screen, one line at a time.
@@ -177,6 +183,8 @@ static int rd_item(object_type *o_ptr)
 	byte old_ds;
 	byte tmp8u;
 
+	size_t i;
+
 	object_kind *k_ptr;
 
 	char buf[128];
@@ -226,9 +234,10 @@ static int rd_item(object_type *o_ptr)
 	rd_byte(&o_ptr->origin_depth);
 	rd_u16b(&o_ptr->origin_xtra);
 
-	rd_u32b(&o_ptr->flags[0]);
-	rd_u32b(&o_ptr->flags[1]);
-	rd_u32b(&o_ptr->flags[2]);
+	/* Hack - XXX - MarbleDice - Maximum saveable flags = 96 */
+	for (i = 0; i < 12 && i < OF_SIZE; i++)
+		rd_byte(&o_ptr->flags[i]);
+	if (i < 12) strip_bytes(OF_SIZE - i);
 
 	/* Monster holding object */
 	rd_s16b(&o_ptr->held_m_idx);
@@ -357,7 +366,7 @@ static int rd_item(object_type *o_ptr)
 		}
 
 		/* Hack -- enforce legal pval */
-		if (e_ptr->flags[0] & TR0_PVAL_MASK)
+		if (flags_test(e_ptr->flags, OF_SIZE, OF_PVAL_MASK, FLAG_END))
 		{
 			/* Force a meaningful pval */
 			if (!o_ptr->pval) o_ptr->pval = 1;
@@ -376,23 +385,30 @@ static int rd_item(object_type *o_ptr)
 static int rd_randomizer(void)
 {
 	int i;
+	u32b noop;
 
-	u16b tmp16u;
+	/* current value for the simple RNG */
+	rd_u32b(&Rand_value);
 
+	/* state index */
+	rd_u32b(&state_i);
 
-	/* Tmp */
-	rd_u16b(&tmp16u);
+	/* for safety, make sure state_i < RAND_DEG */
+	state_i = state_i % RAND_DEG;
 
-	/* Place */
-	rd_u16b(&Rand_place);
+	/* RNG variables */
+	rd_u32b(&z0);
+	rd_u32b(&z1);
+	rd_u32b(&z2);
 
-	/* State */
+	/* RNG state */
 	for (i = 0; i < RAND_DEG; i++)
-	{
-		rd_u32b(&Rand_state[i]);
-	}
+		rd_u32b(&STATE[i]);
 
-	/* Accept */
+	/* NULL padding */
+	for (i = 0; i < 59 - RAND_DEG; i++)
+		rd_u32b(&noop);
+
 	Rand_quick = FALSE;
 
 	return 0;
@@ -564,7 +580,7 @@ static int rd_monster_memory(void)
 	/* Read the available records */
 	for (r_idx = 0; r_idx < tmp16u; r_idx++)
 	{
-		int i;
+		size_t i;
 
 		monster_race *r_ptr = &r_info[r_idx];
 		monster_lore *l_ptr = &l_list[r_idx];
@@ -593,21 +609,26 @@ static int rd_monster_memory(void)
 			rd_byte(&l_ptr->blows[i]);
 
 		/* Memorize flags */
-		for (i = 0; i < RACE_FLAG_STRICT_UB; i++)
-			rd_u32b(&l_ptr->flags[i]);
-		for (i = 0; i < RACE_FLAG_SPELL_STRICT_UB; i++)
-			rd_u32b(&l_ptr->spell_flags[i]);
-			
-			
+
+		/* Hack - XXX - MarbleDice - Maximum saveable flags = 96 */
+		for (i = 0; i < 12 && i < RF_SIZE; i++)
+			rd_byte(&l_ptr->flags[i]);
+		if (i < 12) strip_bytes(RF_SIZE - i);
+
+		/* Hack - XXX - MarbleDice - Maximum saveable flags = 96 */
+		for (i = 0; i < 12 && i < RSF_SIZE; i++)
+			rd_byte(&l_ptr->spell_flags[i]);
+		if (i < 12) strip_bytes(12 - i);
+
+
 		/* Read the "Racial" monster limit per level */
 		rd_byte(&r_ptr->max_num);
-			
+
 		/* XXX */
 		strip_bytes(3);
 
 		/* Repair the spell lore flags */
-		for (i = 0; i < RACE_FLAG_SPELL_STRICT_UB; i++)
-			l_ptr->spell_flags[i] &= r_ptr->spell_flags[i];
+		rsf_inter(l_ptr->spell_flags, r_ptr->spell_flags);
 	}
 	
 	return 0;
@@ -1071,7 +1092,7 @@ static int rd_player_spells(void)
  */
 static int rd_randarts(void)
 {
-	int i;
+	size_t i;
 	byte tmp8u;
 	s16b tmp16s;
 	u16b tmp16u;
@@ -1150,9 +1171,10 @@ static int rd_randarts(void)
 
 				rd_s32b(&a_ptr->cost);
 
-				rd_u32b(&a_ptr->flags[0]);
-				rd_u32b(&a_ptr->flags[1]);
-				rd_u32b(&a_ptr->flags[2]);
+				/* Hack - XXX - MarbleDice - Maximum saveable flags = 96 */
+				for (i = 0; i < 12 && i < OF_SIZE; i++)
+					rd_byte(&a_ptr->flags[i]);
+				if (i < 12) strip_bytes(OF_SIZE - i);
 
 				rd_byte(&a_ptr->level);
 				rd_byte(&a_ptr->rarity);
@@ -1263,7 +1285,7 @@ static int rd_inventory(void)
 		if (n >= INVEN_WIELD)
 		{
 			/* Copy object */
-			object_copy(&inventory[n], i_ptr);
+			object_copy(&p_ptr->inventory[n], i_ptr);
 
 			/* Add the weight */
 			p_ptr->total_weight += (i_ptr->number * i_ptr->weight);
@@ -1289,7 +1311,7 @@ static int rd_inventory(void)
 			n = slot++;
 
 			/* Copy object */
-			object_copy(&inventory[n], i_ptr);
+			object_copy(&p_ptr->inventory[n], i_ptr);
 
 			/* Add the weight */
 			p_ptr->total_weight += (i_ptr->number * i_ptr->weight);
@@ -1335,7 +1357,7 @@ static int rd_stores(void)
 			return (-1);
 		}
 		
-		st_ptr->owner = own;
+		st_ptr->owner = store_ownerbyidx(st_ptr, own);
 		
 		/* Read the items */
 		for (j = 0; j < num; j++)

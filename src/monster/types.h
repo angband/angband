@@ -37,10 +37,12 @@ typedef struct
  * be moved out of this array since they are not read from
  * "monster.txt".
  */
-typedef struct
+typedef struct monster_race
 {
-	u32b name;				/* Name (offset) */
-	u32b text;				/* Text (offset) */
+	struct monster_race *next;
+	unsigned int ridx;
+	char *name;
+	char *text;
 
 	u16b avg_hp;				/* Average HP for this creature */
 
@@ -59,14 +61,8 @@ typedef struct
 	byte freq_innate;		/* Innate spell frequency */
 	byte freq_spell;		/* Other spell frequency */
 
-	u32b flags[RACE_FLAG_STRICT_UB];	/* Flags */
-		/* Flags 0 (general) */
-		/* Flags 1 (abilities) */
-		/* Flags 2 (race/resist) */
-	u32b spell_flags[RACE_FLAG_SPELL_STRICT_UB];	/* Spell flags */
-		/* Flags 3 (innate/breath) */
-		/* Flags 4 (normal spells) */
-		/* Flags 5 (special spells) */
+	bitflag flags[RF_SIZE];         /* Flags */
+	bitflag spell_flags[RSF_SIZE];  /* Spell flags */
 
 	monster_blow blow[MONSTER_BLOW_MAX]; /* Up to four blows per round */
 
@@ -110,10 +106,10 @@ typedef struct
 
 	byte blows[MONSTER_BLOW_MAX]; /* Number of times each blow type was seen */
 
-	u32b flags[RACE_FLAG_STRICT_UB]; /* Observed racial flags - a 1 indicates
-	                                  * the flag (or lack thereof) is known to
-	                                  * the player */
-	u32b spell_flags[RACE_FLAG_SPELL_STRICT_UB];	/* Observed racial spell flags */
+	bitflag flags[RF_SIZE]; /* Observed racial flags - a 1 indicates
+	                         * the flag (or lack thereof) is known to
+	                         * the player */
+	bitflag spell_flags[RSF_SIZE];  /* Observed racial spell flags */
 } monster_lore;
 
 
@@ -153,6 +149,8 @@ typedef struct
 
 	s16b hold_o_idx;	/* Object being held (if any) */
 
+	byte attr;  /* attr last used for drawing monster */
+
 	u32b smart;			/* Field for "adult_ai_learn" */
 } monster_type;
 
@@ -165,6 +163,7 @@ typedef struct
 	u16b asleep;		/* number asleep (not in LOS) */
 	u16b los;		/* number in LOS */
 	u16b los_asleep;	/* number asleep and in LOS */
+	byte attr; /* attr to use for drawing */
 } monster_vis; 
 
 #endif /* INCLUDED_MONSTER_TYPES_H */

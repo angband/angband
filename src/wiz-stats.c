@@ -138,19 +138,19 @@ inline static void stats_print_m(void)
 
 static void stats_monster(const monster_type *m_ptr)
 {
-	u32b f0 = r_info[m_ptr->r_idx].flags[0];
+	const monster_race r_ptr = &r_info[m_ptr->r_idx];
 	float prob = 0.0;
 
-	bool gold_ok = (!(f0 & (RF0_ONLY_ITEM)));
-	bool item_ok = (!(f0 & (RF0_ONLY_GOLD)));
+	bool gold_ok = (!rf_has(r_ptr->flags, RF_ONLY_ITEM));
+	bool item_ok = (!rf_has(r_ptr->flags, RF_ONLY_GOLD));
 
-	if (f0 & RF0_DROP_40)  prob += /*0.6*/ 0.4;
-	if (f0 & RF0_DROP_60)  prob += /*0.9*/ 0.6;
+	if (rf_has(r_ptr->flags, RF_DROP_40))  prob += /*0.6*/ 0.4;
+	if (rf_has(r_ptr->flags, RF_DROP_60))  prob += /*0.9*/ 0.6;
 
-	if (f0 & RF0_DROP_4) prob += /*6.0*/ 4.0;
-	if (f0 & RF0_DROP_3) prob += /*4.5*/ 3.0;
-	if (f0 & RF0_DROP_2) prob += /*3.0*/ 2.0;
-	if (f0 & RF0_DROP_1) prob += /*1.5*/ 1.0;
+	if (rf_has(r_ptr->flags, RF_DROP_4)) prob += /*6.0*/ 4.0;
+	if (rf_has(r_ptr->flags, RF_DROP_3)) prob += /*4.5*/ 3.0;
+	if (rf_has(r_ptr->flags, RF_DROP_2)) prob += /*3.0*/ 2.0;
+	if (rf_has(r_ptr->flags, RF_DROP_1)) prob += /*1.5*/ 1.0;
 
 	if (gold_ok && item_ok)
 	{

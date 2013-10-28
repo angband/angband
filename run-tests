@@ -1,0 +1,15 @@
+#!/bin/sh
+
+RAN=0
+OK=0
+
+cd tests
+for x in */*; do
+	./run-test $x
+	if [ $? -eq 0 ]; then
+		OK=$(expr $OK + 1)
+	fi
+	RAN=$(expr $RAN + 1)
+done
+
+echo "Total: $OK/$RAN"

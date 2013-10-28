@@ -15,9 +15,17 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
-#include "angband.h"
-#include "object/tvalsval.h"
 
+#include "angband.h"
+#include "cave.h"
+#include "generate.h"
+#include "history.h"
+#include "monster/monster.h"
+#include "object/tvalsval.h"
+#include "spells.h"
+#include "squelch.h"
+#include "target.h"
+#include "trap.h"
 
 /*
  * Increase players hit points, notice effects
@@ -149,16 +157,31 @@ bool do_dec_stat(int stat, bool perma)
 	/* Get the "sustain" */
 	switch (stat)
 	{
-		case A_STR: if (p_ptr->state.sustain_str) sust = TRUE; break;
-		case A_INT: if (p_ptr->state.sustain_int) sust = TRUE; break;
-		case A_WIS: if (p_ptr->state.sustain_wis) sust = TRUE; break;
-		case A_DEX: if (p_ptr->state.sustain_dex) sust = TRUE; break;
-		case A_CON: if (p_ptr->state.sustain_con) sust = TRUE; break;
-		case A_CHR: if (p_ptr->state.sustain_chr) sust = TRUE; break;
+		case A_STR:
+			if (p_ptr->state.sustain_str) sust = TRUE;
+			wieldeds_notice_flag(OF_SUST_STR);
+			break;
+		case A_INT:
+			if (p_ptr->state.sustain_int) sust = TRUE;
+			wieldeds_notice_flag(OF_SUST_INT);
+			break;
+		case A_WIS:
+			if (p_ptr->state.sustain_wis) sust = TRUE;
+			wieldeds_notice_flag(OF_SUST_WIS);
+			break;
+		case A_DEX:
+			if (p_ptr->state.sustain_dex) sust = TRUE;
+			wieldeds_notice_flag(OF_SUST_DEX);
+			break;
+		case A_CON:
+			if (p_ptr->state.sustain_con) sust = TRUE;
+			wieldeds_notice_flag(OF_SUST_CON);
+			break;
+		case A_CHR:
+			if (p_ptr->state.sustain_chr) sust = TRUE;
+			wieldeds_notice_flag(OF_SUST_CHR);
+			break;
 	}
-
-	assert(TR1_SUST_STR == (1<<A_STR));
-	wieldeds_notice_flag(1, 1<<stat);
 
 	/* Sustain */
 	if (sust && !perma)
@@ -173,7 +196,7 @@ bool do_dec_stat(int stat, bool perma)
 	}
 
 	/* Attempt to reduce the stat */
-	if (dec_stat(stat, perma))
+	if (player_stat_dec(p_ptr, stat, perma))
 	{
 		/* Message */
 		message_format(MSG_DRAIN_STAT, stat, "You feel very %s.", desc_stat_neg[stat]);
@@ -218,7 +241,7 @@ bool do_inc_stat(int stat)
 	res = res_stat(stat);
 
 	/* Attempt to increase */
-	if (inc_stat(stat))
+	if (player_stat_inc(p_ptr, stat))
 	{
 		/* Message */
 		msg_format("You feel very %s!", desc_stat_pos[stat]);
@@ -254,7 +277,7 @@ void identify_pack(void)
 	/* Simply identify and know every item */
 	for (i = 0; i < ALL_INVEN_TOTAL; i++)
 	{
-		object_type *o_ptr = &inventory[i];
+		object_type *o_ptr = &p_ptr->inventory[i];
 
 		/* Skip non-objects */
 		if (!o_ptr->k_idx) continue;
@@ -293,7 +316,7 @@ static const int enchant_table[16] =
 static void uncurse_object(object_type *o_ptr)
 {
 	/* Uncurse it */
-	o_ptr->flags[2] &= ~(TR2_CURSE_MASK);
+	flags_clear(o_ptr->flags, OF_SIZE, OF_CURSE_MASK, FLAG_END);
 }
 
 
@@ -309,18 +332,18 @@ static int remove_curse_aux(bool heavy)
 	int i, cnt = 0;
 
 	/* Attempt to uncurse items being worn */
-	for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
+	for (i = INVEN_WIELD; i < ALL_INVEN_TOTAL; i++)
 	{
-		object_type *o_ptr = &inventory[i];
+		object_type *o_ptr = &p_ptr->inventory[i];
 
 		if (!o_ptr->k_idx) continue;
 		if (!cursed_p(o_ptr)) continue;
 
 		/* Heavily cursed items need a special spell */
-		if ((o_ptr->flags[2] & TR2_HEAVY_CURSE) && !heavy) continue;
+		if (of_has(o_ptr->flags, OF_HEAVY_CURSE) && !heavy) continue;
 
 		/* Perma-cursed items can never be removed */
-		if (o_ptr->flags[2] & TR2_PERMA_CURSE) continue;
+		if (of_has(o_ptr->flags, OF_PERMA_CURSE)) continue;
 
 		/* Uncurse, and update things */
 		uncurse_object(o_ptr);
@@ -452,8 +475,11 @@ void map_area(void)
 	x1 = p_ptr->px - DETECT_DIST_X;
 	x2 = p_ptr->px + DETECT_DIST_X;
 
+	/* Drag the co-ordinates into the dungeon */
 	if (y1 < 0) y1 = 0;
 	if (x1 < 0) x1 = 0;
+	if (y2 > DUNGEON_HGT - 1) y2 = DUNGEON_HGT - 1;
+	if (x2 > DUNGEON_WID - 1) x2 = DUNGEON_WID - 1;
 
 	/* Scan the dungeon */
 	for (y = y1; y < y2; y++)
@@ -920,7 +946,7 @@ bool detect_monsters_normal(bool aware)
 		if (x < x1 || y < y1 || x > x2 || y > y2) continue;
 
 		/* Detect all non-invisible monsters */
-		if (!(r_ptr->flags[1] & (RF1_INVISIBLE)))
+		if (!rf_has(r_ptr->flags, RF_INVISIBLE))
 		{
 			/* Optimize -- Repair flags */
 			repair_mflag_mark = repair_mflag_show = TRUE;
@@ -984,10 +1010,10 @@ bool detect_monsters_invis(bool aware)
 		if (x < x1 || y < y1 || x > x2 || y > y2) continue;
 
 		/* Detect invisible monsters */
-		if (r_ptr->flags[1] & (RF1_INVISIBLE))
+		if (rf_has(r_ptr->flags, RF_INVISIBLE))
 		{
 			/* Take note that they are invisible */
-			l_ptr->flags[1] |= (RF1_INVISIBLE);
+			rf_on(l_ptr->flags, RF_INVISIBLE);
 
 			/* Update monster recall window */
 			if (p_ptr->monster_race_idx == m_ptr->r_idx)
@@ -1058,10 +1084,10 @@ bool detect_monsters_evil(bool aware)
 		if (x < x1 || y < y1 || x > x2 || y > y2) continue;
 
 		/* Detect evil monsters */
-		if (r_ptr->flags[2] & (RF2_EVIL))
+		if (rf_has(r_ptr->flags, RF_EVIL))
 		{
 			/* Take note that they are evil */
-			l_ptr->flags[2] |= (RF2_EVIL);
+			rf_on(l_ptr->flags, RF_EVIL);
 
 			/* Update monster recall window */
 			if (p_ptr->monster_race_idx == m_ptr->r_idx)
@@ -1263,13 +1289,13 @@ bool enchant_score(s16b *score, bool is_artifact)
  */
 bool enchant_curse(object_type *o_ptr, bool is_artifact)
 {
-	u32b f[OBJ_FLAG_N];
+	bitflag f[OF_SIZE];
 
 	/* Extract the flags */
 	object_flags(o_ptr, f);
 
 	/* If the item isn't cursed (or is perma-cursed) this doesn't work */
-	if (!cursed_p(o_ptr) || f[2] & TR2_PERMA_CURSE) return FALSE;
+	if (!cursed_p(o_ptr) || of_has(f, OF_PERMA_CURSE)) return FALSE;
 
 	/* Artifacts resist enchanting curses away half the time */
 	if (is_artifact && randint0(100) < 50) return FALSE;
@@ -1384,7 +1410,7 @@ bool enchant_spell(int num_hit, int num_dam, int num_ac)
 	/* Get an item */
 	q = "Enchant which item? ";
 	s = "You have nothing to enchant.";
-	if (!get_item(&item, q, s, (USE_EQUIP | USE_INVEN | USE_FLOOR))) return (FALSE);
+	if (!get_item(&item, q, s, 0, (USE_EQUIP | USE_INVEN | USE_FLOOR))) return (FALSE);
 
 	o_ptr = object_from_item_idx(item);
 
@@ -1436,7 +1462,7 @@ bool ident_spell(void)
 	/* Get an item */
 	q = "Identify which item? ";
 	s = "You have nothing to identify.";
-	if (!get_item(&item, q, s, (USE_EQUIP | USE_INVEN | USE_FLOOR))) return (FALSE);
+	if (!get_item(&item, q, s, 0, (USE_EQUIP | USE_INVEN | USE_FLOOR))) return (FALSE);
 
 	o_ptr = object_from_item_idx(item);
 
@@ -1496,7 +1522,7 @@ bool recharge(int num)
 	/* Get an item */
 	q = "Recharge which item? ";
 	s = "You have nothing to recharge.";
-	if (!get_item(&item, q, s, (USE_INVEN | USE_FLOOR))) return (FALSE);
+	if (!get_item(&item, q, s, 0, (USE_INVEN | USE_FLOOR))) return (FALSE);
 
 	o_ptr = object_from_item_idx(item);
 
@@ -1757,7 +1783,7 @@ bool banishment(void)
 		if (!m_ptr->r_idx) continue;
 
 		/* Hack -- Skip Unique Monsters */
-		if (r_ptr->flags[0] & (RF0_UNIQUE)) continue;
+		if (rf_has(r_ptr->flags, RF_UNIQUE)) continue;
 
 		/* Skip "wrong" monsters */
 		if (r_ptr->d_char != typ) continue;
@@ -1801,7 +1827,7 @@ bool mass_banishment(void)
 		if (!m_ptr->r_idx) continue;
 
 		/* Hack -- Skip unique monsters */
-		if (r_ptr->flags[0] & (RF0_UNIQUE)) continue;
+		if (rf_has(r_ptr->flags, RF_UNIQUE)) continue;
 
 		/* Skip distant monsters */
 		if (m_ptr->cdis > MAX_SIGHT) continue;
@@ -2202,7 +2228,7 @@ void earthquake(int cy, int cx, int r)
 				monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 				/* Most monsters cannot co-exist with rock */
-				if (!(r_ptr->flags[1] & (RF1_KILL_WALL | RF1_PASS_WALL)))
+				if (!flags_test(r_ptr->flags, RF_SIZE, RF_KILL_WALL, RF_PASS_WALL, FLAG_END))
 				{
 					char m_name[80];
 
@@ -2210,7 +2236,7 @@ void earthquake(int cy, int cx, int r)
 					sn = 0;
 
 					/* Monster can move to escape the wall */
-					if (!(r_ptr->flags[0] & (RF0_NEVER_MOVE)))
+					if (!rf_has(r_ptr->flags, RF_NEVER_MOVE))
 					{
 						/* Look for safety */
 						for (i = 0; i < 8; i++)
@@ -2417,10 +2443,10 @@ static void cave_temp_room_light(void)
 			monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 			/* Stupid monsters rarely wake up */
-			if (r_ptr->flags[1] & (RF1_STUPID)) chance = 10;
+			if (rf_has(r_ptr->flags, RF_STUPID)) chance = 10;
 
 			/* Smart monsters always wake up */
-			if (r_ptr->flags[1] & (RF1_SMART)) chance = 100;
+			if (rf_has(r_ptr->flags, RF_SMART)) chance = 100;
 
 			/* Sometimes monsters wake up */
 			if (m_ptr->csleep && (randint0(100) < chance))
@@ -2949,7 +2975,7 @@ bool curse_armor(void)
 
 
 	/* Curse the body armor */
-	o_ptr = &inventory[INVEN_BODY];
+	o_ptr = &p_ptr->inventory[INVEN_BODY];
 
 	/* Nothing to curse */
 	if (!o_ptr->k_idx) return (FALSE);
@@ -2976,7 +3002,7 @@ bool curse_armor(void)
 		o_ptr->to_a -= randint1(3);
 
 		/* Curse it */
-		o_ptr->flags[2] |= (TR2_LIGHT_CURSE | TR2_HEAVY_CURSE);
+		flags_set(o_ptr->flags, OF_SIZE, OF_LIGHT_CURSE, OF_HEAVY_CURSE, FLAG_END);
 
 		/* Recalculate bonuses */
 		p_ptr->update |= (PU_BONUS);
@@ -3003,7 +3029,7 @@ bool curse_weapon(void)
 
 
 	/* Curse the weapon */
-	o_ptr = &inventory[INVEN_WIELD];
+	o_ptr = &p_ptr->inventory[INVEN_WIELD];
 
 	/* Nothing to curse */
 	if (!o_ptr->k_idx) return (FALSE);
@@ -3031,7 +3057,7 @@ bool curse_weapon(void)
 		o_ptr->to_d = 0 - randint1(3);
 
 		/* Curse it */
-		o_ptr->flags[2] |= (TR2_LIGHT_CURSE | TR2_HEAVY_CURSE);
+		flags_set(o_ptr->flags, OF_SIZE, OF_LIGHT_CURSE, OF_HEAVY_CURSE, FLAG_END);
 
 		/* Recalculate bonuses */
 		p_ptr->update |= (PU_BONUS);
@@ -3113,7 +3139,7 @@ void brand_weapon(void)
 	object_type *o_ptr;
 	byte brand_type;
 
-	o_ptr = &inventory[INVEN_WIELD];
+	o_ptr = &p_ptr->inventory[INVEN_WIELD];
 
 	/* Select a brand */
 	if (randint0(100) < 25)
@@ -3162,7 +3188,7 @@ bool brand_ammo(void)
 	/* Get an item */
 	q = "Brand which kind of ammunition? ";
 	s = "You have nothing to brand.";
-	if (!get_item(&item, q, s, (USE_EQUIP | USE_INVEN | USE_FLOOR))) return (FALSE);
+	if (!get_item(&item, q, s, 0, (USE_EQUIP | USE_INVEN | USE_FLOOR))) return (FALSE);
 
 	o_ptr = object_from_item_idx(item);
 
@@ -3200,7 +3226,7 @@ bool brand_bolts(void)
 	/* Get an item */
 	q = "Brand which bolts? ";
 	s = "You have no bolts to brand.";
-	if (!get_item(&item, q, s, (USE_INVEN | USE_FLOOR))) return (FALSE);
+	if (!get_item(&item, q, s, 0, (USE_INVEN | USE_FLOOR))) return (FALSE);
 
 	o_ptr = object_from_item_idx(item);
 
@@ -3227,12 +3253,12 @@ void ring_of_power(int dir)
 			msg_print("You are surrounded by a malignant aura.");
 
 			/* Decrease all stats (permanently) */
-			(void)dec_stat(A_STR, TRUE);
-			(void)dec_stat(A_INT, TRUE);
-			(void)dec_stat(A_WIS, TRUE);
-			(void)dec_stat(A_DEX, TRUE);
-			(void)dec_stat(A_CON, TRUE);
-			(void)dec_stat(A_CHR, TRUE);
+			player_stat_dec(p_ptr, A_STR, TRUE);
+			player_stat_dec(p_ptr, A_INT, TRUE);
+			player_stat_dec(p_ptr, A_WIS, TRUE);
+			player_stat_dec(p_ptr, A_DEX, TRUE);
+			player_stat_dec(p_ptr, A_CON, TRUE);
+			player_stat_dec(p_ptr, A_CHR, TRUE);
 
 			/* Lose some experience (permanently) */
 			p_ptr->exp -= (p_ptr->exp / 4);
@@ -3288,6 +3314,8 @@ void do_ident_item(int item, object_type *o_ptr)
 {
 	char o_name[80];
 
+	u32b msg_type = 0;
+
 	/* Identify it */
 	object_flavor_aware(o_ptr);
 	object_notice_everything(o_ptr);
@@ -3310,40 +3338,44 @@ void do_ident_item(int item, object_type *o_ptr)
 	/* Description */
 	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
 
-	/* Possibly play a sound depending on object quality. */
+	/* Determine the message type. */
 	if (o_ptr->pval < 0)
 	{
 		/* This is a bad item. */
-		sound(MSG_IDENT_BAD);
+		msg_type = MSG_IDENT_BAD;
 	}
 	else if (o_ptr->name1 != 0)
 	{
 		/* We have a good artifact. */
-		sound(MSG_IDENT_ART);
+		msg_type = MSG_IDENT_ART;
 	}
 	else if (o_ptr->name2 != 0)
 	{
 		/* We have a good ego item. */
-		sound(MSG_IDENT_EGO);
+		msg_type = MSG_IDENT_EGO;
+	}
+	else
+	{
+		msg_type = MSG_GENERIC;
 	}
 
 	/* Log artifacts to the history list. */
 	if (artifact_p(o_ptr))
-		history_add_artifact(o_ptr->name1, TRUE);
+		history_add_artifact(o_ptr->name1, TRUE, TRUE);
 
 	/* Describe */
 	if (item >= INVEN_WIELD)
 	{
-		msg_format("%^s: %s (%c).",
+		message_format(msg_type, 0, "%^s: %s (%c).",
 			  describe_use(item), o_name, index_to_label(item));
 	}
 	else if (item >= 0)
 	{
-		msg_format("In your pack: %s (%c).",
+		message_format(msg_type, 0, "In your pack: %s (%c).",
 			  o_name, index_to_label(item));
 	}
 	else
 	{
-		msg_format("On the ground: %s.", o_name);
+		message_format(msg_type, 0, "On the ground: %s.", o_name);
 	}
 }

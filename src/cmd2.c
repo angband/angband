@@ -15,11 +15,19 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
-#include "angband.h"
-#include "object/tvalsval.h"
 
+#include "angband.h"
+#include "attack.h"
+#include "cave.h"
 #include "cmds.h"
+#include "files.h"
 #include "game-cmd.h"
+#include "generate.h"
+#include "monster/monster.h"
+#include "object/tvalsval.h"
+#include "spells.h"
+#include "squelch.h"
+#include "trap.h"
 
 /*
  * Go up one level
@@ -167,8 +175,7 @@ static s16b chest_check(int y, int x)
  * Small chests often contain "gold", while Large chests always contain
  * items.  Wooden chests contain 2 items, Iron chests contain 4 items,
  * and Steel chests contain 6 items.  The "value" of the items in a
- * chest is based on the "power" of the chest, which is in turn based
- * on the level on which the chest is generated.
+ * chest is based on the level on which the chest is generated.
  */
 static void chest_death(int y, int x, s16b o_idx)
 {
@@ -198,7 +205,9 @@ static void chest_death(int y, int x, s16b o_idx)
 	opening_chest = TRUE;
 
 	/* Determine the "value" of the items */
-	value = ABS(o_ptr->pval) + 10;
+	value = o_ptr->origin_depth - 10 + 2 * o_ptr->sval;
+	if (value < 1)
+		value = 1;
 
 	/* Drop some objects (non-chests) */
 	for (; number > 0; --number)
@@ -213,10 +222,12 @@ static void chest_death(int y, int x, s16b o_idx)
 		if (tiny && (randint0(100) < 75))
 			make_gold(i_ptr, value, SV_GOLD_ANY);
 
-		/* Otherwise drop an item */
+		/* Otherwise drop an item, as long as it isn't a chest */
 		else
 		{
 			if (!make_object(i_ptr, value, FALSE, FALSE))
+				continue;
+			if (i_ptr->tval == TV_CHEST)
 				continue;
 			i_ptr->origin = ORIGIN_CHEST;
 			i_ptr->origin_depth = o_ptr->origin_depth;
@@ -279,7 +290,7 @@ static void chest_trap(int y, int x, s16b o_idx)
 		if (!(p_ptr->state.resist_pois || p_ptr->timed[TMD_OPP_POIS]))
 			(void)inc_timed(TMD_POISONED, 10 + randint1(20), TRUE);
 		else if (p_ptr->state.resist_pois)
-			wieldeds_notice_flag(1, TR1_RES_POIS);
+			wieldeds_notice_flag(OF_RES_POIS);
 	}
 
 	/* Paralyze */
@@ -289,7 +300,7 @@ static void chest_trap(int y, int x, s16b o_idx)
 		if (!p_ptr->state.free_act)
 			(void)inc_timed(TMD_PARALYZED, 10 + randint1(20), TRUE);
 		else
-			wieldeds_notice_flag(2, TR2_FREE_ACT);
+			wieldeds_notice_flag(OF_FREE_ACT);
 	}
 
 	/* Summon monsters */
@@ -470,7 +481,7 @@ static bool do_cmd_disarm_chest(int y, int x, s16b o_idx)
 /*
  * Return TRUE if the given feature is an open door
  */
-static bool is_open(int feat)
+bool is_open(int feat)
 {
 	return (feat == FEAT_OPEN);
 }
@@ -479,7 +490,7 @@ static bool is_open(int feat)
 /*
  * Return TRUE if the given feature is a closed door
  */
-static bool is_closed(int feat)
+bool is_closed(int feat)
 {
 	return ((feat >= FEAT_DOOR_HEAD) &&
 	        (feat <= FEAT_DOOR_TAIL));
@@ -489,7 +500,7 @@ static bool is_closed(int feat)
 /*
  * Return TRUE if the given feature is a trap
  */
-static bool is_trap(int feat)
+bool is_trap(int feat)
 {
 	return ((feat >= FEAT_TRAP_HEAD) &&
 	        (feat <= FEAT_TRAP_TAIL));
@@ -499,7 +510,7 @@ static bool is_trap(int feat)
 /*
  * Return the number of doors/traps around (or under) the character.
  */
-static int count_feats(int *y, int *x, bool (*test)(int feat), bool under)
+int count_feats(int *y, int *x, bool (*test)(int feat), bool under)
 {
 	int d;
 	int xx, yy;
@@ -541,7 +552,7 @@ static int count_feats(int *y, int *x, bool (*test)(int feat), bool under)
  * Return the number of chests around (or under) the character.
  * If requested, count only trapped chests.
  */
-static int count_chests(int *y, int *x, bool trapped)
+int count_chests(int *y, int *x, bool trapped)
 {
 	int d, count, o_idx;
 
@@ -592,7 +603,7 @@ static int count_chests(int *y, int *x, bool trapped)
  * Extract a "direction" which will move one step from the player location
  * towards the given "target" location (or "5" if no motion necessary).
  */
-static int coords_to_dir(int y, int x)
+int coords_to_dir(int y, int x)
 {
 	return (motion_dir(p_ptr->py, p_ptr->px, y, x));
 }
@@ -796,31 +807,6 @@ void do_cmd_open(cmd_code code, cmd_arg args[])
 	if (!more) disturb(0, 0);
 }
 
-void textui_cmd_open(void)
-{
-	int y, x, dir = DIR_UNKNOWN;
-
-	/* Easy Open */
-	if (OPT(easy_open))
-	{
-		int num_doors, num_chests;
-
-		/* Count closed doors */
-		num_doors = count_feats(&y, &x, is_closed, FALSE);
-
-		/* Count chests (locked) */
-		num_chests = count_chests(&y, &x, FALSE);
-
-		/* See if only one target */
-		if ((num_doors + num_chests) == 1)
-		{
-			dir = coords_to_dir(y, x);
-		}
-	}
-
-	cmd_insert(CMD_OPEN, dir);
-}
-
 
 /*
  * Determine if a given grid may be "closed"
@@ -946,28 +932,6 @@ void do_cmd_close(cmd_code code, cmd_arg args[])
 
 	/* Cancel repeat unless told not to */
 	if (!more) disturb(0, 0);
-}
-
-void textui_cmd_close(void)
-{
-	int y, x, dir = DIR_UNKNOWN;
-
-	/* Easy Close */
-	if (OPT(easy_open))
-	{
-		/* Count open doors */
-		if (count_feats(&y, &x, is_open, FALSE) == 1)
-		{
-			dir = coords_to_dir(y, x);
-		}
-	}
-	else
-	{
-		if (!get_rep_dir(&dir))
-			return;
-	}
-
-	cmd_insert(CMD_CLOSE, dir);
 }
 
 
@@ -1285,14 +1249,6 @@ void do_cmd_tunnel(cmd_code code, cmd_arg args[])
 	if (!more) disturb(0, 0);
 }
 
-void textui_cmd_tunnel(void)
-{
-	int dir;
-	if (!get_rep_dir(&dir)) return;
-	cmd_insert(CMD_TUNNEL, dir);
-}
-
-
 /*
  * Determine if a given grid may be "disarmed"
  */
@@ -1345,7 +1301,7 @@ static bool do_cmd_disarm_aux(int y, int x)
 
 
 	/* Get the trap name */
-	name = (f_name + f_info[cave_feat[y][x]].name);
+	name = f_info[cave_feat[y][x]].name;
 
 	/* Get the "disarm" factor */
 	i = p_ptr->state.skills[SKILL_DISARM];
@@ -1481,38 +1437,6 @@ void do_cmd_disarm(cmd_code code, cmd_arg args[])
 	if (!more) disturb(0, 0);
 }
 
-void textui_cmd_disarm(void)
-{
-	int y, x, dir;
-
-	dir = DIR_UNKNOWN;
-
-	/* Easy Disarm */
-	if (OPT(easy_open))
-	{
-		int num_traps, num_chests;
-
-		/* Count visible traps */
-		num_traps = count_feats(&y, &x, is_trap, TRUE);
-
-		/* Count chests (trapped) */
-		num_chests = count_chests(&y, &x, TRUE);
-
-		/* See if only one target */
-		if (num_traps || num_chests)
-		{
-			if (num_traps + num_chests <= 1)
-				dir = coords_to_dir(y, x);
-		}
-	}
-	else
-	{
-		if (!get_rep_dir(&dir))
-			return;
-	}
-
-	cmd_insert(CMD_DISARM, dir);
-}
 
 /*
  * Determine if a given grid may be "bashed"
@@ -1694,16 +1618,6 @@ void do_cmd_bash(cmd_code code, cmd_arg args[])
 	if (!more) disturb(0, 0);
 }
 
-void textui_cmd_bash(void)
-{
-	int dir;
-	if (!get_rep_dir(&dir))
-		return;
-
-	cmd_insert(CMD_BASH, dir);
-}
-
-
 
 /*
  * Manipulate an adjacent grid in some way
@@ -1803,15 +1717,6 @@ void do_cmd_alter(cmd_code code, cmd_arg args[])
 	do_cmd_alter_aux(args[0].direction);
 }
 
-void textui_cmd_alter(void)
-{
-	int dir;
-
-	if (!get_rep_dir(&dir))
-		return;
-
-	cmd_insert(CMD_ALTER, dir);
-}
 
 /*
  * Find the index of some "spikes", if possible.
@@ -1825,7 +1730,7 @@ static bool get_spike(int *ip)
 	/* Check every item in the pack */
 	for (i = 0; i < INVEN_PACK; i++)
 	{
-		object_type *o_ptr = &inventory[i];
+		object_type *o_ptr = &p_ptr->inventory[i];
 
 		/* Skip non-objects */
 		if (!o_ptr->k_idx) continue;
@@ -1957,15 +1862,6 @@ void do_cmd_spike(cmd_code code, cmd_arg args[])
 	}
 }
 
-void textui_cmd_spike(void)
-{
-	int dir;
-	if (!get_rep_dir(&dir))
-		return;
-
-	cmd_insert(CMD_JAM, dir);
-}
-
 
 /*
  * Determine if a given grid may be "walked"
@@ -2076,19 +1972,6 @@ void do_cmd_walk(cmd_code code, cmd_arg args[])
 	move_player(dir);
 }
 
-/*
- * Tell the game we want to walk - in future we might want to supply
- * directions here rather than rely on keymap/macro things.
- */
-void textui_cmd_walk(void)
-{
-	int dir;
-	if (!get_rep_dir(&dir))
-		return;
-
-	cmd_insert(CMD_WALK, dir);
-}
-
 
 /*
  * Jump into a trap, turn off pickup (does not work).
@@ -2107,15 +1990,6 @@ void do_cmd_jump(cmd_code code, cmd_arg args[])
 
 	/* Restore OPT(easy_alter) */
 	OPT(easy_alter) = old_easy_alter;
-}
-
-void textui_cmd_jump(void)
-{
-	int dir;
-	if (!get_rep_dir(&dir))
-		return;
-
-	cmd_insert(CMD_JUMP, dir);
 }
 
 
@@ -2150,14 +2024,6 @@ void do_cmd_run(cmd_code code, cmd_arg args[])
 	run_step(dir);
 }
 
-void textui_cmd_run(void)
-{
-	int dir;
-	if (!get_rep_dir(&dir))
-		return;
-
-	cmd_insert(CMD_RUN, dir);
-}
 
 /*
  * Start running with pathfinder.
@@ -2250,38 +2116,26 @@ void do_cmd_pickup(cmd_code code, cmd_arg args[])
  */
 void do_cmd_rest(cmd_code code, cmd_arg args[])
 {
-	/* Save the rest code */
-	switch (args[0].choice)
+	/* 
+	 * A little sanity checking on the input - only the specified negative 
+	 * values are valid. 
+	 */
+	if ((args[0].choice < 0) &&
+		((args[0].choice != REST_COMPLETE) &&
+		 (args[0].choice != REST_ALL_POINTS) &&
+		 (args[0].choice != REST_SOME_POINTS))) 
 	{
-		case REST_ALL:
-		{
-			p_ptr->resting = -2;
-			break;
-		}
-
-		case REST_ALL_POINTS:
-		{
-			p_ptr->resting = -1;
-			break;
-		}
-
-		case REST_SOME_POINTS:
-		{
-			p_ptr->resting = -3;
-			break;
-		}
-
-		default:
-		{
-			p_ptr->resting = p_ptr->command_arg;
-		}
+		return;
 	}
 
+	/* Save the rest code */
+	p_ptr->resting = args[0].choice;
+	
+	/* Truncate overlarge values */
+	if (p_ptr->resting > 9999) p_ptr->resting = 9999;
+	
 	/* Take a turn XXX XXX XXX (?) */
 	p_ptr->energy_use = 100;
-
-	/* Cancel the arg */
-	p_ptr->command_arg = 0;
 
 	/* Cancel searching */
 	p_ptr->searching = FALSE;
@@ -2315,29 +2169,33 @@ void textui_cmd_rest(void)
 		/* Rest until done */
 		if (out_val[0] == '&')
 		{
-			cmd_insert(CMD_REST, REST_ALL);
+			cmd_insert(CMD_REST);
+			cmd_set_arg_choice(cmd_get_top(), 0, REST_COMPLETE);
 		}
 
 		/* Rest a lot */
 		else if (out_val[0] == '*')
 		{
-			cmd_insert(CMD_REST, REST_ALL_POINTS);
+			cmd_insert(CMD_REST);
+			cmd_set_arg_choice(cmd_get_top(), 0, REST_ALL_POINTS);
 		}
 
 		/* Rest until HP or SP filled */
 		else if (out_val[0] == '!')
 		{
-			cmd_insert(CMD_REST, REST_SOME_POINTS);
+			cmd_insert(CMD_REST);
+			cmd_set_arg_choice(cmd_get_top(), 0, REST_SOME_POINTS);
 		}
 		
 		/* Rest some */
 		else
 		{
-			p_ptr->command_arg = atoi(out_val);
-			if (p_ptr->command_arg <= 0) return;
-			if (p_ptr->command_arg > 9999) p_ptr->command_arg = 9999;
+			int turns = atoi(out_val);
+			if (turns <= 0) return;
+			if (turns > 9999) turns = 9999;
 			
-			cmd_insert(CMD_REST, REST_TURNS);
+			cmd_insert(CMD_REST);
+			cmd_set_arg_choice(cmd_get_top(), 0, turns);
 		}
 	}
 }

@@ -15,10 +15,18 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
+
 #include "angband.h"
-#include "wizard.h"
+#include "cave.h"
 #include "cmds.h"
+#include "files.h"
+#include "monster/monster.h"
 #include "object/tvalsval.h"
+#include "object/object.h"
+#include "ui-menu.h"
+#include "spells.h"
+#include "target.h"
+#include "wizard.h"
 
 
 #ifdef ALLOW_DEBUG
@@ -101,17 +109,16 @@ static void do_cmd_wiz_hack_ben(void)
 
 
 /*
- * Output a long int in binary format.
+ * Output part of a bitflag set in binary format.
  */
-static void prt_binary(u32b flags, int row, int col, char ch, int num)
+static void prt_binary(const bitflag *flags, int offset, int row, int col, char ch, int num)
 {
-	int i;
-	u32b bitmask;
+	int flag;
 
 	/* Scan the flags */
-	for (i = bitmask = 1; i <= num; i++, bitmask *= 2)
+	for (flag = FLAG_START + offset; flag < FLAG_START + offset + num; flag++)
 	{
-		if (flags & bitmask)
+		if (of_has(flags, flag))
 			Term_putch(col++, row, TERM_BLUE, ch);
 		else
 			Term_putch(col++, row, TERM_WHITE, '-');
@@ -299,7 +306,7 @@ static void wiz_display_item(const object_type *o_ptr, bool all)
 {
 	int j = 0;
 
-	u32b f[OBJ_FLAG_N];
+	bitflag f[OF_SIZE];
 
 	char buf[256];
 
@@ -334,8 +341,8 @@ static void wiz_display_item(const object_type *o_ptr, bool all)
 	prt("siwdcc  ssidsasmnvudotgddduoclio", 11, j);
 	prt("tnieoh  trnipthgiinmrrnrrmniierl", 12, j);
 	prt("rtsxna..lcfgdkttmldncltggndsdced", 13, j);
-	prt_binary(f[0], 14, j, '*', 32);
-	prt_binary(o_ptr->known_flags[0], 15, j, '+', 32);
+	prt_binary(f, 0, 14, j, '*', 32);
+	prt_binary(o_ptr->known_flags, 0, 15, j, '+', 32);
 
 	prt("+------------FLAGS1------------+", 16, j);
 	prt("SUST........IMM.RESIST.........", 17, j);
@@ -343,8 +350,8 @@ static void wiz_display_item(const object_type *o_ptr, bool all)
 	prt("siwdcc      cilocliooeialoshnecd", 19, j);
 	prt("tnieoh      irelierliatrnnnrethi", 20, j);
 	prt("rtsxna......decddcedsrekdfddxhss", 21, j);
-	prt_binary(f[1], 22, j, '*', 32);
-	prt_binary(o_ptr->known_flags[1], 23, j, '+', 32);
+	prt_binary(f, 32, 22, j, '*', 32);
+	prt_binary(o_ptr->known_flags, 32, 23, j, '+', 32);
 
 	prt("+------------FLAGS2------------+", 8, j+34);
 	prt("s   ts hn    tadiiii   aiehs  hp", 9, j+34);
@@ -355,8 +362,8 @@ static void wiz_display_item(const object_type *o_ptr, bool all)
 	prt("ghigavail   aoveclio  saanyo rrr", 14, j+34);
 	prt("seteticf    craxierl  etropd sss", 15, j+34);
 	prt("trenhste    tttpdced  detwes eee", 16, j+34);
-	prt_binary(f[2], 17, j+34, '*', 32);
-	prt_binary(o_ptr->known_flags[2], 18, j+34, '+', 32);
+	prt_binary(f, 64, 17, j + 34, '*', 32);
+	prt_binary(o_ptr->known_flags, 64, 18, j + 34, '+', 32);
 
 	prt("o_ptr->ident:", 20, j+34);
 	prt(format("sense  %c  worn   %c  empty   %c  known   %c",
@@ -375,19 +382,79 @@ static void wiz_display_item(const object_type *o_ptr, bool all)
 }
 
 
+
+static const region wiz_create_item_area = { 0, 0, 0, 0 };
+
+/** Object kind selection */
+void wiz_create_item_subdisplay(menu_type *m, int oid, bool cursor,
+		int row, int col, int width)
+{
+	int *choices = menu_priv(m);
+	char buf[80];
+
+	object_kind_name(buf, sizeof buf, choices[oid], TRUE);
+	c_prt(curs_attrs[CURS_KNOWN][0 != cursor], buf, row, col);
+}
+
+bool wiz_create_item_subaction(menu_type *m, const ui_event_data *e, int oid)
+{
+	int *choices = menu_priv(m);
+
+	object_kind *kind = &k_info[choices[oid]];
+
+	object_type *i_ptr;
+	object_type object_type_body;
+
+	if (e->type != EVT_SELECT)
+		return TRUE;
+
+
+	/* Get local object */
+	i_ptr = &object_type_body;
+
+	/* Create the item */
+	object_prep(i_ptr, &k_info[choices[oid]], p_ptr->depth, RANDOMISE);
+
+	/* Apply magic (no messages, no artifacts) */
+	apply_magic(i_ptr, p_ptr->depth, FALSE, FALSE, FALSE);
+
+	/* Mark as cheat, and where created */
+	i_ptr->origin = ORIGIN_CHEAT;
+	i_ptr->origin_depth = p_ptr->depth;
+
+	if (kind->tval == TV_GOLD)
+		make_gold(i_ptr, p_ptr->depth, kind->sval);
+
+	/* Drop the object from heaven */
+	drop_near(i_ptr, 0, p_ptr->py, p_ptr->px, TRUE);
+
+	return FALSE;
+}
+
+menu_iter wiz_create_item_submenu =
+{
+	NULL,
+	NULL,
+	wiz_create_item_subdisplay,
+	wiz_create_item_subaction,
+	NULL
+};
+
+/** Object base kind selection **/
+
 /*
  * A structure to hold a tval and its description
  */
-typedef struct tval_desc
+struct tval_desc
 {
 	int tval;
-	cptr desc;
-} tval_desc;
+	const char *desc;
+};
 
 /*
  * A list of tvals and their textual names
  */
-static const tval_desc tvals[] =
+static struct tval_desc tvals[] =
 {
 	{ TV_SWORD,             "Sword"                },
 	{ TV_POLEARM,           "Polearm"              },
@@ -423,115 +490,86 @@ static const tval_desc tvals[] =
 	{ TV_SKELETON,          "Skeletons"            },
 	{ TV_BOTTLE,            "Empty bottle"         },
 	{ TV_JUNK,              "Junk"                 },
-	{ TV_GOLD,              "Gold"                 },
-	{ 0,                    NULL                   }
+	{ TV_GOLD,              "Gold"                 }
+};
+
+void wiz_create_item_display(menu_type *m, int oid, bool cursor,
+		int row, int col, int width)
+{
+	struct tval_desc *tvals = menu_priv(m);
+	c_prt(curs_attrs[CURS_KNOWN][0 != cursor], tvals[oid].desc, row, col);
+}
+
+bool wiz_create_item_action(menu_type *m, const ui_event_data *e, int oid)
+{
+	ui_event_data ret;
+	menu_type *menu;
+
+	int choice[60];
+	int n_choices;
+
+	int i;
+
+	if (e->type != EVT_SELECT)
+		return TRUE;
+
+	for (n_choices = 0, i = 1; (n_choices < 60) && (i < z_info->k_max); i++)
+	{
+		object_kind *kind = &k_info[i];
+
+		if (kind->tval != tvals[oid].tval ||
+				of_has(kind->flags, OF_INSTA_ART))
+			continue;
+
+		choice[n_choices++] = i;
+	}
+
+	screen_save();
+	clear_from(0);
+
+	menu = menu_new(MN_SKIN_COLUMNS, &wiz_create_item_submenu);
+	menu->selections = all_letters;
+	menu->title = format("What kind of %s?", tvals[oid].desc);
+
+	menu_setpriv(menu, n_choices, choice);
+	menu_layout(menu, &wiz_create_item_area);
+	ret = menu_select(menu, 0);
+
+	screen_load();
+
+	return (ret.type == EVT_ESCAPE);
+}
+
+menu_iter wiz_create_item_menu =
+{
+	NULL,
+	NULL,
+	wiz_create_item_display,
+	wiz_create_item_action,
+	NULL
 };
 
 
-
 /*
- * Get an object kind for creation (or zero)
- *
- * List up to 60 choices in three columns
+ * Choose and create an instance of an object kind
  */
-static int wiz_create_itemtype(void)
+static void wiz_create_item(void)
 {
-	int i, num, max_num;
-	int col, row;
-	int tval;
+	menu_type *menu = menu_new(MN_SKIN_COLUMNS, &wiz_create_item_menu);
 
-	cptr tval_desc;
-	char ch;
+	menu->selections = all_letters;
+	menu->title = "What kind of object?";
 
-	int choice[60];
-	static const char choice_name[] = "abcdefghijklmnopqrst"
-	                                  "ABCDEFGHIJKLMNOPQRST"
-	                                  "0123456789:;<=>?@%&*";
-	const char *cp;
+	screen_save();
+	clear_from(0);
 
-	char buf[160];
+	menu_setpriv(menu, N_ELEMENTS(tvals), tvals);
+	menu_layout(menu, &wiz_create_item_area);
+	menu_select(menu, 0);
 
-
-	/* Clear screen */
-	Term_clear();
-
-	/* Print all tval's and their descriptions */
-	for (num = 0; (num < 60) && tvals[num].tval; num++)
-	{
-		row = 2 + (num % 20);
-		col = 30 * (num / 20);
-		ch  = choice_name[num];
-		prt(format("[%c] %s", ch, tvals[num].desc), row, col);
-	}
-
-	/* We need to know the maximal possible tval_index */
-	max_num = num;
-
-	/* Choose! */
-	if (!get_com("Get what type of object? ", &ch)) return (0);
-
-	/* Analyze choice */
-	num = -1;
-	if ((cp = strchr(choice_name, ch)) != NULL)
-		num = cp - choice_name;
-
-	/* Bail out if choice is illegal */
-	if ((num < 0) || (num >= max_num)) return (0);
-
-	/* Base object type chosen, fill in tval */
-	tval = tvals[num].tval;
-	tval_desc = tvals[num].desc;
-
-
-	/*** And now we go for k_idx ***/
-
-	/* Clear screen */
-	Term_clear();
-
-	/* We have to search the whole itemlist. */
-	for (num = 0, i = 1; (num < 60) && (i < z_info->k_max); i++)
-	{
-		object_kind *k_ptr = &k_info[i];
-
-		/* Analyze matching items */
-		if (k_ptr->tval == tval)
-		{
-			/* Hack -- Skip instant artifacts */
-			if (k_ptr->flags[2] & (TR2_INSTA_ART)) continue;
-
-			/* Prepare it */
-			row = 2 + (num % 20);
-			col = 30 * (num / 20);
-			ch  = choice_name[num];
-
-			/* Get the "name" of object "i" */
-			object_kind_name(buf, sizeof buf, i, TRUE);
-
-			/* Print it */
-			prt(format("[%c] %s", ch, buf), row, col);
-
-			/* Remember the object index */
-			choice[num++] = i;
-		}
-	}
-
-	/* Me need to know the maximal possible remembered object_index */
-	max_num = num;
-
-	/* Choose! */
-	if (!get_com(format("What Kind of %s? ", tval_desc), &ch)) return (0);
-
-	/* Analyze choice */
-	num = -1;
-	if ((cp = strchr(choice_name, ch)) != NULL)
-		num = cp - choice_name;
-
-	/* Bail out if choice is "illegal" */
-	if ((num < 0) || (num >= max_num)) return (0);
-
-	/* And return successful */
-	return (choice[num]);
+	screen_load();
 }
+
 
 
 /*
@@ -546,29 +584,20 @@ static void wiz_tweak_item(object_type *o_ptr)
 	/* Hack -- leave artifacts alone */
 	if (artifact_p(o_ptr)) return;
 
-	p = "Enter new 'pval' setting: ";
-	strnfmt(tmp_val, sizeof(tmp_val), "%d", o_ptr->pval);
-	if (!get_string(p, tmp_val, 6)) return;
-	o_ptr->pval = atoi(tmp_val);
-	wiz_display_item(o_ptr, TRUE);
+#define WIZ_TWEAK(attribute) do {\
+	p = "Enter new '" #attribute "' setting: ";\
+	strnfmt(tmp_val, sizeof(tmp_val), "%d", o_ptr->attribute);\
+	if (!get_string(p, tmp_val, 6)) return;\
+	o_ptr->attribute = atoi(tmp_val);\
+	wiz_display_item(o_ptr, TRUE);\
+} while (0)
 
-	p = "Enter new 'to_a' setting: ";
-	strnfmt(tmp_val, sizeof(tmp_val), "%d", o_ptr->to_a);
-	if (!get_string(p, tmp_val, 6)) return;
-	o_ptr->to_a = atoi(tmp_val);
-	wiz_display_item(o_ptr, TRUE);
-
-	p = "Enter new 'to_h' setting: ";
-	strnfmt(tmp_val, sizeof(tmp_val), "%d", o_ptr->to_h);
-	if (!get_string(p, tmp_val, 6)) return;
-	o_ptr->to_h = atoi(tmp_val);
-	wiz_display_item(o_ptr, TRUE);
-
-	p = "Enter new 'to_d' setting: ";
-	strnfmt(tmp_val, sizeof(tmp_val), "%d", o_ptr->to_d);
-	if (!get_string(p, tmp_val, 6)) return;
-	o_ptr->to_d = atoi(tmp_val);
-	wiz_display_item(o_ptr, TRUE);
+	WIZ_TWEAK(pval);
+	WIZ_TWEAK(to_a);
+	WIZ_TWEAK(to_h);
+	WIZ_TWEAK(to_d);
+	WIZ_TWEAK(name1);
+	WIZ_TWEAK(name2);
 }
 
 
@@ -616,21 +645,21 @@ static void wiz_reroll_item(object_type *o_ptr)
 		/* Apply normal magic, but first clear object */
 		else if (ch == 'n' || ch == 'N')
 		{
-			object_prep(i_ptr, o_ptr->k_idx, p_ptr->depth, RANDOMISE);
+			object_prep(i_ptr, o_ptr->kind, p_ptr->depth, RANDOMISE);
 			apply_magic(i_ptr, p_ptr->depth, FALSE, FALSE, FALSE);
 		}
 
 		/* Apply good magic, but first clear object */
 		else if (ch == 'g' || ch == 'g')
 		{
-			object_prep(i_ptr, o_ptr->k_idx, p_ptr->depth, RANDOMISE);
+			object_prep(i_ptr, o_ptr->kind, p_ptr->depth, RANDOMISE);
 			apply_magic(i_ptr, p_ptr->depth, FALSE, TRUE, FALSE);
 		}
 
 		/* Apply great magic, but first clear object */
 		else if (ch == 'e' || ch == 'e')
 		{
-			object_prep(i_ptr, o_ptr->k_idx, p_ptr->depth, RANDOMISE);
+			object_prep(i_ptr, o_ptr->kind, p_ptr->depth, RANDOMISE);
 			apply_magic(i_ptr, p_ptr->depth, FALSE, TRUE, TRUE);
 		}
 	}
@@ -842,10 +871,8 @@ static void wiz_quantity_item(object_type *o_ptr, bool carried)
 
 	char tmp_val[3];
 
-
 	/* Never duplicate artifacts */
 	if (artifact_p(o_ptr)) return;
-
 
 	/* Default */
 	strnfmt(tmp_val, sizeof(tmp_val), "%d", o_ptr->number);
@@ -870,11 +897,8 @@ static void wiz_quantity_item(object_type *o_ptr, bool carried)
 			p_ptr->total_weight += (tmp_int * o_ptr->weight);
 		}
 
-		/* Adjust charge for rods */
-		if (o_ptr->tval == TV_ROD)
-		{
-			o_ptr->pval = (o_ptr->pval / o_ptr->number) * tmp_int;
-		}
+		/* Adjust charges/timeouts for devices */
+		reduce_charges(o_ptr, (o_ptr->number - tmp_int));
 
 		/* Accept modifications */
 		o_ptr->number = tmp_int;
@@ -892,15 +916,15 @@ static void wiz_tweak_curse(object_type *o_ptr)
 	if (cursed_p(o_ptr))
 	{
 		msg_print("Resetting existing curses.");
-		o_ptr->flags[2] &= ~TR2_CURSE_MASK;
+		flags_clear(o_ptr->flags, OF_SIZE, OF_CURSE_MASK, FLAG_END);
 	}
 
 	if (get_check("Set light curse? "))
-		o_ptr->flags[2] |= TR2_LIGHT_CURSE;
+		flags_set(o_ptr->flags, OF_SIZE, OF_LIGHT_CURSE, FLAG_END);
 	else if (get_check("Set heavy curse? "))
-		o_ptr->flags[2] |= (TR2_LIGHT_CURSE | TR2_HEAVY_CURSE);
+		flags_set(o_ptr->flags, OF_SIZE, OF_LIGHT_CURSE, OF_HEAVY_CURSE, FLAG_END);
 	else if (get_check("Set permanent curse? "))
-		o_ptr->flags[2] |= (TR2_LIGHT_CURSE | TR2_HEAVY_CURSE | TR2_PERMA_CURSE);
+		flags_set(o_ptr->flags, OF_SIZE, OF_LIGHT_CURSE, OF_HEAVY_CURSE, OF_PERMA_CURSE, FLAG_END);
 }
 
 
@@ -933,7 +957,7 @@ static void do_cmd_wiz_play(void)
 	/* Get an item */
 	q = "Play with which object? ";
 	s = "You have nothing to play with.";
-	if (!get_item(&item, q, s, (USE_EQUIP | USE_INVEN | USE_FLOOR))) return;
+	if (!get_item(&item, q, s, 0, (USE_EQUIP | USE_INVEN | USE_FLOOR))) return;
 
 	o_ptr = object_from_item_idx(item);
 
@@ -1013,62 +1037,6 @@ static void do_cmd_wiz_play(void)
 
 
 /*
- * Wizard routine for creating objects
- *
- * Note that wizards cannot create objects on top of other objects.
- *
- * Hack -- this routine always makes a "dungeon object", and applies
- * magic to it, and attempts to decline cursed items. XXX XXX XXX
- */
-static void wiz_create_item(void)
-{
-	int py = p_ptr->py;
-	int px = p_ptr->px;
-
-	object_type *i_ptr;
-	object_type object_type_body;
-
-	int k_idx;
-
-
-	/* Save screen */
-	screen_save();
-
-	/* Get object base type */
-	k_idx = wiz_create_itemtype();
-
-	/* Load screen */
-	screen_load();
-
-
-	/* Return if failed */
-	if (!k_idx) return;
-
-	/* Get local object */
-	i_ptr = &object_type_body;
-
-	/* Create the item */
-	object_prep(i_ptr, k_idx, p_ptr->depth, RANDOMISE);
-
-	/* Apply magic (no messages, no artifacts) */
-	apply_magic(i_ptr, p_ptr->depth, FALSE, FALSE, FALSE);
-
-	/* Mark as cheat, and where created */
-	i_ptr->origin = ORIGIN_CHEAT;
-	i_ptr->origin_depth = p_ptr->depth;
-
-	if (k_info[k_idx].tval == TV_GOLD)
-		make_gold(i_ptr, p_ptr->depth, k_info[k_idx].sval);
-
-	/* Drop the object from heaven */
-	drop_near(i_ptr, 0, py, px, TRUE);
-
-	/* All done */
-	msg_print("Allocated.");
-}
-
-
-/*
  * Create the artifact with the specified number
  */
 static void wiz_create_artifact(int a_idx)
@@ -1095,7 +1063,7 @@ static void wiz_create_artifact(int a_idx)
 	if (!k_idx) return;
 
 	/* Create the artifact */
-	object_prep(i_ptr, k_idx, a_ptr->alloc_min, RANDOMISE);
+	object_prep(i_ptr, &k_info[k_idx], a_ptr->alloc_min, RANDOMISE);
 
 	/* Save the name */
 	i_ptr->name1 = a_idx;
@@ -1112,7 +1080,12 @@ static void wiz_create_artifact(int a_idx)
 
 	/* Hack -- extract the "cursed" flags */
 	if (cursed_p(a_ptr))
-		i_ptr->flags[2] |= (a_ptr->flags[2] & TR2_CURSE_MASK);
+	{
+		bitflag curse_flags[OF_SIZE];
+		of_copy(curse_flags, a_ptr->flags);
+		flags_mask(curse_flags, OF_SIZE, OF_CURSE_MASK, FLAG_END);
+		of_union(i_ptr->flags, curse_flags);
+	}
 
 	/* Mark that the artifact has been created. */
 	a_ptr->created = TRUE;
@@ -1239,7 +1212,7 @@ static void do_cmd_wiz_learn(void)
 			i_ptr = &object_type_body;
 
 			/* Prepare object */
-			object_prep(i_ptr, i, 0, MAXIMISE);
+			object_prep(i_ptr, k_ptr, 0, MAXIMISE);
 
 			/* Awareness */
 			object_flavor_aware(i_ptr);
@@ -1502,7 +1475,7 @@ static void wiz_test_kind(int tval)
 		if (k_idx)
 		{
 			/* Create the item */
-			object_prep(i_ptr, k_idx, p_ptr->depth, RANDOMISE);
+			object_prep(i_ptr, &k_info[k_idx], p_ptr->depth, RANDOMISE);
 
 			/* Apply magic (no messages, no artifacts) */
 			apply_magic(i_ptr, p_ptr->depth, FALSE, FALSE, FALSE);

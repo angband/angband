@@ -43,4 +43,9 @@ struct data_panel
 	type_union value[MAX_FMT];	/* (short) arugment list */
 };
 
+struct point {
+	int x;
+	int y;
+};
+
 #endif /* !INCLUDED_ZTYPE_H */

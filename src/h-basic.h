@@ -11,15 +11,6 @@
 #else
 
 /*
- * Extract the "RISCOS" flag from the compiler
- */
-# ifdef __riscos
-#  ifndef RISCOS
-#   define RISCOS
-#  endif
-# endif
-
-/*
  * Extract the "WINDOWS" flag from the compiler
  */
 # if defined(_Windows) || defined(__WINDOWS__) || \
@@ -53,10 +44,8 @@
 /*
  * Everyone except RISC OS has fcntl.h and sys/stat.h
  */
-#ifndef RISCOS
-# define HAVE_FCNTL_H
-# define HAVE_STAT
-#endif
+#define HAVE_FCNTL_H
+#define HAVE_STAT
 
 #endif /* HAVE_CONFIG_H */
 
@@ -75,7 +64,7 @@
  * Basically, SET_UID should *only* be set for "Unix" machines.
  */
 #if !defined(MACH_O_CARBON) && !defined(WINDOWS) && \
-    !defined(RISCOS) && !defined(GAMEBOY) && !defined(NDS)
+		!defined(GAMEBOY) && !defined(NDS)
 # define SET_UID
 
 /* Without autoconf, turn on some things */

@@ -16,7 +16,7 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
-
+#include "macro.h"
 
 /*
  * This file helps Angband work with UNIX/X11 computers.
@@ -1762,6 +1762,15 @@ static errr CheckEvent(bool wait)
 	/* Do not wait unless requested */
 	if (!wait && !XPending(Metadpy->dpy)) return (1);
 
+	/* Wait in 0.02s increments while updating animations every 0.2s */
+	i = 0;
+	while (!XPending(Metadpy->dpy))
+	{
+		if (i == 0) idle_update();
+		usleep(20000);
+		i = (i + 1) % 10;
+	}
+
 	/* Load the Event */
 	XNextEvent(Metadpy->dpy, xev);
 
@@ -1887,7 +1896,7 @@ static errr CheckEvent(bool wait)
 		/* Move and/or Resize */
 		case ConfigureNotify:
 		{
-			int cols, rows, wid, hgt;
+                        int cols, rows, wid, hgt, force_resize;
 
 			int ox = Infowin->ox;
 			int oy = Infowin->oy;
@@ -1909,24 +1918,25 @@ static errr CheckEvent(bool wait)
 			if (window == 0)
 			{
 				/* Hack the main window must be at least 80x24 */
-				if (cols < 80) cols = 80;
-				if (rows < 24) rows = 24;
-			}
+                                force_resize = FALSE;
+                                if (cols < 80) { cols = 80; force_resize = TRUE; }
+				if (rows < 24) { rows = 24; force_resize = TRUE; }
 
+                                /* Resize the windows if any "change" is needed */
+                                if (force_resize)
+                                  {
 			/* Desired size of window */
 			wid = cols * td->tile_wid + (ox + ox);
 			hgt = rows * td->tile_hgt + (oy + oy);
 
-			/* Resize the Term (if needed) */
-			(void)Term_resize(cols, rows);
-
-			/* Resize the windows if any "change" is needed */
-			if ((Infowin->w != wid) || (Infowin->h != hgt))
-			{
 				/* Resize window */
 				Infowin_set(td->win);
 				Infowin_resize(wid, hgt);
 			}
+			}
+
+			/* Resize the Term (if needed) */
+			(void)Term_resize(cols, rows);
 
 			break;
 		}
@@ -2423,11 +2433,8 @@ static errr term_data_init(term_data *td, int i)
 	if (td->tile_wid <= 0) td->tile_wid = td->fnt->twid;
 	if (td->tile_hgt <= 0) td->tile_hgt = td->fnt->hgt;
 
-	/* Allow bigtile mode */
-	if (use_bigtile)
-		td->tile_wid2 = td->tile_wid * 2;
-	else
-		td->tile_wid2 = td->tile_wid;
+	/* Don't allow bigtile mode - one day maybe NRM */
+	td->tile_wid2 = td->tile_wid;
 
 	/* Hack -- key buffer size */
 	num = ((i == 0) ? 1024 : 16);

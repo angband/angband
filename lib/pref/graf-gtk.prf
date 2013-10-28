@@ -36,6 +36,10 @@ V:31:0x01:0x60:0xF0:0x40
 ?:[EQU $GRAF new]
 %:graf-new.prf
 
+# New tiles
+?:[EQU $GRAF nomad]
+%:graf-nmd.prf
+
 # David Gervais tiles
 ?:[EQU $GRAF david]
 %:graf-dvg.prf

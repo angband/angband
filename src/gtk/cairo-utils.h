@@ -34,11 +34,6 @@ struct font_info
 	int w,h, descent, size;
 };
 
-struct point
-{
-	int x,y;
-};
-
 struct measurements
 {
 	int w,h;
