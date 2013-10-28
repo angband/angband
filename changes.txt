@@ -1,11 +1,17 @@
-Angband 3.0.9a
+Angband 3.0.9b
 =============
 
-Angband 3.0.9a is a bugfix version of 3.0.9.  It fixes the bug where
-monsters act far too stupidly.  It also changes store UI behaviour so
-that pressing Enter no longer initialises buying, but rather 'p' does.
-
-This version also fixes a small bug with autoconf support.
+Angband 3.0.9b is a bugfix version of 3.0.9.  It makes the following
+changes on top of those mentioned below:
+ - Monsters are back up to their pre-3.0.9 levels of smartness.
+ - Store UI behaviour changed so that pressing Enter no longer
+   initiates buying.
+ - Fix detection of curses libraries using autoconf.
+ - Fix broken install using autoconf.
+ - Add the tvals for oil and dragon armor to the tval squelch list.
+ - Once again dump modified colour information to pref files.
+ - Fix warnings when compiling the SDL port.
+ - Fix up roguelike keys in the store (vs. 3.0.9a)
 
 Angband 3.0.9 had the following changelist:
 

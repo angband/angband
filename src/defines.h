@@ -36,7 +36,7 @@
  * Name of the version/variant and its version string
  */
 #define VERSION_NAME   "Angband"
-#define VERSION_STRING "3.0.9"
+#define VERSION_STRING "3.0.9b"
 
 
 /*
