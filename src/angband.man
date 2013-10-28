@@ -55,10 +55,7 @@ in the vein of
 and 
 .I moria.
 .B Angband 
-3.2.0 is an official stable release incorporating all the changes
-and improvements added since the last official stable release (
-.B Angband 
-3.0.9b).
+3.3.2 is an official stable release which fixes some bugs in 3.3.1.
 .PP
 This version of
 .B Angband
@@ -91,7 +88,7 @@ Rebalance monsters
 Show <num> high scores
 .TP
 .BR \-u<who>  
-Use your <who> savefile
+Use your <UID.who> savefile
 .TP
 .BR \-m<sys>  
 Use <sys> core code (e.g. gcu for console mode, x11 or sdl for graphics)
@@ -109,7 +106,7 @@ the command
 .B ?
 and presents a menu of choices.
 .PP
-Program options can be set  using the = command. To see what the
+Program options can be set using the = command. To see what the
 various options mean, access the List of Options help menu with the ?
 command. 
 .SH "SEE ALSO"

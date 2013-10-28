@@ -48,9 +48,6 @@
 #define BASE_AC_POWER            2 /* i.e. 1 */
 #define TO_AC_POWER              2 /* i.e. 1 */
 #define MAX_BLOWS                5
-#define INHIBIT_BLOWS            3
-#define INHIBIT_MIGHT            4
-#define INHIBIT_SHOTS            3
 #define INHIBIT_IMMUNITIES       4
 
 /**

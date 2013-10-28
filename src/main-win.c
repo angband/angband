@@ -3945,11 +3945,17 @@ static void handle_keydown(WPARAM wParam, LPARAM lParam)
 		case VK_CLEAR: ch = '5'; kp=TRUE; break;
 		case VK_PAUSE: ch = KC_PAUSE; break;
 
-		case VK_ADD: ch = '+'; kp = TRUE; break;
-		case VK_SUBTRACT: ch = '-'; kp = TRUE; break;
-		case VK_MULTIPLY: ch = '*'; kp = TRUE; break;
-		case VK_DIVIDE: ch = '/'; kp = TRUE; break;
-		case VK_DECIMAL: ch = '.'; kp = TRUE; break;
+		/* have have these to get consistent ctrl-shift behaviour */
+		case '0': if (mc || ma) ch = '0'; break;
+		case '1': if (mc || ma) ch = '1'; break;
+		case '2': if (mc || ma) ch = '2'; break;
+		case '3': if (mc || ma) ch = '3'; break;
+		case '4': if (mc || ma) ch = '4'; break;
+		case '5': if (mc || ma) ch = '5'; break;
+		case '6': if (mc || ma) ch = '6'; break;
+		case '7': if (mc || ma) ch = '7'; break;
+		case '8': if (mc || ma) ch = '8'; break;
+		case '9': if (mc || ma) ch = '9'; break;
 	}
 
 	/* we could fall back on using the scancode */
