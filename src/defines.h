@@ -28,36 +28,24 @@
  * be defined in this file, but which may be related to definitions here.
  * This is of course bad programming practice, but nobody is perfect...
  *
- * For example, there are MANY things that depend on the screen being
- * 80x24, with the top line used for messages, the bottom line being
- * used for status, and exactly 22 lines used to show the dungeon.
- * Just because your screen can hold 46 lines does not mean that the
- * game will work if you try to use 44 lines to show the dungeon.
- *
  * You have been warned.
  */
 
 
 /*
- * Name of the version/variant
+ * Name of the version/variant and its version string
  */
-#define VERSION_NAME "Angband"
+#define VERSION_NAME   "Angband"
+#define VERSION_STRING "3.0.8"
 
 
 /*
- * Current version string
- */
-#define VERSION_STRING	"3.0.7s"
-
-
-/*
- * Current version numbers
+ * Current savefile version
  */
 #define VERSION_MAJOR	3
 #define VERSION_MINOR	0
-#define VERSION_PATCH	6
-#define VERSION_EXTRA	4
-
+#define VERSION_PATCH	10
+#define VERSION_EXTRA	0
 
 /*
  * Oldest version number that can still be imported
@@ -215,9 +203,8 @@
 
 /*
  * OPTION: Maximum number of macros (see "util.c")
- * Default: assume at most 256 macros are used
  */
-#define MACRO_MAX	256
+#define MACRO_MAX	512
 
 /*
  * OPTION: Maximum number of "quarks" (see "util.c")
@@ -245,26 +232,15 @@
 
 
 /*
- * Maximum value storable in a "byte" (hard-coded)
- */
-#define MAX_UCHAR       255
-
-/*
- * Maximum value storable in a "s16b" (hard-coded)
- */
-#define MAX_SHORT       32767
-
-
-/*
  * Store constants
+ *
+ * STORE_MAX_KEEP must be < STORE_INVEN_MAX.
+ *
  */
 #define STORE_INVEN_MAX	24		/* Max number of discrete objs in inven */
-#define STORE_OBJ_LEVEL	5		/* Magic Level for normal stores */
-#define STORE_TURNOVER	9		/* Normal shop turnover, per day */
-#define STORE_MIN_KEEP	6		/* Min slots to "always" keep full */
-#define STORE_MAX_KEEP	18		/* Max slots to "always" keep full */
-#define STORE_SHUFFLE	25		/* 1/Chance (per day) of an owner changing */
 #define STORE_TURNS		1000	/* Number of turns between turnovers */
+#define STORE_SHUFFLE	25		/* 1/Chance (per day) of an owner changing */
+#define STORE_CHOICES	32		/* Number of choices in the store selection table */
 
 
 /*
@@ -304,7 +280,7 @@
 /*
  * Refueling constants
  */
-#define FUEL_TORCH	5000	/* Maximum amount of fuel in a torch */
+#define FUEL_TORCH	6000	/* Maximum amount of fuel in a torch */
 #define FUEL_LAMP	15000   /* Maximum amount of fuel in a lantern */
 
 
@@ -431,7 +407,13 @@
 /*
  * Total number of inventory slots (hard-coded).
  */
-#define INVEN_TOTAL	36
+#define INVEN_TOTAL		36
+
+
+/*
+ * Special return code corresponding to squelched items.
+ */
+#define ALL_SQUELCHED	101
 
 
 /*
@@ -449,20 +431,56 @@
 #define MAX_FLOOR_STACK			23
 
 
+/*** Constants for accessing the player struct ***/
+
+/*
+ * Timed effects
+ */
+enum
+{
+	TMD_FAST = 0, TMD_SLOW, TMD_BLIND, TMD_PARALYZED, TMD_CONFUSED,
+	TMD_AFRAID, TMD_IMAGE, TMD_POISONED, TMD_CUT, TMD_STUN, TMD_PROTEVIL,
+	TMD_INVULN, TMD_HERO, TMD_SHERO, TMD_SHIELD, TMD_BLESSED, TMD_SINVIS,
+	TMD_SINFRA, TMD_OPP_ACID, TMD_OPP_ELEC, TMD_OPP_FIRE, TMD_OPP_COLD,
+	TMD_OPP_POIS, TMD_AMNESIA,
+
+	TMD_MAX
+};
+
+/*
+ * Skill indexes
+ */
+enum
+{
+	SKILL_DIS,	/* Skill: Disarming */
+	SKILL_DEV,	/* Skill: Magic Devices */
+	SKILL_SAV,	/* Skill: Saving throw */
+	SKILL_STL,	/* Skill: Stealth factor */
+	SKILL_SRH,	/* Skill: Searching ability */
+	SKILL_FOS,	/* Skill: Searching frequency */
+	SKILL_THN,	/* Skill: To hit (normal) */
+	SKILL_THB,	/* Skill: To hit (shooting) */
+	SKILL_THT,	/* Skill: To hit (throwing) */
+	SKILL_DIG,	/* Skill: Digging */
+
+	SKILL_MAX
+};
+
+
 /*
  * Indexes of the various "stats" (hard-coded by savefiles, etc).
  */
-#define A_STR	0
-#define A_INT	1
-#define A_WIS	2
-#define A_DEX	3
-#define A_CON	4
-#define A_CHR	5
+enum
+{
+	A_STR = 0,
+	A_INT,
+	A_WIS,
+	A_DEX,
+	A_CON,
+	A_CHR,
 
-/*
- * Total number of stats.
- */
-#define A_MAX	6
+	A_MAX
+};
 
 
 /*
@@ -471,92 +489,6 @@
 #define SEX_FEMALE		0
 #define SEX_MALE		1
 
-
-/*** Screen Locations ***/
-
-/*
- * Some screen locations for various display routines
- * Currently, row 8 and 15 are the only "blank" rows.
- * That leaves a "border" around the "stat" values.
- */
-
-#define ROW_RACE		1
-#define COL_RACE		0	/* <race name> */
-
-#define ROW_CLASS		2
-#define COL_CLASS		0	/* <class name> */
-
-#define ROW_TITLE		3
-#define COL_TITLE		0	/* <title> or <mode> */
-
-#define ROW_LEVEL		4
-#define COL_LEVEL		0	/* "LEVEL xxxxxx" */
-
-#define ROW_EXP			5
-#define COL_EXP			0	/* "EXP xxxxxxxx" */
-
-#define ROW_GOLD		6
-#define COL_GOLD		0	/* "AU xxxxxxxxx" */
-
-#define ROW_EQUIPPY		7
-#define COL_EQUIPPY		0	/* equippy chars */
-
-#define ROW_STAT		8
-#define COL_STAT		0	/* "xxx   xxxxxx" */
-
-#define ROW_AC			15
-#define COL_AC			0	/* "Cur AC xxxxx" */
-
-#define ROW_MAXHP		16
-#define COL_MAXHP		0	/* "Max HP xxxxx" */
-
-#define ROW_CURHP		17
-#define COL_CURHP		0	/* "Cur HP xxxxx" */
-
-#define ROW_MAXSP		18
-#define COL_MAXSP		0	/* "Max SP xxxxx" */
-
-#define ROW_CURSP		19
-#define COL_CURSP		0	/* "Cur SP xxxxx" */
-
-#define ROW_INFO		20
-#define COL_INFO		0	/* "xxxxxxxxxxxx" */
-
-#define ROW_CUT			21
-#define COL_CUT			0	/* <cut> */
-
-#define ROW_STUN		22
-#define COL_STUN		0	/* <stun> */
-
-#define ROW_HUNGRY		(Term->hgt - 1)
-#define COL_HUNGRY		0	/* "Weak" / "Hungry" / "Full" / "Gorged" */
-
-#define ROW_BLIND		(Term->hgt - 1)
-#define COL_BLIND		7	/* "Blind" */
-
-#define ROW_CONFUSED	(Term->hgt - 1)
-#define COL_CONFUSED	13	/* "Confused" */
-
-#define ROW_AFRAID		(Term->hgt - 1)
-#define COL_AFRAID		22	/* "Afraid" */
-
-#define ROW_POISONED	(Term->hgt - 1)
-#define COL_POISONED	29	/* "Poisoned" */
-
-#define ROW_STATE		(Term->hgt - 1)
-#define COL_STATE		38	/* <state> */
-
-#define ROW_SPEED		(Term->hgt - 1)
-#define COL_SPEED		49	/* "Slow (-NN)" or "Fast (+NN)" */
-
-#define ROW_STUDY		(Term->hgt - 1)
-#define COL_STUDY		64	/* "Study" */
-
-#define ROW_DEPTH		(Term->hgt - 1)
-#define COL_DEPTH		70	/* "Lev NNN" / "NNNN ft" */
-
-#define ROW_OPPOSE_ELEMENTS	(Term->hgt - 1)
-#define COL_OPPOSE_ELEMENTS	80	/* "Acid Elec Fire Cold Pois" */
 
 
 /*** General index values ***/
@@ -673,19 +605,16 @@
 
 
 /*
- * Number of keymap modes
+ * Keymap modes.
  */
-#define KEYMAP_MODES	2
+enum
+{
+	KEYMAP_MODE_ORIG = 0,
+	KEYMAP_MODE_ROGUE,
 
-/*
- * Mode for original keyset commands
- */
-#define KEYMAP_MODE_ORIG	0
+	KEYMAP_MODES		/* Total */
+};
 
-/*
- * Mode for roguelike keyset commands
- */
-#define KEYMAP_MODE_ROGUE	1
 
 
 /*** Feature Indexes (see "lib/edit/feature.txt") ***/
@@ -1418,6 +1347,29 @@
 #define SV_FOOD_PINT_OF_ALE		38
 #define SV_FOOD_PINT_OF_WINE	39
 
+/* The "sval" codes for TV_GOLD */
+#define SV_COPPER1                        1
+#define SV_COPPER2                        2
+#define SV_COPPER3                        3
+#define SV_SILVER1                        4
+#define SV_SILVER2                        5
+#define SV_SILVER3                        6
+#define SV_GARNETS1                       7
+#define SV_GARNETS2                       8
+#define SV_GOLD1                          9
+#define SV_GOLD2                         10
+#define SV_GOLD3                         11
+#define SV_OPALS                         12
+#define SV_SAPPHIRES                     13
+#define SV_RUBIES                        14
+#define SV_DIAMONDS                      15
+#define SV_EMERALDS                      16
+#define SV_MITHRIL                       17
+#define SV_ADAMANTITE                    18
+
+#define SV_GOLD_MAX                      19
+
+
 
 /*
  * Special "sval" limit -- first "normal" food
@@ -1449,40 +1401,18 @@
 
 /*** Squelch stuff ***/
 
-/* XXX Too many things beginning with SQUELCH_ */
-
-/*
- * Squelch modes for k_info->squelch
- */
-#define SQUELCH_NEVER               0 /* Allow pickup, defer to OPT_always_pickup */
-#define NO_SQUELCH_NEVER_PICKUP     1 /* Never pickup, override OPT_always_pickup */ 
-#define NO_SQUELCH_ALWAYS_PICKUP    2 /* Always pickup, override all other options */
-#define SQUELCH_ALWAYS              3 /* Destroy when player walks over */
-
-/*
- * These are the return values of squelch_item_ok().
- */
-#define SQUELCH_FAILED -1
-#define SQUELCH_NO      0
-#define SQUELCH_YES     1
-
-/*
- * Possible levels of quality squelching
- */
-#define SQUELCH_NONE            0 /* No squelch */
-#define SQUELCH_CURSED          1 /* Squelch only cursed items */
-#define SQUELCH_AVERAGE         2 /* Squelch average and worse items */
-#define SQUELCH_GOOD_STRONG     3 /* Squelch good and worse items */
-#define SQUELCH_GOOD_WEAK       4 /* Squelch good and worse items (weak pseudo-id) */
-#define SQUELCH_ALL             5 /* Squelch everything save artifacts */
-
-#define SQUELCH_OPENED_CHESTS   6 /* Squelch open chests */
-
-/* XXX Others defined at beginning of squelch.c */
-#define CHEST_INDEX     19
-
 /* Number of bytes used in squelch sub-quality array */
-#define SQUELCH_BYTES    24
+#define SQUELCH_BYTES    6
+
+
+
+/*** Monster AI stuff ***/
+
+/*
+ * Maximum flow depth when using "MONSTER_FLOW"
+ */
+#define MONSTER_FLOW_DEPTH 3
+
 
 
 /*** Monster blow constants ***/
@@ -1619,7 +1549,7 @@
 #define USE_EQUIP		0x01	/* Allow equip items */
 #define USE_INVEN		0x02	/* Allow inven items */
 #define USE_FLOOR		0x04	/* Allow floor items */
-
+#define CAN_SQUELCH		0x08	/* Allow selection of all squelched items */
 
 
 /*** Player flags ***/
@@ -1628,9 +1558,11 @@
 /*
  * Bit flags for the "p_ptr->notice" variable
  */
-#define PN_COMBINE		0x00000001L	/* Combine the pack */
-#define PN_REORDER		0x00000002L	/* Reorder the pack */
+#define PN_COMBINE      0x00000001L	/* Combine the pack */
+#define PN_REORDER      0x00000002L	/* Reorder the pack */
 #define PN_AUTOINSCRIBE	0x00000004L	/* Autoinscribe items */
+#define PN_PICKUP       0x00000008L	/* Pick stuff up */
+#define PN_SQUELCH      0x00000010L	/* Squelch stuff */
 /* xxx (many) */
 
 
@@ -1690,7 +1622,7 @@
 #define PR_BASIC \
 	(PR_MISC | PR_TITLE | PR_STATS | PR_LEV |\
 	 PR_EXP | PR_GOLD | PR_ARMOR | PR_HP |\
-	 PR_MANA | PR_DEPTH | PR_HEALTH)
+	 PR_MANA | PR_DEPTH | PR_HEALTH | PR_EQUIPPY)
 
 /* Display Extra Info */
 #define PR_EXTRA \
@@ -1700,7 +1632,7 @@
 
 
 /*
- * Bit flags for the "p_ptr->window" variable (etc)
+ * Bit flags for the "p_ptr->window" variable.
  */
 #define PW_INVEN            0x00000001L /* Display inven/equip */
 #define PW_EQUIP            0x00000002L /* Display equip/inven */
@@ -1714,10 +1646,12 @@
 #define PW_OBJECT           0x00000200L /* Display object recall */
 #define PW_MONLIST          0x00000400L /* Display monster list */
 #define PW_STATUS           0x00000800L /* Display status */
-#define PW_SCRIPT_VARS      0x00001000L /* Display script variables */
-#define PW_SCRIPT_SOURCE    0x00002000L /* Display script source */
+/* xxx */
 #define PW_BORG_1           0x00004000L /* Display borg messages */
 #define PW_BORG_2           0x00008000L /* Display borg status */
+
+
+#define PW_MAX_FLAGS		16
 
 
 /*** Cave flags ***/
@@ -1755,7 +1689,7 @@
  * Special object flags
  */
 #define IDENT_SENSE     0x01	/* Item has been "sensed" */
-/* XXX */
+/* ... */
 #define IDENT_EMPTY     0x04	/* Item charges are known */
 #define IDENT_KNOWN     0x08	/* Item abilities are known */
 #define IDENT_STORE     0x10	/* Item is in the inventory of a store */
@@ -1767,17 +1701,18 @@
 /*
  * The special inscriptions.
  */
-#define INSCRIP_NULL            100
-#define INSCRIP_TERRIBLE        100+1
-#define INSCRIP_WORTHLESS       100+2
-#define INSCRIP_CURSED          100+3
-#define INSCRIP_BROKEN          100+4
-#define INSCRIP_AVERAGE         100+5
-#define INSCRIP_GOOD            100+6
-#define INSCRIP_EXCELLENT       100+7
-#define INSCRIP_SPECIAL         100+8
-#define INSCRIP_UNCURSED        100+9
-#define INSCRIP_INDESTRUCTIBLE  100+10
+#define INSCRIP_NULL            0
+#define INSCRIP_TERRIBLE        1
+#define INSCRIP_WORTHLESS       2
+#define INSCRIP_CURSED          3
+#define INSCRIP_BROKEN          4
+#define INSCRIP_AVERAGE         5
+#define INSCRIP_GOOD            6
+#define INSCRIP_EXCELLENT       7
+#define INSCRIP_SPECIAL         8
+#define INSCRIP_UNCURSED        9
+#define INSCRIP_INDESTRUCTIBLE  10
+#define INSCRIP_SQUELCH			11
 
 /*
  * Number of special inscriptions, plus one.
@@ -1916,7 +1851,7 @@
 #define TR3_SEE_INVIS       0x00000020L /* See Invis */
 #define TR3_FREE_ACT        0x00000040L /* Free action */
 #define TR3_HOLD_LIFE       0x00000080L /* Hold life */
-#define TR3_XXX1            0x00000100L
+#define TR3_NO_FUEL         0x00000100L /* Light source uses no fuel */
 #define TR3_XXX2            0x00000200L
 #define TR3_XXX3            0x00000400L
 #define TR3_XXX4            0x00000800L
@@ -2454,63 +2389,30 @@
  */
 #define OPT_rogue_like_commands		0
 #define OPT_quick_messages			1
-#define OPT_floor_query_flag		2
-#define OPT_carry_query_flag		3
+#define OPT_use_sound               2
+#define OPT_pickup_detail			3
 #define OPT_use_old_target			4
-#define OPT_always_pickup			5
-#define OPT_always_repeat			6
+#define OPT_pickup_always			5
+#define OPT_pickup_inven			6
 #define OPT_depth_in_feet			7
-#define OPT_stack_force_notes		8
-#define OPT_stack_force_costs		9
+
 #define OPT_show_labels				10
-#define OPT_show_weights			11
-#define OPT_show_choices			12
-#define OPT_show_details			13
+
 #define OPT_ring_bell				14
 #define OPT_show_flavors			15
-#define OPT_run_ignore_stairs		16
-#define OPT_run_ignore_doors		17
-#define OPT_run_cut_corners			18
-#define OPT_run_use_corners			19
+
 #define OPT_disturb_move			20
 #define OPT_disturb_near			21
 #define OPT_disturb_panel			22
 #define OPT_disturb_state			23
 #define OPT_disturb_minor			24
-#define OPT_next_xp					25
-/* xxx OPT_alert_hitpoint */
-/* xxx OPT_alert_failure */
-#define OPT_verify_destroy			28
-#define OPT_verify_special			29
-#define OPT_allow_quantity			30
-/* xxx */
-/* xxx OPT_auto_haggle */
-#define OPT_auto_scum				33
-/* xxx testing_stack */
-/* xxx testing_carry */
-#define OPT_expand_look				36
-#define OPT_expand_list				37
+
 #define OPT_view_perma_grids		38
 #define OPT_view_torch_grids		39
-#define OPT_dungeon_align			40
-#define OPT_dungeon_stair			41
-#define OPT_flow_by_sound			42
-#define OPT_flow_by_smell			43
-/* xxx track_follow */
-/* xxx track_target */
-#define OPT_smart_learn				46
-#define OPT_smart_cheat				47
-#define OPT_view_reduce_lite		48
-#define OPT_hidden_player			49
-#define OPT_avoid_abort				50
-#define OPT_avoid_other				51
+
 #define OPT_flush_failure			52
 #define OPT_flush_disturb			53
-/* xxx */
-#define OPT_fresh_before			55
-#define OPT_fresh_after				56
-/* xxx */
-#define OPT_compress_savefile		58
+
 #define OPT_hilite_player			59
 #define OPT_view_yellow_lite		60
 #define OPT_view_bright_lite		61
@@ -2518,182 +2420,156 @@
 #define OPT_view_special_lite		63
 #define OPT_easy_open 				64
 #define OPT_easy_alter 				65
-#define OPT_easy_floor 				66
 #define OPT_show_piles				67
 #define OPT_center_player			68
-#define OPT_run_avoid_center		69
-/* xxx */
+
 #define OPT_auto_more				71
-#define OPT_smart_monsters			72
-#define OPT_smart_packs				73
-/* xxx */
-/* xxx */
-/* xxx */
-/* xxx */
-/* xxx */
-/* xxx */
-/* xxx xxx */
-#define OPT_birth_point_based       (OPT_BIRTH+0)
-#define OPT_birth_auto_roller       (OPT_BIRTH+1)
-#define OPT_birth_maximize          (OPT_BIRTH+2)
-#define OPT_birth_preserve          (OPT_BIRTH+3)
-#define OPT_birth_ironman           (OPT_BIRTH+4)
-#define OPT_birth_no_stores         (OPT_BIRTH+5)
-#define OPT_birth_no_artifacts      (OPT_BIRTH+6)
-#define OPT_birth_rand_artifacts    (OPT_BIRTH+7)
-#define OPT_birth_no_stacking       (OPT_BIRTH+8)
-/* xxx xxx */
+#define OPT_hp_changes_color		74
+#define OPT_hide_squelchable		75
+#define OPT_mouse_movement		77
+
+
+#define OPT_birth_maximize          (OPT_BIRTH+0)
+#define OPT_birth_randarts          (OPT_BIRTH+1)
+#define OPT_birth_autoscum          (OPT_BIRTH+2)
+#define OPT_birth_ironman           (OPT_BIRTH+3)
+#define OPT_birth_no_stores         (OPT_BIRTH+4)
+#define OPT_birth_no_artifacts      (OPT_BIRTH+5)
+#define OPT_birth_no_stacking       (OPT_BIRTH+6)
+#define OPT_birth_no_preserve       (OPT_BIRTH+7)
+#define OPT_birth_no_stairs			(OPT_BIRTH+8)
+/* leave four spaces for future */
+#define OPT_birth_ai_sound			(OPT_BIRTH+13)
+#define OPT_birth_ai_smell			(OPT_BIRTH+14)
+#define OPT_birth_ai_packs			(OPT_BIRTH+15)
+#define OPT_birth_ai_learn			(OPT_BIRTH+16)
+#define OPT_birth_ai_cheat			(OPT_BIRTH+17)
+#define OPT_birth_ai_smart			(OPT_BIRTH+18)
+
 #define OPT_cheat_peek				(OPT_CHEAT+0)
 #define OPT_cheat_hear				(OPT_CHEAT+1)
 #define OPT_cheat_room				(OPT_CHEAT+2)
 #define OPT_cheat_xtra				(OPT_CHEAT+3)
 #define OPT_cheat_know				(OPT_CHEAT+4)
 #define OPT_cheat_live				(OPT_CHEAT+5)
-/* xxx xxx */
-#define OPT_adult_point_based		(OPT_ADULT+0)
-#define OPT_adult_auto_roller		(OPT_ADULT+1)
-#define OPT_adult_maximize			(OPT_ADULT+2)
-#define OPT_adult_preserve			(OPT_ADULT+3)
-#define OPT_adult_ironman			(OPT_ADULT+4)
-#define OPT_adult_no_stores			(OPT_ADULT+5)
-#define OPT_adult_no_artifacts		(OPT_ADULT+6)
-#define OPT_adult_rand_artifacts	(OPT_ADULT+7)
-#define OPT_adult_no_stacking		(OPT_ADULT+8)
-/* xxx xxx */
+
+#define OPT_adult_maximize          (OPT_ADULT+0)
+#define OPT_adult_randarts          (OPT_ADULT+1)
+#define OPT_adult_autoscum          (OPT_ADULT+2)
+#define OPT_adult_ironman           (OPT_ADULT+3)
+#define OPT_adult_no_stores         (OPT_ADULT+4)
+#define OPT_adult_no_artifacts      (OPT_ADULT+5)
+#define OPT_adult_no_stacking       (OPT_ADULT+6)
+#define OPT_adult_no_preserve       (OPT_ADULT+7)
+#define OPT_adult_no_stairs			(OPT_ADULT+8)
+/* leave four spaces for future */
+#define OPT_adult_ai_sound			(OPT_ADULT+13)
+#define OPT_adult_ai_smell			(OPT_ADULT+14)
+#define OPT_adult_ai_packs			(OPT_ADULT+15)
+#define OPT_adult_ai_learn			(OPT_ADULT+16)
+#define OPT_adult_ai_cheat			(OPT_ADULT+17)
+#define OPT_adult_ai_smart			(OPT_ADULT+18)
+
 #define OPT_score_peek				(OPT_SCORE+0)
 #define OPT_score_hear				(OPT_SCORE+1)
 #define OPT_score_room				(OPT_SCORE+2)
 #define OPT_score_xtra				(OPT_SCORE+3)
 #define OPT_score_know				(OPT_SCORE+4)
 #define OPT_score_live				(OPT_SCORE+5)
-/* xxx xxx */
 
 
 /*
  * Hack -- Option symbols
  */
-#define rogue_like_commands		op_ptr->opt[OPT_rogue_like_commands]
-#define quick_messages			op_ptr->opt[OPT_quick_messages]
-#define floor_query_flag		op_ptr->opt[OPT_floor_query_flag]
-#define carry_query_flag		op_ptr->opt[OPT_carry_query_flag]
-#define use_old_target			op_ptr->opt[OPT_use_old_target]
-#define always_pickup			op_ptr->opt[OPT_always_pickup]
-#define always_repeat			op_ptr->opt[OPT_always_repeat]
-#define depth_in_feet			op_ptr->opt[OPT_depth_in_feet]
-#define stack_force_notes		op_ptr->opt[OPT_stack_force_notes]
-#define stack_force_costs		op_ptr->opt[OPT_stack_force_costs]
-#define show_labels				op_ptr->opt[OPT_show_labels]
-#define show_weights			op_ptr->opt[OPT_show_weights]
-#define show_choices			op_ptr->opt[OPT_show_choices]
-#define show_details			op_ptr->opt[OPT_show_details]
-#define ring_bell				op_ptr->opt[OPT_ring_bell]
-#define show_flavors			op_ptr->opt[OPT_show_flavors]
-#define run_ignore_stairs		op_ptr->opt[OPT_run_ignore_stairs]
-#define run_ignore_doors		op_ptr->opt[OPT_run_ignore_doors]
-#define run_cut_corners			op_ptr->opt[OPT_run_cut_corners]
-#define run_use_corners			op_ptr->opt[OPT_run_use_corners]
-#define disturb_move			op_ptr->opt[OPT_disturb_move]
-#define disturb_near			op_ptr->opt[OPT_disturb_near]
-#define disturb_panel			op_ptr->opt[OPT_disturb_panel]
-#define disturb_state			op_ptr->opt[OPT_disturb_state]
-#define disturb_minor			op_ptr->opt[OPT_disturb_minor]
-#define next_xp					op_ptr->opt[OPT_next_xp]
-/* xxx */
-/* xxx alert_failure */
-#define verify_destroy			op_ptr->opt[OPT_verify_destroy]
-#define verify_special			op_ptr->opt[OPT_verify_special]
-#define allow_quantity			op_ptr->opt[OPT_allow_quantity]
-/* xxx */
-/* auto_haggle */
-#define auto_scum				op_ptr->opt[OPT_auto_scum]
-/* xxx testing_stack */
-/* xxx testing_carry */
-#define expand_look				op_ptr->opt[OPT_expand_look]
-#define expand_list				op_ptr->opt[OPT_expand_list]
-#define view_perma_grids		op_ptr->opt[OPT_view_perma_grids]
-#define view_torch_grids		op_ptr->opt[OPT_view_torch_grids]
-#define dungeon_align			op_ptr->opt[OPT_dungeon_align]
-#define dungeon_stair			op_ptr->opt[OPT_dungeon_stair]
-#define flow_by_sound			op_ptr->opt[OPT_flow_by_sound]
-#define flow_by_smell			op_ptr->opt[OPT_flow_by_smell]
-/* xxx track_follow */
-/* xxx track_target */
-#define smart_learn				op_ptr->opt[OPT_smart_learn]
-#define smart_cheat				op_ptr->opt[OPT_smart_cheat]
-#define view_reduce_lite		op_ptr->opt[OPT_view_reduce_lite]
-#define hidden_player			op_ptr->opt[OPT_hidden_player]
-#define avoid_abort				op_ptr->opt[OPT_avoid_abort]
-#define avoid_other				op_ptr->opt[OPT_avoid_other]
-#define flush_failure			op_ptr->opt[OPT_flush_failure]
-#define flush_disturb			op_ptr->opt[OPT_flush_disturb]
-/* xxx */
-#define fresh_before			op_ptr->opt[OPT_fresh_before]
-#define fresh_after				op_ptr->opt[OPT_fresh_after]
-/* xxx */
-#define compress_savefile		op_ptr->opt[OPT_compress_savefile]
-#define hilite_player			op_ptr->opt[OPT_hilite_player]
-#define view_yellow_lite		op_ptr->opt[OPT_view_yellow_lite]
-#define view_bright_lite		op_ptr->opt[OPT_view_bright_lite]
-#define view_granite_lite		op_ptr->opt[OPT_view_granite_lite]
-#define view_special_lite		op_ptr->opt[OPT_view_special_lite]
-#define easy_open				op_ptr->opt[OPT_easy_open]
-#define easy_alter				op_ptr->opt[OPT_easy_alter]
-#define easy_floor				op_ptr->opt[OPT_easy_floor]
-#define show_piles				op_ptr->opt[OPT_show_piles]
-#define center_player			op_ptr->opt[OPT_center_player]
-#define run_avoid_center		op_ptr->opt[OPT_run_avoid_center]
-/* xxx */
-#define auto_more				op_ptr->opt[OPT_auto_more]
-#define smart_monsters			op_ptr->opt[OPT_smart_monsters]
-#define smart_packs				op_ptr->opt[OPT_smart_packs]
-/* xxx */
-/* xxx */
-/* xxx */
-/* xxx */
-/* xxx */
-/* xxx */
-/* xxx xxx */
-#define birth_point_based		op_ptr->opt[OPT_birth_point_based]
-#define birth_auto_roller		op_ptr->opt[OPT_birth_auto_roller]
-#define birth_maximize			op_ptr->opt[OPT_birth_maximize]
-#define birth_preserve			op_ptr->opt[OPT_birth_preserve]
-#define birth_ironman			op_ptr->opt[OPT_birth_ironman]
-#define birth_no_stores			op_ptr->opt[OPT_birth_no_stores]
-#define birth_no_artifacts		op_ptr->opt[OPT_birth_no_artifacts]
-#define birth_rand_artifacts	op_ptr->opt[OPT_birth_rand_artifacts]
-#define birth_no_stacking       op_ptr->opt[OPT_birth_no_stacking]
-/* xxx xxx */
-#define cheat_peek				op_ptr->opt[OPT_cheat_peek]
-#define cheat_hear				op_ptr->opt[OPT_cheat_hear]
-#define cheat_room				op_ptr->opt[OPT_cheat_room]
-#define cheat_xtra				op_ptr->opt[OPT_cheat_xtra]
-#define cheat_know				op_ptr->opt[OPT_cheat_know]
-#define cheat_live				op_ptr->opt[OPT_cheat_live]
-/* xxx xxx */
-#define adult_point_based		op_ptr->opt[OPT_adult_point_based]
-#define adult_auto_roller		op_ptr->opt[OPT_adult_auto_roller]
-#define adult_maximize			op_ptr->opt[OPT_adult_maximize]
-#define adult_preserve			op_ptr->opt[OPT_adult_preserve]
-#define adult_ironman			op_ptr->opt[OPT_adult_ironman]
-#define adult_no_stores			op_ptr->opt[OPT_adult_no_stores]
-#define adult_no_artifacts		op_ptr->opt[OPT_adult_no_artifacts]
-#define adult_rand_artifacts	op_ptr->opt[OPT_adult_rand_artifacts]
-#define adult_no_stacking		op_ptr->opt[OPT_adult_no_stacking]
-/* xxx xxx */
-#define score_peek				op_ptr->opt[OPT_score_peek]
-#define score_hear				op_ptr->opt[OPT_score_hear]
-#define score_room				op_ptr->opt[OPT_score_room]
-#define score_xtra				op_ptr->opt[OPT_score_xtra]
-#define score_know				op_ptr->opt[OPT_score_know]
-#define score_live				op_ptr->opt[OPT_score_live]
-/* xxx xxx */
+#define OPTION(opt_name)	op_ptr->opt[OPT_##opt_name]
+
+#define rogue_like_commands		OPTION(rogue_like_commands)
+#define quick_messages			OPTION(quick_messages)
+#define use_sound				OPTION(use_sound)
+#define pickup_detail			OPTION(pickup_detail)
+#define use_old_target			OPTION(use_old_target)
+#define pickup_always			OPTION(pickup_always)
+#define pickup_inven			OPTION(pickup_inven)
+#define depth_in_feet			OPTION(depth_in_feet)
+#define show_labels				OPTION(show_labels)
+#define ring_bell				OPTION(ring_bell)
+#define show_flavors			OPTION(show_flavors)
+#define run_ignore_doors		OPTION(run_ignore_doors)
+#define disturb_move			OPTION(disturb_move)
+#define disturb_near			OPTION(disturb_near)
+#define disturb_panel			OPTION(disturb_panel)
+#define disturb_state			OPTION(disturb_state)
+#define disturb_minor			OPTION(disturb_minor)
+#define view_perma_grids		OPTION(view_perma_grids)
+#define view_torch_grids		OPTION(view_torch_grids)
+#define flush_failure			OPTION(flush_failure)
+#define flush_disturb			OPTION(flush_disturb)
+#define hilite_player			OPTION(hilite_player)
+#define view_yellow_lite		OPTION(view_yellow_lite)
+#define view_bright_lite		OPTION(view_bright_lite)
+#define view_granite_lite		OPTION(view_granite_lite)
+#define view_special_lite		OPTION(view_special_lite)
+#define easy_open				OPTION(easy_open)
+#define easy_alter				OPTION(easy_alter)
+#define show_piles				OPTION(show_piles)
+#define center_player			OPTION(center_player)
+#define auto_more				OPTION(auto_more)
+#define hp_changes_color		OPTION(hp_changes_color)
+#define hide_squelchable		OPTION(hide_squelchable)
+#define mouse_movement			OPTION(mouse_movement)
+
+#define birth_maximize			OPTION(birth_maximize)
+#define birth_randarts			OPTION(birth_randarts)
+#define birth_autoscum			OPTION(birth_autoscum)
+#define birth_ironman			OPTION(birth_ironman)
+#define birth_no_stores			OPTION(birth_no_stores)
+#define birth_no_artifacts		OPTION(birth_no_artifacts)
+#define birth_no_stacking       OPTION(birth_no_stacking)
+#define birth_no_preserve       OPTION(birth_no_preserve)
+#define birth_no_stairs			OPTION(birth_no_stairs)
+#define birth_ai_sound			OPTION(birth_ai_sound)
+#define birth_ai_smell			OPTION(birth_ai_smell)
+#define birth_ai_packs			OPTION(birth_ai_packs)
+#define birth_ai_learn			OPTION(birth_ai_learn)
+#define birth_ai_cheat			OPTION(birth_ai_cheat)
+#define birth_ai_smart			OPTION(birth_ai_smart)
+
+#define cheat_peek				OPTION(cheat_peek)
+#define cheat_hear				OPTION(cheat_hear)
+#define cheat_room				OPTION(cheat_room)
+#define cheat_xtra				OPTION(cheat_xtra)
+#define cheat_know				OPTION(cheat_know)
+#define cheat_live				OPTION(cheat_live)
+
+#define adult_maximize			OPTION(adult_maximize)
+#define adult_randarts			OPTION(adult_randarts)
+#define adult_autoscum			OPTION(adult_autoscum)
+#define adult_ironman			OPTION(adult_ironman)
+#define adult_no_stores			OPTION(adult_no_stores)
+#define adult_no_artifacts		OPTION(adult_no_artifacts)
+#define adult_no_stacking		OPTION(adult_no_stacking)
+#define adult_no_preserve		OPTION(adult_no_preserve)
+#define adult_no_stairs			OPTION(adult_no_stairs)
+#define adult_ai_sound			OPTION(adult_ai_sound)
+#define adult_ai_smell			OPTION(adult_ai_smell)
+#define adult_ai_packs			OPTION(adult_ai_packs)
+#define adult_ai_learn			OPTION(adult_ai_learn)
+#define adult_ai_cheat			OPTION(adult_ai_cheat)
+#define adult_ai_smart			OPTION(adult_ai_smart)
+
+#define score_peek				OPTION(score_peek)
+#define score_hear				OPTION(score_hear)
+#define score_room				OPTION(score_room)
+#define score_xtra				OPTION(score_xtra)
+#define score_know				OPTION(score_know)
+#define score_live				OPTION(score_live)
 
 
 /*
  * Information for "do_cmd_options()".
  */
-#define OPT_PAGE_MAX				7
-#define OPT_PAGE_PER				20
+#define OPT_PAGE_MAX				5
+#define OPT_PAGE_PER				15
 
 
 
@@ -2847,6 +2723,19 @@
 
 
 /*
+ * Convert a "key event" into a "location" (Y)
+ */
+#define KEY_GRID_Y(K) \
+	((int) ((K.mousey - ROW_MAP) + Term->offset_y))
+
+/*
+ * Convert a "key event" into a "location" (X)
+ */
+#define KEY_GRID_X(K) \
+	((int) (((K.mousex - COL_MAP) / (use_bigtile ? 2 : 1)) + Term->offset_x))
+
+
+/*
  * Determines if a map location is "meaningful"
  */
 #define in_bounds(Y,X) \
@@ -2952,32 +2841,7 @@
 
 
 
-/*** Color constants ***/
-
-
-/*
- * Angband "attributes" (with symbols, and base (R,G,B) codes)
- *
- * The "(R,G,B)" codes are given in "fourths" of the "maximal" value,
- * and should "gamma corrected" on most (non-Macintosh) machines.
- */
-#define TERM_DARK		0	/* 'd' */	/* 0,0,0 */
-#define TERM_WHITE		1	/* 'w' */	/* 4,4,4 */
-#define TERM_SLATE		2	/* 's' */	/* 2,2,2 */
-#define TERM_ORANGE		3	/* 'o' */	/* 4,2,0 */
-#define TERM_RED		4	/* 'r' */	/* 3,0,0 */
-#define TERM_GREEN		5	/* 'g' */	/* 0,2,1 */
-#define TERM_BLUE		6	/* 'b' */	/* 0,0,4 */
-#define TERM_UMBER		7	/* 'u' */	/* 2,1,0 */
-#define TERM_L_DARK		8	/* 'D' */	/* 1,1,1 */
-#define TERM_L_WHITE	9	/* 'W' */	/* 3,3,3 */
-#define TERM_VIOLET		10	/* 'v' */	/* 4,0,4 */
-#define TERM_YELLOW		11	/* 'y' */	/* 4,4,0 */
-#define TERM_L_RED		12	/* 'R' */	/* 4,0,0 */
-#define TERM_L_GREEN	13	/* 'G' */	/* 0,4,0 */
-#define TERM_L_BLUE		14	/* 'B' */	/* 0,4,4 */
-#define TERM_L_UMBER	15	/* 'U' */	/* 3,2,1 */
-
+/*** Message constants ***/
 
 #define MSG_GENERIC          0
 #define MSG_HIT              1
@@ -3239,13 +3103,9 @@
 
 #define ACT_MAX                 50
 
-/*
- * HACK - define if the source contains the cleanup_angband() function.
- */
-#define HAS_CLEANUP
 
 
-/*
- * Given an array, determine how many elements are in the array.
- */
-#define N_ELEMENTS(a) (sizeof(a) / sizeof((a)[0]))
+/* player_type.noscore flags */
+#define NOSCORE_WIZARD		0x0002
+#define NOSCORE_DEBUG		0x0008
+#define NOSCORE_BORG		0x0010

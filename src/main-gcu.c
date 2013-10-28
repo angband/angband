@@ -10,26 +10,25 @@
 
 
 /*
- * This file helps Angband run on Unix/Curses machines.
+ * This file provides support for Angband using the Curses library.  To use
+ * it, define USE_GCU in your makefile, and if you are using the ncurses
+ * library, also add USE_NCURSES.
  *
  *
- * To use this file, you must define "USE_GCU" in the Makefile.
+ * Note that this file is not *intended* to support non-Unix machines, nor is
+ * it intended to support VMS or other bizarre setups.  It should, however,
+ * work with most versions of "curses" or "ncurses".
  *
+ * This package assumes that the underlying "curses" handles both the "nonl()"
+ * and "cbreak()" commands correctly, see the "OPTION" below.
  *
- * Note that this file is not "intended" to support non-Unix machines,
- * nor is it intended to support VMS or other bizarre setups.
- *
- * Also, this package assumes that the underlying "curses" handles both
- * the "nonl()" and "cbreak()" commands correctly, see the "OPTION" below.
- *
- * This code should work with most versions of "curses" or "ncurses",
- * and the "main-ncu.c" file (and USE_NCU define) are no longer used.
  *
  * See also "USE_CAP" and "main-cap.c" for code that bypasses "curses"
  * and uses the "termcap" information directly, or even bypasses the
  * "termcap" information and sends direct vt100 escape sequences.
  *
- * This file provides up to 4 term windows.
+ * This file provides up to 4 term windows, or alternatively, bigscreen
+ * support.
  *
  * This file will attempt to redefine the screen colors to conform to
  * standard Angband colors.  It will only do so if the terminal type
@@ -37,8 +36,6 @@
  *
  * Consider the use of "savetty()" and "resetty()".  XXX XXX XXX
  */
-
-
 #include "angband.h"
 
 
@@ -54,10 +51,15 @@
 /* Avoid 'struct term' name conflict with <curses.h> (via <term.h>) on AIX */
 #define term System_term
 
+
 /*
  * Include the proper "header" file
  */
 #ifdef USE_NCURSES
+# ifdef HAVE_STDBOOL_H
+#  define NCURSES_ENABLE_STDBOOL_H 0
+# endif
+
 # include <ncurses.h>
 #else
 # include <curses.h>
@@ -66,27 +68,12 @@
 #undef term
 
 
-#ifdef HAVE_CAN_CHANGE_COLOR
-
-/*
- * Try redefining the colors at startup.
- */
-#define REDEFINE_COLORS
-
-#endif /* HAVE_CAN_CHANGE_COLOR */
-
 
 /*
  * Use POSIX terminal I/O
  */
 #define USE_TPOSIX
 
-/*
- * Hack -- Amiga uses "fake curses" and cannot do any of this stuff
- */
-#if defined(AMIGA)
-# undef USE_TPOSIX
-#endif
 
 /*
  * Hack -- Windows Console mode uses PDCURSES and cannot do any terminal stuff
@@ -103,62 +90,25 @@ _stdcall void Sleep(int);
  * POSIX stuff
  */
 #ifdef USE_TPOSIX
-/*# include <sys/ioctl.h>*/
 # include <termios.h>
 #endif
 
-/*
- * OPTION: Use old BSD curses.
- *
- * Some versions of curses does things a bit differently.
- *
- * If you have an old BSD 4.4 version of curses that isn't
- * XSI Curses standard compatible enable this.
- */
-/* #define USE_OLD_CURSES */
 
 
 /*
- * Turn on options that are available in modern curses.
- */
-#if defined (USE_OLD_CURSES)
-/* Nothing */
-#else
-# define USE_GETCH
-# define USE_CURS_SET
-#endif
-
-/*
- * You might want to turn on some of the options below this line
- * if you had to turn on USE_OLD_CURSES
- */
+ * If you have errors relating to curs_set(), comment out the following line
+ */ 
+#define USE_CURS_SET
 
 
 /*
- * OPTION: Use "blocking getch() calls" in "main-gcu.c".
- */
-/* #define USE_GETCH */
-
-/*
- * OPTION: Use the "curs_set()" call in "main-gcu.c".
- */
-/* #define USE_CURS_SET */
-
-
-
-/*
- * OPTION: some machines lack "cbreak()"
- * On these machines, we use an older definition
+ * If you have errors with any of the functions mentioned below, try
+ * uncommenting the line it's mentioned on.
  */
 /* #define cbreak() crmode() */
-
-
-/*
- * OPTION: some machines cannot handle "nonl()" and "nl()"
- * On these machines, we can simply ignore those commands.
- */
 /* #define nonl() */
 /* #define nl() */
+
 
 
 /*
@@ -168,7 +118,6 @@ _stdcall void Sleep(int);
 #ifdef USE_TPOSIX
 
 static struct termios  norm_termios;
-
 static struct termios  game_termios;
 
 #endif
@@ -177,14 +126,11 @@ static struct termios  game_termios;
 /*
  * Information about a term
  */
-typedef struct term_data term_data;
-
-struct term_data
+typedef struct term_data
 {
 	term t;                 /* All term info */
-
 	WINDOW *win;            /* Pointer to the curses window */
-};
+} term_data;
 
 /* Max number of windows on screen */
 #define MAX_TERM_DATA 4
@@ -192,11 +138,9 @@ struct term_data
 /* Information about our windows */
 static term_data data[MAX_TERM_DATA];
 
-
-/*
- * Hack -- Number of initialized "term" structures
- */
+/* Number of initialized "term" structures */
 static int active = 0;
+
 
 
 #ifdef A_COLOR
@@ -222,7 +166,7 @@ static int can_fix_color = FALSE;
 /*
  * Simple Angband to Curses color conversion table
  */
-static int colortable[16];
+static int colortable[BASIC_COLORS];
 
 #endif
 
@@ -306,6 +250,9 @@ static void keymap_game_prepare(void)
 	game_termios.c_cc[VMIN] = 1;
 	game_termios.c_cc[VTIME] = 0;
 
+	/* Turn off flow control (enable ^S) */
+	game_termios.c_iflag &= ~IXON;
+
 #endif
 
 
@@ -387,13 +334,11 @@ static void Term_init_gcu(term *t)
 {
 	term_data *td = (term_data *)(t->data);
 
-#ifdef USE_GETCH
 	/*
 	 * This is necessary to keep the first call to getch()
 	 * from clearing the screen
 	 */
 	wrefresh(stdscr);
-#endif /* USE_GETCH */
 
 	/* Count init's, handle first */
 	if (active++ != 0) return;
@@ -456,8 +401,6 @@ static void Term_nuke_gcu(term *t)
 
 
 
-#ifdef USE_GETCH
-
 /*
  * Process events, with optional wait
  */
@@ -499,6 +442,17 @@ static errr Term_xtra_gcu_event(int v)
 		if (i == EOF) return (1);
 	}
 
+#ifdef KEY_DOWN
+	/* Handle arrow keys */
+	switch (i)
+	{
+		case KEY_DOWN:  i = ARROW_DOWN;  break;
+		case KEY_UP:    i = ARROW_UP;    break;
+		case KEY_LEFT:  i = ARROW_LEFT;  break;
+		case KEY_RIGHT: i = ARROW_RIGHT; break;
+	}
+#endif
+
 	/* Enqueue the keypress */
 	Term_keypress(i);
 
@@ -506,57 +460,6 @@ static errr Term_xtra_gcu_event(int v)
 	return (0);
 }
 
-#else	/* USE_GETCH */
-
-/*
- * Process events (with optional wait)
- */
-static errr Term_xtra_gcu_event(int v)
-{
-	int i, k;
-
-	char buf[2];
-
-	/* Wait */
-	if (v)
-	{
-		/* Wait for one byte */
-		i = read(0, buf, 1);
-
-		/* Hack -- Handle bizarre "errors" */
-		if ((i <= 0) && (errno != EINTR)) exit_game_panic();
-	}
-
-	/* Do not wait */
-	else
-	{
-		/* Get the current flags for stdin */
-		k = fcntl(0, F_GETFL, 0);
-
-		/* Oops */
-		if (k < 0) return (1);
-
-		/* Tell stdin not to block */
-		if (fcntl(0, F_SETFL, k | O_NONBLOCK) < 0) return (1);
-
-		/* Read one byte, if possible */
-		i = read(0, buf, 1);
-
-		/* Replace the flags for stdin */
-		if (fcntl(0, F_SETFL, k)) return (1);
-	}
-
-	/* Ignore "invalid" keys */
-	if ((i != 1) || (!buf[0])) return (1);
-
-	/* Enqueue the keypress */
-	Term_keypress(buf[0]);
-
-	/* Success */
-	return (0);
-}
-
-#endif	/* USE_GETCH */
 
 /*
  * React to changes
@@ -572,13 +475,12 @@ static errr Term_xtra_gcu_react(void)
 	if (!can_fix_color) return (0);
 
 	/* Set the colors */
-	for (i = 0; i < 16; i++)
+	for (i = 0; i < BASIC_COLORS; i++)
 	{
 		/* Set one color (note scaling) */
-		init_color(i,
-                           angband_color_table[i][1] * 1000 / 255,
-		           angband_color_table[i][2] * 1000 / 255,
-		           angband_color_table[i][3] * 1000 / 255);
+		init_color(i, angband_color_table[i][1] * 1000 / 255,
+		              angband_color_table[i][2] * 1000 / 255,
+		              angband_color_table[i][3] * 1000 / 255);
 	}
 
 #endif
@@ -711,14 +613,14 @@ static errr Term_text_gcu(int x, int y, int n, byte a, cptr s)
 
 #ifdef A_COLOR
 	/* Set the color */
-	if (can_use_color) wattrset(td->win, colortable[a & 0x0F]);
+	if (can_use_color) wattrset(td->win, colortable[a & (BASIC_COLORS-1)]);
 #endif
 
 	/* Move the cursor */
 	wmove(td->win, y, x);
 
 	/* Format to appropriate size */
-	strnfmt(buf, sizeof buf, "%.*s", n, s);
+	strnfmt(buf, sizeof(buf), "%.*s", n, s);
 
 	/* Write to screen */
 	waddstr(td->win, buf);
@@ -831,7 +733,6 @@ errr init_gcu(int argc, char **argv)
 
 	/* Activate hooks */
 	quit_aux = hook_quit;
-	core_aux = hook_quit;
 
 	/* Require standard size screen */
 	if ((LINES < 24) || (COLS < 80))
@@ -848,7 +749,7 @@ errr init_gcu(int argc, char **argv)
 	can_use_color = ((start_color() != ERR) && has_colors() &&
 	                 (COLORS >= 8) && (COLOR_PAIRS >= 8));
 
-#ifdef REDEFINE_COLORS
+#ifdef HAVE_CAN_CHANGE_COLOR
 
 	/* Can we change colors? */
 	can_fix_color = (can_use_color && can_change_color() &&
@@ -860,17 +761,17 @@ errr init_gcu(int argc, char **argv)
 	if (can_fix_color)
 	{
 		/* Prepare the color pairs */
-		for (i = 1; i <= 8; i++)
+		for (i = 0; i < (BASIC_COLORS / 2); i++)
 		{
 			/* Reset the color */
-			if (init_pair(i, i - 1, 0) == ERR)
+			if (init_pair(i + 1, i, 0) == ERR)
 			{
 				quit("Color pair init failed");
 			}
 
 			/* Set up the colormap */
-			colortable[i - 1] = (COLOR_PAIR(i) | A_NORMAL);
-			colortable[i + 7] = (COLOR_PAIR(i) | A_BRIGHT);
+			colortable[i] = (COLOR_PAIR(i - 1) | A_NORMAL);
+			colortable[i + (BASIC_COLORS / 2)] = (COLOR_PAIR(i - 1) | A_BRIGHT);
 		}
 
 		/* Take account of "gamma correction" XXX XXX XXX */
@@ -917,17 +818,17 @@ errr init_gcu(int argc, char **argv)
 
 	/*** Low level preparation ***/
 
-#ifdef USE_GETCH
-
 	/* Paranoia -- Assume no waiting */
 	nodelay(stdscr, FALSE);
-
-#endif
 
 	/* Prepare */
 	cbreak();
 	noecho();
 	nonl();
+
+#ifdef PDCURSES
+	keypad(stdscr, TRUE);
+#endif
 
 	/* Extract the game keymap */
 	keymap_game_prepare();

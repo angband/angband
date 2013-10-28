@@ -15,7 +15,7 @@
  * whether you wish to keep, comment, or uncomment them.  You should not
  * have to modify any lines not indicated by "OPTION".
  *
- * Note: Also examine the "system" configuration file "h-config.h".
+ * Note: Also examine the "system" configuration file "h-basic.h".
  *
  * And finally, remember that the "Makefile" will specify some rather
  * important compile time options, like what visual module to use.
@@ -30,74 +30,9 @@
  * Unix X11 plus the Athena Widget set), and "USE_CAP" (allow use with
  * the "termcap" library, or with hard-coded vt100 terminals).
  *
- * The old "USE_NCU" option has been replaced with "USE_GCU".
- *
  * Several other such options are available for non-unix machines,
  * such as "MACINTOSH", "WINDOWS", "USE_IBM", "USE_EMX".
- *
- * You may also need to specify the "system", using defines such as
- * "SOLARIS" (for Solaris), etc, see "h-config.h" for more info.
  */
-
-
-/*
- * OPTION: Include "ncurses.h" instead of "curses.h" in "main-gcu.c"
- */
-/* #define USE_NCURSES */
-
-
-/*
- * OPTION: for multi-user machines running the game setuid to some other
- * user (like 'games') this SAFE_SETUID option allows the program to drop
- * its privileges when saving files that allow for user specified pathnames.
- * This lets the game be installed system wide without major security
- * concerns.  There should not be any side effects on any machines.
- *
- * This will handle "gids" correctly once the permissions are set right.
- */
-#define SAFE_SETUID
-
-
-/*
- * This flag enables the "POSIX" methods for "SAFE_SETUID".
- */
-#ifdef _POSIX_SAVED_IDS
-# define SAFE_SETUID_POSIX
-#endif
-
-
-/*
- * Prevent problems on (non-Solaris) Suns using "SAFE_SETUID".
- * The SAFE_SETUID code is weird, use it at your own risk...
- */
-#if defined(SUNOS) && !defined(SOLARIS)
-# undef SAFE_SETUID_POSIX
-#endif
-
-
-
-
-/*
- * OPTION: Forbid the use of "fiddled" savefiles.  As far as I can tell,
- * a fiddled savefile is one with an internal timestamp different from
- * the actual timestamp.  Thus, turning this option on forbids one from
- * copying a savefile to a different name.  Combined with disabling the
- * ability to save the game without quitting, and with some method of
- * stopping the user from killing the process at the tombstone screen,
- * this should prevent the use of backup savefiles.  It may also stop
- * the use of savefiles from other platforms, so be careful.
- */
-/* #define VERIFY_TIMESTAMP */
-
-
-/*
- * OPTION: Forbid the "savefile over-write" cheat, in which you simply
- * run another copy of the game, loading a previously saved savefile,
- * and let that copy over-write the "dead" savefile later.  This option
- * either locks the savefile, or creates a fake "xxx.lok" file to prevent
- * the use of the savefile until the file is deleted.  Not ready yet.
- */
-/* #define VERIFY_SAVEFILE */
 
 
 
@@ -134,23 +69,6 @@
 
 
 /*
- * OPTION: Allow characteres to be "auto-rolled"
- */
-#define ALLOW_AUTOROLLER
-
-
-/*
- * OPTION: Allow monsters to "flee" when hit hard
- */
-#define ALLOW_FEAR
-
-/*
- * OPTION: Allow monsters to "flee" from strong players
- */
-#define ALLOW_TERROR
-
-
-/*
  * OPTION: Allow parsing of the ascii template files in "init.c".
  * This must be defined if you do not have valid binary image files.
  * It should be usually be defined anyway to allow easy "updating".
@@ -159,61 +77,49 @@
 
 
 /*
- * OPTION: Allow repeating of last command.
+ * OPTION: Allow processing of template files once parsed.
+ * This 'evaluates' the contents of the files. It is is currently
+ * used for balancing the monster list (monster.txt).
  */
-#define ALLOW_REPEAT
+
+/* #define ALLOW_TEMPLATES_PROCESS */
 
 
 /*
- * OPTION: Handle signals
+ * OPTION: Allow output of 'parsable' ascii template files.
+ * This can be used to help change the ascii template format, and to
+ * make changes to the data in the parsed files within Angband itself.
+ *
+ * Files are output to lib\user with the same file names as lib\edit.
  */
-#define HANDLE_SIGNALS
+
+/* #define ALLOW_TEMPLATES_OUTPUT */
 
 
-/*
- * OPTION: Allow "Wizards" to yield "high scores"
- */
-/* #define SCORE_WIZARDS */
 
 /*
  * OPTION: Allow "Borgs" to yield "high scores"
  */
 /* #define SCORE_BORGS */
 
-/*
- * OPTION: Allow "Cheaters" to yield "high scores"
- */
-/* #define SCORE_CHEATERS */
-
 
 
 /*
- * OPTION: Allow use of the "flow_by_smell" and "flow_by_sound"
+ * OPTION: Allow use of the "adult_ai_smell" and "adult_ai_sound"
  * software options, which enable "monster flowing".
  */
 #define MONSTER_FLOW
 
 
-/*
- * OPTION: Maximum flow depth when using "MONSTER_FLOW"
- */
-#define MONSTER_FLOW_DEPTH 32
-
 
 /*
- * OPTION: Allow use of the "smart_monsters" and "smart_packs"
+ * OPTION: Allow use of the "adult_ai_smart" and "adult_ai_packs"
  * software options, which attempt to make monsters smarter.
  *
  * AI code by Keldon Jones (keldon@umr.edu), modified by Julian
  * Lighton (jl8e@fragment.com).
  */
 #define MONSTER_AI
-
-
-/*
- * OPTION: Support multiple "player" grids in "map_info()"
- */
-/* #define MAP_INFO_MULTIPLE_PLAYERS */
 
 
 /*
@@ -235,24 +141,16 @@
 
 
 /*
- * OPTION: Enable the "smart_learn" and "smart_cheat" options.
- * They let monsters make more "intelligent" choices about attacks
- * (including spell attacks) based on their observations of the
- * player's reactions to previous attacks.  The "smart_cheat" option
- * lets the monster know how the player would react to an attack
- * without actually needing to make the attack.  The "smart_learn"
- * option requires that a monster make a "failed" attack before
- * learning that the player is not harmed by that attack.
+ * OPTION: Enable the "adult_ai_learn" and "adult_ai_cheat" options.
  *
- * This adds about 3K to the memory and about 5K to the executable.
+ * They let monsters make more "intelligent" choices about attacks (including
+ * spell attacks) based on their observations of the player's reactions to
+ * previous attacks.  The "cheat" option lets the monster know how the player
+ * would react to an attack without actually needing to make the attack.  The
+ * "learn" option requires that a monster make a "failed" attack before
+ * learning that the player is not harmed by that attack.
  */
 #define DRS_SMART_OPTIONS
-
-
-/*
- * OPTION: Allow the use of random artifacts (see "randart.c").
- */
-#define GJW_RANDART
 
 
 /*
@@ -266,37 +164,6 @@
 #define USE_GRAPHICS
 
 
-/*
- * Hack -- Macintosh stuff
- */
-#ifdef MACINTOSH
-
-/* Do not handle signals */
-# undef HANDLE_SIGNALS
-
-#endif
-
-
-/*
- * Hack -- Windows stuff
- */
-#ifdef WINDOWS
-
-/* Do not handle signals */
-# undef HANDLE_SIGNALS
-
-#endif
-
-
-/*
- * Hack -- EMX stuff
- */
-#ifdef USE_EMX
-
-/* Do not handle signals */
-# undef HANDLE_SIGNALS
-
-#endif
 
 
 /*
@@ -345,31 +212,6 @@
 #endif /* PRIVATE_USER_PATH */
 
 
-/*
- * On multiuser systems, add the "uid" to savefile names
- */
-#ifdef SET_UID
-# define SAVEFILE_USE_UID
-#endif /* SET_UID */
-
-
-/*
- * Allow the user to execute his own scripts in debug mode.
- *
- * The user-script code has not been checked for security issues yet,
- * so the user shouldn't be allowed to execute his own scripts from
- * a setgid executable.
- */
-#ifndef SET_UID
-# define ALLOW_USER_SCRIPTS
-#endif /* SET_UID */
-
-
-/*
- * OPTION: Check the "time" against "lib/file/hours.txt"
- */
-/* #define CHECK_TIME */
-
 
 /*
  * OPTION: Prevent usage of the "ANGBAND_PATH" environment variable and
@@ -382,19 +224,6 @@
 #define FIXED_PATHS
 #endif /* SET_UID */
 
-
-/*
- * OPTION: Capitalize the "user_name" (for "default" player name)
- * This option is only relevant on SET_UID machines.
- */
-#define CAPITALIZE_USER_NAME
-
-
-
-/*
- * OPTION: Person to bother if something goes wrong.
- */
-#define MAINTAINER	"rr9@thangorodrim.net"
 
 
 /*
@@ -416,31 +245,12 @@
 #define DEFAULT_X11_FONT_7		"5x8"
 
 
-/*
- * Hack -- Mach-O (native binary format of OS X) is basically a Un*x
- * but has Mac OS/Windows-like user interface
- */
-#ifdef MACH_O_CARBON
-# ifdef SAVEFILE_USE_UID
-#  undef SAVEFILE_USE_UID
-# endif
-#endif
-
-/*
- * Hack -- Special "ancient machine" versions
- */
-#if defined(USE_286) || defined(ANGBAND_LITE_MAC)
-# ifndef ANGBAND_LITE
-#  define ANGBAND_LITE
-# endif
-#endif
 
 /*
  * OPTION: Attempt to minimize the size of the game
  */
-#ifndef ANGBAND_LITE
 /* #define ANGBAND_LITE */
-#endif
+
 
 /*
  * Hack -- React to the "ANGBAND_LITE" flag
@@ -450,9 +260,7 @@
 # undef ALLOW_VISUALS
 # undef ALLOW_MACROS
 # undef MONSTER_FLOW
-# undef ALLOW_TERROR
 # undef DRS_SMART_OPTIONS
-# undef GJW_RANDART
 # undef ALLOW_BORG
 # undef ALLOW_DEBUG
 # undef ALLOW_SPOILERS
@@ -461,21 +269,11 @@
 #endif
 
 
-
 /*
- * OPTION: Attempt to prevent all "cheating"
+ * HACK - define if the source contains the cleanup_angband() function.
  */
-/* #define VERIFY_HONOR */
+#define HAS_CLEANUP
 
-
-/*
- * React to the "VERIFY_HONOR" flag
- */
-#ifdef VERIFY_HONOR
-# define VERIFY_SAVEFILE
-# define VERIFY_CHECKSUMS
-# define VERIFY_TIMESTAMP
-#endif
 
 
 /*

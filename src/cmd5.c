@@ -63,8 +63,11 @@ s16b spell_chance(int spell)
 	if (chance < minfail) chance = minfail;
 
 	/* Stunning makes spells harder (after minfail) */
-	if (p_ptr->stun > 50) chance += 25;
-	else if (p_ptr->stun) chance += 15;
+	if (p_ptr->timed[TMD_STUN] > 50) chance += 25;
+	else if (p_ptr->timed[TMD_STUN]) chance += 15;
+
+	/* Amnesia makes spells fail half the time */
+	if (p_ptr->timed[TMD_AMNESIA]) chance *= 2;
 
 	/* Always a 5 percent chance of working */
 	if (chance > 95) chance = 95;
@@ -122,9 +125,10 @@ void print_spells(const byte *spells, int num, int y, int x)
 
 	const magic_type *s_ptr;
 
-	cptr comment;
-
+	char help[20];
 	char out_val[160];
+
+	const char *comment = help;
 
 	byte line_attr;
 
@@ -151,9 +155,10 @@ void print_spells(const byte *spells, int num, int y, int x)
 		}
 
 		/* Get extra info */
-		comment = get_spell_info(cp_ptr->spell_book, spell);
+		get_spell_info(cp_ptr->spell_book, spell, help, sizeof(help));
 
 		/* Assume spell is known and tried */
+		comment = help;
 		line_attr = TERM_WHITE;
 
 		/* Analyze the spell */
@@ -297,8 +302,6 @@ static int get_spell(const object_type *o_ptr, cptr prompt, bool known, bool bro
 
 	cptr p = ((cp_ptr->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
 
-#ifdef ALLOW_REPEAT
-
 	int result;
 
 	/* Get the spell, if available */
@@ -316,8 +319,6 @@ static int get_spell(const object_type *o_ptr, cptr prompt, bool known, bool bro
 			repeat_clear();
 		}
 	}
-
-#endif /* ALLOW_REPEAT */
 
 	/* Extract spells */
 	for (i = 0; i < SPELLS_PER_BOOK; i++)
@@ -459,11 +460,7 @@ static int get_spell(const object_type *o_ptr, cptr prompt, bool known, bool bro
 	/* Abort if needed */
 	if (!flag) return (-1);
 
-#ifdef ALLOW_REPEAT
-
 	repeat_push(spell);
-
-#endif /* ALLOW_REPEAT */
 
 	/* Success */
 	return (spell);
@@ -478,9 +475,10 @@ static void browse_spell(int spell)
 {
 	const magic_type *s_ptr;
 
-	cptr comment;
-
 	char out_val[160];
+	char help[20];
+
+	const char *comment = help;
 
 	byte line_attr;
 
@@ -495,7 +493,7 @@ static void browse_spell(int spell)
 	s_ptr = &mp_ptr->info[spell];
 
 	/* Get extra info */
-	comment = get_spell_info(cp_ptr->spell_book, spell);
+	get_spell_info(cp_ptr->spell_book, spell, help, sizeof(help));
 
 	/* Assume spell is known and tried */
 	line_attr = TERM_WHITE;
@@ -574,7 +572,7 @@ void do_cmd_browse_aux(const object_type *o_ptr)
 		/* Ask for a spell */
 		spell = get_spell(o_ptr, "browse", TRUE, TRUE);
 		if (spell < 0) break;
-	
+
 		/* Browse the spell */
 		browse_spell(spell);
 	}
@@ -604,24 +602,6 @@ void do_cmd_browse(void)
 		msg_print("You cannot read books!");
 		return;
 	}
-
-#if 0
-
-	/* No lite */
-	if (p_ptr->blind || no_lite())
-	{
-		msg_print("You cannot see!");
-		return;
-	}
-
-	/* Confused */
-	if (p_ptr->confused)
-	{
-		msg_print("You are too confused!");
-		return;
-	}
-
-#endif
 
 	/* Restrict choices to "useful" books */
 	item_tester_tval = cp_ptr->spell_book;
@@ -672,13 +652,13 @@ void do_cmd_study(void)
 		return;
 	}
 
-	if (p_ptr->blind || no_lite())
+	if (p_ptr->timed[TMD_BLIND] || no_lite())
 	{
 		msg_print("You cannot see!");
 		return;
 	}
 
-	if (p_ptr->confused)
+	if (p_ptr->timed[TMD_CONFUSED])
 	{
 		msg_print("You are too confused!");
 		return;
@@ -831,14 +811,14 @@ void do_cmd_cast(void)
 	}
 
 	/* Require lite */
-	if (p_ptr->blind || no_lite())
+	if (p_ptr->timed[TMD_BLIND] || no_lite())
 	{
 		msg_print("You cannot see!");
 		return;
 	}
 
 	/* Not when confused */
-	if (p_ptr->confused)
+	if (p_ptr->timed[TMD_CONFUSED])
 	{
 		msg_print("You are too confused!");
 		return;
@@ -957,7 +937,7 @@ void do_cmd_cast(void)
 		msg_print("You faint from the effort!");
 
 		/* Hack -- Bypass free action */
-		(void)set_paralyzed(p_ptr->paralyzed + randint(5 * oops + 1));
+		(void)inc_timed(TMD_PARALYZED, randint(5 * oops + 1));
 
 		/* Damage CON (possibly permanently) */
 		if (rand_int(100) < 50)
@@ -1002,14 +982,14 @@ void do_cmd_pray(void)
 	}
 
 	/* Must have lite */
-	if (p_ptr->blind || no_lite())
+	if (p_ptr->timed[TMD_BLIND] || no_lite())
 	{
 		msg_print("You cannot see!");
 		return;
 	}
 
 	/* Must not be confused */
-	if (p_ptr->confused)
+	if (p_ptr->timed[TMD_CONFUSED])
 	{
 		msg_print("You are too confused!");
 		return;
@@ -1127,7 +1107,7 @@ void do_cmd_pray(void)
 		msg_print("You faint from the effort!");
 
 		/* Hack -- Bypass free action */
-		(void)set_paralyzed(p_ptr->paralyzed + randint(5 * oops + 1));
+		(void)inc_timed(TMD_PARALYZED, randint(5 * oops + 1));
 
 		/* Damage CON (possibly permanently) */
 		if (rand_int(100) < 50)

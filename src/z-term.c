@@ -385,9 +385,6 @@ static errr term_win_copy(term_win *s, term_win *f, int w, int h)
 	s->cu = f->cu;
 	s->cv = f->cv;
 
-	/* Copy resize hook */
-	s->resize_hook = f->resize_hook;
-
 	/* Success */
 	return (0);
 }
@@ -774,7 +771,7 @@ static void Term_fresh_row_both(int y, int x1, int x2)
 		if ((na & 0x80) && (nc & 0x80))
 		{
 			/* 2nd byte of bigtile */
-			if ((na == 255) && (nc == -1)) continue;
+			if ((na == 255) && (nc == (char) -1)) continue;
 
 			/* Flush */
 			if (fn)
@@ -1608,7 +1605,7 @@ errr Term_erase(int x, int y, int n)
 	scr_taa = Term->scr->ta[y];
 	scr_tcc = Term->scr->tc[y];
 
-	if ((n > 0) && (scr_cc[x] == -1) && (scr_aa[x] == 255))
+	if ((n > 0) && (scr_cc[x] == (char) -1) && (scr_aa[x] == 255))
 	{
 		x--;
 		n++;
@@ -1869,31 +1866,56 @@ errr Term_flush(void)
 }
 
 
-
 /*
  * Add a keypress to the "queue"
  */
 errr Term_keypress(int k)
 {
-	/* Hack -- Refuse to enqueue non-keys */
-	if (!k) return (-1);
+  /* Hack -- Refuse to enqueue non-keys */
+  if (!k) return (-1);
+  
+  /* Store the char, advance the queue */
+  Term->key_queue[Term->key_head].key = k;
+  Term->key_queue[Term->key_head].index = 0;
+  Term->key_queue[Term->key_head].type = EVT_KBRD;
+  Term->key_head++;
+  
+  /* Circular queue, handle wrap */
+  if (Term->key_head == Term->key_size) Term->key_head = 0;
+  
+  /* Success (unless overflow) */
+  if (Term->key_head != Term->key_tail) return (0);
+  
+  /* Problem */
+  return (1);
+}
 
-	/* Store the char, advance the queue */
-	Term->key_queue[Term->key_head++] = k;
-
-	/* Circular queue, handle wrap */
-	if (Term->key_head == Term->key_size) Term->key_head = 0;
-
-	/* Success (unless overflow) */
-	if (Term->key_head != Term->key_tail) return (0);
-
+/*
+ * Add a mouse event to the "queue"
+ */
+errr Term_mousepress(int x, int y, char button)
+{
+  /* Store the char, advance the queue */
+  Term->key_queue[Term->key_head].key = '\xff';
+  Term->key_queue[Term->key_head].mousex = x;
+  Term->key_queue[Term->key_head].mousey = y;
+  Term->key_queue[Term->key_head].index = button;
+  Term->key_queue[Term->key_head].type = EVT_MOUSE;
+  Term->key_head++;
+  
+  /* Circular queue, handle wrap */
+  if (Term->key_head == Term->key_size) Term->key_head = 0;
+  
+  /* Success (unless overflow) */
+  if (Term->key_head != Term->key_tail) return (0);
+  
 #if 0
-	/* Hack -- Forget the oldest key */
-	if (++Term->key_tail == Term->key_size) Term->key_tail = 0;
+  /* Hack -- Forget the oldest key */
+  if (++Term->key_tail == Term->key_size) Term->key_tail = 0;
 #endif
-
-	/* Problem */
-	return (1);
+  
+  /* Problem */
+  return (1);
 }
 
 
@@ -1902,14 +1924,28 @@ errr Term_keypress(int k)
  */
 errr Term_key_push(int k)
 {
-	/* Hack -- Refuse to enqueue non-keys */
+	event_type ke;
+
 	if (!k) return (-1);
+
+	ke.type = EVT_KBRD;
+	ke.index = 0;
+	ke.key = k;
+
+	return Term_event_push(&ke);
+}
+
+errr Term_event_push(const event_type *ke)
+{
+	/* Hack -- Refuse to enqueue non-keys */
+	if (!ke) return (-1);
 
 	/* Hack -- Overflow may induce circular queue */
 	if (Term->key_tail == 0) Term->key_tail = Term->key_size;
 
 	/* Back up, Store the char */
-	Term->key_queue[--Term->key_tail] = k;
+	/* Store the char, advance the queue */
+	Term->key_queue[--Term->key_tail] = *ke;
 
 	/* Success (unless overflow) */
 	if (Term->key_head != Term->key_tail) return (0);
@@ -1937,10 +1973,10 @@ errr Term_key_push(int k)
  *
  * Remove the keypress if "take" is true.
  */
-errr Term_inkey(char *ch, bool wait, bool take)
+errr Term_inkey(event_type *ch, bool wait, bool take)
 {
 	/* Assume no key */
-	(*ch) = '\0';
+	ch->type = ch->key = 0;
 
 	/* Hack -- get bored */
 	if (!Term->never_bored)
@@ -1989,21 +2025,6 @@ errr Term_inkey(char *ch, bool wait, bool take)
 /*** Extra routines ***/
 
 /*
- * Set the resize hook for the current term.
- */
-errr Term_set_resize_hook(void (*hook)(void))
-{
-	/* Ensure hook */
-	if (!hook) return (-1);
-
-	/* Set hook */
-	Term->scr->resize_hook = hook;
-
-	/* Success */
-	return (0);
-}
-
-/*
  * Save the "requested" screen into the "memorized" screen
  *
  * Every "Term_save()" should match exactly one "Term_load()"
@@ -2027,9 +2048,6 @@ errr Term_save(void)
 	/* Front of the queue */
 	mem->next = Term->mem;
 	Term->mem = mem;
-
-	/* Nuke the resize hook (safety) */
-	Term->scr->resize_hook = NULL;
 
 	/* Success */
 	return (0);
@@ -2078,10 +2096,6 @@ errr Term_load(void)
 	Term->y1 = 0;
 	Term->y2 = h - 1;
 
-	/* Call the resize hook */
-	if (Term->scr->resize_hook && (w != Term->wid) && (h != Term->hgt))
-		Term->scr->resize_hook();
-
 	/* Success */
 	return (0);
 }
@@ -2104,6 +2118,8 @@ errr Term_resize(int w, int h)
 	term_win *hold_scr;
 	term_win *hold_mem;
 	term_win *hold_tmp;
+
+	event_type evt = { EVT_RESIZE, 0, 0, 0, 0 };
 
 
 	/* Resizing is forbidden */
@@ -2257,9 +2273,8 @@ errr Term_resize(int w, int h)
 	Term->y1 = 0;
 	Term->y2 = h - 1;
 
-	/* Call the resize hook */
-	if (Term->scr->resize_hook)
-		Term->scr->resize_hook();
+	/* Push a resize event onto the stack */
+	Term_event_push(&evt);
 
 	/* Success */
 	return (0);
@@ -2394,7 +2409,7 @@ errr term_init(term *t, int w, int h, int k)
 	t->key_size = k;
 
 	/* Allocate the input queue */
-	C_MAKE(t->key_queue, t->key_size, char);
+	C_MAKE(t->key_queue, t->key_size, event_type);
 
 
 	/* Save the size */

@@ -190,7 +190,7 @@ void do_cmd_wield(void)
 		s = strchr(quark_str(equip_o_ptr->note), '!');
 
 		/* Process preventions */
-		/* XXX Perhaps this should be factored out to a seperate function? */
+		/* XXX Perhaps this should be factored out to a separate function? */
 		while (s)
 		{
 			/* Check the "restriction" */
@@ -288,14 +288,14 @@ void do_cmd_wield(void)
 		sound(MSG_CURSED);
 		msg_print("Oops! It feels deathly cold!");
 
-		/* Remove special inscription, if any */
-		if (o_ptr->discount >= INSCRIP_NULL) o_ptr->discount = 0;
-
-		/* Sense the object if allowed */
-		if (o_ptr->discount == 0) o_ptr->discount = INSCRIP_CURSED;
+		/* Sense the object */
+		o_ptr->pseudo = INSCRIP_CURSED;
 
 		/* The object has been "sensed" */
 		o_ptr->ident |= (IDENT_SENSE);
+
+		/* Set squelched status */
+		p_ptr->notice |= PN_SQUELCH;
 	}
 
 	/* Recalculate bonuses */
@@ -424,7 +424,6 @@ void do_cmd_drop(void)
 void do_cmd_destroy(void)
 {
 	int item, amt;
-	int result;
 
 	object_type *o_ptr;
 
@@ -436,11 +435,17 @@ void do_cmd_destroy(void)
 
 	cptr q, s;
 
-
 	/* Get an item */
 	q = "Destroy which item? ";
 	s = "You have nothing to destroy.";
-	if (!get_item(&item, q, s, (USE_INVEN | USE_FLOOR))) return;
+	if (!get_item(&item, q, s, (USE_INVEN | USE_FLOOR | CAN_SQUELCH))) return;
+
+	/* Deal with squelched items */
+	if (item == ALL_SQUELCHED)
+	{
+		squelch_items();
+		return;
+	}
 
 	/* Get the item (in the pack) */
 	if (item >= 0)
@@ -481,86 +486,8 @@ void do_cmd_destroy(void)
 	object_desc(o_name, sizeof(o_name), i_ptr, TRUE, 3);
 
 	/* Verify destruction */
-	if (verify_destroy)
-	{
-		strnfmt(out_val, sizeof(out_val), "Really destroy %s? ", o_name);
-
-		/* Check for known ego-items */
-		if (ego_item_p(o_ptr) && object_known_p(o_ptr))
-		{
-			/* XXX Hook for context help here to explain 'E' */
- 
-			/* Prompt */
-			result = get_check_other(out_val, 'E');
-
-			/* No */
-			if (result == 0)
-				return;
- 
-			/* Squelch */
-			else if (result == 2)
-			{
-				/* Get the ego item type */
-				ego_item_type *e_ptr = &e_info[o_ptr->name2];
- 
-				/* Set to squelch */
-				e_ptr->squelch = TRUE;
- 
-				/* Tell user */
-				msg_format("Ego-item type '%s' will always be squelched.", e_name + e_ptr->name);
-			}
-		}
-
-		/* Check for aware objects */
-		else if (object_aware_p(o_ptr) && !(k_info[o_ptr->k_idx].flags3 & (TR3_INSTA_ART)))
-		{
-			result = get_check_other(out_val, 'S');
-
-			/* returned "no" */
-			if (!result) return;
-
-			/* Return of 2 sets item to squelch */
-			else if (result == 2)
-			{
-				object_kind *k_ptr = &k_info[o_ptr->k_idx];
-				char o_name2[80];
-
-				/* Make a fake object so we can give a proper message */
-				object_type object_type_body;
-				object_type *i_ptr = &object_type_body;
-
-				/* Wipe the object */
-				object_wipe(i_ptr);
-
-				/* Create the object */
-				object_prep(i_ptr, o_ptr->k_idx);
-
-				/* Make it plural */
-				i_ptr->number = 2;
-
-				/* Now describe with correct amount */
-				object_desc(o_name2, sizeof(o_name2), i_ptr, FALSE, 0);
-
-				/* Set to squelch */
-				k_ptr->squelch = SQUELCH_ALWAYS;
-
-				/* Message - no good routine for extracting the plain name*/
-				msg_format("All %^s will always be squelched.", o_name2);
-
-				/*Mark the view to be updated*/
-				p_ptr->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW);;
-			}
-		}
-
-		/* Everything else */
-		else
-		{
-			if (!get_check(out_val)) return;
-		}
-	}
-
-	/* Take a turn */
-	p_ptr->energy_use = 100;
+	strnfmt(out_val, sizeof(out_val), "Really destroy %s? ", o_name);
+	if (!get_check(out_val)) return; 
 
 	/* Artifacts cannot be destroyed */
 	if (artifact_p(o_ptr))
@@ -576,14 +503,14 @@ void do_cmd_destroy(void)
 		{
 			/* Already sensed objects always get improved feelings */
 			if (cursed_p(o_ptr) || broken_p(o_ptr))
-				o_ptr->discount = INSCRIP_TERRIBLE;
+				o_ptr->pseudo = INSCRIP_TERRIBLE;
 			else
-				o_ptr->discount = INSCRIP_SPECIAL;
+				o_ptr->pseudo = INSCRIP_SPECIAL;
 		}
 		else
 		{
 			/* Mark the object as indestructible */
-			o_ptr->discount = INSCRIP_INDESTRUCTIBLE;
+			o_ptr->pseudo = INSCRIP_INDESTRUCTIBLE;
 		}
 
 		/* Combine the pack */
@@ -619,6 +546,21 @@ void do_cmd_destroy(void)
 		floor_item_describe(0 - item);
 		floor_item_optimize(0 - item);
 	}
+
+#if 0
+	/*
+	 * We can only re-enable this when it can be made to interact well with
+	 * the repeat code.
+	 */
+
+	/* We have destroyed a floor item, and the floor is not empty */
+	if ((item < 0) && (cave_o_idx[p_ptr->py][p_ptr->px]))
+	{
+		/* Automatically repeat this command (unless disturbed) */
+		p_ptr->command_cmd = 'k';
+		p_ptr->command_rep = 2;
+	}
+#endif
 }
 
 
@@ -749,7 +691,7 @@ void do_cmd_inscribe(void)
 	message_flush();
 
 	/* Start with nothing */
-	strcpy(tmp, "");
+	tmp[0] = '\0';
 
 	/* Use old inscription */
 	if (o_ptr->note)
@@ -779,13 +721,19 @@ void do_cmd_inscribe(void)
  */
 static bool item_tester_refill_lantern(const object_type *o_ptr)
 {
+	u32b f1, f2, f3;
+
+	/* Get flags */
+	object_flags(o_ptr, &f1, &f2, &f3);
+
 	/* Flasks of oil are okay */
 	if (o_ptr->tval == TV_FLASK) return (TRUE);
 
-	/* Non-empty lanterns are okay */
+	/* Non-empty, non-everburning lanterns are okay */
 	if ((o_ptr->tval == TV_LITE) &&
 	    (o_ptr->sval == SV_LITE_LANTERN) &&
-	    (o_ptr->pval > 0))
+	    (o_ptr->timeout > 0) &&
+		!(f3 & TR3_NO_FUEL))
 	{
 		return (TRUE);
 	}
@@ -836,19 +784,19 @@ static void do_cmd_refill_lamp(void)
 	j_ptr = &inventory[INVEN_LITE];
 
 	/* Refuel */
-	j_ptr->pval += o_ptr->pval;
+	j_ptr->timeout += o_ptr->timeout ? o_ptr->timeout : o_ptr->pval;
 
 	/* Message */
 	msg_print("You fuel your lamp.");
 
 	/* Comment */
-	if (j_ptr->pval >= FUEL_LAMP)
+	if (j_ptr->timeout >= FUEL_LAMP)
 	{
-		j_ptr->pval = FUEL_LAMP;
+		j_ptr->timeout = FUEL_LAMP;
 		msg_print("Your lamp is full.");
 	}
 
-	/* Refilled from a latern */
+	/* Refilled from a lantern */
 	if (o_ptr->sval == SV_LITE_LANTERN)
 	{
 		/* Unstack if necessary */
@@ -867,7 +815,7 @@ static void do_cmd_refill_lamp(void)
 			i_ptr->number = 1;
 
 			/* Remove fuel */
-			i_ptr->pval = 0;
+			i_ptr->timeout = 0;
 
 			/* Unstack the used item */
 			o_ptr->number--;
@@ -880,11 +828,11 @@ static void do_cmd_refill_lamp(void)
 				drop_near(i_ptr, 0, p_ptr->py, p_ptr->px);
 		}
 
-		/* Empty a single latern */
+		/* Empty a single lantern */
 		else
 		{
 			/* No more fuel */
-			o_ptr->pval = 0;
+			o_ptr->timeout = 0;
 		}
 
 		/* Combine / Reorder the pack (later) */
@@ -928,9 +876,18 @@ static void do_cmd_refill_lamp(void)
  */
 static bool item_tester_refill_torch(const object_type *o_ptr)
 {
+	u32b f1, f2, f3;
+
+	/* Get flags */
+	object_flags(o_ptr, &f1, &f2, &f3);
+
 	/* Torches are okay */
 	if ((o_ptr->tval == TV_LITE) &&
-	    (o_ptr->sval == SV_LITE_TORCH)) return (TRUE);
+	    (o_ptr->sval == SV_LITE_TORCH) &&
+		!(f3 & TR3_NO_FUEL))
+	{
+		return (TRUE);
+	}
 
 	/* Assume not okay */
 	return (FALSE);
@@ -978,15 +935,15 @@ static void do_cmd_refill_torch(void)
 	j_ptr = &inventory[INVEN_LITE];
 
 	/* Refuel */
-	j_ptr->pval += o_ptr->pval + 5;
+	j_ptr->timeout += o_ptr->timeout + 5;
 
 	/* Message */
 	msg_print("You combine the torches.");
 
 	/* Over-fuel message */
-	if (j_ptr->pval >= FUEL_TORCH)
+	if (j_ptr->timeout >= FUEL_TORCH)
 	{
-		j_ptr->pval = FUEL_TORCH;
+		j_ptr->timeout = FUEL_TORCH;
 		msg_print("Your torch is fully fueled.");
 	}
 
@@ -1028,9 +985,14 @@ static void do_cmd_refill_torch(void)
 void do_cmd_refill(void)
 {
 	object_type *o_ptr;
+	u32b f1, f2, f3;
 
 	/* Get the light */
 	o_ptr = &inventory[INVEN_LITE];
+
+	/* Get flags */
+	object_flags(o_ptr, &f1, &f2, &f3);
+
 
 	/* It is nothing */
 	if (o_ptr->tval != TV_LITE)
@@ -1038,16 +1000,19 @@ void do_cmd_refill(void)
 		msg_print("You are not wielding a light.");
 	}
 
-	/* It's a lamp */
-	else if (o_ptr->sval == SV_LITE_LANTERN)
+	else if (!(f3 & TR3_NO_FUEL))
 	{
-		do_cmd_refill_lamp();
-	}
+		/* It's a lamp */
+		if (o_ptr->sval == SV_LITE_LANTERN)
+		{
+			do_cmd_refill_lamp();
+		}
 
-	/* It's a torch */
-	else if (o_ptr->sval == SV_LITE_TORCH)
-	{
-		do_cmd_refill_torch();
+		/* It's a torch */
+		else if (o_ptr->sval == SV_LITE_TORCH)
+		{
+			do_cmd_refill_torch();
+		}
 	}
 
 	/* No torch to refill */
@@ -1426,17 +1391,17 @@ void do_cmd_query_symbol(void)
 	if (sym == KTRL('A'))
 	{
 		all = TRUE;
-		strcpy(buf, "Full monster list.");
+		my_strcpy(buf, "Full monster list.", sizeof(buf));
 	}
 	else if (sym == KTRL('U'))
 	{
 		all = uniq = TRUE;
-		strcpy(buf, "Unique monster list.");
+		my_strcpy(buf, "Unique monster list.", sizeof(buf));
 	}
 	else if (sym == KTRL('N'))
 	{
 		all = norm = TRUE;
-		strcpy(buf, "Non-unique monster list.");
+		my_strcpy(buf, "Non-unique monster list.", sizeof(buf));
 	}
 	else if (ident_info[i])
 	{
@@ -1589,20 +1554,14 @@ void do_cmd_query_symbol(void)
 		if (query == '-')
 		{
 			if (++i == n)
-			{
 				i = 0;
-				if (!expand_list) break;
-			}
 		}
 
 		/* Move to "next" monster */
 		else
 		{
 			if (i-- == 0)
-			{
 				i = n - 1;
-				if (!expand_list) break;
-			}
 		}
 	}
 

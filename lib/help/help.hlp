@@ -1,6 +1,8 @@
 Welcome to the Angband Online Help System.
 
 Please choose one of the following online help files:
+    (k) README for Angband 3.0.8   (308.txt)
+
     (a) General Information        (general.txt)
     (b) Creating a Character       (birth.txt)
     (c) Exploring the Dungeon      (dungeon.txt)
@@ -11,6 +13,7 @@ Please choose one of the following online help files:
     (h) Version Information        (version.txt)
     (i) Spoiler Menu (if any)      (spoiler.hlp)
     (j) User Menu (if any)         (user.hlp)
+
 
 Browser/help commands:
   #     go to line         %  go to file         ?  go to last file/main menu
@@ -27,4 +30,4 @@ Browser/help commands:
 ***** [h] version.txt
 ***** [i] spoiler.hlp
 ***** [j] user.hlp
-
+***** [k] 308.txt

@@ -1,15 +1,20 @@
-/* File: z-util.c */
-
 /*
- * Copyright (c) 1997 Ben Harrison
+ * File: z-util.c
+ * Purpose: Low-level string handling and other utilities.
  *
- * This software may be copied and distributed for educational, research,
- * and not for profit purposes provided that this copyright and statement
- * are included in all such copies.
+ * Copyright (c) 1997-2005 Ben Harrison, Robert Ruehlmann.
+ *
+ * This work is free software; you can redistribute it and/or modify it
+ * under the terms of either:
+ *
+ * a) the GNU General Public License as published by the Free Software
+ *    Foundation, version 2, or
+ *
+ * b) the "Angband licence":
+ *    This software may be copied and distributed for educational, research,
+ *    and not for profit purposes provided that this copyright and statement
+ *    are included in all such copies.  Other copyrights may also apply.
  */
-
-/* Purpose: Low level utilities -BEN- */
-
 #include "z-util.h"
 
 
@@ -139,6 +144,7 @@ size_t my_strcat(char *buf, const char *src, size_t bufsize)
 /*
  * Determine if string "a" is equal to string "b"
  */
+#undef streq
 bool streq(cptr a, cptr b)
 {
 	return (!strcmp(a, b));
@@ -223,35 +229,3 @@ void quit(cptr str)
 	/* Failure */
 	(void)(exit(EXIT_FAILURE));
 }
-
-
-
-/*
- * Redefinable "core" action
- */
-void (*core_aux)(cptr) = NULL;
-
-/*
- * Dump a core file, after printing a warning message
- * As with "quit()", try to use the "core_aux()" hook first.
- */
-void core(cptr str)
-{
-	char *crash = NULL;
-
-	/* Use the aux function */
-	if (core_aux) (*core_aux)(str);
-
-	/* Dump the warning string */
-	if (str) plog(str);
-
-	/* Attempt to Crash */
-	(*crash) = (*crash);
-
-	/* Be sure we exited */
-	quit("core() failed");
-}
-
-
-
-

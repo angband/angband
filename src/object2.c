@@ -286,43 +286,82 @@ static void compact_objects_aux(int i1, int i2)
 
 
 /*
- * Compact and Reorder the object list
+ * Compact and reorder the object list
  *
  * This function can be very dangerous, use with caution!
  *
- * When actually "compacting" objects, we base the saving throw on a
- * combination of object level, distance from player, and current
- * "desperation".
+ * When compacting objects, we first destroy gold, on the basis that by the
+ * time item compaction becomes an issue, the player really won't care.
+ * We also nuke items marked as squelch.
  *
- * After "compacting" (if needed), we "reorder" the objects into a more
- * compact order, and we reset the allocation info, and the "live" array.
+ * When compacting other objects, we base the saving throw on a combination of
+ * object level, distance from player, and current "desperation".
+ *
+ * After compacting, we "reorder" the objects into a more compact order, and we
+ * reset the allocation info, and the "live" array.
  */
 void compact_objects(int size)
 {
 	int py = p_ptr->py;
 	int px = p_ptr->px;
 
-	int i, y, x, num, cnt;
+	int i, y, x, cnt;
 
 	int cur_lev, cur_dis, chance;
 
 
-	/* Compact */
-	if (size)
+	/* Reorder objects when not passed a size */
+	if (!size)
 	{
-		/* Message */
-		msg_print("Compacting objects...");
+		/* Excise dead objects (backwards!) */
+		for (i = o_max - 1; i >= 1; i--)
+		{
+			object_type *o_ptr = &o_list[i];
 
-		/* Redraw map */
-		p_ptr->redraw |= (PR_MAP);
+			/* Skip real objects */
+			if (o_ptr->k_idx) continue;
 
-		/* Window stuff */
-		p_ptr->window |= (PW_OVERHEAD | PW_MAP);
+			/* Move last object into open hole */
+			compact_objects_aux(o_max - 1, i);
+
+			/* Compress "o_max" */
+			o_max--;
+		}
+
+		return;
+	}
+
+
+	/* Message */
+	msg_print("Compacting objects...");
+
+	/* Redraw map */
+	p_ptr->redraw |= (PR_MAP);
+
+	/* Window stuff */
+	p_ptr->window |= (PW_OVERHEAD | PW_MAP);
+
+
+
+
+	/*** Try destroying objects ***/
+
+	/* First do gold */
+	for (i = 1; (i < o_max) && (size); i++)
+	{
+		object_type *o_ptr = &o_list[i];
+
+		/* Nuke gold or squelched items */
+		if (o_ptr->tval == TV_GOLD || squelch_item_ok(o_ptr))
+		{
+			delete_object_idx(i);
+			size--;
+		}
 	}
 
 
 	/* Compact at least 'size' objects */
-	for (num = 0, cnt = 1; num < size; cnt++)
+	for (cnt = 1; size; cnt++)
 	{
 		/* Get more vicious each iteration */
 		cur_lev = 5 * cnt;
@@ -331,17 +370,16 @@ void compact_objects(int size)
 		cur_dis = 5 * (20 - cnt);
 
 		/* Examine the objects */
-		for (i = 1; i < o_max; i++)
+		for (i = 1; (i < o_max) && (size); i++)
 		{
 			object_type *o_ptr = &o_list[i];
-
 			object_kind *k_ptr = &k_info[o_ptr->k_idx];
 
 			/* Skip dead objects */
 			if (!o_ptr->k_idx) continue;
 
 			/* Hack -- High level objects start out "immune" */
-			if (k_ptr->level > cur_lev && (k_ptr->squelch != SQUELCH_ALWAYS))
+			if (k_ptr->level > cur_lev && !k_ptr->squelch)
 				continue;
 
 			/* Monster */
@@ -357,7 +395,7 @@ void compact_objects(int size)
 				x = m_ptr->fx;
 
 				/* Monsters protect their objects */
-				if ((rand_int(100) < 90) && (k_ptr->squelch != SQUELCH_ALWAYS))
+				if ((rand_int(100) < 90) && !k_ptr->squelch)
 					continue;
 			}
 
@@ -370,15 +408,11 @@ void compact_objects(int size)
 			}
 
 			/* Nearby objects start out "immune" */
-			if ((cur_dis > 0) && (distance(py, px, y, x) < cur_dis) &&
-										(k_ptr->squelch != SQUELCH_ALWAYS))
+			if ((cur_dis > 0) && (distance(py, px, y, x) < cur_dis) && !k_ptr->squelch)
 				continue;
 
 			/* Saving throw */
 			chance = 90;
-
-			/* Squelched items get compacted */
-			if ((k_ptr->aware) && (k_ptr->squelch == SQUELCH_ALWAYS)) chance = 0;
 
 
 			/* Hack -- only compact artifacts in emergencies */
@@ -389,27 +423,13 @@ void compact_objects(int size)
 
 			/* Delete the object */
 			delete_object_idx(i);
-
-			/* Count it */
-			num++;
+			size--;
 		}
 	}
 
 
-	/* Excise dead objects (backwards!) */
-	for (i = o_max - 1; i >= 1; i--)
-	{
-		object_type *o_ptr = &o_list[i];
-
-		/* Skip real objects */
-		if (o_ptr->k_idx) continue;
-
-		/* Move last object into open hole */
-		compact_objects_aux(o_max - 1, i);
-
-		/* Compress "o_max" */
-		o_max--;
-	}
+	/* Reorder objects */
+	compact_objects(0);
 }
 
 
@@ -438,15 +458,12 @@ void wipe_o_list(void)
 		/* Skip dead objects */
 		if (!o_ptr->k_idx) continue;
 
-		/* Mega-Hack -- preserve artifacts */
-		if (!character_dungeon || adult_preserve)
+		/* Preserve artifacts */
+		if (!character_dungeon || !adult_no_preserve)
 		{
-			/* Hack -- Preserve unknown artifacts */
+			/* Preserve only unknown artifacts */
 			if (artifact_p(o_ptr) && !object_known_p(o_ptr))
-			{
-				/* Mega-Hack -- Preserve the artifact */
 				a_info[o_ptr->name1].cur_num = 0;
-			}
 		}
 
 		/* Monster */
@@ -767,7 +784,7 @@ s16b get_obj_num(int level)
 void object_known(object_type *o_ptr)
 {
 	/* Remove special inscription, if any */
-	if (o_ptr->discount >= INSCRIP_NULL) o_ptr->discount = 0;
+	if (o_ptr->pseudo) o_ptr->pseudo = 0;
 
 	/* The object is not "sensed" */
 	o_ptr->ident &= ~(IDENT_SENSE);
@@ -790,7 +807,7 @@ void object_aware(object_type *o_ptr)
 {
 	/* Fully aware of the effects */
 	k_info[o_ptr->k_idx].aware = TRUE;
-	
+
 	/* Scrolls can change the graphics when becoming aware */
 	if (o_ptr->tval == TV_SCROLL)
 	{
@@ -1010,7 +1027,7 @@ static s32b object_value_real(const object_type *o_ptr)
 			break;
 		}
 
-		/* Rings/Amulets */
+		/* Rings/Amulets, Lites */
 		case TV_RING:
 		case TV_AMULET:
 		{
@@ -1145,13 +1162,6 @@ s32b object_value(const object_type *o_ptr)
 	}
 
 
-	/* Apply discount (if any) */
-	if (o_ptr->discount > 0 && o_ptr->discount < INSCRIP_NULL)
-	{
-		value -= (value * o_ptr->discount / 100L);
-	}
-
-
 	/* Return the final value */
 	return (value);
 }
@@ -1279,8 +1289,13 @@ bool object_similar(const object_type *o_ptr, const object_type *j_ptr)
 			/* Hack -- Never stack "powerful" items */
 			if (o_ptr->xtra1 || j_ptr->xtra1) return (FALSE);
 
-			/* Hack -- Never stack recharging items */
-			if (o_ptr->timeout || j_ptr->timeout) return (FALSE);
+			/* Hack - Never stack recharging items */
+			if ((o_ptr->timeout || j_ptr->timeout) && o_ptr->tval != TV_LITE) 
+				return FALSE;
+
+			/* Lites must have same amount of fuel */
+			else if(o_ptr->timeout != j_ptr->timeout && o_ptr->tval == TV_LITE)
+				return FALSE;
 
 			/* Require identical "values" */
 			if (o_ptr->ac != j_ptr->ac) return (FALSE);
@@ -1314,43 +1329,14 @@ bool object_similar(const object_type *o_ptr, const object_type *j_ptr)
 	/* Hack -- Require compatible inscriptions */
 	if (o_ptr->note != j_ptr->note)
 	{
-		/* Normally require matching inscriptions */
-		if (!stack_force_notes) return (0);
-
 		/* Never combine different inscriptions */
 		if (o_ptr->note && j_ptr->note) return (0);
 	}
 
 
-	/* Hack -- Require compatible "discount" fields */
-	if (o_ptr->discount != j_ptr->discount)
-	{
-		/* Both are (different) special inscriptions */
-		if ((o_ptr->discount >= INSCRIP_NULL) &&
-		    (j_ptr->discount >= INSCRIP_NULL))
-		{
-			/* Normally require matching inscriptions */
-			return (0);
-		}
-
-		/* One is a special inscription, one is a discount or nothing */
-		else if ((o_ptr->discount >= INSCRIP_NULL) ||
-		         (j_ptr->discount >= INSCRIP_NULL))
-		{
-			/* Normally require matching inscriptions */
-			if (!stack_force_notes) return (0);
-
-			/* Hack -- Never merge a special inscription with a discount */
-			if ((o_ptr->discount > 0) && (j_ptr->discount > 0)) return (0);
-		}
-
-		/* One is a discount, one is a (different) discount or nothing */
-		else
-		{
-			/* Normally require matching discounts */
-			if (!stack_force_costs) return (0);
-		}
-	}
+	/* Different pseudo-ID statuses preclude combination */
+	if (o_ptr->pseudo != j_ptr->pseudo)
+		return (0);
 
 
 	/* Maximal "stacking" limit */
@@ -1400,7 +1386,7 @@ void object_absorb(object_type *o_ptr, const object_type *j_ptr)
 	if (j_ptr->note != 0) o_ptr->note = j_ptr->note;
 
 	/* Mega-Hack -- Blend "discounts" */
-	if (o_ptr->discount < j_ptr->discount) o_ptr->discount = j_ptr->discount;
+	o_ptr->pseudo = j_ptr->pseudo;
 
 	/*
 	 * Hack -- if rods are stacking, re-calculate the
@@ -2452,16 +2438,15 @@ static void a_m_aux_4(object_type *o_ptr, int level, int power)
 	{
 		case TV_LITE:
 		{
-			/* Hack -- Torches -- random fuel */
+			/* Hack -- Torches & lanterns -- random fuel at 1/2 max */
 			if (o_ptr->sval == SV_LITE_TORCH)
 			{
-				if (o_ptr->pval > 0) o_ptr->pval = randint(o_ptr->pval);
+				o_ptr->timeout = randint(FUEL_TORCH/2);
 			}
 
-			/* Hack -- Lanterns -- random fuel */
 			else if (o_ptr->sval == SV_LITE_LANTERN)
 			{
-				if (o_ptr->pval > 0) o_ptr->pval = randint(o_ptr->pval);
+				o_ptr->timeout = randint(FUEL_LAMP/2);
 			}
 
 			break;
@@ -2882,6 +2867,30 @@ static bool kind_is_good(int k_idx)
 			if (k_ptr->sval == SV_AMULET_TRICKERY) return (TRUE);
 			return (FALSE);
 		}
+		
+		/* Potions -- Potions of life, healing, *healing* are good,
+		 * restore mana for spell casters are good,
+		 * as are stat potions, when the stat is not maximised,
+		 * as is augmentation (acts as a potion of 'restoration' if all
+		 * stats are maximised).
+		 * 
+		 * XXX If we make too many useful items 'good' we may want to
+		 * consider limiting the total number of good drops to uniques
+		 * and truely nasty monsters.
+		 */
+		case TV_POTION:
+		{
+			if (k_ptr->sval == SV_POTION_HEALING) return (TRUE);
+			if (k_ptr->sval == SV_POTION_STAR_HEALING) return (TRUE);
+			if (k_ptr->sval == SV_POTION_LIFE) return (TRUE);
+			if ((k_ptr->sval == SV_POTION_RESTORE_MANA) && (p_ptr->msp > 0)) return (TRUE);
+			if ((k_ptr->sval >= SV_POTION_INC_STR) && (k_ptr->sval <= SV_POTION_INC_CHR))
+			{
+				if (p_ptr->stat_cur[k_ptr->sval - SV_POTION_INC_STR] < 18+100) return (TRUE);
+			}
+			if (k_ptr->sval == SV_POTION_AUGMENTATION) return (TRUE);
+			return (FALSE);
+		}
 	}
 
 	/* Assume not good */
@@ -2902,6 +2911,7 @@ static bool kind_is_good(int k_idx)
 bool make_object(object_type *j_ptr, bool good, bool great)
 {
 	int prob, base;
+	object_kind *k_ptr;
 
 
 	/* Chance of "special object" */
@@ -2949,17 +2959,18 @@ bool make_object(object_type *j_ptr, bool good, bool great)
 	/* Apply magic (allow artifacts) */
 	apply_magic(j_ptr, object_level, TRUE, good, great);
 
-	/* Hack -- generate multiple spikes/missiles */
-	switch (j_ptr->tval)
+
+	/* Generate multiple items */
+	/* Imported from Steamband and Sangband */
+	/* XXX Will probably not work so well for stacks of potions (yet) */
+	k_ptr = &k_info[j_ptr->k_idx];
+
+	if (k_ptr->gen_mult_prob >= 100 ||
+	    k_ptr->gen_mult_prob >= randint(100))
 	{
-		case TV_SPIKE:
-		case TV_SHOT:
-		case TV_ARROW:
-		case TV_BOLT:
-		{
-			j_ptr->number = damroll(6, 7);
-		}
+		j_ptr->number = damroll(k_ptr->gen_dice, k_ptr->gen_side);
 	}
+
 
 	/* Notice "okay" out-of-depth objects */
 	if (!cursed_p(j_ptr) && !broken_p(j_ptr) &&
@@ -3788,10 +3799,22 @@ void floor_item_optimize(int item)
  */
 bool inven_carry_okay(const object_type *o_ptr)
 {
-	int j;
-
 	/* Empty slot? */
-	if (p_ptr->inven_cnt < INVEN_PACK) return (TRUE);
+	if (p_ptr->inven_cnt < INVEN_PACK) return TRUE;
+
+	/* Check if it can stack */
+	if (inven_stack_okay(o_ptr)) return TRUE;
+
+	/* Nope */
+	return FALSE;
+}
+
+/*
+ * Check to see if an item is stackable in the inventory
+ */
+bool inven_stack_okay(const object_type *o_ptr)
+{
+	int j;
 
 	/* Similar slot? */
 	for (j = 0; j < INVEN_PACK; j++)
@@ -4147,6 +4170,7 @@ void inven_drop(int item, int amt)
 
 /*
  * Combine items in the pack
+ * Also "pick up" any gold in the inventory by accident
  *
  * Note special handling of the "overflow" slot
  */
@@ -4163,14 +4187,24 @@ void combine_pack(void)
 	/* Combine the pack (backwards) */
 	for (i = INVEN_PACK; i > 0; i--)
 	{
+		bool slide = FALSE;
+
 		/* Get the item */
 		o_ptr = &inventory[i];
 
 		/* Skip empty items */
 		if (!o_ptr->k_idx) continue;
 
+		/* Absorb gold */
+		if (o_ptr->tval == TV_GOLD)
+		{
+			/* Count the gold */
+			slide = TRUE;
+			p_ptr->au += o_ptr->pval;
+		}
+
 		/* Scan the items above that item */
-		for (j = 0; j < i; j++)
+		else for (j = 0; j < i; j++)
 		{
 			/* Get the item */
 			j_ptr = &inventory[j];
@@ -4182,30 +4216,34 @@ void combine_pack(void)
 			if (object_similar(j_ptr, o_ptr))
 			{
 				/* Take note */
-				flag = TRUE;
+				flag = slide = TRUE;
 
 				/* Add together the item counts */
 				object_absorb(j_ptr, o_ptr);
 
-				/* One object is gone */
-				p_ptr->inven_cnt--;
-
-				/* Slide everything down */
-				for (k = i; k < INVEN_PACK; k++)
-				{
-					/* Hack -- slide object */
-					COPY(&inventory[k], &inventory[k+1], object_type);
-				}
-
-				/* Hack -- wipe hole */
-				object_wipe(&inventory[k]);
-
-				/* Window stuff */
-				p_ptr->window |= (PW_INVEN);
-
-				/* Done */
 				break;
 			}
+		}
+
+
+		/* Compact the inventory */
+		if (slide)
+		{
+			/* One object is gone */
+			p_ptr->inven_cnt--;
+
+			/* Slide everything down */
+			for (k = i; k < INVEN_PACK; k++)
+			{
+				/* Hack -- slide object */
+				COPY(&inventory[k], &inventory[k+1], object_type);
+			}
+
+			/* Hack -- wipe hole */
+			object_wipe(&inventory[k]);
+
+			/* Window stuff */
+			p_ptr->window |= (PW_INVEN);
 		}
 	}
 

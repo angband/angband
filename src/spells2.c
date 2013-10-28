@@ -233,26 +233,16 @@ void identify_pack(void)
 	/* Simply identify and know every item */
 	for (i = 0; i < INVEN_TOTAL; i++)
 	{
-		int squelch;
 		object_type *o_ptr = &inventory[i];
 
 		/* Skip non-objects */
 		if (!o_ptr->k_idx) continue;
 
 		/* Aware and Known */
-		if(object_known_p(o_ptr)) continue;
+		if (object_known_p(o_ptr)) continue;
 
-		/* Identify it and get the squelch setting */
-		squelch = do_ident_item(i, o_ptr);
-
-		/*
-		* If the object was squelched, keep analyzing
-		* the same slot (the inventory was displaced). -DG-
-		*/
-		if (squelch != SQUELCH_YES || i < INVEN_WIELD) continue;
-
-		/* Now squelch the object */
-		squelch_item(squelch, i, o_ptr);
+		/* Identify it */
+		do_ident_item(i, o_ptr);
 
 		/* repeat with same slot */
 		i--;
@@ -284,11 +274,8 @@ static void uncurse_object(object_type *o_ptr)
 	/* Uncurse it */
 	o_ptr->ident &= ~(IDENT_CURSED);
 
-	/* Remove special inscription, if any */
-	if (o_ptr->discount >= INSCRIP_NULL) o_ptr->discount = 0;
-
-	/* Take note if allowed */
-	if (o_ptr->discount == 0) o_ptr->discount = INSCRIP_UNCURSED;
+	/* Mark as uncursed */
+	o_ptr->pseudo = INSCRIP_UNCURSED;
 
 	/* The object has been "sensed" */
 	o_ptr->ident |= (IDENT_SENSE);
@@ -397,8 +384,10 @@ bool restore_level(void)
  * Hack -- acquire self knowledge
  *
  * List various information about the player and/or his current equipment.
- *
  * See also "identify_fully()".
+ *
+ * This tests the flags of the equipment being carried and the innate player
+ * flags, so any changes made in calc_bonuses need to be shadowed here.
  *
  * Use the "roff()" routines, perhaps.  XXX XXX XXX
  *
@@ -406,9 +395,11 @@ bool restore_level(void)
  *
  * This function cannot display more than 20 lines.  XXX XXX XXX
  */
-void self_knowledge(void)
+void self_knowledge(bool spoil)
 {
 	int i = 0, j, k;
+
+	u32b t1, t2, t3;
 
 	u32b f1 = 0L, f2 = 0L, f3 = 0L;
 
@@ -420,15 +411,16 @@ void self_knowledge(void)
 	/* Get item flags from equipment */
 	for (k = INVEN_WIELD; k < INVEN_TOTAL; k++)
 	{
-		u32b t1, t2, t3;
-
 		o_ptr = &inventory[k];
 
 		/* Skip non-objects */
 		if (!o_ptr->k_idx) continue;
 
 		/* Extract the flags */
-		object_flags(o_ptr, &t1, &t2, &t3);
+		if (spoil)
+			object_flags(o_ptr, &t1, &t2, &t3);
+		else 
+			object_flags_known(o_ptr, &t1, &t2, &t3);
 
 		/* Extract flags */
 		f1 |= t1;
@@ -436,66 +428,74 @@ void self_knowledge(void)
 		f3 |= t3;
 	}
 
+	/* And flags from the player */
+	player_flags(&t1, &t2, &t3);
 
-	if (p_ptr->blind)
+	/* Extract flags */
+	f1 |= t1;
+	f2 |= t2;
+	f3 |= t3;
+
+
+	if (p_ptr->timed[TMD_BLIND])
 	{
 		info[i++] = "You cannot see.";
 	}
-	if (p_ptr->confused)
+	if (p_ptr->timed[TMD_CONFUSED])
 	{
 		info[i++] = "You are confused.";
 	}
-	if (p_ptr->afraid)
+	if (p_ptr->timed[TMD_AFRAID])
 	{
 		info[i++] = "You are terrified.";
 	}
-	if (p_ptr->cut)
+	if (p_ptr->timed[TMD_CUT])
 	{
 		info[i++] = "You are bleeding.";
 	}
-	if (p_ptr->stun)
+	if (p_ptr->timed[TMD_STUN])
 	{
 		info[i++] = "You are stunned.";
 	}
-	if (p_ptr->poisoned)
+	if (p_ptr->timed[TMD_POISONED])
 	{
 		info[i++] = "You are poisoned.";
 	}
-	if (p_ptr->image)
+	if (p_ptr->timed[TMD_IMAGE])
 	{
 		info[i++] = "You are hallucinating.";
 	}
 
-	if (p_ptr->aggravate)
+	if (f3 & TR3_AGGRAVATE)
 	{
 		info[i++] = "You aggravate monsters.";
 	}
-	if (p_ptr->teleport)
+	if (f3 & TR3_TELEPORT)
 	{
 		info[i++] = "Your position is very uncertain.";
 	}
 
-	if (p_ptr->blessed)
+	if (p_ptr->timed[TMD_BLESSED])
 	{
 		info[i++] = "You feel righteous.";
 	}
-	if (p_ptr->hero)
+	if (p_ptr->timed[TMD_HERO])
 	{
 		info[i++] = "You feel heroic.";
 	}
-	if (p_ptr->shero)
+	if (p_ptr->timed[TMD_SHERO])
 	{
 		info[i++] = "You are in a battle rage.";
 	}
-	if (p_ptr->protevil)
+	if (p_ptr->timed[TMD_PROTEVIL])
 	{
 		info[i++] = "You are protected from evil.";
 	}
-	if (p_ptr->shield)
+	if (p_ptr->timed[TMD_SHIELD])
 	{
 		info[i++] = "You are protected by a mystic shield.";
 	}
-	if (p_ptr->invuln)
+	if (p_ptr->timed[TMD_INVULN])
 	{
 		info[i++] = "You are temporarily invulnerable.";
 	}
@@ -515,172 +515,168 @@ void self_knowledge(void)
 	{
 		info[i++] = "You will soon be recalled.";
 	}
-	if (p_ptr->see_infra)
+	if (rp_ptr->infra || f1 & TR1_INFRA)
 	{
 		info[i++] = "Your eyes are sensitive to infrared light.";
 	}
 
-	if (p_ptr->slow_digest)
+	if (f3 & TR3_SLOW_DIGEST)
 	{
 		info[i++] = "Your appetite is small.";
 	}
-	if (p_ptr->ffall)
+	if (f3 & TR3_FEATHER)
 	{
 		info[i++] = "You land gently.";
 	}
-	if (p_ptr->lite)
-	{
-		info[i++] = "You are glowing with light.";
-	}
-	if (p_ptr->regenerate)
+	if (f3 & TR3_REGEN)
 	{
 		info[i++] = "You regenerate quickly.";
 	}
-	if (p_ptr->telepathy)
+	if (f3 & TR3_TELEPATHY)
 	{
 		info[i++] = "You have ESP.";
 	}
-	if (p_ptr->see_inv)
+	if (f3 & TR3_SEE_INVIS)
 	{
 		info[i++] = "You can see invisible creatures.";
 	}
-	if (p_ptr->free_act)
+	if (f3 & TR3_FREE_ACT)
 	{
 		info[i++] = "You have free action.";
 	}
-	if (p_ptr->hold_life)
+	if (f3 & TR3_HOLD_LIFE)
 	{
 		info[i++] = "You have a firm hold on your life force.";
 	}
 
-	if (p_ptr->immune_acid)
+	if (f2 & TR2_IM_ACID)
 	{
 		info[i++] = "You are completely immune to acid.";
 	}
-	else if ((p_ptr->resist_acid) && (p_ptr->oppose_acid))
+	else if ((f2 & TR2_RES_ACID) && (p_ptr->timed[TMD_OPP_ACID]))
 	{
 		info[i++] = "You resist acid exceptionally well.";
 	}
-	else if ((p_ptr->resist_acid) || (p_ptr->oppose_acid))
+	else if ((f2 & TR2_RES_ACID) || (p_ptr->timed[TMD_OPP_ACID]))
 	{
 		info[i++] = "You are resistant to acid.";
 	}
 
-	if (p_ptr->immune_elec)
+	if (f2 & TR2_IM_ELEC)
 	{
 		info[i++] = "You are completely immune to lightning.";
 	}
-	else if ((p_ptr->resist_elec) && (p_ptr->oppose_elec))
+	else if ((f2 & TR2_RES_ELEC) && (p_ptr->timed[TMD_OPP_ELEC]))
 	{
 		info[i++] = "You resist lightning exceptionally well.";
 	}
-	else if ((p_ptr->resist_elec) || (p_ptr->oppose_elec))
+	else if ((f2 & TR2_RES_ELEC) || (p_ptr->timed[TMD_OPP_ELEC]))
 	{
 		info[i++] = "You are resistant to lightning.";
 	}
 
-	if (p_ptr->immune_fire)
+	if (f2 & TR2_IM_FIRE)
 	{
 		info[i++] = "You are completely immune to fire.";
 	}
-	else if ((p_ptr->resist_fire) && (p_ptr->oppose_fire))
+	else if ((f2 & TR2_RES_FIRE) && (p_ptr->timed[TMD_OPP_FIRE]))
 	{
 		info[i++] = "You resist fire exceptionally well.";
 	}
-	else if ((p_ptr->resist_fire) || (p_ptr->oppose_fire))
+	else if ((f2 & TR2_RES_FIRE) || (p_ptr->timed[TMD_OPP_FIRE]))
 	{
 		info[i++] = "You are resistant to fire.";
 	}
 
-	if (p_ptr->immune_cold)
+	if (f2 & TR2_IM_COLD)
 	{
 		info[i++] = "You are completely immune to cold.";
 	}
-	else if ((p_ptr->resist_cold) && (p_ptr->oppose_cold))
+	else if ((f2 & TR2_RES_COLD) && (p_ptr->timed[TMD_OPP_COLD]))
 	{
 		info[i++] = "You resist cold exceptionally well.";
 	}
-	else if ((p_ptr->resist_cold) || (p_ptr->oppose_cold))
+	else if ((f2 & TR2_RES_COLD) || (p_ptr->timed[TMD_OPP_COLD]))
 	{
 		info[i++] = "You are resistant to cold.";
 	}
 
-	if ((p_ptr->resist_pois) && (p_ptr->oppose_pois))
+	if ((f2 & TR2_RES_POIS) && (p_ptr->timed[TMD_OPP_POIS]))
 	{
 		info[i++] = "You resist poison exceptionally well.";
 	}
-	else if ((p_ptr->resist_pois) || (p_ptr->oppose_pois))
+	else if ((f2 & TR2_RES_POIS) || (p_ptr->timed[TMD_OPP_POIS]))
 	{
 		info[i++] = "You are resistant to poison.";
 	}
 
-	if (p_ptr->resist_fear)
+	if (f2 & TR2_RES_FEAR)
 	{
 		info[i++] = "You are completely fearless.";
 	}
 
-	if (p_ptr->resist_lite)
+	if (f2 & TR2_RES_LITE)
 	{
 		info[i++] = "You are resistant to bright light.";
 	}
-	if (p_ptr->resist_dark)
+	if (f2 & TR2_RES_DARK)
 	{
 		info[i++] = "You are resistant to darkness.";
 	}
-	if (p_ptr->resist_blind)
+	if (f2 & TR2_RES_DARK)
 	{
 		info[i++] = "Your eyes are resistant to blindness.";
 	}
-	if (p_ptr->resist_confu)
+	if (f2 & TR2_RES_CONFU)
 	{
 		info[i++] = "You are resistant to confusion.";
 	}
-	if (p_ptr->resist_sound)
+	if (f2 & TR2_RES_SOUND)
 	{
 		info[i++] = "You are resistant to sonic attacks.";
 	}
-	if (p_ptr->resist_shard)
+	if (f2 & TR2_RES_SHARD)
 	{
 		info[i++] = "You are resistant to blasts of shards.";
 	}
-	if (p_ptr->resist_nexus)
+	if (f2 & TR2_RES_NEXUS)
 	{
 		info[i++] = "You are resistant to nexus attacks.";
 	}
-	if (p_ptr->resist_nethr)
+	if (f2 & TR2_RES_NETHR)
 	{
 		info[i++] = "You are resistant to nether forces.";
 	}
-	if (p_ptr->resist_chaos)
+	if (f2 & TR2_RES_CHAOS)
 	{
 		info[i++] = "You are resistant to chaos.";
 	}
-	if (p_ptr->resist_disen)
+	if (f2 & TR2_RES_DISEN)
 	{
 		info[i++] = "You are resistant to disenchantment.";
 	}
 
-	if (p_ptr->sustain_str)
+	if (f2 & TR2_SUST_STR)
 	{
 		info[i++] = "Your strength is sustained.";
 	}
-	if (p_ptr->sustain_int)
+	if (f2 & TR2_SUST_INT)
 	{
 		info[i++] = "Your intelligence is sustained.";
 	}
-	if (p_ptr->sustain_wis)
+	if (f2 & TR2_SUST_WIS)
 	{
 		info[i++] = "Your wisdom is sustained.";
 	}
-	if (p_ptr->sustain_dex)
+	if (f2 & TR2_SUST_DEX)
 	{
 		info[i++] = "Your dexterity is sustained.";
 	}
-	if (p_ptr->sustain_con)
+	if (f2 & TR2_SUST_CON)
 	{
 		info[i++] = "Your constitution is sustained.";
 	}
-	if (p_ptr->sustain_chr)
+	if (f2 & TR2_SUST_CHR)
 	{
 		info[i++] = "Your charisma is sustained.";
 	}
@@ -875,58 +871,6 @@ void self_knowledge(void)
 
 	/* Load screen */
 	screen_load();
-}
-
-
-
-
-
-
-/*
- * Forget everything
- */
-bool lose_all_info(void)
-{
-	int i;
-
-	/* Forget info about objects */
-	for (i = 0; i < INVEN_TOTAL; i++)
-	{
-		object_type *o_ptr = &inventory[i];
-
-		/* Skip non-objects */
-		if (!o_ptr->k_idx) continue;
-
-		/* Allow "protection" by the MENTAL flag */
-		if (o_ptr->ident & (IDENT_MENTAL)) continue;
-
-		/* Remove special inscription, if any */
-		if (o_ptr->discount >= INSCRIP_NULL) o_ptr->discount = 0;
-
-		/* Hack -- Clear the "felt" flag */
-		o_ptr->ident &= ~(IDENT_SENSE);
-
-		/* Hack -- Clear the "known" flag */
-		o_ptr->ident &= ~(IDENT_KNOWN);
-
-		/* Hack -- Clear the "empty" flag */
-		o_ptr->ident &= ~(IDENT_EMPTY);
-	}
-
-	/* Recalculate bonuses */
-	p_ptr->update |= (PU_BONUS);
-
-	/* Combine / Reorder the pack (later) */
-	p_ptr->notice |= (PN_COMBINE | PN_REORDER);
-
-	/* Window stuff */
-	p_ptr->window |= (PW_INVEN | PW_EQUIP | PW_PLAYER_0 | PW_PLAYER_1);
-
-	/* Mega-Hack -- Forget the map */
-	wiz_dark();
-
-	/* It worked */
-	return (TRUE);
 }
 
 
@@ -1892,8 +1836,6 @@ bool ident_spell(void)
 {
 	int item;
 
-	int squelch;
-
 	object_type *o_ptr;
 
 	cptr q, s;
@@ -1919,11 +1861,8 @@ bool ident_spell(void)
 	}
 
 
-	/* Identify the object and get squelch setting */
-	squelch = do_ident_item(item, o_ptr);
-
-	/* Squelch it (if needed) */
-	squelch_item(squelch, item, o_ptr);
+	/* Identify the object */
+	do_ident_item(item, o_ptr);
 
 
 	/* Something happened */
@@ -1940,7 +1879,6 @@ bool ident_spell(void)
 bool identify_fully(void)
 {
 	int item;
-	int squelch;
 
 	object_type *o_ptr;
 
@@ -1967,8 +1905,8 @@ bool identify_fully(void)
 		o_ptr = &o_list[0 - item];
 	}
 
-	/* Identify the object and get the squelch setting */
-	squelch = do_ident_item(item, o_ptr);
+	/* Identify the object */
+	do_ident_item(item, o_ptr);
 
 	/* Mark the item as fully known */
 	o_ptr->ident |= (IDENT_MENTAL);
@@ -1976,17 +1914,8 @@ bool identify_fully(void)
 	/* Handle stuff */
 	handle_stuff();
 
-	/* Now squelch it if needed */
-	if (squelch == SQUELCH_YES)
-	{
-		squelch_item(squelch, item, o_ptr);
-	}
-
-	else
-	{
-		/* Describe it fully */
-		object_info_screen(o_ptr);
-	}
+	/* Describe it fully */
+	object_info_screen(o_ptr);
 
 
 	/* Success */
@@ -2546,7 +2475,7 @@ void destroy_area(int y1, int x1, int r, bool full)
 		if (!p_ptr->resist_blind && !p_ptr->resist_lite)
 		{
 			/* Become blind */
-			(void)set_blind(p_ptr->blind + 10 + randint(10));
+			(void)inc_timed(TMD_BLIND, 10 + randint(10));
 		}
 	}
 
@@ -2717,14 +2646,14 @@ void earthquake(int cy, int cx, int r)
 				{
 					msg_print("You are bashed by rubble!");
 					damage = damroll(10, 4);
-					(void)set_stun(p_ptr->stun + randint(50));
+					(void)inc_timed(TMD_STUN, randint(50));
 					break;
 				}
 				case 3:
 				{
 					msg_print("You are crushed between the floor and ceiling!");
 					damage = damroll(10, 4);
-					(void)set_stun(p_ptr->stun + randint(50));
+					(void)inc_timed(TMD_STUN, randint(50));
 					break;
 				}
 			}
@@ -3172,7 +3101,7 @@ bool lite_area(int dam, int rad)
 	int flg = PROJECT_GRID | PROJECT_KILL;
 
 	/* Hack -- Message */
-	if (!p_ptr->blind)
+	if (!p_ptr->timed[TMD_BLIND])
 	{
 		msg_print("You are surrounded by a white light.");
 	}
@@ -3200,7 +3129,7 @@ bool unlite_area(int dam, int rad)
 	int flg = PROJECT_GRID | PROJECT_KILL;
 
 	/* Hack -- Message */
-	if (!p_ptr->blind)
+	if (!p_ptr->timed[TMD_BLIND])
 	{
 		msg_print("Darkness surrounds you.");
 	}
@@ -3876,13 +3805,10 @@ void ring_of_power(int dir)
  * `item` is used to print the slot occupied by an object in equip/inven.
  * Any negative value assigned to "item" can be used for specifying an object
  * on the floor.
- *
- * Returns squelch_item_ok(o_ptr).
  */
-int do_ident_item(int item, object_type *o_ptr)
+void do_ident_item(int item, object_type *o_ptr)
 {
 	char o_name[80];
-	int squelch = SQUELCH_NO;
 
 	/* Identify it */
 	object_aware(o_ptr);
@@ -3891,9 +3817,8 @@ int do_ident_item(int item, object_type *o_ptr)
 	/* Apply an autoinscription, if necessary */
 	apply_autoinscription(o_ptr);
 
-	/* Squelch it? */
-	if (item < INVEN_WIELD)
-		squelch = squelch_item_ok(o_ptr, 0, TRUE);
+	/* Set squelch flag */
+	p_ptr->notice |= PN_SQUELCH;
 
 	/* Recalculate bonuses */
 	p_ptr->update |= (PU_BONUS);
@@ -3932,16 +3857,11 @@ int do_ident_item(int item, object_type *o_ptr)
 	}
 	else if (item >= 0)
 	{
-		msg_format("In your pack: %s (%c).  %s",
-			  o_name, index_to_label(item),
-			  squelch_to_label(squelch));
+		msg_format("In your pack: %s (%c).",
+			  o_name, index_to_label(item));
 	}
 	else
 	{
-		 msg_format("On the ground: %s.  %s", o_name,
-			  squelch_to_label(squelch));
+		msg_format("On the ground: %s.", o_name);
 	}
-
-	return (squelch);
 }
-

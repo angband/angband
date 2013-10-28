@@ -96,18 +96,18 @@
 
 #include "angband.h"
 
+#define uint unsigned int
+
 
 #ifdef USE_X11
 
 #include "main.h"
-
 
 #ifndef __MAKEDEPEND__
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/keysym.h>
 #include <X11/keysymdef.h>
-#include <X11/Xatom.h>
 #endif /* __MAKEDEPEND__ */
 
 
@@ -469,7 +469,7 @@ static infofnt *Infofnt = (infofnt*)(NULL);
 /*
  * Actual color table
  */
-static infoclr *clr[256];
+static infoclr *clr[MAX_COLORS];
 
 
 
@@ -1265,14 +1265,6 @@ static errr Infofnt_prepare(XFontStruct *info)
 	ifnt->asc = info->ascent;
 	ifnt->hgt = info->ascent + info->descent;
 	ifnt->wid = cs->width;
-
-#ifdef OBSOLETE_SIZING_METHOD
-	/* Extract default sizing info */
-	ifnt->asc = cs->ascent;
-	ifnt->hgt = (cs->ascent + cs->descent);
-	ifnt->wid = cs->width;
-#endif
-
 	ifnt->twid = cs->width;
 
 	/* Success */
@@ -1491,7 +1483,7 @@ static infoclr *xor;
 /*
  * Color info (unused, red, green, blue).
  */
-static byte color_table[256][4];
+static byte color_table[MAX_COLORS][4];
 
 
 /*
@@ -1511,43 +1503,11 @@ static term_data data[MAX_TERM_DATA];
 char settings[1024];
 
 
-/* Use short names for the most commonly used elements of various structures. */
-#define DPY (Metadpy->dpy)
-#define WIN (Infowin->win)
-
 
 /*
  * Remember the number of terminal windows open
  */
 static int term_windows_open;
-
-
-/* Describe a set of co-ordinates. */
-typedef struct co_ord co_ord;
-struct co_ord
-{
-	int x;
-	int y;
-};
-
-
-/*
- * A special structure to store information about the text currently
- * selected.
- */
-typedef struct x11_selection_type x11_selection_type;
-struct x11_selection_type
-{
-	bool select; /* The selection is currently in use. */
-	bool drawn; /* The selection is currently displayed. */
-	term *t; /* The window where the selection is found. */
-	co_ord init; /* The starting co-ordinates. */
-	co_ord cur; /* The end co-ordinates (the current ones if still copying). */
-	co_ord old; /* The previous end co-ordinates. */
-	Time time; /* The time at which the selection was finalised. */
-};
-
-static x11_selection_type x11_selection[1];
 
 
 
@@ -1673,276 +1633,7 @@ static void pixel_to_square(int * const x, int * const y,
 	(*y) = (oy - Infowin->oy) / td->tile_hgt;
 }
 
-/*
- * Find the pixel at the top-left corner of a square.
- */
-static void square_to_pixel(int * const x, int * const y,
-                            const int ox, const int oy)
-{
-	term_data *td = (term_data*)(Term->data);
 
-	(*x) = ox * td->tile_wid + Infowin->ox;
-	(*y) = oy * td->tile_hgt + Infowin->oy;
-}
-
-
-/*
- * Convert co-ordinates from starting corner/opposite corner to minimum/maximum.
- */
-static void sort_co_ord(co_ord *min, co_ord *max,
-                        const co_ord *b, const co_ord *a)
-{
-	min->x = MIN(a->x, b->x);
-	min->y = MIN(a->y, b->y);
-	max->x = MAX(a->x, b->x);
-	max->y = MAX(a->y, b->y);
-}
-
-
-/*
- * Remove the selection by redrawing it.
- */
-static void mark_selection_clear(int x1, int y1, int x2, int y2)
-{
-	Term_redraw_section(x1, y1, x2, y2);
-}
-
-
-/*
- * Select an area by drawing a grey box around it.
- * NB. These two functions can cause flicker as the selection is modified,
- * as the game redraws the entire marked section.
- */
-static void mark_selection_mark(int x1, int y1, int x2, int y2)
-{
-	term_data *td = (term_data*)(Term->data);
-
-	square_to_pixel(&x1, &y1, x1, y1);
-	square_to_pixel(&x2, &y2, x2, y2);
-	XDrawRectangle(Metadpy->dpy, Infowin->win, clr[2]->gc, x1, y1,
-	               x2-x1+td->tile_wid - 1, y2-y1+td->tile_hgt - 1);
-}
-
-
-/*
- * Mark a selection by drawing boxes around it (for now).
- */
-static void mark_selection(void)
-{
-	co_ord min, max;
-	term *old = Term;
-	bool draw = x11_selection->select;
-	bool clear = x11_selection->drawn;
-
-	/* Open the correct term if necessary. */
-	if (x11_selection->t != old) Term_activate(x11_selection->t);
-
-	if (clear)
-	{
-		sort_co_ord(&min, &max, &x11_selection->init, &x11_selection->old);
-		mark_selection_clear(min.x, min.y, max.x, max.y);
-	}
-
-	if (draw)
-	{
-		sort_co_ord(&min, &max, &x11_selection->init, &x11_selection->cur);
-		mark_selection_mark(min.x, min.y, max.x, max.y);
-	}
-
-	/* Finish on the current term. */
-	if (x11_selection->t != old) Term_activate(old);
-
-	x11_selection->old.x = x11_selection->cur.x;
-	x11_selection->old.y = x11_selection->cur.y;
-	x11_selection->drawn = x11_selection->select;
-}
-
-
-/*
- * Forget a selection for one reason or another.
- */
-static void copy_x11_release(void)
-{
-	/* Deselect the current selection. */
-	x11_selection->select = FALSE;
-
-	/* Remove its graphical represesntation. */
-	mark_selection();
-}
-
-
-/*
- * Start to select some text on the screen.
- */
-static void copy_x11_start(int x, int y)
-{
-	if (x11_selection->select) copy_x11_release();
-
-	/* Remember where the selection started. */
-	x11_selection->t = Term;
-	x11_selection->init.x = x11_selection->cur.x = x11_selection->old.x = x;
-	x11_selection->init.y = x11_selection->cur.y = x11_selection->old.y = y;
-}
-
-
-/*
- * Respond to movement of the mouse when selecting text.
- */
-static void copy_x11_cont(int x, int y, unsigned int buttons)
-{
-	/* Use the nearest square within bounds if the mouse is outside. */
-	x = MIN(MAX(x, 0), Term->wid-1);
-	y = MIN(MAX(y, 0), Term->hgt-1);
-
-	/* The left mouse button isn't pressed. */
-	if (~buttons & Button1Mask) return;
-
-	/* Not a selection in this window. */
-	if (x11_selection->t != Term) return;
-
-	/* Not enough movement. */
-	if ((x == x11_selection->old.x) && (y == x11_selection->old.y) && x11_selection->select) return;
-
-	/* Something is being selected. */
-	x11_selection->select = TRUE;
-
-	/* Track the selection. */
-	x11_selection->cur.x = x;
-	x11_selection->cur.y = y;
-
-	/* Hack - display it inefficiently. */
-	mark_selection();
-}
-
-
-/*
- * Respond to release of the left mouse button by putting the selected text in
- * the primary buffer.
- */
-static void copy_x11_end(const Time time)
-{
-	/* No selection. */
-	if (!x11_selection->select) return;
-
-	/* Not a selection in this window. */
-	if (x11_selection->t != Term) return;
-
-	/* Remember when the selection was finalised. */
-	x11_selection->time = time;
-
-	/* Acquire the primary selection. */
-	XSetSelectionOwner(Metadpy->dpy, XA_PRIMARY, Infowin->win, time);
-
-	if (XGetSelectionOwner(Metadpy->dpy, XA_PRIMARY) != Infowin->win)
-	{
-		/* Failed to acquire the selection, so forget it. */
-		bell("Failed to acquire primary buffer.");
-		x11_selection->select = FALSE;
-		mark_selection();
-	}
-}
-
-
-/*
- * Send some text requested by another X client
- */
-static void paste_x11_send(XSelectionRequestEvent *rq)
-{
-	XEvent event;
-	XSelectionEvent *ptr = &(event.xselection);
-
-	static Atom xa_targets = None;
-
-	if (xa_targets == None)
-		xa_targets = XInternAtom(DPY, "TARGETS", False);
-
-	/* Set the event parameters */
-	ptr->type = SelectionNotify;
-	ptr->property = rq->property;
-	ptr->display = rq->display;
-	ptr->requestor = rq->requestor;
-	ptr->selection = rq->selection;
-	ptr->target = rq->target;
-	ptr->time = rq->time;
-
-	if (rq->target == xa_targets)
-	{
-		Atom target_list[2];
-		target_list[0] = xa_targets;
-		target_list[1] = XA_STRING;
-
-		XChangeProperty(DPY, rq->requestor, rq->property, rq->target,
-		                (8 * sizeof(target_list[0])), PropModeReplace,
-		                (unsigned char *)target_list,
-		                (sizeof(target_list) / sizeof(target_list[0])));
-
-		event.xselection.property = rq->property;
-	}
-	else if (rq->target == XA_STRING)
-	{
-		/* Reply to a known target received recently with data */
-		char buf[1024];
-		co_ord max, min;
-		int x, y, i;
-		byte a;
-		char c;
-
-		/* Work out which way around to paste */
-		sort_co_ord(&min, &max, &x11_selection->init, &x11_selection->cur);
-
-		/* Delete the old value of the property */
-		XDeleteProperty(DPY, rq->requestor, rq->property);
-
-		for (y = 0; y < Term->hgt; y++)
-		{
-			if (y < min.y) continue;
-			if (y > max.y) break;
-
-			for (x = i = 0; x < Term->wid; x++)
-			{
-				if (x < min.x) continue;
-				if (x > max.x) break;
-
-				/* Protect the buffer boundary */
-				if (i >= (sizeof(buf) - 2)) break;
-
-				/* Find the character */
-				Term_what(x, y, &a, &c);
-
-				/* Add it */
-				buf[i++] = c;
-			}
-
-			/* Terminate all but the last line in an appropriate way */
-			if (y != max.y) buf[i++] = '\n';
-
-			/* Send the (non-empty) string */
-			XChangeProperty(DPY, rq->requestor, rq->property, rq->target, 8,
-			                PropModeAppend, buf, i);
-		}
-	}
-	else
-	{
-		/* Respond to all bad requests with property None */
-		ptr->property = None;
-	}
-
-	/* Send whatever event we're left with */
-	XSendEvent(DPY, rq->requestor, FALSE, NoEventMask, &event);
-}
-
-
-/*
- * Handle various events conditional on presses of a mouse button.
- */
-static void handle_button(Time time, int x, int y, int button, bool press)
-{
-	/* The co-ordinates are only used in Angband format. */
-	pixel_to_square(&x, &y, x, y);
-
-	if (press && button == 1) copy_x11_start(x, y);
-	if (!press && button == 1) copy_x11_end(time);
-}
 
 
 /*
@@ -1957,18 +1648,11 @@ static errr CheckEvent(bool wait)
 	term_data *td = NULL;
 	infowin *iwin = NULL;
 
-	int i;
+	int i, x, y;
 	int window = 0;
 
 	/* Do not wait unless requested */
 	if (!wait && !XPending(Metadpy->dpy)) return (1);
-
-	/*
-	 * Hack - redraw the selection, if needed.
-	 * This doesn't actually check that one of its squares was drawn to,
-	 * only that this may have happened.
-	 */
-	if (x11_selection->select && !x11_selection->drawn) mark_selection();
 
 	/* Load the Event */
 	XNextEvent(Metadpy->dpy, xev);
@@ -2009,15 +1693,14 @@ static errr CheckEvent(bool wait)
 	switch (xev->type)
 	{
 		case ButtonPress:
-		case ButtonRelease:
 		{
 			bool press = (xev->type == ButtonPress);
+
+			int z = 0;
 
 			/* Where is the mouse */
 			int x = xev->xbutton.x;
 			int y = xev->xbutton.y;
-
-			int z;
 
 			/* Which button is involved */
 			if (xev->xbutton.button == Button1) z = 1;
@@ -2027,12 +1710,14 @@ static errr CheckEvent(bool wait)
 			else if (xev->xbutton.button == Button5) z = 5;
 			else z = 0;
 
-			/* XXX Handle */
-			handle_button(xev->xbutton.time, x, y, z, press);
+			/* The co-ordinates are only used in Angband format. */
+			pixel_to_square(&x, &y, x, y);
+			if (press) Term_mousepress(x, y, z);
 
 			break;
 		}
 
+#if 0
 		case MotionNotify:
 		{
 			/* Where is the mouse */
@@ -2042,34 +1727,17 @@ static errr CheckEvent(bool wait)
 
 			/* Convert to co-ordinates Angband understands. */
 			pixel_to_square(&x, &y, x, y);
-
-			/* Alter the selection if appropriate. */
-			copy_x11_cont(x, y, z);
-
+			
 			break;
 		}
-
-		case SelectionRequest:
-		{
-			paste_x11_send(&(xev->xselectionrequest));
-			break;
-		}
-
-		case SelectionClear:
-		{
-			x11_selection->select = FALSE;
-			mark_selection();
-			break;
-		}
-
-		case KeyRelease:
-		{
-			/* Nothing */
-			break;
-		}
+#endif
 
 		case KeyPress:
 		{
+			/* Save the mouse location */
+			x = xev->xkey.x;
+			y = xev->xkey.y;
+
 			/* Hack -- use "old" term */
 			Term_activate(&old_td->t);
 
@@ -2201,7 +1869,7 @@ static errr Term_xtra_x11_react(void)
 	if (Metadpy->color)
 	{
 		/* Check the colors */
-		for (i = 0; i < 256; i++)
+		for (i = 0; i < MAX_COLORS; i++)
 		{
 			if ((color_table[i][0] != angband_color_table[i][0]) ||
 			    (color_table[i][1] != angband_color_table[i][1]) ||
@@ -2260,8 +1928,8 @@ static errr Term_xtra_x11(int n, int v)
 		/* Handle change in the "level" */
 		case TERM_XTRA_LEVEL: return (Term_xtra_x11_level(v));
 
-		/* Clear the screen and redraw any selection later */
-		case TERM_XTRA_CLEAR: Infowin_wipe(); x11_selection->drawn = FALSE; return (0);
+		/* Clear the screen */
+		case TERM_XTRA_CLEAR: Infowin_wipe(); return (0);
 
 		/* Delay for some milliseconds */
 		case TERM_XTRA_DELAY:
@@ -2322,9 +1990,6 @@ static errr Term_wipe_x11(int x, int y, int n)
 	/* Mega-Hack -- Erase some space */
 	Infofnt_text_non(x, y, "", n);
 
-	/* Redraw the selection if any, as it may have been obscured. (later) */
-	x11_selection->drawn = FALSE;
-
 	/* Success */
 	return (0);
 }
@@ -2340,9 +2005,6 @@ static errr Term_text_x11(int x, int y, int n, byte a, cptr s)
 
 	/* Draw the text */
 	Infofnt_text_std(x, y, s, n);
-
-	/* Redraw the selection if any, as it may have been obscured. (later) */
-	x11_selection->drawn = FALSE;
 
 	/* Success */
 	return (0);
@@ -2445,9 +2107,6 @@ static errr Term_pict_x11(int x, int y, int n, const byte *ap, const char *cp, c
 
 		x += td->tile_wid;
 	}
-
-	/* Redraw the selection if any, as it may have been obscured. (later) */
-	x11_selection->drawn = FALSE;
 
 	/* Success */
 	return (0);
@@ -2783,8 +2442,8 @@ static errr term_data_init(term_data *td, int i)
 	                 Metadpy->fg, Metadpy->bg);
 
 	/* Ask for certain events */
-	Infowin_set_mask(ExposureMask | StructureNotifyMask | KeyPressMask |
-	                 PointerMotionMask | ButtonPressMask | ButtonReleaseMask);
+	Infowin_set_mask(ExposureMask | StructureNotifyMask | KeyPressMask
+			 | ButtonPressMask);
 
 	/* Set the window name */
 	Infowin_set_name(name);
@@ -2802,7 +2461,7 @@ static errr term_data_init(term_data *td, int i)
 	res_name[0] = tolower((unsigned char)res_name[0]);
 	ch->res_name = res_name;
 
-	strcpy(res_class, "Angband");
+	my_strcpy(res_class, "Angband", sizeof(res_class));
 	ch->res_class = res_class;
 
 	XSetClassHint(Metadpy->dpy, Infowin->win, ch);
@@ -2935,7 +2594,7 @@ static void hook_quit(cptr str)
 	(void)Infoclr_nuke();
 	KILL(xor);
 
-	for (i = 0; i < 256; ++i)
+	for (i = 0; i < MAX_COLORS; ++i)
 	{
 		Infoclr_set(clr[i]);
 		(void)Infoclr_nuke();
@@ -2967,7 +2626,7 @@ errr init_x11(int argc, char **argv)
 
 #ifdef USE_GRAPHICS
 
-	cptr bitmap_file = "";
+	cptr bitmap_file = NULL;
 	char filename[1024];
 
 	int pict_wid = 0;
@@ -3143,67 +2802,64 @@ errr init_x11(int argc, char **argv)
 
 #ifdef USE_GRAPHICS
 
+	/* Paranoia */
+	use_graphics = GRAPHICS_NONE;
+
 	/* Try graphics */
 	switch (arg_graphics)
 	{
-	case GRAPHICS_ADAM_BOLT:
-		/* Use tile graphics of Adam Bolt */
-		bitmap_file = "16x16.bmp";
-
-		/* Try the "16x16.bmp" file */
-		path_build(filename, sizeof(filename), ANGBAND_DIR_XTRA, format("graf/%s", bitmap_file));
-
-		/* Use the "16x16.bmp" file if it exists */
-		if (0 == fd_close(fd_open(filename, O_RDONLY)))
+		case GRAPHICS_ADAM_BOLT:
 		{
-			/* Use graphics */
+			bitmap_file = "graf/16x16.bmp";
+
 			use_graphics = GRAPHICS_ADAM_BOLT;
 			use_transparency = TRUE;
-
 			pict_wid = pict_hgt = 16;
-
 			ANGBAND_GRAF = "new";
 
 			break;
 		}
-		/* Fall through */
 
-	case GRAPHICS_ORIGINAL:
-		/* Use original tile graphics */
-		bitmap_file = "8x8.bmp";
-
-		/* Try the "8x8.bmp" file */
-		path_build(filename, sizeof(filename), ANGBAND_DIR_XTRA, format("graf/%s", bitmap_file));
-
-		/* Use the "8x8.bmp" file if it exists */
-		if (0 == fd_close(fd_open(filename, O_RDONLY)))
+		case GRAPHICS_ORIGINAL:
 		{
-			/* Use graphics */
+			bitmap_file = "graf/8x8.bmp";
+
 			use_graphics = GRAPHICS_ORIGINAL;
-
 			pict_wid = pict_hgt = 8;
-
 			ANGBAND_GRAF = "old";
+
 			break;
 		}
-		break;
 
-	case GRAPHICS_DAVID_GERVAIS:
-		/* Use tile graphics of David Gervais */
-		bitmap_file = "32x32.bmp";
+		case GRAPHICS_DAVID_GERVAIS:
+		{
+			bitmap_file = "graf/32x32.bmp";
 
-		/* Use graphics */
-		use_graphics = GRAPHICS_DAVID_GERVAIS;
-		use_transparency = TRUE;
+			use_graphics = GRAPHICS_DAVID_GERVAIS;
+			use_transparency = TRUE;
+			pict_wid = pict_hgt = 32;
+			ANGBAND_GRAF = "david";
 
-		pict_wid = pict_hgt = 32;
-
-		ANGBAND_GRAF = "david";
-		break;
+			break;
+		}
 	}
 
+
+	if (bitmap_file)
+	{
+		/* Try the file */
+		path_build(filename, sizeof(filename), ANGBAND_DIR_XTRA, bitmap_file);
+		if (!my_fexists(filename))
+		{
+			use_graphics = GRAPHICS_NONE;
+			use_transparency = FALSE;
+			ANGBAND_GRAF = 0;
+		}
+	}
+
+
 	/* Load graphics */
-	if (use_graphics)
+	if (use_graphics != GRAPHICS_NONE)
 	{
 		Display *dpy = Metadpy->dpy;
 
@@ -3216,7 +2872,7 @@ errr init_x11(int argc, char **argv)
 			td->tiles = NULL;
 		}
 
-		path_build(filename, sizeof(filename), ANGBAND_DIR_XTRA, format("graf/%s", bitmap_file));
+		path_build(filename, sizeof(filename), ANGBAND_DIR_XTRA, bitmap_file);
 
 		/* Load the graphical tiles */
 		tiles_raw = ReadBMP(dpy, filename);
@@ -3306,3 +2962,5 @@ errr init_x11(int argc, char **argv)
 }
 
 #endif /* USE_X11 */
+
+

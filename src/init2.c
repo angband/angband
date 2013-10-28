@@ -13,6 +13,7 @@
 
 #include "init.h"
 #include "script.h"
+#include "cmds.h"
 
 /*
  * This file is used to initialize various variables and arrays for the
@@ -62,20 +63,14 @@
  * by the user) will NOT end in the "PATH_SEP" string, see the special
  * "path_build()" function in "util.c" for more information.
  *
- * Mega-Hack -- support fat raw files under NEXTSTEP, using special
- * "suffixed" directories for the "ANGBAND_DIR_DATA" directory, but
- * requiring the directories to be created by hand by the user.
- *
  * Hack -- first we free all the strings, since this is known
  * to succeed even if the strings have not been allocated yet,
  * as long as the variables start out as "NULL".  This allows
  * this function to be called multiple times, for example, to
  * try several base "path" values until a good one is found.
  */
-void init_file_paths(char *path)
+void init_file_paths(const char *path)
 {
-	char *tail;
-
 #ifdef PRIVATE_USER_PATH
 	char buf[1024];
 	char dirpath[1024];
@@ -98,150 +93,65 @@ void init_file_paths(char *path)
 	string_free(ANGBAND_DIR_PREF);
 	string_free(ANGBAND_DIR_USER);
 	string_free(ANGBAND_DIR_XTRA);
-	string_free(ANGBAND_DIR_SCRIPT);
 
 
-	/*** Prepare the "path" ***/
+	/*** Prepare the paths ***/
 
-	/* Hack -- save the main directory */
+	/* Save the main directory */
 	ANGBAND_DIR = string_make(path);
 
-	/* Prepare to append to the Base Path */
-	tail = path + strlen(path);
+	/* Build path names */
+	ANGBAND_DIR_EDIT = string_make(format("%sedit", path));
+	ANGBAND_DIR_FILE = string_make(format("%sfile", path));
+	ANGBAND_DIR_HELP = string_make(format("%shelp", path));
+	ANGBAND_DIR_INFO = string_make(format("%sinfo", path));
+	ANGBAND_DIR_PREF = string_make(format("%spref", path));
+	ANGBAND_DIR_XTRA = string_make(format("%sxtra", path));
 
-
-	/*** Build the sub-directory names ***/
-
-	/* Build a path name */
-	strcpy(tail, "edit");
-	ANGBAND_DIR_EDIT = string_make(path);
-
-	/* Build a path name */
-	strcpy(tail, "file");
-	ANGBAND_DIR_FILE = string_make(path);
-
-	/* Build a path name */
-	strcpy(tail, "help");
-	ANGBAND_DIR_HELP = string_make(path);
-
-	/* Build a path name */
-	strcpy(tail, "info");
-	ANGBAND_DIR_INFO = string_make(path);
-
-	/* Build a path name */
-	strcpy(tail, "pref");
-	ANGBAND_DIR_PREF = string_make(path);
 
 #ifdef PRIVATE_USER_PATH
 
-	/* Get an absolute path from the filename */
+	/* Get an absolute path from the filename, */
 	path_parse(dirpath, sizeof(dirpath), PRIVATE_USER_PATH);
+
 	/* Build the path to the user specific directory */
 	path_build(buf, sizeof(buf), dirpath, VERSION_NAME);
-
-	/* Build a relative path name */
 	ANGBAND_DIR_USER = string_make(buf);
 
 #else /* PRIVATE_USER_PATH */
 
-	/* Build a path name */
-	strcpy(tail, "user");
-	ANGBAND_DIR_USER = string_make(path);
+        ANGBAND_DIR_USER = string_make(format("%suser", path));
 
 #endif /* PRIVATE_USER_PATH */
+
 
 #ifdef USE_PRIVATE_PATHS
 
 	/* Build the path to the user specific sub-directory */
 	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, "scores");
-
-	/* Build a relative path name */
 	ANGBAND_DIR_APEX = string_make(buf);
 
 	/* Build the path to the user specific sub-directory */
 	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, "bone");
-
-	/* Build a relative path name */
 	ANGBAND_DIR_BONE = string_make(buf);
 
 	/* Build the path to the user specific sub-directory */
 	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, "data");
-
-	/* Build a relative path name */
 	ANGBAND_DIR_DATA = string_make(buf);
 
 	/* Build the path to the user specific sub-directory */
 	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, "save");
-
-	/* Build a relative path name */
 	ANGBAND_DIR_SAVE = string_make(buf);
 
 #else /* USE_PRIVATE_PATHS */
 
-	/* Build a path name */
-	strcpy(tail, "apex");
-	ANGBAND_DIR_APEX = string_make(path);
-
-	/* Build a path name */
-	strcpy(tail, "bone");
-	ANGBAND_DIR_BONE = string_make(path);
-
-	/* Build a path name */
-	strcpy(tail, "data");
-	ANGBAND_DIR_DATA = string_make(path);
-
-	/* Build a path name */
-	strcpy(tail, "save");
-	ANGBAND_DIR_SAVE = string_make(path);
+	/* Build pathnames */
+	ANGBAND_DIR_APEX = string_make(format("%sapex", path));
+	ANGBAND_DIR_BONE = string_make(format("%sbone", path));
+	ANGBAND_DIR_DATA = string_make(format("%sdata", path));
+	ANGBAND_DIR_SAVE = string_make(format("%ssave", path));
 
 #endif /* USE_PRIVATE_PATHS */
-
-	/* Build a path name */
-	strcpy(tail, "xtra");
-	ANGBAND_DIR_XTRA = string_make(path);
-
-	/* Build a path name */
-	strcpy(tail, "script");
-	ANGBAND_DIR_SCRIPT = string_make(path);
-
-
-#ifdef NeXT
-
-	/* Allow "fat binary" usage with NeXT */
-	if (TRUE)
-	{
-		cptr next = NULL;
-
-# if defined(m68k)
-		next = "m68k";
-# endif
-
-# if defined(i386)
-		next = "i386";
-# endif
-
-# if defined(sparc)
-		next = "sparc";
-# endif
-
-# if defined(hppa)
-		next = "hppa";
-# endif
-
-		/* Use special directory */
-		if (next)
-		{
-			/* Forget the old path name */
-			string_free(ANGBAND_DIR_DATA);
-
-			/* Build a new path name */
-			sprintf(tail, "data-%s", next);
-			ANGBAND_DIR_DATA = string_make(path);
-		}
-	}
-
-#endif /* NeXT */
-
 }
 
 
@@ -437,6 +347,13 @@ static void init_header(header *head, int num, int len)
 	/* Save the size of "*_head" and "*_info" */
 	head->head_size = sizeof(header);
 	head->info_size = head->info_num * head->info_len;
+
+	/* Clear post-parsing evaluation function */
+	head->eval_info_power = NULL;
+	
+	/* Clear the template emission functions */
+	head->emit_info_txt_index = NULL;
+	head->emit_info_txt_always = NULL;
 }
 
 
@@ -478,6 +395,10 @@ static errr init_info(cptr filename, header *head)
 	errr err = 1;
 
 	FILE *fp;
+
+#ifdef ALLOW_TEMPLATES_OUTPUT
+	FILE *fpout;
+#endif /* ALLOW_TEMPLATES_OUTPUT */
 
 	/* General buffer */
 	char buf[1024];
@@ -545,6 +466,42 @@ static errr init_info(cptr filename, header *head)
 
 		/* Errors */
 		if (err) display_parse_error(filename, err, buf);
+
+		/* Post processing the data */
+		if (head->eval_info_power) eval_info(head->eval_info_power, head);
+
+#ifdef ALLOW_TEMPLATES_OUTPUT
+
+		/*** Output a 'parsable' ascii template file ***/
+		if ((head->emit_info_txt_index) || (head->emit_info_txt_always))
+		{
+			/* Build the filename */
+			path_build(buf, 1024, ANGBAND_DIR_EDIT, format("%s.txt", filename));
+
+			/* Open the file */
+			fp = my_fopen(buf, "r");
+
+			/* Parse it */
+			if (!fp) quit(format("Cannot open '%s.txt' file for re-parsing.", filename));
+
+			/* Build the filename */
+			path_build(buf, 1024, ANGBAND_DIR_USER, format("%s.txt", filename));
+
+			/* Open the file */
+			fpout = my_fopen(buf, "w");
+
+			/* Parse it */
+			if (!fpout) quit(format("Cannot open '%s.txt' file for output.", filename));
+
+			/* Parse and output the files */
+			err = emit_info_txt(fpout, fp, buf, head, head->emit_info_txt_index, head->emit_info_txt_always);
+
+			/* Close both files */
+			my_fclose(fpout);
+			my_fclose(fp);
+		}
+
+#endif
 
 
 		/*** Dump the binary image file ***/
@@ -849,6 +806,17 @@ static errr init_r_info(void)
 	/* Save a pointer to the parsing function */
 	r_head.parse_info_txt = parse_r_info;
 
+#ifdef ALLOW_TEMPLATES_PROCESS
+	/* Save a pointer to the evaluate power function*/
+	r_head.eval_info_power = eval_r_power;
+#endif
+
+#ifdef ALLOW_TEMPLATES_OUTPUT
+
+	/* Save a pointer to the evaluate power function*/
+	r_head.emit_info_txt_index = emit_r_info_index;
+#endif /* ALLOW_TEMPLATES_OUTPUT */
+
 #endif /* ALLOW_TEMPLATES */
 
 	err = init_info("monster", &r_head);
@@ -1109,7 +1077,7 @@ static void init_books(void)
 		}
 	}
 
-	/* Place each spell in it's own book */
+	/* Place each spell in its own book */
 	for (spell = 0; spell < z_info->s_max; spell++)
 	{
 		/* Get the spell */
@@ -1122,257 +1090,6 @@ static void init_books(void)
 
 /*** Initialize others ***/
 
-#define STORE_CHOICES   32              /* Number of items to choose stock from */
-
-
-/*
- * Hack -- Objects sold in the stores -- by tval/sval pair.
- */
-static const byte store_table[MAX_STORES-2][STORE_CHOICES][2] =
-{
-	{
-		/* General Store */
-
-		{ TV_FOOD, SV_FOOD_RATION },
-		{ TV_FOOD, SV_FOOD_RATION },
-		{ TV_FOOD, SV_FOOD_RATION },
-		{ TV_FOOD, SV_FOOD_RATION },
-		{ TV_FOOD, SV_FOOD_RATION },
-		{ TV_FOOD, SV_FOOD_BISCUIT },
-		{ TV_FOOD, SV_FOOD_JERKY },
-		{ TV_FOOD, SV_FOOD_JERKY },
-
-		{ TV_FOOD, SV_FOOD_PINT_OF_WINE },
-		{ TV_FOOD, SV_FOOD_PINT_OF_ALE },
-		{ TV_LITE, SV_LITE_TORCH },
-		{ TV_LITE, SV_LITE_TORCH },
-		{ TV_LITE, SV_LITE_TORCH },
-		{ TV_LITE, SV_LITE_TORCH },
-		{ TV_LITE, SV_LITE_LANTERN },
-		{ TV_LITE, SV_LITE_LANTERN },
-
-		{ TV_FLASK, 0 },
-		{ TV_FLASK, 0 },
-		{ TV_FLASK, 0 },
-		{ TV_FLASK, 0 },
-		{ TV_FLASK, 0 },
-		{ TV_FLASK, 0 },
-		{ TV_SPIKE, 0 },
-		{ TV_SPIKE, 0 },
-
-		{ TV_SHOT, SV_AMMO_NORMAL },
-		{ TV_ARROW, SV_AMMO_NORMAL },
-		{ TV_BOLT, SV_AMMO_NORMAL },
-		{ TV_DIGGING, SV_SHOVEL },
-		{ TV_DIGGING, SV_PICK },
-		{ TV_CLOAK, SV_CLOAK },
-		{ TV_CLOAK, SV_CLOAK },
-		{ TV_CLOAK, SV_CLOAK }
-	},
-
-	{
-		/* Armoury */
-
-		{ TV_BOOTS, SV_PAIR_OF_SOFT_LEATHER_BOOTS },
-		{ TV_BOOTS, SV_PAIR_OF_SOFT_LEATHER_BOOTS },
-		{ TV_BOOTS, SV_PAIR_OF_HARD_LEATHER_BOOTS },
-		{ TV_BOOTS, SV_PAIR_OF_HARD_LEATHER_BOOTS },
-		{ TV_HELM, SV_HARD_LEATHER_CAP },
-		{ TV_HELM, SV_HARD_LEATHER_CAP },
-		{ TV_HELM, SV_METAL_CAP },
-		{ TV_HELM, SV_IRON_HELM },
-
-		{ TV_SOFT_ARMOR, SV_ROBE },
-		{ TV_SOFT_ARMOR, SV_ROBE },
-		{ TV_SOFT_ARMOR, SV_SOFT_LEATHER_ARMOR },
-		{ TV_SOFT_ARMOR, SV_SOFT_LEATHER_ARMOR },
-		{ TV_SOFT_ARMOR, SV_HARD_LEATHER_ARMOR },
-		{ TV_SOFT_ARMOR, SV_HARD_LEATHER_ARMOR },
-		{ TV_SOFT_ARMOR, SV_HARD_STUDDED_LEATHER },
-		{ TV_SOFT_ARMOR, SV_HARD_STUDDED_LEATHER },
-
-		{ TV_SOFT_ARMOR, SV_LEATHER_SCALE_MAIL },
-		{ TV_SOFT_ARMOR, SV_LEATHER_SCALE_MAIL },
-		{ TV_HARD_ARMOR, SV_METAL_SCALE_MAIL },
-		{ TV_HARD_ARMOR, SV_CHAIN_MAIL },
-		{ TV_HARD_ARMOR, SV_CHAIN_MAIL },
-		{ TV_HARD_ARMOR, SV_AUGMENTED_CHAIN_MAIL },
-		{ TV_HARD_ARMOR, SV_BAR_CHAIN_MAIL },
-		{ TV_HARD_ARMOR, SV_DOUBLE_CHAIN_MAIL },
-
-		{ TV_HARD_ARMOR, SV_METAL_BRIGANDINE_ARMOUR },
-		{ TV_GLOVES, SV_SET_OF_LEATHER_GLOVES },
-		{ TV_GLOVES, SV_SET_OF_LEATHER_GLOVES },
-		{ TV_GLOVES, SV_SET_OF_GAUNTLETS },
-		{ TV_SHIELD, SV_SMALL_LEATHER_SHIELD },
-		{ TV_SHIELD, SV_SMALL_LEATHER_SHIELD },
-		{ TV_SHIELD, SV_LARGE_LEATHER_SHIELD },
-		{ TV_SHIELD, SV_SMALL_METAL_SHIELD }
-	},
-
-	{
-		/* Weaponsmith */
-
-		{ TV_SWORD, SV_DAGGER },
-		{ TV_SWORD, SV_MAIN_GAUCHE },
-		{ TV_SWORD, SV_RAPIER },
-		{ TV_SWORD, SV_SMALL_SWORD },
-		{ TV_SWORD, SV_SHORT_SWORD },
-		{ TV_SWORD, SV_SABRE },
-		{ TV_SWORD, SV_CUTLASS },
-		{ TV_SWORD, SV_TULWAR },
-
-		{ TV_SWORD, SV_BROAD_SWORD },
-		{ TV_SWORD, SV_LONG_SWORD },
-		{ TV_SWORD, SV_SCIMITAR },
-		{ TV_SWORD, SV_KATANA },
-		{ TV_SWORD, SV_BASTARD_SWORD },
-		{ TV_POLEARM, SV_SPEAR },
-		{ TV_POLEARM, SV_AWL_PIKE },
-		{ TV_POLEARM, SV_TRIDENT },
-
-		{ TV_POLEARM, SV_PIKE },
-		{ TV_POLEARM, SV_BEAKED_AXE },
-		{ TV_POLEARM, SV_BROAD_AXE },
-		{ TV_POLEARM, SV_LANCE },
-		{ TV_POLEARM, SV_BATTLE_AXE },
-		{ TV_HAFTED, SV_WHIP },
-		{ TV_BOW, SV_SLING },
-		{ TV_BOW, SV_SHORT_BOW },
-
-		{ TV_BOW, SV_LONG_BOW },
-		{ TV_BOW, SV_LIGHT_XBOW },
-		{ TV_SHOT, SV_AMMO_NORMAL },
-		{ TV_SHOT, SV_AMMO_NORMAL },
-		{ TV_ARROW, SV_AMMO_NORMAL },
-		{ TV_ARROW, SV_AMMO_NORMAL },
-		{ TV_BOLT, SV_AMMO_NORMAL },
-		{ TV_BOLT, SV_AMMO_NORMAL },
-	},
-
-	{
-		/* Temple */
-
-		{ TV_HAFTED, SV_WHIP },
-		{ TV_HAFTED, SV_QUARTERSTAFF },
-		{ TV_HAFTED, SV_MACE },
-		{ TV_HAFTED, SV_MACE },
-		{ TV_HAFTED, SV_BALL_AND_CHAIN },
-		{ TV_HAFTED, SV_WAR_HAMMER },
-		{ TV_HAFTED, SV_LUCERN_HAMMER },
-		{ TV_HAFTED, SV_MORNING_STAR },
-
-		{ TV_HAFTED, SV_FLAIL },
-		{ TV_HAFTED, SV_FLAIL },
-		{ TV_HAFTED, SV_LEAD_FILLED_MACE },
-		{ TV_SCROLL, SV_SCROLL_REMOVE_CURSE },
-		{ TV_SCROLL, SV_SCROLL_BLESSING },
-		{ TV_SCROLL, SV_SCROLL_HOLY_CHANT },
-		{ TV_POTION, SV_POTION_BOLDNESS },
-		{ TV_POTION, SV_POTION_HEROISM },
-
-		{ TV_POTION, SV_POTION_CURE_LIGHT },
-		{ TV_POTION, SV_POTION_CURE_SERIOUS },
-		{ TV_POTION, SV_POTION_CURE_SERIOUS },
-		{ TV_POTION, SV_POTION_CURE_CRITICAL },
-		{ TV_POTION, SV_POTION_CURE_CRITICAL },
-		{ TV_POTION, SV_POTION_RESTORE_EXP },
-		{ TV_POTION, SV_POTION_RESTORE_EXP },
-		{ TV_POTION, SV_POTION_RESTORE_EXP },
-
-		{ TV_PRAYER_BOOK, 0 },
-		{ TV_PRAYER_BOOK, 0 },
-		{ TV_PRAYER_BOOK, 0 },
-		{ TV_PRAYER_BOOK, 1 },
-		{ TV_PRAYER_BOOK, 1 },
-		{ TV_PRAYER_BOOK, 2 },
-		{ TV_PRAYER_BOOK, 2 },
-		{ TV_PRAYER_BOOK, 3 }
-	},
-
-	{
-		/* Alchemy shop */
-
-		{ TV_SCROLL, SV_SCROLL_ENCHANT_WEAPON_TO_HIT },
-		{ TV_SCROLL, SV_SCROLL_ENCHANT_WEAPON_TO_DAM },
-		{ TV_SCROLL, SV_SCROLL_ENCHANT_ARMOR },
-		{ TV_SCROLL, SV_SCROLL_IDENTIFY },
-		{ TV_SCROLL, SV_SCROLL_IDENTIFY },
-		{ TV_SCROLL, SV_SCROLL_IDENTIFY },
-		{ TV_SCROLL, SV_SCROLL_IDENTIFY },
-		{ TV_SCROLL, SV_SCROLL_LIGHT },
-
-		{ TV_SCROLL, SV_SCROLL_PHASE_DOOR },
-		{ TV_SCROLL, SV_SCROLL_PHASE_DOOR },
-		{ TV_SCROLL, SV_SCROLL_PHASE_DOOR },
-		{ TV_SCROLL, SV_SCROLL_MONSTER_CONFUSION },
-		{ TV_SCROLL, SV_SCROLL_MAPPING },
-		{ TV_SCROLL, SV_SCROLL_DETECT_GOLD },
-		{ TV_SCROLL, SV_SCROLL_DETECT_ITEM },
-		{ TV_SCROLL, SV_SCROLL_DETECT_TRAP },
-
-		{ TV_SCROLL, SV_SCROLL_DETECT_DOOR },
-		{ TV_SCROLL, SV_SCROLL_DETECT_INVIS },
-		{ TV_SCROLL, SV_SCROLL_RECHARGING },
-		{ TV_SCROLL, SV_SCROLL_SATISFY_HUNGER },
-		{ TV_SCROLL, SV_SCROLL_WORD_OF_RECALL },
-		{ TV_SCROLL, SV_SCROLL_WORD_OF_RECALL },
-		{ TV_SCROLL, SV_SCROLL_WORD_OF_RECALL },
-		{ TV_SCROLL, SV_SCROLL_WORD_OF_RECALL },
-
-		{ TV_POTION, SV_POTION_RESIST_HEAT },
-		{ TV_POTION, SV_POTION_RESIST_COLD },
-		{ TV_POTION, SV_POTION_RES_STR },
-		{ TV_POTION, SV_POTION_RES_INT },
-		{ TV_POTION, SV_POTION_RES_WIS },
-		{ TV_POTION, SV_POTION_RES_DEX },
-		{ TV_POTION, SV_POTION_RES_CON },
-		{ TV_POTION, SV_POTION_RES_CHR }
-	},
-
-	{
-		/* Magic-User store */
-
-		{ TV_RING, SV_RING_SEARCHING },
-		{ TV_RING, SV_RING_FEATHER_FALL },
-		{ TV_RING, SV_RING_PROTECTION },
-		{ TV_AMULET, SV_AMULET_CHARISMA },
-		{ TV_AMULET, SV_AMULET_SLOW_DIGEST },
-		{ TV_AMULET, SV_AMULET_RESIST_ACID },
-		{ TV_WAND, SV_WAND_SLOW_MONSTER },
-		{ TV_WAND, SV_WAND_CONFUSE_MONSTER },
-
-		{ TV_WAND, SV_WAND_SLEEP_MONSTER },
-		{ TV_WAND, SV_WAND_MAGIC_MISSILE },
-		{ TV_WAND, SV_WAND_STINKING_CLOUD },
-		{ TV_WAND, SV_WAND_WONDER },
-		{ TV_STAFF, SV_STAFF_LITE },
-		{ TV_STAFF, SV_STAFF_MAPPING },
-		{ TV_STAFF, SV_STAFF_DETECT_TRAP },
-		{ TV_STAFF, SV_STAFF_DETECT_DOOR },
-
-		{ TV_STAFF, SV_STAFF_DETECT_GOLD },
-		{ TV_STAFF, SV_STAFF_DETECT_ITEM },
-		{ TV_STAFF, SV_STAFF_DETECT_INVIS },
-		{ TV_STAFF, SV_STAFF_DETECT_EVIL },
-		{ TV_STAFF, SV_STAFF_TELEPORTATION },
-		{ TV_STAFF, SV_STAFF_TELEPORTATION },
-		{ TV_STAFF, SV_STAFF_IDENTIFY },
-		{ TV_STAFF, SV_STAFF_IDENTIFY },
-
-		{ TV_MAGIC_BOOK, 0 },
-		{ TV_MAGIC_BOOK, 0 },
-		{ TV_MAGIC_BOOK, 0 },
-		{ TV_MAGIC_BOOK, 1 },
-		{ TV_MAGIC_BOOK, 1 },
-		{ TV_MAGIC_BOOK, 2 },
-		{ TV_MAGIC_BOOK, 2 },
-		{ TV_MAGIC_BOOK, 3 }
-	}
-};
-
-
-
 static void autoinscribe_init(void)
 {
 	if (inscriptions)
@@ -1380,6 +1097,8 @@ static void autoinscribe_init(void)
  
 	inscriptions = 0;
 	inscriptions_count = 0;
+
+	C_MAKE(inscriptions, AUTOINSCRIPTIONS_MAX, autoinscription);
 }
 
 
@@ -1400,9 +1119,7 @@ static errr init_other(void)
 	(void)quarks_init();
 
 	/* Initialize squelch things */
-	squelch_init();
 	autoinscribe_init();
-	C_MAKE(inscriptions, AUTOINSCRIPTIONS_MAX, autoinscription);
 
 	/* Initialize the "message" package */
 	(void)messages_init();
@@ -1507,8 +1224,8 @@ static errr init_other(void)
 			int k_idx;
 
 			/* Extract the tval/sval codes */
-			int tv = store_table[i][k][0];
-			int sv = store_table[i][k][1];
+			int tv = store_choices[i][k][0];
+			int sv = store_choices[i][k][1];
 
 			/* Look for it */
 			for (k_idx = 1; k_idx < z_info->k_max; k_idx++)
@@ -1548,7 +1265,7 @@ static errr init_other(void)
 	/*** Pre-allocate space for the "format()" buffer ***/
 
 	/* Hack -- Just call the "format()" function */
-	(void)format("%s", MAINTAINER);
+	(void)format("I wish you could swim, like dolphins can swim...");
 
 
 	/* Success */
@@ -2009,7 +1726,12 @@ void init_angband(void)
 	fd_close(fd);
 
 
+	/* Initialize the menus */
+	/* This must occur before preference files are read */
+	init_cmd4_c();
+	
 	/*** Initialize some arrays ***/
+
 
 	/* Initialize size info */
 	note("[Initializing array sizes...]");
@@ -2089,6 +1811,9 @@ void init_angband(void)
 
 	/* Done */
 	note("[Initialization complete]");
+
+	/* Sneakily init command list */
+	cmd_init();
 }
 
 
@@ -2193,5 +1918,4 @@ void cleanup_angband(void)
 	string_free(ANGBAND_DIR_PREF);
 	string_free(ANGBAND_DIR_USER);
 	string_free(ANGBAND_DIR_XTRA);
-	string_free(ANGBAND_DIR_SCRIPT);
 }

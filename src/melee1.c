@@ -87,7 +87,7 @@ static cptr desc_insult[MAX_DESC_INSULT] =
 };
 
 
-#define MAX_DESC_MOAN 4
+#define MAX_DESC_MOAN 8
 
 
 /*
@@ -95,9 +95,13 @@ static cptr desc_insult[MAX_DESC_INSULT] =
  */
 static cptr desc_moan[MAX_DESC_MOAN] =
 {
+	"wants his mushrooms back.",
+	"tells you to get off his land.",
+	"looks for his dogs. ",
+	"says 'Did you kill my Fang?' ",
+	"asks 'Do you want to buy any mushrooms?' ",
 	"seems sad about something.",
 	"asks if you have seen his dogs.",
-	"tells you to get off his land.",
 	"mumbles something about mushrooms."
 };
 
@@ -229,7 +233,7 @@ bool make_attack_normal(int m_idx)
 
 
 			/* Hack -- Apply "protection from evil" */
-			if ((p_ptr->protevil > 0) &&
+			if ((p_ptr->timed[TMD_PROTEVIL] > 0) &&
 			    (r_ptr->flags3 & (RF3_EVIL)) &&
 			    (p_ptr->lev >= rlev) &&
 			    ((rand_int(100) + p_ptr->lev) > 50))
@@ -472,9 +476,9 @@ bool make_attack_normal(int m_idx)
 					take_hit(damage, ddesc);
 
 					/* Take "poison" effect */
-					if (!(p_ptr->resist_pois || p_ptr->oppose_pois))
+					if (!(p_ptr->resist_pois || p_ptr->timed[TMD_OPP_POIS]))
 					{
-						if (set_poisoned(p_ptr->poisoned + randint(rlev) + 5))
+						if (inc_timed(TMD_POISONED, randint(rlev) + 5))
 						{
 							obvious = TRUE;
 						}
@@ -578,7 +582,7 @@ bool make_attack_normal(int m_idx)
 					obvious = TRUE;
 
 					/* Saving throw (unless paralyzed) based on dex and level */
-					if (!p_ptr->paralyzed &&
+					if (!p_ptr->timed[TMD_PARALYZED] &&
 					    (rand_int(100) < (adj_dex_safe[p_ptr->stat_ind[A_DEX]] +
 					                      p_ptr->lev)))
 					{
@@ -631,7 +635,7 @@ bool make_attack_normal(int m_idx)
 					take_hit(damage, ddesc);
 
 					/* Saving throw (unless paralyzed) based on dex and level */
-					if (!p_ptr->paralyzed &&
+					if (!p_ptr->timed[TMD_PARALYZED] &&
 					    (rand_int(100) < (adj_dex_safe[p_ptr->stat_ind[A_DEX]] +
 					                      p_ptr->lev)))
 					{
@@ -767,7 +771,7 @@ bool make_attack_normal(int m_idx)
 						if (o_ptr->pval < 1) o_ptr->pval = 1;
 
 						/* Notice */
-						if (!p_ptr->blind)
+						if (!p_ptr->timed[TMD_BLIND])
 						{
 							msg_print("Your light dims.");
 							obvious = TRUE;
@@ -856,7 +860,7 @@ bool make_attack_normal(int m_idx)
 					/* Increase "blind" */
 					if (!p_ptr->resist_blind)
 					{
-						if (set_blind(p_ptr->blind + 10 + randint(rlev)))
+						if (inc_timed(TMD_BLIND, 10 + randint(rlev)))
 						{
 							obvious = TRUE;
 						}
@@ -876,7 +880,7 @@ bool make_attack_normal(int m_idx)
 					/* Increase "confused" */
 					if (!p_ptr->resist_confu)
 					{
-						if (set_confused(p_ptr->confused + 3 + randint(rlev)))
+						if (inc_timed(TMD_CONFUSED, 3 + randint(rlev)))
 						{
 							obvious = TRUE;
 						}
@@ -899,14 +903,14 @@ bool make_attack_normal(int m_idx)
 						msg_print("You stand your ground!");
 						obvious = TRUE;
 					}
-					else if (rand_int(100) < p_ptr->skill_sav)
+					else if (rand_int(100) < p_ptr->skills[SKILL_SAV])
 					{
 						msg_print("You stand your ground!");
 						obvious = TRUE;
 					}
 					else
 					{
-						if (set_afraid(p_ptr->afraid + 3 + randint(rlev)))
+						if (inc_timed(TMD_AFRAID, 3 + randint(rlev)))
 						{
 							obvious = TRUE;
 						}
@@ -921,7 +925,7 @@ bool make_attack_normal(int m_idx)
 				case RBE_PARALYZE:
 				{
 					/* Hack -- Prevent perma-paralysis via damage */
-					if (p_ptr->paralyzed && (damage < 1)) damage = 1;
+					if (p_ptr->timed[TMD_PARALYZED] && (damage < 1)) damage = 1;
 
 					/* Take damage */
 					take_hit(damage, ddesc);
@@ -932,14 +936,14 @@ bool make_attack_normal(int m_idx)
 						msg_print("You are unaffected!");
 						obvious = TRUE;
 					}
-					else if (rand_int(100) < p_ptr->skill_sav)
+					else if (rand_int(100) < p_ptr->skills[SKILL_SAV])
 					{
 						msg_print("You resist the effects!");
 						obvious = TRUE;
 					}
 					else
 					{
-						if (set_paralyzed(p_ptr->paralyzed + 3 + randint(rlev)))
+						if (inc_timed(TMD_PARALYZED, 3 + randint(rlev)))
 						{
 							obvious = TRUE;
 						}
@@ -1187,7 +1191,7 @@ bool make_attack_normal(int m_idx)
 					/* Increase "image" */
 					if (!p_ptr->resist_chaos)
 					{
-						if (set_image(p_ptr->image + 3 + randint(rlev / 2)))
+						if (inc_timed(TMD_IMAGE, 3 + randint(rlev / 2)))
 						{
 							obvious = TRUE;
 						}
@@ -1239,7 +1243,7 @@ bool make_attack_normal(int m_idx)
 				}
 
 				/* Apply the cut */
-				if (k) (void)set_cut(p_ptr->cut + k);
+				if (k) (void)inc_timed(TMD_CUT, k);
 			}
 
 			/* Handle stun */
@@ -1264,7 +1268,7 @@ bool make_attack_normal(int m_idx)
 				}
 
 				/* Apply the stun */
-				if (k) (void)set_stun(p_ptr->stun + k);
+				if (k) (void)inc_timed(TMD_STUN, k);
 			}
 		}
 

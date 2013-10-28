@@ -9,813 +9,7 @@
  */
 
 #include "angband.h"
-
-
-
-#ifdef SET_UID
-
-# ifndef HAVE_USLEEP
-
-/*
- * For those systems that don't have "usleep()" but need it.
- *
- * Fake "usleep()" function grabbed from the inl netrek server -cba
- */
-int usleep(unsigned long usecs)
-{
-	struct timeval      Timer;
-
-	/* Paranoia -- No excessive sleeping */
-	if (usecs > 4000000L) quit("Illegal usleep() call");
-
-	/* Wait for it */
-	Timer.tv_sec = (usecs / 1000000L);
-	Timer.tv_usec = (usecs % 1000000L);
-
-	/* Wait for it */
-	if (select(0, NULL, NULL, NULL, &Timer) < 0)
-	{
-		/* Hack -- ignore interrupts */
-		if (errno != EINTR) return -1;
-	}
-
-	/* Success */
-	return 0;
-}
-
-# endif /* HAVE_USLEEP */
-
-
-/*
- * Find a default user name from the system.
- */
-void user_name(char *buf, size_t len, int id)
-{
-	struct passwd *pw;
-
-	/* Look up the user name */
-	if ((pw = getpwuid(id)))
-	{
-		/* Get the first 15 characters of the user name */
-		my_strcpy(buf, pw->pw_name, len);
-
-#ifdef CAPITALIZE_USER_NAME
-		/* Hack -- capitalize the user name */
-		if (islower((unsigned char)buf[0]))
-			buf[0] = toupper((unsigned char)buf[0]);
-#endif /* CAPITALIZE_USER_NAME */
-
-		return;
-	}
-
-	/* Oops.  Hack -- default to "PLAYER" */
-	my_strcpy(buf, "PLAYER", len);
-}
-
-#endif /* SET_UID */
-
-
-/*
- * The concept of the "file" routines below (and elsewhere) is that all
- * file handling should be done using as few routines as possible, since
- * every machine is slightly different, but these routines always have the
- * same semantics.
- *
- * In fact, perhaps we should use the "path_parse()" routine below to convert
- * from "canonical" filenames (optional leading tilde's, internal wildcards,
- * slash as the path seperator, etc) to "system" filenames (no special symbols,
- * system-specific path seperator, etc).  This would allow the program itself
- * to assume that all filenames are "Unix" filenames, and explicitly "extract"
- * such filenames if needed (by "path_parse()", or perhaps "path_canon()").
- *
- * Note that "path_temp" should probably return a "canonical" filename.
- *
- * Note that "my_fopen()" and "my_open()" and "my_make()" and "my_kill()"
- * and "my_move()" and "my_copy()" should all take "canonical" filenames.
- *
- * Note that "canonical" filenames use a leading "slash" to indicate an absolute
- * path, and a leading "tilde" to indicate a special directory, and default to a
- * relative path, but MSDOS uses a leading "drivename plus colon" to indicate the
- * use of a "special drive", and then the rest of the path is parsed "normally",
- * and MACINTOSH uses a leading colon to indicate a relative path, and an embedded
- * colon to indicate a "drive plus absolute path", and finally defaults to a file
- * in the current working directory, which may or may not be defined.
- *
- * We should probably parse a leading "~~/" as referring to "ANGBAND_DIR". (?)
- */
-
-
-#ifdef RISCOS
-
-
-/*
- * Most of the "file" routines for "RISCOS" should be in "main-ros.c"
- */
-
-
-#else /* RISCOS */
-
-#if defined(SET_UID) || defined(USE_PRIVATE_PATHS)
-
-/*
- * Extract a "parsed" path from an initial filename
- * Normally, we simply copy the filename into the buffer
- * But leading tilde symbols must be handled in a special way
- * Replace "~user/" by the home directory of the user named "user"
- * Replace "~/" by the home directory of the current user
- */
-errr path_parse(char *buf, size_t max, cptr file)
-{
-	cptr u, s;
-	struct passwd	*pw;
-	char user[128];
-
-
-	/* Assume no result */
-	buf[0] = '\0';
-
-	/* No file? */
-	if (!file) return (-1);
-
-	/* File needs no parsing */
-	if (file[0] != '~')
-	{
-		my_strcpy(buf, file, max);
-		return (0);
-	}
-
-	/* Point at the user */
-	u = file+1;
-
-	/* Look for non-user portion of the file */
-	s = strstr(u, PATH_SEP);
-
-	/* Hack -- no long user names */
-	if (s && (s >= u + sizeof(user))) return (1);
-
-	/* Extract a user name */
-	if (s)
-	{
-		int i;
-		for (i = 0; u < s; ++i) user[i] = *u++;
-		user[i] = '\0';
-		u = user;
-	}
-
-	/* Look up the "current" user */
-	if (u[0] == '\0') u = getlogin();
-
-	/* Look up a user (or "current" user) */
-	if (u) pw = getpwnam(u);
-	else pw = getpwuid(getuid());
-
-	/* Nothing found? */
-	if (!pw) return (1);
-
-	/* Make use of the info */
-	my_strcpy(buf, pw->pw_dir, max);
-
-	/* Append the rest of the filename, if any */
-	if (s) my_strcat(buf, s, max);
-
-	/* Success */
-	return (0);
-}
-
-
-#else /* SET_UID */
-
-
-/*
- * Extract a "parsed" path from an initial filename
- *
- * This requires no special processing on simple machines,
- * except for verifying the size of the filename.
- */
-errr path_parse(char *buf, size_t max, cptr file)
-{
-	/* Accept the filename */
-	my_strcpy(buf, file, max);
-
-# ifdef MACH_O_CARBON
-
-	/* Fix it according to the current operating system */
-	convert_pathname(buf);
-
-# endif
-
-	/* Success */
-	return (0);
-}
-
-
-#endif /* SET_UID */
-
-
-#ifndef HAVE_MKSTEMP
-
-/*
- * Hack -- acquire a "temporary" file name if possible
- *
- * This filename is always in "system-specific" form.
- */
-static errr path_temp(char *buf, size_t max)
-{
-	cptr s;
-
-	/* Temp file */
-	s = tmpnam(NULL);
-
-	/* Oops */
-	if (!s) return (-1);
-
-	/* Copy to buffer */
-	my_strcpy(buf, s, max);
-
-	/* Success */
-	return (0);
-}
-
-#endif /* HAVE_MKSTEMP */
-
-
-/*
- * Create a new path by appending a file (or directory) to a path
- *
- * This requires no special processing on simple machines, except
- * for verifying the size of the filename, but note the ability to
- * bypass the given "path" with certain special file-names.
- *
- * Note that the "file" may actually be a "sub-path", including
- * a path and a file.
- *
- * Note that this function yields a path which must be "parsed"
- * using the "parse" function above.
- */
-errr path_build(char *buf, size_t max, cptr path, cptr file)
-{
-	/* Special file */
-	if (file[0] == '~')
-	{
-		/* Use the file itself */
-		my_strcpy(buf, file, max);
-	}
-
-	/* Absolute file, on "normal" systems */
-	else if (prefix(file, PATH_SEP) && !streq(PATH_SEP, ""))
-	{
-		/* Use the file itself */
-		my_strcpy(buf, file, max);
-	}
-
-	/* No path given */
-	else if (!path[0])
-	{
-		/* Use the file itself */
-		my_strcpy(buf, file, max);
-	}
-
-	/* Path and File */
-	else
-	{
-		/* Build the new path */
-		strnfmt(buf, max, "%s%s%s", path, PATH_SEP, file);
-	}
-
-	/* Success */
-	return (0);
-}
-
-
-/*
- * Hack -- replacement for "fopen()"
- */
-FILE *my_fopen(cptr file, cptr mode)
-{
-	char buf[1024];
-	FILE *fff;
-
-	/* Hack -- Try to parse the path */
-	if (path_parse(buf, sizeof(buf), file)) return (NULL);
-
-	/* Attempt to fopen the file anyway */
-	fff = fopen(buf, mode);
-
-#if defined(MAC_MPW) || defined(MACH_O_CARBON)
-
-	/* Set file creator and type */
-	if (fff && strchr(mode, 'w')) fsetfileinfo(buf, _fcreator, _ftype);
-
-#endif
-
-	/* Return open file or NULL */
-	return (fff);
-}
-
-
-/*
- * Hack -- replacement for "fclose()"
- */
-errr my_fclose(FILE *fff)
-{
-	/* Require a file */
-	if (!fff) return (-1);
-
-	/* Close, check for error */
-	if (fclose(fff) == EOF) return (1);
-
-	/* Success */
-	return (0);
-}
-
-#endif /* RISCOS */
-
-
-#ifdef HAVE_MKSTEMP
-
-FILE *my_fopen_temp(char *buf, size_t max)
-{
-	int fd;
-
-	/* Prepare the buffer for mkstemp */
-	my_strcpy(buf, "/tmp/anXXXXXX", max);
-
-	/* Secure creation of a temporary file */
-	fd = mkstemp(buf);
-
-	/* Check the file-descriptor */
-	if (fd < 0) return (NULL);
-
-	/* Return a file stream */
-	return (fdopen(fd, "w"));
-}
-
-#else /* HAVE_MKSTEMP */
-
-FILE *my_fopen_temp(char *buf, size_t max)
-{
-	/* Generate a temporary filename */
-	if (path_temp(buf, max)) return (NULL);
-
-	/* Open the file */
-	return (my_fopen(buf, "w"));
-}
-
-#endif /* HAVE_MKSTEMP */
-
-
-/*
- * Hack -- replacement for "fgets()"
- *
- * Read a string, without a newline, to a file
- *
- * Process tabs, strip internal non-printables
- */
-#define TAB_COLUMNS   8
-
-errr my_fgets(FILE *fff, char *buf, size_t n)
-{
-	u16b i = 0;
-	char *s = buf;
-	int len;
-
-
-	/* Paranoia */
-	if (n <= 0) return (1);
-
-	/* Enforce historical upper bound */
-	if (n > 1024) n = 1024;
-
-	/* Leave a byte for terminating null */
-	len = n - 1;
-
-	/* While there's room left in the buffer */
-	while (i < len)
-	{
-		int c;
-
-		/*
-		 * Read next character - stdio buffers I/O, so there's no
-		 * need to buffer it again using fgets.
-		 */
-		c = fgetc(fff);
-
-		/* End of file */
-		if (c == EOF)
-		{
-			/* No characters read -- signal error */
-			if (i == 0) break;
-
-			/*
-			 * Be nice to DOS/Windows, where a last line of a file isn't
-			 * always \n terminated.
-			 */
-			*s = '\0';
-
-			/* Success */
-			return (0);
-		}
-
-#if defined(MACINTOSH) || defined(MACH_O_CARBON)
-
-		/*
-		 * Be nice to the Macintosh, where a file can have Mac or Unix
-		 * end of line, especially since the introduction of OS X.
-		 * MPW tools were also very tolerant to the Unix EOL.
-		 */
-		if (c == '\r') c = '\n';
-
-#endif /* MACINTOSH || MACH_O_CARBON */
-
-		/* End of line */
-		if (c == '\n')
-		{
-			/* Null terminate */
-			*s = '\0';
-
-			/* Success */
-			return (0);
-		}
-
-		/* Expand a tab into spaces */
-		if (c == '\t')
-		{
-			int tabstop;
-
-			/* Next tab stop */
-			tabstop = ((i + TAB_COLUMNS) / TAB_COLUMNS) * TAB_COLUMNS;
-
-			/* Bounds check */
-			if (tabstop >= len) break;
-
-			/* Convert it to spaces */
-			while (i < tabstop)
-			{
-				/* Store space */
-				*s++ = ' ';
-
-				/* Count */
-				i++;
-			}
-		}
-
-		/* Ignore non-printables */
-		else if (isprint(c))
-		{
-			/* Store character in the buffer */
-			*s++ = c;
-
-			/* Count number of characters in the buffer */
-			i++;
-		}
-	}
-
-	/* Buffer overflow or EOF - return an empty string */
-	buf[0] = '\0';
-
-	/* Error */
-	return (1);
-}
-
-
-/*
- * Hack -- replacement for "fputs()"
- *
- * Dump a string, plus a newline, to a file
- *
- * Perhaps this function should handle internal weirdness.
- */
-errr my_fputs(FILE *fff, cptr buf, size_t n)
-{
-	/* Unused paramter */
-	(void)n;
-
-	/* Dump, ignore errors */
-	(void)fprintf(fff, "%s\n", buf);
-
-	/* Success */
-	return (0);
-}
-
-
-#ifdef RISCOS
-
-
-/*
- * Most of the "file" routines for "RISCOS" should be in "main-ros.c"
- *
- * Many of them can be rewritten now that only "fd_open()" and "fd_make()"
- * and "my_fopen()" should ever create files.
- */
-
-
-#else /* RISCOS */
-
-
-/*
- * Several systems have no "O_BINARY" flag
- */
-#ifndef O_BINARY
-# define O_BINARY 0
-#endif /* O_BINARY */
-
-
-/*
- * Hack -- attempt to delete a file
- */
-errr fd_kill(cptr file)
-{
-	char buf[1024];
-
-	/* Hack -- Try to parse the path */
-	if (path_parse(buf, sizeof(buf), file)) return (-1);
-
-	/* Remove, return 0 on success, non-zero on failure */
-	return (remove(buf));
-}
-
-
-/*
- * Hack -- attempt to move a file
- */
-errr fd_move(cptr file, cptr what)
-{
-	char buf[1024];
-	char aux[1024];
-
-	/* Hack -- Try to parse the path */
-	if (path_parse(buf, sizeof(buf), file)) return (-1);
-
-	/* Hack -- Try to parse the path */
-	if (path_parse(aux, sizeof(aux), what)) return (-1);
-
-	/* Rename, return 0 on success, non-zero on failure */
-	return (rename(buf, aux));
-}
-
-
-/*
- * Hack -- attempt to open a file descriptor (create file)
- *
- * This function should fail if the file already exists
- *
- * Note that we assume that the file should be "binary"
- */
-int fd_make(cptr file, int mode)
-{
-	char buf[1024];
-	int fd;
-
-	/* Hack -- Try to parse the path */
-	if (path_parse(buf, sizeof(buf), file)) return (-1);
-
-#if defined(MACINTOSH)
-
-	/* Create the file, fail if exists, write-only, binary */
-	fd = open(buf, O_CREAT | O_EXCL | O_WRONLY | O_BINARY);
-
-#else
-
-	/* Create the file, fail if exists, write-only, binary */
-	fd = open(buf, O_CREAT | O_EXCL | O_WRONLY | O_BINARY, mode);
-
-#endif
-
-#if defined(MAC_MPW) || defined(MACH_O_CARBON)
-
-	/* Set file creator and type */
-	if (fd >= 0) fsetfileinfo(buf, _fcreator, _ftype);
-
-#endif
-
-	/* Return descriptor */
-	return (fd);
-}
-
-
-/*
- * Hack -- attempt to open a file descriptor (existing file)
- *
- * Note that we assume that the file should be "binary"
- */
-int fd_open(cptr file, int flags)
-{
-	char buf[1024];
-
-	/* Hack -- Try to parse the path */
-	if (path_parse(buf, sizeof(buf), file)) return (-1);
-
-#if defined(MACINTOSH) || defined(WINDOWS)
-
-	/* Attempt to open the file */
-	return (open(buf, flags | O_BINARY));
-
-#else
-
-	/* Attempt to open the file */
-	return (open(buf, flags | O_BINARY, 0));
-
-#endif
-
-}
-
-
-/*
- * Hack -- attempt to lock a file descriptor
- *
- * Legal lock types -- F_UNLCK, F_RDLCK, F_WRLCK
- */
-errr fd_lock(int fd, int what)
-{
-#ifdef SET_UID
-
-	struct flock lock;
-#endif
-
-	/* Verify the fd */
-	if (fd < 0) return (-1);
-
-#ifdef SET_UID
-
-	lock.l_type = what;
-	lock.l_start = 0; /* Lock the entire file */
-	lock.l_whence = SEEK_SET; /* Lock the entire file */
-	lock.l_len = 0; /* Lock the entire file */
-
-	/* Wait for access and set lock status */
-	/*
-	 * Change F_SETLKW to G_SETLK if it's preferable to return
-	 * without locking and reporting an error instead of waiting.
-	 */
-	return (fcntl(fd, F_SETLKW, &lock));
-
-
-#else /* SET_UID */
-
-	/* Unused parameter */
-	(void)what;
-
-#endif /* SET_UID */
-
-	/* Success */
-	return (0);
-}
-
-
-/*
- * Hack -- attempt to seek on a file descriptor
- */
-errr fd_seek(int fd, long n)
-{
-	long p;
-
-	/* Verify fd */
-	if (fd < 0) return (-1);
-
-	/* Seek to the given position */
-	p = lseek(fd, n, SEEK_SET);
-
-	/* Failure */
-	if (p < 0) return (1);
-
-	/* Failure */
-	if (p != n) return (1);
-
-	/* Success */
-	return (0);
-}
-
-
-#ifndef SET_UID
-#define FILE_BUF_SIZE 16384
-#endif
-
-
-/*
- * Hack -- attempt to read data from a file descriptor
- */
-errr fd_read(int fd, char *buf, size_t n)
-{
-	/* Verify the fd */
-	if (fd < 0) return (-1);
-
-#ifndef SET_UID
-
-	/* Read pieces */
-	while (n >= FILE_BUF_SIZE)
-	{
-		/* Read a piece */
-		if (read(fd, buf, FILE_BUF_SIZE) != FILE_BUF_SIZE) return (1);
-
-		/* Shorten the task */
-		buf += FILE_BUF_SIZE;
-
-		/* Shorten the task */
-		n -= FILE_BUF_SIZE;
-	}
-
-#endif
-
-	/* Read the final piece */
-	if (read(fd, buf, n) != (int)n) return (1);
-
-	/* Success */
-	return (0);
-}
-
-
-/*
- * Hack -- Attempt to write data to a file descriptor
- */
-errr fd_write(int fd, cptr buf, size_t n)
-{
-	/* Verify the fd */
-	if (fd < 0) return (-1);
-
-#ifndef SET_UID
-
-	/* Write pieces */
-	while (n >= FILE_BUF_SIZE)
-	{
-		/* Write a piece */
-		if (write(fd, buf, FILE_BUF_SIZE) != FILE_BUF_SIZE) return (1);
-
-		/* Shorten the task */
-		buf += FILE_BUF_SIZE;
-
-		/* Shorten the task */
-		n -= FILE_BUF_SIZE;
-	}
-
-#endif
-
-	/* Write the final piece */
-	if (write(fd, buf, n) != (int)n) return (1);
-
-	/* Success */
-	return (0);
-}
-
-
-/*
- * Hack -- attempt to close a file descriptor
- */
-errr fd_close(int fd)
-{
-	/* Verify the fd */
-	if (fd < 0) return (-1);
-
-	/* Close, return 0 on success, -1 on failure */
-	return (close(fd));
-}
-
-
-#if defined(CHECK_MODIFICATION_TIME) && !defined(MAC_MPW)
-
-# ifdef MACINTOSH
-#  include <stat.h>
-# else
-#  include <sys/types.h>
-#  include <sys/stat.h>
-# endif /* MACINTOSH */
-
-
-errr check_modification_date(int fd, cptr template_file)
-{
-	char buf[1024];
-
-	struct stat txt_stat, raw_stat;
-
-	/* Build the filename */
-	path_build(buf, sizeof(buf), ANGBAND_DIR_EDIT, template_file);
-
-	/* Access stats on text file */
-	if (stat(buf, &txt_stat))
-	{
-		/* No text file - continue */
-	}
-
-	/* Access stats on raw file */
-	else if (fstat(fd, &raw_stat))
-	{
-		/* Error */
-		return (-1);
-	}
-
-	/* Ensure text file is not newer than raw file */
-	else if (txt_stat.st_mtime > raw_stat.st_mtime)
-	{
-		/* Reprocess text file */
-		return (-1);
-	}
-
-	return (0);
-}
-
-#endif /* CHECK_MODIFICATION_TIME */
-
-#endif /* RISCOS */
-
+#include "randname.h"
 
 
 
@@ -1142,7 +336,7 @@ static size_t trigger_ascii_to_text(char *buf, size_t max, cptr *strptr)
 			break;
 		case '#':
 			/* Read key code */
-			for (j = 0; *str && (*str != '\r') && (j < sizeof(key_code) - 1); j++)
+			for (j = 0; *str && (*str != '\r') && (j < (int)sizeof(key_code) - 1); j++)
 				key_code[j] = *str++;
 			key_code[j] = '\0';
 			break;
@@ -1352,6 +546,7 @@ static int macro_find_check(cptr pat)
 	/* Nothing */
 	return (-1);
 }
+
 
 
 /*
@@ -1611,7 +806,6 @@ static bool parse_under = FALSE;
 
 
 
-
 /*
  * Helper function called only from "inkey()"
  *
@@ -1629,140 +823,153 @@ static bool parse_under = FALSE;
  * macro trigger, 500 milliseconds must pass before the key sequence is
  * known not to be that macro trigger.  XXX XXX XXX
  */
-static char inkey_aux(void)
+static event_type inkey_aux(void)
 {
-	int k, n;
-	int p = 0, w = 0;
-
+	int k = 0, n, p = 0, w = 0;
+	
+	event_type ke, ke0;
 	char ch;
-
+	
 	cptr pat, act;
-
+	
 	char buf[1024];
-
-
+	
+	/* Initialize the no return */
+	ke0.type = EVT_KBRD;
+	ke0.key = 0;
+	ke0.index = 0; /* To fix GCC warnings on X11 */
+	ke0.mousey = 0;
+	ke0.mousex = 0;
+ 
 	/* Wait for a keypress */
-	(void)(Term_inkey(&ch, TRUE, TRUE));
-
-
+	(void)(Term_inkey(&ke, TRUE, TRUE));
+	ch = ke.key;
+	
 	/* End "macro action" */
-	if (ch == 30) parse_macro = FALSE;
-
+	if ((ch == 30) || (ch == '\xff'))
+	{
+		parse_macro = FALSE;
+		return (ke);
+	}
+	
 	/* Inside "macro action" */
-	if (ch == 30) return (ch);
-
-	/* Inside "macro action" */
-	if (parse_macro) return (ch);
-
+	if (parse_macro) return (ke);
+	
 	/* Inside "macro trigger" */
-	if (parse_under) return (ch);
-
+	if (parse_under) return (ke);
+	
 
 	/* Save the first key, advance */
 	buf[p++] = ch;
 	buf[p] = '\0';
-
-
+	
+	
 	/* Check for possible macro */
 	k = macro_find_check(buf);
-
+	
 	/* No macro pending */
-	if (k < 0) return (ch);
-
-
+	if (k < 0) return (ke);
+	
+	
 	/* Wait for a macro, or a timeout */
 	while (TRUE)
 	{
 		/* Check for pending macro */
 		k = macro_find_maybe(buf);
-
+		
 		/* No macro pending */
 		if (k < 0) break;
-
+		
 		/* Check for (and remove) a pending key */
-		if (0 == Term_inkey(&ch, FALSE, TRUE))
+		if (0 == Term_inkey(&ke, FALSE, TRUE))
 		{
 			/* Append the key */
-			buf[p++] = ch;
+			buf[p++] = ke.key;
 			buf[p] = '\0';
-
+		
 			/* Restart wait */
 			w = 0;
 		}
-
+		
 		/* No key ready */
 		else
 		{
 			/* Increase "wait" */
 			w += 10;
-
+		
 			/* Excessive delay */
 			if (w >= 100) break;
-
+		
 			/* Delay */
 			Term_xtra(TERM_XTRA_DELAY, w);
 		}
 	}
-
-
+	
+	
 	/* Check for available macro */
 	k = macro_find_ready(buf);
 
 	/* No macro available */
 	if (k < 0)
 	{
-		/* Push all the keys back on the queue */
+		/* Push all the "keys" back on the queue */
+		/* The most recent event may not be a keypress. */
+		if(p)
+		{
+			if(Term_event_push(&ke)) return (ke0);
+			p--;
+		}
 		while (p > 0)
 		{
 			/* Push the key, notice over-flow */
-			if (Term_key_push(buf[--p])) return (0);
+			if (Term_key_push(buf[--p])) return (ke0);
 		}
-
+		
 		/* Wait for (and remove) a pending key */
-		(void)Term_inkey(&ch, TRUE, TRUE);
-
+		(void)Term_inkey(&ke, TRUE, TRUE);
+		
 		/* Return the key */
-		return (ch);
+		return (ke);
 	}
-
-
+	
+	
 	/* Get the pattern */
 	pat = macro__pat[k];
-
+	
 	/* Get the length of the pattern */
 	n = strlen(pat);
-
+	
 	/* Push the "extra" keys back on the queue */
 	while (p > n)
 	{
 		/* Push the key, notice over-flow */
-		if (Term_key_push(buf[--p])) return (0);
+		if (Term_key_push(buf[--p])) return (ke0);
 	}
-
-
+	
+	
 	/* Begin "macro action" */
 	parse_macro = TRUE;
-
+	
 	/* Push the "end of macro action" key */
-	if (Term_key_push(30)) return (0);
-
-
-	/* Get the macro action */
+	if (Term_key_push(30)) return (ke0);
+	
+	
+	/* Access the macro action */
 	act = macro__act[k];
-
+	
 	/* Get the length of the action */
 	n = strlen(act);
-
+	
 	/* Push the macro "action" onto the key queue */
 	while (n > 0)
 	{
 		/* Push the key, notice over-flow */
-		if (Term_key_push(act[--n])) return (0);
+		if (Term_key_push(act[--n])) return (ke0);
 	}
-
-
+	
+	
 	/* Hack -- Force "inkey()" to call us again */
-	return (0);
+	return (ke0);
 }
 
 
@@ -1841,9 +1048,9 @@ char (*inkey_hack)(int flush_first) = NULL;
  * any time.  These sub-commands could include commands to take a picture of
  * the current screen, to start/stop recording a macro action, etc.
  *
- * If "term_screen" is not active, we will make it active during this
+ * If "angband_term[0]" is not active, we will make it active during this
  * function, so that the various "main-xxx.c" files can assume that input
- * is only requested (via "Term_inkey()") when "term_screen" is active.
+ * is only requested (via "Term_inkey()") when "angband_term[0]" is active.
  *
  * Mega-Hack -- This function is used as the entry point for clearing the
  * "signal_count" variable, and of the "character_saved" variable.
@@ -1853,115 +1060,99 @@ char (*inkey_hack)(int flush_first) = NULL;
  * Mega-Hack -- Note the use of "inkey_hack" to allow the "Borg" to steal
  * control of the keyboard from the user.
  */
-char inkey(void)
+event_type inkey_ex(void)
 {
-	bool cursor_state[ANGBAND_TERM_MAX];
-
-	int j;
-
-	char kk;
-
-	char ch = 0;
-
+	bool cursor_state;
+	event_type kk;
+	event_type ke;
+	
 	bool done = FALSE;
-
+	
 	term *old = Term;
-
-
+	
+	
+	/* Initialise keypress */
+	ke.key = 0;
+	ke.type = EVT_KBRD;
+	
 	/* Hack -- Use the "inkey_next" pointer */
 	if (inkey_next && *inkey_next && !inkey_xtra)
 	{
 		/* Get next character, and advance */
-		ch = *inkey_next++;
-
+		ke.key = *inkey_next++;
+		
 		/* Cancel the various "global parameters" */
 		inkey_base = inkey_xtra = inkey_flag = inkey_scan = FALSE;
-
+		
 		/* Accept result */
-		return (ch);
+		return (ke);
 	}
-
+	
 	/* Forget pointer */
 	inkey_next = NULL;
-
-
+	
+	
 #ifdef ALLOW_BORG
-
+	
 	/* Mega-Hack -- Use the special hook */
 	if (inkey_hack && ((ch = (*inkey_hack)(inkey_xtra)) != 0))
 	{
 		/* Cancel the various "global parameters" */
 		inkey_base = inkey_xtra = inkey_flag = inkey_scan = FALSE;
-
+		ke.type = EVT_KBRD;
+		
 		/* Accept result */
-		return (ch);
+		return (ke);
 	}
-
+	
 #endif /* ALLOW_BORG */
-
-
+	
+	
 	/* Hack -- handle delayed "flush()" */
 	if (inkey_xtra)
 	{
 		/* End "macro action" */
 		parse_macro = FALSE;
-
+		ke.type = EVT_KBRD;
+		
 		/* End "macro trigger" */
 		parse_under = FALSE;
-
+		
 		/* Forget old keypresses */
 		Term_flush();
 	}
-
-
+	
+	
+	/* Get the cursor state */
+	(void)Term_get_cursor(&cursor_state);
+	
 	/* Show the cursor if waiting, except sometimes in "command" mode */
 	if (!inkey_scan && (!inkey_flag || hilite_player || character_icky))
 	{
-		/* Scan windows */
-		for (j = 0; j < ANGBAND_TERM_MAX; j++)
-		{
-			term *t = angband_term[j];
-
-			/* No window */
-			if (!t) continue;
-
-			/* No relevant flags */
-			if ((j > 0) && !(op_ptr->window_flag[j] & (PW_MAP)))
-				continue;
-
-			/* Activate the map term */
-			Term_activate(t);
-
-			/* Get the cursor state */
-			(void)Term_get_cursor(&cursor_state[j]);
-
-			/* Show the cursor */
-			(void)Term_set_cursor(TRUE);
-
-			/* Refresh the term to draw the cursor */
-			if (!cursor_state[j]) Term_fresh();
-		}
+		/* Show the cursor */
+		(void)Term_set_cursor(TRUE);
 	}
-
-
+	
+	
 	/* Hack -- Activate main screen */
 	Term_activate(term_screen);
-
-
+	
+	
 	/* Get a key */
-	while (!ch)
+	while (!ke.key)
 	{
 		/* Hack -- Handle "inkey_scan" */
 		if (!inkey_base && inkey_scan &&
-		    (0 != Term_inkey(&kk, FALSE, FALSE)))
+		   (0 != Term_inkey(&kk, FALSE, FALSE)))
 		{
 			break;
 		}
-
+		
 
 		/* Hack -- Flush output once when no key ready */
 		if (!done && (0 != Term_inkey(&kk, FALSE, FALSE)))
 		{
+
 			/* Hack -- activate proper term */
 			Term_activate(old);
 
@@ -1973,15 +1164,15 @@ char inkey(void)
 
 			/* Mega-Hack -- reset saved flag */
 			character_saved = FALSE;
-
+		
 			/* Mega-Hack -- reset signal counter */
 			signal_count = 0;
-
+		
 			/* Only once */
 			done = TRUE;
 		}
-
-
+		
+		
 		/* Hack -- Handle "inkey_base" */
 		if (inkey_base)
 		{
@@ -1991,7 +1182,7 @@ char inkey(void)
 			if (!inkey_scan)
 			{
 				/* Wait for (and remove) a pending key */
-				if (0 == Term_inkey(&ch, TRUE, TRUE))
+				if (0 == Term_inkey(&ke, TRUE, TRUE))
 				{
 					/* Done */
 					break;
@@ -2001,11 +1192,11 @@ char inkey(void)
 				break;
 			}
 
-			/* Wait */
+			/* Wait only as long as macro activation would wait*/
 			while (TRUE)
 			{
 				/* Check for (and remove) a pending key */
-				if (0 == Term_inkey(&ch, FALSE, TRUE))
+				if (0 == Term_inkey(&ke, FALSE, TRUE))
 				{
 					/* Done */
 					break;
@@ -2022,110 +1213,121 @@ char inkey(void)
 
 					/* Delay */
 					Term_xtra(TERM_XTRA_DELAY, w);
+
 				}
 			}
 
 			/* Done */
+			ke.type = EVT_KBRD;
 			break;
 		}
-
-
-		/* Get a key (see above) */
-		ch = inkey_aux();
-
-
+		
+		
+			/* Get a key (see above) */
+			ke = inkey_aux();
+		
+		
 		/* Handle "control-right-bracket" */
-		if (ch == 29)
+		if (ke.key == 29)
 		{
 			/* Strip this key */
-			ch = 0;
-
+			ke.key = 0;
+		
 			/* Continue */
 			continue;
 		}
-
-
+		
+		
 		/* Treat back-quote as escape */
-		if (ch == '`') ch = ESCAPE;
-
-
+		if (ke.key == '`') ke.key = ESCAPE;
+		
+		
 		/* End "macro trigger" */
-		if (parse_under && (ch <= 32))
+		if (parse_under && (ke.key <= 32))
 		{
 			/* Strip this key */
-			ch = 0;
-
+			ke.key = 0;
+		
 			/* End "macro trigger" */
 			parse_under = FALSE;
 		}
 
-
 		/* Handle "control-caret" */
-		if (ch == 30)
+		if (ke.key == 30)
 		{
 			/* Strip this key */
-			ch = 0;
+			ke.key = 0;
 		}
 
 		/* Handle "control-underscore" */
-		else if (ch == 31)
+		else if (ke.key == 31)
 		{
 			/* Strip this key */
-			ch = 0;
+			ke.key = 0;
 
 			/* Begin "macro trigger" */
 			parse_under = TRUE;
 		}
 
 		/* Inside "macro trigger" */
-		else if (parse_under)
+    	else if (parse_under)
 		{
 			/* Strip this key */
-			ch = 0;
+			ke.key = 0;
 		}
 	}
-
-	/* Hide the cursor again */
-	if (!inkey_scan && (!inkey_flag || hilite_player || character_icky))
-	{
-		/* Scan windows */
-		for (j = 0; j < ANGBAND_TERM_MAX; j++)
-		{
-			term *t = angband_term[j];
-
-			/* No window */
-			if (!t) continue;
-
-			/* No relevant flags */
-			if ((j > 0) && !(op_ptr->window_flag[j] & PW_MAP)) continue;
-
-			/* Activate the term */
-			Term_activate(t);
-
-			/* Restore the cursor */
-			(void)Term_set_cursor(cursor_state[j]);
-
-			/* Refresh to erase the cursor */
-			if (!cursor_state[j])
-			{
-				Term_fresh();
-			}
-		}
-	}
-
-
+	
+	
 	/* Hack -- restore the term */
 	Term_activate(old);
-
-
+	
+	
+	/* Restore the cursor */
+	Term_set_cursor(cursor_state);
+	
+	
 	/* Cancel the various "global parameters" */
 	inkey_base = inkey_xtra = inkey_flag = inkey_scan = FALSE;
-
-
+	
+	
 	/* Return the keypress */
-	return (ch);
+	return (ke);
 }
 
+
+/*
+ * Get a keypress or mouse click from the user.
+ */
+char anykey(void)
+{
+  event_type ke;
+  
+  /* Only accept a keypress or mouse click*/
+  do
+    {
+      ke = inkey_ex();
+    } while (!(ke.type & (EVT_MOUSE|EVT_KBRD)));
+  
+  return ke.key;
+}
+
+/*
+ * Get a "keypress" from the user.
+ */
+char inkey(void)
+{
+	event_type ke;
+
+	/* Only accept a keypress */
+	do
+	{
+		ke = inkey_ex();
+	} while (!(ke.type  & (EVT_KBRD|EVT_ESCAPE)));
+	/* Paranoia */
+	if(ke.type == EVT_ESCAPE) ke.key = ESCAPE;
+
+	return ke.key;
+}
 
 
 
@@ -2157,6 +1359,7 @@ void bell(cptr reason)
 }
 
 
+
 /*
  * Hack -- Make a (relevant?) sound
  */
@@ -2165,8 +1368,9 @@ void sound(int val)
 	/* No sound */
 	if (!use_sound) return;
 
-	/* Make a sound (if allowed) */
-	Term_xtra(TERM_XTRA_SOUND, val);
+	/* Make a noise */
+	if (sound_hook)
+		sound_hook(val);
 }
 
 
@@ -2279,7 +1483,7 @@ errr quarks_free(void)
 	}
 
 	/* Free the list of "quarks" */
-	FREE((void*)quark__str);
+	FREE(quark__str);
 
 	/* Success */
 	return (0);
@@ -2785,14 +1989,6 @@ void messages_free(void)
  */
 
 
-/*
- * Move the cursor
- */
-void move_cursor(int row, int col)
-{
-	Term_gotoxy(col, row);
-}
-
 
 
 /*
@@ -2954,9 +2150,6 @@ static void msg_print_aux(u16b type, cptr msg)
 
 	/* Remember the position */
 	message_column += n + 1;
-
-	/* Optional refresh */
-	if (fresh_after) Term_fresh();
 }
 
 
@@ -3421,8 +2614,124 @@ void clear_from(int row)
 	}
 }
 
+/*
+ * The default "keypress handling function" for askfor_aux, this takes the
+ * given keypress, input buffer, length, etc, and does the appropriate action
+ * for each keypress, such as moving the cursor left or inserting a character.
+ *
+ * It should return TRUE when editing of the buffer is "complete" (e.g. on
+ * the press of RETURN).
+ */
+bool askfor_aux_keypress(char *buf, size_t buflen, size_t *curs, size_t *len, char keypress, bool firsttime)
+{
+	switch (keypress)
+	{
+		case ESCAPE:
+		{
+			*curs = 0;
+			return TRUE;
+			break;
+		}
+		
+		case '\n':
+		case '\r':
+		{
+			*curs = *len;
+			return TRUE;
+			break;
+		}
+		
+		case ARROW_LEFT:
+		{
+			if (firsttime) *curs = 0;
+			if (*curs > 0) (*curs)--;
+			break;
+		}
+		
+		case ARROW_RIGHT:
+		{
+			if (firsttime) *curs = *len - 1;
+			if (*curs < *len) (*curs)++;
+			break;
+		}
+		
+		case 0x7F:
+		case '\010':
+		{
+			/* If this is the first time round, backspace means "delete all" */
+			if (firsttime)
+			{
+				buf[0] = '\0';
+				*curs = 0;
+				*len = 0;
+
+				break;
+			}
+
+			/* Refuse to backspace into oblivion */
+			if (*curs == 0) break;
+
+			/* Move the string from k to nul along to the left by 1 */
+			memmove(&buf[*curs - 1], &buf[*curs], *len - *curs);
+
+			/* Decrement */
+			(*curs)--;
+			(*len)--;
+
+			/* Terminate */
+			buf[*len] = '\0';
+
+			break;
+		}
+		
+		default:
+		{
+			bool atnull = (buf[*curs] == 0);
 
 
+			if (!isprint((unsigned char)keypress))
+			{
+				bell("Illegal edit key!");
+				break;
+			}
+
+			/* Clear the buffer if this is the first time round */
+			if (firsttime)
+			{
+				buf[0] = '\0';
+				*curs = 0;
+				*len = 0;
+				atnull = 1;
+			}
+
+			if (atnull)
+			{
+				/* Make sure we have enough room for a new character */
+				if ((*curs + 1) >= buflen) break;
+			}
+			else
+			{
+				/* Make sure we have enough room to add a new character */
+				if ((*len + 1) >= buflen) break;
+
+				/* Move the rest of the buffer along to make room */
+				memmove(&buf[*curs+1], &buf[*curs], *len - *curs);
+			}
+
+			/* Insert the character */
+			buf[(*curs)++] = keypress;
+			(*len)++;
+
+			/* Terminate */
+			buf[*len] = '\0';
+
+			break;
+		}
+	}
+
+	/* By default, we aren't done. */
+	return FALSE;
+}
 
 /*
  * Get some input at the cursor location.
@@ -3440,9 +2749,15 @@ void clear_from(int row)
  *
  * Note that 'len' refers to the size of the buffer.  The maximum length
  * of the input is 'len-1'.
+ *
+ * 'keypress_h' is a pointer to a function to handle keypresses, altering
+ * the input buffer, cursor position and suchlike as required.  See
+ * 'askfor_aux_keypress' (the default handler if you supply NULL for
+ * 'keypress_h') for an example.
  */
-bool askfor_aux(char *buf, size_t len)
+bool askfor_aux(char *buf, size_t len, bool keypress_h(char *, size_t, size_t *, size_t *, char, bool))
 {
+
 	int y, x;
 
 	size_t k = 0;		/* Cursor position */
@@ -3453,6 +2768,10 @@ bool askfor_aux(char *buf, size_t len)
 	bool done = FALSE;
 	bool firsttime = TRUE;
 
+	if (keypress_h == NULL)
+	{
+		keypress_h = askfor_aux_keypress;
+	}
 
 	/* Locate the cursor */
 	Term_locate(&x, &y);
@@ -3484,111 +2803,8 @@ bool askfor_aux(char *buf, size_t len)
 		/* Get a key */
 		ch = inkey();
 
-		/* Analyze the key */
-		switch (ch)
-		{
-			case ESCAPE:
-			{
-				k = 0;
-				done = TRUE;
-				break;
-			}
-
-			case '\n':
-			case '\r':
-			{
-				k = strlen(buf);
-				done = TRUE;
-				break;
-			}
-
-			case ARROW_LEFT:
-			{
-				if (firsttime) k = 0;
-				if (k > 0) k--;
-				break;
-			}
-
-			case ARROW_RIGHT:
-			{
-				if (firsttime) k = nul - 1;
-				if (k < nul) k++;
-				break;
-			}
-
-			case 0x7F:
-			case '\010':
-			{
-				/* If this is the first time round, backspace means "delete all" */
-				if (firsttime)
-				{
-					buf[0] = '\0';
-					k = 0;
-					nul = 0;
-
-					break;
-				}
-
-				/* Refuse to backspace into oblivion */
-				if (k == 0) break;
-
-				/* Move the string from k to nul along to the left by 1 */
-				memmove(&buf[k-1], &buf[k], nul - k);
-
-				/* Decrement */
-				k--;
-				nul--;
-
-				/* Terminate */
-				buf[nul] = '\0';
-
-				break;
-			}
-
-			default:
-			{
-				bool atnull = (buf[k] == 0);
-
-
-				if (!isprint((unsigned char)ch))
-				{
-					bell("Illegal edit key!");
-					break;
-				}
-
-				/* Clear the buffer if this is the first time round */
-				if (firsttime)
-				{
-					buf[0] = '\0';
-					k = 0;
-					nul = 0;
-					atnull = 1;
-				}
-
-				if (atnull)
-				{
-					/* Make sure we have enough room for a new character */
-					if ((k + 1) >= len) break;
-				}
-				else
-				{
-					/* Make sure we have enough room to add a new character */
-					if ((nul + 1) >= len) break;
-
-					/* Move the rest of the buffer along to make room */
-					memmove(&buf[k+1], &buf[k], nul - k);
-				}
-
-				/* Insert the character */
-				buf[k++] = ch;
-				nul++;
-
-				/* Terminate */
-				buf[nul] = '\0';
-
-				break;
-			}
-		}
+		/* Let the keypress handler deal with the keypress */
+		done = keypress_h(buf, len, &k, &nul, ch, firsttime);
 
 		/* Update the entry */
 		Term_erase(x, y, (int)len);
@@ -3601,6 +2817,78 @@ bool askfor_aux(char *buf, size_t len)
 	/* Done */
 	return (ch != ESCAPE);
 }
+
+/*
+ * A "keypress" handling function for askfor_aux, that handles the special
+ * case of '*' for a new random "name" and passes any other "keypress"
+ * through to the default "editing" handler.
+ */
+bool get_name_keypress(char *buf, size_t buflen, size_t *curs, size_t *len, char keypress, bool firsttime)
+{
+	bool result;
+
+	switch (keypress)
+	{
+		case '*':
+		{
+			*len = randname_make(RANDNAME_TOLKIEN, 4, 8, buf, buflen);
+			buf[0] = toupper((unsigned char) buf[0]);
+			*curs = 0;
+			result = FALSE;
+			break;
+		}
+		
+		
+		default:
+		{
+			result = askfor_aux_keypress(buf, buflen, curs, len, keypress, firsttime);
+			break;
+		}
+	}
+
+	return result;
+}
+
+
+/*
+ * Gets a name for the character, reacting to name changes.
+ *
+ * If sf is TRUE, we change the savefile name depending on the character name.
+ *
+ * What a horrible name for a global function.  XXX XXX XXX
+ */
+bool get_name(bool sf)
+{
+	bool res;
+	char tmp[32];
+
+	/* Paranoia XXX XXX XXX */
+	message_flush();
+
+	/* Display prompt */
+	prt("Enter a name for your character (* for a random name): ", 0, 0);
+
+	/* Save the player name */
+	my_strcpy(tmp, op_ptr->full_name, sizeof(tmp));
+
+	/* Ask the user for a string */
+	res = askfor_aux(tmp, sizeof(tmp), get_name_keypress);
+
+	/* Clear prompt */
+	prt("", 0, 0);
+
+	if (res)
+	{
+		/* Use the name */
+		my_strcpy(op_ptr->full_name, tmp, sizeof(op_ptr->full_name));
+
+		/* Process the player name */
+		process_player_name(sf);
+	}
+
+	return res;
+}
+
 
 
 /*
@@ -3622,7 +2910,7 @@ bool get_string(cptr prompt, char *buf, size_t len)
 	prt(prompt, 0, 0);
 
 	/* Ask the user for a string */
-	res = askfor_aux(buf, len);
+	res = askfor_aux(buf, len, NULL);
 
 	/* Clear prompt */
 	prt("", 0, 0);
@@ -3653,18 +2941,14 @@ s16b get_quantity(cptr prompt, int max)
 		p_ptr->command_arg = 0;
 	}
 
-#ifdef ALLOW_REPEAT
-
 	/* Get the item index */
-	else if ((max != 1) && allow_quantity && repeat_pull(&amt))
+	else if ((max != 1) && repeat_pull(&amt))
 	{
 		/* nothing */
 	}
 
-#endif /* ALLOW_REPEAT */
-
 	/* Prompt if needed */
-	else if ((max != 1) && allow_quantity)
+	else if ((max != 1))
 	{
 		char tmp[80];
 
@@ -3674,14 +2958,14 @@ s16b get_quantity(cptr prompt, int max)
 		if (!prompt)
 		{
 			/* Build a prompt */
-			sprintf(tmp, "Quantity (0-%d): ", max);
+			strnfmt(tmp, sizeof(tmp), "Quantity (0-%d, *=all): ", max);
 
 			/* Use that prompt */
 			prompt = tmp;
 		}
 
 		/* Build the default */
-		sprintf(buf, "%d", amt);
+		strnfmt(buf, sizeof(buf), "%d", amt);
 
 		/* Ask for a quantity */
 		if (!get_string(prompt, buf, 7)) return (0);
@@ -3689,8 +2973,8 @@ s16b get_quantity(cptr prompt, int max)
 		/* Extract a number */
 		amt = atoi(buf);
 
-		/* A letter means "all" */
-		if (isalpha((unsigned char)buf[0])) amt = max;
+		/* A star or letter means "all" */
+		if ((buf[0] == '*') || isalpha((unsigned char)buf[0])) amt = max;
 	}
 
 	/* Enforce the maximum */
@@ -3699,11 +2983,7 @@ s16b get_quantity(cptr prompt, int max)
 	/* Enforce the minimum */
 	if (amt < 0) amt = 0;
 
-#ifdef ALLOW_REPEAT
-
 	if (amt) repeat_push(amt);
-
-#endif /* ALLOW_REPEAT */
 
 	/* Return the result */
 	return (amt);
@@ -3823,7 +3103,18 @@ bool get_check(cptr prompt)
  */
 bool get_com(cptr prompt, char *command)
 {
-	char ch;
+	event_type ke;
+	bool result;
+
+	result = get_com_ex(prompt, &ke);
+	*command = ke.key;
+
+	return result;
+}
+
+bool get_com_ex(cptr prompt, event_type *command)
+{
+	event_type ke;
 
 	/* Paranoia XXX XXX XXX */
 	message_flush();
@@ -3832,16 +3123,16 @@ bool get_com(cptr prompt, char *command)
 	prt(prompt, 0, 0);
 
 	/* Get a key */
-	ch = inkey();
+	ke = inkey_ex();
 
 	/* Clear the prompt */
 	prt("", 0, 0);
 
 	/* Save the command */
-	*command = ch;
+	*command = ke;
 
 	/* Done */
-	return (ch != ESCAPE);
+	return (ke.key != ESCAPE);
 }
 
 
@@ -3886,11 +3177,11 @@ static char request_command_buffer[256];
  *
  * Note that "p_ptr->command_new" may not work any more.  XXX XXX XXX
  */
-void request_command(bool shopping)
+void request_command(void)
 {
 	int i;
 
-	char ch;
+	event_type ke;
 
 	int mode;
 
@@ -3930,7 +3221,7 @@ void request_command(bool shopping)
 			message_flush();
 
 			/* Use auto-command */
-			ch = (char)p_ptr->command_new;
+			ke.key = (char)p_ptr->command_new;
 
 			/* Forget it */
 			p_ptr->command_new = 0;
@@ -3946,15 +3237,23 @@ void request_command(bool shopping)
 			inkey_flag = TRUE;
 
 			/* Get a command */
-			ch = inkey();
+			ke = inkey_ex();
 		}
 
 		/* Clear top line */
 		prt("", 0, 0);
 
 
+		/* Resize events XXX XXX */
+		if (ke.type == EVT_RESIZE)
+		{
+			p_ptr->command_cmd_ex = ke;
+			p_ptr->command_new = ' ';
+		}
+
+
 		/* Command Count */
-		if (ch == '0')
+		if (ke.key == '0')
 		{
 			int old_arg = p_ptr->command_arg;
 
@@ -3968,10 +3267,10 @@ void request_command(bool shopping)
 			while (1)
 			{
 				/* Get a new keypress */
-				ch = inkey();
+				ke.key = inkey();
 
 				/* Simple editing (delete or backspace) */
-				if ((ch == 0x7F) || (ch == KTRL('H')))
+				if ((ke.key == 0x7F) || (ke.key == KTRL('H')))
 				{
 					/* Delete a digit */
 					p_ptr->command_arg = p_ptr->command_arg / 10;
@@ -3981,7 +3280,7 @@ void request_command(bool shopping)
 				}
 
 				/* Actual numeric data */
-				else if (isdigit((unsigned char)ch))
+				else if (isdigit((unsigned char)ke.key))
 				{
 					/* Stop count at 9999 */
 					if (p_ptr->command_arg >= 1000)
@@ -3997,7 +3296,7 @@ void request_command(bool shopping)
 					else
 					{
 						/* Incorporate that digit */
-						p_ptr->command_arg = p_ptr->command_arg * 10 + D2I(ch);
+						p_ptr->command_arg = p_ptr->command_arg * 10 + D2I(ke.key);
 					}
 
 					/* Show current count */
@@ -4032,10 +3331,10 @@ void request_command(bool shopping)
 			}
 
 			/* Hack -- white-space means "enter command now" */
-			if ((ch == ' ') || (ch == '\n') || (ch == '\r'))
+			if ((ke.key == ' ') || (ke.key == '\n') || (ke.key == '\r'))
 			{
 				/* Get a real command */
-				if (!get_com("Command: ", &ch))
+				if (!get_com("Command: ", &ke.key))
 				{
 					/* Clear count */
 					p_ptr->command_arg = 0;
@@ -4048,23 +3347,23 @@ void request_command(bool shopping)
 
 
 		/* Special case for the arrow keys */
-		if (isarrow(ch))
+		if (isarrow(ke.key))
 		{
-			switch (ch)
+			switch (ke.key)
 			{
-				case ARROW_DOWN:    ch = '2'; break;
-				case ARROW_LEFT:    ch = '4'; break;
-				case ARROW_RIGHT:   ch = '6'; break;
-				case ARROW_UP:      ch = '8'; break;
+				case ARROW_DOWN:    ke.key = '2'; break;
+				case ARROW_LEFT:    ke.key = '4'; break;
+				case ARROW_RIGHT:   ke.key = '6'; break;
+				case ARROW_UP:      ke.key = '8'; break;
 			}
 		}
 
 
 		/* Allow "keymaps" to be bypassed */
-		if (ch == '\\')
+		if (ke.key == '\\')
 		{
 			/* Get a real command */
-			(void)get_com("Command: ", &ch);
+			(void)get_com("Command: ", &ke.key);
 
 			/* Hack -- bypass keymaps */
 			if (!inkey_next) inkey_next = "";
@@ -4072,15 +3371,15 @@ void request_command(bool shopping)
 
 
 		/* Allow "control chars" to be entered */
-		if (ch == '^')
+		if (ke.key == '^')
 		{
 			/* Get a new command and controlify it */
-			if (get_com("Control: ", &ch)) ch = KTRL(ch);
+			if (get_com("Control: ", &ke.key)) ke.key = KTRL(ke.key);
 		}
 
 
 		/* Look up applicable keymap */
-		act = keymap_act[mode][(byte)(ch)];
+		act = keymap_act[mode][(byte)(ke.key)];
 
 		/* Apply keymap if not inside a keymap already */
 		if (act && !inkey_next)
@@ -4098,42 +3397,25 @@ void request_command(bool shopping)
 
 
 		/* Paranoia */
-		if (ch == '\0') continue;
+		if (ke.key == '\0') continue;
 
 
 		/* Use command */
-		p_ptr->command_cmd = ch;
+		p_ptr->command_cmd = ke.key;
+		p_ptr->command_cmd_ex = ke;
 
 		/* Done */
 		break;
 	}
 
 	/* Hack -- Auto-repeat certain commands */
-	if (always_repeat && (p_ptr->command_arg <= 0))
+	if (p_ptr->command_arg <= 0)
 	{
 		/* Hack -- auto repeat certain commands */
 		if (strchr(AUTO_REPEAT_COMMANDS, p_ptr->command_cmd))
 		{
 			/* Repeat 99 times */
 			p_ptr->command_arg = 99;
-		}
-	}
-
-
-	/* Shopping */
-	if (shopping)
-	{
-		/* Hack -- Convert a few special keys */
-		switch (p_ptr->command_cmd)
-		{
-			/* Command "p" -> "purchase" (get) */
-			case 'p': p_ptr->command_cmd = 'g'; break;
-
-			/* Command "m" -> "purchase" (get) */
-			case 'm': p_ptr->command_cmd = 'g'; break;
-
-			/* Command "s" -> "sell" (drop) */
-			case 's': p_ptr->command_cmd = 'd'; break;
 		}
 	}
 
@@ -4176,6 +3458,9 @@ void request_command(bool shopping)
 
 	/* Hack -- erase the message line. */
 	prt("", 0, 0);
+
+	/* Hack again -- apply the modified key command */
+	p_ptr->command_cmd_ex.key = p_ptr->command_cmd;
 }
 
 
@@ -4384,8 +3669,6 @@ static bool insert_str(char *buf, cptr target, cptr insert)
 #endif
 
 
-#ifdef ALLOW_REPEAT
-
 #define REPEAT_MAX 20
 
 /* Number of chars saved */
@@ -4484,8 +3767,6 @@ void repeat_check(void)
 		repeat_push(what);
 	}
 }
-
-#endif /* ALLOW_REPEAT */
 
 
 #ifdef SUPPORT_GAMMA

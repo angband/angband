@@ -17,7 +17,9 @@
  */
 
 
-#if defined(WIN32_CONSOLE_MODE) || (!defined(MACINTOSH) && !defined(WINDOWS) && !defined(RISCOS))
+#if defined(WIN32_CONSOLE_MODE) \
+    || (!defined(WINDOWS) && !defined(RISCOS)) \
+    || defined(USE_SDL)
 
 #include "main.h"
 
@@ -27,10 +29,6 @@
  */
 static const struct module modules[] =
 {
-#ifdef USE_LFB
-    	{ "lfb", help_lfb, init_lfb },
-#endif /* USE_LFB */
-
 #ifdef USE_GTK
 	{ "gtk", help_gtk, init_gtk },
 #endif /* USE_GTK */
@@ -43,46 +41,31 @@ static const struct module modules[] =
 	{ "x11", help_x11, init_x11 },
 #endif /* USE_X11 */
 
-#ifdef USE_XPJ
-	{ "xpj", help_xpj, init_xpj },
-#endif /* USE_XPJ */
+#ifdef USE_SDL
+	{ "sdl", help_sdl, init_sdl },
+#endif /* USE_SDL */
 
 #ifdef USE_GCU
 	{ "gcu", help_gcu, init_gcu },
 #endif /* USE_GCU */
-
-#ifdef USE_CAP
-	{ "cap", help_cap, init_cap },
-#endif /* USE_CAP */
-
-#ifdef USE_DOS
-	{ "dos", help_dos, init_dos },
-#endif /* USE_DOS */
-
-#ifdef USE_IBM
-	{ "ibm", help_ibm, init_ibm },
-#endif /* USE_IBM */
-
-#ifdef USE_EMX
-	{ "emx", help_emx, init_emx },
-#endif /* USE_EMX */
-
-#ifdef USE_SLA
-	{ "sla", help_sla, init_sla },
-#endif /* USE_SLA */
-
-#ifdef USE_LSL
-	{ "lsl", help_lsl, init_lsl },
-#endif /* USE_LSL */
-
-#ifdef USE_AMI
-	{ "ami", help_ami, init_ami },
-#endif /* USE_AMI */
-
-#ifdef USE_VCS
-	{ "vcs", help_vcs, init_vcs },
-#endif /* USE_VCS */
 };
+
+
+#ifdef USE_SOUND
+
+/*
+ * List of sound modules in the order they should be tried.
+ */
+static const struct module sound_modules[] =
+{
+#ifdef SOUND_SDL
+	{ "sdl", "SDL_mixer sound module", init_sound_sdl },
+#endif /* SOUND_SDL */
+
+	{ "dummy", "Dummy module", NULL },
+};
+
+#endif
 
 
 /*
@@ -111,23 +94,11 @@ static void quit_hook(cptr s)
 
 
 /*
- * Set the stack size (for the Amiga)
+ * SDL needs a look-in
  */
-#ifdef AMIGA
-# include <dos.h>
-__near long __stack = 32768L;
-#endif /* AMIGA */
-
-
-/*
- * Set the stack size and overlay buffer (see main-286.c")
- */
-#ifdef USE_286
-# include <dos.h>
-extern unsigned _stklen = 32768U;
-extern unsigned _ovrbuffer = 0x1500;
-#endif /* USE_286 */
-
+#ifdef USE_SDL
+# include "SDL.h"
+#endif
 
 
 /*
@@ -145,9 +116,6 @@ extern unsigned _ovrbuffer = 0x1500;
  * since the "init_file_paths()" function will simply append the
  * relevant "sub-directory names" to the given path.
  *
- * Note that the "path" must be "Angband:" for the Amiga, and it
- * is ignored for "VM/ESA", so I just combined the two.
- *
  * Make sure that the path doesn't overflow the buffer.  We have
  * to leave enough space for the path separator, directory, and
  * filenames.
@@ -155,13 +123,6 @@ extern unsigned _ovrbuffer = 0x1500;
 static void init_stuff(void)
 {
 	char path[1024];
-
-#if defined(AMIGA)
-
-	/* Hack -- prepare "path" */
-	strcpy(path, "Angband:");
-
-#else /* AMIGA */
 
 	cptr tail = NULL;
 
@@ -180,8 +141,6 @@ static void init_stuff(void)
 
 	/* Hack -- Add a path separator (only if needed) */
 	if (!suffix(path, PATH_SEP)) my_strcat(path, PATH_SEP, sizeof(path));
-
-#endif /* AMIGA */
 
 	/* Initialize */
 	init_file_paths(path);
@@ -247,18 +206,6 @@ static void change_path(cptr info)
 			break;
 		}
 
-#ifdef VERIFY_SAVEFILE
-
-		case 'b':
-		case 'd':
-		case 'e':
-		case 's':
-		{
-			quit_fmt("Restricted option '-d%s'", info);
-		}
-
-#else /* VERIFY_SAVEFILE */
-
 		case 'b':
 		{
 			string_free(ANGBAND_DIR_BONE);
@@ -286,8 +233,6 @@ static void change_path(cptr info)
 			ANGBAND_DIR_SAVE = string_make(s+1);
 			break;
 		}
-
-#endif /* VERIFY_SAVEFILE */
 
 #endif /* FIXED_PATHS */
 
@@ -318,27 +263,17 @@ int main(int argc, char *argv[])
 	int i;
 
 	bool done = FALSE;
-
 	bool new_game = FALSE;
 
 	int show_score = 0;
 
-	cptr mstr = NULL;
+	const char *mstr = NULL;
 
 	bool args = TRUE;
 
 
 	/* Save the "program name" XXX XXX XXX */
 	argv0 = argv[0];
-
-
-#ifdef USE_286
-	/* Attempt to use XMS (or EMS) memory for swap space */
-	if (_OvrInitExt(0L, 0L))
-	{
-		_OvrInitEms(0, 0, 64);
-	}
-#endif /* USE_286 */
 
 
 #ifdef SET_UID
@@ -355,42 +290,11 @@ int main(int argc, char *argv[])
 
 #ifdef SET_UID
 
-	/* Get the user id (?) */
+	/* Get the user id */
 	player_uid = getuid();
 
-#ifdef VMS
-	/* Mega-Hack -- Factor group id */
-	player_uid += (getgid() * 1000);
-#endif /* VMS */
-
-# ifdef SAFE_SETUID
-
-#  if defined(HAVE_SETEGID) || defined(SAFE_SETUID_POSIX)
-
-	/* Save some info for later */
-	player_euid = geteuid();
+	/* Save the effective GID for later recall */
 	player_egid = getegid();
-
-#  endif /* defined(HAVE_SETEGID) || defined(SAFE_SETUID_POSIX) */
-
-#  if 0 /* XXX XXX XXX */
-
-	/* Redundant setting necessary in case root is running the game */
-	/* If not root or game not setuid the following two calls do nothing */
-
-	if (setgid(getegid()) != 0)
-	{
-		quit("setgid(): cannot set permissions correctly!");
-	}
-
-	if (setuid(geteuid()) != 0)
-	{
-		quit("setuid(): cannot set permissions correctly!");
-	}
-
-#  endif /* 0 */
-
-# endif /* SAFE_SETUID */
 
 #endif /* SET_UID */
 
@@ -400,12 +304,6 @@ int main(int argc, char *argv[])
 
 
 #ifdef SET_UID
-
-	/* Initialize the "time" checker */
-	if (check_time_init() || check_time())
-	{
-		quit("The gates to Angband are closed (bad time).");
-	}
 
 	/* Get the "user name" as a default player name */
 	user_name(op_ptr->full_name, sizeof(op_ptr->full_name), player_uid);
@@ -467,20 +365,6 @@ int main(int argc, char *argv[])
 				break;
 			}
 
-			case 'R':
-			case 'r':
-			{
-				arg_force_roguelike = TRUE;
-				break;
-			}
-
-			case 'O':
-			case 'o':
-			{
-				arg_force_original = TRUE;
-				break;
-			}
-
 			case 'S':
 			case 's':
 			{
@@ -528,17 +412,15 @@ int main(int argc, char *argv[])
 			{
 				/* Dump usage information */
 				puts("Usage: angband [options] [-- subopts]");
-				puts("  -n       Start a new character");
-				puts("  -f       Request fiddle (verbose) mode");
-				puts("  -w       Request wizard mode");
-				puts("  -v       Request sound mode");
-				puts("  -g       Request graphics mode");
-				puts("  -o       Request original keyset (default)");
-				puts("  -r       Request rogue-like keyset");
-				puts("  -s<num>  Show <num> high scores (default: 10)");
-				puts("  -u<who>  Use your <who> savefile");
-				puts("  -d<def>  Define a 'lib' dir sub-path");
-				puts("  -m<sys>  use Module <sys>, where <sys> can be:");
+				puts("  -n             Start a new character");
+				puts("  -w             Resurrect dead character (marks savefile)");
+				puts("  -f             Request fiddle (verbose) mode");
+				puts("  -v             Request sound mode");
+				puts("  -g             Request graphics mode");
+				puts("  -s<num>        Show <num> high scores (default: 10)");
+				puts("  -u<who>        Use your <who> savefile");
+				puts("  -d<def>=<path> Instead of lib/<def>, use <path>");
+				puts("  -m<sys>        Use module <sys>, where <sys> can be:");
 
 				/* Print the name and help for each available module */
 				for (i = 0; i < (int)N_ELEMENTS(modules); i++)
@@ -586,6 +468,19 @@ int main(int argc, char *argv[])
 
 	/* Make sure we have a display! */
 	if (!done) quit("Unable to prepare any 'display module'!");
+
+
+#ifdef USE_SOUND
+
+	/* Try the modules in the order specified by sound_modules[] */
+	for (i = 0; i < (int)N_ELEMENTS(sound_modules) - 1; i++)
+	{
+		if (0 == sound_modules[i].init(argc, argv))
+			break;
+	}
+
+#endif
+
 
 	/* Catch nasty signals */
 	signals_init();

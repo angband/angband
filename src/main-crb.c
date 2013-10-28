@@ -1,5 +1,3 @@
-/* File: main-crb.c */
-
 /*
  * Copyright (c) 1997-2006 Ben Harrison, Keith Randall, Peter Ammon,
  * Ron Anderson, and others
@@ -31,6 +29,32 @@
  * Most Apple Event code provided by Steve Linberg (slinberg@crocker.com).
  * Carbon code adapted from works by Peter Ammon and Ron Anderson.
  * Much modernization and graphics/sound improvement done by pelpel.
+ *
+ *
+ * Graphics code originally adapted from an extremely minimal subset of
+ * "Sprite World II" <http://www.spriteworld.org/>, which is under the
+ * following licence:
+ *
+ *    This software is provided 'as-is', without any express or implied
+ *    warranty. In no event will the authors be held liable for any damages
+ *    arising from the use of this software.
+ *
+ *    Permission is granted to anyone to use this software for any purpose,
+ *    including commercial applications, and to alter it and redistribute it
+ *    freely, subject to the following restrictions:
+ *
+ *       1. The origin of this software must not be misrepresented; you must not
+ *       claim that you wrote the original software. If you use this software
+ *       in a product, an acknowledgment in the product documentation would be
+ *       appreciated but is not required.
+ *
+ *       2. Altered source versions must be plainly marked as such, and must not be
+ *       misrepresented as being the original software.
+ *
+ *       3. This notice may not be removed or altered from any source
+ *       distribution.
+ * (end of licence)
+ *
  *
  * Notes:
  *
@@ -150,13 +174,15 @@
 
 #ifdef MACH_O_CARBON
 
+#include "angband.h"
+
 #include <Carbon/Carbon.h>
 #include <QuickTime/QuickTime.h>
 #include <CoreServices/CoreServices.h>
 #include <CoreFoundation/CoreFoundation.h>
-#include "angband.h"
 
 #include "osx/osx_tables.h"
+
 
 
  /*
@@ -228,8 +254,8 @@ static int graf_width = 0;
  * Creator signature and file type - Didn't I say that I abhor file name
  * extentions?  Names and metadata are entirely different set of notions.
  */
-OSType _fcreator;
-OSType _ftype;
+u32b _fcreator;
+u32b _ftype;
 
 typedef struct GlyphInfo GlyphInfo;
 
@@ -244,7 +270,8 @@ struct term_data
 	WindowRef w;
 	GlyphInfo *ginfo;
 	
-	Rect r;			// Absolute bounds of window.
+	Rect wr;		// Absolute bounds of window (for save/restore)
+	Rect r;			// Canvas bounds of window (for mouse addressing &c) 
 	CGRect bounds;  // Relative bounds of border-clipped canvas.
 
 	int spacing;  	// Text padding (in pixels) for tiling wider than text
@@ -256,6 +283,7 @@ struct term_data
 	s16b rows;		// rows in picture
 	s16b cols;		// columns in picture.
 
+	char font_name[200]; // Name of font for storage.
 	ATSUFontID font_id;
 	float font_size;	// Scaled ATSU font size.
 
@@ -289,6 +317,7 @@ struct GlyphInfo
 
 static GlyphInfo glyph_data[MAX_TERM_DATA+1];
 
+static WindowRef aboutDialog;
 
 
 static bool CheckEvents(int wait);
@@ -299,6 +328,7 @@ static void Term_wipe_mac_aux(int x, int y, int n);
 inline static void term_data_color(int a);
 static void install_handlers(WindowRef w);
 static void graphics_tiles_nuke(void);
+static void play_sound(int num);
 
 /*
  * Available values for 'wait'
@@ -428,7 +458,7 @@ static OSErr path_to_spec(const char *path, FSSpec *spec)
 	FSRef ref;
 
 	/* Convert pathname to FSRef ... */
-	err = FSPathMakeRef(path, &ref, NULL);
+	err = FSPathMakeRef((byte*) path, &ref, NULL);
 	if (err != noErr) return (err);
 
 	/* ... then FSRef to FSSpec */
@@ -453,7 +483,7 @@ static OSErr spec_to_path(const FSSpec *spec, char *buf, size_t size)
 	if (err != noErr) return (err);
 
 	/* ... then FSRef to pathname */
-	err = FSRefMakePath(&ref, buf, size);
+	err = FSRefMakePath(&ref, (byte*)buf, size);
 
 	/* Inform caller of success or failure */
 	return (err);
@@ -465,7 +495,7 @@ static OSErr spec_to_path(const FSSpec *spec, char *buf, size_t size)
  * Set creator and filetype of a file specified by POSIX-style pathname.
  * Returns 0 on success, -1 in case of errors.
  */
-void fsetfileinfo(cptr pathname, OSType fcreator, OSType ftype)
+void fsetfileinfo(cptr pathname, u32b fcreator, u32b ftype)
 {
 	OSErr err;
 	FSSpec spec;
@@ -682,7 +712,7 @@ static GlyphInfo *get_glyph_info(ATSUFontID fid, float size)
 	info->layout = 0;
 
 	/* ICK */
-			
+
 	info->font_size = size;
 	info->font_id = fid;
 
@@ -705,11 +735,16 @@ static GlyphInfo *get_glyph_info(ATSUFontID fid, float size)
 	ATSUSetTextPointerLocation(info->layout, text, 0, 1, 1);
 	ATSUSetRunStyle(info->layout, info->style, 0, 1);
 
-	ByteCount oCount;
+	ByteCount oCount = 0;
 	FontNameCode oCode;
-	ATSUGetIndFontName(fid, 6, sizeof(info->psname), info->psname,
+	err = ATSUGetIndFontName(fid, 6, sizeof(info->psname), info->psname,
 													&oCount, &oCode, 0, 0, 0);
 
+	require_noerr(err, CantInitialize);
+	if(oCount == 0 || strlen(info->psname) == 0)
+		goto CantInitialize;
+
+	info->psname[oCount] = 0;
 	// Is font mono-space?
 	err = ATSUCreateTextLayout(&info->layout);
 	require_noerr(err, CantInitialize);
@@ -752,7 +787,6 @@ static GlyphInfo *get_glyph_info(ATSUFontID fid, float size)
 	info->font_wid = (info->font_wid)/(1<<16);
 
 	info->refcount++;
-
 	return info;
 
 CantInitialize:
@@ -792,13 +826,14 @@ static void release_glyph_info(GlyphInfo *info)
 static void term_data_check_font(term_data *td)
 {
 	GlyphInfo *info = get_glyph_info(td->font_id, td->font_size);
-	if(info) {
-		release_glyph_info(td->ginfo);
-		td->ginfo = info;
-	}
+	if(!info) return;
+
+	release_glyph_info(td->ginfo);
+	td->ginfo = info;
 
 	td->font_wid = (info->font_wid +.999);
 	td->font_hgt = info->ascent + info->descent;
+	my_strcpy(td->font_name, info->psname, sizeof(td->font_name));
 
 	/* Set default tile size */
 	if (td->tile_wid == 0) td->tile_wid = td->font_wid;
@@ -848,29 +883,25 @@ static void term_data_check_size(term_data *td)
 	td->size_hgt = td->rows * td->tile_hgt + BORDER_WID;
 
 
-	/* Get current screen */
-	hibernate();
+	hibernate(); 
 	BitMap tScreen;
+	/* Get current screen */
 	(void)GetQDGlobalsScreenBits(&tScreen);
-	
 	/* Verify the bottom */
 	if (td->r.top > tScreen.bounds.bottom - td->size_hgt)
 	{
 		td->r.top = tScreen.bounds.bottom - td->size_hgt;
 	}
-
 	/* Verify the top */
-	if (td->r.top < tScreen.bounds.top + GetMBarHeight())
+	if (td->r.top < tScreen.bounds.top + 2*GetMBarHeight())
 	{
-		td->r.top = tScreen.bounds.top + GetMBarHeight();
+		td->r.top = tScreen.bounds.top + 2*GetMBarHeight();
 	}
-
 	/* Verify the right */
 	if (td->r.left > tScreen.bounds.right - td->size_wid)
 	{
 		td->r.left = tScreen.bounds.right - td->size_wid;
 	}
-
 	/* Verify the left */
 	if (td->r.left < tScreen.bounds.left)
 	{
@@ -884,20 +915,20 @@ static void term_data_check_size(term_data *td)
 	td->bounds = (CGRect) {{0, 0},
 		{td->cols * td->tile_wid, td->rows * td->tile_hgt}};
 
-	/* Assume no graphics */
+	/* Assume no graphics, monospace */
 	td->t->higher_pict = FALSE;
 	td->t->always_pict = FALSE;
 
 	
 	/* Handle graphics */
-	if (td->ginfo->monospace) td->t->higher_pict = TRUE;
+	if (!td->ginfo->monospace) {
+		/* Draw every character */
+		td->t->always_pict = TRUE;
+	}
 	else if (use_graphics && (td == &data[0]))
 	{
 		/* Use higher pict whenever possible */
-		if (td->ginfo->monospace) td->t->higher_pict = TRUE;
-
-		/* Use always_pict only when necessary */
-		else td->t->always_pict = TRUE;
+		td->t->higher_pict = TRUE;
 	}
 
 }
@@ -920,6 +951,7 @@ static void term_data_resize(term_data *td)
 	 */
 	
 	SizeWindow(td->w, td->size_wid, td->size_hgt, 0);
+
 	// Cheat a little -- can't use the active view to redraw its own border.
 	CGContextRef tmpCtx;
 	QDBeginCGContext(GetWindowPort(td->w), &tmpCtx);
@@ -1296,6 +1328,8 @@ static SInt16 sample_refs[MSG_MAX];
  */
 static SInt16 sound_volume = SOUND_VOLUME_MAX;
 
+
+
 /*
  * QuickTime sound, by Ron Anderson
  *
@@ -1403,6 +1437,9 @@ close_file: CloseMovieFile(file_id);
 
 	/* Stop QuickTime */
 	ExitMovies();
+
+	/* Register the sound hook */
+	sound_hook = play_sound;
 }
 
 /*
@@ -1484,11 +1521,11 @@ static void cleanup_sound(void)
  * time code) and provides a sort of cache for sound data.
  *
  * Globals referenced: channel_initialised, channels[], samples[],
- *   sample_refs[].
+ *   sample_refs[], sound_volume.
  * Globals updated: channel_initialised, channels[], sample_refs[].
  */
 
-static void play_sound(int num, SInt16 vol)
+static void play_sound(int num)
 {
 	OSErr err;
 	int prev_num;
@@ -1499,6 +1536,8 @@ static void play_sound(int num, SInt16 vol)
 	static int next_chan;
 	static SInt16 channel_occupants[MAX_CHANNELS];
 	static SndCommand volume_cmd, quiet_cmd;
+
+	SInt16 vol = sound_volume;
 
 	/* Initialise sound channels */
 	if (!channel_initialised)
@@ -1589,6 +1628,8 @@ static void play_sound(int num, SInt16 vol)
 	if (next_chan >= MAX_CHANNELS) next_chan = 0;
 }
 
+
+
 /*** Support for the "z-term.c" package ***/
 
 /*
@@ -1614,6 +1655,12 @@ static void Term_init_mac(term *t)
 			wattrs,
 			&td->r,
 			&td->w);
+
+	Rect tmpR;
+	GetWindowBounds((WindowRef)td->w, kWindowTitleBarRgn, &tmpR);
+	int trueTop = td->r.top - (tmpR.bottom-tmpR.top);
+	MoveWindow((WindowRef)td->w, td->r.left, trueTop, FALSE);
+	
 
 	install_handlers(td->w);
 
@@ -1699,16 +1746,6 @@ static errr Term_xtra_mac(int n, int v)
 		{
 			/* Make a noise */
 			SysBeep(1);
-
-			/* Success */
-			return (0);
-		}
-
-		/* Make a sound */
-		case TERM_XTRA_SOUND:
-		{
-			/* Play sound */
-			play_sound(v, sound_volume);
 
 			/* Success */
 			return (0);
@@ -2033,7 +2070,7 @@ static char *locate_lib(char *buf, size_t size)
 	if (!main_url) return (NULL);
 
 	/* Get the URL in the file system's native string representation */
-	success = CFURLGetFileSystemRepresentation(main_url, TRUE, buf, size);
+	success = CFURLGetFileSystemRepresentation(main_url, TRUE, (byte*)buf, size);
 
 	/* Free the url */
 	CFRelease(main_url);
@@ -2067,16 +2104,23 @@ static char *locate_lib(char *buf, size_t size)
  * Store "value" as the value for preferences item name
  * pointed by key
  */
-static void save_pref_short(const char *key, short value)
+static void save_preference(const char *key, type_union value)
 {
 	CFStringRef cf_key;
-	CFNumberRef cf_value;
+	CFPropertyListRef cf_value = 0;
 
 	/* allocate and initialise the key */
 	cf_key = CFStringCreateWithCString(NULL, key, kTextEncodingUS_ASCII);
 
 	/* allocate and initialise the value */
-	cf_value = CFNumberCreate(NULL, kCFNumberShortType, &value);
+	if(value.t == T_INT)
+		cf_value = CFNumberCreate(NULL, kCFNumberIntType, &value.u.i);
+
+	else if(value.t == T_STRING)
+		cf_value = CFStringCreateWithCString(NULL, value.u.s, kTextEncodingUS_ASCII);
+
+	else quit(format("Unrecognized save type %d\n", value.t));
+
 
 	if ((cf_key != NULL) && (cf_value != NULL))
 	{
@@ -2100,10 +2144,10 @@ static void save_pref_short(const char *key, short value)
  * Load preference value for key, returns TRUE if it succeeds with
  * vptr updated appropriately, FALSE otherwise.
  */
-static bool query_load_pref_short(const char *key, short *vptr)
+static bool load_preference(const char *key, type_union *vptr, size_t maxlen )
 {
 	CFStringRef cf_key;
-	CFNumberRef cf_value;
+	CFPropertyListRef cf_value;
 
 	/* allocate and initialise the key */
 	cf_key = CFStringCreateWithCString(NULL, key, kTextEncodingUS_ASCII);
@@ -2123,11 +2167,13 @@ static bool query_load_pref_short(const char *key, short *vptr)
 		return (FALSE);
 	}
 
-	/* Convert the value to short */
-	CFNumberGetValue(
-		cf_value,
-		kCFNumberShortType,
-		vptr);
+	/* Convert the value to appropriate type */
+	if(vptr->t == T_INT)
+		CFNumberGetValue( cf_value, kCFNumberIntType, &vptr->u.i);
+	else if(vptr->t == T_STRING) {
+		CFRange range = { 0, 200};
+		(void) CFStringGetBytes (cf_value, range, kCGEncodingMacRoman, 0, 0, (UInt8*)vptr->u.s, maxlen, 0);
+	}
 
 	/* Free CF data */
 	CFRelease(cf_value);
@@ -2137,18 +2183,20 @@ static bool query_load_pref_short(const char *key, short *vptr)
 	return (TRUE);
 }
 
-
-/*
- * Update short data pointed by vptr only if preferences
- * value for key is located.
- */
-static void load_pref_short(const char *key, short *vptr)
+/* Convenience wrappers for commonly used type short */
+static void save_pref_short(const char *key, short value)
 {
-	short tmp;
-
-	if (query_load_pref_short(key, &tmp)) *vptr = tmp;
+	type_union u = i2u(value);
+	save_preference(key, u);
 }
-
+static bool load_pref_short(const char *key, short *vptr)
+{
+	bool ret;
+	type_union u = { T_INT };
+	ret = load_preference(key, &u, 0);
+	if( ret == TRUE ) *vptr = u.u.i;
+	return ret;
+}
 
 /*
  * Save preferences to preferences file for current host+current user+
@@ -2163,8 +2211,15 @@ static void cf_save_prefs()
 	save_pref_short("version.extra", VERSION_EXTRA);
 
 	/* Gfx settings */
+	/* sound */
 	save_pref_short("arg.arg_sound", arg_sound);
-/* Tile dimensions of the current graphics mode */
+
+	/* double-width tiles */
+	save_pref_short("arg.use_bigtile", use_bigtile);
+
+	/* graphics mode */
+	save_pref_short("graf_mode", graf_mode);
+
 
 	/* Windows */
 	for (int i = 0; i < MAX_TERM_DATA; i++)
@@ -2180,6 +2235,10 @@ static void cf_save_prefs()
 		save_pref_short(format("term%d.rows", i), td->rows);
 		save_pref_short(format("term%d.left", i), td->r.left);
 		save_pref_short(format("term%d.top", i), td->r.top);
+
+		/* Integer font sizes only */
+		save_preference(format("term%d.font_size", i), i2u((int)td->font_size));
+		save_preference(format("term%d.font_name", i), s2u(td->font_name));
 	}
 
 	/*
@@ -2202,10 +2261,10 @@ static void cf_load_prefs()
 	bool ok = TRUE;
 
 	/* Load version information */
-	ok &= query_load_pref_short("version.major", &pref_major);
-	ok &= query_load_pref_short("version.minor", &pref_minor);
-	ok &= query_load_pref_short("version.patch", &pref_patch);
-	ok &= query_load_pref_short("version.extra", &pref_extra);
+	ok &= load_pref_short("version.major", &pref_major);
+	ok &= load_pref_short("version.minor", &pref_minor);
+	ok &= load_pref_short("version.patch", &pref_patch);
+	ok &= load_pref_short("version.extra", &pref_extra);
 
 	/* Any of the above failed */
 	if (!ok)
@@ -2219,7 +2278,6 @@ static void cf_load_prefs()
 		return;
 	}
 
-#if 0
 
 	/* Check version */
 	if ((pref_major != VERSION_MAJOR) ||
@@ -2227,6 +2285,7 @@ static void cf_load_prefs()
 		(pref_patch != VERSION_PATCH) ||
 		(pref_extra != VERSION_EXTRA))
 	{
+#if 1 // For 3.0.8 : pref file change!
 		/* Message */
 		mac_warning(
 			format("Ignoring %d.%d.%d.%d preferences.",
@@ -2234,9 +2293,11 @@ static void cf_load_prefs()
 
 		/* Ignore */
 		return;
+#else
+		mac_warning(format("Preference file has changed.  If you have display problems, delete %s and restart", ));
+#endif
 	}
 
-#endif
 
 	/* HACK - Check for broken preferences */
 	load_pref_short("term0.mapped", &valid);
@@ -2254,14 +2315,15 @@ static void cf_load_prefs()
 	short pref_tmp;
 
 	/* sound */
-	if (query_load_pref_short("arg.arg_sound", &pref_tmp))
+	if (load_pref_short("arg.arg_sound", &pref_tmp))
 		arg_sound = pref_tmp;
 
 	/* double-width tiles */
-	if (query_load_pref_short("arg.big_tile", &pref_tmp))
-	{
+	if (load_pref_short("arg.use_bigtile", &pref_tmp))
 		use_bigtile = pref_tmp;
-	}
+
+	if(load_pref_short("graf_mode", &pref_tmp))
+		graf_mode = pref_tmp;
 
 
 	/* Windows */
@@ -2278,6 +2340,20 @@ static void cf_load_prefs()
 		load_pref_short(format("term%d.rows", i), &td->rows);
 		load_pref_short(format("term%d.left", i), &td->r.left);
 		load_pref_short(format("term%d.top", i), &td->r.top);
+
+		type_union u = {T_INT};
+		if(load_preference(format("term%d.font_size", i), &u, sizeof(int)))
+			td->font_size = (float) u.u.i;
+		u = s2u(td->font_name);
+		if(load_preference(format("term%d.font_name", i), &u, sizeof(td->font_name))) {
+			ATSUFontID fid = 0;
+			ATSUFindFontFromName(td->font_name, strlen(td->font_name),
+								kFontPostscriptName, kFontMacintoshPlatform,
+								kFontNoScriptCode, kFontNoLanguageCode, &fid);
+			if(fid) td->font_id = fid;
+			/* Use the default */
+			else my_strcpy(td->font_name, "Monaco", sizeof(td->font_name));
+		}
 	}
 }
 
@@ -2289,9 +2365,11 @@ static void term_data_hack(term_data *td)
 {
 	/* Default to Monaco font */
 	ATSUFontID fid = 0;
+
 	ATSUFindFontFromName("Monaco", strlen("Monaco"), kFontPostscriptName,
 							kFontMacintoshPlatform, kFontNoScriptCode,
 							kFontNoLanguageCode, &fid);
+
 
 	if(!fid)
 		quit("Failed to find font 'Monaco'");
@@ -2304,6 +2382,7 @@ static void term_data_hack(term_data *td)
 
 	/* Default font */
 	td->font_id = fid;
+	my_strcpy(td->font_name, "Monaco", sizeof(td->font_name));
 
 	/* Default font size - was 12 */
 	td->font_size = 14;
@@ -2519,6 +2598,8 @@ static void init_menubar(void)
 	if((err = SetMenuBarFromNib(nib, CFSTR("MenuBar"))))
 		quit("Cannot prepare menu bar!");
 
+	(void) CreateWindowFromNib(nib, CFSTR("DLOG:about"), &aboutDialog);
+
 	DisposeNibReference(nib);
 
 	MenuRef m = MyGetMenuHandle(kStyleMenu);
@@ -2536,7 +2617,7 @@ static void init_menubar(void)
 			char buf[15];
 			/* Tile size */
 			strnfmt((char*)buf, 15, "%d", i);
-			CFStringRef cfstr = CFStringCreateWithBytes ( NULL, buf,
+			CFStringRef cfstr = CFStringCreateWithBytes ( NULL, (byte*) buf,
 									strlen(buf), kCFStringEncodingASCII, false);
 			AppendMenuItemTextWithCFString(m, cfstr, 0, j, NULL);
 			SetMenuItemRefCon(m, i-MIN_FONT+1, i);
@@ -2660,6 +2741,8 @@ static OSStatus AngbandGame(EventHandlerCallRef inCallRef,
 	/* Prompt the user - You may have to change this for some variants */
 	prt("[Choose 'New', 'Open' or 'Import' from the 'File' menu]", 23, 11);
 
+	SetFontInfoForSelection(kFontSelectionATSUIType, 0, 0, 0);
+
 	for(int i = kNew; i <= kImport; i++)
 		EnableMenuItem(MyGetMenuHandle(kFileMenu), i);
 
@@ -2668,7 +2751,7 @@ static OSStatus AngbandGame(EventHandlerCallRef inCallRef,
 		if(data[i].mapped)
 			RevalidateGraphics(&data[i], 0);
 	}
-	
+
 	/* Flush the prompt */
 	Term_fresh();
 	Term_flush();
@@ -2733,9 +2816,9 @@ static OSStatus AppleCommand(EventHandlerCallRef inCallRef,
 static OSStatus QuitCommand(EventHandlerCallRef inCallRef,
 							EventRef inEvent, void *inUserData )
 {
-	if(!game_in_progress && !character_generated)
+	if (!game_in_progress && !character_generated)
 		quit(0);	
-	else Term_key_push('\030');
+	else Term_key_push(KTRL('x'));
 	return noErr;
 }
 
@@ -2761,6 +2844,14 @@ static OSStatus CommandCommand(EventHandlerCallRef inCallRef,
 		break;
 	case 'font':
 	  {
+		if(!FPIsFontPanelVisible()) {
+			WindowRef w = FrontWindow();
+			if (w) {
+				term_data *td = (term_data*) GetWRefCon(w);
+				SetFontInfoForSelection(kFontSelectionATSUIType, 1,
+										&td->ginfo->style, NULL);
+			}
+		}
 		CFStringRef tags[] = {CFSTR("Show Fonts"), CFSTR("Hide Fonts")};
         FPShowHideFontPanel(); 
 		SetMenuItemTextWithCFString(command.menu.menuRef, kFonts,
@@ -2813,30 +2904,42 @@ static OSStatus ResizeCommand(EventHandlerCallRef inCallRef,
 {
 	int x, y;
 	WindowRef w = 0;
+	unsigned flags;
 
 	term_data *td;
 	term *old = Term;
+	int err ;
 
 	GetEventParameter(inEvent, kEventParamDirectObject,
 							typeWindowRef, NULL, sizeof(w), NULL, &w);
+	err = GetEventParameter(inEvent, kEventParamAttributes,
+							typeUInt32, NULL, sizeof(flags), NULL, &flags);
 
 	td = (term_data*) GetWRefCon(w);
 
 	/* Oops */
 	if (!td) return noErr;
 
+
 	/* Obtain geometry of resized window */
-	
+
 	Rect tmpR;
 	GetWindowBounds((WindowRef)td->w, kWindowContentRgn, &tmpR);
+	td->r = tmpR;
+	if(td->r.top < 40) td->r.top = 40;
 
 	/* Extract the new ClipRect size in pixels */
 	y = tmpR.bottom - tmpR.top - BORDER_WID;
 	x = tmpR.right - tmpR.left - BORDER_WID * 2;
 
+	/* Ignore drag effects, other than for moving the mouse origin */
+	if(td->rows == y/ td->tile_hgt && td->cols ==x/td->tile_wid)
+		return noErr;
+
 	/* Extract a "close" approximation */
 	td->rows = y / td->tile_hgt;
 	td->cols = x / td->tile_wid;
+
 
 	/* Apply and Verify */
 	term_data_check_size(td);
@@ -3024,16 +3127,13 @@ static OSStatus RevalidateGraphics(term_data *td, EventRef inEvent)
 	HICommand command;
 	command.commandID = 0;
 	command.menu.menuRef = 0;
-	int menuID = 0;
 	if(inEvent) {
 		GetEventParameter( inEvent, kEventParamDirectObject, typeHICommand,
 							NULL, sizeof(command), NULL, &command);
 	}
 
 	// Only rescale graphics when absolutely necessary.
-	if(command.commandID == 'graf')
-		menuID = GetMenuID(command.menu.menuRef);
-	if((menuID != kTileWidMenu ||  menuID != kTileHgtMenu))
+	if(command.commandID != kTileWidMenu && command.commandID != kTileHgtMenu)
 	{
 		// Reset tilesize to default when graphics change.
 		td->tile_wid = td->tile_hgt = 0;
@@ -3162,6 +3262,7 @@ static OSStatus FontCommand(EventHandlerCallRef inHandlerCallRef, EventRef inEve
 		(void) GetEventParameter (inEvent, kEventParamATSUFontID,
 							typeATSUFontID, NULL, sizeof(fid), NULL, &fid);
 
+		if(size > 32*(1<<16)) size = 32*(1<<16);
 		float fsize = 1.0*size/(1<<16);
 		FontChanged(fid, fsize);
 		return noErr;
@@ -3179,8 +3280,8 @@ static OSStatus FontCommand(EventHandlerCallRef inHandlerCallRef, EventRef inEve
 		if(w) fontInfo.focus = w; 
 		return noErr;
 	}
-	else if(type == 'font' && type == kEventFontPanelClosed) {
-		SetMenuItemTextWithCFString(GetMenuHandle(102), 3, CFSTR("Show Fonts"));
+	else if(class == 'font' && type == kEventFontPanelClosed) {
+		SetMenuItemTextWithCFString(GetMenuHandle(kStyleMenu), kFonts, CFSTR("Show Fonts"));
 		return noErr;
 	}
 
@@ -3219,9 +3320,7 @@ static OSStatus MouseCommand ( EventHandlerCallRef inCallRef,
 	// X coordinate relative to left side of window exclusive of border.
 	p.x -= (BORDER_WID+td->r.left);
 	// Y coordinate relative to top of window content region.
-	// HACK: assumes title width of 21 pixels.
-	p.y -= (td->r.top + 21);
-
+	p.y -= td->r.top;
 
 	Term_mousepress(p.x/td->tile_wid, p.y/td->tile_hgt, button);
 
@@ -3312,6 +3411,7 @@ static OSStatus PrintCommand(EventHandlerCallRef inCallRef, EventRef inEvent,
 	return noErr;
 }
 
+/* About angband... */
 static OSStatus AboutCommand(EventHandlerCallRef inCallRef, EventRef inEvent,
     void *inUserData )
 {
@@ -3323,27 +3423,36 @@ static OSStatus AboutCommand(EventHandlerCallRef inCallRef, EventRef inEvent,
 	if(command.commandID != 'abou')
 		return eventNotHandledErr;
 
-	/* About angband... */
-	DialogPtr dialog;
-	short item_hit;
-
-	/* Get the about dialogue */
-	dialog = GetNewDialog(128, 0, (WindowRef)-1);
-
 	/* Move it to the middle of the screen */
-	RepositionWindow( GetDialogWindow(dialog), NULL, kWindowCenterOnMainScreen);
+	RepositionWindow(aboutDialog,  NULL, kWindowCenterOnMainScreen);
 
 	/* Show the dialog */
-	TransitionWindow(GetDialogWindow(dialog),
+	TransitionWindow(aboutDialog,
 		kWindowZoomTransitionEffect,
 		kWindowShowTransitionAction,
 		NULL);
 
-	/* wait for user to click on it */
-	ModalDialog(0, &item_hit);
+	/* wait for user input */
+	for(;;) {
+		EventTargetRef target = GetEventDispatcherTarget();
+		EventRef event;
+		OSStatus err = ReceiveNextEvent(0, 0, kEventDurationForever, true, &event);
+		EventClass evc = GetEventClass(event);
+		EventType evt = GetEventKind(event);
+		if(err == noErr) {
+			SendEventToEventTarget (event, target);
+			ReleaseEvent(event);
+		}
+		if(evc == 'keyb' || (evc == 'mous' && evt == kEventMouseDown))
+			break;
+	}
 
-	/* Free the dialogue */
-	DisposeDialog(dialog);
+	/* Hide the dialogue */
+	TransitionWindow(aboutDialog,
+		kWindowZoomTransitionEffect,
+		kWindowHideTransitionAction,
+		NULL);
+
 	return noErr;
 }
 
@@ -3671,24 +3780,6 @@ static void hook_quit(cptr str)
 }
 
 
-/*
- * Hook to tell the user something, and then crash
- */
-static void hook_core(cptr str)
-{
-	/* XXX Use the debugger */
-	/* DebugStr(str); */
-
-	/* Warning */
-	if (str) mac_warning(str);
-	if(!save_player())
-		mac_warning("Fatal error -- save failed!");
-	else 
-		mac_warning("Fatal error -- game saved successfully");
-
-	/* Quit */
-	quit(NULL);
-}
 
 /*** Main program ***/
 
@@ -3752,7 +3843,6 @@ int main(void)
 	/* Hooks in some "z-util.c" hooks */
 	plog_aux = hook_plog;
 	quit_aux = hook_quit;
-	core_aux = hook_core;
 
 	/* Initialize colors */
 	update_color_info();
@@ -3813,6 +3903,8 @@ int main(void)
 	initialized = TRUE;
 
 	validate_menus();
+
+	if(graf_mode) graphics_aux(graf_mode);
 
 	/* Start playing! */
 	EventRef newGameEvent = nil;

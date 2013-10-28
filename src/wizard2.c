@@ -9,7 +9,7 @@
  */
 
 #include "angband.h"
-
+#include "cmds.h"
 #include "script.h"
 
 
@@ -157,7 +157,7 @@ static void do_cmd_wiz_change_aux(void)
 		strnfmt(ppp, sizeof(ppp), "%s (3-118): ", stat_names[i]);
 
 		/* Default */
-		sprintf(tmp_val, "%d", p_ptr->stat_max[i]);
+		strnfmt(tmp_val, sizeof(tmp_val), "%d", p_ptr->stat_max[i]);
 
 		/* Query */
 		if (!get_string(ppp, tmp_val, 4)) return;
@@ -175,7 +175,7 @@ static void do_cmd_wiz_change_aux(void)
 
 
 	/* Default */
-	sprintf(tmp_val, "%ld", (long)(p_ptr->au));
+	strnfmt(tmp_val, sizeof(tmp_val), "%ld", (long)(p_ptr->au));
 
 	/* Query */
 	if (!get_string("Gold: ", tmp_val, 10)) return;
@@ -191,7 +191,7 @@ static void do_cmd_wiz_change_aux(void)
 
 
 	/* Default */
-	sprintf(tmp_val, "%ld", (long)(p_ptr->exp));
+	strnfmt(tmp_val, sizeof(tmp_val), "%ld", (long)(p_ptr->exp));
 
 	/* Query */
 	if (!get_string("Experience: ", tmp_val, 10)) return;
@@ -209,7 +209,7 @@ static void do_cmd_wiz_change_aux(void)
 	check_experience();
 
 	/* Default */
-	sprintf(tmp_val, "%ld", (long)(p_ptr->max_exp));
+	strnfmt(tmp_val, sizeof(tmp_val), "%ld", (long)(p_ptr->max_exp));
 
 	/* Query */
 	if (!get_string("Max Exp: ", tmp_val, 10)) return;
@@ -408,46 +408,10 @@ static const tval_desc tvals[] =
 	{ TV_SKELETON,          "Skeletons"            },
 	{ TV_BOTTLE,            "Empty bottle"         },
 	{ TV_JUNK,              "Junk"                 },
+	{ TV_GOLD,              "Gold"                 },
 	{ 0,                    NULL                   }
 };
 
-
-/*
- * Strip an "object name" into a buffer
- */
-void strip_name(char *buf, int k_idx)
-{
-	char *t;
-
-	object_kind *k_ptr = &k_info[k_idx];
-
-	cptr str = (k_name + k_ptr->name);
-
-
-	/* Skip past leading characters */
-	while ((*str == ' ') || (*str == '&')) str++;
-
-	/* Copy useful chars */
-	for (t = buf; *str; str++)
-	{
-		/* Pluralizer for irregular plurals */
-		/* Useful for languages where adjective changes for plural */
-		if (*str == '|')
-		{
-			/* Process singular part */
-			for (str++; *str != '|'; str++) *t++ = *str;
-
-			/* Process plural part */
-			for (str++; *str != '|'; str++) ;
-		}
-
-		/* English plural indicator can simply be skipped */
-		else if (*str != '~') *t++ = *str;
-	}
-
-	/* Terminate the new name */
-	*t = '\0';
-}
 
 
 /*
@@ -526,7 +490,7 @@ static int wiz_create_itemtype(void)
 			ch  = choice_name[num];
 
 			/* Get the "name" of object "i" */
-			strip_name(buf, i);
+			object_kind_name(buf, sizeof buf, i, TRUE);
 
 			/* Print it */
 			prt(format("[%c] %s", ch, buf), row, col);
@@ -568,25 +532,25 @@ static void wiz_tweak_item(object_type *o_ptr)
 	if (artifact_p(o_ptr)) return;
 
 	p = "Enter new 'pval' setting: ";
-	sprintf(tmp_val, "%d", o_ptr->pval);
+	strnfmt(tmp_val, sizeof(tmp_val), "%d", o_ptr->pval);
 	if (!get_string(p, tmp_val, 6)) return;
 	o_ptr->pval = atoi(tmp_val);
 	wiz_display_item(o_ptr);
 
 	p = "Enter new 'to_a' setting: ";
-	sprintf(tmp_val, "%d", o_ptr->to_a);
+	strnfmt(tmp_val, sizeof(tmp_val), "%d", o_ptr->to_a);
 	if (!get_string(p, tmp_val, 6)) return;
 	o_ptr->to_a = atoi(tmp_val);
 	wiz_display_item(o_ptr);
 
 	p = "Enter new 'to_h' setting: ";
-	sprintf(tmp_val, "%d", o_ptr->to_h);
+	strnfmt(tmp_val, sizeof(tmp_val), "%d", o_ptr->to_h);
 	if (!get_string(p, tmp_val, 6)) return;
 	o_ptr->to_h = atoi(tmp_val);
 	wiz_display_item(o_ptr);
 
 	p = "Enter new 'to_d' setting: ";
-	sprintf(tmp_val, "%d", o_ptr->to_d);
+	strnfmt(tmp_val, sizeof(tmp_val), "%d", o_ptr->to_d);
 	if (!get_string(p, tmp_val, 6)) return;
 	o_ptr->to_d = atoi(tmp_val);
 	wiz_display_item(o_ptr);
@@ -865,7 +829,7 @@ static void wiz_quantity_item(object_type *o_ptr, bool carried)
 
 
 	/* Default */
-	sprintf(tmp_val, "%d", o_ptr->number);
+	strnfmt(tmp_val, sizeof(tmp_val), "%d", o_ptr->number);
 
 	/* Query */
 	if (get_string("Quantity: ", tmp_val, 3))
@@ -1063,6 +1027,15 @@ static void wiz_create_item(void)
 	/* Apply magic (no messages, no artifacts) */
 	apply_magic(i_ptr, p_ptr->depth, FALSE, FALSE, FALSE);
 
+	if (k_info[k_idx].tval == TV_GOLD)
+	{
+		/* Hack -- Base coin cost */
+		s32b base = k_info[k_idx].cost;
+
+		/* Determine how much the treasure is "worth" */
+		i_ptr->pval = (base + (8L * randint(base)) + randint(8));
+	}
+
 	/* Drop the object from heaven */
 	drop_near(i_ptr, -1, py, px);
 
@@ -1149,15 +1122,15 @@ static void do_cmd_wiz_cure_all(void)
 	p_ptr->csp_frac = 0;
 
 	/* Cure stuff */
-	(void)set_blind(0);
-	(void)set_confused(0);
-	(void)set_poisoned(0);
-	(void)set_afraid(0);
-	(void)set_paralyzed(0);
-	(void)set_image(0);
-	(void)set_stun(0);
-	(void)set_cut(0);
-	(void)set_slow(0);
+	(void)clear_timed(TMD_BLIND);
+	(void)clear_timed(TMD_CONFUSED);
+	(void)clear_timed(TMD_POISONED);
+	(void)clear_timed(TMD_AFRAID);
+	(void)clear_timed(TMD_PARALYZED);
+	(void)clear_timed(TMD_IMAGE);
+	(void)clear_timed(TMD_STUN);
+	(void)clear_timed(TMD_CUT);
+	(void)clear_timed(TMD_SLOW);
 
 	/* No longer hungry */
 	(void)set_food(PY_FOOD_MAX - 1);
@@ -1180,10 +1153,10 @@ static void do_cmd_wiz_jump(void)
 		char tmp_val[160];
 
 		/* Prompt */
-		sprintf(ppp, "Jump to level (0-%d): ", MAX_DEPTH-1);
+		strnfmt(ppp, sizeof(ppp), "Jump to level (0-%d): ", MAX_DEPTH-1);
 
 		/* Default */
-		sprintf(tmp_val, "%d", p_ptr->depth);
+		strnfmt(tmp_val, sizeof(tmp_val), "%d", p_ptr->depth);
 
 		/* Ask for a level */
 		if (!get_string(ppp, tmp_val, 11)) return;
@@ -1607,7 +1580,7 @@ void do_cmd_debug(void)
 		/* Self-Knowledge */
 		case 'k':
 		{
-			self_knowledge();
+			self_knowledge(TRUE);
 			break;
 		}
 
@@ -1729,12 +1702,6 @@ void do_cmd_debug(void)
 	}
 }
 
-
-#else
-
-#ifdef MACINTOSH
-static int i = 0;
-#endif
 
 #endif
 

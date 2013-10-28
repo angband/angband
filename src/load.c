@@ -265,12 +265,14 @@ static errr rd_item(object_type *o_ptr)
 	/* Type/Subtype */
 	rd_byte(&o_ptr->tval);
 	rd_byte(&o_ptr->sval);
-
-	/* Special pval */
 	rd_s16b(&o_ptr->pval);
 
+	/* Pseudo-ID bit */
+	rd_byte(&o_ptr->pseudo);
 
-	rd_byte(&o_ptr->discount);
+	/* Fix the field */
+	if (o_ptr->pseudo > 99)
+	    o_ptr->pseudo -= 100;
 
 	rd_byte(&o_ptr->number);
 	rd_s16b(&o_ptr->weight);
@@ -477,6 +479,17 @@ static errr rd_item(object_type *o_ptr)
 			o_ptr->ds = 0;
 		}
 	}
+
+	if (older_than(3, 0, 9) &&
+	    o_ptr->tval == TV_LITE &&
+	    !artifact_p(o_ptr) &&
+	    !ego_item_p(o_ptr) &&
+	    o_ptr->pval)
+	{
+		o_ptr->timeout = o_ptr->pval;
+		o_ptr->pval = 0;
+	}
+
 
 	/* Success */
 	return (0);
@@ -740,29 +753,63 @@ static void rd_options(void)
 		int os = i / 32;
 		int ob = i % 32;
 
-		/* Process real entries */
-		if (option_text[i])
+		/* Process saved entries */
+		if (mask[os] & (1L << ob))
 		{
-			/* Process saved entries */
-			if (mask[os] & (1L << ob))
-			{
-				/* Set flag */
-				if (flag[os] & (1L << ob))
-				{
-					/* Set */
-					op_ptr->opt[i] = TRUE;
-				}
+			/* Set flag */
+			if (flag[os] & (1L << ob))
+				op_ptr->opt[i] = TRUE;
 
-				/* Clear flag */
-				else
-				{
-					/* Set */
-					op_ptr->opt[i] = FALSE;
-				}
-			}
+			/* Clear flag */
+			else
+				op_ptr->opt[i] = FALSE;
 		}
 	}
 
+	/* Load savefiles pre-reorganisation */
+	if (older_than(3, 0, 8))
+	{
+		/* 
+		 * Slot	Old layout:	New layout:
+		 * 0	xxx			maximise
+		 * 1	xxx			randarts
+		 * 2	maximise	autoscum
+		 * 3	preserve	ironman
+		 * 4	ironman		no_stores
+		 * 5	no_stores	no_artifacts
+		 * 6	no_artifats	no_stacking
+		 * 7	randarts	no_preserve
+		 * 8	no_stacking	no_stairs
+		 */
+
+		/* We #define this so it's obvious what we're doing */
+		#define OLD_OPT(n)	op_ptr->opt[n]
+
+		bool old_birth[9];
+		for (i = 0; i <= 8; i++)
+			old_birth[i] = OLD_OPT(OPT_BIRTH + i);
+
+		if (arg_fiddle) note("Loading pre-3.0.7 options...");
+
+		birth_maximize = adult_maximize = old_birth[2];
+		birth_no_preserve = adult_no_preserve = !old_birth[3];
+		birth_ironman = adult_ironman = old_birth[4];
+		birth_no_stores = adult_no_stores = old_birth[5];
+		birth_no_artifacts = adult_no_artifacts = old_birth[6];
+		birth_randarts = adult_randarts = old_birth[7];
+		birth_no_stacking = adult_no_stacking = old_birth[8];
+
+		birth_no_stairs = adult_no_stairs = !OLD_OPT(41);
+		birth_autoscum = adult_autoscum = OLD_OPT(33);
+		birth_ai_sound = adult_ai_sound = OLD_OPT(42);
+		birth_ai_smell = adult_ai_smell = OLD_OPT(43);
+		birth_ai_packs = adult_ai_packs = OLD_OPT(73);
+		birth_ai_learn = adult_ai_learn = OLD_OPT(46);
+		birth_ai_cheat = adult_ai_cheat = OLD_OPT(47);
+		birth_ai_smart = adult_ai_smart = OLD_OPT(72);
+
+		#undef OLD_OPT
+	}
 
 	/*** Window Options ***/
 
@@ -922,41 +969,50 @@ static errr rd_player_spells(void)
 static int rd_squelch(void)
 {
 	int i;
-	byte tmp8u;
-	u16b file_e_max;
+	byte tmp8u = 24;
 
 	/* Handle old versions, and Pete Mack's patch */
 	if (older_than(3, 0, 6))
 		return 0;
 
-	/* Read item-quality squelch sub-menu */
-	for (i = 0; i < SQUELCH_BYTES; i++)
-		rd_byte(&squelch_level[i]);
 
-	/* Read the number of saved ego-item types */
-	rd_u16b(&file_e_max);
+	/* Read how many squelch bytes we have */
+	if (!older_than(3, 0, 9))
+		rd_byte(&tmp8u);
 
-	/* Read ego-item squelch settings */
-	for (i = 0; i < z_info->e_max; i++)
+	/* Check against current number */
+	if (tmp8u != SQUELCH_BYTES)
 	{
-		ego_item_type *e_ptr = &e_info[i];
-		tmp8u = 0;
-
-		if (i < file_e_max)
-			rd_byte(&tmp8u);
-
-		e_ptr->squelch |= (tmp8u & 0x01);
-		e_ptr->everseen |= (tmp8u & 0x02);
-
-		/* Hack - Repair the savefile */
-		if (!e_ptr->everseen) e_ptr->squelch = FALSE;
+		strip_bytes(tmp8u);
+	}
+	else
+	{
+		for (i = 0; i < SQUELCH_BYTES; i++)
+			rd_byte(&squelch_level[i]);
 	}
 
-	/* Read possible extra elements */
-	while (i < file_e_max)
+	/* Handle ego-item squelch */
+	if ((sf_major == 3) && (sf_minor == 0) && (sf_patch != 9))
 	{
-		rd_byte(&tmp8u);
-		i++;
+		u16b file_e_max;
+
+		/* Read the number of saved ego-item */
+		rd_u16b(&file_e_max);
+
+		for (i = 0; i < file_e_max; i++)
+		{
+			if (i < z_info->e_max)
+			{
+				byte flags;
+
+				/* Read and extract the flag */
+				rd_byte(&flags);
+				e_info[i].everseen |= (flags & 0x02);
+			}
+		}
+	}
+	else
+	{
 	}
 
 	/* Read the current number of auto-inscriptions */
@@ -965,12 +1021,12 @@ static int rd_squelch(void)
 	/* Write the autoinscriptions array*/
 	for (i = 0; i < inscriptions_count; i++)
 	{
-		 char tmp[80];
+		char tmp[80];
 
-		 rd_s16b(&inscriptions[i].kind_idx);
-		 rd_string(tmp, 80);
+		rd_s16b(&inscriptions[i].kind_idx);
+		rd_string(tmp, sizeof(tmp));
 
-		 inscriptions[i].inscription_idx = quark_add(tmp);
+		inscriptions[i].inscription_idx = quark_add(tmp);
 	}
 
 	return 0;
@@ -1095,44 +1151,83 @@ static errr rd_extra(void)
 	strip_bytes(2);
 
 	/* Read the flags */
-	strip_bytes(2);	/* Old "rest" */
-	rd_s16b(&p_ptr->blind);
-	rd_s16b(&p_ptr->paralyzed);
-	rd_s16b(&p_ptr->confused);
-	rd_s16b(&p_ptr->food);
-	strip_bytes(4);	/* Old "food_digested" / "protection" */
-	rd_s16b(&p_ptr->energy);
-	rd_s16b(&p_ptr->fast);
-	rd_s16b(&p_ptr->slow);
-	rd_s16b(&p_ptr->afraid);
-	rd_s16b(&p_ptr->cut);
-	rd_s16b(&p_ptr->stun);
-	rd_s16b(&p_ptr->poisoned);
-	rd_s16b(&p_ptr->image);
-	rd_s16b(&p_ptr->protevil);
-	rd_s16b(&p_ptr->invuln);
-	rd_s16b(&p_ptr->hero);
-	rd_s16b(&p_ptr->shero);
-	rd_s16b(&p_ptr->shield);
-	rd_s16b(&p_ptr->blessed);
-	rd_s16b(&p_ptr->tim_invis);
-	rd_s16b(&p_ptr->word_recall);
-	rd_s16b(&p_ptr->see_infra);
-	rd_s16b(&p_ptr->tim_infra);
-	rd_s16b(&p_ptr->oppose_fire);
-	rd_s16b(&p_ptr->oppose_cold);
-	rd_s16b(&p_ptr->oppose_acid);
-	rd_s16b(&p_ptr->oppose_elec);
-	rd_s16b(&p_ptr->oppose_pois);
+	if (older_than(3, 0, 7))
+	{
+		strip_bytes(2);	/* Old "rest" */
+		rd_s16b(&p_ptr->timed[TMD_BLIND]);
+		rd_s16b(&p_ptr->timed[TMD_PARALYZED]);
+		rd_s16b(&p_ptr->timed[TMD_CONFUSED]);
+		rd_s16b(&p_ptr->food);
+		strip_bytes(4);	/* Old "food_digested" / "protection" */
+		rd_s16b(&p_ptr->energy);
+		rd_s16b(&p_ptr->timed[TMD_FAST]);
+		rd_s16b(&p_ptr->timed[TMD_SLOW]);
+		rd_s16b(&p_ptr->timed[TMD_AFRAID]);
+		rd_s16b(&p_ptr->timed[TMD_CUT]);
+		rd_s16b(&p_ptr->timed[TMD_STUN]);
+		rd_s16b(&p_ptr->timed[TMD_POISONED]);
+		rd_s16b(&p_ptr->timed[TMD_IMAGE]);
+		rd_s16b(&p_ptr->timed[TMD_PROTEVIL]);
+		rd_s16b(&p_ptr->timed[TMD_INVULN]);
+		rd_s16b(&p_ptr->timed[TMD_HERO]);
+		rd_s16b(&p_ptr->timed[TMD_SHERO]);
+		rd_s16b(&p_ptr->timed[TMD_SHIELD]);
+		rd_s16b(&p_ptr->timed[TMD_BLESSED]);
+		rd_s16b(&p_ptr->timed[TMD_SINVIS]);
+		rd_s16b(&p_ptr->word_recall);
+		rd_s16b(&p_ptr->see_infra);
+		rd_s16b(&p_ptr->timed[TMD_SINFRA]);
+		rd_s16b(&p_ptr->timed[TMD_OPP_FIRE]);
+		rd_s16b(&p_ptr->timed[TMD_OPP_COLD]);
+		rd_s16b(&p_ptr->timed[TMD_OPP_ACID]);
+		rd_s16b(&p_ptr->timed[TMD_OPP_ELEC]);
+		rd_s16b(&p_ptr->timed[TMD_OPP_POIS]);
 
-	rd_byte(&p_ptr->confusing);
-	rd_byte(&tmp8u);	/* oops */
-	rd_byte(&tmp8u);	/* oops */
-	rd_byte(&tmp8u);	/* oops */
-	rd_byte(&p_ptr->searching);
-	rd_byte(&tmp8u);	/* oops */
-	rd_byte(&tmp8u);	/* oops */
-	rd_byte(&tmp8u);	/* oops */
+		rd_byte(&p_ptr->confusing);
+		rd_byte(&tmp8u);	/* oops */
+		rd_byte(&tmp8u);	/* oops */
+		rd_byte(&tmp8u);	/* oops */
+		rd_byte(&p_ptr->searching);
+		rd_byte(&tmp8u);	/* oops */
+		rd_byte(&tmp8u);	/* oops */
+		rd_byte(&tmp8u);	/* oops */
+	}
+	else
+	{
+		byte num;
+		int i;
+
+		rd_s16b(&p_ptr->food);
+		rd_s16b(&p_ptr->energy);
+		rd_s16b(&p_ptr->word_recall);
+		rd_s16b(&p_ptr->see_infra);
+		rd_byte(&p_ptr->confusing);
+		rd_byte(&p_ptr->searching);
+
+		/* Find the number of timed effects */
+		rd_byte(&num);
+
+		if (num <= TMD_MAX)
+		{
+			/* Read all the effects */
+			for (i = 0; i < num; i++)
+				rd_s16b(&p_ptr->timed[i]);
+
+			/* Initialize any entries not read */
+			if (num < TMD_MAX)
+				C_WIPE(p_ptr->timed + num, TMD_MAX - num, s16b);
+		}
+		else
+		{
+			/* Probably in trouble anyway */
+			for (i = 0; i < TMD_MAX; i++)
+				rd_s16b(&p_ptr->timed[i]);
+
+			/* Discard unused entries */
+			strip_bytes(2 * (num - TMD_MAX));
+			note("Discarded unsupported timed effects");
+		}
+	}
 
 	/* Future use */
 	strip_bytes(40);
@@ -1204,9 +1299,6 @@ static errr rd_extra(void)
  */
 static errr rd_randarts(void)
 {
-
-#ifdef GJW_RANDART
-
 	int i;
 	byte tmp8u;
 	s16b tmp16s;
@@ -1334,14 +1426,6 @@ static errr rd_randarts(void)
 	}
 
 	return (0);
-
-#else /* GJW_RANDART */
-
-	note("Random artifacts are disabled in this binary.");
-	return (-1);
-
-#endif /* GJW_RANDART */
-
 }
 
 
@@ -1860,18 +1944,27 @@ static errr rd_savefile_new_aux(void)
 	for (i = 0; i < tmp16u; i++)
 	{
 		byte tmp8u;
-
 		object_kind *k_ptr = &k_info[i];
 
 		rd_byte(&tmp8u);
 
-		k_ptr->aware = (tmp8u & 0x01) ? TRUE: FALSE;
-		k_ptr->tried = (tmp8u & 0x02) ? TRUE: FALSE;
-		k_ptr->everseen = (tmp8u & 0x08) ? TRUE: FALSE;
+		k_ptr->aware = (tmp8u & 0x01) ? TRUE : FALSE;
+		k_ptr->tried = (tmp8u & 0x02) ? TRUE : FALSE;
+		k_ptr->squelch = (tmp8u & 0x04) ? TRUE : FALSE;
+		k_ptr->everseen = (tmp8u & 0x08) ? TRUE : FALSE;
 
-		if (!older_than(3, 0, 6))
-			rd_byte(&k_ptr->squelch);
+		/* Read the (old) squelch bit */
+		if (older_than(3, 0, 9) && !older_than(3, 0, 6))
+		{
+			rd_byte(&tmp8u);
+
+			if (tmp8u == 3)
+				k_ptr->squelch = TRUE;
+			else
+				k_ptr->squelch = FALSE;
+		}
 	}
+
 	if (arg_fiddle) note("Loaded Object Memory");
 
 
@@ -1925,7 +2018,7 @@ static errr rd_savefile_new_aux(void)
 
 
 	/* Read random artifacts */
-	if (adult_rand_artifacts)
+	if (adult_randarts)
 	{
 		if (rd_randarts()) return (-1);
 		if (arg_fiddle) note("Loaded Random Artifacts");
@@ -2052,13 +2145,13 @@ static errr rd_savefile(void)
  * the player loads a savefile belonging to someone else, and then is not
  * allowed to save his game when he quits.
  *
- * We return "TRUE" if the savefile was usable, and we set the global
+ * We return "TRUE" if the savefile was usable, and we set the
  * flag "character_loaded" if a real, living, character was loaded.
  *
  * Note that we always try to load the "current" savefile, even if
  * there is no such file, so we must check for "empty" savefile names.
  */
-bool load_player(void)
+bool load_player(bool *character_loaded, bool *reusing_savefile)
 {
 	int fd = -1;
 
@@ -2066,19 +2159,15 @@ bool load_player(void)
 
 	byte vvv[4];
 
-#ifdef VERIFY_TIMESTAMP
-	struct stat	statbuf;
-#endif /* VERIFY_TIMESTAMP */
-
 	cptr what = "generic";
 
 
 	/* Paranoia */
 	turn = 0;
-
-	/* Paranoia */
 	p_ptr->is_dead = FALSE;
-
+        
+	*character_loaded = FALSE;
+	*reusing_savefile = FALSE;
 
 	/* Allow empty savefile name */
 	if (!savefile[0]) return (TRUE);
@@ -2107,61 +2196,6 @@ bool load_player(void)
 	fd_close(fd);
 
 
-#ifdef VERIFY_SAVEFILE
-
-	/* Verify savefile usage */
-	if (!err)
-	{
-		FILE *fkk;
-
-		char temp[1024];
-
-		/* Extract name of lock file */
-		my_strcpy(temp, savefile, sizeof(temp));
-		strcat(temp, ".lok");
-
-		/* Grab permissions */
-		safe_setuid_grab();
-
-		/* Check for lock */
-		fkk = my_fopen(temp, "r");
-
-		/* Drop permissions */
-		safe_setuid_drop();
-
-		/* Oops, lock exists */
-		if (fkk)
-		{
-			/* Close the file */
-			my_fclose(fkk);
-
-			/* Message */
-			msg_print("Savefile is currently in use.");
-			message_flush();
-
-			/* Oops */
-			return (FALSE);
-		}
-
-		/* Grab permissions */
-		safe_setuid_grab();
-
-		/* Create a lock file */
-		fkk = my_fopen(temp, "w");
-
-		/* Drop permissions */
-		safe_setuid_drop();
-
-		/* Dump a line of info */
-		fprintf(fkk, "Lock file for savefile '%s'\n", savefile);
-
-		/* Close the lock file */
-		my_fclose(fkk);
-	}
-
-#endif /* VERIFY_SAVEFILE */
-
-
 	/* Okay */
 	if (!err)
 	{
@@ -2184,20 +2218,6 @@ bool load_player(void)
 	/* Process file */
 	if (!err)
 	{
-
-#ifdef VERIFY_TIMESTAMP
-
-		/* Grab permissions */
-		safe_setuid_grab();
-
-		/* Get the timestamp */
-		(void)fstat(fd, &statbuf);
-
-		/* Drop permissions */
-		safe_setuid_drop();
-
-#endif /* VERIFY_TIMESTAMP */
-
 		/* Read the first four bytes */
 		if (fd_read(fd, (char*)(vvv), sizeof(vvv))) err = -1;
 
@@ -2250,27 +2270,12 @@ bool load_player(void)
 		if (err) what = "Broken savefile";
 	}
 
-#ifdef VERIFY_TIMESTAMP
-	/* Verify timestamp */
-	if (!err && !arg_wizard)
-	{
-		/* Hack -- Verify the timestamp */
-		if (sf_when > (statbuf.st_ctime + 100) ||
-		    sf_when < (statbuf.st_ctime - 100))
-		{
-			/* Message */
-			what = "Invalid timestamp";
-
-			/* Oops */
-			err = -1;
-		}
-	}
-#endif /* VERIFY_TIMESTAMP */
-
 
 	/* Okay */
 	if (!err)
 	{
+		*reusing_savefile = TRUE;
+
 		/* Give a conversion warning */
 		if ((version_major != sf_major) ||
 		    (version_minor != sf_minor) ||
@@ -2289,7 +2294,10 @@ bool load_player(void)
 			if (arg_wizard)
 			{
 				/* A character was loaded */
-				character_loaded = TRUE;
+				*character_loaded = TRUE;
+
+				/* Mark the savefile */
+				p_ptr->noscore |= NOSCORE_WIZARD;
 
 				/* Done */
 				return (TRUE);
@@ -2303,48 +2311,24 @@ bool load_player(void)
 
 			/* Forget turns */
 			turn = old_turn = 0;
-
+                        
 			/* Done */
 			return (TRUE);
 		}
 
 		/* A character was loaded */
-		character_loaded = TRUE;
+		*character_loaded = TRUE;
 
 		/* Still alive */
 		if (p_ptr->chp >= 0)
 		{
 			/* Reset cause of death */
-			strcpy(p_ptr->died_from, "(alive and well)");
+			my_strcpy(p_ptr->died_from, "(alive and well)", sizeof(p_ptr->died_from));
 		}
 
 		/* Success */
 		return (TRUE);
 	}
-
-
-#ifdef VERIFY_SAVEFILE
-
-	/* Verify savefile usage */
-	if (TRUE)
-	{
-		char temp[1024];
-
-		/* Extract name of lock file */
-		my_strcpy(temp, savefile, sizeof(temp));
-		strcat(temp, ".lok");
-
-		/* Grab permissions */
-		safe_setuid_grab();
-
-		/* Remove lock */
-		fd_kill(temp);
-
-		/* Drop permissions */
-		safe_setuid_drop();
-	}
-
-#endif /* VERIFY_SAVEFILE */
 
 
 	/* Message */

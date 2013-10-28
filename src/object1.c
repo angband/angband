@@ -9,42 +9,13 @@
  */
 
 #include "angband.h"
+#include "randname.h"
 
 
 /*
  * Max sizes of the following arrays.
  */
 #define MAX_TITLES     50       /* Used with scrolls (min 48) */
-#define MAX_SYLLABLES 158       /* Used with scrolls (see below) */
-
-
-/*
- * Syllables for scrolls (must be 1-4 letters each).
- */
-
-static cptr syllables[MAX_SYLLABLES] =
-{
-	"a", "ab", "ag", "aks", "ala", "an", "ankh", "app",
-	"arg", "arze", "ash", "aus", "ban", "bar", "bat", "bek",
-	"bie", "bin", "bit", "bjor", "blu", "bot", "bu",
-	"byt", "comp", "con", "cos", "cre", "dalf", "dan",
-	"den", "der", "doe", "dok", "eep", "el", "eng", "er", "ere", "erk",
-	"esh", "evs", "fa", "fid", "flit", "for", "fri", "fu", "gan",
-	"gar", "glen", "gop", "gre", "ha", "he", "hyd", "i",
-	"ing", "ion", "ip", "ish", "it", "ite", "iv", "jo",
-	"kho", "kli", "klis", "la", "lech", "man", "mar",
-	"me", "mi", "mic", "mik", "mon", "mung", "mur", "nag", "nej",
-	"nelg", "nep", "ner", "nes", "nis", "nih", "nin", "o",
-	"od", "ood", "org", "orn", "ox", "oxy", "pay", "pet",
-	"ple", "plu", "po", "pot", "prok", "re", "rea", "rhov",
-	"ri", "ro", "rog", "rok", "rol", "sa", "san", "sat",
-	"see", "sef", "seh", "shu", "ski", "sna", "sne", "snik",
-	"sno", "so", "sol", "sri", "sta", "sun", "ta", "tab",
-	"tem", "ther", "ti", "tox", "trol", "tue", "turs", "u",
-	"ulk", "um", "un", "uni", "ur", "val", "viv", "vly",
-	"vom", "wah", "wed", "werg", "wex", "whon", "wun", "x",
-	"yerg", "yp", "zun", "tri", "blaa"
-};
 
 
 /*
@@ -157,15 +128,10 @@ static void flavor_assign_random(byte tval)
  *
  * Scroll titles are always between 6 and 14 letters long.  This is
  * ensured because every title is composed of whole words, where every
- * word is from 1 to 8 letters long (one or two syllables of 1 to 4
- * letters each), and that no scroll is finished until it attempts to
- * grow beyond 15 letters.  The first time this can happen is when the
- * current title has 6 letters and the new word has 8 letters, which
- * would result in a 6 letter scroll title.
- *
- * Duplicate titles are avoided by requiring that no two scrolls share
- * the same first four letters (not the most efficient method, and not
- * the least efficient method, but it will always work).
+ * word is from 2 to 8 letters long, and that no scroll is finished
+ * until it attempts to grow beyond 15 letters.  The first time this
+ * can happen is when the current title has 6 letters and the new word
+ * has 8 letters, which would result in a 6 letter scroll title.
  *
  * Hack -- make sure everything stays the same for each saved game
  * This is accomplished by the use of a saved "random seed", as in
@@ -176,13 +142,11 @@ void flavor_init(void)
 {
 	int i, j;
 
-
 	/* Hack -- Use the "simple" RNG */
 	Rand_quick = TRUE;
 
 	/* Hack -- Induce consistant flavors */
 	Rand_value = seed_flavor;
-
 
 	flavor_assign_fixed();
 
@@ -198,76 +162,42 @@ void flavor_init(void)
 	/* Scrolls (random titles, always white) */
 	for (i = 0; i < MAX_TITLES; i++)
 	{
-		/* Get a new title */
-		while (TRUE)
+		char buf[24];
+		char *end = buf;
+		int titlelen = 0;
+		int wordlen;
+		bool okay = TRUE;
+
+		wordlen = randname_make(RANDNAME_SCROLL, 2, 8, end, 24);
+		while (titlelen + wordlen < (int)(sizeof(scroll_adj[0]) - 1))
 		{
-			char buf[80];
+			end[wordlen] = ' ';
+			titlelen += wordlen + 1;
+			end += wordlen + 1;
+			wordlen = randname_make(RANDNAME_SCROLL, 2, 8, end, 24 - titlelen);
+		}
+		buf[titlelen - 1] = '\0';
 
-			bool okay;
-
-			/* Start a new title */
-			buf[0] = '\0';
-
-			/* Collect words until done */
-			while (1)
+		/* Check the scroll name hasn't already been generated */
+		for (j = 0; j < i; j++)
+		{
+			if (streq(buf, scroll_adj[j]))
 			{
-				int q, s;
-
-				char tmp[80];
-
-				/* Start a new word */
-				tmp[0] = '\0';
-
-				/* Choose one or two syllables */
-				s = ((rand_int(100) < 30) ? 1 : 2);
-
-				/* Add a one or two syllable word */
-				for (q = 0; q < s; q++)
-				{
-					/* Add the syllable */
-					my_strcat(tmp, syllables[rand_int(MAX_SYLLABLES)], sizeof(tmp));
-				}
-
-				/* Stop before getting too long */
-				if (strlen(buf) + 1 + strlen(tmp) > 15) break;
-
-				/* Add a space */
-				strcat(buf, " ");
-
-				/* Add the word */
-				my_strcat(buf, tmp, sizeof(buf));
-			}
-
-			/* Save the title */
-			my_strcpy(scroll_adj[i], buf+1, sizeof(scroll_adj[0]));
-
-			/* Assume okay */
-			okay = TRUE;
-
-			/* Check for "duplicate" scroll titles */
-			for (j = 0; j < i; j++)
-			{
-				cptr hack1 = scroll_adj[j];
-				cptr hack2 = scroll_adj[i];
-
-				/* Compare first four characters */
-				if (*hack1++ != *hack2++) continue;
-				if (*hack1++ != *hack2++) continue;
-				if (*hack1++ != *hack2++) continue;
-				if (*hack1++ != *hack2++) continue;
-
-				/* Not okay */
 				okay = FALSE;
-
-				/* Stop looking */
 				break;
 			}
+		}
 
-			/* Break when done */
-			if (okay) break;
+		if (okay)
+		{
+			my_strcpy(scroll_adj[i], buf, sizeof(scroll_adj[0]));
+		}
+		else
+		{
+			/* Have another go at making a name */
+			i--;
 		}
 	}
-
 
 	/* Hack -- Use the "complex" RNG */
 	Rand_quick = FALSE;
@@ -355,7 +285,7 @@ void reset_visuals(bool unused)
 	}
 
 	/* Extract attr/chars for inventory objects (by tval) */
-	for (i = 0; i < 128; i++)
+	for (i = 0; i < (int)N_ELEMENTS(tval_to_attr); i++)
 	{
 		/* Default to white */
 		tval_to_attr[i] = TERM_WHITE;
@@ -519,6 +449,88 @@ static void object_flags_aux(int mode, const object_type *o_ptr, u32b *f1, u32b 
 
 
 
+/*
+ * Puts a very stripped-down version of an object's name into buf.
+ * If easy_know is TRUE, then the IDed names are used, otherwise
+ * flavours, scroll names, etc will be used.
+ *
+ * Just truncates if the buffer isn't big enough.
+ */
+void object_kind_name(char *buf, size_t max, int k_idx, bool easy_know)
+{
+	char *t;
+
+	object_kind *k_ptr = &k_info[k_idx];
+
+	/* If not aware, use flavor */
+	if (!easy_know && !k_ptr->aware && k_ptr->flavor)
+	{
+		if (k_ptr->tval == TV_SCROLL)
+		{
+			strnfmt(buf, max, "\"%s\"", scroll_adj[k_ptr->sval]);
+		}
+		else if (k_ptr->tval == TV_FOOD && k_ptr->sval < SV_FOOD_MIN_FOOD)
+		{
+			strnfmt(buf, max, "%s Mushroom", flavor_text + flavor_info[k_ptr->flavor].text);
+		}
+		else
+		{
+			/* Plain flavour (e.g. Copper) will do. */
+			my_strcpy(buf, flavor_text + flavor_info[k_ptr->flavor].text, max);
+		}
+	}
+
+	/* Use proper name (Healing, or whatever) */
+	else
+	{
+		cptr str = (k_name + k_ptr->name);
+
+		if (k_ptr->tval == TV_FOOD && k_ptr->sval < SV_FOOD_MIN_FOOD)
+		{
+			my_strcpy(buf, "Mushroom of ", max);
+			max -= strlen(buf);
+			t = buf + strlen(buf);
+		}
+		else
+		{
+			t = buf;
+		}
+
+		/* Skip past leading characters */
+		while ((*str == ' ') || (*str == '&')) str++;
+
+		/* Copy useful chars */
+		for (; *str && max > 1; str++)
+		{
+			/* Pluralizer for irregular plurals */
+			/* Useful for languages where adjective changes for plural */
+			if (*str == '|')
+			{
+				/* Process singular part */
+				for (str++; *str != '|' && max > 1; str++) 
+				{
+					*t++ = *str;
+					max--;
+				}
+
+				/* Process plural part */
+				for (str++; *str != '|'; str++) ;
+			}
+
+			/* English plural indicator can simply be skipped */
+			else if (*str != '~')
+			{
+				*t++ = *str;
+				max--;
+			}
+		}
+
+		/* Terminate the new name */
+		*t = '\0';
+	}
+}
+
+
 
 /*
  * Obtain the "flags" for an item
@@ -637,7 +649,7 @@ void object_flags_known(const object_type *o_ptr, u32b *f1, u32b *f2, u32b *f3)
  * possible description, which can get pretty long, including inscriptions,
  * such as:
  * "no more Maces of Disruption (Defender) (+10,+10) [+5] (+3 to stealth)".
-
+ *
  * Note that the object description will be clipped to fit into the given
  * buffer size.
  *
@@ -682,13 +694,15 @@ void object_flags_known(const object_type *o_ptr, u32b *f1, u32b *f2, u32b *f3)
  *   0 -- Chain Mail of Death
  *   1 -- A Cloak of Death [1,+3]
  *   2 -- An Amulet of Death [1,+3] (+2 to Stealth)
- *   3 -- 5 Rings of Death [1,+3] (+2 to Stealth) {nifty}
+ *   3 -- 5 Rings of Death [1,+3] (+2 to Stealth) {nifty} (squelch)
+ *   4 -- 5 Rings of Death [1,+3] (+2 to Stealth) {nifty}
  *
  * Modes ("pref" is FALSE):
  *   0 -- Chain Mail of Death
  *   1 -- Cloak of Death [1,+3]
  *   2 -- Amulet of Death [1,+3] (+2 to Stealth)
- *   3 -- Rings of Death [1,+3] (+2 to Stealth) {nifty}
+ *   3 -- Rings of Death [1,+3] (+2 to Stealth) {nifty} (squelch)
+ *   4 -- Rings of Death [1,+3] (+2 to Stealth) {nifty}
  */
 void object_desc(char *buf, size_t max, const object_type *o_ptr, int pref, int mode)
 {
@@ -720,8 +734,6 @@ void object_desc(char *buf, size_t max, const object_type *o_ptr, int pref, int 
 	char b1 = '[', b2 = ']';
 	char c1 = '{', c2 = '}';
 
-	char discount_buf[80];
-
 	char tmp_buf[128];
 
 	u32b f1, f2, f3;
@@ -744,6 +756,16 @@ void object_desc(char *buf, size_t max, const object_type *o_ptr, int pref, int 
 
 	/* Allow flavors to be hidden when aware */
 	if (aware && !show_flavors) flavor = FALSE;
+
+	/* Hack -- mark-to-squelch worthless items XXX */
+	if (!k_ptr->everseen && aware)
+	{
+		if (object_value(o_ptr) == 0)
+		{
+			k_ptr->squelch = TRUE;
+			p_ptr->notice |= PN_SQUELCH;
+		}
+	}
 
 	/* We've seen it at least once now we're aware of it */
 	if (aware) k_ptr->everseen = TRUE;
@@ -1381,13 +1403,13 @@ void object_desc(char *buf, size_t max, const object_type *o_ptr, int pref, int 
 	/* No more details wanted */
 	if (mode < 2) goto object_desc_done;
 
-	/* Hack -- Process Lanterns/Torches */
-	if ((o_ptr->tval == TV_LITE) && (!artifact_p(o_ptr)))
+	/* Fuelled light sources get number of remaining turns appended */
+	if ((o_ptr->tval == TV_LITE) && !(f3 & TR3_NO_FUEL))
 	{
-		/* Hack -- Turns of light for normal lites */
-		object_desc_str_macro(t, " (with ");
-		object_desc_num_macro(t, o_ptr->pval);
-		object_desc_str_macro(t, " turns of light)");
+		/* Turns of light for normal lites */
+		object_desc_str_macro(t, " (");
+		object_desc_num_macro(t, o_ptr->timeout);
+		object_desc_str_macro(t, " turns)");
 	}
 
 
@@ -1535,7 +1557,7 @@ void object_desc(char *buf, size_t max, const object_type *o_ptr, int pref, int 
 	}
 
 	/* Indicate "charging" artifacts */
-	else if (known && o_ptr->timeout)
+	else if (known && o_ptr->timeout && !(o_ptr->tval == TV_LITE && !artifact_p(o_ptr)))
 	{
 		/* Hack -- Dump " (charging)" if relevant */
 		object_desc_str_macro(t, " (charging)");
@@ -1559,10 +1581,11 @@ void object_desc(char *buf, size_t max, const object_type *o_ptr, int pref, int 
 	}
 
 
+
 	/* Use special inscription, if any */
-	if (o_ptr->discount >= INSCRIP_NULL)
+	if (o_ptr->pseudo)
 	{
-		v = inscrip_text[o_ptr->discount - INSCRIP_NULL];
+		v = inscrip_text[o_ptr->pseudo];
 	}
 
 	/* Use "cursed" if the item is known to be cursed */
@@ -1581,16 +1604,6 @@ void object_desc(char *buf, size_t max, const object_type *o_ptr, int pref, int 
 	else if (!aware && object_tried_p(o_ptr))
 	{
 		v = "tried";
-	}
-
-	/* Use the discount, if any */
-	else if (o_ptr->discount > 0)
-	{
-		char *q = discount_buf;
-		object_desc_num_macro(q, o_ptr->discount);
-		object_desc_str_macro(q, "% off");
-		*q = '\0';
-		v = discount_buf;
 	}
 
 	/* Nothing */
@@ -1632,6 +1645,11 @@ void object_desc(char *buf, size_t max, const object_type *o_ptr, int pref, int 
 		/* Terminate the inscription */
 		*t++ = c2;
 	}
+
+
+	/* Add squelch marker unless mode == 4 (in-store) */
+	if (mode != 4 && !hide_squelchable && squelch_item_ok(o_ptr))
+		object_desc_str_macro(t, " (squelch)");
 
 
 object_desc_done:
@@ -1966,26 +1984,25 @@ bool item_tester_okay(const object_type *o_ptr)
 
 
 /*
- * Get the indexes of objects at a given floor location.
+ * Get the indexes of objects at a given floor location. -TNB-
  *
  * Return the number of object indexes acquired.
  *
- * Never acquire more than "size" object indexes, and never return a
- * number bigger than "size", even if more floor objects exist.
- *
  * Valid flags are any combination of the bits:
- *
  *   0x01 -- Verify item tester
- *   0x02 -- Marked items only
+ *   0x02 -- Marked/visible items only
+ *   0x04 -- Only the top item
  */
-int scan_floor(int *items, int size, int y, int x, int mode)
+bool scan_floor(int *items, int *item_num, int y, int x, int mode)
 {
 	int this_o_idx, next_o_idx;
 
 	int num = 0;
 
+	(*item_num) = 0;
+
 	/* Sanity */
-	if (!in_bounds(y, x)) return (0);
+	if (!in_bounds(y, x)) return (FALSE);
 
 	/* Scan all objects in the grid */
 	for (this_o_idx = cave_o_idx[y][x]; this_o_idx; this_o_idx = next_o_idx)
@@ -1998,21 +2015,28 @@ int scan_floor(int *items, int size, int y, int x, int mode)
 		/* Get the next object */
 		next_o_idx = o_ptr->next_o_idx;
 
-		/* Verify item tester */
+		/* Item tester */
 		if ((mode & 0x01) && !item_tester_okay(o_ptr)) continue;
 
-		/* Marked items only */
-		if ((mode & 0x02) && !o_ptr->marked) continue;
+		/* Marked */
+		if ((mode & 0x02) && (!o_ptr->marked || squelch_hide_item(o_ptr)))
+			continue;
 
 		/* Accept this item */
 		items[num++] = this_o_idx;
 
-		/* Enforce size limit */
-		if (num >= size) break;
+		/* Only one */
+		if (mode & 0x04) break;
+
+		/* XXX Hack -- Enforce limit */
+		if (num == MAX_FLOOR_STACK) break;
 	}
 
+	/* Number of items */
+	(*item_num) = num;
+
 	/* Result */
-	return (num);
+	return (num != 0);
 }
 
 
@@ -2028,7 +2052,7 @@ void display_inven(void)
 
 	byte attr;
 
-	char tmp_val[80];
+	char tmp_val[10];
 
 	char o_name[80];
 
@@ -2083,10 +2107,10 @@ void display_inven(void)
 		Term_erase(3+n, i, 255);
 
 		/* Display the weight if needed */
-		if (show_weights && o_ptr->weight)
+		if (o_ptr->weight)
 		{
 			int wgt = o_ptr->weight * o_ptr->number;
-			sprintf(tmp_val, "%3d.%1d lb", wgt / 10, wgt % 10);
+			strnfmt(tmp_val, sizeof(tmp_val), "%3d.%1d lb", wgt / 10, wgt % 10);
 			Term_putstr(71, i, -1, TERM_WHITE, tmp_val);
 		}
 	}
@@ -2110,7 +2134,7 @@ void display_equip(void)
 	object_type *o_ptr;
 	byte attr;
 
-	char tmp_val[80];
+	char tmp_val[10];
 
 	char o_name[80];
 
@@ -2160,11 +2184,11 @@ void display_equip(void)
 		}
 
 		/* Display the weight (if needed) */
-		if (show_weights && o_ptr->weight)
+		if (o_ptr->weight)
 		{
 			int wgt = o_ptr->weight * o_ptr->number;
 			int col = (show_labels ? 52 : 71);
-			sprintf(tmp_val, "%3d.%1d lb", wgt / 10, wgt % 10);
+			strnfmt(tmp_val, sizeof(tmp_val), "%3d.%1d lb", wgt / 10, wgt % 10);
 			Term_putstr(col, i - INVEN_WIELD, -1, TERM_WHITE, tmp_val);
 		}
 	}
@@ -2204,10 +2228,8 @@ void show_inven(void)
 	len = 79 - 50;
 
 	/* Maximum space allowed for descriptions */
-	lim = 79 - 3;
-
-	/* Require space for weight (if needed) */
-	if (show_weights) lim -= 9;
+	/* screen width - "a) " - weight */
+	lim = 79 - 3 - 9;
 
 
 	/* Find the "final" slot */
@@ -2249,7 +2271,7 @@ void show_inven(void)
 		l = strlen(out_desc[k]) + 5;
 
 		/* Be sure to account for the weight */
-		if (show_weights) l += 9;
+		l += 9;
 
 		/* Maintain the maximum length */
 		if (l > len) len = l;
@@ -2264,6 +2286,8 @@ void show_inven(void)
 	/* Output each entry */
 	for (j = 0; j < k; j++)
 	{
+		int wgt;
+
 		/* Get the index */
 		i = out_index[j];
 
@@ -2274,7 +2298,7 @@ void show_inven(void)
 		prt("", j + 1, col ? col - 2 : col);
 
 		/* Prepare an index --(-- */
-		sprintf(tmp_val, "%c)", index_to_label(i));
+		strnfmt(tmp_val, sizeof(tmp_val), "%c)", index_to_label(i));
 
 		/* Clear the line with the (possibly indented) index */
 		put_str(tmp_val, j + 1, col);
@@ -2283,12 +2307,9 @@ void show_inven(void)
 		c_put_str(out_color[j], out_desc[j], j + 1, col + 3);
 
 		/* Display the weight if needed */
-		if (show_weights)
-		{
-			int wgt = o_ptr->weight * o_ptr->number;
-			sprintf(tmp_val, "%3d.%1d lb", wgt / 10, wgt % 10);
-			put_str(tmp_val, j + 1, 71);
-		}
+		wgt = o_ptr->weight * o_ptr->number;
+		strnfmt(tmp_val, sizeof(tmp_val), "%3d.%1d lb", wgt / 10, wgt % 10);
+		put_str(tmp_val, j + 1, 71);
 	}
 
 	/* Make a "shadow" below the list (only if needed) */
@@ -2324,8 +2345,8 @@ void show_equip(void)
 	/* Require space for labels (if needed) */
 	if (show_labels) lim -= (14 + 2);
 
-	/* Require space for weight (if needed) */
-	if (show_weights) lim -= 9;
+	/* Require space for weight */
+	lim -= 9;
 
 	/* Scan the equipment list */
 	for (k = 0, i = INVEN_WIELD; i < INVEN_TOTAL; i++)
@@ -2356,8 +2377,8 @@ void show_equip(void)
 		/* Increase length for labels (if needed) */
 		if (show_labels) l += (14 + 2);
 
-		/* Increase length for weight (if needed) */
-		if (show_weights) l += 9;
+		/* Increase length for weight */
+		l += 9;
 
 		/* Maintain the max-length */
 		if (l > len) len = l;
@@ -2372,6 +2393,8 @@ void show_equip(void)
 	/* Output each entry */
 	for (j = 0; j < k; j++)
 	{
+		int wgt;
+
 		/* Get the index */
 		i = out_index[j];
 
@@ -2382,7 +2405,7 @@ void show_equip(void)
 		prt("", j + 1, col ? col - 2 : col);
 
 		/* Prepare an index --(-- */
-		sprintf(tmp_val, "%c)", index_to_label(i));
+		strnfmt(tmp_val, sizeof(tmp_val), "%c)", index_to_label(i));
 
 		/* Clear the line with the (possibly indented) index */
 		put_str(tmp_val, j+1, col);
@@ -2406,12 +2429,9 @@ void show_equip(void)
 		}
 
 		/* Display the weight if needed */
-		if (show_weights)
-		{
-			int wgt = o_ptr->weight * o_ptr->number;
-			sprintf(tmp_val, "%3d.%d lb", wgt / 10, wgt % 10);
-			put_str(tmp_val, j+1, 71);
-		}
+		wgt = o_ptr->weight * o_ptr->number;
+		strnfmt(tmp_val, sizeof(tmp_val), "%3d.%d lb", wgt / 10, wgt % 10);
+		put_str(tmp_val, j+1, 71);
 	}
 
 	/* Make a "shadow" below the list (only if needed) */
@@ -2420,9 +2440,9 @@ void show_equip(void)
 
 
 /*
- * Display a list of the items on the floor at the given location.
+ * Display a list of the items on the floor at the given location.  -TNB-
  */
-void show_floor(const int *floor_list, int floor_num)
+void show_floor(const int *floor_list, int floor_num, bool gold)
 {
 	int i, j, k, l;
 	int col, len, lim;
@@ -2444,16 +2464,23 @@ void show_floor(const int *floor_list, int floor_num)
 	/* Maximum space allowed for descriptions */
 	lim = 79 - 3;
 
-	/* Require space for weight (if needed) */
-	if (show_weights) lim -= 9;
+	/* Require space for weight */
+	lim -= 9;
 
-	/* Display the inventory */
+	/* Limit displayed floor items to 23 (screen limits) */
+	if (floor_num > MAX_FLOOR_STACK) floor_num = MAX_FLOOR_STACK;
+
+	/* Display the floor */
 	for (k = 0, i = 0; i < floor_num; i++)
 	{
 		o_ptr = &o_list[floor_list[i]];
 
-		/* Is this item acceptable? */
-		if (!item_tester_okay(o_ptr)) continue;
+		/* Optionally, show gold */
+		if ((o_ptr->tval != TV_GOLD) || (!gold))
+		{
+			/* Is this item acceptable?  (always rejects gold) */
+			if (!item_tester_okay(o_ptr)) continue;
+		}
 
 		/* Describe the object */
 		object_desc(o_name, sizeof(o_name), o_ptr, TRUE, 3);
@@ -2474,7 +2501,7 @@ void show_floor(const int *floor_list, int floor_num)
 		l = strlen(out_desc[k]) + 5;
 
 		/* Be sure to account for the weight */
-		if (show_weights) l += 9;
+		l += 9;
 
 		/* Maintain the maximum length */
 		if (l > len) len = l;
@@ -2489,6 +2516,8 @@ void show_floor(const int *floor_list, int floor_num)
 	/* Output each entry */
 	for (j = 0; j < k; j++)
 	{
+		int wgt;
+
 		/* Get the index */
 		i = floor_list[out_index[j]];
 
@@ -2499,7 +2528,7 @@ void show_floor(const int *floor_list, int floor_num)
 		prt("", j + 1, col ? col - 2 : col);
 
 		/* Prepare an index --(-- */
-		sprintf(tmp_val, "%c)", index_to_label(out_index[j]));
+		strnfmt(tmp_val, sizeof(tmp_val), "%c)", index_to_label(out_index[j]));
 
 		/* Clear the line with the (possibly indented) index */
 		put_str(tmp_val, j + 1, col);
@@ -2508,17 +2537,15 @@ void show_floor(const int *floor_list, int floor_num)
 		c_put_str(out_color[j], out_desc[j], j + 1, col + 3);
 
 		/* Display the weight if needed */
-		if (show_weights)
-		{
-			int wgt = o_ptr->weight * o_ptr->number;
-			sprintf(tmp_val, "%3d.%1d lb", wgt / 10, wgt % 10);
-			put_str(tmp_val, j + 1, 71);
-		}
+		wgt = o_ptr->weight * o_ptr->number;
+		strnfmt(tmp_val, sizeof(tmp_val), "%3d.%1d lb", wgt / 10, wgt % 10);
+		put_str(tmp_val, j + 1, 71);
 	}
 
 	/* Make a "shadow" below the list (only if needed) */
 	if (j && (j < 23)) prt("", j + 1, col ? col - 2 : col);
 }
+
 
 
 /*
@@ -2787,8 +2814,6 @@ static int get_tag(int *cp, char tag)
  * We always erase the prompt when we are done, leaving a blank line,
  * or a warning message, if appropriate, if no items are available.
  *
- * Note that the "easy_floor" option affects this function in several ways.
- *
  * Note that only "acceptable" floor objects get indexes, so between two
  * commands, the indexes of floor objects may change.  XXX XXX XXX
  */
@@ -2799,7 +2824,7 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 
 	char which;
 
-	int i, j, k;
+	int j, k;
 
 	int i1, i2;
 	int e1, e2;
@@ -2809,9 +2834,10 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 
 	bool oops = FALSE;
 
-	bool use_inven = ((mode & (USE_INVEN)) ? TRUE : FALSE);
-	bool use_equip = ((mode & (USE_EQUIP)) ? TRUE : FALSE);
-	bool use_floor = ((mode & (USE_FLOOR)) ? TRUE : FALSE);
+	bool use_inven = ((mode & USE_INVEN) ? TRUE : FALSE);
+	bool use_equip = ((mode & USE_EQUIP) ? TRUE : FALSE);
+	bool use_floor = ((mode & USE_FLOOR) ? TRUE : FALSE);
+	bool can_squelch = ((mode & CAN_SQUELCH) ? TRUE : FALSE);
 
 	bool allow_inven = FALSE;
 	bool allow_equip = FALSE;
@@ -2825,8 +2851,6 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 	int floor_list[MAX_FLOOR_STACK];
 	int floor_num;
 
-
-#ifdef ALLOW_REPEAT
 
 	/* Get the item index */
 	if (repeat_pull(cp))
@@ -2849,8 +2873,6 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 			repeat_clear();
 		}
 	}
-
-#endif /* ALLOW_REPEAT */
 
 
 	/* Paranoia XXX XXX XXX */
@@ -2894,8 +2916,8 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 	if (e1 <= e2) allow_equip = TRUE;
 
 
-	/* Scan all objects in the grid */
-	floor_num = scan_floor(floor_list, MAX_FLOOR_STACK, py, px, 0x00);
+	/* Scan all marked non-gold objects in the grid */
+	(void)scan_floor(floor_list, &floor_num, py, px, 0x03);
 
 	/* Full floor */
 	f1 = 0;
@@ -2949,7 +2971,7 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 		}
 
 		/* Use floor if allowed */
-		else if (easy_floor)
+		else if (use_floor)
 		{
 			p_ptr->command_wrk = (USE_FLOOR);
 		}
@@ -2973,42 +2995,38 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 	/* Repeat until done */
 	while (!done)
 	{
-		/* Show choices */
-		if (show_choices)
+		int ni = 0;
+		int ne = 0;
+
+		/* Scan windows */
+		for (j = 0; j < ANGBAND_TERM_MAX; j++)
 		{
-			int ni = 0;
-			int ne = 0;
+			/* Unused */
+			if (!angband_term[j]) continue;
 
-			/* Scan windows */
-			for (j = 0; j < ANGBAND_TERM_MAX; j++)
-			{
-				/* Unused */
-				if (!angband_term[j]) continue;
+			/* Count windows displaying inven */
+			if (op_ptr->window_flag[j] & (PW_INVEN)) ni++;
 
-				/* Count windows displaying inven */
-				if (op_ptr->window_flag[j] & (PW_INVEN)) ni++;
-
-				/* Count windows displaying equip */
-				if (op_ptr->window_flag[j] & (PW_EQUIP)) ne++;
-			}
-
-			/* Toggle if needed */
-			if (((p_ptr->command_wrk == (USE_EQUIP)) && ni && !ne) ||
-			    ((p_ptr->command_wrk == (USE_INVEN)) && !ni && ne))
-			{
-				/* Toggle */
-				toggle_inven_equip();
-
-				/* Track toggles */
-				toggle = !toggle;
-			}
-
-			/* Update */
-			p_ptr->window |= (PW_INVEN | PW_EQUIP);
-
-			/* Redraw windows */
-			window_stuff();
+			/* Count windows displaying equip */
+			if (op_ptr->window_flag[j] & (PW_EQUIP)) ne++;
 		}
+
+		/* Toggle if needed */
+		if (((p_ptr->command_wrk == (USE_EQUIP)) && ni && !ne) ||
+		    ((p_ptr->command_wrk == (USE_INVEN)) && !ni && ne))
+		{
+			/* Toggle */
+			toggle_inven_equip();
+
+			/* Track toggles */
+			toggle = !toggle;
+		}
+
+		/* Update */
+		p_ptr->window |= (PW_INVEN | PW_EQUIP);
+
+		/* Redraw windows */
+		window_stuff();
 
 		/* Viewing inventory */
 		if (p_ptr->command_wrk == (USE_INVEN))
@@ -3017,13 +3035,13 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 			if (p_ptr->command_see) show_inven();
 
 			/* Begin the prompt */
-			sprintf(out_val, "Inven:");
+			strnfmt(out_val, sizeof(out_val), "Inven:");
 
 			/* List choices */
 			if (i1 <= i2)
 			{
 				/* Build the prompt */
-				sprintf(tmp_val, " %c-%c,",
+				strnfmt(tmp_val, sizeof(tmp_val), " %c-%c,",
 				        index_to_label(i1), index_to_label(i2));
 
 				/* Append */
@@ -3031,13 +3049,16 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 			}
 
 			/* Indicate ability to "view" */
-			if (!p_ptr->command_see) strcat(out_val, " * to see,");
+			if (!p_ptr->command_see) my_strcat(out_val, " * to see,", sizeof(out_val));
 
 			/* Indicate legality of "toggle" */
-			if (use_equip) strcat(out_val, " / for Equip,");
+			if (use_equip) my_strcat(out_val, " / for Equip,", sizeof(out_val));
 
 			/* Indicate legality of the "floor" */
-			if (allow_floor) strcat(out_val, " - for floor,");
+			if (allow_floor) my_strcat(out_val, " - for floor,", sizeof(out_val));
+
+			/* Indicate that squelched items can be selected */
+			if (can_squelch) my_strcat(out_val, " ! for squelched,", sizeof(out_val));
 		}
 
 		/* Viewing equipment */
@@ -3047,13 +3068,13 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 			if (p_ptr->command_see) show_equip();
 
 			/* Begin the prompt */
-			sprintf(out_val, "Equip:");
+			strnfmt(out_val, sizeof(out_val), "Equip:");
 
 			/* List choices */
 			if (e1 <= e2)
 			{
 				/* Build the prompt */
-				sprintf(tmp_val, " %c-%c,",
+				strnfmt(tmp_val, sizeof(tmp_val), " %c-%c,",
 				        index_to_label(e1), index_to_label(e2));
 
 				/* Append */
@@ -3061,46 +3082,49 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 			}
 
 			/* Indicate ability to "view" */
-			if (!p_ptr->command_see) strcat(out_val, " * to see,");
+			if (!p_ptr->command_see) my_strcat(out_val, " * to see,", sizeof(out_val));
 
 			/* Indicate legality of "toggle" */
-			if (use_inven) strcat(out_val, " / for Inven,");
+			if (use_inven) my_strcat(out_val, " / for Inven,", sizeof(out_val));
 
 			/* Indicate legality of the "floor" */
-			if (allow_floor) strcat(out_val, " - for floor,");
+			if (allow_floor) my_strcat(out_val, " - for floor,", sizeof(out_val));
 		}
 
 		/* Viewing floor */
 		else
 		{
 			/* Redraw if needed */
-			if (p_ptr->command_see) show_floor(floor_list, floor_num);
+			if (p_ptr->command_see) show_floor(floor_list, floor_num, FALSE);
 
 			/* Begin the prompt */
-			sprintf(out_val, "Floor:");
+			strnfmt(out_val, sizeof(out_val), "Floor:");
 
 			/* List choices */
 			if (f1 <= f2)
 			{
 				/* Build the prompt */
-				sprintf(tmp_val, " %c-%c,", I2A(f1), I2A(f2));
+				strnfmt(tmp_val, sizeof(tmp_val), " %c-%c,", I2A(f1), I2A(f2));
 
 				/* Append */
 				my_strcat(out_val, tmp_val, sizeof(out_val));
 			}
 
 			/* Indicate ability to "view" */
-			if (!p_ptr->command_see) strcat(out_val, " * to see,");
+			if (!p_ptr->command_see) my_strcat(out_val, " * to see,", sizeof(out_val));
 
 			/* Append */
-			if (use_inven) strcat(out_val, " / for Inven,");
+			if (use_inven) my_strcat(out_val, " / for Inven,", sizeof(out_val));
 
 			/* Append */
-			else if (use_equip) strcat(out_val, " / for Equip,");
+			else if (use_equip) my_strcat(out_val, " / for Equip,", sizeof(out_val));
+
+			/* Indicate that squelched items can be selected */
+			if (can_squelch) my_strcat(out_val, " ! for squelched,", sizeof(out_val));
 		}
 
 		/* Finish the prompt */
-		strcat(out_val, " ESC");
+		my_strcat(out_val, " ESC", sizeof(out_val));
 
 		/* Build the prompt */
 		strnfmt(tmp_val, sizeof(tmp_val), "(%s) %s", out_val, pmt);
@@ -3192,49 +3216,44 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 					break;
 				}
 
-				if (easy_floor)
+				/* There is only one item */
+				if (floor_num == 1)
 				{
-					/* There is only one item */
-					if (floor_num == 1)
+					/* Auto-select */
+					if (p_ptr->command_wrk == (USE_FLOOR))
 					{
-						/* Hack -- Auto-Select */
-						if ((p_ptr->command_wrk == (USE_FLOOR)) ||
-						    (!floor_query_flag))
+						/* Special index */
+						k = 0 - floor_list[0];
+
+						/* Allow player to "refuse" certain actions */
+						if (!get_item_allow(k))
 						{
-							/* Special index */
-							k = 0 - floor_list[0];
-
-							/* Allow player to "refuse" certain actions */
-							if (!get_item_allow(k))
-							{
-								done = TRUE;
-								break;
-							}
-
-							/* Accept that choice */
-							(*cp) = k;
-							item = TRUE;
 							done = TRUE;
-
 							break;
 						}
+
+						/* Accept that choice */
+						(*cp) = k;
+						item = TRUE;
+						done = TRUE;
+
+						break;
 					}
-
-					/* Hack -- Fix screen */
-					if (p_ptr->command_see)
-					{
-						/* Load screen */
-						screen_load();
-
-						/* Save screen */
-						screen_save();
-					}
-
-					p_ptr->command_wrk = (USE_FLOOR);
-
-					break;
 				}
 
+				/* Hack -- Fix screen */
+				if (p_ptr->command_see)
+				{
+					/* Load screen */
+					screen_load();
+
+					/* Save screen */
+					screen_save();
+				}
+
+				p_ptr->command_wrk = (USE_FLOOR);
+
+#if 0
 				/* Check each legal object */
 				for (i = 0; i < floor_num; ++i)
 				{
@@ -3243,9 +3262,6 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 
 					/* Skip non-okay objects */
 					if (!get_item_okay(k)) continue;
-
-					/* Verify the item (if required) */
-					if (floor_query_flag && !verify_item("Try", k)) continue;
 
 					/* Allow player to "refuse" certain actions */
 					if (!get_item_allow(k)) continue;
@@ -3256,6 +3272,7 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 					done = TRUE;
 					break;
 				}
+#endif
 
 				break;
 			}
@@ -3360,6 +3377,20 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 				break;
 			}
 
+			case '!':
+			{
+				/* Try squelched items */
+				if (can_squelch)
+				{
+					(*cp) = ALL_SQUELCHED;
+					item = TRUE;
+					done = TRUE;
+					break;
+				}
+
+				/* Just fall through */
+			}
+
 			default:
 			{
 				bool verify;
@@ -3458,18 +3489,14 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 	item_tester_hook = NULL;
 
 
-	/* Clean up */
-	if (show_choices)
-	{
-		/* Toggle again if needed */
-		if (toggle) toggle_inven_equip();
+	/* Toggle again if needed */
+	if (toggle) toggle_inven_equip();
 
-		/* Update */
-		p_ptr->window |= (PW_INVEN | PW_EQUIP);
+	/* Update */
+	p_ptr->window |= (PW_INVEN | PW_EQUIP);
 
-		/* Window stuff */
-		window_stuff();
-	}
+	/* Window stuff */
+	window_stuff();
 
 
 	/* Clear the prompt line */
@@ -3478,12 +3505,8 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 	/* Warning if needed */
 	if (oops && str) msg_print(str);
 
-#ifdef ALLOW_REPEAT
-
 	/* Save item if available */
 	if (item) repeat_push(*cp);
-
-#endif /* ALLOW_REPEAT */
 
 	/* Result */
 	return (item);

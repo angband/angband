@@ -192,18 +192,19 @@ struct object_kind
 	byte charge_base;	/* Charge base */
 	byte charge_dd, charge_ds;	/* Charge dice/sides */
 
+	byte gen_mult_prob;     /* Probability of generating more than one */
+	byte gen_dice;          /* Average number to generate - dice rolled */
+	byte gen_side;          /* Average number to generate - dice sides */
+
 
 	u16b flavor;		/* Special object flavor (or zero) */
+	u16b note;          /* Autoinscription field (later) */
 
+	bool aware;		/* The player is "aware" of the item's effects */
+	bool tried;		/* The player has "tried" one of the items */
 
-	bool aware;			/* The player is "aware" of the item's effects */
-
-	bool tried;			/* The player has "tried" one of the items */
-
-	byte squelch;		/* Squelch setting for the particular item */
-
+	bool squelch;		/* Squelch this item? */
 	bool everseen;		/* Used to despoilify squelch menus */
-
 };
 
 
@@ -283,8 +284,6 @@ struct ego_item_type
 	byte xtra;			/* Extra sustain/resist/power */
 
 	bool everseen;		/* Do not spoil squelch menus */
-	bool squelch;		/* Squelch this ego-item */
-
 };
 
 
@@ -342,7 +341,13 @@ struct monster_race
 
 	s32b mexp;				/* Exp value for kill */
 
-	s16b extra;				/* Unused (for now) */
+	s16b power;				/* Monster power */
+	
+#ifdef ALLOW_TEMPLATES_PROCESS
+
+	s16b highest_threat;	/* Monster highest threat */
+
+#endif /* ALLOW_TEMPLATES_PROCESS */
 
 	byte freq_innate;		/* Innate spell frequency */
 	byte freq_spell;		/* Other spell frequency */
@@ -367,6 +372,7 @@ struct monster_race
 
 	byte max_num;			/* Maximum population allowed per level */
 	byte cur_num;			/* Monster population on current level */
+
 };
 
 
@@ -466,7 +472,7 @@ struct object_type
 
 	s16b pval;			/* Item extra-parameter */
 
-	byte discount;		/* Discount (if any) */
+	byte pseudo;		/* Pseudo-ID marker */
 
 	byte number;		/* Number of items */
 
@@ -538,7 +544,7 @@ struct monster_type
 
 #ifdef DRS_SMART_OPTIONS
 
-	u32b smart;			/* Field for "smart_learn" */
+	u32b smart;			/* Field for "adult_ai_learn" */
 
 #endif /* DRS_SMART_OPTIONS */
 
@@ -875,31 +881,7 @@ struct player_type
 	s16b stat_max[A_MAX];	/* Current "maximal" stat values */
 	s16b stat_cur[A_MAX];	/* Current "natural" stat values */
 
-	s16b fast;			/* Timed -- Fast */
-	s16b slow;			/* Timed -- Slow */
-	s16b blind;			/* Timed -- Blindness */
-	s16b paralyzed;		/* Timed -- Paralysis */
-	s16b confused;		/* Timed -- Confusion */
-	s16b afraid;		/* Timed -- Fear */
-	s16b image;			/* Timed -- Hallucination */
-	s16b poisoned;		/* Timed -- Poisoned */
-	s16b cut;			/* Timed -- Cut */
-	s16b stun;			/* Timed -- Stun */
-
-	s16b protevil;		/* Timed -- Protection */
-	s16b invuln;		/* Timed -- Invulnerable */
-	s16b hero;			/* Timed -- Heroism */
-	s16b shero;			/* Timed -- Super Heroism */
-	s16b shield;		/* Timed -- Shield Spell */
-	s16b blessed;		/* Timed -- Blessed */
-	s16b tim_invis;		/* Timed -- See Invisible */
-	s16b tim_infra;		/* Timed -- Infra Vision */
-
-	s16b oppose_acid;	/* Timed -- oppose acid */
-	s16b oppose_elec;	/* Timed -- oppose lightning */
-	s16b oppose_fire;	/* Timed -- oppose heat */
-	s16b oppose_cold;	/* Timed -- oppose cold */
-	s16b oppose_pois;	/* Timed -- oppose poison */
+	s16b timed[TMD_MAX];	/* Timed effects */
 
 	s16b word_recall;	/* Word of recall counter */
 
@@ -958,6 +940,7 @@ struct player_type
 
 	s16b resting;			/* Resting counter */
 	s16b running;			/* Running counter */
+	bool running_withpathfind;      /* Are we using the pathfinder ? */
 
 	s16b run_cur_dir;		/* Direction we are running */
 	s16b run_old_dir;		/* Direction we came from */
@@ -966,10 +949,13 @@ struct player_type
 	bool run_break_right;	/* Looking for a break (right) */
 	bool run_break_left;	/* Looking for a break (left) */
 
+	bool auto_pickup_okay;      /* Allow automatic pickup */
+
 	s16b command_cmd;		/* Gives identity of current command */
 	s16b command_arg;		/* Gives argument of current command */
 	s16b command_rep;		/* Gives repetition of current command */
 	s16b command_dir;		/* Gives direction of current command */
+	event_type command_cmd_ex; /* Gives additional information of current command */
 
 	s16b command_see;		/* See "cmd1.c" */
 	s16b command_wrk;		/* See "cmd1.c" */
@@ -1031,7 +1017,6 @@ struct player_type
 
 	bool slow_digest;	/* Slower digestion */
 	bool ffall;			/* Feather falling */
-	bool lite;			/* Permanent light */
 	bool regenerate;	/* Regeneration */
 	bool telepathy;		/* Telepathy */
 	bool see_inv;		/* See invisible */
@@ -1059,16 +1044,7 @@ struct player_type
 
 	s16b see_infra;		/* Infravision range */
 
-	s16b skill_dis;		/* Skill: Disarming */
-	s16b skill_dev;		/* Skill: Magic Devices */
-	s16b skill_sav;		/* Skill: Saving throw */
-	s16b skill_stl;		/* Skill: Stealth factor */
-	s16b skill_srh;		/* Skill: Searching ability */
-	s16b skill_fos;		/* Skill: Searching frequency */
-	s16b skill_thn;		/* Skill: To hit (normal) */
-	s16b skill_thb;		/* Skill: To hit (shooting) */
-	s16b skill_tht;		/* Skill: To hit (throwing) */
-	s16b skill_dig;		/* Skill: Digging */
+	s16b skills[SKILL_MAX];	/* Skills */
 
 	u32b noise;			/* Derived from stealth */
 

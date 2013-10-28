@@ -15,11 +15,10 @@
 
 /*
  * The defines below must match the spell numbers in spell.txt
- * if they don't, "interessting" things will probably happen.
+ * if they don't, "interesting" things will probably happen.
  *
- * It would be nice if we could get rid of this dependancy
+ * It would be nice if we could get rid of this dependency.
  */
-
 #define SPELL_MAGIC_MISSILE             0
 #define SPELL_DETECT_MONSTERS           1
 #define SPELL_PHASE_DOOR                2
@@ -195,12 +194,10 @@ cptr get_spell_name(int tval, int spell)
 }
 
 
-cptr get_spell_info(int tval, int spell)
+void get_spell_info(int tval, int spell, char *p, size_t len)
 {
-	static char p[80];
-
-	/* Default */
-	strcpy(p, "");
+	/* Blank 'p' first */
+	p[0] = '\0';
 
 	/* Mage spells */
 	if (tval == TV_MAGIC_BOOK)
@@ -211,94 +208,94 @@ cptr get_spell_info(int tval, int spell)
 		switch (spell)
 		{
 		case SPELL_MAGIC_MISSILE:
-			sprintf(p, " dam %dd4", 3 + ((plev - 1) / 5));
+			strnfmt(p, len, " dam %dd4", 3 + ((plev - 1) / 5));
 			break;
 		case SPELL_PHASE_DOOR:
-			sprintf(p, " range 10");
+			strnfmt(p, len, " range 10");
 			break;
 		case SPELL_CURE_LIGHT_WOUNDS:
-			sprintf(p, " heal 2d8");
+			strnfmt(p, len, " heal 2d8");
 			break;
 		case SPELL_STINKING_CLOUD:
-			sprintf(p, " dam %d", 10 + (plev / 2));
+			strnfmt(p, len, " dam %d", 10 + (plev / 2));
 			break;
 		case SPELL_LIGHTNING_BOLT:
-			sprintf(p, " dam %dd6", (3 + ((plev - 5) / 6)));
+			strnfmt(p, len, " dam %dd6", (3 + ((plev - 5) / 6)));
 			break;
 		case SPELL_FROST_BOLT:
-			sprintf(p, " dam %dd8", (5 + ((plev - 5) / 4)));
+			strnfmt(p, len, " dam %dd8", (5 + ((plev - 5) / 4)));
 			break;
 		case SPELL_ACID_BOLT:
-			sprintf(p, " dam %dd8", (8 + ((plev - 5) / 4)));
+			strnfmt(p, len, " dam %dd8", (8 + ((plev - 5) / 4)));
 			break;
 		case SPELL_FIRE_BOLT:
-			sprintf(p, " dam %dd8", (6 + ((plev - 5) / 4)));
+			strnfmt(p, len, " dam %dd8", (6 + ((plev - 5) / 4)));
 			break;
 		case SPELL_SPEAR_OF_LIGHT:
-			sprintf(p, " dam 6d8");
+			strnfmt(p, len, " dam 6d8");
 			break;
 		case SPELL_HEROISM:
-			sprintf(p, " dur 25+d25");
+			strnfmt(p, len, " dur 25+d25");
 			break;
 		case SPELL_BERSERKER:
-			sprintf(p, " dur 25+d25");
+			strnfmt(p, len, " dur 25+d25");
 			break;
 		case SPELL_HASTE_SELF:
-			sprintf(p, " dur %d+d20", plev);
+			strnfmt(p, len, " dur %d+d20", plev);
 			break;
 		case SPELL_TELEPORT_SELF:
-			sprintf(p, " range %d", plev * 5);
+			strnfmt(p, len, " range %d", plev * 5);
 			break;
 		case SPELL_SHOCK_WAVE:
-			sprintf(p, " dam %d", 10 + plev);
+			strnfmt(p, len, " dam %d", 10 + plev);
 			break;
 		case SPELL_EXPLOSION:
-			sprintf(p, " dam %d", 20 + plev * 2);
+			strnfmt(p, len, " dam %d", 20 + plev * 2);
 			break;
 		case SPELL_CLOUD_KILL:
-			sprintf(p, " dam %d", 40 + (plev / 2));
+			strnfmt(p, len, " dam %d", 40 + (plev / 2));
 			break;
 		case SPELL_REND_SOUL:
-			sprintf(p, " dam 11d%d", plev);
+			strnfmt(p, len, " dam 11d%d", plev);
 			break;
 		case SPELL_CHAOS_STRIKE:
-			sprintf(p, " dam 13d%d", plev);
+			strnfmt(p, len, " dam 13d%d", plev);
 			break;
 		case SPELL_RESIST_COLD:
-			sprintf(p, " dur 20+d20");
+			strnfmt(p, len, " dur 20+d20");
 			break;
 		case SPELL_RESIST_FIRE:
-			sprintf(p, " dur 20+d20");
+			strnfmt(p, len, " dur 20+d20");
 			break;
 		case SPELL_RESIST_POISON:
-			sprintf(p, " dur 20+d20");
+			strnfmt(p, len, " dur 20+d20");
 			break;
 		case SPELL_RESISTANCE:
-			sprintf(p, " dur 20+d20");
+			strnfmt(p, len, " dur 20+d20");
 			break;
 		case SPELL_SHIELD:
-			sprintf(p, " dur 30+d20");
+			strnfmt(p, len, " dur 30+d20");
 			break;
 		case SPELL_FROST_BALL:
-			sprintf(p, " dam %d", 30 + plev);
+			strnfmt(p, len, " dam %d", 30 + plev);
 			break;
 		case SPELL_ACID_BALL:
-			sprintf(p, " dam %d", 40 + plev);
+			strnfmt(p, len, " dam %d", 40 + plev);
 			break;
 		case SPELL_FIRE_BALL:
-			sprintf(p, " dam %d", 55 + plev);
+			strnfmt(p, len, " dam %d", 55 + plev);
 			break;
 		case SPELL_ICE_STORM:
-			sprintf(p, " dam %d", 50 + (plev * 2));
+			strnfmt(p, len, " dam %d", 50 + (plev * 2));
 			break;
 		case SPELL_METEOR_SWARM:
-			sprintf(p, " dam %dx%d", 30 + plev / 2, 2 + plev / 20);
+			strnfmt(p, len, " dam %dx%d", 30 + plev / 2, 2 + plev / 20);
 			break;
 		case SPELL_RIFT:
-			sprintf(p, " dam 40+%dd7", plev);
+			strnfmt(p, len, " dam 40+%dd7", plev);
 			break;
 		case SPELL_MANA_STORM:
-			sprintf(p, " dam %d", 300 + plev * 2);
+			strnfmt(p, len, " dam %d", 300 + plev * 2);
 			break;
 		}
 	}
@@ -312,82 +309,82 @@ cptr get_spell_info(int tval, int spell)
 		switch (spell)
 		{
 			case PRAYER_CURE_LIGHT_WOUNDS:
-				strcpy(p, " heal 2d10");
+				my_strcpy(p, " heal 2d10", len);
 				break;
 			case PRAYER_BLESS:
-				strcpy(p, " dur 12+d12");
+				my_strcpy(p, " dur 12+d12", len);
 				break;
 			case PRAYER_PORTAL:
-				sprintf(p, " range %d", 3 * plev);
+				strnfmt(p, len, " range %d", 3 * plev);
 				break;
 			case PRAYER_CURE_SERIOUS_WOUNDS:
-				strcpy(p, " heal 4d10");
+				my_strcpy(p, " heal 4d10", len);
 				break;
 			case PRAYER_CHANT:
-				strcpy(p, " dur 24+d24");
+				my_strcpy(p, " dur 24+d24", len);
 				break;
 			case PRAYER_RESIST_HEAT_COLD:
-				strcpy(p, " dur 10+d10");
+				my_strcpy(p, " dur 10+d10", len);
 				break;
 			case PRAYER_ORB_OF_DRAINING:
-				sprintf(p, " %d+3d6", plev +
+				strnfmt(p, len, " %d+3d6", plev +
 				        (plev / ((cp_ptr->flags & CF_BLESS_WEAPON) ? 2 : 4)));
 				break;
 			case PRAYER_CURE_CRITICAL_WOUNDS:
-				strcpy(p, " heal 6d10");
+				my_strcpy(p, " heal 6d10", len);
 				break;
 			case PRAYER_SENSE_INVISIBLE:
-				strcpy(p, " dur 24+d24");
+				my_strcpy(p, " dur 24+d24", len);
 				break;
 			case PRAYER_PROTECTION_FROM_EVIL:
-				sprintf(p, " dur %d+d25", 3 * plev);
+				strnfmt(p, len, " dur %d+d25", 3 * plev);
 				break;
 			case PRAYER_CURE_MORTAL_WOUNDS:
-				strcpy(p, " heal 8d10");
+				my_strcpy(p, " heal 8d10", len);
 				break;
 			case PRAYER_PRAYER:
-				strcpy(p, " dur 48+d48");
+				my_strcpy(p, " dur 48+d48", len);
 				break;
 			case PRAYER_DISPEL_UNDEAD:
-				sprintf(p, " dam d%d", 3 * plev);
+				strnfmt(p, len, " dam d%d", 3 * plev);
 				break;
 			case PRAYER_HEAL:
-				strcpy(p, " heal 300");
+				my_strcpy(p, " heal 300", len);
 				break;
 			case PRAYER_DISPEL_EVIL:
-				sprintf(p, " dam d%d", 3 * plev);
+				strnfmt(p, len, " dam d%d", 3 * plev);
 				break;
 			case PRAYER_HOLY_WORD:
-				strcpy(p, " heal 1000");
+				my_strcpy(p, " heal 1000", len);
 				break;
 			case PRAYER_CURE_SERIOUS_WOUNDS2:
-				strcpy(p, " heal 4d10");
+				my_strcpy(p, " heal 4d10", len);
 				break;
 			case PRAYER_CURE_MORTAL_WOUNDS2:
-				strcpy(p, " heal 8d10");
+				my_strcpy(p, " heal 8d10", len);
 				break;
 			case PRAYER_HEALING:
-				strcpy(p, " heal 2000");
+				my_strcpy(p, " heal 2000", len);
 				break;
 			case PRAYER_DISPEL_UNDEAD2:
-				sprintf(p, " dam d%d", 4 * plev);
+				strnfmt(p, len, " dam d%d", 4 * plev);
 				break;
 			case PRAYER_DISPEL_EVIL2:
-				sprintf(p, " dam d%d", 4 * plev);
+				strnfmt(p, len, " dam d%d", 4 * plev);
 				break;
 			case PRAYER_ANNIHILATION:
-				strcpy(p, " dam 200");
+				my_strcpy(p, " dam 200", len);
 				break;
 			case PRAYER_BLINK:
-				strcpy(p, " range 10");
+				my_strcpy(p, " range 10", len);
 				break;
 			case PRAYER_TELEPORT_SELF:
-				sprintf(p, " range %d", 8 * plev);
+				strnfmt(p, len, " range %d", 8 * plev);
 				break;
 		}
 	}
 
-	return (p);
+	return;
 }
 
 
@@ -509,7 +506,7 @@ static bool cast_mage_spell(int spell)
 		{
 
 			(void)hp_player(damroll(2, 8));
-			(void)set_cut(p_ptr->cut - 15);
+			(void)dec_timed(TMD_CUT, 15);
 			break;
 		}
 
@@ -564,7 +561,7 @@ static bool cast_mage_spell(int spell)
 
 		case SPELL_CURE_POISON:
 		{
-			(void)set_poisoned(0);
+			(void)clear_timed(TMD_POISONED);
 			break;
 		}
 
@@ -798,13 +795,13 @@ static bool cast_mage_spell(int spell)
 
 		case SPELL_RESIST_FIRE:
 		{
-			(void)set_oppose_fire(p_ptr->oppose_fire + randint(20) + 20);
+			(void)inc_timed(TMD_OPP_FIRE, randint(20) + 20);
 			break;
 		}
 
 		case SPELL_RESIST_COLD:
 		{
-			(void)set_oppose_cold(p_ptr->oppose_cold + randint(20) + 20);
+			(void)inc_timed(TMD_OPP_COLD, randint(20) + 20);
 			break;
 		}
 
@@ -815,52 +812,52 @@ static bool cast_mage_spell(int spell)
 
 		case SPELL_RESIST_POISON:
 		{
-			(void)set_oppose_pois(p_ptr->oppose_pois + randint(20) + 20);
+			(void)inc_timed(TMD_OPP_POIS, randint(20) + 20);
 			break;
 		}
 
 		case SPELL_RESISTANCE:
 		{
 			int time = randint(20) + 20;
-			(void)set_oppose_acid(p_ptr->oppose_acid + time);
-			(void)set_oppose_elec(p_ptr->oppose_elec + time);
-			(void)set_oppose_fire(p_ptr->oppose_fire + time);
-			(void)set_oppose_cold(p_ptr->oppose_cold + time);
-			(void)set_oppose_pois(p_ptr->oppose_pois + time);
+			(void)inc_timed(TMD_OPP_ACID, time);
+			(void)inc_timed(TMD_OPP_ELEC, time);
+			(void)inc_timed(TMD_OPP_FIRE, time);
+			(void)inc_timed(TMD_OPP_COLD, time);
+			(void)inc_timed(TMD_OPP_POIS, time);
 			break;
 		}
 
 		case SPELL_HEROISM:
 		{
 			(void)hp_player(10);
-			(void)set_hero(p_ptr->hero + randint(25) + 25);
-			(void)set_afraid(0);
+			(void)inc_timed(TMD_HERO, randint(25) + 25);
+			(void)clear_timed(TMD_AFRAID);
 			break;
 		}
 
 		case SPELL_SHIELD:
 		{
-			(void)set_shield(p_ptr->shield + randint(20) + 30);
+			(void)inc_timed(TMD_SHIELD, randint(20) + 30);
 			break;
 		}
 
 		case SPELL_BERSERKER:
 		{
 			(void)hp_player(30);
-			(void)set_shero(p_ptr->shero + randint(25) + 25);
-			(void)set_afraid(0);
+			(void)inc_timed(TMD_SHERO, randint(25) + 25);
+			(void)clear_timed(TMD_AFRAID);
 			break;
 		}
 
 		case SPELL_HASTE_SELF:
 		{
-			if (!p_ptr->fast)
+			if (!p_ptr->timed[TMD_FAST])
 			{
-				(void)set_fast(randint(20) + plev);
+				(void)set_timed(TMD_FAST, randint(20) + plev);
 			}
 			else
 			{
-				(void)set_fast(p_ptr->fast + randint(5));
+				(void)inc_timed(TMD_FAST, randint(5));
 			}
 			break;
 		}
@@ -929,19 +926,19 @@ static bool cast_priest_spell(int spell)
 		case PRAYER_CURE_LIGHT_WOUNDS:
 		{
 			(void)hp_player(damroll(2, 10));
-			(void)set_cut(p_ptr->cut - 10);
+			(void)dec_timed(TMD_CUT, 10);
 			break;
 		}
 
 		case PRAYER_BLESS:
 		{
-			(void)set_blessed(p_ptr->blessed + randint(12) + 12);
+			(void)inc_timed(TMD_BLESSED, randint(12) + 12);
 			break;
 		}
 
 		case PRAYER_REMOVE_FEAR:
 		{
-			(void)set_afraid(0);
+			(void)clear_timed(TMD_AFRAID);
 			break;
 		}
 
@@ -966,7 +963,7 @@ static bool cast_priest_spell(int spell)
 
 		case PRAYER_SLOW_POISON:
 		{
-			(void)set_poisoned(p_ptr->poisoned / 2);
+			(void)set_timed(TMD_POISONED, p_ptr->timed[TMD_POISONED] / 2);
 			break;
 		}
 
@@ -986,13 +983,13 @@ static bool cast_priest_spell(int spell)
 		case PRAYER_CURE_SERIOUS_WOUNDS:
 		{
 			(void)hp_player(damroll(4, 10));
-			(void)set_cut((p_ptr->cut / 2) - 20);
+			(void)set_timed(TMD_CUT, (p_ptr->timed[TMD_CUT] / 2) - 20);
 			break;
 		}
 
 		case PRAYER_CHANT:
 		{
-			(void)set_blessed(p_ptr->blessed + randint(24) + 24);
+			(void)inc_timed(TMD_BLESSED, randint(24) + 24);
 			break;
 		}
 
@@ -1016,14 +1013,14 @@ static bool cast_priest_spell(int spell)
 
 		case PRAYER_RESIST_HEAT_COLD:
 		{
-			(void)set_oppose_fire(p_ptr->oppose_fire + randint(10) + 10);
-			(void)set_oppose_cold(p_ptr->oppose_cold + randint(10) + 10);
+			(void)inc_timed(TMD_OPP_FIRE, randint(10) + 10);
+			(void)inc_timed(TMD_OPP_COLD, randint(10) + 10);
 			break;
 		}
 
 		case PRAYER_NEUTRALIZE_POISON:
 		{
-			(void)set_poisoned(0);
+			(void)clear_timed(TMD_POISONED);
 			break;
 		}
 
@@ -1040,19 +1037,20 @@ static bool cast_priest_spell(int spell)
 		case PRAYER_CURE_CRITICAL_WOUNDS:
 		{
 			(void)hp_player(damroll(6, 10));
-			(void)set_cut(0);
+			(void)clear_timed(TMD_CUT);
+			(void)clear_timed(TMD_AMNESIA);
 			break;
 		}
 
 		case PRAYER_SENSE_INVISIBLE:
 		{
-			(void)set_tim_invis(p_ptr->tim_invis + randint(24) + 24);
+			(void)inc_timed(TMD_SINVIS, randint(24) + 24);
 			break;
 		}
 
 		case PRAYER_PROTECTION_FROM_EVIL:
 		{
-			(void)set_protevil(p_ptr->protevil + randint(25) + 3 * p_ptr->lev);
+			(void)inc_timed(TMD_PROTEVIL, randint(25) + 3 * p_ptr->lev);
 			break;
 		}
 
@@ -1071,8 +1069,8 @@ static bool cast_priest_spell(int spell)
 		case PRAYER_CURE_MORTAL_WOUNDS:
 		{
 			(void)hp_player(damroll(8, 10));
-			(void)set_stun(0);
-			(void)set_cut(0);
+			(void)clear_timed(TMD_STUN);
+			(void)clear_timed(TMD_CUT);
 			break;
 		}
 
@@ -1084,7 +1082,7 @@ static bool cast_priest_spell(int spell)
 
 		case PRAYER_PRAYER:
 		{
-			(void)set_blessed(p_ptr->blessed + randint(48) + 48);
+			(void)inc_timed(TMD_BLESSED, randint(48) + 48);
 			break;
 		}
 
@@ -1097,8 +1095,8 @@ static bool cast_priest_spell(int spell)
 		case PRAYER_HEAL:
 		{
 			(void)hp_player(300);
-			(void)set_stun(0);
-			(void)set_cut(0);
+			(void)clear_timed(TMD_STUN);
+			(void)clear_timed(TMD_CUT);
 			break;
 		}
 
@@ -1118,10 +1116,10 @@ static bool cast_priest_spell(int spell)
 		{
 			(void)dispel_evil(randint(plev * 4));
 			(void)hp_player(1000);
-			(void)set_afraid(0);
-			(void)set_poisoned(0);
-			(void)set_stun(0);
-			(void)set_cut(0);
+			(void)clear_timed(TMD_AFRAID);
+			(void)clear_timed(TMD_POISONED);
+			(void)clear_timed(TMD_STUN);
+			(void)clear_timed(TMD_CUT);
 			break;
 		}
 
@@ -1157,23 +1155,23 @@ static bool cast_priest_spell(int spell)
 		case PRAYER_CURE_SERIOUS_WOUNDS2:
 		{
 			(void)hp_player(damroll(4, 10));
-			(void)set_cut(0);
+			(void)clear_timed(TMD_CUT);
 			break;
 		}
 
 		case PRAYER_CURE_MORTAL_WOUNDS2:
 		{
 			(void)hp_player(damroll(8, 10));
-			(void)set_stun(0);
-			(void)set_cut(0);
+			(void)clear_timed(TMD_STUN);
+			(void)clear_timed(TMD_CUT);
 			break;
 		}
 
 		case PRAYER_HEALING:
 		{
 			(void)hp_player(2000);
-			(void)set_stun(0);
-			(void)set_cut(0);
+			(void)clear_timed(TMD_STUN);
+			(void)clear_timed(TMD_CUT);
 			break;
 		}
 

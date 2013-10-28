@@ -553,8 +553,11 @@ s16b get_mon_num(int level)
  */
 void display_monlist(void)
 {
-	int idx, n;
-	int line = 0;
+	int i, max;
+	int line = 1, x = 0;
+	unsigned total_count = 0, disp_count = 0;
+
+	byte attr;
 
 	char *m_name;
 	char buf[80];
@@ -562,98 +565,107 @@ void display_monlist(void)
 	monster_type *m_ptr;
 	monster_race *r_ptr;
 
-	u16b *race_counts;
+	u16b *race_count;
 
 
-	/* Allocate the array */
-	C_MAKE(race_counts, z_info->r_max, u16b);
-
-	/* Iterate over mon_list */
-	for (idx = 1; idx < mon_max; idx++)
+	/* Clear the term if in a subwindow, set x otherwise */
+	if (Term != angband_term[0])
 	{
-		m_ptr = &mon_list[idx];
-
-		/* Only visible monsters */
-		if (!m_ptr->ml) continue;
-
-		/* Bump the count for this race */
-		race_counts[m_ptr->r_idx]++;
+		clear_from(0);
+		max = Term->hgt - 1;
+	}
+	else
+	{
+	    x = 13;
+	    max = Term->hgt - 2;
 	}
 
+	/* Allocate the array */
+	C_MAKE(race_count, z_info->r_max, u16b);
 
-	/* Iterate over mon_list ( again :-/ ) */
-	for (idx = 1; idx < mon_max; idx++)
+	/* Scan the monster list */
+	for (i = 1; i < mon_max; i++)
 	{
-		m_ptr = &mon_list[idx];
+		m_ptr = &mon_list[i];
 
 		/* Only visible monsters */
 		if (!m_ptr->ml) continue;
 
-		/* Do each race only once */
-		if (!race_counts[m_ptr->r_idx]) continue;
+		/* Bump the count for this race, and the total count */
+		race_count[m_ptr->r_idx]++;
+		total_count++;
+	}
 
-		/* Get monster race */
-		r_ptr = &r_info[m_ptr->r_idx];
+	/* Note no visible monsters */
+	if (!total_count)
+	{
+		/* Clear display and print note */
+		c_prt(TERM_SLATE, "You see no monsters.", 0, 0);
+		if (Term == angband_term[0])
+		    Term_addstr(-1, TERM_WHITE, "  (Press any key to continue.)");
 
-		/* Get the monster name */
+		/* Free up memory */
+		FREE(race_count);
+
+		/* Done */
+		return;
+	}
+
+	/* Go over */
+	for (i = 1; (i < z_info->r_max) && (line < max); i++)
+	{
+		/* No monsters of this race are visible */
+		if (!race_count[i]) continue;
+
+		/* Note that these have been displayed */
+		disp_count += race_count[i];
+
+		/* Get monster race and name */
+		r_ptr = &r_info[i];
 		m_name = r_name + r_ptr->name;
 
-		/* Obtain the length of the description */
-		n = strlen(m_name);
+		/* Display uniques in a special colour */
+		if (r_ptr->flags1 & RF1_UNIQUE)
+			attr = TERM_VIOLET;
+		else
+			attr = TERM_WHITE;
 
-		/* Display the entry itself */
-		Term_putstr(0, line, n, TERM_WHITE, m_name);
+		/* Build the monster name */
+		if (race_count[i] == 1)
+			my_strcpy(buf, m_name, sizeof(buf));
+		else
+			strnfmt(buf, sizeof(buf), "%s (x%d) ", m_name, race_count[i]);
 
-		/* Append the "standard" attr/char info */
-		Term_addstr(-1, TERM_WHITE, " ('");
-		Term_addch(r_ptr->d_attr, r_ptr->d_char);
-		Term_addstr(-1, TERM_WHITE, "')");
-		n += 6;
+		/* Display the pict */
+		Term_putch(x, line, r_ptr->x_attr, r_ptr->x_char);
+		Term_putch(x + 1, line, TERM_WHITE, ' ');
 
-		/* Append the "optional" attr/char info */
-		Term_addstr(-1, TERM_WHITE, "/('");
-
-		Term_addch(r_ptr->x_attr, r_ptr->x_char);
-
-		if (use_bigtile)
-		{
-			if (r_ptr->x_attr & 0x80)
-				Term_addch(255, -1);
-			else
-				Term_addch(0, ' ');
-
-			n++;
-		}
-
-		Term_addstr(-1, TERM_WHITE, "'):");
-		n += 7;
-
-		/* Add race count */
-		sprintf(buf, "%d", race_counts[m_ptr->r_idx]);
-		Term_addch(TERM_WHITE, '[');
-		Term_addstr(strlen(buf), TERM_WHITE, buf);
-		Term_addch(TERM_WHITE, ']');
-		n += strlen(buf) + 2;
-
-		/* Don't do this race again */
-		race_counts[m_ptr->r_idx] = 0;
-
-		/* Erase the rest of the line */
-		Term_erase(n, line, 255);
-
-		/* Bump line counter */
+		/* Print and bump line counter */
+		c_prt(attr, buf, line, x + 2);
 		line++;
 	}
 
-	/* Free the race counters */
-	FREE(race_counts);
-
-	/* Erase the rest of the window */
-	for (idx = line; idx < Term->hgt; idx++)
+	/* Print "and others" message if we've run out of space */
+	if (disp_count != total_count)
 	{
-		/* Erase the line */
-		Term_erase(0, idx, 255);
+		strnfmt(buf, sizeof buf, "  ...and %d others.", total_count - disp_count);
+	    c_prt(TERM_WHITE, buf, line, x);
 	}
+
+	/* Otherwise clear a line at the end, for main-term display */
+	else
+	{
+		prt("", line, x);
+	}
+
+	/* Message */
+	prt(format("You can see %d monster%s:",
+		total_count, (total_count > 1 ? "s" : "")), 0, 0);
+	if (Term == angband_term[0])
+	    Term_addstr(-1, TERM_WHITE, "  (Press any key to continue.)");
+
+	/* Free the race counters */
+	FREE(race_count);
 }
 
 
@@ -1055,7 +1067,7 @@ void update_mon(int m_idx, bool full)
 		}
 
 		/* Normal line of sight, and not blind */
-		if (player_has_los_bold(fy, fx) && !p_ptr->blind)
+		if (player_has_los_bold(fy, fx) && !p_ptr->timed[TMD_BLIND])
 		{
 			bool do_invisible = FALSE;
 			bool do_cold_blood = FALSE;
@@ -2364,7 +2376,7 @@ void update_smart_learn(int m_idx, int what)
 
 
 	/* Not allowed to learn */
-	if (!smart_learn) return;
+	if (!adult_ai_learn) return;
 
 	/* Too stupid to learn anything */
 	if (r_ptr->flags2 & (RF2_STUPID)) return;
@@ -2393,7 +2405,7 @@ void update_smart_learn(int m_idx, int what)
 		case DRS_RES_ACID:
 		{
 			if (p_ptr->resist_acid) m_ptr->smart |= (SM_RES_ACID);
-			if (p_ptr->oppose_acid) m_ptr->smart |= (SM_OPP_ACID);
+			if (p_ptr->timed[TMD_OPP_ACID]) m_ptr->smart |= (SM_OPP_ACID);
 			if (p_ptr->immune_acid) m_ptr->smart |= (SM_IMM_ACID);
 			break;
 		}
@@ -2401,7 +2413,7 @@ void update_smart_learn(int m_idx, int what)
 		case DRS_RES_ELEC:
 		{
 			if (p_ptr->resist_elec) m_ptr->smart |= (SM_RES_ELEC);
-			if (p_ptr->oppose_elec) m_ptr->smart |= (SM_OPP_ELEC);
+			if (p_ptr->timed[TMD_OPP_ELEC]) m_ptr->smart |= (SM_OPP_ELEC);
 			if (p_ptr->immune_elec) m_ptr->smart |= (SM_IMM_ELEC);
 			break;
 		}
@@ -2409,7 +2421,7 @@ void update_smart_learn(int m_idx, int what)
 		case DRS_RES_FIRE:
 		{
 			if (p_ptr->resist_fire) m_ptr->smart |= (SM_RES_FIRE);
-			if (p_ptr->oppose_fire) m_ptr->smart |= (SM_OPP_FIRE);
+			if (p_ptr->timed[TMD_OPP_FIRE]) m_ptr->smart |= (SM_OPP_FIRE);
 			if (p_ptr->immune_fire) m_ptr->smart |= (SM_IMM_FIRE);
 			break;
 		}
@@ -2417,7 +2429,7 @@ void update_smart_learn(int m_idx, int what)
 		case DRS_RES_COLD:
 		{
 			if (p_ptr->resist_cold) m_ptr->smart |= (SM_RES_COLD);
-			if (p_ptr->oppose_cold) m_ptr->smart |= (SM_OPP_COLD);
+			if (p_ptr->timed[TMD_OPP_COLD]) m_ptr->smart |= (SM_OPP_COLD);
 			if (p_ptr->immune_cold) m_ptr->smart |= (SM_IMM_COLD);
 			break;
 		}
@@ -2425,7 +2437,7 @@ void update_smart_learn(int m_idx, int what)
 		case DRS_RES_POIS:
 		{
 			if (p_ptr->resist_pois) m_ptr->smart |= (SM_RES_POIS);
-			if (p_ptr->oppose_pois) m_ptr->smart |= (SM_OPP_POIS);
+			if (p_ptr->timed[TMD_OPP_POIS]) m_ptr->smart |= (SM_OPP_POIS);
 			break;
 		}
 

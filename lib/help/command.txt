@@ -131,13 +131,11 @@ Stay still (with pickup) (,) or Stay still (with pickup) (.)
         on.  You may also use the "5" key (both keysets).  This command
         may take a count, and takes some energy.
 
-Stay still (flip pickup) (g)
-        Stays in the same square for one move.  If you normally pick up
-        objects you encounter, you will not pick up whatever you are
-        standing on.  If you normally do not pick up objects, you will
-        pick up what you are standing on.  This command is normally only
-        used when the "always_pickup" option is false.  This command may
-        take a count, and takes some energy.
+Get objects (g)
+        Pick up objects and gold on the floor beneath you.  Picking up
+        gold takes no time, and objects take 1/10th of a normal turn each
+        (maximum time cost is a full turn).  You may pick up objects until
+        the floor is empty or your backpack is full.
 
 Rest (R)
         Resting is better for you than repeatedly staying still, and can
@@ -569,8 +567,9 @@ Interact with options (=)
         pref commands.  The "window" options allow you to specify what
         should be drawn in any of the special sub-windows (not available
         on all platforms). See the help file "options.txt" for more info.
+        You can also interact with macros and keymaps under this menu.
 
-Interact with macros (@)
+Interact with macros - option submenu
         Allow you to interact with macros.  You may load or save macros
         from user pref files, create macros of various types, or define
         keymaps.  You must define a "current action", shown at the bottom
@@ -578,15 +577,19 @@ Interact with macros (@)
         commands, which use that "current action" as their action.  This
         is a horrible interface, and will be fixed eventually.
 
-Interact with visuals (%)
+Interact with visuals - option submenu.
         Allow you to interact with visuals.  You may load or save visuals
         from user pref files, or modify the attr/char mappings for the
         monsters, objects, and terrain features.  You must use the "redraw"
         command (^R) to redraw the map after changing attr/char mappings.
+		NOTE: It is generally easier to modify visuals via the "knowledge"
+        menus.
 
-Interact with colors (&)
+Interact with colors - option submenu.
         Allow the user to interact with colors.  This command only
         works on some systems.
+        NOTE: It is commonly used to brighten the 'Light Dark' color
+        (eg. Cave Spiders) on displays with bad alpha settings.
  
 --- Help ---
 
@@ -644,5 +647,11 @@ Load screen dump (left-paren)
 
 Save screen dump (right-paren)
         This command dumps a "snap-shot" of the current screen to the file
-        "dump.txt", including encoded color information.
+        "dump.txt", including encoded color information.  The command has
+		three variants:
+		- text, a simple ascii dump of the screen concatenated with a dump of
+		the color attributes.  It may be viewed in color with the '(' command.
+		- html, suitable for viewing in a web browser.
+		- forum embedded html for vBulletin, suitable for pasting in
+		web forums like http://angband.oook.cz/forums.
 

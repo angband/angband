@@ -119,6 +119,7 @@ void do_cmd_eat_food(void)
 	{
 		object_aware(o_ptr);
 		gain_exp((lev + (p_ptr->lev / 2)) / p_ptr->lev);
+		p_ptr->notice |= PN_SQUELCH;
 	}
 
 	/* Window stuff */
@@ -204,6 +205,7 @@ void do_cmd_quaff_potion(void)
 	{
 		object_aware(o_ptr);
 		gain_exp((lev + (p_ptr->lev / 2)) / p_ptr->lev);
+		p_ptr->notice |= PN_SQUELCH;
 	}
 
 	/* Window stuff */
@@ -245,7 +247,7 @@ void do_cmd_read_scroll(void)
 
 
 	/* Check some conditions */
-	if (p_ptr->blind)
+	if (p_ptr->timed[TMD_BLIND])
 	{
 		msg_print("You can't see anything.");
 		return;
@@ -255,12 +257,12 @@ void do_cmd_read_scroll(void)
 		msg_print("You have no light to read by.");
 		return;
 	}
-	if (p_ptr->confused)
+
+	if (p_ptr->timed[TMD_CONFUSED])
 	{
 		msg_print("You are too confused!");
 		return;
 	}
-
 
 	/* Restrict choices to scrolls */
 	item_tester_tval = TV_SCROLL;
@@ -286,6 +288,14 @@ void do_cmd_read_scroll(void)
 	/* Take a turn */
 	p_ptr->energy_use = 100;
 
+	/* Check for amnesia */
+	if (rand_int(2) != 0 && p_ptr->timed[TMD_AMNESIA])
+	{
+		/* Can't remember how */
+		msg_print("You can't remember how to read!");
+		return;
+	}
+
 	/* Not identified yet */
 	ident = FALSE;
 
@@ -306,6 +316,7 @@ void do_cmd_read_scroll(void)
 	{
 		object_aware(o_ptr);
 		gain_exp((lev + (p_ptr->lev / 2)) / p_ptr->lev);
+		p_ptr->notice |= PN_SQUELCH;
 	}
 
 	/* Window stuff */
@@ -382,6 +393,7 @@ void do_cmd_use_staff(void)
 	/* Take a turn */
 	p_ptr->energy_use = 100;
 
+
 	/* Not identified yet */
 	ident = FALSE;
 
@@ -389,10 +401,10 @@ void do_cmd_use_staff(void)
 	lev = k_info[o_ptr->k_idx].level;
 
 	/* Base chance of success */
-	chance = p_ptr->skill_dev;
+	chance = p_ptr->skills[SKILL_DEV];
 
 	/* Confusion hurts skill */
-	if (p_ptr->confused) chance = chance / 2;
+	if (p_ptr->timed[TMD_CONFUSED]) chance = chance / 2;
 
 	/* High level objects are harder */
 	chance = chance - ((lev > 50) ? 50 : lev);
@@ -442,6 +454,7 @@ void do_cmd_use_staff(void)
 	{
 		object_aware(o_ptr);
 		gain_exp((lev + (p_ptr->lev / 2)) / p_ptr->lev);
+		p_ptr->notice |= PN_SQUELCH;
 	}
 
 	/* Window stuff */
@@ -520,6 +533,8 @@ void do_cmd_aim_wand(void)
 		o_ptr = &o_list[0 - item];
 	}
 
+
+
 	/* Aim the wand */
 	if (!use_object(o_ptr, &ident)) return;
 
@@ -538,6 +553,7 @@ void do_cmd_aim_wand(void)
 	{
 		object_aware(o_ptr);
 		gain_exp((lev + (p_ptr->lev / 2)) / p_ptr->lev);
+		p_ptr->notice |= PN_SQUELCH;
 	}
 
 	/* Window stuff */
@@ -565,7 +581,7 @@ void do_cmd_aim_wand(void)
 
 
 /*
- * Activate (zap) a Rod
+ * Zap a Rod
  *
  * Unstack fully charged rods as needed.
  *
@@ -617,6 +633,7 @@ void do_cmd_zap_rod(void)
 
 		object_aware(o_ptr);
 		gain_exp((lev + (p_ptr->lev / 2)) / p_ptr->lev);
+		p_ptr->notice |= PN_SQUELCH;
 	}
 
 	/* Window stuff */
@@ -687,6 +704,7 @@ void do_cmd_activate(void)
 	/* Take a turn */
 	p_ptr->energy_use = 100;
 
+
 	/* Extract the item level */
 	lev = k_info[o_ptr->k_idx].level;
 
@@ -694,18 +712,27 @@ void do_cmd_activate(void)
 	if (artifact_p(o_ptr)) lev = a_info[o_ptr->name1].level;
 
 	/* Base chance of success */
-	chance = p_ptr->skill_dev;
+	chance = p_ptr->skills[SKILL_DEV];
 
 	/* Confusion hurts skill */
-	if (p_ptr->confused) chance = chance / 2;
+	if (p_ptr->timed[TMD_CONFUSED]) chance = chance / 2;
 
 	/* High level objects are harder */
 	chance = chance - ((lev > 50) ? 50 : lev);
+
 
 	/* Give everyone a (slight) chance */
 	if ((chance < USE_DEVICE) && (rand_int(USE_DEVICE - chance + 1) == 0))
 	{
 		chance = USE_DEVICE;
+	}
+
+	/* Check for amnesia */
+	if (rand_int(2) != 0 && p_ptr->timed[TMD_AMNESIA])
+	{
+		if (flush_failure) flush();
+		msg_print("You can't remember how to activate it.");
+		return;
 	}
 
 	/* Roll for usage */

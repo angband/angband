@@ -1,0 +1,61 @@
+#
+# File: Makefile.src
+#
+# A makefile which includes the current object files, hopefully includable
+# across a range of different makefiles, to cut down on maintenance.
+#
+
+VERSION = 3.0.8
+
+HDRS = h-basic.h
+INCS = angband.h config.h defines.h externs.h types.h \
+       z-term.h z-rand.h z-type.h z-util.h z-virt.h z-form.h
+
+HEADERS = $(HDRS) $(INCS)
+
+ZFILES = z-file.o z-form.o z-rand.o z-term.o z-type.o z-util.o z-virt.o
+MAINFILES = main.o maid-x11.o main-crb.o main-gcu.o main-gtk.o \
+	main-ros.o main-sdl.o main-win.o main-x11.o main-xaw.o snd-sdl.o
+
+ANGFILES = \
+	birth.o \
+	cave.o \
+	cmd0.o \
+	cmd1.o \
+	cmd2.o \
+	cmd3.o \
+	cmd4.o \
+	cmd5.o \
+	cmd6.o \
+	dungeon.o \
+	files.o \
+	generate.o \
+	init1.o \
+	init2.o \
+	load.o \
+	melee1.o \
+	melee2.o \
+	monster1.o \
+	monster2.o \
+	obj-info.o \
+	object1.o \
+	object2.o \
+	randart.o \
+	randname.o \
+	pathfind.o \
+	signals.o \
+	save.o \
+	spells1.o \
+	spells2.o \
+	squelch.o \
+	store.o \
+	tables.o \
+	ui.o \
+	use-obj.o  \
+	util.o  \
+	variable.o \
+	wizard1.o \
+	wizard2.o \
+	x-spell.o \
+	xtra1.o \
+	xtra2.o

@@ -472,7 +472,7 @@ static void special_lighting_floor(byte *a, char *c, int info)
 	}
 
 	/* Handle "dark" grids and "blindness" */
-	else if ((p_ptr->blind) || (!(info & CAVE_GLOW)))
+	else if ((p_ptr->timed[TMD_BLIND]) || (!(info & CAVE_GLOW)))
 	{
 		/* Use a dark tile */
 		switch (use_graphics)
@@ -517,7 +517,7 @@ static void special_lighting_wall(byte *a, char *c, int feat, int info)
 	}
 
 	/* Handle "blind" */
-	else if (p_ptr->blind)
+	else if (p_ptr->timed[TMD_BLIND])
 	{
 		switch (use_graphics)
 		{
@@ -718,17 +718,12 @@ static void special_lighting_wall(byte *a, char *c, int feat, int info)
  * the color of whatever is under them, and "CHAR_CLEAR", which means that
  * they take the symbol of whatever is under them.  Technically, the flag
  * "CHAR_MULTI" is supposed to indicate that a monster looks strange when
- * examined, but this flag is currently ignored.  All of these flags are
- * ignored if the "avoid_other" option is set, since checking for these
- * conditions is expensive (and annoying) on some systems.
+ * examined, but this flag is currently ignored.
  *
  * Normally, players could be handled just like monsters, except that the
  * concept of the "torch lite" of others player would add complications.
  * For efficiency, however, we handle the (only) player first, since the
  * "player" symbol always "pre-empts" any other facts about the grid.
- *
- * The "hidden_player" efficiency option, which only makes sense with a
- * single player, allows the player symbol to be hidden while running.
  *
  * ToDo: The transformations for tile colors, or brightness for the 16x16
  * tiles should be handled differently.  One possibility would be to
@@ -747,7 +742,7 @@ void map_info(int y, int x, byte *ap, char *cp, byte *tap, char *tcp)
 
 	s16b m_idx;
 
-	s16b image = p_ptr->image;
+	s16b image = p_ptr->timed[TMD_IMAGE];
 
 	int floor_num = 0;
 
@@ -847,7 +842,7 @@ void map_info(int y, int x, byte *ap, char *cp, byte *tap, char *tcp)
 	for (o_ptr = get_first_object(y, x); o_ptr; o_ptr = get_next_object(o_ptr))
 	{
 		/* Memorized objects */
-		if (o_ptr->marked)
+		if (o_ptr->marked && !squelch_hide_item(o_ptr))
 		{
 			/* Hack -- object hallucination */
 			if (image)
@@ -917,16 +912,6 @@ void map_info(int y, int x, byte *ap, char *cp, byte *tap, char *tcp)
 				c = PICT_C(i);
 			}
 
-			/* Ignore weird codes */
-			else if (avoid_other)
-			{
-				/* Use attr */
-				a = da;
-
-				/* Use char */
-				c = dc;
-			}
-
 			/* Special attr/char codes */
 			else if ((da & 0x80) && (dc & 0x80))
 			{
@@ -984,7 +969,37 @@ void map_info(int y, int x, byte *ap, char *cp, byte *tap, char *tcp)
 	}
 
 	/* Handle "player" */
-	else if ((m_idx < 0) && !(p_ptr->running && hidden_player))
+	else if (m_idx < 0)
+	{
+		monster_race *r_ptr = &r_info[0];
+
+		/* Get the "player" attr */
+		a = r_ptr->x_attr;
+		if ((hp_changes_color) && (arg_graphics == GRAPHICS_NONE))
+		{
+			switch(p_ptr->chp * 10 / p_ptr->mhp)
+				{
+				case 10:
+				case  9:	a = TERM_WHITE  ;	break;
+				case  8:
+				case  7:	a = TERM_YELLOW ;	break;
+				case  6:
+				case  5:	a = TERM_ORANGE ;	break;
+				case  4:
+				case  3:	a = TERM_L_RED  ;	break;
+				case  2:
+				case  1:
+				case  0:	a = TERM_RED    ;	break;
+				default:	a = TERM_WHITE  ;	break;
+				}
+		}
+
+		/* Get the "player" char */
+		c = r_ptr->x_char;
+	}
+
+	/* Players */
+	else if (m_idx < 0)
 	{
 		monster_race *r_ptr = &r_info[0];
 
@@ -993,377 +1008,6 @@ void map_info(int y, int x, byte *ap, char *cp, byte *tap, char *tcp)
 
 		/* Get the "player" char */
 		c = r_ptr->x_char;
-	}
-
-#ifdef MAP_INFO_MULTIPLE_PLAYERS
-	/* Players */
-	else if (m_idx < 0)
-#else /* MAP_INFO_MULTIPLE_PLAYERS */
-	/* Handle "player" */
-	else if ((m_idx < 0) && !(p_ptr->running && hidden_player))
-#endif /* MAP_INFO_MULTIPLE_PLAYERS */
-	{
-		monster_race *r_ptr = &r_info[0];
-
-		/* Get the "player" attr */
-		a = r_ptr->x_attr;
-
-		/* Get the "player" char */
-		c = r_ptr->x_char;
-	}
-
-	/* Result */
-	(*ap) = a;
-	(*cp) = c;
-}
-
-/*
- * HACK - duplicated code
- *
- * Same as map_info, but always return the char/attr specified by the
- * info files.
- */
-void map_info_default(int y, int x, byte *ap, char *cp)
-{
-	byte a;
-	char c;
-
-	byte feat;
-	byte info;
-
-	feature_type *f_ptr;
-
-	s16b this_o_idx, next_o_idx = 0;
-
-	s16b m_idx;
-
-	s16b image = p_ptr->image;
-
-	int floor_num = 0;
-
-	/* Monster/Player */
-	m_idx = cave_m_idx[y][x];
-
-	/* Feature */
-	feat = cave_feat[y][x];
-
-	/* Cave flags */
-	info = cave_info[y][x];
-
-	/* Hack -- rare random hallucination on non-outer walls */
-	if (image && (!rand_int(256)) && (feat < FEAT_PERM_SOLID))
-	{
-		int i = image_random();
-
-		a = PICT_A(i);
-		c = PICT_C(i);
-	}
-
-	/* Boring grids (floors, etc) */
-	else if (feat <= FEAT_INVIS)
-	{
-		/* Memorized (or seen) floor */
-		if ((info & (CAVE_MARK)) ||
-		    (info & (CAVE_SEEN)))
-		{
-			/* Get the floor feature */
-			f_ptr = &f_info[FEAT_FLOOR];
-
-			/* Normal attr */
-			a = f_ptr->d_attr;
-
-			/* Normal char */
-			c = f_ptr->d_char;
-
-			/* Special lighting effects */
-			if (view_special_lite && (a == TERM_WHITE))
-			{
-				/* Handle "seen" grids */
-				if (info & (CAVE_SEEN))
-				{
-					/* Only lit by "torch" lite */
-					if (view_yellow_lite && !(info & (CAVE_GLOW)))
-					{
-						/* Use "yellow" */
-						a = TERM_YELLOW;
-					}
-				}
-
-				/* Handle "blind" */
-				else if (p_ptr->blind)
-				{
-					/* Use "dark gray" */
-					a = TERM_L_DARK;
-				}
-
-				/* Handle "dark" grids */
-				else if (!(info & (CAVE_GLOW)))
-				{
-					/* Use "dark gray" */
-					a = TERM_L_DARK;
-				}
-
-				/* Handle "view_bright_lite" */
-				else if (view_bright_lite)
-				{
-					/* Use "gray" */
-					a = TERM_SLATE;
-				}
-			}
-		}
-
-		/* Unknown */
-		else
-		{
-			/* Get the darkness feature */
-			f_ptr = &f_info[FEAT_NONE];
-
-			/* Normal attr */
-			a = f_ptr->d_attr;
-
-			/* Normal char */
-			c = f_ptr->d_char;
-		}
-	}
-
-	/* Interesting grids (non-floors) */
-	else
-	{
-		/* Memorized grids */
-		if (info & (CAVE_MARK))
-		{
-			/* Apply "mimic" field */
-			feat = f_info[feat].mimic;
-
-			/* Get the feature */
-			f_ptr = &f_info[feat];
-
-			/* Normal attr */
-			a = f_ptr->d_attr;
-
-			/* Normal char */
-			c = f_ptr->d_char;
-
-			/* Special lighting effects (walls only) */
-			if (view_granite_lite &&
-			    (((a == TERM_WHITE) && (feat >= FEAT_SECRET)) ||
-			     (feat_supports_lighting(feat))))
-			{
-				/* Handle "seen" grids */
-				if (info & (CAVE_SEEN))
-				{
-					/* Use "white" */
-				}
-
-				/* Handle "blind" */
-				else if (p_ptr->blind)
-				{
-					/* Use "dark gray" */
-					a = TERM_L_DARK;
-				}
-
-				/* Handle "view_bright_lite" */
-				else if (view_bright_lite)
-				{
-					/* Use "gray" */
-					a = TERM_SLATE;
-				}
-				else
-				{
-					/* Use "white" */
-				}
-			}
-		}
-
-		/* Unknown */
-		else
-		{
-			/* Get the darkness feature */
-			f_ptr = &f_info[FEAT_NONE];
-
-			/* Normal attr */
-			a = f_ptr->d_attr;
-
-			/* Normal char */
-			c = f_ptr->d_char;
-		}
-	}
-
-	/* Objects */
-	for (this_o_idx = cave_o_idx[y][x]; this_o_idx; this_o_idx = next_o_idx)
-	{
-		object_type *o_ptr;
-
-		/* Get the object */
-		o_ptr = &o_list[this_o_idx];
-
-		/* Get the next object */
-		next_o_idx = o_ptr->next_o_idx;
-
-		/* Memorized objects */
-		if (o_ptr->marked)
-		{
-			/* Hack -- object hallucination */
-			if (image)
-			{
-				int i = image_object();
-
-				a = PICT_A(i);
-				c = PICT_C(i);
-
-				break;
-			}
-
-			/* Normal attr */
-			a = object_attr_default(o_ptr);
-
-			/* Normal char */
-			c = object_char_default(o_ptr);
-
-			/* First marked object */
-			if (!show_piles) break;
-
-			/* Special stack symbol */
-			if (++floor_num > 1)
-			{
-				object_kind *k_ptr;
-
-				/* Get the "pile" feature */
-				k_ptr = &k_info[0];
-
-				/* Normal attr */
-				a = k_ptr->d_attr;
-
-				/* Normal char */
-				c = k_ptr->d_char;
-
-				break;
-			}
-		}
-	}
-
-
-	/* Monsters */
-	if (m_idx > 0)
-	{
-		monster_type *m_ptr = &mon_list[m_idx];
-
-		/* Visible monster */
-		if (m_ptr->ml)
-		{
-			monster_race *r_ptr = &r_info[m_ptr->r_idx];
-
-			byte da;
-			char dc;
-
-			/* Desired attr */
-			da = r_ptr->d_attr;
-
-			/* Desired char */
-			dc = r_ptr->d_char;
-
-			/* Hack -- monster hallucination */
-			if (image)
-			{
-				int i = image_monster();
-
-				a = PICT_A(i);
-				c = PICT_C(i);
-			}
-
-			/* Ignore weird codes */
-			else if (avoid_other)
-			{
-				/* Use attr */
-				a = da;
-
-				/* Use char */
-				c = dc;
-			}
-
-			/* Special attr/char codes */
-			else if ((da & 0x80) && (dc & 0x80))
-			{
-				/* Use attr */
-				a = da;
-
-				/* Use char */
-				c = dc;
-			}
-
-			/* Multi-hued monster */
-			else if (r_ptr->flags1 & (RF1_ATTR_MULTI))
-			{
-				/* Multi-hued attr */
-				a = randint(15);
-
-				/* Normal char */
-				c = dc;
-			}
-
-			/* Normal monster (not "clear" in any way) */
-			else if (!(r_ptr->flags1 & (RF1_ATTR_CLEAR | RF1_CHAR_CLEAR)))
-			{
-				/* Use attr */
-				a = da;
-
-				/* Use char */
-				c = dc;
-			}
-
-			/* Hack -- Bizarre grid under monster */
-			else if ((a & 0x80) || (c & 0x80))
-			{
-				/* Use attr */
-				a = da;
-
-				/* Use char */
-				c = dc;
-			}
-
-			/* Normal char, Clear attr, monster */
-			else if (!(r_ptr->flags1 & (RF1_CHAR_CLEAR)))
-			{
-				/* Normal char */
-				c = dc;
-			}
-
-			/* Normal attr, Clear char, monster */
-			else if (!(r_ptr->flags1 & (RF1_ATTR_CLEAR)))
-			{
-				/* Normal attr */
-				a = da;
-			}
-		}
-	}
-
-	/* Handle "player" */
-	else if ((m_idx < 0) && !(p_ptr->running && hidden_player))
-	{
-		monster_race *r_ptr = &r_info[0];
-
-		/* Get the "player" attr */
-		a = r_ptr->d_attr;
-
-		/* Get the "player" char */
-		c = r_ptr->d_char;
-	}
-
-#ifdef MAP_INFO_MULTIPLE_PLAYERS
-	/* Players */
-	else if (m_idx < 0)
-#else /* MAP_INFO_MULTIPLE_PLAYERS */
-	/* Handle "player" */
-	else if ((m_idx < 0) && !(p_ptr->running && hidden_player))
-#endif /* MAP_INFO_MULTIPLE_PLAYERS */
-	{
-		monster_race *r_ptr = &r_info[0];
-
-		/* Get the "player" attr */
-		a = r_ptr->d_attr;
-
-		/* Get the "player" char */
-		c = r_ptr->d_char;
 	}
 
 	/* Result */
@@ -3448,7 +3092,7 @@ void update_view(void)
 	/*** Step 3 -- Complete the algorithm ***/
 
 	/* Handle blindness */
-	if (p_ptr->blind)
+	if (p_ptr->timed[TMD_BLIND])
 	{
 		/* Process "new" grids */
 		for (i = 0; i < fast_view_n; i++)
@@ -3621,7 +3265,7 @@ void update_flow(void)
 
 
 	/* Hack -- disabled */
-	if (!flow_by_sound) return;
+	if (!adult_ai_sound) return;
 
 
 	/*** Cycle the flow ***/
@@ -4477,20 +4121,10 @@ void disturb(int stop_search, int unused_flag)
 		p_ptr->running = 0;
 
  		/* Check for new panel if appropriate */
- 		if (center_player && run_avoid_center) verify_panel();
+ 		if (center_player) verify_panel();
 
 		/* Calculate torch radius */
 		p_ptr->update |= (PU_TORCH);
-
-		/* Redraw the player */
-		if (hidden_player)
-		{
-			int py = p_ptr->py;
-			int px = p_ptr->px;
-
-			/* Redraw player */
-			lite_spot(py, px);
-		}
 	}
 
 	/* Cancel searching if requested */
@@ -4504,6 +4138,13 @@ void disturb(int stop_search, int unused_flag)
 
 		/* Redraw the state */
 		p_ptr->redraw |= (PR_STATE);
+	}
+
+	/* Cancel auto-pickup if badly wounded  XXX XXX */
+	if ((p_ptr->notice & (PN_PICKUP)) &&
+	    (p_ptr->chp < (p_ptr->mhp * op_ptr->hitpoint_warn / 10)))
+	{
+		p_ptr->auto_pickup_okay = FALSE;
 	}
 
 	/* Flush the input if requested */

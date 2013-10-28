@@ -289,9 +289,9 @@ static void chest_trap(int y, int x, s16b o_idx)
 	if (trap & (CHEST_POISON))
 	{
 		msg_print("A puff of green gas surrounds you!");
-		if (!(p_ptr->resist_pois || p_ptr->oppose_pois))
+		if (!(p_ptr->resist_pois || p_ptr->timed[TMD_OPP_POIS]))
 		{
-			(void)set_poisoned(p_ptr->poisoned + 10 + randint(20));
+			(void)inc_timed(TMD_POISONED, 10 + randint(20));
 		}
 	}
 
@@ -301,7 +301,7 @@ static void chest_trap(int y, int x, s16b o_idx)
 		msg_print("A puff of yellow gas surrounds you!");
 		if (!p_ptr->free_act)
 		{
-			(void)set_paralyzed(p_ptr->paralyzed + 10 + randint(20));
+			(void)inc_timed(TMD_PARALYZED, 10 + randint(20));
 		}
 	}
 
@@ -353,11 +353,11 @@ static bool do_cmd_open_chest(int y, int x, s16b o_idx)
 		flag = FALSE;
 
 		/* Get the "disarm" factor */
-		i = p_ptr->skill_dis;
+		i = p_ptr->skills[SKILL_DIS];
 
 		/* Penalize some conditions */
-		if (p_ptr->blind || no_lite()) i = i / 10;
-		if (p_ptr->confused || p_ptr->image) i = i / 10;
+		if (p_ptr->timed[TMD_BLIND] || no_lite()) i = i / 10;
+		if (p_ptr->timed[TMD_CONFUSED] || p_ptr->timed[TMD_IMAGE]) i = i / 10;
 
 		/* Extract the difficulty */
 		j = i - o_ptr->pval;
@@ -393,11 +393,7 @@ static bool do_cmd_open_chest(int y, int x, s16b o_idx)
 		chest_death(y, x, o_idx);
 
 		/* Squelch chest if autosquelch calls for it */
-		if ((squelch_level[CHEST_INDEX]) == SQUELCH_OPENED_CHESTS)
-		{
-			delete_object_idx(o_idx);
-			msg_print("Chest squelched after it was opened.");
-		}
+		p_ptr->notice |= PN_SQUELCH;
 	}
 
 	/* Result */
@@ -422,11 +418,11 @@ static bool do_cmd_disarm_chest(int y, int x, s16b o_idx)
 
 
 	/* Get the "disarm" factor */
-	i = p_ptr->skill_dis;
+	i = p_ptr->skills[SKILL_DIS];
 
 	/* Penalize some conditions */
-	if (p_ptr->blind || no_lite()) i = i / 10;
-	if (p_ptr->confused || p_ptr->image) i = i / 10;
+	if (p_ptr->timed[TMD_BLIND] || no_lite()) i = i / 10;
+	if (p_ptr->timed[TMD_CONFUSED] || p_ptr->timed[TMD_IMAGE]) i = i / 10;
 
 	/* Extract the difficulty */
 	j = i - o_ptr->pval;
@@ -672,11 +668,11 @@ static bool do_cmd_open_aux(int y, int x)
 	else if (cave_feat[y][x] >= FEAT_DOOR_HEAD + 0x01)
 	{
 		/* Disarm factor */
-		i = p_ptr->skill_dis;
+		i = p_ptr->skills[SKILL_DIS];
 
 		/* Penalize some conditions */
-		if (p_ptr->blind || no_lite()) i = i / 10;
-		if (p_ptr->confused || p_ptr->image) i = i / 10;
+		if (p_ptr->timed[TMD_BLIND] || no_lite()) i = i / 10;
+		if (p_ptr->timed[TMD_CONFUSED] || p_ptr->timed[TMD_IMAGE]) i = i / 10;
 
 		/* Extract the lock power */
 		j = cave_feat[y][x] - FEAT_DOOR_HEAD;
@@ -1088,7 +1084,7 @@ static bool do_cmd_tunnel_aux(int y, int x)
 	else if (cave_feat[y][x] >= FEAT_WALL_EXTRA)
 	{
 		/* Tunnel */
-		if ((p_ptr->skill_dig > 40 + rand_int(1600)) && twall(y, x))
+		if ((p_ptr->skills[SKILL_DIG] > 40 + rand_int(1600)) && twall(y, x))
 		{
 			msg_print("You have finished the tunnel.");
 		}
@@ -1124,13 +1120,13 @@ static bool do_cmd_tunnel_aux(int y, int x)
 		/* Quartz */
 		if (hard)
 		{
-			okay = (p_ptr->skill_dig > 20 + rand_int(800));
+			okay = (p_ptr->skills[SKILL_DIG] > 20 + rand_int(800));
 		}
 
 		/* Magma */
 		else
 		{
-			okay = (p_ptr->skill_dig > 10 + rand_int(400));
+			okay = (p_ptr->skills[SKILL_DIG] > 10 + rand_int(400));
 		}
 
 		/* Success */
@@ -1175,7 +1171,7 @@ static bool do_cmd_tunnel_aux(int y, int x)
 	else if (cave_feat[y][x] == FEAT_RUBBLE)
 	{
 		/* Remove the rubble */
-		if ((p_ptr->skill_dig > rand_int(200)) && twall(y, x))
+		if ((p_ptr->skills[SKILL_DIG] > rand_int(200)) && twall(y, x))
 		{
 			/* Message */
 			msg_print("You have removed the rubble.");
@@ -1186,8 +1182,9 @@ static bool do_cmd_tunnel_aux(int y, int x)
 				/* Create a simple object */
 				place_object(y, x, FALSE, FALSE);
 
-				/* Observe new object */
-				if (player_can_see_bold(y, x))
+				/* Observe the new object */
+				if (!squelch_hide_item(&o_list[cave_o_idx[y][x]]) &&
+				    player_can_see_bold(y, x))
 				{
 					msg_print("You have found something!");
 				}
@@ -1206,7 +1203,7 @@ static bool do_cmd_tunnel_aux(int y, int x)
 	else if (cave_feat[y][x] >= FEAT_SECRET)
 	{
 		/* Tunnel */
-		if ((p_ptr->skill_dig > 30 + rand_int(1200)) && twall(y, x))
+		if ((p_ptr->skills[SKILL_DIG] > 30 + rand_int(1200)) && twall(y, x))
 		{
 			msg_print("You have finished the tunnel.");
 		}
@@ -1227,7 +1224,7 @@ static bool do_cmd_tunnel_aux(int y, int x)
 	else
 	{
 		/* Tunnel */
-		if ((p_ptr->skill_dig > 30 + rand_int(1200)) && twall(y, x))
+		if ((p_ptr->skills[SKILL_DIG] > 30 + rand_int(1200)) && twall(y, x))
 		{
 			msg_print("You have finished the tunnel.");
 		}
@@ -1373,11 +1370,11 @@ static bool do_cmd_disarm_aux(int y, int x)
 	name = (f_name + f_info[cave_feat[y][x]].name);
 
 	/* Get the "disarm" factor */
-	i = p_ptr->skill_dis;
+	i = p_ptr->skills[SKILL_DIS];
 
 	/* Penalize some conditions */
-	if (p_ptr->blind || no_lite()) i = i / 10;
-	if (p_ptr->confused || p_ptr->image) i = i / 10;
+	if (p_ptr->timed[TMD_BLIND] || no_lite()) i = i / 10;
+	if (p_ptr->timed[TMD_CONFUSED] || p_ptr->timed[TMD_IMAGE]) i = i / 10;
 
 	/* XXX XXX XXX Variable power? */
 
@@ -1642,7 +1639,7 @@ static bool do_cmd_bash_aux(int y, int x)
 		msg_print("You are off-balance.");
 
 		/* Hack -- Lose balance ala paralysis */
-		(void)set_paralyzed(p_ptr->paralyzed + 2 + rand_int(2));
+		(void)inc_timed(TMD_PARALYZED, 2 + rand_int(2));
 	}
 
 	/* Result */
@@ -2000,7 +1997,7 @@ void do_cmd_spike(void)
 /*
  * Determine if a given grid may be "walked"
  */
-static bool do_cmd_walk_test(int y, int x)
+bool do_cmd_walk_test(int y, int x)
 {
 	/* Hack -- walking obtains knowledge XXX XXX */
 	if (!(cave_info[y][x] & (CAVE_MARK))) return (TRUE);
@@ -2048,12 +2045,11 @@ static bool do_cmd_walk_test(int y, int x)
 
 
 /*
- * Helper function for the "walk" and "jump" commands.
+ * Helper function for the "walk" command.
  */
-static void do_cmd_walk_or_jump(int jumping)
+void do_cmd_walk(void)
 {
 	int y, x, dir;
-
 
 	/* Get a direction (or abort) */
 	if (!get_rep_dir(&dir)) return;
@@ -2097,28 +2093,9 @@ static void do_cmd_walk_or_jump(int jumping)
 	}
 
 	/* Move the player */
-	move_player(dir, jumping);
+	move_player(dir);
 }
 
-
-/*
- * Walk into a grid.
- */
-void do_cmd_walk(void)
-{
-	/* Move (normal) */
-	do_cmd_walk_or_jump(FALSE);
-}
-
-
-/*
- * Jump into a grid.
- */
-void do_cmd_jump(void)
-{
-	/* Move (jump) */
-	do_cmd_walk_or_jump(TRUE);
-}
 
 
 /*
@@ -2132,7 +2109,7 @@ void do_cmd_run(void)
 
 
 	/* Hack XXX XXX XXX */
-	if (p_ptr->confused)
+	if (p_ptr->timed[TMD_CONFUSED])
 	{
 		msg_print("You are too confused!");
 		return;
@@ -2155,13 +2132,37 @@ void do_cmd_run(void)
 	run_step(dir);
 }
 
+/*
+ * Start running with pathfinder.
+ *
+ * Note that running while confused is not allowed.
+ */
+void do_cmd_pathfind(int y, int x)
+{
+	/* Hack XXX XXX XXX */
+	if (p_ptr->timed[TMD_CONFUSED])
+	{
+		msg_print("You are too confused!");
+		return;
+	}
+
+	if (findpath(y, x))
+	{
+		p_ptr->running = 1000;
+		/* Calculate torch radius */
+		p_ptr->update |= (PU_TORCH);
+		p_ptr->running_withpathfind = TRUE;
+		run_step(0);
+	}
+}
+
 
 
 /*
  * Stay still.  Search.  Enter stores.
  * Pick up treasure if "pickup" is true.
  */
-static void do_cmd_hold_or_stay(int pickup)
+void do_cmd_hold(void)
 {
 	/* Allow repeated command */
 	if (p_ptr->command_arg)
@@ -2180,7 +2181,7 @@ static void do_cmd_hold_or_stay(int pickup)
 	p_ptr->energy_use = 100;
 
 	/* Spontaneous Searching */
-	if ((p_ptr->skill_fos >= 50) || (0 == rand_int(50 - p_ptr->skill_fos)))
+	if ((p_ptr->skills[SKILL_FOS] >= 50) || (0 == rand_int(50 - p_ptr->skills[SKILL_FOS])))
 	{
 		search();
 	}
@@ -2191,8 +2192,8 @@ static void do_cmd_hold_or_stay(int pickup)
 		search();
 	}
 
-	/* Handle "objects" */
-	py_pickup(pickup);
+	/* Handle objects now.  XXX XXX XXX */
+	p_ptr->energy_use += py_pickup(0) * 10;
 
 	/* Hack -- enter a store if we are on one */
 	if ((cave_feat[p_ptr->py][p_ptr->px] >= FEAT_SHOP_HEAD) &&
@@ -2210,24 +2211,24 @@ static void do_cmd_hold_or_stay(int pickup)
 }
 
 
-/*
- * Hold still (usually pickup)
- */
-void do_cmd_hold(void)
-{
-	/* Hold still (usually pickup) */
-	do_cmd_hold_or_stay(always_pickup);
-}
-
 
 /*
- * Stay still (usually do not pickup)
+ * Pick up objects on the floor beneath you.  -LM-
  */
-void do_cmd_stay(void)
+void do_cmd_pickup(void)
 {
-	/* Stay still (usually do not pickup) */
-	do_cmd_hold_or_stay(!always_pickup);
+	int energy_cost;
+
+	/* Pick up floor objects, forcing a menu for multiple objects. */
+	energy_cost = py_pickup(1) * 10;
+
+	/* Maximum time expenditure is a full turn. */
+	if (energy_cost > 100) energy_cost = 100;
+
+	/* Charge this amount of energy. */
+	p_ptr->energy_use = energy_cost;
 }
+
 
 
 /*
@@ -2240,10 +2241,7 @@ void do_cmd_rest(void)
 	{
 		cptr p = "Rest (0-9999, '*' for HP/SP, '&' as needed): ";
 
-		char out_val[5];
-
-		/* Default */
-		strcpy(out_val, "&");
+		char out_val[5] = "& ";
 
 		/* Ask for duration */
 		if (!get_string(p, out_val, sizeof(out_val))) return;
@@ -2295,7 +2293,7 @@ void do_cmd_rest(void)
 	handle_stuff();
 
 	/* Refresh XXX XXX XXX */
-	if (fresh_before) Term_fresh();
+	Term_fresh();
 }
 
 
@@ -2487,7 +2485,7 @@ void do_cmd_fire(void)
 
 	/* Actually "fire" the object */
 	bonus = (p_ptr->to_h + i_ptr->to_h + j_ptr->to_h);
-	chance = (p_ptr->skill_thb + (bonus * BTH_PLUS_ADJ));
+	chance = (p_ptr->skills[SKILL_THB] + (bonus * BTH_PLUS_ADJ));
 
 	/* Assume a base multiplier */
 	tmul = p_ptr->ammo_mult;
@@ -2544,19 +2542,15 @@ void do_cmd_fire(void)
 			/* Visual effects */
 			print_rel(missile_char, missile_attr, y, x);
 			move_cursor_relative(y, x);
-			if (fresh_before)
-			{
-				Term_fresh();
-				if (p_ptr->window) window_stuff();
-			}
+
+			Term_fresh();
+			if (p_ptr->window) window_stuff();
 
 			Term_xtra(TERM_XTRA_DELAY, msec);
 			lite_spot(y, x);
-			if (fresh_before)
-			{
-				Term_fresh();
-				if (p_ptr->window) window_stuff();
-			}
+
+			Term_fresh();
+			if (p_ptr->window) window_stuff();
 		}
 
 		/* Delay anyway for consistency */
@@ -2786,7 +2780,7 @@ void do_cmd_throw(void)
 	tdam = damroll(i_ptr->dd, i_ptr->ds) + i_ptr->to_d;
 
 	/* Chance of hitting */
-	chance = (p_ptr->skill_tht + (p_ptr->to_h * BTH_PLUS_ADJ));
+	chance = (p_ptr->skills[SKILL_THT] + (p_ptr->to_h * BTH_PLUS_ADJ));
 
 
 	/* Take a turn */
@@ -2834,18 +2828,15 @@ void do_cmd_throw(void)
 			/* Visual effects */
 			print_rel(missile_char, missile_attr, y, x);
 			move_cursor_relative(y, x);
-			if (fresh_before)
-			{
-				Term_fresh();
-				if (p_ptr->window) window_stuff();
-			}
+
+			Term_fresh();
+			if (p_ptr->window) window_stuff();
+
 			Term_xtra(TERM_XTRA_DELAY, msec);
 			lite_spot(y, x);
-			if (fresh_before)
-			{
-				Term_fresh();
-				if (p_ptr->window) window_stuff();
-			}
+
+			Term_fresh();
+			if (p_ptr->window) window_stuff();
 		}
 
 		/* Delay anyway for consistency */

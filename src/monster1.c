@@ -1256,12 +1256,11 @@ void describe_monster(int r_idx, bool spoilers)
 	if (cheat_know || spoilers) cheat_monster_lore(r_idx, &lore);
 
 	/* Show kills of monster vs. player(s) */
-	if (!spoilers && show_details)
+	if (!spoilers)
 		describe_monster_kills(r_idx, &lore);
 
 	/* Monster description */
-	if (spoilers || show_details)
-		describe_monster_desc(r_idx);
+	describe_monster_desc(r_idx);
 
 	/* Describe the movement and level of the monster */
 	describe_monster_movement(r_idx, &lore);

@@ -55,6 +55,4 @@ extern void quit_fmt(cptr fmt, ...);
 extern void core_fmt(cptr fmt, ...);
 
 
-#endif
-
-
+#endif /* INCLUDED_Z_FORM_H */

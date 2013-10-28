@@ -52,9 +52,7 @@ u16b sf_saves;			/* Number of "saves" during this life */
 bool arg_fiddle;			/* Command arg -- Request fiddle mode */
 bool arg_wizard;			/* Command arg -- Request wizard mode */
 bool arg_sound;				/* Command arg -- Request special sounds */
-bool arg_graphics;			/* Command arg -- Request graphics mode */
-bool arg_force_original;	/* Command arg -- Request original keyset */
-bool arg_force_roguelike;	/* Command arg -- Request roguelike keyset */
+int arg_graphics;			/* Command arg -- Request graphics mode */
 
 /*
  * Various things
@@ -62,7 +60,6 @@ bool arg_force_roguelike;	/* Command arg -- Request roguelike keyset */
 
 bool character_generated;	/* The character exists */
 bool character_dungeon;		/* The character has a dungeon */
-bool character_loaded;		/* The character was loaded from a savefile */
 bool character_saved;		/* The character was just saved to a savefile */
 
 s16b character_icky;		/* Depth of the game in special mode */
@@ -83,7 +80,7 @@ s32b turn;				/* Current game turn */
 
 s32b old_turn;			/* Hack -- Level feeling counter */
 
-bool use_sound;			/* The "sound" mode is enabled */
+
 int use_graphics;		/* The "graphics" mode is enabled */
 bool use_bigtile = FALSE;
 
@@ -136,7 +133,6 @@ bool closing_flag;		/* Dungeon is closing */
  * Player info
  */
 int player_uid;
-int player_euid;
 int player_egid;
 
 
@@ -197,7 +193,7 @@ cptr macro_trigger_keycode[2][MAX_MACRO_TRIGGER];
 /*
  * Global table of color definitions (mostly zeros)
  */
-byte angband_color_table[256][4] =
+byte angband_color_table[MAX_COLORS][4] =
 {
 	{0x00, 0x00, 0x00, 0x00},	/* TERM_DARK */
 	{0x00, 0xFF, 0xFF, 0xFF},	/* TERM_WHITE */
@@ -372,7 +368,7 @@ const cptr angband_sound_name[MSG_MAX] =
 	"kill_unique",
 	"kill_king",
 	"drain_stat",
-	"multiply",
+	"multiply"
 };
 
 
@@ -764,12 +760,6 @@ cptr ANGBAND_DIR_USER;
  */
 cptr ANGBAND_DIR_XTRA;
 
-/*
- * Script files
- * These files are portable between platforms
- */
-cptr ANGBAND_DIR_SCRIPT;
-
 
 /*
  * Total Hack -- allow all items to be listed (even empty ones)
@@ -855,7 +845,13 @@ bool use_transparency = FALSE;
 
 
 /*
+ * Sound hook (for playing FX).
+ */
+void (*sound_hook)(int sound);
+
+
+/*
  * For autoinscriptions.
  */
-autoinscription* inscriptions = 0;
+autoinscription *inscriptions = 0;
 u16b inscriptions_count = 0;

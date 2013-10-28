@@ -1,15 +1,20 @@
 /*
  * File: main-ros.c
+ * Purpose: Support for RISC OS versions of Angband
  *
- * Abstract: Support for RISC OS versions of Angband, including support
- * for multitasking and dynamic areas.
+ * Copyright (c) 2000-2007  Musus Umbra, Antony Sidwell, Thomas Harris,
+ * Andrew Sidwell, Ben Harrison.
  *
- * Authors: Musus Umbra, Antony Sidwell, Thomas Harris, Andrew Sidwell,
- *          Ben Harrison, and others.
+ * This work is free software; you can redistribute it and/or modify it
+ * under the terms of either:
  *
- * Licences: Angband licence, GNU GPL version 2	
+ * a) the GNU General Public License as published by the Free Software
+ *    Foundation, version 2, or
  *
- * Current maintainer: Antony Sidwell <antony@isparp.co.uk>  (ajps)
+ * b) the "Angband licence":
+ *    This software may be copied and distributed for educational, research,
+ *    and not for profit purposes provided that this copyright and statement
+ *    are included in all such copies.  Other copyrights may also apply.
  */
 
 #ifdef __riscos
@@ -18,6 +23,7 @@
 
 /*
  * Purpose: Support for RISC OS Angband 2.9.x onwards (and variants)
+ * Current maintainer: Antony Sidwell <antony@isparp.co.uk>  (ajps)
  *
  * NB: This code is still under continuous development - if you want to use
  * it for your own compilation/variant, please contact me so that I can
@@ -50,7 +56,7 @@
  * PORTVERSION
  *   This is the port version; it appears in the infobox.
  */
-#define PORTVERSION	"1.33 (2007-02-06)"
+#define PORTVERSION	"1.34 (2007-06-24)"
 
 /*
  * VARIANT & VERSION
@@ -163,7 +169,7 @@
  *   to clean up the code but just making work for people with no
  *   ultimate benefit.
  */
-/* #define HASNOCORE */
+#define HASNOCORE
 
 /*
  * USE_DA
@@ -289,6 +295,10 @@
 extern void core(cptr str);
 #endif
 
+/* V, post3.0.7, has conflicting types for these we have to #define around */
+#undef event_type
+#undef menu_flags
+#undef menu_item
 
 /* Constants, etc. ---------------------------------------------------------*/
 
@@ -625,7 +635,7 @@ static ZapFont fonts[MAX_TERM_DATA + 1];	/* The +1 is for the system font */
 /* The system font is always font 0 */
 #define SYSTEM_FONT (&(fonts[0]))
 
-                                                                                                                                 /* Term system variables */
+/* Term system variables */
 static term_data data[MAX_TERM_DATA];	/* One per term */
 
 #ifndef FULLSCREEN_ONLY
@@ -872,9 +882,11 @@ static void debug(const char *fmt, ...)
 {
 	va_list ap;
 	char buffer[260];
+
 	va_start(ap, fmt);
-	vsprintf(buffer, fmt, ap);
+	vstrnfmt(buffer, sizeof(buffer), fmt, ap);
 	va_end(ap);
+
 	plog(buffer);
 }
 
@@ -955,7 +967,7 @@ static void f2printf(FILE *a, FILE *b, const char *fmt, ...)
 	va_list ap;
 	char buffer[2048];
 	va_start(ap, fmt);
-	vsprintf(buffer, fmt, ap);
+	vstrnfmt(buffer, sizeof(buffer), fmt, ap);
 	va_end(ap);
 
 	if (a) fprintf(a, buffer);
@@ -989,7 +1001,7 @@ static void final_acn(void)
 	if (flush_scrap && *scrap_path)
 	{
 		char tmp[512];
-		strcpy(tmp, scrap_path);
+		my_strcpy(tmp, scrap_path, sizeof(tmp));
 		tmp[strlen(tmp) - 1] = 0;	/* Remove trailing dot */
 
 		/* ie. "*Wipe <scrapdir> r~c~v~f" */
@@ -1209,7 +1221,7 @@ errr fd_kill(cptr file)
 errr fd_move(cptr old, cptr new)
 {
 	char new_[260];
-	strcpy(new_, riscosify_name(new));
+	my_strcpy(new_, riscosify_name(new), sizeof(new_));
 	return rename(riscosify_name(old), new_) ? 1 : 0;
 }
 
@@ -1655,10 +1667,10 @@ static ZapFont *load_font(char *name, ZapFont *f)
 	/* Get the path setting */
 	font_path = getenv(path);
 	if (!font_path || !*font_path)
-		strcpy(path, "null:$.");
+		my_strcpy(path, "null:$.", sizeof(path));
 	else
 	{
-		strcpy(path, font_path);
+		my_strcpy(path, font_path, sizeof(path));
 		for (t = path; *t > ' '; t++)
 			;
 		if (t[-1] != '.' && t[-1] != ':')
@@ -1989,6 +2001,7 @@ static menu_ptr make_zfont_menu(const char *dir)
 
 					break;
 				}
+
 			}
 			temp = ((char *) item_info) + 20;
 			while (*temp++);
@@ -2148,19 +2161,28 @@ static BOOL SaveHnd_FileSave(char *filename, void *ref)
 	}
 
 	/* Preserve the old path, in case something goes wrong... */
-	strcpy(old_savefile, savefile);
+	my_strcpy(old_savefile, savefile, sizeof(old_savefile));
 
 	/* Set the new path */
-	strcpy(savefile, unixify_name(filename));
+	my_strcpy(savefile, unixify_name(filename), sizeof(savefile));
 
 	/* Try a save (if sensible) */
 	if (game_in_progress && character_generated)
 	{
-		if (!save_player(SAVE_PLAYER_PARAM))
+		if (inkey_flag)
 		{
-			Msgs_Report(0, "err.save", filename);
-			strcpy(savefile, old_savefile);
-			return FALSE;		/* => failure */
+			if (!save_player(SAVE_PLAYER_PARAM))
+			{
+				Msgs_Report(0, "err.save", filename);
+				my_strcpy(savefile, old_savefile, sizeof(savefile));
+				return FALSE;		/* => failure */
+			}
+		}
+		else
+		{
+			Msgs_Report(0, "err.nosave");
+			my_strcpy(savefile, old_savefile, sizeof(savefile));
+			return TRUE; /* Failed really, but not unexpectedly */
 		}
 	}
 
@@ -2433,7 +2455,7 @@ static void set_up_zrb(term_data *t)
  */
 static void RO_redraw_window(window_redrawblock * rb, BOOL *more, term_data *t)
 {
-	int cx, cy, cw, ch;
+	int cx = 0, cy = 0, cw = 0, ch = 0;
 
 	/* set GCOL for cursor colour */
 	if (t->cursor.visible)
@@ -2754,7 +2776,7 @@ static void make_font_menu(void)
 		t = "";
 	}
 
-	strcpy(buffer, t);
+	my_strcpy(buffer, t, sizeof(buffer));
 
 	/*
 	   | Count how many paths there are, build an array of pointers to them
@@ -2835,7 +2857,7 @@ static void make_font_menu(void)
 		}
 
 		/* Fudge so that the fontpath can be a path, not just a dir. */
-		strcpy(menu_buffer, t);
+		my_strcpy(menu_buffer, t, sizeof(menu_buffer));
 		for (t = menu_buffer; *t > ' '; t++)
 			;
 		if (t[-1] == '.')
@@ -3068,7 +3090,8 @@ static void set_font_menu_ticks(menu_ptr fm, char *fn, const char *prefix)
 	int pl;	/* prefix string length */
 	menu_item *mi = (menu_item *) (fm + 1);
 
-	strcpy(buffer, prefix);
+	my_strcpy(buffer, prefix, sizeof(buffer));
+
 	pl = strlen(buffer);
 	b_leaf = buffer + pl;
 
@@ -3086,7 +3109,7 @@ static void set_font_menu_ticks(menu_ptr fm, char *fn, const char *prefix)
 		else
 		{
 			/* Yes - must be a partial match (with a dot on :) */
-			strcat(b_leaf, ".");
+			my_strcat(b_leaf, ".", sizeof(buffer) - pl);
 			mi->menuflags.data.ticked =
 				!strncmp(buffer, fn, pl + strlen(b_leaf));
 			if (mi->menuflags.data.ticked)
@@ -3164,7 +3187,37 @@ static void set_up_term_menu(term_data *t)
  */
 static BOOL Hnd_Click(event_pollblock * pb, void *ref)
 {
-	if (pb->data.mouse.button.data.dragselect ||
+
+  if (pb->data.mouse.window == data[0].w)
+  {
+    if (pb->data.mouse.button.data.select)
+    {
+	int fw, fh;
+        int xpos, ypos;
+        wimp_point clickpoint = pb->data.mouse.pos;
+        convert_block convert;
+
+	set_up_zrb(&data[0]);
+
+	fw = zrb.r_charw << screen_eig.x;
+	fh = zrb.r_charh << screen_eig.y;
+	if (zrb.r_flags.bits.double_height)
+	{
+		fh *= 2;
+	}
+
+        /* SO fw & fh are in OS units here */
+        Window_GetCoords(data[0].w, &convert);
+        Coord_PointToWorkArea(&clickpoint, &convert);
+
+        xpos = clickpoint.x / fw;
+        ypos = -clickpoint.y / fh;
+
+        Term_mousepress(xpos, ypos, 1);
+        key_pressed = 1;
+    }
+  }
+  else if (pb->data.mouse.button.data.dragselect ||
 		pb->data.mouse.button.data.dragadjust)
 	{
 		drag_block b;
@@ -3462,14 +3515,6 @@ static errr Term_xtra_acn(int n, int v)
 				GFX_Wait();
 				while ((Time_Monotonic() - start) < v);
 			}
-			return 0;
-		}
-
-		/* Play a sound :) */
-		case TERM_XTRA_SOUND:
-		{
-			if (enable_sound) play_sound(v);
-
 			return 0;
 		}
 
@@ -4591,8 +4636,17 @@ static BOOL Hnd_IbarMenu(event_pollblock * pb, void *ref)
 			break;
 		case IBAR_MENU_QUIT:	/* Quit */
 			if (game_in_progress && character_generated)
-				save_player(SAVE_PLAYER_PARAM);
-			quit(NULL);
+			{
+				if (inkey_flag)
+				{
+					save_player(SAVE_PLAYER_PARAM);
+					quit(NULL);
+				}
+				else
+				{
+					Msgs_Report(0, "err.nosave");
+				}
+			}
 			break;
 	}
 
@@ -4744,7 +4798,17 @@ static BOOL Hnd_PreQuit(event_pollblock * b, void *ref)
 			return TRUE;		/* no! Pleeeeeease don't kill leeeeddle ol' me! */
 
 		if (ok == 3)
-			save_player(SAVE_PLAYER_PARAM);		/* Save & Quit */
+		{
+			if (inkey_flag)
+			{
+				save_player(SAVE_PLAYER_PARAM);		/* Save & Quit */
+			}
+			else
+			{
+				Msgs_Report(0, "err.nosave");
+				return FALSE;
+			}
+		}
 	}
 
 
@@ -7011,13 +7075,16 @@ static void check_playit(void)
 
 
 
-
 static void initialise_sound(void)
 {
 	/* Load the configuration file */
 	Hourglass_On();
 	read_sound_config();
 	check_playit();
+
+	/* Set the sound hook */
+	sound_hook = play_sound;
+
 	Hourglass_Off();
 }
 
@@ -7044,10 +7111,8 @@ static void play_sample(char *leafname)
 static void play_sound(int event)
 {
 	/* Paranoia */
-	if (!sound_initd)
-	{
+	if (!sound_initd || !enable_sound)
 		return;
-	}
 
 	/* Paranoia */
 	if (event < 0 || event >= SOUND_MAX)
@@ -7094,7 +7159,7 @@ static void display_line(int x, int y, int c, const char *fmt, ...)
 	char buffer[260];
 
 	va_start(ap, fmt);
-	vsprintf(buffer, fmt, ap);
+	vstrnfmt(buffer, sizeof(buffer), fmt, ap);
 	Term_putstr(x, y, -1, c, buffer);
 	va_end(ap);
 }
@@ -8567,7 +8632,7 @@ static void debug_printf(char *fmt, ...)
 	char *p = buffer;
 
 	va_start(ap, fmt);
-	vsprintf(buffer, fmt, ap);
+	vstrnfmt(buffer, sizeof(buffer), fmt, ap);
 	va_end(ap);
 
 	/* Now split the string into display lines */
@@ -8757,5 +8822,6 @@ static void show_debug_info(void)
 #endif /* FE_DEBUG_INFO */
 
 #endif /* __riscos */
+
 
 

@@ -9,7 +9,7 @@
  */
 
 #include "angband.h"
-
+#include "cmds.h"
 
 /* TRUE if a paragraph break should be output before next p_text_out() */
 static bool new_paragraph = FALSE;
@@ -532,7 +532,7 @@ static bool screen_out_head(const object_type *o_ptr)
 	FREE(o_name);
 
 	/* Display the known artifact description */
-	if (!adult_rand_artifacts && o_ptr->name1 &&
+	if (!adult_randarts && o_ptr->name1 &&
 	    object_known_p(o_ptr) && a_info[o_ptr->name1].text)
 	{
 		p_text_out("\n\n   ");
@@ -593,7 +593,7 @@ void object_info_screen(const object_type *o_ptr)
 	text_out_c(TERM_L_BLUE, "\n\n[Press any key to continue]\n");
 
 	/* Wait for input */
-	(void)inkey();
+	(void)anykey();
 
 	/* Load the screen */
 	screen_load();

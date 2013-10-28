@@ -53,10 +53,9 @@ enum {
 
 // Special Menu
 enum {
-	kSound	 			= 1, /* Toggle sound */
-							 /* \-p */
-	kWizard				= 3, /* Toggle wizard mode */
-	kFiddle				= 4  /* Don't know what this is. */
+	/* kSound	 		= -1, Toggle sound */
+	kWizard				= 1, /* Toggle wizard mode */
+	kFiddle				= 2  /* Don't know what this is. */
 };
 
 
@@ -82,10 +81,6 @@ enum {
 	kWINDOW = -1
 };
 
-void fsetfileinfo(cptr pathname, u32b fcreator, u32b ftype);
-
-extern u32b _ftype;
-extern u32b _fcreator;
 
 /* Opcodes for various events (OS X specific) */
 
@@ -124,6 +119,7 @@ typedef struct CommandDef CommandDef;
 #define CLICK kEventWindowHandleContentClick
 #define WNUPD kEventWindowUpdate
 #define WNRSZ kEventWindowResizeCompleted
+#define WNDRG kEventWindowDragCompleted
 
 #define HANDLERDEF(func) \
 		static OSStatus func(EventHandlerCallRef inHandlerCallRef, \
@@ -179,6 +175,7 @@ const CommandDef event_defs [] =
 	{ 'wind', WNUPD, 	UpdateCommand,	 kWINDOW, NULL },
 
 	{ 'wind', WNRSZ,	ResizeCommand,	 kWINDOW, NULL }, // Change window size
+	{ 'wind', WNDRG,	ResizeCommand,	 kWINDOW, NULL }, // Change window size
 	{ 'appl', kEventAppActivated,
 						ResumeCommand,	 0,		NULL },
 	{ 'Play', 'Band',	AngbandGame,	 0,		NULL }, // Start event dispatch
@@ -204,8 +201,8 @@ static struct {
 } toggle_defs [] = {
 	{ &arg_wizard, kSpecialMenu, kWizard, 	false},
 	{ &arg_fiddle, kSpecialMenu, kFiddle, 	false},
-	{ &use_sound,  kSpecialMenu, kSound,	false},
 	{ &use_bigtile, kStyleMenu,  kBigTile,	true},
-	{ &interpolate, kStyleMenu,  kInterpolate, true}
+	{ &interpolate, kStyleMenu,  kInterpolate, true},
+	{ &antialias,	kStyleMenu,	kAntialias,	true}
 };
 
