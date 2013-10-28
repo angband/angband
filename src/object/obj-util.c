@@ -1579,8 +1579,7 @@ s32b object_value(const object_type *o_ptr, int qty, int verbose)
 	return (value);
 }
 
-
-/*
+/**
  * Determine if an item can "absorb" a second item
  *
  * See "object_absorb()" for the actual "absorption" code.
@@ -1595,14 +1594,9 @@ s32b object_value(const object_type *o_ptr, int qty, int verbose)
  * Chests, and activatable items, except rods, never stack (for various
  * reasons).
  */
-bool object_similar(const object_type *o_ptr, const object_type *j_ptr,
-	object_stack_t mode)
+static bool inventory_object_stackable(const object_type *o_ptr, const object_type *j_ptr, object_stack_t mode)
 {
 	int i;
-	int total = o_ptr->number + j_ptr->number;
-
-	/* Check against stacking limit - except in stores which absorb anyway */
-	if (!(mode & OSTACK_STORE) && (total >= MAX_STACK_SIZE)) return FALSE;
 
 	/* If either item is unknown, do not stack */
 	if (mode & OSTACK_LIST && o_ptr->marked == MARK_AWARE) return FALSE;
@@ -1637,7 +1631,7 @@ bool object_similar(const object_type *o_ptr, const object_type *j_ptr,
 		case TV_ROD:
 		{
 			/* Since the kinds are identical, either both will be
-			aware or both will be unaware */
+			 aware or both will be unaware */
 			break;
 		}
 
@@ -1692,19 +1686,19 @@ bool object_similar(const object_type *o_ptr, const object_type *j_ptr,
 					return (FALSE);
 
 			/* Require identical ego-item types */
-			if (o_ptr->ego != j_ptr->ego) return (FALSE);
+			if (o_ptr->ego != j_ptr->ego) return FALSE;
 
 			/* Hack - Never stack recharging wearables ... */
 			if ((o_ptr->timeout || j_ptr->timeout) &&
-					o_ptr->tval != TV_LIGHT) return FALSE;
+				o_ptr->tval != TV_LIGHT) return FALSE;
 
 			/* ... and lights must have same amount of fuel */
 			else if ((o_ptr->timeout != j_ptr->timeout) &&
-					o_ptr->tval == TV_LIGHT) return FALSE;
+					 o_ptr->tval == TV_LIGHT) return FALSE;
 
 			/* Prevent unIDd items stacking in the object list */
 			if (mode & OSTACK_LIST &&
-					!(o_ptr->ident & j_ptr->ident & IDENT_KNOWN)) return FALSE;
+				!(o_ptr->ident & j_ptr->ident & IDENT_KNOWN)) return FALSE;
 
 			/* Probably okay */
 			break;
@@ -1723,11 +1717,39 @@ bool object_similar(const object_type *o_ptr, const object_type *j_ptr,
 		return FALSE;
 
 	/* They must be similar enough */
-	return (TRUE);
+	return TRUE;
 }
 
+/**
+ * Return whether each stack of objects can be merged into two uneven stacks.
+ */
+static bool inventory_can_stack_partial(const object_type *o_ptr, const object_type *j_ptr, object_stack_t mode)
+{
+	if (!(mode & OSTACK_STORE)) {
+		int total = o_ptr->number + j_ptr->number;
+		int remainder = total - (MAX_STACK_SIZE - 1);
 
-/*
+		if (remainder >= MAX_STACK_SIZE)
+			return FALSE;
+	}
+
+	return inventory_object_stackable(o_ptr, j_ptr, mode);
+}
+
+/**
+ * Return whether each stack of objects can be merged into one stack.
+ */
+bool object_similar(const object_type *o_ptr, const object_type *j_ptr, object_stack_t mode)
+{
+	int total = o_ptr->number + j_ptr->number;
+
+	/* Check against stacking limit - except in stores which absorb anyway */
+	if (!(mode & OSTACK_STORE) && (total >= MAX_STACK_SIZE)) return FALSE;
+
+	return inventory_object_stackable(o_ptr, j_ptr, mode);
+}
+
+/**
  * Allow one item to "absorb" another, assuming they are similar.
  *
  * The blending of the "note" field assumes that either (1) one has an
@@ -1743,12 +1765,9 @@ bool object_similar(const object_type *o_ptr, const object_type *j_ptr,
  *
  * These assumptions are enforced by the "object_similar()" code.
  */
-void object_absorb(object_type *o_ptr, const object_type *j_ptr)
+static void object_absorb_merge(object_type *o_ptr, const object_type *j_ptr)
 {
-	int total = o_ptr->number + j_ptr->number;
-
-	/* Add together the item counts */
-	o_ptr->number = ((total < MAX_STACK_SIZE) ? total : (MAX_STACK_SIZE - 1));
+	int total;
 
 	/* Blend all knowledge */
 	o_ptr->ident |= (j_ptr->ident & ~IDENT_EMPTY);
@@ -1764,7 +1783,7 @@ void object_absorb(object_type *o_ptr, const object_type *j_ptr)
 
 	/* Combine pvals for wands and staves */
 	if (o_ptr->tval == TV_WAND || o_ptr->tval == TV_STAFF ||
-			o_ptr->tval == TV_GOLD)
+		o_ptr->tval == TV_GOLD)
 	{
 		total = o_ptr->pval[DEFAULT_PVAL] + j_ptr->pval[DEFAULT_PVAL];
 		o_ptr->pval[DEFAULT_PVAL] = total >= MAX_PVAL ? MAX_PVAL : total;
@@ -1772,8 +1791,8 @@ void object_absorb(object_type *o_ptr, const object_type *j_ptr)
 
 	/* Combine origin data as best we can */
 	if (o_ptr->origin != j_ptr->origin ||
-			o_ptr->origin_depth != j_ptr->origin_depth ||
-			o_ptr->origin_xtra != j_ptr->origin_xtra) {
+		o_ptr->origin_depth != j_ptr->origin_depth ||
+		o_ptr->origin_xtra != j_ptr->origin_xtra) {
 		int act = 2;
 
 		if (o_ptr->origin_xtra && j_ptr->origin_xtra) {
@@ -1790,7 +1809,7 @@ void object_absorb(object_type *o_ptr, const object_type *j_ptr)
 
 		switch (act)
 		{
-			/* Overwrite with j_ptr */
+				/* Overwrite with j_ptr */
 			case 1:
 			{
 				o_ptr->origin = j_ptr->origin;
@@ -1798,7 +1817,7 @@ void object_absorb(object_type *o_ptr, const object_type *j_ptr)
 				o_ptr->origin_xtra = j_ptr->origin_xtra;
 			}
 
-			/* Set as "mixed" */
+				/* Set as "mixed" */
 			case 2:
 			{
 				o_ptr->origin = ORIGIN_MIXED;
@@ -1807,7 +1826,32 @@ void object_absorb(object_type *o_ptr, const object_type *j_ptr)
 	}
 }
 
+/**
+ * Merge a smaller stack into a larger stack, leaving two uneven stacks.
+ */
+static void object_absorb_partial(object_type *o_ptr, object_type *j_ptr)
+{
+	int smallest = MIN(o_ptr->number, j_ptr->number);
+	int largest = MAX(o_ptr->number, j_ptr->number);
+	int difference = (MAX_STACK_SIZE - 1) - largest;
+	o_ptr->number = largest + difference;
+	j_ptr->number = smallest - difference;
 
+	object_absorb_merge(o_ptr, j_ptr);
+}
+
+/**
+ * Merge two stacks into one stack.
+ */
+void object_absorb(object_type *o_ptr, const object_type *j_ptr)
+{
+	int total = o_ptr->number + j_ptr->number;
+
+	/* Add together the item counts */
+	o_ptr->number = ((total < MAX_STACK_SIZE) ? total : (MAX_STACK_SIZE - 1));
+
+	object_absorb_merge(o_ptr, j_ptr);
+}
 
 /*
  * Wipe an object clean.
@@ -2745,6 +2789,71 @@ bool inven_stack_okay(const object_type *o_ptr)
 	return (FALSE);
 }
 
+/**
+ * Return the preferred inventory slot for the given object.
+ *
+ * This function defines the sort order for the inventory.
+ *
+ * \param o_ptr is the object that needs a slot.
+ * \param max_slot is the maximum slot we will allow for this object.
+ * \return the inventory slot index for the object.
+ */
+static int inventory_slot_for_object(const struct object *o_ptr, size_t max_slot)
+{
+	/* Get the "value" of the item */
+	s32b o_value = o_ptr->kind->cost;
+	s32b j_value;
+	struct object *j_ptr;
+	size_t j;
+
+	/* Scan every occupied slot */
+	for (j = 0; j < max_slot; j++)
+	{
+		/* Get the item already there */
+		j_ptr = &p_ptr->inventory[j];
+
+		/* Use empty slots */
+		if (!j_ptr->kind) break;
+		
+		/* Hack -- readable books always come first */
+		if ((o_ptr->tval == p_ptr->class->spell_book) &&
+			(j_ptr->tval != p_ptr->class->spell_book)) break;
+		if ((j_ptr->tval == p_ptr->class->spell_book) &&
+			(o_ptr->tval != p_ptr->class->spell_book)) continue;
+		
+		/* Objects sort by decreasing type */
+		if (o_ptr->tval > j_ptr->tval) break;
+		if (o_ptr->tval < j_ptr->tval) continue;
+		
+		/* Non-aware (flavored) items always come last */
+		if (!object_flavor_is_aware(o_ptr)) continue;
+		if (!object_flavor_is_aware(j_ptr)) break;
+		
+		/* Objects sort by increasing sval */
+		if (o_ptr->sval < j_ptr->sval) break;
+		if (o_ptr->sval > j_ptr->sval) continue;
+		
+		/* Unidentified objects always come last */
+		if (!object_is_known(o_ptr)) continue;
+		if (!object_is_known(j_ptr)) break;
+		
+		/* Lights sort by decreasing fuel */
+		if (o_ptr->tval == TV_LIGHT)
+		{
+			if (o_ptr->pval[DEFAULT_PVAL] > j_ptr->pval[DEFAULT_PVAL]) break;
+			if (o_ptr->pval[DEFAULT_PVAL] < j_ptr->pval[DEFAULT_PVAL]) continue;
+		}
+		
+		/* Determine the "value" of the pack item */
+		j_value = j_ptr->kind->cost;
+		
+		/* Objects sort by decreasing value */
+		if (o_value > j_value) break;
+		if (o_value < j_value) continue;
+	}
+
+	return j;
+}
 
 /*
  * Add an item to the players inventory, and return the slot used.
@@ -2823,53 +2932,7 @@ extern s16b inven_carry(struct player *p, struct object *o)
 	/* Reorder the pack */
 	if (i < INVEN_MAX_PACK)
 	{
-		s32b o_value, j_value;
-
-		/* Get the "value" of the item */
-		o_value = o->kind->cost;
-
-		/* Scan every occupied slot */
-		for (j = 0; j < INVEN_MAX_PACK; j++)
-		{
-			j_ptr = &p->inventory[j];
-			if (!j_ptr->kind) break;
-
-			/* Hack -- readable books always come first */
-			if ((o->tval == p_ptr->class->spell_book) &&
-			    (j_ptr->tval != p_ptr->class->spell_book)) break;
-			if ((j_ptr->tval == p_ptr->class->spell_book) &&
-			    (o->tval != p_ptr->class->spell_book)) continue;
-
-			/* Objects sort by decreasing type */
-			if (o->tval > j_ptr->tval) break;
-			if (o->tval < j_ptr->tval) continue;
-
-			/* Non-aware (flavored) items always come last */
-			if (!object_flavor_is_aware(o)) continue;
-			if (!object_flavor_is_aware(j_ptr)) break;
-
-			/* Objects sort by increasing sval */
-			if (o->sval < j_ptr->sval) break;
-			if (o->sval > j_ptr->sval) continue;
-
-			/* Unidentified objects always come last */
-			if (!object_is_known(o)) continue;
-			if (!object_is_known(j_ptr)) break;
-
-			/* Lights sort by decreasing fuel */
-			if (o->tval == TV_LIGHT)
-			{
-				if (o->pval[DEFAULT_PVAL] > j_ptr->pval[DEFAULT_PVAL]) break;
-				if (o->pval[DEFAULT_PVAL] < j_ptr->pval[DEFAULT_PVAL]) continue;
-			}
-
-			/* Determine the "value" of the pack item */
-			j_value = j_ptr->kind->cost;
-
-			/* Objects sort by decreasing value */
-			if (o_value > j_value) break;
-			if (o_value < j_value) continue;
-		}
+		j = inventory_slot_for_object(o, INVEN_MAX_PACK);
 
 		/* Use that slot */
 		i = j;
@@ -2910,14 +2973,13 @@ extern s16b inven_carry(struct player *p, struct object *o)
 	{
 		if (player_has(PF_KNOW_MUSHROOM) && j_ptr->tval == TV_FOOD)
 		{
-			do_ident_item(i, j_ptr);
+			do_ident_item(j_ptr);
 			msg("Mushrooms for breakfast!");
 		}
-
-		if (player_has(PF_KNOW_ZAPPER) &&
+		else if (player_has(PF_KNOW_ZAPPER) &&
 			(j_ptr->tval == TV_WAND || j_ptr->tval == TV_STAFF))
 		{
-			do_ident_item(i, j_ptr);
+			do_ident_item(j_ptr);
 		}
 	}
 
@@ -3104,12 +3166,10 @@ void inven_drop(int item, int amt)
 void combine_pack(void)
 {
 	int i, j, k;
-
 	object_type *o_ptr;
 	object_type *j_ptr;
-
-	bool flag = FALSE;
-
+	bool display_message = FALSE;
+	bool redraw = FALSE;
 
 	/* Combine the pack (backwards) */
 	for (i = INVEN_PACK; i > 0; i--)
@@ -3140,18 +3200,21 @@ void combine_pack(void)
 			if (!j_ptr->kind) continue;
 
 			/* Can we drop "o_ptr" onto "j_ptr"? */
-			if (object_similar(j_ptr, o_ptr, OSTACK_PACK))
-			{
-				/* Take note */
-				flag = slide = TRUE;
-
-				/* Add together the item counts */
+			if (object_similar(j_ptr, o_ptr, OSTACK_PACK)) {
+				display_message = TRUE;
+				slide = TRUE;
+				redraw = TRUE;
 				object_absorb(j_ptr, o_ptr);
-
+				break;
+			}
+			else if (inventory_can_stack_partial(j_ptr, o_ptr, OSTACK_PACK)) {
+				display_message = FALSE; /* Setting this to TRUE spams the combine message. */
+				slide = FALSE;
+				redraw = TRUE;
+				object_absorb_partial(j_ptr, o_ptr);
 				break;
 			}
 		}
-
 
 		/* Compact the inventory */
 		if (slide)
@@ -3175,13 +3238,16 @@ void combine_pack(void)
 			/* Hack -- wipe hole */
 			object_wipe(&p_ptr->inventory[k]);
 
-			/* Redraw stuff */
-			p_ptr->redraw |= (PR_INVEN);
+			redraw = TRUE;
 		}
 	}
 
+	/* Redraw stuff */
+	if (redraw)
+		p_ptr->redraw |= (PR_INVEN);
+
 	/* Message */
-	if (flag)
+	if (display_message)
 	{
 		msg("You combine some items in your pack.");
 
@@ -3189,7 +3255,6 @@ void combine_pack(void)
 		cmd_disable_repeat();
 	}
 }
-
 
 /*
  * Reorder items in the pack
@@ -3199,18 +3264,10 @@ void combine_pack(void)
 void reorder_pack(void)
 {
 	int i, j, k;
-
-	s32b o_value;
-	s32b j_value;
-
 	object_type *o_ptr;
-	object_type *j_ptr;
-
 	object_type *i_ptr;
 	object_type object_type_body;
-
 	bool flag = FALSE;
-
 
 	/* Re-order the pack (forwards) */
 	for (i = 0; i < INVEN_PACK; i++)
@@ -3221,54 +3278,7 @@ void reorder_pack(void)
 		/* Skip empty slots */
 		if (!o_ptr->kind) continue;
 
-		/* Get the "value" of the item */
-		o_value = o_ptr->kind->cost;
-
-		/* Scan every occupied slot */
-		for (j = 0; j < INVEN_PACK; j++)
-		{
-			/* Get the item already there */
-			j_ptr = &p_ptr->inventory[j];
-
-			/* Use empty slots */
-			if (!j_ptr->kind) break;
-
-			/* Hack -- readable books always come first */
-			if ((o_ptr->tval == p_ptr->class->spell_book) &&
-			    (j_ptr->tval != p_ptr->class->spell_book)) break;
-			if ((j_ptr->tval == p_ptr->class->spell_book) &&
-			    (o_ptr->tval != p_ptr->class->spell_book)) continue;
-
-			/* Objects sort by decreasing type */
-			if (o_ptr->tval > j_ptr->tval) break;
-			if (o_ptr->tval < j_ptr->tval) continue;
-
-			/* Non-aware (flavored) items always come last */
-			if (!object_flavor_is_aware(o_ptr)) continue;
-			if (!object_flavor_is_aware(j_ptr)) break;
-
-			/* Objects sort by increasing sval */
-			if (o_ptr->sval < j_ptr->sval) break;
-			if (o_ptr->sval > j_ptr->sval) continue;
-
-			/* Unidentified objects always come last */
-			if (!object_is_known(o_ptr)) continue;
-			if (!object_is_known(j_ptr)) break;
-
-			/* Lights sort by decreasing fuel */
-			if (o_ptr->tval == TV_LIGHT)
-			{
-				if (o_ptr->pval[DEFAULT_PVAL] > j_ptr->pval[DEFAULT_PVAL]) break;
-				if (o_ptr->pval[DEFAULT_PVAL] < j_ptr->pval[DEFAULT_PVAL]) continue;
-			}
-
-			/* Determine the "value" of the pack item */
-			j_value = j_ptr->kind->cost;
-
-			/* Objects sort by decreasing value */
-			if (o_value > j_value) break;
-			if (o_value < j_value) continue;
-		}
+		j = inventory_slot_for_object(o_ptr, INVEN_PACK);
 
 		/* Never move down */
 		if (j >= i) continue;

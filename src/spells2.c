@@ -306,10 +306,10 @@ void identify_pack(void)
 		if (object_is_known(o_ptr)) continue;
 
 		/* Identify it */
-		do_ident_item(i, o_ptr);
+		do_ident_item(o_ptr);
 
-		/* repeat with same slot */
-		i--;
+		/* Reset loop in case the pack reordered. */
+		i = 0;
 	}
 }
 
@@ -1474,7 +1474,7 @@ bool ident_spell(void)
 
 
 	/* Identify the object */
-	do_ident_item(item, o_ptr);
+	do_ident_item(o_ptr);
 
 
 	/* Something happened */
@@ -3185,14 +3185,8 @@ void ring_of_power(int dir)
 
 /*
  * Identify an item.
- *
- * `item` is used to print the slot occupied by an object in equip/inven.
- * Any negative value assigned to "item" can be used for specifying an object
- * on the floor.
- *
- * XXX Remove the item parameter, as it is no longer used.
  */
-void do_ident_item(int item, object_type *o_ptr)
+void do_ident_item(object_type *o_ptr)
 {
 	char o_name[80];
 
