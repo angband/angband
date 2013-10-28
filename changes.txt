@@ -1,198 +1,168 @@
-Angband 3.1.1
+Angband 3.1.2
 =============
 
-This is an Angband development version -- it may be buggy, so be warned!
-Special thanks in this release go to: Eddie Grove, Elly, Stefan O'Rear,
-Mango Juice, Gabriel Cunningham, Chris Carr, Chris Robertson, Peter Denison,
-Joe Buck, Eric Osheim, Antony Sidwell, tigen, and rhinocesaurus, without whom
-this release would not have happened.
+We, the Angband development team, are proud to present the latest iteration
+of the game, in the form of Angband 3.1.2.  Like other releases in the 3.1.x
+series, this is a beta, though it should be less buggy than other 3.1.x
+releases have been.  Doubtless there will be another release in a few weeks
+time fixing the bugs found herein, but in the meantime, play.
+
+Please note that this release breaks savefiles again.
+
+This release was brought to you by (in no particular order): bron, Tobias,
+Eddie Grove, Antoine, Chris Carr, MarbleDice, Erik Osheim, Stefan O'Rear,
+Peter Denison, Andi Sidwell, rhinocesaurus, and Andrew Doull, Marco and Pete
+Mack.  Other people may have contributed too; if you're missed off here,
+please file a bug at http://trac.rephial.org :)
 
 
-Significant changes in this version:
-====================================
+Gameplay changes
+================
 
-The identify system, previously tweaked in 3.1.0, has been overhauled.  The game
-now allows you to identify items through use instead of using Identify scrolls;
-this means that you wield unknown items more often and use them for a while
-until their effects become obvious.  For example, wield an unknown sword and
-attack foes, and you will soon discover its combat advantages.  If you wear some
-armour and it increases your intelligence, the game will remember that.  And
-when you have discovered all of an item's attributes, that kind of item will be
-automatically known in future.  "Identify" is still in the game, but you will
-need to use it much less than before, and as a consequence, it is more
-expensive.  The game is more fun this way, trust me.
+Make paralysis non-cumulative (you can't be paralysed more if you're already paralysed) (#783)
+New algorithm for device failure rates, and display those rates during the inspect/aim/use/zap commands (#483, #715, #1048)
+Extensive tweaking of artifact list (http://angband.oook.cz/forum/showthread.php?t=2454)
+Various randart changes, including random activations on non-lights (#974)
+Add NPP-style quiver (#34)
+Tweaks to ID-by-use:
+ - Don't display larger than normal base dice (artifacts/boosted egos) until the weapon is attacked with (#982)
+ - Notice artifact status on pickup (#1052)
+Bows of Power/Accuracy should always have a good bonus (#782)
+Show stat requirements for additional blows when describing melee weapons (#922)
+Decouple chance to enchant and chance to uncurse (#1007)
+Increase variability of gold drops
+Increase prices of ego ammo by assuming +9 launcher
+Make player races a bit more varied
+Deep Descent now acts as a 2-level down Teleport Level (#1062)
+General store buys some stuff again (#288)
+Empty wands/staffs sold to stores are recharged (#229)
+Boost device damage on high device skill (#419)
+Make wands/rods of lightning bolt always beam
+Mage damage spells have lower mana usage than before, by about half, making using magic when attacking more appealing 
+Detect Invisible spell should reveal non-invisible monsters too (#1047)
+Combine priest Detect Trap and Detect Stairs prayers (#941)
+Remove destroyed levels
+Remove the self knowledge effect (#831)
+Increase odds of out-of-depth monsters
+Smeagol now has HURT_LITE (#955)
+Give rods of lightning balls IGNORE_ELEC (like wands)
 
-The second change that many will welcome is a reworked squelch system by Eddie
-Grove, which is quite similar to the one present in his patch of 3.0.9.  It
-allows squelching of more item types independently of each other, as well as
-squelching unaware consumables.
 
-Another major change that most players will notice is the significantly
-different pricing that many items have.  This is because the algorithm that
-detemines item prices has changed a lot, and hopefully gives more reasonable
-prices than before, both because it makes things few would buy much cheaper and
-because it tries to price generally in proportion to usefulness.  This, combined
-with the two points above, means the emphasis of the game is much less on what
-you can lug back to stores to sell, and much more on exploration.
+User interface
+==============
 
-For people who play with randarts, you should now find them more interesting and
-better-balanced.
-
+New commands:
+ - Center map (Ctrl-L)
+ - Fire at nearest enemy with default ammo ('h') (#697)
+ - Target closest monster ("'") (#374)
+Make look/target command a lot more usable, with less stuff cluttering the screen and a '?' display a la the stores (#924, #927)
+Display shots modifiers on bows in the multiplier
+Uniques are now all purple (#1000, pending full implementation of extra colours)
+Destroy command now asks 'yns' to allow squelching
+Tweak monster recall; (#743, #532, #541)
+ - add damage estimates for monster spells
+ - add more meaningful colours that depend on the player's state (vulnerabilities and resistances)
+ - change the order of sentences
+Show player-turns on C screen and in dumps (#891)
+Add "{unseen}" to unaware items in stores (#732)
+Add price to the item list when the player is prompted to select an item to sell (#861)
+Add light sources to the quality squelch menu (#1032)
 
 
 List of bugs fixed
 ==================
 
-(#29) Gold stolen by monsters is now stored in their inventory.
-(#30) Now using a new savefile format (no user-visible change)
-(#33) Add BRAND_FIRE to oil flasks and torches.
-(#48) Improve the randart code a lot.
-(#62) Game is now available entirely under the GPL.
-(#63) Dynastic character numbering support 
-(#328) 'lore' functions now write to subwindows when appropriate.
-(#343) Add autosave on level change.
-(#352) Probing now reveals attack and spell information.
-(#367) Prompt for which ring to replace when wearing two
-(#412) Monster list is no longer hallucination-proof.
-(#448) Heal spells now identical to potions of same name
-(#451) Fix inventory/equipment and message update in store.
-(#496) Give wands and staves EASY_KNOW, so they no longer need ID.
-(#521, #597, #635) Stop the slow launches and occasional non-launches on Windows.
-(#561) 'n', when used to fire missiles, no longer ignores confusion.
-(#562) Ego-items are now never squelched as "bad" or "average".
-(#572) Make ID-by-use more viable by making monsters summoned from player actions have less energy
-(#599) Above 18, stat drain and gain always works in intervals of 10 points
-(#613) Prevent {!*} prompting for harmless actions.
-(#637) Print messages when monsters crush or push past each other.
-(#639) Reset social status to original value with quickstart
-(#641) Fix Morgoth artifacts.
-(#645) Fix fail rate display wrt amnesia
-(#654) Allow pseudo to work whilst resting.
-(#661) Prompt for how many items to buy in a store now doesn't get the number in your pack wrong when there's > 99
-(#663) Numbers of summoned monsters now match singular/plural message text
-(#672) Fix Evenstar activation message.
-(#673) Fix description of Identify scrolls.
-(#676) Fixed character creation help.
-(#675) Fix graphics mode cloak tile bug
-(#677) Character history now in character dump
-(#679) Mages no longer get told they can learn more spells than they can
-(#680) Stop displaying two highscore entries for dead characters.
-(#682) Remove the autoroller
-(#683) Fix !Berserk Strength being unsellable.
-(#685) Scrolls of Create Trap now ID on use.
-(#688) Mages once more get a message when they can't learn new spells from a book.
-(#690) Item descriptions now take player speed into account.
-(#691) Make of Open Wounds similar to ther pval-less rings in that it doesn't need ID.
-(#694) Fix dropped rods recharging, and any other rod-related oddities.
-(#696) Put character name back onto the dump.
-(#698) Added '!' to 'R' prompt to rest until mana or hp are full.
-(#700) Stop running one square away from already-visible monsters
-(#705) Randart activation messages no longer refer to the original artifact.
-(#706) Number of blows on 'I'nspection screen should be correct now
-(#709) Don't display the wrong tile in graphics mode at detection boundaries
-(#711, #764) Fix descriptions of area-of-effect detection.
-(#712) Autoinscribe items in the first inventory slot.
-(#717) Make stat potions just a little bit more common.
-(#721) Searching bonuses are now displayed as a % increase to match the character screen.
-(#722) Fix spoilers and wizard mode cheat info not displaying magical abilities
-(#723) Fix support for playing in the terminal on OS X 10.4.
-(#724) Critical hit messages come after regular hit messages again.
-(#725) *Remove Curse* now removes all curses again.
-(#727) Targetting warns when out-of-range
-(#729) Random teleportation disturbs the player.
-(#730) Mention control+[ANU] in monster recall '/' prompt.
-(#733) Curse Weapon/Armour no longer blast your objects completely, they just curse them a bit.
-(#734) Stop displaying the store slot bought when purchasing.
-(#735) Remove weak pseudo-ID.
-(#740, partial #532) Color-code monster melee attacks by how dangerous they are to the current player.
-(#741) Stop generating spurious staircases under the player on recall/teleport.
-(#742) Mention tunnelling ability in item descriptions.
-(#745) Fix a monster movement bug where monster packs would try to "surround" the player without fo st checking that they weren't already.
-(#747) ui-birth.c needs to handle going directly from character sheet to sex prompt.
-(#748) Allow Rings of Delving to activate.
-(#754) Have a go at using a slightly cleverer pricing algorithm for combat gear.
-(#755) Fix pseudo-id of branded ammo, so already-known ammo doesn't get pseudo-ID'd.
-(#762) Alchemist's Gloves are now wearable by mages
-(#766) Scrolls of trap creation now longer crash in town.
-(#767) Hitpoint warning now accepts only numbers from 0-9.
-(#770) Fix item pickup energy inconsistencies.
-(#772) Display searching bonuses for rings of searching in object descriptions again
-(#773) General Store now restocks like other stores (e.g. more food will appear without you having to buy out all the food).
-(#774) Ego-items with random powers no longer get duplicate powers
-(#781) Remove the cap on potions of experience -- they always give 100k XP now.
-(#784) Stop dumping squelch settings with other options.
-(#792) Arriving on new levels is guaranteed to be safe
-(#799) Elessar and Evenstar now show the right recharge times.
-(#801) Inscriptions now shown properly in the home.
-(#813) Potions of Healing now do what the description says they do, not something much more powerful.
-(#814) Don't allow attacking when scared (rather than wasting a turn)
-(#830) Fix knowledge menu crash by initialising knowledge commands earlier
-(#839) Remove 12% of HP for ex-FORCE_MAXHP non-uniques
-(#848) Monster list shows in/out of LOS and asleep/awake
-(#849) Drop squelched items after ignoring them
-(#864) Stop autoinscriptions from overwriting manual inscriptions
-(#865) Weapon descriptions should no longer be too big for a 80x24 screen
-(#868) Rings of Escaping have more accurate description
-(#874) Update monster list when monsters wake up
-(#893) Auto-pickup is no longer disabled when hitpoints are low
-Fix bug with rods of treasure location needing ID.
-Fix birth_money so that in point-based it still gives you 500AU.
-Fix double-resist damage.
-Fix pluralisation of 'staves'.
-Fix artifact recharge times.
-Fix displaying the special rings in the object knowledge viewer.
-Fix randart saving/loading.
-Add Word of Recall status to the status line.
-Make teleport level work in ironman before DL 99, always moving downward.
-Allow use of the object knowledge menu for setting up item-kind squelch.
-Tone down the frequency of {excellent} items somewhat, and tweak {good} frequency.
-Tone down detection area a wee bit.
-Remove the 'K' command and instead put a prompt after the 'destroy' prompt.
-Weaken PDSM just a tad.
-Enchant Armour scrolls ID when reading them, not when they are successfully read.
-Tone down Troll Priest HP.
-Turn off show_flavors by default.
-Include critical damage in the object description's average display.
-Make Kavlax 'scary dark like Ancalagon'.
-Curses on jewelry only happen with negative-pval items.  (temporary)
-Only wake monsters on attack if you're not "too afraid to attack".
-A few fixes to the visual editor on the knowledge screens.
-Add yeeks to the monster knowledge browser.
-Make the object knowledge list sort some items by sval rather than alphabetically.
-Items trying to be dropped on the floor now attempt to delete the oldest item on that grid that's been squelched.
+ #294 Fix ego-item recall on object knowledge browser
+ #443 Lack of HURT_LITE and HURT_ROCK are noted as resistances
+ #688 Fix "learning spells" message when casting
+ #641 Fix Morgoth artifacts *again*
+ #708 Monster recall and object knowledge update more correctly with sleep/scare/etc effects
+ #816 Random teleport no longer prints odd messages if you try to work into a store when it triggers
+ #884 Don't use a turn when an item has no charges (also see #980)
+ #915 Print trampling and pushing past messages only when monster is in view of the player
+ #918 Warn player when melee attacks do no damage
+ #920 Make permarock a different colour
+ #923 Add notify_recharge option to notify on all rod/activation recharges without inscriptions
+ #926 Restore artifact activations to character dumps
+ #929 Avoid giving away unknown pvals in object descriptions
+ #930 Fix prices of known objects with unknown pval
+ #933 Fix ID-by-use for AC bonuses
+ #935 Check that the item exists before accessing it in resistance display
+ #937 Quality squelch UI fixes
+ #943 Use correct symbol for wand of teleport other
+ #945 Make scrolls of Darkness notice rDark as well as rBlind
+ #948 Fix corrupted messages when dropping in the home
+ #954 Ring of Accuracy displays (+h,+d) like everything else
+ #967 Ensure that artifacts ID'd by use appear in player history
+ #972 Reword origin of store items to make sense when inspected before purchase
+ #975 Potion of Dragon Breath can destroy itself and cause double-delete
+ #976 Fix recall of artifacts in knowledge menu (also #1065)
+ #978 Stop knowledge menu leaking info via squelch settings
+ #980 Don't use a turn when an ID spell/scroll/staff has nothing to ID
+ #986 Don't show refuelling info for unrefuellable lights
+ #988 Artifact spoilers include curses again
+ #989 When artifact creation fails, fallback to great items
+ #990 Inven/equip windows keep weights closer to item names
+ #994 Make {wielded} inscription change to {worn} as necessary for consistency
+#1010 Branding now IDs the item after branding
+#1011 Fix fail behaviour of gain-one-lose-one stat potions 
+#1013 Multiple brand/slays should only print one message and only print brand messages once
+#1016 Make jewelry auto-ID properly
+#1034 Town no longer interrupts level feelings
+#1040 Object origin now shown correctly on chest-generated items
+#1042 Fix room lighting crash bug
+#1043 Rods on the floor now charge as fast as rods in inventory
+#1053 Show ring and chest mimics in monster knowledge
+#1055 Fix pval display on fixed-pval jewelry
+#1064 Stop invalid open/disarm/etc commands repeating
+#1067 Monster list updates on monster move
+#1068 Stop stat rings IDing prematurely (interim solution)
+#1070 Auto-repeat the search command
+#1081 Correct origin text for items found in chests
+#1082 Don't print messages for squelched items dropped underfoot
+#1084 Fix gold generation bug
+#1089 Fix magic missile's visual effect
 
-Unix ports:
-Update angband man page.
-Get debian packaging stuff working.
-
-Curses port:
-(#666) Fix out-of-bounds memory access
-(#678) Don't leave terminal colours broken on quitting
-Disable ^Y on BSDs, since it clashes with roguelike keyset
-Add pseudo-graphics support
-Use curses to parse keys, which is more portable and removes the Escape delay.
+Fix effect descriptions for unIDd food, potions and scrolls
+Describe brands on torches and flasks correctly (they do not brand melee attacks)
+Re-enable auto-stat-buying in the birth process
+Ensure it is possible to destroy wielded items with the destroy command
+r1630 fix keymap loading issue
+improvements to grammar per mailing list
+Better grammar in ID messages
+Fix possibility of infinite loop when generating ego-items
+Update description of GAIN_EXP effect
+Player melee confusion effect now triggers before monster death is checked
+Rename "Detect Hidden Doors/Traps" to "Detect Doors, Traps & Stairs"
 
 
-Invisible code changes:
-Once again, the game has seen some large-scale reworking.  Mentioned here is only a small subsection of that reworking.
-(#513) Refactor the code that prompts for character dump filenames so that it can be overriden by platform-native ports.
-(#616) Add support for BSDish makes.
-(#664) Refactor brands and slays so they're defined in one place and referenced elsewhere.
-(#749) Add an id_only paramater to calc_bonuses().
-Significant work on making the game more command-based than keypress-based
-More flags now kept in arrays
-Make "make clean" remove all object files in the list, to catch files in subdirectories.
-Commit the beginnings of a flag-based terrain system; note that it does absolutely nothing as yet.
-Make the z-virt defines cast to the right type so that assignment errors can get caught a bit ealier on.
-Fix autoconf install errors.
-Remove an unnecessary call to getlogin() which was screwing up su'd users.
-Dependency generator has to add dirnames itself
-Remove "uint" from main-x11.c.
-Tweak the OS X makefile to be a little more terse.
-Make the game a little bit more borg-friendly.
+Misc
+====
 
-Debug mode:
-Add help file documenting debug mode.
-Add a prompt for artifact name when using ^AC with no command count,
-Add a prompt for monster name when using ^An with no command count.
-Allow tweaking of curses when playing with objects
+  #23 Import UnAngband's 256-colour display code
+  #43 Move names for randarts and player into names.txt
+  #46 Create missing directories on startup if necessary
+ #771 make object_desc use better use of bitflags
+ #934 Flags set in monster lore now mean "know the presence or absence of this flag", a la known_flags on object_type
+ #939 Scale X11 port's colours to the maximum gamut
+ #961 Remove the .raw files
+ #984 Move artifacts to alloc_prob system, enabling max depths
+ #995 Updated references to copyrights and licences (pending full help rewrite)
+#1038 Various fields in the edit files now take random values of the form "5+2d6M8"
+      (e.g. stack size, pval, to_hit, to_dam, to_ac, recharge time, number of charges)
+#1079 Fix GTK port memory leak
+      Replace all instances of "lite" and "hilite" with light and highlight (except rLite on the C screen)
+
+
+Unix
+====
+
+Comply with the FHS (#134)
+Remove debian/ directory - Debian packaging now hosted at git://git.debian.org/git/collab-maint/angband.git
+Make --no-install work again
+Make --use-private-dirs the default
+Improve the GCU port a bit:
+ - added gcu subopts -a(scii) and -g(raphics)
+ - fix ncurses-autoconf bug; fix gcu bg-color bug; add xterm-256color support
+ - handle putty numpad (#796)
+ - supports dynamic resizing (#368)

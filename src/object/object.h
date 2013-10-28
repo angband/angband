@@ -26,9 +26,39 @@ typedef enum
 
 	ODESC_STORE  = 0x04,   /*!< This is an in-store description */
 	ODESC_PLURAL = 0x08,   /*!< Always pluralise */
-	ODESC_SINGULAR	= 0x10,	/*!< Always singular */
-	ODESC_SPOIL  = 0x20    /*!< Display regardless of player knowledge */
+	ODESC_SINGULAR    = 0x10,    /*!< Always singular */
+	ODESC_SPOIL  = 0x20,    /*!< Display regardless of player knowledge */
+	ODESC_PREFIX = 0x40   /* */
 } odesc_detail_t;
+
+
+/**
+ * Modes for item lists in "show_inven()"  "show_equip()" and "show_floor()"
+ */
+typedef enum
+{
+	OLIST_NONE   = 0x00,   /* No options */
+   OLIST_WINDOW = 0x01,   /* Display list in a sub-term (left-align) */
+   OLIST_QUIVER = 0x02,   /* Display quiver lines */
+   OLIST_GOLD   = 0x04,   /* Include gold in the list */
+	OLIST_WEIGHT = 0x08,   /* Show item weight */
+	OLIST_PRICE  = 0x10,   /* Show item price */
+	OLIST_FAIL   = 0x20    /* Show device failure */
+	
+} olist_detail_t;
+
+
+/**
+ * Modes for object_info()
+ */
+typedef enum
+{
+	OINFO_NONE   = 0x00, /* No options */
+	OINFO_TERSE  = 0x01, /* Keep descriptions brief, e.g. for dumps */
+	OINFO_SUBJ   = 0x02, /* Describe object from the character's POV */
+	OINFO_FULL   = 0x04, /* Treat object as if fully IDd */
+	OINFO_DUMMY  = 0x08 /* Object does not exist (e.g. knowledge menu) */
+} oinfo_detail_t;
 
 
 /**
@@ -57,7 +87,10 @@ extern s32b object_last_wield;
 
 bool object_is_known(const object_type *o_ptr);
 bool object_is_known_artifact(const object_type *o_ptr);
+bool object_is_not_artifact(const object_type *o_ptr);
+bool object_is_not_known_consistently(const object_type *o_ptr);
 bool object_was_worn(const object_type *o_ptr);
+bool object_was_fired(const object_type *o_ptr);
 bool object_was_sensed(const object_type *o_ptr);
 bool object_flavor_is_aware(const object_type *o_ptr);
 bool object_flavor_was_tried(const object_type *o_ptr);
@@ -74,31 +107,34 @@ void object_notice_everything(object_type *o_ptr);
 void object_notice_indestructible(object_type *o_ptr);
 void object_notice_ego(object_type *o_ptr);
 void object_notice_sensing(object_type *o_ptr);
+void object_sense_artifact(object_type *o_ptr);
 void object_notice_effect(object_type *o_ptr);
 void object_notice_slays(object_type *o_ptr, u32b known_f0);
 void object_notice_attack_plusses(object_type *o_ptr);
-void object_notice_flags(object_type *o_ptr, int flagset, u32b flags);
+bool object_notice_flags(object_type *o_ptr, int flagset, u32b flags);
 bool object_notice_curses(object_type *o_ptr);
 void object_notice_on_defend(void);
 void object_notice_on_wield(object_type *o_ptr);
+void object_notice_on_firing(object_type *o_ptr);
 void wieldeds_notice_flag(int flagset, u32b flag);
 void wieldeds_notice_on_attack(void);
-void wieldeds_notice_slays(u32b known_f0);
 void object_repair_knowledge(object_type *o_ptr);
 obj_pseudo_t object_pseudo(const object_type *o_ptr);
 void sense_inventory(void);
-
+bool easy_know(const object_type *o_ptr);
+bool object_check_for_ident(object_type *o_ptr);
+bool object_name_is_visible(const object_type *o_ptr);
 
 /* obj-desc.c */
 void object_kind_name(char *buf, size_t max, int k_idx, bool easy_know);
-size_t object_desc(char *buf, size_t max, const object_type *o_ptr, bool prefix, odesc_detail_t mode);
+size_t object_desc(char *buf, size_t max, const object_type *o_ptr, odesc_detail_t mode);
 
 /* obj-info.c */
 extern const slay_t slay_table[];
 size_t num_slays(void);
 void object_info_header(const object_type *o_ptr);
 
-bool object_info(const object_type *o_ptr, bool full);
+bool object_info(const object_type *o_ptr, oinfo_detail_t mode);
 bool object_info_chardump(const object_type *o_ptr);
 bool object_info_spoil(const object_type *o_ptr);
 
@@ -106,6 +142,7 @@ bool object_info_spoil(const object_type *o_ptr);
 void free_obj_alloc(void);
 bool init_obj_alloc(void);
 s16b get_obj_num(int level, bool good);
+void object_prep(object_type *o_ptr, int k_idx, int lev, aspect rand_aspect);
 void apply_magic(object_type *o_ptr, int lev, bool okay, bool good, bool great);
 bool make_object(object_type *j_ptr, int lev, bool good, bool great);
 void make_gold(object_type *j_ptr, int lev, int coin_type);
@@ -119,11 +156,9 @@ u32b ego_xtra_power_list(void);
 
 
 /* obj-ui.c */
-void display_inven(void);
-void display_equip(void);
-void show_inven(void);
-void show_equip(void);
-void show_floor(const int *floor_list, int floor_num, bool gold);
+void show_inven(olist_detail_t mode);
+void show_equip(olist_detail_t mode);
+void show_floor(const int *floor_list, int floor_num, olist_detail_t mode);
 bool verify_item(cptr prompt, int item);
 bool get_item(int *cp, cptr pmt, cptr str, int mode);
 
@@ -157,13 +192,13 @@ void object_absorb(object_type *o_ptr, const object_type *j_ptr);
 void object_wipe(object_type *o_ptr);
 void object_copy(object_type *o_ptr, const object_type *j_ptr);
 void object_copy_amt(object_type *dst, object_type *src, int amt);
-void object_prep(object_type *o_ptr, int k_idx);
 s16b floor_carry(int y, int x, object_type *j_ptr);
-void drop_near(object_type *j_ptr, int chance, int y, int x);
+void drop_near(object_type *j_ptr, int chance, int y, int x, bool verbose);
 void acquirement(int y1, int x1, int level, int num, bool great);
 void inven_item_charges(int item);
 void inven_item_describe(int item);
 void inven_item_increase(int item, int num);
+void save_quiver_size(void);
 void inven_item_optimize(int item);
 void floor_item_charges(int item);
 void floor_item_describe(int item);
@@ -176,8 +211,13 @@ s16b inven_takeoff(int item, int amt);
 void inven_drop(int item, int amt);
 void combine_pack(void);
 void reorder_pack(void);
+void open_quiver_slot(int slot);
+void sort_quiver(void);
+int get_use_device_chance(const object_type *o_ptr);
 void distribute_charges(object_type *o_ptr, object_type *q_ptr, int amt);
 void reduce_charges(object_type *o_ptr, int amt);
+int number_charging(const object_type *o_ptr);
+bool recharge_timeout(object_type *o_ptr);
 unsigned check_for_inscrip(const object_type *o_ptr, const char *inscrip);
 int lookup_kind(int tval, int sval);
 bool lookup_reverse(s16b k_idx, int *tval, int *sval);
@@ -194,9 +234,10 @@ bool obj_is_rod(const object_type *o_ptr);
 bool obj_is_potion(const object_type *o_ptr);
 bool obj_is_scroll(const object_type *o_ptr);
 bool obj_is_food(const object_type *o_ptr);
-bool obj_is_lite(const object_type *o_ptr);
+bool obj_is_light(const object_type *o_ptr);
 bool obj_is_ring(const object_type *o_ptr);
 bool obj_is_ammo(const object_type *o_ptr);
+bool obj_has_charges(const object_type *o_ptr);
 bool obj_can_zap(const object_type *o_ptr);
 bool obj_is_activatable(const object_type *o_ptr);
 bool obj_can_activate(const object_type *o_ptr);
@@ -215,9 +256,12 @@ extern void display_itemlist(void);
 extern void display_object_idx_recall(s16b o_idx);
 extern void display_object_kind_recall(s16b k_idx);
 
+bool pack_is_full(void);
+bool pack_is_overfull(void);
+void pack_overflow(void);
 
 /* obj-power.c and randart.c */
-s32b object_power(const object_type *o_ptr, int verbose, ang_file *log_file);
+s32b object_power(const object_type *o_ptr, int verbose, ang_file *log_file, bool known);
 /*
  * Some constants used in randart generation and power calculation
  * - thresholds for limiting to_hit, to_dam and to_ac
@@ -227,7 +271,7 @@ s32b object_power(const object_type *o_ptr, int verbose, ang_file *log_file);
 #define INHIBIT_POWER       20000
 #define HIGH_TO_AC             21
 #define VERYHIGH_TO_AC         31
-#define INHIBIT_AC             41
+#define INHIBIT_AC             51
 #define HIGH_TO_HIT            16
 #define VERYHIGH_TO_HIT        26
 #define HIGH_TO_DAM            16
@@ -250,5 +294,5 @@ s32b object_power(const object_type *o_ptr, int verbose, ang_file *log_file);
         do { if (verbose) \
                 file_putf(log_file, (string), (val1), (val2)); \
         } while (0);
-	
+
 #endif /* !INCLUDED_OBJECT_H */

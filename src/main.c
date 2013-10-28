@@ -112,7 +112,7 @@ static void quit_hook(cptr s)
  *
  * First, we'll look for the ANGBAND_PATH environment variable,
  * and then look for the files in there.  If that doesn't work,
- * we'll try the DEFAULT_PATH constant.  So be sure that one of
+ * we'll try the DEFAULT_PATH constants.  So be sure that one of
  * these two things works...
  *
  * We must ensure that the path ends with "PATH_SEP" if needed,
@@ -125,20 +125,27 @@ static void quit_hook(cptr s)
  */
 static void init_stuff(void)
 {
-	char path[1024];
-
+	char configpath[512];
+	char libpath[512];
+	char datapath[512];
 
 	/* Use the angband_path, or a default */
-	my_strcpy(path, DEFAULT_PATH, sizeof(path));
+	my_strcpy(configpath, DEFAULT_CONFIG_PATH, sizeof(configpath));
+	my_strcpy(libpath, DEFAULT_LIB_PATH, sizeof(libpath));
+	my_strcpy(datapath, DEFAULT_DATA_PATH, sizeof(datapath));
 
-	/* Make sure it's terminated */
-	path[511] = '\0';
+	/* Make sure they're terminated */
+	configpath[511] = '\0';
+	libpath[511] = '\0';
+	datapath[511] = '\0';
 
 	/* Hack -- Add a path separator (only if needed) */
-	if (!suffix(path, PATH_SEP)) my_strcat(path, PATH_SEP, sizeof(path));
+	if (!suffix(configpath, PATH_SEP)) my_strcat(configpath, PATH_SEP, sizeof(configpath));
+	if (!suffix(libpath, PATH_SEP)) my_strcat(libpath, PATH_SEP, sizeof(libpath));
+	if (!suffix(datapath, PATH_SEP)) my_strcat(datapath, PATH_SEP, sizeof(datapath));
 
 	/* Initialize */
-	init_file_paths(path);
+	init_file_paths(configpath, libpath, datapath);
 }
 
 
@@ -271,12 +278,8 @@ int main(int argc, char *argv[])
 	/* Get the "user name" as a default player name */
 	user_name(op_ptr->full_name, sizeof(op_ptr->full_name), player_uid);
 
-#ifdef PRIVATE_USER_PATH
-
-	/* Create directories for the users files */
-	create_user_dirs();
-
-#endif /* PRIVATE_USER_PATH */
+	/* Create any missing directories */
+	create_needed_dirs();
 
 #endif /* SET_UID */
 

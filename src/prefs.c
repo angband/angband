@@ -428,7 +428,7 @@ void dump_colors(ang_file *fff)
 		if (!kv && !rv && !gv && !bv) continue;
 
 		/* Extract the color name */
-		if (i < BASIC_COLORS) name = color_names[i];
+		if (i < BASIC_COLORS) name = color_table[i].name;
 
 		file_putf(fff, "# Color: %s\n", name);
 		file_putf(fff, "V:%d:0x%02X:0x%02X:0x%02X:0x%02X\n\n", i, kv, rv, gv, bv);
@@ -822,6 +822,7 @@ errr process_pref_file_command(char *buf)
 	else if (buf[0] == 'C')
 	{
 		long mode;
+		byte j;
 
 		char tmp[1024];
 
@@ -832,11 +833,11 @@ errr process_pref_file_command(char *buf)
 
 		text_to_ascii(tmp, sizeof(tmp), zz[1]);
 		if (!tmp[0] || tmp[1]) return (1);
-		i = (long)tmp[0];
+		j = (byte)tmp[0];
 
-		string_free(keymap_act[mode][i]);
+		string_free(keymap_act[mode][j]);
 
-		keymap_act[mode][i] = string_make(macro_buffer);
+		keymap_act[mode][j] = string_make(macro_buffer);
 
 		return (0);
 	}

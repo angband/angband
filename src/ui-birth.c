@@ -450,7 +450,9 @@ static enum birth_stage menu_question(enum birth_stage current, menu_type *curre
 					 * Make sure we've got a point-based char to play with. 
 					 * We call point_based_start here to make sure we get
 					 * an update on the points totals before trying to
-					 * display the screen.
+					 * display the screen.  The call to CMD_RESET_STATS
+					 * forces a rebuying of the stats to give us up-to-date
+					 * totals.  This is, it should go without saying, a hack.
 					 */
 					point_based_start();
 					cmd_insert(CMD_RESET_STATS, TRUE);

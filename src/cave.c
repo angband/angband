@@ -306,7 +306,7 @@ bool los(int y1, int x1, int y2, int x2)
 /*
  * Returns true if the player's grid is dark
  */
-bool no_lite(void)
+bool no_light(void)
 {
 	return (!player_can_see_bold(p_ptr->py, p_ptr->px));
 }
@@ -435,12 +435,45 @@ bool feat_supports_lighting(int feat)
 	}
 }
 
+
+/*
+ * Translate text colours.
+ *
+ * This translates a color based on the attribute. We use this to set terrain to
+ * be lighter or darker, make metallic monsters shimmer, highlight text under the
+ * mouse, and reduce the colours on mono colour or 16 colour terms to the correct
+ * colour space.
+ *
+ * TODO: Honour the attribute for the term (full color, mono, 16 color) but ensure
+ * that e.g. the lighter version of yellow becomes white in a 16 color term, but
+ * light yellow in a full colour term.
+ */
+byte get_color(byte a, int attr, int n)
+{
+	/* Accept any graphical attr (high bit set) */
+	if (a & (0x80)) return (a);
+
+	/* TODO: Honour the attribute for the term (full color, mono, 16 color) */
+	if (!attr) return(a);
+
+	/* Translate the color N times */
+	while (n > 0)
+	{
+		a = color_table[a].color_translate[attr];
+		n--;
+	}
+	
+	/* Return the modified color */
+	return (a);
+}
+
+
 /*
  * This function modifies the attr/char pair for an empty floor space
  * to reflect the various lighting options available.
  *
- * For text, this means changing the colouring for OPT(view_yellow_lite) or
- * OPT(view_bright_lite), and for graphics it means modifying the char to
+ * For text, this means changing the colouring for OPT(view_yellow_light) or
+ * OPT(view_bright_light), and for graphics it means modifying the char to
  * use a different tile in the tileset.  These modifications are different
  * for different sets, depending on the tiles available, and their position 
  * in the set.
@@ -450,10 +483,10 @@ static void special_lighting_floor(byte *a, char *c, enum grid_light_level light
 	/* The floor starts off "lit" - i.e. rendered in white or the default 
 	 * tile. */
 
-	if (lighting == LIGHT_TORCH && OPT(view_yellow_lite))
+	if (lighting == LIGHT_TORCH && OPT(view_yellow_light))
 	{
 		/* 
-		 * OPT(view_yellow_lite) distinguishes between torchlit and 
+		 * OPT(view_yellow_light) distinguishes between torchlit and 
 		 * permanently-lit areas 
 		 */
 		switch (use_graphics)
@@ -490,10 +523,10 @@ static void special_lighting_floor(byte *a, char *c, enum grid_light_level light
 	else
 	{
 		/* 
-		 * OPT(view_bright_lite) makes tiles that aren't in the "eyeline" 
+		 * OPT(view_bright_light) makes tiles that aren't in the "eyeline" 
 		 * of the player show up dimmer than those that are.
 		 */
-		if (OPT(view_bright_lite) && !in_view)
+		if (OPT(view_bright_light) && !in_view)
 		{
 			switch (use_graphics)
 			{
@@ -517,7 +550,7 @@ static void special_lighting_floor(byte *a, char *c, enum grid_light_level light
  * grids to show them as more-or-less lit.  Note that how walls are drawn 
  * isn't directly related to how they are lit - walls are always "lit".
  * The lighting effects we use are as a visual cue to emphasise blindness 
- * and to show field-of-view (OPT(view_bright_lite)).
+ * and to show field-of-view (OPT(view_bright_light)).
  *
  * For text, we change the attr and for graphics we modify the char to
  * use a different tile in the tileset.  These modifications are different
@@ -546,8 +579,8 @@ static void special_wall_display(byte *a, char *c, bool in_view, int feat)
 		}
 	}
 
-	/* Handle "OPT(view_bright_lite)" by dimming walls not "in view" */
-	else if (OPT(view_bright_lite))
+	/* Handle "OPT(view_bright_light)" by dimming walls not "in view" */
+	else if (OPT(view_bright_light))
 	{
 		switch (use_graphics)
 		{
@@ -649,11 +682,11 @@ void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp)
 		a = TERM_L_GREEN;
 
 	/* Special lighting effects */
-	if (g->f_idx <= FEAT_INVIS && OPT(view_special_lite))
+	if (g->f_idx <= FEAT_INVIS && OPT(view_special_light))
 		special_lighting_floor(&a, &c, g->lighting, g->in_view);
 
 	/* Special lighting effects (walls only) */
-	if (g->f_idx > FEAT_INVIS && OPT(view_granite_lite)) 
+	if (g->f_idx > FEAT_INVIS && OPT(view_granite_light)) 
 		special_wall_display(&a, &c, g->in_view, g->f_idx);
 		
 	/* Save the terrain info for the transparency effects */
@@ -857,7 +890,7 @@ void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp)
  *    grid that the player knows and cares about (to facilitate any special
  *    floor stack symbol that might be used).
  *  - g->in_view is TRUE if the player can currently see the grid - this can
- *    be used to indicate field-of-view, such as through the OPT(view_bright_lite)
+ *    be used to indicate field-of-view, such as through the OPT(view_bright_light)
  *    option.
  *  - g->lighting is set to indicate the lighting level for the grid:
  *    LIGHT_DARK for unlit grids, LIGHT_TORCH for those lit by the player's
@@ -922,7 +955,7 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 			/* Handle currently visible grids */
 			if (info & CAVE_SEEN)
 			{
-				/* Only lit by "torch" lite */
+				/* Only lit by "torch" light */
 				if (info & CAVE_GLOW)
 					g->lighting = LIGHT_GLOW;
 				else
@@ -1278,7 +1311,7 @@ void note_spot(int y, int x)
  *
  * This function should only be called on "legal" grids.
  */
-void lite_spot(int y, int x)
+void light_spot(int y, int x)
 {
 	event_signal_point(EVENT_MAP, x, y);
 }
@@ -1350,7 +1383,7 @@ static void prt_map_aux(void)
 /*
  * Redraw (on the screen) the current map panel
  *
- * Note the inline use of "lite_spot()" for efficiency.
+ * Note the inline use of "light_spot()" for efficiency.
  *
  * The main screen will always be at least 24x80 in size.
  */
@@ -1519,8 +1552,8 @@ void display_map(int *cy, int *cx)
 	/* Large array on the stack */
 	byte mp[DUNGEON_HGT][DUNGEON_WID];
 
-	bool old_view_special_lite;
-	bool old_view_granite_lite;
+	bool old_view_special_light;
+	bool old_view_granite_light;
 
 	monster_race *r_ptr = &r_info[0];
 
@@ -1540,12 +1573,12 @@ void display_map(int *cy, int *cx)
 
 
 	/* Save lighting effects */
-	old_view_special_lite = OPT(view_special_lite);
-	old_view_granite_lite = OPT(view_granite_lite);
+	old_view_special_light = OPT(view_special_light);
+	old_view_granite_light = OPT(view_granite_light);
 
 	/* Disable lighting effects */
-	OPT(view_special_lite) = FALSE;
-	OPT(view_granite_lite) = FALSE;
+	OPT(view_special_light) = FALSE;
+	OPT(view_granite_light) = FALSE;
 
 
 	/* Nothing here */
@@ -1629,8 +1662,8 @@ void display_map(int *cy, int *cx)
 
 
 	/* Restore lighting effects */
-	OPT(view_special_lite) = old_view_special_lite;
-	OPT(view_granite_lite) = old_view_granite_lite;
+	OPT(view_special_light) = old_view_special_light;
+	OPT(view_granite_light) = old_view_granite_light;
 }
 
 
@@ -1662,7 +1695,7 @@ void do_cmd_view_map(void)
 	/* Show the prompt */
 	put_str(prompt, Term->hgt - 1, Term->wid / 2 - strlen(prompt) / 2);
 
-	/* Hilite the player */
+	/* Highlight the player */
 	Term_gotoxy(cx, cy);
 
 	/* Get any key */
@@ -1945,7 +1978,7 @@ void do_cmd_view_map(void)
  * become slower in some situations if it did.
  *
  *       Rad=0     Rad=1      Rad=2        Rad=3
- *      No-Lite  Torch,etc   Lantern     Artifacts
+ *      No-Light Torch,etc   Lantern     Artifacts
  *
  *                                          333
  *                             333         43334
@@ -2574,11 +2607,11 @@ void forget_view(void)
 		/* Clear "CAVE_VIEW" and "CAVE_SEEN" flags */
 		fast_cave_info[g] &= ~(CAVE_VIEW | CAVE_SEEN);
 
-		/* Clear "CAVE_LITE" flag */
-		/* fast_cave_info[g] &= ~(CAVE_LITE); */
+		/* Clear "CAVE_LIGHT" flag */
+		/* fast_cave_info[g] &= ~(CAVE_LIGHT); */
 
 		/* Redraw */
-		lite_spot(y, x);
+		light_spot(y, x);
 	}
 
 	/* None left */
@@ -2723,8 +2756,8 @@ void update_view(void)
 		/* Clear "CAVE_VIEW" and "CAVE_SEEN" flags */
 		info &= ~(CAVE_VIEW | CAVE_SEEN);
 
-		/* Clear "CAVE_LITE" flag */
-		/* info &= ~(CAVE_LITE); */
+		/* Clear "CAVE_LIGHT" flag */
+		/* info &= ~(CAVE_LIGHT); */
 
 		/* Save cave info */
 		fast_cave_info[g] = info;
@@ -2734,7 +2767,7 @@ void update_view(void)
 	fast_view_n = 0;
 
 	/* Extract "radius" value */
-	radius = p_ptr->cur_lite;
+	radius = p_ptr->cur_light;
 
 	/* Handle real light */
 	if (radius > 0) ++radius;
@@ -2757,8 +2790,8 @@ void update_view(void)
 		/* Mark as "CAVE_SEEN" */
 		info |= (CAVE_SEEN);
 
-		/* Mark as "CAVE_LITE" */
-		/* info |= (CAVE_LITE); */
+		/* Mark as "CAVE_LIGHT" */
+		/* info |= (CAVE_LIGHT); */
 	}
 
 	/* Perma-lit grid */
@@ -2842,8 +2875,8 @@ void update_view(void)
 							/* Mark as "CAVE_SEEN" */
 							info |= (CAVE_SEEN);
 
-							/* Mark as "CAVE_LITE" */
-							/* info |= (CAVE_LITE); */
+							/* Mark as "CAVE_LIGHT" */
+							/* info |= (CAVE_LIGHT); */
 						}
 
 						/* Perma-lit grids */
@@ -2899,8 +2932,8 @@ void update_view(void)
 							/* Mark as "CAVE_SEEN" */
 							info |= (CAVE_SEEN);
 
-							/* Mark as "CAVE_LITE" */
-							/* info |= (CAVE_LITE); */
+							/* Mark as "CAVE_LIGHT" */
+							/* info |= (CAVE_LIGHT); */
 						}
 
 						/* Perma-lit grids */
@@ -2960,7 +2993,7 @@ void update_view(void)
 			note_spot(y, x);
 
 			/* Redraw */
-			lite_spot(y, x);
+			light_spot(y, x);
 		}
 	}
 
@@ -2989,7 +3022,7 @@ void update_view(void)
 			x = GRID_X(g);
 
 			/* Redraw */
-			lite_spot(y, x);
+			light_spot(y, x);
 		}
 	}
 
@@ -3198,7 +3231,7 @@ void update_flow(void)
  * since this would prevent the use of "OPT(view_torch_grids)" as a method to
  * keep track of what grids have been observed directly.
  */
-void wiz_lite(void)
+void wiz_light(void)
 {
 	int i, y, x;
 
@@ -3233,7 +3266,7 @@ void wiz_lite(void)
 					int yy = y + ddy_ddd[i];
 					int xx = x + ddx_ddd[i];
 
-					/* Perma-lite the grid */
+					/* Perma-light the grid */
 					cave_info[yy][xx] |= (CAVE_GLOW);
 
 					/* Memorize normal features */
@@ -3421,7 +3454,7 @@ void cave_set_feat(int y, int x, int feat)
 		note_spot(y, x);
 
 		/* Redraw */
-		lite_spot(y, x);
+		light_spot(y, x);
 	}
 }
 

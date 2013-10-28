@@ -58,7 +58,7 @@ something you are more comfortable with.
   =   A ring                          (   Soft armour
   "   An amulet                       [   Hard armour
   $   Gold or gems                    ]   Misc. armour
-  ~   Lites, Tools, Chests, etc       )   A shield
+  ~   Lights, Tools, Chests, etc      )   A shield
   ~   Junk, Sticks, Skeletons, etc    &   (unused)
  
  

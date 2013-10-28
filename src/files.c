@@ -168,7 +168,7 @@ static const struct player_flag_record player_flag_table[RES_ROWS*4] =
 	{ "rCold",	1, TR1_RES_COLD,	TR1_IM_COLD,	TR1_VULN_COLD },
 	{ "rPois",	1, TR1_RES_POIS,	0, 0 },
 	{ "rFear",	1, TR1_RES_FEAR,	0, 0 },
-	{ "rLite",	1, TR1_RES_LITE,	0, 0 },
+	{ "rLite",	1, TR1_RES_LIGHT,	0, 0 },
 	{ "rDark",	1, TR1_RES_DARK,	0, 0 },
 	{ "rBlnd",	1, TR1_RES_BLIND,	0, 0 },
 
@@ -182,7 +182,7 @@ static const struct player_flag_record player_flag_table[RES_ROWS*4] =
 	{ "S.Dig",	2, TR2_SLOW_DIGEST,	0, 0 },
 	{ "Feath",	2, TR2_FEATHER, 	0, 0 },
 
-	{ "PLite",	2, TR2_LITE, 		0, 0 },
+	{ "Light",	2, TR2_LIGHT, 		0, 0 },
 	{ "Regen",	2, TR2_REGEN, 		0, 0 },
 	{ "  ESP",	2, TR2_TELEPATHY, 	0, 0 },
 	{ "Invis",	2, TR2_SEE_INVIS, 	0, 0 },
@@ -234,17 +234,24 @@ static void display_resistance_panel(const struct player_flag_record *resists,
 
 			bool res, imm, vuln;
 
-			if (j < INVEN_TOTAL)
+			/* Wipe flagset */
+			C_WIPE(f, OBJ_FLAG_N, u32b);
+
+			if (j < INVEN_TOTAL && o_ptr->k_idx)
+			{
 				object_flags_known(o_ptr, f);
-			else
+			}
+			else if (j == INVEN_TOTAL)
 			{
 				player_flags(f);
 
-				/* If the race has innate infravision, force the corresponding flag
+				/* If the race has innate infravision/digging, force the corresponding flag
 				   here.  If we set it in player_flags(), then all callers of that
 				   function will think the infravision is caused by equipment. */
 				if (rp_ptr->infra > 0)
-					f[0] |= (TR0_INFRA);
+					f[0] |= TR0_INFRA;
+				if (rp_ptr->r_skills[SKILL_DIGGING] > 0)
+					f[0] |= TR0_TUNNEL;
 			}
 
 			res = (0 != (f[resists[i].set] & resists[i].res_flag));
@@ -257,7 +264,8 @@ static void display_resistance_panel(const struct player_flag_record *resists,
 			if (vuln) sym = '-';
 			else if (imm) sym = '*';
 			else if (res) sym = '+';
-			else if ((!object_flag_is_known(o_ptr, resists[i].set, resists[i].res_flag)) && (j < INVEN_TOTAL) && (o_ptr->k_idx)) sym = '?';
+			else if ((j < INVEN_TOTAL) && o_ptr->k_idx && 
+				!object_flag_is_known(o_ptr, resists[i].set, resists[i].res_flag)) sym = '?';
 			Term_addch(attr, sym);
 		}
 		Term_putstr(col, row, 6, name_attr, format("%5s:", resists[i].name));
@@ -542,9 +550,9 @@ static const region boundaries [] =
 	/* x   y     width, rows */
 	{ 0,   0,		0,		0 },
 	{ 1,   1,		40,		8 }, /* Name, Class, ... */
-	{ 1,  10,		22,		8 }, /* Cur Exp, Max Exp, ... */
-	{ 26, 10,		17,		8 }, /* AC, melee, ... */
-	{ 48, 10,		24,		8 }, /* skills */
+	{ 1,   9,		22,		9 }, /* Cur Exp, Max Exp, ... */
+	{ 26,  9,		17,		9 }, /* AC, melee, ... */
+	{ 48,  9,		24,		8 }, /* skills */
 	{ 21,  2,		18,		5 }, /* Age, ht, wt, ... */
 };
 
@@ -727,9 +735,10 @@ static int get_panel(int oid, data_panel *panel, size_t size)
 	P_I(TERM_L_GREEN, "Max Exp",	"%y",	i2u(p_ptr->max_exp), END  );
 	P_I(TERM_L_GREEN, "Adv Exp",	"%y",	s2u(show_adv_exp()), END  );
 	P_I(TERM_L_GREEN, "MaxDepth",	"%y",	s2u(show_depth()), END  );
-	P_I(TERM_L_GREEN, "Turns",		"%y",	i2u(turn), END  );
+	P_I(TERM_L_GREEN, "Game Turns",	"%y",	i2u(turn), END  );
+	P_I(TERM_L_GREEN, "Player Turns","%y",	i2u(p_ptr->player_turn), END  );
+	P_I(TERM_L_GREEN, "Active Turns","%y",	i2u(p_ptr->player_turn - p_ptr->resting_turn), END  );
 	P_I(TERM_L_GREEN, "Gold",		"%y",	i2u(p_ptr->au), END  );
-	P_I(TERM_L_GREEN, "Burden",	"%.1y lbs",	f2u(p_ptr->total_weight/10.0), END  );
 	assert(i == boundaries[2].page_rows);
 	return ret;
   }
@@ -746,6 +755,7 @@ static int get_panel(int oid, data_panel *panel, size_t size)
 	P_I(TERM_L_BLUE, "Shots", "%y/turn",	i2u(p_ptr->state.num_fire), END  );
 	P_I(TERM_L_BLUE, "Infra", "%y ft",		i2u(p_ptr->state.see_infra * 10), END  );
 	P_I(TERM_L_BLUE, "Speed", "%y",			s2u(show_speed()), END );
+	P_I(TERM_L_BLUE, "Burden","%.1y lbs",	f2u(p_ptr->total_weight/10.0), END  );
 	assert(i == boundaries[3].page_rows);
 	return ret;
   }
@@ -778,10 +788,17 @@ static int get_panel(int oid, data_panel *panel, size_t size)
 		if (skills[i].skill == SKILL_SAVE ||
 				skills[i].skill == SKILL_SEARCH)
 		{
+			if (skill < 0) skill = 0;
 			if (skill > 100) skill = 100;
 			panel[i].fmt = "%y%%";
 			panel[i].value[0] = i2u(skill);
 			panel[i].color = colour_table[skill / 10];
+		}
+		else if (skills[i].skill == SKILL_DEVICE)
+		{
+			panel[i].fmt = "%y";
+			panel[i].value[0] = i2u(skill);
+			panel[i].color = colour_table[skill / 13];
 		}
 		else if (skills[i].skill == SKILL_SEARCH_FREQUENCY)
 		{
@@ -1057,27 +1074,29 @@ errr file_character(const char *path, bool full)
 	text_out_wrap = 72;
 
 	/* Dump the equipment */
-	if (p_ptr->equip_cnt)
+	file_putf(fp, "  [Character Equipment]\n\n");
+	for (i = INVEN_WIELD; i < ALL_INVEN_TOTAL; i++)
 	{
-		file_putf(fp, "  [Character Equipment]\n\n");
-		for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
+		if (i == INVEN_TOTAL)
 		{
-			object_desc(o_name, sizeof(o_name), &inventory[i], TRUE, ODESC_FULL);
-
-			file_putf(fp, "%c) %s\n", index_to_label(i), o_name);
-			if (inventory[i].k_idx)
-				object_info_chardump(&inventory[i]);
+			file_putf(fp, "\n\n  [Character Quiver]\n\n");
+			continue;
 		}
-		file_putf(fp, "\n\n");
+		object_desc(o_name, sizeof(o_name), &inventory[i],
+				ODESC_PREFIX | ODESC_FULL);
+
+		file_putf(fp, "%c) %s\n", index_to_label(i), o_name);
+		if (inventory[i].k_idx) object_info_chardump(&inventory[i]);
 	}
 
 	/* Dump the inventory */
-	file_putf(fp, "  [Character Inventory]\n\n");
+	file_putf(fp, "\n\n  [Character Inventory]\n\n");
 	for (i = 0; i < INVEN_PACK; i++)
 	{
 		if (!inventory[i].k_idx) break;
 
-		object_desc(o_name, sizeof(o_name), &inventory[i], TRUE, ODESC_FULL);
+		object_desc(o_name, sizeof(o_name), &inventory[i],
+					ODESC_PREFIX | ODESC_FULL);
 
 		file_putf(fp, "%c) %s\n", index_to_label(i), o_name);
 		object_info_chardump(&inventory[i]);
@@ -1094,7 +1113,8 @@ errr file_character(const char *path, bool full)
 		/* Dump all available items */
 		for (i = 0; i < st_ptr->stock_num; i++)
 		{
-			object_desc(o_name, sizeof(o_name), &st_ptr->stock[i], TRUE, ODESC_FULL);
+			object_desc(o_name, sizeof(o_name), &st_ptr->stock[i],
+						ODESC_PREFIX | ODESC_FULL);
 			file_putf(fp, "%c) %s\n", I2A(i), o_name);
 
 			object_info_chardump(&st_ptr->stock[i]);
@@ -1406,7 +1426,7 @@ bool show_file(cptr name, cptr what, int line, int mode)
 			/* Dump the line */
 			Term_putstr(0, i+2, -1, TERM_WHITE, buf);
 
-			/* Hilite "shower" */
+			/* Highlight "shower" */
 			if (shower[0])
 			{
 				cptr str = lc_buf;

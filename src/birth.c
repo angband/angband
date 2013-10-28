@@ -57,6 +57,8 @@ typedef struct birther /*lovely*/ birther; /*sometimes we think she's a dream*/
 /*
  * A structure to hold "rolled" information, and any
  * other useful state for the birth process.
+ *
+ * XXX Demand Obama's birth certificate
  */
 struct birther
 {
@@ -434,11 +436,8 @@ static void player_wipe(void)
 	(void)WIPE(p_ptr, player_type);
 
 	/* Clear the inventory */
-	for (i = 0; i < INVEN_TOTAL; i++)
-	{
+	for (i = 0; i < ALL_INVEN_TOTAL; i++)
 		object_wipe(&inventory[i]);
-	}
-
 
 	/* Start with no artifacts made yet */
 	for (i = 0; i < z_info->a_max; i++)
@@ -509,9 +508,11 @@ static void player_wipe(void)
 
 	/* First turn. */
 	turn = old_turn = 1;
+	p_ptr->player_turn = 0;
+	p_ptr->resting_turn = 0;
 }
 
-/*
+/**
  * Try to wield everything wieldable in the inventory.
  */
 static void wield_all(void)
@@ -522,29 +523,45 @@ static void wield_all(void)
 
 	int slot;
 	int item;
+	int num;
+	bool is_ammo;
 
 	/* Scan through the slots backwards */
 	for (item = INVEN_PACK - 1; item >= 0; item--)
 	{
 		o_ptr = &inventory[item];
+		is_ammo = obj_is_ammo(o_ptr);
 
 		/* Skip non-objects */
 		if (!o_ptr->k_idx) continue;
 
-		/* Make sure we can wield it and that there's nothing else in that slot */
+		/* Make sure we can wield it */
 		slot = wield_slot(o_ptr);
 		if (slot < INVEN_WIELD) continue;
-		if (inventory[slot].k_idx) continue;
+		i_ptr = &inventory[slot];
+
+		/* Make sure that there's an available slot */
+		if (is_ammo)
+		{
+			if (i_ptr->k_idx && !object_similar(o_ptr, i_ptr)) continue;
+		}
+		else
+		{
+			if (i_ptr->k_idx) continue;
+		}
+
+		/* Figure out how much of the item we'll be wielding */
+		num = is_ammo ? o_ptr->number : 1;
 
 		/* Get local object */
 		i_ptr = &object_type_body;
 		object_copy(i_ptr, o_ptr);
 
 		/* Modify quantity */
-		i_ptr->number = 1;
+		i_ptr->number = num;
 
 		/* Decrease the item (from the pack) */
-		inven_item_increase(item, -1);
+		inven_item_increase(item, -num);
 		inven_item_optimize(item);
 
 		/* Get the wield slot */
@@ -554,11 +571,13 @@ static void wield_all(void)
 		object_copy(o_ptr, i_ptr);
 
 		/* Increase the weight */
-		p_ptr->total_weight += i_ptr->weight;
+		p_ptr->total_weight += i_ptr->weight * i_ptr->number;
 
 		/* Increment the equip counter by hand */
 		p_ptr->equip_cnt++;
 	}
+
+	save_quiver_size();
 
 	return;
 }
@@ -596,7 +615,7 @@ static void player_outfit(void)
 			if (!k_idx) continue;
 
 			/* Prepare the item */
-			object_prep(i_ptr, k_idx);
+			object_prep(i_ptr, k_idx, 0, MINIMISE);
 			i_ptr->number = (byte)rand_range(e_ptr->min, e_ptr->max);
 			i_ptr->origin = ORIGIN_BIRTH;
 
@@ -614,7 +633,7 @@ static void player_outfit(void)
 	i_ptr = &object_type_body;
 
 	/* Hack -- Give the player some food */
-	object_prep(i_ptr, lookup_kind(TV_FOOD, SV_FOOD_RATION));
+	object_prep(i_ptr, lookup_kind(TV_FOOD, SV_FOOD_RATION), 0, MINIMISE);
 	i_ptr->number = (byte)rand_range(3, 7);
 	i_ptr->origin = ORIGIN_BIRTH;
 	object_flavor_aware(i_ptr);
@@ -627,13 +646,13 @@ static void player_outfit(void)
 	i_ptr = &object_type_body;
 
 	/* Hack -- Give the player some torches */
-	object_prep(i_ptr, lookup_kind(TV_LITE, SV_LITE_TORCH));
+	object_prep(i_ptr, lookup_kind(TV_LIGHT, SV_LIGHT_TORCH), 0, MINIMISE);
+	apply_magic(i_ptr, 0, FALSE, FALSE, FALSE);
 	i_ptr->number = (byte)rand_range(3, 7);
-	i_ptr->timeout = FUEL_TORCH;
 	i_ptr->origin = ORIGIN_BIRTH;
 	object_flavor_aware(i_ptr);
 	object_notice_everything(i_ptr);
-        k_info[i_ptr->k_idx].everseen = TRUE;
+	k_info[i_ptr->k_idx].everseen = TRUE;
 	(void)inven_carry(i_ptr);
 
 

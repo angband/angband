@@ -232,8 +232,8 @@ bool history_add_artifact(byte a_idx, bool known)
 	/* Make fake artifact for description purposes */
 	object_wipe(o_ptr);
 	make_fake_artifact(o_ptr, a_idx);
-	object_desc(o_name, sizeof(o_name), o_ptr, TRUE,
-			ODESC_BASE | ODESC_SPOIL);
+	object_desc(o_name, sizeof(o_name), o_ptr,
+				ODESC_PREFIX | ODESC_BASE | ODESC_SPOIL);
 	strnfmt(buf, sizeof(buf), "Found %s", o_name);
 
 	/* Known objects gets different treatment */
@@ -442,8 +442,8 @@ void dump_history(ang_file *file)
                 if (history_list[i].type & HISTORY_ARTIFACT_LOST)
                                 my_strcat(buf, " (LOST)", sizeof(buf));
 
-		file_putf(file, buf);
-		file_putf(file, "\n");
+		file_put(file, buf);
+		file_put(file, "\n");
 	}
 
 	return;

@@ -13,48 +13,42 @@ typedef struct
 {
 	/** Constants **/
 
-	u32b name;     /**< (const char *) object_kind::name + k_name = Name */
-	u32b text;     /**< (const char *) object_kind::text + k_text = Description  */
+	u32b name;         /**< (const char *) object_kind::name + k_name = Name */
+	u32b text;         /**< (const char *) object_kind::text + k_text = Description  */
 
-	byte tval;     /**< General object type (see TV_ macros) */
-	byte sval;     /**< Object sub-type (see SV_ macros) */
-	s16b pval;     /**< Power for any flags which need it */
+	byte tval;         /**< General object type (see TV_ macros) */
+	byte sval;         /**< Object sub-type (see SV_ macros) */
+	random_value pval; /**< Power for any flags which need it */
 
-	s16b to_h;     /**< Bonus to-hit */
-	s16b to_d;     /**< Bonus to damage */
-	s16b to_a;     /**< Bonus to armor */
-	s16b ac;       /**< Base armor */
+	random_value to_h; /**< Bonus to hit */
+	random_value to_d; /**< Bonus to damage */
+	random_value to_a; /**< Bonus to armor */
+	s16b ac;           /**< Base armor */
 
-	byte dd;       /**< Damage dice */
-	byte ds;       /**< Damage sides */
-	s16b weight;   /**< Weight, in 1/10lbs */
+	byte dd;           /**< Damage dice */
+	byte ds;           /**< Damage sides */
+	s16b weight;       /**< Weight, in 1/10lbs */
 
-	s32b cost;     /**< Object base cost */
+	s32b cost;         /**< Object base cost */
 
 	u32b flags[OBJ_FLAG_N];		/**< Flags */
 
-	byte d_attr;   /**< Default object attribute */
-	char d_char;   /**< Default object character */
+	byte d_attr;       /**< Default object attribute */
+	char d_char;       /**< Default object character */
 
 	byte alloc_prob;   /**< Allocation: commonness */
 	byte alloc_min;    /**< Highest normal dungeon level */
 	byte alloc_max;    /**< Lowest normal dungeon level */
-	byte level;        /**< Level */
+	byte level;        /**< Level (difficulty of activation) */
 
-	u16b effect;       /**< Effect this item produces (effects.c) */
-	u16b time_base;    /**< Recharge time (if appropriate) */
-	u16b time_dice;    /**< Randomised recharge time dice */
-	u16b time_sides;   /**< Randomised recharge time sides */
+	u16b effect;         /**< Effect this item produces (effects.c) */
+	random_value time;   /**< Recharge time (rods/activation) */
+	random_value charge; /**< Number of charges (staves/wands) */
 
-	byte charge_base;  /**< Non-random initial charge base */
-	byte charge_dd;    /**< Randomised initial charge dice */
-	byte charge_ds;    /**< Randomised initial charge sides */
+	byte gen_mult_prob;      /**< Probability of generating more than one */
+	random_value stack_size; /**< Number to generate */
 
-	byte gen_mult_prob; /**< Probability of generating more than one */
-	byte gen_dice;      /**< Number to generate dice */
-	byte gen_side;      /**< Number to generate sides */
-
-	u16b flavor;        /**< Special object flavor (or zero) */
+	u16b flavor;         /**< Special object flavor (or zero) */
 
 
 	/** Game-dependent **/
@@ -106,8 +100,11 @@ typedef struct
 
 	u32b flags[OBJ_FLAG_N];		/**< Flags */
 
-	byte level;   /**< Minimum depth artifact can appear at */
-	byte rarity;  /**< Artifact rarity */
+	byte level;   /** Difficulty level for activation */
+	byte rarity;  /** Unused */
+	byte alloc_prob; /** Chance of being generated (i.e. rarity) */
+	byte alloc_min;  /** Minimum depth (can appear earlier) */
+	byte alloc_max;  /** Maximum depth (will NEVER appear deeper) */
 
 	bool created;	/**< Whether this artifact has been created */
 	bool seen;	/**< Whether this artifact has been seen as an artifact */
@@ -116,9 +113,7 @@ typedef struct
 	u16b effect;     /**< Artifact activation (see effects.c) */
 	u32b effect_msg; /**< (const char *) artifact_type::effect_msg + a_text = Effect message */
 
-	u16b time_base;  /**< Recharge time (if appropriate) */
-	u16b time_dice;  /**< Randomised recharge time dice */
-	u16b time_sides; /**< Randomised recharge time sides */
+	random_value time;  /**< Recharge time (if appropriate) */
 
 } artifact_type;
 
@@ -143,10 +138,15 @@ typedef struct
 	byte min_sval[EGO_TVALS_MAX];	/* Minimum legal sval */
 	byte max_sval[EGO_TVALS_MAX];	/* Maximum legal sval */
 
-	byte max_to_h;		/* Maximum to-hit bonus */
-	byte max_to_d;		/* Maximum to-dam bonus */
-	byte max_to_a;		/* Maximum to-ac bonus */
-	byte max_pval;		/* Maximum pval */
+	random_value to_h;     /* Extra to-hit bonus */
+	random_value to_d; /* Extra to-dam bonus */
+	random_value to_a; /* Extra to-ac bonus */
+	random_value pval; /* Extra pval bonus */
+
+	byte min_to_h;		/* Minimum to-hit value */
+	byte min_to_d;		/* Minimum to-dam value */
+	byte min_to_a;		/* Minimum to-ac value */
+	byte min_pval;		/* Minimum pval */
 
 	byte xtra;			/* Extra sustain/resist/power */
 

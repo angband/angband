@@ -1,12 +1,10 @@
 # File: flavor.txt
 
 
-# This file is used to initialize the "lib/data/flavor.raw" file, which is
-# used to initialize the "flavor" information for the Angband game.
+# This file is used to initialize the "flavor" information for the Angband game.
 
 # Do not modify this file unless you know exactly what you are doing,
 # unless you wish to risk possible system crashes and broken savefiles.
-# After modifying this file, delete the "lib/data/flavor.raw" file.
 
 # N:<index>:<tval>:<sval>
 # G:<char>:<attr>

@@ -20,17 +20,13 @@
 #include "object/object.h"
 #include "object/tvalsval.h"
 #include "game-cmd.h"
+#include "cmds.h"
 
-/**
- * Determines how likely an object is to break on throwing or shooting.
- *
- * \returns percentage change of breaking
- */
+/* Returns percent chance of an object breaking after throwing or shooting. */
 int breakage_chance(const object_type *o_ptr)
 {
 	/* Artifacts never break */
-	if (artifact_p(o_ptr))
-		return 0;
+	if (artifact_p(o_ptr)) return 0;
 
 	switch (o_ptr->tval)
 	{
@@ -41,7 +37,7 @@ int breakage_chance(const object_type *o_ptr)
 		case TV_JUNK:
 			return 100;
 
-		case TV_LITE:
+		case TV_LIGHT:
 		case TV_SCROLL:
 		case TV_SKELETON:
 			return 50;
@@ -131,7 +127,7 @@ static int critical_shot(int weight, int plus, int dam)
  *
  * Factor in weapon weight, total plusses, player level.
  */
-static int critical_norm(int weight, int plus, int dam)
+static int critical_norm(int weight, int plus, int dam, const char **crit_msg)
 {
 	int i, k;
 
@@ -146,31 +142,31 @@ static int critical_norm(int weight, int plus, int dam)
 		if (k < 400)
 		{
 			sound(MSG_HIT_GOOD);
-			msg_print("It was a good hit!");
+			*crit_msg = "It was a good hit!";
 			dam = 2 * dam + 5;
 		}
 		else if (k < 700)
 		{
 			sound(MSG_HIT_GREAT);
-			msg_print("It was a great hit!");
+			*crit_msg = "It was a great hit!";
 			dam = 2 * dam + 10;
 		}
 		else if (k < 900)
 		{
 			sound(MSG_HIT_SUPERB);
-			msg_print("It was a superb hit!");
+			*crit_msg = "It was a superb hit!";
 			dam = 3 * dam + 15;
 		}
 		else if (k < 1300)
 		{
 			sound(MSG_HIT_HI_GREAT);
-			msg_print("It was a *GREAT* hit!");
+			*crit_msg = "It was a *GREAT* hit!";
 			dam = 3 * dam + 20;
 		}
 		else
 		{
 			sound(MSG_HIT_HI_SUPERB);
-			msg_print("It was a *SUPERB* hit!");
+			*crit_msg = "It was a *SUPERB* hit!";
 			dam = ((7 * dam) / 2) + 25;
 		}
 	}
@@ -179,7 +175,7 @@ static int critical_norm(int weight, int plus, int dam)
 		sound(MSG_HIT);
 	}
 
-	return (dam);
+	return dam;
 }
 
 
@@ -199,7 +195,7 @@ static int critical_norm(int weight, int plus, int dam)
  * \returns attack multiplier
  */
 static int get_brand_mult(object_type *o_ptr, const monster_type *m_ptr,
-		const char **hit_verb, bool is_ranged, bool secondary)
+		const char **hit_verb, bool is_ranged)
 {
 	int mult = 1;
 	const slay_t *s_ptr;
@@ -207,56 +203,51 @@ static int get_brand_mult(object_type *o_ptr, const monster_type *m_ptr,
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 	monster_lore *l_ptr = &l_list[m_ptr->r_idx];
 
-	u32b f[OBJ_FLAG_N];
+	u32b f[OBJ_FLAG_N], known_f[OBJ_FLAG_N];
 	object_flags(o_ptr, f);
+	object_flags_known(o_ptr, known_f);
 
 	for (s_ptr = slay_table; s_ptr->slay_flag; s_ptr++)
 	{
 		if (!(f[0] & s_ptr->slay_flag)) continue;
 
-		/* notice any brand or slay that would affect the monster */
-		if ((s_ptr->resist_flag) || (r_ptr->flags[2] & s_ptr->monster_flag))
+		/* Learn about monster resistance/vulnerability IF:
+		 * 1) The slay flag on the object is known OR
+		 * 2) The monster does not possess the appropriate resistance flag OR
+		 * 3) The monster does possess the appropriate vulnerability flag
+		 */
+		if (known_f[0] & s_ptr->slay_flag ||
+		    (s_ptr->monster_flag && (r_ptr->flags[2] & s_ptr->monster_flag)) ||
+		    (s_ptr->resist_flag && !(r_ptr->flags[2] & s_ptr->resist_flag)))
 		{
-			object_notice_slays(o_ptr, s_ptr->slay_flag);
-			wieldeds_notice_slays(s_ptr->slay_flag);
+			if (m_ptr->ml && s_ptr->monster_flag)
+			{
+				l_ptr->flags[2] |= s_ptr->monster_flag;
+			}
+
+			if (m_ptr->ml && s_ptr->resist_flag)
+			{
+				l_ptr->flags[2] |= s_ptr->resist_flag;
+			}
 		}
 
 		/* If the monster doesn't match or the slay flag does */
 		if ((s_ptr->brand && !(r_ptr->flags[2] & s_ptr->resist_flag)) || 
 			(r_ptr->flags[2] & s_ptr->monster_flag))
 		{
-			/* Learn the flag */
-			if (m_ptr->ml)
-				l_ptr->flags[2] |= s_ptr->monster_flag;
+			/* notice any brand or slay that would affect the monster */
+			object_notice_slays(o_ptr, s_ptr->slay_flag);
 
-			if (mult < s_ptr->mult)
-				mult = s_ptr->mult;
+			if (mult < s_ptr->mult)	mult = s_ptr->mult;
 
 			/* Set the hit verb appropriately */
 			if (is_ranged)
 				*hit_verb = s_ptr->range_verb;
 			else
 				*hit_verb = s_ptr->melee_verb;
-
-			/* Print a cool message for branded rings et al */
-			if (s_ptr->active_verb && secondary)
-			{
-				char o_name[40];
-				object_desc(o_name, sizeof(o_name), o_ptr,
-						FALSE, ODESC_BASE);
-				msg_format("Your %s %s!", o_name,
-						s_ptr->active_verb);
-			}
-		}
-
-		/* If the monster resisted, add to the monster lore */
-		if (r_ptr->flags[2] & s_ptr->resist_flag)
-		{
-			if (m_ptr->ml)
-				l_ptr->flags[2] |= s_ptr->resist_flag;
 		}
 	}
-	
+
 	return mult;
 }
 
@@ -271,9 +262,9 @@ void py_attack(int y, int x)
 {
 	int num = 0, bonus, chance;
 
-	monster_type *m_ptr;
-	monster_race *r_ptr;
-	monster_lore *l_ptr;
+	monster_type *m_ptr = &mon_list[cave_m_idx[y][x]];
+	monster_race *r_ptr = &r_info[m_ptr->r_idx];
+	monster_lore *l_ptr = &l_list[m_ptr->r_idx];
 
 	object_type *o_ptr;
 
@@ -283,11 +274,7 @@ void py_attack(int y, int x)
 
 	bool do_quake = FALSE;
 
-
-	/* Get the monster */
-	m_ptr = &mon_list[cave_m_idx[y][x]];
-	r_ptr = &r_info[m_ptr->r_idx];
-	l_ptr = &l_list[m_ptr->r_idx];
+	const char *crit_msg = NULL;
 
 
 	/* Disturb the player */
@@ -340,30 +327,28 @@ void py_attack(int y, int x)
 			/* Handle normal weapon */
 			if (o_ptr->k_idx)
 			{
-				int weapon_brand_mult, ring_brand_mult[2];
+				int weapon_brand_mult;
+				int other_brand_mult[INVEN_TOTAL];
 				int use_mult = 1;
+				int i;
 
 				hit_verb = "hit";
 
-				/* Hack-- put rings first, because they can
-				 * only be brands right now */
-				ring_brand_mult[0] = get_brand_mult(
-						&inventory[INVEN_LEFT],
-						m_ptr, &hit_verb, FALSE, TRUE);
-				ring_brand_mult[1] = get_brand_mult(
-						&inventory[INVEN_RIGHT],
-						m_ptr, &hit_verb, FALSE, TRUE);
-				weapon_brand_mult = get_brand_mult(
-						o_ptr,
-						m_ptr, &hit_verb, FALSE, FALSE);
+				/* Get the best multiplier from all slays or
+				 * brands on all non-launcher equipment */
+				for (i = INVEN_LEFT; i < INVEN_TOTAL; i++)
+				{
+					other_brand_mult[i] = get_brand_mult(
+						&inventory[i], m_ptr,
+						&hit_verb, FALSE);
 
-				/* Message. Need to do this after tot_dam_aux, which sets hit_verb, but before critical_norm, which may print further messages. */
-				message_format(MSG_GENERIC, m_ptr->r_idx, "You %s %s.", hit_verb, m_name);
-						
-				if (ring_brand_mult[0] > use_mult)
-					use_mult = ring_brand_mult[0];
-				if (ring_brand_mult[1] > use_mult)
-					use_mult = ring_brand_mult[1];
+					if (other_brand_mult[i] > use_mult)
+						use_mult = other_brand_mult[i];
+				}
+
+				weapon_brand_mult = get_brand_mult(o_ptr,
+						m_ptr, &hit_verb, FALSE);
+
 				if (weapon_brand_mult > use_mult)
 					use_mult = weapon_brand_mult;
 
@@ -374,7 +359,7 @@ void py_attack(int y, int x)
 					do_quake = TRUE;
 
 				k += o_ptr->to_d;
-				k = critical_norm(o_ptr->weight, o_ptr->to_h, k);
+				k = critical_norm(o_ptr->weight, o_ptr->to_h, k, &crit_msg);
 
 				/* Learn by use */
 				object_notice_attack_plusses(o_ptr);
@@ -383,23 +368,24 @@ void py_attack(int y, int x)
 				if (do_quake)
 					wieldeds_notice_flag(2, TR2_IMPACT);
 			}
-			else
-			{
-				message_format(MSG_GENERIC, m_ptr->r_idx, "You %s %s.", hit_verb, m_name);
-			}
 
 			/* Apply the player damage bonuses */
 			k += p_ptr->state.to_d;
 
-			/* No negative damage */
-			if (k < 0) k = 0;
+			/* No negative damage; change verb if no damage done */
+			if (k <= 0)
+			{
+				k = 0;
+				hit_verb = "fail to harm";
+			}
+
+			/* Tell the player what happened */
+			message_format(MSG_GENERIC, m_ptr->r_idx, "You %s %s.", hit_verb, m_name);
+			if (crit_msg) msg_print(crit_msg);
 
 			/* Complex message */
 			if (p_ptr->wizard)
 				msg_format("You do %d (out of %d) damage.", k, m_ptr->hp);
-
-			/* Damage, check for fear and death */
-			if (mon_take_hit(cave_m_idx[y][x], k, &fear, NULL)) break;
 
 			/* Confusion attack */
 			if (p_ptr->confusing)
@@ -410,14 +396,15 @@ void py_attack(int y, int x)
 				/* Message */
 				msg_print("Your hands stop glowing.");
 
+				/* Update the lore */
+				if (m_ptr->ml)
+				{
+					l_ptr->flags[2] |= (RF2_NO_CONF);
+				}
+
 				/* Confuse the monster */
 				if (r_ptr->flags[2] & (RF2_NO_CONF))
 				{
-					if (m_ptr->ml)
-					{
-						l_ptr->flags[2] |= (RF2_NO_CONF);
-					}
-
 					msg_format("%^s is unaffected.", m_name);
 				}
 				else if (randint0(100) < r_ptr->level)
@@ -430,8 +417,11 @@ void py_attack(int y, int x)
 					m_ptr->confused += 10 + randint0(p_ptr->lev) / 5;
 				}
 			}
-		}
 
+			/* Damage, check for fear and death */
+			if (mon_take_hit(cave_m_idx[y][x], k, &fear, NULL)) break;
+		}
+		
 		/* Player misses */
 		else
 		{
@@ -439,7 +429,6 @@ void py_attack(int y, int x)
 			message_format(MSG_MISS, m_ptr->r_idx, "You miss %s.", m_name);
 		}
 	}
-
 
 	/* Hack -- delay fear messages */
 	if (fear && m_ptr->ml)
@@ -519,7 +508,7 @@ void do_cmd_fire(cmd_code code, cmd_arg args[])
 	dir = args[1].direction;
 
 	/* Check the item being fired is usable by the player. */
-	if (!item_is_available(item, NULL, (USE_INVEN | USE_FLOOR)))
+	if (!item_is_available(item, NULL, (USE_EQUIP | USE_INVEN | USE_FLOOR)))
 	{
 		msg_format("That item is not within your reach.");
 		return;
@@ -560,9 +549,10 @@ void do_cmd_fire(cmd_code code, cmd_arg args[])
 	/* Sound */
 	sound(MSG_SHOOT);
 
+	object_notice_on_firing(o_ptr);
+
 	/* Describe the object */
-	object_desc(o_name, sizeof(o_name), o_ptr, FALSE,
-			ODESC_FULL | ODESC_SINGULAR);
+	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_FULL | ODESC_SINGULAR);
 
 	/* Find the color and symbol for the object for throwing */
 	missile_attr = object_attr(o_ptr);
@@ -609,7 +599,7 @@ void do_cmd_fire(cmd_code code, cmd_arg args[])
 			if (p_ptr->redraw) redraw_stuff();
 
 			Term_xtra(TERM_XTRA_DELAY, msec);
-			lite_spot(y, x);
+			light_spot(y, x);
 
 			Term_fresh();
 			if (p_ptr->redraw) redraw_stuff();
@@ -633,17 +623,17 @@ void do_cmd_fire(cmd_code code, cmd_arg args[])
 
 			const char *hit_verb = "hits";
 
-			int ammo_mult = get_brand_mult(o_ptr, m_ptr,
-					&hit_verb, TRUE, FALSE);
-			int shoot_mult = get_brand_mult(j_ptr, m_ptr,
-					&hit_verb, TRUE, FALSE);
-
 			/* Note the collision */
 			hit_body = TRUE;
 
 			/* Did we hit it (penalize distance travelled) */
 			if (test_hit(chance2, r_ptr->ac, m_ptr->ml))
 			{
+				int ammo_mult = get_brand_mult(o_ptr, m_ptr,
+					&hit_verb, TRUE);
+				int shoot_mult = get_brand_mult(j_ptr, m_ptr,
+					&hit_verb, TRUE);
+
 				bool fear = FALSE;
 
 				/* Assume a default death */
@@ -769,7 +759,7 @@ void do_cmd_fire(cmd_code code, cmd_arg args[])
 	j = (hit_body ? breakage_chance(i_ptr) : 0);
 
 	/* Drop (or break) near that location */
-	drop_near(i_ptr, j, y, x);
+	drop_near(i_ptr, j, y, x, TRUE);
 }
 
 void textui_cmd_fire(void)
@@ -777,8 +767,8 @@ void textui_cmd_fire(void)
 	object_type *j_ptr, *o_ptr;
 	int item;
 	int dir;
-	cptr q, s;
-
+	cptr q = "Fire which item? ";
+	cptr s = "You have nothing to fire.";
 
 	/* Get the "bow" (if any) */
 	j_ptr = &inventory[INVEN_BOW];
@@ -790,13 +780,12 @@ void textui_cmd_fire(void)
 		return;
 	}
 
-	/* Require proper missile */
+	/* Require proper missile; prefer the quiver */
 	item_tester_tval = p_ptr->state.ammo_tval;
+	p_ptr->command_wrk = USE_EQUIP;
 
 	/* Get an item */
-	q = "Fire which item? ";
-	s = "You have nothing to fire.";
-	if (!get_item(&item, q, s, (USE_INVEN | USE_FLOOR))) return;
+	if (!get_item(&item, q, s, (USE_INVEN | USE_EQUIP | USE_FLOOR))) return;
 
 	/* Get the object */
 	o_ptr = object_from_item_idx(item);
@@ -804,6 +793,48 @@ void textui_cmd_fire(void)
 	/* Get a direction (or cancel) */
 	if (!get_aim_dir(&dir)) return;
 
+	cmd_insert(CMD_FIRE, item, dir);
+}
+
+void textui_cmd_fire_at_nearest(void)
+{
+	/* the direction '5' means 'use the target' */
+	int i, dir = 5, item = -1;
+
+	/* Require a usable launcher */
+	if (!inventory[INVEN_BOW].tval || !p_ptr->state.ammo_tval)
+	{
+		msg_print("You have nothing to fire with.");
+		return;
+	}
+
+	/* Find first eligible ammo in the quiver */
+	for (i=QUIVER_START; i < QUIVER_END; i++)
+	{
+		if (inventory[i].tval != p_ptr->state.ammo_tval) continue;
+		item = i;
+		break;
+	}
+
+	/* Require usable ammo */
+	if (item < 0)
+	{
+		msg_print("You have no ammunition in the quiver to fire");
+		return;
+	}
+
+	/* Require foe */
+	if (!target_set_closest(TARGET_KILL | TARGET_QUIET))
+		return;
+
+	/* Check for confusion */
+	if (p_ptr->timed[TMD_CONFUSED])
+	{
+		msg_print("You are confused.");
+		dir = ddd[randint0(8)];
+	}
+
+	/* Fire! */
 	cmd_insert(CMD_FIRE, item, dir);
 }
 
@@ -845,8 +876,15 @@ void do_cmd_throw(cmd_code code, cmd_arg args[])
 	item = args[0].item;
 	dir = args[1].direction;
 
+	/* Make sure the player isn't throwing wielded items */
+	if (item >= INVEN_WIELD && item < QUIVER_START)
+	{
+		msg_print("You have cannot throw wielded items.");
+		return;
+	}
+
 	/* Check the item being thrown is usable by the player. */
-	if (!item_is_available(item, NULL, (USE_INVEN | USE_FLOOR)))
+	if (!item_is_available(item, NULL, (USE_EQUIP | USE_INVEN | USE_FLOOR)))
 	{
 		msg_format("That item is not within your reach.");
 		return;
@@ -854,6 +892,7 @@ void do_cmd_throw(cmd_code code, cmd_arg args[])
 
 	/* Get the object */
 	o_ptr = object_from_item_idx(item);
+	object_notice_on_firing(o_ptr);
 
 	/* Get local object */
 	i_ptr = &object_type_body;
@@ -884,7 +923,7 @@ void do_cmd_throw(cmd_code code, cmd_arg args[])
 
 
 	/* Description */
-	object_desc(o_name, sizeof(o_name), i_ptr, FALSE, ODESC_FULL);
+	object_desc(o_name, sizeof(o_name), i_ptr, ODESC_FULL);
 
 	/* Find the color and symbol for the object for throwing */
 	missile_attr = object_attr(i_ptr);
@@ -958,7 +997,7 @@ void do_cmd_throw(cmd_code code, cmd_arg args[])
 			if (p_ptr->redraw) redraw_stuff();
 
 			Term_xtra(TERM_XTRA_DELAY, msec);
-			lite_spot(y, x);
+			light_spot(y, x);
 
 			Term_fresh();
 			if (p_ptr->redraw) redraw_stuff();
@@ -1005,7 +1044,7 @@ void do_cmd_throw(cmd_code code, cmd_arg args[])
 
 				/* Apply special damage  - brought forward to fill in hit_verb XXX XXX XXX */
 				tdam *= get_brand_mult(i_ptr, m_ptr,
-						&hit_verb, TRUE, FALSE);
+						&hit_verb, TRUE);
 
 				/* Handle unseen monster */
 				if (!visible)
@@ -1039,7 +1078,8 @@ void do_cmd_throw(cmd_code code, cmd_arg args[])
 				if (tdam < 0) tdam = 0;
 
 				/* Learn the bonuses */
-				/* XXX Eddie This is messed up, better done for firing, should use that method [split last] instead */
+				/* XXX Eddie This is messed up, better done for firing, */
+				/* should use that method [split last] instead */
 				/* check if inven_optimize removed what o_ptr referenced */
 				if (object_similar(i_ptr, o_ptr))
 					object_notice_attack_plusses(o_ptr);
@@ -1047,10 +1087,8 @@ void do_cmd_throw(cmd_code code, cmd_arg args[])
 
 				/* Complex message */
 				if (p_ptr->wizard)
-				{
 					msg_format("You do %d (out of %d) damage.",
-					           tdam, m_ptr->hp);
-				}
+							   tdam, m_ptr->hp);
 
 				/* Hit the monster, check for death */
 				if (mon_take_hit(cave_m_idx[y][x], tdam, &fear, note_dies))
@@ -1088,7 +1126,7 @@ void do_cmd_throw(cmd_code code, cmd_arg args[])
 	j = (hit_body ? breakage_chance(i_ptr) : 0);
 
 	/* Drop (or break) near that location */
-	drop_near(i_ptr, j, y, x);
+	drop_near(i_ptr, j, y, x, TRUE);
 }
 
 void textui_cmd_throw(void)
@@ -1099,7 +1137,13 @@ void textui_cmd_throw(void)
 	/* Get an item */
 	q = "Throw which item? ";
 	s = "You have nothing to throw.";
-	if (!get_item(&item, q, s, (USE_INVEN | USE_FLOOR))) return;
+	if (!get_item(&item, q, s, (USE_EQUIP | USE_INVEN | USE_FLOOR))) return;
+
+	if (item >= INVEN_WIELD && item < QUIVER_START)
+	{
+		msg_print("You have cannot throw wielded items.");
+		return;
+	}
 
 	/* Get a direction (or cancel) */
 	if (!get_aim_dir(&dir)) return;

@@ -51,7 +51,7 @@ static timed_effect effects[] =
 			NULL, NULL,
 			PR_MAP, PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS, MSG_BLIND },
 	{ "You are paralysed!", "You can move again.",
-			"You are more paralysed!", "You are less paralysed.",
+			NULL, NULL,
 			0, 0, MSG_PARALYZED },
 	{ "You are confused!", "You are no longer confused.",
 			"You are more confused!", "You feel a little less confused.",
@@ -85,7 +85,7 @@ static timed_effect effects[] =
 	{ "You feel righteous!", "The prayer has expired.",
 			"You feel more righteous!", "You feel less righteous.",
 			0, PU_BONUS, MSG_BLESSED },
-	{ "Your eyes feel very sensitive!", "Your no longer feel so sensitive.",
+	{ "Your eyes feel very sensitive!", "Your eyes no longer feel so sensitive.",
 			"Your eyes feel more sensitive!", "Your eyes feel less sensitive.",
 			0, (PU_BONUS | PU_MONSTERS), MSG_SEE_INVIS },
 	{ "Your eyes begin to tingle!", "Your eyes stop tingling.",
@@ -211,6 +211,10 @@ bool inc_timed(int idx, int v, bool notify)
 {
 	/* Check we have a valid effect */
 	if ((idx < 0) || (idx > TMD_MAX)) return FALSE;
+
+	/* Paralysis should be non-cumulative */
+	if (idx == TMD_PARALYZED && p_ptr->timed[TMD_PARALYZED] > 0)
+		return FALSE;
 
 	/* Set v */
 	v = v + p_ptr->timed[idx];

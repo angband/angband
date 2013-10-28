@@ -46,15 +46,15 @@ const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 	/* Display */
 	{
 		OPT_hp_changes_color,
-		OPT_hilite_player,
+		OPT_highlight_player,
  		OPT_center_player,
 		OPT_show_piles,
 		OPT_show_flavors,
 		OPT_show_labels,
-		OPT_view_yellow_lite,
-		OPT_view_bright_lite,
-		OPT_view_granite_lite,
-		OPT_view_special_lite,
+		OPT_view_yellow_light,
+		OPT_view_bright_light,
+		OPT_view_granite_light,
+		OPT_view_special_light,
 		OPT_view_perma_grids,
 		OPT_view_torch_grids,
 		OPT_NONE,
@@ -74,7 +74,7 @@ const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 		OPT_ring_bell,
 		OPT_flush_failure,
 		OPT_flush_disturb,
-		OPT_NONE,
+		OPT_notify_recharge,
 		OPT_NONE,
 		OPT_NONE,
 		OPT_NONE,
@@ -193,11 +193,11 @@ static option_entry options[OPT_MAX] =
 { NULL,                  NULL,                                          FALSE }, /* 56 */
 { NULL,                  NULL,                                          FALSE }, /* 57 */
 { NULL,                  NULL,                                          FALSE }, /* 58 */
-{ "hilite_player",       "Hilite the player with the cursor",           FALSE }, /* 59 */
-{ "view_yellow_lite",    "Use special colors for torch lite",           FALSE }, /* 60 */
-{ "view_bright_lite",    "Use special colors for field of view",        TRUE },  /* 61 */
-{ "view_granite_lite",   "Use special colors for wall grids",           FALSE }, /* 62 */
-{ "view_special_lite",   "Use special colors for floor grids",          TRUE },  /* 63 */
+{ "highlight_player",    "Highlight the player with the cursor",        FALSE }, /* 59 */
+{ "view_yellow_light",   "Use special colors for torch light",          FALSE }, /* 60 */
+{ "view_bright_light",   "Use special colors for field of view",        TRUE },  /* 61 */
+{ "view_granite_light",  "Use special colors for wall grids",           FALSE }, /* 62 */
+{ "view_special_light",  "Use special colors for floor grids",          TRUE },  /* 63 */
 { "easy_open",           "Open/Disarm/Close without direction",         FALSE }, /* 64 */
 { "easy_alter",          "Open/Disarm doors/traps on movement",         FALSE }, /* 65 */
 { NULL,                  NULL,                                          FALSE }, /* 66 */
@@ -213,7 +213,7 @@ static option_entry options[OPT_MAX] =
 { "squelch_worthless",   "Automatically squelch worthless items",       FALSE }, /* 76 */
 { "mouse_movement",      "Allow mouse clicks to move the player",       FALSE }, /* 77 */
 { "mouse_buttons",        "Show mouse status line buttons",             FALSE }, /* 78 */
-{ NULL,                  NULL,                                          FALSE }, /* 79 */
+{ "notify_recharge",     "Notify on object recharge",                   FALSE }, /* 79 */
 { NULL,                  NULL,                                          FALSE }, /* 80 */
 { NULL,                  NULL,                                          FALSE }, /* 81 */
 { NULL,                  NULL,                                          FALSE }, /* 82 */

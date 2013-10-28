@@ -210,7 +210,7 @@ bool make_attack_normal(int m_idx)
 			case RBE_EAT_GOLD:  power =  5; break;
 			case RBE_EAT_ITEM:  power =  5; break;
 			case RBE_EAT_FOOD:  power =  5; break;
-			case RBE_EAT_LITE:  power =  5; break;
+			case RBE_EAT_LIGHT: power =  5; break;
 			case RBE_ACID:      power =  0; break;
 			case RBE_ELEC:      power = 10; break;
 			case RBE_FIRE:      power = 10; break;
@@ -243,22 +243,24 @@ bool make_attack_normal(int m_idx)
 
 
 			/* Hack -- Apply "protection from evil" */
-			if ((p_ptr->timed[TMD_PROTEVIL] > 0) &&
-			    (r_ptr->flags[2] & (RF2_EVIL)) &&
-			    (p_ptr->lev >= rlev) &&
-			    ((randint0(100) + p_ptr->lev) > 50))
+			if (p_ptr->timed[TMD_PROTEVIL] > 0)
 			{
-				/* Remember the Evil-ness */
+				/* Learn about the evil flag */
 				if (m_ptr->ml)
 				{
 					l_ptr->flags[2] |= (RF2_EVIL);
 				}
 
-				/* Message */
-				msg_format("%^s is repelled.", m_name);
+				if ((r_ptr->flags[2] & (RF2_EVIL)) &&
+				    (p_ptr->lev >= rlev) &&
+				    ((randint0(100) + p_ptr->lev) > 50))
+				{
+					/* Message */
+					msg_format("%^s is repelled.", m_name);
 
-				/* Hack -- Next attack */
-				continue;
+					/* Hack -- Next attack */
+					continue;
+				}
 			}
 
 
@@ -635,7 +637,7 @@ bool make_attack_normal(int m_idx)
 							/* Create a new temporary object */
 							object_type o;
 							object_wipe(&o);
-							object_prep(&o, lookup_kind(TV_GOLD, SV_GOLD));
+							object_prep(&o, lookup_kind(TV_GOLD, SV_GOLD), 0, MINIMISE);
 
 							/* Amount of gold to put in this object */
 							amt = gold > MAX_PVAL ? MAX_PVAL : gold;
@@ -698,7 +700,7 @@ bool make_attack_normal(int m_idx)
 						if (artifact_p(o_ptr)) continue;
 
 						/* Get a description */
-						object_desc(o_name, sizeof(o_name), o_ptr, FALSE, ODESC_FULL);
+						object_desc(o_name, sizeof(o_name), o_ptr, ODESC_FULL);
 
 						/* Message */
 						msg_format("%sour %s (%c) was stolen!",
@@ -761,7 +763,8 @@ bool make_attack_normal(int m_idx)
 						if (o_ptr->tval != TV_FOOD) continue;
 
 						/* Get a description */
-						object_desc(o_name, sizeof(o_name), o_ptr, FALSE, ODESC_BASE);
+						object_desc(o_name, sizeof(o_name), o_ptr,
+									ODESC_PREFIX | ODESC_BASE);
 
 						/* Message */
 						msg_format("%sour %s (%c) was eaten!",
@@ -782,15 +785,15 @@ bool make_attack_normal(int m_idx)
 					break;
 				}
 
-				case RBE_EAT_LITE:
+				case RBE_EAT_LIGHT:
 				{
 					u32b f[OBJ_FLAG_N];
 
 					/* Take damage */
 					take_hit(damage, ddesc);
 
-					/* Get the lite, and its flags */
-					o_ptr = &inventory[INVEN_LITE];
+					/* Get the light, and its flags */
+					o_ptr = &inventory[INVEN_LIGHT];
 					object_flags(o_ptr, f);
 
 					/* Drain fuel where applicable */

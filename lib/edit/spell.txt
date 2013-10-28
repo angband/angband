@@ -1,12 +1,10 @@
 # File: spell.txt
 
 
-# This file is used to initialize the "lib/data/spell.raw" file, which is
-# used to initialize the "spell" information for the Angband game.
+# This file is used to initialize the "spell" information for the Angband game.
 
 # Do not modify this file unless you know exactly what you are doing,
 # unless you wish to risk possible system crashes and broken savefiles.
-# After modifying this file, delete the "lib/data/ego_item.raw" file.
 
 # The spell indexes are defined in "x-spell.c", and must not be changed
 # or savefile compatibility will be lost.
@@ -66,7 +64,7 @@ D:Lights up all squares in a level-dependant area, and hurts
 D: all light-sensitive monsters in the area of effect.
 D:  If you are in a room, the entire room will be lit up as well.
 
-N:4:Find Hidden Traps/Doors
+N:4:Find Traps, Doors & Stairs
 I:90:0:7
 D:Detects all traps, doors, and stairs in the immediate area.
 
@@ -82,10 +80,9 @@ N:8:Identify
 I:90:2:5
 D:Reveals the powers of an object.
 
-N:9:Detect Invisible
+N:9:Reveal Monsters
 I:90:2:6
-D:Detects all invisible monsters in the immediate area,
-D: for one turn only.
+D:Detects all monsters in the immediate area, for one turn only.
 
 N:10:Detect Enchantment
 I:90:3:5
@@ -418,13 +415,9 @@ D:Lights up all squares in a level-dependant area, and hurts
 D: all light-sensitive monsters in the area of effect.
 D:  If you are in a room, the entire room will be lit up as well.
 
-N:69:Find Traps
+N:69:Find Traps, Doors & Stairs
 I:91:0:5
-D:Detects all traps in the immediate area.
-
-N:70:Detect Doors/Stairs
-I:91:0:6
-D:Detects all doors, and stairs in the immediate area.
+D:Detects all traps, doors, and stairs in the immediate area.
 
 N:71:Slow Poison
 I:91:0:7

@@ -170,7 +170,7 @@ static const char *obj_desc_get_basename(const object_type *o_ptr, bool aware)
 		case TV_SOFT_ARMOR:
 		case TV_HARD_ARMOR:
 		case TV_DRAG_ARMOR:
-		case TV_LITE:
+		case TV_LIGHT:
 			return (k_name + k_ptr->name);
 
 		case TV_AMULET:
@@ -250,7 +250,7 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end,
 		}
 		else if (o_ptr->number > 1)
 			strnfcat(buf, max, &end, "%d ", o_ptr->number);
-		else if (known && artifact_p(o_ptr))
+		else if ((object_name_is_visible(o_ptr) || known) && artifact_p(o_ptr))
 			strnfcat(buf, max, &end, "The ");
 
 		else if (*basename == '&')
@@ -394,7 +394,7 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end,
 
 	/** Append extra names of various kinds **/
 
-	if (known && o_ptr->name1)
+	if ((object_name_is_visible(o_ptr) || known) && o_ptr->name1)
 		strnfcat(buf, max, &end, " %s", a_name + a_info[o_ptr->name1].name);
 
 	else if ((spoil && o_ptr->name2) || object_ego_is_visible(o_ptr))
@@ -531,6 +531,13 @@ static size_t obj_desc_chest(const object_type *o_ptr, char *buf, size_t max, si
 static size_t obj_desc_combat(const object_type *o_ptr, char *buf, size_t max, 
 		size_t end, bool spoil)
 {
+	object_kind *k_ptr = &k_info[o_ptr->k_idx];
+	u32b flags[OBJ_FLAG_N];
+	u32b flags_known[OBJ_FLAG_N];
+
+	object_flags(o_ptr, flags);
+	object_flags_known(o_ptr, flags_known);
+
 	/* Dump base weapon info */
 	switch (o_ptr->tval)
 	{
@@ -543,14 +550,22 @@ static size_t obj_desc_combat(const object_type *o_ptr, char *buf, size_t max,
 		case TV_SWORD:
 		case TV_DIGGING:
 		{
-			strnfcat(buf, max, &end, " (%dd%d)", o_ptr->dd, o_ptr->ds);
+			/* Only display the real damage dice if the combat stats are known */
+			if (spoil || object_attack_plusses_are_visible(o_ptr))
+				strnfcat(buf, max, &end, " (%dd%d)", o_ptr->dd, o_ptr->ds);
+			else
+				strnfcat(buf, max, &end, " (%dd%d)", k_ptr->dd, k_ptr->ds);
 			break;
 		}
 
 		/* Missile launchers */
 		case TV_BOW:
 		{
-			strnfcat(buf, max, &end, " (x%d)", o_ptr->sval % 10);
+			/* Display shooting power as part of the multiplier */
+			if ((flags[0] & TR0_MIGHT) && (spoil || (flags_known[0] & TR0_MIGHT)))
+				strnfcat(buf, max, &end, " (x%d)", (o_ptr->sval % 10) + o_ptr->pval);
+			else
+				strnfcat(buf, max, &end, " (x%d)", o_ptr->sval % 10);
 			break;
 		}
 	}
@@ -559,10 +574,19 @@ static size_t obj_desc_combat(const object_type *o_ptr, char *buf, size_t max,
 	/* Show weapon bonuses */
 	if (spoil || object_attack_plusses_are_visible(o_ptr))
 	{
-		if (obj_desc_show_weapon(o_ptr) || o_ptr->to_d)
-			strnfcat(buf, max, &end, " (%+d,%+d)", o_ptr->to_h, o_ptr->to_d);
-		else if (o_ptr->to_h)
-			strnfcat(buf, max, &end, " (%+d)", o_ptr->to_h);
+		if (obj_desc_show_weapon(o_ptr) || o_ptr->to_d || o_ptr->to_h)
+		{
+			/* Make an exception for body armor with only a to-hit penalty */
+			if (o_ptr->to_h < 0 && o_ptr->to_d == 0 &&
+			    (o_ptr->tval == TV_SOFT_ARMOR ||
+			     o_ptr->tval == TV_HARD_ARMOR ||
+			     o_ptr->tval == TV_DRAG_ARMOR))
+				strnfcat(buf, max, &end, " (%+d)", o_ptr->to_h);
+
+			/* Otherwise, always use the full tuple */
+			else
+				strnfcat(buf, max, &end, " (%+d,%+d)", o_ptr->to_h, o_ptr->to_d);
+		}
 	}
 
 
@@ -588,7 +612,7 @@ static size_t obj_desc_light(const object_type *o_ptr, char *buf, size_t max, si
 	object_flags(o_ptr, f);
 
 	/* Fuelled light sources get number of remaining turns appended */
-	if ((o_ptr->tval == TV_LITE) && !(f[2] & TR2_NO_FUEL))
+	if ((o_ptr->tval == TV_LIGHT) && !(f[2] & TR2_NO_FUEL))
 		strnfcat(buf, max, &end, " (%d turns)", o_ptr->timeout);
 
 	return end;
@@ -601,24 +625,21 @@ static size_t obj_desc_pval(const object_type *o_ptr, char *buf, size_t max, siz
 
 	if (!(f[0] & TR0_PVAL_MASK)) return end;
 
-	if (f[2] & TR2_HIDE_TYPE)
-	{
-		strnfcat(buf, max, &end, " (%+d)", o_ptr->pval);
-		return end;
-	}
-
 	strnfcat(buf, max, &end, " (%+d", o_ptr->pval);
 
-	if (f[0] & TR0_STEALTH)
-		strnfcat(buf, max, &end, " stealth");
-	else if (f[0] & TR0_SEARCH)
-		strnfcat(buf, max, &end, " searching");
-	else if (f[0] & TR0_INFRA)
-		strnfcat(buf, max, &end, " infravision");
-	else if (f[0] & TR0_SPEED)
-		strnfcat(buf, max, &end, " speed");
-	else if (f[0] & TR0_BLOWS)
-		strnfcat(buf, max, &end, " attack%s", PLURAL(o_ptr->pval));
+	if (!(f[2] & TR2_HIDE_TYPE))
+	{
+		if (f[0] & TR0_STEALTH)
+			strnfcat(buf, max, &end, " stealth");
+		else if (f[0] & TR0_SEARCH)
+			strnfcat(buf, max, &end, " searching");
+		else if (f[0] & TR0_INFRA)
+			strnfcat(buf, max, &end, " infravision");
+		else if (f[0] & TR0_SPEED)
+			strnfcat(buf, max, &end, " speed");
+		else if (f[0] & TR0_BLOWS)
+			strnfcat(buf, max, &end, " attack%s", PLURAL(o_ptr->pval));
+	}
 
 	strnfcat(buf, max, &end, ")");
 
@@ -641,7 +662,7 @@ static size_t obj_desc_charges(const object_type *o_ptr, char *buf, size_t max, 
 		if (o_ptr->tval == TV_ROD && o_ptr->number > 1)
 		{
 			int power;
-			int time_base = k_ptr->time_base;
+			int time_base = randcalc(k_ptr->time, 0, MINIMISE);
 
 			if (!time_base) time_base = 1;
 
@@ -659,7 +680,7 @@ static size_t obj_desc_charges(const object_type *o_ptr, char *buf, size_t max, 
 		}
 
 		/* Artifacts, single rods */
-		else if (!(o_ptr->tval == TV_LITE && !artifact_p(o_ptr)))
+		else if (!(o_ptr->tval == TV_LIGHT && !artifact_p(o_ptr)))
 		{
 			strnfcat(buf, max, &end, " (charging)");
 		}
@@ -693,7 +714,13 @@ static size_t obj_desc_inscrip(const object_type *o_ptr, char *buf, size_t max, 
 	else if ((o_ptr->ident & IDENT_EMPTY) && !object_is_known(o_ptr))
 		u[n++] = "empty";
 	else if (!object_is_known(o_ptr) && object_was_worn(o_ptr))
-		u[n++] = "wielded";
+	{
+		if (wield_slot(o_ptr) == INVEN_WIELD || wield_slot(o_ptr) ==
+		INVEN_BOW) u[n++] = "wielded";
+		else u[n++] = "worn";
+	}
+	else if (!object_is_known(o_ptr) && object_was_fired(o_ptr))
+		u[n++] = "fired";
 	else if (!object_flavor_is_aware(o_ptr) && object_flavor_was_tried(o_ptr))
 		u[n++] = "tried";
 
@@ -724,9 +751,21 @@ static size_t obj_desc_inscrip(const object_type *o_ptr, char *buf, size_t max, 
 }
 
 
+/* Add "unseen" to the end of unaware items in stores */
+static size_t obj_desc_aware(const object_type *o_ptr, char *buf, size_t max,
+	size_t end)
+{
+        if (!object_flavor_is_aware(o_ptr)) strnfcat(buf, max, &end,
+		" {unseen}");
+
+        return end;
+}
+
+
 /**
  * Describes item `o_ptr` into buffer `buf` of size `max`.
  *
+ * ODESC_PREFIX prepends a 'the', 'a' or number
  * ODESC_BASE results in a base description.
  * ODESC_COMBAT will add to-hit, to-dam and AC info.
  * ODESC_EXTRA will add pval/charge/inscription/squelch info.
@@ -740,10 +779,11 @@ static size_t obj_desc_inscrip(const object_type *o_ptr, char *buf, size_t max, 
  * \returns The number of bytes used of the buffer.
  */
 size_t object_desc(char *buf, size_t max, const object_type *o_ptr,
-		bool prefix, odesc_detail_t mode)
+				   odesc_detail_t mode)
 {
 	object_kind *k_ptr = &k_info[o_ptr->k_idx];
 
+	bool prefix = mode & ODESC_PREFIX;
 	bool spoil = (mode & ODESC_SPOIL);
 	bool aware = object_flavor_is_aware(o_ptr) ||
 			(o_ptr->ident & IDENT_STORE) || spoil;
@@ -788,7 +828,7 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr,
 	{
 		if (o_ptr->tval == TV_CHEST)
 			end = obj_desc_chest(o_ptr, buf, max, end);
-		else if (o_ptr->tval == TV_LITE)
+		else if (o_ptr->tval == TV_LIGHT)
 			end = obj_desc_light(o_ptr, buf, max, end);
 
 		end = obj_desc_combat(o_ptr, buf, max, end, spoil);
@@ -801,7 +841,11 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr,
 
 		end = obj_desc_charges(o_ptr, buf, max, end);
 
-		if (!(mode & ODESC_STORE))
+		if (mode & ODESC_STORE)
+		{
+			end = obj_desc_aware(o_ptr, buf, max, end);
+		}
+		else
 			end = obj_desc_inscrip(o_ptr, buf, max, end);
 	}
 

@@ -24,14 +24,18 @@
 
 
 /*
- * Search for hidden things
+ * Search for hidden things.  Returns true if a search was attempted, returns
+ * false when the player has a 0% chance of finding anything.  Prints messages
+ * for negative confirmation when verbose mode is requested.
  */
-void search(void)
+bool search(bool verbose)
 {
 	int py = p_ptr->py;
 	int px = p_ptr->px;
 
 	int y, x, chance;
+
+	bool found = FALSE;
 
 	object_type *o_ptr;
 
@@ -39,12 +43,29 @@ void search(void)
 	/* Start with base search ability */
 	chance = p_ptr->state.skills[SKILL_SEARCH];
 
-	/* Notice object flags */
-	wieldeds_notice_flag(0, TR0_SEARCH);
-
 	/* Penalize various conditions */
-	if (p_ptr->timed[TMD_BLIND] || no_lite()) chance = chance / 10;
+	if (p_ptr->timed[TMD_BLIND] || no_light()) chance = chance / 10;
 	if (p_ptr->timed[TMD_CONFUSED] || p_ptr->timed[TMD_IMAGE]) chance = chance / 10;
+
+	/* Prevent fruitless searches */
+	if (chance <= 0)
+	{
+		if (verbose)
+		{
+			msg_print("You can't make out your surroundings well enough to search.");
+
+			/* Cancel repeat */
+			disturb(0, 0);
+		}
+
+		return FALSE;
+	}
+
+	if (chance >= 100)
+	{
+		/* Repeat is unnecessary */
+		disturb(0, 0);
+	}
 
 	/* Search the nearby grids, which are always in bounds */
 	for (y = (py - 1); y <= (py + 1); y++)
@@ -57,6 +78,8 @@ void search(void)
 				/* Invisible trap */
 				if (cave_feat[y][x] == FEAT_INVIS)
 				{
+					found = TRUE;
+
 					/* Pick a trap */
 					pick_trap(y, x);
 
@@ -70,6 +93,8 @@ void search(void)
 				/* Secret door */
 				if (cave_feat[y][x] == FEAT_SECRET)
 				{
+					found = TRUE;
+
 					/* Message */
 					msg_print("You have found a secret door.");
 
@@ -95,6 +120,8 @@ void search(void)
 					/* Identify once */
 					if (!object_is_known(o_ptr))
 					{
+						found = TRUE;
+
 						/* Message */
 						msg_print("You have discovered a trap on the chest!");
 
@@ -108,6 +135,16 @@ void search(void)
 			}
 		}
 	}
+
+	if (verbose && !found)
+	{
+		if (chance >= 100)
+			msg_print("There are no secrets here.");
+		else
+			msg_print("You found nothing.");
+	}
+
+	return TRUE;
 }
 
 
@@ -232,9 +269,8 @@ static void py_pickup_gold(void)
 static bool auto_pickup_okay(const object_type *o_ptr)
 {
 	if (!inven_carry_okay(o_ptr)) return FALSE;
-
-	if (OPT(pickup_inven) && inven_stack_okay(o_ptr)) return TRUE;
 	if (OPT(pickup_always) || check_for_inscrip(o_ptr, "=g")) return TRUE;
+	if (OPT(pickup_inven) && inven_stack_okay(o_ptr)) return TRUE;
 
 	return FALSE;
 }
@@ -245,7 +281,7 @@ static bool auto_pickup_okay(const object_type *o_ptr)
  */
 static void py_pickup_aux(int o_idx, bool msg)
 {
-	int slot;
+	int slot, quiver_slot = 0;
 
 	char o_name[80];
 	object_type *o_ptr = &o_list[o_idx];
@@ -256,28 +292,47 @@ static void py_pickup_aux(int o_idx, bool msg)
 	/* Handle errors (paranoia) */
 	if (slot < 0) return;
 
+	/* If we have picked up ammo which matches something in the quiver, note
+	 * that it so that we can wield it later (and suppress pick up message) */
+	if (obj_is_ammo(o_ptr)) {
+		int i;
+		for (i=QUIVER_START; i < QUIVER_END; i++) {
+			if (!inventory[i].k_idx) continue;
+			if (!object_similar(&inventory[i], o_ptr)) continue;
+			quiver_slot = i;
+			break;
+		}
+	}
+
 	/* Get the new object */
 	o_ptr = &inventory[slot];
 
 	/* Set squelch status */
 	p_ptr->notice |= PN_SQUELCH;
 
+	/* Automatically sense artifacts */
+	object_sense_artifact(o_ptr);
+
+	/* Log artifacts if found */
+	if (artifact_p(o_ptr))
+		history_add_artifact(o_ptr->name1, object_was_sensed(o_ptr));
+
 	/* Optionally, display a message */
-	if (msg)
+	if (msg && !quiver_slot)
 	{
 		/* Describe the object */
-		object_desc(o_name, sizeof(o_name), o_ptr, TRUE, ODESC_FULL);
+		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
 
 		/* Message */
 		msg_format("You have %s (%c).", o_name, index_to_label(slot));
 	}
 
-	/* Log if picking up an artifact. */
-	if (artifact_p(o_ptr))
-		history_add_artifact(o_ptr->name1, object_is_known(o_ptr));
 
 	/* Delete the object */
 	delete_object_idx(o_idx);
+
+	/* If we have a quiver slot that this ammo matches, use it */
+	if (quiver_slot) wield_item(o_ptr, slot, quiver_slot);
 }
 
 
@@ -336,7 +391,7 @@ byte py_pickup(int pickup)
 	int can_pickup = 0;
 	bool call_function_again = FALSE;
 
-	bool blind = ((p_ptr->timed[TMD_BLIND]) || (no_lite()));
+	bool blind = ((p_ptr->timed[TMD_BLIND]) || (no_light()));
 	bool msg = TRUE;
 
 
@@ -415,8 +470,12 @@ byte py_pickup(int pickup)
 			o_ptr = &o_list[floor_o_idx];
 
 			/* Describe the object.  Less detail if blind. */
-			if (blind) object_desc(o_name, sizeof(o_name), o_ptr, TRUE, ODESC_BASE);
-			else       object_desc(o_name, sizeof(o_name), o_ptr, TRUE, ODESC_FULL);
+			if (blind)
+				object_desc(o_name, sizeof(o_name), o_ptr,
+							ODESC_PREFIX | ODESC_BASE);
+			else
+				object_desc(o_name, sizeof(o_name), o_ptr,
+							ODESC_PREFIX | ODESC_FULL);
 
 			/* Message */
 			message_flush();
@@ -437,13 +496,13 @@ byte py_pickup(int pickup)
 				screen_save();
 
 				/* Display objects on the floor */
-				show_floor(floor_list, floor_num, FALSE);
+				show_floor(floor_list, floor_num, (OLIST_WEIGHT));
 
 				/* Display prompt */
 				prt(format("You %s: ", p), 0, 0);
 
 				/* Move cursor back to character, if needed */
-				if (OPT(hilite_player)) move_cursor_relative(p_ptr->py, p_ptr->px);
+				if (OPT(highlight_player)) move_cursor_relative(p_ptr->py, p_ptr->px);
 
 				/* Wait for it.  Use key as next command. */
 				p_ptr->command_new = inkey();
@@ -586,7 +645,7 @@ void move_player(int dir)
 			{
 				message(MSG_HITWALL, 0, "You feel a pile of rubble blocking your way.");
 				cave_info[y][x] |= (CAVE_MARK);
-				lite_spot(y, x);
+				light_spot(y, x);
 			}
 
 			/* Closed door */
@@ -594,7 +653,7 @@ void move_player(int dir)
 			{
 				message(MSG_HITWALL, 0, "You feel a door blocking your way.");
 				cave_info[y][x] |= (CAVE_MARK);
-				lite_spot(y, x);
+				light_spot(y, x);
 			}
 
 			/* Wall (or secret door) */
@@ -602,7 +661,7 @@ void move_player(int dir)
 			{
 				message(MSG_HITWALL, 0, "You feel a wall blocking your way.");
 				cave_info[y][x] |= (CAVE_MARK);
-				lite_spot(y, x);
+				light_spot(y, x);
 			}
 		}
 
@@ -653,25 +712,24 @@ void move_player(int dir)
 		if ((p_ptr->state.skills[SKILL_SEARCH_FREQUENCY] >= 50) ||
 		    one_in_(50 - p_ptr->state.skills[SKILL_SEARCH_FREQUENCY]))
 		{
-			search();
+			search(FALSE);
 		}
 
 		/* Continuous Searching */
 		if (p_ptr->searching)
 		{
-			search();
+			search(FALSE);
 		}
 
 
 		/* Handle "store doors" */
-		if ((cave_feat[y][x] >= FEAT_SHOP_HEAD) &&
-		    (cave_feat[y][x] <= FEAT_SHOP_TAIL))
+		if ((cave_feat[p_ptr->py][p_ptr->px] >= FEAT_SHOP_HEAD) &&
+			(cave_feat[p_ptr->py][p_ptr->px] <= FEAT_SHOP_TAIL))
 		{
 			/* Disturb */
 			disturb(0, 0);
 			cmd_insert(CMD_ENTER_STORE);
 		}
-
 
 		/* All other grids (including traps) */
 		else

@@ -52,6 +52,7 @@ typedef enum
 	TYPE_DIGGER,
 	TYPE_RING,
 	TYPE_AMULET,
+	TYPE_LIGHT,
 
 	TYPE_MAX
 } squelch_type_t;
@@ -91,6 +92,7 @@ static quality_squelch_struct quality_mapping[] =
 	{ TYPE_DIGGER,		TV_DIGGING,	0,		SV_UNKNOWN },
 	{ TYPE_RING,		TV_RING,	0,		SV_UNKNOWN },
 	{ TYPE_AMULET,		TV_AMULET,	0,		SV_UNKNOWN },
+	{ TYPE_LIGHT, 		TV_LIGHT, 	0,		SV_UNKNOWN },
 };
 
 
@@ -119,6 +121,7 @@ static quality_name_struct quality_choices[TYPE_MAX] =
 	{ TYPE_DIGGER,		"Diggers" },
 	{ TYPE_RING,		"Rings" },
 	{ TYPE_AMULET,		"Amulets" },
+	{ TYPE_LIGHT, 		"Lights" },
 };
 
 /* Structure to describe tval/description pairings. */
@@ -142,7 +145,7 @@ static tval_desc sval_dependent[] =
 	{ TV_MAGIC_BOOK,	"Magic books" },
 	{ TV_PRAYER_BOOK,	"Prayer books" },
 	{ TV_SPIKE,			"Spikes" },
-	{ TV_LITE,			"Lights" },
+	{ TV_LIGHT,			"Lights" },
 	{ TV_FLASK,			"Flasks of oil" },
 	{ TV_DRAG_ARMOR,	"Dragon Mail Armor" },
 };
@@ -314,7 +317,7 @@ int apply_autoinscription(object_type *o_ptr)
 		return 0;
 
 	/* Get an object description */
-	object_desc(o_name, sizeof(o_name), o_ptr, TRUE, ODESC_FULL);
+	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
 
 	if (note[0] != 0)
 		o_ptr->note = quark_add(note);
@@ -419,7 +422,7 @@ void autoinscribe_pack(void)
 /*** Squelch code ***/
 
 /*
- * Determines whether a tval is eligable for sval-squelch.
+ * Determines whether a tval is eligible for sval-squelch.
  */
 bool squelch_tval(int tval)
 {
@@ -459,7 +462,9 @@ static squelch_type_t squelch_type_of(const object_type *o_ptr)
 	/* Find the appropriate squelch group */
 	for (i = 0; i < N_ELEMENTS(quality_mapping); i++)
 	{
-		if ((quality_mapping[i].tval == o_ptr->tval) && (quality_mapping[i].min_sval <= o_ptr->sval) && (quality_mapping[i].max_sval >= o_ptr->sval))
+		if ((quality_mapping[i].tval == o_ptr->tval) &&
+			(quality_mapping[i].min_sval <= o_ptr->sval) &&
+			(quality_mapping[i].max_sval >= o_ptr->sval))
 			return quality_mapping[i].squelch_type;
 	}
 
@@ -477,6 +482,9 @@ static byte squelch_level_of(const object_type *o_ptr)
 {
 	object_kind *k_ptr = &k_info[o_ptr->k_idx];
 	byte value;
+	u32b f[OBJ_FLAG_N];
+
+	object_flags_known(o_ptr, f);
 
 	if ((object_pval_is_visible(o_ptr)) && (o_ptr->pval < 0))
 		return SQUELCH_BAD;
@@ -488,6 +496,19 @@ static byte squelch_level_of(const object_type *o_ptr)
 			return SQUELCH_AVERAGE;
 		if ((o_ptr->to_h > 0) || (o_ptr->to_d > 0) || (o_ptr->to_a > 0))
 			return SQUELCH_AVERAGE;
+		if ((o_ptr->to_h < 0) || (o_ptr->to_d < 0) || (o_ptr->to_a < 0))
+			return SQUELCH_BAD;
+
+		return SQUELCH_AVERAGE;
+	}
+
+	/* And lights */
+	if (o_ptr->tval == TV_LIGHT)
+	{
+		if (f[2] & TR2_OBVIOUS_MASK)
+			return SQUELCH_ALL;
+		if ((o_ptr->to_h > 0) || (o_ptr->to_d > 0) || (o_ptr->to_a > 0))
+			return SQUELCH_GOOD;
 		if ((o_ptr->to_h < 0) || (o_ptr->to_d < 0) || (o_ptr->to_a < 0))
 			return SQUELCH_BAD;
 
@@ -531,9 +552,11 @@ static byte squelch_level_of(const object_type *o_ptr)
 			/* This is the interesting case */
 			case INSCRIP_MAGICAL:
 				value = SQUELCH_GOOD;
-				if ((object_attack_plusses_are_visible(o_ptr) || (o_ptr->to_h == k_ptr->to_h && o_ptr->to_d == k_ptr->to_d)) &&
-				    (object_defence_plusses_are_visible(o_ptr) || (o_ptr->to_a == k_ptr->to_a)) &&
-				    (o_ptr->to_h <= k_ptr->to_h) && (o_ptr->to_d <= k_ptr->to_d) && (o_ptr->to_a <= k_ptr->to_a))
+				if ((object_attack_plusses_are_visible(o_ptr) || (randcalc_valid(k_ptr->to_h, o_ptr->to_h) && randcalc_valid(k_ptr->to_d, o_ptr->to_d))) &&
+				    (object_defence_plusses_are_visible(o_ptr) || (randcalc_valid(k_ptr->to_a, o_ptr->to_a))) &&
+				    (o_ptr->to_h <= randcalc(k_ptr->to_h, 0, MINIMISE)) &&
+				    (o_ptr->to_d <= randcalc(k_ptr->to_d, 0, MINIMISE)) &&
+				    (o_ptr->to_a <= randcalc(k_ptr->to_a, 0, MINIMISE)))
 					value = SQUELCH_BAD;
 				break;
 
@@ -587,7 +610,7 @@ void kind_squelch_when_unaware(object_kind *k_ptr)
 
 
 /*
- * Determines if an object is eligable for squelching.
+ * Determines if an object is eligible for squelching.
  */
 bool squelch_item_ok(const object_type *o_ptr)
 {
@@ -618,10 +641,13 @@ bool squelch_item_ok(const object_type *o_ptr)
 			kind_is_squelched_unaware(k_ptr))
 		return TRUE;
 
-
 	type = squelch_type_of(o_ptr);
 	if (type == TYPE_MAX)
 		return FALSE;
+
+	/* Squelch items known not to be special */
+	if (object_is_not_artifact(o_ptr) && squelch_level[type] == SQUELCH_ALL)
+		return TRUE;
 
 	/* Get result based on the feeling and the squelch_level */
 	if (squelch_level_of(o_ptr) <= squelch_level[type])
@@ -704,7 +730,7 @@ void squelch_items(void)
 		               count, ((count > 1) ? "s" : ""));
 
 		/* Combine/reorder the pack */
-		p_ptr->notice |= (PN_COMBINE | PN_REORDER);
+		p_ptr->notice |= (PN_COMBINE | PN_REORDER | PN_SORT_QUIVER);
 	}
 }
 
@@ -785,7 +811,7 @@ static bool quality_action(char cmd, void *db, int oid)
 {
 	menu_type menu;
 	menu_iter menu_f = { NULL, NULL, quality_subdisplay, quality_subaction };
-	region area = { 24, 5, 26, SQUELCH_MAX };
+	region area = { 24, 5, 29, SQUELCH_MAX };
 	ui_event_data evt;
 	int cursor;
 
@@ -802,6 +828,10 @@ static bool quality_action(char cmd, void *db, int oid)
 	menu.count = SQUELCH_MAX;
 	if ((oid == TYPE_RING) || (oid == TYPE_AMULET))
 		menu.count = area.page_rows = SQUELCH_BAD + 1;
+
+	/* Stop menus from going off the bottom of the screen */
+	if (area.row + menu.count > Term->hgt - 1)
+		area.row += Term->hgt - 1 - area.row - menu.count;
 
 	menu_init(&menu, MN_SKIN_SCROLL, &menu_f, &area);
 	window_make(area.col - 2, area.row - 1, area.col + area.width + 2, area.row + area.page_rows);
@@ -962,7 +992,7 @@ static bool sval_menu(int tval, const char *desc)
         /* sort by name in squelch menus except for categories of items that are aware from the start */
         switch(tval)
         {
-                case TV_LITE:
+                case TV_LIGHT:
                 case TV_MAGIC_BOOK:
                 case TV_PRAYER_BOOK:
                 case TV_DRAG_ARMOR:
@@ -1191,8 +1221,8 @@ bool squelch_interactive(const object_type *o_ptr)
 		char sval_name[50];
 
 		/* Obtain plural form without a quantity */
-		object_desc(sval_name, sizeof sval_name, o_ptr, FALSE,
-				ODESC_BASE | ODESC_PLURAL);
+		object_desc(sval_name, sizeof sval_name, o_ptr,
+					ODESC_BASE | ODESC_PLURAL);
 		/* XXX Eddie while correct in a sense, to squelch all torches on torch of brightness you get the message "Ignore Wooden Torches of Brightness in future? " */
 		strnfmt(out_val, sizeof out_val, "Ignore %s in future? ",
 				sval_name);
@@ -1204,7 +1234,7 @@ bool squelch_interactive(const object_type *o_ptr)
 				object_squelch_flavor_of(o_ptr);
 				msg_format("Ignoring %s from now on.", sval_name);
 				return TRUE;
-			}		
+			}
 		}
 		/* XXX Eddie need to add generalized squelching, e.g. con rings with pval < 3 */
 		if (!object_is_jewelry(o_ptr) || (squelch_level_of(o_ptr) != SQUELCH_BAD))

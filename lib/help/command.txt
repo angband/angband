@@ -34,7 +34,7 @@ Equipment list (e)
         which may contain only a single object at a time, and each of which
         may only contain objects of the proper "type", and which include
         WIELD (weapon), BOW (missile launcher), LEFT (ring), RIGHT (ring),
-        NECK (amulet), LITE (light source), BODY (armor), OUTER (cloak),
+        NECK (amulet), LIGHT (light source), BODY (armor), OUTER (cloak),
         ARM (shield), HEAD (helmet), HANDS (gloves), FEET (boots).  You
         must be wielding/wearing certain objects to take advantage of
         their special powers.

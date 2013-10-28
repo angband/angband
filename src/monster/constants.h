@@ -25,9 +25,9 @@
  * init1.c   - to evaluate the "power" of monsters
  *
  * The first two uses can involve randomness, but the third requires minimum
- * values (of resistance) and maxima (of damage). So we use damcalc() as a
- * wrapper for z-rand.c's damroll(), which allows us to obtain the values we
- * need in each case. All uses of randint1(x) have been replaced with
+ * values (of resistance) and maxima (of damage). So we use z-rand.c's
+ * damcalc() as a wrapper for damroll(), which allows us to obtain the values
+ * we need in each case. All uses of randint1(x) have been replaced with
  * damroll(1, x) in order to pass cleanly through the wrapper.
  *
  * If you want to change any damage or resistance calculations, you only have
@@ -37,16 +37,6 @@
  * no random element. But it also means that if you want to make breath
  * damage dependent on rlev (for example), you have more work to do.
  */
-
-typedef enum
-{
-	MAXIMISE,
-	RANDOMISE,
-	MINIMISE,
-	AVERAGE
-} aspect;
-
-int damcalc(int dice, int sides, aspect dam_aspect);
 
 #define NOT_USED	/* to avoid confusion in spells1.c */
 
@@ -95,9 +85,9 @@ int damcalc(int dice, int sides, aspect dam_aspect);
 #define BR_NETH_DIVISOR				6
 #define RES_NETH_ADJ(dam, dam_aspect)		(((dam) * 6) / (damcalc(1, 6, dam_aspect) + 6))
 
-#define BR_LITE_MAX				400
-#define BR_LITE_DIVISOR				6
-#define RES_LITE_ADJ(dam, dam_aspect)           (((dam) * 4) / (damcalc(1, 6, dam_aspect) + 6))
+#define BR_LIGHT_MAX				400
+#define BR_LIGHT_DIVISOR				6
+#define RES_LIGHT_ADJ(dam, dam_aspect)           (((dam) * 4) / (damcalc(1, 6, dam_aspect) + 6))
 
 #define BR_DARK_MAX				400
 #define BR_DARK_DIVISOR				6

@@ -1,6 +1,5 @@
 MKPATH=../../mk/
 include $(MKPATH)buildsys.mk
 
-DATA = delete.me
-PACKAGE = ${PACKAGE_NAME}/info
-
+LIBDATA = readme.txt
+PACKAGE = info

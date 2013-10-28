@@ -180,6 +180,7 @@ static void regen_monsters(void)
  * If player has inscribed the object with "!!", let him know when it's
  * recharged. -LM-
  * Also inform player when first item of a stack has recharged. -HK-
+ * Notify all recharges w/o inscription if notify_recharge option set -WP-
  */
 static void recharged_notice(const object_type *o_ptr, bool all)
 {
@@ -187,47 +188,56 @@ static void recharged_notice(const object_type *o_ptr, bool all)
 
 	cptr s;
 
-	/* No inscription */
-	if (!o_ptr->note) return;
+	bool notify = FALSE;
 
-	/* Find a '!' */
-	s = strchr(quark_str(o_ptr->note), '!');
-
-	/* Process notification request */
-	while (s)
+	if (OPT(notify_recharge))
 	{
-		/* Find another '!' */
-		if (s[1] == '!')
-		{
-			/* Describe (briefly) */
-			object_desc(o_name, sizeof(o_name), o_ptr, FALSE, ODESC_BASE);
-
-			/* Disturb the player */
-			disturb(0, 0);
-
-			/* Notify the player */
-			if (o_ptr->number > 1)
-			{
-				if (all) msg_format("Your %s have recharged.", o_name);
-				else msg_format("One of your %s has recharged.", o_name);
-			}
-
-			/* Artifacts */
-			else if (o_ptr->name1)
-			{
-				msg_format("The %s has recharged.", o_name);
-			}
-
-			/* Single, non-artifact items */
-			else msg_format("Your %s has recharged.", o_name);
-
-			/* Done */
-			return;
-		}
-
-		/* Keep looking for '!'s */
-		s = strchr(s + 1, '!');
+		notify = TRUE;
 	}
+	else if (o_ptr->note)
+	{
+		/* Find a '!' */
+		s = strchr(quark_str(o_ptr->note), '!');
+
+		/* Process notification request */
+		while (s)
+		{
+			/* Find another '!' */
+			if (s[1] == '!')
+			{
+				notify = TRUE;
+				break;
+			}
+
+			/* Keep looking for '!'s */
+			s = strchr(s + 1, '!');
+		}
+	}
+
+	if (!notify) return;
+
+
+	/* Describe (briefly) */
+	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
+
+	/* Disturb the player */
+	disturb(0, 0);
+
+	/* Notify the player */
+	if (o_ptr->number > 1)
+	{
+		if (all) msg_format("Your %s have recharged.", o_name);
+		else msg_format("One of your %s has recharged.", o_name);
+	}
+
+	/* Artifacts */
+	else if (o_ptr->name1)
+	{
+		msg_format("The %s has recharged.", o_name);
+	}
+
+	/* Single, non-artifact items */
+	else msg_format("Your %s has recharged.", o_name);
 }
 
 
@@ -239,13 +249,12 @@ static void recharge_objects(void)
 {
 	int i;
 
-	int charged = 0;
+	bool charged = FALSE, discharged_stack;
 
 	object_type *o_ptr;
 	object_kind *k_ptr;
 
-
-	/* Process equipment */
+	/*** Recharge equipment ***/
 	for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
 	{
 		/* Get the object */
@@ -255,16 +264,12 @@ static void recharge_objects(void)
 		if (!o_ptr->k_idx) continue;
 
 		/* Recharge activatable objects */
-		if (o_ptr->timeout > 0 && !(o_ptr->tval == TV_LITE && !artifact_p(o_ptr)))
+		if (recharge_timeout(o_ptr))
 		{
-			/* Recharge */
-			o_ptr->timeout--;
+			charged = TRUE;
 
-			/* Notice changes */
-			if (!o_ptr->timeout) charged++;
-
-			/* Message if item is recharged, if inscribed with "!!" */
-			if (!o_ptr->timeout) recharged_notice(o_ptr, TRUE);
+			/* Message if an item recharged */
+			recharged_notice(o_ptr, TRUE);
 		}
 	}
 
@@ -275,9 +280,9 @@ static void recharge_objects(void)
 		p_ptr->redraw |= (PR_EQUIP);
 	}
 
-	charged = 0;
+	charged = FALSE;
 
-	/* Recharge rods */
+	/*** Recharge the inventory ***/
 	for (i = 0; i < INVEN_PACK; i++)
 	{
 		o_ptr = &inventory[i];
@@ -286,29 +291,23 @@ static void recharge_objects(void)
 		/* Skip non-objects */
 		if (!o_ptr->k_idx) continue;
 
-		/* Examine all charging rods */
-		if ((o_ptr->tval == TV_ROD) && (o_ptr->timeout))
+		discharged_stack = (number_charging(o_ptr) == o_ptr->number) ? TRUE : FALSE;
+
+		/* Recharge rods, and update if any rods are recharged */
+		if (o_ptr->tval == TV_ROD && recharge_timeout(o_ptr))
 		{
-			/* Determine how many rods are charging */
-			int temp = (o_ptr->timeout + (k_ptr->time_base - 1)) / k_ptr->time_base;
-			if (temp > o_ptr->number) temp = o_ptr->number;
+			charged = TRUE;
 
-			/* Decrease timeout by that number */
-			o_ptr->timeout -= temp;
-
-			/* Boundary control */
-			if (o_ptr->timeout < 0) o_ptr->timeout = 0;
-
-			/* Update if any rods are recharged */
-			if (temp > (o_ptr->timeout + (k_ptr->time_base - 1)) / k_ptr->time_base)
+			/* Entire stack is recharged */
+			if (o_ptr->timeout == 0)
 			{
-				/* Update window */
-				charged++;
+				recharged_notice(o_ptr, TRUE);
+			}
 
-				/* Message if whole stack is recharged, if inscribed with "!!" */
-				if (!o_ptr->timeout) recharged_notice(o_ptr, TRUE);
-				/* Message if first in a stack is recharged, if inscribed with "!!" -HK- */
-				else if (temp == o_ptr->number) recharged_notice(o_ptr, FALSE);
+			/* Previously exhausted stack has acquired a charge */
+			else if (discharged_stack)
+			{
+				recharged_notice(o_ptr, FALSE);
 			}
 		}
 	}
@@ -323,10 +322,7 @@ static void recharge_objects(void)
 		p_ptr->redraw |= (PR_INVEN);
 	}
 
-
-	/*** Process Objects ***/
-
-	/* Process objects */
+	/*** Recharge the ground ***/
 	for (i = 1; i < o_max; i++)
 	{
 		/* Get the object */
@@ -336,14 +332,8 @@ static void recharge_objects(void)
 		if (!o_ptr->k_idx) continue;
 
 		/* Recharge rods on the ground */
-		if ((o_ptr->tval == TV_ROD) && o_ptr->timeout)
-		{
-			/* Charge it */
-			o_ptr->timeout -= o_ptr->number;
-
-			/* Boundary control */
-			if (o_ptr->timeout < 0) o_ptr->timeout = 0;
-		}
+		if (o_ptr->tval == TV_ROD)
+			recharge_timeout(o_ptr);
 	}
 }
 
@@ -696,10 +686,10 @@ static void process_world(void)
 	/*** Process Light ***/
 
 	/* Check for light being wielded */
-	o_ptr = &inventory[INVEN_LITE];
+	o_ptr = &inventory[INVEN_LIGHT];
 
-	/* Burn some fuel in the current lite */
-	if (o_ptr->tval == TV_LITE)
+	/* Burn some fuel in the current light */
+	if (o_ptr->tval == TV_LIGHT)
 	{
 		u32b f[OBJ_FLAG_N];
 		bool burn_fuel = TRUE;
@@ -911,7 +901,6 @@ static void process_player(void)
 {
 	int i;
 
-
 	/*** Check for interrupts ***/
 
 	/* Complete resting */
@@ -1001,57 +990,28 @@ static void process_player(void)
 		/* Refresh (optional) */
 		Term_fresh();
 
-
 		/* Hack -- Pack Overflow */
-		if (inventory[INVEN_PACK].k_idx)
-		{
-			int item = INVEN_PACK;
-
-			char o_name[80];
-
-			object_type *o_ptr;
-
-			/* Get the slot to be dropped */
-			o_ptr = &inventory[item];
-
-			/* Disturbing */
-			disturb(0, 0);
-
-			/* Warning */
-			msg_print("Your pack overflows!");
-
-			/* Describe */
-			object_desc(o_name, sizeof(o_name), o_ptr, TRUE, ODESC_FULL);
-
-			/* Message */
-			msg_format("You drop %s (%c).", o_name, index_to_label(item));
-
-			/* Drop it (carefully) near the player */
-			drop_near(o_ptr, 0, p_ptr->py, p_ptr->px);
-
-			/* Modify, Describe, Optimize */
-			inven_item_increase(item, -255);
-			inven_item_describe(item);
-			inven_item_optimize(item);
-
-			/* Notice stuff (if needed) */
-			if (p_ptr->notice) notice_stuff();
-
-			/* Update stuff (if needed) */
-			if (p_ptr->update) update_stuff();
-
-			/* Redraw stuff (if needed) */
-			if (p_ptr->redraw) redraw_stuff();
-		}
-
+		pack_overflow();
 
 		/* Hack -- reset to inventory display */
 		if (!p_ptr->command_new) p_ptr->command_wrk = USE_INVEN;
 
-
 		/* Assume free turn */
 		p_ptr->energy_use = 0;
 
+		/* Dwarves detect treasure */
+		if (rp_ptr->new_racial_flags & NRF_SEE_ORE)
+		{
+			/* Only if they are in good shape */
+			if (!p_ptr->timed[TMD_IMAGE] &&
+					!p_ptr->timed[TMD_CONFUSED] &&
+					!p_ptr->timed[TMD_AMNESIA] &&
+					!p_ptr->timed[TMD_STUN] &&
+					!p_ptr->timed[TMD_PARALYZED] &&
+					!p_ptr->timed[TMD_TERROR] &&
+					!p_ptr->timed[TMD_AFRAID])
+				detect_close_buried_treasure();
+		}
 
 		/* Paralyzed or Knocked Out */
 		if ((p_ptr->timed[TMD_PARALYZED]) || (p_ptr->timed[TMD_STUN] >= 100))
@@ -1133,12 +1093,21 @@ static void process_player(void)
 
 		/*** Clean up ***/
 
+		/* Action is or was resting */
+		if (p_ptr->resting)
+		{
+			/* Increment the resting counter */
+			p_ptr->resting_turn++;
+		}
+
 		/* Significant */
 		if (p_ptr->energy_use)
 		{
 			/* Use some energy */
 			p_ptr->energy -= p_ptr->energy_use;
 
+			/* Increment the player turn counter */
+			p_ptr->player_turn++;
 
 			/* Hack -- constant hallucination */
 			if (p_ptr->timed[TMD_IMAGE])
@@ -1174,7 +1143,7 @@ static void process_player(void)
 					shimmer_monsters = TRUE;
 
 					/* Redraw regardless */
-					lite_spot(m_ptr->fy, m_ptr->fx);
+					light_spot(m_ptr->fy, m_ptr->fx);
 				}
 			}
 
@@ -1396,7 +1365,7 @@ static void dungeon(void)
 	p_ptr->update |= (PU_BONUS | PU_HP | PU_MANA | PU_SPELLS);
 
 	/* Combine / Reorder the pack */
-	p_ptr->notice |= (PN_COMBINE | PN_REORDER);
+	p_ptr->notice |= (PN_COMBINE | PN_REORDER | PN_SORT_QUIVER);
 
 	/* Make basic mouse buttons */
 	(void) button_add("[ESC]", ESCAPE);
@@ -1472,7 +1441,7 @@ static void dungeon(void)
 		/* Redraw stuff */
 		if (p_ptr->redraw) redraw_stuff();
 
-		/* Hack -- Hilite the player */
+		/* Hack -- Highlight the player */
 		move_cursor_relative(p_ptr->py, p_ptr->px);
 
 		/* Handle "leaving" */
@@ -1491,7 +1460,7 @@ static void dungeon(void)
 		/* Redraw stuff */
 		if (p_ptr->redraw) redraw_stuff();
 
-		/* Hack -- Hilite the player */
+		/* Hack -- Highlight the player */
 		move_cursor_relative(p_ptr->py, p_ptr->px);
 
 		/* Handle "leaving" */
@@ -1510,12 +1479,11 @@ static void dungeon(void)
 		/* Redraw stuff */
 		if (p_ptr->redraw) redraw_stuff();
 
-		/* Hack -- Hilite the player */
+		/* Hack -- Highlight the player */
 		move_cursor_relative(p_ptr->py, p_ptr->px);
 
 		/* Handle "leaving" */
 		if (p_ptr->leaving) break;
-
 
 		/*** Apply energy ***/
 

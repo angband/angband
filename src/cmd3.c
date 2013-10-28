@@ -35,7 +35,7 @@ void do_cmd_inven(void)
 	item_tester_full = TRUE;
 
 	/* Display the inventory */
-	show_inven();
+	show_inven(OLIST_WEIGHT | OLIST_QUIVER);
 
 	/* Hack -- hide empty slots */
 	item_tester_full = FALSE;
@@ -76,7 +76,7 @@ void do_cmd_equip(void)
 	item_tester_full = TRUE;
 
 	/* Display the equipment */
-	show_equip();
+	show_equip(OLIST_WEIGHT);
 
 	/* Hack -- undo the hack above */
 	item_tester_full = FALSE;
@@ -108,8 +108,18 @@ void wield_item(object_type *o_ptr, int item, int slot)
 	object_type object_type_body;
 	object_type *i_ptr = &object_type_body;
 
-	cptr act;
+	cptr fmt;
 	char o_name[80];
+
+	bool combined_ammo = FALSE;
+	int num = 1;
+
+	/* If we are stacking ammo in the quiver */
+	if (obj_is_ammo(o_ptr))
+	{
+		num = o_ptr->number;
+		combined_ammo = object_similar(o_ptr, &inventory[slot]);
+	}
 
 	/* Take a turn */
 	p_ptr->energy_use = 100;
@@ -118,60 +128,75 @@ void wield_item(object_type *o_ptr, int item, int slot)
 	object_copy(i_ptr, o_ptr);
 
 	/* Modify quantity */
-	i_ptr->number = 1;
+	i_ptr->number = num;
 
 	/* Decrease the item (from the pack) */
 	if (item >= 0)
 	{
-		inven_item_increase(item, -1);
+		inven_item_increase(item, -num);
 		inven_item_optimize(item);
 	}
 
 	/* Decrease the item (from the floor) */
 	else
 	{
-		floor_item_increase(0 - item, -1);
+		floor_item_increase(0 - item, -num);
 		floor_item_optimize(0 - item);
 	}
 
 	/* Get the wield slot */
 	o_ptr = &inventory[slot];
 
-	/* Take off existing item */
-	if (o_ptr->k_idx)
+	if (combined_ammo)
+	{
+		/* Add the new ammo to the already-quiver-ed ammo */
+		object_absorb(o_ptr, i_ptr);
+	}
+	else 
 	{
 		/* Take off existing item */
-		(void)inven_takeoff(slot, 255);
+		if (o_ptr->k_idx)
+			(void)inven_takeoff(slot, 255);
+
+		/* If we are wielding ammo we may need to "open" the slot by shifting
+		 * later ammo up the quiver; this is because we already called the
+		 * inven_item_optimize() function. */
+		if (slot >= QUIVER_START)
+			open_quiver_slot(slot);
+	
+		/* Wear the new stuff */
+		object_copy(o_ptr, i_ptr);
+
+		/* Increment the equip counter by hand */
+		p_ptr->equip_cnt++;
 	}
 
-	/* Wear the new stuff */
-	object_copy(o_ptr, i_ptr);
-
 	/* Increase the weight */
-	p_ptr->total_weight += i_ptr->weight;
-
-	/* Increment the equip counter by hand */
-	p_ptr->equip_cnt++;
+	p_ptr->total_weight += i_ptr->weight * num;
 
 	/* Do any ID-on-wield */
 	object_notice_on_wield(o_ptr);
 
 	/* Where is the item now */
 	if (slot == INVEN_WIELD)
-		act = "You are wielding";
+		fmt = "You are wielding %s (%c).";
 	else if (slot == INVEN_BOW)
-		act = "You are shooting with";
-	else if (slot == INVEN_LITE)
-		act = "Your light source is";
+		fmt = "You are shooting with %s (%c).";
+	else if (slot == INVEN_LIGHT)
+		fmt = "Your light source is %s (%c).";
+	else if (combined_ammo)
+		fmt = "You combine %s in your quiver (%c).";
+	else if (slot >= QUIVER_START && slot < QUIVER_END)
+		fmt = "You add %s to your quiver (%c).";
 	else
-		act = "You are wearing";
+		fmt = "You are wearing %s (%c).";
 
 	/* Describe the result */
-	object_desc(o_name, sizeof(o_name), o_ptr, TRUE, ODESC_FULL);
+	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
 
 	/* Message */
 	sound(MSG_WIELD);
-	msg_format("%s %s (%c).", act, o_name, index_to_label(slot));
+	msg_format(fmt, o_name, index_to_label(slot));
 
 	/* Cursed! */
 	if (cursed_p(o_ptr))
@@ -183,6 +208,12 @@ void wield_item(object_type *o_ptr, int item, int slot)
 		/* Sense the object */
 		object_notice_curses(o_ptr);
 	}
+
+	/* Save quiver size */
+	save_quiver_size();
+
+	/* See if we have to overflow the pack */
+	pack_overflow();
 
 	/* Recalculate bonuses, torch, mana */
 	p_ptr->update |= (PU_BONUS | PU_TORCH | PU_MANA);
@@ -231,7 +262,8 @@ void do_cmd_destroy(cmd_code code, cmd_arg args[])
 
 	/* Describe the destroyed object by taking a copy with the right "amt" */
 	object_copy_amt(&destroyed_obj, o_ptr, amt);
-	object_desc(o_name, sizeof(o_name), &destroyed_obj, TRUE, ODESC_FULL);
+	object_desc(o_name, sizeof(o_name), &destroyed_obj,
+				ODESC_PREFIX | ODESC_FULL);
 
 	/* Artifacts cannot be destroyed */
 	if (artifact_p(o_ptr))
@@ -282,6 +314,7 @@ void textui_cmd_destroy(void)
 
 	object_type obj_to_destroy;
 
+	char result;
 	char o_name[120];
 	char out_val[160];
 
@@ -302,11 +335,6 @@ void textui_cmd_destroy(void)
 	o_ptr = object_from_item_idx(item);
 
 	/* Ask if player would prefer squelching instead of destruction */
-	if (squelch_interactive(o_ptr))
-	{
-		p_ptr->notice |= PN_SQUELCH;
-		return;
-	}
 
 	/* Get a quantity */
 	amt = get_quantity(NULL, o_ptr->number);
@@ -314,14 +342,25 @@ void textui_cmd_destroy(void)
 
 	/* Describe the destroyed object by taking a copy with the right "amt" */
 	object_copy_amt(&obj_to_destroy, o_ptr, amt);
-	object_desc(o_name, sizeof(o_name), &obj_to_destroy, TRUE, ODESC_FULL);
+	object_desc(o_name, sizeof(o_name), &obj_to_destroy,
+				ODESC_PREFIX | ODESC_FULL);
 
 	/* Verify destruction */
 	strnfmt(out_val, sizeof(out_val), "Really destroy %s? ", o_name);
-	if (!get_check(out_val)) return;
+	
+	result = get_char(out_val, "yns", 3, 'n');
 
-	/* Tell the game to destroy the item. */
-	cmd_insert(CMD_DESTROY, item, amt);
+	if (result == 'y')
+		cmd_insert(CMD_DESTROY, item, amt);
+	else if (result == 's' && squelch_interactive(o_ptr))
+	{
+		p_ptr->notice |= PN_SQUELCH;
+		
+		/* If the item is not equipped, we can rely on it being dropped and */
+		/* ignored, otherwise we should continue on to check if we should */
+		/* still destroy it. */
+		if (item < INVEN_WIELD) return;
+	}
 }
 
 void refill_lamp(object_type *j_ptr, object_type *o_ptr, int item)
@@ -340,7 +379,7 @@ void refill_lamp(object_type *j_ptr, object_type *o_ptr, int item)
 	}
 
 	/* Refilled from a lantern */
-	if (o_ptr->sval == SV_LITE_LANTERN)
+	if (o_ptr->sval == SV_LIGHT_LANTERN)
 	{
 		/* Unstack if necessary */
 		if (o_ptr->number > 1)
@@ -368,7 +407,7 @@ void refill_lamp(object_type *j_ptr, object_type *o_ptr, int item)
 			if (item >= 0)
 				item = inven_carry(i_ptr);
 			else
-				drop_near(i_ptr, 0, p_ptr->py, p_ptr->px);
+				drop_near(i_ptr, 0, p_ptr->py, p_ptr->px, FALSE);
 		}
 
 		/* Empty a single lantern */
@@ -467,19 +506,17 @@ void refuel_torch(object_type *j_ptr, object_type *o_ptr, int item)
  */
 void do_cmd_target(void)
 {
-	/* Target set */
 	if (target_set_interactive(TARGET_KILL, -1, -1))
-	{
 		msg_print("Target Selected.");
-	}
-
-	/* Target aborted */
 	else
-	{
 		msg_print("Target Aborted.");
-	}
 }
 
+
+void do_cmd_target_closest(void)
+{
+	target_set_closest(TARGET_KILL);
+}
 
 
 /*
@@ -1023,4 +1060,10 @@ void do_cmd_query_symbol(void)
 
 	/* Free the "who" array */
 	FREE(who);
+}
+
+/* Centers the map on the player */
+void do_cmd_center_map(void)
+{
+	center_panel();
 }

@@ -534,9 +534,9 @@ static u32b create_pixel(Display *dpy, byte red, byte green, byte blue)
 
 	/* Build the color */
 
-	xcolour.red = red * 255;
-	xcolour.green = green * 255;
-	xcolour.blue = blue * 255;
+	xcolour.red   = red * 257;
+	xcolour.green = green * 257;
+	xcolour.blue  = blue * 257;
 	xcolour.flags = DoRed | DoGreen | DoBlue;
 
 	/* Attempt to Allocate the Parsed color */
@@ -1592,7 +1592,7 @@ static infoclr *xor;
 /*
  * Color info (unused, red, green, blue).
  */
-static byte color_table[MAX_COLORS][4];
+static byte color_table_x11[MAX_COLORS][4];
 
 
 /*
@@ -1979,24 +1979,24 @@ static errr Term_xtra_x11_react(void)
 		/* Check the colors */
 		for (i = 0; i < MAX_COLORS; i++)
 		{
-			if ((color_table[i][0] != angband_color_table[i][0]) ||
-			    (color_table[i][1] != angband_color_table[i][1]) ||
-			    (color_table[i][2] != angband_color_table[i][2]) ||
-			    (color_table[i][3] != angband_color_table[i][3]))
+			if ((color_table_x11[i][0] != angband_color_table[i][0]) ||
+				(color_table_x11[i][1] != angband_color_table[i][1]) ||
+				(color_table_x11[i][2] != angband_color_table[i][2]) ||
+				(color_table_x11[i][3] != angband_color_table[i][3]))
 			{
 				Pixell pixel;
 
 				/* Save new values */
-				color_table[i][0] = angband_color_table[i][0];
-				color_table[i][1] = angband_color_table[i][1];
-				color_table[i][2] = angband_color_table[i][2];
-				color_table[i][3] = angband_color_table[i][3];
+				color_table_x11[i][0] = angband_color_table[i][0];
+				color_table_x11[i][1] = angband_color_table[i][1];
+				color_table_x11[i][2] = angband_color_table[i][2];
+				color_table_x11[i][3] = angband_color_table[i][3];
 
 				/* Create pixel */
 				pixel = create_pixel(Metadpy->dpy,
-				                     color_table[i][1],
-				                     color_table[i][2],
-				                     color_table[i][3]);
+									 color_table_x11[i][1],
+									 color_table_x11[i][2],
+									 color_table_x11[i][3]);
 
 				/* Change the foreground */
 				Infoclr_set(clr[i]);
@@ -2258,7 +2258,7 @@ static errr term_data_init(term_data *td, int i)
 			if (buf[0] == '#') continue;
 
 			/* Window specific location (x) */
-			sprintf(cmd, "AT_X_%d", i);
+			strnfmt(cmd, sizeof(cmd), "AT_X_%d", i);
 
 			if (prefix(buf, cmd))
 			{
@@ -2268,7 +2268,7 @@ static errr term_data_init(term_data *td, int i)
 			}
 
 			/* Window specific location (y) */
-			sprintf(cmd, "AT_Y_%d", i);
+			strnfmt(cmd, sizeof(cmd), "AT_Y_%d", i);
 
 			if (prefix(buf, cmd))
 			{
@@ -2278,7 +2278,7 @@ static errr term_data_init(term_data *td, int i)
 			}
 
 			/* Window specific cols */
-			sprintf(cmd, "COLS_%d", i);
+			strnfmt(cmd, sizeof(cmd), "COLS_%d", i);
 
 			if (prefix(buf, cmd))
 			{
@@ -2289,7 +2289,7 @@ static errr term_data_init(term_data *td, int i)
 			}
 
 			/* Window specific rows */
-			sprintf(cmd, "ROWS_%d", i);
+			strnfmt(cmd, sizeof(cmd), "ROWS_%d", i);
 
 			if (prefix(buf, cmd))
 			{
@@ -2300,7 +2300,7 @@ static errr term_data_init(term_data *td, int i)
 			}
 
 			/* Window specific inner border offset (ox) */
-			sprintf(cmd, "IBOX_%d", i);
+			strnfmt(cmd, sizeof(cmd), "IBOX_%d", i);
 
 			if (prefix(buf, cmd))
 			{
@@ -2311,7 +2311,7 @@ static errr term_data_init(term_data *td, int i)
 			}
 
 			/* Window specific inner border offset (oy) */
-			sprintf(cmd, "IBOY_%d", i);
+			strnfmt(cmd, sizeof(cmd), "IBOY_%d", i);
 
 			if (prefix(buf, cmd))
 			{
@@ -2322,7 +2322,7 @@ static errr term_data_init(term_data *td, int i)
 			}
 
 			/* Window specific font name */
-			sprintf(cmd, "FONT_%d", i);
+			strnfmt(cmd, sizeof(cmd), "FONT_%d", i);
 
 			if (prefix(buf, cmd))
 			{
@@ -2336,7 +2336,7 @@ static errr term_data_init(term_data *td, int i)
 			}
 
 			/* Window specific tile width */
-			sprintf(cmd, "TILE_WIDTH_%d", i);
+			strnfmt(cmd, sizeof(cmd), "TILE_WIDTH_%d", i);
 
 			if (prefix(buf, cmd))
 			{
@@ -2347,7 +2347,7 @@ static errr term_data_init(term_data *td, int i)
 			}
 
 			/* Window specific tile height */
-			sprintf(cmd, "TILE_HEIGHT_%d", i);
+			strnfmt(cmd, sizeof(cmd), "TILE_HEIGHT_%d", i);
 
 			if (prefix(buf, cmd))
 			{
@@ -2367,43 +2367,43 @@ static errr term_data_init(term_data *td, int i)
 	 */
 
 	/* Window specific location (x) */
-	sprintf(buf, "ANGBAND_X11_AT_X_%d", i);
+	strnfmt(buf, sizeof(buf), "ANGBAND_X11_AT_X_%d", i);
 	str = getenv(buf);
 	val = (str != NULL) ? atoi(str) : -1;
 	if (val > 0) x = val;
 
 	/* Window specific location (y) */
-	sprintf(buf, "ANGBAND_X11_AT_Y_%d", i);
+	strnfmt(buf, sizeof(buf), "ANGBAND_X11_AT_Y_%d", i);
 	str = getenv(buf);
 	val = (str != NULL) ? atoi(str) : -1;
 	if (val > 0) y = val;
 
 	/* Window specific cols */
-	sprintf(buf, "ANGBAND_X11_COLS_%d", i);
+	strnfmt(buf, sizeof(buf), "ANGBAND_X11_COLS_%d", i);
 	str = getenv(buf);
 	val = (str != NULL) ? atoi(str) : -1;
 	if (val > 0) cols = val;
 
 	/* Window specific rows */
-	sprintf(buf, "ANGBAND_X11_ROWS_%d", i);
+	strnfmt(buf, sizeof(buf), "ANGBAND_X11_ROWS_%d", i);
 	str = getenv(buf);
 	val = (str != NULL) ? atoi(str) : -1;
 	if (val > 0) rows = val;
 
 	/* Window specific inner border offset (ox) */
-	sprintf(buf, "ANGBAND_X11_IBOX_%d", i);
+	strnfmt(buf, sizeof(buf), "ANGBAND_X11_IBOX_%d", i);
 	str = getenv(buf);
 	val = (str != NULL) ? atoi(str) : -1;
 	if (val > 0) ox = val;
 
 	/* Window specific inner border offset (oy) */
-	sprintf(buf, "ANGBAND_X11_IBOY_%d", i);
+	strnfmt(buf, sizeof(buf), "ANGBAND_X11_IBOY_%d", i);
 	str = getenv(buf);
 	val = (str != NULL) ? atoi(str) : -1;
 	if (val > 0) oy = val;
 
 	/* Window specific font name */
-	sprintf(buf, "ANGBAND_X11_FONT_%d", i);
+	strnfmt(buf, sizeof(buf), "ANGBAND_X11_FONT_%d", i);
 	str = getenv(buf);
 	if (str) font = str;
 
@@ -2717,10 +2717,10 @@ errr init_x11(int argc, char **argv)
 		Infoclr_set(clr[i]);
 
 		/* Acquire Angband colors */
-		color_table[i][0] = angband_color_table[i][0];
-		color_table[i][1] = angband_color_table[i][1];
-		color_table[i][2] = angband_color_table[i][2];
-		color_table[i][3] = angband_color_table[i][3];
+		color_table_x11[i][0] = angband_color_table[i][0];
+		color_table_x11[i][1] = angband_color_table[i][1];
+		color_table_x11[i][2] = angband_color_table[i][2];
+		color_table_x11[i][3] = angband_color_table[i][3];
 
 		/* Default to monochrome */
 		pixel = ((i == 0) ? Metadpy->bg : Metadpy->fg);
@@ -2730,9 +2730,9 @@ errr init_x11(int argc, char **argv)
 		{
 			/* Create pixel */
 			pixel = create_pixel(Metadpy->dpy,
-			                     color_table[i][1],
-			                     color_table[i][2],
-			                     color_table[i][3]);
+								 color_table_x11[i][1],
+								 color_table_x11[i][2],
+								 color_table_x11[i][3]);
 		}
 
 		/* Initialize the color */

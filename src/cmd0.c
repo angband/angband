@@ -76,6 +76,7 @@ static command_type cmd_action[] =
 	{ "Rest for a while",           'R', CMD_NULL, textui_cmd_rest },
 	{ "Look around",                'l', CMD_NULL, do_cmd_look },
 	{ "Target monster or location", '*', CMD_NULL, do_cmd_target },
+	{ "Target closest monster",     '\'', CMD_NULL, do_cmd_target_closest },
 	{ "Dig a tunnel",               'T', CMD_NULL, textui_cmd_tunnel },
 	{ "Go up staircase",            '<', CMD_GO_UP, NULL },
 	{ "Go down staircase",          '>', CMD_GO_DOWN, NULL },
@@ -98,6 +99,7 @@ static command_type cmd_item_use[] =
 	{ "Eat some food",            'E', CMD_NULL, textui_cmd_eat_food },
 	{ "Fuel your light source",   'F', CMD_NULL, textui_cmd_refill },
 	{ "Fire your missile weapon", 'f', CMD_NULL, textui_cmd_fire },
+	{ "Fire at nearest target",   'h', CMD_NULL, textui_cmd_fire_at_nearest },
 	{ "Throw an item",            'v', CMD_NULL, textui_cmd_throw }
 };
 
@@ -164,6 +166,7 @@ static command_type cmd_hidden[] =
 	{ "Check knowledge",          '|', CMD_NULL, do_cmd_knowledge },
 	{ "Display menu of actions", '\n', CMD_NULL, do_cmd_menu },
 	{ "Display menu of actions", '\r', CMD_NULL, do_cmd_menu },
+	{ "Center map",              KTRL('L'), CMD_NULL, do_cmd_center_map },
 
 	{ "Toggle wizard mode",  KTRL('W'), CMD_NULL, do_cmd_wizard },
 	{ "Repeat previous command",  KTRL('V'), CMD_REPEAT, NULL },
@@ -557,7 +560,7 @@ static void do_cmd_menu(void)
 
 	ui_event_data evt;
 	int cursor = 0;
-	command_type chosen_command = { NULL };
+	command_type chosen_command = {NULL, '\0', CMD_NULL, NULL};
 
 	/* Set up the menu */
 	WIPE(&menu, menu);

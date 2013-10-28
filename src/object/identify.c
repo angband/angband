@@ -20,8 +20,10 @@
 #include "object/tvalsval.h"
 #include "game-event.h"
 
+
 /** Time last item was wielded */
 s32b object_last_wield;
+
 
 
 
@@ -31,7 +33,7 @@ s32b object_last_wield;
 /**
  * \returns whether an object counts as "known" due to EASY_KNOW status
  */
-static bool easy_know(const object_type *o_ptr)
+bool easy_know(const object_type *o_ptr)
 {
 	object_kind *k_ptr = &k_info[o_ptr->k_idx];
 
@@ -56,7 +58,18 @@ bool object_is_known(const object_type *o_ptr)
 bool object_is_known_artifact(const object_type *o_ptr)
 {
 	return (o_ptr->ident & IDENT_INDESTRUCT) ||
-			(artifact_p(o_ptr) && object_is_known(o_ptr));
+			(artifact_p(o_ptr) && object_was_sensed(o_ptr));
+}
+
+/**
+ * \returns whether the object is known to not be an artifact
+ */
+bool object_is_not_artifact(const object_type *o_ptr)
+{
+	if (o_ptr->ident & IDENT_NOTART)
+		return TRUE;
+
+	return FALSE;
 }
 
 /**
@@ -65,6 +78,14 @@ bool object_is_known_artifact(const object_type *o_ptr)
 bool object_was_worn(const object_type *o_ptr)
 {
 	return o_ptr->ident & IDENT_WORN ? TRUE : FALSE;
+}
+
+/**
+ * \returns whether the object has been fired/thrown
+ */
+bool object_was_fired(const object_type *o_ptr)
+{
+	return o_ptr->ident & IDENT_FIRED ? TRUE : FALSE;
 }
 
 /**
@@ -96,7 +117,9 @@ bool object_flavor_was_tried(const object_type *o_ptr)
  */
 bool object_effect_is_known(const object_type *o_ptr)
 {
-	return (easy_know(o_ptr) || o_ptr->ident & IDENT_EFFECT) ? TRUE : FALSE;
+	return (easy_know(o_ptr) || (o_ptr->ident & IDENT_EFFECT)
+		|| (object_flavor_is_aware(o_ptr) && k_info[o_ptr->k_idx].effect)
+		|| (o_ptr->ident & IDENT_STORE)) ? TRUE : FALSE;
 }
 
 /**
@@ -106,14 +129,31 @@ bool object_pval_is_visible(const object_type *o_ptr)
 {
 	u32b f[OBJ_FLAG_N];
 	object_flags(o_ptr, f);
-	
+
 	if (o_ptr->ident & IDENT_STORE)
 		return TRUE;
-	
+
+	/* Aware jewelry with non-variable pvals */
+	if (object_is_jewelry(o_ptr) && object_flavor_is_aware(o_ptr))
+	{
+		const object_kind *k_ptr = &k_info[o_ptr->k_idx];
+
+		if (!randcalc_varies(k_ptr->pval))
+			return TRUE;
+	}
+
 	if (f[0] & TR0_PVAL_MASK & o_ptr->known_flags[0])
 		return TRUE;
-	else
-		return FALSE;
+
+	return FALSE;
+}
+
+/**
+ * \returns whether any ego or artifact name is available to the player
+ */
+bool object_name_is_visible(const object_type *o_ptr)
+{
+	return o_ptr->ident & IDENT_NAME ? TRUE : FALSE;
 }
 
 /**
@@ -121,11 +161,13 @@ bool object_pval_is_visible(const object_type *o_ptr)
  */
 bool object_ego_is_visible(const object_type *o_ptr)
 {
-	if ((o_ptr->tval == TV_LITE) && (ego_item_p(o_ptr)))
+	if (!ego_item_p(o_ptr))
+		return FALSE;
+
+	if (o_ptr->tval == TV_LIGHT)
 		return TRUE;
-	if ((o_ptr->ident & IDENT_EGO) || 
-	    ((o_ptr->ident & IDENT_KNOWN) && ego_item_p(o_ptr)) || /* XXX Eddie this should go, but necessary to use savefiles with IDENT_KNOWN before IDENT_EGO was added */
-	    ((o_ptr->ident & IDENT_STORE) && ego_item_p(o_ptr)))
+
+	if ((o_ptr->ident & IDENT_NAME) || (o_ptr->ident & IDENT_STORE))
 		return TRUE;
 	else
 		return FALSE;
@@ -136,10 +178,20 @@ bool object_ego_is_visible(const object_type *o_ptr)
  */
 bool object_attack_plusses_are_visible(const object_type *o_ptr)
 {
+	/* Bonuses have been revealed or for sale */
 	if ((o_ptr->ident & IDENT_ATTACK) || (o_ptr->ident & IDENT_STORE))
 		return TRUE;
-	else
-		return FALSE;
+
+	/* Aware jewelry with non-variable bonuses */
+	if (object_is_jewelry(o_ptr) && object_flavor_is_aware(o_ptr))
+	{
+		const object_kind *k_ptr = &k_info[o_ptr->k_idx];
+
+		if (!randcalc_varies(k_ptr->to_h) && !randcalc_varies(k_ptr->to_d))
+			return TRUE;
+	}
+
+	return FALSE;
 }
 
 /**
@@ -147,10 +199,20 @@ bool object_attack_plusses_are_visible(const object_type *o_ptr)
  */
 bool object_defence_plusses_are_visible(const object_type *o_ptr)
 {
+	/* Bonuses have been revealed or for sale */
 	if ((o_ptr->ident & IDENT_DEFENCE) || (o_ptr->ident & IDENT_STORE))
 		return TRUE;
-	else
-		return FALSE;
+
+	/* Aware jewelry with non-variable bonuses */
+	if (object_is_jewelry(o_ptr) && object_flavor_is_aware(o_ptr))
+	{
+		const object_kind *k_ptr = &k_info[o_ptr->k_idx];
+
+		if (!randcalc_varies(k_ptr->to_a))
+			return TRUE;
+	}
+
+	return FALSE;
 }
 
 
@@ -187,42 +249,72 @@ bool object_high_resist_is_possible(const object_type *o_ptr)
 
 
 
+/*
+ * Sets a some IDENT_ flags on an object.
+ *
+ * \param o_ptr is the object to check
+ * \param flags are the ident flags to be added
+ *
+ * \returns whether o_ptr->ident changed
+ */
+static bool object_add_ident_flags(object_type *o_ptr, u32b flags)
+{
+	if ((o_ptr->ident & flags) != flags)
+	{
+		o_ptr->ident |= flags;
+		return TRUE;
+	}
+
+	return FALSE;
+}
+
+
+/* Flags on an object that do not affect the player, belongs in some .h file */
+#define TR2_AFFECTS_OBJ_ONLY (TR2_INSTA_ART | TR2_EASY_KNOW | TR2_HIDE_TYPE | TR2_SHOW_MODS | TR2_IGNORE_ACID | TR2_IGNORE_ELEC | TR2_IGNORE_FIRE | TR2_IGNORE_COLD)
 
 /*
  * Checks for additional knowledge implied by what the player already knows.
  *
  * \param o_ptr is the object to check
+ *
+ * returns whether it calls object_notice_everyting
  */
-static void object_check_for_ident(object_type *o_ptr)
+bool object_check_for_ident(object_type *o_ptr)
 {
 	int i;
 	u32b flags[OBJ_FLAG_N];
+	u32b known_flags[OBJ_FLAG_N];
 	
 	object_flags(o_ptr, flags);
+	object_flags_known(o_ptr, known_flags);
 
 	/* Some flags are irrelevant or never learned or too hard to learn */
-	flags[2] &= ~(TR2_INSTA_ART | TR2_EASY_KNOW | TR2_HIDE_TYPE | TR2_SHOW_MODS | TR2_IGNORE_ACID | TR2_IGNORE_ELEC | TR2_IGNORE_FIRE | TR2_IGNORE_COLD);
-	
+	flags[2] &= ~TR2_AFFECTS_OBJ_ONLY;
+	known_flags[2] &= ~TR2_AFFECTS_OBJ_ONLY;
+
 	for (i = 0; i < OBJ_FLAG_N; i++)
 	{
-		if (flags[i] != (flags[i] & o_ptr->known_flags[i]))
-			return;
+		if (flags[i] != known_flags[i])
+			return FALSE;
 	}
-	
+
 	/* If we know attack bonuses, and defence bonuses, and effect, then
 	 * we effectively know everything, so mark as such */
-	if ((o_ptr->ident & IDENT_ATTACK || (o_ptr->ident & IDENT_SENSE && o_ptr->to_h == 0 && o_ptr->to_d == 0)) &&
-	    (o_ptr->ident & IDENT_DEFENCE || (o_ptr->ident & IDENT_SENSE && o_ptr->to_a == 0)) &&
-	    (o_ptr->ident & IDENT_EFFECT || !object_effect(o_ptr)))
+	if ((object_attack_plusses_are_visible(o_ptr) || (object_was_sensed(o_ptr) && o_ptr->to_h == 0 && o_ptr->to_d == 0)) &&
+	    (object_defence_plusses_are_visible(o_ptr) || (object_was_sensed(o_ptr) && o_ptr->to_a == 0)) &&
+	    (object_effect_is_known(o_ptr) || !object_effect(o_ptr)))
 	{
 		object_notice_everything(o_ptr);
+		return TRUE;
 	}
-	
+
 	/* We still know all the flags, so we still know if it's an ego */
 	else if (ego_item_p(o_ptr))
 	{
-		o_ptr->ident |= IDENT_EGO;
+		object_notice_ego(o_ptr);
 	}
+
+	return FALSE;
 }
 
 
@@ -250,7 +342,7 @@ void object_flavor_aware(object_type *o_ptr)
 		/* So update display for all floor objects of this kind */
 		if (!floor_o_ptr->held_m_idx &&
 				floor_o_ptr->k_idx == o_ptr->k_idx)
-			lite_spot(floor_o_ptr->iy, floor_o_ptr->ix);
+			light_spot(floor_o_ptr->iy, floor_o_ptr->ix);
 	}
 }
 
@@ -265,7 +357,7 @@ void object_flavor_tried(object_type *o_ptr)
 	assert(o_ptr != NULL);
 	assert(o_ptr->k_idx > 0);
 	assert(o_ptr->k_idx < z_info->k_max);
-	
+
 	k_info[o_ptr->k_idx].tried = TRUE;
 }
 
@@ -280,8 +372,41 @@ void object_know_all_flags(object_type *o_ptr)
 }
 
 
+#define IDENTS_SET_BY_IDENTIFY ( IDENT_KNOWN | IDENT_ATTACK | IDENT_DEFENCE | IDENT_SENSE | IDENT_EFFECT | IDENT_WORN | IDENT_FIRED | IDENT_NAME )
+
+/**
+ * Check whether an object has IDENT_KNOWN but should not
+ */
+bool object_is_not_known_consistently(const object_type *o_ptr)
+{
+	int i;
+
+	if (easy_know(o_ptr))
+		return FALSE;
+	if (!(o_ptr->ident & IDENT_KNOWN))
+		return TRUE;
+	if ((o_ptr->ident & IDENTS_SET_BY_IDENTIFY) != IDENTS_SET_BY_IDENTIFY)
+		return TRUE;
+	if (o_ptr->ident & IDENT_EMPTY)
+		return TRUE;
+	else if (o_ptr->name1)
+	{
+		artifact_type *a_ptr = &a_info[o_ptr->name1];
+		if (!(a_ptr->seen || a_ptr->everseen))
+			return TRUE;
+	}
+	for (i = 0; i < OBJ_FLAG_N; i++)
+		if (o_ptr->known_flags[i] != (u32b) -1)
+			return TRUE;
+
+	return FALSE;
+}
+
+
+
 /**
  * Mark as object as fully known, a.k.a identified. 
+ * Mark as object as fully known, a.k.a identified.
  *
  * \param o_ptr is the object to mark as identified
  */
@@ -291,23 +416,22 @@ void object_notice_everything(object_type *o_ptr)
 
 	/* The object is "empty" */
 	o_ptr->ident &= ~(IDENT_EMPTY);
-	
+
 	/* Mark as known */
 	object_flavor_aware(o_ptr);
-	o_ptr->ident |= (IDENT_KNOWN | IDENT_ATTACK | IDENT_DEFENCE |
-					 IDENT_SENSE | IDENT_EFFECT | IDENT_WORN);
+	object_add_ident_flags(o_ptr, IDENTS_SET_BY_IDENTIFY);
 
 	/* Artifact has now been seen */
 	if (a_ptr)
+	{
 		a_ptr->seen = a_ptr->everseen = TRUE;
-
-	/* Mark ego as known */
-	if (ego_item_p(o_ptr))
-		o_ptr->ident |= IDENT_EGO;
+		history_add_artifact(o_ptr->name1, TRUE);
+	}
 
 	/* Know all flags there are to be known */
 	object_know_all_flags(o_ptr);
 }
+
 
 
 /**
@@ -315,7 +439,8 @@ void object_notice_everything(object_type *o_ptr)
  */
 void object_notice_indestructible(object_type *o_ptr)
 {
-	o_ptr->ident |= IDENT_INDESTRUCT;
+	if (object_add_ident_flags(o_ptr, IDENT_INDESTRUCT))
+		object_check_for_ident(o_ptr);
 }
 
 
@@ -324,48 +449,46 @@ void object_notice_indestructible(object_type *o_ptr)
  */
 void object_notice_ego(object_type *o_ptr)
 {
-	if (o_ptr->name2)
+	int i;
+
+	ego_item_type *e_ptr;
+	u32b learned_flags[OBJ_FLAG_N];
+
+	if (!o_ptr->name2)
+		return;
+
+	e_ptr = &e_info[o_ptr->name2];
+
+
+	/* XXX Eddie print a message on notice ego if not already noticed? */
+	/* XXX Eddie should we do something about everseen of egos here? */
+
+	/* learn all flags except random abilities */
+	for (i = 0; i < OBJ_FLAG_N; i++)
+		learned_flags[i] = (u32b) -1;
+
+	switch (e_ptr->xtra)
 	{
-		ego_item_type *e_ptr = &e_info[o_ptr->name2];
-
-		/* XXX Eddie print a message on notice ego if not already noticed? */
-		/* XXX Eddie should we do something about everseen of egos here? */
-
-		/* learn all flags except random abilities */
-		u32b learned_flags[OBJ_FLAG_N];
-		int i;
-
-		for (i = 0; i < OBJ_FLAG_N; i++)
-			learned_flags[i] = (u32b) -1;
-
-		switch (e_ptr->xtra)
-		{
-			case OBJECT_XTRA_TYPE_NONE:
-				break;
-			case OBJECT_XTRA_TYPE_SUSTAIN:
-				learned_flags[ego_xtra_sustain_idx()] &= ~(ego_xtra_sustain_list());
-				break;
-			case OBJECT_XTRA_TYPE_RESIST:
-				learned_flags[ego_xtra_resist_idx()] &= ~(ego_xtra_resist_list());
-				break;
-			case OBJECT_XTRA_TYPE_POWER:
-				learned_flags[ego_xtra_power_idx()] &= ~(ego_xtra_power_list());
-				break;
-			default:
-				assert(0);
-		}
-
-		for (i = 0; i < OBJ_FLAG_N; i++)
-			o_ptr->known_flags[i] |=
-					(learned_flags[i] | e_ptr->flags[i]);
-
-		/* XXX Eddie should check for ident be allowed if repairing?  For now, only repair is things currently IDENT_KNOWN in savefile, but in future if something changes might need to repair based upon arbitrary player knowledge */
-		if (!(o_ptr->ident & IDENT_EGO))
-		{
-			o_ptr->ident |= IDENT_EGO;
-			object_check_for_ident(o_ptr);
-		}
+		case OBJECT_XTRA_TYPE_NONE:
+			break;
+		case OBJECT_XTRA_TYPE_SUSTAIN:
+			learned_flags[ego_xtra_sustain_idx()] &= ~(ego_xtra_sustain_list());
+			break;
+		case OBJECT_XTRA_TYPE_RESIST:
+			learned_flags[ego_xtra_resist_idx()] &= ~(ego_xtra_resist_list());
+			break;
+		case OBJECT_XTRA_TYPE_POWER:
+			learned_flags[ego_xtra_power_idx()] &= ~(ego_xtra_power_list());
+			break;
+		default:
+			assert(0);
 	}
+
+	for (i = 0; i < OBJ_FLAG_N; i++)
+		o_ptr->known_flags[i] |= (learned_flags[i] | e_ptr->flags[i]);
+
+	if (object_add_ident_flags(o_ptr, IDENT_NAME))
+		object_check_for_ident(o_ptr);
 }
 
 
@@ -374,20 +497,34 @@ void object_notice_ego(object_type *o_ptr)
  */
 void object_notice_sensing(object_type *o_ptr)
 {
-	/* XXX Eddie can be called to repair knowledge, should print messages only if IDENT_SENSE prev not set */
-	if (!object_was_sensed(o_ptr))
-	{
-		artifact_type *a_ptr = artifact_of(o_ptr);
-		if (a_ptr) a_ptr->seen = a_ptr->everseen = TRUE;
+	artifact_type *a_ptr = artifact_of(o_ptr);
 
-		o_ptr->ident |= IDENT_SENSE;
-		object_check_for_ident(o_ptr);
+	if (object_was_sensed(o_ptr))
+		return;
+
+
+	if (a_ptr)
+	{
+		a_ptr->seen = a_ptr->everseen = TRUE;
+		o_ptr->ident |= IDENT_NAME;
 	}
 
-	/* for repair purposes, notice curses even on prev sensed object */
 	object_notice_curses(o_ptr);
+	if (object_add_ident_flags(o_ptr, IDENT_SENSE))
+		object_check_for_ident(o_ptr);
 }
 
+
+/*
+ * Sense artifacts
+ */
+void object_sense_artifact(object_type *o_ptr)
+{
+	if (artifact_p(o_ptr))
+		object_notice_sensing(o_ptr);
+	else
+		o_ptr->ident |= IDENT_NOTART;
+}
 
 
 /**
@@ -397,7 +534,8 @@ void object_notice_sensing(object_type *o_ptr)
  */
 void object_notice_effect(object_type *o_ptr)
 {
-	o_ptr->ident |= IDENT_EFFECT;
+	if (object_add_ident_flags(o_ptr, IDENT_EFFECT))
+		object_check_for_ident(o_ptr);
 
 	/* noticing an effect gains awareness */
 	if (!object_flavor_is_aware(o_ptr))
@@ -412,14 +550,26 @@ void object_notice_effect(object_type *o_ptr)
  */
 void object_notice_slays(object_type *o_ptr, u32b known_f0)
 {
-	u32b flags[OBJ_FLAG_N];
-	object_flags(o_ptr, flags);
+	const slay_t *s_ptr;
+	bool learned = object_notice_flags(o_ptr, 0, known_f0);
 
-	object_notice_flags(o_ptr, 0, known_f0);
-
-	/* if you learn a slay, learn the ego */
-	if (EASY_LEARN && (flags[0] & known_f0))
+	/* if you learn a slay, learn the ego and print a message */
+	if (EASY_LEARN && learned)
+	{
 		object_notice_ego(o_ptr);
+
+		for (s_ptr = slay_table; s_ptr->slay_flag; s_ptr++)
+		{
+                        if (s_ptr->slay_flag & known_f0)
+                        {
+                                char o_name[40];
+                                object_desc(o_name, sizeof(o_name), o_ptr,
+					ODESC_BASE);
+                                msg_format("Your %s %s!", o_name,
+                                                s_ptr->active_verb);
+                        }
+		}
+	}
 	object_check_for_ident(o_ptr);
 }
 
@@ -427,22 +577,23 @@ void object_notice_slays(object_type *o_ptr, u32b known_f0)
 static void object_notice_defence_plusses(object_type *o_ptr)
 {
 	if (!o_ptr->k_idx) return;
-	if (o_ptr->ident & IDENT_DEFENCE)
+	if (object_defence_plusses_are_visible(o_ptr))
 		return;
 
-	o_ptr->ident |= IDENT_DEFENCE;
-	object_check_for_ident(o_ptr);
+	if (object_add_ident_flags(o_ptr, IDENT_DEFENCE))
+		object_check_for_ident(o_ptr);
 
 	if (o_ptr->ac || o_ptr->to_a)
 	{
 		char o_name[80];
 
-		object_desc(o_name, sizeof(o_name), o_ptr, FALSE, ODESC_BASE);
+		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
 		message_format(MSG_PSEUDOID, 0,
-				"You feel you better know the %s you are wearing.",
+				"You know more about the %s you are wearing.",
 				o_name);
 	}
 
+	p_ptr->update |= (PU_BONUS);
 	event_signal(EVENT_INVENTORY);
 	event_signal(EVENT_EQUIPMENT);
 }
@@ -451,19 +602,20 @@ static void object_notice_defence_plusses(object_type *o_ptr)
 void object_notice_attack_plusses(object_type *o_ptr)
 {
 	if (!o_ptr->k_idx) return;
-	if (o_ptr->ident & IDENT_ATTACK)
+	if (object_attack_plusses_are_visible(o_ptr))
 		return;
 
-	o_ptr->ident |= IDENT_ATTACK;
-	object_check_for_ident(o_ptr);
+	if (object_add_ident_flags(o_ptr, IDENT_ATTACK))
+		object_check_for_ident(o_ptr);
+
 
 	if (wield_slot(o_ptr) == INVEN_WIELD)
 	{
 		char o_name[80];
 
-		object_desc(o_name, sizeof(o_name), o_ptr, FALSE, ODESC_BASE);
+		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
 		message_format(MSG_PSEUDOID, 0,
-				"You feel you better know the %s you are attacking with.",
+				"You know more about the %s you are using.",
 				o_name);
 	}
 	else if ((o_ptr->to_d || o_ptr->to_h) &&
@@ -471,10 +623,11 @@ void object_notice_attack_plusses(object_type *o_ptr)
 	{
 		char o_name[80];
 
-		object_desc(o_name, sizeof(o_name), o_ptr, FALSE, ODESC_BASE);
+		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
 		message_format(MSG_PSEUDOID, 0, "Your %s glows.", o_name);
 	}
 
+	p_ptr->update |= (PU_BONUS);
 	event_signal(EVENT_INVENTORY);
 	event_signal(EVENT_EQUIPMENT);
 }
@@ -501,21 +654,22 @@ static const flag_message_t msgs[] =
 
 
 /*
- * Notice a set of flags
+ * Notice a set of flags - returns TRUE if anything new was learned
  *
  * this is non-standard -- everything else notices an individual flag
  */
-void object_notice_flags(object_type *o_ptr, int flagset, u32b flags)
+bool object_notice_flags(object_type *o_ptr, int flagset, u32b flags)
 {
 	if (flags & (~o_ptr->known_flags[flagset]))
 	{
 		o_ptr->known_flags[flagset] |= flags;
 		/* XXX Eddie don't want infinite recursion if object_check_for_ident sets more flags, but maybe this will interfere with savefile repair */
 		object_check_for_ident(o_ptr);
+		event_signal(EVENT_INVENTORY);
+		event_signal(EVENT_EQUIPMENT);
+		return TRUE;
 	}
-
-	event_signal(EVENT_INVENTORY);
-	event_signal(EVENT_EQUIPMENT);
+	return FALSE;
 }
 
 
@@ -549,7 +703,7 @@ bool object_notice_curses(object_type *o_ptr)
 void object_notice_on_defend(void)
 {
 	int i;
-	
+
 	for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
 		object_notice_defence_plusses(&inventory[i]);
 
@@ -559,9 +713,20 @@ void object_notice_on_defend(void)
 
 
 /*
- * Determine whether a weapon or missile weapon is obviously {excellent} when worn.
+ * Notice stuff when firing or throwing objects.
  *
- * When repairing knowledge, do not print messages.
+ */
+/* XXX Eddie perhaps some stuff from do_cmd_fire and do_cmd_throw should be moved here */
+void object_notice_on_firing(object_type *o_ptr)
+{
+	if (object_add_ident_flags(o_ptr, IDENT_FIRED))
+		object_check_for_ident(o_ptr);
+}
+
+
+
+/*
+ * Determine whether a weapon or missile weapon is obviously {excellent} when worn.
  */
 /* XXX Eddie should messages be adhoc all over the place?  perhaps the main loop should check for change in inventory/wieldeds and all messages be printed from one place */
 void object_notice_on_wield(object_type *o_ptr)
@@ -570,7 +735,7 @@ void object_notice_on_wield(object_type *o_ptr)
 	bool obvious = FALSE;
 	bool obvious_without_activate = FALSE;
 	bool to_sense = FALSE;
-
+	const slay_t *s_ptr;
 	object_kind *k_ptr = &k_info[o_ptr->k_idx];
 
 
@@ -581,84 +746,80 @@ void object_notice_on_wield(object_type *o_ptr)
 	if (object_is_known(o_ptr)) return;
 
 	/* Wear it */
-	o_ptr->ident |= IDENT_WORN;
 	object_flavor_tried(o_ptr);
-	
-	if (obj_is_lite(o_ptr) && ego_item_p(o_ptr))
+	if (object_add_ident_flags(o_ptr, IDENT_WORN))
+		object_check_for_ident(o_ptr);
+
+	if (obj_is_light(o_ptr) && ego_item_p(o_ptr))
 		object_notice_ego(o_ptr);
 
-	if (object_flavor_is_aware(o_ptr))
+	if (object_flavor_is_aware(o_ptr) && easy_know(o_ptr))
 	{
-		if (easy_know(o_ptr))
-		{
-			object_notice_everything(o_ptr);
-			return;
-		}
-
-		/* We currently always know all flags on aware jewelry */
-		else if (object_is_jewelry(o_ptr))
-		{
-			object_know_all_flags(o_ptr);
-		}
+		object_notice_everything(o_ptr);
+		return;
 	}
 
-	/* notice all artifacts upon wield */
+	/* Automatically sense artifacts upon wield */
+	object_sense_artifact(o_ptr);
+
+	/* Note artifacts when found */
 	if (artifact_p(o_ptr))
-		object_notice_sensing(o_ptr);
-	
+		history_add_artifact(o_ptr->name1, object_was_sensed(o_ptr));
+
 	/* Extract the flags */
 	object_flags(o_ptr, f);
-	
+
 	/* Find obvious things */
 	if (f[0] & TR0_OBVIOUS_MASK) obvious = TRUE;
 	if (f[2] & TR2_OBVIOUS_MASK & ~TR2_CURSE_MASK) obvious = TRUE;
-	
+
 	/* XXX Eddie this next block should go when learning cascades with flags */
 	if (f[0] & TR0_OBVIOUS_MASK) obvious_without_activate = TRUE;
 	if (f[2] & TR2_OBVIOUS_MASK & ~TR2_CURSE_MASK)
 		obvious_without_activate = TRUE;
-	
+
 	if (f[0] & TR0_OBVIOUS_MASK & ~k_ptr->flags[0]) to_sense = TRUE;
 	if (f[2] & TR2_OBVIOUS_MASK & ~k_ptr->flags[2]) to_sense = TRUE;
-	
+
 	/* XXX Eddie should these next NOT call object_check_for_ident due to worries about repairing? */
 	o_ptr->known_flags[0] |= TR0_OBVIOUS_MASK;
 	o_ptr->known_flags[2] |= TR2_OBVIOUS_MASK;
-	
+
+	/* XXX Eddie this is a small hack, but jewelry with anything noticeable really is obvious */
+	/* XXX Eddie learn =soulkeeping vs =bodykeeping when notice sustain_str */
+	if (object_is_jewelry(o_ptr))
+	{
+		/* Learn the flavor of jewelry with obvious flags */
+		if (EASY_LEARN && obvious_without_activate)
+			object_flavor_aware(o_ptr);
+
+		/* Learn all flags on any aware jewelry */
+		if (object_flavor_is_aware(o_ptr))
+			object_know_all_flags(o_ptr);
+	}
+
 	object_check_for_ident(o_ptr);
-	
+
 	if (!obvious) return;
-	
+
 	/* something obvious should be immediately sensed */
 	if (to_sense)
 		object_notice_sensing(o_ptr);
 	/* XXX Eddie is above necessary here?  done again at end of function */
-	
-	if (EASY_LEARN && object_is_jewelry(o_ptr) && obvious_without_activate)
-	{
-		/* XXX Eddie this is a small hack, but jewelry with anything noticeable really is obvious */
-		/* XXX Eddie learn =soulkeeping vs =bodykeeping when notice sustain_str */
-		object_flavor_aware(o_ptr);
-		object_check_for_ident(o_ptr);
-	}
-	
+
 	/* Messages */
-	if (wield_slot(o_ptr) == INVEN_WIELD)
+	for (s_ptr = slay_table; s_ptr->slay_flag; s_ptr++)
 	{
-		if (f[0] & TR0_BRAND_POIS)
-			msg_print("It seethes with poison!");
-		if (f[0] & TR0_BRAND_ELEC)
-			msg_print("It crackles with electricity!");
-		if (f[0] & TR0_BRAND_FIRE)
-			msg_print("It flares with fire!");
-		if (f[0] & TR0_BRAND_COLD)
-			msg_print("It coats itself in ice!");
-		if (f[0] & TR0_BRAND_ACID)
-			msg_print("It starts spitting acid!");
+		if ((f[0] & s_ptr->slay_flag) && s_ptr->brand)
+		{
+			char o_name[40];
+			object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
+			msg_format("Your %s %s!", o_name, s_ptr->active_verb);
+		}
 	}
-	
+
 	/* XXX Eddie need to add stealth here, also need to assert/double-check everything is covered */
-	
+
 	if (f[0] & TR0_STR)
 		msg_format("You feel %s!", o_ptr->pval > 0 ? "stronger" : "weaker");
 	if (f[0] & TR0_INT)
@@ -677,21 +838,21 @@ void object_notice_on_wield(object_type *o_ptr)
 		msg_format("Your hands %s", o_ptr->pval > 0 ? "tingle!" : "ache.");
 	if (f[0] & TR0_INFRA)
 		msg_format("Your eyes tingle.");
-	
-	if (f[2] & TR2_LITE)
+
+	if (f[2] & TR2_LIGHT)
 		msg_print("It glows!");
 	if (f[2] & TR2_TELEPATHY)
 		msg_print("Your mind feels strangely sharper!");
-	
+
 	/* learn the ego on any brand or slay */
 	if (EASY_LEARN && f[0] & TR0_OBVIOUS_MASK & TR0_ALL_SLAYS)
 		if (ego_item_p(o_ptr))
 		/* XXX Eddie somewhat inconsistent, style is to notice even when property is not present */
 			object_notice_ego(o_ptr);
-	
+
 	/* Remember the flags */
 	object_notice_sensing(o_ptr);
-	
+
 	/* XXX Eddie should we check_for_ident here? */
 }
 
@@ -715,13 +876,15 @@ static void object_notice_after_time(void)
 	int i;
 	size_t j;
 
-	for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
+	for (i = INVEN_WIELD; i < ALL_INVEN_TOTAL; i++)
 	{
 		object_type *o_ptr = &inventory[i];
 		char o_name[80];
 		u32b f[OBJ_FLAG_N];
 
-		object_desc(o_name, sizeof(o_name), o_ptr, FALSE, ODESC_BASE);
+		if (!o_ptr->k_idx) continue;
+
+		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
 		object_flags(o_ptr, f);
 
 		for (j = 0; j < N_ELEMENTS(notice_msgs); j++)
@@ -729,8 +892,7 @@ static void object_notice_after_time(void)
 			int set = notice_msgs[j].flagset;
 			u32b flag = notice_msgs[j].flag;
 
-			if ((f[set] & flag) &&
-					!(o_ptr->known_flags[set] & flag))
+			if ((f[set] & flag) && !(o_ptr->known_flags[set] & flag))
 			{
 				/* Notice the flag */
 				object_notice_flags(o_ptr, set, flag);
@@ -739,7 +901,7 @@ static void object_notice_after_time(void)
 				msg_format(notice_msgs[j].msg, o_name);
 
 				if (object_is_jewelry(o_ptr) &&
-						(!object_effect(o_ptr) || o_ptr->ident & IDENT_EFFECT))
+						(!object_effect(o_ptr) || object_effect_is_known(o_ptr)))
 				{
 					/* XXX this is a small hack, but jewelry with anything noticeable really is obvious */
 					/* XXX except, wait until learn activation if that is only clue */
@@ -755,7 +917,7 @@ static void object_notice_after_time(void)
 		}
 		/* XXX Eddie the object_notice_flags should presumably come out of the if/else and next check not necessary, fix later */
 		object_check_for_ident(o_ptr);
-	}	
+	}
 }
 
 
@@ -770,24 +932,24 @@ void wieldeds_notice_flag(int flagset, u32b flag)
 {
 	int i;
 	size_t j;
-	
+
 	/* XXX Eddie need different naming conventions for starting wieldeds at INVEN_WIELD vs INVEN_WIELD+2 */
-	for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
+	for (i = INVEN_WIELD; i < ALL_INVEN_TOTAL; i++)
 	{
 		object_type *o_ptr = &inventory[i];
 		u32b f[OBJ_FLAG_N];
-		
+
+		if (!o_ptr->k_idx) continue;
+
 		object_flags(o_ptr, f);
-		if ((f[flagset] & flag) &&
-			!(o_ptr->known_flags[flagset] & flag))
+		if ((f[flagset] & flag) && !(o_ptr->known_flags[flagset] & flag))
 		{
 			char o_name[80];
-			object_desc(o_name, sizeof(o_name), o_ptr, FALSE,
-						ODESC_BASE);
-			
+			object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
+
 			/* Notice flags */
 			object_notice_flags(o_ptr, flagset, flag);
-			
+
 			/* XXX Eddie should this go before noticing the flag to avoid learning twice? */
 			if (EASY_LEARN && object_is_jewelry(o_ptr))
 			{
@@ -795,7 +957,7 @@ void wieldeds_notice_flag(int flagset, u32b flag)
 				object_flavor_aware(o_ptr);
 				object_check_for_ident(o_ptr);
 			}
-			
+
 			for (j = 0; j < N_ELEMENTS(msgs); j++)
 			{
 				if (msgs[j].flagset == flagset &&
@@ -808,12 +970,12 @@ void wieldeds_notice_flag(int flagset, u32b flag)
 			/* Notice that flag is absent */
 			object_notice_flags(o_ptr, flagset, flag);
 		}
-		
+
 		/* XXX Eddie should not need this, should be done in noticing, but will remove later */
 		object_check_for_ident(o_ptr);
-		
-	}	
-	
+
+	}
+
 	return;
 }
 
@@ -834,21 +996,6 @@ void wieldeds_notice_on_attack(void)
 
 	return;
 }
-
-
-/*
- * Notice slays on wielded items other than melee and bow slots.
- *
- * \param known_f0 is the list of flags to notice
- */
-void wieldeds_notice_slays(u32b known_f0)
-{
-	int i;
-	
-	for (i = INVEN_WIELD+2; i < INVEN_TOTAL; i++)
-		object_notice_slays(&inventory[i], known_f0);
-}
-
 
 
 /*
@@ -888,16 +1035,19 @@ obj_pseudo_t object_pseudo(const object_type *o_ptr)
 			return INSCRIP_EXCELLENT;
 	}
 
-	if (o_ptr->to_a == k_ptr->to_a && o_ptr->to_h == k_ptr->to_h &&
-			o_ptr->to_d == k_ptr->to_d)
+	if (o_ptr->to_a == randcalc(k_ptr->to_a, 0, MINIMISE) &&
+	    o_ptr->to_h == randcalc(k_ptr->to_h, 0, MINIMISE) &&
+		 o_ptr->to_d == randcalc(k_ptr->to_d, 0, MINIMISE))
 		return INSCRIP_AVERAGE;
 
-	if (o_ptr->to_a >= k_ptr->to_a && o_ptr->to_h >= k_ptr->to_h &&
-			o_ptr->to_d >= k_ptr->to_d)
+	if (o_ptr->to_a >= randcalc(k_ptr->to_a, 0, MINIMISE) &&
+	    o_ptr->to_h >= randcalc(k_ptr->to_h, 0, MINIMISE) &&
+	    o_ptr->to_d >= randcalc(k_ptr->to_d, 0, MINIMISE))
 		return INSCRIP_MAGICAL;
 
-	if (o_ptr->to_a <= k_ptr->to_a && o_ptr->to_h <= k_ptr->to_h &&
-			o_ptr->to_d <= k_ptr->to_d)
+	if (o_ptr->to_a <= randcalc(k_ptr->to_a, 0, MINIMISE) &&
+	    o_ptr->to_h <= randcalc(k_ptr->to_h, 0, MINIMISE) &&
+	    o_ptr->to_d <= randcalc(k_ptr->to_d, 0, MINIMISE))
 		return INSCRIP_MAGICAL;
 
 	return INSCRIP_STRANGE;
@@ -927,30 +1077,30 @@ void sense_inventory(void)
 		object_last_wield = 0;
 	}
 
-	
+
 	/* Get improvement rate */
 	if (cp_ptr->flags & CF_PSEUDO_ID_IMPROV)
 		rate = cp_ptr->sense_base / (p_ptr->lev * p_ptr->lev + cp_ptr->sense_div);
 	else
 		rate = cp_ptr->sense_base / (p_ptr->lev + cp_ptr->sense_div);
-	
+
 	if (!one_in_(rate)) return;
-	
-	
+
+
 	/* Check everything */
-	for (i = 0; i < INVEN_TOTAL; i++)
+	for (i = 0; i < ALL_INVEN_TOTAL; i++)
 	{
 		const char *text = NULL;
 
 		object_type *o_ptr = &inventory[i];
 		obj_pseudo_t feel;
 		bool cursed;
-		
+
 		bool okay = FALSE;
-		
+
 		/* Skip empty slots */
 		if (!o_ptr->k_idx) continue;
-		
+
 		/* Valid "tval" codes */
 		switch (o_ptr->tval)
 		{
@@ -985,7 +1135,7 @@ void sense_inventory(void)
 		
 		
 		/* It has already been sensed, do not sense it again */
-		if (o_ptr->ident & IDENT_SENSE)
+		if (object_was_sensed(o_ptr))
 		{
 			/* Small chance of wielded, sensed items getting complete ID */
 			if (!o_ptr->name1 && (i >= INVEN_WIELD) && one_in_(1000))
@@ -1013,7 +1163,7 @@ void sense_inventory(void)
 		else
 			text = inscrip_text[feel];
 
-		object_desc(o_name, sizeof(o_name), o_ptr, FALSE, ODESC_BASE);
+		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
 
 		/* Average pseudo-ID means full ID */
 		if (feel == INSCRIP_AVERAGE)
@@ -1021,8 +1171,9 @@ void sense_inventory(void)
 			object_notice_everything(o_ptr);
 
 			message_format(MSG_PSEUDOID, 0,
-					"You feel the %s (%c) in your pack %s average...",
-					o_name, index_to_label(i),
+					"You feel the %s (%c) %s %s average...",
+					o_name, index_to_label(i),((i >=
+					INVEN_WIELD) ? "you are using" : "in your pack"),
 					((o_ptr->number == 1) ? "is" : "are"));
 		}
 		else
@@ -1042,15 +1193,15 @@ void sense_inventory(void)
 				                           text);
 			}
 		}
-		
-		
+
+
 		/* Set squelch flag as appropriate */
 		if (i < INVEN_WIELD)
 			p_ptr->notice |= PN_SQUELCH;
 		
 		
 		/* Combine / Reorder the pack (later) */
-		p_ptr->notice |= (PN_COMBINE | PN_REORDER);
+		p_ptr->notice |= (PN_COMBINE | PN_REORDER | PN_SORT_QUIVER);
 		
 		/* Redraw stuff */
 		p_ptr->redraw |= (PR_INVEN | PR_EQUIP);

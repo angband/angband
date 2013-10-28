@@ -88,11 +88,9 @@ void do_cmd_go_down(cmd_code code, cmd_arg args[])
  */
 void do_cmd_search(cmd_code code, cmd_arg args[])
 {
-	/* Take a turn */
-	p_ptr->energy_use = 100;
-
-	/* Search */
-	search();
+	/* Only take a turn if attempted */
+	if (search(TRUE))
+		p_ptr->energy_use = 100;
 }
 
 
@@ -220,10 +218,12 @@ static void chest_death(int y, int x, s16b o_idx)
 		{
 			if (!make_object(i_ptr, value, FALSE, FALSE))
 				continue;
+			i_ptr->origin = ORIGIN_CHEST;
+			i_ptr->origin_depth = o_ptr->origin_depth;
 		}
 
 		/* Drop it in the dungeon */
-		drop_near(i_ptr, -1, y, x);
+		drop_near(i_ptr, 0, y, x, TRUE);
 	}
 
 	/* No longer opening a chest */
@@ -343,7 +343,7 @@ static bool do_cmd_open_chest(int y, int x, s16b o_idx)
 		i = p_ptr->state.skills[SKILL_DISARM];
 
 		/* Penalize some conditions */
-		if (p_ptr->timed[TMD_BLIND] || no_lite()) i = i / 10;
+		if (p_ptr->timed[TMD_BLIND] || no_light()) i = i / 10;
 		if (p_ptr->timed[TMD_CONFUSED] || p_ptr->timed[TMD_IMAGE]) i = i / 10;
 
 		/* Extract the difficulty */
@@ -383,7 +383,7 @@ static bool do_cmd_open_chest(int y, int x, s16b o_idx)
 		p_ptr->notice |= PN_SQUELCH;
 
 		/* Redraw chest, to be on the safe side (it may have been squelched) */
-		lite_spot(y, x);
+		light_spot(y, x);
 	}
 
 	/* Result */
@@ -411,7 +411,7 @@ static bool do_cmd_disarm_chest(int y, int x, s16b o_idx)
 	i = p_ptr->state.skills[SKILL_DISARM];
 
 	/* Penalize some conditions */
-	if (p_ptr->timed[TMD_BLIND] || no_lite()) i = i / 10;
+	if (p_ptr->timed[TMD_BLIND] || no_light()) i = i / 10;
 	if (p_ptr->timed[TMD_CONFUSED] || p_ptr->timed[TMD_IMAGE]) i = i / 10;
 
 	/* Extract the difficulty */
@@ -661,7 +661,7 @@ static bool do_cmd_open_aux(int y, int x)
 		i = p_ptr->state.skills[SKILL_DISARM];
 
 		/* Penalize some conditions */
-		if (p_ptr->timed[TMD_BLIND] || no_lite()) i = i / 10;
+		if (p_ptr->timed[TMD_BLIND] || no_light()) i = i / 10;
 		if (p_ptr->timed[TMD_CONFUSED] || p_ptr->timed[TMD_IMAGE]) i = i / 10;
 
 		/* Extract the lock power */
@@ -746,8 +746,12 @@ void do_cmd_open(cmd_code code, cmd_arg args[])
 
 
 	/* Verify legality */
-	if (!o_idx && !do_cmd_open_test(y, x)) return;
-
+	if (!o_idx && !do_cmd_open_test(y, x))
+	{
+		/* Cancel repeat */
+		disturb(0, 0);
+		return;
+	}
 
 	/* Take a turn */
 	p_ptr->energy_use = 100;
@@ -904,7 +908,12 @@ void do_cmd_close(cmd_code code, cmd_arg args[])
 	x = p_ptr->px + ddx[dir];
 
 	/* Verify legality */
-	if (!do_cmd_close_test(y, x)) return;
+	if (!do_cmd_close_test(y, x))
+	{
+		/* Cancel repeat */
+		disturb(0, 0);
+		return;
+	}
 
 	/* Take a turn */
 	p_ptr->energy_use = 100;
@@ -1190,7 +1199,7 @@ static bool do_cmd_tunnel_aux(int y, int x)
 			more = TRUE;
 
 			/* Occasional Search XXX XXX */
-			if (randint0(100) < 25) search();
+			if (randint0(100) < 25) search(FALSE);
 		}
 	}
 
@@ -1236,8 +1245,12 @@ void do_cmd_tunnel(cmd_code code, cmd_arg args[])
 
 
 	/* Oops */
-	if (!do_cmd_tunnel_test(y, x)) return;
-
+	if (!do_cmd_tunnel_test(y, x))
+	{
+		/* Cancel repeat */
+		disturb(0, 0);
+		return;
+	}
 
 	/* Take a turn */
 	p_ptr->energy_use = 100;
@@ -1338,7 +1351,7 @@ static bool do_cmd_disarm_aux(int y, int x)
 	i = p_ptr->state.skills[SKILL_DISARM];
 
 	/* Penalize some conditions */
-	if (p_ptr->timed[TMD_BLIND] || no_lite()) i = i / 10;
+	if (p_ptr->timed[TMD_BLIND] || no_light()) i = i / 10;
 	if (p_ptr->timed[TMD_CONFUSED] || p_ptr->timed[TMD_IMAGE]) i = i / 10;
 
 	/* XXX XXX XXX Variable power? */
@@ -1418,8 +1431,12 @@ void do_cmd_disarm(cmd_code code, cmd_arg args[])
 
 
 	/* Verify legality */
-	if (!o_idx && !do_cmd_disarm_test(y, x)) return;
-
+	if (!o_idx && !do_cmd_disarm_test(y, x))
+	{
+		/* Cancel repeat */
+		disturb(0, 0);
+		return;
+	}
 
 	/* Take a turn */
 	p_ptr->energy_use = 100;
@@ -1627,6 +1644,7 @@ static bool do_cmd_bash_aux(int y, int x)
 void do_cmd_bash(cmd_code code, cmd_arg args[])
 {
 	int y, x, dir;
+	bool more = FALSE;
 
 	dir = args[0].direction;
 
@@ -1636,8 +1654,12 @@ void do_cmd_bash(cmd_code code, cmd_arg args[])
 
 
 	/* Verify legality */
-	if (!do_cmd_bash_test(y, x)) return;
-
+	if (!do_cmd_bash_test(y, x))
+	{
+		/* Cancel repeat */
+		disturb(0, 0);
+		return;
+	}
 
 	/* Take a turn */
 	p_ptr->energy_use = 100;
@@ -1665,12 +1687,11 @@ void do_cmd_bash(cmd_code code, cmd_arg args[])
 	else
 	{
 		/* Bash the door */
-		if (!do_cmd_bash_aux(y, x))
-		{
-			/* Cancel repeat */
-			disturb(0, 0);
-		}
+		more = do_cmd_bash_aux(y, x);
 	}
+
+	/* Cancel repeat unless we may continue */
+	if (!more) disturb(0, 0);
 }
 
 void textui_cmd_bash(void)
@@ -1730,53 +1751,46 @@ void do_cmd_alter_aux(int dir)
 	/* Attack monsters */
 	if (cave_m_idx[y][x] > 0)
 	{
-		/* Attack */
 		py_attack(y, x);
 	}
 
 	/* Tunnel through walls */
 	else if (feat >= FEAT_SECRET)
 	{
-		/* Tunnel */
 		more = do_cmd_tunnel_aux(y, x);
 	}
+
 #if 0
 	/* Bash jammed doors */
 	else if (feat >= FEAT_DOOR_HEAD + 0x08)
 	{
-		/* Tunnel */
 		more = do_cmd_bash_aux(y, x);
 	}
-#endif /* 0 */
+#endif
+
 	/* Open closed doors */
 	else if (feat >= FEAT_DOOR_HEAD)
 	{
-		/* Tunnel */
 		more = do_cmd_open_aux(y, x);
 	}
 
 	/* Disarm traps */
 	else if (feat >= FEAT_TRAP_HEAD)
 	{
-		/* Tunnel */
 		more = do_cmd_disarm_aux(y, x);
 	}
 
 #if 0
-
 	/* Close open doors */
 	else if (feat == FEAT_OPEN)
 	{
-		/* Close */
 		more = do_cmd_close_aux(y, x);
 	}
-
 #endif
 
 	/* Oops */
 	else
 	{
-		/* Oops */
 		msg_print("You spin around.");
 	}
 
@@ -2012,6 +2026,9 @@ static bool do_cmd_walk_test(int y, int x)
 			message(MSG_HITWALL, 0, "There is a wall in the way!");
 		}
 
+		/* Cancel repeat */
+		disturb(0, 0);
+
 		/* Nope */
 		return (FALSE);
 	}
@@ -2181,13 +2198,13 @@ void do_cmd_hold(cmd_code code, cmd_arg args[])
 	if ((p_ptr->state.skills[SKILL_SEARCH_FREQUENCY] >= 50) ||
 	    one_in_(50 - p_ptr->state.skills[SKILL_SEARCH_FREQUENCY]))
 	{
-		search();
+		search(FALSE);
 	}
 
 	/* Continuous Searching */
 	if (p_ptr->searching)
 	{
-		search();
+		search(FALSE);
 	}
 
 	/* Pick things up, not using extra energy */

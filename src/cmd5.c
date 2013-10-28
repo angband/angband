@@ -263,10 +263,7 @@ int get_spell(const object_type *o_ptr, cptr prompt, bool known, bool browse)
 
 	/* No available spells */
 	if (!okay)
-	{
-		msg_format("You cannot learn any %ss in that book.", p);
 		return (-2);
-	}
 
 
 
@@ -567,7 +564,7 @@ void do_cmd_cast(cmd_code code, cmd_arg args[])
 	int i;
 
 	cptr verb = ((cp_ptr->spell_book == TV_MAGIC_BOOK) ? "cast" : "recite");
-    cptr noun = ((cp_ptr->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
+	cptr noun = ((cp_ptr->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
 
 	/* Check the player can cast spells at all */
 	if (!player_can_cast())

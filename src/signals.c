@@ -351,7 +351,7 @@ void signals_init(void)
 }
 
 
-#else	/* HANDLE_SIGNALS */
+#else	/* !WINDOWS */
 
 
 /*
@@ -375,5 +375,5 @@ void signals_init(void)
 {
 }
 
-#endif	/* HANDLE_SIGNALS */
+#endif	/* !WINDOWS */
 

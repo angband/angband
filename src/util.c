@@ -17,9 +17,6 @@
  */
 #include "angband.h"
 #include "game-event.h"
-#include "randname.h"
-
-
 
 /*
  * Convert a decimal to a single digit hex number
@@ -1181,7 +1178,7 @@ char (*inkey_hack)(int flush_first) = NULL;
  * triggers.  The "inkey_base" flag is extremely dangerous!
  *
  * If "inkey_flag" is TRUE, then we will assume that we are waiting for a
- * normal command, and we will only show the cursor if "OPT(hilite_player)" is
+ * normal command, and we will only show the cursor if "OPT(highlight_player)" is
  * TRUE (or if the player is in a store), instead of always showing the
  * cursor.  The various "main-xxx.c" files should avoid saving the game
  * in response to a "menu item" request unless "inkey_flag" is TRUE, to
@@ -1285,7 +1282,7 @@ ui_event_data inkey_ex(void)
 	(void)Term_get_cursor(&cursor_state);
 
 	/* Show the cursor if waiting, except sometimes in "command" mode */
-	if (!inkey_scan && (!inkey_flag || OPT(hilite_player) || character_icky))
+	if (!inkey_scan && (!inkey_flag || OPT(highlight_player) || character_icky))
 	{
 		/* Show the cursor */
 		(void)Term_set_cursor(TRUE);
@@ -2780,6 +2777,75 @@ bool get_check(cptr prompt)
 	return (TRUE);
 }
 
+/* TODO: refactor get_check() in terms of get_char() */
+/*
+ * Ask the user to respond with a character. Options is a constant string,
+ * e.g. "yns"; len is the length of the constant string, and fallback should
+ * be the default answer if the user hits escape or an invalid key.
+ *
+ * Example: get_char("Study? ", "yns", 3, 'n')
+ *     This prompts "Study? [yns]" and defaults to 'n'.
+ *
+ */
+char get_char(cptr prompt, const char *options, size_t len, char fallback)
+{
+	size_t i;
+	char button[4], buf[80], key;
+	bool repeat = FALSE;
+  
+	/* Paranoia XXX XXX XXX */
+	message_flush();
+
+	/* Hack -- Build a "useful" prompt */
+	strnfmt(buf, 78, "%.70s[%s] ", prompt, options);
+
+	/* Hack - kill the repeat button */
+	if (button_kill('n')) repeat = TRUE;
+	
+	/* Make some buttons */
+	for (i=0; i < len; i++)
+	{
+		strnfmt(button, 4, "[%c]", options[i]);
+		button_add(button, options[i]);
+	}
+	redraw_stuff();
+  
+	/* Prompt for it */
+	prt(buf, 0, 0);
+
+	/* Get an acceptable answer */
+	while (TRUE)
+	{
+		key = inkey_ex().key;
+
+		/* Lowercase answer if necessary */
+		if (key >= 'A' && key <= 'Z') key += 32;
+
+		/* See if key is in our options string */
+		if (strchr(options, key)) break;
+
+		/* If we want to escape, return the fallback */
+		if (key == ESCAPE || OPT(quick_messages)) {
+			key = fallback;
+			break;
+		}
+		bell("Illegal response!");
+	}
+
+	/* Kill the buttons */
+	for (i=0; i < len; i++) button_kill(options[i]);
+
+	/* Hack - restore the repeat button */
+	if (repeat) button_add("[Rpt]", 'n');
+	redraw_stuff();
+  
+	/* Erase the prompt */
+	prt("", 0, 0);
+
+	/* Success */
+	return key;
+}
+
 
 /**
  * Text-native way of getting a filename.
@@ -3136,17 +3202,6 @@ void request_command(void)
 		break;
 	}
 
-	/* Hack -- Auto-repeat certain commands */
-	if (p_ptr->command_arg <= 0)
-	{
-		/* Hack -- auto repeat certain commands */
-		if (strchr(AUTO_REPEAT_COMMANDS, p_ptr->command_cmd))
-		{
-			/* Repeat 99 times */
-			p_ptr->command_arg = 99;
-		}
-	}
-
 
 	/* Hack -- Scan equipment */
 	for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
@@ -3205,33 +3260,32 @@ bool is_a_vowel(int ch)
 
 
 /*
- * Convert a "color letter" into an "actual" color
- * The colors are: dwsorgbuDWvyRGBU, as shown below
+ * Accept a color index character; if legal, return the color.  -LM-
+ *
+ * Unlike Sangband, we don't translate these colours here.
  */
 int color_char_to_attr(char c)
 {
-	switch (c)
-	{
-		case 'd': return (TERM_DARK);
-		case 'w': return (TERM_WHITE);
-		case 's': return (TERM_SLATE);
-		case 'o': return (TERM_ORANGE);
-		case 'r': return (TERM_RED);
-		case 'g': return (TERM_GREEN);
-		case 'b': return (TERM_BLUE);
-		case 'u': return (TERM_UMBER);
+	int a;
 
-		case 'D': return (TERM_L_DARK);
-		case 'W': return (TERM_L_WHITE);
-		case 'v': return (TERM_VIOLET);
-		case 'y': return (TERM_YELLOW);
-		case 'R': return (TERM_L_RED);
-		case 'G': return (TERM_L_GREEN);
-		case 'B': return (TERM_L_BLUE);
-		case 'U': return (TERM_L_UMBER);
+	/* Is negative -- spit it right back out */
+	if (c < 0) return (c);
+
+	/* Is a space or '\0' -- return black */
+	if (c == '\0' || c == ' ') return (TERM_DARK);
+
+	/* Search the color table */
+	for (a = 0; a < BASIC_COLORS; a++)
+	{
+		/* Look for the index */
+		if (color_table[a].index_char == c) break;
 	}
 
-	return (-1);
+	/* If we don't find the color, we assume white */
+	if (a == BASIC_COLORS) return (TERM_WHITE);
+
+	/* Return the color */
+	return (a);
 }
 
 
@@ -3240,29 +3294,15 @@ int color_char_to_attr(char c)
  */
 int color_text_to_attr(cptr name)
 {
-	if (my_stricmp(name, "dark")       == 0) return TERM_DARK;
-	if (my_stricmp(name, "white")      == 0) return TERM_WHITE;
-	if (my_stricmp(name, "slate")      == 0) return TERM_SLATE;
-	if (my_stricmp(name, "gray")       == 0) return TERM_SLATE;
-	if (my_stricmp(name, "grey")       == 0) return TERM_SLATE;
-	if (my_stricmp(name, "orange")     == 0) return TERM_ORANGE;
-	if (my_stricmp(name, "red")        == 0) return TERM_RED;
-	if (my_stricmp(name, "green")      == 0) return TERM_GREEN;
-	if (my_stricmp(name, "blue")       == 0) return TERM_BLUE;
-	if (my_stricmp(name, "umber")      == 0) return TERM_UMBER;
-	if (my_stricmp(name, "brown")      == 0) return TERM_UMBER;
-	if (my_stricmp(name, "violet")     == 0) return TERM_VIOLET;
-	if (my_stricmp(name, "yellow")     == 0) return TERM_YELLOW;
-	if (my_stricmp(name, "lightdark")  == 0) return TERM_L_DARK;
-	if (my_stricmp(name, "lightwhite") == 0) return TERM_L_WHITE;
-	if (my_stricmp(name, "lightred")   == 0) return TERM_L_RED;
-	if (my_stricmp(name, "lightgreen") == 0) return TERM_L_GREEN;
-	if (my_stricmp(name, "lightblue")  == 0) return TERM_L_BLUE;
-	if (my_stricmp(name, "lightumber") == 0) return TERM_L_UMBER;
-	if (my_stricmp(name, "lightbrown") == 0) return TERM_L_UMBER;
+	int a;
 
-	/* Oops */
-	return -1;
+	for (a = 0; a < MAX_COLORS; a++)
+	{
+		if (my_stricmp(name, color_table[a].name) == 0) return (a);
+	}
+
+	/* Default to white */
+	return (TERM_WHITE);
 }
 
 
@@ -3271,28 +3311,10 @@ int color_text_to_attr(cptr name)
  */
 cptr attr_to_text(byte a)
 {
-	switch (a)
-	{
-		case TERM_DARK:    return "Dark";
-		case TERM_WHITE:   return "White";
-		case TERM_SLATE:   return "Slate";
-		case TERM_ORANGE:  return "Orange";
-		case TERM_RED:     return "Red";
-		case TERM_GREEN:   return "Green";
-		case TERM_BLUE:    return "Blue";
-		case TERM_UMBER:   return "Umber";
-		case TERM_L_DARK:  return "L.Dark";
-		case TERM_L_WHITE: return "L.Slate";
-		case TERM_VIOLET:  return "Violet";
-		case TERM_YELLOW:  return "Yellow";
-		case TERM_L_RED:   return "L.Red";
-		case TERM_L_GREEN: return "L.Green";
-		case TERM_L_BLUE:  return "L.Blue";
-		case TERM_L_UMBER: return "L.Umber";
-	}
-
-	/* Oops */
-	return "Icky";
+	if (a < BASIC_COLORS)
+		return (color_table[a].name);
+	else
+		return ("Icky");
 }
 
 

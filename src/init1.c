@@ -35,14 +35,6 @@
  * be able to load any template file with more than 20K of names or 60K
  * of text, even though technically, up to 64K should be legal.
  *
- * Note that if "ALLOW_TEMPLATES" is not defined, then a lot of the code
- * in this file is compiled out, and the game will not run unless valid
- * "binary template files" already exist in "lib/data".  Thus, one can
- * compile Angband with ALLOW_TEMPLATES defined, run once to create the
- * "*.raw" files in "lib/data", and then quit, and recompile without
- * defining ALLOW_TEMPLATES, which will both save 20K and prevent people
- * from changing the ascii template files in potentially dangerous ways.
- *
  * The code could actually be removed and placed into a "stand-alone"
  * program, but that feels a little silly, especially considering some
  * of the platforms that we currently support.
@@ -50,10 +42,6 @@
 
 #include "effects.h"
 #include "monster/constants.h"
-
-#ifdef ALLOW_TEMPLATES
-
-
 #include "init.h"
 
 
@@ -115,7 +103,7 @@ static cptr r_info_blow_effect[] =
 	"EAT_GOLD",
 	"EAT_ITEM",
 	"EAT_FOOD",
-	"EAT_LITE",
+	"EAT_LIGHT",
 	"ACID",
 	"ELEC",
 	"FIRE",
@@ -236,7 +224,7 @@ static cptr r_info_flags2[] =
 	"XXX2X3",
 	"XXX3X3",
 	"XXX4X3",
-	"HURT_LITE",
+	"HURT_LIGHT",
 	"HURT_ROCK",
 	"HURT_FIRE",
 	"HURT_COLD",
@@ -277,7 +265,7 @@ static cptr r_info_spell_flags0[] =
 	"BR_COLD",
 	"BR_POIS",
 	"BR_NETH",
-	"BR_LITE",
+	"BR_LIGHT",
 	"BR_DARK",
 	"BR_CONF",
 	"BR_SOUN",
@@ -442,7 +430,7 @@ static cptr k_info_flags2[] =
 	"RES_COLD",
 	"RES_POIS",
 	"RES_FEAR",
-	"RES_LITE",
+	"RES_LIGHT",
 	"RES_DARK",
 	"RES_BLIND",
 	"RES_CONFU",
@@ -461,7 +449,7 @@ static cptr k_info_flags3[] =
 {
 	"SLOW_DIGEST",
 	"FEATHER",
-	"LITE",
+	"LIGHT",
 	"REGEN",
 	"TELEPATHY",
 	"SEE_INVIS",
@@ -482,7 +470,7 @@ static cptr k_info_flags3[] =
 	"XXX5",
 	"XXX6",
 	"BLESSED",
-	"ACTIVATE",
+	"XXX8",
 	"INSTA_ART",
 	"EASY_KNOW",
 	"HIDE_TYPE",
@@ -532,6 +520,44 @@ static cptr c_info_flags[] =
 	"XXX32"
 };
 
+/*
+ * New racial flags
+ */
+static cptr race_info_flags[] =
+{
+	"XXX1",
+	"KNOW_MUSHROOM",
+	"KNOW_ZAPPER",
+	"XXX2",
+	"SEE_ORE",
+	"XXX6",
+	"XXX7",
+	"XXX8",
+	"XXX9",
+	"XXX10",
+	"XXX11",
+	"XXX12",
+	"XXX13",
+	"XXX14",
+	"XXX15",
+	"XXX16",
+	"XXX17",
+	"XXX18",
+	"XXX19",
+	"XXX20",
+	"XXX21",
+	"XXX22",
+	"XXX23",
+	"XXX24",
+	"XXX25",
+	"XXX26",
+	"XXX27",
+	"XXX28",
+	"XXX29",
+	"XXX30",
+	"XXX31",
+	"XXX32"
+};
 
 /*
  * Terrain feature flags
@@ -722,6 +748,120 @@ static errr grab_one_flag(u32b *flags, cptr names[], cptr what)
 	return (-1);
 }
 
+
+/*
+ * This function reads a value of the form "1+2d3M4"
+ *
+ * - The 1 is a constant base value.
+ * - The 2d3 is a dice roll, to be applied with damroll().  The number of dice
+ *   is optional, and if not present, is assumed to be 1.
+ * - The M4 is a magic bonus, to be applied with m_bonus().
+ *
+ * All parts of the random value are optional.  The value is read into a
+ * "random_value" struct and may be used with the randcalc() function to
+ * determine the minimum, maximum, average, or randomised result of the roll.
+ */
+static bool parse_random_value(const char *str, random_value *bonus)
+{
+	bool negative = FALSE;
+
+	char buffer[50];
+	int i = 0, b, dn, ds, mb;
+	
+	const char end_chr = '|';
+	char eov;
+
+	/* Entire value may be negated */
+	if (str[0] == '-')
+	{
+		negative = TRUE;
+		i++;
+	}
+
+	/* Make a working copy of the string */
+	my_strcpy(buffer, &str[i], N_ELEMENTS(buffer) - 2);
+
+	/* Check for invalid negative numbers */
+	if (NULL != strstr(buffer, "-"))	return FALSE;
+
+	/*
+	 * Add a sentinal value at the end of the string.
+	 * Used by scanf to make sure there's no text after the final conversion.
+	 */
+	buffer[strlen(buffer) + 1] = '\0';
+	buffer[strlen(buffer)] = end_chr;
+
+	/* Scan the value, apply defaults for unspecified components */
+	if (5 == sscanf(buffer, "%d+%dd%dM%d%c", &b, &dn, &ds, &mb, &eov) && eov == end_chr)
+	{
+		/* No defaults */
+	}
+	else if (4 == sscanf(buffer, "%d+d%dM%d%c", &b, &ds, &mb, &eov) && eov == end_chr)
+	{
+		dn = 1;
+	}
+	else if (3 == sscanf(buffer, "%d+M%d%c", &b, &mb, &eov) && eov == end_chr)
+	{
+		dn = 0; ds = 0;
+	}
+	else if (4 == sscanf(buffer, "%d+%dd%d%c", &b, &dn, &ds, &eov) && eov == end_chr)
+	{
+		mb = 0;
+	}
+	else if (3 == sscanf(buffer, "%d+d%d%c", &b, &ds, &eov) && eov == end_chr)
+	{
+		dn = 1; mb = 0;
+	}
+	else if (4 == sscanf(buffer, "%dd%dM%d%c", &dn, &ds, &mb, &eov) && eov == end_chr)
+	{
+		b = 0;
+	}
+	else if (3 == sscanf(buffer, "d%dM%d%c", &ds, &mb, &eov) && eov == end_chr)
+	{
+		b = 0; dn = 1;
+	}
+	else if (2 == sscanf(buffer, "M%d%c", &mb, &eov) && eov == end_chr)
+	{
+		b = 0; dn = 0; ds = 0;
+	}
+	else if (3 == sscanf(buffer, "%dd%d%c", &dn, &ds, &eov) && eov == end_chr)
+	{
+		b = 0; mb = 0;
+	}
+	else if (2 == sscanf(buffer, "d%d%c", &ds, &eov) && eov == end_chr)
+	{
+		b = 0; dn = 1; mb = 0;
+	}
+	else if (2 == sscanf(buffer, "%d%c", &b, &eov) && eov == end_chr)
+	{
+		dn = 0; ds = 0; mb = 0;
+	}
+	else
+	{
+		return FALSE;
+	}
+
+	/* Assign the values */
+	bonus->base = b;
+	bonus->dice = dn;
+	bonus->sides = ds;
+	bonus->m_bonus = mb;
+
+	/*
+	 * Handle negation (the random components are always positive, so the base
+	 * must be adjusted as necessary).
+	 */
+	if (negative)
+	{
+		bonus->base *= -1;
+		bonus->base -= bonus->m_bonus;
+		bonus->base -= bonus->dice * (bonus->sides + 1);
+	}
+
+	return TRUE;
+}
+
+
 /*
  * Figure out what index an activation should have
  */
@@ -741,28 +881,6 @@ static u32b grab_one_effect(const char *what)
 
 	/* Error */
 	return 0;
-}
-
-/**
- * Parse a timeout figure, in dice+adds format
- *
- * Note -- we use temporary variables of type 'int' because ther
- * is no sscanf identifer for uint16_t.
- */
-static bool grab_one_timeout(const char *text, u16b *dd, u16b *ds, u16b *base)
-{
-	int t_dd = 0, t_ds = 0, t_base = 0;
-
-	     if (1 == sscanf(text, "d%d",      &t_ds))          { t_dd = 1; }
-	else if (2 == sscanf(text, "%d+d%d",   &t_base, &t_ds)) { t_dd = 1; }
-	else if (2 == sscanf(text, "%dd%d",    &t_dd, &t_ds));
-	else if (3 == sscanf(text, "%d+%dd%d", &t_base, &t_dd, &t_ds));
-	else if (1 == sscanf(text, "%d",       &t_base)) { t_dd = t_ds = 0; }
-	else return FALSE;
-
-	*dd = t_dd; *ds = t_ds; *base = t_base;
-
-	return TRUE;
 }
 
 
@@ -885,6 +1003,103 @@ errr init_store_txt(ang_file *fp, char *buf)
 }
 
 
+/**
+ * Initialise the random name fragments
+ */
+errr init_names_txt(ang_file *fp, char *buf)
+{
+	int i, name_section;
+	u32b num_names[RANDNAME_NUM_TYPES];
+	char temp[1024];
+	int counter = 0;
+	error_line = 0;
+	memset(num_names, 0, RANDNAME_NUM_TYPES * sizeof(u32b));
+
+	/* 
+	 * Go through the file and count the total number of names in each name 
+	 * section
+	 */
+	while (file_getl(fp, buf, 1024))
+	{
+		error_line++;
+
+		if (!buf[0] || '#' == buf[0])
+			continue;
+
+		else if ('N' == buf[0])
+		{
+			if (1 != sscanf(buf, "N:%d", &name_section))
+				return PARSE_ERROR_GENERIC;
+
+			if (name_section > RANDNAME_NUM_TYPES)
+				return PARSE_ERROR_GENERIC;
+		}
+
+		else if ('D' == buf[0])
+		{
+			num_names[name_section]++;
+		}
+
+		else
+		{
+			return PARSE_ERROR_UNDEFINED_DIRECTIVE;
+		}
+	}
+
+	/* Go back to the start of the file */
+	file_seek(fp, 0);
+
+	/* Allocate some memory for pointers to sections */
+	name_sections = C_ZNEW(RANDNAME_NUM_TYPES, cptr*);
+
+	/* Allocate more memory for pointers to names */
+	/* Add a null element at the end of each array (see randname.c) */
+	for (i = 0; i < RANDNAME_NUM_TYPES; i++)
+	{
+		if (num_names[i])
+		{
+			name_sections[i] = C_ZNEW(num_names[i] + 1, cptr);
+		}
+	} 
+	
+	/* 
+	 * Go through the file again and read each name into the relevant array 
+	 */
+	while (file_getl(fp, buf, 1024))
+	{
+		error_line++;
+
+		if (!buf[0] || '#' == buf[0])
+			continue;
+
+		else if ('N' == buf[0])
+		{
+			if (1 != sscanf(buf, "N:%d", &name_section))
+				return PARSE_ERROR_GENERIC;
+
+			if (name_section > RANDNAME_NUM_TYPES)
+				return PARSE_ERROR_GENERIC;
+
+			counter = 0;
+		}
+
+		else if ('D' == buf[0])
+		{
+			if (1 != sscanf(buf, "D:%s", temp))
+				return PARSE_ERROR_GENERIC;
+
+			name_sections[name_section][counter++] = string_make(temp);
+		}
+
+		else
+		{
+			return PARSE_ERROR_UNDEFINED_DIRECTIVE;
+		}
+	}
+
+	/* No errors */
+	return 0;
+}
 
 
 /*
@@ -1499,16 +1714,17 @@ errr parse_k_info(char *buf, header *head)
 	/* Process 'I' for "Info" (one line only) */
 	else if (buf[0] == 'I')
 	{
-		int tval, sval, pval;
+		int tval, sval;
+		char pval[50];
 
 		/* Scan for the values */
-		if (3 != sscanf(buf+2, "%d:%d:%d",
-			            &tval, &sval, &pval)) return (PARSE_ERROR_GENERIC);
+		if (3 != sscanf(buf+2, "%d:%d:%s",
+			            &tval, &sval, pval)) return (PARSE_ERROR_GENERIC);
 
 		/* Save the values */
 		k_ptr->tval = tval;
 		k_ptr->sval = sval;
-		k_ptr->pval = pval;
+		if (!parse_random_value(pval, &k_ptr->pval)) return PARSE_ERROR_INVALID_VALUE;
 	}
 
 	/* Process 'W' for "More Info" (one line only) */
@@ -1552,75 +1768,46 @@ errr parse_k_info(char *buf, header *head)
 	/* Hack -- Process 'P' for "power" and such */
 	else if (buf[0] == 'P')
 	{
-		int ac, hd1, hd2, th, td, ta;
+		int ac, hd1, hd2;
+		char *th, *td, *ta;
+		char fields[150];
 
-		/* Scan for the values */
-		if (6 != sscanf(buf+2, "%d:%dd%d:%d:%d:%d",
-			            &ac, &hd1, &hd2, &th, &td, &ta)) return (PARSE_ERROR_GENERIC);
+		/* Scan for the values "P:0:0d0:0:0:0" */
+		if (4 != sscanf(buf+2, "%d:%dd%d:%s",
+			            &ac, &hd1, &hd2, fields)) return (PARSE_ERROR_GENERIC);
+
+		/* Tokenize the last three fields */
+		if(!(th = strtok(fields, ":"))) return PARSE_ERROR_GENERIC;
+		if(!(td = strtok(NULL, ":"))) return PARSE_ERROR_GENERIC;
+		if(!(ta = strtok(NULL, ":"))) return PARSE_ERROR_GENERIC;
 
 		k_ptr->ac = ac;
 		k_ptr->dd = hd1;
 		k_ptr->ds = hd2;
-		k_ptr->to_h = th;
-		k_ptr->to_d = td;
-		k_ptr->to_a = ta;
+		if (!parse_random_value(th, &k_ptr->to_h)) return PARSE_ERROR_INVALID_VALUE;
+		if (!parse_random_value(td, &k_ptr->to_d)) return PARSE_ERROR_INVALID_VALUE;
+		if (!parse_random_value(ta, &k_ptr->to_a)) return PARSE_ERROR_INVALID_VALUE;
 	}
 
 	/* Hack -- Process 'C' for "charges" */
 	else if (buf[0] == 'C')
 	{
-		int base = 0;
-		int ds = 0;
-		int dd = 1;
-
-		/* Assign base values */
-		k_ptr->charge_base = 0;
-		k_ptr->charge_ds = 0;
-		k_ptr->charge_dd = 1;
-
-		/* Scan for the values */
-		if (1 == sscanf(buf+2, "d%d", &ds))
-		{
-			k_ptr->charge_ds = ds;
-		}
-		else if (2 == sscanf(buf+2, "%d+d%d", &base, &ds))
-		{
-			k_ptr->charge_base = base;
-			k_ptr->charge_ds   = ds;
-		}
-		else if (2 == sscanf(buf+2, "%dd%d", &dd, &ds))
-		{
-			k_ptr->charge_dd = dd;
-			k_ptr->charge_ds = ds;
-		}
-		else if (3 == sscanf(buf+2, "%d+%dd%d", &base, &dd, &ds))
-		{
-			k_ptr->charge_base = base;
-			k_ptr->charge_dd   = dd;
-			k_ptr->charge_ds   = ds;
-		}
-		else
-		{
-			return (PARSE_ERROR_GENERIC);
-		}
+		if(!parse_random_value(buf+2, &k_ptr->charge)) return PARSE_ERROR_INVALID_VALUE;
 	}
 
 	/* Process 'M' for "Multiple quantity" (one line only) */
 	else if (buf[0] == 'M')
 	{
-		int prob, dice, side;
+		int prob;
+		char stack[50];
 
 		/* Scan for the values */
-		if (3 != sscanf(buf+2, "%d:%dd%d", &prob, &dice, &side))
+		if (2 != sscanf(buf+2, "%d:%s", &prob, stack))
 			return (PARSE_ERROR_GENERIC);
-
-		/* Sanity check */
-		if (!(dice * side)) prob = dice = side = 0;
 
 		/* Save the values */
 		k_ptr->gen_mult_prob = prob;
-		k_ptr->gen_dice = dice;
-		k_ptr->gen_side = side;
+		if (!parse_random_value(stack, &k_ptr->stack_size)) return PARSE_ERROR_INVALID_VALUE;
 	}
 
 	/* Hack -- Process 'F' for flags */
@@ -1659,9 +1846,9 @@ errr parse_k_info(char *buf, header *head)
 		k_ptr->effect = grab_one_effect(buf + 2);
 		if (!k_ptr->effect) return (PARSE_ERROR_GENERIC);
 
-		if (s && !grab_one_timeout(s, &k_ptr->time_dice,
-				&k_ptr->time_sides, &k_ptr->time_base))
-			return (PARSE_ERROR_GENERIC);
+		/* Get the timeout, if supplied */
+		if (s && !parse_random_value(s, &k_ptr->time))
+			return (PARSE_ERROR_INVALID_VALUE);
 	}
 
 	/* Process 'D' for "Description" */
@@ -1806,6 +1993,28 @@ errr parse_a_info(char *buf, header *head)
 		a_ptr->cost = cost;
 	}
 
+	/* Process 'A' for "Allocation" (one line only) */
+	else if (buf[0] == 'A')
+	{
+		int common, min, max;
+
+		/* Format is "A:<common>:<min> to <max>" */
+		if (3 != sscanf(buf+2, "%d:%d to %d", &common, &min, &max))
+			return (PARSE_ERROR_GENERIC);
+
+
+		/* Limit to size a byte */
+		if (common < 0 || common > 255) return (PARSE_ERROR_GENERIC);
+		if (min < 0 || min > 255) return (PARSE_ERROR_GENERIC);
+		if (max < 0 || max > 255) return (PARSE_ERROR_GENERIC);
+
+
+		/* Set up data */
+		a_ptr->alloc_prob = common;
+		a_ptr->alloc_min = min;
+		a_ptr->alloc_max = max;
+	}
+
 	/* Process 'P' for "power" and such */
 	else if (buf[0] == 'P')
 	{
@@ -1848,8 +2057,8 @@ errr parse_a_info(char *buf, header *head)
 		}
 	}
 
-	/* Process 'A' for "Activation & time" */
-	else if (buf[0] == 'A')
+	/* Process 'E' for Effect (Activation) & time */
+	else if (buf[0] == 'E')
 	{
 		/* Find the colon after the name */
 		s = strchr(buf + 2, ':');
@@ -1864,9 +2073,8 @@ errr parse_a_info(char *buf, header *head)
 		if (!a_ptr->effect) return (PARSE_ERROR_GENERIC);
 
 		/* Scan for the values */
-		if (!grab_one_timeout(s, &a_ptr->time_dice, &a_ptr->time_sides,
-				&a_ptr->time_base))
-			return (PARSE_ERROR_GENERIC);
+		if (!parse_random_value(s, &a_ptr->time))
+			return (PARSE_ERROR_INVALID_VALUE);
 	}
 
 	/* Process 'M' for "Effect message" */
@@ -2014,6 +2222,29 @@ errr parse_e_info(char *buf, header *head)
 	/* Hack -- Process 'C' for "creation" */
 	else if (buf[0] == 'C')
 	{
+		char *th, *td, *ta, *pv;
+		char fields[200];
+
+		/* There better be a current e_ptr */
+		if (!e_ptr) return (PARSE_ERROR_MISSING_RECORD_HEADER);
+
+		/* Scan for the values */
+		if (1 != sscanf(buf+2, "%s", fields)) return (PARSE_ERROR_GENERIC);
+
+		if(!(th = strtok(fields, ":"))) return PARSE_ERROR_GENERIC;
+		if(!(td = strtok(NULL, ":"))) return PARSE_ERROR_GENERIC;
+		if(!(ta = strtok(NULL, ":"))) return PARSE_ERROR_GENERIC;
+		if(!(pv = strtok(NULL, ":"))) return PARSE_ERROR_GENERIC;
+		
+		if(!parse_random_value(th, &e_ptr->to_h)) return PARSE_ERROR_INVALID_VALUE;
+		if(!parse_random_value(td, &e_ptr->to_d)) return PARSE_ERROR_INVALID_VALUE;
+		if(!parse_random_value(ta, &e_ptr->to_a)) return PARSE_ERROR_INVALID_VALUE;
+		if(!parse_random_value(pv, &e_ptr->pval)) return PARSE_ERROR_INVALID_VALUE;
+	}
+
+	/* Process 'M' for "minimum values" */
+	else if (buf[0] == 'M')
+	{
 		int th, td, ta, pv;
 
 		/* There better be a current e_ptr */
@@ -2023,10 +2254,10 @@ errr parse_e_info(char *buf, header *head)
 		if (4 != sscanf(buf+2, "%d:%d:%d:%d",
 			            &th, &td, &ta, &pv)) return (PARSE_ERROR_GENERIC);
 
-		e_ptr->max_to_h = th;
-		e_ptr->max_to_d = td;
-		e_ptr->max_to_a = ta;
-		e_ptr->max_pval = pv;
+		e_ptr->min_to_h = th;
+		e_ptr->min_to_d = td;
+		e_ptr->min_to_a = ta;
+		e_ptr->min_pval = pv;
 	}
 
 	/* Hack -- Process 'F' for flags */
@@ -2397,6 +2628,23 @@ errr parse_r_info(char *buf, header *head)
 }
 
 
+
+/*
+ * Grab one new race-only flag in a player_race from a textual string
+ */
+static errr grab_one_new_racial_flag(player_race *pr_ptr, cptr what)
+{
+	if (grab_one_flag(&pr_ptr->new_racial_flags, race_info_flags, what) == 0)
+		return (0);
+
+	/* Oops */
+	msg_format("Unknown new player flag '%s'.", what);
+
+	/* Error */
+	return (PARSE_ERROR_INVALID_FLAG);
+}
+
+
 /*
  * Helper function for reading a list of skills
  */
@@ -2620,6 +2868,34 @@ errr parse_p_info(char *buf, header *head)
 		}
 	}
 
+	/* Hack -- Process 'Y' for new race-only flags */
+	else if (buf[0] == 'Y')
+	{
+		/* There better be a current pr_ptr */
+		if (!pr_ptr) return (PARSE_ERROR_MISSING_RECORD_HEADER);
+
+		/* Parse every entry textually */
+		for (s = buf + 2; *s; )
+		{
+			/* Find the end of this entry */
+			for (t = s; *t && (*t != ' ') && (*t != '|'); ++t) /* loop */;
+
+			/* Nuke and skip any dividers */
+			if (*t)
+			{
+				*t++ = '\0';
+				while ((*t == ' ') || (*t == '|')) t++;
+			}
+
+			/* Parse this entry */
+			if (0 != grab_one_new_racial_flag(pr_ptr, s))
+				return (PARSE_ERROR_INVALID_FLAG);
+
+			/* Start the next entry */
+			s = t;
+		}
+	}
+	
 	/* Hack -- Process 'C' for class choices */
 	else if (buf[0] == 'C')
 	{
@@ -3357,39 +3633,6 @@ errr eval_info(eval_info_post_func eval_info_process, header *head)
 }
 
 
-/*
- * Damage calculation - we want max damage for power evaluation,
- * but random damage for combat. See full explanation in monster/constants.h
- */
-int damcalc(int dice, int sides, aspect dam_aspect)
-{
-	int num = 0;
-	switch (dam_aspect)
-	{
-		case MAXIMISE:
-		{
-			num = dice * sides;
-			break;
-		}
-		case RANDOMISE:
-		{
-			num = damroll(dice, sides);
-			break;
-		}
-		case MINIMISE:
-		{
-			num = dice;
-			break;
-		}
-		case AVERAGE:
-		{
-			num = dice * (sides + 1) / 2;
-			break;
-		}
-	}
-	return (num);
-}
-
 static long eval_blow_effect(int effect, int atk_dam, int rlev)
 {
 	switch (effect)
@@ -3398,7 +3641,7 @@ static long eval_blow_effect(int effect, int atk_dam, int rlev)
 		case RBE_EAT_GOLD:
 		case RBE_EAT_ITEM:
 		case RBE_EAT_FOOD:
-		case RBE_EAT_LITE:
+		case RBE_EAT_LIGHT:
 		case RBE_LOSE_CHR:
 		{
 			atk_dam += 5;
@@ -3570,10 +3813,10 @@ static long eval_max_dam(monster_race *r_ptr)
 		if (spell_dam < breath_dam) spell_dam = (breath_dam * 5 / 4)
 			+ 5;
 		}
-	if (r_ptr->spell_flags[0] & RSF0_BR_LITE)
+	if (r_ptr->spell_flags[0] & RSF0_BR_LIGHT)
 		{
-		breath_dam = (RES_LITE_ADJ(MIN(BR_LITE_MAX,
-			(hp / BR_LITE_DIVISOR)), MINIMISE));
+		breath_dam = (RES_LIGHT_ADJ(MIN(BR_LIGHT_MAX,
+			(hp / BR_LIGHT_DIVISOR)), MINIMISE));
 		if (spell_dam < breath_dam) spell_dam = breath_dam + 10;
 		}
 	if (r_ptr->spell_flags[0] & RSF0_BR_DARK)
@@ -4304,8 +4547,8 @@ for (iteration = 0; iteration < 3; iteration ++)
 	return(0);
 }
 
-/* 
- * Create the slay cache by determining the number of different slay 
+/*
+ * Create the slay cache by determining the number of different slay
  * combinations available to ego items
  */
 errr eval_e_slays(header *head)
@@ -4369,21 +4612,20 @@ errr eval_e_slays(header *head)
 
 	/* add a null element to enable looping over the array */
 	slay_cache[count].flags = 0;
+	slay_cache[count].value = 0;
 
 	FREE(dupcheck);
-	
+
 	/* Success */
 	return 0;
 }
 
-#ifdef ALLOW_TEMPLATES_OUTPUT
-
 /*
  * Emit a "template" file.
- * 
+ *
  * This allows us to modify an existing template file by parsing it
  * in and then modifying the data structures.
- * 
+ *
  * We parse the previous "template" file to allow us to include comments.
  */
 errr emit_info_txt(ang_file *fp, ang_file *template, char *buf, header *head,
@@ -4439,7 +4681,7 @@ errr emit_info_txt(ang_file *fp, ang_file *template, char *buf, header *head,
 
 			/* Output the version number */
 			file_putf(fp, "\nV:%d.%d.%d\n\n", head->v_major, head->v_minor, head->v_patch);
-			
+
 			/* Okay to proceed */
 			okay = TRUE;
 
@@ -4454,15 +4696,15 @@ errr emit_info_txt(ang_file *fp, ang_file *template, char *buf, header *head,
 		if ((emit_info_txt_index) && (buf[0] == 'N'))
 		{
 			int idx;
-			
+
 			idx = atoi(buf + 2);
 
 			/* Verify index order */
 			if (idx < ++error_idx) return (PARSE_ERROR_NON_SEQUENTIAL_RECORDS);
-			
+
 			/* Verify information */
 			if (idx >= head->info_num) return (PARSE_ERROR_TOO_MANY_ENTRIES);
-			
+
 			if (comment) file_putf(fp,"\n");
 			comment = FALSE;
 			blanklines = 0;
@@ -4661,7 +4903,7 @@ static char color_attr_to_char[] =
 		'B',
 		'U'
 };
-		
+
 /*
  * Emit the "r_info" array into an ascii "template" file
  */
@@ -4671,8 +4913,8 @@ errr emit_r_info_index(ang_file *fp, header *head, int i)
 
 	/* Current entry */
 	monster_race *r_ptr = (monster_race *)head->info_ptr + i;
-	
-	
+
+
 	/* Output 'N' for "New/Number/Name" */
 	file_putf(fp, "N:%d:%s\n", i,head->name_ptr + r_ptr->name);
 
@@ -4691,21 +4933,21 @@ errr emit_r_info_index(ang_file *fp, header *head, int i)
 		/* End of blows */
 		if (!r_ptr->blow[n].method) break;
 
-		/* Output blow method */		
+		/* Output blow method */
 		file_putf(fp, "B:%s", r_info_blow_method[r_ptr->blow[n].method]);
-		
+
 		/* Output blow effect */
 		if (r_ptr->blow[n].effect)
 		{
 			file_putf(fp, ":%s", r_info_blow_effect[r_ptr->blow[n].effect]);
-			
+
 			/* Output blow damage if required */
 			if ((r_ptr->blow[n].d_dice) && (r_ptr->blow[n].d_side))
 			{
 				file_putf(fp, ":%dd%d", r_ptr->blow[n].d_dice, r_ptr->blow[n].d_side);
 			}
 		}
-		
+
 		/* End line */
 		file_putf(fp, "\n");
 	}
@@ -4719,11 +4961,11 @@ errr emit_r_info_index(ang_file *fp, header *head, int i)
 	emit_flags_32(fp, "S:", r_ptr->spell_flags[0], r_info_spell_flags0);
 	emit_flags_32(fp, "S:", r_ptr->spell_flags[1], r_info_spell_flags1);
 	emit_flags_32(fp, "S:", r_ptr->spell_flags[2], r_info_spell_flags2);
-	
+
 	/* Output 'S' for spell frequency in unwieldy format */
 	/* TODO: use this routine to output M:freq_innate:freq_spell or similar to allow these to be
 	 * specified properly. 'M' is for magic. Could be extended with :spell_power:mana for 4GAI.
-	 * 
+	 *
 	 * XXX Need to check for rounding errors here.
 	 */
 	if (r_ptr->freq_innate) file_putf(fp, "S:1_IN_%d\n",100/r_ptr->freq_innate);
@@ -4734,11 +4976,6 @@ errr emit_r_info_index(ang_file *fp, header *head, int i)
 	file_putf(fp,"\n");
 
 	/* Success */
-	return (0);	
+	return (0);
 }
-
-
-#endif /* ALLOW_TEMPLATES_OUTPUT */
-
-#endif	/* ALLOW_TEMPLATES */
 

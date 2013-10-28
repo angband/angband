@@ -16,7 +16,7 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
-#include "randname.h"
+#include "defines.h"
 #include "tvalsval.h"
 #include "effects.h"
 #include "game-cmd.h"
@@ -25,7 +25,6 @@
  * Hold the titles of scrolls, 6 to 14 characters each.
  */
 char scroll_adj[MAX_TITLES][16];
-
 
 static void flavor_assign_fixed(void)
 {
@@ -356,7 +355,6 @@ void object_flags_known(const object_type *o_ptr, u32b flags[])
 	u32b f[OBJ_FLAG_N];
 	int i;
 	bool aware = object_flavor_is_aware(o_ptr);
-	bool easy_know = (object_kind_of(o_ptr)->flags[2] & TR2_EASY_KNOW);
 
 	object_flags(o_ptr, f);
 
@@ -365,10 +363,9 @@ void object_flags_known(const object_type *o_ptr, u32b flags[])
 		flags[i] = o_ptr->known_flags[i] & f[i];
 		if (aware)
 			flags[i] |= k_info[o_ptr->k_idx].flags[i];
-		if (o_ptr->name2 && easy_know)
+		if (o_ptr->name2 && easy_know(o_ptr))
 			flags[i] |= e_info[o_ptr->name2].flags[i];
 	}
-
 }
 
 
@@ -424,7 +421,8 @@ s16b label_to_equip(int c)
 	i = (islower((unsigned char)c) ? A2I(c) : -1) + INVEN_WIELD;
 
 	/* Verify the index */
-	if ((i < INVEN_WIELD) || (i >= INVEN_TOTAL)) return (-1);
+	if ((i < INVEN_WIELD) || (i >= ALL_INVEN_TOTAL)) return (-1);
+	if (i == INVEN_TOTAL) return (-1);
 
 	/* Empty slots can never be chosen */
 	if (!inventory[i].k_idx) return (-1);
@@ -459,20 +457,65 @@ bool wearable_p(const object_type *o_ptr)
 		case TV_SOFT_ARMOR:
 		case TV_HARD_ARMOR:
 		case TV_DRAG_ARMOR:
-		case TV_LITE:
+		case TV_LIGHT:
 		case TV_AMULET:
-		case TV_RING:
-		{
-			return (TRUE);
-		}
+		case TV_RING: return (TRUE);
 	}
 
 	/* Nope */
 	return (FALSE);
 }
 
-/*
- * Determine which equipment slot (if any) an item likes
+int get_inscribed_ammo_slot(const object_type *o_ptr)
+{
+	char *s;
+	if (!o_ptr->note) return 0;
+	s = strchr(quark_str(o_ptr->note), 'f');
+	if (!s || s[1] < '0' || s[1] > '9') return 0;
+
+	return QUIVER_START + (s[1] - '0');
+}
+
+/**
+ * Used by wield_slot() to find an appopriate slot for ammo. See wield_slot()
+ * for information on what this returns.
+ */
+s16b wield_slot_ammo(const object_type *o_ptr)
+{
+	s16b i, open = 0;
+
+	/* If the ammo is inscribed with a slot number, we'll try to put it in */
+	/* that slot, if possible. */
+	i = get_inscribed_ammo_slot(o_ptr);
+	if (i && !inventory[i].k_idx) return i;
+
+	for (i = QUIVER_START; i < QUIVER_END; i++)
+	{
+		if (!inventory[i].k_idx)
+		{
+			/* Save the open slot if we haven't found one already */
+			if (!open) open = i;
+			continue;
+		}
+
+		/* If ammo is cursed we can't stack it */
+		if (cursed_p(&inventory[i])) continue;
+
+		/* If they are stackable, we'll use this slot for sure */
+		if (object_similar(&inventory[i], o_ptr)) return i;
+	}
+
+	/* If not absorbed, return an open slot (or QUIVER_START if no room) */
+	return open ? open : QUIVER_START;
+}
+
+/**
+ * Determine which equipment slot (if any) an item likes. The slot might (or
+ * might not) be open, but it is a slot which the object could be equipped in.
+ *
+ * For items where multiple slots could work (e.g. ammo or rings), the function
+ * will try to a return a stackable slot first (only for ammo), then an open
+ * slot if possible, and finally a used (but valid) slot if necessary.
  */
 s16b wield_slot(const object_type *o_ptr)
 {
@@ -482,67 +525,35 @@ s16b wield_slot(const object_type *o_ptr)
 		case TV_DIGGING:
 		case TV_HAFTED:
 		case TV_POLEARM:
-		case TV_SWORD:
-		{
-			return (INVEN_WIELD);
-		}
+		case TV_SWORD: return (INVEN_WIELD);
 
-		case TV_BOW:
-		{
-			return (INVEN_BOW);
-		}
+		case TV_BOW: return (INVEN_BOW);
 
 		case TV_RING:
-		{
-			/* Use the right hand first */
-			if (!inventory[INVEN_RIGHT].k_idx) return (INVEN_RIGHT);
+			return inventory[INVEN_RIGHT].k_idx ? INVEN_LEFT : INVEN_RIGHT;
 
-			/* Use the left hand for swapping (by default) */
-			return (INVEN_LEFT);
-		}
+		case TV_AMULET: return (INVEN_NECK);
 
-		case TV_AMULET:
-		{
-			return (INVEN_NECK);
-		}
-
-		case TV_LITE:
-		{
-			return (INVEN_LITE);
-		}
+		case TV_LIGHT: return (INVEN_LIGHT);
 
 		case TV_DRAG_ARMOR:
 		case TV_HARD_ARMOR:
-		case TV_SOFT_ARMOR:
-		{
-			return (INVEN_BODY);
-		}
+		case TV_SOFT_ARMOR: return (INVEN_BODY);
 
-		case TV_CLOAK:
-		{
-			return (INVEN_OUTER);
-		}
+		case TV_CLOAK: return (INVEN_OUTER);
 
-		case TV_SHIELD:
-		{
-			return (INVEN_ARM);
-		}
+		case TV_SHIELD: return (INVEN_ARM);
 
 		case TV_CROWN:
-		case TV_HELM:
-		{
-			return (INVEN_HEAD);
-		}
+		case TV_HELM: return (INVEN_HEAD);
 
-		case TV_GLOVES:
-		{
-			return (INVEN_HANDS);
-		}
+		case TV_GLOVES: return (INVEN_HANDS);
 
-		case TV_BOOTS:
-		{
-			return (INVEN_FEET);
-		}
+		case TV_BOOTS: return (INVEN_FEET);
+
+		case TV_BOLT:
+		case TV_ARROW:
+		case TV_SHOT: return wield_slot_ammo(o_ptr);
 	}
 
 	/* No slot available */
@@ -555,15 +566,12 @@ s16b wield_slot(const object_type *o_ptr)
  */
 bool slot_can_wield_item(int slot, const object_type *o_ptr)
 {
-	/* XXX This is nasty, but is there a better way? */
-	if (o_ptr->tval == TV_RING &&
-			(slot == INVEN_LEFT || slot == INVEN_RIGHT))
-		return TRUE;
-
-	if (wield_slot(o_ptr) == slot)
-		return TRUE;
+	if (o_ptr->tval == TV_RING)
+		return (slot == INVEN_LEFT || slot == INVEN_RIGHT) ? TRUE : FALSE;
+	else if (obj_is_ammo(o_ptr))
+		return (slot >= QUIVER_START && slot < QUIVER_END) ? TRUE : FALSE;
 	else
-		return FALSE;
+		return (wield_slot(o_ptr) == slot) ? TRUE : FALSE;
 }
 
 
@@ -593,14 +601,28 @@ const char *mention_use(int slot)
 		case INVEN_LEFT:  return "On left hand";
 		case INVEN_RIGHT: return "On right hand";
 		case INVEN_NECK:  return "Around neck";
-		case INVEN_LITE:  return "Light source";
+		case INVEN_LIGHT: return "Light source";
 		case INVEN_BODY:  return "On body";
 		case INVEN_OUTER: return "About body";
 		case INVEN_ARM:   return "On arm";
 		case INVEN_HEAD:  return "On head";
 		case INVEN_HANDS: return "On hands";
 		case INVEN_FEET:  return "On feet";
+
+		case QUIVER_START + 0: return "In quiver [f0]";
+		case QUIVER_START + 1: return "In quiver [f1]";
+		case QUIVER_START + 2: return "In quiver [f2]";
+		case QUIVER_START + 3: return "In quiver [f3]";
+		case QUIVER_START + 4: return "In quiver [f4]";
+		case QUIVER_START + 5: return "In quiver [f5]";
+		case QUIVER_START + 6: return "In quiver [f6]";
+		case QUIVER_START + 7: return "In quiver [f7]";
+		case QUIVER_START + 8: return "In quiver [f8]";
+		case QUIVER_START + 9: return "In quiver [f9]";
 	}
+
+	/*if (slot >= QUIVER_START && slot < QUIVER_END)
+		return "In quiver";*/
 
 	return "In pack";
 }
@@ -621,7 +643,7 @@ cptr describe_use(int i)
 		case INVEN_LEFT:  p = "wearing on your left hand"; break;
 		case INVEN_RIGHT: p = "wearing on your right hand"; break;
 		case INVEN_NECK:  p = "wearing around your neck"; break;
-		case INVEN_LITE:  p = "using to light the way"; break;
+		case INVEN_LIGHT: p = "using to light the way"; break;
 		case INVEN_BODY:  p = "wearing on your body"; break;
 		case INVEN_OUTER: p = "wearing on your back"; break;
 		case INVEN_ARM:   p = "wearing on your arm"; break;
@@ -893,7 +915,7 @@ void delete_object_idx(int o_idx)
 		x = j_ptr->ix;
 
 		/* Visual update */
-		lite_spot(y, x);
+		light_spot(y, x);
 	}
 
 	/* Wipe the object */
@@ -938,7 +960,7 @@ void delete_object(int y, int x)
 	cave_o_idx[y][x] = 0;
 
 	/* Visual update */
-	lite_spot(y, x);
+	light_spot(y, x);
 }
 
 
@@ -1159,8 +1181,18 @@ void compact_objects(int size)
 	compact_objects(0);
 }
 
+/* 
+ * Mention artifact preservation for peeking wizards
+ */
+static void mention_preserve(const object_type *o_ptr)
+{
+	char o_name[80];
 
+	/* Describe */
+	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE | ODESC_SPOIL);
 
+	msg_format("Preserving (%s)", o_name);
+}
 
 /*
  * Delete all the items when player leaves the level
@@ -1190,9 +1222,14 @@ void wipe_o_list(void)
 		{
 			artifact_type *a_ptr = artifact_of(o_ptr);
 
-			/* Preserve only unknown artifacts */
-			if (a_ptr && !a_ptr->seen)
+			/* Preserve only artifacts not known to be unique */
+			if (a_ptr && !object_was_sensed(o_ptr))
+			{
 				a_ptr->created = FALSE;
+
+				/* Cheat -- Mention preserving */
+				if (OPT(cheat_peek)) mention_preserve(o_ptr);
+			}
 		}
 
 		/* Mark artifacts as lost in logs */
@@ -1377,7 +1414,8 @@ static s32b object_value_base(const object_type *o_ptr)
  * are priced according to their power rating. All ammo, and normal (non-ego)
  * torches are scaled down by AMMO_RESCALER to reflect their impermanence.
  */
-static s32b object_value_real(const object_type *o_ptr, int qty, int verbose)
+static s32b object_value_real(const object_type *o_ptr, int qty, int verbose,
+	bool known)
 {
 	s32b value, total_value;
 
@@ -1408,12 +1446,12 @@ static s32b object_value_real(const object_type *o_ptr, int qty, int verbose)
 		}
 
 		LOG_PRINT1("object is %s", k_name + k_ptr->name);
-		power = object_power(o_ptr, verbose, log_file);
+		power = object_power(o_ptr, verbose, log_file, known);
 		value = sign(power) * ((a * power * power) + (b * power));
 
 		if ( (o_ptr->tval == TV_SHOT) || (o_ptr->tval == TV_ARROW) ||
-  			(o_ptr->tval == TV_BOLT) || ((o_ptr->tval == TV_LITE)
-			&& (o_ptr->sval == SV_LITE_TORCH) && !o_ptr->name2) )
+  			(o_ptr->tval == TV_BOLT) || ((o_ptr->tval == TV_LIGHT)
+			&& (o_ptr->sval == SV_LIGHT_TORCH) && !o_ptr->name2) )
 		{
 			value = value / AMMO_RESCALER;
 			if (value < 1) value = 1;
@@ -1501,7 +1539,7 @@ s32b object_value(const object_type *o_ptr, int qty, int verbose)
 	{
 		if (cursed_p(o_ptr)) return (0L);
 
-		value = object_value_real(o_ptr, qty, verbose);
+		value = object_value_real(o_ptr, qty, verbose, TRUE);
 	}
 	else if (wearable_p(o_ptr))
 	{
@@ -1518,10 +1556,10 @@ s32b object_value(const object_type *o_ptr, int qty, int verbose)
 
 		if (!object_attack_plusses_are_visible(o_ptr))
 			j_ptr->to_h = j_ptr->to_d = 0;
-		else if (!object_defence_plusses_are_visible(o_ptr))
+		if (!object_defence_plusses_are_visible(o_ptr))
 			j_ptr->to_a = 0;
 
-		value = object_value_real(j_ptr, qty, verbose);
+		value = object_value_real(j_ptr, qty, verbose, FALSE);
 	}
 	else value = object_value_base(o_ptr) * qty;
 
@@ -1614,7 +1652,7 @@ bool object_similar(const object_type *o_ptr, const object_type *j_ptr)
 		case TV_DRAG_ARMOR:
 		case TV_RING:
 		case TV_AMULET:
-		case TV_LITE:
+		case TV_LIGHT:
 		{
 			/* Fall through */
 		}
@@ -1639,11 +1677,11 @@ bool object_similar(const object_type *o_ptr, const object_type *j_ptr)
 			if (o_ptr->name2 != j_ptr->name2) return (FALSE);
 
 			/* Hack - Never stack recharging items */
-			if ((o_ptr->timeout || j_ptr->timeout) && o_ptr->tval != TV_LITE) 
+			if ((o_ptr->timeout || j_ptr->timeout) && o_ptr->tval != TV_LIGHT) 
 				return FALSE;
 
-			/* Lites must have same amount of fuel */
-			else if (o_ptr->timeout != j_ptr->timeout && o_ptr->tval == TV_LITE)
+			/* Lights must have same amount of fuel */
+			else if (o_ptr->timeout != j_ptr->timeout && o_ptr->tval == TV_LIGHT)
 				return FALSE;
 
 			/* Require identical "values" */
@@ -1705,8 +1743,6 @@ bool object_similar(const object_type *o_ptr, const object_type *j_ptr)
  */
 void object_absorb(object_type *o_ptr, const object_type *j_ptr)
 {
-	object_kind *k_ptr = &k_info[o_ptr->k_idx];
-
 	int i;
 	int total = o_ptr->number + j_ptr->number;
 
@@ -1727,7 +1763,7 @@ void object_absorb(object_type *o_ptr, const object_type *j_ptr)
 	 */
 	if (o_ptr->tval == TV_ROD)
 	{
-		o_ptr->pval = total * k_ptr->pval;
+		o_ptr->pval = total * j_ptr->pval;
 		o_ptr->timeout += j_ptr->timeout;
 	}
 
@@ -1807,6 +1843,9 @@ void object_copy(object_type *o_ptr, const object_type *j_ptr)
  */
 void object_copy_amt(object_type *dst, object_type *src, int amt)
 {
+	const object_kind *k_ptr = &k_info[src->k_idx];
+	int charge_time = randcalc(k_ptr->time, 0, AVERAGE), max_time;
+
 	/* Get a copy of the object */
 	object_copy(dst, src);
 
@@ -1824,55 +1863,13 @@ void object_copy_amt(object_type *dst, object_type *src, int amt)
 
 	if (src->tval == TV_ROD)
 	{
-		int max_time = k_info[src->k_idx].time_base * amt;
+		max_time = charge_time * amt;
 
 		if (src->timeout > max_time)
 			dst->timeout = max_time;
 		else
 			dst->timeout = src->timeout;
 	}
-}
-
-
-/*
- * Prepare an object based on an object kind.
- */
-void object_prep(object_type *o_ptr, int k_idx)
-{
-	object_kind *k_ptr = &k_info[k_idx];
-
-	/* Clear the record */
-	(void)WIPE(o_ptr, object_type);
-
-	/* Save the kind index */
-	o_ptr->k_idx = k_idx;
-
-	/* Efficiency -- tval/sval */
-	o_ptr->tval = k_ptr->tval;
-	o_ptr->sval = k_ptr->sval;
-
-	/* Default "pval" */
-	o_ptr->pval = k_ptr->pval;
-
-	/* Default number */
-	o_ptr->number = 1;
-
-	/* Default weight */
-	o_ptr->weight = k_ptr->weight;
-
-	/* Default magic */
-	o_ptr->to_h = k_ptr->to_h;
-	o_ptr->to_d = k_ptr->to_d;
-	o_ptr->to_a = k_ptr->to_a;
-
-	/* Default power */
-	o_ptr->ac = k_ptr->ac;
-	o_ptr->dd = k_ptr->dd;
-	o_ptr->ds = k_ptr->ds;
-
-	/* Hack -- cursed items are always "cursed" */
-	if (k_ptr->flags[2] & TR2_LIGHT_CURSE)
-	    o_ptr->flags[2] |= TR2_LIGHT_CURSE;
 }
 
 
@@ -1981,7 +1978,7 @@ s16b floor_carry(int y, int x, object_type *j_ptr)
 		note_spot(y, x);
 
 		/* Redraw */
-		lite_spot(y, x);
+		light_spot(y, x);
 	}
 
 	/* Result */
@@ -1998,14 +1995,14 @@ s16b floor_carry(int y, int x, object_type *j_ptr)
  * chance that the item will "disappear" instead of drop.  If the object
  * has been thrown, then this is the chance of disappearance on contact.
  *
- * Hack -- this function uses "chance" to determine if it should produce
- * some form of "description" of the drop event (under the player).
+ * This function will produce a description of a drop event under the player
+ * when "verbose" is true.
  *
  * We check several locations to see if we can find a location at which
  * the object can combine, stack, or be placed.  Artifacts will try very
  * hard to be placed, including "teleporting" to a useful grid if needed.
  */
-void drop_near(object_type *j_ptr, int chance, int y, int x)
+void drop_near(object_type *j_ptr, int chance, int y, int x, bool verbose)
 {
 	int i, k, n, d, s;
 
@@ -2027,7 +2024,7 @@ void drop_near(object_type *j_ptr, int chance, int y, int x)
 	if (j_ptr->number != 1) plural = TRUE;
 
 	/* Describe object */
-	object_desc(o_name, sizeof(o_name), j_ptr, FALSE, ODESC_BASE);
+	object_desc(o_name, sizeof(o_name), j_ptr, ODESC_BASE);
 
 
 	/* Handle normal "breakage" */
@@ -2158,8 +2155,8 @@ void drop_near(object_type *j_ptr, int chance, int y, int x)
 		/* Random locations */
 		else
 		{
-			ty = randint0(DUNGEON_HGT);
-			tx = randint0(DUNGEON_WID);
+			ty = randint0(level_hgt);
+			tx = randint0(level_wid);
 		}
 
 		/* Require floor space */
@@ -2198,9 +2195,8 @@ void drop_near(object_type *j_ptr, int chance, int y, int x)
 	/* Sound */
 	sound(MSG_DROP);
 
-	/* Mega-Hack -- no message if "dropped" by player */
 	/* Message when an object falls under the player */
-	if (chance && (cave_m_idx[by][bx] < 0))
+	if (verbose && (cave_m_idx[by][bx] < 0) && !squelch_item_ok(j_ptr))
 	{
 		msg_print("You feel something roll beneath your feet.");
 	}
@@ -2230,7 +2226,7 @@ void acquirement(int y1, int x1, int level, int num, bool great)
 		i_ptr->origin_depth = p_ptr->depth;
 
 		/* Drop the object */
-		drop_near(i_ptr, -1, y1, x1);
+		drop_near(i_ptr, 0, y1, x1, TRUE);
 	}
 }
 
@@ -2266,7 +2262,7 @@ void inven_item_describe(int item)
 	if (artifact_p(o_ptr) && object_is_known(o_ptr))
 	{
 		/* Get a description */
-		object_desc(o_name, sizeof(o_name), o_ptr, FALSE, ODESC_FULL);
+		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_FULL);
 
 		/* Print a message */
 		msg_format("You no longer have the %s (%c).", o_name, index_to_label(item));
@@ -2274,7 +2270,7 @@ void inven_item_describe(int item)
 	else
 	{
 		/* Get a description */
-		object_desc(o_name, sizeof(o_name), o_ptr, TRUE, ODESC_FULL);
+		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
 
 		/* Print a message */
 		msg_format("You have %s (%c).", o_name, index_to_label(item));
@@ -2323,65 +2319,221 @@ void inven_item_increase(int item, int num)
 }
 
 
+/**
+ * Save the size of the quiver.
+ */
+void save_quiver_size(void)
+{
+	int i, count = 0;
+	for (i = QUIVER_START; i < QUIVER_END; i++)
+		if (inventory[i].k_idx) count += inventory[i].number;
+
+	p_ptr->quiver_size = count;
+	p_ptr->quiver_slots = (count + 98) / 99;
+	p_ptr->quiver_remainder = count % 99;
+}
+
+
+/**
+ * Compare ammunition from slots (0-9); used for sorting.
+ *
+ * \returns -1 if slot1 should come first, 1 if slot2 should come first, or 0.
+ */
+int compare_ammo(int slot1, int slot2)
+{
+	/* Right now there is no sorting criteria */
+	return 0;
+}
+
+/**
+ * Swap ammunition between quiver slots (0-9).
+ */
+void swap_quiver_slots(int slot1, int slot2)
+{
+	int i = slot1 + QUIVER_START;
+	int j = slot2 + QUIVER_START;
+	object_type o;
+
+	object_copy(&o, &inventory[i]);
+	object_copy(&inventory[i], &inventory[j]);
+	object_copy(&inventory[j], &o);
+}
+
+/**
+ * Sorts the quiver--ammunition inscribed with @fN prefers to end up in quiver
+ * slot N.
+ */
+void sort_quiver(void)
+{
+	/* Ammo slots go from 0-9; these indices correspond to the range of
+	 * (QUIVER_START) - (QUIVER_END-1) in inventory[].
+	 */
+	bool locked[QUIVER_SIZE] = {FALSE, FALSE, FALSE, FALSE, FALSE,
+								FALSE, FALSE, FALSE, FALSE, FALSE};
+	int desired[QUIVER_SIZE] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
+	int i, j, k;
+	object_type *o_ptr;
+
+	/* Here we figure out which slots have inscribed ammo, and whether that
+	 * ammo is already in the slot it "wants" to be in or not.
+	 */
+	for (i=0; i < QUIVER_SIZE; i++)
+	{
+		j = QUIVER_START + i;
+		o_ptr = &inventory[j];
+
+		/* Skip this slot if it doesn't have ammo */
+		if (!o_ptr->k_idx) continue;
+
+		/* Figure out which slot this ammo prefers, if any */
+		k = get_inscribed_ammo_slot(o_ptr);
+		if (!k) continue;
+
+		k -= QUIVER_START;
+		if (k == i) locked[i] = TRUE;
+		if (desired[k] < 0) desired[k] = i;
+	}
+
+	/* For items which had a preference that was not fulfilled, we will swap
+	 * them into the slot as long as it isn't already locked.
+	 */
+	for (i=0; i < QUIVER_SIZE; i++)
+	{
+		if (locked[i] || desired[i] < 0) continue;
+
+		/* item in slot 'desired[i]' desires to be in slot 'i' */
+		swap_quiver_slots(desired[i], i);
+		locked[i] = TRUE;
+	}
+
+	/* Now we need to compact ammo which isn't in a preferrred slot towards the
+	 * "front" of the quiver */
+	for (i=0; i < QUIVER_SIZE; i++)
+	{
+		/* If the slot isn't empty, skip it */
+		if (inventory[QUIVER_START + i].k_idx) continue;
+
+		/* Start from the end and find an unlocked item to put here. */
+		for (j=QUIVER_SIZE - 1; j > i; j--)
+		{
+			if (!inventory[QUIVER_START + j].k_idx || locked[j]) continue;
+			swap_quiver_slots(i, j);
+			break;
+		}
+	}
+
+	/* Now we will sort all other ammo using a simple insertion sort */
+	for (i=0; i < QUIVER_SIZE; i++)
+	{
+		k = i;
+		for (j=i + 1; j < QUIVER_SIZE; j++) if (compare_ammo(k, j) > 0) k = j;
+		if (k != i) swap_quiver_slots(i, k);
+	}
+}
+
+/*
+ * Shifts ammo at or above the item slot towards the end of the quiver, making
+ * room for a new piece of ammo.
+ */
+void open_quiver_slot(int slot)
+{
+	int i, pref;
+	int dest = QUIVER_END - 1;
+
+	/* This should only be used on ammunition */
+	if (slot < QUIVER_START) return;
+
+	/* Quiver is full */
+	if (inventory[QUIVER_END - 1].k_idx) return;
+
+	/* Find the first open quiver slot */
+	while (inventory[dest].k_idx) dest++;
+
+	/* Swap things with the space one higher (essentially moving the open space
+	 * towards our goal slot. */
+	for (i = dest - 1; i >= slot; i--)
+	{
+		/* If we have an item with an inscribed location (and it's in */
+		/* that location) then we won't move it. */
+		pref = get_inscribed_ammo_slot(&inventory[i]);
+		if (i != slot && pref && pref == i) continue;
+
+		/* Copy the item up and wipe the old slot */
+		COPY(&inventory[dest], &inventory[i], object_type);
+		dest = i;
+		object_wipe(&inventory[dest]);
+	}
+}
+
+
 /*
  * Erase an inventory slot if it has no more items
  */
 void inven_item_optimize(int item)
 {
 	object_type *o_ptr = &inventory[item];
+	int i, j, slot, limit;
 
-	/* Only optimize real items */
-	if (!o_ptr->k_idx) return;
+	/* Save a possibly new quiver size */
+	if (item >= QUIVER_START) save_quiver_size();
 
-	/* Only optimize empty items */
-	if (o_ptr->number) return;
+	/* Only optimize real items which are empty */
+	if (!o_ptr->k_idx || o_ptr->number) return;
 
-	/* The item is in the pack */
+	/* Items in the pack are treated differently from other items */
 	if (item < INVEN_WIELD)
 	{
-		int i;
-
-		/* One less item */
 		p_ptr->inven_cnt--;
-
-		/* Slide everything down */
-		for (i = item; i < INVEN_PACK; i++)
-		{
-			/* Hack -- slide object */
-			COPY(&inventory[i], &inventory[i+1], object_type);
-		}
-
-		/* Hack -- wipe hole */
-		(void)WIPE(&inventory[i], object_type);
-
-		/* Redraw stuff */
-		p_ptr->redraw |= (PR_INVEN);
-
-		/* Inventory has changed, repeated command may use the wrong item */ 
-		cmd_disable_repeat();		
+		p_ptr->redraw |= PR_INVEN;
+		limit = INVEN_MAX_PACK;
 	}
 
-	/* The item is being wielded */
+	/* Items in the quiver and equipped items are (mostly) treated similarly */
 	else
 	{
-		/* One less item */
 		p_ptr->equip_cnt--;
+		p_ptr->redraw |= PR_EQUIP;
+		limit = item >= QUIVER_START ? QUIVER_END : 0;
+	}
 
+	/* If the item is equipped (but not in the quiver), there is no need to */
+	/* slide other items. Bonuses and such will need to be recalculated */
+	if (!limit)
+	{
 		/* Erase the empty slot */
 		object_wipe(&inventory[item]);
-
-		/* Recalculate bonuses */
+		
+		/* Recalculate stuff */
 		p_ptr->update |= (PU_BONUS);
-
-		/* Recalculate torch */
 		p_ptr->update |= (PU_TORCH);
-
-		/* Recalculate mana XXX */
 		p_ptr->update |= (PU_MANA);
-
-		/* Redraw stuff */
-		p_ptr->redraw |= (PR_EQUIP);
+		
+		return;
 	}
+
+	/* Slide everything down */
+	for (j = item, i = item + 1; i < limit; i++)
+	{
+		if (limit == QUIVER_END && inventory[i].k_idx)
+		{
+			/* If we have an item with an inscribed location (and it's in */
+			/* that location) then we won't move it. */
+			slot = get_inscribed_ammo_slot(&inventory[i]);
+			if (slot && slot == i)
+				continue;
+		}
+		COPY(&inventory[j], &inventory[i], object_type);
+		j = i;
+	}
+
+	/* Reorder the quiver if necessary */
+	if (item >= QUIVER_START) sort_quiver();
+
+	/* Wipe the left-over object on the end */
+	object_wipe(&inventory[j]);
+
+	/* Inventory has changed, so disable repeat command */ 
+	cmd_disable_repeat();
 }
 
 
@@ -2415,7 +2567,7 @@ void floor_item_describe(int item)
 	char o_name[80];
 
 	/* Get a description */
-	object_desc(o_name, sizeof(o_name), o_ptr, TRUE, ODESC_FULL);
+	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
 
 	/* Print a message */
 	msg_format("You see %s.", o_name);
@@ -2468,7 +2620,7 @@ void floor_item_optimize(int item)
 bool inven_carry_okay(const object_type *o_ptr)
 {
 	/* Empty slot? */
-	if (p_ptr->inven_cnt < INVEN_PACK) return TRUE;
+	if (p_ptr->inven_cnt < INVEN_MAX_PACK) return TRUE;
 
 	/* Check if it can stack */
 	if (inven_stack_okay(o_ptr)) return TRUE;
@@ -2482,21 +2634,36 @@ bool inven_carry_okay(const object_type *o_ptr)
  */
 bool inven_stack_okay(const object_type *o_ptr)
 {
+	/* Similar slot? */
 	int j;
 
-	/* Similar slot? */
-	for (j = 0; j < INVEN_PACK; j++)
+	/* If our pack is full and we're adding too many missiles, there won't be
+	 * enough room in the quiver, so don't check it. */
+	int limit;
+
+	if (!pack_is_full())
+		/* The pack has more room */
+		limit = ALL_INVEN_TOTAL;
+	else if (p_ptr->quiver_remainder == 0)
+		/* Quiver already maxed out */
+		limit = INVEN_PACK;
+	else if (p_ptr->quiver_remainder + o_ptr->number > 99)
+		/* Too much new ammo */
+		limit = INVEN_PACK;
+	else
+		limit = ALL_INVEN_TOTAL;
+
+	for (j = 0; j < limit; j++)
 	{
 		object_type *j_ptr = &inventory[j];
 
-		/* Skip non-objects */
+		/* Skip equipped items and non-objects */
+		if (j >= INVEN_PACK && j < QUIVER_START) continue;
 		if (!j_ptr->k_idx) continue;
 
 		/* Check if the two items can be combined */
 		if (object_similar(j_ptr, o_ptr)) return (TRUE);
 	}
-
-	/* Nope */
 	return (FALSE);
 }
 
@@ -2554,6 +2721,9 @@ s16b inven_carry(object_type *o_ptr)
 			/* Redraw stuff */
 			p_ptr->redraw |= (PR_INVEN);
 
+			/* Save quiver size */
+			save_quiver_size();
+
 			/* Success */
 			return (j);
 		}
@@ -2561,11 +2731,11 @@ s16b inven_carry(object_type *o_ptr)
 
 
 	/* Paranoia */
-	if (p_ptr->inven_cnt > INVEN_PACK) return (-1);
+	if (p_ptr->inven_cnt > INVEN_MAX_PACK) return (-1);
 
 
 	/* Find an empty slot */
-	for (j = 0; j <= INVEN_PACK; j++)
+	for (j = 0; j <= INVEN_MAX_PACK; j++)
 	{
 		j_ptr = &inventory[j];
 
@@ -2576,9 +2746,8 @@ s16b inven_carry(object_type *o_ptr)
 	/* Use that slot */
 	i = j;
 
-
 	/* Reorder the pack */
-	if (i < INVEN_PACK)
+	if (i < INVEN_MAX_PACK)
 	{
 		s32b o_value, j_value;
 
@@ -2586,7 +2755,7 @@ s16b inven_carry(object_type *o_ptr)
 		o_value = k_info[o_ptr->k_idx].cost;
 
 		/* Scan every occupied slot */
-		for (j = 0; j < INVEN_PACK; j++)
+		for (j = 0; j < INVEN_MAX_PACK; j++)
 		{
 			j_ptr = &inventory[j];
 
@@ -2615,8 +2784,8 @@ s16b inven_carry(object_type *o_ptr)
 			if (!object_is_known(o_ptr)) continue;
 			if (!object_is_known(j_ptr)) break;
 
-			/* Lites sort by decreasing fuel */
-			if (o_ptr->tval == TV_LITE)
+			/* Lights sort by decreasing fuel */
+			if (o_ptr->tval == TV_LIGHT)
 			{
 				if (o_ptr->pval > j_ptr->pval) break;
 				if (o_ptr->pval < j_ptr->pval) continue;
@@ -2643,7 +2812,6 @@ s16b inven_carry(object_type *o_ptr)
 		/* Wipe the empty slot */
 		object_wipe(&inventory[i]);
 	}
-
 
 	/* Copy the item */
 	object_copy(&inventory[i], o_ptr);
@@ -2677,6 +2845,26 @@ s16b inven_carry(object_type *o_ptr)
 
 	/* Redraw stuff */
 	p_ptr->redraw |= (PR_INVEN);
+
+	/* Hobbits ID mushrooms on pickup, gnomes ID wands and staffs on pickup */
+	if (!object_is_known(j_ptr))
+	{
+		if ((rp_ptr->new_racial_flags & NRF_KNOW_MUSHROOM) &&
+			j_ptr->tval == TV_FOOD)
+		{
+			do_ident_item(i, j_ptr);
+			msg_print("Mushrooms for breakfast!");
+		}
+
+		if ((rp_ptr->new_racial_flags & NRF_KNOW_ZAPPER) &&
+			(j_ptr->tval == TV_WAND || j_ptr->tval == TV_STAFF))
+		{
+			do_ident_item(i, j_ptr);
+		}
+	}
+
+	/* Save quiver size */
+	save_quiver_size();
 
 	/* Return the slot */
 	return (i);
@@ -2726,7 +2914,7 @@ s16b inven_takeoff(int item, int amt)
 	i_ptr->number = amt;
 
 	/* Describe the object */
-	object_desc(o_name, sizeof(o_name), i_ptr, TRUE, ODESC_FULL);
+	object_desc(o_name, sizeof(o_name), i_ptr, ODESC_PREFIX | ODESC_FULL);
 
 	/* Took off weapon */
 	if (item == INVEN_WIELD)
@@ -2741,7 +2929,7 @@ s16b inven_takeoff(int item, int amt)
 	}
 
 	/* Took off light */
-	else if (item == INVEN_LITE)
+	else if (item == INVEN_LIGHT)
 	{
 		act = "You were holding";
 	}
@@ -2822,13 +3010,13 @@ void inven_drop(int item, int amt)
 	i_ptr->number = amt;
 
 	/* Describe local object */
-	object_desc(o_name, sizeof(o_name), i_ptr, TRUE, ODESC_FULL);
+	object_desc(o_name, sizeof(o_name), i_ptr, ODESC_PREFIX | ODESC_FULL);
 
 	/* Message */
 	msg_format("You drop %s (%c).", o_name, index_to_label(item));
 
 	/* Drop it near the player */
-	drop_near(i_ptr, 0, py, px);
+	drop_near(i_ptr, 0, py, px, FALSE);
 
 	/* Modify, Describe, Optimize */
 	inven_item_increase(item, -amt);
@@ -2992,8 +3180,8 @@ void reorder_pack(void)
 			if (!object_is_known(o_ptr)) continue;
 			if (!object_is_known(j_ptr)) break;
 
-			/* Lites sort by decreasing fuel */
-			if (o_ptr->tval == TV_LITE)
+			/* Lights sort by decreasing fuel */
+			if (o_ptr->tval == TV_LIGHT)
 			{
 				if (o_ptr->pval > j_ptr->pval) break;
 				if (o_ptr->pval < j_ptr->pval) continue;
@@ -3044,6 +3232,40 @@ void reorder_pack(void)
 
 
 /*
+ *Returns the number of times in 1000 that @ will FAIL
+ * - thanks to Ed Graham for the formula
+ */
+int get_use_device_chance(const object_type *o_ptr)
+{
+	int lev, skill, fail;
+
+	/* these could be globals if desired, calculated rather than stated */
+	int skill_min = 10;
+	int skill_max = 141;
+	int diff_min = 1;
+	int diff_max = 100;
+
+	/* Extract the item level, which is the difficulty rating */
+	if (artifact_p(o_ptr))
+		lev = a_info[o_ptr->name1].level;
+	else
+		lev = k_info[o_ptr->k_idx].level;
+
+	/* Chance of failure */
+	skill = p_ptr->state.skills[SKILL_DEVICE];
+
+	fail = 100 * ((skill - lev) - (skill_max - diff_min))
+		/ ((lev - skill) - (diff_max - skill_min));
+
+	/* Limit range */
+	if (fail > 950) fail = 950;
+	if (fail < 10) fail = 10;
+
+	return fail;
+}
+
+
+/*
  * Distribute charges of rods, staves, or wands.
  *
  * o_ptr = source item
@@ -3052,7 +3274,8 @@ void reorder_pack(void)
  */
 void distribute_charges(object_type *o_ptr, object_type *q_ptr, int amt)
 {
-	int max_time;
+	const object_kind *k_ptr = &k_info[o_ptr->k_idx];
+	int charge_time = randcalc(k_ptr->time, 0, AVERAGE), max_time;
 
 	/*
 	 * Hack -- If rods, staves, or wands are dropped, the total maximum
@@ -3076,7 +3299,7 @@ void distribute_charges(object_type *o_ptr, object_type *q_ptr, int amt)
 	 */
 	if (o_ptr->tval == TV_ROD)
 	{
-		max_time = k_info[o_ptr->k_idx].time_base * amt;
+		max_time = charge_time * amt;
 
 		if (o_ptr->timeout > max_time)
 			q_ptr->timeout = max_time;
@@ -3111,7 +3334,58 @@ void reduce_charges(object_type *o_ptr, int amt)
 }
 
 
+int number_charging(const object_type *o_ptr)
+{
+	int charge_time, num_charging;
+	random_value timeout;
 
+	/* Artifacts have a special timeout */	
+	if(o_ptr->name1)
+		timeout = a_info[o_ptr->name1].time;
+	else
+		timeout = k_info[o_ptr->k_idx].time;
+
+	charge_time = randcalc(timeout, 0, AVERAGE);
+
+	/* Item has no timeout */
+	if (charge_time <= 0) return 0;
+
+	/* No items are charging */
+	if (o_ptr->timeout <= 0) return 0;
+
+	/* Calculate number charging based on timeout */
+	num_charging = (o_ptr->timeout + charge_time - 1) / charge_time;
+
+	/* Number charging cannot exceed stack size */
+	if (num_charging > o_ptr->number) num_charging = o_ptr->number;
+
+	return num_charging;
+}
+
+
+bool recharge_timeout(object_type *o_ptr)
+{
+	int charging_before, charging_after;
+
+	/* Find the number of charging items */
+	charging_before = number_charging(o_ptr);
+
+	/* Nothing to charge */	
+	if (charging_before == 0)
+		return FALSE;
+
+	/* Decrease the timeout */
+	o_ptr->timeout -= MIN(charging_before, o_ptr->timeout);
+
+	/* Find the new number of charging items */
+	charging_after = number_charging(o_ptr);
+
+	/* Return true if at least 1 item obtained a charge */
+	if (charging_after < charging_before)
+		return TRUE;
+	else
+		return FALSE;
+}
 
 /*
  * Looks if "inscrip" is present on the given object.
@@ -3216,7 +3490,7 @@ static const grouper tval_names[] =
 	{ TV_HARD_ARMOR,  "hard armour" },
 	{ TV_DRAG_ARMOR,  "dragon armor" },
 	{ TV_DRAG_ARMOR,  "dragon armour" },
-	{ TV_LITE,        "light" },
+	{ TV_LIGHT,       "light" },
 	{ TV_AMULET,      "amulet" },
 	{ TV_RING,        "ring" },
 	{ TV_STAFF,       "staff" },
@@ -3394,7 +3668,7 @@ void display_object_recall(object_type *o_ptr)
 	clear_from(0);
 	prt("", 0, 0);
 	object_info_header(o_ptr);
-	if (!object_info(o_ptr, FALSE))
+	if (!object_info(o_ptr, OINFO_NONE))
 		text_out("This item does not seem to possess any special abilities.");
 }
 
@@ -3421,7 +3695,7 @@ void display_object_kind_recall(s16b k_idx)
 	object_type object;
 	object_type *o_ptr = &object;
 	object_wipe(o_ptr);
-	object_prep(o_ptr, k_idx);
+	object_prep(o_ptr, k_idx, 0, EXTREMIFY);
 	if (k_info[k_idx].aware) o_ptr->ident |= (IDENT_STORE);
 
 	/* draw it */
@@ -3481,7 +3755,7 @@ void display_itemlist(void)
 				unsigned j;
 
 				/* Skip gold/squelched */
-				if (o_ptr->tval == TV_GOLD || squelch_item_ok(o_ptr))
+				if (o_ptr->tval == TV_GOLD || squelch_hide_item(o_ptr))
 					continue;
 
 				/* See if we've already seen a similar item; if so, just add */
@@ -3550,14 +3824,14 @@ void display_itemlist(void)
 		object_type *o_ptr = types[i];
 
 		/* We shouldn't list coins or squelched items */
-		if (o_ptr->tval == TV_GOLD || squelch_item_ok(o_ptr))
+		if (o_ptr->tval == TV_GOLD || squelch_hide_item(o_ptr))
 			continue;
 
-		object_desc(o_name, sizeof(o_name), o_ptr, FALSE, ODESC_FULL);
+		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_FULL);
 		if (counts[i] > 1)
-			sprintf(o_desc, "%s (x%d)", o_name, counts[i]);
+			strnfmt(o_desc, sizeof(o_desc), "%s (x%d)", o_name, counts[i]);
 		else
-			sprintf(o_desc, "%s", o_name);
+			strnfmt(o_desc, sizeof(o_desc), "%s", o_name);
 
 		/* Reset position */
 		cur_x = x;
@@ -3655,7 +3929,7 @@ bool obj_is_rod(const object_type *o_ptr)    { return o_ptr->tval == TV_ROD; }
 bool obj_is_potion(const object_type *o_ptr) { return o_ptr->tval == TV_POTION; }
 bool obj_is_scroll(const object_type *o_ptr) { return o_ptr->tval == TV_SCROLL; }
 bool obj_is_food(const object_type *o_ptr)   { return o_ptr->tval == TV_FOOD; }
-bool obj_is_lite(const object_type *o_ptr)   { return o_ptr->tval == TV_LITE; }
+bool obj_is_light(const object_type *o_ptr)   { return o_ptr->tval == TV_LIGHT; }
 bool obj_is_ring(const object_type *o_ptr)   { return o_ptr->tval == TV_RING; }
 
 
@@ -3677,17 +3951,24 @@ bool obj_is_ammo(const object_type *o_ptr)
 	}
 }
 
+/* Determine if an object has charges */
+bool obj_has_charges(const object_type *o_ptr)
+{
+	if (o_ptr->tval != TV_WAND && o_ptr->tval != TV_STAFF) return FALSE;
+
+	if (o_ptr->pval <= 0) return FALSE;
+
+	return TRUE;
+}
+
 /* Determine if an object is zappable */
 bool obj_can_zap(const object_type *o_ptr)
 {
-	const object_kind *k_ptr = &k_info[o_ptr->k_idx];
-	if (o_ptr->tval != TV_ROD) return FALSE;
+	/* Any rods not charging? */
+	if (o_ptr->tval == TV_ROD && number_charging(o_ptr) < o_ptr->number)
+		return TRUE;
 
-	/* All still charging? */
-	if (o_ptr->number <= (o_ptr->timeout + (k_ptr->time_base - 1)) / k_ptr->time_base) return FALSE;
-
-	/* Otherwise OK */
-	return TRUE;
+	return FALSE;
 }
 
 /* Determine if an object is activatable */
@@ -3711,19 +3992,19 @@ bool obj_can_activate(const object_type *o_ptr)
 bool obj_can_refill(const object_type *o_ptr)
 {
 	u32b f[OBJ_FLAG_N];
-	const object_type *j_ptr = &inventory[INVEN_LITE];
+	const object_type *j_ptr = &inventory[INVEN_LIGHT];
 
 	/* Get flags */
 	object_flags(o_ptr, f);
 
-	if (j_ptr->sval == SV_LITE_LANTERN)
+	if (j_ptr->sval == SV_LIGHT_LANTERN)
 	{
 		/* Flasks of oil are okay */
 		if (o_ptr->tval == TV_FLASK) return (TRUE);
 	}
 
 	/* Non-empty, non-everburning sources are okay */
-	if ((o_ptr->tval == TV_LITE) &&
+	if ((o_ptr->tval == TV_LIGHT) &&
 	    (o_ptr->sval == j_ptr->sval) &&
 	    (o_ptr->timeout > 0) &&
 		!(f[2] & TR2_NO_FUEL))
@@ -3861,7 +4142,7 @@ int scan_items(int *item_list, size_t item_list_max, int mode)
 
 	if (use_equip)
 	{
-		for (i = INVEN_WIELD; i < INVEN_TOTAL && item_list_num < item_list_max; i++)
+		for (i = INVEN_WIELD; i < ALL_INVEN_TOTAL && item_list_num < item_list_max; i++)
 		{
 			if (get_item_okay(i))
 				item_list[item_list_num++] = i;
@@ -3895,7 +4176,7 @@ int scan_items(int *item_list, size_t item_list_max, int mode)
  */
 bool item_is_available(int item, bool (*tester)(const object_type *), int mode)
 {
-	int item_list[INVEN_TOTAL + MAX_FLOOR_STACK];
+	int item_list[ALL_INVEN_TOTAL + MAX_FLOOR_STACK];
 	int item_num;
 	int i;
 
@@ -3912,4 +4193,67 @@ bool item_is_available(int item, bool (*tester)(const object_type *), int mode)
 	return FALSE;
 }
 
+/*
+ * Returns whether the pack is holding the maximum number of items. The max
+ * size is INVEN_MAX_PACK, which is a macro since quiver size affects slots
+ * available.
+ */
+bool pack_is_full(void)
+{
+	return inventory[INVEN_MAX_PACK - 1].k_idx ? TRUE : FALSE;
+}
 
+/*
+ * Returns whether the pack is holding the more than the maximum number of
+ * items. The max size is INVEN_MAX_PACK, which is a macro since quiver size
+ * affects slots available. If this is true, calling pack_overflow() will
+ * trigger a pack overflow.
+ */
+bool pack_is_overfull(void)
+{
+	return inventory[INVEN_MAX_PACK].k_idx ? TRUE : FALSE;
+}
+
+/*
+ * Overflow an item from the pack, if it is overfull.
+ */
+void pack_overflow(void)
+{
+	int item = INVEN_MAX_PACK;
+	char o_name[80];
+	object_type *o_ptr;
+
+	if (!pack_is_overfull()) return;
+
+	/* Get the slot to be dropped */
+	o_ptr = &inventory[item];
+
+	/* Disturbing */
+	disturb(0, 0);
+
+	/* Warning */
+	msg_print("Your pack overflows!");
+
+	/* Describe */
+	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
+
+	/* Message */
+	msg_format("You drop %s (%c).", o_name, index_to_label(item));
+
+	/* Drop it (carefully) near the player */
+	drop_near(o_ptr, 0, p_ptr->py, p_ptr->px, FALSE);
+
+	/* Modify, Describe, Optimize */
+	inven_item_increase(item, -255);
+	inven_item_describe(item);
+	inven_item_optimize(item);
+
+	/* Notice stuff (if needed) */
+	if (p_ptr->notice) notice_stuff();
+
+	/* Update stuff (if needed) */
+	if (p_ptr->update) update_stuff();
+
+	/* Redraw stuff (if needed) */
+	if (p_ptr->redraw) redraw_stuff();
+}

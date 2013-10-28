@@ -19,6 +19,11 @@
 #include "game-cmd.h"
 /*#include "cmds.h"*/
 
+/* 
+ * Height of the help screen; any higher than 4 will overlap the health
+ * bar which we want to keep in targeting mode.
+ */
+#define HELP_HEIGHT 3
 
 /*** File-wide variables ***/
 
@@ -458,6 +463,144 @@ static void target_set_interactive_prepare(int mode)
 
 
 /*
+ * Perform the minimum "whole panel" adjustment to ensure that the given
+ * location is contained inside the current panel, and return TRUE if any
+ * such adjustment was performed. Optionally accounts for the targeting
+ * help window.
+ */
+bool adjust_panel_help(int y, int x, bool help)
+{
+	bool changed = FALSE;
+
+	int j;
+
+	int screen_hgt_main = help ? (Term->hgt - ROW_MAP - 3) 
+							   : (Term->hgt - ROW_MAP - 1);
+
+	/* Scan windows */
+	for (j = 0; j < ANGBAND_TERM_MAX; j++)
+	{
+		int wx, wy;
+		int screen_hgt, screen_wid;
+
+		term *t = angband_term[j];
+
+		/* No window */
+		if (!t) continue;
+
+		/* No relevant flags */
+		if ((j > 0) && !(op_ptr->window_flag[j] & PW_MAP)) continue;
+
+		wy = t->offset_y;
+		wx = t->offset_x;
+
+		screen_hgt = (j == 0) ? screen_hgt_main : t->hgt;
+		screen_wid = (j == 0) ? (Term->wid - COL_MAP - 1) : t->wid;
+
+		/* Bigtile panels only have half the width */
+		if (use_bigtile) screen_wid = screen_wid / 2;
+
+		/* Adjust as needed */
+		while (y >= wy + screen_hgt) wy += screen_hgt / 2;
+		while (y < wy) wy -= screen_hgt / 2;
+
+		/* Adjust as needed */
+		while (x >= wx + screen_wid) wx += screen_wid / 2;
+		while (x < wx) wx -= screen_wid / 2;
+
+		/* Use "modify_panel" */
+		if (modify_panel(t, wy, wx)) changed = TRUE;
+	}
+
+	return (changed);
+}
+
+
+/*
+ * Describe a location relative to the player position.
+ * e.g. "12 S 35 W" or "0 N, 33 E" or "0 N, 0 E"
+ */
+void coords_desc(char *buf, int size, int y, int x) {
+	
+	char *east_or_west;
+	char *north_or_south;
+
+	int py = p_ptr->py;
+	int px = p_ptr->px;
+	
+	if (y > py)
+		north_or_south = "S";
+	else
+		north_or_south = "N";
+	
+	if (x < px)
+		east_or_west = "W";
+	else
+		east_or_west = "E";
+	
+	strnfmt(buf, size, "%d %s, %d %s",
+		ABS(y-py), north_or_south, ABS(x-px), east_or_west);
+}
+
+/*
+ * Display targeting help at the bottom of the screen.
+ */
+static void target_display_help(bool monster, bool free)
+{
+	/* Determine help location */
+	int wid, hgt, help_loc;
+	Term_get_size(&wid, &hgt);
+	help_loc = hgt - HELP_HEIGHT;
+	
+	/* Clear */
+	clear_from(help_loc);
+
+	/* Prepare help hooks */
+	text_out_hook = text_out_to_screen;
+	text_out_indent = 1;
+	Term_gotoxy(1, help_loc);
+
+	/* Display help */
+	text_out_c(TERM_L_GREEN, "<dir>");
+	text_out(" and ");
+	text_out_c(TERM_L_GREEN, "<click>");
+	text_out(" look around. '");
+	text_out_c(TERM_L_GREEN, "g");
+	text_out(" moves to the selection. '");
+	text_out_c(TERM_L_GREEN, "p");
+	text_out("' selects the player. '");
+	text_out_c(TERM_L_GREEN, "q");
+	text_out("' exits. '");
+	text_out_c(TERM_L_GREEN, "r");
+	text_out("' displays details. '");
+
+	if (free)
+	{
+		text_out_c(TERM_L_GREEN, "m");
+		text_out("' restricts to interesting places. ");
+	}
+	else
+	{
+		text_out_c(TERM_L_GREEN, "+");
+		text_out("' and '");
+		text_out_c(TERM_L_GREEN, "-");
+		text_out("' cycle through interesting places. '");
+		text_out_c(TERM_L_GREEN, "o");
+		text_out("' allows free selection. ");
+	}
+	
+	if (monster || free)
+	{
+		text_out("'");
+		text_out_c(TERM_L_GREEN, "t");
+		text_out("' targets the current selection.");
+	}
+
+	/* Reset */
+	text_out_indent = 0;
+}
+
+/*
  * Examine a grid, return a keypress.
  *
  * The "mode" argument contains the "TARGET_LOOK" bit flag, which
@@ -478,7 +621,7 @@ static void target_set_interactive_prepare(int mode)
  *
  * This function must handle blindness/hallucination.
  */
-static ui_event_data target_set_interactive_aux(int y, int x, int mode, cptr info)
+static ui_event_data target_set_interactive_aux(int y, int x, int mode)
 {
 	s16b this_o_idx = 0, next_o_idx = 0;
 
@@ -496,6 +639,11 @@ static ui_event_data target_set_interactive_aux(int y, int x, int mode, cptr inf
 	ui_event_data query;
 
 	char out_val[256];
+
+	char coords[20];
+	
+	/* Describe the square location */
+	coords_desc(coords, sizeof(coords), y, x);
 
 	/* Repeat forever */
 	while (1)
@@ -522,7 +670,6 @@ static ui_event_data target_set_interactive_aux(int y, int x, int mode, cptr inf
 			s2 = "on ";
 		}
 
-
 		/* Hack -- hallucination */
 		if (p_ptr->timed[TMD_IMAGE])
 		{
@@ -532,12 +679,12 @@ static ui_event_data target_set_interactive_aux(int y, int x, int mode, cptr inf
 			if (p_ptr->wizard)
 			{
 				strnfmt(out_val, sizeof(out_val),
-				        "%s%s%s%s [%s] (%d:%d)", s1, s2, s3, name, info, y, x);
+						"%s%s%s%s, %s (%d:%d).", s1, s2, s3, name, coords, y, x);
 			}
 			else
 			{
 				strnfmt(out_val, sizeof(out_val),
-				        "%s%s%s%s [%s]", s1, s2, s3, name, info);
+						"%s%s%s%s, %s.", s1, s2, s3, name, coords);
 			}
 
 			prt(out_val, 0, 0);
@@ -550,7 +697,6 @@ static ui_event_data target_set_interactive_aux(int y, int x, int mode, cptr inf
 			/* Repeat forever */
 			continue;
 		}
-
 
 		/* Actual monsters */
 		if (cave_m_idx[y][x] > 0)
@@ -592,9 +738,6 @@ static ui_event_data target_set_interactive_aux(int y, int x, int mode, cptr inf
 						/* Recall on screen */
 						screen_roff(m_ptr->r_idx);
 
-						/* Hack -- Complete the prompt (again) */
-						Term_addstr(-1, TERM_WHITE, format("  [r,%s]", info));
-
 						/* Command */
 						query = inkey_ex();
 
@@ -614,14 +757,14 @@ static ui_event_data target_set_interactive_aux(int y, int x, int mode, cptr inf
 						if (p_ptr->wizard)
 						{
 							strnfmt(out_val, sizeof(out_val),
-							        "%s%s%s%s (%s) [r,%s] (%d:%d)",
-						            s1, s2, s3, m_name, buf, info, y, x);
+									"%s%s%s%s (%s), %s (%d:%d).",
+									s1, s2, s3, m_name, buf, coords, y, x);
 						}
 						else
 						{
 							strnfmt(out_val, sizeof(out_val),
-							        "%s%s%s%s (%s) [r,%s]",
-							        s1, s2, s3, m_name, buf, info);
+									"%s%s%s%s (%s), %s.",
+									s1, s2, s3, m_name, buf, coords);
 						}
 
 						prt(out_val, 0, 0);
@@ -670,19 +813,20 @@ static ui_event_data target_set_interactive_aux(int y, int x, int mode, cptr inf
 					next_o_idx = o_ptr->next_o_idx;
 
 					/* Obtain an object description */
-					object_desc(o_name, sizeof(o_name), o_ptr, TRUE, ODESC_FULL);
+					object_desc(o_name, sizeof(o_name), o_ptr,
+								ODESC_PREFIX | ODESC_FULL);
 
 					/* Describe the object */
 					if (p_ptr->wizard)
 					{
 						strnfmt(out_val, sizeof(out_val),
-						        "%s%s%s%s [%s] (%d:%d)",
-						        s1, s2, s3, o_name, info, y, x);
+								"%s%s%s%s, %s (%d:%d).",
+								s1, s2, s3, o_name, coords, y, x);
 					}
 					else
 					{
 						strnfmt(out_val, sizeof(out_val),
-						        "%s%s%s%s [%s]", s1, s2, s3, o_name, info);
+								"%s%s%s%s, %s.", s1, s2, s3, o_name, coords);
 					}
 
 					prt(out_val, 0, 0);
@@ -732,14 +876,14 @@ static ui_event_data target_set_interactive_aux(int y, int x, int mode, cptr inf
 				if (p_ptr->wizard)
 				{
 					strnfmt(out_val, sizeof(out_val),
-					        "%s%s%sa pile of %d objects [r,%s] (%d:%d)",
-					        s1, s2, s3, floor_num, info, y, x);
+							"%s%s%sa pile of %d objects, %s (%d:%d).",
+							s1, s2, s3, floor_num, coords, y, x);
 				}
 				else
 				{
 					strnfmt(out_val, sizeof(out_val),
-					        "%s%s%sa pile of %d objects [r,%s]",
-					        s1, s2, s3, floor_num, info);
+							"%s%s%sa pile of %d objects, %s.",
+							s1, s2, s3, floor_num, coords);
 				}
 
 				prt(out_val, 0, 0);
@@ -757,7 +901,7 @@ static ui_event_data target_set_interactive_aux(int y, int x, int mode, cptr inf
 						screen_save();
 
 						/* Display */
-						show_floor(floor_list, floor_num, TRUE);
+						show_floor(floor_list, floor_num, (OLIST_WEIGHT | OLIST_GOLD));
 
 						/* Describe the pile */
 						prt(out_val, 0, 0);
@@ -797,19 +941,20 @@ static ui_event_data target_set_interactive_aux(int y, int x, int mode, cptr inf
 				boring = FALSE;
 
 				/* Obtain an object description */
-				object_desc(o_name, sizeof(o_name), o_ptr, TRUE, ODESC_FULL);
+				object_desc(o_name, sizeof(o_name), o_ptr,
+							ODESC_PREFIX | ODESC_FULL);
 
 				/* Describe the object */
 				if (p_ptr->wizard)
 				{
 					strnfmt(out_val, sizeof(out_val),
-					        "%s%s%s%s [%s] (%d:%d)",
-					        s1, s2, s3, o_name, info, y, x);
+							"%s%s%s%s, %s (%d:%d).",
+							s1, s2, s3, o_name, coords, y, x);
 				}
 				else
 				{
 					strnfmt(out_val, sizeof(out_val),
-					        "%s%s%s%s [%s]", s1, s2, s3, o_name, info);
+							"%s%s%s%s, %s.", s1, s2, s3, o_name, coords);
 				}
 
 				prt(out_val, 0, 0);
@@ -831,6 +976,7 @@ static ui_event_data target_set_interactive_aux(int y, int x, int mode, cptr inf
 				/* Preposition */
 				s2 = "on ";
 			}
+
 		}
 
 		/* Double break */
@@ -871,12 +1017,12 @@ static ui_event_data target_set_interactive_aux(int y, int x, int mode, cptr inf
 			if (p_ptr->wizard)
 			{
 				strnfmt(out_val, sizeof(out_val),
-				        "%s%s%s%s [%s] (%d:%d)", s1, s2, s3, name, info, y, x);
+						"%s%s%s%s, %s (%d:%d).", s1, s2, s3, name, coords, y, x);
 			}
 			else
 			{
 				strnfmt(out_val, sizeof(out_val),
-				        "%s%s%s%s [%s]", s1, s2, s3, name, info);
+						"%s%s%s%s, %s.", s1, s2, s3, name, coords);
 			}
 
 			prt(out_val, 0, 0);
@@ -893,6 +1039,57 @@ static ui_event_data target_set_interactive_aux(int y, int x, int mode, cptr inf
 
 	/* Keep going */
 	return (query);
+}
+
+
+bool target_set_closest(int mode)
+{
+	int y, x, m_idx;
+	monster_type *m_ptr;
+	char m_name[80];
+	bool visibility;
+
+	/* Cancel old target */
+	target_set_monster(0);
+
+	/* Get ready to do targetting */
+	target_set_interactive_prepare(mode);
+
+	/* Find the first monster in the queue */
+	y = temp_y[0];
+	x = temp_x[0];
+	m_idx = cave_m_idx[y][x];
+	
+	/* Target the monster, if possible */
+	if ((m_idx <= 0) || !target_able(m_idx))
+	{
+		msg_print("No Available Target.");
+		return FALSE;
+	}
+
+	/* Target the monster */
+	m_ptr = &mon_list[m_idx];
+	monster_desc(m_name, sizeof(m_name), m_ptr, 0x00);
+	if (!(mode & TARGET_QUIET))
+		msg_format("%^s is targeted.", m_name);
+	Term_fresh();
+
+	/* Set up target information */
+	monster_race_track(m_ptr->r_idx);
+	health_track(cave_m_idx[y][x]);
+	target_set_monster(m_idx);
+
+	/* Visual cue */
+	Term_get_cursor(&visibility);
+	(void)Term_set_cursor(TRUE);
+	move_cursor_relative(y, x);
+	Term_redraw_section(x, y, x, y);
+
+	/* TODO: what's an appropriate amount of time to spend highlighting */
+	Term_xtra(TERM_XTRA_DELAY, 150);
+	(void)Term_set_cursor(visibility);
+
+	return TRUE;
 }
 
 
@@ -948,14 +1145,13 @@ static ui_event_data target_set_interactive_aux(int y, int x, int mode, cptr inf
 bool target_set_interactive(int mode, int x, int y)
 {
 	int i, d, m, t, bd;
+	int wid, hgt, help_prompt_loc;
 
 	bool done = FALSE;
-
 	bool flag = TRUE;
+	bool help = FALSE;
 
 	ui_event_data query;
-
-	char info[80];
 
 	/* If we haven't been given an initial location, start on the
 	   player. */
@@ -974,10 +1170,15 @@ bool target_set_interactive(int mode, int x, int y)
 	/* Cancel target */
 	target_set_monster(0);
 
-
 	/* Cancel tracking */
 	/* health_track(0); */
 
+	/* Calculate the window location for the help prompt */
+	Term_get_size(&wid, &hgt);
+	help_prompt_loc = hgt - 1;
+	
+	/* Display the help prompt */
+	prt("Press '?' for help.", help_prompt_loc, 0);
 
 	/* Prepare the "temp" array */
 	target_set_interactive_prepare(mode);
@@ -994,27 +1195,24 @@ bool target_set_interactive(int mode, int x, int y)
 			y = temp_y[m];
 			x = temp_x[m];
 
-			/* Allow target */
-			if ((cave_m_idx[y][x] > 0) && target_able(cave_m_idx[y][x]))
-			{
-				my_strcpy(info, "g,q,t,p,o,+,-,<dir>, <click>", sizeof(info));
-			}
-
-			/* Dis-allow target */
-			else
-			{
-				my_strcpy(info, "g,q,p,o,+,-,<dir>, <click>", sizeof(info));
-			}
 
 			/* Adjust panel if needed */
-			if (adjust_panel(y, x))
+			if (adjust_panel_help(y, x, help))
 			{
 				/* Handle stuff */
 				handle_stuff();
 			}
+		
+			/* Update help */
+			if (help)
+			{
+				bool good_target = ((cave_m_idx[y][x] > 0) &&
+								target_able(cave_m_idx[y][x]));
+				target_display_help(good_target, !(flag && temp_n));
+			}
 
 			/* Describe and Prompt */
-			query = target_set_interactive_aux(y, x, mode, info);
+			query = target_set_interactive_aux(y, x, mode);
 
 			/* Cancel tracking */
 			/* health_track(0); */
@@ -1109,6 +1307,20 @@ bool target_set_interactive(int mode, int x, int y)
 					done = TRUE;
 					break;
 				}
+				
+				case '?':
+				{
+					help = !help;
+					
+					/* Redraw main window */
+					p_ptr->redraw |= (PR_BASIC | PR_EXTRA | PR_MAP | PR_EQUIP);
+					Term_clear();
+					handle_stuff();
+					if (!help)
+						prt("Press '?' for help.", help_prompt_loc, 0);
+					
+					break;
+				}
 
 				default:
 				{
@@ -1166,11 +1378,14 @@ bool target_set_interactive(int mode, int x, int y)
 		/* Arbitrary grids */
 		else
 		{
-			/* Default prompt */
-			my_strcpy(info, "g,q,t,p,m,+,-,<dir>, <click>", sizeof(info));
+			/* Update help */
+			if (help) {
+				bool good_target = ((cave_m_idx[y][x] > 0) && target_able(cave_m_idx[y][x]));
+				target_display_help(good_target, !(flag && temp_n));
+			}
 
 			/* Describe and Prompt (enable "TARGET_LOOK") */
-			query = target_set_interactive_aux(y, x, mode | TARGET_LOOK, info);
+			query = target_set_interactive_aux(y, x, mode | TARGET_LOOK);
 
 			/* Cancel tracking */
 			/* health_track(0); */
@@ -1291,6 +1506,20 @@ bool target_set_interactive(int mode, int x, int y)
 					break;
 				}
 
+				case '?':
+				{
+					help = !help;
+					
+					/* Redraw main window */
+					p_ptr->redraw |= (PR_BASIC | PR_EXTRA | PR_MAP | PR_EQUIP);
+					Term_clear();
+					handle_stuff();
+					if (!help)
+						prt("Press '?' for help.", help_prompt_loc, 0);
+					
+					break;
+				}
+
 				default:
 				{
 					/* Extract a direction */
@@ -1322,7 +1551,7 @@ bool target_set_interactive(int mode, int x, int y)
 				else if (y <= 0) y++;
 
 				/* Adjust panel if needed */
-				if (adjust_panel(y, x))
+				if (adjust_panel_help(y, x, help))
 				{
 					/* Handle stuff */
 					handle_stuff();
@@ -1337,8 +1566,18 @@ bool target_set_interactive(int mode, int x, int y)
 	/* Forget */
 	temp_n = 0;
 
-	/* Clear the top line */
-	prt("", 0, 0);
+	/* Redraw as necessary */
+	if (help)
+	{
+		p_ptr->redraw |= (PR_BASIC | PR_EXTRA | PR_MAP | PR_EQUIP);
+		Term_clear();
+	}
+	else
+	{
+		prt("", 0, 0);
+		prt("", help_prompt_loc, 0);
+		p_ptr->redraw |= (PR_DEPTH | PR_STATUS);
+	}
 
 	/* Recenter around player */
 	verify_panel();

@@ -109,7 +109,7 @@ static const grouper group_item[] =
 	{ TV_CHEST,		"Chests" },
 
 	{ TV_SPIKE,		"Various" },
-	{ TV_LITE,		  NULL },
+	{ TV_LIGHT,		  NULL },
 	{ TV_FLASK,		  NULL },
 	{ TV_JUNK,		  NULL },
 	{ TV_BOTTLE,	  NULL },
@@ -140,7 +140,7 @@ static void kind_info(char *buf, size_t buf_len,
 	i_ptr = &object_type_body;
 
 	/* Prepare a fake item */
-	object_prep(i_ptr, k);
+	object_prep(i_ptr, k, 0, MAXIMISE);
 
 	/* Obtain the "kind" info */
 	k_ptr = &k_info[i_ptr->k_idx];
@@ -165,8 +165,7 @@ static void kind_info(char *buf, size_t buf_len,
 
 	/* Description (too brief) */
 	if (buf)
-		object_desc(buf, buf_len, i_ptr, FALSE,
-				ODESC_BASE | ODESC_SPOIL);
+		object_desc(buf, buf_len, i_ptr, ODESC_BASE | ODESC_SPOIL);
 
 	/* Weight */
 	if (wgt)
@@ -377,7 +376,7 @@ static const grouper group_artifact[] =
 	{ TV_GLOVES,        "Gloves" },
 	{ TV_BOOTS,         "Boots" },
 
-	{ TV_LITE,          "Light Sources" },
+	{ TV_LIGHT,         "Light Sources" },
 	{ TV_AMULET,        "Amulets" },
 	{ TV_RING,          "Rings" },
 
@@ -405,7 +404,7 @@ bool make_fake_artifact(object_type *o_ptr, byte name1)
 	if (!i) return (FALSE);
 
 	/* Create the artifact */
-	object_prep(o_ptr, i);
+	object_prep(o_ptr, i, 0, MAXIMISE);
 
 	/* Save the name */
 	o_ptr->name1 = name1;
@@ -420,9 +419,15 @@ bool make_fake_artifact(object_type *o_ptr, byte name1)
 	o_ptr->to_d = a_ptr->to_d;
 	o_ptr->weight = a_ptr->weight;
 
-	/* Hack -- extract the "cursed" flag */
+	/* Hack -- extract the "cursed" flags */
 	if (a_ptr->flags[2] & (TR2_LIGHT_CURSE))
 		o_ptr->flags[2] |= TR2_LIGHT_CURSE;
+
+	if (a_ptr->flags[2] & TR2_HEAVY_CURSE)
+		o_ptr->flags[2] |= TR2_HEAVY_CURSE;
+
+	if (a_ptr->flags[2] & TR2_PERMA_CURSE)
+		o_ptr->flags[2] |= TR2_PERMA_CURSE;
 
 	/* Success */
 	return (TRUE);
@@ -491,8 +496,8 @@ static void spoil_artifact(cptr fname)
 			if (!make_fake_artifact(i_ptr, (byte)j)) continue;
 
 			/* Grab artifact name */
-			object_desc(buf, sizeof(buf), i_ptr, TRUE,
-					ODESC_COMBAT | ODESC_SPOIL);
+			object_desc(buf, sizeof(buf), i_ptr,
+						ODESC_PREFIX | ODESC_COMBAT | ODESC_SPOIL);
 
 			/* Print name and underline */
 			spoiler_underline(buf, '-');
@@ -504,9 +509,10 @@ static void spoil_artifact(cptr fname)
 			 * Determine the minimum depth an artifact can appear, its rarity,
 			 * its weight, and its value in gold pieces.
 			 */
-			text_out("\nLevel %u, Rarity %u, %d.%d lbs, %ld AU\n",
-					 a_ptr->level, a_ptr->rarity, (a_ptr->weight / 10),
-					 (a_ptr->weight % 10), ((long)a_ptr->cost));
+			text_out("\nMin Level %u, Max Level %u, Generation chance %u, %d.%d lbs\n",
+				a_ptr->alloc_min, a_ptr->alloc_max,
+				a_ptr->alloc_prob, (a_ptr->weight / 10),
+				(a_ptr->weight % 10));
 
 			/* Terminate the entry */
 			spoiler_blanklines(2);

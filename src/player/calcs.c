@@ -430,11 +430,11 @@ static void calc_torch(void)
 {
 	int i;
 
-	s16b old_lite = p_ptr->cur_lite;
+	s16b old_light = p_ptr->cur_light;
 	bool burn_light = TRUE;
 
-	s16b new_lite = 0;
-	int extra_lite = 0;
+	s16b new_light = 0;
+	int extra_light = 0;
 
 
 
@@ -461,12 +461,12 @@ static void calc_torch(void)
 		if (f[2] & TR2_LIGHT_CURSE)
 			amt = 0;
 
-		/* Examine actual lites */
-		else if (o_ptr->tval == TV_LITE)
+		/* Examine actual lights */
+		else if (o_ptr->tval == TV_LIGHT)
 		{
-			int flag_inc = (f[2] & TR2_LITE) ? 1 : 0;
+			int flag_inc = (f[2] & TR2_LIGHT) ? 1 : 0;
 
-			/* Artifact Lites provide permanent bright light */
+			/* Artifact lights provide permanent bright light */
 			if (artifact_p(o_ptr))
 				amt = 3 + flag_inc;
 
@@ -480,42 +480,44 @@ static void calc_torch(void)
 				amt = 2 + flag_inc;
 
 				/* Torches below half fuel provide less light */
-				if (o_ptr->sval == SV_LITE_TORCH && o_ptr->timeout < (FUEL_TORCH / 4))
+				if (o_ptr->sval == SV_LIGHT_TORCH && o_ptr->timeout < (FUEL_TORCH / 4))
 				    amt--;
 			}
 		}
 
 		else
 		{
-			/* LITE flag on an non-cursed non-lights always increases radius */
-			if (f[2] & TR2_LITE) extra_lite++;
+			/* LIGHT flag on an non-cursed non-lights always increases radius */
+			if (f[2] & TR2_LIGHT) extra_light++;
 		}
 
-		/* Alter p_ptr->cur_lite if reasonable */
-		if (new_lite < amt)
-		    new_lite = amt;
+		/* Alter p_ptr->cur_light if reasonable */
+		if (new_light < amt)
+		    new_light = amt;
 	}
 
-	/* Add bonus from LITE flags */
-	new_lite += extra_lite;
+	/* Add bonus from LIGHT flags */
+	new_light += extra_light;
 
 	/* Limit light */
-	new_lite = MIN(new_lite, 5);
-	new_lite = MAX(new_lite, 0);
+	new_light = MIN(new_light, 5);
+	new_light = MAX(new_light, 0);
 
-	/* Notice changes in the "lite radius" */
-	if (old_lite != new_lite)
+	/* Notice changes in the "light radius" */
+	if (old_light != new_light)
 	{
 		/* Update the visuals */
-		p_ptr->cur_lite = new_lite;
+		p_ptr->cur_light = new_light;
 		p_ptr->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 	}
 }
 
 /*
- * Calculate the blows a player would get, in current condition, wielding "o_ptr".
+ * Calculate the blows a player would get, in current condition, wielding
+ * "o_ptr". NOTE - this function does not take any extra blows from items
+ * into account.
  */
-static int calc_blows(const object_type *o_ptr, player_state *state)
+int calc_blows(const object_type *o_ptr, player_state *state)
 {
 	int blows;
 	int str_index, dex_index;
@@ -751,7 +753,7 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 	if (collect_f[1] & TR1_RES_COLD) state->resist_cold = TRUE;
 	if (collect_f[1] & TR1_RES_POIS) state->resist_pois = TRUE;
 	if (collect_f[1] & TR1_RES_FEAR) state->resist_fear = TRUE;
-	if (collect_f[1] & TR1_RES_LITE) state->resist_lite = TRUE;
+	if (collect_f[1] & TR1_RES_LIGHT) state->resist_light = TRUE;
 	if (collect_f[1] & TR1_RES_DARK) state->resist_dark = TRUE;
 	if (collect_f[1] & TR1_RES_BLIND) state->resist_blind = TRUE;
 	if (collect_f[1] & TR1_RES_CONFU) state->resist_confu = TRUE;
@@ -824,6 +826,8 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 		state->dis_to_h -= 20;
 		state->to_d -= 20;
 		state->dis_to_d -= 20;
+		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE]
+			* 8 / 10;
 	}
 	else if (p_ptr->timed[TMD_STUN])
 	{
@@ -831,6 +835,8 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 		state->dis_to_h -= 5;
 		state->to_d -= 5;
 		state->dis_to_d -= 5;
+		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE]
+			* 9 / 10;
 	}
 
 	/* Invulnerability */
@@ -847,6 +853,8 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 		state->dis_to_a += 5;
 		state->to_h += 10;
 		state->dis_to_h += 10;
+		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE]
+			* 105 / 100;
 	}
 
 	/* Temporary shield */
@@ -870,6 +878,8 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 		state->to_h += 12;
 		state->dis_to_h += 12;
 		state->resist_fear = TRUE;
+		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE]
+			* 105 / 100;
 	}
 
 	/* Temporary "Berserk" */
@@ -880,6 +890,8 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 		state->to_a -= 10;
 		state->dis_to_a -= 10;
 		state->resist_fear = TRUE;
+		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE]
+			* 9 / 10;
 	}
 
 	/* Temporary "fast" */
@@ -889,7 +901,6 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 	/* Temporary "slow" */
 	if (p_ptr->timed[TMD_SLOW])
 		state->speed -= 10;
-
 
 	/* Temporary see invisible */
 	if (p_ptr->timed[TMD_SINVIS])
@@ -914,7 +925,6 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 	if (p_ptr->timed[TMD_TERROR])
 		state->speed += 5;
 
-
 	/* Fear can come from item flags too */
 	if (state->afraid)
 	{
@@ -922,8 +932,29 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 		state->dis_to_h -= 20;
 		state->to_a += 8;
 		state->dis_to_a += 8;
+		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE]
+			* 95 / 100;
 	}
 
+	/* Confusion */
+	if (p_ptr->timed[TMD_CONFUSED])
+		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE]
+			* 75 / 100;
+
+	/* Amnesia */
+	if (p_ptr->timed[TMD_AMNESIA])
+		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE]
+			* 8 / 10;
+
+	/* Poison */
+	if (p_ptr->timed[TMD_POISONED])
+		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE]
+			* 95 / 100;
+
+	/* Hallucination */
+	if (p_ptr->timed[TMD_IMAGE])
+		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE]
+			* 8 / 10;
 
 	/*** Analyze weight ***/
 
@@ -1336,6 +1367,13 @@ void notice_stuff(void)
 	{
 		p_ptr->notice &= ~(PN_REORDER);
 		reorder_pack();
+	}
+
+	/* Sort the quiver */
+	if (p_ptr->notice & PN_SORT_QUIVER)
+	{
+		p_ptr->notice &= ~(PN_SORT_QUIVER);
+		sort_quiver();
 	}
 }
 

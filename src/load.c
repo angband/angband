@@ -145,9 +145,12 @@ static int rd_item(object_type *o_ptr)
 	if (!wearable_p(o_ptr))
 	{
 		/* Get the correct fields */
-		o_ptr->to_h = k_ptr->to_h;
-		o_ptr->to_d = k_ptr->to_d;
-		o_ptr->to_a = k_ptr->to_a;
+		if (!randcalc_valid(k_ptr->to_h, o_ptr->to_h))
+			o_ptr->to_h = randcalc(k_ptr->to_h, o_ptr->origin_depth, RANDOMISE);
+		if (!randcalc_valid(k_ptr->to_d, o_ptr->to_d))
+			o_ptr->to_d = randcalc(k_ptr->to_d, o_ptr->origin_depth, RANDOMISE);
+		if (!randcalc_valid(k_ptr->to_a, o_ptr->to_a))
+			o_ptr->to_a = randcalc(k_ptr->to_a, o_ptr->origin_depth, RANDOMISE);
 
 		/* Get the correct fields */
 		o_ptr->ac = k_ptr->ac;
@@ -490,9 +493,7 @@ int rd_monster_memory(u32b version)
 		/* XXX */
 		strip_bytes(3);
 
-		/* Repair the lore flags */
-		for (i = 0; i < RACE_FLAG_STRICT_UB; i++)
-			l_ptr->flags[i] &= r_ptr->flags[i];
+		/* Repair the spell lore flags */
 		for (i = 0; i < RACE_FLAG_SPELL_STRICT_UB; i++)
 			l_ptr->spell_flags[i] &= r_ptr->spell_flags[i];
 	}
@@ -606,7 +607,7 @@ int rd_artifacts(u32b version)
 		anywhere = C_ZNEW(z_info->a_max, bool);
 
 		/* All inventory/home artifacts need to be marked as seen */
-		for (i = 0; i < INVEN_TOTAL; i++)
+		for (i = 0; i < ALL_INVEN_TOTAL; i++)
 		{
 			o_ptr = &o_list[i];
 			if (object_is_known_artifact(o_ptr))
@@ -791,8 +792,13 @@ int rd_player(u32b version)
 		note("Discarded unsupported timed effects");
 	}
 
+	/* # of player turns */
+	rd_u32b(&p_ptr->player_turn);
+	/* # of turns spent resting */
+	rd_u32b(&p_ptr->resting_turn);
+
 	/* Future use */
-	strip_bytes(40);
+	strip_bytes(32);
 
 	return 0;
 }
@@ -1013,6 +1019,7 @@ int rd_randarts(u32b version)
 			for (i = 0; i < artifact_count; i++)
 			{
 				artifact_type *a_ptr = &a_info[i];
+				u16b time_base, time_dice, time_sides;
 
 				rd_byte(&a_ptr->tval);
 				rd_byte(&a_ptr->sval);
@@ -1036,11 +1043,17 @@ int rd_randarts(u32b version)
 
 				rd_byte(&a_ptr->level);
 				rd_byte(&a_ptr->rarity);
+				rd_byte(&a_ptr->alloc_prob);
+				rd_byte(&a_ptr->alloc_min);
+				rd_byte(&a_ptr->alloc_max);
 
 				rd_u16b(&a_ptr->effect);
-				rd_u16b(&a_ptr->time_base);
-				rd_u16b(&a_ptr->time_dice);
-				rd_u16b(&a_ptr->time_sides);
+				rd_u16b(&time_base);
+				rd_u16b(&time_dice);
+				rd_u16b(&time_sides);
+				a_ptr->time.base = time_base;
+				a_ptr->time.dice = time_dice;
+				a_ptr->time.sides = time_sides;
 			}
 
 		/* Initialize only the randart names */
@@ -1073,6 +1086,9 @@ int rd_randarts(u32b version)
 
 				rd_byte(&tmp8u); /* a_ptr->level */
 				rd_byte(&tmp8u); /* a_ptr->rarity */
+				rd_byte(&tmp8u); /* a_ptr->alloc_prob */
+				rd_byte(&tmp8u); /* a_ptr->alloc_min */
+				rd_byte(&tmp8u); /* a_ptr->alloc_max */
 
 				rd_u16b(&tmp16u); /* a_ptr->effect */
 				rd_u16b(&tmp16u); /* a_ptr->time_base */
@@ -1127,7 +1143,7 @@ int rd_inventory(u32b version)
 		if (!i_ptr->k_idx) continue;;
 
 		/* Verify slot */
-		if (n >= INVEN_TOTAL) return (-1);
+		if (n >= ALL_INVEN_TOTAL) return (-1);
 
 		/* Wield equipment */
 		if (n >= INVEN_WIELD)
@@ -1168,6 +1184,8 @@ int rd_inventory(u32b version)
 			p_ptr->inven_cnt++;
 		}
 	}
+
+	save_quiver_size();
 
 	/* Success */
 	return (0);
@@ -1226,7 +1244,8 @@ int rd_stores(u32b version)
 				return (-1);
 			}
 
-			i_ptr->ident |= IDENT_STORE;
+			if (i != STORE_HOME)
+				i_ptr->ident |= IDENT_STORE;
 			
 			/* Accept any valid items */
 			if ((st_ptr->stock_num < STORE_INVEN_MAX) &&

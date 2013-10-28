@@ -95,59 +95,59 @@ static struct
 	cptr name;
 } monster_group[] =
 {
-	{ (cptr)-1,	"Uniques" },
-	{ "A",		"Angels" },
-	{ "a",		"Ants" },
-	{ "b",		"Bats" },
-	{ "B",		"Birds" },
-	{ "C",		"Canines" },
-	{ "c",		"Centipedes" },
-	{ "uU",		"Demons" },
-	{ "dD",		"Dragons" },
-	{ "vE",		"Elementals/Vortices" },
-	{ "e",		"Eyes/Beholders" },
-	{ "f",		"Felines" },
-	{ "G",		"Ghosts" },
-	{ "OP",		"Giants/Ogres" },
-	{ "g",		"Golems" },
-	{ "H",		"Harpies/Hybrids" },
-	{ "h",		"Hominids (Elves, Dwarves)" },
-	{ "M",		"Hydras" },
-	{ "i",		"Icky Things" },
-	{ "lFI",	"Insects" },
-	{ "j",		"Jellies" },
-	{ "K",		"Killer Beetles" },
-	{ "k",		"Kobolds" },
-	{ "L",		"Lichs" },
-	{ "tp",		"Men" },
-	{ ".$?!_",	"Mimics" },
-	{ "m",		"Molds" },
-	{ ",",		"Mushroom Patches" },
-	{ "n",		"Nagas" },
-	{ "o",		"Orcs" },
-	{ "q",		"Quadrupeds" },
-	{ "Q",		"Quylthulgs" },
-	{ "R",		"Reptiles/Amphibians" },
-	{ "r",		"Rodents" },
-	{ "S",		"Scorpions/Spiders" },
-	{ "s",		"Skeletons/Drujs" },
-	{ "J",		"Snakes" },
-	{ "T",		"Trolls" },
-	{ "V",		"Vampires" },
-	{ "W",		"Wights/Wraiths" },
-	{ "w",		"Worms/Worm Masses" },
-	{ "X",		"Xorns/Xarens" },
-	{ "y",		"Yeeks" },
-	{ "Y",		"Yeti" },
-	{ "Z",		"Zephyr Hounds" },
-	{ "z",		"Zombies" },
-	{ NULL,		NULL }
+	{ (cptr)-1,   "Uniques" },
+	{ "A",        "Angels" },
+	{ "a",        "Ants" },
+	{ "b",        "Bats" },
+	{ "B",        "Birds" },
+	{ "C",        "Canines" },
+	{ "c",        "Centipedes" },
+	{ "uU",       "Demons" },
+	{ "dD",       "Dragons" },
+	{ "vE",       "Elementals/Vortices" },
+	{ "e",        "Eyes/Beholders" },
+	{ "f",        "Felines" },
+	{ "G",        "Ghosts" },
+	{ "OP",       "Giants/Ogres" },
+	{ "g",        "Golems" },
+	{ "H",        "Harpies/Hybrids" },
+	{ "h",        "Hominids (Elves, Dwarves)" },
+	{ "M",        "Hydras" },
+	{ "i",        "Icky Things" },
+	{ "lFI",      "Insects" },
+	{ "j",        "Jellies" },
+	{ "K",        "Killer Beetles" },
+	{ "k",        "Kobolds" },
+	{ "L",        "Lichs" },
+	{ "tp",		  "Men" },
+	{ ".$!?=~_",  "Mimics" },
+	{ "m",        "Molds" },
+	{ ",",        "Mushroom Patches" },
+	{ "n",        "Nagas" },
+	{ "o",        "Orcs" },
+	{ "q",        "Quadrupeds" },
+	{ "Q",        "Quylthulgs" },
+	{ "R",        "Reptiles/Amphibians" },
+	{ "r",        "Rodents" },
+	{ "S",        "Scorpions/Spiders" },
+	{ "s",        "Skeletons/Drujs" },
+	{ "J",        "Snakes" },
+	{ "T",        "Trolls" },
+	{ "V",        "Vampires" },
+	{ "W",        "Wights/Wraiths" },
+	{ "w",        "Worms/Worm Masses" },
+	{ "X",        "Xorns/Xarens" },
+	{ "y",        "Yeeks" },
+	{ "Y",        "Yeti" },
+	{ "Z",        "Zephyr Hounds" },
+	{ "z",        "Zombies" },
+	{ NULL,       NULL }
 };
 
 /*
  * Description of each feature group.
  */
-const char *feature_group_text[] = 
+const char *feature_group_text[] =
 {
 	"Floors",
 	"Traps",
@@ -167,9 +167,9 @@ const char *feature_group_text[] =
 static void display_visual_list(int col, int row, int height, int width,
 				byte attr_top, byte char_left);
 
-static bool visual_mode_command(ui_event_data ke, bool *visual_list_ptr, 
-				int height, int width, 
-				byte *attr_top_ptr, byte *char_left_ptr, 
+static bool visual_mode_command(ui_event_data ke, bool *visual_list_ptr,
+				int height, int width,
+				byte *attr_top_ptr, byte *char_left_ptr,
 				byte *cur_attr_ptr, byte *cur_char_ptr,
 				int col, int row, int *delay);
 
@@ -315,7 +315,7 @@ static const char *recall_prompt(int oid)
 #define swap(a, b) (swapspace = (void*)(a)), ((a) = (b)), ((b) = swapspace)
 
 /*
- * Interactive group by. 
+ * Interactive group by.
  * Recognises inscriptions, graphical symbols, lore
  */
 static void display_knowledge(const char *title, int *obj_list, int o_count,
@@ -763,9 +763,9 @@ static void place_visual_list_cursor(int col, int row, byte a, byte c, byte attr
 /*
  *  Do visual mode command -- Change symbols
  */
-static bool visual_mode_command(ui_event_data ke, bool *visual_list_ptr, 
-				int height, int width, 
-				byte *attr_top_ptr, byte *char_left_ptr, 
+static bool visual_mode_command(ui_event_data ke, bool *visual_list_ptr,
+				int height, int width,
+				byte *attr_top_ptr, byte *char_left_ptr,
 				byte *cur_attr_ptr, byte *cur_char_ptr,
 				int col, int row, int *delay)
 {
@@ -1154,11 +1154,11 @@ static void do_cmd_knowledge_monsters(void *obj, const char *name)
 		monster_race *r_ptr = &r_info[i];
 		if (!OPT(cheat_know) && !l_list[i].sights) continue;
 		if (!r_ptr->name) continue;
-	
+
 		for (j = 0; j < N_ELEMENTS(monster_group)-1; j++)
 		{
 			const char *pat = monster_group[j].chars;
-			if (j == 0 && !(r_ptr->flags[0] & RF0_UNIQUE)) 
+			if (j == 0 && !(r_ptr->flags[0] & RF0_UNIQUE))
 				continue;
 			else if (j > 0 && !strchr(pat, r_ptr->d_char))
 				continue;
@@ -1189,7 +1189,7 @@ static void get_artifact_display_name(char *o_name, size_t namelen, int a_idx)
 	make_fake_artifact(o_ptr, a_idx);
 
 	/* Get its name */
-	object_desc(o_name, namelen, o_ptr, TRUE, ODESC_BASE | ODESC_SPOIL);
+	object_desc(o_name, namelen, o_ptr, ODESC_PREFIX | ODESC_BASE | ODESC_SPOIL);
 }
 
 /*
@@ -1215,6 +1215,9 @@ static void desc_art_fake(int a_idx)
 {
 	object_type *o_ptr;
 	object_type object_type_body;
+	bool lost = TRUE, abil = FALSE;
+	int i, j;
+	oinfo_detail_t mode = OINFO_NONE;
 
 	/* Get local object */
 	o_ptr = &object_type_body;
@@ -1222,9 +1225,54 @@ static void desc_art_fake(int a_idx)
 	/* Wipe the object */
 	object_wipe(o_ptr);
 
-	/* Make fake artifact */
-	make_fake_artifact(o_ptr, a_idx);
-	o_ptr->ident |= IDENT_STORE;
+	/* Look for the artifact, either in inventory, store or the object list */
+	for (i = 0; i < z_info->o_max; i++)
+	{
+		if (o_list[i].name1 == a_idx)
+		{
+			o_ptr = &o_list[i];
+			lost = FALSE;
+			break;
+		}
+	}
+
+	if (lost)
+	{
+		for (i = 0; i < INVEN_TOTAL; i++)
+		{
+			if (inventory[i].name1 == a_idx)
+			{
+				o_ptr = &inventory[i];
+				lost = FALSE;
+				break;
+			}
+		}
+	}
+
+	if (lost)
+	{
+		for (j = 1; j < (FEAT_SHOP_TAIL - FEAT_SHOP_HEAD + 1); j++)
+		{
+			for (i = 0; i < store[j].stock_size; i++)
+			{
+				if (store[j].stock[i].name1 == a_idx)
+				{
+					o_ptr = &store[j].stock[i];
+					lost = FALSE;
+					break;
+				}
+			}
+			if (!lost) break;
+		}
+	}
+
+	/* If it's been lost, make a fake artifact for it */
+	if (lost)
+	{
+		make_fake_artifact(o_ptr, a_idx);
+		o_ptr->ident |= IDENT_NAME;
+		mode = OINFO_FULL;
+	}
 
 	/* Hack -- Handle stuff */
 	handle_stuff();
@@ -1232,14 +1280,16 @@ static void desc_art_fake(int a_idx)
 	text_out_hook = text_out_to_screen;
 	screen_save();
 
+	/* Print the artifact information */
 	Term_gotoxy(0, 0);
 	object_info_header(o_ptr);
-	if (!object_info(o_ptr, FALSE))
-		text_out("\n\nThis item does not seem to possess any special abilities.");
+	abil = object_info(o_ptr, mode);
+	if (lost) text_out("\nThis artifact has been lost.");
+	if (!abil) text_out("\n\nThis item does not seem to possess any special abilities.");
 
 	text_out_c(TERM_L_BLUE, "\n\n[Press any key to continue]\n");
 	(void)anykey();
-      
+
 	screen_load();
 }
 
@@ -1294,7 +1344,7 @@ static bool artifact_is_known(int a_idx)
 		if (!o_ptr->k_idx) continue;
 
 
-		if (o_ptr->name1 && o_ptr->name1 == a_idx && 
+		if (o_ptr->name1 && o_ptr->name1 == a_idx &&
 		    !object_is_known(o_ptr))
 		{
 			return FALSE;
@@ -1303,7 +1353,7 @@ static bool artifact_is_known(int a_idx)
 
 	return TRUE;
 }
- 
+
 
 /* If 'artifacts' is NULL, it counts the number of known artifacts, otherwise
    it collects the list of known artifacts into 'artifacts' as well. */
@@ -1414,7 +1464,8 @@ static void desc_ego_fake(int oid)
 
 	/* List ego flags */
 	dummy.name2 = e_idx;
-	object_info_spoil(&dummy);
+	dummy.tval = e_ptr->tval[0];
+	object_info(&dummy, OINFO_FULL | OINFO_DUMMY);
 
 	if (e_ptr->xtra)
 		text_out(format("It provides one random %s.", xtra[e_ptr->xtra - 1]));
@@ -1561,7 +1612,8 @@ static void display_object(int col, int row, bool cursor, int oid)
 	c_prt(attr, o_name, row, col);
 
 	/* Show squelch status */
-	if (k_ptr->squelch)
+	if ((aware && kind_is_squelched_aware(k_ptr)) || 
+		(!aware && kind_is_squelched_unaware(k_ptr)))
 		c_put_str(attr, "Yes", row, 46);
 
 	/* Show autoinscription if around */
@@ -1602,7 +1654,7 @@ static void desc_obj_fake(int k_idx)
 	object_wipe(o_ptr);
 
 	/* Create the artifact */
-	object_prep(o_ptr, k_idx);
+	object_prep(o_ptr, k_idx, 0, EXTREMIFY);
 
 	/* Hack -- its in the store */
 	if (k_info[k_idx].aware) o_ptr->ident |= (IDENT_STORE);
@@ -1619,7 +1671,7 @@ static void desc_obj_fake(int k_idx)
 
 	Term_gotoxy(0,0);
 	object_info_header(o_ptr);
-	if (!object_info(o_ptr, FALSE))
+	if (!object_info(o_ptr, OINFO_NONE))
 		text_out("\n\nThis item does not seem to possess any special abilities.");
 
 	text_out_c(TERM_L_BLUE, "\n\n[Press any key to continue]\n");
@@ -1645,7 +1697,7 @@ static int o_cmp_tval(const void *a, const void *b)
 
 	switch (k_a->tval)
 	{
-		case TV_LITE:
+		case TV_LIGHT:
 		case TV_MAGIC_BOOK:
 		case TV_PRAYER_BOOK:
 		case TV_DRAG_ARMOR:
@@ -1908,17 +1960,6 @@ static void do_cmd_knowledge_features(void *obj, const char *name)
 /* =================== END JOIN DEFINITIONS ================================ */
 
 
-
-
-static void do_cmd_self_knowledge(void *obj, const char *name)
-{
-	(void)obj;
-	(void)name;
-	
-	/* display self knowledge we already know about. */
-	self_knowledge(FALSE);
-}
-
 static void do_cmd_knowledge_scores(void *obj, const char *name)
 {
 	(void)obj;
@@ -1945,9 +1986,8 @@ static menu_item knowledge_actions[] =
 { {0, "Display ego item knowledge", do_cmd_knowledge_ego_items, 0}, 'c', 0 },
 { {0, "Display monster knowledge",  do_cmd_knowledge_monsters,  0}, 'd', 0 },
 { {0, "Display feature knowledge",  do_cmd_knowledge_features,  0}, 'e', 0 },
-{ {0, "Display self-knowledge",     do_cmd_self_knowledge,      0}, 'f', 0 },
-{ {0, "Display hall of fame",       do_cmd_knowledge_scores,    0}, 'g', 0 },
-{ {0, "Display character history",  do_cmd_knowledge_history,   0}, 'h', 0 },
+{ {0, "Display hall of fame",       do_cmd_knowledge_scores,    0}, 'f', 0 },
+{ {0, "Display character history",  do_cmd_knowledge_history,   0}, 'g', 0 },
 };
 
 static menu_type knowledge_menu;

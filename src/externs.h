@@ -49,7 +49,7 @@ extern const byte extract_energy[200];
 extern const s32b player_exp[PY_MAX_LEVEL];
 extern const player_sex sex_info[MAX_SEXES];
 extern const byte chest_traps[64];
-extern cptr color_names[BASIC_COLORS];
+/*XYZ extern cptr color_names[BASIC_COLORS];*/
 extern cptr stat_names[A_MAX];
 extern cptr stat_names_reduced[A_MAX];
 extern cptr stat_names_full[A_MAX];
@@ -113,6 +113,7 @@ extern char **macro__act;
 extern term *angband_term[ANGBAND_TERM_MAX];
 extern char angband_term_name[ANGBAND_TERM_MAX][16];
 extern byte angband_color_table[MAX_COLORS][4];
+extern color_type color_table[MAX_COLORS];
 extern const cptr angband_sound_name[MSG_MAX];
 extern int view_n;
 extern u16b *view_g;
@@ -134,6 +135,7 @@ extern s32b tot_mon_power;
 extern monster_lore *l_list;
 extern quest *q_list;
 extern store_type *store;
+extern cptr** name_sections;
 extern object_type *inventory;
 extern s16b alloc_ego_size;
 extern alloc_entry *alloc_ego_table;
@@ -193,10 +195,7 @@ extern s16b spell_list[MAX_REALMS][BOOKS_PER_REALM][SPELLS_PER_BOOK];
 extern const char *ANGBAND_SYS;
 extern const char *ANGBAND_GRAF;
 
-extern char *ANGBAND_DIR;
 extern char *ANGBAND_DIR_APEX;
-extern char *ANGBAND_DIR_BONE;
-extern char *ANGBAND_DIR_DATA;
 extern char *ANGBAND_DIR_EDIT;
 extern char *ANGBAND_DIR_FILE;
 extern char *ANGBAND_DIR_HELP;
@@ -263,14 +262,15 @@ size_t button_print(int row, int col);
 /* cave.c */
 extern int distance(int y1, int x1, int y2, int x2);
 extern bool los(int y1, int x1, int y2, int x2);
-extern bool no_lite(void);
+extern bool no_light(void);
 extern bool cave_valid_bold(int y, int x);
+extern byte get_color(byte a, int attr, int n);
 extern bool feat_supports_lighting(int feat);
 extern void map_info(unsigned x, unsigned y, grid_data *g);
 extern void move_cursor_relative(int y, int x);
 extern void print_rel(char c, byte a, int y, int x);
 extern void note_spot(int y, int x);
-extern void lite_spot(int y, int x);
+extern void light_spot(int y, int x);
 extern void prt_map(void);
 extern void display_map(int *cy, int *cx);
 extern void do_cmd_view_map(void);
@@ -280,7 +280,7 @@ extern void update_view(void);
 extern void forget_flow(void);
 extern void update_flow(void);
 extern void map_area(void);
-extern void wiz_lite(void);
+extern void wiz_light(void);
 extern void wiz_dark(void);
 extern void town_illuminate(bool daytime);
 extern void cave_set_feat(int y, int x, int feat);
@@ -297,7 +297,7 @@ extern bool is_quest(int level);
 extern bool dtrap_edge(int y, int x);
 
 /* cmd1.c */
-extern void search(void);
+extern bool search(bool verbose);
 extern byte py_pickup(int pickup);
 extern void move_player(int dir);
 
@@ -334,6 +334,8 @@ extern void close_game(void);
 extern void exit_game_panic(void);
 
 /* generate.c */
+extern int level_hgt;
+extern int level_wid;
 void place_object(int y, int x, int level, bool good, bool great);
 void place_gold(int y, int x, int level);
 void place_secret_door(int y, int x);
@@ -353,8 +355,8 @@ void history_display(void);
 void dump_history(ang_file *file);
 
 /* init2.c */
-extern void init_file_paths(const char *path);
-extern void create_user_dirs(void);
+extern void init_file_paths(const char *configpath, const char *libpath, const char *datapath);
+extern void create_needed_dirs(void);
 extern bool init_angband(void);
 extern void cleanup_angband(void);
 
@@ -404,6 +406,7 @@ extern void message_pain(int m_idx, int dam);
 extern void update_smart_learn(int m_idx, int what);
 void monster_death(int m_idx);
 bool mon_take_hit(int m_idx, int dam, bool *fear, cptr note);
+extern void monster_flags_known(const monster_race *r_ptr, const monster_lore *l_ptr, u32b flags[]);
 
 /* pathfind.c */
 extern bool findpath(int y, int x);
@@ -431,6 +434,9 @@ errr process_pref_file(cptr name);
 
 /* randart.c */
 extern errr do_randart(u32b randart_seed, bool full);
+
+/* randname.c */
+extern size_t randname_make(randname_type name_type, size_t min, size_t max, char *word_buf, size_t buflen);
 
 /* score.c */
 extern void enter_score(time_t *death_time);
@@ -474,12 +480,12 @@ extern void identify_pack(void);
 extern bool remove_curse(void);
 extern bool remove_all_curse(void);
 extern bool restore_level(void);
-extern void self_knowledge(bool spoil);
 extern bool lose_all_info(void);
 extern void set_recall(void);
 extern bool detect_traps(bool aware);
 extern bool detect_doorstairs(bool aware);
 extern bool detect_treasure(bool aware);
+extern bool detect_close_buried_treasure(void);
 extern bool detect_objects_magic(bool aware);
 extern bool detect_monsters_normal(bool aware);
 extern bool detect_monsters_invis(bool aware);
@@ -493,10 +499,10 @@ extern bool ident_spell(void);
 extern bool recharge(int num);
 extern bool speed_monsters(void);
 extern bool slow_monsters(void);
-extern bool confuse_monsters(void);
-extern bool sleep_monsters(void);
+extern bool confuse_monsters(bool aware);
+extern bool sleep_monsters(bool aware);
 extern bool banish_evil(int dist);
-extern bool turn_undead(void);
+extern bool turn_undead(bool aware);
 extern bool dispel_undead(int dam);
 extern bool dispel_evil(int dam);
 extern bool dispel_monsters(int dam);
@@ -506,18 +512,18 @@ extern bool mass_banishment(void);
 extern bool probing(void);
 extern void destroy_area(int y1, int x1, int r, bool full);
 extern void earthquake(int cy, int cx, int r);
-extern void lite_room(int y1, int x1);
-extern void unlite_room(int y1, int x1);
-extern bool lite_area(int dam, int rad);
-extern bool unlite_area(int dam, int rad);
+extern void light_room(int y1, int x1);
+extern void unlight_room(int y1, int x1);
+extern bool light_area(int dam, int rad);
+extern bool unlight_area(int dam, int rad);
 extern bool fire_ball(int typ, int dir, int dam, int rad);
 extern bool fire_swarm(int num, int typ, int dir, int dam, int rad);
 extern bool fire_bolt(int typ, int dir, int dam);
 extern bool fire_beam(int typ, int dir, int dam);
 extern bool fire_bolt_or_beam(int prob, int typ, int dir, int dam);
-extern bool project_los(int typ, int dam);
-extern bool lite_line(int dir);
-extern bool strong_lite_line(int dir);
+extern bool project_los(int typ, int dam, bool obvious);
+extern bool light_line(int dir);
+extern bool strong_light_line(int dir);
 extern bool drain_life(int dir, int dam);
 extern bool wall_to_mud(int dir);
 extern bool destroy_door(int dir);
@@ -525,16 +531,16 @@ extern bool disarm_trap(int dir);
 extern bool heal_monster(int dir);
 extern bool speed_monster(int dir);
 extern bool slow_monster(int dir);
-extern bool sleep_monster(int dir);
-extern bool confuse_monster(int dir, int plev);
+extern bool sleep_monster(int dir, bool aware);
+extern bool confuse_monster(int dir, int plev, bool aware);
 extern bool poly_monster(int dir);
 extern bool clone_monster(int dir);
-extern bool fear_monster(int dir, int plev);
+extern bool fear_monster(int dir, int plev, bool aware);
 extern bool teleport_monster(int dir);
 extern bool door_creation(void);
 extern bool trap_creation(void);
 extern bool destroy_doors_touch(void);
-extern bool sleep_monsters_touch(void);
+extern bool sleep_monsters_touch(bool aware);
 extern bool curse_armor(void);
 extern bool curse_weapon(void);
 extern void brand_object(object_type *o_ptr, byte brand_type);
@@ -566,15 +572,10 @@ void squelch_drop(void);
 void do_cmd_options_item(void *unused, cptr title);
 bool squelch_interactive(const object_type *o_ptr);
 
-/* store.c */
-s32b price_item(const object_type *o_ptr, bool store_buying, int qty);
-void store_init(void);
-void store_shuffle(int which);
-void store_maint(int which);
-
 /* target.c */
 bool target_able(int m_idx);
 bool target_okay(void);
+bool target_set_closest(int mode);
 void target_set_monster(int m_idx);
 void target_set_location(int y, int x);
 bool target_set_interactive(int mode, int x, int y);
@@ -626,6 +627,7 @@ extern bool askfor_aux_keypress(char *buf, size_t buflen, size_t *curs, size_t *
 extern bool askfor_aux(char *buf, size_t len, bool keypress_h(char *, size_t, size_t *, size_t *, char, bool));
 extern bool get_string(cptr prompt, char *buf, size_t len);
 extern s16b get_quantity(cptr prompt, int max);
+extern char get_char(cptr prompt, const char *options, size_t len, char fallback);
 extern bool get_check(cptr prompt);
 extern bool (*get_file)(const char *suggested_name, char *path, size_t len);
 extern bool get_com(cptr prompt, char *command);
@@ -658,6 +660,7 @@ bool modify_panel(term *t, int wy, int wx);
 bool adjust_panel(int y, int x);
 bool change_panel(int dir);
 void verify_panel(void);
+void center_panel(void);
 int motion_dir(int y1, int x1, int y2, int x2);
 int target_dir(char ch);
 bool get_rep_dir(int *dp);

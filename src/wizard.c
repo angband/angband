@@ -314,7 +314,8 @@ static void wiz_display_item(const object_type *o_ptr, bool all)
 	Term_clear();
 
 	/* Describe fully */
-	object_desc(buf, sizeof(buf), o_ptr, TRUE, ODESC_FULL | ODESC_SPOIL);
+	object_desc(buf, sizeof(buf), o_ptr,
+				ODESC_PREFIX | ODESC_FULL | ODESC_SPOIL);
 
 	prt(buf, 2, j);
 
@@ -370,7 +371,7 @@ static void wiz_display_item(const object_type *o_ptr, bool all)
 		(o_ptr->ident & IDENT_EFFECT) ? '+' : ' '), 22, j+34);
 	prt(format("indest %c  ego    %c",
 		(o_ptr->ident & IDENT_INDESTRUCT) ? '+' : ' ',
-		(o_ptr->ident & IDENT_EGO) ? '+' : ' '), 23, j+34);
+		(o_ptr->ident & IDENT_NAME) ? '+' : ' '), 23, j+34);
 }
 
 
@@ -406,7 +407,7 @@ static const tval_desc tvals[] =
 	{ TV_SOFT_ARMOR,        "Soft Armor"           },
 	{ TV_RING,              "Ring"                 },
 	{ TV_AMULET,            "Amulet"               },
-	{ TV_LITE,              "Lite"                 },
+	{ TV_LIGHT,             "Light"                },
 	{ TV_POTION,            "Potion"               },
 	{ TV_SCROLL,            "Scroll"               },
 	{ TV_WAND,              "Wand"                 },
@@ -615,21 +616,21 @@ static void wiz_reroll_item(object_type *o_ptr)
 		/* Apply normal magic, but first clear object */
 		else if (ch == 'n' || ch == 'N')
 		{
-			object_prep(i_ptr, o_ptr->k_idx);
+			object_prep(i_ptr, o_ptr->k_idx, p_ptr->depth, RANDOMISE);
 			apply_magic(i_ptr, p_ptr->depth, FALSE, FALSE, FALSE);
 		}
 
 		/* Apply good magic, but first clear object */
 		else if (ch == 'g' || ch == 'g')
 		{
-			object_prep(i_ptr, o_ptr->k_idx);
+			object_prep(i_ptr, o_ptr->k_idx, p_ptr->depth, RANDOMISE);
 			apply_magic(i_ptr, p_ptr->depth, FALSE, TRUE, FALSE);
 		}
 
 		/* Apply great magic, but first clear object */
 		else if (ch == 'e' || ch == 'e')
 		{
-			object_prep(i_ptr, o_ptr->k_idx);
+			object_prep(i_ptr, o_ptr->k_idx, p_ptr->depth, RANDOMISE);
 			apply_magic(i_ptr, p_ptr->depth, FALSE, TRUE, TRUE);
 		}
 	}
@@ -654,7 +655,7 @@ static void wiz_reroll_item(object_type *o_ptr)
 		p_ptr->update |= (PU_BONUS);
 
 		/* Combine / Reorder the pack (later) */
-		p_ptr->notice |= (PN_COMBINE | PN_REORDER);
+		p_ptr->notice |= (PN_COMBINE | PN_REORDER | PN_SORT_QUIVER);
 
 		/* Window stuff */
 		p_ptr->redraw |= (PR_INVEN | PR_EQUIP );
@@ -1047,7 +1048,7 @@ static void wiz_create_item(void)
 	i_ptr = &object_type_body;
 
 	/* Create the item */
-	object_prep(i_ptr, k_idx);
+	object_prep(i_ptr, k_idx, p_ptr->depth, RANDOMISE);
 
 	/* Apply magic (no messages, no artifacts) */
 	apply_magic(i_ptr, p_ptr->depth, FALSE, FALSE, FALSE);
@@ -1060,7 +1061,7 @@ static void wiz_create_item(void)
 		make_gold(i_ptr, p_ptr->depth, k_info[k_idx].sval);
 
 	/* Drop the object from heaven */
-	drop_near(i_ptr, -1, py, px);
+	drop_near(i_ptr, 0, py, px, TRUE);
 
 	/* All done */
 	msg_print("Allocated.");
@@ -1094,7 +1095,7 @@ static void wiz_create_artifact(int a_idx)
 	if (!k_idx) return;
 
 	/* Create the artifact */
-	object_prep(i_ptr, k_idx);
+	object_prep(i_ptr, k_idx, a_ptr->alloc_min, RANDOMISE);
 
 	/* Save the name */
 	i_ptr->name1 = a_idx;
@@ -1120,7 +1121,7 @@ static void wiz_create_artifact(int a_idx)
 	i_ptr->origin = ORIGIN_CHEAT;
 
 	/* Drop the artifact from heaven */
-	drop_near(i_ptr, -1, p_ptr->py, p_ptr->px);
+	drop_near(i_ptr, 0, p_ptr->py, p_ptr->px, TRUE);
 
 	/* All done */
 	msg_print("Allocated.");
@@ -1238,7 +1239,7 @@ static void do_cmd_wiz_learn(void)
 			i_ptr = &object_type_body;
 
 			/* Prepare object */
-			object_prep(i_ptr, i);
+			object_prep(i_ptr, i, 0, MAXIMISE);
 
 			/* Awareness */
 			object_flavor_aware(i_ptr);
@@ -1501,7 +1502,7 @@ static void wiz_test_kind(int tval)
 		if (k_idx)
 		{
 			/* Create the item */
-			object_prep(i_ptr, k_idx);
+			object_prep(i_ptr, k_idx, p_ptr->depth, RANDOMISE);
 
 			/* Apply magic (no messages, no artifacts) */
 			apply_magic(i_ptr, p_ptr->depth, FALSE, FALSE, FALSE);
@@ -1514,7 +1515,7 @@ static void wiz_test_kind(int tval)
 				make_gold(i_ptr, p_ptr->depth, sval);
 
 			/* Drop the object from heaven */
-			drop_near(i_ptr, -1, py, px);
+			drop_near(i_ptr, 0, py, px, TRUE);
 		}
 	}
 
@@ -1689,13 +1690,6 @@ void do_cmd_debug(void)
 			break;
 		}
 
-		/* Self-Knowledge */
-		case 'k':
-		{
-			self_knowledge(TRUE);
-			break;
-		}
-
 		/* Learn about objects */
 		case 'l':
 		{
@@ -1820,7 +1814,7 @@ void do_cmd_debug(void)
 		/* Wizard Light the Level */
 		case 'w':
 		{
-			wiz_lite();
+			wiz_light();
 			break;
 		}
 

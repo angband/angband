@@ -30,7 +30,8 @@ typedef enum
 
 /*** Functions ***/
 
-bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam);
+bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
+	int boost);
 bool effect_aim(effect_type effect);
 const char *effect_desc(effect_type effect);
 int effect_power(effect_type effect);

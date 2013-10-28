@@ -97,8 +97,7 @@
 #define PRAYER_BLESS                    2
 #define PRAYER_REMOVE_FEAR              3
 #define PRAYER_CALL_LIGHT               4
-#define PRAYER_FIND_TRAPS               5
-#define PRAYER_DETECT_DOORS_STAIRS      6
+#define PRAYER_FIND_TRAPS_DOORS         5
 #define PRAYER_SLOW_POISON              7
 
 /* Words of Wisdom */
@@ -510,7 +509,7 @@ static bool cast_mage_spell(int spell, int dir)
 
 		case SPELL_LIGHT_AREA:
 		{
-			(void)lite_area(damroll(2, (plev / 2)), (plev / 10) + 1);
+			(void)light_area(damroll(2, (plev / 2)), (plev / 10) + 1);
 			break;
 		}
 
@@ -545,7 +544,7 @@ static bool cast_mage_spell(int spell, int dir)
 
 		case SPELL_CONFUSE_MONSTER:
 		{
-			(void)confuse_monster(dir, plev);
+			(void)confuse_monster(dir, plev, TRUE);
 			break;
 		}
 
@@ -563,7 +562,7 @@ static bool cast_mage_spell(int spell, int dir)
 
 		case SPELL_SLEEP_MONSTER:
 		{
-			(void)sleep_monster(dir);
+			(void)sleep_monster(dir, TRUE);
 			break;
 		}
 
@@ -582,7 +581,7 @@ static bool cast_mage_spell(int spell, int dir)
 		case SPELL_SPEAR_OF_LIGHT:
 		{
 			msg_print("A line of blue shimmering light appears.");
-			lite_line(dir);
+			light_line(dir);
 			break;
 		}
 
@@ -629,7 +628,7 @@ static bool cast_mage_spell(int spell, int dir)
 
 		case SPELL_MASS_SLEEP:
 		{
-			(void)sleep_monsters();
+			(void)sleep_monsters(TRUE);
 			break;
 		}
 
@@ -754,6 +753,7 @@ static bool cast_mage_spell(int spell, int dir)
 		}
 		case SPELL_DETECT_INVISIBLE:
 		{
+			(void)detect_monsters_normal(TRUE);
 			(void)detect_monsters_invis(TRUE);
 			break;
 		}
@@ -932,18 +932,13 @@ static bool cast_priest_spell(int spell, int dir)
 
 		case PRAYER_CALL_LIGHT:
 		{
-			(void)lite_area(damroll(2, (plev / 2)), (plev / 10) + 1);
+			(void)light_area(damroll(2, (plev / 2)), (plev / 10) + 1);
 			break;
 		}
 
-		case PRAYER_FIND_TRAPS:
+		case PRAYER_FIND_TRAPS_DOORS:
 		{
 			(void)detect_traps(TRUE);
-			break;
-		}
-
-		case PRAYER_DETECT_DOORS_STAIRS:
-		{
 			(void)detect_doorstairs(TRUE);
 			break;
 		}
@@ -956,7 +951,7 @@ static bool cast_priest_spell(int spell, int dir)
 
 		case PRAYER_SCARE_MONSTER:
 		{
-			(void)fear_monster(dir, plev);
+			(void)fear_monster(dir, plev, TRUE);
 			break;
 		}
 
@@ -983,7 +978,7 @@ static bool cast_priest_spell(int spell, int dir)
 
 		case PRAYER_SANCTUARY:
 		{
-			(void)sleep_monsters_touch();
+			(void)sleep_monsters_touch(TRUE);
 			break;
 		}
 
@@ -1071,7 +1066,7 @@ static bool cast_priest_spell(int spell, int dir)
 
 		case PRAYER_TURN_UNDEAD:
 		{
-			(void)turn_undead();
+			(void)turn_undead(TRUE);
 			break;
 		}
 
@@ -1150,7 +1145,7 @@ static bool cast_priest_spell(int spell, int dir)
 
 		case PRAYER_CLAIRVOYANCE:
 		{
-			wiz_lite();
+			wiz_light();
 			break;
 		}
 

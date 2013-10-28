@@ -108,7 +108,7 @@ static void death_knowledge(void)
 
 	int i;
 
-	for (i = 0; i < INVEN_TOTAL; i++)
+	for (i = 0; i < ALL_INVEN_TOTAL; i++)
 	{
 		o_ptr = &inventory[i];
 		if (!o_ptr->k_idx) continue;
@@ -239,7 +239,7 @@ static void death_info(void *unused, const char *title)
 	{
 		Term_clear();
 		item_tester_full = TRUE;
-		show_equip();
+		show_equip(OLIST_WEIGHT);
 		prt("You are using: -more-", 0, 0);
 		(void)anykey();
 	}
@@ -249,7 +249,7 @@ static void death_info(void *unused, const char *title)
 	{
 		Term_clear();
 		item_tester_full = TRUE;
-		show_inven();
+		show_inven(OLIST_WEIGHT);
 		prt("You are carrying: -more-", 0, 0);
 		(void)anykey();
 	}
@@ -281,7 +281,8 @@ static void death_info(void *unused, const char *title)
 				prt(tmp_val, j+2, 4);
 
 				/* Get the object description */
-				object_desc(o_name, sizeof(o_name), o_ptr, TRUE, ODESC_FULL);
+				object_desc(o_name, sizeof(o_name), o_ptr,
+							ODESC_PREFIX | ODESC_FULL);
 
 				/* Get the inventory color */
 				attr = tval_to_attr[o_ptr->tval % N_ELEMENTS(tval_to_attr)];
@@ -352,7 +353,7 @@ static void death_examine(void *unused, const char *title)
 		Term_gotoxy(0, 0);
 
 		object_info_header(o_ptr);
-		if (!object_info(o_ptr, TRUE))
+		if (!object_info(o_ptr, OINFO_FULL))
 			text_out("This item does not possess any special abilities.");
 
 		text_out_c(TERM_L_BLUE, "\n\n[Press any key to continue]\n");

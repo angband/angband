@@ -44,6 +44,7 @@ void textui_cmd_eat_food(void);
 void textui_cmd_quaff_potion(void);
 void textui_cmd_read_scroll(void);
 
+
 /* cmd2.c */
 void do_cmd_go_up(cmd_code code, cmd_arg args[]);
 void do_cmd_go_down(cmd_code code, cmd_arg args[]);
@@ -85,16 +86,19 @@ void textui_cmd_suicide(void);
 void do_cmd_inven(void);
 void do_cmd_equip(void);
 void wield_item(object_type *o_ptr, int item, int slot);
+void wield_combine_ammo(object_type *o_ptr, int item, int slot);
 void do_cmd_destroy(cmd_code code, cmd_arg args[]);
 void textui_cmd_destroy(void);
 void refill_lamp(object_type *j_ptr, object_type *o_ptr, int item);
 void refuel_torch(object_type *j_ptr, object_type *o_ptr, int item);
 void do_cmd_target(void);
+void do_cmd_target_closest(void);
 void do_cmd_look(void);
 void do_cmd_locate(void);
 bool ang_sort_comp_hook(const void *u, const void *v, int a, int b);
 void ang_sort_swap_hook(void *u, void *v, int a, int b);
 void do_cmd_query_symbol(void);
+void do_cmd_center_map(void);
 
 /* cmd4.c */
 extern void do_cmd_redraw(void);
@@ -126,6 +130,7 @@ extern void init_cmd_know(void);
 /* attack.c */
 extern void do_cmd_fire(cmd_code code, cmd_arg args[]);
 extern void textui_cmd_fire(void);
+extern void textui_cmd_fire_at_nearest(void);
 extern void do_cmd_throw(cmd_code code, cmd_arg args[]);
 extern void textui_cmd_throw(void);
 

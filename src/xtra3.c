@@ -366,8 +366,8 @@ byte monster_health_attr(void)
 	
 	/* Tracking an unseen, hallucinatory, or dead monster */
 	else if ((!mon_list[p_ptr->health_who].ml) ||
-		    (p_ptr->timed[TMD_IMAGE]) ||
-		    (!mon_list[p_ptr->health_who].hp < 0))
+			(p_ptr->timed[TMD_IMAGE]) ||
+			(mon_list[p_ptr->health_who].hp < 0))
 	{
 		/* The monster health is "unknown" */
 		attr = TERM_WHITE;
@@ -436,8 +436,8 @@ static void prt_health(int row, int col)
 
 	/* Tracking an unseen, hallucinatory, or dead monster */
 	else if ((!mon_list[p_ptr->health_who].ml) || /* Unseen */
-		    (p_ptr->timed[TMD_IMAGE]) || /* Hallucination */
-		    (!mon_list[p_ptr->health_who].hp < 0)) /* Dead (?) */
+			(p_ptr->timed[TMD_IMAGE]) || /* Hallucination */
+			(mon_list[p_ptr->health_who].hp < 0)) /* Dead (?) */
 	{
 		/* The monster health is "unknown" */
 		Term_putstr(col, row, 12, attr, "[----------]");
@@ -633,7 +633,7 @@ static void hp_colour_change(game_event_type type, game_event_data *data, void *
 	 */
 	if ((OPT(hp_changes_color)) && (arg_graphics == GRAPHICS_NONE))
 	{
-		lite_spot(p_ptr->py, p_ptr->px);
+		light_spot(p_ptr->py, p_ptr->px);
 	}
 }
 
@@ -1106,9 +1106,9 @@ static void update_inven_subwindow(game_event_type type, game_event_data *data,
 	Term_activate(inv_term);
 
 	if (!flip_inven)
-		display_inven();
+		show_inven(OLIST_WINDOW | OLIST_WEIGHT | OLIST_QUIVER);
 	else
-		display_equip();
+		show_equip(OLIST_WINDOW | OLIST_WEIGHT);
 
 	Term_fresh();
 	
@@ -1126,9 +1126,9 @@ static void update_equip_subwindow(game_event_type type, game_event_data *data,
 	Term_activate(inv_term);
 
 	if (!flip_inven)
-		display_equip();
+		show_equip(OLIST_WINDOW | OLIST_WEIGHT);
 	else
-		display_inven();
+		show_inven(OLIST_WINDOW | OLIST_WEIGHT | OLIST_QUIVER);
 
 	Term_fresh();
 	
@@ -1155,18 +1155,18 @@ void toggle_inven_equip(void)
 		if (op_ptr->window_flag[i] & PW_INVEN)
 		{
 			if (!flip_inven)
-				display_inven();
+				show_inven(OLIST_WINDOW | OLIST_WEIGHT | OLIST_QUIVER);
 			else
-				display_equip();
+				show_equip(OLIST_WINDOW | OLIST_WEIGHT);
 			
 			Term_fresh();
 		}
 		else if (op_ptr->window_flag[i] & PW_EQUIP)
 		{
 			if (!flip_inven)
-				display_equip();
+				show_equip(OLIST_WINDOW | OLIST_WEIGHT);
 			else
-				display_inven();
+				show_inven(OLIST_WINDOW | OLIST_WEIGHT | OLIST_QUIVER);
 			
 			Term_fresh();
 		}
@@ -1694,6 +1694,13 @@ static void show_splashscreen(game_event_type type, game_event_data *data, void 
 		/* Dump the file to the screen */
 		while (file_getl(fp, buf, sizeof(buf)))
 		{
+			char *version_marker = strstr(buf, "$VERSION");
+			if (version_marker)
+			{
+				ptrdiff_t pos = version_marker - buf;
+				strnfmt(version_marker, sizeof(buf) - pos, "%-8s", VERSION_STRING);
+			}
+
 			text_out_e("%s", buf);
 			text_out("\n");
 		}

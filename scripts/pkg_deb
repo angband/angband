@@ -1,0 +1,27 @@
+#!/bin/sh
+
+if [ $# -ne 1 ] && [ $# -ne 2 ]; then
+	echo "Simple packaging file for creating the Debian source tarball."
+	echo ""
+	echo "Use in the root directory of the game, like so:"
+	echo "   scripts/pkg_deb <name of of release, e.g. angband-4.0.1> [<output filename>]"
+	echo ""
+
+	exit 1
+fi
+
+DIR=angband-$1
+if [ $# -eq 1 ]; then
+	OUT=../angband_$1.orig.tar.gz
+else
+	OUT=$2
+fi
+
+svn export . $DIR &&
+	cd $DIR &&
+	rm -rf debian &&
+	./autogen.sh &&
+	rm -rf autogen.sh autom4te.cache &&
+	cd .. &&
+	tar czvf $OUT $DIR &&
+	rm -rf $DIR

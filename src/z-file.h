@@ -207,6 +207,18 @@ bool file_writec(ang_file *f, byte b);
 /*** Directory code ***/
 
 /**
+ * Return whether or not a directory exists.
+ */
+bool dir_exists(const char *dirname);
+
+/**
+ * Create's the given directory, creating intermediate directories if
+ * needed and possible. Returns whether or not the directory was created
+ * successfully.
+ */
+bool dir_create(const char *dirname);
+
+/**
  * An opaque file handle for Angband directory handling.
  */
 typedef struct ang_dir ang_dir;

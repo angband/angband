@@ -47,7 +47,7 @@
 #define TV_SOFT_ARMOR   36	/* Soft Armor */
 #define TV_HARD_ARMOR   37	/* Hard Armor */
 #define TV_DRAG_ARMOR	38	/* Dragon Scale Mail */
-#define TV_LITE         39	/* Lites (including Specials) */
+#define TV_LIGHT        39	/* Lights (including Specials) */
 #define TV_AMULET       40	/* Amulets (including Specials) */
 #define TV_RING         45	/* Rings (including Specials) */
 #define TV_STAFF        55
@@ -76,13 +76,13 @@
 #define SV_LIGHT_XBOW		23	/* (x3) */
 #define SV_HEAVY_XBOW		24	/* (x4) */
 
-/* The sval codes for TV_LITE */
-#define SV_LITE_TORCH		0
-#define SV_LITE_LANTERN		1
-#define SV_LITE_GALADRIEL	4
-#define SV_LITE_ELENDIL		5
-#define SV_LITE_THRAIN		6
-#define SV_LITE_PALANTIR	7
+/* The sval codes for TV_LIGHT */
+#define SV_LIGHT_TORCH		0
+#define SV_LIGHT_LANTERN		1
+#define SV_LIGHT_GALADRIEL	4
+#define SV_LIGHT_ELENDIL		5
+#define SV_LIGHT_THRAIN		6
+#define SV_LIGHT_PALANTIR	7
 
 /* Hacky defines */
 #define SV_SCROLL_PHASE_DOOR			1

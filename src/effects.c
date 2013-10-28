@@ -110,9 +110,9 @@ bool effect_wonder(int dir, int die, int beam)
 	else if (die < 36)
 		visible = fire_bolt_or_beam(beam - 10, GF_MISSILE, dir,
 		                            damroll(3 + ((plev - 1) / 5), 4));
-	else if (die < 41) visible = confuse_monster(dir, plev);
+	else if (die < 41) visible = confuse_monster(dir, plev, FALSE);
 	else if (die < 46) visible = fire_ball(GF_POIS, dir, 20 + (plev / 2), 3);
-	else if (die < 51) visible = lite_line(dir);
+	else if (die < 51) visible = light_line(dir);
 	else if (die < 56)
 		visible = fire_beam(GF_ELEC, dir, damroll(3+((plev-5)/6), 6));
 	else if (die < 61)
@@ -139,7 +139,7 @@ bool effect_wonder(int dir, int die, int beam)
 	{
 		dispel_monsters(150);
 		slow_monsters();
-		sleep_monsters();
+		sleep_monsters(TRUE);
 		hp_player(300);
 	}
 
@@ -151,11 +151,15 @@ bool effect_wonder(int dir, int die, int beam)
 
 /*
  * Do an effect, given an object.
+ * Boost is the extent to which skill surpasses difficulty, used as % boost. It
+ * ranges from 0 to 138.
  */
-bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
+bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
+	int boost)
 {
 	int py = p_ptr->py;
 	int px = p_ptr->px;
+	int dam, chance;
 
 	if (effect < 1 || effect > EF_MAX)
 	{
@@ -170,13 +174,12 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 			if (!p_ptr->state.resist_pois)
 			{
 				if (!p_ptr->timed[TMD_OPP_POIS] &&
-						inc_timed(TMD_POISONED, damroll(2, 7) + 10, TRUE))
+					inc_timed(TMD_POISONED, damroll(2, 7)
+					+ 10, TRUE))
 					*ident = TRUE;
 			}
-			else
-			{
-				wieldeds_notice_flag(1, TR1_RES_POIS);
-			}
+			*ident = TRUE;
+			wieldeds_notice_flag(1, TR1_RES_POIS);
 
 			return TRUE;
 		}
@@ -185,13 +188,12 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 		{
 			if (!p_ptr->state.resist_blind)
 			{
-				if (inc_timed(TMD_BLIND, damroll(4, 25) + 75, TRUE))
+				if (inc_timed(TMD_BLIND, damroll(4, 25) + 75,
+					TRUE))
 					*ident = TRUE;
 			}
-			else
-			{
-				wieldeds_notice_flag(1, TR1_RES_BLIND);
-			}
+			*ident = TRUE;
+			wieldeds_notice_flag(1, TR1_RES_BLIND);
 
 			return TRUE;
 		}
@@ -200,13 +202,12 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 		{
 			if (!p_ptr->state.resist_fear)
 			{
-				if (inc_timed(TMD_AFRAID, randint0(10) + 10, TRUE))
+				if (inc_timed(TMD_AFRAID, randint0(10) + 10,
+					TRUE))
 					*ident = TRUE;
 			}
-			else
-			{
-				wieldeds_notice_flag(1, TR1_RES_FEAR);
-			}
+			*ident = TRUE;
+			wieldeds_notice_flag(1, TR1_RES_FEAR);
 
 			return TRUE;
 		}
@@ -215,13 +216,12 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 		{
 			if (!p_ptr->state.resist_confu)
 			{
-				if (inc_timed(TMD_CONFUSED, damroll(4, 5) + 10, TRUE))
+				if (inc_timed(TMD_CONFUSED, damroll(4, 5) + 10,
+					TRUE))
 					*ident = TRUE;
 			}
-			else
-			{
-				wieldeds_notice_flag(1, TR1_RES_CONFU);
-			}
+			*ident = TRUE;
+			wieldeds_notice_flag(1, TR1_RES_CONFU);
 
 			return TRUE;
 		}
@@ -230,13 +230,12 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 		{
 			if (!p_ptr->state.resist_chaos)
 			{
-				if (inc_timed(TMD_IMAGE, randint0(250) + 250, TRUE))
+				if (inc_timed(TMD_IMAGE, randint0(250) + 250,
+					TRUE))
 					*ident = TRUE;
 			}
-			else
-			{
-				wieldeds_notice_flag(1, TR1_RES_CHAOS);
-			}
+			*ident = TRUE;
+			wieldeds_notice_flag(1, TR1_RES_CHAOS);
 
 			return TRUE;
 		}
@@ -245,20 +244,20 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 		{
 			if (!p_ptr->state.free_act)
 			{
-				if (inc_timed(TMD_PARALYZED, randint0(5) + 5, TRUE))
+				if (inc_timed(TMD_PARALYZED, randint0(5) + 5,
+					TRUE))
 					*ident = TRUE;
 			}
-			else
-			{
-				wieldeds_notice_flag(2, TR2_FREE_ACT);
-			}
+			*ident = TRUE;
+			wieldeds_notice_flag(2, TR2_FREE_ACT);
 
 			return TRUE;
 		}
 
 		case EF_SLOW:
 		{
-			if (inc_timed(TMD_SLOW, randint1(25) + 15, TRUE)) *ident = TRUE;
+			if (inc_timed(TMD_SLOW, randint1(25) + 15, TRUE))
+			*ident = TRUE;
 			return TRUE;
 		}
 
@@ -292,7 +291,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 			if (clear_timed(TMD_AFRAID, TRUE)) *ident = TRUE;
 			if (clear_timed(TMD_IMAGE, TRUE)) *ident = TRUE;
 			if (!p_ptr->state.resist_confu &&
-					inc_timed(TMD_OPP_CONF, damroll(4, 10), TRUE))
+				inc_timed(TMD_OPP_CONF, damroll(4, 10), TRUE))
 			    	*ident = TRUE;
 			return TRUE;
 		}
@@ -399,7 +398,6 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 			return TRUE;
 		}
 
-
 		case EF_GAIN_EXP:
 		{
 			if (p_ptr->exp < PY_MAX_EXP)
@@ -419,10 +417,8 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 				lose_exp(p_ptr->exp / 4);
 				*ident = TRUE;
 			}
-			else
-			{
-				wieldeds_notice_flag(2, TR2_HOLD_LIFE);
-			}
+			*ident = TRUE;
+			wieldeds_notice_flag(2, TR2_HOLD_LIFE);
 			return TRUE;
 		}
 
@@ -472,9 +468,13 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 		{
 			/* Pick a random stat to decrease other than strength */
 			int stat = randint0(A_MAX-1) + 1;
-			
-			if (!do_dec_stat(stat, TRUE)) return FALSE;
-			if (do_inc_stat(A_STR)) *ident = TRUE;
+
+			if (do_dec_stat(stat, TRUE))
+			{
+				do_inc_stat(A_STR);
+				*ident = TRUE;
+			}
+
 			return TRUE;
 		}
 
@@ -483,9 +483,13 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 			/* Pick a random stat to decrease other than intelligence */
 			int stat = randint0(A_MAX-1);
 			if (stat >= A_INT) stat++;
-			
-			if (!do_dec_stat(stat, TRUE)) return FALSE;
-			if (do_inc_stat(A_INT)) *ident = TRUE;
+
+			if (do_dec_stat(stat, TRUE))
+			{
+				do_inc_stat(A_INT);
+				*ident = TRUE;
+			}
+
 			return TRUE;
 		}
 
@@ -494,9 +498,13 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 			/* Pick a random stat to decrease other than wisdom */
 			int stat = randint0(A_MAX-1);
 			if (stat >= A_WIS) stat++;
-			
-			if (!do_dec_stat(stat, TRUE)) return FALSE;
-			if (do_inc_stat(A_WIS)) *ident = TRUE;
+
+			if (do_dec_stat(stat, TRUE))
+			{
+				do_inc_stat(A_WIS);
+				*ident = TRUE;
+			}
+
 			return TRUE;
 		}
 
@@ -505,9 +513,13 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 			/* Pick a random stat to decrease other than constitution */
 			int stat = randint0(A_MAX-1);
 			if (stat >= A_CON) stat++;
-			
-			if (!do_dec_stat(stat, TRUE)) return FALSE;
-			if (do_inc_stat(A_CON)) *ident = TRUE;
+
+			if (do_dec_stat(stat, TRUE))
+			{
+				do_inc_stat(A_CON);
+				*ident = TRUE;
+			}
+
 			return TRUE;
 		}
 
@@ -516,9 +528,13 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 			/* Pick a random stat to decrease other than dexterity */
 			int stat = randint0(A_MAX-1);
 			if (stat >= A_DEX) stat++;
-			
-			if (!do_dec_stat(stat, TRUE)) return FALSE;
-			if (do_inc_stat(A_DEX)) *ident = TRUE;
+
+			if (do_dec_stat(stat, TRUE))
+			{
+				do_inc_stat(A_DEX);
+				*ident = TRUE;
+			}
+
 			return TRUE;
 		}
 
@@ -526,9 +542,13 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 		{
 			/* Pick a random stat to decrease other than charisma */
 			int stat = randint0(A_MAX-1);
-			
-			if (!do_dec_stat(stat, TRUE)) return FALSE;
-			if (do_inc_stat(A_CHR)) *ident = TRUE;
+
+			if (do_dec_stat(stat, TRUE))
+			{
+				do_inc_stat(A_CHR);
+				*ident = TRUE;
+			}
+
 			return TRUE;
 		}
 
@@ -593,6 +613,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 
 		case EF_RESTORE_ALL:
 		{
+			/* Life, above, also gives these effects */
 			if (do_res_stat(A_STR)) *ident = TRUE;
 			if (do_res_stat(A_INT)) *ident = TRUE;
 			if (do_res_stat(A_WIS)) *ident = TRUE;
@@ -614,24 +635,26 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 			return TRUE;
 		}
 
-
 		case EF_TMD_INFRA:
 		{
-			if (inc_timed(TMD_SINFRA, 100 + damroll(4, 25), TRUE)) *ident = TRUE;
+			if (inc_timed(TMD_SINFRA, 100 + damroll(4, 25), TRUE))
+				*ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_TMD_SINVIS:
 		{
 			if (clear_timed(TMD_BLIND, TRUE)) *ident = TRUE;
-			if (inc_timed(TMD_SINVIS, 12 + damroll(2, 6), TRUE)) *ident = TRUE;
+			if (inc_timed(TMD_SINVIS, 12 + damroll(2, 6), TRUE))
+				*ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_TMD_ESP:
 		{
 			if (clear_timed(TMD_BLIND, TRUE)) *ident = TRUE;
-			if (inc_timed(TMD_TELEPATHY, 12 + damroll(6, 6), TRUE)) *ident = TRUE;
+			if (inc_timed(TMD_TELEPATHY, 12 + damroll(6, 6), TRUE))
+				*ident = TRUE;
 			return TRUE;
 		}
 
@@ -639,7 +662,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 		case EF_ENLIGHTENMENT:
 		{
 			msg_print("An image of your surroundings forms in your mind...");
-			wiz_lite();
+			wiz_light();
 			*ident = TRUE;
 			return TRUE;
 		}
@@ -649,33 +672,23 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 		{
 			msg_print("You begin to feel more enlightened...");
 			message_flush();
-			wiz_lite();
+			wiz_light();
 			(void)do_inc_stat(A_INT);
 			(void)do_inc_stat(A_WIS);
 			(void)detect_traps(TRUE);
 			(void)detect_doorstairs(TRUE);
 			(void)detect_treasure(TRUE);
 			identify_pack();
-			self_knowledge(TRUE);
 			*ident = TRUE;
 			return TRUE;
 		}
-
-		case EF_SELF_KNOW:
-		{
-			msg_print("You begin to know yourself a little better...");
-			message_flush();
-			self_knowledge(TRUE);
-			*ident = TRUE;
-			return TRUE;
-		}
-
 
 		case EF_HERO:
 		{
 			if (hp_player(10)) *ident = TRUE;
 			if (clear_timed(TMD_AFRAID, TRUE)) *ident = TRUE;
-			if (inc_timed(TMD_HERO, randint1(25) + 25, TRUE)) *ident = TRUE;
+			if (inc_timed(TMD_HERO, randint1(25) + 25, TRUE))
+				*ident = TRUE;
 			return TRUE;
 		}
 
@@ -683,7 +696,8 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 		{
 			if (hp_player(30)) *ident = TRUE;
 			if (clear_timed(TMD_AFRAID, TRUE)) *ident = TRUE;
-			if (inc_timed(TMD_SHERO, randint1(25) + 25, TRUE)) *ident = TRUE;
+			if (inc_timed(TMD_SHERO, randint1(25) + 25, TRUE))
+				*ident = TRUE;
 			return TRUE;
 		}
 
@@ -725,11 +739,16 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 
 		case EF_RESIST_ALL:
 		{
-			if (inc_timed(TMD_OPP_ACID, randint1(20) + 20, TRUE)) *ident = TRUE;
-			if (inc_timed(TMD_OPP_ELEC, randint1(20) + 20, TRUE)) *ident = TRUE;
-			if (inc_timed(TMD_OPP_FIRE, randint1(20) + 20, TRUE)) *ident = TRUE;
-			if (inc_timed(TMD_OPP_COLD, randint1(20) + 20, TRUE)) *ident = TRUE;
-			if (inc_timed(TMD_OPP_POIS, randint1(20) + 20, TRUE)) *ident = TRUE;
+			if (inc_timed(TMD_OPP_ACID, randint1(20) + 20, TRUE))
+				*ident = TRUE;
+			if (inc_timed(TMD_OPP_ELEC, randint1(20) + 20, TRUE))
+				*ident = TRUE;
+			if (inc_timed(TMD_OPP_FIRE, randint1(20) + 20, TRUE))
+				*ident = TRUE;
+			if (inc_timed(TMD_OPP_COLD, randint1(20) + 20, TRUE))
+				*ident = TRUE;
+			if (inc_timed(TMD_OPP_POIS, randint1(20) + 20, TRUE))
+				*ident = TRUE;
 			return TRUE;
 		}
 
@@ -769,7 +788,6 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 			return TRUE;
 		}
 
-
 		case EF_ENCHANT_TOHIT:
 		{
 			*ident = TRUE;
@@ -787,7 +805,8 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 		case EF_ENCHANT_WEAPON:
 		{
 			*ident = TRUE;
-			if (!enchant_spell(randint1(3), randint1(3), 0)) return FALSE;
+			if (!enchant_spell(randint1(3), randint1(3), 0))
+				return FALSE;
 			return TRUE;
 		}
 
@@ -835,10 +854,10 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 
 		case EF_LIGHT:
 		{
-			if (lite_area(damroll(2, 8), 2)) *ident = TRUE;
+			if (light_area(damroll(2, 8), 2)) *ident = TRUE;
 			return TRUE;
 		}
-		
+
 		case EF_SUMMON_MON:
 		{
 			int i;
@@ -859,7 +878,8 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 
 			for (i = 0; i < randint1(3); i++)
 			{
-				if (summon_specific(py, px, p_ptr->depth, SUMMON_UNDEAD, 1))
+				if (summon_specific(py, px, p_ptr->depth,
+					SUMMON_UNDEAD, 1))
 					*ident = TRUE;
 			}
 			return TRUE;
@@ -920,7 +940,8 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 
 		case EF_ACQUIRE2:
 		{
-			acquirement(py, px, p_ptr->depth, randint1(2) + 1, TRUE);
+			acquirement(py, px, p_ptr->depth, randint1(2) + 1,
+				TRUE);
 			*ident = TRUE;
 			return TRUE;
 		}
@@ -967,18 +988,22 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 
 		case EF_DARKNESS:
 		{
-			if (!p_ptr->state.resist_blind)
+			if ((!p_ptr->state.resist_blind) && (!p_ptr->state.resist_dark))
 				(void)inc_timed(TMD_BLIND, 3 + randint1(5), TRUE);
-			else
-				wieldeds_notice_flag(1, TR1_RES_BLIND);
 
-			if (unlite_area(10, 3)) *ident = TRUE;
+			unlight_area(10, 3);
+
+			wieldeds_notice_flag(1, TR1_RES_BLIND);
+			wieldeds_notice_flag(1, TR1_RES_DARK);
+
+			*ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_PROTEVIL:
 		{
-			if (inc_timed(TMD_PROTEVIL, randint1(25) + 3 * p_ptr->lev, TRUE)) *ident = TRUE;
+			if (inc_timed(TMD_PROTEVIL, randint1(25) + 3 *
+				p_ptr->lev, TRUE)) *ident = TRUE;
 			return TRUE;
 		}
 
@@ -1002,19 +1027,22 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 
 		case EF_BLESSING:
 		{
-			if (inc_timed(TMD_BLESSED, randint1(12) + 6, TRUE)) *ident = TRUE;
+			if (inc_timed(TMD_BLESSED, randint1(12) + 6, TRUE))
+				*ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_BLESSING2:
 		{
-			if (inc_timed(TMD_BLESSED, randint1(24) + 12, TRUE)) *ident = TRUE;
+			if (inc_timed(TMD_BLESSED, randint1(24) + 12, TRUE))
+				*ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_BLESSING3:
 		{
-			if (inc_timed(TMD_BLESSED, randint1(48) + 24, TRUE)) *ident = TRUE;
+			if (inc_timed(TMD_BLESSED, randint1(48) + 24, TRUE))
+				*ident = TRUE;
 			return TRUE;
 		}
 
@@ -1027,34 +1055,24 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 
 		case EF_DEEP_DESCENT:
 		{
-			int i = 2;
-			int new_max = p_ptr->max_depth;
-
-			do
+			int i, target_depth = p_ptr->depth;
+			
+			/* Calculate target depth */
+			for (i = 2; i > 0; i--)
 			{
-				if (is_quest(new_max)) continue;
-				if (new_max >= MAX_DEPTH-1) continue;
-				new_max++;
-			} while (--i);
-
-			if (new_max == p_ptr->max_depth)
-				return TRUE;
-
-			p_ptr->max_depth = new_max;
-			*ident = TRUE;
-
-			if (p_ptr->depth == 0)
-			{
-				set_recall();
-				msg_print("The lower reaches of the dungeon beckon.");
+				if (is_quest(target_depth)) break;
+				if (target_depth >= MAX_DEPTH - 1) break;
+				
+				target_depth++;
 			}
-			else
+
+			if (target_depth > p_ptr->depth)
 			{
 				message(MSG_TPLEVEL, 0, "You sink through the floor...");
-				dungeon_change_level(p_ptr->max_depth);
+				dungeon_change_level(target_depth);
+				*ident = TRUE;
 			}
 
-			*ident = TRUE;
 			return TRUE;
 		}
 
@@ -1066,7 +1084,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 
 		case EF_LOSSLEEP:
 		{
-			if (sleep_monsters()) *ident = TRUE;
+			if (sleep_monsters(aware)) *ident = TRUE;
 			return TRUE;
 		}
 
@@ -1078,7 +1096,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 
 		case EF_LOSCONF:
 		{
-			if (confuse_monsters()) *ident = TRUE;
+			if (confuse_monsters(aware)) *ident = TRUE;
 			return TRUE;
 		}
 
@@ -1105,14 +1123,14 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 
 		case EF_ILLUMINATION:
 		{
-			if (lite_area(damroll(2, 15), 3)) *ident = TRUE;
+			if (light_area(damroll(2, 15), 3)) *ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_CLAIRVOYANCE:
 		{
 			*ident = TRUE;
-			wiz_lite();
+			wiz_light();
 			(void)detect_traps(TRUE);
 			(void)detect_doorstairs(TRUE);
 			return TRUE;
@@ -1124,7 +1142,6 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 			return TRUE;
 		}
 
-
 		case EF_STONE_TO_MUD:
 		{
 			if (wall_to_mud(dir)) *ident = TRUE;
@@ -1134,10 +1151,9 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 		case EF_CONFUSE2:
 		{
 			*ident = TRUE;
-			confuse_monster(dir, 20);
+			confuse_monster(dir, 20, aware);
 			return TRUE;
 		}
-
 
 		case EF_BIZARRE:
 		{
@@ -1146,12 +1162,12 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 			return TRUE;
 		}
 
-
 		case EF_STAR_BALL:
 		{
 			int i;
 			*ident = TRUE;
-			for (i = 0; i < 8; i++) fire_ball(GF_ELEC, ddd[i], 150, 3);
+			for (i = 0; i < 8; i++) fire_ball(GF_ELEC, ddd[i],
+				(150 * (100 + boost) / 100), 3);
 			return TRUE;
 		}
 
@@ -1173,7 +1189,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 		case EF_SLEEPII:
 		{
 			*ident = TRUE;
-			sleep_monsters_touch();
+			sleep_monsters_touch(aware);
 			return TRUE;
 		}
 
@@ -1187,32 +1203,37 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 		case EF_MISSILE:
 		{
 			*ident = TRUE;
-			fire_bolt_or_beam(beam, GF_MISSILE, dir, damroll(3, 4));
+			dam = damroll(3, 4) * (100 + boost) / 100;
+			fire_bolt_or_beam(beam, GF_MISSILE, dir, dam);
 			return TRUE;
 		}
 
 		case EF_DISPEL_EVIL:
 		{
 			*ident = TRUE;
-			dispel_evil(p_ptr->lev * 5);
+			dam = p_ptr->lev * 5 * (100 + boost) / 100;
+			dispel_evil(dam);
 			return TRUE;
 		}
 
 		case EF_DISPEL_EVIL60:
 		{
-			if (dispel_evil(60)) *ident = TRUE;
+			dam = 60 * (100 + boost) / 100;
+			if (dispel_evil(dam)) *ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_DISPEL_UNDEAD:
 		{
-			if (dispel_undead(60)) *ident = TRUE;
+			dam = 60 * (100 + boost) / 100;
+			if (dispel_undead(dam)) *ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_DISPEL_ALL:
 		{
-			if (dispel_monsters(120)) *ident = TRUE;
+			dam = 120 * (100 + boost) / 100;
+			if (dispel_monsters(dam)) *ident = TRUE;
 			return TRUE;
 		}
 
@@ -1262,148 +1283,169 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 		case EF_FIRE_BOLT:
 		{
 			*ident = TRUE;
-			fire_bolt(GF_FIRE, dir, damroll(9, 8));
+			dam = damroll(9, 8) * (100 + boost) / 100;
+			fire_bolt(GF_FIRE, dir, dam);
 			return TRUE;
 		}
 
 		case EF_FIRE_BOLT2:
 		{
-			fire_bolt_or_beam(beam, GF_FIRE, dir, damroll(12, 8));
+			dam = damroll(12, 8) * (100 + boost) / 100;
+			fire_bolt_or_beam(beam, GF_FIRE, dir, dam);
 			*ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_FIRE_BOLT3:
 		{
-			fire_bolt_or_beam(beam, GF_FIRE, dir, damroll(16, 8));
+			dam = damroll(16, 8) * (100 + boost) / 100;
+			fire_bolt_or_beam(beam, GF_FIRE, dir, dam);
 			*ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_FIRE_BOLT72:
 		{
+			dam = 72 * (100 + boost) / 100;
 			*ident = TRUE;
-			fire_ball(GF_FIRE, dir, 72, 2);
+			fire_ball(GF_FIRE, dir, dam, 2);
 			return TRUE;
 		}
-		
+
 		case EF_FIRE_BALL:
 		{
-			fire_ball(GF_FIRE, dir, 144, 2);
+			dam = 144 * (100 + boost) / 100;
+			fire_ball(GF_FIRE, dir, dam, 2);
 			*ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_FIRE_BALL2:
 		{
+			dam = 120 * (100 + boost) / 100;
 			*ident = TRUE;
-			fire_ball(GF_FIRE, dir, 120, 3);
+			fire_ball(GF_FIRE, dir, dam, 3);
 			return TRUE;
 		}
 
 		case EF_FIRE_BALL200:
 		{
+			dam = 200 * (100 + boost) / 100;
 			*ident = TRUE;
-			fire_ball(GF_FIRE, dir, 200, 3);
+			fire_ball(GF_FIRE, dir, dam, 3);
 			return TRUE;
 		}
 
 		case EF_COLD_BOLT:
 		{
+			dam = damroll(6, 8) * (100 + boost) / 100;
 			*ident = TRUE;
-			fire_bolt_or_beam(beam, GF_COLD, dir, damroll(6, 8));
+			fire_bolt_or_beam(beam, GF_COLD, dir, dam);
 			return TRUE;
 		}
 
 		case EF_COLD_BOLT2:
 		{
+			dam = damroll(12, 8) * (100 + boost) / 100;
 			*ident = TRUE;
-			fire_bolt(GF_COLD, dir, damroll(12, 8));
+			fire_bolt(GF_COLD, dir, dam);
 			return TRUE;
 		}
 
 		case EF_COLD_BALL2:
 		{
+			dam = 200 * (100 + boost) / 100;
 			*ident = TRUE;
-			fire_ball(GF_COLD, dir, 200, 3);
+			fire_ball(GF_COLD, dir, dam, 3);
 			return TRUE;
 		}
 
 		case EF_COLD_BALL50:
 		{
+			dam = 50 * (100 + boost) / 100;
 			*ident = TRUE;
-			fire_ball(GF_COLD, dir, 50, 2);
+			fire_ball(GF_COLD, dir, dam, 2);
 			return TRUE;
 		}
 
 		case EF_COLD_BALL100:
 		{
+			dam = 100 * (100 + boost) / 100;
 			*ident = TRUE;
-			fire_ball(GF_COLD, dir, 100, 2);
+			fire_ball(GF_COLD, dir, dam, 2);
 			return TRUE;
 		}
-		
+
 		case EF_COLD_BALL160:
 		{
+			dam = 160 * (100 + boost) / 100;
 			*ident = TRUE;
-			fire_ball(GF_COLD, dir, 160, 3);
+			fire_ball(GF_COLD, dir, dam, 3);
 			return TRUE;
 		}
 
 		case EF_ACID_BOLT:
 		{
+			dam = damroll(5, 8) * (100 + boost) / 100;
 			*ident = TRUE;
-			fire_bolt(GF_ACID, dir, damroll(5, 8));
+			fire_bolt(GF_ACID, dir, dam);
 			return TRUE;
 		}
 
 		case EF_ACID_BOLT2:
 		{
-			fire_bolt_or_beam(beam, GF_ACID, dir, damroll(10, 8));
+			dam = damroll(10, 8) * (100 + boost) / 100;
+			fire_bolt_or_beam(beam, GF_ACID, dir, dam);
 			*ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_ACID_BOLT3:
 		{
-			fire_bolt_or_beam(beam, GF_ACID, dir, damroll(12, 8));
+			dam = damroll(12, 8) * (100 + boost) / 100;
+			fire_bolt_or_beam(beam, GF_ACID, dir, dam);
 			*ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_ACID_BALL:
 		{
-			fire_ball(GF_ACID, dir, 120, 2);
+			dam = 120 * (100 + boost) / 100;
+			fire_ball(GF_ACID, dir, dam, 2);
 			*ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_ELEC_BOLT:
 		{
+			dam = damroll(6, 6) * (100 + boost) / 100;
 			*ident = TRUE;
-			fire_bolt_or_beam(beam, GF_ELEC, dir, damroll(6, 6));
+			fire_beam(GF_ELEC, dir, dam);
 			return TRUE;
 		}
 
 		case EF_ELEC_BALL:
 		{
-			fire_ball(GF_ELEC, dir, 64, 2);
+			dam = 64 * (100 + boost) / 100;
+			fire_ball(GF_ELEC, dir, dam, 2);
 			*ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_ELEC_BALL2:
 		{
+			dam = 250 * (100 + boost) / 100;
 			*ident = TRUE;
-			fire_ball(GF_ELEC, dir, 250, 3);
+			fire_ball(GF_ELEC, dir, dam, 3);
 			return TRUE;
 		}
 
 
 		case EF_ARROW:
 		{
+			dam = 150 * (100 + boost) / 100;
 			*ident = TRUE;
-			fire_bolt(GF_ARROW, dir, 150);
+			fire_bolt(GF_ARROW, dir, dam);
 			return TRUE;
 		}
 
@@ -1417,33 +1459,38 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 
 		case EF_STINKING_CLOUD:
 		{
+			dam = 12 * (100 + boost) / 100;
 			*ident = TRUE;
-			fire_ball(GF_POIS, dir, 12, 3);
+			fire_ball(GF_POIS, dir, dam, 3);
 			return TRUE;
 		}
 
 
 		case EF_DRAIN_LIFE1:
 		{
-			if (drain_life(dir, 90)) *ident = TRUE;
+			dam = 90 * (100 + boost) / 100;
+			if (drain_life(dir, dam)) *ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_DRAIN_LIFE2:
 		{
-			if (drain_life(dir, 120)) *ident = TRUE;
+			dam = 120 * (100 + boost) / 100;
+			if (drain_life(dir, dam)) *ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_DRAIN_LIFE3:
 		{
-			if (drain_life(dir, 150)) *ident = TRUE;
+			dam = 150 * (100 + boost) / 100;
+			if (drain_life(dir, dam)) *ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_DRAIN_LIFE4:
 		{
-			if (drain_life(dir, 250)) *ident = TRUE;
+			dam = 250 * (100 + boost) / 100;
+			if (drain_life(dir, dam)) *ident = TRUE;
 			return TRUE;
 		}
 
@@ -1456,7 +1503,8 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 
 		case EF_MANA_BOLT:
 		{
-			fire_bolt(GF_MANA, dir, damroll(12, 8));
+			dam = damroll(12, 8) * (100 + boost) / 100;
+			fire_bolt(GF_MANA, dir, dam);
 			*ident = TRUE;
 			return TRUE;
 		}
@@ -1481,13 +1529,13 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 
 		case EF_MON_CONFUSE:
 		{
-			if (confuse_monster(dir, 10)) *ident = TRUE;
+			if (confuse_monster(dir, 10, aware)) *ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_MON_SLEEP:
 		{
-			if (sleep_monster(dir)) *ident = TRUE;
+			if (sleep_monster(dir, aware)) *ident = TRUE;
 			return TRUE;
 		}
 
@@ -1499,14 +1547,14 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 
 		case EF_MON_SCARE:
 		{
-			if (fear_monster(dir, 10)) *ident = TRUE;
+			if (fear_monster(dir, 10, aware)) *ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_LIGHT_LINE:
 		{
 			msg_print("A line of shimmering blue light appears.");
-			lite_line(dir);
+			light_line(dir);
 			*ident = TRUE;
 			return TRUE;
 		}
@@ -1534,14 +1582,13 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 			if (poly_monster(dir)) *ident = TRUE;
 			return TRUE;
 		}
- 
 
 		case EF_STARLIGHT:
 		{
 			int i;
 			if (!p_ptr->timed[TMD_BLIND])
 				msg_print("Light shoots in all directions!");
-			for (i = 0; i < 8; i++) lite_line(ddd[i]);
+			for (i = 0; i < 8; i++) light_line(ddd[i]);
 			*ident = TRUE;
 			return TRUE;
 		}
@@ -1549,25 +1596,24 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 		case EF_STARLIGHT2:
 		{
 			int k;
-			for (k = 0; k < 8; k++) strong_lite_line(ddd[k]);
+			for (k = 0; k < 8; k++) strong_light_line(ddd[k]);
 			*ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_BERSERKER:
 		{
-			if (inc_timed(TMD_SHERO, randint1(50) + 50, TRUE)) *ident = TRUE;
+			if (inc_timed(TMD_SHERO, randint1(50) + 50, TRUE))
+				*ident = TRUE;
 			return TRUE;
 		}
-
 
 		case EF_WONDER:
 		{
-			if (effect_wonder(dir, randint1(100) + p_ptr->lev / 5, beam)) *ident = TRUE;
+			if (effect_wonder(dir, randint1(100) + p_ptr->lev / 5,
+				beam)) *ident = TRUE;
 			return TRUE;
 		}
-
-
 
 		case EF_WAND_BREATH:
 		{
@@ -1602,8 +1648,10 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 
 		case EF_STAFF_HOLY:
 		{
-			if (dispel_evil(120)) *ident = TRUE;
-			if (inc_timed(TMD_PROTEVIL, randint1(25) + 3 * p_ptr->lev, TRUE)) *ident = TRUE;
+			dam = 120 * (100 + boost) / 100;
+			if (dispel_evil(dam)) *ident = TRUE;
+			if (inc_timed(TMD_PROTEVIL, randint1(25) + 3 *
+				p_ptr->lev, TRUE)) *ident = TRUE;
 			if (clear_timed(TMD_POISONED, TRUE)) *ident = TRUE;
 			if (clear_timed(TMD_AFRAID, TRUE)) *ident = TRUE;
 			if (hp_player(50)) *ident = TRUE;
@@ -1751,57 +1799,64 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 
 		case EF_RING_ACID:
 		{
+			dam = 70 * (100 + boost) / 100;
 			*ident = TRUE;
-			fire_ball(GF_ACID, dir, 70, 2);
+			fire_ball(GF_ACID, dir, dam, 2);
 			inc_timed(TMD_OPP_ACID, randint1(20) + 20, TRUE);
 			return TRUE;
 		}
 
 		case EF_RING_FLAMES:
 		{
+			dam = 80 * (100 + boost) / 100;
 			*ident = TRUE;
-			fire_ball(GF_FIRE, dir, 80, 2);
+			fire_ball(GF_FIRE, dir, dam, 2);
 			inc_timed(TMD_OPP_FIRE, randint1(20) + 20, TRUE);
 			return TRUE;
 		}
 
 		case EF_RING_ICE:
 		{
+			dam = 75 * (100 + boost) / 100;
 			*ident = TRUE;
-			fire_ball(GF_COLD, dir, 75, 2);
+			fire_ball(GF_COLD, dir, dam, 2);
 			inc_timed(TMD_OPP_COLD, randint1(20) + 20, TRUE);
 			return TRUE;
 		}
 
 		case EF_RING_LIGHTNING:
 		{
+			dam = 85 * (100 + boost) / 100;
 			*ident = TRUE;
-			fire_ball(GF_ELEC, dir, 85, 2);
+			fire_ball(GF_ELEC, dir, dam, 2);
 			inc_timed(TMD_OPP_ELEC, randint1(20) + 20, TRUE);
 			return TRUE;
 		}
 
 		case EF_DRAGON_BLUE:
 		{
+			dam = 100 * (100 + boost) / 100;
 			sound(MSG_BR_ELEC);
 			msg_print("You breathe lightning.");
-			fire_ball(GF_ELEC, dir, 100, 2);
+			fire_ball(GF_ELEC, dir, dam, 2);
 			return TRUE;
 		}
 
 		case EF_DRAGON_GREEN:
 		{
+			dam = 150 * (100 + boost) / 100;
 			sound(MSG_BR_GAS);
 			msg_print("You breathe poison gas.");
-			fire_ball(GF_POIS, dir, 150, 2);
+			fire_ball(GF_POIS, dir, dam, 2);
 			return TRUE;
 		}
 
 		case EF_DRAGON_RED:
 		{
+			dam = 200 * (100 + boost) / 100;
 			sound(MSG_BR_FIRE);
 			msg_print("You breathe fire.");
-			fire_ball(GF_FIRE, dir, 200, 2);
+			fire_ball(GF_FIRE, dir, dam, 2);
 			return TRUE;
 		}
 
@@ -1822,53 +1877,59 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 			};
 
 			int chance = randint0(5);
+			dam = 250 * (100 + boost) / 100;
 			sound(mh[chance].sound);
 			msg_format("You breathe %s.", mh[chance].msg);
-			fire_ball(mh[chance].typ, dir, 250, 2);
+			fire_ball(mh[chance].typ, dir, dam, 2);
 			return TRUE;
 		}
 
 		case EF_DRAGON_BRONZE:
 		{
+			dam = 120 * (100 + boost) / 100;
 			sound(MSG_BR_CONF);
 			msg_print("You breathe confusion.");
-			fire_ball(GF_CONFUSION, dir, 120, 2);
+			fire_ball(GF_CONFUSION, dir, dam, 2);
 			return TRUE;
 		}
 
 		case EF_DRAGON_GOLD:
 		{
+			dam = 130 * (100 + boost) / 100;
 			sound(MSG_BR_SOUND);
 			msg_print("You breathe sound.");
-			fire_ball(GF_SOUND, dir, 130, 2);
+			fire_ball(GF_SOUND, dir, dam, 2);
 			return TRUE;
 		}
 
 		case EF_DRAGON_CHAOS:
 		{
-			int chance = randint0(2);
+			dam = 220 * (100 + boost) / 100;
+			chance = randint0(2);
 			sound(((chance == 1 ? MSG_BR_CHAOS : MSG_BR_DISENCHANT)));
 			msg_format("You breathe %s.",
 			           ((chance == 1 ? "chaos" : "disenchantment")));
 			fire_ball((chance == 1 ? GF_CHAOS : GF_DISENCHANT),
-			          dir, 220, 2);
+			          dir, dam, 2);
 			return TRUE;
 		}
 
 		case EF_DRAGON_LAW:
 		{
-			int chance = randint0(2);
+			dam = 230 * (100 + boost) / 100;
+			chance = randint0(2);
 			sound(((chance == 1 ? MSG_BR_SOUND : MSG_BR_SHARDS)));
 			msg_format("You breathe %s.",
 			           ((chance == 1 ? "sound" : "shards")));
 			fire_ball((chance == 1 ? GF_SOUND : GF_SHARD),
-			          dir, 230, 2);
+			          dir, dam, 2);
 			return TRUE;
 		}
 
 		case EF_DRAGON_BALANCE:
 		{
-			int chance = randint0(4);
+			dam = 250 * (100 + boost) / 100;
+			chance = randint0(4);
 			msg_format("You breathe %s.",
 			           ((chance == 1) ? "chaos" :
 			            ((chance == 2) ? "disenchantment" :
@@ -1876,25 +1937,28 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 			fire_ball(((chance == 1) ? GF_CHAOS :
 			           ((chance == 2) ? GF_DISENCHANT :
 			            ((chance == 3) ? GF_SOUND : GF_SHARD))),
-			          dir, 250, 2);
+			          dir, dam, 2);
 			return TRUE;
 		}
 
 		case EF_DRAGON_SHINING:
 		{
-			int chance = randint0(2);
+			dam = 200 * (100 + boost) / 100;
+			chance = randint0(2);
 			sound(((chance == 0 ? MSG_BR_LIGHT : MSG_BR_DARK)));
 			msg_format("You breathe %s.",
-			           ((chance == 0 ? "light" : "darkness")));
-			fire_ball((chance == 0 ? GF_LITE : GF_DARK), dir, 200, 2);
+			        ((chance == 0 ? "light" : "darkness")));
+			fire_ball((chance == 0 ? GF_LIGHT : GF_DARK), dir, dam,
+				2);
 			return TRUE;
 		}
 
 		case EF_DRAGON_POWER:
 		{
+			dam = 300 * (100 + boost) / 100;
 			sound(MSG_BR_ELEMENTS);
 			msg_print("You breathe the elements.");
-			fire_ball(GF_MISSILE, dir, 300, 2);
+			fire_ball(GF_MISSILE, dir, dam, 2);
 			return TRUE;
 		}
 

@@ -85,7 +85,7 @@ void delete_monster_idx(int i)
 	mon_cnt--;
 
 	/* Visual update */
-	lite_spot(y, x);
+	light_spot(y, x);
 }
 
 
@@ -415,31 +415,9 @@ s16b get_mon_num(int level)
 
 	alloc_entry *table = alloc_race_table;
 
-
-	/* Boost the level */
-	if (level > 0)
-	{
-		/* Occasional "nasty" monster */
-		if (one_in_(NASTY_MON))
-		{
-			/* Pick a level bonus */
-			int d = level / 4 + 2;
-
-			/* Boost the level */
-			level += ((d < 5) ? d : 5);
-		}
-
-		/* Occasional "nasty" monster */
-		if (one_in_(NASTY_MON))
-		{
-			/* Pick a level bonus */
-			int d = level / 4 + 2;
-
-			/* Boost the level */
-			level += ((d < 5) ? d : 5);
-		}
-	}
-
+	/* Occasionally produce a nastier monster in the dungeon */
+	if (level > 0 && one_in_(NASTY_MON))
+		level += MIN(level / 4 + 2, MON_OOD_MAX);
 
 	/* Reset total */
 	total = 0L;
@@ -1062,7 +1040,7 @@ void lore_do_probe(int m_idx)
 	unsigned i;
 
 	/* Know various things */
-	race_flags_assign(l_ptr->flags, r_ptr->flags);
+	memset(l_ptr->flags, 255, sizeof(l_ptr->flags));
 	race_flags_assign_spell(l_ptr->spell_flags, r_ptr->spell_flags);
 	for (i = 0; i < MONSTER_BLOW_MAX; i++)
 		l_ptr->blows[i] = MAX_UCHAR;
@@ -1089,7 +1067,6 @@ void lore_do_probe(int m_idx)
 void lore_treasure(int m_idx, int num_item, int num_gold)
 {
 	monster_type *m_ptr = &mon_list[m_idx];
-	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 	monster_lore *l_ptr = &l_list[m_ptr->r_idx];
 
 
@@ -1097,9 +1074,8 @@ void lore_treasure(int m_idx, int num_item, int num_gold)
 	if (num_item > l_ptr->drop_item) l_ptr->drop_item = num_item;
 	if (num_gold > l_ptr->drop_gold) l_ptr->drop_gold = num_gold;
 
-	/* Hack -- memorize the good/great flags */
-	if (r_ptr->flags[0] & (RF0_DROP_GOOD)) l_ptr->flags[0] |= (RF0_DROP_GOOD);
-	if (r_ptr->flags[0] & (RF0_DROP_GREAT)) l_ptr->flags[0] |= (RF0_DROP_GREAT);
+	/* Learn about drop quality */
+	l_ptr->flags[0] |= (RF0_DROP_GOOD | RF0_DROP_GREAT);
 
 	/* Update monster recall window */
 	if (p_ptr->monster_race_idx == m_ptr->r_idx)
@@ -1162,7 +1138,7 @@ void lore_treasure(int m_idx, int num_item, int num_gold)
  *
  * Monsters which are not on the current panel may be "visible" to
  * the player, and their descriptions will include an "offscreen"
- * reference.  Currently, offscreen monsters cannot be targetted
+ * reference.  Currently, offscreen monsters cannot be targeted
  * or viewed directly, but old targets will remain set.  XXX XXX
  *
  * The player can choose to be disturbed by several things, including
@@ -1232,8 +1208,7 @@ void update_mon(int m_idx, bool full)
 			/* Empty mind, no telepathy */
 			if (r_ptr->flags[1] & (RF1_EMPTY_MIND))
 			{
-				/* Memorize flags */
-				l_ptr->flags[1] |= (RF1_EMPTY_MIND);
+				/* Nothing! */
 			}
 
 			/* Weird mind, occasional telepathy */
@@ -1247,13 +1222,6 @@ void update_mon(int m_idx, bool full)
 
 					/* Check for LOS so that MFLAG_VIEW is set later */
 					if (player_has_los_bold(fy, fx)) easy = TRUE;
-
-					/* Memorize flags */
-					l_ptr->flags[1] |= (RF1_WEIRD_MIND);
-
-					/* Hack -- Memorize mental flags */
-					if (r_ptr->flags[1] & (RF1_SMART)) l_ptr->flags[1] |= (RF1_SMART);
-					if (r_ptr->flags[1] & (RF1_STUPID)) l_ptr->flags[1] |= (RF1_STUPID);
 				}
 			}
 
@@ -1265,31 +1233,20 @@ void update_mon(int m_idx, bool full)
 
 				/* Check for LOS to that MFLAG_VIEW is set later */
 				if (player_has_los_bold(fy, fx)) easy = TRUE;
-
-				/* Hack -- Memorize mental flags */
-				if (r_ptr->flags[1] & (RF1_SMART)) l_ptr->flags[1] |= (RF1_SMART);
-				if (r_ptr->flags[1] & (RF1_STUPID)) l_ptr->flags[1] |= (RF1_STUPID);
 			}
 		}
 
 		/* Normal line of sight, and not blind */
 		if (player_has_los_bold(fy, fx) && !p_ptr->timed[TMD_BLIND])
 		{
-			bool do_invisible = FALSE;
-			bool do_cold_blood = FALSE;
-
 			/* Use "infravision" */
 			if (d <= p_ptr->state.see_infra)
 			{
-				/* Handle "cold blooded" monsters */
-				if (r_ptr->flags[1] & (RF1_COLD_BLOOD))
-				{
-					/* Take note */
-					do_cold_blood = TRUE;
-				}
-
+				/* Learn about warm/cold blood */
+				l_ptr->flags[1] |= (RF1_COLD_BLOOD);
+				
 				/* Handle "warm blooded" monsters */
-				else
+				if (!(r_ptr->flags[1] & (RF1_COLD_BLOOD)))
 				{
 					/* Easy to see */
 					easy = flag = TRUE;
@@ -1299,12 +1256,12 @@ void update_mon(int m_idx, bool full)
 			/* Use "illumination" */
 			if (player_can_see_bold(fy, fx))
 			{
+				/* Learn about invisibility */
+				l_ptr->flags[1] |= (RF1_INVISIBLE);
+				
 				/* Handle "invisible" monsters */
 				if (r_ptr->flags[1] & (RF1_INVISIBLE))
 				{
-					/* Take note */
-					do_invisible = TRUE;
-
 					/* See invisible */
 					if (p_ptr->state.see_inv)
 					{
@@ -1320,14 +1277,6 @@ void update_mon(int m_idx, bool full)
 					easy = flag = TRUE;
 				}
 			}
-
-			/* Visible */
-			if (flag)
-			{
-				/* Memorize flags */
-				if (do_invisible) l_ptr->flags[1] |= (RF1_INVISIBLE);
-				if (do_cold_blood) l_ptr->flags[1] |= (RF1_COLD_BLOOD);
-			}
 		}
 	}
 
@@ -1335,6 +1284,12 @@ void update_mon(int m_idx, bool full)
 	/* The monster is now visible */
 	if (flag)
 	{
+		/* Learn about the monster's mind */
+		if (p_ptr->state.telepathy)
+		{
+			l_ptr->flags[1] |= (RF1_EMPTY_MIND | RF1_WEIRD_MIND | RF1_SMART | RF1_STUPID);
+		}
+		
 		/* It was previously unseen */
 		if (!m_ptr->ml)
 		{
@@ -1342,7 +1297,7 @@ void update_mon(int m_idx, bool full)
 			m_ptr->ml = TRUE;
 
 			/* Draw the monster */
-			lite_spot(fy, fx);
+			light_spot(fy, fx);
 
 			/* Update health bar as needed */
 			if (p_ptr->health_who == m_idx) p_ptr->redraw |= (PR_HEALTH);
@@ -1368,7 +1323,7 @@ void update_mon(int m_idx, bool full)
 			m_ptr->ml = FALSE;
 
 			/* Erase the monster */
-			lite_spot(fy, fx);
+			light_spot(fy, fx);
 
 			/* Update health bar as needed */
 			if (p_ptr->health_who == m_idx) p_ptr->redraw |= (PR_HEALTH);
@@ -1544,6 +1499,9 @@ void monster_swap(int y1, int x1, int y2, int x2)
 
 		/* Update monster */
 		update_mon(m1, TRUE);
+
+		/* Redraw monster list */
+		p_ptr->redraw |= (PR_MONLIST);
 	}
 
 	/* Player 1 */
@@ -1577,6 +1535,9 @@ void monster_swap(int y1, int x1, int y2, int x2)
 
 		/* Update monster */
 		update_mon(m2, TRUE);
+
+		/* Redraw monster list */
+		p_ptr->redraw |= (PR_MONLIST);
 	}
 
 	/* Player 2 */
@@ -1601,8 +1562,8 @@ void monster_swap(int y1, int x1, int y2, int x2)
 
 
 	/* Redraw */
-	lite_spot(y1, x1);
-	lite_spot(y2, x2);
+	light_spot(y1, x1);
+	light_spot(y2, x2);
 }
 
 
@@ -2184,8 +2145,8 @@ bool alloc_monster(int dis, bool slp, int depth)
 	while (--attempts_left)
 	{
 		/* Pick a location */
-		y = randint0(DUNGEON_HGT);
-		x = randint0(DUNGEON_WID);
+		y = randint0(level_hgt);
+		x = randint0(level_wid);
 
 		/* Require "naked" floor grid */
 		if (!cave_naked_bold(y, x)) continue;
@@ -2643,7 +2604,7 @@ static learn_attack_struct attack_table[] = {
 	{ DRS_RES_COLD, 1, TR1_RES_COLD },
 	{ DRS_RES_POIS, 1, TR1_RES_POIS },
 	{ DRS_RES_FEAR, 1, TR1_RES_FEAR },
-	{ DRS_RES_LITE, 1, TR1_RES_LITE },
+	{ DRS_RES_LIGHT, 1, TR1_RES_LIGHT },
 	{ DRS_RES_DARK, 1, TR1_RES_DARK },
 	{ DRS_RES_BLIND, 1, TR1_RES_BLIND },
 	{ DRS_RES_CONFU, 1, TR1_RES_CONFU },
@@ -2744,9 +2705,9 @@ void update_smart_learn(int m_idx, int what)
 			break;
 		}
 
-		case DRS_RES_LITE:
+		case DRS_RES_LIGHT:
 		{
-			if (p_ptr->state.resist_lite) m_ptr->smart |= (SM_RES_LITE);
+			if (p_ptr->state.resist_light) m_ptr->smart |= (SM_RES_LIGHT);
 			break;
 		}
 
@@ -2941,7 +2902,7 @@ void monster_death(int m_idx)
 		delete_object_idx(this_o_idx);
 
 		/* Drop it */
-		drop_near(i_ptr, -1, y, x);
+		drop_near(i_ptr, 0, y, x, TRUE);
 	}
 
 	/* Forget objects */
@@ -2954,38 +2915,33 @@ void monster_death(int m_idx)
 		/* Get local object */
 		i_ptr = &object_type_body;
 
-		/* Mega-Hack -- Prepare to make "Grond" */
-		object_prep(i_ptr, lookup_kind(TV_HAFTED, SV_GROND));
-
-		/* Note -- We must not set name1 so that it can be made into
-		 * an artifact by apply_magic */
-
-		/* Mega-Hack -- Actually create "Grond" */
-		apply_magic(i_ptr, -1, TRUE, TRUE, TRUE);
+		/* Mega-Hack -- Make "Grond" */
+		object_prep(i_ptr, lookup_kind(TV_HAFTED, SV_GROND), 0, MAXIMISE);
+		i_ptr->name1 = ART_GROND;
+		apply_magic(i_ptr, 0, TRUE, TRUE, TRUE);
 
 		i_ptr->origin = ORIGIN_DROP;
 		i_ptr->origin_depth = p_ptr->depth;
 		i_ptr->origin_xtra = m_ptr->r_idx;
 
 		/* Drop it in the dungeon */
-		drop_near(i_ptr, -1, y, x);
+		drop_near(i_ptr, 0, y, x, TRUE);
 
 
 		/* Get local object */
 		i_ptr = &object_type_body;
 
-		/* Mega-Hack -- Prepare to make "Morgoth" */
-		object_prep(i_ptr, lookup_kind(TV_CROWN, SV_MORGOTH));
-
-		/* Mega-Hack -- Actually create "Morgoth" */
-		apply_magic(i_ptr, -1, TRUE, TRUE, TRUE);
+		/* Mega-Hack -- Make "Morgoth" */
+		object_prep(i_ptr, lookup_kind(TV_CROWN, SV_MORGOTH), 0, MAXIMISE);
+		i_ptr->name1 = ART_MORGOTH;
+		apply_magic(i_ptr, 0, TRUE, TRUE, TRUE);
 
 		i_ptr->origin = ORIGIN_DROP;
 		i_ptr->origin_depth = p_ptr->depth;
 		i_ptr->origin_xtra = m_ptr->r_idx;
 
 		/* Drop it in the dungeon */
-		drop_near(i_ptr, -1, y, x);
+		drop_near(i_ptr, 0, y, x, TRUE);
 	}
 
 
@@ -3033,7 +2989,7 @@ void monster_death(int m_idx)
 		i_ptr->origin_xtra = m_ptr->r_idx;
 
 		/* Drop it in the dungeon */
-		drop_near(i_ptr, -1, y, x);
+		drop_near(i_ptr, 0, y, x, TRUE);
 	}
 
 	/* Take note of any dropped treasure */
@@ -3306,3 +3262,17 @@ bool mon_take_hit(int m_idx, int dam, bool *fear, cptr note)
 	return (FALSE);
 }
 
+/*
+ * Obtain the "flags" for a monster race which are known to the monster
+ * lore struct.  Known flags will be 1 for present, or 0 for not present.
+ * Unknown flags will always be 0.
+ */
+void monster_flags_known(const monster_race *r_ptr, const monster_lore *l_ptr, u32b flags[])
+{
+	int i;
+
+	for (i = 0; i < RACE_FLAG_STRICT_UB; i++)
+	{
+		flags[i] = l_ptr->flags[i] & r_ptr->flags[i];
+	}
+}

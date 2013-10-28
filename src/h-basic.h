@@ -103,10 +103,13 @@
  */
 #undef PATH_SEP
 #define PATH_SEP "/"
+#define PATH_SEPC '/'
 
 #ifdef WINDOWS
 # undef PATH_SEP
+# undef PATH_SEPC
 # define PATH_SEP "\\"
+# define PATH_SEPC '\\'
 #endif
 
 
@@ -125,6 +128,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stddef.h>
 #include <string.h>
 #include <time.h>
 

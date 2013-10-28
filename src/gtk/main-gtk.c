@@ -2056,7 +2056,7 @@ static void init_color_tags(xtra_win_data *xd)
 
 	tags = gtk_text_buffer_get_tag_table(xd->buf);
 	
-	for (i = 0; i <= 15; i++)
+	for (i = 0; i <= MAX_COLORS; i++)
 	{
 		strnfmt(colorname, sizeof(colorname),  "color-%d", i);
 		strnfmt(str, sizeof(str), "#%02x%02x%02x", angband_color_table[i][1], angband_color_table[i][2], angband_color_table[i][3]);
@@ -2165,8 +2165,15 @@ static void handle_message(game_event_type type, game_event_data *data, void *us
 	int i;
 
 	if (!xd) return;
-
-	xd->buf = gtk_text_buffer_new(NULL);
+	
+	if (!GTK_IS_TEXT_BUFFER(xd->buf))
+	{
+		xd->buf = gtk_text_buffer_new(NULL);
+	}
+	else
+	{
+		gtk_text_buffer_set_text(xd->buf, "", -1);
+	}
 	gtk_text_view_set_buffer(GTK_TEXT_VIEW (xd->text_view), xd->buf);
 	
 	init_color_tags(xd);
@@ -2214,7 +2221,7 @@ static void inv_slot(char *str, size_t len, int i, bool equip)
 	if (item_tester_okay(o_ptr) || equip)
 	{
 		/* Obtain an item description */
-		object_desc(o_name, sizeof(o_name), o_ptr, TRUE, ODESC_FULL);
+		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
 			
 		/* Obtain the length of the description */
 		n = strlen(o_name);
@@ -2258,8 +2265,15 @@ static void handle_inv(game_event_type type, game_event_data *data, void *user)
 
 
 	if (!xd) return;
-
-	xd->buf = gtk_text_buffer_new(NULL);
+	
+	if (!GTK_IS_TEXT_BUFFER(xd->buf))
+	{
+		xd->buf = gtk_text_buffer_new(NULL);
+	}
+	else
+	{
+		gtk_text_buffer_set_text(xd->buf, "", -1);
+	}
 	gtk_text_view_set_buffer(GTK_TEXT_VIEW(xd->text_view), xd->buf);
 	
 	init_color_tags(xd);
@@ -2293,8 +2307,15 @@ static void handle_equip(game_event_type type, game_event_data *data, void *user
 		char str[80];
 	
 	if (!xd) return;
-
-	xd->buf = gtk_text_buffer_new(NULL);
+	
+	if (!GTK_IS_TEXT_BUFFER(xd->buf))
+	{
+		xd->buf = gtk_text_buffer_new(NULL);
+	}
+	else
+	{
+		gtk_text_buffer_set_text(xd->buf, "", -1);
+	}
 	gtk_text_view_set_buffer(GTK_TEXT_VIEW(xd->text_view), xd->buf);
 	
 	init_color_tags(xd);
@@ -2335,7 +2356,15 @@ static void handle_mons_list(game_event_type type, game_event_data *data, void *
 
 	if (!xd) return;
 
-	xd->buf = gtk_text_buffer_new(NULL);
+	if (!GTK_IS_TEXT_BUFFER(xd->buf))
+	{
+		xd->buf = gtk_text_buffer_new(NULL);
+	}
+	else
+	{
+		gtk_text_buffer_set_text(xd->buf, "", -1);
+	}
+	
 	gtk_text_view_set_buffer(GTK_TEXT_VIEW (xd->text_view), xd->buf);
 	
 	init_color_tags(xd);
@@ -2374,7 +2403,7 @@ static void handle_mons_list(game_event_type type, game_event_data *data, void *
 	text_view_print(xd, str, 1);
 	
 	/* Go over in reverse order (so we show harder monsters first) */
-for (i = 1; i < z_info->r_max; i++)
+	for (i = 1; i < z_info->r_max; i++)
 	{
 		monster_lore *l_ptr = &l_list[i];
 
@@ -2394,7 +2423,8 @@ for (i = 1; i < z_info->r_max; i++)
 		/* Display uniques in a special colour */
 		if (r_ptr->flags[0] & RF0_UNIQUE)
 			attr = TERM_VIOLET;
-		else if (l_ptr->tkills && (r_ptr->level > p_ptr->depth))
+		/* If the player has never killed it (ever) AND it is out of depth */
+		else if ((!l_ptr->tkills) && (r_ptr->level > p_ptr->depth))
 			attr = TERM_RED;
 		else
 			attr = TERM_WHITE;
@@ -2418,9 +2448,14 @@ static void draw_xtra_cr_text(xtra_win_data *xd, int x, int y, byte color, cptr 
 	measurements size;
 	cairo_rectangle_t r;
 	int n = strlen(str);
+
+	/* Prevent gcc warnings */
+	r.width = 0;
+	r.height = 0;
+	r.x = 0;
+	r.y = 0;
 	
 	/* Set dimensions */
-	
 	size.w = xd->font.w;
 	size.h = xd->font.h;
 	draw_text(xd->surface, &xd->font, &size, x, y, n, color, str);

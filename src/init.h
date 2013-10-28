@@ -12,7 +12,7 @@
 #define INCLUDED_INIT_H
 
 #include "h-basic.h"
-
+#include "z-rand.h"
 
 /*
  * Parse errors
@@ -23,6 +23,7 @@ enum
 	PARSE_ERROR_INVALID_FLAG,
 	PARSE_ERROR_INVALID_ITEM_NUMBER,
 	PARSE_ERROR_INVALID_SPELL_FREQ,
+	PARSE_ERROR_INVALID_VALUE,
 	PARSE_ERROR_MISSING_COLON,
 	PARSE_ERROR_MISSING_FIELD,
 	PARSE_ERROR_MISSING_RECORD_HEADER,
@@ -112,13 +113,12 @@ struct header
 extern errr init_info_txt(ang_file *fp, char *buf, header *head,
                           parse_info_txt_func parse_info_txt_line);
 extern errr init_store_txt(ang_file *fp, char *buf);
-
+extern errr init_names_txt(ang_file *fp, char *buf);
 extern errr eval_info(eval_info_post_func eval_info_process, header *head);
 
 extern errr emit_info_txt(ang_file *fp, ang_file *template, char *buf, header *head,
    emit_info_txt_index_func emit_info_txt_index, emit_info_txt_always_func emit_info_txt_always);
 
-#ifdef ALLOW_TEMPLATES
 extern errr parse_z_info(char *buf, header *head);
 extern errr parse_v_info(char *buf, header *head);
 extern errr parse_f_info(char *buf, header *head);
@@ -136,9 +136,7 @@ extern errr parse_s_info(char *buf, header *head);
 extern errr eval_r_power(header *head);
 extern errr eval_e_slays(header *head);
 
-#ifdef ALLOW_TEMPLATES_OUTPUT
 extern errr emit_r_info_index(ang_file *fp, header *head, int i);
-#endif
 
 
 /*
@@ -146,9 +144,6 @@ extern errr emit_r_info_index(ang_file *fp, header *head, int i);
  */
 extern int error_idx;
 extern int error_line;
-
-
-#endif /* ALLOW_TEMPLATES */
 
 
 /*

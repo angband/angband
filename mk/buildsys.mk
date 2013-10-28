@@ -148,7 +148,7 @@ ${STATIC_LIB} ${STATIC_LIB_NOINST}: ${EXT_DEPS} ${OBJS}
 		${COMPILE_FAILED}; \
 	fi
 
-install: ${LIB} ${STATIC_LIB} ${PLUGIN} ${PROG} install-extra
+install: ${LIB} ${STATIC_LIB} ${PLUGIN} ${PROG} ${CONFIG} ${LIBDATA} ${VARDATA} ${INCLUDES} ${MAN} install-extra
 	for i in ${SUBDIRS}; do \
 		${DIR_ENTER}; \
 		${MAKE} ${MFLAGS} install || exit 1; \
@@ -182,9 +182,27 @@ install: ${LIB} ${STATIC_LIB} ${PLUGIN} ${PROG} install-extra
 		fi \
 	done
 
-	for i in ${DATA}; do \
+	for i in ${VARDATA}; do \
 		${INSTALL_STATUS}; \
-		if ${MKDIR_P} $$(dirname ${DESTDIR}${datadir}/${PACKAGE}/$$i) && ${INSTALL} -m 644 $$i ${DESTDIR}${datadir}/${PACKAGE}/$$i; then \
+		if ${MKDIR_P} $$(dirname ${DESTDIR}${vardatadir}${PACKAGE}/$$i) && ${INSTALL} -m 644 $$i ${DESTDIR}${vardatadir}${PACKAGE}/$$i; then \
+			${INSTALL_OK}; \
+		else \
+			${INSTALL_FAILED}; \
+		fi \
+	done
+	
+	for i in ${LIBDATA}; do \
+		${INSTALL_STATUS}; \
+		if ${MKDIR_P} $$(dirname ${DESTDIR}${libdatadir}${PACKAGE}/$$i) && ${INSTALL} -m 644 $$i ${DESTDIR}${libdatadir}${PACKAGE}/$$i; then \
+			${INSTALL_OK}; \
+		else \
+			${INSTALL_FAILED}; \
+		fi \
+	done
+	
+	for i in ${CONFIG}; do \
+		${INSTALL_STATUS}; \
+		if ${MKDIR_P} $$(dirname ${DESTDIR}${configdir}${PACKAGE}/$$i) && ${INSTALL} -m 644 $$i ${DESTDIR}${configdir}${PACKAGE}/$$i; then \
 			${INSTALL_OK}; \
 		else \
 			${INSTALL_FAILED}; \
@@ -340,7 +358,7 @@ distclean: clean
 			fi \
 		fi \
 	done
-	rm -rf configure *.mk autom4te.cache
+	rm -rf configure *.mk autom4te.cache config.log config.status aclocal.m4 src/autoconf.* mk/extra.mk mk/sinclude.mk
 
 DIR_ENTER = cd $$i || exit 1
 DIR_LEAVE = cd .. || exit 1

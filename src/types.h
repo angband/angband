@@ -45,6 +45,7 @@ typedef struct store_type store_type;
 typedef struct spell_type spell_type;
 typedef struct autoinscription autoinscription;
 typedef struct history_info history_info;
+typedef struct color_type color_type;
 
 
 /**
@@ -232,6 +233,17 @@ typedef struct
 	bool hallucinate;
 	bool trapborder;
 } grid_data;
+
+
+/*
+ * A game color.
+ */
+struct color_type
+{
+	char index_char;            /* Character index:  'r' = red, etc. */
+	char name[32];              /* Color name */
+	byte color_translate[MAX_ATTR];       /* Index for various in-game translations */
+};
 
 
 #endif /* !INCLUDED_TYPES_H */

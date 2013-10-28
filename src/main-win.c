@@ -655,7 +655,7 @@ static const byte special_key_list[] =
 #include "cmds.h"
 #include "textui.h"
 
-static game_command cmd = { CMD_NULL, 0, { NULL } };
+static game_command cmd = { CMD_NULL, 0, {{NULL}} };
 
 #if 0
 /*
@@ -2421,7 +2421,7 @@ static void windows_map_aux(void)
 		}
 	}
 
-	/* Hilite the player */
+	/* Highlight the player */
 	Term_curs_win(p_ptr->px - min_x, p_ptr->py - min_y);
 }
 
@@ -4636,16 +4636,13 @@ static void init_stuff(void)
 	validate_dir(path);
 
 	/* Init the file paths */
-	init_file_paths(path);
+	init_file_paths(path, path, path);
 
 	/* Hack -- Validate the paths */
 	validate_dir(ANGBAND_DIR_APEX);
-	validate_dir(ANGBAND_DIR_BONE);
-	validate_dir(ANGBAND_DIR_DATA);
 	validate_dir(ANGBAND_DIR_EDIT);
 	validate_dir(ANGBAND_DIR_FILE);
 	validate_dir(ANGBAND_DIR_HELP);
-	validate_dir(ANGBAND_DIR_INFO);
 	validate_dir(ANGBAND_DIR_PREF);
 	validate_dir(ANGBAND_DIR_SAVE);
 	validate_dir(ANGBAND_DIR_USER);

@@ -114,7 +114,7 @@ static const flag_type f2_resist[] =
 	{ TR1_RES_COLD,  "cold" },
 	{ TR1_RES_POIS,  "poison" },
 	{ TR1_RES_FEAR,  "fear" },
-	{ TR1_RES_LITE,  "light" },
+	{ TR1_RES_LIGHT, "light" },
 	{ TR1_RES_DARK,  "dark" },
 	{ TR1_RES_BLIND, "blindness" },
 	{ TR1_RES_CONFU, "confusion" },
@@ -154,7 +154,7 @@ static const flag_type f3_misc[] =
 	{ TR2_FEATHER, "Feather Falling" },
 	{ TR2_REGEN, "Speeds regeneration" },
 	{ TR2_FREE_ACT, "Prevents paralysis" },
-	{ TR2_HOLD_LIFE, "Stops experience drain" },
+	{ TR2_HOLD_LIFE, "Sustains your life force" },
 	{ TR2_TELEPATHY, "Grants telepathy" },
 	{ TR2_SEE_INVIS, "Grants the ability to see invisible things" },
 	{ TR2_AGGRAVATE, "Aggravates creatures nearby" },
@@ -165,29 +165,29 @@ static const flag_type f3_misc[] =
 
 /** Slays **/
 /*
- * Entries in this table should be in ascending order of multiplier, to 
- * ensure that the highest one takes precedence 
- * object flag, vulnerable flag, resist flag, multiplier, ranged verb, 
+ * Entries in this table should be in ascending order of multiplier, to
+ * ensure that the highest one takes precedence
+ * object flag, vulnerable flag, resist flag, multiplier, ranged verb,
  * melee verb, verb describing what the thing branded does when it is active,
  * description of affected creatures, brand
  */
 const slay_t slay_table[] =
 {
-	{ TR0_SLAY_ANIMAL, RF2_ANIMAL, 0, 2, "pierces",  "smite", NULL,
+	{ TR0_SLAY_ANIMAL, RF2_ANIMAL, 0, 2, "pierces",  "smite", "glows",
 	  "animals",                                NULL },
-	{ TR0_SLAY_EVIL,   RF2_EVIL,   0, 2, "pierces",  "smite", NULL,
+	{ TR0_SLAY_EVIL,   RF2_EVIL,   0, 2, "pierces",  "smite", "glows",
 	  "evil creatures",                         NULL },
-	{ TR0_SLAY_UNDEAD, RF2_UNDEAD, 0, 3, "pierces",  "smite", NULL,
+	{ TR0_SLAY_UNDEAD, RF2_UNDEAD, 0, 3, "pierces",  "smite", "glows",
 	  "undead",                                 NULL },
-	{ TR0_SLAY_DEMON,  RF2_DEMON,  0, 3, "pierces",  "smite", NULL,
+	{ TR0_SLAY_DEMON,  RF2_DEMON,  0, 3, "pierces",  "smite", "glows",
 	  "demons",                                 NULL },
-	{ TR0_SLAY_ORC,    RF2_ORC,    0, 3, "pierces",  "smite", NULL,
+	{ TR0_SLAY_ORC,    RF2_ORC,    0, 3, "pierces",  "smite", "glows",
 	  "orcs",                                   NULL },
-	{ TR0_SLAY_TROLL,  RF2_TROLL,  0, 3, "pierces",  "smite", NULL,
+	{ TR0_SLAY_TROLL,  RF2_TROLL,  0, 3, "pierces",  "smite", "glows",
 	  "trolls",                                 NULL },
-	{ TR0_SLAY_GIANT,  RF2_GIANT,  0, 3, "pierces",  "smite", NULL,
+	{ TR0_SLAY_GIANT,  RF2_GIANT,  0, 3, "pierces",  "smite", "glows",
 	 "giants",                                  NULL },
-	{ TR0_SLAY_DRAGON, RF2_DRAGON, 0, 3, "pierces",  "smite", NULL,
+	{ TR0_SLAY_DRAGON, RF2_DRAGON, 0, 3, "pierces",  "smite", "glows",
 	  "dragons",                                NULL },
 	{ TR0_BRAND_ACID, 0, RF2_IM_ACID, 3, "corrodes", "corrode", "spits",
 	  "creatures not resistant to acid",        "acid" },
@@ -200,12 +200,12 @@ const slay_t slay_table[] =
 	{ TR0_BRAND_POIS, 0, RF2_IM_POIS, 3, "poisons",  "poison", "seethes",
 	  "creatures not resistant to poison",      "venom" },
 	{ TR0_KILL_DRAGON, RF2_DRAGON, 0, 5, "deeply pierces",
-	 "fiercely smite", NULL, "dragons",         NULL },
+	 "fiercely smite", "glows brightly", "dragons",         NULL },
 	{ TR0_KILL_DEMON,  RF2_DEMON,  0, 5, "deeply pierces",
-	 "fiercely smite", NULL, "demons",          NULL },
+	 "fiercely smite", "glows brightly", "demons",          NULL },
 	{ TR0_KILL_UNDEAD, RF2_UNDEAD, 0, 5, "deeply pierces",
-	 "fiercely smite", NULL, "undead",          NULL },
-	{ 0, 0, 0, 0, NULL, NULL, NULL, NULL }
+	 "fiercely smite", "glows brightly", "undead",          NULL },
+	{ 0, 0, 0, 0, NULL, NULL, NULL, NULL, NULL }
 };
 
 /*
@@ -245,24 +245,43 @@ static bool describe_curses(const object_type *o_ptr, u32b f3)
 /*
  * Describe stat modifications.
  */
-static bool describe_stats(u32b f1, int pval)
+static bool describe_stats(const object_type *o_ptr, u32b f1, oinfo_detail_t
+	mode)
 {
 	cptr descs[N_ELEMENTS(f1_pval)];
 	size_t count;
+	bool full = mode & OINFO_FULL;
+	bool dummy = mode & OINFO_DUMMY;
 
-	if (!pval) return FALSE;
+	if (!o_ptr->pval && !dummy) return FALSE;
 
 	count = info_collect(f1_pval, N_ELEMENTS(f1_pval), f1, descs);
 	if (count)
 	{
-		text_out_c((pval > 0) ? TERM_L_GREEN : TERM_RED, "%+i ", pval);
-		info_out_list(descs, count);
+		if ((object_pval_is_visible(o_ptr) || full) && !dummy)
+		{
+			text_out_c((o_ptr->pval > 0) ? TERM_L_GREEN : TERM_RED,
+				 "%+i ", o_ptr->pval);
+			info_out_list(descs, count);
+
+		}
+		else
+		{
+			text_out("Affects your ");
+			info_out_list(descs, count);
+		}
 	}
 
 	if (f1 & TR0_SEARCH)
 	{
-		text_out_c((pval > 0) ? TERM_L_GREEN : TERM_RED, "%+i%% ", pval * 5);
-		text_out("to searching.\n");
+		if ((object_pval_is_visible(o_ptr) || full) && !dummy)
+		{
+			text_out_c((o_ptr->pval > 0) ? TERM_L_GREEN : TERM_RED,
+				"%+i%% ", o_ptr->pval * 5);
+			text_out("to searching.\n");
+		}
+		else if (count) text_out("Also affects your searching skill.\n");
+		else text_out("Affects your searching skill.\n");
 	}
 
 	return TRUE;
@@ -385,9 +404,10 @@ static bool describe_slays(u32b f1, int tval)
 
 	bool fulldesc;
 
-	if ((tval == TV_SWORD) || (tval == TV_HAFTED) || (tval == TV_POLEARM) ||
-		(tval == TV_DIGGING ) || (tval == TV_BOW) || (tval == TV_SHOT) ||
-		(tval == TV_ARROW) || (tval == TV_BOLT)) fulldesc = FALSE;
+	if ((tval == TV_SWORD) || (tval == TV_HAFTED) || (tval == TV_POLEARM)
+		|| (tval == TV_DIGGING ) || (tval == TV_BOW) || (tval == TV_SHOT)
+		|| (tval == TV_ARROW) || (tval == TV_BOLT) || (tval == TV_FLASK))
+		fulldesc = FALSE;
 	else fulldesc = TRUE;
 
 	for (s_ptr = slay_table; s_ptr->slay_flag; s_ptr++)
@@ -521,29 +541,36 @@ static void calculate_missile_crits(player_state *state, int weight,
 /*
  * Describe combat advantages.
  */
-static bool describe_combat(const object_type *o_ptr, bool full)
+static bool describe_combat(const object_type *o_ptr, oinfo_detail_t mode)
 {
+	bool full = mode & OINFO_FULL;
+
 	const char *desc[16];
 	int i;
 	int mult[16];
 	int cnt, dam, total_dam, plus = 0;
 	int xtra_postcrit = 0, xtra_precrit = 0;
 	int crit_mult, crit_div, crit_add;
+	int str_plus, dex_plus, old_blows, new_blows, extra_blows;
+	int str_done = -1;
 	object_type *j_ptr = &inventory[INVEN_BOW];
 
 	u32b f[OBJ_FLAG_N];
+	u32b flags[OBJ_FLAG_N];
 
 	bool weapon = (wield_slot(o_ptr) == INVEN_WIELD);
 	bool ammo   = (p_ptr->state.ammo_tval == o_ptr->tval) &&
 	              (j_ptr->k_idx);
 
 	/* Abort if we've nothing to say */
+	if (mode & OINFO_DUMMY) return FALSE;
+
 	if (!weapon && !ammo)
 	{
 		/* Potions can have special text */
 		if (o_ptr->tval != TV_POTION) return FALSE;
 		if (!o_ptr->dd || !o_ptr->ds) return FALSE;
-		if (!object_is_known(o_ptr)) return FALSE;
+		if (!object_flavor_is_aware(o_ptr)) return FALSE;
 
 		text_out("It can be thrown at creatures with damaging effect.\n");
 		return TRUE;
@@ -588,21 +615,71 @@ static bool describe_combat(const object_type *o_ptr, bool full)
 
 		text_out_c(TERM_L_GREEN, "%d ", state.num_blow);
 		text_out("blow%s/round.\n", (state.num_blow > 1) ? "s" : "");
+
+		/* Check to see if extra STR or DEX would yield extra blows */
+		old_blows = state.num_blow;
+		extra_blows = 0;
+
+		/* First we need to look for extra blows on other items, as
+		 * state does not track these */
+		for (i = INVEN_BOW; i < INVEN_TOTAL; i++)
+		{
+			object_flags_known(&inventory[i], flags);
+
+			if (flags[0] & TR0_BLOWS)
+				extra_blows += inventory[i].pval;
+		}
+
+		/* Then we add blows from the weapon being examined */
+		if (f[0] & TR0_BLOWS) extra_blows += o_ptr->pval;
+
+		/* Then we check for extra "real" blows */
+		for (dex_plus = 0; dex_plus < 8; dex_plus++)
+		{
+			for (str_plus = 0; str_plus < 8; str_plus++)
+		        {
+				state.stat_ind[A_STR] += str_plus;
+				state.stat_ind[A_DEX] += dex_plus;
+				new_blows = calc_blows(o_ptr, &state)
+					+ extra_blows;
+
+				/* Test to make sure that this extra blow is a
+				 * new str/dex combination, not a repeat
+				 */
+				if ((new_blows > old_blows) &&
+					((str_plus < str_done) ||
+					(str_done == -1)))
+				{
+					text_out("With an additional %d strength and %d dex you would get %d blows\n",
+						str_plus, dex_plus, new_blows);
+					state.stat_ind[A_STR] -= str_plus;
+					state.stat_ind[A_DEX] -= dex_plus;
+					str_done = str_plus;
+					break;
+				}
+				state.stat_ind[A_STR] -= str_plus;
+				state.stat_ind[A_DEX] -= dex_plus;
+			}
+		}
 	}
 	else
 	{
 		int tdis = 6 + 2 * p_ptr->state.ammo_mult;
 		u32b g[OBJ_FLAG_N];
 
-		if (object_is_known(o_ptr)) plus += o_ptr->to_h;
+		if (object_attack_plusses_are_visible(o_ptr))
+			plus += o_ptr->to_h;
 
 		calculate_missile_crits(&p_ptr->state, o_ptr->weight, plus,
 				&crit_mult, &crit_add, &crit_div);
 
 		/* Calculate damage */
 		dam = ((o_ptr->ds + 1) * o_ptr->dd * 5);
-		if (object_is_known(o_ptr)) dam += (o_ptr->to_d * 10);
-		if (object_is_known(j_ptr)) dam += (j_ptr->to_d * 10);
+
+		if (object_attack_plusses_are_visible(o_ptr))
+			dam += (o_ptr->to_d * 10);
+		if (object_attack_plusses_are_visible(j_ptr))
+			dam += (j_ptr->to_d * 10);
 		dam *= p_ptr->state.ammo_mult;
 
 		/* Apply brands from the shooter to the ammo */
@@ -615,24 +692,30 @@ static bool describe_combat(const object_type *o_ptr, bool full)
 	}
 
 	/* Collect slays */
-	/* Melee weapons get slays from rings now */
+	/* Melee weapons get slays and brands from other items now */
 	if (weapon)
 	{
 		u32b g[OBJ_FLAG_N];
-		u32b h[OBJ_FLAG_N];
-		
-		object_flags_known(&inventory[INVEN_LEFT], g);
-		object_flags_known(&inventory[INVEN_RIGHT], h);
+		bool nonweap = FALSE;
 
-		if (!((f[0] & TR0_BRAND_MASK) ==
-			((f[0] | g[0] | h[0]) & TR0_BRAND_MASK)))
-			text_out("This weapon benefits from one or more ring brands.\n");
+		for (i = INVEN_LEFT; i < INVEN_TOTAL; i++)
+		{
+			object_flags_known(&inventory[i], g);
 
-		f[0] |= (g[0] | h[0]);
+			if ((f[0] & TR0_ALL_SLAYS) !=
+			((f[0] | g[0]) & TR0_ALL_SLAYS))
+			{
+				f[0] |= g[0];
+				nonweap = TRUE;
+			}
+		}
+
+		if (nonweap)
+			text_out("This weapon benefits from one or more off-weapon brands or slays.\n");
 	}
 
 	text_out("Average damage/hit: ");
-	
+
 	cnt = collect_slays(desc, mult, f[0]);
 	for (i = 0; i < cnt; i++)
 	{
@@ -670,7 +753,7 @@ static bool describe_combat(const object_type *o_ptr, bool full)
 
 	if (cnt) text_out(" vs. others");
 	text_out(".\n");
-	
+
 	/* Note the impact flag */
 	if (f[2] & TR2_IMPACT)
 		text_out("Sometimes creates earthquakes on impact.\n");
@@ -689,8 +772,10 @@ static bool describe_combat(const object_type *o_ptr, bool full)
 /*
  * Describe objects that can be used for digging.
  */
-static bool describe_digger(const object_type *o_ptr, bool full)
+static bool describe_digger(const object_type *o_ptr, oinfo_detail_t mode)
 {
+	bool full = mode & OINFO_FULL;
+
 	player_state st;
 
 	object_type inven[INVEN_TOTAL];
@@ -702,6 +787,9 @@ static bool describe_digger(const object_type *o_ptr, bool full)
 
 	int chances[4]; /* These are out of 1600 */
 	static const char *names[4] = { "rubble", "magma veins", "quartz veins", "granite" };
+
+	/* abort if we are a dummy object */
+	if (mode & OINFO_DUMMY) return FALSE;
 
 	if (full)
 		object_flags(o_ptr, f);
@@ -734,7 +822,11 @@ static bool describe_digger(const object_type *o_ptr, bool full)
 		int decis = chance ? (16000 / chance) : 0;
 
 		if (i == 0 && chance > 0)
-			text_out("Clears ");
+		{
+			if (sl == INVEN_WIELD) text_out("Clears ");
+			else text_out("With this item, your current weapon clears ");
+		}
+
 		if (i == 3 || (i != 0 && chance == 0))
 			text_out("and ");
 
@@ -764,7 +856,7 @@ static bool describe_digger(const object_type *o_ptr, bool full)
 }
 
 
-static bool describe_food(const object_type *o_ptr, bool subjective)
+static bool describe_food(const object_type *o_ptr, bool subjective, bool full)
 {
 	/* Describe boring bits */
 	if ((o_ptr->tval == TV_FOOD || o_ptr->tval == TV_POTION) &&
@@ -774,9 +866,14 @@ static bool describe_food(const object_type *o_ptr, bool subjective)
 		int multiplier = extract_energy[p_ptr->state.speed];
 		if (!subjective) multiplier = 10;
 
-		text_out("Nourishes for around ");
-		text_out_c(TERM_L_GREEN, "%d", (o_ptr->pval / 2) * multiplier / 10);
-		text_out(" turns.\n");
+		if (object_is_known(o_ptr) || full)
+		{
+			text_out("Nourishes for around ");
+			text_out_c(TERM_L_GREEN, "%d", (o_ptr->pval / 2) *
+				multiplier / 10);
+			text_out(" turns.\n");
+		}
+		else text_out("Provides some nourishment.\n");
 
 		return TRUE;
 	}
@@ -794,30 +891,30 @@ static bool describe_light(const object_type *o_ptr, u32b f3, bool terse)
 
 	bool artifact = artifact_p(o_ptr);
 	bool no_fuel = (f3 & TR2_NO_FUEL) ? TRUE : FALSE;
-	bool is_lite = (o_ptr->tval == TV_LITE) ? TRUE : FALSE;
+	bool is_light = (o_ptr->tval == TV_LIGHT) ? TRUE : FALSE;
 
-	if ((o_ptr->tval != TV_LITE) && !(f3 & TR2_LITE))
+	if ((o_ptr->tval != TV_LIGHT) && !(f3 & TR2_LIGHT))
 		return FALSE;
 
 	/* Work out radius */
-	if (artifact && is_lite) rad = 3;
-	else if (is_lite) rad = 2;
-	if (f3 & TR2_LITE) rad++;
+	if (artifact && is_light) rad = 3;
+	else if (is_light) rad = 2;
+	if (f3 & TR2_LIGHT) rad++;
 
 	/* Describe here */
 	text_out("Radius ");
 	text_out_c(TERM_L_GREEN, format("%d", rad));
 	if (no_fuel && !artifact)
 		text_out(" light.  No fuel required.");
-	else if (is_lite && o_ptr->sval == SV_LITE_TORCH)
+	else if (is_light && o_ptr->sval == SV_LIGHT_TORCH)
 		text_out(" light, reduced when running out of fuel.");
 	else
 		text_out (" light.");
 
-	if (!terse && is_lite && !artifact)
+	if (!terse && is_light && !no_fuel)
 	{
-		const char *name = (o_ptr->sval == SV_LITE_TORCH) ? "torches" : "lanterns";
-		int turns = (o_ptr->sval == SV_LITE_TORCH) ? FUEL_TORCH : FUEL_LAMP;
+		const char *name = (o_ptr->sval == SV_LIGHT_TORCH) ? "torches" : "lanterns";
+		int turns = (o_ptr->sval == SV_LIGHT_TORCH) ? FUEL_TORCH : FUEL_LAMP;
 
 		text_out("  Refills other %s up to %d turns of fuel.", name, turns);
 	}
@@ -837,8 +934,9 @@ static bool describe_effect(const object_type *o_ptr, u32b f3, bool full,
 {
 	const object_kind *k_ptr = &k_info[o_ptr->k_idx];
 	const char *desc;
+	random_value timeout = {0, 0, 0, 0};
 
-	int effect = 0, base, dice, sides;
+	int effect = 0, fail;
 
 	if (o_ptr->name1)
 	{
@@ -847,9 +945,7 @@ static bool describe_effect(const object_type *o_ptr, u32b f3, bool full,
 		if (object_effect_is_known(o_ptr) || full)
 		{
 			effect = a_ptr->effect;
-			base = a_ptr->time_base;
-			dice = a_ptr->time_dice;
-			sides = a_ptr->time_sides;
+			timeout = a_ptr->time;
 		}
 		else if (object_effect(o_ptr))
 		{
@@ -859,16 +955,26 @@ static bool describe_effect(const object_type *o_ptr, u32b f3, bool full,
 	}
 	else
 	{
+		/* Sometimes only print artifact activation info */
+		if (only_artifacts == TRUE) return FALSE;
+
 		if (object_effect_is_known(o_ptr) || full)
 		{
 			effect = k_ptr->effect;
-			base = k_ptr->time_base;
-			dice = k_ptr->time_dice;
-			sides = k_ptr->time_sides;
+			timeout = k_ptr->time;
 		}
 		else if (object_effect(o_ptr) != 0)
 		{
-			text_out("It can be activated.\n");
+			if (effect_aim(k_ptr->effect))
+				text_out("It can be aimed.\n");
+			else if (o_ptr->tval == TV_FOOD)
+				text_out("It can be eaten.\n");
+			else if (o_ptr->tval == TV_POTION)
+				text_out("It can be drunk.\n");
+			else if (o_ptr->tval == TV_SCROLL)
+				text_out("It can be read.\n");
+			else text_out("It can be activated.\n");
+
 			return TRUE;
 		}
 	}
@@ -879,11 +985,6 @@ static bool describe_effect(const object_type *o_ptr, u32b f3, bool full,
 	/* Obtain the description */
 	desc = effect_desc(effect);
 	if (!desc) return FALSE;
-
-	/* Sometimes only print artifact activation info */
-	if (only_artifacts == TRUE &&
-			o_ptr->name1 && a_info[o_ptr->name1].effect)
-		return FALSE;
 
 	if (effect_aim(effect))
 		text_out("When aimed, it ");
@@ -907,7 +1008,7 @@ static bool describe_effect(const object_type *o_ptr, u32b f3, bool full,
 
 	text_out(".\n");
 
-	if (base || dice || sides)
+	if (randcalc(timeout, 0, MAXIMISE) > 0)
 	{
 		int min_time, max_time;
 
@@ -918,8 +1019,8 @@ static bool describe_effect(const object_type *o_ptr, u32b f3, bool full,
 		text_out("Takes ");
 
 		/* Correct for player speed */
-		min_time = (dice*1     + base) * multiplier / 10;
-		max_time = (dice*sides + base) * multiplier / 10;
+		min_time = randcalc(timeout, 0, MINIMISE) * multiplier / 10;
+		max_time = randcalc(timeout, 0, MAXIMISE) * multiplier / 10;
 
 		text_out_c(TERM_L_GREEN, "%d", min_time);
 
@@ -936,6 +1037,18 @@ static bool describe_effect(const object_type *o_ptr, u32b f3, bool full,
 		text_out(".\n");
 	}
 
+	if (!subjective || o_ptr->tval == TV_FOOD || o_ptr->tval == TV_POTION ||
+		o_ptr->tval == TV_SCROLL)
+	{
+		return TRUE;
+	}
+	else
+	{
+		fail = get_use_device_chance(o_ptr);
+		text_out("Your chance of success is %d.%d%%\n", (1000 - fail) /
+			10, (1000 - fail) % 10);
+	}
+
 	return TRUE;
 }
 
@@ -949,12 +1062,20 @@ static bool describe_effect(const object_type *o_ptr, u32b f3, bool full,
 void object_info_header(const object_type *o_ptr)
 {
 	char o_name[120];
+	char origin_text[80];
 
 	/* Object name */
-	object_desc(o_name, sizeof(o_name), o_ptr, TRUE, ODESC_FULL);
+	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
 	text_out_c(TERM_L_BLUE, "%^s\n", o_name);
 
 	/* Display the origin */
+	
+	if (o_ptr->origin_depth)
+		strnfmt(origin_text, sizeof(origin_text), "%d feet (level %d)",
+		        o_ptr->origin_depth * 50, o_ptr->origin_depth);
+	else
+		my_strcpy(origin_text, "town", sizeof(origin_text));
+
 	switch (o_ptr->origin)
 	{
 		case ORIGIN_NONE:
@@ -966,13 +1087,13 @@ void object_info_header(const object_type *o_ptr)
 			break;
 
 		case ORIGIN_STORE:
-			text_out("(bought in a store)\n");
+			text_out("(from a store)\n");
 			break;
 
 		case ORIGIN_FLOOR:
-			text_out("(lying on the floor at %d feet (level %d))\n",
-			         o_ptr->origin_depth * 50,
-			         o_ptr->origin_depth);
+			text_out("(lying on the floor %s %s)\n",
+			         (o_ptr->origin_depth ? "at" : "in"),
+			         origin_text);
  			break;
 
 		case ORIGIN_DROP:
@@ -980,37 +1101,45 @@ void object_info_header(const object_type *o_ptr)
 			const char *name = r_name + r_info[o_ptr->origin_xtra].name;
 			bool unique = (r_info[o_ptr->origin_xtra].flags[0] & RF0_UNIQUE) ? TRUE : FALSE;
 
-			text_out("dropped by ");
+			text_out("(dropped by ");
 
 			if (unique)
 				text_out("%s", name);
 			else
 				text_out("%s%s", is_a_vowel(name[0]) ? "an " : "a ", name);
 
-			text_out(" at %d feet (level %d)\n",
-			         o_ptr->origin_depth * 50,
-			         o_ptr->origin_depth);
-
+			text_out(" %s %s)\n",
+			         (o_ptr->origin_depth ? "at" : "in"),
+			         origin_text);
  			break;
 		}
 
 		case ORIGIN_DROP_UNKNOWN:
-			text_out("(dropped by an unknown monster)\n");
+		{
+			text_out("(dropped by an unknown monster %s %s)\n",
+			         (o_ptr->origin_depth ? "at" : "in"),
+			         origin_text);
 			break;
+		}
 
 		case ORIGIN_ACQUIRE:
-			text_out("(conjured forth by magic)\n");
+		{
+			text_out("(conjured forth by magic %s %s)\n",
+			         (o_ptr->origin_depth ? "at" : "in"),
+			         origin_text);
  			break;
+		}
 
 		case ORIGIN_CHEAT:
 			text_out("(created by debug option)\n");
  			break;
 
 		case ORIGIN_CHEST:
-			text_out("(found in a chest at %d feet (level %d))\n",
-			         o_ptr->origin_depth * 50,
-			         o_ptr->origin_depth);
+		{
+			text_out("(found in a chest from %s)\n",
+			         origin_text);
 			break;
+		}
 	}
 
 	text_out("\n");
@@ -1056,12 +1185,15 @@ void object_info_header(const object_type *o_ptr)
 /*
  * Output object information
  */
-static bool object_info_out(const object_type *o_ptr, bool full, bool terse, bool subjective)
+static bool object_info_out(const object_type *o_ptr, oinfo_detail_t mode)
 {
 	u32b f[OBJ_FLAG_N];
 	bool something = FALSE;
 	bool known = object_is_known(o_ptr);
-	
+	bool full = mode & OINFO_FULL;
+	bool terse = mode & OINFO_TERSE;
+	bool subjective = mode & OINFO_SUBJ;
+
 	/* Grab the object flags */
 	if (full)
 		object_flags(o_ptr, f);
@@ -1072,48 +1204,50 @@ static bool object_info_out(const object_type *o_ptr, bool full, bool terse, boo
 	{
 		text_out("You do not know the full extent of this item's powers.\n");
 		something = TRUE;
-	}	
-	
+	}
+
 	if (describe_curses(o_ptr, f[2])) something = TRUE;
-	if (describe_stats(f[0], o_ptr->pval)) something = TRUE;
+	if (describe_stats(o_ptr, f[0], mode)) something = TRUE;
 	if (describe_slays(f[0], o_ptr->tval)) something = TRUE;
 	if (describe_immune(f[1])) something = TRUE;
 	if (describe_ignores(f[2])) something = TRUE;
 	if (describe_sustains(f[1])) something = TRUE;
 	if (describe_misc_magic(f[2])) something = TRUE;
 	if (something) text_out("\n");
-	
+
 	if (describe_effect(o_ptr, f[2], full, terse, subjective))
 	{
 		something = TRUE;
 		text_out("\n");
 	}
 
-	if (subjective && describe_combat(o_ptr, full))
+	if (subjective && describe_combat(o_ptr, mode))
 	{
 		something = TRUE;
 		text_out("\n");
 	}
 
-	if (!terse && describe_food(o_ptr, subjective)) something = TRUE;
+	if (!terse && describe_food(o_ptr, subjective, full)) something = TRUE;
 	if (describe_light(o_ptr, f[2], terse)) something = TRUE;
-	if (!terse && subjective && describe_digger(o_ptr, full)) something = TRUE;
+	if (!terse && subjective && describe_digger(o_ptr, mode)) something = TRUE;
 
 	return something;
 }
 
 
 /**
- * Provide information on an item, including how it would affect the current player's state.
- * 
- * \param full should be set if actual player knowledge should be ignored in favour of
- *              full knowledge.
+ * Provide information on an item, including how it would affect the current
+ * player's state.
  *
- * \returns TRUE if anything is printed.
+ * mode OINFO_FULL should be set if actual player knowledge should be ignored
+ * in favour of full knowledge.
+ *
+ * returns TRUE if anything is printed.
  */
-bool object_info(const object_type *o_ptr, bool full)
+bool object_info(const object_type *o_ptr, oinfo_detail_t mode)
 {
-	return object_info_out(o_ptr, full, FALSE, TRUE);
+	mode |= OINFO_SUBJ;
+	return object_info_out(o_ptr, mode);
 }
 
 
@@ -1122,7 +1256,7 @@ bool object_info(const object_type *o_ptr, bool full)
  */
 bool object_info_chardump(const object_type *o_ptr)
 {
-	return object_info_out(o_ptr, FALSE, TRUE, TRUE);
+	return object_info_out(o_ptr, OINFO_TERSE | OINFO_SUBJ);
 }
 
 
@@ -1134,6 +1268,5 @@ bool object_info_chardump(const object_type *o_ptr)
  */
 bool object_info_spoil(const object_type *o_ptr)
 {
-	return object_info_out(o_ptr, TRUE, FALSE, FALSE);
+	return object_info_out(o_ptr, OINFO_FULL);
 }
-

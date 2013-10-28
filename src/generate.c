@@ -181,6 +181,16 @@
 #define ROOM_MAX	9
 
 
+/*
+ * Height and width for the currently generated level
+ *
+ * This differs from DUNGEON_HGT (and dungeon_hgt) in that it bounds the part
+ * of the level that might actually contain open squares. It will vary from
+ * level to level, unlike the constant.
+ */
+int level_hgt  = DUNGEON_HGT;
+int level_wid  = DUNGEON_WID;
+
 
 /*
  * Simple structure to hold a map location
@@ -277,21 +287,17 @@ static const room_data room[ROOM_MAX] =
 static void correct_dir(int *rdir, int *cdir, int y1, int x1, int y2, int x2)
 {
 	/* Extract vertical and horizontal directions */
-	*rdir = (y1 == y2) ? 0 : (y1 < y2) ? 1 : -1;
-	*cdir = (x1 == x2) ? 0 : (x1 < x2) ? 1 : -1;
+	*rdir = CMP(y2, y1);
+	*cdir = CMP(x2, x1);
 
-	/* Never move diagonally */
-	if (*rdir && *cdir)
-	{
-		if (randint0(100) < 50)
-		{
-			*rdir = 0;
-		}
-		else
-		{
-			*cdir = 0;
-		}
-	}
+	/* If we only have one direction to go, then we're done */
+	if (!*rdir || !*cdir) return;
+
+	/* If we need to go diagonally, then choose a random direction */
+	if (randint0(100) < 50)
+		*rdir = 0;
+	else
+		*cdir = 0;
 }
 
 
@@ -320,8 +326,8 @@ static void new_player_spot(void)
 	while (1)
 	{
 		/* Pick a legal spot */
-		y = rand_range(1, DUNGEON_HGT - 2);
-		x = rand_range(1, DUNGEON_WID - 2);
+		y = rand_range(1, level_hgt - 2);
+		x = rand_range(1, level_wid - 2);
 
 		/* Must be a "naked" floor grid */
 		if (!cave_naked_bold(y, x)) continue;
@@ -331,11 +337,13 @@ static void new_player_spot(void)
 
 		if (!OPT(adult_no_stairs))
 		{
-			if (p_ptr->create_down_stair) {
+			if (p_ptr->create_down_stair)
+			{
 				cave_set_feat(y, x, FEAT_MORE);
 				p_ptr->create_down_stair = FALSE;
 			}
-			else if (p_ptr->create_up_stair) {
+			else if (p_ptr->create_up_stair)
+			{
 				cave_set_feat(y, x, FEAT_LESS);
 				p_ptr->create_up_stair = FALSE;
 			}
@@ -604,8 +612,8 @@ static void alloc_stairs(int feat, int num, int walls)
 			for (j = 0; !flag && j <= 3000; j++)
 			{
 				/* Pick a random grid */
-				y = randint0(DUNGEON_HGT);
-				x = randint0(DUNGEON_WID);
+				y = randint0(level_hgt);
+				x = randint0(level_wid);
 
 				/* Require "naked" floor grid */
 				if (!cave_naked_bold(y, x)) continue;
@@ -651,19 +659,22 @@ static void alloc_stairs(int feat, int num, int walls)
  */
 static void alloc_object(int set, int typ, int num, int depth)
 {
-	int y, x, k;
+	int y, x, k, tries;
+	bool room;
 
 	/* Place some objects */
 	for (k = 0; k < num; k++)
 	{
+		tries = 0;
+
 		/* Pick a "legal" spot */
-		while (TRUE)
+		while (tries < 10000)
 		{
-			bool room;
+			tries++;
 
 			/* Location */
-			y = randint0(DUNGEON_HGT);
-			x = randint0(DUNGEON_WID);
+			y = randint0(level_hgt);
+			x = randint0(level_wid);
 
 			/* Require "naked" floor grid */
 			if (!cave_naked_bold(y, x)) continue;
@@ -770,91 +781,6 @@ static void build_streamer(int feat, int chance)
 		if (!in_bounds(y, x)) break;
 	}
 }
-
-
-/*
- * Build a destroyed level
- */
-static void destroy_level(void)
-{
-	int y1, x1, y, x, k, t, n;
-
-
-	/* Note destroyed levels */
-	if (OPT(cheat_room)) msg_print("Destroyed Level");
-
-	/* Drop a few epi-centers (usually about two) */
-	for (n = 0; n < randint1(5); n++)
-	{
-		/* Pick an epi-center */
-		x1 = rand_range(5, DUNGEON_WID-1 - 5);
-		y1 = rand_range(5, DUNGEON_HGT-1 - 5);
-
-		/* Big area of affect */
-		for (y = (y1 - 15); y <= (y1 + 15); y++)
-		{
-			for (x = (x1 - 15); x <= (x1 + 15); x++)
-			{
-				/* Skip illegal grids */
-				if (!in_bounds_fully(y, x)) continue;
-
-				/* Extract the distance */
-				k = distance(y1, x1, y, x);
-
-				/* Stay in the circle of death */
-				if (k >= 16) continue;
-
-				/* Delete the monster (if any) */
-				delete_monster(y, x);
-
-				/* Destroy valid grids */
-				if (cave_valid_bold(y, x))
-				{
-					/* Delete objects */
-					delete_object(y, x);
-
-					/* Wall (or floor) type */
-					t = randint0(200);
-
-					/* Granite */
-					if (t < 20)
-					{
-						/* Create granite wall */
-						cave_set_feat(y, x, FEAT_WALL_EXTRA);
-					}
-
-					/* Quartz */
-					else if (t < 70)
-					{
-						/* Create quartz vein */
-						cave_set_feat(y, x, FEAT_QUARTZ);
-					}
-
-					/* Magma */
-					else if (t < 100)
-					{
-						/* Create magma vein */
-						cave_set_feat(y, x, FEAT_MAGMA);
-					}
-
-					/* Floor */
-					else
-					{
-						/* Create floor */
-						cave_set_feat(y, x, FEAT_FLOOR);
-					}
-
-					/* No longer part of a room or vault */
-					cave_info[y][x] &= ~(CAVE_ROOM | CAVE_ICKY);
-
-					/* No longer illuminated */
-					cave_info[y][x] &= ~(CAVE_GLOW);
-				}
-			}
-		}
-	}
-}
-
 
 
 /*
@@ -2961,50 +2887,50 @@ static bool room_build(int by0, int bx0, int typ)
  */
 static void cave_gen(void)
 {
-	int i, k, y, x, y1, x1;
-
+	int i, j, k, l, y, x, y1, x1;
 	int by, bx;
+	int num_rooms, size_percent;
 
-	bool destroyed = FALSE;
+	bool blocks_tried[MAX_ROOMS_ROW][MAX_ROOMS_COL];
 
 	dun_data dun_body;
 
+	/* Possibly generate fewer rooms in a smaller area via a scaling factor.
+	 * Since we scale row_rooms and col_rooms by the same amount, DUN_ROOMS
+	 * gives the same "room density" no matter what size the level turns out
+	 * to be. TODO: vary room density slightly? */
+	/* XXX: Until vault generation is improved, scaling variance is reduced */
+	i = randint1(10);
+	if (is_quest(p_ptr->depth)) size_percent = 100;
+	else if (i < 2) size_percent = 75;
+	else if (i < 3) size_percent = 80;
+	else if (i < 4) size_percent = 85;
+	else if (i < 5) size_percent = 90;
+	else if (i < 6) size_percent = 95;
+	else size_percent = 100;
+	size_percent = 100;
+
+	/* scale the various generation variables */
+	num_rooms = DUN_ROOMS * size_percent / 100;
+	level_hgt = DUNGEON_HGT * size_percent / 100;
+	level_wid  = DUNGEON_WID * size_percent / 100;
 
 	/* Global data */
 	dun = &dun_body;
 
-
 	/* Hack -- Start with basic granite */
 	for (y = 0; y < DUNGEON_HGT; y++)
-	{
 		for (x = 0; x < DUNGEON_WID; x++)
-		{
-			/* Create granite wall */
 			cave_set_feat(y, x, FEAT_WALL_EXTRA);
-		}
-	}
-
-
-	/* Possible "destroyed" level */
-	if ((p_ptr->depth > 10) && one_in_(DUN_DEST)) destroyed = TRUE;
-
-	/* Hack -- No destroyed "quest" levels */
-	if (is_quest(p_ptr->depth)) destroyed = FALSE;
-
 
 	/* Actual maximum number of rooms on this level */
-	dun->row_rooms = DUNGEON_HGT / BLOCK_HGT;
-	dun->col_rooms = DUNGEON_WID / BLOCK_WID;
+	dun->row_rooms = level_hgt / BLOCK_HGT;
+	dun->col_rooms = level_wid / BLOCK_WID;
 
 	/* Initialize the room table */
 	for (by = 0; by < dun->row_rooms; by++)
-	{
 		for (bx = 0; bx < dun->col_rooms; bx++)
-		{
-			dun->room_map[by][bx] = FALSE;
-		}
-	}
-
+			dun->room_map[by][bx] = blocks_tried[by][bx]  = FALSE;
 
 	/* No "crowded" rooms yet */
 	dun->crowded = FALSE;
@@ -3014,33 +2940,36 @@ static void cave_gen(void)
 	dun->cent_n = 0;
 
 	/* Build some rooms */
-	for (i = 0; i < DUN_ROOMS; i++)
+	i = 0;
+	while(i < num_rooms)
 	{
-		/* Pick a block for the room */
-		by = randint0(dun->row_rooms);
-		bx = randint0(dun->col_rooms);
+		i++;
 
-#if 0
-		/* Align dungeon rooms */
-		if (dungeon_align)
+		/* Pick a block for the room; j counts blocks we haven't tried */
+		j = 0;
+		for(by=0; by < dun->row_rooms; by++)
+			for(bx=0; bx < dun->col_rooms; bx++)
+				if (!blocks_tried[by][bx]) j++;
+
+		/* If we've tried all blocks we're done */
+		if (j == 0) break;
+
+		/* OK, choose one of the j blocks we haven't tried. Then figure out */
+		/* which one that actually was */
+		k = randint0(j);
+		l = 0;
+		for(by=0; by < dun->row_rooms; by++)
 		{
-			/* Slide some rooms right */
-			if ((bx % 3) == 0) bx++;
-
-			/* Slide some rooms left */
-			if ((bx % 3) == 2) bx--;
+			for(bx=0; bx < dun->col_rooms; bx++)
+			{
+				if (blocks_tried[by][bx]) continue;
+				if (l == k) break;
+				l++;
+			}
+			if (l == k) break;
 		}
-#endif
-
-		/* Destroyed levels are boring */
-		if (destroyed)
-		{
-			/* Attempt a "trivial" room */
-			if (room_build(by, bx, 1)) continue;
-
-			/* Never mind */
-			continue;
-		}
+		
+		blocks_tried[by][bx] = TRUE;
 
 		/* Attempt an "unusual" room */
 		if (randint0(DUN_UNUSUAL) < p_ptr->depth)
@@ -3078,43 +3007,21 @@ static void cave_gen(void)
 		if (room_build(by, bx, 1)) continue;
 	}
 
-
-	/* Special boundary walls -- Top */
-	for (x = 0; x < DUNGEON_WID; x++)
-	{
-		y = 0;
-
-		/* Clear previous contents, add "solid" perma-wall */
-		cave_set_feat(y, x, FEAT_PERM_SOLID);
-	}
-
 	/* Special boundary walls -- Bottom */
 	for (x = 0; x < DUNGEON_WID; x++)
 	{
-		y = DUNGEON_HGT-1;
-
 		/* Clear previous contents, add "solid" perma-wall */
-		cave_set_feat(y, x, FEAT_PERM_SOLID);
+		cave_set_feat(0, x, FEAT_PERM_SOLID);
+		cave_set_feat(DUNGEON_HGT - 1, x, FEAT_PERM_SOLID);
 	}
 
 	/* Special boundary walls -- Left */
 	for (y = 0; y < DUNGEON_HGT; y++)
 	{
-		x = 0;
-
 		/* Clear previous contents, add "solid" perma-wall */
-		cave_set_feat(y, x, FEAT_PERM_SOLID);
+		cave_set_feat(y, 0, FEAT_PERM_SOLID);
+		cave_set_feat(y, DUNGEON_WID - 1, FEAT_PERM_SOLID);
 	}
-
-	/* Special boundary walls -- Right */
-	for (y = 0; y < DUNGEON_HGT; y++)
-	{
-		x = DUNGEON_WID-1;
-
-		/* Clear previous contents, add "solid" perma-wall */
-		cave_set_feat(y, x, FEAT_PERM_SOLID);
-	}
-
 
 	/* Hack -- Scramble the room order */
 	for (i = 0; i < dun->cent_n; i++)
@@ -3175,10 +3082,6 @@ static void cave_gen(void)
 	}
 
 
-	/* Destroy the level if necessary */
-	if (destroyed) destroy_level();
-
-
 	/* Place 3 or 4 down stairs near some walls */
 	alloc_stairs(FEAT_MORE, rand_range(3, 4), 3);
 
@@ -3227,8 +3130,8 @@ static void cave_gen(void)
 				/* Pick a location */
 				while (1)
 				{
-					y = randint0(DUNGEON_HGT);
-					x = randint0(DUNGEON_WID);
+					y = randint0(level_hgt);
+					x = randint0(level_wid);
 
 					if (cave_naked_bold(y, x)) break;
 				}
@@ -3609,10 +3512,10 @@ static int calculate_feeling(int rating, int depth)
 void generate_cave(void)
 {
 	const char *error = "no generation";
+	int counter = 0;
 
 	/* The dungeon is not ready */
 	character_dungeon = FALSE;
-
 
 	/* Generate */
 	while (error)
@@ -3641,14 +3544,20 @@ void generate_cave(void)
 
 		if (OPT(cheat_room) && error)
 			msg_format("Generation restarted: %s.", error);
-	}
 
+		counter++;
+		if (counter > 100)
+		{
+			msg_format("cave_gen() failed 100 times!");
+			exit_game_panic();
+		}
+	}
 
 	/* The dungeon is ready */
 	character_dungeon = TRUE;
 
-	/* Remember when this level was "created" */
-	old_turn = turn;
+	/* Remember when the last dungeon level was created */
+	if (p_ptr->depth > 0) old_turn = turn;
 }
 
 
