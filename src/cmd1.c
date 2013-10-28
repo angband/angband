@@ -24,8 +24,8 @@
 #include "game-event.h"
 #include "generate.h"
 #include "history.h"
-#include "monster/mon-util.h"
 #include "monster/mon-timed.h"
+#include "monster/mon-util.h"
 #include "object/inventory.h"
 #include "object/tvalsval.h"
 #include "object/object.h"
@@ -112,14 +112,8 @@ bool search(bool verbose)
 				/* Scan all objects in the grid */
 				for (o_ptr = get_first_object(y, x); o_ptr; o_ptr = get_next_object(o_ptr))
 				{
-					/* Skip non-chests */
-					if (o_ptr->tval != TV_CHEST) continue;
-
-					/* Skip disarmed chests */
-					if (o_ptr->pval[DEFAULT_PVAL] <= 0) continue;
-
-					/* Skip non-trapped chests */
-					if (!chest_traps[o_ptr->pval[DEFAULT_PVAL]]) continue;
+					/* Skip if not a trapped chest */
+					if (!is_trapped_chest(o_ptr)) continue;
 
 					/* Identify once */
 					if (!object_is_known(o_ptr))
@@ -479,7 +473,7 @@ byte py_pickup(int pickup)
 	if (!cave->o_idx[py][px]) return objs_picked_up;
 
 	/* Tally objects that can be picked up.*/
-	floor_num = scan_floor(floor_list, N_ELEMENTS(floor_list), py, px, 0x03);
+	floor_num = scan_floor(floor_list, N_ELEMENTS(floor_list), py, px, 0x01);
 	for (i = 0; i < floor_num; i++)
 	{
 	    can_pickup += inven_carry_okay(object_byid(floor_list[i]));
@@ -562,15 +556,16 @@ void move_player(int dir, bool disarm)
 	int x = px + ddx[dir];
 
 	int m_idx = cave->m_idx[y][x];
+	struct monster *m_ptr = cave_monster(cave, m_idx);
 
 	/* Attack monsters */
 	if (m_idx > 0) {
 		/* Mimics surprise the player */
-		if (is_mimicking(m_idx)) {
-			become_aware(m_idx);
+		if (is_mimicking(m_ptr)) {
+			become_aware(m_ptr);
 
 			/* Mimic wakes up */
-			mon_clear_timed(m_idx, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, FALSE);
+			mon_clear_timed(m_ptr, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, FALSE);
 
 		} else {
 			py_attack(y, x);

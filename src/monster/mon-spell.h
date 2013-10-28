@@ -53,7 +53,7 @@ enum spell_effect_flag {
     S_SPIDER = 12,
     S_HOUND = 13,
     S_HYDRA = 14,
-    S_ANGEL = 15,
+    S_AINU = 15,
     S_DEMON = 16,
     S_UNDEAD = 17,
     S_DRAGON = 18,

@@ -35,7 +35,7 @@ static char pf_result[MAX_PF_LENGTH];
 static int pf_result_index;
 
 static int ox, oy, ex, ey;
-
+static int dir_search[8] = {2,4,6,8,1,3,7,9};
 
 
 static bool is_valid_pf(int y, int x)
@@ -72,7 +72,7 @@ static void fill_terrain_info(void)
 
 bool findpath(int y, int x)
 {
-	int i, j, dir;
+	int i, j, k, dir;
 	bool try_again;
 	int cur_distance;
 
@@ -82,7 +82,7 @@ bool findpath(int y, int x)
 
 	if ((x >= ox) && (x < ex) && (y >= oy) && (y < ey))
 	{
-		if ((cave->m_idx[y][x] > 0) && (cave_monster(cave, cave->m_idx[y][x])->ml))
+		if ((cave->m_idx[y][x] > 0) && (cave_monster_at(cave, y, x)->ml))
 		{
 			terrain[y - oy][x - ox] = MAX_PF_LENGTH;
 		}
@@ -152,8 +152,9 @@ bool findpath(int y, int x)
 	while ((i != p_ptr->px) || (j != p_ptr->py))
 	{
 		cur_distance = terrain[j - oy][i - ox] - 1;
-		for (dir = 1; dir < 10; dir++)
+		for (k = 0; k < 8; k++)
 		{
+			dir = dir_search[k];
 			if (terrain[j - oy + ddy[dir]][i - ox + ddx[dir]] == cur_distance)
 				break;
 		}
@@ -580,7 +581,7 @@ static bool run_test(void)
 		/* Visible monsters abort running */
 		if (cave->m_idx[row][col] > 0)
 		{
-			monster_type *m_ptr = cave_monster(cave, cave->m_idx[row][col]);
+			monster_type *m_ptr = cave_monster_at(cave, row, col);
 
 			/* Visible monster */
 			if (m_ptr->ml) return (TRUE);
@@ -727,7 +728,7 @@ static bool run_test(void)
 		/* Visible monsters abort running */
 		if (cave->m_idx[row][col] > 0)
 		{
-			monster_type *m_ptr = cave_monster(cave, cave->m_idx[row][col]);
+			monster_type *m_ptr = cave_monster_at(cave, row, col);
 			
 			/* Visible monster */
 			if (m_ptr->ml) return (TRUE);			

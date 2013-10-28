@@ -191,8 +191,12 @@
 /*
  * More maximum values
  */
-#define MAX_SIGHT	20	/* Maximum view distance */
-#define MAX_RANGE	20	/* Maximum range (spells, etc) */
+#define MAX_SIGHT_LGE   20      /* Maximum view distance */
+#define MAX_RANGE_LGE   20      /* Maximum projection range */
+#define MAX_SIGHT_SML   10      /* Maximum view distance (small devices) */
+#define MAX_RANGE_SML   10      /* Maximum projection range (small devices) */
+#define MAX_SIGHT (OPT(birth_small_range) ? MAX_SIGHT_SML : MAX_SIGHT_LGE)  
+#define MAX_RANGE (OPT(birth_small_range) ? MAX_RANGE_SML : MAX_RANGE_LGE)
 
 
 
@@ -318,9 +322,9 @@
 
 
 /*
- * A "stack" of items is limited to less than 100 items (hard-coded).
+ * A "stack" of items is limited to 40 items (hard-coded).
  */
-#define MAX_STACK_SIZE 100
+#define MAX_STACK_SIZE 41
 
 
 /*
@@ -506,19 +510,6 @@ enum
 
 
 /*
- * Bit flags for the "monster_desc" function
- */
-#define MDESC_OBJE		0x01	/* Objective (or Reflexive) */
-#define MDESC_POSS		0x02	/* Possessive (or Reflexive) */
-#define MDESC_IND1		0x04	/* Indefinites for hidden monsters */
-#define MDESC_IND2		0x08	/* Indefinites for visible monsters */
-#define MDESC_PRO1		0x10	/* Pronominalize hidden monsters */
-#define MDESC_PRO2		0x20	/* Pronominalize visible monsters */
-#define MDESC_HIDE		0x40	/* Assume the monster is hidden */
-#define MDESC_SHOW		0x80	/* Assume the monster is visible */
-
-
-/*
  * Bit flags for the "get_item" function
  */
 #define USE_EQUIP     0x01	/* Allow equip items */
@@ -652,6 +643,8 @@ enum
 
 #define CAVE2_DTRAP		0x01	/* trap detected grid */
 #define CAVE2_FEEL		0x02	/* hidden points to trigger feelings*/
+#define CAVE2_DEDGE		0x04	/* border of trap detected area */
+#define CAVE2_VERT		0x08	/* use an alternate visual for this grid */
 
 /* 
  * Information for Feelings 
@@ -661,7 +654,7 @@ enum
 
 
 /*
- * Chest trap flags (see "tables.c")
+ * Chest trap flags (see "object/chest.c")
  */
 #define CHEST_LOSE_STR	0x01
 #define CHEST_LOSE_CON	0x02
@@ -878,14 +871,9 @@ enum
 
 
 /*
- * Available graphic modes
+ * Default graphic modes
  */
 #define GRAPHICS_NONE           0
-#define GRAPHICS_ORIGINAL       1
-#define GRAPHICS_ADAM_BOLT      2
-#define GRAPHICS_DAVID_GERVAIS  3
-#define GRAPHICS_PSEUDO         4
-#define GRAPHICS_NOMAD          5
 
 
 /* player_type.noscore flags */
@@ -903,20 +891,5 @@ enum
  * Maximum number of rvals (monster templates) that a pit can specify.
  */
 #define MAX_RVALS 4
-
-/*
- * Monster Timed Effects
- */
-enum
-{
-	MON_TMD_SLEEP = 0,
-	MON_TMD_STUN,
-	MON_TMD_CONF,
-	MON_TMD_FEAR,
-	MON_TMD_SLOW,
-	MON_TMD_FAST,
-
-	MON_TMD_MAX
-};
 
 #endif /* !INCLUDED_DEFINES_H */

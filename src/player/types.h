@@ -104,6 +104,7 @@ typedef struct player
 	s16b timed[TMD_MAX];	/* Timed effects */
 
 	s16b word_recall;	/* Word of recall counter */
+	s16b deep_descent;	/* Deep Descent counter */
 
 	s16b energy;		/* Current energy */
 
@@ -137,7 +138,6 @@ typedef struct player
 	bool playing;			/* True if player is playing */
 	bool leaving;			/* True if player is leaving */
 	bool autosave;          /* True if autosave is pending */
-	bool randarts;			/* True if randarts have been loaded/generated */
 
 	bool create_up_stair;	/* Create up stair on next level */
 	bool create_down_stair;	/* Create down stair on next level */
@@ -147,7 +147,7 @@ typedef struct player
 	s16b inven_cnt;			/* Number of items in inventory */
 	s16b equip_cnt;			/* Number of items in equipment */
 
-	s16b health_who;		/* Health bar trackee */
+	struct monster *health_who;		/* Health bar trackee */
 
 	s16b monster_race_idx;	/* Monster race trackee */
 

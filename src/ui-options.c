@@ -289,12 +289,24 @@ static void do_cmd_options_win(const char *name, int row)
 			int choicey = ke.mouse.y - 5;
 			int choicex = (ke.mouse.x - 35)/5;
 
+			if (ke.mouse.button == 2)
+				break;
+
 			if ((choicey >= 0) && (choicey < PW_MAX_FLAGS)
 				&& (choicex > 0) && (choicex < ANGBAND_TERM_MAX)
 				&& !(ke.mouse.x % 5))
 			{
-				y = choicey;
-				x = (ke.mouse.x - 35)/5;
+				if ((choicey == y) && (choicex == x)) {
+					/* Toggle flag (off) */
+					if (new_flags[x] & (1L << y))
+						new_flags[x] &= ~(1L << y);
+					/* Toggle flag (on) */
+					else
+						new_flags[x] |= (1L << y);
+				} else {
+					y = choicey;
+					x = (ke.mouse.x - 35)/5;
+				}
 			}
 		}
 
@@ -306,7 +318,7 @@ static void do_cmd_options_win(const char *name, int row)
 
 			/* Toggle */
 			else if (ke.key.code == '5' || ke.key.code == 't' ||
-					ke.key.code == '\n' || ke.key.code == '\r')
+					ke.key.code == KC_ENTER)
 			{
 				/* Hack -- ignore the main window */
 				if (x == 0)
@@ -824,12 +836,11 @@ static bool askfor_aux_numbers(char *buf, size_t buflen, size_t *curs, size_t *l
 	switch (keypress.code)
 	{
 		case ESCAPE:
-		case '\n':
-		case '\r':
+		case KC_ENTER:
 		case ARROW_LEFT:
 		case ARROW_RIGHT:
-		case 0x7F:
-		case '\010':
+		case KC_DELETE:
+		case KC_BACKSPACE:
 		case '0':
 		case '1':
 		case '2':
@@ -883,7 +894,7 @@ static void do_cmd_hp_warn(const char *name, int row)
 {
 	bool res;
 	char tmp[4] = "";
-	u16b warn;
+	byte warn;
 
 	strnfmt(tmp, sizeof(tmp), "%i", op_ptr->hitpoint_warn);
 
@@ -902,7 +913,7 @@ static void do_cmd_hp_warn(const char *name, int row)
 	/* Process input */
 	if (res)
 	{
-		warn = (u16b) strtoul(tmp, NULL, 0);
+		warn = (byte) strtoul(tmp, NULL, 0);
 		
 		/* Reset nonsensical warnings */
 		if (warn > 9)

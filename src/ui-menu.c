@@ -230,13 +230,19 @@ static const menu_skin menu_skin_scroll =
 
 /*** Multi-column menus ***/
 
-/* Find the position of a cursor given a screen address */
 static int columns_get_cursor(int row, int col, int n, int top, region *loc)
 {
-	int rows_per_page = loc->page_rows;
-	int colw = loc->width / (n + rows_per_page - 1) / rows_per_page;
-	int cursor = row + rows_per_page * (col - loc->col) / colw;
+	int w, h, cursor;
+        int rows_per_page = loc->page_rows;
+        int cols = (n + rows_per_page - 1) / rows_per_page;
+	int colw = 23;
 
+	Term_get_size(&w, &h);
+
+	if ((colw * cols) > (w - col))
+		colw = (w - col) / cols;
+
+	cursor = (row - loc->row) + rows_per_page * ((col - loc->col) / colw);
 	if (cursor < 0) cursor = 0;	/* assert: This should never happen */
 	if (cursor >= n) cursor = n - 1;
 
@@ -479,14 +485,15 @@ bool menu_handle_mouse(menu_type *menu, const ui_event *in,
 {
 	int new_cursor;
 
-	if (!region_inside(&menu->active, in))
-	{
+	if (in->mouse.button == 2) {
+		out->type = EVT_ESCAPE;
+	} else
+	if (!region_inside(&menu->active, in)) {
 		/* A click to the left of the active region is 'back' */
 		if (!region_inside(&menu->active, in) &&
 				in->mouse.x < menu->active.col)
 			out->type = EVT_ESCAPE;
-	}
-	else
+	} else
 	{
 		int count = menu->filter_list ? menu->filter_count : menu->count;
 
@@ -582,7 +589,7 @@ bool menu_handle_keypress(menu_type *menu, const ui_event *in,
 		}
 	}
 
-	else if (in->key.code == '\n' || in->key.code == '\r')
+	else if (in->key.code == KC_ENTER)
 		out->type = EVT_SELECT;
 
 	/* Try directional movement */
@@ -645,6 +652,9 @@ ui_event menu_select(menu_type *menu, int notify, bool popup)
 
 		/* Handle mouse & keyboard commands */
 		if (in.type == EVT_MOUSE) {
+			if (!no_act && menu_handle_action(menu, &in)) {
+				continue;
+			}
 			menu_handle_mouse(menu, &in, &out);
 		} else if (in.type == EVT_KBRD) {
 			if (!no_act && menu->cmd_keys &&
@@ -897,6 +907,14 @@ void menu_dynamic_add(menu_type *m, const char *text, int value)
 	} else {
 		menu_setpriv(m, m->count + 1, new);
 	}
+}
+
+void menu_dynamic_add_label(menu_type *m, const char *text, const char label, int value, char *label_list)
+{
+	if(label && m->selections && (m->selections == label_list)) {
+		label_list[m->count] = label;
+	}
+	menu_dynamic_add(m,text,value);
 }
 
 size_t menu_dynamic_longest_entry(menu_type *m)

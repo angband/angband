@@ -21,8 +21,8 @@
 
 struct queue *q_new(size_t size) {
     struct queue *q = (struct queue*)malloc(sizeof(struct queue));
-    q->data = (uintptr_t*)malloc(sizeof(uintptr_t) * size);
-    q->size = size;
+    q->data = (uintptr_t*)malloc(sizeof(uintptr_t) * (size + 1));
+    q->size = size + 1;
     q->head = 0;
     q->tail = 0;
     return q;

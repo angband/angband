@@ -107,6 +107,7 @@
 #include <X11/Xutil.h>
 #include <X11/keysym.h>
 #include <X11/keysymdef.h>
+#include <X11/XKBlib.h>
 
 #include "main.h"
 
@@ -196,6 +197,8 @@ typedef struct infofnt infofnt;
  *	- The default Screen for the display
  *	- The virtual root (usually just the root)
  *	- The default colormap (from a macro)
+ *  - The Alt key modifier mask
+ *  - The Super key modifier mask
  *
  *	- The "name" of the display
  *
@@ -222,6 +225,8 @@ struct metadpy
 	Screen *screen;
 	Window root;
 	Colormap cmap;
+	unsigned int alt_mask;
+	unsigned int super_mask;
 
 	char *name;
 
@@ -347,7 +352,7 @@ struct infoclr
  */
 struct infofnt
 {
-	XFontStruct *info;
+	XFontSet	fs;
 
 	const char *name;
 
@@ -593,6 +598,23 @@ static const char *get_default_font(int term_num)
 }
 
 
+/* look up keyboard modifiers using the Xkb extension */
+
+unsigned int xkb_mask_modifier( XkbDescPtr xkb, const char *name )
+{
+	unsigned int mask=0;
+	
+	if  ( strcmp(name, "Caps Lock") == 0 ) return 2;
+	
+	for(int i = 0; i <= XkbNumVirtualMods; i++ ) {
+		char* modStr = XGetAtomName( xkb->dpy, xkb->names->vmods[i] );
+		if( modStr != NULL && strcmp(name, modStr) == 0 ) {
+			XkbVirtualModsToReal( xkb, 1 << i, &mask );
+			return mask;
+		}
+	}
+	return 0;
+}
 
 /**** Generic code ****/
 
@@ -614,7 +636,8 @@ static const char *get_default_font(int term_num)
 static errr Metadpy_init_2(Display *dpy, const char *name)
 {
 	metadpy *m = Metadpy;
-
+	XkbDescPtr xkb;
+	
 	/*** Open the display if needed ***/
 
 	/* If no Display given, attempt to Create one */
@@ -646,6 +669,16 @@ static errr Metadpy_init_2(Display *dpy, const char *name)
 	/* Get the Screen and Virtual Root Window */
 	m->screen = DefaultScreenOfDisplay(dpy);
 	m->root = RootWindowOfScreen(m->screen);
+
+	/* get the modifier key layout */
+	m->alt_mask = Mod1Mask;
+	m->super_mask = Mod4Mask;
+	xkb = XkbGetKeyboard(dpy, XkbAllComponentsMask, XkbUseCoreKbd);
+	if (xkb != NULL) {
+        m->alt_mask = xkb_mask_modifier( xkb, "Alt" );
+        m->super_mask = xkb_mask_modifier( xkb, "Super" );
+		XkbFreeKeyboard( xkb, 0, True );
+	}
 
 	/* Get the default colormap */
 	m->cmap = DefaultColormapOfScreen(m->screen);
@@ -1347,7 +1380,7 @@ static errr Infofnt_nuke(void)
 	if (ifnt->nuke)
 	{
 		/* Free the font */
-		XFreeFont(Metadpy->dpy, ifnt->info);
+		XFreeFontSet(Metadpy->dpy, ifnt->fs);
 	}
 
 	/* Success */
@@ -1358,47 +1391,31 @@ static errr Infofnt_nuke(void)
 /*
  * Prepare a new 'infofnt'
  */
-static errr Infofnt_prepare(XFontStruct *info)
+static errr Infofnt_prepare(XFontSet fs)
 {
 	infofnt *ifnt = Infofnt;
-
-	XCharStruct *cs;
+	int font_count, i;
+	XFontSetExtents *extents;
+	XFontStruct **fonts;
+	char **names;
 
 	/* Assign the struct */
-	ifnt->info = info;
+	ifnt->fs = fs;
+	extents = XExtentsOfFontSet(fs);
 
-	/* Jump into the max bouonds thing */
-	cs = &(info->max_bounds);
+	font_count = XFontsOfFontSet(fs, &fonts, &names);
+	ifnt->asc = 0;
+	for (i = 0; i < font_count; i++, fonts++)
+	   if (ifnt->asc < (*fonts)->ascent) ifnt->asc = (*fonts)->ascent;
 
 	/* Extract default sizing info */
-	ifnt->asc = info->ascent;
-	ifnt->hgt = info->ascent + info->descent;
-	ifnt->wid = cs->width;
-	ifnt->twid = cs->width;
+	ifnt->hgt = extents->max_logical_extent.height;
+	ifnt->wid = extents->max_logical_extent.width;
+	ifnt->twid = extents->max_logical_extent.width;
 
 	/* Success */
 	return (0);
 }
-
-
-#ifndef IGNORE_UNUSED_FUNCTIONS
-
-/*
- * Initialize a new 'infofnt'.
- */
-static errr Infofnt_init_real(XFontStruct *info)
-{
-	/* Wipe the thing */
-	(void)WIPE(Infofnt, infofnt);
-
-	/* No nuking */
-	Infofnt->nuke = 0;
-
-	/* Attempt to prepare it */
-	return (Infofnt_prepare(info));
-}
-
-#endif /* IGNORE_UNUSED_FUNCTIONS */
 
 
 /*
@@ -1409,20 +1426,22 @@ static errr Infofnt_init_real(XFontStruct *info)
  */
 static errr Infofnt_init_data(const char *name)
 {
-	XFontStruct *info;
-
+	XFontSet fs;
+	char **missing;
+	int missing_count;
 
 	/*** Load the info Fresh, using the name ***/
 
 	/* If the name is not given, report an error */
 	if (!name) return (-1);
 
-	/* Attempt to load the font */
-	info = XLoadQueryFont(Metadpy->dpy, name);
+
+	fs = XCreateFontSet(Metadpy->dpy, name, &missing, &missing_count, NULL);
 
 	/* The load failed, try to recover */
-	if (!info) return (-1);
-
+	if (!fs) return (-1);
+	if (missing_count)
+		XFreeStringList(missing);
 
 	/*** Init the font ***/
 
@@ -1430,10 +1449,10 @@ static errr Infofnt_init_data(const char *name)
 	(void)WIPE(Infofnt, infofnt);
 
 	/* Attempt to prepare it */
-	if (Infofnt_prepare(info))
+	if (Infofnt_prepare(fs))
 	{
 		/* Free the font */
-		XFreeFont(Metadpy->dpy, info);
+		XFreeFontSet(Metadpy->dpy, fs);
 
 		/* Fail */
 		return (-1);
@@ -1456,7 +1475,7 @@ static errr Infofnt_init_data(const char *name)
 /*
  * Standard Text
  */
-static errr Infofnt_text_std(int x, int y, const char *str, int len)
+static errr Infofnt_text_std(int x, int y, const wchar_t *str, int len)
 {
 	int i;
 	int w, h;
@@ -1469,7 +1488,7 @@ static errr Infofnt_text_std(int x, int y, const char *str, int len)
 	if (!str || !*str) return (-1);
 
 	/* Get the length of the string */
-	if (len < 0) len = strlen(str);
+	if (len < 0) len = wcslen(str);
 
 	/*** Decide where to place the string, vertically ***/
 
@@ -1496,11 +1515,6 @@ static errr Infofnt_text_std(int x, int y, const char *str, int len)
 
 
 	/*** Actually draw 'str' onto the infowin ***/
-
-	/* Be sure the correct font is ready */
-	XSetFont(Metadpy->dpy, Infoclr->gc, Infofnt->info->fid);
-
-
 	y += Infofnt->asc;
 
 
@@ -1513,7 +1527,7 @@ static errr Infofnt_text_std(int x, int y, const char *str, int len)
 		for (i = 0; i < len; ++i)
 		{
 			/* Note that the Infoclr is set up to contain the Infofnt */
-			XDrawImageString(Metadpy->dpy, Infowin->win, Infoclr->gc,
+			XwcDrawImageString(Metadpy->dpy, Infowin->win, Infofnt->fs, Infoclr->gc,
 			                 x + i * td->tile_wid + Infofnt->off, y, str + i, 1);
 		}
 	}
@@ -1522,7 +1536,7 @@ static errr Infofnt_text_std(int x, int y, const char *str, int len)
 	else
 	{
 		/* Note that the Infoclr is set up to contain the Infofnt */
-		XDrawImageString(Metadpy->dpy, Infowin->win, Infoclr->gc,
+		XwcDrawImageString(Metadpy->dpy, Infowin->win, Infofnt->fs, Infoclr->gc,
 		                 x, y, str, len);
 	}
 
@@ -1534,7 +1548,7 @@ static errr Infofnt_text_std(int x, int y, const char *str, int len)
 /*
  * Painting where text would be
  */
-static errr Infofnt_text_non(int x, int y, const char *str, int len)
+static errr Infofnt_text_non(int x, int y, const wchar_t *str, int len)
 {
 	int w, h;
 
@@ -1543,7 +1557,7 @@ static errr Infofnt_text_non(int x, int y, const char *str, int len)
 	/*** Find the width ***/
 
 	/* Negative length is a flag to count the characters in str */
-	if (len < 0) len = strlen(str);
+	if (len < 0) len = wcslen(str);
 
 	/* The total width will be 'len' chars * standard width */
 	w = len * td->tile_wid;
@@ -1627,16 +1641,17 @@ static int term_windows_open;
 static void react_keypress(XKeyEvent *ev)
 {
 	int n, ch = 0;
+	metadpy *m = Metadpy;
 
 	KeySym ks;
 
 	char buf[128];
 
-	/* Extract four "modifier flags" */
+	/* Extract "modifier flags" */
 	int mc = (ev->state & ControlMask) ? TRUE : FALSE;
 	int ms = (ev->state & ShiftMask) ? TRUE : FALSE;
-	int mo = (ev->state & Mod1Mask) ? TRUE : FALSE;
-	int mx = (ev->state & Mod2Mask) ? TRUE : FALSE;
+	int mo = (ev->state & m->alt_mask) ? TRUE : FALSE;
+	int mx = (ev->state & m->super_mask) ? TRUE : FALSE;
 	int kp = FALSE;
 
 	byte mods = (mo ? KC_MOD_ALT : 0) | (mx ? KC_MOD_META : 0);
@@ -1684,7 +1699,7 @@ static void react_keypress(XKeyEvent *ev)
 		case XK_KP_Multiply: ch = '*'; kp = TRUE; break;
 		case XK_KP_Subtract: ch = '-'; kp = TRUE; break;
 		case XK_KP_Add: ch = '+'; kp = TRUE; break;
-		case XK_KP_Enter: ch = '\n'; kp = TRUE; break;
+		case XK_KP_Enter: ch = KC_ENTER; kp = TRUE; break;
 		case XK_KP_Equal: ch = '='; kp = TRUE; break;
 
 		case XK_KP_Delete: ch = KC_DELETE; kp = TRUE; break;
@@ -2092,7 +2107,7 @@ static errr Term_wipe_x11(int x, int y, int n)
 	Infoclr_set(clr[TERM_DARK]);
 
 	/* Mega-Hack -- Erase some space */
-	Infofnt_text_non(x, y, "", n);
+	Infofnt_text_non(x, y, L"", n);
 
 	/* Success */
 	return (0);
@@ -2102,7 +2117,7 @@ static errr Term_wipe_x11(int x, int y, int n)
 /*
  * Draw some textual characters.
  */
-static errr Term_text_x11(int x, int y, int n, byte a, const char *s)
+static errr Term_text_x11(int x, int y, int n, byte a, const wchar_t *s)
 {
 	/* Draw the text */
 	Infoclr_set(clr[a]);
@@ -2526,6 +2541,9 @@ static errr term_data_init(term_data *td, int i)
 	/* Erase with "white space" */
 	t->attr_blank = TERM_WHITE;
 	t->char_blank = ' ';
+
+	/* Differentiate between BS/^h, Tab/^i, etc. */
+	t->complex_input = TRUE;
 
 	/* Hooks */
 	t->xtra_hook = Term_xtra_x11;

@@ -59,6 +59,9 @@ extern size_t my_strcpy(char *buf, const char *src, size_t bufsize);
  */
 extern size_t my_strcat(char *buf, const char *src, size_t bufsize);
 
+/* Capitalise string 'buf' */
+void my_strcap(char *buf);
+
 /* Test equality, prefix, suffix */
 extern bool streq(const char *s, const char *t);
 extern bool prefix(const char *s, const char *t);
@@ -67,6 +70,11 @@ extern bool suffix(const char *s, const char *t);
 
 #define streq(s, t)		(!strcmp(s, t))
 
+/* skip occurrences of a characters */
+void strskip(char *s, const char c);
+
+/* determines if a string is "empty" */
+bool contains_only_spaces(const char* s);
 
 /* Print an error message */
 extern void plog(const char *str);

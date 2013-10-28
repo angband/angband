@@ -2,7 +2,7 @@
 <object class="NSIBObjectData">
   <object name="rootObject" class="NSCustomObject" id="1">
   </object>
-  <array count="69" name="allObjects">
+  <array count="70" name="allObjects">
     <object class="IBCarbonMenuItem" id="211">
       <string name="title">Terminal 4</string>
       <string name="keyEquivalent">4</string>
@@ -340,6 +340,12 @@
       <boolean name="updateSingleItem">TRUE</boolean>
       <ostype name="command">graf</ostype>
     </object>
+    <object class="IBCarbonMenuItem" id="463">
+      <string name="title">64x64 tiles</string>
+      <boolean name="disabled">TRUE</boolean>
+      <boolean name="updateSingleItem">TRUE</boolean>
+      <ostype name="command">graf</ostype>
+    </object>
     <reference idRef="343"/>
     <reference idRef="469"/>
     <object class="IBCarbonMenuItem" id="460">
@@ -417,12 +423,13 @@
     <object class="IBCarbonMenu" id="435">
       <string name="title">Graphics</string>
       <int name="menuID">106</int>
-      <array count="9" name="items">
+      <array count="10" name="items">
         <reference idRef="440"/>
         <reference idRef="441"/>
         <reference idRef="442"/>
         <reference idRef="443"/>
         <reference idRef="446"/>
+        <reference idRef="463"/>
         <object class="IBCarbonMenuItem" id="444">
           <boolean name="separator">TRUE</boolean>
           <boolean name="updateSingleItem">TRUE</boolean>
@@ -476,7 +483,7 @@
     <reference idRef="196"/>
     <reference idRef="207"/>
   </array>
-  <array count="68" name="allParents">
+  <array count="69" name="allParents">
     <reference idRef="195"/>
     <reference idRef="215"/>
     <reference idRef="325"/>
@@ -545,6 +552,7 @@
     <reference idRef="447"/>
     <reference idRef="195"/>
     <reference idRef="195"/>
+    <reference idRef="435"/>
   </array>
   <dictionary count="3" name="nameTable">
     <string>DLOG:about</string>

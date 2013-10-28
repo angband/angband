@@ -132,11 +132,11 @@ static void do_cmd_wiz_hack_ben(void)
 
 				/* Display player/floors/walls */
 				if ((y == py) && (x == px))
-					print_rel('@', a, y, x);
+					print_rel(L'@', a, y, x);
 				else if (cave_floor_bold(y, x))
-					print_rel('*', a, y, x);
+					print_rel(L'*', a, y, x);
 				else
-					print_rel('#', a, y, x);
+					print_rel(L'#', a, y, x);
 			}
 		}
 
@@ -185,6 +185,7 @@ static void do_cmd_keylog(void) {
 	int i;
 	char buf[50];
 	char buf2[12];
+	struct keypress keys[2] = {{EVT_NONE, 0}, {EVT_NONE, 0}};
 
 	screen_save();
 
@@ -198,7 +199,7 @@ static void do_cmd_keylog(void) {
 
 			/* ugh. it would be nice if there was a verion of keypress_to_text
 			 * which took only one keypress. */
-			struct keypress keys[2] = {k, {EVT_NONE, 0}};
+			keys[0] = k;
 			keypress_to_text(buf2, sizeof(buf2), keys, TRUE);
 
 			/* format this line of output */
@@ -631,22 +632,6 @@ static void wiz_tweak_item(object_type *o_ptr)
 	/* Hack -- leave artifacts alone */
 	if (o_ptr->artifact) return;
 
-#define WIZ_TWEAK(attribute) do {\
-	p = "Enter new '" #attribute "' setting: ";\
-	strnfmt(tmp_val, sizeof(tmp_val), "%d", o_ptr->attribute);\
-	if (!get_string(p, tmp_val, 6)) return;\
-	o_ptr->attribute = atoi(tmp_val);\
-	wiz_display_item(o_ptr, TRUE);\
-} while (0)
-	for (i = 0; i < MAX_PVALS; i++) {
-		WIZ_TWEAK(pval[i]);
-		if (o_ptr->pval[i])
-			o_ptr->num_pvals = (i + 1);
-	}
-	WIZ_TWEAK(to_a);
-	WIZ_TWEAK(to_h);
-	WIZ_TWEAK(to_d);
-
 	p = "Enter new ego item index: ";
 	strnfmt(tmp_val, sizeof(tmp_val), "0");
 	if (o_ptr->ego)
@@ -672,6 +657,22 @@ static void wiz_tweak_item(object_type *o_ptr)
 	} else
 		o_ptr->artifact = 0;
 	wiz_display_item(o_ptr, TRUE);
+
+#define WIZ_TWEAK(attribute) do {\
+	p = "Enter new '" #attribute "' setting: ";\
+	strnfmt(tmp_val, sizeof(tmp_val), "%d", o_ptr->attribute);\
+	if (!get_string(p, tmp_val, 6)) return;\
+	o_ptr->attribute = atoi(tmp_val);\
+	wiz_display_item(o_ptr, TRUE);\
+} while (0)
+	for (i = 0; i < MAX_PVALS; i++) {
+		WIZ_TWEAK(pval[i]);
+		if (o_ptr->pval[i])
+			o_ptr->num_pvals = (i + 1);
+	}
+	WIZ_TWEAK(to_a);
+	WIZ_TWEAK(to_h);
+	WIZ_TWEAK(to_d);
 }
 
 
@@ -1426,33 +1427,6 @@ static void do_cmd_wiz_zap(int d)
 
 
 /*
- * Un-hide all monsters
- */
-static void do_cmd_wiz_unhide(int d)
-{
-	int i;
-
-	/* Process monsters */
-	for (i = 1; i < cave_monster_max(cave); i++)
-	{
-		monster_type *m_ptr = cave_monster(cave, i);
-
-		/* Skip dead monsters */
-		if (!m_ptr->r_idx) continue;
-
-		/* Skip distant monsters */
-		if (m_ptr->cdis > d) continue;
-
-		/* Detect the monster */
-		m_ptr->mflag |= (MFLAG_MARK | MFLAG_SHOW);
-
-		/* Update the monster */
-		update_mon(i, FALSE);
-	}
-}
-
-
-/*
  * Query the dungeon
  */
 static void do_cmd_wiz_query(void)
@@ -1512,11 +1486,11 @@ static void do_cmd_wiz_query(void)
 
 			/* Display player/floors/walls */
 			if ((y == py) && (x == px))
-				print_rel('@', a, y, x);
+				print_rel(L'@', a, y, x);
 			else if (cave_floor_bold(y, x))
-				print_rel('*', a, y, x);
+				print_rel(L'*', a, y, x);
 			else
-				print_rel('#', a, y, x);
+				print_rel(L'#', a, y, x);
 		}
 	}
 
@@ -1630,6 +1604,8 @@ void do_cmd_debug(void)
 
 	struct keypress cmd;
 
+	const monster_race *r_ptr;
+
 
 	/* Get a "debug command" */
 	if (!get_com("Debug Command: ", &cmd)) return;
@@ -1640,8 +1616,7 @@ void do_cmd_debug(void)
 		/* Ignore */
 		case ESCAPE:
 		case ' ':
-		case '\n':
-		case '\r':
+		case KC_ENTER:
 		{
 			break;
 		}
@@ -1696,7 +1671,7 @@ void do_cmd_debug(void)
 		/* Create an artifact */
 		case 'C':
 		{
-			if (p_ptr->command_arg > 0)
+			if (p_ptr->command_arg > 0 && p_ptr->command_arg < z_info->a_max)
 			{
 				wiz_create_artifact(p_ptr->command_arg);
 			}
@@ -1722,7 +1697,7 @@ void do_cmd_debug(void)
 						a_idx = lookup_artifact_name(name); 
 					
 					/* Did we find a valid artifact? */
-					if (a_idx != -1)
+					if (a_idx != -1 && a_idx < z_info->a_max)
 						wiz_create_artifact(a_idx);
 					else
 						msg("No artifact found.");
@@ -1905,8 +1880,11 @@ void do_cmd_debug(void)
 				if (sym.code == 'a' || sym.code == 'A')
 				{
 					int i;
-					for (i = 0; i < z_info->r_max; i++)
-						cheat_monster_lore(i, &l_list[i]);
+					for (i = 1; i < z_info->r_max; i++)
+					{
+						r_ptr = &r_info[i];
+						cheat_monster_lore(r_ptr, &l_list[i]);
+					}
 					break;
 				}
 				else if (sym.code == 's' || sym.code == 'S')
@@ -1942,7 +1920,10 @@ void do_cmd_debug(void)
 
 			/* Did we find a valid monster? */
 			if (r_idx > 0)
-				cheat_monster_lore(r_idx, &l_list[r_idx]);
+			{
+				r_ptr = &r_info[r_idx];
+				cheat_monster_lore(r_ptr, &l_list[r_idx]);
+			}
 			else
 				msg("No monster found.");
 	
@@ -1986,8 +1967,7 @@ void do_cmd_debug(void)
 		/* Un-hide all monsters */
 		case 'u':
 		{
-			if (p_ptr->command_arg <= 0) p_ptr->command_arg = 255;
-			do_cmd_wiz_unhide(p_ptr->command_arg);
+			detect_monsters_entire_level();
 			break;
 		}
 
@@ -2008,7 +1988,7 @@ void do_cmd_debug(void)
 		/* Wizard Light the Level */
 		case 'w':
 		{
-			wiz_light();
+			wiz_light(TRUE);
 			break;
 		}
 
@@ -2032,8 +2012,11 @@ void do_cmd_debug(void)
 				if (sym.code == 'a' || sym.code == 'A')
 				{
 					int i;
-					for (i = 0; i < z_info->r_max; i++)
-						wipe_monster_lore(i, &l_list[i]);
+					for (i = 1; i < z_info->r_max; i++)
+					{
+						r_ptr = &r_info[i];
+						wipe_monster_lore(r_ptr, &l_list[i]);
+					}
 					break;
 				}
 				else if (sym.code == 's' || sym.code == 'S')
@@ -2069,7 +2052,10 @@ void do_cmd_debug(void)
 
 			/* Did we find a valid monster? */
 			if (r_idx > 0)
-				wipe_monster_lore(r_idx, &l_list[r_idx]);
+			{
+				r_ptr = &r_info[r_idx];
+				wipe_monster_lore(r_ptr, &l_list[r_idx]);
+			}
 			else
 				msg("No monster found.");
 	

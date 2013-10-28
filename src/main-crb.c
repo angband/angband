@@ -26,6 +26,10 @@
 #include "buildid.h"
 #include "files.h"
 #include "init.h"
+#include "grafmode.h"
+
+#include <langinfo.h>
+#include <xlocale.h>
 
 /*
  * Notes:
@@ -254,7 +258,6 @@ struct GlyphInfo
 	bool monospace;
 	float offsets[256][3];
 	float heights[256][3];
-	float widths[256];
 };
 
 static GlyphInfo glyph_data[MAX_TERM_DATA+1];
@@ -722,9 +725,6 @@ static GlyphInfo *get_glyph_info(ATSUFontID fid, float size)
 		if(info->ascent < ascent) info->ascent = ascent;
 		if(info->descent < descent) info->descent = descent;
 
-
-		info->widths[i] = (stop - start)/(1<<16);
-
 		if(info->font_wid == 0) info->font_wid = stop - start;
 		else if((info->font_wid != stop - start) && (stop - start != 0)) {
 			info->monospace = false;
@@ -1076,7 +1076,7 @@ static CGImageRef GetTileImage(int row, int col, bool has_alpha)
 	return timg; 
 }
 
-static void DrawTile(int x, int y, byte a, byte c, byte ta, byte tc)
+static void DrawTile(int x, int y, byte a, wchar_t c, byte ta, wchar_t tc)
 {
 	term_data *td = (term_data*) Term->data;
 
@@ -1109,8 +1109,9 @@ static void DrawTile(int x, int y, byte a, byte c, byte ta, byte tc)
 	}
 }
 
-static void ShowTextAt(int x, int y, int color, int n, const char *text )
+static void ShowTextAt(int x, int y, int color, int n, const wchar_t *text )
 {
+        int i;
 	term_data *td = (term_data*) Term->data;
 	GlyphInfo *info = td->ginfo;
 	/* Overwite the text, unless it's being called recursively. */
@@ -1118,13 +1119,58 @@ static void ShowTextAt(int x, int y, int color, int n, const char *text )
 		Term_wipe_mac_aux(x, y, n); 
 	}
 
-	int c = *(unsigned char*) text;
+	/* Cribbed from the SDL port */
+	wchar_t src[255];
+	UInt8 text_mb[MB_LEN_MAX * 255];
+	wcsncpy(src, text, n);
+	src[n] = L'\0';
+        size_t text_bytes = 0;
+ 
+        /* Copied from FAangband - thanks to nck_m! */
+        for (i = 0; i < n; i++) {
+            if ((src[i] & 0x7f) == src[i])
+                text_mb[text_bytes++] = (UInt8) src[i];
+            else if ((src[i] & 0x7ff) == src[i]){
+                text_mb[text_bytes++] = (UInt8) 0xc0 + (src[i] >> 6);
+                text_mb[text_bytes++] = (UInt8) 0x80 + (src[i] & 0x3f);
+            } else if ((src[i] & 0xffff) == src[i]) {
+                text_mb[text_bytes++] = (UInt8) 0xe0 + (src[i] >> 12);
+                text_mb[text_bytes++] = (UInt8) 0x80 + ((src[i] >> 6) & 0x3f);
+                text_mb[text_bytes++] = (UInt8) 0x80 + (src[i] & 0x3f);
+            } else {
+                text_mb[text_bytes++] = (UInt8) 0xf0 + (src[i] >> 18);
+                text_mb[text_bytes++] = (UInt8) 0x80 + ((src[i] >> 12) & 0x3f);
+                text_mb[text_bytes++] = (UInt8) 0x80 + ((src[i] >> 6) & 0x3f);
+                text_mb[text_bytes++] = (UInt8) 0x80 + (src[i] & 0x3f);
+            }
+        }
 
-	int xp = x * td->tile_wid + (td->tile_wid - (info->widths[c] + td->spacing))/2;
+	text_mb[text_bytes] = '\0';
+
+	CFStringRef text_str = CFStringCreateWithBytes(
+		kCFAllocatorDefault, text_mb, text_bytes,
+		kCFStringEncodingUTF8, false);
+	assert(text_str != NULL);
+	CTFontRef font = CTFontCreateWithGraphicsFont(
+		info->fontRef, (CGFloat)td->font_size,
+		NULL, NULL);
+	assert(font != NULL);
+
+	UniChar *characters = (UniChar *)mem_alloc(n * sizeof(UniChar));
+	CGGlyph *glyphs = (CGGlyph *)mem_alloc(n * sizeof(CGGlyph));
+
+	assert(characters != NULL);
+	assert(glyphs != NULL);
+
+	CFStringGetCharacters(text_str, CFRangeMake(0, n), characters);
+	CTFontGetGlyphsForCharacters(font, characters, glyphs, n);
+
+	int xp = x * td->tile_wid - td->spacing / 2; 
 	/* Only round once. */
-	int yp = y * td->tile_hgt + info->ascent + (td->tile_hgt - td->font_hgt)/2;
+	int yp = y * td->tile_hgt + info->ascent + 
+		(td->tile_hgt - td->font_hgt)/2;
 
-	 CGRect r;
+	CGRect r;
 	if(use_graphics || !use_overwrite_hack) {
 		r = (CGRect) {{x*td->tile_wid, y*td->tile_hgt},
 											{n*td->tile_wid, td->tile_hgt}};
@@ -1140,44 +1186,27 @@ static void ShowTextAt(int x, int y, int color, int n, const char *text )
 	term_data_color(color);
 	/* Monospace; use preset text spacing when tiling is wider than text */
 	if(n == 1 || info->monospace) {
-		/* See the Accessing Font Metrics section of Apple's Core Text 
-		 * Programming Guide for the sample code that inspired this
-		 * block. */
-		UniChar *characters;
-		CGGlyph *glyphs;
-		CTFontRef font = CTFontCreateWithGraphicsFont(
-			td->ginfo->fontRef, (CGFloat)td->font_size,
-			NULL, NULL);
-		CFStringRef text_str = CFStringCreateWithCString(
-			kCFAllocatorDefault, text, 
-			kCFStringEncodingISOLatin1);
-
-		characters = (UniChar *)mem_alloc(sizeof(UniChar) * n);
-		assert(characters != NULL);
-		glyphs = (CGGlyph *)mem_alloc(sizeof(CGGlyph) * n);
-		assert(glyphs != NULL);
-
-		CFStringGetCharacters(text_str, CFRangeMake(0, n), characters);
-		CFRelease(text_str);
-		CTFontGetGlyphsForCharacters(font, characters, glyphs, n);
 		CGContextShowGlyphsAtPoint(focus.ctx, 
 			(CGFloat)xp, (CGFloat)yp, glyphs, n);
 		mem_free(characters);
 		mem_free(glyphs);
+		CFRelease(text_str);
+		CFRelease(font);
 		if(use_clip_hack)
 			CGContextRestoreGState(focus.ctx);
 		return;
 	}
 
-	
-	GlyphInfo *gi = td->ginfo;
-
 	UniChar utext[n];
 	for(int i = 0; i < n; i++) utext[i] = text[i];
-	ATSUSetTextPointerLocation(gi->layout, utext, 0, n, n);
-	ATSUSetRunStyle(gi->layout, info->style, 0, n);
+	ATSUSetTextPointerLocation(info->layout, utext, 0, n, n);
+	ATSUSetRunStyle(info->layout, info->style, 0, n);
 	ATSUDrawText(info->layout, 0, n, xp*(1<<16), yp*(1<<16));
 
+	mem_free(characters);
+	mem_free(glyphs);
+	CFRelease(text_str);
+	CFRelease(font);
 	if(use_clip_hack)
 		CGContextRestoreGState (focus.ctx);
 
@@ -1197,7 +1226,7 @@ static errr graphics_init(void)
 	locate_lib(path, sizeof(path));
 	char *tail = path + strlen(path);
 	FSSpec pict_spec;
-	snprintf(tail, path+1024-tail, "xtra/graf/%s.png", pict_id);
+	snprintf(tail, path+1024-tail, "xtra/graf/%s", pict_id);
 	if(noErr != path_to_spec(path, &pict_spec))
 		return -1;
 
@@ -1689,7 +1718,7 @@ static errr Term_curs_mac(int x, int y)
 	CGContextSaveGState(focus.ctx);
 
 	/* Temporarily set stroke color to yellow */
-	char c;
+	wchar_t c;
 	byte a = TERM_YELLOW;
 	CGContextSetRGBStrokeColor(focus.ctx, focus.color_info[a][0],
 							focus.color_info[a][1], focus.color_info[a][2], 1);
@@ -1700,13 +1729,13 @@ static errr Term_curs_mac(int x, int y)
 
 	if (tile_width != 1) {
 		Term_what(x + 1, y, &a, &c);
-		if (c == (char) 0xff)
+		if (c == (wchar_t) 0xff)
 			tile_wid *= tile_width;
 	}
 
 	if (tile_height != 1) {
 		Term_what(x, y + 1, &a, &c);
-		if (c == (char) 0xff)
+		if (c == (wchar_t) 0xff)
 			tile_hgt *= tile_height;
 	}
 
@@ -1732,7 +1761,7 @@ static errr Term_curs_mac(int x, int y)
 static void Term_wipe_mac_aux(int x, int y, int n)
 {
 	/* Use old screen image kept inside the term package */
-	const char *cp = &(Term->old->c[y][x]);
+	const wchar_t *cp = &(Term->old->c[y][x]);
 
 	/* And write it in the background color */
 	ShowTextAt(x, y, COLOR_BLACK, n, cp);
@@ -1769,22 +1798,11 @@ static errr Term_wipe_mac(int x, int y, int n)
 
 
 /*
- * Given a position in the ISO Latin-1 character set, return
- * the correct character on this system.
- */
- static byte Term_xchar_mac(byte c)
-{
- 	/* The Mac port uses the Latin-1 standard */
- 	return (c);
-}
-
-
-/*
  * Low level graphics.  Assumes valid input.
  *
  * Draw several ("n") chars, with an attr, at a given location.
  */
-static errr Term_text_mac(int x, int y, int n, byte a, const char *cp)
+static errr Term_text_mac(int x, int y, int n, byte a, const wchar_t *cp)
 {
 	if(!focus.ctx) activate(focus.active);
 
@@ -1795,8 +1813,9 @@ static errr Term_text_mac(int x, int y, int n, byte a, const char *cp)
 	return (0);
 }
 
-static errr Term_pict_mac(int x, int y, int n, const byte *ap, const char *cp,
-			  const byte *tap, const char *tcp)
+static errr Term_pict_mac(int x, int y, int n, const byte *ap,
+			const wchar_t *cp, const byte *tap, 
+			const wchar_t *tcp)
 {
 	if(!focus.ctx) activate(focus.active);
 
@@ -1804,9 +1823,9 @@ static errr Term_pict_mac(int x, int y, int n, const byte *ap, const char *cp,
 	for (int i = 0; i < n; i++)
 	{
 		byte a = *ap++;
-		char c = *cp++;
+		wchar_t c = *cp++;
 		byte ta = *tap++;
-		char tc = *tcp++;
+		wchar_t tc = *tcp++;
 
 		/* Hack -- a filler for tiles */
 		if (a == 255 && (tile_height != 1 || tile_width != 1))
@@ -1834,6 +1853,55 @@ static errr Term_pict_mac(int x, int y, int n, const byte *ap, const char *cp,
 	return (0);
 }
 
+/* From the Linux mbstowcs(3) man page:
+ *   If dest is NULL, n is ignored, and the conversion  proceeds  as  above,
+ *   except  that  the converted wide characters are not written out to mem‐
+ *   ory, and that no length limit exists.
+ */
+static size_t Term_mbcs_mac(wchar_t *dest, const char *src, int n)
+{
+    int i;
+    int count = 0;
+
+    /* Unicode code point to UTF-8
+     *  0x0000-0x007f:   0xxxxxxx
+     *  0x0080-0x07ff:   110xxxxx 10xxxxxx
+     *  0x0800-0xffff:   1110xxxx 10xxxxxx 10xxxxxx
+     * 0x10000-0x1fffff: 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
+     * Note that UTF-16 limits Unicode to 0x10ffff. This code is not
+     * endian-agnostic.
+     */
+    for (i = 0; i < n || dest == NULL; i++) {
+        if ((src[i] & 0x80) == 0) {
+            if (dest != NULL) dest[count] = src[i];
+            if (src[i] == 0) break;
+        } else if ((src[i] & 0xe0) == 0xc0) {
+            if (dest != NULL) dest[count] = 
+                            (((unsigned char)src[i] & 0x1f) << 6)| 
+                            ((unsigned char)src[i+1] & 0x3f);
+            i++;
+        } else if ((src[i] & 0xf0) == 0xe0) {
+            if (dest != NULL) dest[count] = 
+                            (((unsigned char)src[i] & 0x0f) << 12) | 
+                            (((unsigned char)src[i+1] & 0x3f) << 6) |
+                            ((unsigned char)src[i+2] & 0x3f);
+            i += 2;
+        } else if ((src[i] & 0xf8) == 0xf0) {
+            if (dest != NULL) dest[count] = 
+                            (((unsigned char)src[i] & 0x0f) << 18) | 
+                            (((unsigned char)src[i+1] & 0x3f) << 12) |
+                            (((unsigned char)src[i+2] & 0x3f) << 6) |
+                            ((unsigned char)src[i+3] & 0x3f);
+            i += 3;
+        } else {
+            /* Found an invalid multibyte sequence */
+            return (size_t)-1;
+        }
+        count++;
+    }
+    return count;
+}
+
 
 /*
  * Create and initialize window number "i"
@@ -1859,6 +1927,9 @@ static void term_data_link(int i)
 	/* Use a "software" cursor */
 	td->t->soft_cursor = TRUE;
 
+    /* Differentiate between BS/^h, Tab/^i, etc. */
+    td->t->complex_input = TRUE;
+
 	/*
 	 * We have an "icky" lower right corner, since
 	 * the window resize control is placed there
@@ -1880,7 +1951,7 @@ static void term_data_link(int i)
 	td->t->bigcurs_hook = Term_curs_mac;
 	td->t->text_hook = Term_text_mac;
 	td->t->pict_hook = Term_pict_mac;
-	td->t->xchar_hook = Term_xchar_mac; 
+	td->t->mbcs_hook = Term_mbcs_mac;
 
 
 	td->t->never_bored = TRUE;
@@ -2246,7 +2317,7 @@ static void cf_load_prefs()
 								kFontNoScriptCode, kFontNoLanguageCode, &fid);
 			if(fid) td->font_id = fid;
 			/* Use the default */
-			else my_strcpy(td->font_name, "Monaco", sizeof(td->font_name));
+			else my_strcpy(td->font_name, "Menlo-Regular", sizeof(td->font_name));
 		}
 	}
 	
@@ -2271,16 +2342,16 @@ static void cf_load_prefs()
  */
 static void term_data_hack(term_data *td)
 {
-	/* Default to Monaco font */
+	/* Default to Menlo font */
 	ATSUFontID fid = 0;
 
-	ATSUFindFontFromName("Monaco", strlen("Monaco"), kFontPostscriptName,
+	ATSUFindFontFromName("Menlo-Regular", strlen("Menlo-Regular"), kFontPostscriptName,
 							kFontMacintoshPlatform, kFontNoScriptCode,
 							kFontNoLanguageCode, &fid);
 
 
 	if(!fid)
-		quit("Failed to find font 'Monaco'");
+		quit("Failed to find font 'Menlo'");
 
 	/* Wipe it */
 	WIPE(td, term_data);
@@ -2290,7 +2361,7 @@ static void term_data_hack(term_data *td)
 
 	/* Default font */
 	td->font_id = fid;
-	my_strcpy(td->font_name, "Monaco", sizeof(td->font_name));
+	my_strcpy(td->font_name, "Menlo-Regular", sizeof(td->font_name));
 
 	/* Default font size - was 12 */
 	td->font_size = 14;
@@ -2558,9 +2629,13 @@ static void init_menubar(void)
 		/* Invalid entry */
 		SetMenuItemRefCon(m, i, -1);
 	}
-	for (size_t i = 0; i < N_ELEMENTS(graphics_modes); i++) {
-		SetMenuItemRefCon(m, graphics_modes[i].menuItem, i);
-	}
+	/* Note that menu indices start at 1, while grafIDs start at 0.
+	 * Hence the + 1. The RefCon is the grafID, not the menu index. */
+	size_t i = 0;
+	do {
+		SetMenuItemRefCon(m, graphics_modes[i].grafID + 1,
+			graphics_modes[i].grafID);
+	} while (graphics_modes[i++].pNext);
 
 	/* Set up bigtile menus */
 	m = MyGetMenuHandle(kBigtileWidthMenu);
@@ -3101,13 +3176,22 @@ static OSStatus ResizeCommand(EventHandlerCallRef inCallRef,
 static void graphics_aux(UInt32 op)
 {
 	graf_mode = op;
-	use_transparency = graphics_modes[op].trans;
-	pict_id = graphics_modes[op].file;
-	graf_width = graf_height = graphics_modes[op].size;
-	use_graphics = (op != 0);
-	graf_mode = op;
-	ANGBAND_GRAF = graphics_modes[op].name;
-	arg_graphics = op;
+	current_graphics_mode = get_graphics_mode(op);
+	if (current_graphics_mode) {
+		use_transparency = (op != 0);
+		pict_id = current_graphics_mode->file;
+		graf_width = current_graphics_mode->cell_width;
+		graf_height = current_graphics_mode->cell_height;
+		use_graphics = (op != 0);
+		graf_mode = op;
+		ANGBAND_GRAF = current_graphics_mode->pref;
+		arg_graphics = op;
+	} else {
+		use_graphics = 0;
+		graf_mode = 0;
+		ANGBAND_GRAF = 0;
+		use_transparency = false;
+	}
 
 	graphics_nuke();
 
@@ -3121,6 +3205,7 @@ static void graphics_aux(UInt32 op)
 		use_graphics = 0;
 		graf_mode = 0;
 		ANGBAND_GRAF = 0;
+		current_graphics_mode = NULL;
 
 		/* reset transparency mode */
 		use_transparency = false;
@@ -3573,7 +3658,7 @@ static OSStatus KeyboardCommand ( EventHandlerCallRef inCallRef,
 		case 67: ch = '*'; kp = TRUE; break;
 		case 69: ch = '+'; kp = TRUE; break;
 		case 75: ch = '/'; kp = TRUE; break;
-		case 76: ch = '\n'; kp = TRUE; break;
+		case 76: ch = KC_ENTER; kp = TRUE; break;
 		case 78: ch = '-'; kp = TRUE; break;
 		case 81: ch = '='; kp = TRUE; break;
 		case 82: ch = '0'; kp = TRUE; break;
@@ -3589,8 +3674,9 @@ static OSStatus KeyboardCommand ( EventHandlerCallRef inCallRef,
 
 		/* main keyboard but deal with here */
 		case 48: ch = KC_TAB; break;
-		case 36: ch = KC_RETURN; break;
+		case 36: ch = KC_ENTER; break;
 		case 51: ch = KC_BACKSPACE; break;
+		case 53: ch = ESCAPE; break;
 
 		/* middle bit */
 		case 114: ch = KC_HELP; break;
@@ -3937,6 +4023,8 @@ static void hook_quit(const char *str)
 	/* Write a preference file */
 	if (initialized) save_pref_file();
 
+	close_graphics_modes();
+
 	/* All done */
 	ExitToShell();
 }
@@ -4008,15 +4096,18 @@ int main(void)
 	/* Show the "watch" cursor */
 	SetCursor(*(GetCursor(watchCursor)));
 
+	/* Initialize */
+	init_paths();
+
+	/* Load possible graphics modes -- must happen before menubar init */
+	init_graphics_modes("graphics.txt");
+
 	/* Prepare the menubar */
 	init_menubar();
 
 	/* Ensure that the recent items array is always an array and start with an empty menu */
 	recentItemsArrayRef = CFArrayCreateMutable(kCFAllocatorDefault, 0, &kCFTypeArrayCallBacks);
 	redrawRecentItemsMenu();
-
-	/* Initialize */
-	init_paths();
 
 	/* Prepare the windows */
 	init_windows();

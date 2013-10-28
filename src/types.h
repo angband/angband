@@ -30,10 +30,10 @@ typedef s16b s16b_wid[DUNGEON_WID];
 /** Function hook types **/
 
 /** Function prototype for the UI to provide to create native buttons */
-typedef int (*button_add_f)(const char *, unsigned char);
+typedef int (*button_add_f)(const char *, keycode_t);
 
 /** Function prototype for the UI to provide to remove native buttons */
-typedef int (*button_kill_f)(unsigned char);
+typedef int (*button_kill_f)(keycode_t);
 
 
 
@@ -93,10 +93,10 @@ typedef struct feature
 	u32b flags;    /**< Terrain flags */
 
 	byte d_attr;   /**< Default feature attribute */
-	char d_char;   /**< Default feature character */
+	wchar_t d_char;   /**< Default feature character */
 
 	byte x_attr[3];   /**< Desired feature attribute (set by user/pref file) */
-	char x_char[3];   /**< Desired feature character (set by user/pref file) */
+	wchar_t x_char[3];   /**< Desired feature character (set by user/pref file) */
 } feature_type;
 
 
@@ -212,6 +212,8 @@ typedef struct
 	u32b f_idx;		/* Feature index */
 	struct object_kind *first_kind;	/* The "kind" of the first item on the grid */
 	bool multiple_objects;	/* Is there more than one item there? */
+	bool unseen_object;	/* Is there an unaware object there? */
+	bool unseen_money; /* Is there some unaware money there? */
 
 	enum grid_light_level lighting; /* Light level */
 	bool in_view; /* TRUE when the player can currently see the grid. */

@@ -223,7 +223,7 @@ static void regen_monsters(void)
 			if (m_ptr->hp > m_ptr->maxhp) m_ptr->hp = m_ptr->maxhp;
 
 			/* Redraw (later) if needed */
-			if (p_ptr->health_who == i) p_ptr->redraw |= (PR_HEALTH);
+			if (p_ptr->health_who == m_ptr) p_ptr->redraw |= (PR_HEALTH);
 		}
 	}
 }
@@ -700,8 +700,7 @@ static void process_world(struct cave *c)
 	o_ptr = &p_ptr->inventory[INVEN_LIGHT];
 
 	/* Burn some fuel in the current light */
-	if (o_ptr->tval == TV_LIGHT)
-	{
+	if (o_ptr->tval == TV_LIGHT) {
 		bitflag f[OF_SIZE];
 		bool burn_fuel = TRUE;
 
@@ -717,35 +716,34 @@ static void process_world(struct cave *c)
 		    burn_fuel = FALSE;
 
 		/* Use some fuel (except on artifacts, or during the day) */
-		if (burn_fuel && o_ptr->timeout > 0)
-		{
+		if (burn_fuel && o_ptr->timeout > 0) {
 			/* Decrease life-span */
 			o_ptr->timeout--;
 
 			/* Hack -- notice interesting fuel steps */
 			if ((o_ptr->timeout < 100) || (!(o_ptr->timeout % 100)))
-			{
 				/* Redraw stuff */
 				p_ptr->redraw |= (PR_EQUIP);
-			}
 
 			/* Hack -- Special treatment when blind */
-			if (p_ptr->timed[TMD_BLIND])
-			{
+			if (p_ptr->timed[TMD_BLIND]) {
 				/* Hack -- save some light for later */
 				if (o_ptr->timeout == 0) o_ptr->timeout++;
-			}
 
 			/* The light is now out */
-			else if (o_ptr->timeout == 0)
-			{
+			} else if (o_ptr->timeout == 0) {
 				disturb(p_ptr, 0, 0);
 				msg("Your light has gone out!");
+
+				/* If it's a torch, now is the time to delete it */
+				if (o_ptr->sval == SV_LIGHT_TORCH) {
+					inven_item_increase(INVEN_LIGHT, -1);
+					inven_item_optimize(INVEN_LIGHT);
+				}
 			}
 
 			/* The light is getting dim */
-			else if ((o_ptr->timeout < 100) && (!(o_ptr->timeout % 10)))
-			{
+			else if ((o_ptr->timeout < 50) && (!(o_ptr->timeout % 20))) {
 				disturb(p_ptr, 0, 0);
 				msg("Your light is growing faint.");
 			}
@@ -761,8 +759,10 @@ static void process_world(struct cave *c)
 	/* Handle experience draining */
 	if (check_state(p_ptr, OF_DRAIN_EXP, p_ptr->state.flags))
 	{
-		if ((p_ptr->exp > 0) && one_in_(10))
-			player_exp_lose(p_ptr, 1, FALSE);
+		if ((p_ptr->exp > 0) && one_in_(10)) {
+			s32b d = damroll(10, 6) + (p_ptr->exp/100) * MON_DRAIN_LIFE;
+			player_exp_lose(p_ptr, d / 10, FALSE);
+		}
 
 		wieldeds_notice_flag(p_ptr, OF_DRAIN_EXP);
 	}
@@ -809,6 +809,37 @@ static void process_world(struct cave *c)
 				/* New depth - back to max depth or 1, whichever is deeper */
 				dungeon_change_level(p_ptr->max_depth < 1 ? 1: p_ptr->max_depth);
 			}
+		}
+	}
+
+	/* Delayed Deep Descent */
+	if (p_ptr->deep_descent) {
+		/* Count down towards recall */
+		p_ptr->deep_descent--;
+
+		/* Activate the recall */
+		if (p_ptr->deep_descent == 0) {
+			int i, target_depth = p_ptr->max_depth;
+
+			/* Calculate target depth */
+			for (i = 5; i > 0; i--) {
+				if (is_quest(target_depth)) break;
+				if (target_depth >= MAX_DEPTH - 1) break;
+				
+				target_depth++;
+			}
+
+			disturb(p_ptr, 0, 0);
+
+			/* Determine the level */
+			if (target_depth > p_ptr->depth) {
+				msgt(MSG_TPLEVEL, "The floor opens beneath you!");
+				dungeon_change_level(target_depth);
+			} else {
+				/* Otherwise do something disastrous */
+				msgt(MSG_TPLEVEL, "You are thrown back in an explosion!");
+				destroy_area(p_ptr->py, p_ptr->px, 5, TRUE);
+			}		
 		}
 	}
 }
@@ -1270,7 +1301,7 @@ static void dungeon(struct cave *c)
 	target_set_monster(0);
 
 	/* Cancel the health bar */
-	health_track(p_ptr, 0);
+	health_track(p_ptr, NULL);
 
 	/* Disturb */
 	disturb(p_ptr, 1, 0);
@@ -1356,7 +1387,7 @@ static void dungeon(struct cave *c)
 
 	/* Make basic mouse buttons */
 	(void) button_add("[ESC]", ESCAPE);
-	(void) button_add("[Ret]", '\r');
+	(void) button_add("[Ret]", KC_ENTER);
 	(void) button_add("[Spc]", ' ');
 	(void) button_add("[Rpt]", 'n');
 	(void) button_add("[Std]", ',');
@@ -1408,7 +1439,7 @@ static void dungeon(struct cave *c)
 		while ((p_ptr->energy >= 100) && !p_ptr->leaving)
 		{
     		/* Do any necessary animations */
-    		do_animation();
+    		do_animation(); 
 
 			/* process monster with even more energy first */
 			process_monsters(c, (byte)(p_ptr->energy + 1));
@@ -1487,7 +1518,7 @@ static void dungeon(struct cave *c)
 		for (i = cave_monster_max(cave) - 1; i >= 1; i--)
 		{
 			int mspeed;
-
+			
 			/* Access the monster */
 			m_ptr = cave_monster(cave, i);
 
@@ -1559,6 +1590,7 @@ static void process_some_user_pref_files(void)
  */
 void play_game(void)
 {
+	u32b window_flag[ANGBAND_TERM_MAX];
 	/* Initialize */
 	bool new_game = init_angband();
 
@@ -1581,6 +1613,21 @@ void play_game(void)
 	/* Hack -- Turn off the cursor */
 	(void)Term_set_cursor(FALSE);
 
+	/* set a default warning level that will be overridden by the savefile */
+	op_ptr->hitpoint_warn = 3;
+
+	/* initialize window options that will be overridden by the savefile */
+	memset(window_flag, 0, sizeof(u32b)*ANGBAND_TERM_MAX);
+	if (ANGBAND_TERM_MAX > 1) window_flag[1] = (PW_MESSAGE);
+	if (ANGBAND_TERM_MAX > 2) window_flag[2] = (PW_INVEN);
+	if (ANGBAND_TERM_MAX > 3) window_flag[3] = (PW_MONLIST);
+	if (ANGBAND_TERM_MAX > 4) window_flag[4] = (PW_ITEMLIST);
+	if (ANGBAND_TERM_MAX > 5) window_flag[5] = (PW_MONSTER | PW_OBJECT);
+	if (ANGBAND_TERM_MAX > 6) window_flag[6] = (PW_OVERHEAD);
+	if (ANGBAND_TERM_MAX > 7) window_flag[7] = (PW_PLAYER_2);
+
+	/* Set up the subwindows */
+	subwindows_set_flags(window_flag, ANGBAND_TERM_MAX);
 
 	/*** Try to load the savefile ***/
 
@@ -1618,7 +1665,7 @@ void play_game(void)
 		u32b seed;
 
 		/* Basic seed */
-		seed = (time(NULL));
+		seed = (u32b)(time(NULL));
 
 #ifdef SET_UID
 
@@ -1643,25 +1690,23 @@ void play_game(void)
 		/* Start in town */
 		p_ptr->depth = 0;
 
-		/* Hack -- seed for flavors */
+		/* Seed for flavors */
 		seed_flavor = randint0(0x10000000);
 
-		/* Hack -- seed for town layout */
+		/* Seed for town layout */
 		seed_town = randint0(0x10000000);
-
-		/* Hack -- seed for random artifacts */
-		seed_randart = randint0(0x10000000);
 
 		/* Roll up a new character. Quickstart is allowed if ht_birth is set */
 		player_birth(p_ptr->ht_birth ? TRUE : FALSE);
-
-		/* Randomize the artifacts if required */
-		if (OPT(birth_randarts) &&
-				(!OPT(birth_keep_randarts) || !p_ptr->randarts)) {
-			do_randart(seed_randart, TRUE);
-			p_ptr->randarts = TRUE;
-		}
 	}
+
+	/* Seed for random artifacts */
+	if (!seed_randart || (new_game && !OPT(birth_keep_randarts)))
+		seed_randart = randint0(0x10000000);
+
+	/* Randomize the artifacts if required */
+	if (OPT(birth_randarts))
+		do_randart(seed_randart, TRUE);
 
 	/* Initialize temporary fields sensibly */
 	p_ptr->object_idx = p_ptr->object_kind_idx = NO_OBJECT;
@@ -1686,6 +1731,9 @@ void play_game(void)
 
 	/* Flush the message */
 	Term_fresh();
+
+	/* Prepare "vinfo" array**/
+	(void)vinfo_init();
 
 	/* Flavor the objects */
 	flavor_init();
@@ -1754,7 +1802,7 @@ void play_game(void)
 		target_set_monster(0);
 
 		/* Cancel the health bar */
-		health_track(p_ptr, 0);
+		health_track(p_ptr, NULL);
 
 
 		/* Forget the view */

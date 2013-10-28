@@ -76,7 +76,7 @@ const byte adj_chr_gold[STAT_RANGE] =
 /*
  * Stat Table (INT) -- Magic devices
  */
-static const byte adj_int_dev[STAT_RANGE] =
+const byte adj_int_dev[STAT_RANGE] =
 {
 	0	/* 3 */,
 	0	/* 4 */,
@@ -121,7 +121,7 @@ static const byte adj_int_dev[STAT_RANGE] =
 /*
  * Stat Table (WIS) -- Saving throw
  */
-static const byte adj_wis_sav[STAT_RANGE] =
+const byte adj_wis_sav[STAT_RANGE] =
 {
 	0	/* 3 */,
 	0	/* 4 */,
@@ -167,7 +167,7 @@ static const byte adj_wis_sav[STAT_RANGE] =
 /*
  * Stat Table (DEX) -- disarming
  */
-static const byte adj_dex_dis[STAT_RANGE] =
+const byte adj_dex_dis[STAT_RANGE] =
 {
 	0	/* 3 */,
 	0	/* 4 */,
@@ -213,7 +213,7 @@ static const byte adj_dex_dis[STAT_RANGE] =
 /*
  * Stat Table (INT) -- disarming
  */
-static const byte adj_int_dis[STAT_RANGE] =
+const byte adj_int_dis[STAT_RANGE] =
 {
 	0	/* 3 */,
 	0	/* 4 */,
@@ -258,7 +258,7 @@ static const byte adj_int_dis[STAT_RANGE] =
 /*
  * Stat Table (DEX) -- bonus to ac (plus 128)
  */
-static const byte adj_dex_ta[STAT_RANGE] =
+const byte adj_dex_ta[STAT_RANGE] =
 {
 	128 + -4	/* 3 */,
 	128 + -3	/* 4 */,
@@ -303,7 +303,7 @@ static const byte adj_dex_ta[STAT_RANGE] =
 /*
  * Stat Table (STR) -- bonus to dam (plus 128)
  */
-static const byte adj_str_td[STAT_RANGE] =
+const byte adj_str_td[STAT_RANGE] =
 {
 	128 + -2	/* 3 */,
 	128 + -2	/* 4 */,
@@ -349,7 +349,7 @@ static const byte adj_str_td[STAT_RANGE] =
 /*
  * Stat Table (DEX) -- bonus to hit (plus 128)
  */
-static const byte adj_dex_th[STAT_RANGE] =
+const byte adj_dex_th[STAT_RANGE] =
 {
 	128 + -3	/* 3 */,
 	128 + -2	/* 4 */,
@@ -395,7 +395,7 @@ static const byte adj_dex_th[STAT_RANGE] =
 /*
  * Stat Table (STR) -- bonus to hit (plus 128)
  */
-static const byte adj_str_th[STAT_RANGE] =
+const byte adj_str_th[STAT_RANGE] =
 {
 	128 + -3	/* 3 */,
 	128 + -2	/* 4 */,
@@ -441,7 +441,7 @@ static const byte adj_str_th[STAT_RANGE] =
 /*
  * Stat Table (STR) -- weight limit in deca-pounds
  */
-static const byte adj_str_wgt[STAT_RANGE] =
+const byte adj_str_wgt[STAT_RANGE] =
 {
 	5	/* 3 */,
 	6	/* 4 */,
@@ -533,7 +533,7 @@ const byte adj_str_hold[STAT_RANGE] =
 /*
  * Stat Table (STR) -- digging value
  */
-static const byte adj_str_dig[STAT_RANGE] =
+const byte adj_str_dig[STAT_RANGE] =
 {
 	0	/* 3 */,
 	0	/* 4 */,
@@ -625,7 +625,7 @@ const byte adj_str_blow[STAT_RANGE] =
 /*
  * Stat Table (DEX) -- index into the "blow" table
  */
-static const byte adj_dex_blow[STAT_RANGE] =
+const byte adj_dex_blow[STAT_RANGE] =
 {
 	0	/* 3 */,
 	0	/* 4 */,
@@ -763,7 +763,7 @@ const byte adj_con_fix[STAT_RANGE] =
 /*
  * Stat Table (CON) -- extra 1/100th hitpoints per level
  */
-static const int adj_con_mhp[STAT_RANGE] =
+const int adj_con_mhp[STAT_RANGE] =
 {
 	-250	/* 3 */,
 	-150	/* 4 */,
@@ -805,7 +805,7 @@ static const int adj_con_mhp[STAT_RANGE] =
 	1250	/* 18/220+ */
 };
 
-static const int adj_mag_study[STAT_RANGE] =
+const int adj_mag_study[STAT_RANGE] =
 {
 	  0	/* 3 */,
 	  0	/* 4 */,
@@ -850,7 +850,7 @@ static const int adj_mag_study[STAT_RANGE] =
 /*
  * Stat Table (INT/WIS) -- extra 1/100 mana-points per level
  */
-static const int adj_mag_mana[STAT_RANGE] =
+const int adj_mag_mana[STAT_RANGE] =
 {
 	  0	/* 3 */,
 	 10	/* 4 */,
@@ -920,7 +920,7 @@ static const int adj_mag_mana[STAT_RANGE] =
  * The player gets blows/round equal to 100/this number, up to a maximum of
  * "num" blows/round, plus any "bonus" blows/round.
  */
-static const byte blows_table[12][12] =
+const byte blows_table[12][12] =
 {
 	/* P */
    /* D:   0,   1,   2,   3,   4,   5,   6,   7,   8,   9,   10,  11+ */
@@ -1359,18 +1359,21 @@ static void calc_torch(void)
 	int i;
 
 	s16b old_light = p_ptr->cur_light;
-	bool burn_light = TRUE;
-
 	s16b new_light = 0;
-	int extra_light = 0;
 
 	/* Ascertain lightness if in the town */
-	if (!p_ptr->depth && ((turn % (10L * TOWN_DAWN)) < ((10L * TOWN_DAWN) / 2)))
-		burn_light = FALSE;
+	if (!p_ptr->depth && ((turn % (10L * TOWN_DAWN)) < ((10L * TOWN_DAWN) / 2))) {
+		new_light = 0;
+		if (old_light != new_light) {
+			/* Update the visuals */
+			p_ptr->cur_light = new_light;
+			p_ptr->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
+		}
+		return;
+	}
 
 	/* Examine all wielded objects, use the brightest */
-	for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
-	{
+	for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)	{
 		bitflag f[OF_SIZE];
 
 		int amt = 0;
@@ -1382,55 +1385,30 @@ static void calc_torch(void)
 		/* Extract the flags */
 		object_flags(o_ptr, f);
 
+		/* Light radius is now a pval */
+		if (of_has(f, OF_LIGHT))
+			amt = o_ptr->pval[which_pval(o_ptr, OF_LIGHT)];
+
 		/* Cursed objects emit no light */
 		if (of_has(f, OF_LIGHT_CURSE))
 			amt = 0;
 
 		/* Examine actual lights */
-		else if (o_ptr->tval == TV_LIGHT)
-		{
-			int flag_inc = of_has(f, OF_LIGHT) ? 1 : 0;
-
-			/* Artifact lights provide permanent bright light */
-			if (o_ptr->artifact)
-				amt = 3 + flag_inc;
-
-			/* Non-artifact lights and those without fuel provide no light */
-			else if (!burn_light || o_ptr->timeout == 0)
-				amt = 0;
-
-			/* All lit lights provide at least radius 2 light */
-			else
-			{
-				amt = 2 + flag_inc;
-
-				/* Torches below half fuel provide less light */
-				if (o_ptr->sval == SV_LIGHT_TORCH && o_ptr->timeout < (FUEL_TORCH / 4))
-				    amt--;
-			}
-		}
-
-		else
-		{
-			/* LIGHT flag on an non-cursed non-lights always increases radius */
-			if (of_has(f, OF_LIGHT)) extra_light++;
-		}
+		if (o_ptr->tval == TV_LIGHT && !of_has(o_ptr->flags, OF_NO_FUEL) &&
+				o_ptr->timeout == 0)
+			/* Lights without fuel provide no light */
+			amt = 0;
 
 		/* Alter p_ptr->cur_light if reasonable */
-		if (new_light < amt)
-		    new_light = amt;
+	    new_light += amt;
 	}
-
-	/* Add bonus from LIGHT flags */
-	new_light += extra_light;
 
 	/* Limit light */
 	new_light = MIN(new_light, 5);
 	new_light = MAX(new_light, 0);
 
 	/* Notice changes in the "light radius" */
-	if (old_light != new_light)
-	{
+	if (old_light != new_light) {
 		/* Update the visuals */
 		p_ptr->cur_light = new_light;
 		p_ptr->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
@@ -1890,9 +1868,6 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 
 
 	/*** Modify skills ***/
-
-	/* Affect Skill -- stealth (bonus one) */
-	state->skills[SKILL_STEALTH] += 1;
 
 	/* Affect Skill -- disarming (DEX and INT) */
 	state->skills[SKILL_DISARM] += adj_dex_dis[state->stat_ind[A_DEX]];

@@ -29,43 +29,121 @@
 #include "ui-menu.h"
 #include "target.h"
 
+
+/*
+ * Pick the context menu options appropiate for the item
+ * bits (1<<(n-1)):
+ *  1 - item can be examined
+ *  2 - item can be wielded
+ *  3 - item can be taken off
+ *  4 - item can be inscribed
+ *  5 - item can be uninscribed
+ *  6 - item can be dropped
+ *  7 - item can be picked up
+ *  8 - item can be used (name,key are specific to item type)
+ *  9 - item(book) can be browsed
+ * 10 - item(book) can be studdied
+ * 11 - item can be used to refill light source
+ */
+int object_context_bits(const object_type *o_ptr, const int slot)
+{
+  int bits = 0;
+
+  if (o_ptr) {
+    bits |= 1;
+  } else {
+    return bits;
+  }
+  if ((slot > INVEN_WIELD) && obj_can_takeoff(o_ptr)) {
+    bits |= 4;
+  } else
+  if ((slot <= INVEN_WIELD) && obj_can_wear(o_ptr)) {
+    bits |= 2;
+  }
+  if (obj_has_inscrip(o_ptr)) {
+    bits |= 16;
+  } else
+  {
+    bits |= 8;
+  }
+  if (slot >= 0) {
+    bits |= 32;
+  } else
+  {
+    bits |= 64;
+  }
+  if (obj_is_useable(o_ptr)) {
+    bits |= 128;
+  }
+  if (obj_can_browse(o_ptr)) {
+    bits |= 256;
+    if (obj_can_cast_from(o_ptr)) {
+      bits |= 128;
+    }
+    if (obj_can_study(o_ptr)) {
+      bits |= 512;
+    }
+  }
+  if (obj_can_refill(o_ptr)) {
+    bits |= 1024;
+  }
+  return bits;
+}
+
 /*
  * Display inventory
  */
+int context_menu_object(const object_type *o_ptr, const int slot);
+
 void do_cmd_inven(void)
 {
-	ui_event e;
+	int item;
+	int ret = 3;
 	int diff = weight_remaining();
 
 	/* Hack -- Start in "inventory" mode */
 	p_ptr->command_wrk = (USE_INVEN);
 
-	/* Save screen */
-	screen_save();
-
 	/* Hack -- show empty slots */
 	item_tester_full = TRUE;
 
-	/* Display the inventory */
-	show_inven(OLIST_WEIGHT | OLIST_QUIVER);
+	/* Loop this menu until an object context menu says differently */
+	while (ret == 3) {
+		/* Save screen */
+		screen_save();
+
+		/* Prompt for a command */
+		prt(format("(Inventory) Burden %d.%d lb (%d.%d lb %s). Select Item: ",
+			        p_ptr->total_weight / 10, p_ptr->total_weight % 10,
+			        abs(diff) / 10, abs(diff) % 10,
+			        (diff < 0 ? "overweight" : "remaining")),
+				0, 0);
+
+		/* Get an item to use a context command on (Display the inventory) */
+		if (get_item(&item, NULL, NULL, CMD_NULL, USE_EQUIP|USE_INVEN|USE_FLOOR|IS_HARMLESS)) {
+			object_type *o_ptr;
+
+			/* Load screen */
+			screen_load();
+
+			/* Track the object kind */
+			track_object(item);
+
+			o_ptr = object_from_item_idx(item);
+
+			if (o_ptr && o_ptr->kind) {
+				while ((ret = context_menu_object(o_ptr, item)) == 2);
+			}
+		} else {
+			/* Load screen */
+			screen_load();
+
+			ret = -1;
+		}
+	}
 
 	/* Hack -- hide empty slots */
 	item_tester_full = FALSE;
-
-	/* Prompt for a command */
-	prt(format("(Inventory) Burden %d.%d lb (%d.%d lb %s). Command: ",
-		        p_ptr->total_weight / 10, p_ptr->total_weight % 10,
-		        abs(diff) / 10, abs(diff) % 10,
-		        (diff < 0 ? "overweight" : "remaining")),
-	    0, 0);
-
-	/* Get a new command */
-	e = inkey_ex();
-	if (!(e.type == EVT_KBRD && e.key.code == ESCAPE))
-		Term_event_push(&e);
-
-	/* Load screen */
-	screen_load();
 }
 
 
@@ -74,33 +152,46 @@ void do_cmd_inven(void)
  */
 void do_cmd_equip(void)
 {
-	ui_event e;
+	int item;
+	int ret = 3;
 
-	/* Hack -- Start in "equipment" mode */
+	/* Hack -- Start in "inventory" mode */
 	p_ptr->command_wrk = (USE_EQUIP);
-
-	/* Save screen */
-	screen_save();
 
 	/* Hack -- show empty slots */
 	item_tester_full = TRUE;
 
-	/* Display the equipment */
-	show_equip(OLIST_WEIGHT);
+	/* Loop this menu until an object context menu says differently */
+	while (ret == 3) {
+		/* Save screen */
+		screen_save();
 
-	/* Hack -- undo the hack above */
+		/* Get an item to use a context command on (Display the inventory) */
+		if (get_item(&item, "Select Item:", NULL, CMD_NULL, USE_EQUIP|USE_INVEN|USE_FLOOR|IS_HARMLESS)) {
+			object_type *o_ptr;
+
+			/* Load screen */
+			screen_load();
+
+			/* Track the object kind */
+			track_object(item);
+
+			o_ptr = object_from_item_idx(item);
+
+			if (o_ptr && o_ptr->kind) {
+				while ((ret = context_menu_object(o_ptr, item)) == 2);
+			}
+		} else {
+			/* Load screen */
+			screen_load();
+
+			ret = -1;
+		}
+	}
+
+
+	/* Hack -- hide empty slots */
 	item_tester_full = FALSE;
-
-	/* Prompt for a command */
-	prt("(Equipment) Command: ", 0, 0);
-
-	/* Get a new command */
-	e = inkey_ex();
-	if (!(e.type == EVT_KBRD && e.key.code == ESCAPE))
-		Term_event_push(&e);
-
-	/* Load screen */
-	screen_load();
 }
 
 enum
@@ -112,24 +203,18 @@ enum
 	IGNORE_THIS_QUALITY
 };
 
-void textui_cmd_destroy(void)
+void textui_cmd_destroy_menu(int item)
 {
-	int item;
 	object_type *o_ptr;
-
 	char out_val[160];
 
 	menu_type *m;
 	region r;
 	int selected;
 
-	/* Get an item */
-	const char *q = "Ignore which item? ";
-	const char *s = "You have nothing to ignore.";
-	if (!get_item(&item, q, s, CMD_DESTROY, USE_INVEN | USE_EQUIP | USE_FLOOR))
-		return;
-
 	o_ptr = object_from_item_idx(item);
+	if (!(o_ptr->kind))
+		return;
 
 	m = menu_dynamic_new();
 	m->selections = lower_case;
@@ -212,6 +297,19 @@ void textui_cmd_destroy(void)
 	menu_dynamic_free(m);
 }
 
+void textui_cmd_destroy(void)
+{
+	int item;
+
+	/* Get an item */
+	const char *q = "Ignore which item? ";
+	const char *s = "You have nothing to ignore.";
+	if (!get_item(&item, q, s, CMD_DESTROY, USE_INVEN | USE_EQUIP | USE_FLOOR))
+		return;
+
+	textui_cmd_destroy_menu(item);
+}
+
 void textui_cmd_toggle_ignore(void)
 {
 	p_ptr->unignoring = !p_ptr->unignoring;
@@ -241,9 +339,10 @@ void textui_obj_examine(void)
 	/* Display info */
 	o_ptr = object_from_item_idx(item);
 	tb = object_info(o_ptr, OINFO_NONE);
-	object_desc(header, sizeof(header), o_ptr, ODESC_PREFIX | ODESC_FULL);
+	object_desc(header, sizeof(header), o_ptr,
+			ODESC_PREFIX | ODESC_FULL | ODESC_CAPITAL);
 
-	textui_textblock_show(tb, area, format("%^s", header));
+	textui_textblock_show(tb, area, header);
 	textblock_free(tb);
 }
 
@@ -435,7 +534,7 @@ static void lookup_symbol(struct keypress sym, char *buf, size_t max)
 	It would make more sense to loop through tvals, but then we need to associate
 	a display character with each tval. */
 	for (i = 1; i < z_info->k_max; i++) {
-		if (k_info[i].d_char == (char)sym.code) {
+		if (char_matches_key(k_info[i].d_char, sym.code)) {
 			strnfmt(buf, max, "%c - %s.", (char)sym.code, tval_find_name(k_info[i].tval));
 			return;
 		}
@@ -445,7 +544,7 @@ static void lookup_symbol(struct keypress sym, char *buf, size_t max)
 	/* Note: We need a better way of doing this. Currently '#' matches secret door,
 	and '^' matches trap door (instead of the more generic "trap"). */
 	for (i = 1; i < z_info->f_max; i++) {
-		if (f_info[i].d_char == (char)sym.code) {
+		if (char_matches_key(f_info[i].d_char, sym.code)) {
 			strnfmt(buf, max, "%c - %s.", (char)sym.code, f_info[i].name);
 			return;
 		}
@@ -453,14 +552,18 @@ static void lookup_symbol(struct keypress sym, char *buf, size_t max)
 	
 	/* Look through monster templates */
 	for (race = rb_info; race; race = race->next){
-		if ((char)sym.code == race->d_char) {
+		if (char_matches_key(race->d_char, sym.code)) {
 			strnfmt(buf, max, "%c - %s.", (char)sym.code, race->text);
 			return;
 		}
 	}
 
 	/* No matches */
-	strnfmt(buf, max, "%c - %s.", (char)sym.code, "Unknown Symbol");
+        if (isprint((char)sym.code)) {
+	    strnfmt(buf, max, "%c - Unknown Symbol.", (char)sym.code);
+        } else {
+	    strnfmt(buf, max, "? - Unknown Symbol.");
+        }
 	
 	return;
 }
@@ -492,6 +595,9 @@ void do_cmd_query_symbol(void)
 	bool recall = FALSE;
 
 	u16b *who;
+
+	const monster_race *r_ptr;
+	const monster_lore *l_ptr;
 
 	/* Get a character, or abort */
 	if (!get_com("Enter character to be identified, or control+[ANU]: ", &sym))
@@ -540,7 +646,7 @@ void do_cmd_query_symbol(void)
 		if (uniq && !rf_has(r_ptr->flags, RF_UNIQUE)) continue;
 
 		/* Collect "appropriate" monsters */
-		if (all || (r_ptr->d_char == (char)sym.code)) who[n++] = i;
+		if (all || char_matches_key(r_ptr->d_char, sym.code)) who[n++] = i;
 	}
 
 	/* Nothing to recall */
@@ -609,6 +715,8 @@ void do_cmd_query_symbol(void)
 	{
 		/* Extract a race */
 		r_idx = who[i];
+		r_ptr = &r_info[r_idx];
+		l_ptr = &l_list[r_idx];
 
 		/* Hack -- Auto-recall */
 		monster_race_track(r_idx);
@@ -617,7 +725,7 @@ void do_cmd_query_symbol(void)
 		handle_stuff(p_ptr);
 
 		/* Hack -- Begin the prompt */
-		roff_top(r_idx);
+		roff_top(r_ptr);
 
 		/* Hack -- Complete the prompt */
 		Term_addstr(-1, TERM_WHITE, " [(r)ecall, ESC]");
@@ -632,7 +740,7 @@ void do_cmd_query_symbol(void)
 				screen_save();
 
 				/* Recall on screen */
-				screen_roff(who[i]);
+				screen_roff(r_ptr, l_ptr);
 
 				/* Hack -- Complete the prompt (again) */
 				Term_addstr(-1, TERM_WHITE, " [(r)ecall, ESC]");

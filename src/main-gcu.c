@@ -25,10 +25,6 @@
 #include "main.h"
 #include "files.h"
 
-/* locale junk */
-#include "locale.h"
-#include "langinfo.h"
-
 /* Avoid 'struct term' name conflict with <curses.h> (via <term.h>) on AIX */
 #define term System_term
 
@@ -120,22 +116,6 @@ static term_data data[MAX_TERM_DATA];
 /* Number of initialized "term" structures */
 static int active = 0;
 
-#define CTRL_ORE 1
-#define CTRL_WALL 2
-#define CTRL_ROCK 3
-
-static char ctrl_char[32] = {
-	'\0', '*', '#', '%', '?', '?', '?', '\'', '+', '?', '?', '+',
-	'+', '+', '+', '+', '~', '-', '-', '-', '_', '+', '+', '+',
-	'+', '|', '?', '?', '?', '?', '?', '.'
-};
-
-static int ctrl_attr[32] = {
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0
-};
-
 #ifdef A_COLOR
 
 /*
@@ -159,6 +139,7 @@ static int colortable[BASIC_COLORS];
 /* Screen info: use one big Term 0, or other subwindows? */
 static bool use_big_screen = FALSE;
 static bool bold_extended = FALSE;
+static bool ascii_walls = FALSE;
 
 /*
  * Background color we should draw with; either BLACK or DEFAULT
@@ -434,7 +415,7 @@ void do_gcu_resize(void) {
  * Process events, with optional wait
  */
 static errr Term_xtra_gcu_event(int v) {
-	int i, j, k;
+	int i, j, k, mods=0;
 
 	if (v) {
 		/* Wait for a keypress; use halfdelay(1) so if the user takes more */
@@ -534,6 +515,12 @@ static errr Term_xtra_gcu_event(int v) {
 		case KEY_UP:    i = ARROW_UP;    break;
 		case KEY_LEFT:  i = ARROW_LEFT;  break;
 		case KEY_RIGHT: i = ARROW_RIGHT; break;
+		case KEY_DC:    i = KC_DELETE; break;
+		case KEY_BACKSPACE: i = KC_BACKSPACE; break;
+		case KEY_ENTER: i = KC_ENTER; mods |= KC_MOD_KEYPAD; break;
+		case 9:         i = KC_TAB; break;
+		case 13:        i = KC_ENTER; break;
+		case 27:        i = ESCAPE; break;
 
 		/* keypad keys */
 		case 0xFC: i = '0'; break;
@@ -544,9 +531,6 @@ static errr Term_xtra_gcu_event(int v) {
 		case 0xE9: i = '5'; break;
 		case 0xC1: i = '7'; break;
 		case 0xF4: i = '9'; break;
-
-		/* try to compensate for inadequate terminfo */
-		case 263: i = '\b'; break;
 
 		default: {
 			if (i < KEY_MIN) break;
@@ -565,7 +549,7 @@ static errr Term_xtra_gcu_event(int v) {
 #endif
 
 	/* Enqueue the keypress */
-	Term_keypress(i, 0);
+	Term_keypress(i, mods);
 
 	/* Success */
 	return (0);
@@ -595,6 +579,31 @@ int create_color(int i, int scale) {
  * React to changes
  */
 static errr Term_xtra_gcu_react(void) {
+	if (ascii_walls) {
+		int i;
+		ascii_walls = FALSE;
+		for (i = 0; i < 3; i++) {
+			// magma as %:D
+			f_info[50].x_char[i] = f_info[52].x_char[i] = 0x23;
+			f_info[50].x_attr[i] = f_info[52].x_attr[i] = 0x01;
+
+			// quartz as %:D
+			f_info[51].x_char[i] = f_info[53].x_char[i] = 0x23;
+			f_info[51].x_attr[i] = f_info[53].x_attr[i] = 0x01;
+
+			// quartz/magma w treasure as *:o
+			f_info[54].x_char[i] = f_info[55].x_char[i] = 0x2A;
+			f_info[54].x_attr[i] = f_info[55].x_attr[i] = 0x03;
+
+			// granite walls as #:D
+			f_info[56].x_char[i] = 0x23;
+			f_info[56].x_attr[i] = 0x01;
+
+			// permanent walls as #:r
+			f_info[60].x_char[i] = 0x23;
+			f_info[60].x_attr[i] = 0x04;
+		}
+	}
 
 #ifdef A_COLOR
 	if (COLORS == 256 || COLORS == 88) {
@@ -613,11 +622,9 @@ static errr Term_xtra_gcu_react(void) {
 
 		for (i = 0; i < BASIC_COLORS; i++) {
 			int fg = create_color(i, scale);
+			int isbold = bold_extended ? A_BRIGHT : A_NORMAL;
 			init_pair(i + 1, fg, bg_color);
-			if (bold_extended)
-				colortable[i] = COLOR_PAIR(i + 1) | A_BRIGHT;
-			else
-				colortable[i] = COLOR_PAIR(i + 1);
+			colortable[i] = COLOR_PAIR(i + 1) | isbold;
 		}
 	}
 #endif
@@ -698,66 +705,30 @@ static errr Term_wipe_gcu(int x, int y, int n) {
 	return 0;
 }
 
-/*
- * Since GCU currently only supports Latin-1 extended chracters, we only
- * install this hook if we're not using UTF-8.
- * Given a position in the ISO Latin-1 character set, return the correct
- * character on this system. Currently
- */
- static byte Term_xchar_gcu(byte c) {
-	return c;
-}
-
-
-/* Hack - replace non-ASCII characters to
- * avoid display glitches in selectors.
- *
- * Note that we do this after the ACS mapping,
- * because the display glitches we are avoiding
- * are in curses itself.
- */
-char filter_char(char c) {
-	if (c < ' ' || c >= 127)
-		return '?';
-	else
-		return c;
-}
-
 
 /*
  * Place some text on the screen using an attribute
  */
-static errr Term_text_gcu(int x, int y, int n, byte a, const char *s) {
+static errr Term_text_gcu(int x, int y, int n, byte a, const wchar_t *s) {
 	term_data *td = (term_data *)(Term->data);
 
 #ifdef A_COLOR
-	/* Set the color */
-	if (can_use_color) (void)wattrset(td->win, colortable[a & 255]);
-#endif
+	if (can_use_color) {
+		/* the lower 7 bits of the attribute indicate the fg/bg */
+		int attr = a & 127;
 
-	/* Move the cursor */
-	wmove(td->win, y, x);
+		/* the high bit of the attribute indicates a reversed fg/bg */
+		int flip = a > 127 ? A_REVERSE : A_NORMAL;
 
-	/* Write to screen */
-	while (n--) {
-		unsigned char c = *(s++);
-
-		if (c < 32) {
-			wattron(td->win, ctrl_attr[c]);
-			waddch(td->win, filter_char(ctrl_char[c]));
-			wattroff(td->win, ctrl_attr[c]);
-		} else {
-			waddch(td->win, filter_char(c));
-		}
+		wattrset(td->win, colortable[attr] | flip);
+		mvwaddnwstr(td->win, y, x, s, n);
+		wattrset(td->win, A_NORMAL);
+		return 0;
 	}
-
-#if defined(A_COLOR)
-	/* Unset the color */
-	if (can_use_color) wattrset(td->win, A_NORMAL);
 #endif
 
-	/* Success */
-	return (0);
+	mvwaddnwstr(td->win, y, x, s, n);
+	return 0;
 }
 
 
@@ -786,6 +757,9 @@ static errr term_data_init_gcu(term_data *td, int rows, int cols, int y, int x) 
 	t->attr_blank = TERM_WHITE;
 	t->char_blank = ' ';
 
+	/* Differentiate between BS/^h, Tab/^i, etc. */
+	t->complex_input = TRUE;
+
 	/* Set some hooks */
 	t->init_hook = Term_init_gcu;
 	t->nuke_hook = Term_nuke_gcu;
@@ -795,13 +769,6 @@ static errr term_data_init_gcu(term_data *td, int rows, int cols, int y, int x) 
 	t->wipe_hook = Term_wipe_gcu;
 	t->curs_hook = Term_curs_gcu;
 	t->xtra_hook = Term_xtra_gcu;
-
-	/* only if the locale supports Latin-1 will we enable xchar_hook */
-	if (setlocale(LC_CTYPE, "")) {
-		/* the Latin-1 codeset is ISO-8859-1 */
-		if (strcmp(nl_langinfo(CODESET), "ISO-8859-1") == 0)
-			t->xchar_hook = Term_xchar_gcu;
-	}
 
 	/* Save the data */
 	t->data = td;
@@ -829,7 +796,6 @@ errr init_gcu(int argc, char **argv) {
 	int i;
 	int rows, cols, y, x;
 	int next_win = 0;
-	bool graphics = TRUE;
 
 	/* Initialize info about terminal capabilities */
 	termtype = getenv("TERM");
@@ -837,29 +803,22 @@ errr init_gcu(int argc, char **argv) {
 
 	/* Parse args */
 	for (i = 1; i < argc; i++) {
-		if (prefix(argv[i], "-b"))
+		if (prefix(argv[i], "-b")) {
 			use_big_screen = TRUE;
-		else if (prefix(argv[i], "-B"))
+		} else if (prefix(argv[i], "-B")) {
 			bold_extended = TRUE;
-		else if (prefix(argv[i], "-a"))
-			graphics = FALSE;
-		else
+		} else if (prefix(argv[i], "-a")) {
+			ascii_walls = TRUE;
+		} else {
 			plog_fmt("Ignoring option: %s", argv[i]);
-	}
-
-	if (graphics) {
-		ctrl_char[CTRL_WALL] = ' ';
-		ctrl_attr[CTRL_ORE] = A_REVERSE;
-		ctrl_attr[CTRL_WALL] = A_REVERSE;
-		ctrl_attr[CTRL_ROCK] = A_REVERSE;
+		}
 	}
 
 	/* Extract the normal keymap */
 	keymap_norm_prepare();
 
 	/* We do it like this to prevent a link error with curseses that
-	 * lack ESCDELAY.
-	 */
+	 * lack ESCDELAY. */
 	if (!getenv("ESCDELAY"))
 		putenv("ESCDELAY=20");
 
@@ -919,9 +878,9 @@ errr init_gcu(int argc, char **argv) {
 		colortable[TERM_MUD]         = (COLOR_PAIR(PAIR_YELLOW));
 		colortable[TERM_L_YELLOW]    = (COLOR_PAIR(PAIR_YELLOW | A_BRIGHT));
 		colortable[TERM_MAGENTA]     = (COLOR_PAIR(PAIR_MAGENTA | A_BRIGHT));
-		colortable[TERM_L_TEAL]      = (COLOR_PAIR(PAIR_CYAN | A_BRIGHT));
-		colortable[TERM_L_VIOLET]    = (COLOR_PAIR(PAIR_MAGENTA | A_BRIGHT));
-		colortable[TERM_L_PINK]      = (COLOR_PAIR(PAIR_MAGENTA | A_BRIGHT));
+		colortable[TERM_L_TEAL]      = (COLOR_PAIR(PAIR_CYAN) | A_BRIGHT);
+		colortable[TERM_L_VIOLET]    = (COLOR_PAIR(PAIR_MAGENTA) | A_BRIGHT);
+		colortable[TERM_L_PINK]      = (COLOR_PAIR(PAIR_MAGENTA) | A_BRIGHT);
 		colortable[TERM_MUSTARD]     = (COLOR_PAIR(PAIR_YELLOW));
 		colortable[TERM_BLUE_SLATE]  = (COLOR_PAIR(PAIR_BLUE));
 		colortable[TERM_DEEP_L_BLUE] = (COLOR_PAIR(PAIR_BLUE));
@@ -942,7 +901,7 @@ errr init_gcu(int argc, char **argv) {
 	/* Extract the game keymap */
 	keymap_game_prepare();
 
-	/*** Now prepare the term(s) ***/
+	/* Now prepare the term(s) */
 	for (i = 0; i < MAX_TERM_DATA; i++) {
 		if (use_big_screen && i > 0) break;
 

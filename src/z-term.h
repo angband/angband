@@ -42,16 +42,16 @@ struct term_win
 	byte cx, cy;
 
 	byte **a;
-	char **c;
+	wchar_t **c;
 
 	byte *va;
-	char *vc;
+	wchar_t *vc;
 
 	byte **ta;
-	char **tc;
+	wchar_t **tc;
 
 	byte *vta;
-	char *vtc;
+	wchar_t *vtc;
 
 	term_win *next;
 };
@@ -116,6 +116,8 @@ struct term_win
  *	- Value "char_blank"
  *	  Use this "char" value for "blank" grids
  *
+ *	- Flag "complex_input"
+ *	  Distinguish between Enter/^m/^j, Tab/^i, etc.
  *
  *	- Ignore this pointer
  *
@@ -181,7 +183,9 @@ struct term
 	bool never_frosh;
 
 	byte attr_blank;
-	char char_blank;
+	wchar_t char_blank;
+
+	bool complex_input;
 
 	ui_event *key_queue;
 
@@ -223,11 +227,14 @@ struct term
 
 	errr (*wipe_hook)(int x, int y, int n);
 
-	errr (*text_hook)(int x, int y, int n, byte a, const char *s);
+	errr (*text_hook)(int x, int y, int n, byte a, const wchar_t *s);
 
-	errr (*pict_hook)(int x, int y, int n, const byte *ap, const char *cp, const byte *tap, const char *tcp);
+	errr (*pict_hook)(int x, int y, int n, const byte *ap, const wchar_t *cp, const byte *tap, const wchar_t *tcp);
 
-	byte (*xchar_hook)(byte c);
+	size_t (*mbcs_hook)(wchar_t *dest, const char *src, int n);
+
+	void (*view_map_hook)(term *t);
+
 };
 
 
@@ -347,29 +354,31 @@ extern bool smlcurs;
 /**** Available Functions ****/
 
 extern errr Term_xtra(int n, int v);
+extern size_t Term_mbstowcs(wchar_t *dest, const char *src, int n);
 
-extern void Term_queue_char(term *t, int x, int y, byte a, char c, byte ta, char tc);
-extern void Term_big_queue_char(term *t, int x, int y, byte a, char c, byte a1, char c1);
-extern void Term_queue_chars(int x, int y, int n, byte a, const char *s);
+extern void Term_queue_char(term *t, int x, int y, byte a, wchar_t c, byte ta, wchar_t tc);
+extern void Term_big_queue_char(term *t, int x, int y, byte a, wchar_t c, byte a1, wchar_t c1);
+extern void Term_queue_chars(int x, int y, int n, byte a, const wchar_t *s);
 
 extern errr Term_fresh(void);
 extern errr Term_set_cursor(bool v);
 extern errr Term_gotoxy(int x, int y);
-extern errr Term_draw(int x, int y, byte a, char c);
-extern errr Term_addch(byte a, char c);
+extern errr Term_draw(int x, int y, byte a, wchar_t c);
+extern errr Term_addch(byte a, wchar_t c);
 extern errr Term_addstr(int n, byte a, const char *s);
-extern errr Term_putch(int x, int y, byte a, char c);
-extern void Term_big_putch(int x, int y, byte a, char c);
+extern errr Term_putch(int x, int y, byte a, wchar_t c);
+extern void Term_big_putch(int x, int y, byte a, wchar_t c);
 extern errr Term_putstr(int x, int y, int n, byte a, const char *s);
 extern errr Term_erase(int x, int y, int n);
 extern errr Term_clear(void);
 extern errr Term_redraw(void);
 extern errr Term_redraw_section(int x1, int y1, int x2, int y2);
+extern errr Term_mark(int x, int y);
 
 extern errr Term_get_cursor(bool *v);
 extern errr Term_get_size(int *w, int *h);
 extern errr Term_locate(int *x, int *y);
-extern errr Term_what(int x, int y, byte *a, char *c);
+extern errr Term_what(int x, int y, byte *a, wchar_t *c);
 
 extern errr Term_flush(void);
 extern errr Term_mousepress(int x, int y, char button);

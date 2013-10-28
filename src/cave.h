@@ -8,6 +8,7 @@
 #include "z-type.h"
 
 struct player;
+struct monster;
 
 extern int distance(int y1, int x1, int y2, int x2);
 extern bool los(int y1, int x1, int y2, int x2);
@@ -16,7 +17,7 @@ extern bool cave_valid_bold(int y, int x);
 extern byte get_color(byte a, int attr, int n);
 extern void map_info(unsigned x, unsigned y, grid_data *g);
 extern void move_cursor_relative(int y, int x);
-extern void print_rel(char c, byte a, int y, int x);
+extern void print_rel(wchar_t c, byte a, int y, int x);
 extern void prt_map(void);
 extern void display_map(int *cy, int *cx);
 extern void do_cmd_view_map(void);
@@ -24,12 +25,12 @@ extern errr vinfo_init(void);
 extern void forget_view(void);
 extern void update_view(void);
 extern void map_area(void);
-extern void wiz_light(void);
+extern void wiz_light(bool full);
 extern void wiz_dark(void);
 extern int project_path(u16b *gp, int range, int y1, int x1, int y2, int x2, int flg);
 extern bool projectable(int y1, int x1, int y2, int x2, int flg);
 extern void scatter(int *yp, int *xp, int y, int x, int d, int m);
-extern void health_track(struct player *p, int m_idx);
+extern void health_track(struct player *p, struct monster *m_ptr);
 extern void monster_race_track(int r_idx);
 extern void track_object(int item);
 extern void track_object_kind(int k_idx);
@@ -100,6 +101,9 @@ extern bool cave_isdoor(struct cave *c, int y, int x);
 extern bool cave_issecrettrap(struct cave *c, int y, int x);
 extern bool cave_isknowntrap(struct cave *c, int y, int x);
 extern bool cave_istrap(struct cave *c, int y, int x);
+extern bool cave_isstairs(struct cave *c, int y, int x);
+extern bool cave_isupstairs(struct cave *c, int y, int x);
+extern bool cave_isdownstairs(struct cave *c, int y, int x);
 
 /* BEHAVIOR PREDICATES */
 extern bool cave_isopen(struct cave *c, int y, int x);
@@ -120,6 +124,7 @@ extern bool cave_in_bounds(struct cave *c, int y, int x);
 extern bool cave_in_bounds_fully(struct cave *c, int y, int x);
 
 extern struct monster *cave_monster(struct cave *c, int idx);
+extern struct monster *cave_monster_at(struct cave *c, int y, int x);
 extern int cave_monster_max(struct cave *c);
 extern int cave_monster_count(struct cave *c);
 

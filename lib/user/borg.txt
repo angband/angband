@@ -1,0 +1,1434 @@
+
+# This file will allow you to customize your APWBorg along certain themes.
+# The borg is fairly successful, having won the game several times.
+# However, some players/observers of borgs would like to see it function
+# differently.  Some would like to see the borg play more aggressively, or
+# more conservatively.  While others would like to value armour class more.
+# Still others would like to see it collect more speed items.
+
+# With the expressions below, you can influence the borg's behavior and
+# equipment selection choices.  The 'borg_worship_' variables will influence
+# his equipment selection by adding additional bonuses to items which
+# enhance that attribute.  For example:  if a borg recieves 2000 pts for
+# a single point of armour class, an 'ac worshipping' borg would receive
+# 3000 pts.  This bonus would significantly influence equipment choices.
+
+# borg_worships_gold explained:
+# The borg_worships_gold option will greatly impact how the borg treats items
+# which he finds in the dungeon.  With this opion on, he will return to town
+# whenever he fills up with items then sell those items.  This can cause
+# the borg to lose some artifacts, since he will sell them even if not ID'd.
+# Generally speaking the borg will not sell an item unless it is at least
+# psuedo ID'd.  The benefit of this option is that the borg will significantly
+# increase his income at the low clevels.  This will increase his survivablity
+# by allowing him to invest in armour and arrows.  With this on,
+# he will not recall to town to sell stuff but climb the stairs instead.
+# He will also not recall into the dungeon until dlevel 8 (instead of 5).
+# This option has no effect after clevel 20.  One other downside of this is
+# that the borg will spend more time in town and may have to evade Vets more.
+
+
+# To modify, simply set it to TRUE or FALSE.
+
+# NOTE: THERE MUST BE A SPACE AFTER THE =
+# option = TRUE   is acceptable
+# option =TRUE    is NOT acceptable and will result in a default value.
+
+# Worships
+
+borg_worships_damage = FALSE
+borg_worships_speed = FALSE
+borg_worships_hp = FALSE
+borg_worships_mana = FALSE
+borg_worships_ac = FALSE
+borg_worships_gold = FALSE
+
+
+# use the POWER_ and REQ_ lines below.  If false the borg will
+# use the calcs in the C code.  Which is recommended since I hone those
+# more frequently than I do the dynamic calcs.  Most borg users will 
+# have more successful borgs by leaving this option as FALSE.
+# note: the dynamic calcs are slower than the internal calcs
+
+borg_uses_dynamic_calcs = FALSE
+
+
+# Risky
+
+# A risky borg is one who is not confined by character level requirements
+# in order to dive deeper.  It is also more likely to stay in a battle than
+# to teleport out.  A risky borg will dive faster but is more likely to die.
+# A risky borg is not concerned with killing uniques before diving deeper.
+#
+# A borg who scums for uniques will set the auto_scum flag in order to generate
+# more exciting levels and hopefully encounter a unique
+# 
+# borgs who kill_uniques will wait for uniques to die before diving deeper
+# into the dungeon.  Usually, he will not dive deeper then three uniques.  
+# Example, Unique Monsters who normally reside on levels 12, 15, and 18 are 
+# still alive so the borg will not dive deeper than level 18 until at least one
+# of those uniques are dead.  Setting this to FALSE will allow the borg to dive
+# deeper, faster, not being held up by the uniques.  But, he does run the risk
+# of finding 3 or 4 uniques on one level.  That can be a bit scary.
+
+borg_plays_risky = FALSE
+borg_scums_uniques = TRUE
+borg_kills_uniques = FALSE
+
+# Swap Items
+
+# The borg is designed to use Swap Items in the inventory.  A swap item
+# is an equipment item (like a sword or armour item) which posseses a
+# desireable resistance or trait.  If the borg is in danger, then he will
+# consider exchanging his current item for the swap item.  A prime example of
+# this is at dungeon level 60.  He is required to have several resists in
+# place.  If he does not have them then he will not dive deeper.  However,
+# with Swaps enabled he will select an item to cover the open resist then
+# dive down.  Having Swaps enabled allows the borg to dive deeper, faster.
+# The draw back is the Swap Items take up two inventory slots.
+
+borg_uses_swaps = TRUE
+
+
+
+# Home Storage
+
+# The borg has two routines to store items in the home.  One is very
+# effective and will make the best possible choice for adding an item to the
+# home.  Unfortunately, this function is very slow.  A much faster routine
+# will do a fine job at storing items in the home but it is not as
+# efficient.
+
+borg_slow_optimizehome = FALSE
+
+
+# Respawn
+
+# If the borg is in continual play mode (as with the screen saver),
+# he will respawn a randomly generated character at death.  This section
+# allows the user to make certain bias for the type of character generated.
+# You may select the race and or class and or minimal stats for the Borg.
+# You may also select the minimal character level needed before the
+# character dump is created in the game directory.
+
+# With regards to race, the borg is programmed to accept the variety of
+# user defined races which may be in the p_info.txt file.  So the values
+# given in table below are for the default races.  But if you are bright
+# enough to modify the p_info.txt file then you are bright enough to figure
+# out that race 0 does not necessarily equal Human.  It's just the first
+# race listed in your p_info.txt file.
+#
+# RACE:-1 Random Race          CLASS:  -1 Random Class
+#       0 Human                         0 Warrior
+#       1 Half Elf                      1 Mage
+#       2 Elf                           2 Priest
+#       3 Hobbit                        3 Rogue
+#       4 Gnome                         4 Ranger
+#       5 Dwarf                         5 Paladin
+#       6 Half Orc
+#       7 Half Troll
+#       8 Dunadan
+#       9 High Elf
+#	10 Kobold
+#
+# With regards to the stats.  The minimal stats are rolled by the
+# borg.  CON will be 16, the secondary stat (usually DEX) will be 17,
+# The primary stat will be 17.  These are the maximal values which
+# can be rolled (racial and class bonuses added after).
+# If the borg can not reach the stats after 500,000 tries the game
+# will just assign you a random stat.
+#
+# After killing Morgoth, generally, the borg will stop and allow you
+# to inspect the victory.  If you set the respawn_winners then after
+# killing Morgoth,the borg will generate a new character.  A map file
+# is created so you can see what the final battle looked like.
+
+borg_respawn_race = -1
+borg_respawn_class = -1
+borg_respawn_winners = FALSE
+
+
+# Dumps
+
+# This variable will determine the minimal character level at which the borg
+# will create a character dump file.  That file contains some vital information
+# concerning the status of the borg at the time of his demise.  It is placed
+# in the user directory.
+# The borg_save_death variable will tell the borg to save the game in the user
+# directory so that it can be examined more closely.  The clevel of the borg
+# must at least equal the borg_dump_level in order for the game to save.
+
+borg_dump_level = 1
+borg_save_death = 1
+
+# Auto Stops
+
+# The borg is able to stop when it reaches a certain dungeon depth or character
+# level.  He will also stop when he wins the game.  If you want him to keep
+# playing, even after Morgoth is dead, then change the borg_stop_king to FALSE.
+# Set the other values to the level at which you want the borg to stop.  Set
+# them out of bounds if you do not want him to stop.
+
+borg_stop_dlevel = 128
+borg_stop_clevel = 51
+borg_no_deeper = 127
+borg_stop_king = TRUE
+
+
+# Chest Tolerance
+
+# The borg is able to search, disarm, and open chests.  There is a inherant
+# risk when dealing with chests.  The risk of setting off the trap vs the
+# benefit of the loot within the chest.  The game uses a straight forward 
+# formula for calculating the success of a chest.  It is:
+# randint(100) < the skill of the player minus the dificulty of the chest.
+# Difficulties run from 1 to 63.  I would recommend a tolerance of about 7
+# for vanilla chests (since they suck) and about 15 for DrAngband.
+
+borg_chest_fail_tolerance = 7
+
+
+# Speed of the Borg
+
+# You can slow the borg down several different ways.  One way is to set the
+# base game delay factor in the options menu.  This will slow down the borg
+# and the visual effects (like missiles shooting, explosions).  If using the
+# screensaver, you will need to load angband.exe load the savefile, make the
+# modifications, then save and exit.  Another way to slow the borg down is
+# to add more term windows.  The more it has to do, the slower it will be.
+# I recommend using Inventory, Equipment, Messages, Monster Recall, Borg
+# Status windows. Then you can really see what the borg is up to.  Lastly,
+# to slow the borg down use the following variable.  The formula is:
+# base_game_delay_factor^2 + borg_delay_factor^2.
+
+borg_delay_factor = 9
+
+
+# Money Scumming
+
+# This started as more of a joke but it does have a useful purpose.  If you 
+# find yourself shopping in the BM and you really want that item and its just 
+# out of your price range, then you can set a dollar amount into this variable 
+# and the borg will run around town killing monsters and collecting items for 
+# cash.  Once he has reached his monetary goal, it will unhook and stop moving.  
+# The borg will wait on the level, to build up more towns people, kill them, 
+# buy food when it needs to.  But it won't leave the level until the goal
+# is reached.  To disengage the money scum, leave this variable at 0 (zero).
+# This will also simulate the borg_worships_gold and allow the borg to sell 
+# non-ID'd items which will be dropped in town.  The borg will flee from town 
+# from Scary Guys.  So keep this in mind with borgs under clevel 6. The borg 
+# will not scum unless he has a perma light source (phial, or some glowing 
+# artifact). The borg will stop if the General Store runs out of food to buy.
+# It is not recommended for borgs with Regeneration and no Slow 
+# Digestion, since they will spend all their money on food.  But if you have a
+# borg with Satisfy Hunger spell, they can stay in town forever.
+# NOTE: if a human wants the borg to scum to a particular amount, turn the 
+# borg_self_scum to FALSE or else he will buy his own gear with that money.
+
+borg_money_scum_amount = 0
+
+
+# Borg Scumming
+
+# This is a companion to the Money Scum above.  The borg will scum town if
+# a stat potion is in the BM.  If the borg finds an item in town that he would
+# really like to have, then he will stay in town until he can gathered enough
+# money to buy it.  The borg will behave like the borg_money_scum_amount above.
+# If this is TRUE, then the borg is allowed to scum for items that he wants.
+# To forbid this behavior (which can take a very long time) set it FALSE.
+# NOTE: if a human wants the borg to scum to a particular amount, turn the 
+# borg_self_scum to FALSE or else he will buy his own gear with that money.
+# Also, the borg must be at least clevel 10, with a perma light, 
+# a 65% chance to avoid the pick pocket, and lots of food.
+
+borg_self_scum = TRUE
+
+
+# Lunal Borg
+
+# The borg will dive deep in the dungeon, even while he is still
+# low level, bouncing between levels to take nearby down stairs.
+# Once deep, he will gather items, then recall to town.  He will not recall
+# back down into the dungeon, but walk all the way down again.  If you want
+# a fast win, this is not the option for you.  If you want the borg to have
+# maxed stats early on at the expense of game turns, then give this a try.
+# The best way to use this is to have a borg that can cast Satisfy Hunger.
+# This is a one way trip for the borg and he will be getting hungry.
+# The borg should also have a perma light source (like the phial).  Again,
+# one way trip.  He won't be stopping to restock his fuel source.  However,
+# if he has food or fuel, he will use them when appropriate.  Having extra
+# speed will help the borg too.  Often he will come down the stairs, and 
+# find himself right next to a monster.  Sometimes, that monster can get
+# the first hit on a borg, killing him instantly.  Even +3 speed would help
+# to avoid this type of instadeath.
+#
+# Self Lunal Mode will allow the borg to use the stair scumming in order to
+# dive deep in the dungeon for his own goals.  For example, if the borg has
+# been down to depth 99, and now has no more potions of healing, he will
+# only be prepared for depth 45.  He will remain shallow in the dungeon,
+# from depth 1-10 waiting for the shops to cycle.  Then he will attempt to 
+# buy a healing potion from the town shops.  If none is available, he will
+# return to the shallow dungeon depths and wait for the shops to cycle.  He 
+# will repeat this pattern until he gets a potion of healing.  If the borg 
+# is allowed to self-lunal, then it will bounce the stairs down to a depth
+# where it feels comfortable.  In the case above, it will do this until
+# about depth 40.
+
+borg_lunal_mode = FALSE
+borg_self_lunal = FALSE
+
+
+# Borg Verbose
+
+# Verbose is default off.  It makes the borg give more reports on his actions
+# and thoughts.  He still gives reports when verbose is FALSE, but when TRUE, 
+# he really chats up a storm.
+
+borg_verbose = FALSE
+
+
+
+# Munchkin Start
+
+# Munchink start will have the borg stair-scum at depth 5-6, looking for items
+# which he will then sell in town.  He will continue this process until about
+# clevel 6 or 7.  The advantage is a sizable boost to his early income and
+# he can find some wands early on to assist with monster killing.
+
+borg_munchkin_start = TRUE
+
+
+# Enchant Limit
+
+# The borg knows how to enchant his equipment using scrolls and spells.
+# For ammo, he will stop enchanting about +10 or so.  If he has access 
+# to the *enchant* spell, he can go up to +15.  But the borg will spend
+# a lot of time casting and resting in order to get his item up to +15.
+# The borg has plenty of time, to waste doing this.  If you want a fast
+# win, then choose a lower number like +11.
+
+borg_enchant_limit = 12
+
+
+# WARNING: If you mess with the objects.txt or the monster.txt and change 
+# the locations of things, then you must make those changes in borg.txt
+# as well as in this borg code.  The borg is very concerned about item 
+# index locations.  ie: borgs_has[242] is looking for a Potion of Healing.
+# The borg is concerned over several items, broken swords, and several 
+# monster locations (Tarresque, Sauron, Morgoth).
+
+
+
+# CHANGE THIS AT YOUR OWN RISK.  Changes here can cause VERY STUPID borg
+# behaviour.  If you do change them and your borg acts goofy, do not email me
+# complaining that your borg keeps dying.  Change these values if you know
+# exactly what you are doing.  It is strongly recommended that you keep a
+# backup copy of a borg.txt.
+
+# requirements 
+
+# format of line 
+# REQ_CLASSaaa_DEPTHbbb_(special value)
+
+# NOTE:  CLASS999 = all classes
+# NOTE:  CLASS000 = Warrior
+# NOTE:  CLASS001 = Mage
+# NOTE:  CLASS002 = Priests
+# NOTE:  CLASS003 = Rogue
+# NOTE:  CLASS004 = Ranger
+# NOTE:  CLASS005 = Paladin
+# NOTE:  it is possible to do stupid/impossible things, like require the borg 
+#        to have 3 Ringils or carry 999 potions of healing to get to level 1.
+#        there are no checks against such stupidity.
+# special values are:
+# _ITEMxxx = xxx is the index in k_info- Item in inventory
+# _WITEMxxx = xxx is the index in k_info- Item being worn
+# _ARTIFACTxxx = xxx is the index in a_info- Artifact being worn
+# _FORMULAxxx = formula found on seperate line
+# the rest do not require numbers.
+# Too add this to this list, add to array in borg1.c, add to enum in borg1.h 
+# (those must always match) then make sure the value is set in borg4.c borg_notice()
+# -personal attributes 
+# _STR  (0-39.  3 = 0, 15 = 18/00-18/09, 39 = 18/220)
+# _INT
+# _WIS
+# _DEX
+# _CON
+# _CHR
+# _CSTR (3-238+, 18/09 = 27)
+# _CINT
+# _CWIS
+# _CDEX
+# _CCON
+# _CCHR
+# Sustain Stat:
+# _SSTR
+# _SINT 
+# _SWIS 
+# _SDEX 
+# _SCON 
+# _SCHR 
+# 
+# _LIGHT = Has Lite
+# _CURHP   = Current HP
+# _MAXHP = Max HP
+# _OLDCHP = HP last round
+# _CURSP  = Current Mana
+# _MAXSP = max Mana
+# _ADJSP = mana adj due to Int/Wis
+# _OLDCSP = SP last round
+# _SFAIL1 = fail rate from array1
+# _SFAIL2 = min fail rate
+# _CLEVEL = cur char level
+# _MAXCLEVEL = Max char level
+# _ESP    = has telepathy
+# _CURLITE = Lite Radius
+# _RECALL = number of 'Recall's
+# _FOOD   = number of foods
+# _SPEED  = base speed (110 = normal speed)
+# _SDIG   = Slow Digest
+# _FEATH  = feather fall
+# _REG    = regen
+# _SINV   = See invis
+# _INFRA  = Infravision
+# _DIS    = Base Disarm
+# _DEV    = Base device use
+# _SAV    = Base Saving throw
+# _STL    = Stealth
+# _SRCH   = Search
+# _SERCHFREQ = Search Frequency
+# _THN    = To hit (normal)
+# _THB    = To hit (shooting)
+# _THT    = To hit (throwing)
+# _DIG    = Digging
+# Ignores/Immune
+# _IFIRE  
+# _IACID 
+# _ICOLD 
+# _IELEC 
+# Resists
+# _RFIRE 
+# _RCOLD 
+# _RELEC 
+# _RACID 
+# _RPOIS 
+# _RFEAR 
+# _RLITE 
+# _RDARK 
+# _RBLIND 
+# _RCONF 
+# _RSND 
+# _RSHRD 
+# _RNXUS 
+# _RNTHR 
+# _RKAOS 
+# _RDIS 
+# _HLIFE = Hold Life
+# _FRACT = Free Action
+# same as without S but includes swap
+# _SRFIRE    
+# _SRCOLD 
+# _SRELEC 
+# _SRACID 
+# _SRPOIS 
+# _SRFEAR 
+# _SRLITE 
+# _SRDARK 
+# _SRBLIND 
+# _SRCONF 
+# _SRSND 
+# _SRSHRD 
+# _SRNXUS 
+# _SRNTHR 
+# _SRKAOS 
+# _SRDIS 
+# _SHLIFE 
+# _SFRACT 
+# _DEPTH    = current depth being tested or Max Depth (for power)
+# _CDEPTH   = current depth borg is on
+#             when the borg is testing, he might see if he is ready for depth 10 while he is on
+#             depth 9
+# _MAXDEPTH = recall depth
+# _KING     = ***WINNER***
+# Player Status
+# _ISWEAK
+# _ISHUNGRY
+# _ISFULL
+# _ISGORGED
+# _ISBLIND
+# _ISAFRAID
+# _ISCONFUSED
+# _ISPOISONED
+# _ISCUT
+# _ISSTUN
+# _ISHEAVYSTUN
+# _ISIMAGE
+# _ISSTUDY
+# _ISSEARCHING
+# _ISFIXLEV
+# _ISFIXEXP
+# _ISFIXSTR
+# _ISFIXINT
+# _ISFIXWIS
+# _ISFIXDEX
+# _ISFIXCON
+# _ISFIXCHR
+# _ISFIXALL
+
+# _ARMOR    = base AC
+# _TOHIT    = base to hit, does not include weapon 
+# _TODAM    = base to damage, does not include weapon 
+# _WTOHIT   = weapon to hit 
+# _WTODAM   = weapon to damage 
+# _BTOHIT   = bow to hit 
+# _BTODAM   = bow to damage 
+# _BLOWS    = # attacks with current weapon
+# _SHOTS    = # shots with current bow
+# _WMAXDAM  =  max damage per round with weapon (normal blow) 
+#              Assumes you can enchant to +8 if you are level 25+ 
+# _WBASEDAM =  base damage per round with weapon (normal blow) 
+#              Assumes you no bonuses for to hit
+# _BMAXDAM  =  max damage per round with bow (normal hit) 
+#              Assumes you can enchant to +8 if you are level 25+ 
+# _HEAVYWEPON = Weapon is 'heavy' 
+# _HEAVYBOW   = bow is 'heavy'
+# _CRSTELE   = random teleport
+# _CRSAGRV   = Aggrevate
+# weapon attributes 
+# WS = slays
+# _WSANIMAL
+# _WSEVIL 
+# _WSUNDEAD 
+# _WSDEMON 
+# _WSORC 
+# _WSTROLL 
+# _WSGIANT 
+# _WSDRAGON 
+# WK = Weapon Kills
+# _WKDRAGON    
+# _WKDEMON    
+# _WKUNDEAD    
+# _WIMPACT 
+# WB = Weapon Branded With 
+# _WBACID       
+# _WBELEC 
+# _WBFIRE 
+# _WBCOLD 
+# _WBPOIS
+# inventory amounts 
+# _ATELEPORT 
+# _AESCAPE 
+# _FUEL 
+# _HEAL 
+# _EZHEAL 
+# _ID 
+# _ASPEED 
+# STF = Staff
+# _ASTFMAGI   Amount Staff Charges 
+# _ASTFDEST   
+# _AMISSILES    only ones for your current bow count 
+# _ACUREPOIS 
+# _ADETTRAP 
+# _ADETDOOR 
+# _ADETEVIL 
+# _AMAGICMAP 
+# _ALITE
+# _ARECHARGE 
+# _APFE        = Protection from Evil 
+# _AGLYPH      = Rune Protection 
+# _ACCW        = CCW potions
+# _ACSW        = CSW potions (+ CLW if cut)
+# _ARESHEAT    = Resist Heat potion
+# _ARESCOLD    = Resist Cold potion
+# _ATELEPORTLVL = Scroll of Teleport Level
+# _HWORD	= Holy Word spell is legal
+# _ADETONATE    = POTIONS TO THROW
+# _DINV         = See Inv spell is legal
+
+# Formulas are in (ew) reverse polish notation.  
+# Here is a copy of the formulas as defaults.
+# If you alter yours and mess them up, look here
+# to return them to the normal value.
+#FORMULA000=_CLEVEL 30 >= _ACCW _ACSW + 2 >= ||
+#FORMULA001=_CLEVEL 30 >= _ACCW _ACSW + 3 >= ||
+#FORMULA002=_ATELEPORT _AESCAPE + 2 >= 
+#FORMULA003=_CLEVEL _DEPTH 4 - >= _CLEVEL 19 >= ||
+#FORMULA004=_CLEVEL _DEPTH 5 + >= _CLEVEL 19 >= ||
+#FORMULA005=_CLEVEL _DEPTH  >= _CLEVEL 19 >= ||
+#FORMULA006=_CLEVEL 30 >= _ACCW 5 >= ||
+#FORMULA007=_ESP _SINV || _DINV || 
+#FORMULA008=_RCOLD _RELEC + _RACID + 1 >=
+#FORMULA009=_CLEVEL _DEPTH 5 + >= _CLEVEL 38 > ||
+#FORMULA010=_CLEVEL _DEPTH 8 + >= _CLEVEL 38 > ||
+#FORMULA011=_CLEVEL 38 - 2 * 30 + _DEPTH >= _CLEVEL 45 > ||
+#FORMULA012=_CLEVEL _DEPTH 10 - >= _CLEVEL 43 > ||
+#FORMULA013=_CLEVEL _DEPTH 13 - >= _CLEVEL 46 > ||
+#FORMULA014=_CLEVEL _DEPTH 8 - >= _CLEVEL 41 > ||
+#FORMULA015=_CLEVEL _DEPTH 7 - >= _CLEVEL 40 > ||
+#FORMULA016=_ATELEPORT _AESCAPE + 6 >= 
+#FORMULA017=_CLEVEL 30 >= _ACCW _ACSW + 10 >= ||
+#FORMULA018=_SHLIFE _CLEVEL 50 = || 
+#FORMULA019=_HEAL _EZHEAL || 
+#FORMULA020=_HEAL 1 > _EZHEAL ||
+#FORMULA021=_WMAXDAM 20 * _BLOWS 1 + *
+#           see also formulas 81+
+#FORMULA022=_WBASEDAM _BLOWS * 1 * _WSANIMAL *
+#FORMULA023=_WBASEDAM _BLOWS * 140 * _WSEVIL * 
+#FORMULA024=_WBASEDAM _BLOWS * 150 * _WSUNDEAD * _WKUNDEAD ! *
+#FORMULA025=_WBASEDAM _BLOWS * 90 * _WSDEMON * _WKDEMON ! *
+#FORMULA026=_WBASEDAM _BLOWS * 20 * _WSORC * 
+#FORMULA027=_WBASEDAM _BLOWS * 45 * _WSTROLL * 
+#FORMULA028=_WBASEDAM _BLOWS * 180 * _WSDRAGON * _WKDRAGON ! *
+#FORMULA029=_WBASEDAM _BLOWS * 120 * _WSGIANT * 
+#FORMULA030=_WBASEDAM _BLOWS * 130 * _WBACID * 
+#FORMULA031=_WBASEDAM _BLOWS * 150 * _WBELEC * 
+#FORMULA032=_WBASEDAM _BLOWS * 90 * _WBFIRE * 
+#FORMULA033=_WBASEDAM _BLOWS * 90 * _WBCOLD * 
+#FORMULA034=_WBASEDAM _BLOWS * 250 * _WKDRAGON * 
+#      See formulas 81+
+#CND035=_STR 9 <
+#FORMULA036=_SPEED 110 < _SPEED 114 > || _SPEED 110 - * 2500 *
+#CND037=_MAXHP 500 >
+#FORMULA038=_MAXHP 500 - 100 *
+#CND039=_CLEVEL 25 <
+#CND040=_ESP !
+#FORMULA041=_CLEVEL 50 == _HLIFE && 200 * _CLEVEL 50 != _HLIFE && 2000 * +
+#FORMULA042=_RCOLD _RFIRE && _RACID && _RELEC && 10000 *
+#FORMULA043=_SSTR _SINT && _SWIS && _SCON && _SDEX && 1000 *
+#FORMULA044=_SINV _ESP || 100000 *
+#CND045=_CLEVEL 50 !=
+#CND046=_ARMOR 15 <
+#CND047=_ARMOR 15 >= _ARMOR 75 < &&
+#CND048=_ARMOR 75 >= 
+#FORMULA049=_RCOLD _RFIRE && _RACID && _RELEC && 100000 *
+#CND050=_CDEPTH 90 >
+#CND051=_REG 1 >= 
+#CND052=_ITEM419 0 ==
+#CND056=_CLEVEL 1 ==
+#CND057=_MAXSP 100 >
+#CND058=_STR 15 >
+#CND059 _IFIRE !
+#CND060 _ICOLD !
+#FORMULA061= _AHWORD 1000 >=
+#CND062=_RCONF ! _CLEVEL 35 < ||
+#CND063=_RCONF !
+#FORMULA064=_ADJSP 35000 *
+#CND065=_RBLIND !
+#FORMULA066=_ADJSP 35000 *
+#CND067=_RPOIS !
+#FORMULA068=_WBASEDAM _BLOWS * 90 * _WBPOIS * 
+#
+#FORMULA071=_ITEM324 _ITEM327 + 3 < _ITEM324 _ITEM327 + * 500 *
+#FORMULA072=_ITEM324 _ITEM327 + 3 >= 3 * 500 *
+#FORMULA073=_CDEPTH ! _CURHP 60 >= ||
+#FORMULA074=_CDEPTH ! _CURHP 80 >= ||
+#FORMULA075=_CDEPTH ! _CLEVEL 6 >= ||
+#FORMULA076=_CDEPTH ! _CLEVEL 15 >= ||
+#FORMULA077=_CDEPTH ! _CLEVEL 10 >= ||
+
+#CND080=_STR 7 >
+#
+#Also see formulas 22-34
+#FORMULA081=_WBASEDAM _BLOWS * 40 * _WSORC * _WSEVIL ! *
+#FORMULA082=_WBASEDAM _BLOWS * 45 * _WSTROLL * _WSEVIL ! *
+#FORMULA083=_WBASEDAM _BLOWS * 20 * _WSANIMAL * _WBELEC ! *
+#FORMULA085=_WBASEDAM _BLOWS * 175 * _WKUNDEAD * 
+#FORMULA086=_WBASEDAM _BLOWS * 150 * _WKDEMON * 
+#CND087= _CLEVEL 10 <=
+#FORMULA088= _FUEL 5 >= _LIGHT 1 >= || 
+#
+#(heal + ez_heal > 30) && (ez_heal > 20)
+#FORMULA111=_ITEM242 _EZHEAL + 30 > _EZHEAL 20 >= &&
+
+# things marked depth 99 and greater are ignored if Morgoth is dead
+REQ_CLASS999_DEPTH001_CURLITE=1 
+REQ_CLASS999_DEPTH001_FOOD=5 
+REQ_CLASS999_DEPTH002_CURLITE=2 
+REQ_CLASS999_DEPTH002_FORMULA088
+REQ_CLASS999_DEPTH002_RECALL=1 
+REQ_CLASS999_DEPTH002_CURHP=30 
+REQ_CLASS000_DEPTH003_CURHP=50
+REQ_CLASS000_DEPTH003_CLEVEL=4
+REQ_CLASS001_DEPTH003_CURHP=60
+REQ_CLASS001_DEPTH003_CLEVEL=11
+REQ_CLASS002_DEPTH003_CURHP=50
+REQ_CLASS002_DEPTH003_CLEVEL=9
+REQ_CLASS003_DEPTH003_CURHP=50
+REQ_CLASS003_DEPTH003_CLEVEL=8
+REQ_CLASS004_DEPTH003_CURHP=50
+REQ_CLASS004_DEPTH003_CLEVEL=4
+REQ_CLASS005_DEPTH003_CURHP=50
+REQ_CLASS005_DEPTH003_CLEVEL=4
+REQ_CLASS999_DEPTH003_FORMULA000
+
+# this isn't quite what the original code did but no matter, it is commmented
+# out in the original code.
+# REQ_CLASS999_DEPTH003_ID=2
+REQ_CLASS000_DEPTH005_FORMULA073
+REQ_CLASS000_DEPTH005_FORMULA075
+REQ_CLASS001_DEPTH005_FORMULA074
+REQ_CLASS001_DEPTH005_FORMULA076
+REQ_CLASS002_DEPTH005_FORMULA073
+REQ_CLASS002_DEPTH005_FORMULA076
+REQ_CLASS003_DEPTH005_FORMULA073
+REQ_CLASS003_DEPTH005_FORMULA077
+REQ_CLASS004_DEPTH005_FORMULA073
+REQ_CLASS004_DEPTH005_FORMULA075
+REQ_CLASS005_DEPTH005_FORMULA073
+REQ_CLASS005_DEPTH005_FORMULA075
+
+# this isn't quite what the original code did but no matter, it is commmented
+# out in the original code.
+# REQ_CLASS999_DEPTH005_ID=5
+REQ_CLASS999_DEPTH005_RECALL=2
+REQ_CLASS999_DEPTH010_FORMULA001
+REQ_CLASS999_DEPTH010_FORMULA002
+REQ_CLASS000_DEPTH011_FORMULA003
+REQ_CLASS001_DEPTH011_FORMULA004
+REQ_CLASS002_DEPTH011_FORMULA005
+REQ_CLASS003_DEPTH011_FORMULA005
+REQ_CLASS004_DEPTH011_FORMULA005
+REQ_CLASS005_DEPTH011_FORMULA005
+# REQ_CLASS999_DEPTH010_ID=10
+REQ_CLASS999_DEPTH010_FORMULA007
+
+REQ_CLASS999_DEPTH020_FORMULA006
+REQ_CLASS999_DEPTH020_FRACT=1
+
+REQ_CLASS999_DEPTH021_SRFIRE=1
+REQ_CLASS999_DEPTH021_FORMULA008
+REQ_CLASS999_DEPTH021_CSTR=7
+REQ_CLASS999_DEPTH021_CDEX=7
+REQ_CLASS999_DEPTH021_CCON=7
+REQ_CLASS001_DEPTH021_CINT=7
+REQ_CLASS003_DEPTH021_CINT=7
+REQ_CLASS004_DEPTH021_CINT=7
+REQ_CLASS002_DEPTH021_CWIS=7
+REQ_CLASS005_DEPTH021_CWIS=7
+REQ_CLASS000_DEPTH021_FORMULA009
+REQ_CLASS001_DEPTH021_FORMULA010
+REQ_CLASS001_DEPTH033_FORMULA011
+REQ_CLASS003_DEPTH021_FORMULA012
+REQ_CLASS002_DEPTH021_FORMULA013
+REQ_CLASS004_DEPTH021_FORMULA014
+REQ_CLASS005_DEPTH021_FORMULA015
+REQ_CLASS999_DEPTH026_FORMULA016
+REQ_CLASS999_DEPTH026_FORMULA017
+REQ_CLASS999_DEPTH030_ATELEPORT=1
+REQ_CLASS999_DEPTH030_SRCOLD=1
+REQ_CLASS999_DEPTH030_SRACID=1
+REQ_CLASS999_DEPTH030_SRELEC=1
+REQ_CLASS999_DEPTH034_CLEVEL=40
+REQ_CLASS999_DEPTH035_SRPOIS=1
+REQ_CLASS999_DEPTH040_CSTR=16
+REQ_CLASS999_DEPTH040_CDEX=16
+REQ_CLASS999_DEPTH040_CCON=16
+REQ_CLASS001_DEPTH040_CINT=16
+REQ_CLASS003_DEPTH040_CINT=16
+REQ_CLASS004_DEPTH040_CINT=16
+REQ_CLASS002_DEPTH040_CWIS=16
+REQ_CLASS005_DEPTH040_CWIS=16
+REQ_CLASS999_DEPTH046_SPEED=115
+REQ_CLASS999_DEPTH046_RCONF=1
+REQ_CLASS999_DEPTH046_CURHP=500
+REQ_CLASS999_DEPTH046_CSTR=58
+REQ_CLASS999_DEPTH046_CDEX=68
+REQ_CLASS001_DEPTH046_CINT=118
+REQ_CLASS003_DEPTH046_CINT=115
+REQ_CLASS004_DEPTH046_CINT=115
+REQ_CLASS002_DEPTH046_CWIS=118
+REQ_CLASS005_DEPTH046_CWIS=115
+REQ_CLASS999_DEPTH046_FORMULA018
+REQ_CLASS999_DEPTH046_FORMULA019
+REQ_CLASS999_DEPTH056_FORMULA020
+REQ_CLASS999_DEPTH056_SRBLIND=1
+#REQ_CLASS999_DEPTH056_SRNTHR=1
+REQ_CLASS999_DEPTH056_ESP=1
+REQ_CLASS999_DEPTH060_SPEED=120
+REQ_CLASS999_DEPTH060_SRKAOS=1
+REQ_CLASS999_DEPTH060_SRDIS=1
+REQ_CLASS999_DEPTH081_SPEED=130
+# p of restore Mana
+REQ_CLASS001_DEPTH100_ITEM266=10
+REQ_CLASS002_DEPTH100_ITEM266=10
+REQ_CLASS003_DEPTH100_ITEM266=10
+REQ_CLASS004_DEPTH100_ITEM266=10
+REQ_CLASS005_DEPTH100_ITEM266=10
+# p of Healing
+REQ_CLASS999_DEPTH100_FORMULA111
+# (heal + ez_heal > 30) && (ez_heal > 20)
+FORMULA111=_ITEM242 _EZHEAL + 30 > _EZHEAL 20 >= &&
+REQ_CLASS999_DEPTH100_EZHEAL=15
+# p of speed
+REQ_CLASS999_DEPTH100_ASPEED=10
+#REQ_CLASS999_DEPTH101_KING=1
+
+# Formulas are in (ew) reverse polish notation.  
+# Sorry, it was easiest to process.
+# I will comment translations above the formulas for 
+# people who are not reverse polish.
+# ((max_level >= 30) || ((ccw+csw) >= 2))
+FORMULA000=_CLEVEL 30 >= _ACCW _ACSW + 2 >= ||
+# ((max_level >= 30) || ((ccw+csw) >= 3))
+FORMULA001=_CLEVEL 30 >= _ACCW _ACSW + 3 >= ||
+# amt_teleport + amt_escape >= 2
+FORMULA002=_ATELEPORT _AESCAPE + 2 >= 
+# max_level >= depth - 4 || clevel >= 19
+FORMULA003=_CLEVEL _DEPTH 4 - >= _CLEVEL 19 >= ||
+# max_level >= depth + 5 || clevel >= 19
+FORMULA004=_CLEVEL _DEPTH 5 + >= _CLEVEL 19 >= ||
+# max_level >= depth || clevel >= 19
+FORMULA005=_CLEVEL _DEPTH  >= _CLEVEL 19 >= ||
+# ((max_level >= 30) || (CCW >= 5))
+FORMULA006=_CLEVEL 30 >= _ACCW 5 >= ||
+# see invis or telepathy
+FORMULA007=_ESP _SINV || _DINV ||
+# one resist (other than fire)
+FORMULA008=_RCOLD _RELEC + _RACID + 1 >=
+# max_level >= depth + 5 || max_level > 38
+FORMULA009=_CLEVEL _DEPTH 5 + >= _CLEVEL 38 > ||
+# max_level >= depth + 8 || max_level > 38
+FORMULA010=_CLEVEL _DEPTH 8 + >= _CLEVEL 38 > ||
+# (max_level-38)*2+30 <= dlevel (or clevel > 45)
+FORMULA011=_CLEVEL 38 - 2 * 30 + _DEPTH >= _CLEVEL 45 > ||
+# max_level >= depth - 10 || max_level > 43
+FORMULA012=_CLEVEL _DEPTH 10 - >= _CLEVEL 43 > ||
+# max_level >= depth - 13 || max_level > 46
+FORMULA013=_CLEVEL _DEPTH 13 - >= _CLEVEL 46 > ||
+# max_level >= depth - 8 || max_level >= 41
+FORMULA014=_CLEVEL _DEPTH 8 - >= _CLEVEL 41 > ||
+# max_level >= depth - 7 || max_level >= 40
+FORMULA015=_CLEVEL _DEPTH 7 - >= _CLEVEL 40 > ||
+
+# amt_teleport + amt_escape >= 6
+FORMULA016=_ATELEPORT _AESCAPE + 6 >= 
+
+# ((max_level >= 30) || ((ccw+csw) >= 10))
+FORMULA017=_CLEVEL 30 >= _ACCW _ACSW + 10 >= ||
+
+# if below level 50, must have hold life
+FORMULA018=_SHLIFE _CLEVEL 50 = || 
+
+# have some heal or ez heal
+FORMULA019=_HEAL _EZHEAL || 
+
+# have 2 heal or 1 ez heal
+FORMULA020=_HEAL 1 > _EZHEAL ||
+
+# Priests have Holy Word
+CND061= _AHWORD 1000 >=
+
+# HP must be more than x unless we are checking from town (_CDEPTH 0)
+FORMULA073=_CDEPTH ! _CURHP 60 >= ||
+FORMULA074=_CDEPTH ! _CURHP 80 >= ||
+# player level must be more than x0 unless we are checking from town (_CDEPTH 0)
+FORMULA075=_CDEPTH ! _CLEVEL 6 >= ||
+FORMULA076=_CDEPTH ! _CLEVEL 15 >= ||
+FORMULA077=_CDEPTH ! _CLEVEL 10 >= ||
+
+#BI_FUEL >= 5 || BI_LIGHT >= 1
+FORMULA088= _FUEL 5 >= _LIGHT 1 >= ||
+
+# Power calculations
+
+# CHANGE THIS AT YOUR OWN RISK.  Changes here can cause VERY STUPID borg
+# behavior.
+
+# Stuff left in code:  1) heavy armor gives a sliding loss of power
+#                      2) bad gloves on a mage, -275K
+#                      3) bad weapon on a priest, -75K
+#                      4) special bonus for one item with RNeth RDisn RChaos = 25K
+#                      5) special bonus for one item with RNeth RDisn = 15K
+#                      6) CSW reward (complex)
+#                      7) low level spell books (complex... need to know what you can cast)
+#                      8) state specific things.  This includes, enchant weapon scrolls when
+#                         weapon needs enchanting, restore stat potions, cures when injured in town,
+#                         and extra food when hungry
+#                      9) weight/encumbrance penalty (too complex)
+#                     10) reward for empty slots (to avoid carrying worthless junk) 4K/slot
+#
+
+# POWER_CLASSxxx_DEPTHxxx_CNDxxx_RANGExxxTOxxx_(special value)=xxx EACH
+
+# NOTE:  CND is optional.  It refers to a _FORMULA line later.  The formula will be 
+#        evalulated and, if it is 0, the power calc is skipped
+# NOTE:  EACH is optional. 
+# NOTE:  with range, only amounts in that range will count.
+#        so if range is RANGE006TO007 and you have 12, you get
+#        2 * the 'power' with 'each' or nothing if not each
+#        Range is ignored for formulas (gives an error)
+# NOTE:  _RANGE000TO999 is a special case. it means 'no range used'
+
+# things marked depth 99 and greater are ignored if Morgoth is dead
+
+# 20 per damage point * (blows + 1)
+POWER_CLASS999_DEPTH000_RANGE000TO999_FORMULA021
+FORMULA021=_WMAXDAM 20 * _BLOWS 1 + *
+POWER_CLASS999_DEPTH000_RANGE000TO999_TOHIT= 750 EACH
+POWER_CLASS999_DEPTH000_RANGE000TO999_WTOHIT= 750 EACH
+# slays and such... yikes!
+POWER_CLASS999_DEPTH000_RANGE000TO999_FORMULA022
+POWER_CLASS999_DEPTH000_RANGE000TO999_FORMULA083
+#Brands rewarded if Kill Brand not there.
+#SAnimal is rewarded only if weapon is not electric brand.
+FORMULA022=_WBASEDAM _BLOWS * 1 * _WSANIMAL *
+FORMULA083=_WBASEDAM _BLOWS * 20 * _WSANIMAL * _WBELEC ! *
+POWER_CLASS999_DEPTH000_RANGE000TO999_FORMULA023
+FORMULA023=_WBASEDAM _BLOWS * 140 * _WSEVIL *
+POWER_CLASS999_DEPTH000_RANGE000TO999_FORMULA024
+FORMULA024=_WBASEDAM _BLOWS * 150 * _WSUNDEAD * _WKUNDEAD ! *
+POWER_CLASS999_DEPTH000_RANGE000TO999_FORMULA025
+FORMULA025=_WBASEDAM _BLOWS * 90 * _WSDEMON * _WKDEMON ! *
+#SOrc is rewarded more if slay evil is not possesed
+POWER_CLASS999_DEPTH000_RANGE000TO999_FORMULA026
+POWER_CLASS999_DEPTH000_RANGE000TO999_FORMULA081
+FORMULA026=_WBASEDAM _BLOWS * 20 * _WSORC * 
+FORMULA081=_WBASEDAM _BLOWS * 20 * _WSORC * _WSEVIL ! *
+#STroll is rewarded more if slay evil is not possesed
+POWER_CLASS999_DEPTH000_RANGE000TO999_FORMULA027
+POWER_CLASS999_DEPTH000_RANGE000TO999_FORMULA082
+FORMULA027=_WBASEDAM _BLOWS * 45 * _WSTROLL * 
+FORMULA082=_WBASEDAM _BLOWS * 45 * _WSTROLL * _WSEVIL ! *
+POWER_CLASS999_DEPTH000_RANGE000TO999_FORMULA028
+FORMULA028=_WBASEDAM _BLOWS * 180 * _WSDRAGON * _WKDRAGON ! *
+POWER_CLASS999_DEPTH000_RANGE000TO999_FORMULA029
+FORMULA029=_WBASEDAM _BLOWS * 120 * _WSGIANT * 
+POWER_CLASS999_DEPTH000_RANGE000TO999_FORMULA030
+FORMULA030=_WBASEDAM _BLOWS * 130 * _WBACID * 
+POWER_CLASS999_DEPTH000_RANGE000TO999_FORMULA031
+FORMULA031=_WBASEDAM _BLOWS * 150 * _WBELEC * 
+POWER_CLASS999_DEPTH000_RANGE000TO999_FORMULA032
+FORMULA032=_WBASEDAM _BLOWS * 90 * _WBFIRE * 
+POWER_CLASS999_DEPTH000_RANGE000TO999_FORMULA033
+FORMULA033=_WBASEDAM _BLOWS * 90 * _WBCOLD * 
+POWER_CLASS999_DEPTH000_RANGE000TO999_FORMULA033
+FORMULA068=_WBASEDAM _BLOWS * 90 * _WBPOIS * 
+#Kills brands
+POWER_CLASS999_DEPTH000_RANGE000TO999_FORMULA034
+FORMULA034=_WBASEDAM _BLOWS * 250 * _WKDRAGON * 
+POWER_CLASS999_DEPTH000_RANGE000TO999_FORMULA085
+FORMULA085=_WBASEDAM _BLOWS * 175 * _WKUNDEAD * 
+POWER_CLASS999_DEPTH000_RANGE000TO999_FORMULA086
+FORMULA086=_WBASEDAM _BLOWS * 150 * _WKDEMON * 
+
+POWER_CLASS999_DEPTH000_RANGE000TO999_WIMPACT=5000
+POWER_CLASS999_DEPTH000_CND080_RANGE000TO999_HEAVYWEPON=-8000
+CND080=_STR 7 >
+POWER_CLASS999_DEPTH000_RANGE000TO999_HEAVYBOW=-500000
+
+# Borg worships num_blow, even on broken swords.
+# kind 47 is a broken sword usually 1d2 in damage 
+POWER_CLASS999_DEPTH000_RANGE000TO999_WITEM030=-90000
+POWER_CLASS999_DEPTH000_RANGE000TO999_WITEM047=-90000
+POWER_CLASS999_DEPTH000_RANGE000TO999_WITEM390=-90000
+
+# slings force you to carry heavy ammo.  Penalty for that unles you have lots of str
+POWER_CLASS999_DEPTH000_CND035_RANGE000TO999_WITEM077= -5000
+CND035=_STR 9 <
+
+#We want the borg to use whips and daggers at first
+POWER_CLASS999_DEPTH000_CND087_RANGE000TO999_BLOWS= 45000 EACH
+CND087= _CLEVEL 10 <=
+
+# bow damage
+POWER_CLASS999_DEPTH000_RANGE000TO999_BMAXDAM= 9 EACH
+POWER_CLASS999_DEPTH000_RANGE000TO999_TOHIT= 250 EACH
+POWER_CLASS999_DEPTH000_RANGE000TO999_BTOHIT= 250 EACH
+#We want low level dudes to really like ranged weaps
+POWER_CLASS999_DEPTH000_CND087_RANGE000TO999_BMAXDAM= 300 EACH
+POWER_CLASS999_DEPTH000_CND087_RANGE000TO999_TOHIT= 300 EACH
+POWER_CLASS999_DEPTH000_CND087_RANGE000TO999_BTOHIT= 300 EACH
+#We want low level dudes to buy a sling asap
+POWER_CLASS999_DEPTH000_CND087_RANGE000TO999_WITEM073= 3000 
+POWER_CLASS999_DEPTH000_CND087_RANGE000TO999_WITEM074= 3000 
+POWER_CLASS999_DEPTH000_CND087_RANGE000TO999_WITEM075= 3000 
+POWER_CLASS999_DEPTH000_CND087_RANGE000TO999_WITEM076= 3000 
+POWER_CLASS999_DEPTH000_CND087_RANGE000TO999_WITEM077= 3000 
+
+
+# Rangers perfer bows
+POWER_CLASS004_DEPTH000_RANGE000TO999_WITEM073= 30000
+POWER_CLASS004_DEPTH000_RANGE000TO999_WITEM074= 30000
+
+# Dragon armor liked for the activation.  (AJG: I adjusted this slightly)
+POWER_CLASS999_DEPTH000_RANGE000TO999_WITEM400=1100
+POWER_CLASS999_DEPTH000_RANGE000TO999_WITEM401=1100
+POWER_CLASS999_DEPTH000_RANGE000TO999_WITEM402=1100
+POWER_CLASS999_DEPTH000_RANGE000TO999_WITEM403=1100
+POWER_CLASS999_DEPTH000_RANGE000TO999_WITEM404=2750
+POWER_CLASS999_DEPTH000_RANGE000TO999_WITEM405=3250
+POWER_CLASS999_DEPTH000_RANGE000TO999_WITEM406=5550
+POWER_CLASS999_DEPTH000_RANGE000TO999_WITEM407=5650
+POWER_CLASS999_DEPTH000_RANGE000TO999_WITEM408=5750
+POWER_CLASS999_DEPTH000_RANGE000TO999_WITEM409=5850
+POWER_CLASS999_DEPTH000_RANGE000TO999_WITEM410=5950
+POWER_CLASS999_DEPTH000_RANGE000TO999_WITEM411=5975
+POWER_CLASS999_DEPTH000_RANGE000TO999_WITEM412=5999
+
+# Light bonuses
+POWER_CLASS999_DEPTH000_RANGE000TO000_CURLITE=-3000
+POWER_CLASS999_DEPTH000_RANGE001TO003_CURLITE=500000 EACH
+POWER_CLASS999_DEPTH000_RANGE003TO099_CURLITE=580000
+POWER_CLASS999_DEPTH000_RANGE000TO999_ARTIFACT001=8000
+POWER_CLASS999_DEPTH000_RANGE000TO999_ARTIFACT002=10000
+POWER_CLASS999_DEPTH000_RANGE000TO999_ARTIFACT003=12000
+
+# Speed formulas are slightly complex.  Note negative for poor speed
+# 110 is the base speed
+# (Speed - 110) * 2500
+POWER_CLASS999_DEPTH000_RANGE000TO999_FORMULA036
+FORMULA036=_SPEED 110 < _SPEED 114 > || _SPEED 110 - * 2500 *
+POWER_CLASS999_DEPTH000_RANGE111TO999_SPEED= 1000 EACH
+POWER_CLASS999_DEPTH000_RANGE110TO114_SPEED= 55000
+POWER_CLASS999_DEPTH000_RANGE115TO119_SPEED= 75000
+POWER_CLASS999_DEPTH000_RANGE120TO124_SPEED= 100000
+POWER_CLASS999_DEPTH000_RANGE125TO129_SPEED= 125000
+POWER_CLASS999_DEPTH000_RANGE130TO134_SPEED= 140000
+POWER_CLASS999_DEPTH000_RANGE135TO139_SPEED= 155000
+POWER_CLASS999_DEPTH000_RANGE140TO144_SPEED= 165000
+POWER_CLASS999_DEPTH000_RANGE145TO149_SPEED= 170000
+POWER_CLASS999_DEPTH000_RANGE150TO999_SPEED= 175000
+
+# stat bonuses
+POWER_CLASS999_DEPTH000_RANGE000TO999_STR= 100 EACH
+# note: division of bonus based on class
+POWER_CLASS001_DEPTH000_RANGE000TO999_INT= 200 EACH
+POWER_CLASS002_DEPTH000_RANGE000TO999_WIS= 200 EACH
+POWER_CLASS003_DEPTH000_RANGE000TO999_INT= 200 EACH
+POWER_CLASS004_DEPTH000_RANGE000TO999_INT= 200 EACH
+POWER_CLASS005_DEPTH000_RANGE000TO999_WIS= 200 EACH
+# we can't directly give a bonus for mana or your bonus 
+# would adjust as you cast spells.  Instead we give a 
+# bonus for 'mana adjustment' based on stats 
+POWER_CLASS001_DEPTH000_RANGE000TO999_ADJSP= 255 EACH
+POWER_CLASS002_DEPTH000_RANGE000TO999_ADJSP= 250 EACH
+POWER_CLASS003_DEPTH000_RANGE000TO999_ADJSP= 155 EACH
+POWER_CLASS004_DEPTH000_RANGE000TO999_ADJSP= 155 EACH
+POWER_CLASS005_DEPTH000_RANGE000TO999_ADJSP= 150 EACH
+# The fail rate is based on the table adj_mag_stat[]
+POWER_CLASS001_DEPTH000_RANGE000TO999_SFAIL1= 5010 EACH
+POWER_CLASS002_DEPTH000_RANGE000TO999_SFAIL1= 5000 EACH
+POWER_CLASS003_DEPTH000_RANGE000TO999_SFAIL1= 3010 EACH
+POWER_CLASS004_DEPTH000_RANGE000TO999_SFAIL1= 3010 EACH
+POWER_CLASS005_DEPTH000_RANGE000TO999_SFAIL1= 3000 EACH
+# This is the 'min fail rate' and it is nice if it is 0
+# (note range 0 to 0) (I hope this works)
+POWER_CLASS001_DEPTH000_RANGE000TO002_SFAIL2= 70000
+POWER_CLASS002_DEPTH000_RANGE000TO002_SFAIL2= 70000
+# Priests with Holy Word legal try to maximize WIS
+POWER_CLASS002_DEPTH000_CND061_RANGE000TO999_FORMULA064
+FORMULA064=_ADJSP 35000 *
+
+POWER_CLASS999_DEPTH000_RANGE000TO999_DEX= 120 EACH
+# like spell points, hit points are 'powered' based on your hp bonus
+# which is based on your con and adj_con_mhp[]
+POWER_CLASS999_DEPTH000_RANGE000TO999_CON= 150 EACH
+# first 500 hp's are more important than the next 500
+POWER_CLASS999_DEPTH000_RANGE000TO500_MAXHP= 350 EACH
+# can't use the range because of the 999 max :-(
+POWER_CLASS999_DEPTH000_CND037_RANGE000TO999_FORMULA038
+CND037=_MAXHP 500 >
+FORMULA038=_MAXHP 500 - 100 *
+# charisma is only nice at low levels
+POWER_CLASS999_DEPTH000_CND039_RANGE000TO999_CHR= 2 EACH
+CND039=_CLEVEL 25 <
+
+# 'minor' skills
+POWER_CLASS999_DEPTH000_RANGE000TO999_DIS= 2 EACH
+POWER_CLASS999_DEPTH000_RANGE000TO999_DEV= 25 EACH
+POWER_CLASS999_DEPTH000_RANGE000TO999_SAV= 25 EACH
+POWER_CLASS999_DEPTH000_RANGE100TO999_SAV= 10000
+POWER_CLASS999_DEPTH000_RANGE000TO999_STL= 2 EACH
+POWER_CLASS999_DEPTH000_RANGE000TO999_SRCH= 1 EACH
+POWER_CLASS999_DEPTH000_RANGE000TO999_SERCHFREQ= 1 EACH
+POWER_CLASS999_DEPTH000_RANGE000TO999_THN= 5 EACH
+POWER_CLASS999_DEPTH000_RANGE000TO999_THB= 35 EACH
+POWER_CLASS999_DEPTH000_RANGE000TO999_THT= 2 EACH
+POWER_CLASS999_DEPTH000_RANGE000TO999_DIG= 2 EACH
+
+# other powers
+POWER_CLASS999_DEPTH000_RANGE000TO999_SDIG= 750
+
+# note: after depth 20 you only get 50 for Feather fall (500-450)
+POWER_CLASS999_DEPTH000_RANGE000TO999_FEATH= 500
+POWER_CLASS999_DEPTH020_RANGE000TO999_FEATH= -450
+POWER_CLASS999_DEPTH000_RANGE000TO999_LIGHT= 2000
+# 500 for ESP & See inv, 5000 for just see inv (ESP is rewarded later)
+POWER_CLASS999_DEPTH000_RANGE000TO999_SINV= 500
+POWER_CLASS999_DEPTH000_CND040_RANGE000TO999_SINV= 4500
+CND040=_ESP !
+POWER_CLASS999_DEPTH000_RANGE000TO999_FRACT= 10000
+# only 200 pts for Hold Life if you have maxed out your level
+POWER_CLASS999_DEPTH000_RANGE000TO999_FORMULA041
+FORMULA041=_CLEVEL 50 == _HLIFE && 200 * _CLEVEL 50 != _HLIFE && 2000 * +
+POWER_CLASS999_DEPTH000_RANGE000TO999_REG= 2000
+POWER_CLASS999_DEPTH000_RANGE000TO999_ESP= 80000
+POWER_CLASS999_DEPTH000_RANGE000TO999_ICOLD= 50000
+POWER_CLASS999_DEPTH000_RANGE000TO999_IELEC= 25000
+POWER_CLASS999_DEPTH000_RANGE000TO999_IFIRE= 70000
+POWER_CLASS999_DEPTH000_RANGE000TO999_IACID= 30000
+POWER_CLASS999_DEPTH000_RANGE000TO999_RCOLD= 3000
+POWER_CLASS999_DEPTH000_RANGE000TO999_RELEC= 4000
+POWER_CLASS999_DEPTH000_RANGE000TO999_RACID= 6000
+POWER_CLASS999_DEPTH000_RANGE000TO999_RFIRE= 8000
+# special bonus for base 4 resists
+POWER_CLASS999_DEPTH000_RANGE000TO999_FORMULA042
+FORMULA042=_RCOLD _RFIRE && _RACID && _RELEC && 10000 *
+POWER_CLASS999_DEPTH000_RANGE000TO999_RPOIS= 20000
+POWER_CLASS999_DEPTH000_RANGE000TO999_RSND= 3500
+POWER_CLASS999_DEPTH000_RANGE000TO999_RLITE= 800
+POWER_CLASS999_DEPTH000_RANGE000TO999_RDARK= 800
+POWER_CLASS999_DEPTH000_RANGE000TO999_RKAOS= 5000
+# note, this is especially high because some items (CCW) give 
+# extra bonuses if you don't have RCONF, so we need to ensure
+# you will not do that -instead- of getting RCONF
+POWER_CLASS999_DEPTH000_RANGE000TO999_RCONF= 80000
+# and a little extra for a mage.
+POWER_CLASS001_DEPTH000_RANGE000TO999_RCONF= 2000
+POWER_CLASS999_DEPTH000_RANGE000TO999_RDIS= 5000
+POWER_CLASS999_DEPTH000_RANGE000TO999_RSHRD= 100
+POWER_CLASS999_DEPTH000_RANGE000TO999_RNXUS= 100
+POWER_CLASS999_DEPTH000_RANGE000TO999_RBLIND= 5000
+POWER_CLASS999_DEPTH000_RANGE000TO999_RNTHR= 5500
+POWER_CLASS999_DEPTH000_RANGE000TO999_RFEAR= 2000
+# sustains
+# note: don't care about SCHR
+POWER_CLASS999_DEPTH000_RANGE000TO999_SSTR= 50
+POWER_CLASS999_DEPTH000_RANGE000TO999_SINT= 50
+POWER_CLASS999_DEPTH000_RANGE000TO999_SWIS= 50
+POWER_CLASS999_DEPTH000_RANGE000TO999_SCON= 50
+POWER_CLASS999_DEPTH000_RANGE000TO999_SDEX= 50
+# special bonus for sustain all
+POWER_CLASS999_DEPTH000_RANGE000TO999_FORMULA043
+FORMULA043=_SSTR _SINT && _SWIS && _SCON && _SDEX && 1000 *
+
+# special rewards for 'must have' (based on requirements above)
+POWER_CLASS999_DEPTH009_RANGE000TO999_FORMULA044
+FORMULA044=_SINV _ESP || 100000 *
+POWER_CLASS999_DEPTH019_RANGE000TO999_FRACT= 100000
+POWER_CLASS999_DEPTH024_RANGE000TO999_RFIRE= 100000
+POWER_CLASS999_DEPTH035_RANGE000TO999_RPOIS= 100000
+POWER_CLASS999_DEPTH030_RANGE000TO999_RELEC= 100000
+POWER_CLASS999_DEPTH030_RANGE000TO999_RACID= 100000
+POWER_CLASS999_DEPTH030_RANGE000TO999_RCOLD= 100000
+POWER_CLASS999_DEPTH040_RANGE000TO999_RCONF= 100000
+POWER_CLASS999_DEPTH045_CND045_RANGE000TO999_HLIFE= 100000
+CND045=_CLEVEL 50 !=
+POWER_CLASS999_DEPTH045_RANGE115TO999_SPEED= 100000
+# note: Resist nether shows up several times... it is important
+POWER_CLASS999_DEPTH049_RANGE000TO999_RNTHR= 55000
+POWER_CLASS999_DEPTH049_RANGE000TO999_RSND= 100000
+POWER_CLASS999_DEPTH054_RANGE000TO999_RBLIND= 100000
+POWER_CLASS999_DEPTH054_RANGE000TO999_ESP= 100000
+POWER_CLASS999_DEPTH059_RANGE000TO999_RNTHR= 55000
+POWER_CLASS999_DEPTH059_RANGE000TO999_RKAOS= 104000
+POWER_CLASS999_DEPTH059_RANGE000TO999_RDIS= 90000
+# speed above 120 gets a bonus
+POWER_CLASS999_DEPTH059_RANGE120TO999_SPEED= 100000
+# speed above 130 gets a bonus
+POWER_CLASS999_DEPTH079_RANGE130TO999_SPEED= 100000
+POWER_CLASS999_DEPTH079_RANGE000TO999_RNTHR= 15000
+POWER_CLASS999_DEPTH079_RANGE000TO999_RDARK= 25000
+# Warrior's get an extra bonus for speed about 140
+POWER_CLASS000_DEPTH079_RANGE140TO999_SPEED= 100000
+
+# AC Bonuses (dependant on level)
+POWER_CLASS999_DEPTH000_CND046_RANGE000TO999_ARMOR= 2000 EACH
+CND046=_ARMOR 15 <
+POWER_CLASS999_DEPTH000_CND047_RANGE000TO999_ARMOR= 500 EACH
+CND047=_ARMOR 15 >= _ARMOR 75 < &&
+POWER_CLASS999_DEPTH000_CND048_RANGE000TO999_ARMOR= 100 EACH
+CND048=_ARMOR 75 >= 
+
+# cursed items
+POWER_CLASS999_DEPTH000_RANGE000TO999_CRSTELE= -100000
+POWER_CLASS000_DEPTH000_RANGE000TO999_CRSAGRV= -80000
+POWER_CLASS001_DEPTH000_RANGE000TO999_CRSAGRV= -8000
+POWER_CLASS002_DEPTH000_RANGE000TO999_CRSAGRV= -80000
+POWER_CLASS003_DEPTH000_RANGE000TO999_CRSAGRV= -80000
+POWER_CLASS004_DEPTH000_RANGE000TO999_CRSAGRV= -80000
+POWER_CLASS005_DEPTH000_RANGE000TO999_CRSAGRV= -80000
+
+# Depth 99+, assume going after Morgoth.
+# note: these are ignored if Morgoth is dead
+#POWER_CLASS999_DEPTH099_RANGE000TO999_SSTR= 35000
+#POWER_CLASS001_DEPTH099_RANGE000TO999_SINT= 45000
+#POWER_CLASS003_DEPTH099_RANGE000TO999_SINT= 45000
+#POWER_CLASS004_DEPTH099_RANGE000TO999_SINT= 45000
+#POWER_CLASS002_DEPTH099_RANGE000TO999_SWIS= 35000
+#POWER_CLASS005_DEPTH099_RANGE000TO999_SWIS= 35000
+#POWER_CLASS999_DEPTH099_RANGE000TO999_SCON= 55000
+#POWER_CLASS999_DEPTH099_RANGE000TO999_SDEX= 15000
+#POWER_CLASS999_DEPTH099_RANGE000TO999_WSEVIL= 15000
+#POWER_CLASS999_DEPTH099_RANGE000TO999_RNTHR= 15000
+#POWER_CLASS999_DEPTH099_RANGE000TO999_RDIS= 15000
+#POWER_CLASS999_DEPTH099_RANGE000TO999_RPOIS= 100000
+#Pots of Berserk Str for non Priest/Mage
+POWER_CLASS000_DEPTH099_RANGE000TO999_ITEM258= 2000 EACH
+POWER_CLASS003_DEPTH099_RANGE000TO999_ITEM258= 2000 EACH
+POWER_CLASS004_DEPTH099_RANGE000TO999_ITEM258= 2000 EACH
+POWER_CLASS005_DEPTH099_RANGE000TO999_ITEM258= 2000 EACH
+# Mass Banishment Scrolls
+POWER_CLASS999_DEPTH099_RANGE000TO999_AMASSBAN= 2500 EACH
+# Heal Pots
+POWER_CLASS005_DEPTH099_RANGE000TO999_ITEM242= 2000 EACH
+# Res Mana pots
+POWER_CLASS005_DEPTH099_RANGE000TO999_ITEM266= 2000 EACH
+#POWER_CLASS999_DEPTH099_RANGE000TO999_FORMULA049
+FORMULA049=_RCOLD _RFIRE && _RACID && _RELEC && 100000 *
+
+#POWER_CLASS999_DEPTH099_RANGE000TO999_AGLYPH= 2500 EACH
+
+# artifact activation bonuses
+POWER_CLASS000_DEPTH000_RANGE000TO999_ARTIFACT001= 1500
+POWER_CLASS001_DEPTH000_RANGE000TO999_ARTIFACT001= 500
+POWER_CLASS002_DEPTH000_RANGE000TO999_ARTIFACT001= 500
+POWER_CLASS003_DEPTH000_RANGE000TO999_ARTIFACT001= 1000
+POWER_CLASS004_DEPTH000_RANGE000TO999_ARTIFACT001= 1000
+POWER_CLASS005_DEPTH000_RANGE000TO999_ARTIFACT001= 1000
+POWER_CLASS999_DEPTH000_RANGE000TO999_ARTIFACT002= 1200
+POWER_CLASS000_DEPTH000_RANGE000TO999_ARTIFACT001= 2000
+POWER_CLASS001_DEPTH000_RANGE000TO999_ARTIFACT003= 2000
+POWER_CLASS002_DEPTH000_RANGE000TO999_ARTIFACT003= 1500
+POWER_CLASS003_DEPTH000_RANGE000TO999_ARTIFACT003= 2000
+POWER_CLASS004_DEPTH000_RANGE000TO999_ARTIFACT003= 2000
+POWER_CLASS005_DEPTH000_RANGE000TO999_ARTIFACT003= 2000
+POWER_CLASS999_DEPTH000_RANGE000TO999_ARTIFACT067= 527
+POWER_CLASS999_DEPTH000_RANGE000TO999_ARTIFACT068= 518
+POWER_CLASS999_DEPTH000_RANGE000TO999_ARTIFACT069= 524
+POWER_CLASS999_DEPTH000_RANGE000TO999_ARTIFACT070= 596
+POWER_CLASS999_DEPTH000_RANGE000TO999_ARTIFACT072= 554
+POWER_CLASS999_DEPTH000_RANGE000TO999_ARTIFACT082= 700
+# NOTE: Don't do this if you are using random artifacts (ringil speed bonus)
+# POWER_CLASS999_DEPTH000_RANGE000TO999_ARTIFACT082= 25000
+POWER_CLASS999_DEPTH000_RANGE000TO999_ARTIFACT083= 644
+POWER_CLASS999_DEPTH000_RANGE000TO999_ARTIFACT093= 620
+POWER_CLASS999_DEPTH000_RANGE000TO999_ARTIFACT097= 700
+POWER_CLASS999_DEPTH000_RANGE000TO999_ARTIFACT112= 700
+POWER_CLASS999_DEPTH000_RANGE000TO999_ARTIFACT115= 644
+POWER_CLASS999_DEPTH000_RANGE000TO999_ARTIFACT122= 590
+POWER_CLASS999_DEPTH000_RANGE000TO999_ARTIFACT016= 800
+POWER_CLASS999_DEPTH000_RANGE000TO999_ARTIFACT053= 507
+POWER_CLASS999_DEPTH000_RANGE000TO999_ARTIFACT054= 540
+POWER_CLASS999_DEPTH000_RANGE000TO999_ARTIFACT055= 527
+POWER_CLASS999_DEPTH000_RANGE000TO999_ARTIFACT056= 518
+POWER_CLASS999_DEPTH000_RANGE000TO999_ARTIFACT057= 522
+POWER_CLASS999_DEPTH000_RANGE000TO999_ARTIFACT059= 650
+# NOTE: Don't do this if you are using random artifacts (Feanor special bonus)
+# POWER_CLASS999_DEPTH000_RANGE000TO999_ARTIFACT060= 5000
+# Ok so I fudged this one: Dispel Evil (it was a nice formula in the code)
+# I took a random average
+POWER_CLASS999_DEPTH000_RANGE000TO999_ARTIFACT005= 650
+POWER_CLASS999_DEPTH000_RANGE000TO999_ARTIFACT010= 740
+POWER_CLASS999_DEPTH000_RANGE000TO999_ARTIFACT011= 900
+POWER_CLASS999_DEPTH000_RANGE000TO999_ARTIFACT012= 1000
+POWER_CLASS999_DEPTH000_RANGE000TO999_ARTIFACT013= 999999
+POWER_CLASS000_DEPTH000_RANGE000TO999_ARTIFACT108= 1000
+POWER_CLASS001_DEPTH000_RANGE000TO999_ARTIFACT108= 500
+POWER_CLASS002_DEPTH000_RANGE000TO999_ARTIFACT108= 1000
+POWER_CLASS003_DEPTH000_RANGE000TO999_ARTIFACT108= 1000
+POWER_CLASS004_DEPTH000_RANGE000TO999_ARTIFACT108= 1000
+POWER_CLASS005_DEPTH000_RANGE000TO999_ARTIFACT108= 1000
+POWER_CLASS999_DEPTH000_RANGE000TO999_ARTIFACT017= 650
+POWER_CLASS000_DEPTH000_RANGE000TO999_ARTIFACT017= 25000
+POWER_CLASS003_DEPTH000_RANGE000TO999_ARTIFACT017= 25000
+POWER_CLASS005_DEPTH000_RANGE000TO999_ARTIFACT017= 25000
+POWER_CLASS999_DEPTH000_RANGE000TO999_ARTIFACT044= 650
+POWER_CLASS000_DEPTH000_RANGE000TO999_ARTIFACT044= 25000
+POWER_CLASS003_DEPTH000_RANGE000TO999_ARTIFACT044= 25000
+POWER_CLASS005_DEPTH000_RANGE000TO999_ARTIFACT044= 25000
+POWER_CLASS000_DEPTH000_RANGE000TO999_ARTIFACT045= 7500
+POWER_CLASS001_DEPTH000_RANGE000TO999_ARTIFACT045= 500
+POWER_CLASS002_DEPTH000_RANGE000TO999_ARTIFACT045= 500
+POWER_CLASS003_DEPTH000_RANGE000TO999_ARTIFACT045= 700
+POWER_CLASS004_DEPTH000_RANGE000TO999_ARTIFACT045= 700
+POWER_CLASS005_DEPTH000_RANGE000TO999_ARTIFACT045= 700
+POWER_CLASS000_DEPTH000_RANGE000TO999_ARTIFACT046= 600
+POWER_CLASS001_DEPTH000_RANGE000TO999_ARTIFACT046= 500
+POWER_CLASS002_DEPTH000_RANGE000TO999_ARTIFACT046= 600
+POWER_CLASS003_DEPTH000_RANGE000TO999_ARTIFACT046= 600
+POWER_CLASS004_DEPTH000_RANGE000TO999_ARTIFACT046= 600
+POWER_CLASS005_DEPTH000_RANGE000TO999_ARTIFACT046= 600
+POWER_CLASS000_DEPTH000_RANGE000TO999_ARTIFACT061= 700
+POWER_CLASS001_DEPTH000_RANGE000TO999_ARTIFACT061= 500
+POWER_CLASS002_DEPTH000_RANGE000TO999_ARTIFACT061= 500
+POWER_CLASS003_DEPTH000_RANGE000TO999_ARTIFACT061= 700
+POWER_CLASS004_DEPTH000_RANGE000TO999_ARTIFACT061= 700
+POWER_CLASS005_DEPTH000_RANGE000TO999_ARTIFACT061= 700
+POWER_CLASS999_DEPTH000_RANGE000TO999_ARTIFACT126= 800
+# NOTE: Don't do this if you are using random artifacts (Cubragol speed)
+# POWER_CLASS999_DEPTH000_RANGE000TO999_ARTIFACT126= 25000
+POWER_CLASS999_DEPTH000_RANGE000TO999_ARTIFACT031= 500
+
+# Condition 058 is used miltiple times relating to inventory
+# items.  Weak characters need to not be slow.
+CND058=_STR 15 >
+
+# Inventory items
+POWER_CLASS999_DEPTH000_RANGE001TO006_FUEL= 60000 EACH
+POWER_CLASS999_DEPTH000_CND058_RANGE007TO008_FUEL= 500 EACH
+POWER_CLASS999_DEPTH000_RANGE001TO008_FOOD= 50000 EACH
+POWER_CLASS999_DEPTH000_CND058_RANGE009TO015_FOOD= 200 EACH
+# Carry extra food if Regen 
+POWER_CLASS999_DEPTH000_CND051_RANGE000TO015_FOOD= 700 EACH
+CND051=_REG 1 >= _CLEVEL 20 <= &&
+# ID scrolls, but not too many if Low Strength
+POWER_CLASS999_DEPTH000_RANGE001TO004_ID= 6000 EACH
+POWER_CLASS999_DEPTH000_CND058_RANGE005TO010_ID= 6000 EACH
+# This is *ID*
+POWER_CLASS999_DEPTH000_RANGE001TO003_ITEM177= 10000 EACH
+POWER_CLASS999_DEPTH000_RANGE005TO010_ITEM177= 2000 EACH
+POWER_CLASS999_DEPTH000_RANGE001TO005_APFE= 10000 EACH
+POWER_CLASS999_DEPTH000_RANGE006TO010_APFE= 2000 EACH
+POWER_CLASS999_DEPTH000_RANGE001TO005_AGLYPH= 10000 EACH
+POWER_CLASS999_DEPTH000_RANGE006TO010_AGLYPH= 2000 EACH
+POWER_CLASS999_DEPTH000_RANGE001TO003_RECALL= 50000 EACH
+POWER_CLASS999_DEPTH000_CND058_RANGE004TO007_RECALL= 5000 EACH
+# Resist Heat and Cold for Warriors (for now)
+POWER_CLASS000_DEPTH000_CND059_RANGE001TO004_ARESHEAT= 500 EACH
+CND059=_IFIRE !
+POWER_CLASS000_DEPTH000_CND060_RANGE001TO004_ARESCOLD= 500 EACH
+CND060=_ICOLD !
+# scrolls of phase door
+POWER_CLASS999_DEPTH000_RANGE000TO004_APHASE= 50000 EACH
+POWER_CLASS999_DEPTH000_RANGE005TO008_APHASE= 1000 EACH
+POWER_CLASS999_DEPTH000_CND058_RANGE009TO015_APHASE= 500 EACH
+POWER_CLASS999_DEPTH000_RANGE001TO002_AESCAPE= 10000 EACH
+POWER_CLASS999_DEPTH090_CND050_RANGE003TO005_AESCAPE= 30000
+CND050=_CDEPTH 90 >
+POWER_CLASS999_DEPTH000_RANGE001TO005_ATELEPORT= 10000 EACH
+POWER_CLASS999_DEPTH000_RANGE006TO999_ATELEPORT= 50000
+#POWER_CLASS999_DEPTH000_CND058_RANGE006TO010_ATELEPORT= 10000 EACH
+#POWER_CLASS999_DEPTH000_CND058_RANGE010TO999_ATELEPORT= 100000
+#POWER_CLASS999_DEPTH000_RANGE001TO005_ATELEPORTLVL= 10000 EACH
+
+# Healing stuff gets complex and is very class dependant
+POWER_CLASS000_DEPTH000_RANGE001TO020_HEAL= 8000 EACH
+POWER_CLASS003_DEPTH000_RANGE001TO020_HEAL= 8000 EACH
+# *HEAL*
+POWER_CLASS999_DEPTH000_RANGE001TO002_ITEM419= 10000 EACH
+# first two LIFE give 9000 if you have no *HEAL*
+POWER_CLASS999_DEPTH000_CND052_RANGE001TO002_ITEM420= 9000
+CND052=_ITEM419 0 ==
+# rod of healing
+POWER_CLASS000_DEPTH000_RANGE001TO002_ITEM374= 20000 EACH
+POWER_CLASS003_DEPTH000_RANGE001TO002_ITEM374= 20000 EACH
+POWER_CLASS001_DEPTH000_RANGE001TO020_HEAL= 4000 EACH
+POWER_CLASS004_DEPTH000_RANGE001TO020_HEAL= 4000 EACH
+POWER_CLASS005_DEPTH000_RANGE001TO020_HEAL= 4000 EACH
+POWER_CLASS001_DEPTH000_RANGE001TO002_ITEM419= 9000 EACH
+POWER_CLASS004_DEPTH000_RANGE001TO002_ITEM419= 9000 EACH
+POWER_CLASS005_DEPTH000_RANGE001TO002_ITEM419= 9000 EACH
+# make sure level 1 Priest sell thier healing potion for quick cash
+POWER_CLASS002_DEPTH000_CND056_RANGE000TO999_ITEM242= -2000 EACH
+CND056=_CLEVEL 1 ==
+POWER_CLASS002_DEPTH000_RANGE000TO010_ITEM242= 2000 EACH
+
+# if your max mana is more than 100, reward up to ten restore manas
+POWER_CLASS999_DEPTH000_CND057_RANGE001TO010_ITEM266= 4000 EACH
+CND057=_MAXSP 100 >
+# and some magi staff charges
+POWER_CLASS999_DEPTH000_CND057_RANGE001TO100_ASTFMAGI= 4000 EACH
+
+POWER_CLASS999_DEPTH000_RANGE001TO005_ACCW= 5000 EACH
+POWER_CLASS999_DEPTH000_CND058_RANGE006TO010_ACCW= 5000 EACH
+# next 5 at 500 if you done have resist conf or are below level 35
+POWER_CLASS999_DEPTH000_CND062_RANGE011TO015_ACCW= 500 EACH
+CND062=_RCONF ! _CLEVEL 35 < ||
+
+# If you don't have RCONF, give reward for collecting cure conf
+POWER_CLASS999_DEPTH000_CND063_RANGE001TO010_ITEM008= 400 EACH
+CND063=_RCONF !
+# If you don't have RBLIND, give reward for collecting cure blind
+POWER_CLASS999_DEPTH000_CND065_RANGE001TO005_ITEM006= 300 EACH
+CND065=_RBLIND !
+# If you don't have RPOIS, give reward for collecting cure pois
+POWER_CLASS999_DEPTH000_CND067_RANGE001TO005_ACUREPOIS= 250 EACH
+CND067=_RPOIS !
+POWER_CLASS999_DEPTH000_RANGE000TO999_ADETTRAP= 4000 
+POWER_CLASS999_DEPTH000_RANGE000TO999_ADETDOOR= 2000 
+POWER_CLASS999_DEPTH000_RANGE000TO999_ADETEVIL= 1000
+POWER_CLASS999_DEPTH000_RANGE000TO999_AMAGICMAP= 4000 
+POWER_CLASS999_DEPTH000_RANGE000TO999_ALITE= 1000 
+# Genocide - only collect when deep
+POWER_CLASS999_DEPTH100_RANGE001TO010_ITEM207= 10000 EACH
+POWER_CLASS999_DEPTH100_RANGE011TO020_ITEM207= 2000 EACH
+# Mass Genocide - only collect when deep
+POWER_CLASS999_DEPTH100_RANGE001TO010_ITEM200= 10000 EACH
+POWER_CLASS999_DEPTH100_RANGE011TO020_ITEM200= 2000 EACH
+
+POWER_CLASS999_DEPTH000_RANGE001TO005_ARECHARGE= 5000 EACH
+
+POWER_CLASS000_DEPTH000_RANGE001TO010_AMISSILES= 1000 EACH
+POWER_CLASS001_DEPTH000_RANGE001TO010_AMISSILES= 1000 EACH
+POWER_CLASS002_DEPTH000_RANGE001TO010_AMISSILES= 1000 EACH
+POWER_CLASS003_DEPTH000_RANGE001TO010_AMISSILES= 1000 EACH
+POWER_CLASS004_DEPTH000_RANGE001TO020_AMISSILES= 1000 EACH
+POWER_CLASS005_DEPTH000_RANGE001TO010_AMISSILES= 1000 EACH
+POWER_CLASS000_DEPTH000_CND058_RANGE011TO040_AMISSILES= 100 EACH
+POWER_CLASS001_DEPTH000_CND058_RANGE011TO040_AMISSILES= 100 EACH
+POWER_CLASS002_DEPTH000_CND058_RANGE011TO040_AMISSILES= 100 EACH
+POWER_CLASS003_DEPTH000_CND058_RANGE011TO040_AMISSILES= 100 EACH
+POWER_CLASS004_DEPTH000_CND058_RANGE021TO070_AMISSILES= 100 EACH
+POWER_CLASS005_DEPTH000_CND058_RANGE011TO040_AMISSILES= 100 EACH
+#too many missiles
+POWER_CLASS000_DEPTH000_RANGE050TO999_AMISSILES= -1000 EACH
+POWER_CLASS001_DEPTH000_RANGE050TO999_AMISSILES= -1000 EACH
+POWER_CLASS002_DEPTH000_RANGE050TO999_AMISSILES= -1000 EACH
+POWER_CLASS003_DEPTH000_RANGE050TO999_AMISSILES= -1000 EACH
+POWER_CLASS004_DEPTH000_RANGE075TO999_AMISSILES= -1000 EACH
+POWER_CLASS005_DEPTH000_RANGE050TO999_AMISSILES= -1000 EACH
+
+# Potions of Detonations 
+POWER_CLASS999_DEPTH000_RANGE001TO020_ADETONATE= 2000 EACH
+
+# If you have up to 3 staffs of power or holiness you get rewarded.
+#    first gets 2500
+POWER_CLASS999_DEPTH000_RANGE000TO999_FORMULA070
+FORMULA070=_ITEM324 _ITEM327 || 2500 *
+#    all three get 500
+POWER_CLASS999_DEPTH000_RANGE000TO999_FORMULA071
+FORMULA071=_ITEM324 _ITEM327 + 3 < _ITEM324 _ITEM327 + * 500 *
+POWER_CLASS999_DEPTH000_RANGE000TO999_FORMULA072
+FORMULA072=_ITEM324 _ITEM327 + 3 >= 3 * 500 *
+# If you have up to 3 staffs of destruction you get rewarded.
+POWER_CLASS999_DEPTH000_RANGE000TO999_ITEM307= 5000
+POWER_CLASS999_DEPTH000_RANGE000TO003_ITEM307= 200 EACH
+
+# Wand of Teleport Other (or Spells)
+POWER_CLASS999_DEPTH000_RANGE000TO999_ATPORTOTHER= 5000
+# bonus for Warriors
+POWER_CLASS000_DEPTH000_RANGE000TO015_ATPORTOTHER= 50000
+POWER_CLASS999_DEPTH000_RANGE000TO010_ATPORTOTHER= 1000 EACH
+POWER_CLASS999_DEPTH000_RANGE010TO999_ATPORTOTHER= 61000
+
+# High Level Spell Books
+POWER_CLASS001_DEPTH000_RANGE001TO999_ITEM379= 300000
+POWER_CLASS003_DEPTH000_RANGE001TO999_ITEM379= 300000
+POWER_CLASS004_DEPTH000_RANGE001TO999_ITEM379= 300000
+POWER_CLASS002_DEPTH000_RANGE001TO999_ITEM384= 300000
+POWER_CLASS005_DEPTH000_RANGE001TO999_ITEM384= 300000
+POWER_CLASS001_DEPTH000_RANGE001TO999_ITEM380= 300000
+POWER_CLASS003_DEPTH000_RANGE001TO999_ITEM380= 300000
+POWER_CLASS004_DEPTH000_RANGE001TO999_ITEM380= 300000
+POWER_CLASS002_DEPTH000_RANGE001TO999_ITEM385= 300000
+POWER_CLASS005_DEPTH000_RANGE001TO999_ITEM385= 300000
+POWER_CLASS001_DEPTH000_RANGE001TO999_ITEM381= 300000
+POWER_CLASS003_DEPTH000_RANGE001TO999_ITEM381= 300000
+POWER_CLASS004_DEPTH000_RANGE001TO999_ITEM381= 300000
+POWER_CLASS002_DEPTH000_RANGE001TO999_ITEM386= 300000
+POWER_CLASS005_DEPTH000_RANGE001TO999_ITEM386= 300000
+POWER_CLASS001_DEPTH000_RANGE001TO999_ITEM382= 300000
+POWER_CLASS003_DEPTH000_RANGE001TO999_ITEM382= 300000
+POWER_CLASS004_DEPTH000_RANGE001TO999_ITEM382= 300000
+POWER_CLASS002_DEPTH000_RANGE001TO999_ITEM387= 300000
+POWER_CLASS005_DEPTH000_RANGE001TO999_ITEM387= 300000
+POWER_CLASS001_DEPTH000_RANGE001TO999_ITEM383= 300000
+POWER_CLASS003_DEPTH000_RANGE001TO999_ITEM383= 300000
+POWER_CLASS004_DEPTH000_RANGE001TO999_ITEM383= 300000
+POWER_CLASS002_DEPTH000_RANGE001TO999_ITEM388= 300000
+POWER_CLASS005_DEPTH000_RANGE001TO999_ITEM388= 300000
+
+
+
+

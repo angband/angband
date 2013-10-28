@@ -1,1 +1,1 @@
-TESTPROGS += object/attack
+TESTPROGS += object/attack object/util

@@ -31,6 +31,7 @@ endif
 
 # Include list of object files and add system-specific ones
 include Makefile.inc
+MAINFILES="$(WINMAINFILES)"
 
 ifdef CONSOLE
   CFLAGS = -DUSE_GCU -DWIN32_CONSOLE_MODE -I$(PDCURSES_INC)
@@ -45,8 +46,8 @@ else
   CFLAGS += -Iwin/include -Lwin/lib
   LDFLAGS += -Lwin/lib
 
-  IOBJS = $(BASEOBJS) win/angband.res main-win.o win/readdib.o win/readpng.o
-  LIBS = -s -mwindows -lwinmm -lzlib -llibpng
+  IOBJS = $(BASEOBJS) win/angband.res main-win.o win/readdib.o win/readpng.o win/scrnshot.o win/win-layout.o
+  LIBS = -mwindows -lwinmm -lzlib -llibpng -lmsimg32
 endif
 
 CC = $(CROSS)gcc

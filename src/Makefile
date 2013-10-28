@@ -6,8 +6,8 @@ include Makefile.src
 INCLUDE = $(HDRS) $(INCS)
 OBJECTS = $(ANGFILES) $(ZFILES)
 SRCS    = ${OBJECTS:.o=.c} ${MAINFILES:.o=.c}
-SUBDIRS = gtk monster object player
-PROG    = angband
+SUBDIRS = monster object player
+PROG    = angband$(PROG_SUFFIX)
 VERSION := $(shell ../scripts/version.sh)
 CFLAGS += -DBUILD_ID=${VERSION} -I. -std=c99 -Wdeclaration-after-statement -O0
 
@@ -15,23 +15,21 @@ CFLAGS += -DBUILD_ID=${VERSION} -I. -std=c99 -Wdeclaration-after-statement -O0
 GCOBJS = $(OBJECTS:.o=.gcno) $(OBJECTS:.o=.gcda)
 GCOVS = $(OBJECTS:.o=.c.gcov)
 
-export CFLAGS LDFLAGS
+CLEAN = angband.o $(OBJECTS) win/angband.res
+DISTCLEAN = autoconf.h
 
-angband: angband.o $(MAINFILES)
-	$(CC) -o angband angband.o $(MAINFILES) $(LDFLAGS) $(LDADD)
+export CFLAGS LDFLAGS LIBS
+
+$(PROG): angband.o $(MAINFILES)
+	$(CC) -o $@ angband.o $(MAINFILES) $(LDFLAGS) $(LDADD) $(LIBS)
 	@printf "%10s %-20s\n" LINK $@
+
+win/angband.res: win/angband.rc
+	$(RC) $< -O coff -o $@
 
 angband.o: $(OBJECTS)
-	$(LD) -r -o $@ $(OBJECTS)
+	$(LD) -nostdlib -r -o $@ $(OBJECTS)
 	@printf "%10s %-20s\n" LINK $@
-
-clean:: test-clean
-	-rm -f angband.o
-	-rm -f angband.exe
-	-rm -f win/angband.res
-
-clean-extra:
-	-rm -f autoconf.h
 
 tests: angband.o
 	$(MAKE) -C tests all

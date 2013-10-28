@@ -627,7 +627,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 		case EF_ENLIGHTENMENT:
 		{
 			msg("An image of your surroundings forms in your mind...");
-			wiz_light();
+			wiz_light(TRUE);
 			*ident = TRUE;
 			return TRUE;
 		}
@@ -637,12 +637,13 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 		{
 			msg("You begin to feel more enlightened...");
 			message_flush();
-			wiz_light();
+			wiz_light(TRUE);
 			(void)do_inc_stat(A_INT);
 			(void)do_inc_stat(A_WIS);
 			(void)detect_traps(TRUE);
 			(void)detect_doorstairs(TRUE);
-			(void)detect_treasure(TRUE);
+			(void)detect_treasure(TRUE, TRUE);
+			(void)detect_monsters_entire_level();
 			identify_pack();
 			*ident = TRUE;
 			return TRUE;
@@ -721,7 +722,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 
 		case EF_DETECT_TREASURE:
 		{
-			if (detect_treasure(aware)) *ident = TRUE;
+			if (detect_treasure(aware, FALSE)) *ident = TRUE;
 			return TRUE;
 		}
 
@@ -1018,10 +1019,10 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 
 		case EF_DEEP_DESCENT:
 		{
-			int i, target_depth = p_ptr->depth;
+			int i, target_depth = p_ptr->max_depth;
 			
 			/* Calculate target depth */
-			for (i = 2; i > 0; i--) {
+			for (i = 5; i > 0; i--) {
 				if (is_quest(target_depth)) break;
 				if (target_depth >= MAX_DEPTH - 1) break;
 				
@@ -1029,8 +1030,8 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 			}
 
 			if (target_depth > p_ptr->depth) {
-				msgt(MSG_TPLEVEL, "You sink through the floor...");
-				dungeon_change_level(target_depth);
+				msgt(MSG_TPLEVEL, "The air around you starts to swirl...");
+				p_ptr->deep_descent = 3 + randint1(4);
 				*ident = TRUE;
 				return TRUE;
 			} else {
@@ -1094,7 +1095,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 		case EF_CLAIRVOYANCE:
 		{
 			*ident = TRUE;
-			wiz_light();
+			wiz_light(FALSE);
 			(void)detect_traps(TRUE);
 			(void)detect_doorstairs(TRUE);
 			return TRUE;
@@ -1617,13 +1618,19 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 		{
 			dam = 120 * (100 + boost) / 100;
 			if (dispel_evil(dam)) *ident = TRUE;
+			if (hp_player(50)) *ident = TRUE;
 			if (player_inc_timed(p_ptr, TMD_PROTEVIL, randint1(25) + 3 *
 				p_ptr->lev, TRUE, TRUE)) *ident = TRUE;
 			if (player_clear_timed(p_ptr, TMD_POISONED, TRUE)) *ident = TRUE;
+			if (player_clear_timed(p_ptr, TMD_TERROR, TRUE)) *ident = TRUE;
 			if (player_clear_timed(p_ptr, TMD_AFRAID, TRUE)) *ident = TRUE;
-			if (hp_player(50)) *ident = TRUE;
 			if (player_clear_timed(p_ptr, TMD_STUN, TRUE)) *ident = TRUE;
 			if (player_clear_timed(p_ptr, TMD_CUT, TRUE)) *ident = TRUE;
+			if (player_clear_timed(p_ptr, TMD_SLOW, TRUE)) *ident = TRUE;
+			if (player_clear_timed(p_ptr, TMD_BLIND, TRUE)) *ident = TRUE;
+			if (player_clear_timed(p_ptr, TMD_CONFUSED, TRUE)) *ident = TRUE;
+			if (player_clear_timed(p_ptr, TMD_IMAGE, TRUE)) *ident = TRUE;
+			if (player_clear_timed(p_ptr, TMD_AMNESIA, TRUE)) *ident = TRUE;
 			return TRUE;
 		}
 

@@ -35,7 +35,7 @@
 
 # Version stamp (required)
 
-V:3.0.11
+V:3.4.0
 
 
 # Mage spells 0 through 63
@@ -72,9 +72,9 @@ N:5:Cure Light Wounds
 I:90:0:5
 D:Cures 15% of your wounds (min 15hp) and heals 20 points worth of cuts.
 
-N:6:Detect Treasure
+N:6:Detect Objects
 I:90:0:4
-D:Detects all treasure in the immediate area.
+D:Detects all objects in the immediate area.
 
 N:8:Identify
 I:90:2:5
@@ -84,12 +84,9 @@ N:9:Reveal Monsters
 I:90:2:6
 D:Detects all monsters in the immediate area, for one turn only.
 
-N:10:Detect Enchantment
+N:10:Detect Treasure
 I:90:3:5
-D:Detects all enchanted objects in the immediate area.
-D:  Enchanted objects include artifacts, ego items, amulets, rings,
-D: staffs, wands, rods, scrolls, potions, spellbooks, and all items
-D: that give a bonus to-hit, to-dam, or to AC.
+D:Detects all treasure in the immediate area.
 
 N:11:Stinking Cloud
 I:90:0:8
@@ -256,7 +253,8 @@ D:  Uniques or monsters that resist confusion are not affected.
 
 N:41:Rend Soul
 I:90:8:2
-D:Fires a nether bolt that always hits its target.
+D:Fires a nether bolt that always hits its target. Does
+D:not affect undead.
 D:  Sometimes a beam is fired instead that hurts each monster
 D: in its path.
 D:  The chance to get a beam goes up with your character level.
@@ -265,8 +263,7 @@ N:42:Word of Destruction
 I:90:8:4
 D:Destroys everything in a 15-square radius circle around you.
 D:  All monsters, objects, and terrain features in the area of
-D: effect are destroyed, except stairs, permanent walls and
-D: artifacts.
+D: effect are destroyed, except stairs and permanent walls.
 D:  You will also be blinded for 10+1d10 turns, unless you
 D: have resistance to blindness or light.
 D:  This spell has no effect when used in the town.
@@ -451,10 +448,11 @@ I:91:1:5
 D:Magically renders you well-fed (but not satiated).
 D:  This will also cure a bloated stomach.
 
-N:78:Remove Curse
-I:91:1:6
-D:Removes all ordinary curses from all equipped items.
-D:  Heavy or permanent curses are not affected.
+## Remove in 3.4 until curses are redone
+#N:78:Remove Curse
+#I:91:1:6
+#D:Removes all ordinary curses from all equipped items.
+#D:  Heavy or permanent curses are not affected.
 
 N:79:Resist Heat and Cold
 I:91:1:7
@@ -604,8 +602,7 @@ N:108:Word of Destruction
 I:91:8:3
 D:Destroys everything in a 15-square radius circle around you.
 D:  All monsters, objects, and terrain features in the area of
-D: effect are destroyed, except stairs, permanent walls and
-D: artifacts.
+D: effect are destroyed, except stairs and permanent walls.
 D:  You will also be blinded for 10+1d10 turns, unless you
 D: have resistance to blindness or light.
 D:  This prayer has no effect when used in the town.
@@ -626,18 +623,21 @@ D:  Chance of success and number of charges gained increase with your
 D: level and decrease with level of wand or staff and number of charges.
 D:  A failed attempt to recharge destroys one wand or staff from the stack.
 
-N:112:Dispel Curse
-I:91:7:2
-D:Removes all ordinary and heavy curses from all equipped objects.
-D:  Permanent curses are not affected.
+## Remove in 3.4 until curses are redone
+#N:112:Dispel Curse
+#I:91:7:2
+#D:Removes all ordinary and heavy curses from all equipped objects.
+#D:  Permanent curses are not affected.
 
 N:113:Enchant Weapon
 I:91:7:3
 D:Attempts to improve the to-hit bonus and the to-dam bonus of a weapon.
+D: Also gives a chance to break a curse.
 
 N:114:Enchant Armour
 I:91:7:4
 D:Attempts to improve the armour class bonus of a piece of armour.
+D: Also gives a chance to break a curse.
 
 N:115:Elemental Brand
 I:91:7:5

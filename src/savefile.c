@@ -89,11 +89,11 @@ static const struct {
 	{ "misc", wr_misc, 2 },
 	{ "player hp", wr_player_hp, 1 },
 	{ "player spells", wr_player_spells, 1 },
-	{ "randarts", wr_randarts, 2 },
-	{ "inventory", wr_inventory, 4 },
-	{ "stores", wr_stores, 4 },
+	{ "randarts", wr_randarts, 3 },
+	{ "inventory", wr_inventory, 5 },
+	{ "stores", wr_stores, 5 },
 	{ "dungeon", wr_dungeon, 1 },
-	{ "objects", wr_objects, 4 },
+	{ "objects", wr_objects, 5 },
 	{ "monsters", wr_monsters, 6 },
 	{ "ghost", wr_ghost, 1 },
 	{ "history", wr_history, 1 },
@@ -122,19 +122,23 @@ static const struct {
 	{ "player spells", rd_player_spells, 1 },
 	{ "randarts", rd_randarts_1, 1 },
 	{ "randarts", rd_randarts_2, 2 },
+	{ "randarts", rd_randarts_3, 3 },
 	{ "inventory", rd_inventory_1, 1 },
 	{ "inventory", rd_inventory_2, 2 },
 	{ "inventory", rd_inventory_3, 3 },
 	{ "inventory", rd_inventory_4, 4 },	
+	{ "inventory", rd_inventory_5, 5 },	
 	{ "stores", rd_stores_1, 1 },
 	{ "stores", rd_stores_2, 2 },
 	{ "stores", rd_stores_3, 3 },
 	{ "stores", rd_stores_4, 4 },	
+	{ "stores", rd_stores_5, 5 },	
 	{ "dungeon", rd_dungeon, 1 },
 	{ "objects", rd_objects_1, 1 },
 	{ "objects", rd_objects_2, 2 },
 	{ "objects", rd_objects_3, 3 },
 	{ "objects", rd_objects_4, 4 },
+	{ "objects", rd_objects_5, 5 },	
 	{ "monsters", rd_monsters_1, 1 },
 	{ "monsters", rd_monsters_2, 2 },
 	{ "monsters", rd_monsters_3, 3 },
@@ -381,6 +385,7 @@ bool savefile_save(const char *path)
 		strnfmt(old_savefile, sizeof(old_savefile), "%s%u%u.old", path,Rand_simple(1000000),count);
 	}
 	count = 0;
+
 	/* Make sure that the savefile doesn't already exist */
 	/*safe_setuid_grab();
 	file_delete(new_savefile);

@@ -27,6 +27,12 @@
 
 static int view_n;
 static u16b view_g[VIEW_MAX];
+static int  vinfo_grids;
+static int  vinfo_slopes;
+static u32b vinfo_bits_3;
+static u32b vinfo_bits_2;
+static u32b vinfo_bits_1;
+static u32b vinfo_bits_0;
 
 /*
  * Approximate distance between two points.
@@ -343,7 +349,7 @@ bool cave_valid_bold(int y, int x)
 /*
  * Hack -- Hallucinatory monster
  */
-static void hallucinatory_monster(byte *a, char *c)
+static void hallucinatory_monster(byte *a, wchar_t *c)
 {
 	while (1)
 	{
@@ -364,7 +370,7 @@ static void hallucinatory_monster(byte *a, char *c)
 /*
  * Hack -- Hallucinatory object
  */
-static void hallucinatory_object(byte *a, char *c)
+static void hallucinatory_object(byte *a, wchar_t *c)
 {
 	
 	while (1)
@@ -430,14 +436,10 @@ bool dtrap_edge(int y, int x)
  	if (!(cave->info2[y][x] & CAVE2_DTRAP)) return FALSE; 
 
  	/* Check for non-dtrap adjacent grids */ 
- 	if (in_bounds_fully(y + 1, x    ) &&
-			(!(cave->info2[y + 1][x    ] & CAVE2_DTRAP))) return TRUE; 
- 	if (in_bounds_fully(y    , x + 1) &&
-			(!(cave->info2[y    ][x + 1] & CAVE2_DTRAP))) return TRUE; 
- 	if (in_bounds_fully(y - 1, x    ) &&
-			(!(cave->info2[y - 1][x    ] & CAVE2_DTRAP))) return TRUE; 
- 	if (in_bounds_fully(y    , x - 1) &&
-			(!(cave->info2[y    ][x - 1] & CAVE2_DTRAP))) return TRUE; 
+ 	if (in_bounds_fully(y + 1, x    ) && (!(cave->info2[y + 1][x    ] & CAVE2_DTRAP))) return TRUE; 
+ 	if (in_bounds_fully(y    , x + 1) && (!(cave->info2[y    ][x + 1] & CAVE2_DTRAP))) return TRUE; 
+ 	if (in_bounds_fully(y - 1, x    ) && (!(cave->info2[y - 1][x    ] & CAVE2_DTRAP))) return TRUE; 
+ 	if (in_bounds_fully(y    , x - 1) && (!(cave->info2[y    ][x - 1] & CAVE2_DTRAP))) return TRUE; 
 
 	return FALSE; 
 }
@@ -455,34 +457,36 @@ static bool feat_is_treasure(int feat) {
 /**
  * Apply text lighting effects
  */
-static void grid_get_text(grid_data *g, byte *a, char *c)
+static void grid_get_attr(grid_data *g, byte *a)
 {
-	/* Trap detect edge, but don't colour traps themselves, or treasure */
-	if (g->trapborder && !feat_is_known_trap(g->f_idx) &&
-			!feat_is_treasure(g->f_idx))
-	{
-		if (g->in_view)
-			*a = TERM_L_GREEN;
-		else
-			*a = TERM_GREEN;
+	/* Save the high-bit, since it's used for attr inversion. */
+	byte a0 = *a & 0x80;
+
+	/* We will never tint traps or treasure */
+	if (feat_is_known_trap(g->f_idx) || feat_is_treasure(g->f_idx)) return;
+
+	/* Tint the trap detection edge green. */
+	if (g->trapborder) {
+		*a = a0 | (g->in_view ? TERM_L_GREEN : TERM_GREEN);
+		return;
 	}
-	else if (g->f_idx == FEAT_FLOOR)
-	{
-		if (g->lighting == FEAT_LIGHTING_BRIGHT) {
-			if (*a == TERM_WHITE)
-				*a = TERM_YELLOW;
-		} else if (g->lighting == FEAT_LIGHTING_DARK) {
-			if (*a == TERM_WHITE)
-				*a = TERM_L_DARK;
+
+	/* If the square isn't white we won't apply any other lighting effects. */
+	if ((*a & 0x7F) != TERM_WHITE) return;
+
+	/* If it's a floor tile then we'll tint based on lighting. */
+	if (g->f_idx == FEAT_FLOOR) {
+		switch (g->lighting) {
+			case FEAT_LIGHTING_BRIGHT: *a = a0 | TERM_YELLOW; break;
+			case FEAT_LIGHTING_DARK: *a = a0 | TERM_L_DARK; break;
+			default: break;
 		}
+		return;
 	}
-	else if (g->f_idx > FEAT_INVIS)
-	{
-		if (g->lighting == FEAT_LIGHTING_DARK) {
-			if (*a == TERM_WHITE)
-				*a = TERM_SLATE;
-		}
-	}
+
+	/* If it's another kind of tile, only tint when unlit. */
+	if (g->f_idx > FEAT_INVIS && g->lighting == FEAT_LIGHTING_DARK)
+		*a = a0 | TERM_SLATE;
 }
 
 
@@ -521,17 +525,23 @@ static void grid_get_text(grid_data *g, byte *a, char *c)
  * This will probably be done outside of the current text->graphics mappings
  * though.
  */
-void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp)
+void grid_data_as_text(grid_data *g, byte *ap, wchar_t *cp, byte *tap, wchar_t *tcp)
 {
 	feature_type *f_ptr = &f_info[g->f_idx];
 
 	byte a = f_ptr->x_attr[g->lighting];
-	char c = f_ptr->x_char[g->lighting];
+	wchar_t c = f_ptr->x_char[g->lighting];
 
 	/* Check for trap detection boundaries */
-	if (use_graphics == GRAPHICS_NONE ||
-				use_graphics == GRAPHICS_PSEUDO)
-		grid_get_text(g, &a, &c);
+	if (use_graphics == GRAPHICS_NONE)
+		grid_get_attr(g, &a);
+	else if (g->trapborder && (g->f_idx == FEAT_FLOOR)
+		 && (g->m_idx || g->first_kind)) {
+		/* if there is an object or monster here, and this is a plain floor
+		 * display the border here rather than an overlay below */
+		a = f_info[64].x_attr[g->lighting]; /* 64 is the index of the feat that */
+		c = f_info[64].x_char[g->lighting]; /* holds the trap detect border floor tile */
+	}
 
 	/* Save the terrain info for the transparency effects */
 	(*tap) = a;
@@ -539,8 +549,19 @@ void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp)
 
 
 	/* If there's an object, deal with that. */
-	if (g->first_kind)
-	{
+	if (g->unseen_money) {
+	
+		/* $$$ gets an orange star*/
+		a = object_kind_attr(&k_info[7]);
+		c = object_kind_char(&k_info[7]);
+		
+	} else if (g->unseen_object) {	
+	
+		/* Everything else gets a red star */    
+		a = object_kind_attr(&k_info[6]);
+		c = object_kind_char(&k_info[6]);
+		
+	} else if (g->first_kind) {
 		if (g->hallucinate) {
 			/* Just pick a random object to display. */
 			hallucinatory_object(&a, &c);
@@ -552,42 +573,36 @@ void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp)
 			/* Normal attr and char */
 			a = object_kind_attr(g->first_kind);
 			c = object_kind_char(g->first_kind);
-		}			
+		}
 	}
 
 	/* If there's a monster */
-	if (g->m_idx > 0 && !is_mimicking(g->m_idx))
-	{
-		if (g->hallucinate)
-		{
+	if (g->m_idx > 0) {
+		if (g->hallucinate) {
 			/* Just pick a random monster to display. */
 			hallucinatory_monster(&a, &c);
-		}
-		else
-		{
+		} else if (!is_mimicking(cave_monster(cave, g->m_idx)))	{
 			monster_type *m_ptr = cave_monster(cave, g->m_idx);
 			monster_race *r_ptr = &r_info[m_ptr->r_idx];
-				
+
 			byte da;
-			char dc;
-			
+			wchar_t dc;
+
 			/* Desired attr & char */
 			da = r_ptr->x_attr;
 			dc = r_ptr->x_char;
 
 			/* Special attr/char codes */
-			if ((da & 0x80) && (dc & 0x80))
-			{
+			if (da & 0x80) {
 				/* Use attr */
 				a = da;
-				
+
 				/* Use char */
 				c = dc;
 			}
-			
+
 			/* Turn uniques purple if desired (violet, actually) */
-			else if (OPT(purple_uniques) && rf_has(r_ptr->flags, RF_UNIQUE))
-			{
+			else if (OPT(purple_uniques) && rf_has(r_ptr->flags, RF_UNIQUE)) {
 				/* Use (light) violet attr */
 				a = TERM_VIOLET;
 
@@ -598,8 +613,7 @@ void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp)
 			/* Multi-hued monster */
 			else if (rf_has(r_ptr->flags, RF_ATTR_MULTI) ||
 					 rf_has(r_ptr->flags, RF_ATTR_FLICKER) ||
-					 rf_has(r_ptr->flags, RF_ATTR_RAND))
-			{
+					 rf_has(r_ptr->flags, RF_ATTR_RAND)) {
 				/* Multi-hued attr */
 				a = m_ptr->attr ? m_ptr->attr : da;
 				
@@ -623,7 +637,7 @@ void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp)
 			}
 			
 			/* Hack -- Bizarre grid under monster */
-			else if ((a & 0x80) || (c & 0x80))
+			else if (a & 0x80)
 			{
 				/* Use attr */
 				a = da;
@@ -658,35 +672,43 @@ void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp)
 
 		/* Get the "player" attr */
 		a = r_ptr->x_attr;
-		if ((OPT(hp_changes_color)) && !(a & 0x80))	{
-			switch(p_ptr->chp * 10 / p_ptr->mhp) {
+		if ((OPT(hp_changes_color)) && !(a & 0x80))
+		{
+			switch(p_ptr->chp * 10 / p_ptr->mhp)
+			{
 				case 10:
-				case  9: {
-					a = TERM_WHITE;
+				case  9: 
+				{
+					a = TERM_WHITE; 
 					break;
 				}
 				case  8:
-				case  7: {
+				case  7:
+				{
 					a = TERM_YELLOW;
 					break;
 				}
 				case  6:
-				case  5: {
+				case  5:
+				{
 					a = TERM_ORANGE;
 					break;
 				}
 				case  4:
-				case  3: {
+				case  3:
+				{
 					a = TERM_L_RED;
 					break;
 				}
 				case  2:
 				case  1:
-				case  0: {
+				case  0:
+				{
 					a = TERM_RED;
 					break;
 				}
-				default: {
+				default:
+				{
 					a = TERM_WHITE;
 					break;
 				}
@@ -696,10 +718,16 @@ void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp)
 		/* Get the "player" char */
 		c = r_ptr->x_char;
 	}
+	else if (g->trapborder && (g->f_idx) && !(g->first_kind)
+		&& (use_graphics != GRAPHICS_NONE)) {
+		/* no overlay is used, so we can use the trap border overlay */
+		a = f_info[65].x_attr[g->lighting]; /* 65 is the index of the feat that */
+		c = f_info[65].x_char[g->lighting]; /* holds the trap detect border overlay tile */
+	}
 
 	/* Result */
 	(*ap) = a;
-	(*cp) = c;	
+	(*cp) = c;
 }
 
 
@@ -765,6 +793,8 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 	g->first_kind = NULL;
 	g->multiple_objects = FALSE;
 	g->lighting = FEAT_LIGHTING_DARK;
+	g->unseen_object = FALSE;
+	g->unseen_money = FALSE;
 
 	g->f_idx = cave->feat[y][x];
 	if (f_info[g->f_idx].mimic)
@@ -774,7 +804,7 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 	g->is_player = (cave->m_idx[y][x] < 0) ? TRUE : FALSE;
 	g->m_idx = (g->is_player) ? 0 : cave->m_idx[y][x];
 	g->hallucinate = p_ptr->timed[TMD_IMAGE] ? TRUE : FALSE;
-	g->trapborder = (dtrap_edge(y, x)) ? TRUE : FALSE;
+	g->trapborder = (cave->info2[y][x] & CAVE2_DEDGE) ? TRUE : FALSE;
 
 	if (g->in_view)
 	{
@@ -792,19 +822,20 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 	/* Objects */
 	for (o_ptr = get_first_object(y, x); o_ptr; o_ptr = get_next_object(o_ptr))
 	{
-		/* Memorized objects */
-		if (o_ptr->marked && !squelch_item_ok(o_ptr))
-		{
-			/* First item found */
-			if (!g->first_kind)
-			{
-				g->first_kind = o_ptr->kind;
+		if (o_ptr->marked == MARK_AWARE) {
+		
+			/* Distinguish between unseen money and objects */
+			if (o_ptr->tval == TV_GOLD) {
+			    g->unseen_money = TRUE;
+			} else {
+				g->unseen_object = TRUE;
 			}
-			else
-			{
+			
+		} else if (o_ptr->marked == MARK_SEEN && !squelch_item_ok(o_ptr)) {
+			if (!g->first_kind) {
+				g->first_kind = o_ptr->kind;
+			} else {
 				g->multiple_objects = TRUE;
-
-				/* And we know all we need to know. */
 				break;
 			}
 		}
@@ -816,7 +847,6 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 		/* If the monster isn't "visible", make sure we don't list it.*/
 		monster_type *m_ptr = cave_monster(cave, g->m_idx);
 		if (!m_ptr->ml) g->m_idx = 0;
-
 	}
 
 	/* Rare random hallucination on non-outer walls */
@@ -945,7 +975,7 @@ void move_cursor_relative(int y, int x)
  *
  * Note the use of "Term_queue_char()" for efficiency.
  */
-static void print_rel_map(char c, byte a, int y, int x)
+static void print_rel_map(wchar_t c, byte a, int y, int x)
 {
 	int ky, kx;
 
@@ -1005,7 +1035,7 @@ static void print_rel_map(char c, byte a, int y, int x)
  *
  * The main screen will always be at least 24x80 in size.
  */
-void print_rel(char c, byte a, int y, int x)
+void print_rel(wchar_t c, byte a, int y, int x)
 {
 	int ky, kx;
 	int vy, vx;
@@ -1078,7 +1108,7 @@ void cave_note_spot(struct cave *c, int y, int x)
 		return;
 
 	for (o_ptr = get_first_object(y, x); o_ptr; o_ptr = get_next_object(o_ptr))
-		o_ptr->marked = TRUE;
+		o_ptr->marked = MARK_SEEN;
 
 	if (c->info[y][x] & CAVE_MARK)
 		return;
@@ -1103,9 +1133,9 @@ void cave_light_spot(struct cave *c, int y, int x)
 static void prt_map_aux(void)
 {
 	byte a;
-	char c;
+	wchar_t c;
 	byte ta;
-	char tc;
+	wchar_t tc;
 	grid_data g;
 
 	int y, x;
@@ -1164,9 +1194,9 @@ static void prt_map_aux(void)
 void prt_map(void)
 {
 	byte a;
-	char c;
+	wchar_t c;
 	byte ta;
-	char tc;
+	wchar_t tc;
 	grid_data g;
 
 	int y, x;
@@ -1197,7 +1227,7 @@ void prt_map(void)
 
 			if ((tile_width > 1) || (tile_height > 1))
 			{
-			        Term_big_queue_char(Term, vx, vy, a, c, TERM_WHITE, ' ');
+			        Term_big_queue_char(Term, vx, vy, a, c, TERM_WHITE, L' ');
 	      
 				if (tile_width > 1)
 				{
@@ -1241,7 +1271,7 @@ void display_map(int *cy, int *cx)
 	grid_data g;
 
 	byte ta;
-	char tc;
+	wchar_t tc;
 
 	byte tp;
 
@@ -1267,7 +1297,7 @@ void display_map(int *cy, int *cx)
 
 	/* Nothing here */
 	ta = TERM_WHITE;
-	tc = ' ';
+	tc = L' ';
 
 	/* Clear the priorities */
 	for (y = 0; y < map_hgt; ++y)
@@ -1306,7 +1336,7 @@ void display_map(int *cy, int *cx)
 			if (mp[row][col] < tp)
 			{
 				/* Hack - make every grid on the map lit */
-				g.lighting = FEAT_LIGHTING_BRIGHT;
+				g.lighting = FEAT_LIGHTING_LIT; /*FEAT_LIGHTING_BRIGHT;*/
 				grid_data_as_text(&g, &ta, &tc, &ta, &tc);
 
 				/* Add the character */
@@ -1356,8 +1386,12 @@ void display_map(int *cy, int *cx)
 void do_cmd_view_map(void)
 {
 	int cy, cx;
+	byte w, h;
 	const char *prompt = "Hit any key to continue";
-	
+	if (Term->view_map_hook) {
+		(*(Term->view_map_hook))(Term);
+		return;
+	}
 	/* Save screen */
 	screen_save();
 
@@ -1370,6 +1404,12 @@ void do_cmd_view_map(void)
 	/* Clear the screen */
 	Term_clear();
 
+	/* store the tile multipliers */
+	w = tile_width;
+	h = tile_height;
+	tile_width = 1;
+	tile_height = 1;
+
 	/* Display the map */
 	display_map(&cy, &cx);
 
@@ -1381,6 +1421,10 @@ void do_cmd_view_map(void)
 
 	/* Get any key */
 	(void)anykey();
+
+	/* Restore the tile multipliers */
+	tile_width = w;
+	tile_height = h;
 
 	/* Load screen */
 	screen_load();
@@ -1944,8 +1988,8 @@ struct vinfo_hack {
 
 	long slopes[VINFO_MAX_SLOPES];
 
-	long slopes_min[MAX_SIGHT+1][MAX_SIGHT+1];
-	long slopes_max[MAX_SIGHT+1][MAX_SIGHT+1];
+	long slopes_min[MAX_SIGHT_LGE+1][MAX_SIGHT_LGE+1];
+	long slopes_max[MAX_SIGHT_LGE+1][MAX_SIGHT_LGE+1];
 };
 
 static int cmp_longs(const void *a, const void *b)
@@ -1981,10 +2025,10 @@ static void vinfo_init_aux(vinfo_hack *hack, int y, int x, long m)
 		if (i == hack->num_slopes)
 		{
 			/* Paranoia */
-			if (hack->num_slopes >= VINFO_MAX_SLOPES)
+			if (hack->num_slopes >= vinfo_slopes)
 			{
 				quit_fmt("Too many slopes (%d)!",
-			         	VINFO_MAX_SLOPES);
+					 vinfo_slopes);
 			}
 
 			/* Save the slope, and advance */
@@ -2029,6 +2073,14 @@ errr vinfo_init(void)
 	vinfo_type *queue[VINFO_MAX_GRIDS*2];
 
 
+	/* Set the variables for the grids, bits and slopes actually used */
+	vinfo_grids = (OPT(birth_small_range) ? 48 : 161);
+	vinfo_slopes = (OPT(birth_small_range) ? 36 : 126);
+	vinfo_bits_3 = (OPT(birth_small_range) ? 0x00000000 : 0x3FFFFFFF);
+	vinfo_bits_2 = (OPT(birth_small_range) ? 0x00000000 : 0xFFFFFFFF);
+	vinfo_bits_1 = (OPT(birth_small_range) ? 0x0000000F : 0xFFFFFFFF);
+	vinfo_bits_0 = (OPT(birth_small_range) ? 0xFFFFFFFF : 0xFFFFFFFF);
+
 	/* Make hack */
 	hack = ZNEW(vinfo_hack);
 
@@ -2046,10 +2098,10 @@ errr vinfo_init(void)
 			hack->slopes_max[y][x] = 0;
 
 			/* Paranoia */
-			if (num_grids >= VINFO_MAX_GRIDS)
+			if (num_grids >= vinfo_grids)
 			{
 				quit_fmt("Too many grids (%d >= %d)!",
-				         num_grids, VINFO_MAX_GRIDS);
+				         num_grids, vinfo_grids);
 			}
 
 			/* Count grids */
@@ -2083,17 +2135,17 @@ errr vinfo_init(void)
 
 
 	/* Enforce maximal efficiency */
-	if (num_grids < VINFO_MAX_GRIDS)
+	if (num_grids < vinfo_grids)
 	{
 		quit_fmt("Too few grids (%d < %d)!",
-		         num_grids, VINFO_MAX_GRIDS);
+		         num_grids, vinfo_grids);
 	}
 
 	/* Enforce maximal efficiency */
-	if (hack->num_slopes < VINFO_MAX_SLOPES)
+	if (hack->num_slopes < vinfo_slopes)
 	{
 		quit_fmt("Too few slopes (%d < %d)!",
-		         hack->num_slopes, VINFO_MAX_SLOPES);
+		         hack->num_slopes, vinfo_slopes);
 	}
 
 	sort(hack->slopes, hack->num_slopes, sizeof(*hack->slopes), cmp_longs);
@@ -2201,12 +2253,15 @@ errr vinfo_init(void)
 
 
 	/* Verify maximal bits XXX XXX XXX */
-	if (((vinfo[1].bits_3 | vinfo[2].bits_3) != VINFO_BITS_3) ||
-	    ((vinfo[1].bits_2 | vinfo[2].bits_2) != VINFO_BITS_2) ||
-	    ((vinfo[1].bits_1 | vinfo[2].bits_1) != VINFO_BITS_1) ||
-	    ((vinfo[1].bits_0 | vinfo[2].bits_0) != VINFO_BITS_0))
-	{
-		quit("Incorrect bit masks!");
+	if (((vinfo[1].bits_3 | vinfo[2].bits_3) != vinfo_bits_3)
+	    || ((vinfo[1].bits_2 | vinfo[2].bits_2) != vinfo_bits_2)
+	    || ((vinfo[1].bits_1 | vinfo[2].bits_1) != vinfo_bits_1)
+	    || ((vinfo[1].bits_0 | vinfo[2].bits_0) != vinfo_bits_0)) {
+	        quit_fmt("Incorrect bit masks: %x\n%x\n%x\n%x\n", 
+			 (vinfo[1].bits_3 | vinfo[2].bits_3),
+			 (vinfo[1].bits_2 | vinfo[2].bits_2),
+			 (vinfo[1].bits_1 | vinfo[2].bits_1),
+			 (vinfo[1].bits_0 | vinfo[2].bits_0));
 	}
 
 
@@ -2520,10 +2575,10 @@ void update_view(void)
 		vinfo_type *queue[VINFO_MAX_GRIDS*2];
 
 		/* Slope bit vector */
-		u32b bits0 = VINFO_BITS_0;
-		u32b bits1 = VINFO_BITS_1;
-		u32b bits2 = VINFO_BITS_2;
-		u32b bits3 = VINFO_BITS_3;
+		u32b bits0 = vinfo_bits_0;
+		u32b bits1 = vinfo_bits_1;
+		u32b bits2 = vinfo_bits_2;
+		u32b bits3 = vinfo_bits_3;
 
 		/* Reset queue */
 		queue_head = queue_tail = 0;
@@ -2924,7 +2979,7 @@ void cave_update_flow(struct cave *c)
  * This function "illuminates" every grid in the dungeon, memorizes all
  * "objects", and memorizes all grids as with magic mapping.
  */
-void wiz_light(void)
+void wiz_light(bool full)
 {
 	int i, y, x;
 
@@ -2940,8 +2995,9 @@ void wiz_light(void)
 		/* Skip held objects */
 		if (o_ptr->held_m_idx) continue;
 
-		/* Memorize */
-		o_ptr->marked = TRUE;
+		/* Memorize it */
+		if (o_ptr->marked < MARK_SEEN)
+			o_ptr->marked = full ? MARK_SEEN : MARK_AWARE;
 	}
 
 	/* Scan all normal grids */
@@ -2993,7 +3049,7 @@ void wiz_dark(void)
 		{
 			/* Process the grid */
 			cave->info[y][x] &= ~(CAVE_MARK);
-			cave->info2[y][x] &= ~(CAVE2_DTRAP);
+			cave->info2[y][x] &= ~(CAVE2_DTRAP|CAVE2_DEDGE);
 		}
 	}
 
@@ -3009,7 +3065,7 @@ void wiz_dark(void)
 		if (o_ptr->held_m_idx) continue;
 
 		/* Forget the object */
-		o_ptr->marked = FALSE;
+		o_ptr->marked = MARK_UNAWARE;
 	}
 
 	/* Fully update the visuals */
@@ -3478,9 +3534,10 @@ void scatter(int *yp, int *xp, int y, int x, int d, int m)
 	(*xp) = nx;
 }
 
-void health_track(struct player *p, int m_idx)
+/* XXX: this does not belong here */
+void health_track(struct player *p, struct monster *m_ptr)
 {
-	p->health_who = m_idx;
+	p->health_who = m_ptr;
 	p->redraw |= PR_HEALTH;
 }
 
@@ -3775,6 +3832,26 @@ bool cave_istrap(struct cave *c, int y, int x) {
 	return cave_issecrettrap(cave, y, x) || cave_isknowntrap(cave, y, x);
 }
 
+/**
+ * True if cave is an up or down stair
+ */
+bool cave_isstairs(struct cave*c, int y, int x) {
+    return cave_isupstairs(c, y, x) || cave_isdownstairs(c, y, x);
+}
+
+/**
+ * True if cave is an up stair.
+ */
+bool cave_isupstairs(struct cave*c, int y, int x) {
+    return c->feat[y][x] == FEAT_LESS;
+}
+
+/**
+ * True if cave is a down stair.
+ */
+bool cave_isdownstairs(struct cave*c, int y, int x) {
+    return c->feat[y][x] == FEAT_MORE;
+}
 
 
 /**
@@ -3874,6 +3951,13 @@ bool cave_isfeel(struct cave *c, int y, int x){
  */
 struct monster *cave_monster(struct cave *c, int idx) {
 	return &c->monsters[idx];
+}
+
+/**
+ * Get a monster on the current level by its position.
+ */
+struct monster *cave_monster_at(struct cave *c, int y, int x) {
+	return cave_monster(cave, cave->m_idx[y][x]);
 }
 
 /**

@@ -295,7 +295,8 @@ char *artifact_gen_name(struct artifact *a, const char ***words) {
 	char buf[BUFLEN];
 	char word[MAX_NAME_LEN + 1];
 	randname_make(RANDNAME_TOLKIEN, MIN_NAME_LEN, MAX_NAME_LEN, word, sizeof(word), words);
-	word[0] = toupper((unsigned char)word[0]);
+	my_strcap(word);
+
 	if (one_in_(3))
 		strnfmt(buf, sizeof(buf), "'%s'", word);
 	else
@@ -502,7 +503,6 @@ static object_kind *choose_item(int a_idx)
 	k_ptr = lookup_kind(tval, sval);
 	a_ptr->tval = k_ptr->tval;
 	a_ptr->sval = k_ptr->sval;
-	a_ptr->pval[DEFAULT_PVAL] = randcalc(k_ptr->pval[DEFAULT_PVAL], 0, MINIMISE);
 	a_ptr->to_h = randcalc(k_ptr->to_h, 0, MINIMISE);
 	a_ptr->to_d = randcalc(k_ptr->to_d, 0, MINIMISE);
 	a_ptr->to_a = randcalc(k_ptr->to_a, 0, MINIMISE);
@@ -511,8 +511,10 @@ static object_kind *choose_item(int a_idx)
 	a_ptr->ds = k_ptr->ds;
 	a_ptr->weight = k_ptr->weight;
 	of_copy(a_ptr->flags, k_ptr->flags);
-	for (i = 0; i < MAX_PVALS; i++)
+	for (i = 0; i < MAX_PVALS; i++) {
 		of_copy(a_ptr->pval_flags[i], k_ptr->pval_flags[i]);
+		a_ptr->pval[i] = randcalc(k_ptr->pval[i], 0, MINIMISE);
+	}
 	a_ptr->num_pvals = k_ptr->num_pvals;
 	a_ptr->effect = 0;
 
@@ -1342,7 +1344,7 @@ static void parse_frequencies(void)
 		if (of_has(a_ptr->flags, OF_LIGHT))
 		{
 			/* Handle permanent light */
-			file_putf(log_file, "Adding 1 for permanent light - general.\n");
+			file_putf(log_file, "Adding 1 for light radius - general.\n");
 
 			(artprobs[ART_IDX_GEN_LIGHT])++;
 		}
@@ -1993,7 +1995,6 @@ static void add_to_hit(artifact_type *a_ptr, int fixed, int random)
 		}
 	}
 	a_ptr->to_h += (s16b)(fixed + randint0(random));
-	if (a_ptr->to_h > 0) of_on(a_ptr->flags, OF_SHOW_MODS);
 	file_putf(log_file, "Adding ability: extra to_h (now %+d)\n", a_ptr->to_h);
 }
 
@@ -2017,7 +2018,6 @@ static void add_to_dam(artifact_type *a_ptr, int fixed, int random)
 		}
 	}
 	a_ptr->to_d += (s16b)(fixed + randint0(random));
-	if (a_ptr->to_d > 0) of_on(a_ptr->flags, OF_SHOW_MODS);
 	file_putf(log_file, "Adding ability: extra to_dam (now %+d)\n", a_ptr->to_d);
 }
 
@@ -2488,8 +2488,16 @@ static void add_ability_aux(artifact_type *a_ptr, int r, s32b target_power)
 			add_immunity(a_ptr);
 			break;
 
-		case ART_IDX_GEN_LIGHT:
-			add_flag(a_ptr, OF_LIGHT);
+		case ART_IDX_GEN_LIGHT: {
+				if (a_ptr->tval != TV_LIGHT &&
+						!of_is_empty(a_ptr->pval_flags[DEFAULT_PVAL])) {
+					of_on(a_ptr->flags, OF_LIGHT);
+					of_on(a_ptr->pval_flags[DEFAULT_PVAL + 1], OF_LIGHT);
+					a_ptr->pval[DEFAULT_PVAL + 1] = 1;
+					recalc_num_pvals(a_ptr);
+				} else
+					break;
+			}
 			break;
 
 		case ART_IDX_GEN_SDIG:
@@ -2826,8 +2834,16 @@ static void scramble_artifact(int a_idx)
 		}
 
 		/* Clear the activations for rings and amulets but not lights */
-		if (a_ptr->tval != TV_LIGHT) a_ptr->effect = 0;
-
+		if (a_ptr->tval != TV_LIGHT)
+			a_ptr->effect = 0;
+		/* Restore lights */
+		else {
+			of_on(a_ptr->flags, OF_LIGHT);
+			of_on(a_ptr->flags, OF_NO_FUEL);
+			of_on(a_ptr->pval_flags[DEFAULT_PVAL], OF_LIGHT);
+			a_ptr->pval[DEFAULT_PVAL] = 2 + randint0(2);
+			a_ptr->num_pvals = 1;
+		}
 		/* Artifacts ignore everything */
 		create_mask(f, FALSE, OFT_IGNORE, OFT_MAX);
 		of_union(a_ptr->flags, f);
@@ -2981,16 +2997,9 @@ static void scramble_artifact(int a_idx)
 	file_putf(log_file, "New depths are min %d, max %d\n", a_ptr->alloc_min, a_ptr->alloc_max);
 	file_putf(log_file, "Power-based alloc_prob is %d\n", a_ptr->alloc_prob);
 
-	/* Restore some flags */
-	if (a_ptr->tval == TV_LIGHT) of_on(a_ptr->flags, OF_NO_FUEL);
-	if (a_idx < ART_MIN_NORMAL) of_on(a_ptr->flags, OF_INSTA_ART);
-
-	/*
-	 * Add OF_HIDE_TYPE to all artifacts with nonzero pval because we're
-	 * too lazy to find out which ones need it and which ones don't.
-	 */
-	if (a_ptr->pval[DEFAULT_PVAL])
-		of_on(a_ptr->flags, OF_HIDE_TYPE);
+	/* This will go */
+	if (a_idx < ART_MIN_NORMAL)
+		of_on(a_ptr->flags, OF_INSTA_ART);
 
 	/* Success */
 	file_putf(log_file, ">>>>>>>>>>>>>>>>>>>>>>>>>> ARTIFACT COMPLETED <<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n");
@@ -3069,7 +3078,8 @@ static bool artifacts_acceptable(void)
 				gloves > 0 ? " gloves" : "",
 				boots > 0 ? " boots" : "");
 
-			file_putf(log_file, "Restarting generation process: not enough%s", types);
+			file_putf(log_file, "Restarting generation process: not enough%s",
+				types);
 		}
 		return FALSE;
 	}

@@ -91,6 +91,7 @@ size_t randname_make(randname_type name_type, size_t min, size_t max, char *word
 
 		wordlist = sections[name_type];
 
+		(void)WIPE(lprobs, name_probs);
 		build_prob(lprobs, wordlist);
 
 		cached_type = name_type;
@@ -203,7 +204,7 @@ int main(int argc, char *argv[])
 	for (i = 0; i < 20; i++)
 	{
 		randname_make(RANDNAME_TOLKIEN, 5, 9, name, 256, name_sections);
-		name[0] = toupper((unsigned char) name[0]);
+		my_strcap(name);
 		printf("%s\n", name);
 	}
 

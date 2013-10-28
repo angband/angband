@@ -110,6 +110,7 @@ bool check_side_immune(int type);
 int inven_damage(struct player *p, int type, int cperc);
 int adjust_dam(struct player *p, int type, int dam, aspect dam_aspect, int resist);
 void monster_learn_resists(struct monster *m, struct player *p, int type);
+void dedup_hates_flags(bitflag *f);
 
 /* spells2.c */
 extern bool hp_player(int num);
@@ -128,12 +129,12 @@ extern bool lose_all_info(void);
 extern void set_recall(void);
 extern bool detect_traps(bool aware);
 extern bool detect_doorstairs(bool aware);
-extern bool detect_treasure(bool aware);
+extern bool detect_treasure(bool aware, bool full);
 extern bool detect_close_buried_treasure(void);
-extern bool detect_objects_magic(bool aware);
 extern bool detect_monsters_normal(bool aware);
 extern bool detect_monsters_invis(bool aware);
 extern bool detect_monsters_evil(bool aware);
+extern bool detect_monsters_entire_level(void);
 extern bool detect_all(bool aware);
 extern void stair_creation(void);
 extern bool enchant(object_type *o_ptr, int n, int eflag);

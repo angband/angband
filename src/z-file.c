@@ -237,10 +237,24 @@ size_t path_build(char *buf, size_t len, const char *base, const char *leaf)
 # define HAVE_READ
 #endif
 
+/* Some defines for compatibility between various build platforms */
+#ifndef S_IRUSR
+#define S_IRUSR S_IREAD
+#endif
+
+#ifndef S_IWUSR
+#define S_IWUSR S_IWRITE
+#endif
+
 /* if the flag O_BINARY is not defined, it is not needed , but we still
  * need it defined so it will compile */
 #ifndef O_BINARY
 #define O_BINARY 0
+#endif
+
+/* Avoid a compiler warning when cross compiling for windows */
+#ifdef __STRICT_ANSI__
+FILE *fdopen(int handle, const char *mode);
 #endif
 
 /* Private structure to hold file pointers and useful info. */
@@ -368,25 +382,28 @@ ang_file *file_open(const char *fname, file_mode mode, file_type ftype)
 	path_parse(buf, sizeof(buf), fname);
 
 	switch (mode) {
-		case MODE_WRITE: {
+		case MODE_WRITE: { 
 			if (ftype == FTYPE_SAVE) {
 				/* open only if the file does not exist */
 				int fd;
-				fd = open(buf,
-					O_CREAT | O_EXCL | O_WRONLY | O_BINARY, S_IRUSR | S_IWUSR);
+				fd = open(buf, O_CREAT | O_EXCL | O_WRONLY | O_BINARY, S_IRUSR | S_IWUSR);
 				if (fd < 0) {
 					/* there was some error */
 					f->fh = NULL;
 				} else {
 					f->fh = fdopen(fd, "wb");
 				}
-			} else
+			} else {
 				f->fh = fopen(buf, "wb");
-			 break;
-		 }
-		case MODE_READ:   f->fh = fopen(buf, "rb"); break;
+			}
+			break;
+		}
+
+		case MODE_READ: f->fh = fopen(buf, "rb"); break;
+
 		case MODE_APPEND: f->fh = fopen(buf, "a+"); break;
-		default:          f->fh = fopen(buf, "__");
+
+		default: f->fh = fopen(buf, "__");
 	}
 
 	if (f->fh == NULL)
@@ -525,8 +542,6 @@ bool file_getl(ang_file *f, char *buf, size_t len)
 	byte b;
 	size_t i = 0;
 
-	bool check_encodes = FALSE;
-
 	/* Leave a byte for the terminating 0 */
 	size_t max_len = len - 1;
 
@@ -575,25 +590,8 @@ bool file_getl(ang_file *f, char *buf, size_t len)
 			continue;
 		}
 
-		/* Ignore non-printables */
-		else if (my_isprint((unsigned char)c))
-  		{
-			buf[i++] = c;
-
-			/* Notice possible encode */
- 			if (c == '[') check_encodes = TRUE;
-
-			continue;
-		}
-		else
-		{
-			buf[i++] = '?';
-			continue;
-		}
+		buf[i++] = c;
 	}
-
-	/* Translate encodes if necessary */
- 	if (check_encodes) xstr_trans(buf, LATIN1);
 
 	buf[i] = '\0';
 	return TRUE;
@@ -653,7 +651,7 @@ bool file_vputf(ang_file *f, const char *fmt, va_list vp)
 /*
  * Format and translate a string, then print it out to file.
  */
-bool x_file_putf(ang_file *f, int encoding, const char *fmt, ...)
+bool x_file_putf(ang_file *f, const char *fmt, ...)
 {
 	va_list vp;
 
@@ -667,9 +665,6 @@ bool x_file_putf(ang_file *f, int encoding, const char *fmt, ...)
 
  	/* End the Varargs Stuff */
  	va_end(vp);
-
- 	/* Translate*/
- 	xstr_trans(buf, encoding);
 
  	return file_put(f, buf);
 }
@@ -826,8 +821,7 @@ void my_dclose(ang_dir *dir)
 	FREE(dir);
 }
 
-#endif /* WINDOWS */
-
+#else /* WINDOWS */
 
 #ifdef HAVE_DIRENT_H
 
@@ -909,4 +903,4 @@ void my_dclose(ang_dir *dir)
 }
 
 #endif /* HAVE_DIRENT_H */
-
+#endif /* WINDOWS */

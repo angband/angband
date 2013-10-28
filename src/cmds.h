@@ -11,8 +11,8 @@ typedef void (*cmd_handler_fn)(cmd_code code, cmd_arg args[]);
 
 /* cmd0.c */
 extern void cmd_init(void);
-unsigned char cmd_lookup_key(cmd_code cmd);
-cmd_code cmd_lookup(unsigned char key);
+unsigned char cmd_lookup_key(cmd_code cmd, int mode);
+cmd_code cmd_lookup(unsigned char key, int mode);
 
 /* cmd-obj.c */
 void do_cmd_uninscribe(cmd_code code, cmd_arg args[]);
@@ -124,13 +124,16 @@ extern int cmp_monsters(const void *a, const void *b);
 
 
 /* ui-spell.c -- just for now */
+int get_spell(const object_type *o_ptr, const char *verb,
+		bool (*spell_test)(int spell));
 void textui_book_browse(const object_type *o_ptr);
 void textui_spell_browse(void);
 void textui_obj_study(void);
 void textui_obj_cast(void);
+int textui_obj_cast_ret(void);
 
 /* ui-knowledge.c */
-extern int big_pad(int col, int row, byte a, byte c);
+extern int big_pad(int col, int row, byte a, wchar_t c);
 extern void textui_browse_object_knowledge(const char *name, int row);
 extern void textui_knowledge_init(void);
 extern void textui_browse_knowledge(void);

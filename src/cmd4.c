@@ -31,6 +31,7 @@
 #include "squelch.h"
 #include "ui.h"
 #include "ui-menu.h"
+#include "button.h"
 
 
 
@@ -62,7 +63,7 @@ void do_cmd_redraw(void)
 
 	/* Reset "inkey()" */
 	flush();
-	
+
 	if (character_dungeon)
 		verify_panel();
 
@@ -124,12 +125,40 @@ void do_cmd_change_name(void)
 	const char *p;
 
 	bool more = TRUE;
+	bool button_state;
+
+	if (OPT(mouse_movement)) {
+		/**
+		 * show some buttons on the last line regardless of whether
+		 * mouse buttons are usually shown
+		 */
+		button_state = OPT(mouse_buttons);
+		if (!button_state) {
+			option_set("mouse_buttons", TRUE);
+		}
+	} else {
+		/* make sure we do not change the state of the mouse_buttons option below */
+		button_state = TRUE;
+	}
 
 	/* Prompt */
 	p = "['c' to change name, 'f' to file, 'h' to change mode, or ESC]";
 
 	/* Save screen */
 	screen_save();
+
+	/* backup the previous buttons and clear them */
+	button_backup_all();
+	button_kill_all();
+
+	/* add some 1d buttons for if we are using them */
+	button_add("[c]", 'c');
+	button_add("[f]", 'f');
+	button_add("[->]", 'h');
+	button_add("[<-]", 'l');
+
+	button_add("[Ret]",'\n');
+	button_add("[ESC]",ESCAPE);
 
 	/* Forever */
 	while (more)
@@ -139,11 +168,19 @@ void do_cmd_change_name(void)
 
 		/* Prompt */
 		Term_putstr(2, 23, -1, TERM_WHITE, p);
+		/* display the mouse buttons */
+		if (OPT(mouse_buttons)) {
+			if (Term->hgt == 24) {
+				button_print(23, 2+62);
+			} else {
+				button_print(Term->hgt - 1, COL_MAP);
+			}
+		}
 
 		/* Query */
 		ke = inkey_ex();
 
-		if (ke.type == EVT_KBRD) {
+		if ((ke.type == EVT_KBRD)||(ke.type == EVT_BUTTON)) {
 			switch (ke.key.code) {
 				case ESCAPE: more = FALSE; break;
 				case 'c': {
@@ -189,12 +226,27 @@ void do_cmd_change_name(void)
 					break;
 			}
 		} else if (ke.type == EVT_MOUSE) {
-			/* Just flip through the screens */			
-			mode = (mode + 1) % INFO_SCREENS;
+			if (ke.mouse.button == 1) {
+				/* Flip through the screens */			
+				mode = (mode + 1) % INFO_SCREENS;
+			} else
+			if (ke.mouse.button == 2) {
+				/* exit the screen */
+				more = FALSE;
+			} else
+			{
+				/* Flip backwards through the screens */			
+				mode = (mode - 1) % INFO_SCREENS;
+			}
 		}
 
 		/* Flush messages */
 		message_flush();
+	}
+	/* Remove the 1d buttons that we added earlier */
+	button_restore();
+	if (!button_state) {
+		option_set("mouse_buttons", FALSE);
 	}
 
 	/* Load screen */
@@ -315,13 +367,18 @@ void do_cmd_messages(void)
 
 		/* Scroll forwards or backwards using mouse clicks */
 		if (ke.type == EVT_MOUSE) {
-			if (ke.mouse.y <= hgt / 2) {
-				/* Go older if legal */
-				if (i + 20 < n)
-					i += 20;
-			} else {
-				/* Go newer */
-				i = (i >= 20) ? (i - 20) : 0;
+			if (ke.mouse.button == 1) {
+				if (ke.mouse.y <= hgt / 2) {
+					/* Go older if legal */
+					if (i + 20 < n)
+						i += 20;
+				} else {
+					/* Go newer */
+					i = (i >= 20) ? (i - 20) : 0;
+				}
+			} else
+			if (ke.mouse.button == 2) {
+				more = FALSE;
 			}
 		} else if (ke.type == EVT_KBRD) {
 			switch (ke.key.code) {
@@ -357,8 +414,7 @@ void do_cmd_messages(void)
 
 				case ARROW_DOWN:
 				case '2':
-				case '\r':
-				case '\n':
+				case KC_ENTER:
 					i = (i >= 1) ? (i - 1) : 0;
 					break;
 
@@ -416,8 +472,8 @@ void do_cmd_messages(void)
  */
 void do_cmd_note(void) {
 	/* Allocate/Initialize strings to get and format user input. */
-	char tmp[200];
-	char note[220];
+	char tmp[70];
+	char note[90];
 	my_strcpy(tmp, "", sizeof(tmp));
 	my_strcpy(note, "", sizeof(note));
 
@@ -593,7 +649,7 @@ void do_cmd_load_screen(void)
 	int i, y, x;
 
 	byte a = 0;
-	char c = ' ';
+	wchar_t c = L' ';
 
 	bool okay = TRUE;
 
@@ -626,8 +682,9 @@ void do_cmd_load_screen(void)
 		/* Show each row */
 		for (x = 0; x < 79; x++)
 		{
+			Term_mbstowcs(&c, &buf[x], 1);
 			/* Put the attr/char */
-			Term_draw(x, y, TERM_WHITE, buf[x]);
+			Term_draw(x, y, TERM_WHITE, c);
 		}
 	}
 
@@ -682,11 +739,12 @@ static void do_cmd_save_screen_text(void)
 	int y, x;
 
 	byte a = 0;
-	char c = ' ';
+	wchar_t c = L' ';
 
 	ang_file *fff;
 
 	char buf[1024];
+	char *p;
 
 	/* Build the filename */
 	path_build(buf, 1024, ANGBAND_DIR_USER, "dump.txt");
@@ -701,6 +759,7 @@ static void do_cmd_save_screen_text(void)
 	/* Dump the screen */
 	for (y = 0; y < 24; y++)
 	{
+		p = buf;
 		/* Dump each row */
 		for (x = 0; x < 79; x++)
 		{
@@ -708,11 +767,11 @@ static void do_cmd_save_screen_text(void)
 			(void)(Term_what(x, y, &a, &c));
 
 			/* Dump it */
-			buf[x] = c;
+			p += wctomb(p, c);
 		}
 
 		/* Terminate */
-		buf[x] = '\0';
+		*p = '\0';
 
 		/* End the row */
 		file_putf(fff, "%s\n", buf);

@@ -277,7 +277,7 @@ s16b Rand_normal(int mean, int stand) {
 	}
 
 	/* Convert the index into an offset */
-	offset = (long)stand * (long)low / RANDNOR_STD;
+	offset = (s16b)((long)stand * (long)low / RANDNOR_STD);
 
 	/* One half should be negative */
 	if (one_in_(2)) return (mean - offset);
@@ -472,11 +472,12 @@ void rand_fix(u32b val) {
 	rand_fixval = val;
 }
 
-/*
+int getpid(void);
+
+/**
  * Another simple RNG that does not use any of the above state
  * (so can be used without disturbing the game's RNG state)
  */
-int getpid(void);
 u32b Rand_simple(u32b m) {
 	static time_t seed;
 	time_t v;

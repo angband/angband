@@ -738,7 +738,7 @@ static void mass_produce(object_type *o_ptr)
 		case TV_BOLT:
 		{
 			if (cost <= 5L)
-				size = randint1(3) * 20;         /* 20-60 in 20s */
+				size = randint1(2) * 20;         /* 20-40 in 20s */
 			else if (cost > 5L && cost <= 50L)
 				size = randint1(4) * 10;         /* 10-40 in 10s */
 			else if (cost > 50 && cost <= 500L)
@@ -764,7 +764,7 @@ static void store_object_absorb(object_type *o_ptr, object_type *j_ptr)
 	int total = o_ptr->number + j_ptr->number;
 
 	/* Combine quantity, lose excess items */
-	o_ptr->number = (total > 99) ? 99 : total;
+	o_ptr->number = (total >= MAX_STACK_SIZE) ? MAX_STACK_SIZE - 1 : total;
 
 	/* Hack -- if rods are stacking, add the charging timeouts */
 	if (o_ptr->tval == TV_ROD)
@@ -1505,7 +1505,7 @@ static void store_create_staples(void)
 				break;
 
 			case MAKE_MAX:
-				o_ptr->number = 99;
+				o_ptr->number = MAX_STACK_SIZE - 1;
 				break;
 		}
 	}
@@ -1593,7 +1593,8 @@ struct owner *store_ownerbyidx(struct store *s, unsigned int idx) {
 			return o;
 	}
 
-	notreached;
+	quit_fmt("Bad call to store_ownerbyidx: idx is %d\n", idx);
+	return 0; /* Needed to avoid Windows compiler warning */
 }
 
 static struct owner *store_choose_owner(struct store *s) {
@@ -2356,9 +2357,10 @@ static bool store_purchase(int item)
 		return FALSE;
 	}
 
+	if (item < 0) return FALSE;
+
 	/* Get the actual object */
 	o_ptr = &store->stock[item];
-	if (item < 0) return FALSE;
 
 	/* Clear all current messages */
 	msg_flag = FALSE;
@@ -2417,7 +2419,8 @@ static bool store_purchase(int item)
 	}
 
 	/* Describe the object (fully) */
-	object_desc(o_name, sizeof(o_name), i_ptr, ODESC_PREFIX | ODESC_FULL);
+	object_desc(o_name, sizeof(o_name), i_ptr, ODESC_PREFIX | ODESC_FULL |
+		ODESC_STORE);
 
 	/* Attempt to buy it */
 	if (store->sidx != STORE_HOME)
@@ -2571,6 +2574,9 @@ void do_cmd_sell(cmd_code code, cmd_arg args[])
 	/* Take the object from the player */
 	inven_item_increase(item, -amt);
 	inven_item_optimize(item);
+
+	/* Notice if pack items need to be combined or reordered */
+	notice_stuff(p_ptr);
 
 	/* Handle stuff */
 	handle_stuff(p_ptr);
@@ -2755,6 +2761,7 @@ static bool store_sell(void)
 	return TRUE;
 }
 
+//static bool store_sell(int sell_count)
 
 /*
  * Examine an item in a store
@@ -2774,9 +2781,14 @@ static void store_examine(int item)
 	/* Get the actual object */
 	o_ptr = &store->stock[item];
 
+	/* Hack -- no flush needed */
+	msg_flag = FALSE;
+
 	/* Show full info in most stores, but normal info in player home */
-	tb = object_info(o_ptr, (store->sidx != STORE_HOME) ? OINFO_FULL : OINFO_NONE);
-	object_desc(header, sizeof(header), o_ptr, ODESC_PREFIX | ODESC_FULL);
+	tb = object_info(o_ptr, (store->sidx != STORE_HOME) ? OINFO_FULL :
+		OINFO_NONE);
+	object_desc(header, sizeof(header), o_ptr, ODESC_PREFIX | ODESC_FULL |
+		ODESC_STORE);
 
 	textui_textblock_show(tb, area, header);
 	textblock_free(tb);
@@ -2842,6 +2854,9 @@ static bool store_process_command_key(struct keypress kp)
 {
 	int cmd = 0;
 
+	/* Hack -- no flush needed */
+	msg_flag = FALSE;
+
 	/* Process the keycode */
 	switch (kp.code) {
 		case 'T': /* roguelike */
@@ -2875,6 +2890,36 @@ static bool store_process_command_key(struct keypress kp)
 	return TRUE;
 }
 
+/*
+ * Select an item from the store's stock, and return the stock index
+ */
+static int store_get_stock(menu_type *m, int oid)
+{
+	ui_event e;
+	int no_act = m->flags & MN_NO_ACTION;
+
+	/* set a flag to make sure that we get the selection or escape
+	 * without running the menu handler
+	 */
+	m->flags |= MN_NO_ACTION;
+	e = menu_select(m, 0, TRUE);
+	if (!no_act) {
+		m->flags &= ~MN_NO_ACTION;
+	}
+
+	if (e.type == EVT_SELECT) {
+		return m->cursor;
+	} else
+	if (e.type == EVT_ESCAPE) {
+		return -1;
+	}
+
+	/* if we do not have a new selection, just return the original item */
+	return oid;
+}
+
+int context_menu_store(struct store *store, const int oid, int x, int y);
+int context_menu_store_item(struct store *store, const int oid, int x, int y);
 
 /*
  *
@@ -2882,12 +2927,54 @@ static bool store_process_command_key(struct keypress kp)
 static bool store_menu_handle(menu_type *m, const ui_event *event, int oid)
 {
 	bool processed = TRUE;
-
+	struct store *store = current_store();
+	
 	if (event->type == EVT_SELECT)
 	{
 		/* Nothing for now, except "handle" the event */
 		return TRUE;
 		/* In future, maybe we want a display a list of what you can do. */
+	}
+	else if (event->type == EVT_MOUSE)
+	{
+		if (event->mouse.button == 2) {
+			/* exit the store? what already does this? menu_handle_mouse
+			 * so exit this so that menu_handle_mouse will be called */
+			return FALSE;
+		} else
+		if (event->mouse.button == 1) {
+			bool action = FALSE;
+			if ((event->mouse.y == 0) || (event->mouse.y == 1)) {
+				/* show the store context menu */
+				struct store *store = current_store();
+				context_menu_store(store,oid,event->mouse.x,event->mouse.y);
+				action = TRUE;
+			} else
+			/* if press is on a list item, so store item context */
+			if (event->mouse.y == 4+oid) {
+				/* click was on an item */
+				struct store *store = current_store();
+				context_menu_store_item(store,oid, event->mouse.x,event->mouse.y);
+				action = TRUE;
+			}
+			if (action) {
+				store_flags |= (STORE_FRAME_CHANGE | STORE_GOLD_CHANGE);
+
+				/* Let the game handle any core commands (equipping, etc) */
+				process_command(CMD_STORE, TRUE);
+
+				/* Notice and handle stuff */
+				notice_stuff(p_ptr);
+				handle_stuff(p_ptr);
+
+				/* Display the store */
+				store_display_recalc(m);
+				store_menu_recalc(m);
+				store_redraw();
+
+				return TRUE;
+			}
+		}
 	}
 	else if (event->type == EVT_KBRD)
 	{
@@ -2897,9 +2984,31 @@ static bool store_menu_handle(menu_type *m, const ui_event *event, int oid)
 			case 's':
 			case 'd': storechange = store_sell(); break;
 			case 'p':
-			case 'g': storechange = store_purchase(oid); break;
+			case 'g':
+				/* use the old way of purchasing items */
+				msg_flag = FALSE;
+				if (store->sidx != STORE_HOME) {
+					prt("Purchase which item? (ESC to cancel, Enter to select)", 0, 0);
+				} else {
+					prt("Get which item? (Esc to cancel, Enter to select)", 0, 0);
+				}
+				oid = store_get_stock(m, oid);
+				prt("", 0, 0);
+				if (oid >= 0) {
+					storechange = store_purchase(oid);
+				}
+				break;
 			case 'l':
-			case 'x': store_examine(oid); break;
+			case 'x':
+				/* use the old way of examining items */
+				msg_flag = FALSE;
+				prt("Examine which item? (ESC to cancel, Enter to select)", 0, 0);
+				oid = store_get_stock(m, oid);
+				prt("", 0, 0);
+				if (oid >= 0) {
+					store_examine(oid);
+				}
+				break;
 
 			/* XXX redraw functionality should be another menu_iter handler */
 			case KTRL('R'): {
@@ -3022,12 +3131,6 @@ void do_cmd_store(cmd_code code, cmd_arg args[])
 	/* Verify that there is a store */
 	if (!store) {
 		msg("You see no store here.");
-		return;
-	}
-
-	/* Check if we can enter the store */
-	if (OPT(birth_no_stores)) {
-		msg("The doors are locked.");
 		return;
 	}
 

@@ -40,14 +40,6 @@
  * These limitations could be fixed by stealing some of the code from,
  * say, "vsprintf()" and placing it into my "vstrnfmt()" function.
  *
- * Note that a "^" inside a "format sequence" causes the first non-space
- * character in the string resulting from the combination of the format
- * sequence and the argument(s) to be "capitalized" if possible.  Note
- * that the "^" character is removed before the "standard" formatting
- * routines are called.  Likewise, a "*" inside a "format sequence" is
- * removed from the "format sequence", and replaced by the textual form
- * of the next argument in the argument list.  See examples below.
- *
  * Legal format characters: %,b,n,p,c,s,d,i,o,u,X,x,E,e,F,f,G,g,r,v.
  *
  * Format("%%")
@@ -130,9 +122,8 @@
  * For example: "s = buf; n = vstrnfmt(s+n, 100-n, ...); ..." will allow
  * multiple bounded "appends" to "buf", with constant access to "strlen(buf)".
  *
- * For example: "format("%^-.*s", i, txt)" will produce a string containing
- * the first "i" characters of "txt", left justified, with the first non-space
- * character capitilized, if reasonable.
+ * For example: "format("%-.*s", i, txt)" will produce a string containing
+ * the first "i" characters of "txt", left justified.
  */
 
 
@@ -189,12 +180,10 @@
 size_t vstrnfmt(char *buf, size_t max, const char *fmt, va_list vp)
 {
 	const char *s;
+	int i = 0, len = 0;
 
 	/* The argument is "long" */
 	bool do_long;
-
-	/* The argument needs to be uppercased */
-	bool titlecase;
 
 	/* Bytes used in buffer */
 	size_t n;
@@ -283,7 +272,6 @@ size_t vstrnfmt(char *buf, size_t max, const char *fmt, va_list vp)
 		aux[q++] = '%';
 
 		do_long = FALSE;
-		titlecase = FALSE;
 
 		/* Build the "aux" string */
 		while (TRUE)
@@ -350,11 +338,6 @@ size_t vstrnfmt(char *buf, size_t max, const char *fmt, va_list vp)
 					while (aux[q]) q++;
 
 					/* Skip the "*" */
-					s++;
-				}
-				else if (*s == '^')
-				{
-					titlecase = TRUE;
 					s++;
 				}
 
@@ -509,32 +492,81 @@ size_t vstrnfmt(char *buf, size_t max, const char *fmt, va_list vp)
 			/* String */
 			case 's':
 			{
-				const char *arg;
-				char arg2[1024];
+				if (do_long)
+				{
+					const wchar_t *arg;
+					char arg2[1024];
 
-				/* XXX There is a big bug here: if one
-				 * passes "%.0s" to strnfmt, then really we
-				 * should not dereference the arg at all.
-				 * But it does.  See bug #666.
-				 */
+					/* XXX There is a big bug here: if one
+					 * passes "%.0s" to strnfmt, then really we
+					 * should not dereference the arg at all.
+					 * But it does.  See bug #666.
+					 */
 
-				/* Get the next argument */
-				arg = tval.t == T_END ? va_arg(vp, const char *) : tval.u.s;
+					/* Get the next argument */
+					arg = va_arg(vp, const wchar_t *);
 
-				/* Hack -- convert NULL to EMPTY */
-				if (!arg) arg = "";
+					/* Hack -- convert NULL to EMPTY */
+					if (!arg) arg = L"";
 
-				/* Prevent buffer overflows */
-				(void)my_strcpy(arg2, arg, sizeof(arg2));
+					/* Format the argument */
+					/* snprintf should not be used in a snprintf replacement function
+					snprintf(tmp, sizeof(tmp), aux, arg); */
+					/* Prevent buffer overflows and convert string to char */
+					/* this really should use a wcstombs type function */
+					len = wcslen(arg);
+					if (len >= 768) {
+						len = 767;
+					}
+					for (i = 0; i < len; ++i) {
+						arg2[i] = (char)arg[i];
+					}
+					arg2[len] = '\0';
 
-				/* Translate it to 8-bit (Latin-1) */
- 				xstr_trans(arg2, LATIN1);
+					/* Remove the l from aux, since we no longer have wchar_t as input */
+					aux[q-2] = 's';
+					aux[q-1] = '\0';
 
-				/* Format the argument */
-				sprintf(tmp, aux, arg2);
+					/* Format the argument */
+					sprintf(tmp, aux, arg2);
 
-				/* Done */
-				break;
+					/*if (my_strcpy((char*)arg2, (char*)arg, sizeof(arg2)) < 1024) {
+						sprintf(tmp, aux, arg2);
+					}*/
+
+					/* Done */
+					break;
+				}
+				else
+				{
+					const char *arg;
+					char arg2[1024];
+
+					/* XXX There is a big bug here: if one
+					 * passes "%.0s" to strnfmt, then really we
+					 * should not dereference the arg at all.
+					 * But it does.  See bug #666.
+					 */
+
+					/* Get the next argument */
+					arg = tval.t == T_END ? va_arg(vp, const char *) : tval.u.s;
+
+					/* Hack -- convert NULL to EMPTY */
+					if (!arg) arg = "";
+
+					/* Format the argument */
+					/* snprintf should not be used in a snprintf replacement function
+					snprintf(tmp, sizeof(tmp), aux, arg); */
+
+					/* Prevent buffer overflows */
+					(void)my_strcpy(arg2, arg, sizeof(arg2));
+
+					/* Format the argument */
+					sprintf(tmp, aux, arg2);
+
+					/* Done */
+					break;
+				}
 			}
 
 			/* Oops */
@@ -545,23 +577,6 @@ size_t vstrnfmt(char *buf, size_t max, const char *fmt, va_list vp)
 
 				/* Return "error" */
 				return (0);
-			}
-		}
-
-		if (titlecase)
-		{
-			for (q = 0; tmp[q]; q++)
-			{
-				/* Notice first non-space */
-				if (!my_isspace((unsigned char)tmp[q]))
-				{
-					/* Capitalize if possible */
-					if (my_islower((unsigned char)tmp[q]))
-						tmp[q] = my_toupper((unsigned char)tmp[q]);
-
-					/* Done */
-					break;
-				}
 			}
 		}
 

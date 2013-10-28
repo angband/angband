@@ -30,6 +30,7 @@
 #include "z-form.h"
 #include "z-util.h"
 #include "z-virt.h"
+#include "z-term.h"
 
 
 const char *parser_error_str[PARSE_ERROR_MAX] = {
@@ -81,7 +82,7 @@ struct parser_spec {
 struct parser_value {
 	struct parser_spec spec;
 	union {
-		char cval;
+		wchar_t cval;
 		int ival;
 		unsigned int uval;
 		char *sval;
@@ -345,7 +346,7 @@ enum parser_error parser_parse(struct parser *p, const char *line) {
 		}
 		else if (t == PARSE_T_CHAR)
 		{
-			v->u.cval = *tok;
+			Term_mbstowcs(&v->u.cval, tok, 1);
 		}
 		else if (t == PARSE_T_SYM || t == PARSE_T_STR)
 		{
@@ -545,7 +546,8 @@ static struct parser_value *parser_getval(struct parser *p, const char *name) {
 			return v;
 		}
 	}
-	assert(0);
+	quit_fmt("parser_getval error: name is %s\n", name);
+	return 0; /* Needed to avoid Windows compiler warning */
 }
 
 const char *parser_getsym(struct parser *p, const char *name) {
@@ -578,7 +580,7 @@ struct random parser_getrand(struct parser *p, const char *name) {
 	return v->u.rval;
 }
 
-char parser_getchar(struct parser *p, const char *name) {
+wchar_t parser_getchar(struct parser *p, const char *name) {
 	struct parser_value *v = parser_getval(p, name);
 	assert((v->spec.type & ~PARSE_T_OPT) == PARSE_T_CHAR);
 	return v->u.cval;

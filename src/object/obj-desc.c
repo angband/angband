@@ -21,8 +21,6 @@
 #include "object/tvalsval.h"
 #include "object/pval.h"
 
-static size_t obj_desc_name_format(char *buf, size_t max, size_t end,
-		const char *fmt, const char *modstr, bool pluralise);
 
 /**
  * Puts the object base kind's name into buf.
@@ -235,7 +233,7 @@ static size_t obj_desc_name_prefix(char *buf, size_t max, size_t end,
  * '#' will be replaced with 'modstr' (which may contain the pluralising
  * formats given above).
  */
-static size_t obj_desc_name_format(char *buf, size_t max, size_t end,
+size_t obj_desc_name_format(char *buf, size_t max, size_t end,
 		const char *fmt, const char *modstr, bool pluralise)
 {
 	/* Copy the string */
@@ -394,9 +392,9 @@ static size_t obj_desc_chest(const object_type *o_ptr, char *buf, size_t max, si
 		strnfcat(buf, max, &end, " (empty)");
 
 	/* May be "disarmed" */
-	else if (o_ptr->pval[DEFAULT_PVAL] < 0)
+	else if (!is_locked_chest(o_ptr))
 	{
-		if (chest_traps[0 - o_ptr->pval[DEFAULT_PVAL]])
+		if (chest_trap_type(o_ptr) != 0)
 			strnfcat(buf, max, &end, " (disarmed)");
 		else
 			strnfcat(buf, max, &end, " (unlocked)");
@@ -406,7 +404,7 @@ static size_t obj_desc_chest(const object_type *o_ptr, char *buf, size_t max, si
 	else
 	{
 		/* Describe the traps */
-		switch (chest_traps[o_ptr->pval[DEFAULT_PVAL]])
+		switch (chest_trap_type(o_ptr))
 		{
 			case 0:
 				strnfcat(buf, max, &end, " (Locked)");
@@ -454,8 +452,7 @@ static size_t obj_desc_combat(const object_type *o_ptr, char *buf, size_t max,
 	object_flags(o_ptr, flags);
 	object_flags_known(o_ptr, flags_known);
 
-	if (of_has(flags, OF_SHOW_DICE))
-	{
+	if (of_has(flags, OF_SHOW_DICE)) {
 		/* Only display the real damage dice if the combat stats are known */
 		if (spoil || object_attack_plusses_are_visible(o_ptr))
 			strnfcat(buf, max, &end, " (%dd%d)", o_ptr->dd, o_ptr->ds);
@@ -463,8 +460,7 @@ static size_t obj_desc_combat(const object_type *o_ptr, char *buf, size_t max,
 			strnfcat(buf, max, &end, " (%dd%d)", o_ptr->kind->dd, o_ptr->kind->ds);
 	}
 
-	if (of_has(flags, OF_SHOW_MULT))
-	{
+	if (of_has(flags, OF_SHOW_MULT)) {
 		/* Display shooting power as part of the multiplier */
 		if (of_has(flags, OF_MIGHT) &&
 		    (spoil || object_flag_is_known(o_ptr, OF_MIGHT)))
@@ -474,10 +470,9 @@ static size_t obj_desc_combat(const object_type *o_ptr, char *buf, size_t max,
 	}
 
 	/* Show weapon bonuses */
-	if (spoil || object_attack_plusses_are_visible(o_ptr))
-	{
-		if (of_has(flags, OF_SHOW_MODS) || o_ptr->to_d || o_ptr->to_h)
-		{
+	if (spoil || object_attack_plusses_are_visible(o_ptr)) {
+		if (wield_slot(o_ptr) == INVEN_WIELD || wield_slot(o_ptr) == INVEN_BOW
+				|| obj_is_ammo(o_ptr) || o_ptr->to_d || o_ptr->to_h) {
 			/* Make an exception for body armor with only a to-hit penalty */
 			if (o_ptr->to_h < 0 && o_ptr->to_d == 0 &&
 			    (o_ptr->tval == TV_SOFT_ARMOR ||
@@ -493,17 +488,14 @@ static size_t obj_desc_combat(const object_type *o_ptr, char *buf, size_t max,
 
 
 	/* Show armor bonuses */
-	if (spoil || object_defence_plusses_are_visible(o_ptr))
-	{
+	if (spoil || object_defence_plusses_are_visible(o_ptr)) {
 		if (obj_desc_show_armor(o_ptr))
 			strnfcat(buf, max, &end, " [%d,%+d]", o_ptr->ac, o_ptr->to_a);
 		else if (o_ptr->to_a)
 			strnfcat(buf, max, &end, " [%+d]", o_ptr->to_a);
 	}
 	else if (obj_desc_show_armor(o_ptr))
-	{
 		strnfcat(buf, max, &end, " [%d]", object_was_sensed(o_ptr) ? o_ptr->ac : o_ptr->kind->ac);
-	}
 
 	return end;
 }
@@ -526,6 +518,7 @@ static size_t obj_desc_pval(const object_type *o_ptr, char *buf, size_t max,
 {
 	bitflag f[OF_SIZE], f2[OF_SIZE];
 	int i;
+	bool any = FALSE;
 
 	object_flags(o_ptr, f);
 	create_mask(f2, FALSE, OFT_PVAL, OFT_STAT, OFT_MAX);
@@ -535,9 +528,10 @@ static size_t obj_desc_pval(const object_type *o_ptr, char *buf, size_t max,
 	strnfcat(buf, max, &end, " <");
 	for (i = 0; i < o_ptr->num_pvals; i++) {
 		if (spoil || object_this_pval_is_visible(o_ptr, i)) {
-			if (i > 0)
+			if (any)
 				strnfcat(buf, max, &end, ", ");
 			strnfcat(buf, max, &end, "%+d", o_ptr->pval[i]);
+			any = TRUE;
 		}
 	}
 
@@ -699,6 +693,10 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr,
 
 	/*** Some things get really simple descriptions ***/
 
+	if (o_ptr->marked == MARK_AWARE) {
+		return strnfmt(buf, max, "an unknown item");
+	}
+
 	if (o_ptr->tval == TV_GOLD)
 		return strnfmt(buf, max, "%d gold pieces worth of %s%s",
 				o_ptr->pval[DEFAULT_PVAL], o_ptr->kind->name,
@@ -730,9 +728,7 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr,
 		end = obj_desc_charges(o_ptr, buf, max, end);
 
 		if (mode & ODESC_STORE)
-		{
 			end = obj_desc_aware(o_ptr, buf, max, end);
-		}
 		else
 			end = obj_desc_inscrip(o_ptr, buf, max, end);
 	}

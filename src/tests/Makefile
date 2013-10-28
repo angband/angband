@@ -25,7 +25,7 @@ run : build
 
 bin/% : %.o ../angband.o test-utils.o unit-test.o
 	@mkdir -p $(shell echo "$$(dirname $@)")
-	@$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
+	@$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS) $(LDADD) $(LIBS)
 	@echo "  CC $@"
 
 clean :

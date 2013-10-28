@@ -97,7 +97,9 @@ typedef enum
 	ODESC_PLURAL = 0x08,   /*!< Always pluralise */
 	ODESC_SINGULAR    = 0x10,    /*!< Always singular */
 	ODESC_SPOIL  = 0x20,    /*!< Display regardless of player knowledge */
-	ODESC_PREFIX = 0x40   /* */
+	ODESC_PREFIX = 0x40,   /* */
+
+	ODESC_CAPITAL = 0x80	/*!< Capitalise object name */
 } odesc_detail_t;
 
 
@@ -163,6 +165,14 @@ typedef enum
 	INSCRIP_MAX                  /*!< Maximum number of pseudo-ID markers */
 } obj_pseudo_t;
 
+/*
+ * Chest check types
+ */
+enum chest_query {
+	CHEST_ANY,
+	CHEST_OPENABLE,
+	CHEST_TRAPPED
+};
 
 /*
  * Some constants used in randart generation and power calculation
@@ -184,6 +194,13 @@ typedef enum
 #define AMMO_RESCALER          20 /* this value is also used for torches */
 
 #define sign(x) ((x) > 0 ? 1 : ((x) < 0 ? -1 : 0))
+
+/* Values for struct object->marked */
+enum {
+	MARK_UNAWARE = 0,
+	MARK_AWARE = 1,
+	MARK_SEEN = 2
+};
 
 
 /*** Macros ***/
@@ -294,7 +311,7 @@ typedef struct object_kind
 	bitflag pval_flags[MAX_PVALS][OF_SIZE];	/**< pval flags */
 
 	byte d_attr;       /**< Default object attribute */
-	char d_char;       /**< Default object character */
+	wchar_t d_char;       /**< Default object character */
 
 	byte alloc_prob;   /**< Allocation: commonness */
 	byte alloc_min;    /**< Highest normal dungeon level */
@@ -314,7 +331,7 @@ typedef struct object_kind
 	/** Game-dependent **/
 
 	byte x_attr;   /**< Desired object attribute (set by user/pref file) */
-	char x_char;   /**< Desired object character (set by user/pref file) */
+	wchar_t x_char;   /**< Desired object character (set by user/pref file) */
 
 	/** Also saved in savefile **/
 
@@ -492,7 +509,7 @@ typedef struct object
 
 	byte number;		/* Number of items */
 	byte marked;		/* Object is marked */
-	bool ignore;		/* Object is ignored */
+	byte ignore;		/* Object is ignored */
 
 	s16b next_o_idx;	/* Next object in stack (if any) */
 	s16b held_m_idx;	/* Monster holding us (if any) */
@@ -514,14 +531,24 @@ typedef struct flavor {
 	byte sval;      /* Associated object sub-type */
 
 	byte d_attr;    /* Default flavor attribute */
-	char d_char;    /* Default flavor character */
+	wchar_t d_char;    /* Default flavor character */
 
 	byte x_attr;    /* Desired flavor attribute */
-	char x_char;    /* Desired flavor character */
+	wchar_t x_char;    /* Desired flavor character */
 } flavor_type;
 
 
 /*** Functions ***/
+
+/* chest.c */
+byte chest_trap_type(const object_type *o_ptr);
+bool is_trapped_chest(const object_type *o_ptr);
+bool is_locked_chest(const object_type *o_ptr);
+void unlock_chest(object_type *o_ptr);
+s16b chest_check(int y, int x, enum chest_query check_type);
+int count_chests(int *y, int *x, enum chest_query check_type);
+bool do_cmd_open_chest(int y, int x, s16b o_idx);
+bool do_cmd_disarm_chest(int y, int x, s16b o_idx);
 
 /* identify.c */
 extern s32b object_last_wield;
@@ -559,6 +586,7 @@ void object_notice_on_defend(struct player *p);
 void object_notice_on_wield(object_type *o_ptr);
 void object_notice_on_firing(object_type *o_ptr);
 void wieldeds_notice_flag(struct player *p, int flag);
+void wieldeds_notice_to_hit_on_attack(void);
 void wieldeds_notice_on_attack(void);
 void object_repair_knowledge(object_type *o_ptr);
 bool object_FA_would_be_obvious(const object_type *o_ptr);
@@ -572,6 +600,7 @@ void object_know_all_flags(object_type *o_ptr);
 /* obj-desc.c */
 void object_base_name(char *buf, size_t max, int tval, bool plural);
 void object_kind_name(char *buf, size_t max, const object_kind *kind, bool easy_know);
+size_t obj_desc_name_format(char *buf, size_t max, size_t end, const char *fmt, const char *modstr, bool pluralise);
 size_t object_desc(char *buf, size_t max, const object_type *o_ptr, odesc_detail_t mode);
 
 /* obj-info.c */
@@ -690,6 +719,9 @@ bool obj_can_takeoff(const object_type *o_ptr);
 bool obj_can_wear(const object_type *o_ptr);
 bool obj_can_fire(const object_type *o_ptr);
 bool obj_has_inscrip(const object_type *o_ptr);
+bool obj_is_useable(const object_type *o_ptr);
+bool obj_is_used_aimed(const object_type *o_ptr);
+bool obj_is_used_unaimed(const object_type *o_ptr);
 u16b object_effect(const object_type *o_ptr);
 object_type *object_from_item_idx(int item);
 bool obj_needs_aim(object_type *o_ptr);

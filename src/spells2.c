@@ -540,6 +540,8 @@ bool detect_traps(bool aware)
 
 	bool detect = FALSE;
 
+	object_type *o_ptr;
+
 	(void)aware;
 
 	/* Pick an area to map */
@@ -576,6 +578,26 @@ bool detect_traps(bool aware)
 				detect = TRUE;
 			}
 
+			/* Scan all objects in the grid to look for traps on chests */
+			for (o_ptr = get_first_object(y, x); o_ptr; o_ptr = get_next_object(o_ptr))
+			{
+				/* Skip anything not a trapped chest */
+				if (!is_trapped_chest(o_ptr)) continue;
+
+				/* Identify once */
+				if (!object_is_known(o_ptr))
+				{
+					/* Know the trap */
+					object_notice_everything(o_ptr);
+
+					/* Notice it */
+					disturb(p_ptr, 0, 0);
+
+					/* We found something to detect */
+					detect = TRUE;
+				}
+			}
+
 			/* Mark as trap-detected */
 			cave->info2[y][x] |= CAVE2_DTRAP;
 		}
@@ -587,6 +609,13 @@ bool detect_traps(bool aware)
 		for (x = x1 - 1; x < x2 + 1; x++)
 		{
 			if (!in_bounds_fully(y, x)) continue;
+
+			/* see if this grid is on the edge */
+			if (dtrap_edge(y, x)) {
+				cave->info2[y][x] |= CAVE2_DEDGE;
+			} else {
+				cave->info2[y][x] &= ~CAVE2_DEDGE;
+			}
 
 			/* Redraw */
 			cave_light_spot(cave, y, x);
@@ -690,7 +719,7 @@ bool detect_doorstairs(bool aware)
 /*
  * Detect all treasure around the player.
  */
-bool detect_treasure(bool aware)
+bool detect_treasure(bool aware, bool full)
 {
 	int i;
 	int y, x;
@@ -711,24 +740,19 @@ bool detect_treasure(bool aware)
 
 
 	/* Scan the dungeon */
-	for (y = y1; y < y2; y++)
-	{
-		for (x = x1; x < x2; x++)
-		{
+	for (y = y1; y < y2; y++) {
+		for (x = x1; x < x2; x++) {
 			if (!in_bounds_fully(y, x)) continue;
 
 			/* Notice embedded gold */
 			if ((cave->feat[y][x] == FEAT_MAGMA_H) ||
-			    (cave->feat[y][x] == FEAT_QUARTZ_H))
-			{
+				    (cave->feat[y][x] == FEAT_QUARTZ_H))
 				/* Expose the gold */
 				cave->feat[y][x] += 0x02;
-			}
 
 			/* Magma/Quartz + Known Gold */
 			if ((cave->feat[y][x] == FEAT_MAGMA_K) ||
-			    (cave->feat[y][x] == FEAT_QUARTZ_K))
-			{
+			    (cave->feat[y][x] == FEAT_QUARTZ_K)) {
 				/* Hack -- Memorize */
 				cave->info[y][x] |= (CAVE_MARK);
 
@@ -742,8 +766,7 @@ bool detect_treasure(bool aware)
 	}
 
 	/* Scan objects */
-	for (i = 1; i < o_max; i++)
-	{
+	for (i = 1; i < o_max; i++)	{
 		object_type *o_ptr = object_byid(i);
 
 		/* Skip dead objects */
@@ -759,14 +782,15 @@ bool detect_treasure(bool aware)
 		/* Only detect nearby objects */
 		if (x < x1 || y < y1 || x > x2 || y > y2) continue;
 
-		/* Hack -- memorize it */
-		o_ptr->marked = TRUE;
+		/* Memorize it */
+		if (o_ptr->marked < MARK_SEEN)
+			o_ptr->marked = full ? MARK_SEEN : MARK_AWARE;
 
 		/* Redraw */
 		cave_light_spot(cave, y, x);
 
 		/* Detect */
-		if (!squelch_item_ok(o_ptr))
+		if (!squelch_item_ok(o_ptr) || !full)
 			objects = TRUE;
 	}
 
@@ -837,84 +861,6 @@ bool detect_close_buried_treasure(void)
 
 	return (gold_buried);
 }
-
-/*
- * Detect "magic" objects around the player.
- *
- * This will light up all spaces with "magic" items, including artifacts,
- * ego-items, potions, scrolls, books, rods, wands, staves, amulets, rings,
- * and "enchanted" items of the "good" variety.
- *
- * It can probably be argued that this function is now too powerful.
- */
-bool detect_objects_magic(bool aware)
-{
-	int i, y, x, tv;
-	int x1, x2, y1, y2;
-
-	bool detect = FALSE;
-
-
-	/* Pick an area to map */
-	y1 = p_ptr->py - DETECT_DIST_Y;
-	y2 = p_ptr->py + DETECT_DIST_Y;
-	x1 = p_ptr->px - DETECT_DIST_X;
-	x2 = p_ptr->px + DETECT_DIST_X;
-
-	if (y1 < 0) y1 = 0;
-	if (x1 < 0) x1 = 0;
-
-
-	/* Scan all objects */
-	for (i = 1; i < o_max; i++)
-	{
-		object_type *o_ptr = object_byid(i);
-
-		/* Skip dead objects */
-		if (!o_ptr->kind) continue;
-
-		/* Skip held objects */
-		if (o_ptr->held_m_idx) continue;
-
-		/* Location */
-		y = o_ptr->iy;
-		x = o_ptr->ix;
-
-
-		/* Only detect nearby objects */
-		if (x < x1 || y < y1 || x > x2 || y > y2) continue;
-
-		/* Examine the tval */
-		tv = o_ptr->tval;
-
-		/* Artifacts, misc magic items, or enchanted wearables */
-		if (o_ptr->artifact || o_ptr->ego ||
-		    (tv == TV_AMULET) || (tv == TV_RING) ||
-		    (tv == TV_STAFF) || (tv == TV_WAND) || (tv == TV_ROD) ||
-		    (tv == TV_SCROLL) || (tv == TV_POTION) ||
-		    (tv == TV_MAGIC_BOOK) || (tv == TV_PRAYER_BOOK) ||
-		    ((o_ptr->to_a > 0) || (o_ptr->to_h + o_ptr->to_d > 0)))
-		{
-			/* Memorize the item */
-			o_ptr->marked = TRUE;
-
-			/* Redraw */
-			cave_light_spot(cave, y, x);
-
-			/* Detect */
-			if (!squelch_item_ok(o_ptr))
-				detect = TRUE;
-		}
-	}
-
-	if (detect)
-		msg("You sense the presence of magic objects!");
-	else if (aware && !detect)
-		msg("You sense no magic objects.");
-
-	return detect;
-}
-
 
 /*
  * Detect "normal" monsters around the player.
@@ -1118,8 +1064,39 @@ bool detect_monsters_evil(bool aware)
 	return flag;
 }
 
+/* 
+ * Detect all monsters on the level (used for *enlightenment* only)
+ */
+bool detect_monsters_entire_level(void)
+{
+	int i;
+	bool detect = FALSE;
+	
+	for (i = 1; i < cave_monster_max(cave); i++)
+	{
+		monster_type *m_ptr = cave_monster(cave, i);
+	
+		/* Skip dead monsters */
+		if (!m_ptr->r_idx) continue;
 
+		/* Detect the monster */
+		m_ptr->mflag |= (MFLAG_MARK | MFLAG_SHOW);
 
+		/* Update the monster */
+		update_mon(i, FALSE);
+		
+		detect = TRUE;
+	}
+	
+	if (detect)
+		msg("An image of all nearby life-forms appears in your mind");
+	else
+		/* Let's see who the first person is to ever see this message! */
+		msg("The level is devoid of life");
+		
+	return detect;
+}
+	
 /*
  * Detect everything
  */
@@ -1130,7 +1107,7 @@ bool detect_all(bool aware)
 	/* Detect everything */
 	if (detect_traps(aware)) detect = TRUE;
 	if (detect_doorstairs(aware)) detect = TRUE;
-	if (detect_treasure(aware)) detect = TRUE;
+	if (detect_treasure(aware, FALSE)) detect = TRUE;
 	if (detect_monsters_invis(aware)) detect = TRUE;
 	if (detect_monsters_normal(aware)) detect = TRUE;
 
@@ -1777,7 +1754,6 @@ void aggravate_monsters(int who)
 	int i;
 
 	bool sleep = FALSE;
-	bool speed = FALSE;
 
 	/* Aggravate everyone nearby */
 	for (i = 1; i < cave_monster_max(cave); i++)
@@ -1797,19 +1773,18 @@ void aggravate_monsters(int who)
 			if (m_ptr->m_timed[MON_TMD_SLEEP])
 			{
 				/* Wake up */
-				mon_clear_timed(i, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, FALSE);
+				mon_clear_timed(m_ptr, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, FALSE);
 				sleep = TRUE;
 			}
 		}
 
 		/* Speed up monsters in line of sight */
 		if (player_has_los_bold(m_ptr->fy, m_ptr->fx))
-			mon_inc_timed(i, MON_TMD_FAST, 25, MON_TMD_FLG_NOTIFY, FALSE);
+			mon_inc_timed(m_ptr, MON_TMD_FAST, 25, MON_TMD_FLG_NOTIFY, FALSE);
 	}
 
 	/* Messages */
-	if (speed) msg("You feel a sudden stirring nearby!");
-	else if (sleep) msg("You hear a sudden stirring in the distance!");
+	if (sleep) msg("You hear a sudden stirring in the distance!");
 }
 
 
@@ -1840,7 +1815,7 @@ bool banishment(void)
 		if (rf_has(r_ptr->flags, RF_UNIQUE)) continue;
 
 		/* Skip "wrong" monsters */
-		if (r_ptr->d_char != (char)typ.code) continue;
+		if (!char_matches_key(r_ptr->d_char, typ.code)) continue;
 
 		/* Delete the monster */
 		delete_monster_idx(i);
@@ -1937,10 +1912,11 @@ bool probing(void)
 			if (!probe) msg("Probing...");
 
 			/* Get "the monster" or "something" */
-			monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_IND1);
+			monster_desc(m_name, sizeof(m_name), m_ptr,
+					MDESC_IND1 | MDESC_CAPITAL);
 
 			/* Describe the monster */
-			msg("%^s has %d hit points.", m_name, m_ptr->hp);
+			msg("%s has %d hit points.", m_name, m_ptr->hp);
 
 			/* Learn all of the non-spell, non-treasure flags */
 			lore_do_probe(i);
@@ -1994,7 +1970,7 @@ void destroy_area(int y1, int x1, int r, bool full)
 		{
 			/* Skip illegal grids */
 			if (!in_bounds_fully(y, x)) continue;
-
+			
 			/* Extract the distance */
 			k = distance(y1, x1, y, x);
 
@@ -2004,8 +1980,8 @@ void destroy_area(int y1, int x1, int r, bool full)
 			/* Lose room and vault */
 			cave->info[y][x] &= ~(CAVE_ROOM | CAVE_ICKY);
 
-			/* Lose light and knowledge */
-			cave->info[y][x] &= ~(CAVE_GLOW | CAVE_MARK);
+			/* Lose light */
+			cave->info[y][x] &= ~(CAVE_GLOW);
 			
 			cave_light_spot(cave, y, x);
 
@@ -2024,6 +2000,12 @@ void destroy_area(int y1, int x1, int r, bool full)
 
 			/* Delete the monster (if any) */
 			delete_monster(y, x);
+			
+			/* Don't remove stairs */
+			if (cave_isstairs(cave, y, x)) continue;	
+			
+			/* Lose knowledge (keeping knowledge of stairs) */
+			cave->info[y][x] &= ~(CAVE_MARK);
 
 			/* Destroy any grid that isn't a permament wall */
 			if (!cave_isperm(cave, y, x))
@@ -2279,7 +2261,7 @@ void earthquake(int cy, int cx, int r)
 			/* Process monsters */
 			if (cave->m_idx[yy][xx] > 0)
 			{
-				monster_type *m_ptr = cave_monster(cave, cave->m_idx[yy][xx]);
+				monster_type *m_ptr = cave_monster_at(cave, yy, xx);
 				monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 				/* Most monsters cannot co-exist with rock */
@@ -2319,21 +2301,21 @@ void earthquake(int cy, int cx, int r)
 					}
 
 					/* Describe the monster */
-					monster_desc(m_name, sizeof(m_name), m_ptr, 0);
+					monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_CAPITAL);
 
 					/* Scream in pain */
-					msg("%^s wails out in pain!", m_name);
+					msg("%s wails out in pain!", m_name);
 
 					/* Take damage from the quake */
 					damage = (sn ? damroll(4, 8) : (m_ptr->hp + 1));
 
 					/* Monster is certainly awake */
-					mon_clear_timed(cave->m_idx[yy][xx], MON_TMD_SLEEP,
-						MON_TMD_FLG_NOMESSAGE, FALSE);
+					mon_clear_timed(m_ptr, MON_TMD_SLEEP,
+							MON_TMD_FLG_NOMESSAGE, FALSE);
 
 					/* If the quake finished the monster off, show message */
 					if (m_ptr->hp < damage && m_ptr->hp >= 0)
-						msg("%^s is embedded in the rock!", m_name);
+						msg("%s is embedded in the rock!", m_name);
 
 					/* Apply damage directly */
 					m_ptr->hp -= damage;
@@ -2492,7 +2474,7 @@ static void cave_light(struct point_set *ps)
 		{
 			int chance = 25;
 
-			monster_type *m_ptr = cave_monster(cave, cave->m_idx[y][x]);
+			monster_type *m_ptr = cave_monster_at(cave, y, x);
 			monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 			/* Stupid monsters rarely wake up */
@@ -2505,7 +2487,7 @@ static void cave_light(struct point_set *ps)
 			if (m_ptr->m_timed[MON_TMD_SLEEP] && (randint0(100) < chance))
 			{
 				/* Wake up! */
-				mon_clear_timed(cave->m_idx[y][x], MON_TMD_SLEEP,
+				mon_clear_timed(m_ptr, MON_TMD_SLEEP,
 					MON_TMD_FLG_NOTIFY, FALSE);
 
 			}
@@ -3354,8 +3336,12 @@ void do_ident_item(int item, object_type *o_ptr)
 	/* Describe */
 	if (item >= INVEN_WIELD)
 	{
-		msgt(msg_type, "%^s: %s (%c).",
+		/* Format and capitalise */
+		char *msg = format("%s: %s (%c).",
 			  describe_use(item), o_name, index_to_label(item));
+		my_strcap(msg);
+
+		msgt(msg_type, msg);
 	}
 	else if (item >= 0)
 	{

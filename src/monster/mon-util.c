@@ -20,20 +20,22 @@
 #include "monster/mon-make.h"
 #include "monster/mon-msg.h"
 #include "monster/mon-spell.h"
+#include "monster/mon-timed.h"
 #include "monster/mon-util.h"
 #include "squelch.h"
 
-
-/*
- * Return the r_idx of the monster with the given name.
- * If no monster has the exact name given, returns the r_idx
- * of the first monster having the given name as a prefix.
+/**
+ * Returns the r_idx of the monster with the given name. If no monster has
+ * the exact name given, returns the r_idx of the first monster having the
+ * given name as a (case-insensitive) substring.
+ *
+ * Returns -1 if no match is found.
  */
 int lookup_monster(const char *name)
 {
 	int i;
 	int r_idx = -1;
-
+	
 	/* Look for it */
 	for (i = 1; i < z_info->r_max; i++)
 	{
@@ -42,7 +44,7 @@ int lookup_monster(const char *name)
 		/* Test for equality */
 		if (r_ptr->name && streq(name, r_ptr->name))
 			return i;
-
+		
 		/* Test for close matches */
 		if (r_ptr->name && my_stristr(r_ptr->name, name) && r_idx == -1)
 			r_idx = i;
@@ -73,7 +75,7 @@ monster_base *lookup_monster_base(const char *name)
  *
  * Accepts a variable-length list of name strings. The list must end with NULL.
  */
-bool match_monster_bases(monster_base *base, ...)
+bool match_monster_bases(const monster_base *base, ...)
 {
 	bool ok = FALSE;
 	va_list vp;
@@ -87,12 +89,14 @@ bool match_monster_bases(monster_base *base, ...)
 	return ok;
 }
 
-/*
+/**
  * Mega-hack - Fix plural names of monsters
  *
  * Taken from PernAngband via EY, modified to fit NPP monster list
  *
  * Note: It should handle all regular Angband monsters.
+ *
+ * TODO: Specify monster name plurals in monster.txt instead.
  */
 void plural_aux(char *name, size_t max)
 {
@@ -248,42 +252,48 @@ void plural_aux(char *name, size_t max)
 }
 
 
-
-/*
+/**
  * Helper function for display monlist.  Prints the number of creatures, followed
  * by either a singular or plural version of the race name as appropriate.
  */
-static void get_mon_name(char *output_name, size_t max, int r_idx, int in_los)
+static void get_mon_name(char *output_name, size_t max, 
+		const monster_race *r_ptr, int num)
 {
-	/* Get monster race and name */
-	monster_race *r_ptr = &r_info[r_idx];
-
 	char race_name[80];
+
+	assert(r_ptr);
 
 	my_strcpy(race_name, r_ptr->name, sizeof(race_name));
 
 	/* Unique names don't have a number */
 	if (rf_has(r_ptr->flags, RF_UNIQUE))
-	{
 		my_strcpy(output_name, "[U] ", max);
-	}
 
 	/* Normal races*/
-	else
-	{
-		my_strcpy(output_name, format("%3d ", in_los), max);
+	else {
+		my_strcpy(output_name, format("%3d ", num), max);
 
 		/* Make it plural, if needed. */
-		if (in_los > 1)
-		{
+		if (num > 1)
 			plural_aux(race_name, sizeof(race_name));
-		}
 	}
 
 	/* Mix the quantity and the header. */
 	my_strcat(output_name, race_name, max);
 }
 
+
+/* 
+ * Monster data for the visible monster list 
+ */
+typedef struct
+{
+	u16b count;		/* total number of this type visible */
+	u16b asleep;		/* number asleep (not in LOS) */
+	u16b los;		/* number in LOS */
+	u16b los_asleep;	/* number asleep and in LOS */
+	byte attr; /* attr to use for drawing */
+} monster_vis; 
 
 /*
  * Display visible monsters in a window
@@ -313,8 +323,7 @@ void display_monlist(void)
 	bool in_term = (Term != angband_term[0]);
 
 	/* Hallucination is weird */
-	if (p_ptr->timed[TMD_IMAGE])
-	{
+	if (p_ptr->timed[TMD_IMAGE]) {
 		if (in_term)
 			clear_from(0);
 		Term_gotoxy(0, 0);
@@ -324,15 +333,12 @@ void display_monlist(void)
 		return;
 	}
 
-
 	/* Clear the term if in a subwindow, set x otherwise */
-	if (in_term)
-	{
+	if (in_term) {
 		clear_from(0);
 		max = Term->hgt - 1;
 	}
-	else
-	{
+	else {
 		x = 13;
 		max = Term->hgt - 2;
 	}
@@ -341,14 +347,13 @@ void display_monlist(void)
 	list = C_ZNEW(z_info->r_max, monster_vis);
 
 	/* Scan the list of monsters on the level */
-	for (ii = 1; ii < cave_monster_max(cave); ii++)
-	{
+	for (ii = 1; ii < cave_monster_max(cave); ii++) {
 		monster_vis *v;
 
 		m_ptr = cave_monster(cave, ii);
 		r_ptr = &r_info[m_ptr->r_idx];
 
-		/* Only consider visible, aware monsters */
+		/* Only consider visible, known monsters */
 		if (!m_ptr->ml || m_ptr->unaware) continue;
 
 		/* Take a pointer to this monster visibility entry */
@@ -463,9 +468,7 @@ void display_monlist(void)
 
 		/* Get monster race and name */
 		r_ptr = &r_info[order[i]];
-
-		/* Get monster race and name */
-		get_mon_name(m_name, sizeof(m_name), order[i], list[order[i]].los);
+		get_mon_name(m_name, sizeof(m_name), r_ptr, list[order[i]].los);
 
 		/* Display uniques in a special colour */
 		if (rf_has(r_ptr->flags, RF_UNIQUE))
@@ -483,10 +486,9 @@ void display_monlist(void)
 			"%s (%d asleep) " : "%s"), m_name, list[order[i]].los_asleep);
 
 		/* Display the pict */
-		if ((tile_width == 1) && (tile_height == 1))
-		{
-		        Term_putch(cur_x++, line, list[order[i]].attr, r_ptr->x_char);
-			Term_putch(cur_x++, line, TERM_WHITE, ' ');
+		if ((tile_width == 1) && (tile_height == 1)) {
+	        Term_putch(cur_x++, line, list[order[i]].attr, r_ptr->x_char);
+			Term_putch(cur_x++, line, TERM_WHITE, L' ');
 		}
 
 		/* Print and bump line counter */
@@ -494,8 +496,7 @@ void display_monlist(void)
 		line++;
 
 		/* Page wrap */
-		if (!in_term && (line == max) && disp_count != total_count)
-		{
+		if (!in_term && (line == max) && disp_count != total_count) {
 			prt("-- more --", line, x);
 			anykey();
 
@@ -514,8 +515,7 @@ void display_monlist(void)
 	}
 
 	/* Message for monsters outside LOS, if there are any */
-	if (total_count > los_count)
-	{
+	if (total_count > los_count) {
 		/* Leave a blank line */
 		line++;
 		
@@ -525,8 +525,7 @@ void display_monlist(void)
 	}
 
 	/* Print out non-LOS monsters in descending order */
-	for (i = 0; (i < type_count) && (line < max); i++)
-	{
+	for (i = 0; (i < type_count) && (line < max); i++) {
 		int out_of_los = list[order[i]].count - list[order[i]].los;
 
 		/* Skip if there are none of these out of LOS */
@@ -540,7 +539,7 @@ void display_monlist(void)
 
 		/* Get monster race and name */
 		r_ptr = &r_info[order[i]];
-		get_mon_name(m_name, sizeof(m_name), order[i], out_of_los);
+		get_mon_name(m_name, sizeof(m_name), r_ptr, out_of_los);
 
 		/* Display uniques in a special colour */
 		if (rf_has(r_ptr->flags, RF_UNIQUE))
@@ -559,10 +558,9 @@ void display_monlist(void)
 			list[order[i]].asleep);
 
 		/* Display the pict */
-		if ((tile_width == 1) && (tile_height == 1))
-		{
-		        Term_putch(cur_x++, line, list[order[i]].attr, r_ptr->x_char);
-			Term_putch(cur_x++, line, TERM_WHITE, ' ');
+		if ((tile_width == 1) && (tile_height == 1)) {
+	        Term_putch(cur_x++, line, list[order[i]].attr, r_ptr->x_char);
+			Term_putch(cur_x++, line, TERM_WHITE, L' ');
 		}
 
 		/* Print and bump line counter */
@@ -570,8 +568,7 @@ void display_monlist(void)
 		line++;
 
 		/* Page wrap */
-		if (!in_term && (line == max) && disp_count != total_count)
-		{
+		if (!in_term && (line == max) && disp_count != total_count) {
 			prt("-- more --", line, x);
 			anykey();
 
@@ -593,17 +590,14 @@ void display_monlist(void)
 
 
 	/* Print "and others" message if we've run out of space */
-	if (disp_count != total_count)
-	{
+	if (disp_count != total_count) {
 		strnfmt(buf, sizeof buf, "  ...and %d others.", total_count - disp_count);
 		c_prt(TERM_WHITE, buf, line, x);
 	}
 
 	/* Otherwise clear a line at the end, for main-term display */
 	else
-	{
 		prt("", line, x);
-	}
 
 	if (!in_term)
 		Term_addstr(-1, TERM_WHITE, "  (Press any key to continue.)");
@@ -614,8 +608,8 @@ void display_monlist(void)
 }
 
 
-/*
- * Build a string describing a monster in some way.
+/**
+ * Builds a string describing a monster in some way.
  *
  * We can correctly describe monsters based on their visibility.
  * We can force all monsters to be treated as visible or invisible.
@@ -652,6 +646,7 @@ void display_monlist(void)
  *   0x20 --> Pronominalize visible monsters
  *   0x40 --> Assume the monster is hidden
  *   0x80 --> Assume the monster is visible
+ *  0x100 --> Capitalise monster name
  *
  * Useful Modes:
  *   0x00 --> Full nominative name ("the kobold") or "it"
@@ -789,11 +784,14 @@ void monster_desc(char *desc, size_t max, const monster_type *m_ptr, int mode)
 			my_strcat(desc, " (offscreen)", max);
 		}
 	}
+
+	if (mode & MDESC_CAPITAL)
+		my_strcap(desc);
 }
 
 
 
-/*
+/**
  * This function updates the monster record of the given monster
  *
  * This involves extracting the distance to the player (if requested),
@@ -813,7 +811,7 @@ void monster_desc(char *desc, size_t max, const monster_type *m_ptr, int mode)
  * Note the special "update_monsters()" function which can be used to
  * call this function once for every monster.
  *
- * Note the "full" flag which requests that the "cdis" field be updated,
+ * Note the "full" flag which requests that the "cdis" field be updated;
  * this is only needed when the monster (or the player) has moved.
  *
  * Every time a monster moves, we must call this function for that
@@ -854,17 +852,14 @@ void monster_desc(char *desc, size_t max, const monster_type *m_ptr, int mode)
  */
 void update_mon(int m_idx, bool full)
 {
-	monster_type *m_ptr = cave_monster(cave, m_idx);
-
-	monster_race *r_ptr = &r_info[m_ptr->r_idx];
-
-	monster_lore *l_ptr = &l_list[m_ptr->r_idx];
+	monster_type *m_ptr;
+	monster_race *r_ptr;
+	monster_lore *l_ptr;
 
 	int d;
 
 	/* Current location */
-	int fy = m_ptr->fy;
-	int fx = m_ptr->fx;
+	int fy, fx;
 
 	/* Seen at all */
 	bool flag = FALSE;
@@ -872,10 +867,16 @@ void update_mon(int m_idx, bool full)
 	/* Seen by vision */
 	bool easy = FALSE;
 
+	assert(m_idx > 0);
+	m_ptr = cave_monster(cave, m_idx);
+	r_ptr = &r_info[m_ptr->r_idx];
+	l_ptr = &l_list[m_ptr->r_idx];
+	
+	fy = m_ptr->fy;
+	fx = m_ptr->fx;
 
 	/* Compute distance */
-	if (full)
-	{
+	if (full) {
 		int py = p_ptr->py;
 		int px = p_ptr->px;
 
@@ -894,23 +895,18 @@ void update_mon(int m_idx, bool full)
 	}
 
 	/* Extract distance */
-	else
-	{
+	else {
 		/* Extract the distance */
 		d = m_ptr->cdis;
 	}
 
-
 	/* Detected */
 	if (m_ptr->mflag & (MFLAG_MARK)) flag = TRUE;
 
-
 	/* Nearby */
-	if (d <= MAX_SIGHT)
-	{
+	if (d <= MAX_SIGHT) {
 		/* Basic telepathy */
-		if (check_state(p_ptr, OF_TELEPATHY, p_ptr->state.flags))
-		{
+		if (check_state(p_ptr, OF_TELEPATHY, p_ptr->state.flags)) {
 			/* Empty mind, no telepathy */
 			if (rf_has(r_ptr->flags, RF_EMPTY_MIND))
 			{
@@ -918,11 +914,9 @@ void update_mon(int m_idx, bool full)
 			}
 
 			/* Weird mind, occasional telepathy */
-			else if (rf_has(r_ptr->flags, RF_WEIRD_MIND))
-			{
+			else if (rf_has(r_ptr->flags, RF_WEIRD_MIND)) {
 				/* One in ten individuals are detectable */
-				if ((m_idx % 10) == 5)
-				{
+				if ((m_idx % 10) == 5) {
 					/* Detectable */
 					flag = TRUE;
 
@@ -932,8 +926,7 @@ void update_mon(int m_idx, bool full)
 			}
 
 			/* Normal mind, allow telepathy */
-			else
-			{
+			else {
 				/* Detectable */
 				flag = TRUE;
 
@@ -943,17 +936,14 @@ void update_mon(int m_idx, bool full)
 		}
 
 		/* Normal line of sight and player is not blind */
-		if (player_has_los_bold(fy, fx) && !p_ptr->timed[TMD_BLIND])
-		{
+		if (player_has_los_bold(fy, fx) && !p_ptr->timed[TMD_BLIND]) {
 			/* Use "infravision" */
-			if (d <= p_ptr->state.see_infra)
-			{
+			if (d <= p_ptr->state.see_infra) {
 				/* Learn about warm/cold blood */
 				rf_on(l_ptr->flags, RF_COLD_BLOOD);
 
 				/* Handle "warm blooded" monsters */
-				if (!rf_has(r_ptr->flags, RF_COLD_BLOOD))
-				{
+				if (!rf_has(r_ptr->flags, RF_COLD_BLOOD)) {
 					/* Easy to see */
 					easy = flag = TRUE;
 				}
@@ -963,8 +953,7 @@ void update_mon(int m_idx, bool full)
 			/*if (rf_has(r_ptr->flags, RF_HAS_LIGHT)) easy = flag = TRUE;*/
 
 			/* Use "illumination" */
-			if (player_can_see_bold(fy, fx))
-			{
+			if (player_can_see_bold(fy, fx)) {
 				/* Learn it emits light */
 				rf_on(l_ptr->flags, RF_HAS_LIGHT);
 
@@ -972,8 +961,7 @@ void update_mon(int m_idx, bool full)
 				rf_on(l_ptr->flags, RF_INVISIBLE);
 
 				/* Handle "invisible" monsters */
-				if (rf_has(r_ptr->flags, RF_INVISIBLE))
-				{
+				if (rf_has(r_ptr->flags, RF_INVISIBLE)) {
 					/* See invisible */
 					if (check_state(p_ptr, OF_SEE_INVIS, p_ptr->state.flags))
 					{
@@ -983,8 +971,7 @@ void update_mon(int m_idx, bool full)
 				}
 
 				/* Handle "normal" monsters */
-				else
-				{
+				else {
 					/* Easy to see */
 					easy = flag = TRUE;
 				}
@@ -993,24 +980,21 @@ void update_mon(int m_idx, bool full)
 	}
 
 	/* If a mimic looks like a squelched item, it's not seen */
-	if (is_mimicking(m_idx)) {
+	if (is_mimicking(m_ptr)) {
 		object_type *o_ptr = object_byid(m_ptr->mimicked_o_idx);
 		if (squelch_item_ok(o_ptr))
 			easy = flag = FALSE;
 	}
 	
 	/* The monster is now visible */
-	if (flag)
-	{
+	if (flag) {
 		/* Learn about the monster's mind */
 		if (check_state(p_ptr, OF_TELEPATHY, p_ptr->state.flags))
-		{
-			flags_set(l_ptr->flags, RF_SIZE, RF_EMPTY_MIND, RF_WEIRD_MIND, RF_SMART, RF_STUPID, FLAG_END);
-		}
+			flags_set(l_ptr->flags, RF_SIZE, RF_EMPTY_MIND, RF_WEIRD_MIND,
+					RF_SMART, RF_STUPID, FLAG_END);
 
 		/* It was previously unseen */
-		if (!m_ptr->ml)
-		{
+		if (!m_ptr->ml) {
 			/* Mark as visible */
 			m_ptr->ml = TRUE;
 
@@ -1018,13 +1002,16 @@ void update_mon(int m_idx, bool full)
 			cave_light_spot(cave, fy, fx);
 
 			/* Update health bar as needed */
-			if (p_ptr->health_who == m_idx) p_ptr->redraw |= (PR_HEALTH);
+			if (p_ptr->health_who == m_ptr)
+				p_ptr->redraw |= (PR_HEALTH);
 
 			/* Hack -- Count "fresh" sightings */
-			if (l_ptr->sights < MAX_SHORT) l_ptr->sights++;
+			if (l_ptr->sights < MAX_SHORT)
+				l_ptr->sights++;
 
 			/* Disturb on appearance */
-			if (OPT(disturb_move)) disturb(p_ptr, 1, 0);
+			if (OPT(disturb_move))
+				disturb(p_ptr, 1, 0);
 
 			/* Window stuff */
 			p_ptr->redraw |= PR_MONLIST;
@@ -1032,13 +1019,12 @@ void update_mon(int m_idx, bool full)
 	}
 
 	/* The monster is not visible */
-	else
-	{
+	else {
 		/* It was previously seen */
-		if (m_ptr->ml)
-		{
+		if (m_ptr->ml) {
 			/* Treat mimics differently */
-			if (!m_ptr->mimicked_o_idx || squelch_item_ok(object_byid(m_ptr->mimicked_o_idx)))
+			if (!m_ptr->mimicked_o_idx || 
+					squelch_item_ok(object_byid(m_ptr->mimicked_o_idx)))
 			{
 				/* Mark as not visible */
 				m_ptr->ml = FALSE;
@@ -1047,7 +1033,7 @@ void update_mon(int m_idx, bool full)
 				cave_light_spot(cave, fy, fx);
 
 				/* Update health bar as needed */
-				if (p_ptr->health_who == m_idx) p_ptr->redraw |= (PR_HEALTH);
+				if (p_ptr->health_who == m_ptr) p_ptr->redraw |= (PR_HEALTH);
 
 				/* Disturb on disappearance */
 				if (OPT(disturb_move)) disturb(p_ptr, 1, 0);
@@ -1060,11 +1046,9 @@ void update_mon(int m_idx, bool full)
 
 
 	/* The monster is now easily visible */
-	if (easy)
-	{
+	if (easy) {
 		/* Change */
-		if (!(m_ptr->mflag & (MFLAG_VIEW)))
-		{
+		if (!(m_ptr->mflag & (MFLAG_VIEW))) {
 			/* Mark as easily visible */
 			m_ptr->mflag |= (MFLAG_VIEW);
 
@@ -1077,11 +1061,9 @@ void update_mon(int m_idx, bool full)
 	}
 
 	/* The monster is not easily visible */
-	else
-	{
+	else {
 		/* Change */
-		if (m_ptr->mflag & (MFLAG_VIEW))
-		{
+		if (m_ptr->mflag & (MFLAG_VIEW)) {
 			/* Mark as not easily visible */
 			m_ptr->mflag &= ~(MFLAG_VIEW);
 
@@ -1097,16 +1079,15 @@ void update_mon(int m_idx, bool full)
 
 
 
-/*
- * This function simply updates all the (non-dead) monsters (see above).
+/**
+ * Updates all the (non-dead) monsters via update_mon().
  */
 void update_monsters(bool full)
 {
 	int i;
 
 	/* Update each (live) monster */
-	for (i = 1; i < cave_monster_max(cave); i++)
-	{
+	for (i = 1; i < cave_monster_max(cave); i++) {
 		monster_type *m_ptr = cave_monster(cave, i);
 
 		/* Skip dead monsters */
@@ -1118,10 +1099,11 @@ void update_monsters(bool full)
 }
 
 
-
-
-/*
- * Make a monster carry an object
+/**
+ * Add the given object to the given monster's inventory.
+ *
+ * Returns the o_idx of the new object, or 0 if the object is
+ * not successfully added.
  */
 s16b monster_carry(struct monster *m_ptr, object_type *j_ptr)
 {
@@ -1130,8 +1112,7 @@ s16b monster_carry(struct monster *m_ptr, object_type *j_ptr)
 	s16b this_o_idx, next_o_idx = 0;
 
 	/* Scan objects already being held for combination */
-	for (this_o_idx = m_ptr->hold_o_idx; this_o_idx; this_o_idx = next_o_idx)
-	{
+	for (this_o_idx = m_ptr->hold_o_idx; this_o_idx; this_o_idx = next_o_idx) {
 		object_type *o_ptr;
 
 		/* Get the object */
@@ -1141,8 +1122,7 @@ s16b monster_carry(struct monster *m_ptr, object_type *j_ptr)
 		next_o_idx = o_ptr->next_o_idx;
 
 		/* Check for combination */
-		if (object_similar(o_ptr, j_ptr, OSTACK_MONSTER))
-		{
+		if (object_similar(o_ptr, j_ptr, OSTACK_MONSTER)) {
 			/* Combine the items */
 			object_absorb(o_ptr, j_ptr);
 
@@ -1156,8 +1136,7 @@ s16b monster_carry(struct monster *m_ptr, object_type *j_ptr)
 	o_idx = o_pop();
 
 	/* Success */
-	if (o_idx)
-	{
+	if (o_idx) {
 		object_type *o_ptr;
 
 		/* Get new object */
@@ -1186,8 +1165,8 @@ s16b monster_carry(struct monster *m_ptr, object_type *j_ptr)
 	return (o_idx);
 }
 
-/*
- * Swap the players/monsters (if any) at two locations XXX XXX XXX
+/**
+ * Swap the players/monsters (if any) at two locations.
  */
 void monster_swap(int y1, int x1, int y2, int x2)
 {
@@ -1201,15 +1180,12 @@ void monster_swap(int y1, int x1, int y2, int x2)
 	m1 = cave->m_idx[y1][x1];
 	m2 = cave->m_idx[y2][x2];
 
-
 	/* Update grids */
 	cave->m_idx[y1][x1] = m2;
 	cave->m_idx[y2][x2] = m1;
 
-
 	/* Monster 1 */
-	if (m1 > 0)
-	{
+	if (m1 > 0) {
 		m_ptr = cave_monster(cave, m1);
 
 		/* Move monster */
@@ -1228,8 +1204,7 @@ void monster_swap(int y1, int x1, int y2, int x2)
 	}
 
 	/* Player 1 */
-	else if (m1 < 0)
-	{
+	else if (m1 < 0) {
 		/* Move player */
 		p_ptr->py = y2;
 		p_ptr->px = x2;
@@ -1251,8 +1226,7 @@ void monster_swap(int y1, int x1, int y2, int x2)
 	}
 
 	/* Monster 2 */
-	if (m2 > 0)
-	{
+	if (m2 > 0) {
 		m_ptr = cave_monster(cave, m2);
 
 		/* Move monster */
@@ -1271,8 +1245,7 @@ void monster_swap(int y1, int x1, int y2, int x2)
 	}
 
 	/* Player 2 */
-	else if (m2 < 0)
-	{
+	else if (m2 < 0) {
 		/* Move player */
 		p_ptr->py = y1;
 		p_ptr->px = x1;
@@ -1293,7 +1266,6 @@ void monster_swap(int y1, int x1, int y2, int x2)
 		p_ptr->redraw |= (PR_MONLIST);
 	}
 
-
 	/* Redraw */
 	cave_light_spot(cave, y1, x1);
 	cave_light_spot(cave, y2, x2);
@@ -1305,17 +1277,30 @@ void monster_swap(int y1, int x1, int y2, int x2)
 static int summon_specific_type = 0;
 
 
-/*
- * Hack -- help decide if a monster race is "okay" to summon
+/**
+ * Hack -- help decide if a monster race is "okay" to summon.
+ *
+ * Compares the given monster to the monster type specified by
+ * summon_specific_type. Returns TRUE if the monster is eligible to
+ * be summoned, FALSE otherwise. 
  */
 static bool summon_specific_okay(int r_idx)
 {
-	monster_race *r_ptr = &r_info[r_idx];
-	bitflag *flags = r_ptr->flags;
-	struct monster_base *base = r_ptr->base;
+	const monster_race *r_ptr;
+	const bitflag *flags;
+	const struct monster_base *base;
+	
+	bool unique, scary;
 
-	bool unique = rf_has(r_ptr->flags, RF_UNIQUE);
-	bool scary = flags_test(flags, RF_SIZE, RF_UNIQUE, RF_FRIEND, RF_FRIENDS, RF_ESCORT, RF_ESCORTS, FLAG_END);
+	assert(r_idx > 0);
+	r_ptr = &r_info[r_idx];
+
+	flags = r_ptr->flags;
+	base = r_ptr->base;
+	
+	unique = rf_has(flags, RF_UNIQUE);
+	scary = flags_test(flags, RF_SIZE, RF_UNIQUE, RF_FRIEND, RF_FRIENDS,
+			RF_ESCORT, RF_ESCORTS, FLAG_END);
 
 	/* Check our requirements */
 	switch (summon_specific_type)
@@ -1324,7 +1309,7 @@ static bool summon_specific_okay(int r_idx)
 		case S_SPIDER: return !unique && match_monster_bases(base, "spider", NULL);
 		case S_HOUND: return !unique && match_monster_bases(base, "canine", "zephyr hound", NULL);
 		case S_HYDRA: return !unique && match_monster_bases(base, "hydra", NULL);
-		case S_ANGEL: return !scary && match_monster_bases(base, "angel", NULL);
+		case S_AINU: return !scary && match_monster_bases(base, "ainu", NULL);
 		case S_DEMON: return !scary && rf_has(flags, RF_DEMON);
 		case S_UNDEAD: return !scary && rf_has(flags, RF_UNDEAD);
 		case S_DRAGON: return !scary && rf_has(flags, RF_DRAGON);
@@ -1342,8 +1327,8 @@ static bool summon_specific_okay(int r_idx)
 }
 
 
-/*
- * Place a monster (of the specified "type") near the given
+/**
+ * Places a monster (of the specified "type") near the given
  * location.  Return TRUE iff a monster was actually summoned.
  *
  * We will attempt to place the monster up to 10 times before giving up.
@@ -1366,13 +1351,16 @@ static bool summon_specific_okay(int r_idx)
  *
  * Note that this function may not succeed, though this is very rare.
  */
-bool summon_specific(int y1, int x1, int lev, int type, int delay)
+int summon_specific(int y1, int x1, int lev, int type, int delay)
 {
 	int i, x = 0, y = 0, r_idx;
+	int temp = 1;
 
+	monster_type *m_ptr;
+	monster_race *r_ptr;
 
-	/* Look for a location */
-	for (i = 0; i < 20; ++i)
+	/* Look for a location, allow up to 4 squares away */
+	for (i = 0; i < 60; ++i)
 	{
 		/* Pick a distance */
 		int d = (i / 15) + 1;
@@ -1391,12 +1379,10 @@ bool summon_specific(int y1, int x1, int lev, int type, int delay)
 	}
 
 	/* Failure */
-	if (i == 20) return (FALSE);
-
+	if (i == 60) return (0);
 
 	/* Save the "summon" type */
 	summon_specific_type = type;
-
 
 	/* Require "okay" monsters */
 	get_mon_num_hook = summon_specific_okay;
@@ -1404,10 +1390,8 @@ bool summon_specific(int y1, int x1, int lev, int type, int delay)
 	/* Prepare allocation table */
 	get_mon_num_prep();
 
-
 	/* Pick a monster, using the level calculation */
 	r_idx = get_mon_num((p_ptr->depth + lev) / 2 + 5);
-
 
 	/* Remove restriction */
 	get_mon_num_hook = NULL;
@@ -1415,39 +1399,54 @@ bool summon_specific(int y1, int x1, int lev, int type, int delay)
 	/* Prepare allocation table */
 	get_mon_num_prep();
 
-
 	/* Handle failure */
-	if (!r_idx) return (FALSE);
+	if (!r_idx) return (0);
 
-	/* Attempt to place the monster (awake, allow groups) */
-	if (!place_new_monster(cave, y, x, r_idx, FALSE, TRUE, ORIGIN_DROP_SUMMON))
-		return (FALSE);
+	/* Attempt to place the monster (awake, don't allow groups) */
+	if (!place_new_monster(cave, y, x, r_idx, FALSE, FALSE, ORIGIN_DROP_SUMMON))
+		return (0);
 
-	/* If delay, try to let the player act before the summoned monsters. */
-	/* NOTE: should really be -100, but energy is currently 0-255. */
-	if (delay)
-		cave_monster(cave, cave->m_idx[y][x])->energy = 0;
+	/* Success, return the level of the monster */
+	m_ptr = cave_monster_at(cave, y, x);
+	r_ptr = &r_info[m_ptr->r_idx];
 
-	/* Success */
-	return (TRUE);
+	/* If delay, try to let the player act before the summoned monsters,
+	 * including slowing down faster monsters for one turn */
+	if (delay) {
+		m_ptr->energy = 0;
+		if (r_ptr->speed > p_ptr->state.speed)
+			mon_inc_timed(m_ptr, MON_TMD_SLOW, 1,
+				MON_TMD_FLG_NOMESSAGE, FALSE);
+	}
+
+
+	/* Monsters that normally come with FRIENDS are weaker */
+	if (rf_has(r_ptr->flags, RF_FRIENDS))
+		temp = 5;
+
+	return (r_ptr->level / temp);
 }
 
-/*
- * Let the given monster attempt to reproduce.
+/**
+ * Lets the given monster attempt to reproduce.
  *
  * Note that "reproduction" REQUIRES empty space.
+ *
+ * Returns TRUE if the monster successfully reproduced.
  */
 bool multiply_monster(int m_idx)
 {
-	monster_type *m_ptr = cave_monster(cave, m_idx);
+	const monster_type *m_ptr;
 
 	int i, y, x;
 
 	bool result = FALSE;
 
+	assert(m_idx > 0);
+	m_ptr = cave_monster(cave, m_idx);
+
 	/* Try up to 18 times */
-	for (i = 0; i < 18; i++)
-	{
+	for (i = 0; i < 18; i++) {
 		int d = 1;
 
 		/* Pick a location */
@@ -1469,16 +1468,18 @@ bool multiply_monster(int m_idx)
 }
 
 
-/*
+/**
  * Make player fully aware of the given mimic.
+ *
+ * When a player becomes aware of a mimic, we update the monster memory
+ * and delete the "fake item" that the monster was mimicking.
  */
-void become_aware(int m_idx)
+void become_aware(struct monster *m_ptr)
 {
-	monster_type *m_ptr = cave_monster(cave, m_idx);
-	monster_race *r_ptr = &r_info[m_ptr->r_idx];
+	const monster_race *r_ptr = &r_info[m_ptr->r_idx];
 	monster_lore *l_ptr = &l_list[m_ptr->r_idx];
 
-	if(m_ptr->unaware) {
+	if (m_ptr->unaware) {
 		m_ptr->unaware = FALSE;
 
 		/* Learn about mimicry */
@@ -1496,6 +1497,23 @@ void become_aware(int m_idx)
 
 			/* Clear the mimicry */
 			o_ptr->mimicking_m_idx = 0;
+
+			/* Give the object to the monster if appropriate */
+			if (rf_has(r_ptr->flags, RF_MIMIC_INV)) {
+				object_type *i_ptr;
+				object_type object_type_body;
+				
+				/* Get local object */
+				i_ptr = &object_type_body;
+
+				/* Obtain local object */
+				object_copy(i_ptr, o_ptr);
+
+				/* Carry the object */
+				monster_carry(m_ptr, i_ptr);
+			}
+				
+			/* Delete the mimicked object */
 			delete_object_idx(m_ptr->mimicked_o_idx);
 			m_ptr->mimicked_o_idx = 0;
 		}
@@ -1506,30 +1524,28 @@ void become_aware(int m_idx)
 	}
 }
 
-/*
+/**
  * Returns TRUE if the given monster is currently mimicking an item.
  */
-bool is_mimicking(int m_idx)
+bool is_mimicking(struct monster *m_ptr)
 {
-	monster_type *m_ptr = cave_monster(cave, m_idx);
-
 	return (m_ptr->unaware && m_ptr->mimicked_o_idx);
 }
 
 
-/*
- * Learn about an "observed" resistance or other player state property, or
- * lack of it.
+/**
+ * The given monster learns about an "observed" resistance or other player
+ * state property, or lack of it.
  */
-void update_smart_learn(struct monster *m, struct player *p, int what)
+void update_smart_learn(struct monster *m, struct player *p, int flag)
 {
 	monster_race *r_ptr = &r_info[m->r_idx];
 
 	/* Sanity check */
-	if (!what) return;
+	if (!flag) return;
 
 	/* anything a monster might learn, the player should learn */
-	wieldeds_notice_flag(p, what);
+	wieldeds_notice_flag(p, flag);
 
 	/* Not allowed to learn */
 	if (!OPT(birth_ai_learn)) return;
@@ -1541,10 +1557,9 @@ void update_smart_learn(struct monster *m, struct player *p, int what)
 	if (!rf_has(r_ptr->flags, RF_SMART) && one_in_(2)) return;
 
 	/* Analyze the knowledge; fail very rarely */
-	if (check_state(p, what, p->state.flags) && !one_in_(100))
-		of_on(m->known_pflags, what);
+	if (check_state(p, flag, p->state.flags) && !one_in_(100))
+		of_on(m->known_pflags, flag);
 	else
-		of_off(m->known_pflags, what);
+		of_off(m->known_pflags, flag);
 }
-
 

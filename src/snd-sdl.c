@@ -30,6 +30,9 @@
 /* Don't cache audio */
 static bool no_cache_audio = FALSE;
 
+/* Using mp3s */
+static bool use_mp3 = FALSE;
+
 /* Arbitary limit on number of samples per event */
 #define MAX_SAMPLES      8
 
@@ -38,6 +41,7 @@ typedef struct
 {
 	int num;                        /* Number of samples for this event */
 	Mix_Chunk *wavs[MAX_SAMPLES];   /* Sample array */
+	Mix_Music *mp3s[MAX_SAMPLES];   /* Sample array */
 	char *paths[MAX_SAMPLES]; /* Relative pathnames for samples */
 } sample_list;
 
@@ -64,7 +68,10 @@ static void close_audio(void)
 		/* Nuke all samples */
 		for (j = 0; j < smp->num; j++)
 		{
-			Mix_FreeChunk(smp->wavs[j]);
+		        if (use_mp3)
+			        Mix_FreeMusic(smp->mp3s[j]);
+			else
+			        Mix_FreeChunk(smp->wavs[j]);
 			string_free(smp->paths[j]);
 		}
 	}
@@ -201,6 +208,7 @@ static bool sound_sdl_init(bool no_cache)
         while (cur_token)
         {
             int num = samples[event].num;
+	    bool got_file_type = FALSE;
 
 			/* Don't allow too many samples */
 			if (num >= MAX_SAMPLES) break;
@@ -208,6 +216,15 @@ static bool sound_sdl_init(bool no_cache)
 			/* Build the path to the sample */
 			path_build(path, sizeof(path), ANGBAND_DIR_XTRA_SOUND, cur_token);
 			if (!file_exists(path)) goto next_token;
+
+			if (!got_file_type)
+			{
+			        if (streq(path + strlen(path) - 3, "mp3"))
+				{
+				        use_mp3 = TRUE;
+					got_file_type = TRUE;
+				}
+			}
 
 			/* Don't load now if we're not caching */
 			if (no_cache)
@@ -218,11 +235,23 @@ static bool sound_sdl_init(bool no_cache)
 			else
 			{
 				/* Load the file now */
-				samples[event].wavs[num] = Mix_LoadWAV(path);
-				if (!samples[event].wavs[num])
+			        if (use_mp3)
 				{
-					plog_fmt("%s: %s", SDL_GetError(), strerror(errno));
-					goto next_token;
+				        samples[event].mp3s[num] = Mix_LoadMUS(path);
+					if (!samples[event].mp3s[num])
+					{
+					        plog_fmt("%s: %s", SDL_GetError(), strerror(errno));
+						goto next_token;
+					}
+				}
+				else
+				{
+				        samples[event].wavs[num] = Mix_LoadWAV(path);
+					if (!samples[event].wavs[num])
+					{
+					        plog_fmt("%s: %s", SDL_GetError(), strerror(errno));
+						goto next_token;
+					}
 				}
 			}
 
@@ -267,6 +296,7 @@ static bool sound_sdl_init(bool no_cache)
 static void play_sound(int event)
 {
 	Mix_Chunk *wave = NULL;
+	Mix_Music *mp3 = NULL;
 	int s;
 
 	/* Paranoia */
@@ -277,28 +307,37 @@ static void play_sound(int event)
 
 	/* Choose a random event */
 	s = randint0(samples[event].num);
-	wave = samples[event].wavs[s];
+	if (use_mp3)
+	        mp3 = samples[event].mp3s[s];
+	else
+	        wave = samples[event].wavs[s];
 
 	/* Try loading it, if it's not cached */
-	if (!wave)
+	if (!(wave || mp3))
 	{
 		/* Verify it exists */
 		const char *filename = samples[event].paths[s];
 		if (!file_exists(filename)) return;
 
 		/* Load */
-		wave = Mix_LoadWAV(filename);
+		if (use_mp3)
+		        mp3 = Mix_LoadMUS(filename);
+		else
+		        wave = Mix_LoadWAV(filename);
 	}
 
-	/* Check to see if we have a wave again */
-	if (!wave)
+	/* Check to see if we have a sound again */
+	if (!(wave || mp3))
 	{
 		plog("SDL sound load failed.");
 		return;
 	}
 
 	/* Actually play the thing */
-	Mix_PlayChannel(-1, wave, 0);
+	if (use_mp3)
+	        Mix_PlayMusic(mp3, 1);
+	else
+	        Mix_PlayChannel(-1, wave, 0);
 }
 
 

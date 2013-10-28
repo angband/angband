@@ -41,15 +41,13 @@ static struct ego_item *lookup_ego(int idx)
 
 
 /*
- * Read an object, version 4 (added mimicking_o_idx)
+ * Read an object, version 5 (added mimicking_o_idx)
  *
- * This function attempts to "repair" old savefiles, and to extract
- * the most up to date values for various object fields.
+ * This function no longer attempts to "repair" old savefiles - the info
+ * held in o_ptr is now authoritative.
  */
-static int rd_item_4(object_type *o_ptr)
+static int rd_item_5(object_type *o_ptr)
 {
-	byte old_dd;
-	byte old_ds;
 	byte tmp8u;
 	u16b tmp16u;
 
@@ -97,8 +95,117 @@ static int rd_item_4(object_type *o_ptr)
 
 	rd_s16b(&o_ptr->ac);
 
-	rd_byte(&old_dd);
-	rd_byte(&old_ds);
+	rd_byte(&o_ptr->dd);
+	rd_byte(&o_ptr->ds);
+
+	rd_u16b(&o_ptr->ident);
+
+	rd_byte(&o_ptr->marked);
+
+	rd_byte(&o_ptr->origin);
+	rd_byte(&o_ptr->origin_depth);
+	rd_u16b(&o_ptr->origin_xtra);
+	rd_byte(&o_ptr->ignore);
+
+	for (i = 0; i < OF_BYTES && i < OF_SIZE; i++)
+		rd_byte(&o_ptr->flags[i]);
+	if (i < OF_BYTES) strip_bytes(OF_BYTES - i);
+
+	of_wipe(o_ptr->known_flags);
+
+	for (i = 0; i < OF_BYTES && i < OF_SIZE; i++)
+		rd_byte(&o_ptr->known_flags[i]);
+	if (i < OF_BYTES) strip_bytes(OF_BYTES - i);
+
+	for (j = 0; j < MAX_PVALS; j++) {
+		for (i = 0; i < OF_BYTES && i < OF_SIZE; i++)
+			rd_byte(&o_ptr->pval_flags[j][i]);
+		if (i < OF_BYTES) strip_bytes(OF_BYTES - i);
+	}
+
+	/* Monster holding object */
+	rd_s16b(&o_ptr->held_m_idx);
+
+	rd_s16b(&o_ptr->mimicking_m_idx);
+
+	/* Save the inscription */
+	rd_string(buf, sizeof(buf));
+	if (buf[0]) o_ptr->note = quark_add(buf);
+
+
+	/* Lookup item kind */
+	o_ptr->kind = lookup_kind(o_ptr->tval, o_ptr->sval);
+	if (!o_ptr->kind)
+		return 0;
+
+	o_ptr->ego = lookup_ego(ego_idx);
+
+	if (art_idx >= z_info->a_max)
+		return -1;
+	if (art_idx > 0)
+		o_ptr->artifact = &a_info[art_idx];
+
+	/* Success */
+	return (0);
+}
+
+/*
+ * Read an object, version 4 (added mimicking_o_idx)
+ *
+ * This function no longer attempts to "repair" old savefiles - the info
+ * held in o_ptr is now authoritative.
+ */
+static int rd_item_4(object_type *o_ptr)
+{
+	byte tmp8u;
+	u16b tmp16u;
+
+	byte ego_idx;
+	byte art_idx;
+
+	size_t i, j;
+
+	char buf[128];
+
+	byte ver = 1;
+
+	rd_u16b(&tmp16u);
+	rd_byte(&ver);
+	assert(tmp16u == 0xffff);
+
+	strip_bytes(2);
+
+	/* Location */
+	rd_byte(&o_ptr->iy);
+	rd_byte(&o_ptr->ix);
+
+	/* Type/Subtype */
+	rd_byte(&o_ptr->tval);
+	rd_byte(&o_ptr->sval);
+	for (i = 0; i < MAX_PVALS; i++) {
+		rd_s16b(&o_ptr->pval[i]);
+	}
+	rd_byte(&o_ptr->num_pvals);
+
+	/* Pseudo-ID bit */
+	rd_byte(&tmp8u);
+
+	rd_byte(&o_ptr->number);
+	rd_s16b(&o_ptr->weight);
+
+	rd_byte(&art_idx);
+	rd_byte(&ego_idx);
+
+	rd_s16b(&o_ptr->timeout);
+
+	rd_s16b(&o_ptr->to_h);
+	rd_s16b(&o_ptr->to_d);
+	rd_s16b(&o_ptr->to_a);
+
+	rd_s16b(&o_ptr->ac);
+
+	rd_byte(&o_ptr->dd);
+	rd_byte(&o_ptr->ds);
 
 	rd_u16b(&o_ptr->ident);
 
@@ -126,7 +233,7 @@ static int rd_item_4(object_type *o_ptr)
 
 	/* Monster holding object */
 	rd_s16b(&o_ptr->held_m_idx);
-	
+
 	rd_s16b(&o_ptr->mimicking_m_idx);
 
 	/* Save the inscription */
@@ -145,65 +252,6 @@ static int rd_item_4(object_type *o_ptr)
 		return -1;
 	if (art_idx > 0)
 		o_ptr->artifact = &a_info[art_idx];
-
-	/* Repair non "wearable" items */
-	if (!wearable_p(o_ptr))
-	{
-		/* Get the correct fields */
-		if (!randcalc_valid(o_ptr->kind->to_h, o_ptr->to_h))
-			o_ptr->to_h = randcalc(o_ptr->kind->to_h, o_ptr->origin_depth, RANDOMISE);
-		if (!randcalc_valid(o_ptr->kind->to_d, o_ptr->to_d))
-			o_ptr->to_d = randcalc(o_ptr->kind->to_d, o_ptr->origin_depth, RANDOMISE);
-		if (!randcalc_valid(o_ptr->kind->to_a, o_ptr->to_a))
-			o_ptr->to_a = randcalc(o_ptr->kind->to_a, o_ptr->origin_depth, RANDOMISE);
-
-		/* Get the correct fields */
-		o_ptr->ac = o_ptr->kind->ac;
-		o_ptr->dd = o_ptr->kind->dd;
-		o_ptr->ds = o_ptr->kind->ds;
-
-		/* Get the correct weight */
-		o_ptr->weight = o_ptr->kind->weight;
-
-		/* All done */
-		return (0);
-	}
-
-
-	/* Get the standard fields */
-	o_ptr->ac = o_ptr->kind->ac;
-	o_ptr->dd = o_ptr->kind->dd;
-	o_ptr->ds = o_ptr->kind->ds;
-
-	/* Get the standard weight */
-	o_ptr->weight = o_ptr->kind->weight;
-
-	/* Artifacts */
-	if (o_ptr->artifact)
-	{
-	        /* Get the new artifact "pvals" */
-	        for (i = 0; i < MAX_PVALS; i++)
-	                o_ptr->pval[i] = o_ptr->artifact->pval[i];
-	        o_ptr->num_pvals = o_ptr->artifact->num_pvals;
-
-	        /* Get the new artifact fields */
-	        o_ptr->ac = o_ptr->artifact->ac;
-	        o_ptr->dd = o_ptr->artifact->dd;
-	        o_ptr->ds = o_ptr->artifact->ds;
-
-	        /* Get the new artifact weight */
-	        o_ptr->weight = o_ptr->artifact->weight;
-	}
-
-	/* Ego items */
-	if (o_ptr->ego)	{
-        /* Hack -- keep some old fields */
-        if ((o_ptr->dd < old_dd) && (o_ptr->ds == old_ds))
-			/* Keep old boosted damage dice */
-			o_ptr->dd = old_dd;
-
-		ego_min_pvals(o_ptr);
-	}
 
 	/* Success */
 	return (0);
@@ -829,7 +877,6 @@ static const struct {
 	{ 66, "animate_flicker" },
 	{ 68, "center_player" },
 	{ 69, "purple_uniques" },
-	{ 70, "xchars_to_file" },
 	{ 71, "auto_more" },
 	{ 74, "hp_changes_color" },
 	{ 77, "mouse_movement" },
@@ -843,7 +890,7 @@ static const struct {
 	{ 192, "birth_maximize" },
 	{ 193, "birth_randarts" },
 	{ 195, "birth_ironman" },
-	{ 196, "birth_no_stores" },
+	{ 196, "birth_small_range" },
 	{ 197, "birth_no_artifacts" },
 	{ 198, "birth_no_stacking" },
 	{ 199, "birth_no_preserve" },
@@ -1344,7 +1391,7 @@ int rd_player(void)
 	strip_bytes(8);
 	rd_s16b(&p_ptr->sc);
 	p_ptr->sc_birth = p_ptr->sc;
-	strip_bytes(2);
+	rd_s16b(&p_ptr->deep_descent);
 
 	/* Read the flags */
 	rd_s16b(&p_ptr->food);
@@ -1587,6 +1634,12 @@ int rd_player_spells(void)
 }
 
 
+/* We no longer store randarts in the savefile */
+int rd_randarts_3(void)
+{
+	return 0;
+}
+
 /*
  * Read the random artifacts, version 2
  */
@@ -1599,10 +1652,8 @@ int rd_randarts_2(void)
 	u16b artifact_count;
 	s32b tmp32s;
 
-	if (!OPT(birth_randarts)) {
-		p_ptr->randarts = FALSE;
+	if (!OPT(birth_randarts))
 		return 0;
-	}
 
 	/* Read the number of artifacts */
 	rd_u16b(&artifact_count);
@@ -1668,7 +1719,6 @@ int rd_randarts_2(void)
 
 		/* Initialize only the randart names */
 		do_randart(seed_randart, FALSE);
-		p_ptr->randarts = TRUE;
 
 		/* Mark any stray old artifacts as "empty" */
 		if (artifact_count < z_info->a_max)
@@ -1724,8 +1774,6 @@ int rd_randarts_2(void)
 			rd_u16b(&tmp16u); /* a_ptr->time_dice */
 			rd_u16b(&tmp16u); /* a_ptr->time_sides */
 		}
-
-		p_ptr->randarts = FALSE;
 	}
 
 	return (0);
@@ -1951,6 +1999,7 @@ static int rd_inventory(rd_item_t rd_item_version)
 /*
  * Read the player inventory - wrapper functions
  */
+int rd_inventory_5(void) { return rd_inventory(rd_item_5); }
 int rd_inventory_4(void) { return rd_inventory(rd_item_4); }
 int rd_inventory_3(void) { return rd_inventory(rd_item_3); }
 int rd_inventory_2(void) { return rd_inventory(rd_item_2); } /* remove post-3.3 */
@@ -2024,6 +2073,7 @@ static int rd_stores(rd_item_t rd_item_version)
 /*
  * Read the stores - wrapper functions
  */
+int rd_stores_5(void) { return rd_stores(rd_item_5); }
 int rd_stores_4(void) { return rd_stores(rd_item_4); }
 int rd_stores_3(void) { return rd_stores(rd_item_3); }
 int rd_stores_2(void) { return rd_stores(rd_item_2); } /* remove post-3.3 */
@@ -2281,6 +2331,7 @@ static int rd_objects(rd_item_t rd_item_version)
 /*
  * Read the object list - wrapper functions
  */
+int rd_objects_5(void) { return rd_objects(rd_item_5); }
 int rd_objects_4(void) { return rd_objects(rd_item_4); }
 int rd_objects_3(void) { return rd_objects(rd_item_3); }
 int rd_objects_2(void) { return rd_objects(rd_item_2); } /* remove post-3.3 */

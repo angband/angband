@@ -5,8 +5,8 @@
 # across a range of different makefiles, to cut down on maintenance.
 #
 
-VERSION = 3.3.2
-COPYRIGHT = (c) 1995-2011 Angband contributors
+VERSION = 3.4.0
+COPYRIGHT = (c) 1995-2012 Angband contributors
 
 HEADERS = \
 	angband.h \
@@ -19,7 +19,6 @@ HEADERS = \
 	game-cmd.h \
 	game-event.h \
 	guid.h \
-	$(GTKHEADERS) \
 	h-basic.h \
 	init.h \
 	main.h \
@@ -30,7 +29,6 @@ HEADERS = \
 	ui.h \
 	ui-menu.h \
 	wizard.h \
-	x-char.h \
 	z-bitflag.h \
 	z-file.h \
 	z-form.h \
@@ -43,20 +41,33 @@ HEADERS = \
 	z-util.h \
 	z-virt.h
 
-GTKHEADERS = \
-	gtk/cairo-utils.h \
-	gtk/main-gtk.h \
-	
 ZFILES = z-bitflag.o z-file.o z-form.o z-msg.o z-quark.o z-queue.o z-rand.o \
 	z-term.o z-type.o z-util.o z-virt.o z-textblock.o
 
-MAINFILES = main.o main-crb.o main-gcu.o $(GTKMAINFILES) \
-	main-sdl.o main-win.o main-x11.o snd-sdl.o main-test.o
+# MAINFILES is defined by autotools (or manually) to be combinations of these
 
-GTKMAINFILES = \
-	gtk/main-gtk.o \
-	gtk/cairo-utils.o 
-	
+BASEMAINFILES = main.o
+
+GCUMAINFILES = main-gcu.o
+
+OSXMAINFILES = main-crb.o
+
+SDLMAINFILES = main-sdl.o
+
+SNDSDLFILES = snd-sdl.o
+
+TESTMAINFILES = main-test.o
+
+WINMAINFILES = \
+        win/angband.res \
+        main-win.o \
+        win/readdib.o \
+        win/readpng.o \
+        win/scrnshot.o \
+		win/win-layout.o
+
+X11MAINFILES = main-x11.o
+
 ANGFILES = \
 	attack.o \
 	birth.o \
@@ -67,6 +78,7 @@ ANGFILES = \
 	cmd2.o \
 	cmd3.o \
 	cmd4.o \
+	cmd-context.o \
 	cmd-misc.o \
 	cmd-obj.o \
 	death.o \
@@ -77,12 +89,13 @@ ANGFILES = \
 	game-cmd.o \
 	game-event.o \
 	generate.o \
+	grafmode.o \
 	guid.o \
 	history.o \
 	init2.o \
 	keymap.o \
 	load.o \
-	monster/init.o \
+	monster/mon-init.o \
 	monster/melee1.o \
 	monster/melee2.o \
 	monster/mon-lore.o \
@@ -92,6 +105,7 @@ ANGFILES = \
 	monster/mon-spell.o \
 	monster/mon-timed.o \
 	monster/mon-util.o \
+	object/chest.o \
 	object/identify.o \
 	object/obj-desc.o \
 	object/obj-flag.o \
@@ -114,7 +128,7 @@ ANGFILES = \
 	player/race.o \
 	player/spell.o \
 	player/timed.o \
-	player/util.o \
+	player/p-util.o \
 	score.o \
 	signals.o \
 	save.o \
@@ -138,17 +152,21 @@ ANGFILES = \
 	wiz-spoil.o \
 	wiz-stats.o \
 	wizard.o \
-	x-char.o \
 	x-spell.o \
 	xtra2.o \
-	xtra3.o
+	xtra3.o \
+	borg/borg1.o \
+	borg/borg2.o \
+	borg/borg3.o \
+	borg/borg4.o \
+	borg/borg5.o \
+	borg/borg6.o \
+	borg/borg7.o \
+	borg/borg8.o \
+	borg/borg9.o
 
-STATSFILES = stats/db.o
-
-ifeq ($(USE_STATS),1)
-	ANGFILES += $(STATSFILES)
-	MAINFILES += main-stats.o
-endif
+STATSMAINFILES = main-stats.o \
+        stats/db.o
 
 buildid.o: $(ANGFILES)
 ANGFILES += buildid.o

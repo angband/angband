@@ -1,0 +1,54 @@
+# File: graphics.txt
+
+# This file is used to initialize a list of graphics modes
+
+# === Understanding dungeons.txt ===
+
+# N: serial number : pref file name
+# I: tile width : tile height : tileset file name
+# M: menu name
+# X: alphblending : start row : end row of double high tiles
+
+# 'N' indicates the beginning of an entry. The serial number must
+# increase for each new item. The pref file name is the name used
+# on load to load the right pref file set for this tile set.
+
+# 'I' is for image information - tile width and height are the dimensions,
+# in pixels, of an individual tile in the set. filename is the name of the
+# image file to load.
+
+# 'M' is for menu name - the name the graphics mode is listed under when
+# selecting it from a graphical menu.
+
+# 'X' is for extra information - alpha is a flag if the tileset needs to use
+# alpha blending. double high tiles are ones that have twice the tile height
+# as a typical tile. start row is the first row that uses double high tiles.
+# End row is the last row that uses double high tiles. start row and end row
+# must be greater than 0, if double high tiles are used, and refer to the
+# bottom half of the double row.
+
+
+N:1:Original Tiles
+I:8:8:8x8.png
+P:old
+X:0:0:0
+
+N:2:Adam Bolt's tiles
+I:16:16:16x16.png
+P:new
+X:0:0:0
+
+N:3:David Gervais' tiles
+I:32:32:32x32.png
+P:david
+X:0:0:0
+
+N:4:Nomad's tiles
+I:16:16:8x16.png
+P:nomad
+X:0:0:0
+
+N:5:Shockbolt's tiles
+I:64:64:64x64.png
+P:shock
+X:1:29:31

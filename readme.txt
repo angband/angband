@@ -1,4 +1,4 @@
-Angband 3.3.2
+Angband 3.4.0
 =============
 
 Angband is a graphical dungeon adventure game that uses textual characters
@@ -13,4 +13,4 @@ If you're compiling the game yourself, read http://rephial.org/wiki/Compiling.
 
 Enjoy!
 
--- Andi Sidwell, maintainer
+-- The Angband Dev Team

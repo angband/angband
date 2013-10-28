@@ -39,7 +39,7 @@ const int option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 		OPT_mouse_movement,
 		OPT_mouse_buttons,
 		OPT_use_sound,
-		OPT_xchars_to_file,
+		OPT_NONE,
 		OPT_NONE,
 	},
 
@@ -74,7 +74,7 @@ const int option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 		OPT_birth_ai_cheat,
 		OPT_birth_ai_smart,
 		OPT_birth_ironman,
-		OPT_birth_no_stores,
+		OPT_birth_small_range,
 		OPT_birth_no_artifacts,
 		OPT_birth_no_stacking,
 		OPT_birth_no_preserve,
@@ -120,7 +120,7 @@ static const struct option options[OPT_MAX] =
 { "use_old_target",      "Use old target by default",                   FALSE }, /* 3 */
 { "pickup_always",       "Always pickup items",                         FALSE }, /* 4 */
 { "pickup_inven",        "Always pickup items matching inventory",      TRUE },  /* 5 */
-{ "show_flavors",        "Show flavors in object descriptions",         FALSE },  /* 6 */
+{ "show_flavors",        "Show flavors in object descriptions",         FALSE }, /* 6 */
 { "disturb_move",        "Disturb whenever any monster moves",          FALSE }, /* 7 */
 { "disturb_near",        "Disturb whenever viewable monster moves",     TRUE },  /* 8 */
 { "disturb_detect",      "Disturb whenever leaving trap detected area", TRUE },  /* 9 */
@@ -128,14 +128,14 @@ static const struct option options[OPT_MAX] =
 { NULL,                  NULL,                                          FALSE }, /* 11 */
 { NULL,                  NULL,                                          FALSE }, /* 12 */
 { "view_yellow_light",   "Color: Illuminate torchlight in yellow",      FALSE }, /* 13 */
-{ "easy_open",           "Open/disarm/close without direction",         TRUE }, /* 14 */
+{ "easy_open",           "Open/disarm/close without direction",         TRUE },  /* 14 */
 { "animate_flicker",     "Color: Shimmer multi-colored things",         FALSE }, /* 15 */
 { "center_player",       "Center map continuously",                     FALSE }, /* 16 */
 { "purple_uniques",      "Color: Show unique monsters in purple",       FALSE }, /* 17 */
-{ "xchars_to_file",      "Allow accents in output files",               FALSE }, /* 18 */
+{ NULL,                  NULL,                                          FALSE }, /* 18 */
 { "auto_more",           "Automatically clear '-more-' prompts",        FALSE }, /* 19 */
 { "hp_changes_color",    "Color: Player color indicates % hit points",  FALSE }, /* 20 */
-{ "mouse_movement",      "Allow mouse clicks to move the player",       FALSE }, /* 21 */
+{ "mouse_movement",      "Allow mouse clicks to move the player",       TRUE },  /* 21 */
 { "mouse_buttons",       "Show mouse status line buttons",              FALSE }, /* 22 */
 { "notify_recharge",     "Notify on object recharge",                   FALSE }, /* 23 */
 { NULL,                  NULL,                                          FALSE }, /* 24 */
@@ -167,7 +167,7 @@ static const struct option options[OPT_MAX] =
 { "birth_maximize",      "Maximise effect of race/class bonuses",       TRUE },  /* 50 */
 { "birth_randarts",      "Randomise the artifacts (except a very few)", FALSE }, /* 51 */
 { "birth_ironman",       "Restrict the use of stairs/recall",           FALSE }, /* 52 */
-{ "birth_no_stores",     "Restrict the use of stores/home",             FALSE }, /* 53 */
+{ "birth_small_range",   "Halve view and spell distances",              FALSE }, /* 53 */
 { "birth_no_artifacts",  "Restrict creation of artifacts",              FALSE }, /* 54 */
 { "birth_no_stacking",   "Don't stack objects on the floor",            FALSE }, /* 55 */
 { "birth_no_preserve",   "Lose artifacts when leaving level",           FALSE }, /* 56 */

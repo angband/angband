@@ -447,12 +447,12 @@ static enum parser_error parse_k_n(struct parser *p) {
 }
 
 static enum parser_error parse_k_g(struct parser *p) {
-	const char *sym = parser_getsym(p, "char");
+	wchar_t glyph = parser_getchar(p, "glyph");
 	const char *color = parser_getsym(p, "color");
 	struct object_kind *k = parser_priv(p);
 	assert(k);
 
-	k->d_char = sym[0];
+	k->d_char = glyph;
 	if (strlen(color) > 1)
 		k->d_attr = color_text_to_attr(color);
 	else
@@ -607,7 +607,7 @@ struct parser *init_parse_k(void) {
 	parser_setpriv(p, NULL);
 	parser_reg(p, "V sym version", ignored);
 	parser_reg(p, "N int index str name", parse_k_n);
-	parser_reg(p, "G sym char sym color", parse_k_g);
+	parser_reg(p, "G char glyph sym color", parse_k_g);
 	parser_reg(p, "I sym tval int sval", parse_k_i);
 	parser_reg(p, "W int level int extra int weight int cost", parse_k_w);
 	parser_reg(p, "A int common str minmax", parse_k_a);
@@ -628,16 +628,32 @@ static errr run_parse_k(struct parser *p) {
 static errr finish_parse_k(struct parser *p) {
 	struct object_kind *k, *next = NULL;
 
-	k_info = mem_zalloc(z_info->k_max * sizeof(*k));
-	for (k = parser_priv(p); k; k = next) {
-		if (k->kidx >= z_info->k_max)
-			continue;
-		memcpy(&k_info[k->kidx], k, sizeof(*k));
-		next = k->next;
-		mem_free(k);
+	/* scan the list for the max id */
+	z_info->k_max -= 1;
+	/*z_info->k_max = 0; fails to load existing save file because of
+	too high value in old limits.txt.  Change to this line when save file 
+	compatibility changes and remove line from limits.txt */ 
+	k = parser_priv(p);
+	while (k) {
+		if (k->kidx > z_info->k_max)
+			z_info->k_max = k->kidx;
+		k = k->next;
 	}
 
-	objkinds = parser_priv(p);
+	/* allocate the direct access list and copy the data to it */
+	k_info = mem_zalloc((z_info->k_max+1) * sizeof(*k));
+	for (k = parser_priv(p); k; k = next) {
+		memcpy(&k_info[k->kidx], k, sizeof(*k));
+		next = k->next;
+		if (next)
+			k_info[k->kidx].next = &k_info[next->kidx];
+		else
+			k_info[k->kidx].next = NULL;
+		mem_free(k);
+	}
+	z_info->k_max += 1;
+
+	/*objkinds = parser_priv(p); not used yet, when used, remove the mem_free(k); above */
 	parser_destroy(p);
 	return 0;
 }
@@ -843,19 +859,28 @@ static errr run_parse_a(struct parser *p) {
 static errr finish_parse_a(struct parser *p) {
 	struct artifact *a, *n;
 
-	a_info = mem_zalloc(z_info->a_max * sizeof(*a));
-	for (a = parser_priv(p); a; a = a->next) {
-		if (a->aidx >= z_info->a_max)
-			continue;
-		memcpy(&a_info[a->aidx], a, sizeof(*a));
-	}
-
+	/* scan the list for the max id */
+	z_info->a_max = 0;
 	a = parser_priv(p);
 	while (a) {
-		n = a->next;
-		mem_free(a);
-		a = n;
+		if (a->aidx > z_info->a_max)
+			z_info->a_max = a->aidx;
+		a = a->next;
 	}
+
+	/* allocate the direct access list and copy the data to it */
+	a_info = mem_zalloc((z_info->a_max+1) * sizeof(*a));
+	for (a = parser_priv(p); a; a = n) {
+		memcpy(&a_info[a->aidx], a, sizeof(*a));
+		n = a->next;
+		if (n)
+			a_info[a->aidx].next = &a_info[n->aidx];
+		else
+			a_info[a->aidx].next = NULL;
+
+		mem_free(a);
+	}
+	z_info->a_max += 1;
 
 	parser_destroy(p);
 	return 0;
@@ -986,7 +1011,7 @@ static enum parser_error parse_f_n(struct parser *p) {
 }
 
 static enum parser_error parse_f_g(struct parser *p) {
-	char glyph = parser_getchar(p, "glyph");
+	wchar_t glyph = parser_getchar(p, "glyph");
 	const char *color = parser_getsym(p, "color");
 	int attr = 0;
 	struct feature *f = parser_priv(p);
@@ -1129,19 +1154,27 @@ static errr run_parse_f(struct parser *p) {
 static errr finish_parse_f(struct parser *p) {
 	struct feature *f, *n;
 
-	f_info = mem_zalloc(z_info->f_max * sizeof(*f));
-	for (f = parser_priv(p); f; f = f->next) {
-		if (f->fidx >= z_info->f_max)
-			continue;
-		memcpy(&f_info[f->fidx], f, sizeof(*f));
-	}
-
+	/* scan the list for the max id */
+	z_info->f_max = 0;
 	f = parser_priv(p);
 	while (f) {
-		n = f->next;
-		mem_free(f);
-		f = n;
+		if (f->fidx > z_info->f_max)
+			z_info->f_max = f->fidx;
+		f = f->next;
 	}
+
+	/* allocate the direct access list and copy the data to it */
+	f_info = mem_zalloc((z_info->f_max+1) * sizeof(*f));
+	for (f = parser_priv(p); f; f = n) {
+		memcpy(&f_info[f->fidx], f, sizeof(*f));
+		n = f->next;
+		if (n)
+			f_info[f->fidx].next = &f_info[n->fidx];
+		else
+			f_info[f->fidx].next = NULL;
+		mem_free(f);
+	}
+	z_info->f_max += 1;
 
 	parser_destroy(p);
 	return 0;
@@ -1367,21 +1400,29 @@ static errr run_parse_e(struct parser *p) {
 static errr finish_parse_e(struct parser *p) {
 	struct ego_item *e, *n;
 
-	e_info = mem_zalloc(z_info->e_max * sizeof(*e));
-	for (e = parser_priv(p); e; e = e->next) {
-		if (e->eidx >= z_info->e_max)
-			continue;
-		memcpy(&e_info[e->eidx], e, sizeof(*e));
-	}
-
-	create_slay_cache(e_info);
-
+	/* scan the list for the max id */
+	z_info->e_max = 0;
 	e = parser_priv(p);
 	while (e) {
-		n = e->next;
-		mem_free(e);
-		e = n;
+		if (e->eidx > z_info->e_max)
+			z_info->e_max = e->eidx;
+		e = e->next;
 	}
+
+	/* allocate the direct access list and copy the data to it */
+	e_info = mem_zalloc((z_info->e_max+1) * sizeof(*e));
+	for (e = parser_priv(p); e; e = n) {
+		memcpy(&e_info[e->eidx], e, sizeof(*e));
+		n = e->next;
+		if (n)
+			e_info[e->eidx].next = &e_info[n->eidx];
+		else
+			e_info[e->eidx].next = NULL;
+		mem_free(e);
+	}
+	z_info->e_max += 1;
+
+	create_slay_cache(e_info);
 
 	parser_destroy(p);
 	return 0;
@@ -2180,20 +2221,32 @@ static errr finish_parse_s(struct parser *p) {
 	struct spell *s, *n, *ss;
 	struct object_kind *k;
 
-	s_info = mem_zalloc(z_info->s_max * sizeof(*s_info));
+	/* scan the list for the max id */
+	z_info->s_max = 0;
+	s = parser_priv(p);
+	while (s) {
+		if (s->sidx > z_info->s_max)
+			z_info->s_max = s->sidx;
+		s = s->next;
+	}
+
+	/* allocate the direct access list and copy the data to it */
+	s_info = mem_zalloc((z_info->s_max+1) * sizeof(*s));
 	for (s = parser_priv(p); s; s = n) {
 		n = s->next;
-		if (s->sidx >= z_info->s_max)
-			continue;
+
 		ss = &s_info[s->sidx];
 		memcpy(ss, s, sizeof(*s));
 		k = objkind_get(s->tval, s->sval);
 		if (k) {
 			ss->next = k->spells;
 			k->spells = ss;
+		} else {
+			ss->next = NULL;
 		}
 		mem_free(s);
 	}
+	z_info->s_max += 1;
 
 	parser_destroy(p);
 	return 0;
@@ -2307,20 +2360,28 @@ static errr run_parse_mp(struct parser *p) {
 static errr finish_parse_mp(struct parser *p) {
 	struct monster_pain *mp, *n;
 		
-	pain_messages = mem_zalloc(sizeof(*mp) * z_info->mp_max);
-	for (mp = parser_priv(p); mp; mp = mp->next) {
-		if (mp->pain_idx >= z_info->mp_max)
-			continue;
-		memcpy(&pain_messages[mp->pain_idx], mp, sizeof(*mp));
-	}
-	
+	/* scan the list for the max id */
+	z_info->mp_max = 0;
 	mp = parser_priv(p);
 	while (mp) {
-		n = mp->next;
-		mem_free(mp);
-		mp = n;
+		if (mp->pain_idx > z_info->mp_max)
+			z_info->mp_max = mp->pain_idx;
+		mp = mp->next;
 	}
-	
+
+	/* allocate the direct access list and copy the data to it */
+	pain_messages = mem_zalloc((z_info->mp_max+1) * sizeof(*mp));
+	for (mp = parser_priv(p); mp; mp = n) {
+		memcpy(&pain_messages[mp->pain_idx], mp, sizeof(*mp));
+		n = mp->next;
+		if (n)
+			pain_messages[mp->pain_idx].next = &pain_messages[n->pain_idx];
+		else
+			pain_messages[mp->pain_idx].next = NULL;
+		mem_free(mp);
+	}
+	z_info->mp_max += 1;
+
 	parser_destroy(p);
 	return 0;
 }
@@ -2354,7 +2415,9 @@ static enum parser_error parse_pit_n(struct parser *p) {
 	struct pit_profile *pit = mem_zalloc(sizeof *pit);
 	pit->next = h;
 	pit->pit_idx = parser_getuint(p, "index");
-	pit->name = string_make(parser_getstr(p, "name"));	
+	pit->name = string_make(parser_getstr(p, "name"));
+	pit->colors = NULL;
+	pit->forbidden_monsters = NULL;
 	parser_setpriv(p, pit);
 	return PARSE_ERROR_NONE;
 }
@@ -2405,6 +2468,29 @@ static enum parser_error parse_pit_t(struct parser *p) {
 	}
 }
 
+static enum parser_error parse_pit_c(struct parser *p) {
+	struct pit_profile *pit = parser_priv(p);
+	struct pit_color_profile *colors;
+	const char *color;
+	int attr;
+
+	if (!pit)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	color = parser_getsym(p, "color");
+	if (strlen(color) > 1)
+		attr = color_text_to_attr(color);
+	else
+		attr = color_char_to_attr(color[0]);
+	if (attr < 0)
+		return PARSE_ERROR_INVALID_COLOR;
+
+	colors = mem_zalloc(sizeof *colors);
+	colors->color = attr;
+	colors->next = pit->colors;
+	pit->colors = colors;
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_pit_f(struct parser *p) {
 	struct pit_profile *pit = parser_priv(p);
 	char *flags;
@@ -2418,6 +2504,29 @@ static enum parser_error parse_pit_f(struct parser *p) {
 	s = strtok(flags, " |");
 	while (s) {
 		if (grab_flag(pit->flags, RF_SIZE, r_info_flags, s)) {
+			mem_free(flags);
+			return PARSE_ERROR_INVALID_FLAG;
+		}
+		s = strtok(NULL, " |");
+	}
+	
+	mem_free(flags);
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_pit_f2(struct parser *p) {
+	struct pit_profile *pit = parser_priv(p);
+	char *flags;
+	char *s;
+
+	if (!pit)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	if (!parser_hasval(p, "flags"))
+		return PARSE_ERROR_NONE;
+	flags = string_make(parser_getstr(p, "flags"));
+	s = strtok(flags, " |");
+	while (s) {
+		if (grab_flag(pit->forbidden_flags, RF_SIZE, r_info_flags, s)) {
 			mem_free(flags);
 			return PARSE_ERROR_INVALID_FLAG;
 		}
@@ -2473,6 +2582,22 @@ static enum parser_error parse_pit_s2(struct parser *p) {
 	mem_free(flags);
 	return PARSE_ERROR_NONE;
 }
+
+static enum parser_error parse_pit_e(struct parser *p) {
+	struct pit_profile *pit = parser_priv(p);
+	struct pit_forbidden_monster *monsters;
+	int r_idx = lookup_monster(parser_getsym(p, "race"));
+
+	if (!pit)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	monsters = mem_zalloc(sizeof *monsters);
+	monsters->r_idx = r_idx;
+	monsters->next = pit->forbidden_monsters;
+	pit->forbidden_monsters = monsters;
+	return PARSE_ERROR_NONE;
+}
+
 struct parser *init_parse_pit(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
@@ -2482,9 +2607,12 @@ struct parser *init_parse_pit(void) {
 	parser_reg(p, "A uint rarity uint level", parse_pit_a);
 	parser_reg(p, "O uint obj_rarity", parse_pit_o);
 	parser_reg(p, "T sym base", parse_pit_t);
+	parser_reg(p, "C sym color", parse_pit_c);
 	parser_reg(p, "F ?str flags", parse_pit_f);
+	parser_reg(p, "f ?str flags", parse_pit_f2);
 	parser_reg(p, "S ?str spells", parse_pit_s);
 	parser_reg(p, "s ?str spells", parse_pit_s2);
+	parser_reg(p, "E sym race", parse_pit_e);
 	return p;
 }
 
@@ -2495,20 +2623,29 @@ static errr run_parse_pit(struct parser *p) {
 static errr finish_parse_pit(struct parser *p) {
 	struct pit_profile *pit, *n;
 		
-	pit_info = mem_zalloc(sizeof(*pit) * z_info->pit_max);
-	for (pit = parser_priv(p); pit; pit = pit->next) {
-		if (pit->pit_idx >= z_info->pit_max)
-			continue;
-		memcpy(&pit_info[pit->pit_idx], pit, sizeof(*pit));
-	}
-	
+	/* scan the list for the max id */
+	z_info->pit_max = 0;
 	pit = parser_priv(p);
 	while (pit) {
-		n = pit->next;
-		mem_free(pit);
-		pit = n;
+		if (pit->pit_idx > z_info->pit_max)
+			z_info->pit_max = pit->pit_idx;
+		pit = pit->next;
 	}
-	
+
+	/* allocate the direct access list and copy the data to it */
+	pit_info = mem_zalloc((z_info->pit_max+1) * sizeof(*pit));
+	for (pit = parser_priv(p); pit; pit = n) {
+		memcpy(&pit_info[pit->pit_idx], pit, sizeof(*pit));
+		n = pit->next;
+		if (n)
+			pit_info[pit->pit_idx].next = &pit_info[n->pit_idx];
+		else
+			pit_info[pit->pit_idx].next = NULL;
+
+		mem_free(pit);
+	}
+	z_info->pit_max += 1;
+
 	parser_destroy(p);
 	return 0;
 }
@@ -2516,8 +2653,26 @@ static errr finish_parse_pit(struct parser *p) {
 static void cleanup_pits(void)
 {
 	int idx;
+	
 	for (idx = 0; idx < z_info->pit_max; idx++) {
+		struct pit_profile *pit = &pit_info[idx];
+		struct pit_color_profile *c, *cn;
+		struct pit_forbidden_monster *m, *mn;
+		
+		c = pit->colors;
+		while (c) {
+			cn = c->next;
+			mem_free(c);
+			c = cn;
+		}
+		m = pit->forbidden_monsters;
+		while (m) {
+			mn = m->next;
+			mem_free(m);
+			m = mn;
+		}
 		string_free((char *)pit_info[idx].name);
+		
 	}
 	mem_free(pit_info);
 }
@@ -2562,12 +2717,6 @@ static errr init_other(void)
 	/* Array of stacked monster messages */
 	mon_msg = C_ZNEW(MAX_STORED_MON_MSG, monster_race_message);
 	mon_message_hist = C_ZNEW(MAX_STORED_MON_CODES, monster_message_history);
-
-	/*** Prepare "vinfo" array ***/
-
-	/* Used by "update_view()" */
-	(void)vinfo_init();
-
 
 	/*** Prepare entity arrays ***/
 

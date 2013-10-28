@@ -344,9 +344,10 @@ static void death_examine(const char *title, int row)
 		object_type *o_ptr = &p_ptr->inventory[item];
 
 		tb = object_info(o_ptr, OINFO_FULL);
-		object_desc(header, sizeof(header), o_ptr, ODESC_PREFIX | ODESC_FULL);
+		object_desc(header, sizeof(header), o_ptr,
+				ODESC_PREFIX | ODESC_FULL | ODESC_CAPITAL);
 
-		textui_textblock_show(tb, area, format("%^s", header));
+		textui_textblock_show(tb, area, header);
 		textblock_free(tb);
 	}
 }
@@ -371,7 +372,7 @@ static void death_spoilers(const char *title, int row)
 /* Menu command: toggle birth_keep_randarts option. */
 static void death_randarts(const char *title, int row)
 {
-	if (p_ptr->randarts)
+	if (OPT(birth_randarts))
 		option_set(option_name(OPT_birth_keep_randarts),
 			get_check("Keep randarts for next game? "));
 	else

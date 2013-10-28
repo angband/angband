@@ -25,13 +25,13 @@ int test_alloc(void *state) {
 int test_append(void *state) {
 	textblock *tb = textblock_new();
 
-	require(!strcmp(textblock_text(tb), ""));
+	require(!wcscmp(textblock_text(tb), L""));
 
 	textblock_append(tb, "Hello");
-	require(!strcmp(textblock_text(tb), "Hello"));
+	require(!wcscmp(textblock_text(tb), L"Hello"));
 
 	textblock_append(tb, "%d", 20);
-	require(!strcmp(textblock_text(tb), "Hello20"));
+	require(!wcscmp(textblock_text(tb), L"Hello20"));
 
 	ok;
 }
@@ -53,9 +53,10 @@ int test_length(void *state) {
 	textblock *tb = textblock_new();
 
 	const char text[] = "1234567";
+	const wchar_t test_text[] = L"1234567";
 	int i;
 
-	const char *tb_text;
+	const wchar_t *tb_text;
 
 	/* Add it 32 times to make sure that appending definitely works */
 	for (i = 0; i < 32; i++) {
@@ -68,7 +69,7 @@ int test_length(void *state) {
 		int n = N_ELEMENTS(text) - 1;
 		int offset = i * n;
 
-	 	require(!memcmp(tb_text + offset, text, n));
+	 	require(!wmemcmp(tb_text + offset, test_text, n));
 	}
 
 	ok;

@@ -131,7 +131,7 @@ static void display_player_equippy(int y, int x)
 	int i;
 
 	byte a;
-	char c;
+	wchar_t c;
 
 	object_type *o_ptr;
 
@@ -776,7 +776,7 @@ static int get_panel(int oid, data_panel *panel, size_t size)
 	P_I(TERM_L_BLUE, "Shots", "%y/turn",	i2u(p_ptr->state.num_shots), END  );
 	P_I(TERM_L_BLUE, "Infra", "%y ft",	i2u(p_ptr->state.see_infra * 10), END  );
 	P_I(TERM_L_BLUE, "Speed", "%y",		s2u(show_speed()), END );
-	P_I(TERM_L_BLUE, "Burden","%.1y lbs",	f2u(p_ptr->total_weight/10.0), END  );
+	P_I(TERM_L_BLUE, "Burden","%.1y lbs",	f2u(p_ptr->total_weight/10.0F), END  );
 	assert(i == boundaries[3].page_rows);
 	return ret;
   }
@@ -965,7 +965,7 @@ errr file_character(const char *path, bool full)
 	int i, x, y;
 
 	byte a;
-	char c;
+	wchar_t c;
 
 	ang_file *fp;
 
@@ -973,12 +973,8 @@ errr file_character(const char *path, bool full)
 
 	char o_name[80];
 
-	byte (*old_xchar_hook)(byte c) = Term->xchar_hook;
-
 	char buf[1024];
-
-	/* We use either ascii or system-specific encoding */
- 	int encoding = OPT(xchars_to_file) ? SYSTEM_SPECIFIC : ASCII;
+	char *p;
 
 	/* Unused parameter */
 	(void)full;
@@ -987,9 +983,6 @@ errr file_character(const char *path, bool full)
 	/* Open the file for writing */
 	fp = file_open(path, MODE_WRITE, FTYPE_TEXT);
 	if (!fp) return (-1);
-
-	/* Display the requested encoding -- ASCII or system-specific */
- 	if (!OPT(xchars_to_file)) Term->xchar_hook = NULL;
 
 	/* Begin dump */
 	file_putf(fp, "  [%s Character Dump]\n\n", buildid);
@@ -1001,6 +994,7 @@ errr file_character(const char *path, bool full)
 	/* Dump part of the screen */
 	for (y = 1; y < 23; y++)
 	{
+		p = buf;
 		/* Dump each row */
 		for (x = 0; x < 79; x++)
 		{
@@ -1008,17 +1002,17 @@ errr file_character(const char *path, bool full)
 			(void)(Term_what(x, y, &a, &c));
 
 			/* Dump it */
-			buf[x] = c;
+			p += wctomb(p, c);
 		}
 
 		/* Back up over spaces */
-		while ((x > 0) && (buf[x-1] == ' ')) --x;
+		while ((p > buf) && (p[-1] == ' ')) --p;
 
 		/* Terminate */
-		buf[x] = '\0';
+		*p = '\0';
 
 		/* End the row */
-		x_file_putf(fp, encoding, "%s\n", buf);
+		x_file_putf(fp, "%s\n", buf);
 	}
 
 	/* Skip a line */
@@ -1030,6 +1024,7 @@ errr file_character(const char *path, bool full)
 	/* Dump part of the screen */
 	for (y = 11; y < 20; y++)
 	{
+		p = buf;
 		/* Dump each row */
 		for (x = 0; x < 39; x++)
 		{
@@ -1037,17 +1032,17 @@ errr file_character(const char *path, bool full)
 			(void)(Term_what(x, y, &a, &c));
 
 			/* Dump it */
-			buf[x] = c;
+			p += wctomb(p, c);
 		}
 
 		/* Back up over spaces */
-		while ((x > 0) && (buf[x-1] == ' ')) --x;
+		while ((p > buf) && (p[-1] == ' ')) --p;
 
 		/* Terminate */
-		buf[x] = '\0';
+		*p = '\0';
 
 		/* End the row */
-		x_file_putf(fp, encoding, "%s\n", buf);
+		x_file_putf(fp, "%s\n", buf);
 	}
 
 	/* Skip a line */
@@ -1056,6 +1051,7 @@ errr file_character(const char *path, bool full)
 	/* Dump part of the screen */
 	for (y = 11; y < 20; y++)
 	{
+		p = buf;
 		/* Dump each row */
 		for (x = 0; x < 39; x++)
 		{
@@ -1063,17 +1059,17 @@ errr file_character(const char *path, bool full)
 			(void)(Term_what(x + 40, y, &a, &c));
 
 			/* Dump it */
-			buf[x] = c;
+			p += wctomb(p, c);
 		}
 
 		/* Back up over spaces */
-		while ((x > 0) && (buf[x-1] == ' ')) --x;
+		while ((p > buf) && (p[-1] == ' ')) --p;
 
 		/* Terminate */
-		buf[x] = '\0';
+		*p = '\0';
 
 		/* End the row */
-		x_file_putf(fp, encoding, "%s\n", buf);
+		x_file_putf(fp, "%s\n", buf);
 	}
 
 	/* Skip some lines */
@@ -1088,9 +1084,9 @@ errr file_character(const char *path, bool full)
 		file_putf(fp, "  [Last Messages]\n\n");
 		while (i-- > 0)
 		{
-			x_file_putf(fp, encoding, "> %s\n", message_str((s16b)i));
+			x_file_putf(fp, "> %s\n", message_str((s16b)i));
 		}
-		x_file_putf(fp, encoding, "\nKilled by %s.\n\n", p_ptr->died_from);
+		x_file_putf(fp, "\nKilled by %s.\n\n", p_ptr->died_from);
 	}
 
 
@@ -1106,7 +1102,7 @@ errr file_character(const char *path, bool full)
 		object_desc(o_name, sizeof(o_name), &p_ptr->inventory[i],
 				ODESC_PREFIX | ODESC_FULL);
 
-		x_file_putf(fp, encoding, "%c) %s\n", index_to_label(i), o_name);
+		x_file_putf(fp, "%c) %s\n", index_to_label(i), o_name);
 		if (p_ptr->inventory[i].kind)
 			object_info_chardump(fp, &p_ptr->inventory[i], 5, 72);
 	}
@@ -1120,7 +1116,7 @@ errr file_character(const char *path, bool full)
 		object_desc(o_name, sizeof(o_name), &p_ptr->inventory[i],
 					ODESC_PREFIX | ODESC_FULL);
 
-		x_file_putf(fp, encoding, "%c) %s\n", index_to_label(i), o_name);
+		x_file_putf(fp, "%c) %s\n", index_to_label(i), o_name);
 		object_info_chardump(fp, &p_ptr->inventory[i], 5, 72);
 	}
 	file_putf(fp, "\n\n");
@@ -1137,7 +1133,7 @@ errr file_character(const char *path, bool full)
 		{
 			object_desc(o_name, sizeof(o_name), &st_ptr->stock[i],
 						ODESC_PREFIX | ODESC_FULL);
-			x_file_putf(fp, encoding, "%c) %s\n", I2A(i), o_name);
+			x_file_putf(fp, "%c) %s\n", I2A(i), o_name);
 
 			object_info_chardump(fp, &st_ptr->stock[i], 5, 72);
 		}
@@ -1167,9 +1163,6 @@ errr file_character(const char *path, bool full)
 
 	/* Skip some lines */
 	file_putf(fp, "\n\n");
-
-	/* Return to standard display */
- 	Term->xchar_hook = old_xchar_hook;
 
 	file_close(fp);
 
@@ -1255,6 +1248,9 @@ bool show_file(const char *name, const char *what, int line, int mode)
 	char hook[26][32];
 
 	int wid, hgt;
+	
+	/* TRUE if we are inside a RST block that should be skipped */
+	bool skip_lines = FALSE;
 
 
 
@@ -1282,7 +1278,6 @@ bool show_file(const char *name, const char *what, int line, int mode)
 
 	/* Redirect the name */
 	name = filename;
-
 
 	/* Hack XXX XXX XXX */
 	if (what)
@@ -1329,27 +1324,33 @@ bool show_file(const char *name, const char *what, int line, int mode)
 		/* Read a line or stop */
 		if (!file_getl(fff, buf, sizeof(buf))) break;
 
-		/* XXX Parse "menu" items */
-		if (prefix(buf, "***** "))
-		{
-			char b1 = '[', b2 = ']';
+		/* Skip lines if we are inside a RST directive*/
+		if(skip_lines){
+			if(contains_only_spaces(buf))
+				skip_lines=FALSE;
+			continue;
+		}
 
-			/* Notice "menu" requests */
-			if ((buf[6] == b1) && isalpha((unsigned char)buf[7]) &&
-			    (buf[8] == b2) && (buf[9] == ' '))
+		/* Parse a very small subset of RST */
+		/* TODO: should be more flexible */
+		if (prefix(buf, ".. "))
+		{
+			/* parse ".. menu:: [x] filename.txt" (with exact spacing)*/
+			if(prefix(buf+strlen(".. "), "menu:: [") && 
+                           buf[strlen(".. menu:: [x")]==']')
 			{
 				/* This is a menu file */
 				menu = TRUE;
 
 				/* Extract the menu item */
-				k = A2I(buf[7]);
+				k = A2I(buf[strlen(".. menu:: [")]);
 
 				/* Store the menu item (if valid) */
 				if ((k >= 0) && (k < 26))
-					my_strcpy(hook[k], buf + 10, sizeof(hook[0]));
+					my_strcpy(hook[k], buf + strlen(".. menu:: [x] "), sizeof(hook[0]));
 			}
-			/* Notice "tag" requests */
-			else if (buf[6] == '<')
+			/* parse ".. _some_hyperlink_target:" */
+			else if (buf[strlen(".. ")] == '_')
 			{
 				if (tag)
 				{
@@ -1357,7 +1358,7 @@ bool show_file(const char *name, const char *what, int line, int mode)
 					buf[strlen(buf) - 1] = '\0';
 
 					/* Compare with the requested tag */
-					if (streq(buf + 7, tag))
+					if (streq(buf + strlen(".. _"), tag))
 					{
 						/* Remember the tagged line */
 						line = next;
@@ -1365,7 +1366,8 @@ bool show_file(const char *name, const char *what, int line, int mode)
 				}
 			}
 
-			/* Skip this */
+			/* Skip this and enter skip mode*/
+			skip_lines = TRUE;
 			continue;
 		}
 
@@ -1375,7 +1377,6 @@ bool show_file(const char *name, const char *what, int line, int mode)
 
 	/* Save the number of "real" lines */
 	size = next;
-
 
 
 	/* Display the file */
@@ -1389,7 +1390,7 @@ bool show_file(const char *name, const char *what, int line, int mode)
 		if (line > (size - (hgt - 4))) line = size - (hgt - 4);
 		if (line < 0) line = 0;
 
-
+		skip_lines = FALSE;
 		/* Re-open the file if needed */
 		if (next > line)
 		{
@@ -1411,8 +1412,19 @@ bool show_file(const char *name, const char *what, int line, int mode)
 			/* Get a line */
 			if (!file_getl(fff, buf, sizeof(buf))) break;
 
-			/* Skip tags/links */
-			if (prefix(buf, "***** ")) continue;
+			/* Skip lines if we are inside a RST directive*/
+			if(skip_lines){
+				if(contains_only_spaces(buf))
+					skip_lines=FALSE;
+				continue;
+			}
+
+			/* Skip RST directives */
+			if (prefix(buf, ".. "))
+			{
+				skip_lines=TRUE;
+				continue;
+			}
 
 			/* Count the lines */
 			next++;
@@ -1428,8 +1440,22 @@ bool show_file(const char *name, const char *what, int line, int mode)
 			/* Get a line of the file or stop */
 			if (!file_getl(fff, buf, sizeof(buf))) break;
 
-			/* Hack -- skip "special" lines */
-			if (prefix(buf, "***** ")) continue;
+			/* Skip lines if we are inside a RST directive*/
+			if(skip_lines){
+				if(contains_only_spaces(buf))
+					skip_lines=FALSE;
+				continue;
+			}
+
+			/* Skip RST directives */
+			if (prefix(buf, ".. "))
+			{
+				skip_lines=TRUE;
+				continue;
+			}
+
+			/* skip | characters */
+			strskip(buf,'|');
 
 			/* Count the "real" lines */
 			next++;
@@ -1490,7 +1516,7 @@ bool show_file(const char *name, const char *what, int line, int mode)
 		if (menu)
 		{
 			/* Wait for it */
-			prt("[Press a Number, or ESC to exit.]", hgt - 1, 0);
+			prt("[Press a Letter, or ESC to exit.]", hgt - 1, 0);
 		}
 
 		/* Prompt -- small files */
@@ -1590,8 +1616,7 @@ bool show_file(const char *name, const char *what, int line, int mode)
 			/* down a line */
 			case ARROW_DOWN:
 			case '2':
-			case '\n':
-			case '\r': line++; break;
+			case KC_ENTER: line++; break;
 
 			/* down a page */
 			case KC_PGDOWN:
@@ -1821,22 +1846,30 @@ void close_game(void)
 	signals_handle_tstp();
 }
 
-static void write_html_escape_char(ang_file *fp, char c)
+static void write_html_escape_char(ang_file *fp, wchar_t c)
 {
+	//char mbseq[MB_CUR_MAX];
+
 	switch (c)
 	{
-		case '<':
+		case L'<':
 			file_putf(fp, "&lt;");
 			break;
-		case '>':
+		case L'>':
 			file_putf(fp, "&gt;");
 			break;
-		case '&':
+		case L'&':
 			file_putf(fp, "&amp;");
 			break;
 		default:
-			file_putf(fp, "%c", c);
-			break;
+			{
+				char *mbseq = (char*) mem_alloc(sizeof(char)*(MB_CUR_MAX+1));
+				wctomb(mbseq, c);
+				mbseq[MB_CUR_MAX] = '\0';
+				file_putf(fp, "%s", mbseq);
+				mem_free(mbseq);
+				break;
+			}
 	}
 }
 
@@ -1849,7 +1882,7 @@ void html_screenshot(const char *name, int mode)
 
 	byte a = TERM_WHITE;
 	byte oa = TERM_WHITE;
-	char c = ' ';
+	wchar_t c = L' ';
 
 	const char *new_color_fmt = (mode == 0) ?
 					"<font color=\"#%02X%02X%02X\">"
@@ -1899,7 +1932,7 @@ void html_screenshot(const char *name, int mode)
 			(void)(Term_what(x, y, &a, &c));
 
 			/* Color change */
-			if (oa != a && c != ' ')
+			if (oa != a && c != L' ')
 			{
 				/* From the default white to another color */
 				if (oa == TERM_WHITE)
@@ -1931,7 +1964,12 @@ void html_screenshot(const char *name, int mode)
 
 			/* Write the character and escape special HTML characters */
 			if (mode == 0) write_html_escape_char(fp, c);
-			else file_putf(fp, "%c", c);
+			else
+			{
+				char mbseq[MB_LEN_MAX+1] = {0};
+				wctomb(mbseq, c);
+				file_putf(fp, "%s", mbseq);
+			}
 		}
 
 		/* End the row */

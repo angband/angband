@@ -29,7 +29,7 @@ SYS_x11 = -DUSE_X11 -lX11
 
 # Support curses console mode (main-gcu.c)
 # If this fails, try the alternate below
-SYS_gcu = -DUSE_GCU -DUSE_NCURSES -lncurses
+SYS_gcu = -DUSE_GCU -DUSE_NCURSES -lncursesw
 #SYS_gcu = -DUSE_GCU -lcurses -ltermcap
 
 # Support the GTK2 graphical tookit (main-gtk.c)
@@ -78,8 +78,7 @@ LIBS += $(patsubst -D%,,$(patsubst -I%,, $(MODULES)))
 
 
 # Object definitions
-GTKOBJS = gtk/main-gtk.o gtk/cairo-utils.o
-OBJS = $(BASEOBJS) main.o main-stats.o main-gcu.o main-x11.o main-sdl.o snd-sdl.o $(GTKOBJS)
+OBJS = $(BASEOBJS) main.o main-stats.o main-gcu.o main-x11.o main-sdl.o snd-sdl.o
 
 
 

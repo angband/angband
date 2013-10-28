@@ -244,7 +244,7 @@ color_type color_table[MAX_COLORS] =
 /*
  * Standard sound (and message) names
  */
-const const char *angband_sound_name[MSG_MAX] =
+const char *angband_sound_name[MSG_MAX] =
 {
 	"",
 	"hit",
@@ -358,7 +358,7 @@ const const char *angband_sound_name[MSG_MAX] =
 	"breathe_plasma", 
 	"breathe_force", 
 	"summon_monster", 
-	"summon_angel", 
+	"summon_ainu",
 	"summon_undead", 
 	"summon_animal", 
 	"summon_spider", 
@@ -457,7 +457,7 @@ alloc_entry *alloc_race_table;
  * Specify attr/char pairs for visual special effects for project()
  */
 byte gf_to_attr[GF_MAX][BOLT_MAX];
-char gf_to_char[GF_MAX][BOLT_MAX];
+wchar_t gf_to_char[GF_MAX][BOLT_MAX];
 
 
 /*

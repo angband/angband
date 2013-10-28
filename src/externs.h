@@ -7,7 +7,6 @@
 #include "player/types.h"
 #include "store.h"
 #include "types.h"
-#include "x-char.h"
 #include "z-file.h"
 #include "z-msg.h"
 #include "spells.h"
@@ -32,12 +31,10 @@ extern const s16b ddy_ddd[9];
 extern const byte extract_energy[200];
 extern const s32b player_exp[PY_MAX_LEVEL];
 extern const player_sex sex_info[MAX_SEXES];
-extern const byte chest_traps[64];
 extern const char *stat_names[A_MAX];
 extern const char *stat_names_reduced[A_MAX];
 extern const char *window_flag_desc[32];
 extern const char *inscrip_text[];
-extern const byte char_tables[256][CHAR_TABLE_SLOTS];
 
 /* variable.c */
 extern const char *copyright;
@@ -83,7 +80,7 @@ extern alloc_entry *alloc_ego_table;
 extern s16b alloc_race_size;
 extern alloc_entry *alloc_race_table;
 extern byte gf_to_attr[GF_MAX][BOLT_MAX];
-extern char gf_to_char[GF_MAX][BOLT_MAX];
+extern wchar_t gf_to_char[GF_MAX][BOLT_MAX];
 extern byte tval_to_attr[128];
 extern player_other *op_ptr;
 extern player_type *p_ptr;
@@ -153,7 +150,6 @@ extern void move_player(int dir, bool disarm);
 
 /* cmd2.c */
 int count_feats(int *y, int *x, bool (*test)(struct cave *cave, int y, int x), bool under);
-int count_chests(int *y, int *x, bool trapped);
 int coords_to_dir(int y, int x);
 
 /* death.c */
@@ -196,6 +192,7 @@ extern int int_to_roman(int n, char *roman, size_t bufsize);
 extern void flush(void);
 extern void flush_fail(void);
 extern struct keypress inkey(void);
+extern ui_event inkey_m(void);
 extern ui_event inkey_ex(void);
 extern void anykey(void);
 extern void bell(const char *reason);
@@ -216,7 +213,7 @@ extern void text_out_c(byte a, const char *fmt, ...);
 extern void text_out_e(const char *fmt, ...);
 extern void clear_from(int row);
 extern bool askfor_aux_keypress(char *buf, size_t buflen, size_t *curs, size_t *len, struct keypress keypress, bool firsttime);
-extern bool askfor_aux(char *buf, size_t len, bool keypress_h(char *, size_t, size_t *, size_t *, struct keypress, bool));
+extern bool askfor_aux(char *buf, size_t len, bool (*keypress_h)(char *, size_t, size_t *, size_t *, struct keypress, bool));
 extern bool get_string(const char *prompt, char *buf, size_t len);
 extern s16b get_quantity(const char *prompt, int max);
 extern char get_char(const char *prompt, const char *options, size_t len, char fallback);
@@ -224,21 +221,18 @@ extern bool get_check(const char *prompt);
 extern bool (*get_file)(const char *suggested_name, char *path, size_t len);
 extern bool get_com(const char *prompt, struct keypress *command);
 extern bool get_com_ex(const char *prompt, ui_event *command);
-extern void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp);
+extern void grid_data_as_text(grid_data *g, byte *ap, wchar_t *cp, byte *tap, wchar_t *tcp);
 extern void pause_line(struct term *term);
 extern bool is_a_vowel(int ch);
 extern int color_char_to_attr(char c);
 extern int color_text_to_attr(const char *name);
 extern const char *attr_to_text(byte a);
+extern bool char_matches_key(wchar_t c, keycode_t key);
 
 #ifdef SUPPORT_GAMMA
 extern void build_gamma_table(int gamma);
 extern byte gamma_table[256];
 #endif /* SUPPORT_GAMMA */
-
-/* x-char.c */
-extern void xstr_trans(char *str, int encoding);
-extern char xchar_trans(byte c);
 
 /* xtra2.c */
 bool modify_panel(term *t, int wy, int wx);

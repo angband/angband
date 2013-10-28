@@ -28,6 +28,9 @@
 /* Define to 1 if you have the `mkdir' function. */
 #undef HAVE_MKDIR
 
+/* Define to 1 if you have the `mvwaddnwstr' function. */
+#undef HAVE_MVWADDNWSTR
+
 /* Define to 1 if you have the <ndir.h> header file, and it defines `DIR'. */
 #undef HAVE_NDIR_H
 
@@ -93,9 +96,6 @@
 /* Define to the one symbol short name of this package. */
 #undef PACKAGE_TARNAME
 
-/* Define to the home page for this package. */
-#undef PACKAGE_URL
-
 /* Define to the version of this package. */
 #undef PACKAGE_VERSION
 
@@ -108,14 +108,8 @@
 /* Define to 1 if you have the ANSI C header files. */
 #undef STDC_HEADERS
 
-/* Define to 1 if Curses or PDCurses is found, but NCurses is not. */
-#undef USE_CURSES
-
 /* Define to 1 if using the Curses frontend. */
 #undef USE_GCU
-
-/* Define to 1 if using the GTK+ 2.x interface and GTK+ 2.x is found. */
-#undef USE_GTK
 
 /* Define to 1 if NCurses is found. */
 #undef USE_NCURSES
@@ -131,6 +125,9 @@
 
 /* Define to 1 to build the test frontend */
 #undef USE_TEST
+
+/* Define to 1 if using the Windows interface. */
+#undef USE_WIN
 
 /* Define to 1 if using the X11 frontend and X11 libraries are found. */
 #undef USE_X11

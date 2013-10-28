@@ -30,6 +30,7 @@
 #include "spells.h"
 #include "squelch.h"
 #include "z-queue.h"
+#include "grafmode.h"
 
 struct object *o_list;
 
@@ -204,12 +205,6 @@ void flavor_init(void)
 }
 
 
-
-#ifdef ALLOW_BORG_GRAPHICS
-extern void init_translate_visuals(void);
-#endif /* ALLOW_BORG_GRAPHICS */
-
-
 /*
  * Reset the "visual" lists
  *
@@ -279,17 +274,20 @@ void reset_visuals(bool load_prefs)
 
 
 	/* Graphic symbols */
-	if (use_graphics)
-		process_pref_file("graf.prf", FALSE, FALSE);
+	if (use_graphics) {
+		/* if we have a graphics mode, see if the mode has a pref file name */
+		graphics_mode *mode = get_graphics_mode(use_graphics);
+		if (mode && strstr(mode->pref,".prf")) {
+			(void)process_pref_file(mode->pref, FALSE, FALSE);
+		} else {
+			(void)process_pref_file("graf.prf", FALSE, FALSE);
+		}
+		/* process_pref_file("graf.prf", FALSE, FALSE); */
 
 	/* Normal symbols */
-	else
+	} else {
 		process_pref_file("font.prf", FALSE, FALSE);
-
-#ifdef ALLOW_BORG_GRAPHICS
-	/* Initialize the translation table for the borg */
-	init_translate_visuals();
-#endif /* ALLOW_BORG_GRAPHICS */
+	}
 }
 
 
@@ -668,6 +666,16 @@ bool item_tester_okay(const object_type *o_ptr)
 }
 
 
+/** 
+ * Return true if the item is unknown (has yet to be seen by the player).
+ */
+static bool is_unknown(const object_type *o_ptr)
+{
+	grid_data gd = { 0 };
+	map_info(o_ptr->iy, o_ptr->ix, &gd);
+	return gd.unseen_object;
+}	
+
 
 /*
  * Get the indexes of objects at a given floor location. -TNB-
@@ -707,8 +715,10 @@ int scan_floor(int *items, int max_size, int y, int x, int mode)
 		if ((mode & 0x01) && !item_tester_okay(o_ptr)) continue;
 
 		/* Marked */
-		if ((mode & 0x02) && (!o_ptr->marked || squelch_item_ok(o_ptr)))
-			continue;
+		if ((mode & 0x02)) {
+			if (!o_ptr->marked) continue;
+			if (!is_unknown(o_ptr) && squelch_item_ok(o_ptr)) continue;
+		}
 
 		/* Accept this item */
 		items[num++] = this_o_idx;
@@ -1401,7 +1411,7 @@ s32b object_value_real(const object_type *o_ptr, int qty, int verbose,
 
 	s32b power;
 	int a = 1;
-	int b = 1;
+	int b = 5;
 	static file_mode pricing_mode = MODE_WRITE;
 
 	if (wearable_p(o_ptr))
@@ -1411,7 +1421,7 @@ s32b object_value_real(const object_type *o_ptr, int qty, int verbose,
 
 		if (verbose)
 		{
-			path_build(buf, sizeof(buf), ANGBAND_DIR_USER, 					"pricing.log");
+			path_build(buf, sizeof(buf), ANGBAND_DIR_USER, "pricing.log");
                 	log_file = file_open(buf, pricing_mode, FTYPE_TEXT);
                 	if (!log_file)
                 	{
@@ -1568,6 +1578,9 @@ bool object_similar(const object_type *o_ptr, const object_type *j_ptr,
 
 	/* Check against stacking limit - except in stores which absorb anyway */
 	if (!(mode & OSTACK_STORE) && (total >= MAX_STACK_SIZE)) return FALSE;
+
+	/* Unknown items cannot be stacked */
+	if (mode & OSTACK_LIST && o_ptr->marked == MARK_AWARE) return FALSE;
 
 	/* Hack -- identical items cannot be stacked */
 	if (o_ptr == j_ptr) return FALSE;
@@ -2333,13 +2346,15 @@ void inven_item_increase(int item, int num)
 void save_quiver_size(struct player *p)
 {
 	int i, count = 0;
+	int maxsize = MAX_STACK_SIZE - 1;
+
 	for (i = QUIVER_START; i < QUIVER_END; i++)
 		if (p->inventory[i].kind)
 			count += p->inventory[i].number;
 
 	p->quiver_size = count;
-	p->quiver_slots = (count + 98) / 99;
-	p->quiver_remainder = count % 99;
+	p->quiver_slots = (count + maxsize - 1) / maxsize;
+	p->quiver_remainder = count % maxsize;
 }
 
 
@@ -2692,7 +2707,7 @@ bool inven_stack_okay(const object_type *o_ptr)
 	else if (p_ptr->quiver_remainder == 0)
 		/* Quiver already maxed out */
 		limit = INVEN_PACK;
-	else if (p_ptr->quiver_remainder + o_ptr->number > 99)
+	else if (p_ptr->quiver_remainder + o_ptr->number >= MAX_STACK_SIZE)
 		/* Too much new ammo */
 		limit = INVEN_PACK;
 	else
@@ -3559,15 +3574,14 @@ int lookup_name(int tval, const char *name)
 	for (k = 1; k < z_info->k_max; k++)
 	{
 		object_kind *k_ptr = &k_info[k];
-		const char *nm = k_ptr->name;
+		char cmp_name[1024];
 
-		if (!nm) continue;
+		if (!k_ptr || !k_ptr->name) continue;
 
-		if (*nm == '&' && *(nm+1))
-			nm += 2;
+		obj_desc_name_format(cmp_name, sizeof cmp_name, 0, k_ptr->name, 0, FALSE);
 
 		/* Found a match */
-		if (k_ptr->tval == tval && !strcmp(name, nm))
+		if (k_ptr->tval == tval && !my_stricmp(cmp_name, name))
 			return k;
 	}
 
@@ -3593,7 +3607,7 @@ int lookup_artifact_name(const char *name)
 			return i;
 		
 		/* Test for close matches */
-		if (a_ptr->name && my_stristr(a_ptr->name, name) && a_idx == -1)
+		if (strlen(name) >= 3 && a_ptr->name && my_stristr(a_ptr->name, name) && a_idx == -1)
 			a_idx = i;
 	} 
 
@@ -3617,15 +3631,14 @@ int lookup_sval(int tval, const char *name)
 	for (k = 1; k < z_info->k_max; k++)
 	{
 		object_kind *k_ptr = &k_info[k];
-		const char *nm = k_ptr->name;
+		char cmp_name[1024];
 
-		if (!nm) continue;
+		if (!k_ptr || !k_ptr->name) continue;
 
-		if (*nm == '&' && *(nm+1))
-			nm += 2;
+		obj_desc_name_format(cmp_name, sizeof cmp_name, 0, k_ptr->name, 0, FALSE);
 
 		/* Found a match */
-		if (k_ptr->tval == tval && !strcmp(name, nm))
+		if (k_ptr->tval == tval && !my_stricmp(cmp_name, name))
 			return k_ptr->sval;
 	}
 
@@ -3681,7 +3694,8 @@ static int compare_types(const object_type *o1, const object_type *o2)
 		return CMP(o1->sval, o2->sval);
 	else
 		return CMP(o1->tval, o2->tval);
-}
+}	
+	
 
 /**
  * Sort comparator for objects
@@ -3693,6 +3707,13 @@ static int compare_types(const object_type *o1, const object_type *o2)
  */
 static int compare_items(const object_type *o1, const object_type *o2)
 {
+
+	/* unknown objects go at the end, order doesn't matter */
+	if (is_unknown(o1) || is_unknown(o2)) {
+		if (!is_unknown(o1)) return -1;
+		return 1;
+	}
+
 	/* known artifacts will sort first */
 	if (object_is_known_artifact(o1) && object_is_known_artifact(o2))
 		return compare_types(o1, o2);
@@ -3763,13 +3784,11 @@ void display_itemlist(void)
 {
 	int max;
 	int mx, my;
-	unsigned num;
 	int line = 1, x = 0;
 	int cur_x;
-	unsigned i;
-	unsigned disp_count = 0;
+	unsigned i, num, disp_count = 0;
 	byte a;
-	char c;
+	wchar_t c;
 
 	object_type *types[MAX_ITEMLIST];
 	int counts[MAX_ITEMLIST];
@@ -3785,44 +3804,41 @@ void display_itemlist(void)
 	int floor_list[MAX_FLOOR_STACK];
 
 	/* Clear the term if in a subwindow, set x otherwise */
-	if (Term != angband_term[0])
-	{
+	if (Term != angband_term[0]) {
 		clear_from(0);
 		max = Term->hgt - 1;
-	}
-	else
-	{
+	} else {
 		x = 13;
 		max = Term->hgt - 2;
 	}
 
 	/* Look at each square of the dungeon for items */
-	for (my = 0; my < dungeon_hgt; my++)
-	{
-		for (mx = 0; mx < dungeon_wid; mx++)
-		{
+	for (my = 0; my < dungeon_hgt; my++) {
+		for (mx = 0; mx < dungeon_wid; mx++) {
+			
 			num = scan_floor(floor_list, MAX_FLOOR_STACK, my, mx, 0x02);
 
 			/* Iterate over all the items found on this square */
-			for (i = 0; i < num; i++)
-			{
+			for (i = 0; i < num; i++) {
 				object_type *o_ptr = object_byid(floor_list[i]);
 				unsigned j;
 
-				/* Skip gold/squelched */
-				if (o_ptr->tval == TV_GOLD || squelch_item_ok(o_ptr))
-					continue;
+				if (!is_unknown(o_ptr) && squelch_item_ok(o_ptr)) continue;
+				if (o_ptr->tval == TV_GOLD) continue;
 
 				/* See if we've already seen a similar item; if so, just add */
 				/* to its count */
-				for (j = 0; j < counter; j++)
-				{
-					if (object_similar(o_ptr, types[j],
-						OSTACK_LIST))
-					{
-						counts[j] += o_ptr->number;
-						if ((my - p_ptr->py) * (my - p_ptr->py) + (mx - p_ptr->px) * (mx - p_ptr->px) < dy[j] * dy[j] + dx[j] * dx[j])
-						{
+				for (j = 0; j < counter; j++) {
+					if (object_similar(o_ptr, types[j],	OSTACK_LIST) &&
+							!is_unknown(o_ptr)) {
+						if (o_ptr->marked == MARK_SEEN)
+							counts[j] += o_ptr->number;
+						else
+							counts[j] = 1;
+
+						if ((my - p_ptr->py) * (my - p_ptr->py) +
+								(mx - p_ptr->px) * (mx - p_ptr->px) <
+								dy[j] * dy[j] + dx[j] * dx[j]) {
 							dy[j] = my - p_ptr->py;
 							dx[j] = mx - p_ptr->px;
 						}
@@ -3833,29 +3849,28 @@ void display_itemlist(void)
 				/* We saw a new item. So insert it at the end of the list and */
 				/* then sort it forward using compare_items(). The types list */
 				/* is always kept sorted. */
-				if (j == counter)
-				{
+				if (j == counter) {
 					types[counter] = o_ptr;
 					counts[counter] = o_ptr->number;
 					dy[counter] = my - p_ptr->py;
-					dx[counter] = mx - p_ptr->px;
+					dx[counter] = mx - p_ptr->px;					
 
-					while (j > 0 && compare_items(types[j - 1], types[j]) > 0)
-					{
+					while (j > 0 && compare_items(types[j - 1], types[j]) > 0) {
 						object_type *tmp_o = types[j - 1];
-						int tmpcount;
-						int tmpdx = dx[j-1];
-						int tmpdy = dy[j-1];
+						int tmpcount = counts[j - 1];
+						int tmpdx = dx[j - 1];
+						int tmpdy = dy[j - 1];
+						
 
 						types[j - 1] = types[j];
 						types[j] = tmp_o;
-						dx[j-1] = dx[j];
+						dx[j - 1] = dx[j];
 						dx[j] = tmpdx;
-						dy[j-1] = dy[j];
+						dy[j - 1] = dy[j];
 						dy[j] = tmpdy;
-						tmpcount = counts[j - 1];
 						counts[j - 1] = counts[j];
 						counts[j] = tmpcount;
+						
 						j--;
 					}
 					counter++;
@@ -3865,8 +3880,7 @@ void display_itemlist(void)
 	}
 
 	/* Note no visible items */
-	if (!counter)
-	{
+	if (!counter) {
 		/* Clear display and print note */
 		c_prt(TERM_SLATE, "You see no items.", 0, 0);
 		if (Term == angband_term[0])
@@ -3874,16 +3888,13 @@ void display_itemlist(void)
 
 		/* Done */
 		return;
-	}
-	else
-	{
+	} else {
 		/* Reprint Message */
 		prt(format("You can see %d item%s:",
 				   counter, (counter > 1 ? "s" : "")), 0, 0);
 	}
 
-	for (i = 0; i < counter; i++)
-	{
+	for (i = 0; i < counter; i++) {
 		/* o_name will hold the object_desc() name for the object. */
 		/* o_desc will also need to put a (x4) behind it. */
 		/* can there be more than 999 stackable items on a level? */
@@ -3892,12 +3903,8 @@ void display_itemlist(void)
 
 		object_type *o_ptr = types[i];
 
-		/* We shouldn't list coins or squelched items */
-		if (o_ptr->tval == TV_GOLD || squelch_item_ok(o_ptr))
-			continue;
-
 		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_FULL);
-		if (counts[i] > 1)
+		if ((counts[i] > 1) && !(is_unknown(o_ptr)))
 			strnfmt(o_desc, sizeof(o_desc), "%s (x%d) %d %c, %d %c", o_name, counts[i],
 				(dy[i] > 0) ? dy[i] : -dy[i], (dy[i] > 0) ? 'S' : 'N',
 				(dx[i] > 0) ? dx[i] : -dx[i], (dx[i] > 0) ? 'E' : 'W');
@@ -3910,8 +3917,7 @@ void display_itemlist(void)
 		cur_x = x;
 
 		/* See if we need to scroll or not */
-		if (Term == angband_term[0] && (line == max) && disp_count != counter)
-		{
+		if (Term == angband_term[0] && (line == max) && disp_count != counter) {
 			prt("-- more --", line, x);
 			anykey();
 
@@ -3925,21 +3931,21 @@ void display_itemlist(void)
 
 			/* Reset */
 			line = 1;
-		}
-		else if (line == max)
-		{
+		} else if (line == max)
 			continue;
-		}
 
 		/* Note that the number of items actually displayed */
 		disp_count++;
 
-		if (o_ptr->artifact && object_is_known(o_ptr))
+		if (is_unknown(o_ptr))
+			/* unknown object */
+			attr = TERM_RED;
+		else if (o_ptr->artifact && object_is_known(o_ptr))
 			/* known artifact */
 			attr = TERM_VIOLET;
 		else if (!object_flavor_is_aware(o_ptr))
 			/* unaware of kind */
-			attr = TERM_RED;
+			attr = TERM_L_RED;
 		else if (o_ptr->kind->cost == 0)
 			/* worthless */
 			attr = TERM_SLATE;
@@ -3947,13 +3953,17 @@ void display_itemlist(void)
 			/* default */
 			attr = TERM_WHITE;
 
-		a = object_kind_attr(o_ptr->kind);
-		c = object_kind_char(o_ptr->kind);
+		if (!(is_unknown(o_ptr))) {
+			a = object_kind_attr(o_ptr->kind);
+			c = object_kind_char(o_ptr->kind);
+		} else {
+			a = TERM_RED;
+			c = L'*';
+		}
 
 		/* Display the pict */
-		if ((tile_width == 1) && (tile_height == 1))
-		{
-		        Term_putch(cur_x++, line, a, c);
+		if ((tile_width == 1) && (tile_height == 1)) {
+			Term_putch(cur_x++, line, a, c);
 			Term_putch(cur_x++, line, TERM_WHITE, ' ');
 		}
 
@@ -3962,17 +3972,13 @@ void display_itemlist(void)
 		line++;
 	}
 
-	if (disp_count != counter)
-	{
+	if (disp_count != counter) {
 		/* Print "and others" message if we've run out of space */
 		strnfmt(buf, sizeof buf, "  ...and %d others.", counter - disp_count);
 		c_prt(TERM_WHITE, buf, line, x);
-	}
-	else
-	{
+	} else
 		/* Otherwise clear a line at the end, for main-term display */
 		prt("", line, x);
-	}
 
 	if (Term == angband_term[0])
 		Term_addstr(-1, TERM_WHITE, "  (Press any key to continue.)");
@@ -4046,31 +4052,31 @@ bool obj_can_activate(const object_type *o_ptr)
 	return FALSE;
 }
 
-bool obj_can_refill(const object_type *o_ptr)
+/**
+ * Check if an object can be used to refuel other objects.
+ */
+bool obj_can_refill(const object_type *obj)
 {
-	bitflag f[OF_SIZE];
-	const object_type *j_ptr = &p_ptr->inventory[INVEN_LIGHT];
+	const object_type *light = &p_ptr->inventory[INVEN_LIGHT];
+	bitflag flags[OF_SIZE];
+	bool no_fuel;
 
 	/* Get flags */
-	object_flags(o_ptr, f);
+	object_flags(obj, flags);
+	no_fuel = of_has(flags, OF_NO_FUEL) ? TRUE : FALSE;
 
-	if (j_ptr->sval == SV_LIGHT_LANTERN)
-	{
-		/* Flasks of oil are okay */
-		if (o_ptr->tval == TV_FLASK) return (TRUE);
+	/* A lantern can be refueled from a flask or another lantern */
+	if (light->sval == SV_LIGHT_LANTERN) {
+		if (obj->tval == TV_FLASK) 
+			return TRUE;
+		else if (obj->tval == TV_LIGHT &&
+			obj->sval == SV_LIGHT_LANTERN &&
+			obj->timeout > 0 &&
+			!no_fuel) 
+			return TRUE;
 	}
 
-	/* Non-empty, non-everburning sources are okay */
-	if ((o_ptr->tval == TV_LIGHT) &&
-	    (o_ptr->sval == j_ptr->sval) &&
-	    (o_ptr->timeout > 0) &&
-	    !of_has(f, OF_NO_FUEL))
-	{
-		return (TRUE);
-	}
-
-	/* Assume not okay */
-	return (FALSE);
+	return FALSE;
 }
 
 
@@ -4114,6 +4120,66 @@ bool obj_can_fire(const object_type *o_ptr)
 bool obj_has_inscrip(const object_type *o_ptr)
 {
 	return (o_ptr->note ? TRUE : FALSE);
+}
+
+bool obj_is_useable(const object_type *o_ptr)
+{
+  if ((o_ptr->tval == TV_ROD) || (o_ptr->tval == TV_WAND)
+    || (o_ptr->tval == TV_STAFF) || (o_ptr->tval == TV_SCROLL)
+    || (o_ptr->tval == TV_POTION) || (o_ptr->tval == TV_FOOD)) {
+    return TRUE;
+  }
+  if (object_effect(o_ptr))
+    return TRUE;
+  if ((o_ptr->tval == TV_BOLT) || (o_ptr->tval == TV_ARROW)
+    || (o_ptr->tval == TV_SHOT)) {
+    return o_ptr->tval == p_ptr->state.ammo_tval;
+  }
+
+	return FALSE;
+}
+
+bool obj_is_used_aimed(const object_type *o_ptr)
+{
+  //return obj_needs_aim(o_ptr);
+	int effect;
+  if (o_ptr->tval == TV_WAND) {
+    return TRUE;
+  }
+  if (o_ptr->tval == TV_ROD && !object_flavor_is_aware(o_ptr)) {
+    return TRUE;
+  }
+  if ((o_ptr->tval == TV_BOLT) || (o_ptr->tval == TV_ARROW)
+    || (o_ptr->tval == TV_SHOT)) {
+    return o_ptr->tval == p_ptr->state.ammo_tval;
+  }
+  effect = object_effect(o_ptr);
+  if (effect && effect_aim(effect)) {
+    return TRUE;
+  }
+
+	return FALSE;
+}
+bool obj_is_used_unaimed(const object_type *o_ptr)
+{
+	int effect;
+  if ((o_ptr->tval == TV_STAFF) || (o_ptr->tval == TV_SCROLL)
+    || (o_ptr->tval == TV_POTION) || (o_ptr->tval == TV_FOOD)) {
+    return TRUE;
+  }
+  if ((o_ptr->tval == TV_ROD) && !(!object_flavor_is_aware(o_ptr))) {
+    return TRUE;
+  }
+  if ((o_ptr->tval == TV_BOLT) || (o_ptr->tval == TV_ARROW)
+    || (o_ptr->tval == TV_SHOT)) {
+    return FALSE;
+  }
+  effect = object_effect(o_ptr);
+  if (!effect || !effect_aim(effect)) {
+    return TRUE;
+  }
+
+	return FALSE;
 }
 
 /*** Generic utility functions ***/

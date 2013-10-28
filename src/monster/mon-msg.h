@@ -109,7 +109,7 @@ typedef struct monster_race_message
 
 typedef struct monster_message_history
 {
-	int monster_idx;	/* The monster */
+	struct monster *mon;	/* The monster */
 	int message_code;		/* The coded message */
 } monster_message_history;
 
@@ -119,8 +119,8 @@ monster_race_message *mon_msg;
 monster_message_history *mon_message_hist;
 
 /** Functions **/
-void message_pain(int m_idx, int dam);
-bool add_monster_message(const char *mon_name, int m_idx, int msg_code, bool delay);
+void message_pain(struct monster *m, int dam);
+bool add_monster_message(const char *mon_name, struct monster *m, int msg_code, bool delay);
 void flush_all_monster_messages(void);
 
 #endif /* MONSTER_MESSAGE_H */

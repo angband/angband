@@ -25,6 +25,7 @@
 #include "z-rand.h"
 #include "cave.h"
 #include "player/types.h"
+#include "monster/mon-timed.h"
 
 /** Constants **/
 
@@ -37,13 +38,6 @@ enum
 };
 
 #define RSF_SIZE               FLAG_SIZE(RSF_MAX)
-
-
-/* Flags for the monster timed functions */
-#define MON_TMD_FLG_NOTIFY		0x01 /* Give notification */
-#define MON_TMD_MON_SOURCE		0x02 /* Monster is causing the damage */
-#define MON_TMD_FLG_NOMESSAGE	0x04 /* Never show a message */
-#define MON_TMD_FLG_NOFAIL		0x08 /* Never fail */
 
 
 /** Structures **/
@@ -87,7 +81,7 @@ typedef struct monster_base
 	bitflag flags[RF_SIZE];         /* Flags */
 	bitflag spell_flags[RSF_SIZE];  /* Spell flags */
 	
-	char d_char;			/* Default monster character */
+	wchar_t d_char;			/* Default monster character */
 
 	monster_pain *pain;		/* Pain messages */
 } monster_base;
@@ -169,10 +163,10 @@ typedef struct monster_race
 	byte rarity;			/* Rarity of creature */
 
 	byte d_attr;			/* Default monster attribute */
-	char d_char;			/* Default monster character */
+	wchar_t d_char;			/* Default monster character */
 
 	byte x_attr;			/* Desired monster attribute */
-	char x_char;			/* Desired monster character */
+	wchar_t x_char;			/* Desired monster character */
 
 	byte max_num;			/* Maximum population allowed per level */
 	byte cur_num;			/* Monster population on current level */

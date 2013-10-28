@@ -58,21 +58,21 @@
 
 # Version stamp (required)
 
-V:3.0.11
+V:3.4.0
 
 
 N:0:Warrior
-S:5:-2:-2:2:2:-1
-C:25:18:18:1:14:2:70:55:55:0
+S:3:-2:-2:2:2:-1
+C:25:18:18:0:14:2:70:55:55:0
 X:10:7:10:0:0:0:45:45:45:0
 I:9:0:7000:40
 A:6:30:5
 M:0:0:0:0
-E:food:Ration~ of Food:3:7
-E:light:Wooden Torch~:3:7
+E:food:Ration of Food:3:7
+E:light:Wooden Torch:3:7
 E:potion:Berserk Strength:1:1
-E:sword:Short Sword~:1:1
-E:soft armour:Soft Leather Armour~:1:1
+E:sword:Short Sword:1:1
+E:soft armour:Soft Leather Armour:1:1
 E:scroll:Word of Recall:1:1
 F:BRAVERY_30 | PSEUDO_ID_IMPROV
 T:Rookie
@@ -87,16 +87,16 @@ T:Hero
 T:Lord
 
 N:1:Mage
-S:-5:3:0:1:-2:1
+S:-3:3:0:0:-2:1
 C:30:36:30:2:16:20:34:20:20:0
 X:7:13:9:0:0:0:15:15:15:0
 I:0:30:170000:5
 A:4:40:2
 M:90:1:1:300
-E:food:Ration~ of Food:3:7
-E:light:Wooden Torch~:3:7
+E:food:Ration of Food:3:7
+E:light:Wooden Torch:3:7
 E:magic book:[Magic for Beginners]:1:1
-E:sword:Dagger~:1:1
+E:sword:Dagger:1:1
 E:scroll:Word of Recall:1:1
 F:CUMBER_GLOVE | ZERO_FAIL | BEAM | CHOOSE_SPELLS
 T:Novice
@@ -174,16 +174,16 @@ B:62:35:20:60:25
 B:63:42:16:95:200
 
 N:2:Priest
-S:-1:-3:3:-1:0:2
+S:-1:-3:3:-1:1:2
 C:25:30:32:2:16:8:48:35:35:0
 X:7:10:12:0:0:0:20:20:20:0
 I:2:20:15000:40
 A:4:35:3
 M:91:2:1:350
-E:food:Ration~ of Food:3:7
-E:light:Wooden Torch~:3:7
+E:food:Ration of Food:3:7
+E:light:Wooden Torch:3:7
 E:prayer book:[Beginners Handbook]:1:1
-E:hafted:Mace~:1:1
+E:hafted:Mace:1:1
 E:potion:Cure Serious Wounds:2:2
 E:scroll:Word of Recall:1:1
 F:BLESS_WEAPON | ZERO_FAIL | PSEUDO_ID_IMPROV
@@ -210,7 +210,8 @@ B:10:5:4:32:4
 B:11:5:5:34:4
 B:12:7:5:36:3
 B:13:7:5:38:4
-B:14:7:6:38:5
+## get rid of remove_curse in 3.4 until curses are redone
+#B:14:7:6:38:5
 B:15:7:7:38:5
 B:16:9:6:38:4
 B:17:9:7:40:4
@@ -244,7 +245,8 @@ B:44:35:35:80:115
 B:45:45:60:75:250
 B:46:5:6:50:40
 B:47:15:20:80:25
-B:48:25:40:80:160
+## get rid of dispel_curse in 3.4 until curses are redone
+#B:48:25:40:80:160
 B:49:35:50:80:230
 B:50:37:60:85:250
 B:51:45:95:85:250
@@ -262,17 +264,17 @@ B:62:99:0:0:0
 B:63:99:0:0:0
 
 N:3:Rogue
-S:2:1:-2:3:1:-1
-C:45:32:28:5:32:24:60:66:66:0
-X:15:10:10:0:0:0:40:30:30:0
+S:0:1:-3:3:-1:-1
+C:45:32:28:3:32:24:60:66:66:0
+X:15:10:10:1:0:0:40:30:30:0
 I:6:25:10000:40
 A:5:30:4
 M:90:1:5:350
-E:food:Ration~ of Food:3:7
-E:light:Wooden Torch~:3:7
+E:food:Ration of Food:3:7
+E:light:Wooden Torch:3:7
 E:magic book:[Magic for Beginners]:1:1
-E:sword:Short Sword~:1:1
-E:soft armour:Soft Leather Armour~:1:1
+E:sword:Short Sword:1:1
+E:soft armour:Soft Leather Armour:1:1
 E:scroll:Word of Recall:1:1
 F:CUMBER_GLOVE | CHOOSE_SPELLS | PSEUDO_ID_IMPROV
 T:Vagabond
@@ -294,7 +296,7 @@ B:5:99:0:0:0
 B:6:10:3:60:1
 B:8:18:18:60:2
 B:9:20:11:50:4
-B:10:27:10:50:10
+B:10:99:0:0:0
 B:11:21:12:50:10
 B:12:99:0:0:0
 B:13:15:6:75:1
@@ -350,18 +352,18 @@ B:62:99:0:0:0
 B:63:99:0:0:0
 
 N:4:Ranger
-S:2:2:0:1:1:1
+S:0:2:-2:1:-1:1
 C:30:32:28:3:24:16:56:72:72:0
 X:8:10:10:0:0:0:30:45:45:0
 I:4:30:20000:40
 A:5:35:4
 M:90:1:3:400
-E:food:Ration~ of Food:3:7
-E:light:Wooden Torch~:3:7
+E:food:Ration of Food:3:7
+E:light:Wooden Torch:3:7
 E:magic book:[Magic for Beginners]:1:1
-E:sword:Dagger~:1:1
-E:bow:Short Bow~:1:1
-E:arrow:Arrow~:15:20
+E:sword:Dagger:1:1
+E:bow:Short Bow:1:1
+E:arrow:Arrow:15:20
 E:scroll:Word of Recall:1:1
 F:CUMBER_GLOVE | EXTRA_SHOT | CHOOSE_SPELLS | PSEUDO_ID_IMPROV
 T:Runner
@@ -439,16 +441,16 @@ B:62:99:0:0:0
 B:63:99:0:0:0
 
 N:5:Paladin
-S:3:-3:1:0:2:2
-C:20:24:25:1:12:2:68:40:40:0
+S:1:-3:1:-1:2:2
+C:20:24:25:0:12:2:68:40:40:0
 X:7:10:11:0:0:0:35:30:30:0
 I:6:35:60000:40
 A:5:30:5
 M:91:2:1:400
-E:food:Ration~ of Food:3:7
-E:light:Wooden Torch~:3:7
+E:food:Ration of Food:3:7
+E:light:Wooden Torch:3:7
 E:prayer book:[Beginners Handbook]:1:1
-E:sword:Broad Sword~:1:1
+E:sword:Broad Sword:1:1
 E:scroll:Protection from Evil:1:1
 E:scroll:Word of Recall:1:1
 F:PSEUDO_ID_IMPROV
@@ -475,7 +477,8 @@ B:10:11:9:40:3
 B:11:11:10:45:3
 B:12:11:10:45:3
 B:13:13:10:45:3
-B:14:13:11:45:4
+## get rid of remove_curse in 3.4 until curses are redone
+#B:14:13:11:45:4
 B:15:15:13:45:4
 B:16:15:15:50:4
 B:17:17:15:50:4
@@ -509,7 +512,8 @@ B:44:40:40:80:100
 B:45:99:0:0:0
 B:46:10:16:50:20
 B:47:25:30:80:15
-B:48:99:0:0:0
+## get rid of dispel_curse in 3.4 until curses are redone
+#B:48:99:0:0:0
 B:49:40:70:80:200
 B:50:42:80:85:250
 B:51:47:95:85:250

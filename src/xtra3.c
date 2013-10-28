@@ -243,7 +243,7 @@ static void prt_equippy(int row, int col)
 	int i;
 
 	byte a;
-	char c;
+	wchar_t c;
 
 	object_type *o_ptr;
 
@@ -326,24 +326,18 @@ static void prt_sp(int row, int col)
  */
 byte monster_health_attr(void)
 {
-	byte attr = TERM_WHITE;
-	
-	/* Not tracking */
-	if (!p_ptr->health_who)
+	struct monster *mon = p_ptr->health_who;
+	byte attr;
+
+	if (!mon) {
+		/* Not tracking */
 		attr = TERM_DARK;
 
-	/* Tracking an unseen, hallucinatory, or dead monster */
-	else if ((!cave_monster(cave, p_ptr->health_who)->ml) ||
-			(p_ptr->timed[TMD_IMAGE]) ||
-			(cave_monster(cave, p_ptr->health_who)->hp < 0))
-	{
+	} else if (!mon->ml || mon->hp < 0 || p_ptr->timed[TMD_IMAGE]) {
 		/* The monster health is "unknown" */
 		attr = TERM_WHITE;
-	}
-	
-	else
-	{
-		struct monster *mon = cave_monster(cave, p_ptr->health_who);
+
+	} else {
 		int pct;
 
 		/* Default to almost dead */
@@ -393,20 +387,18 @@ byte monster_health_attr(void)
 static void prt_health(int row, int col)
 {
 	byte attr = monster_health_attr();
-	struct monster *mon;
-	
+	struct monster *mon = p_ptr->health_who;
+
 	/* Not tracking */
-	if (!p_ptr->health_who)
+	if (!mon)
 	{
 		/* Erase the health bar */
 		Term_erase(col, row, 12);
 		return;
 	}
 
-	mon = cave_monster(cave, p_ptr->health_who);
-
 	/* Tracking an unseen, hallucinatory, or dead monster */
-	if ((!mon->ml) || /* Unseen */
+	if (!mon->ml || /* Unseen */
 			(p_ptr->timed[TMD_IMAGE]) || /* Hallucination */
 			(mon->hp < 0)) /* Dead (?) */
 	{
@@ -417,15 +409,11 @@ static void prt_health(int row, int col)
 	/* Tracking a visible monster */
 	else
 	{
-		int pct, len;
-
-		monster_type *m_ptr = cave_monster(cave, p_ptr->health_who);
-
 		/* Extract the "percent" of health */
-		pct = 100L * m_ptr->hp / m_ptr->maxhp;
+		int pct = 100L * mon->hp / mon->maxhp;
 
 		/* Convert percent into "health" */
-		len = (pct < 10) ? 1 : (pct < 90) ? (pct / 10 + 1) : 10;
+		int len = (pct < 10) ? 1 : (pct < 90) ? (pct / 10 + 1) : 10;
 
 		/* Default to "unknown" */
 		Term_putstr(col, row, 12, TERM_WHITE, "[----------]");
@@ -602,7 +590,7 @@ static void hp_colour_change(game_event_type type, game_event_data *data, void *
 	 * using this command when graphics mode is on
 	 * causes the character to be a black square.
 	 */
-	if ((OPT(hp_changes_color)) && (arg_graphics == GRAPHICS_NONE))
+	if ((OPT(hp_changes_color)) && (use_graphics == GRAPHICS_NONE))
 	{
 		cave_light_spot(cave, p_ptr->py, p_ptr->px);
 	}
@@ -879,7 +867,7 @@ static size_t prt_dtrap(int row, int col)
 	if (info & (CAVE2_DTRAP))
 	{
 		/* The player is on the border */
-		if (dtrap_edge(p_ptr->py, p_ptr->px))
+		if (info & (CAVE2_DEDGE))
 			c_put_str(TERM_YELLOW, "DTrap", row, col);
 		else
 			c_put_str(TERM_L_GREEN, "DTrap", row, col);
@@ -891,22 +879,30 @@ static size_t prt_dtrap(int row, int col)
 }
 
 
-
 /*
- * Print whether a character is studying or not.
+ * Print how many spells the player can study.
  */
 static size_t prt_study(int row, int col)
 {
+	char *text;
+	int attr = TERM_WHITE;
+
+	/* Can the player learn new spells? */
 	if (p_ptr->new_spells)
 	{
-		char *text = format("Study (%d)", p_ptr->new_spells);
-		put_str(text, row, col);
+		/* If the player does not carry a book with spells they can study,
+		   the message is displayed in a darker colour */
+		if (!player_can_study_book())
+			attr = TERM_L_DARK;
+
+		/* Print study message */
+		text = format("Study (%d)", p_ptr->new_spells);
+		c_put_str(attr, text, row, col);
 		return strlen(text) + 1;
 	}
 
 	return 0;
 }
-
 
 
 /*
@@ -936,7 +932,7 @@ static size_t prt_unignore(int row, int col)
 	if (p_ptr->unignoring) {
 		const char *str = "Unignoring";
 		put_str(str, row, col);
-		return strlen(str);
+		return strlen(str) + 1;
 	}
 
 	return 0;
@@ -1011,7 +1007,7 @@ static void update_maps(game_event_type type, game_event_data *data, void *user)
 	{
 		grid_data g;
 		byte a, ta;
-		char c, tc;
+		wchar_t c, tc;
 		
 		int ky, kx;
 		int vy, vx;
@@ -1202,13 +1198,19 @@ static void update_monster_subwindow(game_event_type type, game_event_data *data
 {
 	term *old = Term;
 	term *inv_term = user;
+	const monster_race *r_ptr;
+	const monster_lore *l_ptr;
 
 	/* Activate */
 	Term_activate(inv_term);
 
 	/* Display monster race info */
 	if (p_ptr->monster_race_idx)
-		display_roff(p_ptr->monster_race_idx);
+	{
+		r_ptr = &r_info[p_ptr->monster_race_idx];
+		l_ptr = &l_list[p_ptr->monster_race_idx];
+		display_roff(r_ptr, l_ptr);
+	}
 
 	Term_fresh();
 	
