@@ -459,7 +459,8 @@ static void grid_get_attr(grid_data *g, int *a)
 			/* If it's a floor tile then we'll tint based on lighting. */
 			if (g->f_idx == FEAT_FLOOR)
 				switch (g->lighting) {
-					case FEAT_LIGHTING_BRIGHT: *a = TERM_YELLOW; break;
+					case FEAT_LIGHTING_TORCH: *a = TERM_YELLOW; break;
+					case FEAT_LIGHTING_LIT: *a = TERM_L_BLUE; break;
 					case FEAT_LIGHTING_DARK: *a = TERM_L_DARK; break;
 					default: break;
 				}
@@ -752,9 +753,10 @@ void grid_data_as_text(grid_data *g, int *ap, wchar_t *cp, int *tap, wchar_t *tc
  *    be used to indicate field-of-view, such as through the OPT(view_bright_light)
  *    option.
  *  - g->lighting is set to indicate the lighting level for the grid:
- *    FEAT_LIGHTING_DARK for unlit grids, FEAT_LIGHTING_LIT for those lit by the player's
- *    light source, and FEAT_LIGHTING_BRIGHT for inherently light grids (lit rooms, etc).
- *    Note that lighting is always FEAT_LIGHTING_BRIGHT for known "interesting" grids
+ *    FEAT_LIGHTING_DARK for unlit grids, FEAT_LIGHTING_LIT for inherently light
+ *    grids (lit rooms, etc), FEAT_LIGHTING_TORCH for grids lit by the player's
+ *    light source, and FEAT_LIGHTING_LOS for grids in the player's line of sight.
+ *    Note that lighting is always FEAT_LIGHTING_LIT for known "interesting" grids
  *    like walls.
  *  - g->is_player is TRUE if the player is on the given grid.
  *  - g->hallucinate is TRUE if the player is hallucinating something "strange"
@@ -804,15 +806,19 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 
 	if (g->in_view)
 	{
-		g->lighting = FEAT_LIGHTING_LIT;
+		g->lighting = FEAT_LIGHTING_LOS;
 
 		if (!(info & CAVE_GLOW) && OPT(view_yellow_light))
-			g->lighting = FEAT_LIGHTING_BRIGHT;
+			g->lighting = FEAT_LIGHTING_TORCH;
 	}
-	else if (!(info & CAVE_MARK))
+    else if (!(info & CAVE_MARK))
 	{
 		g->f_idx = FEAT_NONE;
 	}
+	else if ((info & CAVE_GLOW))
+	{
+		g->lighting = FEAT_LIGHTING_LIT;
+    }
 
 
 	/* Objects */
