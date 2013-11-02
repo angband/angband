@@ -1027,6 +1027,310 @@ static int project_m_x;
 static int project_m_y;
 
 
+#pragma mark floor handlers
+
+typedef struct project_floor_handler_context_s {
+	const int who;
+	const int r;
+	const int y;
+	const int x;
+	const int dam;
+	const int type;
+	bool obvious;
+} project_floor_handler_context_t;
+
+/* Destroy Traps (and Locks) */
+static void project_floor_handler_KILL_TRAP(project_floor_handler_context_t *context)
+{
+	const int x = context->x;
+	const int y = context->y;
+
+	/* Reveal secret doors */
+	if (square_issecretdoor(cave, y, x))
+	{
+		place_closed_door(cave, y, x);
+
+		/* Check line of sight */
+		if (player_has_los_bold(y, x))
+		{
+			context->obvious = TRUE;
+		}
+	}
+
+	/* Destroy traps */
+	if (square_istrap(cave, y, x))
+	{
+		/* Check line of sight */
+		if (player_has_los_bold(y, x))
+		{
+			msg("There is a bright flash of light!");
+			context->obvious = TRUE;
+		}
+
+		/* Forget the trap */
+		sqinfo_off(cave->info[y][x], SQUARE_MARK);
+
+		/* Destroy the trap */
+		square_destroy_trap(cave, y, x);
+	}
+
+	/* Locked doors are unlocked */
+	else if (square_islockeddoor(cave, y, x))
+	{
+		/* Unlock the door */
+		square_unlock_door(cave, y, x);
+
+		/* Check line of sound */
+		if (player_has_los_bold(y, x))
+		{
+			msg("Click!");
+			context->obvious = TRUE;
+		}
+	}
+}
+
+/* Destroy Doors (and traps) */
+static void project_floor_handler_KILL_DOOR(project_floor_handler_context_t *context)
+{
+	const int x = context->x;
+	const int y = context->y;
+
+	/* Destroy all doors and traps */
+	if (square_istrap(cave, y, x) || square_isdoor(cave, y, x))
+	{
+		/* Check line of sight */
+		if (player_has_los_bold(y, x))
+		{
+			/* Message */
+			msg("There is a bright flash of light!");
+			context->obvious = TRUE;
+
+			/* Visibility change */
+			if (square_isdoor(cave, y, x))
+			{
+				/* Update the visuals */
+				p_ptr->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
+			}
+		}
+
+		/* Forget the door */
+		sqinfo_off(cave->info[y][x], SQUARE_MARK);
+
+		/* Destroy the feature */
+		if (square_isdoor(cave, y, x))
+			square_destroy_door(cave, y, x);
+		else
+			square_destroy_trap(cave, y, x);
+	}
+}
+
+/* Destroy walls (and doors) */
+static void project_floor_handler_KILL_WALL(project_floor_handler_context_t *context)
+{
+	const int x = context->x;
+	const int y = context->y;
+
+	/* Non-walls (etc) */
+	if (square_ispassable(cave, y, x)) return;
+
+	/* Permanent walls */
+	if (square_isperm(cave, y, x)) return;
+
+	/* Granite */
+	if (square_iswall(cave, y, x) && !square_hasgoldvein(cave, y, x))
+	{
+		/* Message */
+		if (sqinfo_has(cave->info[y][x], SQUARE_MARK))
+		{
+			msg("The wall turns into mud!");
+			context->obvious = TRUE;
+		}
+
+		/* Forget the wall */
+		sqinfo_off(cave->info[y][x], SQUARE_MARK);
+
+		/* Destroy the wall */
+		square_destroy_wall(cave, y, x);
+	}
+
+	/* Quartz / Magma with treasure */
+	else if (square_iswall(cave, y, x) && square_hasgoldvein(cave, y, x))
+	{
+		/* Message */
+		if (sqinfo_has(cave->info[y][x], SQUARE_MARK))
+		{
+			msg("The vein turns into mud!");
+			msg("You have found something!");
+			context->obvious = TRUE;
+		}
+
+		/* Forget the wall */
+		sqinfo_off(cave->info[y][x], SQUARE_MARK);
+
+		/* Destroy the wall */
+		square_destroy_wall(cave, y, x);
+
+		/* Place some gold */
+		place_gold(cave, y, x, p_ptr->depth, ORIGIN_FLOOR);
+	}
+
+	/* Quartz / Magma */
+	else if (square_ismagma(cave, y, x) || square_isquartz(cave, y, x))
+	{
+		/* Message */
+		if (sqinfo_has(cave->info[y][x], SQUARE_MARK))
+		{
+			msg("The vein turns into mud!");
+			context->obvious = TRUE;
+		}
+
+		/* Forget the wall */
+		sqinfo_off(cave->info[y][x], SQUARE_MARK);
+
+		/* Destroy the wall */
+		square_destroy_wall(cave, y, x);
+	}
+
+	/* Rubble */
+	else if (square_isrubble(cave, y, x))
+	{
+		/* Message */
+		if (sqinfo_has(cave->info[y][x], SQUARE_MARK))
+		{
+			msg("The rubble turns into mud!");
+			context->obvious = TRUE;
+		}
+
+		/* Forget the wall */
+		sqinfo_off(cave->info[y][x], SQUARE_MARK);
+
+		/* Destroy the rubble */
+		square_destroy_rubble(cave, y, x);
+
+		/* Hack -- place an object */
+		if (randint0(100) < 10){
+			if (player_can_see_bold(y, x)) {
+				msg("There was something buried in the rubble!");
+				context->obvious = TRUE;
+			}
+			place_object(cave, y, x, p_ptr->depth, FALSE, FALSE,
+						 ORIGIN_RUBBLE, 0);
+		}
+	}
+
+	/* Destroy doors (and secret doors) */
+	else if (square_isdoor(cave, y, x))
+	{
+		/* Hack -- special message */
+		if (sqinfo_has(cave->info[y][x], SQUARE_MARK))
+		{
+			msg("The door turns into mud!");
+			context->obvious = TRUE;
+		}
+
+		/* Forget the wall */
+		sqinfo_off(cave->info[y][x], SQUARE_MARK);
+
+		/* Destroy the feature */
+		square_destroy_door(cave, y, x);
+	}
+
+	/* Update the visuals */
+	p_ptr->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
+
+	/* Fully update the flow */
+	p_ptr->update |= (PU_FORGET_FLOW | PU_UPDATE_FLOW);
+}
+
+/* Make doors */
+static void project_floor_handler_MAKE_DOOR(project_floor_handler_context_t *context)
+{
+	const int x = context->x;
+	const int y = context->y;
+
+	/* Require a grid without monsters */
+	if (cave->m_idx[y][x]) return;
+
+	/* Require a floor grid */
+	if (!square_isfloor(cave, y, x)) return;
+
+	/* Push objects off the grid */
+	if (cave->o_idx[y][x]) push_object(y,x);
+
+	/* Create closed door */
+	square_add_door(cave, y, x, TRUE);
+
+	/* Observe */
+	if (sqinfo_has(cave->info[y][x], SQUARE_MARK)) context->obvious = TRUE;
+
+	/* Update the visuals */
+	p_ptr->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
+}
+
+/* Make traps */
+static void project_floor_handler_MAKE_TRAP(project_floor_handler_context_t *context)
+{
+	const int x = context->x;
+	const int y = context->y;
+
+	/* Require an "empty", non-warded floor grid */
+	if (!square_isempty(cave, y, x)) return;
+	if (square_iswarded(cave, y, x)) return;
+
+	/* Create a trap */
+	place_trap(cave, y, x, -1, cave->depth);
+}
+
+/* Light up the grid */
+static void project_floor_handler_LIGHT(project_floor_handler_context_t *context)
+{
+	const int x = context->x;
+	const int y = context->y;
+
+	/* Turn on the light */
+	sqinfo_on(cave->info[y][x], SQUARE_GLOW);
+
+	/* Grid is in line of sight */
+	if (player_has_los_bold(y, x))
+	{
+		if (!p_ptr->timed[TMD_BLIND])
+		{
+			/* Observe */
+			context->obvious = TRUE;
+		}
+
+		/* Fully update the visuals */
+		p_ptr->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
+	}
+}
+
+/* Darken the grid */
+static void project_floor_handler_DARK(project_floor_handler_context_t *context)
+{
+	const int x = context->x;
+	const int y = context->y;
+
+	if (p_ptr->depth != 0 || !is_daytime())
+	{
+		/* Turn off the light */
+		sqinfo_off(cave->info[y][x], SQUARE_GLOW);
+
+		/* Hack -- Forget "boring" grids */
+		if (!square_isinteresting(cave, y, x))
+			sqinfo_off(cave->info[y][x], SQUARE_MARK);
+	}
+
+	/* Grid is in line of sight */
+	if (player_has_los_bold(y, x))
+	{
+		/* Observe */
+		context->obvious = TRUE;
+
+		/* Fully update the visuals */
+		p_ptr->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
+	}
+}
+
 /*
  * We are called from "project()" to "damage" terrain features
  *
@@ -1045,17 +1349,21 @@ static int project_m_y;
  */
 static bool project_f(int who, int r, int y, int x, int dam, int typ, bool obvious)
 {
-	/* Unused parameters */
-	(void)who;
-	(void)r;
-	(void)dam;
-
 #if 0 /* unused */
 	/* Reduce damage by distance */
 	dam = (dam + r) / (r + 1);
 #endif /* 0 */
 
-	/* Analyze the type */
+	project_floor_handler_context_t context = {
+		who,
+		r,
+		y,
+		x,
+		dam,
+		typ,
+		obvious,
+	};
+
 	switch (typ)
 	{
 		/* Ignore most effects */
@@ -1071,304 +1379,178 @@ static bool project_f(int who, int r, int y, int x, int dam, int typ, bool obvio
 		case GF_SOUND:
 		case GF_MANA:
 		case GF_HOLY_ORB:
-		{
 			break;
-		}
 
-		/* Destroy Traps (and Locks) */
 		case GF_KILL_TRAP:
-		{
-			/* Reveal secret doors */
-			if (square_issecretdoor(cave, y, x))
-			{
-				place_closed_door(cave, y, x);
-
-				/* Check line of sight */
-				if (player_has_los_bold(y, x))
-				{
-					obvious = TRUE;
-				}
-			}
-
-			/* Destroy traps */
-			if (square_istrap(cave, y, x))
-			{
-				/* Check line of sight */
-				if (player_has_los_bold(y, x))
-				{
-					msg("There is a bright flash of light!");
-					obvious = TRUE;
-				}
-
-				/* Forget the trap */
-				sqinfo_off(cave->info[y][x], SQUARE_MARK);
-
-				/* Destroy the trap */
-				square_destroy_trap(cave, y, x);
-			}
-
-			/* Locked doors are unlocked */
-			else if (square_islockeddoor(cave, y, x))
-			{
-				/* Unlock the door */
-				square_unlock_door(cave, y, x);
-
-				/* Check line of sound */
-				if (player_has_los_bold(y, x))
-				{
-					msg("Click!");
-					obvious = TRUE;
-				}
-			}
-
+			project_floor_handler_KILL_TRAP(&context);
 			break;
-		}
 
-		/* Destroy Doors (and traps) */
 		case GF_KILL_DOOR:
-		{
-			/* Destroy all doors and traps */
-			if (square_istrap(cave, y, x) || square_isdoor(cave, y, x))
-			{
-				/* Check line of sight */
-				if (player_has_los_bold(y, x))
-				{
-					/* Message */
-					msg("There is a bright flash of light!");
-					obvious = TRUE;
-
-					/* Visibility change */
-					if (square_isdoor(cave, y, x))
-					{
-						/* Update the visuals */
-						p_ptr->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
-					}
-				}
-
-				/* Forget the door */
-				sqinfo_off(cave->info[y][x], SQUARE_MARK);
-
-				/* Destroy the feature */
-				if (square_isdoor(cave, y, x))
-					square_destroy_door(cave, y, x);
-				else
-					square_destroy_trap(cave, y, x);
-			}
-
+			project_floor_handler_KILL_DOOR(&context);
 			break;
-		}
 
-		/* Destroy walls (and doors) */
 		case GF_KILL_WALL:
-		{
-			/* Non-walls (etc) */
-			if (square_ispassable(cave, y, x)) break;
-
-			/* Permanent walls */
-			if (square_isperm(cave, y, x)) break;
-
-			/* Granite */
-			if (square_iswall(cave, y, x) && !square_hasgoldvein(cave, y, x))
-			{
-				/* Message */
-				if (sqinfo_has(cave->info[y][x], SQUARE_MARK))
-				{
-					msg("The wall turns into mud!");
-					obvious = TRUE;
-				}
-
-				/* Forget the wall */
-				sqinfo_off(cave->info[y][x], SQUARE_MARK);
-
-				/* Destroy the wall */
-				square_destroy_wall(cave, y, x);
-			}
-
-			/* Quartz / Magma with treasure */
-			else if (square_iswall(cave, y, x) && square_hasgoldvein(cave, y, x))
-			{
-				/* Message */
-				if (sqinfo_has(cave->info[y][x], SQUARE_MARK))
-				{
-					msg("The vein turns into mud!");
-					msg("You have found something!");
-					obvious = TRUE;
-				}
-
-				/* Forget the wall */
-				sqinfo_off(cave->info[y][x], SQUARE_MARK);
-
-				/* Destroy the wall */
-				square_destroy_wall(cave, y, x);
-
-				/* Place some gold */
-				place_gold(cave, y, x, p_ptr->depth, ORIGIN_FLOOR);
-			}
-
-			/* Quartz / Magma */
-			else if (square_ismagma(cave, y, x) || square_isquartz(cave, y, x))
-			{
-				/* Message */
-				if (sqinfo_has(cave->info[y][x], SQUARE_MARK))
-				{
-					msg("The vein turns into mud!");
-					obvious = TRUE;
-				}
-
-				/* Forget the wall */
-				sqinfo_off(cave->info[y][x], SQUARE_MARK);
-
-				/* Destroy the wall */
-				square_destroy_wall(cave, y, x);
-			}
-
-			/* Rubble */
-			else if (square_isrubble(cave, y, x))
-			{
-				/* Message */
-				if (sqinfo_has(cave->info[y][x], SQUARE_MARK))
-				{
-					msg("The rubble turns into mud!");
-					obvious = TRUE;
-				}
-
-				/* Forget the wall */
-				sqinfo_off(cave->info[y][x], SQUARE_MARK);
-
-				/* Destroy the rubble */
-				square_destroy_rubble(cave, y, x);
-
-				/* Hack -- place an object */
-				if (randint0(100) < 10){
-					if (player_can_see_bold(y, x)) {
-						msg("There was something buried in the rubble!");
-						obvious = TRUE;
-					}
-					place_object(cave, y, x, p_ptr->depth, FALSE, FALSE,
-						ORIGIN_RUBBLE, 0);
-				}
-			}
-
-			/* Destroy doors (and secret doors) */
-			else if (square_isdoor(cave, y, x))
-			{
-				/* Hack -- special message */
-				if (sqinfo_has(cave->info[y][x], SQUARE_MARK))
-				{
-					msg("The door turns into mud!");
-					obvious = TRUE;
-				}
-
-				/* Forget the wall */
-				sqinfo_off(cave->info[y][x], SQUARE_MARK);
-
-				/* Destroy the feature */
-				square_destroy_door(cave, y, x);
-			}
-
-			/* Update the visuals */
-			p_ptr->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
-
-			/* Fully update the flow */
-			p_ptr->update |= (PU_FORGET_FLOW | PU_UPDATE_FLOW);
-
+			project_floor_handler_KILL_WALL(&context);
 			break;
-		}
 
-		/* Make doors */
 		case GF_MAKE_DOOR:
-		{
-			/* Require a grid without monsters */
-			if (cave->m_idx[y][x]) break;
-			
-			/* Require a floor grid */
-			if (!square_isfloor(cave, y, x)) break;
-			
-			/* Push objects off the grid */
-			if (cave->o_idx[y][x]) push_object(y,x);
-
-			/* Create closed door */
-			square_add_door(cave, y, x, TRUE);
-
-			/* Observe */
-			if (sqinfo_has(cave->info[y][x], SQUARE_MARK)) obvious = TRUE;
-
-			/* Update the visuals */
-			p_ptr->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
-
+			project_floor_handler_MAKE_DOOR(&context);
 			break;
-		}
 
-		/* Make traps */
 		case GF_MAKE_TRAP:
-		{
-			/* Require an "empty", non-warded floor grid */
-			if (!square_isempty(cave, y, x)) break;
-			if (square_iswarded(cave, y, x)) break;
-
-			/* Create a trap */
-			place_trap(cave, y, x, -1, cave->depth);
-
+			project_floor_handler_MAKE_TRAP(&context);
 			break;
-		}
 
-		/* Light up the grid */
 		case GF_LIGHT_WEAK:
 		case GF_LIGHT:
-		{
-			/* Turn on the light */
-			sqinfo_on(cave->info[y][x], SQUARE_GLOW);
-
-			/* Grid is in line of sight */
-			if (player_has_los_bold(y, x))
-			{
-				if (!p_ptr->timed[TMD_BLIND])
-				{
-					/* Observe */
-					obvious = TRUE;
-				}
-
-				/* Fully update the visuals */
-				p_ptr->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
-			}
-
+			project_floor_handler_LIGHT(&context);
 			break;
-		}
 
-		/* Darken the grid */
 		case GF_DARK_WEAK:
 		case GF_DARK:
-		{
-			if (p_ptr->depth != 0 || !is_daytime())
-			{
-				/* Turn off the light */
-				sqinfo_off(cave->info[y][x], SQUARE_GLOW);
-
-				/* Hack -- Forget "boring" grids */
-				if (!square_isinteresting(cave, y, x))
-					sqinfo_off(cave->info[y][x], SQUARE_MARK);
-			}
-
-			/* Grid is in line of sight */
-			if (player_has_los_bold(y, x))
-			{
-				/* Observe */
-				obvious = TRUE;
-
-				/* Fully update the visuals */
-				p_ptr->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
-			}
-
-			/* All done */
+			project_floor_handler_DARK(&context);
 			break;
-		}
 	}
 
 	/* Return "Anything seen?" */
-	return (obvious);
+	return context.obvious;
 }
 
+#pragma mark object handlers
 
+typedef struct project_object_handler_context_s {
+	const int who;
+	const int r;
+	const int y;
+	const int x;
+	const int dam;
+	const int type;
+	bitflag const * const flags;
+	object_type *o_ptr; /* Ideally, this would be const, but we can't with C89 initialization. */
+	bool obvious;
+	bool do_kill;
+	bool ignore;
+	const char *note_kill;
+} project_object_handler_context_t;
+
+/* Acid -- Lots of things */
+static void project_object_handler_ACID(project_object_handler_context_t *context)
+{
+	if (of_has(context->flags, OF_HATES_ACID)) {
+		context->do_kill = TRUE;
+		context->note_kill = VERB_AGREEMENT(context->o_ptr->number, "melts", "melt");
+		if (of_has(context->flags, OF_IGNORE_ACID)) context->ignore = TRUE;
+	}
+}
+
+/* Elec -- Rings and Wands */
+static void project_object_handler_ELEC(project_object_handler_context_t *context)
+{
+	if (of_has(context->flags, OF_HATES_ELEC)) {
+		context->do_kill = TRUE;
+		context->note_kill = VERB_AGREEMENT(context->o_ptr->number, "is destroyed", "are destroyed");
+		if (of_has(context->flags, OF_IGNORE_ELEC)) context->ignore = TRUE;
+	}
+}
+
+/* Fire -- Flammable objects */
+static void project_object_handler_FIRE(project_object_handler_context_t *context)
+{
+	if (of_has(context->flags, OF_HATES_FIRE)) {
+		context->do_kill = TRUE;
+		context->note_kill = VERB_AGREEMENT(context->o_ptr->number, "burns up", "burn up");
+		if (of_has(context->flags, OF_IGNORE_FIRE)) context->ignore = TRUE;
+	}
+}
+
+/* Cold -- potions and flasks */
+static void project_object_handler_COLD(project_object_handler_context_t *context)
+{
+	if (of_has(context->flags, OF_HATES_COLD)) {
+		context->note_kill = VERB_AGREEMENT(context->o_ptr->number, "shatters", "shatter");
+		context->do_kill = TRUE;
+		if (of_has(context->flags, OF_IGNORE_COLD)) context->ignore = TRUE;
+	}
+}
+
+/* Fire + Elec */
+static void project_object_handler_PLASMA(project_object_handler_context_t *context)
+{
+	if (of_has(context->flags, OF_HATES_FIRE)) {
+		context->do_kill = TRUE;
+		context->note_kill = VERB_AGREEMENT(context->o_ptr->number, "burns up", "burn up");
+		if (of_has(context->flags, OF_IGNORE_FIRE)) context->ignore = TRUE;
+	}
+
+	if (of_has(context->flags, OF_HATES_ELEC)) {
+		context->ignore = FALSE;
+		context->do_kill = TRUE;
+		context->note_kill = VERB_AGREEMENT(context->o_ptr->number, "is destroyed", "are destroyed");
+		if (of_has(context->flags, OF_IGNORE_ELEC)) context->ignore = TRUE;
+	}
+}
+
+/* Fire + Cold */
+static void project_object_handler_METEOR(project_object_handler_context_t *context)
+{
+	if (of_has(context->flags, OF_HATES_FIRE)) {
+		context->do_kill = TRUE;
+		context->note_kill = VERB_AGREEMENT(context->o_ptr->number, "burns up", "burn up");
+		if (of_has(context->flags, OF_IGNORE_FIRE)) context->ignore = TRUE;
+	}
+
+	if (of_has(context->flags, OF_HATES_COLD)) {
+		context->ignore = FALSE;
+		context->do_kill = TRUE;
+		context->note_kill = VERB_AGREEMENT(context->o_ptr->number, "shatters", "shatter");
+		if (of_has(context->flags, OF_IGNORE_COLD)) context->ignore = TRUE;
+	}
+
+}
+
+/* Hack -- break potions and such */
+static void project_object_handler_shatter(project_object_handler_context_t *context)
+{
+	if (of_has(context->flags, OF_HATES_COLD)) {
+		context->note_kill = VERB_AGREEMENT(context->o_ptr->number, "shatters", "shatter");
+		context->do_kill = TRUE;
+	}
+}
+
+/* Mana -- destroys everything */
+static void project_object_handler_MANA(project_object_handler_context_t *context)
+{
+	context->do_kill = TRUE;
+	context->note_kill = VERB_AGREEMENT(context->o_ptr->number, "is destroyed", "are destroyed");
+}
+
+/* Holy Orb -- destroys cursed non-artifacts */
+static void project_object_handler_HOLY_ORB(project_object_handler_context_t *context)
+{
+	if (cursed_p(context->o_ptr->flags)) {
+		context->do_kill = TRUE;
+		context->note_kill = VERB_AGREEMENT(context->o_ptr->number, "is destroyed", "are destroyed");
+	}
+}
+
+/* Unlock chests */
+static void project_object_handler_chest(project_object_handler_context_t *context)
+{
+	/* Chests are noticed only if trapped or locked */
+	if (is_locked_chest(context->o_ptr)) {
+		/* Disarm or Unlock */
+		unlock_chest((object_type * const)context->o_ptr);
+
+		/* Identify */
+		object_notice_everything((object_type * const)context->o_ptr);
+
+		/* Notice */
+		if (context->o_ptr->marked > MARK_UNAWARE && !squelch_item_ok(context->o_ptr)) {
+			msg("Click!");
+			context->obvious = TRUE;
+		}
+	}
+}
 
 /*
  * We are called from "project()" to "damage" objects
@@ -1386,40 +1568,41 @@ static bool project_f(int who, int r, int y, int x, int dam, int typ, bool obvio
  *
  * We return "TRUE" if the effect of the projection is "obvious".
  */
-static bool project_o(int who, int r, int y, int x, int dam, int typ,
-	bool obvious)
+static bool project_o(int who, int r, int y, int x, int dam, int typ, bool obvious)
 {
 	s16b this_o_idx, next_o_idx = 0;
-
 	bitflag f[OF_SIZE];
-
-	char o_name[80];
-
-
-	/* Unused parameters */
-	(void)who;
-	(void)r;
-	(void)dam;
 
 #if 0 /* unused */
 	/* Reduce damage by distance */
 	dam = (dam + r) / (r + 1);
 #endif /* 0 */
 
-
 	/* Scan all objects in the grid */
 	for (this_o_idx = cave->o_idx[y][x]; this_o_idx; this_o_idx = next_o_idx)
 	{
 		object_type *o_ptr;
-
-		bool is_art = FALSE;
 		bool ignore = FALSE;
 		bool do_kill = FALSE;
-
 		const char *note_kill = NULL;
+		project_object_handler_context_t context = {
+			who,
+			r,
+			y,
+			x,
+			dam,
+			typ,
+			f,
+			NULL,
+			obvious,
+			do_kill,
+			ignore,
+			note_kill,
+		};
 
 		/* Get the object */
 		o_ptr = object_byid(this_o_idx);
+		context.o_ptr = o_ptr;
 
 		/* Get the next object */
 		next_o_idx = o_ptr->next_o_idx;
@@ -1427,160 +1610,64 @@ static bool project_o(int who, int r, int y, int x, int dam, int typ,
 		/* Extract the flags */
 		object_flags(o_ptr, f);
 
-		/* Check for artifact */
-		if (o_ptr->artifact) is_art = TRUE;
-
 		/* Analyze the type */
 		switch (typ)
 		{
-			/* Acid -- Lots of things */
 			case GF_ACID:
-			{
-				if (of_has(f, OF_HATES_ACID))
-				{
-					do_kill = TRUE;
-					note_kill = VERB_AGREEMENT(o_ptr->number, "melts", "melt");
-					if (of_has(f, OF_IGNORE_ACID)) ignore = TRUE;
-				}
+				project_object_handler_ACID(&context);
 				break;
-			}
 
-			/* Elec -- Rings and Wands */
 			case GF_ELEC:
-			{
-				if (of_has(f, OF_HATES_ELEC))
-				{
-					do_kill = TRUE;
-					note_kill = VERB_AGREEMENT(o_ptr->number, "is destroyed", "are destroyed");
-					if (of_has(f, OF_IGNORE_ELEC)) ignore = TRUE;
-				}
+				project_object_handler_ELEC(&context);
 				break;
-			}
 
-			/* Fire -- Flammable objects */
 			case GF_FIRE:
-			{
-				if (of_has(f, OF_HATES_FIRE))
-				{
-					do_kill = TRUE;
-					note_kill = VERB_AGREEMENT(o_ptr->number, "burns up", "burn up");
-					if (of_has(f, OF_IGNORE_FIRE)) ignore = TRUE;
-				}
+				project_object_handler_FIRE(&context);
 				break;
-			}
 
-			/* Cold -- potions and flasks */
 			case GF_COLD:
-			{
-				if (of_has(f, OF_HATES_COLD))
-				{
-					note_kill = VERB_AGREEMENT(o_ptr->number, "shatters", "shatter");
-					do_kill = TRUE;
-					if (of_has(f, OF_IGNORE_COLD)) ignore = TRUE;
-				}
+				project_object_handler_COLD(&context);
 				break;
-			}
 
-			/* Fire + Elec */
 			case GF_PLASMA:
-			{
-				if (of_has(f, OF_HATES_FIRE))
-				{
-					do_kill = TRUE;
-					note_kill = VERB_AGREEMENT(o_ptr->number, "burns up", "burn up");
-					if (of_has(f, OF_IGNORE_FIRE)) ignore = TRUE;
-				}
-				if (of_has(f, OF_HATES_ELEC))
-				{
-					ignore = FALSE;
-					do_kill = TRUE;
-					note_kill = VERB_AGREEMENT(o_ptr->number, "is destroyed", "are destroyed");
-					if (of_has(f, OF_IGNORE_ELEC)) ignore = TRUE;
-				}
+				project_object_handler_PLASMA(&context);
 				break;
-			}
 
-			/* Fire + Cold */
 			case GF_METEOR:
-			{
-				if (of_has(f, OF_HATES_FIRE))
-				{
-					do_kill = TRUE;
-					note_kill = VERB_AGREEMENT(o_ptr->number, "burns up", "burn up");
-					if (of_has(f, OF_IGNORE_FIRE)) ignore = TRUE;
-				}
-				if (of_has(f, OF_HATES_COLD))
-				{
-					ignore = FALSE;
-					do_kill = TRUE;
-					note_kill = VERB_AGREEMENT(o_ptr->number, "shatters", "shatter");
-					if (of_has(f, OF_IGNORE_COLD)) ignore = TRUE;
-				}
+				project_object_handler_METEOR(&context);
 				break;
-			}
 
-			/* Hack -- break potions and such */
 			case GF_ICE:
 			case GF_SHARD:
 			case GF_FORCE:
 			case GF_SOUND:
-			{
-				if (of_has(f, OF_HATES_COLD))
-				{
-					note_kill = VERB_AGREEMENT(o_ptr->number, "shatters", "shatter");
-					do_kill = TRUE;
-				}
+				project_object_handler_shatter(&context);
 				break;
-			}
 
-			/* Mana -- destroys everything */
 			case GF_MANA:
-			{
-				do_kill = TRUE;
-				note_kill = VERB_AGREEMENT(o_ptr->number, "is destroyed", "are destroyed");
+				project_object_handler_MANA(&context);
 				break;
-			}
 
-			/* Holy Orb -- destroys cursed non-artifacts */
 			case GF_HOLY_ORB:
-			{
-				if (cursed_p(o_ptr->flags))
-				{
-					do_kill = TRUE;
-					note_kill = VERB_AGREEMENT(o_ptr->number, "is destroyed", "are destroyed");
-				}
+				project_object_handler_HOLY_ORB(&context);
 				break;
-			}
 
-			/* Unlock chests */
 			case GF_KILL_TRAP:
 			case GF_KILL_DOOR:
-			{
-				/* Chests are noticed only if trapped or locked */
-				if (is_locked_chest(o_ptr))
-				{
-					/* Disarm or Unlock */
-					unlock_chest(o_ptr);
-
-					/* Identify */
-					object_notice_everything(o_ptr);
-
-					/* Notice */
-					if (o_ptr->marked > MARK_UNAWARE && !squelch_item_ok(o_ptr))
-					{
-						msg("Click!");
-						obvious = TRUE;
-					}
-				}
-
+				project_object_handler_chest(&context);
 				break;
-			}
 		}
 
+		obvious = context.obvious;
+		do_kill = context.do_kill;
+		ignore = context.ignore;
+		note_kill = context.note_kill;
 
 		/* Attempt to destroy the object */
 		if (do_kill)
 		{
+			char o_name[80];
+
 			/* Effect "observed" */
 			if (o_ptr->marked && !squelch_item_ok(o_ptr))
 			{
@@ -1589,7 +1676,7 @@ static bool project_o(int who, int r, int y, int x, int dam, int typ,
 			}
 
 			/* Artifacts, and other objects, get to resist */
-			if (is_art || ignore)
+			if (o_ptr->artifact || ignore)
 			{
 				/* Observe the resist */
 				if (o_ptr->marked && !squelch_item_ok(o_ptr))
@@ -1620,6 +1707,723 @@ static bool project_o(int who, int r, int y, int x, int dam, int typ,
 	/* Return "Anything seen?" */
 	return (obvious);
 }
+
+#pragma mark monster handlers
+
+typedef struct project_monster_handler_context_s {
+	const int who;
+	const int r;
+	const int y;
+	const int x;
+	int dam;
+	const int type;
+	const bool seen;
+	const bool id;
+	monster_type *m_ptr;
+	monster_lore *l_ptr;
+	bool obvious;
+	bool skipped;
+	u16b flag;
+	bool do_poly;
+	int teleport_distance;
+	int conf_amount;
+	int stun_amount;
+	int slow_amount;
+	int haste_amount;
+	int sleep_amount;
+	int fear_amount;
+	enum mon_messages m_note;
+	enum mon_messages note_dies;
+
+} project_monster_handler_context_t;
+
+/* Magic Missile -- pure damage */
+static void project_monster_handler_MISSILE(project_monster_handler_context_t *context)
+{
+	if (context->seen) context->obvious = TRUE;
+}
+
+/* Acid */
+static void project_monster_handler_ACID(project_monster_handler_context_t *context)
+{
+	if (context->seen) context->obvious = TRUE;
+	if (context->seen) rf_on(context->l_ptr->flags, RF_IM_ACID);
+	if (rf_has(context->m_ptr->race->flags, RF_IM_ACID)) {
+		context->m_note = MON_MSG_RESIST_A_LOT;
+		context->dam /= 9;
+	}
+}
+
+/* Electricity */
+static void project_monster_handler_ELEC(project_monster_handler_context_t *context)
+{
+	if (context->seen) context->obvious = TRUE;
+	if (context->seen) rf_on(context->l_ptr->flags, RF_IM_ELEC);
+	if (rf_has(context->m_ptr->race->flags, RF_IM_ELEC)) {
+		context->m_note = MON_MSG_RESIST_A_LOT;
+		context->dam /= 9;
+	}
+}
+
+/* Fire damage */
+static void project_monster_handler_FIRE(project_monster_handler_context_t *context)
+{
+	if (context->seen) context->obvious = TRUE;
+	if (context->seen) {
+		rf_on(context->l_ptr->flags, RF_IM_FIRE);
+		rf_on(context->l_ptr->flags, RF_HURT_FIRE);
+	}
+
+	if (rf_has(context->m_ptr->race->flags, RF_IM_FIRE)) {
+		context->m_note = MON_MSG_RESIST_A_LOT;
+		context->dam /= 9;
+	}
+	else if (rf_has(context->m_ptr->race->flags, RF_HURT_FIRE)) {
+		context->m_note = MON_MSG_CATCH_FIRE;
+		context->note_dies = MON_MSG_DISENTEGRATES;
+		context->dam *= 2;
+	}
+}
+
+/* Cold */
+/* Ice -- Cold + Stun */
+static void project_monster_handler_ICE(project_monster_handler_context_t *context)
+{
+	if (context->seen) {
+		context->obvious = TRUE;
+		rf_on(context->l_ptr->flags, RF_IM_COLD);
+		rf_on(context->l_ptr->flags, RF_HURT_COLD);
+	}
+
+	if (context->type == GF_ICE) {
+		if (context->who > 0) {
+			context->stun_amount = (randint1(15) + context->r) / (context->r + 1);
+			context->flag |= MON_TMD_MON_SOURCE;
+		}
+		else
+			context->stun_amount = (randint1(15) + context->r + p_ptr->lev / 5) / (context->r + 1);
+	}
+
+	if (rf_has(context->m_ptr->race->flags, RF_IM_COLD)) {
+		context->m_note = MON_MSG_RESIST_A_LOT;
+		context->dam /= 9;
+	}
+	else if (rf_has(context->m_ptr->race->flags, RF_HURT_COLD)) {
+		context->m_note = MON_MSG_BADLY_FROZEN;
+		context->note_dies = MON_MSG_FREEZE_SHATTER;
+		context->dam *= 2;
+	}
+}
+
+/* Poison */
+static void project_monster_handler_POIS(project_monster_handler_context_t *context)
+{
+	if (context->seen) context->obvious = TRUE;
+	if (context->seen) rf_on(context->l_ptr->flags, RF_IM_POIS);
+	if (rf_has(context->m_ptr->race->flags, RF_IM_POIS)) {
+		context->m_note = MON_MSG_RESIST_A_LOT;
+		context->dam /= 9;
+	}
+}
+
+/* Holy Orb -- hurts Evil */
+static void project_monster_handler_HOLY_ORB(project_monster_handler_context_t *context)
+{
+	if (context->seen) context->obvious = TRUE;
+	if (context->seen) rf_on(context->l_ptr->flags, RF_EVIL);
+	if (rf_has(context->m_ptr->race->flags, RF_EVIL)) {
+		context->dam *= 2;
+		context->m_note = MON_MSG_HIT_HARD;
+	}
+}
+
+/* Arrow -- no defense XXX */
+static void project_monster_handler_ARROW(project_monster_handler_context_t *context)
+{
+	if (context->seen) context->obvious = TRUE;
+}
+
+/* Plasma */
+static void project_monster_handler_PLASMA(project_monster_handler_context_t *context)
+{
+	if (context->seen) context->obvious = TRUE;
+	if (context->seen) rf_on(context->l_ptr->flags, RF_RES_PLAS);
+	if (rf_has(context->m_ptr->race->flags, RF_RES_PLAS)) {
+		context->m_note = MON_MSG_RESIST;
+		context->dam *= 3;
+		context->dam /= (randint1(6)+6);
+	}
+}
+
+/* Nether -- see above */
+static void project_monster_handler_NETHER(project_monster_handler_context_t *context)
+{
+	if (context->seen) context->obvious = TRUE;
+
+	/* Update the lore */
+	if (context->seen) {
+		/* Acquire knowledge of undead type and nether resistance */
+		rf_on(context->l_ptr->flags, RF_UNDEAD);
+		rf_on(context->l_ptr->flags, RF_RES_NETH);
+
+		/* If it isn't undead, acquire extra knowledge */
+		if (!rf_has(context->m_ptr->race->flags, RF_UNDEAD)) {
+			/* Learn this creature breathes nether if true */
+			if (rsf_has(context->m_ptr->race->spell_flags, RSF_BR_NETH)) {
+				rsf_on(context->l_ptr->spell_flags, RSF_BR_NETH);
+			}
+
+			/* Otherwise learn about evil type */
+			else {
+				rf_on(context->l_ptr->flags, RF_EVIL);
+			}
+		}
+	}
+
+	if (rf_has(context->m_ptr->race->flags, RF_UNDEAD)) {
+		context->m_note = MON_MSG_IMMUNE;
+		context->dam = 0;
+	}
+	else if (rf_has(context->m_ptr->race->flags, RF_RES_NETH)) {
+		context->m_note = MON_MSG_RESIST;
+		context->dam *= 3;
+		context->dam /= (randint1(6)+6);
+	}
+	else if (rf_has(context->m_ptr->race->flags, RF_EVIL)) {
+		context->dam /= 2;
+		context->m_note = MON_MSG_RESIST_SOMEWHAT;
+	}
+}
+
+/* Water damage */
+static void project_monster_handler_WATER(project_monster_handler_context_t *context)
+{
+	if (context->seen) context->obvious = TRUE;
+	if (context->seen) rf_on(context->l_ptr->flags, RF_IM_WATER);
+	if (rf_has(context->m_ptr->race->flags, RF_IM_WATER)) {
+		context->m_note = MON_MSG_IMMUNE;
+		context->dam = 0;
+	}
+}
+
+/* Chaos -- Chaos breathers resist */
+static void project_monster_handler_CHAOS(project_monster_handler_context_t *context)
+{
+	if (context->seen) context->obvious = TRUE;
+
+	context->do_poly = TRUE;
+
+	if (context->who > 0) {
+		context->conf_amount = (5 + randint1(11) + context->r) / (context->r + 1);
+		context->flag |= MON_TMD_MON_SOURCE;
+	}
+	else
+		context->conf_amount = (5 + randint1(11) + context->r + p_ptr->lev / 5) / (context->r + 1);
+
+	if (rsf_has(context->m_ptr->race->spell_flags, RSF_BR_CHAO)) {
+		/* Learn about breathers through resistance */
+		if (context->seen) rsf_on(context->l_ptr->spell_flags, RSF_BR_CHAO);
+
+		context->dam *= 3;
+		context->dam /= (randint1(6)+6);
+		context->do_poly = FALSE;
+	}
+}
+
+/* Shards -- Shard breathers resist */
+static void project_monster_handler_SHARD(project_monster_handler_context_t *context)
+{
+	if (context->seen) context->obvious = TRUE;
+	if (rsf_has(context->m_ptr->race->spell_flags, RSF_BR_SHAR)) {
+		/* Learn about breathers through resistance */
+		if (context->seen) rsf_on(context->l_ptr->spell_flags, RSF_BR_SHAR);
+
+		context->m_note = MON_MSG_RESIST;
+		context->dam *= 3;
+		context->dam /= (randint1(6)+6);
+	}
+}
+
+/* Sound -- Sound breathers resist */
+static void project_monster_handler_SOUND(project_monster_handler_context_t *context)
+{
+	if (context->seen) context->obvious = TRUE;
+
+	if (context->who > 0) {
+		context->stun_amount = (10 + randint1(15) + context->r) / (context->r + 1);
+		context->flag |= MON_TMD_MON_SOURCE;
+	}
+	else
+		context->stun_amount = (10 + randint1(15) + context->r + p_ptr->lev / 5) / (context->r + 1);
+
+	if (rsf_has(context->m_ptr->race->spell_flags, RSF_BR_SOUN)) {
+		/* Learn about breathers through resistance */
+		if (context->seen) rsf_on(context->l_ptr->spell_flags, RSF_BR_SOUN);
+
+		context->m_note = MON_MSG_RESIST;
+		context->dam *= 2;
+		context->dam /= (randint1(6)+6);
+	}
+}
+
+/* Disenchantment */
+static void project_monster_handler_DISEN(project_monster_handler_context_t *context)
+{
+	if (context->seen) context->obvious = TRUE;
+	if (context->seen) rf_on(context->l_ptr->flags, RF_RES_DISE);
+	if (rf_has(context->m_ptr->race->flags, RF_RES_DISE)) {
+		context->m_note = MON_MSG_RESIST;
+		context->dam *= 3;
+		context->dam /= (randint1(6)+6);
+	}
+}
+
+/* Nexus */
+static void project_monster_handler_NEXUS(project_monster_handler_context_t *context)
+{
+	if (context->seen) context->obvious = TRUE;
+	if (context->seen) rf_on(context->l_ptr->flags, RF_RES_NEXUS);
+	if (rf_has(context->m_ptr->race->flags, RF_RES_NEXUS)) {
+		context->m_note = MON_MSG_RESIST;
+		context->dam *= 3;
+		context->dam /= (randint1(6)+6);
+	}
+}
+
+/* Force */
+static void project_monster_handler_FORCE(project_monster_handler_context_t *context)
+{
+	if (context->seen) context->obvious = TRUE;
+
+	if (context->who > 0) {
+		context->stun_amount = (randint1(15) + context->r) / (context->r + 1);
+		context->flag |= MON_TMD_MON_SOURCE;
+	}
+	else
+		context->stun_amount = (randint1(15) + context->r + p_ptr->lev / 5) / (context->r + 1);
+
+	if (rsf_has(context->m_ptr->race->spell_flags, RSF_BR_WALL)) {
+		/* Learn about breathers through resistance */
+		if (context->seen) rsf_on(context->l_ptr->spell_flags, RSF_BR_WALL);
+
+		context->m_note = MON_MSG_RESIST;
+		context->dam *= 3;
+		context->dam /= (randint1(6)+6);
+	}
+}
+
+/* Inertia -- breathers resist */
+static void project_monster_handler_INERTIA(project_monster_handler_context_t *context)
+{
+	if (context->seen) context->obvious = TRUE;
+	if (rsf_has(context->m_ptr->race->spell_flags, RSF_BR_INER)) {
+		/* Learn about breathers through resistance */
+		if (context->seen) rsf_on(context->l_ptr->spell_flags, RSF_BR_INER);
+
+		context->m_note = MON_MSG_RESIST;
+		context->dam *= 3;
+		context->dam /= (randint1(6)+6);
+	}
+}
+
+/* Time -- breathers resist */
+static void project_monster_handler_TIME(project_monster_handler_context_t *context)
+{
+	if (context->seen) context->obvious = TRUE;
+	if (rsf_has(context->m_ptr->race->spell_flags, RSF_BR_TIME)) {
+		/* Learn about breathers through resistance */
+		if (context->seen) rsf_on(context->l_ptr->spell_flags, RSF_BR_TIME);
+
+		context->m_note = MON_MSG_RESIST;
+		context->dam *= 3;
+		context->dam /= (randint1(6)+6);
+	}
+}
+
+/* Gravity -- breathers resist */
+static void project_monster_handler_GRAVITY(project_monster_handler_context_t *context)
+{
+	if (context->seen) context->obvious = TRUE;
+
+	/* Higher level monsters can resist the teleportation better */
+	if (randint1(127) > context->m_ptr->race->level)
+		context->teleport_distance = 10;
+
+	if (rsf_has(context->m_ptr->race->spell_flags, RSF_BR_GRAV)) {
+		/* Learn about breathers through resistance */
+		if (context->seen) rsf_on(context->l_ptr->spell_flags, RSF_BR_GRAV);
+
+		context->m_note = MON_MSG_RESIST;
+		context->dam *= 3;
+		context->dam /= (randint1(6)+6);
+		context->teleport_distance = 0;
+	}
+}
+
+/* Pure damage */
+static void project_monster_handler_MANA(project_monster_handler_context_t *context)
+{
+	if (context->seen) context->obvious = TRUE;
+}
+
+/* Meteor -- powerful magic missile */
+static void project_monster_handler_METEOR(project_monster_handler_context_t *context)
+{
+	if (context->seen) context->obvious = TRUE;
+}
+
+/* Drain Life */
+static void project_monster_handler_OLD_DRAIN(project_monster_handler_context_t *context)
+{
+	if (context->seen) context->obvious = TRUE;
+	if (context->seen) {
+		rf_on(context->l_ptr->flags, RF_UNDEAD);
+		rf_on(context->l_ptr->flags, RF_DEMON);
+	}
+	if (monster_is_nonliving(context->m_ptr->race)) {
+		context->m_note = MON_MSG_UNAFFECTED;
+		context->obvious = FALSE;
+		context->dam = 0;
+	}
+}
+
+/* Polymorph monster (Use "dam" as "power") */
+static void project_monster_handler_OLD_POLY(project_monster_handler_context_t *context)
+{
+	/* Polymorph later */
+	context->do_poly = context->dam;
+
+	/* No "real" damage */
+	context->dam = 0;
+}
+
+/* Clone monsters (Ignore "dam") */
+static void project_monster_handler_OLD_CLONE(project_monster_handler_context_t *context)
+{
+	if (context->seen) context->obvious = TRUE;
+
+	/* Heal fully */
+	context->m_ptr->hp = context->m_ptr->maxhp;
+
+	/* Speed up */
+	mon_inc_timed(context->m_ptr, MON_TMD_FAST, 50, MON_TMD_FLG_NOTIFY, context->id);
+
+	/* Attempt to clone. */
+	if (multiply_monster(context->m_ptr))
+		context->m_note = MON_MSG_SPAWN;
+
+	/* No "real" damage */
+	context->dam = 0;
+
+}
+
+/* Heal Monster (use "dam" as amount of healing) */
+static void project_monster_handler_OLD_HEAL(project_monster_handler_context_t *context)
+{
+	if (context->seen) context->obvious = TRUE;
+
+	/* Wake up */
+	mon_clear_timed(context->m_ptr, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, context->id);
+
+	/* Heal */
+	context->m_ptr->hp += context->dam;
+
+	/* No overflow */
+	if (context->m_ptr->hp > context->m_ptr->maxhp) context->m_ptr->hp = context->m_ptr->maxhp;
+
+	/* Redraw (later) if needed */
+	if (p_ptr->health_who == context->m_ptr) p_ptr->redraw |= (PR_HEALTH);
+
+	/* Message */
+	else context->m_note = MON_MSG_HEALTHIER;
+
+	/* No "real" damage */
+	context->dam = 0;
+}
+
+/* Speed Monster (Ignore "dam") */
+static void project_monster_handler_OLD_SPEED(project_monster_handler_context_t *context)
+{
+	if (context->seen) context->obvious = TRUE;
+
+	/* Speed up */
+	context->haste_amount = context->dam;
+
+	/* No "real" damage */
+	context->dam = 0;
+}
+
+/* Slow Monster (Use "dam" as "power") */
+static void project_monster_handler_OLD_SLOW(project_monster_handler_context_t *context)
+{
+	if (context->seen) context->obvious = TRUE;
+
+	context->slow_amount = context->dam;
+
+	/* No "real" damage */
+	context->dam = 0;
+}
+
+/* Sleep (Use "dam" as "power") */
+static void project_monster_handler_OLD_SLEEP(project_monster_handler_context_t *context)
+{
+	/* Go to sleep later */
+	context->sleep_amount = context->dam;
+
+	/* No "real" damage */
+	context->dam = 0;
+}
+
+/* Confusion (Use "dam" as "power") */
+static void project_monster_handler_OLD_CONF(project_monster_handler_context_t *context)
+{
+	/* Get confused later */
+	context->conf_amount = context->dam;
+
+	/* No "real" damage */
+	context->dam = 0;
+}
+
+/* Light, but only hurts susceptible creatures */
+static void project_monster_handler_LIGHT_WEAK(project_monster_handler_context_t *context)
+{
+	if (context->seen) context->obvious = TRUE;
+	if (context->seen) rf_on(context->l_ptr->flags, RF_HURT_LIGHT);
+
+	/* Hurt by light */
+	if (rf_has(context->m_ptr->race->flags, RF_HURT_LIGHT)) {
+		/* Special effect */
+		context->m_note = MON_MSG_CRINGE_LIGHT;
+		context->note_dies = MON_MSG_SHRIVEL_LIGHT;
+	}
+
+	/* Normally no damage */
+	else {
+		/* No damage */
+		context->dam = 0;
+	}
+}
+
+/* Light -- opposite of Dark */
+static void project_monster_handler_LIGHT(project_monster_handler_context_t *context)
+{
+	if (context->seen) context->obvious = TRUE;
+	if (context->seen) rf_on(context->l_ptr->flags, RF_HURT_LIGHT);
+
+	if (rsf_has(context->m_ptr->race->spell_flags, RSF_BR_LIGHT)) {
+		/* Learn about breathers through resistance */
+		if (context->seen) rsf_on(context->l_ptr->spell_flags, RSF_BR_LIGHT);
+
+		context->m_note = MON_MSG_RESIST;
+		context->dam *= 2;
+		context->dam /= (randint1(6)+6);
+	}
+	else if (rf_has(context->m_ptr->race->flags, RF_HURT_LIGHT)) {
+		context->m_note = MON_MSG_CRINGE_LIGHT;
+		context->note_dies = MON_MSG_SHRIVEL_LIGHT;
+		context->dam *= 2;
+	}
+}
+
+/* Dark -- opposite of Light */
+static void project_monster_handler_DARK(project_monster_handler_context_t *context)
+{
+	if (context->seen) context->obvious = TRUE;
+	if (rsf_has(context->m_ptr->race->spell_flags, RSF_BR_DARK)) {
+		/* Learn about breathers through resistance */
+		if (context->seen) rsf_on(context->l_ptr->spell_flags, RSF_BR_DARK);
+
+		context->m_note = MON_MSG_RESIST;
+		context->dam *= 2;
+		context->dam /= (randint1(6)+6);
+	}
+}
+
+/* Stone to Mud */
+static void project_monster_handler_KILL_WALL(project_monster_handler_context_t *context)
+{
+	if (context->seen) context->obvious = TRUE;
+	if (context->seen) rf_on(context->l_ptr->flags, RF_HURT_ROCK);
+
+	/* Hurt by rock remover */
+	if (rf_has(context->m_ptr->race->flags, RF_HURT_ROCK)) {
+		/* Cute little message */
+		context->m_note = MON_MSG_LOSE_SKIN;
+		context->note_dies = MON_MSG_DISSOLVE;
+	}
+
+	/* Usually, ignore the effects */
+	else {
+		/* No damage */
+		context->dam = 0;
+	}
+}
+
+/* Teleport undead (Use "dam" as "power") */
+static void project_monster_handler_AWAY_UNDEAD(project_monster_handler_context_t *context)
+{
+	if (context->seen) rf_on(context->l_ptr->flags, RF_UNDEAD);
+
+	/* Only affect undead */
+	if (rf_has(context->m_ptr->race->flags, RF_UNDEAD)) {
+		if (context->seen) context->obvious = TRUE;
+		context->teleport_distance = context->dam;
+	}
+
+	/* Others ignore */
+	else {
+		/* Irrelevant */
+		context->skipped = TRUE;
+	}
+
+	/* No "real" damage */
+	context->dam = 0;
+}
+
+/* Teleport evil (Use "dam" as "power") */
+static void project_monster_handler_AWAY_EVIL(project_monster_handler_context_t *context)
+{
+	if (context->seen) rf_on(context->l_ptr->flags, RF_EVIL);
+
+	/* Only affect evil */
+	if (rf_has(context->m_ptr->race->flags, RF_EVIL)) {
+		if (context->seen) context->obvious = TRUE;
+		context->teleport_distance = context->dam;
+	}
+
+	/* Others ignore */
+	else {
+		/* Irrelevant */
+		context->skipped = TRUE;
+	}
+
+	/* No "real" damage */
+	context->dam = 0;
+}
+
+/* Teleport monster (Use "dam" as "power") */
+static void project_monster_handler_AWAY_ALL(project_monster_handler_context_t *context)
+{
+	/* Obvious */
+	if (context->seen) context->obvious = TRUE;
+
+	/* Prepare to teleport */
+	context->teleport_distance = context->dam;
+
+	/* No "real" damage */
+	context->dam = 0;
+}
+
+/* Turn undead (Use "dam" as "power") */
+static void project_monster_handler_TURN_UNDEAD(project_monster_handler_context_t *context)
+{
+	/* Only affect undead */
+	if (rf_has(context->m_ptr->race->flags, RF_UNDEAD)) {
+		/* Obvious */
+		if (context->seen) context->obvious = TRUE;
+
+		/* Apply some fear */
+		context->fear_amount = context->dam;
+	}
+	else {
+		context->skipped = TRUE;
+	}
+
+	/* No "real" damage */
+	context->dam = 0;
+}
+
+/* Turn evil (Use "dam" as "power") */
+static void project_monster_handler_TURN_EVIL(project_monster_handler_context_t *context)
+{
+	/* Only affect evil */
+	if (rf_has(context->m_ptr->race->flags, RF_EVIL)) {
+		/* Obvious */
+		if (context->seen) context->obvious = TRUE;
+
+		/* Apply some fear */
+		context->fear_amount = context->dam;
+	}
+	else {
+		context->skipped = TRUE;
+	}
+
+	/* No "real" damage */
+	context->dam = 0;
+}
+
+/* Turn monster (Use "dam" as "power") */
+static void project_monster_handler_TURN_ALL(project_monster_handler_context_t *context)
+{
+	/* Get frightened later */
+	context->fear_amount = context->dam;
+
+	/* No "real" damage */
+	context->dam = 0;
+}
+
+/* Dispel undead */
+static void project_monster_handler_DISP_UNDEAD(project_monster_handler_context_t *context)
+{
+	if (context->seen) rf_on(context->l_ptr->flags, RF_UNDEAD);
+
+	/* Only affect undead */
+	if (rf_has(context->m_ptr->race->flags, RF_UNDEAD)) {
+		/* Obvious */
+		if (context->seen) context->obvious = TRUE;
+
+		/* Message */
+		context->m_note = MON_MSG_SHUDDER;
+		context->note_dies = MON_MSG_DISSOLVE;
+	}
+
+	/* Others ignore */
+	else {
+		/* Irrelevant */
+		context->skipped = TRUE;
+
+		/* No damage */
+		context->dam = 0;
+	}
+}
+
+/* Dispel evil */
+static void project_monster_handler_DISP_EVIL(project_monster_handler_context_t *context)
+{
+	if (context->seen) rf_on(context->l_ptr->flags, RF_EVIL);
+
+	/* Only affect evil */
+	if (rf_has(context->m_ptr->race->flags, RF_EVIL))
+	{
+		/* Obvious */
+		if (context->seen) context->obvious = TRUE;
+
+		/* Message */
+		context->m_note = MON_MSG_SHUDDER;
+		context->note_dies = MON_MSG_DISSOLVE;
+	}
+
+	/* Others ignore */
+	else {
+		/* Irrelevant */
+		context->skipped = TRUE;
+
+		/* No damage */
+		context->dam = 0;
+	}
+}
+
+/* Dispel monster */
+static void project_monster_handler_DISP_ALL(project_monster_handler_context_t *context)
+{
+	/* Obvious */
+	if (context->seen) context->obvious = TRUE;
+	
+	/* Message */
+	context->m_note = MON_MSG_SHUDDER;
+	context->note_dies = MON_MSG_DISSOLVE;
+}
+
 
 
 
@@ -1676,8 +2480,7 @@ static bool project_o(int who, int r, int y, int x, int dam, int typ,
  *
  * We attempt to return "TRUE" if the player saw anything "obvious" happen.
  */
-static bool project_m(int who, int r, int y, int x, int dam, int typ,
-	bool obvious)
+static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvious)
 {
 	monster_type *m_ptr;
 	monster_lore *l_ptr;
@@ -1693,7 +2496,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 	bool mon_died = FALSE;
 
 	/* Polymorph setting (true or false) */
-	int do_poly = 0;
+	bool do_poly = FALSE;
 
 	/* Teleport setting (max distance) */
 	int do_dist = 0;
@@ -1711,7 +2514,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 	int do_haste = 0;
 
 	/* Sleep amount (amount to sleep) */
-	bool do_sleep = FALSE;
+	int do_sleep = 0;
 
 	/* Fear amount (amount to fear) */
 	int do_fear = 0;
@@ -1726,10 +2529,36 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 	int m_idx = cave->m_idx[y][x];
 
 	/* Assume no note */
-	int m_note = MON_MSG_NONE;
+	enum mon_messages m_note = MON_MSG_NONE;
 
 	/* Assume a default death */
-	byte note_dies = MON_MSG_DIE;
+	enum mon_messages note_dies = MON_MSG_DIE;
+
+	project_monster_handler_context_t context = {
+		who,
+		r,
+		y,
+		x,
+		dam,
+		typ,
+		seen,
+		id,
+		NULL,
+		NULL,
+		obvious,
+		skipped,
+		flag,
+		do_poly,
+		do_dist,
+		do_conf,
+		do_stun,
+		do_slow,
+		do_haste,
+		do_sleep,
+		do_fear,
+		m_note,
+		note_dies,
+	};
 
 
 	/* Walls protect monsters */
@@ -1746,12 +2575,15 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 	/* Obtain monster info */
 	m_ptr = cave_monster(cave, m_idx);
 	l_ptr = get_lore(m_ptr->race);
+	context.m_ptr = m_ptr;
+	context.l_ptr = l_ptr;
+
 	if (m_ptr->ml) seen = TRUE;
 
 
 	/* Reduce damage by distance */
 	dam = (dam + r) / (r + 1);
-
+	context.dam = dam;
 
 	/* Get the monster name (BEFORE polymorphing) */
 	monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_DEFAULT);
@@ -1761,799 +2593,186 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 
 
 	/* Some monsters get "destroyed" */
-	if (monster_is_unusual(m_ptr->race))
+	if (monster_is_unusual(m_ptr->race)) {
 		note_dies = MON_MSG_DESTROYED;
-
+		context.note_dies = note_dies;
+	}
 
 	/* Analyze the damage type */
 	switch (typ)
 	{
-		/* Magic Missile -- pure damage */
 		case GF_MISSILE:
-		{
-			if (seen) obvious = TRUE;
+			project_monster_handler_MISSILE(&context);
 			break;
-		}
 
-		/* Acid */
 		case GF_ACID:
-		{
-			if (seen) obvious = TRUE;
-			if (seen) rf_on(l_ptr->flags, RF_IM_ACID);
-			if (rf_has(m_ptr->race->flags, RF_IM_ACID))
-			{
-				m_note = MON_MSG_RESIST_A_LOT;
-				dam /= 9;
-			}
+			project_monster_handler_ACID(&context);
 			break;
-		}
 
-		/* Electricity */
 		case GF_ELEC:
-		{
-			if (seen) obvious = TRUE;
-			if (seen) rf_on(l_ptr->flags, RF_IM_ELEC);
-			if (rf_has(m_ptr->race->flags, RF_IM_ELEC))
-			{
-				m_note = MON_MSG_RESIST_A_LOT;
-				dam /= 9;
-			}
+			project_monster_handler_ELEC(&context);
 			break;
-		}
 
-		/* Fire damage */
 		case GF_FIRE:
-		{
-			if (seen) obvious = TRUE;
-			if (seen)
-			{
-				rf_on(l_ptr->flags, RF_IM_FIRE);
-				rf_on(l_ptr->flags, RF_HURT_FIRE);
-			}
-			if (rf_has(m_ptr->race->flags, RF_IM_FIRE))
-			{
-				m_note = MON_MSG_RESIST_A_LOT;
-				dam /= 9;
-			}
-			else if (rf_has(m_ptr->race->flags, RF_HURT_FIRE))
-			{
-				m_note = MON_MSG_CATCH_FIRE;
-				note_dies = MON_MSG_DISENTEGRATES;
-				dam *= 2;
-			}
+			project_monster_handler_FIRE(&context);
 			break;
-		}
 
-		/* Cold */
 		case GF_COLD:
-		/* Ice -- Cold + Stun */
 		case GF_ICE:
-		{
-			if (seen)
-			{
-				obvious = TRUE;
-				rf_on(l_ptr->flags, RF_IM_COLD);
-				rf_on(l_ptr->flags, RF_HURT_COLD);
-			}
-
-			if (typ == GF_ICE) {
-				if (who > 0) {
-					do_stun = (randint1(15) + r) / (r + 1);
-					flag |= MON_TMD_MON_SOURCE;
-				} else
-					do_stun = (randint1(15) + r + p_ptr->lev / 5) / (r + 1);
-			}
-
-			if (rf_has(m_ptr->race->flags, RF_IM_COLD))
-			{
-				m_note = MON_MSG_RESIST_A_LOT;
-				dam /= 9;
-			}
-			else if (rf_has(m_ptr->race->flags, RF_HURT_COLD))
-			{
-				m_note = MON_MSG_BADLY_FROZEN;
-				note_dies = MON_MSG_FREEZE_SHATTER;
-				dam *= 2;
-			}
+			project_monster_handler_ICE(&context);
 			break;
-		}
 
-		/* Poison */
 		case GF_POIS:
-		{
-			if (seen) obvious = TRUE;
-			if (seen) rf_on(l_ptr->flags, RF_IM_POIS);
-			if (rf_has(m_ptr->race->flags, RF_IM_POIS))
-			{
-				m_note = MON_MSG_RESIST_A_LOT;
-				dam /= 9;
-			}
+			project_monster_handler_POIS(&context);
 			break;
-		}
 
-		/* Holy Orb -- hurts Evil */
 		case GF_HOLY_ORB:
-		{
-			if (seen) obvious = TRUE;
-			if (seen) rf_on(l_ptr->flags, RF_EVIL);
-			if (rf_has(m_ptr->race->flags, RF_EVIL))
-			{
-				dam *= 2;
-				m_note = MON_MSG_HIT_HARD;
-			}
+			project_monster_handler_HOLY_ORB(&context);
 			break;
-		}
 
-		/* Arrow -- no defense XXX */
 		case GF_ARROW:
-		{
-			if (seen) obvious = TRUE;
+			project_monster_handler_ARROW(&context);
 			break;
-		}
 
-		/* Plasma */
 		case GF_PLASMA:
-		{
-			if (seen) obvious = TRUE;
-			if (seen) rf_on(l_ptr->flags, RF_RES_PLAS);
-			if (rf_has(m_ptr->race->flags, RF_RES_PLAS))
-			{
-				m_note = MON_MSG_RESIST;
-				dam *= 3; dam /= (randint1(6)+6);
-			}
+			project_monster_handler_PLASMA(&context);
 			break;
-		}
 
-		/* Nether -- see above */
 		case GF_NETHER:
-		{
-			if (seen) obvious = TRUE;
-
-			/* Update the lore */
-			if (seen)
-			{
-				/* Acquire knowledge of undead type and nether resistance */
-				rf_on(l_ptr->flags, RF_UNDEAD);
-				rf_on(l_ptr->flags, RF_RES_NETH);
-
-				/* If it isn't undead, acquire extra knowledge */
-				if (!rf_has(m_ptr->race->flags, RF_UNDEAD))
-				{
-					/* Learn this creature breathes nether if true */
-					if (rsf_has(m_ptr->race->spell_flags, RSF_BR_NETH))
-					{
-						rsf_on(l_ptr->spell_flags, RSF_BR_NETH);
-					}
-
-					/* Otherwise learn about evil type */
-					else
-					{
-						rf_on(l_ptr->flags, RF_EVIL);
-					}
-				}
-			}
-
-			if (rf_has(m_ptr->race->flags, RF_UNDEAD))
-			{
-				m_note = MON_MSG_IMMUNE;
-				dam = 0;
-			}
-			else if (rf_has(m_ptr->race->flags, RF_RES_NETH))
-			{
-				m_note = MON_MSG_RESIST;
-				dam *= 3; dam /= (randint1(6)+6);
-			}
-			else if (rf_has(m_ptr->race->flags, RF_EVIL))
-			{
-				dam /= 2;
-				m_note = MON_MSG_RESIST_SOMEWHAT;
-			}
+			project_monster_handler_NETHER(&context);
 			break;
-		}
 
-		/* Water damage */
 		case GF_WATER:
-		{
-			if (seen) obvious = TRUE;
-			if (seen) rf_on(l_ptr->flags, RF_IM_WATER);
-			if (rf_has(m_ptr->race->flags, RF_IM_WATER))
-			{
-				m_note = MON_MSG_IMMUNE;
-				dam = 0;
-			}
+			project_monster_handler_WATER(&context);
 			break;
-		}
 
-		/* Chaos -- Chaos breathers resist */
 		case GF_CHAOS:
-		{
-			if (seen) obvious = TRUE;
-
-			do_poly = TRUE;
-
-			if (who > 0) {
-				do_conf = (5 + randint1(11) + r) / (r + 1);
-				flag |= MON_TMD_MON_SOURCE;
-			} else
-				do_conf = (5 + randint1(11) + r + p_ptr->lev / 5) / (r + 1);
-
-			if (rsf_has(m_ptr->race->spell_flags, RSF_BR_CHAO))
-			{
-				/* Learn about breathers through resistance */
-				if (seen) rsf_on(l_ptr->spell_flags, RSF_BR_CHAO);
-
-				dam *= 3; dam /= (randint1(6)+6);
-				do_poly = FALSE;
-			}
+			project_monster_handler_CHAOS(&context);
 			break;
-		}
 
-		/* Shards -- Shard breathers resist */
 		case GF_SHARD:
-		{
-			if (seen) obvious = TRUE;
-			if (rsf_has(m_ptr->race->spell_flags, RSF_BR_SHAR))
-			{
-				/* Learn about breathers through resistance */
-				if (seen) rsf_on(l_ptr->spell_flags, RSF_BR_SHAR);
-
-				m_note = MON_MSG_RESIST;
-				dam *= 3; dam /= (randint1(6)+6);
-			}
+			project_monster_handler_SHARD(&context);
 			break;
-		}
 
-		/* Sound -- Sound breathers resist */
 		case GF_SOUND:
-		{
-			if (seen) obvious = TRUE;
-
-			if (who > 0) {
-				do_stun = (10 + randint1(15) + r) / (r + 1);
-				flag |= MON_TMD_MON_SOURCE;
-			} else
-				do_stun = (10 + randint1(15) + r + p_ptr->lev / 5) / (r + 1);
-
-			if (rsf_has(m_ptr->race->spell_flags, RSF_BR_SOUN))
-			{
-				/* Learn about breathers through resistance */
-				if (seen) rsf_on(l_ptr->spell_flags, RSF_BR_SOUN);
-
-				m_note = MON_MSG_RESIST;
-				dam *= 2; dam /= (randint1(6)+6);
-			}
+			project_monster_handler_SOUND(&context);
 			break;
-		}
 
-		/* Disenchantment */
 		case GF_DISEN:
-		{
-			if (seen) obvious = TRUE;
-			if (seen) rf_on(l_ptr->flags, RF_RES_DISE);
-			if (rf_has(m_ptr->race->flags, RF_RES_DISE))
-			{
-				m_note = MON_MSG_RESIST;
-				dam *= 3; dam /= (randint1(6)+6);
-			}
+			project_monster_handler_DISEN(&context);
 			break;
-		}
 
-		/* Nexus */
 		case GF_NEXUS:
-		{
-			if (seen) obvious = TRUE;
-			if (seen) rf_on(l_ptr->flags, RF_RES_NEXUS);
-			if (rf_has(m_ptr->race->flags, RF_RES_NEXUS))
-			{
-				m_note = MON_MSG_RESIST;
-				dam *= 3; dam /= (randint1(6)+6);
-			}
+			project_monster_handler_NEXUS(&context);
 			break;
-		}
 
-		/* Force */
 		case GF_FORCE:
-		{
-			if (seen) obvious = TRUE;
-
-			if (who > 0) {
-				do_stun = (randint1(15) + r) / (r + 1);
-				flag |= MON_TMD_MON_SOURCE;
-			} else
-				do_stun = (randint1(15) + r + p_ptr->lev / 5) / (r + 1);
-
-			if (rsf_has(m_ptr->race->spell_flags, RSF_BR_WALL))
-			{
-				/* Learn about breathers through resistance */
-				if (seen) rsf_on(l_ptr->spell_flags, RSF_BR_WALL);
-
-				m_note = MON_MSG_RESIST;
-				dam *= 3; dam /= (randint1(6)+6);
-			}
+			project_monster_handler_FORCE(&context);
 			break;
-		}
 
-		/* Inertia -- breathers resist */
 		case GF_INERTIA:
-		{
-			if (seen) obvious = TRUE;
-			if (rsf_has(m_ptr->race->spell_flags, RSF_BR_INER))
-			{
-				/* Learn about breathers through resistance */
-				if (seen) rsf_on(l_ptr->spell_flags, RSF_BR_INER);
-
-				m_note = MON_MSG_RESIST;
-				dam *= 3; dam /= (randint1(6)+6);
-			}
+			project_monster_handler_INERTIA(&context);
 			break;
-		}
 
-		/* Time -- breathers resist */
 		case GF_TIME:
-		{
-			if (seen) obvious = TRUE;
-			if (rsf_has(m_ptr->race->spell_flags, RSF_BR_TIME))
-			{
-				/* Learn about breathers through resistance */
-				if (seen) rsf_on(l_ptr->spell_flags, RSF_BR_TIME);
-
-				m_note = MON_MSG_RESIST;
-				dam *= 3; dam /= (randint1(6)+6);
-			}
+			project_monster_handler_TIME(&context);
 			break;
-		}
 
-		/* Gravity -- breathers resist */
 		case GF_GRAVITY:
-		{
-			if (seen) obvious = TRUE;
-
-			/* Higher level monsters can resist the teleportation better */
-			if (randint1(127) > m_ptr->race->level)
-				do_dist = 10;
-
-			if (rsf_has(m_ptr->race->spell_flags, RSF_BR_GRAV))
-			{
-				/* Learn about breathers through resistance */
-				if (seen) rsf_on(l_ptr->spell_flags, RSF_BR_GRAV);
-
-				m_note = MON_MSG_RESIST;
-				dam *= 3; dam /= (randint1(6)+6);
-				do_dist = 0;
-			}
+			project_monster_handler_GRAVITY(&context);
 			break;
-		}
 
-		/* Pure damage */
 		case GF_MANA:
-		{
-			if (seen) obvious = TRUE;
+			project_monster_handler_MANA(&context);
 			break;
-		}
 
-		/* Meteor -- powerful magic missile */
 		case GF_METEOR:
-		{
-			if (seen) obvious = TRUE;
+			project_monster_handler_METEOR(&context);
 			break;
-		}
 
-		/* Drain Life */
 		case GF_OLD_DRAIN:
-		{
-			if (seen) obvious = TRUE;
-			if (seen)
-			{
-				rf_on(l_ptr->flags, RF_UNDEAD);
-				rf_on(l_ptr->flags, RF_DEMON);
-			}
-			if (monster_is_nonliving(m_ptr->race))
-			{
-				m_note = MON_MSG_UNAFFECTED;
-				obvious = FALSE;
-				dam = 0;
-			}
-
+			project_monster_handler_OLD_DRAIN(&context);
 			break;
-		}
 
-		/* Polymorph monster (Use "dam" as "power") */
 		case GF_OLD_POLY:
-		{
-			/* Polymorph later */
-			do_poly = dam;
-
-			/* No "real" damage */
-			dam = 0;
+			project_monster_handler_OLD_POLY(&context);
 			break;
-		}
 
-
-		/* Clone monsters (Ignore "dam") */
 		case GF_OLD_CLONE:
-		{
-			if (seen) obvious = TRUE;
-
-			/* Heal fully */
-			m_ptr->hp = m_ptr->maxhp;
-
-			/* Speed up */
-			mon_inc_timed(m_ptr, MON_TMD_FAST, 50, MON_TMD_FLG_NOTIFY, id);
-
-			/* Attempt to clone. */
-			if (multiply_monster(m_ptr))
-				m_note = MON_MSG_SPAWN;
-
-			/* No "real" damage */
-			dam = 0;
-
+			project_monster_handler_OLD_CLONE(&context);
 			break;
-		}
 
-
-		/* Heal Monster (use "dam" as amount of healing) */
 		case GF_OLD_HEAL:
-		{
-			if (seen) obvious = TRUE;
-
-			/* Wake up */
-			mon_clear_timed(m_ptr, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, id);
-
-			/* Heal */
-			m_ptr->hp += dam;
-
-			/* No overflow */
-			if (m_ptr->hp > m_ptr->maxhp) m_ptr->hp = m_ptr->maxhp;
-
-			/* Redraw (later) if needed */
-			if (p_ptr->health_who == m_ptr) p_ptr->redraw |= (PR_HEALTH);
-
-			/* Message */
-			else m_note = MON_MSG_HEALTHIER;
-
-			/* No "real" damage */
-			dam = 0;
+			project_monster_handler_OLD_HEAL(&context);
 			break;
-		}
 
-
-		/* Speed Monster (Ignore "dam") */
 		case GF_OLD_SPEED:
-		{
-			if (seen) obvious = TRUE;
-
-			/* Speed up */
-			do_haste = dam;
-
-			/* No "real" damage */
-			dam = 0;
+			project_monster_handler_OLD_SPEED(&context);
 			break;
-		}
 
-
-		/* Slow Monster (Use "dam" as "power") */
 		case GF_OLD_SLOW:
-		{
-			if (seen) obvious = TRUE;
-
-			do_slow = dam;
-
-			/* No "real" damage */
-			dam = 0;
+			project_monster_handler_OLD_SLOW(&context);
 			break;
-		}
 
-
-		/* Sleep (Use "dam" as "power") */
 		case GF_OLD_SLEEP:
-		{
-			/* Go to sleep later */
-			do_sleep = dam;
-
-			/* No "real" damage */
-			dam = 0;
+			project_monster_handler_OLD_SLEEP(&context);
 			break;
-		}
 
-
-		/* Confusion (Use "dam" as "power") */
 		case GF_OLD_CONF:
-		{
-			/* Get confused later */
-			do_conf = dam;
-
-			/* No "real" damage */
-			dam = 0;
+			project_monster_handler_OLD_CONF(&context);
 			break;
-		}
 
-
-		/* Light, but only hurts susceptible creatures */
 		case GF_LIGHT_WEAK:
-		{
-			if (seen) obvious = TRUE;
-			if (seen) rf_on(l_ptr->flags, RF_HURT_LIGHT);
-
-			/* Hurt by light */
-			if (rf_has(m_ptr->race->flags, RF_HURT_LIGHT))
-			{
-				/* Special effect */
-				m_note = MON_MSG_CRINGE_LIGHT;
-				note_dies = MON_MSG_SHRIVEL_LIGHT;
-			}
-
-			/* Normally no damage */
-			else
-			{
-				/* No damage */
-				dam = 0;
-			}
-
+			project_monster_handler_LIGHT_WEAK(&context);
 			break;
-		}
 
-
-		/* Light -- opposite of Dark */
 		case GF_LIGHT:
-		{
-			if (seen) obvious = TRUE;
-			if (seen) rf_on(l_ptr->flags, RF_HURT_LIGHT);
-
-			if (rsf_has(m_ptr->race->spell_flags, RSF_BR_LIGHT))
-			{
-				/* Learn about breathers through resistance */
-				if (seen) rsf_on(l_ptr->spell_flags, RSF_BR_LIGHT);
-
-				m_note = MON_MSG_RESIST;
-				dam *= 2; dam /= (randint1(6)+6);
-			}
-			else if (rf_has(m_ptr->race->flags, RF_HURT_LIGHT))
-			{
-				m_note = MON_MSG_CRINGE_LIGHT;
-				note_dies = MON_MSG_SHRIVEL_LIGHT;
-				dam *= 2;
-			}
+			project_monster_handler_LIGHT(&context);
 			break;
-		}
 
-
-		/* Dark -- opposite of Light */
 		case GF_DARK:
-		{
-			if (seen) obvious = TRUE;
-			if (rsf_has(m_ptr->race->spell_flags, RSF_BR_DARK))
-			{
-				/* Learn about breathers through resistance */
-				if (seen) rsf_on(l_ptr->spell_flags, RSF_BR_DARK);
-
-				m_note = MON_MSG_RESIST;
-				dam *= 2; dam /= (randint1(6)+6);
-			}
+			project_monster_handler_DARK(&context);
 			break;
-		}
 
-
-		/* Stone to Mud */
 		case GF_KILL_WALL:
-		{
-			if (seen) obvious = TRUE;
-			if (seen) rf_on(l_ptr->flags, RF_HURT_ROCK);
-
-			/* Hurt by rock remover */
-			if (rf_has(m_ptr->race->flags, RF_HURT_ROCK))
-			{
-				/* Cute little message */
-				m_note = MON_MSG_LOSE_SKIN;
-				note_dies = MON_MSG_DISSOLVE;
-			}
-
-			/* Usually, ignore the effects */
-			else
-			{
-				/* No damage */
-				dam = 0;
-			}
-
+			project_monster_handler_KILL_WALL(&context);
 			break;
-		}
 
-
-		/* Teleport undead (Use "dam" as "power") */
 		case GF_AWAY_UNDEAD:
-		{
-			if (seen) rf_on(l_ptr->flags, RF_UNDEAD);
-
-			/* Only affect undead */
-			if (rf_has(m_ptr->race->flags, RF_UNDEAD))
-			{
-				if (seen) obvious = TRUE;
-				do_dist = dam;
-			}
-
-			/* Others ignore */
-			else
-			{
-				/* Irrelevant */
-				skipped = TRUE;
-			}
-
-			/* No "real" damage */
-			dam = 0;
+			project_monster_handler_AWAY_UNDEAD(&context);
 			break;
-		}
 
-
-		/* Teleport evil (Use "dam" as "power") */
 		case GF_AWAY_EVIL:
-		{
-			if (seen) rf_on(l_ptr->flags, RF_EVIL);
-
-			/* Only affect evil */
-			if (rf_has(m_ptr->race->flags, RF_EVIL))
-			{
-				if (seen) obvious = TRUE;
-				do_dist = dam;
-			}
-
-			/* Others ignore */
-			else
-			{
-				/* Irrelevant */
-				skipped = TRUE;
-			}
-
-			/* No "real" damage */
-			dam = 0;
+			project_monster_handler_AWAY_EVIL(&context);
 			break;
-		}
 
-
-		/* Teleport monster (Use "dam" as "power") */
 		case GF_AWAY_ALL:
-		{
-			/* Obvious */
-			if (seen) obvious = TRUE;
-
-			/* Prepare to teleport */
-			do_dist = dam;
-
-			/* No "real" damage */
-			dam = 0;
+			project_monster_handler_AWAY_ALL(&context);
 			break;
-		}
 
-
-		/* Turn undead (Use "dam" as "power") */
 		case GF_TURN_UNDEAD:
-		{
-			/* Only affect undead */
-			if (rf_has(m_ptr->race->flags, RF_UNDEAD))
-			{
-				/* Obvious */
-				if (seen) obvious = TRUE;
-
-				/* Apply some fear */
-				do_fear = dam;
-			}
-			else
-			{
-				skipped = TRUE;
-			}
-
-			/* No "real" damage */
-			dam = 0;
+			project_monster_handler_TURN_UNDEAD(&context);
 			break;
-		}
 
-
-		/* Turn evil (Use "dam" as "power") */
 		case GF_TURN_EVIL:
-		{
-			/* Only affect evil */
-			if (rf_has(m_ptr->race->flags, RF_EVIL))
-			{
-				/* Obvious */
-				if (seen) obvious = TRUE;
-
-				/* Apply some fear */
-				do_fear = dam;
-			}
-			else
-			{
-				skipped = TRUE;
-			}
-
-			/* No "real" damage */
-			dam = 0;
+			project_monster_handler_TURN_EVIL(&context);
 			break;
-		}
 
-
-		/* Turn monster (Use "dam" as "power") */
 		case GF_TURN_ALL:
-		{
-			/* Get frightened later */
-			do_fear = dam;
-
-			/* No "real" damage */
-			dam = 0;
+			project_monster_handler_TURN_ALL(&context);
 			break;
-		}
 
-
-		/* Dispel undead */
 		case GF_DISP_UNDEAD:
-		{
-			if (seen) rf_on(l_ptr->flags, RF_UNDEAD);
-
-			/* Only affect undead */
-			if (rf_has(m_ptr->race->flags, RF_UNDEAD))
-			{
-				/* Obvious */
-				if (seen) obvious = TRUE;
-
-				/* Message */
-				m_note = MON_MSG_SHUDDER;
-				note_dies = MON_MSG_DISSOLVE;
-			}
-
-			/* Others ignore */
-			else
-			{
-				/* Irrelevant */
-				skipped = TRUE;
-
-				/* No damage */
-				dam = 0;
-			}
-
+			project_monster_handler_DISP_UNDEAD(&context);
 			break;
-		}
 
-
-		/* Dispel evil */
 		case GF_DISP_EVIL:
-		{
-			if (seen) rf_on(l_ptr->flags, RF_EVIL);
-
-			/* Only affect evil */
-			if (rf_has(m_ptr->race->flags, RF_EVIL))
-			{
-				/* Obvious */
-				if (seen) obvious = TRUE;
-
-				/* Message */
-				m_note = MON_MSG_SHUDDER;
-				note_dies = MON_MSG_DISSOLVE;
-			}
-
-			/* Others ignore */
-			else
-			{
-				/* Irrelevant */
-				skipped = TRUE;
-
-				/* No damage */
-				dam = 0;
-			}
-
+			project_monster_handler_DISP_EVIL(&context);
 			break;
-		}
 
-
-		/* Dispel monster */
 		case GF_DISP_ALL:
-		{
-			/* Obvious */
-			if (seen) obvious = TRUE;
-
-			/* Message */
-			m_note = MON_MSG_SHUDDER;
-			note_dies = MON_MSG_DISSOLVE;
-
+			project_monster_handler_DISP_ALL(&context);
 			break;
-		}
-
 
 		/* Default */
 		default:
@@ -2567,6 +2786,21 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 			break;
 		}
 	}
+
+	dam = context.dam;
+	obvious = context.obvious;
+	skipped = context.skipped;
+	flag = context.flag;
+	do_poly = context.do_poly;
+	do_dist = context.teleport_distance;
+	do_conf = context.conf_amount;
+	do_stun = context.stun_amount;
+	do_slow = context.slow_amount;
+	do_haste = context.haste_amount;
+	do_sleep = context.sleep_amount;
+	do_fear = context.fear_amount;
+	m_note = context.m_note;
+	note_dies = context.note_dies;
 
 
 	/* Absolutely no effect */
@@ -2788,6 +3022,23 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 	return (obvious);
 }
 
+#pragma mark player handlers
+
+typedef struct project_player_handler_context_s {
+	const int who;
+	const int r;
+	const int y;
+	const int x;
+	const int dam;
+	const int type;
+	bool obvious;
+} project_player_handler_context_t;
+
+static void project_player_handler_GRAVITY(project_player_handler_context_t *context)
+{
+	msg("Gravity warps around you.");
+}
+
 /*
  * Helper function for "project()" below.
  *
@@ -2805,8 +3056,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
  * Actually, for historical reasons, we just assume that the effects were
  * obvious.  XXX XXX XXX
  */
-static bool project_p(int who, int r, int y, int x, int dam, int typ,
-	bool obvious)
+static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvious)
 {
 	bool blind, seen;
 
@@ -2818,6 +3068,16 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ,
 
 	/* Monster name (for damage) */
 	char killer[80];
+
+	project_player_handler_context_t context = {
+		who,
+		r,
+		y,
+		x,
+		dam,
+		typ,
+		obvious,
+	};
 
 	/* No player here */
 	if (!(cave->m_idx[y][x] < 0)) return (FALSE);
@@ -2845,7 +3105,9 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ,
 		msg("You are hit by %s!", gf_ptr->desc);
 
 	if (typ == GF_GRAVITY)
-		msg("Gravity warps around you.");
+		project_player_handler_GRAVITY(&context);
+
+	obvious = context.obvious;
 
 	/* Adjust damage for resistance, immunity or vulnerability, and apply it */
 	dam = adjust_dam(p_ptr, typ, dam, RANDOMISE, check_for_resist(p_ptr, typ,
