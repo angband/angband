@@ -2324,7 +2324,215 @@ static void project_monster_handler_DISP_ALL(project_monster_handler_context_t *
 	context->die_msg = MON_MSG_DISSOLVE;
 }
 
+/**
+ * Deal damage to a monster from another monster.
+ *
+ * This is a helper for project_m(). It is very similar to mon_take_hit(), but eliminates the player-oriented
+ * stuff of that function. It isn't a type handler, but we take a handler context since that has a lot of
+ * what we need.
+ *
+ * \param context is the project_m context.
+ * \param m_name is the formatted monster name.
+ * \param m_idx is the cave monster index.
+ * \return TRUE if the monster died, FALSE if it is still alive.
+ */
+static bool project_m_monster_attack(project_monster_handler_context_t *context, const char *m_name, int m_idx)
+{
+	bool mon_died = FALSE;
+	bool seen = context->seen;
+	int dam = context->dam;
+	enum mon_messages die_msg = context->die_msg;
+	enum mon_messages hurt_msg = context->hurt_msg;
+	monster_type *m_ptr = context->m_ptr;
 
+	/* "Unique" monsters can only be "killed" by the player */
+	if (rf_has(m_ptr->race->flags, RF_UNIQUE)) {
+		/* Reduce monster hp to zero, but don't kill it. */
+		if (dam > m_ptr->hp) dam = m_ptr->hp;
+	}
+
+	/* Redraw (later) if needed */
+	if (p_ptr->health_who == m_ptr) p_ptr->redraw |= (PR_HEALTH);
+
+	/* Wake the monster up */
+	mon_clear_timed(m_ptr, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, FALSE);
+
+	/* Hurt the monster */
+	m_ptr->hp -= dam;
+
+	/* Dead monster */
+	if (m_ptr->hp < 0)
+	{
+		/* Give detailed messages if destroyed */
+		if (!seen) die_msg = MON_MSG_MORIA_DEATH;
+
+		/* dump the note*/
+		add_monster_message(m_name, m_ptr, die_msg, FALSE);
+
+		/* Generate treasure, etc */
+		monster_death(m_ptr, FALSE);
+
+		/* Delete the monster */
+		delete_monster_idx(m_idx);
+
+		mon_died = TRUE;
+	}
+
+	/* Damaged monster */
+	else if (!is_mimicking(m_ptr))
+	{
+		/* Give detailed messages if visible or destroyed */
+		if ((hurt_msg != MON_MSG_NONE) && seen)
+		{
+			add_monster_message(m_name, m_ptr, hurt_msg, FALSE);
+		}
+
+		/* Hack -- Pain message */
+		else if (dam > 0) message_pain(m_ptr, dam);
+	}
+
+	return mon_died;
+}
+
+/**
+ * Deal damage to a monster from the player
+ *
+ * This is a helper for project_m(). It isn't a type handler, but we take a handler context since that
+ * has a lot of what we need.
+ *
+ * \param context is the project_m context.
+ * \param m_name is the formatted monster name.
+ * \return TRUE if the monster died, FALSE if it is still alive.
+ */
+static bool project_m_player_attack(project_monster_handler_context_t *context, const char *m_name)
+{
+	bool fear = FALSE;
+	bool mon_died = FALSE;
+	bool seen = context->seen;
+	int dam = context->dam;
+	enum mon_messages die_msg = context->die_msg;
+	enum mon_messages hurt_msg = context->hurt_msg;
+	monster_type *m_ptr = context->m_ptr;
+
+	/*
+	 * The monster is going to be killed, so display a specific death message before mon_take_hit() displays
+	 * its own message that the player has killed/destroyed the monster. If the monster is not visible to
+	 * the player, use a generic message.
+	 */
+	if (dam > m_ptr->hp) {
+		if (!seen) die_msg = MON_MSG_MORIA_DEATH;
+		add_monster_message(m_name, m_ptr, die_msg, FALSE);
+	}
+
+	mon_died = mon_take_hit(m_ptr, dam, &fear, "");
+
+	/*
+	 * If the monster didn't die, provide additional messages about how it was hurt/damaged. If a specific
+	 * message isn't provided, display a message based on the amount of damage dealt. Also display a message
+	 * if the hit caused the monster to flee.
+	 */
+	if (!mon_died) {
+		if (seen && hurt_msg != MON_MSG_NONE)
+			add_monster_message(m_name, m_ptr, hurt_msg, FALSE);
+		else if (dam > 0)
+			message_pain(m_ptr, dam);
+
+		if (seen && fear)
+			add_monster_message(m_name, m_ptr, MON_MSG_FLEE_IN_TERROR, TRUE);
+	}
+
+	return mon_died;
+}
+
+/**
+ * Apply side effects from an attack onto a monster.
+ *
+ * This is a helper for project_m(). It isn't a type handler, but we take a handler context since that
+ * has a lot of what we need.
+ *
+ * \param context is the project_m context.
+ * \param m_name is the formatted monster name.
+ * \param m_idx is the cave monster index.
+ */
+static void project_m_apply_side_effects(project_monster_handler_context_t *context, const char *m_name, int m_idx)
+{
+	int typ = context->type;
+	monster_type *m_ptr = context->m_ptr;
+
+	/*
+	 * Handle side effects of an attack. First we check for polymorphing since it may not make sense to
+	 * apply status effects to a changed monster. Right now, teleporting is also separate, but it could
+	 * make sense in the future to change it so that we can apply other effects AND teleport the monster.
+	 */
+	if (context->do_poly) {
+		enum mon_messages hurt_msg = MON_MSG_UNAFFECTED;
+		const int x = context->x;
+		const int y = context->y;
+		int savelvl = typ == GF_OLD_POLY ? 11 : randint1(90);
+		monster_race *old;
+		monster_race *new;
+
+		/* Uniques cannot be polymorphed */
+		if (rf_has(m_ptr->race->flags, RF_UNIQUE)) {
+			add_monster_message(m_name, m_ptr, hurt_msg, FALSE);
+			return;
+		}
+
+		if (context->seen) context->obvious = TRUE;
+
+		/* Saving throws are allowed */
+		if (m_ptr->race->level > savelvl) {
+			if (typ == GF_OLD_POLY) hurt_msg = MON_MSG_MAINTAIN_SHAPE;
+			add_monster_message(m_name, m_ptr, hurt_msg, FALSE);
+			return;
+		}
+
+		old = m_ptr->race;
+		new = poly_race(old);
+
+		/* Handle polymorph */
+		if (new != old) {
+			/* Report the polymorph before changing the monster */
+			hurt_msg = MON_MSG_CHANGE;
+			add_monster_message(m_name, m_ptr, hurt_msg, FALSE);
+
+			/* Delete the old monster, and return a new one */
+			delete_monster_idx(m_idx);
+			place_new_monster(cave, y, x, new, FALSE, FALSE, ORIGIN_DROP_POLY);
+			context->m_ptr = square_monster(cave, y, x);
+		}
+		else {
+			add_monster_message(m_name, m_ptr, hurt_msg, FALSE);
+		}
+	}
+	else if (context->teleport_distance > 0) {
+		teleport_away(m_ptr, context->teleport_distance);
+	}
+	else {
+		int i;
+
+		/* Reduce stun if the monster is already stunned. */
+		if (context->mon_timed[MON_TMD_STUN] > 0 && m_ptr->m_timed[MON_TMD_STUN] > 0) {
+			context->mon_timed[MON_TMD_STUN] /= 2;
+			context->mon_timed[MON_TMD_STUN] += 1;
+		}
+
+		/* Reroll confusion based on the provided amount. */
+		if (context->mon_timed[MON_TMD_CONF] > 0) {
+			context->mon_timed[MON_TMD_CONF] = damroll(3, (context->mon_timed[MON_TMD_CONF] / 2)) + 1;
+		}
+
+		/* If sleep is caused by the player, base the time on the player's level. */
+		if (context->who == 0 && context->mon_timed[MON_TMD_SLEEP] > 0) {
+			context->mon_timed[MON_TMD_SLEEP] = 500 + p_ptr->lev * 10;
+		}
+
+		for (i = 0; i < MON_TMD_MAX; i++) {
+			if (context->mon_timed[i] > 0)
+				context->obvious = mon_inc_timed(m_ptr, i, context->mon_timed[i], context->flag | MON_TMD_FLG_NOTIFY, context->id);
+		}
+	}
+}
 
 
 /*
@@ -2384,14 +2592,9 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 {
 	monster_type *m_ptr;
 	monster_lore *l_ptr;
-	u16b flag = 0;
 
 	/* Is the monster "seen"? */
 	bool seen = FALSE;
-
-	/* Were the effects "irrelevant"? */
-	bool skipped = FALSE;
-
 	bool mon_died = FALSE;
 
 	/* Are we trying to id the source of this effect? */
@@ -2402,10 +2605,6 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 	char m_poss[80];
 
 	int m_idx = cave->m_idx[y][x];
-
-	/* Messages for when the monster is hurt by an effect or killed by an effect. */
-	enum mon_messages hurt_msg = MON_MSG_NONE;
-	enum mon_messages die_msg = MON_MSG_DIE;
 
 	project_monster_handler_context_t context = {
 		who,
@@ -2419,26 +2618,23 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 		NULL, /* m_ptr */
 		NULL, /* l_ptr */
 		obvious,
-		skipped,
-		flag,
+		FALSE, /* skipped */
+		0, /* flag */
 		FALSE, /* do_poly */
 		0, /* teleport_distance */
-		hurt_msg,
-		die_msg,
+		MON_MSG_NONE, /* hurt_msg */
+		MON_MSG_DIE, /* die_msg */
 		{0, 0, 0, 0, 0, 0},
 	};
 
-
 	/* Walls protect monsters */
 	if (!square_ispassable(cave, y,x)) return (FALSE);
-
 
 	/* No monster here */
 	if (!(m_idx > 0)) return (FALSE);
 
 	/* Never affect projector */
 	if (m_idx == who) return (FALSE);
-
 
 	/* Obtain monster info */
 	m_ptr = cave_monster(cave, m_idx);
@@ -2451,22 +2647,17 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 		context.seen = seen;
 	}
 
-
 	/* Reduce damage by distance */
 	dam = (dam + r) / (r + 1);
 	context.dam = dam;
-
 
 	/* Get monster name and possessive here, in case of polymorphing. */
 	monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_DEFAULT);
 	monster_desc(m_poss, sizeof(m_poss), m_ptr, MDESC_PRO_VIS | MDESC_POSS);
 
-
 	/* Some monsters get "destroyed" */
-	if (monster_is_unusual(m_ptr->race)) {
-		die_msg = MON_MSG_DESTROYED;
-		context.die_msg = die_msg;
-	}
+	if (monster_is_unusual(m_ptr->race))
+		context.die_msg = MON_MSG_DESTROYED;
 
 	/* Analyze the damage type */
 	switch (typ) {
@@ -2638,7 +2829,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 			break;
 
 		default:
-			skipped = TRUE;
+			context.skipped = TRUE;
 			dam = 0;
 			break;
 	}
@@ -2700,203 +2891,51 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 
 	dam = context.dam;
 	obvious = context.obvious;
-	skipped = context.skipped;
-	flag = context.flag;
-	hurt_msg = context.hurt_msg;
-	die_msg = context.die_msg;
-
 
 	/* Absolutely no effect */
-	if (skipped) return (FALSE);
+	if (context.skipped) return (FALSE);
 
+	/* Extract method of death, if the monster will be killed. */
+	if (dam > m_ptr->hp)
+		context.hurt_msg = context.die_msg;
 
-	/* "Unique" monsters can only be "killed" by the player */
-	if (rf_has(m_ptr->race->flags, RF_UNIQUE) && who > 0) {
-		/* Reduce monster hp to zero, but don't kill it. */
-		if (dam > m_ptr->hp) dam = m_ptr->hp;
-	}
+	/* Apply damage to the monster, based on who did the damage. */
+	if (who > 0)
+		mon_died = project_m_monster_attack(&context, m_name, m_idx);
+	else
+		mon_died = project_m_player_attack(&context, m_name);
 
+	if (!mon_died)
+		project_m_apply_side_effects(&context, m_name, m_idx);
 
-	/* Handle monster death, polymorphing, and teleportation first. If none of those happen, apply status effects. */
-	if (dam > m_ptr->hp) {
-		/* Extract method of death */
-		hurt_msg = die_msg;
-	}
-	else if (context.do_poly) {
-		/* Default -- assume no polymorph */
-		hurt_msg = MON_MSG_UNAFFECTED;
+	/* Update locals again, since the project_m_* functions can change some values. */
+	m_ptr = context.m_ptr;
+	obvious = context.obvious;
 
-		/* Uniques cannot be polymorphed */
-		if (!rf_has(m_ptr->race->flags, RF_UNIQUE)) {
-
-			int savelvl = typ == GF_OLD_POLY ? 11 : randint1(90);
-
-			if (seen) obvious = TRUE;
-
-			/* Saving throws are allowed */
-			if (m_ptr->race->level > savelvl) {
-				if (typ == GF_OLD_POLY) hurt_msg = MON_MSG_MAINTAIN_SHAPE;
-			} else {
-				monster_race *old = m_ptr->race;
-				monster_race *new = poly_race(old);
-
-				/* Handle polymorph */
-				if (new != old) {
-					/* Report the polymorph before changing the monster */
-					hurt_msg = MON_MSG_CHANGE;
-					add_monster_message(m_name, m_ptr, hurt_msg, FALSE);
-					hurt_msg = MON_MSG_NONE;
-
-					/* Reset damage */
-					dam = 0;
-
-					/* Delete the old monster, and return a new one */
-					delete_monster_idx(m_idx);
-					place_new_monster(cave, y, x, new, FALSE, FALSE, ORIGIN_DROP_POLY);
-					m_ptr = square_monster(cave, y, x);
-				}
-			}
-		}
-	}
-	else if (context.teleport_distance > 0) {
-		teleport_away(m_ptr, context.teleport_distance);
-
-		/* Hack -- get new location */
-		y = m_ptr->fy;
-		x = m_ptr->fx;
-	}
-	else {
-		/* Handle stunning, confusion, slowing, hasting and fear, adjusting as needed. */
-		int i;
-
-		if (context.mon_timed[MON_TMD_STUN] > 0 && m_ptr->m_timed[MON_TMD_STUN] > 0) {
-			context.mon_timed[MON_TMD_STUN] /= 2;
-			context.mon_timed[MON_TMD_STUN] += 1;
-		}
-
-		if (context.mon_timed[MON_TMD_CONF] > 0) {
-			context.mon_timed[MON_TMD_CONF] = damroll(3, (context.mon_timed[MON_TMD_CONF] / 2)) + 1;
-		}
-
-		for (i = 0; i < MON_TMD_MAX; i++) {
-			/* Skip sleep since the monster will just be woken up again. */
-			if (i == MON_TMD_SLEEP)
-				continue;
-
-			if (context.mon_timed[i] > 0)
-				obvious = mon_inc_timed(m_ptr, i, context.mon_timed[i], flag | MON_TMD_FLG_NOTIFY, id);
-		}
-	}
-
-
-	/* Hack: Avoid a crash in case polymorph goes bad; this will certainly have weird side effects */
+	/* Verify this code XXX XXX XXX */
+	/* Check for NULL, since polymorph can occasionally return NULL. */
 	if (m_ptr != NULL) {
-		/* If another monster did the damage, hurt the monster by hand */
-		if (who > 0)
-		{
-			/* Redraw (later) if needed */
-			if (p_ptr->health_who == m_ptr) p_ptr->redraw |= (PR_HEALTH);
-
-			/* Wake the monster up */
-			mon_clear_timed(m_ptr, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, FALSE);
-
-			/* Hurt the monster */
-			m_ptr->hp -= dam;
-
-			/* Dead monster */
-			if (m_ptr->hp < 0)
-			{
-				/* Give detailed messages if destroyed */
-				if (!seen) die_msg = MON_MSG_MORIA_DEATH;
-
-				/* dump the note*/
-				add_monster_message(m_name, m_ptr, die_msg, FALSE);
-
-				/* Generate treasure, etc */
-				monster_death(m_ptr, FALSE);
-
-				/* Delete the monster */
-				delete_monster_idx(m_idx);
-
-				mon_died = TRUE;
-			}
-
-			/* Damaged monster */
-			else if (!is_mimicking(m_ptr))
-			{
-				/* Give detailed messages if visible or destroyed */
-				if ((hurt_msg != MON_MSG_NONE) && seen)
-				{
-					add_monster_message(m_name, m_ptr, hurt_msg, FALSE);
-				}
-
-				/* Hack -- Pain message */
-				else if (dam > 0) message_pain(m_ptr, dam);
-			}
-		}
-
-		/* If the player did it, give them experience, check fear */
-		else
-		{
-			bool fear = FALSE;
-
-			/* The monster is going to be killed */
-			if (dam > m_ptr->hp)
-			{
-				/* Adjust message for unseen monsters */
-				if (!seen) die_msg = MON_MSG_MORIA_DEATH;
-
-				/* Save the death notification for later */
-				add_monster_message(m_name, m_ptr, die_msg, FALSE);
-			}
-
-			if (context.mon_timed[MON_TMD_SLEEP])
-				obvious = mon_inc_timed(m_ptr, MON_TMD_SLEEP, 500 + p_ptr->lev * 10,
-										flag | MON_TMD_FLG_NOTIFY, id);
-			else if (mon_take_hit(m_ptr, dam, &fear, ""))
-				mon_died = TRUE;
-			else
-			{
-				/* Give detailed messages if visible or destroyed */
-				if ((hurt_msg != MON_MSG_NONE) && seen)
-				{
-					add_monster_message(m_name, m_ptr, hurt_msg, FALSE);
-				}
-
-				/* Hack -- Pain message */
-				else if (dam > 0)
-					message_pain(m_ptr, dam);
-
-				if (fear && m_ptr->ml)
-					add_monster_message(m_name, m_ptr, MON_MSG_FLEE_IN_TERROR, TRUE);
-			}
-		}
-
-		/* Verify this code XXX XXX XXX */
-
 		/* Update the monster */
 		if (!mon_died) update_mon(m_ptr, FALSE);
+
+		/* Hack -- get new location in case of teleport */
+		y = m_ptr->fy;
+		x = m_ptr->fx;
 
 		/* Redraw the monster grid */
 		square_light_spot(cave, y, x);
 
-
 		/* Update monster recall window */
-		if (p_ptr->monster_race == m_ptr->race)
-		{
+		if (p_ptr->monster_race == m_ptr->race) {
 			/* Window stuff */
 			p_ptr->redraw |= (PR_MONSTER);
 		}
-	} /* m_ptr != NULL */
-	else {
-		bell("Polymorph crash avoided! Please file a bug report (with a screen shot if possible).");
 	}
 
 	/* Track it */
 	project_m_n++;
 	project_m_x = x;
 	project_m_y = y;
-
 
 	/* Return "Anything seen?" */
 	return (obvious);
