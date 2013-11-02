@@ -32,1001 +32,6 @@
 #include "squelch.h"
 #include "trap.h"
 
-/**
- * Details of the different projectable attack types in the game.
- * See src/spells.h for structure
- */
-static const struct gf_type gf_table[] =
-{
-        #define GF(a, b, c, d, e, f, g, h, i, j, k, l, m) \
-			{ GF_##a, b, c, d, e, f, g, h, i, j, k, l, m },
-                #define RV(b, x, y, m) {b, x, y, m}
-        #include "list-gf-types.h"
-        #undef GF
-                #undef RV
-};
-
-
-/**
- * Check for resistance to a GF_ attack type. Return codes:
- * -1 = vulnerability
- * 0 = no resistance (or resistance plus vulnerability)
- * 1 = single resistance or opposition (or double resist plus vulnerability)
- * 2 = double resistance (including opposition)
- * 3 = total immunity
- *
- * \param type is the attack type we are trying to resist
- * \param flags is the set of flags we're checking
- * \param real is whether this is a real attack
- */
-int check_for_resist(struct player *p, int type, bitflag *flags, bool real)
-{
-	const struct gf_type *gf_ptr = &gf_table[type];
-	int result = 0;
-
-	if (gf_ptr->vuln && of_has(flags, gf_ptr->vuln))
-		result--;
-
-	/* If it's not a real attack, we don't check timed status explicitly */
-	if (real && gf_ptr->opp && p->timed[gf_ptr->opp])
-		result++;
-
-	if (gf_ptr->resist && of_has(flags, gf_ptr->resist))
-		result++;
-
-	if (gf_ptr->immunity && of_has(flags, gf_ptr->immunity))
-		result = 3;
-
-	/* Notice flags, if it's a real attack */
-	if (real && gf_ptr->immunity)
-		wieldeds_notice_flag(p, gf_ptr->immunity);
-	if (real && gf_ptr->resist)
-		wieldeds_notice_flag(p, gf_ptr->resist);
-	if (real && gf_ptr->vuln)
-		wieldeds_notice_flag(p, gf_ptr->vuln);
-
-	return result;
-}
-
-
-/**
- * Check whether the player is immune to side effects of a GF_ type.
- *
- * \param type is the GF_ type we are checking.
- */
-bool check_side_immune(int type)
-{
-	const struct gf_type *gf_ptr = &gf_table[type];
-
-	if (gf_ptr->immunity) {
-		if (gf_ptr->side_immune && check_state(p_ptr, gf_ptr->immunity,
-				p_ptr->state.flags))
-			return TRUE;
-	} else if ((gf_ptr->resist && of_has(p_ptr->state.flags, gf_ptr->resist)) ||
-				(gf_ptr->opp && p_ptr->timed[gf_ptr->opp]))
-		return TRUE;
-
-	return FALSE;
-}
-
-/**
- * Update monster knowledge of player resists.
- *
- * \param m is the monster who is learning
- * \param p is the player being learnt about
- * \param type is the GF_ type to which it's learning about the player's
- *    resistance (or lack of)
- */
-void monster_learn_resists(struct monster *m, struct player *p, int type)
-{
-	const struct gf_type *gf_ptr = &gf_table[type];
-
-	update_smart_learn(m, p, gf_ptr->resist);
-	update_smart_learn(m, p, gf_ptr->immunity);
-	update_smart_learn(m, p, gf_ptr->vuln);
-
-	return;
-}
-
-/**
- * Strip the HATES_ flags out of a flagset for any IGNORE_ flags that are
- * present
- */
-void dedup_hates_flags(bitflag *f)
-{
-	size_t i;
-
-	for (i = 0; i < GF_MAX; i++) {
-		const struct gf_type *gf_ptr = &gf_table[i];
-		if (gf_ptr->obj_imm && of_has(f, gf_ptr->obj_imm) &&
-				gf_ptr->obj_hates && of_has(f, gf_ptr->obj_hates))
-			of_off(f, gf_ptr->obj_hates);
-	}
-}
-
-/*
- * Helper function -- return a "nearby" race for polymorphing
- *
- * Note that this function is one of the more "dangerous" ones...
- */
-static monster_race *poly_race(monster_race *race)
-{
-	int i, minlvl, maxlvl, goal;
-
-	assert(race && race->name);
-
-	/* Uniques never polymorph */
-	if (rf_has(race->flags, RF_UNIQUE)) return race;
-
-	/* Allowable range of "levels" for resulting monster */
-	goal = (p_ptr->depth + race->level) / 2 + 5;
-	minlvl = MIN(race->level - 10, (race->level * 3) / 4);
-	maxlvl = MAX(race->level + 10, (race->level * 5) / 4);
-
-	/* Small chance to allow something really strong */
-	if (one_in_(100)) maxlvl = 100;
-
-	/* Try to pick a new, non-unique race within our level range */
-	for (i = 0; i < 1000; i++) {
-		monster_race *new_race = get_mon_num(goal);
-
-		if (!new_race || new_race == race) continue;
-		if (rf_has(new_race->flags, RF_UNIQUE)) continue;
-		if (new_race->level < minlvl || new_race->level > maxlvl) continue;
-
-		/* Avoid force-depth monsters, since it might cause a crash in project_m() */
-		if (rf_has(new_race->flags, RF_FORCE_DEPTH) && p_ptr->depth < new_race->level) continue;
-
-		return new_race;
-	}
-
-	/* If we get here, we weren't able to find a new race. */
-	return race;
-}
-
-
-/*
- * Teleport a monster, normally up to "dis" grids away.
- *
- * Attempt to move the monster at least "dis/2" grids away.
- *
- * But allow variation to prevent infinite loops.
- */
-void teleport_away(struct monster *m_ptr, int dis)
-{
-	int ny = 0, nx = 0, oy, ox, d, i, min;
-
-	bool look = TRUE;
-
-
-	/* Paranoia */
-	if (!m_ptr->race) return;
-
-	/* Save the old location */
-	oy = m_ptr->fy;
-	ox = m_ptr->fx;
-
-	/* Minimum distance */
-	min = dis / 2;
-
-	/* Look until done */
-	while (look)
-	{
-		/* Verify max distance */
-		if (dis > 200) dis = 200;
-
-		/* Try several locations */
-		for (i = 0; i < 500; i++)
-		{
-			/* Pick a (possibly illegal) location */
-			while (1)
-			{
-				ny = rand_spread(oy, dis);
-				nx = rand_spread(ox, dis);
-				d = distance(oy, ox, ny, nx);
-				if ((d >= min) && (d <= dis)) break;
-			}
-
-			/* Ignore illegal locations */
-			if (!square_in_bounds_fully(cave, ny, nx)) continue;
-
-			/* Require "empty" floor space */
-			if (!square_isempty(cave, ny, nx)) continue;
-
-			/* Hack -- no teleport onto glyph of warding */
-			if (square_iswarded(cave, ny, nx)) continue;
-
-			/* No teleporting into vaults and such */
-			/* if (cave->info[ny][nx] & square_isvault(cave, ny, nx)) continue; */
-
-			/* This grid looks good */
-			look = FALSE;
-
-			/* Stop looking */
-			break;
-		}
-
-		/* Increase the maximum distance */
-		dis = dis * 2;
-
-		/* Decrease the minimum distance */
-		min = min / 2;
-	}
-
-	/* Sound */
-	sound(MSG_TPOTHER);
-
-	/* Swap the monsters */
-	monster_swap(oy, ox, ny, nx);
-}
-
-
-/*
- * Teleport the player to a location up to "dis" grids away.
- *
- * If no such spaces are readily available, the distance may increase.
- * Try very hard to move the player at least a quarter that distance.
- */
-void teleport_player(int dis)
-{
-	int py = p_ptr->py;
-	int px = p_ptr->px;
-
-	int d, i, min, y, x;
-
-	bool look = TRUE;
-
-
-	/* Initialize */
-	y = py;
-	x = px;
-
-	/* Minimum distance */
-	min = dis / 2;
-
-	/* Look until done */
-	while (look)
-	{
-		/* Verify max distance */
-		if (dis > 200) dis = 200;
-
-		/* Try several locations */
-		for (i = 0; i < 500; i++)
-		{
-			/* Pick a (possibly illegal) location */
-			while (1)
-			{
-				y = rand_spread(py, dis);
-				x = rand_spread(px, dis);
-				d = distance(py, px, y, x);
-				if ((d >= min) && (d <= dis)) break;
-			}
-
-			/* Ignore illegal locations */
-			if (!square_in_bounds_fully(cave, y, x)) continue;
-
-			/* Require "naked" floor space */
-			if (!square_isempty(cave, y, x)) continue;
-
-			/* No teleporting into vaults and such */
-			if (square_isvault(cave, y, x)) continue;
-
-			/* This grid looks good */
-			look = FALSE;
-
-			/* Stop looking */
-			break;
-		}
-
-		/* Increase the maximum distance */
-		dis = dis * 2;
-
-		/* Decrease the minimum distance */
-		min = min / 2;
-	}
-
-	/* Sound */
-	sound(MSG_TELEPORT);
-
-	/* Move player */
-	monster_swap(py, px, y, x);
-
-	/* Handle stuff XXX XXX XXX */
-	handle_stuff(p_ptr);
-}
-
-
-
-/*
- * Teleport player to a grid near the given location
- *
- * This function is slightly obsessive about correctness.
- * This function allows teleporting into vaults (!)
- */
-void teleport_player_to(int ny, int nx)
-{
-	int py = p_ptr->py;
-	int px = p_ptr->px;
-
-	int y, x;
-
-	int dis = 0, ctr = 0;
-
-	/* Initialize */
-	y = py;
-	x = px;
-
-	/* Find a usable location */
-	while (1)
-	{
-		/* Pick a nearby legal location */
-		while (1)
-		{
-			y = rand_spread(ny, dis);
-			x = rand_spread(nx, dis);
-			if (square_in_bounds_fully(cave, y, x)) break;
-		}
-
-		/* Accept "naked" floor grids */
-		if (square_isempty(cave, y, x)) break;
-
-		/* Occasionally advance the distance */
-		if (++ctr > (4 * dis * dis + 4 * dis + 1))
-		{
-			ctr = 0;
-			dis++;
-		}
-	}
-
-	/* Sound */
-	sound(MSG_TELEPORT);
-
-	/* Move player */
-	monster_swap(py, px, y, x);
-
-	/* Handle stuff XXX XXX XXX */
-	handle_stuff(p_ptr);
-}
-
-
-
-/*
- * Teleport the player one level up or down (random when legal)
- */
-void teleport_player_level(void)
-{
-	bool up = TRUE, down = TRUE;
-
-	/* No going up with force_descend or in the town */
-	if (OPT(birth_force_descend) || !p_ptr->depth)
-		up = FALSE;
-
-	/* No forcing player down to quest levels if they can't leave */
-	if (!up && is_quest(p_ptr->max_depth + 1))
-		down = FALSE;
-
-	/* Can't leave quest levels or go down deeper than the dungeon */
-	if (is_quest(p_ptr->depth) || (p_ptr->depth >= MAX_DEPTH-1))
-		down = FALSE;
-
-	/* Determine up/down if not already done */
-	if (up && down) {
-		if (randint0(100) < 50)
-			up = FALSE;
-		else
-			down = FALSE;
-	}
-
-	/* Now actually do the level change */
-	if (up) {
-		msgt(MSG_TPLEVEL, "You rise up through the ceiling.");
-		dungeon_change_level(p_ptr->depth - 1);
-	} else if (down) {
-		msgt(MSG_TPLEVEL, "You sink through the floor.");
-
-		if (OPT(birth_force_descend))
-			dungeon_change_level(p_ptr->max_depth + 1);
-		else
-			dungeon_change_level(p_ptr->depth + 1);
-	} else {
-		msg("Nothing happens.");
-	}
-}
-
-
-static const char *gf_name_list[] =
-{
-    #define GF(a, b, c, d, e, f, g, h, i, j, k, l, m) #a,
-    #include "list-gf-types.h"
-    #undef GF
-    NULL
-};
-
-int gf_name_to_idx(const char *name)
-{
-    int i;
-    for (i = 0; gf_name_list[i]; i++) {
-        if (!my_stricmp(name, gf_name_list[i]))
-            return i;
-    }
-
-    return -1;
-}
-
-const char *gf_idx_to_name(int type)
-{
-    assert(type >= 0);
-    assert(type < GF_MAX);
-
-    return gf_name_list[type];
-}
-
-
-/*
- * Return a color to use for the bolt/ball spells
- */
-static byte spell_color(int type)
-{
-	/* Analyze */
-	switch (type)
-	{
-		case GF_MISSILE:	return (TERM_VIOLET);
-		case GF_ACID:		return (TERM_SLATE);
-		case GF_ELEC:		return (TERM_BLUE);
-		case GF_FIRE:		return (TERM_RED);
-		case GF_COLD:		return (TERM_WHITE);
-		case GF_POIS:		return (TERM_GREEN);
-		case GF_HOLY_ORB:	return (TERM_L_DARK);
-		case GF_MANA:		return (TERM_L_DARK);
-		case GF_ARROW:		return (TERM_WHITE);
-		case GF_WATER:		return (TERM_SLATE);
-		case GF_NETHER:		return (TERM_L_GREEN);
-		case GF_CHAOS:		return (TERM_VIOLET);
-		case GF_DISEN:		return (TERM_VIOLET);
-		case GF_NEXUS:		return (TERM_L_RED);
-		case GF_CONFU:		return (TERM_L_UMBER);
-		case GF_SOUND:		return (TERM_YELLOW);
-		case GF_SHARD:		return (TERM_UMBER);
-		case GF_FORCE:		return (TERM_UMBER);
-		case GF_INERTIA:	return (TERM_L_WHITE);
-		case GF_GRAVITY:	return (TERM_L_WHITE);
-		case GF_TIME:		return (TERM_L_BLUE);
-		case GF_LIGHT_WEAK:	return (TERM_ORANGE);
-		case GF_LIGHT:		return (TERM_ORANGE);
-		case GF_DARK_WEAK:	return (TERM_L_DARK);
-		case GF_DARK:		return (TERM_L_DARK);
-		case GF_PLASMA:		return (TERM_RED);
-		case GF_METEOR:		return (TERM_RED);
-		case GF_ICE:		return (TERM_WHITE);
-	}
-
-	/* Standard "color" */
-	return (TERM_WHITE);
-}
-
-
-
-/*
- * Find the attr/char pair to use for a spell effect
- *
- * It is moving (or has moved) from (x,y) to (nx,ny).
- *
- * If the distance is not "one", we (may) return "*".
- */
-static void bolt_pict(int y, int x, int ny, int nx, int typ, byte *a, wchar_t *c)
-{
-	int motion;
-
-	/* Convert co-ordinates into motion */
-	if ((ny == y) && (nx == x))
-		motion = BOLT_NO_MOTION;
-	else if (nx == x)
-		motion = BOLT_0;
-	else if ((ny-y) == (x-nx))
-		motion = BOLT_45;
-	else if (ny == y)
-		motion = BOLT_90;
-	else if ((ny-y) == (nx-x))
-		motion = BOLT_135;
-	else
-		motion = BOLT_NO_MOTION;
-
-	/* Decide on output char */
-	if (use_graphics == GRAPHICS_NONE) {
-		/* ASCII is simple */
-		wchar_t chars[] = L"*|/-\\";
-
-		*c = chars[motion];
-		*a = spell_color(typ);
-	} else {
-		*a = gf_to_attr[typ][motion];
-		*c = gf_to_char[typ][motion];
-	}
-}
-
-
-
-
-/*
- * Decreases players hit points and sets death flag if necessary
- *
- * Invulnerability needs to be changed into a "shield" XXX XXX XXX
- *
- * Hack -- this function allows the user to save (or quit) the game
- * when he dies, since the "You die." message is shown before setting
- * the player to "dead".
- */
-void take_hit(struct player *p, int dam, const char *kb_str)
-{
-	int old_chp = p->chp;
-
-	int warning = (p->mhp * op_ptr->hitpoint_warn / 10);
-
-
-	/* Paranoia */
-	if (p->is_dead) return;
-
-
-	/* Disturb */
-	disturb(p, 1, 0);
-
-	/* Mega-Hack -- Apply "invulnerability" */
-	if (p->timed[TMD_INVULN] && (dam < 9000)) return;
-
-	/* Hurt the player */
-	p->chp -= dam;
-
-	/* Display the hitpoints */
-	p->redraw |= (PR_HP);
-
-	/* Dead player */
-	if (p->chp < 0)
-	{
-		/* Hack -- Note death */
-		msgt(MSG_DEATH, "You die.");
-		message_flush();
-
-		/* Note cause of death */
-		my_strcpy(p->died_from, kb_str, sizeof(p->died_from));
-
-		/* No longer a winner */
-		p->total_winner = FALSE;
-
-		/* Note death */
-		p->is_dead = TRUE;
-
-		/* Leaving */
-		p->leaving = TRUE;
-
-		/* Dead */
-		return;
-	}
-
-	/* Hitpoint warning */
-	if (p->chp < warning)
-	{
-		/* Hack -- bell on first notice */
-		if (old_chp > warning)
-		{
-			bell("Low hitpoint warning!");
-		}
-
-		/* Message */
-		msgt(MSG_HITPOINT_WARN, "*** LOW HITPOINT WARNING! ***");
-		message_flush();
-	}
-}
-
-
-/*
- * Destroys a type of item on a given percent chance.
- * The chance 'cperc' is in hundredths of a percent (1-in-10000)
- * Note that missiles are no longer necessarily all destroyed
- *
- * Returns number of items destroyed.
- */
-int inven_damage(struct player *p, int type, int cperc)
-{
-	const struct gf_type *gf_ptr = &gf_table[type];
-
-	int i, j, k, amt;
-
-	object_type *o_ptr;
-
-	char o_name[80];
-	
-	bool damage;
-
-	bitflag f[OF_SIZE];
-
-	/* Count the casualties */
-	k = 0;
-
-	/* Scan through the slots backwards */
-	for (i = 0; i < QUIVER_END; i++)
-	{
-		if (i >= INVEN_PACK && i < QUIVER_START) continue;
-
-		o_ptr = &p->inventory[i];
-
-		of_wipe(f);
-		object_flags(o_ptr, f);
-
-		/* Skip non-objects */
-		if (!o_ptr->kind) continue;
-
-		/* Hack -- for now, skip artifacts */
-		if (o_ptr->artifact) continue;
-
-		/* Give this item slot a shot at death if it is vulnerable */
-		if (of_has(f, gf_ptr->obj_hates) &&	!of_has(f, gf_ptr->obj_imm))
-		{
-			/* Chance to destroy this item */
-			int chance = cperc;
-
-			/* Track if it is damaged instead of destroyed */
-			damage = FALSE;
-
-			/** 
-			 * Analyze the type to see if we just damage it
-			 * - we also check for rods to reduce chance
-			 */
-			switch (o_ptr->tval)
-			{
-				/* Weapons */
-				case TV_BOW:
-				case TV_SWORD:
-				case TV_HAFTED:
-				case TV_POLEARM:
-				case TV_DIGGING:
-				{
-					/* Chance to damage it */
-					if (randint0(10000) < cperc)
-					{
-						/* Damage the item */
-						o_ptr->to_h--;
-						o_ptr->to_d--;
-
-						/* Damaged! */
-						damage = TRUE;
-					}
-					else continue;
-
-					break;
-				}
-
-				/* Wearable items */
-				case TV_HELM:
-				case TV_CROWN:
-				case TV_SHIELD:
-				case TV_BOOTS:
-				case TV_GLOVES:
-				case TV_CLOAK:
-				case TV_SOFT_ARMOR:
-				case TV_HARD_ARMOR:
-				case TV_DRAG_ARMOR:
-				{
-					/* Chance to damage it */
-					if (randint0(10000) < cperc)
-					{
-						/* Damage the item */
-						o_ptr->to_a--;
-
-						/* Damaged! */
-						damage = TRUE;
-					}
-					else continue;
-
-					break;
-				}
-				
-				/* Rods are tough */
-				case TV_ROD:
-				{
-					chance = (chance / 4);
-					
-					break;
-				}
-			}
-
-			/* Damage instead of destroy */
-			if (damage)
-			{
-				p->update |= (PU_BONUS);
-				p->redraw |= (PR_EQUIP);
-
-				/* Casualty count */
-				amt = o_ptr->number;
-			}
-
-			/* ... or count the casualties */
-			else for (amt = j = 0; j < o_ptr->number; ++j)
-			{
-				if (randint0(10000) < chance) amt++;
-			}
-
-			/* Some casualities */
-			if (amt)
-			{
-				/* Get a description */
-				object_desc(o_name, sizeof(o_name), o_ptr,
-					ODESC_BASE);
-
-				/* Message */
-				msgt(MSG_DESTROY, "%sour %s (%c) %s %s!",
-				           ((o_ptr->number > 1) ?
-				            ((amt == o_ptr->number) ? "All of y" :
-				             (amt > 1 ? "Some of y" : "One of y")) : "Y"),
-				           o_name, index_to_label(i),
-				           ((amt > 1) ? "were" : "was"),
-					   (damage ? "damaged" : "destroyed"));
-
-				/* Damage already done? */
-				if (damage) continue;
-
-				/* Reduce charges if some devices are destroyed */
-				reduce_charges(o_ptr, amt);
-
-				/* Destroy "amt" items */
-				inven_item_increase(i, -amt);
-				inven_item_optimize(i);
-
-				/* Count the casualties */
-				k += amt;
-			}
-		}
-	}
-
-	/* Return the casualty count */
-	return (k);
-}
-
-
-
-
-/*
- * Acid has hit the player, attempt to affect some armor.
- *
- * Note that the "base armor" of an object never changes.
- *
- * If any armor is damaged (or resists), the player takes less damage.
- */
-static int minus_ac(struct player *p)
-{
-	object_type *o_ptr = NULL;
-
-	bitflag f[OF_SIZE];
-
-	char o_name[80];
-
-	/* Avoid crash during monster power calculations */
-	if (!p->inventory) return FALSE;
-
-	/* Pick a (possibly empty) inventory slot */
-	switch (randint1(6))
-	{
-		case 1: o_ptr = &p->inventory[INVEN_BODY]; break;
-		case 2: o_ptr = &p->inventory[INVEN_ARM]; break;
-		case 3: o_ptr = &p->inventory[INVEN_OUTER]; break;
-		case 4: o_ptr = &p->inventory[INVEN_HANDS]; break;
-		case 5: o_ptr = &p->inventory[INVEN_HEAD]; break;
-		case 6: o_ptr = &p->inventory[INVEN_FEET]; break;
-		default: assert(0);
-	}
-
-	/* Nothing to damage */
-	if (!o_ptr->kind) return (FALSE);
-
-	/* No damage left to be done */
-	if (o_ptr->ac + o_ptr->to_a <= 0) return (FALSE);
-
-	/* Describe */
-	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
-
-	/* Extract the flags */
-	object_flags(o_ptr, f);
-
-	/* Object resists */
-	if (of_has(f, OF_IGNORE_ACID))
-	{
-		msg("Your %s is unaffected!", o_name);
-
-		return (TRUE);
-	}
-
-	/* Message */
-	msg("Your %s is damaged!", o_name);
-
-	/* Damage the item */
-	o_ptr->to_a--;
-
-	p->update |= PU_BONUS;
-	p->redraw |= (PR_EQUIP);
-
-	/* Item was damaged */
-	return (TRUE);
-}
-
-/**
- * Adjust damage according to resistance or vulnerability.
- *
- * \param type is the attack type we are checking.
- * \param dam is the unadjusted damage.
- * \param dam_aspect is the calc we want (min, avg, max, random).
- * \param resist is the degree of resistance (-1 = vuln, 3 = immune).
- */
-int adjust_dam(struct player *p, int type, int dam, aspect dam_aspect, int resist)
-{
-	const struct gf_type *gf_ptr = &gf_table[type];
-	int i, denom;
-
-	if (resist == 3) /* immune */
-		return 0;
-
-	/* Hack - acid damage is halved by armour, holy orb is halved */
-	if ((type == GF_ACID && minus_ac(p)) || type == GF_HOLY_ORB)
-		dam = (dam + 1) / 2;
-
-	if (resist == -1) /* vulnerable */
-		return (dam * 4 / 3);
-
-	/* Variable resists vary the denominator, so we need to invert the logic
-	 * of dam_aspect. (m_bonus is unused) */
-	switch (dam_aspect) {
-		case MINIMISE:
-			denom = randcalc(gf_ptr->denom, 0, MAXIMISE);
-			break;
-		case MAXIMISE:
-			denom = randcalc(gf_ptr->denom, 0, MINIMISE);
-			break;
-		case AVERAGE:
-		case EXTREMIFY:
-		case RANDOMISE:
-			denom = randcalc(gf_ptr->denom, 0, dam_aspect);
-			break;
-		default:
-			assert(0);
-	}
-
-	for (i = resist; i > 0; i--)
-		if (denom)
-			dam = dam * gf_ptr->num / denom;
-
-	return dam;
-}
-
-/*
- * Restore a stat.  Return TRUE only if this actually makes a difference.
- */
-bool res_stat(int stat)
-{
-	/* Restore if needed */
-	if (p_ptr->stat_cur[stat] != p_ptr->stat_max[stat])
-	{
-		/* Restore */
-		p_ptr->stat_cur[stat] = p_ptr->stat_max[stat];
-
-		/* Recalculate bonuses */
-		p_ptr->update |= (PU_BONUS);
-
-		/* Success */
-		return (TRUE);
-	}
-
-	/* Nothing to restore */
-	return (FALSE);
-}
-
-
-
-
-/*
- * Apply disenchantment to the player's stuff
- *
- * This function is also called from the "melee" code.
- *
- * The "mode" is currently unused.
- *
- * Return "TRUE" if the player notices anything.
- */
-bool apply_disenchant(int mode)
-{
-	int t = 0;
-
-	object_type *o_ptr;
-
-	char o_name[80];
-
-
-	/* Unused parameter */
-	(void)mode;
-
-	/* Pick a random slot */
-	switch (randint1(8))
-	{
-		case 1: t = INVEN_WIELD; break;
-		case 2: t = INVEN_BOW; break;
-		case 3: t = INVEN_BODY; break;
-		case 4: t = INVEN_OUTER; break;
-		case 5: t = INVEN_ARM; break;
-		case 6: t = INVEN_HEAD; break;
-		case 7: t = INVEN_HANDS; break;
-		case 8: t = INVEN_FEET; break;
-	}
-
-	/* Get the item */
-	o_ptr = &p_ptr->inventory[t];
-
-	/* No item, nothing happens */
-	if (!o_ptr->kind) return (FALSE);
-
-
-	/* Nothing to disenchant */
-	if ((o_ptr->to_h <= 0) && (o_ptr->to_d <= 0) && (o_ptr->to_a <= 0))
-	{
-		/* Nothing to notice */
-		return (FALSE);
-	}
-
-
-	/* Describe the object */
-	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
-
-
-	/* Artifacts have 60% chance to resist */
-	if (o_ptr->artifact && (randint0(100) < 60))
-	{
-		/* Message */
-		msg("Your %s (%c) resist%s disenchantment!",
-		           o_name, index_to_label(t),
-		           ((o_ptr->number != 1) ? "" : "s"));
-
-		/* Notice */
-		return (TRUE);
-	}
-
-	/* Apply disenchantment, depending on which kind of equipment */
-	if (t == INVEN_WIELD || t == INVEN_BOW)
-	{
-		/* Disenchant to-hit */
-		if (o_ptr->to_h > 0) o_ptr->to_h--;
-		if ((o_ptr->to_h > 5) && (randint0(100) < 20)) o_ptr->to_h--;
-
-		/* Disenchant to-dam */
-		if (o_ptr->to_d > 0) o_ptr->to_d--;
-		if ((o_ptr->to_d > 5) && (randint0(100) < 20)) o_ptr->to_d--;
-	}
-	else
-	{
-		/* Disenchant to-ac */
-		if (o_ptr->to_a > 0) o_ptr->to_a--;
-		if ((o_ptr->to_a > 5) && (randint0(100) < 20)) o_ptr->to_a--;
-	}
-
-	/* Message */
-	msg("Your %s (%c) %s disenchanted!",
-	           o_name, index_to_label(t),
-	           ((o_ptr->number != 1) ? "were" : "was"));
-
-	/* Recalculate bonuses */
-	p_ptr->update |= (PU_BONUS);
-
-	/* Window stuff */
-	p_ptr->redraw |= (PR_EQUIP);
-
-	/* Notice */
-	return (TRUE);
-}
-
-
-/*
- * Mega-Hack -- track "affected" monsters (see "project()" comments)
- */
-static int project_m_n;
-static int project_m_x;
-static int project_m_y;
-
-
 #pragma mark floor handlers
 
 typedef struct project_floor_handler_context_s {
@@ -1038,6 +43,7 @@ typedef struct project_floor_handler_context_s {
 	const int type;
 	bool obvious;
 } project_floor_handler_context_t;
+typedef void (*project_floor_handler_f)(project_floor_handler_context_t *);
 
 /* Destroy Traps (and Locks) */
 static void project_floor_handler_KILL_TRAP(project_floor_handler_context_t *context)
@@ -1140,7 +146,7 @@ static void project_floor_handler_KILL_WALL(project_floor_handler_context_t *con
 	if (square_iswall(cave, y, x) && !square_hasgoldvein(cave, y, x))
 	{
 		/* Message */
-		if (sqinfo_has(cave->info[y][x], SQUARE_MARK))
+		if (sqinfo_on(cave->info[y][x], SQUARE_MARK))
 		{
 			msg("The wall turns into mud!");
 			context->obvious = TRUE;
@@ -1157,7 +163,7 @@ static void project_floor_handler_KILL_WALL(project_floor_handler_context_t *con
 	else if (square_iswall(cave, y, x) && square_hasgoldvein(cave, y, x))
 	{
 		/* Message */
-		if (sqinfo_has(cave->info[y][x], SQUARE_MARK))
+		if (sqinfo_on(cave->info[y][x], SQUARE_MARK))
 		{
 			msg("The vein turns into mud!");
 			msg("You have found something!");
@@ -1178,7 +184,7 @@ static void project_floor_handler_KILL_WALL(project_floor_handler_context_t *con
 	else if (square_ismagma(cave, y, x) || square_isquartz(cave, y, x))
 	{
 		/* Message */
-		if (sqinfo_has(cave->info[y][x], SQUARE_MARK))
+		if (sqinfo_on(cave->info[y][x], SQUARE_MARK))
 		{
 			msg("The vein turns into mud!");
 			context->obvious = TRUE;
@@ -1195,7 +201,7 @@ static void project_floor_handler_KILL_WALL(project_floor_handler_context_t *con
 	else if (square_isrubble(cave, y, x))
 	{
 		/* Message */
-		if (sqinfo_has(cave->info[y][x], SQUARE_MARK))
+		if (sqinfo_on(cave->info[y][x], SQUARE_MARK))
 		{
 			msg("The rubble turns into mud!");
 			context->obvious = TRUE;
@@ -1222,7 +228,7 @@ static void project_floor_handler_KILL_WALL(project_floor_handler_context_t *con
 	else if (square_isdoor(cave, y, x))
 	{
 		/* Hack -- special message */
-		if (sqinfo_has(cave->info[y][x], SQUARE_MARK))
+		if (sqinfo_on(cave->info[y][x], SQUARE_MARK))
 		{
 			msg("The door turns into mud!");
 			context->obvious = TRUE;
@@ -1261,7 +267,7 @@ static void project_floor_handler_MAKE_DOOR(project_floor_handler_context_t *con
 	square_add_door(cave, y, x, TRUE);
 
 	/* Observe */
-	if (sqinfo_has(cave->info[y][x], SQUARE_MARK)) context->obvious = TRUE;
+	if (sqinfo_on(cave->info[y][x], SQUARE_MARK)) context->obvious = TRUE;
 
 	/* Update the visuals */
 	p_ptr->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
@@ -1331,91 +337,6 @@ static void project_floor_handler_DARK(project_floor_handler_context_t *context)
 	}
 }
 
-/*
- * We are called from "project()" to "damage" terrain features
- *
- * We are called both for "beam" effects and "ball" effects.
- *
- * The "r" parameter is the "distance from ground zero".
- *
- * Note that we determine if the player can "see" anything that happens
- * by taking into account: blindness, line-of-sight, and illumination.
- *
- * We return "TRUE" if the effect of the projection is "obvious".
- *
- * Hack -- We also "see" grids which are "memorized".
- *
- * Perhaps we should affect doors and/or walls.
- */
-static bool project_f(int who, int r, int y, int x, int dam, int typ, bool obvious)
-{
-#if 0 /* unused */
-	/* Reduce damage by distance */
-	dam = (dam + r) / (r + 1);
-#endif /* 0 */
-
-	project_floor_handler_context_t context = {
-		who,
-		r,
-		y,
-		x,
-		dam,
-		typ,
-		obvious,
-	};
-
-	switch (typ)
-	{
-		/* Ignore most effects */
-		case GF_ACID:
-		case GF_ELEC:
-		case GF_FIRE:
-		case GF_COLD:
-		case GF_PLASMA:
-		case GF_METEOR:
-		case GF_ICE:
-		case GF_SHARD:
-		case GF_FORCE:
-		case GF_SOUND:
-		case GF_MANA:
-		case GF_HOLY_ORB:
-			break;
-
-		case GF_KILL_TRAP:
-			project_floor_handler_KILL_TRAP(&context);
-			break;
-
-		case GF_KILL_DOOR:
-			project_floor_handler_KILL_DOOR(&context);
-			break;
-
-		case GF_KILL_WALL:
-			project_floor_handler_KILL_WALL(&context);
-			break;
-
-		case GF_MAKE_DOOR:
-			project_floor_handler_MAKE_DOOR(&context);
-			break;
-
-		case GF_MAKE_TRAP:
-			project_floor_handler_MAKE_TRAP(&context);
-			break;
-
-		case GF_LIGHT_WEAK:
-		case GF_LIGHT:
-			project_floor_handler_LIGHT(&context);
-			break;
-
-		case GF_DARK_WEAK:
-		case GF_DARK:
-			project_floor_handler_DARK(&context);
-			break;
-	}
-
-	/* Return "Anything seen?" */
-	return context.obvious;
-}
-
 #pragma mark object handlers
 
 typedef struct project_object_handler_context_s {
@@ -1432,6 +353,7 @@ typedef struct project_object_handler_context_s {
 	bool ignore;
 	const char *note_kill;
 } project_object_handler_context_t;
+typedef void (*project_object_handler_f)(project_object_handler_context_t *);
 
 /**
  * Project an effect onto an object.
@@ -1531,162 +453,6 @@ static void project_object_handler_chest(project_object_handler_context_t *conte
 	}
 }
 
-/*
- * We are called from "project()" to "damage" objects
- *
- * We are called both for "beam" effects and "ball" effects.
- *
- * Perhaps we should only SOMETIMES damage things on the ground.
- *
- * The "r" parameter is the "distance from ground zero".
- *
- * Note that we determine if the player can "see" anything that happens
- * by taking into account: blindness, line-of-sight, and illumination.
- *
- * Hack -- We also "see" objects which are "memorized".
- *
- * We return "TRUE" if the effect of the projection is "obvious".
- */
-static bool project_o(int who, int r, int y, int x, int dam, int typ, bool obvious)
-{
-	s16b this_o_idx, next_o_idx = 0;
-	bitflag f[OF_SIZE];
-
-#if 0 /* unused */
-	/* Reduce damage by distance */
-	dam = (dam + r) / (r + 1);
-#endif /* 0 */
-
-	/* Scan all objects in the grid */
-	for (this_o_idx = cave->o_idx[y][x]; this_o_idx; this_o_idx = next_o_idx)
-	{
-		object_type *o_ptr;
-		bool ignore = FALSE;
-		bool do_kill = FALSE;
-		const char *note_kill = NULL;
-		project_object_handler_context_t context = {
-			who,
-			r,
-			y,
-			x,
-			dam,
-			typ,
-			f,
-			NULL,
-			obvious,
-			do_kill,
-			ignore,
-			note_kill,
-		};
-
-		/* Get the object */
-		o_ptr = object_byid(this_o_idx);
-		context.o_ptr = o_ptr;
-
-		/* Get the next object */
-		next_o_idx = o_ptr->next_o_idx;
-
-		/* Extract the flags */
-		object_flags(o_ptr, f);
-
-		/* Analyze the type */
-		switch (typ)
-		{
-			case GF_ACID:
-				project_object_handler_ACID(&context);
-				break;
-
-			case GF_ELEC:
-				project_object_handler_ELEC(&context);
-				break;
-
-			case GF_FIRE:
-				project_object_handler_FIRE(&context);
-				break;
-
-			case GF_COLD:
-				project_object_handler_COLD(&context);
-				break;
-
-			case GF_PLASMA:
-				project_object_handler_PLASMA(&context);
-				break;
-
-			case GF_METEOR:
-				project_object_handler_METEOR(&context);
-				break;
-
-			case GF_ICE:
-			case GF_SHARD:
-			case GF_FORCE:
-			case GF_SOUND:
-				project_object_handler_shatter(&context);
-				break;
-
-			case GF_MANA:
-				project_object_handler_MANA(&context);
-				break;
-
-			case GF_HOLY_ORB:
-				project_object_handler_HOLY_ORB(&context);
-				break;
-
-			case GF_KILL_TRAP:
-			case GF_KILL_DOOR:
-				project_object_handler_chest(&context);
-				break;
-		}
-
-		obvious = context.obvious;
-		do_kill = context.do_kill;
-		ignore = context.ignore;
-		note_kill = context.note_kill;
-
-		/* Attempt to destroy the object */
-		if (do_kill)
-		{
-			char o_name[80];
-
-			/* Effect "observed" */
-			if (o_ptr->marked && !squelch_item_ok(o_ptr))
-			{
-				obvious = TRUE;
-				object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
-			}
-
-			/* Artifacts, and other objects, get to resist */
-			if (o_ptr->artifact || ignore)
-			{
-				/* Observe the resist */
-				if (o_ptr->marked && !squelch_item_ok(o_ptr))
-					msg("The %s %s unaffected!", o_name, VERB_AGREEMENT(o_ptr->number, "is", "are"));
-			}
-
-			/* Reveal mimics */
-			else if (o_ptr->mimicking_m_idx) {
-				become_aware(cave_monster(cave, o_ptr->mimicking_m_idx));
-			}
-
-			/* Kill it */
-			else
-			{
-				/* Describe if needed */
-				if (o_ptr->marked && note_kill && !squelch_item_ok(o_ptr))
-					msgt(MSG_DESTROY, "The %s %s!", o_name, note_kill);
-
-				/* Delete the object */
-				delete_object_idx(this_o_idx);
-
-				/* Redraw */
-				square_light_spot(cave, y, x);
-			}
-		}
-	}
-
-	/* Return "Anything seen?" */
-	return (obvious);
-}
-
 #pragma mark monster handlers
 
 typedef struct project_monster_handler_context_s {
@@ -1709,6 +475,7 @@ typedef struct project_monster_handler_context_s {
 	enum mon_messages die_msg;
 	int mon_timed[MON_TMD_MAX];
 } project_monster_handler_context_t;
+typedef void (*project_monster_handler_f)(project_monster_handler_context_t *);
 
 /**
  * Resist an attack if the monster has the given elemental flag.
@@ -2303,6 +1070,1190 @@ static void project_monster_handler_DISP_ALL(project_monster_handler_context_t *
 	context->die_msg = MON_MSG_DISSOLVE;
 }
 
+#pragma mark player handlers
+
+typedef struct project_player_handler_context_s {
+	const int who;
+	const int r;
+	const int y;
+	const int x;
+	const int dam;
+	const int type;
+	bool obvious;
+} project_player_handler_context_t;
+typedef void (*project_player_handler_f)(project_player_handler_context_t *);
+
+static void project_player_handler_GRAVITY(project_player_handler_context_t *context)
+{
+	msg("Gravity warps around you.");
+}
+
+#pragma mark other functions
+
+/**
+ * Structure for GF types and their resistances/immunities/vulnerabilities
+ */
+static const struct gf_type {
+	u16b name;			/* numerical index (GF_#) */
+	const char *desc;	/* text description (if blind) */
+	int resist;			/* object flag for resistance */
+	int num;			/* numerator for resistance */
+	random_value denom;	/* denominator for resistance */
+	bool force_obvious;	/* */
+	byte color;			/* */
+	int opp;			/* timed flag for temporary resistance ("opposition") */
+	int immunity;		/* object flag for total immunity */
+	bool side_immune;	/* whether immunity protects from ALL side effects */
+	int vuln;			/* object flag for vulnerability */
+	int mon_res;		/* monster flag for resistance */
+	int mon_vuln;		/* monster flag for vulnerability */
+	int obj_hates;		/* object flag for object vulnerability */
+	int obj_imm;		/* object flag for object immunity */
+	project_floor_handler_f floor_handler;
+	project_object_handler_f object_handler;
+	project_monster_handler_f monster_handler;
+	project_player_handler_f player_handler;
+} gf_table[] = {
+	#define GF(a, b, c, d, e, obv, col, f, g, h, i, j, k, l, m, fh, oh, mh, ph) { GF_##a, b, c, d, e, obv, col, f, g, h, i, j, k, l, m, fh, oh, mh, ph },
+	#define RV(b, x, y, m) {b, x, y, m}
+	#define FH(x) project_floor_handler_##x
+	#define OH(x) project_object_handler_##x
+	#define MH(x) project_monster_handler_##x
+	#define PH(x) project_player_handler_##x
+	#include "list-gf-types.h"
+	#undef GF
+	#undef RV
+	#undef FH
+	#undef OH
+	#undef MH
+	#undef PH
+};
+
+static const char *gf_name_list[] =
+{
+	#define GF(a, b, c, d, e, obv, col, f, g, h, i, j, k, l, m, fh, oh, mh, ph) #a,
+	#include "list-gf-types.h"
+	#undef GF
+    NULL
+};
+
+static project_floor_handler_f gf_floor_handler(int type)
+{
+	if (type < 0 || type >= GF_MAX)
+		return NULL;
+
+	return gf_table[type].floor_handler;
+}
+
+static project_object_handler_f gf_object_handler(int type)
+{
+	if (type < 0 || type >= GF_MAX)
+		return NULL;
+
+	return gf_table[type].object_handler;
+}
+
+static project_monster_handler_f gf_monster_handler(int type)
+{
+	if (type < 0 || type >= GF_MAX)
+		return NULL;
+
+	return gf_table[type].monster_handler;
+}
+
+static project_player_handler_f gf_player_handler(int type)
+{
+	if (type < 0 || type >= GF_MAX)
+		return NULL;
+
+	return gf_table[type].player_handler;
+}
+
+static bool gf_force_obvious(int type)
+{
+	if (type < 0 || type >= GF_MAX)
+		return FALSE;
+
+	return gf_table[type].force_obvious;
+}
+
+static byte gf_color(int type)
+{
+	if (type < 0 || type >= GF_MAX)
+		return TERM_WHITE;
+
+	return gf_table[type].color;
+}
+
+
+/**
+ * Check for resistance to a GF_ attack type. Return codes:
+ * -1 = vulnerability
+ * 0 = no resistance (or resistance plus vulnerability)
+ * 1 = single resistance or opposition (or double resist plus vulnerability)
+ * 2 = double resistance (including opposition)
+ * 3 = total immunity
+ *
+ * \param type is the attack type we are trying to resist
+ * \param flags is the set of flags we're checking
+ * \param real is whether this is a real attack
+ */
+int check_for_resist(struct player *p, int type, bitflag *flags, bool real)
+{
+	const struct gf_type *gf_ptr = &gf_table[type];
+	int result = 0;
+
+	if (gf_ptr->vuln && of_has(flags, gf_ptr->vuln))
+		result--;
+
+	/* If it's not a real attack, we don't check timed status explicitly */
+	if (real && gf_ptr->opp && p->timed[gf_ptr->opp])
+		result++;
+
+	if (gf_ptr->resist && of_has(flags, gf_ptr->resist))
+		result++;
+
+	if (gf_ptr->immunity && of_has(flags, gf_ptr->immunity))
+		result = 3;
+
+	/* Notice flags, if it's a real attack */
+	if (real && gf_ptr->immunity)
+		wieldeds_notice_flag(p, gf_ptr->immunity);
+	if (real && gf_ptr->resist)
+		wieldeds_notice_flag(p, gf_ptr->resist);
+	if (real && gf_ptr->vuln)
+		wieldeds_notice_flag(p, gf_ptr->vuln);
+
+	return result;
+}
+
+/**
+ * Check whether the player is immune to side effects of a GF_ type.
+ *
+ * \param type is the GF_ type we are checking.
+ */
+bool check_side_immune(int type)
+{
+	const struct gf_type *gf_ptr = &gf_table[type];
+
+	if (gf_ptr->immunity) {
+		if (gf_ptr->side_immune && check_state(p_ptr, gf_ptr->immunity,
+				p_ptr->state.flags))
+			return TRUE;
+	} else if ((gf_ptr->resist && of_has(p_ptr->state.flags, gf_ptr->resist)) ||
+				(gf_ptr->opp && p_ptr->timed[gf_ptr->opp]))
+		return TRUE;
+
+	return FALSE;
+}
+
+/**
+ * Update monster knowledge of player resists.
+ *
+ * \param m is the monster who is learning
+ * \param p is the player being learnt about
+ * \param type is the GF_ type to which it's learning about the player's
+ *    resistance (or lack of)
+ */
+void monster_learn_resists(struct monster *m, struct player *p, int type)
+{
+	const struct gf_type *gf_ptr = &gf_table[type];
+
+	update_smart_learn(m, p, gf_ptr->resist);
+	update_smart_learn(m, p, gf_ptr->immunity);
+	update_smart_learn(m, p, gf_ptr->vuln);
+
+	return;
+}
+
+/**
+ * Strip the HATES_ flags out of a flagset for any IGNORE_ flags that are
+ * present
+ */
+void dedup_hates_flags(bitflag *f)
+{
+	size_t i;
+
+	for (i = 0; i < GF_MAX; i++) {
+		const struct gf_type *gf_ptr = &gf_table[i];
+		if (gf_ptr->obj_imm && of_has(f, gf_ptr->obj_imm) &&
+				gf_ptr->obj_hates && of_has(f, gf_ptr->obj_hates))
+			of_off(f, gf_ptr->obj_hates);
+	}
+}
+
+/*
+ * Helper function -- return a "nearby" race for polymorphing
+ *
+ * Note that this function is one of the more "dangerous" ones...
+ */
+static monster_race *poly_race(monster_race *race)
+{
+	int i, minlvl, maxlvl, goal;
+
+	assert(race && race->name);
+
+	/* Uniques never polymorph */
+	if (rf_has(race->flags, RF_UNIQUE)) return race;
+
+	/* Allowable range of "levels" for resulting monster */
+	goal = (p_ptr->depth + race->level) / 2 + 5;
+	minlvl = MIN(race->level - 10, (race->level * 3) / 4);
+	maxlvl = MAX(race->level + 10, (race->level * 5) / 4);
+
+	/* Small chance to allow something really strong */
+	if (one_in_(100)) maxlvl = 100;
+
+	/* Try to pick a new, non-unique race within our level range */
+	for (i = 0; i < 1000; i++) {
+		monster_race *new_race = get_mon_num(goal);
+
+		if (!new_race || new_race == race) continue;
+		if (rf_has(new_race->flags, RF_UNIQUE)) continue;
+		if (new_race->level < minlvl || new_race->level > maxlvl) continue;
+
+		/* Avoid force-depth monsters, since it might cause a crash in project_m() */
+		if (rf_has(new_race->flags, RF_FORCE_DEPTH) && p_ptr->depth < new_race->level) continue;
+
+		return new_race;
+	}
+
+	/* If we get here, we weren't able to find a new race. */
+	return race;
+}
+
+/*
+ * Teleport a monster, normally up to "dis" grids away.
+ *
+ * Attempt to move the monster at least "dis/2" grids away.
+ *
+ * But allow variation to prevent infinite loops.
+ */
+void teleport_away(struct monster *m_ptr, int dis)
+{
+	int ny = 0, nx = 0, oy, ox, d, i, min;
+
+	bool look = TRUE;
+
+
+	/* Paranoia */
+	if (!m_ptr->race) return;
+
+	/* Save the old location */
+	oy = m_ptr->fy;
+	ox = m_ptr->fx;
+
+	/* Minimum distance */
+	min = dis / 2;
+
+	/* Look until done */
+	while (look)
+	{
+		/* Verify max distance */
+		if (dis > 200) dis = 200;
+
+		/* Try several locations */
+		for (i = 0; i < 500; i++)
+		{
+			/* Pick a (possibly illegal) location */
+			while (1)
+			{
+				ny = rand_spread(oy, dis);
+				nx = rand_spread(ox, dis);
+				d = distance(oy, ox, ny, nx);
+				if ((d >= min) && (d <= dis)) break;
+			}
+
+			/* Ignore illegal locations */
+			if (!square_in_bounds_fully(cave, ny, nx)) continue;
+
+			/* Require "empty" floor space */
+			if (!square_isempty(cave, ny, nx)) continue;
+
+			/* Hack -- no teleport onto glyph of warding */
+			if (square_iswarded(cave, ny, nx)) continue;
+
+			/* No teleporting into vaults and such */
+			/* if (cave->info[ny][nx] & square_isvault(cave, ny, nx)) continue; */
+
+			/* This grid looks good */
+			look = FALSE;
+
+			/* Stop looking */
+			break;
+		}
+
+		/* Increase the maximum distance */
+		dis = dis * 2;
+
+		/* Decrease the minimum distance */
+		min = min / 2;
+	}
+
+	/* Sound */
+	sound(MSG_TPOTHER);
+
+	/* Swap the monsters */
+	monster_swap(oy, ox, ny, nx);
+}
+
+/*
+ * Teleport the player to a location up to "dis" grids away.
+ *
+ * If no such spaces are readily available, the distance may increase.
+ * Try very hard to move the player at least a quarter that distance.
+ */
+void teleport_player(int dis)
+{
+	int py = p_ptr->py;
+	int px = p_ptr->px;
+
+	int d, i, min, y, x;
+
+	bool look = TRUE;
+
+
+	/* Initialize */
+	y = py;
+	x = px;
+
+	/* Minimum distance */
+	min = dis / 2;
+
+	/* Look until done */
+	while (look)
+	{
+		/* Verify max distance */
+		if (dis > 200) dis = 200;
+
+		/* Try several locations */
+		for (i = 0; i < 500; i++)
+		{
+			/* Pick a (possibly illegal) location */
+			while (1)
+			{
+				y = rand_spread(py, dis);
+				x = rand_spread(px, dis);
+				d = distance(py, px, y, x);
+				if ((d >= min) && (d <= dis)) break;
+			}
+
+			/* Ignore illegal locations */
+			if (!square_in_bounds_fully(cave, y, x)) continue;
+
+			/* Require "naked" floor space */
+			if (!square_isempty(cave, y, x)) continue;
+
+			/* No teleporting into vaults and such */
+			if (square_isvault(cave, y, x)) continue;
+
+			/* This grid looks good */
+			look = FALSE;
+
+			/* Stop looking */
+			break;
+		}
+
+		/* Increase the maximum distance */
+		dis = dis * 2;
+
+		/* Decrease the minimum distance */
+		min = min / 2;
+	}
+
+	/* Sound */
+	sound(MSG_TELEPORT);
+
+	/* Move player */
+	monster_swap(py, px, y, x);
+
+	/* Handle stuff XXX XXX XXX */
+	handle_stuff(p_ptr);
+}
+
+/*
+ * Teleport player to a grid near the given location
+ *
+ * This function is slightly obsessive about correctness.
+ * This function allows teleporting into vaults (!)
+ */
+void teleport_player_to(int ny, int nx)
+{
+	int py = p_ptr->py;
+	int px = p_ptr->px;
+
+	int y, x;
+
+	int dis = 0, ctr = 0;
+
+	/* Initialize */
+	y = py;
+	x = px;
+
+	/* Find a usable location */
+	while (1)
+	{
+		/* Pick a nearby legal location */
+		while (1)
+		{
+			y = rand_spread(ny, dis);
+			x = rand_spread(nx, dis);
+			if (square_in_bounds_fully(cave, y, x)) break;
+		}
+
+		/* Accept "naked" floor grids */
+		if (square_isempty(cave, y, x)) break;
+
+		/* Occasionally advance the distance */
+		if (++ctr > (4 * dis * dis + 4 * dis + 1))
+		{
+			ctr = 0;
+			dis++;
+		}
+	}
+
+	/* Sound */
+	sound(MSG_TELEPORT);
+
+	/* Move player */
+	monster_swap(py, px, y, x);
+
+	/* Handle stuff XXX XXX XXX */
+	handle_stuff(p_ptr);
+}
+
+/*
+ * Teleport the player one level up or down (random when legal)
+ */
+void teleport_player_level(void)
+{
+	bool up = TRUE, down = TRUE;
+
+	/* No going up with force_descend or in the town */
+	if (OPT(birth_force_descend) || !p_ptr->depth)
+		up = FALSE;
+
+	/* No forcing player down to quest levels if they can't leave */
+	if (!up && is_quest(p_ptr->max_depth + 1))
+		down = FALSE;
+
+	/* Can't leave quest levels or go down deeper than the dungeon */
+	if (is_quest(p_ptr->depth) || (p_ptr->depth >= MAX_DEPTH-1))
+		down = FALSE;
+
+	/* Determine up/down if not already done */
+	if (up && down) {
+		if (randint0(100) < 50)
+			up = FALSE;
+		else
+			down = FALSE;
+	}
+
+	/* Now actually do the level change */
+	if (up) {
+		msgt(MSG_TPLEVEL, "You rise up through the ceiling.");
+		dungeon_change_level(p_ptr->depth - 1);
+	} else if (down) {
+		msgt(MSG_TPLEVEL, "You sink through the floor.");
+
+		if (OPT(birth_force_descend))
+			dungeon_change_level(p_ptr->max_depth + 1);
+		else
+			dungeon_change_level(p_ptr->depth + 1);
+	} else {
+		msg("Nothing happens.");
+	}
+}
+
+int gf_name_to_idx(const char *name)
+{
+    int i;
+    for (i = 0; gf_name_list[i]; i++) {
+        if (!my_stricmp(name, gf_name_list[i]))
+            return i;
+    }
+
+    return -1;
+}
+
+const char *gf_idx_to_name(int type)
+{
+    assert(type >= 0);
+    assert(type < GF_MAX);
+
+    return gf_name_list[type];
+}
+
+/*
+ * Return a color to use for the bolt/ball spells
+ */
+static byte spell_color(int type)
+{
+	return gf_color(type);
+}
+
+/*
+ * Find the attr/char pair to use for a spell effect
+ *
+ * It is moving (or has moved) from (x,y) to (nx,ny).
+ *
+ * If the distance is not "one", we (may) return "*".
+ */
+static void bolt_pict(int y, int x, int ny, int nx, int typ, byte *a, wchar_t *c)
+{
+	int motion;
+
+	/* Convert co-ordinates into motion */
+	if ((ny == y) && (nx == x))
+		motion = BOLT_NO_MOTION;
+	else if (nx == x)
+		motion = BOLT_0;
+	else if ((ny-y) == (x-nx))
+		motion = BOLT_45;
+	else if (ny == y)
+		motion = BOLT_90;
+	else if ((ny-y) == (nx-x))
+		motion = BOLT_135;
+	else
+		motion = BOLT_NO_MOTION;
+
+	/* Decide on output char */
+	if (use_graphics == GRAPHICS_NONE) {
+		/* ASCII is simple */
+		wchar_t chars[] = L"*|/-\\";
+
+		*c = chars[motion];
+		*a = spell_color(typ);
+	} else {
+		*a = gf_to_attr[typ][motion];
+		*c = gf_to_char[typ][motion];
+	}
+}
+
+/*
+ * Decreases players hit points and sets death flag if necessary
+ *
+ * Invulnerability needs to be changed into a "shield" XXX XXX XXX
+ *
+ * Hack -- this function allows the user to save (or quit) the game
+ * when he dies, since the "You die." message is shown before setting
+ * the player to "dead".
+ */
+void take_hit(struct player *p, int dam, const char *kb_str)
+{
+	int old_chp = p->chp;
+
+	int warning = (p->mhp * op_ptr->hitpoint_warn / 10);
+
+
+	/* Paranoia */
+	if (p->is_dead) return;
+
+
+	/* Disturb */
+	disturb(p, 1, 0);
+
+	/* Mega-Hack -- Apply "invulnerability" */
+	if (p->timed[TMD_INVULN] && (dam < 9000)) return;
+
+	/* Hurt the player */
+	p->chp -= dam;
+
+	/* Display the hitpoints */
+	p->redraw |= (PR_HP);
+
+	/* Dead player */
+	if (p->chp < 0)
+	{
+		/* Hack -- Note death */
+		msgt(MSG_DEATH, "You die.");
+		message_flush();
+
+		/* Note cause of death */
+		my_strcpy(p->died_from, kb_str, sizeof(p->died_from));
+
+		/* No longer a winner */
+		p->total_winner = FALSE;
+
+		/* Note death */
+		p->is_dead = TRUE;
+
+		/* Leaving */
+		p->leaving = TRUE;
+
+		/* Dead */
+		return;
+	}
+
+	/* Hitpoint warning */
+	if (p->chp < warning)
+	{
+		/* Hack -- bell on first notice */
+		if (old_chp > warning)
+		{
+			bell("Low hitpoint warning!");
+		}
+
+		/* Message */
+		msgt(MSG_HITPOINT_WARN, "*** LOW HITPOINT WARNING! ***");
+		message_flush();
+	}
+}
+
+/*
+ * Destroys a type of item on a given percent chance.
+ * The chance 'cperc' is in hundredths of a percent (1-in-10000)
+ * Note that missiles are no longer necessarily all destroyed
+ *
+ * Returns number of items destroyed.
+ */
+int inven_damage(struct player *p, int type, int cperc)
+{
+	const struct gf_type *gf_ptr = &gf_table[type];
+
+	int i, j, k, amt;
+
+	object_type *o_ptr;
+
+	char o_name[80];
+	
+	bool damage;
+
+	bitflag f[OF_SIZE];
+
+	/* Count the casualties */
+	k = 0;
+
+	/* Scan through the slots backwards */
+	for (i = 0; i < QUIVER_END; i++)
+	{
+		if (i >= INVEN_PACK && i < QUIVER_START) continue;
+
+		o_ptr = &p->inventory[i];
+
+		of_wipe(f);
+		object_flags(o_ptr, f);
+
+		/* Skip non-objects */
+		if (!o_ptr->kind) continue;
+
+		/* Hack -- for now, skip artifacts */
+		if (o_ptr->artifact) continue;
+
+		/* Give this item slot a shot at death if it is vulnerable */
+		if (of_has(f, gf_ptr->obj_hates) &&	!of_has(f, gf_ptr->obj_imm))
+		{
+			/* Chance to destroy this item */
+			int chance = cperc;
+
+			/* Track if it is damaged instead of destroyed */
+			damage = FALSE;
+
+			/** 
+			 * Analyze the type to see if we just damage it
+			 * - we also check for rods to reduce chance
+			 */
+			switch (o_ptr->tval)
+			{
+				/* Weapons */
+				case TV_BOW:
+				case TV_SWORD:
+				case TV_HAFTED:
+				case TV_POLEARM:
+				case TV_DIGGING:
+				{
+					/* Chance to damage it */
+					if (randint0(10000) < cperc)
+					{
+						/* Damage the item */
+						o_ptr->to_h--;
+						o_ptr->to_d--;
+
+						/* Damaged! */
+						damage = TRUE;
+					}
+					else continue;
+
+					break;
+				}
+
+				/* Wearable items */
+				case TV_HELM:
+				case TV_CROWN:
+				case TV_SHIELD:
+				case TV_BOOTS:
+				case TV_GLOVES:
+				case TV_CLOAK:
+				case TV_SOFT_ARMOR:
+				case TV_HARD_ARMOR:
+				case TV_DRAG_ARMOR:
+				{
+					/* Chance to damage it */
+					if (randint0(10000) < cperc)
+					{
+						/* Damage the item */
+						o_ptr->to_a--;
+
+						/* Damaged! */
+						damage = TRUE;
+					}
+					else continue;
+
+					break;
+				}
+				
+				/* Rods are tough */
+				case TV_ROD:
+				{
+					chance = (chance / 4);
+					
+					break;
+				}
+			}
+
+			/* Damage instead of destroy */
+			if (damage)
+			{
+				p->update |= (PU_BONUS);
+				p->redraw |= (PR_EQUIP);
+
+				/* Casualty count */
+				amt = o_ptr->number;
+			}
+
+			/* ... or count the casualties */
+			else for (amt = j = 0; j < o_ptr->number; ++j)
+			{
+				if (randint0(10000) < chance) amt++;
+			}
+
+			/* Some casualities */
+			if (amt)
+			{
+				/* Get a description */
+				object_desc(o_name, sizeof(o_name), o_ptr,
+					ODESC_BASE);
+
+				/* Message */
+				msgt(MSG_DESTROY, "%sour %s (%c) %s %s!",
+				           ((o_ptr->number > 1) ?
+				            ((amt == o_ptr->number) ? "All of y" :
+				             (amt > 1 ? "Some of y" : "One of y")) : "Y"),
+				           o_name, index_to_label(i),
+				           ((amt > 1) ? "were" : "was"),
+					   (damage ? "damaged" : "destroyed"));
+
+				/* Damage already done? */
+				if (damage) continue;
+
+				/* Reduce charges if some devices are destroyed */
+				reduce_charges(o_ptr, amt);
+
+				/* Destroy "amt" items */
+				inven_item_increase(i, -amt);
+				inven_item_optimize(i);
+
+				/* Count the casualties */
+				k += amt;
+			}
+		}
+	}
+
+	/* Return the casualty count */
+	return (k);
+}
+
+/*
+ * Acid has hit the player, attempt to affect some armor.
+ *
+ * Note that the "base armor" of an object never changes.
+ *
+ * If any armor is damaged (or resists), the player takes less damage.
+ */
+static int minus_ac(struct player *p)
+{
+	object_type *o_ptr = NULL;
+
+	bitflag f[OF_SIZE];
+
+	char o_name[80];
+
+	/* Avoid crash during monster power calculations */
+	if (!p->inventory) return FALSE;
+
+	/* Pick a (possibly empty) inventory slot */
+	switch (randint1(6))
+	{
+		case 1: o_ptr = &p->inventory[INVEN_BODY]; break;
+		case 2: o_ptr = &p->inventory[INVEN_ARM]; break;
+		case 3: o_ptr = &p->inventory[INVEN_OUTER]; break;
+		case 4: o_ptr = &p->inventory[INVEN_HANDS]; break;
+		case 5: o_ptr = &p->inventory[INVEN_HEAD]; break;
+		case 6: o_ptr = &p->inventory[INVEN_FEET]; break;
+		default: assert(0);
+	}
+
+	/* Nothing to damage */
+	if (!o_ptr->kind) return (FALSE);
+
+	/* No damage left to be done */
+	if (o_ptr->ac + o_ptr->to_a <= 0) return (FALSE);
+
+	/* Describe */
+	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
+
+	/* Extract the flags */
+	object_flags(o_ptr, f);
+
+	/* Object resists */
+	if (of_has(f, OF_IGNORE_ACID))
+	{
+		msg("Your %s is unaffected!", o_name);
+
+		return (TRUE);
+	}
+
+	/* Message */
+	msg("Your %s is damaged!", o_name);
+
+	/* Damage the item */
+	o_ptr->to_a--;
+
+	p->update |= PU_BONUS;
+	p->redraw |= (PR_EQUIP);
+
+	/* Item was damaged */
+	return (TRUE);
+}
+
+/**
+ * Adjust damage according to resistance or vulnerability.
+ *
+ * \param type is the attack type we are checking.
+ * \param dam is the unadjusted damage.
+ * \param dam_aspect is the calc we want (min, avg, max, random).
+ * \param resist is the degree of resistance (-1 = vuln, 3 = immune).
+ */
+int adjust_dam(struct player *p, int type, int dam, aspect dam_aspect, int resist)
+{
+	const struct gf_type *gf_ptr = &gf_table[type];
+	int i, denom;
+
+	if (resist == 3) /* immune */
+		return 0;
+
+	/* Hack - acid damage is halved by armour, holy orb is halved */
+	if ((type == GF_ACID && minus_ac(p)) || type == GF_HOLY_ORB)
+		dam = (dam + 1) / 2;
+
+	if (resist == -1) /* vulnerable */
+		return (dam * 4 / 3);
+
+	/* Variable resists vary the denominator, so we need to invert the logic
+	 * of dam_aspect. (m_bonus is unused) */
+	switch (dam_aspect) {
+		case MINIMISE:
+			denom = randcalc(gf_ptr->denom, 0, MAXIMISE);
+			break;
+		case MAXIMISE:
+			denom = randcalc(gf_ptr->denom, 0, MINIMISE);
+			break;
+		case AVERAGE:
+		case EXTREMIFY:
+		case RANDOMISE:
+			denom = randcalc(gf_ptr->denom, 0, dam_aspect);
+			break;
+		default:
+			assert(0);
+	}
+
+	for (i = resist; i > 0; i--)
+		if (denom)
+			dam = dam * gf_ptr->num / denom;
+
+	return dam;
+}
+
+/*
+ * Restore a stat.  Return TRUE only if this actually makes a difference.
+ */
+bool res_stat(int stat)
+{
+	/* Restore if needed */
+	if (p_ptr->stat_cur[stat] != p_ptr->stat_max[stat])
+	{
+		/* Restore */
+		p_ptr->stat_cur[stat] = p_ptr->stat_max[stat];
+
+		/* Recalculate bonuses */
+		p_ptr->update |= (PU_BONUS);
+
+		/* Success */
+		return (TRUE);
+	}
+
+	/* Nothing to restore */
+	return (FALSE);
+}
+
+/*
+ * Apply disenchantment to the player's stuff
+ *
+ * This function is also called from the "melee" code.
+ *
+ * The "mode" is currently unused.
+ *
+ * Return "TRUE" if the player notices anything.
+ */
+bool apply_disenchant(int mode)
+{
+	int t = 0;
+
+	object_type *o_ptr;
+
+	char o_name[80];
+
+
+	/* Unused parameter */
+	(void)mode;
+
+	/* Pick a random slot */
+	switch (randint1(8))
+	{
+		case 1: t = INVEN_WIELD; break;
+		case 2: t = INVEN_BOW; break;
+		case 3: t = INVEN_BODY; break;
+		case 4: t = INVEN_OUTER; break;
+		case 5: t = INVEN_ARM; break;
+		case 6: t = INVEN_HEAD; break;
+		case 7: t = INVEN_HANDS; break;
+		case 8: t = INVEN_FEET; break;
+	}
+
+	/* Get the item */
+	o_ptr = &p_ptr->inventory[t];
+
+	/* No item, nothing happens */
+	if (!o_ptr->kind) return (FALSE);
+
+
+	/* Nothing to disenchant */
+	if ((o_ptr->to_h <= 0) && (o_ptr->to_d <= 0) && (o_ptr->to_a <= 0))
+	{
+		/* Nothing to notice */
+		return (FALSE);
+	}
+
+
+	/* Describe the object */
+	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
+
+
+	/* Artifacts have 60% chance to resist */
+	if (o_ptr->artifact && (randint0(100) < 60))
+	{
+		/* Message */
+		msg("Your %s (%c) resist%s disenchantment!",
+		           o_name, index_to_label(t),
+		           ((o_ptr->number != 1) ? "" : "s"));
+
+		/* Notice */
+		return (TRUE);
+	}
+
+	/* Apply disenchantment, depending on which kind of equipment */
+	if (t == INVEN_WIELD || t == INVEN_BOW)
+	{
+		/* Disenchant to-hit */
+		if (o_ptr->to_h > 0) o_ptr->to_h--;
+		if ((o_ptr->to_h > 5) && (randint0(100) < 20)) o_ptr->to_h--;
+
+		/* Disenchant to-dam */
+		if (o_ptr->to_d > 0) o_ptr->to_d--;
+		if ((o_ptr->to_d > 5) && (randint0(100) < 20)) o_ptr->to_d--;
+	}
+	else
+	{
+		/* Disenchant to-ac */
+		if (o_ptr->to_a > 0) o_ptr->to_a--;
+		if ((o_ptr->to_a > 5) && (randint0(100) < 20)) o_ptr->to_a--;
+	}
+
+	/* Message */
+	msg("Your %s (%c) %s disenchanted!",
+	           o_name, index_to_label(t),
+	           ((o_ptr->number != 1) ? "were" : "was"));
+
+	/* Recalculate bonuses */
+	p_ptr->update |= (PU_BONUS);
+
+	/* Window stuff */
+	p_ptr->redraw |= (PR_EQUIP);
+
+	/* Notice */
+	return (TRUE);
+}
+
+/*
+ * Mega-Hack -- track "affected" monsters (see "project()" comments)
+ */
+static int project_m_n;
+static int project_m_x;
+static int project_m_y;
+
+/*
+ * We are called from "project()" to "damage" terrain features
+ *
+ * We are called both for "beam" effects and "ball" effects.
+ *
+ * The "r" parameter is the "distance from ground zero".
+ *
+ * Note that we determine if the player can "see" anything that happens
+ * by taking into account: blindness, line-of-sight, and illumination.
+ *
+ * We return "TRUE" if the effect of the projection is "obvious".
+ *
+ * Hack -- We also "see" grids which are "memorized".
+ *
+ * Perhaps we should affect doors and/or walls.
+ */
+static bool project_f(int who, int r, int y, int x, int dam, int typ, bool obvious)
+{
+#if 0 /* unused */
+	/* Reduce damage by distance */
+	dam = (dam + r) / (r + 1);
+#endif /* 0 */
+
+	project_floor_handler_context_t context = {
+		who,
+		r,
+		y,
+		x,
+		dam,
+		typ,
+		obvious,
+	};
+	project_floor_handler_f floor_handler = gf_floor_handler(typ);
+
+	if (floor_handler != NULL)
+		floor_handler(&context);
+
+	/* Return "Anything seen?" */
+	return context.obvious;
+}
+
+/*
+ * We are called from "project()" to "damage" objects
+ *
+ * We are called both for "beam" effects and "ball" effects.
+ *
+ * Perhaps we should only SOMETIMES damage things on the ground.
+ *
+ * The "r" parameter is the "distance from ground zero".
+ *
+ * Note that we determine if the player can "see" anything that happens
+ * by taking into account: blindness, line-of-sight, and illumination.
+ *
+ * Hack -- We also "see" objects which are "memorized".
+ *
+ * We return "TRUE" if the effect of the projection is "obvious".
+ */
+static bool project_o(int who, int r, int y, int x, int dam, int typ, bool obvious)
+{
+	s16b this_o_idx, next_o_idx = 0;
+	bitflag f[OF_SIZE];
+
+#if 0 /* unused */
+	/* Reduce damage by distance */
+	dam = (dam + r) / (r + 1);
+#endif /* 0 */
+
+	/* Scan all objects in the grid */
+	for (this_o_idx = cave->o_idx[y][x]; this_o_idx; this_o_idx = next_o_idx)
+	{
+		object_type *o_ptr;
+		bool ignore = FALSE;
+		bool do_kill = FALSE;
+		const char *note_kill = NULL;
+		project_object_handler_context_t context = {
+			who,
+			r,
+			y,
+			x,
+			dam,
+			typ,
+			f,
+			NULL,
+			obvious,
+			do_kill,
+			ignore,
+			note_kill,
+		};
+		project_object_handler_f object_handler = gf_object_handler(typ);
+
+		/* Get the object */
+		o_ptr = object_byid(this_o_idx);
+		context.o_ptr = o_ptr;
+
+		/* Get the next object */
+		next_o_idx = o_ptr->next_o_idx;
+
+		/* Extract the flags */
+		object_flags(o_ptr, f);
+
+		if (object_handler != NULL)
+			object_handler(&context);
+
+		obvious = context.obvious;
+		do_kill = context.do_kill;
+		ignore = context.ignore;
+		note_kill = context.note_kill;
+
+		/* Attempt to destroy the object */
+		if (do_kill)
+		{
+			char o_name[80];
+
+			/* Effect "observed" */
+			if (o_ptr->marked && !squelch_item_ok(o_ptr))
+			{
+				obvious = TRUE;
+				object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
+			}
+
+			/* Artifacts, and other objects, get to resist */
+			if (o_ptr->artifact || ignore)
+			{
+				/* Observe the resist */
+				if (o_ptr->marked && !squelch_item_ok(o_ptr))
+					msg("The %s %s unaffected!", o_name, VERB_AGREEMENT(o_ptr->number, "is", "are"));
+			}
+
+			/* Reveal mimics */
+			else if (o_ptr->mimicking_m_idx) {
+				become_aware(cave_monster(cave, o_ptr->mimicking_m_idx));
+			}
+
+			/* Kill it */
+			else
+			{
+				/* Describe if needed */
+				if (o_ptr->marked && note_kill && !squelch_item_ok(o_ptr))
+					msgt(MSG_DESTROY, "The %s %s!", o_name, note_kill);
+
+				/* Delete the object */
+				delete_object_idx(this_o_idx);
+
+				/* Redraw */
+				square_light_spot(cave, y, x);
+			}
+		}
+	}
+
+	/* Return "Anything seen?" */
+	return (obvious);
+}
+
 /**
  * Deal damage to a monster from another monster.
  *
@@ -2513,7 +2464,6 @@ static void project_m_apply_side_effects(project_monster_handler_context_t *cont
 	}
 }
 
-
 /*
  * Helper function for "project()" below.
  *
@@ -2585,6 +2535,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 
 	int m_idx = cave->m_idx[y][x];
 
+	project_monster_handler_f monster_handler = gf_monster_handler(typ);
 	project_monster_handler_context_t context = {
 		who,
 		r,
@@ -2638,235 +2589,12 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 	if (monster_is_unusual(m_ptr->race))
 		context.die_msg = MON_MSG_DESTROYED;
 
-	/* Analyze the damage type */
-	switch (typ) {
-		case GF_MISSILE:
-		case GF_ARROW:
-		case GF_MANA:
-		case GF_METEOR:
-			/* These do straight damage that cannot be resisted. */
-			break;
-
-		case GF_ACID:
-			project_monster_handler_ACID(&context);
-			break;
-
-		case GF_ELEC:
-			project_monster_handler_ELEC(&context);
-			break;
-
-		case GF_FIRE:
-			project_monster_handler_FIRE(&context);
-			break;
-
-		case GF_COLD:
-			project_monster_handler_COLD(&context);
-			break;
-
-		case GF_ICE:
-			project_monster_handler_ICE(&context);
-			break;
-
-		case GF_POIS:
-			project_monster_handler_POIS(&context);
-			break;
-
-		case GF_HOLY_ORB:
-			project_monster_handler_HOLY_ORB(&context);
-			break;
-
-		case GF_PLASMA:
-			project_monster_handler_PLASMA(&context);
-			break;
-
-		case GF_NETHER:
-			project_monster_handler_NETHER(&context);
-			break;
-
-		case GF_WATER:
-			project_monster_handler_WATER(&context);
-			break;
-
-		case GF_CHAOS:
-			project_monster_handler_CHAOS(&context);
-			break;
-
-		case GF_SHARD:
-			project_monster_handler_SHARD(&context);
-			break;
-
-		case GF_SOUND:
-			project_monster_handler_SOUND(&context);
-			break;
-
-		case GF_DISEN:
-			project_monster_handler_DISEN(&context);
-			break;
-
-		case GF_NEXUS:
-			project_monster_handler_NEXUS(&context);
-			break;
-
-		case GF_FORCE:
-			project_monster_handler_FORCE(&context);
-			break;
-
-		case GF_INERTIA:
-			project_monster_handler_INERTIA(&context);
-			break;
-
-		case GF_TIME:
-			project_monster_handler_TIME(&context);
-			break;
-
-		case GF_GRAVITY:
-			project_monster_handler_GRAVITY(&context);
-			break;
-
-		case GF_OLD_DRAIN:
-			project_monster_handler_OLD_DRAIN(&context);
-			break;
-
-		case GF_OLD_POLY:
-			project_monster_handler_OLD_POLY(&context);
-			break;
-
-		case GF_OLD_CLONE:
-			project_monster_handler_OLD_CLONE(&context);
-			break;
-
-		case GF_OLD_HEAL:
-			project_monster_handler_OLD_HEAL(&context);
-			break;
-
-		case GF_OLD_SPEED:
-			project_monster_handler_OLD_SPEED(&context);
-			break;
-
-		case GF_OLD_SLOW:
-			project_monster_handler_OLD_SLOW(&context);
-			break;
-
-		case GF_OLD_SLEEP:
-			project_monster_handler_OLD_SLEEP(&context);
-			break;
-
-		case GF_OLD_CONF:
-			project_monster_handler_OLD_CONF(&context);
-			break;
-
-		case GF_LIGHT_WEAK:
-			project_monster_handler_LIGHT_WEAK(&context);
-			break;
-
-		case GF_LIGHT:
-			project_monster_handler_LIGHT(&context);
-			break;
-
-		case GF_DARK:
-			project_monster_handler_DARK(&context);
-			break;
-
-		case GF_KILL_WALL:
-			project_monster_handler_KILL_WALL(&context);
-			break;
-
-		case GF_AWAY_UNDEAD:
-			project_monster_handler_AWAY_UNDEAD(&context);
-			break;
-
-		case GF_AWAY_EVIL:
-			project_monster_handler_AWAY_EVIL(&context);
-			break;
-
-		case GF_AWAY_ALL:
-			project_monster_handler_AWAY_ALL(&context);
-			break;
-
-		case GF_TURN_UNDEAD:
-			project_monster_handler_TURN_UNDEAD(&context);
-			break;
-
-		case GF_TURN_EVIL:
-			project_monster_handler_TURN_EVIL(&context);
-			break;
-
-		case GF_TURN_ALL:
-			project_monster_handler_TURN_ALL(&context);
-			break;
-
-		case GF_DISP_UNDEAD:
-			project_monster_handler_DISP_UNDEAD(&context);
-			break;
-
-		case GF_DISP_EVIL:
-			project_monster_handler_DISP_EVIL(&context);
-			break;
-
-		case GF_DISP_ALL:
-			project_monster_handler_DISP_ALL(&context);
-			break;
-
-		default:
-			context.skipped = TRUE;
-			dam = 0;
-			break;
-	}
+	if (monster_handler != NULL)
+		monster_handler(&context);
 
 	/* Force obviousness for certain types if seen. */
-	switch (typ) {
-		case GF_MISSILE:
-		case GF_ACID:
-		case GF_ELEC:
-		case GF_FIRE:
-		case GF_COLD:
-		case GF_ICE:
-		case GF_POIS:
-		case GF_HOLY_ORB:
-		case GF_ARROW:
-		case GF_PLASMA:
-		case GF_NETHER:
-		case GF_WATER:
-		case GF_CHAOS:
-		case GF_SHARD:
-		case GF_SOUND:
-		case GF_DISEN:
-		case GF_NEXUS:
-		case GF_FORCE:
-		case GF_INERTIA:
-		case GF_TIME:
-		case GF_GRAVITY:
-		case GF_MANA:
-		case GF_METEOR:
-		case GF_OLD_DRAIN:
-		case GF_OLD_CLONE:
-		case GF_OLD_HEAL:
-		case GF_OLD_SPEED:
-		case GF_OLD_SLOW:
-		case GF_LIGHT_WEAK:
-		case GF_LIGHT:
-		case GF_DARK:
-		case GF_KILL_WALL:
-		case GF_AWAY_ALL:
-		case GF_DISP_ALL:
-			if (context.seen)
-				context.obvious = TRUE;
-			break;
-
-		case GF_OLD_POLY:
-		case GF_OLD_SLEEP:
-		case GF_OLD_CONF:
-		case GF_AWAY_UNDEAD:
-		case GF_AWAY_EVIL:
-		case GF_TURN_UNDEAD:
-		case GF_TURN_EVIL:
-		case GF_TURN_ALL:
-		case GF_DISP_UNDEAD:
-		case GF_DISP_EVIL:
-		default:
-			/* Use whatever the handler provides. */
-			break;
-	}
+	if (gf_force_obvious(typ) && context.seen)
+		context.obvious = TRUE;
 
 	dam = context.dam;
 	obvious = context.obvious;
@@ -2920,23 +2648,6 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 	return (obvious);
 }
 
-#pragma mark player handlers
-
-typedef struct project_player_handler_context_s {
-	const int who;
-	const int r;
-	const int y;
-	const int x;
-	const int dam;
-	const int type;
-	bool obvious;
-} project_player_handler_context_t;
-
-static void project_player_handler_GRAVITY(project_player_handler_context_t *context)
-{
-	msg("Gravity warps around you.");
-}
-
 /*
  * Helper function for "project()" below.
  *
@@ -2967,6 +2678,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 	/* Monster name (for damage) */
 	char killer[80];
 
+	project_player_handler_f player_handler = gf_player_handler(typ);
 	project_player_handler_context_t context = {
 		who,
 		r,
@@ -3002,8 +2714,8 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 	if (!seen)
 		msg("You are hit by %s!", gf_ptr->desc);
 
-	if (typ == GF_GRAVITY)
-		project_player_handler_GRAVITY(&context);
+	if (player_handler != NULL)
+		player_handler(&context);
 
 	obvious = context.obvious;
 
@@ -3019,7 +2731,6 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 	/* Return "Anything seen?" */
 	return (obvious);
 }
-
 
 /*
  * Generic "beam"/"bolt"/"ball" projection routine.

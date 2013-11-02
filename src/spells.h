@@ -13,30 +13,10 @@
  */
 enum
 {
-    #define GF(a, b, c, d, e, f, g, h, i, j, k, l, m) GF_##a,
+    #define GF(a, b, c, d, e, obv, col, f, g, h, i, j, k, l, m, fh, oh, mh, ph) GF_##a,
     #include "list-gf-types.h"
     #undef GF
 };
-
-/**
- * Structure for GF types and their resistances/immunities/vulnerabilities
- */
-struct gf_type {
-	u16b name;      	/* numerical index (GF_#) */
-	const char *desc;			/* text description (if blind) */
-	int resist;			/* object flag for resistance */
-	int num;			/* numerator for resistance */
-	random_value denom;	/* denominator for resistance */
-	int opp;			/* timed flag for temporary resistance ("opposition") */
-	int immunity;		/* object flag for total immunity */
-	bool side_immune;	/* whether immunity protects from ALL side effects */
-	int vuln;			/* object flag for vulnerability */
-	int mon_res;		/* monster flag for resistance */
-	int mon_vuln;		/* monster flag for vulnerability */
-	int obj_hates;		/* object flag for object vulnerability */
-	int obj_imm;		/* object flag for object immunity */
-};
-
 
 /**
  * Bolt motion (used in prefs.c, spells1.c)
