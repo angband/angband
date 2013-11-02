@@ -1433,88 +1433,67 @@ typedef struct project_object_handler_context_s {
 	const char *note_kill;
 } project_object_handler_context_t;
 
+/**
+ * Project an effect onto an object.
+ *
+ * \param context is the project_o context.
+ * \param hate_flag is the OF_ flag for elements that will destroy and object.
+ * \param ignore_flag is the OF_flag for elements that the object is immunte to.
+ * \param singular_verb is the verb that is displayed when one object is destroyed.
+ * \param plural_verb is the verb that is displayed in multiple objects are destroyed.
+ */
+static void project_object_elemental(project_object_handler_context_t *context, int hate_flag, int ignore_flag, const char *singular_verb, const char *plural_verb)
+{
+	if (of_has(context->flags, hate_flag)) {
+		context->do_kill = TRUE;
+		context->note_kill = VERB_AGREEMENT(context->o_ptr->number, singular_verb, plural_verb);
+		context->ignore = of_has(context->flags, ignore_flag);
+	}
+}
+
 /* Acid -- Lots of things */
 static void project_object_handler_ACID(project_object_handler_context_t *context)
 {
-	if (of_has(context->flags, OF_HATES_ACID)) {
-		context->do_kill = TRUE;
-		context->note_kill = VERB_AGREEMENT(context->o_ptr->number, "melts", "melt");
-		if (of_has(context->flags, OF_IGNORE_ACID)) context->ignore = TRUE;
-	}
+	project_object_elemental(context, OF_HATES_ACID, OF_IGNORE_ACID, "melts", "melt");
 }
 
 /* Elec -- Rings and Wands */
 static void project_object_handler_ELEC(project_object_handler_context_t *context)
 {
-	if (of_has(context->flags, OF_HATES_ELEC)) {
-		context->do_kill = TRUE;
-		context->note_kill = VERB_AGREEMENT(context->o_ptr->number, "is destroyed", "are destroyed");
-		if (of_has(context->flags, OF_IGNORE_ELEC)) context->ignore = TRUE;
-	}
+	project_object_elemental(context, OF_HATES_ELEC, OF_IGNORE_ELEC, "is destroyed", "are destroyed");
 }
 
 /* Fire -- Flammable objects */
 static void project_object_handler_FIRE(project_object_handler_context_t *context)
 {
-	if (of_has(context->flags, OF_HATES_FIRE)) {
-		context->do_kill = TRUE;
-		context->note_kill = VERB_AGREEMENT(context->o_ptr->number, "burns up", "burn up");
-		if (of_has(context->flags, OF_IGNORE_FIRE)) context->ignore = TRUE;
-	}
+	project_object_elemental(context, OF_HATES_FIRE, OF_IGNORE_FIRE, "burns up", "burn up");
 }
 
 /* Cold -- potions and flasks */
 static void project_object_handler_COLD(project_object_handler_context_t *context)
 {
-	if (of_has(context->flags, OF_HATES_COLD)) {
-		context->note_kill = VERB_AGREEMENT(context->o_ptr->number, "shatters", "shatter");
-		context->do_kill = TRUE;
-		if (of_has(context->flags, OF_IGNORE_COLD)) context->ignore = TRUE;
-	}
+	project_object_elemental(context, OF_HATES_COLD, OF_IGNORE_COLD, "shatters", "shatter");
 }
 
 /* Fire + Elec */
 static void project_object_handler_PLASMA(project_object_handler_context_t *context)
 {
-	if (of_has(context->flags, OF_HATES_FIRE)) {
-		context->do_kill = TRUE;
-		context->note_kill = VERB_AGREEMENT(context->o_ptr->number, "burns up", "burn up");
-		if (of_has(context->flags, OF_IGNORE_FIRE)) context->ignore = TRUE;
-	}
-
-	if (of_has(context->flags, OF_HATES_ELEC)) {
-		context->ignore = FALSE;
-		context->do_kill = TRUE;
-		context->note_kill = VERB_AGREEMENT(context->o_ptr->number, "is destroyed", "are destroyed");
-		if (of_has(context->flags, OF_IGNORE_ELEC)) context->ignore = TRUE;
-	}
+	project_object_elemental(context, OF_HATES_FIRE, OF_IGNORE_FIRE, "burns up", "burn up");
+	project_object_elemental(context, OF_HATES_ELEC, OF_IGNORE_ELEC, "is destroyed", "are destroyed");
 }
 
 /* Fire + Cold */
 static void project_object_handler_METEOR(project_object_handler_context_t *context)
 {
-	if (of_has(context->flags, OF_HATES_FIRE)) {
-		context->do_kill = TRUE;
-		context->note_kill = VERB_AGREEMENT(context->o_ptr->number, "burns up", "burn up");
-		if (of_has(context->flags, OF_IGNORE_FIRE)) context->ignore = TRUE;
-	}
-
-	if (of_has(context->flags, OF_HATES_COLD)) {
-		context->ignore = FALSE;
-		context->do_kill = TRUE;
-		context->note_kill = VERB_AGREEMENT(context->o_ptr->number, "shatters", "shatter");
-		if (of_has(context->flags, OF_IGNORE_COLD)) context->ignore = TRUE;
-	}
-
+	project_object_elemental(context, OF_HATES_FIRE, OF_IGNORE_FIRE, "burns up", "burn up");
+	project_object_elemental(context, OF_HATES_COLD, OF_IGNORE_COLD, "shatters", "shatter");
 }
 
 /* Hack -- break potions and such */
 static void project_object_handler_shatter(project_object_handler_context_t *context)
 {
-	if (of_has(context->flags, OF_HATES_COLD)) {
-		context->note_kill = VERB_AGREEMENT(context->o_ptr->number, "shatters", "shatter");
-		context->do_kill = TRUE;
-	}
+	/* We don't care if the object ignores anything. */
+	project_object_elemental(context, OF_HATES_COLD, OF_NONE, "shatters", "shatter");
 }
 
 /* Mana -- destroys everything */
