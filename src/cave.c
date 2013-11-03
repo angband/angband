@@ -460,13 +460,14 @@ static void grid_get_attr(grid_data *g, int *a)
 			if (g->f_idx == FEAT_FLOOR)
 				switch (g->lighting) {
 					case FEAT_LIGHTING_TORCH: *a = TERM_YELLOW; break;
-					case FEAT_LIGHTING_LIT: *a = TERM_L_BLUE; break;
+					case FEAT_LIGHTING_LIT: *a = TERM_L_DARK; break;
 					case FEAT_LIGHTING_DARK: *a = TERM_L_DARK; break;
 					default: break;
 				}
 
-			/* If it's another kind of tile, only tint when unlit. */
-			else if (g->f_idx > FEAT_INVIS && g->lighting == FEAT_LIGHTING_DARK)
+			/* If it's another kind of tile, only tint when not in los/torchlight. */
+			else if (g->f_idx > FEAT_INVIS &&
+					 (g->lighting == FEAT_LIGHTING_DARK || g->lighting == FEAT_LIGHTING_LIT))
 				*a = TERM_L_DARK;
 		}
 		else if (feat_is_magma(g->f_idx) || feat_is_quartz(g->f_idx)) {
