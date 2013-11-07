@@ -6,6 +6,7 @@
 #include "z-textblock.h"
 #include "z-quark.h"
 #include "z-bitflag.h"
+#include "z-dice.h"
 #include "game-cmd.h"
 #include "cave.h"
 #include "object/obj-flag.h"
@@ -314,6 +315,7 @@ typedef struct spell {
 	byte snum;			/* Position of spell within book */
 
 	byte spell_index;	/* Index into player_magic array */
+	dice_t *dice;		/* Value information from spell file */
 } spell_type;
 
 

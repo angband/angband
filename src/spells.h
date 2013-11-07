@@ -176,5 +176,6 @@ extern bool cast_spell(int tval, int index, int dir);
 extern bool spell_needs_aim(int tval, int spell);
 extern bool spell_is_identify(int book, int spell);
 extern int spell_lookup_by_name(int tval, const char *name);
+extern expression_base_value_f spell_value_base_by_name(const char *name);
 
 #endif /* !SPELLS_H */

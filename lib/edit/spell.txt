@@ -39,6 +39,8 @@
 N:0:Magic Missile
 I:90:0:0
 id:SPELL_MAGIC_MISSILE
+dice:$Dd4
+expr:D:PLAYER_LEVEL:- 1 / 5 + 3
 D:Fires a magic missile that always hits its target and does
 D: unresistable damage.
 D:  Sometimes a beam is fired instead that hurts each monster
@@ -54,12 +56,15 @@ D: for one turn only.
 N:2:Phase Door
 I:90:0:2
 id:SPELL_PHASE_DOOR
+dice:10
 D:Teleports you randomly up to 10 squares away.
 
 # Damage should probably be displayed on screen
 N:3:Light Area
 I:90:0:3
 id:SPELL_LIGHT_AREA
+dice:2d$S
+expr:S:PLAYER_LEVEL:/ 2
 D:Lights up all squares in a level-dependant area, and hurts
 D: all light-sensitive monsters in the area of effect.
 D:  If you are in a room, the entire room will be lit up as well.
@@ -72,6 +77,7 @@ D:Detects all traps, doors, and stairs in the immediate area.
 N:5:Cure Light Wounds
 I:90:0:5
 id:SPELL_CURE_LIGHT_WOUNDS
+dice:15+m15
 D:Cures 15% of your wounds (min 15hp) and heals 20 points worth of cuts.
 
 N:6:Detect Objects
@@ -96,12 +102,16 @@ D:Detects all treasure in the immediate area.
 
 N:11:Stinking Cloud
 I:90:0:8
+dice:$B
+expr:B:PLAYER_LEVEL:/ 2 + 10
 id:SPELL_STINKING_CLOUD
 D:Shoots a radius-2 poison ball.
 
 N:12:Lightning Bolt
 I:90:1:1
 id:SPELL_LIGHTNING_BOLT
+dice:$Dd6
+expr:D:PLAYER_LEVEL:- 5 / 6 + 3
 D:Fires a lightning beam that hurts each monster in its path.
 
 N:13:Confuse Monster
@@ -124,6 +134,8 @@ D:Invokes a random spell effect.
 N:16:Frost Bolt
 I:90:1:7
 id:SPELL_FROST_BOLT
+dice:$Dd8
+expr:D:PLAYER_LEVEL:- 5 / 4 + 5
 D:Fires a frost bolt that always hits its target.
 D:  Sometimes a beam is fired instead that hurts each monster
 D: in its path.
@@ -132,6 +144,8 @@ D:  The chance to get a beam goes up with your character level.
 N:17:Acid Bolt
 I:90:2:7
 id:SPELL_ACID_BOLT
+dice:$Dd8
+expr:D:PLAYER_LEVEL:- 5 / 4 + 8
 D:Fires an acid bolt that always hits its target.
 D:  Sometimes a beam is fired instead that hurts each monster
 D: in its path.
@@ -140,6 +154,8 @@ D:  The chance to get a beam goes up with your character level.
 N:18:Fire Bolt
 I:90:2:3
 id:SPELL_FIRE_BOLT
+dice:$Dd8
+expr:D:PLAYER_LEVEL:- 5 / 4 + 6
 D:Fires a fire bolt that always hits its target.
 D:  Sometimes a beam is fired instead that hurts each monster
 D: in its path.
@@ -153,6 +169,7 @@ D:Destroys all traps and doors within a 1-square radius of you.
 N:20:Spear of Light
 I:90:1:6
 id:SPELL_SPEAR_OF_LIGHT
+dice:6d8
 D:Fires a beam that lights up each square and hurts each
 D: light-sensitive monster in its path.
 
@@ -200,12 +217,14 @@ D:  This will also cure a bloated stomach.
 N:27:Heroism
 I:90:7:0
 id:SPELL_HEROISM
+dice:25+d25
 D:Cures 10 points of damage, removes fear and grants you heroism
 D: (resistance to fear, and a bonus of +12 to-hit) for 25+1d25 turns.
 
 N:28:Berserker
 I:90:7:1
 id:SPELL_BERSERKER
+dice:25+d25
 D:Cures 30 points of damage, removes fear, and grants you berserk
 D: strength (resistance to fear, a bonus of +24 to-hit, and a penalty
 D: of -10 to AC) for 25+1d25 turns.
@@ -213,10 +232,14 @@ D: of -10 to AC) for 25+1d25 turns.
 N:29:Haste Self
 I:90:3:2
 id:SPELL_HASTE_SELF
+dice:$B+d20
+expr:B:PLAYER_LEVEL:+ 0
 D:Hastes you (+10 to speed) for a level-dependant duration.
 
 N:30:Teleport Self
 I:90:1:5
+dice:$B
+expr:B:PLAYER_LEVEL:* 5
 id:SPELL_TELEPORT_SELF
 D:Teleports you randomly within the current level.
 
@@ -260,6 +283,8 @@ D:  Uniques are not affected.
 N:36:Shock Wave
 I:90:5:0
 id:SPELL_SHOCK_WAVE
+dice:$B
+expr:B:PLAYER_LEVEL:+ 10
 D:Shoots a radius-2 sound ball.
 D:  Apart from doing sound damage, this also has a chance to stun
 D: each monster in the area of effect.
@@ -267,11 +292,15 @@ D: each monster in the area of effect.
 N:37:Explosion
 I:90:5:1
 id:SPELL_EXPLOSION
+dice:$B
+expr:B:PLAYER_LEVEL:* 2 + 20
 D:Shoots a radius-2 shards ball.
 
 N:38:Cloudkill
 I:90:5:2
 id:SPELL_CLOUD_KILL
+dice:$B
+expr:B:PLAYER_LEVEL:/ 2 + 40
 D:Shoots a radius-3 poison ball.
 
 N:39:Mass Sleep
@@ -290,6 +319,8 @@ D:  Uniques or monsters that resist confusion are not affected.
 N:41:Rend Soul
 I:90:8:2
 id:SPELL_REND_SOUL
+dice:11d$S
+expr:S:PLAYER_LEVEL:+ 0
 D:Fires a nether bolt that always hits its target. Does
 D: not affect undead.
 D:  Sometimes a beam is fired instead that hurts each monster
@@ -309,6 +340,8 @@ D:  This spell has no effect when used in the town.
 N:43:Chaos Strike
 I:90:8:6
 id:SPELL_CHAOS_STRIKE
+dice:13d$S
+expr:S:PLAYER_LEVEL:+ 0
 D:Fires a chaos bolt that always hits its target.
 D:  Sometimes a beam is fired instead that hurts each monster
 D: in its path.
@@ -317,27 +350,32 @@ D:  The chance to get a beam goes up with your character level.
 N:44:Resist Cold
 I:90:4:0
 id:SPELL_RESIST_COLD
+dice:20+d20
 D:Grants you resistance to cold for 20+1d20 turns.
 
 N:45:Resist Fire
 I:90:4:1
 id:SPELL_RESIST_FIRE
+dice:20+d20
 D:Grants you resistance to fire for 20+1d20 turns.
 
 N:46:Resist Poison
 I:90:4:2
 id:SPELL_RESIST_POISON
+dice:20+d20
 D:Grants you resistance to poison for 20+1d20 turns.
 
 N:47:Resistance
 I:90:4:3
 id:SPELL_RESISTANCE
+dice:20+d20
 D:Grants you resistance to acid, cold, fire, lightning, and poison for
 D: 20+1d20 turns.  
 
 N:48:Shield
 I:90:4:4
 id:SPELL_SHIELD
+dice:30+d20
 D:Grants you +50 to AC for 30+1d20 turns.
 
 N:49:Rune of Protection
@@ -354,6 +392,8 @@ D: breaking it, or until you leave the level.
 N:50:Lesser Recharging
 I:90:2:1
 id:SPELL_RECHARGE_ITEM_I
+dice:$B
+expr:B:PLAYER_LEVEL:/ 5 + 2
 D:Adds charges to a stack of wands or staves.
 D:  Chance of success and number of charges gained increase with your
 D: level and decrease with level of wand or staff and number of charges.
@@ -362,16 +402,22 @@ D:  A failed attempt to recharge destroys one wand or staff from the stack.
 N:51:Enchant Armor
 I:90:7:2
 id:SPELL_ENCHANT_ARMOR
+dice:$B+1d3
+expr:B:PLAYER_LEVEL:/ 20
 D:Attempts to improve the armour class bonus of a piece of armour.
 
 N:52:Enchant Weapon
 I:90:7:3
 id:SPELL_ENCHANT_WEAPON
+dice:$B+1d4
+expr:B:PLAYER_LEVEL:/ 20
 D:Attempts to improve the to-hit bonus and the to-dam bonus of a weapon.
 
 N:53:Greater Recharging
 I:90:7:4
 id:SPELL_RECHARGE_ITEM_II
+dice:$B
+expr:B:PLAYER_LEVEL:+ 50
 D:Adds charges to a stack of wands or staves.
 D:  Chance of success and number of charges gained increase with your
 D: level and decrease with level of wand or staff and number of charges,
@@ -390,21 +436,29 @@ D: slay, is broken, or is cursed.
 N:55:Frost Ball
 I:90:3:0
 id:SPELL_FROST_BALL
+dice:$B
+expr:B:PLAYER_LEVEL:+ 30
 D:Shoots a radius-2 frost ball.
 
 N:56:Acid Ball
 I:90:5:3
 id:SPELL_ACID_BALL
+dice:$B
+expr:B:PLAYER_LEVEL:+ 40
 D:Shoots a radius-2 acid ball.
 
 N:57:Fire Ball
 I:90:3:4
 id:SPELL_FIRE_BALL
+dice:$B
+expr:B:PLAYER_LEVEL:+ 55
 D:Shoots a radius-2 fire ball.
 
 N:58:Ice Storm
 I:90:5:4
 id:SPELL_ICE_STORM
+dice:$B
+expr:B:PLAYER_LEVEL:* 2 + 50
 D:Shoots a radius-3 cold ball.
 
 N:59:Banishment
@@ -417,6 +471,9 @@ D:  You take 1d4 points of damage for every monster removed.
 N:60:Meteor Swarm
 I:90:5:5
 id:SPELL_METEOR_SWARM
+dice:$B+m$M
+expr:B:PLAYER_LEVEL:/ 2 + 30
+expr:M:PLAYER_LEVEL:/ 20 + 2
 D:Shoots a swarm of 3 or 4 meteors.
 D:  Meteors will travel until hitting a wall, a monster,
 D: or reaching the target location.
@@ -435,12 +492,16 @@ D:  You take 1d3 points of damage for every monster removed.
 N:62:Rift
 I:90:5:6
 id:SPELL_RIFT
+dice:40+$Dd7
+expr:D:PLAYER_LEVEL:+ 0
 D:Fires a gravity beam that hurts each monster in its path
 D: and has a chance of teleporting it away.
 
 N:63:Mana Storm
 I:90:8:7
 id:SPELL_MANA_STORM
+dice:$B
+expr:B:PLAYER_LEVEL:* 2 + 300
 D:Shoots a radius-3 mana ball that does unresistable
 D: damage to each monster in its area of effect.
 
@@ -456,11 +517,13 @@ D: for one turn only.
 N:65:Cure Light Wounds
 I:91:0:1
 id:PRAYER_CURE_LIGHT_WOUNDS
+dice:15+m15
 D:Cures 15% of your wounds (min 15hp) and heals 20 points worth of cuts.
 
 N:66:Bless
 I:91:0:2
 id:PRAYER_BLESS
+dice:12+d12
 D:Blesses you, giving a bonus of +5 to AC and +10 to-hit, for 12+1d12 turns.
 
 N:67:Remove Fear
@@ -472,6 +535,8 @@ D:Removes fear.
 N:68:Call Light
 I:91:0:4
 id:PRAYER_CALL_LIGHT
+dice:2d$S
+expr:S:PLAYER_LEVEL:/ 2
 D:Lights up all squares in a level-dependant area, and hurts
 D: all light-sensitive monsters in the area of effect.
 D:  If you are in a room, the entire room will be lit up as well.
@@ -495,16 +560,20 @@ D:  Uniques and monsters that resist fear are not affected.
 N:73:Portal
 I:91:1:1
 id:PRAYER_PORTAL
+dice:$B
+expr:B:PLAYER_LEVEL:* 3
 D:Teleports you randomly over a short distance.
 
 N:74:Cure Serious Wounds
 I:91:1:2
 id:PRAYER_CURE_SERIOUS_WOUNDS
+dice:25+m20
 D:Cures 20% of your wounds (min 25hp) and heals all cut damage.
 
 N:75:Chant
 I:91:1:3
 id:PRAYER_CHANT
+dice:24+d24
 D:Blesses you, giving a bonus of +5 to AC and +10 to-hit, for 24+1d24
 D: turns.
 
@@ -530,6 +599,7 @@ D:  This will also cure a bloated stomach.
 N:79:Resist Heat and Cold
 I:91:1:7
 id:PRAYER_RESIST_HEAT_COLD
+dice:10+d10
 D:Gives you temporary resistance to cold and fire, for 10+1d10 turns each.
 
 N:80:Neutralize Poison
@@ -540,6 +610,8 @@ D:Neutralizes poison.
 N:81:Orb of Draining
 I:91:2:1
 id:PRAYER_ORB_OF_DRAINING
+dice:$B+3d6
+expr:B:ORB_OF_DRAINING:+ 0
 D:Shoots a radius-2 or radius-3 ball that does unresistable
 D: damage to each monster in its area of effect.
 D:  Evil monsters take double damage.
@@ -549,17 +621,21 @@ D:  The bigger area of effect is attained at character level 30.
 N:82:Cure Critical Wounds
 I:91:2:2
 id:PRAYER_CURE_CRITICAL_WOUNDS
+dice:30+m25
 D:Cures 25% of your wounds (min 30hp) and heals all cut damage, poison,
 D: amnesia and stunning.
 
 N:83:Sense Invisible
 I:91:2:3
 id:PRAYER_SENSE_INVISIBLE
+dice:24+d24
 D:Enables you to see invisible monsters for 24+1d24 turns.
 
 N:84:Protection from Evil
 I:91:2:4
 id:PRAYER_PROTECTION_FROM_EVIL
+dice:$B+d25
+expr:B:PLAYER_LEVEL:* 3
 D:Protects you from evil for a level-dependant duration:
 D: all melee attacks by evil monsters have a chance to be repelled,
 D: unless the monster's level is higher than your character level.
@@ -581,6 +657,7 @@ D:Maps out a portion of the level around you.
 N:87:Cure Mortal Wounds
 I:91:2:7
 id:PRAYER_CURE_MORTAL_WOUNDS
+dice:50+m30
 D:Cures 30% of your wounds (min 50hp), cures all stunning and heals all
 D: cut damage, poison and amnesia.
 
@@ -593,22 +670,28 @@ D: causing it to flee in terror for a level-dependant duration.
 N:89:Prayer
 I:91:3:0
 id:PRAYER_PRAYER
+dice:48+d48
 D:Blesses you, giving a bonus of +5 to AC and +10 to-hit, for 48+1d48 turns.
 
 N:90:Dispel Undead
 I:91:3:1
 id:PRAYER_DISPEL_UNDEAD
+dice:d$S
+expr:S:PLAYER_LEVEL:* 3
 D:Inflicts unresistable damage on each undead monster within line of sight.
 
 N:91:Heal
 I:91:3:2
 id:PRAYER_HEAL
+dice:300+m35
 D:Cures 35% of your max hp (min 300), cures all stunning and heals all cut
 D: damage, poison and amnesia.
 
 N:92:Dispel Evil
 I:91:3:3
 id:PRAYER_DISPEL_EVIL
+dice:d$S
+expr:S:PLAYER_LEVEL:* 3
 D:Inflicts unresistable damage on each evil monster within line of sight.
 
 N:93:Glyph of Warding
@@ -625,6 +708,7 @@ D: breaking it, or until you leave the level.
 N:94:Holy Word
 I:91:3:5
 id:PRAYER_HOLY_WORD
+dice:1000
 D:Inflicts unresistable damage on each evil monster within line of sight,
 D: cures 1000 points of damage, cures all stunning, heals all cut damage,
 D: neutralizes poison, and removes fear.
@@ -662,17 +746,20 @@ D: dungeon level.
 N:100:Cure Serious Wounds
 I:91:6:0
 id:PRAYER_CURE_SERIOUS_WOUNDS2
+dice:25+m20
 D:Cures 20% of your wounds (min 25hp) and heals all cut damage.
 
 N:101:Cure Mortal Wounds
 I:91:6:1
 id:PRAYER_CURE_MORTAL_WOUNDS2
+dice:50+m30
 D:Cures 30% of your wounds (min 50hp), cures all stunning and heals all cut
 D: damage, poison and amnesia.
 
 N:102:Healing
 I:91:6:2
 id:PRAYER_HEALING
+dice:2000
 D:Cures 2000 points of damage, cures all stunning and heals all cut damage.
 
 N:103:Restoration
@@ -688,11 +775,15 @@ D:Restores experience points to maximum if it is currently below maximum.
 N:105:Dispel Undead
 I:91:8:0
 id:PRAYER_DISPEL_UNDEAD2
+dice:d$S
+expr:S:PLAYER_LEVEL:* 4
 D:Inflicts unresistable damage on each undead monster within line of sight.
 
 N:106:Dispel Evil
 I:91:8:1
 id:PRAYER_DISPEL_EVIL2
+dice:d$S
+expr:S:PLAYER_LEVEL:* 4
 D:Inflicts unresistable damage on each evil monster within line of sight.
 
 N:107:Banish Evil
@@ -713,6 +804,7 @@ D:  This prayer has no effect when used in the town.
 N:109:Annihilation
 I:91:8:4
 id:PRAYER_ANNIHILATION
+dice:200
 D:Inflicts 200 points of damage on a single monster that is not
 D: undead, a demon, an elemental, a golem, or a vortex.
 
@@ -724,6 +816,8 @@ D:Destroys all traps and doors within a 1-square radius of you.
 N:111:Recharging
 I:91:7:1
 id:PRAYER_RECHARGING
+dice:$B
+expr:B:PLAYER_LEVEL:+ 20
 D:Adds charges to a stack of wands or staves.
 D:  Chance of success and number of charges gained increase with your
 D: level and decrease with level of wand or staff and number of charges.
@@ -739,12 +833,14 @@ D:  A failed attempt to recharge destroys one wand or staff from the stack.
 N:113:Enchant Weapon
 I:91:7:3
 id:PRAYER_ENCHANT_WEAPON
+dice:1+1d4
 D:Attempts to improve the to-hit bonus and the to-dam bonus of a weapon.
 D: Also gives a chance to break a curse.
 
 N:114:Enchant Armour
 I:91:7:4
 id:PRAYER_ENCHANT_ARMOUR
+dice:2+1d3
 D:Attempts to improve the armour class bonus of a piece of armour.
 D: Also gives a chance to break a curse.
 
@@ -760,11 +856,14 @@ D: is already branded, has a slay, is broken, or is cursed.
 N:116:Blink
 I:91:4:0
 id:PRAYER_BLINK
+dice:10
 D:Teleports you randomly up to 10 squares away.
 
 N:117:Teleport Self
 I:91:4:1
 id:PRAYER_TELEPORT_SELF
+dice:$B
+expr:B:PLAYER_LEVEL:* 8
 D:Teleports you randomly within the current level.
 
 N:118:Teleport Other

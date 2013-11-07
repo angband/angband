@@ -2344,12 +2344,78 @@ static enum parser_error parse_s_id(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_s_dice(struct parser *p) {
+	struct spell *s = parser_priv(p);
+	dice_t *dice = NULL;
+	const char *string = NULL;
+
+	if (!s)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	dice = dice_new();
+
+	if (dice == NULL)
+		return PARSE_ERROR_INTERNAL;
+
+	string = parser_getstr(p, "dice");
+
+	if (dice_parse_string(dice, string)) {
+		s->dice = dice;
+	}
+	else {
+		dice_free(dice);
+		return PARSE_ERROR_GENERIC;
+	}
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_s_expr(struct parser *p) {
+	struct spell *s = parser_priv(p);
+	expression_t *expression = NULL;
+	expression_base_value_f function = NULL;
+	const char *name;
+	const char *base;
+	const char *expr;
+
+	if (!s)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	/* If there are no dice, assume that this is human and not parser error. */
+	if (s->dice == NULL)
+		return PARSE_ERROR_NONE;
+
+	name = parser_getsym(p, "name");
+	base = parser_getsym(p, "base");
+	expr = parser_getstr(p, "expr");
+	expression = expression_new();
+
+	if (expression == NULL)
+		return PARSE_ERROR_INTERNAL;
+
+	function = spell_value_base_by_name(base);
+	expression_set_base_value(expression, function);
+
+	if (expression_add_operations_string(expression, expr) < 0)
+		return PARSE_ERROR_GENERIC;
+
+	if (dice_bind_expression(s->dice, name, expression) < 0)
+		return PARSE_ERROR_GENERIC;
+
+	/* The dice object makes a deep copy of the expression, so we don't need it anymore. */
+	expression_free(expression);
+
+	return PARSE_ERROR_NONE;
+}
+
 struct parser *init_parse_s(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
 	parser_reg(p, "N uint index str name", parse_s_n);
 	parser_reg(p, "I uint tval uint sval uint snum", parse_s_i);
 	parser_reg(p, "id sym id", parse_s_id);
+	parser_reg(p, "dice str dice", parse_s_dice);
+	parser_reg(p, "expr sym name sym base str expr", parse_s_expr);
 	parser_reg(p, "D str desc", parse_s_d);
 	return p;
 }
