@@ -594,7 +594,7 @@ static const char *lore_describe_race_flag(int flag)
  */
 static const char *lore_describe_blow_method(int method)
 {
-	monster_blow_method_description(method);
+	return monster_blow_method_description(method);
 }
 
 /**
@@ -602,7 +602,7 @@ static const char *lore_describe_blow_method(int method)
  */
 static const char *lore_describe_blow_effect(int effect)
 {
-	monster_blow_effect_description(effect);
+	return monster_blow_effect_description(effect);
 }
 
 /**

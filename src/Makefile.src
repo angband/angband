@@ -31,6 +31,8 @@ HEADERS = \
 	wizard.h \
 	z-bitflag.h \
 	z-color.h \
+	z-dice.h \
+	z-expression.h \
 	z-file.h \
 	z-form.h \
 	z-msg.h \
@@ -43,8 +45,23 @@ HEADERS = \
 	z-util.h \
 	z-virt.h
 
-ZFILES = z-bitflag.o z-color.o z-file.o z-form.o z-msg.o z-quark.o z-queue.o \
-	z-rand.o z-set.o z-term.o z-type.o z-util.o z-virt.o z-textblock.o
+ZFILES = \
+	z-bitflag.o \
+	z-color.o \
+	z-dice.o \
+	z-expression.o \
+	z-file.o \
+	z-form.o \
+	z-msg.o \
+	z-quark.o \
+	z-queue.o \
+	z-rand.o \
+	z-set.o \
+	z-term.o \
+	z-textblock.o \
+	z-type.o \
+	z-util.o \
+	z-virt.o
 
 # MAINFILES is defined by autotools (or manually) to be combinations of these
 
