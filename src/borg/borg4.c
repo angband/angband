@@ -8546,7 +8546,7 @@ int borg_danger_aux(int y, int x, int c, int i, bool average, bool full_damage)
 			x_temp = x9 + ddx_ddd[ii];
 
 			/* Check for legality */
-			if (!cave_in_bounds_fully(cave, y_temp,x_temp)) continue;
+			if (!square_in_bounds_fully(cave, y_temp,x_temp)) continue;
 
 			/* Cannot occupy another monster's grid */
 			if (borg_grids[y_temp][x_temp].kill) continue;
@@ -8659,7 +8659,7 @@ int borg_danger_aux(int y, int x, int c, int i, bool average, bool full_damage)
 			x_temp = x9 + ddx_ddd[ii];
 
 			/* Check for legality */
-			if (!cave_in_bounds_fully(cave, y_temp,x_temp)) continue;
+			if (!square_in_bounds_fully(cave, y_temp,x_temp)) continue;
 
 			/* Cannot occupy another monster's grid */
 			if (borg_grids[y_temp][x_temp].kill) continue;
@@ -8839,7 +8839,7 @@ int borg_danger(int y, int x, int c, bool average, bool full_damage)
     int i, p=0;
 
     /* Base danger (from regional fear) but not within a vault.  Cheating the floor grid */
-	if (!cave_isvault(cave, y, x) && borg_skill[BI_CDEPTH] <= 80)
+	if (!square_isvault(cave, y, x) && borg_skill[BI_CDEPTH] <= 80)
 	{
 		p += borg_fear_region[y/11][x/11] * c;
 	}
@@ -8852,7 +8852,7 @@ int borg_danger(int y, int x, int c, bool average, bool full_damage)
      * this panel for too long, or monster's in a vault.  The fear_monsters[][]
      * can induce some bouncy behavior.
      */
-    if (time_this_panel <= 200 && !cave_isvault(cave, y, x))
+    if (time_this_panel <= 200 && !square_isvault(cave, y, x))
 	p += borg_fear_monsters[y][x] * c;
 
     full_damage = TRUE;

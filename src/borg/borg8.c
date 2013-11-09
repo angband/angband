@@ -2852,7 +2852,7 @@ bool borg_think_dungeon_light(void)
 	           	y = c_y + ddy_ddd[ii];
 
 				/* Bounds check */
-	            if (!cave_in_bounds_fully(cave, y,x)) continue;
+	            if (!square_in_bounds_fully(cave, y,x)) continue;
 
 	           	/* Access the grid */
 	           	ag = &borg_grids[y][x];
@@ -2892,7 +2892,7 @@ bool borg_think_dungeon_light(void)
 
 
 			/* Bounds check */
-            if (!cave_in_bounds_fully(cave, y,x)) continue;
+            if (!square_in_bounds_fully(cave, y,x)) continue;
 
            	/* Access the grid */
            	ag = &borg_grids[y][x];
@@ -2905,7 +2905,7 @@ bool borg_think_dungeon_light(void)
 				(y == c_y && x == c_x))
 			{
 				/* Cheat the grid info to see if the door is lit */
-				if (cave->feat[c_y][c_x] == CAVE_GLOW) ag->info |= BORG_GLOW;
+				if (cave->feat[c_y][c_x] == SQUARE_GLOW) ag->info |= BORG_GLOW;
 				continue;
 			}
 
@@ -3998,7 +3998,7 @@ bool borg_think_dungeon_munchkin(void)
 			x = c_x + ddx_ddd[i];
 
 			/* Bounds check */
-			if (!cave_in_bounds(cave, y, x)) continue;
+			if (!square_in_bounds(cave, y, x)) continue;
 
 			/* Get the grid */
 			ag = &borg_grids[y][x];

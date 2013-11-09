@@ -592,7 +592,7 @@ static void hp_colour_change(game_event_type type, game_event_data *data, void *
 	 */
 	if ((OPT(hp_changes_color)) && (use_graphics == GRAPHICS_NONE))
 	{
-		cave_light_spot(cave, p_ptr->py, p_ptr->px);
+		square_light_spot(cave, p_ptr->py, p_ptr->px);
 	}
 }
 
@@ -860,13 +860,11 @@ static size_t prt_state(int row, int col)
  */
 static size_t prt_dtrap(int row, int col)
 {
-	byte info = cave->info2[p_ptr->py][p_ptr->px];
-
 	/* The player is in a trap-detected grid */
-	if (info & (CAVE2_DTRAP))
+	if (sqinfo_has(cave->info[p_ptr->py][p_ptr->px], SQUARE_DTRAP))
 	{
 		/* The player is on the border */
-		if (info & (CAVE2_DEDGE))
+		if (sqinfo_has(cave->info[p_ptr->py][p_ptr->px], SQUARE_DEDGE))
 			c_put_str(TERM_YELLOW, "DTrap", row, col);
 		else
 			c_put_str(TERM_L_GREEN, "DTrap", row, col);

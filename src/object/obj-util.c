@@ -712,7 +712,7 @@ int scan_floor(int *items, int max_size, int y, int x, int mode)
 	int num = 0;
 	
 	/* Sanity */
-	if (!cave_in_bounds(cave, y, x)) return 0;
+	if (!square_in_bounds(cave, y, x)) return 0;
 
 	/* Scan all objects in the grid */
 	for (this_o_idx = cave->o_idx[y][x]; this_o_idx; this_o_idx = next_o_idx)
@@ -900,7 +900,7 @@ void delete_object_idx(int o_idx)
 		y = j_ptr->iy;
 		x = j_ptr->ix;
 
-		cave_light_spot(cave, y, x);
+		square_light_spot(cave, y, x);
 	}
 	
 	/* Delete the mimicking monster if necessary */
@@ -940,7 +940,7 @@ void delete_object(int y, int x)
 	s16b this_o_idx, next_o_idx = 0;
 
 	/* Paranoia */
-	if (!cave_in_bounds(cave, y, x)) return;
+	if (!square_in_bounds(cave, y, x)) return;
 
 	/* Scan all objects in the grid */
 	for (this_o_idx = cave->o_idx[y][x]; this_o_idx; this_o_idx = next_o_idx) {
@@ -979,7 +979,7 @@ void delete_object(int y, int x)
 	cave->o_idx[y][x] = 0;
 
 	/* Visual update */
-	cave_light_spot(cave, y, x);
+	square_light_spot(cave, y, x);
 }
 
 
@@ -2025,8 +2025,8 @@ s16b floor_carry(struct cave *c, int y, int x, object_type *j_ptr)
 		/* Link the floor to the object */
 		c->o_idx[y][x] = o_idx;
 
-		cave_note_spot(c, y, x);
-		cave_light_spot(c, y, x);
+		square_note_spot(c, y, x);
+		square_light_spot(c, y, x);
 	}
 
 	/* Result */
@@ -2037,7 +2037,7 @@ s16b floor_carry(struct cave *c, int y, int x, object_type *j_ptr)
 /*
  * Let an object fall to the ground at or near a location.
  *
- * The initial location is assumed to be "cave_in_bounds_fully(cave, )".
+ * The initial location is assumed to be "square_in_bounds_fully(cave, )".
  *
  * This function takes a parameter "chance".  This is the percentage
  * chance that the item will "disappear" instead of drop.  If the object
@@ -2109,13 +2109,13 @@ void drop_near(struct cave *c, object_type *j_ptr, int chance, int y, int x, boo
 			tx = x + dx;
 
 			/* Skip illegal grids */
-			if (!cave_in_bounds_fully(cave, ty, tx)) continue;
+			if (!square_in_bounds_fully(cave, ty, tx)) continue;
 
 			/* Require line of sight */
 			if (!los(y, x, ty, tx)) continue;
 
 			/* Require floor space */
-			if (!cave_isfloor(cave, ty, tx)) continue;
+			if (!square_isfloor(cave, ty, tx)) continue;
 
 			/* No objects */
 			k = 0;
@@ -2203,7 +2203,7 @@ void drop_near(struct cave *c, object_type *j_ptr, int chance, int y, int x, boo
 		}
 
 		/* Require floor space */
-		if (!cave_canputitem(cave, ty, tx)) continue;
+		if (!square_canputitem(cave, ty, tx)) continue;
 
 		/* Bounce to that location */
 		by = ty;
@@ -2250,7 +2250,7 @@ void drop_near(struct cave *c, object_type *j_ptr, int chance, int y, int x, boo
 void push_object(int y, int x)
 {
 	/* Save the original terrain feature */
-	struct feature *feat_old = cave_feat(cave, y, x);
+	struct feature *feat_old = square_feat(cave, y, x);
 
 	object_type *o_ptr;
    
@@ -2261,8 +2261,8 @@ void push_object(int y, int x)
 		q_push_ptr(queue, o_ptr);
 
 	/* Set feature to an open door */
-	cave_force_floor(cave, y, x);
-	cave_add_door(cave, y, x, FALSE);
+	square_force_floor(cave, y, x);
+	square_add_door(cave, y, x, FALSE);
 	
 	/* Drop objects back onto the floor */
 	while (q_len(queue) > 0)
@@ -2278,7 +2278,7 @@ void push_object(int y, int x)
 	delete_object(y, x);
 	
 	/* Reset cave feature */
-	cave_set_feat(cave, y, x, feat_old->fidx);
+	square_set_feat(cave, y, x, feat_old->fidx);
 	
 	q_free(queue);
 }

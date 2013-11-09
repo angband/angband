@@ -125,16 +125,16 @@ static bool summon_possible(int y1, int x1)
 		for (x = x1 - 2; x <= x1 + 2; x++)
 		{
 			/* Ignore illegal locations */
-			if (!cave_in_bounds(cave, y, x)) continue;
+			if (!square_in_bounds(cave, y, x)) continue;
 
 			/* Only check a circular area */
 			if (distance(y1, x1, y, x) > 2) continue;
 
 			/* Hack: no summon on glyph of warding */
-			if (cave_iswarded(cave, y, x)) continue;
+			if (square_iswarded(cave, y, x)) continue;
 
 			/* Require empty floor grid in line of sight */
-			if (cave_isempty(cave, y, x) && los(y1, x1, y, x))
+			if (square_isempty(cave, y, x) && los(y1, x1, y, x))
 			{
 				return (TRUE);
 			}
@@ -464,8 +464,8 @@ static bool near_permwall(const monster_type *m_ptr, struct cave *c)
 	{
 		for (x = (mx - 2); x <= (mx + 2); x++)
 		{
-            if (!cave_in_bounds_fully(c, y, x)) continue;
-            if (cave_isperm(c, y, x)) return TRUE;
+            if (!square_in_bounds_fully(c, y, x)) continue;
+            if (square_isperm(c, y, x)) return TRUE;
 		}
 	}
 	return FALSE;
@@ -824,10 +824,10 @@ static bool find_safety(struct cave *c, struct monster *m_ptr, int *yp, int *xp)
 			x = fx + dx;
 
 			/* Skip illegal locations */
-			if (!cave_in_bounds_fully(cave, y, x)) continue;
+			if (!square_in_bounds_fully(cave, y, x)) continue;
 
 			/* Skip locations in a wall */
-			if (!cave_ispassable(cave, y, x)) continue;
+			if (!square_ispassable(cave, y, x)) continue;
 
 			/* Ignore grids very far from the player */
 			if (c->when[y][x] < c->when[py][px]) continue;
@@ -910,10 +910,10 @@ static bool find_hiding(struct monster *m_ptr, int *yp, int *xp)
 			x = fx + dx;
 
 			/* Skip illegal locations */
-			if (!cave_in_bounds_fully(cave, y, x)) continue;
+			if (!square_in_bounds_fully(cave, y, x)) continue;
 
 			/* Skip occupied locations */
-			if (!cave_isempty(cave, y, x)) continue;
+			if (!square_isempty(cave, y, x)) continue;
 
 			/* Check for hidden, available grid */
 			if (!player_has_los_bold(y, x) && (clean_shot(fy, fx, y, x)))
@@ -989,7 +989,7 @@ static bool get_moves(struct cave *c, struct monster *m_ptr, int mm[5])
 			int rx = px + ddx_ddd[i];
 			/* Check grid around the player for room interior (room walls count)
 			   or other empty space */
-			if (cave_ispassable(cave, ry, rx) || cave_isroom(cave, ry, rx))
+			if (square_ispassable(cave, ry, rx) || square_isroom(cave, ry, rx))
 			{
 				/* One more open grid */
 				open++;
@@ -1043,7 +1043,7 @@ static bool get_moves(struct cave *c, struct monster *m_ptr, int mm[5])
 				x2 = px + ddx_ddd[(tmp + i) & 7];
 				
 				/* Ignore filled grids */
-				if (!cave_isempty(cave, y2, x2)) continue;
+				if (!square_isempty(cave, y2, x2)) continue;
 				
 				/* Try to fill this hole */
 				break;
@@ -2840,12 +2840,12 @@ static void process_monster(struct cave *c, struct monster *m_ptr)
 		nx = ox + ddx[d];
 
 		/* Floor is open? */
-		if (cave_ispassable(cave, ny, nx))
+		if (square_ispassable(cave, ny, nx))
 			/* Go ahead and move */
 			do_move = TRUE;
 
 		/* Permanent wall in the way */
-		else if (cave_iswall(cave, ny, nx) && cave_isperm(cave, ny, nx))
+		else if (square_iswall(cave, ny, nx) && square_isperm(cave, ny, nx))
 		{
 			/* Nothing */
 		}
@@ -2870,17 +2870,17 @@ static void process_monster(struct cave *c, struct monster *m_ptr)
 				do_move = TRUE;
 
 				/* Forget the wall */
-				cave->info[ny][nx] &= ~(CAVE_MARK);
+				sqinfo_off(cave->info[ny][nx], SQUARE_MARK);
 
 				/* Notice */
-				cave_destroy_wall(c, ny, nx);
+				square_destroy_wall(c, ny, nx);
 
 				/* Note changes to viewable region */
 				if (player_has_los_bold(ny, nx)) do_view = TRUE;
 			}
 
 			/* Handle doors and secret doors */
-			else if (cave_iscloseddoor(cave, ny, nx) || cave_issecretdoor(cave, ny, nx)) {
+			else if (square_iscloseddoor(cave, ny, nx) || square_issecretdoor(cave, ny, nx)) {
 				/* Take a turn */
 				do_turn = TRUE;
 
@@ -2895,8 +2895,8 @@ static void process_monster(struct cave *c, struct monster *m_ptr)
 					bool may_bash = ((rf_has(m_ptr->race->flags, RF_BASH_DOOR) && one_in_(2))? TRUE: FALSE);
 
 					/* Stuck door -- try to unlock it */
-					if (cave_islockeddoor(cave, ny, nx)) {
-						int k = cave_door_power(cave, ny, nx);
+					if (square_islockeddoor(cave, ny, nx)) {
+						int k = square_door_power(cave, ny, nx);
 
 						if (randint0(m_ptr->hp / 10) > k) {
 							/* Print a message */
@@ -2914,14 +2914,14 @@ static void process_monster(struct cave *c, struct monster *m_ptr)
 							}
 
 							/* Reduce the power of the door by one */
-							cave_set_feat(c, ny, nx, cave->feat[ny][nx] - 1);
+							square_set_feat(c, ny, nx, cave->feat[ny][nx] - 1);
 						}
 					}
 
 					/* Closed or secret door -- open or bash if allowed */
 					else {
 						if (may_bash) {
-							cave_smash_door(c, ny, nx);
+							square_smash_door(c, ny, nx);
 							msg("You hear a door burst open!");
 
 							disturb(p_ptr, 0, 0);
@@ -2929,7 +2929,7 @@ static void process_monster(struct cave *c, struct monster *m_ptr)
 							/* Fall into doorway */
 							do_move = TRUE;
 						} else
-							cave_open_door(c, ny, nx);
+							square_open_door(c, ny, nx);
 
 						/* Handle viewable doors */
 						if (player_has_los_bold(ny, nx))
@@ -2941,21 +2941,21 @@ static void process_monster(struct cave *c, struct monster *m_ptr)
 
 
 		/* Hack -- check for Glyph of Warding */
-		if (do_move && cave_iswarded(cave, ny, nx)) {
+		if (do_move && square_iswarded(cave, ny, nx)) {
 			/* Assume no move allowed */
 			do_move = FALSE;
 
 			/* Break the ward */
 			if (randint1(BREAK_GLYPH) < m_ptr->race->level) {
 				/* Describe observable breakage */
-				if (cave->info[ny][nx] & (CAVE_MARK))
+				if (sqinfo_has(cave->info[ny][nx], SQUARE_MARK))
 					msg("The rune of protection is broken!");
 
 				/* Forget the rune */
-				cave->info[ny][nx] &= ~CAVE_MARK;
+				sqinfo_off(cave->info[ny][nx], SQUARE_MARK);
 
 				/* Break the rune */
-				cave_remove_ward(c, ny, nx);
+				square_remove_ward(c, ny, nx);
 
 				/* Allow movement */
 				do_move = TRUE;
@@ -3001,7 +3001,7 @@ static void process_monster(struct cave *c, struct monster *m_ptr)
 
 		/* A monster is in the way */
 		if (do_move && (cave->m_idx[ny][nx] > 0)) {
-			monster_type *n_ptr = cave_monster_at(cave, ny, nx);
+			monster_type *n_ptr = square_monster(cave, ny, nx);
 
 			/* Kill weaker monsters */
 			int kill_ok = rf_has(m_ptr->race->flags, RF_KILL_BODY);
@@ -3009,7 +3009,7 @@ static void process_monster(struct cave *c, struct monster *m_ptr)
 			/* Move weaker monsters if they can swap places */
 			/* (not in a wall) */
 			int move_ok = (rf_has(m_ptr->race->flags, RF_MOVE_BODY) &&
-						   cave_ispassable(cave, m_ptr->fy, m_ptr->fx));
+						   square_ispassable(cave, m_ptr->fy, m_ptr->fx));
 
 			/* Assume no movement */
 			do_move = FALSE;

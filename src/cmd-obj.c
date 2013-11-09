@@ -760,7 +760,7 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 	}
 	
 	/* Hack to make Glyph of Warding work properly */
-	if (cave_isglyph(cave, py, px))
+	if (square_isglyph(cave, py, px))
 	{
 		/* Push objects off the grid */
 		if (cave->o_idx[py][px]) push_object(py, px);

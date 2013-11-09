@@ -44,10 +44,10 @@ static int dir_search[8] = {2,4,6,8,1,3,7,9};
 static bool is_valid_pf(int y, int x)
 {
 	/* Unvisited means allowed */
-	if (!(cave->info[y][x] & (CAVE_MARK))) return (TRUE);
+	if (!sqinfo_has(cave->info[y][x], SQUARE_MARK)) return (TRUE);
 
 	/* Require open space */
-	return (cave_ispassable(cave, y, x));
+	return (square_ispassable(cave, y, x));
 }
 
 static void fill_terrain_info(void)
@@ -86,7 +86,7 @@ bool findpath(int y, int x)
 
 	if ((x >= ox) && (x < ex) && (y >= oy) && (y < ey))
 	{
-		if ((cave->m_idx[y][x] > 0) && (cave_monster_at(cave, y, x)->ml))
+		if ((cave->m_idx[y][x] > 0) && (square_monster(cave, y, x)->ml))
 		{
 			terrain[y - oy][x - ox] = MAX_PF_LENGTH;
 		}
@@ -411,14 +411,14 @@ static int see_wall(int dir, int y, int x)
 	x += ddx[dir];
 
 	/* Illegal grids are not known walls XXX XXX XXX */
-	if (!cave_in_bounds(cave, y, x)) return (FALSE);
+	if (!square_in_bounds(cave, y, x)) return (FALSE);
 
 	/* Non-wall grids are not known walls */
-	if (!cave_seemslikewall(cave, y, x))
+	if (!square_seemslikewall(cave, y, x))
 		return FALSE;
 
 	/* Unknown walls are not known walls */
-	if (!(cave->info[y][x] & (CAVE_MARK))) return (FALSE);
+	if (!sqinfo_has(cave->info[y][x], SQUARE_MARK)) return (FALSE);
 
 	/* Default */
 	return (TRUE);
@@ -586,7 +586,7 @@ static bool run_test(void)
 		/* Visible monsters abort running */
 		if (cave->m_idx[row][col] > 0)
 		{
-			monster_type *m_ptr = cave_monster_at(cave, row, col);
+			monster_type *m_ptr = square_monster(cave, row, col);
 
 			/* Visible monster */
 			if (m_ptr->ml) return (TRUE);
@@ -604,9 +604,9 @@ static bool run_test(void)
 		inv = TRUE;
 
 		/* Check memorized grids */
-		if (cave->info[row][col] & (CAVE_MARK))
+		if (sqinfo_has(cave->info[row][col], SQUARE_MARK))
 		{
-			bool notice = cave_noticeable(cave, row, col);
+			bool notice = square_noticeable(cave, row, col);
 
 			/* Interesting feature */
 			if (notice) return (TRUE);
@@ -616,7 +616,7 @@ static bool run_test(void)
 		}
 
 		/* Analyze unknown grids and floors */
-		if (inv || cave_ispassable(cave, row, col))
+		if (inv || square_ispassable(cave, row, col))
 		{
 			/* Looking for open area */
 			if (p_ptr->run_open_area)
@@ -695,7 +695,7 @@ static bool run_test(void)
 		/* Visible monsters abort running */
 		if (cave->m_idx[row][col] > 0)
 		{
-			monster_type *m_ptr = cave_monster_at(cave, row, col);
+			monster_type *m_ptr = square_monster(cave, row, col);
 			
 			/* Visible monster */
 			if (m_ptr->ml && !is_mimicking(m_ptr)) return (TRUE);			
@@ -714,9 +714,9 @@ static bool run_test(void)
 			col = px + ddx[new_dir];
 
 			/* Unknown grid or non-wall */
-			/* Was: cave_ispassable(cave, row, col) */
-			if (!(cave->info[row][col] & (CAVE_MARK)) ||
-			    (cave_ispassable(cave, row, col))) {
+			/* Was: square_ispassable(cave, row, col) */
+			if (!sqinfo_has(cave->info[row][col], SQUARE_MARK) ||
+			    (square_ispassable(cave, row, col))) {
 				/* Looking to break right */
 				if (p_ptr->run_break_right)
 				{
@@ -744,9 +744,9 @@ static bool run_test(void)
 			col = px + ddx[new_dir];
 
 			/* Unknown grid or non-wall */
-			/* Was: cave_ispassable(cave, row, col) */
-			if (!(cave->info[row][col] & (CAVE_MARK)) ||
-			    (cave_ispassable(cave, row, col))) {
+			/* Was: square_ispassable(cave, row, col) */
+			if (!sqinfo_has(cave->info[row][col], SQUARE_MARK) ||
+			    (square_ispassable(cave, row, col))) {
 				/* Looking to break left */
 				if (p_ptr->run_break_left)
 				{
@@ -867,7 +867,7 @@ void run_step(int dir)
 				x = p_ptr->px + ddx[pf_result[pf_result_index] - '0'];
 
 				/* Known wall */
-				if ((cave->info[y][x] & (CAVE_MARK)) && !cave_ispassable(cave, y, x))
+				if (sqinfo_has(cave->info[y][x], SQUARE_MARK) && !square_ispassable(cave, y, x))
 				{
 					disturb(p_ptr, 0,0);
 					p_ptr->running_withpathfind = FALSE;
@@ -892,7 +892,7 @@ void run_step(int dir)
 				x = p_ptr->px + ddx[pf_result[pf_result_index] - '0'];
 
 				/* Known wall */
-				if ((cave->info[y][x] & (CAVE_MARK)) && !cave_ispassable(cave, y, x))
+				if (sqinfo_has(cave->info[y][x], SQUARE_MARK) && !square_ispassable(cave, y, x))
 				{
 					disturb(p_ptr, 0,0);
 					p_ptr->running_withpathfind = FALSE;
@@ -904,7 +904,7 @@ void run_step(int dir)
 				x = x + ddx[pf_result[pf_result_index-1] - '0'];
 
 				/* Known wall */
-				if ((cave->info[y][x] & (CAVE_MARK)) && !cave_ispassable(cave, y, x))
+				if (sqinfo_has(cave->info[y][x], SQUARE_MARK) && !square_ispassable(cave, y, x))
 				{
 					p_ptr->running_withpathfind = FALSE;
 

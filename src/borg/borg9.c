@@ -6053,7 +6053,7 @@ void do_cmd_borg(void)
                 if (borg_grids[y][x].info & BORG_VIEW)	msg("Info for grid (%d, %d) is VIEW", y,x);
                 if (borg_grids[y][x].info & BORG_TEMP)	msg("Info for grid (%d, %d) is TEMP", y,x);
                 if (borg_grids[y][x].info & BORG_XTRA)	msg("Info for grid (%d, %d) is XTRA", y,x);
-				if (cave_isvault(cave, y, x)) msg("Info for grid (%d, %d) is ICKY", y,x);
+				if (square_isvault(cave, y, x)) msg("Info for grid (%d, %d) is ICKY", y,x);
 
 				borg_note(format("Info for grid (%d, %d) is %d", y,x,cave->info[y][x]));
 			prt_map();

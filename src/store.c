@@ -657,8 +657,8 @@ static struct store *current_store(void)
 	if (store_knowledge != STORE_NONE)
 		n = store_knowledge;
 
-	else if (cave_isshop(cave, p_ptr->py, p_ptr->px))
-		n = cave_shopnum(cave, p_ptr->py, p_ptr->px);
+	else if (square_isshop(cave, p_ptr->py, p_ptr->px))
+		n = square_shopnum(cave, p_ptr->py, p_ptr->px);
 
 	if (n != STORE_NONE)
 		return &stores[n];

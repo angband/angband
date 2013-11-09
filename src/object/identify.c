@@ -353,7 +353,7 @@ void object_flavor_aware(object_type *o_ptr)
 		/* So update display for all floor objects of this kind */
 		if (!floor_o_ptr->held_m_idx &&
 				floor_o_ptr->kind == o_ptr->kind)
-			cave_light_spot(cave, floor_o_ptr->iy, floor_o_ptr->ix);
+			square_light_spot(cave, floor_o_ptr->iy, floor_o_ptr->ix);
 	}
 }
 

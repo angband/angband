@@ -321,7 +321,7 @@ bool borg_check_LIGHT_only(void)
 			int y = c_y + ddy_ddd[i];
 			
 			/* Bounds check */
-			if (!cave_in_bounds_fully(cave, y, x)) continue;
+			if (!square_in_bounds_fully(cave, y, x)) continue;
 			
 			/* Get grid */
 			ag = &borg_grids[y][x];
@@ -357,7 +357,7 @@ bool borg_check_LIGHT_only(void)
 				borg_grid *ag;
 
 				/* Bounds check */
-				if (!cave_in_bounds_fully(cave, y, x)) continue;
+				if (!square_in_bounds_fully(cave, y, x)) continue;
 				
 				/* Get grid */
 				ag = &borg_grids[y][x];
@@ -365,7 +365,7 @@ bool borg_check_LIGHT_only(void)
 				/* Must be a floor grid lit by torchlight, not by magic */
 				if (borg_cave_floor_grid(ag) &&
 						(ag->info & BORG_LIGHT) &&
-						!(cave->info[y][x] & CAVE_GLOW)) {
+					!sqinfo_has(cave->info[y][x], SQUARE_GLOW)) {
 					floors++;
 				}
 			}

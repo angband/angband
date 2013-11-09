@@ -1103,7 +1103,7 @@ static void process_player(void)
 					continue;
 				if (!rf_has(mon->race->flags, RF_ATTR_MULTI))
 					continue;
-				cave_light_spot(cave, mon->fy, mon->fx);
+				square_light_spot(cave, mon->fy, mon->fx);
 			}
 
 			/* Clear NICE flag, and show marked monsters */

@@ -357,7 +357,7 @@ enum
  * Note the use of comparison to zero to force a "boolean" result
  */
 #define player_has_los_bold(Y,X) \
-	((cave->info[Y][X] & (CAVE_VIEW)) != 0)
+	(sqinfo_has(cave->info[Y][X], SQUARE_VIEW))
 
 
 /*
@@ -366,7 +366,7 @@ enum
  * Note the use of comparison to zero to force a "boolean" result
  */
 #define player_can_see_bold(Y,X) \
-	((cave->info[Y][X] & (CAVE_SEEN)) != 0)
+	(sqinfo_has(cave->info[Y][X], SQUARE_SEEN))
 
 
 /*

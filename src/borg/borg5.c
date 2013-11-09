@@ -890,7 +890,7 @@ static void borg_fear_grid(char *who, int y, int x, int k)  /* 8-8, this was uin
 	if (borg_morgoth_position || borg_as_position) return;
 
 	/* Do not add fear in a vault -- Cheating the cave info */
-	if (cave_isvault(cave, y, x)) return;
+	if (square_isvault(cave, y, x)) return;
 
 	/* Access the grid info */
 	ag = &borg_grids[y][x];
@@ -958,7 +958,7 @@ static void borg_fear_regional(char *who, int y, int x, int k, bool seen_guy) /*
     int x0, y0, x1, x2, y1, y2;
 
 	/* Do not add fear in a vault -- Cheating the cave info */
-  	if (cave_isvault(cave, y, x)) return;
+  	if (square_isvault(cave, y, x)) return;
 
     /* Messages */
     if (seen_guy)
@@ -1511,7 +1511,7 @@ static void borg_follow_kill(int i)
         y = oy + dy;
 
 		/* legal */
-		if (!cave_in_bounds_fully(cave, y,x)) continue;
+		if (!square_in_bounds_fully(cave, y,x)) continue;
 
 		/* Access the grid */
         ag = &borg_grids[y][x];
@@ -4735,7 +4735,7 @@ void borg_update(void)
         int x = c_x + borg_ddx_ddd[j];
 
 		/* Stay in the bounds */
-		if (!cave_in_bounds(cave, y, x))
+		if (!square_in_bounds(cave, y, x))
 		{
 			floor_grid++;
 			continue;
@@ -5097,7 +5097,7 @@ void borg_update(void)
 	            y = kill->y + ddy_ddd[ii];
 
 				/* Legal grid */
-				if (!cave_in_bounds_fully(cave, y,x)) continue;
+				if (!square_in_bounds_fully(cave, y,x)) continue;
 
 				/* Access the grid */
 	            ag = &borg_grids[y][x];

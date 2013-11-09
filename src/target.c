@@ -168,7 +168,7 @@ bool target_set_monster(struct monster *mon)
 void target_set_location(int y, int x)
 {
 	/* Legal target */
-	if (cave_in_bounds_fully(cave, y, x))
+	if (square_in_bounds_fully(cave, y, x))
 	{
 		/* Save target info */
 		target_set = TRUE;
@@ -299,7 +299,7 @@ static bool target_set_interactive_accept(int y, int x)
 	/* Visible monsters */
 	if (cave->m_idx[y][x] > 0)
 	{
-		monster_type *m_ptr = cave_monster_at(cave, y, x);
+		monster_type *m_ptr = square_monster(cave, y, x);
 
 		/* Visible monsters */
 		if (m_ptr->ml && !m_ptr->unaware) return (TRUE);
@@ -313,7 +313,7 @@ static bool target_set_interactive_accept(int y, int x)
 	}
 
 	/* Interesting memorized features */
-	if (cave->info[y][x] & (CAVE_MARK) && !cave_isboring(cave, y, x))
+	if (sqinfo_has(cave->info[y][x], SQUARE_MARK) && !square_isboring(cave, y, x))
 		return (TRUE);
 
 	/* Nope */
@@ -334,7 +334,7 @@ static struct point_set *target_set_interactive_prepare(int mode)
 		for (x = Term->offset_x; x < Term->offset_x + SCREEN_WID; x++)
 		{
 			/* Check bounds */
-			if (!cave_in_bounds_fully(cave, y, x)) continue;
+			if (!square_in_bounds_fully(cave, y, x)) continue;
 
 			/* Require "interesting" contents */
 			if (!target_set_interactive_accept(y, x)) continue;
@@ -346,7 +346,7 @@ static struct point_set *target_set_interactive_prepare(int mode)
 				if (!(cave->m_idx[y][x] > 0)) continue;
 
 				/* Must be a targettable monster */
-			 	if (!target_able(cave_monster_at(cave, y, x))) continue;
+			 	if (!target_able(square_monster(cave, y, x))) continue;
 			}
 
 			/* Save the location */
@@ -664,7 +664,7 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 		/* Actual monsters */
 		if (cave->m_idx[y][x] > 0)
 		{
-			monster_type *m_ptr = cave_monster_at(cave, y, x);
+			monster_type *m_ptr = square_monster(cave, y, x);
 			const monster_lore *l_ptr = get_lore(m_ptr->race);
 
 			/* Visible */
@@ -930,21 +930,21 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 		/* Double break */
 		if (this_o_idx) break;
 
-		name = cave_apparent_name(cave, p_ptr, y, x);
+		name = square_apparent_name(cave, p_ptr, y, x);
 
 		/* Terrain feature if needed */
-		if (boring || cave_isinteresting(cave, y, x))
+		if (boring || square_isinteresting(cave, y, x))
 		{
 			/* Hack -- handle unknown grids */
 
 			/* Pick a prefix */
-			if (*s2 && cave_isdoor(cave, y, x)) s2 = "in ";
+			if (*s2 && square_isdoor(cave, y, x)) s2 = "in ";
 
 			/* Pick proper indefinite article */
 			s3 = (is_a_vowel(name[0])) ? "an " : "a ";
 
 			/* Hack -- special introduction for store doors */
-			if (cave_isshop(cave, y, x))
+			if (square_isshop(cave, y, x))
 			{
 				s3 = "the entrance to the ";
 			}
@@ -1015,7 +1015,7 @@ bool target_set_closest(int mode)
 	/* Find the first monster in the queue */
 	y = targets->pts[0].y;
 	x = targets->pts[0].x;
-	m_ptr = cave_monster_at(cave, y, x);
+	m_ptr = square_monster(cave, y, x);
 	
 	/* Target the monster, if possible */
 	if (!target_able(m_ptr))
@@ -1107,9 +1107,9 @@ static int draw_path(u16b path_n, u16b *path_g, wchar_t *c, int *a, int y1, int 
 		Term_what(Term->scr->cx, Term->scr->cy, a+i, c+i);
 
 		/* Choose a colour. */
-		if (cave->m_idx[y][x] && cave_monster_at(cave, y, x)->ml) {
+		if (cave->m_idx[y][x] && square_monster(cave, y, x)->ml) {
 			/* Visible monsters are red. */
-			monster_type *m_ptr = cave_monster_at(cave, y, x);
+			monster_type *m_ptr = square_monster(cave, y, x);
 
 			/* Mimics act as objects */
 			if (rf_has(m_ptr->race->flags, RF_UNAWARE)) 
@@ -1122,12 +1122,12 @@ static int draw_path(u16b path_n, u16b *path_g, wchar_t *c, int *a, int y1, int 
 			/* Known objects are yellow. */
 			colour = TERM_YELLOW;
 
-		else if (!cave_ispassable(cave, y,x) &&
-				 ((cave->info[y][x] & (CAVE_MARK)) || player_can_see_bold(y,x)))
+		else if ((!square_ispassable(cave, y,x) &&
+				  sqinfo_has(cave->info[y][x], SQUARE_MARK)) || player_can_see_bold(y,x))
 			/* Known walls are blue. */
 			colour = TERM_BLUE;
 
-		else if (!(cave->info[y][x] & (CAVE_MARK)) && !player_can_see_bold(y,x))
+		else if (!sqinfo_has(cave->info[y][x], SQUARE_MARK) && !player_can_see_bold(y,x))
 			/* Unknown squares are grey. */
 			colour = TERM_L_DARK;
 
@@ -1279,7 +1279,7 @@ bool target_set_interactive(int mode, int x, int y)
 		
 			/* Update help */
 			if (help) {
-				bool good_target = target_able(cave_monster_at(cave, y, x));
+				bool good_target = target_able(square_monster(cave, y, x));
 				target_display_help(good_target, !(flag && point_set_size(targets)));
 			}
 
@@ -1315,7 +1315,7 @@ bool target_set_interactive(int mode, int x, int y)
 					x = KEY_GRID_X(press);//.mouse.x;
 					if (press.mouse.mods & KC_MOD_CONTROL) {
 						/* same as keyboard target selection command below */
-						struct monster *m = cave_monster_at(cave, y, x);
+						struct monster *m = square_monster(cave, y, x);
 
 						if (target_able(m)) {
 							/* Set up target information */
@@ -1415,7 +1415,7 @@ bool target_set_interactive(int mode, int x, int y)
 				case '0':
 				case '.':
 				{
-					struct monster *m = cave_monster_at(cave, y, x);
+					struct monster *m = square_monster(cave, y, x);
 
 					if (target_able(m))
 					{
@@ -1513,7 +1513,7 @@ bool target_set_interactive(int mode, int x, int y)
 			/* Update help */
 			if (help) 
 			{
-				bool good_target = target_able(cave_monster_at(cave, y, x));
+				bool good_target = target_able(square_monster(cave, y, x));
 				target_display_help(good_target, !(flag && point_set_size(targets)));
 			}
 

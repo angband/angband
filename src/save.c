@@ -602,17 +602,12 @@ void wr_stores(void)
 
 
 /*
- * The cave grid flags that get saved in the savefile
- */
-#define IMPORTANT_FLAGS (CAVE_MARK | CAVE_GLOW | CAVE_VAULT | CAVE_ROOM)
-
-
-/*
  * Write the current dungeon
  */
 void wr_dungeon(void)
 {
 	int y, x;
+	size_t i;
 
 	byte tmp8u;
 
@@ -632,12 +627,15 @@ void wr_dungeon(void)
 	wr_u16b(p_ptr->px);
 	wr_u16b(cave->height);
 	wr_u16b(cave->width);
-	wr_u16b(0);
+	wr_u16b(SQUARE_SIZE);
 	wr_u16b(0);
 
 
 	/*** Simple "Run-Length-Encoding" of cave ***/
 
+    /* Loop across bytes of cave->info */
+    for (i = 0; i < SQUARE_SIZE; i++)
+    {
 	/* Note that this will induce two wasted bytes */
 	count = 0;
 	prev_char = 0;
@@ -648,7 +646,7 @@ void wr_dungeon(void)
 		for (x = 0; x < DUNGEON_WID; x++)
 		{
 			/* Extract the important cave->info flags */
-			tmp8u = (cave->info[y][x] & (IMPORTANT_FLAGS));
+			tmp8u = cave->info[y][x][i];
 
 			/* If the run is broken, or too full, flush it */
 			if ((tmp8u != prev_char) || (count == MAX_UCHAR))
@@ -673,45 +671,7 @@ void wr_dungeon(void)
 		wr_byte((byte)count);
 		wr_byte((byte)prev_char);
 	}
-
-	/** Now dump the cave->info2[][] stuff **/
-
-	/* Note that this will induce two wasted bytes */
-	count = 0;
-	prev_char = 0;
-
-	/* Dump the cave */
-	for (y = 0; y < DUNGEON_HGT; y++)
-	{
-		for (x = 0; x < DUNGEON_WID; x++)
-		{
-			/* Keep all the information from info2 */
-			tmp8u = cave->info2[y][x];
-
-			/* If the run is broken, or too full, flush it */
-			if ((tmp8u != prev_char) || (count == MAX_UCHAR))
-			{
-				wr_byte((byte)count);
-				wr_byte((byte)prev_char);
-				prev_char = tmp8u;
-				count = 1;
-			}
-
-			/* Continue the run */
-			else
-			{
-				count++;
-			}
-		}
 	}
-
-	/* Flush the data (if any) */
-	if (count)
-	{
-		wr_byte((byte)count);
-		wr_byte((byte)prev_char);
-	}
-
 
 	/*** Simple "Run-Length-Encoding" of cave ***/
 

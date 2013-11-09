@@ -65,21 +65,36 @@ struct monster;
 
 
 /*
- * Special cave grid flags
+ * Square flags
  */
-#define CAVE_MARK		0x01 	/* memorized feature */
-#define CAVE_GLOW		0x02 	/* self-illuminating */
-#define CAVE_VAULT		0x04 	/* part of a vault */
-#define CAVE_ROOM		0x08 	/* part of a room */
-#define CAVE_SEEN		0x10 	/* seen flag */
-#define CAVE_VIEW		0x20 	/* view flag */
-#define CAVE_WASSEEN		0x40 	/* previously seen (during update) */
-#define CAVE_WALL		0x80 	/* wall flag */
 
-#define CAVE2_DTRAP		0x01	/* trap detected grid */
-#define CAVE2_FEEL		0x02	/* hidden points to trigger feelings*/
-#define CAVE2_DEDGE		0x04	/* border of trap detected area */
-#define CAVE2_VERT		0x08	/* use an alternate visual for this grid */
+enum
+{
+	#define SQUARE(a,b) SQUARE_##a,
+	#include "list-square-flags.h"
+	#undef SQUARE
+	SQUARE_MAX
+};
+
+#define SQUARE_SIZE                FLAG_SIZE(SQUARE_MAX)
+
+#define sqinfo_has(f, flag)        flag_has_dbg(f, SQUARE_SIZE, flag, #f, #flag)
+#define sqinfo_next(f, flag)       flag_next(f, SQUARE_SIZE, flag)
+#define sqinfo_is_empty(f)         flag_is_empty(f, SQUARE_SIZE)
+#define sqinfo_is_full(f)          flag_is_full(f, SQUARE_SIZE)
+#define sqinfo_is_inter(f1, f2)    flag_is_inter(f1, f2, SQUARE_SIZE)
+#define sqinfo_is_subset(f1, f2)   flag_is_subset(f1, f2, SQUARE_SIZE)
+#define sqinfo_is_equal(f1, f2)    flag_is_equal(f1, f2, SQUARE_SIZE)
+#define sqinfo_on(f, flag)         flag_on_dbg(f, SQUARE_SIZE, flag, #f, #flag)
+#define sqinfo_off(f, flag)        flag_off(f, SQUARE_SIZE, flag)
+#define sqinfo_wipe(f)             flag_wipe(f, SQUARE_SIZE)
+#define sqinfo_setall(f)           flag_setall(f, SQUARE_SIZE)
+#define sqinfo_negate(f)           flag_negate(f, SQUARE_SIZE)
+#define sqinfo_copy(f1, f2)        flag_copy(f1, f2, SQUARE_SIZE)
+#define sqinfo_union(f1, f2)       flag_union(f1, f2, SQUARE_SIZE)
+#define sqinfo_comp_union(f1, f2)  flag_comp_union(f1, f2, SQUARE_SIZE)
+#define sqinfo_inter(f1, f2)       flag_inter(f1, f2, SQUARE_SIZE)
+#define sqinfo_diff(f1, f2)        flag_diff(f1, f2, SQUARE_SIZE)
 
 
 /*
@@ -186,8 +201,8 @@ typedef struct
 
 
 
-/** An array of 256 bytes */
-typedef byte byte_256[256];
+/** An array of 256 cave square bitflag arrays */
+typedef bitflag grid_256[256][SQUARE_SIZE];
 
 /** An array of DUNGEON_WID bytes */
 typedef byte byte_wid[DUNGEON_WID];
@@ -209,8 +224,7 @@ struct cave {
 	
 	u16b feeling_squares; /* Keep track of how many feeling squares the player has visited */
 
-	byte (*info)[256];
-	byte (*info2)[256];
+	bitflag (*info)[256][SQUARE_SIZE];
 	byte (*feat)[DUNGEON_WID];
 	byte (*cost)[DUNGEON_WID];
 	byte (*when)[DUNGEON_WID];
@@ -225,7 +239,7 @@ struct cave {
 extern int distance(int y1, int x1, int y2, int x2);
 extern bool los(int y1, int x1, int y2, int x2);
 extern bool no_light(void);
-extern bool cave_valid_bold(int y, int x);
+extern bool square_valid_bold(int y, int x);
 extern byte get_color(byte a, int attr, int n);
 extern void map_info(unsigned x, unsigned y, grid_data *g);
 extern void grid_data_as_text(grid_data *g, int *ap, wchar_t *cp, int *tap, wchar_t *tcp);
@@ -252,126 +266,126 @@ extern struct cave *cave;
 extern struct cave *cave_new(void);
 extern void cave_free(struct cave *c);
 
-extern struct feature *cave_feat(struct cave *c, int y, int x);
-extern void cave_set_feat(struct cave *c, int y, int x, int feat);
-extern void cave_note_spot(struct cave *c, int y, int x);
-extern void cave_light_spot(struct cave *c, int y, int x);
+extern struct feature *square_feat(struct cave *c, int y, int x);
+extern void square_set_feat(struct cave *c, int y, int x, int feat);
+extern void square_note_spot(struct cave *c, int y, int x);
+extern void square_light_spot(struct cave *c, int y, int x);
 extern void cave_update_flow(struct cave *c);
 extern void cave_forget_flow(struct cave *c);
 extern void cave_illuminate(struct cave *c, bool daytime);
 
 /**
- * cave_predicate is a function pointer which tests a given square to
+ * square_predicate is a function pointer which tests a given square to
  * see if the predicate in question is true.
  */
-typedef bool (*cave_predicate)(struct cave *c, int y, int x);
+typedef bool (*square_predicate)(struct cave *c, int y, int x);
 
 /* FEATURE PREDICATES */
-extern bool cave_isfloor(struct cave *c, int y, int x);
-extern bool cave_isrock(struct cave *c, int y, int x);
-extern bool cave_isperm(struct cave *c, int y, int x);
+extern bool square_isfloor(struct cave *c, int y, int x);
+extern bool square_isrock(struct cave *c, int y, int x);
+extern bool square_isperm(struct cave *c, int y, int x);
 extern bool feat_is_magma(int feat);
-extern bool cave_ismagma(struct cave *c, int y, int x);
+extern bool square_ismagma(struct cave *c, int y, int x);
 extern bool feat_is_quartz(int feat);
-extern bool cave_isquartz(struct cave *c, int y, int x);
-extern bool cave_ismineral(struct cave *c, int y, int x);
-extern bool cave_hassecretvein(struct cave *c, int y, int x);
-extern bool cave_hasgoldvein(struct cave *c, int y, int x);
+extern bool square_isquartz(struct cave *c, int y, int x);
+extern bool square_ismineral(struct cave *c, int y, int x);
+extern bool square_hassecretvein(struct cave *c, int y, int x);
+extern bool square_hasgoldvein(struct cave *c, int y, int x);
 extern bool feat_is_treasure(int feat);
-extern bool cave_issecretdoor(struct cave *c, int y, int x);
-extern bool cave_isopendoor(struct cave *c, int y, int x);
-extern bool cave_iscloseddoor(struct cave *c, int y, int x);
-extern bool cave_islockeddoor(struct cave *c, int y, int x);
-extern bool cave_isbrokendoor(struct cave *c, int y, int x);
-extern bool cave_isdoor(struct cave *c, int y, int x);
-extern bool cave_issecrettrap(struct cave *c, int y, int x);
+extern bool square_issecretdoor(struct cave *c, int y, int x);
+extern bool square_isopendoor(struct cave *c, int y, int x);
+extern bool square_iscloseddoor(struct cave *c, int y, int x);
+extern bool square_islockeddoor(struct cave *c, int y, int x);
+extern bool square_isbrokendoor(struct cave *c, int y, int x);
+extern bool square_isdoor(struct cave *c, int y, int x);
+extern bool square_issecrettrap(struct cave *c, int y, int x);
 extern bool feat_is_known_trap(int feat);
 extern bool feat_is_wall(int feat);
-extern bool cave_isknowntrap(struct cave *c, int y, int x);
-extern bool cave_istrap(struct cave *c, int y, int x);
+extern bool square_isknowntrap(struct cave *c, int y, int x);
+extern bool square_istrap(struct cave *c, int y, int x);
 extern bool feature_isshop(int feat);
-extern bool cave_isstairs(struct cave *c, int y, int x);
-extern bool cave_isupstairs(struct cave *c, int y, int x);
-extern bool cave_isdownstairs(struct cave *c, int y, int x);
-extern bool cave_isshop(struct cave *c, int y, int x);
-extern bool cave_isglyph(struct cave *c, int y, int x);
+extern bool square_isstairs(struct cave *c, int y, int x);
+extern bool square_isupstairs(struct cave *c, int y, int x);
+extern bool square_isdownstairs(struct cave *c, int y, int x);
+extern bool square_isshop(struct cave *c, int y, int x);
+extern bool square_isglyph(struct cave *c, int y, int x);
 
 /* BEHAVIOR PREDICATES */
-extern bool cave_isopen(struct cave *c, int y, int x);
-extern bool cave_isempty(struct cave *c, int y, int x);
-extern bool cave_canputitem(struct cave *c, int y, int x);
-extern bool cave_isdiggable(struct cave *c, int y, int x);
+extern bool square_isopen(struct cave *c, int y, int x);
+extern bool square_isempty(struct cave *c, int y, int x);
+extern bool square_canputitem(struct cave *c, int y, int x);
+extern bool square_isdiggable(struct cave *c, int y, int x);
 extern bool feat_ispassable(feature_type *f_ptr);
 extern bool feat_is_monster_walkable(feature_type *feature);
-extern bool cave_is_monster_walkable(struct cave *c, int y, int x);
-extern bool cave_ispassable(struct cave *c, int y, int x);
-extern bool cave_iswall(struct cave *c, int y, int x);
-extern bool cave_isstrongwall(struct cave *c, int y, int x);
-extern bool cave_isvault(struct cave *c, int y, int x);
-extern bool cave_isroom(struct cave *c, int y, int x);
-extern bool cave_isrubble(struct cave *c, int y, int x);
-extern bool cave_isfeel(struct cave *c, int y, int x);
+extern bool square_is_monster_walkable(struct cave *c, int y, int x);
+extern bool square_ispassable(struct cave *c, int y, int x);
+extern bool square_iswall(struct cave *c, int y, int x);
+extern bool square_isstrongwall(struct cave *c, int y, int x);
+extern bool square_isvault(struct cave *c, int y, int x);
+extern bool square_isroom(struct cave *c, int y, int x);
+extern bool square_isrubble(struct cave *c, int y, int x);
+extern bool square_isfeel(struct cave *c, int y, int x);
 extern bool feat_isboring(feature_type *f_ptr);
-extern bool cave_isboring(struct cave *c, int y, int x);
-extern bool cave_isview(struct cave *c, int y, int x);
-extern bool cave_isseen(struct cave *c, int y, int x);
-extern bool cave_wasseen(struct cave *c, int y, int x);
-extern bool cave_isglow(struct cave *c, int y, int x);
-extern bool cave_iswarded(struct cave *c, int y, int x);
-extern bool cave_canward(struct cave *c, int y, int x);
+extern bool square_isboring(struct cave *c, int y, int x);
+extern bool square_isview(struct cave *c, int y, int x);
+extern bool square_isseen(struct cave *c, int y, int x);
+extern bool square_wasseen(struct cave *c, int y, int x);
+extern bool square_isglow(struct cave *c, int y, int x);
+extern bool square_iswarded(struct cave *c, int y, int x);
+extern bool square_canward(struct cave *c, int y, int x);
 
-extern bool cave_seemslikewall(struct cave *c, int y, int x);
+extern bool square_seemslikewall(struct cave *c, int y, int x);
 /* interesting to memorize when mapping */
-extern bool cave_isinteresting(struct cave *c, int y, int x);
+extern bool square_isinteresting(struct cave *c, int y, int x);
 /* noticeable when running */
-extern bool cave_noticeable(struct cave *c, int y, int x);
+extern bool square_noticeable(struct cave *c, int y, int x);
 
 /* Feature placers */
-extern void cave_add_trap(struct cave *c, int y, int x);
-extern void cave_add_ward(struct cave *c, int y, int x);
-extern void cave_add_stairs(struct cave *c, int y, int x, int depth);
-extern void cave_add_door(struct cave *c, int y, int x, bool closed);
+extern void square_add_trap(struct cave *c, int y, int x);
+extern void square_add_ward(struct cave *c, int y, int x);
+extern void square_add_stairs(struct cave *c, int y, int x, int depth);
+extern void square_add_door(struct cave *c, int y, int x, bool closed);
 
-extern void cave_remove_ward(struct cave *c, int y, int x);
+extern void square_remove_ward(struct cave *c, int y, int x);
 
 extern void cave_generate(struct cave *c, struct player *p);
 
-extern bool cave_in_bounds(struct cave *c, int y, int x);
-extern bool cave_in_bounds_fully(struct cave *c, int y, int x);
+extern bool square_in_bounds(struct cave *c, int y, int x);
+extern bool square_in_bounds_fully(struct cave *c, int y, int x);
 
 extern struct monster *cave_monster(struct cave *c, int idx);
-extern struct monster *cave_monster_at(struct cave *c, int y, int x);
+extern struct monster *square_monster(struct cave *c, int y, int x);
 extern int cave_monster_max(struct cave *c);
 extern int cave_monster_count(struct cave *c);
 
 void upgrade_mineral(struct cave *c, int y, int x);
 
 /* Feature modifiers */
-int cave_door_power(struct cave *c, int y, int x);
-void cave_open_door(struct cave *c, int y, int x);
-void cave_close_door(struct cave *c, int y, int x);
-void cave_smash_door(struct cave *c, int y, int x);
-void cave_lock_door(struct cave *c, int y, int x, int power);
-void cave_unlock_door(struct cave *c, int y, int x);
-void cave_destroy_door(struct cave *c, int y, int x);
+int square_door_power(struct cave *c, int y, int x);
+void square_open_door(struct cave *c, int y, int x);
+void square_close_door(struct cave *c, int y, int x);
+void square_smash_door(struct cave *c, int y, int x);
+void square_lock_door(struct cave *c, int y, int x, int power);
+void square_unlock_door(struct cave *c, int y, int x);
+void square_destroy_door(struct cave *c, int y, int x);
 
-void cave_show_trap(struct cave *c, int y, int x, int type);
-void cave_destroy_trap(struct cave *c, int y, int x);
+void square_show_trap(struct cave *c, int y, int x, int type);
+void square_destroy_trap(struct cave *c, int y, int x);
 
-void cave_tunnel_wall(struct cave *c, int y, int x);
-void cave_destroy_wall(struct cave *c, int y, int x);
+void square_tunnel_wall(struct cave *c, int y, int x);
+void square_destroy_wall(struct cave *c, int y, int x);
 
-void cave_show_vein(struct cave *c, int y, int x);
+void square_show_vein(struct cave *c, int y, int x);
 
 /* destroy this cell, as destruction spell */
-void cave_destroy(struct cave *c, int y, int x);
-void cave_earthquake(struct cave *c, int y, int x);
+void square_destroy(struct cave *c, int y, int x);
+void square_earthquake(struct cave *c, int y, int x);
 
-int cave_shopnum(struct cave *c, int y, int x);
-const char *cave_apparent_name(struct cave *c, struct player *p, int y, int x);
+int square_shopnum(struct cave *c, int y, int x);
+const char *square_apparent_name(struct cave *c, struct player *p, int y, int x);
 
-void cave_destroy_rubble(struct cave *c, int y, int x);
+void square_destroy_rubble(struct cave *c, int y, int x);
 
-void cave_force_floor(struct cave *c, int y, int x);
+void square_force_floor(struct cave *c, int y, int x);
 
 #endif /* !CAVE_H */

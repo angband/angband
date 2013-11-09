@@ -2005,7 +2005,7 @@ int rd_stores_1(void) { return rd_stores(rd_item_1); } /* remove post-3.3 */
  */
 int rd_dungeon(void)
 {
-	int i, y, x;
+	int i, n, y, x;
 
 	s16b depth;
 	s16b py, px;
@@ -2013,7 +2013,7 @@ int rd_dungeon(void)
 
 	byte count;
 	byte tmp8u;
-	u16b tmp16u;
+	u16b tmp16u, square_size;
 
 	/* Only if the player's alive */
 	if (p_ptr->is_dead)
@@ -2028,10 +2028,13 @@ int rd_dungeon(void)
 	rd_s16b(&px);
 	rd_s16b(&ymax);
 	rd_s16b(&xmax);
-	rd_u16b(&tmp16u);
+    rd_u16b(&square_size);
 	rd_u16b(&tmp16u);
 
 
+    /* Always at least two bytes of cave_info */
+    square_size = MAX(2, square_size);
+  
 	/* Ignore illegal dungeons */
 	if ((depth < 0) || (depth >= MAX_DEPTH))
 	{
@@ -2053,6 +2056,9 @@ int rd_dungeon(void)
 
 	/*** Run length decoding ***/
 
+    /* Loop across bytes of cave_info */
+    for (n = 0; n < square_size; n++)
+    {
 	/* Load the dungeon data */
 	for (x = y = 0; y < DUNGEON_HGT; )
 	{
@@ -2064,7 +2070,7 @@ int rd_dungeon(void)
 		for (i = count; i > 0; i--)
 		{
 			/* Extract "info" */
-			cave->info[y][x] = tmp8u;
+			cave->info[y][x][n] = tmp8u;
 
 			/* Advance/Wrap */
 			if (++x >= DUNGEON_WID)
@@ -2077,30 +2083,6 @@ int rd_dungeon(void)
 			}
 		}
 	}
-
-	/* Load the dungeon data */
-	for (x = y = 0; y < DUNGEON_HGT; )
-	{
-		/* Grab RLE info */
-		rd_byte(&count);
-		rd_byte(&tmp8u);
-
-		/* Apply the RLE info */
-		for (i = count; i > 0; i--)
-		{
-			/* Extract "info" */
-			cave->info2[y][x] = tmp8u;
-
-			/* Advance/Wrap */
-			if (++x >= DUNGEON_WID)
-			{
-				/* Wrap */
-				x = 0;
-
-				/* Advance/Wrap */
-				if (++y >= DUNGEON_HGT) break;
-			}
-		}
 	}
 
 
@@ -2117,7 +2099,7 @@ int rd_dungeon(void)
 		for (i = count; i > 0; i--)
 		{
 			/* Extract "feat" */
-			cave_set_feat(cave, y, x, tmp8u);
+			square_set_feat(cave, y, x, tmp8u);
 
 			/* Advance/Wrap */
 			if (++x >= DUNGEON_WID)

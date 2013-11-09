@@ -522,7 +522,7 @@ static void add_stats(double total[MAX_LVL], double mondrop[MAX_LVL], double inv
 static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool uniq)
 {
 	
-	bool vault = cave_isvault(cave, y, x);
+	bool vault = square_isvault(cave, y, x);
 	bitflag f[OF_SIZE];
 	int effect;
 	int number = o_ptr->number;
@@ -2360,13 +2360,13 @@ void calc_cave_distances(void)
 				ty = oy + ddy_ddd[d];
 				tx = ox + ddx_ddd[d];
 				
-				if (!(cave_in_bounds_fully(cave, ty,tx))) continue;
+				if (!(square_in_bounds_fully(cave, ty,tx))) continue;
 				
 				/* Have we been here before? */
 				if (cave_dist[ty][tx] >= 0) continue;
 				
 				/* Is it a wall? */
-				if (cave_iswall(cave, ty, tx)) continue;
+				if (square_iswall(cave, ty, tx)) continue;
 				
 				/* Add the new location */
 				d_y_new[d_new_max] = ty;
@@ -2531,13 +2531,13 @@ void disconnect_stats(void)
 			for (x = 1; x < cave->width - 1; x++){
 			
 				/* don't care about walls */
-				if (cave_iswall(cave, y, x)) continue;
+				if (square_iswall(cave, y, x)) continue;
 				
 				/* Can we get there? */
 				if (cave_dist[y][x] >= 0){
 				
 					/* Is it a  down stairs? */
-					if (cave_isdownstairs(cave, y, x)) {
+					if (square_isdownstairs(cave, y, x)) {
 
 						has_dsc_from_stairs = FALSE;
 					
@@ -2550,7 +2550,7 @@ void disconnect_stats(void)
 				}
 				
 				/* Ignore vaults as they are often disconnected */
-				if (cave_isvault(cave, y, x)) continue;
+				if (square_isvault(cave, y, x)) continue;
 				
 				/* We have a disconnected area */
 				has_dsc = TRUE;

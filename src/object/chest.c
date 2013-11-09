@@ -446,7 +446,7 @@ bool do_cmd_open_chest(int y, int x, s16b o_idx)
 	}
 
 	/* Redraw chest, to be on the safe side (it may have been squelched) */
-	cave_light_spot(cave, y, x);
+	square_light_spot(cave, y, x);
 
 	/* Refresh */
 	Term_fresh();

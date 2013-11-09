@@ -111,14 +111,14 @@ bool warding_glyph(void)
 	int py = p_ptr->py;
 	int px = p_ptr->px;
 
-	if (!cave_canward(cave, py, px))
+	if (!square_canward(cave, py, px))
 	{
 		msg("There is no clear floor on which to cast the spell.");
 		return FALSE;
 	}
 
 	/* Create a glyph */
-	cave_add_ward(cave, py, px);
+	square_add_ward(cave, py, px);
 	return TRUE;
 }
 
@@ -510,16 +510,16 @@ void map_area(void)
 		for (x = x1; x < x2; x++)
 		{
 			/* All non-walls are "checked" */
-			if (!cave_seemslikewall(cave, y, x))
+			if (!square_seemslikewall(cave, y, x))
 			{
-				if (!cave_in_bounds_fully(cave, y, x)) continue;
+				if (!square_in_bounds_fully(cave, y, x)) continue;
 
 				/* Memorize normal features */
-				if (cave_isinteresting(cave, y, x))
+				if (square_isinteresting(cave, y, x))
 				{
 					/* Memorize the object */
-					cave->info[y][x] |= (CAVE_MARK);
-					cave_light_spot(cave, y, x);
+					sqinfo_on(cave->info[y][x], SQUARE_MARK);
+					square_light_spot(cave, y, x);
 				}
 
 				/* Memorize known walls */
@@ -529,11 +529,11 @@ void map_area(void)
 					int xx = x + ddx_ddd[i];
 
 					/* Memorize walls (etc) */
-					if (cave_seemslikewall(cave, yy, xx))
+					if (square_seemslikewall(cave, yy, xx))
 					{
 						/* Memorize the walls */
-						cave->info[yy][xx] |= (CAVE_MARK);
-						cave_light_spot(cave, yy, xx);
+						sqinfo_on(cave->info[yy][xx], SQUARE_MARK);
+						square_light_spot(cave, yy, xx);
 					}
 				}
 			}
@@ -572,20 +572,20 @@ bool detect_traps(bool aware)
 	{
 		for (x = x1; x < x2; x++)
 		{
-			if (!cave_in_bounds_fully(cave, y, x)) continue;
+			if (!square_in_bounds_fully(cave, y, x)) continue;
 
 			/* Detect invisible traps */
-			if (cave_issecrettrap(cave, y, x))
+			if (square_issecrettrap(cave, y, x))
 			{
 				/* Pick a trap */
 				pick_trap(y, x);
 			}
 
 			/* Detect traps */
-			if (cave_isknowntrap(cave, y, x))
+			if (square_isknowntrap(cave, y, x))
 			{
 				/* Hack -- Memorize */
-				cave->info[y][x] |= (CAVE_MARK);
+				sqinfo_on(cave->info[y][x], SQUARE_MARK);
 
 				/* We found something to detect */
 				detect = TRUE;
@@ -612,7 +612,7 @@ bool detect_traps(bool aware)
 			}
 
 			/* Mark as trap-detected */
-			cave->info2[y][x] |= CAVE2_DTRAP;
+			sqinfo_on(cave->info[y][x], SQUARE_DTRAP);
 		}
 	}
 
@@ -621,17 +621,17 @@ bool detect_traps(bool aware)
 	{
 		for (x = x1 - 1; x < x2 + 1; x++)
 		{
-			if (!cave_in_bounds_fully(cave, y, x)) continue;
+			if (!square_in_bounds_fully(cave, y, x)) continue;
 
 			/* see if this grid is on the edge */
 			if (dtrap_edge(y, x)) {
-				cave->info2[y][x] |= CAVE2_DEDGE;
+				sqinfo_on(cave->info[y][x], SQUARE_DEDGE);
 			} else {
-				cave->info2[y][x] &= ~CAVE2_DEDGE;
+				sqinfo_off(cave->info[y][x], SQUARE_DEDGE);
 			}
 
 			/* Redraw */
-			cave_light_spot(cave, y, x);
+			square_light_spot(cave, y, x);
 		}
 	}
 
@@ -679,33 +679,33 @@ bool detect_doorstairs(bool aware)
 	{
 		for (x = x1; x < x2; x++)
 		{
-			if (!cave_in_bounds_fully(cave, y, x)) continue;
+			if (!square_in_bounds_fully(cave, y, x)) continue;
 
 			/* Detect secret doors */
-			if (cave_issecretdoor(cave, y, x))
+			if (square_issecretdoor(cave, y, x))
 				place_closed_door(cave, y, x);
 
 			/* Detect doors */
-			if (cave_isdoor(cave, y, x))
+			if (square_isdoor(cave, y, x))
 			{
 				/* Hack -- Memorize */
-				cave->info[y][x] |= (CAVE_MARK);
+				sqinfo_on(cave->info[y][x], SQUARE_MARK);
 
 				/* Redraw */
-				cave_light_spot(cave, y, x);
+				square_light_spot(cave, y, x);
 
 				/* Obvious */
 				doors = TRUE;
 			}
 
 			/* Detect stairs */
-			if (cave_isstairs(cave, y, x))
+			if (square_isstairs(cave, y, x))
 			{
 				/* Hack -- Memorize */
-				cave->info[y][x] |= (CAVE_MARK);
+				sqinfo_on(cave->info[y][x], SQUARE_MARK);
 
 				/* Redraw */
-				cave_light_spot(cave, y, x);
+				square_light_spot(cave, y, x);
 
 				/* Obvious */
 				stairs = TRUE;
@@ -751,17 +751,17 @@ bool detect_treasure(bool aware, bool full)
 	/* Scan the dungeon */
 	for (y = y1; y < y2; y++) {
 		for (x = x1; x < x2; x++) {
-			if (!cave_in_bounds_fully(cave, y, x)) continue;
+			if (!square_in_bounds_fully(cave, y, x)) continue;
 
-			cave_show_vein(cave, y, x);
+			square_show_vein(cave, y, x);
 
 			/* Magma/Quartz + Known Gold */
-			if (cave_hasgoldvein(cave, y, x)) {
+			if (square_hasgoldvein(cave, y, x)) {
 				/* Hack -- Memorize */
-				cave->info[y][x] |= (CAVE_MARK);
+				sqinfo_on(cave->info[y][x], SQUARE_MARK);
 
 				/* Redraw */
-				cave_light_spot(cave, y, x);
+				square_light_spot(cave, y, x);
 
 				/* Detect */
 				gold_buried = TRUE;
@@ -791,7 +791,7 @@ bool detect_treasure(bool aware, bool full)
 			o_ptr->marked = full ? MARK_SEEN : MARK_AWARE;
 
 		/* Redraw */
-		cave_light_spot(cave, y, x);
+		square_light_spot(cave, y, x);
 
 		/* Detect */
 		if (!squelch_item_ok(o_ptr) || !full)
@@ -837,19 +837,19 @@ bool detect_close_buried_treasure(void)
 	{
 		for (x = x1; x < x2; x++)
 		{
-			if (!cave_in_bounds_fully(cave, y, x)) continue;
+			if (!square_in_bounds_fully(cave, y, x)) continue;
 
 			/* Notice embedded gold */
-			cave_show_vein(cave, y, x);
+			square_show_vein(cave, y, x);
 
 			/* Magma/Quartz + Known Gold */
-			if (cave_hasgoldvein(cave, y, x))
+			if (square_hasgoldvein(cave, y, x))
 			{
 				/* Hack -- Memorize */
-				cave->info[y][x] |= (CAVE_MARK);
+				sqinfo_on(cave->info[y][x], SQUARE_MARK);
 
 				/* Redraw */
-				cave_light_spot(cave, y, x);
+				square_light_spot(cave, y, x);
 
 				/* Detect */
 				gold_buried = TRUE;
@@ -1125,7 +1125,7 @@ void stair_creation(void)
 	int px = p_ptr->px;
 
 	/* Only allow stairs to be created on empty floor */
-	if (!cave_isfloor(cave, py, px))
+	if (!square_isfloor(cave, py, px))
 	{
 		msg("There is no empty floor here.");
 		return;
@@ -1134,7 +1134,7 @@ void stair_creation(void)
 	/* Push objects off the grid */
 	if (cave->o_idx[py][px]) push_object(py, px);
 
-	cave_add_stairs(cave, py, px, p_ptr->depth);
+	square_add_stairs(cave, py, px, p_ptr->depth);
 }
 
 
@@ -1949,7 +1949,7 @@ void destroy_area(int y1, int x1, int r, bool full)
 		for (x = (x1 - r); x <= (x1 + r); x++)
 		{
 			/* Skip illegal grids */
-			if (!cave_in_bounds_fully(cave, y, x)) continue;
+			if (!square_in_bounds_fully(cave, y, x)) continue;
 			
 			/* Extract the distance */
 			k = distance(y1, x1, y, x);
@@ -1958,12 +1958,13 @@ void destroy_area(int y1, int x1, int r, bool full)
 			if (k > r) continue;
 
 			/* Lose room and vault */
-			cave->info[y][x] &= ~(CAVE_ROOM | CAVE_VAULT);
+			sqinfo_off(cave->info[y][x], SQUARE_ROOM);
+			sqinfo_off(cave->info[y][x], SQUARE_VAULT);
 
 			/* Lose light */
-			cave->info[y][x] &= ~(CAVE_GLOW);
+			sqinfo_off(cave->info[y][x], SQUARE_GLOW);
 			
-			cave_light_spot(cave, y, x);
+			square_light_spot(cave, y, x);
 
 			/* Hack -- Notice player affect */
 			if (cave->m_idx[y][x] < 0)
@@ -1982,17 +1983,17 @@ void destroy_area(int y1, int x1, int r, bool full)
 			delete_monster(y, x);
 			
 			/* Don't remove stairs */
-			if (cave_isstairs(cave, y, x)) continue;	
+			if (square_isstairs(cave, y, x)) continue;	
 			
 			/* Lose knowledge (keeping knowledge of stairs) */
-			cave->info[y][x] &= ~(CAVE_MARK);
+			sqinfo_off(cave->info[y][x], SQUARE_MARK);
 
 			/* Destroy any grid that isn't a permament wall */
-			if (!cave_isperm(cave, y, x))
+			if (!square_isperm(cave, y, x))
 			{
 				/* Delete objects */
 				delete_object(y, x);
-				cave_destroy(cave, y, x);
+				square_destroy(cave, y, x);
 			}
 		}
 	}
@@ -2084,16 +2085,18 @@ void earthquake(int cy, int cx, int r)
 			xx = cx + dx;
 
 			/* Skip illegal grids */
-			if (!cave_in_bounds_fully(cave, yy, xx)) continue;
+			if (!square_in_bounds_fully(cave, yy, xx)) continue;
 
 			/* Skip distant grids */
 			if (distance(cy, cx, yy, xx) > r) continue;
 
 			/* Lose room and vault */
-			cave->info[yy][xx] &= ~(CAVE_ROOM | CAVE_VAULT);
+			sqinfo_off(cave->info[yy][xx], SQUARE_ROOM);
+			sqinfo_off(cave->info[yy][xx], SQUARE_VAULT);
 
 			/* Lose light and knowledge */
-			cave->info[yy][xx] &= ~(CAVE_GLOW | CAVE_MARK);
+			sqinfo_off(cave->info[yy][xx], SQUARE_GLOW);
+			sqinfo_off(cave->info[yy][xx], SQUARE_MARK);
 			
 			/* Skip the epicenter */
 			if (!dx && !dy) continue;
@@ -2120,7 +2123,7 @@ void earthquake(int cy, int cx, int r)
 			x = px + ddx_ddd[i];
 
 			/* Skip non-empty grids */
-			if (!cave_isempty(cave, y, x)) continue;
+			if (!square_isempty(cave, y, x)) continue;
 
 			/* Important -- Skip "quake" grids */
 			if (map[16+y-cy][16+x-cx]) continue;
@@ -2213,7 +2216,7 @@ void earthquake(int cy, int cx, int r)
 			/* Process monsters */
 			if (cave->m_idx[yy][xx] > 0)
 			{
-				monster_type *m_ptr = cave_monster_at(cave, yy, xx);
+				monster_type *m_ptr = square_monster(cave, yy, xx);
 				
 				/* Most monsters cannot co-exist with rock */
 				if (!flags_test(m_ptr->race->flags, RF_SIZE, RF_KILL_WALL, RF_PASS_WALL, FLAG_END))
@@ -2234,10 +2237,10 @@ void earthquake(int cy, int cx, int r)
 							x = xx + ddx_ddd[i];
 
 							/* Skip non-empty grids */
-							if (!cave_isempty(cave, y, x)) continue;
+							if (!square_isempty(cave, y, x)) continue;
 
 							/* Hack -- no safety on glyph of warding */
-							if (cave_iswarded(cave, y, x))
+							if (square_iswarded(cave, y, x))
 								continue;
 
 							/* Important -- Skip "quake" grids */
@@ -2314,19 +2317,19 @@ void earthquake(int cy, int cx, int r)
 			xx = cx + dx;
 
 			/* ignore invalid grids */
-			if (!cave_in_bounds_fully(cave, yy, xx)) continue;
+			if (!square_in_bounds_fully(cave, yy, xx)) continue;
 
 			/* Note unaffected grids for light changes, etc. */
 			if (!map[16+yy-cy][16+xx-cx])
 			{
-				cave_light_spot(cave, yy, xx);
+				square_light_spot(cave, yy, xx);
 			}
 
 			/* Destroy location (if valid) */
-			else if (cave_valid_bold(yy, xx))
+			else if (square_valid_bold(yy, xx))
 			{
 				delete_object(yy, xx);
-				cave_earthquake(cave, yy, xx);
+				square_earthquake(cave, yy, xx);
 			}
 		}
 	}
@@ -2369,7 +2372,7 @@ static void cave_light(struct point_set *ps)
 		int x = ps->pts[i].x;
 
 		/* Perma-Light */
-		cave->info[y][x] |= (CAVE_GLOW);
+		sqinfo_on(cave->info[y][x], SQUARE_GLOW);
 	}
 
 	/* Fully update the visuals */
@@ -2385,14 +2388,14 @@ static void cave_light(struct point_set *ps)
 		int x = ps->pts[i].x;
 
 		/* Redraw the grid */
-		cave_light_spot(cave, y, x);
+		square_light_spot(cave, y, x);
 
 		/* Process affected monsters */
 		if (cave->m_idx[y][x] > 0)
 		{
 			int chance = 25;
 
-			monster_type *m_ptr = cave_monster_at(cave, y, x);
+			monster_type *m_ptr = square_monster(cave, y, x);
 
 			/* Stupid monsters rarely wake up */
 			if (rf_has(m_ptr->race->flags, RF_STUPID)) chance = 10;
@@ -2432,11 +2435,11 @@ static void cave_unlight(struct point_set *ps)
 		int x = ps->pts[i].x;
 
 		/* Darken the grid */
-		cave->info[y][x] &= ~(CAVE_GLOW);
+		sqinfo_off(cave->info[y][x], SQUARE_GLOW);
 
 		/* Hack -- Forget "boring" grids */
-		if (!cave_isinteresting(cave, y, x))
-			cave->info[y][x] &= ~(CAVE_MARK);
+		if (!square_isinteresting(cave, y, x))
+			sqinfo_off(cave->info[y][x], SQUARE_MARK);
 	}
 
 	/* Fully update the visuals */
@@ -2452,7 +2455,7 @@ static void cave_unlight(struct point_set *ps)
 		int x = ps->pts[i].x;
 
 		/* Redraw the grid */
-		cave_light_spot(cave, y, x);
+		square_light_spot(cave, y, x);
 	}
 }
 
@@ -2464,7 +2467,7 @@ static void cave_room_aux(struct point_set *seen, int y, int x)
 	if (point_set_contains(seen, y, x))
 		return;
 
-	if (!cave_isroom(cave, y, x))
+	if (!square_isroom(cave, y, x))
 		return;
 
 	/* Add it to the "seen" set */
@@ -2491,7 +2494,7 @@ static void light_room(int y1, int x1, bool light)
 		x = ps->pts[i].x, y = ps->pts[i].y;
 
 		/* Walls get lit, but stop light */
-		if (!cave_ispassable(cave, y, x)) continue;
+		if (!square_ispassable(cave, y, x)) continue;
 
 		/* Spread adjacent */
 		cave_room_aux(ps, y + 1, x);

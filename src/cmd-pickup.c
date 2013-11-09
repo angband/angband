@@ -496,9 +496,9 @@ void move_player(int dir, bool disarm)
 	}
 
 	/* Optionally alter traps/doors on movement */
-	else if (disarm && (cave->info[y][x] & CAVE_MARK) &&
-			(cave_isknowntrap(cave, y, x) ||
-			cave_iscloseddoor(cave, y, x)))
+	else if (disarm && sqinfo_has(cave->info[y][x], SQUARE_MARK) &&
+			(square_isknowntrap(cave, y, x) ||
+			square_iscloseddoor(cave, y, x)))
 	{
 		/* Auto-repeat if not already repeating */
 		if (cmd_get_nrepeats() == 0)
@@ -508,45 +508,45 @@ void move_player(int dir, bool disarm)
 	}
 
 	/* Cannot walk through walls */
-	else if (!cave_ispassable(cave, y, x))
+	else if (!square_ispassable(cave, y, x))
 	{
 		/* Disturb the player */
 		disturb(p_ptr, 0, 0);
 
 		/* Notice unknown obstacles */
-		if (!(cave->info[y][x] & CAVE_MARK))
+		if (!sqinfo_has(cave->info[y][x], SQUARE_MARK))
 		{
 			/* Rubble */
-			if (cave_isrubble(cave, y, x))
+			if (square_isrubble(cave, y, x))
 			{
 				msgt(MSG_HITWALL, "You feel a pile of rubble blocking your way.");
-				cave->info[y][x] |= (CAVE_MARK);
-				cave_light_spot(cave, y, x);
+				sqinfo_on(cave->info[y][x], SQUARE_MARK);
+				square_light_spot(cave, y, x);
 			}
 
 			/* Closed door */
-			else if (cave_iscloseddoor(cave, y, x))
+			else if (square_iscloseddoor(cave, y, x))
 			{
 				msgt(MSG_HITWALL, "You feel a door blocking your way.");
-				cave->info[y][x] |= (CAVE_MARK);
-				cave_light_spot(cave, y, x);
+				sqinfo_on(cave->info[y][x], SQUARE_MARK);
+				square_light_spot(cave, y, x);
 			}
 
 			/* Wall (or secret door) */
 			else
 			{
 				msgt(MSG_HITWALL, "You feel a wall blocking your way.");
-				cave->info[y][x] |= (CAVE_MARK);
-				cave_light_spot(cave, y, x);
+				sqinfo_on(cave->info[y][x], SQUARE_MARK);
+				square_light_spot(cave, y, x);
 			}
 		}
 
 		/* Mention known obstacles */
 		else
 		{
-			if (cave_isrubble(cave, y, x))
+			if (square_isrubble(cave, y, x))
 				msgt(MSG_HITWALL, "There is a pile of rubble blocking your way.");
-			else if (cave_iscloseddoor(cave, y, x))
+			else if (square_iscloseddoor(cave, y, x))
 				msgt(MSG_HITWALL, "There is a door blocking your way.");
 			else
 				msgt(MSG_HITWALL, "There is a wall blocking your way.");
@@ -557,8 +557,8 @@ void move_player(int dir, bool disarm)
 	else
 	{
 		/* See if trap detection status will change */
-		bool old_dtrap = ((cave->info2[py][px] & (CAVE2_DTRAP)) != 0);
-		bool new_dtrap = ((cave->info2[y][x] & (CAVE2_DTRAP)) != 0);
+		bool old_dtrap = (sqinfo_has(cave->info[py][px], SQUARE_DTRAP));
+		bool new_dtrap = (sqinfo_has(cave->info[y][x], SQUARE_DTRAP));
 
 		/* Note the change in the detect status */
 		if (old_dtrap != new_dtrap)
@@ -585,7 +585,7 @@ void move_player(int dir, bool disarm)
 			search(FALSE);
 
 		/* Handle "store doors" */
-		if (cave_isshop(cave, p_ptr->py, p_ptr->px)) {
+		if (square_isshop(cave, p_ptr->py, p_ptr->px)) {
 			/* Disturb */
 			disturb(p_ptr, 0, 0);
 			cmd_insert(CMD_ENTER_STORE);
@@ -600,7 +600,7 @@ void move_player(int dir, bool disarm)
 
 
 		/* Discover invisible traps */
-		if (cave_issecrettrap(cave, y, x))
+		if (square_issecrettrap(cave, y, x))
 		{
 			/* Disturb */
 			disturb(p_ptr, 0, 0);
@@ -616,7 +616,7 @@ void move_player(int dir, bool disarm)
 		}
 
 		/* Set off an visible trap */
-		else if (cave_isknowntrap(cave, y, x))
+		else if (square_isknowntrap(cave, y, x))
 		{
 			/* Disturb */
 			disturb(p_ptr, 0, 0);

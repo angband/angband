@@ -67,7 +67,7 @@ void pick_trap(int y, int x)
 	};
 
 	/* Paranoia */
-	if (!cave_issecrettrap(cave, y, x))
+	if (!square_issecrettrap(cave, y, x))
 		return;
 
 	/* Pick a trap */
@@ -90,25 +90,25 @@ void pick_trap(int y, int x)
 	}
 
 	/* Activate the trap */
-	cave_show_trap(cave, y, x, feat);
+	square_show_trap(cave, y, x, feat);
 }
 
 /* Places a trap. All traps are untyped until discovered. */
 void place_trap(struct cave *c, int y, int x)
 {
-	assert(cave_in_bounds(c, y, x));
-	assert(cave_isempty(c, y, x));
+	assert(square_in_bounds(c, y, x));
+	assert(square_isempty(c, y, x));
 
-	cave_add_trap(c, y, x);
+	square_add_trap(c, y, x);
 }
 
 /* Create a trap during play. All traps are untyped until discovered. */
 void create_trap(struct cave *c, int y, int x)
 {
-	assert(cave_in_bounds(c, y, x));
-	assert(cave_isempty(cave, y, x));
+	assert(square_in_bounds(c, y, x));
+	assert(square_isempty(cave, y, x));
 
-	cave_add_trap(c, y, x);
+	square_add_trap(c, y, x);
 }
 
 /*

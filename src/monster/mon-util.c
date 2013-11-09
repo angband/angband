@@ -533,7 +533,7 @@ void update_mon(struct monster *m_ptr, bool full)
 			m_ptr->ml = TRUE;
 
 			/* Draw the monster */
-			cave_light_spot(cave, fy, fx);
+			square_light_spot(cave, fy, fx);
 
 			/* Update health bar as needed */
 			if (p_ptr->health_who == m_ptr)
@@ -560,7 +560,7 @@ void update_mon(struct monster *m_ptr, bool full)
 				m_ptr->ml = FALSE;
 
 				/* Erase the monster */
-				cave_light_spot(cave, fy, fx);
+				square_light_spot(cave, fy, fx);
 
 				/* Update health bar as needed */
 				if (p_ptr->health_who == m_ptr) p_ptr->redraw |= (PR_HEALTH);
@@ -790,8 +790,8 @@ void monster_swap(int y1, int x1, int y2, int x2)
 	}
 
 	/* Redraw */
-	cave_light_spot(cave, y1, x1);
-	cave_light_spot(cave, y2, x2);
+	square_light_spot(cave, y1, x1);
+	square_light_spot(cave, y2, x2);
 }
 
 /*
@@ -882,10 +882,10 @@ int summon_specific(int y1, int x1, int lev, int type, int delay)
 		scatter(&y, &x, y1, x1, d, TRUE);
 
 		/* Require "empty" floor grid */
-		if (!cave_isempty(cave, y, x)) continue;
+		if (!square_isempty(cave, y, x)) continue;
 
 		/* Hack -- no summon on glyph of warding */
-		if (cave_iswarded(cave, y, x)) continue;
+		if (square_iswarded(cave, y, x)) continue;
 
 		/* Okay */
 		break;
@@ -914,7 +914,7 @@ int summon_specific(int y1, int x1, int lev, int type, int delay)
 		return (0);
 
 	/* Success, return the level of the monster */
-	m_ptr = cave_monster_at(cave, y, x);
+	m_ptr = square_monster(cave, y, x);
 	
 	/* If delay, try to let the player act before the summoned monsters,
 	 * including slowing down faster monsters for one turn */
@@ -949,7 +949,7 @@ bool multiply_monster(const monster_type *m_ptr)
 		scatter(&y, &x, m_ptr->fy, m_ptr->fx, d, TRUE);
 
 		/* Require an "empty" floor grid */
-		if (!cave_isempty(cave, y, x)) continue;
+		if (!square_isempty(cave, y, x)) continue;
 
 		/* Create a new monster (awake, no groups) */
 		result = place_new_monster(cave, y, x, m_ptr->race, FALSE, FALSE,

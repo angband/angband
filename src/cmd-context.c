@@ -278,10 +278,10 @@ int context_menu_player(int mx, int my)
 	}
 
 	/* if player is on stairs add option to use them */
-	if (cave_isupstairs(cave, p_ptr->py, p_ptr->px)) {
+	if (square_isupstairs(cave, p_ptr->py, p_ptr->px)) {
 		ADD_LABEL("Go Up", CMD_GO_UP, MN_ROW_VALID);
 	}
-	else if (cave_isdownstairs(cave, p_ptr->py, p_ptr->px)) {
+	else if (square_isdownstairs(cave, p_ptr->py, p_ptr->px)) {
 		ADD_LABEL("Go Down", CMD_GO_DOWN, MN_ROW_VALID);
 	}
 
@@ -508,19 +508,19 @@ int context_menu_cave(struct cave *c, int y, int x, int adjacent, int mx, int my
 			}
 		}
 
-		if (cave_istrap(c, y, x)) {
+		if (square_istrap(c, y, x)) {
 			ADD_LABEL("Disarm", CMD_DISARM, MN_ROW_VALID);
 			ADD_LABEL("Jump Onto", CMD_JUMP, MN_ROW_VALID);
 		}
 
-		if (cave_isopendoor(c, y, x)) {
+		if (square_isopendoor(c, y, x)) {
 			ADD_LABEL("Close", CMD_CLOSE, MN_ROW_VALID);
 		}
-		else if (cave_iscloseddoor(c, y, x)) {
+		else if (square_iscloseddoor(c, y, x)) {
 			ADD_LABEL("Open", CMD_OPEN, MN_ROW_VALID);
 			ADD_LABEL("Lock", CMD_DISARM, MN_ROW_VALID);
 		}
-		else if (cave_isdiggable(c, y, x)) {
+		else if (square_isdiggable(c, y, x)) {
 			ADD_LABEL("Tunnel", CMD_TUNNEL, MN_ROW_VALID);
 		}
 
@@ -573,7 +573,7 @@ int context_menu_cave(struct cave *c, int y, int x, int adjacent, int mx, int my
 	} else
 	if (c->m_idx[y][x]) {
 		char m_name[80];
-		monster_type *m_ptr = cave_monster_at(c, y, x);
+		monster_type *m_ptr = square_monster(c, y, x);
 
 		/* Get the monster name ("a kobold") */
 		monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_IND_VIS);
@@ -593,10 +593,10 @@ int context_menu_cave(struct cave *c, int y, int x, int adjacent, int mx, int my
 	} else
 	{
 		/* Feature (apply mimic) */
-		const char *name = cave_apparent_name(c, p_ptr, y, x);
+		const char *name = square_apparent_name(c, p_ptr, y, x);
 
 		/* Hack -- special introduction for store doors */
-		if (cave_isshop(cave, y, x)) {
+		if (square_isshop(cave, y, x)) {
 			prt(format("(Enter to select command, ESC to cancel) You see the entrance to the %s:", name), 0, 0);
 		} else {
 			prt(format("(Enter to select command, ESC to cancel) You see %s %s:",
@@ -663,7 +663,7 @@ int context_menu_cave(struct cave *c, int y, int x, int adjacent, int mx, int my
 
 		case MENU_VALUE_RECALL: {
 			/* recall monster Info */
-			monster_type *m_ptr = cave_monster_at(c, y, x);
+			monster_type *m_ptr = square_monster(c, y, x);
 			if (m_ptr) {
 				monster_lore *lore = get_lore(m_ptr->race);
 				lore_show_interactive(m_ptr->race, lore);
@@ -808,7 +808,7 @@ int context_menu_object(const object_type *o_ptr, const int slot)
 	}
 
 	if (slot >= 0) {
-		if (!store_in_store || cave_shopnum(cave, p_ptr->py, p_ptr->px) == STORE_HOME) {
+		if (!store_in_store || square_shopnum(cave, p_ptr->py, p_ptr->px) == STORE_HOME) {
 			ADD_LABEL("Drop", CMD_DROP, MN_ROW_VALID);
 
 			if (o_ptr->number > 1) {

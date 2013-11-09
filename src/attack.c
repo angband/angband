@@ -170,7 +170,7 @@ static bool py_attack_real(int y, int x, bool *fear) {
 	size_t i;
 
 	/* Information about the target of the attack */
-	monster_type *m_ptr = cave_monster_at(cave, y, x);
+	monster_type *m_ptr = square_monster(cave, y, x);
 	char m_name[80];
 	bool stop = FALSE;
 
@@ -313,7 +313,7 @@ void py_attack(int y, int x) {
 	int blow_energy = 10000 / p_ptr->state.num_blows;
 	int blows = 0;
 	bool fear = FALSE;
-	monster_type *m_ptr = cave_monster_at(cave, y, x);
+	monster_type *m_ptr = square_monster(cave, y, x);
 	
 	/* disturb the player */
 	disturb(p_ptr, 0,0);
@@ -429,7 +429,7 @@ static void ranged_helper(int item, int dir, int range, int shots, ranged_attack
 		int nx = GRID_X(path_g[i]);
 
 		/* Hack -- Stop before hitting walls */
-		if (!cave_ispassable(cave, ny, nx)) break;
+		if (!square_ispassable(cave, ny, nx)) break;
 
 		/* Advance */
 		x = nx;
@@ -444,7 +444,7 @@ static void ranged_helper(int item, int dir, int range, int shots, ranged_attack
 			if (p_ptr->redraw) redraw_stuff(p_ptr);
 
 			Term_xtra(TERM_XTRA_DELAY, msec);
-			cave_light_spot(cave, y, x);
+			square_light_spot(cave, y, x);
 
 			Term_fresh();
 			if (p_ptr->redraw) redraw_stuff(p_ptr);
@@ -459,7 +459,7 @@ static void ranged_helper(int item, int dir, int range, int shots, ranged_attack
 
 	/* Try the attack on the monster at (x, y) if any */
 	if (cave->m_idx[y][x] > 0) {
-		monster_type *m_ptr = cave_monster_at(cave, y, x);
+		monster_type *m_ptr = square_monster(cave, y, x);
 		int visible = m_ptr->ml;
 
 		bool fear = FALSE;
@@ -556,7 +556,7 @@ static struct attack_result make_ranged_shot(object_type *o_ptr, int y, int x) {
 
 	object_type *j_ptr = &p_ptr->inventory[INVEN_BOW];
 
-	monster_type *m_ptr = cave_monster_at(cave, y, x);
+	monster_type *m_ptr = square_monster(cave, y, x);
 	
 	int bonus = p_ptr->state.to_h + o_ptr->to_h + j_ptr->to_h;
 	int chance = p_ptr->state.skills[SKILL_TO_HIT_BOW] + bonus * BTH_PLUS_ADJ;
@@ -597,7 +597,7 @@ static struct attack_result make_ranged_shot(object_type *o_ptr, int y, int x) {
 static struct attack_result make_ranged_throw(object_type *o_ptr, int y, int x) {
 	struct attack_result result = {FALSE, 0, 0, "hits"};
 
-	monster_type *m_ptr = cave_monster_at(cave, y, x);
+	monster_type *m_ptr = square_monster(cave, y, x);
 	
 	int bonus = p_ptr->state.to_h + o_ptr->to_h;
 	int chance = p_ptr->state.skills[SKILL_TO_HIT_THROW] + bonus * BTH_PLUS_ADJ;

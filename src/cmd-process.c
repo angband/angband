@@ -690,7 +690,7 @@ static void textui_process_click(ui_event e)
 	x = KEY_GRID_X(e);
 
 	/* Check for a valid location */
-	if (!cave_in_bounds_fully(cave, y, x)) return;
+	if (!square_in_bounds_fully(cave, y, x)) return;
 
 	/* XXX show context menu here */
 	if ((p_ptr->py == y) && (p_ptr->px == x)) {
@@ -707,9 +707,9 @@ static void textui_process_click(ui_event e)
 			/* ctrl-click - use feature / use inventory item */
 			/* switch with default */
 			if (e.mouse.button == 1) {
-				if (cave_isupstairs(cave, p_ptr->py, p_ptr->px))
+				if (square_isupstairs(cave, p_ptr->py, p_ptr->px))
 					cmd_insert(CMD_GO_UP);
-				else if (cave_isdownstairs(cave, p_ptr->py, p_ptr->px))
+				else if (square_isdownstairs(cave, p_ptr->py, p_ptr->px))
 					cmd_insert(CMD_GO_DOWN);
 			} else
 			if (e.mouse.button == 2) {
@@ -792,7 +792,7 @@ static void textui_process_click(ui_event e)
 
 	else if (e.mouse.button == 2)
 	{
-		struct monster *m = cave_monster_at(cave, y, x);
+		struct monster *m = square_monster(cave, y, x);
 		if (m && target_able(m)) {
 			/* Set up target information */
 			monster_race_track(m->race);

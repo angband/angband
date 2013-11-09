@@ -121,7 +121,7 @@ static void do_cmd_wiz_hack_ben(void)
 			{
 				byte a = TERM_RED;
 
-				if (!cave_in_bounds_fully(cave, y, x)) continue;
+				if (!square_in_bounds_fully(cave, y, x)) continue;
 
 				/* Display proper cost */
 				if (cave->cost[y][x] != i) continue;
@@ -133,7 +133,7 @@ static void do_cmd_wiz_hack_ben(void)
 				/* Display player/floors/walls */
 				if ((y == py) && (x == px))
 					print_rel(L'@', a, y, x);
-				else if (cave_ispassable(cave, y, x))
+				else if (square_ispassable(cave, y, x))
 					print_rel(L'*', a, y, x);
 				else
 					print_rel(L'#', a, y, x);
@@ -1385,7 +1385,7 @@ static void do_cmd_wiz_named(monster_race *r, bool slp)
 		scatter(&y, &x, py, px, d, TRUE);
 
 		/* Require empty grids */
-		if (!cave_isempty(cave, y, x)) continue;
+		if (!square_isempty(cave, y, x)) continue;
 
 		/* Place it (allow groups) */
 		if (place_new_monster(cave, y, x, r, slp, TRUE, ORIGIN_DROP_WIZARD)) break;
@@ -1451,14 +1451,14 @@ static void do_cmd_wiz_query(void)
 		case '6': mask = (1 << 6); break;
 		case '7': mask = (1 << 7); break;
 
-		case 'm': mask |= (CAVE_MARK); break;
-		case 'g': mask |= (CAVE_GLOW); break;
-		case 'r': mask |= (CAVE_ROOM); break;
-		case 'i': mask |= (CAVE_VAULT); break;
-		case 's': mask |= (CAVE_SEEN); break;
-		case 'v': mask |= (CAVE_VIEW); break;
-		case 't': mask |= (CAVE_WASSEEN); break;
-		case 'w': mask |= (CAVE_WALL); break;
+		case 'm': mask |= (SQUARE_MARK); break;
+		case 'g': mask |= (SQUARE_GLOW); break;
+		case 'r': mask |= (SQUARE_ROOM); break;
+		case 'i': mask |= (SQUARE_VAULT); break;
+		case 's': mask |= (SQUARE_SEEN); break;
+		case 'v': mask |= (SQUARE_VIEW); break;
+		case 't': mask |= (SQUARE_WASSEEN); break;
+		case 'w': mask |= (SQUARE_WALL); break;
 	}
 
 	/* Scan map */
@@ -1468,21 +1468,21 @@ static void do_cmd_wiz_query(void)
 		{
 			byte a = TERM_RED;
 
-			if (!cave_in_bounds_fully(cave, y, x)) continue;
+			if (!square_in_bounds_fully(cave, y, x)) continue;
 
 			/* Given mask, show only those grids */
-			if (mask && !(cave->info[y][x] & mask)) continue;
+			if (mask && !(cave->info[y][x][0] & mask)) continue;
 
 			/* Given no mask, show unknown grids */
-			if (!mask && (cave->info[y][x] & (CAVE_MARK))) continue;
+			if (!mask && (cave->info[y][x][0] & (SQUARE_MARK))) continue;
 
 			/* Color */
-			if (cave_ispassable(cave, y, x)) a = TERM_YELLOW;
+			if (square_ispassable(cave, y, x)) a = TERM_YELLOW;
 
 			/* Display player/floors/walls */
 			if ((y == py) && (x == px))
 				print_rel(L'@', a, y, x);
-			else if (cave_ispassable(cave, y, x))
+			else if (square_ispassable(cave, y, x))
 				print_rel(L'*', a, y, x);
 			else
 				print_rel(L'#', a, y, x);
@@ -1934,12 +1934,12 @@ void do_cmd_debug(void)
 		/* Create a trap */
 		case 'T':
 		{
-			if (!cave_isfloor(cave, p_ptr->py, p_ptr->px))
+			if (!square_isfloor(cave, p_ptr->py, p_ptr->px))
 				msg("You can't place a trap there!");
 			else if (p_ptr->depth == 0)
 				msg("You can't place a trap in the town!");
 			else
-				cave_add_trap(cave, p_ptr->py, p_ptr->px);
+				square_add_trap(cave, p_ptr->py, p_ptr->px);
 			break;
 		}
 

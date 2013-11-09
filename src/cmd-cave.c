@@ -40,7 +40,7 @@
 void do_cmd_go_up(cmd_code code, cmd_arg args[])
 {
 	/* Verify stairs */
-	if (!cave_isupstairs(cave, p_ptr->py, p_ptr->px)) {
+	if (!square_isupstairs(cave, p_ptr->py, p_ptr->px)) {
 		msg("I see no up staircase here.");
 		return;
 	}
@@ -74,7 +74,7 @@ void do_cmd_go_down(cmd_code code, cmd_arg args[])
 	int descend_to = p_ptr->depth + 1;
 
 	/* Verify stairs */
-	if (!cave_isdownstairs(cave, p_ptr->py, p_ptr->px)) {
+	if (!square_isdownstairs(cave, p_ptr->py, p_ptr->px)) {
 		msg("I see no down staircase here.");
 		return;
 	}
@@ -158,7 +158,7 @@ bool search(bool verbose)
 			if (randint0(100) < chance)
 			{
 				/* Invisible trap */
-				if (cave_issecrettrap(cave, y, x))
+				if (square_issecrettrap(cave, y, x))
 				{
 					found = TRUE;
 
@@ -173,7 +173,7 @@ bool search(bool verbose)
 				}
 
 				/* Secret door */
-				if (cave_issecretdoor(cave, y, x))
+				if (square_issecretdoor(cave, y, x))
 				{
 					found = TRUE;
 
@@ -289,10 +289,10 @@ int count_feats(int *y, int *x, bool (*test)(struct cave *cave, int y, int x), b
 		xx = p_ptr->px + ddx_ddd[d];
 
 		/* Paranoia */
-		if (!cave_in_bounds_fully(cave, yy, xx)) continue;
+		if (!square_in_bounds_fully(cave, yy, xx)) continue;
 
 		/* Must have knowledge */
-		if (!(cave->info[yy][xx] & (CAVE_MARK))) continue;
+		if (!sqinfo_has(cave->info[yy][xx], SQUARE_MARK)) continue;
 
 		/* Not looking for this feature */
 		if (!((*test)(cave, yy, xx))) continue;
@@ -326,12 +326,12 @@ int coords_to_dir(int y, int x)
 static bool do_cmd_open_test(int y, int x)
 {
 	/* Must have knowledge */
-	if (!(cave->info[y][x] & (CAVE_MARK))) {
+	if (!sqinfo_has(cave->info[y][x], SQUARE_MARK)) {
 		msg("You see nothing there.");
 		return FALSE;
 	}
 
-	if (!cave_iscloseddoor(cave, y, x)) {
+	if (!square_iscloseddoor(cave, y, x)) {
 		msgt(MSG_NOTHING_TO_OPEN, "You see nothing there to open.");
 		return FALSE;
 	}
@@ -360,7 +360,7 @@ static bool do_cmd_open_aux(int y, int x)
 
 
 	/* Locked door */
-	if (cave_islockeddoor(cave, y, x))
+	if (square_islockeddoor(cave, y, x))
 	{
 		/* Disarm factor */
 		i = p_ptr->state.skills[SKILL_DISARM];
@@ -370,7 +370,7 @@ static bool do_cmd_open_aux(int y, int x)
 		if (p_ptr->timed[TMD_CONFUSED] || p_ptr->timed[TMD_IMAGE]) i = i / 10;
 
 		/* Extract the lock power */
-		j = cave_door_power(cave, y, x);
+		j = square_door_power(cave, y, x);
 
 		/* Extract the difficulty XXX XXX XXX */
 		j = i - (j * 4);
@@ -385,7 +385,7 @@ static bool do_cmd_open_aux(int y, int x)
 			msgt(MSG_LOCKPICK, "You have picked the lock.");
 
 			/* Open the door */
-			cave_open_door(cave, y, x);
+			square_open_door(cave, y, x);
 
 			/* Update the visuals */
 			p_ptr->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
@@ -412,7 +412,7 @@ static bool do_cmd_open_aux(int y, int x)
 	else
 	{
 		/* Open the door */
-		cave_open_door(cave, y, x);
+		square_open_door(cave, y, x);
 
 		/* Update the visuals */
 		p_ptr->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
@@ -519,7 +519,7 @@ void do_cmd_open(cmd_code code, cmd_arg args[])
 static bool do_cmd_close_test(int y, int x)
 {
 	/* Must have knowledge */
-	if (!(cave->info[y][x] & (CAVE_MARK)))
+	if (!sqinfo_has(cave->info[y][x], SQUARE_MARK))
 	{
 		/* Message */
 		msg("You see nothing there.");
@@ -529,7 +529,7 @@ static bool do_cmd_close_test(int y, int x)
 	}
 
  	/* Require open/broken door */
-	if (!cave_isopendoor(cave, y, x) && !cave_isbrokendoor(cave, y, x))
+	if (!square_isopendoor(cave, y, x) && !square_isbrokendoor(cave, y, x))
 	{
 		/* Message */
 		msg("You see nothing there to close.");
@@ -558,7 +558,7 @@ static bool do_cmd_close_aux(int y, int x)
 	if (!do_cmd_close_test(y, x)) return (FALSE);
 
 	/* Broken door */
-	if (cave_isbrokendoor(cave, y, x))
+	if (square_isbrokendoor(cave, y, x))
 	{
 		/* Message */
 		msg("The door appears to be broken.");
@@ -568,7 +568,7 @@ static bool do_cmd_close_aux(int y, int x)
 	else
 	{
 		/* Close the door */
-		cave_close_door(cave, y, x);
+		square_close_door(cave, y, x);
 
 		/* Update the visuals */
 		p_ptr->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
@@ -645,7 +645,7 @@ void do_cmd_close(cmd_code code, cmd_arg args[])
 static bool do_cmd_tunnel_test(int y, int x)
 {
 	/* Must have knowledge */
-	if (!(cave->info[y][x] & (CAVE_MARK)))
+	if (!sqinfo_has(cave->info[y][x], SQUARE_MARK))
 	{
 		/* Message */
 		msg("You see nothing there.");
@@ -655,7 +655,7 @@ static bool do_cmd_tunnel_test(int y, int x)
 	}
 
 	/* Must be a wall/door/etc */
-	if (cave_ispassable(cave, y, x))
+	if (square_ispassable(cave, y, x))
 	{
 		/* Message */
 		msg("You see nothing there to tunnel.");
@@ -682,16 +682,16 @@ static bool do_cmd_tunnel_test(int y, int x)
 static bool twall(int y, int x)
 {
 	/* Paranoia -- Require a wall or door or some such */
-	if (cave_ispassable(cave, y, x)) return (FALSE);
+	if (square_ispassable(cave, y, x)) return (FALSE);
 
 	/* Sound */
 	sound(MSG_DIG);
 
 	/* Forget the wall */
-	cave->info[y][x] &= ~(CAVE_MARK);
+	sqinfo_off(cave->info[y][x], SQUARE_MARK);
 
 	/* Remove the feature */
-	cave_tunnel_wall(cave, y, x);
+	square_tunnel_wall(cave, y, x);
 
 	/* Update the visuals */
 	p_ptr->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
@@ -726,13 +726,13 @@ static bool do_cmd_tunnel_aux(int y, int x)
 	/* sound(MSG_DIG); */
 
 	/* Titanium */
-	if (cave_isperm(cave, y, x))
+	if (square_isperm(cave, y, x))
 	{
 		msg("This seems to be permanent rock.");
 	}
 
 	/* Granite */
-	else if (cave_isrock(cave, y, x))
+	else if (square_isrock(cave, y, x))
 	{
 		/* Tunnel */
 		if ((p_ptr->state.skills[SKILL_DIGGING] > 40 + randint0(1600)) && twall(y, x))
@@ -750,18 +750,18 @@ static bool do_cmd_tunnel_aux(int y, int x)
 	}
 
 	/* Quartz / Magma */
-	else if (cave_ismagma(cave, y, x) || cave_isquartz(cave, y, x))
+	else if (square_ismagma(cave, y, x) || square_isquartz(cave, y, x))
 	{
 		bool okay = FALSE;
 		bool gold = FALSE;
 		bool hard = FALSE;
 
 		/* Found gold */
-		if (cave_hasgoldvein(cave, y, x))
+		if (square_hasgoldvein(cave, y, x))
 			gold = TRUE;
 
 		/* Extract "quartz" flag XXX XXX XXX */
-		if (cave_isquartz(cave, y, x))
+		if (square_isquartz(cave, y, x))
 			hard = TRUE;
 
 		/* Quartz */
@@ -810,7 +810,7 @@ static bool do_cmd_tunnel_aux(int y, int x)
 	}
 
 	/* Rubble */
-	else if (cave_isrubble(cave, y, x))
+	else if (square_isrubble(cave, y, x))
 	{
 		/* Remove the rubble */
 		if ((p_ptr->state.skills[SKILL_DIGGING] > randint0(200)) && twall(y, x))
@@ -840,7 +840,7 @@ static bool do_cmd_tunnel_aux(int y, int x)
 	}
 
 	/* Secret doors */
-	else if (cave_issecretdoor(cave, y, x))
+	else if (square_issecretdoor(cave, y, x))
 	{
 		/* Tunnel */
 		if ((p_ptr->state.skills[SKILL_DIGGING] > 30 + randint0(1200)) && twall(y, x))
@@ -948,17 +948,17 @@ void do_cmd_tunnel(cmd_code code, cmd_arg args[])
 static bool do_cmd_disarm_test(int y, int x)
 {
 	/* Must have knowledge */
-	if (!(cave->info[y][x] & (CAVE_MARK))) {
+	if (!sqinfo_has(cave->info[y][x], SQUARE_MARK)) {
 		msg("You see nothing there.");
 		return FALSE;
 	}
 
 	/* Look for a closed, unlocked door to lock */
-	if (cave_iscloseddoor(cave, y, x) && !cave_islockeddoor(cave, y, x))
+	if (square_iscloseddoor(cave, y, x) && !square_islockeddoor(cave, y, x))
 		return TRUE;
 
 	/* Look for a trap */
-	if (!cave_isknowntrap(cave, y, x)) {
+	if (!square_isknowntrap(cave, y, x)) {
 		msg("You see nothing there to disarm.");
 		return FALSE;
 	}
@@ -1004,7 +1004,7 @@ static bool do_cmd_lock_door(int y, int x)
 	/* Success */
 	if (randint0(100) < j) {
 		msg("You lock the door.");
-		cave_lock_door(cave, y, x, power);
+		square_lock_door(cave, y, x, power);
 	}
 
 	/* Failure -- Keep trying */
@@ -1075,10 +1075,10 @@ static bool do_cmd_disarm_aux(int y, int x)
 		player_exp_gain(p_ptr, power);
 
 		/* Forget the trap */
-		cave->info[y][x] &= ~(CAVE_MARK);
+		sqinfo_off(cave->info[y][x], SQUARE_MARK);
 
 		/* Remove the trap */
-		cave_destroy_trap(cave, y, x);
+		square_destroy_trap(cave, y, x);
 	}
 
 	/* Failure -- Keep trying */
@@ -1163,8 +1163,8 @@ void do_cmd_disarm(cmd_code code, cmd_arg args[])
 		more = do_cmd_disarm_chest(y, x, o_idx);
 
 	/* Door to lock */
-	else if (    cave_iscloseddoor(cave, y, x)
-	         && !cave_islockeddoor(cave, y, x))
+	else if (    square_iscloseddoor(cave, y, x)
+	         && !square_islockeddoor(cave, y, x))
 		more = do_cmd_lock_door(y, x);
 
 	/* Disarm trap */
@@ -1210,15 +1210,15 @@ void do_cmd_alter_aux(int dir)
 		py_attack(y, x);
 
 	/* Tunnel through walls and rubble */
-	else if (cave_isdiggable(cave, y, x))
+	else if (square_isdiggable(cave, y, x))
 		more = do_cmd_tunnel_aux(y, x);
 
 	/* Open closed doors */
-	else if (cave_iscloseddoor(cave, y, x))
+	else if (square_iscloseddoor(cave, y, x))
 		more = do_cmd_open_aux(y, x);
 
 	/* Disarm traps */
-	else if (cave_isknowntrap(cave, y, x))
+	else if (square_isknowntrap(cave, y, x))
 		more = do_cmd_disarm_aux(y, x);
 
 	/* Oops */
@@ -1263,18 +1263,18 @@ static bool do_cmd_walk_test(int y, int x)
 	}
 
 	/* If we don't know the grid, allow attempts to walk into it */
-	if (!(cave->info[y][x] & CAVE_MARK))
+	if (!sqinfo_has(cave->info[y][x], SQUARE_MARK))
 		return TRUE;
 
 	/* Require open space */
-	if (!cave_ispassable(cave, y, x))
+	if (!square_ispassable(cave, y, x))
 	{
 		/* Rubble */
-		if (cave_isrubble(cave, y, x))
+		if (square_isrubble(cave, y, x))
 			msgt(MSG_HITWALL, "There is a pile of rubble in the way!");
 
 		/* Door */
-		else if (cave_iscloseddoor(cave, y, x))
+		else if (square_iscloseddoor(cave, y, x))
 			return TRUE;
 
 		/* Wall */
@@ -1421,7 +1421,7 @@ void do_cmd_hold(cmd_code code, cmd_arg args[])
 	do_autopickup();
 
 	/* Hack -- enter a store if we are on one */
-	if (cave_isshop(cave, p_ptr->py, p_ptr->px)) {
+	if (square_isshop(cave, p_ptr->py, p_ptr->px)) {
 		/* Disturb */
 		disturb(p_ptr, 0, 0);
 

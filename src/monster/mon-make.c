@@ -195,7 +195,7 @@ void delete_monster_idx(int m_idx)
 	cave->mon_cnt--;
 
 	/* Visual update */
-	cave_light_spot(cave, y, x);
+	square_light_spot(cave, y, x);
 }
 
 
@@ -204,7 +204,7 @@ void delete_monster_idx(int m_idx)
  */
 void delete_monster(int y, int x)
 {
-	assert(cave_in_bounds(cave, y, x));
+	assert(square_in_bounds(cave, y, x));
 
 	/* Delete the monster (if any) */
 	if (cave->m_idx[y][x] > 0)
@@ -780,8 +780,8 @@ s16b place_monster(int y, int x, monster_type *mon, byte origin)
 	s16b m_idx;
 	monster_type *m_ptr;
 
-	assert(cave_in_bounds(cave, y, x));
-	assert(!cave_monster_at(cave, y, x));
+	assert(square_in_bounds(cave, y, x));
+	assert(!square_monster(cave, y, x));
 
 	/* Get a new record */
 	m_idx = mon_pop();
@@ -798,7 +798,7 @@ s16b place_monster(int y, int x, monster_type *mon, byte origin)
 	cave->m_idx[y][x] = m_ptr->midx;
 	m_ptr->fy = y;
 	m_ptr->fx = x;
-	assert(cave_monster_at(cave, y, x) == m_ptr);
+	assert(square_monster(cave, y, x) == m_ptr);
 
 	update_mon(m_ptr, TRUE);
 
@@ -906,19 +906,19 @@ static bool place_new_monster_one(int y, int x, monster_race *race,
 	struct monster *mon;
 	struct monster monster_body;
 
-	assert(cave_in_bounds(cave, y, x));
+	assert(square_in_bounds(cave, y, x));
 	assert(race && race->name);
 
 	/* Not where monsters already are */
-	if (cave_monster_at(cave, y, x))
+	if (square_monster(cave, y, x))
 		return FALSE;
 
 	/* Prevent monsters from being placed where they cannot walk, but allow other feature types */
-	if (!cave_is_monster_walkable(cave, y, x))
+	if (!square_is_monster_walkable(cave, y, x))
 		return FALSE;
 
 	/* No creation on glyph of warding */
-	if (cave_iswarded(cave, y, x)) return FALSE;
+	if (square_iswarded(cave, y, x)) return FALSE;
 
 	/* "unique" monsters must be "unique" */
 	if (rf_has(race->flags, RF_UNIQUE) && race->cur_num >= race->max_num)
@@ -1059,7 +1059,7 @@ static bool place_new_monster_group(struct cave *c, int y, int x,
 			int my = hy + ddy_ddd[i];
 
 			/* Walls and Monsters block flow */
-			if (!cave_isempty(cave, my, mx)) continue;
+			if (!square_isempty(cave, my, mx)) continue;
 
 			/* Attempt to place another monster */
 			if (place_new_monster_one(my, mx, r_ptr, sleep, origin)) {
@@ -1150,7 +1150,7 @@ static bool place_monster_base_okay(monster_race *race)
 	/* Find a nearby place to put the other groups */
 	for (j = 0; j < 50; j++){
 		scatter(&ny, &nx, y, x, GROUP_DISTANCE, FALSE);
-		if (cave_isopen(cave, ny, nx)) break;
+		if (square_isopen(cave, ny, nx)) break;
 	}
 		
 	/* Place the monsters */
@@ -1294,7 +1294,7 @@ bool pick_and_place_distant_monster(struct cave *c, struct loc loc, int dis,
 		x = randint0(c->width);
 
 		/* Require "naked" floor grid */
-		if (!cave_isempty(c, y, x)) continue;
+		if (!square_isempty(c, y, x)) continue;
 
 		/* Accept far away grids */
 		if (distance(y, x, py, px) > dis) break;

@@ -2014,8 +2014,8 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 			msgt(MSG_SUM_MONSTER, "You are enveloped in a cloud of smoke!");
 
 			/* Remove trap */
-			cave->info[py][px] &= ~(CAVE_MARK);
-			cave_destroy_trap(cave, py, px);
+			sqinfo_off(cave->info[py][px], SQUARE_MARK);
+			square_destroy_trap(cave, py, px);
 
 			for (i = 0; i < num; i++)
 				(void)summon_specific(py, px, p_ptr->depth, 0, 1);
