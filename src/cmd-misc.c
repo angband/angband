@@ -127,7 +127,7 @@ void do_cmd_try_borg(void)
 	}
 
 	/* Okay */
-	do_cmd_borg();
+	//do_cmd_borg();
 }
 
 #endif /* ALLOW_BORG */

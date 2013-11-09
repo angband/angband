@@ -1287,9 +1287,9 @@ static void dungeon(struct cave *c)
 		save_game();
 #endif
 #ifdef ALLOW_BORG
-        if (!borg_active){
+        //if (!borg_active){
             save_game();
-        }
+			//}
 #endif
 		p_ptr->autosave = FALSE;
 	}
