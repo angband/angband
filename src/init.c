@@ -2408,6 +2408,83 @@ static enum parser_error parse_s_expr(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_s_bolt(struct parser *p) {
+	struct spell *s = parser_priv(p);
+	const char *type;
+
+	if (!s)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	type = parser_getsym(p, "type");
+
+	if (type == NULL)
+		return PARSE_ERROR_INVALID_VALUE;
+
+	s->params[0] = gf_name_to_idx(type);
+	s->params[2] = SPELL_PROJECT_BOLT;
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_s_beam(struct parser *p) {
+	struct spell *s = parser_priv(p);
+	const char *type;
+
+	if (!s)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	type = parser_getsym(p, "type");
+
+	if (type == NULL)
+		return PARSE_ERROR_INVALID_VALUE;
+
+	s->params[0] = gf_name_to_idx(type);
+	s->params[2] = SPELL_PROJECT_BEAM;
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_s_borb(struct parser *p) {
+	struct spell *s = parser_priv(p);
+	const char *type;
+
+	if (!s)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	type = parser_getsym(p, "type");
+
+	if (type == NULL)
+		return PARSE_ERROR_INVALID_VALUE;
+
+	s->params[0] = gf_name_to_idx(type);
+
+	if (parser_hasval(p, "adj"))
+		s->params[1] = parser_getint(p, "adj");
+
+	s->params[2] = SPELL_PROJECT_BOLT_OR_BEAM;
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_s_ball(struct parser *p) {
+	struct spell *s = parser_priv(p);
+	const char *type;
+
+	if (!s)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	type = parser_getsym(p, "type");
+
+	if (type == NULL)
+		return PARSE_ERROR_INVALID_VALUE;
+
+	s->params[0] = gf_name_to_idx(type);
+	s->params[1] = parser_getuint(p, "radius");
+	s->params[2] = SPELL_PROJECT_BALL;
+
+	return PARSE_ERROR_NONE;
+}
+
 struct parser *init_parse_s(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
@@ -2416,6 +2493,10 @@ struct parser *init_parse_s(void) {
 	parser_reg(p, "id sym id", parse_s_id);
 	parser_reg(p, "dice str dice", parse_s_dice);
 	parser_reg(p, "expr sym name sym base str expr", parse_s_expr);
+	parser_reg(p, "bolt sym type", parse_s_bolt);
+	parser_reg(p, "beam sym type", parse_s_beam);
+	parser_reg(p, "borb sym type ?int adj", parse_s_borb);
+	parser_reg(p, "ball sym type uint radius", parse_s_ball);
 	parser_reg(p, "D str desc", parse_s_d);
 	return p;
 }

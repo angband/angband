@@ -203,6 +203,7 @@ typedef struct spell_handler_context_s {
 	const int dir;
 	const int beam;
 	const random_value value;
+	const int p1, p2, p3;
 } spell_handler_context_t;
 
 typedef bool (*spell_handler_f)(spell_handler_context_t *);
@@ -283,28 +284,45 @@ static int spell_calculate_value(spell_handler_context_t *context)
 	return final;
 }
 
-static int spell_teleport_player(spell_handler_context_t *context)
+
+
+#pragma mark generic spell handlers
+
+static bool spell_handler_teleport_player(spell_handler_context_t *context)
 {
 	int range = spell_calculate_value(context);
 	teleport_player(range);
 	return TRUE;
 }
 
-static bool spell_dispel_undead(spell_handler_context_t *context)
+static bool spell_handler_teleport_level(spell_handler_context_t *context)
 {
-	int dam = spell_calculate_value(context);
-	dispel_undead(dam);
+	teleport_player_level();
 	return TRUE;
 }
 
-static bool spell_dispel_evil(spell_handler_context_t *context)
+static bool spell_handler_teleport_other(spell_handler_context_t *context)
 {
-	int dam = spell_calculate_value(context);
-	dispel_evil(dam);
+	teleport_monster(context->dir);
 	return TRUE;
 }
 
-static bool spell_enchant_weapon(spell_handler_context_t *context)
+static bool spell_handler_word_of_recall(spell_handler_context_t *context)
+{
+	return set_recall();
+}
+
+static bool spell_handler_enchant_armour(spell_handler_context_t *context)
+{
+	/* Original values used randint0, whereas these start at 1, so we adjust. */
+	int plus_ac = spell_calculate_value(context) - 1;
+
+	plus_ac = MAX(plus_ac, 0);
+
+	return enchant_spell(0, 0, plus_ac);
+}
+
+static bool spell_handler_enchant_weapon(spell_handler_context_t *context)
 {
 	/* Original values used randint0, whereas these start at 1, so we adjust. */
 	int plus_hit = spell_calculate_value(context) - 1;
@@ -316,42 +334,37 @@ static bool spell_enchant_weapon(spell_handler_context_t *context)
 	return enchant_spell(plus_hit, plus_dam, 0);
 }
 
-static bool spell_enchant_armour(spell_handler_context_t *context)
+static bool spell_handler_identify(spell_handler_context_t *context)
 {
-	/* Original values used randint0, whereas these start at 1, so we adjust. */
-	int plus_ac = spell_calculate_value(context) - 1;
-
-	plus_ac = MAX(plus_ac, 0);
-
-	return enchant_spell(0, 0, plus_ac);
+	return ident_spell();
 }
 
-static bool spell_recharge(spell_handler_context_t *context)
+static bool spell_handler_satisfy_hunger(spell_handler_context_t *context)
 {
-	return recharge(spell_calculate_value(context));
-}
-
-#pragma mark arcane spell handlers
-
-static bool spell_handler_arcane_MAGIC_MISSILE(spell_handler_context_t *context)
-{
-	int dam = spell_calculate_value(context);
-	fire_bolt_or_beam(context->beam - 10, GF_MISSILE, context->dir, dam);
+	player_set_food(p_ptr, PY_FOOD_MAX - 1);
 	return TRUE;
 }
 
-static bool spell_handler_arcane_DETECT_MONSTERS(spell_handler_context_t *context)
+static bool spell_handler_trap_door_destruction(spell_handler_context_t *context)
 {
-	(void)detect_monsters_normal(TRUE);
+	destroy_doors_touch();
 	return TRUE;
 }
 
-static bool spell_handler_arcane_PHASE_DOOR(spell_handler_context_t *context)
+static bool spell_handler_detect_monsters(spell_handler_context_t *context)
 {
-	return spell_teleport_player(context);
+	detect_monsters_normal(TRUE);
+	return TRUE;
 }
 
-static bool spell_handler_arcane_LIGHT_AREA(spell_handler_context_t *context)
+static bool spell_handler_detect_traps_doors_stairs(spell_handler_context_t *context)
+{
+	detect_traps(TRUE);
+	detect_doorstairs(TRUE);
+	return TRUE;
+}
+
+static bool spell_handler_light_area(spell_handler_context_t *context)
 {
 	int dam = spell_calculate_value(context);
 	int radius = p_ptr->lev / 10 + 1;
@@ -359,13 +372,19 @@ static bool spell_handler_arcane_LIGHT_AREA(spell_handler_context_t *context)
 	return TRUE;
 }
 
-static bool spell_handler_arcane_OBJECT_DETECTION(spell_handler_context_t *context)
+static bool spell_handler_cure_poison(spell_handler_context_t *context)
 {
-	(void)detect_treasure(TRUE, TRUE);
+	player_clear_timed(p_ptr, TMD_POISONED, TRUE);
 	return TRUE;
 }
 
-static bool spell_handler_arcane_CURE_LIGHT_WOUNDS(spell_handler_context_t *context)
+static bool spell_handler_glyph_of_warding(spell_handler_context_t *context)
+{
+	warding_glyph_spell();
+	return TRUE;
+}
+
+static bool spell_handler_cure_light_wounds(spell_handler_context_t *context)
 {
 	heal_player(context->value.m_bonus, context->value.base);
 	player_dec_timed(p_ptr, TMD_CUT, 20, TRUE);
@@ -374,17 +393,117 @@ static bool spell_handler_arcane_CURE_LIGHT_WOUNDS(spell_handler_context_t *cont
 	return TRUE;
 }
 
-static bool spell_handler_arcane_FIND_TRAPS_DOORS(spell_handler_context_t *context)
+static bool spell_handler_word_of_destruction(spell_handler_context_t *context)
 {
-	(void)detect_traps(TRUE);
-	(void)detect_doorstairs(TRUE);
+	destroy_area(p_ptr->py, p_ptr->px, 15, TRUE);
 	return TRUE;
 }
 
-static bool spell_handler_arcane_STINKING_CLOUD(spell_handler_context_t *context)
+static bool spell_handler_earthquake(spell_handler_context_t *context)
+{
+	earthquake(p_ptr->py, p_ptr->px, 10);
+	return TRUE;
+}
+
+static bool spell_handler_recharge(spell_handler_context_t *context)
+{
+	return recharge(spell_calculate_value(context));
+}
+
+static bool spell_handler_bless(spell_handler_context_t *context)
+{
+	int dur = spell_calculate_value(context);
+	player_inc_timed(p_ptr, TMD_BLESSED, dur, TRUE, TRUE);
+	return TRUE;
+}
+
+static bool spell_handler_dispel_evil(spell_handler_context_t *context)
 {
 	int dam = spell_calculate_value(context);
-	fire_ball(GF_POIS, context->dir, dam, 2);
+	dispel_evil(dam);
+	return TRUE;
+}
+
+static bool spell_handler_dispel_undead(spell_handler_context_t *context)
+{
+	int dam = spell_calculate_value(context);
+	dispel_undead(dam);
+	return TRUE;
+}
+
+static bool spell_handler_cure_serious_wounds(spell_handler_context_t *context)
+{
+	heal_player(context->value.m_bonus, context->value.base);
+	player_clear_timed(p_ptr, TMD_CUT, TRUE);
+	player_clear_timed(p_ptr, TMD_CONFUSED, TRUE);
+	player_clear_timed(p_ptr, TMD_BLIND, TRUE);
+	return TRUE;
+}
+
+static bool spell_handler_cure_critical_wounds(spell_handler_context_t *context)
+{
+	heal_player(context->value.m_bonus, context->value.base);
+	player_clear_timed(p_ptr, TMD_CUT, TRUE);
+	player_clear_timed(p_ptr, TMD_AMNESIA, TRUE);
+	player_clear_timed(p_ptr, TMD_CONFUSED, TRUE);
+	player_clear_timed(p_ptr, TMD_BLIND, TRUE);
+	player_clear_timed(p_ptr, TMD_POISONED, TRUE);
+	player_clear_timed(p_ptr, TMD_STUN, TRUE);
+	return TRUE;
+}
+
+static bool spell_handler_project_bolt_or_beam(spell_handler_context_t *context)
+{
+	int dam = spell_calculate_value(context);
+	fire_bolt_or_beam(context->beam + context->p2, context->p1, context->dir, dam);
+	return TRUE;
+}
+
+static bool spell_handler_project_bolt_only(spell_handler_context_t *context)
+{
+	int dam = spell_calculate_value(context);
+	fire_bolt(context->p1, context->dir, dam);
+	return TRUE;
+}
+
+static bool spell_handler_project_beam_only(spell_handler_context_t *context)
+{
+	int dam = spell_calculate_value(context);
+	fire_beam(context->p1, context->dir, dam);
+	return TRUE;
+}
+
+static bool spell_handler_project_ball(spell_handler_context_t *context)
+{
+	int dam = spell_calculate_value(context);
+	fire_ball(context->p1, context->dir, dam, context->p2);
+	return TRUE;
+}
+
+static bool spell_handler_project_context(spell_handler_context_t *context)
+{
+	switch (context->p3) {
+		case SPELL_PROJECT_BOLT_OR_BEAM:
+			return spell_handler_project_bolt_or_beam(context);
+		case SPELL_PROJECT_BOLT:
+			return spell_handler_project_bolt_only(context);
+		case SPELL_PROJECT_BEAM:
+			return spell_handler_project_beam_only(context);
+		case SPELL_PROJECT_BALL:
+			return spell_handler_project_ball(context);
+		default:
+			break;
+	}
+
+	bell("Unknown spell projection type.");
+	return FALSE;
+}
+
+#pragma mark arcane spell handlers
+
+static bool spell_handler_arcane_OBJECT_DETECTION(spell_handler_context_t *context)
+{
+	(void)detect_treasure(TRUE, TRUE);
 	return TRUE;
 }
 
@@ -394,34 +513,10 @@ static bool spell_handler_arcane_CONFUSE_MONSTER(spell_handler_context_t *contex
 	return TRUE;
 }
 
-static bool spell_handler_arcane_LIGHTNING_BOLT(spell_handler_context_t *context)
-{
-	int dam = spell_calculate_value(context);
-	fire_beam(GF_ELEC, context->dir, dam);
-	return TRUE;
-}
-
-static bool spell_handler_arcane_TRAP_DOOR_DESTRUCTION(spell_handler_context_t *context)
-{
-	(void)destroy_doors_touch();
-	return TRUE;
-}
-
 static bool spell_handler_arcane_SLEEP_MONSTER(spell_handler_context_t *context)
 {
 	(void)sleep_monster(context->dir, TRUE);
 	return TRUE;
-}
-
-static bool spell_handler_arcane_CURE_POISON(spell_handler_context_t *context)
-{
-	(void)player_clear_timed(p_ptr, TMD_POISONED, TRUE);
-	return TRUE;
-}
-
-static bool spell_handler_arcane_TELEPORT_SELF(spell_handler_context_t *context)
-{
-	return spell_teleport_player(context);
 }
 
 static bool spell_handler_arcane_SPEAR_OF_LIGHT(spell_handler_context_t *context)
@@ -432,28 +527,10 @@ static bool spell_handler_arcane_SPEAR_OF_LIGHT(spell_handler_context_t *context
 	return TRUE;
 }
 
-static bool spell_handler_arcane_FROST_BOLT(spell_handler_context_t *context)
-{
-	int dam = spell_calculate_value(context);
-	fire_bolt_or_beam(context->beam - 10, GF_COLD, context->dir, dam);
-	return TRUE;
-}
-
 static bool spell_handler_arcane_TURN_STONE_TO_MUD(spell_handler_context_t *context)
 {
 	(void)wall_to_mud(context->dir);
 	return TRUE;
-}
-
-static bool spell_handler_arcane_SATISFY_HUNGER(spell_handler_context_t *context)
-{
-	player_set_food(p_ptr, PY_FOOD_MAX - 1);
-	return TRUE;
-}
-
-static bool spell_handler_arcane_RECHARGE_ITEM_I(spell_handler_context_t *context)
-{
-	return spell_recharge(context);
 }
 
 static bool spell_handler_arcane_WONDER(spell_handler_context_t *context)
@@ -468,64 +545,15 @@ static bool spell_handler_arcane_POLYMORPH_OTHER(spell_handler_context_t *contex
 	return TRUE;
 }
 
-static bool spell_handler_arcane_IDENTIFY(spell_handler_context_t *context)
-{
-	return ident_spell();
-}
-
 static bool spell_handler_arcane_MASS_SLEEP(spell_handler_context_t *context)
 {
 	(void)sleep_monsters(TRUE);
 	return TRUE;
 }
 
-static bool spell_handler_arcane_FIRE_BOLT(spell_handler_context_t *context)
-{
-	int dam = spell_calculate_value(context);
-	fire_bolt_or_beam(context->beam, GF_FIRE, context->dir, dam);
-	return TRUE;
-}
-
 static bool spell_handler_arcane_SLOW_MONSTER(spell_handler_context_t *context)
 {
 	(void)slow_monster(context->dir);
-	return TRUE;
-}
-
-static bool spell_handler_arcane_FROST_BALL(spell_handler_context_t *context)
-{
-	int dam = spell_calculate_value(context);
-	fire_ball(GF_COLD, context->dir, dam, 2);
-	return TRUE;
-}
-
-static bool spell_handler_arcane_RECHARGE_ITEM_II(spell_handler_context_t *context) /* greater recharging */
-{
-	return spell_recharge(context);
-}
-
-static bool spell_handler_arcane_TELEPORT_OTHER(spell_handler_context_t *context)
-{
-	(void)teleport_monster(context->dir);
-	return TRUE;
-}
-
-static bool spell_handler_arcane_BEDLAM(spell_handler_context_t *context)
-{
-	fire_ball(GF_OLD_CONF, context->dir, p_ptr->lev, 4);
-	return TRUE;
-}
-
-static bool spell_handler_arcane_FIRE_BALL(spell_handler_context_t *context)
-{
-	int dam = spell_calculate_value(context);
-	fire_ball(GF_FIRE, context->dir, dam, 2);
-	return TRUE;
-}
-
-static bool spell_handler_arcane_WORD_OF_DESTRUCTION(spell_handler_context_t *context)
-{
-	destroy_area(p_ptr->py, p_ptr->px, 15, TRUE);
 	return TRUE;
 }
 
@@ -546,62 +574,10 @@ static bool spell_handler_arcane_STAIR_CREATION(spell_handler_context_t *context
 	return TRUE;
 }
 
-static bool spell_handler_arcane_TELEPORT_LEVEL(spell_handler_context_t *context)
-{
-	(void)teleport_player_level();
-	return TRUE;
-}
-
-static bool spell_handler_arcane_EARTHQUAKE(spell_handler_context_t *context)
-{
-	earthquake(p_ptr->py, p_ptr->px, 10);
-	return TRUE;
-}
-
-static bool spell_handler_arcane_WORD_OF_RECALL(spell_handler_context_t *context)
-{
-	return set_recall();
-}
-
-static bool spell_handler_arcane_ACID_BOLT(spell_handler_context_t *context)
-{
-	int dam = spell_calculate_value(context);
-	fire_bolt_or_beam(context->beam, GF_ACID, context->dir, dam);
-	return TRUE;
-}
-
-static bool spell_handler_arcane_CLOUD_KILL(spell_handler_context_t *context)
-{
-	int dam = spell_calculate_value(context);
-	fire_ball(GF_POIS, context->dir, dam, 3);
-	return TRUE;
-}
-
-static bool spell_handler_arcane_ACID_BALL(spell_handler_context_t *context)
-{
-	int dam = spell_calculate_value(context);
-	fire_ball(GF_ACID, context->dir, dam, 2);
-	return TRUE;
-}
-
-static bool spell_handler_arcane_ICE_STORM(spell_handler_context_t *context)
-{
-	int dam = spell_calculate_value(context);
-	fire_ball(GF_ICE, context->dir, dam, 3);
-	return TRUE;
-}
-
 static bool spell_handler_arcane_METEOR_SWARM(spell_handler_context_t *context)
 {
 	int dam = spell_calculate_value(context);
 	fire_swarm(context->value.m_bonus, GF_METEOR, context->dir, dam, 1);
-	return TRUE;
-}
-
-static bool spell_handler_arcane_MANA_STORM(spell_handler_context_t *context)
-{
-	int dam = spell_calculate_value(context);
-	fire_ball(GF_MANA, context->dir, dam, 3);
 	return TRUE;
 }
 
@@ -615,20 +591,6 @@ static bool spell_handler_arcane_DETECT_INVISIBLE(spell_handler_context_t *conte
 static bool spell_handler_arcane_TREASURE_DETECTION(spell_handler_context_t *context)
 {
 	(void)detect_treasure(TRUE, FALSE);
-	return TRUE;
-}
-
-static bool spell_handler_arcane_SHOCK_WAVE(spell_handler_context_t *context)
-{
-	int dam = spell_calculate_value(context);
-	fire_ball(GF_SOUND, context->dir, dam, 2);
-	return TRUE;
-}
-
-static bool spell_handler_arcane_EXPLOSION(spell_handler_context_t *context)
-{
-	int dam = spell_calculate_value(context);
-	fire_ball(GF_SHARD, context->dir, dam, 2);
 	return TRUE;
 }
 
@@ -716,41 +678,11 @@ static bool spell_handler_arcane_HASTE_SELF(spell_handler_context_t *context)
 	return TRUE;
 }
 
-static bool spell_handler_arcane_RIFT(spell_handler_context_t *context)
-{
-	int dam = spell_calculate_value(context);
-	fire_beam(GF_GRAVITY, context->dir,	dam);
-	return TRUE;
-}
-
 static bool spell_handler_arcane_REND_SOUL(spell_handler_context_t *context)
 {
 	int dam = spell_calculate_value(context);
 	fire_bolt_or_beam(context->beam / 4, GF_NETHER, context->dir, dam);
 	return TRUE;
-}
-
-static bool spell_handler_arcane_CHAOS_STRIKE(spell_handler_context_t *context)
-{
-	int dam = spell_calculate_value(context);
-	fire_bolt_or_beam(context->beam, GF_CHAOS, context->dir, dam);
-	return TRUE;
-}
-
-static bool spell_handler_arcane_RUNE_OF_PROTECTION(spell_handler_context_t *context)
-{
-	warding_glyph_spell();
-	return TRUE;
-}
-
-static bool spell_handler_arcane_ENCHANT_ARMOR(spell_handler_context_t *context)
-{
-	return spell_enchant_armour(context);
-}
-
-static bool spell_handler_arcane_ENCHANT_WEAPON(spell_handler_context_t *context)
-{
-	return spell_enchant_weapon(context);
 }
 
 #pragma mark prayer handlers
@@ -761,39 +693,9 @@ static bool spell_handler_prayer_DETECT_EVIL(spell_handler_context_t *context)
 	return TRUE;
 }
 
-static bool spell_handler_prayer_CURE_LIGHT_WOUNDS(spell_handler_context_t *context)
-{
-	(void)heal_player(context->value.m_bonus, context->value.base);
-	(void)player_dec_timed(p_ptr, TMD_CUT, 20, TRUE);
-	(void)player_dec_timed(p_ptr, TMD_CONFUSED, 20, TRUE);
-	(void)player_clear_timed(p_ptr, TMD_BLIND, TRUE);
-	return TRUE;
-}
-
-static bool spell_handler_prayer_BLESS(spell_handler_context_t *context)
-{
-	int dur = spell_calculate_value(context);
-	(void)player_inc_timed(p_ptr, TMD_BLESSED, dur, TRUE, TRUE);
-	return TRUE;
-}
-
 static bool spell_handler_prayer_REMOVE_FEAR(spell_handler_context_t *context)
 {
 	(void)player_clear_timed(p_ptr, TMD_AFRAID, TRUE);
-	return TRUE;
-}
-
-static bool spell_handler_prayer_CALL_LIGHT(spell_handler_context_t *context)
-{
-	int dam = spell_calculate_value(context);
-	light_area(dam, (p_ptr->lev / 10) + 1);
-	return TRUE;
-}
-
-static bool spell_handler_prayer_FIND_TRAPS_DOORS(spell_handler_context_t *context)
-{
-	(void)detect_traps(TRUE);
-	(void)detect_doorstairs(TRUE);
 	return TRUE;
 }
 
@@ -809,36 +711,9 @@ static bool spell_handler_prayer_SCARE_MONSTER(spell_handler_context_t *context)
 	return TRUE;
 }
 
-static bool spell_handler_prayer_PORTAL(spell_handler_context_t *context)
-{
-	return spell_teleport_player(context);
-}
-
-static bool spell_handler_prayer_CURE_SERIOUS_WOUNDS(spell_handler_context_t *context)
-{
-	(void)heal_player(context->value.m_bonus, context->value.base);
-	(void)player_clear_timed(p_ptr, TMD_CUT, TRUE);
-	(void)player_clear_timed(p_ptr, TMD_CONFUSED, TRUE);
-	(void)player_clear_timed(p_ptr, TMD_BLIND, TRUE);
-	return TRUE;
-}
-
-static bool spell_handler_prayer_CHANT(spell_handler_context_t *context)
-{
-	int dur = spell_calculate_value(context);
-	(void)player_inc_timed(p_ptr, TMD_BLESSED, dur, TRUE, TRUE);
-	return TRUE;
-}
-
 static bool spell_handler_prayer_SANCTUARY(spell_handler_context_t *context)
 {
 	(void)sleep_monsters_touch(TRUE);
-	return TRUE;
-}
-
-static bool spell_handler_prayer_SATISFY_HUNGER(spell_handler_context_t *context)
-{
-	player_set_food(p_ptr, PY_FOOD_MAX - 1);
 	return TRUE;
 }
 
@@ -858,29 +733,11 @@ static bool spell_handler_prayer_RESIST_HEAT_COLD(spell_handler_context_t *conte
 	return TRUE;
 }
 
-static bool spell_handler_prayer_NEUTRALIZE_POISON(spell_handler_context_t *context)
-{
-	(void)player_clear_timed(p_ptr, TMD_POISONED, TRUE);
-	return TRUE;
-}
-
 static bool spell_handler_prayer_ORB_OF_DRAINING(spell_handler_context_t *context)
 {
 	int dam = spell_calculate_value(context);
 	int radius = (p_ptr->lev < 30) ? 2 : 3;
 	fire_ball(GF_HOLY_ORB, context->dir, dam, radius);
-	return TRUE;
-}
-
-static bool spell_handler_prayer_CURE_CRITICAL_WOUNDS(spell_handler_context_t *context)
-{
-	(void)heal_player(context->value.m_bonus	, context->value.base);
-	(void)player_clear_timed(p_ptr, TMD_CUT, TRUE);
-	(void)player_clear_timed(p_ptr, TMD_AMNESIA, TRUE);
-	(void)player_clear_timed(p_ptr, TMD_CONFUSED, TRUE);
-	(void)player_clear_timed(p_ptr, TMD_BLIND, TRUE);
-	(void)player_clear_timed(p_ptr, TMD_POISONED, TRUE);
-	(void)player_clear_timed(p_ptr, TMD_STUN, TRUE);
 	return TRUE;
 }
 
@@ -898,27 +755,9 @@ static bool spell_handler_prayer_PROTECTION_FROM_EVIL(spell_handler_context_t *c
 	return TRUE;
 }
 
-static bool spell_handler_prayer_EARTHQUAKE(spell_handler_context_t *context)
-{
-	earthquake(p_ptr->py, p_ptr->px, 10);
-	return TRUE;
-}
-
 static bool spell_handler_prayer_SENSE_SURROUNDINGS(spell_handler_context_t *context)
 {
 	map_area();
-	return TRUE;
-}
-
-static bool spell_handler_prayer_CURE_MORTAL_WOUNDS(spell_handler_context_t *context)
-{
-	(void)heal_player(context->value.m_bonus	, context->value.base);
-	(void)player_clear_timed(p_ptr, TMD_CUT, TRUE);
-	(void)player_clear_timed(p_ptr, TMD_AMNESIA, TRUE);
-	(void)player_clear_timed(p_ptr, TMD_CONFUSED, TRUE);
-	(void)player_clear_timed(p_ptr, TMD_BLIND, TRUE);
-	(void)player_clear_timed(p_ptr, TMD_POISONED, TRUE);
-	(void)player_clear_timed(p_ptr, TMD_STUN, TRUE);
 	return TRUE;
 }
 
@@ -926,18 +765,6 @@ static bool spell_handler_prayer_TURN_UNDEAD(spell_handler_context_t *context)
 {
 	(void)turn_undead(TRUE);
 	return TRUE;
-}
-
-static bool spell_handler_prayer_PRAYER(spell_handler_context_t *context)
-{
-	int dur = spell_calculate_value(context);
-	player_inc_timed(p_ptr, TMD_BLESSED, dur, TRUE, TRUE);
-	return TRUE;
-}
-
-static bool spell_handler_prayer_DISPEL_UNDEAD(spell_handler_context_t *context)
-{
-	return spell_dispel_undead(context);
 }
 
 static bool spell_handler_prayer_HEAL(spell_handler_context_t *context)
@@ -955,17 +782,6 @@ static bool spell_handler_prayer_HEAL(spell_handler_context_t *context)
 	return TRUE;
 }
 
-static bool spell_handler_prayer_DISPEL_EVIL(spell_handler_context_t *context)
-{
-	return spell_dispel_evil(context);
-}
-
-static bool spell_handler_prayer_GLYPH_OF_WARDING(spell_handler_context_t *context)
-{
-	warding_glyph_spell();
-	return TRUE;
-}
-
 static bool spell_handler_prayer_HOLY_WORD(spell_handler_context_t *context)
 {
 	(void)dispel_evil(randint1(p_ptr->lev * 4));
@@ -977,21 +793,10 @@ static bool spell_handler_prayer_HOLY_WORD(spell_handler_context_t *context)
 	return TRUE;
 }
 
-static bool spell_handler_prayer_DETECT_MONSTERS(spell_handler_context_t *context)
-{
-	(void)detect_monsters_normal(TRUE);
-	return TRUE;
-}
-
 static bool spell_handler_prayer_DETECTION(spell_handler_context_t *context)
 {
 	(void)detect_all(TRUE);
 	return TRUE;
-}
-
-static bool spell_handler_prayer_PERCEPTION(spell_handler_context_t *context)
-{
-	return ident_spell();
 }
 
 static bool spell_handler_prayer_PROBING(spell_handler_context_t *context)
@@ -1003,27 +808,6 @@ static bool spell_handler_prayer_PROBING(spell_handler_context_t *context)
 static bool spell_handler_prayer_CLAIRVOYANCE(spell_handler_context_t *context)
 {
 	wiz_light(FALSE);
-	return TRUE;
-}
-
-static bool spell_handler_prayer_CURE_SERIOUS_WOUNDS2(spell_handler_context_t *context)
-{
-	(void)heal_player(context->value.m_bonus, context->value.base);
-	(void)player_clear_timed(p_ptr, TMD_CUT, TRUE);
-	(void)player_clear_timed(p_ptr, TMD_CONFUSED, TRUE);
-	(void)player_clear_timed(p_ptr, TMD_BLIND, TRUE);
-	return TRUE;
-}
-
-static bool spell_handler_prayer_CURE_MORTAL_WOUNDS2(spell_handler_context_t *context)
-{
-	(void)heal_player(context->value.m_bonus, context->value.base);
-	(void)player_clear_timed(p_ptr, TMD_CUT, TRUE);
-	(void)player_clear_timed(p_ptr, TMD_AMNESIA, TRUE);
-	(void)player_clear_timed(p_ptr, TMD_CONFUSED, TRUE);
-	(void)player_clear_timed(p_ptr, TMD_BLIND, TRUE);
-	(void)player_clear_timed(p_ptr, TMD_POISONED, TRUE);
-	(void)player_clear_timed(p_ptr, TMD_STUN, TRUE);
 	return TRUE;
 }
 
@@ -1051,16 +835,6 @@ static bool spell_handler_prayer_REMEMBRANCE(spell_handler_context_t *context)
 	return TRUE;
 }
 
-static bool spell_handler_prayer_DISPEL_UNDEAD2(spell_handler_context_t *context)
-{
-	return spell_dispel_undead(context);
-}
-
-static bool spell_handler_prayer_DISPEL_EVIL2(spell_handler_context_t *context)
-{
-	return spell_dispel_evil(context);
-}
-
 static bool spell_handler_prayer_BANISH_EVIL(spell_handler_context_t *context)
 {
 	if (banish_evil(100))
@@ -1070,27 +844,10 @@ static bool spell_handler_prayer_BANISH_EVIL(spell_handler_context_t *context)
 	return TRUE;
 }
 
-static bool spell_handler_prayer_WORD_OF_DESTRUCTION(spell_handler_context_t *context)
-{
-	destroy_area(p_ptr->py, p_ptr->px, 15, TRUE);
-	return TRUE;
-}
-
 static bool spell_handler_prayer_ANNIHILATION(spell_handler_context_t *context)
 {
 	drain_life(context->dir, context->value.base);
 	return TRUE;
-}
-
-static bool spell_handler_prayer_UNBARRING_WAYS(spell_handler_context_t *context)
-{
-	(void)destroy_doors_touch();
-	return TRUE;
-}
-
-static bool spell_handler_prayer_RECHARGING(spell_handler_context_t *context)
-{
-	return spell_recharge(context);
 }
 
 static bool spell_handler_prayer_DISPEL_CURSE(spell_handler_context_t *context)
@@ -1100,47 +857,10 @@ static bool spell_handler_prayer_DISPEL_CURSE(spell_handler_context_t *context)
 	return FALSE;
 }
 
-static bool spell_handler_prayer_ENCHANT_WEAPON(spell_handler_context_t *context)
-{
-	return spell_enchant_weapon(context);
-}
-
-static bool spell_handler_prayer_ENCHANT_ARMOUR(spell_handler_context_t *context)
-{
-	return spell_enchant_armour(context);
-}
-
 static bool spell_handler_prayer_ELEMENTAL_BRAND(spell_handler_context_t *context)
 {
 	brand_weapon();
 	return TRUE;
-}
-
-static bool spell_handler_prayer_BLINK(spell_handler_context_t *context)
-{
-	return spell_teleport_player(context);
-}
-
-static bool spell_handler_prayer_TELEPORT_SELF(spell_handler_context_t *context)
-{
-	return spell_teleport_player(context);
-}
-
-static bool spell_handler_prayer_TELEPORT_OTHER(spell_handler_context_t *context)
-{
-	(void)teleport_monster(context->dir);
-	return TRUE;
-}
-
-static bool spell_handler_prayer_TELEPORT_LEVEL(spell_handler_context_t *context)
-{
-	(void)teleport_player_level();
-	return TRUE;
-}
-
-static bool spell_handler_prayer_WORD_OF_RECALL(spell_handler_context_t *context)
-{
-	return set_recall();
 }
 
 static bool spell_handler_prayer_ALTER_REALITY(spell_handler_context_t *context)
@@ -1155,17 +875,21 @@ static bool spell_handler_prayer_ALTER_REALITY(spell_handler_context_t *context)
 
 static const spell_info_t arcane_spells[] = {
 	#define F(x) spell_handler_arcane_##x
+	#define H(x) spell_handler_##x
 	#define SPELL(x, a, s, f) {x, a, s, f},
 	#include "list-spells-arcane.h"
 	#undef SPELL
+	#undef H
 	#undef F
 };
 
 static const spell_info_t prayer_spells[] = {
 	#define F(x) spell_handler_prayer_##x
+	#define H(x) spell_handler_##x
 	#define SPELL(x, a, s, f) {x, a, s, f},
 	#include "list-spells-prayer.h"
 	#undef SPELL
+	#undef H
 	#undef F
 };
 
@@ -1189,6 +913,7 @@ static bool cast_mage_spell(int spell, int dir)
 	spell_handler_f spell_handler = NULL;
 	const spell_info_t *spell_info = spell_info_for_index(arcane_spells, N_ELEMENTS(arcane_spells), SPELL_MAX, spell);
 	random_value value;
+	int p1, p2, p3;
 
 	if (spell_info == NULL)
 		return FALSE;
@@ -1201,11 +926,16 @@ static bool cast_mage_spell(int spell, int dir)
 	if (s_info[spell].dice != NULL)
 		dice_roll(s_info[spell].dice, &value);
 
+	p1 = s_info[spell].params[0]; /* Usually GF_ type. */
+	p2 = s_info[spell].params[1]; /* Usually radius for ball spells, or some other modifier. */
+	p3 = s_info[spell].params[2]; /* SPELL_PROJECT_ type if from the parser. */
+
 	spell_handler_context_t context = {
 		spell,
 		dir,
 		beam_chance(),
 		value,
+		p1, p2, p3,
 	};
 
 	return spell_handler(&context);

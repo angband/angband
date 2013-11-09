@@ -41,6 +41,7 @@ I:90:0:0
 id:SPELL_MAGIC_MISSILE
 dice:$Dd4
 expr:D:PLAYER_LEVEL:- 1 / 5 + 3
+borb:MISSILE:-10
 D:Fires a magic missile that always hits its target and does
 D: unresistable damage.
 D:  Sometimes a beam is fired instead that hurts each monster
@@ -102,9 +103,10 @@ D:Detects all treasure in the immediate area.
 
 N:11:Stinking Cloud
 I:90:0:8
+id:SPELL_STINKING_CLOUD
 dice:$B
 expr:B:PLAYER_LEVEL:/ 2 + 10
-id:SPELL_STINKING_CLOUD
+ball:POIS:2
 D:Shoots a radius-2 poison ball.
 
 N:12:Lightning Bolt
@@ -112,6 +114,7 @@ I:90:1:1
 id:SPELL_LIGHTNING_BOLT
 dice:$Dd6
 expr:D:PLAYER_LEVEL:- 5 / 6 + 3
+beam:ELEC
 D:Fires a lightning beam that hurts each monster in its path.
 
 N:13:Confuse Monster
@@ -136,6 +139,7 @@ I:90:1:7
 id:SPELL_FROST_BOLT
 dice:$Dd8
 expr:D:PLAYER_LEVEL:- 5 / 4 + 5
+borb:COLD:-10
 D:Fires a frost bolt that always hits its target.
 D:  Sometimes a beam is fired instead that hurts each monster
 D: in its path.
@@ -146,6 +150,7 @@ I:90:2:7
 id:SPELL_ACID_BOLT
 dice:$Dd8
 expr:D:PLAYER_LEVEL:- 5 / 4 + 8
+borb:ACID
 D:Fires an acid bolt that always hits its target.
 D:  Sometimes a beam is fired instead that hurts each monster
 D: in its path.
@@ -156,6 +161,7 @@ I:90:2:3
 id:SPELL_FIRE_BOLT
 dice:$Dd8
 expr:D:PLAYER_LEVEL:- 5 / 4 + 6
+borb:FIRE
 D:Fires a fire bolt that always hits its target.
 D:  Sometimes a beam is fired instead that hurts each monster
 D: in its path.
@@ -238,9 +244,9 @@ D:Hastes you (+10 to speed) for a level-dependant duration.
 
 N:30:Teleport Self
 I:90:1:5
+id:SPELL_TELEPORT_SELF
 dice:$B
 expr:B:PLAYER_LEVEL:* 5
-id:SPELL_TELEPORT_SELF
 D:Teleports you randomly within the current level.
 
 N:31:Slow Monster
@@ -285,6 +291,7 @@ I:90:5:0
 id:SPELL_SHOCK_WAVE
 dice:$B
 expr:B:PLAYER_LEVEL:+ 10
+ball:SOUND:2
 D:Shoots a radius-2 sound ball.
 D:  Apart from doing sound damage, this also has a chance to stun
 D: each monster in the area of effect.
@@ -294,6 +301,7 @@ I:90:5:1
 id:SPELL_EXPLOSION
 dice:$B
 expr:B:PLAYER_LEVEL:* 2 + 20
+ball:SHARD:2
 D:Shoots a radius-2 shards ball.
 
 N:38:Cloudkill
@@ -301,6 +309,7 @@ I:90:5:2
 id:SPELL_CLOUD_KILL
 dice:$B
 expr:B:PLAYER_LEVEL:/ 2 + 40
+ball:POIS:3
 D:Shoots a radius-3 poison ball.
 
 N:39:Mass Sleep
@@ -312,6 +321,9 @@ D:  Uniques and monsters that resist confusion are not affected.
 N:40:Bedlam
 I:90:8:1
 id:SPELL_BEDLAM
+dice:$B
+expr:B:PLAYER_LEVEL:+ 0
+ball:OLD_CONF:4
 D:Shoots a radius-4 confusion ball that doesn't cause physical
 D: damage but has a chance to confuse each monster in the area of effect.
 D:  Uniques or monsters that resist confusion are not affected.
@@ -342,6 +354,7 @@ I:90:8:6
 id:SPELL_CHAOS_STRIKE
 dice:13d$S
 expr:S:PLAYER_LEVEL:+ 0
+borb:CHAOS
 D:Fires a chaos bolt that always hits its target.
 D:  Sometimes a beam is fired instead that hurts each monster
 D: in its path.
@@ -438,6 +451,7 @@ I:90:3:0
 id:SPELL_FROST_BALL
 dice:$B
 expr:B:PLAYER_LEVEL:+ 30
+ball:COLD:2
 D:Shoots a radius-2 frost ball.
 
 N:56:Acid Ball
@@ -445,6 +459,7 @@ I:90:5:3
 id:SPELL_ACID_BALL
 dice:$B
 expr:B:PLAYER_LEVEL:+ 40
+ball:ACID:2
 D:Shoots a radius-2 acid ball.
 
 N:57:Fire Ball
@@ -452,6 +467,7 @@ I:90:3:4
 id:SPELL_FIRE_BALL
 dice:$B
 expr:B:PLAYER_LEVEL:+ 55
+ball:FIRE:2
 D:Shoots a radius-2 fire ball.
 
 N:58:Ice Storm
@@ -459,6 +475,7 @@ I:90:5:4
 id:SPELL_ICE_STORM
 dice:$B
 expr:B:PLAYER_LEVEL:* 2 + 50
+ball:ICE:3
 D:Shoots a radius-3 cold ball.
 
 N:59:Banishment
@@ -494,6 +511,7 @@ I:90:5:6
 id:SPELL_RIFT
 dice:40+$Dd7
 expr:D:PLAYER_LEVEL:+ 0
+beam:GRAVITY
 D:Fires a gravity beam that hurts each monster in its path
 D: and has a chance of teleporting it away.
 
@@ -502,6 +520,7 @@ I:90:8:7
 id:SPELL_MANA_STORM
 dice:$B
 expr:B:PLAYER_LEVEL:* 2 + 300
+ball:MANA:3
 D:Shoots a radius-3 mana ball that does unresistable
 D: damage to each monster in its area of effect.
 

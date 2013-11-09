@@ -316,8 +316,16 @@ typedef struct spell {
 
 	byte spell_index;	/* Index into player_magic array */
 	dice_t *dice;		/* Value information from spell file */
+	int params[3];		/* Extra parameters to be passed to the handler */
 } spell_type;
 
+enum spell_param_project_type_e {
+	SPELL_PROJECT_NONE = 0,
+	SPELL_PROJECT_BOLT,
+	SPELL_PROJECT_BEAM,
+	SPELL_PROJECT_BOLT_OR_BEAM,
+	SPELL_PROJECT_BALL,
+};
 
 /**
  * Information about object types, like rods, wands, etc.
