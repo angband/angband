@@ -102,46 +102,15 @@ enum
  */
 enum
 {
-	FF_NONE,
-	FF_PWALK,
-	FF_PPASS,
-	FF_MWALK,
-	FF_MPASS,
-	FF_LOOK,
-	FF_DIG,
-	FF_DOOR,
-	FF_EXIT_UP,
-	FF_EXIT_DOWN,
-	FF_PERM,
-	FF_TRAP,
-	FF_SHOP,
-	FF_HIDDEN,
-	FF_BORING,
-	FF_MAX
+	#define TF(a,b) TF_##a,
+	#include "list-terrain-flags.h"
+	#undef TF
+	TF_MAX
 };
 
-#define FF_SIZE               FLAG_SIZE(FF_MAX)
+#define TF_SIZE                FLAG_SIZE(TF_MAX)
 
-#define ff_has(f, flag)        flag_has_dbg(f, FF_SIZE, flag, #f, #flag)
-#define ff_next(f, flag)       flag_next(f, FF_SIZE, flag)
-#define ff_is_empty(f)         flag_is_empty(f, FF_SIZE)
-#define ff_is_full(f)          flag_is_full(f, FF_SIZE)
-#define ff_is_inter(f1, f2)    flag_is_inter(f1, f2, FF_SIZE)
-#define ff_is_subset(f1, f2)   flag_is_subset(f1, f2, FF_SIZE)
-#define ff_is_equal(f1, f2)    flag_is_equal(f1, f2, FF_SIZE)
-#define ff_on(f, flag)         flag_on_dbg(f, FF_SIZE, flag, #f, #flag)
-#define ff_off(f, flag)        flag_off(f, FF_SIZE, flag)
-#define ff_wipe(f)             flag_wipe(f, FF_SIZE)
-#define ff_setall(f)           flag_setall(f, FF_SIZE)
-#define ff_negate(f)           flag_negate(f, FF_SIZE)
-#define ff_copy(f1, f2)        flag_copy(f1, f2, FF_SIZE)
-#define ff_union(f1, f2)       flag_union(f1, f2, FF_SIZE)
-#define ff_comp_union(f1, f2)  flag_comp_union(f1, f2, FF_SIZE)
-#define ff_inter(f1, f2)       flag_inter(f1, f2, FF_SIZE)
-#define ff_diff(f1, f2)        flag_diff(f1, f2, FF_SIZE)
-
-
-
+#define tf_has(f, flag)        flag_has_dbg(f, TF_SIZE, flag, #f, #flag)
 
 /**
  * Information about terrain features.
@@ -165,7 +134,7 @@ typedef struct feature
 	byte dig;      /**< How hard is it to dig through? */
 
 	u32b effect;   /**< Effect on entry to grid */
-	bitflag flags[FF_SIZE];    /**< Terrain flags */
+	bitflag flags[TF_SIZE];    /**< Terrain flags */
 
 	byte d_attr;   /**< Default feature attribute */
 	wchar_t d_char;   /**< Default feature character */

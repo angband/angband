@@ -1053,24 +1053,12 @@ static enum parser_error parse_f_p(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static const char *f_info_flags[] =
+static const char *terrain_flags[] =
 {
-	"NONE",
-	"PWALK",
-	"PPASS",
-	"MWALK",
-	"MPASS",
-	"LOOK",
-	"DIG",
-	"DOOR",
-	"EXIT_UP",
-	"EXIT_DOWN",
-	"PERM",
-	"TRAP",
-	"SHOP",
-	"HIDDEN",
-	"BORING",
-	NULL
+#define TF(a, b) #a,
+#include "list-terrain-flags.h"
+#undef TF
+    NULL
 };
 
 static enum parser_error parse_f_f(struct parser *p) {
@@ -1087,7 +1075,7 @@ static enum parser_error parse_f_f(struct parser *p) {
 
 	s = strtok(flags, " |");
 	while (s) {
-		if (grab_flag(f->flags, FF_SIZE, f_info_flags, s)) {
+		if (grab_flag(f->flags, TF_SIZE, terrain_flags, s)) {
 			mem_free(flags);
 			quit_fmt("bad f-flag: %s", s);
 			return PARSE_ERROR_INVALID_FLAG;

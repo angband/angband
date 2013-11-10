@@ -3133,7 +3133,7 @@ bool square_isdiggable(struct cave *c, int y, int x) {
  */
 bool feat_is_monster_walkable(feature_type *feature)
 {
-	return ff_has(feature->flags, FF_MWALK);
+	return tf_has(feature->flags, TF_PASSABLE);
 }
 
 /**
@@ -3152,7 +3152,7 @@ bool square_is_monster_walkable(struct cave *c, int y, int x)
  * True if the feature is passable by the player.
  */
 bool feat_ispassable(feature_type *f_ptr) {
-	return ff_has(f_ptr->flags, FF_PWALK);
+	return tf_has(f_ptr->flags, TF_PASSABLE);
 }
 
 /**
@@ -3202,7 +3202,6 @@ bool square_isvault(struct cave *c, int y, int x) {
 bool square_isroom(struct cave *c, int y, int x) {
 	assert(square_in_bounds(c, y, x));
 	return sqinfo_has(c->info[y][x], SQUARE_ROOM);
-
 }
 
 /**
@@ -3238,7 +3237,7 @@ bool square_isglow(struct cave *c, int y, int x) {
  * True if the feature is "boring".
  */
 bool feat_isboring(feature_type *f_ptr) {
-	return ff_has(f_ptr->flags, FF_BORING);
+	return !tf_has(f_ptr->flags, TF_INTERESTING);
 }
 
 /**

@@ -46,7 +46,6 @@
 N:0:<darkness>
 G: :w
 P:2
-F:MWALK | MPASS | LOOK | BORING
 
 
 # 0x01 --> open floor
@@ -54,7 +53,7 @@ F:MWALK | MPASS | LOOK | BORING
 N:1:open floor
 G:.:w
 P:5
-F:PWALK | PPASS | MWALK | MPASS | LOOK | BORING
+F:LOS | PROJECT | PASSABLE | FLOOR | OBJECT | EASY | TRAP | RUNE | TORCH
 
 # 0x02 --> invisible trap (drawn as open floor)
 
@@ -62,49 +61,49 @@ N:2:invisible trap
 G:.:w
 M:1
 P:5
-F:PWALK | PPASS | MWALK | MPASS | LOOK | TRAP | HIDDEN | BORING
+F:LOS | PROJECT | PASSABLE | FLOOR | EASY | TRAP | RUNE | TORCH
 
 # 0x03 --> glyph of warding
 
 N:3:glyph of warding
 G:;:y
 P:20
-F:PWALK | PPASS | LOOK
+F:LOS | PROJECT | PASSABLE | FLOOR | EASY | TRAP | RUNE | TORCH
 
 # 0x04 --> open door
 
 N:4:open door
 G:':U
 P:15
-F:PWALK | PPASS | MWALK | MPASS | LOOK
+F:LOS | PROJECT | PASSABLE | DOOR_ANY | INTERESTING | CLOSABLE | EASY  
 
 # 0x05 --> broken door
 
 N:5:broken door
 G:':u
 P:15
-F:PWALK | PPASS | MWALK | MPASS | LOOK
+F:LOS | PROJECT | PASSABLE | DOOR_ANY | INTERESTING | EASY 
 
 # 0x06 --> up stairs (perm)
 
 N:6:up staircase
 G:<:w
 P:25
-F:PWALK | PPASS | MWALK | MPASS | LOOK | EXIT_UP
+F:LOS | PROJECT | PASSABLE | PERMANENT | INTERESTING | STAIR | UPSTAIR | EASY
 
 # 0x07 --> down stairs (perm)
 
 N:7:down staircase
 G:>:w
 P:25
-F:PWALK | PPASS | MWALK | MPASS | LOOK | EXIT_DOWN
+F:LOS | PROJECT | PASSABLE | PERMANENT | INTERESTING | STAIR | DOWNSTAIR | EASY
 
 # 0x08 --> shop -- general store (perm)
 
 N:8:General Store
 G:1:U
 P:20
-F:PWALK | PPASS | MWALK | MPASS | LOOK | PERM | SHOP
+F:SHOP | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY
 X:0:0:1:0
 
 # 0x09 --> shop -- armoury (perm)
@@ -112,7 +111,7 @@ X:0:0:1:0
 N:9:Armoury
 G:2:s
 P:20
-F:PWALK | PPASS | MWALK | MPASS | LOOK | PERM | SHOP
+F:SHOP | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY
 X:0:0:2:0
 
 # 0x0A --> shop -- weapon shop (perm)
@@ -120,7 +119,7 @@ X:0:0:2:0
 N:10:Weapon Smiths
 G:3:w
 P:20
-F:PWALK | PPASS | MWALK | MPASS | LOOK | PERM | SHOP
+F:SHOP | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY
 X:0:0:3:0
 
 # 0x0B --> shop -- temple (perm)
@@ -128,7 +127,7 @@ X:0:0:3:0
 N:11:Temple
 G:4:g
 P:20
-F:PWALK | PPASS | MWALK | MPASS | LOOK | PERM | SHOP
+F:SHOP | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY
 X:0:0:4:0
 
 # 0x0C --> shop -- alchemist (perm)
@@ -136,7 +135,7 @@ X:0:0:4:0
 N:12:Alchemy Shop
 G:5:b
 P:20
-F:PWALK | PPASS | MWALK | MPASS | LOOK | PERM | SHOP
+F:SHOP | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY
 X:0:0:5:0
 
 # 0x0D --> shop -- magic shop (perm)
@@ -144,7 +143,7 @@ X:0:0:5:0
 N:13:Magic Shop
 G:6:r
 P:20
-F:PWALK | PPASS | MWALK | MPASS | LOOK | PERM | SHOP
+F:SHOP | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY
 X:0:0:6:0
 
 # 0x0E --> shop -- black market (perm)
@@ -152,7 +151,7 @@ X:0:0:6:0
 N:14:Black Market
 G:7:D
 P:20
-F:PWALK | PPASS | MWALK | MPASS | LOOK | PERM | SHOP
+F:SHOP | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY
 X:0:0:7:0
 
 # 0x0F --> shop -- home (perm)
@@ -160,7 +159,7 @@ X:0:0:7:0
 N:15:Home
 G:8:y
 P:20
-F:PWALK | PPASS | MWALK | MPASS | LOOK | PERM | SHOP
+F:SHOP | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY
 X:0:0:8:0
 
 # 0x10 --> visible trap -- trap door
@@ -168,7 +167,7 @@ X:0:0:8:0
 N:16:trap door
 G:^:w
 P:20
-F:PWALK | PPASS | MWALK | MPASS | LOOK | TRAP
+F:LOS | PROJECT | PASSABLE | FLOOR | EASY | TRAP | RUNE | TORCH
 E:TRAP_DOOR
 
 # 0x11 --> visible trap -- open pit
@@ -176,7 +175,7 @@ E:TRAP_DOOR
 N:17:pit
 G:^:s
 P:20
-F:PWALK | PPASS | MWALK | MPASS | LOOK | TRAP
+F:LOS | PROJECT | PASSABLE | FLOOR | EASY | TRAP | RUNE | TORCH
 E:TRAP_PIT
 
 # 0x12 --> visible trap -- spiked pit
@@ -184,7 +183,7 @@ E:TRAP_PIT
 N:18:pit
 G:^:s
 P:20
-F:PWALK | PPASS | MWALK | MPASS | LOOK | TRAP
+F:LOS | PROJECT | PASSABLE | FLOOR | EASY | TRAP | RUNE | TORCH
 E:TRAP_PIT_SPIKES
 
 # 0x13 --> visible trap -- poison pit
@@ -192,7 +191,7 @@ E:TRAP_PIT_SPIKES
 N:19:pit
 G:^:s
 P:20
-F:PWALK | PPASS | MWALK | MPASS | LOOK | TRAP
+F:LOS | PROJECT | PASSABLE | FLOOR | EASY | TRAP | RUNE | TORCH
 E:TRAP_PIT_POISON
 
 # 0x14 --> visible trap -- rune -- summon
@@ -200,7 +199,7 @@ E:TRAP_PIT_POISON
 N:20:strange rune
 G:^:B
 P:20
-F:PWALK | PPASS | MWALK | MPASS | LOOK | TRAP
+F:LOS | PROJECT | PASSABLE | FLOOR | EASY | TRAP | RUNE | TORCH
 E:TRAP_RUNE_SUMMON
 
 # 0x15 --> visible trap -- rune -- teleport
@@ -208,7 +207,7 @@ E:TRAP_RUNE_SUMMON
 N:21:strange rune
 G:^:o
 P:20
-F:PWALK | PPASS | MWALK | MPASS | LOOK | TRAP
+F:LOS | PROJECT | PASSABLE | FLOOR | EASY | TRAP | RUNE | TORCH
 E:TRAP_RUNE_TELEPORT
 
 # 0x16 --> visible trap -- spot -- fire
@@ -216,7 +215,7 @@ E:TRAP_RUNE_TELEPORT
 N:22:discolored spot
 G:^:u
 P:20
-F:PWALK | PPASS | MWALK | MPASS | LOOK | TRAP
+F:LOS | PROJECT | PASSABLE | FLOOR | EASY | TRAP | RUNE | TORCH
 E:TRAP_SPOT_FIRE
 
 # 0x17 --> visible trap -- spot -- acid
@@ -224,7 +223,7 @@ E:TRAP_SPOT_FIRE
 N:23:discolored spot
 G:^:u
 P:20
-F:PWALK | PPASS | MWALK | MPASS | LOOK | TRAP
+F:LOS | PROJECT | PASSABLE | FLOOR | EASY | TRAP | RUNE | TORCH
 E:TRAP_SPOT_ACID
 
 # 0x18 --> visible trap -- dart -- slow
@@ -232,7 +231,7 @@ E:TRAP_SPOT_ACID
 N:24:dart trap
 G:^:r
 P:20
-F:PWALK | PPASS | MWALK | MPASS | LOOK | TRAP
+F:LOS | PROJECT | PASSABLE | FLOOR | EASY | TRAP | RUNE | TORCH
 E:TRAP_DART_SLOW
 
 # 0x19 --> visible trap -- dart -- lose str
@@ -240,7 +239,7 @@ E:TRAP_DART_SLOW
 N:25:dart trap
 G:^:r
 P:20
-F:PWALK | PPASS | MWALK | MPASS | LOOK | TRAP
+F:LOS | PROJECT | PASSABLE | FLOOR | EASY | TRAP | RUNE | TORCH
 E:TRAP_DART_LOSE_STR
 
 # 0x1A --> visible trap -- dart -- lose dex
@@ -248,7 +247,7 @@ E:TRAP_DART_LOSE_STR
 N:26:dart trap
 G:^:r
 P:20
-F:PWALK | PPASS | MWALK | MPASS | LOOK | TRAP
+F:LOS | PROJECT | PASSABLE | FLOOR | EASY | TRAP | RUNE | TORCH
 E:TRAP_DART_LOSE_DEX
 
 # 0x1B --> visible trap -- dart -- lose con
@@ -256,7 +255,7 @@ E:TRAP_DART_LOSE_DEX
 N:27:dart trap
 G:^:r
 P:20
-F:PWALK | PPASS | MWALK | MPASS | LOOK | TRAP
+F:LOS | PROJECT | PASSABLE | FLOOR | EASY | TRAP | RUNE | TORCH
 E:TRAP_DART_LOSE_CON
 
 # 0x1C --> visible trap -- gas -- blind
@@ -264,7 +263,7 @@ E:TRAP_DART_LOSE_CON
 N:28:gas trap
 G:^:g
 P:20
-F:PWALK | PPASS | MWALK | MPASS | LOOK | TRAP
+F:LOS | PROJECT | PASSABLE | FLOOR | EASY | TRAP | RUNE | TORCH
 E:TRAP_GAS_BLIND
 
 # 0x1D --> visible trap -- gas -- confuse
@@ -272,7 +271,7 @@ E:TRAP_GAS_BLIND
 N:29:gas trap
 G:^:g
 P:20
-F:PWALK | PPASS | MWALK | MPASS | LOOK | TRAP
+F:LOS | PROJECT | PASSABLE | FLOOR | EASY | TRAP | RUNE | TORCH
 E:TRAP_GAS_CONFUSE
 
 # 0x1E --> visible trap -- gas -- poison
@@ -280,7 +279,7 @@ E:TRAP_GAS_CONFUSE
 N:30:gas trap
 G:^:g
 P:20
-F:PWALK | PPASS | MWALK | MPASS | LOOK | TRAP
+F:LOS | PROJECT | PASSABLE | FLOOR | EASY | TRAP | RUNE | TORCH
 E:TRAP_GAS_POISON
 
 # 0x1F --> visible trap -- gas -- sleep
@@ -288,7 +287,7 @@ E:TRAP_GAS_POISON
 N:31:gas trap
 G:^:g
 P:20
-F:PWALK | PPASS | MWALK | MPASS | LOOK | TRAP
+F:LOS | PROJECT | PASSABLE | FLOOR | EASY | TRAP | RUNE | TORCH
 E:TRAP_GAS_SLEEP
 
 # 0x2x --> locked door (power 0)
@@ -297,7 +296,7 @@ N:32:door
 G:+:U
 P:17
 M:32
-F:DOOR
+F:DOOR_ANY | DOOR_CLOSED | INTERESTING
 X:0:0:0:0
 
 # 0x2x --> locked door (power 1)
@@ -306,7 +305,7 @@ N:33:locked door
 G:+:U
 P:17
 M:32
-F:DOOR
+F:DOOR_ANY | DOOR_CLOSED | INTERESTING | DOOR_LOCKED 
 X:1:0:0:0
 
 # 0x2x --> locked door (power 2)
@@ -315,7 +314,7 @@ N:34:locked door
 G:+:U
 P:17
 M:32
-F:DOOR
+F:DOOR_ANY | DOOR_CLOSED | INTERESTING | DOOR_LOCKED 
 X:2:0:0:0
 
 # 0x2x --> locked door (power 3)
@@ -324,7 +323,7 @@ N:35:locked door
 G:+:U
 P:17
 M:32
-F:DOOR
+F:DOOR_ANY | DOOR_CLOSED | INTERESTING | DOOR_LOCKED 
 X:3:0:0:0
 
 # 0x2x --> locked door (power 4)
@@ -333,7 +332,7 @@ N:36:locked door
 G:+:U
 P:17
 M:32
-F:DOOR
+F:DOOR_ANY | DOOR_CLOSED | INTERESTING | DOOR_LOCKED 
 X:4:0:0:0
 
 # 0x2x --> locked door (power 5)
@@ -342,7 +341,7 @@ N:37:locked door
 G:+:U
 P:17
 M:32
-F:DOOR
+F:DOOR_ANY | DOOR_CLOSED | INTERESTING | DOOR_LOCKED 
 X:5:0:0:0
 
 # 0x2x --> locked door (power 6)
@@ -351,7 +350,7 @@ N:38:locked door
 G:+:U
 P:17
 M:32
-F:DOOR
+F:DOOR_ANY | DOOR_CLOSED | INTERESTING | DOOR_LOCKED 
 X:6:0:0:0
 
 # 0x2x --> locked door (power 7)
@@ -360,7 +359,7 @@ N:39:locked door
 G:+:U
 P:17
 M:32
-F:DOOR
+F:DOOR_ANY | DOOR_CLOSED | INTERESTING | DOOR_LOCKED 
 X:7:0:0:0
 
 ## rm post 3.5
@@ -370,7 +369,7 @@ N:40:jammed door
 G:+:U
 P:17
 M:32
-F:DOOR
+F:DOOR_ANY | DOOR_CLOSED | INTERESTING | DOOR_JAMMED
 X:0:0:0:0
 
 # 0x2x --> jammed door (power 1)
@@ -379,7 +378,7 @@ N:41:jammed door
 G:+:U
 P:17
 M:32
-F:DOOR
+F:DOOR_ANY | DOOR_CLOSED | INTERESTING | DOOR_JAMMED
 X:0:1:0:0
 
 # 0x2x --> jammed door (power 2)
@@ -388,7 +387,7 @@ N:42:jammed door
 G:+:U
 P:17
 M:32
-F:DOOR
+F:DOOR_ANY | DOOR_CLOSED | INTERESTING | DOOR_JAMMED
 X:0:2:0:0
 
 # 0x2x --> jammed door (power 3)
@@ -397,7 +396,7 @@ N:43:jammed door
 G:+:U
 P:17
 M:32
-F:DOOR
+F:DOOR_ANY | DOOR_CLOSED | INTERESTING | DOOR_JAMMED
 X:0:3:0:0
 
 # 0x2x --> jammed door (power 4)
@@ -406,7 +405,7 @@ N:44:jammed door
 G:+:U
 P:17
 M:32
-F:DOOR
+F:DOOR_ANY | DOOR_CLOSED | INTERESTING | DOOR_JAMMED
 X:0:4:0:0
 
 # 0x2x --> jammed door (power 5)
@@ -415,7 +414,7 @@ N:45:jammed door
 G:+:U
 P:17
 M:32
-F:DOOR
+F:DOOR_ANY | DOOR_CLOSED | INTERESTING | DOOR_JAMMED
 X:0:5:0:0
 
 # 0x2x --> jammed door (power 6)
@@ -424,7 +423,7 @@ N:46:jammed door
 G:+:U
 P:17
 M:32
-F:DOOR
+F:DOOR_ANY | DOOR_CLOSED | INTERESTING | DOOR_JAMMED
 X:0:6:0:0
 
 # 0x2x --> jammed door (power 7)
@@ -433,7 +432,7 @@ N:47:jammed door
 G:+:U
 P:17
 M:32
-F:DOOR
+F:DOOR_ANY | DOOR_CLOSED | INTERESTING | DOOR_JAMMED
 X:0:7:0:0
 
 # 0x30 --> secret door
@@ -442,14 +441,14 @@ N:48:secret door
 G:#:w
 P:10
 M:56
-F:HIDDEN | BORING
+F:WALL | ROCK | DOOR_ANY | GRANITE
 
 # 0x31 --> pile of rubble
 
 N:49:pile of rubble
 G:::w
 P:13
-F:DIG
+F:WALL | ROCK | NO_SCENT | NO_NOISE
 X:0:0:0:1
 
 # 0x32 --> magma vein
@@ -457,7 +456,7 @@ X:0:0:0:1
 N:50:magma vein
 G:%:s
 P:12
-F:DIG | BORING
+F:WALL | ROCK | NO_SCENT | NO_NOISE | MAGMA 
 X:0:0:0:2
 
 # 0x33 --> quartz vein
@@ -465,7 +464,7 @@ X:0:0:0:2
 N:51:quartz vein
 G:%:W
 P:11
-F:DIG | BORING
+F:WALL | ROCK | NO_SCENT | NO_NOISE | QUARTZ 
 X:0:0:0:3
 
 # 0x34 --> magma vein + treasure
@@ -474,7 +473,7 @@ N:52:magma vein
 G:%:s
 P:12
 M:50
-F:DIG | BORING
+F:WALL | ROCK | NO_SCENT | NO_NOISE | GOLD | MAGMA 
 X:0:0:0:2
 
 # 0x35 --> quartz vein + treasure
@@ -483,7 +482,7 @@ N:53:quartz vein
 G:%:W
 P:11
 M:51
-F:DIG | BORING
+F:WALL | ROCK | NO_SCENT | NO_NOISE | GOLD | QUARTZ 
 X:0:0:0:3
 
 # 0x36 --> magma vein + known treasure
@@ -491,7 +490,7 @@ X:0:0:0:3
 N:54:magma vein with treasure
 G:*:o
 P:19
-F:DIG
+F:WALL | ROCK | INTERESTING | NO_SCENT | NO_NOISE | GOLD | MAGMA 
 X:0:0:0:2
 
 # 0x37 --> quartz vein + known treasure
@@ -499,7 +498,7 @@ X:0:0:0:2
 N:55:quartz vein with treasure
 G:*:o
 P:19
-F:DIG
+F:WALL | ROCK | INTERESTING | NO_SCENT | NO_NOISE | GOLD | QUARTZ
 X:0:0:0:3
 
 # 0x38 --> granite wall -- basic
@@ -507,7 +506,7 @@ X:0:0:0:3
 N:56:granite wall
 G:#:w
 P:10
-F:DIG | BORING
+F:WALL | ROCK | GRANITE | NO_SCENT | NO_NOISE
 X:0:0:0:4
 
 # 0x39 --> granite wall -- inner
@@ -516,7 +515,7 @@ N:57:granite wall
 G:#:w
 P:10
 M:56
-F:DIG | BORING
+F:WALL | ROCK | GRANITE | NO_SCENT | NO_NOISE
 X:0:0:0:4
 
 # 0x3A --> granite wall -- outer
@@ -525,7 +524,7 @@ N:58:granite wall
 G:#:w
 P:10
 M:56
-F:DIG | BORING
+F:WALL | ROCK | GRANITE | NO_SCENT | NO_NOISE
 X:0:0:0:4
 
 # 0x3B --> granite wall -- solid
@@ -534,7 +533,7 @@ N:59:granite wall
 G:#:w
 P:10
 M:56
-F:DIG | BORING
+F:WALL | ROCK | GRANITE | NO_SCENT | NO_NOISE
 X:0:0:0:4
 
 # 0x3C --> permanent wall -- basic (perm)
@@ -542,7 +541,7 @@ X:0:0:0:4
 N:60:permanent wall
 G:#:u
 P:10
-F:PERM | BORING
+F:WALL | ROCK | PERMANENT | NO_SCENT | NO_NOISE
 
 # 0x3D --> permanent wall -- inner (perm)
 
@@ -550,7 +549,7 @@ N:61:permanent wall
 G:#:u
 P:10
 M:60
-F:PERM | BORING
+F:WALL | ROCK | PERMANENT | NO_SCENT | NO_NOISE
 
 # 0x3E --> permanent wall -- outer (perm)
 
@@ -558,7 +557,7 @@ N:62:permanent wall
 G:#:u
 P:10
 M:60
-F:PERM | BORING
+F:WALL | ROCK | PERMANENT | NO_SCENT | NO_NOISE
 
 # 0x3F --> permanent wall -- solid (perm)
 
@@ -566,19 +565,19 @@ N:63:permanent wall
 G:#:u
 P:10
 M:60
-F:PERM | BORING
+F:WALL | ROCK | PERMANENT | NO_SCENT | NO_NOISE
 
 # holder for trap detected border floor tile
 N:64:open floor
 G:.:G
 P:5
-F:PWALK | PPASS | MWALK | MPASS | LOOK | BORING
+F:LOS | PROJECT | PASSABLE | FLOOR | OBJECT | EASY | TRAP | RUNE | TORCH
 
 # holder for trap detected border overlay tile
 N:65:granite wall
 G:#:G
 P:10
-F:DIG | BORING
+F:WALL | ROCK | GRANITE | NO_SCENT | NO_NOISE
 X:0:0:0:4
 
 
