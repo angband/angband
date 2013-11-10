@@ -600,23 +600,17 @@ void move_player(int dir, bool disarm)
 
 
 		/* Discover invisible traps */
-		if (square_issecrettrap(cave, y, x))
+		if (square_invisible_trap(cave, y, x)) 
 		{
 			/* Disturb */
 			disturb(p_ptr, 0, 0);
-
-			/* Message */
-			msg("You found a trap!");
-
-			/* Pick a trap */
-			pick_trap(y, x);
-
-			/* Hit the trap */
+			
+			/* Hit the trap. */
 			hit_trap(y, x);
 		}
 
-		/* Set off an visible trap */
-		else if (square_isknowntrap(cave, y, x))
+		/* Set off a visible trap */
+		else if (square_visible_trap(cave, y, x))
 		{
 			/* Disturb */
 			disturb(p_ptr, 0, 0);

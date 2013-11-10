@@ -21,4 +21,7 @@ M:O:1024
 # Maximum number of monsters on the level
 M:M:1024
 
+# Maximum number of traps on the level
+M:N:1024
+
 

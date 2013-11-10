@@ -157,19 +157,16 @@ bool search(bool verbose)
 			/* Sometimes, notice things */
 			if (randint0(100) < chance)
 			{
-				/* Invisible trap */
-				if (square_issecrettrap(cave, y, x))
+				if (square_invisible_trap(cave, y, x)) 
 				{
 					found = TRUE;
 
-					/* Pick a trap */
-					pick_trap(y, x);
-
-					/* Message */
-					msg("You have found a trap.");
-
-					/* Disturb */
-					disturb(p_ptr, 0, 0);
+					/* Reveal trap, display a message */
+					if (square_reveal_trap(cave, y, x, chance, TRUE))
+					{
+						/* Disturb */
+						disturb(p_ptr, 0, 0);
+					}
 				}
 
 				/* Secret door */
@@ -1035,7 +1032,8 @@ static bool do_cmd_disarm_aux(int y, int x)
 {
 	int i, j, power;
 
-	const char *name;
+	int trap;
+    trap_type *t_ptr;
 
 	bool more = FALSE;
 
@@ -1044,8 +1042,10 @@ static bool do_cmd_disarm_aux(int y, int x)
 	if (!do_cmd_disarm_test(y, x)) return (FALSE);
 
 
-	/* Get the trap name */
-	name = f_info[cave->feat[y][x]].name;
+    /* Choose trap */
+    trap = square_visible_trap_idx(cave, y, x);
+    if (trap < 0) return (FALSE);
+    t_ptr = &cave->traps[trap];
 
 	/* Get the "disarm" factor */
 	i = p_ptr->state.skills[SKILL_DISARM];
@@ -1069,7 +1069,7 @@ static bool do_cmd_disarm_aux(int y, int x)
 	if (randint0(100) < j)
 	{
 		/* Message */
-		msgt(MSG_DISARM, "You have disarmed the %s.", name);
+		msgt(MSG_DISARM, "You have disarmed the %s.", t_ptr->kind->name);
 
 		/* Reward */
 		player_exp_gain(p_ptr, power);
@@ -1087,7 +1087,7 @@ static bool do_cmd_disarm_aux(int y, int x)
 		flush();
 
 		/* Message */
-		msg("You failed to disarm the %s.", name);
+		msg("You failed to disarm the %s.", t_ptr->kind->name);
 
 		/* We may keep trying */
 		more = TRUE;
@@ -1097,7 +1097,7 @@ static bool do_cmd_disarm_aux(int y, int x)
 	else
 	{
 		/* Message */
-		msg("You set off the %s!", name);
+		msg("You set off the %s!", t_ptr->kind->name);
 
 		/* Hit the trap */
 		hit_trap(y, x);

@@ -6,6 +6,7 @@
 #include "object/object.h"
 #include "player/player.h"
 #include "store.h"
+#include "trap.h"
 #include "z-term.h"
 #include "z-file.h"
 #include "z-msg.h"
@@ -72,6 +73,7 @@ extern byte tval_to_attr[128];
 extern player_other *op_ptr;
 extern player_type *p_ptr;
 extern feature_type *f_info;
+extern trap_kind *trap_info;
 extern object_base *kb_info;
 extern object_kind *k_info;
 extern artifact_type *a_info;

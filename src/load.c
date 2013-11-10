@@ -37,6 +37,9 @@ byte monster_blow_max = 0;
 byte rf_size = 0;
 byte rsf_size = 0;
 
+/* Trap constants */
+byte trf_size = 0;
+
 /* Shorthand function pointer for rd_item version */
 typedef int (*rd_item_t)(object_type *o_ptr);
 
@@ -859,6 +862,23 @@ static int rd_item_1(object_type *o_ptr)
 }
 
 
+
+/**
+ * Read a trap record
+ */
+static void rd_trap(trap_type *t_ptr)
+{
+    int i;
+
+    rd_byte(&t_ptr->t_idx);
+    t_ptr->kind = &trap_info[t_ptr->t_idx];
+    rd_byte(&t_ptr->fy);
+    rd_byte(&t_ptr->fx);
+    rd_byte(&t_ptr->xtra);
+
+    for (i = 0; i < trf_size; i++)
+	rd_byte(&t_ptr->flags[i]);
+}
 
 /**
  * Read RNG state
@@ -2485,6 +2505,27 @@ int rd_history(void)
 	}
 
 	return 0;
+}
+
+int rd_traps(void)
+{
+    int i;
+    u32b tmp32u;
+
+    rd_byte(&trf_size);
+    rd_s16b(&cave->trap_max);
+
+    for (i = 0; i < cave->trap_max; i++)
+    {
+		trap_type *t_ptr = &cave->traps[i];
+
+		rd_trap(t_ptr);
+    }
+
+    /* Expansion */
+    rd_u32b(&tmp32u);
+
+    return 0;
 }
 
 /**

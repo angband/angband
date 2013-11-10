@@ -41,6 +41,7 @@
 #include "quest.h"
 #include "randname.h"
 #include "squelch.h"
+#include "trap.h"
 
 /*
  * Structure (not array) of size limits
@@ -258,6 +259,8 @@ static enum parser_error parse_z(struct parser *p) {
 		z->o_max = value;
 	else if (streq(label, "M"))
 		z->m_max = value;
+	else if (streq(label, "N"))
+		z->l_max = value;
 	else if (streq(label, "I"))
 		z->pit_max = value;
 	else
@@ -999,6 +1002,169 @@ static struct file_parser names_parser = {
 	cleanup_names
 };
 
+static const char *trap_flags[] =
+{
+#define TRF(a, b) #a,
+#include "list-trap-flags.h"
+#undef TRF
+    NULL
+};
+
+static enum parser_error parse_trap_n(struct parser *p) {
+    int idx = parser_getuint(p, "index");
+    const char *name = parser_getstr(p, "name");
+    struct trap *h = parser_priv(p);
+
+    struct trap *t = mem_zalloc(sizeof *t);
+    t->next = h;
+    t->tidx = idx;
+    t->name = string_make(name);
+    parser_setpriv(p, t);
+    return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_trap_g(struct parser *p) {
+    char glyph = parser_getchar(p, "glyph");
+    const char *color = parser_getsym(p, "color");
+    int attr = 0;
+    struct trap *t = parser_priv(p);
+
+    if (!t)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+    t->d_char = glyph;
+    if (strlen(color) > 1)
+		attr = color_text_to_attr(color);
+    else
+		attr = color_char_to_attr(color[0]);
+    if (attr < 0)
+		return PARSE_ERROR_INVALID_COLOR;
+    t->d_attr = attr;
+    t->x_char = t->d_char;
+    t->x_attr = t->d_attr;
+    return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_trap_m(struct parser *p) {
+    struct trap *t = parser_priv(p);
+
+    if (!t)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+    t->rarity =  parser_getuint(p, "rarity");
+    t->min_depth =  parser_getuint(p, "mindepth");
+    t->max_num =  parser_getuint(p, "maxnum");
+    return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_trap_f(struct parser *p) {
+    char *flags;
+    struct trap *t = parser_priv(p);
+    char *s;
+
+    if (!t)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+    if (!parser_hasval(p, "flags"))
+		return PARSE_ERROR_NONE;
+    flags = string_make(parser_getstr(p, "flags"));
+
+    s = strtok(flags, " |");
+    while (s) {
+		if (grab_flag(t->flags, TRF_SIZE, trap_flags, s)) {
+			mem_free(s);
+			return PARSE_ERROR_INVALID_FLAG;
+		}
+		s = strtok(NULL, " |");
+    }
+
+    mem_free(flags);
+    return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_trap_e(struct parser *p) {
+	struct trap *t = parser_priv(p);
+
+	if (!t)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	t->effect = grab_one_effect(parser_getstr(p, "effect"));
+	if (!t->effect)
+		return PARSE_ERROR_INVALID_EFFECT;
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_trap_d(struct parser *p) {
+    struct trap *t = parser_priv(p);
+    assert(t);
+
+    t->text = string_append(t->text, parser_getstr(p, "text"));
+    return PARSE_ERROR_NONE;
+}
+
+struct parser *init_parse_trap(void) {
+    struct parser *p = parser_new();
+    parser_setpriv(p, NULL);
+    parser_reg(p, "V sym version", ignored);
+    parser_reg(p, "N uint index str name", parse_trap_n);
+    parser_reg(p, "G char glyph sym color", parse_trap_g);
+    parser_reg(p, "M uint rarity uint mindepth uint maxnum", parse_trap_m);
+    parser_reg(p, "F ?str flags", parse_trap_f);
+	parser_reg(p, "E str effect", parse_trap_e);
+    parser_reg(p, "D str text", parse_trap_d);
+    return p;
+}
+
+static errr run_parse_trap(struct parser *p) {
+    return parse_file(p, "trap");
+}
+
+static errr finish_parse_trap(struct parser *p) {
+	struct trap *t, *n;
+	
+	/* scan the list for the max id */
+	z_info->trap_max = 0;
+	t = parser_priv(p);
+	while (t) {
+		if (t->tidx > z_info->trap_max)
+			z_info->trap_max = t->tidx;
+		t = t->next;
+	}
+	
+	trap_info = mem_zalloc((z_info->trap_max + 1) * sizeof(*t));
+    for (t = parser_priv(p); t; t = t->next) {
+		if (t->tidx >= z_info->trap_max)
+			continue;
+		memcpy(&trap_info[t->tidx], t, sizeof(*t));
+    }
+	z_info->trap_max += 1;
+
+    t = parser_priv(p);
+    while (t) {
+		n = t->next;
+		mem_free(t);
+		t = n;
+    }
+
+    parser_destroy(p);
+    return 0;
+}
+
+static void cleanup_trap(void)
+{
+	int i;
+	for (i = 0; i < z_info->trap_max; i++) {
+		string_free(trap_info[i].name);
+		mem_free(trap_info[i].text);
+	}
+	mem_free(trap_info);
+}
+
+struct file_parser trap_parser = {
+    "trap",
+    init_parse_trap,
+    run_parse_trap,
+    finish_parse_trap,
+    cleanup_trap
+};
+
 /* Parsing functions for terrain.txt */
 static enum parser_error parse_f_n(struct parser *p) {
 	int idx = parser_getuint(p, "index");
@@ -1098,17 +1264,6 @@ static enum parser_error parse_f_x(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_f_e(struct parser *p) {
-	struct feature *f = parser_priv(p);
-
-	if (!f)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	f->effect = grab_one_effect(parser_getstr(p, "effect"));
-	if (!f->effect)
-		return PARSE_ERROR_INVALID_EFFECT;
-	return PARSE_ERROR_NONE;
-}
-
 struct parser *init_parse_f(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
@@ -1118,7 +1273,6 @@ struct parser *init_parse_f(void) {
 	parser_reg(p, "P uint priority", parse_f_p);
 	parser_reg(p, "F ?str flags", parse_f_f);
 	parser_reg(p, "X int locked int unused int shopnum int dig", parse_f_x);
-	parser_reg(p, "E str effect", parse_f_e);
 	return p;
 }
 
@@ -2756,6 +2910,10 @@ void init_arrays(void)
 	/* Initialize size info */
 	event_signal_string(EVENT_INITSTATUS, "Initializing array sizes...");
 	if (run_parser(&z_parser)) quit("Cannot initialize sizes");
+
+	/* Initialize trap info */
+	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (traps)");
+	if (run_parser(&trap_parser)) quit("Cannot initialize traps");
 
 	/* Initialize feature info */
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (features)");

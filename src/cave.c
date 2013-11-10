@@ -24,6 +24,7 @@
 #include "object/tvalsval.h"
 #include "squelch.h"
 #include "cmds.h"
+#include "trap.h"
 #include "grafmode.h"
 
 /*
@@ -441,7 +442,7 @@ static void grid_get_attr(grid_data *g, int *a)
 	int a0 = *a & 0x80;
 
 	/* We will never tint traps or treasure */
-	if (feat_is_known_trap(g->f_idx)) return;
+	//if (feat_is_known_trap(g->f_idx)) return;
 
 	/* Remove the high bit so we can add it back again at the end */
 	*a = (*a & 0x7F);
@@ -535,7 +536,7 @@ void grid_data_as_text(grid_data *g, int *ap, wchar_t *cp, int *tap, wchar_t *tc
 	if (use_graphics == GRAPHICS_NONE)
 		grid_get_attr(g, &a);
 	else if (g->trapborder && (g->f_idx == FEAT_FLOOR)
-		 && (g->m_idx || g->first_kind)) {
+			 && (g->m_idx || g->first_kind)) {
 		/* if there is an object or monster here, and this is a plain floor
 		 * display the border here rather than an overlay below */
 		a = f_info[64].x_attr[g->lighting]; /* 64 is the index of the feat that */
@@ -545,6 +546,13 @@ void grid_data_as_text(grid_data *g, int *ap, wchar_t *cp, int *tap, wchar_t *tc
 	/* Save the terrain info for the transparency effects */
 	(*tap) = a;
 	(*tcp) = c;
+
+	/* There is a trap in this grid, and we are not hallucinating */
+	if (((int) g->trap < cave->trap_max) && (!g->hallucinate))
+	{
+	    /* Change graphics to indicate a trap (if visible) */
+	    (void) get_trap_graphics(cave, g->trap, &a, &c, TRUE);
+	}
 
 
 	/* If there's an object, deal with that. */
@@ -621,7 +629,7 @@ void grid_data_as_text(grid_data *g, int *ap, wchar_t *cp, int *tap, wchar_t *tc
 			
 			/* Normal monster (not "clear" in any way) */
 			else if (!flags_test(m_ptr->race->flags, RF_SIZE,
-				RF_ATTR_CLEAR, RF_CHAR_CLEAR, FLAG_END))
+								 RF_ATTR_CLEAR, RF_CHAR_CLEAR, FLAG_END))
 			{
 				/* Use attr */
 				a = da;
@@ -674,42 +682,42 @@ void grid_data_as_text(grid_data *g, int *ap, wchar_t *cp, int *tap, wchar_t *tc
 		{
 			switch(p_ptr->chp * 10 / p_ptr->mhp)
 			{
-				case 10:
-				case  9: 
-				{
-					a = TERM_WHITE; 
-					break;
-				}
-				case  8:
-				case  7:
-				{
-					a = TERM_YELLOW;
-					break;
-				}
-				case  6:
-				case  5:
-				{
-					a = TERM_ORANGE;
-					break;
-				}
-				case  4:
-				case  3:
-				{
-					a = TERM_L_RED;
-					break;
-				}
-				case  2:
-				case  1:
-				case  0:
-				{
-					a = TERM_RED;
-					break;
-				}
-				default:
-				{
-					a = TERM_WHITE;
-					break;
-				}
+			case 10:
+			case  9: 
+			{
+				a = TERM_WHITE; 
+				break;
+			}
+			case  8:
+			case  7:
+			{
+				a = TERM_YELLOW;
+				break;
+			}
+			case  6:
+			case  5:
+			{
+				a = TERM_ORANGE;
+				break;
+			}
+			case  4:
+			case  3:
+			{
+				a = TERM_L_RED;
+				break;
+			}
+			case  2:
+			case  1:
+			case  0:
+			{
+				a = TERM_RED;
+				break;
+			}
+			default:
+			{
+				a = TERM_WHITE;
+				break;
+			}
 			}
 		}
 
@@ -717,7 +725,7 @@ void grid_data_as_text(grid_data *g, int *ap, wchar_t *cp, int *tap, wchar_t *tc
 		c = r_ptr->x_char;
 	}
 	else if (g->trapborder && (g->f_idx) && !(g->first_kind)
-		&& (use_graphics != GRAPHICS_NONE)) {
+			 && (use_graphics != GRAPHICS_NONE)) {
 		/* no overlay is used, so we can use the trap border overlay */
 		a = f_info[65].x_attr[g->lighting]; /* 65 is the index of the feat that */
 		c = f_info[65].x_char[g->lighting]; /* holds the trap detect border overlay tile */
@@ -787,6 +795,7 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 
 	/* Default "clear" values, others will be set later where appropriate. */
 	g->first_kind = NULL;
+    g->trap = cave->trap_max;
 	g->multiple_objects = FALSE;
 	g->lighting = FEAT_LIGHTING_DARK;
 	g->unseen_object = FALSE;
@@ -818,6 +827,28 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 		g->lighting = FEAT_LIGHTING_LIT;
 	}
 
+
+    /* There is a trap in this square */
+    if (sqinfo_has(cave->info[y][x], SQUARE_TRAP) && 
+		sqinfo_has(cave->info[y][x], SQUARE_MARK))
+    {
+		int i;
+		
+		/* Scan the current trap list */
+		for (i = 0; i < cave->trap_max; i++)
+		{
+			/* Point to this trap */
+			trap_type *t_ptr = &cave->traps[i];
+			
+			/* Find a trap in this position */
+			if ((t_ptr->fy == y) && (t_ptr->fx == x))
+			{
+				/* Get the trap */
+				g->trap = i;
+				break;
+			}
+		}
+    }
 
 	/* Objects */
 	for (o_ptr = get_first_object(y, x); o_ptr; o_ptr = get_next_object(o_ptr))
@@ -896,7 +927,7 @@ static void move_cursor_relative_map(int y, int x)
 
 		if (tile_height > 1)
 		{
-				ky = tile_height * ky;
+			ky = tile_height * ky;
 		}
 
 		/* Verify location */
@@ -907,7 +938,7 @@ static void move_cursor_relative_map(int y, int x)
 
 		if (tile_width > 1)
 		{
-				kx = tile_width * kx;
+			kx = tile_width * kx;
 		}
 
 		/* Verify location */
@@ -955,11 +986,11 @@ void move_cursor_relative(int y, int x)
 
 	if (tile_width > 1)
 	{
-			vx += (tile_width - 1) * kx;
+		vx += (tile_width - 1) * kx;
 	}
 	if (tile_height > 1)
 	{
-			vy += (tile_height - 1) * ky;
+		vy += (tile_height - 1) * ky;
 	}
 
 	/* Go there */
@@ -997,7 +1028,7 @@ static void print_rel_map(wchar_t c, byte a, int y, int x)
 
 		if (tile_height > 1)
 		{
-				ky = tile_height * ky;
+			ky = tile_height * ky;
 			if (ky + 1 >= t->hgt) continue;
 		}
 
@@ -1009,7 +1040,7 @@ static void print_rel_map(wchar_t c, byte a, int y, int x)
 
 		if (tile_width > 1)
 		{
-				kx = tile_width * kx;
+			kx = tile_width * kx;
 			if (kx + 1 >= t->wid) continue;
 		}
 
@@ -1020,7 +1051,7 @@ static void print_rel_map(wchar_t c, byte a, int y, int x)
 		Term_queue_char(t, kx, ky, a, c, 0, 0);
 
 		if ((tile_width > 1) || (tile_height > 1))
-				Term_big_queue_char(Term, kx, ky, a, c, 0, 0);
+			Term_big_queue_char(Term, kx, ky, a, c, 0, 0);
 	}
 }
 
@@ -1063,7 +1094,7 @@ void print_rel(wchar_t c, byte a, int y, int x)
 	Term_queue_char(Term, vx, vy, a, c, 0, 0);
 
 	if ((tile_width > 1) || (tile_height > 1))
-			Term_big_queue_char(Term, vx, vy, a, c, 0, 0);
+		Term_big_queue_char(Term, vx, vy, a, c, 0, 0);
   
 }
 
@@ -1283,6 +1314,7 @@ void display_map(int *cy, int *cx)
 
 	/* Nothing here */
 	a = TERM_WHITE;
+    c = L' ';
 	ta = TERM_WHITE;
 	tc = L' ';
 
@@ -1315,9 +1347,13 @@ void display_map(int *cy, int *cx)
 
 			/* Get the attr/char at that map location */
 			map_info(y, x, &g);
+			grid_data_as_text(&g, &a, &c, &ta, &tc);
 
 			/* Get the priority of that attr/char */
 			tp = f_info[g.f_idx].priority;
+
+			/* Stuff on top of terrain gets higher priority */
+			if ((a != ta) || (c != tc)) tp = 20;
 
 			/* Save "best" */
 			if (mp[row][col] < tp)
@@ -2068,7 +2104,8 @@ void wiz_light(bool full)
 					sqinfo_on(cave->info[yy][xx], SQUARE_GLOW);
 
 					/* Memorize normal features */
-					if (cave->feat[yy][xx] > FEAT_INVIS)
+					if ((cave->feat[yy][xx] > FEAT_INVIS) || 
+						square_visible_trap(cave, yy, xx))
 						sqinfo_on(cave->info[yy][xx], SQUARE_MARK);
 				}
 			}
@@ -2617,6 +2654,10 @@ struct cave *cave_new(void) {
 	c->monsters = C_ZNEW(z_info->m_max, struct monster);
 	c->mon_max = 1;
 
+	c->traps = C_ZNEW(z_info->l_max, struct trap_type);
+	c->trap_max = 1;
+	c->trap_cnt = 0;
+
 	c->created_at = 1;
 	return c;
 }
@@ -2629,6 +2670,7 @@ void cave_free(struct cave *c) {
 	mem_free(c->m_idx);
 	mem_free(c->o_idx);
 	mem_free(c->monsters);
+	mem_free(c->traps);
 	mem_free(c);
 }
 
@@ -2662,11 +2704,11 @@ bool square_isfloor(struct cave *c, int y, int x) {
  */
 bool square_isrock(struct cave *c, int y, int x) {
 	switch (c->feat[y][x]) {
-		case FEAT_WALL_EXTRA:
-		case FEAT_WALL_INNER:
-		case FEAT_WALL_OUTER:
-		case FEAT_WALL_SOLID: return TRUE;
-		default: return FALSE;
+	case FEAT_WALL_EXTRA:
+	case FEAT_WALL_INNER:
+	case FEAT_WALL_OUTER:
+	case FEAT_WALL_SOLID: return TRUE;
+	default: return FALSE;
 	}
 }
 
@@ -2678,11 +2720,11 @@ bool square_isrock(struct cave *c, int y, int x) {
  */
 bool square_isperm(struct cave *c, int y, int x) {
 	switch (c->feat[y][x]) {
-		case FEAT_PERM_EXTRA:
-		case FEAT_PERM_INNER:
-		case FEAT_PERM_OUTER:
-		case FEAT_PERM_SOLID: return TRUE;
-		default: return FALSE;
+	case FEAT_PERM_EXTRA:
+	case FEAT_PERM_INNER:
+	case FEAT_PERM_OUTER:
+	case FEAT_PERM_SOLID: return TRUE;
+	default: return FALSE;
 	}
 }
 
@@ -2692,10 +2734,10 @@ bool square_isperm(struct cave *c, int y, int x) {
 bool feat_is_magma(int feat)
 {
 	switch (feat) {
-		case FEAT_MAGMA:
-		case FEAT_MAGMA_H:
-		case FEAT_MAGMA_K: return TRUE;
-		default: return FALSE;
+	case FEAT_MAGMA:
+	case FEAT_MAGMA_H:
+	case FEAT_MAGMA_K: return TRUE;
+	default: return FALSE;
 	}
 }
 
@@ -2712,10 +2754,10 @@ bool square_ismagma(struct cave *c, int y, int x) {
 bool feat_is_quartz(int feat)
 {
 	switch (feat) {
-		case FEAT_QUARTZ:
-		case FEAT_QUARTZ_H:
-		case FEAT_QUARTZ_K: return TRUE;
-		default: return FALSE;
+	case FEAT_QUARTZ:
+	case FEAT_QUARTZ_H:
+	case FEAT_QUARTZ_K: return TRUE;
+	default: return FALSE;
 	}
 }
 
@@ -2787,23 +2829,16 @@ bool square_islockeddoor(struct cave *c, int y, int x) {
  */
 bool square_isdoor(struct cave *c, int y, int x) {
 	return (square_isopendoor(c, y, x) ||
-		square_issecretdoor(c, y, x) ||
-		square_iscloseddoor(c, y, x) ||
-		square_isbrokendoor(c, y, x));
+			square_issecretdoor(c, y, x) ||
+			square_iscloseddoor(c, y, x) ||
+			square_isbrokendoor(c, y, x));
 }
 
 /**
  * True if the square is an unknown trap (it will appear as a floor tile).
  */
 bool square_issecrettrap(struct cave *c, int y, int x) {
-    return c->feat[y][x] == FEAT_INVIS;
-}
-
-/**
- * True if the square is a known trap.
- */
-bool feat_is_known_trap(int feat) {
-	return feat >= FEAT_TRAP_HEAD && feat <= FEAT_TRAP_TAIL;
+    return square_invisible_trap(c, y, x);
 }
 
 /**
@@ -2811,14 +2846,14 @@ bool feat_is_known_trap(int feat) {
  */
 bool feat_is_wall(int feat) {
 	return feat >= FEAT_SECRET && feat <= FEAT_PERM_SOLID &&
-			feat != FEAT_RUBBLE;
+		feat != FEAT_RUBBLE;
 }
 
 /**
  * True if the square is a known trap.
  */
 bool square_isknowntrap(struct cave *c, int y, int x) {
-	return feat_is_known_trap(c->feat[y][x]);
+	return square_visible_trap(c, y, x);
 }
 
 /**
@@ -3067,8 +3102,8 @@ int cave_monster_count(struct cave *c) {
  */
 void upgrade_mineral(struct cave *c, int y, int x) {
 	switch (c->feat[y][x]) {
-		case FEAT_MAGMA: square_set_feat(c, y, x, FEAT_MAGMA_K); break;
-		case FEAT_QUARTZ: square_set_feat(c, y, x, FEAT_QUARTZ_K); break;
+	case FEAT_MAGMA: square_set_feat(c, y, x, FEAT_MAGMA_K); break;
+	case FEAT_QUARTZ: square_set_feat(c, y, x, FEAT_QUARTZ_K); break;
 	}
 }
 
@@ -3085,8 +3120,7 @@ void square_smash_door(struct cave *c, int y, int x) {
 }
 
 void square_destroy_trap(struct cave *c, int y, int x) {
-	/* XXX: FEAT_TRAP check? */
-	square_set_feat(cave, y, x, FEAT_FLOOR);
+	square_remove_trap(cave, y, x, FALSE, -1);
 }
 
 void square_lock_door(struct cave *c, int y, int x, int power) {
@@ -3114,30 +3148,21 @@ bool square_isbrokendoor(struct cave *c, int y, int x) {
 	return c->feat[y][x] == FEAT_BROKEN;
 }
 
-bool square_isglyph(struct cave *c, int y, int x) {
-	return c->feat[y][x] == FEAT_GLYPH;
-}
-
-void square_show_trap(struct cave *c, int y, int x, int type) {
-	assert(square_issecrettrap(c, y, x));
-	square_set_feat(c, y, x, FEAT_TRAP_HEAD + type);
-}
-
 void square_add_trap(struct cave *c, int y, int x) {
-	square_set_feat(c, y, x, FEAT_INVIS);
+	place_trap(c, y, x, -1, c->depth);
 }
 
 bool square_iswarded(struct cave *c, int y, int x) {
-	return c->feat[y][x] == FEAT_GLYPH;
+	return square_trap_specific(c, y, x, RUNE_PROTECT);
 }
 
 void square_add_ward(struct cave *c, int y, int x) {
-	square_set_feat(c, y, x, FEAT_GLYPH);
+	place_trap(c, y, x, RUNE_PROTECT, 0);
 }
 
 void square_remove_ward(struct cave *c, int y, int x) {
 	assert(square_iswarded(c, y, x));
-	square_set_feat(c, y, x, FEAT_FLOOR);
+	square_remove_trap_kind(c, y, x, TRUE, RUNE_PROTECT);
 }
 
 bool square_canward(struct cave *c, int y, int x) {
@@ -3150,7 +3175,7 @@ bool square_seemslikewall(struct cave *c, int y, int x) {
 
 bool square_isinteresting(struct cave *c, int y, int x) {
 	int f = c->feat[y][x];
-	return f != FEAT_FLOOR && f != FEAT_INVIS;
+	return tf_has(f_info[f].flags, TF_INTERESTING);
 }
 
 void square_show_vein(struct cave *c, int y, int x) {

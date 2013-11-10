@@ -1307,7 +1307,7 @@ static bool project_f(int who, int r, int y, int x, int dam, int typ, bool obvio
 			if (square_iswarded(cave, y, x)) break;
 
 			/* Create a trap */
-			create_trap(cave, y, x);
+			place_trap(cave, y, x, -1, cave->depth);
 
 			break;
 		}

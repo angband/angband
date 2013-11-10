@@ -305,6 +305,10 @@ static bool target_set_interactive_accept(int y, int x)
 		if (m_ptr->ml && !m_ptr->unaware) return (TRUE);
 	}
 
+    /* Traps */
+    if (square_visible_trap(cave, y, x))
+		return(TRUE);
+
 	/* Scan all objects in the grid */
 	for (o_ptr = get_first_object(y, x); o_ptr; o_ptr = get_next_object(o_ptr))
 	{
@@ -826,6 +830,67 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 			}
 		}
 
+		/* A trap */
+		if (square_visible_trap(cave, y, x)) 
+		{
+			trap_type *t_ptr = &cave->traps[square_visible_trap_idx(cave, y, x)];
+
+			/* Not boring */
+			boring = FALSE;
+
+			/* Interact */
+			while (1) 
+			{
+				/* Change the intro */
+				if (cave->m_idx[y][x] < 0) 
+				{
+					s1 = "You are ";
+					s2 = "on ";
+				}
+				else
+				{
+					s1 = "You see ";
+					s2 = "";
+				}
+
+				/* Pick proper indefinite article */
+				s3 = (is_a_vowel(t_ptr->kind->name[0])) ? "an " : "a ";
+
+				/* Describe, and prompt for recall */
+				if (p_ptr->wizard) 
+				{
+					strnfmt(out_val, sizeof(out_val),
+							"%s%s%s%s, %s (%d:%d).", s1, s2, s3,
+							t_ptr->kind->name, coords, y, x);
+				} 
+				else 
+				{
+					strnfmt(out_val, sizeof(out_val), "%s%s%s%s, %s.", 
+							s1, s2, s3, t_ptr->kind->name, coords);
+				}
+
+				prt(out_val, 0, 0);
+
+				/* Place cursor */
+				move_cursor_relative(y, x);
+
+				/* Command */
+				press = inkey_m();
+		
+				/* Stop on everything but "return"/"space" */
+				if ((press.key.code != KC_ENTER) && (press.key.code != ' '))
+					break;
+		
+				/* Sometimes stop at "space" key */
+				if ((press.key.code == ' ') && !(mode & (TARGET_LOOK)))
+					break;
+			}
+		}
+	
+		/* Double break */
+		if (square_visible_trap(cave, y, x))
+			break;
+	
 		/* Assume not floored */
 		floor_num = scan_floor(floor_list, N_ELEMENTS(floor_list), y, x, 0x0A);
 

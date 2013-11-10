@@ -28,6 +28,7 @@
 #include "spells.h"
 #include "squelch.h"
 #include "target.h"
+#include "trap.h"
 #include "ui-menu.h"
 #include "ui-options.h"
 
@@ -760,7 +761,7 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 	}
 	
 	/* Hack to make Glyph of Warding work properly */
-	if (square_isglyph(cave, py, px))
+	if (square_trap_specific(cave, py, px, RUNE_PROTECT))
 	{
 		/* Push objects off the grid */
 		if (cave->o_idx[py][px]) push_object(py, px);

@@ -169,6 +169,7 @@ player_type *p_ptr = &player_type_body;
  * The vault generation arrays
  */
 feature_type *f_info;
+trap_kind *trap_info;
 
 object_kind *k_info;
 object_base *kb_info;

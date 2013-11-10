@@ -130,6 +130,22 @@ static void wr_item(const object_type *o_ptr)
 }
 
 
+/**
+ * Write a trap record
+ */
+static void wr_trap(trap_type *t_ptr)
+{
+    size_t i;
+
+    wr_byte(t_ptr->t_idx);
+    wr_byte(t_ptr->fy);
+    wr_byte(t_ptr->fx);
+    wr_byte(t_ptr->xtra);
+
+    for (i = 0; i < TRF_SIZE; i++)
+		wr_byte(t_ptr->flags[i]);
+}
+
 /*
  * Write RNG state
  *
@@ -815,4 +831,22 @@ void wr_history(void)
 		wr_byte(history_list[i].a_idx);
 		wr_string(history_list[i].event);
 	}
+}
+
+void wr_traps(void)
+{
+    int i;
+
+    wr_byte(TRF_SIZE);
+    wr_s16b(cave->trap_max);
+
+    for (i = 0; i < cave->trap_max; i++)
+    {
+		trap_type *t_ptr = &cave->traps[i];
+
+		wr_trap(t_ptr);
+    }
+
+    /* Expansion */
+    wr_u32b(0);
 }

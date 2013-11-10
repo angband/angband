@@ -574,21 +574,15 @@ bool detect_traps(bool aware)
 		{
 			if (!square_in_bounds_fully(cave, y, x)) continue;
 
-			/* Detect invisible traps */
-			if (square_issecrettrap(cave, y, x))
-			{
-				/* Pick a trap */
-				pick_trap(y, x);
-			}
-
 			/* Detect traps */
-			if (square_isknowntrap(cave, y, x))
+			if (square_player_trap(cave, y, x)) 
 			{
-				/* Hack -- Memorize */
-				sqinfo_on(cave->info[y][x], SQUARE_MARK);
-
-				/* We found something to detect */
-				detect = TRUE;
+				/* Reveal trap */
+				if (square_reveal_trap(cave, y, x, 100, FALSE))
+				{
+					/* We found something to detect */
+					detect = TRUE;
+				}
 			}
 
 			/* Scan all objects in the grid to look for traps on chests */

@@ -20,7 +20,6 @@
 # P : display priority on mini-map
 # F : terrain flags
 # X : lockedness : unused : shop number : digging
-# E : effect on entry
 
 # N' indicates the beginning of an entry. The serial number must
 # increase for each new item.
@@ -37,8 +36,6 @@
 
 # 'F' is for terrain flags.
 
-# 'E' is for entry effects.  See list-effects.h.
-
 
 
 # 0x00 --> <darkness>
@@ -54,21 +51,6 @@ N:1:open floor
 G:.:w
 P:5
 F:LOS | PROJECT | PASSABLE | FLOOR | OBJECT | EASY | TRAP | RUNE | TORCH
-
-# 0x02 --> invisible trap (drawn as open floor)
-
-N:2:invisible trap
-G:.:w
-M:1
-P:5
-F:LOS | PROJECT | PASSABLE | FLOOR | EASY | TRAP | RUNE | TORCH
-
-# 0x03 --> glyph of warding
-
-N:3:glyph of warding
-G:;:y
-P:20
-F:LOS | PROJECT | PASSABLE | FLOOR | EASY | TRAP | RUNE | TORCH
 
 # 0x04 --> open door
 
@@ -161,134 +143,6 @@ G:8:y
 P:20
 F:SHOP | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY
 X:0:0:8:0
-
-# 0x10 --> visible trap -- trap door
-
-N:16:trap door
-G:^:w
-P:20
-F:LOS | PROJECT | PASSABLE | FLOOR | EASY | TRAP | RUNE | TORCH
-E:TRAP_DOOR
-
-# 0x11 --> visible trap -- open pit
-
-N:17:pit
-G:^:s
-P:20
-F:LOS | PROJECT | PASSABLE | FLOOR | EASY | TRAP | RUNE | TORCH
-E:TRAP_PIT
-
-# 0x12 --> visible trap -- spiked pit
-
-N:18:pit
-G:^:s
-P:20
-F:LOS | PROJECT | PASSABLE | FLOOR | EASY | TRAP | RUNE | TORCH
-E:TRAP_PIT_SPIKES
-
-# 0x13 --> visible trap -- poison pit
-
-N:19:pit
-G:^:s
-P:20
-F:LOS | PROJECT | PASSABLE | FLOOR | EASY | TRAP | RUNE | TORCH
-E:TRAP_PIT_POISON
-
-# 0x14 --> visible trap -- rune -- summon
-
-N:20:strange rune
-G:^:B
-P:20
-F:LOS | PROJECT | PASSABLE | FLOOR | EASY | TRAP | RUNE | TORCH
-E:TRAP_RUNE_SUMMON
-
-# 0x15 --> visible trap -- rune -- teleport
-
-N:21:strange rune
-G:^:o
-P:20
-F:LOS | PROJECT | PASSABLE | FLOOR | EASY | TRAP | RUNE | TORCH
-E:TRAP_RUNE_TELEPORT
-
-# 0x16 --> visible trap -- spot -- fire
-
-N:22:discolored spot
-G:^:u
-P:20
-F:LOS | PROJECT | PASSABLE | FLOOR | EASY | TRAP | RUNE | TORCH
-E:TRAP_SPOT_FIRE
-
-# 0x17 --> visible trap -- spot -- acid
-
-N:23:discolored spot
-G:^:u
-P:20
-F:LOS | PROJECT | PASSABLE | FLOOR | EASY | TRAP | RUNE | TORCH
-E:TRAP_SPOT_ACID
-
-# 0x18 --> visible trap -- dart -- slow
-
-N:24:dart trap
-G:^:r
-P:20
-F:LOS | PROJECT | PASSABLE | FLOOR | EASY | TRAP | RUNE | TORCH
-E:TRAP_DART_SLOW
-
-# 0x19 --> visible trap -- dart -- lose str
-
-N:25:dart trap
-G:^:r
-P:20
-F:LOS | PROJECT | PASSABLE | FLOOR | EASY | TRAP | RUNE | TORCH
-E:TRAP_DART_LOSE_STR
-
-# 0x1A --> visible trap -- dart -- lose dex
-
-N:26:dart trap
-G:^:r
-P:20
-F:LOS | PROJECT | PASSABLE | FLOOR | EASY | TRAP | RUNE | TORCH
-E:TRAP_DART_LOSE_DEX
-
-# 0x1B --> visible trap -- dart -- lose con
-
-N:27:dart trap
-G:^:r
-P:20
-F:LOS | PROJECT | PASSABLE | FLOOR | EASY | TRAP | RUNE | TORCH
-E:TRAP_DART_LOSE_CON
-
-# 0x1C --> visible trap -- gas -- blind
-
-N:28:gas trap
-G:^:g
-P:20
-F:LOS | PROJECT | PASSABLE | FLOOR | EASY | TRAP | RUNE | TORCH
-E:TRAP_GAS_BLIND
-
-# 0x1D --> visible trap -- gas -- confuse
-
-N:29:gas trap
-G:^:g
-P:20
-F:LOS | PROJECT | PASSABLE | FLOOR | EASY | TRAP | RUNE | TORCH
-E:TRAP_GAS_CONFUSE
-
-# 0x1E --> visible trap -- gas -- poison
-
-N:30:gas trap
-G:^:g
-P:20
-F:LOS | PROJECT | PASSABLE | FLOOR | EASY | TRAP | RUNE | TORCH
-E:TRAP_GAS_POISON
-
-# 0x1F --> visible trap -- gas -- sleep
-
-N:31:gas trap
-G:^:g
-P:20
-F:LOS | PROJECT | PASSABLE | FLOOR | EASY | TRAP | RUNE | TORCH
-E:TRAP_GAS_SLEEP
 
 # 0x2x --> locked door (power 0)
 

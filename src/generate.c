@@ -828,7 +828,7 @@ static bool alloc_object(struct cave *c, int set, int typ, int depth, byte origi
 	/* Place something */
 	switch (typ) {
 		case TYP_RUBBLE: place_rubble(c, y, x); break;
-		case TYP_TRAP: place_trap(c, y, x); break;
+		case TYP_TRAP: place_trap(c, y, x, -1, depth); break;
 		case TYP_GOLD: place_gold(c, y, x, depth, origin); break;
 		case TYP_OBJECT: place_object(c, y, x, depth, FALSE, FALSE, origin, 0); break;
 		case TYP_GOOD: place_object(c, y, x, depth, TRUE, FALSE, origin, 0); break;
@@ -929,7 +929,7 @@ static void vault_trap_aux(struct cave *c, int y, int x, int yd, int xd)
 		find_nearby_grid(c, &y1, y, yd, &x1, x, xd);
 		if (!square_isempty(c, y1, x1)) continue;
 
-		place_trap(c, y1, x1);
+		place_trap(c, y1, x1, -1, c->depth);
 		break;
 	}
 }
@@ -2197,13 +2197,13 @@ static void build_vault(struct cave *c, int y0, int x0, int ymax, int xmax, cons
 				case '#': square_set_feat(c, y, x, FEAT_WALL_INNER); break;
 				case 'X': square_set_feat(c, y, x, FEAT_PERM_INNER); break;
 				case '+': place_secret_door(c, y, x); break;
-				case '^': place_trap(c, y, x); break;
+				case '^': place_trap(c, y, x, -1, c->depth); break;
 				case '*': {
 					/* Treasure or a trap */
 					if (randint0(100) < 75)
 						place_object(c, y, x, c->depth, FALSE, FALSE, ORIGIN_VAULT, 0);
 					else
-						place_trap(c, y, x);
+						place_trap(c, y, x, -1, c->depth);
 					break;
 				}
 			}
@@ -3758,6 +3758,7 @@ static void cave_clear(struct cave *c, struct player *p) {
 
 	wipe_o_list(c);
 	wipe_mon_list(c, p);
+	wipe_trap_list(c);
 
 	/* Clear flags and flow information. */
 	for (y = 0; y < DUNGEON_HGT; y++) {

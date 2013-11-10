@@ -20,7 +20,6 @@ struct monster;
 /* Various */
 #define FEAT_FLOOR 0x01
 #define FEAT_INVIS 0x02
-#define FEAT_GLYPH 0x03
 #define FEAT_OPEN 0x04
 #define FEAT_BROKEN 0x05
 #define FEAT_LESS 0x06
@@ -29,10 +28,6 @@ struct monster;
 /* Shops */
 #define FEAT_SHOP_HEAD 0x08
 #define FEAT_SHOP_TAIL 0x0F
-
-/* Traps */
-#define FEAT_TRAP_HEAD 0x10
-#define FEAT_TRAP_TAIL 0x1F
 
 /* Doors */
 #define FEAT_DOOR_HEAD 0x20
@@ -133,7 +128,6 @@ typedef struct feature
 	byte shopnum;  /**< Which shop does it take you to? */
 	byte dig;      /**< How hard is it to dig through? */
 
-	u32b effect;   /**< Effect on entry to grid */
 	bitflag flags[TF_SIZE];    /**< Terrain flags */
 
 	byte d_attr;   /**< Default feature attribute */
@@ -157,6 +151,7 @@ typedef struct
 	u32b m_idx;		/* Monster index */
 	u32b f_idx;		/* Feature index */
 	struct object_kind *first_kind;	/* The "kind" of the first item on the grid */
+    u32b trap;          /* Trap index */
 	bool multiple_objects;	/* Is there more than one item there? */
 	bool unseen_object;	/* Is there an unaware object there? */
 	bool unseen_money; /* Is there some unaware money there? */
@@ -191,7 +186,7 @@ struct cave {
 	int height;
 	int width;
 	
-	u16b feeling_squares; /* Keep track of how many feeling squares the player has visited */
+	u16b feeling_squares; /* How many feeling squares the player has visited */
 
 	bitflag (*info)[256][SQUARE_SIZE];
 	byte (*feat)[DUNGEON_WID];
@@ -203,6 +198,10 @@ struct cave {
 	struct monster *monsters;
 	int mon_max;
 	int mon_cnt;
+
+	struct trap_type *traps;
+	s16b trap_max;
+	int trap_cnt;
 };
 
 extern int distance(int y1, int x1, int y2, int x2);
@@ -268,7 +267,6 @@ extern bool square_islockeddoor(struct cave *c, int y, int x);
 extern bool square_isbrokendoor(struct cave *c, int y, int x);
 extern bool square_isdoor(struct cave *c, int y, int x);
 extern bool square_issecrettrap(struct cave *c, int y, int x);
-extern bool feat_is_known_trap(int feat);
 extern bool feat_is_wall(int feat);
 extern bool square_isknowntrap(struct cave *c, int y, int x);
 extern bool square_istrap(struct cave *c, int y, int x);
