@@ -204,46 +204,46 @@ void get_spell_info(int tval, int spell, char *p, size_t len)
 		switch (spell)
 		{
 		case SPELL_MAGIC_MISSILE:
-			strnfmt(p, len, " dam %dd4", 3 + ((plev - 1) / 5));
+		        strnfmt(p, len, " dam %dd4 (%.1f)", 3 + ((plev - 1) / 5), damrollavg(3 + ((plev - 1) / 5),4));
 			break;
 		case SPELL_PHASE_DOOR:
 			strnfmt(p, len, " range 10");
 			break;
 		case SPELL_LIGHT_AREA:
-			strnfmt(p, len, " dam 2d%d", (plev / 2));
+		        strnfmt(p, len, " dam 2d%d (%.1f)", (plev / 2), damrollavg(2, plev / 2));
 			break; 
 		case SPELL_CURE_LIGHT_WOUNDS:
 			strnfmt(p, len, " heal 15%%");
 			break;
 		case SPELL_STINKING_CLOUD:
-			strnfmt(p, len, " dam %d", 10 + (plev / 2));
+		        strnfmt(p, len, " dam %d", 10 + (plev / 2));
 			break;
 		case SPELL_LIGHTNING_BOLT:
-			strnfmt(p, len, " dam %dd6", (3 + ((plev - 5) / 6)));
+		        strnfmt(p, len, " dam %dd6 (%.1f)", (3 + ((plev - 5) / 6)), damrollavg((3 + ((plev - 5) / 6)),6));
 			break;
 		case SPELL_FROST_BOLT:
-			strnfmt(p, len, " dam %dd8", (5 + ((plev - 5) / 4)));
+		        strnfmt(p, len, " dam %dd8 (%.1f)", (5 + ((plev - 5) / 4)), damrollavg((5 + ((plev - 5) / 4)), 8));
 			break;
 		case SPELL_ACID_BOLT:
-			strnfmt(p, len, " dam %dd8", (8 + ((plev - 5) / 4)));
+		        strnfmt(p, len, " dam %dd8 (%.1f)", (8 + ((plev - 5) / 4)), damrollavg((8 + ((plev - 5) / 4)), 8));
 			break;
 		case SPELL_FIRE_BOLT:
-			strnfmt(p, len, " dam %dd8", (6 + ((plev - 5) / 4)));
+		        strnfmt(p, len, " dam %dd8 (%.1f)", (6 + ((plev - 5) / 4)), damrollavg((6 + ((plev - 5) / 4)), 8));
 			break;
 		case SPELL_SPEAR_OF_LIGHT:
-			strnfmt(p, len, " dam 6d8");
+		        strnfmt(p, len, " dam 6d8 (%.1f)", (damrollavg(6,8)));
 			break;
 		case SPELL_HEROISM:
-			strnfmt(p, len, " dur 25+d25");
+		        strnfmt(p, len, " dur 25+d25 (%.1f)", (25 + damrollavg(1,25)));
 			break;
 		case SPELL_BERSERKER:
-			strnfmt(p, len, " dur 25+d25");
+			strnfmt(p, len, " dur 25+d25 (%.1f)", (25 + damrollavg(1,25)));
 			break;
 		case SPELL_HASTE_SELF:
-			strnfmt(p, len, " dur %d+d20", plev);
+		        strnfmt(p, len, " dur %d+d20 (%.1f)", plev, (plev + damrollavg(1,20)));
 			break;
 		case SPELL_TELEPORT_SELF:
-			strnfmt(p, len, " range %d", plev * 5);
+		        strnfmt(p, len, " range %d", plev * 5);
 			break;
 		case SPELL_SHOCK_WAVE:
 			strnfmt(p, len, " dam %d", 10 + plev);
@@ -255,25 +255,25 @@ void get_spell_info(int tval, int spell, char *p, size_t len)
 			strnfmt(p, len, " dam %d", 40 + (plev / 2));
 			break;
 		case SPELL_REND_SOUL:
-			strnfmt(p, len, " dam 11d%d", plev);
+		        strnfmt(p, len, " dam 11d%d (%.1f)", plev, damrollavg(11,plev));
 			break;
 		case SPELL_CHAOS_STRIKE:
-			strnfmt(p, len, " dam 13d%d", plev);
+		        strnfmt(p, len, " dam 13d%d", plev, damrollavg(13,plev));
 			break;
 		case SPELL_RESIST_COLD:
-			strnfmt(p, len, " dur 20+d20");
+		  strnfmt(p, len, " dur 20+d20 (%.1f)", (20 + damrollavg(1,20)));
 			break;
 		case SPELL_RESIST_FIRE:
-			strnfmt(p, len, " dur 20+d20");
+		  strnfmt(p, len, " dur 20+d20 (%.1f)", (20 + damrollavg(1,20)));
 			break;
 		case SPELL_RESIST_POISON:
-			strnfmt(p, len, " dur 20+d20");
+		  strnfmt(p, len, " dur 20+d20 (%.1f)", (20 + damrollavg(1,20)));
 			break;
 		case SPELL_RESISTANCE:
-			strnfmt(p, len, " dur 20+d20");
+		  strnfmt(p, len, " dur 20+d20 (%.1f)", (20 + damrollavg(1,20)));
 			break;
 		case SPELL_SHIELD:
-			strnfmt(p, len, " dur 30+d20");
+		  strnfmt(p, len, " dur 30+d20 (%.1f)", (30 + damrollavg(1,20)));
 			break;
 		case SPELL_FROST_BALL:
 			strnfmt(p, len, " dam %d", 30 + plev);
@@ -291,7 +291,7 @@ void get_spell_info(int tval, int spell, char *p, size_t len)
 			strnfmt(p, len, " dam %dx%d", 30 + plev / 2, 2 + plev / 20);
 			break;
 		case SPELL_RIFT:
-			strnfmt(p, len, " dam 40+%dd7", plev);
+			strnfmt(p, len, " dam 40+%dd7 (%.1f)", plev, (40 + damrollavg(plev,7)));
 			break;
 		case SPELL_MANA_STORM:
 			strnfmt(p, len, " dam %d", 300 + plev * 2);
@@ -311,10 +311,10 @@ void get_spell_info(int tval, int spell, char *p, size_t len)
 				my_strcpy(p, " heal 15%", len);
 				break;
 			case PRAYER_BLESS:
-				my_strcpy(p, " dur 12+d12", len);
+				my_strcpy(p, " dur 12+d12 (18.5)", len);
 				break;
 			case PRAYER_CALL_LIGHT:
-				strnfmt(p, len, " dam 2d%d", (plev / 2));
+			  strnfmt(p, len, " dam 2d%d (%.1f)", (plev / 2), damrollavg(2, (plev / 2)));
 				break; 
 			case PRAYER_PORTAL:
 				strnfmt(p, len, " range %d", 3 * plev);
@@ -323,40 +323,45 @@ void get_spell_info(int tval, int spell, char *p, size_t len)
 				my_strcpy(p, " heal 20%", len);
 				break;
 			case PRAYER_CHANT:
-				my_strcpy(p, " dur 24+d24", len);
+				my_strcpy(p, " dur 24+d24 (36.5)", len);
 				break;
 			case PRAYER_RESIST_HEAT_COLD:
-				my_strcpy(p, " dur 10+d10", len);
+				my_strcpy(p, " dur 10+d10 (15.5)", len);
 				break;
 			case PRAYER_ORB_OF_DRAINING:
-				strnfmt(p, len, " %d+3d6", plev +
-				        (player_has(PF_ZERO_FAIL) 
-						? (plev / 2)
-						: (plev / 4)));
+				strnfmt(p, len, " %d+3d6 (%.1f)", plev +
+				                                   (player_has(PF_ZERO_FAIL) 
+						                    ? (plev / 2)
+					                            : (plev / 4)),
+                                                                  plev + 
+                                                                   (player_has(PF_ZERO_FAIL) 
+						                    ? (plev / 2)
+					                            : (plev / 4))
+					                           + damrollavg(3,6));
 				break;
 			case PRAYER_CURE_CRITICAL_WOUNDS:
 				my_strcpy(p, " heal 25%", len);
 				break;
 			case PRAYER_SENSE_INVISIBLE:
-				my_strcpy(p, " dur 24+d24", len);
+				my_strcpy(p, " dur 24+d24 (36.5)", len);
 				break;
 			case PRAYER_PROTECTION_FROM_EVIL:
-				strnfmt(p, len, " dur %d+d25", 3 * plev);
+			  strnfmt(p, len, " dur %d+d25 (%.1f)", 3 * plev, (3 * plev) + damrollavg(1,25));
 				break;
 			case PRAYER_CURE_MORTAL_WOUNDS:
 				my_strcpy(p, " heal 30%", len);
 				break;
 			case PRAYER_PRAYER:
-				my_strcpy(p, " dur 48+d48", len);
+				my_strcpy(p, " dur 48+d48 (72.5)", len);
 				break;
 			case PRAYER_DISPEL_UNDEAD:
-				strnfmt(p, len, " dam d%d", 3 * plev);
+			  strnfmt(p, len, " dam d%d (%.1f)", 3 * plev, damrollavg(1, 3 * plev));
 				break;
 			case PRAYER_HEAL:
 				my_strcpy(p, " heal 35%", len);
 				break;
 			case PRAYER_DISPEL_EVIL:
-				strnfmt(p, len, " dam d%d", 3 * plev);
+			        strnfmt(p, len, " dam d%d (%.1f)", 3 * plev, damrollavg(1, 3 * plev));
 				break;
 			case PRAYER_HOLY_WORD:
 				my_strcpy(p, " heal 1000", len);
@@ -371,10 +376,10 @@ void get_spell_info(int tval, int spell, char *p, size_t len)
 				my_strcpy(p, " heal 2000", len);
 				break;
 			case PRAYER_DISPEL_UNDEAD2:
-				strnfmt(p, len, " dam d%d", 4 * plev);
+			        strnfmt(p, len, " dam d%d (%.1f)", 4 * plev, damrollavg(1, 4 * plev));
 				break;
 			case PRAYER_DISPEL_EVIL2:
-				strnfmt(p, len, " dam d%d", 4 * plev);
+			        strnfmt(p, len, " dam d%d (%.1f)", 4 * plev, damrollavg(1, 4 * plev));
 				break;
 			case PRAYER_ANNIHILATION:
 				my_strcpy(p, " dam 200", len);
@@ -383,7 +388,7 @@ void get_spell_info(int tval, int spell, char *p, size_t len)
 				my_strcpy(p, " range 10", len);
 				break;
 			case PRAYER_TELEPORT_SELF:
-				strnfmt(p, len, " range %d", 8 * plev);
+			        strnfmt(p, len, " range %d", 8 * plev);
 				break;
 		}
 	}
