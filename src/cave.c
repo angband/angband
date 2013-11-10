@@ -1442,28 +1442,6 @@ void do_cmd_view_map(void)
  * associated with the dungeon should really be associated with the player,
  * such as whether a given grid is viewable by a given player.
  *
- * One of the major bottlenecks in ancient versions of Angband was in the
- * calculation of "line of sight" from the player to various grids, such
- * as those containing monsters, using the relatively expensive "los()"
- * function.  This was such a nasty bottleneck that a lot of silly things
- * were done to reduce the dependancy on "line of sight", for example, you
- * could not "see" any grids in a lit room until you actually entered the
- * room, at which point every grid in the room became "illuminated" and
- * all of the grids in the room were "memorized" forever.  Other major
- * bottlenecks involved the determination of whether a grid was lit by the
- * player's torch, and whether a grid blocked the player's line of sight.
- * These bottlenecks led to the development of special new functions to
- * optimize issues involved with "line of sight" and "torch lit grids".
- * These optimizations led to entirely new additions to the game, such as
- * the ability to display the player's entire field of view using different
- * colors than were used for the "memorized" portions of the dungeon, and
- * the ability to memorize dark floor grids, but to indicate by the way in
- * which they are displayed that they are not actually illuminated.  And
- * of course many of them simply made the game itself faster or more fun.
- * Also, over time, the definition of "line of sight" has been relaxed to
- * allow the player to see a wider "field of view", which is slightly more
- * realistic, and only slightly more expensive to maintain.
- *
  * Currently, a lot of the information about the dungeon is stored in ways
  * that make it very efficient to access or modify the information, while
  * still attempting to be relatively conservative about memory usage, even
@@ -1477,72 +1455,34 @@ void do_cmd_view_map(void)
  * find out which monster.  The extra space used to store the information
  * twice is inconsequential compared to the speed increase.
  *
- * Some of the information about the dungeon is used by functions which can
- * constitute the "critical efficiency path" of the game itself, and so the
- * way in which they are stored and accessed has been optimized in order to
- * optimize the game itself.  For example, the "update_view()" function was
- * originally created to speed up the game itself (when the player was not
- * running), but then it took on extra responsibility as the provider of the
- * new "special effects lighting code", and became one of the most important
- * bottlenecks when the player was running.  So many rounds of optimization
- * were performed on both the function itself, and the data structures which
- * it uses, resulting eventually in a function which not only made the game
- * faster than before, but which was responsible for even more calculations
- * (including the determination of which grids are "viewable" by the player,
- * which grids are illuminated by the player's torch, and which grids can be
- * "seen" in some way by the player), as well as for providing the guts of
- * the special effects lighting code, and for the efficient redisplay of any
- * grids whose visual representation may have changed.
- *
- * Several pieces of information about each cave grid are stored in various
- * two dimensional arrays, with one unit of information for each grid in the
- * dungeon.  Some of these arrays have been intentionally expanded by a small
- * factor to make the two dimensional array accesses faster by allowing the
- * use of shifting instead of multiplication.
- *
  * Several pieces of information about each cave grid are stored in the
- * "cave->info" array, which is a special two dimensional array of bytes,
- * one for each cave grid, each containing eight separate "flags" which
- * describe some property of the cave grid.  These flags can be checked and
- * modified extremely quickly, especially when special idioms are used to
- * force the compiler to keep a local register pointing to the base of the
- * array.  Special location offset macros can be used to minimize the number
- * of computations which must be performed at runtime.  Note that using a
- * byte for each flag set may be slightly more efficient than using a larger
- * unit, so if another flag (or two) is needed later, and it must be fast,
- * then the two existing flags which do not have to be fast should be moved
- * out into some other data structure and the new flags should take their
- * place.  This may require a few minor changes in the savefile code.
+ * "cave->info" array, which is a special two dimensional array of bitflags.
  *
- * The "CAVE_ROOM" flag is saved in the savefile and is used to determine
- * which grids are part of "rooms", and thus which grids are affected by
- * "illumination" spells.  This flag does not have to be very fast.
+ * The "SQUARE_ROOM" flag is used to determine which grids are part of "rooms", 
+ * and thus which grids are affected by "illumination" spells.
  *
- * The "CAVE_VAULT" flag is saved in the savefile and is used to determine
- * which grids are part of "vaults", and thus which grids cannot serve as
- * the destinations of player teleportation.  This flag does not have to
- * be very fast.
+ * The "SQUARE_VAULT" flag is used to determine which grids are part of 
+ * "vaults", and thus which grids cannot serve as the destinations of player 
+ * teleportation.
  *
- * The "CAVE_MARK" flag is saved in the savefile and is used to determine
- * which grids have been "memorized" by the player.  This flag is used by
- * the "map_info()" function to determine if a grid should be displayed.
- * This flag is used in a few other places to determine if the player can
- * "know" about a given grid.  This flag must be very fast.
+ * The "SQUARE_MARK" flag is used to determine which grids have been memorized 
+ * by the player.  This flag is used by the "map_info()" function to determine
+ * if a grid should be displayed. This flag is used in a few other places to 
+ * determine if the player can * "know" about a given grid.
  *
- * The "CAVE_GLOW" flag is saved in the savefile and is used to determine
- * which grids are "permanently illuminated".  This flag is used by the
- * "update_view()" function to help determine which viewable flags may
- * be "seen" by the player.  This flag is used by the "map_info" function
- * to determine if a grid is only lit by the player's torch.  This flag
- * has special semantics for wall grids (see "update_view()").  This flag
- * must be very fast.
+ * The "SQUARE_GLOW" flag is used to determine which grids are "permanently 
+ * illuminated".  This flag is used by the update_view() function to help 
+ * determine which viewable flags may be "seen" by the player.  This flag 
+ * is used by the "map_info" function to determine if a grid is only lit by 
+ * the player's torch.  This flag has special semantics for wall grids 
+ * (see "update_view()").
  *
- * The "CAVE_WALL" flag is used to determine which grids block the player's
+ * The "SQUARE_WALL" flag is used to determine which grids block the player's
  * line of sight.  This flag is used by the "update_view()" function to
  * determine which grids block line of sight, and to help determine which
  * grids can be "seen" by the player.  This flag must be very fast.
  *
- * The "CAVE_VIEW" flag is used to determine which grids are currently in
+ * The "SQUARE_VIEW" flag is used to determine which grids are currently in
  * line of sight of the player.  This flag is set by (and used by) the
  * "update_view()" function.  This flag is used by any code which needs to
  * know if the player can "view" a given grid.  This flag is used by the
@@ -1552,42 +1492,36 @@ void do_cmd_view_map(void)
  * if a modification to a terrain feature might affect the player's field of
  * view.  This flag is used to see if certain monsters are "visible" to the
  * player.  This flag is used to allow any monster in the player's field of
- * view to "sense" the presence of the player.  This flag must be very fast.
+ * view to "sense" the presence of the player.
  *
- * The "CAVE_SEEN" flag is used to determine which grids are currently in
+ * The "SQUARE_SEEN" flag is used to determine which grids are currently in
  * line of sight of the player and also illuminated in some way.  This flag
  * is set by the "update_view()" function, using computations based on the
- * "CAVE_VIEW" and "CAVE_WALL" and "CAVE_GLOW" flags of various grids.  This
- * flag is used by any code which needs to know if the player can "see" a
+ * "SQUARE_VIEW" and "SQUARE_WALL" and "SQUARE_GLOW" flags of various grids.  
+ * This flag is used by any code which needs to know if the player can "see" a
  * given grid.  This flag is used by the "map_info()" function both to see
  * if a given "boring" grid can be seen by the player, and for some optional
  * special lighting effects.  The "player_can_see_bold()" macro wraps an
  * abstraction around this flag, but certain code idioms are much more
  * efficient.  This flag is used to see if certain monsters are "visible" to
- * the player.  This flag is never set for a grid unless "CAVE_VIEW" is also
- * set for the grid.  Whenever the "CAVE_WALL" or "CAVE_GLOW" flag changes
- * for a grid which has the "CAVE_VIEW" flag set, the "CAVE_SEEN" flag must
+ * the player.  This flag is never set for a grid unless "SQUARE_VIEW" is also
+ * set for the grid.  Whenever the "SQUARE_WALL" or "SQUARE_GLOW" flag changes
+ * for a grid which has the "SQUARE_VIEW" flag set, the "SQUARE_SEEN" flag must
  * be recalculated.  The simplest way to do this is to call "forget_view()"
- * and "update_view()" whenever the "CAVE_WALL" or "CAVE_GLOW" flags change
- * for a grid which has "CAVE_VIEW" set.  This flag must be very fast.
+ * and "update_view()" whenever the "SQUARE_WALL" or "SQUARE_GLOW" flags change
+ * for a grid which has "SQUARE_VIEW" set.
  *
- * The "CAVE_WASSEEN" flag is used for a variety of temporary purposes.  This
- * flag is used to determine if the "CAVE_SEEN" flag for a grid has changed
+ * The "SQUARE_WASSEEN" flag is used for a variety of temporary purposes.  This
+ * flag is used to determine if the "SQUARE_SEEN" flag for a grid has changed
  * during the "update_view()" function.  This flag is used to "spread" light
  * or darkness through a room.  This flag is used by the "monster flow code".
- * This flag must always be cleared by any code which sets it, often, this
- * can be optimized by the use of the special "temp_g" array.  This flag must
- * be very fast.
+ * This flag must always be cleared by any code which sets it.
  *
- * Note that the "CAVE_MARK" flag is used for many reasons, some of which
- * are strictly for optimization purposes.  The "CAVE_MARK" flag means that
+ * Note that the "SQUARE_MARK" flag is used for many reasons, some of which
+ * are strictly for optimization purposes.  The "SQUARE_MARK" flag means that
  * even if the player cannot "see" the grid, he "knows" about the terrain in
  * that grid.  This is used to "memorize" grids when they are first "seen" by
  * the player, and to allow certain grids to be "detected" by certain magic.
- * Note that most grids are always memorized when they are first "seen", but
- * "boring" grids (floor grids) are only memorized if the "OPT(view_torch_grids)"
- * option is set, or if the "OPT(view_perma_grids)" option is set, and the grid
- * in question has the "CAVE_GLOW" flag set.
  *
  * Objects are "memorized" in a different way, using a special "marked" flag
  * on the object itself, which is set when an object is observed or detected.
@@ -1599,22 +1533,13 @@ void do_cmd_view_map(void)
  * is resting, or performing any repeated actions (like digging, disarming,
  * farming, etc), there is no need to call the "update_view()" function, so
  * even if it was not very efficient, this would really only matter when the
- * player was "running" through the dungeon.  It sets the "CAVE_VIEW" flag
- * on every cave grid in the player's field of view, and maintains an array
- * of all such grids in the global "view_g" array.  It also checks the torch
- * radius of the player, and sets the "CAVE_SEEN" flag for every grid which
+ * player was "running" through the dungeon.  It sets the "SQUARE_VIEW" flag
+ * on every cave grid in the player's field of view.  It also checks the torch
+ * radius of the player, and sets the "SQUARE_SEEN" flag for every grid which
  * is in the "field of view" of the player and which is also "illuminated",
  * either by the players torch (if any) or by any permanent light source.
  * It could use and help maintain information about multiple light sources,
  * which would be helpful in a multi-player version of Angband.
- *
- * The "update_view()" function maintains the special "view_g" array, which
- * contains exactly those grids which have the "CAVE_VIEW" flag set.  This
- * array is used by "update_view()" to (only) memorize grids which become
- * newly "seen", and to (only) redraw grids whose "seen" value changes, which
- * allows the use of some interesting (and very efficient) "special lighting
- * effects".  In addition, this array could be used elsewhere to quickly scan
- * through all the grids which are in the player's field of view.
  *
  * Note that the "update_view()" function allows, among other things, a room
  * to be "partially" seen as the player approaches it, with a growing cone
@@ -1626,19 +1551,6 @@ void do_cmd_view_map(void)
  * colors for grids which are not in the player's field of view, and/or to
  * indicate which grids are illuminated only by the player's torch by using
  * the color yellow for those grids.
- *
- * The old "update_view()" algorithm uses the special "CAVE_EASY" flag as a
- * temporary internal flag to mark those grids which are not only in view,
- * but which are also "easily" in line of sight of the player.  This flag
- * is actually just the "CAVE_SEEN" flag, and the "update_view()" function
- * makes sure to clear it for all old "CAVE_SEEN" grids, and then use it in
- * the algorithm as "CAVE_EASY", and then clear it for all "CAVE_EASY" grids,
- * and then reset it as appropriate for all new "CAVE_SEEN" grids.  This is
- * kind of messy, but it works.  The old algorithm may disappear eventually.
- *
- * The new "update_view()" algorithm uses a faster and more mathematically
- * correct algorithm, assisted by a large machine generated static array, to
- * determine the "CAVE_VIEW" and "CAVE_SEEN" flags simultaneously.  See below.
  *
  * It seems as though slight modifications to the "update_view()" functions
  * would allow us to determine "reverse" line-of-sight as well as "normal"
@@ -1652,14 +1564,14 @@ void do_cmd_view_map(void)
  * the monsters move around even if the player was not detectable, and to
  * "remember" where the player was last seen, to avoid looking stupid.
  *
- * Note that the "CAVE_GLOW" flag means that a grid is permanently lit in
+ * Note that the "SQUARE_GLOW" flag means that a grid is permanently lit in
  * some way.  However, for the player to "see" the grid, as determined by
- * the "CAVE_SEEN" flag, the player must not be blind, the grid must have
- * the "CAVE_VIEW" flag set, and if the grid is a "wall" grid, and it is
+ * the "SQUARE_SEEN" flag, the player must not be blind, the grid must have
+ * the "SQUARE_VIEW" flag set, and if the grid is a "wall" grid, and it is
  * not lit by the player's torch, then it must touch a grid which does not
- * have the "CAVE_WALL" flag set, but which does have both the "CAVE_GLOW"
- * and "CAVE_VIEW" flags set.  This last part about wall grids is induced
- * by the semantics of "CAVE_GLOW" as applied to wall grids, and checking
+ * have the "SQUARE_WALL" flag set, but which does have both the "SQUARE_GLOW"
+ * and "SQUARE_VIEW" flags set.  This last part about wall grids is induced
+ * by the semantics of "SQUARE_GLOW" as applied to wall grids, and checking
  * the technical requirements can be very expensive, especially since the
  * grid may be touching some "illegal" grids.  Luckily, it is more or less
  * correct to restrict the "touching" grids from the eight "possible" grids
@@ -1667,19 +1579,19 @@ void do_cmd_view_map(void)
  * closer to the player than the grid itself, which eliminates more than
  * half of the work, including all of the potentially "illegal" grids, if
  * at most one of the three grids is a "diagonal" grid.  In addition, in
- * almost every situation, it is possible to ignore the "CAVE_VIEW" flag
+ * almost every situation, it is possible to ignore the "SQUARE_VIEW" flag
  * on these three "touching" grids, for a variety of technical reasons.
  * Finally, note that in most situations, it is only necessary to check
  * a single "touching" grid, in fact, the grid which is strictly closest
  * to the player of all the touching grids, and in fact, it is normally
- * only necessary to check the "CAVE_GLOW" flag of that grid, again, for
+ * only necessary to check the "SQUARE_GLOW" flag of that grid, again, for
  * various technical reasons.  However, one of the situations which does
  * not work with this last reduction is the very common one in which the
  * player approaches an illuminated room from a dark hallway, in which the
  * two wall grids which form the "entrance" to the room would not be marked
- * as "CAVE_SEEN", since of the three "touching" grids nearer to the player
+ * as "SQUARE_SEEN", since of the three "touching" grids nearer to the player
  * than each wall grid, only the farthest of these grids is itself marked
- * "CAVE_GLOW".
+ * "SQUARE_GLOW".
  *
  *
  * Here are some pictures of the legal "light source" radius values, in
@@ -1699,58 +1611,10 @@ void do_cmd_view_map(void)
  *                             333         43334
  *                                          333
  *
- *
- * Here is an illustration of the two different "update_view()" algorithms,
- * in which the grids marked "%" are pillars, and the grids marked "?" are
- * not in line of sight of the player.
- *
- *
- *                    Sample situation
- *
- *                  #####################
- *                  ############.%.%.%.%#
- *                  #...@..#####........#
- *                  #............%.%.%.%#
- *                  #......#####........#
- *                  ############........#
- *                  #####################
- *
- *
- *          New Algorithm             Old Algorithm
- *
- *      ########?????????????    ########?????????????
- *      #...@..#?????????????    #...@..#?????????????
- *      #...........?????????    #.........???????????
- *      #......#####.....????    #......####??????????
- *      ########?????????...#    ########?????????????
- *
- *      ########?????????????    ########?????????????
- *      #.@....#?????????????    #.@....#?????????????
- *      #............%???????    #...........?????????
- *      #......#####........?    #......#####?????????
- *      ########??????????..#    ########?????????????
- *
- *      ########?????????????    ########?????%???????
- *      #......#####........#    #......#####..???????
- *      #.@..........%???????    #.@..........%???????
- *      #......#####........#    #......#####..???????
- *      ########?????????????    ########?????????????
- *
- *      ########??????????..#    ########?????????????
- *      #......#####........?    #......#####?????????
- *      #............%???????    #...........?????????
- *      #.@....#?????????????    #.@....#?????????????
- *      ########?????????????    ########?????????????
- *
- *      ########?????????%???    ########?????????????
- *      #......#####.....????    #......####??????????
- *      #...........?????????    #.........???????????
- *      #...@..#?????????????    #...@..#?????????????
- *      ########?????????????    ########?????????????
  */
 
 /*
- * Forget the "CAVE_VIEW" grids, redrawing as needed
+ * Forget the "SQUARE_VIEW" grids, redrawing as needed
  */
 void forget_view(struct cave *c)
 {
@@ -1771,89 +1635,6 @@ void forget_view(struct cave *c)
 
 /*
  * Calculate the complete field of view using a new algorithm
- *
- * If "view_g" and "temp_g" were global pointers to arrays of grids, as
- * opposed to actual arrays of grids, then we could be more efficient by
- * using "pointer swapping".
- *
- * Note the following idiom, which is used in the function below.
- * This idiom processes each "octant" of the field of view, in a
- * clockwise manner, starting with the east strip, south side,
- * and for each octant, allows a simple calculation to set "g"
- * equal to the proper grids, relative to "pg", in the octant.
- *
- *   for (o2 = 0; o2 < 8; o2++)
- *   ...
- *         g = pg + p->grid[o2];
- *   ...
- *
- *
- * Normally, vision along the major axes is more likely than vision
- * along the diagonal axes, so we check the bits corresponding to
- * the lines of sight near the major axes first.
- *
- * We use the "temp_g" array (and the "CAVE_WASSEEN" flag) to keep track of
- * which grids were previously marked "CAVE_SEEN", since only those grids
- * whose "CAVE_SEEN" value changes during this routine must be redrawn.
- *
- * This function is now responsible for maintaining the "CAVE_SEEN"
- * flags as well as the "CAVE_VIEW" flags, which is good, because
- * the only grids which normally need to be memorized and/or redrawn
- * are the ones whose "CAVE_SEEN" flag changes during this routine.
- *
- * Basically, this function divides the "octagon of view" into octants of
- * grids (where grids on the main axes and diagonal axes are "shared" by
- * two octants), and processes each octant one at a time, processing each
- * octant one grid at a time, processing only those grids which "might" be
- * viewable, and setting the "CAVE_VIEW" flag for each grid for which there
- * is an (unobstructed) line of sight from the center of the player grid to
- * any internal point in the grid (and collecting these "CAVE_VIEW" grids
- * into the "view_g" array), and setting the "CAVE_SEEN" flag for the grid
- * if, in addition, the grid is "illuminated" in some way.
- *
- * This function relies on a theorem (suggested and proven by Mat Hostetter)
- * which states that in each octant of a field of view, a given grid will
- * be "intersected" by one or more unobstructed "lines of sight" from the
- * center of the player grid if and only if it is "intersected" by at least
- * one such unobstructed "line of sight" which passes directly through some
- * corner of some grid in the octant which is not shared by any other octant.
- * The proof is based on the fact that there are at least three significant
- * lines of sight involving any non-shared grid in any octant, one which
- * intersects the grid and passes though the corner of the grid closest to
- * the player, and two which "brush" the grid, passing through the "outer"
- * corners of the grid, and that any line of sight which intersects a grid
- * without passing through the corner of a grid in the octant can be "slid"
- * slowly towards the corner of the grid closest to the player, until it
- * either reaches it or until it brushes the corner of another grid which
- * is closer to the player, and in either case, the existanc of a suitable
- * line of sight is thus demonstrated.
- *
- * It turns out that in each octant of the radius 20 "octagon of view",
- * there are 161 grids (with 128 not shared by any other octant), and there
- * are exactly 126 distinct "lines of sight" passing from the center of the
- * player grid through any corner of any non-shared grid in the octant.  To
- * determine if a grid is "viewable" by the player, therefore, you need to
- * simply show that one of these 126 lines of sight intersects the grid but
- * does not intersect any wall grid closer to the player.  So we simply use
- * a bit vector with 126 bits to represent the set of interesting lines of
- * sight which have not yet been obstructed by wall grids, and then we scan
- * all the grids in the octant, moving outwards from the player grid.  For
- * each grid, if any of the lines of sight which intersect that grid have not
- * yet been obstructed, then the grid is viewable.  Furthermore, if the grid
- * is a wall grid, then all of the lines of sight which intersect the grid
- * should be marked as obstructed for future reference.  Also, we only need
- * to check those grids for whom at least one of the "parents" was a viewable
- * non-wall grid, where the parents include the two grids touching the grid
- * but closer to the player grid (one adjacent, and one diagonal).  For the
- * bit vector, we simply use 4 32-bit integers.  All of the static values
- * which are needed by this function are stored in the large "vinfo" array
- * (above), which is machine generated by another program.  XXX XXX XXX
- *
- * Hack -- The queue must be able to hold more than VINFO_MAX_GRIDS grids
- * because the grids at the edge of the field of view use "grid zero" as
- * their children, and the queue must be able to hold several of these
- * special grids.  Because the actual number of required grids is bizarre,
- * we simply allocate twice as many as we would normally need.  XXX XXX XXX
  */
 static void mark_wasseen(struct cave *c) 
 {
