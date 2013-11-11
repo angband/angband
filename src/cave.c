@@ -438,6 +438,8 @@ bool dtrap_edge(int y, int x)
  */
 static void grid_get_attr(grid_data *g, int *a)
 {
+    feature_type *f_ptr = &f_info[g->f_idx];
+
 	/* Save the high-bit, since it's used for attr inversion in GCU */
 	int a0 = *a & 0x80;
 
@@ -458,7 +460,7 @@ static void grid_get_attr(grid_data *g, int *a)
 		 * this is to stop e.g. doors going grey when out of LOS */
 		if (*a == TERM_WHITE) {
 			/* If it's a floor tile then we'll tint based on lighting. */
-			if (g->f_idx == FEAT_FLOOR)
+			if (tf_has(f_ptr->flags, TF_TORCH))
 				switch (g->lighting) {
 					case FEAT_LIGHTING_TORCH: *a = TERM_YELLOW; break;
 					case FEAT_LIGHTING_LIT: *a = TERM_L_DARK; break;
@@ -466,9 +468,8 @@ static void grid_get_attr(grid_data *g, int *a)
 					default: break;
 				}
 
-			/* If it's another kind of tile, only tint when not in los/torchlight. */
-			else if (g->f_idx > FEAT_INVIS &&
-					 (g->lighting == FEAT_LIGHTING_DARK || g->lighting == FEAT_LIGHTING_LIT))
+			/* If it's another kind of tile, only tint when unlit. */
+			else if (g->lighting == FEAT_LIGHTING_DARK || g->lighting == FEAT_LIGHTING_LIT)
 				*a = TERM_L_DARK;
 		}
 		else if (feat_is_magma(g->f_idx) || feat_is_quartz(g->f_idx)) {
@@ -535,7 +536,7 @@ void grid_data_as_text(grid_data *g, int *ap, wchar_t *cp, int *tap, wchar_t *tc
 	/* Check for trap detection boundaries */
 	if (use_graphics == GRAPHICS_NONE)
 		grid_get_attr(g, &a);
-	else if (g->trapborder && (g->f_idx == FEAT_FLOOR)
+	else if (g->trapborder && tf_has(f_ptr->flags, TF_FLOOR)
 			 && (g->m_idx || g->first_kind)) {
 		/* if there is an object or monster here, and this is a plain floor
 		 * display the border here rather than an overlay below */
@@ -883,9 +884,9 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 	/* Rare random hallucination on non-outer walls */
 	if (g->hallucinate && g->m_idx == 0 && g->first_kind == 0)
 	{
-		if (one_in_(128) && g->f_idx < FEAT_PERM_SOLID)
+		if (one_in_(128) && g->f_idx != FEAT_PERM_SOLID)
 			g->m_idx = 1;
-		else if (one_in_(128) && g->f_idx < FEAT_PERM_SOLID)
+		else if (one_in_(128) && g->f_idx != FEAT_PERM_SOLID)
 			/* if hallucinating, we just need first_kind to not be NULL */
 			g->first_kind = k_info;
 		else
@@ -2034,7 +2035,7 @@ void cave_update_flow(struct cave *c)
 			if (c->when[y][x] == flow_n) continue;
 
 			/* Ignore "walls" and "rubble" */
-			if (c->feat[y][x] >= FEAT_RUBBLE) continue;
+			if (tf_has(f_info[c->feat[y][x]].flags, TF_NO_FLOW)) continue;
 
 			/* Save the time-stamp */
 			c->when[y][x] = flow_n;
@@ -2091,8 +2092,10 @@ void wiz_light(bool full)
 		/* Scan all normal grids */
 		for (x = 1; x < cave->width - 1; x++)
 		{
+			feature_type *f_ptr = &f_info[cave->feat[y][x]];
+
 			/* Process all non-walls */
-			if (cave->feat[y][x] < FEAT_SECRET)
+			if (!tf_has(f_ptr->flags, TF_ROCK))
 			{
 				/* Scan all neighbors */
 				for (i = 0; i < 9; i++)
@@ -2100,11 +2103,13 @@ void wiz_light(bool full)
 					int yy = y + ddy_ddd[i];
 					int xx = x + ddx_ddd[i];
 
+					f_ptr = &f_info[cave->feat[yy][xx]];		    
+
 					/* Perma-light the grid */
 					sqinfo_on(cave->info[yy][xx], SQUARE_GLOW);
 
 					/* Memorize normal features */
-					if ((cave->feat[yy][xx] > FEAT_INVIS) || 
+					if (!tf_has(f_ptr->flags, TF_FLOOR) || 
 						square_visible_trap(cave, yy, xx))
 						sqinfo_on(cave->info[yy][xx], SQUARE_MARK);
 				}
@@ -2173,9 +2178,11 @@ void cave_illuminate(struct cave *c, bool daytime)
 
 	/* Apply light or darkness */
 	for (y = 0; y < c->height; y++)
-		for (x = 0; x < c->width; x++)
+		for (x = 0; x < c->width; x++) {
+			feature_type *f_ptr = &f_info[c->feat[y][x]];
+			
 			/* Only interesting grids at night */
-			if (daytime || c->feat[y][x] > FEAT_INVIS) {
+			if (daytime || !tf_has(f_ptr->flags, TF_FLOOR)) {
 				sqinfo_on(c->info[y][x], SQUARE_GLOW);
 				sqinfo_on(c->info[y][x], SQUARE_MARK);
 			}
@@ -2183,8 +2190,9 @@ void cave_illuminate(struct cave *c, bool daytime)
 				sqinfo_off(c->info[y][x], SQUARE_GLOW);
 				sqinfo_off(c->info[y][x], SQUARE_MARK);
 			}
-
-
+		}
+			
+			
 	/* Light shop doorways */
 	for (y = 0; y < c->height; y++) {
 		for (x = 0; x < c->width; x++) {
@@ -2218,6 +2226,8 @@ struct feature *square_feat(struct cave *c, int y, int x)
 
 void square_set_feat(struct cave *c, int y, int x, int feat)
 {
+	feature_type *f_ptr = &f_info[feat];
+
 	assert(c);
 	assert(y >= 0 && y < DUNGEON_HGT);
 	assert(x >= 0 && x < DUNGEON_WID);
@@ -2226,7 +2236,7 @@ void square_set_feat(struct cave *c, int y, int x, int feat)
 
 	c->feat[y][x] = feat;
 
-	if (feat >= FEAT_DOOR_HEAD)
+	if (!tf_has(f_ptr->flags, TF_PROJECT))
 		sqinfo_on(c->info[y][x], SQUARE_WALL);
 	else
 		sqinfo_off(c->info[y][x], SQUARE_WALL);
@@ -2693,7 +2703,7 @@ void cave_free(struct cave *c) {
  * True if the square is normal open floor.
  */
 bool square_isfloor(struct cave *c, int y, int x) {
-	return c->feat[y][x] == FEAT_FLOOR;
+	return tf_has(f_info[c->feat[y][x]].flags, TF_FLOOR);
 }
 
 /**
@@ -2703,13 +2713,8 @@ bool square_isfloor(struct cave *c, int y, int x) {
  * of cave generation (and should be avoided).
  */
 bool square_isrock(struct cave *c, int y, int x) {
-	switch (c->feat[y][x]) {
-	case FEAT_WALL_EXTRA:
-	case FEAT_WALL_INNER:
-	case FEAT_WALL_OUTER:
-	case FEAT_WALL_SOLID: return TRUE;
-	default: return FALSE;
-	}
+	return (tf_has(f_info[c->feat[y][x]].flags, TF_GRANITE) &&
+			!tf_has(f_info[c->feat[y][x]].flags, TF_DOOR_ANY));
 }
 
 /**
@@ -2719,13 +2724,8 @@ bool square_isrock(struct cave *c, int y, int x) {
  * of cave generation (and should be avoided).
  */
 bool square_isperm(struct cave *c, int y, int x) {
-	switch (c->feat[y][x]) {
-	case FEAT_PERM_EXTRA:
-	case FEAT_PERM_INNER:
-	case FEAT_PERM_OUTER:
-	case FEAT_PERM_SOLID: return TRUE;
-	default: return FALSE;
-	}
+	return (tf_has(f_info[c->feat[y][x]].flags, TF_PERMANENT) &&
+			tf_has(f_info[c->feat[y][x]].flags, TF_ROCK));
 }
 
 /**
@@ -2733,12 +2733,7 @@ bool square_isperm(struct cave *c, int y, int x) {
  */
 bool feat_is_magma(int feat)
 {
-	switch (feat) {
-	case FEAT_MAGMA:
-	case FEAT_MAGMA_H:
-	case FEAT_MAGMA_K: return TRUE;
-	default: return FALSE;
-	}
+	return tf_has(f_info[feat].flags, TF_MAGMA);
 }
 
 /**
@@ -2753,12 +2748,7 @@ bool square_ismagma(struct cave *c, int y, int x) {
  */
 bool feat_is_quartz(int feat)
 {
-	switch (feat) {
-	case FEAT_QUARTZ:
-	case FEAT_QUARTZ_H:
-	case FEAT_QUARTZ_K: return TRUE;
-	default: return FALSE;
-	}
+	return tf_has(f_info[feat].flags, TF_QUARTZ);
 }
 
 /**
@@ -2779,14 +2769,16 @@ bool square_ismineral(struct cave *c, int y, int x) {
  * True if the square is a mineral wall with treasure (magma/quartz).
  */
 bool feat_is_treasure(int feat) {
-	return feat == FEAT_MAGMA_K || feat == FEAT_QUARTZ_K;
+	return (tf_has(f_info[feat].flags, TF_GOLD) &&
+			tf_has(f_info[feat].flags, TF_INTERESTING));
 }
 
 /**
  * True if the square is rubble.
  */
 bool square_isrubble(struct cave *c, int y, int x) {
-	return c->feat[y][x] == FEAT_RUBBLE;
+    return (!tf_has(f_info[c->feat[y][x]].flags, TF_WALL) &&
+			tf_has(f_info[c->feat[y][x]].flags, TF_ROCK));
 }
 
 /**
@@ -2796,14 +2788,15 @@ bool square_isrubble(struct cave *c, int y, int x) {
  * is replaced by a closed door.
  */
 bool square_issecretdoor(struct cave *c, int y, int x) {
-    return c->feat[y][x] == FEAT_SECRET;
+    return (tf_has(f_info[c->feat[y][x]].flags, TF_DOOR_ANY) &&
+			tf_has(f_info[c->feat[y][x]].flags, TF_ROCK));
 }
 
 /**
  * True if the square is an open door.
  */
 bool square_isopendoor(struct cave *c, int y, int x) {
-    return c->feat[y][x] == FEAT_OPEN;
+    return (tf_has(f_info[c->feat[y][x]].flags, TF_CLOSABLE));
 }
 
 /**
@@ -2811,7 +2804,7 @@ bool square_isopendoor(struct cave *c, int y, int x) {
  */
 bool square_iscloseddoor(struct cave *c, int y, int x) {
 	int feat = c->feat[y][x];
-	return feat >= FEAT_DOOR_HEAD && feat <= FEAT_DOOR_TAIL;
+	return tf_has(f_info[feat].flags, TF_DOOR_CLOSED);
 }
 
 /**
@@ -2819,7 +2812,8 @@ bool square_iscloseddoor(struct cave *c, int y, int x) {
  */
 bool square_islockeddoor(struct cave *c, int y, int x) {
 	int feat = c->feat[y][x];
-	return feat >= FEAT_DOOR_HEAD + 0x01 && feat <= FEAT_DOOR_TAIL;
+	return (tf_has(f_info[feat].flags, TF_DOOR_LOCKED) ||
+			tf_has(f_info[feat].flags, TF_DOOR_JAMMED));
 }
 
 /**
@@ -2828,10 +2822,8 @@ bool square_islockeddoor(struct cave *c, int y, int x) {
  * This includes open, closed, and hidden doors.
  */
 bool square_isdoor(struct cave *c, int y, int x) {
-	return (square_isopendoor(c, y, x) ||
-			square_issecretdoor(c, y, x) ||
-			square_iscloseddoor(c, y, x) ||
-			square_isbrokendoor(c, y, x));
+	int feat = c->feat[y][x];
+	return tf_has(f_info[feat].flags, TF_DOOR_ANY);
 }
 
 /**
@@ -2845,8 +2837,7 @@ bool square_issecrettrap(struct cave *c, int y, int x) {
  * True is the feature is a solid wall (not rubble).
  */
 bool feat_is_wall(int feat) {
-	return feat >= FEAT_SECRET && feat <= FEAT_PERM_SOLID &&
-		feat != FEAT_RUBBLE;
+	return tf_has(f_info[feat].flags, TF_WALL);
 }
 
 /**
@@ -2867,28 +2858,31 @@ bool square_istrap(struct cave *c, int y, int x) {
  * True if the feature is a shop entrance.
  */
 bool feature_isshop(int feat) {
-	return (feat >= FEAT_SHOP_HEAD && feat <= FEAT_SHOP_TAIL);
+	return tf_has(f_info[feat].flags, TF_SHOP);
 }
 
 /**
- * True if square is an up or down stair
+ * True if square is any stair
  */
 bool square_isstairs(struct cave*c, int y, int x) {
-    return square_isupstairs(c, y, x) || square_isdownstairs(c, y, x);
+	int feat = c->feat[y][x];
+	return tf_has(f_info[feat].flags, TF_STAIR);
 }
 
 /**
  * True if square is an up stair.
  */
 bool square_isupstairs(struct cave*c, int y, int x) {
-    return c->feat[y][x] == FEAT_LESS;
+	int feat = c->feat[y][x];
+	return tf_has(f_info[feat].flags, TF_UPSTAIR);
 }
 
 /**
  * True if square is a down stair.
  */
 bool square_isdownstairs(struct cave *c, int y, int x) {
-    return c->feat[y][x] == FEAT_MORE;
+	int feat = c->feat[y][x];
+	return tf_has(f_info[feat].flags, TF_DOWNSTAIR);
 }
 
 /**
@@ -3128,8 +3122,7 @@ void square_lock_door(struct cave *c, int y, int x, int power) {
 }
 
 bool square_hasgoldvein(struct cave *c, int y, int x) {
-	return c->feat[y][x] >= FEAT_MAGMA_H
-		&& c->feat[y][x] <= FEAT_QUARTZ_K;
+	return tf_has(f_info[c->feat[y][x]].flags, TF_GOLD);
 }
 
 void square_tunnel_wall(struct cave *c, int y, int x) {
@@ -3145,7 +3138,10 @@ void square_close_door(struct cave *c, int y, int x) {
 }
 
 bool square_isbrokendoor(struct cave *c, int y, int x) {
-	return c->feat[y][x] == FEAT_BROKEN;
+	int feat = c->feat[y][x];
+    return (tf_has(f_info[feat].flags, TF_DOOR_ANY) &&
+			tf_has(f_info[feat].flags, TF_PASSABLE) &&
+			!tf_has(f_info[feat].flags, TF_CLOSABLE));
 }
 
 void square_add_trap(struct cave *c, int y, int x) {
@@ -3170,7 +3166,7 @@ bool square_canward(struct cave *c, int y, int x) {
 }
 
 bool square_seemslikewall(struct cave *c, int y, int x) {
-	return c->feat[y][x] >= FEAT_SECRET;
+	return tf_has(f_info[c->feat[y][x]].flags, TF_ROCK);
 }
 
 bool square_isinteresting(struct cave *c, int y, int x) {
@@ -3227,20 +3223,12 @@ void square_earthquake(struct cave *c, int y, int x) {
 }
 
 bool square_hassecretvein(struct cave *c, int y, int x) {
-	return c->feat[y][x] == FEAT_MAGMA_H || c->feat[y][x] == FEAT_QUARTZ_H;
+	return (tf_has(f_info[c->feat[y][x]].flags, TF_GOLD) &&
+			!tf_has(f_info[c->feat[y][x]].flags, TF_INTERESTING));
 }
 
 bool square_noticeable(struct cave *c, int y, int x) {
-	if (square_isfloor(c, y, x))
-		return FALSE;
-	if (square_issecrettrap(c, y, x) || square_issecretdoor(c, y, x))
-		return FALSE;
-	if (square_ismagma(c, y, x) || square_isquartz(c, y, x))
-		if (!square_hasgoldvein(c, y, x) || square_hassecretvein(c, y, x))
-			return FALSE;
-	if (square_seemslikewall(c, y, x))
-		return FALSE;
-	return TRUE;
+	return tf_has(f_info[c->feat[y][x]].flags, TF_INTERESTING);
 }
 
 const char *square_apparent_name(struct cave *c, struct player *p, int y, int x) {

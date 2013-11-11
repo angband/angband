@@ -2466,7 +2466,8 @@ static void build_tunnel(struct cave *c, int row1, int col1, int row2, int col2)
 			row1 = tmp_row;
 			col1 = tmp_col;
 
-		} else if (c->feat[tmp_row][tmp_col] >= FEAT_WALL_EXTRA) {
+		} else if (tf_has(f_info[c->feat[tmp_row][tmp_col]].flags, TF_GRANITE) ||
+				   tf_has(f_info[c->feat[tmp_row][tmp_col]].flags, TF_PERMANENT)) {
 			/* Tunnel through all other walls */
 			/* Accept this location */
 			row1 = tmp_row;

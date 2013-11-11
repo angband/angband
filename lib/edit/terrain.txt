@@ -302,7 +302,7 @@ F:WALL | ROCK | DOOR_ANY | GRANITE
 N:49:pile of rubble
 G:::w
 P:13
-F:WALL | ROCK | NO_SCENT | NO_NOISE
+F:ROCK | NO_SCENT | NO_FLOW
 X:0:0:0:1
 
 # 0x32 --> magma vein
@@ -310,7 +310,7 @@ X:0:0:0:1
 N:50:magma vein
 G:%:s
 P:12
-F:WALL | ROCK | NO_SCENT | NO_NOISE | MAGMA 
+F:WALL | ROCK | NO_SCENT | NO_FLOW | MAGMA 
 X:0:0:0:2
 
 # 0x33 --> quartz vein
@@ -318,7 +318,7 @@ X:0:0:0:2
 N:51:quartz vein
 G:%:W
 P:11
-F:WALL | ROCK | NO_SCENT | NO_NOISE | QUARTZ 
+F:WALL | ROCK | NO_SCENT | NO_FLOW | QUARTZ 
 X:0:0:0:3
 
 # 0x34 --> magma vein + treasure
@@ -327,7 +327,7 @@ N:52:magma vein
 G:%:s
 P:12
 M:50
-F:WALL | ROCK | NO_SCENT | NO_NOISE | GOLD | MAGMA 
+F:WALL | ROCK | NO_SCENT | NO_FLOW | GOLD | MAGMA 
 X:0:0:0:2
 
 # 0x35 --> quartz vein + treasure
@@ -336,7 +336,7 @@ N:53:quartz vein
 G:%:W
 P:11
 M:51
-F:WALL | ROCK | NO_SCENT | NO_NOISE | GOLD | QUARTZ 
+F:WALL | ROCK | NO_SCENT | NO_FLOW | GOLD | QUARTZ 
 X:0:0:0:3
 
 # 0x36 --> magma vein + known treasure
@@ -344,7 +344,7 @@ X:0:0:0:3
 N:54:magma vein with treasure
 G:*:o
 P:19
-F:WALL | ROCK | INTERESTING | NO_SCENT | NO_NOISE | GOLD | MAGMA 
+F:WALL | ROCK | INTERESTING | NO_SCENT | NO_FLOW | GOLD | MAGMA 
 X:0:0:0:2
 
 # 0x37 --> quartz vein + known treasure
@@ -352,7 +352,7 @@ X:0:0:0:2
 N:55:quartz vein with treasure
 G:*:o
 P:19
-F:WALL | ROCK | INTERESTING | NO_SCENT | NO_NOISE | GOLD | QUARTZ
+F:WALL | ROCK | INTERESTING | NO_SCENT | NO_FLOW | GOLD | QUARTZ
 X:0:0:0:3
 
 # 0x38 --> granite wall -- basic
@@ -360,7 +360,7 @@ X:0:0:0:3
 N:56:granite wall
 G:#:w
 P:10
-F:WALL | ROCK | GRANITE | NO_SCENT | NO_NOISE
+F:WALL | ROCK | GRANITE | NO_SCENT | NO_FLOW
 X:0:0:0:4
 
 # 0x39 --> granite wall -- inner
@@ -369,7 +369,7 @@ N:57:granite wall
 G:#:w
 P:10
 M:56
-F:WALL | ROCK | GRANITE | NO_SCENT | NO_NOISE
+F:WALL | ROCK | GRANITE | NO_SCENT | NO_FLOW
 X:0:0:0:4
 
 # 0x3A --> granite wall -- outer
@@ -378,7 +378,7 @@ N:58:granite wall
 G:#:w
 P:10
 M:56
-F:WALL | ROCK | GRANITE | NO_SCENT | NO_NOISE
+F:WALL | ROCK | GRANITE | NO_SCENT | NO_FLOW
 X:0:0:0:4
 
 # 0x3B --> granite wall -- solid
@@ -387,7 +387,7 @@ N:59:granite wall
 G:#:w
 P:10
 M:56
-F:WALL | ROCK | GRANITE | NO_SCENT | NO_NOISE
+F:WALL | ROCK | GRANITE | NO_SCENT | NO_FLOW
 X:0:0:0:4
 
 # 0x3C --> permanent wall -- basic (perm)
@@ -395,7 +395,7 @@ X:0:0:0:4
 N:60:permanent wall
 G:#:u
 P:10
-F:WALL | ROCK | PERMANENT | NO_SCENT | NO_NOISE
+F:WALL | ROCK | PERMANENT | NO_SCENT | NO_FLOW
 
 # 0x3D --> permanent wall -- inner (perm)
 
@@ -403,7 +403,7 @@ N:61:permanent wall
 G:#:u
 P:10
 M:60
-F:WALL | ROCK | PERMANENT | NO_SCENT | NO_NOISE
+F:WALL | ROCK | PERMANENT | NO_SCENT | NO_FLOW
 
 # 0x3E --> permanent wall -- outer (perm)
 
@@ -411,7 +411,7 @@ N:62:permanent wall
 G:#:u
 P:10
 M:60
-F:WALL | ROCK | PERMANENT | NO_SCENT | NO_NOISE
+F:WALL | ROCK | PERMANENT | NO_SCENT | NO_FLOW
 
 # 0x3F --> permanent wall -- solid (perm)
 
@@ -419,7 +419,7 @@ N:63:permanent wall
 G:#:u
 P:10
 M:60
-F:WALL | ROCK | PERMANENT | NO_SCENT | NO_NOISE
+F:WALL | ROCK | PERMANENT | NO_SCENT | NO_FLOW
 
 # holder for trap detected border floor tile
 N:64:open floor
@@ -431,7 +431,7 @@ F:LOS | PROJECT | PASSABLE | FLOOR | OBJECT | EASY | TRAP | RUNE | TORCH
 N:65:granite wall
 G:#:G
 P:10
-F:WALL | ROCK | GRANITE | NO_SCENT | NO_NOISE
+F:WALL | ROCK | GRANITE | NO_SCENT | NO_FLOW
 X:0:0:0:4
 
 
