@@ -16,6 +16,7 @@
  */
 #include "z-virt.h"
 #include "z-term.h"
+#include "z-util.h"
 #include "z-msg.h"
 
 typedef struct _message_t
@@ -205,4 +206,25 @@ byte message_type_color(u16b type)
 	}
 
 	return color;
+}
+
+int message_lookup_by_name(const char *name)
+{
+	static const char *message_names[] = {
+		#define MSG(x) #x,
+		#include "z-msg-list.h"
+		#undef MSG
+	};
+	size_t i;
+	unsigned int number;
+
+	if (sscanf(name, "%u", &number) == 1)
+		return (number < MSG_MAX) ? number : -1;
+
+	for (i = 0; i < N_ELEMENTS(message_names); i++) {
+		if (my_stricmp(name, message_names[i]) == 0)
+			return (int)i;
+	}
+
+	return -1;
 }

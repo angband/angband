@@ -880,15 +880,21 @@ static enum parser_error parse_prefs_c(struct parser *p)
 
 static enum parser_error parse_prefs_m(struct parser *p)
 {
-	int a, type;
+	int a, msg_index;
 	const char *attr;
+	const char *type;
 
 	struct prefs_data *d = parser_priv(p);
 	assert(d != NULL);
 	if (d->bypass) return PARSE_ERROR_NONE;
 
-	type = parser_getint(p, "type");
+	type = parser_getsym(p, "type");
 	attr = parser_getsym(p, "attr");
+
+	msg_index = message_lookup_by_name(type);
+
+	if (msg_index < 0)
+		return PARSE_ERROR_GENERIC;
 
 	if (strlen(attr) > 1)
 		a = color_text_to_attr(attr);
@@ -898,7 +904,7 @@ static enum parser_error parse_prefs_m(struct parser *p)
 	if (a < 0)
 		return PARSE_ERROR_INVALID_COLOR;
 
-	message_color_define((u16b)type, (byte)a);
+	message_color_define(msg_index, (byte)a);
 
 	return PARSE_ERROR_NONE;
 }
@@ -1013,7 +1019,7 @@ static struct parser *init_parse_prefs(bool user)
 	parser_reg(p, "inscribe sym tval sym sval str text", parse_prefs_inscribe);
 	parser_reg(p, "A ?str act", parse_prefs_a);
 	parser_reg(p, "C int mode str key", parse_prefs_c);
-	parser_reg(p, "M int type sym attr", parse_prefs_m);
+	parser_reg(p, "M sym type sym attr", parse_prefs_m);
 	parser_reg(p, "V uint idx int k int r int g int b", parse_prefs_v);
 	parser_reg(p, "W int window uint flag uint value", parse_prefs_w);
 	parser_reg(p, "X str option", parse_prefs_x);
