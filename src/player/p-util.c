@@ -54,80 +54,188 @@ s16b modify_stat_value(int value, int amount)
 	return (value);
 }
 
-/* Is the player capable of casting a spell? */
-bool player_can_cast(void)
+/**
+ * Return TRUE if the player can cast a spell.
+ *
+ * \param show_msg should be set to TRUE if a failure message should be displayed.
+ */
+bool player_can_cast(struct player *p, bool show_msg)
 {
-	if (!p_ptr->class->spell_book)
+	if (!p->class->spell_book)
 	{
+		if (show_msg)
+			msg("You cannot pray or produce magics.");
+
 		return FALSE;
 	}
 
-	if (p_ptr->timed[TMD_BLIND] || no_light())
+	if (p->timed[TMD_BLIND] || no_light())
 	{
+		if (show_msg)
+			msg("You cannot see!");
+
 		return FALSE;
 	}
 
-	if (p_ptr->timed[TMD_CONFUSED])
+	if (p->timed[TMD_CONFUSED])
 	{
+		if (show_msg)
+			msg("You are too confused!");
+
 		return FALSE;
 	}
 
 	return TRUE;
 }
 
-bool player_can_cast_msg(void)
+/**
+ * Return TRUE if the player can study a spell.
+ *
+ * \param show_msg should be set to TRUE if a failure message should be displayed.
+ */
+bool player_can_study(struct player *p, bool show_msg)
 {
-	if (!p_ptr->class->spell_book)
-	{
-		msg("You cannot pray or produce magics.");
+	if (!player_can_cast(p, show_msg))
 		return FALSE;
-	}
 
-	if (p_ptr->timed[TMD_BLIND] || no_light())
+	if (!p->new_spells)
 	{
-		msg("You cannot see!");
-		return FALSE;
-	}
+		if (show_msg) {
+			const char *name = ((p_ptr->class->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
+			msg("You cannot learn any new %ss!", name);
+		}
 
-	if (p_ptr->timed[TMD_CONFUSED])
-	{
-		msg("You are too confused!");
 		return FALSE;
 	}
 
 	return TRUE;
 }
 
-/* Is the player capable of studying? */
-bool player_can_study(void)
+/**
+ * Return TRUE if the player can read scrolls or books.
+ *
+ * \param show_msg should be set to TRUE if a failure message should be displayed.
+ */
+bool player_can_read(struct player *p, bool show_msg)
 {
-	if (!player_can_cast())
-		return FALSE;
-
-	if (!p_ptr->new_spells)
+	if (p->timed[TMD_BLIND])
 	{
+		if (show_msg)
+			msg("You can't see anything.");
+
+		return FALSE;
+	}
+
+	if (no_light())
+	{
+		if (show_msg)
+			msg("You have no light to read by.");
+
+		return FALSE;
+	}
+
+	if (p->timed[TMD_CONFUSED])
+	{
+		if (show_msg)
+			msg("You are too confused to read!");
+
+		return FALSE;
+	}
+
+	if (p->timed[TMD_AMNESIA])
+	{
+		if (show_msg)
+			msg("You can't remember how to read!");
+
 		return FALSE;
 	}
 
 	return TRUE;
 }
-bool player_can_study_msg(void)
-{
-	if (!player_can_cast_msg())
-		return FALSE;
 
-	if (!p_ptr->new_spells)
+/**
+ * Return TRUE if the player can fire something with a launcher.
+ *
+ * \param show_msg should be set to TRUE if a failure message should be displayed.
+ */
+bool player_can_fire(struct player *p, bool show_msg)
+{
+	object_type *o_ptr = &p->inventory[INVEN_BOW];
+
+	/* Require a usable launcher */
+	if (!o_ptr->tval || !p->state.ammo_tval)
 	{
-		const char *p = ((p_ptr->class->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
-		msg("You cannot learn any new %ss!", p);
+		if (show_msg)
+			msg("You have nothing to fire with.");
+
 		return FALSE;
 	}
 
 	return TRUE;
 }
 
-/* Does the player carry a book with a spell they can study? */
-bool player_can_study_book(void)
+/**
+ * Return TRUE if the player can refuel their light source.
+ *
+ * \param show_msg should be set to TRUE if a failure message should be displayed.
+ */
+bool player_can_refuel(struct player *p, bool show_msg)
+{
+	object_type *obj = &p->inventory[INVEN_LIGHT];
+
+	if (obj->kind && obj->sval == SV_LIGHT_LANTERN)
+		return TRUE;
+
+	if (show_msg)
+		msg("Your light cannot be refuelled.");
+
+	return FALSE;
+}
+
+/**
+ * Prerequiste function for command. See struct cmd_info in cmd-process.c.
+ */
+bool player_can_cast_prereq(void)
+{
+	return player_can_cast(p_ptr, TRUE);
+}
+
+/**
+ * Prerequiste function for command. See struct cmd_info in cmd-process.c.
+ */
+bool player_can_study_prereq(void)
+{
+	return player_can_study(p_ptr, TRUE);
+}
+
+/**
+ * Prerequiste function for command. See struct cmd_info in cmd-process.c.
+ */
+bool player_can_read_prereq(void)
+{
+	return player_can_read(p_ptr, TRUE);
+}
+
+/**
+ * Prerequiste function for command. See struct cmd_info in cmd-process.c.
+ */
+bool player_can_fire_prereq(void)
+{
+	return player_can_fire(p_ptr, TRUE);
+}
+
+/**
+ * Prerequiste function for command. See struct cmd_info in cmd-process.c.
+ */
+bool player_can_refuel_prereq(void)
+{
+	return player_can_refuel(p_ptr, TRUE);
+}
+
+/**
+ * Return TRUE if the player has a book in their inventory that has unlearned spells.
+ */
+bool player_book_has_unlearned_spells(struct player *p)
 {
 	int i;
 	int item_list[INVEN_TOTAL];
@@ -136,7 +244,7 @@ bool player_can_study_book(void)
 	struct spell *sp;
 
 	/* Check if the player can learn new spells */
-	if (!p_ptr->new_spells)
+	if (!p->new_spells)
 		return FALSE;
 
 	/* Get the number of books in inventory */
@@ -155,107 +263,6 @@ bool player_can_study_book(void)
 				return TRUE;
 	}
 
-	return FALSE;
-}
-
-/* Determine if the player can read scrolls. */
-bool player_can_read(void)
-{
-	if (p_ptr->timed[TMD_BLIND])
-	{
-		return FALSE;
-	}
-
-	if (no_light())
-	{
-		return FALSE;
-	}
-
-	if (p_ptr->timed[TMD_CONFUSED])
-	{
-		return FALSE;
-	}
-
-	if (p_ptr->timed[TMD_AMNESIA])
-	{
-		return FALSE;
-	}
-
-	return TRUE;
-}
-bool player_can_read_msg(void)
-{
-	if (p_ptr->timed[TMD_BLIND])
-	{
-		msg("You can't see anything.");
-		return FALSE;
-	}
-
-	if (no_light())
-	{
-		msg("You have no light to read by.");
-		return FALSE;
-	}
-
-	if (p_ptr->timed[TMD_CONFUSED])
-	{
-		msg("You are too confused to read!");
-		return FALSE;
-	}
-
-	if (p_ptr->timed[TMD_AMNESIA])
-	{
-		msg("You can't remember how to read!");
-		return FALSE;
-	}
-
-	return TRUE;
-}
-/* Determine if the player can fire with the bow */
-bool player_can_fire(void)
-{
-	object_type *o_ptr = &p_ptr->inventory[INVEN_BOW];
-
-	/* Require a usable launcher */
-	if (!o_ptr->tval || !p_ptr->state.ammo_tval)
-	{
-		return FALSE;
-	}
-
-	return TRUE;
-}
-bool player_can_fire_msg(void)
-{
-	object_type *o_ptr = &p_ptr->inventory[INVEN_BOW];
-
-	/* Require a usable launcher */
-	if (!o_ptr->tval || !p_ptr->state.ammo_tval)
-	{
-		msg("You have nothing to fire with.");
-		return FALSE;
-	}
-
-	return TRUE;
-}
-
-bool player_can_refuel(void)
-{
-	object_type *obj = &p_ptr->inventory[INVEN_LIGHT];
-
-	if (obj->kind && obj->sval == SV_LIGHT_LANTERN)
-		return TRUE;
-
-	return FALSE;
-}
-
-bool player_can_refuel_msg(void)
-{
-	object_type *obj = &p_ptr->inventory[INVEN_LIGHT];
-
-	if (obj->kind && obj->sval == SV_LIGHT_LANTERN)
-		return TRUE;
-
-	msg("Your light cannot be refuelled.");
 	return FALSE;
 }
 

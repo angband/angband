@@ -687,17 +687,17 @@ bool player_set_food(struct player *p, int v);
 
 /* util.c */
 s16b modify_stat_value(int value, int amount);
-bool player_can_cast(void);
-bool player_can_cast_msg(void);
-bool player_can_study(void);
-bool player_can_study_msg(void);
-bool player_can_study_book(void);
-bool player_can_read(void);
-bool player_can_read_msg(void);
-bool player_can_fire(void);
-bool player_can_fire_msg(void);
-bool player_can_refuel(void);
-bool player_can_refuel_msg(void);
+bool player_can_cast(struct player *p, bool show_msg);
+bool player_can_study(struct player *p, bool show_msg);
+bool player_can_read(struct player *p, bool show_msg);
+bool player_can_fire(struct player *p, bool show_msg);
+bool player_can_refuel(struct player *p, bool show_msg);
+bool player_can_cast_prereq(void);
+bool player_can_study_prereq(void);
+bool player_can_read_prereq(void);
+bool player_can_fire_prereq(void);
+bool player_can_refuel_prereq(void);
+bool player_book_has_unlearned_spells(struct player *p);
 bool player_confuse_dir(struct player *p, int *dir, bool too);
 bool player_is_resting(void);
 s16b player_resting_count(void);

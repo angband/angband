@@ -891,7 +891,7 @@ static size_t prt_study(int row, int col)
 	{
 		/* If the player does not carry a book with spells they can study,
 		   the message is displayed in a darker colour */
-		if (!player_can_study_book())
+		if (!player_book_has_unlearned_spells(p_ptr))
 			attr = TERM_L_DARK;
 
 		/* Print study message */
