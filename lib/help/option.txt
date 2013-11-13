@@ -137,12 +137,6 @@ Allow mouse clicks to move the player  '[mouse_movement]'
   Clicking on the main window will be interpreted as a move command to that
   spot.
 
-.. _mouse_buttons:
-
-Show mouse status line buttons '[mouse_buttons]'
-  Creates clickable "buttons" on the bottom line of the main window, to
-  enhance mouse-led play.
-
 .. _use_sound:
 
 Use sound '[use_sound]'
