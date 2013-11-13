@@ -2785,14 +2785,14 @@ void disturb(struct player *p, int stop_search, int unused_flag)
 	cmd_cancel_repeat();
 
 	/* Cancel Resting */
-	if (p->resting) {
-		p->resting = 0;
+	if (player_is_resting(p)) {
+		player_resting_cancel(p);
 		p->redraw |= PR_STATE;
 	}
 
 	/* Cancel running */
 	if (p->running) {
-		p_ptr->running = 0;
+		p->running = 0;
 
  		/* Check for new panel if appropriate */
  		if (OPT(center_player)) verify_panel();

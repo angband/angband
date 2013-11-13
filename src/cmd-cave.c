@@ -1449,7 +1449,7 @@ void do_cmd_rest(cmd_code code, cmd_arg args[])
     if (args[0].choice < 0 && !player_resting_is_special(args[0].choice))
         return;
 
-	player_resting_set_count(args[0].choice);
+	player_resting_set_count(p_ptr, args[0].choice);
 
 	/* Take a turn XXX XXX XXX (?) */
 	p_ptr->energy_use = 100;

@@ -101,7 +101,7 @@ bool player_can_study(struct player *p, bool show_msg)
 	if (!p->new_spells)
 	{
 		if (show_msg) {
-			const char *name = ((p_ptr->class->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
+			const char *name = ((p->class->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
 			msg("You cannot learn any new %ss!", name);
 		}
 
@@ -311,17 +311,17 @@ bool player_resting_is_special(s16b count)
 /**
  * Return TRUE if the player is resting.
  */
-bool player_is_resting(void)
+bool player_is_resting(struct player *p)
 {
-	return p_ptr->resting > 0 || player_resting_is_special(p_ptr->resting);
+	return p->resting > 0 || player_resting_is_special(p->resting);
 }
 
 /**
  * Return the remaining number of resting turns.
  */
-s16b player_resting_count(void)
+s16b player_resting_count(struct player *p)
 {
-	return p_ptr->resting;
+	return p->resting;
 }
 
 /*
@@ -336,41 +336,41 @@ static s16b player_resting_start_count = 0;
  *
  * \param count is the number of turns to rest or one of the REST_ constants.
  */
-void player_resting_set_count(s16b count)
+void player_resting_set_count(struct player *p, s16b count)
 {
 	if (count < 0 && !player_resting_is_special(count)) {
 		/* Ignore if the rest count is negative. */
-		p_ptr->resting = 0;
+		p->resting = 0;
 		return;
 	}
 
 	/* Save the rest code */
-	p_ptr->resting = count;
+	p->resting = count;
 
 	/* Truncate overlarge values */
-	if (p_ptr->resting > 9999) p_ptr->resting = 9999;
+	if (p->resting > 9999) p->resting = 9999;
 
 	/* The first turn is always used, so we need to adjust the count. */
-	if (p_ptr->resting > 0)
-		p_ptr->resting--;
+	if (p->resting > 0)
+		p->resting--;
 
-	player_resting_start_count = p_ptr->resting;
+	player_resting_start_count = p->resting;
 }
 
 /**
  * Cancel current rest.
  */
-void player_resting_cancel(void)
+void player_resting_cancel(struct player *p)
 {
-	player_resting_set_count(0);
+	player_resting_set_count(p, 0);
 }
 
 /**
  * Return TRUE if the player should get a regeneration bonus for the current rest.
  */
-bool player_resting_can_regenerate(void)
+bool player_resting_can_regenerate(struct player *p)
 {
-	return (player_resting_start_count - p_ptr->resting) >= REST_REQUIRED_FOR_REGEN || player_resting_is_special(p_ptr->resting);
+	return (player_resting_start_count - p->resting) >= REST_REQUIRED_FOR_REGEN || player_resting_is_special(p->resting);
 }
 
 /**
@@ -378,69 +378,69 @@ bool player_resting_can_regenerate(void)
  * and does not calculate any possible other effects of resting (see process_world()
  * for regeneration).
  */
-void player_resting_step_turn(void)
+void player_resting_step_turn(struct player *p)
 {
 	/* Timed rest */
-	if (p_ptr->resting > 0)
+	if (p->resting > 0)
 	{
 		/* Reduce rest count */
-		p_ptr->resting--;
+		p->resting--;
 
 		/* Redraw the state */
-		p_ptr->redraw |= (PR_STATE);
+		p->redraw |= (PR_STATE);
 	}
 
 	/* Take a turn */
-	p_ptr->energy_use = 100;
+	p->energy_use = 100;
 
 	/* Increment the resting counter */
-	p_ptr->resting_turn++;
+	p->resting_turn++;
 }
 
 /**
  * Handle the conditions for conditional resting (resting with the REST_ constants).
  */
-void player_resting_complete_special(void)
+void player_resting_complete_special(struct player *p)
 {
 	/* Complete resting */
-	if (player_resting_is_special(p_ptr->resting))
+	if (player_resting_is_special(p->resting))
 	{
 		/* Basic resting */
-		if (p_ptr->resting == REST_ALL_POINTS)
+		if (p->resting == REST_ALL_POINTS)
 		{
 			/* Stop resting */
-			if ((p_ptr->chp == p_ptr->mhp) &&
-			    (p_ptr->csp == p_ptr->msp))
+			if ((p->chp == p->mhp) &&
+			    (p->csp == p->msp))
 			{
-				disturb(p_ptr, 0, 0);
+				disturb(p, 0, 0);
 			}
 		}
 
 		/* Complete resting */
-		else if (p_ptr->resting == REST_COMPLETE)
+		else if (p->resting == REST_COMPLETE)
 		{
 			/* Stop resting */
-			if ((p_ptr->chp == p_ptr->mhp) &&
-			    (p_ptr->csp == p_ptr->msp) &&
-			    !p_ptr->timed[TMD_BLIND] && !p_ptr->timed[TMD_CONFUSED] &&
-			    !p_ptr->timed[TMD_POISONED] && !p_ptr->timed[TMD_AFRAID] &&
-			    !p_ptr->timed[TMD_TERROR] &&
-			    !p_ptr->timed[TMD_STUN] && !p_ptr->timed[TMD_CUT] &&
-			    !p_ptr->timed[TMD_SLOW] && !p_ptr->timed[TMD_PARALYZED] &&
-			    !p_ptr->timed[TMD_IMAGE] && !p_ptr->word_recall)
+			if ((p->chp == p->mhp) &&
+			    (p->csp == p->msp) &&
+			    !p->timed[TMD_BLIND] && !p->timed[TMD_CONFUSED] &&
+			    !p->timed[TMD_POISONED] && !p->timed[TMD_AFRAID] &&
+			    !p->timed[TMD_TERROR] &&
+			    !p->timed[TMD_STUN] && !p->timed[TMD_CUT] &&
+			    !p->timed[TMD_SLOW] && !p->timed[TMD_PARALYZED] &&
+			    !p->timed[TMD_IMAGE] && !p->word_recall)
 			{
-				disturb(p_ptr, 0, 0);
+				disturb(p, 0, 0);
 			}
 		}
 
 		/* Rest until HP or SP are filled */
-		else if (p_ptr->resting == REST_SOME_POINTS)
+		else if (p->resting == REST_SOME_POINTS)
 		{
 			/* Stop resting */
-			if ((p_ptr->chp == p_ptr->mhp) ||
-			    (p_ptr->csp == p_ptr->msp))
+			if ((p->chp == p->mhp) ||
+			    (p->csp == p->msp))
 			{
-				disturb(p_ptr, 0, 0);
+				disturb(p, 0, 0);
 			}
 		}
 	}

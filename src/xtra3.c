@@ -760,10 +760,10 @@ static size_t prt_state(int row, int col)
 
 
 	/* Resting */
-	if (player_is_resting())
+	if (player_is_resting(p_ptr))
 	{
 		int i;
-		int n = player_resting_count();
+		int n = player_resting_count(p_ptr);
 
 		/* Start with "Rest" */
 		my_strcpy(text, "Rest      ", sizeof(text));

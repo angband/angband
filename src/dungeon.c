@@ -644,7 +644,7 @@ static void process_world(struct cave *c)
 	/* Various things speed up regeneration */
 	if (check_state(p_ptr, OF_REGEN, p_ptr->state.flags))
 		regen_amount *= 2;
-	if (p_ptr->searching || player_resting_can_regenerate())
+	if (p_ptr->searching || player_resting_can_regenerate(p_ptr))
 		regen_amount *= 2;
 
 	/* Some things slow it down */
@@ -670,7 +670,7 @@ static void process_world(struct cave *c)
 	/* Various things speed up regeneration */
 	if (check_state(p_ptr, OF_REGEN, p_ptr->state.flags))
 		regen_amount *= 2;
-	if (p_ptr->searching || player_resting_can_regenerate())
+	if (p_ptr->searching || player_resting_can_regenerate(p_ptr))
 		regen_amount *= 2;
 
 	/* Some things slow it down */
@@ -950,12 +950,12 @@ static void process_player(void)
 
 	/*** Check for interrupts ***/
 
-	player_resting_complete_special();
+	player_resting_complete_special(p_ptr);
 
 	/* Check for "player abort" */
 	if (p_ptr->running ||
 	    cmd_get_nrepeats() > 0 ||
-	    (player_is_resting() && !(turn & 0x7F)))
+	    (player_is_resting(p_ptr) && !(turn & 0x7F)))
 	{
 		ui_event e;
 
@@ -1035,9 +1035,9 @@ static void process_player(void)
 		}
 
 		/* Resting */
-		else if (player_is_resting())
+		else if (player_is_resting(p_ptr))
 		{
-			player_resting_step_turn();
+			player_resting_step_turn(p_ptr);
 		}
 
 		/* Running */
