@@ -19,7 +19,6 @@
  */
 
 #include "angband.h"
-#include "button.h"
 #include "cave.h"
 #include "cmds.h"
 #include "files.h"
@@ -126,40 +125,12 @@ void do_cmd_change_name(void)
 	const char *p;
 
 	bool more = TRUE;
-	bool button_state;
-
-	if (OPT(mouse_movement)) {
-		/**
-		 * show some buttons on the last line regardless of whether
-		 * mouse buttons are usually shown
-		 */
-		button_state = OPT(mouse_buttons);
-		if (!button_state) {
-			option_set("mouse_buttons", TRUE);
-		}
-	} else {
-		/* make sure we do not change the state of the mouse_buttons option below */
-		button_state = TRUE;
-	}
 
 	/* Prompt */
 	p = "['c' to change name, 'f' to file, 'h' to change mode, or ESC]";
 
 	/* Save screen */
 	screen_save();
-
-	/* backup the previous buttons and clear them */
-	button_backup_all();
-	button_kill_all();
-
-	/* add some 1d buttons for if we are using them */
-	button_add("[c]", 'c');
-	button_add("[f]", 'f');
-	button_add("[->]", 'h');
-	button_add("[<-]", 'l');
-
-	button_add("[Ret]",'\n');
-	button_add("[ESC]",ESCAPE);
 
 	/* Forever */
 	while (more)
@@ -169,14 +140,6 @@ void do_cmd_change_name(void)
 
 		/* Prompt */
 		Term_putstr(2, 23, -1, TERM_WHITE, p);
-		/* display the mouse buttons */
-		if (OPT(mouse_buttons)) {
-			if (Term->hgt == 24) {
-				button_print(23, 2+62);
-			} else {
-				button_print(Term->hgt - 1, COL_MAP);
-			}
-		}
 
 		/* Query */
 		ke = inkey_ex();
@@ -239,11 +202,6 @@ void do_cmd_change_name(void)
 
 		/* Flush messages */
 		message_flush();
-	}
-	/* Remove the 1d buttons that we added earlier */
-	button_restore();
-	if (!button_state) {
-		option_set("mouse_buttons", FALSE);
 	}
 
 	/* Load screen */
@@ -843,13 +801,6 @@ void do_cmd_query_symbol(void)
 		return;
 	}
 
-	/* Buttons */
-	button_add("[y]", 'y');
-	button_add("[k]", 'k');
-	/* Don't collide with the repeat button */
-	button_add("[n]", 'q'); 
-	redraw_stuff(p_ptr);
-
 	/* Prompt */
 	put_str("Recall details? (y/k/n): ", 0, 40);
 
@@ -858,12 +809,6 @@ void do_cmd_query_symbol(void)
 
 	/* Restore */
 	prt(buf, 0, 0);
-
-	/* Buttons */
-	button_kill('y');
-	button_kill('k');
-	button_kill('q');
-	redraw_stuff(p_ptr);
 
 	/* Interpret the response */
 	if (query.code == 'k')
@@ -888,12 +833,6 @@ void do_cmd_query_symbol(void)
 
 	/* Start at the end */
 	i = n - 1;
-
-	/* Button */
-	button_add("[r]", 'r');
-	button_add("[-]", '-');
-	button_add("[+]", '+');
-	redraw_stuff(p_ptr);
 
 	/* Scan the monster memory */
 	while (1)
@@ -950,12 +889,6 @@ void do_cmd_query_symbol(void)
 				i = n - 1;
 		}
 	}
-
-	/* Button */
-	button_kill('r');
-	button_kill('-');
-	button_kill('+');
-	redraw_stuff(p_ptr);
 
 	/* Re-display the identity */
 	prt(buf, 0, 0);

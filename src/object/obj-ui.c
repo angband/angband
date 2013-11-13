@@ -17,7 +17,6 @@
  */
 
 #include "angband.h"
-#include "button.h"
 #include "tvalsval.h"
 #include "cmds.h"
 #include "game-cmd.h"
@@ -859,21 +858,18 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, int mode)
 			if (!show_list)
 			{
 				my_strcat(out_val, " * to see,", sizeof(out_val));
-				button_add("[*]", '*');
 			}
 
 			/* Indicate legality of "toggle" */
 			if (use_equip)
 			{
 				my_strcat(out_val, " / for Equip,", sizeof(out_val));
-				button_add("[/]", '/');
 			}
 
 			/* Indicate legality of the "floor" */
 			if (allow_floor)
 			{
 				my_strcat(out_val, " - for floor,", sizeof(out_val));
-				button_add("[-]", '-');
 			}
 		}
 
@@ -901,21 +897,18 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, int mode)
 			if (!show_list)
 			{
 				my_strcat(out_val, " * to see,", sizeof(out_val));
-				button_add("[*]", '*');
 			}
 
 			/* Indicate legality of "toggle" */
 			if (use_inven)
 			{
 				my_strcat(out_val, " / for Inven,", sizeof(out_val));
-				button_add("[/]", '/');
 			}
 
 			/* Indicate legality of the "floor" */
 			if (allow_floor)
 			{
 				my_strcat(out_val, " - for floor,", sizeof(out_val));
-				button_add("[!]", '!');
 			}
 		}
 
@@ -942,25 +935,20 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, int mode)
 			if (!show_list)
 			{
 				my_strcat(out_val, " * to see,", sizeof(out_val));
-				button_add("[*]", '*');
 			}
 
 			/* Append */
 			if (use_inven)
 			{
 				my_strcat(out_val, " / for Inven,", sizeof(out_val));
-				button_add("[/]", '/');
 			}
 
 			/* Append */
 			else if (use_equip)
 			{
 				my_strcat(out_val, " / for Equip,", sizeof(out_val));
-				button_add("[/]", '/');
 			}
 		}
-
-		redraw_stuff(p_ptr);
 
 		/* Finish the prompt */
 		my_strcat(out_val, " ESC", sizeof(out_val));
@@ -1424,14 +1412,6 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, int mode)
 		show_list = FALSE;
 	}
 
-
-	/* Kill buttons */
-	button_kill('*');
-	button_kill('/');
-	button_kill('-');
-	button_kill('!');
-	redraw_stuff(p_ptr);
- 
 	/* Forget the item_tester_tval restriction */
 	item_tester_tval = 0;
 

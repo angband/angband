@@ -20,7 +20,6 @@
 
 #include "angband.h"
 #include "buildid.h"
-#include "button.h"
 #include "cave.h"
 #include "files.h"
 #include "game-event.h"
@@ -64,7 +63,6 @@ static game_event_type statusline_events[] =
 	EVENT_STATUS,
 	EVENT_DETECTIONSTATUS,
 	EVENT_STATE,
-	EVENT_MOUSEBUTTONS
 };
 
 
@@ -937,23 +935,11 @@ static size_t prt_unignore(int row, int col)
 	return 0;
 }
 
-/*
- * Print mouse buttons
- */
-static size_t prt_buttons(int row, int col)
-{
-	if (OPT(mouse_buttons))
-		return button_print(row, col);
-
-	return 0;
-}
-
-
 /* Useful typedef */
 typedef size_t status_f(int row, int col);
 
 static status_f *status_handlers[] =
-{ prt_buttons, prt_unignore, prt_recall, prt_state, prt_cut, prt_stun,
+{ prt_unignore, prt_recall, prt_state, prt_cut, prt_stun,
   prt_hunger, prt_study, prt_tmd, prt_dtrap };
 
 

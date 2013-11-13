@@ -16,7 +16,6 @@
  */
 
 #include "angband.h"
-#include "button.h"
 #include "cmds.h"
 #include "dungeon.h"
 #include "files.h"
@@ -2798,7 +2797,7 @@ static void AngbandHandleEventMouseDown( NSEvent *event )
 		 * top row is reserved, and bottom row may have mouse buttons.
 		 * Coordinates run from (0,0) to (cols-1, rows-1).
 		 */
-		if ((x > 13 && x <= cols - 1 && y > 0  && y <= rows - 2) || (OPT(mouse_buttons) && y == rows - 1 && x >= COL_MAP && x < COL_MAP + button_get_length()))
+		if ((x > 13 && x <= cols - 1 && y > 0  && y <= rows - 2))
 		{
 			// [event buttonNumber] will return 0 for left click, 1 for right click, but this is safer
 			int button = ([event type] == NSLeftMouseDown) ? 1 : 2;

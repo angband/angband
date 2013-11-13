@@ -132,7 +132,7 @@ static const struct option options[OPT_MAX] =
 { "auto_more",           "Automatically clear '-more-' prompts",        FALSE }, /* 19 */
 { "hp_changes_color",    "Color: Player color indicates % hit points",  TRUE },  /* 20 */
 { "mouse_movement",      "Allow mouse clicks to move the player",       TRUE },  /* 21 */
-{ "mouse_buttons",       "Show mouse status line buttons",              FALSE }, /* 22 */
+{ "mouse_buttons",       "Show mouse status line buttons",              TRUE }, /* 22 */
 { "notify_recharge",     "Notify on object recharge",                   FALSE }, /* 23 */
 { NULL,                  NULL,                                          FALSE }, /* 24 */
 { NULL,                  NULL,                                          FALSE }, /* 25 */

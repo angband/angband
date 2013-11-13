@@ -19,7 +19,6 @@
 #include "angband.h"
 #include "birth.h"
 #include "borg/borg1.h"
-#include "button.h"
 #include "cave.h"
 #include "cmds.h"
 #include "dungeon.h"
@@ -1343,16 +1342,6 @@ static void dungeon(struct cave *c)
 
 	/* Combine / Reorder the pack */
 	p_ptr->notice |= (PN_COMBINE | PN_REORDER | PN_SORT_QUIVER);
-
-	/* Make basic mouse buttons */
-	(void) button_add("[ESC]", ESCAPE);
-	(void) button_add("[Ret]", KC_ENTER);
-	(void) button_add("[Spc]", ' ');
-	(void) button_add("[Rpt]", 'n');
-	(void) button_add("[Std]", ',');
-
-	/* Redraw buttons */
-	p_ptr->redraw |= (PR_BUTTONS);
 
 	/* Notice stuff */
 	notice_stuff(p_ptr);
