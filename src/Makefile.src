@@ -98,6 +98,7 @@ ANGFILES = \
 	monster/mon-init.o \
 	monster/melee1.o \
 	monster/melee2.o \
+	monster/mon-list.o \
 	monster/mon-lore.o \
 	monster/mon-make.o \
 	monster/mon-msg.o \

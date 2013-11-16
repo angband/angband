@@ -26,6 +26,7 @@
 #include "history.h"
 #include "object/tvalsval.h"
 #include "monster/mon-lore.h"
+#include "monster/mon-list.h"
 #include "monster/mon-util.h"
 #include "option.h"
 #include "prefs.h"
@@ -979,10 +980,8 @@ void do_cmd_monlist(void)
 {
 	/* Save the screen and display the list */
 	screen_save();
-	display_monlist();
 
-	/* Wait */
-	anykey();
+    monster_list_show_interactive(Term->hgt, Term->wid);
 
 	/* Return */
 	screen_load();
