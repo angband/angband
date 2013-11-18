@@ -40,6 +40,7 @@ typedef struct monster_list_s {
 	size_t entries_size;
 	u16b distinct_entries;
 	s32b creation_turn;
+	bool sorted;
 	u16b total_entries[MONSTER_LIST_SECTION_MAX];
 	u16b total_monsters[MONSTER_LIST_SECTION_MAX];
 } monster_list_t;
@@ -151,6 +152,7 @@ static void monster_list_reset(monster_list_t *list)
 	C_WIPE(&list->total_monsters, MONSTER_LIST_SECTION_MAX, u16b);
 	list->distinct_entries = 0;
 	list->creation_turn = 0;
+	list->sorted = FALSE;
 }
 
 /**
@@ -238,6 +240,7 @@ static void monster_list_collect(monster_list_t *list)
 	}
 
 	list->creation_turn = turn;
+	list->sorted = FALSE;
 }
 
 /**
@@ -279,7 +282,7 @@ static void monster_list_sort(monster_list_t *list, int (*compare)(const void *,
 	if (list == NULL || list->entries == NULL)
 		return;
 
-	if (!monster_list_needs_update(list))
+	if (list->sorted)
 		return;
 
 	elements = list->distinct_entries;
@@ -288,6 +291,7 @@ static void monster_list_sort(monster_list_t *list, int (*compare)(const void *,
 		return;
 
 	sort(list->entries, elements, sizeof(list->entries[0]), compare);
+	list->sorted = TRUE;
 }
 
 /**
@@ -578,8 +582,8 @@ void monster_list_show_interactive(int height, int width)
 	 * list is positioned on the right side of the term underneath the status line.
 	 */
 	monster_list_format_textblock(list, NULL, 1000, 1000, &max_height, &max_width);
-	safe_height = MIN(height - 1, (int)max_height + 2);
-	safe_width = MIN(width, (int)max_width);
+	safe_height = MIN(height - 2, (int)max_height + 2);
+	safe_width = MIN(width - 13, (int)max_width);
 	r.col = -safe_width;
 	r.row = 1;
 	r.width = safe_width;
