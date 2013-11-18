@@ -39,6 +39,7 @@ typedef struct monster_list_s {
 	monster_list_entry_t *entries;
 	size_t entries_size;
 	u16b distinct_entries;
+	s32b creation_turn;
 	u16b total_entries[MONSTER_LIST_SECTION_MAX];
 	u16b total_monsters[MONSTER_LIST_SECTION_MAX];
 } monster_list_t;
@@ -84,6 +85,75 @@ static void monster_list_free(monster_list_t *list)
 }
 
 /**
+ * Shared monster list instance.
+ */
+static monster_list_t *monster_list_subwindow = NULL;
+
+/**
+ * Initialize the monster list module.
+ */
+void monster_list_init(void)
+{
+	monster_list_subwindow = NULL;
+}
+
+/**
+ * Tear down the monster list module.
+ */
+void monster_list_finalize(void)
+{
+	monster_list_free(monster_list_subwindow);
+}
+
+/**
+ * Return a common monster list instance.
+ */
+monster_list_t *monster_list_shared_instance(void)
+{
+	if (monster_list_subwindow == NULL) {
+		monster_list_subwindow = monster_list_new();
+	}
+
+	return monster_list_subwindow;
+}
+
+/**
+ * Return TRUE if the list needs to be updated. Usually this is each turn or if
+ * the number of cave monsters changes.
+ */
+static bool monster_list_needs_update(const monster_list_t *list)
+{
+	if (list == NULL || list->entries == NULL)
+		return FALSE;
+
+	return list->creation_turn != turn || (int)list->entries_size < cave_monster_max(cave);
+}
+
+/**
+ * Zero out the contents of a monster list. If needed, this function will reallocate
+ * the entry list if the number of monsters has changed.
+ */
+static void monster_list_reset(monster_list_t *list)
+{
+	if (list == NULL || list->entries == NULL)
+		return;
+
+	if (!monster_list_needs_update(list))
+		return;
+
+	if ((int)list->entries_size < cave_monster_max(cave)) {
+		list->entries = mem_realloc(list->entries, sizeof(list->entries[0]) * cave_monster_max(cave));
+		list->entries_size = cave_monster_max(cave);
+	}
+
+	C_WIPE(list->entries, list->entries_size, monster_list_entry_t);
+	C_WIPE(&list->total_entries, MONSTER_LIST_SECTION_MAX, u16b);
+	C_WIPE(&list->total_monsters, MONSTER_LIST_SECTION_MAX, u16b);
+	list->distinct_entries = 0;
+	list->creation_turn = 0;
+}
+
+/**
  * Collect monster information from the current cave's monster list.
  */
 static void monster_list_collect(monster_list_t *list)
@@ -94,7 +164,7 @@ static void monster_list_collect(monster_list_t *list)
 		return;
 
 	/* Use cave_monster_max() here in case the monster list isn't compacted. */
-	for (i = 0; i < cave_monster_max(cave); i++) {
+	for (i = 1; i < cave_monster_max(cave); i++) {
 		monster_type *monster = cave_monster(cave, i);
 		monster_list_entry_t *entry = NULL;
 		int j, field;
@@ -122,7 +192,14 @@ static void monster_list_collect(monster_list_t *list)
 		if (entry == NULL)
 			continue;
 
-		/* 
+		/* Always collect the latest monster attribute so that flicker animation works. */
+		entry->attr = (monster->attr > 0) ? monster->attr : monster->race->x_attr;
+
+		/* Skip the projection and location checks if nothing has changed. */
+		if (!monster_list_needs_update(list))
+			continue;
+
+		/*
 		 * Check for LOS
 		 * Hack - we should use (m_ptr->mflag & (MFLAG_VIEW)) here,
 		 * but this does not catch monsters detected by ESP which are
@@ -138,10 +215,11 @@ static void monster_list_collect(monster_list_t *list)
 		/* Store the location offset from the player; this is only used for monster counts of 1 */
 		entry->dx = monster->fx - p_ptr->px;
 		entry->dy = monster->fy - p_ptr->py;
-
-		if (entry->attr == 0)
-			entry->attr = (monster->attr > 0) ? monster->attr : monster->race->x_attr;
 	}
+
+	/* Skip calculations if nothing has changed, otherwise this will yield incorrect numbers. */
+	if (!monster_list_needs_update(list))
+		return;
 
 	/* Collect totals for easier calculations of the list. */
 	for (i = 0; i < (int)list->entries_size; i++) {
@@ -158,6 +236,8 @@ static void monster_list_collect(monster_list_t *list)
 		list->total_monsters[MONSTER_LIST_SECTION_ESP] += list->entries[i].count[MONSTER_LIST_SECTION_ESP];
 		list->distinct_entries++;
 	}
+
+	list->creation_turn = turn;
 }
 
 /**
@@ -197,6 +277,9 @@ static void monster_list_sort(monster_list_t *list, int (*compare)(const void *,
 	size_t elements;
 
 	if (list == NULL || list->entries == NULL)
+		return;
+
+	if (!monster_list_needs_update(list))
 		return;
 
 	elements = list->distinct_entries;
@@ -447,24 +530,26 @@ static void monster_list_format_textblock(const monster_list_t *list, textblock 
  * Display the monster list statically. This will force the list to be displayed to
  * the provided dimensions. Contents will be adjusted accordingly.
  *
+ * In order to support more efficient monster flicker animations, this function uses
+ * a shared list object so that it's not constantly allocating and freeing the list.
+ *
  * \param height is the height of the list.
  * \param width is the width of the list.
  */
 void monster_list_show_subwindow(int height, int width)
 {
 	textblock *tb = textblock_new();
-	monster_list_t *list = monster_list_new();
+	monster_list_t *list = monster_list_shared_instance();
 
+	monster_list_reset(list);
 	monster_list_collect(list);
 	monster_list_sort(list, monster_list_standard_compare);
 
 	/* Draw the list to exactly fit the subwindow. */
 	monster_list_format_textblock(list, tb, height, width, NULL, NULL);
-	clear_from(0);
 	textui_textblock_place(tb, SCREEN_REGION, NULL);
 
 	textblock_free(tb);
-	monster_list_free(list);
 }
 
 /**
