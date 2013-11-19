@@ -109,7 +109,7 @@ void monster_list_finalize(void)
 /**
  * Return a common monster list instance.
  */
-monster_list_t *monster_list_shared_instance(void)
+static monster_list_t *monster_list_shared_instance(void)
 {
 	if (monster_list_subwindow == NULL) {
 		monster_list_subwindow = monster_list_new();
@@ -336,11 +336,16 @@ static void monster_list_format_section(const monster_list_t *list, textblock *t
 	int remaining_monster_total = 0;
 	int line_count = 0;
 	int entry_index;
-	int total = list->distinct_entries;
+	int total;
 	char line_buffer[200];
 	const char *punctuation = (lines_to_display == 0) ? "." : ":";
 	const char *others = (show_others) ? "other " : "";
 	size_t max_line_length = 0;
+
+	if (list == NULL || list->entries == NULL)
+		return;
+
+	total = list->distinct_entries;
 
 	if (list->total_monsters[section] == 0) {
 		max_line_length = strnfmt(line_buffer, sizeof(line_buffer), "%s no monsters.\n", prefix);
@@ -487,8 +492,8 @@ static void monster_list_format_textblock(const monster_list_t *list, textblock 
 {
 	int header_lines = 1;
 	int lines_remaining;
-	int los_lines_to_display = list->total_entries[MONSTER_LIST_SECTION_LOS];
-	int esp_lines_to_display = list->total_entries[MONSTER_LIST_SECTION_ESP];
+	int los_lines_to_display;
+	int esp_lines_to_display;
 	size_t max_los_line = 0;
 	size_t max_esp_line = 0;
 
@@ -497,6 +502,9 @@ static void monster_list_format_textblock(const monster_list_t *list, textblock 
 
 	if (monster_list_format_special(list, tb, max_lines, max_width, max_height_result, max_width_result))
 		return;
+
+	los_lines_to_display = list->total_entries[MONSTER_LIST_SECTION_LOS];
+	esp_lines_to_display = list->total_entries[MONSTER_LIST_SECTION_ESP];
 
 	if (list->total_entries[MONSTER_LIST_SECTION_ESP] > 0)
 		header_lines += 2;

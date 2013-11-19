@@ -799,6 +799,8 @@ extern void display_itemlist(void);
 extern void display_object_idx_recall(s16b o_idx);
 extern void display_object_kind_recall(struct object_kind *kind);
 void display_object_recall_interactive(object_type *o_ptr);
+bool is_unknown(const object_type *o_ptr);
+int compare_items(const object_type *o1, const object_type *o2);
 
 bool pack_is_full(void);
 bool pack_is_overfull(void);
