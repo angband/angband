@@ -9,7 +9,7 @@
 /*** Message constants ***/
 
 enum {
-	#define MSG(x) MSG_##x,
+	#define MSG(x, s) MSG_##x,
 	#include "z-msg-list.h"
 	#undef MSG
 	SOUND_MAX = MSG_MAX,
@@ -107,5 +107,21 @@ void message_color_define(u16b type, byte color);
  * \return The MSG_ flag that matches the given name.
  */
 int message_lookup_by_name(const char *name);
+
+/**
+ * Return the MSG_ flag that matches the given sound event name.
+ *
+ * \param name is the sound name from sound.cfg.
+ * \return The MSG_ flag for the corresponding sound.
+ */
+int message_lookup_by_sound_name(const char *name);
+
+/**
+ * Return the sound name for the given message.
+ *
+ * \param message is the MSG_ flag to find.
+ * \return The sound.cfg sound name.
+ */
+const char *message_sound_name(int message);
 
 #endif /* !INCLUDED_Z_MSG_H */

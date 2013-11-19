@@ -211,7 +211,7 @@ byte message_type_color(u16b type)
 int message_lookup_by_name(const char *name)
 {
 	static const char *message_names[] = {
-		#define MSG(x) #x,
+		#define MSG(x, s) #x,
 		#include "z-msg-list.h"
 		#undef MSG
 	};
@@ -227,4 +227,35 @@ int message_lookup_by_name(const char *name)
 	}
 
 	return -1;
+}
+
+int message_lookup_by_sound_name(const char *name)
+{
+	static const char *sound_names[] = {
+		#define MSG(x, s) s,
+		#include "z-msg-list.h"
+		#undef MSG
+	};
+	size_t i;
+
+	for (i = 0; i < N_ELEMENTS(sound_names); i++) {
+		if (my_stricmp(name, sound_names[i]) == 0)
+			return (int)i;
+	}
+
+	return MSG_GENERIC;
+}
+
+const char *message_sound_name(int message)
+{
+	static const char *sound_names[] = {
+		#define MSG(x, s) s,
+		#include "z-msg-list.h"
+		#undef MSG
+	};
+
+	if (message < MSG_GENERIC || message >= MSG_MAX)
+		return NULL;
+
+	return sound_names[message];
 }
