@@ -217,7 +217,7 @@ struct menu_type
 	int cursor;             /* Currently selected row */
 	int top;                /* Position in list for partial display */
 	region active;          /* Subregion actually active for selection */
-
+	int cursor_x_offset;    /* Adjustment to the default position of the cursor on a line. */
 };
 
 
@@ -328,6 +328,10 @@ void menu_ensure_cursor_valid(menu_type *m);
 bool menu_handle_mouse(menu_type *menu, const ui_event *in, ui_event *out);
 bool menu_handle_keypress(menu_type *menu, const ui_event *in, ui_event *out);
 
+/**
+ * Allow adjustment of the cursor's default x offset.
+ */
+void menu_set_cursor_x_offset(menu_type *m, int offset);
 
 /*** Dynamic menu handling ***/
 
