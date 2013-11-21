@@ -3024,9 +3024,8 @@ static void hook_plog(const char * str)
 {
     if (str)
     {
-		NSLog( @"%s", str );
-//        NSString *string = [NSString stringWithCString:str encoding:NSMacOSRomanStringEncoding];
-//        NSRunAlertPanel(@"Danger Will Robinson", @"%@", @"OK", nil, nil, string);
+        NSString *string = [NSString stringWithCString:str encoding:NSMacOSRomanStringEncoding];
+        NSRunAlertPanel(@"Danger Will Robinson", @"%@", @"OK", nil, nil, string);
     }
 }
 

@@ -335,6 +335,57 @@ static byte object_list_entry_line_attribute(const object_list_entry_t *entry)
 }
 
 /**
+ * Format the object name so that the prefix is right aligned to a common column.
+ *
+ * This uses the default logic of object_desc() in order to handle flavors, artifacts,
+ * vowels and so on. It was easier to do this and then use strtok() to break it up than
+ * to do anything else.
+ *
+ * \param entry is the object list entry that has a name to be formatted.
+ * \param line_buffer is the buffer to format into.
+ * \param size is the size of line_buffer.
+ * \param full_width is the maximum formatted width allowed.
+ */
+static void object_list_format_name(const object_list_entry_t *entry, char *line_buffer, size_t size, size_t full_width)
+{
+	char name[80];
+	char *chunk, *source;
+	size_t name_width = MIN(full_width, size);
+	bool has_singular_prefix;
+
+	/* Hack - these don't have a prefix when there is only one, so just pad with a space. */
+	switch (entry->object->kind->tval) {
+		case TV_SOFT_ARMOR:
+		case TV_HARD_ARMOR:
+		case TV_DRAG_ARMOR:
+			has_singular_prefix = FALSE;
+			break;
+		default:
+			has_singular_prefix = TRUE;
+			break;
+	}
+
+	object_desc(name, sizeof(name), entry->object, ODESC_PREFIX | ODESC_FULL);
+
+	/* The source string for strtok() needs to be set properly, depending on when we use it. */
+	if (!has_singular_prefix && entry->object->number == 1) {
+		chunk = " ";
+		source = name;
+	}
+	else {
+		chunk = strtok(name, " ");
+		source = NULL;
+	}
+
+	/* Right alight the prefix and clip. */
+	strnfmt(line_buffer, size, "%3.3s ", chunk);
+
+	/* Get the rest of the name and clip it to fit the max width. */
+	chunk = strtok(source, "\0");
+	my_strcat(line_buffer, chunk, name_width + 1);
+}
+
+/**
  * Format a section of the object list: a header followed by object list entry rows.
  *
  * This function will process each entry for the given section. It will display:
@@ -386,10 +437,8 @@ static void object_list_format_section(const object_list_t *list, textblock *tb,
 
 	for (entry_index = 0; entry_index < total && line_count < lines_to_display; entry_index++) {
 		char location[20] = { '\0' };
-		char name[80];
 		byte line_attr;
 		size_t full_width;
-		size_t name_width;
 		const char *direction_y = (list->entries[entry_index].dy <= 0) ? "N" : "S";
 		const char *direction_x = (list->entries[entry_index].dx <= 0) ? "W" : "E";
 
@@ -405,10 +454,7 @@ static void object_list_format_section(const object_list_t *list, textblock *tb,
 		full_width = max_width - 2 - strlen(location) - 1;
 
 		/* Add the object count and clip the object name to fit. */
-		strnfmt(line_buffer, sizeof(line_buffer), "%3d ", list->entries[entry_index].count);
-		name_width = MIN(full_width, sizeof(line_buffer));
-		object_desc(name, sizeof(name), list->entries[entry_index].object, ODESC_FULL);
-		my_strcat(line_buffer, name, name_width + 1);
+		object_list_format_name(&list->entries[entry_index], line_buffer, sizeof(line_buffer), full_width);
 
 		/* Calculate the width of the line for dynamic sizing; use a fixed max width for location and object char. */
 		max_line_length = MAX(max_line_length, strlen(line_buffer) + 12 + 2);
