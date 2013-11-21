@@ -1731,7 +1731,7 @@ static void see_floor_items(game_event_type type, game_event_data *data, void *u
 	size_t i;
 
 	/* Scan all marked objects in the grid */
-	floor_num = scan_floor(floor_list, N_ELEMENTS(floor_list), py, px, 0x0B);
+	floor_num = scan_floor(floor_list, N_ELEMENTS(floor_list), py, px, 0x01);
 	if (floor_num == 0) return;
 
 	for (i = 0; i < floor_num; i++)
