@@ -2793,11 +2793,16 @@ static void AngbandHandleEventMouseDown( NSEvent *event )
 		x = floor( p.x / tileSize.width );
 		y = floor( p.y / tileSize.height );
 
-		/* Sidebar plus border == thirteen characters;
-		 * top row is reserved, and bottom row may have mouse buttons.
-		 * Coordinates run from (0,0) to (cols-1, rows-1).
-		 */
-		if ((x > 13 && x <= cols - 1 && y > 0  && y <= rows - 2))
+		// being safe about this, since xcode doesn't seem to like the bool_hack stuff
+		BOOL displayingMapInterface = ((int)inkey_flag != 0);
+
+		// Sidebar plus border == thirteen characters; top row is reserved.
+		// Coordinates run from (0,0) to (cols-1, rows-1).
+		BOOL mouseInMapSection = (x > 13 && x <= cols - 1 && y > 0  && y <= rows - 2);
+
+		// if we are displaying a menu, allow clicks anywhere; if we are displaying the main
+		// game interface, only allow clicks in the map section
+		if (!displayingMapInterface || (displayingMapInterface && mouseInMapSection))
 		{
 			// [event buttonNumber] will return 0 for left click, 1 for right click, but this is safer
 			int button = ([event type] == NSLeftMouseDown) ? 1 : 2;
