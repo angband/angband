@@ -53,7 +53,6 @@ monster_race *lookup_monster(const char *name);
 monster_base *lookup_monster_base(const char *name);
 bool match_monster_bases(const monster_base *base, ...);
 void plural_aux(char *name, size_t max);
-void display_monlist(void);
 void monster_desc(char *desc, size_t max, const monster_type *m_ptr, int mode);
 void update_mon(struct monster *m_ptr, bool full);
 void update_monsters(bool full);
@@ -64,5 +63,6 @@ bool multiply_monster(const struct monster *m);
 void become_aware(struct monster *m);
 bool is_mimicking(struct monster *m);
 void update_smart_learn(struct monster *m, struct player *p, int flag);
+void get_mon_name(char *output_name, size_t max, const monster_race *r_ptr, int num);
 
 #endif /* MONSTER_UTILITIES_H */

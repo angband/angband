@@ -28,8 +28,10 @@
 #include "grafmode.h"
 #include "hint.h"
 #include "monster/mon-lore.h"
+#include "monster/mon-list.h"
 #include "monster/mon-util.h"
 #include "monster/monster.h"
+#include "object/obj-list.h"
 #include "object/tvalsval.h"
 #include "textui.h"
 #include "ui-birth.h"
@@ -1170,7 +1172,8 @@ static void update_itemlist_subwindow(game_event_type type, game_event_data *dat
 	/* Activate */
 	Term_activate(inv_term);
 
-	display_itemlist();
+    clear_from(0);
+    object_list_show_subwindow(Term->hgt, Term->wid);
 	Term_fresh();
 	
 	/* Restore */
@@ -1185,7 +1188,8 @@ static void update_monlist_subwindow(game_event_type type, game_event_data *data
 	/* Activate */
 	Term_activate(inv_term);
 
-	display_monlist();
+	clear_from(0);
+	monster_list_show_subwindow(Term->hgt, Term->wid);
 	Term_fresh();
 	
 	/* Restore */
