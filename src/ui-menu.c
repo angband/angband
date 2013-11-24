@@ -182,7 +182,7 @@ static void display_scrolling(menu_type *menu, int cursor, int *top, region *loc
 	}
 
 	if (menu->cursor >= 0)
-		Term_gotoxy(col, row + cursor - *top);
+		Term_gotoxy(col + menu->cursor_x_offset, row + cursor - *top);
 }
 
 static char scroll_get_tag(menu_type *menu, int pos)
@@ -276,7 +276,7 @@ static void display_columns(menu_type *menu, int cursor, int *top, region *loc)
 	}
 
 	if (menu->cursor >= 0)
-		Term_gotoxy(col + (cursor / rows_per_page) * colw,
+		Term_gotoxy(col + (cursor / rows_per_page) * colw + menu->cursor_x_offset,
 				row + (cursor % rows_per_page) - *top);
 }
 
@@ -849,6 +849,7 @@ void menu_init(menu_type *menu, skin_id skin_id, const menu_iter *iter)
 	menu->row_funcs = iter;
 	menu->skin = skin;
 	menu->cursor = 0;
+	menu->cursor_x_offset = 0;
 }
 
 menu_type *menu_new(skin_id skin_id, const menu_iter *iter)
@@ -865,6 +866,11 @@ menu_type *menu_new_action(menu_action *acts, size_t n)
 	return m;
 }
 
+void menu_set_cursor_x_offset(menu_type *m, int offset)
+{
+	/* This value is used in the menu skin's display_list() function. */
+	m->cursor_x_offset = offset;
+}
 
 /*** Dynamic menu handling ***/
 

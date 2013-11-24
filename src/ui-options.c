@@ -1375,6 +1375,7 @@ static bool sval_menu(int tval, const char *desc)
 	menu_setpriv(menu, n_choices, choices);
 	menu->cmd_keys = "Tt";
 	menu_layout(menu, &area);
+	menu_set_cursor_x_offset(menu, 1); /* Place cursor in brackets. */
 	menu_select(menu, 0, FALSE);
 
 	/* Free memory */
