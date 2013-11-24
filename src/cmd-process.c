@@ -562,7 +562,7 @@ static int show_command_list(struct cmd_info cmd_list[], int size, int mx,
 			key[0] = cmd_list[i].key[mode];
 			key[1] = '\0';
 		}
-		strnfmt(cmd_name, 80, "%s (%s)",  cmd_list[i].desc, key[mode]);
+		strnfmt(cmd_name, 80, "%s (%s)",  cmd_list[i].desc, key);
 		menu_dynamic_add(m, cmd_name, i+1);
 	}
 
