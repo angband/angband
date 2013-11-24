@@ -979,10 +979,12 @@ static void load_sound_prefs(void)
 
 	for (i = 0; i < MSG_MAX; i++)
 	{
-		/* Ignore empty sound strings */
-		if (!angband_sound_name[i][0]) continue;
+		const char *sound_name = message_sound_name(i);
 
-		GetPrivateProfileString("Sound", angband_sound_name[i], "", tmp, sizeof(tmp), ini_path);
+		/* Ignore empty sound strings */
+		if (!sound_name[0]) continue;
+
+		GetPrivateProfileString("Sound", sound_name, "", tmp, sizeof(tmp), ini_path);
 
 		num = tokenize_whitespace(tmp, SAMPLE_MAX, zz);
 
