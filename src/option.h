@@ -74,7 +74,7 @@ extern const int option_page[OPT_PAGE_MAX][OPT_PAGE_PER];
 #define OPT_auto_more				19
 #define OPT_hp_changes_color		20
 #define OPT_mouse_movement			21
-#define OPT_mouse_buttons			22
+/* XXX 22 */
 #define OPT_notify_recharge			23
 
 #define OPT_cheat_hear				(OPT_CHEAT+1)

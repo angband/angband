@@ -72,7 +72,6 @@ X11MAINFILES = main-x11.o
 ANGFILES = \
 	attack.o \
 	birth.o \
-	button.o \
 	cave.o \
 	cmd-cave.o \
 	cmd-context.o \

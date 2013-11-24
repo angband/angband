@@ -17,7 +17,6 @@
  */
 
 #include "angband.h"
-#include "button.h"
 #include "cmds.h"
 #include "target.h"
 #include "files.h"
@@ -276,27 +275,6 @@ ui_event inkey_ex(void)
 		if(inkey_scan && ke.type == EVT_NONE)
 			/* The keypress timed out. We need to stop here. */
 			break;
-
-		/* Handle mouse buttons */
-		if ((ke.type == EVT_MOUSE) && (OPT(mouse_buttons)))
-		{
-			/* Check to see if we've hit a button */
-			/* Assuming text buttons here for now - this would have to
-			 * change for GUI buttons */
-			char key = button_get_key(ke.mouse.x, ke.mouse.y);
-
-			if (key)
-			{
-				/* Rewrite the event */
-				/* XXXmacro button implementation needs updating */
-				ke.type = EVT_BUTTON;
-				ke.key.code = key;
-				ke.key.mods = 0;
-
-				/* Done */
-				break;
-			}
-		}
 
 		/* Treat back-quote as escape */
 		if (ke.key.code == '`')
@@ -1513,34 +1491,16 @@ bool get_check(const char *prompt)
 
 	char buf[80];
 
-	bool repeat = FALSE;
-  
 	/* Paranoia XXX XXX XXX */
 	message_flush();
 
 	/* Hack -- Build a "useful" prompt */
 	strnfmt(buf, 78, "%.70s[y/n] ", prompt);
 
-	/* Hack - kill the repeat button */
-	if (button_kill('n')) repeat = TRUE;
-	
-	/* Make some buttons */
-	button_add("[y]", 'y');
-	button_add("[n]", 'n');
-	redraw_stuff(p_ptr);
-  
 	/* Prompt for it */
 	prt(buf, 0, 0);
 	ke = inkey_m();
 
-	/* Kill the buttons */
-	button_kill('y');
-	button_kill('n');
-
-	/* Hack - restore the repeat button */
-	if (repeat) button_add("[Rpt]", 'n');
-	redraw_stuff(p_ptr);
-  
 	/* Erase the prompt */
 	prt("", 0, 0);
 
@@ -1566,28 +1526,15 @@ bool get_check(const char *prompt)
  */
 char get_char(const char *prompt, const char *options, size_t len, char fallback)
 {
-	size_t i;
 	struct keypress key;
-	char button[4], buf[80];
-	bool repeat = FALSE;
-  
+	char buf[80];
+
 	/* Paranoia XXX XXX XXX */
 	message_flush();
 
 	/* Hack -- Build a "useful" prompt */
 	strnfmt(buf, 78, "%.70s[%s] ", prompt, options);
 
-	/* Hack - kill the repeat button */
-	if (button_kill('n')) repeat = TRUE;
-	
-	/* Make some buttons */
-	for (i = 0; i < len; i++)
-	{
-		strnfmt(button, 4, "[%c]", options[i]);
-		button_add(button, options[i]);
-	}
-	redraw_stuff(p_ptr);
-  
 	/* Prompt for it */
 	prt(buf, 0, 0);
 
@@ -1601,13 +1548,6 @@ char get_char(const char *prompt, const char *options, size_t len, char fallback
 	if (!strchr(options, (char)key.code))
 		key.code = fallback;
 
-	/* Kill the buttons */
-	for (i = 0; i < len; i++) button_kill(options[i]);
-
-	/* Hack - restore the repeat button */
-	if (repeat) button_add("[Rpt]", 'n');
-	redraw_stuff(p_ptr);
-  
 	/* Erase the prompt */
 	prt("", 0, 0);
 

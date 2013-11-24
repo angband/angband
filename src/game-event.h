@@ -24,7 +24,6 @@ typedef enum game_event_type
 	EVENT_DETECTIONSTATUS,	/* Trap detection status */
 	EVENT_STATE,		/* The three 'R's: Resting, Repeating and
 				   Searching */
-	EVENT_MOUSEBUTTONS,     /* Displayed mouse buttons need changing */
 
 	EVENT_PLAYERMOVED,
 	EVENT_SEEFLOOR,         /* When the player would "see" floor objects */

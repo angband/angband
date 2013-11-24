@@ -18,7 +18,6 @@
 
 #include "angband.h"
 #include "buildid.h"
-#include "button.h"
 #include "cave.h"
 #include "cmds.h"
 #include "game-event.h"
@@ -2706,11 +2705,6 @@ static errr init_other(void)
 	l_list = C_ZNEW(z_info->r_max, monster_lore);
 
 
-	/*** Prepare mouse buttons ***/
-
-	button_init(button_add_text, button_kill_text);
-
-
 	/*** Prepare quest array ***/
 
 	quest_init();
@@ -2986,7 +2980,6 @@ void cleanup_angband(void)
 	if (stores) free_stores();
 
 	quest_free();
-	button_free();
 
 	FREE(p_ptr->inventory);
 

@@ -255,7 +255,7 @@ enum
 #define PR_MONSTER		0x00400000L /* Display monster recall */
 #define PR_OBJECT		0x00800000L /* Display object recall */
 #define PR_MONLIST		0x01000000L /* Display monster list */
-#define PR_BUTTONS      0x02000000L /* Display mouse buttons */
+/* xxx */
 #define PR_ITEMLIST     0x04000000L /* Display item list */
 
 /* Display Basic Info */
