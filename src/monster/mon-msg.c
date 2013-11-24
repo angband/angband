@@ -472,7 +472,20 @@ static void flush_monster_messages(bool delay, byte delay_tag)
 			case MON_MSG_DISENTEGRATES:
 			case MON_MSG_FREEZE_SHATTER:
 			case MON_MSG_DISSOLVE:
+			{
+				/* Assume normal death sound */
 				type = MSG_KILL;
+
+				/* Play a special sound if the monster was unique */
+				if (r_ptr != NULL && rf_has(r_ptr->flags, RF_UNIQUE)) {
+					if (r_ptr->base == lookup_monster_base("Morgoth"))
+						type = MSG_KILL_KING;
+					else
+						type = MSG_KILL_UNIQUE;
+				}
+				break;
+			}
+
 		}
 
 		/* Show the message */
