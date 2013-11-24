@@ -63,15 +63,15 @@ static struct cmd_info cmd_item[] =
 	{ "Take off/unwield an item", { 't', 'T'}, CMD_TAKEOFF },
 	{ "Examine an item", { 'I' }, CMD_NULL, textui_obj_examine },
 	{ "Drop an item", { 'd' }, CMD_DROP },
-	{ "Fire your missile weapon", { 'f', 't' }, CMD_FIRE, NULL, player_can_fire_msg },
+	{ "Fire your missile weapon", { 'f', 't' }, CMD_FIRE, NULL, player_can_fire_prereq },
 	{ "Use a staff", { 'u', 'Z' }, CMD_USE_STAFF },
 	{ "Aim a wand", {'a', 'z'}, CMD_USE_WAND },
 	{ "Zap a rod", {'z', 'a'}, CMD_USE_ROD },
 	{ "Activate an object", {'A' }, CMD_ACTIVATE },
 	{ "Eat some food", { 'E' }, CMD_EAT },
 	{ "Quaff a potion", { 'q' }, CMD_QUAFF },
-	{ "Read a scroll", { 'r' }, CMD_READ_SCROLL, NULL, player_can_read_msg },
-	{ "Fuel your light source", { 'F' }, CMD_REFILL, NULL, player_can_refuel_msg },
+	{ "Read a scroll", { 'r' }, CMD_READ_SCROLL, NULL, player_can_read_prereq },
+	{ "Fuel your light source", { 'F' }, CMD_REFILL, NULL, player_can_refuel_prereq },
 	{ "Use an item", { 'U', 'X' }, CMD_USE_ANY }
 };
 
@@ -108,9 +108,9 @@ static struct cmd_info cmd_item_manage[] =
 static struct cmd_info cmd_info[] =
 {
 	{ "Browse a book", { 'b', 'P' }, CMD_BROWSE_SPELL, textui_spell_browse },
-	{ "Gain new spells", { 'G' }, CMD_STUDY_BOOK, textui_obj_study, player_can_study_msg },
-	{ "Cast a spell", { 'm' }, CMD_CAST, textui_obj_cast, player_can_cast_msg },
-	{ "Cast a spell", { 'p' }, CMD_CAST, textui_obj_cast, player_can_cast_msg },
+	{ "Gain new spells", { 'G' }, CMD_STUDY_BOOK, textui_obj_study, player_can_study_prereq },
+	{ "Cast a spell", { 'm' }, CMD_CAST, textui_obj_cast, player_can_cast_prereq },
+	{ "Cast a spell", { 'p' }, CMD_CAST, textui_obj_cast, player_can_cast_prereq },
 	{ "Full dungeon map", { 'M' }, CMD_NULL, do_cmd_view_map },
 	{ "Toggle ignoring of items", { 'K', 'O' }, CMD_NULL, textui_cmd_toggle_ignore },
 	{ "Display visible item list", { ']' }, CMD_NULL, do_cmd_itemlist },

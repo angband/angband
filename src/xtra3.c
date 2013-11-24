@@ -760,10 +760,10 @@ static size_t prt_state(int row, int col)
 
 
 	/* Resting */
-	if (player_is_resting())
+	if (player_is_resting(p_ptr))
 	{
 		int i;
-		int n = player_resting_count();
+		int n = player_resting_count(p_ptr);
 
 		/* Start with "Rest" */
 		my_strcpy(text, "Rest      ", sizeof(text));
@@ -891,7 +891,7 @@ static size_t prt_study(int row, int col)
 	{
 		/* If the player does not carry a book with spells they can study,
 		   the message is displayed in a darker colour */
-		if (!player_can_study_book())
+		if (!player_book_has_unlearned_spells(p_ptr))
 			attr = TERM_L_DARK;
 
 		/* Print study message */

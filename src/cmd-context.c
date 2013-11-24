@@ -273,7 +273,7 @@ int context_menu_player(int mx, int my)
 	ADD_LABEL("Use", CMD_USE_ANY, MN_ROW_VALID);
 
 	/* if player can cast, add casting option */
-	if (player_can_cast()) {
+	if (player_can_cast(p_ptr, FALSE)) {
 		ADD_LABEL("Cast", CMD_CAST, MN_ROW_VALID);
 	}
 
@@ -479,7 +479,7 @@ int context_menu_cave(struct cave *c, int y, int x, int adjacent, int mx, int my
 
 	ADD_LABEL("Use Item On", CMD_USE_ANY, MN_ROW_VALID);
 
-	if (player_can_cast()) {
+	if (player_can_cast(p_ptr, FALSE)) {
 		ADD_LABEL("Cast On", CMD_CAST, MN_ROW_VALID);
 	}
 
@@ -535,7 +535,7 @@ int context_menu_cave(struct cave *c, int y, int x, int adjacent, int mx, int my
 		ADD_LABEL("Run Towards", CMD_RUN, MN_ROW_VALID);
 	}
 
-	if (player_can_fire()) {
+	if (player_can_fire(p_ptr, FALSE)) {
 		ADD_LABEL("Fire On", CMD_FIRE, MN_ROW_VALID);
 	}
 
@@ -740,18 +740,18 @@ int context_menu_object(const object_type *o_ptr, const int slot)
 	menu_dynamic_add_label(m, "Inspect", 'I', MENU_VALUE_INSPECT, labels);
 
 	if (obj_can_browse(o_ptr)) {
-		if (obj_can_cast_from(o_ptr) && player_can_cast()) {
+		if (obj_can_cast_from(o_ptr) && player_can_cast(p_ptr, FALSE)) {
 			ADD_LABEL("Cast", CMD_CAST, MN_ROW_VALID);
 		}
 
-		if (obj_can_study(o_ptr) && player_can_study()) {
+		if (obj_can_study(o_ptr) && player_can_study(p_ptr, FALSE)) {
 			cmd_code study_cmd = player_has(PF_CHOOSE_SPELLS) ? CMD_STUDY_SPELL : CMD_STUDY_BOOK;
 			/* Hack - Use the STUDY_BOOK command key so that we get the correct command key. */
 			cmdkey = cmd_lookup_key_unktrl(CMD_STUDY_BOOK, mode);
 			menu_dynamic_add_label(m, "Study", cmdkey, study_cmd, labels);
 		}
 
-		if (player_can_read()) {
+		if (player_can_read(p_ptr, FALSE)) {
 			ADD_LABEL("Browse", CMD_BROWSE_SPELL, MN_ROW_VALID);
 		}
 	}
@@ -769,7 +769,7 @@ int context_menu_object(const object_type *o_ptr, const int slot)
 			ADD_LABEL("Use", CMD_USE_STAFF, valid);
 		}
 		else if (obj_is_scroll(o_ptr)) {
-			menu_row_validity_t valid = (player_can_read()) ? MN_ROW_VALID : MN_ROW_INVALID;
+			menu_row_validity_t valid = (player_can_read(p_ptr, FALSE)) ? MN_ROW_VALID : MN_ROW_INVALID;
 			ADD_LABEL("Read", CMD_READ_SCROLL, valid);
 		}
 		else if (obj_is_potion(o_ptr)) {
