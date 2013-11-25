@@ -1312,7 +1312,7 @@ static errr graphics_nuke(void)
 
 
 /* Arbitary limit on number of possible samples per event */
-#define MAX_SAMPLES            8
+#define MAX_SAMPLES            16
 
 /* Struct representing all data for a set of event samples */
 typedef struct
@@ -1387,11 +1387,7 @@ static void load_sounds(void)
 		search[0] = '\0';
 
 		/* Make sure this is a valid event name */
-		for (event = MSG_MAX - 1; event >= 0; event--)
-		{
-			if (strcmp(msg_name, angband_sound_name[event]) == 0)
-				break;
-		}
+		event = message_lookup_by_sound_name(msg_name);
 		if (event < 0) continue;
 
 		/* Advance the sample list pointer so it's at the beginning of text */

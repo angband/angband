@@ -34,7 +34,7 @@ static bool no_cache_audio = FALSE;
 static bool use_mp3 = FALSE;
 
 /* Arbitary limit on number of samples per event */
-#define MAX_SAMPLES      8
+#define MAX_SAMPLES      16
 
 /* Struct representing all data about an event sample */
 typedef struct
@@ -178,11 +178,7 @@ static bool sound_sdl_init(bool no_cache)
 
 
 		/* Make sure this is a valid event name */
-		for (event = MSG_MAX - 1; event >= 0; event--)
-		{
-			if (strcmp(msg_name, angband_sound_name[event]) == 0)
-			    break;
-		}
+		event = message_lookup_by_sound_name(msg_name);
         if (event < 0) continue;
 
 		/* Advance the sample list pointer so it's at the beginning of text */
