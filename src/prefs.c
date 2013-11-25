@@ -242,8 +242,10 @@ void dump_features(ang_file *fff)
 			wint_t chr = f_ptr->x_char[j];
 
 			const char *light = NULL;
-			if (j == FEAT_LIGHTING_BRIGHT)
-				light = "bright";
+			if (j == FEAT_LIGHTING_TORCH)
+				light = "torch";
+			if (j == FEAT_LIGHTING_LOS)
+				light = "los";
 			else if (j == FEAT_LIGHTING_LIT)
 				light = "lit";
 			else if (j == FEAT_LIGHTING_DARK)
@@ -651,8 +653,10 @@ static enum parser_error parse_prefs_f(struct parser *p)
 		return PARSE_ERROR_OUT_OF_BOUNDS;
 
 	lighting = parser_getsym(p, "lighting");
-	if (streq(lighting, "bright"))
-		light_idx = FEAT_LIGHTING_BRIGHT;
+	if (streq(lighting, "torch"))
+		light_idx = FEAT_LIGHTING_TORCH;
+	else if (streq(lighting, "los"))
+		light_idx = FEAT_LIGHTING_LOS;
 	else if (streq(lighting, "lit"))
 		light_idx = FEAT_LIGHTING_LIT;
 	else if (streq(lighting, "dark"))

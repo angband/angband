@@ -155,15 +155,16 @@ typedef struct feature
 	byte d_attr;   /**< Default feature attribute */
 	wchar_t d_char;   /**< Default feature character */
 
-	byte x_attr[3];   /**< Desired feature attribute (set by user/pref file) */
-	wchar_t x_char[3];   /**< Desired feature character (set by user/pref file) */
+	byte x_attr[4];   /**< Desired feature attribute (set by user/pref file) */
+	wchar_t x_char[4];   /**< Desired feature character (set by user/pref file) */
 } feature_type;
 
 enum grid_light_level
 {
-	FEAT_LIGHTING_BRIGHT = 0,
-	FEAT_LIGHTING_LIT,
-	FEAT_LIGHTING_DARK,
+	FEAT_LIGHTING_LOS = 0,   /* line of sight */
+	FEAT_LIGHTING_TORCH,     /* torchlight */
+	FEAT_LIGHTING_LIT,       /* permanently lit (when not in line of sight) */
+	FEAT_LIGHTING_DARK,      /* dark */
 	FEAT_LIGHTING_MAX
 };
 

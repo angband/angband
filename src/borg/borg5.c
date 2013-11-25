@@ -3227,7 +3227,7 @@ static void borg_update_map(void)
                     }
 
 					/* Handle Glowing floors */
-                    else if (g.lighting == FEAT_LIGHTING_BRIGHT)
+                    else if (g.lighting == FEAT_LIGHTING_LIT)
 					{
 							/* Perma Glowing Grid */
 							ag->info |= BORG_GLOW;
@@ -3236,7 +3236,7 @@ static void borg_update_map(void)
 							ag->info &= ~BORG_DARK;
 					}
 
-                    /* torch-lit grids */
+                    /* torch-lit or line of sight grids */
                     else
                     {
 						ag->info |= BORG_LIGHT;
