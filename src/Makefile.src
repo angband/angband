@@ -97,6 +97,7 @@ ANGFILES = \
 	monster/mon-init.o \
 	monster/melee1.o \
 	monster/melee2.o \
+	monster/mon-list.o \
 	monster/mon-lore.o \
 	monster/mon-make.o \
 	monster/mon-msg.o \
@@ -109,6 +110,7 @@ ANGFILES = \
 	object/obj-desc.o \
 	object/obj-flag.o \
 	object/obj-info.o \
+	object/obj-list.o \
 	object/obj-make.o \
 	object/obj-power.o \
 	object/obj-ui.o \

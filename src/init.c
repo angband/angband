@@ -28,9 +28,11 @@
 #include "keymap.h"
 #include "init.h"
 #include "monster/mon-init.h"
+#include "monster/mon-list.h"
 #include "monster/mon-msg.h"
 #include "monster/mon-util.h"
 #include "object/object.h"
+#include "object/obj-list.h"
 #include "object/slays.h"
 #include "object/tvalsval.h"
 #include "option.h"
@@ -2686,6 +2688,9 @@ static errr init_other(void)
 	/* Initialize the "message" package */
 	(void)messages_init();
 
+	monster_list_init();
+	object_list_init();
+
 	/*** Prepare grid arrays ***/
 
 	cave = cave_new();
@@ -3001,6 +3006,9 @@ void cleanup_angband(void)
 
 	/* Free the "quarks" */
 	quarks_free();
+
+	monster_list_finalize();
+	object_list_finalize();
 
 	cleanup_parser(&k_parser);
 	cleanup_parser(&kb_parser);
