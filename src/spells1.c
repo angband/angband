@@ -2590,7 +2590,8 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 	/* Handle polymorph */
 	else if (do_poly) {
 		/* Default -- assume no polymorph */
-		m_note = MON_MSG_UNAFFECTED;
+		if (typ == GF_OLD_POLY)
+			m_note = MON_MSG_UNAFFECTED;
 
 		/* Uniques cannot be polymorphed */
 		if (!rf_has(m_ptr->race->flags, RF_UNIQUE)) {
