@@ -27,6 +27,7 @@
 #include "generate.h"
 #include "grafmode.h"
 #include "init.h"
+#include "monster/mon-list.h"
 #include "monster/mon-make.h"
 #include "monster/mon-spell.h"
 #include "monster/mon-util.h"
@@ -1259,6 +1260,11 @@ static void dungeon(struct cave *c)
 	/* Disturb */
 	disturb(p_ptr, 1, 0);
 
+	/*
+	 * Because changing levels doesn't take a turn and PR_MONLIST might not be
+	 * set for a few game turns, manually force an update on level change.
+	 */
+	monster_list_force_subwindow_update();
 
 	/* Track maximum player level */
 	if (p_ptr->max_lev < p_ptr->lev)

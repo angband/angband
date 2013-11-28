@@ -26,5 +26,6 @@ void monster_list_init(void);
 void monster_list_finalize(void);
 void monster_list_show_subwindow(int height, int width);
 void monster_list_show_interactive(int height, int width);
+void monster_list_force_subwindow_update(void);
 
 #endif /* MONSTER_LIST_H */

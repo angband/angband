@@ -616,3 +616,15 @@ void monster_list_show_interactive(int height, int width)
 	textblock_free(tb);
 	monster_list_free(list);
 }
+
+/**
+ * Force an update to the monster list subwindow.
+ *
+ * There are conditions that monster_list_reset() can't catch, so we set the turn
+ * an invalid value to force the list to update.
+ */
+void monster_list_force_subwindow_update(void)
+{
+	monster_list_t *list = monster_list_shared_instance();
+	list->creation_turn = -1;
+}
