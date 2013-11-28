@@ -480,6 +480,12 @@ void do_cmd_equip(void)
 	int item;
 	int ret = 3;
 
+	/* Check inventory, since get_item() will default to inventory list when equipment is empty. */
+	if (!p_ptr->inventory[0].kind) {
+		msg("You are not wielding or wearing anything.");
+		return;
+	}
+
 	/* Hack -- Start in "inventory" mode */
 	p_ptr->command_wrk = (USE_EQUIP);
 
