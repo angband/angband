@@ -266,6 +266,62 @@ depgen:
  list-trap-flags.h spells.h list-gf-types.h files.h game-event.h \
  generate.h monster/mon-make.h angband.h monster/mon-spell.h \
  monster/list-spell-effects.h object/tvalsval.h z-queue.h
+./gen-cave.o: gen-cave.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
+ defines.h z-file.h z-util.h z-rand.h z-term.h ui-event.h z-quark.h \
+ z-msg.h config.h cave.h z-type.h list-square-flags.h \
+ list-terrain-flags.h game-cmd.h init.h parser.h monster/constants.h \
+ monster/list-blow-methods.h monster/list-blow-effects.h \
+ monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
+ z-bitflag.h z-rand.h cave.h monster/mon-timed.h object/obj-flag.h \
+ z-file.h z-textblock.h z-file.h defines.h z-quark.h game-cmd.h \
+ object/list-object-flags.h monster/list-mon-spells.h object/obj-flag.h \
+ object/object.h option.h player/player.h guid.h object/object.h option.h \
+ list-player-flags.h store.h ui.h z-textblock.h externs.h trap.h \
+ list-trap-flags.h spells.h list-gf-types.h files.h game-event.h \
+ generate.h monster/mon-make.h angband.h monster/mon-spell.h \
+ monster/list-spell-effects.h object/tvalsval.h z-queue.h
+./gen-monster.o: gen-monster.c angband.h h-basic.h z-bitflag.h z-form.h \
+ z-virt.h defines.h z-file.h z-util.h z-rand.h z-term.h ui-event.h \
+ z-quark.h z-msg.h config.h cave.h z-type.h list-square-flags.h \
+ list-terrain-flags.h game-cmd.h init.h parser.h monster/constants.h \
+ monster/list-blow-methods.h monster/list-blow-effects.h \
+ monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
+ z-bitflag.h z-rand.h cave.h monster/mon-timed.h object/obj-flag.h \
+ z-file.h z-textblock.h z-file.h defines.h z-quark.h game-cmd.h \
+ object/list-object-flags.h monster/list-mon-spells.h object/obj-flag.h \
+ object/object.h option.h player/player.h guid.h object/object.h option.h \
+ list-player-flags.h store.h ui.h z-textblock.h externs.h trap.h \
+ list-trap-flags.h spells.h list-gf-types.h files.h game-event.h \
+ generate.h monster/mon-make.h angband.h monster/mon-spell.h \
+ monster/list-spell-effects.h object/tvalsval.h
+./gen-room.o: gen-room.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
+ defines.h z-file.h z-util.h z-rand.h z-term.h ui-event.h z-quark.h \
+ z-msg.h config.h cave.h z-type.h list-square-flags.h \
+ list-terrain-flags.h game-cmd.h init.h parser.h monster/constants.h \
+ monster/list-blow-methods.h monster/list-blow-effects.h \
+ monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
+ z-bitflag.h z-rand.h cave.h monster/mon-timed.h object/obj-flag.h \
+ z-file.h z-textblock.h z-file.h defines.h z-quark.h game-cmd.h \
+ object/list-object-flags.h monster/list-mon-spells.h object/obj-flag.h \
+ object/object.h option.h player/player.h guid.h object/object.h option.h \
+ list-player-flags.h store.h ui.h z-textblock.h externs.h trap.h \
+ list-trap-flags.h spells.h list-gf-types.h files.h game-event.h \
+ generate.h monster/mon-make.h angband.h monster/mon-spell.h \
+ monster/list-spell-effects.h object/tvalsval.h z-queue.h
+./gen-util.o: gen-util.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
+ defines.h z-file.h z-util.h z-rand.h z-term.h ui-event.h z-quark.h \
+ z-msg.h config.h cave.h z-type.h list-square-flags.h \
+ list-terrain-flags.h game-cmd.h init.h parser.h monster/constants.h \
+ monster/list-blow-methods.h monster/list-blow-effects.h \
+ monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
+ z-bitflag.h z-rand.h cave.h monster/mon-timed.h object/obj-flag.h \
+ z-file.h z-textblock.h z-file.h defines.h z-quark.h game-cmd.h \
+ object/list-object-flags.h monster/list-mon-spells.h object/obj-flag.h \
+ object/object.h option.h player/player.h guid.h object/object.h option.h \
+ list-player-flags.h store.h ui.h z-textblock.h externs.h trap.h \
+ list-trap-flags.h spells.h list-gf-types.h files.h game-event.h \
+ generate.h monster/mon-make.h angband.h monster/mon-spell.h \
+ monster/list-spell-effects.h object/tvalsval.h z-queue.h
 ./grafmode.o: grafmode.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
  defines.h z-file.h z-util.h z-rand.h z-term.h ui-event.h z-quark.h \
  z-msg.h config.h cave.h z-type.h list-square-flags.h \

@@ -88,6 +88,10 @@ ANGFILES = \
 	game-cmd.o \
 	game-event.o \
 	generate.o \
+	gen-cave.o \
+	gen-monster.o \
+	gen-room.o \
+	gen-util.o \
 	grafmode.o \
 	guid.o \
 	history.o \

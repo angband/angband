@@ -111,6 +111,16 @@ enum mon_spell_type {
 #define rsf_inter(f1, f2)      flag_inter(f1, f2, RSF_SIZE)
 #define rsf_diff(f1, f2)       flag_diff(f1, f2, RSF_SIZE)
 
+/**
+ * Breath attacks.
+ */
+#define RSF_BREATH_MASK \
+        RSF_BR_ACID, RSF_BR_ELEC, RSF_BR_FIRE, RSF_BR_COLD, \
+        RSF_BR_POIS, RSF_BR_PLAS, RSF_BR_LIGHT, RSF_BR_DARK, \
+        RSF_BR_CONF, RSF_BR_SOUN, RSF_BR_SHAR, RSF_BR_INER, \
+        RSF_BR_GRAV, RSF_BR_WALL, RSF_BR_NEXU, RSF_BR_NETH, \
+        RSF_BR_CHAO, RSF_BR_DISE, RSF_BR_TIME, RSF_BR_MANA
+
 
 /** Structures **/
 
