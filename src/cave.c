@@ -823,7 +823,7 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 	{
 		g->f_idx = FEAT_NONE;
 	}
-	else if ((info & CAVE_GLOW))
+	else if (sqinfo_has(cave->info[y][x], SQUARE_GLOW))
 	{
 		g->lighting = FEAT_LIGHTING_LIT;
 	}
