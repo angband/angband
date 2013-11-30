@@ -4,6 +4,13 @@
 #include "h-basic.h"
 #include "defines.h"
 
+/*
+ * Assumed maximum dungeon level.  This value is used for various 
+ * calculations involving object and monster creation.  It must be at least 
+ * 100. Setting it below 128 may prevent the creation of some objects.
+ */
+#define MAX_RAND_DEPTH	128
+
 /**
  * A struct representing a strategy for making a dice roll.
  *
