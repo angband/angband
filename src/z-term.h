@@ -13,6 +13,7 @@
 
 #include "h-basic.h"
 #include "ui-event.h"
+#include "z-msg.h"
 
 
 /**
@@ -301,8 +302,8 @@ struct term
  * The "(R,G,B)" codes are given in "fourths" of the "maximal" value,
  * and should "gamma corrected" on most (non-Macintosh) machines.
  */
-#define TERM_DARK     0  /* d */    /* 0 0 0 */
-#define TERM_WHITE    1  /* w */    /* 4 4 4 */
+#define TERM_DARK     COLOR_BACKGROUND  /* d */    /* 0 0 0 */
+#define TERM_WHITE    COLOR_FOREGROUND  /* w */    /* 4 4 4 */
 #define TERM_SLATE    2  /* s */    /* 2 2 2 */
 #define TERM_ORANGE   3  /* o */    /* 4 2 0 */
 #define TERM_RED      4  /* r */    /* 3 0 0 */

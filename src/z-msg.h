@@ -5,6 +5,8 @@
 
 /*** Constants ***/
 
+#define COLOR_BACKGROUND    0
+#define COLOR_FOREGROUND    1
 
 /*** Message constants ***/
 

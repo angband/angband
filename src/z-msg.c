@@ -15,7 +15,6 @@
  *    and/or other materials provided with the distribution.
  */
 #include "z-virt.h"
-#include "z-term.h"
 #include "z-util.h"
 #include "z-msg.h"
 
@@ -157,7 +156,7 @@ u16b message_type(u16b age)
 byte message_color(u16b age)
 {
 	message_t *m = message_get(age);
-	return (m ? message_type_color(m->type) : TERM_WHITE);
+	return (m ? message_type_color(m->type) : COLOR_FOREGROUND);
 }
 
 
@@ -192,7 +191,7 @@ void message_color_define(u16b type, byte color)
 byte message_type_color(u16b type)
 {
 	msgcolor_t *mc;
-	byte color = TERM_WHITE;
+	byte color = COLOR_FOREGROUND;
 
 	if (messages)
 	{
@@ -201,7 +200,7 @@ byte message_type_color(u16b type)
 		while (mc && mc->type != type)
 			mc = mc->next;
 
-		if (mc && (mc->color != TERM_DARK))
+		if (mc && (mc->color != COLOR_BACKGROUND))
 			color = mc->color;
 	}
 
