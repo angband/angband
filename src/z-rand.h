@@ -2,7 +2,6 @@
 #define INCLUDED_Z_RAND_H
 
 #include "h-basic.h"
-#include "defines.h"
 
 /*
  * Assumed maximum dungeon level.  This value is used for various 

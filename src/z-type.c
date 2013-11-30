@@ -16,10 +16,6 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
-#include "h-basic.h"
-#include "z-form.h"
-#include "z-term.h"
-#include "ui.h"
 #include "z-type.h"
 #include "z-virt.h"
 

@@ -419,7 +419,7 @@ s16b m_bonus_calc(int max, int level, aspect bonus_aspect) {
 		case MAXIMISE:  return max;
 		case RANDOMISE: return m_bonus(max, level);
 		case MINIMISE:  return 0;
-		case AVERAGE:   return max * level / MAX_DEPTH;
+		case AVERAGE:   return max * level / MAX_RAND_DEPTH;
 	}
 
 	assert(0 && "Should never reach here");

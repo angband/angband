@@ -22,7 +22,6 @@
 #include "h-basic.h"
 #include "z-form.h"
 #include "z-virt.h"
-#include "defines.h"
 
 /* The basic datatype of bitflags */
 typedef byte bitflag;

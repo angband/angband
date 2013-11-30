@@ -55,25 +55,6 @@
 #define PANEL_WID 	((int)(BLOCK_WID / tile_width))
 
 
-/**
- * Number of text rows in each map screen, regardless of tile size
- */
-#define SCREEN_ROWS	(Term->hgt - ROW_MAP - 1) 
-
-/**
- * Number of grids in each screen (vertically)
- */
-#define SCREEN_HGT    ((int) (SCREEN_ROWS / tile_height))
-
-/**
- * Number of grids in each screen (horizontally)
- */
-#define SCREEN_WID	((int)((Term->wid - COL_MAP - 1) / tile_width))
-
-#define ROW_MAP			1
-#define COL_MAP			13
-
-
 /*
  * Number of grids in each dungeon (vertically)
  * Must be a multiple of SCREEN_HGT
