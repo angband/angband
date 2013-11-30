@@ -356,6 +356,8 @@ static void object_list_format_name(const object_list_entry_t *entry, char *line
 	/* Hack - these don't have a prefix when there is only one, so just pad with a space. */
 	switch (entry->object->kind->tval) {
 		case TV_SOFT_ARMOR:
+			has_singular_prefix = (entry->object->kind->sval == SV_ROBE);
+			break;
 		case TV_HARD_ARMOR:
 		case TV_DRAG_ARMOR:
 			has_singular_prefix = FALSE;
