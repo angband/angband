@@ -352,6 +352,7 @@ static void object_list_format_name(const object_list_entry_t *entry, char *line
 	char *chunk, *source;
 	size_t name_width = MIN(full_width, size);
 	bool has_singular_prefix;
+	byte old_number;
 
 	/* Hack - these don't have a prefix when there is only one, so just pad with a space. */
 	switch (entry->object->kind->tval) {
@@ -367,10 +368,18 @@ static void object_list_format_name(const object_list_entry_t *entry, char *line
 			break;
 	}
 
+	/*
+	 * Because each entry points to a specific object and not something more general, the
+	 * number of similar objects we counted has to be swapped in. This isn't an ideal way
+	 * to do this, but it's the easiest way until object_desc is more flexible.
+	 */
+	old_number = entry->object->number;
+	entry->object->number = entry->count;
 	object_desc(name, sizeof(name), entry->object, ODESC_PREFIX | ODESC_FULL);
+	entry->object->number = old_number;
 
 	/* The source string for strtok() needs to be set properly, depending on when we use it. */
-	if (!has_singular_prefix && entry->object->number == 1) {
+	if (!has_singular_prefix && entry->count == 1) {
 		chunk = " ";
 		source = name;
 	}
