@@ -20,12 +20,14 @@
  * Include the mid-level includes.
  */
 #include "z-bitflag.h"
+#include "z-color.h"
 #include "z-file.h"
 #include "z-form.h"
 #include "z-util.h"
 #include "z-virt.h"
 #include "z-rand.h"
 #include "z-term.h"
+#include "z-textblock.h"
 #include "z-quark.h"
 #include "z-msg.h"
 

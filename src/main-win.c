@@ -2684,7 +2684,6 @@ static void term_data_link(term_data *td)
 	t->wipe_hook = Term_wipe_win;
 	t->text_hook = Term_text_win;
 	t->pict_hook = Term_pict_win;
-	t->mbcs_hook = Term_mbstowcs_win;
 
 	/* Remember where we came from */
 	t->data = td;
@@ -2851,6 +2850,7 @@ static void init_windows(void)
 
 	term_data_link(td);
 	term_screen = &td->t;
+	text_mbcs_hook = Term_mbstowcs_win;
 
 	/* Activate the main window */
 	SetActiveWindow(td->w);

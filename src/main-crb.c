@@ -1958,7 +1958,6 @@ static void term_data_link(int i)
 	td->t->bigcurs_hook = Term_curs_mac;
 	td->t->text_hook = Term_text_mac;
 	td->t->pict_hook = Term_pict_mac;
-	td->t->mbcs_hook = Term_mbcs_mac;
 
 
 	td->t->never_bored = TRUE;
@@ -2433,6 +2432,7 @@ static void init_windows(void)
 
 	/* Main window */
 	td = &data[0];
+	text_mbcs_hook = Term_mbcs_mac;
 
 	/* Main window */
 	Term_activate(td->t);

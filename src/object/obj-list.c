@@ -497,7 +497,7 @@ static void object_list_format_section(const object_list_t *list, textblock *tb,
 			 * Hack - Because object name strings are UTF8, we have to add additional padding for
 			 * any raw bytes that might be consolidated into one displayed character.
 			 */
-			full_width += strlen(line_buffer) - Term_mbstowcs(NULL, line_buffer, 0);
+			full_width += strlen(line_buffer) - text_mbstowcs(NULL, line_buffer, 0);
 			line_attr = object_list_entry_line_attribute(&list->entries[entry_index]);
 			textblock_append_c(tb, line_attr, "%-*s%s\n", full_width, line_buffer, location);
 		}

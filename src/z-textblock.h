@@ -10,6 +10,9 @@ typedef struct textblock textblock;
 
 textblock *textblock_new(void);
 void textblock_free(textblock *tb);
+size_t (*text_mbcs_hook)(wchar_t *dest, const char *src, int n);
+size_t text_mbstowcs(wchar_t *dest, const char *src, int n);
+
 
 void textblock_append(textblock *tb, const char *fmt, ...);
 void textblock_append_c(textblock *tb, byte attr, const char *fmt, ...);

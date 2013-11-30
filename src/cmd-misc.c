@@ -291,7 +291,7 @@ void do_cmd_load_screen(void)
 		/* Show each row */
 		for (x = 0; x < 79; x++)
 		{
-			Term_mbstowcs(&c, &buf[x], 1);
+			text_mbstowcs(&c, &buf[x], 1);
 			/* Put the attr/char */
 			Term_draw(x, y, TERM_WHITE, c);
 		}

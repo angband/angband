@@ -6,6 +6,7 @@
 #include "history.h" /* history_add */
 #include "player/player.h"
 #include "birth.h" /* find_roman_suffix_start */
+#include "z-color.h" /* TERM_* */
 #include "z-util.h" /* my_strcpy */
 
 

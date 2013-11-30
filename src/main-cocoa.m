@@ -965,6 +965,7 @@ static int compare_advances(const void *ap, const void *bp)
     
     /* Prepare the windows */
     init_windows();
+	text_mbcs_hook = Term_mbcs_cocoa;
     
     /* Set up game event handlers */
     init_display();
@@ -2346,7 +2347,6 @@ static term *term_data_link(int i)
     newterm->curs_hook = Term_curs_cocoa;
     newterm->text_hook = Term_text_cocoa;
     newterm->pict_hook = Term_pict_cocoa;
-    newterm->mbcs_hook = Term_mbcs_cocoa;
     
     /* Global pointer */
     angband_term[i] = newterm;

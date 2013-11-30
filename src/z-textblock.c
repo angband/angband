@@ -21,7 +21,7 @@
  * wchar_t, since they are expected to display straight to screen. Conversion
  * from the incoming locale-encoded format is done in textblock_vappend_c().
  */
-#include "z-term.h"
+#include "z-color.h"
 #include "z-textblock.h"
 #include "z-virt.h"
 #include "z-form.h"
@@ -36,6 +36,9 @@ struct textblock {
 	size_t strlen;
 	size_t size;
 };
+
+size_t (*text_mbcs_hook)(wchar_t *dest, const char *src, int n) = NULL;
+
 
 
 /**
@@ -80,6 +83,17 @@ void textblock_resize_if_needed(textblock *tb, size_t additional_size)
 	}
 }
 
+/*
+ * Allow override of the multi-byte to wide char conversion
+ */
+size_t text_mbstowcs(wchar_t *dest, const char *src, int n)
+{
+	if (text_mbcs_hook)
+		return (*text_mbcs_hook)(dest, src, n);
+	else
+		return mbstowcs(dest, src, n);
+}
+
 static void textblock_vappend_c(textblock *tb, byte attr, const char *fmt,
 		va_list vp)
 {
@@ -110,11 +124,11 @@ static void textblock_vappend_c(textblock *tb, byte attr, const char *fmt,
 	}
 
 	/* Get extent of addition in wide chars */
-	new_length = Term_mbstowcs(NULL, temp_space, 0);
+	new_length = text_mbstowcs(NULL, temp_space, 0);
 	textblock_resize_if_needed(tb, new_length);
 
 	/* Convert to wide chars, into the text block buffer */
-	Term_mbstowcs(tb->text + tb->strlen, temp_space, tb->size - tb->strlen);
+	text_mbstowcs(tb->text + tb->strlen, temp_space, tb->size - tb->strlen);
 	memset(tb->attrs + tb->strlen, attr, new_length);
 	tb->strlen += new_length;
 	mem_free(temp_space);

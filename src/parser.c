@@ -346,7 +346,7 @@ enum parser_error parser_parse(struct parser *p, const char *line) {
 		}
 		else if (t == PARSE_T_CHAR)
 		{
-			Term_mbstowcs(&v->u.cval, tok, 1);
+			text_mbstowcs(&v->u.cval, tok, 1);
 		}
 		else if (t == PARSE_T_SYM || t == PARSE_T_STR)
 		{
