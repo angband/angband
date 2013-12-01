@@ -471,7 +471,7 @@ static void grid_get_attr(grid_data *g, int *a)
 				*a = TERM_L_DARK;
 		}
 		else if (feat_is_magma(g->f_idx) || feat_is_quartz(g->f_idx)) {
-			if (g->lighting == FEAT_LIGHTING_DARK) {
+			if (!g->in_view) {
 				*a = TERM_L_DARK;
 			}
 		}
