@@ -3025,11 +3025,16 @@ static void process_monster(struct cave *c, struct monster *m_ptr)
 					/* Get the names of the monsters involved */
 					char m1_name[80];
 					char n_name[80];
-					monster_desc(m1_name, sizeof(m1_name), m_ptr, MDESC_CAPITAL | MDESC_IND_HID);
+					monster_desc(m1_name, sizeof(m1_name), m_ptr, MDESC_IND_HID);
 					monster_desc(n_name, sizeof(n_name), n_ptr, MDESC_IND_HID);
+					my_strcap(m1_name);
 
 					/* Allow movement */
 					do_move = TRUE;
+
+					/* Reveal mimics */
+					if (is_mimicking(n_ptr))
+						become_aware(n_ptr);
 
 					/* Monster ate another monster */
 					if (kill_ok) {
