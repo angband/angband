@@ -147,6 +147,9 @@ static bool object_list_should_ignore_object(const object_type *object)
 	if (object->kind == NULL)
 		return TRUE;
 
+	if (!object->marked)
+		return TRUE;
+
 	if (!is_unknown(object) && squelch_item_ok(object))
 		return TRUE;
 
@@ -161,10 +164,7 @@ static bool object_list_should_ignore_object(const object_type *object)
  */
 static void object_list_collect(object_list_t *list)
 {
-	const int dungeon_hgt = p_ptr->depth == 0 ? TOWN_HGT : DUNGEON_HGT;
-	const int dungeon_wid = p_ptr->depth == 0 ? TOWN_WID : DUNGEON_WID;
-	int floor_list[MAX_FLOOR_STACK];
-	int x, y;
+	int item;
 
 	if (list == NULL || list->entries == NULL)
 		return;
@@ -172,57 +172,51 @@ static void object_list_collect(object_list_t *list)
 	if (!object_list_needs_update(list))
 		return;
 
-	/* Scan each object in each stack in each square of the dungeon. */
-	for (y = 0; y < dungeon_hgt; y++) {
-		for (x = 0; x < dungeon_wid; x++) {
-			int stack_count = scan_floor(floor_list, MAX_FLOOR_STACK, y, x, 0x0A);
+	/* Scan each object in the dungeon. */
+	for (item = 0; item < z_info->o_max; item++) {
+		object_type *object = object_byid(item);
+		object_list_entry_t *entry = NULL;
+		int entry_index;
+		int current_distance;
+		int entry_distance;
 
-			for (int stack_item = 0; stack_item < stack_count; stack_item++) {
-				object_type *object = object_byid(floor_list[stack_item]);
-				object_list_entry_t *entry = NULL;
-				int entry_index;
-				int current_distance;
-				int entry_distance;
+		if (object_list_should_ignore_object(object))
+			continue;
 
-				if (object_list_should_ignore_object(object))
-					continue;
-
-				/* Find or add a list entry. */
-				for (entry_index = 0; entry_index < (int)list->entries_size; entry_index++) {
-					if (list->entries[entry_index].object == NULL) {
-						/* We found an empty slot, so add this object here. */
-						list->entries[entry_index].object = object;
-						list->entries[entry_index].count = 0;
-						list->entries[entry_index].dy = y - p_ptr->py;
-						list->entries[entry_index].dx = x - p_ptr->px;
-						entry = &list->entries[entry_index];
-						break;
-					}
-					else if (!is_unknown(object) && object_similar(object, list->entries[entry_index].object, OSTACK_LIST)) {
-						/* We found a matching object and we'll use that. */
-						entry = &list->entries[entry_index];
-						break;
-					}
-				}
-
-				if (entry == NULL)
-					return;
-
-				/* We only know the number of objects if we've actually seen them. */
-				if (object->marked == MARK_SEEN)
-					entry->count += object->number;
-				else
-					entry->count = 1;
-
-				/* Store the distance to the object in the stack that is closest to the player. */
-				current_distance = (y - p_ptr->py) * (y - p_ptr->py) + (x - p_ptr->px) * (x - p_ptr->px);
-				entry_distance = entry->dy * entry->dy + entry->dx * entry->dx;
-
-				if (current_distance < entry_distance) {
-					entry->dy = y - p_ptr->py;
-					entry->dx = x - p_ptr->px;
-				}
+		/* Find or add a list entry. */
+		for (entry_index = 0; entry_index < (int)list->entries_size; entry_index++) {
+			if (list->entries[entry_index].object == NULL) {
+				/* We found an empty slot, so add this object here. */
+				list->entries[entry_index].object = object;
+				list->entries[entry_index].count = 0;
+				list->entries[entry_index].dy = object->iy - p_ptr->py;
+				list->entries[entry_index].dx = object->ix - p_ptr->px;
+				entry = &list->entries[entry_index];
+				break;
 			}
+			else if (!is_unknown(object) && object_similar(object, list->entries[entry_index].object, OSTACK_LIST)) {
+				/* We found a matching object and we'll use that. */
+				entry = &list->entries[entry_index];
+				break;
+			}
+		}
+
+		if (entry == NULL)
+			return;
+
+		/* We only know the number of objects if we've actually seen them. */
+		if (object->marked == MARK_SEEN)
+			entry->count += object->number;
+		else
+			entry->count = 1;
+
+		/* Store the distance to the object in the stack that is closest to the player. */
+		current_distance = (object->iy - p_ptr->py) * (object->iy - p_ptr->py) + (object->ix - p_ptr->px) * (object->ix - p_ptr->px);
+		entry_distance = entry->dy * entry->dy + entry->dx * entry->dx;
+
+		if (current_distance < entry_distance) {
+			entry->dy = object->iy - p_ptr->py;
+			entry->dx = object->ix - p_ptr->px;
 		}
 	}
 
