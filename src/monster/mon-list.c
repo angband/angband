@@ -181,6 +181,11 @@ static void monster_list_collect(monster_list_t *list)
 			if (list->entries[j].race == NULL) {
 				/* We found an empty slot, so add this race here. */
 				list->entries[j].race = monster->race;
+				WIPE(list->entries[j].count, u16b);
+				WIPE(list->entries[j].asleep, u16b);
+				list->entries[j].dx = 0;
+				list->entries[j].dy = 0;
+				list->entries[j].attr = 0;
 				entry = &list->entries[j];
 				break;
 			}
@@ -555,8 +560,14 @@ static void monster_list_format_textblock(const monster_list_t *list, textblock 
  */
 void monster_list_show_subwindow(int height, int width)
 {
-	textblock *tb = textblock_new();
-	monster_list_t *list = monster_list_shared_instance();
+	textblock *tb;
+	monster_list_t *list;
+
+	if (height < 1 || width < 1)
+		return;
+
+	tb = textblock_new();
+	list = monster_list_shared_instance();
 
 	monster_list_reset(list);
 	monster_list_collect(list);
@@ -578,11 +589,17 @@ void monster_list_show_subwindow(int height, int width)
  */
 void monster_list_show_interactive(int height, int width)
 {
-	textblock *tb = textblock_new();
-	monster_list_t *list = monster_list_new();
+	textblock *tb;
+	monster_list_t *list;
 	size_t max_width = 0, max_height = 0;
 	int safe_height, safe_width;
 	region r;
+
+	if (height < 1 || width < 1)
+		return;
+
+	tb = textblock_new();
+	list = monster_list_new();
 
 	monster_list_collect(list);
 	monster_list_sort(list, monster_list_standard_compare);

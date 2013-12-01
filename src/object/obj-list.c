@@ -118,7 +118,8 @@ static bool object_list_needs_update(const object_list_t *list)
 	if (list == NULL || list->entries == NULL)
 		return FALSE;
 
-	return list->creation_turn != turn;
+	/* For now, always update when requested. */
+	return TRUE;
 }
 
 /**
@@ -147,6 +148,9 @@ static bool object_list_should_ignore_object(const object_type *object)
 	if (object->kind == NULL)
 		return TRUE;
 
+	if (!object->marked)
+		return TRUE;
+
 	if (!is_unknown(object) && squelch_item_ok(object))
 		return TRUE;
 
@@ -161,10 +165,7 @@ static bool object_list_should_ignore_object(const object_type *object)
  */
 static void object_list_collect(object_list_t *list)
 {
-	const int dungeon_hgt = p_ptr->depth == 0 ? TOWN_HGT : DUNGEON_HGT;
-	const int dungeon_wid = p_ptr->depth == 0 ? TOWN_WID : DUNGEON_WID;
-	int floor_list[MAX_FLOOR_STACK];
-	int x, y;
+	int item;
 
 	if (list == NULL || list->entries == NULL)
 		return;
@@ -172,56 +173,51 @@ static void object_list_collect(object_list_t *list)
 	if (!object_list_needs_update(list))
 		return;
 
-	/* Scan each object in each stack in each square of the dungeon. */
-	for (y = 0; y < dungeon_hgt; y++) {
-		for (x = 0; x < dungeon_wid; x++) {
-			int stack_count = scan_floor(floor_list, MAX_FLOOR_STACK, y, x, 0x0A);
+	/* Scan each object in the dungeon. */
+	for (item = 0; item < z_info->o_max; item++) {
+		object_type *object = object_byid(item);
+		object_list_entry_t *entry = NULL;
+		int entry_index;
+		int current_distance;
+		int entry_distance;
 
-			for (int stack_item = 0; stack_item < stack_count; stack_item++) {
-				object_type *object = object_byid(floor_list[stack_item]);
-				object_list_entry_t *entry = NULL;
-				int entry_index;
-				int current_distance;
-				int entry_distance;
+		if (object_list_should_ignore_object(object))
+			continue;
 
-				if (object_list_should_ignore_object(object))
-					continue;
-
-				/* Find or add a list entry. */
-				for (entry_index = 0; entry_index < (int)list->entries_size; entry_index++) {
-					if (list->entries[entry_index].object == NULL) {
-						/* We found an empty slot, so add this object here. */
-						list->entries[entry_index].object = object;
-						list->entries[entry_index].dy = y - p_ptr->py;
-						list->entries[entry_index].dx = x - p_ptr->px;
-						entry = &list->entries[entry_index];
-						break;
-					}
-					else if (!is_unknown(object) && object_similar(object, list->entries[entry_index].object, OSTACK_LIST)) {
-						/* We found a matching object and we'll use that. */
-						entry = &list->entries[entry_index];
-						break;
-					}
-				}
-
-				if (entry == NULL)
-					return;
-
-				/* We only know the number of objects if we've actually seen them. */
-				if (object->marked == MARK_SEEN)
-					entry->count += object->number;
-				else
-					entry->count = 1;
-
-				/* Store the distance to the object in the stack that is closest to the player. */
-				current_distance = (y - p_ptr->py) * (y - p_ptr->py) + (x - p_ptr->px) * (x - p_ptr->px);
-				entry_distance = entry->dy * entry->dy + entry->dx * entry->dx;
-
-				if (current_distance < entry_distance) {
-					entry->dy = y - p_ptr->py;
-					entry->dx = x - p_ptr->px;
-				}
+		/* Find or add a list entry. */
+		for (entry_index = 0; entry_index < (int)list->entries_size; entry_index++) {
+			if (list->entries[entry_index].object == NULL) {
+				/* We found an empty slot, so add this object here. */
+				list->entries[entry_index].object = object;
+				list->entries[entry_index].count = 0;
+				list->entries[entry_index].dy = object->iy - p_ptr->py;
+				list->entries[entry_index].dx = object->ix - p_ptr->px;
+				entry = &list->entries[entry_index];
+				break;
 			}
+			else if (!is_unknown(object) && object_similar(object, list->entries[entry_index].object, OSTACK_LIST)) {
+				/* We found a matching object and we'll use that. */
+				entry = &list->entries[entry_index];
+				break;
+			}
+		}
+
+		if (entry == NULL)
+			return;
+
+		/* We only know the number of objects if we've actually seen them. */
+		if (object->marked == MARK_SEEN)
+			entry->count += object->number;
+		else
+			entry->count = 1;
+
+		/* Store the distance to the object in the stack that is closest to the player. */
+		current_distance = (object->iy - p_ptr->py) * (object->iy - p_ptr->py) + (object->ix - p_ptr->px) * (object->ix - p_ptr->px);
+		entry_distance = entry->dy * entry->dy + entry->dx * entry->dx;
+
+		if (current_distance < entry_distance) {
+			entry->dy = object->iy - p_ptr->py;
+			entry->dx = object->ix - p_ptr->px;
 		}
 	}
 
@@ -352,10 +348,16 @@ static void object_list_format_name(const object_list_entry_t *entry, char *line
 	char *chunk, *source;
 	size_t name_width = MIN(full_width, size);
 	bool has_singular_prefix;
+	byte old_number;
+
+	if (entry == NULL || entry->object == NULL || entry->object->kind == NULL)
+		return;
 
 	/* Hack - these don't have a prefix when there is only one, so just pad with a space. */
 	switch (entry->object->kind->tval) {
 		case TV_SOFT_ARMOR:
+			has_singular_prefix = (entry->object->kind->sval == SV_ROBE);
+			break;
 		case TV_HARD_ARMOR:
 		case TV_DRAG_ARMOR:
 			has_singular_prefix = FALSE;
@@ -365,10 +367,18 @@ static void object_list_format_name(const object_list_entry_t *entry, char *line
 			break;
 	}
 
+	/*
+	 * Because each entry points to a specific object and not something more general, the
+	 * number of similar objects we counted has to be swapped in. This isn't an ideal way
+	 * to do this, but it's the easiest way until object_desc is more flexible.
+	 */
+	old_number = entry->object->number;
+	entry->object->number = entry->count;
 	object_desc(name, sizeof(name), entry->object, ODESC_PREFIX | ODESC_FULL);
+	entry->object->number = old_number;
 
 	/* The source string for strtok() needs to be set properly, depending on when we use it. */
-	if (!has_singular_prefix && entry->object->number == 1) {
+	if (!has_singular_prefix && entry->count == 1) {
 		chunk = " ";
 		source = name;
 	}
@@ -578,11 +588,16 @@ static void object_list_format_textblock(const object_list_t *list, textblock *t
  */
 void object_list_show_subwindow(int height, int width)
 {
-	textblock *tb = textblock_new();
-	object_list_t *list = object_list_new();
+	textblock *tb;
+	object_list_t *list;
 
-	/* XXX For some reason, the shared instance isn't working properly. */
-	/* object_list_reset(list); */
+	if (height < 1 || width < 1)
+		return;
+
+	tb = textblock_new();
+	list = object_list_shared_instance();
+
+	object_list_reset(list);
 	object_list_collect(list);
 	object_list_sort(list, object_list_standard_compare);
 
@@ -591,7 +606,6 @@ void object_list_show_subwindow(int height, int width)
 	textui_textblock_place(tb, SCREEN_REGION, NULL);
 
 	textblock_free(tb);
-	object_list_free(list);
 }
 
 /**
@@ -603,11 +617,17 @@ void object_list_show_subwindow(int height, int width)
  */
 void object_list_show_interactive(int height, int width)
 {
-	textblock *tb = textblock_new();
-	object_list_t *list = object_list_new();
+	textblock *tb;
+	object_list_t *list;
 	size_t max_width = 0, max_height = 0;
 	int safe_height, safe_width;
 	region r;
+
+	if (height < 1 || width < 1)
+		return;
+
+	tb = textblock_new();
+	list = object_list_new();
 
 	object_list_collect(list);
 	object_list_sort(list, object_list_standard_compare);
