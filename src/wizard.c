@@ -1489,8 +1489,11 @@ static void do_cmd_wiz_query(void)
 		}
 	}
 
+	Term_redraw();
+
 	/* Get keypress */
 	msg("Press any key.");
+	inkey_ex();
 	message_flush();
 
 	/* Redraw map */
