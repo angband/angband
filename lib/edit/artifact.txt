@@ -229,7 +229,7 @@ D:The treasure of Tulkas, most fleet and wrathful of the Valar.
 
 # The Ring of Power 'Narya'
 
-N:10:of Power 'Narya'
+N:10:'Narya'
 I:ring:52
 W:70:50:2:100000
 A:2:70 to 127
@@ -250,7 +250,7 @@ D:by the Elves from Sauron.
 
 # The Ring of Power 'Nenya'
 
-N:11:of Power 'Nenya'
+N:11:'Nenya'
 I:ring:53
 W:80:50:2:200000
 A:2:80 to 127
@@ -271,7 +271,7 @@ D:Celebrimbor and hidden by the Elves from Sauron.
 
 # The Ring of Power 'Vilya'
 
-N:12:of Power 'Vilya'
+N:12:'Vilya'
 I:ring:54
 W:90:80:2:300000
 A:1:90 to 127
@@ -293,7 +293,7 @@ D:hidden by the Elves from Sauron.
 
 # The Ring of Power 'The One Ring'
 
-N:13:of Power 'The One Ring'
+N:13:'The One Ring'
 I:ring:55
 W:100:100:2:5000000
 A:1:100 to 127
