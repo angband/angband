@@ -118,7 +118,8 @@ static bool object_list_needs_update(const object_list_t *list)
 	if (list == NULL || list->entries == NULL)
 		return FALSE;
 
-	return list->creation_turn != turn;
+	/* For now, always update when requested. */
+	return TRUE;
 }
 
 /**
@@ -348,6 +349,9 @@ static void object_list_format_name(const object_list_entry_t *entry, char *line
 	size_t name_width = MIN(full_width, size);
 	bool has_singular_prefix;
 	byte old_number;
+
+	if (entry == NULL || entry->object == NULL || entry->object->kind == NULL)
+		return;
 
 	/* Hack - these don't have a prefix when there is only one, so just pad with a space. */
 	switch (entry->object->kind->tval) {
@@ -591,10 +595,9 @@ void object_list_show_subwindow(int height, int width)
 		return;
 
 	tb = textblock_new();
-	list = object_list_new();
+	list = object_list_shared_instance();
 
-	/* XXX For some reason, the shared instance isn't working properly. */
-	/* object_list_reset(list); */
+	object_list_reset(list);
 	object_list_collect(list);
 	object_list_sort(list, object_list_standard_compare);
 
@@ -603,7 +606,6 @@ void object_list_show_subwindow(int height, int width)
 	textui_textblock_place(tb, SCREEN_REGION, NULL);
 
 	textblock_free(tb);
-	object_list_free(list);
 }
 
 /**
