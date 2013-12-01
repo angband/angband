@@ -1423,7 +1423,8 @@ int rd_player_2(void)
 	if (p_ptr->max_depth < 0) p_ptr->max_depth = 1;
 
 	/* More info */
-	strip_bytes(10);
+	strip_bytes(9);
+	rd_byte(&p_ptr->unignoring);
 	rd_s16b(&p_ptr->deep_descent);
 
 	/* Read the flags */
@@ -1565,7 +1566,8 @@ int rd_player_3(void)
 	if (p_ptr->max_depth < 0) p_ptr->max_depth = 1;
 
 	/* More info */
-	strip_bytes(10);
+	strip_bytes(9);
+	rd_byte(&p_ptr->unignoring);
 	rd_s16b(&p_ptr->deep_descent);
 
 	/* Read the flags */

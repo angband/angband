@@ -415,7 +415,8 @@ void wr_player(void)
 	wr_s16b(0);	/* oops */
 	wr_s16b(0);	/* oops */
 	wr_s16b(0);	/* oops */
-	wr_s16b(0); /* oops */
+	wr_byte(0);
+	wr_byte(p_ptr->unignoring);
 	wr_s16b(p_ptr->deep_descent);
 
 	wr_s16b(p_ptr->food);
