@@ -3785,7 +3785,7 @@ F:INSTA_ART
 
 # The Amulet of Ingwe -- see artifact list
 
-N:554:& Amulet~
+N:554:& Pendant~
 G:":d
 I:40:51
 W:65:0:3:90000
@@ -3801,7 +3801,7 @@ F:INSTA_ART
 
 # The Ring of Barahir -- see artifact list
 
-N:556:& Ring~
+N:556:& Serpent Ring~
 G:=:d
 I:45:50
 W:50:0:2:65000
@@ -3817,7 +3817,7 @@ F:INSTA_ART
 
 # The Ring of Power 'Narya' -- see artifact list
 
-N:558:& Ring~
+N:558:& Ring of Power~
 G:=:d
 I:45:52
 W:70:0:2:100000
@@ -3825,7 +3825,7 @@ F:INSTA_ART
 
 # The Ring of Power 'Nenya' -- see artifact list
 
-N:559:& Ring~
+N:559:& Ring of Power~
 G:=:d
 I:45:53
 W:80:0:2:200000
@@ -3833,7 +3833,7 @@ F:INSTA_ART
 
 # The Ring of Power 'Vilya' -- see artifact list
 
-N:560:& Ring~
+N:560:& Ring of Power~
 G:=:d
 I:45:54
 W:90:0:2:300000
@@ -3841,7 +3841,7 @@ F:INSTA_ART
 
 # The Ring of Power 'The One Ring' -- see artifact list
 
-N:561:& Ring~
+N:561:& Ring of Power~
 G:=:y
 I:45:55
 W:100:0:2:5000000

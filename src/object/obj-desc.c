@@ -102,52 +102,16 @@ static const char *obj_desc_get_modstr(const object_kind *kind)
 	return "";
 }
 
-/**
- * Get an object base name format string for an artifact.
- *
- * For objects that are only seen, this will return the artifact's object kind (flavored,
- * if appropriate). Once the object is picked up (so the name shows), this will dump the
- * flavoring.
- *
- * \param o_ptr is the object, which must be an artifact.
- * \param buffer is the buffer to copy the string to.
- * \param size is the size of the buffer.
- * \param aware is if the object is known.
- * \param terse is if we should hide flavor.
- */
-static void obj_desc_get_basename_artifact(const object_type *o_ptr, char *buffer, size_t size, bool aware, bool terse)
-{
-	size_t end = 0, name_offset = 0;
-	const char *format;
-	bool has_ident_flags = (o_ptr->ident & IDENT_NAME) || (o_ptr->ident & IDENT_STORE);
-
-	if (!o_ptr->artifact) {
-		my_strcpy(buffer, o_ptr->kind->name, size);
-		return;
-	}
-
-	/* Ignoring OPT_show_flavors, since we never want to see the flavor if we're aware of it. */
-	if (aware || has_ident_flags || terse || !o_ptr->kind->flavor) {
-		format = "& ";
-	}
-	else {
-		format = "& # ";
-	}
-
-	/* Prevent bad format strings. */
-	if (prefix(o_ptr->kind->name, "& "))
-		name_offset = 2;
-
-	end = my_strcpy(buffer, format, size);
-	end = my_strcpy(buffer + end, o_ptr->kind->name + name_offset, size - end);
-}
-
 static const char *obj_desc_get_basename(const object_type *o_ptr, bool aware, bool terse)
 {
 	bool show_flavor = !terse && o_ptr->kind->flavor;
 
 	if (o_ptr->ident & IDENT_STORE) show_flavor = FALSE;
 	if (aware && !OPT(show_flavors)) show_flavor = FALSE;
+
+	/* Artifacts are special */
+	if (o_ptr->artifact && (aware || (o_ptr->ident & IDENT_NAME) || terse || !o_ptr->kind->flavor))
+		return o_ptr->kind->name;
 
 	/* Analyze the object */
 	switch (o_ptr->tval)
@@ -354,16 +318,8 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end,
 {
 	bool known = object_is_known(o_ptr) || (o_ptr->ident & IDENT_STORE) || spoil;
 	bool aware = object_flavor_is_aware(o_ptr) || (o_ptr->ident & IDENT_STORE) || spoil;
-	char basename[80];
+	const char *basename = obj_desc_get_basename(o_ptr, aware, terse);
 	const char *modstr = obj_desc_get_modstr(o_ptr->kind);
-
-	if (o_ptr->artifact) {
-		obj_desc_get_basename_artifact(o_ptr, basename, sizeof(basename), aware, terse);
-	}
-	else {
-		const char *static_base = obj_desc_get_basename(o_ptr, aware, terse);
-		my_strcpy(basename, static_base, sizeof(basename));
-	}
 
 	if (aware && !o_ptr->kind->everseen && !spoil)
 		o_ptr->kind->everseen = TRUE;
