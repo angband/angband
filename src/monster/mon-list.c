@@ -181,6 +181,11 @@ static void monster_list_collect(monster_list_t *list)
 			if (list->entries[j].race == NULL) {
 				/* We found an empty slot, so add this race here. */
 				list->entries[j].race = monster->race;
+				WIPE(list->entries[j].count, u16b);
+				WIPE(list->entries[j].asleep, u16b);
+				list->entries[j].dx = 0;
+				list->entries[j].dy = 0;
+				list->entries[j].attr = 0;
 				entry = &list->entries[j];
 				break;
 			}

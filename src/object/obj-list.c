@@ -192,6 +192,7 @@ static void object_list_collect(object_list_t *list)
 					if (list->entries[entry_index].object == NULL) {
 						/* We found an empty slot, so add this object here. */
 						list->entries[entry_index].object = object;
+						list->entries[entry_index].count = 0;
 						list->entries[entry_index].dy = y - p_ptr->py;
 						list->entries[entry_index].dx = x - p_ptr->px;
 						entry = &list->entries[entry_index];
