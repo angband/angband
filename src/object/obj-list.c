@@ -589,8 +589,14 @@ static void object_list_format_textblock(const object_list_t *list, textblock *t
  */
 void object_list_show_subwindow(int height, int width)
 {
-	textblock *tb = textblock_new();
-	object_list_t *list = object_list_new();
+	textblock *tb;
+	object_list_t *list;
+
+	if (height < 1 || width < 1)
+		return;
+
+	tb = textblock_new();
+	list = object_list_new();
 
 	/* XXX For some reason, the shared instance isn't working properly. */
 	/* object_list_reset(list); */
@@ -614,11 +620,17 @@ void object_list_show_subwindow(int height, int width)
  */
 void object_list_show_interactive(int height, int width)
 {
-	textblock *tb = textblock_new();
-	object_list_t *list = object_list_new();
+	textblock *tb;
+	object_list_t *list;
 	size_t max_width = 0, max_height = 0;
 	int safe_height, safe_width;
 	region r;
+
+	if (height < 1 || width < 1)
+		return;
+
+	tb = textblock_new();
+	list = object_list_new();
 
 	object_list_collect(list);
 	object_list_sort(list, object_list_standard_compare);
