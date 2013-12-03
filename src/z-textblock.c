@@ -23,6 +23,7 @@
  */
 #include "z-color.h"
 #include "z-textblock.h"
+#include "z-util.h"
 #include "z-virt.h"
 #include "z-form.h"
 
@@ -36,8 +37,6 @@ struct textblock {
 	size_t strlen;
 	size_t size;
 };
-
-size_t (*text_mbcs_hook)(wchar_t *dest, const char *src, int n) = NULL;
 
 
 
@@ -81,17 +80,6 @@ void textblock_resize_if_needed(textblock *tb, size_t additional_size)
 		tb->text = mem_realloc(tb->text, tb->size * sizeof *tb->text);
 		tb->attrs = mem_realloc(tb->attrs, tb->size);
 	}
-}
-
-/*
- * Allow override of the multi-byte to wide char conversion
- */
-size_t text_mbstowcs(wchar_t *dest, const char *src, int n)
-{
-	if (text_mbcs_hook)
-		return (*text_mbcs_hook)(dest, src, n);
-	else
-		return mbstowcs(dest, src, n);
 }
 
 static void textblock_vappend_c(textblock *tb, byte attr, const char *fmt,

@@ -13,6 +13,7 @@ extern char *argv0;
 
 
 /* Aux functions */
+size_t (*text_mbcs_hook)(wchar_t *dest, const char *src, int n);
 extern void (*plog_aux)(const char *);
 extern void (*quit_aux)(const char *);
 
@@ -76,6 +77,11 @@ extern void strescape(char *s, const char c);
 
 /* determines if a string is "empty" */
 bool contains_only_spaces(const char* s);
+
+/*
+ * Allow override of the multi-byte to wide char conversion
+ */
+size_t text_mbstowcs(wchar_t *dest, const char *src, int n);
 
 /* Print an error message */
 extern void plog(const char *str);

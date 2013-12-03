@@ -26,6 +26,11 @@
 char *argv0 = NULL;
 
 /*
+ * Hook for platform-specific wide character handling
+ */
+size_t (*text_mbcs_hook)(wchar_t *dest, const char *src, int n) = NULL;
+
+/*
  * Case insensitive comparison between two strings
  */
 int my_stricmp(const char *s1, const char *s2)
@@ -299,6 +304,17 @@ bool contains_only_spaces(const char* s){
 		s++;
 	}
 	return TRUE;
+}
+
+/*
+ * Allow override of the multi-byte to wide char conversion
+ */
+size_t text_mbstowcs(wchar_t *dest, const char *src, int n)
+{
+	if (text_mbcs_hook)
+		return (*text_mbcs_hook)(dest, src, n);
+	else
+		return mbstowcs(dest, src, n);
 }
 
 /*

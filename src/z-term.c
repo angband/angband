@@ -18,7 +18,7 @@
 #include "h-basic.h"
 #include "z-color.h"
 #include "z-term.h"
-#include "z-textblock.h"
+#include "z-util.h"
 #include "z-virt.h"
 
 /*
