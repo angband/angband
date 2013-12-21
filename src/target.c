@@ -172,7 +172,7 @@ void target_set_location(int y, int x)
 	{
 		/* Save target info */
 		target_set = TRUE;
-		target_who = cave_monster_at(cave, y, x);
+		target_who = NULL;
 		target_y = y;
 		target_x = x;
 	}
