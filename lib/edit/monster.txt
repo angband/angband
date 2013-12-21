@@ -324,6 +324,29 @@ F:DROP_40
 F:RAND_50 | OPEN_DOOR | BASH_DOOR | TAKE_ITEM
 D:He doesn't take to strangers kindly.
 
+N:617:Red-Hatted Elf
+T:humanoid
+C:r
+I:110:100:80:12:3
+W:0:1:0:0
+B:HIT:HURT:1d1
+F:HAS_LIGHT | SEASONAL
+friends:30:1d5:Same
+D:It's Yuletide and this elf has had a few too many.
+
+N:618:Father Christmas
+T:humanoid
+C:G
+I:100:1000:80:12:3
+W:0:1:0:0
+F:HAS_LIGHT | SEASONAL
+F:UNIQUE
+F:DROP_1 | DROP_GOOD | ONLY_ITEM
+F:NO_CONF | NO_SLEEP
+S:1_IN_4
+S:BLINK | HEAL
+D:It's Saint Nick, out delivering presents to the town urchins.
+
 ### Dungeon level 1 ###
 
 N:15:Grey mold
@@ -10088,4 +10111,4 @@ drop-artifact:'Grond'
 drop-artifact:of Morgoth
 
 
-# Max is currently N:616
+# Max is currently N:619

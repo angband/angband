@@ -166,6 +166,7 @@ static bool object_list_should_ignore_object(const object_type *object)
 static void object_list_collect(object_list_t *list)
 {
 	int item;
+	int i;
 
 	if (list == NULL || list->entries == NULL)
 		return;
@@ -222,7 +223,7 @@ static void object_list_collect(object_list_t *list)
 	}
 
 	/* Collect totals for easier calculations of the list. */
-	for (int i = 0; i < (int)list->entries_size; i++) {
+	for (i = 0; i < (int)list->entries_size; i++) {
 		if (list->entries[i].object == NULL)
 			continue;
 

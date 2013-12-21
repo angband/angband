@@ -13,7 +13,7 @@
 M:K:570
 
 # Maximum number of monster races
-M:R:618
+M:R:620
 
 # Maximum number of objects on the level
 M:O:1024

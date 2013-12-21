@@ -549,6 +549,9 @@ monster_race *get_mon_num(int level)
 
 	/* Process probabilities */
 	for (i = 0; i < alloc_race_size; i++) {
+		time_t cur_time = time(NULL);
+		struct tm *date = localtime(&cur_time);
+
 		/* Monsters are sorted by depth */
 		if (table[i].level > level) break;
 
@@ -560,6 +563,11 @@ monster_race *get_mon_num(int level)
 
 		/* Get the chosen monster */
 		race = &r_info[table[i].index];
+
+		/* No seasonal monsters outside of Christmas */
+		if (rf_has(race->flags, RF_SEASONAL) && 
+				!(date->tm_mon == 11 && date->tm_mday >= 24 && date->tm_mday <= 26))
+			continue;
 
 		/* Only one copy of a a unique must be around at the same time */
 		if (rf_has(race->flags, RF_UNIQUE) && 
@@ -1099,6 +1107,7 @@ static bool place_monster_base_okay(monster_race *race)
 	int level_difference, extra_chance, nx, ny;
 	int j;
 	bool is_unique, success = TRUE;
+	int j;
 	
 	/* Find the difference between current dungeon depth and monster level */
 	level_difference = p_ptr->depth - friends_race->level + 5;
