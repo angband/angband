@@ -361,12 +361,18 @@ static void object_list_format_name(const object_list_entry_t *entry, char *line
 			break;
 		case TV_HARD_ARMOR:
 		case TV_DRAG_ARMOR:
-			has_singular_prefix = FALSE;
+			if ((object_name_is_visible(entry->object) || object_is_known(entry->object)) && entry->object->artifact)
+				has_singular_prefix = TRUE;
+			else
+				has_singular_prefix = FALSE;				
 			break;
 		default:
 			has_singular_prefix = TRUE;
 			break;
 	}
+
+	if (entry->object->marked == MARK_AWARE)
+		has_singular_prefix = TRUE;
 
 	/*
 	 * Because each entry points to a specific object and not something more general, the
