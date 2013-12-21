@@ -301,10 +301,11 @@ int context_menu_player(int mx, int my)
 	if (cave->o_idx[p_ptr->py][p_ptr->px]) {
 		object_type *o_ptr = object_byid(cave->o_idx[p_ptr->py][p_ptr->px]);
 		if (!squelch_item_ok(o_ptr)) {
+			menu_row_validity_t valid;
+
 			/* 'f' isn't in rogue keymap, so we can use it here. */
   			menu_dynamic_add_label(m, "Floor", 'f', MENU_VALUE_FLOOR, labels);
-
-			menu_row_validity_t valid = (inven_carry_okay(o_ptr)) ? MN_ROW_VALID : MN_ROW_INVALID;
+			valid = (inven_carry_okay(o_ptr)) ? MN_ROW_VALID : MN_ROW_INVALID;
 			ADD_LABEL("Pick up", CMD_PICKUP, valid);
 		}
 	}

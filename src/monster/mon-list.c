@@ -384,8 +384,8 @@ static void monster_list_format_section(const monster_list_t *list, textblock *t
 
 		/* It doesn't make sense to display directions for more than one monster. */
 		if (list->entries[entry_index].count[section] == 1) {
-			char *direction1 = (list->entries[entry_index].dy <= 0) ? "N" : "S";
-			char *direction2 = (list->entries[entry_index].dx <= 0) ? "W" : "E";
+			const char *direction1 = (list->entries[entry_index].dy <= 0) ? "N" : "S";
+			const char *direction2 = (list->entries[entry_index].dx <= 0) ? "W" : "E";
 			strnfmt(location, sizeof(location), " %d %s %d %s", abs(list->entries[entry_index].dy), direction1, abs(list->entries[entry_index].dx), direction2);
 		}
 

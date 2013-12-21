@@ -584,7 +584,7 @@ void squelch_drop(void)
  */
 const char *squelch_name_for_type(squelch_type_t type)
 {
-	int i;
+	size_t i;
 
 	for (i = 0; i < TYPE_MAX; i++) {
 		if (quality_choices[i].enum_val == type)

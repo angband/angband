@@ -411,8 +411,6 @@ static menu_row_style_t menu_row_style_for_validity(menu_row_validity_t row_vali
 			style = MN_ROW_STYLE_DISABLED;
 			break;
 		case MN_ROW_VALID:
-			style = MN_ROW_STYLE_ENABLED;
-			break;
 		default:
 			style = MN_ROW_STYLE_ENABLED;
 			break;

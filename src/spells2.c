@@ -3191,9 +3191,9 @@ void do_ident_item(object_type *o_ptr)
 	char o_name[80];
 
 	u32b msg_type = 0;
-	int i;
+	int i, index;
 	bool bad = TRUE;
-    object_type *original = ZNEW(object_type);
+	object_type *original = ZNEW(object_type);
 
     /* Identify and apply autoinscriptions. We use o_ptr here since it points to the inventory
      * slot that the real object is in. o_ptr does NOT point to the object data itself. */
@@ -3242,9 +3242,9 @@ void do_ident_item(object_type *o_ptr)
 	if (original->artifact)
 		history_add_artifact(original->artifact, TRUE, TRUE);
 
-    /* Get the index of the inventory slot that our real original object is in. */
-    int index = inventory_index_matching_object(original);
-    FREE(original);
+	/* Get the index of the inventory slot that our real original object is in. */
+	index = inventory_index_matching_object(original);
+	FREE(original);
 
 	/* Describe */
 	if (index >= INVEN_WIELD)

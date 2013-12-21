@@ -1858,7 +1858,7 @@ void do_cmd_debug(void)
 			const monster_race *r_ptr = NULL;
 
 			struct keypress sym;
-			char *prompt =
+			const char *prompt =
 				"Full recall for [a]ll monsters or [s]pecific monster? ";
 
 			if (!get_com(prompt, &sym)) return;
@@ -1987,7 +1987,7 @@ void do_cmd_debug(void)
 			s16b r_idx = 0; 
 
 			struct keypress sym;
-			char *prompt =
+			const char *prompt =
 				"Wipe recall for [a]ll monsters or [s]pecific monster? ";
 
 			if (!get_com(prompt, &sym)) return;

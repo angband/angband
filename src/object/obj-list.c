@@ -345,7 +345,8 @@ static byte object_list_entry_line_attribute(const object_list_entry_t *entry)
 static void object_list_format_name(const object_list_entry_t *entry, char *line_buffer, size_t size, size_t full_width)
 {
 	char name[80];
-	char *chunk, *source;
+	const char *chunk;
+	char *source;
 	size_t name_width = MIN(full_width, size);
 	bool has_singular_prefix;
 	byte old_number;
