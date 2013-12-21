@@ -278,10 +278,6 @@ C:0:^C
 A:w0\s\s
 C:0:x
 
-# Pickup an item (with autopickup)
-A:^Gg
-C:0:g
-
 ##### Roguelike Keyset Mappings #####
 
 # Stay still (numerical)
@@ -349,10 +345,6 @@ C:1:^U
 # Hack -- Commit suicide
 A:Q
 C:1:^C
-
-# Pickup an item (with autopickup)
-A:^Gg
-C:1:g
 
 # Message colors
 %:message.prf

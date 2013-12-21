@@ -41,8 +41,14 @@ void do_cmd_pickup(cmd_code code, cmd_arg args[])
 {
 	int energy_cost;
 
-	/* Pick up floor objects, forcing a menu for multiple objects. */
-	energy_cost = py_pickup_item(1, args[0].item);
+	/* Autopickup first */
+	energy_cost = do_autopickup() * 10;
+
+	/* Pick up floor objects with a menu for multiple objects */
+	energy_cost += py_pickup_item(1, args[0].item) * 10;
+
+	/* Limit */
+	if (energy_cost > 100) energy_cost = 100;
 
 	/* Charge this amount of energy. */
 	p_ptr->energy_use = energy_cost;
