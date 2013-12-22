@@ -1934,30 +1934,30 @@ static void store_display_help(void)
 		if (is_home) text_out("' picks up");
 		else text_out("' purchases");
 	}
-	text_out(" the selected item. '");
+	text_out(" the selected item. ");
 
-	if (store_knowledge == STORE_NONE)
-	{
-		text_out_c(TERM_L_GREEN, "d");
-		if (is_home) text_out("' drops");
-		else text_out("' sells");
-	}
-	else
-	{
+	if (store_knowledge == STORE_NONE) {
+		if (OPT(birth_no_selling)) {
+			text_out("Press '");
+			text_out_c(TERM_L_GREEN, "d");
+			text_out("' to give an item to the store in return for its identification. ");
+		} else {
+			text_out("'");
+			text_out_c(TERM_L_GREEN, "d");
+			if (is_home) text_out("' drops");
+			else text_out("' sells");
+			text_out(" an item from your inventory. ");
+		}
+	} else {
 		text_out_c(TERM_L_GREEN, "I");
-		text_out("' inspects");
+		text_out("' inspects an item from your inventory. ");
 	}
-	text_out(" an item from your inventory. ");
 
 	text_out_c(TERM_L_GREEN, "ESC");
 	if (store_knowledge == STORE_NONE)
-	{
 		text_out(" exits the building.");
-	}
 	else
-	{
 		text_out(" exits this screen.");
-	}
 
 	text_out_indent = 0;
 }
@@ -2478,6 +2478,10 @@ static bool store_purchase(int item)
 static bool store_will_buy_tester(const object_type *o_ptr)
 {
 	struct store *store = current_store();
+
+	if (OPT(birth_no_selling) && object_is_known(o_ptr))
+		return FALSE;
+
 	if (store)
 		return store_will_buy(store, o_ptr);
 
@@ -2547,7 +2551,6 @@ void do_cmd_sell(cmd_code code, cmd_arg args[])
 
 	/* Get the "apparent" value */
 	dummy = object_value(&sold_item, amt, FALSE);
-/*	msg("Dummy is %d", dummy); */
 
 	/* Identify original object */
 	object_notice_everything(o_ptr);
@@ -2566,17 +2569,19 @@ void do_cmd_sell(cmd_code code, cmd_arg args[])
 
 	/* Get the "actual" value */
 	value = object_value(&sold_item, amt, FALSE);
-/*	msg("Value is %d", value); */
 
 	/* Get the description all over again */
 	object_desc(o_name, sizeof(o_name), &sold_item, ODESC_PREFIX | ODESC_FULL);
 
 	/* Describe the result (in message buffer) */
-	msg("You sold %s (%c) for %ld gold.",
-		o_name, index_to_label(item), (long)price);
+	if (OPT(birth_no_selling)) {
+		msg("You had %s (%c).", o_name, index_to_label(item));
+	} else {
+		msg("You sold %s (%c) for %ld gold.", o_name, index_to_label(item), (long)price);
 
-	/* Analyze the prices (and comment verbally) */
-	purchase_analyze(price, value, dummy);
+		/* Analyze the prices (and comment verbally) */
+		purchase_analyze(price, value, dummy);
+	}
 
 	/* Set squelch flag */
 	p_ptr->notice |= PN_SQUELCH;
@@ -2673,12 +2678,12 @@ static bool store_sell(void)
 
 
 	const char *reject = "You have nothing that I want. ";
-	const char *prompt = "Sell which item? ";
+	const char *prompt = OPT(birth_no_selling) ? "Give which item? " : "Sell which item? ";
 
 	struct store *store = current_store();
 
 	if (!store) {
-		msg("You cannot sell items when not in a store.");
+		msg("You cannot %s items when not in a store.", OPT(birth_no_selling) ? "give" : "sell");
 		return FALSE;
 	}
 
@@ -2725,7 +2730,6 @@ static bool store_sell(void)
 	{
 		if (store->sidx == STORE_HOME)
 			msg("Your home is full.");
-
 		else
 			msg("I have not the room in my store to keep it.");
 
@@ -2744,10 +2748,12 @@ static bool store_sell(void)
 		screen_save();
 
 		/* Show price */
-		prt(format("Price: %d", price), 1, 0);
+		if (!OPT(birth_no_selling)) prt(format("Price: %d", price), 1, 0);
 
 		/* Confirm sale */
-		if (!store_get_check(format("Sell %s? [ESC, any other key to accept]", o_name)))
+		if (!store_get_check(format("%s %s? [ESC, any other key to accept]",
+				OPT(birth_no_selling) ? "Give" : "Sell",
+				o_name)))
 		{
 			screen_load();
 			return FALSE;
@@ -2795,8 +2801,7 @@ static void store_examine(int item)
 	msg_flag = FALSE;
 
 	/* Show full info in most stores, but normal info in player home */
-	tb = object_info(o_ptr, (store->sidx != STORE_HOME) ? OINFO_FULL :
-		OINFO_NONE);
+	tb = object_info(o_ptr, (store->sidx != STORE_HOME) ? OINFO_FULL : OINFO_NONE);
 	object_desc(header, sizeof(header), o_ptr, ODESC_PREFIX | ODESC_FULL |
 		ODESC_STORE);
 
