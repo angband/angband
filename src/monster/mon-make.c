@@ -1097,6 +1097,7 @@ static bool place_monster_base_okay(monster_race *race)
 		monster_race *friends_race, int total, bool sleep, byte origin)
  {
 	int level_difference, extra_chance, nx, ny;
+	int j;
 	bool is_unique, success = TRUE;
 	
 	/* Find the difference between current dungeon depth and monster level */
@@ -1139,7 +1140,7 @@ static bool place_monster_base_okay(monster_race *race)
 	}
 	
 	/* Find a nearby place to put the other groups */
-	for (int j = 0; j < 50; j++){
+	for (j = 0; j < 50; j++){
 		scatter(&ny, &nx, y, x, GROUP_DISTANCE, FALSE);
 		if (cave_isopen(cave, ny, nx)) break;
 	}
