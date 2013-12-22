@@ -496,7 +496,7 @@ static errr sdl_FontCreate(sdl_Font *font, const char *fontname, SDL_Surface *su
 	if (TTF_SizeText(ttf_font, "M", &font->width, &font->height)) return (-1);
 	
 	/* Fill in some of the font struct */
-	my_strcpy(font->name, fontname, 30);
+	if (font->name != fontname) my_strcpy(font->name, fontname, 30);
 	font->pitch = surface->pitch;
 	font->bpp = surface->format->BytesPerPixel;
 	font->sdl_font = ttf_font;
