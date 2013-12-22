@@ -22,6 +22,7 @@
 
 #include "birth.h"
 #include "buildid.h"
+#include "dungeon.h"
 #include "init.h"
 #include "monster/mon-make.h"
 #include "object/pval.h"

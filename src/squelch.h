@@ -6,7 +6,7 @@
  */
 typedef struct
 {
-	int enum_val;
+	unsigned int enum_val;
 	const char *name;
 } quality_name_struct;
 
