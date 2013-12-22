@@ -376,6 +376,41 @@ void store_reset(void) {
 
 
 
+
+/**
+ * Check if a given item kind is an always-stocked item.
+ */
+static bool store_is_staple(struct store *s, object_kind *k) {
+	size_t i;
+
+	assert(s);
+	assert(k);
+
+	for (i = 0; i < s->always_num; i++) {
+		object_kind *l = s->always_table[i];
+		if (k == l)
+			return TRUE;
+	}
+
+	return FALSE;
+}
+
+/**
+ * Check if a given item kind is an always-stocked or sometimes-stocked item.
+ */
+static bool store_can_carry(struct store *store, struct object_kind *kind) {
+	size_t i;
+
+	for (i = 0; i < store->normal_num; i++) {
+		if (store->normal_table[i] == kind)
+			return TRUE;
+	}
+
+	return store_is_staple(store, kind);
+}
+
+
+
 /*
  * The greeting a shopkeeper gives the character says a lot about his
  * general attitude.
@@ -1085,17 +1120,8 @@ static int store_carry(struct store *store, object_type *o_ptr)
 		case TV_STAFF:
 		case TV_WAND:
 		{
-			bool recharge = FALSE;
-
-			/* Recharge without fail if the store normally carries that type */
-			for (i = 0; i < store->normal_num; i++)
-			{
-				if (store->normal_table[i] == o_ptr->kind)
-					recharge = TRUE;
-			}
-
-			if (recharge)
-			{
+			/* If the store can stock this item kind, we recharge */
+			if (store_can_carry(store, o_ptr->kind)) {
 				int charges = 0;
 
 				/* Calculate the recharged number of charges */
@@ -1314,23 +1340,6 @@ static object_type *store_find_kind(struct store *s, object_kind *k) {
 	return NULL;
 }
 
-/**
- * Check if a given item kind is an always-stocked item.
- */
-static bool store_is_staple(struct store *s, object_kind *k) {
-	size_t i;
-
-	assert(s);
-	assert(k);
-
-	for (i = 0; i < s->always_num; i++) {
-		object_kind *l = s->always_table[i];
-		if (k == l)
-			return TRUE;
-	}
-
-	return FALSE;
-}
 
 /*
  * Delete a random object from store 'st', or, if it is a stack, perhaps only
@@ -1914,38 +1923,30 @@ static void store_display_help(void)
 	text_out_indent = 1;
 	Term_gotoxy(1, help_loc);
 
-	text_out("Use the ");
-	text_out_c(TERM_L_GREEN, "movement keys");
-	text_out(" to navigate, or ");
-	text_out_c(TERM_L_GREEN, "Space");
-	text_out(" to advance to the next page. '");
-
 	if (OPT(rogue_like_commands))
 		text_out_c(TERM_L_GREEN, "x");
 	else
 		text_out_c(TERM_L_GREEN, "l");
 
-	text_out("' examines");
+	text_out(" examines");
 	if (store_knowledge == STORE_NONE)
 	{
-		text_out(" and '");
+		text_out(" and ");
 		text_out_c(TERM_L_GREEN, "p");
 
-		if (is_home) text_out("' picks up");
-		else text_out("' purchases");
+		if (is_home) text_out(" picks up");
+		else text_out(" purchases");
 	}
 	text_out(" the selected item. ");
 
 	if (store_knowledge == STORE_NONE) {
 		if (OPT(birth_no_selling)) {
-			text_out("Press '");
 			text_out_c(TERM_L_GREEN, "d");
-			text_out("' to give an item to the store in return for its identification. ");
+			text_out(" gives an item to the store in return for its identification. Some wands and staves will also be recharged. ");
 		} else {
-			text_out("'");
 			text_out_c(TERM_L_GREEN, "d");
-			if (is_home) text_out("' drops");
-			else text_out("' sells");
+			if (is_home) text_out(" drops");
+			else text_out(" sells");
 			text_out(" an item from your inventory. ");
 		}
 	} else {
@@ -2478,14 +2479,22 @@ static bool store_purchase(int item)
 static bool store_will_buy_tester(const object_type *o_ptr)
 {
 	struct store *store = current_store();
+	if (!store) return FALSE;
 
-	if (OPT(birth_no_selling) && object_is_known(o_ptr))
-		return FALSE;
+	if (OPT(birth_no_selling)) {
+		switch (o_ptr->tval) {
+			case TV_STAFF:
+			case TV_WAND:
+				if (!store_can_carry(store, o_ptr->kind) && object_is_known(o_ptr))
+					return FALSE;
 
-	if (store)
-		return store_will_buy(store, o_ptr);
+			default:
+				if (object_is_known(o_ptr))
+					return FALSE;
+		}
+	}
 
-	return FALSE;
+	return store_will_buy(store, o_ptr);
 }
 
 /*
