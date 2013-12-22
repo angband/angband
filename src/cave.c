@@ -421,13 +421,13 @@ byte get_color(byte a, int attr, int n)
 bool dtrap_edge(int y, int x) 
 { 
 	/* Check if the square is a dtrap in the first place */ 
- 	if (!(cave->info2[y][x] & CAVE2_DTRAP)) return FALSE; 
+	if (!(cave->info2[y][x] & CAVE2_DTRAP)) return FALSE; 
 
- 	/* Check for non-dtrap adjacent grids */ 
- 	if (cave_in_bounds_fully(cave, y + 1, x    ) && (!(cave->info2[y + 1][x    ] & CAVE2_DTRAP))) return TRUE; 
- 	if (cave_in_bounds_fully(cave, y    , x + 1) && (!(cave->info2[y    ][x + 1] & CAVE2_DTRAP))) return TRUE; 
- 	if (cave_in_bounds_fully(cave, y - 1, x    ) && (!(cave->info2[y - 1][x    ] & CAVE2_DTRAP))) return TRUE; 
- 	if (cave_in_bounds_fully(cave, y    , x - 1) && (!(cave->info2[y    ][x - 1] & CAVE2_DTRAP))) return TRUE; 
+	/* Check for non-dtrap adjacent grids */ 
+	if (cave_in_bounds_fully(cave, y + 1, x    ) && (!(cave->info2[y + 1][x    ] & CAVE2_DTRAP))) return TRUE; 
+	if (cave_in_bounds_fully(cave, y    , x + 1) && (!(cave->info2[y    ][x + 1] & CAVE2_DTRAP))) return TRUE; 
+	if (cave_in_bounds_fully(cave, y - 1, x    ) && (!(cave->info2[y - 1][x    ] & CAVE2_DTRAP))) return TRUE; 
+	if (cave_in_bounds_fully(cave, y    , x - 1) && (!(cave->info2[y    ][x - 1] & CAVE2_DTRAP))) return TRUE; 
 
 	return FALSE; 
 }
@@ -812,14 +812,14 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 		if (!(info & CAVE_GLOW) && OPT(view_yellow_light))
 			g->lighting = FEAT_LIGHTING_TORCH;
 	}
-    else if (!(info & CAVE_MARK))
+	else if (!(info & CAVE_MARK))
 	{
 		g->f_idx = FEAT_NONE;
 	}
 	else if ((info & CAVE_GLOW))
 	{
 		g->lighting = FEAT_LIGHTING_LIT;
-    }
+	}
 
 
 	/* Objects */
@@ -829,7 +829,7 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 		
 			/* Distinguish between unseen money and objects */
 			if (o_ptr->tval == TV_GOLD) {
-			    g->unseen_money = TRUE;
+				g->unseen_money = TRUE;
 			} else {
 				g->unseen_object = TRUE;
 			}
@@ -899,7 +899,7 @@ static void move_cursor_relative_map(int y, int x)
 
 		if (tile_height > 1)
 		{
-		        ky = tile_height * ky;
+				ky = tile_height * ky;
 		}
 
 		/* Verify location */
@@ -910,7 +910,7 @@ static void move_cursor_relative_map(int y, int x)
 
 		if (tile_width > 1)
 		{
-		        kx = tile_width * kx;
+				kx = tile_width * kx;
 		}
 
 		/* Verify location */
@@ -958,11 +958,11 @@ void move_cursor_relative(int y, int x)
 
 	if (tile_width > 1)
 	{
-	        vx += (tile_width - 1) * kx;
+			vx += (tile_width - 1) * kx;
 	}
 	if (tile_height > 1)
 	{
-	        vy += (tile_height - 1) * ky;
+			vy += (tile_height - 1) * ky;
 	}
 
 	/* Go there */
@@ -1000,7 +1000,7 @@ static void print_rel_map(wchar_t c, byte a, int y, int x)
 
 		if (tile_height > 1)
 		{
-		        ky = tile_height * ky;
+				ky = tile_height * ky;
 			if (ky + 1 >= t->hgt) continue;
 		}
 
@@ -1012,7 +1012,7 @@ static void print_rel_map(wchar_t c, byte a, int y, int x)
 
 		if (tile_width > 1)
 		{
-		        kx = tile_width * kx;
+				kx = tile_width * kx;
 			if (kx + 1 >= t->wid) continue;
 		}
 
@@ -1023,7 +1023,7 @@ static void print_rel_map(wchar_t c, byte a, int y, int x)
 		Term_queue_char(t, kx, ky, a, c, 0, 0);
 
 		if ((tile_width > 1) || (tile_height > 1))
-		        Term_big_queue_char(Term, kx, ky, a, c, 0, 0);
+				Term_big_queue_char(Term, kx, ky, a, c, 0, 0);
 	}
 }
 
@@ -1066,7 +1066,7 @@ void print_rel(wchar_t c, byte a, int y, int x)
 	Term_queue_char(Term, vx, vy, a, c, 0, 0);
 
 	if ((tile_width > 1) || (tile_height > 1))
-	        Term_big_queue_char(Term, vx, vy, a, c, 0, 0);
+			Term_big_queue_char(Term, vx, vy, a, c, 0, 0);
   
 }
 
@@ -1163,7 +1163,7 @@ static void prt_map_aux(void)
 		/* Dump the map */
 		for (y = t->offset_y, vy = 0; y < ty; vy++, y++)
 		{
-		        if (vy + tile_height - 1 >= t->hgt) continue;
+			if (vy + tile_height - 1 >= t->hgt) continue;
 			for (x = t->offset_x, vx = 0; x < tx; vx++, x++)
 			{
 				/* Check bounds */
@@ -1226,7 +1226,7 @@ void prt_map(void)
 
 			if ((tile_width > 1) || (tile_height > 1))
 			{
-			        Term_big_queue_char(Term, vx, vy, a, c, TERM_WHITE, L' ');
+				Term_big_queue_char(Term, vx, vy, a, c, TERM_WHITE, L' ');
 			}
 		}
 	}
@@ -2012,13 +2012,13 @@ static void update_view_one(struct cave *c, int y, int x, int radius, int py, in
 		 * don't steal LOS. */
 		if (ax == 2 && ay == 1) {
 			if (  !cave_iswall(c, y, x - sx)
-			    && cave_iswall(c, y - sy, x - sx)) {
+				&& cave_iswall(c, y - sy, x - sx)) {
 				xc = x;
 				yc = y;
 			}
 		} else if (ax == 1 && ay == 2) {
 			if (  !cave_iswall(c, y - sy, x)
-			    && cave_iswall(c, y - sy, x - sx)) {
+				&& cave_iswall(c, y - sy, x - sx)) {
 				xc = x;
 				yc = y;
 			}
@@ -2801,8 +2801,8 @@ void disturb(struct player *p, int stop_search, int unused_flag)
 	if (p->running) {
 		p->running = 0;
 
- 		/* Check for new panel if appropriate */
- 		if (OPT(center_player)) verify_panel();
+		/* Check for new panel if appropriate */
+		if (OPT(center_player)) verify_panel();
 		p->update |= PU_TORCH;
 	}
 
@@ -2971,14 +2971,14 @@ bool cave_isrubble(struct cave *c, int y, int x) {
  * is replaced by a closed door.
  */
 bool cave_issecretdoor(struct cave *c, int y, int x) {
-    return c->feat[y][x] == FEAT_SECRET;
+	return c->feat[y][x] == FEAT_SECRET;
 }
 
 /**
  * True if the square is an open door.
  */
 bool cave_isopendoor(struct cave *c, int y, int x) {
-    return c->feat[y][x] == FEAT_OPEN;
+	return c->feat[y][x] == FEAT_OPEN;
 }
 
 /**
@@ -3013,7 +3013,7 @@ bool cave_isdoor(struct cave *c, int y, int x) {
  * True if the square is an unknown trap (it will appear as a floor tile).
  */
 bool cave_issecrettrap(struct cave *c, int y, int x) {
-    return c->feat[y][x] == FEAT_INVIS;
+	return c->feat[y][x] == FEAT_INVIS;
 }
 
 /**
@@ -3056,21 +3056,21 @@ bool feature_isshop(int feat) {
  * True if cave is an up or down stair
  */
 bool cave_isstairs(struct cave*c, int y, int x) {
-    return cave_isupstairs(c, y, x) || cave_isdownstairs(c, y, x);
+	return cave_isupstairs(c, y, x) || cave_isdownstairs(c, y, x);
 }
 
 /**
  * True if cave is an up stair.
  */
 bool cave_isupstairs(struct cave*c, int y, int x) {
-    return c->feat[y][x] == FEAT_LESS;
+	return c->feat[y][x] == FEAT_LESS;
 }
 
 /**
  * True if cave is a down stair.
  */
 bool cave_isdownstairs(struct cave *c, int y, int x) {
-    return c->feat[y][x] == FEAT_MORE;
+	return c->feat[y][x] == FEAT_MORE;
 }
 
 /**
@@ -3313,7 +3313,7 @@ void cave_lock_door(struct cave *c, int y, int x, int power) {
 
 bool cave_hasgoldvein(struct cave *c, int y, int x) {
 	return c->feat[y][x] >= FEAT_MAGMA_H
-	    && c->feat[y][x] <= FEAT_QUARTZ_K;
+		&& c->feat[y][x] <= FEAT_QUARTZ_K;
 }
 
 void cave_tunnel_wall(struct cave *c, int y, int x) {
