@@ -432,6 +432,8 @@ static void store_base_power (void)
 	art_total = art_melee_total + art_bow_total + art_armor_total +
 	            art_shield_total + art_cloak_total + art_headgear_total +
 	            art_glove_total + art_boot_total + art_other_total;
+
+    FREE(fake_power);
 }
 
 
