@@ -197,6 +197,8 @@ void free_stores(void)
 			string_free(o->name);
 			mem_free(o);
 		}
+
+		string_free((void *)store->name);
 	}
 	mem_free(stores);
 }

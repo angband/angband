@@ -219,7 +219,7 @@ int message_lookup_by_name(const char *name)
 	unsigned int number;
 
 	if (sscanf(name, "%u", &number) == 1)
-		return (number < MSG_MAX) ? number : -1;
+		return (number < MSG_MAX) ? (int)number : -1;
 
 	for (i = 0; i < N_ELEMENTS(message_names); i++) {
 		if (my_stricmp(name, message_names[i]) == 0)

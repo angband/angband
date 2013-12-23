@@ -680,6 +680,7 @@ static void cleanup_r(void)
 			mem_free(m);
 			m = mn;
 		}
+		string_free(r->plural);
 		string_free(r->text);
 		string_free(r->name);
 	}

@@ -323,6 +323,8 @@ static errr init_names(void)
 				strlen(a->name) + 8);
 		}
 
+		string_free(a->text);
+		string_free(a->name);
 		a->text = string_make(desc);
 		a->name = artifact_gen_name(a, name_sections);
 	}
@@ -432,6 +434,8 @@ static void store_base_power (void)
 	art_total = art_melee_total + art_bow_total + art_armor_total +
 	            art_shield_total + art_cloak_total + art_headgear_total +
 	            art_glove_total + art_boot_total + art_other_total;
+
+    FREE(fake_power);
 }
 
 
