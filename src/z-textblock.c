@@ -307,4 +307,7 @@ void textblock_to_file(textblock *tb, ang_file *f, int indent, int wrap_at)
 		else
 			file_putf(f, "%*c%.*ls\n", indent, ' ', line_lengths[i], tb->text + line_starts[i]);
 	}
+
+	mem_free(line_starts);
+	mem_free(line_lengths);
 }

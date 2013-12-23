@@ -323,6 +323,8 @@ static errr init_names(void)
 				strlen(a->name) + 8);
 		}
 
+		string_free(a->text);
+		string_free(a->name);
 		a->text = string_make(desc);
 		a->name = artifact_gen_name(a, name_sections);
 	}
