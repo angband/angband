@@ -2489,6 +2489,7 @@ static bool store_will_buy_tester(const object_type *o_ptr)
 			case TV_WAND:
 				if (!store_can_carry(store, o_ptr->kind) && object_is_known(o_ptr))
 					return FALSE;
+				break;
 
 			default:
 				if (object_is_known(o_ptr))
