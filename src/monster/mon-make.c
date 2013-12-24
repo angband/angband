@@ -1107,7 +1107,6 @@ static bool place_monster_base_okay(monster_race *race)
 	int level_difference, extra_chance, nx, ny;
 	int j;
 	bool is_unique, success = TRUE;
-	int j;
 	
 	/* Find the difference between current dungeon depth and monster level */
 	level_difference = p_ptr->depth - friends_race->level + 5;
