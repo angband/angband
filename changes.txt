@@ -91,7 +91,7 @@ Bugs fixed
 * Fix pval display on artifact jewelry. (#1789)
 * Light up quartz and magma only when the player can see them.
 * Pushing or trampling mimics now reveals them. (#1755)
-
+* Allow shift-arrow-keys to run in curses again. (#1756)
 
 Gameplay changes
 ----------------
