@@ -1,0 +1,275 @@
+markdown = "true"
+Downloads
+=========
+ - [Source code][1]
+ - [Windows][2]
+ - [OS X][3] (10.5+)
+
+[1]:http://rephial.org/downloads/3.5/angband-v3.5.0.tar.gz "Source tarball, 18M"
+[2]:http://rephial.org/downloads/3.5/angband-v3.5.0-win.zip "Windows port, 16M zip file"
+[3]:http://rephial.org/downloads/3.5/Angband-v3.5.0-osx.dmg "Max OS X port, 17M .dmg file"
+
+Background
+==========
+Angband 3.5.0 was released on 24th December 2012.  It was the first major release in over a year, though many players had been playing the latest autobuilt development version for some time.  It made significant changes to many aspects of gameplay including monster groups, item generation, ego item allocation, dungeon generation, and the removal of charisma as player stat.
+
+Gameplay changes
+----------------
+* Monster groups completely overhauled.  Now different monsters tend to appear with different companions, and some uniques appear together too.  This results in e.g. groups of novice adventurers of different kinds appearing together.
+* Rebalance object generation. Flatten out chances of getting good and great items - means more good and great items early on, proportionally fewer later.
+* Rewrite ego allocation and rarities so that egos are more level-appropriate.
+* Turn off selling to stores by default. Tweak the store interface so that it no longer talks about selling for 0 gold, instead you give items to the store in return for identification or recharging.
+* Monsters spawn a lot less frequently after level is created (chance per turn has gone from 1/160 to 1/500).
+* Reduce the size of monster escorts and groups.
+* Make uniques more likely to drop out-of-depth items, and reduce the number of chances DROP_GREAT drops get at being great to compensate.
+* Elvenkind now has level-dependent speed bonuses.
+* Give thematic spell-book drops to monsters.
+* Make town spellbooks available earlier in the dungeon (at dlev1 instead of dlev5).
+* Change monster elemental attacks so that they do some part of their damage using elemental damage and some of it using physical damage. This means that the damage a monster attack gets calculated twice - once for if it was pure damage, one if it was elemental damage. Whichever of the two is higher is the amount of damage dealt.  This meant that immunity won't reduce damage ridiculously low.
+* Make Purifications and Healing a bit more of a find for Paladins by making CSW and CMW slightly better than the earlier versions instead of worse.  (#888)
+* Give the player a bonus to damage absorption for physical elemental attacks (085574b82d649)
+* Some monster attacks no longer do physical damage (e.g. touch, spit, etc.) - they only do elemental damage. (3fc86a0f84db)
+* Remove birth_ai_smart (broken). Replace with birth_force_descend, which is like 'ironman lite' - you can only take down stairs. You can still recall but down stairs from the town take you to your deepest level + 1.
+* Make the damage monsters deal with each attack and their AC visible to the player after one attack/one hit.
+* Remove Charisma and tone down gold drops to compensate.
+* Remove Iron Spikes, jammed doors, and player door bashing.
+* Replace rings of rFire & rCold with one ring, rFire&Cold
+* Move =Flames/Ice/Lightning/Acid higher in the dungeon
+* Radically improve Slow Digestion (you nearly never need to eat with it).
+* Tweak mushrooms:
+ - fast recovery heals some HP, clear mind heals 10SP.
+ - substantially increase duration of telepathy from ,SecondSight and rConf from ,ClearMind.
+ - Terror now gives you +10 speed
+ - 2x change of finding ,Vigor, will be found later
+ - mushrooms appear generally later in the dungeon and are spread out more
+* Stop scrolls of Curse Armour/Weapon being generated, since they are gamebreaking when there are no sources of Remove Curse.
+* All classes now start with a dagger (except priests) and less food/fewer torches.
+* Split out start_kit option from no_selling.
+* More option removals: maximise, birth_ai_smell, birth_ai_packs and easy_open are now permanently on. birth_ai_cheat is permanently off. Most disturb options have been removed, leaving only the one that people seem to actually change.
+* Add solid and hybrid wall options, a la Sil. This removes platform-specific solid wall setups.
+* Tone down the drop frequencies of spellbooks
+* The Phial is radius 3 again.
+* Instead of the general store having only 'always stocked' items, most shops now have some 'always stocked' items. These items are in an infinite stack, so you can buy as many as you like and there will always be another 40 in the store.
+* There are more food types for sale at the General Store, and it sometimes stocks some mushrooms now as well.
+* The Temple sells healing potions again now, and the alchemist will sometimes stock other potions it couldn't previously.
+* Polymorph monster is more likely to work and has a wider range of possible monsters to switch between.
+* Boots of Speed and Boots of Elvenkind are now at least +2 and +4, respectively.
+* Make the priest/paladin spell recharging rise with level as the description says.  It'll be as good at the scroll at clev30.
+* Remove Gorged status if you eat too much food.
+* Teleport object power now triggers 2x as often.
+* No rings are now native <DL10
+* All DSM breath weapons do at least 150 damage
+* Move hellhounds to level 42 (#1718)
+* Prevent regeneration during the first few turns of resting. (#1771)
+* Allow randarts to have random flavors again.
+* Drop equipped items when squelched (with confirmation). (#1737)
+* Special flavoured artifacts have fixed item flavours now. (#1646)
+
+Level generation changes:
+* Add Nomad's new rooms, which make dungeons feel a lot more interesting.
+* Add pac-man vault
+* Rebalance frequencies and levels for different room types
+* Increase floor drops in caverns and labyrinths
+* Allow two nests or pits each level
+* Reduce pit size and make nest size variable
+
+
+User interface
+--------------
+* Make the default macro for 'swap weapon' be assigned to 'x' instead of 'X' for the Angband keyset. (#860)
+* Make inventory listings terser in the term window if there's not much room.  (#121)
+* Make it so skills, hitdie and exp modifier when selecting a class on the birth screen are shown with racial adjustments, a la stat display. Fixes #1705 (thanks danial.santos).
+* Improved error message for no available new spells to gain. Thanks to hboetes for pointing it out.
+* Redesign character sheet, changing the fighting and shooting skills scores into numbers comparable to to-hit scores, and rearranging all combat info to be together in the centre of the screen. Also improve spacing.  Fix height/weight display to be in sensible units.
+* Rename =Delving to =Digging for thematic consistency
+* Add option to show damage player does to monster in melee.
+* Add a prompt if you try to deactivate WoR, just in case.
+* Add Dragon Scale Mail category to squelch
+* Remove player social class
+* Allow loading and saving of autoinscription preferences to pref file.
+* Include Dubtrain's sound set instead of the one Angband perviously had (encoded as high-quality VBR MP3).
+* Add platform-native save dialogue boxes for character dumps and other things which prompt for a file to save to on OS X (both Carbon and Cocoa). Add note telling user where character dump is going to be saved to in text mode.
+* On UNIX systems, there is a -l argument which shows you which savefiles you can use and what they are (e.g. savefile 'Nomad', L30 High-Elf Warrior on dungoen level 30). This will be ported to other frontends at some point.
+* (Windows) Add some keyboard shortcuts to the Windows port for 'new game' and 'open game'.  (#887)
+* (Windows) Make the windows port save the game before closing on shutdown.  (#296)
+* (Curses) Allow specification of number of terminals in the curses port.
+* Combine first two pages of options together; rearrange vaguely thematically.  Add autoinscription shortcut from main options screen.
+* Stop allowing the user to save options to a pref file, to avoid confusion.  (#1127)
+* Add Sil-style target highlighting option
+* Add a new splashscreen
+* Stop truncating player notes, clean up character dump so history looks more like how Sil has it, and modernise player history UI.  (#1615)
+* Allow object recall during look.  (#1684)
+* Add separate squelch category for Blades of Chaos, Scythe of Slicing, Made of Disruption. (#1781)
+* Call the plasma effect plasma everywhere, not sometimes hellfire and sometimes plasma.
+* Add command to toggle spell description. (#1628)
+* Remove 'mouse button' support.
+* Rewrite monster list and object list code, making both less buggy and swisher. (#1611, #1803)
+* Fix lighting settings in graphics modes.
+* Change vein colors for better visibility. (#1786)
+* Use flavored object kind for untouched artifacts. (#1646)
+* Update browse prompt with ? toggle.
+* Update context menus to use correct keys and to check inscriptions, as well as making them gray out properly.
+* Display a message when both equipment and inventory are empty and the player presses 'e'.
+
+OS X:
+* Include Ben Semmler's excellent work on the Mac port:
+  - Term windows can now be resized.
+  - Add a command menu to get around issues with non-US keyboards. #880, #1460
+  - Create a safe install target for development versions. #506
+  - Change some makefile and Info.plist things to clean up version strings. #1701
+  - Make windows closeable based on subwindow flags. #1664
+* Fix for #1709: Use isMainWindow instead of isKeyWindow for detecting front-most window in main-cocoa, and don't try to change font for non-Angband windows. Also update the font selection panel when windows become main.
+* Fix for #1695: In the Cocoa port, Cmd-Q now does nothing when inkey_flag is false, e .g. when the inventory menu is up. This behavior is now consistent with the Windows port.
+* Finished the fix to #1669: remove call to displayIfNeeded from Cocoa TERM_XTRA_FRESH handler. (thanks to mtadd)
+* Further issues from #1678: corrected bounds for clickable region and added support for OPT(mouse_buttons).
+* Add right click and click plus modifier support.
+* Add mouseclick support for the Cocoa frontend.
+* Add support for animate_flicker option.
+
+
+Bugs fixed
+----------
+* Force radius 3 for randart lights. (#1752)
+* Fix up monster recall colouring and hit chance.  (#1772)
+* Allow drop/drop all from the inventory context menu to work correctly in the home. (#1727)
+* Inscriptions now take use the roguelike keyset if that's what you're using.  (#437)
+* Fix object visuals dumping bug reported at http://angband.oook.cz/forum/showthread. php?t=5864
+* Picking things up wasn't using energy. Also fix autopickup not always working.  (#1759)
+* Omit unnecessary UI updates during birth process. Helps with refresh issues.  (#1669)
+* Correct comments for X: in p_race.txt. (#1708)
+* Reformatted Greater Maia description. (#1691)
+* Clean up msg_repository[]. (#1690)
+* Re-enable autosave. (#1699)
+* Fix article handling when a detected item that's really a mimic, but is displaying as a red star because the player hasn't had LOS with it yet, is found to be a mimic.  (#1676)
+* Fix up article handling in messages reported in forum posts. (#1500)
+* Fix monster capitalisation typos. (#1711) Patch by mart0258.
+* Stop crashes when changing to ASCII in SDL.
+* Fix UTF8 in HTML screendumps.
+* Fix cursor in bigtile mode.
+* Fixed a crash bug where do_cmd_inven() and do_cmd_equip() permitted tracking nonexistent items.
+* Fix keymap pref-parsing bug (patch by AnonymousHero). (#1683)
+* Fix typos in hints.txt and object.txt.
+* Fix up various bugs with the item list: stop it combining items the player doesn't know are the same (#1687), stop leaking information on unknown items.
+* Stop giving the player a menu for pickup if there is only 1 item they can see but other items that are squelched.
+* Assign 'O' as roguelike keyset equivalent of 'K' (unhide squelched items). (#1679)
+* Make sure that both Enter and 't' can toggle options in all option submenus.  (#1501)
+* Allow the -u switch to specify filenames outside of ANGBAND_LIB_SAVE on non-setgid systems. (#1220)
+* Fix the birth menu starting race and class on the last entry instead of the first.
+* Save HP warning and delay factor settings to options pref file.
+* Allow pStun to be generated on non-body armour randarts.
+* Fix up the logic of teleport level so it's always correct.
+* Show quiver slots in inventory again (#1761)
+* Fix monster tile mappings in the Adam Bolt tileset by nicking them all from PWMAngband (many thanks!).  (#905)
+* Stairs never appear in walls after killing Morgoth (fixes #874).
+* Allow >255 character wide/high screens.  (#427)
+* The game will first look for a user pref file matching the character name (as it currently does). If that fails, it will try to find one matching the savefile name. Should address parts of #671 and #758.  (Thanks Ben Semmler)
+* A load of grammar fixes (thanks Ben Semmbler).  Fixes #1738, #1732, #1731.
+* Clean up duplicate and conflicting monster flags (thanks Ben Semmler).  Fixes #1601, #1692.
+* Change description for deep descent from two levels down to five levels down.
+* Fix cavern redraw bug, update a lot of code to use cave->(width|height) instead of DUNGEON_(HGT|WID)  (fixes #1751).
+* Fix original tiles trap detect image (it was a hydra before)
+* Make the game handle neuter gender better.  (#1763)
+* Move universal use in the roguelike keyset to 'X' to avoid conflict with running north east. (#1758)
+* Univeral use command defaults now to inventory instead of equipment. (#1736)
+* Make the subwindow inventory display responsive to its term size - hiding the weights and abbreviating item descriptions  * in small windows.  (#1735)
+* Fix old bug there if a monster is targeted using 'free targeting' mode, use_old_target would never clear after it was dead. *  (#332)
+* Ensure monster death messages to go last, so you don't get "it dies.  it moans in pain." type messages. (#1554)
+* Clear overhead subwindow on level change when necessary. (#1495)
+* Allow monsters to be placed on locations that have objects.
+* Various grammar fixes (full stops, singular/plural agreement)
+* Fix description for Rend Soul.
+* In character dumps, don't include origin information for non-wearables and don't include obvious and basic flags.
+* Fix typo that limited boulder damage.
+* Light description and character dump fixes.  (#401, #403, #1681, #1325, #1681)
+* Get rid of extra linebreaks in character dumps. (#1325)
+* Stop mimics revealing themselves when running. (#1667)
+* Adjust 'when drunk' to 'when quaffed' for pedants.  (#1635)
+* Add back in sounds on monster deaths from spells.  (#1630)
+* Stop the inventory menu overwriting item descriptions.  (#1725)
+* Only show fail rates on items when requested if those items have fail rates.  (#1734)
+* Display a blank for a message count of zero. (#1787)
+* Allow chests underfoot to be disarmed. (#1779)
+* Fix gcu window sizing bug when there are any number of rows or columns besides 1 or 3.
+* Prevent polymorphing into force-depth monsters.
+* Attempt a fix of #142, hopefully making Windows fonts not disappear after an upgrade / folder move.
+* Force drop knowledge on first kill and use race flags to determine drop text. (#1780)
+* Gray out and disable some context menu items. (#1776)
+* Check user directory for pref files. (#671)
+* Offset cursor for sval squelch menu. (#1785)
+* Feel objects when blind or without light. (#1665)
+* Fix sounds, make message pref files use textual message types instead of numbers.  (#1748), #1799.
+* Fix various monster death messages and sounds.
+* Prevent traps from being created on glyphs. (#1790)
+* Partially address #671: Strip roman numeral suffixes when looking for pref files to load.
+* Reorder inventory before displaying identification messages. (#1037)
+* Create full stacks when combining pack. (#1733)
+* Fix out-of-bounds crash in cave_monster_at(). (#1801)
+* Fix chaos damage message. (#1806)
+* Update map to show items felt during blindness.
+* Fix pickup behaviour in the dark. (#1665)
+* Save "unignore" status in savefiles. (#1293)
+* Fix some monster plurals. (#1424)
+* Fix mimic damage monsters when they're still mimicking. (#1754)
+* Fix pval display on artifact jewelry. (#1789)
+* Light up quartz and magma only when the player can see them.
+* Pushing or trampling mimics now reveals them. (#1755)
+* Allow shift-arrow-keys to run in curses again. (#1756)
+
+
+
+Borg changes
+------------
+* Clean up logic and fix bugs in borg_item_analyze().
+* Make borg room lighting behaviour a lot smarter.
+* The borg turns off 'lazy movement' if it's on because it can't cope with it.
+* Allow the borg to remove rubble it finds.
+* Fix up borg ID routines to reflect the fact the game doesn't have 'light' pseudo anymore, and to get less confused about equip/inven screen selection.
+* Lots of unused or defunct code has been removed (unused globals, copies of the main game's constants/tables).
+* Lots of other code has been cleaned up significantly (removing unused function arguments, repeated code, msg(NULL) -> message_flush()).
+
+
+Coding changes
+--------------
+* Stop the code indexing into the monster race array all the time, instead preferring to pass around monster_race *. This has allowed significant simplifications throughout the code.
+* Merge all store-related info in external files into a rewritten store.txt.
+* Support building with clang.
+* Add debug command to really hurt monsters ('H')
+* Fix loads of warnings and errors that clang and splint threw up.
+* Remove p_ptr->command_arg.
+* Change alloc_prob and rarities to an int instead of a byte. (#1677)
+* Refactor and simplify get_obj_num_by_kind(). Patch by daniel.santos. (#1707)
+* Refactor a load of duplicated code in mon-power.c. Patch mostly by daniel.santos. (#1706)
+* Remove Carbon-specific support for using '~' in paths on OS X to mean 'home directory' because Carbon is deprecated and it's unnecessary.
+* Get close to removing z-type.c
+* Factor out a lot of externs.h
+* As ever, more little bits of cleanup and removal of old unused code.
+* Allow item creation to be narrowed to one tval only.
+* Replace a lot of passing around indexes into r_info, k_info etc with passing pointer to the appropriate entry instead. Closes out #1499.
+* Clean up options saving code
+* Change the format of flavors.txt so each flavour is on its own line - it's a lot more readable now. (#576)
+* Refactor savefile loading framework into multiple shorter functions. It's a lot cleaner now.
+* Remove op_ptr->base_name and process_player_name(). Replace with savefile_set_name() to set savefile filename and player_safe_name() which returns a filesystem-safe player name.
+* Make the -d commandline arg useful (only applicable to non-Windows/OS X installs)
+* Split SET_UID define out into SETGID for multiuser installs and UNIX. UNIX includes OS X. This means that on individual-user setups, the savefile no longer has your UID prepended. Angband will rename your savefiles to the new style when you first run it.
+* Terrain feature flags now have the same bitflag system as the rest of th game, and are used by cave_is* predicates where appropriate.
+* Convert most cave->feat access (and uses of FEAT_*) to function calls instead (e.g. cave->feat == FEAT_FLOOR -> cave_isfloor(), add cave_isshop(), & more)
+* Remove cave_bold* functions/macros because they were named ridiculously, replace with better named functions.
+* Rewrite FOV code to remove a massive Ben-era hack (vinfo_hack, and also uses of view_g/view_n/fast_cave_info). FOV is now more restrictive than before.
+* The various CAVE_ constants (for cave->info[][]) have been named more sensibly, and in some places stopped being used
+* Replace file_seek() with file_skip() as it was unused and skipping is more useful.
+* The buildsystem can now build and install the HTML & PDF documentation. The OS X dist target and scripts/pkg_win will also package the manual if it exists. 'make dist' in the angband directory will now try to make the manual before packaging up the game and supercedes scripts/pkg_src.
+* Try to move things out of defines.h into more appropriate places, and likewise with util.c
+* Update lore system to use textblocks.
+* Fix macros with potential side effects. (#1668)
+* Make monster_desc() and its callers cleaner.
+* Add spaces to colour names for text_out_e.
+* Remove nether breath giving nether resistance for monsters; follow up close of #1791.
+* Make do_cmd_wiz_query() actually display results.
+
+
+Documentation changes
+---------------------
+* Add the player's guide (basic strategy and tactics) from the old wiki. It's by no means complete but it is something at least.
+* Update the help files with info about protections and resistances
+* Update inscription documentation.
+* Fix option documentation (#1750)
