@@ -351,10 +351,7 @@ C:1:^C
 
 ##### System Specific Subfiles #####
 
-#?:[EQU $SYS mac]
-#%:pref-run.prf
-
-#?:[EQU $SYS sdl]
-#%:pref-run.prf
+?:[EQU $SYS gcu]
+%:keys-gcu.prf
 
 ?:1
