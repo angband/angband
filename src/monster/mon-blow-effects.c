@@ -778,7 +778,7 @@ melee_effect_handler_f melee_handler_for_blow_effect(monster_blow_effect_t effec
 	};
 	const struct blow_handler_s *current = blow_handlers;
 
-	if (effect < RBE_NONE || effect >= RBE_MAX)
+	if (effect >= RBE_MAX)
 		return NULL;
 
 	while (current->effect != RBE_MAX && current->function != NULL) {
@@ -806,7 +806,7 @@ int monster_blow_effect_power(monster_blow_effect_t effect)
 		#undef RBE
 	};
 
-	if (effect < RBE_NONE || effect >= RBE_MAX)
+	if (effect >= RBE_MAX)
 		return 0;
 
 	return effect_powers[effect];
@@ -828,7 +828,7 @@ const char *monster_blow_effect_description(monster_blow_effect_t effect)
 	};
 
 	/* Some blows have no effects, so we do want to return whatever is in the table for RBE_NONE */
-	if (effect < RBE_NONE || effect >= RBE_MAX)
+	if (effect >= RBE_MAX)
 		return "do weird things";
 
 	return r_blow_effect_description[effect];
@@ -849,7 +849,7 @@ int monster_blow_effect_eval(monster_blow_effect_t effect)
 		#undef RBE
 	};
 
-	if (effect < RBE_NONE || effect >= RBE_MAX)
+	if (effect >= RBE_MAX)
 		return 0;
 
 	return effect_evals[effect];
@@ -885,5 +885,5 @@ monster_blow_effect_t monster_blow_effect_for_string(const char *string)
  */
 bool monster_blow_effect_is_valid(monster_blow_effect_t effect)
 {
-	return effect >= RBE_NONE && effect < RBE_MAX;
+	return effect < RBE_MAX;
 }

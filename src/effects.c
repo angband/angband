@@ -1051,8 +1051,8 @@ bool effect_handler_RESTORE_LIFE(effect_handler_context_t *context)
 
 bool effect_handler_DISPEL_EVIL(effect_handler_context_t *context)
 {
-	context->ident = TRUE;
 	int dam = p_ptr->lev * 5 * (100 + context->boost) / 100;
+	context->ident = TRUE;
 	dispel_evil(dam);
 	return TRUE;
 }
@@ -1706,8 +1706,8 @@ bool effect_handler_TRAP_RUNE_TELEPORT(effect_handler_context_t *context)
 
 bool effect_handler_TRAP_SPOT_FIRE(effect_handler_context_t *context)
 {
-	msg("You are enveloped in flames!");
 	int dam = damroll(4, 6);
+	msg("You are enveloped in flames!");
 	dam = adjust_dam(p_ptr, GF_FIRE, dam, RANDOMISE,
 					 check_for_resist(p_ptr, GF_FIRE, p_ptr->state.flags, TRUE));
 	if (dam) {
@@ -1719,8 +1719,8 @@ bool effect_handler_TRAP_SPOT_FIRE(effect_handler_context_t *context)
 
 bool effect_handler_TRAP_SPOT_ACID(effect_handler_context_t *context)
 {
-	msg("You are splashed with acid!");
 	int dam = damroll(4, 6);
+	msg("You are splashed with acid!");
 	dam = adjust_dam(p_ptr, GF_ACID, dam, RANDOMISE,
 					 check_for_resist(p_ptr, GF_ACID, p_ptr->state.flags, TRUE));
 	if (dam) {
@@ -1926,13 +1926,14 @@ effect_type effect_lookup(const char *name)
 bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam, int boost)
 {
 	bool handled = FALSE;
+	effect_handler_f handler;
 
 	if (!effect_valid(effect)) {
 		msg("Bad effect passed to do_effect().  Please report this bug.");
 		return FALSE;
 	}
 
-	effect_handler_f handler = effect_handler(effect);
+	handler = effect_handler(effect);
 
 	if (handler != NULL) {
 		random_value value = effect_value(effect);

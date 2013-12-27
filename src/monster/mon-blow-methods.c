@@ -36,7 +36,7 @@ bool monster_blow_method_cut(monster_blow_method_t method)
 		#undef RBM
 	};
 
-	if (method < RBM_NONE || method >= RBM_MAX)
+	if (method >= RBM_MAX)
 		return FALSE;
 
 	return blow_cuts[method];
@@ -57,7 +57,7 @@ bool monster_blow_method_stun(monster_blow_method_t method)
 		#undef RBM
 	};
 
-	if (method < RBM_NONE || method >= RBM_MAX)
+	if (method >= RBM_MAX)
 		return FALSE;
 
 	return blow_stuns[method];
@@ -78,7 +78,7 @@ int monster_blow_method_message(monster_blow_method_t method)
 		#undef RBM
 	};
 
-	if (method < RBM_NONE || method >= RBM_MAX)
+	if (method >= RBM_MAX)
 		return MSG_GENERIC;
 
 	return blow_messages[method];
@@ -143,7 +143,7 @@ const char *monster_blow_method_action(monster_blow_method_t method)
 	};
 	const char *action = NULL;
 
-	if (method < RBM_NONE || method >= RBM_MAX)
+	if (method >= RBM_MAX)
 		return NULL;
 
 	action = blow_actions[method];
@@ -173,7 +173,7 @@ bool monster_blow_method_miss(monster_blow_method_t method)
 		#undef RBM
 	};
 
-	if (method < RBM_NONE || method >= RBM_MAX)
+	if (method >= RBM_MAX)
 		return FALSE;
 
 	return blow_misses[method];
@@ -194,7 +194,7 @@ bool monster_blow_method_physical(monster_blow_method_t method)
 		#undef RBM
 	};
 
-	if (method < RBM_NONE || method >= RBM_MAX)
+	if (method >= RBM_MAX)
 		return FALSE;
 
 	return blow_physicals[method];
@@ -252,5 +252,5 @@ monster_blow_method_t monster_blow_method_for_string(const char *string)
  */
 bool monster_blow_method_is_valid(monster_blow_method_t method)
 {
-	return method >= RBM_NONE && method < RBM_MAX;
+	return method < RBM_MAX;
 }
