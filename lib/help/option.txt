@@ -221,9 +221,12 @@ Lose artifacts when leaving level '[birth_no_preserve]'
 
 .. _birth_no_stairs:
 
-Don't generate connected stairs '[birth_no_s	tairs]'
-  Never generate a staircase back to the level you came from, if you used a
-  staircase to get to the level.
+Don't generate connected stairs '[birth_no_stairs]'
+  Normally, if you go down stairs, you start the new level on an up
+  staircase, and vice versa (if you go up stairs, you start the next level
+  on a down staircase).  With this option on, you will never start on a
+  staircase - but other staircases up and down elsewhere on the level will
+  still be generated.
 
 .. _birth_no_feelings:
 
