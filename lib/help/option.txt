@@ -230,7 +230,7 @@ Don't show level feelings '[birth_no_feelings]'
 
 .. _birth_no_selling:
 
-Items always sell for 0 gold '[birth_no_selling]'
+Increase gold drops but disable selling '[birth_no_selling]'
   Shopkeepers will never pay you for items you sell, though they will still
   identify unknown items for you, and will still sell you their wares. To
   balance out income in the game, gold found in the dungeon will be

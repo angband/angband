@@ -83,7 +83,7 @@ OP(birth_no_stairs,       "Don't generate connected stairs",
 BIRTH, FALSE)
 OP(birth_no_feelings,     "Don't show level feelings",
 BIRTH, FALSE)
-OP(birth_no_selling,      "Items always sell for 0 gold",
+OP(birth_no_selling,      "Increase gold drops but disable selling",
 BIRTH, TRUE)
 OP(birth_keep_randarts,   "Use previous set of randarts",
 BIRTH, TRUE)
