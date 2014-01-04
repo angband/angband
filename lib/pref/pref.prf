@@ -275,7 +275,7 @@ A:Q
 C:0:^C
 
 # Hack -- Swap equipment
-A:w0\s\s
+A:w0
 C:0:x
 
 ##### Roguelike Keyset Mappings #####
