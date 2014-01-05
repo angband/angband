@@ -677,7 +677,7 @@ int context_menu_cave(struct cave *c, int y, int x, int adjacent, int mx, int my
 
 		case CMD_PATHFIND:
 			cmd_insert(selected);
-			cmd_set_arg_point(cmd_get_top(), 0, x, y);
+			cmd_set_arg_point(cmdq_peek(), 0, x, y);
 			break;
 
 		case CMD_ALTER:
@@ -689,12 +689,12 @@ int context_menu_cave(struct cave *c, int y, int x, int adjacent, int mx, int my
 		case CMD_WALK:
 		case CMD_RUN:
 			cmd_insert(selected);
-			cmd_set_arg_direction(cmd_get_top(), 0, coords_to_dir(y,x));
+			cmd_set_arg_direction(cmdq_peek(), 0, coords_to_dir(y,x));
 			break;
 
 		case CMD_CAST:
 			if (textui_obj_cast_ret() >= 0) {
-				cmd_set_arg_target(cmd_get_top(), 1, DIR_TARGET);
+				cmd_set_arg_target(cmdq_peek(), 1, DIR_TARGET);
 			}
 			break;
 
@@ -702,7 +702,7 @@ int context_menu_cave(struct cave *c, int y, int x, int adjacent, int mx, int my
 		case CMD_THROW:
 		case CMD_USE_ANY:
 			cmd_insert(selected);
-			cmd_set_arg_target(cmd_get_top(), 1, DIR_TARGET);
+			cmd_set_arg_target(cmdq_peek(), 1, DIR_TARGET);
 			break;
 
 		default:
@@ -883,8 +883,8 @@ int context_menu_object(const object_type *o_ptr, const int slot)
 			/* Drop entire stack with confirmation. */
 			if (get_check(format("Drop %s? ", header))) {
 				cmd_insert(store_in_store ? CMD_STASH : CMD_DROP);
-				cmd_set_arg_item(cmd_get_top(), 0, slot);
-				cmd_set_arg_number(cmd_get_top(), 1, o_ptr->number);
+				cmd_set_arg_item(cmdq_peek(), 0, slot);
+				cmd_set_arg_number(cmdq_peek(), 1, o_ptr->number);
 			}
 			return 1;
 
@@ -943,7 +943,7 @@ int context_menu_object(const object_type *o_ptr, const int slot)
 
 		if (spell >= 0) {
 			cmd_insert(CMD_STUDY_SPELL);
-			cmd_set_arg_choice(cmd_get_top(), 0, spell);
+			cmd_set_arg_choice(cmdq_peek(), 0, spell);
 		}
 	}
 	else if (selected == CMD_CAST) {
@@ -954,17 +954,17 @@ int context_menu_object(const object_type *o_ptr, const int slot)
 
 			if (spell >= 0) {
 				cmd_insert(CMD_CAST);
-				cmd_set_arg_choice(cmd_get_top(), 0, spell);
+				cmd_set_arg_choice(cmdq_peek(), 0, spell);
 			}
 		}
 	}
 	else {
 		cmd_insert(selected);
-		cmd_set_arg_item(cmd_get_top(), 0, slot);
+		cmd_set_arg_item(cmdq_peek(), 0, slot);
 
 		/* If we're in a store, we need to change the "drop" command to "stash". */
 		if (selected == CMD_DROP && store_in_store) {
-			game_command *gc = cmd_get_top();
+			struct command *gc = cmdq_peek();
 			gc->command = CMD_STASH;
 		}
 	}
@@ -1058,8 +1058,8 @@ int context_menu_store(struct store *store, const int oid, int mx, int my)
 		} else {
 			cmd_insert(CMD_SELL);
 		}
-		cmd_set_arg_item(cmd_get_top(), 0, oid);
-		cmd_set_arg_number(cmd_get_top(), 1, 1);*/
+		cmd_set_arg_item(cmdq_peek(), 0, oid);
+		cmd_set_arg_number(cmdq_peek(), 1, 1);*/
 	} else
 	if (selected == 3) {
 		Term_keypress('s', 0);
@@ -1073,8 +1073,8 @@ int context_menu_store(struct store *store, const int oid, int mx, int my)
 		} else {
 			cmd_insert(CMD_BUY);
 		}
-		cmd_set_arg_choice(cmd_get_top(), 0, oid);
-		cmd_set_arg_number(cmd_get_top(), 1, 1);
+		cmd_set_arg_choice(cmdq_peek(), 0, oid);
+		cmd_set_arg_number(cmdq_peek(), 1, 1);
 	} else
 	if (selected == 6) {
 		Term_keypress('p', 0);
@@ -1164,8 +1164,8 @@ int context_menu_store_item(struct store *store, const int oid, int mx, int my)
 		} else {
 			cmd_insert(CMD_BUY);
 		}
-		cmd_set_arg_choice(cmd_get_top(), 0, oid);
-		cmd_set_arg_number(cmd_get_top(), 1, 1);
+		cmd_set_arg_choice(cmdq_peek(), 0, oid);
+		cmd_set_arg_number(cmdq_peek(), 1, 1);
 	} else
 	if (selected == 6) {
 		Term_keypress('p', 0);

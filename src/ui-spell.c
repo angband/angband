@@ -326,11 +326,11 @@ void textui_obj_study(void)
 				"study", spell_okay_to_study);
 		if (spell >= 0) {
 			cmd_insert(CMD_STUDY_SPELL);
-			cmd_set_arg_choice(cmd_get_top(), 0, spell);
+			cmd_set_arg_choice(cmdq_peek(), 0, spell);
 		}
 	} else {
 		cmd_insert(CMD_STUDY_BOOK);
-		cmd_set_arg_item(cmd_get_top(), 0, item);
+		cmd_set_arg_item(cmdq_peek(), 0, item);
 	}
 }
 
@@ -357,7 +357,7 @@ void textui_obj_cast(void)
 	spell = get_spell(object_from_item_idx(item), verb, spell_okay_to_cast);
 	if (spell >= 0) {
 		cmd_insert(CMD_CAST);
-		cmd_set_arg_choice(cmd_get_top(), 0, spell);
+		cmd_set_arg_choice(cmdq_peek(), 0, spell);
 	}
 }
 /* same as above but returns the spell used. two functions to avoid some
@@ -382,7 +382,7 @@ int textui_obj_cast_ret(void)
 	spell = get_spell(object_from_item_idx(item), verb, spell_okay_to_cast);
 	if (spell >= 0) {
 		cmd_insert(CMD_CAST);
-		cmd_set_arg_choice(cmd_get_top(), 0, spell);
+		cmd_set_arg_choice(cmdq_peek(), 0, spell);
 	}
   return spell;
 }

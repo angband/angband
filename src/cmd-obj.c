@@ -1133,7 +1133,7 @@ void textui_cmd_destroy_menu(int item)
 
 	if (selected == IGNORE_THIS_ITEM) {
 		cmd_insert(CMD_DESTROY);
-		cmd_set_arg_item(cmd_get_top(), 0, item);
+		cmd_set_arg_item(cmdq_peek(), 0, item);
 	} else if (selected == UNIGNORE_THIS_ITEM) {
 		o_ptr->ignore = FALSE;
 	} else if (selected == IGNORE_THIS_FLAVOR) {

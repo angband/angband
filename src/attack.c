@@ -717,8 +717,8 @@ void textui_cmd_throw(void) {
 	if (!get_aim_dir(&dir)) return;
 
 	cmd_insert(CMD_THROW);
-	cmd_set_arg_item(cmd_get_top(), 0, item);
-	cmd_set_arg_target(cmd_get_top(), 1, dir);
+	cmd_set_arg_item(cmdq_peek(), 0, item);
+	cmd_set_arg_target(cmdq_peek(), 1, dir);
 }
 
 
@@ -753,6 +753,6 @@ void textui_cmd_fire_at_nearest(void) {
 
 	/* Fire! */
 	cmd_insert(CMD_FIRE);
-	cmd_set_arg_item(cmd_get_top(), 0, item);
-	cmd_set_arg_target(cmd_get_top(), 1, dir);
+	cmd_set_arg_item(cmdq_peek(), 0, item);
+	cmd_set_arg_target(cmdq_peek(), 1, dir);
 }

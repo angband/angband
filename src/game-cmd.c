@@ -32,7 +32,7 @@ errr (*cmd_get_hook)(cmd_context c, bool wait);
 
 static int cmd_head = 0;
 static int cmd_tail = 0;
-static game_command cmd_queue[CMD_QUEUE_SIZE];
+static struct command cmd_queue[CMD_QUEUE_SIZE];
 
 static bool repeat_prev_allowed = FALSE;
 static bool repeating = FALSE;
@@ -161,7 +161,7 @@ const char *cmd_get_verb(cmd_code cmd)
 	return NULL;
 }
 
-game_command *cmd_get_top(void)
+struct command *cmdq_peek(void)
 {
 	return &cmd_queue[prev_cmd_idx(cmd_head)];
 }
@@ -170,7 +170,7 @@ game_command *cmd_get_top(void)
 /*
  * Insert the given command into the command queue.
  */
-errr cmd_insert_s(game_command *cmd)
+errr cmd_insert_s(struct command *cmd)
 {
 	/* If queue full, return error */
 	if (cmd_head + 1 == cmd_tail) return 1;
@@ -207,7 +207,7 @@ errr cmd_insert_s(game_command *cmd)
  * are prepared to wait for a command or require a quick return with
  * no command.
  */
-errr cmd_get(cmd_context c, game_command **cmd, bool wait)
+errr cmd_get(cmd_context c, struct command **cmd, bool wait)
 {
 	/* If we're repeating, just pull the last command again. */
 	if (repeating)
@@ -247,7 +247,7 @@ static int cmd_idx(cmd_code code)
 	return -1;
 }
 
-void cmd_set_arg_choice(game_command *cmd, int n, int choice)
+void cmd_set_arg_choice(struct command *cmd, int n, int choice)
 {
 	int idx = cmd_idx(cmd->command);
 
@@ -259,7 +259,7 @@ void cmd_set_arg_choice(game_command *cmd, int n, int choice)
 	cmd->arg_present[n] = TRUE;
 }
 
-void cmd_set_arg_string(game_command *cmd, int n, const char *str)
+void cmd_set_arg_string(struct command *cmd, int n, const char *str)
 {
 	int idx = cmd_idx(cmd->command);
 
@@ -271,7 +271,7 @@ void cmd_set_arg_string(game_command *cmd, int n, const char *str)
 	cmd->arg_present[n] = TRUE;
 }
 
-void cmd_set_arg_direction(game_command *cmd, int n, int dir)
+void cmd_set_arg_direction(struct command *cmd, int n, int dir)
 {
 	int idx = cmd_idx(cmd->command);
 
@@ -283,7 +283,7 @@ void cmd_set_arg_direction(game_command *cmd, int n, int dir)
 	cmd->arg_present[n] = TRUE;
 }
 
-void cmd_set_arg_target(game_command *cmd, int n, int target)
+void cmd_set_arg_target(struct command *cmd, int n, int target)
 {
 	int idx = cmd_idx(cmd->command);
 
@@ -295,7 +295,7 @@ void cmd_set_arg_target(game_command *cmd, int n, int target)
 	cmd->arg_present[n] = TRUE;
 }
 
-void cmd_set_arg_point(game_command *cmd, int n, int x, int y)
+void cmd_set_arg_point(struct command *cmd, int n, int x, int y)
 {
 	int idx = cmd_idx(cmd->command);
 
@@ -308,7 +308,7 @@ void cmd_set_arg_point(game_command *cmd, int n, int x, int y)
 	cmd->arg_present[n] = TRUE;
 }
 
-void cmd_set_arg_item(game_command *cmd, int n, int item)
+void cmd_set_arg_item(struct command *cmd, int n, int item)
 {
 	int idx = cmd_idx(cmd->command);
 
@@ -320,7 +320,7 @@ void cmd_set_arg_item(game_command *cmd, int n, int item)
 	cmd->arg_present[n] = TRUE;
 }
 
-void cmd_set_arg_number(game_command *cmd, int n, int num)
+void cmd_set_arg_number(struct command *cmd, int n, int num)
 {
 	int idx = cmd_idx(cmd->command);
 
@@ -338,7 +338,7 @@ void cmd_set_arg_number(game_command *cmd, int n, int num)
  */
 errr cmd_insert_repeated(cmd_code c, int nrepeats)
 {
-	game_command cmd = { 0 };
+	struct command cmd = { 0 };
 
 	if (cmd_idx(c) == -1)
 		return 1;
@@ -364,7 +364,7 @@ errr cmd_insert(cmd_code c)
  */
 void process_command(cmd_context ctx, bool no_request)
 {
-	game_command *cmd;
+	struct command *cmd;
 
 	/* Reset so that when selecting items, we look in the default location */
 	p_ptr->command_wrk = 0;
@@ -690,7 +690,7 @@ void process_command(cmd_context ctx, bool no_request)
  */
 void cmd_cancel_repeat(void)
 {
-	game_command *cmd = &cmd_queue[prev_cmd_idx(cmd_tail)];
+	struct command *cmd = &cmd_queue[prev_cmd_idx(cmd_tail)];
 
 	if (cmd->nrepeats || repeating)
 	{
@@ -708,7 +708,7 @@ void cmd_cancel_repeat(void)
  */
 void cmd_set_repeat(int nrepeats)
 {
-	game_command *cmd = &cmd_queue[prev_cmd_idx(cmd_tail)];
+	struct command *cmd = &cmd_queue[prev_cmd_idx(cmd_tail)];
 
 	cmd->nrepeats = nrepeats;
 	if (nrepeats) repeating = TRUE;
@@ -723,7 +723,7 @@ void cmd_set_repeat(int nrepeats)
  */
 int cmd_get_nrepeats(void)
 {
-	game_command *cmd = &cmd_queue[prev_cmd_idx(cmd_tail)];
+	struct command *cmd = &cmd_queue[prev_cmd_idx(cmd_tail)];
 	return cmd->nrepeats;
 }
 

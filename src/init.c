@@ -3257,7 +3257,7 @@ bool init_angband(void)
 	/* Ask for a "command" until we get one we like. */
 	while (1)
 	{
-		game_command *command_req;
+		struct command *command_req;
 		int failed = cmd_get(CMD_INIT, &command_req, TRUE);
 
 		if (failed)

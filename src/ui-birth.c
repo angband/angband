@@ -587,14 +587,14 @@ static enum birth_stage menu_question(enum birth_stage current, menu_type *curre
 					 */
 					point_based_start();
 					cmd_insert(CMD_RESET_STATS);
-					cmd_set_arg_choice(cmd_get_top(), 0, TRUE);
+					cmd_set_arg_choice(cmdq_peek(), 0, TRUE);
 					next = current + 1;
 				}
 			}
 			else
 			{
 				cmd_insert(choice_command);
-				cmd_set_arg_choice(cmd_get_top(), 0, current_menu->cursor);
+				cmd_set_arg_choice(cmdq_peek(), 0, current_menu->cursor);
 				next = current + 1;
 			}
 		}
@@ -605,7 +605,7 @@ static enum birth_stage menu_question(enum birth_stage current, menu_type *curre
 			{
 				current_menu->cursor = randint0(current_menu->count);
 				cmd_insert(choice_command);
-				cmd_set_arg_choice(cmd_get_top(), 0, current_menu->cursor);
+				cmd_set_arg_choice(cmdq_peek(), 0, current_menu->cursor);
 
 				menu_refresh(current_menu, FALSE);
 				next = current + 1;
@@ -813,7 +813,7 @@ static enum birth_stage point_based_command(void)
 	else if (ch.code == 'r' || ch.code == 'R') 
 	{
 		cmd_insert(CMD_RESET_STATS);
-		cmd_set_arg_choice(cmd_get_top(), 0, FALSE);
+		cmd_set_arg_choice(cmdq_peek(), 0, FALSE);
 	}
 	
 	/* Done */
@@ -837,14 +837,14 @@ static enum birth_stage point_based_command(void)
 		if (dir == 4)
 		{
 			cmd_insert(CMD_SELL_STAT);
-			cmd_set_arg_choice(cmd_get_top(), 0, stat);
+			cmd_set_arg_choice(cmdq_peek(), 0, stat);
 		}
 		
 		/* Increase stat (if possible) */
 		if (dir == 6)
 		{
 			cmd_insert(CMD_BUY_STAT);
-			cmd_set_arg_choice(cmd_get_top(), 0, stat);
+			cmd_set_arg_choice(cmdq_peek(), 0, stat);
 		}
 	}
 
@@ -862,7 +862,7 @@ static enum birth_stage get_name_command(void)
 	if (get_name(name, sizeof(name)))
 	{	
 		cmd_insert(CMD_NAME_CHOICE);
-		cmd_set_arg_string(cmd_get_top(), 0, name);
+		cmd_set_arg_string(cmdq_peek(), 0, name);
 		next = BIRTH_FINAL_CONFIRM;
 	}
 	else

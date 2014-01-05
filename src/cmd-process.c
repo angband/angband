@@ -752,20 +752,20 @@ static void textui_process_click(ui_event e)
 			if (e.mouse.mods & KC_MOD_SHIFT) {
 				/* shift-click - run */
 				cmd_insert(CMD_RUN);
-				cmd_set_arg_direction(cmd_get_top(), 0, coords_to_dir(y,x));
+				cmd_set_arg_direction(cmdq_peek(), 0, coords_to_dir(y,x));
 				/*if ((y-p_ptr->py >= -1) && (y-p_ptr->py <= 1)
 					&& (x-p_ptr->px >= -1) && (x-p_ptr->px <= 1)) {
 					cmd_insert(CMD_JUMP);
-					cmd_set_arg_direction(cmd_get_top(), 0, coords_to_dir(y,x));
+					cmd_set_arg_direction(cmdq_peek(), 0, coords_to_dir(y,x));
 				} else {
 				  cmd_insert(CMD_RUN);
-				  cmd_set_arg_direction(cmd_get_top(), 0, coords_to_dir(y,x));
+				  cmd_set_arg_direction(cmdq_peek(), 0, coords_to_dir(y,x));
 				}*/
 			} else
 			if (e.mouse.mods & KC_MOD_CONTROL) {
 				/* control-click - alter */
 				cmd_insert(CMD_ALTER);
-				cmd_set_arg_direction(cmd_get_top(), 0, coords_to_dir(y,x));
+				cmd_set_arg_direction(cmdq_peek(), 0, coords_to_dir(y,x));
 			} else
 			if (e.mouse.mods & KC_MOD_ALT) {
 				/* alt-click - look */
@@ -773,7 +773,7 @@ static void textui_process_click(ui_event e)
 					msg("Target Selected.");
 				}
 				//cmd_insert(CMD_LOOK);
-				//cmd_set_arg_point(cmd_get_top(), 0, y, x);
+				//cmd_set_arg_point(cmdq_peek(), 0, y, x);
 			} else
 			{
 				/* pathfind does not work well on trap detection borders,
@@ -781,10 +781,10 @@ static void textui_process_click(ui_event e)
 				if ((y-p_ptr->py >= -1) && (y-p_ptr->py <= 1)
 					&& (x-p_ptr->px >= -1) && (x-p_ptr->px <= 1)) {
 					cmd_insert(CMD_WALK);
-					cmd_set_arg_direction(cmd_get_top(), 0, coords_to_dir(y,x));
+					cmd_set_arg_direction(cmdq_peek(), 0, coords_to_dir(y,x));
 				} else {
 					cmd_insert(CMD_PATHFIND);
-					cmd_set_arg_point(cmd_get_top(), 0, y, x);
+					cmd_set_arg_point(cmdq_peek(), 0, y, x);
 				}
 			}
 		}
@@ -804,18 +804,18 @@ static void textui_process_click(ui_event e)
 		if (e.mouse.mods & KC_MOD_SHIFT) {
 			/* shift-click - cast spell at target */
 			if (textui_obj_cast_ret() >= 0) {
-				cmd_set_arg_target(cmd_get_top(), 1, DIR_TARGET);
+				cmd_set_arg_target(cmdq_peek(), 1, DIR_TARGET);
 			}
 		} else
 		if (e.mouse.mods & KC_MOD_CONTROL) {
 			/* control-click - fire at target */
 			cmd_insert(CMD_USE_AIMED);
-			cmd_set_arg_target(cmd_get_top(), 1, DIR_TARGET);
+			cmd_set_arg_target(cmdq_peek(), 1, DIR_TARGET);
 		} else
 		if (e.mouse.mods & KC_MOD_ALT) {
 			/* alt-click - throw at target */
 			cmd_insert(CMD_THROW);
-			cmd_set_arg_target(cmd_get_top(), 1, DIR_TARGET);
+			cmd_set_arg_target(cmdq_peek(), 1, DIR_TARGET);
 		} else
 		{
 			//msg("Target set.");

@@ -476,7 +476,7 @@ static int gamma_correction;
 #include "cmds.h"
 #include "textui.h"
 
-static game_command cmd = { CMD_NULL, 0, {{NULL}} };
+static struct command cmd = { CMD_NULL, 0, {{NULL}} };
 
 #if 0
 /*

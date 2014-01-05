@@ -154,7 +154,7 @@ enum cmd_arg_type
 };
 
 /*
- * The game_command type is used to return details of the command the
+ * The struct command type is used to return details of the command the
  * game should carry out.
  *
  * 'command' should always have a valid cmd_code value, the other entries
@@ -162,8 +162,7 @@ enum cmd_arg_type
  *
  * NOTE: This is prone to change quite a bit while things are shaken out.
  */
-typedef struct game_command
-{
+struct command {
 	/* A valid command code. */
 	cmd_code command;
 
@@ -178,7 +177,7 @@ typedef struct game_command
 
 	/* Types of the arguments passed */
 	enum cmd_arg_type arg_type[CMD_MAX_ARGS];
-} game_command;
+};
 
 /* 
  * Command handlers will take a pointer to the command structure
@@ -196,7 +195,7 @@ const char *cmd_get_verb(cmd_code cmd);
 /**
  * Returns the top command on the queue.
  */
-game_command *cmd_get_top(void);
+struct command *cmdq_peek(void);
 
 /*
  * A function called by the game to get a command from the UI.
@@ -204,7 +203,7 @@ game_command *cmd_get_top(void);
 extern errr (*cmd_get_hook)(cmd_context c, bool wait);
 
 /* Inserts a command in the queue to be carried out. */
-errr cmd_insert_s(game_command *cmd);
+errr cmd_insert_s(struct command *cmd);
 
 /* 
  * Convenience functions.
@@ -216,19 +215,19 @@ errr cmd_insert(cmd_code c);
 /**
  * Set the args of a command.
  */
-void cmd_set_arg_choice(game_command *cmd, int n, int choice);
-void cmd_set_arg_string(game_command *cmd, int n, const char *str);
-void cmd_set_arg_direction(game_command *cmd, int n, int dir);
-void cmd_set_arg_target(game_command *cmd, int n, int target);
-void cmd_set_arg_point(game_command *cmd, int n, int x, int y);
-void cmd_set_arg_item(game_command *cmd, int n, int item);
-void cmd_set_arg_number(game_command *cmd, int n, int num);
+void cmd_set_arg_choice(struct command *cmd, int n, int choice);
+void cmd_set_arg_string(struct command *cmd, int n, const char *str);
+void cmd_set_arg_direction(struct command *cmd, int n, int dir);
+void cmd_set_arg_target(struct command *cmd, int n, int target);
+void cmd_set_arg_point(struct command *cmd, int n, int x, int y);
+void cmd_set_arg_item(struct command *cmd, int n, int item);
+void cmd_set_arg_number(struct command *cmd, int n, int num);
 
 /* 
  * Gets the next command from the queue, optionally waiting to allow
  * the UI time to process user input, etc. if wait is TRUE 
  */
-errr cmd_get(cmd_context c, game_command **cmd, bool wait);
+errr cmd_get(cmd_context c, struct command **cmd, bool wait);
 
 /* Called by the game engine to get the player's next action. */
 void process_command(cmd_context c, bool no_request);

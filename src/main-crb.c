@@ -340,7 +340,7 @@ CFMutableArrayRef recentItemsArrayRef = NULL;
  * Support the improved game command handling
  */
 #include "textui.h"
-static game_command cmd = { CMD_NULL, 0 };
+static struct command cmd = { CMD_NULL, 0 };
 
 
 static MenuRef MyGetMenuHandle_aux(int menuID, bool first)
