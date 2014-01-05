@@ -1159,7 +1159,7 @@ void textui_cmd_destroy(void)
 	/* Get an item */
 	const char *q = "Ignore which item? ";
 	const char *s = "You have nothing to ignore.";
-	if (!get_item(&item, q, s, CMD_DESTROY, USE_INVEN | USE_EQUIP | USE_FLOOR))
+	if (!get_item(&item, q, s, CMD_DESTROY, NULL, USE_INVEN | USE_EQUIP | USE_FLOOR))
 		return;
 
 	textui_cmd_destroy_menu(item);
@@ -1185,7 +1185,7 @@ void textui_obj_examine(void)
 
 	/* Select item */
 	if (!get_item(&item, "Examine which item?", "You have nothing to examine.",
-			CMD_NULL, (USE_EQUIP | USE_INVEN | USE_FLOOR | IS_HARMLESS)))
+			CMD_NULL, NULL, (USE_EQUIP | USE_INVEN | USE_FLOOR | IS_HARMLESS)))
 		return;
 
 	/* Track object for object recall */

@@ -1349,17 +1349,12 @@ bool enchant_spell(int num_hit, int num_dam, int num_ac)
 
 	const char *q, *s;
 
-
-	/* Assume enchant weapon */
-	item_tester_hook = item_tester_hook_weapon;
-
-	/* Enchant armor if requested */
-	if (num_ac) item_tester_hook = item_tester_hook_armour;
-
 	/* Get an item */
 	q = "Enchant which item? ";
 	s = "You have nothing to enchant.";
-	if (!get_item(&item, q, s, 0, (USE_EQUIP | USE_INVEN | USE_FLOOR))) return (FALSE);
+	if (!get_item(&item, q, s, 0, 
+		num_ac ? item_tester_hook_armour : item_tester_hook_weapon,
+		(USE_EQUIP | USE_INVEN | USE_FLOOR))) return (FALSE);
 
 	o_ptr = object_from_item_idx(item);
 
@@ -1390,58 +1385,6 @@ bool enchant_spell(int num_hit, int num_dam, int num_ac)
 	return (TRUE);
 }
 
-static bool item_tester_restore(const struct object *o)
-{
-	if (o->to_d < 0 || o->to_h < 0 || o->to_a < 0)
-		return TRUE;
-
-	if (o->artifact) {
-		if (o->to_d < o->artifact->to_d || o->to_h < o->artifact->to_h ||
-				o->to_a < o->artifact->to_a)
-			return TRUE;
-	}
-
-	return FALSE;
-}
-
-/**
- * Restore an item to its original state, or something close.
- */
-bool restore_item(void)
-{
-	char o_name[80];
-
-	int item;
-	object_type *o;
-
-	item_tester_hook = item_tester_restore;
-	if (!get_item(&item, "Restore which item?",
-			"You have nothing to restore.", 0,
-			USE_EQUIP | USE_INVEN | USE_FLOOR))
-		return FALSE;
-
-	o = object_from_item_idx(item);
-
-	/*** Restore the item (ish) ***/
-
-	/* Artifacts get replenished */
-	if (o->artifact) {
-		o->to_d = o->artifact->to_d;
-		o->to_h = o->artifact->to_h;
-		o->to_a = o->artifact->to_a;
-	} else {
-		o->to_d = MAX(o->to_d, 0);
-		o->to_h = MAX(o->to_h, 0);
-		o->to_a = MAX(o->to_a, 0);
-	}
-
-	object_desc(o_name, sizeof(o_name), o, ODESC_BASE);
-	msg("%s %s is mended.",
-	           ((item >= 0) ? "Your" : "The"), o_name,
-	           ((o->number > 1) ? "" : "s"));
-
-	return TRUE;
-}
 
 /*
  * Identify an object in the inventory (or on the floor)
@@ -1456,13 +1399,10 @@ bool ident_spell(void)
 
 	const char *q, *s;
 
-	/* Only un-id'ed items */
-	item_tester_hook = item_tester_unknown;
-
 	/* Get an item */
 	q = "Identify which item? ";
 	s = "You have nothing to identify.";
-	if (!get_item(&item, q, s, 0, (USE_EQUIP | USE_INVEN | USE_FLOOR))) return (FALSE);
+	if (!get_item(&item, q, s, 0, item_tester_unknown, (USE_EQUIP | USE_INVEN | USE_FLOOR))) return (FALSE);
 
 	o_ptr = object_from_item_idx(item);
 
@@ -1537,13 +1477,10 @@ bool recharge(int spell_strength)
 	const char *q, *s;
 
 
-	/* Only accept legal items */
-	item_tester_hook = item_tester_hook_recharge;
-
 	/* Get an item */
 	q = "Recharge which item? ";
 	s = "You have nothing to recharge.";
-	if (!get_item(&item, q, s, 0, (USE_INVEN | USE_FLOOR))) return (FALSE);
+	if (!get_item(&item, q, s, 0, item_tester_hook_recharge, (USE_INVEN | USE_FLOOR))) return (FALSE);
 
 	o_ptr = object_from_item_idx(item);
 
@@ -3067,13 +3004,10 @@ bool brand_ammo(void)
 	const struct slay *s_ptr;
 	bitflag f[OF_SIZE];
 
-	/* Only accept ammo */
-	item_tester_hook = item_tester_hook_ammo;
-
 	/* Get an item */
 	q = "Brand which kind of ammunition? ";
 	s = "You have nothing to brand.";
-	if (!get_item(&item, q, s, 0, (USE_EQUIP | USE_INVEN | USE_FLOOR))) return (FALSE);
+	if (!get_item(&item, q, s, 0, item_tester_hook_ammo, (USE_EQUIP | USE_INVEN | USE_FLOOR))) return (FALSE);
 
 	o_ptr = object_from_item_idx(item);
 
@@ -3089,6 +3023,10 @@ bool brand_ammo(void)
 	return (TRUE);
 }
 
+static bool item_tester_hook_bolt(const struct object *o)
+{
+	return o->tval == TV_BOLT;
+}
 
 /*
  * Enchant some (non-magical) bolts
@@ -3099,14 +3037,10 @@ bool brand_bolts(void)
 	object_type *o_ptr;
 	const char *q, *s;
 
-
-	/* Restrict choices to bolts */
-	item_tester_tval = TV_BOLT;
-
 	/* Get an item */
 	q = "Brand which bolts? ";
 	s = "You have no bolts to brand.";
-	if (!get_item(&item, q, s, 0, (USE_INVEN | USE_FLOOR))) return (FALSE);
+	if (!get_item(&item, q, s, 0, item_tester_hook_bolt, (USE_INVEN | USE_FLOOR))) return (FALSE);
 
 	o_ptr = object_from_item_idx(item);
 

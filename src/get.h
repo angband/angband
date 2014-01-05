@@ -1,8 +1,6 @@
 #ifndef GET_H
 #define GET_H
 
-typedef bool (*item_filter)(const struct object *);
-
 struct getset {
 	bool (*file)(const char *suggested_name, char *path, size_t len);
 	bool (*string)(const char *prompt, char *buf, size_t len);

@@ -1079,9 +1079,9 @@ static void update_inven_subwindow(game_event_type type, game_event_data *data,
 	Term_activate(inv_term);
 
 	if (!flip_inven)
-		show_inven(OLIST_WINDOW | OLIST_WEIGHT | OLIST_QUIVER);
+		show_inven(OLIST_WINDOW | OLIST_WEIGHT | OLIST_QUIVER, NULL);
 	else
-		show_equip(OLIST_WINDOW | OLIST_WEIGHT);
+		show_equip(OLIST_WINDOW | OLIST_WEIGHT, NULL);
 
 	Term_fresh();
 	
@@ -1099,9 +1099,9 @@ static void update_equip_subwindow(game_event_type type, game_event_data *data,
 	Term_activate(inv_term);
 
 	if (!flip_inven)
-		show_equip(OLIST_WINDOW | OLIST_WEIGHT);
+		show_equip(OLIST_WINDOW | OLIST_WEIGHT, NULL);
 	else
-		show_inven(OLIST_WINDOW | OLIST_WEIGHT | OLIST_QUIVER);
+		show_inven(OLIST_WINDOW | OLIST_WEIGHT | OLIST_QUIVER, NULL);
 
 	Term_fresh();
 	
@@ -1128,18 +1128,18 @@ void toggle_inven_equip(void)
 		if (op_ptr->window_flag[i] & PW_INVEN)
 		{
 			if (!flip_inven)
-				show_inven(OLIST_WINDOW | OLIST_WEIGHT | OLIST_QUIVER);
+				show_inven(OLIST_WINDOW | OLIST_WEIGHT | OLIST_QUIVER, NULL);
 			else
-				show_equip(OLIST_WINDOW | OLIST_WEIGHT);
+				show_equip(OLIST_WINDOW | OLIST_WEIGHT, NULL);
 			
 			Term_fresh();
 		}
 		else if (op_ptr->window_flag[i] & PW_EQUIP)
 		{
 			if (!flip_inven)
-				show_equip(OLIST_WINDOW | OLIST_WEIGHT);
+				show_equip(OLIST_WINDOW | OLIST_WEIGHT, NULL);
 			else
-				show_inven(OLIST_WINDOW | OLIST_WEIGHT | OLIST_QUIVER);
+				show_inven(OLIST_WINDOW | OLIST_WEIGHT | OLIST_QUIVER, NULL);
 			
 			Term_fresh();
 		}
@@ -1758,7 +1758,7 @@ static void see_floor_items(game_event_type type, game_event_data *data, void *u
 
 		/* Display objects on the floor */
 		screen_save();
-		show_floor(floor_list, floor_num, (OLIST_WEIGHT));
+		show_floor(floor_list, floor_num, OLIST_WEIGHT, NULL);
 		prt(format("You %s: ", p), 0, 0);
 
 		/* Wait for it.  Use key as next command. */

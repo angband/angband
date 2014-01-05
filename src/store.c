@@ -2687,6 +2687,7 @@ static bool store_sell(void)
 
 	char o_name[120];
 
+	item_tester tester = NULL;
 
 	const char *reject = "You have nothing that I want. ";
 	const char *prompt = OPT(birth_no_selling) ? "Give which item? " : "Sell which item? ";
@@ -2705,14 +2706,14 @@ static bool store_sell(void)
 	if (store->sidx == STORE_HOME) {
 		prompt = "Drop which item? ";
 	} else {
-		item_tester_hook = store_will_buy_tester;
+		tester = store_will_buy_tester;
 		get_mode |= SHOW_PRICES;
 	}
 
 	/* Get an item */
 	p_ptr->command_wrk = USE_INVEN;
 
-	if (!get_item(&item, prompt, reject, CMD_DROP, get_mode))
+	if (!get_item(&item, prompt, reject, CMD_DROP, tester, get_mode))
 		return FALSE;
 
 	/* Get the item */

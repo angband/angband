@@ -408,9 +408,8 @@ void process_command(cmd_context ctx, bool no_request)
 				strnfmt(prompt, sizeof(prompt), "%s which %s?", capitalVerb, type);
 				strnfmt(none, sizeof(none), "You have no %s you can %s.", type2, verb);
 
-				item_tester_hook = is->filter;
 				if (cmd->command == CMD_USE_ANY) p_ptr->command_wrk = USE_INVEN;
-				if (!get_item(&item, prompt, none, cmd->command, is->mode))
+				if (!get_item(&item, prompt, none, cmd->command, is->filter, is->mode))
 					return;
 
 				cmd_set_arg_item(cmd, 0, item);
@@ -630,8 +629,7 @@ void process_command(cmd_context ctx, bool no_request)
 					{
 						const char *q = "Replace which ring? ";
 						const char *s = "Error in obj_wield, please report";
-						item_tester_hook = obj_is_ring;
-						if (!get_item(&slot, q, s, CMD_WIELD, USE_EQUIP)) return;
+						if (!get_item(&slot, q, s, CMD_WIELD, obj_is_ring, USE_EQUIP)) return;
 					}
 			
 					if (obj_is_ammo(o_ptr) && !object_similar(&p_ptr->inventory[slot],
@@ -639,8 +637,7 @@ void process_command(cmd_context ctx, bool no_request)
 					{
 						const char *q = "Replace which ammunition? ";
 						const char *s = "Error in obj_wield, please report";
-						item_tester_hook = obj_is_ammo;
-						if (!get_item(&slot, q, s, CMD_WIELD, USE_EQUIP)) return;
+						if (!get_item(&slot, q, s, CMD_WIELD, obj_is_ammo, USE_EQUIP)) return;
 					}
 				}
 

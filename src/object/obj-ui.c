@@ -212,12 +212,21 @@ static void show_obj_list(int num_obj, int num_head, char labels[50][80],
 }
 
 
+/* Use a tester function, skipping all non-objects and gold */
+bool try_test(item_tester tester, const struct object *o)
+{
+	return o->kind &&
+			o->tval != TV_GOLD &&
+			(!tester || tester(o));
+}
+
+
 /*
  * Display the inventory.  Builds a list of objects and passes them
  * off to show_obj_list() for display.  Mode flags documented in
  * object.h
  */
-void show_inven(int mode)
+void show_inven(int mode, item_tester tester)
 {
 	int i, last_slot = -1;
 	int diff = weight_remaining();
@@ -256,7 +265,7 @@ void show_inven(int mode)
 		o_ptr = &p_ptr->inventory[i];
 
 		/* Acceptable items get a label */
-		if (item_tester_okay(o_ptr))
+		if (try_test(tester, o_ptr))
 			strnfmt(labels[num_obj], sizeof(labels[num_obj]), "%c) ", index_to_label(i));
 
 		/* Unacceptable items are still sometimes shown */
@@ -285,7 +294,7 @@ void show_inven(int mode)
  * off to show_obj_list() for display.  Mode flags documented in
  * object.h
  */
-void show_equip(int mode)
+void show_equip(int mode, item_tester tester)
 {
 	int i, last_slot = 0;
 
@@ -322,7 +331,7 @@ void show_equip(int mode)
 			for (j = i; j < last_slot; j++)
 			{
 				o_ptr = &p_ptr->inventory[j];
-				if (item_tester_okay(o_ptr)) need_spacer = TRUE;
+				if (try_test(tester, o_ptr)) need_spacer = TRUE;
 			}
 
 			/* Add a spacer between equipment and quiver */
@@ -337,7 +346,7 @@ void show_equip(int mode)
 		}
 
 		/* Acceptable items get a label */
-		if (item_tester_okay(o_ptr))
+		if (try_test(tester, o_ptr))
 			strnfmt(labels[num_obj], sizeof(labels[num_obj]), "%c) ", index_to_label(i));
 
 		/* Unacceptable items are still sometimes shown */
@@ -366,7 +375,7 @@ void show_equip(int mode)
  * off to show_obj_list() for display.  Mode flags documented in
  * object.h
  */
-void show_floor(const int *floor_list, int floor_num, int mode)
+void show_floor(const int *floor_list, int floor_num, int mode, item_tester tester)
 {
 	int i;
 
@@ -387,7 +396,7 @@ void show_floor(const int *floor_list, int floor_num, int mode)
 		 * only test items that are not gold.
 		 */
 		if ((o_ptr->tval != TV_GOLD || !(mode & OLIST_GOLD)) &&
-		    !item_tester_okay(o_ptr))
+		    !try_test(tester, o_ptr))
 			continue;
 
 		strnfmt(labels[num_obj], sizeof(labels[num_obj]),
@@ -582,11 +591,6 @@ static int get_tag(int *cp, char tag, cmd_code cmd, bool quiver_tags)
  *
  * Return TRUE only if an acceptable item was chosen by the user.
  *
- * The selected item must satisfy the "item_tester_hook()" function,
- * if that hook is set, and the "item_tester_tval", if that value is set.
- *
- * All "item_tester" restrictions are cleared before this function returns.
- *
  * The user is allowed to choose acceptable items from the equipment,
  * inventory, or floor, respectively, if the proper flag was given,
  * and there are any acceptable items in that location.
@@ -625,7 +629,7 @@ static int get_tag(int *cp, char tag, cmd_code cmd, bool quiver_tags)
  * Note that only "acceptable" floor objects get indexes, so between two
  * commands, the indexes of floor objects may change.  XXX XXX XXX
  */
-bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, int mode)
+bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, item_tester tester, int mode)
 {
 	int py = p_ptr->py;
 	int px = p_ptr->px;
@@ -838,7 +842,7 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, int mode)
 
 			/* Redraw if needed */
 			if (show_list)
-				show_inven(nmode);
+				show_inven(nmode, tester);
 
 			/* Begin the prompt */
 			strnfmt(out_val, sizeof(out_val), "Inven:");
@@ -877,7 +881,7 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, int mode)
 		else if (p_ptr->command_wrk == USE_EQUIP)
 		{
 			/* Redraw if needed */
-			if (show_list) show_equip(olist_mode);
+			if (show_list) show_equip(olist_mode, tester);
 
 			/* Begin the prompt */
 			strnfmt(out_val, sizeof(out_val), "Equip:");
@@ -916,7 +920,7 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, int mode)
 		else
 		{
 			/* Redraw if needed */
-			if (show_list) show_floor(floor_list, floor_num, olist_mode);
+			if (show_list) show_floor(floor_list, floor_num, olist_mode, tester);
 
 			/* Begin the prompt */
 			strnfmt(out_val, sizeof(out_val), "Floor:");
@@ -1411,12 +1415,6 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, int mode)
 		/* Hack -- Cancel "display" */
 		show_list = FALSE;
 	}
-
-	/* Forget the item_tester_tval restriction */
-	item_tester_tval = 0;
-
-	/* Forget the item_tester_hook restriction */
-	item_tester_hook = NULL;
 
 
 	/* Toggle again if needed */

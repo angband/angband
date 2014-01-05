@@ -448,7 +448,7 @@ void do_cmd_inven(void)
 				0, 0);
 
 		/* Get an item to use a context command on (Display the inventory) */
-		if (get_item(&item, NULL, NULL, CMD_NULL, GET_ITEM_PARAMS)) {
+		if (get_item(&item, NULL, NULL, CMD_NULL, NULL, GET_ITEM_PARAMS)) {
 			object_type *o_ptr;
 
 			/* Load screen */
@@ -495,7 +495,7 @@ void do_cmd_equip(void)
 		screen_save();
 
 		/* Get an item to use a context command on (Display the inventory) */
-		if (get_item(&item, "Select Item:", NULL, CMD_NULL, GET_ITEM_PARAMS)) {
+		if (get_item(&item, "Select Item:", NULL, CMD_NULL, NULL, GET_ITEM_PARAMS)) {
 			object_type *o_ptr;
 
 			/* Load screen */

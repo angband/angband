@@ -611,6 +611,9 @@ struct flavor
 };
 
 
+typedef bool (*item_tester)(const struct object *);
+
+
 /*** Functions ***/
 
 /* chest.c */
@@ -695,11 +698,11 @@ void ego_apply_magic(object_type *o_ptr, int level);
 void ego_min_pvals(object_type *o_ptr);
 
 /* obj-ui.c */
-void show_inven(int mode);
-void show_equip(int mode);
-void show_floor(const int *floor_list, int floor_num, int mode);
+void show_inven(int mode, item_tester tester);
+void show_equip(int mode, item_tester tester);
+void show_floor(const int *floor_list, int floor_num, int mode, item_tester tester);
 bool verify_item(const char *prompt, int item);
-bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, int mode);
+bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, item_tester tester, int mode);
 bool get_item_allow(int item, unsigned char ch, cmd_code cmd, bool is_harmless);
 
 /* obj-util.c */

@@ -421,13 +421,10 @@ byte py_pickup_item(int pickup, int item)
 		const char *q, *s;
 		int item;
 
-		/* Restrict the choices */
-		item_tester_hook = inven_carry_okay;
-
 		/* Get an object or exit. */
 		q = "Get which item?";
 		s = "You see nothing there.";
-		if (!get_item(&item, q, s, CMD_PICKUP, USE_FLOOR))
+		if (!get_item(&item, q, s, CMD_PICKUP, inven_carry_okay, USE_FLOOR))
 			return (objs_picked_up);
 
 		this_o_idx = 0 - item;

@@ -687,12 +687,6 @@ bool effect_handler_ENCHANT_ARMOR2(effect_handler_context_t *context)
 	return enchant_spell(0, 0, randint1(3) + 2);
 }
 
-bool effect_handler_RESTORE_ITEM(effect_handler_context_t *context)
-{
-	context->ident = TRUE;
-	return restore_item();
-}
-
 bool effect_handler_IDENTIFY(effect_handler_context_t *context)
 {
 	context->ident = TRUE;

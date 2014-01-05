@@ -98,7 +98,6 @@ EFFECT(ENCHANT_TODAM,		FALSE,	20,				F(ENCHANT_TODAM),		RV(0, 0, 0, 0),		EP(0, 0
 EFFECT(ENCHANT_WEAPON,		FALSE,	22,				F(ENCHANT_WEAPON),		RV(0, 0, 0, 0),		EP(0, 0, 0),				"attempts to magically enhance a weapon both to-hit and to-dam.  Also gives a chance to break a curse")
 EFFECT(ENCHANT_ARMOR,		FALSE,	12,				F(ENCHANT_ARMOR),		RV(0, 0, 0, 0),		EP(0, 0, 0),				"attempts to magically enhance a piece of armour.  Also gives a chance to break a curse")
 EFFECT(ENCHANT_ARMOR2,		FALSE,	15,				F(ENCHANT_ARMOR2),		RV(0, 0, 0, 0),		EP(0, 0, 0),				"attempts to magically enhance a piece of armour with high chance of success.  Also gives a chance to break a curse")
-EFFECT(RESTORE_ITEM,		FALSE,	10,				F(RESTORE_ITEM),		RV(0, 0, 0, 0),		EP(0, 0, 0),				"restores an item after disenchantment or damage")
 EFFECT(IDENTIFY,			FALSE,	9,				F(IDENTIFY),			RV(0, 0, 0, 0),		EP(0, 0, 0),				"reveals to you the extent of an item's magical powers")
 EFFECT(REMOVE_CURSE,		FALSE,	8,				F(REMOVE_CURSE),		RV(0, 0, 0, 0),		EP(0, 0, 0),				"removes all ordinary curses from all equipped items")
 EFFECT(REMOVE_CURSE2,		FALSE,	20,				F(REMOVE_CURSE2),		RV(0, 0, 0, 0),		EP(0, 0, 0),				"removes all curses from all equipped items")

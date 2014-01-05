@@ -239,7 +239,7 @@ static void death_info(const char *title, int row)
 	if (p_ptr->equip_cnt)
 	{
 		Term_clear();
-		show_equip(OLIST_WEIGHT | OLIST_SEMPTY);
+		show_equip(OLIST_WEIGHT | OLIST_SEMPTY, NULL);
 		prt("You are using: -more-", 0, 0);
 		(void)anykey();
 	}
@@ -248,7 +248,7 @@ static void death_info(const char *title, int row)
 	if (p_ptr->inven_cnt)
 	{
 		Term_clear();
-		show_inven(OLIST_WEIGHT);
+		show_inven(OLIST_WEIGHT, NULL);
 		prt("You are carrying: -more-", 0, 0);
 		(void)anykey();
 	}
@@ -333,7 +333,7 @@ static void death_examine(const char *title, int row)
 	q = "Examine which item? ";
 	s = "You have nothing to examine.";
 
-	while (get_item(&item, q, s, 0, (USE_INVEN | USE_EQUIP | IS_HARMLESS)))
+	while (get_item(&item, q, s, 0, NULL, (USE_INVEN | USE_EQUIP | IS_HARMLESS)))
 	{
 		char header[120];
 
