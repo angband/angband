@@ -171,6 +171,7 @@ extern int color_char_to_attr(char c);
 extern int color_text_to_attr(const char *name);
 extern const char *attr_to_text(byte a);
 extern bool char_matches_key(wchar_t c, keycode_t key);
+extern int coords_to_dir(int y, int x);
 
 #ifdef SUPPORT_GAMMA
 extern void build_gamma_table(int gamma);

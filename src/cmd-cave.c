@@ -267,57 +267,6 @@ void do_cmd_toggle_search(cmd_code code, cmd_arg args[])
 
 
 /*
- * Return the number of doors/traps around (or under) the character.
- */
-int count_feats(int *y, int *x, bool (*test)(struct cave *cave, int y, int x), bool under)
-{
-	int d;
-	int xx, yy;
-	int count = 0; /* Count how many matches */
-
-	/* Check around (and under) the character */
-	for (d = 0; d < 9; d++)
-	{
-		/* if not searching under player continue */
-		if ((d == 8) && !under) continue;
-
-		/* Extract adjacent (legal) location */
-		yy = p_ptr->py + ddy_ddd[d];
-		xx = p_ptr->px + ddx_ddd[d];
-
-		/* Paranoia */
-		if (!square_in_bounds_fully(cave, yy, xx)) continue;
-
-		/* Must have knowledge */
-		if (!sqinfo_has(cave->info[yy][xx], SQUARE_MARK)) continue;
-
-		/* Not looking for this feature */
-		if (!((*test)(cave, yy, xx))) continue;
-
-		/* Count it */
-		++count;
-
-		/* Remember the location of the last door found */
-		*y = yy;
-		*x = xx;
-	}
-
-	/* All done */
-	return count;
-}
-
-
-/*
- * Extract a "direction" which will move one step from the player location
- * towards the given "target" location (or "5" if no motion necessary).
- */
-int coords_to_dir(int y, int x)
-{
-	return (motion_dir(p_ptr->py, p_ptr->px, y, x));
-}
-
-
-/*
  * Determine if a given grid may be "opened"
  */
 static bool do_cmd_open_test(int y, int x)

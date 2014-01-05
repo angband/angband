@@ -26,8 +26,6 @@ void display_feeling(bool obj_only);
 void do_cmd_feeling(void);
 
 void textui_cmd_rest(void);
-int count_feats(int *y, int *x, bool (*test)(struct cave *cave, int y, int x), bool under);
-int coords_to_dir(int y, int x);
 
 /* cmd-context.c */
 int context_menu_player(int mx, int my);

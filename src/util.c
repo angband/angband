@@ -1748,6 +1748,15 @@ bool char_matches_key(wchar_t c, keycode_t key)
 	return (c == keychar[0]);
 }
 
+/*
+ * Extract a "direction" which will move one step from the player location
+ * towards the given "target" location (or "5" if no motion necessary).
+ */
+int coords_to_dir(int y, int x)
+{
+	return (motion_dir(p_ptr->py, p_ptr->px, y, x));
+}
+
 #ifdef SUPPORT_GAMMA
 
 /*

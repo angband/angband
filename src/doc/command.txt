@@ -118,11 +118,13 @@ map '^E' => { read(item: "Phase Door") && quaff(item: "Healing") }
 Implementation plan
 -------------------
 
-Pre-refactor
+DONE:
 
 0a. Move check_state somewhere useful, refactor it so that its data is kept in 3rd normal form.
 0b. Move cmd2.c(count_feats + coords_to_dir) => cave.c
 
+
+NOT DONE:
 
 1. Clarify split between command and command queue functions (prefixes cmd_ and cmdq_).
 

@@ -355,4 +355,6 @@ void square_destroy_rubble(struct cave *c, int y, int x);
 
 void square_force_floor(struct cave *c, int y, int x);
 
+int count_feats(int *y, int *x, bool (*test)(struct cave *cave, int y, int x), bool under);
+
 #endif /* !CAVE_H */
