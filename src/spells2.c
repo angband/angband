@@ -1425,11 +1425,10 @@ bool spell_identify_unknown_available(void)
 	int i;
 	bool unidentified_inventory = FALSE;
 
-	item_tester_hook = item_tester_unknown;
-	floor_num = scan_floor(floor_list, N_ELEMENTS(floor_list), p_ptr->py, p_ptr->px, 0x0B);
+	floor_num = scan_floor(floor_list, N_ELEMENTS(floor_list), p_ptr->py, p_ptr->px, 0x0B, item_tester_unknown);
 
 	for (i = 0; i < ALL_INVEN_TOTAL; i++) {
-		if (get_item_okay(i)) {
+		if (item_test(item_tester_unknown, i)) {
 			unidentified_inventory = TRUE;
 			break;
 		}

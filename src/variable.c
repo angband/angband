@@ -247,13 +247,6 @@ char *ANGBAND_DIR_XTRA_SOUND;
 char *ANGBAND_DIR_XTRA_ICON;
 
 
-/*
- * Here is a "hook" used during calls to "get_item()" and
- * "show_inven()" and "show_equip()", and the choice window routines.
- */
-bool (*item_tester_hook)(const object_type*);
-
-
 
 /*
  * Use transparent tiles

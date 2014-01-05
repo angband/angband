@@ -211,16 +211,6 @@ static void show_obj_list(int num_obj, int num_head, char labels[50][80],
 	}
 }
 
-
-/* Use a tester function, skipping all non-objects and gold */
-bool try_test(item_tester tester, const struct object *o)
-{
-	return o->kind &&
-			o->tval != TV_GOLD &&
-			(!tester || tester(o));
-}
-
-
 /*
  * Display the inventory.  Builds a list of objects and passes them
  * off to show_obj_list() for display.  Mode flags documented in
@@ -265,7 +255,7 @@ void show_inven(int mode, item_tester tester)
 		o_ptr = &p_ptr->inventory[i];
 
 		/* Acceptable items get a label */
-		if (try_test(tester, o_ptr))
+		if (object_test(tester, o_ptr))
 			strnfmt(labels[num_obj], sizeof(labels[num_obj]), "%c) ", index_to_label(i));
 
 		/* Unacceptable items are still sometimes shown */
@@ -331,7 +321,7 @@ void show_equip(int mode, item_tester tester)
 			for (j = i; j < last_slot; j++)
 			{
 				o_ptr = &p_ptr->inventory[j];
-				if (try_test(tester, o_ptr)) need_spacer = TRUE;
+				if (object_test(tester, o_ptr)) need_spacer = TRUE;
 			}
 
 			/* Add a spacer between equipment and quiver */
@@ -346,7 +336,7 @@ void show_equip(int mode, item_tester tester)
 		}
 
 		/* Acceptable items get a label */
-		if (try_test(tester, o_ptr))
+		if (object_test(tester, o_ptr))
 			strnfmt(labels[num_obj], sizeof(labels[num_obj]), "%c) ", index_to_label(i));
 
 		/* Unacceptable items are still sometimes shown */
@@ -396,7 +386,7 @@ void show_floor(const int *floor_list, int floor_num, int mode, item_tester test
 		 * only test items that are not gold.
 		 */
 		if ((o_ptr->tval != TV_GOLD || !(mode & OLIST_GOLD)) &&
-		    !try_test(tester, o_ptr))
+		    !object_test(tester, o_ptr))
 			continue;
 
 		strnfmt(labels[num_obj], sizeof(labels[num_obj]),
@@ -706,8 +696,8 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, item_test
 	if (!use_inven) i2 = -1;
 
 	/* Restrict inventory indexes */
-	while ((i1 <= i2) && (!get_item_okay(i1))) i1++;
-	while ((i1 <= i2) && (!get_item_okay(i2))) i2--;
+	while ((i1 <= i2) && (!item_test(tester, i1))) i1++;
+	while ((i1 <= i2) && (!item_test(tester, i2))) i2--;
 
 	/* Accept inventory */
 	if (i1 <= i2) allow_inven = TRUE;
@@ -721,15 +711,15 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, item_test
 	if (!use_equip) e2 = -1;
 
 	/* Restrict equipment indexes */
-	while ((e1 <= e2) && (!get_item_okay(e1))) e1++;
-	while ((e1 <= e2) && (!get_item_okay(e2))) e2--;
+	while ((e1 <= e2) && (!item_test(tester, e1))) e1++;
+	while ((e1 <= e2) && (!item_test(tester, e2))) e2--;
 
 	/* Accept equipment */
 	if (e1 <= e2) allow_equip = TRUE;
 
 
 	/* Scan all non-gold objects in the grid */
-	floor_num = scan_floor(floor_list, N_ELEMENTS(floor_list), py, px, 0x0B);
+	floor_num = scan_floor(floor_list, N_ELEMENTS(floor_list), py, px, 0x0B, tester);
 
 	/* Full floor */
 	f1 = 0;
@@ -739,8 +729,8 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, item_test
 	if (!use_floor) f2 = -1;
 
 	/* Restrict floor indexes */
-	while ((f1 <= f2) && (!get_item_okay(0 - floor_list[f1]))) f1++;
-	while ((f1 <= f2) && (!get_item_okay(0 - floor_list[f2]))) f2--;
+	while ((f1 <= f2) && (!item_test(tester, 0 - floor_list[f1]))) f1++;
+	while ((f1 <= f2) && (!item_test(tester, 0 - floor_list[f2]))) f2--;
 
 	/* Accept floor */
 	if (f1 <= f2) allow_floor = TRUE;
@@ -991,7 +981,7 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, item_test
 						//k = label_to_inven(index_to_label(i1+press.mouse.y-1));
 						/* get the item index, allowing for skipped indices */
 						for (j = i1; j <= i2; j++) {
-							if (get_item_okay(j)) {
+							if (item_test(tester, j)) {
 								if (press.mouse.y == 1) {
 									k = j;
 									break;
@@ -1022,7 +1012,7 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, item_test
 								if (j == 36) {
 									press.mouse.y--;
 								} else
-									if (get_item_okay(j)) {
+									if (item_test(tester, j)) {
 										if (press.mouse.y == 1) {
 											k = j;
 											break;
@@ -1047,7 +1037,7 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, item_test
 						k = 0 - floor_list[press.mouse.y-1];
 						/* get the item index, allowing for skipped indices */
 						for (j = f1; j <= f2; j++) {
-							if (get_item_okay(0 - floor_list[j])) {
+							if (item_test(tester, 0 - floor_list[j])) {
 								if (press.mouse.y == 1) {
 									k = 0 - floor_list[j];
 									break;
@@ -1075,7 +1065,7 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, item_test
 				}
 				if (k >= 0) {
 					/* Validate the item */
-					if (!get_item_okay(k)) {
+					if (!item_test(tester, k)) {
 						bell("Illegal object choice (normal)!");
 					}
 
@@ -1201,7 +1191,7 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, item_test
 					k = 0 - floor_list[i];
 
 					/* Skip non-okay objects */
-					if (!get_item_okay(k)) continue;
+					if (!item_test(tester, k)) continue;
 
 					/* Allow player to "refuse" certain actions */
 					if (!get_item_allow(k, cmdkey, cmd, is_harmless)) continue;
@@ -1238,7 +1228,7 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, item_test
 				}
 
 				/* Validate the item */
-				if (!get_item_okay(k))
+				if (!item_test(tester, k))
 				{
 					bell("Illegal object choice (tag)!");
 					break;
@@ -1301,7 +1291,7 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, item_test
 				}
 
 				/* Validate the item */
-				if (!get_item_okay(k))
+				if (!item_test(tester, k))
 				{
 					bell("Illegal object choice (default)!");
 					break;
@@ -1376,7 +1366,7 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, item_test
 				}
 
 				/* Validate the item */
-				if (!get_item_okay(k))
+				if (!item_test(tester, k))
 				{
 					bell("Illegal object choice (normal)!");
 					break;

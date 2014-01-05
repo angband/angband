@@ -892,7 +892,7 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 			break;
 	
 		/* Assume not floored */
-		floor_num = scan_floor(floor_list, N_ELEMENTS(floor_list), y, x, 0x0A);
+		floor_num = scan_floor(floor_list, N_ELEMENTS(floor_list), y, x, 0x0A, NULL);
 
 		/* Scan all marked objects in the grid */
 		if ((floor_num > 0) &&

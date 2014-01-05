@@ -248,8 +248,7 @@ bool player_book_has_unlearned_spells(struct player *p)
 		return FALSE;
 
 	/* Get the number of books in inventory */
-	item_tester_hook = obj_can_browse;
-	item_num = scan_items(item_list, N_ELEMENTS(item_list), (USE_INVEN));
+	item_num = scan_items(item_list, N_ELEMENTS(item_list), (USE_INVEN), obj_can_browse);
 
 	/* Check through all available books */
 	for (i = 0; i < item_num; i++) {

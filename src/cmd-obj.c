@@ -912,8 +912,7 @@ void do_cmd_study_spell(cmd_code code, cmd_arg args[])
 		return;
 
 	/* Check that the player can actually learn the nominated spell. */
-	item_tester_hook = obj_can_browse;
-	item_num = scan_items(item_list, N_ELEMENTS(item_list), (USE_INVEN | USE_FLOOR));
+	item_num = scan_items(item_list, N_ELEMENTS(item_list), (USE_INVEN | USE_FLOOR), obj_can_browse);
 
 	/* Check through all available books */
 	for (i = 0; i < item_num; i++)
@@ -955,8 +954,7 @@ void do_cmd_cast(cmd_code code, cmd_arg args[])
 		return;
 
 	/* Check spell is in a book they can access */
-	item_tester_hook = obj_can_browse;
-	item_num = scan_items(item_list, N_ELEMENTS(item_list), (USE_INVEN | USE_FLOOR));
+	item_num = scan_items(item_list, N_ELEMENTS(item_list), (USE_INVEN | USE_FLOOR), obj_can_browse);
 
 	/* Check through all available books */
 	for (i = 0; i < item_num; i++)

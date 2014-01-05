@@ -652,36 +652,31 @@ const char *describe_use(int i)
 }
 
 
-
-
-
 /*
- * Here is a "hook" used during calls to "get_item()" and
- * "show_inven()" and "show_equip()", and the choice window routines.
+ * Apply a tester function, skipping all non-objects and gold
  */
-bool (*item_tester_hook)(const object_type*);
-
-
-/*
- * Check an item against the item tester info
- */
-bool item_tester_okay(const object_type *o_ptr)
+bool object_test(item_tester tester, const struct object *obj)
 {
-	/* Require an item */
-	if (!o_ptr->kind) return (FALSE);
+	/* Require kind */
+	if (!obj->kind) return FALSE;
 
-	/* Hack -- ignore "gold" */
-	if (o_ptr->tval == TV_GOLD) return (FALSE);
+	/* Ignore gold */
+	if (obj->tval == TV_GOLD) return FALSE;
 
-	/* Check the hook */
-	if (item_tester_hook)
-	{
-		if (!(*item_tester_hook)(o_ptr)) return (FALSE);
-	}
-
-	/* Assume okay */
-	return (TRUE);
+	/* Pass without a tester, or tail-call the tester if it exists */
+	return !tester || tester(obj);
 }
+
+
+/*
+ * Verify the "okayness" of a given item.
+ */
+bool item_test(item_tester tester, int item)
+{
+	/* Verify the item */
+	return object_test(tester, object_from_item_idx(item));
+}
+
 
 
 /** 
@@ -706,7 +701,7 @@ bool is_unknown(const object_type *o_ptr)
  *   0x04 -- Only the top item
  *   0x08 -- Visible items only
  */
-int scan_floor(int *items, int max_size, int y, int x, int mode)
+int scan_floor(int *items, int max_size, int y, int x, int mode, item_tester tester)
 {
 	int this_o_idx, next_o_idx;
 
@@ -731,7 +726,7 @@ int scan_floor(int *items, int max_size, int y, int x, int mode)
 		next_o_idx = o_ptr->next_o_idx;
 
 		/* Item tester */
-		if ((mode & 0x01) && !item_tester_okay(o_ptr)) continue;
+		if ((mode & 0x01) && !object_test(tester, o_ptr)) continue;
 
 		/* Marked */
 		if (mode & 0x02) {
@@ -4159,22 +4154,10 @@ bool obj_can_fail(const struct object *o) {
 
 
 /*
- * Verify the "okayness" of a given item.
- *
- * The item can be negative to mean "item on floor".
- */
-bool get_item_okay(int item)
-{
-	/* Verify the item */
-	return (item_tester_okay(object_from_item_idx(item)));
-}
-
-
-/*
  * Get a list of "valid" item indexes.
  *
  * Fills item_list[] with items that are "okay" as defined by the
- * current item_tester_hook, etc.  mode determines what combination of
+ * provided tester function, etc.  mode determines what combination of
  * inventory, equipment and player's floor location should be used
  * when drawing up the list.
  *
@@ -4183,7 +4166,7 @@ bool get_item_okay(int item)
  * Maximum space that can be used is [INVEN_TOTAL + MAX_FLOOR_STACK],
  * though practically speaking much smaller numbers are likely.
  */
-int scan_items(int *item_list, size_t item_list_max, int mode)
+int scan_items(int *item_list, size_t item_list_max, int mode, item_tester tester)
 {
 	bool use_inven = ((mode & USE_INVEN) ? TRUE : FALSE);
 	bool use_equip = ((mode & USE_EQUIP) ? TRUE : FALSE);
@@ -4199,7 +4182,7 @@ int scan_items(int *item_list, size_t item_list_max, int mode)
 	{
 		for (i = 0; i < INVEN_PACK && item_list_num < item_list_max; i++)
 		{
-			if (get_item_okay(i))
+			if (item_test(tester, i))
 				item_list[item_list_num++] = i;
 		}
 	}
@@ -4208,7 +4191,7 @@ int scan_items(int *item_list, size_t item_list_max, int mode)
 	{
 		for (i = INVEN_WIELD; i < ALL_INVEN_TOTAL && item_list_num < item_list_max; i++)
 		{
-			if (get_item_okay(i))
+			if (item_test(tester, i))
 				item_list[item_list_num++] = i;
 		}
 	}
@@ -4216,17 +4199,11 @@ int scan_items(int *item_list, size_t item_list_max, int mode)
 	/* Scan all non-gold objects in the grid */
 	if (use_floor)
 	{
-		floor_num = scan_floor(floor_list, N_ELEMENTS(floor_list), p_ptr->py, p_ptr->px, 0x0B);
+		floor_num = scan_floor(floor_list, N_ELEMENTS(floor_list), p_ptr->py, p_ptr->px, 0x0B, tester);
 
 		for (i = 0; i < floor_num && item_list_num < item_list_max; i++)
-		{
-			if (get_item_okay(-floor_list[i]))
-				item_list[item_list_num++] = -floor_list[i];
-		}
+			item_list[item_list_num++] = -floor_list[i];
 	}
-
-	/* Forget the item_tester_hook restrictions */
-	item_tester_hook = NULL;
 
 	return item_list_num;
 }
@@ -4243,8 +4220,7 @@ bool item_is_available(int item, bool (*tester)(const object_type *), int mode)
 	int item_num;
 	int i;
 
-	item_tester_hook = tester;
-	item_num = scan_items(item_list, N_ELEMENTS(item_list), mode);
+	item_num = scan_items(item_list, N_ELEMENTS(item_list), mode, tester);
 
 	for (i = 0; i < item_num; i++)
 	{
