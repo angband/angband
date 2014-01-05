@@ -91,6 +91,10 @@ struct color_type
 extern byte angband_color_table[MAX_COLORS][4];
 extern color_type color_table[MAX_COLORS];
 
+extern int color_char_to_attr(char c);
+extern int color_text_to_attr(const char *name);
+extern const char *attr_to_text(byte a);
+
 
 #endif /* INCLUDED_Z_COLOR_H */
 

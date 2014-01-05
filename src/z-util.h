@@ -78,6 +78,10 @@ extern void strescape(char *s, const char c);
 /* determines if a string is "empty" */
 bool contains_only_spaces(const char* s);
 
+/* Check if a char is a vowel */
+bool is_a_vowel(int ch);
+
+
 /*
  * Allow override of the multi-byte to wide char conversion
  */

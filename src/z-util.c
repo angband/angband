@@ -307,6 +307,26 @@ bool contains_only_spaces(const char* s){
 }
 
 /*
+ * Check a char for "vowel-hood"
+ */
+bool is_a_vowel(int ch)
+{
+	switch (tolower((unsigned char) ch))
+	{
+		case 'a':
+		case 'e':
+		case 'i':
+		case 'o':
+		case 'u':
+		{
+			return (TRUE);
+		}
+	}
+
+	return (FALSE);
+}
+
+/*
  * Allow override of the multi-byte to wide char conversion
  */
 size_t text_mbstowcs(wchar_t *dest, const char *src, int n)

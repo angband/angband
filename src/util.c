@@ -1332,6 +1332,8 @@ bool askfor_aux(char *buf, size_t len, bool (*keypress_h)(char *, size_t, size_t
 }
 
 
+
+
 /*
  * A "keypress" handling function for askfor_aux, that handles the special
  * case of '*' for a new random "name" and passes any other "keypress"
@@ -1653,85 +1655,8 @@ void pause_line(struct term *term)
 	prt("", term->hgt - 1, 0);
 }
 
-/*
- * Check a char for "vowel-hood"
- */
-bool is_a_vowel(int ch)
-{
-	switch (tolower((unsigned char) ch))
-	{
-		case 'a':
-		case 'e':
-		case 'i':
-		case 'o':
-		case 'u':
-		{
-			return (TRUE);
-		}
-	}
-
-	return (FALSE);
-}
 
 
-/*
- * Accept a color index character; if legal, return the color.  -LM-
- *
- * Unlike Sangband, we don't translate these colours here.
- */
-/* XXX: having color_{char,text}_to_attr() separately is moronic. */
-int color_char_to_attr(char c)
-{
-	int a;
-
-	/* Is negative -- spit it right back out */
-	if (c < 0) return (c);
-
-	/* Is a space or '\0' -- return black */
-	if (c == '\0' || c == ' ') return (TERM_DARK);
-
-	/* Search the color table */
-	for (a = 0; a < BASIC_COLORS; a++)
-	{
-		/* Look for the index */
-		if (color_table[a].index_char == c) break;
-	}
-
-	/* If we don't find the color, we assume white */
-	if (a == BASIC_COLORS) return (TERM_WHITE);
-
-	/* Return the color */
-	return (a);
-}
-
-
-/*
- * Converts a string to a terminal color byte.
- */
-int color_text_to_attr(const char *name)
-{
-	int a;
-
-	for (a = 0; a < MAX_COLORS; a++)
-	{
-		if (my_stricmp(name, color_table[a].name) == 0) return (a);
-	}
-
-	/* Default to white */
-	return (TERM_WHITE);
-}
-
-
-/*
- * Extract a textual representation of an attribute
- */
-const char *attr_to_text(byte a)
-{
-	if (a < BASIC_COLORS)
-		return (color_table[a].name);
-	else
-		return ("Icky");
-}
 
 /**
  * Return whether the given display char matches an entered symbol
