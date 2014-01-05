@@ -230,49 +230,50 @@ struct player_flag_record
 	int res_flag;			/* resistance flag bit */
 	int im_flag;			/* corresponding immunity bit, if any */
 	int vuln_flag;			/* corresponding vulnerability flag, if any */
+	int tmd_flag;			/* corresponding timed flag */
 };
 
 static const struct player_flag_record player_flag_table[RES_ROWS*4] =
 {
-	{ "rAcid",	OF_RES_ACID,    OF_IM_ACID, OF_VULN_ACID },
-	{ "rElec",	OF_RES_ELEC,    OF_IM_ELEC, OF_VULN_ELEC },
-	{ "rFire",	OF_RES_FIRE,    OF_IM_FIRE, OF_VULN_FIRE },
-	{ "rCold",	OF_RES_COLD,    OF_IM_COLD, OF_VULN_COLD },
-	{ "rPois",	OF_RES_POIS,    FLAG_END,   FLAG_END },
-	{ "rLite",	OF_RES_LIGHT,   FLAG_END,   FLAG_END },
-	{ "rDark",	OF_RES_DARK,    FLAG_END,   FLAG_END },
-	{ "Sound",	OF_RES_SOUND,   FLAG_END,   FLAG_END },
-	{ "Shard",	OF_RES_SHARD,   FLAG_END,   FLAG_END },
+	{ "rAcid",	OF_RES_ACID,    OF_IM_ACID, OF_VULN_ACID, TMD_OPP_ACID },
+	{ "rElec",	OF_RES_ELEC,    OF_IM_ELEC, OF_VULN_ELEC, TMD_OPP_ELEC },
+	{ "rFire",	OF_RES_FIRE,    OF_IM_FIRE, OF_VULN_FIRE, TMD_OPP_FIRE },
+	{ "rCold",	OF_RES_COLD,    OF_IM_COLD, OF_VULN_COLD, TMD_OPP_COLD },
+	{ "rPois",	OF_RES_POIS,    FLAG_END,   FLAG_END,     TMD_OPP_POIS },
+	{ "rLite",	OF_RES_LIGHT,   FLAG_END,   FLAG_END,     -1 },
+	{ "rDark",	OF_RES_DARK,    FLAG_END,   FLAG_END,     -1 },
+	{ "Sound",	OF_RES_SOUND,   FLAG_END,   FLAG_END,     -1 },
+	{ "Shard",	OF_RES_SHARD,   FLAG_END,   FLAG_END,     -1 },
 
-	{ "Nexus",	OF_RES_NEXUS,   FLAG_END,   FLAG_END },
-	{ "Nethr",	OF_RES_NETHR,   FLAG_END,   FLAG_END },
-	{ "Chaos",	OF_RES_CHAOS,   FLAG_END,   FLAG_END },
-	{ "Disen",	OF_RES_DISEN,   FLAG_END,   FLAG_END },
-	{ "Feath",	OF_FEATHER,     FLAG_END,   FLAG_END },
-	{ "pFear",	OF_RES_FEAR,    FLAG_END,   FLAG_END },
-	{ "pBlnd",	OF_RES_BLIND,   FLAG_END,   FLAG_END },
-	{ "pConf",	OF_RES_CONFU,   FLAG_END,   FLAG_END },
-	{ "pStun",	OF_RES_STUN,	FLAG_END,   FLAG_END },
+	{ "Nexus",	OF_RES_NEXUS,   FLAG_END,   FLAG_END,     -1 },
+	{ "Nethr",	OF_RES_NETHR,   FLAG_END,   FLAG_END,     -1 },
+	{ "Chaos",	OF_RES_CHAOS,   FLAG_END,   FLAG_END,     -1 },
+	{ "Disen",	OF_RES_DISEN,   FLAG_END,   FLAG_END,     -1 },
+	{ "Feath",	OF_FEATHER,     FLAG_END,   FLAG_END,     -1 },
+	{ "pFear",	OF_RES_FEAR,    FLAG_END,   FLAG_END,     -1 },
+	{ "pBlnd",	OF_RES_BLIND,   FLAG_END,   FLAG_END,     -1 },
+	{ "pConf",	OF_RES_CONFU,   FLAG_END,   FLAG_END,     TMD_OPP_CONF },
+	{ "pStun",	OF_RES_STUN,	FLAG_END,   FLAG_END,     -1 },
 
-	{ "Light",	OF_LIGHT,       FLAG_END,   FLAG_END },
-	{ "Regen",	OF_REGEN,       FLAG_END,   FLAG_END },
-	{ "  ESP",	OF_TELEPATHY,   FLAG_END,   FLAG_END },
-	{ "Invis",	OF_SEE_INVIS,   FLAG_END,   FLAG_END },
-	{ "FrAct",	OF_FREE_ACT,    FLAG_END,   FLAG_END },
-	{ "HLife",	OF_HOLD_LIFE,   FLAG_END,   FLAG_END },
-	{ "Stea.",	OF_STEALTH,     FLAG_END,   FLAG_END },
-	{ "Sear.",	OF_SEARCH,      FLAG_END,   FLAG_END },
-	{ "Infra",	OF_INFRA,       FLAG_END,   FLAG_END },
+	{ "Light",	OF_LIGHT,       FLAG_END,   FLAG_END,     -1 },
+	{ "Regen",	OF_REGEN,       FLAG_END,   FLAG_END,     -1 },
+	{ "  ESP",	OF_TELEPATHY,   FLAG_END,   FLAG_END,     TMD_TELEPATHY },
+	{ "Invis",	OF_SEE_INVIS,   FLAG_END,   FLAG_END,     TMD_SINVIS },
+	{ "FrAct",	OF_FREE_ACT,    FLAG_END,   FLAG_END,     -1 },
+	{ "HLife",	OF_HOLD_LIFE,   FLAG_END,   FLAG_END,     -1 },
+	{ "Stea.",	OF_STEALTH,     FLAG_END,   FLAG_END,     -1 },
+	{ "Sear.",	OF_SEARCH,      FLAG_END,   FLAG_END,     -1 },
+	{ "Infra",	OF_INFRA,       FLAG_END,   FLAG_END,     TMD_SINFRA },
 
-	{ "Tunn.",	OF_TUNNEL,      FLAG_END,   FLAG_END },
-	{ "Speed",	OF_SPEED,       FLAG_END,   FLAG_END },
-	{ "Blows",	OF_BLOWS,       FLAG_END,   FLAG_END },
-	{ "Shots",	OF_SHOTS,       FLAG_END,   FLAG_END },
-	{ "Might",	OF_MIGHT,       FLAG_END,   FLAG_END },
-	{ "S.Dig",	OF_SLOW_DIGEST, FLAG_END,   FLAG_END },
-	{ "ImpHP",	OF_IMPAIR_HP,   FLAG_END,   FLAG_END },
-	{ " Fear",	OF_AFRAID,      FLAG_END,   FLAG_END },
-	{ "Aggrv",	OF_AGGRAVATE,   FLAG_END,   FLAG_END },
+	{ "Tunn.",	OF_TUNNEL,      FLAG_END,   FLAG_END,     -1 },
+	{ "Speed",	OF_SPEED,       FLAG_END,   FLAG_END,     TMD_FAST },
+	{ "Blows",	OF_BLOWS,       FLAG_END,   FLAG_END,     -1 },
+	{ "Shots",	OF_SHOTS,       FLAG_END,   FLAG_END,     -1 },
+	{ "Might",	OF_MIGHT,       FLAG_END,   FLAG_END,     -1 },
+	{ "S.Dig",	OF_SLOW_DIGEST, FLAG_END,   FLAG_END,     -1 },
+	{ "ImpHP",	OF_IMPAIR_HP,   FLAG_END,   FLAG_END,     -1 },
+	{ " Fear",	OF_AFRAID,      FLAG_END,   FLAG_END,     TMD_AFRAID },
+	{ "Aggrv",	OF_AGGRAVATE,   FLAG_END,   FLAG_END,     -1 },
 };
 
 #define RES_COLS (5 + 2 + INVEN_TOTAL - INVEN_WIELD)
@@ -305,6 +306,7 @@ static void display_resistance_panel(const struct player_flag_record *resists,
 			char sym = '.';
 
 			bool res, imm, vuln;
+			bool timed = FALSE;
 
 			/* Wipe flagset */
 			of_wipe(f);
@@ -316,6 +318,10 @@ static void display_resistance_panel(const struct player_flag_record *resists,
 			else if (j == INVEN_TOTAL)
 			{
 				player_flags(f);
+
+				/* Timed flags only in the player column */
+				if (resists[i].tmd_flag >= 0)
+	 				timed = p_ptr->timed[resists[i].tmd_flag] ? TRUE : FALSE;
 
 				/* If the race has innate infravision/digging, force the corresponding flag
 				   here.  If we set it in player_flags(), then all callers of that
@@ -331,13 +337,15 @@ static void display_resistance_panel(const struct player_flag_record *resists,
 			vuln = of_has(f, resists[i].vuln_flag);
 
 			if (imm) name_attr = TERM_GREEN;
-			else if (res && name_attr == TERM_WHITE) name_attr = TERM_L_BLUE;
+			else if (res) name_attr = TERM_L_BLUE;
 
 			if (vuln) sym = '-';
 			else if (imm) sym = '*';
 			else if (res) sym = '+';
+			else if (timed) { sym = '!'; attr = TERM_L_GREEN; }
 			else if ((j < INVEN_TOTAL) && o_ptr->kind && 
 				!object_flag_is_known(o_ptr, resists[i].res_flag)) sym = '?';
+
 			Term_addch(attr, sym);
 		}
 		Term_putstr(col, row, 6, name_attr, format("%5s:", resists[i].name));
