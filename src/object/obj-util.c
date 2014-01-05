@@ -656,6 +656,13 @@ const char *describe_use(int i)
 
 
 /*
+ * Here is a "hook" used during calls to "get_item()" and
+ * "show_inven()" and "show_equip()", and the choice window routines.
+ */
+bool (*item_tester_hook)(const object_type*);
+
+
+/*
  * Check an item against the item tester info
  */
 bool item_tester_okay(const object_type *o_ptr)
@@ -665,12 +672,6 @@ bool item_tester_okay(const object_type *o_ptr)
 
 	/* Hack -- ignore "gold" */
 	if (o_ptr->tval == TV_GOLD) return (FALSE);
-
-	/* Check the tval */
-	if (item_tester_tval)
-	{
-		if (item_tester_tval != o_ptr->tval) return (FALSE);
-	}
 
 	/* Check the hook */
 	if (item_tester_hook)
@@ -4224,8 +4225,7 @@ int scan_items(int *item_list, size_t item_list_max, int mode)
 		}
 	}
 
-	/* Forget the item_tester_tval and item_tester_hook  restrictions */
-	item_tester_tval = 0;
+	/* Forget the item_tester_hook restrictions */
 	item_tester_hook = NULL;
 
 	return item_list_num;
@@ -4244,7 +4244,6 @@ bool item_is_available(int item, bool (*tester)(const object_type *), int mode)
 	int i;
 
 	item_tester_hook = tester;
-	item_tester_tval = 0;
 	item_num = scan_items(item_list, N_ELEMENTS(item_list), mode);
 
 	for (i = 0; i < item_num; i++)
