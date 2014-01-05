@@ -198,4 +198,7 @@ extern void c_prt(byte attr, const char *str, int row, int col);
 extern void prt(const char *str, int row, int col);
 
 
+extern bool char_matches_key(wchar_t c, keycode_t key);
+
+
 #endif /* INCLUDED_UI_EVENT_H */

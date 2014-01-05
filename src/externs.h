@@ -166,7 +166,6 @@ extern bool (*get_file)(const char *suggested_name, char *path, size_t len);
 extern bool get_com(const char *prompt, struct keypress *command);
 extern bool get_com_ex(const char *prompt, ui_event *command);
 extern void pause_line(struct term *term);
-extern bool char_matches_key(wchar_t c, keycode_t key);
 extern int coords_to_dir(int y, int x);
 
 /* xtra2.c */

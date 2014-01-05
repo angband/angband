@@ -1657,22 +1657,6 @@ void pause_line(struct term *term)
 
 
 
-
-/**
- * Return whether the given display char matches an entered symbol
- *
- * Horrible hack. TODO UTF-8 find some way of entering mb chars
- */
-bool char_matches_key(wchar_t c, keycode_t key)
-{
-	wchar_t keychar[2];
-	char k[2] = {'\0', '\0'};
-
-	k[0] = (char)key;
-	text_mbstowcs(keychar, k, 1);
-	return (c == keychar[0]);
-}
-
 /*
  * Extract a "direction" which will move one step from the player location
  * towards the given "target" location (or "5" if no motion necessary).
