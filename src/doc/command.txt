@@ -17,15 +17,13 @@ A command is made up of:
 
 Arguments can have any of the following types:
 || null      | No data held
-|| number    | An integer of standard platform length (the same as C 'int')
 || string    | An ASCII string
-|| itemref   | An integer 'item' - i.e. one referring to the backpack/equipment or the dungeon inventory array
-|| object    | A pointer to an object structure, i.e. "struct object *"
-|| direction | one of the 9 cardinal directions, plus 0 for 'unknown'
+|| item      | An integer 'item' - i.e. one referring to the backpack/equipment or the dungeon inventory array
+|| direction | one of the 9 directions
+|| target    | one of the directions or -1 for a target
 || check     | a 'yes' or 'no' answer
-
-The following are also allowed but may be merged with other types:
-|| quantity  | the quantity of an item - may be merged with 'number'
+|| quantity  | the quantity of an item
+|| spell     | a spell index
 
 In C a command is represented by the type 'struct command'.  Command arguments can be set using the cmd_set_arg_*() functions.
 
@@ -67,6 +65,7 @@ For example:
 
 		/* ... learn from 'item' */
 	}
+
 
 
 
@@ -128,9 +127,8 @@ DONE:
 
 NOT DONE:
 
-2. Refactor the get_* functions so that textui.c has the textui get_*() functions which it registers near game start, with the actual get_*() functions being generic dispatchers.
 
-2b. Refactor get_item() to not use item_tester_hook.
+2. Refactor get_item() to not use item_tester_hook.
 
 
 3. Change the argument system
@@ -171,12 +169,18 @@ NOT DONE:
 
 5. Reorganise files:
 
-	cmd-process.c -> textui-cmd.c
+	cmd-process.c -> ui-cmd.c
 	game-cmd.c -> cmd-core.c
 	{game-cmd.h + cmds.h} -> cmds.h
-	{cmd-misc.c + cmd-cave.c(textui_cmd_rest)} -> [textui-misc.c XXX]
-	cmd-know.c -> [textui-know.c XXX]
-	cmd-context.c -> [textui-context.c XXX]
-	attack.c -> {cmd-attack.c + textui-cmd.c}
+	{cmd-misc.c + cmd-cave.c(textui_cmd_rest)} -> [ui-misc.c XXX]
+	cmd-know.c -> [ui-know.c XXX]
+	cmd-context.c -> [ui-context.c XXX]
+	attack.c -> {cmd-attack.c + ui-cmd.c}
 	cmd-pickup.c(move_player) -> cmd-cave.c
+
+
+Later
+-----
+
+Refactor the get_* functions so that textui.c has the textui get_*() functions which it registers near game start, with the actual get_*() functions being generic dispatchers.
 
