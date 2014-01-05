@@ -169,11 +169,6 @@ extern void pause_line(struct term *term);
 extern bool char_matches_key(wchar_t c, keycode_t key);
 extern int coords_to_dir(int y, int x);
 
-#ifdef SUPPORT_GAMMA
-extern void build_gamma_table(int gamma);
-extern byte gamma_table[256];
-#endif /* SUPPORT_GAMMA */
-
 /* xtra2.c */
 bool modify_panel(term *t, int wy, int wx);
 bool adjust_panel(int y, int x);
