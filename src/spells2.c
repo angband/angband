@@ -182,23 +182,23 @@ bool do_dec_stat(int stat, bool perma)
 	switch (stat)
 	{
 		case A_STR:
-			if (check_state(p_ptr, OF_SUST_STR, p_ptr->state.flags)) sust = TRUE;
+			if (player_of_has(p_ptr, OF_SUST_STR)) sust = TRUE;
 			wieldeds_notice_flag(p_ptr, OF_SUST_STR);
 			break;
 		case A_INT:
-			if (check_state(p_ptr, OF_SUST_INT, p_ptr->state.flags)) sust = TRUE;
+			if (player_of_has(p_ptr, OF_SUST_INT)) sust = TRUE;
 			wieldeds_notice_flag(p_ptr, OF_SUST_INT);
 			break;
 		case A_WIS:
-			if (check_state(p_ptr, OF_SUST_WIS, p_ptr->state.flags)) sust = TRUE;
+			if (player_of_has(p_ptr, OF_SUST_WIS)) sust = TRUE;
 			wieldeds_notice_flag(p_ptr, OF_SUST_WIS);
 			break;
 		case A_DEX:
-			if (check_state(p_ptr, OF_SUST_DEX, p_ptr->state.flags)) sust = TRUE;
+			if (player_of_has(p_ptr, OF_SUST_DEX)) sust = TRUE;
 			wieldeds_notice_flag(p_ptr, OF_SUST_DEX);
 			break;
 		case A_CON:
-			if (check_state(p_ptr, OF_SUST_CON, p_ptr->state.flags)) sust = TRUE;
+			if (player_of_has(p_ptr, OF_SUST_CON)) sust = TRUE;
 			wieldeds_notice_flag(p_ptr, OF_SUST_CON);
 			break;
 	}
@@ -2001,7 +2001,7 @@ void destroy_area(int y1, int x1, int r, bool full)
 
 		/* Blind the player */
 		wieldeds_notice_flag(p_ptr, OF_RES_LIGHT);
-		if (!check_state(p_ptr, OF_RES_LIGHT, p_ptr->state.flags))
+		if (!player_of_has(p_ptr, OF_RES_LIGHT))
 		{
 			/* Become blind */
 			(void)player_inc_timed(p_ptr, TMD_BLIND, 10 + randint1(10), TRUE, TRUE);

@@ -299,7 +299,7 @@ bool effect_handler_CURE_MIND(effect_handler_context_t *context)
 	if (player_restore_mana(p_ptr, 10)) context->ident = TRUE;
 	effect_clear_timed_multiple(context, TMD_CONFUSED, TMD_AFRAID, TMD_IMAGE, EFFECT_STOP);
 
-	if (!of_has(p_ptr->state.flags, OF_RES_CONFU) &&
+	if (!player_of_has(p_ptr, OF_RES_CONFU) &&
 		player_inc_timed(p_ptr, TMD_OPP_CONF, 12 + damroll(6, 10), TRUE, TRUE))
 		context->ident = TRUE;
 
@@ -393,7 +393,7 @@ bool effect_handler_GAIN_EXP(effect_handler_context_t *context)
 
 bool effect_handler_LOSE_EXP(effect_handler_context_t *context)
 {
-	if (!check_state(p_ptr, OF_HOLD_LIFE, p_ptr->state.flags) && (p_ptr->exp > 0)) {
+	if (!player_of_has(p_ptr, OF_HOLD_LIFE) && (p_ptr->exp > 0)) {
 		msg("You feel your memories fade.");
 		player_exp_lose(p_ptr, p_ptr->exp / 4, FALSE);
 	}
@@ -854,7 +854,7 @@ bool effect_handler_BANISHMENT(effect_handler_context_t *context)
 
 bool effect_handler_DARKNESS(effect_handler_context_t *context)
 {
-	if (!check_state(p_ptr, OF_RES_DARK, p_ptr->state.flags)) {
+	if (!player_of_has(p_ptr, OF_RES_DARK)) {
 		int amount = effect_calculate_value(context, FALSE);
 		(void)player_inc_timed(p_ptr, TMD_BLIND, amount, TRUE, TRUE);
 	}
@@ -1611,7 +1611,7 @@ bool effect_handler_DRAGON_POWER(effect_handler_context_t *context)
 bool effect_handler_TRAP_DOOR(effect_handler_context_t *context)
 {
 	msg("You fall through a trap door!");
-	if (check_state(p_ptr, OF_FEATHER, p_ptr->state.flags)) {
+	if (player_of_has(p_ptr, OF_FEATHER)) {
 		msg("You float gently down to the next level.");
 	} else {
 		take_hit(p_ptr, damroll(2, 8), "a trap");
@@ -1625,7 +1625,7 @@ bool effect_handler_TRAP_DOOR(effect_handler_context_t *context)
 bool effect_handler_TRAP_PIT(effect_handler_context_t *context)
 {
 	msg("You fall into a pit!");
-	if (check_state(p_ptr, OF_FEATHER, p_ptr->state.flags)) {
+	if (player_of_has(p_ptr, OF_FEATHER)) {
 		msg("You float gently to the bottom of the pit.");
 	} else {
 		take_hit(p_ptr, damroll(2, 6), "a trap");
@@ -1638,7 +1638,7 @@ bool effect_handler_TRAP_PIT_SPIKES(effect_handler_context_t *context)
 {
 	msg("You fall into a spiked pit!");
 
-	if (check_state(p_ptr, OF_FEATHER, p_ptr->state.flags)) {
+	if (player_of_has(p_ptr, OF_FEATHER)) {
 		msg("You float gently to the floor of the pit.");
 		msg("You carefully avoid touching the spikes.");
 	} else {
@@ -1661,7 +1661,7 @@ bool effect_handler_TRAP_PIT_POISON(effect_handler_context_t *context)
 {
 	msg("You fall into a spiked pit!");
 
-	if (check_state(p_ptr, OF_FEATHER, p_ptr->state.flags)) {
+	if (player_of_has(p_ptr, OF_FEATHER)) {
 		msg("You float gently to the floor of the pit.");
 		msg("You carefully avoid touching the spikes.");
 	} else {
@@ -1709,7 +1709,7 @@ bool effect_handler_TRAP_SPOT_FIRE(effect_handler_context_t *context)
 	int dam = damroll(4, 6);
 	msg("You are enveloped in flames!");
 	dam = adjust_dam(p_ptr, GF_FIRE, dam, RANDOMISE,
-					 check_for_resist(p_ptr, GF_FIRE, p_ptr->state.flags, TRUE));
+					 check_for_resist(p_ptr, GF_FIRE, NULL, TRUE));
 	if (dam) {
 		take_hit(p_ptr, dam, "a fire trap");
 		inven_damage(p_ptr, GF_FIRE, MIN(dam * 5, 300));
@@ -1722,7 +1722,7 @@ bool effect_handler_TRAP_SPOT_ACID(effect_handler_context_t *context)
 	int dam = damroll(4, 6);
 	msg("You are splashed with acid!");
 	dam = adjust_dam(p_ptr, GF_ACID, dam, RANDOMISE,
-					 check_for_resist(p_ptr, GF_ACID, p_ptr->state.flags, TRUE));
+					 check_for_resist(p_ptr, GF_ACID, NULL, TRUE));
 	if (dam) {
 		take_hit(p_ptr, dam, "an acid trap");
 		inven_damage(p_ptr, GF_ACID, MIN(dam * 5, 300));

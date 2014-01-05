@@ -23,8 +23,8 @@
  */
 static const struct object_flag object_flag_table[] =
 {
-    #define OF(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s) \
-            { OF_##a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s },
+    #define OF(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r) \
+            { OF_##a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r },
     #include "list-object-flags.h"
     #undef OF
 };
@@ -34,7 +34,7 @@ static const struct object_flag object_flag_table[] =
  */
 static const char *flag_names[] =
 {
-    #define OF(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s) #a,
+    #define OF(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r) #a,
     #include "list-object-flags.h"
     #undef OF
     ""
@@ -100,28 +100,6 @@ bool cursed_p(const bitflag *f)
 	return of_is_inter(f, f2);
 }
 
-/**
- * Determine whether an object flag or its timed equivalent are set in the
- * passed-in flags (which probably come from a state structure). This assumes
- * that there are no p_ptr->timed effects which can be active yet unknown to
- * the player.
- *
- * \param p player to act upon
- * \param flag is the object flag for which we are checking.
- * \param f is the set of flags we're checking
- */
-bool check_state(struct player *p, int flag, bitflag *f)
-{
-	const struct object_flag *of_ptr = &object_flag_table[flag];
-
-	/* Sanity check */
-	if (!flag) return FALSE;
-
-	if (of_has(f, flag) || (of_ptr->timed && p->timed[of_ptr->timed]))
-		return TRUE;
-
-	return FALSE;
-}
 
 /**
  * Log the names of a flagset to a file.

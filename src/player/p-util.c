@@ -445,3 +445,12 @@ void player_resting_complete_special(struct player *p)
 		}
 	}
 }
+
+/**
+ * Check if the player state has the given OF_ flag.
+ */
+bool player_of_has(struct player *p, int flag)
+{
+	assert(p);
+	return of_has(p->state.flags, flag);
+}

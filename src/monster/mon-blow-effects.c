@@ -59,7 +59,7 @@ static void melee_effect_elemental(melee_effect_handler_context_t *context, int 
 		physical_dam = 0;
 
 	elemental_dam = adjust_dam(context->p, type, context->damage, RANDOMISE,
-							   check_for_resist(context->p, type, context->p->state.flags, TRUE));
+							   check_for_resist(context->p, type, NULL, TRUE));
 
 	/* Take the larger of physical or elemental damage */
 	context->damage = (physical_dam > elemental_dam) ? physical_dam : elemental_dam;
@@ -136,12 +136,12 @@ static void melee_effect_experience(melee_effect_handler_context_t *context, int
 	take_hit(context->p, context->damage, context->ddesc);
 	update_smart_learn(context->m_ptr, context->p, OF_HOLD_LIFE);
 
-	if (check_state(context->p, OF_HOLD_LIFE, context->p->state.flags) && (randint0(100) < chance)) {
+	if (player_of_has(context->p, OF_HOLD_LIFE) && (randint0(100) < chance)) {
 		msg("You keep hold of your life force!");
 	}
 	else {
 		s32b d = drain_amount + (context->p->exp/100) * MON_DRAIN_LIFE;
-		if (check_state(context->p, OF_HOLD_LIFE, context->p->state.flags)) {
+		if (player_of_has(context->p, OF_HOLD_LIFE)) {
 			msg("You feel your life slipping away!");
 			player_exp_lose(context->p, d / 10, FALSE);
 		}
@@ -206,7 +206,7 @@ static void melee_effect_handler_disenchant(melee_effect_handler_context_t *cont
 	take_hit(context->p, context->damage, context->ddesc);
 
 	/* Allow complete resist */
-	if (!check_state(context->p, OF_RES_DISEN, context->p->state.flags))
+	if (!player_of_has(context->p, OF_RES_DISEN))
 	{
 		/* Apply disenchantment */
 		if (apply_disenchant(0)) context->obvious = TRUE;

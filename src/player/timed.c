@@ -151,15 +151,15 @@ bool player_set_timed(struct player *p, int idx, int v, bool notify)
 	else if (idx == TMD_CUT) return set_cut(p, v);
 
 	/* Don't mention effects which already match the player state. */
-	if (idx == TMD_OPP_ACID && check_state(p, OF_IM_ACID, p->state.flags))
+	if (idx == TMD_OPP_ACID && player_of_has(p, OF_IM_ACID))
 		notify = FALSE;
-	else if (idx == TMD_OPP_ELEC && check_state(p, OF_IM_ELEC, p->state.flags))
+	else if (idx == TMD_OPP_ELEC && player_of_has(p, OF_IM_ELEC))
 		notify = FALSE;
-	else if (idx == TMD_OPP_FIRE && check_state(p, OF_IM_FIRE, p->state.flags))
+	else if (idx == TMD_OPP_FIRE && player_of_has(p, OF_IM_FIRE))
 		notify = FALSE;
-	else if (idx == TMD_OPP_COLD && check_state(p, OF_IM_COLD, p->state.flags))
+	else if (idx == TMD_OPP_COLD && player_of_has(p, OF_IM_COLD))
 		notify = FALSE;
-	else if (idx == TMD_OPP_CONF && of_has(p->state.flags, OF_RES_CONFU))
+	else if (idx == TMD_OPP_CONF && player_of_has(p, OF_RES_CONFU))
 		notify = FALSE;
 
 	/* Find the effect */
@@ -231,7 +231,8 @@ bool player_inc_timed(struct player *p, int idx, int v, bool notify, bool check)
 	/* Check that @ can be affected by this effect */
 	if (check) {
 		wieldeds_notice_flag(p, effect->resist);
-		if (check_state(p, effect->resist, p->state.flags)) return FALSE;
+		if (player_of_has(p, effect->resist)) return FALSE;
+		if (idx == TMD_POISONED && p->timed[TMD_OPP_POIS]) return FALSE;
 	}
 
 	/* Paralysis should be non-cumulative */

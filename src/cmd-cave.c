@@ -1246,7 +1246,7 @@ static bool do_cmd_walk_test(int y, int x)
 	if (m_idx > 0 && m_ptr->ml && !is_mimicking(m_ptr))
 	{
 		/* Handle player fear */
-		if (check_state(p_ptr, OF_AFRAID, p_ptr->state.flags))
+		if (player_of_has(p_ptr, OF_AFRAID))
 		{
 			/* Extract monster name (or "it") */
 			char m_name[80];

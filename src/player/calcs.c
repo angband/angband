@@ -1520,52 +1520,52 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 		of_union(collect_f, f);
 
 		/* Affect stats */
-		if (of_has(f, OF_STR)) state->stat_add[A_STR] +=
-			o_ptr->pval[which_pval(o_ptr, OF_STR)];
-		if (of_has(f, OF_INT)) state->stat_add[A_INT] +=
-			o_ptr->pval[which_pval(o_ptr, OF_INT)];
-		if (of_has(f, OF_WIS)) state->stat_add[A_WIS] +=
-			o_ptr->pval[which_pval(o_ptr, OF_WIS)];
-		if (of_has(f, OF_DEX)) state->stat_add[A_DEX] +=
-			o_ptr->pval[which_pval(o_ptr, OF_DEX)];
-		if (of_has(f, OF_CON)) state->stat_add[A_CON] +=
-			o_ptr->pval[which_pval(o_ptr, OF_CON)];
+		if (of_has(f, OF_STR))
+			state->stat_add[A_STR] += o_ptr->pval[which_pval(o_ptr, OF_STR)];
+		if (of_has(f, OF_INT))
+			state->stat_add[A_INT] += o_ptr->pval[which_pval(o_ptr, OF_INT)];
+		if (of_has(f, OF_WIS))
+			state->stat_add[A_WIS] += o_ptr->pval[which_pval(o_ptr, OF_WIS)];
+		if (of_has(f, OF_DEX))
+			state->stat_add[A_DEX] += o_ptr->pval[which_pval(o_ptr, OF_DEX)];
+		if (of_has(f, OF_CON))
+			state->stat_add[A_CON] += o_ptr->pval[which_pval(o_ptr, OF_CON)];
 
 		/* Affect stealth */
-		if (of_has(f, OF_STEALTH)) state->skills[SKILL_STEALTH] +=
-			o_ptr->pval[which_pval(o_ptr, OF_STEALTH)];
+		if (of_has(f, OF_STEALTH))
+			state->skills[SKILL_STEALTH] += o_ptr->pval[which_pval(o_ptr, OF_STEALTH)];
 
 		/* Affect searching ability (factor of five) */
-		if (of_has(f, OF_SEARCH)) state->skills[SKILL_SEARCH] +=
-			(o_ptr->pval[which_pval(o_ptr, OF_SEARCH)] * 5);
+		if (of_has(f, OF_SEARCH))
+			state->skills[SKILL_SEARCH] += (o_ptr->pval[which_pval(o_ptr, OF_SEARCH)] * 5);
 
 		/* Affect searching frequency (factor of five) */
-		if (of_has(f, OF_SEARCH)) state->skills[SKILL_SEARCH_FREQUENCY]
-			+= (o_ptr->pval[which_pval(o_ptr, OF_SEARCH)] * 5);
+		if (of_has(f, OF_SEARCH))
+			state->skills[SKILL_SEARCH_FREQUENCY] += (o_ptr->pval[which_pval(o_ptr, OF_SEARCH)] * 5);
 
 		/* Affect infravision */
-		if (of_has(f, OF_INFRA)) state->see_infra +=
-			o_ptr->pval[which_pval(o_ptr, OF_INFRA)];
+		if (of_has(f, OF_INFRA))
+			state->see_infra += o_ptr->pval[which_pval(o_ptr, OF_INFRA)];
 
 		/* Affect digging (factor of 20) */
-		if (of_has(f, OF_TUNNEL)) state->skills[SKILL_DIGGING] +=
-			(o_ptr->pval[which_pval(o_ptr, OF_TUNNEL)] * 20);
+		if (of_has(f, OF_TUNNEL))
+			state->skills[SKILL_DIGGING] += (o_ptr->pval[which_pval(o_ptr, OF_TUNNEL)] * 20);
 
 		/* Affect speed */
-		if (of_has(f, OF_SPEED)) state->speed +=
-			o_ptr->pval[which_pval(o_ptr, OF_SPEED)];
+		if (of_has(f, OF_SPEED))
+			state->speed += o_ptr->pval[which_pval(o_ptr, OF_SPEED)];
 
 		/* Affect blows */
-		if (of_has(f, OF_BLOWS)) extra_blows +=
-			o_ptr->pval[which_pval(o_ptr, OF_BLOWS)];
+		if (of_has(f, OF_BLOWS))
+			extra_blows += o_ptr->pval[which_pval(o_ptr, OF_BLOWS)];
 
 		/* Affect shots */
-		if (of_has(f, OF_SHOTS)) extra_shots +=
-			o_ptr->pval[which_pval(o_ptr, OF_SHOTS)];
+		if (of_has(f, OF_SHOTS))
+			extra_shots += o_ptr->pval[which_pval(o_ptr, OF_SHOTS)];
 
 		/* Affect Might */
-		if (of_has(f, OF_MIGHT)) extra_might +=
-			o_ptr->pval[which_pval(o_ptr, OF_MIGHT)];
+		if (of_has(f, OF_MIGHT))
+			extra_might += o_ptr->pval[which_pval(o_ptr, OF_MIGHT)];
 
 		/* Modify the base armor class */
 		state->ac += o_ptr->ac;
@@ -1605,10 +1605,7 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 
 	/*** Update all flags ***/
 
-	for (i = 0; i < OF_MAX; i++)
-		if (of_has(collect_f, i))
-			of_on(state->flags, i);
-
+	of_union(state->flags, collect_f);
 
 	/*** Handle stats ***/
 
@@ -1709,6 +1706,10 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 		state->speed -= 5;
 	}
 
+	/* Temporary resistance to fear */
+	if (p_ptr->timed[TMD_BOLD])
+		of_on(state->flags, OF_RES_FEAR);
+
 	/* Temporary "Hero" */
 	if (p_ptr->timed[TMD_HERO])
 	{
@@ -1741,44 +1742,50 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 	if (p_ptr->timed[TMD_SINFRA])
 		state->see_infra += 5;
 
-	/* Terror - this is necessary because TMD_AFRAID already occupies the 
-	 * of_ptr->timed slot for OF_AFRAID */
-	if (p_ptr->timed[TMD_TERROR] > p_ptr->timed[TMD_AFRAID])
-		p_ptr->timed[TMD_AFRAID] = p_ptr->timed[TMD_TERROR];
+	/* Temporary ESP */
+	if (p_ptr->timed[TMD_TELEPATHY])
+		of_on(state->flags, OF_TELEPATHY);
 
+	/* Temporary see invisible */
+	if (p_ptr->timed[TMD_SINVIS])
+		of_on(state->flags, OF_SEE_INVIS);
+
+	/* Fear / terror flags */
+	if (p_ptr->timed[TMD_AFRAID] || p_ptr->timed[TMD_TERROR])
+		of_on(state->flags, OF_AFRAID);
 	if (p_ptr->timed[TMD_TERROR])
 		state->speed += 10;
 
-	/* Fear can come from item flags too */
-	if (check_state(p_ptr, OF_AFRAID, p_ptr->state.flags))
-	{
+	/* Resist confusion */
+	if (p_ptr->timed[TMD_OPP_CONF])
+		of_on(state->flags, OF_RES_CONFU);
+
+	/* Confusion */
+	if (p_ptr->timed[TMD_CONFUSED])
+		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE] * 75 / 100;
+
+	/* Amnesia */
+	if (p_ptr->timed[TMD_AMNESIA])
+		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE] * 8 / 10;
+
+	/* Poison */
+	if (p_ptr->timed[TMD_POISONED])
+		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE] * 95 / 100;
+
+	/* Hallucination */
+	if (p_ptr->timed[TMD_IMAGE])
+		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE] * 8 / 10;
+
+	/*** Analyze flags ***/
+
+	/* Check for fear */
+	if (of_has(state->flags, OF_AFRAID)) {
 		state->to_h -= 20;
 		state->dis_to_h -= 20;
 		state->to_a += 8;
 		state->dis_to_a += 8;
-		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE]
-			* 95 / 100;
+		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE] * 95 / 100;
 	}
-
-	/* Confusion */
-	if (p_ptr->timed[TMD_CONFUSED])
-		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE]
-			* 75 / 100;
-
-	/* Amnesia */
-	if (p_ptr->timed[TMD_AMNESIA])
-		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE]
-			* 8 / 10;
-
-	/* Poison */
-	if (p_ptr->timed[TMD_POISONED])
-		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE]
-			* 95 / 100;
-
-	/* Hallucination */
-	if (p_ptr->timed[TMD_IMAGE])
-		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE]
-			* 8 / 10;
 
 	/*** Analyze weight ***/
 
@@ -1978,7 +1985,7 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 	state->icky_wield = FALSE;
 
 	/* Priest weapon penalty for non-blessed edged weapons */
-	if (player_has(PF_BLESS_WEAPON) && !check_state(p_ptr, OF_BLESSED, p_ptr->state.flags) &&
+	if (player_has(PF_BLESS_WEAPON) && !player_of_has(p_ptr, OF_BLESSED) &&
 		((o_ptr->tval == TV_SWORD) || (o_ptr->tval == TV_POLEARM)))
 	{
 		/* Reduce the real bonuses */

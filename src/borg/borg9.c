@@ -4703,7 +4703,7 @@ void borg_write_map(bool ask)
     {
         file_putf(borg_map_file,  "You are hallucinating.\n");
     }
-    if (check_state(p_ptr, OF_AGGRAVATE, p_ptr->state.flags))
+    if (player_of_has(p_ptr, OF_AGGRAVATE))
     {
         file_putf(borg_map_file,  "You aggravate monsters.\n");
     }

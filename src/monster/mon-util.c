@@ -440,7 +440,7 @@ void update_mon(struct monster *m_ptr, bool full)
 	/* Nearby */
 	if (d <= MAX_SIGHT) {
 		/* Basic telepathy */
-		if (check_state(p_ptr, OF_TELEPATHY, p_ptr->state.flags)) {
+		if (player_of_has(p_ptr, OF_TELEPATHY)) {
 			/* Empty mind, no telepathy */
 			if (rf_has(m_ptr->race->flags, RF_EMPTY_MIND))
 			{
@@ -497,7 +497,7 @@ void update_mon(struct monster *m_ptr, bool full)
 				/* Handle "invisible" monsters */
 				if (rf_has(m_ptr->race->flags, RF_INVISIBLE)) {
 					/* See invisible */
-					if (check_state(p_ptr, OF_SEE_INVIS, p_ptr->state.flags))
+					if (player_of_has(p_ptr, OF_SEE_INVIS))
 					{
 						/* Easy to see */
 						easy = flag = TRUE;
@@ -523,7 +523,7 @@ void update_mon(struct monster *m_ptr, bool full)
 	/* The monster is now visible */
 	if (flag) {
 		/* Learn about the monster's mind */
-		if (check_state(p_ptr, OF_TELEPATHY, p_ptr->state.flags))
+		if (player_of_has(p_ptr, OF_TELEPATHY))
 			flags_set(l_ptr->flags, RF_SIZE, RF_EMPTY_MIND, RF_WEIRD_MIND,
 					RF_SMART, RF_STUPID, FLAG_END);
 
@@ -1050,7 +1050,14 @@ void update_smart_learn(struct monster *m, struct player *p, int flag)
 	if (!rf_has(m->race->flags, RF_SMART) && one_in_(2)) return;
 
 	/* Analyze the knowledge; fail very rarely */
-	if (check_state(p, flag, p->state.flags) && !one_in_(100))
+	if (one_in_(100))
+		return;
+
+	/* The inclusion of poison here is a nasty heck, that comes from the 
+	 * previous attempt to lump in the 'base 5' timed and permanent resists
+	 * onto the same flags (OF_RES_POIS et al), which doesn't really work
+	 * because of the fact they are not binary, resulting in this hack here. */
+	if (player_of_has(p, flag) || (flag == OF_RES_POIS && p->timed[TMD_OPP_POIS]))
 		of_on(m->known_pflags, flag);
 	else
 		of_off(m->known_pflags, flag);

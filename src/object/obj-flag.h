@@ -23,14 +23,13 @@
 #include "z-textblock.h"
 #include "z-quark.h"
 #include "z-bitflag.h"
-#include "game-cmd.h"
 #include "cave.h"
 
 /*** Constants ***/
 
 /* The object flags */
 enum {
-    #define OF(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s) OF_##a,
+    #define OF(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r) OF_##a,
     #include "list-object-flags.h"
     #undef OF
 };
@@ -109,7 +108,6 @@ enum object_flag_id {
 struct object_flag {
 	u16b index;				/* the OF_ index */
 	bool pval;				/* is it granular (TRUE) or binary (FALSE) */
-	u16b timed;				/* the corresponding TMD_ flag */
 	u16b id;				/* how is it identified */
 	u16b type;				/* OFT_ category */
 	s16b power;				/* base power rating */
@@ -140,6 +138,5 @@ s16b slot_mult(int flag, int slot);
 bool flag_uses_pval(int flag);
 int obj_flag_type(int flag);
 int pval_mult(int flag);
-bool check_state(struct player *p, int flag, bitflag *f);
 
 #endif /* !INCLUDED_OBJFLAG_H */

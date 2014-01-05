@@ -102,7 +102,7 @@ static void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MA
 		/* Disenchantment - requires an enchanted item */
 		if (i >= INVEN_WIELD && (!known || o_ptr->to_a > 0 ||
 				o_ptr->to_h > 0 || o_ptr->to_d > 0) &&
-				!check_state(p_ptr, OF_RES_DISEN, st.flags))
+				!of_has(st.flags, OF_RES_DISEN))
 		{
 			melee_colors[RBE_UN_BONUS] = TERM_L_RED;
 			spell_colors[RSF_BR_DISE] = TERM_L_RED;
@@ -110,9 +110,9 @@ static void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MA
 	}
 
 	/* Acid */
-	if (check_state(p_ptr, OF_IM_ACID, st.flags))
+	if (of_has(st.flags, OF_IM_ACID))
 		tmp_col = TERM_L_GREEN;
-	else if (check_state(p_ptr, OF_RES_ACID, st.flags))
+	else if (of_has(st.flags, OF_RES_ACID) || p_ptr->timed[TMD_OPP_ACID])
 		tmp_col = TERM_YELLOW;
 	else
 		tmp_col = TERM_ORANGE;
@@ -123,9 +123,9 @@ static void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MA
 	spell_colors[RSF_BA_ACID] = tmp_col;
 
 	/* Cold and ice */
-	if (check_state(p_ptr, OF_IM_COLD, st.flags))
+	if (of_has(st.flags, OF_IM_COLD))
 		tmp_col = TERM_L_GREEN;
-	else if (check_state(p_ptr, OF_RES_COLD, st.flags))
+	else if (of_has(st.flags, OF_RES_COLD) || p_ptr->timed[TMD_OPP_COLD])
 		tmp_col = TERM_YELLOW;
 	else
 		tmp_col = TERM_ORANGE;
@@ -137,9 +137,9 @@ static void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MA
 	spell_colors[RSF_BO_ICEE] = tmp_col;
 
 	/* Elec */
-	if (check_state(p_ptr, OF_IM_ELEC, st.flags))
+	if (of_has(st.flags, OF_IM_ELEC))
 		tmp_col = TERM_L_GREEN;
-	else if (check_state(p_ptr, OF_RES_ELEC, st.flags))
+	else if (of_has(st.flags, OF_RES_ELEC) || p_ptr->timed[TMD_OPP_ELEC])
 		tmp_col = TERM_YELLOW;
 	else
 		tmp_col = TERM_ORANGE;
@@ -150,9 +150,9 @@ static void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MA
 	spell_colors[RSF_BA_ELEC] = tmp_col;
 
 	/* Fire */
-	if (check_state(p_ptr, OF_IM_FIRE, st.flags))
+	if (of_has(st.flags, OF_IM_FIRE))
 		tmp_col = TERM_L_GREEN;
-	else if (check_state(p_ptr, OF_RES_FIRE, st.flags))
+	else if (of_has(st.flags, OF_RES_FIRE) || p_ptr->timed[TMD_OPP_FIRE])
 		tmp_col = TERM_YELLOW;
 	else
 		tmp_col = TERM_ORANGE;
@@ -163,7 +163,7 @@ static void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MA
 	spell_colors[RSF_BA_FIRE] = tmp_col;
 
 	/* Poison */
-	if (!check_state(p_ptr, OF_RES_POIS, st.flags))
+	if (!of_has(st.flags, OF_RES_POIS) && !p_ptr->timed[TMD_OPP_POIS])
 	{
 		melee_colors[RBE_POISON] = TERM_ORANGE;
 		spell_colors[RSF_BR_POIS] = TERM_ORANGE;
@@ -171,7 +171,7 @@ static void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MA
 	}
 
 	/* Nexus  */
-	if (!check_state(p_ptr, OF_RES_NEXUS, st.flags))
+	if (!of_has(st.flags, OF_RES_NEXUS))
 	{
 		if(st.skills[SKILL_SAVE] < 100)
 			spell_colors[RSF_BR_NEXU] = TERM_L_RED;
@@ -180,7 +180,7 @@ static void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MA
 	}
 
 	/* Nether */
-	if (!check_state(p_ptr, OF_RES_NETHR, st.flags))
+	if (!of_has(st.flags, OF_RES_NETHR))
 	{
 		spell_colors[RSF_BR_NETH] = TERM_ORANGE;
 		spell_colors[RSF_BA_NETH] = TERM_ORANGE;
@@ -193,26 +193,26 @@ static void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MA
 	spell_colors[RSF_BR_TIME] = TERM_L_RED;
 
 	/* Sound */
-	if (check_state(p_ptr, OF_RES_SOUND, st.flags))
+	if (of_has(st.flags, OF_RES_SOUND))
 		spell_colors[RSF_BR_SOUN] = TERM_L_GREEN;
-	else if (!check_state(p_ptr, OF_RES_SOUND, st.flags) && check_state(p_ptr, OF_RES_STUN, st.flags))
+	else if (!of_has(st.flags, OF_RES_SOUND) && of_has(st.flags, OF_RES_STUN))
 		spell_colors[RSF_BR_SOUN] = TERM_YELLOW;
 	else
 		spell_colors[RSF_BR_SOUN] = TERM_ORANGE;
 
  	/* Shards */
- 	if(!check_state(p_ptr, OF_RES_SHARD, st.flags))
+ 	if(!of_has(st.flags, OF_RES_SHARD))
  		spell_colors[RSF_BR_SHAR] = TERM_ORANGE;
 
 	/* Confusion */
-	if (!check_state(p_ptr, OF_RES_CONFU, st.flags))
+	if (!of_has(st.flags, OF_RES_CONFU))
 	{
 		melee_colors[RBE_CONFUSE] = TERM_ORANGE;
 		spell_colors[RSF_BR_CONF] = TERM_ORANGE;
 	}
 
 	/* Stunning */
-	if (!check_state(p_ptr, OF_RES_STUN, st.flags)) {
+	if (!of_has(st.flags, OF_RES_STUN)) {
 		spell_colors[RSF_BR_WALL] = TERM_YELLOW;
 		spell_colors[RSF_BR_PLAS] = TERM_ORANGE;
 		spell_colors[RSF_BO_PLAS] = TERM_ORANGE;
@@ -225,23 +225,23 @@ static void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MA
 	}
 
 	/* Chaos */
-	if (!check_state(p_ptr, OF_RES_CHAOS, st.flags))
+	if (!of_has(st.flags, OF_RES_CHAOS))
 		spell_colors[RSF_BR_CHAO] = TERM_ORANGE;
 
 	/* Light */
-	if (!check_state(p_ptr, OF_RES_LIGHT, st.flags))
+	if (!of_has(st.flags, OF_RES_LIGHT))
 		spell_colors[RSF_BR_LIGHT] = TERM_ORANGE;
 
 	/* Darkness */
-	if (!check_state(p_ptr, OF_RES_DARK, st.flags))
+	if (!of_has(st.flags, OF_RES_DARK))
 	{
 		spell_colors[RSF_BR_DARK] = TERM_ORANGE;
 		spell_colors[RSF_BA_DARK] = TERM_L_RED;
 	}
 
 	/* Water */
-	if (!check_state(p_ptr, OF_RES_CONFU, st.flags) ||
-			!check_state(p_ptr, OF_RES_STUN, st.flags))
+	if (!of_has(st.flags, OF_RES_CONFU) ||
+			!of_has(st.flags, OF_RES_STUN))
 	{
 		spell_colors[RSF_BA_WATE] = TERM_L_RED;
 		spell_colors[RSF_BO_WATE] = TERM_L_RED;
@@ -264,14 +264,14 @@ static void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MA
 		spell_colors[RSF_FORGET] = TERM_YELLOW;
 
 		/* Fear */
-		if (!check_state(p_ptr, OF_RES_FEAR, st.flags))
+		if (!of_has(st.flags, OF_RES_FEAR))
 		{
 			melee_colors[RBE_TERRIFY] = TERM_YELLOW;
 			spell_colors[RSF_SCARE] = TERM_YELLOW;
 		}
 
 		/* Paralysis and slow */
-		if (!check_state(p_ptr, OF_FREE_ACT, st.flags))
+		if (!of_has(st.flags, OF_FREE_ACT))
 		{
 			melee_colors[RBE_PARALYZE] = TERM_L_RED;
 			spell_colors[RSF_HOLD] = TERM_L_RED;
@@ -279,11 +279,11 @@ static void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MA
 		}
 
 		/* Blind */
-		if (!check_state(p_ptr, OF_RES_BLIND, st.flags))
+		if (!of_has(st.flags, OF_RES_BLIND))
 			spell_colors[RSF_BLIND] = TERM_ORANGE;
 
 		/* Confusion */
-		if (!check_state(p_ptr, OF_RES_CONFU, st.flags))
+		if (!of_has(st.flags, OF_RES_CONFU))
 			spell_colors[RSF_CONF] = TERM_ORANGE;
 
 		/* Cause wounds */
@@ -293,13 +293,13 @@ static void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MA
 		spell_colors[RSF_CAUSE_4] = TERM_YELLOW;
 
 		/* Mind blast */
-		spell_colors[RSF_MIND_BLAST] = (check_state(p_ptr, OF_RES_CONFU, st.flags) ?
+		spell_colors[RSF_MIND_BLAST] = (of_has(st.flags, OF_RES_CONFU) ?
 				TERM_YELLOW : TERM_ORANGE);
 
 		/* Brain smash slows even when conf/blind resisted */
-		spell_colors[RSF_BRAIN_SMASH] = (check_state(p_ptr, OF_RES_BLIND, st.flags) &&
-				check_state(p_ptr, OF_FREE_ACT, st.flags) &&
-				check_state(p_ptr, OF_RES_CONFU, st.flags)	? TERM_ORANGE : TERM_L_RED);
+		spell_colors[RSF_BRAIN_SMASH] = (of_has(st.flags, OF_RES_BLIND) &&
+				of_has(st.flags, OF_FREE_ACT) &&
+				of_has(st.flags, OF_RES_CONFU)	? TERM_ORANGE : TERM_L_RED);
 	}
 
 	/* Gold theft */
@@ -307,33 +307,33 @@ static void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MA
 		melee_colors[RBE_EAT_GOLD] = TERM_YELLOW;
 
 	/* Melee blindness and hallucinations */
-	if (!check_state(p_ptr, OF_RES_BLIND, st.flags))
+	if (!of_has(st.flags, OF_RES_BLIND))
 		melee_colors[RBE_BLIND] = TERM_YELLOW;
-	if (!check_state(p_ptr, OF_RES_CHAOS, st.flags))
+	if (!of_has(st.flags, OF_RES_CHAOS))
 		melee_colors[RBE_HALLU] = TERM_YELLOW;
 
 	/* Stat draining is bad */
-	if (!check_state(p_ptr, OF_SUST_STR, st.flags))
+	if (!of_has(st.flags, OF_SUST_STR))
 		melee_colors[RBE_LOSE_STR] = TERM_ORANGE;
-	if (!check_state(p_ptr, OF_SUST_INT, st.flags))
+	if (!of_has(st.flags, OF_SUST_INT))
 		melee_colors[RBE_LOSE_INT] = TERM_ORANGE;
-	if (!check_state(p_ptr, OF_SUST_WIS, st.flags))
+	if (!of_has(st.flags, OF_SUST_WIS))
 		melee_colors[RBE_LOSE_WIS] = TERM_ORANGE;
-	if (!check_state(p_ptr, OF_SUST_DEX, st.flags))
+	if (!of_has(st.flags, OF_SUST_DEX))
 		melee_colors[RBE_LOSE_DEX] = TERM_ORANGE;
-	if (!check_state(p_ptr, OF_SUST_CON, st.flags))
+	if (!of_has(st.flags, OF_SUST_CON))
 		melee_colors[RBE_LOSE_CON] = TERM_ORANGE;
 
 	/* Drain all gets a red warning */
-	if (!check_state(p_ptr, OF_SUST_STR, st.flags) || !check_state(p_ptr, OF_SUST_INT, st.flags) ||
-			!check_state(p_ptr, OF_SUST_WIS, st.flags) || !check_state(p_ptr, OF_SUST_DEX, st.flags) ||
-			!check_state(p_ptr, OF_SUST_CON, st.flags))
+	if (!of_has(st.flags, OF_SUST_STR) || !of_has(st.flags, OF_SUST_INT) ||
+			!of_has(st.flags, OF_SUST_WIS) || !of_has(st.flags, OF_SUST_DEX) ||
+			!of_has(st.flags, OF_SUST_CON))
 		melee_colors[RBE_LOSE_ALL] = TERM_L_RED;
 
 	/* Hold life isn't 100% effective */
 	melee_colors[RBE_EXP_10] = melee_colors[RBE_EXP_20] = 
 			melee_colors[RBE_EXP_40] = melee_colors[RBE_EXP_80] =
-			check_state(p_ptr, OF_HOLD_LIFE, st.flags) ? TERM_YELLOW : TERM_ORANGE;
+			of_has(st.flags, OF_HOLD_LIFE) ? TERM_YELLOW : TERM_ORANGE;
 
 	/* Shatter is always noteworthy */
 	melee_colors[RBE_SHATTER] = TERM_YELLOW;
@@ -346,7 +346,7 @@ static void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MA
 	/* Player teleports and traps are annoying */
 	spell_colors[RSF_TELE_TO] = TERM_YELLOW;
 	spell_colors[RSF_TELE_AWAY] = TERM_YELLOW;
-	if (!check_state(p_ptr, OF_RES_NEXUS, st.flags) && st.skills[SKILL_SAVE] < 100)
+	if (!of_has(st.flags, OF_RES_NEXUS) && st.skills[SKILL_SAVE] < 100)
 		spell_colors[RSF_TELE_LEVEL] = TERM_YELLOW;
 	spell_colors[RSF_TRAPS] = TERM_YELLOW;
 

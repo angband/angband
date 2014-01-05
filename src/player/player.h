@@ -407,7 +407,7 @@ typedef struct player {
 	s16b wt_birth;          /* Birth Weight */
 
 	/* Variable and calculatable player state */
-	player_state	state;
+	player_state state;
 
 	/* "cached" quiver statistics*/
 	u16b quiver_size;
@@ -707,5 +707,6 @@ void player_resting_cancel(struct player *p);
 bool player_resting_can_regenerate(struct player *p);
 void player_resting_step_turn(struct player *p);
 void player_resting_complete_special(struct player *p);
+bool player_of_has(struct player *p, int flag);
 
 #endif /* !PLAYER_PLAYER_H */

@@ -1203,6 +1203,9 @@ int check_for_resist(struct player *p, int type, bitflag *flags, bool real)
 	const struct gf_type *gf_ptr = &gf_table[type];
 	int result = 0;
 
+	if (!flags)
+		flags = p->state.flags;
+
 	if (gf_ptr->vuln && of_has(flags, gf_ptr->vuln))
 		result--;
 
@@ -1237,10 +1240,9 @@ bool check_side_immune(int type)
 	const struct gf_type *gf_ptr = &gf_table[type];
 
 	if (gf_ptr->immunity) {
-		if (gf_ptr->side_immune && check_state(p_ptr, gf_ptr->immunity,
-				p_ptr->state.flags))
+		if (gf_ptr->side_immune && player_of_has(p_ptr, gf_ptr->immunity))
 			return TRUE;
-	} else if ((gf_ptr->resist && of_has(p_ptr->state.flags, gf_ptr->resist)) ||
+	} else if ((gf_ptr->resist && player_of_has(p_ptr, gf_ptr->resist)) ||
 				(gf_ptr->opp && p_ptr->timed[gf_ptr->opp]))
 		return TRUE;
 
@@ -2720,8 +2722,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 	obvious = context.obvious;
 
 	/* Adjust damage for resistance, immunity or vulnerability, and apply it */
-	dam = adjust_dam(p_ptr, typ, dam, RANDOMISE, check_for_resist(p_ptr, typ,
-		p_ptr->state.flags, TRUE));
+	dam = adjust_dam(p_ptr, typ, dam, RANDOMISE, check_for_resist(p_ptr, typ, NULL, TRUE));
 	if (dam)
 		take_hit(p_ptr, dam, killer);
 

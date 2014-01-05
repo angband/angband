@@ -349,7 +349,7 @@ static void do_side_effects(int spell, int dam, struct monster *m_ptr, bool seen
 				update_smart_learn(m_ptr, p_ptr, re_ptr->res_flag);
 
 			if ((rs_ptr->gf && check_side_immune(rs_ptr->gf)) ||
-					check_state(p_ptr, re_ptr->res_flag, p_ptr->state.flags)) {
+					player_of_has(p_ptr, re_ptr->res_flag)) {
 				msg("You resist the effect!");
 				continue;
 			}

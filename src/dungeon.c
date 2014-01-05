@@ -591,10 +591,10 @@ static void process_world(struct cave *c)
 		i = extract_energy[p_ptr->state.speed] * 2;
 
 		/* Regeneration takes more food */
-		if (check_state(p_ptr, OF_REGEN, p_ptr->state.flags)) i += 30;
+		if (player_of_has(p_ptr, OF_REGEN)) i += 30;
 
 		/* Slow digestion takes less food */
-		if (check_state(p_ptr, OF_SLOW_DIGEST, p_ptr->state.flags)) i /= 5;
+		if (player_of_has(p_ptr, OF_SLOW_DIGEST)) i /= 5;
 
 		/* Minimal digestion */
 		if (i < 1) i = 1;
@@ -642,13 +642,13 @@ static void process_world(struct cave *c)
 		regen_amount = PY_REGEN_WEAK;
 
 	/* Various things speed up regeneration */
-	if (check_state(p_ptr, OF_REGEN, p_ptr->state.flags))
+	if (player_of_has(p_ptr, OF_REGEN))
 		regen_amount *= 2;
 	if (p_ptr->searching || player_resting_can_regenerate(p_ptr))
 		regen_amount *= 2;
 
 	/* Some things slow it down */
-	if (check_state(p_ptr, OF_IMPAIR_HP, p_ptr->state.flags))
+	if (player_of_has(p_ptr, OF_IMPAIR_HP))
 		regen_amount /= 2;
 
 	/* Various things interfere with physical healing */
@@ -668,13 +668,13 @@ static void process_world(struct cave *c)
 	regen_amount = PY_REGEN_NORMAL;
 
 	/* Various things speed up regeneration */
-	if (check_state(p_ptr, OF_REGEN, p_ptr->state.flags))
+	if (player_of_has(p_ptr, OF_REGEN))
 		regen_amount *= 2;
 	if (p_ptr->searching || player_resting_can_regenerate(p_ptr))
 		regen_amount *= 2;
 
 	/* Some things slow it down */
-	if (check_state(p_ptr, OF_IMPAIR_MANA, p_ptr->state.flags))
+	if (player_of_has(p_ptr, OF_IMPAIR_MANA))
 		regen_amount /= 2;
 
 	/* Regenerate mana */
@@ -752,7 +752,7 @@ static void process_world(struct cave *c)
 	/*** Process Inventory ***/
 
 	/* Handle experience draining */
-	if (check_state(p_ptr, OF_DRAIN_EXP, p_ptr->state.flags))
+	if (player_of_has(p_ptr, OF_DRAIN_EXP))
 	{
 		if ((p_ptr->exp > 0) && one_in_(10)) {
 			s32b d = damroll(10, 6) + (p_ptr->exp/100) * MON_DRAIN_LIFE;
@@ -772,7 +772,7 @@ static void process_world(struct cave *c)
 	/*** Involuntary Movement ***/
 
 	/* Random teleportation */
-	if (check_state(p_ptr, OF_TELEPORT, p_ptr->state.flags) && one_in_(50))
+	if (player_of_has(p_ptr, OF_TELEPORT) && one_in_(50))
 	{
 		wieldeds_notice_flag(p_ptr, OF_TELEPORT);
 		teleport_player(40);

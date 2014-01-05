@@ -1628,7 +1628,7 @@ static void process_monster(struct cave *c, struct monster *m_ptr)
 		u32b notice;
 
 		/* Aggravation */
-		if (check_state(p_ptr, OF_AGGRAVATE, p_ptr->state.flags)) {
+		if (player_of_has(p_ptr, OF_AGGRAVATE)) {
 			/* Wake the monster and notify player */
 			mon_clear_timed(m_ptr, MON_TMD_SLEEP, MON_TMD_FLG_NOTIFY, FALSE);
 

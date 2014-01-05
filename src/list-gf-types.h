@@ -43,7 +43,7 @@ GF(ACID,		"acid",				OF_RES_ACID,    1,  RV(3,0,0,0),	TRUE,		TERM_SLATE,		    TM
 GF(ELEC,		"lightning",		OF_RES_ELEC,    1,  RV(3,0,0,0),	TRUE,		TERM_BLUE,		    TMD_OPP_ELEC,   OF_IM_ELEC, TRUE,	OF_VULN_ELEC,   RF_IM_ELEC, 0,				OF_HATES_ELEC,	OF_IGNORE_ELEC,	NULL,			OH(ELEC),		MH(ELEC),			NULL)
 GF(FIRE,		"fire",				OF_RES_FIRE,    1,  RV(3,0,0,0),	TRUE,		TERM_RED,		    TMD_OPP_FIRE,   OF_IM_FIRE, TRUE,	OF_VULN_FIRE,   RF_IM_FIRE, RF_HURT_FIRE,	OF_HATES_FIRE,	OF_IGNORE_FIRE,	NULL,			OH(FIRE),		MH(FIRE),			NULL)
 GF(COLD,		"cold",				OF_RES_COLD,    1,  RV(3,0,0,0),	TRUE,		TERM_WHITE,		    TMD_OPP_COLD,   OF_IM_COLD, TRUE,	OF_VULN_COLD,   RF_IM_COLD, RF_HURT_COLD,	OF_HATES_COLD,	OF_IGNORE_COLD,	NULL,			OH(COLD),		MH(COLD),			NULL)
-GF(POIS,		"poison",			OF_RES_POIS,    1,  RV(3,0,0,0),	TRUE,		TERM_GREEN,		    TMD_OPP_POIS,   0,          TRUE,	0,              RF_IM_POIS, 0,				0,				0,				NULL,			NULL,			MH(POIS),			NULL)
+GF(POIS,		"poison",			OF_RES_POIS,    1,  RV(3,0,0,0),	TRUE,		TERM_GREEN,		    TMD_OPP_POIS,   0,          TRUE ,	0,              RF_IM_POIS, 0,				0,				0,				NULL,			NULL,			MH(POIS),			NULL)
 GF(LIGHT,		"something",		OF_RES_LIGHT,   4,  RV(6,1,6,0),	TRUE,		TERM_ORANGE,	    0,              0,          TRUE,	0,              0,          RF_HURT_LIGHT,	0,				0,				FH(LIGHT),		NULL,			MH(LIGHT),			NULL)
 GF(DARK,		"something",		OF_RES_DARK,    4,  RV(6,1,6,0),	TRUE,		TERM_L_DARK,	    0,              0,          TRUE,	0,              0,          0,				0,				0,				FH(DARK),		NULL,			MH(DARK),			NULL)
 GF(CONFU,		"something",		OF_RES_CONFU,	6,	RV(6,1,6,0),	FALSE,		TERM_L_UMBER,		TMD_OPP_CONF,	0,			TRUE,	0,				0,			0,				0,				0,				NULL,			NULL,			NULL,				NULL)
