@@ -11,7 +11,6 @@
 #include "cave.h"
 #include "object/obj-flag.h"
 
-struct player;
 
 
 /*** Game constants ***/
