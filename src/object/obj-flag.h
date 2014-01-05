@@ -18,12 +18,8 @@
 #ifndef INCLUDED_OBJFLAG_H
 #define INCLUDED_OBJFLAG_H
 
-#include "z-rand.h"
 #include "z-file.h"
-#include "z-textblock.h"
-#include "z-quark.h"
 #include "z-bitflag.h"
-#include "cave.h"
 
 /*** Constants ***/
 
