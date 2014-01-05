@@ -124,12 +124,10 @@ DONE:
 
 1. Clarify split between command and command queue functions (prefixes cmd_ and cmdq_).
 
-
-NOT DONE:
-
-
 2. Refactor get_item() to not use item_tester_hook.
 
+
+NOT DONE:
 
 3. Change the argument system
 
