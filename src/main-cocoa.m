@@ -65,7 +65,7 @@ static NSInteger const AngbandCommandMenuItemTagBase = 2000;
  * Support the improved game command handling
  */
 #include "textui.h"
-static game_command cmd = { CMD_NULL, 0 };
+static struct command cmd = { CMD_NULL, 0 };
 
 
 /* Our command-fetching function */
@@ -2685,7 +2685,7 @@ static errr get_cmd_init(void)
     }
     
     /* Push the command to the game. */
-    cmd_insert_s(&cmd);
+    cmdq_push_copy(&cmd);
     
     return 0; 
 } 
@@ -3421,7 +3421,7 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
     }
     else
     {
-        cmd_insert(CMD_QUIT);
+        cmdq_push(CMD_QUIT);
         /* Post an escape event so that we can return from our get-key-event function */
         wakeup_event_loop();
         quit_when_ready = true;

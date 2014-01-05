@@ -123,11 +123,10 @@ DONE:
 0a. Move check_state somewhere useful, refactor it so that its data is kept in 3rd normal form.
 0b. Move cmd2.c(count_feats + coords_to_dir) => cave.c
 
-
-NOT DONE:
-
 1. Clarify split between command and command queue functions (prefixes cmd_ and cmdq_).
 
+
+NOT DONE:
 
 2. Refactor the get_* functions so that textui.c has the textui get_*() functions which it registers near game start, with the actual get_*() functions being generic dispatchers.
 

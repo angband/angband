@@ -1132,7 +1132,7 @@ void textui_cmd_destroy_menu(int item)
 	screen_load();
 
 	if (selected == IGNORE_THIS_ITEM) {
-		cmd_insert(CMD_DESTROY);
+		cmdq_push(CMD_DESTROY);
 		cmd_set_arg_item(cmdq_peek(), 0, item);
 	} else if (selected == UNIGNORE_THIS_ITEM) {
 		o_ptr->ignore = FALSE;

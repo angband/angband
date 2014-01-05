@@ -475,7 +475,7 @@ bool get_item_allow(int item, unsigned char ch, cmd_code cmd, bool is_harmless)
 	if (n) {
 		char prompt[1024];
 
-		const char *verb = cmd_get_verb(cmd);
+		const char *verb = cmdq_pop_verb(cmd);
 		if (!verb)
 			verb = "do that with";
 

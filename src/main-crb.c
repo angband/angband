@@ -2997,7 +2997,7 @@ static errr get_cmd_init()
 	}
 
 	/* Push the command to the game. */
-	cmd_insert_s(&cmd);
+	cmdq_push_copy(&cmd);
 		
 	/* A game is starting - update status and tracking as appropriate. */ 
 	term_data *td0 = &data[0];

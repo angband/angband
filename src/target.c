@@ -1394,7 +1394,7 @@ bool target_set_interactive(int mode, int x, int y)
 					} else
 					if (press.mouse.mods & KC_MOD_ALT) {
 						/* go to spot - same as 'g' command below */
-						cmd_insert(CMD_PATHFIND);
+						cmdq_push(CMD_PATHFIND);
 						cmd_set_arg_point(cmdq_peek(), 0, y, x);
 						done = TRUE;
 					} else
@@ -1497,7 +1497,7 @@ bool target_set_interactive(int mode, int x, int y)
 
 				case 'g':
 				{
-					cmd_insert(CMD_PATHFIND);
+					cmdq_push(CMD_PATHFIND);
 					cmd_set_arg_point(cmdq_peek(), 0, y, x);
 					done = TRUE;
 					break;
@@ -1624,7 +1624,7 @@ bool target_set_interactive(int mode, int x, int y)
 					} else
 					if (press.mouse.mods & KC_MOD_ALT) {
 						/* go to spot - same as 'g' command below */
-						cmd_insert(CMD_PATHFIND);
+						cmdq_push(CMD_PATHFIND);
 						cmd_set_arg_point(cmdq_peek(), 0, y, x);
 						done = TRUE;
 					} else
@@ -1767,7 +1767,7 @@ bool target_set_interactive(int mode, int x, int y)
 
 				case 'g':
 				{
-					cmd_insert(CMD_PATHFIND);
+					cmdq_push(CMD_PATHFIND);
 					cmd_set_arg_point(cmdq_peek(), 0, y, x);
 					done = TRUE;
 					break;

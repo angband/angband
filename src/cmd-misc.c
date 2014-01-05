@@ -212,7 +212,7 @@ void textui_cmd_suicide(void)
 		if (ch.code != '@') return;
 	}
 
-	cmd_insert(CMD_SUICIDE);
+	cmdq_push(CMD_SUICIDE);
 }
 
 void do_cmd_save_game(cmd_code code, cmd_arg args[])

@@ -716,7 +716,7 @@ void textui_cmd_throw(void) {
 	/* Get a direction (or cancel) */
 	if (!get_aim_dir(&dir)) return;
 
-	cmd_insert(CMD_THROW);
+	cmdq_push(CMD_THROW);
 	cmd_set_arg_item(cmdq_peek(), 0, item);
 	cmd_set_arg_target(cmdq_peek(), 1, dir);
 }
@@ -752,7 +752,7 @@ void textui_cmd_fire_at_nearest(void) {
 	if (!target_set_closest(TARGET_KILL | TARGET_QUIET)) return;
 
 	/* Fire! */
-	cmd_insert(CMD_FIRE);
+	cmdq_push(CMD_FIRE);
 	cmd_set_arg_item(cmdq_peek(), 0, item);
 	cmd_set_arg_target(cmdq_peek(), 1, dir);
 }

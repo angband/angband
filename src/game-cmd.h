@@ -186,31 +186,70 @@ struct command {
 typedef void (*cmd_handler_fn)(cmd_code code, cmd_arg args[]);
 
 
+/*** Command type functions ***/
 
-/**
- * Return the verb that goes alongside the given command.
- */
-const char *cmd_get_verb(cmd_code cmd);
+/* Return the verb that goes alongside the given command. */
+const char *cmdq_pop_verb(cmd_code cmd);
+
+
+/*** Command queue functions ***/
 
 /**
  * Returns the top command on the queue.
  */
 struct command *cmdq_peek(void);
 
-/*
- * A function called by the game to get a command from the UI.
- */
+/** A function called by the game to get a command from the UI. */
 extern errr (*cmd_get_hook)(cmd_context c, bool wait);
 
-/* Inserts a command in the queue to be carried out. */
-errr cmd_insert_s(struct command *cmd);
-
-/* 
- * Convenience functions.
- * Insert a command with params in the queue to be carried out.
+/**
+ * Gets the next command from the queue, optionally waiting to allow
+ * the UI time to process user input, etc. if wait is TRUE 
  */
-errr cmd_insert_repeated(cmd_code c, int nrepeats);
-errr cmd_insert(cmd_code c);
+errr cmdq_pop(cmd_context c, struct command **cmd, bool wait);
+
+
+/**
+ * Insert commands in the queue.
+ */
+errr cmdq_push_copy(struct command *cmd);
+errr cmdq_push_repeat(cmd_code c, int nrepeats);
+errr cmdq_push(cmd_code c);
+
+
+/**
+ * Called by the game engine to get the player's next action.
+ */
+void process_command(cmd_context c, bool no_request);
+
+
+/*** Command repeat manipulation ***/
+
+/**
+ * Remove any pending repeats from the current command.
+ */
+void cmd_cancel_repeat(void);
+
+/**
+ * Update the number of repeats pending for the current command.
+ */
+void cmd_set_repeat(int nrepeats);
+
+/**
+ * Call to disallow the current command from being repeated with the
+ * "Repeat last command" command.
+ */
+void cmd_disable_repeat(void);
+
+/**
+ * Returns the number of repeats left for the current command.
+ * i.e. zero if not repeating.
+ */
+int cmd_get_nrepeats(void);
+
+
+
+/*** Command type functions ***/
 
 /**
  * Set the args of a command.
@@ -223,31 +262,5 @@ void cmd_set_arg_point(struct command *cmd, int n, int x, int y);
 void cmd_set_arg_item(struct command *cmd, int n, int item);
 void cmd_set_arg_number(struct command *cmd, int n, int num);
 
-/* 
- * Gets the next command from the queue, optionally waiting to allow
- * the UI time to process user input, etc. if wait is TRUE 
- */
-errr cmd_get(cmd_context c, struct command **cmd, bool wait);
-
-/* Called by the game engine to get the player's next action. */
-void process_command(cmd_context c, bool no_request);
-
-/* Remove any pending repeats from the current command. */
-void cmd_cancel_repeat(void);
-
-/* Update the number of repeats pending for the current command. */
-void cmd_set_repeat(int nrepeats);
-
-/*
- * Call to disallow the current command from being repeated with the
- * "Repeat last command" command.
- */
-void cmd_disable_repeat(void);
-
-/* 
- * Returns the number of repeats left for the current command.
- * i.e. zero if not repeating.
- */
-int cmd_get_nrepeats(void);
 
 #endif

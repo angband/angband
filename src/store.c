@@ -2456,7 +2456,7 @@ static bool store_purchase(int item)
 		/* Negative response, so give up */
 		if (!response) return FALSE;
 
-		cmd_insert(CMD_BUY);
+		cmdq_push(CMD_BUY);
 		cmd_set_arg_choice(cmdq_peek(), 0, item);
 		cmd_set_arg_number(cmdq_peek(), 1, amt);
 	}
@@ -2464,7 +2464,7 @@ static bool store_purchase(int item)
 	/* Home is much easier */
 	else
 	{
-		cmd_insert(CMD_RETRIEVE);
+		cmdq_push(CMD_RETRIEVE);
 		cmd_set_arg_choice(cmdq_peek(), 0, item);
 		cmd_set_arg_number(cmdq_peek(), 1, amt);
 	}
@@ -2772,7 +2772,7 @@ static bool store_sell(void)
 
 		screen_load();
 
-		cmd_insert(CMD_SELL);
+		cmdq_push(CMD_SELL);
 		cmd_set_arg_item(cmdq_peek(), 0, item);
 		cmd_set_arg_number(cmdq_peek(), 1, amt);
 	}
@@ -2780,7 +2780,7 @@ static bool store_sell(void)
 	/* Player is at home */
 	else
 	{
-		cmd_insert(CMD_STASH);
+		cmdq_push(CMD_STASH);
 		cmd_set_arg_item(cmdq_peek(), 0, item);
 		cmd_set_arg_number(cmdq_peek(), 1, amt);
 	}
@@ -2911,7 +2911,7 @@ static bool store_process_command_key(struct keypress kp)
 	}
 
 	if (cmd)
-		cmd_insert_repeated(cmd, 0);
+		cmdq_push_repeat(cmd, 0);
 
 	return TRUE;
 }

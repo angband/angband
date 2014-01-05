@@ -151,7 +151,7 @@ static struct item_selector item_selector[] =
 
 };
 
-const char *cmd_get_verb(cmd_code cmd)
+const char *cmdq_pop_verb(cmd_code cmd)
 {
 	size_t i;
 	for (i = 0; i < N_ELEMENTS(game_cmds); i++) {
@@ -170,7 +170,7 @@ struct command *cmdq_peek(void)
 /*
  * Insert the given command into the command queue.
  */
-errr cmd_insert_s(struct command *cmd)
+errr cmdq_push_copy(struct command *cmd)
 {
 	/* If queue full, return error */
 	if (cmd_head + 1 == cmd_tail) return 1;
@@ -207,7 +207,7 @@ errr cmd_insert_s(struct command *cmd)
  * are prepared to wait for a command or require a quick return with
  * no command.
  */
-errr cmd_get(cmd_context c, struct command **cmd, bool wait)
+errr cmdq_pop(cmd_context c, struct command **cmd, bool wait)
 {
 	/* If we're repeating, just pull the last command again. */
 	if (repeating)
@@ -336,7 +336,7 @@ void cmd_set_arg_number(struct command *cmd, int n, int num)
  * Inserts a command in the queue to be carried out, with the given
  * number of repeats.
  */
-errr cmd_insert_repeated(cmd_code c, int nrepeats)
+errr cmdq_push_repeat(cmd_code c, int nrepeats)
 {
 	struct command cmd = { 0 };
 
@@ -346,15 +346,15 @@ errr cmd_insert_repeated(cmd_code c, int nrepeats)
 	cmd.command = c;
 	cmd.nrepeats = nrepeats;
 
-	return cmd_insert_s(&cmd);
+	return cmdq_push_copy(&cmd);
 }
 
 /* 
  * Inserts a command in the queue to be carried out. 
  */
-errr cmd_insert(cmd_code c)
+errr cmdq_push(cmd_code c)
 {
-	return cmd_insert_repeated(c, 0);
+	return cmdq_push_repeat(c, 0);
 }
 
 
@@ -370,7 +370,7 @@ void process_command(cmd_context ctx, bool no_request)
 	p_ptr->command_wrk = 0;
 
 	/* If we've got a command to process, do it. */
-	if (cmd_get(ctx, &cmd, !no_request) == 0)
+	if (cmdq_pop(ctx, &cmd, !no_request) == 0)
 	{
 		int oldrepeats = cmd->nrepeats;
 		int idx = cmd_idx(cmd->command);

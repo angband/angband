@@ -708,19 +708,19 @@ static void textui_process_click(ui_event e)
 			/* switch with default */
 			if (e.mouse.button == 1) {
 				if (square_isupstairs(cave, p_ptr->py, p_ptr->px))
-					cmd_insert(CMD_GO_UP);
+					cmdq_push(CMD_GO_UP);
 				else if (square_isdownstairs(cave, p_ptr->py, p_ptr->px))
-					cmd_insert(CMD_GO_DOWN);
+					cmdq_push(CMD_GO_DOWN);
 			} else
 			if (e.mouse.button == 2) {
-				cmd_insert(CMD_USE_UNAIMED);
+				cmdq_push(CMD_USE_UNAIMED);
 			}
 		} else
 		if (e.mouse.mods & KC_MOD_ALT) {
 			/* alt-click - Search  or show char screen */
 			/* XXX call a platform specific hook */
 			if (e.mouse.button == 1) {
- 				cmd_insert(CMD_SEARCH);
+ 				cmdq_push(CMD_SEARCH);
 			} else
 			if (e.mouse.button == 2) {
 				Term_keypress('C',0);
@@ -729,9 +729,9 @@ static void textui_process_click(ui_event e)
 		{
 			if (e.mouse.button == 1) {
 				if (cave->o_idx[y][x]) {
-					cmd_insert(CMD_PICKUP);
+					cmdq_push(CMD_PICKUP);
 				} else {
-					cmd_insert(CMD_HOLD);
+					cmdq_push(CMD_HOLD);
 				}
 			} else
 			if (e.mouse.button == 2) {
@@ -745,26 +745,26 @@ static void textui_process_click(ui_event e)
 	{
 		if (p_ptr->timed[TMD_CONFUSED])
 		{
-			cmd_insert(CMD_WALK);
+			cmdq_push(CMD_WALK);
 		}
 		else
 		{
 			if (e.mouse.mods & KC_MOD_SHIFT) {
 				/* shift-click - run */
-				cmd_insert(CMD_RUN);
+				cmdq_push(CMD_RUN);
 				cmd_set_arg_direction(cmdq_peek(), 0, coords_to_dir(y,x));
 				/*if ((y-p_ptr->py >= -1) && (y-p_ptr->py <= 1)
 					&& (x-p_ptr->px >= -1) && (x-p_ptr->px <= 1)) {
-					cmd_insert(CMD_JUMP);
+					cmdq_push(CMD_JUMP);
 					cmd_set_arg_direction(cmdq_peek(), 0, coords_to_dir(y,x));
 				} else {
-				  cmd_insert(CMD_RUN);
+				  cmdq_push(CMD_RUN);
 				  cmd_set_arg_direction(cmdq_peek(), 0, coords_to_dir(y,x));
 				}*/
 			} else
 			if (e.mouse.mods & KC_MOD_CONTROL) {
 				/* control-click - alter */
-				cmd_insert(CMD_ALTER);
+				cmdq_push(CMD_ALTER);
 				cmd_set_arg_direction(cmdq_peek(), 0, coords_to_dir(y,x));
 			} else
 			if (e.mouse.mods & KC_MOD_ALT) {
@@ -772,7 +772,7 @@ static void textui_process_click(ui_event e)
 				if (target_set_interactive(TARGET_LOOK, x, y)) {
 					msg("Target Selected.");
 				}
-				//cmd_insert(CMD_LOOK);
+				//cmdq_push(CMD_LOOK);
 				//cmd_set_arg_point(cmdq_peek(), 0, y, x);
 			} else
 			{
@@ -780,10 +780,10 @@ static void textui_process_click(ui_event e)
 				 * so if the click is next to the player, force a walk step */
 				if ((y-p_ptr->py >= -1) && (y-p_ptr->py <= 1)
 					&& (x-p_ptr->px >= -1) && (x-p_ptr->px <= 1)) {
-					cmd_insert(CMD_WALK);
+					cmdq_push(CMD_WALK);
 					cmd_set_arg_direction(cmdq_peek(), 0, coords_to_dir(y,x));
 				} else {
-					cmd_insert(CMD_PATHFIND);
+					cmdq_push(CMD_PATHFIND);
 					cmd_set_arg_point(cmdq_peek(), 0, y, x);
 				}
 			}
@@ -809,12 +809,12 @@ static void textui_process_click(ui_event e)
 		} else
 		if (e.mouse.mods & KC_MOD_CONTROL) {
 			/* control-click - fire at target */
-			cmd_insert(CMD_USE_AIMED);
+			cmdq_push(CMD_USE_AIMED);
 			cmd_set_arg_target(cmdq_peek(), 1, DIR_TARGET);
 		} else
 		if (e.mouse.mods & KC_MOD_ALT) {
 			/* alt-click - throw at target */
-			cmd_insert(CMD_THROW);
+			cmdq_push(CMD_THROW);
 			cmd_set_arg_target(cmdq_peek(), 1, DIR_TARGET);
 		} else
 		{
@@ -891,7 +891,7 @@ static bool textui_process_key(struct keypress kp, int count)
 		if (cmd->hook)
 			cmd->hook();
 		else if (cmd->cmd)
-			cmd_insert_repeated(cmd->cmd, count);
+			cmdq_push_repeat(cmd->cmd, count);
 	}
 
 	return TRUE;

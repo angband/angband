@@ -106,12 +106,12 @@ static enum birth_stage get_quickstart_command(void)
 		
 		if (ke.code == 'N' || ke.code == 'n')
 		{
-			cmd_insert(CMD_BIRTH_RESET);
+			cmdq_push(CMD_BIRTH_RESET);
 			next = BIRTH_SEX_CHOICE;
 		}
 		else if (ke.code == KTRL('X'))
 		{
-			cmd_insert(CMD_QUIT);
+			cmdq_push(CMD_QUIT);
 			next = BIRTH_COMPLETE;
 		}
 		else if (ke.code == 'C' || ke.code == 'c')
@@ -120,7 +120,7 @@ static enum birth_stage get_quickstart_command(void)
 		}
 		else if (ke.code == 'Y' || ke.code == 'y')
 		{
-			cmd_insert(CMD_ACCEPT_CHARACTER);
+			cmdq_push(CMD_ACCEPT_CHARACTER);
 			next = BIRTH_COMPLETE;
 		}
 	} while (next == BIRTH_QUICKSTART);
@@ -567,12 +567,12 @@ static enum birth_stage menu_question(enum birth_stage current, menu_type *curre
 		{
 			if (current == BIRTH_ROLLER_CHOICE)
 			{
-				cmd_insert(CMD_FINALIZE_OPTIONS);
+				cmdq_push(CMD_FINALIZE_OPTIONS);
 
 				if (current_menu->cursor)
 				{
 					/* Do a first roll of the stats */
-					cmd_insert(CMD_ROLL_STATS);
+					cmdq_push(CMD_ROLL_STATS);
 					next = current + 2;
 				}
 				else
@@ -586,14 +586,14 @@ static enum birth_stage menu_question(enum birth_stage current, menu_type *curre
 					 * totals.  This is, it should go without saying, a hack.
 					 */
 					point_based_start();
-					cmd_insert(CMD_RESET_STATS);
+					cmdq_push(CMD_RESET_STATS);
 					cmd_set_arg_choice(cmdq_peek(), 0, TRUE);
 					next = current + 1;
 				}
 			}
 			else
 			{
-				cmd_insert(choice_command);
+				cmdq_push(choice_command);
 				cmd_set_arg_choice(cmdq_peek(), 0, current_menu->cursor);
 				next = current + 1;
 			}
@@ -604,7 +604,7 @@ static enum birth_stage menu_question(enum birth_stage current, menu_type *curre
 			if (cx.key.code == '*' && menu_data->allow_random) 
 			{
 				current_menu->cursor = randint0(current_menu->count);
-				cmd_insert(choice_command);
+				cmdq_push(choice_command);
 				cmd_set_arg_choice(cmdq_peek(), 0, current_menu->cursor);
 
 				menu_refresh(current_menu, FALSE);
@@ -617,7 +617,7 @@ static enum birth_stage menu_question(enum birth_stage current, menu_type *curre
 			}
 			else if (cx.key.code == KTRL('X')) 
 			{
-				cmd_insert(CMD_QUIT);
+				cmdq_push(CMD_QUIT);
 				next = BIRTH_COMPLETE;
 			}
 			else if (cx.key.code == '?')
@@ -677,20 +677,20 @@ static enum birth_stage roller_command(bool first_call)
 	/* Reroll this character */
 	else if ((ch.code == ' ') || (ch.code == 'r'))
 	{
-		cmd_insert(CMD_ROLL_STATS);
+		cmdq_push(CMD_ROLL_STATS);
 		prev_roll = TRUE;
 	}
 
 	/* Previous character */
 	else if (prev_roll && (ch.code == 'p'))
 	{
-		cmd_insert(CMD_PREV_STATS);
+		cmdq_push(CMD_PREV_STATS);
 	}
 
 	/* Quit */
 	else if (ch.code == KTRL('X')) 
 	{
-		cmd_insert(CMD_QUIT);
+		cmdq_push(CMD_QUIT);
 		next = BIRTH_COMPLETE;
 	}
 
@@ -800,7 +800,7 @@ static enum birth_stage point_based_command(void)
 	
 	if (ch.code == KTRL('X')) 
 	{
-		cmd_insert(CMD_QUIT);
+		cmdq_push(CMD_QUIT);
 		next = BIRTH_COMPLETE;
 	}
 	
@@ -812,7 +812,7 @@ static enum birth_stage point_based_command(void)
 
 	else if (ch.code == 'r' || ch.code == 'R') 
 	{
-		cmd_insert(CMD_RESET_STATS);
+		cmdq_push(CMD_RESET_STATS);
 		cmd_set_arg_choice(cmdq_peek(), 0, FALSE);
 	}
 	
@@ -836,14 +836,14 @@ static enum birth_stage point_based_command(void)
 		/* Decrease stat (if possible) */
 		if (dir == 4)
 		{
-			cmd_insert(CMD_SELL_STAT);
+			cmdq_push(CMD_SELL_STAT);
 			cmd_set_arg_choice(cmdq_peek(), 0, stat);
 		}
 		
 		/* Increase stat (if possible) */
 		if (dir == 6)
 		{
-			cmd_insert(CMD_BUY_STAT);
+			cmdq_push(CMD_BUY_STAT);
 			cmd_set_arg_choice(cmdq_peek(), 0, stat);
 		}
 	}
@@ -861,7 +861,7 @@ static enum birth_stage get_name_command(void)
 
 	if (get_name(name, sizeof(name)))
 	{	
-		cmd_insert(CMD_NAME_CHOICE);
+		cmdq_push(CMD_NAME_CHOICE);
 		cmd_set_arg_string(cmdq_peek(), 0, name);
 		next = BIRTH_FINAL_CONFIRM;
 	}
@@ -896,7 +896,7 @@ static enum birth_stage get_confirm_command(void)
 	}
 	else if (ke.code == KTRL('X'))
 	{
-		cmd_insert(CMD_QUIT);
+		cmdq_push(CMD_QUIT);
 		next = BIRTH_COMPLETE;
 	}
 	else if (ke.code == ESCAPE)
@@ -905,7 +905,7 @@ static enum birth_stage get_confirm_command(void)
 	}
 	else
 	{
-		cmd_insert(CMD_ACCEPT_CHARACTER);
+		cmdq_push(CMD_ACCEPT_CHARACTER);
 		next = BIRTH_COMPLETE;
 	}
 
@@ -944,7 +944,7 @@ errr get_birth_command(bool wait)
 	{
 		case BIRTH_RESET:
 		{
-			cmd_insert(CMD_BIRTH_RESET);
+			cmdq_push(CMD_BIRTH_RESET);
 
 			roller = BIRTH_RESET;
 			

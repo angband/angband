@@ -325,11 +325,11 @@ void textui_obj_study(void)
 		int spell = get_spell(object_from_item_idx(item),
 				"study", spell_okay_to_study);
 		if (spell >= 0) {
-			cmd_insert(CMD_STUDY_SPELL);
+			cmdq_push(CMD_STUDY_SPELL);
 			cmd_set_arg_choice(cmdq_peek(), 0, spell);
 		}
 	} else {
-		cmd_insert(CMD_STUDY_BOOK);
+		cmdq_push(CMD_STUDY_BOOK);
 		cmd_set_arg_item(cmdq_peek(), 0, item);
 	}
 }
@@ -356,7 +356,7 @@ void textui_obj_cast(void)
 	/* Ask for a spell */
 	spell = get_spell(object_from_item_idx(item), verb, spell_okay_to_cast);
 	if (spell >= 0) {
-		cmd_insert(CMD_CAST);
+		cmdq_push(CMD_CAST);
 		cmd_set_arg_choice(cmdq_peek(), 0, spell);
 	}
 }
@@ -381,7 +381,7 @@ int textui_obj_cast_ret(void)
 	/* Ask for a spell */
 	spell = get_spell(object_from_item_idx(item), verb, spell_okay_to_cast);
 	if (spell >= 0) {
-		cmd_insert(CMD_CAST);
+		cmdq_push(CMD_CAST);
 		cmd_set_arg_choice(cmdq_peek(), 0, spell);
 	}
   return spell;

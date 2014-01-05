@@ -3258,7 +3258,7 @@ bool init_angband(void)
 	while (1)
 	{
 		struct command *command_req;
-		int failed = cmd_get(CMD_INIT, &command_req, TRUE);
+		int failed = cmdq_pop(CMD_INIT, &command_req, TRUE);
 
 		if (failed)
 			continue;

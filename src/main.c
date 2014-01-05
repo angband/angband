@@ -340,10 +340,10 @@ static errr get_init_cmd(void)
 	pause_line(Term);
 
 	if (new_game)
-		cmd_insert(CMD_NEWGAME);
+		cmdq_push(CMD_NEWGAME);
 	else
 		/* This might be modified to supply the filename in future. */
-		cmd_insert(CMD_LOADFILE);
+		cmdq_push(CMD_LOADFILE);
 
 	/* Everything's OK. */
 	return 0;

@@ -946,7 +946,7 @@ void player_birth(bool quickstart_allowed)
 	while (cmd->command != CMD_ACCEPT_CHARACTER)
 	{
 		/* Grab a command from the queue - we're happy to wait for it. */
-		if (cmd_get(CMD_BIRTH, &cmd, TRUE) != 0) continue;
+		if (cmdq_pop(CMD_BIRTH, &cmd, TRUE) != 0) continue;
 
 		if (cmd->command == CMD_BIRTH_RESET)
 		{

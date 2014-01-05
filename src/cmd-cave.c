@@ -1374,7 +1374,7 @@ void do_cmd_hold(cmd_code code, cmd_arg args[])
 		/* Disturb */
 		disturb(p_ptr, 0, 0);
 
-		cmd_insert(CMD_ENTER_STORE);
+		cmdq_push(CMD_ENTER_STORE);
 
 		/* Free turn XXX XXX XXX */
 		p_ptr->energy_use = 0;
@@ -1432,21 +1432,21 @@ void textui_cmd_rest(void)
 	/* Rest until done */
 	if (out_val[0] == '&')
 	{
-		cmd_insert(CMD_REST);
+		cmdq_push(CMD_REST);
 		cmd_set_arg_choice(cmdq_peek(), 0, REST_COMPLETE);
 	}
 
 	/* Rest a lot */
 	else if (out_val[0] == '*')
 	{
-		cmd_insert(CMD_REST);
+		cmdq_push(CMD_REST);
 		cmd_set_arg_choice(cmdq_peek(), 0, REST_ALL_POINTS);
 	}
 
 	/* Rest until HP or SP filled */
 	else if (out_val[0] == '!')
 	{
-		cmd_insert(CMD_REST);
+		cmdq_push(CMD_REST);
 		cmd_set_arg_choice(cmdq_peek(), 0, REST_SOME_POINTS);
 	}
 	
@@ -1457,7 +1457,7 @@ void textui_cmd_rest(void)
 		if (turns <= 0) return;
 		if (turns > 9999) turns = 9999;
 		
-		cmd_insert(CMD_REST);
+		cmdq_push(CMD_REST);
 		cmd_set_arg_choice(cmdq_peek(), 0, turns);
 	}
 }

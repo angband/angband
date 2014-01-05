@@ -5225,7 +5225,7 @@ static errr get_init_cmd()
 	game_in_progress = TRUE;
 
 	/* Push command into the queue. */
-	cmd_insert_s(&cmd);
+	cmdq_push_copy(&cmd);
 
 	/* Everything's OK. */
 	return 0;
