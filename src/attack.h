@@ -4,9 +4,9 @@
 #define ATTACK_H
 
 /* attack.c */
-extern void do_cmd_fire(cmd_code code, cmd_arg args[]);
+extern void do_cmd_fire(struct command *cmd);
 extern void textui_cmd_fire_at_nearest(void);
-extern void do_cmd_throw(cmd_code code, cmd_arg args[]);
+extern void do_cmd_throw(struct command *cmd);
 extern void textui_cmd_throw(void);
 
 

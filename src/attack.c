@@ -632,7 +632,7 @@ static struct attack_result make_ranged_throw(object_type *o_ptr, int y, int x) 
 /**
  * Fire an object from the quiver, pack or floor at a target.
  */
-void do_cmd_fire(cmd_code code, cmd_arg args[]) {
+void do_cmd_fire(struct command *cmd) {
 	int item = args[0].item;
 	int dir = args[1].direction;
 	int range = MIN(6 + 2 * p_ptr->state.ammo_mult, MAX_RANGE);
@@ -668,7 +668,7 @@ void do_cmd_fire(cmd_code code, cmd_arg args[]) {
 /**
  * Throw an object from the quiver, pack or floor.
  */
-void do_cmd_throw(cmd_code code, cmd_arg args[]) {
+void do_cmd_throw(struct command *cmd) {
 	int item = args[0].item;
 	int dir = args[1].direction;
 	int shots = 1;

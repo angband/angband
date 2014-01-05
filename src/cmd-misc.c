@@ -136,7 +136,7 @@ void do_cmd_try_borg(void)
 /*
  * Quit the game.
  */
-void do_cmd_quit(cmd_code code, cmd_arg args[])
+void do_cmd_quit(struct command *cmd)
 {
 	/* Stop playing */
 	p_ptr->playing = FALSE;
@@ -168,7 +168,7 @@ void do_cmd_unknown(void)
 /*
  * Hack -- commit suicide
  */
-void do_cmd_suicide(cmd_code code, cmd_arg args[])
+void do_cmd_suicide(struct command *cmd)
 {
 	/* Commit suicide */
 	p_ptr->is_dead = TRUE;
@@ -215,7 +215,7 @@ void textui_cmd_suicide(void)
 	cmdq_push(CMD_SUICIDE);
 }
 
-void do_cmd_save_game(cmd_code code, cmd_arg args[])
+void do_cmd_save_game(struct command *cmd)
 {
 	save_game();
 }

@@ -37,7 +37,7 @@
 /*
  * Pick up objects on the floor beneath you.  -LM-
  */
-void do_cmd_pickup(cmd_code code, cmd_arg args[])
+void do_cmd_pickup(struct command *cmd)
 {
 	int energy_cost;
 
@@ -57,7 +57,7 @@ void do_cmd_pickup(cmd_code code, cmd_arg args[])
 /*
  * Pick up objects on the floor beneath you.  -LM-
  */
-void do_cmd_autopickup(cmd_code code, cmd_arg args[])
+void do_cmd_autopickup(struct command *cmd)
 {
 	p_ptr->energy_use = do_autopickup() * 10;
 }

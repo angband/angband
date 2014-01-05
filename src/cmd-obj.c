@@ -188,7 +188,7 @@ static void activation_message(object_type *o_ptr, const char *message)
 /*** Inscriptions ***/
 
 /* Remove inscription */
-void do_cmd_uninscribe(cmd_code code, cmd_arg args[])
+void do_cmd_uninscribe(struct command *cmd)
 {
 	object_type *o_ptr = object_from_item_idx(args[0].item);
 
@@ -202,7 +202,7 @@ void do_cmd_uninscribe(cmd_code code, cmd_arg args[])
 }
 
 /* Add inscription */
-void do_cmd_inscribe(cmd_code code, cmd_arg args[])
+void do_cmd_inscribe(struct command *cmd)
 {
 	object_type *o_ptr = object_from_item_idx(args[0].item);
 
@@ -217,7 +217,7 @@ void do_cmd_inscribe(cmd_code code, cmd_arg args[])
 /*** Taking off/putting on ***/
 
 /* Take off an item */
-void do_cmd_takeoff(cmd_code code, cmd_arg args[])
+void do_cmd_takeoff(struct command *cmd)
 {
 	int item = args[0].item;
 
@@ -374,7 +374,7 @@ void wield_item(object_type *o_ptr, int item, int slot)
 
 
 /* Wield or wear an item */
-void do_cmd_wield(cmd_code code, cmd_arg args[])
+void do_cmd_wield(struct command *cmd)
 {
 	object_type *equip_o_ptr;
 	char o_name[80];
@@ -440,7 +440,7 @@ void do_cmd_wield(cmd_code code, cmd_arg args[])
 }
 
 /* Drop an item */
-void do_cmd_drop(cmd_code code, cmd_arg args[])
+void do_cmd_drop(struct command *cmd)
 {
 	int item = args[0].item;
 	object_type *o_ptr = object_from_item_idx(item);
@@ -464,7 +464,7 @@ void do_cmd_drop(cmd_code code, cmd_arg args[])
 }
 
 /* Destroy an item */
-void do_cmd_destroy(cmd_code code, cmd_arg args[])
+void do_cmd_destroy(struct command *cmd)
 {
 	object_type *o_ptr;
 	int item = args[0].item;
@@ -510,7 +510,7 @@ void do_cmd_destroy(cmd_code code, cmd_arg args[])
  * item causes the inducer of that action to "move", causing "o_ptr" to
  * no longer point at the correct item, with horrifying results.
  */
-void do_cmd_use(cmd_code code, cmd_arg args[])
+void do_cmd_use(struct command *cmd)
 {
 	int item = args[0].item;
 	object_type *o_ptr = object_from_item_idx(item);
@@ -862,7 +862,7 @@ static void refill_lamp(object_type *j_ptr, object_type *o_ptr, int item)
 }
 
 
-void do_cmd_refill(cmd_code code, cmd_arg args[])
+void do_cmd_refill(struct command *cmd)
 {
 	object_type *j_ptr = &p_ptr->inventory[INVEN_LIGHT];
 	bitflag f[OF_SIZE];
@@ -899,7 +899,7 @@ void do_cmd_refill(cmd_code code, cmd_arg args[])
 /*** Spell casting ***/
 
 /* Gain a specific spell, specified by spell number (for mages). */
-void do_cmd_study_spell(cmd_code code, cmd_arg args[])
+void do_cmd_study_spell(struct command *cmd)
 {
 	int spell = args[0].choice;
 
@@ -937,7 +937,7 @@ void do_cmd_study_spell(cmd_code code, cmd_arg args[])
 }
 
 /* Cast a spell from a book */
-void do_cmd_cast(cmd_code code, cmd_arg args[])
+void do_cmd_cast(struct command *cmd)
 {
 	int spell = args[0].choice;
 	int dir = args[1].direction;
@@ -1003,7 +1003,7 @@ void do_cmd_cast(cmd_code code, cmd_arg args[])
 
 
 /* Gain a random spell from the given book (for priests) */
-void do_cmd_study_book(cmd_code code, cmd_arg args[])
+void do_cmd_study_book(struct command *cmd)
 {
 	int book = args[0].item;
 	object_type *o_ptr = object_from_item_idx(book);

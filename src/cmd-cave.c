@@ -37,7 +37,7 @@
 /*
  * Go up one level
  */
-void do_cmd_go_up(cmd_code code, cmd_arg args[])
+void do_cmd_go_up(struct command *cmd)
 {
 	/* Verify stairs */
 	if (!square_isupstairs(cave, p_ptr->py, p_ptr->px)) {
@@ -69,7 +69,7 @@ void do_cmd_go_up(cmd_code code, cmd_arg args[])
 /*
  * Go down one level
  */
-void do_cmd_go_down(cmd_code code, cmd_arg args[])
+void do_cmd_go_down(struct command *cmd)
 {
 	int descend_to = p_ptr->depth + 1;
 
@@ -225,7 +225,7 @@ bool search(bool verbose)
 /*
  * Simple command to "search" for one turn
  */
-void do_cmd_search(cmd_code code, cmd_arg args[])
+void do_cmd_search(struct command *cmd)
 {
 	/* Only take a turn if attempted */
 	if (search(TRUE))
@@ -236,7 +236,7 @@ void do_cmd_search(cmd_code code, cmd_arg args[])
 /*
  * Hack -- toggle search mode
  */
-void do_cmd_toggle_search(cmd_code code, cmd_arg args[])
+void do_cmd_toggle_search(struct command *cmd)
 {
 	/* Stop searching */
 	if (p_ptr->searching)
@@ -378,7 +378,7 @@ static bool do_cmd_open_aux(int y, int x)
  *
  * Unlocking a locked door/chest is worth one experience point.
  */
-void do_cmd_open(cmd_code code, cmd_arg args[])
+void do_cmd_open(struct command *cmd)
 {
 	int y, x, dir;
 
@@ -531,7 +531,7 @@ static bool do_cmd_close_aux(int y, int x)
 /*
  * Close an open door.
  */
-void do_cmd_close(cmd_code code, cmd_arg args[])
+void do_cmd_close(struct command *cmd)
 {
 	int y, x, dir;
 
@@ -835,7 +835,7 @@ static bool do_cmd_tunnel_aux(int y, int x)
  * Digging is very difficult without a "digger" weapon, but can be
  * accomplished by strong players using heavy weapons.
  */
-void do_cmd_tunnel(cmd_code code, cmd_arg args[])
+void do_cmd_tunnel(struct command *cmd)
 {
 	int y, x, dir;
 	bool more = FALSE;
@@ -1060,7 +1060,7 @@ static bool do_cmd_disarm_aux(int y, int x)
 /*
  * Disarms a trap, or a chest
  */
-void do_cmd_disarm(cmd_code code, cmd_arg args[])
+void do_cmd_disarm(struct command *cmd)
 {
 	int y, x, dir;
 
@@ -1178,7 +1178,7 @@ void do_cmd_alter_aux(int dir)
 	if (!more) disturb(p_ptr, 0, 0);
 }
 
-void do_cmd_alter(cmd_code code, cmd_arg args[])
+void do_cmd_alter(struct command *cmd)
 {
 	do_cmd_alter_aux(args[0].direction);
 }
@@ -1245,7 +1245,7 @@ static bool do_cmd_walk_test(int y, int x)
 /*
  * Walk in the given direction.
  */
-void do_cmd_walk(cmd_code code, cmd_arg args[])
+void do_cmd_walk(struct command *cmd)
 {
 	int x, y;
 	int dir = args[0].direction;
@@ -1272,7 +1272,7 @@ void do_cmd_walk(cmd_code code, cmd_arg args[])
 /*
  * Walk into a trap.
  */
-void do_cmd_jump(cmd_code code, cmd_arg args[])
+void do_cmd_jump(struct command *cmd)
 {
 	int x, y;
 	int dir = args[0].direction;
@@ -1297,7 +1297,7 @@ void do_cmd_jump(cmd_code code, cmd_arg args[])
  *
  * Note that running while confused is not allowed.
  */
-void do_cmd_run(cmd_code code, cmd_arg args[])
+void do_cmd_run(struct command *cmd)
 {
 	int x, y;
 	int dir = args[0].direction;
@@ -1323,7 +1323,7 @@ void do_cmd_run(cmd_code code, cmd_arg args[])
  *
  * Note that running while confused is not allowed.
  */
-void do_cmd_pathfind(cmd_code code, cmd_arg args[])
+void do_cmd_pathfind(struct command *cmd)
 {
 	/* Hack XXX XXX XXX */
 	int dir = 5;
@@ -1348,7 +1348,7 @@ void do_cmd_pathfind(cmd_code code, cmd_arg args[])
  * Stay still.  Search.  Enter stores.
  * Pick up treasure if "pickup" is true.
  */
-void do_cmd_hold(cmd_code code, cmd_arg args[])
+void do_cmd_hold(struct command *cmd)
 {
 	/* Take a turn */
 	p_ptr->energy_use = 100;
@@ -1389,7 +1389,7 @@ void do_cmd_hold(cmd_code code, cmd_arg args[])
 /*
  * Rest (restores hit points and mana and such)
  */
-void do_cmd_rest(cmd_code code, cmd_arg args[])
+void do_cmd_rest(struct command *cmd)
 {
 	/* 
 	 * A little sanity checking on the input - only the specified negative 

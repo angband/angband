@@ -2166,7 +2166,7 @@ static int find_inven(const object_type *o_ptr)
 /*
  * Buy the item with the given index from the current store's inventory.
  */
-void do_cmd_buy(cmd_code code, cmd_arg args[])
+void do_cmd_buy(struct command *cmd)
 {
 	int item = args[0].item;
 	int amt = args[1].number;
@@ -2290,7 +2290,7 @@ void do_cmd_buy(cmd_code code, cmd_arg args[])
 /*
  * Retrieve the item with the given index from the home's inventory.
  */
-void do_cmd_retrieve(cmd_code code, cmd_arg args[])
+void do_cmd_retrieve(struct command *cmd)
 {
 	int item = args[0].item;
 	int amt = args[1].number;
@@ -2502,7 +2502,7 @@ static bool store_will_buy_tester(const object_type *o_ptr)
 /*
  * Sell an item to the current store.
  */
-void do_cmd_sell(cmd_code code, cmd_arg args[])
+void do_cmd_sell(struct command *cmd)
 {
 	int item = args[0].item;
 	int amt = args[1].number;
@@ -2617,7 +2617,7 @@ void do_cmd_sell(cmd_code code, cmd_arg args[])
 /*
  * Stash an item in the home.
  */
-void do_cmd_stash(cmd_code code, cmd_arg args[])
+void do_cmd_stash(struct command *cmd)
 {
 	int item = args[0].item;
 	int amt = args[1].number;
@@ -3134,7 +3134,7 @@ void do_cmd_store_knowledge(void)
 /*
  * Enter a store, and interact with it.
  */
-void do_cmd_store(cmd_code code, cmd_arg args[])
+void do_cmd_store(struct command *cmd)
 {
 	/* Take note of the store number from the terrain feature */
 	struct store *store = current_store();

@@ -24,6 +24,7 @@ Arguments can have any of the following types:
 || check     | a 'yes' or 'no' answer
 || quantity  | the quantity of an item
 || spell     | a spell index
+|| storeitem | an item from the inventory of the current store
 
 In C a command is represented by the type 'struct command'.  Command arguments can be set using the cmd_set_arg_*() functions.
 
