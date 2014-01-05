@@ -24,4 +24,18 @@ size_t textblock_calculate_lines(textblock *tb, size_t **line_starts, size_t **l
 
 void textblock_to_file(textblock *tb, ang_file *f, int indent, int wrap_at);
 
+
+
+extern ang_file *text_out_file;
+extern void (*text_out_hook)(byte a, const char *str);
+extern int text_out_wrap;
+extern int text_out_indent;
+extern int text_out_pad;
+
+extern void text_out_to_file(byte attr, const char *str);
+extern void text_out(const char *fmt, ...);
+extern void text_out_c(byte a, const char *fmt, ...);
+extern void text_out_e(const char *fmt, ...);
+
+
 #endif /* INCLUDED_Z_TEXTBLOCK_H */

@@ -111,11 +111,6 @@ extern char *ANGBAND_DIR_XTRA_ICON;
 
 extern byte item_tester_tval;
 extern bool (*item_tester_hook)(const object_type *);
-extern ang_file *text_out_file;
-extern void (*text_out_hook)(byte a, const char *str);
-extern int text_out_wrap;
-extern int text_out_indent;
-extern int text_out_pad;
 extern bool use_transparency;
 extern void (*sound_hook)(int);
 
@@ -150,11 +145,6 @@ extern void sound(int val);
 extern void msg(const char *fmt, ...);
 extern void msgt(unsigned int type, const char *fmt, ...);
 extern void message_flush(void);
-extern void text_out_to_file(byte attr, const char *str);
-extern void text_out_to_screen(byte a, const char *str);
-extern void text_out(const char *fmt, ...);
-extern void text_out_c(byte a, const char *fmt, ...);
-extern void text_out_e(const char *fmt, ...);
 extern void clear_from(int row);
 extern bool askfor_aux_keypress(char *buf, size_t buflen, size_t *curs, size_t *len, struct keypress keypress, bool firsttime);
 extern bool askfor_aux(char *buf, size_t len, bool (*keypress_h)(char *, size_t, size_t *, size_t *, struct keypress, bool));

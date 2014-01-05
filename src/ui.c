@@ -209,6 +209,133 @@ void textui_textblock_show(textblock *tb, region orig_area, const char *header)
 }
 
 
+/** text_out hook for screen display **/
+
+/*
+ * Print some (colored) text to the screen at the current cursor position,
+ * automatically "wrapping" existing text (at spaces) when necessary to
+ * avoid placing any text into the last column, and clearing every line
+ * before placing any text in that line.  Also, allow "newline" to force
+ * a "wrap" to the next line.  Advance the cursor as needed so sequential
+ * calls to this function will work correctly.
+ *
+ * Once this function has been called, the cursor should not be moved
+ * until all the related "text_out()" calls to the window are complete.
+ *
+ * This function will correctly handle any width up to the maximum legal
+ * value of 256, though it works best for a standard 80 character width.
+ */
+void text_out_to_screen(byte a, const char *str)
+{
+	int x, y;
+
+	int wid, h;
+
+	int wrap;
+
+	const wchar_t *s;
+	wchar_t buf[1024];
+
+	/* Obtain the size */
+	(void)Term_get_size(&wid, &h);
+
+	/* Obtain the cursor */
+	(void)Term_locate(&x, &y);
+
+	/* Copy to a rewriteable string */
+	text_mbstowcs(buf, str, 1024);
+	
+	/* Use special wrapping boundary? */
+	if ((text_out_wrap > 0) && (text_out_wrap < wid))
+		wrap = text_out_wrap;
+	else
+		wrap = wid;
+
+	/* Process the string */
+	for (s = buf; *s; s++)
+	{
+		wchar_t ch;
+
+		/* Force wrap */
+		if (*s == L'\n')
+		{
+			/* Wrap */
+			x = text_out_indent;
+			y++;
+
+			/* Clear line, move cursor */
+			Term_erase(x, y, 255);
+
+			x += text_out_pad;
+			Term_gotoxy(x, y);
+
+			continue;
+		}
+
+		/* Clean up the char */
+		ch = (iswprint(*s) ? *s : L' ');
+
+		/* Wrap words as needed */
+		if ((x >= wrap - 1) && (ch != L' '))
+		{
+			int i, n = 0;
+
+			int av[256];
+			wchar_t cv[256];
+
+			/* Wrap word */
+			if (x < wrap)
+			{
+				/* Scan existing text */
+				for (i = wrap - 2; i >= 0; i--)
+				{
+					/* Grab existing attr/char */
+					Term_what(i, y, &av[i], &cv[i]);
+
+					/* Break on space */
+					if (cv[i] == L' ') break;
+
+					/* Track current word */
+					n = i;
+				}
+			}
+
+			/* Special case */
+			if (n == 0) n = wrap;
+
+			/* Clear line */
+			Term_erase(n, y, 255);
+
+			/* Wrap */
+			x = text_out_indent;
+			y++;
+
+			/* Clear line, move cursor */
+			Term_erase(x, y, 255);
+
+			x += text_out_pad;
+			Term_gotoxy(x, y);
+
+			/* Wrap the word (if any) */
+			for (i = n; i < wrap - 1; i++)
+			{
+				/* Dump */
+				Term_addch(av[i], cv[i]);
+
+				/* Advance (no wrap) */
+				if (++x > wrap) x = wrap;
+			}
+		}
+
+		/* Dump */
+		Term_addch(a, ch);
+
+		/* Advance */
+		if (++x > wrap) x = wrap;
+	}
+}
+
+
 /** Simple text display **/
 
 /*

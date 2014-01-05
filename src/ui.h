@@ -1,13 +1,3 @@
-/*
- * Copyright (c) 2007 Pete Mack and others
- * This code released under the Gnu Public License. See www.fsf.org
- * for current GPL license details. Addition permission granted to
- * incorporate modifications in all Angband variants as defined in the
- * Angband variants FAQ. See rec.games.roguelike.angband for FAQ.
- */
-
-
-
 #ifndef INCLUDED_UI_H
 #define INCLUDED_UI_H
 
@@ -45,6 +35,18 @@ bool region_inside(const region *loc, const ui_event *key);
 #include "z-textblock.h"
 void textui_textblock_show(textblock *tb, region orig_area, const char *header);
 void textui_textblock_place(textblock *tb, region orig_area, const char *header);
+
+void text_out_to_screen(byte a, const char *str);
+
+/* Screen loading/saving */
+extern void screen_save(void);
+extern void screen_load(void);
+
+/* Placing text on screen */
+extern void c_put_str(byte attr, const char *str, int row, int col);
+extern void put_str(const char *str, int row, int col);
+extern void c_prt(byte attr, const char *str, int row, int col);
+extern void prt(const char *str, int row, int col);
 
 
 /*** Misc ***/
