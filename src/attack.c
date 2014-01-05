@@ -634,7 +634,7 @@ static struct attack_result make_ranged_throw(object_type *o_ptr, int y, int x) 
  */
 void do_cmd_fire(struct command *cmd) {
 	int item = args[0].item;
-	int dir = args[1].direction;
+	int dir = cmd_get_arg_direction(cmd, 1);
 	int range = MIN(6 + 2 * p_ptr->state.ammo_mult, MAX_RANGE);
 	int shots = p_ptr->state.num_shots;
 
@@ -670,7 +670,7 @@ void do_cmd_fire(struct command *cmd) {
  */
 void do_cmd_throw(struct command *cmd) {
 	int item = args[0].item;
-	int dir = args[1].direction;
+	int dir = cmd_get_arg_direction(cmd, 1);
 	int shots = 1;
 
 	object_type *o_ptr = object_from_item_idx(item);

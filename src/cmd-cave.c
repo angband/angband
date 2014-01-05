@@ -386,7 +386,7 @@ void do_cmd_open(struct command *cmd)
 
 	bool more = FALSE;
 
-	dir = args[0].direction;
+	dir = cmd_get_arg_direction(cmd, 0);
 
 	/* Get location */
 	y = p_ptr->py + ddy[dir];
@@ -537,7 +537,7 @@ void do_cmd_close(struct command *cmd)
 
 	bool more = FALSE;
 
-	dir = args[0].direction;
+	dir = cmd_get_arg_direction(cmd, 0);
 
 	/* Get location */
 	y = p_ptr->py + ddy[dir];
@@ -840,7 +840,7 @@ void do_cmd_tunnel(struct command *cmd)
 	int y, x, dir;
 	bool more = FALSE;
 
-	dir = args[0].direction;
+	dir = cmd_get_arg_direction(cmd, 0);
 
 	/* Get location */
 	y = p_ptr->py + ddy[dir];
@@ -1068,7 +1068,7 @@ void do_cmd_disarm(struct command *cmd)
 
 	bool more = FALSE;
 
-	dir = args[0].direction;
+	dir = cmd_get_arg_direction(cmd, 0);
 
 	/* Get location */
 	y = p_ptr->py + ddy[dir];
@@ -1180,7 +1180,7 @@ void do_cmd_alter_aux(int dir)
 
 void do_cmd_alter(struct command *cmd)
 {
-	do_cmd_alter_aux(args[0].direction);
+	do_cmd_alter_aux(cmd_get_arg_direction(cmd, 0));
 }
 
 /*
@@ -1248,13 +1248,13 @@ static bool do_cmd_walk_test(int y, int x)
 void do_cmd_walk(struct command *cmd)
 {
 	int x, y;
-	int dir = args[0].direction;
+	int dir = cmd_get_arg_direction(cmd, 0);
 
 	/* Apply confusion if necessary */
 	player_confuse_dir(p_ptr, &dir, FALSE);
 
 	/* Confused movements use energy no matter what */
-	if (dir != args[0].direction)	
+	if (dir != cmd_get_arg_direction(cmd, 0))	
 		p_ptr->energy_use = 100;
 	
 	/* Verify walkability */
@@ -1275,7 +1275,7 @@ void do_cmd_walk(struct command *cmd)
 void do_cmd_jump(struct command *cmd)
 {
 	int x, y;
-	int dir = args[0].direction;
+	int dir = cmd_get_arg_direction(cmd, 0);
 
 	/* Apply confusion if necessary */
 	player_confuse_dir(p_ptr, &dir, FALSE);
@@ -1300,7 +1300,7 @@ void do_cmd_jump(struct command *cmd)
 void do_cmd_run(struct command *cmd)
 {
 	int x, y;
-	int dir = args[0].direction;
+	int dir = cmd_get_arg_direction(cmd, 0);
 
 	if (player_confuse_dir(p_ptr, &dir, TRUE))
 	{

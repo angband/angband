@@ -382,7 +382,7 @@ void do_cmd_wield(struct command *cmd)
 	unsigned n;
 
 	int item = args[0].item;
-	int slot = args[1].number;
+	int slot = cmd_get_arg_number(cmd, 1);
 	object_type *o_ptr = object_from_item_idx(item);
 
 	if (!item_is_available(item, NULL, USE_INVEN | USE_FLOOR))
@@ -444,7 +444,7 @@ void do_cmd_drop(struct command *cmd)
 {
 	int item = args[0].item;
 	object_type *o_ptr = object_from_item_idx(item);
-	int amt = args[1].number;
+	int amt = cmd_get_arg_number(cmd, 1);
 
 	if (!item_is_available(item, NULL, USE_INVEN | USE_EQUIP))
 	{
@@ -630,7 +630,7 @@ void do_cmd_use(struct command *cmd)
 
 	/* If the item requires a direction, get one (allow cancelling) */
 	if (obj_needs_aim(o_ptr))
-		dir = args[1].direction;
+		dir = cmd_get_arg_direction(cmd, 1);
 
 	if (item >= 0 && item < INVEN_PACK) {
 		/* Create a copy so that we can remember what we are working with, in case the
@@ -940,7 +940,7 @@ void do_cmd_study_spell(struct command *cmd)
 void do_cmd_cast(struct command *cmd)
 {
 	int spell = args[0].choice;
-	int dir = args[1].direction;
+	int dir = cmd_get_arg_direction(cmd, 1);
 
 	int item_list[INVEN_TOTAL + MAX_FLOOR_STACK];
 	int item_num;
