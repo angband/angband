@@ -169,11 +169,11 @@ ANGFILES = \
 	ui.o \
 	ui-birth.o \
 	ui-event.o \
+	ui-input.o \
 	ui-knowledge.o \
 	ui-menu.o \
 	ui-options.o \
 	ui-spell.o \
-	util.o  \
 	variable.o \
 	wiz-spoil.o \
 	wiz-stats.o \

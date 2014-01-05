@@ -708,5 +708,6 @@ bool player_resting_can_regenerate(struct player *p);
 void player_resting_step_turn(struct player *p);
 void player_resting_complete_special(struct player *p);
 bool player_of_has(struct player *p, int flag);
+int coords_to_dir(int y, int x);
 
 #endif /* !PLAYER_PLAYER_H */

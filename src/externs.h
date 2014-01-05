@@ -133,7 +133,7 @@ extern void signals_init(void);
 /* store.c */
 void do_cmd_store_knowledge(void);
 
-/* util.c */
+/* ui-input.c */
 extern void flush(void);
 extern void flush_fail(void);
 extern struct keypress inkey(void);
@@ -156,7 +156,6 @@ extern bool (*get_file)(const char *suggested_name, char *path, size_t len);
 extern bool get_com(const char *prompt, struct keypress *command);
 extern bool get_com_ex(const char *prompt, ui_event *command);
 extern void pause_line(struct term *term);
-extern int coords_to_dir(int y, int x);
 
 /* xtra2.c */
 bool modify_panel(term *t, int wy, int wx);
