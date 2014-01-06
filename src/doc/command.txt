@@ -133,9 +133,11 @@ DONE:
 
 NOT DONE:
 
-3b. Slowly relocate the 'fill-in' code in game-cmd.c to the the various cmd_get_*() arg functions.
+3b. Add a named parameter system side-by-side existing system.
 
-3c. Switch to named parameters.
+3c. Slowly switch things across to using the new system, which allows compilation and testing, without breaking things.  This involves relocating the 'fill-in' code from game-cmd.c to the various do_cmd_* functions as well as writing new cmd_get_* functions that check validity of inputs, etc. as above.
+
+3d. Remove the old system when done.
 
 
 4. Reimplement the following in terms of a core-UI split:
