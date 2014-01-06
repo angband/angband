@@ -674,7 +674,7 @@ void process_command(cmd_context ctx, bool no_request)
 		repeat_prev_allowed = TRUE;
 
 		if (game_cmds[idx].fn)
-			game_cmds[idx].fn(cmd->command, cmd->arg);
+			game_cmds[idx].fn(cmd);
 
 		/* If the command hasn't changed nrepeats, count this execution. */
 		if (cmd->nrepeats > 0 && oldrepeats == cmd_get_nrepeats())

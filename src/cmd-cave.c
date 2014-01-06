@@ -1325,15 +1325,14 @@ void do_cmd_run(struct command *cmd)
  */
 void do_cmd_pathfind(struct command *cmd)
 {
-	/* Hack XXX XXX XXX */
-	int dir = 5;
-	if (player_confuse_dir(p_ptr, &dir, TRUE))
-	{
-		return;
-	}
+	int x, y;
 
-	if (findpath(args[0].point.x, args[0].point.y))
-	{
+	cmd_get_arg_point(cmd, 0, &x, &y);
+
+	if (p_ptr->timed[TMD_CONFUSED])
+		return;
+
+	if (findpath(x, y)) {
 		p_ptr->running = 1000;
 		/* Calculate torch radius */
 		p_ptr->update |= (PU_TORCH);
@@ -1391,14 +1390,16 @@ void do_cmd_hold(struct command *cmd)
  */
 void do_cmd_rest(struct command *cmd)
 {
+	int n = cmd_get_arg_choice(cmd, 0);
+
 	/* 
 	 * A little sanity checking on the input - only the specified negative 
 	 * values are valid. 
 	 */
-    if (args[0].choice < 0 && !player_resting_is_special(args[0].choice))
+    if (n < 0 && !player_resting_is_special(n))
         return;
 
-	player_resting_set_count(p_ptr, args[0].choice);
+	player_resting_set_count(p_ptr, n);
 
 	/* Take a turn XXX XXX XXX (?) */
 	p_ptr->energy_use = 100;

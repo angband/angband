@@ -190,7 +190,13 @@ static void activation_message(object_type *o_ptr, const char *message)
 /* Remove inscription */
 void do_cmd_uninscribe(struct command *cmd)
 {
-	object_type *o_ptr = object_from_item_idx(args[0].item);
+	int item;
+	object_type *o_ptr;
+
+	if (!cmd_get_arg_item(cmd, 0, &item))
+		return;
+
+	o_ptr = object_from_item_idx(item);
 
 	if (obj_has_inscrip(o_ptr))
 		msg("Inscription removed.");
@@ -204,10 +210,17 @@ void do_cmd_uninscribe(struct command *cmd)
 /* Add inscription */
 void do_cmd_inscribe(struct command *cmd)
 {
-	object_type *o_ptr = object_from_item_idx(args[0].item);
+	int item;
+	object_type *o_ptr;
+	const char *str = cmd_get_arg_string(cmd, 1);
 
-	o_ptr->note = quark_add(args[1].string);
-	string_free((void *)args[1].string);
+	if (!cmd_get_arg_item(cmd, 0, &item))
+		return;
+
+	o_ptr = object_from_item_idx(item);
+
+	o_ptr->note = quark_add(str);
+	string_free((char *)str);
 
 	p_ptr->notice |= (PN_COMBINE | PN_SQUELCH | PN_SORT_QUIVER);
 	p_ptr->redraw |= (PR_INVEN | PR_EQUIP);
@@ -219,7 +232,10 @@ void do_cmd_inscribe(struct command *cmd)
 /* Take off an item */
 void do_cmd_takeoff(struct command *cmd)
 {
-	int item = args[0].item;
+	int item;
+
+	if (!cmd_get_arg_item(cmd, 0, &item))
+		return;
 
 	if (!item_is_available(item, NULL, USE_EQUIP))
 	{
@@ -381,9 +397,14 @@ void do_cmd_wield(struct command *cmd)
 
 	unsigned n;
 
-	int item = args[0].item;
 	int slot = cmd_get_arg_number(cmd, 1);
-	object_type *o_ptr = object_from_item_idx(item);
+	int item;
+	object_type *o_ptr;
+
+	if (!cmd_get_arg_item(cmd, 0, &item))
+		return;
+
+	o_ptr = object_from_item_idx(item);
 
 	if (!item_is_available(item, NULL, USE_INVEN | USE_FLOOR))
 	{
@@ -442,9 +463,14 @@ void do_cmd_wield(struct command *cmd)
 /* Drop an item */
 void do_cmd_drop(struct command *cmd)
 {
-	int item = args[0].item;
-	object_type *o_ptr = object_from_item_idx(item);
 	int amt = cmd_get_arg_number(cmd, 1);
+	int item;
+	object_type *o_ptr;
+
+	if (!cmd_get_arg_item(cmd, 0, &item))
+		return;
+
+	o_ptr = object_from_item_idx(item);
 
 	if (!item_is_available(item, NULL, USE_INVEN | USE_EQUIP))
 	{
@@ -466,8 +492,11 @@ void do_cmd_drop(struct command *cmd)
 /* Destroy an item */
 void do_cmd_destroy(struct command *cmd)
 {
+	int item;
 	object_type *o_ptr;
-	int item = args[0].item;
+
+	if (!cmd_get_arg_item(cmd, 0, &item))
+		return;
 
 	if (!item_is_available(item, NULL, USE_INVEN | USE_EQUIP | USE_FLOOR))
 	{
@@ -512,12 +541,16 @@ void do_cmd_destroy(struct command *cmd)
  */
 void do_cmd_use(struct command *cmd)
 {
-	int item = args[0].item;
-	object_type *o_ptr = object_from_item_idx(item);
+	int item;
+	object_type *o_ptr;
+
+	if (!cmd_get_arg_item(cmd, 0, &item))
+		return;
+
 	object_type *original = NULL;
 	int effect;
 	bool ident = FALSE, used = FALSE;
-	bool was_aware = object_flavor_is_aware(o_ptr);
+	bool was_aware;
 	int dir = 5;
 	int px = p_ptr->px, py = p_ptr->py;
 	int snd = MSG_GENERIC, boost, level;
@@ -527,6 +560,9 @@ void do_cmd_use(struct command *cmd)
 		USE_SINGLE
 	} use = USE_SINGLE;
 	int items_allowed = 0;
+
+	o_ptr = object_from_item_idx(item);
+	was_aware = object_flavor_is_aware(o_ptr);
 
 	/* Determine how this item is used. */
 	if (obj_is_rod(o_ptr))
@@ -601,7 +637,7 @@ void do_cmd_use(struct command *cmd)
 	}
 	else if (obj_is_ammo(o_ptr))
 	{
-		do_cmd_fire(code,args);
+		do_cmd_fire(cmd);
 		return;
 	}
 	else
@@ -867,8 +903,13 @@ void do_cmd_refill(struct command *cmd)
 	object_type *j_ptr = &p_ptr->inventory[INVEN_LIGHT];
 	bitflag f[OF_SIZE];
 
-	int item = args[0].item;
-	object_type *o_ptr = object_from_item_idx(item);
+	int item;
+	object_type *o_ptr;
+
+	if (!cmd_get_arg_item(cmd, 0, &item))
+		return;
+
+	o_ptr = object_from_item_idx(item);
 
 	if (!item_is_available(item, NULL, USE_INVEN | USE_FLOOR)) {
 		msg("You do not have that item to refill with it.");
@@ -901,7 +942,7 @@ void do_cmd_refill(struct command *cmd)
 /* Gain a specific spell, specified by spell number (for mages). */
 void do_cmd_study_spell(struct command *cmd)
 {
-	int spell = args[0].choice;
+	int spell = cmd_get_arg_choice(cmd, 0);
 
 	int item_list[INVEN_TOTAL + MAX_FLOOR_STACK];
 	int item_num;
@@ -939,7 +980,7 @@ void do_cmd_study_spell(struct command *cmd)
 /* Cast a spell from a book */
 void do_cmd_cast(struct command *cmd)
 {
-	int spell = args[0].choice;
+	int spell = cmd_get_arg_choice(cmd, 0);
 	int dir = cmd_get_arg_direction(cmd, 1);
 
 	int item_list[INVEN_TOTAL + MAX_FLOOR_STACK];
@@ -998,21 +1039,24 @@ void do_cmd_cast(struct command *cmd)
 			return;
 		}
 	}
-
 }
-
 
 /* Gain a random spell from the given book (for priests) */
 void do_cmd_study_book(struct command *cmd)
 {
-	int book = args[0].item;
-	object_type *o_ptr = object_from_item_idx(book);
+	int book;
+	object_type *o_ptr;
+
+	if (!cmd_get_arg_item(cmd, 0, &book))
+		return;
 
 	int spell = -1;
 	struct spell *sp;
 	int k = 0;
 
 	const char *p = ((p_ptr->class->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
+
+	o_ptr = object_from_item_idx(book);
 
 	/* Check the player can study at all atm */
 	if (!player_can_study(p_ptr, TRUE))

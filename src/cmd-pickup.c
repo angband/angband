@@ -40,12 +40,16 @@
 void do_cmd_pickup(struct command *cmd)
 {
 	int energy_cost;
+	int item;
+
+	if (!cmd_get_arg_item(cmd, 0, &item))
+		return;
 
 	/* Autopickup first */
 	energy_cost = do_autopickup() * 10;
 
 	/* Pick up floor objects with a menu for multiple objects */
-	energy_cost += py_pickup_item(1, args[0].item) * 10;
+	energy_cost += py_pickup_item(1, item) * 10;
 
 	/* Limit */
 	if (energy_cost > 100) energy_cost = 100;

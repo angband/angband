@@ -2168,7 +2168,7 @@ static int find_inven(const object_type *o_ptr)
  */
 void do_cmd_buy(struct command *cmd)
 {
-	int item = args[0].item;
+	int item;
 	int amt = cmd_get_arg_number(cmd, 1);
 
 	object_type *o_ptr;	
@@ -2184,6 +2184,9 @@ void do_cmd_buy(struct command *cmd)
 		msg("You cannot purchase items when not in a store.");
 		return;
 	}
+
+	if (!cmd_get_arg_item(cmd, 0, &item))
+		return;
 
 	/* Get the actual object */
 	o_ptr = &store->stock[item];
@@ -2292,7 +2295,7 @@ void do_cmd_buy(struct command *cmd)
  */
 void do_cmd_retrieve(struct command *cmd)
 {
-	int item = args[0].item;
+	int item;
 	int amt = cmd_get_arg_number(cmd, 1);
 
 	object_type *o_ptr;	
@@ -2306,6 +2309,9 @@ void do_cmd_retrieve(struct command *cmd)
 		msg("You are not currently at home.");
 		return;
 	}
+
+	if (!cmd_get_arg_item(cmd, 0, &item))
+		return;
 
 	/* Get the actual object */
 	o_ptr = &store->stock[item];
@@ -2504,15 +2510,19 @@ static bool store_will_buy_tester(const object_type *o_ptr)
  */
 void do_cmd_sell(struct command *cmd)
 {
-	int item = args[0].item;
 	int amt = cmd_get_arg_number(cmd, 1);
 	object_type sold_item;
 	struct store *store = current_store();
 	int price, dummy, value;
 	char o_name[120];
 
-	/* Get the item */
-	object_type *o_ptr = object_from_item_idx(item);
+	int item;
+	object_type *o_ptr;
+
+	if (!cmd_get_arg_item(cmd, 0, &item))
+		return;
+
+	o_ptr = object_from_item_idx(item);
 
 	/* Cannot remove cursed objects */
 	if ((item >= INVEN_WIELD) && cursed_p(o_ptr->flags)) {
@@ -2619,12 +2629,18 @@ void do_cmd_sell(struct command *cmd)
  */
 void do_cmd_stash(struct command *cmd)
 {
-	int item = args[0].item;
 	int amt = cmd_get_arg_number(cmd, 1);
 	object_type dropped_item;
-	object_type *o_ptr = object_from_item_idx(item);
 	struct store *store = current_store();
 	char o_name[120];
+
+	int item;
+	object_type *o_ptr;
+
+	if (!cmd_get_arg_item(cmd, 0, &item))
+		return;
+
+	o_ptr = object_from_item_idx(item);
 
 	/* Check we are somewhere we can stash items. */
 	if (store->sidx != STORE_HOME)
