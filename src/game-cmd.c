@@ -259,6 +259,12 @@ void cmd_set_arg_choice(struct command *cmd, int n, int choice)
 	cmd->arg_present[n] = TRUE;
 }
 
+int cmd_get_arg_choice(struct command *cmd, int n)
+{
+	assert(n <= CMD_MAX_ARGS);
+	return cmd->arg_present[n] ? cmd->arg[n].choice : -1;
+}
+
 void cmd_set_arg_string(struct command *cmd, int n, const char *str)
 {
 	int idx = cmd_idx(cmd->command);
@@ -269,6 +275,12 @@ void cmd_set_arg_string(struct command *cmd, int n, const char *str)
 	cmd->arg[n].string = string_make(str);
 	cmd->arg_type[n] = arg_STRING;
 	cmd->arg_present[n] = TRUE;
+}
+
+const char *cmd_get_arg_string(struct command *cmd, int n)
+{
+	assert(n <= CMD_MAX_ARGS);
+	return cmd->arg_present[n] ? cmd->arg[n].string : NULL;
 }
 
 void cmd_set_arg_direction(struct command *cmd, int n, int dir)
@@ -283,6 +295,12 @@ void cmd_set_arg_direction(struct command *cmd, int n, int dir)
 	cmd->arg_present[n] = TRUE;
 }
 
+int cmd_get_arg_direction(struct command *cmd, int n)
+{
+	assert(n <= CMD_MAX_ARGS);
+	return cmd->arg_present[n] ? cmd->arg[n].direction : 0;
+}
+
 void cmd_set_arg_target(struct command *cmd, int n, int target)
 {
 	int idx = cmd_idx(cmd->command);
@@ -293,6 +311,16 @@ void cmd_set_arg_target(struct command *cmd, int n, int target)
 	cmd->arg[n].direction = target;
 	cmd->arg_type[n] = arg_TARGET;
 	cmd->arg_present[n] = TRUE;
+}
+
+bool cmd_get_arg_target(struct command *cmd, int n, int *target)
+{
+	assert(n <= CMD_MAX_ARGS);
+	if (!cmd->arg_present[n])
+		return FALSE;
+
+	*target = cmd->arg[n].direction;
+	return TRUE;
 }
 
 void cmd_set_arg_point(struct command *cmd, int n, int x, int y)
@@ -308,6 +336,17 @@ void cmd_set_arg_point(struct command *cmd, int n, int x, int y)
 	cmd->arg_present[n] = TRUE;
 }
 
+bool cmd_get_arg_point(struct command *cmd, int n, int *x, int *y)
+{
+	assert(n <= CMD_MAX_ARGS);
+	if (!cmd->arg_present[n])
+		return FALSE;
+
+	*x = cmd->arg[n].point.x;
+	*y = cmd->arg[n].point.y;	
+	return TRUE;
+}
+
 void cmd_set_arg_item(struct command *cmd, int n, int item)
 {
 	int idx = cmd_idx(cmd->command);
@@ -320,6 +359,16 @@ void cmd_set_arg_item(struct command *cmd, int n, int item)
 	cmd->arg_present[n] = TRUE;
 }
 
+bool cmd_get_arg_item(struct command *cmd, int n, int *item)
+{
+	assert(n <= CMD_MAX_ARGS);
+	if (!cmd->arg_present[n])
+		return FALSE;
+
+	*item = cmd->arg[n].item;
+	return TRUE;
+}
+
 void cmd_set_arg_number(struct command *cmd, int n, int num)
 {
 	int idx = cmd_idx(cmd->command);
@@ -330,6 +379,12 @@ void cmd_set_arg_number(struct command *cmd, int n, int num)
 	cmd->arg[n].number = num;
 	cmd->arg_type[n] = arg_NUMBER;
 	cmd->arg_present[n] = TRUE;
+}
+
+int cmd_get_arg_number(struct command *cmd, int n)
+{
+	assert(n <= CMD_MAX_ARGS);
+	return cmd->arg_present[n] ? cmd->arg[n].number : -1;
 }
 
 /*

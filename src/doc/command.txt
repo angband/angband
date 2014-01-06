@@ -127,12 +127,11 @@ DONE:
 
 2. Refactor get_item() to not use item_tester_hook.
 
-
-NOT DONE:
-
 3. Change the argument system
 
 3a. Replace 'cmd_code code, cmd_arg args[]' in command handlers with 'struct command *', remove direct arg access (replace with a halfway house - e.g. cmd_get_arg_item(cmd, 0) )
+
+NOT DONE:
 
 3b. Slowly relocate the 'fill-in' code in game-cmd.c to the the various cmd_get_*() arg functions.
 
