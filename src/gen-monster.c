@@ -73,7 +73,7 @@ static bool mon_select(monster_race *r_ptr)
 
     /* Require that the monster symbol be correct. */
     if (d_char_req[0] != '\0') {
-		if (strchr(d_char_req, r_ptr->d_char) == 0)
+		if (strchr(d_char_req, r_ptr->base->d_char) == 0)
 			return (FALSE);
     }
 
@@ -126,13 +126,17 @@ static bool mon_select(monster_race *r_ptr)
 /**
  * Accept characters representing a race or group of monsters and 
  * an (adjusted) depth, and use these to set values for required racial 
- * type, monster symbol, monster symbol color, and breath type.
+ * type, monster base symbol, monster symbol color, and breath type.
+ *
+ * This code was originally from Oangband, and will need tweaking before
+ * actual use - in particular better use could be made of monster bases,
+ * and the symbol colors may not be relevant.
  *
  * This function is called to set restrictions, point the monster 
  * allocation function to mon_select(), and remake monster allocation.  
  * It undoes all of this things when called with the symbol '\0'.
  * 
- * Describe the monsters (used by cheat_room) and determine if they 
+ * Describe the monsters (for use by cheat_room) and determine if they 
  * should be neatly ordered or randomly placed (used in monster pits).
  */
 char *mon_restrict(char symbol, byte depth, bool * ordered,
