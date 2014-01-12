@@ -26,6 +26,7 @@
 #include "monster/mon-util.h"
 #include "monster/monster.h"
 #include "object/slays.h"
+#include "object/obj-tval.h"
 #include "object/tvalsval.h"
 #include "spells.h"
 #include "squelch.h"
@@ -1139,22 +1140,7 @@ void stair_creation(void)
  */
 static bool item_tester_hook_weapon(const object_type *o_ptr)
 {
-	switch (o_ptr->tval)
-	{
-		case TV_SWORD:
-		case TV_HAFTED:
-		case TV_POLEARM:
-		case TV_DIGGING:
-		case TV_BOW:
-		case TV_BOLT:
-		case TV_ARROW:
-		case TV_SHOT:
-		{
-			return (TRUE);
-		}
-	}
-
-	return (FALSE);
+	return tval_is_weapon(o_ptr);
 }
 
 
@@ -1163,23 +1149,7 @@ static bool item_tester_hook_weapon(const object_type *o_ptr)
  */
 static bool item_tester_hook_armour(const object_type *o_ptr)
 {
-	switch (o_ptr->tval)
-	{
-		case TV_DRAG_ARMOR:
-		case TV_HARD_ARMOR:
-		case TV_SOFT_ARMOR:
-		case TV_SHIELD:
-		case TV_CLOAK:
-		case TV_CROWN:
-		case TV_HELM:
-		case TV_BOOTS:
-		case TV_GLOVES:
-		{
-			return (TRUE);
-		}
-	}
-
-	return (FALSE);
+	return tval_is_armor(o_ptr);
 }
 
 
@@ -1299,9 +1269,7 @@ bool enchant(object_type *o_ptr, int n, int eflag)
 	prob = o_ptr->number * 100;
 
 	/* Missiles are easy to enchant */
-	if ((o_ptr->tval == TV_BOLT) ||
-		(o_ptr->tval == TV_ARROW) ||
-		(o_ptr->tval == TV_SHOT)) prob = prob / 20;
+	if (tval_is_ammo(o_ptr)) prob = prob / 20;
 
 	/* Try "n" times */
 	for (i = 0; i < n; i++)
@@ -1442,14 +1410,10 @@ bool spell_identify_unknown_available(void)
  */
 static bool item_tester_hook_recharge(const object_type *o_ptr)
 {
-	/* Recharge staves */
-	if (o_ptr->tval == TV_STAFF) return (TRUE);
+	/* Recharge staves and wands */
+	if (tval_can_have_charges(o_ptr)) return TRUE;
 
-	/* Recharge wands */
-	if (o_ptr->tval == TV_WAND) return (TRUE);
-
-	/* Nope */
-	return (FALSE);
+	return FALSE;
 }
 
 
@@ -2978,17 +2942,7 @@ void brand_weapon(void)
  */
 static bool item_tester_hook_ammo(const object_type *o_ptr)
 {
-	switch (o_ptr->tval)
-	{
-		case TV_BOLT:
-		case TV_ARROW:
-		case TV_SHOT:
-		{
-			return (TRUE);
-		}
-	}
-
-	return (FALSE);
+	return tval_is_ammo(o_ptr);
 }
 
 

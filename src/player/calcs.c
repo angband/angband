@@ -23,6 +23,7 @@
 #include "game-event.h"
 #include "monster/mon-msg.h"
 #include "monster/mon-util.h"
+#include "object/obj-tval.h"
 #include "object/tvalsval.h"
 #include "object/pval.h"
 #include "spells.h"
@@ -1986,7 +1987,7 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 
 	/* Priest weapon penalty for non-blessed edged weapons */
 	if (player_has(PF_BLESS_WEAPON) && !player_of_has(p_ptr, OF_BLESSED) &&
-		((o_ptr->tval == TV_SWORD) || (o_ptr->tval == TV_POLEARM)))
+		tval_is_pointy(o_ptr))
 	{
 		/* Reduce the real bonuses */
 		state->to_h -= 2;

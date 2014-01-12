@@ -24,6 +24,7 @@
 #include "effects.h"
 #include "game-cmd.h"
 #include "object/inventory.h"
+#include "object/obj-tval.h"
 #include "object/tvalsval.h"
 #include "spells.h"
 #include "squelch.h"
@@ -724,7 +725,7 @@ void do_cmd_use(struct command *cmd)
 	if (ident) object_notice_effect(o_ptr);
 
 	/* Food feeds the player */
-	if (o_ptr->tval == TV_FOOD || o_ptr->tval == TV_POTION)
+	if (tval_can_have_nourishment(o_ptr))
 		player_set_food(p_ptr, p_ptr->food + o_ptr->pval[DEFAULT_PVAL]);
 
 	/* Use the turn */
@@ -1146,7 +1147,7 @@ void textui_cmd_destroy_menu(int item)
 		byte value = squelch_level_of(o_ptr);
 		int type = squelch_type_of(o_ptr);
 
-		if (object_is_jewelry(o_ptr) &&
+		if (tval_is_jewelry(o_ptr) &&
 					squelch_level_of(o_ptr) != SQUELCH_BAD)
 			value = SQUELCH_MAX;
 

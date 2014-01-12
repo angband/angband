@@ -19,6 +19,7 @@
 #include "angband.h"
 #include "cmds.h"
 #include "ui-menu.h"
+#include "object/obj-tval.h"
 #include "object/tvalsval.h"
 #include "object/pval.h"
 #include "squelch.h"
@@ -308,7 +309,7 @@ byte squelch_level_of(const object_type *o_ptr)
 	object_flags_known(o_ptr, f);
 
 	/* Deal with jewelry specially. */
-	if (object_is_jewelry(o_ptr))
+	if (tval_is_jewelry(o_ptr))
 	{
 		/* CC: average jewelry has at least one known positive pval */
 		for (i = 0; i < o_ptr->num_pvals; i++)

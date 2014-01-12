@@ -21,6 +21,7 @@
 #include "attack.h"
 #include "effects.h"
 #include "cmds.h"
+#include "object/obj-tval.h"
 #include "object/tvalsval.h"
 #include "z-textblock.h"
 #include "object/slays.h"
@@ -937,7 +938,7 @@ static bool describe_food(textblock *tb, const object_type *o_ptr,
 		bool subjective, bool full)
 {
 	/* Describe boring bits */
-	if ((o_ptr->tval == TV_FOOD || o_ptr->tval == TV_POTION) &&
+	if (tval_can_have_nourishment(o_ptr) &&
 		o_ptr->pval[DEFAULT_PVAL])
 	{
 		/* Sometimes adjust for player speed */

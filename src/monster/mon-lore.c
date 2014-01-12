@@ -22,6 +22,7 @@
 #include "monster/mon-spell.h"
 #include "monster/mon-util.h"
 #include "monster/mon-blow-effects.h"
+#include "object/obj-tval.h"
 #include "object/tvalsval.h"
 #include "attack.h"
 
@@ -82,7 +83,7 @@ static void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MA
 
 		/* Drain charges - requires a charged item */
 		if (i < INVEN_PACK && (!known || o_ptr->pval[DEFAULT_PVAL] > 0) &&
-				(o_ptr->tval == TV_STAFF || o_ptr->tval == TV_WAND))
+				tval_can_have_charges(o_ptr))
 			melee_colors[RBE_UN_POWER] = TERM_L_RED;
 
 		/* Steal item - requires non-artifacts */

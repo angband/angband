@@ -18,6 +18,7 @@
 
 #include "angband.h"
 #include "squelch.h"
+#include "object/obj-tval.h"
 #include "object/tvalsval.h"
 #include "object/pval.h"
 
@@ -474,10 +475,7 @@ static size_t obj_desc_combat(const object_type *o_ptr, char *buf, size_t max,
 		if (wield_slot(o_ptr) == INVEN_WIELD || wield_slot(o_ptr) == INVEN_BOW
 				|| obj_is_ammo(o_ptr) || o_ptr->to_d || o_ptr->to_h) {
 			/* Make an exception for body armor with only a to-hit penalty */
-			if (o_ptr->to_h < 0 && o_ptr->to_d == 0 &&
-			    (o_ptr->tval == TV_SOFT_ARMOR ||
-			     o_ptr->tval == TV_HARD_ARMOR ||
-			     o_ptr->tval == TV_DRAG_ARMOR))
+			if (o_ptr->to_h < 0 && o_ptr->to_d == 0 && tval_is_body_armor(o_ptr))
 				strnfcat(buf, max, &end, " (%+d)", o_ptr->to_h);
 
 			/* Otherwise, always use the full tuple */
@@ -545,7 +543,7 @@ static size_t obj_desc_charges(const object_type *o_ptr, char *buf, size_t max, 
 	bool aware = object_flavor_is_aware(o_ptr) || (o_ptr->ident & IDENT_STORE);
 
 	/* Wands and Staffs have charges */
-	if (aware && (o_ptr->tval == TV_STAFF || o_ptr->tval == TV_WAND))
+	if (aware && tval_can_have_charges(o_ptr))
 		strnfcat(buf, max, &end, " (%d charge%s)", o_ptr->pval[DEFAULT_PVAL], PLURAL(o_ptr->pval[DEFAULT_PVAL]));
 
 	/* Charging things */
@@ -699,7 +697,7 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr, int mode)
 		return strnfmt(buf, max, "unknown item");
 	}
 
-	if (o_ptr->tval == TV_GOLD)
+	if (tval_is_money(o_ptr))
 		return strnfmt(buf, max, "%d gold pieces worth of %s%s",
 				o_ptr->pval[DEFAULT_PVAL], o_ptr->kind->name,
 				squelch_item_ok(o_ptr) ? " {squelch}" : "");
@@ -711,7 +709,7 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr, int mode)
 
 	if (mode & ODESC_COMBAT)
 	{
-		if (o_ptr->tval == TV_CHEST)
+		if (tval_is_chest(o_ptr))
 			end = obj_desc_chest(o_ptr, buf, max, end);
 		else if (o_ptr->tval == TV_LIGHT)
 			end = obj_desc_light(o_ptr, buf, max, end);

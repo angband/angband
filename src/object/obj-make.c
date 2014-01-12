@@ -20,6 +20,7 @@
 #include "alloc.h"
 #include "cave.h"
 #include "init.h"
+#include "object/obj-tval.h"
 #include "object/tvalsval.h"
 #include "object/pval.h"
 #include "object/slays.h"
@@ -616,7 +617,7 @@ void object_prep(object_type *o_ptr, struct object_kind *k, int lev,
 	of_union(o_ptr->flags, f2);
 
 	/* Assign charges (wands/staves only) */
-	if (o_ptr->tval == TV_WAND || o_ptr->tval == TV_STAFF)
+	if (tval_can_have_charges(o_ptr))
 		o_ptr->pval[DEFAULT_PVAL] = randcalc(k->charge, lev, rand_aspect);
 
 	/* Assign flagless pval for food or oil */

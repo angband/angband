@@ -22,6 +22,7 @@
 #include "monster/mon-blow-effects.h"
 #include "monster/mon-blow-methods.h"
 #include "monster/mon-util.h"
+#include "object/obj-tval.h"
 #include "object/tvalsval.h"
 
 /**
@@ -243,8 +244,7 @@ static void melee_effect_handler_drain_charges(melee_effect_handler_context_t *c
 		if (!o_ptr->kind) continue;
 
 		/* Drain charged wands/staves */
-		if ((o_ptr->tval == TV_STAFF) ||
-			(o_ptr->tval == TV_WAND))
+		if (tval_can_have_charges(o_ptr))
 		{
 			/* Charged? */
 			if (o_ptr->pval[DEFAULT_PVAL])

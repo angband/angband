@@ -26,6 +26,7 @@
 #include "init.h"
 #include "monster/mon-make.h"
 #include "object/pval.h"
+#include "object/obj-tval.h"
 #include "object/tvalsval.h"
 #include "stats/db.h"
 #include "stats/structs.h"
@@ -300,7 +301,7 @@ static void log_all_objects(int level)
 /*				o_power = object_power(o_ptr, FALSE, NULL, TRUE); */
 
 				/* Capture gold amounts */
-				if (o_ptr->tval == TV_GOLD)
+				if (tval_is_money(o_ptr))
 					level_data[level].gold[o_ptr->origin] += o_ptr->pval[DEFAULT_PVAL];
 
 				/* Capture artifact drops */

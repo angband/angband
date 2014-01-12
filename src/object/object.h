@@ -290,12 +290,6 @@ enum {
 #define object_char(T) \
     (object_kind_char((T)->kind))
 
-/*
- * Rings and Amulets
- */
-#define object_is_jewelry(T) \
-    (((T)->tval == TV_RING) || ((T)->tval == TV_AMULET))
-
 
 /*** Structures ***/
 
