@@ -22,7 +22,6 @@
 #include "game-cmd.h"
 #include "monster/mon-util.h"
 #include "object/obj-tval.h"
-#include "object/tvalsval.h" // !!!: needed only to support object_attr() macro
 #include "squelch.h"
 #include "cmds.h"
 #include "trap.h"
