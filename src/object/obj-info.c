@@ -393,7 +393,7 @@ static bool describe_misc_magic(textblock *tb, const bitflag flags[OF_SIZE])
  * Describe slays and brands on weapons
  */
 static bool describe_slays(textblock *tb, const bitflag flags[OF_SIZE],
-		int tval)
+		const struct object *o_ptr)
 {
 	bool printed = FALSE;
 	const char *slay_descs[SL_MAX] = { 0 };
@@ -405,9 +405,7 @@ static bool describe_slays(textblock *tb, const bitflag flags[OF_SIZE],
 	create_mask(kill_mask, FALSE, OFT_KILL, OFT_MAX);
 	create_mask(brand_mask, FALSE, OFT_BRAND, OFT_MAX);
 
-	if (tval == TV_SWORD || tval == TV_HAFTED || tval == TV_POLEARM ||
-			tval == TV_DIGGING || tval == TV_BOW || tval == TV_SHOT ||
-			tval == TV_ARROW || tval == TV_BOLT || tval == TV_FLASK)
+    if (tval_is_weapon(o_ptr) || tval_is_fuel(o_ptr))
 		fulldesc = FALSE;
 	else
 		fulldesc = TRUE;
@@ -971,7 +969,7 @@ static bool describe_light(textblock *tb, const object_type *o_ptr,
 
 	bool artifact = o_ptr->artifact ? TRUE : FALSE;
 	bool no_fuel = of_has(flags, OF_NO_FUEL) ? TRUE : FALSE;
-	bool is_light = (o_ptr->tval == TV_LIGHT) ? TRUE : FALSE;
+	bool is_light = tval_is_light(o_ptr);
 	bool terse = mode & OINFO_TERSE;
 
 	if (!is_light && !of_has(flags, OF_LIGHT))
@@ -1119,8 +1117,7 @@ static bool describe_effect(textblock *tb, const object_type *o_ptr, bool full,
 		textblock_append(tb, ".\n");
 	}
 
-	if (!subjective || o_ptr->tval == TV_FOOD || o_ptr->tval == TV_POTION ||
-		o_ptr->tval == TV_SCROLL)
+	if (!subjective || tval_is_food(o_ptr) || tval_is_potion(o_ptr) || tval_is_scroll(o_ptr))
 	{
 		return TRUE;
 	}
@@ -1360,7 +1357,7 @@ static textblock *object_info_out(const object_type *o_ptr, int mode)
 
 	if (describe_curses(tb, o_ptr, flags)) something = TRUE;
 	if (describe_stats(tb, o_ptr, pv_flags, mode)) something = TRUE;
-	if (describe_slays(tb, flags, o_ptr->tval)) something = TRUE;
+	if (describe_slays(tb, flags, o_ptr)) something = TRUE;
 	if (describe_immune(tb, flags)) something = TRUE;
 	if (describe_ignores(tb, flags)) something = TRUE;
 	dedup_hates_flags(flags);

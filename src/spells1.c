@@ -28,6 +28,7 @@
 #include "monster/mon-util.h"
 #include "object/object.h"
 #include "object/tvalsval.h"
+#include "object/obj-tval.h"
 #include "spells.h"
 #include "squelch.h"
 #include "trap.h"
@@ -1755,63 +1756,35 @@ int inven_damage(struct player *p, int type, int cperc)
 			 * Analyze the type to see if we just damage it
 			 * - we also check for rods to reduce chance
 			 */
-			switch (o_ptr->tval)
-			{
-				/* Weapons */
-				case TV_BOW:
-				case TV_SWORD:
-				case TV_HAFTED:
-				case TV_POLEARM:
-				case TV_DIGGING:
+			if (tval_is_weapon(o_ptr) && !tval_is_ammo(o_ptr)) {
+				/* Chance to damage it */
+				if (randint0(10000) < cperc)
 				{
-					/* Chance to damage it */
-					if (randint0(10000) < cperc)
-					{
-						/* Damage the item */
-						o_ptr->to_h--;
-						o_ptr->to_d--;
+					/* Damage the item */
+					o_ptr->to_h--;
+					o_ptr->to_d--;
 
-						/* Damaged! */
-						damage = TRUE;
-					}
-					else continue;
-
-					break;
+					/* Damaged! */
+					damage = TRUE;
 				}
-
-				/* Wearable items */
-				case TV_HELM:
-				case TV_CROWN:
-				case TV_SHIELD:
-				case TV_BOOTS:
-				case TV_GLOVES:
-				case TV_CLOAK:
-				case TV_SOFT_ARMOR:
-				case TV_HARD_ARMOR:
-				case TV_DRAG_ARMOR:
-				{
-					/* Chance to damage it */
-					if (randint0(10000) < cperc)
-					{
-						/* Damage the item */
-						o_ptr->to_a--;
-
-						/* Damaged! */
-						damage = TRUE;
-					}
-					else continue;
-
-					break;
-				}
-				
-				/* Rods are tough */
-				case TV_ROD:
-				{
-					chance = (chance / 4);
-					
-					break;
-				}
+				else continue;
 			}
+			else if (tval_is_armor(o_ptr)) {
+				/* Chance to damage it */
+				if (randint0(10000) < cperc)
+				{
+					/* Damage the item */
+					o_ptr->to_a--;
+
+					/* Damaged! */
+					damage = TRUE;
+				}
+				else continue;
+			}
+			else if (tval_is_rod(o_ptr)) {
+				chance = (chance / 4);
+			}
+
 
 			/* Damage instead of destroy */
 			if (damage)

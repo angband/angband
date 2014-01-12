@@ -23,6 +23,7 @@
 #include "squelch.h"
 #include "prefs.h"
 #include "object/tvalsval.h"
+#include "object/obj-tval.h"
 #include "ui-menu.h"
 #include "ui-options.h"
 #include "files.h"
@@ -1314,7 +1315,7 @@ static int squelch_collect_kind(int tval, squelch_choice **ch)
 			choice[num++].aware = FALSE;
 		}
 
-		if ((k_ptr->everseen && !of_has(k_ptr->flags, OF_INSTA_ART)) || k_ptr->tval == TV_GOLD)
+		if ((k_ptr->everseen && !of_has(k_ptr->flags, OF_INSTA_ART)) || tval_is_money_k(k_ptr))
 		{
 			/* Do not display the artifact base kinds in this list */
 			/* aware squelch requires everseen */

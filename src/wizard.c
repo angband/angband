@@ -26,6 +26,7 @@
 #include "monster/mon-util.h"
 #include "monster/monster.h"
 #include "object/tvalsval.h"
+#include "object/obj-tval.h"
 #include "ui-event.h"
 #include "ui-menu.h"
 #include "spells.h"
@@ -499,7 +500,7 @@ static bool wiz_create_item_subaction(menu_type *m, const ui_event *e, int oid)
 	i_ptr->origin = ORIGIN_CHEAT;
 	i_ptr->origin_depth = p_ptr->depth;
 
-	if (kind->tval == TV_GOLD)
+	if (tval_is_money_k(kind))
 		make_gold(i_ptr, p_ptr->depth, kind->sval);
 
 	/* Drop the object from heaven */

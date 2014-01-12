@@ -829,7 +829,7 @@ s16b place_monster(int y, int x, monster_type *mon, byte origin)
 
 		i_ptr = &object_type_body;
 
-		if (kind->tval == TV_GOLD) {
+		if (tval_is_money_k(kind)) {
 			make_gold(i_ptr, p_ptr->depth, kind->sval);
 		} else {
 			object_prep(i_ptr, kind, m_ptr->race->level, RANDOMISE);

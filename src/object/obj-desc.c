@@ -47,7 +47,7 @@ void object_kind_name(char *buf, size_t max, const object_kind *kind, bool easy_
 	/* If not aware, use flavor */
 	if (!easy_know && !kind->aware && kind->flavor)
 	{
-		if (kind->tval == TV_FOOD && kind->sval >= SV_FOOD_MIN_SHROOM)
+		if (tval_is_food_k(kind) && kind->sval >= SV_FOOD_MIN_SHROOM)
 		{
 			strnfmt(buf, max, "%s Mushroom", kind->flavor->text);
 		}
@@ -63,7 +63,7 @@ void object_kind_name(char *buf, size_t max, const object_kind *kind, bool easy_
 	{
 		char *t;
 
-		if (kind->tval == TV_FOOD && kind->sval >= SV_FOOD_MIN_SHROOM)
+		if (tval_is_food_k(kind) && kind->sval >= SV_FOOD_MIN_SHROOM)
 		{
 			my_strcpy(buf, "Mushroom of ", max);
 			max -= strlen(buf);
@@ -83,22 +83,11 @@ void object_kind_name(char *buf, size_t max, const object_kind *kind, bool easy_
 
 static const char *obj_desc_get_modstr(const object_kind *kind)
 {
-	switch (kind->tval)
-	{
-		case TV_AMULET:
-		case TV_RING:
-		case TV_STAFF:
-		case TV_WAND:
-		case TV_ROD:
-		case TV_POTION:
-		case TV_FOOD:
-		case TV_SCROLL:
-			return kind->flavor ? kind->flavor->text : "";
+	if (tval_can_have_flavor_k(kind))
+		return kind->flavor ? kind->flavor->text : "";
 
-		case TV_MAGIC_BOOK:
-		case TV_PRAYER_BOOK:
-			return kind->name;
-	}
+	if (tval_is_book_k(kind))
+		return kind->name;
 
 	return "";
 }
@@ -363,6 +352,8 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end,
 static bool obj_desc_show_armor(const object_type *o_ptr)
 {
 	if (o_ptr->ac || tval_is_armor(o_ptr)) return TRUE;
+
+	return FALSE;
 }
 
 static size_t obj_desc_chest(const object_type *o_ptr, char *buf, size_t max, size_t end)

@@ -1455,7 +1455,7 @@ static bool store_create_random(struct store *store)
 		/*** Pre-generation filters ***/
 
 		/* No chests in stores XXX */
-		if (tval_is_chest(o_ptr)) continue;
+		if (tval_is_chest(i_ptr)) continue;
 
 
 		/*** Generate the item ***/
