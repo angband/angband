@@ -24,7 +24,7 @@
 #include "history.h"
 #include "monster/mon-make.h"
 #include "object/inventory.h"
-#include "object/obj-tval.h"
+#include "obj-tval.h"
 #include "object/tvalsval.h"
 #include "prefs.h"
 #include "randname.h"

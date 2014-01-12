@@ -20,7 +20,7 @@
 #include "alloc.h"
 #include "cave.h"
 #include "init.h"
-#include "object/obj-tval.h"
+#include "obj-tval.h"
 #include "object/tvalsval.h"
 #include "object/pval.h"
 #include "object/slays.h"
@@ -621,13 +621,12 @@ void object_prep(object_type *o_ptr, struct object_kind *k, int lev,
 		o_ptr->pval[DEFAULT_PVAL] = randcalc(k->charge, lev, rand_aspect);
 
 	/* Assign flagless pval for food or oil */
-	if (o_ptr->tval == TV_FOOD || o_ptr->tval == TV_POTION ||
-			o_ptr->tval == TV_FLASK)
+	if (tval_is_food(o_ptr) || tval_is_potion(o_ptr) || tval_is_fuel(o_ptr))
 		o_ptr->pval[DEFAULT_PVAL]
 			= randcalc(k->pval[DEFAULT_PVAL], lev, rand_aspect);
 
 	/* Default fuel for lamps */
-	if (o_ptr->tval == TV_LIGHT) {
+	if (tval_is_light(o_ptr)) {
 		if (o_ptr->sval == SV_LIGHT_TORCH)
 			o_ptr->timeout = DEFAULT_TORCH;
 		else if (o_ptr->sval == SV_LIGHT_LANTERN)
@@ -708,51 +707,29 @@ s16b apply_magic(object_type *o_ptr, int lev, bool allow_artifacts,
 		make_ego_item(o_ptr, lev);
 
 	/* Apply magic */
-	switch (o_ptr->tval)
-	{
-		case TV_DIGGING:
-		case TV_HAFTED:
-		case TV_POLEARM:
-		case TV_SWORD:
-		case TV_BOW:
-		case TV_SHOT:
-		case TV_ARROW:
-		case TV_BOLT:
-			apply_magic_weapon(o_ptr, lev, power);
-			break;
-
-		case TV_DRAG_ARMOR:
-		case TV_HARD_ARMOR:
-		case TV_SOFT_ARMOR:
-		case TV_SHIELD:
-		case TV_HELM:
-		case TV_CROWN:
-		case TV_CLOAK:
-		case TV_GLOVES:
-		case TV_BOOTS:
-			apply_magic_armour(o_ptr, lev, power);
-			break;
-
-		case TV_RING:
-			if (o_ptr->sval == SV_RING_SPEED) {
-				/* Super-charge the ring */
-				while (one_in_(2))
-					o_ptr->pval[which_pval(o_ptr, OF_SPEED)]++;
-			}
-			break;
-
-		case TV_CHEST:
-			/* Hack -- skip ruined chests */
-			if (o_ptr->kind->level <= 0) break;
-
+	if (tval_is_weapon(o_ptr)) {
+		apply_magic_weapon(o_ptr, lev, power);
+	}
+	else if (tval_is_armor(o_ptr)) {
+		apply_magic_armour(o_ptr, lev, power);
+	}
+	else if (tval_is_ring(o_ptr)) {
+		if (o_ptr->sval == SV_RING_SPEED) {
+			/* Super-charge the ring */
+			while (one_in_(2))
+				o_ptr->pval[which_pval(o_ptr, OF_SPEED)]++;
+		}
+	}
+	else if (tval_is_chest(o_ptr)) {
+		/* Hack -- skip ruined chests */
+		if (o_ptr->kind->level > 0) {
 			/* Hack -- pick a "difficulty" */
 			o_ptr->pval[DEFAULT_PVAL] = randint1(o_ptr->kind->level);
 
 			/* Never exceed "difficulty" of 55 to 59 */
 			if (o_ptr->pval[DEFAULT_PVAL] > 55)
 				o_ptr->pval[DEFAULT_PVAL] = (s16b)(55 + randint0(5));
-
-			break;
+		}
 	}
 
 	/* Apply minima from ego items if necessary */

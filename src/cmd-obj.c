@@ -45,12 +45,19 @@ static int check_devices(object_type *o_ptr)
 	const char *what = NULL;
 
 	/* Get the right string */
-	switch (o_ptr->tval)
-	{
-		case TV_ROD:   action = "zap the rod";   break;
-		case TV_WAND:  action = "use the wand";  what = "wand";  break;
-		case TV_STAFF: action = "use the staff"; what = "staff"; break;
-		default:       action = "activate it";  break;
+	if (tval_is_rod(o_ptr)) {
+		action = "zap the rod";
+	}
+	else if (tval_is_wand(o_ptr)) {
+		action = "use the wand";
+		what = "wand";
+	}
+	else if (tval_is_staff(o_ptr)) {
+		action = "use the staff";
+		what = "staff";
+	}
+	else {
+		action = "activate it";
 	}
 
 	/* Figure out how hard the item is to use */
@@ -746,7 +753,7 @@ void do_cmd_use(struct command *cmd)
 		int lev = o_ptr->kind->level;
 
 		object_flavor_aware(o_ptr);
-		if (o_ptr->tval == TV_ROD) object_notice_everything(o_ptr);
+		if (tval_is_rod(o_ptr)) object_notice_everything(o_ptr);
 		player_exp_gain(p_ptr, (lev + (p_ptr->lev / 2)) / p_ptr->lev);
 		p_ptr->notice |= PN_SQUELCH;
 	}
@@ -920,7 +927,7 @@ void do_cmd_refill(struct command *cmd)
 	/* Check what we're wielding. */
 	object_flags(j_ptr, f);
 
-	if (j_ptr->tval != TV_LIGHT) {
+	if (!tval_is_light(j_ptr)) {
 		msg("You are not wielding a light.");
 		return;
 	} else if (of_has(f, OF_NO_FUEL)) {

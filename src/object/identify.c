@@ -170,7 +170,7 @@ bool object_ego_is_visible(const object_type *o_ptr)
 	if (!o_ptr->ego)
 		return FALSE;
 
-	if (o_ptr->tval == TV_LIGHT)
+	if (tval_is_light(o_ptr))
 		return TRUE;
 
 	if ((o_ptr->ident & IDENT_NAME) || (o_ptr->ident & IDENT_STORE))
@@ -1134,31 +1134,9 @@ void sense_inventory(void)
 		if (!o_ptr->kind) continue;
 
 		/* Valid "tval" codes */
-		switch (o_ptr->tval)
-		{
-			case TV_SHOT:
-			case TV_ARROW:
-			case TV_BOLT:
-			case TV_BOW:
-			case TV_DIGGING:
-			case TV_HAFTED:
-			case TV_POLEARM:
-			case TV_SWORD:
-			case TV_BOOTS:
-			case TV_GLOVES:
-			case TV_HELM:
-			case TV_CROWN:
-			case TV_SHIELD:
-			case TV_CLOAK:
-			case TV_SOFT_ARMOR:
-			case TV_HARD_ARMOR:
-			case TV_DRAG_ARMOR:
-			{
-				okay = TRUE;
-				break;
-			}
-		}
-		
+		if (tval_is_weapon(o_ptr) || tval_is_armor(o_ptr))
+			okay = TRUE;
+
 		/* Skip non-sense machines */
 		if (!okay) continue;
 		

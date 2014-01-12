@@ -869,7 +869,7 @@ static void store_object_absorb(object_type *o_ptr, object_type *j_ptr)
 	o_ptr->number = (total >= MAX_STACK_SIZE) ? MAX_STACK_SIZE - 1 : total;
 
 	/* Hack -- if rods are stacking, add the charging timeouts */
-	if (o_ptr->tval == TV_ROD)
+	if (tval_can_have_timeout(o_ptr))
 		o_ptr->timeout += j_ptr->timeout;
 
 	/* Hack -- if wands/staves are stacking, combine the charges */
@@ -1455,7 +1455,7 @@ static bool store_create_random(struct store *store)
 		/*** Pre-generation filters ***/
 
 		/* No chests in stores XXX */
-		if (kind->tval == TV_CHEST) continue;
+		if (tval_is_chest(o_ptr)) continue;
 
 
 		/*** Generate the item ***/
@@ -2090,7 +2090,7 @@ static int find_inven(const object_type *o_ptr)
 				if (o_ptr->ego != j_ptr->ego) continue;
 
 				/* Lights must have same amount of fuel */
-				else if (o_ptr->timeout != j_ptr->timeout && o_ptr->tval == TV_LIGHT)
+				else if (o_ptr->timeout != j_ptr->timeout && tval_is_light(o_ptr))
 					continue;
 
 				/* Require identical "values" */

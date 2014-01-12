@@ -1350,7 +1350,7 @@ static void calc_torch(void)
 			amt = 0;
 
 		/* Examine actual lights */
-		if (o_ptr->tval == TV_LIGHT && !of_has(o_ptr->flags, OF_NO_FUEL) &&
+		if (tval_is_light(o_ptr) && !of_has(o_ptr->flags, OF_NO_FUEL) &&
 				o_ptr->timeout == 0)
 			/* Lights without fuel provide no light */
 			amt = 0;

@@ -474,7 +474,7 @@ static void melee_effect_handler_eat_food(melee_effect_handler_context_t *contex
 		if (!o_ptr->kind) continue;
 
 		/* Skip non-food objects */
-		if (o_ptr->tval != TV_FOOD) continue;
+		if (!tval_is_food(o_ptr)) continue;
 
 		if (o_ptr->number == 1) {
 			object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);

@@ -21,7 +21,7 @@
 #include "attack.h"
 #include "effects.h"
 #include "cmds.h"
-#include "object/obj-tval.h"
+#include "obj-tval.h"
 #include "object/tvalsval.h"
 #include "z-textblock.h"
 #include "object/slays.h"
@@ -784,7 +784,7 @@ static bool describe_combat(textblock *tb, const object_type *o_ptr,
 
 	if (!weapon && !ammo) {
 		/* Potions can have special text */
-		if (o_ptr->tval != TV_POTION ||
+		if (!tval_is_potion(o_ptr) ||
 				o_ptr->dd == 0 || o_ptr->ds == 0 ||
 				!object_flavor_is_aware(o_ptr))
 			return FALSE;
@@ -1049,11 +1049,11 @@ static bool describe_effect(textblock *tb, const object_type *o_ptr, bool full,
 		{
 			if (effect_aim(o_ptr->kind->effect))
 				textblock_append(tb, "It can be aimed.\n");
-			else if (o_ptr->tval == TV_FOOD)
+			else if (tval_is_food(o_ptr))
 				textblock_append(tb, "It can be eaten.\n");
-			else if (o_ptr->tval == TV_POTION)
+			else if (tval_is_potion(o_ptr))
 				textblock_append(tb, "It can be drunk.\n");
-			else if (o_ptr->tval == TV_SCROLL)
+			else if (tval_is_scroll(o_ptr))
 				textblock_append(tb, "It can be read.\n");
 			else textblock_append(tb, "It can be activated.\n");
 
@@ -1070,11 +1070,11 @@ static bool describe_effect(textblock *tb, const object_type *o_ptr, bool full,
 
 	if (effect_aim(effect))
 		textblock_append(tb, "When aimed, it ");
-	else if (o_ptr->tval == TV_FOOD)
+	else if (tval_is_food(o_ptr))
 		textblock_append(tb, "When eaten, it ");
-	else if (o_ptr->tval == TV_POTION)
+	else if (tval_is_potion(o_ptr))
 		textblock_append(tb, "When quaffed, it ");
-	else if (o_ptr->tval == TV_SCROLL)
+	else if (tval_is_scroll(o_ptr))
 	    textblock_append(tb, "When read, it ");
 	else
 	    textblock_append(tb, "When activated, it ");

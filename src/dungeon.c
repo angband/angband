@@ -32,6 +32,7 @@
 #include "monster/mon-spell.h"
 #include "monster/mon-util.h"
 #include "monster/monster.h"
+#include "object/obj-tval.h"
 #include "object/tvalsval.h"
 #include "pathfind.h"
 #include "prefs.h"
@@ -351,7 +352,7 @@ static void recharge_objects(void)
 		discharged_stack = (number_charging(o_ptr) == o_ptr->number) ? TRUE : FALSE;
 
 		/* Recharge rods, and update if any rods are recharged */
-		if (o_ptr->tval == TV_ROD && recharge_timeout(o_ptr))
+		if (tval_can_have_timeout(o_ptr) && recharge_timeout(o_ptr))
 		{
 			charged = TRUE;
 
@@ -385,7 +386,7 @@ static void recharge_objects(void)
 		if (!o_ptr->kind) continue;
 
 		/* Recharge rods on the ground */
-		if (o_ptr->tval == TV_ROD)
+		if (tval_can_have_timeout(o_ptr))
 			recharge_timeout(o_ptr);
 	}
 }
@@ -695,7 +696,7 @@ static void process_world(struct cave *c)
 	o_ptr = &p_ptr->inventory[INVEN_LIGHT];
 
 	/* Burn some fuel in the current light */
-	if (o_ptr->tval == TV_LIGHT) {
+	if (tval_is_light(o_ptr)) {
 		bitflag f[OF_SIZE];
 		bool burn_fuel = TRUE;
 

@@ -18,7 +18,7 @@
 
 #include "angband.h"
 #include "squelch.h"
-#include "object/obj-tval.h"
+#include "obj-tval.h"
 #include "object/tvalsval.h"
 #include "object/pval.h"
 
@@ -362,30 +362,14 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end,
  */
 static bool obj_desc_show_armor(const object_type *o_ptr)
 {
-	if (o_ptr->ac) return TRUE;
-
-	switch (o_ptr->tval)
-	{
-		case TV_BOOTS:
-		case TV_GLOVES:
-		case TV_CLOAK:
-		case TV_CROWN:
-		case TV_HELM:
-		case TV_SHIELD:
-		case TV_SOFT_ARMOR:
-		case TV_HARD_ARMOR:
-		case TV_DRAG_ARMOR:
-			return TRUE;
-	}
-
-	return FALSE;
+	if (o_ptr->ac || tval_is_armor(o_ptr)) return TRUE;
 }
 
 static size_t obj_desc_chest(const object_type *o_ptr, char *buf, size_t max, size_t end)
 {
 	bool known = object_is_known(o_ptr) || (o_ptr->ident & IDENT_STORE);
 
-	if (o_ptr->tval != TV_CHEST) return end;
+	if (!tval_is_chest(o_ptr)) return end;
 	if (!known) return end;
 
 	/* May be "empty" */
@@ -505,7 +489,7 @@ static size_t obj_desc_light(const object_type *o_ptr, char *buf, size_t max, si
 	object_flags(o_ptr, f);
 
 	/* Fuelled light sources get number of remaining turns appended */
-	if ((o_ptr->tval == TV_LIGHT) && !of_has(f, OF_NO_FUEL))
+	if (tval_is_light(o_ptr) && !of_has(f, OF_NO_FUEL))
 		strnfcat(buf, max, &end, " (%d turns)", o_ptr->timeout);
 
 	return end;
@@ -549,7 +533,7 @@ static size_t obj_desc_charges(const object_type *o_ptr, char *buf, size_t max, 
 	/* Charging things */
 	else if (o_ptr->timeout > 0)
 	{
-		if (o_ptr->tval == TV_ROD && o_ptr->number > 1)
+		if (tval_can_have_timeout(o_ptr) && o_ptr->number > 1)
 		{
 			int power;
 			int time_base = randcalc(o_ptr->kind->time, 0, MINIMISE);
@@ -570,7 +554,7 @@ static size_t obj_desc_charges(const object_type *o_ptr, char *buf, size_t max, 
 		}
 
 		/* Artifacts, single rods */
-		else if (!(o_ptr->tval == TV_LIGHT && !o_ptr->artifact))
+		else if (!(tval_is_light(o_ptr) && !o_ptr->artifact))
 		{
 			strnfcat(buf, max, &end, " (charging)");
 		}
@@ -711,7 +695,7 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr, int mode)
 	{
 		if (tval_is_chest(o_ptr))
 			end = obj_desc_chest(o_ptr, buf, max, end);
-		else if (o_ptr->tval == TV_LIGHT)
+		else if (tval_is_light(o_ptr))
 			end = obj_desc_light(o_ptr, buf, max, end);
 
 		end = obj_desc_combat(o_ptr, buf, max, end, spoil);

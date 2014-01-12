@@ -63,6 +63,11 @@ bool tval_is_chest(const struct object *o_ptr)
 	return (o_ptr->tval == TV_CHEST);
 }
 
+bool tval_is_fuel(const struct object *o_ptr)
+{
+	return o_ptr->tval == TV_FLASK;
+}
+
 bool tval_is_money(const struct object *o_ptr)
 {
 	return (o_ptr->tval == TV_GOLD);
@@ -81,6 +86,11 @@ bool tval_can_have_nourishment(const struct object *o_ptr)
 bool tval_can_have_charges(const struct object *o_ptr)
 {
 	return (o_ptr->tval == TV_STAFF) || (o_ptr->tval == TV_WAND);
+}
+
+bool tval_can_have_timeout(const struct object *o_ptr)
+{
+	return o_ptr->tval == TV_ROD;
 }
 
 bool tval_is_body_armor(const struct object *o_ptr)

@@ -25,11 +25,13 @@
 bool tval_can_have_charges(const struct object *o_ptr);
 bool tval_can_have_failure(const struct object *o_ptr);
 bool tval_can_have_nourishment(const struct object *o_ptr);
+bool tval_can_have_timeout(const struct object *o_ptr);
 bool tval_is_ammo(const struct object *o_ptr);
 bool tval_is_armor(const struct object *o_ptr);
 bool tval_is_body_armor(const struct object *o_ptr);
 bool tval_is_chest(const struct object *o_ptr);
 bool tval_is_food(const struct object *o_ptr);
+bool tval_is_fuel(const struct object *o_ptr);
 bool tval_is_jewelry(const struct object *o_ptr);
 bool tval_is_light(const struct object *o_ptr);
 bool tval_is_money(const struct object *o_ptr);

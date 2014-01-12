@@ -20,6 +20,7 @@
 #include "attack.h"
 #include "cmds.h"
 #include "game-cmd.h"
+#include "object/obj-tval.h"
 #include "object/object.h"
 #include "object/tvalsval.h"
 #include "spells.h"
@@ -680,7 +681,7 @@ void process_command(cmd_context ctx, bool no_request)
 				 * want to replace */
 				if (p_ptr->inventory[slot].kind)
 				{
-					if (o_ptr->tval == TV_RING)
+					if (tval_is_ring(o_ptr))
 					{
 						const char *q = "Replace which ring? ";
 						const char *s = "Error in obj_wield, please report";

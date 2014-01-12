@@ -18,7 +18,7 @@
  */
 
 #include "angband.h"
-#include "object/obj-tval.h"
+#include "obj-tval.h"
 #include "object/tvalsval.h"
 #include "monster/mon-util.h" /* for summon_specific() */
 

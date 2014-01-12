@@ -92,7 +92,7 @@ static void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MA
 			melee_colors[RBE_EAT_ITEM] = TERM_L_RED;
 
 		/* Eat food - requries food */
-		if (i < INVEN_PACK && o_ptr->tval == TV_FOOD)
+		if (i < INVEN_PACK && tval_is_food(o_ptr))
 			melee_colors[RBE_EAT_FOOD] = TERM_YELLOW;
 
 		/* Eat light - requires a fuelled light */

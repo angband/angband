@@ -16,7 +16,7 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
-#include "object/obj-tval.h"
+#include "obj-tval.h"
 #include "object/pval.h"
 #include "object/tvalsval.h"
 

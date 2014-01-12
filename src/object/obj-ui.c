@@ -18,6 +18,7 @@
 
 #include "angband.h"
 #include "tvalsval.h"
+#include "obj-tval.h"
 #include "cmds.h"
 #include "game-cmd.h"
 #include "keymap.h"
@@ -385,7 +386,7 @@ void show_floor(const int *floor_list, int floor_num, int mode, item_tester test
 		/* Tester always skips gold. When gold should be displayed,
 		 * only test items that are not gold.
 		 */
-		if ((o_ptr->tval != TV_GOLD || !(mode & OLIST_GOLD)) &&
+		if ((!tval_is_money(o_ptr) || !(mode & OLIST_GOLD)) &&
 		    !object_test(tester, o_ptr))
 			continue;
 

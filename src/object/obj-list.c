@@ -21,6 +21,7 @@
 #include "tvalsval.h"
 #include "squelch.h"
 #include "obj-list.h"
+#include "obj-tval.h"
 
 typedef struct object_list_entry_s {
 	object_type *object;
@@ -154,7 +155,7 @@ static bool object_list_should_ignore_object(const object_type *object)
 	if (!is_unknown(object) && squelch_item_ok(object))
 		return TRUE;
 
-	if (object->tval == TV_GOLD)
+	if (tval_is_money(object))
 		return TRUE;
 
 	return FALSE;

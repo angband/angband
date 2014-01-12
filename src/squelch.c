@@ -327,7 +327,7 @@ byte squelch_level_of(const object_type *o_ptr)
 	}
 
 	/* And lights */
-	if (o_ptr->tval == TV_LIGHT)
+	if (tval_is_light(o_ptr))
 	{
 		create_mask(f2, TRUE, OFID_WIELD, OFT_MAX);
 		if (of_is_inter(f, f2))
