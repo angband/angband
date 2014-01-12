@@ -24,7 +24,7 @@
 #include "game-cmd.h"
 #include "history.h"
 #include "object/inventory.h"
-#include "object/tvalsval.h"
+#include "object/obj-tval.h"
 #include "object/object.h"
 #include "squelch.h"
 #include "quest.h"
@@ -499,8 +499,9 @@ static void player_outfit(struct player *p)
 
 		/* Without start_kit, only start with 1 food and 1 light */
 		if (!OPT(birth_start_kit)) {
-			if (si->kind->tval != TV_FOOD && si->kind->tval != TV_LIGHT)
+			if (!tval_is_food_k(si->kind) && !tval_is_light_k(si->kind))
 				continue;
+
 			num = 1;
 		}
 

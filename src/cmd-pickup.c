@@ -27,6 +27,7 @@
 #include "monster/mon-timed.h"
 #include "monster/mon-util.h"
 #include "object/inventory.h"
+#include "object/obj-tval.h"
 #include "object/tvalsval.h"
 #include "object/object.h"
 #include "squelch.h"
@@ -101,7 +102,7 @@ static void py_pickup_gold(void)
 		next_o_idx = o_ptr->next_o_idx;
 
 		/* Ignore if not legal treasure */
-		if ((o_ptr->tval != TV_GOLD) ||
+		if (!tval_is_money(o_ptr) ||
 		    (o_ptr->sval >= SV_GOLD_MAX)) continue;
 
 		/* Note that we have this kind of treasure */

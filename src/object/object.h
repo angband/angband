@@ -245,58 +245,6 @@ enum {
 
 /*** Macros ***/
 
-/*
- * Determine if the attr and char should consider the item's flavor
- *
- * Identified scrolls should use their own tile.
- */
-#define use_flavor_glyph(kind) \
-    ((kind)->flavor && \
-     !((kind)->tval == TV_SCROLL && (kind)->aware))
-
-/*
- * Return the "attr" for a given item kind.
- * Use "flavor" if available.
- * Default to user definitions.
- */
-#define object_kind_attr(kind) \
-    (use_flavor_glyph((kind)) ? \
-     ((kind)->flavor->x_attr) : \
-     ((kind)->x_attr))
-
-/*
- * Return the "char" for a given item kind.
- * Use "flavor" if available.
- * Default to user definitions.
- */
-#define object_kind_char(kind) \
-    (use_flavor_glyph(kind) ? \
-     ((kind)->flavor->x_char) : \
-     ((kind)->x_char))
-
-/*
- * Return the "attr" for a given item.
- * Use "flavor" if available.
- * Default to user definitions.
- */
-#define object_attr(T) \
-    (object_kind_attr((T)->kind))
-
-/*
- * Return the "char" for a given item.
- * Use "flavor" if available.
- * Default to user definitions.
- */
-#define object_char(T) \
-    (object_kind_char((T)->kind))
-
-/*
- * Rings and Amulets
- */
-#define object_is_jewelry(T) \
-    (((T)->tval == TV_RING) || ((T)->tval == TV_AMULET))
-
-
 /*** Structures ***/
 
 /*
@@ -698,6 +646,10 @@ void ego_apply_magic(object_type *o_ptr, int level);
 void ego_min_pvals(object_type *o_ptr);
 
 /* obj-ui.c */
+byte object_kind_attr(const struct object_kind *kind);
+wchar_t object_kind_char(const struct object_kind *kind);
+byte object_attr(const struct object *o_ptr);
+wchar_t object_char(const struct object *o_ptr);
 void show_inven(int mode, item_tester tester);
 void show_equip(int mode, item_tester tester);
 void show_floor(const int *floor_list, int floor_num, int mode, item_tester tester);

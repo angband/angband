@@ -18,6 +18,7 @@
  */
 
 #include "angband.h"
+#include "obj-tval.h"
 #include "object/tvalsval.h"
 #include "monster/mon-util.h" /* for summon_specific() */
 
@@ -111,7 +112,7 @@ byte chest_trap_type(const object_type *o_ptr)
  */
 bool is_trapped_chest(const object_type *o_ptr)
 {
-	if (o_ptr->tval != TV_CHEST)
+	if (!tval_is_chest(o_ptr))
 		return FALSE;
 
 	/* Disarmed or opened chests are not trapped */
@@ -128,7 +129,7 @@ bool is_trapped_chest(const object_type *o_ptr)
  */
 bool is_locked_chest(const object_type *o_ptr)
 {
-	if (o_ptr->tval != TV_CHEST)
+	if (!tval_is_chest(o_ptr))
 		return FALSE;
 
 	/* Disarmed or opened chests are not locked */
@@ -169,11 +170,11 @@ s16b chest_check(int y, int x, enum chest_query check_type)
 		switch (check_type)
 		{
 		case CHEST_ANY:
-			if (o_ptr->tval == TV_CHEST)
+			if (tval_is_chest(o_ptr))
 				return this_o_idx;
 			break;
 		case CHEST_OPENABLE:
-			if ((o_ptr->tval == TV_CHEST) && (o_ptr->pval[DEFAULT_PVAL] != 0))
+			if (tval_is_chest(o_ptr) && (o_ptr->pval[DEFAULT_PVAL] != 0))
 				return this_o_idx;
 			break;
 		case CHEST_TRAPPED:
@@ -277,7 +278,7 @@ static void chest_death(int y, int x, s16b o_idx)
 		/* Otherwise drop an item, as long as it isn't a chest */
 		else {
 			if (!make_object(cave, i_ptr, value, FALSE, FALSE, FALSE, NULL, 0)) continue;
-			if (i_ptr->tval == TV_CHEST) continue;
+			if (tval_is_chest(i_ptr)) continue;
 		}
 
 		/* Record origin */

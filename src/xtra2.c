@@ -20,7 +20,6 @@
 #include "cmds.h"
 #include "keymap.h"
 #include "history.h"
-#include "object/tvalsval.h"
 #include "pathfind.h"
 #include "spells.h"
 #include "target.h"

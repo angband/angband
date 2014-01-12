@@ -18,6 +18,7 @@
 
 #include "angband.h"
 #include "squelch.h"
+#include "obj-tval.h"
 #include "object/tvalsval.h"
 #include "object/pval.h"
 
@@ -46,7 +47,7 @@ void object_kind_name(char *buf, size_t max, const object_kind *kind, bool easy_
 	/* If not aware, use flavor */
 	if (!easy_know && !kind->aware && kind->flavor)
 	{
-		if (kind->tval == TV_FOOD && kind->sval >= SV_FOOD_MIN_SHROOM)
+		if (tval_is_food_k(kind) && kind->sval >= SV_FOOD_MIN_SHROOM)
 		{
 			strnfmt(buf, max, "%s Mushroom", kind->flavor->text);
 		}
@@ -62,7 +63,7 @@ void object_kind_name(char *buf, size_t max, const object_kind *kind, bool easy_
 	{
 		char *t;
 
-		if (kind->tval == TV_FOOD && kind->sval >= SV_FOOD_MIN_SHROOM)
+		if (tval_is_food_k(kind) && kind->sval >= SV_FOOD_MIN_SHROOM)
 		{
 			my_strcpy(buf, "Mushroom of ", max);
 			max -= strlen(buf);
@@ -82,22 +83,11 @@ void object_kind_name(char *buf, size_t max, const object_kind *kind, bool easy_
 
 static const char *obj_desc_get_modstr(const object_kind *kind)
 {
-	switch (kind->tval)
-	{
-		case TV_AMULET:
-		case TV_RING:
-		case TV_STAFF:
-		case TV_WAND:
-		case TV_ROD:
-		case TV_POTION:
-		case TV_FOOD:
-		case TV_SCROLL:
-			return kind->flavor ? kind->flavor->text : "";
+	if (tval_can_have_flavor_k(kind))
+		return kind->flavor ? kind->flavor->text : "";
 
-		case TV_MAGIC_BOOK:
-		case TV_PRAYER_BOOK:
-			return kind->name;
-	}
+	if (tval_is_book_k(kind))
+		return kind->name;
 
 	return "";
 }
@@ -361,21 +351,7 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end,
  */
 static bool obj_desc_show_armor(const object_type *o_ptr)
 {
-	if (o_ptr->ac) return TRUE;
-
-	switch (o_ptr->tval)
-	{
-		case TV_BOOTS:
-		case TV_GLOVES:
-		case TV_CLOAK:
-		case TV_CROWN:
-		case TV_HELM:
-		case TV_SHIELD:
-		case TV_SOFT_ARMOR:
-		case TV_HARD_ARMOR:
-		case TV_DRAG_ARMOR:
-			return TRUE;
-	}
+	if (o_ptr->ac || tval_is_armor(o_ptr)) return TRUE;
 
 	return FALSE;
 }
@@ -384,7 +360,7 @@ static size_t obj_desc_chest(const object_type *o_ptr, char *buf, size_t max, si
 {
 	bool known = object_is_known(o_ptr) || (o_ptr->ident & IDENT_STORE);
 
-	if (o_ptr->tval != TV_CHEST) return end;
+	if (!tval_is_chest(o_ptr)) return end;
 	if (!known) return end;
 
 	/* May be "empty" */
@@ -474,10 +450,7 @@ static size_t obj_desc_combat(const object_type *o_ptr, char *buf, size_t max,
 		if (wield_slot(o_ptr) == INVEN_WIELD || wield_slot(o_ptr) == INVEN_BOW
 				|| obj_is_ammo(o_ptr) || o_ptr->to_d || o_ptr->to_h) {
 			/* Make an exception for body armor with only a to-hit penalty */
-			if (o_ptr->to_h < 0 && o_ptr->to_d == 0 &&
-			    (o_ptr->tval == TV_SOFT_ARMOR ||
-			     o_ptr->tval == TV_HARD_ARMOR ||
-			     o_ptr->tval == TV_DRAG_ARMOR))
+			if (o_ptr->to_h < 0 && o_ptr->to_d == 0 && tval_is_body_armor(o_ptr))
 				strnfcat(buf, max, &end, " (%+d)", o_ptr->to_h);
 
 			/* Otherwise, always use the full tuple */
@@ -507,7 +480,7 @@ static size_t obj_desc_light(const object_type *o_ptr, char *buf, size_t max, si
 	object_flags(o_ptr, f);
 
 	/* Fuelled light sources get number of remaining turns appended */
-	if ((o_ptr->tval == TV_LIGHT) && !of_has(f, OF_NO_FUEL))
+	if (tval_is_light(o_ptr) && !of_has(f, OF_NO_FUEL))
 		strnfcat(buf, max, &end, " (%d turns)", o_ptr->timeout);
 
 	return end;
@@ -545,13 +518,13 @@ static size_t obj_desc_charges(const object_type *o_ptr, char *buf, size_t max, 
 	bool aware = object_flavor_is_aware(o_ptr) || (o_ptr->ident & IDENT_STORE);
 
 	/* Wands and Staffs have charges */
-	if (aware && (o_ptr->tval == TV_STAFF || o_ptr->tval == TV_WAND))
+	if (aware && tval_can_have_charges(o_ptr))
 		strnfcat(buf, max, &end, " (%d charge%s)", o_ptr->pval[DEFAULT_PVAL], PLURAL(o_ptr->pval[DEFAULT_PVAL]));
 
 	/* Charging things */
 	else if (o_ptr->timeout > 0)
 	{
-		if (o_ptr->tval == TV_ROD && o_ptr->number > 1)
+		if (tval_can_have_timeout(o_ptr) && o_ptr->number > 1)
 		{
 			int power;
 			int time_base = randcalc(o_ptr->kind->time, 0, MINIMISE);
@@ -572,7 +545,7 @@ static size_t obj_desc_charges(const object_type *o_ptr, char *buf, size_t max, 
 		}
 
 		/* Artifacts, single rods */
-		else if (!(o_ptr->tval == TV_LIGHT && !o_ptr->artifact))
+		else if (!(tval_is_light(o_ptr) && !o_ptr->artifact))
 		{
 			strnfcat(buf, max, &end, " (charging)");
 		}
@@ -699,7 +672,7 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr, int mode)
 		return strnfmt(buf, max, "unknown item");
 	}
 
-	if (o_ptr->tval == TV_GOLD)
+	if (tval_is_money(o_ptr))
 		return strnfmt(buf, max, "%d gold pieces worth of %s%s",
 				o_ptr->pval[DEFAULT_PVAL], o_ptr->kind->name,
 				squelch_item_ok(o_ptr) ? " {squelch}" : "");
@@ -711,9 +684,9 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr, int mode)
 
 	if (mode & ODESC_COMBAT)
 	{
-		if (o_ptr->tval == TV_CHEST)
+		if (tval_is_chest(o_ptr))
 			end = obj_desc_chest(o_ptr, buf, max, end);
-		else if (o_ptr->tval == TV_LIGHT)
+		else if (tval_is_light(o_ptr))
 			end = obj_desc_light(o_ptr, buf, max, end);
 
 		end = obj_desc_combat(o_ptr, buf, max, end, spoil);

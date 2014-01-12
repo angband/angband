@@ -17,11 +17,61 @@
  */
 
 #include "angband.h"
-#include "tvalsval.h"
+#include "obj-tval.h"
 #include "cmds.h"
 #include "game-cmd.h"
 #include "keymap.h"
+#include "tvalsval.h" /* Only for use_flavor_glyph() */
 
+/*
+ * Determine if the attr and char should consider the item's flavor
+ *
+ * Identified scrolls should use their own tile.
+ */
+static bool use_flavor_glyph(const struct object_kind *kind)
+{
+	return kind->flavor && !(kind->tval == TV_SCROLL && kind->aware);
+}
+
+/*
+ * Return the "attr" for a given item kind.
+ * Use "flavor" if available.
+ * Default to user definitions.
+ */
+byte object_kind_attr(const struct object_kind *kind)
+{
+	return use_flavor_glyph(kind) ? kind->flavor->x_attr : kind->x_attr;
+}
+
+/*
+ * Return the "char" for a given item kind.
+ * Use "flavor" if available.
+ * Default to user definitions.
+ */
+wchar_t object_kind_char(const struct object_kind *kind)
+{
+	return use_flavor_glyph(kind) ? kind->flavor->x_char : kind->x_char;
+}
+
+/*
+ * Return the "attr" for a given item.
+ * Use "flavor" if available.
+ * Default to user definitions.
+ */
+byte object_attr(const struct object *o_ptr)
+{
+	return object_kind_attr(o_ptr->kind);
+}
+
+/*
+ * Return the "char" for a given item.
+ * Use "flavor" if available.
+ * Default to user definitions.
+ */
+wchar_t object_char(const struct object *o_ptr)
+{
+	return object_kind_char(o_ptr->kind);
+}
 
 /*
  * Display a list of objects.  Each object may be prefixed with a label.
@@ -385,7 +435,7 @@ void show_floor(const int *floor_list, int floor_num, int mode, item_tester test
 		/* Tester always skips gold. When gold should be displayed,
 		 * only test items that are not gold.
 		 */
-		if ((o_ptr->tval != TV_GOLD || !(mode & OLIST_GOLD)) &&
+		if ((!tval_is_money(o_ptr) || !(mode & OLIST_GOLD)) &&
 		    !object_test(tester, o_ptr))
 			continue;
 

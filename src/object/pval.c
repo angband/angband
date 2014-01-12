@@ -16,8 +16,8 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
+#include "obj-tval.h"
 #include "object/pval.h"
-#include "object/tvalsval.h"
 
 /**
  * Return the pval_flags for an item
@@ -101,7 +101,7 @@ bool object_this_pval_is_visible(const object_type *o_ptr, int pval)
 		return TRUE;
 
 	/* Aware jewelry with non-variable pval */
-	if (object_is_jewelry(o_ptr) && object_flavor_is_aware(o_ptr)) {
+	if (tval_is_jewelry(o_ptr) && object_flavor_is_aware(o_ptr)) {
 		if (!randcalc_varies(o_ptr->kind->pval[pval])) {
 			object_pval_flags_known(o_ptr, f);
 			of_wipe(f2);

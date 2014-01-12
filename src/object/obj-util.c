@@ -24,6 +24,7 @@
 #include "history.h"
 #include "monster/mon-make.h"
 #include "object/inventory.h"
+#include "obj-tval.h"
 #include "object/tvalsval.h"
 #include "prefs.h"
 #include "randname.h"
@@ -408,33 +409,7 @@ s16b label_to_equip(int c)
  */
 bool wearable_p(const object_type *o_ptr)
 {
-	/* Valid "tval" codes */
-	switch (o_ptr->tval)
-	{
-		case TV_SHOT:
-		case TV_ARROW:
-		case TV_BOLT:
-		case TV_BOW:
-		case TV_DIGGING:
-		case TV_HAFTED:
-		case TV_POLEARM:
-		case TV_SWORD:
-		case TV_BOOTS:
-		case TV_GLOVES:
-		case TV_HELM:
-		case TV_CROWN:
-		case TV_SHIELD:
-		case TV_CLOAK:
-		case TV_SOFT_ARMOR:
-		case TV_HARD_ARMOR:
-		case TV_DRAG_ARMOR:
-		case TV_LIGHT:
-		case TV_AMULET:
-		case TV_RING: return (TRUE);
-	}
-
-	/* Nope */
-	return (FALSE);
+	return tval_is_wearable(o_ptr);
 }
 
 static int get_inscribed_ammo_slot(const object_type *o_ptr)
@@ -494,39 +469,26 @@ s16b wield_slot(const object_type *o_ptr)
 	/* Slot for equipment */
 	switch (o_ptr->tval)
 	{
-		case TV_DIGGING:
-		case TV_HAFTED:
-		case TV_POLEARM:
-		case TV_SWORD: return (INVEN_WIELD);
-
 		case TV_BOW: return (INVEN_BOW);
-
-		case TV_RING:
-			return p_ptr->inventory[INVEN_RIGHT].kind ? INVEN_LEFT : INVEN_RIGHT;
-
 		case TV_AMULET: return (INVEN_NECK);
-
-		case TV_LIGHT: return (INVEN_LIGHT);
-
-		case TV_DRAG_ARMOR:
-		case TV_HARD_ARMOR:
-		case TV_SOFT_ARMOR: return (INVEN_BODY);
-
 		case TV_CLOAK: return (INVEN_OUTER);
-
 		case TV_SHIELD: return (INVEN_ARM);
-
-		case TV_CROWN:
-		case TV_HELM: return (INVEN_HEAD);
-
 		case TV_GLOVES: return (INVEN_HANDS);
-
 		case TV_BOOTS: return (INVEN_FEET);
-
-		case TV_BOLT:
-		case TV_ARROW:
-		case TV_SHOT: return wield_slot_ammo(o_ptr);
 	}
+
+	if (tval_is_melee_weapon(o_ptr))
+		return INVEN_WIELD;
+	else if (tval_is_ring(o_ptr))
+		return p_ptr->inventory[INVEN_RIGHT].kind ? INVEN_LEFT : INVEN_RIGHT;
+	else if (tval_is_light(o_ptr))
+		return INVEN_LIGHT;
+	else if (tval_is_body_armor(o_ptr))
+		return INVEN_BODY;
+	else if (tval_is_head_armor(o_ptr))
+		return INVEN_HEAD;
+	else if (tval_is_ammo(o_ptr))
+		return wield_slot_ammo(o_ptr);
 
 	/* No slot available */
 	return (-1);
@@ -538,7 +500,7 @@ s16b wield_slot(const object_type *o_ptr)
  */
 bool slot_can_wield_item(int slot, const object_type *o_ptr)
 {
-	if (o_ptr->tval == TV_RING)
+	if (tval_is_ring(o_ptr))
 		return (slot == INVEN_LEFT || slot == INVEN_RIGHT) ? TRUE : FALSE;
 	else if (obj_is_ammo(o_ptr))
 		return (slot >= QUIVER_START && slot < QUIVER_END) ? TRUE : FALSE;
@@ -661,7 +623,7 @@ bool object_test(item_tester tester, const struct object *obj)
 	if (!obj->kind) return FALSE;
 
 	/* Ignore gold */
-	if (obj->tval == TV_GOLD) return FALSE;
+	if (tval_is_money(obj)) return FALSE;
 
 	/* Pass without a tester, or tail-call the tester if it exists */
 	return !tester || tester(obj);
@@ -1130,7 +1092,7 @@ void compact_objects(int size)
 		object_type *o_ptr = object_byid(i);
 
 		/* Nuke gold or squelched items */
-		if (o_ptr->tval == TV_GOLD || squelch_item_ok(o_ptr))
+		if (tval_is_money(o_ptr) || squelch_item_ok(o_ptr))
 		{
 			delete_object_idx(i);
 			size--;
@@ -1456,8 +1418,7 @@ s32b object_value_real(const object_type *o_ptr, int qty, int verbose,
 		power = object_power(o_ptr, verbose, log_file, known);
 		value = sign(power) * ((a * power * power) + (b * power));
 
-		if ( (o_ptr->tval == TV_SHOT) || (o_ptr->tval == TV_ARROW) ||
-  			(o_ptr->tval == TV_BOLT) || ((o_ptr->tval == TV_LIGHT)
+		if (tval_is_ammo(o_ptr) || (tval_is_light(o_ptr)
 			&& (o_ptr->sval == SV_LIGHT_TORCH) && !o_ptr->ego) )
 		{
 			value = value / AMMO_RESCALER;
@@ -1488,34 +1449,22 @@ s32b object_value_real(const object_type *o_ptr, int qty, int verbose,
 	value = o_ptr->kind->cost;
 
 	/* Analyze the item type and quantity*/
-	switch (o_ptr->tval)
-	{
-		/* Wands/Staffs */
-		case TV_WAND:
-		case TV_STAFF:
-		{
-			int charges;
+	if (tval_can_have_charges(o_ptr)) {
+		int charges;
 
-			total_value = value * qty;
+		total_value = value * qty;
 
-			/* Calculate number of charges, rounded up */
-			charges = o_ptr->pval[DEFAULT_PVAL]
-				* qty / o_ptr->number;
-			if ((o_ptr->pval[DEFAULT_PVAL] * qty) % o_ptr->number != 0)
-				charges++;
+		/* Calculate number of charges, rounded up */
+		charges = o_ptr->pval[DEFAULT_PVAL]
+		* qty / o_ptr->number;
+		if ((o_ptr->pval[DEFAULT_PVAL] * qty) % o_ptr->number != 0)
+			charges++;
 
-			/* Pay extra for charges, depending on standard number of charges */
-			total_value += value * charges / 20;
-
-			/* Done */
-			break;
-		}
-
-		default:
-		{
-			total_value = value * qty;
-			break;
-		}
+		/* Pay extra for charges, depending on standard number of charges */
+		total_value += value * charges / 20;
+	}
+	else {
+		total_value = value * qty;
 	}
 
 	/* No negative value */
@@ -1611,101 +1560,58 @@ static bool inventory_object_stackable(const object_type *o_ptr, const object_ty
 	if (o_ptr->artifact || j_ptr->artifact) return FALSE;
 
 	/* Analyze the items */
-	switch (o_ptr->tval)
-	{
+	if (tval_is_chest(o_ptr)) {
 		/* Chests never stack */
-		case TV_CHEST:
-		{
-			/* Never okay */
-			return FALSE;
-		}
-
-		/* Food, potions, scrolls and rods all stack nicely */
-		case TV_FOOD:
-		case TV_POTION:
-		case TV_SCROLL:
-		case TV_ROD:
-		{
-			/* Since the kinds are identical, either both will be
-			 aware or both will be unaware */
-			break;
-		}
-
+		return FALSE;
+	}
+	else if (tval_is_food(o_ptr) || tval_is_potion(o_ptr) ||
+		tval_is_scroll(o_ptr) || tval_is_rod(o_ptr)) {
+		/* Food, potions, scrolls and rods all stack nicely,
+		   since the kinds are identical, either both will be
+		   aware or both will be unaware */
+	}
+	else if (tval_can_have_charges(o_ptr) || tval_is_money(o_ptr)) {
 		/* Gold, staves and wands stack most of the time */
-		case TV_STAFF:
-		case TV_WAND:
-		case TV_GOLD:
-		{
-			/* Too much gold or too many charges */
-			if (o_ptr->pval[DEFAULT_PVAL] + j_ptr->pval[DEFAULT_PVAL] > MAX_PVAL)
-				return FALSE;
+		/* Too much gold or too many charges */
+		if (o_ptr->pval[DEFAULT_PVAL] + j_ptr->pval[DEFAULT_PVAL] > MAX_PVAL)
+			return FALSE;
 
-			/* ... otherwise ok */
-			else break;
-		}
+		/* ... otherwise ok */
+	}
+	else if (tval_is_weapon(o_ptr) || tval_is_armor(o_ptr) ||
+		tval_is_jewelry(o_ptr) || tval_is_light(o_ptr)) {
+		/* Require identical values */
+		if (o_ptr->ac != j_ptr->ac) return FALSE;
+		if (o_ptr->dd != j_ptr->dd) return FALSE;
+		if (o_ptr->ds != j_ptr->ds) return FALSE;
 
-		/* Weapons, ammo, armour, jewelry, lights */
-		case TV_BOW:
-		case TV_DIGGING:
-		case TV_HAFTED:
-		case TV_POLEARM:
-		case TV_SWORD:
-		case TV_BOOTS:
-		case TV_GLOVES:
-		case TV_HELM:
-		case TV_CROWN:
-		case TV_SHIELD:
-		case TV_CLOAK:
-		case TV_SOFT_ARMOR:
-		case TV_HARD_ARMOR:
-		case TV_DRAG_ARMOR:
-		case TV_RING:
-		case TV_AMULET:
-		case TV_LIGHT:
-		case TV_BOLT:
-		case TV_ARROW:
-		case TV_SHOT:
-		{
-			/* Require identical values */
-			if (o_ptr->ac != j_ptr->ac) return FALSE;
-			if (o_ptr->dd != j_ptr->dd) return FALSE;
-			if (o_ptr->ds != j_ptr->ds) return FALSE;
+		/* Require identical bonuses */
+		if (o_ptr->to_h != j_ptr->to_h) return FALSE;
+		if (o_ptr->to_d != j_ptr->to_d) return FALSE;
+		if (o_ptr->to_a != j_ptr->to_a) return FALSE;
 
-			/* Require identical bonuses */
-			if (o_ptr->to_h != j_ptr->to_h) return FALSE;
-			if (o_ptr->to_d != j_ptr->to_d) return FALSE;
-			if (o_ptr->to_a != j_ptr->to_a) return FALSE;
+		/* Require all identical pvals */
+		for (i = 0; i < MAX_PVALS; i++)
+			if (o_ptr->pval[i] != j_ptr->pval[i])
+				return (FALSE);
 
-			/* Require all identical pvals */
-			for (i = 0; i < MAX_PVALS; i++)
-				if (o_ptr->pval[i] != j_ptr->pval[i])
-					return (FALSE);
+		/* Require identical ego-item types */
+		if (o_ptr->ego != j_ptr->ego) return FALSE;
 
-			/* Require identical ego-item types */
-			if (o_ptr->ego != j_ptr->ego) return FALSE;
+		/* Hack - Never stack recharging wearables ... */
+		if ((o_ptr->timeout || j_ptr->timeout) &&
+			!tval_is_light(o_ptr)) return FALSE;
 
-			/* Hack - Never stack recharging wearables ... */
-			if ((o_ptr->timeout || j_ptr->timeout) &&
-				o_ptr->tval != TV_LIGHT) return FALSE;
+		/* ... and lights must have same amount of fuel */
+		else if ((o_ptr->timeout != j_ptr->timeout) &&
+				 tval_is_light(o_ptr)) return FALSE;
 
-			/* ... and lights must have same amount of fuel */
-			else if ((o_ptr->timeout != j_ptr->timeout) &&
-					 o_ptr->tval == TV_LIGHT) return FALSE;
-
-			/* Prevent unIDd items stacking in the object list */
-			if (mode & OSTACK_LIST &&
-				!(o_ptr->ident & j_ptr->ident & IDENT_KNOWN)) return FALSE;
-
-			/* Probably okay */
-			break;
-		}
-
-		/* Anything else */
-		default:
-		{
-			/* Probably okay */
-			break;
-		}
+		/* Prevent unIDd items stacking in the object list */
+		if (mode & OSTACK_LIST &&
+			!(o_ptr->ident & j_ptr->ident & IDENT_KNOWN)) return FALSE;
+	}
+	else {
+		/* Anything else probably okay */
 	}
 
 	/* Require compatible inscriptions */
@@ -1774,12 +1680,11 @@ static void object_absorb_merge(object_type *o_ptr, const object_type *j_ptr)
 		o_ptr->note = j_ptr->note;
 
 	/* Combine timeouts for rod stacking */
-	if (o_ptr->tval == TV_ROD)
+	if (tval_can_have_timeout(o_ptr))
 		o_ptr->timeout += j_ptr->timeout;
 
 	/* Combine pvals for wands and staves */
-	if (o_ptr->tval == TV_WAND || o_ptr->tval == TV_STAFF ||
-		o_ptr->tval == TV_GOLD)
+	if (tval_can_have_charges(o_ptr) || tval_is_money(o_ptr))
 	{
 		total = o_ptr->pval[DEFAULT_PVAL] + j_ptr->pval[DEFAULT_PVAL];
 		o_ptr->pval[DEFAULT_PVAL] = total >= MAX_PVAL ? MAX_PVAL : total;
@@ -1889,13 +1794,13 @@ void object_copy_amt(object_type *dst, object_type *src, int amt)
 	 * If the item has charges/timeouts, set them to the correct level 
 	 * too. We split off the same amount as distribute_charges.
 	 */
-	if (src->tval == TV_WAND || src->tval == TV_STAFF)
+	if (tval_can_have_charges(src))
 	{
 		dst->pval[DEFAULT_PVAL] =
 			src->pval[DEFAULT_PVAL] * amt / src->number;
 	}
 
-	if (src->tval == TV_ROD)
+	if (tval_can_have_timeout(src))
 	{
 		max_time = charge_time * amt;
 
@@ -2316,7 +2221,7 @@ void inven_item_charges(int item)
 	object_type *o_ptr = &p_ptr->inventory[item];
 
 	/* Require staff/wand */
-	if ((o_ptr->tval != TV_STAFF) && (o_ptr->tval != TV_WAND)) return;
+	if (!tval_can_have_charges(o_ptr)) return;
 
 	/* Require known item */
 	if (!object_is_known(o_ptr)) return;
@@ -2661,7 +2566,7 @@ void floor_item_charges(int item)
 	object_type *o_ptr = object_byid(item);
 
 	/* Require staff/wand */
-	if ((o_ptr->tval != TV_STAFF) && (o_ptr->tval != TV_WAND)) return;
+	if (!tval_can_have_charges(o_ptr)) return;
 
 	/* Require known item */
 	if (!object_is_known(o_ptr)) return;
@@ -2834,7 +2739,7 @@ static int inventory_slot_for_object(const struct object *o_ptr, size_t max_slot
 		if (!object_is_known(j_ptr)) break;
 		
 		/* Lights sort by decreasing fuel */
-		if (o_ptr->tval == TV_LIGHT)
+		if (tval_is_light(o_ptr))
 		{
 			if (o_ptr->pval[DEFAULT_PVAL] > j_ptr->pval[DEFAULT_PVAL]) break;
 			if (o_ptr->pval[DEFAULT_PVAL] < j_ptr->pval[DEFAULT_PVAL]) continue;
@@ -2967,13 +2872,12 @@ extern s16b inven_carry(struct player *p, struct object *o)
 	/* Hobbits ID mushrooms on pickup, gnomes ID wands and staffs on pickup */
 	if (!object_is_known(j_ptr))
 	{
-		if (player_has(PF_KNOW_MUSHROOM) && j_ptr->tval == TV_FOOD)
+		if (player_has(PF_KNOW_MUSHROOM) && tval_is_food(j_ptr))
 		{
 			do_ident_item(j_ptr);
 			msg("Mushrooms for breakfast!");
 		}
-		else if (player_has(PF_KNOW_ZAPPER) &&
-			(j_ptr->tval == TV_WAND || j_ptr->tval == TV_STAFF))
+		else if (player_has(PF_KNOW_ZAPPER) && tval_is_zapper(j_ptr))
 		{
 			do_ident_item(j_ptr);
 		}
@@ -3179,7 +3083,7 @@ void combine_pack(void)
 		if (!o_ptr->kind) continue;
 
 		/* Absorb gold */
-		if (o_ptr->tval == TV_GOLD)
+		if (tval_is_money(o_ptr))
 		{
 			/* Count the gold */
 			slide = TRUE;
@@ -3379,8 +3283,7 @@ void distribute_charges(object_type *o_ptr, object_type *q_ptr, int amt)
 	 * If all the items are being dropped, it makes for a neater message
 	 * to leave the original stack's pval alone. -LM-
 	 */
-	if ((o_ptr->tval == TV_WAND) ||
-	    (o_ptr->tval == TV_STAFF))
+	if (tval_can_have_charges(o_ptr))
 	{
 		q_ptr->pval[DEFAULT_PVAL] = o_ptr->pval[DEFAULT_PVAL] * amt / o_ptr->number;
 
@@ -3394,7 +3297,7 @@ void distribute_charges(object_type *o_ptr, object_type *q_ptr, int amt)
 	 * The dropped stack will accept all time remaining to charge up to
 	 * its maximum.
 	 */
-	if (o_ptr->tval == TV_ROD)
+	if (tval_can_have_timeout(o_ptr))
 	{
 		max_time = charge_time * amt;
 
@@ -3416,18 +3319,11 @@ void reduce_charges(object_type *o_ptr, int amt)
 	 * charges of the stack needs to be reduced, unless all the items are
 	 * being destroyed. -LM-
 	 */
-	if (((o_ptr->tval == TV_WAND) ||
-	     (o_ptr->tval == TV_STAFF)) &&
-	    (amt < o_ptr->number))
-	{
+	if (tval_can_have_charges(o_ptr) && amt < o_ptr->number)
 		o_ptr->pval[DEFAULT_PVAL] -= o_ptr->pval[DEFAULT_PVAL] * amt / o_ptr->number;
-	}
 
-	if ((o_ptr->tval == TV_ROD) &&
-	    (amt < o_ptr->number))
-	{
+	if (tval_can_have_timeout(o_ptr) && amt < o_ptr->number)
 		o_ptr->timeout -= o_ptr->timeout * amt / o_ptr->number;
-	}
 }
 
 
@@ -3819,14 +3715,14 @@ void display_object_recall_interactive(object_type *o_ptr)
 
 
 /* Basic tval testers */
-bool obj_is_staff(const object_type *o_ptr)  { return o_ptr->tval == TV_STAFF; }
-bool obj_is_wand(const object_type *o_ptr)   { return o_ptr->tval == TV_WAND; }
-bool obj_is_rod(const object_type *o_ptr)    { return o_ptr->tval == TV_ROD; }
-bool obj_is_potion(const object_type *o_ptr) { return o_ptr->tval == TV_POTION; }
-bool obj_is_scroll(const object_type *o_ptr) { return o_ptr->tval == TV_SCROLL; }
-bool obj_is_food(const object_type *o_ptr)   { return o_ptr->tval == TV_FOOD; }
-bool obj_is_light(const object_type *o_ptr)   { return o_ptr->tval == TV_LIGHT; }
-bool obj_is_ring(const object_type *o_ptr)   { return o_ptr->tval == TV_RING; }
+bool obj_is_staff(const object_type *o_ptr)  { return tval_is_staff(o_ptr); }
+bool obj_is_wand(const object_type *o_ptr)   { return tval_is_wand(o_ptr); }
+bool obj_is_rod(const object_type *o_ptr)    { return tval_is_rod(o_ptr); }
+bool obj_is_potion(const object_type *o_ptr) { return tval_is_potion(o_ptr); }
+bool obj_is_scroll(const object_type *o_ptr) { return tval_is_scroll(o_ptr); }
+bool obj_is_food(const object_type *o_ptr)   { return tval_is_food(o_ptr); }
+bool obj_is_light(const object_type *o_ptr)   { return tval_is_light(o_ptr); }
+bool obj_is_ring(const object_type *o_ptr)   { return tval_is_ring(o_ptr); }
 
 
 /**
@@ -3836,21 +3732,13 @@ bool obj_is_ring(const object_type *o_ptr)   { return o_ptr->tval == TV_RING; }
  */
 bool obj_is_ammo(const object_type *o_ptr)
 {
-	switch (o_ptr->tval)
-	{
-		case TV_SHOT:
-		case TV_ARROW:
-		case TV_BOLT:
-			return TRUE;
-		default:
-			return FALSE;
-	}
+	return tval_is_ammo(o_ptr);
 }
 
 /* Determine if an object has charges */
 bool obj_has_charges(const object_type *o_ptr)
 {
-	if (o_ptr->tval != TV_WAND && o_ptr->tval != TV_STAFF) return FALSE;
+	if (!tval_can_have_charges(o_ptr)) return FALSE;
 
 	if (o_ptr->pval[DEFAULT_PVAL] <= 0) return FALSE;
 
@@ -3861,7 +3749,7 @@ bool obj_has_charges(const object_type *o_ptr)
 bool obj_can_zap(const object_type *o_ptr)
 {
 	/* Any rods not charging? */
-	if (o_ptr->tval == TV_ROD && number_charging(o_ptr) < o_ptr->number)
+	if (tval_can_have_timeout(o_ptr) && number_charging(o_ptr) < o_ptr->number)
 		return TRUE;
 
 	return FALSE;
@@ -3900,9 +3788,9 @@ bool obj_can_refill(const object_type *obj)
 
 	/* A lantern can be refueled from a flask or another lantern */
 	if (light->sval == SV_LIGHT_LANTERN) {
-		if (obj->tval == TV_FLASK) 
+		if (tval_is_fuel(obj))
 			return TRUE;
-		else if (obj->tval == TV_LIGHT &&
+		else if (tval_is_light(obj) &&
 			obj->sval == SV_LIGHT_LANTERN &&
 			obj->timeout > 0 &&
 			!no_fuel) 
@@ -3957,60 +3845,54 @@ bool obj_has_inscrip(const object_type *o_ptr)
 
 bool obj_is_useable(const object_type *o_ptr)
 {
-  if ((o_ptr->tval == TV_ROD) || (o_ptr->tval == TV_WAND)
-    || (o_ptr->tval == TV_STAFF) || (o_ptr->tval == TV_SCROLL)
-    || (o_ptr->tval == TV_POTION) || (o_ptr->tval == TV_FOOD)) {
-    return TRUE;
-  }
-  if (object_effect(o_ptr))
-    return TRUE;
-  if ((o_ptr->tval == TV_BOLT) || (o_ptr->tval == TV_ARROW)
-    || (o_ptr->tval == TV_SHOT)) {
-    return o_ptr->tval == p_ptr->state.ammo_tval;
-  }
+	if (tval_is_useable(o_ptr))
+		return TRUE;
+
+	if (object_effect(o_ptr))
+		return TRUE;
+
+	if (tval_is_ammo(o_ptr))
+		return o_ptr->tval == p_ptr->state.ammo_tval;
 
 	return FALSE;
 }
 
 bool obj_is_used_aimed(const object_type *o_ptr)
 {
-  //return obj_needs_aim(o_ptr);
+	//return obj_needs_aim(o_ptr);
 	int effect;
-  if (o_ptr->tval == TV_WAND) {
-    return TRUE;
-  }
-  if (o_ptr->tval == TV_ROD && !object_flavor_is_aware(o_ptr)) {
-    return TRUE;
-  }
-  if ((o_ptr->tval == TV_BOLT) || (o_ptr->tval == TV_ARROW)
-    || (o_ptr->tval == TV_SHOT)) {
-    return o_ptr->tval == p_ptr->state.ammo_tval;
-  }
-  effect = object_effect(o_ptr);
-  if (effect && effect_aim(effect)) {
-    return TRUE;
-  }
+	if (tval_is_wand(o_ptr))
+		return TRUE;
+
+	if (tval_is_rod(o_ptr) && !object_flavor_is_aware(o_ptr))
+		return TRUE;
+
+	if (tval_is_ammo(o_ptr))
+		return o_ptr->tval == p_ptr->state.ammo_tval;
+
+	effect = object_effect(o_ptr);
+	if (effect && effect_aim(effect))
+		return TRUE;
 
 	return FALSE;
 }
 bool obj_is_used_unaimed(const object_type *o_ptr)
 {
 	int effect;
-  if ((o_ptr->tval == TV_STAFF) || (o_ptr->tval == TV_SCROLL)
-    || (o_ptr->tval == TV_POTION) || (o_ptr->tval == TV_FOOD)) {
-    return TRUE;
-  }
-  if ((o_ptr->tval == TV_ROD) && !(!object_flavor_is_aware(o_ptr))) {
-    return TRUE;
-  }
-  if ((o_ptr->tval == TV_BOLT) || (o_ptr->tval == TV_ARROW)
-    || (o_ptr->tval == TV_SHOT)) {
-    return FALSE;
-  }
-  effect = object_effect(o_ptr);
-  if (!effect || !effect_aim(effect)) {
-    return TRUE;
-  }
+
+	if (tval_is_staff(o_ptr) || tval_is_scroll(o_ptr) ||
+		tval_is_potion(o_ptr) || tval_is_food(o_ptr))
+		return TRUE;
+
+	if (tval_is_rod(o_ptr) && !(!object_flavor_is_aware(o_ptr)))
+		return TRUE;
+
+	if (tval_is_ammo(o_ptr))
+		return FALSE;
+
+	effect = object_effect(o_ptr);
+	if (!effect || !effect_aim(effect))
+		return TRUE;
 
 	return FALSE;
 }
@@ -4131,25 +4013,20 @@ bool obj_needs_aim(object_type *o_ptr)
 
 	/* If the effect needs aiming, or if the object type needs
 	   aiming, this object needs aiming. */
-	return effect_aim(effect) || o_ptr->tval == TV_BOLT ||
-			o_ptr->tval == TV_SHOT || o_ptr->tval == TV_ARROW ||
-			o_ptr->tval == TV_WAND ||
-			(o_ptr->tval == TV_ROD && !object_flavor_is_aware(o_ptr));
+	return effect_aim(effect) || tval_is_ammo(o_ptr) ||
+			tval_is_wand(o_ptr) ||
+			(tval_is_rod(o_ptr) && !object_flavor_is_aware(o_ptr));
 }
 
 /*
  * Can the object fail if used?
  */
-bool obj_can_fail(const struct object *o) {
-	switch (o->tval) {
-		case TV_STAFF:
-		case TV_WAND:
-		case TV_ROD:
-			return TRUE;
+bool obj_can_fail(const struct object *o)
+{
+	if (tval_can_have_failure(o))
+		return TRUE;
 
-		default:
-			return wield_slot(o) == -1 ? FALSE : TRUE;
-	}
+	return wield_slot(o) == -1 ? FALSE : TRUE;
 }
 
 

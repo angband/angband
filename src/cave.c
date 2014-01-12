@@ -21,7 +21,7 @@
 #include "game-event.h"
 #include "game-cmd.h"
 #include "monster/mon-util.h"
-#include "object/tvalsval.h"
+#include "object/obj-tval.h"
 #include "squelch.h"
 #include "cmds.h"
 #include "trap.h"
@@ -857,7 +857,7 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 		if (o_ptr->marked == MARK_AWARE) {
 		
 			/* Distinguish between unseen money and objects */
-			if (o_ptr->tval == TV_GOLD) {
+			if (tval_is_money(o_ptr)) {
 				g->unseen_money = TRUE;
 			} else {
 				g->unseen_object = TRUE;

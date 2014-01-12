@@ -17,6 +17,7 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
+#include "object/obj-tval.h"
 #include "object/slays.h"
 #include "object/tvalsval.h"
 #include "object/pval.h"
@@ -388,7 +389,7 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 	}
 
 	/* Add base power for jewelry */
-	if (object_is_jewelry(o_ptr)) {
+	if (tval_is_jewelry(o_ptr)) {
 		p += BASE_JEWELRY_POWER;
 		file_putf(log_file, "Adding power for jewelry, total is %d\n", p);
 	}

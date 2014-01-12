@@ -27,7 +27,7 @@
 #include "monster/mon-blow-methods.h"
 #include "monster/mon-blow-effects.h"
 #include "object/slays.h"
-#include "object/tvalsval.h"
+#include "object/obj-tval.h"
 #include "spells.h"
 #include "squelch.h"
 
@@ -2080,7 +2080,7 @@ static void process_monster(struct cave *c, struct monster *m_ptr)
 				next_o_idx = o_ptr->next_o_idx;
 
 				/* Skip gold */
-				if (o_ptr->tval == TV_GOLD) continue;
+				if (tval_is_money(o_ptr)) continue;
 
 				/* Learn about item pickup behavior */
 				if (m_ptr->ml) {

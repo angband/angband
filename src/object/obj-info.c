@@ -21,6 +21,7 @@
 #include "attack.h"
 #include "effects.h"
 #include "cmds.h"
+#include "obj-tval.h"
 #include "object/tvalsval.h"
 #include "z-textblock.h"
 #include "object/slays.h"
@@ -392,7 +393,7 @@ static bool describe_misc_magic(textblock *tb, const bitflag flags[OF_SIZE])
  * Describe slays and brands on weapons
  */
 static bool describe_slays(textblock *tb, const bitflag flags[OF_SIZE],
-		int tval)
+		const struct object *o_ptr)
 {
 	bool printed = FALSE;
 	const char *slay_descs[SL_MAX] = { 0 };
@@ -404,9 +405,7 @@ static bool describe_slays(textblock *tb, const bitflag flags[OF_SIZE],
 	create_mask(kill_mask, FALSE, OFT_KILL, OFT_MAX);
 	create_mask(brand_mask, FALSE, OFT_BRAND, OFT_MAX);
 
-	if (tval == TV_SWORD || tval == TV_HAFTED || tval == TV_POLEARM ||
-			tval == TV_DIGGING || tval == TV_BOW || tval == TV_SHOT ||
-			tval == TV_ARROW || tval == TV_BOLT || tval == TV_FLASK)
+    if (tval_is_weapon(o_ptr) || tval_is_fuel(o_ptr))
 		fulldesc = FALSE;
 	else
 		fulldesc = TRUE;
@@ -783,7 +782,7 @@ static bool describe_combat(textblock *tb, const object_type *o_ptr,
 
 	if (!weapon && !ammo) {
 		/* Potions can have special text */
-		if (o_ptr->tval != TV_POTION ||
+		if (!tval_is_potion(o_ptr) ||
 				o_ptr->dd == 0 || o_ptr->ds == 0 ||
 				!object_flavor_is_aware(o_ptr))
 			return FALSE;
@@ -937,7 +936,7 @@ static bool describe_food(textblock *tb, const object_type *o_ptr,
 		bool subjective, bool full)
 {
 	/* Describe boring bits */
-	if ((o_ptr->tval == TV_FOOD || o_ptr->tval == TV_POTION) &&
+	if (tval_can_have_nourishment(o_ptr) &&
 		o_ptr->pval[DEFAULT_PVAL])
 	{
 		/* Sometimes adjust for player speed */
@@ -970,7 +969,7 @@ static bool describe_light(textblock *tb, const object_type *o_ptr,
 
 	bool artifact = o_ptr->artifact ? TRUE : FALSE;
 	bool no_fuel = of_has(flags, OF_NO_FUEL) ? TRUE : FALSE;
-	bool is_light = (o_ptr->tval == TV_LIGHT) ? TRUE : FALSE;
+	bool is_light = tval_is_light(o_ptr);
 	bool terse = mode & OINFO_TERSE;
 
 	if (!is_light && !of_has(flags, OF_LIGHT))
@@ -1048,11 +1047,11 @@ static bool describe_effect(textblock *tb, const object_type *o_ptr, bool full,
 		{
 			if (effect_aim(o_ptr->kind->effect))
 				textblock_append(tb, "It can be aimed.\n");
-			else if (o_ptr->tval == TV_FOOD)
+			else if (tval_is_food(o_ptr))
 				textblock_append(tb, "It can be eaten.\n");
-			else if (o_ptr->tval == TV_POTION)
+			else if (tval_is_potion(o_ptr))
 				textblock_append(tb, "It can be drunk.\n");
-			else if (o_ptr->tval == TV_SCROLL)
+			else if (tval_is_scroll(o_ptr))
 				textblock_append(tb, "It can be read.\n");
 			else textblock_append(tb, "It can be activated.\n");
 
@@ -1069,11 +1068,11 @@ static bool describe_effect(textblock *tb, const object_type *o_ptr, bool full,
 
 	if (effect_aim(effect))
 		textblock_append(tb, "When aimed, it ");
-	else if (o_ptr->tval == TV_FOOD)
+	else if (tval_is_food(o_ptr))
 		textblock_append(tb, "When eaten, it ");
-	else if (o_ptr->tval == TV_POTION)
+	else if (tval_is_potion(o_ptr))
 		textblock_append(tb, "When quaffed, it ");
-	else if (o_ptr->tval == TV_SCROLL)
+	else if (tval_is_scroll(o_ptr))
 	    textblock_append(tb, "When read, it ");
 	else
 	    textblock_append(tb, "When activated, it ");
@@ -1118,8 +1117,7 @@ static bool describe_effect(textblock *tb, const object_type *o_ptr, bool full,
 		textblock_append(tb, ".\n");
 	}
 
-	if (!subjective || o_ptr->tval == TV_FOOD || o_ptr->tval == TV_POTION ||
-		o_ptr->tval == TV_SCROLL)
+	if (!subjective || tval_is_food(o_ptr) || tval_is_potion(o_ptr) || tval_is_scroll(o_ptr))
 	{
 		return TRUE;
 	}
@@ -1359,7 +1357,7 @@ static textblock *object_info_out(const object_type *o_ptr, int mode)
 
 	if (describe_curses(tb, o_ptr, flags)) something = TRUE;
 	if (describe_stats(tb, o_ptr, pv_flags, mode)) something = TRUE;
-	if (describe_slays(tb, flags, o_ptr->tval)) something = TRUE;
+	if (describe_slays(tb, flags, o_ptr)) something = TRUE;
 	if (describe_immune(tb, flags)) something = TRUE;
 	if (describe_ignores(tb, flags)) something = TRUE;
 	dedup_hates_flags(flags);

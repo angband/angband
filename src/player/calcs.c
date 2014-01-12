@@ -23,6 +23,7 @@
 #include "game-event.h"
 #include "monster/mon-msg.h"
 #include "monster/mon-util.h"
+#include "object/obj-tval.h"
 #include "object/tvalsval.h"
 #include "object/pval.h"
 #include "spells.h"
@@ -1349,7 +1350,7 @@ static void calc_torch(void)
 			amt = 0;
 
 		/* Examine actual lights */
-		if (o_ptr->tval == TV_LIGHT && !of_has(o_ptr->flags, OF_NO_FUEL) &&
+		if (tval_is_light(o_ptr) && !of_has(o_ptr->flags, OF_NO_FUEL) &&
 				o_ptr->timeout == 0)
 			/* Lights without fuel provide no light */
 			amt = 0;
@@ -1986,7 +1987,7 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 
 	/* Priest weapon penalty for non-blessed edged weapons */
 	if (player_has(PF_BLESS_WEAPON) && !player_of_has(p_ptr, OF_BLESSED) &&
-		((o_ptr->tval == TV_SWORD) || (o_ptr->tval == TV_POLEARM)))
+		tval_is_pointy(o_ptr))
 	{
 		/* Reduce the real bonuses */
 		state->to_h -= 2;

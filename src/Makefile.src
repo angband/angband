@@ -137,6 +137,7 @@ ANGFILES = \
 	object/obj-list.o \
 	object/obj-make.o \
 	object/obj-power.o \
+	object/obj-tval.o \
 	object/obj-ui.o \
 	object/obj-util.o \
 	object/pval.o \

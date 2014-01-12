@@ -2742,7 +2742,7 @@ static void quit_calmly(void)
         msg_flag = FALSE;
         
         /* Save the game */
-        do_cmd_save_game(FALSE, 0);
+        do_cmd_save_game(NULL);
         record_current_savefile();
         
         
@@ -3216,7 +3216,7 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
     msg_flag = FALSE;
     
     /* Save the game */
-    do_cmd_save_game(FALSE, 0);
+    do_cmd_save_game(NULL);
     
     /* Record the current save file so we can select it by default next time. It's a little sketchy that this only happens when we save through the menu; ideally game-triggered saves would trigger it too. */
     record_current_savefile();

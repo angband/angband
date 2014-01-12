@@ -27,7 +27,6 @@
 #include "monster/mon-util.h"
 #include "monster/monster.h"
 #include "object/slays.h"
-#include "object/tvalsval.h"
 #include "spells.h"
 #include "target.h"
 

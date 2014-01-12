@@ -21,6 +21,7 @@
 #include "cave.h"
 #include "game-event.h"
 #include "history.h"
+#include "object/obj-tval.h"
 #include "object/slays.h"
 #include "object/tvalsval.h"
 #include "object/pval.h"
@@ -169,7 +170,7 @@ bool object_ego_is_visible(const object_type *o_ptr)
 	if (!o_ptr->ego)
 		return FALSE;
 
-	if (o_ptr->tval == TV_LIGHT)
+	if (tval_is_light(o_ptr))
 		return TRUE;
 
 	if ((o_ptr->ident & IDENT_NAME) || (o_ptr->ident & IDENT_STORE))
@@ -188,7 +189,7 @@ bool object_attack_plusses_are_visible(const object_type *o_ptr)
 		return TRUE;
 
 	/* Aware jewelry with non-variable bonuses */
-	if (object_is_jewelry(o_ptr) && object_flavor_is_aware(o_ptr))
+	if (tval_is_jewelry(o_ptr) && object_flavor_is_aware(o_ptr))
 	{
 		if (!randcalc_varies(o_ptr->kind->to_h) && !randcalc_varies(o_ptr->kind->to_d))
 			return TRUE;
@@ -207,7 +208,7 @@ bool object_defence_plusses_are_visible(const object_type *o_ptr)
 		return TRUE;
 
 	/* Aware jewelry with non-variable bonuses */
-	if (object_is_jewelry(o_ptr) && object_flavor_is_aware(o_ptr))
+	if (tval_is_jewelry(o_ptr) && object_flavor_is_aware(o_ptr))
 	{
 		if (!randcalc_varies(o_ptr->kind->to_a))
 			return TRUE;
@@ -776,7 +777,7 @@ void object_notice_on_wield(object_type *o_ptr)
 
 	/* XXX Eddie this is a small hack, but jewelry with anything noticeable really is obvious */
 	/* XXX Eddie learn =soulkeeping vs =bodykeeping when notice sustain_str */
-	if (object_is_jewelry(o_ptr))
+	if (tval_is_jewelry(o_ptr))
 	{
 		/* Learn the flavor of jewelry with obvious flags */
 		if (EASY_LEARN && obvious)
@@ -874,7 +875,7 @@ static void object_notice_after_time(void)
 				/* Notice the flag */
 				object_notice_flag(o_ptr, flag);
 
-				if (object_is_jewelry(o_ptr) &&
+				if (tval_is_jewelry(o_ptr) &&
 					 (!object_effect(o_ptr) || object_effect_is_known(o_ptr)))
 				{
 					/* XXX this is a small hack, but jewelry with anything noticeable really is obvious */
@@ -927,7 +928,7 @@ void wieldeds_notice_flag(struct player *p, int flag)
 			object_notice_flag(o_ptr, flag);
 
 			/* XXX Eddie should this go before noticing the flag to avoid learning twice? */
-			if (EASY_LEARN && object_is_jewelry(o_ptr))
+			if (EASY_LEARN && tval_is_jewelry(o_ptr))
 			{
 				/* XXX Eddie EASY_LEARN Possible concern: gets =teleportation just from +2 speed */
 				object_flavor_aware(o_ptr);
@@ -1034,7 +1035,7 @@ obj_pseudo_t object_pseudo(const object_type *o_ptr)
 		return INSCRIP_SPECIAL;
 
 	/* jewelry does not pseudo */
-	if (object_is_jewelry(o_ptr))
+	if (tval_is_jewelry(o_ptr))
 		return INSCRIP_NULL;
 
 	/* XXX Eddie should also check for flags with pvals where the pval exceeds
@@ -1133,31 +1134,9 @@ void sense_inventory(void)
 		if (!o_ptr->kind) continue;
 
 		/* Valid "tval" codes */
-		switch (o_ptr->tval)
-		{
-			case TV_SHOT:
-			case TV_ARROW:
-			case TV_BOLT:
-			case TV_BOW:
-			case TV_DIGGING:
-			case TV_HAFTED:
-			case TV_POLEARM:
-			case TV_SWORD:
-			case TV_BOOTS:
-			case TV_GLOVES:
-			case TV_HELM:
-			case TV_CROWN:
-			case TV_SHIELD:
-			case TV_CLOAK:
-			case TV_SOFT_ARMOR:
-			case TV_HARD_ARMOR:
-			case TV_DRAG_ARMOR:
-			{
-				okay = TRUE;
-				break;
-			}
-		}
-		
+		if (tval_is_weapon(o_ptr) || tval_is_armor(o_ptr))
+			okay = TRUE;
+
 		/* Skip non-sense machines */
 		if (!okay) continue;
 		

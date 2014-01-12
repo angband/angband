@@ -29,7 +29,6 @@
 #include "monster/monster.h"
 #include "monster/mon-make.h"
 #include "monster/mon-spell.h"
-#include "object/tvalsval.h"
 
 /**
  * Restrictions on monsters, used in pits, vaults, and chambers.

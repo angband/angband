@@ -25,6 +25,7 @@
 #include "monster/mon-make.h"
 #include "monster/mon-timed.h"
 #include "monster/mon-util.h"
+#include "object/obj-tval.h"
 #include "object/tvalsval.h"
 #include "quest.h"
 
@@ -828,7 +829,7 @@ s16b place_monster(int y, int x, monster_type *mon, byte origin)
 
 		i_ptr = &object_type_body;
 
-		if (kind->tval == TV_GOLD) {
+		if (tval_is_money_k(kind)) {
 			make_gold(i_ptr, p_ptr->depth, kind->sval);
 		} else {
 			object_prep(i_ptr, kind, m_ptr->race->level, RANDOMISE);
@@ -1368,9 +1369,9 @@ void monster_death(struct monster *m_ptr, bool stats)
 
 		/* Count it and drop it - refactor once origin is a bitflag */
 		if (!stats) {
-			if ((i_ptr->tval == TV_GOLD) && (i_ptr->origin != ORIGIN_STOLEN))
+			if (tval_is_money(i_ptr) && (i_ptr->origin != ORIGIN_STOLEN))
 				dump_gold++;
-			else if ((i_ptr->tval != TV_GOLD) && ((i_ptr->origin == ORIGIN_DROP)
+			else if (!tval_is_money(i_ptr) && ((i_ptr->origin == ORIGIN_DROP)
 					|| (i_ptr->origin == ORIGIN_DROP_PIT)
 					|| (i_ptr->origin == ORIGIN_DROP_VAULT)
 					|| (i_ptr->origin == ORIGIN_DROP_SUMMON)

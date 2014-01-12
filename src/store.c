@@ -24,6 +24,7 @@
 #include "history.h"
 #include "init.h"
 #include "object/inventory.h"
+#include "object/obj-tval.h"
 #include "object/tvalsval.h"
 #include "object/object.h"
 #include "spells.h"
@@ -697,7 +698,7 @@ s32b price_item(const object_type *o_ptr, bool store_buying, int qty)
 
 
 	/* Get the value of the stack of wands, or a single item */
-	if ((o_ptr->tval == TV_WAND) || (o_ptr->tval == TV_STAFF))
+	if (tval_can_have_charges(o_ptr))
 		price = object_value(o_ptr, qty, FALSE);
 	else
 		price = object_value(o_ptr, 1, FALSE);
@@ -746,7 +747,7 @@ s32b price_item(const object_type *o_ptr, bool store_buying, int qty)
 	price = (price * adjust + 50L) / 100L;
 
 	/* Now convert price to total price for non-wands */
-	if (!(o_ptr->tval == TV_WAND) && !(o_ptr->tval == TV_STAFF))
+	if (!tval_can_have_charges(o_ptr))
 		price *= qty;
 
 	/* Now limit the price to the purse limit */
@@ -868,11 +869,11 @@ static void store_object_absorb(object_type *o_ptr, object_type *j_ptr)
 	o_ptr->number = (total >= MAX_STACK_SIZE) ? MAX_STACK_SIZE - 1 : total;
 
 	/* Hack -- if rods are stacking, add the charging timeouts */
-	if (o_ptr->tval == TV_ROD)
+	if (tval_can_have_timeout(o_ptr))
 		o_ptr->timeout += j_ptr->timeout;
 
 	/* Hack -- if wands/staves are stacking, combine the charges */
-	if ((o_ptr->tval == TV_WAND) || (o_ptr->tval == TV_STAFF))
+	if (tval_can_have_charges(o_ptr))
 	{
 		o_ptr->pval[DEFAULT_PVAL] += j_ptr->pval[DEFAULT_PVAL];
 	}
@@ -1091,51 +1092,34 @@ static int store_carry(struct store *store, object_type *o_ptr)
 	o_ptr->note = 0;
 
 	/* Some item types require maintenance */
-	switch (o_ptr->tval)
-	{
-		/* Refuel lights to the standard amount */
-		case TV_LIGHT:
+	if (tval_is_light(o_ptr)) {
+		bitflag f[OF_SIZE];
+		object_flags(o_ptr, f);
+
+		if (!of_has(f, OF_NO_FUEL))
 		{
-			bitflag f[OF_SIZE];
-			object_flags(o_ptr, f);
+			if (o_ptr->sval == SV_LIGHT_TORCH)
+				o_ptr->timeout = DEFAULT_TORCH;
 
-			if (!of_has(f, OF_NO_FUEL))
-			{
-				if (o_ptr->sval == SV_LIGHT_TORCH)
-					o_ptr->timeout = DEFAULT_TORCH;
-
-				else if (o_ptr->sval == SV_LIGHT_LANTERN)
-					o_ptr->timeout = DEFAULT_LAMP;
-			}
-
-			break;
+			else if (o_ptr->sval == SV_LIGHT_LANTERN)
+				o_ptr->timeout = DEFAULT_LAMP;
 		}
+	}
+	else if (tval_can_have_timeout(o_ptr)) {
+		o_ptr->timeout = 0;
+	}
+	else if (tval_can_have_charges(o_ptr)) {
+		/* If the store can stock this item kind, we recharge */
+		if (store_can_carry(store, o_ptr->kind)) {
+			int charges = 0;
 
-		/* Recharge rods */
-		case TV_ROD:
-		{
-			o_ptr->timeout = 0;
-			break;
-		}
+			/* Calculate the recharged number of charges */
+			for (i = 0; i < o_ptr->number; i++)
+				charges += randcalc(kind->charge, 0, RANDOMISE);
 
-		/* Possibly recharge wands and staves */
-		case TV_STAFF:
-		case TV_WAND:
-		{
-			/* If the store can stock this item kind, we recharge */
-			if (store_can_carry(store, o_ptr->kind)) {
-				int charges = 0;
-
-				/* Calculate the recharged number of charges */
-				for (i = 0; i < o_ptr->number; i++)
-					charges += randcalc(kind->charge, 0, RANDOMISE);
-
-				/* Use recharged value only if greater */
-				if (charges > o_ptr->pval[DEFAULT_PVAL])
-					o_ptr->pval[DEFAULT_PVAL] = charges;
-			}
-
-			break;
+			/* Use recharged value only if greater */
+			if (charges > o_ptr->pval[DEFAULT_PVAL])
+				o_ptr->pval[DEFAULT_PVAL] = charges;
 		}
 	}
 
@@ -1277,42 +1261,31 @@ static void store_delete_index(struct store *store, int what)
 	if (num > 1)
 	{
 		/* Special behaviour for arrows, bolts &tc. */
-		switch (o_ptr->tval)
-		{
-			case TV_SHOT:
-			case TV_ARROW:
-			case TV_BOLT:
+		if (tval_is_ammo(o_ptr)) {
+			/* 50% of the time, destroy the entire stack */
+			if (randint0(100) < 50 || num < 10)
+				num = o_ptr->number;
+
+			/* 50% of the time, reduce the size to a multiple of 5 */
+			else
+				num = randint1(num / 5) * 5 + (num % 5);
+		}
+		else {
+			/* 50% of the time, destroy a single object */
+			if (randint0(100) < 50) num = 1;
+
+			/* 25% of the time, destroy half the objects */
+			else if (randint0(100) < 50) num = (num + 1) / 2;
+
+			/* 25% of the time, destroy all objects */
+			else num = o_ptr->number;
+
+			/* Hack -- decrement the total charges of staves and wands. */
+			if (tval_can_have_charges(o_ptr))
 			{
-				/* 50% of the time, destroy the entire stack */
-				if (randint0(100) < 50 || num < 10)
-					num = o_ptr->number;
-
-				/* 50% of the time, reduce the size to a multiple of 5 */
-				else
-					num = randint1(num / 5) * 5 + (num % 5);
-
-				break;
-			}
-
-			default:
-			{
-				/* 50% of the time, destroy a single object */
-				if (randint0(100) < 50) num = 1;
-
-				/* 25% of the time, destroy half the objects */
-				else if (randint0(100) < 50) num = (num + 1) / 2;
-				
-				/* 25% of the time, destroy all objects */
-				else num = o_ptr->number;
-
-				/* Hack -- decrement the total charges of staves and wands. */
-				if (o_ptr->tval == TV_STAFF || o_ptr->tval == TV_WAND)
-				{
-					o_ptr->pval[DEFAULT_PVAL] -= num * o_ptr->pval[DEFAULT_PVAL] / o_ptr->number;
-				}
+				o_ptr->pval[DEFAULT_PVAL] -= num * o_ptr->pval[DEFAULT_PVAL] / o_ptr->number;
 			}
 		}
-
 	}
 
 	if (o_ptr->artifact)
@@ -1465,7 +1438,7 @@ static bool store_create_random(struct store *store)
 		/*** Pre-generation filters ***/
 
 		/* No chests in stores XXX */
-		if (kind->tval == TV_CHEST) continue;
+		if (tval_is_chest(i_ptr)) continue;
 
 
 		/*** Generate the item ***/
@@ -1480,38 +1453,12 @@ static bool store_create_random(struct store *store)
 		apply_magic(i_ptr, level, FALSE, FALSE, FALSE, FALSE);
 
 		/* Reject if item is 'damaged' (i.e. negative mods) */
-		switch (i_ptr->tval)
-		{
-			case TV_DIGGING:
-			case TV_HAFTED:
-			case TV_POLEARM:
-			case TV_SWORD:
-			case TV_BOW:
-			case TV_SHOT:
-			case TV_ARROW:
-			case TV_BOLT:
-			{
-				if ((i_ptr->to_h < 0) || (i_ptr->to_d < 0)) 
-					continue;
-			}
-
-			case TV_DRAG_ARMOR:
-			case TV_HARD_ARMOR:
-			case TV_SOFT_ARMOR:
-			case TV_SHIELD:
-			case TV_HELM:
-			case TV_CROWN:
-			case TV_CLOAK:
-			case TV_GLOVES:
-			case TV_BOOTS:
-			{
-				if (i_ptr->to_a < 0) continue;
-			}
-
-			default:
-			{
-				/* nothing to do */
-			}
+		if (tval_is_weapon(i_ptr)) {
+			if ((i_ptr->to_h < 0) || (i_ptr->to_d < 0))
+				continue;
+		}
+		else if (tval_is_armor(i_ptr)) {
+			if (i_ptr->to_a < 0) continue;
 		}
 
 		/* The object is "known" and belongs to a store */
@@ -1847,8 +1794,7 @@ static void store_display_entry(menu_type *menu, int oid, bool cursor, int row, 
 			colour = curs_attrs[CURS_UNKNOWN][(int)cursor];
 
 		/* Actually draw the price */
-		if (((o_ptr->tval == TV_WAND) || (o_ptr->tval == TV_STAFF)) &&
-		    (o_ptr->number > 1))
+		if (tval_can_have_charges(o_ptr) && (o_ptr->number > 1))
 			strnfmt(out_val, sizeof out_val, "%9ld avg", (long)x);
 		else
 			strnfmt(out_val, sizeof out_val, "%9ld    ", (long)x);
@@ -2127,7 +2073,7 @@ static int find_inven(const object_type *o_ptr)
 				if (o_ptr->ego != j_ptr->ego) continue;
 
 				/* Lights must have same amount of fuel */
-				else if (o_ptr->timeout != j_ptr->timeout && o_ptr->tval == TV_LIGHT)
+				else if (o_ptr->timeout != j_ptr->timeout && tval_is_light(o_ptr))
 					continue;
 
 				/* Require identical "values" */
@@ -2244,7 +2190,7 @@ void do_cmd_buy(struct command *cmd)
 	msg("You have %s (%c).", o_name, index_to_label(item_new));
 
 	/* Hack - Reduce the number of charges in the original stack */
-	if (o_ptr->tval == TV_WAND || o_ptr->tval == TV_STAFF)
+	if (tval_can_have_charges(o_ptr))
 	{
 		o_ptr->pval[DEFAULT_PVAL] -= i_ptr->pval[DEFAULT_PVAL];
 	}
@@ -2490,15 +2436,13 @@ static bool store_will_buy_tester(const object_type *o_ptr)
 	if (!store) return FALSE;
 
 	if (OPT(birth_no_selling)) {
-		switch (o_ptr->tval) {
-			case TV_STAFF:
-			case TV_WAND:
-				if (!store_can_carry(store, o_ptr->kind) && object_is_known(o_ptr))
-					return FALSE;
-
-			default:
-				if (object_is_known(o_ptr))
-					return FALSE;
+		if (tval_can_have_charges(o_ptr)) {
+			if (!store_can_carry(store, o_ptr->kind) && object_is_known(o_ptr))
+				return FALSE;
+		}
+		else {
+			if (object_is_known(o_ptr))
+				return FALSE;
 		}
 	}
 

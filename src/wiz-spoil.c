@@ -22,6 +22,7 @@
 #include "monster/mon-lore.h"
 #include "monster/monster.h"
 #include "object/tvalsval.h"
+#include "object/obj-tval.h"
 #include "ui-menu.h"
 #include "wizard.h"
 #include "z-file.h"
@@ -180,48 +181,10 @@ static void kind_info(char *buf, size_t buf_len,
 	dam[0] = '\0';
 
 	/* Damage */
-	switch (i_ptr->tval)
-	{
-		/* Bows */
-		case TV_BOW:
-		{
-			break;
-		}
-
-		/* Ammo */
-		case TV_SHOT:
-		case TV_BOLT:
-		case TV_ARROW:
-		{
-			strnfmt(dam, dam_len, "%dd%d", i_ptr->dd, i_ptr->ds);
-			break;
-		}
-
-		/* Weapons */
-		case TV_HAFTED:
-		case TV_POLEARM:
-		case TV_SWORD:
-		case TV_DIGGING:
-		{
-			strnfmt(dam, dam_len, "%dd%d", i_ptr->dd, i_ptr->ds);
-			break;
-		}
-
-		/* Armour */
-		case TV_BOOTS:
-		case TV_GLOVES:
-		case TV_CLOAK:
-		case TV_CROWN:
-		case TV_HELM:
-		case TV_SHIELD:
-		case TV_SOFT_ARMOR:
-		case TV_HARD_ARMOR:
-		case TV_DRAG_ARMOR:
-		{
-			strnfmt(dam, dam_len, "%d", i_ptr->ac);
-			break;
-		}
-	}
+	if (tval_is_ammo(i_ptr) || tval_is_melee_weapon(i_ptr))
+		strnfmt(dam, dam_len, "%dd%d", i_ptr->dd, i_ptr->ds);
+	else if (tval_is_armor(i_ptr))
+		strnfmt(dam, dam_len, "%d", i_ptr->ac);
 }
 
 
