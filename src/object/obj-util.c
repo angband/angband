@@ -469,39 +469,26 @@ s16b wield_slot(const object_type *o_ptr)
 	/* Slot for equipment */
 	switch (o_ptr->tval)
 	{
-		case TV_DIGGING:
-		case TV_HAFTED:
-		case TV_POLEARM:
-		case TV_SWORD: return (INVEN_WIELD);
-
 		case TV_BOW: return (INVEN_BOW);
-
-		case TV_RING:
-			return p_ptr->inventory[INVEN_RIGHT].kind ? INVEN_LEFT : INVEN_RIGHT;
-
 		case TV_AMULET: return (INVEN_NECK);
-
-		case TV_LIGHT: return (INVEN_LIGHT);
-
-		case TV_DRAG_ARMOR:
-		case TV_HARD_ARMOR:
-		case TV_SOFT_ARMOR: return (INVEN_BODY);
-
 		case TV_CLOAK: return (INVEN_OUTER);
-
 		case TV_SHIELD: return (INVEN_ARM);
-
-		case TV_CROWN:
-		case TV_HELM: return (INVEN_HEAD);
-
 		case TV_GLOVES: return (INVEN_HANDS);
-
 		case TV_BOOTS: return (INVEN_FEET);
-
-		case TV_BOLT:
-		case TV_ARROW:
-		case TV_SHOT: return wield_slot_ammo(o_ptr);
 	}
+
+	if (tval_is_melee_weapon(o_ptr))
+		return INVEN_WIELD;
+	else if (tval_is_ring(o_ptr))
+		return p_ptr->inventory[INVEN_RIGHT].kind ? INVEN_LEFT : INVEN_RIGHT;
+	else if (tval_is_light(o_ptr))
+		return INVEN_LIGHT;
+	else if (tval_is_body_armor(o_ptr))
+		return INVEN_BODY;
+	else if (tval_is_head_armor(o_ptr))
+		return INVEN_HEAD;
+	else if (tval_is_ammo(o_ptr))
+		return wield_slot_ammo(o_ptr);
 
 	/* No slot available */
 	return (-1);
@@ -1613,11 +1600,11 @@ static bool inventory_object_stackable(const object_type *o_ptr, const object_ty
 
 		/* Hack - Never stack recharging wearables ... */
 		if ((o_ptr->timeout || j_ptr->timeout) &&
-			o_ptr->tval != TV_LIGHT) return FALSE;
+			!tval_is_light(o_ptr)) return FALSE;
 
 		/* ... and lights must have same amount of fuel */
 		else if ((o_ptr->timeout != j_ptr->timeout) &&
-				 o_ptr->tval == TV_LIGHT) return FALSE;
+				 tval_is_light(o_ptr)) return FALSE;
 
 		/* Prevent unIDd items stacking in the object list */
 		if (mode & OSTACK_LIST &&
@@ -3874,10 +3861,10 @@ bool obj_is_used_aimed(const object_type *o_ptr)
 {
 	//return obj_needs_aim(o_ptr);
 	int effect;
-	if (o_ptr->tval == TV_WAND)
+	if (tval_is_wand(o_ptr))
 		return TRUE;
 
-	if (o_ptr->tval == TV_ROD && !object_flavor_is_aware(o_ptr))
+	if (tval_is_rod(o_ptr) && !object_flavor_is_aware(o_ptr))
 		return TRUE;
 
 	if (tval_is_ammo(o_ptr))
@@ -3892,11 +3879,12 @@ bool obj_is_used_aimed(const object_type *o_ptr)
 bool obj_is_used_unaimed(const object_type *o_ptr)
 {
 	int effect;
-	if ((o_ptr->tval == TV_STAFF) || (o_ptr->tval == TV_SCROLL)
-		|| (o_ptr->tval == TV_POTION) || (o_ptr->tval == TV_FOOD))
+
+	if (tval_is_staff(o_ptr) || tval_is_scroll(o_ptr) ||
+		tval_is_potion(o_ptr) || tval_is_food(o_ptr))
 		return TRUE;
 
-	if ((o_ptr->tval == TV_ROD) && !(!object_flavor_is_aware(o_ptr)))
+	if (tval_is_rod(o_ptr) && !(!object_flavor_is_aware(o_ptr)))
 		return TRUE;
 
 	if (tval_is_ammo(o_ptr))
@@ -4025,10 +4013,9 @@ bool obj_needs_aim(object_type *o_ptr)
 
 	/* If the effect needs aiming, or if the object type needs
 	   aiming, this object needs aiming. */
-	return effect_aim(effect) || o_ptr->tval == TV_BOLT ||
-			o_ptr->tval == TV_SHOT || o_ptr->tval == TV_ARROW ||
-			o_ptr->tval == TV_WAND ||
-			(o_ptr->tval == TV_ROD && !object_flavor_is_aware(o_ptr));
+	return effect_aim(effect) || tval_is_ammo(o_ptr) ||
+			tval_is_wand(o_ptr) ||
+			(tval_is_rod(o_ptr) && !object_flavor_is_aware(o_ptr));
 }
 
 /*

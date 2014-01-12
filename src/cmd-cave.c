@@ -28,7 +28,6 @@
 #include "monster/mon-timed.h"
 #include "monster/mon-util.h"
 #include "monster/monster.h"
-#include "object/tvalsval.h"
 #include "pathfind.h"
 #include "spells.h"
 #include "squelch.h"

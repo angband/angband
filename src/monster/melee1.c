@@ -20,7 +20,6 @@
 #include "attack.h"
 #include "cave.h"
 #include "monster/monster.h"
-#include "object/tvalsval.h"
 #include "spells.h"
 
 

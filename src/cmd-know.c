@@ -23,7 +23,6 @@
 #include "cmds.h"
 #include "files.h"
 #include "history.h"
-#include "object/tvalsval.h"
 #include "monster/mon-lore.h"
 #include "monster/mon-list.h"
 #include "monster/mon-util.h"

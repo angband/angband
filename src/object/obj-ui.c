@@ -17,7 +17,6 @@
  */
 
 #include "angband.h"
-#include "tvalsval.h"
 #include "obj-tval.h"
 #include "cmds.h"
 #include "game-cmd.h"

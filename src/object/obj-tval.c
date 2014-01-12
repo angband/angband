@@ -122,6 +122,11 @@ bool tval_is_body_armor(const struct object *o_ptr)
 	}
 }
 
+bool tval_is_head_armor(const struct object *o_ptr)
+{
+	return o_ptr->tval == TV_HELM || o_ptr->tval == TV_CROWN;
+}
+
 bool tval_is_ammo(const struct object *o_ptr)
 {
 	switch (o_ptr->tval) {

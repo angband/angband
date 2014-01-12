@@ -33,7 +33,6 @@
 #include "monster/mon-util.h"
 #include "monster/monster.h"
 #include "object/obj-tval.h"
-#include "object/tvalsval.h"
 #include "pathfind.h"
 #include "prefs.h"
 #include "savefile.h"

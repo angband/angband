@@ -22,7 +22,6 @@
 #include "game-cmd.h"
 #include "object/obj-tval.h"
 #include "object/object.h"
-#include "object/tvalsval.h"
 #include "spells.h"
 #include "target.h"
 

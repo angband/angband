@@ -23,7 +23,6 @@
 #include "monster/mon-util.h"
 #include "monster/mon-blow-effects.h"
 #include "object/obj-tval.h"
-#include "object/tvalsval.h"
 #include "attack.h"
 
 /*

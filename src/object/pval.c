@@ -18,7 +18,6 @@
 #include "angband.h"
 #include "obj-tval.h"
 #include "object/pval.h"
-#include "object/tvalsval.h"
 
 /**
  * Return the pval_flags for an item

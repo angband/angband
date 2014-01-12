@@ -22,7 +22,6 @@
 #include "monster/mon-make.h"
 #include "monster/monster.h"
 #include "monster/constants.h"
-#include "object/tvalsval.h"
 #include "effects.h"
 #include "generate.h"
 /*

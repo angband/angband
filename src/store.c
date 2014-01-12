@@ -1092,51 +1092,34 @@ static int store_carry(struct store *store, object_type *o_ptr)
 	o_ptr->note = 0;
 
 	/* Some item types require maintenance */
-	switch (o_ptr->tval)
-	{
-		/* Refuel lights to the standard amount */
-		case TV_LIGHT:
+	if (tval_is_light(o_ptr)) {
+		bitflag f[OF_SIZE];
+		object_flags(o_ptr, f);
+
+		if (!of_has(f, OF_NO_FUEL))
 		{
-			bitflag f[OF_SIZE];
-			object_flags(o_ptr, f);
+			if (o_ptr->sval == SV_LIGHT_TORCH)
+				o_ptr->timeout = DEFAULT_TORCH;
 
-			if (!of_has(f, OF_NO_FUEL))
-			{
-				if (o_ptr->sval == SV_LIGHT_TORCH)
-					o_ptr->timeout = DEFAULT_TORCH;
-
-				else if (o_ptr->sval == SV_LIGHT_LANTERN)
-					o_ptr->timeout = DEFAULT_LAMP;
-			}
-
-			break;
+			else if (o_ptr->sval == SV_LIGHT_LANTERN)
+				o_ptr->timeout = DEFAULT_LAMP;
 		}
+	}
+	else if (tval_can_have_timeout(o_ptr)) {
+		o_ptr->timeout = 0;
+	}
+	else if (tval_can_have_charges(o_ptr)) {
+		/* If the store can stock this item kind, we recharge */
+		if (store_can_carry(store, o_ptr->kind)) {
+			int charges = 0;
 
-		/* Recharge rods */
-		case TV_ROD:
-		{
-			o_ptr->timeout = 0;
-			break;
-		}
+			/* Calculate the recharged number of charges */
+			for (i = 0; i < o_ptr->number; i++)
+				charges += randcalc(kind->charge, 0, RANDOMISE);
 
-		/* Possibly recharge wands and staves */
-		case TV_STAFF:
-		case TV_WAND:
-		{
-			/* If the store can stock this item kind, we recharge */
-			if (store_can_carry(store, o_ptr->kind)) {
-				int charges = 0;
-
-				/* Calculate the recharged number of charges */
-				for (i = 0; i < o_ptr->number; i++)
-					charges += randcalc(kind->charge, 0, RANDOMISE);
-
-				/* Use recharged value only if greater */
-				if (charges > o_ptr->pval[DEFAULT_PVAL])
-					o_ptr->pval[DEFAULT_PVAL] = charges;
-			}
-
-			break;
+			/* Use recharged value only if greater */
+			if (charges > o_ptr->pval[DEFAULT_PVAL])
+				o_ptr->pval[DEFAULT_PVAL] = charges;
 		}
 	}
 
@@ -2453,15 +2436,13 @@ static bool store_will_buy_tester(const object_type *o_ptr)
 	if (!store) return FALSE;
 
 	if (OPT(birth_no_selling)) {
-		switch (o_ptr->tval) {
-			case TV_STAFF:
-			case TV_WAND:
-				if (!store_can_carry(store, o_ptr->kind) && object_is_known(o_ptr))
-					return FALSE;
-
-			default:
-				if (object_is_known(o_ptr))
-					return FALSE;
+		if (tval_can_have_charges(o_ptr)) {
+			if (!store_can_carry(store, o_ptr->kind) && object_is_known(o_ptr))
+				return FALSE;
+		}
+		else {
+			if (object_is_known(o_ptr))
+				return FALSE;
 		}
 	}
 
