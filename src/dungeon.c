@@ -18,7 +18,6 @@
 
 #include "angband.h"
 #include "birth.h"
-#include "borg/borg1.h"
 #include "cave.h"
 #include "cmds.h"
 #include "dungeon.h"
@@ -1282,15 +1281,7 @@ static void dungeon(struct cave *c)
 	/* If autosave is pending, do it now. */
 	if (p_ptr->autosave)
 	{
-/* The borg runs so quickly that this is a bad idea. */
-#ifndef ALLOW_BORG
 		save_game();
-#endif
-#ifdef ALLOW_BORG
-        if (!borg_active){
-            save_game();
-        }
-#endif
 		p_ptr->autosave = FALSE;
 	}
 
