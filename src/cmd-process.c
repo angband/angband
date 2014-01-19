@@ -160,9 +160,6 @@ static struct cmd_info cmd_hidden[] =
 #ifdef ALLOW_DEBUG
 	{ "Debug mode commands", { KTRL('A') }, CMD_NULL, do_cmd_try_debug },
 #endif
-#ifdef ALLOW_BORG
-	{ "Borg commands", { KTRL('Z') }, CMD_NULL, do_cmd_try_borg }
-#endif
 };
 
 
