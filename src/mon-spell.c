@@ -18,13 +18,13 @@
 #include "angband.h"
 #include "spells.h"
 #include "effects.h"
-#include "monster/mon-spell.h"
-#include "monster/mon-timed.h"
-#include "monster/mon-util.h"
+#include "mon-spell.h"
+#include "mon-timed.h"
+#include "mon-util.h"
 
 /**
  * Details of the different monster spells in the game.
- * See src/monster/monster.h for structure
+ * See src/monster.h for structure
  */
 static const struct mon_spell mon_spell_table[] =
 {
@@ -39,7 +39,7 @@ static const struct mon_spell mon_spell_table[] =
 
 /**
  * Details of the different side effects of spells.
- * See src/monster/monster.h for structure
+ * See src/monster.h for structure
  */
 static const struct spell_effect spell_effect_table[] =
 {

@@ -19,9 +19,9 @@
 #include "angband.h"
 #include "cave.h"
 #include "game-cmd.h"
-#include "monster/mon-lore.h"
-#include "monster/mon-util.h"
-#include "monster/monster.h"
+#include "mon-lore.h"
+#include "mon-util.h"
+#include "monster.h"
 #include "squelch.h"
 #include "target.h"
 

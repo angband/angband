@@ -26,9 +26,9 @@
 #include "game-event.h"
 #include "generate.h"
 #include "init.h"
-#include "monster/monster.h"
-#include "monster/mon-make.h"
-#include "monster/mon-spell.h"
+#include "monster.h"
+#include "mon-make.h"
+#include "mon-spell.h"
 
 /**
  * Restrictions on monsters, used in pits, vaults, and chambers.

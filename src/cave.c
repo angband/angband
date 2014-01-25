@@ -20,7 +20,7 @@
 #include "cave.h"
 #include "game-event.h"
 #include "game-cmd.h"
-#include "monster/mon-util.h"
+#include "mon-util.h"
 #include "obj-tval.h"
 #include "squelch.h"
 #include "cmds.h"

@@ -1,5 +1,5 @@
 /*
- * File: monster/constants.h
+ * File: mon-constants.h
  * Purpose: constants for monsters
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke

@@ -24,7 +24,7 @@
 #include "buildid.h"
 #include "dungeon.h"
 #include "init.h"
-#include "monster/mon-make.h"
+#include "mon-make.h"
 #include "obj-pval.h"
 #include "obj-tval.h"
 #include "obj-tvalsval.h"
@@ -802,7 +802,7 @@ static int stats_dump_lists(void)
 	char *r_info_flags[] =
 	{
 		#define RF(a, b) #a,
-		#include "monster/list-mon-flags.h"
+		#include "list-mon-flags.h"
 		#undef RF
 		NULL
 	};
@@ -812,7 +812,7 @@ static int stats_dump_lists(void)
 		#define RSF(a, b, c, d, e, f, g, h, i, j, k, l, m, n) \
 			{ RSF_##a, b, #a, d, e, f, g, h, i, j, k, l, m, n },
 		#define RV(b, x, y, m) {b, x, y, m}
-		#include "monster/list-mon-spells.h"
+		#include "list-mon-spells.h"
 		#undef RV
 		#undef RSF
 	};

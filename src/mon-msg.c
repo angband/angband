@@ -17,8 +17,8 @@
  */
 
 #include "angband.h"
-#include "monster/mon-msg.h"
-#include "monster/mon-util.h"
+#include "mon-msg.h"
+#include "mon-util.h"
 
 static u16b size_mon_hist = 0;
 static u16b size_mon_msg = 0;

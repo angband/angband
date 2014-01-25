@@ -1,8 +1,8 @@
 #ifndef INCLUDED_EXTERNS_H
 #define INCLUDED_EXTERNS_H
 
-#include "monster/constants.h"
-#include "monster/monster.h"
+#include "mon-constants.h"
+#include "monster.h"
 #include "object.h"
 #include "player/player.h"
 #include "store.h"

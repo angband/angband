@@ -22,7 +22,7 @@
 #include "game-cmd.h"
 #include "generate.h"
 #include "history.h"
-#include "monster/mon-make.h"
+#include "mon-make.h"
 #include "obj-tval.h"
 #include "obj-tvalsval.h"
 #include "object.h"

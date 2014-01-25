@@ -18,8 +18,8 @@
  */
 
 #include "angband.h"
-#include "monster/monster.h"
-#include "monster/mon-blow-methods.h"
+#include "monster.h"
+#include "mon-blow-methods.h"
 
 /**
  * Return whether or not the given blow causes cuts.
@@ -211,7 +211,7 @@ const char *monster_blow_method_description(monster_blow_method_t method)
 {
 	static const char *r_blow_method_description[] = {
 		#define RBM(x, c, s, miss, p, m, a, d) d,
-		#include "monster/list-blow-methods.h"
+		#include "list-blow-methods.h"
 		#undef RBM
 	};
 
@@ -234,7 +234,7 @@ monster_blow_method_t monster_blow_method_for_string(const char *string)
 	int i;
 	static const char *r_info_blow_method[] = {
 		#define RBM(x, c, s, miss, p, m, a, d) #x,
-		#include "monster/list-blow-methods.h"
+		#include "list-blow-methods.h"
 		#undef RBM
 	};
 

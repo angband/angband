@@ -17,11 +17,11 @@
  */
 
 #include "angband.h"
-#include "monster/mon-lore.h"
-#include "monster/mon-make.h"
-#include "monster/mon-spell.h"
-#include "monster/mon-util.h"
-#include "monster/mon-blow-effects.h"
+#include "mon-lore.h"
+#include "mon-make.h"
+#include "mon-spell.h"
+#include "mon-util.h"
+#include "mon-blow-effects.h"
 #include "obj-tval.h"
 #include "attack.h"
 
@@ -578,7 +578,7 @@ static const char *lore_describe_race_flag(int flag)
 {
 	static const char *r_flag_description[] = {
 		#define RF(a, b) b,
-		#include "monster/list-mon-flags.h"
+		#include "list-mon-flags.h"
 		#undef RF
 		NULL
 	};

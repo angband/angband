@@ -1,5 +1,5 @@
 /*
- * File: monster/list-mon-spells.h
+ * File: list-mon-spells.h
  * Purpose: List of monster spell flags 
  *
  * Changing flag order will break savefiles. There is a hard-coded limit of

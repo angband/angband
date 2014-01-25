@@ -6,7 +6,7 @@
 #ifndef SPELLS_H
 #define SPELLS_H
 
-#include "monster/monster.h"
+#include "monster.h"
 
 /*
  * Spell types used by project(), and related functions.

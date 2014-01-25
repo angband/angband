@@ -30,8 +30,8 @@
 #include "obj-tvalsval.h"
 #include "obj-tval.h"
 #include "object.h"
-#include "monster/mon-lore.h"
-#include "monster/mon-util.h"
+#include "mon-lore.h"
+#include "mon-util.h"
 
 #define ADD_LABEL(text, cmd, valid) { \
 	cmdkey = cmd_lookup_key_unktrl((cmd), mode); \

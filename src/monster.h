@@ -24,9 +24,9 @@
 #include "z-bitflag.h"
 #include "z-rand.h"
 #include "cave.h"
-#include "monster/mon-timed.h"
-#include "monster/mon-blow-methods.h"
-#include "monster/mon-blow-effects.h"
+#include "mon-timed.h"
+#include "mon-blow-methods.h"
+#include "mon-blow-effects.h"
 #include "obj-flag.h"
 
 /** Constants **/

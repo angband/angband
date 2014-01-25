@@ -22,8 +22,8 @@
 #define STATS_STRUCTS_H
 
 #include "effects.h"
-#include "monster/monster.h"
-#include "monster/mon-spell.h"
+#include "monster.h"
+#include "mon-spell.h"
 #include "obj-slays.h"
 
 /*

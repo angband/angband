@@ -3,7 +3,7 @@
 #include "unit-test.h"
 #include "unit-test-data.h"
 
-#include "monster/monster.h"
+#include "monster.h"
 
 int setup_tests(void **state) {
 	struct monster_race *r = &test_r_human;

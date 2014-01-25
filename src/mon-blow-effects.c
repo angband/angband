@@ -18,10 +18,10 @@
  */
 
 #include "angband.h"
-#include "monster/monster.h"
-#include "monster/mon-blow-effects.h"
-#include "monster/mon-blow-methods.h"
-#include "monster/mon-util.h"
+#include "monster.h"
+#include "mon-blow-effects.h"
+#include "mon-blow-methods.h"
+#include "mon-util.h"
 #include "obj-tval.h"
 #include "obj-tvalsval.h"
 
@@ -823,7 +823,7 @@ const char *monster_blow_effect_description(monster_blow_effect_t effect)
 {
 	static const char *r_blow_effect_description[] = {
 		#define RBE(x, p, e, d) d,
-		#include "monster/list-blow-effects.h"
+		#include "list-blow-effects.h"
 		#undef RBE
 	};
 
@@ -867,7 +867,7 @@ monster_blow_effect_t monster_blow_effect_for_string(const char *string)
 	int i;
 	static const char *r_info_blow_effect[] = {
 		#define RBE(x, p, e, d) #x,
-		#include "monster/list-blow-effects.h"
+		#include "list-blow-effects.h"
 		#undef RBE
 	};
 

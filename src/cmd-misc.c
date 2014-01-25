@@ -20,7 +20,7 @@
 #include "cave.h"
 #include "cmds.h"
 #include "game-cmd.h"
-#include "monster/mon-util.h"
+#include "mon-util.h"
 #include "wizard.h"
 #include "target.h"
 #include "prefs.h"

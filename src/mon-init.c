@@ -17,14 +17,14 @@
  */
 
 #include "externs.h"
-#include "monster/mon-init.h"
-#include "monster/mon-msg.h"
-#include "monster/mon-power.h"
-#include "monster/mon-spell.h"
-#include "monster/mon-util.h"
-#include "monster/mon-blow-methods.h"
-#include "monster/mon-blow-effects.h"
-#include "monster/monster.h"
+#include "mon-init.h"
+#include "mon-msg.h"
+#include "mon-power.h"
+#include "mon-spell.h"
+#include "mon-util.h"
+#include "mon-blow-methods.h"
+#include "mon-blow-effects.h"
+#include "monster.h"
 #include "obj-tval.h"
 #include "parser.h"
 #include "z-util.h"
@@ -71,7 +71,7 @@ static enum parser_error parse_rb_m(struct parser *p) {
 const char *r_info_flags[] =
 {
 	#define RF(a, b) #a,
-	#include "monster/list-mon-flags.h"
+	#include "list-mon-flags.h"
 	#undef RF
 	NULL
 };
@@ -103,7 +103,7 @@ static enum parser_error parse_rb_f(struct parser *p) {
 const char *r_info_spell_flags[] =
 {
 	#define RSF(a, b, c, d, e, f, g, h, i, j, k, l, m, n) #a,
-	#include "monster/list-mon-spells.h"
+	#include "list-mon-spells.h"
 	#undef RSF
 	NULL
 };

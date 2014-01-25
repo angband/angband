@@ -17,12 +17,12 @@
  */
 
 #include "angband.h"
-#include "monster/mon-make.h"
-#include "monster/mon-msg.h"
-#include "monster/mon-spell.h"
-#include "monster/mon-timed.h"
-#include "monster/mon-list.h"
-#include "monster/mon-util.h"
+#include "mon-make.h"
+#include "mon-msg.h"
+#include "mon-spell.h"
+#include "mon-timed.h"
+#include "mon-list.h"
+#include "mon-util.h"
 #include "squelch.h"
 
 

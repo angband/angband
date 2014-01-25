@@ -19,9 +19,9 @@
 #include "cave.h"
 #include "cmds.h"
 #include "wizard.h"
-#include "monster/mon-make.h"
-#include "monster/monster.h"
-#include "monster/constants.h"
+#include "mon-make.h"
+#include "monster.h"
+#include "mon-constants.h"
 #include "effects.h"
 #include "generate.h"
 /*

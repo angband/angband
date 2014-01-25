@@ -3,8 +3,8 @@
 #ifndef GENERATE_H
 #define GENERATE_H
 
-#include "monster/constants.h"
-#include "monster/monster.h"
+#include "mon-constants.h"
+#include "monster.h"
 
 #if  __STDC_VERSION__ < 199901L
 #define ROOM_LOG  if (OPT(cheat_room)) msg

@@ -116,19 +116,18 @@ ANGFILES = \
 	init.o \
 	keymap.o \
 	load.o \
-	monster/mon-init.o \
-	monster/melee1.o \
-	monster/melee2.o \
-	monster/mon-list.o \
-	monster/mon-blow-effects.o \
-	monster/mon-blow-methods.o \
-	monster/mon-lore.o \
-	monster/mon-make.o \
-	monster/mon-msg.o \
-	monster/mon-power.o \
-	monster/mon-spell.o \
-	monster/mon-timed.o \
-	monster/mon-util.o \
+	mon-blow-effects.o \
+	mon-blow-methods.o \
+	mon-list.o \
+	mon-lore.o \
+	mon-make.o \
+	mon-melee2.o \
+	mon-msg.o \
+	mon-power.o \
+	mon-spell.o \
+	mon-timed.o \
+	mon-util.o \
+	mon-init.o \
 	obj-chest.o \
 	obj-desc.o \
 	obj-flag.o \

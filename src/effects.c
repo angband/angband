@@ -20,8 +20,8 @@
 #include "cave.h"
 #include "effects.h"
 #include "dungeon.h"
-#include "monster/mon-spell.h"
-#include "monster/mon-util.h"
+#include "mon-spell.h"
+#include "mon-util.h"
 #include "trap.h"
 #include "spells.h"
 

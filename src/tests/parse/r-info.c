@@ -3,8 +3,8 @@
 #include "unit-test.h"
 #include "unit-test-data.h"
 #include "init.h"
-#include "monster/constants.h"
-#include "monster/monster.h"
+#include "mon-constants.h"
+#include "monster.h"
 
 #include "externs.h"
 

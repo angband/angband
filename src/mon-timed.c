@@ -17,10 +17,10 @@
  */
 
 #include "angband.h"
-#include "monster/mon-msg.h"
-#include "monster/mon-spell.h"
-#include "monster/mon-timed.h"
-#include "monster/mon-util.h"
+#include "mon-msg.h"
+#include "mon-spell.h"
+#include "mon-timed.h"
+#include "mon-util.h"
 
 typedef struct {
   int message_begin;

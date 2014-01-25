@@ -20,7 +20,7 @@
 #include "angband.h"
 #include "obj-tval.h"
 #include "obj-tvalsval.h"
-#include "monster/mon-util.h" /* for summon_specific() */
+#include "mon-util.h" /* for summon_specific() */
 
 /*
  * Each chest has a certain set of traps, determined by pval

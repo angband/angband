@@ -1,5 +1,5 @@
 /*
- * File: src/monster/mon-power.c
+ * File: src/mon-power.c
  * Purpose: functions for monster power evaluation
  *
  * Copyright (c) 2000-11 Chris Carr, Chris Robertson, Andrew Doull
@@ -17,10 +17,10 @@
  */
 
 #include "angband.h"
-#include "monster/mon-power.h"
-#include "monster/mon-spell.h"
-#include "monster/mon-blow-methods.h"
-#include "monster/mon-blow-effects.h"
+#include "mon-power.h"
+#include "mon-spell.h"
+#include "mon-blow-methods.h"
+#include "mon-blow-effects.h"
 
 s32b tot_mon_power;
 

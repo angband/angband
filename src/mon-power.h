@@ -1,8 +1,8 @@
 /*
- * File: melee1.c
- * Purpose: Monster attacking code
+ * File: src/mon-power.h
+ * Purpose: structures and functions for monster power
  *
- * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
+ * Copyright (c) 2011 Chris Carr
  *
  * This work is free software; you can redistribute it and/or modify it
  * under the terms of either:
@@ -16,10 +16,16 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
-#include "angband.h"
-#include "attack.h"
-#include "cave.h"
-#include "monster/monster.h"
-#include "spells.h"
+#ifndef MONSTER_POWER_H
+#define MONSTER_POWER_H
+
+#include "monster.h"
+
+/** Variables **/
+extern s32b tot_mon_power;
+
+/** Functions **/
+errr eval_r_power(struct monster_race *races);
 
 
+#endif /* MONSTER_POWER_H */

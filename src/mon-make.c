@@ -21,10 +21,10 @@
 #include "history.h"
 #include "init.h"
 #include "target.h"
-#include "monster/mon-lore.h"
-#include "monster/mon-make.h"
-#include "monster/mon-timed.h"
-#include "monster/mon-util.h"
+#include "mon-lore.h"
+#include "mon-make.h"
+#include "mon-timed.h"
+#include "mon-util.h"
 #include "obj-tval.h"
 #include "obj-tvalsval.h"
 #include "quest.h"
@@ -1598,7 +1598,7 @@ bool mon_take_hit(struct monster *m_ptr, int dam, bool *fear, const char *note)
 }
 
 struct init_module mon_make_module = {
-	.name = "monster/mon-make",
+	.name = "mon-make",
 	.init = init_race_allocs,
 	.cleanup = cleanup_race_allocs
 };

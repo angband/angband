@@ -1,5 +1,5 @@
 /*
- * File: src/monster/mon-spell.h
+ * File: src/mon-spell.h
  * Purpose: structures and functions for monster power
  *
  * Copyright (c) 2011 Chris Carr

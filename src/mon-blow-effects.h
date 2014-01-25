@@ -21,8 +21,8 @@
 #define MON_BLOW_EFFECTS_H
 
 #include "player/player.h"
-#include "monster/mon-blow-methods.h"
-#include "monster/monster.h"
+#include "mon-blow-methods.h"
+#include "monster.h"
 
 /* Constants */
 
