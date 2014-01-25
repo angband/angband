@@ -454,10 +454,8 @@ static infoclr *clr[MAX_COLORS * BG_MAX];
 
 /**** Code imported from the old maid-x11.c ****/
 
-#ifdef SUPPORT_GAMMA
 static bool gamma_table_ready = FALSE;
 static int gamma_val = 0;
-#endif /* SUPPORT_GAMMA */
 
 
 /*
@@ -468,8 +466,6 @@ static u32b create_pixel(Display *dpy, byte red, byte green, byte blue)
 	Colormap cmap = DefaultColormapOfScreen(DefaultScreenOfDisplay(dpy));
 
 	XColor xcolour;
-
-#ifdef SUPPORT_GAMMA
 
 	if (!gamma_table_ready)
 	{
@@ -489,8 +485,6 @@ static u32b create_pixel(Display *dpy, byte red, byte green, byte blue)
 		green = gamma_table[green];
 		blue = gamma_table[blue];
 	}
-
-#endif /* SUPPORT_GAMMA */
 
 	/* Build the color */
 

@@ -468,9 +468,7 @@ static byte win_pal[MAX_COLORS] =
 };
 
 
-#ifdef SUPPORT_GAMMA
 static int gamma_correction;
-#endif /* SUPPORT_GAMMA */
 
 
 #include "cmds.h"
@@ -886,12 +884,10 @@ static void load_prefs(void)
 	/* Extract the "arg_rebalance" flag */
 	arg_rebalance = (GetPrivateProfileInt("Angband", "Rebalance", FALSE, ini_file) != 0);
 
-#ifdef SUPPORT_GAMMA
 
 	/* Extract the gamma correction */
 	gamma_correction = GetPrivateProfileInt("Angband", "Gamma", 0, ini_file);
 
-#endif /* SUPPORT_GAMMA */
 
 	/* Load window prefs */
 	for (i = 0; i < MAX_TERM_DATA; i++)
@@ -1093,7 +1089,6 @@ static int new_palette(void)
 		p->peGreen = GetGValue(win_clr[i]);
 		p->peBlue = GetBValue(win_clr[i]);
 
-#ifdef SUPPORT_GAMMA
 
 		if (gamma_correction > 0)
 		{
@@ -1102,7 +1097,6 @@ static int new_palette(void)
 			p->peBlue = gamma_table[p->peBlue];
 		}
 
-#endif /* SUPPORT_GAMMA */
 
 		/* Save the flags */
 		p->peFlags = PC_NOCOLLAPSE;
@@ -1630,16 +1624,12 @@ static errr Term_xtra_win_react(void)
 			gv = angband_color_table[i][2];
 			bv = angband_color_table[i][3];
 
-#ifdef SUPPORT_GAMMA
-
 			if (gamma_correction > 0)
 			{
 				rv = gamma_table[rv];
 				gv = gamma_table[gv];
 				bv = gamma_table[bv];
 			}
-
-#endif /* SUPPORT_GAMMA */
 
 			/* Extract a full color code */
 			code = PALETTERGB(rv, gv, bv);
@@ -2858,12 +2848,8 @@ static void init_windows(void)
 	/* Bring main window back to top */
 	SetWindowPos(td->w, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 
-#ifdef SUPPORT_GAMMA
-
 	if (gamma_correction > 0)
 		build_gamma_table(gamma_correction);
-
-#endif /* SUPPORT_GAMMA */
 
 	/* New palette XXX XXX XXX */
 	(void)new_palette();

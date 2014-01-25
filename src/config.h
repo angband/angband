@@ -109,12 +109,6 @@
 /*** X11 settings ***/
 
 /*
- * OPTION: Gamma correct colours (with X11)
- */
-#define SUPPORT_GAMMA
-
-
-/*
  * OPTION: Default font (when using X11).
  */
 #define DEFAULT_X11_FONT		"9x15"

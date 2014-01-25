@@ -214,8 +214,6 @@ const char *attr_to_text(byte a)
 
 
 
-#ifdef SUPPORT_GAMMA
-
 /*
  * XXX XXX XXX Important note about "colors" XXX XXX XXX
  *
@@ -344,4 +342,3 @@ void build_gamma_table(int gamma)
 	}
 }
 
-#endif /* SUPPORT_GAMMA */
