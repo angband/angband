@@ -2,7 +2,7 @@
 
 #include "unit-test.h"
 #include "init.h"
-#include "player/player.h"
+#include "player.h"
 
 
 int setup_tests(void **state) {

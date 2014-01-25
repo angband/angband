@@ -1,6 +1,6 @@
 /* player/history */
 
-#include "player/player.h"
+#include "player.h"
 #include "birth.h"
 #include "unit-test.h"
 

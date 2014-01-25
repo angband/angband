@@ -147,13 +147,13 @@ ANGFILES = \
 	randname.o \
 	pathfind.o \
 	prefs.o \
-	player/calcs.o \
-	player/class.o \
-	player/player.o \
-	player/race.o \
-	player/spell.o \
-	player/timed.o \
-	player/p-util.o \
+	player-calcs.o \
+	player-class.o \
+	player-race.o \
+	player-spell.o \
+	player-timed.o \
+	player-util.o \
+	player.o \
 	quest.o \
 	score.o \
 	signals.o \

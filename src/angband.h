@@ -45,7 +45,7 @@
 #include "obj-flag.h"
 #include "object.h"
 #include "option.h"
-#include "player/player.h"
+#include "player.h"
 #include "store.h"
 
 #include "ui.h"

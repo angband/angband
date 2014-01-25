@@ -20,7 +20,7 @@
 #ifndef MON_BLOW_EFFECTS_H
 #define MON_BLOW_EFFECTS_H
 
-#include "player/player.h"
+#include "player.h"
 #include "mon-blow-methods.h"
 #include "monster.h"
 

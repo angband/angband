@@ -3,7 +3,7 @@
  */
 
 #include "externs.h"
-#include "player/player.h"
+#include "player.h"
 
 struct player_race *player_id2race(guid id)
 {

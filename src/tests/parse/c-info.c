@@ -6,7 +6,7 @@
 #include "obj-flag.h"
 #include "object.h"
 #include "obj-tvalsval.h"
-#include "player/player.h"
+#include "player.h"
 
 int setup_tests(void **state) {
 	*state = init_parse_c();

@@ -1,4 +1,4 @@
-/* player/player.h - player interface */
+/* player.h - player interface */
 
 #ifndef PLAYER_PLAYER_H
 #define PLAYER_PLAYER_H
