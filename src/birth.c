@@ -433,7 +433,7 @@ void wield_all(struct player *p)
 	for (item = INVEN_PACK - 1; item >= 0; item--)
 	{
 		o_ptr = &p->inventory[item];
-		is_ammo = obj_is_ammo(o_ptr);
+		is_ammo = tval_is_ammo(o_ptr);
 
 		/* Skip non-objects */
 		if (!o_ptr->kind) continue;

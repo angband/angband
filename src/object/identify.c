@@ -738,7 +738,7 @@ void object_notice_on_wield(object_type *o_ptr)
 
 	/* CC: may wish to be more subtle about this once we have ego lights
 	 * with multiple pvals */
-	if (obj_is_light(o_ptr) && o_ptr->ego)
+	if (tval_is_light(o_ptr) && o_ptr->ego)
 		object_notice_ego(o_ptr);
 
 	if (object_flavor_is_aware(o_ptr) && easy_know(o_ptr))

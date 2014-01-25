@@ -28,6 +28,7 @@
 #include "target.h"
 #include "squelch.h"
 #include "object/tvalsval.h"
+#include "object/obj-tval.h"
 #include "object/object.h"
 #include "monster/mon-lore.h"
 #include "monster/mon-util.h"
@@ -757,26 +758,26 @@ int context_menu_object(const object_type *o_ptr, const int slot)
 		}
 	}
 	else if (obj_is_useable(o_ptr)) {
-		if (obj_is_wand(o_ptr)) {
+		if (tval_is_wand(o_ptr)) {
 			menu_row_validity_t valid = (obj_has_charges(o_ptr)) ? MN_ROW_VALID : MN_ROW_INVALID;
 			ADD_LABEL("Aim", CMD_USE_WAND, valid);
 		}
-		else if (obj_is_rod(o_ptr)) {
+		else if (tval_is_rod(o_ptr)) {
 			menu_row_validity_t valid = (obj_can_zap(o_ptr)) ? MN_ROW_VALID : MN_ROW_INVALID;
 			ADD_LABEL("Zap", CMD_USE_ROD, valid);
 		}
-		else if (obj_is_staff(o_ptr)) {
+		else if (tval_is_staff(o_ptr)) {
 			menu_row_validity_t valid = (obj_has_charges(o_ptr)) ? MN_ROW_VALID : MN_ROW_INVALID;
 			ADD_LABEL("Use", CMD_USE_STAFF, valid);
 		}
-		else if (obj_is_scroll(o_ptr)) {
+		else if (tval_is_scroll(o_ptr)) {
 			menu_row_validity_t valid = (player_can_read(p_ptr, FALSE)) ? MN_ROW_VALID : MN_ROW_INVALID;
 			ADD_LABEL("Read", CMD_READ_SCROLL, valid);
 		}
-		else if (obj_is_potion(o_ptr)) {
+		else if (tval_is_potion(o_ptr)) {
 			ADD_LABEL("Quaff", CMD_QUAFF, MN_ROW_VALID);
 		}
-		else if (obj_is_food(o_ptr)) {
+		else if (tval_is_food(o_ptr)) {
 			ADD_LABEL("Eat", CMD_EAT, MN_ROW_VALID);
 		}
 		else if (obj_is_activatable(o_ptr)) {

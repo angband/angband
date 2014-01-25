@@ -502,7 +502,7 @@ bool slot_can_wield_item(int slot, const object_type *o_ptr)
 {
 	if (tval_is_ring(o_ptr))
 		return (slot == INVEN_LEFT || slot == INVEN_RIGHT) ? TRUE : FALSE;
-	else if (obj_is_ammo(o_ptr))
+	else if (tval_is_ammo(o_ptr))
 		return (slot >= QUIVER_START && slot < QUIVER_END) ? TRUE : FALSE;
 	else
 		return (wield_slot(o_ptr) == slot) ? TRUE : FALSE;
@@ -3711,28 +3711,6 @@ void display_object_recall_interactive(object_type *o_ptr)
 	object_desc(header, sizeof(header), o_ptr, ODESC_PREFIX | ODESC_FULL);
 	textui_textblock_show(tb, SCREEN_REGION, header);
 	textblock_free(tb);
-}
-
-
-/* Basic tval testers */
-bool obj_is_staff(const object_type *o_ptr)  { return tval_is_staff(o_ptr); }
-bool obj_is_wand(const object_type *o_ptr)   { return tval_is_wand(o_ptr); }
-bool obj_is_rod(const object_type *o_ptr)    { return tval_is_rod(o_ptr); }
-bool obj_is_potion(const object_type *o_ptr) { return tval_is_potion(o_ptr); }
-bool obj_is_scroll(const object_type *o_ptr) { return tval_is_scroll(o_ptr); }
-bool obj_is_food(const object_type *o_ptr)   { return tval_is_food(o_ptr); }
-bool obj_is_light(const object_type *o_ptr)   { return tval_is_light(o_ptr); }
-bool obj_is_ring(const object_type *o_ptr)   { return tval_is_ring(o_ptr); }
-
-
-/**
- * Determine whether an object is ammo
- *
- * \param o_ptr is the object to check
- */
-bool obj_is_ammo(const object_type *o_ptr)
-{
-	return tval_is_ammo(o_ptr);
 }
 
 /* Determine if an object has charges */

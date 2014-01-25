@@ -137,13 +137,13 @@ static struct item_selector item_selector[] =
 	{ CMD_DROP, NULL, NULL, (USE_EQUIP | USE_INVEN) },
 	{ CMD_THROW, NULL, NULL, (USE_EQUIP | USE_INVEN | USE_FLOOR) },
 	{ CMD_FIRE, NULL, obj_can_fire, (USE_INVEN | USE_EQUIP | USE_FLOOR | QUIVER_TAGS) },
-	{ CMD_USE_STAFF, "staff",  obj_is_staff, (USE_INVEN | USE_FLOOR | SHOW_FAIL) },
-	{ CMD_USE_WAND, "wand", obj_is_wand, (USE_INVEN | USE_FLOOR | SHOW_FAIL) },
-	{ CMD_USE_ROD, "rod", obj_is_rod, (USE_INVEN | USE_FLOOR | SHOW_FAIL) },
+	{ CMD_USE_STAFF, "staff",  tval_is_staff, (USE_INVEN | USE_FLOOR | SHOW_FAIL) },
+	{ CMD_USE_WAND, "wand", tval_is_wand, (USE_INVEN | USE_FLOOR | SHOW_FAIL) },
+	{ CMD_USE_ROD, "rod", tval_is_rod, (USE_INVEN | USE_FLOOR | SHOW_FAIL) },
 	{ CMD_ACTIVATE, NULL, obj_is_activatable, (USE_EQUIP | SHOW_FAIL) },
-	{ CMD_EAT, "food", obj_is_food, (USE_INVEN | USE_FLOOR) },
-	{ CMD_QUAFF, "potion", obj_is_potion, (USE_INVEN | USE_FLOOR) },
-	{ CMD_READ_SCROLL, "scroll", obj_is_scroll, (USE_INVEN | USE_FLOOR) },
+	{ CMD_EAT, "food", tval_is_food, (USE_INVEN | USE_FLOOR) },
+	{ CMD_QUAFF, "potion", tval_is_potion, (USE_INVEN | USE_FLOOR) },
+	{ CMD_READ_SCROLL, "scroll", tval_is_scroll, (USE_INVEN | USE_FLOOR) },
 	{ CMD_REFILL, "fuel source", obj_can_refill, (USE_INVEN | USE_FLOOR) },
 	{ CMD_USE_AIMED, NULL, obj_is_used_aimed, (USE_EQUIP |USE_INVEN | USE_FLOOR | SHOW_FAIL | QUIVER_TAGS) },
 	{ CMD_USE_UNAIMED, NULL, obj_is_used_unaimed, (USE_EQUIP |USE_INVEN | USE_FLOOR | SHOW_FAIL) },
@@ -684,15 +684,15 @@ void process_command(cmd_context ctx, bool no_request)
 					{
 						const char *q = "Replace which ring? ";
 						const char *s = "Error in obj_wield, please report";
-						if (!get_item(&slot, q, s, CMD_WIELD, obj_is_ring, USE_EQUIP)) return;
+						if (!get_item(&slot, q, s, CMD_WIELD, tval_is_ring, USE_EQUIP)) return;
 					}
 			
-					if (obj_is_ammo(o_ptr) && !object_similar(&p_ptr->inventory[slot],
+					if (tval_is_ammo(o_ptr) && !object_similar(&p_ptr->inventory[slot],
 						o_ptr, OSTACK_QUIVER))
 					{
 						const char *q = "Replace which ammunition? ";
 						const char *s = "Error in obj_wield, please report";
-						if (!get_item(&slot, q, s, CMD_WIELD, obj_is_ammo, USE_EQUIP)) return;
+						if (!get_item(&slot, q, s, CMD_WIELD, tval_is_ammo, USE_EQUIP)) return;
 					}
 				}
 

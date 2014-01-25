@@ -279,7 +279,7 @@ void wield_item(object_type *o_ptr, int item, int slot)
 	int num = 1;
 
 	/* If we are stacking ammo in the quiver */
-	if (obj_is_ammo(o_ptr))
+	if (tval_is_ammo(o_ptr))
 	{
 		num = o_ptr->number;
 		combined_ammo = object_similar(o_ptr, &p_ptr->inventory[slot],
@@ -437,7 +437,7 @@ void do_cmd_wield(struct command *cmd)
 	}
 
 	/* If the slot is in the quiver and objects can be combined */
-	if (obj_is_ammo(equip_o_ptr) && object_similar(equip_o_ptr, o_ptr,
+	if (tval_is_ammo(equip_o_ptr) && object_similar(equip_o_ptr, o_ptr,
 		OSTACK_QUIVER))
 	{
 		wield_item(o_ptr, item, slot);
@@ -573,7 +573,7 @@ void do_cmd_use(struct command *cmd)
 	was_aware = object_flavor_is_aware(o_ptr);
 
 	/* Determine how this item is used. */
-	if (obj_is_rod(o_ptr))
+	if (tval_is_rod(o_ptr))
 	{
 		if (!obj_can_zap(o_ptr))
 		{
@@ -585,7 +585,7 @@ void do_cmd_use(struct command *cmd)
 		snd = MSG_ZAP_ROD;
 		items_allowed = USE_INVEN | USE_FLOOR;
 	}
-	else if (obj_is_wand(o_ptr))
+	else if (tval_is_wand(o_ptr))
 	{
 		if (!obj_has_charges(o_ptr))
 		{
@@ -597,7 +597,7 @@ void do_cmd_use(struct command *cmd)
 		snd = MSG_ZAP_ROD;
 		items_allowed = USE_INVEN | USE_FLOOR;
 	}
-	else if (obj_is_staff(o_ptr))
+	else if (tval_is_staff(o_ptr))
 	{
 		if (!obj_has_charges(o_ptr))
 		{
@@ -609,19 +609,19 @@ void do_cmd_use(struct command *cmd)
 		snd = MSG_USE_STAFF;
 		items_allowed = USE_INVEN | USE_FLOOR;
 	}
-	else if (obj_is_food(o_ptr))
+	else if (tval_is_food(o_ptr))
 	{
 		use = USE_SINGLE;
 		snd = MSG_EAT;
 		items_allowed = USE_INVEN | USE_FLOOR;
 	}
-	else if (obj_is_potion(o_ptr))
+	else if (tval_is_potion(o_ptr))
 	{
 		use = USE_SINGLE;
 		snd = MSG_QUAFF;
 		items_allowed = USE_INVEN | USE_FLOOR;
 	}
-	else if (obj_is_scroll(o_ptr))
+	else if (tval_is_scroll(o_ptr))
 	{
 		/* Check player can use scroll */
 		if (!player_can_read(p_ptr, TRUE))
@@ -643,7 +643,7 @@ void do_cmd_use(struct command *cmd)
 		snd = MSG_ACT_ARTIFACT;
 		items_allowed = USE_EQUIP;
 	}
-	else if (obj_is_ammo(o_ptr))
+	else if (tval_is_ammo(o_ptr))
 	{
 		do_cmd_fire(cmd);
 		return;
