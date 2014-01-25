@@ -2,13 +2,9 @@
 #define INCLUDED_OBJECT_H
 
 #include "z-rand.h"
-#include "z-file.h"
-#include "z-textblock.h"
 #include "z-quark.h"
 #include "z-bitflag.h"
 #include "z-dice.h"
-#include "game-cmd.h"
-#include "cave.h"
 #include "obj-flag.h"
 
 

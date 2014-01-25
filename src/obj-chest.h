@@ -20,8 +20,6 @@
 #ifndef OBJECT_CHEST_H
 #define OBJECT_CHEST_H
 
-#include "object.h"
-
 byte chest_trap_type(const object_type *o_ptr);
 bool is_trapped_chest(const object_type *o_ptr);
 bool is_locked_chest(const object_type *o_ptr);

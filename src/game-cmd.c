@@ -25,7 +25,6 @@
 #include "obj-tval.h"
 #include "obj-ui.h"
 #include "obj-util.h"
-#include "object.h"
 #include "spells.h"
 #include "target.h"
 

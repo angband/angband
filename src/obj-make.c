@@ -22,7 +22,6 @@
 #include "init.h"
 #include "obj-make.h"
 #include "obj-pval.h"
-#include "obj-slays.h"
 #include "obj-tval.h"
 #include "obj-tvalsval.h"
 #include "obj-util.h"

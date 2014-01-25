@@ -3,7 +3,6 @@
 
 #include "mon-constants.h"
 #include "monster.h"
-#include "object.h"
 #include "player.h"
 #include "store.h"
 #include "trap.h"

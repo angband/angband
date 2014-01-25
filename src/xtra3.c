@@ -32,7 +32,6 @@
 #include "monster.h"
 #include "obj-desc.h"
 #include "obj-list.h"
-#include "obj-tvalsval.h"
 #include "obj-ui.h"
 #include "obj-util.h"
 #include "textui.h"

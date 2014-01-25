@@ -32,7 +32,6 @@
 #include "obj-tvalsval.h"
 #include "obj-ui.h"
 #include "obj-util.h"
-#include "object.h"
 #include "squelch.h"
 #include "trap.h"
 

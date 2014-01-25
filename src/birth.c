@@ -27,7 +27,6 @@
 #include "obj-make.h"
 #include "obj-tval.h"
 #include "obj-util.h"
-#include "object.h"
 #include "squelch.h"
 #include "quest.h"
 #include "ui-menu.h"

@@ -21,6 +21,7 @@
 #include "effects.h"
 #include "game-cmd.h"
 #include "generate.h"
+#include "grafmode.h"
 #include "history.h"
 #include "mon-make.h"
 #include "obj-desc.h"
@@ -30,13 +31,11 @@
 #include "obj-tval.h"
 #include "obj-tvalsval.h"
 #include "obj-util.h"
-#include "object.h"
 #include "prefs.h"
 #include "randname.h"
 #include "spells.h"
 #include "squelch.h"
 #include "z-queue.h"
-#include "grafmode.h"
 
 static struct object *o_list;
 

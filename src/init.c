@@ -37,7 +37,6 @@
 #include "obj-tval.h"
 #include "obj-tvalsval.h"
 #include "obj-util.h"
-#include "object.h"
 #include "option.h"
 #include "parser.h"
 #include "prefs.h"

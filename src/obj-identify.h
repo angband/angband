@@ -20,8 +20,6 @@
 #ifndef OBJECT_IDENTIFY_H
 #define OBJECT_IDENTIFY_H
 
-#include "object.h"
-
 extern s32b object_last_wield;
 
 bool object_is_known(const object_type *o_ptr);

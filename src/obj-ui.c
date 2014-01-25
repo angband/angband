@@ -17,15 +17,15 @@
  */
 
 #include "angband.h"
-#include "obj-desc.h"
-#include "obj-identify.h"
-#include "obj-tval.h"
-#include "obj-ui.h"
-#include "obj-util.h"
 #include "cmds.h"
 #include "game-cmd.h"
 #include "keymap.h"
+#include "obj-desc.h"
+#include "obj-identify.h"
+#include "obj-tval.h"
 #include "obj-tvalsval.h" /* Only for use_flavor_glyph() */
+#include "obj-ui.h"
+#include "obj-util.h"
 
 /*
  * Determine if the attr and char should consider the item's flavor

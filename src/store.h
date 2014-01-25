@@ -1,8 +1,6 @@
 #ifndef INCLUDED_STORE_H
 #define INCLUDED_STORE_H
 
-#include "obj-flag.h"
-#include "object.h"
 #include "parser.h"
 
 extern bool store_in_store;

@@ -27,7 +27,6 @@
 #include "mon-timed.h"
 #include "mon-blow-methods.h"
 #include "mon-blow-effects.h"
-#include "obj-flag.h"
 
 /** Constants **/
 

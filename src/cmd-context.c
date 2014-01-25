@@ -35,7 +35,6 @@
 #include "obj-tval.h"
 #include "obj-ui.h"
 #include "obj-util.h"
-#include "object.h"
 #include "mon-lore.h"
 #include "mon-util.h"
 

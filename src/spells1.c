@@ -31,7 +31,6 @@
 #include "obj-identify.h"
 #include "obj-tval.h"
 #include "obj-util.h"
-#include "object.h"
 #include "spells.h"
 #include "squelch.h"
 #include "trap.h"

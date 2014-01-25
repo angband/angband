@@ -30,7 +30,6 @@
 #include "obj-tvalsval.h"
 #include "obj-ui.h"
 #include "obj-util.h"
-#include "object.h"
 #include "spells.h"
 #include "squelch.h"
 #include "target.h"

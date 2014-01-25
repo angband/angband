@@ -20,7 +20,6 @@
 #ifndef OBJECT_INFO_H
 #define OBJECT_INFO_H
 
-#include "object.h"
 #include "z-textblock.h"
 
 textblock *object_info(const object_type *o_ptr, oinfo_detail_t mode);

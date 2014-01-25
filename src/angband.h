@@ -42,8 +42,6 @@
 #include "init.h"
 #include "mon-constants.h"
 #include "monster.h"
-#include "obj-flag.h"
-#include "object.h"
 #include "option.h"
 #include "player.h"
 #include "store.h"
