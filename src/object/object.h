@@ -711,6 +711,7 @@ bool inven_carry_okay(const object_type *o_ptr);
 bool inven_stack_okay(const object_type *o_ptr);
 s16b inven_takeoff(int item, int amt);
 void inven_drop(int item, int amt);
+s16b inven_carry(struct player *p, struct object *o);
 void combine_pack(void);
 void reorder_pack(void);
 void open_quiver_slot(int slot);

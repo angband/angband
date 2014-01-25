@@ -23,7 +23,6 @@
 #include "generate.h"
 #include "history.h"
 #include "monster/mon-make.h"
-#include "object/inventory.h"
 #include "obj-tval.h"
 #include "object/tvalsval.h"
 #include "prefs.h"
@@ -32,6 +31,7 @@
 #include "squelch.h"
 #include "z-queue.h"
 #include "grafmode.h"
+#include "object.h"
 
 static struct object *o_list;
 

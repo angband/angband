@@ -23,7 +23,6 @@
 #include "game-event.h"
 #include "history.h"
 #include "init.h"
-#include "object/inventory.h"
 #include "object/obj-tval.h"
 #include "object/tvalsval.h"
 #include "object/object.h"
