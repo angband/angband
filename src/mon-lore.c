@@ -22,7 +22,9 @@
 #include "mon-spell.h"
 #include "mon-util.h"
 #include "mon-blow-effects.h"
+#include "obj-identify.h"
 #include "obj-tval.h"
+#include "obj-util.h"
 #include "attack.h"
 
 /*

@@ -28,6 +28,8 @@
 #include "mon-util.h"
 #include "obj-list.h"
 #include "obj-tval.h"
+#include "obj-ui.h"
+#include "obj-util.h"
 #include "option.h"
 #include "prefs.h"
 #include "squelch.h"

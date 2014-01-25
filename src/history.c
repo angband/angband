@@ -18,6 +18,8 @@
 
 #include "angband.h"
 #include "history.h"
+#include "obj-desc.h"
+#include "obj-util.h"
 
 /*
  * Number of slots available at birth in the player history list.  Defaults to

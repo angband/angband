@@ -20,6 +20,8 @@
 #include "cave.h"
 #include "cmds.h"
 #include "obj-tvalsval.h"
+#include "obj-ui.h"
+#include "obj-util.h"
 #include "game-cmd.h"
 #include "spells.h"
 

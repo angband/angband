@@ -24,6 +24,9 @@
 #include "mon-list.h"
 #include "mon-util.h"
 #include "squelch.h"
+#include "obj-desc.h"
+#include "obj-identify.h"
+#include "obj-util.h"
 
 
 /**

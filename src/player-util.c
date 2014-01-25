@@ -5,6 +5,7 @@
 #include "angband.h"
 #include "cave.h"
 #include "obj-tvalsval.h"
+#include "obj-util.h"
 
 /*
  * Modify a stat value by a "modifier", return new value

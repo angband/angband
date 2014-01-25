@@ -17,7 +17,11 @@
  */
 
 #include "angband.h"
+#include "obj-desc.h"
+#include "obj-identify.h"
 #include "obj-tval.h"
+#include "obj-ui.h"
+#include "obj-util.h"
 #include "cmds.h"
 #include "game-cmd.h"
 #include "keymap.h"

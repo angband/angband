@@ -24,6 +24,8 @@
 #include "mon-util.h"
 #include "trap.h"
 #include "spells.h"
+#include "obj-identify.h"
+#include "obj-util.h"
 
 
 typedef struct effect_handler_context_s {

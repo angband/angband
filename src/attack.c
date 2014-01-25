@@ -26,7 +26,11 @@
 #include "mon-timed.h"
 #include "mon-util.h"
 #include "monster.h"
+#include "obj-desc.h"
+#include "obj-identify.h"
 #include "obj-slays.h"
+#include "obj-ui.h"
+#include "obj-util.h"
 #include "spells.h"
 #include "target.h"
 

@@ -26,8 +26,11 @@
 #include "mon-util.h"
 #include "mon-blow-methods.h"
 #include "mon-blow-effects.h"
+#include "obj-desc.h"
+#include "obj-identify.h"
 #include "obj-slays.h"
 #include "obj-tval.h"
+#include "obj-util.h"
 #include "spells.h"
 #include "squelch.h"
 

@@ -17,9 +17,13 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
+#include "obj-desc.h"
+#include "obj-identify.h"
 #include "obj-list.h"
 #include "obj-tval.h"
 #include "obj-tvalsval.h"
+#include "obj-ui.h"
+#include "obj-util.h"
 #include "object.h"
 #include "squelch.h"
 

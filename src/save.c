@@ -26,6 +26,7 @@
 #include "quest.h"
 #include "savefile.h"
 #include "squelch.h"
+#include "obj-util.h"
 
 
 /*

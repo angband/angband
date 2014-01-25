@@ -23,6 +23,7 @@
 #include "pathfind.h"
 #include "squelch.h"
 #include "mon-util.h"
+#include "obj-util.h"
 
 /****** Pathfinding code ******/
 

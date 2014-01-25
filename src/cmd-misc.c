@@ -27,6 +27,7 @@
 #include "files.h"
 #include "buildid.h"
 #include "history.h"
+#include "obj-util.h"
 
 
 /*

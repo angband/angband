@@ -26,6 +26,7 @@
 #include "mon-blow-effects.h"
 #include "monster.h"
 #include "obj-tval.h"
+#include "obj-util.h"
 #include "parser.h"
 #include "z-util.h"
 #include "z-virt.h"

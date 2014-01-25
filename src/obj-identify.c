@@ -21,10 +21,13 @@
 #include "cave.h"
 #include "game-event.h"
 #include "history.h"
+#include "obj-desc.h"
+#include "obj-identify.h"
 #include "obj-tval.h"
 #include "obj-slays.h"
 #include "obj-tvalsval.h"
 #include "obj-pval.h"
+#include "obj-util.h"
 #include "spells.h"
 #include "squelch.h"
 

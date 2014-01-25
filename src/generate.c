@@ -26,6 +26,7 @@
 #include "init.h"
 #include "mon-make.h"
 #include "mon-spell.h"
+#include "obj-util.h"
 #include "parser.h"
 #include "trap.h"
 #include "z-queue.h"

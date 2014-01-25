@@ -1,5 +1,5 @@
 /*
- * File: pval.h
+ * File: obj-pval.h
  * Purpose: Structures and functions for dealing with object pvals
  *
  * Copyright (c) 2011 Chris Carr

@@ -21,6 +21,7 @@
 #include "keymap.h"
 #include "prefs.h"
 #include "obj-tval.h"
+#include "obj-util.h"
 #include "squelch.h"
 #include "spells.h"
 

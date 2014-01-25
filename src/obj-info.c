@@ -1,4 +1,4 @@
-/**
+/*
  * File: obj-info.c
  * Purpose: Object description code.
  *
@@ -21,10 +21,14 @@
 #include "attack.h"
 #include "effects.h"
 #include "cmds.h"
+#include "obj-identify.h"
+#include "obj-info.h"
+#include "obj-make.h"
 #include "obj-pval.h"
 #include "obj-slays.h"
 #include "obj-tval.h"
 #include "obj-tvalsval.h"
+#include "obj-util.h"
 #include "z-textblock.h"
 
 /*

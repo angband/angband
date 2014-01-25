@@ -28,6 +28,7 @@
 #include "ui-menu.h"
 #include "wizard.h"
 #include "target.h"
+#include "obj-util.h"
 
 /*
  * This file contains (several) big lists of commands, so that they can be

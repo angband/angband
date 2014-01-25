@@ -1,5 +1,5 @@
 /*
- * File: slays.h
+ * File: obj-slays.h
  * Purpose: Structures and functions for dealing with slays and brands
  *
  * Copyright (c) 2010 Chris Carr

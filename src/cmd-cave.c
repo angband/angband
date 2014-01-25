@@ -32,6 +32,9 @@
 #include "spells.h"
 #include "squelch.h"
 #include "trap.h"
+#include "obj-chest.h"
+#include "obj-identify.h"
+#include "obj-util.h"
 
 /*
  * Go up one level

@@ -17,6 +17,7 @@
  */
 #include "angband.h"
 #include "quest.h"
+#include "obj-util.h"
 
 /*
  * Array[MAX_Q_IDX] of quests

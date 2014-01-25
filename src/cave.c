@@ -22,6 +22,8 @@
 #include "game-cmd.h"
 #include "mon-util.h"
 #include "obj-tval.h"
+#include "obj-ui.h"
+#include "obj-util.h"
 #include "squelch.h"
 #include "cmds.h"
 #include "trap.h"

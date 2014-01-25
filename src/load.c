@@ -22,6 +22,8 @@
 #include "history.h"
 #include "mon-make.h"
 #include "mon-spell.h"
+#include "obj-make.h"
+#include "obj-util.h"
 #include "savefile.h"
 #include "squelch.h"
 #include "quest.h"

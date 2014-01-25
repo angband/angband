@@ -24,6 +24,10 @@
 #include "savefile.h"
 #include "ui-menu.h"
 #include "wizard.h"
+#include "obj-desc.h"
+#include "obj-identify.h"
+#include "obj-info.h"
+#include "obj-ui.h"
 
 /*
  * Hack - save the time of death

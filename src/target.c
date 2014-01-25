@@ -24,6 +24,9 @@
 #include "monster.h"
 #include "squelch.h"
 #include "target.h"
+#include "obj-desc.h"
+#include "obj-ui.h"
+#include "obj-util.h"
 
 /*
  * Height of the help screen; any higher than 4 will overlap the health
