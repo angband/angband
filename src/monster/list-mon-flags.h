@@ -1,11 +1,11 @@
 /* list-mon-flags.h - monster race flags
  *
- * Changing flag order will break savefiles. There is a hard-coded limit of
- * 96 flags, due to 12 bytes of storage for lore flags in the savefile. Flags
- * below start from 1 on line 11, so a flag's sequence number is its line
- * number minus 10. Column 2 (descr) is currently used for lore descriptions.
+ * Changing flag order will break savefiles. There was a hard-coded limit of
+ * 96 flags, due to 12 bytes of storage for lore flags in the savefile; this 
+ * should be fixed now. Flags below start from 1 on line 11, so a flag's 
+ * sequence number is its line number minus 10. Column 2 (descr) is currently 
+ * used for lore descriptions.
  */
-
 /* symbol       descr */
 RF(NONE,        "")
 RF(UNIQUE,      "")
@@ -22,8 +22,6 @@ RF(FORCE_SLEEP, "")
 RF(FORCE_EXTRA, "")
 RF(GROUP_AI,       "")
 RF(SEASONAL,     "")
-RF(XXX11,      "")
-RF(XXX12,     "")
 RF(NEVER_BLOW,  "")
 RF(NEVER_MOVE,  "")
 RF(RAND_25,     "")
@@ -50,12 +48,7 @@ RF(EMPTY_MIND,  "not detected by telepathy")
 RF(WEIRD_MIND,  "rarely detected by telepathy")
 RF(MULTIPLY,    "")
 RF(REGENERATE,  "")
-RF(XXX1,        "")
-RF(XXX2,        "")
 RF(POWERFUL,    "")
-RF(XXX3,        "")
-RF(XXX4,        "")
-RF(XXX5,        "")
 RF(OPEN_DOOR,   "open doors")
 RF(BASH_DOOR,   "bash down doors")
 RF(PASS_WALL,   "pass through walls")
@@ -64,14 +57,6 @@ RF(MOVE_BODY,   "push past weaker monsters")
 RF(KILL_BODY,   "destroy weaker monsters")
 RF(TAKE_ITEM,   "pick up objects")
 RF(KILL_ITEM,   "destroy objects")
-RF(BRAIN_1,     "")
-RF(BRAIN_2,     "")
-RF(BRAIN_3,     "")
-RF(BRAIN_4,     "")
-RF(BRAIN_5,     "")
-RF(BRAIN_6,     "")
-RF(BRAIN_7,     "")
-RF(BRAIN_8,     "")
 RF(ORC,         "orc")
 RF(TROLL,       "troll")
 RF(GIANT,       "giant")
@@ -81,9 +66,7 @@ RF(UNDEAD,      "undead")
 RF(EVIL,        "evil")
 RF(ANIMAL,      "natural")
 RF(METAL,       "metal")
-RF(XXX6,        "")
 RF(NONLIVING,	"nonliving")
-RF(XXX7,		"")
 RF(HURT_LIGHT,  "bright light")
 RF(HURT_ROCK,   "rock remover")
 RF(HURT_FIRE,   "fire")
@@ -93,13 +76,11 @@ RF(IM_ELEC,     "lightning")
 RF(IM_FIRE,     "fire")
 RF(IM_COLD,     "cold")
 RF(IM_POIS,     "poison")
-RF(XXX8,		"")
 RF(RES_NETH,    "nether")
 RF(IM_WATER,    "water")
 RF(RES_PLAS,    "plasma")
 RF(RES_NEXUS,   "nexus")
 RF(RES_DISE,    "disenchantment")
-RF(XXX9,		"")
 RF(NO_FEAR,     "frightened")
 RF(NO_STUN,     "stunned")
 RF(NO_CONF,     "confused")
