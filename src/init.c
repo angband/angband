@@ -34,6 +34,7 @@
 #include "object/object.h"
 #include "object/obj-list.h"
 #include "object/slays.h"
+#include "object/obj-tval.h"
 #include "object/tvalsval.h"
 #include "option.h"
 #include "parser.h"

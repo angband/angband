@@ -27,6 +27,7 @@
 #include "monster/mon-list.h"
 #include "monster/mon-util.h"
 #include "object/obj-list.h"
+#include "object/obj-tval.h"
 #include "option.h"
 #include "prefs.h"
 #include "squelch.h"

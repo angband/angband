@@ -26,6 +26,8 @@ bool tval_can_have_failure(const struct object *o_ptr);
 bool tval_can_have_flavor_k(const struct object_kind *kind);
 bool tval_can_have_nourishment(const struct object *o_ptr);
 bool tval_can_have_timeout(const struct object *o_ptr);
+int tval_find_idx(const char *name);
+const char *tval_find_name(int tval);
 bool tval_is_ammo(const struct object *o_ptr);
 bool tval_is_armor(const struct object *o_ptr);
 bool tval_is_body_armor(const struct object *o_ptr);

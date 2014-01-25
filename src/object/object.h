@@ -725,8 +725,6 @@ object_kind *lookup_kind(int tval, int sval);
 int lookup_name(int tval, const char *name);
 int lookup_artifact_name(const char *name);
 int lookup_sval(int tval, const char *name);
-int tval_find_idx(const char *name);
-const char *tval_find_name(int tval);
 bool obj_has_charges(const object_type *o_ptr);
 bool obj_can_zap(const object_type *o_ptr);
 bool obj_is_activatable(const object_type *o_ptr);

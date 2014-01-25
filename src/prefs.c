@@ -20,6 +20,7 @@
 #include "angband.h"
 #include "keymap.h"
 #include "prefs.h"
+#include "object/obj-tval.h"
 #include "squelch.h"
 #include "spells.h"
 

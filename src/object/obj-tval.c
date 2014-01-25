@@ -19,6 +19,7 @@
 #include "obj-tval.h"
 
 #include "tvalsval.h"
+#include "z-util.h"
 
 bool tval_is_staff(const struct object *o_ptr)
 {
@@ -279,4 +280,81 @@ bool tval_is_book_k(const struct object_kind *kind)
 bool tval_is_zapper(const struct object *o_ptr)
 {
 	return o_ptr->tval == TV_WAND || o_ptr->tval == TV_STAFF;
+}
+
+/**
+ * List of { tval, name } pairs.
+ */
+static const grouper tval_names[] =
+{
+	{ TV_CHEST,       "chest" },
+	{ TV_SHOT,        "shot" },
+	{ TV_ARROW,       "arrow" },
+	{ TV_BOLT,        "bolt" },
+	{ TV_BOW,         "bow" },
+	{ TV_DIGGING,     "digger" },
+	{ TV_HAFTED,      "hafted" },
+	{ TV_POLEARM,     "polearm" },
+	{ TV_SWORD,       "sword" },
+	{ TV_BOOTS,       "boots" },
+	{ TV_GLOVES,      "gloves" },
+	{ TV_HELM,        "helm" },
+	{ TV_CROWN,       "crown" },
+	{ TV_SHIELD,      "shield" },
+	{ TV_CLOAK,       "cloak" },
+	{ TV_SOFT_ARMOR,  "soft armor" },
+	{ TV_SOFT_ARMOR,  "soft armour" },
+	{ TV_HARD_ARMOR,  "hard armor" },
+	{ TV_HARD_ARMOR,  "hard armour" },
+	{ TV_DRAG_ARMOR,  "dragon armor" },
+	{ TV_DRAG_ARMOR,  "dragon armour" },
+	{ TV_LIGHT,       "light" },
+	{ TV_AMULET,      "amulet" },
+	{ TV_RING,        "ring" },
+	{ TV_STAFF,       "staff" },
+	{ TV_WAND,        "wand" },
+	{ TV_ROD,         "rod" },
+	{ TV_SCROLL,      "scroll" },
+	{ TV_POTION,      "potion" },
+	{ TV_FLASK,       "flask" },
+	{ TV_FOOD,        "food" },
+	{ TV_MAGIC_BOOK,  "magic book" },
+	{ TV_PRAYER_BOOK, "prayer book" },
+	{ TV_GOLD,        "gold" },
+};
+
+/**
+ * Returns the numeric equivalent tval of the textual tval `name`.
+ */
+int tval_find_idx(const char *name)
+{
+	size_t i = 0;
+	unsigned int r;
+
+	if (sscanf(name, "%u", &r) == 1)
+		return r;
+
+	for (i = 0; i < N_ELEMENTS(tval_names); i++)
+	{
+		if (!my_stricmp(name, tval_names[i].name))
+			return tval_names[i].tval;
+	}
+
+	return -1;
+}
+
+/**
+ * Returns the textual equivalent tval of the numeric tval `name`.
+ */
+const char *tval_find_name(int tval)
+{
+	size_t i = 0;
+
+	for (i = 0; i < N_ELEMENTS(tval_names); i++)
+	{
+		if (tval == tval_names[i].tval)
+			return tval_names[i].name;
+	}
+
+	return "unknown";
 }
