@@ -26,7 +26,7 @@
 #include "init.h"
 #include "monster/mon-make.h"
 #include "monster/mon-spell.h"
-#include "object/tvalsval.h"
+#include "obj-tvalsval.h"
 #include "parser.h"
 #include "trap.h"
 #include "z-queue.h"

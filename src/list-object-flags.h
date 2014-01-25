@@ -1,5 +1,5 @@
 /*
- * File: src/object/list-object-flags.h
+ * File: src/list-object-flags.h
  * Purpose: object flags for all objects
  *
  * Changing flag order will break savefiles. There is a hard-coded limit of

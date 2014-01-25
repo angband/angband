@@ -19,7 +19,7 @@
 
 #include "cave.h"
 #include "cmds.h"
-#include "object/tvalsval.h"
+#include "obj-tvalsval.h"
 #include "game-cmd.h"
 #include "spells.h"
 

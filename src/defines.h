@@ -281,7 +281,7 @@ enum
 #define FEELING1		10		/* Squares needed to see in order to trigger first feeling */
 
 /*
- * Chest trap flags (see "object/chest.c")
+ * Chest trap flags (see "obj-chest.c")
  */
 #define CHEST_LOSE_STR	0x01
 #define CHEST_LOSE_CON	0x02

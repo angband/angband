@@ -9,7 +9,7 @@
 #include "z-dice.h"
 #include "game-cmd.h"
 #include "cave.h"
-#include "object/obj-flag.h"
+#include "obj-flag.h"
 
 
 

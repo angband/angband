@@ -14,7 +14,7 @@
 #endif /* TEST_DATA */
 
 #include "angband.h"
-#include "object/tvalsval.h"
+#include "obj-tvalsval.h"
 #include "player/player.h"
 
 static struct player_sex TEST_DATA test_sex = {

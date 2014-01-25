@@ -25,9 +25,9 @@
 #include "dungeon.h"
 #include "init.h"
 #include "monster/mon-make.h"
-#include "object/pval.h"
-#include "object/obj-tval.h"
-#include "object/tvalsval.h"
+#include "obj-pval.h"
+#include "obj-tval.h"
+#include "obj-tvalsval.h"
 #include "stats/db.h"
 #include "stats/structs.h"
 #include <stddef.h>
@@ -821,7 +821,7 @@ static int stats_dump_lists(void)
 	{
 		#define OF(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s) \
 			{ OF_##a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, #a },
-		#include "object/list-object-flags.h"
+		#include "list-object-flags.h"
 		#undef OF
 	};
 
@@ -829,7 +829,7 @@ static int stats_dump_lists(void)
 	{
 		#define SLAY(a, b, c, d, e, f, g, h, i, j) \
 			{ SL_##a, b, c, d, e, f, g, h, #a, j},
-		#include "object/list-slays.h"
+		#include "list-slays.h"
 		#undef SLAY
 	};
 

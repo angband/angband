@@ -27,9 +27,9 @@
 #include "wizard.h"
 #include "target.h"
 #include "squelch.h"
-#include "object/tvalsval.h"
-#include "object/obj-tval.h"
-#include "object/object.h"
+#include "obj-tvalsval.h"
+#include "obj-tval.h"
+#include "object.h"
 #include "monster/mon-lore.h"
 #include "monster/mon-util.h"
 

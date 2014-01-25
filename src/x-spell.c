@@ -19,7 +19,7 @@
 #include "angband.h"
 #include "cave.h"
 #include "effects.h"
-#include "object/tvalsval.h"
+#include "obj-tvalsval.h"
 #include "spells.h"
 
 /*

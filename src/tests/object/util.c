@@ -3,7 +3,7 @@
 #include "unit-test.h"
 #include "unit-test-data.h"
 
-#include "object/object.h"
+#include "object.h"
 
 int setup_tests(void **state) {
     p_ptr->inventory = &test_inven[0];

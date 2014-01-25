@@ -27,7 +27,7 @@
 #include "monster/mon-timed.h"
 #include "monster/mon-blow-methods.h"
 #include "monster/mon-blow-effects.h"
-#include "object/obj-flag.h"
+#include "obj-flag.h"
 
 /** Constants **/
 

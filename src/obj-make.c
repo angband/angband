@@ -20,10 +20,10 @@
 #include "alloc.h"
 #include "cave.h"
 #include "init.h"
+#include "obj-pval.h"
+#include "obj-slays.h"
 #include "obj-tval.h"
-#include "object/tvalsval.h"
-#include "object/pval.h"
-#include "object/slays.h"
+#include "obj-tvalsval.h"
 
 /*
  * The chance of inflating the requested object level (1/x).

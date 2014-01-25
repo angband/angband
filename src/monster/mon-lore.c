@@ -22,7 +22,7 @@
 #include "monster/mon-spell.h"
 #include "monster/mon-util.h"
 #include "monster/mon-blow-effects.h"
-#include "object/obj-tval.h"
+#include "obj-tval.h"
 #include "attack.h"
 
 /*

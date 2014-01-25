@@ -21,11 +21,11 @@
 #include "attack.h"
 #include "effects.h"
 #include "cmds.h"
+#include "obj-pval.h"
+#include "obj-slays.h"
 #include "obj-tval.h"
-#include "object/tvalsval.h"
+#include "obj-tvalsval.h"
 #include "z-textblock.h"
-#include "object/slays.h"
-#include "object/pval.h"
 
 /*
  * Describes a flag-name pair.

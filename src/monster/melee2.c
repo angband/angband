@@ -26,8 +26,8 @@
 #include "monster/mon-util.h"
 #include "monster/mon-blow-methods.h"
 #include "monster/mon-blow-effects.h"
-#include "object/slays.h"
-#include "object/obj-tval.h"
+#include "obj-slays.h"
+#include "obj-tval.h"
 #include "spells.h"
 #include "squelch.h"
 

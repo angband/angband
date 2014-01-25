@@ -4,8 +4,8 @@
 #define PLAYER_PLAYER_H
 
 #include "guid.h"
-#include "object/obj-flag.h"
-#include "object/object.h"
+#include "obj-flag.h"
+#include "object.h"
 #include "option.h"
 
 

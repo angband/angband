@@ -26,9 +26,9 @@
 #include "history.h"
 #include "monster/mon-timed.h"
 #include "monster/mon-util.h"
-#include "object/obj-tval.h"
-#include "object/tvalsval.h"
-#include "object/object.h"
+#include "obj-tval.h"
+#include "obj-tvalsval.h"
+#include "object.h"
 #include "squelch.h"
 #include "trap.h"
 

@@ -20,8 +20,8 @@
 #include "attack.h"
 #include "cmds.h"
 #include "game-cmd.h"
-#include "object/obj-tval.h"
-#include "object/object.h"
+#include "obj-tval.h"
+#include "object.h"
 #include "spells.h"
 #include "target.h"
 

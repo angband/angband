@@ -25,8 +25,8 @@
 #include "monster/mon-make.h"
 #include "monster/mon-timed.h"
 #include "monster/mon-util.h"
-#include "object/obj-tval.h"
-#include "object/tvalsval.h"
+#include "obj-tval.h"
+#include "obj-tvalsval.h"
 #include "quest.h"
 
 s16b num_repro;

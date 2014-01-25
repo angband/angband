@@ -3,9 +3,9 @@
 #include "unit-test.h"
 
 #include "init.h"
-#include "object/tvalsval.h"
-#include "object/obj-flag.h"
-#include "object/object.h"
+#include "obj-tvalsval.h"
+#include "obj-flag.h"
+#include "object.h"
 #include "z-term.h"
 
 int setup_tests(void **state) {

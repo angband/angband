@@ -22,8 +22,8 @@
 #include "monster/mon-blow-effects.h"
 #include "monster/mon-blow-methods.h"
 #include "monster/mon-util.h"
-#include "object/obj-tval.h"
-#include "object/tvalsval.h"
+#include "obj-tval.h"
+#include "obj-tvalsval.h"
 
 /**
  * Do damage as the result of a melee attack that has an elemental aspect.

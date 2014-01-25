@@ -24,14 +24,14 @@
 #include "history.h"
 #include "monster/mon-make.h"
 #include "obj-tval.h"
-#include "object/tvalsval.h"
+#include "obj-tvalsval.h"
+#include "object.h"
 #include "prefs.h"
 #include "randname.h"
 #include "spells.h"
 #include "squelch.h"
 #include "z-queue.h"
 #include "grafmode.h"
-#include "object.h"
 
 static struct object *o_list;
 

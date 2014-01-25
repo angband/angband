@@ -19,8 +19,8 @@
 #include "angband.h"
 #include "squelch.h"
 #include "obj-tval.h"
-#include "object/tvalsval.h"
-#include "object/pval.h"
+#include "obj-tvalsval.h"
+#include "obj-pval.h"
 
 
 /**

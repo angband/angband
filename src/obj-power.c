@@ -17,10 +17,10 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
-#include "object/obj-tval.h"
-#include "object/slays.h"
-#include "object/tvalsval.h"
-#include "object/pval.h"
+#include "obj-pval.h"
+#include "obj-slays.h"
+#include "obj-tval.h"
+#include "obj-tvalsval.h"
 #include "init.h"
 #include "effects.h"
 #include "monster/mon-power.h"

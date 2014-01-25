@@ -18,7 +18,7 @@
 
 #include "obj-tval.h"
 
-#include "tvalsval.h"
+#include "obj-tvalsval.h"
 #include "z-util.h"
 
 bool tval_is_staff(const struct object *o_ptr)

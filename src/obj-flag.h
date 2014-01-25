@@ -1,5 +1,5 @@
 /*
- * File: src/object/obj-flag.h
+ * File: src/obj-flag.h
  * Purpose: definitions and functions for object flags
  *
  * Copyright (c) 2011 Chris Carr

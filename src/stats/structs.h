@@ -24,7 +24,7 @@
 #include "effects.h"
 #include "monster/monster.h"
 #include "monster/mon-spell.h"
-#include "object/slays.h"
+#include "obj-slays.h"
 
 /*
  * Entries for spell/activation descriptions

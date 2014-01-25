@@ -21,7 +21,7 @@
 #include "cmds.h"
 #include "game-cmd.h"
 #include "keymap.h"
-#include "tvalsval.h" /* Only for use_flavor_glyph() */
+#include "obj-tvalsval.h" /* Only for use_flavor_glyph() */
 
 /*
  * Determine if the attr and char should consider the item's flavor

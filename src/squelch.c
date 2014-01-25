@@ -19,9 +19,9 @@
 #include "angband.h"
 #include "cmds.h"
 #include "ui-menu.h"
-#include "object/obj-tval.h"
-#include "object/tvalsval.h"
-#include "object/pval.h"
+#include "obj-pval.h"
+#include "obj-tval.h"
+#include "obj-tvalsval.h"
 #include "squelch.h"
 
 

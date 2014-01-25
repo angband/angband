@@ -30,8 +30,8 @@
 #include "monster/mon-list.h"
 #include "monster/mon-util.h"
 #include "monster/monster.h"
-#include "object/obj-list.h"
-#include "object/tvalsval.h"
+#include "obj-list.h"
+#include "obj-tvalsval.h"
 #include "textui.h"
 #include "ui-birth.h"
 

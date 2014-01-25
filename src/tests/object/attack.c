@@ -4,7 +4,7 @@
 #include "unit-test-data.h"
 
 #include "attack.h"
-#include "object/object.h"
+#include "object.h"
 
 NOSETUP
 NOTEARDOWN

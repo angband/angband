@@ -18,7 +18,7 @@
 
 #include "angband.h"
 #include "cave.h"
-#include "object/tvalsval.h"
+#include "obj-tvalsval.h"
 #include "game-cmd.h"
 #include "spells.h"
 

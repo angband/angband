@@ -31,7 +31,7 @@
 #include "monster/mon-spell.h"
 #include "monster/mon-util.h"
 #include "monster/monster.h"
-#include "object/obj-tval.h"
+#include "obj-tval.h"
 #include "pathfind.h"
 #include "prefs.h"
 #include "savefile.h"

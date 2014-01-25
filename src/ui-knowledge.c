@@ -24,7 +24,7 @@
 #include "monster/mon-lore.h"
 #include "monster/monster.h"
 #include "monster/mon-util.h"
-#include "object/tvalsval.h"
+#include "obj-tvalsval.h"
 #include "squelch.h"
 #include "store.h"
 #include "ui.h"

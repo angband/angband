@@ -129,20 +129,20 @@ ANGFILES = \
 	monster/mon-spell.o \
 	monster/mon-timed.o \
 	monster/mon-util.o \
-	object/chest.o \
-	object/identify.o \
-	object/obj-desc.o \
-	object/obj-flag.o \
-	object/obj-info.o \
-	object/obj-list.o \
-	object/obj-make.o \
-	object/obj-power.o \
-	object/obj-tval.o \
-	object/obj-ui.o \
-	object/obj-util.o \
-	object/pval.o \
-	object/randart.o \
-	object/slays.o \
+	obj-chest.o \
+	obj-desc.o \
+	obj-flag.o \
+	obj-identify.o \
+	obj-info.o \
+	obj-list.o \
+	obj-make.o \
+	obj-power.o \
+	obj-pval.o \
+	obj-randart.o \
+	obj-slays.o \
+	obj-tval.o \
+	obj-ui.o \
+	obj-util.o \
 	option.o \
 	parser.o \
 	randname.o \

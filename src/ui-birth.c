@@ -21,7 +21,7 @@
 #include "files.h"
 #include "game-cmd.h"
 #include "game-event.h"
-#include "object/tvalsval.h"
+#include "obj-tvalsval.h"
 #include "ui-birth.h"
 #include "ui-menu.h"
 #include "ui-options.h"

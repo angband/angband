@@ -17,7 +17,7 @@
  */
 
 #include "angband.h"
-#include "object/slays.h"
+#include "obj-slays.h"
 #include "monster/mon-util.h"
 
 

@@ -3,7 +3,7 @@
 #include "unit-test.h"
 
 #include "init.h"
-#include "object/object.h"
+#include "object.h"
 
 int setup_tests(void **state) {
 	*state = init_parse_s();

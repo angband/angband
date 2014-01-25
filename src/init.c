@@ -31,11 +31,11 @@
 #include "monster/mon-list.h"
 #include "monster/mon-msg.h"
 #include "monster/mon-util.h"
-#include "object/object.h"
-#include "object/obj-list.h"
-#include "object/slays.h"
-#include "object/obj-tval.h"
-#include "object/tvalsval.h"
+#include "obj-list.h"
+#include "obj-slays.h"
+#include "obj-tval.h"
+#include "obj-tvalsval.h"
+#include "object.h"
 #include "option.h"
 #include "parser.h"
 #include "prefs.h"
@@ -69,7 +69,7 @@ static struct history_chart *histories;
 
 static const char *k_info_flags[] = {
 	#define OF(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r) #a,
-	#include "object/list-object-flags.h"
+	#include "list-object-flags.h"
 	#undef OF
 	NULL
 };

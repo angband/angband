@@ -1,5 +1,5 @@
 /*
- * File: src/object/obj-flag.c
+ * File: src/obj-flag.c
  * Purpose: functions to deal with object flags
  *
  * Copyright (c) 2011 Chris Carr
@@ -19,7 +19,7 @@
 
 /**
  * Details of the different object flags in the game.
- * See src/object/obj-flag.h for structure
+ * See src/obj-flag.h for structure
  */
 static const struct object_flag object_flag_table[] =
 {

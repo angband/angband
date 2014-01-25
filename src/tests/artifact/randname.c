@@ -1,8 +1,8 @@
 /* artifact/randname */
 
 #include "unit-test.h"
-#include "object/obj-flag.h"
-#include "object/object.h"
+#include "obj-flag.h"
+#include "object.h"
 
 NOSETUP
 NOTEARDOWN
