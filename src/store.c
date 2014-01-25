@@ -1438,7 +1438,7 @@ static bool store_create_random(struct store *store)
 		/*** Pre-generation filters ***/
 
 		/* No chests in stores XXX */
-		if (tval_is_chest(i_ptr)) continue;
+		if (kind->tval == TV_CHEST) continue;
 
 
 		/*** Generate the item ***/
