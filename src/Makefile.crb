@@ -43,11 +43,6 @@ ppc: CFLAGS = \
 	-DPRIVATE_USER_PATH=\"~/Library/Preferences\" -DUSE_PRIVATE_PATHS
 ppc: OBJ_CFLAGS = -std=c99 -x objective-c -mmacosx-version-min=10.0
 
-# -DALLOW_BORG is required for all .o files in a borg build 
-ifneq (,$(findstring borg, $(MAKECMDGOALS)))
-CFLAGS += -DALLOW_BORG
-endif
-
 # Check for autoconf.h; do not warn on nonexistence
 autoconf= $(wildcard autoconf.h)
 ifneq ($(autoconf),)
@@ -63,7 +58,6 @@ ifneq (${VERSION},)
 	CFLAGS += -DBUILD_ID=${VERSION}
 endif
 
-BOBJS = borg1.o borg2.o borg3.o borg4.o borg5.o borg6.o borg7.o borg8.o borg9.o
 OBJS = $(BASEOBJS)
 OSX_OBJS = main-crb.o
 
@@ -84,9 +78,6 @@ $(EXE): $(EXE).o $(OSX_OBJS)
 
 ppc: $(OBJS) 
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $(EXE) $(OBJS) $(LIBS) 
-
-borg: $(OBJS) $(BOBJS)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $(EXE) $(OBJS) $(BOBJS) $(LIBS) 
 
 #
 # Clean up old junk

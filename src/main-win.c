@@ -107,15 +107,6 @@
 
 
 
-#ifdef ALLOW_BORG
-
-/*
- * Hack -- allow use of "screen saver" mode
- */
-#define USE_SAVER
-
-#endif /* ALLOW_BORG */
-
 /*
  * This may need to be removed for some compilers XXX XXX XXX
  */
@@ -3177,50 +3168,12 @@ static void check_for_save_file(LPSTR cmd_line)
 
 #ifdef USE_SAVER
 
-#ifdef ALLOW_BORG
-
-/*
- * Hook into the inkey() function so that flushing keypresses
- * doesn't affect us.
- *
- * ToDo: Try to implement recording and playing back of games
- * by saving/reading the keypresses to/from a file. Note that
- * interrupting certain actions (resting, running, and other
- * repeated actions) would mess that up, so this would have to
- * be switched off when recording.
- */
-
-extern struct keypress (*inkey_hack)(int flush_first);
-
-static struct keypress screensaver_inkey_hack_buffer[1024];
-
-static struct keypress screensaver_inkey_hack(int flush_first)
-{
-	static size_t screensaver_inkey_hack_index = 0;
-
-	if (screensaver_inkey_hack_index < sizeof(screensaver_inkey_hack_buffer))
-		return (screensaver_inkey_hack_buffer[screensaver_inkey_hack_index++]);
-	else
-	{
-		struct keypress key = {EVT_KBRD, ESCAPE, 0};
-		return key;
-	}
-}
-
-#endif /* ALLOW_BORG */
-
-
 /*
  * Start the screensaver
  */
 static void start_screensaver(void)
 {
 	bool file_exist;
-
-#ifdef ALLOW_BORG
-	int i, j;
-	struct keypress key = {EVT_KBRD, 0, 0};
-#endif /* ALLOW_BORG */
 
 	/* Set the name for process_player_name() */
 	my_strcpy(op_ptr->full_name, saverfilename, sizeof(op_ptr->full_name));
@@ -3245,87 +3198,6 @@ static void start_screensaver(void)
 	/* Low priority */
 	SendMessage(data[0].w, WM_COMMAND, IDM_OPTIONS_LOW_PRIORITY, 0);
 
-#ifdef ALLOW_BORG
-	/*
-	 * MegaHack - Try to start the Borg.
-	 *
-	 * The simulated keypresses will be processed when play_game()
-	 * is called.
-	 */
-
-	inkey_hack = screensaver_inkey_hack;
-	j = 0;
-
-	/*
-	 * If no savefile is present or then go through the steps necessary
-	 * to create a random character.  If a savefile already is present
-	 * then the simulated keypresses will either clean away any [-more-]
-	 * prompts (if the character is alive), or create a new random
-	 * character.
-	 *
-	 * Luckily it's possible to send the same keypresses no matter if
-	 * the character is alive, dead, or not even yet created.
-	 */
-	key.code = ESCAPE;
-	screensaver_inkey_hack_buffer[j++] = key; /* Gender */
-	screensaver_inkey_hack_buffer[j++] = key; /* Race */
-	screensaver_inkey_hack_buffer[j++] = key; /* Class */
-	key.code = 'n';
-	screensaver_inkey_hack_buffer[j++] = key; /* Modify options */
-	key.code = KC_ENTER;
-	screensaver_inkey_hack_buffer[j++] = key; /* Reroll */
-
-	if (!file_exist)
-	{
-		/* Savefile name */
-		int n = strlen(saverfilename);
-		for (i = 0; i < n; i++)
-		{
-			key.code = saverfilename[i];
-			screensaver_inkey_hack_buffer[j++] = key;
-		}
-	}
-
-	key.code = KC_ENTER;
-	screensaver_inkey_hack_buffer[j++] = key; /* Return */
-	key.code = ESCAPE;
-	screensaver_inkey_hack_buffer[j++] = key; /* Character info */
-
-	/*
-	 * Make sure the "verify_special" options is off, so that we can
-	 * get into Borg mode without confirmation.
-	 * 
-	 * Try just marking the savefile correctly.
-	 */
-	p_ptr->noscore |= (NOSCORE_BORG);
-
-	/*
-	 * Make sure the "OPT(cheat_live)" option is set, so that the Borg can
-	 * automatically restart.
-	 */
-	key.code = '5';
-	screensaver_inkey_hack_buffer[j++] = key; /* Cheat options */
-
-	/* Cursor down to "cheat live" */
-	key.code = '2';
-	for (i = 0; i < OPT_cheat_live - OPT_CHEAT - 1; i++)
-		screensaver_inkey_hack_buffer[j++] = key;
-
-	key.code = 'y';
-	screensaver_inkey_hack_buffer[j++] = key; /* Switch on "OPT(cheat_live)" */
-	key.code = ESCAPE;
-	screensaver_inkey_hack_buffer[j++] = key; /* Leave cheat options */
-	screensaver_inkey_hack_buffer[j++] = key; /* Leave options */
-
-	/*
-	 * Now start the Borg!
-	 */
-
-	key.code = KTRL('Z');
-	screensaver_inkey_hack_buffer[j++] = key; /* Enter borgmode */
-	key.code = 'z';
-	screensaver_inkey_hack_buffer[j++] = key; /* Run Borg */
-#endif /* ALLOW_BORG */
 
 	/* Play game */
 	play_game();

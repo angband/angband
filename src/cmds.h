@@ -52,7 +52,6 @@ void do_cmd_itemlist(void);
 /* cmd-misc.c */
 void do_cmd_wizard(void);
 void do_cmd_try_debug(void);
-void do_cmd_try_borg(void);
 void do_cmd_quit(struct command *cmd);
 void do_cmd_xxx_options(void);
 void do_cmd_unknown(void);

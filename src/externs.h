@@ -18,11 +18,6 @@
  * new entries to this file.
  */
 
-#ifdef ALLOW_BORG
-/* Screensaver variables for the borg.  apw */
-extern bool screensaver;
-#endif /* ALLOW_BORG */
-
 /* tables.c */
 extern const s16b ddd[9];
 extern const s16b ddx[10];
@@ -177,10 +172,5 @@ char* random_hint(void);
 
 /* wiz-spoil.c */
 bool make_fake_artifact(object_type *o_ptr, struct artifact *artifact);
-
-/* borg.h */
-#ifdef ALLOW_BORG
-extern void do_cmd_borg(void);
-#endif /* ALLOW_BORG */
 
 #endif /* !INCLUDED_EXTERNS_H */

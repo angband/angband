@@ -67,21 +67,4 @@
 
 
 
-/*** Borg ***/
-
-/* Compile in support for the borg. */
-#define ALLOW_BORG
-
-/* Allow borgs to yield "high scores"? */
-#define SCORE_BORGS
-
-
-/*
- * Allow the Borg to use graphics.
- */
-#if defined(ALLOW_BORG)
-# define ALLOW_BORG_GRAPHICS
-#endif
-
-
 #endif /* !INCLUDED_CONFIG_H */

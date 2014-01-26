@@ -440,17 +440,6 @@ void enter_score(time_t *death_time)
 		message_flush();
 	}
 
-#ifndef SCORE_BORGS
-
-	/* Borg-mode pre-empts scoring */
-	else if (p_ptr->noscore & NOSCORE_BORG)
-	{
-		msg("Score not registered for borgs.");
-		message_flush();
-	}
-
-#endif /* SCORE_BORGS */
-
 	/* Hack -- Interupted */
 	else if (!p_ptr->total_winner && streq(p_ptr->died_from, "Interrupting"))
 	{

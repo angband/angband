@@ -331,12 +331,6 @@ Display status
 Display item list
   Display a list of items you know about and their distance from you.
  
-Display borg messages
-  This window flag is currently used only by the Borg.
-
-Display borg status
-  This window flag is currently used only by the Borg.
-
 Left Over Information
 =====================
 

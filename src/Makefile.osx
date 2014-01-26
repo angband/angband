@@ -38,11 +38,6 @@ DEPLOYMENT_TARGET = MACOSX_DEPLOYMENT_TARGET=10.5
 # and build flags in "./config"
 -include config
 
-# -DALLOW_BORG is required for all .o files in a borg build 
-ifneq (,$(findstring borg, $(MAKECMDGOALS)))
-CFLAGS += -DALLOW_BORG
-endif
-
 # Check for autoconf.h; do not warn on nonexistence
 autoconf= $(wildcard autoconf.h)
 ifneq ($(autoconf),)
@@ -58,7 +53,6 @@ ifeq (${VERSION},)
 endif
 
 
-BOBJS = borg1.o borg2.o borg3.o borg4.o borg5.o borg6.o borg7.o borg8.o borg9.o
 OBJS = $(BASEOBJS)
 OSX_OBJS = main-cocoa.o
 
@@ -78,9 +72,6 @@ $(EXE).o: $(OBJS)
 
 $(EXE): $(EXE).o $(OSX_OBJS)
 	$(DEPLOYMENT_TARGET) $(CC) $(CFLAGS) $(LDFLAGS) -o $(EXE) $(EXE).o $(OSX_OBJS) $(LIBS) 
-
-borg: $(OBJS) $(BOBJS)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $(EXE) $(OBJS) $(BOBJS) $(LIBS) 
 
 #
 # Clean up old junk

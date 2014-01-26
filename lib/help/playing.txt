@@ -138,7 +138,7 @@ Original Keyset Command Summary
   ,    Stay still (with pickup)        ^W    (special - wizard mode)
   <    Go up staircase                 ^X    Save and quit
   .    Run                             ^Y    (unused)
-  >    Go down staircase               ^Z    (special - borg command)
+  >    Go down staircase               ^Z    (unused)
   \\   (special - bypass keymap)        ~     Check knowledge
   \`   (special - escape)               ?     Help
   /    Identify symbol                 
@@ -203,7 +203,7 @@ Roguelike Keyset Command Summary
   ,    Run                             ^W   (special - wizard mode)
   <    Go up staircase                 ^X   Save and quit
   .    Stay still (with pickup)        ^Y   (alter - north west)
-  >    Go down staircase               ^Z   (special - borg command)
+  >    Go down staircase               ^Z   (unused)
   \\    (special - bypass keymap)       ~    Check knowledge 
   \`    (special - escape)              ?    Help
   /    Identify symbol                 

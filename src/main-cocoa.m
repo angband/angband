@@ -29,11 +29,6 @@
 //#define NSLog(...) ;
 
 
-#if BORG
-#include "borg1.h"
-#include "borg9.h"
-#endif
-
 #if defined(MACH_O_CARBON)
 
 /* Default creator signature */

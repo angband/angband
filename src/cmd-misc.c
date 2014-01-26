@@ -98,37 +98,6 @@ void do_cmd_try_debug(void)
 }
 
 
-
-#ifdef ALLOW_BORG
-
-/*
- * Verify use of "borg" mode
- */
-void do_cmd_try_borg(void)
-{
-	/* Ask first time */
-	if (!(p_ptr->noscore & NOSCORE_BORG))
-	{
-		/* Mention effects */
-		msg("You are about to use the dangerous, unsupported, borg commands!");
-		msg("Your machine may crash, and your savefile may become corrupted!");
-		message_flush();
-
-		/* Verify request */
-		if (!get_check("Are you sure you want to use the borg commands? "))
-			return;
-
-		/* Mark savefile */
-		p_ptr->noscore |= NOSCORE_BORG;
-	}
-
-	/* Okay */
-	//do_cmd_borg();
-}
-
-#endif /* ALLOW_BORG */
-
-
 /*
  * Quit the game.
  */

@@ -156,9 +156,6 @@ static struct cmd_info cmd_hidden[] =
 	{ "Repeat previous command", { 'n', KTRL('V') }, CMD_REPEAT, NULL },
 	{ "Do autopickup", { KTRL('G') }, CMD_AUTOPICKUP, NULL },
 	{ "Debug mode commands", { KTRL('A') }, CMD_NULL, do_cmd_try_debug },
-#ifdef ALLOW_BORG
-	{ "Borg commands", { KTRL('Z') }, CMD_NULL, do_cmd_try_borg }
-#endif
 };
 
 
