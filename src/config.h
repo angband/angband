@@ -84,25 +84,4 @@
 #endif
 
 
-/*** X11 settings ***/
-
-/*
- * OPTION: Default font (when using X11).
- */
-#define DEFAULT_X11_FONT		"9x15"
-
-
-/*
- * OPTION: Default fonts (when using X11)
- */
-#define DEFAULT_X11_FONT_0		"10x20"
-#define DEFAULT_X11_FONT_1		"9x15"
-#define DEFAULT_X11_FONT_2		"9x15"
-#define DEFAULT_X11_FONT_3		"5x8"
-#define DEFAULT_X11_FONT_4		"5x8"
-#define DEFAULT_X11_FONT_5		"5x8"
-#define DEFAULT_X11_FONT_6		"5x8"
-#define DEFAULT_X11_FONT_7		"5x8"
-
-
 #endif /* !INCLUDED_CONFIG_H */
