@@ -35,7 +35,6 @@
 #include "z-term.h"
 
 
-#ifdef ALLOW_DEBUG
 static void gf_display(menu_type *m, int type, bool cursor,
 		int row, int col, int wid)
 {
@@ -2118,6 +2117,3 @@ void do_cmd_debug(void)
 		}
 	}
 }
-
-#endif
-

@@ -72,8 +72,6 @@ void do_cmd_wizard(void)
 
 
 
-#ifdef ALLOW_DEBUG
-
 /*
  * Verify use of "debug" mode
  */
@@ -98,8 +96,6 @@ void do_cmd_try_debug(void)
 	/* Okay */
 	do_cmd_debug();
 }
-
-#endif /* ALLOW_DEBUG */
 
 
 

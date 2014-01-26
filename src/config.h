@@ -69,9 +69,6 @@
 
 /*** Some no-brainer defines ***/
 
-/* Compile in support for debug commands */
-#define ALLOW_DEBUG
-
 /* Compile in support for spoiler generation */
 #define ALLOW_SPOILERS
 

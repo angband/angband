@@ -152,14 +152,10 @@ static struct cmd_info cmd_hidden[] =
 	{ "Start running", { '.', ',' }, CMD_RUN, NULL },
 	{ "Stand still", { ',', '.' }, CMD_HOLD, NULL },
 	{ "Center map", { KTRL('L'), '@' }, CMD_NULL, do_cmd_center_map },
-
 	{ "Toggle wizard mode", { KTRL('W') }, CMD_NULL, do_cmd_wizard },
 	{ "Repeat previous command", { 'n', KTRL('V') }, CMD_REPEAT, NULL },
 	{ "Do autopickup", { KTRL('G') }, CMD_AUTOPICKUP, NULL },
-
-#ifdef ALLOW_DEBUG
 	{ "Debug mode commands", { KTRL('A') }, CMD_NULL, do_cmd_try_debug },
-#endif
 #ifdef ALLOW_BORG
 	{ "Borg commands", { KTRL('Z') }, CMD_NULL, do_cmd_try_borg }
 #endif
