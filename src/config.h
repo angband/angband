@@ -69,9 +69,6 @@
 
 /*** Some no-brainer defines ***/
 
-/* Compile in support for spoiler generation */
-#define ALLOW_SPOILERS
-
 /* Allow changing colours at runtime */
 #define ALLOW_COLORS
 

@@ -28,9 +28,6 @@
 #include "z-file.h"
 
 
-#ifdef ALLOW_SPOILERS
-
-
 /*
  * The spoiler file being created
  */
@@ -757,6 +754,3 @@ void do_cmd_spoilers(void)
 	menu_select(spoil_menu, 0, FALSE);
 	screen_load();
 }
-
-
-#endif

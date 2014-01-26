@@ -1653,17 +1653,12 @@ void do_cmd_debug(void)
 			break;
 		}
 
-#ifdef ALLOW_SPOILERS
-
 		/* Hack -- Generate Spoilers */
 		case '"':
 		{
 			do_cmd_spoilers();
 			break;
 		}
-
-#endif
-
 
 		/* Hack -- Help */
 		case '?':
