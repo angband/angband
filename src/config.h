@@ -69,9 +69,6 @@
 
 /*** Some no-brainer defines ***/
 
-/* Allow changing colours at runtime */
-#define ALLOW_COLORS
-
 /* Allow changing "visuals" at runtime */
 #define ALLOW_VISUALS
 

@@ -703,8 +703,6 @@ static void do_cmd_visuals(const char *title, int row)
 
 /*** Interact with colours ***/
 
-#ifdef ALLOW_COLORS
-
 static void colors_pref_load(const char *title, int row)
 {
 	/* Ask for and load a user pref file */
@@ -840,8 +838,6 @@ static void do_cmd_colors(const char *title, int row)
 
 	screen_load();
 }
-
-#endif
 
 
 /*** Non-complex menu actions ***/
@@ -1561,9 +1557,7 @@ static menu_action option_actions[] =
 	{ 0 },
 	{ 0, 'l', "Load a user pref file", options_load_pref_file },
 	{ 0, 'k', "Edit keymaps (advanced)", do_cmd_keymaps },
-#ifdef ALLOW_COLORS
 	{ 0, 'c', "Edit colours (advanced)", do_cmd_colors },
-#endif /* ALLOW_COLORS */
 	{ 0, 'v', "Save visuals (advanced)", do_cmd_visuals },
 };
 
