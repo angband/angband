@@ -618,8 +618,6 @@ static void visuals_pref_load(const char *title, int row)
 	do_cmd_pref_file_hack(15);
 }
 
-#ifdef ALLOW_VISUALS
-
 static void visuals_dump_monsters(const char *title, int row)
 {
 	dump_pref_file(dump_monsters, title, 15);
@@ -640,8 +638,6 @@ static void visuals_dump_flavors(const char *title, int row)
 	dump_pref_file(dump_flavors, title, 15);
 }
 
-#endif /* ALLOW_VISUALS */
-
 static void visuals_reset(const char *title, int row)
 {
 	/* Reset */
@@ -658,12 +654,10 @@ static menu_type *visual_menu;
 static menu_action visual_menu_items [] =
 {
 	{ 0, 0, "Load a user pref file",   visuals_pref_load },
-#ifdef ALLOW_VISUALS
 	{ 0, 0, "Save monster attr/chars", visuals_dump_monsters },
 	{ 0, 0, "Save object attr/chars",  visuals_dump_objects },
 	{ 0, 0, "Save feature attr/chars", visuals_dump_features },
 	{ 0, 0, "Save flavor attr/chars",  visuals_dump_flavors },
-#endif /* ALLOW_VISUALS */
 	{ 0, 0, "Reset visuals",           visuals_reset },
 };
 

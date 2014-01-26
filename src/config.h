@@ -67,13 +67,6 @@
 
 
 
-/*** Some no-brainer defines ***/
-
-/* Allow changing "visuals" at runtime */
-#define ALLOW_VISUALS
-
-
-
 /*** Borg ***/
 
 /* Compile in support for the borg. */
