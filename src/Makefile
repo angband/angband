@@ -6,7 +6,6 @@ include Makefile.src
 INCLUDE = $(HDRS) $(INCS)
 OBJECTS = $(ANGFILES) $(ZFILES)
 SRCS    = ${OBJECTS:.o=.c} ${MAINFILES:.o=.c}
-SUBDIRS = monster object player
 PROG    = angband$(PROG_SUFFIX)
 VERSION := $(shell ../scripts/version.sh)
 ifneq (${VERSION},)
