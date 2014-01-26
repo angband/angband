@@ -69,9 +69,6 @@
 
 /*** Some no-brainer defines ***/
 
-/* Allow the game to make noises correlating to what the player does in-game */
-#define USE_SOUND
-
 /* Allow the use of graphics rather than only having a text-mode */
 #define USE_GRAPHICS
 

@@ -42,18 +42,6 @@
  * are activated by a menu item.
  *
  *
- * Compiling this file, and using the resulting executable, requires
- * several extra files not distributed with the standard Angband code.
- * If "USE_GRAPHICS" is defined, then "readdib.h" and "readdib.c" must
- * be placed into "src/", and the "8x8.bmp" bitmap file must be placed
- * into "lib/xtra/graf".  In any case, some "*.fon" files (including
- * "8X13.FON" if nothing else) must be placed into "lib/xtra/font/".
- * If "USE_SOUND" is defined, then some special library (for example,
- * "winmm.lib") may need to be linked in, and desired "*.WAV" sound
- * files must be placed into "lib/xtra/sound/".  All of these extra
- * files can be found in the "ext-win" archive.
- *
- *
  * The "Term_xtra_win_clear()" function should probably do a low-level
  * clear of the current window, and redraw the borders and other things,
  * if only for efficiency.  XXX XXX XXX
@@ -188,8 +176,6 @@
 #define GWLP_USERDATA GWL_USERDATA
 #endif
 
-#ifdef USE_SOUND
-
 /*
  * Exclude parts of MMSYSTEM.H that are not needed
  */
@@ -204,8 +190,6 @@
 #define MMNOMMSYSTEM     /* General MMSYSTEM functions */
 
 #include <mmsystem.h>
-
-#endif /* USE_SOUND */
 
 #include <commdlg.h>
 #include <shellapi.h>
@@ -400,8 +384,6 @@ static BLENDFUNCTION blendfn;
 #endif /* USE_GRAPHICS */
 
 
-#ifdef USE_SOUND
-
 /*
  * Flag set once "sound" has been initialized
  */
@@ -413,8 +395,6 @@ static bool can_use_sound = FALSE;
  * An array of sound file names
  */
 static char *sound_file[MSG_MAX][SAMPLE_MAX];
-
-#endif /* USE_SOUND */
 
 
 /*
@@ -909,8 +889,6 @@ static void load_prefs(void)
 }
 
 
-#ifdef USE_SOUND
-
 /*
  * XXX XXX XXX - Taken from files.c.
  *
@@ -995,9 +973,6 @@ static void load_sound_prefs(void)
 		}
 	}
 }
-
-#endif /* USE_SOUND */
-
 
 /*
  * Create the new global palette based on the bitmap palette
@@ -1280,7 +1255,6 @@ static bool init_graphics(void)
 #endif /* USE_GRAPHICS */
 
 
-#ifdef USE_SOUND
 /*
  * Initialize sound
  */
@@ -1299,7 +1273,6 @@ static bool init_sound(void)
 	/* Result */
 	return (can_use_sound);
 }
-#endif /* USE_SOUND */
 
 
 /*
@@ -1650,8 +1623,6 @@ static errr Term_xtra_win_react(void)
 	}
 
 
-#ifdef USE_SOUND
-
 	/* Initialize sound (if needed) */
 	if (OPT(use_sound) && !init_sound())
 	{
@@ -1661,9 +1632,6 @@ static errr Term_xtra_win_react(void)
 		/* Cannot enable */
 		OPT(use_sound) = FALSE;
 	}
-
-#endif /* USE_SOUND */
-
 
 #ifdef USE_GRAPHICS
 
@@ -1876,18 +1844,14 @@ static errr Term_xtra_win_noise(void)
  */
 static void Term_xtra_win_sound(int v)
 {
-#ifdef USE_SOUND
 	int i;
 	char buf[1024];
 	MCI_OPEN_PARMS op;
 	MCI_PLAY_PARMS pp;
 	MCIDEVICEID pDevice;
-#endif /* USE_SOUND */
 
 	/* Illegal sound */
 	if ((v < 0) || (v >= MSG_MAX)) return;
-
-#ifdef USE_SOUND
 
 	/* Count the samples */
 	for (i = 0; i < SAMPLE_MAX; i++)
@@ -1927,13 +1891,6 @@ static void Term_xtra_win_sound(int v)
 	        /* Play the sound, catch errors */
 	        PlaySound(buf, 0, SND_FILENAME | SND_ASYNC);
 	}
-
-#else /* USE_SOUND */
-
-	/* Oops */
-	return;
-
-#endif /* USE_SOUND */
 }
 
 
@@ -5111,11 +5068,7 @@ static void hook_plog(const char *str)
  */
 static void hook_quit(const char *str)
 {
-	int i;
-
-#ifdef USE_SOUND
-	int j;
-#endif /* USE_SOUND */
+	int i, j;
 
 
 #ifdef USE_SAVER
@@ -5157,7 +5110,6 @@ static void hook_quit(const char *str)
 
 	close_graphics_modes();
 
-#ifdef USE_SOUND
 	/* Free the sound names */
 	for (i = 0; i < MSG_MAX; i++)
 	{
@@ -5168,7 +5120,6 @@ static void hook_quit(const char *str)
 			string_free(sound_file[i][j]);
 		}
 	}
-#endif /* USE_SOUND */
 
 	/*** Free some other stuff ***/
 
@@ -5326,12 +5277,8 @@ static void init_stuff(void)
 #endif /* USE_GRAPHICS */
 
 
-#ifdef USE_SOUND
-
 	/* Validate the "sound" directory */
 	validate_dir(ANGBAND_DIR_XTRA_SOUND);
-
-#endif /* USE_SOUND */
 }
 
 
@@ -5487,12 +5434,8 @@ int FAR PASCAL WinMain(HINSTANCE hInst, HINSTANCE hPrevInst,
 	}
 #endif /* USE_SAVER */
 
-#ifdef USE_SOUND
-
 	/* Set the sound hook */
 	sound_hook = Term_xtra_win_sound;
-
-#endif /* USE_SOUND */
 
 	/* Did the user double click on a save file? */
 	check_for_save_file(lpCmdLine);
