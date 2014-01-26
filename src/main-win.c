@@ -197,9 +197,7 @@
 /*
  * Include the support for loading bitmaps
  */
-#ifdef USE_GRAPHICS
-# include "win/readdib.h"
-#endif /* USE_GRAPHICS */
+#include "win/readdib.h"
 
 #include <wingdi.h>
 
@@ -353,8 +351,6 @@ static HMENU main_menu;
 static bool screensaver_active = FALSE;
 
 
-#ifdef USE_GRAPHICS
-
 /*
  * Flag set once "graphics" has been initialized
  */
@@ -380,8 +376,6 @@ static int overdrawmax = -1;
 
 static int alphablend = 0;
 static BLENDFUNCTION blendfn;
-
-#endif /* USE_GRAPHICS */
 
 
 /*
@@ -988,9 +982,7 @@ static void load_sound_prefs(void)
  */
 static int new_palette(void)
 {
-#ifdef USE_GRAPHICS
 	HPALETTE hBmPal;
-#endif /* USE_GRAPHICS */
 	HPALETTE hNewPal;
 	HDC hdc;
 	int i, nEntries;
@@ -1007,8 +999,6 @@ static int new_palette(void)
 	/* No bitmap */
 	lppe = NULL;
 	nEntries = 0;
-
-#ifdef USE_GRAPHICS
 
 	/* Check the bitmap palette */
 	hBmPal = infGraph.hPalette;
@@ -1030,8 +1020,6 @@ static int new_palette(void)
 			return (FALSE);
 		}
 	}
-
-#endif /* USE_GRAPHICS */
 
 	/* Size of palette */
 	pLogPalSize = sizeof(LOGPALETTE) + (nEntries + 16) * sizeof(PALETTEENTRY);
@@ -1118,7 +1106,6 @@ static int new_palette(void)
 }
 
 
-#ifdef USE_GRAPHICS
 /*
  * Initialize graphics
  */
@@ -1252,7 +1239,6 @@ static bool init_graphics(void)
 	/* Result */
 	return (can_use_graphics);
 }
-#endif /* USE_GRAPHICS */
 
 
 /*
@@ -1633,8 +1619,6 @@ static errr Term_xtra_win_react(void)
 		OPT(use_sound) = FALSE;
 	}
 
-#ifdef USE_GRAPHICS
-
         /* Handle "arg_graphics_nice" */
         if (use_graphics_nice != arg_graphics_nice)
         {
@@ -1711,8 +1695,6 @@ static errr Term_xtra_win_react(void)
                 /* Reset the flag */
                 change_tilesize = FALSE;
         }
-
-#endif /* USE_GRAPHICS */
 
 
 	/* Clean up windows */
@@ -2200,8 +2182,6 @@ static errr Term_pict_win(int x, int y, int n, const int *ap, const wchar_t *cp,
 {
 	term_data *td = (term_data*)(Term->data);
 
-#ifdef USE_GRAPHICS
-
 	int i;
 	int x1, y1, w1, h1;
 	int x2, y2, w2, h2, tw2, th2;
@@ -2331,13 +2311,6 @@ static errr Term_pict_win(int x, int y, int n, const int *ap, const wchar_t *cp,
 	/* Release */
 	ReleaseDC(td->w, hdc);
 
-#else /* USE_GRAPHICS */
-
-	/* Just erase this grid */
-	return (Term_wipe_win(x, y, n));
-
-#endif /* USE_GRAPHICS */
-
 	/* Success */
 	return 0;
 }
@@ -2390,8 +2363,6 @@ size_t Term_mbstowcs_win(wchar_t *dest, const char *src, int n)
 static errr Term_pict_win_alpha(int x, int y, int n, const int *ap, const wchar_t *cp, const int *tap, const wchar_t *tcp)
 {
 	term_data *td = (term_data*)(Term->data);
-
-#ifdef USE_GRAPHICS
 
 	int i;
 	int x1, y1, w1, h1;
@@ -2500,13 +2471,6 @@ static errr Term_pict_win_alpha(int x, int y, int n, const int *ap, const wchar_
 
 	/* Release */
 	ReleaseDC(td->w, hdc);
-
-#else /* USE_GRAPHICS */
-
-	/* Just erase this grid */
-	return (Term_wipe_win(x, y, n));
-
-#endif /* USE_GRAPHICS */
 
 	/* Success */
 	return 0;
@@ -3143,7 +3107,6 @@ static void setup_menus(void)
 	CheckMenuItem(hm, IDM_OPTIONS_LOW_PRIORITY,
 	              (low_priority ? MF_CHECKED : MF_UNCHECKED));
 
-#ifdef USE_GRAPHICS
 	if (inkey_flag && initialized) {
 		/* Menu "Options", Item "Graphics" */
 		mode = graphics_modes;
@@ -3166,7 +3129,6 @@ static void setup_menus(void)
 		EnableMenuItem(hm, IDM_TILE_12X20, MF_ENABLED);
 		EnableMenuItem(hm, IDM_TILE_16X25, MF_ENABLED);
 	}
-#endif /* USE_GRAPHICS */
 
 #ifdef USE_SAVER
 	/* Menu "Options", Item "ScreenSaver" */
@@ -5102,11 +5064,9 @@ static void hook_quit(const char *str)
 		term_nuke(&data[i].t);
 	}
 
-#ifdef USE_GRAPHICS
 	/* Free the bitmap stuff */
 	FreeDIB(&infGraph);
 	FreeDIB(&infMask);
-#endif /* USE_GRAPHICS */
 
 	close_graphics_modes();
 
@@ -5268,14 +5228,8 @@ static void init_stuff(void)
 	/* Hack -- Validate the basic font */
 	validate_file(path);
 
-
-#ifdef USE_GRAPHICS
-
 	/* Validate the "graf" directory */
 	validate_dir(ANGBAND_DIR_XTRA_GRAF);
-
-#endif /* USE_GRAPHICS */
-
 
 	/* Validate the "sound" directory */
 	validate_dir(ANGBAND_DIR_XTRA_SOUND);

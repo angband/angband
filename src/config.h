@@ -69,9 +69,6 @@
 
 /*** Some no-brainer defines ***/
 
-/* Allow the use of graphics rather than only having a text-mode */
-#define USE_GRAPHICS
-
 /* Compile in support for debug commands */
 #define ALLOW_DEBUG
 
@@ -98,7 +95,7 @@
 /*
  * Allow the Borg to use graphics.
  */
-#if defined(ALLOW_BORG) && defined(USE_GRAPHICS)
+#if defined(ALLOW_BORG)
 # define ALLOW_BORG_GRAPHICS
 #endif
 
