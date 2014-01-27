@@ -110,29 +110,6 @@
 #define MAX_RANGE (OPT(birth_small_range) ? MAX_RANGE_SML : MAX_RANGE_LGE)
 
 
-/** Monster generation info **/
-
-/* There is a 1/500 chance per round of creating a new monster */
-#define MAX_M_ALLOC_CHANCE	500
-
-/* Normal levels get at least 14 monsters */
-#define MIN_M_ALLOC_LEVEL	14
-
-/* The town starts out with 4 residents during the day */
-#define MIN_M_ALLOC_TD		4
-
-/* The town starts out with 8 residents during the night */
-#define MIN_M_ALLOC_TN		8
-
-/*
- * A monster can only "multiply" (reproduce) if there are fewer than 100
- * monsters on the level capable of such spontaneous reproduction.  This
- * is a hack which prevents the "mon_list[]" array from exploding due to
- * reproducing monsters.  Messy, but necessary.
- */
-#define MAX_REPRO	100
-
-
 /** UI constants **/
 
 /* 
