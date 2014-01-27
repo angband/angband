@@ -42,6 +42,9 @@
 #include "spells.h"
 #include "target.h"
 
+/* The minimum amount of energy a player has at the start of a new level */
+#define INITIAL_DUNGEON_ENERGY 100
+
 u16b daycount = 0;
 
 /*

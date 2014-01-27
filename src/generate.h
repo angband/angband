@@ -35,6 +35,11 @@
 
 #define MAX_PIT 2 /* Maximum number of pits or nests allowed */
 
+/**
+ * Maximum number of rvals (monster templates) that a pit can specify.
+ */
+#define MAX_RVALS 4
+
 /*
  * Bounds on some arrays used in the "dun_data" structure.
  * These bounds are checked, though usually this is a formality.

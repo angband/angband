@@ -76,9 +76,6 @@
 /* Maximum number of Angband windows */
 #define ANGBAND_TERM_MAX 8
 
-/* The fixed amount of energy a player should have at the start of a new level */
-#define INITIAL_DUNGEON_ENERGY 100
-
 
 /*
  * Maximum dungeon level.  The player can never reach this level
@@ -130,20 +127,6 @@ enum
 #define REST_REQUIRED_FOR_REGEN 5
 
 /*** General index values ***/
-
-/*** Important artifact indexes (see "lib/edit/artifact.txt") ***/
-
-#define ART_POWER			13
-#define ART_MORGOTH			34
-#define ART_GROND			111
-#define ART_PALANTIR			7
-
-/*
- * Hack -- first "normal" artifact in the artifact list.  All of
- * the artifacts with indexes from 1 to 15 are "special" (lights,
- * rings, amulets), and the ones from 16 to 127 are "normal".
- */
-#define ART_MIN_NORMAL		16
 
 
 
@@ -249,25 +232,6 @@ enum
 #define PW_MAX_FLAGS		16
 
 
-/*** Cave flags ***/
-
-/* 
- * Information for Feelings 
- */
-#define FEELING_TOTAL		100		/* total number of feeling squares per level */ 
-#define FEELING1		10		/* Squares needed to see in order to trigger first feeling */
-
-/*
- * Chest trap flags (see "obj-chest.c")
- */
-#define CHEST_LOSE_STR	0x01
-#define CHEST_LOSE_CON	0x02
-#define CHEST_POISON	0x04
-#define CHEST_PARALYZE	0x08
-#define CHEST_EXPLODE	0x10
-#define CHEST_SUMMON	0x20
-
-
 /*** Macro Definitions ***/
 
 /*
@@ -335,13 +299,6 @@ enum
 #define SCAN_INSTANT ((u32b) -1)
 #define SCAN_OFF 0
 #define SCAN_MACRO 45
-
-#define MAX_ITEMLIST 2560
-
-/**
- * Maximum number of rvals (monster templates) that a pit can specify.
- */
-#define MAX_RVALS 4
 
 
 #endif /* !INCLUDED_DEFINES_H */

@@ -26,6 +26,8 @@
 #include "obj-util.h"
 #include "squelch.h"
 
+#define MAX_ITEMLIST 2560
+
 typedef struct object_list_entry_s {
 	object_type *object;
 	u16b count;

@@ -20,6 +20,17 @@
 #ifndef OBJECT_CHEST_H
 #define OBJECT_CHEST_H
 
+/*
+ * Chest trap flags (see "obj-chest.c")
+ */
+#define CHEST_LOSE_STR	0x01
+#define CHEST_LOSE_CON	0x02
+#define CHEST_POISON	0x04
+#define CHEST_PARALYZE	0x08
+#define CHEST_EXPLODE	0x10
+#define CHEST_SUMMON	0x20
+
+
 byte chest_trap_type(const object_type *o_ptr);
 bool is_trapped_chest(const object_type *o_ptr);
 bool is_locked_chest(const object_type *o_ptr);
