@@ -270,6 +270,15 @@ enum spell_param_project_type_e {
 	SPELL_PROJECT_BALL,
 };
 
+
+/* Brand or slay type */
+typedef struct brand_or_slay
+{
+	char *name;
+	int multiplier;
+	struct brand_or_slay *next;
+} brand_or_slay;
+
 /**
  * Information about object types, like rods, wands, etc.
  */
@@ -396,6 +405,9 @@ typedef struct artifact
 	s16b pval[MAX_PVALS];    /**< Power for any flags which need it */
 	byte num_pvals;/**< Number of pvals in use on this item */
 
+	brand_or_slay brands;
+	brand_or_slay slays;
+
 	s16b to_h;    /**< Bonus to hit */
 	s16b to_d;    /**< Bonus to damage */
 	s16b to_a;    /**< Bonus to armor */
@@ -450,6 +462,9 @@ typedef struct ego_item
 
 	bitflag flags[OF_SIZE];		/**< Flags */
 	bitflag pval_flags[MAX_PVALS][OF_SIZE];	/**< pval flags */
+
+	brand_or_slay brands;
+	brand_or_slay slays;
 
 	byte level;		/* Minimum level */
 	byte rarity;		/* Object rarity */
@@ -528,6 +543,9 @@ typedef struct object
 	bitflag known_flags[OF_SIZE];	/**< Player-known flags */
 	bitflag pval_flags[MAX_PVALS][OF_SIZE];	/**< pval flags */
 	u16b ident;			/* Special flags */
+
+	brand_or_slay brands;
+	brand_or_slay slays;
 
 	s16b ac;			/* Normal AC */
 	s16b to_a;			/* Plusses to AC */
