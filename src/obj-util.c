@@ -2206,6 +2206,69 @@ void acquirement(int y1, int x1, int level, int num, bool great)
 
 
 /*
+ * Acid has hit the player, attempt to affect some armor.
+ *
+ * Note that the "base armor" of an object never changes.
+ *
+ * If any armor is damaged (or resists), the player takes less damage.
+ */
+int minus_ac(struct player *p)
+{
+	object_type *o_ptr = NULL;
+
+	bitflag f[OF_SIZE];
+
+	char o_name[80];
+
+	/* Avoid crash during monster power calculations */
+	if (!p->inventory) return FALSE;
+
+	/* Pick a (possibly empty) inventory slot */
+	switch (randint1(6))
+	{
+		case 1: o_ptr = &p->inventory[INVEN_BODY]; break;
+		case 2: o_ptr = &p->inventory[INVEN_ARM]; break;
+		case 3: o_ptr = &p->inventory[INVEN_OUTER]; break;
+		case 4: o_ptr = &p->inventory[INVEN_HANDS]; break;
+		case 5: o_ptr = &p->inventory[INVEN_HEAD]; break;
+		case 6: o_ptr = &p->inventory[INVEN_FEET]; break;
+		default: assert(0);
+	}
+
+	/* Nothing to damage */
+	if (!o_ptr->kind) return (FALSE);
+
+	/* No damage left to be done */
+	if (o_ptr->ac + o_ptr->to_a <= 0) return (FALSE);
+
+	/* Describe */
+	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
+
+	/* Extract the flags */
+	object_flags(o_ptr, f);
+
+	/* Object resists */
+	if (of_has(f, OF_IGNORE_ACID))
+	{
+		msg("Your %s is unaffected!", o_name);
+
+		return (TRUE);
+	}
+
+	/* Message */
+	msg("Your %s is damaged!", o_name);
+
+	/* Damage the item */
+	o_ptr->to_a--;
+
+	p->update |= PU_BONUS;
+	p->redraw |= (PR_EQUIP);
+
+	/* Item was damaged */
+	return (TRUE);
+}
+
+/*
  * Describe the charges on an item in the inventory.
  */
 void inven_item_charges(int item)

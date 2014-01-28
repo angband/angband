@@ -59,6 +59,7 @@ void drop_near(struct cave *c, object_type *j_ptr, int chance, int y, int x,
 			   bool verbose);
 void push_object(int y, int x);
 void acquirement(int y1, int x1, int level, int num, bool great);
+int minus_ac(struct player *p);
 void inven_item_charges(int item);
 void inven_item_describe(int item);
 void inven_item_increase(int item, int num);

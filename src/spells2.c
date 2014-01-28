@@ -18,6 +18,7 @@
 
 #include "angband.h"
 #include "cave.h"
+#include "dungeon.h"
 #include "generate.h"
 #include "history.h"
 #include "mon-lore.h"
@@ -177,6 +178,28 @@ static const char *desc_stat_neg[] =
 	"ugly"
 };
 
+
+/*
+ * Restore a stat.  Return TRUE only if this actually makes a difference.
+ */
+bool res_stat(int stat)
+{
+	/* Restore if needed */
+	if (p_ptr->stat_cur[stat] != p_ptr->stat_max[stat])
+	{
+		/* Restore */
+		p_ptr->stat_cur[stat] = p_ptr->stat_max[stat];
+
+		/* Recalculate bonuses */
+		p_ptr->update |= (PU_BONUS);
+
+		/* Success */
+		return (TRUE);
+	}
+
+	/* Nothing to restore */
+	return (FALSE);
+}
 
 /*
  * Lose a "point"
@@ -1142,6 +1165,104 @@ void stair_creation(void)
 
 
 /*
+ * Apply disenchantment to the player's stuff
+ *
+ * This function is also called from the "melee" code.
+ *
+ * The "mode" is currently unused.
+ *
+ * Return "TRUE" if the player notices anything.
+ */
+bool apply_disenchant(int mode)
+{
+	int t = 0;
+
+	object_type *o_ptr;
+
+	char o_name[80];
+
+
+	/* Unused parameter */
+	(void)mode;
+
+	/* Pick a random slot */
+	switch (randint1(8))
+	{
+		case 1: t = INVEN_WIELD; break;
+		case 2: t = INVEN_BOW; break;
+		case 3: t = INVEN_BODY; break;
+		case 4: t = INVEN_OUTER; break;
+		case 5: t = INVEN_ARM; break;
+		case 6: t = INVEN_HEAD; break;
+		case 7: t = INVEN_HANDS; break;
+		case 8: t = INVEN_FEET; break;
+	}
+
+	/* Get the item */
+	o_ptr = &p_ptr->inventory[t];
+
+	/* No item, nothing happens */
+	if (!o_ptr->kind) return (FALSE);
+
+
+	/* Nothing to disenchant */
+	if ((o_ptr->to_h <= 0) && (o_ptr->to_d <= 0) && (o_ptr->to_a <= 0))
+	{
+		/* Nothing to notice */
+		return (FALSE);
+	}
+
+
+	/* Describe the object */
+	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
+
+
+	/* Artifacts have 60% chance to resist */
+	if (o_ptr->artifact && (randint0(100) < 60))
+	{
+		/* Message */
+		msg("Your %s (%c) resist%s disenchantment!",
+		           o_name, index_to_label(t),
+		           ((o_ptr->number != 1) ? "" : "s"));
+
+		/* Notice */
+		return (TRUE);
+	}
+
+	/* Apply disenchantment, depending on which kind of equipment */
+	if (t == INVEN_WIELD || t == INVEN_BOW)
+	{
+		/* Disenchant to-hit */
+		if (o_ptr->to_h > 0) o_ptr->to_h--;
+		if ((o_ptr->to_h > 5) && (randint0(100) < 20)) o_ptr->to_h--;
+
+		/* Disenchant to-dam */
+		if (o_ptr->to_d > 0) o_ptr->to_d--;
+		if ((o_ptr->to_d > 5) && (randint0(100) < 20)) o_ptr->to_d--;
+	}
+	else
+	{
+		/* Disenchant to-ac */
+		if (o_ptr->to_a > 0) o_ptr->to_a--;
+		if ((o_ptr->to_a > 5) && (randint0(100) < 20)) o_ptr->to_a--;
+	}
+
+	/* Message */
+	msg("Your %s (%c) %s disenchanted!",
+	           o_name, index_to_label(t),
+	           ((o_ptr->number != 1) ? "were" : "was"));
+
+	/* Recalculate bonuses */
+	p_ptr->update |= (PU_BONUS);
+
+	/* Window stuff */
+	p_ptr->redraw |= (PR_EQUIP);
+
+	/* Notice */
+	return (TRUE);
+}
+
+/*
  * Hook to specify "weapon"
  */
 static bool item_tester_hook_weapon(const object_type *o_ptr)
@@ -1817,6 +1938,249 @@ bool probing(void)
 }
 
 
+
+/*
+ * Teleport a monster, normally up to "dis" grids away.
+ *
+ * Attempt to move the monster at least "dis/2" grids away.
+ *
+ * But allow variation to prevent infinite loops.
+ */
+void teleport_away(struct monster *m_ptr, int dis)
+{
+	int ny = 0, nx = 0, oy, ox, d, i, min;
+
+	bool look = TRUE;
+
+
+	/* Paranoia */
+	if (!m_ptr->race) return;
+
+	/* Save the old location */
+	oy = m_ptr->fy;
+	ox = m_ptr->fx;
+
+	/* Minimum distance */
+	min = dis / 2;
+
+	/* Look until done */
+	while (look)
+	{
+		/* Verify max distance */
+		if (dis > 200) dis = 200;
+
+		/* Try several locations */
+		for (i = 0; i < 500; i++)
+		{
+			/* Pick a (possibly illegal) location */
+			while (1)
+			{
+				ny = rand_spread(oy, dis);
+				nx = rand_spread(ox, dis);
+				d = distance(oy, ox, ny, nx);
+				if ((d >= min) && (d <= dis)) break;
+			}
+
+			/* Ignore illegal locations */
+			if (!square_in_bounds_fully(cave, ny, nx)) continue;
+
+			/* Require "empty" floor space */
+			if (!square_isempty(cave, ny, nx)) continue;
+
+			/* Hack -- no teleport onto glyph of warding */
+			if (square_iswarded(cave, ny, nx)) continue;
+
+			/* No teleporting into vaults and such */
+			/* if (cave->info[ny][nx] & square_isvault(cave, ny, nx)) continue; */
+
+			/* This grid looks good */
+			look = FALSE;
+
+			/* Stop looking */
+			break;
+		}
+
+		/* Increase the maximum distance */
+		dis = dis * 2;
+
+		/* Decrease the minimum distance */
+		min = min / 2;
+	}
+
+	/* Sound */
+	sound(MSG_TPOTHER);
+
+	/* Swap the monsters */
+	monster_swap(oy, ox, ny, nx);
+}
+
+/*
+ * Teleport the player to a location up to "dis" grids away.
+ *
+ * If no such spaces are readily available, the distance may increase.
+ * Try very hard to move the player at least a quarter that distance.
+ */
+void teleport_player(int dis)
+{
+	int py = p_ptr->py;
+	int px = p_ptr->px;
+
+	int d, i, min, y, x;
+
+	bool look = TRUE;
+
+
+	/* Initialize */
+	y = py;
+	x = px;
+
+	/* Minimum distance */
+	min = dis / 2;
+
+	/* Look until done */
+	while (look)
+	{
+		/* Verify max distance */
+		if (dis > 200) dis = 200;
+
+		/* Try several locations */
+		for (i = 0; i < 500; i++)
+		{
+			/* Pick a (possibly illegal) location */
+			while (1)
+			{
+				y = rand_spread(py, dis);
+				x = rand_spread(px, dis);
+				d = distance(py, px, y, x);
+				if ((d >= min) && (d <= dis)) break;
+			}
+
+			/* Ignore illegal locations */
+			if (!square_in_bounds_fully(cave, y, x)) continue;
+
+			/* Require "naked" floor space */
+			if (!square_isempty(cave, y, x)) continue;
+
+			/* No teleporting into vaults and such */
+			if (square_isvault(cave, y, x)) continue;
+
+			/* This grid looks good */
+			look = FALSE;
+
+			/* Stop looking */
+			break;
+		}
+
+		/* Increase the maximum distance */
+		dis = dis * 2;
+
+		/* Decrease the minimum distance */
+		min = min / 2;
+	}
+
+	/* Sound */
+	sound(MSG_TELEPORT);
+
+	/* Move player */
+	monster_swap(py, px, y, x);
+
+	/* Handle stuff XXX XXX XXX */
+	handle_stuff(p_ptr);
+}
+
+/*
+ * Teleport player to a grid near the given location
+ *
+ * This function is slightly obsessive about correctness.
+ * This function allows teleporting into vaults (!)
+ */
+void teleport_player_to(int ny, int nx)
+{
+	int py = p_ptr->py;
+	int px = p_ptr->px;
+
+	int y, x;
+
+	int dis = 0, ctr = 0;
+
+	/* Initialize */
+	y = py;
+	x = px;
+
+	/* Find a usable location */
+	while (1)
+	{
+		/* Pick a nearby legal location */
+		while (1)
+		{
+			y = rand_spread(ny, dis);
+			x = rand_spread(nx, dis);
+			if (square_in_bounds_fully(cave, y, x)) break;
+		}
+
+		/* Accept "naked" floor grids */
+		if (square_isempty(cave, y, x)) break;
+
+		/* Occasionally advance the distance */
+		if (++ctr > (4 * dis * dis + 4 * dis + 1))
+		{
+			ctr = 0;
+			dis++;
+		}
+	}
+
+	/* Sound */
+	sound(MSG_TELEPORT);
+
+	/* Move player */
+	monster_swap(py, px, y, x);
+
+	/* Handle stuff XXX XXX XXX */
+	handle_stuff(p_ptr);
+}
+
+/*
+ * Teleport the player one level up or down (random when legal)
+ */
+void teleport_player_level(void)
+{
+	bool up = TRUE, down = TRUE;
+
+	/* No going up with force_descend or in the town */
+	if (OPT(birth_force_descend) || !p_ptr->depth)
+		up = FALSE;
+
+	/* No forcing player down to quest levels if they can't leave */
+	if (!up && is_quest(p_ptr->max_depth + 1))
+		down = FALSE;
+
+	/* Can't leave quest levels or go down deeper than the dungeon */
+	if (is_quest(p_ptr->depth) || (p_ptr->depth >= MAX_DEPTH-1))
+		down = FALSE;
+
+	/* Determine up/down if not already done */
+	if (up && down) {
+		if (randint0(100) < 50)
+			up = FALSE;
+		else
+			down = FALSE;
+	}
+
+	/* Now actually do the level change */
+	if (up) {
+		msgt(MSG_TPLEVEL, "You rise up through the ceiling.");
+		dungeon_change_level(p_ptr->depth - 1);
+	} else if (down) {
+		msgt(MSG_TPLEVEL, "You sink through the floor.");
+
+		if (OPT(birth_force_descend))
+			dungeon_change_level(p_ptr->max_depth + 1);
+		else
+			dungeon_change_level(p_ptr->depth + 1);
+	} else {
+		msg("Nothing happens.");
+	}
+}
 
 /*
  * The spell of destruction

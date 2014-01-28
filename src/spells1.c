@@ -18,7 +18,7 @@
 
 #include "angband.h"
 #include "cave.h"
-#include "dungeon.h"
+//#include "dungeon.h"
 #include "generate.h"
 #include "grafmode.h"
 #include "mon-make.h"
@@ -1288,424 +1288,6 @@ void dedup_hates_flags(bitflag *f)
 }
 
 /*
- * Helper function -- return a "nearby" race for polymorphing
- *
- * Note that this function is one of the more "dangerous" ones...
- */
-static monster_race *poly_race(monster_race *race)
-{
-	int i, minlvl, maxlvl, goal;
-
-	assert(race && race->name);
-
-	/* Uniques never polymorph */
-	if (rf_has(race->flags, RF_UNIQUE)) return race;
-
-	/* Allowable range of "levels" for resulting monster */
-	goal = (p_ptr->depth + race->level) / 2 + 5;
-	minlvl = MIN(race->level - 10, (race->level * 3) / 4);
-	maxlvl = MAX(race->level + 10, (race->level * 5) / 4);
-
-	/* Small chance to allow something really strong */
-	if (one_in_(100)) maxlvl = 100;
-
-	/* Try to pick a new, non-unique race within our level range */
-	for (i = 0; i < 1000; i++) {
-		monster_race *new_race = get_mon_num(goal);
-
-		if (!new_race || new_race == race) continue;
-		if (rf_has(new_race->flags, RF_UNIQUE)) continue;
-		if (new_race->level < minlvl || new_race->level > maxlvl) continue;
-
-		/* Avoid force-depth monsters, since it might cause a crash in project_m() */
-		if (rf_has(new_race->flags, RF_FORCE_DEPTH) && p_ptr->depth < new_race->level) continue;
-
-		return new_race;
-	}
-
-	/* If we get here, we weren't able to find a new race. */
-	return race;
-}
-
-/*
- * Teleport a monster, normally up to "dis" grids away.
- *
- * Attempt to move the monster at least "dis/2" grids away.
- *
- * But allow variation to prevent infinite loops.
- */
-void teleport_away(struct monster *m_ptr, int dis)
-{
-	int ny = 0, nx = 0, oy, ox, d, i, min;
-
-	bool look = TRUE;
-
-
-	/* Paranoia */
-	if (!m_ptr->race) return;
-
-	/* Save the old location */
-	oy = m_ptr->fy;
-	ox = m_ptr->fx;
-
-	/* Minimum distance */
-	min = dis / 2;
-
-	/* Look until done */
-	while (look)
-	{
-		/* Verify max distance */
-		if (dis > 200) dis = 200;
-
-		/* Try several locations */
-		for (i = 0; i < 500; i++)
-		{
-			/* Pick a (possibly illegal) location */
-			while (1)
-			{
-				ny = rand_spread(oy, dis);
-				nx = rand_spread(ox, dis);
-				d = distance(oy, ox, ny, nx);
-				if ((d >= min) && (d <= dis)) break;
-			}
-
-			/* Ignore illegal locations */
-			if (!square_in_bounds_fully(cave, ny, nx)) continue;
-
-			/* Require "empty" floor space */
-			if (!square_isempty(cave, ny, nx)) continue;
-
-			/* Hack -- no teleport onto glyph of warding */
-			if (square_iswarded(cave, ny, nx)) continue;
-
-			/* No teleporting into vaults and such */
-			/* if (cave->info[ny][nx] & square_isvault(cave, ny, nx)) continue; */
-
-			/* This grid looks good */
-			look = FALSE;
-
-			/* Stop looking */
-			break;
-		}
-
-		/* Increase the maximum distance */
-		dis = dis * 2;
-
-		/* Decrease the minimum distance */
-		min = min / 2;
-	}
-
-	/* Sound */
-	sound(MSG_TPOTHER);
-
-	/* Swap the monsters */
-	monster_swap(oy, ox, ny, nx);
-}
-
-/*
- * Teleport the player to a location up to "dis" grids away.
- *
- * If no such spaces are readily available, the distance may increase.
- * Try very hard to move the player at least a quarter that distance.
- */
-void teleport_player(int dis)
-{
-	int py = p_ptr->py;
-	int px = p_ptr->px;
-
-	int d, i, min, y, x;
-
-	bool look = TRUE;
-
-
-	/* Initialize */
-	y = py;
-	x = px;
-
-	/* Minimum distance */
-	min = dis / 2;
-
-	/* Look until done */
-	while (look)
-	{
-		/* Verify max distance */
-		if (dis > 200) dis = 200;
-
-		/* Try several locations */
-		for (i = 0; i < 500; i++)
-		{
-			/* Pick a (possibly illegal) location */
-			while (1)
-			{
-				y = rand_spread(py, dis);
-				x = rand_spread(px, dis);
-				d = distance(py, px, y, x);
-				if ((d >= min) && (d <= dis)) break;
-			}
-
-			/* Ignore illegal locations */
-			if (!square_in_bounds_fully(cave, y, x)) continue;
-
-			/* Require "naked" floor space */
-			if (!square_isempty(cave, y, x)) continue;
-
-			/* No teleporting into vaults and such */
-			if (square_isvault(cave, y, x)) continue;
-
-			/* This grid looks good */
-			look = FALSE;
-
-			/* Stop looking */
-			break;
-		}
-
-		/* Increase the maximum distance */
-		dis = dis * 2;
-
-		/* Decrease the minimum distance */
-		min = min / 2;
-	}
-
-	/* Sound */
-	sound(MSG_TELEPORT);
-
-	/* Move player */
-	monster_swap(py, px, y, x);
-
-	/* Handle stuff XXX XXX XXX */
-	handle_stuff(p_ptr);
-}
-
-/*
- * Teleport player to a grid near the given location
- *
- * This function is slightly obsessive about correctness.
- * This function allows teleporting into vaults (!)
- */
-void teleport_player_to(int ny, int nx)
-{
-	int py = p_ptr->py;
-	int px = p_ptr->px;
-
-	int y, x;
-
-	int dis = 0, ctr = 0;
-
-	/* Initialize */
-	y = py;
-	x = px;
-
-	/* Find a usable location */
-	while (1)
-	{
-		/* Pick a nearby legal location */
-		while (1)
-		{
-			y = rand_spread(ny, dis);
-			x = rand_spread(nx, dis);
-			if (square_in_bounds_fully(cave, y, x)) break;
-		}
-
-		/* Accept "naked" floor grids */
-		if (square_isempty(cave, y, x)) break;
-
-		/* Occasionally advance the distance */
-		if (++ctr > (4 * dis * dis + 4 * dis + 1))
-		{
-			ctr = 0;
-			dis++;
-		}
-	}
-
-	/* Sound */
-	sound(MSG_TELEPORT);
-
-	/* Move player */
-	monster_swap(py, px, y, x);
-
-	/* Handle stuff XXX XXX XXX */
-	handle_stuff(p_ptr);
-}
-
-/*
- * Teleport the player one level up or down (random when legal)
- */
-void teleport_player_level(void)
-{
-	bool up = TRUE, down = TRUE;
-
-	/* No going up with force_descend or in the town */
-	if (OPT(birth_force_descend) || !p_ptr->depth)
-		up = FALSE;
-
-	/* No forcing player down to quest levels if they can't leave */
-	if (!up && is_quest(p_ptr->max_depth + 1))
-		down = FALSE;
-
-	/* Can't leave quest levels or go down deeper than the dungeon */
-	if (is_quest(p_ptr->depth) || (p_ptr->depth >= MAX_DEPTH-1))
-		down = FALSE;
-
-	/* Determine up/down if not already done */
-	if (up && down) {
-		if (randint0(100) < 50)
-			up = FALSE;
-		else
-			down = FALSE;
-	}
-
-	/* Now actually do the level change */
-	if (up) {
-		msgt(MSG_TPLEVEL, "You rise up through the ceiling.");
-		dungeon_change_level(p_ptr->depth - 1);
-	} else if (down) {
-		msgt(MSG_TPLEVEL, "You sink through the floor.");
-
-		if (OPT(birth_force_descend))
-			dungeon_change_level(p_ptr->max_depth + 1);
-		else
-			dungeon_change_level(p_ptr->depth + 1);
-	} else {
-		msg("Nothing happens.");
-	}
-}
-
-int gf_name_to_idx(const char *name)
-{
-    int i;
-    for (i = 0; gf_name_list[i]; i++) {
-        if (!my_stricmp(name, gf_name_list[i]))
-            return i;
-    }
-
-    return -1;
-}
-
-const char *gf_idx_to_name(int type)
-{
-    assert(type >= 0);
-    assert(type < GF_MAX);
-
-    return gf_name_list[type];
-}
-
-/*
- * Return a color to use for the bolt/ball spells
- */
-static byte spell_color(int type)
-{
-	return gf_color(type);
-}
-
-/*
- * Find the attr/char pair to use for a spell effect
- *
- * It is moving (or has moved) from (x,y) to (nx,ny).
- *
- * If the distance is not "one", we (may) return "*".
- */
-static void bolt_pict(int y, int x, int ny, int nx, int typ, byte *a, wchar_t *c)
-{
-	int motion;
-
-	/* Convert co-ordinates into motion */
-	if ((ny == y) && (nx == x))
-		motion = BOLT_NO_MOTION;
-	else if (nx == x)
-		motion = BOLT_0;
-	else if ((ny-y) == (x-nx))
-		motion = BOLT_45;
-	else if (ny == y)
-		motion = BOLT_90;
-	else if ((ny-y) == (nx-x))
-		motion = BOLT_135;
-	else
-		motion = BOLT_NO_MOTION;
-
-	/* Decide on output char */
-	if (use_graphics == GRAPHICS_NONE) {
-		/* ASCII is simple */
-		wchar_t chars[] = L"*|/-\\";
-
-		*c = chars[motion];
-		*a = spell_color(typ);
-	} else {
-		*a = gf_to_attr[typ][motion];
-		*c = gf_to_char[typ][motion];
-	}
-}
-
-/*
- * Decreases players hit points and sets death flag if necessary
- *
- * Invulnerability needs to be changed into a "shield" XXX XXX XXX
- *
- * Hack -- this function allows the user to save (or quit) the game
- * when he dies, since the "You die." message is shown before setting
- * the player to "dead".
- */
-void take_hit(struct player *p, int dam, const char *kb_str)
-{
-	int old_chp = p->chp;
-
-	int warning = (p->mhp * op_ptr->hitpoint_warn / 10);
-
-
-	/* Paranoia */
-	if (p->is_dead) return;
-
-
-	/* Disturb */
-	disturb(p, 1, 0);
-
-	/* Mega-Hack -- Apply "invulnerability" */
-	if (p->timed[TMD_INVULN] && (dam < 9000)) return;
-
-	/* Hurt the player */
-	p->chp -= dam;
-
-	/* Display the hitpoints */
-	p->redraw |= (PR_HP);
-
-	/* Dead player */
-	if (p->chp < 0)
-	{
-		/* Hack -- Note death */
-		msgt(MSG_DEATH, "You die.");
-		message_flush();
-
-		/* Note cause of death */
-		my_strcpy(p->died_from, kb_str, sizeof(p->died_from));
-
-		/* No longer a winner */
-		p->total_winner = FALSE;
-
-		/* Note death */
-		p->is_dead = TRUE;
-
-		/* Leaving */
-		p->leaving = TRUE;
-
-		/* Dead */
-		return;
-	}
-
-	/* Hitpoint warning */
-	if (p->chp < warning)
-	{
-		/* Hack -- bell on first notice */
-		if (old_chp > warning)
-		{
-			bell("Low hitpoint warning!");
-		}
-
-		/* Message */
-		msgt(MSG_HITPOINT_WARN, "*** LOW HITPOINT WARNING! ***");
-		message_flush();
-	}
-}
-
-/*
  * Destroys a type of item on a given percent chance.
  * The chance 'cperc' is in hundredths of a percent (1-in-10000)
  * Note that missiles are no longer necessarily all destroyed
@@ -1841,66 +1423,108 @@ int inven_damage(struct player *p, int type, int cperc)
 }
 
 /*
- * Acid has hit the player, attempt to affect some armor.
+ * Helper function -- return a "nearby" race for polymorphing
  *
- * Note that the "base armor" of an object never changes.
- *
- * If any armor is damaged (or resists), the player takes less damage.
+ * Note that this function is one of the more "dangerous" ones...
  */
-static int minus_ac(struct player *p)
+static monster_race *poly_race(monster_race *race)
 {
-	object_type *o_ptr = NULL;
+	int i, minlvl, maxlvl, goal;
 
-	bitflag f[OF_SIZE];
+	assert(race && race->name);
 
-	char o_name[80];
+	/* Uniques never polymorph */
+	if (rf_has(race->flags, RF_UNIQUE)) return race;
 
-	/* Avoid crash during monster power calculations */
-	if (!p->inventory) return FALSE;
+	/* Allowable range of "levels" for resulting monster */
+	goal = (p_ptr->depth + race->level) / 2 + 5;
+	minlvl = MIN(race->level - 10, (race->level * 3) / 4);
+	maxlvl = MAX(race->level + 10, (race->level * 5) / 4);
 
-	/* Pick a (possibly empty) inventory slot */
-	switch (randint1(6))
-	{
-		case 1: o_ptr = &p->inventory[INVEN_BODY]; break;
-		case 2: o_ptr = &p->inventory[INVEN_ARM]; break;
-		case 3: o_ptr = &p->inventory[INVEN_OUTER]; break;
-		case 4: o_ptr = &p->inventory[INVEN_HANDS]; break;
-		case 5: o_ptr = &p->inventory[INVEN_HEAD]; break;
-		case 6: o_ptr = &p->inventory[INVEN_FEET]; break;
-		default: assert(0);
+	/* Small chance to allow something really strong */
+	if (one_in_(100)) maxlvl = 100;
+
+	/* Try to pick a new, non-unique race within our level range */
+	for (i = 0; i < 1000; i++) {
+		monster_race *new_race = get_mon_num(goal);
+
+		if (!new_race || new_race == race) continue;
+		if (rf_has(new_race->flags, RF_UNIQUE)) continue;
+		if (new_race->level < minlvl || new_race->level > maxlvl) continue;
+
+		/* Avoid force-depth monsters, since it might cause a crash in project_m() */
+		if (rf_has(new_race->flags, RF_FORCE_DEPTH) && p_ptr->depth < new_race->level) continue;
+
+		return new_race;
 	}
 
-	/* Nothing to damage */
-	if (!o_ptr->kind) return (FALSE);
+	/* If we get here, we weren't able to find a new race. */
+	return race;
+}
 
-	/* No damage left to be done */
-	if (o_ptr->ac + o_ptr->to_a <= 0) return (FALSE);
+int gf_name_to_idx(const char *name)
+{
+    int i;
+    for (i = 0; gf_name_list[i]; i++) {
+        if (!my_stricmp(name, gf_name_list[i]))
+            return i;
+    }
 
-	/* Describe */
-	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
+    return -1;
+}
 
-	/* Extract the flags */
-	object_flags(o_ptr, f);
+const char *gf_idx_to_name(int type)
+{
+    assert(type >= 0);
+    assert(type < GF_MAX);
 
-	/* Object resists */
-	if (of_has(f, OF_IGNORE_ACID))
-	{
-		msg("Your %s is unaffected!", o_name);
+    return gf_name_list[type];
+}
 
-		return (TRUE);
+/*
+ * Return a color to use for the bolt/ball spells
+ */
+static byte spell_color(int type)
+{
+	return gf_color(type);
+}
+
+/*
+ * Find the attr/char pair to use for a spell effect
+ *
+ * It is moving (or has moved) from (x,y) to (nx,ny).
+ *
+ * If the distance is not "one", we (may) return "*".
+ */
+static void bolt_pict(int y, int x, int ny, int nx, int typ, byte *a, wchar_t *c)
+{
+	int motion;
+
+	/* Convert co-ordinates into motion */
+	if ((ny == y) && (nx == x))
+		motion = BOLT_NO_MOTION;
+	else if (nx == x)
+		motion = BOLT_0;
+	else if ((ny-y) == (x-nx))
+		motion = BOLT_45;
+	else if (ny == y)
+		motion = BOLT_90;
+	else if ((ny-y) == (nx-x))
+		motion = BOLT_135;
+	else
+		motion = BOLT_NO_MOTION;
+
+	/* Decide on output char */
+	if (use_graphics == GRAPHICS_NONE) {
+		/* ASCII is simple */
+		wchar_t chars[] = L"*|/-\\";
+
+		*c = chars[motion];
+		*a = spell_color(typ);
+	} else {
+		*a = gf_to_attr[typ][motion];
+		*c = gf_to_char[typ][motion];
 	}
-
-	/* Message */
-	msg("Your %s is damaged!", o_name);
-
-	/* Damage the item */
-	o_ptr->to_a--;
-
-	p->update |= PU_BONUS;
-	p->redraw |= (PR_EQUIP);
-
-	/* Item was damaged */
-	return (TRUE);
 }
 
 /**
@@ -1951,125 +1575,6 @@ int adjust_dam(struct player *p, int type, int dam, aspect dam_aspect, int resis
 	return dam;
 }
 
-/*
- * Restore a stat.  Return TRUE only if this actually makes a difference.
- */
-bool res_stat(int stat)
-{
-	/* Restore if needed */
-	if (p_ptr->stat_cur[stat] != p_ptr->stat_max[stat])
-	{
-		/* Restore */
-		p_ptr->stat_cur[stat] = p_ptr->stat_max[stat];
-
-		/* Recalculate bonuses */
-		p_ptr->update |= (PU_BONUS);
-
-		/* Success */
-		return (TRUE);
-	}
-
-	/* Nothing to restore */
-	return (FALSE);
-}
-
-/*
- * Apply disenchantment to the player's stuff
- *
- * This function is also called from the "melee" code.
- *
- * The "mode" is currently unused.
- *
- * Return "TRUE" if the player notices anything.
- */
-bool apply_disenchant(int mode)
-{
-	int t = 0;
-
-	object_type *o_ptr;
-
-	char o_name[80];
-
-
-	/* Unused parameter */
-	(void)mode;
-
-	/* Pick a random slot */
-	switch (randint1(8))
-	{
-		case 1: t = INVEN_WIELD; break;
-		case 2: t = INVEN_BOW; break;
-		case 3: t = INVEN_BODY; break;
-		case 4: t = INVEN_OUTER; break;
-		case 5: t = INVEN_ARM; break;
-		case 6: t = INVEN_HEAD; break;
-		case 7: t = INVEN_HANDS; break;
-		case 8: t = INVEN_FEET; break;
-	}
-
-	/* Get the item */
-	o_ptr = &p_ptr->inventory[t];
-
-	/* No item, nothing happens */
-	if (!o_ptr->kind) return (FALSE);
-
-
-	/* Nothing to disenchant */
-	if ((o_ptr->to_h <= 0) && (o_ptr->to_d <= 0) && (o_ptr->to_a <= 0))
-	{
-		/* Nothing to notice */
-		return (FALSE);
-	}
-
-
-	/* Describe the object */
-	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
-
-
-	/* Artifacts have 60% chance to resist */
-	if (o_ptr->artifact && (randint0(100) < 60))
-	{
-		/* Message */
-		msg("Your %s (%c) resist%s disenchantment!",
-		           o_name, index_to_label(t),
-		           ((o_ptr->number != 1) ? "" : "s"));
-
-		/* Notice */
-		return (TRUE);
-	}
-
-	/* Apply disenchantment, depending on which kind of equipment */
-	if (t == INVEN_WIELD || t == INVEN_BOW)
-	{
-		/* Disenchant to-hit */
-		if (o_ptr->to_h > 0) o_ptr->to_h--;
-		if ((o_ptr->to_h > 5) && (randint0(100) < 20)) o_ptr->to_h--;
-
-		/* Disenchant to-dam */
-		if (o_ptr->to_d > 0) o_ptr->to_d--;
-		if ((o_ptr->to_d > 5) && (randint0(100) < 20)) o_ptr->to_d--;
-	}
-	else
-	{
-		/* Disenchant to-ac */
-		if (o_ptr->to_a > 0) o_ptr->to_a--;
-		if ((o_ptr->to_a > 5) && (randint0(100) < 20)) o_ptr->to_a--;
-	}
-
-	/* Message */
-	msg("Your %s (%c) %s disenchanted!",
-	           o_name, index_to_label(t),
-	           ((o_ptr->number != 1) ? "were" : "was"));
-
-	/* Recalculate bonuses */
-	p_ptr->update |= (PU_BONUS);
-
-	/* Window stuff */
-	p_ptr->redraw |= (PR_EQUIP);
-
-	/* Notice */
-	return (TRUE);
-}
 
 /*
  * Mega-Hack -- track "affected" monsters (see "project()" comments)

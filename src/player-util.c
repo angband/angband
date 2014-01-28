@@ -8,6 +8,76 @@
 #include "obj-util.h"
 
 /*
+ * Decreases players hit points and sets death flag if necessary
+ *
+ * Invulnerability needs to be changed into a "shield" XXX XXX XXX
+ *
+ * Hack -- this function allows the user to save (or quit) the game
+ * when he dies, since the "You die." message is shown before setting
+ * the player to "dead".
+ */
+void take_hit(struct player *p, int dam, const char *kb_str)
+{
+	int old_chp = p->chp;
+
+	int warning = (p->mhp * op_ptr->hitpoint_warn / 10);
+
+
+	/* Paranoia */
+	if (p->is_dead) return;
+
+
+	/* Disturb */
+	disturb(p, 1, 0);
+
+	/* Mega-Hack -- Apply "invulnerability" */
+	if (p->timed[TMD_INVULN] && (dam < 9000)) return;
+
+	/* Hurt the player */
+	p->chp -= dam;
+
+	/* Display the hitpoints */
+	p->redraw |= (PR_HP);
+
+	/* Dead player */
+	if (p->chp < 0)
+	{
+		/* Hack -- Note death */
+		msgt(MSG_DEATH, "You die.");
+		message_flush();
+
+		/* Note cause of death */
+		my_strcpy(p->died_from, kb_str, sizeof(p->died_from));
+
+		/* No longer a winner */
+		p->total_winner = FALSE;
+
+		/* Note death */
+		p->is_dead = TRUE;
+
+		/* Leaving */
+		p->leaving = TRUE;
+
+		/* Dead */
+		return;
+	}
+
+	/* Hitpoint warning */
+	if (p->chp < warning)
+	{
+		/* Hack -- bell on first notice */
+		if (old_chp > warning)
+		{
+			bell("Low hitpoint warning!");
+		}
+
+		/* Message */
+		msgt(MSG_HITPOINT_WARN, "*** LOW HITPOINT WARNING! ***");
+		message_flush();
+	}
+}
+
+/*
  * Modify a stat value by a "modifier", return new value
  *
  * Stats go up: 3,4,...,17,18,18/10,18/20,...,18/220

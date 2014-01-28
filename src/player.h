@@ -664,6 +664,7 @@ bool player_clear_timed(struct player *p, int idx, bool notify);
 bool player_set_food(struct player *p, int v);
 
 /* util.c */
+void take_hit(struct player *p, int dam, const char *kb_str);
 s16b modify_stat_value(int value, int amount);
 bool player_can_cast(struct player *p, bool show_msg);
 bool player_can_study(struct player *p, bool show_msg);

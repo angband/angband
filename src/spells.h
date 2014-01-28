@@ -70,15 +70,8 @@ enum
 /** Functions **/
 
 /* spells1.c */
-void teleport_away(struct monster *m, int dis);
-void teleport_player(int dis);
-void teleport_player_to(int ny, int nx);
-void teleport_player_level(void);
 int gf_name_to_idx(const char *name);
 const char *gf_idx_to_name(int type);
-void take_hit(struct player *p, int dam, const char *kb_str);
-bool res_stat(int stat);
-bool apply_disenchant(int mode);
 bool project(int who, int rad, int y, int x, int dam, int typ, int flg);
 int check_for_resist(struct player *p, int type, bitflag *flags, bool real);
 bool check_side_immune(int type);
@@ -92,6 +85,7 @@ extern bool hp_player(int num);
 extern bool heal_player(int perc, int min);
 extern bool warding_glyph(void);
 extern void warding_glyph_spell(void);
+bool res_stat(int stat);
 extern bool do_dec_stat(int stat, bool perma);
 extern bool do_res_stat(int stat);
 extern bool do_inc_stat(int stat);
@@ -111,6 +105,7 @@ extern bool detect_monsters_evil(bool aware);
 extern bool detect_monsters_entire_level(void);
 extern bool detect_all(bool aware);
 extern void stair_creation(void);
+bool apply_disenchant(int mode);
 extern bool enchant(object_type *o_ptr, int n, int eflag);
 extern bool enchant_spell(int num_hit, int num_dam, int num_ac);
 extern void do_ident_item(object_type *o_ptr);
@@ -129,6 +124,10 @@ extern void aggravate_monsters(struct monster *who);
 extern bool banishment(void);
 extern bool mass_banishment(void);
 extern bool probing(void);
+void teleport_away(struct monster *m, int dis);
+void teleport_player(int dis);
+void teleport_player_to(int ny, int nx);
+void teleport_player_level(void);
 extern void destroy_area(int y1, int x1, int r, bool full);
 extern void earthquake(int cy, int cx, int r);
 extern bool light_area(int dam, int rad);
