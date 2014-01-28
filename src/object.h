@@ -280,6 +280,8 @@ typedef struct object_base
 	int tval;
 	struct object_base *next;
 
+	int attr;
+
 	bitflag flags[OF_SIZE];
 
 	int break_perc;

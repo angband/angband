@@ -471,8 +471,8 @@ static object_kind *choose_item(int a_idx)
 		tval == TV_SHOT || tval == TV_ARROW || tval == TV_BOLT ||
 		tval == TV_STAFF || tval == TV_WAND || tval == TV_ROD ||
 		tval == TV_SCROLL || tval == TV_POTION || tval == TV_FLASK ||
-		tval == TV_FOOD || tval == TV_MAGIC_BOOK || tval ==
-		TV_PRAYER_BOOK || tval == TV_GOLD || tval == TV_LIGHT ||
+		tval == TV_FOOD || tval == TV_MUSHROOM || tval == TV_MAGIC_BOOK ||
+		tval == TV_PRAYER_BOOK || tval == TV_GOLD || tval == TV_LIGHT ||
 		tval == TV_AMULET || tval == TV_RING || sval == SV_GROND ||
 		sval == SV_MORGOTH || k_info[i].alloc_prob == 0)
 	{

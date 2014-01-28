@@ -613,7 +613,7 @@ void do_cmd_use(struct command *cmd)
 		snd = MSG_USE_STAFF;
 		items_allowed = USE_INVEN | USE_FLOOR;
 	}
-	else if (tval_is_food(o_ptr))
+	else if (tval_is_edible(o_ptr))
 	{
 		use = USE_SINGLE;
 		snd = MSG_EAT;
@@ -1254,4 +1254,3 @@ void textui_obj_examine(void)
 	textui_textblock_show(tb, area, header);
 	textblock_free(tb);
 }
-

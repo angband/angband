@@ -63,7 +63,6 @@ extern int store_knowledge;
 extern const char *** name_sections;
 extern byte gf_to_attr[GF_MAX][BOLT_MAX];
 extern wchar_t gf_to_char[GF_MAX][BOLT_MAX];
-extern byte tval_to_attr[128];
 extern player_other *op_ptr;
 extern player_type *p_ptr;
 extern feature_type *f_info;

@@ -54,6 +54,7 @@
 #define TV_POTION       75
 #define TV_FLASK        77
 #define TV_FOOD         80
+#define TV_MUSHROOM     81
 #define TV_MAGIC_BOOK   90
 #define TV_PRAYER_BOOK  91
 #define TV_GOLD         100	/* Gold can only be picked up by players */
@@ -342,11 +343,6 @@ enum sval_gold /* tval 100 */
 
 
 /*
- * Special "sval" limit -- first "normal" food
- */
-#define SV_FOOD_MIN_SHROOM   6
-
-/*
  * Special "sval" limit -- first "large" chest
  */
 #define SV_CHEST_MIN_LARGE	4
@@ -360,9 +356,6 @@ enum sval_gold /* tval 100 */
  * Special "sval" value -- unknown "sval"
  */
 #define SV_UNKNOWN			255
-
-
-
 
 
 #endif /* INCLUDED_OBJECT_TVALSVAL_H */

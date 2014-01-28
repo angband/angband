@@ -1,14 +1,12 @@
 MKPATH=../../mk/
 include $(MKPATH)buildsys.mk
 
-CONFIG = flvr-dvg.prf font-win.prf \
-       xtra-new.prf flvr-new.prf \
-       font-x11.prf message.prf pref.prf keys-gcu.prf \
-       xtra-xxx.prf flvr-xxx.prf font.prf font-xxx.prf     \
-       graf-new.prf user.prf     \
-       font-gcu.prf font-sdl.prf graf-dvg.prf graf.prf graf-xxx.prf     \
-       xtra-dvg.prf \
-       flvr-nmd.prf graf-nmd.prf xtra-nmd.prf \
-       flvr-shb.prf graf-shb.prf xtra-shb.prf
-PACKAGE = pref
+CONFIG = \
+       font-gcu.prf font-sdl.prf font-win.prf font-x11.prf font.prf \
+       flvr-dvg.prf flvr-new.prf flvr-nmd.prf flvr-shb.prf flvr-xxx.prf \
+       xtra-dvg.prf xtra-new.prf xtra-nmd.prf xtra-shb.prf xtra-xxx.prf \
+       graf-dvg.prf graf-new.prf graf-nmd.prf graf-shb.prf graf-xxx.prf graf.prf \
+       keys-gcu.prf \
+       message.prf pref.prf user.prf
 
+PACKAGE = pref

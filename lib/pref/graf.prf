@@ -9,11 +9,6 @@
 #
 
 
-##### Standard font file #####
-
-%:font-xxx.prf
-
-
 ##### Load graphics tiles if appropriate #####
 
 # Standard file
