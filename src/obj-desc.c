@@ -48,33 +48,13 @@ void object_base_name(char *buf, size_t max, int tval, bool plural)
  */
 void object_kind_name(char *buf, size_t max, const object_kind *kind, bool easy_know)
 {
-	/* If not aware, use flavor */
+	/* If not aware, the plain flavour (e.g. Copper) will do. */
 	if (!easy_know && !kind->aware && kind->flavor)
-	{
-		if (tval_is_mushroom_k(kind)) {
-			strnfmt(buf, max, "%s Mushroom", kind->flavor->text);
-		} else {
-			/* Plain flavour (e.g. Copper) will do. */
-			my_strcpy(buf, kind->flavor->text, max);
-		}
-	}
+		my_strcpy(buf, kind->flavor->text, max);
 
 	/* Use proper name (Healing, or whatever) */
 	else
-	{
-		char *t;
-
-		if (tval_is_mushroom_k(kind)) {
-			my_strcpy(buf, "Mushroom of ", max);
-			max -= strlen(buf);
-			t = buf + strlen(buf);
-		} else {
-			t = buf;
-		}
-
-		/* Format remainder of the string */
-		obj_desc_name_format(t, max, 0, kind->name, NULL, FALSE);
-	}
+		obj_desc_name_format(buf, max, 0, kind->name, NULL, FALSE);
 }
 
 
