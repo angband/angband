@@ -152,13 +152,13 @@ ANGFILES = \
 	player-timed.o \
 	player-util.o \
 	player.o \
+	project.o \
 	quest.o \
 	score.o \
 	signals.o \
 	save.o \
 	savefile.o \
-	spells1.o \
-	spells2.o \
+	spells.o \
 	squelch.o \
 	store.o \
 	tables.o \

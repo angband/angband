@@ -1,6 +1,6 @@
 /*
- * File: spells1.c
- * Purpose: Some spell effects, and the project() function
+ * File: project.c
+ * Purpose: The project() function and helpers
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  *
@@ -18,7 +18,6 @@
 
 #include "angband.h"
 #include "cave.h"
-//#include "dungeon.h"
 #include "generate.h"
 #include "grafmode.h"
 #include "mon-make.h"

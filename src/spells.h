@@ -19,7 +19,7 @@ enum
 };
 
 /**
- * Bolt motion (used in prefs.c, spells1.c)
+ * Bolt motion (used in prefs.c, project.c)
  */
 enum
 {
@@ -69,7 +69,7 @@ enum
 
 /** Functions **/
 
-/* spells1.c */
+/* project.c */
 int gf_name_to_idx(const char *name);
 const char *gf_idx_to_name(int type);
 bool project(int who, int rad, int y, int x, int dam, int typ, int flg);
@@ -80,7 +80,7 @@ int adjust_dam(struct player *p, int type, int dam, aspect dam_aspect, int resis
 void monster_learn_resists(struct monster *m, struct player *p, int type);
 void dedup_hates_flags(bitflag *f);
 
-/* spells2.c */
+/* spells.c */
 extern bool hp_player(int num);
 extern bool heal_player(int perc, int min);
 extern bool warding_glyph(void);

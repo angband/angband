@@ -1,5 +1,5 @@
 /*
- * File: spells2.c
+ * File: spells.c
  * Purpose: Various assorted spell effects
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
