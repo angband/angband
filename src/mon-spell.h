@@ -90,7 +90,7 @@ enum mon_spell_type {
 };
 
 /* Minimum flag which can fail */
-#define MIN_NONINNATE_SPELL    (FLAG_START + 32)
+#define MIN_NONINNATE_SPELL    (FLAG_START + 26)
 
 /** Macros **/
 #define rsf_has(f, flag)       flag_has_dbg(f, RSF_SIZE, flag, #f, #flag)

@@ -2,10 +2,9 @@
  * File: list-mon-spells.h
  * Purpose: List of monster spell flags 
  *
- * Changing flag order will break savefiles. There is a hard-coded limit of
- * 256 flags, due to 32 bytes of storage for lore flags in the savefile. Flags
- * below start from 0 on line 27, so a flag's sequence number is its line
- * number minus 27. Up to and including BOULDER are "innate" spells.
+ * Changing flag order will break savefiles.  Flags
+ * below start from 0 on line 26, so a flag's sequence number is its line
+ * number minus 26. Up to and including BOULDER are "innate" spells.
  *
  * Fields:
  * name - spell name
@@ -26,9 +25,6 @@
 /* 	name		type		desc			  cap	div	gf			msgt			save	hit		verb					base_dam		rlev_dam		blind_verb			lore_desc*/
 RSF(NONE,		0,			NULL,			    0,	0, 	0,			0,				FALSE,	0,		NULL,					RV(0,0,0,0),	RV(0,0,0,0),	NULL,				"")
 RSF(SHRIEK,		RST_ANNOY,	"shriek",		    0,	0, 	0,			MSG_SHRIEK,		FALSE,	100,	"makes a high-pitched",	RV(0,0,0,0),	RV(0,0,0,0),	"shrieks",			"shriek for help")
-RSF(XXX1,		0,			NULL,				0,	0,	0,			0,				FALSE,	0,		NULL,					RV(0,0,0,0),	RV(0,0,0,0),	NULL,				"")
-RSF(XXX2,		0,			NULL,				0,	0,	0,			0,				FALSE,	0,		NULL,					RV(0,0,0,0),	RV(0,0,0,0),	NULL,				"")
-RSF(XXX3,		0,			NULL,				0,	0,	0,			0,				FALSE,	0,		NULL,					RV(0,0,0,0),	RV(0,0,0,0),	NULL,				"")
 RSF(ARROW_1,	RST_BOLT,	"arrow",			0,	0,	GF_ARROW,	0,				FALSE,	40,		"fires an",				RV(0,1,6,0),	RV(0,0,0,0),	"fires an arrow",	"fire an arrow")
 RSF(ARROW_2,	RST_BOLT,	"arrow",			0,	0,	GF_ARROW,	0,				FALSE,	40,		"fires an",				RV(0,3,6,0),	RV(0,0,0,0),	"fires an arrow",	"fire arrows")
 RSF(ARROW_3,	RST_BOLT,	"missile",			0,	0,	GF_ARROW,	0,				FALSE,	50,		"fires a",				RV(0,5,6,0),	RV(0,0,0,0),	"fires a missile",	"fire a missile")
@@ -53,9 +49,6 @@ RSF(BR_SHAR,	RST_BREATH,	"shards",	 	  500,	6,	GF_SHARD,	MSG_BR_SHARDS,	FALSE,	1
 RSF(BR_PLAS,	RST_BREATH,	"plasma",	 	  150,	6,	GF_PLASMA,	MSG_BR_PLASMA,	FALSE,	100,	"breathes",				RV(0,0,0,0),	RV(0,0,0,0),	"breathes",			"plasma")
 RSF(BR_WALL,	RST_BREATH,	"force",	 	  200,	6,	GF_FORCE,	MSG_BR_FORCE,	FALSE,	100,	"breathes",				RV(0,0,0,0),	RV(0,0,0,0),	"breathes",			"force")
 RSF(BR_MANA,	RST_BREATH,	"raw magic",	 1600,	3,	GF_MANA,	0,				FALSE,	100,	"breathes",				RV(0,0,0,0),	RV(0,0,0,0),	"breathes",			"mana")
-RSF(XXX4,		0,			NULL,				0,	0,	0,			0,				FALSE,	0,		NULL,					RV(0,0,0,0),	RV(0,0,0,0),	NULL,				"")
-RSF(XXX5,		0,			NULL,				0,	0,	0,			0,				FALSE,	0,		NULL,					RV(0,0,0,0),	RV(0,0,0,0),	NULL,				"")
-RSF(XXX6,		0,			NULL,				0,	0,	0,			0,				FALSE,	0,		NULL,					RV(0,0,0,0),	RV(0,0,0,0),	NULL,				"")
 RSF(BOULDER,	RST_BOLT,	"boulder",	   		0,	0,	GF_ARROW,	0,				FALSE,	60,		"hurls a",				RV(0,1,12,0),	RV(0,14,12,1),	"hurls a boulder",	"throw boulders")
 RSF(BA_ACID,	RST_BALL,	"acid",				0,	0,	GF_ACID,	0,				FALSE,	100,	"casts a ball of",		RV(15,0,0,0),	RV(0,1,300,0),	"mumbles",			"produce acid balls")
 RSF(BA_ELEC,	RST_BALL,	"lightning",		0,	0,	GF_ELEC,	0,				FALSE,	100,	"casts a ball of",		RV(8,0,0,0),	RV(0,1,150,0),	"mumbles",			"produce lightning balls")
@@ -90,21 +83,15 @@ RSF(CONF,       RST_ANNOY,	"weird things",		0,	0,	0,			0,				TRUE,	100,	"conjure
 RSF(SLOW,       RST_ANNOY | RST_HASTE,"move slowly",0,0,0,			0,				TRUE,	100,	"tries to make you",	RV(0,0,0,0),	RV(0,0,0,0),	"mumbles",			"slow")
 RSF(HOLD,       RST_ANNOY | RST_HASTE,"stop moving",0,0,0,			0,				TRUE,	100,	"tries to make you",	RV(0,0,0,0),	RV(0,0,0,0),	"mumbles",			"paralyze")
 RSF(HASTE,      RST_HASTE,	"moving faster",	0,	0,	0,			0,				FALSE,	100,	"starts",				RV(0,0,0,0),	RV(0,0,0,0),	"mumbles",			"haste-self")
-RSF(XXX7,		0,			NULL,				0,	0,	0,			0,				FALSE,	0,		NULL,					RV(0,0,0,0),	RV(0,0,0,0),	NULL,				"")
 RSF(HEAL,       RST_HEAL,	"closing wounds",	0,	0,	0,			0,				FALSE,	100,	"magically starts",		RV(0,0,0,0),	RV(0,0,0,0),	"mumbles",			"heal-self")
-RSF(XXX8,		0,			NULL,				0,	0,	0,			0,				FALSE,	0,		NULL,					RV(0,0,0,0),	RV(0,0,0,0),	NULL,				"")
 RSF(BLINK,      RST_TACTIC | RST_ESCAPE,"phase door",0,0,0,			0,				FALSE,	100,	"casts a",				RV(0,0,0,0),	RV(0,0,0,0),	"mumbles",			"blink-self")
 RSF(TPORT,      RST_ESCAPE,	"teleport away",	0,	0,	0,			0,				FALSE,	100,	"tries to",				RV(0,0,0,0),	RV(0,0,0,0),	"makes a soft 'pop'",	"teleport-self")
-RSF(XXX9,		0,			NULL,				0,	0,	0,			0,				FALSE,	0,		NULL,					RV(0,0,0,0),	RV(0,0,0,0),	NULL,				"")
-RSF(XXX10,		0,			NULL,				0,	0,	0,			0,				FALSE,	0,		NULL,					RV(0,0,0,0),	RV(0,0,0,0),	NULL,				"")
 RSF(TELE_TO,    RST_ANNOY,	"come hither",		0,	0,	0,			MSG_TELEPORT,	FALSE,	100,	"commands you to",		RV(0,0,0,0),	RV(0,0,0,0),	"commands you to come hither",	"teleport to")
 RSF(TELE_AWAY,  RST_ESCAPE,	"go away",			0,	0,	0,			MSG_TELEPORT,	FALSE,	100,	"commands you to",		RV(0,0,0,0),	RV(0,0,0,0),	"commands you to go away",	"teleport away")
 RSF(TELE_LEVEL, RST_ESCAPE,	"go far away",		0,	0,	0,			MSG_TPLEVEL,	TRUE,	100,	"commands you to",		RV(0,0,0,0),	RV(0,0,0,0),	"commands you to go far away",	"teleport level")
-RSF(XXX11,		0,			NULL,				0,	0,	0,			0,				FALSE,	0,		NULL,					RV(0,0,0,0),	RV(0,0,0,0),	NULL,				"")
 RSF(DARKNESS,   RST_ANNOY,	"darkness",			0,	0,	GF_DARK_WEAK,0,				FALSE,	100,	"surrounds you in",		RV(0,0,0,0),	RV(0,0,0,0),	"mumbles",			"create darkness")
 RSF(TRAPS,      RST_ANNOY,	"traps",			0,	0,	0,			MSG_CREATE_TRAP,FALSE,	100,	"cackles evilly about",	RV(0,0,0,0),	RV(0,0,0,0),	"cackles evilly",	"create traps")
 RSF(FORGET,     RST_ANNOY,	"forget things",	0,	0,	0,			0,				TRUE,	100,	"tries to make you",	RV(0,0,0,0),	RV(0,0,0,0),	"messes with your mind",	"cause amnesia")
-RSF(XXX12,		0,			NULL,				0,	0,	0,			0,				FALSE,	0,		NULL,					RV(0,0,0,0),	RV(0,0,0,0),	NULL,				"")
 RSF(S_KIN,      RST_SUMMON,	"its kin",			0,	0,	0,			MSG_SUM_MONSTER,FALSE,	100,	"summons",				RV(0,0,0,0),	RV(0,0,0,0),	"mumbles",			"summon similar monsters")
 RSF(S_HI_DEMON, RST_SUMMON,	"major demons",		0,	0,	0,			MSG_SUM_HI_DEMON,FALSE,	100,	"summons",				RV(0,0,0,0),	RV(0,0,0,0),	"mumbles",			"summon greater demons")
 RSF(S_MONSTER,  RST_SUMMON,	"a companion",		0,	0,	0,			MSG_SUM_MONSTER,FALSE,	100,	"summons",				RV(0,0,0,0),	RV(0,0,0,0),	"mumbles",			"summon a monster")
