@@ -212,8 +212,6 @@ size_t vstrnfmt(char *buf, size_t max, const char *fmt, va_list vp)
 	/* Scan the format string */
 	while (TRUE)
 	{
-		type_union tval = END;
-
 		/* All done */
 		if (!*s) break;
 
@@ -360,31 +358,6 @@ size_t vstrnfmt(char *buf, size_t max, const char *fmt, va_list vp)
 		/* Clear "tmp" */
 		tmp[0] = '\0';
 
-		/* Parse a type_union */
-		if (aux[q-1] == 'y')
-		{
-			tval = va_arg(vp, type_union);
-
-			if (do_long)
-			{
-				/* Error -- illegal type_union argument */
-				buf[0] = '\0';
-
-				/* Return "error" */
-				return (0);
-			}
-
-			/* Replace aux terminator with proper printf char */
-			if (tval.t == T_CHAR) aux[q-1] = 'c';
-			else if (tval.t == T_INT) aux[q-1] = 'd';
-			else if (tval.t == T_FLOAT) aux[q-1] = 'f';
-			else if (tval.t == T_STRING) aux[q-1] = 's';
-			else
-			{ 
-				buf[0] = '\0';
-				return (0);
-			}
-		}
 
 		/* Process the "format" symbol */
 		switch (aux[q-1])
@@ -395,7 +368,7 @@ size_t vstrnfmt(char *buf, size_t max, const char *fmt, va_list vp)
 				int arg;
 
 				/* Get the next argument */
-				arg = tval.t == T_END ? va_arg(vp, int) : tval.u.c;
+				arg = va_arg(vp, int);
 
 				/* Format the argument */
 				sprintf(tmp, aux, arg);
@@ -422,7 +395,7 @@ size_t vstrnfmt(char *buf, size_t max, const char *fmt, va_list vp)
 					int arg;
 
 					/* Get the next argument */
-					arg = tval.t == T_END ? va_arg(vp, int) : tval.u.i;
+					arg = va_arg(vp, int);
 
 					/* Format the argument */
 					sprintf(tmp, aux, arg);
@@ -468,7 +441,7 @@ size_t vstrnfmt(char *buf, size_t max, const char *fmt, va_list vp)
 				double arg;
 
 				/* Get the next argument */
-				arg = tval.t == T_END ? va_arg(vp, double) : tval.u.f;
+				arg = va_arg(vp, double);
 
 				/* Format the argument */
 				sprintf(tmp, aux, arg);
@@ -552,7 +525,7 @@ size_t vstrnfmt(char *buf, size_t max, const char *fmt, va_list vp)
 					 */
 
 					/* Get the next argument */
-					arg = tval.t == T_END ? va_arg(vp, const char *) : tval.u.s;
+					arg = va_arg(vp, const char *);
 
 					/* Hack -- convert NULL to EMPTY */
 					if (!arg) arg = "";
