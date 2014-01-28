@@ -288,7 +288,7 @@ static void death_info(const char *title, int row)
 							ODESC_PREFIX | ODESC_FULL);
 
 				/* Get the inventory color */
-				attr = tval_to_attr[o_ptr->tval % N_ELEMENTS(tval_to_attr)];
+				attr = o_ptr->kind->base->attr;
 
 				/* Display the object */
 				c_put_str(attr, o_name, j+2, 7);

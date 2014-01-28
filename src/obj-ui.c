@@ -178,7 +178,7 @@ static void show_obj_list(int num_obj, int num_head, char labels[50][80],
 		
 		/* Item kind determines the color of the output */
 		if (o_ptr && o_ptr->kind)
-			attr = tval_to_attr[o_ptr->tval % N_ELEMENTS(tval_to_attr)];
+			attr = o_ptr->kind->base->attr;
 		else
 			attr = TERM_SLATE;
 

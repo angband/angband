@@ -1,110 +1,141 @@
 # D: lines are default values
 
 # N: tvalname
+# G: default attr for inventory display
 # B: breakage chance when thrown
 # F: default flags
 
 D:B:10
 
 N:chest:Chest~
+G:slate
 F:HATES_ACID | HATES_FIRE
 
 N:shot:Shot~
+G:light umber
 B:25
 F:SHOW_DICE | 
 
 N:arrow:Arrow~
+G:light umber
 B:35
 F:HATES_ACID | HATES_FIRE
 F:SHOW_DICE | 
 
 N:bolt:Bolt~
+G:light umber
 B:25
 F:HATES_ACID
 F:SHOW_DICE | 
 
 N:bow:Bow~
+G:umber
 F:HATES_ACID | HATES_FIRE
 F:SHOW_MULT | 
 
 N:digger:Digger~
+G:slate
 F:SHOW_DICE | 
 
 N:hafted:Hafted weapon~
+G:white
 F:HATES_ACID | HATES_FIRE
 F:SHOW_DICE | 
 
 N:polearm:Polearm~
+G:white
 F:HATES_ACID | HATES_FIRE
 F:SHOW_DICE | 
 
 N:sword:Bladed weapon~
+G:white
 F:HATES_ACID
 F:SHOW_DICE | 
 
 N:boots:Boot~
+G:light umber
 F:HATES_ACID | HATES_FIRE
 
 N:gloves:Glove~
+G:light umber
 F:HATES_ACID | HATES_FIRE
 
 N:helm:Helm~
+G:light umber
 F:HATES_ACID
 
 N:crown:Crown~
+G:light umber
 F:HATES_ACID
 
 N:shield:Shield~
+G:light umber
 F:HATES_ACID
 
 N:cloak:Cloak~
+G:light umber
 F:HATES_ACID | HATES_FIRE
 
 N:soft armor:Soft Armor~
+G:slate
 F:HATES_ACID | HATES_FIRE
 
 N:hard armor:Hard Armor~
+G:slate
 F:HATES_ACID
 
 N:dragon armor:Dragon Armor~
+G:slate
 
 N:light:Light~
+G:yellow
 B:50
 F:HATES_FIRE
 
 N:amulet:Amulet~
+G:orange
 
 N:ring:Ring~
+G:red
 F:HATES_ELEC
 
 N:staff:Staff~
+G:light umber
 F:HATES_ACID | HATES_FIRE
 
 N:wand:Wand~
+G:green
 F:HATES_ELEC
 
 N:rod:Rod~
+G:light purple
 F:HATES_ELEC
 
 N:scroll:Scroll~
+G:white
 F:HATES_ACID | HATES_FIRE
 
 N:potion:Potion~
+G:light blue
 B:100
 F:HATES_COLD
 
 N:flask:Flask~
+G:yellow
 B:100
 F:HATES_COLD
 
 N:food:Food
+G:light umber
 B:100
 
 N:mushroom:Mushroom~
+G:light umber
 B:100
 
 N:magic book:Magic Book~
+G:light red
 F:HATES_FIRE
 
 N:prayer book:Prayer Book~
-F:HATES_FIRE
+G:light green

@@ -18,11 +18,6 @@
 ## F:53:0x01:0x23
 
 
-##### Standard font file #####
-
-%:font-xxx.prf
-
-
 ##### System Specific Subfiles #####
 
 ?:[IOR [EQU $SYS xaw] [EQU $SYS x11]]

@@ -766,24 +766,6 @@ static enum parser_error parse_prefs_l(struct parser *p)
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_prefs_e(struct parser *p)
-{
-	int tvi, a;
-
-	struct prefs_data *d = parser_priv(p);
-	assert(d != NULL);
-	if (d->bypass) return PARSE_ERROR_NONE;
-
-	tvi = tval_find_idx(parser_getsym(p, "tval"));
-	if (tvi < 0 || tvi >= (long)N_ELEMENTS(tval_to_attr))
-		return PARSE_ERROR_UNRECOGNISED_TVAL;
-
-	a = parser_getint(p, "attr");
-	if (a) tval_to_attr[tvi] = (byte) a;
-
-	return PARSE_ERROR_NONE;
-}
-
 static enum parser_error parse_prefs_q(struct parser *p)
 {
 	struct prefs_data *d = parser_priv(p);
@@ -1019,7 +1001,6 @@ static struct parser *init_parse_prefs(bool user)
 	parser_reg(p, "F uint idx sym lighting int attr int char", parse_prefs_f);
 	parser_reg(p, "GF sym type sym direction uint attr uint char", parse_prefs_gf);
 	parser_reg(p, "L uint idx int attr int char", parse_prefs_l);
-	parser_reg(p, "E sym tval int attr", parse_prefs_e);
 	parser_reg(p, "Q sym idx sym n ?sym sval ?sym flag", parse_prefs_q);
 		/* XXX should be split into two kinds of line */
 	parser_reg(p, "inscribe sym tval sym sval str text", parse_prefs_inscribe);

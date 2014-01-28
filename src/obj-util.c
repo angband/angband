@@ -282,17 +282,8 @@ void reset_visuals(bool load_prefs)
 		f->x_char = f->d_char;
 	}
 
-	/* Extract attr/chars for inventory objects (by tval) */
-	for (i = 0; i < (int)N_ELEMENTS(tval_to_attr); i++)
-	{
-		/* Default to white */
-		tval_to_attr[i] = TERM_WHITE;
-	}
-
 	if (!load_prefs)
 		return;
-
-
 
 	/* Graphic symbols */
 	if (use_graphics) {

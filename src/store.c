@@ -1782,7 +1782,7 @@ static void store_display_entry(menu_type *menu, int oid, bool cursor, int row, 
 	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | desc);
 
 	/* Display the object */
-	c_put_str(tval_to_attr[o_ptr->tval & 0x7F], o_name, row, col);
+	c_put_str(o_ptr->kind->base->attr, o_name, row, col);
 
 	/* Show weights */
 	colour = curs_attrs[CURS_KNOWN][(int)cursor];

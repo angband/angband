@@ -129,14 +129,6 @@ byte gf_to_attr[GF_MAX][BOLT_MAX];
 wchar_t gf_to_char[GF_MAX][BOLT_MAX];
 
 
-/*
- * Specify color for inventory item text display (by tval)
- * Be sure to use "index & 0x7F" to avoid illegal access
- */
-byte tval_to_attr[128];
-
-
-
 
 /*** Player information ***/
 

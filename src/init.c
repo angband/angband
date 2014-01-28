@@ -348,6 +348,25 @@ static enum parser_error parse_kb_n(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_kb_g(struct parser *p) {
+	struct object_base *kb;
+	const char *color;
+
+	struct kb_parsedata *d = parser_priv(p);
+	assert(d);
+
+	kb = d->kb;
+	assert(kb);
+
+	color = parser_getsym(p, "color");
+	if (strlen(color) > 1)
+		kb->attr = color_text_to_attr(color);
+	else
+		kb->attr = color_char_to_attr(color[0]);
+
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_kb_b(struct parser *p) {
 	struct object_base *kb;
 
@@ -392,6 +411,7 @@ struct parser *init_parse_kb(void) {
 
 	parser_reg(p, "D sym label int value", parse_kb_d);
 	parser_reg(p, "N sym tval str name", parse_kb_n);
+	parser_reg(p, "G sym color", parse_kb_g);
 	parser_reg(p, "B int breakage", parse_kb_b);
 	parser_reg(p, "F str flags", parse_kb_f);
 	return p;
