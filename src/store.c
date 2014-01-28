@@ -517,6 +517,7 @@ static bool store_will_buy(struct store *store, const object_type *o_ptr)
 			{
 				case TV_LIGHT:
 				case TV_FOOD:
+				case TV_MUSHROOM:
 				case TV_FLASK:
 				case TV_DIGGING:
 					break;
@@ -795,6 +796,7 @@ static void mass_produce(object_type *o_ptr)
 	{
 		/* Food, Flasks, and Lights */
 		case TV_FOOD:
+		case TV_MUSHROOM:
 		case TV_FLASK:
 		case TV_LIGHT:
 		{
@@ -1997,6 +1999,7 @@ static int find_inven(const object_type *o_ptr)
 
 			/* Food and Potions and Scrolls */
 			case TV_FOOD:
+			case TV_MUSHROOM:
 			case TV_POTION:
 			case TV_SCROLL:
 			{

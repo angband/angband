@@ -28,9 +28,9 @@ always:arrow:Arrow
 always:bolt:Bolt
 normal:food:Pint of Fine Wine
 normal:food:Slime Mold
-normal:food:Stoneskin
 normal:food:Flask of Whisky
 normal:food:Hard Biscuit
+normal:mushroom:Stoneskin
 
 # Armoury
 store:2:Armoury

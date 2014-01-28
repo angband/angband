@@ -243,7 +243,7 @@ flavor:172:Slate:Pewter
 
 ##### Mushrooms #####
 
-kind:food:,
+kind:mushroom:,
 
 flavor:173:Blue:Blue
 flavor:174:Light Dark:Black

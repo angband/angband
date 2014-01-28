@@ -144,7 +144,7 @@ static struct item_selector item_selector[] =
 	{ CMD_USE_WAND, "wand", tval_is_wand, (USE_INVEN | USE_FLOOR | SHOW_FAIL) },
 	{ CMD_USE_ROD, "rod", tval_is_rod, (USE_INVEN | USE_FLOOR | SHOW_FAIL) },
 	{ CMD_ACTIVATE, NULL, obj_is_activatable, (USE_EQUIP | SHOW_FAIL) },
-	{ CMD_EAT, "food", tval_is_food, (USE_INVEN | USE_FLOOR) },
+	{ CMD_EAT, "food", tval_is_edible, (USE_INVEN | USE_FLOOR) },
 	{ CMD_QUAFF, "potion", tval_is_potion, (USE_INVEN | USE_FLOOR) },
 	{ CMD_READ_SCROLL, "scroll", tval_is_scroll, (USE_INVEN | USE_FLOOR) },
 	{ CMD_REFILL, "fuel source", obj_can_refill, (USE_INVEN | USE_FLOOR) },

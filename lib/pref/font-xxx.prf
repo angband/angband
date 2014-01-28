@@ -97,6 +97,7 @@ E:77:0x0B
 
 # FOOD
 E:80:0x0F
+E:81:0x0F
 
 # MAGIC_BOOK
 E:90:0x0C

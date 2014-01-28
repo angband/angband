@@ -78,10 +78,6 @@ static void flavor_assign_random(byte tval)
 		if (k_info[i].tval != tval || k_info[i].flavor)
 			continue;
 
-		/* HACK - Ordinary food is "boring" */
-		if ((tval == TV_FOOD) && (k_info[i].sval < SV_FOOD_MIN_SHROOM))
-			continue;
-
 		if (!flavor_count)
 			quit_fmt("Not enough flavors for tval %d.", tval);
 
@@ -167,7 +163,7 @@ void flavor_init(void)
 	flavor_assign_random(TV_STAFF);
 	flavor_assign_random(TV_WAND);
 	flavor_assign_random(TV_ROD);
-	flavor_assign_random(TV_FOOD);
+	flavor_assign_random(TV_MUSHROOM);
 	flavor_assign_random(TV_POTION);
 
 	/* Scrolls (random titles, always white) */
@@ -1363,6 +1359,7 @@ static s32b object_value_base(const object_type *o_ptr)
 	switch (o_ptr->tval)
 	{
 		case TV_FOOD:
+		case TV_MUSHROOM:
 			return 5;
 		case TV_POTION:
 		case TV_SCROLL:
@@ -2876,7 +2873,7 @@ extern s16b inven_carry(struct player *p, struct object *o)
 	/* Hobbits ID mushrooms on pickup, gnomes ID wands and staffs on pickup */
 	if (!object_is_known(j_ptr))
 	{
-		if (player_has(PF_KNOW_MUSHROOM) && tval_is_food(j_ptr))
+		if (player_has(PF_KNOW_MUSHROOM) && tval_is_mushroom(j_ptr))
 		{
 			do_ident_item(j_ptr);
 			msg("Mushrooms for breakfast!");

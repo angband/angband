@@ -56,6 +56,16 @@ bool tval_is_food_k(const struct object_kind *kind)
 	return kind->tval == TV_FOOD;
 }
 
+bool tval_is_mushroom(const struct object *o_ptr)
+{
+	return o_ptr->tval == TV_MUSHROOM;
+}
+
+bool tval_is_mushroom_k(const struct object_kind *kind)
+{
+	return kind->tval == TV_MUSHROOM;
+}
+
 bool tval_is_light(const struct object *o_ptr)
 {
 	return o_ptr->tval == TV_LIGHT;
@@ -98,7 +108,8 @@ bool tval_is_pointy(const struct object *o_ptr)
 
 bool tval_can_have_nourishment(const struct object *o_ptr)
 {
-	return o_ptr->tval == TV_FOOD || o_ptr->tval == TV_POTION;
+	return o_ptr->tval == TV_FOOD || o_ptr->tval == TV_POTION ||
+			o_ptr->tval == TV_MUSHROOM;
 }
 
 bool tval_can_have_charges(const struct object *o_ptr)
@@ -149,6 +160,7 @@ bool tval_is_useable(const struct object *o_ptr)
 		case TV_SCROLL:
 		case TV_POTION:
 		case TV_FOOD:
+		case TV_MUSHROOM:
 			return TRUE;
 		default:
 			return FALSE;
@@ -249,6 +261,17 @@ bool tval_is_wearable(const struct object *o_ptr)
 	}
 }
 
+bool tval_is_edible(const struct object *o_ptr)
+{
+	switch (o_ptr->tval) {
+		case TV_FOOD:
+		case TV_MUSHROOM:
+			return TRUE;
+		default:
+			return FALSE;
+	}
+}
+
 bool tval_can_have_flavor_k(const struct object_kind *kind)
 {
 	switch (kind->tval) {
@@ -258,7 +281,7 @@ bool tval_can_have_flavor_k(const struct object_kind *kind)
 		case TV_WAND:
 		case TV_ROD:
 		case TV_POTION:
-		case TV_FOOD:
+		case TV_MUSHROOM:
 		case TV_SCROLL:
 			return TRUE;
 		default:
@@ -318,6 +341,7 @@ static const grouper tval_names[] =
 	{ TV_POTION,      "potion" },
 	{ TV_FLASK,       "flask" },
 	{ TV_FOOD,        "food" },
+	{ TV_MUSHROOM,    "mushroom" },
 	{ TV_MAGIC_BOOK,  "magic book" },
 	{ TV_PRAYER_BOOK, "prayer book" },
 	{ TV_GOLD,        "gold" },

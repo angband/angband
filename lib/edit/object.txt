@@ -213,7 +213,7 @@ D:A fine way to wash down some otherwise unappetising rations.
 
 N:16:Second Sight
 G:,:d
-I:80:6
+I:81:6
 W:0:0:1:200
 A:10:5 to 100
 M:70:1d4
@@ -223,7 +223,7 @@ L:500
 
 N:17:Fast Recovery
 G:,:d
-I:80:7
+I:81:7
 W:0:0:1:200
 A:10:5 to 40
 M:70:1d4
@@ -233,7 +233,7 @@ L:500
 
 N:18:Vigor
 G:,:d
-I:80:8
+I:81:8
 W:0:0:1:200
 A:25:20 to 100
 M:13:1d3
@@ -243,7 +243,7 @@ L:500
 
 N:19:Clear Mind
 G:,:d
-I:80:9
+I:81:9
 W:0:0:1:200
 A:10:5 to 40
 M:70:1d4
@@ -253,7 +253,7 @@ L:500
 
 N:20:Emergency
 G:,:d
-I:80:10
+I:81:10
 W:0:0:1:60
 A:10:5 to 100
 M:70:1d4
@@ -263,7 +263,7 @@ L:500
 
 N:21:Terror
 G:,:d
-I:80:11
+I:81:11
 W:0:0:1:60
 A:10:5 to 40
 M:70:1d4
@@ -273,7 +273,7 @@ L:500
 
 N:22:Stoneskin
 G:,:d
-I:80:12
+I:81:12
 W:0:0:1:60
 A:10:10 to 40
 M:70:1d4
@@ -284,7 +284,7 @@ D:Its poison turns your skin to stone, albeit briefly.
 
 N:23:Turbulence
 G:,:d
-I:80:13
+I:81:13
 W:0:0:1:60
 #A:10:5 to 100
 M:70:1d4
@@ -294,7 +294,7 @@ L:500
 
 N:24:Debility
 G:,:d
-I:80:14
+I:81:14
 W:0:0:1:20
 A:10:10 to 40
 M:70:1d4
@@ -304,7 +304,7 @@ L:500
 
 N:25:Sprinting
 G:,:d
-I:80:15
+I:81:15
 W:0:0:1:100
 A:1:15 to 100
 M:70:1d4
@@ -314,7 +314,7 @@ L:500
 
 N:26:Purging
 G:,:d
-I:80:16
+I:81:16
 W:0:0:1:60
 A:1:15 to 100
 M:70:1d4

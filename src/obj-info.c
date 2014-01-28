@@ -1051,7 +1051,7 @@ static bool describe_effect(textblock *tb, const object_type *o_ptr, bool full,
 		{
 			if (effect_aim(o_ptr->kind->effect))
 				textblock_append(tb, "It can be aimed.\n");
-			else if (tval_is_food(o_ptr))
+			else if (tval_is_edible(o_ptr))
 				textblock_append(tb, "It can be eaten.\n");
 			else if (tval_is_potion(o_ptr))
 				textblock_append(tb, "It can be drunk.\n");

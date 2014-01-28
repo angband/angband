@@ -100,6 +100,9 @@ F:HATES_COLD
 N:food:Food
 B:100
 
+N:mushroom:Mushroom~
+B:100
+
 N:magic book:Magic Book~
 F:HATES_FIRE
 

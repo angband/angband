@@ -35,6 +35,8 @@ bool tval_is_book_k(const struct object_kind *kind);
 bool tval_is_chest(const struct object *o_ptr);
 bool tval_is_food(const struct object *o_ptr);
 bool tval_is_food_k(const struct object_kind *k_ptr);
+bool tval_is_mushroom(const struct object *o_ptr);
+bool tval_is_mushroom_k(const struct object_kind *k_ptr);
 bool tval_is_fuel(const struct object *o_ptr);
 bool tval_is_head_armor(const struct object *o_ptr);
 bool tval_is_jewelry(const struct object *o_ptr);
@@ -53,6 +55,7 @@ bool tval_is_useable(const struct object *o_ptr);
 bool tval_is_wand(const struct object *o_ptr);
 bool tval_is_weapon(const struct object *o_ptr);
 bool tval_is_wearable(const struct object *o_ptr);
+bool tval_is_edible(const struct object *o_ptr);
 bool tval_is_zapper(const struct object *o_ptr);
 
 #endif /* OBJECT_TVAL_H */
