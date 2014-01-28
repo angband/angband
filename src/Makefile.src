@@ -69,8 +69,6 @@ BASEMAINFILES = main.o
 
 GCUMAINFILES = main-gcu.o
 
-OSXMAINFILES = main-crb.o
-
 SDLMAINFILES = main-sdl.o
 
 SNDSDLFILES = snd-sdl.o
