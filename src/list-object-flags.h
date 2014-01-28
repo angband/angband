@@ -2,10 +2,9 @@
  * File: src/list-object-flags.h
  * Purpose: object flags for all objects
  *
- * Changing flag order will break savefiles. There is a hard-coded limit of
- * 256 flags, due to 32 bytes of storage for item flags in the savefile. Flags
- * below start from 0 on line 21, so a flag's sequence number is its line
- * number minus 21.
+ * Changing flag order will break savefiles. Flags
+ * below start from 0 on line 19, so a flag's sequence number is its line
+ * number minus 19.
  *
  * index: the flag number
  * pval: is it a quantitative flag? FALSE means it's just on/off
@@ -23,9 +22,6 @@ OF(INT,         TRUE,	OFID_WIELD,	OFT_STAT,	5,		10,	1,	1,	1,		1,	1,		1,		1,		1,	
 OF(WIS,         TRUE,	OFID_WIELD,	OFT_STAT,	5,		10,	1,	1,	1,		1,	1,		1,		1,		1,		1,	1,		1,		"")
 OF(DEX,         TRUE,	OFID_WIELD,	OFT_STAT,	8,		10,	1,	1,	1,		1,	1,		1,		1,		1,		1,	2,		1,		"")
 OF(CON,         TRUE,	OFID_WIELD,	OFT_STAT,	12,		15,	1,	1,	1,		1,	1,		1,		1,		1,		1,	1,		1,		"")
-OF(XXX0,        FALSE,	0,			0,			0,		0,	0,	0,	0,		0,	0,		0,		0,		0,		0,	0,		0,		"")
-OF(XXX1,        FALSE,	0,			0,			0,		0,	0,	0,	0,		0,	0,		0,		0,		0,		0,	0,		0,		"")
-OF(XXX2,        FALSE,	0,			0,			0,		0,	0,	0,	0,		0,	0,		0,		0,		0,		0,	0,		0,		"")
 OF(STEALTH,     TRUE,	OFID_WIELD,	OFT_PVAL,	8,		12,	1,	1,	1,		1,	1,		1,		1,		1,		1,	1,		1,		"Your %s glows.")
 OF(SEARCH,      TRUE,	OFID_WIELD,	OFT_PVAL,	2,		5,	1,	1,	1,		1,	1,		1,		1,		1,		1,	1,		1,		"Your %s glows.")
 OF(INFRA,       TRUE,	OFID_WIELD,	OFT_PVAL,	4,		8,	1,	1,	1,		1,	1,		1,		1,		1,		1,	1,		1,		"")
@@ -55,13 +51,10 @@ OF(SUST_INT,    FALSE,	OFID_NORMAL,OFT_SUST,	4,		0,	1,	1,	1,		1,	1,		1,		1,		1,	
 OF(SUST_WIS,    FALSE,	OFID_NORMAL,OFT_SUST,	4,		0,	1,	1,	1,		1,	1,		1,		1,		1,		1,	1,		1,		"Your %s glows.")
 OF(SUST_DEX,    FALSE,	OFID_NORMAL,OFT_SUST,	7,		0,	1,	1,	1,		1,	1,		1,		1,		1,		1,	1,		1,		"Your %s glows.")
 OF(SUST_CON,    FALSE, 	OFID_NORMAL,OFT_SUST,	8,		0,	1,	1,	1,		1,	1,		1,		1,		1,		1,	1,		1,		"Your %s glows.")
-OF(XXX2B,       FALSE,	0,			0,			0,		0,	0,	0,	0,		0,	0,		0,		0,		0,		0,	0,		0,		"Your %s glows.")
 OF(VULN_ACID,   FALSE, 	OFID_NORMAL,OFT_VULN,	-6,		0,	1,	1,	1,		1,	1,		1,		1,		1,		1,	1,		1,		"Your %s glows.")
 OF(VULN_ELEC,   FALSE,	OFID_NORMAL,OFT_VULN,	-6,		0,	1,	1,	1,		1,	1,		1,		1,		1,		1,	1,		1,		"Your %s glows.")
 OF(VULN_FIRE,   FALSE,	OFID_NORMAL,OFT_VULN,	-6,		0,	1,	1,	1,		1,	1,		1,		1,		1,		1,	1,		1,		"Your %s glows.")
 OF(VULN_COLD,   FALSE,	OFID_NORMAL,OFT_VULN,	-6,		0,	1,	1,	1,		1,	1,		1,		1,		1,		1,	1,		1,		"Your %s glows.")
-OF(XXX3,        FALSE,	0,			0,			0,		0,	0,	0,	0,		0,	0,		0,		0,		0,		0,	0,		0,		"Your %s glows.")
-OF(XXX4,        FALSE,	0,			0,			0,		0,	0,	0,	0,		0,	0,		0,		0,		0,		0,	0,		0,		"Your %s glows.")
 OF(IM_ACID,     FALSE, 	OFID_NORMAL,OFT_IMM,	38,		0,	1,	1,	1,		1,	1,		1,		1,		1,		1,	1,		1,		"Your %s glows.")
 OF(IM_ELEC,     FALSE,	OFID_NORMAL,OFT_IMM,	35,		0,	1,	1,	1,		1,	1,		1,		1,		1,		1,	1,		1,		"Your %s glows.")
 OF(IM_FIRE,     FALSE,	OFID_NORMAL,OFT_IMM,	40,		0,	1,	1,	1,		1,	1,		1,		1,		1,		1,	1,		1,		"Your %s glows.")
@@ -103,14 +96,9 @@ OF(IGNORE_ELEC, FALSE,	OFID_NORMAL,OFT_IGNORE,	1,		0,	1,  1,  1,      1,  1,    
 OF(IGNORE_FIRE, FALSE,	OFID_NORMAL,OFT_IGNORE,	3,		0,	1,  1,  1,      1,  1,      1,      1,      1,      1,  1,      1,		"")
 OF(IGNORE_COLD, FALSE,	OFID_NORMAL,OFT_IGNORE,	1,		0,	1,  1,  1,      1,  1,      1,      1,      1,      1,  1,      1,		"")
 OF(RES_STUN,    FALSE,	OFID_NORMAL,OFT_PROT,	12,		0,	1,  1,  1,      1,  1,      1,      1,      1,      1,  1,      1,		"Your %s glows.")
-OF(XXX5,        FALSE,	0,			0,			0,		0,	0,	0,	0,		0,	0,		0,		0,		0,		0,	0,		0,		"")
 OF(BLESSED,     FALSE,	OFID_WIELD,	OFT_MELEE,	1,		0,	1,	0,	0,		0,	0,		0,		0,		0,		0,	0,		0,		"")
-OF(XXX6,        FALSE,	0,			0,			0,		0,	0,	0,	0,		0,	0,		0,		0,		0,		0,	0,		0,		"")
 OF(INSTA_ART,   FALSE,	OFID_NONE,	OFT_INT,	0,      0,	0,  0,  0,      0,  0,      0,      0,      0,      0,  0,      0,		"")
 OF(EASY_KNOW,   FALSE,	OFID_NONE,	OFT_INT,	0,      0,	0,  0,  0,      0,  0,      0,      0,      0,      0,  0,      0,		"")
-OF(XXX7,   		FALSE,	0,			0,			0,      0,	0,  0,  0,      0,  0,      0,      0,      0,      0,  0,      0,		"")
-OF(XXX8,		FALSE,	0,			0,			0,      0,	0,  0,  0,      0,  0,      0,      0,      0,      0,  0,      0,		"")
-OF(XXX9,        FALSE,	0,			0,			0,      0,	0,  0,  0,      0,  0,      0,      0,      0,      0,  0,      0,		"")
 OF(LIGHT_CURSE, FALSE,	OFID_WIELD,	OFT_CURSE,	-5,     0,	1,  1,  1,      1,  1,      1,      1,      1,      1,  1,      1,		"")
 OF(HEAVY_CURSE, FALSE,	OFID_WIELD,	OFT_CURSE,	-15,    0,	1,  1,  1,      1,  1,      1,      1,      1,      1,  1,      1,		"")
 OF(PERMA_CURSE, FALSE,	OFID_WIELD,	OFT_CURSE,	-25,    0,	1,  1,  1,      1,  1,      1,      1,      1,      1,  1,      1,		"")
