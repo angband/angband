@@ -21,6 +21,7 @@
 #include "cmds.h"
 #include "dungeon.h"
 #include "files.h"
+#include "prefs.h"
 
 /*
  * Comments and suggestions are welcome. The UI probably needs some

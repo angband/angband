@@ -15,5 +15,6 @@ void dump_colors(ang_file *fff);
 bool prefs_save(const char *path, void (*dump)(ang_file *), const char *title);
 errr process_pref_file_command(const char *buf);
 bool process_pref_file(const char *name, bool quiet, bool user);
+void reset_visuals(bool load_prefs);
 
 #endif /* !PREFS_H */

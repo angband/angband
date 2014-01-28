@@ -22,7 +22,6 @@
 struct object_kind *objkind_get(int tval, int sval);
 struct object_kind *objkind_byid(int kidx);
 void flavor_init(void);
-void reset_visuals(bool load_prefs);
 void object_flags(const object_type *o_ptr, bitflag flags[OF_SIZE]);
 void object_flags_known(const object_type *o_ptr, bitflag flags[OF_SIZE]);
 char index_to_label(int i);
