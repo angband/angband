@@ -913,7 +913,6 @@ static void refill_lamp(object_type *j_ptr, object_type *o_ptr, int item)
 void do_cmd_refill(struct command *cmd)
 {
 	object_type *j_ptr = &p_ptr->inventory[INVEN_LIGHT];
-	bitflag f[OF_SIZE];
 
 	int item;
 	object_type *o_ptr;
@@ -929,12 +928,10 @@ void do_cmd_refill(struct command *cmd)
 	}
 
 	/* Check what we're wielding. */
-	object_flags(j_ptr, f);
-
 	if (!tval_is_light(j_ptr)) {
 		msg("You are not wielding a light.");
 		return;
-	} else if (of_has(f, OF_NO_FUEL)) {
+	} else if (of_has(j_ptr->flags, OF_NO_FUEL)) {
 		msg("Your light cannot be refilled.");
 		return;
 	} else if (j_ptr->sval == SV_LIGHT_LANTERN) {

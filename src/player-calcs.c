@@ -1164,21 +1164,18 @@ static void calc_mana(void)
 	/* Process gloves for those disturbed by them */
 	if (player_has(PF_CUMBER_GLOVE))
 	{
-		bitflag f[OF_SIZE];
-
 		/* Assume player is not encumbered by gloves */
 		p_ptr->cumber_glove = FALSE;
 
 		/* Get the gloves */
 		o_ptr = &p_ptr->inventory[INVEN_HANDS];
 
-		/* Examine the gloves */
-		object_flags(o_ptr, f);
-
 		/* Normal gloves hurt mage-type spells */
 		if (o_ptr->kind &&
-				!of_has(f, OF_FREE_ACT) && !of_has(f, OF_SPELLS_OK) &&
-				!(of_has(f, OF_DEX) && (o_ptr->pval[which_pval(o_ptr, OF_DEX)] > 0)))
+			!of_has(o_ptr->flags, OF_FREE_ACT) && 
+			!of_has(o_ptr->flags, OF_SPELLS_OK) &&
+			!(of_has(o_ptr->flags, OF_DEX) && 
+			  (o_ptr->pval[which_pval(o_ptr, OF_DEX)] > 0)))
 		{
 			/* Encumbered */
 			p_ptr->cumber_glove = TRUE;
@@ -1332,23 +1329,18 @@ static void calc_torch(void)
 
 	/* Examine all wielded objects, use the brightest */
 	for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)	{
-		bitflag f[OF_SIZE];
-
 		int amt = 0;
 		object_type *o_ptr = &p_ptr->inventory[i];
 
 		/* Skip empty slots */
 		if (!o_ptr->kind) continue;
 
-		/* Extract the flags */
-		object_flags(o_ptr, f);
-
 		/* Light radius is now a pval */
-		if (of_has(f, OF_LIGHT))
+		if (of_has(o_ptr->flags, OF_LIGHT))
 			amt = o_ptr->pval[which_pval(o_ptr, OF_LIGHT)];
 
 		/* Cursed objects emit no light */
-		if (of_has(f, OF_LIGHT_CURSE))
+		if (of_has(o_ptr->flags, OF_LIGHT_CURSE))
 			amt = 0;
 
 		/* Examine actual lights */

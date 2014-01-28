@@ -702,18 +702,14 @@ static void process_world(struct cave *c)
 
 	/* Burn some fuel in the current light */
 	if (tval_is_light(o_ptr)) {
-		bitflag f[OF_SIZE];
 		bool burn_fuel = TRUE;
-
-		/* Get the object flags */
-		object_flags(o_ptr, f);
 
 		/* Turn off the wanton burning of light during the day in the town */
 		if (!p_ptr->depth && ((turn % (10L * TOWN_DAWN)) < ((10L * TOWN_DAWN) / 2)))
 			burn_fuel = FALSE;
 
 		/* If the light has the NO_FUEL flag, well... */
-		if (of_has(f, OF_NO_FUEL))
+		if (of_has(o_ptr->flags, OF_NO_FUEL))
 		    burn_fuel = FALSE;
 
 		/* Use some fuel (except on artifacts, or during the day) */

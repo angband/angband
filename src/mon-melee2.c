@@ -2094,16 +2094,12 @@ static void process_monster(struct cave *c, struct monster *m_ptr)
 				/* Take or Kill objects on the floor */
 				if (rf_has(m_ptr->race->flags, RF_TAKE_ITEM) ||
 						rf_has(m_ptr->race->flags, RF_KILL_ITEM))	{
-					bitflag obj_flags[OF_SIZE];
 					bitflag mon_flags[RF_SIZE];
 
 					char m1_name[80];
 					char o_name[80];
 
 					rf_wipe(mon_flags);
-
-					/* Extract some flags */
-					object_flags(o_ptr, obj_flags);
 
 					/* Get the object name */
 					object_desc(o_name, sizeof(o_name), o_ptr,
@@ -2113,7 +2109,7 @@ static void process_monster(struct cave *c, struct monster *m_ptr)
 					monster_desc(m1_name, sizeof(m1_name), m_ptr, MDESC_IND_HID | MDESC_CAPITAL);
 
 					/* React to objects that hurt the monster */
-					react_to_slay(obj_flags, mon_flags);
+					react_to_slay(o_ptr->flags, mon_flags);
 
 					/* The object cannot be picked up by the monster */
 					if (o_ptr->artifact || rf_is_inter(m_ptr->race->flags, mon_flags)) {

@@ -1335,13 +1335,9 @@ static bool enchant_score(s16b *score, bool is_artifact)
  */
 static bool enchant_curse(object_type *o_ptr, bool is_artifact)
 {
-	bitflag f[OF_SIZE];
-
-	/* Extract the flags */
-	object_flags(o_ptr, f);
-
 	/* If the item isn't cursed (or is perma-cursed) this doesn't work */
-	if (!cursed_p(o_ptr->flags) || of_has(f, OF_PERMA_CURSE)) return FALSE;
+	if (!cursed_p(o_ptr->flags) || of_has(o_ptr->flags, OF_PERMA_CURSE)) 
+		return FALSE;
 
 	/* Artifacts resist enchanting curses away half the time */
 	if (is_artifact && randint0(100) < 50) return FALSE;

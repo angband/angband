@@ -1305,8 +1305,6 @@ int inven_damage(struct player *p, int type, int cperc)
 	
 	bool damage;
 
-	bitflag f[OF_SIZE];
-
 	/* Count the casualties */
 	k = 0;
 
@@ -1317,9 +1315,6 @@ int inven_damage(struct player *p, int type, int cperc)
 
 		o_ptr = &p->inventory[i];
 
-		of_wipe(f);
-		object_flags(o_ptr, f);
-
 		/* Skip non-objects */
 		if (!o_ptr->kind) continue;
 
@@ -1327,7 +1322,8 @@ int inven_damage(struct player *p, int type, int cperc)
 		if (o_ptr->artifact) continue;
 
 		/* Give this item slot a shot at death if it is vulnerable */
-		if (of_has(f, gf_ptr->obj_hates) &&	!of_has(f, gf_ptr->obj_imm))
+		if (of_has(o_ptr->flags, gf_ptr->obj_hates) &&
+			!of_has(o_ptr->flags, gf_ptr->obj_imm))
 		{
 			/* Chance to destroy this item */
 			int chance = cperc;

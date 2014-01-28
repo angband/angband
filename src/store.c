@@ -1099,10 +1099,7 @@ static int store_carry(struct store *store, object_type *o_ptr)
 
 	/* Some item types require maintenance */
 	if (tval_is_light(o_ptr)) {
-		bitflag f[OF_SIZE];
-		object_flags(o_ptr, f);
-
-		if (!of_has(f, OF_NO_FUEL))
+		if (!of_has(o_ptr->flags, OF_NO_FUEL))
 		{
 			if (o_ptr->sval == SV_LIGHT_TORCH)
 				o_ptr->timeout = DEFAULT_TORCH;

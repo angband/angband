@@ -505,17 +505,15 @@ static void melee_effect_handler_eat_food(melee_effect_handler_context_t *contex
 static void melee_effect_handler_eat_light(melee_effect_handler_context_t *context)
 {
 	object_type *o_ptr;
-	bitflag f[OF_SIZE];
 
 	/* Take damage */
 	take_hit(context->p, context->damage, context->ddesc);
 
-	/* Get the light, and its flags */
+	/* Get the light */
 	o_ptr = &context->p->inventory[INVEN_LIGHT];
-	object_flags(o_ptr, f);
 
 	/* Drain fuel where applicable */
-	if (!of_has(f, OF_NO_FUEL) && (o_ptr->timeout > 0)) {
+	if (!of_has(o_ptr->flags, OF_NO_FUEL) && (o_ptr->timeout > 0)) {
 		/* Reduce fuel */
 		o_ptr->timeout -= (250 + randint1(250));
 		if (o_ptr->timeout < 1) o_ptr->timeout = 1;
