@@ -12,6 +12,16 @@
 /*** Game constants ***/
 
 /*
+ * Spell types used by project(), needed for object resistances.
+ */
+enum
+{
+    #define GF(a, b, c, d, e, obv, col, f, g, h, i, j, k, l, m, fh, oh, mh, ph) GF_COUNT_##a,
+    #include "list-gf-types.h"
+    #undef GF
+};
+
+/*
  * Refueling constants
  */
 #define FUEL_TORCH                5000  /* Maximum amount of fuel in a torch */
@@ -333,6 +343,7 @@ typedef struct object_kind
 	bitflag pval_flags[MAX_PVALS][OF_SIZE];	/**< pval flags */
 
 	s16b modifiers[OBJ_MOD_MAX];
+	s16b resists[GF_COUNT_MAX];
 
 	brand_or_slay brands;
 	brand_or_slay slays;
@@ -426,6 +437,7 @@ typedef struct artifact
 	bitflag pval_flags[MAX_PVALS][OF_SIZE];	/**< pval flags */
 
 	s16b modifiers[OBJ_MOD_MAX];
+	s16b resists[GF_COUNT_MAX];
 
 	brand_or_slay brands;
 	brand_or_slay slays;
@@ -471,6 +483,7 @@ typedef struct ego_item
 	bitflag pval_flags[MAX_PVALS][OF_SIZE];	/**< pval flags */
 
 	s16b modifiers[OBJ_MOD_MAX];
+	s16b resists[GF_COUNT_MAX];
 
 	brand_or_slay brands;
 	brand_or_slay slays;
@@ -554,6 +567,7 @@ typedef struct object
 	u16b ident;			/* Special flags */
 
 	s16b modifiers[OBJ_MOD_MAX];
+	s16b resists[GF_COUNT_MAX];
 
 	brand_or_slay brands;
 	brand_or_slay slays;
