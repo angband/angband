@@ -30,6 +30,13 @@ enum {
     #undef OF
 };
 
+/* Object modifiers here for now too */
+enum {
+    #define OBJ_MOD(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r) OBJ_MOD_##a,
+    #include "list-object-modifiers.h"
+    #undef OBJ_MOD
+};
+
 /* The object flag types */
 enum object_flag_type {
 	OFT_PVAL = 1,	/* pval-related but not to a stat */

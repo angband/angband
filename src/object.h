@@ -332,6 +332,11 @@ typedef struct object_kind
 	bitflag flags[OF_SIZE];			/**< Flags */
 	bitflag pval_flags[MAX_PVALS][OF_SIZE];	/**< pval flags */
 
+	s16b modifiers[OBJ_MOD_MAX];
+
+	brand_or_slay brands;
+	brand_or_slay slays;
+
 	byte d_attr;       /**< Default object attribute */
 	wchar_t d_char;       /**< Default object character */
 
@@ -405,9 +410,6 @@ typedef struct artifact
 	s16b pval[MAX_PVALS];    /**< Power for any flags which need it */
 	byte num_pvals;/**< Number of pvals in use on this item */
 
-	brand_or_slay brands;
-	brand_or_slay slays;
-
 	s16b to_h;    /**< Bonus to hit */
 	s16b to_d;    /**< Bonus to damage */
 	s16b to_a;    /**< Bonus to armor */
@@ -422,6 +424,11 @@ typedef struct artifact
 
 	bitflag flags[OF_SIZE];		/**< Flags */
 	bitflag pval_flags[MAX_PVALS][OF_SIZE];	/**< pval flags */
+
+	s16b modifiers[OBJ_MOD_MAX];
+
+	brand_or_slay brands;
+	brand_or_slay slays;
 
 	byte level;   /** Difficulty level for activation */
 
@@ -462,6 +469,8 @@ typedef struct ego_item
 
 	bitflag flags[OF_SIZE];		/**< Flags */
 	bitflag pval_flags[MAX_PVALS][OF_SIZE];	/**< pval flags */
+
+	s16b modifiers[OBJ_MOD_MAX];
 
 	brand_or_slay brands;
 	brand_or_slay slays;
@@ -543,6 +552,8 @@ typedef struct object
 	bitflag known_flags[OF_SIZE];	/**< Player-known flags */
 	bitflag pval_flags[MAX_PVALS][OF_SIZE];	/**< pval flags */
 	u16b ident;			/* Special flags */
+
+	s16b modifiers[OBJ_MOD_MAX];
 
 	brand_or_slay brands;
 	brand_or_slay slays;
