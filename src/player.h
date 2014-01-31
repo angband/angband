@@ -367,13 +367,6 @@ typedef struct player {
 	bool running_withpathfind;      /* Are we using the pathfinder ? */
 	bool running_firststep;  /* Is this our first step running? */
 
-	s16b run_cur_dir;		/* Direction we are running */
-	s16b run_old_dir;		/* Direction we came from */
-	bool run_unused;		/* Unused (padding field) */
-	bool run_open_area;		/* Looking for an open area */
-	bool run_break_right;	/* Looking for a break (right) */
-	bool run_break_left;	/* Looking for a break (left) */
-
 	s16b command_wrk;		/* Used by the UI to decide whether
 					   to start off showing equipment or
 					   inventory listings when offering
