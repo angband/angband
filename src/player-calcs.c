@@ -1136,8 +1136,8 @@ static void calc_mana(void)
 
 	object_type *o_ptr;
 
-	bool old_cumber_glove = p_ptr->cumber_glove;
-	bool old_cumber_armor = p_ptr->cumber_armor;
+	bool old_cumber_glove = p_ptr->state.cumber_glove;
+	bool old_cumber_armor = p_ptr->state.cumber_armor;
 
 	/* Hack -- Must be literate */
 	if (!p_ptr->class->spell_book)
@@ -1165,7 +1165,7 @@ static void calc_mana(void)
 	if (player_has(PF_CUMBER_GLOVE))
 	{
 		/* Assume player is not encumbered by gloves */
-		p_ptr->cumber_glove = FALSE;
+		p_ptr->state.cumber_glove = FALSE;
 
 		/* Get the gloves */
 		o_ptr = &p_ptr->inventory[INVEN_HANDS];
@@ -1178,7 +1178,7 @@ static void calc_mana(void)
 			  (o_ptr->pval[which_pval(o_ptr, OF_DEX)] > 0)))
 		{
 			/* Encumbered */
-			p_ptr->cumber_glove = TRUE;
+			p_ptr->state.cumber_glove = TRUE;
 
 			/* Reduce mana */
 			msp = (3 * msp) / 4;
@@ -1186,7 +1186,7 @@ static void calc_mana(void)
 	}
 
 	/* Assume player not encumbered by armor */
-	p_ptr->cumber_armor = FALSE;
+	p_ptr->state.cumber_armor = FALSE;
 
 	/* Weigh the armor */
 	cur_wgt = 0;
@@ -1204,7 +1204,7 @@ static void calc_mana(void)
 	if (((cur_wgt - max_wgt) / 10) > 0)
 	{
 		/* Encumbered */
-		p_ptr->cumber_armor = TRUE;
+		p_ptr->state.cumber_armor = TRUE;
 
 		/* Reduce mana */
 		msp -= ((cur_wgt - max_wgt) / 10);
@@ -1234,10 +1234,10 @@ static void calc_mana(void)
 	if (character_xtra) return;
 
 	/* Take note when "glove state" changes */
-	if (old_cumber_glove != p_ptr->cumber_glove)
+	if (old_cumber_glove != p_ptr->state.cumber_glove)
 	{
 		/* Message */
-		if (p_ptr->cumber_glove)
+		if (p_ptr->state.cumber_glove)
 		{
 			msg("Your covered hands feel unsuitable for spellcasting.");
 		}
@@ -1248,10 +1248,10 @@ static void calc_mana(void)
 	}
 
 	/* Take note when "armor state" changes */
-	if (old_cumber_armor != p_ptr->cumber_armor)
+	if (old_cumber_armor != p_ptr->state.cumber_armor)
 	{
 		/* Message */
-		if (p_ptr->cumber_armor)
+		if (p_ptr->state.cumber_armor)
 		{
 			msg("The weight of your armor encumbers your movement.");
 		}

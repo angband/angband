@@ -251,6 +251,9 @@ typedef struct player_state {
 	bool heavy_shoot;	/* Heavy shooter */
 	bool icky_wield;	/* Icky weapon shooter */
 
+	bool cumber_armor;	/* Mana draining armor */
+	bool cumber_glove;	/* Mana draining gloves */
+
 	bitflag flags[OF_SIZE];	/* Status flags from race and items */
 } player_state;
 
@@ -373,9 +376,6 @@ typedef struct player {
 					   a choice.  See obj/obj-ui.c*/
 
 	s16b new_spells;		/* Number of spells available */
-
-	bool cumber_armor;	/* Mana draining armor */
-	bool cumber_glove;	/* Mana draining gloves */
 
 	s16b cur_light;		/* Radius of light (if any) */
 
