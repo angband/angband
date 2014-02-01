@@ -342,7 +342,7 @@ typedef struct object_kind
 	bitflag flags[OF_SIZE];			/**< Flags */
 	bitflag pval_flags[MAX_PVALS][OF_SIZE];	/**< pval flags */
 
-	s16b modifiers[OBJ_MOD_MAX];
+	random_value modifiers[OBJ_MOD_MAX];
 	s16b resists[GF_COUNT_MAX];
 
 	brand_or_slay brands;
@@ -482,7 +482,8 @@ typedef struct ego_item
 	bitflag flags[OF_SIZE];		/**< Flags */
 	bitflag pval_flags[MAX_PVALS][OF_SIZE];	/**< pval flags */
 
-	s16b modifiers[OBJ_MOD_MAX];
+	random_value modifiers[OBJ_MOD_MAX];
+	byte min_modifiers[OBJ_MOD_MAX];
 	s16b resists[GF_COUNT_MAX];
 
 	brand_or_slay brands;

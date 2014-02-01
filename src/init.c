@@ -76,6 +76,13 @@ static const char *k_info_flags[] = {
 	NULL
 };
 
+static const char *k_info_mods[] = {
+	#define OBJ_MOD(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r) #a,
+	#include "list-object-modifiers.h"
+	#undef OBJ_MOD
+	NULL
+};
+
 static const char *effect_list[] = {
 	#define EFFECT(x, a, r, h, v, c, d)	#x,
 	#include "list-effects.h"
@@ -620,9 +627,13 @@ static enum parser_error parse_k_l(struct parser *p) {
 	t = strtok(s, " |");
 
 	while (t) {
+		int i = lookup_flag(k_info_mods, t);
 		if (grab_flag(k->flags, OF_SIZE, k_info_flags, t) ||
 			grab_flag(k->pval_flags[k->num_pvals], OF_SIZE, k_info_flags, t))
 			break;
+
+		if (i)
+			k->modifiers[i] = k->pval[k->num_pvals];
 
 		t = strtok(NULL, " |");
 	}
@@ -843,9 +854,13 @@ static enum parser_error parse_a_l(struct parser *p) {
 	t = strtok(s, " |");
 
 	while (t) {
+		int i = lookup_flag(k_info_mods, t);
 		if (grab_flag(a->flags, OF_SIZE, k_info_flags, t) ||
 			grab_flag(a->pval_flags[a->num_pvals], OF_SIZE, k_info_flags, t))
 			break;
+
+		if (i)
+			a->modifiers[i] = a->pval[a->num_pvals];
 
 		t = strtok(NULL, " |");
 	}
@@ -1504,9 +1519,15 @@ static enum parser_error parse_e_l(struct parser *p) {
 	t = strtok(s, " |");
 
 	while (t) {
+		int i = lookup_flag(k_info_mods, t);
 		if (grab_flag(e->flags, OF_SIZE, k_info_flags, t) ||
 			grab_flag(e->pval_flags[e->num_pvals], OF_SIZE, k_info_flags, t))
 			break;
+
+		if (i) {
+			e->modifiers[i] = e->pval[e->num_pvals];
+			e->min_modifiers[i] = e->min_pval[e->num_pvals];
+		}
 
 		t = strtok(NULL, " |");
 	}
