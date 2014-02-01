@@ -37,6 +37,9 @@
  */
 #define NASTY_MON    25        /* 1/chance of inflated monster level */
 #define MON_OOD_MAX  10        /* maximum out-of-depth amount */
+#define BREAK_GLYPH		550	/* Rune of protection resistance */
+#define MON_MULT_ADJ		8 	/* High value slows multiplication */
+#define MON_DRAIN_LIFE		2	/* Percent of player exp drained per hit */
 
 
 

@@ -18,6 +18,7 @@
 
 #include "angband.h"
 #include "cave.h"
+#include "dungeon.h"
 #include "generate.h"
 #include "grafmode.h"
 #include "mon-make.h"

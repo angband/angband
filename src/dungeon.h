@@ -1,6 +1,10 @@
 #ifndef DUNGEON_H
 #define DUNGEON_H
 
+#define TOWN_DAWN		10000	/* Number of turns from dawn to dawn */
+#define TOWN_DUSK         5000    /* Number of turns from dawn to dusk */
+
+
 extern u16b daycount;
 
 extern void dungeon_change_level(int dlev);

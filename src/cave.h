@@ -12,6 +12,14 @@ struct monster;
 /*** Constants ***/
 
 /*
+ * Maximum dungeon level.  The player can never reach this level
+ * in the dungeon, and this value is used for various calculations
+ * involving object and monster creation.  It must be at least 100.
+ * Setting it below 128 may prevent the creation of some objects.
+ */
+#define MAX_DEPTH	128
+
+/*
  * Max number of grids in each dungeon (vertically)
  * Must be less or equal to 256
  */
@@ -25,6 +33,17 @@ struct monster;
 
 #define TOWN_WID 66
 #define TOWN_HGT 22
+
+
+/*
+ * Maximum sight and projection values
+ */
+#define MAX_SIGHT_LGE   20      /* Maximum view distance */
+#define MAX_RANGE_LGE   20      /* Maximum projection range */
+#define MAX_SIGHT_SML   10      /* Maximum view distance (small devices) */
+#define MAX_RANGE_SML   10      /* Maximum projection range (small devices) */
+#define MAX_SIGHT (OPT(birth_small_range) ? MAX_SIGHT_SML : MAX_SIGHT_LGE)  
+#define MAX_RANGE (OPT(birth_small_range) ? MAX_RANGE_SML : MAX_RANGE_LGE)
 
 
 /* 

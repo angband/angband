@@ -19,11 +19,12 @@
 
 #include "angband.h"
 #include "cave.h"
+#include "dungeon.h"
 #include "files.h"
 #include "game-event.h"
 #include "mon-msg.h"
-#include "obj-identify.h"
 #include "mon-util.h"
+#include "obj-identify.h"
 #include "obj-pval.h"
 #include "obj-tval.h"
 #include "obj-tvalsval.h"

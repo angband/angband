@@ -33,59 +33,6 @@
 
 
 
-/*
- * Maximum dungeon level.  The player can never reach this level
- * in the dungeon, and this value is used for various calculations
- * involving object and monster creation.  It must be at least 100.
- * Setting it below 128 may prevent the creation of some objects.
- */
-#define MAX_DEPTH	128
-
-/*
- * Misc constants
- */
-#define TOWN_DAWN		10000	/* Number of turns from dawn to dawn */
-#define TOWN_DUSK         5000    /* Number of turns from dawn to dusk */
-#define BREAK_GLYPH		550	/* Rune of protection resistance */
-#define BTH_PLUS_ADJ    	3 	/* Adjust BTH per plus-to-hit */
-#define MON_MULT_ADJ		8 	/* High value slows multiplication */
-#define MON_DRAIN_LIFE		2	/* Percent of player exp drained per hit */
-
-
-/*
- * More maximum values
- */
-#define MAX_SIGHT_LGE   20      /* Maximum view distance */
-#define MAX_RANGE_LGE   20      /* Maximum projection range */
-#define MAX_SIGHT_SML   10      /* Maximum view distance (small devices) */
-#define MAX_RANGE_SML   10      /* Maximum projection range (small devices) */
-#define MAX_SIGHT (OPT(birth_small_range) ? MAX_SIGHT_SML : MAX_SIGHT_LGE)  
-#define MAX_RANGE (OPT(birth_small_range) ? MAX_RANGE_SML : MAX_RANGE_LGE)
-
-
-/** UI constants **/
-
-/* 
- * Special values for the number of turns to rest, these need to be
- * negative numbers, as postive numbers are taken to be a turncount,
- * and zero means "not resting". 
- */
-enum 
-{
-	REST_COMPLETE = -2,
-	REST_ALL_POINTS = -1,
-	REST_SOME_POINTS = -3
-};
-
-/**
- * Minimum number of turns required for regeneration to kick in during resting.
- */
-#define REST_REQUIRED_FOR_REGEN 5
-
-/*** General index values ***/
-
-
-
 /*** Player flags ***/
 
 

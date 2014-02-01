@@ -38,6 +38,25 @@
 #define PY_SPELL_WORKED     0x02 /* Spell has been successfully tried */
 #define PY_SPELL_FORGOTTEN  0x04 /* Spell has been forgotten */
 
+#define BTH_PLUS_ADJ    	3 	/* Adjust BTH per plus-to-hit */
+
+/* 
+ * Special values for the number of turns to rest, these need to be
+ * negative numbers, as postive numbers are taken to be a turncount,
+ * and zero means "not resting". 
+ */
+enum 
+{
+	REST_COMPLETE = -2,
+	REST_ALL_POINTS = -1,
+	REST_SOME_POINTS = -3
+};
+
+/**
+ * Minimum number of turns required for regeneration to kick in during resting.
+ */
+#define REST_REQUIRED_FOR_REGEN 5
+
 /** Inventory **/
 
 /*

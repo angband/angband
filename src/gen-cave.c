@@ -19,11 +19,12 @@
 
 #include "angband.h"
 #include "cave.h"
-#include "math.h"
+#include "dungeon.h"
 #include "files.h"
 #include "game-event.h"
 #include "generate.h"
 #include "init.h"
+#include "math.h"
 #include "mon-make.h"
 #include "mon-spell.h"
 #include "parser.h"
