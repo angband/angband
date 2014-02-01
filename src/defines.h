@@ -32,47 +32,6 @@
  */
 
 
-/*
- * Number of grids in each block (vertically)
- * Probably hard-coded to 11, see "generate.c"
- */
-#define BLOCK_HGT	11
-
-/*
- * Number of grids in each block (horizontally)
- * Probably hard-coded to 11, see "generate.c"
- */
-#define BLOCK_WID	11
-
-/**
- * Number of grids in each panel (vertically)
- */
-#define PANEL_HGT	((int)(BLOCK_HGT / tile_height))
-
-/**
- * Number of grids in each panel (horizontally)
- */
-#define PANEL_WID 	((int)(BLOCK_WID / tile_width))
-
-
-/*
- * Number of grids in each dungeon (vertically)
- * Must be a multiple of SCREEN_HGT
- * Must be less or equal to 256
- */
-#define DUNGEON_HGT		66
-
-/*
- * Number of grids in each dungeon (horizontally)
- * Must be a multiple of SCREEN_WID
- * Must be less or equal to 256
- */
-#define DUNGEON_WID		198
-
-#define TOWN_WID 66
-#define TOWN_HGT 22
-
-
 /* Maximum number of Angband windows */
 #define ANGBAND_TERM_MAX 8
 

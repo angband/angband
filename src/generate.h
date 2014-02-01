@@ -27,6 +27,16 @@
 #define TYP_GREAT 7 /* Great object */
 
 /*
+ * Number of grids in each block (vertically)
+ */
+#define BLOCK_HGT	11
+
+/*
+ * Number of grids in each block (horizontally)
+ */
+#define BLOCK_WID	11
+
+/*
  * Maximum numbers of rooms along each axis (currently 6x18).
  * Used for building fixed-size arrays.
  */

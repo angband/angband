@@ -11,6 +11,22 @@ struct monster;
 
 /*** Constants ***/
 
+/*
+ * Max number of grids in each dungeon (vertically)
+ * Must be less or equal to 256
+ */
+#define DUNGEON_HGT		66
+
+/*
+ * Max number of grids in each dungeon (horizontally)
+ * Must be less or equal to 256
+ */
+#define DUNGEON_WID		198
+
+#define TOWN_WID 66
+#define TOWN_HGT 22
+
+
 /* 
  * Information for Feelings 
  */
