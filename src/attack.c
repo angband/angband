@@ -17,7 +17,6 @@
  */
 
 #include "angband.h"
-
 #include "attack.h"
 #include "cave.h"
 #include "cmds.h"
@@ -31,6 +30,7 @@
 #include "obj-slays.h"
 #include "obj-ui.h"
 #include "obj-util.h"
+#include "project.h"
 #include "spells.h"
 #include "target.h"
 

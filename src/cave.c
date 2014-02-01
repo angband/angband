@@ -24,6 +24,7 @@
 #include "obj-tval.h"
 #include "obj-ui.h"
 #include "obj-util.h"
+#include "project.h"
 #include "squelch.h"
 #include "cmds.h"
 #include "trap.h"

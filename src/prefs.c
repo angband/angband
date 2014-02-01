@@ -20,9 +20,10 @@
 #include "angband.h"
 #include "grafmode.h"
 #include "keymap.h"
-#include "prefs.h"
 #include "obj-tval.h"
 #include "obj-util.h"
+#include "prefs.h"
+#include "project.h"
 #include "squelch.h"
 #include "spells.h"
 

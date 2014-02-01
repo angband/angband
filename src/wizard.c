@@ -32,10 +32,11 @@
 #include "obj-tval.h"
 #include "obj-ui.h"
 #include "obj-util.h"
-#include "ui-event.h"
-#include "ui-menu.h"
+#include "project.h"
 #include "spells.h"
 #include "target.h"
+#include "ui-event.h"
+#include "ui-menu.h"
 #include "wizard.h"
 #include "z-term.h"
 

@@ -20,6 +20,7 @@
 
 #include "mon-util.h"
 #include "mon-list.h"
+#include "project.h"
 
 typedef enum monster_list_section_e {
 	MONSTER_LIST_SECTION_LOS = 0,

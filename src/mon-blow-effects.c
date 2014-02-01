@@ -27,6 +27,7 @@
 #include "obj-tval.h"
 #include "obj-tvalsval.h"
 #include "obj-util.h"
+#include "project.h"
 
 /**
  * Do damage as the result of a melee attack that has an elemental aspect.

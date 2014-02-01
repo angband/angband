@@ -22,11 +22,12 @@
 #include "mon-lore.h"
 #include "mon-util.h"
 #include "monster.h"
-#include "squelch.h"
-#include "target.h"
 #include "obj-desc.h"
 #include "obj-ui.h"
 #include "obj-util.h"
+#include "project.h"
+#include "squelch.h"
+#include "target.h"
 
 /*
  * Height of the help screen; any higher than 4 will overlap the health

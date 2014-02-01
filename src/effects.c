@@ -22,10 +22,11 @@
 #include "dungeon.h"
 #include "mon-spell.h"
 #include "mon-util.h"
-#include "trap.h"
-#include "spells.h"
 #include "obj-identify.h"
 #include "obj-util.h"
+#include "project.h"
+#include "spells.h"
+#include "trap.h"
 
 
 typedef struct effect_handler_context_s {

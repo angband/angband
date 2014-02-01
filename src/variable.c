@@ -98,12 +98,6 @@ int store_knowledge = STORE_NONE;
  */
 const char *** name_sections;
 
-/*
- * Specify attr/char pairs for visual special effects for project()
- */
-byte gf_to_attr[GF_MAX][BOLT_MAX];
-wchar_t gf_to_char[GF_MAX][BOLT_MAX];
-
 
 
 /*** Player information ***/

@@ -31,6 +31,7 @@
 #include "obj-slays.h"
 #include "obj-tval.h"
 #include "obj-util.h"
+#include "project.h"
 #include "spells.h"
 #include "squelch.h"
 

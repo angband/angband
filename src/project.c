@@ -31,9 +31,16 @@
 #include "obj-identify.h"
 #include "obj-tval.h"
 #include "obj-util.h"
+#include "project.h"
 #include "spells.h"
 #include "squelch.h"
 #include "trap.h"
+
+/*
+ * Specify attr/char pairs for visual special effects for project()
+ */
+byte gf_to_attr[GF_MAX][BOLT_MAX];
+wchar_t gf_to_char[GF_MAX][BOLT_MAX];
 
 #pragma mark floor handlers
 

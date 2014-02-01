@@ -16,11 +16,12 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
-#include "spells.h"
 #include "effects.h"
 #include "mon-spell.h"
 #include "mon-timed.h"
 #include "mon-util.h"
+#include "project.h"
+#include "spells.h"
 
 /**
  * Details of the different monster spells in the game.

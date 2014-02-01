@@ -40,6 +40,7 @@
 #include "option.h"
 #include "parser.h"
 #include "prefs.h"
+#include "project.h"
 #include "quest.h"
 #include "randname.h"
 #include "squelch.h"
