@@ -26,6 +26,7 @@
 
 #include "externs.h"
 #include "parser.h"
+#include "ui-input.h"
 #include "z-file.h"
 #include "z-form.h"
 #include "z-util.h"

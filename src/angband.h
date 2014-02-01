@@ -45,8 +45,8 @@
 #include "option.h"
 #include "player.h"
 #include "store.h"
-
 #include "ui.h"
+#include "ui-input.h"
 #include "z-type.h"
 #include "externs.h"
 

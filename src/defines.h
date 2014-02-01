@@ -142,9 +142,5 @@
  */
 #define term_screen	(angband_term[0])
 
-#define SCAN_INSTANT ((u32b) -1)
-#define SCAN_OFF 0
-#define SCAN_MACRO 45
-
 
 #endif /* !INCLUDED_DEFINES_H */

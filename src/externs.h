@@ -103,9 +103,6 @@ extern bool (*item_tester_hook)(const object_type *);
 extern bool use_transparency;
 extern void (*sound_hook)(int);
 
-/* util.c */
-extern struct keypress *inkey_next;
-
 /* randart.c */
 extern errr do_randart(u32b randart_seed, bool full);
 
@@ -121,30 +118,6 @@ extern void signals_init(void);
 
 /* store.c */
 void do_cmd_store_knowledge(void);
-
-/* ui-input.c */
-extern void flush(void);
-extern void flush_fail(void);
-extern struct keypress inkey(void);
-extern ui_event inkey_m(void);
-extern ui_event inkey_ex(void);
-extern void anykey(void);
-extern void bell(const char *reason);
-extern void sound(int val);
-extern void msg(const char *fmt, ...);
-extern void msgt(unsigned int type, const char *fmt, ...);
-extern void message_flush(void);
-extern void clear_from(int row);
-extern bool askfor_aux_keypress(char *buf, size_t buflen, size_t *curs, size_t *len, struct keypress keypress, bool firsttime);
-extern bool askfor_aux(char *buf, size_t len, bool (*keypress_h)(char *, size_t, size_t *, size_t *, struct keypress, bool));
-extern bool get_string(const char *prompt, char *buf, size_t len);
-extern s16b get_quantity(const char *prompt, int max);
-extern char get_char(const char *prompt, const char *options, size_t len, char fallback);
-extern bool get_check(const char *prompt);
-extern bool (*get_file)(const char *suggested_name, char *path, size_t len);
-extern bool get_com(const char *prompt, struct keypress *command);
-extern bool get_com_ex(const char *prompt, ui_event *command);
-extern void pause_line(struct term *term);
 
 /* xtra2.c */
 bool modify_panel(term *t, int wy, int wx);

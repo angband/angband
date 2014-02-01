@@ -1,6 +1,6 @@
 /*
- * File: util.c
- * Purpose: Gamma correction, some high-level UI functions, inkey()
+ * File: ui-input.c
+ * Purpose: Some high-level UI functions, inkey()
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  *
