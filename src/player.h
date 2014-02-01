@@ -243,6 +243,8 @@ typedef struct player_state {
 
 	s16b see_infra;		/* Infravision range */
 
+	s16b cur_light;		/* Radius of light (if any) */
+
 	s16b skills[SKILL_MAX];	/* Skills */
 
 	u32b noise;			/* Derived from stealth */
@@ -376,8 +378,6 @@ typedef struct player {
 					   a choice.  See obj/obj-ui.c*/
 
 	s16b new_spells;		/* Number of spells available */
-
-	s16b cur_light;		/* Radius of light (if any) */
 
 	u32b notice;		/* Bit flags for pending "special" actions to 
 				   carry out after the current "action", 

@@ -1857,7 +1857,7 @@ void update_view(struct cave *c, struct player *p)
 	mark_wasseen(c);
 
 	/* Extract "radius" value */
-	radius = p->cur_light;
+	radius = p->state.cur_light;
 
 	/* Handle real light */
 	if (radius > 0) ++radius;

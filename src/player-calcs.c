@@ -1313,7 +1313,7 @@ static void calc_torch(void)
 {
 	int i;
 
-	s16b old_light = p_ptr->cur_light;
+	s16b old_light = p_ptr->state.cur_light;
 	s16b new_light = 0;
 
 	/* Ascertain lightness if in the town */
@@ -1321,7 +1321,7 @@ static void calc_torch(void)
 		new_light = 0;
 		if (old_light != new_light) {
 			/* Update the visuals */
-			p_ptr->cur_light = new_light;
+			p_ptr->state.cur_light = new_light;
 			p_ptr->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 		}
 		return;
@@ -1349,7 +1349,7 @@ static void calc_torch(void)
 			/* Lights without fuel provide no light */
 			amt = 0;
 
-		/* Alter p_ptr->cur_light if reasonable */
+		/* Alter p_ptr->state.cur_light if reasonable */
 	    new_light += amt;
 	}
 
@@ -1360,7 +1360,7 @@ static void calc_torch(void)
 	/* Notice changes in the "light radius" */
 	if (old_light != new_light) {
 		/* Update the visuals */
-		p_ptr->cur_light = new_light;
+		p_ptr->state.cur_light = new_light;
 		p_ptr->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 	}
 }
