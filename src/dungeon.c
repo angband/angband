@@ -48,6 +48,18 @@
 u16b daycount = 0;
 
 /*
+ * Say whether it's daytime or not
+ */
+bool is_daytime(void)
+{
+	if ((turn % (10L * TOWN_DAWN)) < ((10L * TOWN_DAWN) / 2)) 
+		return FALSE;
+
+	return TRUE;
+} 
+
+
+/*
  * Change dungeon level - e.g. by going up stairs or with WoR.
  */
 void dungeon_change_level(int dlev)

@@ -142,44 +142,6 @@
  */
 #define term_screen	(angband_term[0])
 
-/*
- * Convert a "key event" into a "location" (Y)
- */
-#define KEY_GRID_Y(K) \
-  ((int) (((K.mouse.y - ROW_MAP) / tile_height) + Term->offset_y))
-
-/*
- * Convert a "key event" into a "location" (X)
- */
-#define KEY_GRID_X(K) \
-	((int) (((K.mouse.x - COL_MAP) / tile_width) + Term->offset_x))
-
-
-/*
- * Determine if a "legal" grid is within "los" of the player
- *
- * Note the use of comparison to zero to force a "boolean" result
- */
-#define player_has_los_bold(Y,X) \
-	(sqinfo_has(cave->info[Y][X], SQUARE_VIEW))
-
-
-/*
- * Determine if a "legal" grid can be "seen" by the player
- *
- * Note the use of comparison to zero to force a "boolean" result
- */
-#define player_can_see_bold(Y,X) \
-	(sqinfo_has(cave->info[Y][X], SQUARE_SEEN))
-
-
-/*
- * Say whether it's daytime or not
- */
-#define is_daytime() \
-	(((turn % (10L * TOWN_DAWN)) < ((10L * TOWN_DAWN) / 2)) ? FALSE : TRUE)
-
-
 #define SCAN_INSTANT ((u32b) -1)
 #define SCAN_OFF 0
 #define SCAN_MACRO 45

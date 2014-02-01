@@ -1883,7 +1883,27 @@ void update_view(struct cave *c, struct player *p)
 }
 
 
+/*
+ * Determine if a "legal" grid is within "los" of the player
+ */
+bool player_has_los_bold(int y, int x)
+{
+	if (sqinfo_has(cave->info[y][x], SQUARE_VIEW))
+		return TRUE;
 
+	return FALSE;
+}
+
+/*
+ * Determine if a "legal" grid can be "seen" by the player
+ */
+bool player_can_see_bold(int y, int x)
+{
+	if (sqinfo_has(cave->info[y][x], SQUARE_SEEN))
+		return TRUE;
+
+	return FALSE;
+}
 
 /*
  * Size of the circular queue used by "update_flow()"

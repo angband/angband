@@ -29,6 +29,7 @@
 #include "obj-tval.h"
 #include "obj-tvalsval.h"
 #include "obj-util.h"
+#include "project.h"
 #include "z-textblock.h"
 
 /*

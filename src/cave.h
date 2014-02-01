@@ -259,6 +259,8 @@ extern void prt_map(void);
 extern void display_map(int *cy, int *cx);
 extern void do_cmd_view_map(void);
 extern void forget_view(struct cave *c);
+extern bool player_has_los_bold(int y, int x);
+extern bool player_can_see_bold(int y, int x);
 extern void update_view(struct cave *c, struct player *p);
 extern void map_area(void);
 extern void wiz_light(bool full);

@@ -503,7 +503,7 @@ depgen:
  list-blow-effects.h list-mon-spells.h store.h ui.h externs.h trap.h \
  list-trap-flags.h spells.h attack.h effects.h list-effects.h cmds.h \
  obj-identify.h obj-info.h obj-make.h obj-pval.h obj-slays.h list-slays.h \
- obj-tval.h obj-tvalsval.h obj-util.h
+ obj-tval.h obj-tvalsval.h obj-util.h project.h
 ./obj-list.o: obj-list.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
  z-color.h z-file.h z-util.h z-rand.h z-term.h ui-event.h z-msg.h \
  z-msg-list.h z-textblock.h defines.h z-quark.h config.h cave.h z-type.h \
