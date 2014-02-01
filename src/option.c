@@ -263,7 +263,7 @@ void option_dump(ang_file *f)
 				angband_term_name[i], window_flag_desc[j]);
 
 			/* Dump the flag */
-			if (op_ptr->window_flag[i] & (1L << j))
+			if (window_flag[i] & (1L << j))
 				file_putf(f, "W:%d:%d:1\n", i, j);
 			else
 				file_putf(f, "W:%d:%d:0\n", i, j);

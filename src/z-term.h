@@ -16,25 +16,6 @@
 #include "z-msg.h"
 
 
-/**
- * Number of text rows in each map screen, regardless of tile size
- */
-#define SCREEN_ROWS	(Term->hgt - ROW_MAP - 1) 
-
-/**
- * Number of grids in each screen (vertically)
- */
-#define SCREEN_HGT    ((int) (SCREEN_ROWS / tile_height))
-
-/**
- * Number of grids in each screen (horizontally)
- */
-#define SCREEN_WID	((int)((Term->wid - COL_MAP - 1) / tile_width))
-
-#define ROW_MAP			1
-#define COL_MAP			13
-
-
 /*
  * A term_win is a "window" for a Term
  *
@@ -262,6 +243,28 @@ struct term
 /**** Available Constants ****/
 
 
+/* Maximum number of Angband windows */
+#define ANGBAND_TERM_MAX 8
+
+/**
+ * Number of text rows in each map screen, regardless of tile size
+ */
+#define SCREEN_ROWS	(Term->hgt - ROW_MAP - 1) 
+
+/**
+ * Number of grids in each screen (vertically)
+ */
+#define SCREEN_HGT    ((int) (SCREEN_ROWS / tile_height))
+
+/**
+ * Number of grids in each screen (horizontally)
+ */
+#define SCREEN_WID	((int)((Term->wid - COL_MAP - 1) / tile_width))
+
+#define ROW_MAP			1
+#define COL_MAP			13
+
+
 /*
  * Definitions for the "actions" of "Term_xtra()"
  *
@@ -306,6 +309,10 @@ extern byte tile_width;
 extern byte tile_height;
 extern bool bigcurs;
 extern bool smlcurs;
+extern term *angband_term[ANGBAND_TERM_MAX];
+extern char angband_term_name[ANGBAND_TERM_MAX][16];
+extern u32b window_flag[ANGBAND_TERM_MAX];
+
 
 /**** Available Functions ****/
 

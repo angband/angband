@@ -1024,7 +1024,7 @@ static errr finish_parse_prefs(struct parser *p)
 
 	/* Update sub-windows based on the newly read-in prefs.
 	 *
-	 * The op_ptr->window_flag[] array cannot be updated directly during
+	 * The window_flag[] array cannot be updated directly during
 	 * parsing since the changes between the existing flags and the new
 	 * are used to set/unset the event handlers that update the windows.
 	 *
@@ -1033,7 +1033,7 @@ static errr finish_parse_prefs(struct parser *p)
 	 */
 	for (i = 0; i < ANGBAND_TERM_MAX; i++) {
 		if (!d->loaded_window_flag[i])
-			d->window_flags[i] = op_ptr->window_flag[i];
+			d->window_flags[i] = window_flag[i];
 	}
 	subwindows_set_flags(d->window_flags, ANGBAND_TERM_MAX);
 

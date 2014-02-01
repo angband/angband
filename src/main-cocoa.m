@@ -243,7 +243,7 @@ static NSFont *default_font;
  */
 u32b AngbandMaskForValidSubwindowFlags(void)
 {
-    int windowFlagBits = sizeof(*(op_ptr->window_flag)) * CHAR_BIT;
+    int windowFlagBits = sizeof(*(window_flag)) * CHAR_BIT;
     int maxBits = MIN( PW_MAX_FLAGS, windowFlagBits );
     u32b mask = 0;
 
@@ -302,7 +302,7 @@ static void AngbandUpdateWindowVisibility(void)
         }
         else
         {
-            BOOL termHasSubwindowFlags = ((op_ptr->window_flag[i] & validWindowFlagsMask) > 0);
+            BOOL termHasSubwindowFlags = ((window_flag[i] & validWindowFlagsMask) > 0);
 
             if( angbandContext.hasSubwindowFlags && !termHasSubwindowFlags )
             {
@@ -3233,7 +3233,7 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
         else
         {
             NSInteger subwindowNumber = tag - AngbandWindowMenuItemTagBase;
-            return (op_ptr->window_flag[subwindowNumber] > 0);
+            return (window_flag[subwindowNumber] > 0);
         }
 
         return NO;

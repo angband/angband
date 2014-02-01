@@ -576,8 +576,6 @@ typedef struct {
 	
 	bool opt[OPT_MAX];		/* Options */
 	
-	u32b window_flag[ANGBAND_TERM_MAX];	/* Window flags */
-	
 	byte hitpoint_warn;		/* Hitpoint warning (0 to 9) */
 	
 	byte delay_factor;		/* Delay factor (0 to 9) */

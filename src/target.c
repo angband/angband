@@ -392,7 +392,7 @@ static bool adjust_panel_help(int y, int x, bool help)
 		if (!t) continue;
 
 		/* No relevant flags */
-		if ((j > 0) && !(op_ptr->window_flag[j] & PW_MAP)) continue;
+		if ((j > 0) && !(window_flag[j] & PW_MAP)) continue;
 
 		wy = t->offset_y;
 		wx = t->offset_x;

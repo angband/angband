@@ -186,7 +186,6 @@ void wr_options(void)
 {
 	int i, k;
 
-	u32b window_flag[ANGBAND_TERM_MAX];
 	u32b window_mask[ANGBAND_TERM_MAX];
 
 
@@ -213,9 +212,6 @@ void wr_options(void)
 	/* Reset */
 	for (i = 0; i < ANGBAND_TERM_MAX; i++)
 	{
-		/* Flags */
-		window_flag[i] = op_ptr->window_flag[i];
-
 		/* Mask */
 		window_mask[i] = 0L;
 

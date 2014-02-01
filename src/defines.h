@@ -32,9 +32,6 @@
  */
 
 
-/* Maximum number of Angband windows */
-#define ANGBAND_TERM_MAX 8
-
 
 /*
  * Maximum dungeon level.  The player can never reach this level

@@ -3058,7 +3058,7 @@ static errr init_other(void)
 	for (i = 0; i < ANGBAND_TERM_MAX; i++)
 	{
 		/* Assume no flags */
-		op_ptr->window_flag[i] = 0L;
+		window_flag[i] = 0L;
 	}
 
 

@@ -852,10 +852,10 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, item_test
 			if (!angband_term[j]) continue;
 
 			/* Count windows displaying inven */
-			if (op_ptr->window_flag[j] & (PW_INVEN)) ni++;
+			if (window_flag[j] & (PW_INVEN)) ni++;
 
 			/* Count windows displaying equip */
-			if (op_ptr->window_flag[j] & (PW_EQUIP)) ne++;
+			if (window_flag[j] & (PW_EQUIP)) ne++;
 		}
 
 		/* Toggle if needed */

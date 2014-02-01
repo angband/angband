@@ -1127,7 +1127,7 @@ void toggle_inven_equip(void)
 	{
 		Term_activate(angband_term[i]); 
 
-		if (op_ptr->window_flag[i] & PW_INVEN)
+		if (window_flag[i] & PW_INVEN)
 		{
 			if (!flip_inven)
 				show_inven(OLIST_WINDOW | OLIST_WEIGHT | OLIST_QUIVER, NULL);
@@ -1136,7 +1136,7 @@ void toggle_inven_equip(void)
 			
 			Term_fresh();
 		}
-		else if (op_ptr->window_flag[i] & PW_EQUIP)
+		else if (window_flag[i] & PW_EQUIP)
 		{
 			if (!flip_inven)
 				show_equip(OLIST_WINDOW | OLIST_WEIGHT, NULL);
@@ -1576,7 +1576,7 @@ static void subwindow_set_flags(int win_idx, u32b new_flags)
 		/* Only process valid flags */
 		if (window_flag_desc[i])
 		{
-			if ((new_flags & (1L << i)) != (op_ptr->window_flag[win_idx] & (1L << i)))
+			if ((new_flags & (1L << i)) != (window_flag[win_idx] & (1L << i)))
 			{
 				subwindow_flag_changed(win_idx, (1L << i), (new_flags & (1L << i)) != 0);
 			}
@@ -1584,7 +1584,7 @@ static void subwindow_set_flags(int win_idx, u32b new_flags)
 	}
 
 	/* Store the new flags */
-	op_ptr->window_flag[win_idx] = new_flags;
+	window_flag[win_idx] = new_flags;
 	
 	/* Activate */
 	Term_activate(angband_term[win_idx]);
@@ -1613,7 +1613,7 @@ void subwindows_set_flags(u32b *new_flags, size_t n_subwindows)
 		if (!angband_term[j]) continue;
 
 		/* Ignore non-changes */
-		if (op_ptr->window_flag[j] != new_flags[j])
+		if (window_flag[j] != new_flags[j])
 		{
 			subwindow_set_flags(j, new_flags[j]);
 		}

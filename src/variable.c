@@ -79,30 +79,6 @@ s16b o_cnt = 0;			/* Number of live objects */
 char savefile[1024];
 
 /*
- * The array[ANGBAND_TERM_MAX] of window pointers
- */
-term *angband_term[ANGBAND_TERM_MAX];
-
-
-/*
- * The array[ANGBAND_TERM_MAX] of window names (modifiable?)
- *
- * ToDo: Make the names independent of ANGBAND_TERM_MAX.
- */
-char angband_term_name[ANGBAND_TERM_MAX][16] =
-{
-	VERSION_NAME,
-	"Term-1",
-	"Term-2",
-	"Term-3",
-	"Term-4",
-	"Term-5",
-	"Term-6",
-	"Term-7"
-};
-
-
-/*
  * Array[z_info->r_max] of monster lore
  */
 monster_lore *l_list;

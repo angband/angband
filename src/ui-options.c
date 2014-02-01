@@ -232,7 +232,7 @@ static void do_cmd_options_win(const char *name, int row)
 	/* Set new flags to the old values */
 	for (j = 0; j < ANGBAND_TERM_MAX; j++)
 	{
-		new_flags[j] = op_ptr->window_flag[j];
+		new_flags[j] = window_flag[j];
 	}
 
 

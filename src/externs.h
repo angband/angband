@@ -55,8 +55,6 @@ extern bool inkey_flag;
 extern s16b o_max;
 extern s16b o_cnt;
 extern char savefile[1024];
-extern term *angband_term[ANGBAND_TERM_MAX];
-extern char angband_term_name[ANGBAND_TERM_MAX][16];
 extern monster_lore *l_list;
 extern struct store *stores;
 extern int store_knowledge;

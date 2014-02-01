@@ -15,6 +15,7 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
+#include "buildid.h"
 #include "h-basic.h"
 #include "z-color.h"
 #include "z-term.h"
@@ -263,6 +264,31 @@
  */
 
 
+
+/*
+ * The array[ANGBAND_TERM_MAX] of window pointers
+ */
+term *angband_term[ANGBAND_TERM_MAX];
+
+
+/*
+ * The array[ANGBAND_TERM_MAX] of window names (modifiable?)
+ *
+ * ToDo: Make the names independent of ANGBAND_TERM_MAX.
+ */
+char angband_term_name[ANGBAND_TERM_MAX][16] =
+{
+	VERSION_NAME,
+	"Term-1",
+	"Term-2",
+	"Term-3",
+	"Term-4",
+	"Term-5",
+	"Term-6",
+	"Term-7"
+};
+
+u32b window_flag[ANGBAND_TERM_MAX];
 
 
 
