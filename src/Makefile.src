@@ -13,7 +13,6 @@ HEADERS = \
 	birth.h \
 	cmds.h \
 	config.h \
-	defines.h \
 	effects.h \
 	externs.h \
 	game-cmd.h \

@@ -19,7 +19,6 @@
 #ifndef MONSTER_MONSTER_H
 #define MONSTER_MONSTER_H
 
-#include "defines.h"
 #include "h-basic.h"
 #include "z-bitflag.h"
 #include "z-rand.h"

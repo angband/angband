@@ -294,6 +294,25 @@ struct term
 #define TERM_XTRA_LEVEL 12    /* Change the "soft" level (optional) */
 #define TERM_XTRA_DELAY 13    /* Delay some milliseconds (optional) */
 
+/*
+ * Bit flags for the "window_flag" variable.
+ */
+#define PW_INVEN            0x00000001L /* Display inven/equip */
+#define PW_EQUIP            0x00000002L /* Display equip/inven */
+#define PW_PLAYER_0         0x00000004L /* Display player (basic) */
+#define PW_PLAYER_1         0x00000008L /* Display player (extra) */
+#define PW_PLAYER_2         0x00000010L /* Display player (compact) */
+#define PW_MAP              0x00000020L /* Display dungeon map */
+#define PW_MESSAGE          0x00000040L /* Display messages */
+#define PW_OVERHEAD         0x00000080L /* Display overhead view */
+#define PW_MONSTER          0x00000100L /* Display monster recall */
+#define PW_OBJECT           0x00000200L /* Display object recall */
+#define PW_MONLIST          0x00000400L /* Display monster list */
+#define PW_STATUS           0x00000800L /* Display status */
+#define PW_ITEMLIST         0x00001000L /* Display item list */
+
+#define PW_MAX_FLAGS		16
+
 
 /* sketchy key logging pt. 1 */
 #define KEYLOG_SIZE 8
@@ -312,6 +331,12 @@ extern bool smlcurs;
 extern term *angband_term[ANGBAND_TERM_MAX];
 extern char angband_term_name[ANGBAND_TERM_MAX][16];
 extern u32b window_flag[ANGBAND_TERM_MAX];
+
+/*
+ * Hack -- The main "screen"
+ */
+#define term_screen	(angband_term[0])
+
 
 
 /**** Available Functions ****/

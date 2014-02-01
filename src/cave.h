@@ -3,7 +3,6 @@
 #ifndef CAVE_H
 #define CAVE_H
 
-#include "defines.h"
 #include "z-type.h"
 
 struct player;

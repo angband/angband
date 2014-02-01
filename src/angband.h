@@ -35,7 +35,6 @@
  * Include the high-level includes.
  */
 #include "config.h"
-#include "defines.h"
 
 #include "cave.h"
 #include "game-cmd.h"
