@@ -277,9 +277,9 @@ struct room_profile default_rooms[NUM_DEFAULT_ROOMS];
  */
 struct cave_profile cave_profiles[NUM_CAVE_PROFILES];
 
+byte get_angle_to_grid[41][41];
 
 void ensure_connectedness(struct cave *c);
-
 void shuffle(int *arr, int n);
 bool cave_find(struct cave *c, int *y, int *x, square_predicate pred);
 bool find_empty(struct cave *c, int *y, int *x);
