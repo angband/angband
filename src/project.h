@@ -73,7 +73,9 @@ enum
 #define PROJECT_KILL  0x040
 #define PROJECT_HIDE  0x080
 #define PROJECT_AWARE 0x100
-
+#define PROJECT_SAFE  0x200
+#define PROJECT_ARC   0x400
+#define PROJECT_PLAY  0x800 /* Needs significant changes to implement */
 
 /* project.c */
 extern byte gf_to_attr[GF_MAX][BOLT_MAX];

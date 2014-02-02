@@ -2002,7 +2002,7 @@ static void project_m_apply_side_effects(project_monster_handler_context_t *cont
  *
  * We attempt to return "TRUE" if the player saw anything "obvious" happen.
  */
-static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvious)
+static bool project_m(int who, int r, int y, int x, int dam, int typ, int flg)
 {
 	monster_type *m_ptr;
 	monster_lore *l_ptr;
@@ -2010,6 +2010,9 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 	/* Is the monster "seen"? */
 	bool seen = FALSE;
 	bool mon_died = FALSE;
+
+	/* Is the effect obvious? */
+	bool obvious = (flg & PROJECT_AWARE ? TRUE : FALSE);
 
 	/* Are we trying to id the source of this effect? */
 	bool id = who < 0 ? !obvious : FALSE;
@@ -2060,6 +2063,16 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 	if (m_ptr->ml) {
 		seen = TRUE;
 		context.seen = seen;
+	}
+
+	/* Breathers may not blast members of the same race. */
+	if ((who > 0) && (flg & (PROJECT_SAFE))) {
+		/* Point to monster information of caster */
+		monster_type *caster = cave_monster(cave, who);
+
+		/* Skip monsters with the same race */
+		if (caster->race == m_ptr->race)
+			return (FALSE);
 	}
 
 	/* Reduce damage by distance */
@@ -2737,8 +2750,8 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg)
 			x = gx[i];
 
 			/* Affect the monster in the grid */
-			if (project_m(who, dist, y, x, dam, typ,
-				(flg & PROJECT_AWARE ? TRUE : FALSE))) notice = TRUE;
+			if (project_m(who, dist, y, x, dam, typ, flg)) 
+				notice = TRUE;
 		}
 
 		/* Player affected one monster (without "jumping") */
