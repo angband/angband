@@ -1665,7 +1665,7 @@ bool project_los(int typ, int dam, bool obvious)
 		if (!player_has_los_bold(y, x)) continue;
 
 		/* Jump directly to the target monster */
-		if (project(-1, 0, y, x, dam, typ, flg)) obvious = TRUE;
+		if (project(-1, 0, y, x, dam, typ, flg, 0, 0)) obvious = TRUE;
 	}
 
 	/* Result */
@@ -2796,7 +2796,7 @@ bool light_area(int dam, int rad)
 		msg("You are surrounded by a white light.");
 
 	/* Hook into the "project()" function */
-	(void)project(-1, rad, py, px, dam, GF_LIGHT_WEAK, flg);
+	(void)project(-1, rad, py, px, dam, GF_LIGHT_WEAK, flg, 0, 0);
 
 	/* Light up the room */
 	light_room(py, px, LIGHT);
@@ -2824,7 +2824,7 @@ bool unlight_area(int dam, int rad)
 	}
 
 	/* Hook into the "project()" function */
-	(void)project(-1, rad, py, px, dam, GF_DARK_WEAK, flg);
+	(void)project(-1, rad, py, px, dam, GF_DARK_WEAK, flg, 0, 0);
 
 	/* Darken the room */
 	light_room(py, px, UNLIGHT);
@@ -2863,7 +2863,7 @@ bool fire_ball(int typ, int dir, int dam, int rad)
 	}
 
 	/* Analyze the "dir" and the "target".  Hurt items on floor. */
-	return (project(-1, rad, ty, tx, dam, typ, flg));
+	return (project(-1, rad, ty, tx, dam, typ, flg, 0, 0));
 }
 
 
@@ -2895,7 +2895,7 @@ bool fire_swarm(int num, int typ, int dir, int dam, int rad)
 	while (num--)
 	{
 		/* Analyze the "dir" and the "target".  Hurt items on floor. */
-		if (project(-1, rad, ty, tx, dam, typ, flg)) noticed = TRUE;
+		if (project(-1, rad, ty, tx, dam, typ, flg, 0, 0)) noticed = TRUE;
 	}
 
 	return noticed;
@@ -2924,7 +2924,7 @@ static bool project_hook(int typ, int dir, int dam, int flg)
 		target_get(&tx, &ty);
 
 	/* Analyze the "dir" and the "target", do NOT explode */
-	return (project(-1, 0, ty, tx, dam, typ, flg));
+	return (project(-1, 0, ty, tx, dam, typ, flg, 0, 0));
 }
 
 
@@ -3075,7 +3075,7 @@ bool door_creation(void)
 	int px = p_ptr->px;
 
 	int flg = PROJECT_GRID | PROJECT_ITEM | PROJECT_HIDE;
-	return (project(-1, 1, py, px, 0, GF_MAKE_DOOR, flg));
+	return (project(-1, 1, py, px, 0, GF_MAKE_DOOR, flg, 0, 0));
 }
 
 bool trap_creation(void)
@@ -3084,7 +3084,7 @@ bool trap_creation(void)
 	int px = p_ptr->px;
 
 	int flg = PROJECT_GRID | PROJECT_ITEM | PROJECT_HIDE;
-	return (project(-1, 1, py, px, 0, GF_MAKE_TRAP, flg));
+	return (project(-1, 1, py, px, 0, GF_MAKE_TRAP, flg, 0, 0));
 }
 
 bool destroy_doors_touch(void)
@@ -3093,7 +3093,7 @@ bool destroy_doors_touch(void)
 	int px = p_ptr->px;
 
 	int flg = PROJECT_GRID | PROJECT_ITEM | PROJECT_HIDE;
-	return (project(-1, 1, py, px, 0, GF_KILL_DOOR, flg));
+	return (project(-1, 1, py, px, 0, GF_KILL_DOOR, flg, 0, 0));
 }
 
 bool sleep_monsters_touch(bool aware)
@@ -3103,7 +3103,7 @@ bool sleep_monsters_touch(bool aware)
 
 	int flg = PROJECT_KILL | PROJECT_HIDE;
 	if (aware) flg |= PROJECT_AWARE;
-	return (project(-1, 1, py, px, p_ptr->lev, GF_OLD_SLEEP, flg));
+	return (project(-1, 1, py, px, p_ptr->lev, GF_OLD_SLEEP, flg, 0, 0));
 }
 
 

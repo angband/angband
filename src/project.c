@@ -2371,7 +2371,8 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
  * in the blast radius, in case the "illumination" of the grid was changed,
  * and "update_view()" and "update_monsters()" need to be called.
  */
-bool project(int who, int rad, int y, int x, int dam, int typ, int flg)
+bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
+			 int degrees_of_arc, byte diameter_of_source)
 {
 	int py = p_ptr->py;
 	int px = p_ptr->px;

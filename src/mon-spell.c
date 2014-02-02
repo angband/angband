@@ -576,7 +576,7 @@ void do_mon_spell(int spell, struct monster *m_ptr, bool seen)
 	}
 
 	if (rs_ptr->gf) {
-		(void)project(m_ptr->midx, rad, p_ptr->py, p_ptr->px, dam, rs_ptr->gf, flag);
+		(void)project(m_ptr->midx, rad, p_ptr->py, p_ptr->px, dam, rs_ptr->gf, flag, 0, 0);
 		monster_learn_resists(m_ptr, p_ptr, rs_ptr->gf);
 	}
 	else /* Note that non-projectable attacks are unresistable */
