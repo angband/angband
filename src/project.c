@@ -2229,131 +2229,140 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 	return (obvious);
 }
 
-/*
- * Generic "beam"/"bolt"/"ball" projection routine.
+/**
+ * Generic "beam"/"bolt"/"ball" projection routine.  
+ *   -BEN-, some changes by -LM-
  *
  * Input:
- *   who: Index of "source" monster (negative for "player")
- *   rad: Radius of explosion (0 = beam/bolt, 1 to 9 = ball)
- *   y,x: Target location (or location to travel "towards")
- *   dam: Base damage roll to apply to affected monsters (or player)
- *   typ: Type of damage to apply to monsters (and objects)
- *   flg: Extra bit flags (see PROJECT_xxxx in "defines.h")
+ *   who: Index of "source" monster (negative for the character)
+ *   rad: Radius of explosion (0 = beam/bolt, 1 to 20 = ball), or maximum
+ *	  length of arc from the source.
+ *   y,x: Target location (or location to travel towards)
+ *   dam: Base damage to apply to monsters, terrain, objects, or player
+ *   typ: Type of projection (fire, frost, dispel demons etc.)
+ *   flg: Extra bit flags that control projection behavior
+ *   degrees_of_arc: How wide an arc spell is (in degrees).
+ *   diameter_of_source: how wide the source diameter is.
  *
  * Return:
- *   TRUE if any "effects" of the projection were observed, else FALSE
+ *   TRUE if any effects of the projection were observed, else FALSE
  *
- * Allows a monster (or player) to project a beam/bolt/ball of a given kind
- * towards a given location (optionally passing over the heads of interposing
- * monsters), and have it do a given amount of damage to the monsters (and
- * optionally objects) within the given radius of the final location.
  *
- * A "bolt" travels from source to target and affects only the target grid.
- * A "beam" travels from source to target, affecting all grids passed through.
- * A "ball" travels from source to the target, exploding at the target, and
- *   affecting everything within the given radius of the target location.
+ * At present, there are five major types of projections:
  *
- * Traditionally, a "bolt" does not affect anything on the ground, and does
- * not pass over the heads of interposing monsters, much like a traditional
- * missile, and will "stop" abruptly at the "target" even if no monster is
- * positioned there, while a "ball", on the other hand, passes over the heads
- * of monsters between the source and target, and affects everything except
- * the source monster which lies within the final radius, while a "beam"
- * affects every monster between the source and target, except for the casting
- * monster (or player), and rarely affects things on the ground.
+ * Point-effect projection:  (no PROJECT_BEAM flag, radius of zero, and either 
+ *   jumps directly to target or has a single source and target grid)
+ * A point-effect projection has no line of projection, and only affects one 
+ *   grid.  It is used for most area-effect spells (like dispel evil) and 
+ *   pinpoint strikes like the monster Holding prayer.
+ * 
+ * Bolt:  (no PROJECT_BEAM flag, radius of zero, has to travel from source to 
+ *   target)
+ * A bolt travels from source to target and affects only the final grid in its 
+ *   projection path.  If given the PROJECT_STOP flag, it is stopped by any 
+ *   monster or character in its path (at present, all bolts use this flag).
  *
- * Two special flags allow us to use this function in special ways, the
- * "PROJECT_HIDE" flag allows us to perform "invisible" projections, while
- * the "PROJECT_JUMP" flag allows us to affect a specific grid, without
- * actually projecting from the source monster (or player).
+ * Beam:  (PROJECT_BEAM)
+ * A beam travels from source to target, affecting all grids passed through 
+ *   with full damage.  It is never stopped by monsters in its path.  Beams 
+ *   may never be combined with any other projection type.
  *
- * The player will only get "experience" for monsters killed by himself
- * Unique monsters can only be destroyed by attacks from the player
+ * Ball:  (positive radius, unless the PROJECT_ARC flag is set)
+ * A ball travels from source towards the target, and always explodes.  Unless 
+ *   specified, it does not affect wall grids, but otherwise affects any grids 
+ *   in LOS from the center of the explosion.
+ * If used with a direction, a ball will explode on the first occupied grid in 
+ *   its path.  If given a target, it will explode on that target.  If a 
+ *   wall is in the way, it will explode against the wall.  If a ball reaches 
+ *   MAX_RANGE without hitting anything or reaching its target, it will 
+ *   explode at that point.
  *
- * Only 256 grids can be affected per projection, limiting the effective
- * "radius" of standard ball attacks to nine units (diameter nineteen).
+ * Arc:  (positive radius, with the PROJECT_ARC flag set)
+ * An arc is a portion of a source-centered ball that explodes outwards 
+ *   towards the target grid.  Like a ball, it affects all non-wall grids in 
+ *   LOS of the source in the explosion area.  The width of arc spells is con-
+ *   trolled by degrees_of_arc.
+ * An arc is created by rejecting all grids that form the endpoints of lines 
+ *   whose angular difference (in degrees) from the centerline of the arc is 
+ *   greater than one-half the input "degrees_of_arc".  See the table "get_
+ *   angle_to_grid" in "util.c" for more information.
+ * Note:  An arc with a value for degrees_of_arc of zero is actually a beam of
+ *   defined length.
  *
- * One can project in a given "direction" by combining PROJECT_THRU with small
- * offsets to the initial location (see "line_spell()"), or by calculating
- * "virtual targets" far away from the player.
+ * Projections that effect all monsters in LOS are handled through the use 
+ *   of "project_hack()", which applies a single-grid projection to individual 
+ *   monsters.  Projections that light up rooms or effect all monsters on the 
+ *   level are more efficiently handled through special functions.
  *
- * One can also use PROJECT_THRU to send a beam/bolt along an angled path,
- * continuing until it actually hits somethings (useful for "stone to mud").
  *
- * Bolts and Beams explode INSIDE walls, so that they can destroy doors.
+ * Variations:
  *
- * Balls must explode BEFORE hitting walls, or they would affect monsters
- * on both sides of a wall.  Some bug reports indicate that this is still
- * happening in 2.7.8 for Windows, though it appears to be impossible.
+ * PROJECT_STOP forces a path of projection to stop at the first occupied grid 
+ *   it hits.  This is used with bolts, and also by ball spells travelling in 
+ *   a specific direction rather than towards a target.
  *
- * We "pre-calculate" the blast area only in part for efficiency.
- * More importantly, this lets us do "explosions" from the "inside" out.
- * This results in a more logical distribution of "blast" treasure.
- * It also produces a better (in my opinion) animation of the explosion.
- * It could be (but is not) used to have the treasure dropped by monsters
- * in the middle of the explosion fall "outwards", and then be damaged by
- * the blast as it spreads outwards towards the treasure drop location.
+ * PROJECT_THRU allows a path of projection towards a target to continue 
+ *   past that target.  It also allows a spell to affect wall grids adjacent 
+ *   to a grid in LOS of the center of the explosion.
+ * 
+ * PROJECT_JUMP allows a projection to immediately set the source of the pro-
+ *   jection to the target.  This is used for all area effect spells (like 
+ *   dispel evil), and can also be used for bombardments.
+ * 
+ * PROJECT_HIDE erases all graphical effects, making the projection invisible.
  *
- * Walls and doors are included in the blast area, so that they can be
- * "burned" or "melted" in later versions.
+ * PROJECT_GRID allows projections to affect terrain features.
  *
- * This algorithm is intended to maximize simplicity, not necessarily
- * efficiency, since this function is not a bottleneck in the code.
+ * PROJECT_ITEM allows projections to affect objects on the ground.
  *
- * We apply the blast effect from ground zero outwards, in several passes,
- * first affecting features, then objects, then monsters, then the player.
- * This allows walls to be removed before checking the object or monster
- * in the wall, and protects objects which are dropped by monsters killed
- * in the blast, and allows the player to see all affects before he is
- * killed or teleported away.  The semantics of this method are open to
- * various interpretations, but they seem to work well in practice.
+ * PROJECT_KILL allows projections to affect monsters.
  *
- * We process the blast area from ground-zero outwards to allow for better
- * distribution of treasure dropped by monsters, and because it provides a
- * pleasing visual effect at low cost.
+ * PROJECT_PLAY allows projections to affect the player.
  *
- * Note that the damage done by "ball" explosions decreases with distance.
- * This decrease is rapid, grids at radius "dist" take "1/dist" damage.
+ * degrees_of_arc controls the width of arc spells.  With a value for 
+ *   degrees_of_arc of zero, arcs act like beams of defined length.
  *
- * Notice the "napalm" effect of "beam" weapons.  First they "project" to
- * the target, and then the damage "flows" along this beam of destruction.
- * The damage at every grid is the same as at the "center" of a "ball"
- * explosion, since the "beam" grids are treated as if they ARE at the
- * center of a "ball" explosion.
+ * diameter_of_source controls how quickly explosions lose strength with dis-
+ *   tance from the target.  Most ball spells have a source diameter of 10, 
+ *   which means that they do 1/2 damage at range 1, 1/3 damage at range 2, 
+ *   and so on.   Caster-centered balls usually have a source diameter of 20, 
+ *   which allows them to do full damage to all adjacent grids.   Arcs have 
+ *   source diameters ranging up to 20, which allows the spell designer to 
+ *   fine-tune how quickly a breath loses strength outwards from the breather.
+ *   It is expected, but not required, that wide arcs lose strength more 
+ *   quickly over distance.
  *
- * Currently, specifying "beam" plus "ball" means that locations which are
- * covered by the initial "beam", and also covered by the final "ball", except
- * for the final grid (the epicenter of the ball), will be "hit twice", once
- * by the initial beam, and once by the exploding ball.  For the grid right
- * next to the epicenter, this results in 150% damage being done.  The center
- * does not have this problem, for the same reason the final grid in a "beam"
- * plus "bolt" does not -- it is explicitly removed.  Simply removing "beam"
- * grids which are covered by the "ball" will NOT work, as then they will
- * receive LESS damage than they should.  Do not combine "beam" with "ball".
  *
- * The array "gy[],gx[]" with current size "grids" is used to hold the
- * collected locations of all grids in the "blast area" plus "beam path".
+ * Implementation notes:
  *
- * Note the rather complex usage of the "gm[]" array.  First, gm[0] is always
- * zero.  Second, for N>1, gm[N] is always the index (in gy[],gx[]) of the
- * first blast grid (see above) with radius "N" from the blast center.  Note
- * that only the first gm[1] grids in the blast area thus take full damage.
- * Also, note that gm[rad+1] is always equal to "grids", which is the total
- * number of blast grids.
+ * If the source grid is not the same as the target, we project along the path 
+ *   between them.  Bolts stop if they hit anything, beams stop if they hit a 
+ *   wall, and balls and arcs may exhibit either bahavior.  When they reach 
+ *   the final grid in the path, balls and arcs explode.  We do not allow 
+ * beams to be combined with explosions.
+ * Balls affect all floor grids in LOS (optionally, also wall grids adjacent 
+ *   to a grid in LOS) within their radius.  Arcs do the same, but only within 
+ *   their cone of projection.
+ * Because affected grids are only scanned once, and it is really helpful to 
+ *   have explosions that travel outwards from the source, they are sorted by 
+ *   distance.  For each distance, an adjusted damage is calculated.
+ * In successive passes, the code then displays explosion graphics, erases 
+ *   these graphics, marks terrain for possible later changes, affects 
+ *   objects, monsters, the character, and finally changes features and 
+ *   teleports monsters and characters in marked grids.
+ * 
  *
- * Note that once the projection is complete, (y2,x2) holds the final location
- * of bolts/beams, and the "epicenter" of balls.
+ * Usage and graphics notes:
  *
- * Note also that "rad" specifies the "inclusive" radius of projection blast,
- * so that a "rad" of "one" actually covers 5 or 9 grids, depending on the
- * implementation of the "distance" function.  Also, a bolt can be properly
- * viewed as a "ball" with a "rad" of "zero".
+ * Only 256 grids can be affected per projection, limiting the effective 
+ * radius of standard ball attacks to nine units (diameter nineteen).  Arcs 
+ * can have larger radii; an arc capable of going out to range 20 should not 
+ * be wider than 70 degrees.
  *
- * Note that if no "target" is reached before the beam/bolt/ball travels the
- * maximum distance allowed (MAX_RANGE), no "blast" will be induced.  This
- * may be relevant even for bolts, since they have a "1x1" mini-blast.
+ * Balls must explode BEFORE hitting walls, or they would affect monsters on 
+ * both sides of a wall. 
  *
- * Note that for consistency, we "pretend" that the bolt actually takes "time"
+ * Note that for consistency, we pretend that the bolt actually takes time
  * to move from point A to point B, even if the player cannot see part of the
  * projection path.  Note that in general, the player will *always* see part
  * of the path, since it either starts at the player or ends on the player.
@@ -2363,26 +2372,32 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
  * Hack -- when only a single monster is affected, we automatically track
  * (and recall) that monster, unless "PROJECT_JUMP" is used.
  *
- * Note that all projections now "explode" at their final destination, even
- * if they were being projected at a more distant destination.  This means
- * that "ball" spells will *always* explode.
- *
- * Note that we must call "handle_stuff(p_ptr)" after affecting terrain features
- * in the blast radius, in case the "illumination" of the grid was changed,
+ * Note that we must call "handle_stuff()" after affecting terrain features
+ * in the blast radius, in case the illumination of the grid was changed,
  * and "update_view()" and "update_monsters()" need to be called.
  */
 bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 			 int degrees_of_arc, byte diameter_of_source)
 {
-	int py = p_ptr->py;
-	int px = p_ptr->px;
+	//int py = p_ptr->py;
+	//int px = p_ptr->px;
+	struct loc player_loc = loc(p_ptr->py, p_ptr->px);
 
-	int i, t, dist;
+	int i, j, k, dist_from_centre;
 
-	int y1, x1;
-	int y2, x2;
+	u32b dam_temp;
 
-	int msec = op_ptr->delay_factor;
+	//int y0, x0;
+	//int y1, x1;
+	//int y2, x2;
+	struct loc blast_centre;
+	struct loc source;
+	struct loc destination;
+
+	int n1y = 0;
+	int n1x = 0;
+
+	int msec = op_ptr->delay_factor * op_ptr->delay_factor;
 
 	/* Assume the player sees nothing */
 	bool notice = FALSE;
@@ -2397,413 +2412,566 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 	bool blind = (p_ptr->timed[TMD_BLIND] ? TRUE : FALSE);
 
 	/* Number of grids in the "path" */
-	int path_n = 0;
+	int num_path_grids = 0;
 
 	/* Actual grids in the "path" */
-	u16b path_g[512];
+	u16b path_grid[512];
+	//struct loc path_grid[512]; TODO
 
 	/* Number of grids in the "blast area" (including the "beam" path) */
-	int grids = 0;
+	int num_grids = 0;
 
 	/* Coordinates of the affected grids */
-	byte gx[256], gy[256];
+	//byte gx[256], gy[256];
+	struct loc blast_grid[256];
 
-	/* Encoded "radius" info (see above) */
-	byte gm[16];
+	/* Distance to each of the affected grids. */
+	//byte gd[256];
+	int distance_to_grid[256];
 
+	/* Precalculated damage values for each distance. */
+	int *dam_at_dist = malloc((MAX_RANGE + 1) * sizeof(*dam_at_dist));
 
-	/* Hack -- Jump to target */
-	if (flg & (PROJECT_JUMP))
-	{
-		x1 = x;
-		y1 = y;
+	/* Flush any pending output */
+	handle_stuff(p_ptr);
+
+	/* No projection path - jump to target */
+	if (flg & (PROJECT_JUMP)) {
+		//y1 = y;
+		//x1 = x;
+		source = loc(y, x);
 
 		/* Clear the flag */
 		flg &= ~(PROJECT_JUMP);
 	}
 
 	/* Start at player */
-	else if (who < 0)
-	{
-		x1 = px;
-		y1 = py;
+	else if (who < 0) {
+		//y1 = py;
+		//x1 = px;
+		source = player_loc;
 	}
 
 	/* Start at monster */
-	else if (who > 0)
-	{
-		x1 = cave_monster(cave, who)->fx;
-		y1 = cave_monster(cave, who)->fy;
+	else if (who > 0) {
+		//y1 = m_list[who].fy;
+		//x1 = m_list[who].fx;
+		source = loc(cave_monster(cave, who)->fy, cave_monster(cave, who)->fx);
 	}
 
-	/* Oops */
-	else
-	{
-		x1 = x;
-		y1 = y;
+	/* Implies no caster, so assume source is target */
+	else {
+		//y1 = y;
+		//x1 = x;
+		source = loc(y, x);
+	}
+
+	/* Default destination */
+	//y2 = y;
+	//x2 = x;
+	destination = loc(y, x);
+
+	/* Default center of explosion (if any) */
+	//y0 = y1;
+	//x0 = x1;
+	blast_centre = source;
+
+	/* 
+	 * An arc spell with no width and a non-zero radius is actually a 
+	 * beam of defined length.  Mark it as such.
+	 */
+	if ((flg & (PROJECT_ARC)) && (degrees_of_arc == 0) && (rad != 0)) {
+		/* No longer an arc */
+		flg &= ~(PROJECT_ARC);
+
+		/* Now considered a beam */
+		flg |= (PROJECT_BEAM);
+		flg |= (PROJECT_THRU);
 	}
 
 
-	/* Default "destination" */
-	y2 = y;
-	x2 = x;
+	/* If a single grid is both source and destination (for example
+	 * if PROJECT_JUMP is set), store it. */
+	if ((source.x == destination.x) && (source.y == destination.y)) {
+		blast_grid[num_grids].y = y;
+		blast_grid[num_grids].x = x;
+		distance_to_grid[num_grids] = 0;
+		num_grids++;
+	}
+
+	/* Otherwise, travel along the projection path. */
+	else {
+		/* Calculate the projection path */
+		num_path_grids = project_path(path_grid, MAX_RANGE, source.y, source.x, destination.y, destination.x, flg);
+
+		/* Start from caster */
+		y = source.y;
+		x = source.x;
+
+		/* Some beams have limited length. */
+		if (flg & (PROJECT_BEAM)) {
+			/* Use length limit, if any is given. */
+			if ((rad > 0) && (rad < num_path_grids))
+				num_path_grids = rad;
+		}
 
 
-	/* Hack -- verify stuff */
-	if (flg & (PROJECT_THRU))
-	{
-		if ((x1 == x2) && (y1 == y2))
-		{
-			flg &= ~(PROJECT_THRU);
+		/* Project along the path (except for arcs) */
+		if (!(flg & (PROJECT_ARC)))
+			for (i = 0; i < num_path_grids; ++i) {
+				int oy = y;
+				int ox = x;
+
+				int ny = GRID_Y(path_grid[i]);
+				int nx = GRID_X(path_grid[i]);
+
+				/* Hack -- Balls explode before reaching walls. */
+				if (!square_ispassable(cave, ny, nx) && (rad > 0))
+					break;
+
+				/* Advance */
+				y = ny;
+				x = nx;
+
+				/* If a beam, collect all grids in the path. */
+				if (flg & (PROJECT_BEAM)) {
+					blast_grid[num_grids].y = y;
+					blast_grid[num_grids].x = x;
+					distance_to_grid[num_grids] = 0;
+					num_grids++;
+				}
+
+				/* Otherwise, collect only the final grid in the path. */
+				else if (i == num_path_grids - 1) {
+					blast_grid[num_grids].y = y;
+					blast_grid[num_grids].x = x;
+					distance_to_grid[num_grids] = 0;
+					num_grids++;
+				}
+
+				/* Only do visuals if requested and within range limit. */
+				if (!blind && !(flg & (PROJECT_HIDE))) {
+
+					/* Only do visuals if the player can "see" the bolt */
+					if (player_has_los_bold(y, x)) {
+						byte a;
+						wchar_t c;
+
+						/* Obtain the bolt pict */
+						bolt_pict(oy, ox, y, x, typ, &a, &c);
+
+						/* Visual effects */
+						print_rel(c, a, y, x);
+						move_cursor_relative(y, x);
+						Term_fresh();
+						if (p_ptr->redraw)
+							redraw_stuff(p_ptr);
+						Term_xtra(TERM_XTRA_DELAY, msec);
+						square_light_spot(cave, y, x);
+						Term_fresh();
+						if (p_ptr->redraw)
+							redraw_stuff(p_ptr);
+
+						/* Display "beam" grids */
+						if (flg & (PROJECT_BEAM)) {
+
+							/* Obtain the explosion pict */
+							bolt_pict(y, x, y, x, typ, &a, &c);
+
+							/* Visual effects */
+							print_rel(c, a, y, x);
+						}
+
+						/* Hack -- Activate delay */
+						visual = TRUE;
+					}
+
+					/* Hack -- delay anyway for consistency */
+					else if (visual) {
+						/* Delay for consistency */
+						Term_xtra(TERM_XTRA_DELAY, msec);
+					}
+				}
+			}
+	}
+
+	/* Save the "blast epicenter" */
+	blast_centre.y = y;
+	blast_centre.x = x;
+
+	/* Beams have already stored all the grids they will affect. */
+	if (flg & (PROJECT_BEAM)) {
+		/* No special actions */
+	}
+
+	/* 
+	 * All non-beam projections with a positive radius explode in some way.
+	 */
+	else if (rad > 0) {
+
+		/* Pre-calculate some things for arcs. */
+		if ((flg & (PROJECT_ARC)) && (num_path_grids != 0)) {
+			/* Explosion centers on the caster. */
+			blast_centre.y = source.y;
+			blast_centre.x = source.x;
+
+			/* The radius of arcs cannot be more than 20 */
+			if (rad > 20)
+				rad = 20;
+
+			/* Ensure legal access into get_angle_to_grid table */
+			if (num_path_grids < 21)
+				i = num_path_grids - 1;
+			else
+				i = 20;
+
+			/* Reorient the grid forming the end of the arc's centerline. */
+			n1y = GRID_Y(path_grid[i]) - blast_centre.y + 20;
+			n1x = GRID_X(path_grid[i]) - blast_centre.x + 20;
+		}
+
+		/* 
+		 * If the center of the explosion hasn't been 
+		 * saved already, save it now. 
+		 */
+		if (num_grids == 0) {
+			blast_grid[num_grids].y = blast_centre.y;
+			blast_grid[num_grids].x = blast_centre.x;
+			distance_to_grid[num_grids] = 0;
+			num_grids++;
+		}
+
+		/* 
+		 * Scan every grid that might possibly 
+		 * be in the blast radius. 
+		 */
+		for (y = blast_centre.y - rad; y <= blast_centre.y + rad; y++) {
+			for (x = blast_centre.x - rad; x <= blast_centre.x + rad; x++) {
+
+				/* Center grid has already been stored. */
+				if ((y == blast_centre.y) && (x == blast_centre.x))
+					continue;
+
+				/* Precaution: Stay within area limit. */
+				if (num_grids >= 255)
+					break;
+
+				/* Ignore "illegal" locations */
+				if (!square_in_bounds(cave, y, x))
+					continue;
+#if 0
+				/* Some explosions are allowed to affect one layer of walls */
+				/* All exposions can affect one layer of rubble or trees -BR- */
+				if ((flg & (PROJECT_THRU)) ||
+					square_ispassable(cave, y, x)){
+					/* If this is a wall grid, ... */
+					if (!cave_project(y, x)) {
+						/* Check neighbors */
+						for (i = 0, k = 0; i < 8; i++) {
+							int yy = y + ddy_ddd[i];
+							int xx = x + ddx_ddd[i];
+
+							if (los(blast_centre.y, blast_centre.x, yy, xx)) {
+								k++;
+								break;
+							}
+						}
+
+						/* Require at least one adjacent grid in LOS. */
+						if (!k)
+							continue;
+					}
+				}
+#endif
+				/* Most explosions are immediately stopped by walls. */
+				//else if (!cave_project(y, x))
+				if (!los(blast_centre.y, blast_centre.x, y, x))
+					continue;
+
+				/* Must be within maximum distance. */
+				dist_from_centre  = (distance(blast_centre.y, blast_centre.x, y, x));
+				if (dist_from_centre > rad)
+					continue;
+
+
+				/* If not an arc, accept all grids in LOS. */
+				if (!(flg & (PROJECT_ARC))) {
+					if (los(blast_centre.y, blast_centre.x, y, x)) {
+						blast_grid[num_grids].y = y;
+						blast_grid[num_grids].x = x;
+						distance_to_grid[num_grids] = dist_from_centre;
+						num_grids++;
+					}
+				}
+
+				/* Use angle comparison to delineate an arc. */
+				else {
+					int n2y, n2x, tmp, rotate, diff;
+
+					/* Reorient current grid for table access. */
+					n2y = y - source.y + 20;
+					n2x = x - source.x + 20;
+
+					/* 
+					 * Find the angular difference (/2) between 
+					 * the lines to the end of the arc's center-
+					 * line and to the current grid.
+					 */
+					rotate = 90 - get_angle_to_grid[n1y][n1x];
+					tmp = ABS(get_angle_to_grid[n2y][n2x] + rotate) % 180;
+					diff = ABS(90 - tmp);
+
+					/* 
+					 * If difference is not greater then that 
+					 * allowed, and the grid is in LOS, accept it.
+					 */
+					if (diff < (degrees_of_arc + 6) / 4) {
+						if (los(blast_centre.y, blast_centre.x, y, x)) {
+							blast_grid[num_grids].y = y;
+							blast_grid[num_grids].x = x;
+							distance_to_grid[num_grids] = dist_from_centre;
+							num_grids++;
+						}
+					}
+				}
+			}
 		}
 	}
 
+	/* Calculate and store the actual damage at each distance. */
+	for (i = 0; i <= MAX_RANGE; i++) {
+		/* No damage outside the radius. */
+		if (i > rad)
+			dam_temp = 0;
 
-	/* Hack -- Assume there will be no blast (max radius 16) */
-	for (dist = 0; dist < 16; dist++) gm[dist] = 0;
+		/* Standard damage calc. for 10' source diameters, or at origin. */
+		else if ((!diameter_of_source) || (i == 0)) {
+			dam_temp = (dam + i) / (i + 1);
+		}
 
+		/* If a particular diameter for the source of the explosion's energy is 
+		 * given, calculate an adjusted damage. */
+		else {
+			dam_temp = (diameter_of_source * dam) / ((i + 1) * 10);
+			if (dam_temp > (u32b) dam)
+				dam_temp = dam;
+		}
 
-	/* Initial grid */
-	y = y1;
-	x = x1;
-
-	/* Collect beam grids */
-	if (flg & (PROJECT_BEAM))
-	{
-		gy[grids] = y;
-		gx[grids] = x;
-		grids++;
+		/* Store it. */
+		dam_at_dist[i] = dam_temp;
 	}
 
 
-	/* Calculate the projection path */
-	path_n = project_path(path_g, MAX_RANGE, y1, x1, y2, x2, flg);
+	/* Sort the blast grids by distance, starting at the origin. */
+	for (i = 0, k = 0; i <= rad; i++) {
+		int tmp_y, tmp_x, tmp_d;
 
+		/* Collect all the grids of a given distance together. */
+		for (j = k; j < num_grids; j++) {
+			if (distance_to_grid[j] == i) {
+				tmp_y = blast_grid[k].y;
+				tmp_x = blast_grid[k].x;
+				tmp_d = distance_to_grid[k];
 
-	/* Hack -- Handle stuff */
-	handle_stuff(p_ptr);
+				blast_grid[k].y = blast_grid[j].y;
+				blast_grid[k].x = blast_grid[j].x;
+				distance_to_grid[k] = distance_to_grid[j];
 
-	/* Project along the path */
-	for (i = 0; i < path_n; ++i)
-	{
-		int oy = y;
-		int ox = x;
+				blast_grid[j].y = tmp_y;
+				blast_grid[j].x = tmp_x;
+				distance_to_grid[j] = tmp_d;
 
-		int ny = GRID_Y(path_g[i]);
-		int nx = GRID_X(path_g[i]);
-
-		/* Hack -- Balls explode before reaching walls */
-		if (!square_ispassable(cave, ny, nx) && (rad > 0)) break;
-
-		/* Advance */
-		y = ny;
-		x = nx;
-
-		/* Collect beam grids */
-		if (flg & (PROJECT_BEAM))
-		{
-			gy[grids] = y;
-			gx[grids] = x;
-			grids++;
+				/* Write to next slot */
+				k++;
+			}
 		}
+	}
 
-		/* Only do visuals if requested */
-		if (!blind && !(flg & (PROJECT_HIDE)))
-		{
-			/* Only do visuals if the player can "see" the bolt */
-			if (player_has_los_bold(y, x))
-			{
+	/* Display the blast area if allowed. */
+	if (!blind && !(flg & (PROJECT_HIDE))) {
+		/* Do the blast from inside out */
+		for (i = 0; i <= num_grids; i++) {
+			/* Extract the location */
+			y = blast_grid[i].y;
+			x = blast_grid[i].x;
+
+			/* Only do visuals if the player can "see" the blast */
+			if (panel_contains(y, x) && player_has_los_bold(y, x)) {
 				byte a;
 				wchar_t c;
 
-				/* Obtain the bolt pict */
-				bolt_pict(oy, ox, y, x, typ, &a, &c);
+				drawn = TRUE;
 
-				/* Visual effects */
+				/* Obtain the explosion pict */
+				bolt_pict(y, x, y, x, typ, &a, &c);
+
+				/* Visual effects -- Display */
 				print_rel(c, a, y, x);
-				move_cursor_relative(y, x);
-
-				Term_fresh();
-				if (p_ptr->redraw) redraw_stuff(p_ptr);
-
-				Term_xtra(TERM_XTRA_DELAY, msec);
-
-				square_light_spot(cave, y, x);
-
-				Term_fresh();
-				if (p_ptr->redraw) redraw_stuff(p_ptr);
-
-				/* Display "beam" grids */
-				if (flg & (PROJECT_BEAM))
-				{
-					/* Obtain the explosion pict */
-					bolt_pict(y, x, y, x, typ, &a, &c);
-
-					/* Visual effects */
-					print_rel(c, a, y, x);
-				}
-
-				/* Hack -- Activate delay */
-				visual = TRUE;
-			}
-
-			/* Hack -- delay anyway for consistency */
-			else if (visual)
-			{
-				/* Delay for consistency */
-				Term_xtra(TERM_XTRA_DELAY, msec);
-			}
-		}
-	}
-
-
-	/* Save the "blast epicenter" */
-	y2 = y;
-	x2 = x;
-
-	/* Start the "explosion" */
-	gm[0] = 0;
-
-	/* Hack -- make sure beams get to "explode" */
-	gm[1] = grids;
-
-	/* Explode */
-	/* Hack -- remove final beam grid */
-	if (flg & (PROJECT_BEAM))
-	{
-		grids--;
-	}
-
-	/* Determine the blast area, work from the inside out */
-	for (dist = 0; dist <= rad; dist++)
-	{
-		/* Scan the maximal blast area of radius "dist" */
-		for (y = y2 - dist; y <= y2 + dist; y++)
-		{
-			for (x = x2 - dist; x <= x2 + dist; x++)
-			{
-				/* Ignore "illegal" locations */
-				if (!square_in_bounds(cave, y, x)) continue;
-
-				/* Enforce a "circular" explosion */
-				if (distance(y2, x2, y, x) != dist) continue;
-
-				/* Ball explosions are stopped by walls */
-				if (!los(y2, x2, y, x)) continue;
-
-				/* Save this grid */
-				gy[grids] = y;
-				gx[grids] = x;
-				grids++;
-			}
-		}
-
-		/* Encode some more "radius" info */
-		gm[dist+1] = grids;
-	}
-
-
-	/* Speed -- ignore "non-explosions" */
-	if (!grids) return (FALSE);
-
-
-	/* Display the "blast area" if requested */
-	if (!blind && !(flg & (PROJECT_HIDE)))
-	{
-		/* Then do the "blast", from inside out */
-		for (t = 0; t <= rad; t++)
-		{
-			/* Dump everything with this radius */
-			for (i = gm[t]; i < gm[t+1]; i++)
-			{
-				/* Extract the location */
-				y = gy[i];
-				x = gx[i];
-
-				/* Only do visuals if the player can "see" the blast */
-				if (player_has_los_bold(y, x))
-				{
-					byte a;
-					wchar_t c;
-
-					drawn = TRUE;
-
-					/* Obtain the explosion pict */
-					bolt_pict(y, x, y, x, typ, &a, &c);
-
-					/* Visual effects -- Display */
-					print_rel(c, a, y, x);
-				}
 			}
 
 			/* Hack -- center the cursor */
-			move_cursor_relative(y2, x2);
+			move_cursor_relative(blast_centre.y, blast_centre.x);
 
-			/* Flush each "radius" separately */
-			Term_fresh();
+			/* New radius is about to be drawn */
+			if (i == num_grids) {
+				/* Flush each radius seperately */
+				Term_fresh();
+				if (p_ptr->redraw)
+					redraw_stuff(p_ptr);
 
-			/* Flush */
-			if (p_ptr->redraw) redraw_stuff(p_ptr);
+				/* Delay (efficiently) */
+				if (visual || drawn) {
+					Term_xtra(TERM_XTRA_DELAY, msec);
+				}
+			}
 
-			/* Delay (efficiently) */
-			if (visual || drawn)
-			{
-				Term_xtra(TERM_XTRA_DELAY, msec);
+			/* Hack - repeat to avoid using uninitialised array element */
+			else if (distance_to_grid[i + 1] > distance_to_grid[i]) {
+				/* Flush each radius seperately */
+				Term_fresh();
+				if (p_ptr->redraw)
+					redraw_stuff(p_ptr);
+
+				/* Delay (efficiently) */
+				if (visual || drawn) {
+					Term_xtra(TERM_XTRA_DELAY, msec);
+				}
 			}
 		}
 
 		/* Flush the erasing */
-		if (drawn)
-		{
+		if (drawn) {
 			/* Erase the explosion drawn above */
-			for (i = 0; i < grids; i++)
-			{
+			for (i = 0; i < num_grids; i++) {
 				/* Extract the location */
-				y = gy[i];
-				x = gx[i];
+				y = blast_grid[i].y;
+				x = blast_grid[i].x;
 
 				/* Hack -- Erase if needed */
-				if (player_has_los_bold(y, x))
-				{
+				if (panel_contains(y, x) && player_has_los_bold(y, x)) {
 					square_light_spot(cave, y, x);
 				}
 			}
 
 			/* Hack -- center the cursor */
-			move_cursor_relative(y2, x2);
+			move_cursor_relative(blast_centre.y, blast_centre.x);
 
 			/* Flush the explosion */
 			Term_fresh();
-
-			/* Flush */
-			if (p_ptr->redraw) redraw_stuff(p_ptr);
+			if (p_ptr->redraw)
+				redraw_stuff(p_ptr);
 		}
 	}
 
 
 	/* Check features */
-	if (flg & (PROJECT_GRID))
-	{
-		/* Start with "dist" of zero */
-		dist = 0;
-
+	if (flg & (PROJECT_GRID)) {
 		/* Scan for features */
-		for (i = 0; i < grids; i++)
-		{
-			/* Hack -- Notice new "dist" values */
-			if (gm[dist+1] == i) dist++;
-
+		for (i = 0; i < num_grids; i++) {
 			/* Get the grid location */
-			y = gy[i];
-			x = gx[i];
+			y = blast_grid[i].y;
+			x = blast_grid[i].x;
 
 			/* Affect the feature in that grid */
-			if (project_f(who, dist, y, x, dam, typ, FALSE)) notice = TRUE;
+			if (project_f(who, y, x, distance_to_grid[i], dam_at_dist[distance_to_grid[i]], typ, FALSE))
+				notice = TRUE;
 		}
 	}
-
-
-	/* Update stuff if needed */
-	if (p_ptr->update) update_stuff(p_ptr);
-
 
 	/* Check objects */
-	if (flg & (PROJECT_ITEM))
-	{
-		/* Start with "dist" of zero */
-		dist = 0;
-
+	if (flg & (PROJECT_ITEM)) {
 		/* Scan for objects */
-		for (i = 0; i < grids; i++)
-		{
-			/* Hack -- Notice new "dist" values */
-			if (gm[dist+1] == i) dist++;
-
+		for (i = 0; i < num_grids; i++) {
 			/* Get the grid location */
-			y = gy[i];
-			x = gx[i];
+			y = blast_grid[i].y;
+			x = blast_grid[i].x;
 
 			/* Affect the object in the grid */
-			if (project_o(who, dist, y, x, dam, typ, FALSE)) notice = TRUE;
+			//if (project_o(who, y, x, dam_at_dist[distance_to_grid[i]], typ, FALSE))
+			if (project_o(who, distance_to_grid[i], y, x, dam, typ, FALSE))
+				notice = TRUE;
 		}
 	}
 
-
 	/* Check monsters */
-	if (flg & (PROJECT_KILL))
-	{
+	if (flg & (PROJECT_KILL)) {
 		/* Mega-Hack */
 		project_m_n = 0;
 		project_m_x = 0;
 		project_m_y = 0;
 
-		/* Start with "dist" of zero */
-		dist = 0;
-
 		/* Scan for monsters */
-		for (i = 0; i < grids; i++)
-		{
-			/* Hack -- Notice new "dist" values */
-			if (gm[dist+1] == i) dist++;
-
+		for (i = 0; i < num_grids; i++) {
 			/* Get the grid location */
-			y = gy[i];
-			x = gx[i];
+			y = blast_grid[i].y;
+			x = blast_grid[i].x;
 
 			/* Affect the monster in the grid */
-			if (project_m(who, dist, y, x, dam, typ, flg)) 
+			//if (project_m(who, y, x, dam_at_dist[distance_to_grid[i]], typ, flg))
+			if (project_m(who, distance_to_grid[i], y, x, dam, typ, flg))
 				notice = TRUE;
 		}
 
 		/* Player affected one monster (without "jumping") */
-		if ((who < 0) && (project_m_n == 1) && !(flg & (PROJECT_JUMP)))
-		{
+		if ((who < 0) && (project_m_n == 1) && !(flg & (PROJECT_JUMP))) {
 			/* Location */
 			x = project_m_x;
 			y = project_m_y;
 
 			/* Track if possible */
-			if (cave->m_idx[y][x] > 0)
-			{
+			if (cave->m_idx[y][x] > 0) {
 				monster_type *m_ptr = square_monster(cave, y, x);
 
 				/* Hack -- auto-recall */
-				if (m_ptr->ml) monster_race_track(m_ptr->race);
+				if (m_ptr->ml)
+					monster_race_track(m_ptr->race);
 
 				/* Hack - auto-track */
-				if (m_ptr->ml) health_track(p_ptr, m_ptr);
+				if (m_ptr->ml)
+					health_track(p_ptr, m_ptr);
 			}
 		}
 	}
-
 
 	/* Check player */
-	if (flg & (PROJECT_KILL))
-	{
-		/* Start with "dist" of zero */
-		dist = 0;
-
+	//if (flg & (PROJECT_PLAY)) {
+	if (flg & (PROJECT_KILL)) {
 		/* Scan for player */
-		for (i = 0; i < grids; i++)
-		{
-			/* Hack -- Notice new "dist" values */
-			if (gm[dist+1] == i) dist++;
-
+		for (i = 0; i < num_grids; i++) {
 			/* Get the grid location */
-			y = gy[i];
-			x = gx[i];
+			y = blast_grid[i].y;
+			x = blast_grid[i].x;
 
-			/* Affect the player (assume obvious) */
-			if (project_p(who, dist, y, x, dam, typ, TRUE))
-			{
+			/* Affect the player */
+			//if (project_p(who, rad, y, x, dam_at_dist[distance_to_grid[i]], typ, TRUE))
+			if (project_p(who, distance_to_grid[i], y, x, dam, typ, TRUE))
 				notice = TRUE;
 
-				/* Only affect the player once */
-				break;
-			}
+			//remove this later
+			break;
 		}
 	}
+#if 0
+	/* Teleport monsters and player around, alter certain features. */
+	for (i = 0; i < num_grids; i++) {
+		/* Get the grid location */
+		y = blast_grid[i].y;
+		x = blast_grid[i].x;
 
+		/* Grid must be marked. */
+		if (!sqinfo_has(cave_info[y][x], SQUARE_TEMP))
+			continue;
+
+		/* Affect marked grid */
+		if (project_t(who, y, x, dam_at_dist[distance_to_grid[i]], typ, flg))
+			notice = TRUE;
+	}
+#endif
+	/* Update stuff if needed */
+	if (p_ptr->update)
+		update_stuff(p_ptr);
+
+	free(dam_at_dist);
 
 	/* Return "something was noticed" */
 	return (notice);
