@@ -1602,12 +1602,9 @@ static int project_m_y;
  *
  * Perhaps we should affect doors and/or walls.
  */
-static bool project_f(int who, int r, int y, int x, int dam, int typ, bool obvious)
+static bool project_f(int who, int r, int y, int x, int dam, int typ)
 {
-#if 0 /* unused */
-	/* Reduce damage by distance */
-	dam = (dam + r) / (r + 1);
-#endif /* 0 */
+	bool obvious = FALSE;
 
 	project_floor_handler_context_t context = {
 		who,
@@ -1643,15 +1640,11 @@ static bool project_f(int who, int r, int y, int x, int dam, int typ, bool obvio
  *
  * We return "TRUE" if the effect of the projection is "obvious".
  */
-static bool project_o(int who, int r, int y, int x, int dam, int typ, bool obvious)
+static bool project_o(int who, int r, int y, int x, int dam, int typ)
 {
 	s16b this_o_idx, next_o_idx = 0;
 	bitflag f[OF_SIZE];
-
-#if 0 /* unused */
-	/* Reduce damage by distance */
-	dam = (dam + r) / (r + 1);
-#endif /* 0 */
+	bool obvious = FALSE;
 
 	/* Scan all objects in the grid */
 	for (this_o_idx = cave->o_idx[y][x]; this_o_idx; this_o_idx = next_o_idx)
@@ -2163,9 +2156,10 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, int flg)
  * Actually, for historical reasons, we just assume that the effects were
  * obvious.  XXX XXX XXX
  */
-static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvious)
+static bool project_p(int who, int r, int y, int x, int dam, int typ)
 {
 	bool blind, seen;
+	bool obvious = TRUE;
 
 	/* Get the damage type details */
 	const struct gf_type *gf_ptr = &gf_table[typ];
@@ -2379,17 +2373,10 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 			 int degrees_of_arc, byte diameter_of_source)
 {
-	//int py = p_ptr->py;
-	//int px = p_ptr->px;
-	struct loc player_loc = loc(p_ptr->py, p_ptr->px);
-
 	int i, j, k, dist_from_centre;
 
 	u32b dam_temp;
 
-	//int y0, x0;
-	//int y1, x1;
-	//int y2, x2;
 	struct loc blast_centre;
 	struct loc source;
 	struct loc destination;
@@ -2422,11 +2409,9 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 	int num_grids = 0;
 
 	/* Coordinates of the affected grids */
-	//byte gx[256], gy[256];
 	struct loc blast_grid[256];
 
 	/* Distance to each of the affected grids. */
-	//byte gd[256];
 	int distance_to_grid[256];
 
 	/* Precalculated damage values for each distance. */
@@ -2437,8 +2422,6 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 
 	/* No projection path - jump to target */
 	if (flg & (PROJECT_JUMP)) {
-		//y1 = y;
-		//x1 = x;
 		source = loc(y, x);
 
 		/* Clear the flag */
@@ -2446,35 +2429,22 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 	}
 
 	/* Start at player */
-	else if (who < 0) {
-		//y1 = py;
-		//x1 = px;
-		source = player_loc;
-	}
+	else if (who < 0)
+		source = loc(p_ptr->py, p_ptr->px);
 
 	/* Start at monster */
-	else if (who > 0) {
-		//y1 = m_list[who].fy;
-		//x1 = m_list[who].fx;
+	else if (who > 0)
 		source = loc(cave_monster(cave, who)->fy, cave_monster(cave, who)->fx);
-	}
 
 	/* Implies no caster, so assume source is target */
-	else {
-		//y1 = y;
-		//x1 = x;
+	else
 		source = loc(y, x);
-	}
 
 	/* Default destination */
-	//y2 = y;
-	//x2 = x;
 	destination = loc(y, x);
 
 	/* Default center of explosion (if any) */
-	//y0 = y1;
-	//x0 = x1;
-	blast_centre = source;
+	blast_centre = loc(source.y, source.x);
 
 	/* 
 	 * An arc spell with no width and a non-zero radius is actually a 
@@ -2502,7 +2472,8 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 	/* Otherwise, travel along the projection path. */
 	else {
 		/* Calculate the projection path */
-		num_path_grids = project_path(path_grid, MAX_RANGE, source.y, source.x, destination.y, destination.x, flg);
+		num_path_grids = project_path(path_grid, MAX_RANGE, source.y, source.x,
+									  destination.y, destination.x, flg);
 
 		/* Start from caster */
 		y = source.y;
@@ -2873,7 +2844,8 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 			x = blast_grid[i].x;
 
 			/* Affect the feature in that grid */
-			if (project_f(who, y, x, distance_to_grid[i], dam_at_dist[distance_to_grid[i]], typ, FALSE))
+			if (project_f(who, distance_to_grid[i], y, x, 
+						  dam_at_dist[distance_to_grid[i]], typ))
 				notice = TRUE;
 		}
 	}
@@ -2887,8 +2859,8 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 			x = blast_grid[i].x;
 
 			/* Affect the object in the grid */
-			//if (project_o(who, y, x, dam_at_dist[distance_to_grid[i]], typ, FALSE))
-			if (project_o(who, distance_to_grid[i], y, x, dam, typ, FALSE))
+			if (project_o(who, distance_to_grid[i], y, x, 
+						  dam_at_dist[distance_to_grid[i]], typ))
 				notice = TRUE;
 		}
 	}
@@ -2943,8 +2915,8 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 			x = blast_grid[i].x;
 
 			/* Affect the player */
-			//if (project_p(who, rad, y, x, dam_at_dist[distance_to_grid[i]], typ, TRUE))
-			if (project_p(who, distance_to_grid[i], y, x, dam, typ, TRUE))
+			//if (project_p(who, rad, y, x, dam_at_dist[distance_to_grid[i]], typ))
+			if (project_p(who, distance_to_grid[i], y, x, dam, typ))
 				notice = TRUE;
 
 			//remove this later
