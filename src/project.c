@@ -2068,10 +2068,6 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, int flg)
 			return (FALSE);
 	}
 
-	/* Reduce damage by distance */
-	dam = (dam + r) / (r + 1);
-	context.dam = dam;
-
 	/* Get monster name and possessive here, in case of polymorphing. */
 	monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_DEFAULT);
 	monster_desc(m_poss, sizeof(m_poss), m_ptr, MDESC_PRO_VIS | MDESC_POSS);
@@ -2377,7 +2373,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 
 	u32b dam_temp;
 
-	struct loc blast_centre;
+	struct loc centre;
 	struct loc source;
 	struct loc destination;
 
@@ -2444,7 +2440,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 	destination = loc(y, x);
 
 	/* Default center of explosion (if any) */
-	blast_centre = loc(source.y, source.x);
+	centre = loc(source.y, source.x);
 
 	/* 
 	 * An arc spell with no width and a non-zero radius is actually a 
@@ -2567,8 +2563,8 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 	}
 
 	/* Save the "blast epicenter" */
-	blast_centre.y = y;
-	blast_centre.x = x;
+	centre.y = y;
+	centre.x = x;
 
 	/* Beams have already stored all the grids they will affect. */
 	if (flg & (PROJECT_BEAM)) {
@@ -2583,8 +2579,8 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 		/* Pre-calculate some things for arcs. */
 		if ((flg & (PROJECT_ARC)) && (num_path_grids != 0)) {
 			/* Explosion centers on the caster. */
-			blast_centre.y = source.y;
-			blast_centre.x = source.x;
+			centre.y = source.y;
+			centre.x = source.x;
 
 			/* The radius of arcs cannot be more than 20 */
 			if (rad > 20)
@@ -2597,8 +2593,8 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 				i = 20;
 
 			/* Reorient the grid forming the end of the arc's centerline. */
-			n1y = GRID_Y(path_grid[i]) - blast_centre.y + 20;
-			n1x = GRID_X(path_grid[i]) - blast_centre.x + 20;
+			n1y = GRID_Y(path_grid[i]) - centre.y + 20;
+			n1x = GRID_X(path_grid[i]) - centre.x + 20;
 		}
 
 		/* 
@@ -2606,8 +2602,8 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 		 * saved already, save it now. 
 		 */
 		if (num_grids == 0) {
-			blast_grid[num_grids].y = blast_centre.y;
-			blast_grid[num_grids].x = blast_centre.x;
+			blast_grid[num_grids].y = centre.y;
+			blast_grid[num_grids].x = centre.x;
 			distance_to_grid[num_grids] = 0;
 			num_grids++;
 		}
@@ -2616,11 +2612,11 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 		 * Scan every grid that might possibly 
 		 * be in the blast radius. 
 		 */
-		for (y = blast_centre.y - rad; y <= blast_centre.y + rad; y++) {
-			for (x = blast_centre.x - rad; x <= blast_centre.x + rad; x++) {
+		for (y = centre.y - rad; y <= centre.y + rad; y++) {
+			for (x = centre.x - rad; x <= centre.x + rad; x++) {
 
 				/* Center grid has already been stored. */
-				if ((y == blast_centre.y) && (x == blast_centre.x))
+				if ((y == centre.y) && (x == centre.x))
 					continue;
 
 				/* Precaution: Stay within area limit. */
@@ -2642,7 +2638,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 							int yy = y + ddy_ddd[i];
 							int xx = x + ddx_ddd[i];
 
-							if (los(blast_centre.y, blast_centre.x, yy, xx)) {
+							if (los(centre.y, centre.x, yy, xx)) {
 								k++;
 								break;
 							}
@@ -2656,18 +2652,18 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 #endif
 				/* Most explosions are immediately stopped by walls. */
 				//else if (!cave_project(y, x))
-				if (!los(blast_centre.y, blast_centre.x, y, x))
+				if (!los(centre.y, centre.x, y, x))
 					continue;
 
 				/* Must be within maximum distance. */
-				dist_from_centre  = (distance(blast_centre.y, blast_centre.x, y, x));
+				dist_from_centre  = (distance(centre.y, centre.x, y, x));
 				if (dist_from_centre > rad)
 					continue;
 
 
 				/* If not an arc, accept all grids in LOS. */
 				if (!(flg & (PROJECT_ARC))) {
-					if (los(blast_centre.y, blast_centre.x, y, x)) {
+					if (los(centre.y, centre.x, y, x)) {
 						blast_grid[num_grids].y = y;
 						blast_grid[num_grids].x = x;
 						distance_to_grid[num_grids] = dist_from_centre;
@@ -2697,7 +2693,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 					 * allowed, and the grid is in LOS, accept it.
 					 */
 					if (diff < (degrees_of_arc + 6) / 4) {
-						if (los(blast_centre.y, blast_centre.x, y, x)) {
+						if (los(centre.y, centre.x, y, x)) {
 							blast_grid[num_grids].y = y;
 							blast_grid[num_grids].x = x;
 							distance_to_grid[num_grids] = dist_from_centre;
@@ -2781,7 +2777,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 			}
 
 			/* Hack -- center the cursor */
-			move_cursor_relative(blast_centre.y, blast_centre.x);
+			move_cursor_relative(centre.y, centre.x);
 
 			/* New radius is about to be drawn */
 			if (i == num_grids) {
@@ -2825,7 +2821,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 			}
 
 			/* Hack -- center the cursor */
-			move_cursor_relative(blast_centre.y, blast_centre.x);
+			move_cursor_relative(centre.y, centre.x);
 
 			/* Flush the explosion */
 			Term_fresh();
@@ -2879,8 +2875,8 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 			x = blast_grid[i].x;
 
 			/* Affect the monster in the grid */
-			//if (project_m(who, y, x, dam_at_dist[distance_to_grid[i]], typ, flg))
-			if (project_m(who, distance_to_grid[i], y, x, dam, typ, flg))
+			if (project_m(who, distance_to_grid[i], y, x, 
+						  dam_at_dist[distance_to_grid[i]], typ, flg))
 				notice = TRUE;
 		}
 
