@@ -42,9 +42,9 @@
 byte gf_to_attr[GF_MAX][BOLT_MAX];
 wchar_t gf_to_char[GF_MAX][BOLT_MAX];
 
-#pragma mark floor handlers
+#pragma mark feature handlers
 
-typedef struct project_floor_handler_context_s {
+typedef struct project_feature_handler_context_s {
 	const int who;
 	const int r;
 	const int y;
@@ -52,11 +52,11 @@ typedef struct project_floor_handler_context_s {
 	const int dam;
 	const int type;
 	bool obvious;
-} project_floor_handler_context_t;
-typedef void (*project_floor_handler_f)(project_floor_handler_context_t *);
+} project_feature_handler_context_t;
+typedef void (*project_feature_handler_f)(project_feature_handler_context_t *);
 
 /* Destroy Traps (and Locks) */
-static void project_floor_handler_KILL_TRAP(project_floor_handler_context_t *context)
+static void project_feature_handler_KILL_TRAP(project_feature_handler_context_t *context)
 {
 	const int x = context->x;
 	const int y = context->y;
@@ -106,7 +106,7 @@ static void project_floor_handler_KILL_TRAP(project_floor_handler_context_t *con
 }
 
 /* Destroy Doors (and traps) */
-static void project_floor_handler_KILL_DOOR(project_floor_handler_context_t *context)
+static void project_feature_handler_KILL_DOOR(project_feature_handler_context_t *context)
 {
 	const int x = context->x;
 	const int y = context->y;
@@ -141,7 +141,7 @@ static void project_floor_handler_KILL_DOOR(project_floor_handler_context_t *con
 }
 
 /* Destroy walls (and doors) */
-static void project_floor_handler_KILL_WALL(project_floor_handler_context_t *context)
+static void project_feature_handler_KILL_WALL(project_feature_handler_context_t *context)
 {
 	const int x = context->x;
 	const int y = context->y;
@@ -259,7 +259,7 @@ static void project_floor_handler_KILL_WALL(project_floor_handler_context_t *con
 }
 
 /* Make doors */
-static void project_floor_handler_MAKE_DOOR(project_floor_handler_context_t *context)
+static void project_feature_handler_MAKE_DOOR(project_feature_handler_context_t *context)
 {
 	const int x = context->x;
 	const int y = context->y;
@@ -284,7 +284,7 @@ static void project_floor_handler_MAKE_DOOR(project_floor_handler_context_t *con
 }
 
 /* Make traps */
-static void project_floor_handler_MAKE_TRAP(project_floor_handler_context_t *context)
+static void project_feature_handler_MAKE_TRAP(project_feature_handler_context_t *context)
 {
 	const int x = context->x;
 	const int y = context->y;
@@ -298,7 +298,7 @@ static void project_floor_handler_MAKE_TRAP(project_floor_handler_context_t *con
 }
 
 /* Light up the grid */
-static void project_floor_handler_LIGHT(project_floor_handler_context_t *context)
+static void project_feature_handler_LIGHT(project_feature_handler_context_t *context)
 {
 	const int x = context->x;
 	const int y = context->y;
@@ -321,7 +321,7 @@ static void project_floor_handler_LIGHT(project_floor_handler_context_t *context
 }
 
 /* Darken the grid */
-static void project_floor_handler_DARK(project_floor_handler_context_t *context)
+static void project_feature_handler_DARK(project_feature_handler_context_t *context)
 {
 	const int x = context->x;
 	const int y = context->y;
@@ -1119,14 +1119,14 @@ static const struct gf_type {
 	int mon_vuln;		/* monster flag for vulnerability */
 	int obj_hates;		/* object flag for object vulnerability */
 	int obj_imm;		/* object flag for object immunity */
-	project_floor_handler_f floor_handler;
+	project_feature_handler_f feature_handler;
 	project_object_handler_f object_handler;
 	project_monster_handler_f monster_handler;
 	project_player_handler_f player_handler;
 } gf_table[] = {
 	#define GF(a, b, c, d, e, obv, col, f, g, h, i, j, k, l, m, fh, oh, mh, ph) { GF_##a, b, c, d, e, obv, col, f, g, h, i, j, k, l, m, fh, oh, mh, ph },
 	#define RV(b, x, y, m) {b, x, y, m}
-	#define FH(x) project_floor_handler_##x
+	#define FH(x) project_feature_handler_##x
 	#define OH(x) project_object_handler_##x
 	#define MH(x) project_monster_handler_##x
 	#define PH(x) project_player_handler_##x
@@ -1147,12 +1147,12 @@ static const char *gf_name_list[] =
     NULL
 };
 
-static project_floor_handler_f gf_floor_handler(int type)
+static project_feature_handler_f gf_feature_handler(int type)
 {
 	if (type < 0 || type >= GF_MAX)
 		return NULL;
 
-	return gf_table[type].floor_handler;
+	return gf_table[type].feature_handler;
 }
 
 static project_object_handler_f gf_object_handler(int type)
@@ -1606,7 +1606,7 @@ static bool project_f(int who, int r, int y, int x, int dam, int typ)
 {
 	bool obvious = FALSE;
 
-	project_floor_handler_context_t context = {
+	project_feature_handler_context_t context = {
 		who,
 		r,
 		y,
@@ -1615,10 +1615,10 @@ static bool project_f(int who, int r, int y, int x, int dam, int typ)
 		typ,
 		obvious,
 	};
-	project_floor_handler_f floor_handler = gf_floor_handler(typ);
+	project_feature_handler_f feature_handler = gf_feature_handler(typ);
 
-	if (floor_handler != NULL)
-		floor_handler(&context);
+	if (feature_handler != NULL)
+		feature_handler(&context);
 
 	/* Return "Anything seen?" */
 	return context.obvious;
