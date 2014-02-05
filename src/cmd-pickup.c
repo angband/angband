@@ -45,9 +45,6 @@ void do_cmd_pickup(struct command *cmd)
 	int energy_cost;
 	int item;
 
-	if (!cmd_get_arg_item(cmd, 0, &item))
-		return;
-
 	/* Autopickup first */
 	energy_cost = do_autopickup() * 10;
 
