@@ -203,31 +203,22 @@ int pathfind_direction_to(struct loc from, struct loc to)
 	if (dx >= 0 && dy >= 0)
 	{
 		if (adx < ady * 2 && ady < adx * 2)
-			return DIR_NE;
-		else if (adx > ady)
-			return DIR_E;
-		else
-			return DIR_N;
-	}
-	else if (dx > 0 && dy < 0)
-	{
-		if (adx < ady * 2 && ady < adx * 2)
 			return DIR_SE;
 		else if (adx > ady)
 			return DIR_E;
 		else
 			return DIR_S;
 	}
-	else if (dx < 0 && dy > 0)
+	else if (dx > 0 && dy < 0)
 	{
 		if (adx < ady * 2 && ady < adx * 2)
-			return DIR_NW;
+			return DIR_NE;
 		else if (adx > ady)
-			return DIR_W;
+			return DIR_E;
 		else
 			return DIR_N;
 	}
-	else if (dx <= 0 && dy <= 0)
+	else if (dx < 0 && dy > 0)
 	{
 		if (adx < ady * 2 && ady < adx * 2)
 			return DIR_SW;
@@ -235,6 +226,15 @@ int pathfind_direction_to(struct loc from, struct loc to)
 			return DIR_W;
 		else
 			return DIR_S;
+	}
+	else if (dx <= 0 && dy <= 0)
+	{
+		if (adx < ady * 2 && ady < adx * 2)
+			return DIR_NW;
+		else if (adx > ady)
+			return DIR_W;
+		else
+			return DIR_N;
 	}
 
 	assert(0);
