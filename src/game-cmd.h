@@ -111,16 +111,16 @@ typedef enum cmd_context
 
 enum {
 	DIR_UNKNOWN = 0,
-	DIR_NW = 1,
-	DIR_N = 2,
-	DIR_NE = 3,
+	DIR_NW = 7,
+	DIR_N = 8,
+	DIR_NE = 9,
 	DIR_W = 4,
 	DIR_TARGET = 5,
 	DIR_NONE = 5,
 	DIR_E = 6,
-	DIR_SW = 7,
-	DIR_S = 8,
-	DIR_SE = 9,
+	DIR_SW = 1,
+	DIR_S = 2,
+	DIR_SE = 3,
 };
 
 typedef union 
