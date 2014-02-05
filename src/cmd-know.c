@@ -77,20 +77,20 @@ void do_cmd_redraw(void)
 
 
 	/* Combine and Reorder the pack (later) */
-	p_ptr->notice |= (PN_COMBINE | PN_REORDER);
+	player->notice |= (PN_COMBINE | PN_REORDER);
 
 
 	/* Update torch */
-	p_ptr->update |= (PU_TORCH);
+	player->update |= (PU_TORCH);
 
 	/* Update stuff */
-	p_ptr->update |= (PU_BONUS | PU_HP | PU_MANA | PU_SPELLS);
+	player->update |= (PU_BONUS | PU_HP | PU_MANA | PU_SPELLS);
 
 	/* Fully update the visuals */
-	p_ptr->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
+	player->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
 
 	/* Redraw everything */
-	p_ptr->redraw |= (PR_BASIC | PR_EXTRA | PR_MAP | PR_INVEN | PR_EQUIP |
+	player->redraw |= (PR_BASIC | PR_EXTRA | PR_MAP | PR_INVEN | PR_EQUIP |
 	                  PR_MESSAGE | PR_MONSTER | PR_OBJECT |
 					  PR_MONLIST | PR_ITEMLIST);
 
@@ -98,11 +98,11 @@ void do_cmd_redraw(void)
 	Term_clear();
 
 	/* Hack -- update */
-	handle_stuff(p_ptr);
+	handle_stuff(player);
 
 	/* Place the cursor on the player */
 	if (0 != character_dungeon)
-		move_cursor_relative(p_ptr->px, p_ptr->py);
+		move_cursor_relative(player->px, player->py);
 
 
 	/* Redraw every window */
@@ -166,7 +166,7 @@ void do_cmd_change_name(void)
 					char buf[1024];
 					char fname[80];
 
-					strnfmt(fname, sizeof fname, "%s.txt", player_safe_name(p_ptr, FALSE));
+					strnfmt(fname, sizeof fname, "%s.txt", player_safe_name(player, FALSE));
 
 					if (get_file(fname, buf, sizeof buf))
 					{
@@ -429,13 +429,13 @@ void do_cmd_inven(void)
 	int ret = 3;
 	int diff = weight_remaining();
 
-	if (!p_ptr->inventory[0].kind) {
+	if (!player->inventory[0].kind) {
 		msg("You have nothing in your inventory.");
 		return;
 	}
 
 	/* Hack -- Start in "inventory" mode */
-	p_ptr->command_wrk = (USE_INVEN);
+	player->command_wrk = (USE_INVEN);
 
 	/* Loop this menu until an object context menu says differently */
 	while (ret == 3) {
@@ -444,7 +444,7 @@ void do_cmd_inven(void)
 
 		/* Prompt for a command */
 		prt(format("(Inventory) Burden %d.%d lb (%d.%d lb %s). Select Item: ",
-			        p_ptr->total_weight / 10, p_ptr->total_weight % 10,
+			        player->total_weight / 10, player->total_weight % 10,
 			        abs(diff) / 10, abs(diff) % 10,
 			        (diff < 0 ? "overweight" : "remaining")),
 				0, 0);
@@ -483,13 +483,13 @@ void do_cmd_equip(void)
 	int ret = 3;
 
 	/* Check inventory, since get_item() will default to inventory list when equipment is empty. */
-	if (!p_ptr->inventory[0].kind) {
+	if (!player->inventory[0].kind) {
 		msg("You are not wielding or wearing anything.");
 		return;
 	}
 
 	/* Hack -- Start in "inventory" mode */
-	p_ptr->command_wrk = (USE_EQUIP);
+	player->command_wrk = (USE_EQUIP);
 
 	/* Loop this menu until an object context menu says differently */
 	while (ret == 3) {
@@ -618,7 +618,7 @@ void do_cmd_locate(void)
 		change_panel(dir);
 
 		/* Handle stuff */
-		handle_stuff(p_ptr);
+		handle_stuff(player);
 	}
 
 	/* Verify panel */
@@ -867,7 +867,7 @@ void do_cmd_query_symbol(void)
 		monster_race_track(r_ptr);
 
 		/* Hack -- Handle stuff */
-		handle_stuff(p_ptr);
+		handle_stuff(player);
 
 		tb = textblock_new();
 		lore_title(tb, r_ptr);

@@ -23,7 +23,7 @@
  * Hack -- Link a copyright message into the executable
  */
 const char *copyright =
-	"Copyright (c) 1987-2013 Angband contributors.\n"
+	"Copyright (c) 1987-2014 Angband contributors.\n"
 	"\n"
 	"This work is free software; you can redistribute it and/or modify it\n"
 	"under the terms of either:\n"
@@ -120,7 +120,7 @@ static player_type player_type_body;
 /*
  * Pointer to the player info record
  */
-player_type *p_ptr = &player_type_body;
+player_type *player = &player_type_body;
 
 
 /*

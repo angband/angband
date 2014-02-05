@@ -60,7 +60,7 @@ static void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MA
 	player_state st;
 	int tmp_col;
 
-	calc_bonuses(p_ptr->inventory, &st, TRUE);
+	calc_bonuses(player->inventory, &st, TRUE);
 
 	/* Initialize the colors to green */
 	for (i = 0; i < RBE_MAX; i++)
@@ -70,7 +70,7 @@ static void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MA
 
 	/* Scan the inventory for potentially vulnerable items */
 	for (i = 0; i < INVEN_TOTAL; i++) {
-		object_type *o_ptr = &p_ptr->inventory[i];
+		object_type *o_ptr = &player->inventory[i];
 
 		/* Only occupied slots */
 		if (!o_ptr->kind) continue;
@@ -89,7 +89,7 @@ static void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MA
 
 		/* Steal item - requires non-artifacts */
 		if (i < INVEN_PACK && (!known || !o_ptr->artifact) &&
-				p_ptr->lev + adj_dex_safe[st.stat_ind[A_DEX]] < 100)
+				player->lev + adj_dex_safe[st.stat_ind[A_DEX]] < 100)
 			melee_colors[RBE_EAT_ITEM] = TERM_L_RED;
 
 		/* Eat food - requries food */
@@ -114,7 +114,7 @@ static void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MA
 	/* Acid */
 	if (of_has(st.flags, OF_IM_ACID))
 		tmp_col = TERM_L_GREEN;
-	else if (of_has(st.flags, OF_RES_ACID) || p_ptr->timed[TMD_OPP_ACID])
+	else if (of_has(st.flags, OF_RES_ACID) || player->timed[TMD_OPP_ACID])
 		tmp_col = TERM_YELLOW;
 	else
 		tmp_col = TERM_ORANGE;
@@ -127,7 +127,7 @@ static void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MA
 	/* Cold and ice */
 	if (of_has(st.flags, OF_IM_COLD))
 		tmp_col = TERM_L_GREEN;
-	else if (of_has(st.flags, OF_RES_COLD) || p_ptr->timed[TMD_OPP_COLD])
+	else if (of_has(st.flags, OF_RES_COLD) || player->timed[TMD_OPP_COLD])
 		tmp_col = TERM_YELLOW;
 	else
 		tmp_col = TERM_ORANGE;
@@ -141,7 +141,7 @@ static void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MA
 	/* Elec */
 	if (of_has(st.flags, OF_IM_ELEC))
 		tmp_col = TERM_L_GREEN;
-	else if (of_has(st.flags, OF_RES_ELEC) || p_ptr->timed[TMD_OPP_ELEC])
+	else if (of_has(st.flags, OF_RES_ELEC) || player->timed[TMD_OPP_ELEC])
 		tmp_col = TERM_YELLOW;
 	else
 		tmp_col = TERM_ORANGE;
@@ -154,7 +154,7 @@ static void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MA
 	/* Fire */
 	if (of_has(st.flags, OF_IM_FIRE))
 		tmp_col = TERM_L_GREEN;
-	else if (of_has(st.flags, OF_RES_FIRE) || p_ptr->timed[TMD_OPP_FIRE])
+	else if (of_has(st.flags, OF_RES_FIRE) || player->timed[TMD_OPP_FIRE])
 		tmp_col = TERM_YELLOW;
 	else
 		tmp_col = TERM_ORANGE;
@@ -165,7 +165,7 @@ static void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MA
 	spell_colors[RSF_BA_FIRE] = tmp_col;
 
 	/* Poison */
-	if (!of_has(st.flags, OF_RES_POIS) && !p_ptr->timed[TMD_OPP_POIS])
+	if (!of_has(st.flags, OF_RES_POIS) && !player->timed[TMD_OPP_POIS])
 	{
 		melee_colors[RBE_POISON] = TERM_ORANGE;
 		spell_colors[RSF_BR_POIS] = TERM_ORANGE;
@@ -305,7 +305,7 @@ static void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MA
 	}
 
 	/* Gold theft */
-	if (p_ptr->lev + adj_dex_safe[st.stat_ind[A_DEX]] < 100 && p_ptr->au)
+	if (player->lev + adj_dex_safe[st.stat_ind[A_DEX]] < 100 && player->au)
 		melee_colors[RBE_EAT_GOLD] = TERM_YELLOW;
 
 	/* Melee blindness and hallucinations */
@@ -516,8 +516,8 @@ void lore_do_probe(struct monster *m)
 		l_ptr->blows[i] = MAX_UCHAR;
 
 	/* Update monster recall window */
-	if (p_ptr->monster_race == m->race)
-		p_ptr->redraw |= (PR_MONSTER);
+	if (player->monster_race == m->race)
+		player->redraw |= (PR_MONSTER);
 }
 
 /**
@@ -551,8 +551,8 @@ void lore_treasure(struct monster *m_ptr, int num_item, int num_gold)
 	rf_on(l_ptr->flags, RF_DROP_GREAT);
 
 	/* Update monster recall window */
-	if (p_ptr->monster_race == m_ptr->race)
-		p_ptr->redraw |= (PR_MONSTER);
+	if (player->monster_race == m_ptr->race)
+		player->redraw |= (PR_MONSTER);
 }
 
 /**
@@ -1034,7 +1034,7 @@ static void lore_append_movement(textblock *tb, const monster_race *race, const 
 		textblock_append(tb, " lives in the town");
 	}
 	else {
-		byte colour = (race->level > p_ptr->max_depth) ? TERM_RED : TERM_L_BLUE;
+		byte colour = (race->level > player->max_depth) ? TERM_RED : TERM_L_BLUE;
 
 		if (rf_has(known_flags, RF_FORCE_DEPTH))
 			textblock_append(tb, " is found ");
@@ -1100,7 +1100,7 @@ static void lore_append_toughness(textblock *tb, const monster_race *race, const
 {
 	monster_sex_t msex = MON_SEX_NEUTER;
 	long chance = 0, chance2 = 0;
-	object_type *weapon = &p_ptr->inventory[INVEN_WIELD];
+	object_type *weapon = &player->inventory[INVEN_WIELD];
 
 	assert(tb && race && lore);
 
@@ -1172,10 +1172,10 @@ static void lore_append_exp(textblock *tb, const monster_race *race, const monst
 	textblock_append(tb, " this creature");
 
 	/* calculate the integer exp part */
-	exp_integer = (long)race->mexp * race->level / p_ptr->lev;
+	exp_integer = (long)race->mexp * race->level / player->lev;
 
 	/* calculate the fractional exp part scaled by 100, must use long arithmetic to avoid overflow */
-	exp_fraction = ((((long)race->mexp * race->level % p_ptr->lev) * (long)1000 / p_ptr->lev + 5) / 10);
+	exp_fraction = ((((long)race->mexp * race->level % player->lev) * (long)1000 / player->lev + 5) / 10);
 
 	/* Calculate textual representation */
 	strnfmt(buf, sizeof(buf), "%ld", (long)exp_integer);
@@ -1187,15 +1187,15 @@ static void lore_append_exp(textblock *tb, const monster_race *race, const monst
 
 	/* Take account of annoying English */
 	ordinal = "th";
-	level = p_ptr->lev % 10;
-	if ((p_ptr->lev / 10) == 1) /* nothing */;
+	level = player->lev % 10;
+	if ((player->lev / 10) == 1) /* nothing */;
 	else if (level == 1) ordinal = "st";
 	else if (level == 2) ordinal = "nd";
 	else if (level == 3) ordinal = "rd";
 
 	/* Take account of "leading vowels" in numbers */
 	article = "a";
-	level = p_ptr->lev;
+	level = player->lev;
 	if ((level == 8) || (level == 11) || (level == 18)) article = "an";
 
 	/* Mention the dependance on the player's level */

@@ -268,7 +268,7 @@ bool player_can_refuel(struct player *p, bool show_msg)
  */
 bool player_can_cast_prereq(void)
 {
-	return player_can_cast(p_ptr, TRUE);
+	return player_can_cast(player, TRUE);
 }
 
 /**
@@ -276,7 +276,7 @@ bool player_can_cast_prereq(void)
  */
 bool player_can_study_prereq(void)
 {
-	return player_can_study(p_ptr, TRUE);
+	return player_can_study(player, TRUE);
 }
 
 /**
@@ -284,7 +284,7 @@ bool player_can_study_prereq(void)
  */
 bool player_can_read_prereq(void)
 {
-	return player_can_read(p_ptr, TRUE);
+	return player_can_read(player, TRUE);
 }
 
 /**
@@ -292,7 +292,7 @@ bool player_can_read_prereq(void)
  */
 bool player_can_fire_prereq(void)
 {
-	return player_can_fire(p_ptr, TRUE);
+	return player_can_fire(player, TRUE);
 }
 
 /**
@@ -300,7 +300,7 @@ bool player_can_fire_prereq(void)
  */
 bool player_can_refuel_prereq(void)
 {
-	return player_can_refuel(p_ptr, TRUE);
+	return player_can_refuel(player, TRUE);
 }
 
 /**
@@ -532,6 +532,6 @@ bool player_of_has(struct player *p, int flag)
  */
 int coords_to_dir(int y, int x)
 {
-	return (motion_dir(p_ptr->py, p_ptr->px, y, x));
+	return (motion_dir(player->py, player->px, y, x));
 }
 

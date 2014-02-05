@@ -425,7 +425,7 @@ void process_command(cmd_context ctx, bool no_request)
 	struct command *cmd;
 
 	/* Reset so that when selecting items, we look in the default location */
-	p_ptr->command_wrk = 0;
+	player->command_wrk = 0;
 
 	/* If we've got a command to process, do it. */
 	if (cmdq_pop(ctx, &cmd, !no_request) == 0)
@@ -466,7 +466,7 @@ void process_command(cmd_context ctx, bool no_request)
 				strnfmt(prompt, sizeof(prompt), "%s which %s?", capitalVerb, type);
 				strnfmt(none, sizeof(none), "You have no %s you can %s.", type2, verb);
 
-				if (cmd->command == CMD_USE_ANY) p_ptr->command_wrk = USE_INVEN;
+				if (cmd->command == CMD_USE_ANY) player->command_wrk = USE_INVEN;
 				if (!get_item(&item, prompt, none, cmd->command, is->filter, is->mode))
 					return;
 
@@ -641,7 +641,7 @@ void process_command(cmd_context ctx, bool no_request)
 				if (get_target && !get_aim_dir(&cmd->arg[1].direction))
 						return;
 
-				player_confuse_dir(p_ptr, &cmd->arg[1].direction, FALSE);
+				player_confuse_dir(player, &cmd->arg[1].direction, FALSE);
 				cmd->arg_present[1] = TRUE;
 
 				break;
@@ -652,7 +652,7 @@ void process_command(cmd_context ctx, bool no_request)
 			{
 				bool get_target = FALSE;
 
-				if (spell_needs_aim(p_ptr->class->spell_book, cmd->arg[0].choice))
+				if (spell_needs_aim(player->class->spell_book, cmd->arg[0].choice))
 				{
 					if (!cmd->arg_present[1])
 						get_target = TRUE;
@@ -667,7 +667,7 @@ void process_command(cmd_context ctx, bool no_request)
 				if (get_target && !get_aim_dir(&cmd->arg[1].direction))
 						return;
 
-				player_confuse_dir(p_ptr, &cmd->arg[1].direction, FALSE);
+				player_confuse_dir(player, &cmd->arg[1].direction, FALSE);
 				cmd->arg_present[1] = TRUE;
 				
 				break;
@@ -681,7 +681,7 @@ void process_command(cmd_context ctx, bool no_request)
 				/* Usually if the slot is taken we'll just replace the item in the slot,
 				 * but in some cases we need to ask the user which slot they actually
 				 * want to replace */
-				if (p_ptr->inventory[slot].kind)
+				if (player->inventory[slot].kind)
 				{
 					if (tval_is_ring(o_ptr))
 					{
@@ -690,7 +690,7 @@ void process_command(cmd_context ctx, bool no_request)
 						if (!get_item(&slot, q, s, CMD_WIELD, tval_is_ring, USE_EQUIP)) return;
 					}
 			
-					if (tval_is_ammo(o_ptr) && !object_similar(&p_ptr->inventory[slot],
+					if (tval_is_ammo(o_ptr) && !object_similar(&player->inventory[slot],
 						o_ptr, OSTACK_QUIVER))
 					{
 						const char *q = "Replace which ammunition? ";
@@ -754,7 +754,7 @@ void cmd_cancel_repeat(void)
 		repeating = FALSE;
 		
 		/* Redraw the state (later) */
-		p_ptr->redraw |= (PR_STATE);
+		player->redraw |= (PR_STATE);
 	}
 }
 
@@ -770,7 +770,7 @@ void cmd_set_repeat(int nrepeats)
 	else repeating = FALSE;
 
 	/* Redraw the state (later) */
-	p_ptr->redraw |= (PR_STATE);
+	player->redraw |= (PR_STATE);
 }
 
 /* 

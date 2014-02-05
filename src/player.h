@@ -41,7 +41,7 @@
 #define BTH_PLUS_ADJ    	3 	/* Adjust BTH per plus-to-hit */
 
 /*
- * Bit flags for the "p_ptr->notice" variable
+ * Bit flags for the "player->notice" variable
  */
 #define PN_COMBINE      0x00000001L    /* Combine the pack */
 #define PN_REORDER      0x00000002L    /* Reorder the pack */
@@ -54,7 +54,7 @@
 
 
 /*
- * Bit flags for the "p_ptr->update" variable
+ * Bit flags for the "player->update" variable
  */
 #define PU_BONUS		0x00000001L	/* Calculate bonuses */
 #define PU_TORCH		0x00000002L	/* Calculate torch radius */
@@ -76,7 +76,7 @@
 
 
 /*
- * Bit flags for the "p_ptr->redraw" variable
+ * Bit flags for the "player->redraw" variable
  */
 #define PR_MISC			0x00000001L	/* Display Race/Class */
 #define PR_TITLE		0x00000002L	/* Display Title */
@@ -148,7 +148,7 @@ enum
 /*
  * Like the previous but takes into account the (variably full quiver).
  */
-#define INVEN_MAX_PACK  (INVEN_PACK - p_ptr->quiver_slots)
+#define INVEN_MAX_PACK  (INVEN_PACK - player->quiver_slots)
 
 /*
  * Indexes used for various "equipment" slots (hard-coded by savefiles, etc).
@@ -297,7 +297,7 @@ enum
 #define pf_inter(f1, f2)       flag_inter(f1, f2, PF_SIZE)
 #define pf_diff(f1, f2)        flag_diff(f1, f2, PF_SIZE)
 
-#define player_has(flag)       (pf_has(p_ptr->race->pflags, (flag)) || pf_has(p_ptr->class->pflags, (flag)))
+#define player_has(flag)       (pf_has(player->race->pflags, (flag)) || pf_has(player->class->pflags, (flag)))
 
 
 /* player_type.noscore flags */

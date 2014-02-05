@@ -59,10 +59,10 @@ bool modify_panel(term *t, int wy, int wx)
 		t->offset_x = wx;
 
 		/* Redraw map */
-		p_ptr->redraw |= (PR_MAP);
+		player->redraw |= (PR_MAP);
 
 		/* Redraw for big graphics */
-		if ((tile_width > 1) || (tile_height > 1)) redraw_stuff(p_ptr);
+		if ((tile_width > 1) || (tile_height > 1)) redraw_stuff(player);
       
 		/* Changed */
 		return (TRUE);
@@ -187,8 +187,8 @@ void verify_panel_int(bool centered)
 
 	int panel_wid, panel_hgt;
 
-	int py = p_ptr->py;
-	int px = p_ptr->px;
+	int py = player->py;
+	int px = player->px;
 
 	int j;
 
@@ -214,7 +214,7 @@ void verify_panel_int(bool centered)
 
 
 		/* Scroll screen vertically when off-center */
-		if (centered && !p_ptr->running && (py != wy + panel_hgt))
+		if (centered && !player->running && (py != wy + panel_hgt))
 			wy = py - panel_hgt;
 
 		/* Scroll screen vertically when 3 grids from top/bottom edge */
@@ -223,7 +223,7 @@ void verify_panel_int(bool centered)
 
 
 		/* Scroll screen horizontally when off-center */
-		if (centered && !p_ptr->running && (px != wx + panel_wid))
+		if (centered && !player->running && (px != wx + panel_wid))
 			wx = px - panel_wid;
 
 		/* Scroll screen horizontally when 3 grids from left/right edge */
@@ -381,7 +381,7 @@ bool get_rep_dir(int *dp, bool allow_5)
 			if (ke.mouse.button == 1) {
 				int y = KEY_GRID_Y(ke);
 				int x = KEY_GRID_X(ke);
-				struct loc from = loc(p_ptr->px, p_ptr->py);
+				struct loc from = loc(player->px, player->py);
 				struct loc to = loc(x, y);
 
 				dir = pathfind_direction_to(from, to);

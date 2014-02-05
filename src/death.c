@@ -87,19 +87,19 @@ static void print_tomb(void)
 
 	put_str_centred(line++, 8, 8+31, "%s", op_ptr->full_name);
 	put_str_centred(line++, 8, 8+31, "the");
-	if (p_ptr->total_winner)
+	if (player->total_winner)
 		put_str_centred(line++, 8, 8+31, "Magnificent");
 	else
-		put_str_centred(line++, 8, 8+31, "%s", p_ptr->class->title[(p_ptr->lev - 1) / 5]);
+		put_str_centred(line++, 8, 8+31, "%s", player->class->title[(player->lev - 1) / 5]);
 
 	line++;
 
-	put_str_centred(line++, 8, 8+31, "%s", p_ptr->class->name);
-	put_str_centred(line++, 8, 8+31, "Level: %d", (int)p_ptr->lev);
-	put_str_centred(line++, 8, 8+31, "Exp: %d", (int)p_ptr->exp);
-	put_str_centred(line++, 8, 8+31, "AU: %d", (int)p_ptr->au);
-	put_str_centred(line++, 8, 8+31, "Killed on Level %d", p_ptr->depth);
-	put_str_centred(line++, 8, 8+31, "by %s.", p_ptr->died_from);
+	put_str_centred(line++, 8, 8+31, "%s", player->class->name);
+	put_str_centred(line++, 8, 8+31, "Level: %d", (int)player->lev);
+	put_str_centred(line++, 8, 8+31, "Exp: %d", (int)player->exp);
+	put_str_centred(line++, 8, 8+31, "AU: %d", (int)player->au);
+	put_str_centred(line++, 8, 8+31, "Killed on Level %d", player->depth);
+	put_str_centred(line++, 8, 8+31, "by %s.", player->died_from);
 
 	line++;
 
@@ -119,7 +119,7 @@ static void death_knowledge(void)
 
 	for (i = 0; i < ALL_INVEN_TOTAL; i++)
 	{
-		o_ptr = &p_ptr->inventory[i];
+		o_ptr = &player->inventory[i];
 		if (!o_ptr->kind) continue;
 
 		object_flavor_aware(o_ptr);
@@ -138,8 +138,8 @@ static void death_knowledge(void)
 	history_unmask_unknown();
 
 	/* Hack -- Recalculate bonuses */
-	p_ptr->update |= (PU_BONUS);
-	handle_stuff(p_ptr);
+	player->update |= (PU_BONUS);
+	handle_stuff(player);
 }
 
 
@@ -178,7 +178,7 @@ static void display_winner(void)
 		file_close(fp);
 	}
 
-	put_str_centred(i, 0, wid, "All Hail the Mighty %s!", p_ptr->sex->winner);
+	put_str_centred(i, 0, wid, "All Hail the Mighty %s!", player->sex->winner);
 
 	flush();
 	pause_line(Term);
@@ -193,7 +193,7 @@ static void death_file(const char *title, int row)
 	char buf[1024];
 	char ftmp[80];
 
-	strnfmt(ftmp, sizeof(ftmp), "%s.txt", player_safe_name(p_ptr, FALSE));
+	strnfmt(ftmp, sizeof(ftmp), "%s.txt", player_safe_name(player, FALSE));
 
 	if (get_file(ftmp, buf, sizeof buf))
 	{
@@ -240,7 +240,7 @@ static void death_info(const char *title, int row)
 	/* Show equipment and inventory */
 
 	/* Equipment -- if any */
-	if (p_ptr->equip_cnt)
+	if (player->equip_cnt)
 	{
 		Term_clear();
 		show_equip(OLIST_WEIGHT | OLIST_SEMPTY, NULL);
@@ -249,7 +249,7 @@ static void death_info(const char *title, int row)
 	}
 
 	/* Inventory -- if any */
-	if (p_ptr->inven_cnt)
+	if (player->inven_cnt)
 	{
 		Term_clear();
 		show_inven(OLIST_WEIGHT, NULL);
@@ -344,7 +344,7 @@ static void death_examine(const char *title, int row)
 		textblock *tb;
 		region area = { 0, 0, 0, 0 };
 
-		object_type *o_ptr = &p_ptr->inventory[item];
+		object_type *o_ptr = &player->inventory[item];
 
 		tb = object_info(o_ptr, OINFO_FULL);
 		object_desc(header, sizeof(header), o_ptr,
@@ -412,13 +412,13 @@ void death_screen(void)
 	const region area = { 51, 2, 0, N_ELEMENTS(death_actions) };
 
 	/* Retire in the town in a good state */
-	if (p_ptr->total_winner)
+	if (player->total_winner)
 	{
-		p_ptr->depth = 0;
-		my_strcpy(p_ptr->died_from, "Ripe Old Age", sizeof(p_ptr->died_from));
-		p_ptr->exp = p_ptr->max_exp;
-		p_ptr->lev = p_ptr->max_lev;
-		p_ptr->au += 10000000L;
+		player->depth = 0;
+		my_strcpy(player->died_from, "Ripe Old Age", sizeof(player->died_from));
+		player->exp = player->max_exp;
+		player->lev = player->max_lev;
+		player->au += 10000000L;
 
 		display_winner();
 	}

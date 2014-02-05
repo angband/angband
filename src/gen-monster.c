@@ -82,7 +82,7 @@ static bool mon_select(monster_race *r_ptr)
 			return (FALSE);
 
 		/* Hack -- no invisible undead until deep. */
-		if ((p_ptr->depth < 40) && (rf_has(r_ptr->flags, RF_UNDEAD))
+		if ((player->depth < 40) && (rf_has(r_ptr->flags, RF_UNDEAD))
 			&& (rf_has(r_ptr->flags, RF_INVISIBLE)))
 			return (FALSE);
     }
@@ -176,8 +176,8 @@ char *mon_restrict(char symbol, byte depth, bool * ordered,
 			if (i < 200) {
 				if ((!rf_has(r_info[j].flags, RF_UNIQUE))
 					&& (r_info[j].level != 0) && (r_info[j].level <= depth)
-					&& (ABS(r_info[j].level - p_ptr->depth) <
-						1 + (p_ptr->depth / 4)))
+					&& (ABS(r_info[j].level - player->depth) <
+						1 + (player->depth / 4)))
 					break;
 			} else {
 				if ((!rf_has(r_info[j].flags, RF_UNIQUE))
@@ -336,7 +336,7 @@ char *mon_restrict(char symbol, byte depth, bool * ordered,
     case 'P':
 	{
 	    strcpy(name, "giant");
-	    if ((p_ptr->depth < 30) && (randint0(3) == 0))
+	    if ((player->depth < 30) && (randint0(3) == 0))
 			strcpy(d_char_req, "O");
 	    else
 			strcpy(d_char_req, "P");
@@ -375,8 +375,8 @@ char *mon_restrict(char symbol, byte depth, bool * ordered,
 				if (rf_has(r_info[j].flags, RF_UNDEAD)
 					&& (!rf_has(r_info[j].flags, RF_UNIQUE))
 					&& (strchr("GLWV", r_info[j].d_char))
-					&& (ABS(r_info[j].level - p_ptr->depth) <
-						1 + (p_ptr->depth / 4))) {
+					&& (ABS(r_info[j].level - player->depth) <
+						1 + (player->depth / 4))) {
 					break;
 				}
 			}
@@ -711,13 +711,13 @@ void get_vault_monsters(struct cave *c, char racial_symbol[], byte vault_type, c
 
 		/* Determine level of monster */
 		if (vault_type == 6)
-			depth = p_ptr->depth + 2;
+			depth = player->depth + 2;
 		else if (vault_type == 7)
-			depth = p_ptr->depth + 4;
+			depth = player->depth + 4;
 		else if (vault_type == 8)
-			depth = p_ptr->depth + 6;
+			depth = player->depth + 6;
 		else
-			depth = p_ptr->depth;
+			depth = player->depth;
 
 		/* Prepare allocation table */
 		get_mon_num_prep(mon_select);

@@ -389,7 +389,7 @@ static bool make_artifact_special(object_type *o_ptr, int level)
 	if (OPT(birth_no_artifacts)) return FALSE;
 
 	/* No artifacts in the town */
-	if (!p_ptr->depth) return FALSE;
+	if (!player->depth) return FALSE;
 
 	/* Check the special artifacts */
 	for (i = 0; i < ART_MIN_NORMAL; ++i) {
@@ -402,16 +402,16 @@ static bool make_artifact_special(object_type *o_ptr, int level)
 		if (a_ptr->created) continue;
 
 		/* Enforce minimum "depth" (loosely) */
-		if (a_ptr->alloc_min > p_ptr->depth) {
+		if (a_ptr->alloc_min > player->depth) {
 			/* Get the "out-of-depth factor" */
-			int d = (a_ptr->alloc_min - p_ptr->depth) * 2;
+			int d = (a_ptr->alloc_min - player->depth) * 2;
 
 			/* Roll for out-of-depth creation */
 			if (randint0(d) != 0) continue;
 		}
 
 		/* Enforce maximum depth (strictly) */
-		if (a_ptr->alloc_max < p_ptr->depth) continue;
+		if (a_ptr->alloc_max < player->depth) continue;
 
 		/* Artifact "rarity roll" */
 		if (randint1(100) > a_ptr->alloc_prob) continue;
@@ -484,7 +484,7 @@ static bool make_artifact(object_type *o_ptr)
 	if (!art_ok) return (FALSE);
 
 	/* No artifacts in the town */
-	if (!p_ptr->depth) return (FALSE);
+	if (!player->depth) return (FALSE);
 
 	/* Paranoia -- no "plural" artifacts */
 	if (o_ptr->number != 1) return (FALSE);
@@ -504,17 +504,17 @@ static bool make_artifact(object_type *o_ptr)
 		if (a_ptr->sval != o_ptr->sval) continue;
 
 		/* XXX XXX Enforce minimum "depth" (loosely) */
-		if (a_ptr->alloc_min > p_ptr->depth)
+		if (a_ptr->alloc_min > player->depth)
 		{
 			/* Get the "out-of-depth factor" */
-			int d = (a_ptr->alloc_min - p_ptr->depth) * 2;
+			int d = (a_ptr->alloc_min - player->depth) * 2;
 
 			/* Roll for out-of-depth creation */
 			if (randint0(d) != 0) continue;
 		}
 
 		/* Enforce maximum depth (strictly) */
-		if (a_ptr->alloc_max < p_ptr->depth) continue;
+		if (a_ptr->alloc_max < player->depth) continue;
 
 		/* We must make the "rarity roll" */
 		if (randint1(100) > a_ptr->alloc_prob) continue;
@@ -1085,8 +1085,8 @@ void make_gold(object_type *j_ptr, int lev, int coin_type)
 	object_prep(j_ptr, lookup_kind(TV_GOLD, sval), lev, RANDOMISE);
 
 	/* If we're playing with no_selling, increase the value */
-	if (OPT(birth_no_selling) && p_ptr->depth)
-		value = value * MIN(5, p_ptr->depth);
+	if (OPT(birth_no_selling) && player->depth)
+		value = value * MIN(5, player->depth);
 
 	/* Cap gold at max short (or alternatively make pvals s32b) */
 	if (value > MAX_SHORT)

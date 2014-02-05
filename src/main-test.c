@@ -83,7 +83,7 @@ static void c_player_birth(char *rest) {
 
 	for (i = 0; i < MAX_SEXES; i++) {
 		if (!strcmp(sex, sex_info[i].title)) {
-			p_ptr->psex = i;
+			player->psex = i;
 			break;
 		}
 	}
@@ -110,19 +110,19 @@ static void c_player_birth(char *rest) {
 		return;
 	}
 
-	player_generate(p_ptr, NULL, r, c);
+	player_generate(player, NULL, r, c);
 }
 
 static void c_player_class(char *rest) {
-	printf("player-class: %s\n", p_ptr->class->name);
+	printf("player-class: %s\n", player->class->name);
 }
 
 static void c_player_race(char *rest) {
-	printf("player-race: %s\n", p_ptr->race->name);
+	printf("player-race: %s\n", player->race->name);
 }
 
 static void c_player_sex(char *rest) {
-	printf("player-sex: %s\n", p_ptr->sex->title);
+	printf("player-sex: %s\n", player->sex->title);
 }
 
 typedef struct {

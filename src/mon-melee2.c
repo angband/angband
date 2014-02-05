@@ -234,11 +234,11 @@ bool make_attack_spell(struct monster *m_ptr)
 	char m_name[80], m_poss[80], ddesc[80];
 
 	/* Player position */
-	int px = p_ptr->px;
-	int py = p_ptr->py;
+	int px = player->px;
+	int py = player->py;
 
 	/* Extract the blind-ness */
-	bool blind = (p_ptr->timed[TMD_BLIND] ? TRUE : FALSE);
+	bool blind = (player->timed[TMD_BLIND] ? TRUE : FALSE);
 
 	/* Extract the "see-able-ness" */
 	bool seen = (!blind && m_ptr->ml);
@@ -247,7 +247,7 @@ bool make_attack_spell(struct monster *m_ptr)
 	bool normal = TRUE;
 
 	/* Handle "leaving" */
-	if (p_ptr->leaving) return FALSE;
+	if (player->leaving) return FALSE;
 
 	/* Cannot cast spells when confused */
 	if (m_ptr->m_timed[MON_TMD_CONF]) return (FALSE);
@@ -350,7 +350,7 @@ bool make_attack_spell(struct monster *m_ptr)
 	}
 
 	/* Cast the spell. */
-	disturb(p_ptr, 1, 0);
+	disturb(player, 1, 0);
 
 	/* Special case RSF_HASTE until TMD_* and MON_TMD_* are rationalised */
 	if (thrown_spell == RSF_HASTE) {
@@ -379,7 +379,7 @@ bool make_attack_spell(struct monster *m_ptr)
 		}
 	}
 	/* Always take note of monsters that kill you */
-	if (p_ptr->is_dead && (l_ptr->deaths < MAX_SHORT)) {
+	if (player->is_dead && (l_ptr->deaths < MAX_SHORT)) {
 		l_ptr->deaths++;
 	}
 
@@ -419,7 +419,7 @@ static int mon_will_run(struct monster *m_ptr)
 	if (m_ptr->cdis <= 5) return (FALSE);
 
 	/* Examine player power (level) */
-	p_lev = p_ptr->lev;
+	p_lev = player->lev;
 
 	/* Examine monster power (level plus morale) */
 	m_lev = m_ptr->race->level + (m_ptr->midx & 0x08) + 25;
@@ -429,8 +429,8 @@ static int mon_will_run(struct monster *m_ptr)
 	if (m_lev + 4 <= p_lev) return (TRUE);
 
 	/* Examine player health */
-	p_chp = p_ptr->chp;
-	p_mhp = p_ptr->mhp;
+	p_chp = player->chp;
+	p_mhp = player->mhp;
 
 	/* Examine monster health */
 	m_chp = m_ptr->hp;
@@ -459,7 +459,7 @@ static bool near_permwall(const monster_type *m_ptr, struct cave *c)
 	int mx = m_ptr->fx;
 	
 	/* if PC is in LOS, there's no need to go around walls */
-    if (projectable(my, mx, p_ptr->py, p_ptr->px, PROJECT_NONE)) return FALSE;
+    if (projectable(my, mx, player->py, player->px, PROJECT_NONE)) return FALSE;
     
     /* PASS_WALL & KILL_WALL monsters occasionally flow for a turn anyway */
     if (randint0(99) < 5) return TRUE;
@@ -501,8 +501,8 @@ static bool near_permwall(const monster_type *m_ptr, struct cave *c)
  */
 static bool get_moves_aux(struct cave *c, struct monster *m_ptr, int *yp, int *xp)
 {
-	int py = p_ptr->py;
-	int px = p_ptr->px;
+	int py = player->py;
+	int px = player->px;
 
 	int i, y, x, y1, x1;
 
@@ -580,8 +580,8 @@ static bool get_fear_moves_aux(struct cave *c, struct monster *m_ptr, int *yp, i
 	int i;
 
 	/* Player location */
-	py = p_ptr->py;
-	px = p_ptr->px;
+	py = player->py;
+	px = player->px;
 
 	/* Monster location */
 	fy = m_ptr->fy;
@@ -804,8 +804,8 @@ static bool find_safety(struct cave *c, struct monster *m_ptr, int *yp, int *xp)
 	int fy = m_ptr->fy;
 	int fx = m_ptr->fx;
 
-	int py = p_ptr->py;
-	int px = p_ptr->px;
+	int py = player->py;
+	int px = player->px;
 
 	int i, y, x, dy, dx, d, dis;
 	int gy = 0, gx = 0, gdis = 0;
@@ -888,8 +888,8 @@ static bool find_hiding(struct monster *m_ptr, int *yp, int *xp)
 	int fy = m_ptr->fy;
 	int fx = m_ptr->fx;
 
-	int py = p_ptr->py;
-	int px = p_ptr->px;
+	int py = player->py;
+	int px = player->px;
 
 	int i, y, x, dy, dx, d, dis;
 	int gy = 0, gx = 0, gdis = 999, min;
@@ -960,8 +960,8 @@ static bool find_hiding(struct monster *m_ptr, int *yp, int *xp)
  */
 static bool get_moves(struct cave *c, struct monster *m_ptr, int mm[5])
 {
-	int py = p_ptr->py;
-	int px = p_ptr->px;
+	int py = player->py;
+	int px = player->px;
 
 	int y, ay, x, ax;
 
@@ -1002,7 +1002,7 @@ static bool get_moves(struct cave *c, struct monster *m_ptr, int mm[5])
 		}
 
 		/* Not in an empty space and strong player */
-		if ((open < 7) && (p_ptr->chp > p_ptr->mhp / 2))
+		if ((open < 7) && (player->chp > player->mhp / 2))
 		{
 			/* Find hiding place */
 			if (find_hiding(m_ptr, &y, &x)) done = TRUE;
@@ -1632,7 +1632,7 @@ static void process_monster(struct cave *c, struct monster *m_ptr)
 		u32b notice;
 
 		/* Aggravation */
-		if (player_of_has(p_ptr, OF_AGGRAVATE)) {
+		if (player_of_has(player, OF_AGGRAVATE)) {
 			/* Wake the monster and notify player */
 			mon_clear_timed(m_ptr, MON_TMD_SLEEP, MON_TMD_FLG_NOTIFY, FALSE);
 
@@ -1640,7 +1640,7 @@ static void process_monster(struct cave *c, struct monster *m_ptr)
 			if (m_ptr->ml && !m_ptr->unaware) {
 				
 				/* Hack -- Update the health bar */
-				if (p_ptr->health_who == m_ptr) p_ptr->redraw |= (PR_HEALTH);
+				if (player->health_who == m_ptr) player->redraw |= (PR_HEALTH);
 			}
 
 			/* Efficiency XXX XXX */
@@ -1651,7 +1651,7 @@ static void process_monster(struct cave *c, struct monster *m_ptr)
 		notice = randint0(1024);
 
 		/* Hack -- See if monster "notices" player */
-		if ((notice * notice * notice) <= p_ptr->state.noise) {
+		if ((notice * notice * notice) <= player->state.noise) {
 			d = 1;
 
 			/* Wake up faster near the player */
@@ -1680,7 +1680,7 @@ static void process_monster(struct cave *c, struct monster *m_ptr)
 					msg("%s wakes up.", m_name);
 
 					/* Hack -- Update the health bar */
-					if (p_ptr->health_who == m_ptr) p_ptr->redraw |= (PR_HEALTH);
+					if (player->health_who == m_ptr) player->redraw |= (PR_HEALTH);
 
 					/* Hack -- Count the wakings */
 					if (l_ptr->wake < MAX_UCHAR)
@@ -1927,7 +1927,7 @@ static void process_monster(struct cave *c, struct monster *m_ptr)
 							square_smash_door(c, ny, nx);
 							msg("You hear a door burst open!");
 
-							disturb(p_ptr, 0, 0);
+							disturb(player, 0, 0);
 
 							/* Fall into doorway */
 							do_move = TRUE;
@@ -1980,7 +1980,7 @@ static void process_monster(struct cave *c, struct monster *m_ptr)
 			/* Otherwise, attack the player */
 			else {
 				/* Do the attack */
-				make_attack_normal(m_ptr, p_ptr);
+				make_attack_normal(m_ptr, player);
 
 				/* Do not move */
 				do_move = FALSE;
@@ -2070,7 +2070,7 @@ static void process_monster(struct cave *c, struct monster *m_ptr)
 
 			/* Possible disturb */
 			if (m_ptr->ml && (m_ptr->mflag & MFLAG_VIEW) && OPT(disturb_near))
-				disturb(p_ptr, 0, 0);
+				disturb(player, 0, 0);
 
 			/* Scan all objects in the grid */
 			for (this_o_idx = cave->o_idx[ny][nx]; this_o_idx;
@@ -2172,10 +2172,10 @@ static void process_monster(struct cave *c, struct monster *m_ptr)
 	/* Notice changes in view */
 	if (do_view) {
 		/* Update the visuals */
-		p_ptr->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
+		player->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 
 		/* Fully update the flow XXX XXX XXX */
-		p_ptr->update |= (PU_FORGET_FLOW | PU_UPDATE_FLOW);
+		player->update |= (PU_FORGET_FLOW | PU_UPDATE_FLOW);
 	}
 
 
@@ -2197,7 +2197,7 @@ static bool monster_can_flow(struct cave *c, struct monster *m_ptr)
 	assert(c);
 
 	/* Check the flow (normal aaf is about 20) */
-	if ((c->when[fy][fx] == c->when[p_ptr->py][p_ptr->px]) &&
+	if ((c->when[fy][fx] == c->when[player->py][player->px]) &&
 	    (c->cost[fy][fx] < MONSTER_FLOW_DEPTH) &&
 	    (c->cost[fy][fx] < (OPT(birth_small_range) ? m_ptr->race->aaf / 2 : m_ptr->race->aaf)))
 		return TRUE;
@@ -2237,7 +2237,7 @@ void process_monsters(struct cave *c, byte minimum_energy)
 		monster_type *m_ptr;
 
 		/* Handle "leaving" */
-		if (p_ptr->leaving) break;
+		if (player->leaving) break;
 
 		/* Get the monster */
 		m_ptr = cave_monster(cave, i);

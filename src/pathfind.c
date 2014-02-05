@@ -55,11 +55,11 @@ static void fill_terrain_info(void)
 {
 	int i, j;
 
-	ox = MAX(p_ptr->px - MAX_PF_RADIUS / 2, 0);
-	oy = MAX(p_ptr->py - MAX_PF_RADIUS / 2, 0);
+	ox = MAX(player->px - MAX_PF_RADIUS / 2, 0);
+	oy = MAX(player->py - MAX_PF_RADIUS / 2, 0);
 
-	ex = MIN(p_ptr->px + MAX_PF_RADIUS / 2 - 1, cave->width);
-	ey = MIN(p_ptr->py + MAX_PF_RADIUS / 2 - 1, cave->height);
+	ex = MIN(player->px + MAX_PF_RADIUS / 2 - 1, cave->width);
+	ey = MIN(player->py + MAX_PF_RADIUS / 2 - 1, cave->height);
 
 	for (i = 0; i < MAX_PF_RADIUS * MAX_PF_RADIUS; i++)
 		terrain[0][i] = -1;
@@ -69,7 +69,7 @@ static void fill_terrain_info(void)
 			if (is_valid_pf(j, i))
 				terrain[j - oy][i - ox] = MAX_PF_LENGTH;
 
-	terrain[p_ptr->py - oy][p_ptr->px - ox] = 1;
+	terrain[player->py - oy][player->px - ox] = 1;
 }
 
 #define MARK_DISTANCE(c,d) if ((c <= MAX_PF_LENGTH) && (c > d)) { c = d; try_again = (TRUE); }
@@ -83,7 +83,7 @@ bool findpath(int y, int x)
 
 	fill_terrain_info();
 
-	terrain[p_ptr->py - oy][p_ptr->px - ox] = 1;
+	terrain[player->py - oy][player->px - ox] = 1;
 
 	if ((x >= ox) && (x < ex) && (y >= oy) && (y < ey))
 	{
@@ -154,7 +154,7 @@ bool findpath(int y, int x)
 
 	pf_result_index = 0;
 
-	while ((i != p_ptr->px) || (j != p_ptr->py))
+	while ((i != player->px) || (j != player->py))
 	{
 		cur_distance = terrain[j - oy][i - ox] - 1;
 		for (k = 0; k < 8; k++)
@@ -449,8 +449,8 @@ static int see_wall(int dir, int y, int x)
  */
 static void run_init(int dir)
 {
-	int py = p_ptr->py;
-	int px = p_ptr->px;
+	int py = player->py;
+	int px = player->px;
 
 	int i, row, col;
 
@@ -458,7 +458,7 @@ static void run_init(int dir)
 	bool shortleft, shortright;
 
 	/* Mark that we're starting a run */
-	p_ptr->running_firststep = TRUE;
+	player->running_firststep = TRUE;
 
 	/* Save the direction */
 	run_cur_dir = dir;
@@ -554,8 +554,8 @@ static void run_init(int dir)
  */
 static bool run_test(void)
 {
-	int py = p_ptr->py;
-	int px = p_ptr->px;
+	int py = player->py;
+	int px = player->px;
 
 	int prev_dir;
 	int new_dir;
@@ -836,22 +836,22 @@ void run_step(int dir)
 		run_init(dir);
 
 		/* Hack -- Set the run counter */
-		p_ptr->running = 1000;
+		player->running = 1000;
 
 		/* Calculate torch radius */
-		p_ptr->update |= (PU_TORCH);
+		player->update |= (PU_TORCH);
 	}
 
 	/* Continue run */
 	else
 	{
-		if (!p_ptr->running_withpathfind)
+		if (!player->running_withpathfind)
 		{
 			/* Update run */
 			if (run_test())
 			{
 				/* Disturb */
-				disturb(p_ptr, 0, 0);
+				disturb(player, 0, 0);
 	
 				/* Done */
 				return;
@@ -862,8 +862,8 @@ void run_step(int dir)
 			/* Abort if we have finished */
 			if (pf_result_index < 0)
 			{
-				disturb(p_ptr, 0, 0);
-				p_ptr->running_withpathfind = FALSE;
+				disturb(player, 0, 0);
+				player->running_withpathfind = FALSE;
 				return;
 			}
 
@@ -871,14 +871,14 @@ void run_step(int dir)
 			else if (pf_result_index == 0)
 			{
 				/* Get next step */
-				y = p_ptr->py + ddy[pf_result[pf_result_index] - '0'];
-				x = p_ptr->px + ddx[pf_result[pf_result_index] - '0'];
+				y = player->py + ddy[pf_result[pf_result_index] - '0'];
+				x = player->px + ddx[pf_result[pf_result_index] - '0'];
 
 				/* Known wall */
 				if (sqinfo_has(cave->info[y][x], SQUARE_MARK) && !square_ispassable(cave, y, x))
 				{
-					disturb(p_ptr, 0,0);
-					p_ptr->running_withpathfind = FALSE;
+					disturb(player, 0,0);
+					player->running_withpathfind = FALSE;
 					return;
 				}
 			}
@@ -896,14 +896,14 @@ void run_step(int dir)
 			else if (pf_result_index > 0)
 			{
 				/* Get next step */
-				y = p_ptr->py + ddy[pf_result[pf_result_index] - '0'];
-				x = p_ptr->px + ddx[pf_result[pf_result_index] - '0'];
+				y = player->py + ddy[pf_result[pf_result_index] - '0'];
+				x = player->px + ddx[pf_result[pf_result_index] - '0'];
 
 				/* Known wall */
 				if (sqinfo_has(cave->info[y][x], SQUARE_MARK) && !square_ispassable(cave, y, x))
 				{
-					disturb(p_ptr, 0,0);
-					p_ptr->running_withpathfind = FALSE;
+					disturb(player, 0,0);
+					player->running_withpathfind = FALSE;
 					return;
 				}
 
@@ -914,7 +914,7 @@ void run_step(int dir)
 				/* Known wall */
 				if (sqinfo_has(cave->info[y][x], SQUARE_MARK) && !square_ispassable(cave, y, x))
 				{
-					p_ptr->running_withpathfind = FALSE;
+					player->running_withpathfind = FALSE;
 
 					run_init(pf_result[pf_result_index] - '0');
 				}
@@ -926,10 +926,10 @@ void run_step(int dir)
 
 
 	/* Decrease counter */
-	p_ptr->running--;
+	player->running--;
 
 	/* Take time */
-	p_ptr->energy_use = 100;
+	player->energy_use = 100;
 
 	/* Move the player */
 	move_player(run_cur_dir, TRUE);

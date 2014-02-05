@@ -111,8 +111,8 @@ static s16b get_idx_from_name(char *s)
  */
 static void do_cmd_wiz_hack_ben(void)
 {
-	int py = p_ptr->py;
-	int px = p_ptr->px;
+	int py = player->py;
+	int px = player->px;
 
 	int i, y, x;
 
@@ -265,7 +265,7 @@ static void do_cmd_wiz_change_aux(void)
 		strnfmt(ppp, sizeof(ppp), "%s (3-118): ", stat_names[i]);
 
 		/* Default */
-		strnfmt(tmp_val, sizeof(tmp_val), "%d", p_ptr->stat_max[i]);
+		strnfmt(tmp_val, sizeof(tmp_val), "%d", player->stat_max[i]);
 
 		/* Query */
 		if (!get_string(ppp, tmp_val, 4)) return;
@@ -278,12 +278,12 @@ static void do_cmd_wiz_change_aux(void)
 		else if (tmp_int < 3) tmp_int = 3;
 
 		/* Save it */
-		p_ptr->stat_cur[i] = p_ptr->stat_max[i] = tmp_int;
+		player->stat_cur[i] = player->stat_max[i] = tmp_int;
 	}
 
 
 	/* Default */
-	strnfmt(tmp_val, sizeof(tmp_val), "%ld", (long)(p_ptr->au));
+	strnfmt(tmp_val, sizeof(tmp_val), "%ld", (long)(player->au));
 
 	/* Query */
 	if (!get_string("Gold: ", tmp_val, 10)) return;
@@ -295,11 +295,11 @@ static void do_cmd_wiz_change_aux(void)
 	if (tmp_long < 0) tmp_long = 0L;
 
 	/* Save */
-	p_ptr->au = tmp_long;
+	player->au = tmp_long;
 
 
 	/* Default */
-	strnfmt(tmp_val, sizeof(tmp_val), "%ld", (long)(p_ptr->exp));
+	strnfmt(tmp_val, sizeof(tmp_val), "%ld", (long)(player->exp));
 
 	/* Query */
 	if (!get_string("Experience: ", tmp_val, 10)) return;
@@ -310,10 +310,10 @@ static void do_cmd_wiz_change_aux(void)
 	/* Verify */
 	if (tmp_long < 0) tmp_long = 0L;
 
-	if (tmp_long > p_ptr->exp)
-		player_exp_gain(p_ptr, tmp_long - p_ptr->exp);
+	if (tmp_long > player->exp)
+		player_exp_gain(player, tmp_long - player->exp);
 	else
-		player_exp_lose(p_ptr, p_ptr->exp - tmp_long, FALSE);
+		player_exp_lose(player, player->exp - tmp_long, FALSE);
 }
 
 
@@ -496,20 +496,20 @@ static bool wiz_create_item_subaction(menu_type *m, const ui_event *e, int oid)
 	i_ptr = &object_type_body;
 
 	/* Create the item */
-	object_prep(i_ptr, kind, p_ptr->depth, RANDOMISE);
+	object_prep(i_ptr, kind, player->depth, RANDOMISE);
 
 	/* Apply magic (no messages, no artifacts) */
-	apply_magic(i_ptr, p_ptr->depth, FALSE, FALSE, FALSE, FALSE);
+	apply_magic(i_ptr, player->depth, FALSE, FALSE, FALSE, FALSE);
 
 	/* Mark as cheat, and where created */
 	i_ptr->origin = ORIGIN_CHEAT;
-	i_ptr->origin_depth = p_ptr->depth;
+	i_ptr->origin_depth = player->depth;
 
 	if (tval_is_money_k(kind))
-		make_gold(i_ptr, p_ptr->depth, kind->sval);
+		make_gold(i_ptr, player->depth, kind->sval);
 
 	/* Drop the object from heaven */
-	drop_near(cave, i_ptr, 0, p_ptr->py, p_ptr->px, TRUE);
+	drop_near(cave, i_ptr, 0, player->py, player->px, TRUE);
 
 	return FALSE;
 }
@@ -620,8 +620,8 @@ static void wiz_create_item(void)
 	screen_load();
 	
 	/* Redraw map */
-	p_ptr->redraw |= (PR_MAP | PR_ITEMLIST);
-	handle_stuff(p_ptr);
+	player->redraw |= (PR_MAP | PR_ITEMLIST);
+	handle_stuff(player);
 
 }
 
@@ -647,7 +647,7 @@ static void wiz_tweak_item(object_type *o_ptr)
 	val = atoi(tmp_val);
 	if (val) {
 		o_ptr->ego = &e_info[val];
-		ego_apply_magic(o_ptr, p_ptr->depth);
+		ego_apply_magic(o_ptr, player->depth);
 	} else
 		o_ptr->ego = 0;
 	wiz_display_item(o_ptr, TRUE);
@@ -727,22 +727,22 @@ static void wiz_reroll_item(object_type *o_ptr)
 		/* Apply normal magic, but first clear object */
 		else if (ch.code == 'n' || ch.code == 'N')
 		{
-			object_prep(i_ptr, o_ptr->kind, p_ptr->depth, RANDOMISE);
-			apply_magic(i_ptr, p_ptr->depth, FALSE, FALSE, FALSE, FALSE);
+			object_prep(i_ptr, o_ptr->kind, player->depth, RANDOMISE);
+			apply_magic(i_ptr, player->depth, FALSE, FALSE, FALSE, FALSE);
 		}
 
 		/* Apply good magic, but first clear object */
 		else if (ch.code == 'g' || ch.code == 'G')
 		{
-			object_prep(i_ptr, o_ptr->kind, p_ptr->depth, RANDOMISE);
-			apply_magic(i_ptr, p_ptr->depth, FALSE, TRUE, FALSE, FALSE);
+			object_prep(i_ptr, o_ptr->kind, player->depth, RANDOMISE);
+			apply_magic(i_ptr, player->depth, FALSE, TRUE, FALSE, FALSE);
 		}
 
 		/* Apply great magic, but first clear object */
 		else if (ch.code == 'e' || ch.code == 'E')
 		{
-			object_prep(i_ptr, o_ptr->kind, p_ptr->depth, RANDOMISE);
-			apply_magic(i_ptr, p_ptr->depth, FALSE, TRUE, TRUE, FALSE);
+			object_prep(i_ptr, o_ptr->kind, player->depth, RANDOMISE);
+			apply_magic(i_ptr, player->depth, FALSE, TRUE, TRUE, FALSE);
 		}
 	}
 
@@ -763,13 +763,13 @@ static void wiz_reroll_item(object_type *o_ptr)
 		object_copy(o_ptr, i_ptr);
 
 		/* Recalculate bonuses */
-		p_ptr->update |= (PU_BONUS);
+		player->update |= (PU_BONUS);
 
 		/* Combine / Reorder the pack (later) */
-		p_ptr->notice |= (PN_COMBINE | PN_REORDER | PN_SORT_QUIVER);
+		player->notice |= (PN_COMBINE | PN_REORDER | PN_SORT_QUIVER);
 
 		/* Window stuff */
-		p_ptr->redraw |= (PR_INVEN | PR_EQUIP );
+		player->redraw |= (PR_INVEN | PR_EQUIP );
 	}
 }
 
@@ -850,7 +850,7 @@ static void wiz_statistics(object_type *o_ptr, int level)
 
 		/* Let us know what we are doing */
 		msg("Creating a lot of %s items. Base level = %d.",
-		           quality, p_ptr->depth);
+		           quality, player->depth);
 		message_flush();
 
 		/* Set counters to zero */
@@ -985,10 +985,10 @@ static void wiz_quantity_item(object_type *o_ptr, bool carried)
 		if (carried)
 		{
 			/* Remove the weight of the old number of objects */
-			p_ptr->total_weight -= (o_ptr->number * o_ptr->weight);
+			player->total_weight -= (o_ptr->number * o_ptr->weight);
 
 			/* Add the weight of the new number of objects */
-			p_ptr->total_weight += (tmp_int * o_ptr->weight);
+			player->total_weight += (tmp_int * o_ptr->weight);
 		}
 
 		/* Adjust charges/timeouts for devices */
@@ -1087,7 +1087,7 @@ static void do_cmd_wiz_play(void)
 		else if (ch.code == 'c' || ch.code == 'C')
 			wiz_tweak_curse(i_ptr);
 		else if (ch.code == 's' || ch.code == 'S')
-			wiz_statistics(i_ptr, p_ptr->depth);
+			wiz_statistics(i_ptr, player->depth);
 		else if (ch.code == 'r' || ch.code == 'R')
 			wiz_reroll_item(i_ptr);
 		else if (ch.code == 't' || ch.code == 'T')
@@ -1116,13 +1116,13 @@ static void do_cmd_wiz_play(void)
 		object_copy(o_ptr, i_ptr);
 
 		/* Recalculate bonuses */
-		p_ptr->update |= (PU_BONUS);
+		player->update |= (PU_BONUS);
 
 		/* Combine / Reorder the pack (later) */
-		p_ptr->notice |= (PN_COMBINE | PN_REORDER);
+		player->notice |= (PN_COMBINE | PN_REORDER);
 
 		/* Window stuff */
-		p_ptr->redraw |= (PR_INVEN | PR_EQUIP );
+		player->redraw |= (PR_INVEN | PR_EQUIP );
 	}
 
 	/* Ignore change */
@@ -1173,14 +1173,14 @@ static void wiz_create_artifact(int a_idx)
 	i_ptr->origin = ORIGIN_CHEAT;
 
 	/* Drop the artifact from heaven */
-	drop_near(cave, i_ptr, 0, p_ptr->py, p_ptr->px, TRUE);
+	drop_near(cave, i_ptr, 0, player->py, player->px, TRUE);
 
 	/* All done */
 	msg("Allocated.");
 	
 	/* Redraw map */
-	p_ptr->redraw |= (PR_MAP | PR_ITEMLIST);
-	handle_stuff(p_ptr);
+	player->redraw |= (PR_MAP | PR_ITEMLIST);
+	handle_stuff(player);
 }
 
 
@@ -1203,27 +1203,27 @@ static void do_cmd_wiz_cure_all(void)
 	(void)restore_level();
 
 	/* Heal the player */
-	p_ptr->chp = p_ptr->mhp;
-	p_ptr->chp_frac = 0;
+	player->chp = player->mhp;
+	player->chp_frac = 0;
 
 	/* Restore mana */
-	p_ptr->csp = p_ptr->msp;
-	p_ptr->csp_frac = 0;
+	player->csp = player->msp;
+	player->csp_frac = 0;
 
 	/* Cure stuff */
-	(void)player_clear_timed(p_ptr, TMD_BLIND, TRUE);
-	(void)player_clear_timed(p_ptr, TMD_CONFUSED, TRUE);
-	(void)player_clear_timed(p_ptr, TMD_POISONED, TRUE);
-	(void)player_clear_timed(p_ptr, TMD_AFRAID, TRUE);
-	(void)player_clear_timed(p_ptr, TMD_PARALYZED, TRUE);
-	(void)player_clear_timed(p_ptr, TMD_IMAGE, TRUE);
-	(void)player_clear_timed(p_ptr, TMD_STUN, TRUE);
-	(void)player_clear_timed(p_ptr, TMD_CUT, TRUE);
-	(void)player_clear_timed(p_ptr, TMD_SLOW, TRUE);
-	(void)player_clear_timed(p_ptr, TMD_AMNESIA, TRUE);
+	(void)player_clear_timed(player, TMD_BLIND, TRUE);
+	(void)player_clear_timed(player, TMD_CONFUSED, TRUE);
+	(void)player_clear_timed(player, TMD_POISONED, TRUE);
+	(void)player_clear_timed(player, TMD_AFRAID, TRUE);
+	(void)player_clear_timed(player, TMD_PARALYZED, TRUE);
+	(void)player_clear_timed(player, TMD_IMAGE, TRUE);
+	(void)player_clear_timed(player, TMD_STUN, TRUE);
+	(void)player_clear_timed(player, TMD_CUT, TRUE);
+	(void)player_clear_timed(player, TMD_SLOW, TRUE);
+	(void)player_clear_timed(player, TMD_AMNESIA, TRUE);
 
 	/* No longer hungry */
-	player_set_food(p_ptr, PY_FOOD_MAX - 1);
+	player_set_food(player, PY_FOOD_MAX - 1);
 
 	/* Redraw everything */
 	do_cmd_redraw();
@@ -1247,7 +1247,7 @@ static void do_cmd_wiz_jump(void)
 	strnfmt(ppp, sizeof(ppp), "Jump to level (0-%d): ", MAX_DEPTH-1);
 
 	/* Default */
-	strnfmt(tmp_val, sizeof(tmp_val), "%d", p_ptr->depth);
+	strnfmt(tmp_val, sizeof(tmp_val), "%d", player->depth);
 
 	/* Ask for a level */
 	if (!get_string(ppp, tmp_val, 11)) return;
@@ -1265,10 +1265,10 @@ static void do_cmd_wiz_jump(void)
 	msg("You jump to dungeon level %d.", depth);
 
 	/* New depth */
-	p_ptr->depth = depth;
+	player->depth = depth;
 
 	/* Leaving */
-	p_ptr->leaving = TRUE;
+	player->leaving = TRUE;
 }
 
 
@@ -1314,13 +1314,13 @@ static void do_cmd_rerate(void)
 {
 	int min_value, max_value, i, percent;
 
-	min_value = (PY_MAX_LEVEL * 3 * (p_ptr->hitdie - 1)) / 8;
+	min_value = (PY_MAX_LEVEL * 3 * (player->hitdie - 1)) / 8;
 	min_value += PY_MAX_LEVEL;
 
-	max_value = (PY_MAX_LEVEL * 5 * (p_ptr->hitdie - 1)) / 8;
+	max_value = (PY_MAX_LEVEL * 5 * (player->hitdie - 1)) / 8;
 	max_value += PY_MAX_LEVEL;
 
-	p_ptr->player_hp[0] = p_ptr->hitdie;
+	player->player_hp[0] = player->hitdie;
 
 	/* Rerate */
 	while (1)
@@ -1328,24 +1328,24 @@ static void do_cmd_rerate(void)
 		/* Collect values */
 		for (i = 1; i < PY_MAX_LEVEL; i++)
 		{
-			p_ptr->player_hp[i] = randint1(p_ptr->hitdie);
-			p_ptr->player_hp[i] += p_ptr->player_hp[i - 1];
+			player->player_hp[i] = randint1(player->hitdie);
+			player->player_hp[i] += player->player_hp[i - 1];
 		}
 
 		/* Legal values */
-		if ((p_ptr->player_hp[PY_MAX_LEVEL - 1] >= min_value) &&
-		    (p_ptr->player_hp[PY_MAX_LEVEL - 1] <= max_value)) break;
+		if ((player->player_hp[PY_MAX_LEVEL - 1] >= min_value) &&
+		    (player->player_hp[PY_MAX_LEVEL - 1] <= max_value)) break;
 	}
 
-	percent = (int)(((long)p_ptr->player_hp[PY_MAX_LEVEL - 1] * 200L) /
-	                (p_ptr->hitdie + ((PY_MAX_LEVEL - 1) * p_ptr->hitdie)));
+	percent = (int)(((long)player->player_hp[PY_MAX_LEVEL - 1] * 200L) /
+	                (player->hitdie + ((PY_MAX_LEVEL - 1) * player->hitdie)));
 
 	/* Update and redraw hitpoints */
-	p_ptr->update |= (PU_HP);
-	p_ptr->redraw |= (PR_HP);
+	player->update |= (PU_HP);
+	player->redraw |= (PR_HP);
 
 	/* Handle stuff */
-	handle_stuff(p_ptr);
+	handle_stuff(player);
 
 	/* Message */
 	msg("Current Life Rating is %d/100.", percent);
@@ -1357,14 +1357,14 @@ static void do_cmd_rerate(void)
  */
 static void do_cmd_wiz_summon(int num)
 {
-	int py = p_ptr->py;
-	int px = p_ptr->px;
+	int py = player->py;
+	int px = player->px;
 
 	int i;
 
 	for (i = 0; i < num; i++)
 	{
-		(void)summon_specific(py, px, p_ptr->depth, 0, 1);
+		(void)summon_specific(py, px, player->depth, 0, 1);
 	}
 }
 
@@ -1376,8 +1376,8 @@ static void do_cmd_wiz_summon(int num)
  */
 static void do_cmd_wiz_named(monster_race *r, bool slp)
 {
-	int py = p_ptr->py;
-	int px = p_ptr->px;
+	int py = player->py;
+	int px = player->px;
 
 	int i, x, y;
 
@@ -1424,7 +1424,7 @@ static void do_cmd_wiz_zap(int d)
 	}
 
 	/* Update monster list window */
-	p_ptr->redraw |= PR_MONLIST;
+	player->redraw |= PR_MONLIST;
 }
 
 
@@ -1433,8 +1433,8 @@ static void do_cmd_wiz_zap(int d)
  */
 static void do_cmd_wiz_query(void)
 {
-	int py = p_ptr->py;
-	int px = p_ptr->px;
+	int py = player->py;
+	int px = player->px;
 
 	int y, x;
 
@@ -1512,8 +1512,8 @@ static void do_cmd_wiz_query(void)
  */
 static void wiz_test_kind(int tval)
 {
-	int py = p_ptr->py;
-	int px = p_ptr->px;
+	int py = player->py;
+	int px = player->px;
 	int sval;
 
 	object_type object_type_body;
@@ -1525,17 +1525,17 @@ static void wiz_test_kind(int tval)
 		if (!kind) continue;
 
 		/* Create the item */
-		object_prep(i_ptr, kind, p_ptr->depth, RANDOMISE);
+		object_prep(i_ptr, kind, player->depth, RANDOMISE);
 
 		/* Apply magic (no messages, no artifacts) */
-		apply_magic(i_ptr, p_ptr->depth, FALSE, FALSE, FALSE, FALSE);
+		apply_magic(i_ptr, player->depth, FALSE, FALSE, FALSE, FALSE);
 
 		/* Mark as cheat, and where created */
 		i_ptr->origin = ORIGIN_CHEAT;
-		i_ptr->origin_depth = p_ptr->depth;
+		i_ptr->origin_depth = player->depth;
 
 		if (tval == TV_GOLD)
-			make_gold(i_ptr, p_ptr->depth, sval);
+			make_gold(i_ptr, player->depth, sval);
 
 		/* Drop the object from heaven */
 		drop_near(cave, i_ptr, 0, py, px, TRUE);
@@ -1565,35 +1565,35 @@ static void do_cmd_wiz_advance(void)
 
 	/* Max stats */
 	for (i = 0; i < A_MAX; i++)
-		p_ptr->stat_cur[i] = p_ptr->stat_max[i] = 118;
+		player->stat_cur[i] = player->stat_max[i] = 118;
 
 	/* Lots of money */
-	p_ptr->au = 1000000L;
+	player->au = 1000000L;
 
 	/* Level 50 */
-	player_exp_gain(p_ptr, PY_MAX_EXP);
+	player_exp_gain(player, PY_MAX_EXP);
 
 	/* Heal the player */
-	p_ptr->chp = p_ptr->mhp;
-	p_ptr->chp_frac = 0;
+	player->chp = player->mhp;
+	player->chp_frac = 0;
 
 	/* Restore mana */
-	p_ptr->csp = p_ptr->msp;
-	p_ptr->csp_frac = 0;
+	player->csp = player->msp;
+	player->csp_frac = 0;
 
 	/* Get some awesome equipment */
 	/* Artifacts: 3, 5, 12, ...*/
 	
 	/* Update stuff */
-	p_ptr->update |= (PU_BONUS | PU_HP | PU_MANA | PU_SPELLS);
+	player->update |= (PU_BONUS | PU_HP | PU_MANA | PU_SPELLS);
 
 	/* Redraw everything */
-	p_ptr->redraw |= (PR_BASIC | PR_EXTRA | PR_MAP | PR_INVEN | PR_EQUIP |
+	player->redraw |= (PR_BASIC | PR_EXTRA | PR_MAP | PR_INVEN | PR_EQUIP |
 	                  PR_MESSAGE | PR_MONSTER | PR_OBJECT |
 					  PR_MONLIST | PR_ITEMLIST);
 
 	/* Hack -- update */
-	handle_stuff(p_ptr);
+	handle_stuff(player);
 
 }
 
@@ -1639,8 +1639,8 @@ void do_cmd_wiz_effect(void)
  */
 void do_cmd_debug(void)
 {
-	int py = p_ptr->py;
-	int px = p_ptr->px;
+	int py = player->py;
+	int px = player->px;
 
 	struct keypress cmd;
 
@@ -1778,7 +1778,7 @@ void do_cmd_debug(void)
 			n= get_quantity("How many good objects? ", 40);
 			screen_load();
 			if (n < 1) n = 1;
-			acquirement(py, px, p_ptr->depth, n, FALSE);
+			acquirement(py, px, player->depth, n, FALSE);
 			break;
 		}
 
@@ -1856,7 +1856,7 @@ void do_cmd_debug(void)
 					/* If not, find the monster with that name */
 					r = lookup_monster(name); 
 					
-				p_ptr->redraw |= (PR_MAP | PR_MONLIST);
+				player->redraw |= (PR_MAP | PR_MONLIST);
 			}
 
 			/* Reload the screen */
@@ -1980,12 +1980,12 @@ void do_cmd_debug(void)
 		/* Create a trap */
 		case 'T':
 		{
-			if (!square_isfloor(cave, p_ptr->py, p_ptr->px))
+			if (!square_isfloor(cave, player->py, player->px))
 				msg("You can't place a trap there!");
-			else if (p_ptr->depth == 0)
+			else if (player->depth == 0)
 				msg("You can't place a trap in the town!");
 			else
-				square_add_trap(cave, p_ptr->py, p_ptr->px);
+				square_add_trap(cave, player->py, player->px);
 			break;
 		}
 
@@ -2004,7 +2004,7 @@ void do_cmd_debug(void)
 			n = get_quantity("How many great objects? ", 40);
 			screen_load();
 			if (n < 1) n = 1;
-			acquirement(py, px, p_ptr->depth, n, TRUE);
+			acquirement(py, px, player->depth, n, TRUE);
 			break;
 		}
 
@@ -2088,7 +2088,7 @@ void do_cmd_debug(void)
 			n = get_quantity("Gain how much experience? ", 9999);
 			screen_load();
 			if (n < 1) n = 1;
-			player_exp_gain(p_ptr, n);
+			player_exp_gain(player, n);
 			break;
 		}
 

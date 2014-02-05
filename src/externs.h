@@ -60,7 +60,7 @@ extern struct store *stores;
 extern int store_knowledge;
 extern const char *** name_sections;
 extern player_other *op_ptr;
-extern player_type *p_ptr;
+extern player_type *player;
 extern feature_type *f_info;
 extern trap_kind *trap_info;
 extern object_base *kb_info;

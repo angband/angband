@@ -36,7 +36,7 @@
 void do_cmd_wizard(void)
 {
 	/* Verify first time */
-	if (!(p_ptr->noscore & NOSCORE_WIZARD))
+	if (!(player->noscore & NOSCORE_WIZARD))
 	{
 		/* Mention effects */
 		msg("You are about to enter 'wizard' mode for the very first time!");
@@ -48,26 +48,26 @@ void do_cmd_wizard(void)
 			return;
 
 		/* Mark savefile */
-		p_ptr->noscore |= NOSCORE_WIZARD;
+		player->noscore |= NOSCORE_WIZARD;
 	}
 
 	/* Toggle mode */
-	if (p_ptr->wizard)
+	if (player->wizard)
 	{
-		p_ptr->wizard = FALSE;
+		player->wizard = FALSE;
 		msg("Wizard mode off.");
 	}
 	else
 	{
-		p_ptr->wizard = TRUE;
+		player->wizard = TRUE;
 		msg("Wizard mode on.");
 	}
 
 	/* Update monsters */
-	p_ptr->update |= (PU_MONSTERS);
+	player->update |= (PU_MONSTERS);
 
 	/* Redraw "title" */
-	p_ptr->redraw |= (PR_TITLE);
+	player->redraw |= (PR_TITLE);
 }
 
 
@@ -79,7 +79,7 @@ void do_cmd_wizard(void)
 void do_cmd_try_debug(void)
 {
 	/* Ask first time */
-	if (!(p_ptr->noscore & NOSCORE_DEBUG))
+	if (!(player->noscore & NOSCORE_DEBUG))
 	{
 		/* Mention effects */
 		msg("You are about to use the dangerous, unsupported, debug commands!");
@@ -91,7 +91,7 @@ void do_cmd_try_debug(void)
 			return;
 
 		/* Mark savefile */
-		p_ptr->noscore |= NOSCORE_DEBUG;
+		player->noscore |= NOSCORE_DEBUG;
 	}
 
 	/* Okay */
@@ -105,10 +105,10 @@ void do_cmd_try_debug(void)
 void do_cmd_quit(struct command *cmd)
 {
 	/* Stop playing */
-	p_ptr->playing = FALSE;
+	player->playing = FALSE;
 
 	/* Leaving */
-	p_ptr->leaving = TRUE;
+	player->leaving = TRUE;
 }
 
 
@@ -137,16 +137,16 @@ void do_cmd_unknown(void)
 void do_cmd_suicide(struct command *cmd)
 {
 	/* Commit suicide */
-	p_ptr->is_dead = TRUE;
+	player->is_dead = TRUE;
 
 	/* Stop playing */
-	p_ptr->playing = FALSE;
+	player->playing = FALSE;
 
 	/* Leaving */
-	p_ptr->leaving = TRUE;
+	player->leaving = TRUE;
 
 	/* Cause of death */
-	my_strcpy(p_ptr->died_from, "Quitting", sizeof(p_ptr->died_from));
+	my_strcpy(player->died_from, "Quitting", sizeof(player->died_from));
 }
 
 
@@ -156,7 +156,7 @@ void textui_cmd_suicide(void)
 	flush();
 
 	/* Verify Retirement */
-	if (p_ptr->total_winner)
+	if (player->total_winner)
 	{
 		/* Verify */
 		if (!get_check("Do you want to retire? ")) return;

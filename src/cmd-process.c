@@ -687,7 +687,7 @@ static void textui_process_click(ui_event e)
 	if (!square_in_bounds_fully(cave, y, x)) return;
 
 	/* XXX show context menu here */
-	if ((p_ptr->py == y) && (p_ptr->px == x)) {
+	if ((player->py == y) && (player->px == x)) {
 		if (e.mouse.mods & KC_MOD_SHIFT) {
 			/* shift-click - cast magic */
 			if (e.mouse.button == 1) {
@@ -701,9 +701,9 @@ static void textui_process_click(ui_event e)
 			/* ctrl-click - use feature / use inventory item */
 			/* switch with default */
 			if (e.mouse.button == 1) {
-				if (square_isupstairs(cave, p_ptr->py, p_ptr->px))
+				if (square_isupstairs(cave, player->py, player->px))
 					cmdq_push(CMD_GO_UP);
-				else if (square_isdownstairs(cave, p_ptr->py, p_ptr->px))
+				else if (square_isdownstairs(cave, player->py, player->px))
 					cmdq_push(CMD_GO_DOWN);
 			} else
 			if (e.mouse.button == 2) {
@@ -737,7 +737,7 @@ static void textui_process_click(ui_event e)
 
 	else if (e.mouse.button == 1)
 	{
-		if (p_ptr->timed[TMD_CONFUSED])
+		if (player->timed[TMD_CONFUSED])
 		{
 			cmdq_push(CMD_WALK);
 		}
@@ -747,8 +747,8 @@ static void textui_process_click(ui_event e)
 				/* shift-click - run */
 				cmdq_push(CMD_RUN);
 				cmd_set_arg_direction(cmdq_peek(), 0, coords_to_dir(y,x));
-				/*if ((y-p_ptr->py >= -1) && (y-p_ptr->py <= 1)
-					&& (x-p_ptr->px >= -1) && (x-p_ptr->px <= 1)) {
+				/*if ((y-player->py >= -1) && (y-player->py <= 1)
+					&& (x-player->px >= -1) && (x-player->px <= 1)) {
 					cmdq_push(CMD_JUMP);
 					cmd_set_arg_direction(cmdq_peek(), 0, coords_to_dir(y,x));
 				} else {
@@ -772,8 +772,8 @@ static void textui_process_click(ui_event e)
 			{
 				/* pathfind does not work well on trap detection borders,
 				 * so if the click is next to the player, force a walk step */
-				if ((y-p_ptr->py >= -1) && (y-p_ptr->py <= 1)
-					&& (x-p_ptr->px >= -1) && (x-p_ptr->px <= 1)) {
+				if ((y-player->py >= -1) && (y-player->py <= 1)
+					&& (x-player->px >= -1) && (x-player->px <= 1)) {
 					cmdq_push(CMD_WALK);
 					cmd_set_arg_direction(cmdq_peek(), 0, coords_to_dir(y,x));
 				} else {
@@ -790,7 +790,7 @@ static void textui_process_click(ui_event e)
 		if (m && target_able(m)) {
 			/* Set up target information */
 			monster_race_track(m->race);
-			health_track(p_ptr, m);
+			health_track(player, m);
 			target_set_monster(m);
 		} else {
 			target_set_location(y,x);
@@ -814,8 +814,8 @@ static void textui_process_click(ui_event e)
 		{
 			//msg("Target set.");
 			/* see if the click was adjacent to the player */
-			if ((y-p_ptr->py >= -1) && (y-p_ptr->py <= 1)
-				&& (x-p_ptr->px >= -1) && (x-p_ptr->px <= 1)) {
+			if ((y-player->py >= -1) && (y-player->py <= 1)
+				&& (x-player->px >= -1) && (x-player->px <= 1)) {
 				context_menu_cave(cave,y,x,1,e.mouse.x, e.mouse.y);
 			} else {
 				context_menu_cave(cave,y,x,0,e.mouse.x, e.mouse.y);
@@ -838,7 +838,7 @@ bool key_confirm_command(unsigned char c)
 		char verify_inscrip[] = "^*";
 		unsigned n;
 
-		object_type *o_ptr = &p_ptr->inventory[i];
+		object_type *o_ptr = &player->inventory[i];
 		if (!o_ptr->kind) continue;
 
 		/* Set up string to look for, e.g. "^d" */

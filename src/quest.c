@@ -81,10 +81,10 @@ static void build_quest_stairs(int y, int x)
 	square_add_stairs(cave, y, x, 0);
 
 	/* Update the visuals */
-	p_ptr->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
+	player->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 
 	/* Fully update the flow */
-	p_ptr->update |= (PU_FORGET_FLOW | PU_UPDATE_FLOW);
+	player->update |= (PU_FORGET_FLOW | PU_UPDATE_FLOW);
 }
 
 /*
@@ -111,8 +111,8 @@ bool quest_check(const struct monster *m) {
 
 	/* Nothing left, game over... */
 	if (total == 0) {
-		p_ptr->total_winner = TRUE;
-		p_ptr->redraw |= (PR_TITLE);
+		player->total_winner = TRUE;
+		player->redraw |= (PR_TITLE);
 		msg("*** CONGRATULATIONS ***");
 		msg("You have won the game!");
 		msg("You may retire (commit suicide) when you are ready.");

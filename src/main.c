@@ -468,7 +468,7 @@ int main(int argc, char *argv[])
 				 * can do whatever the hell they want.
 				 */
 #ifdef SETGID
-				savefile_set_name(player_safe_name(p_ptr, FALSE));
+				savefile_set_name(player_safe_name(player, FALSE));
 #else
 				savefile_set_name(arg);
 #endif /* SETGID */
@@ -586,7 +586,7 @@ int main(int argc, char *argv[])
 		user_name(op_ptr->full_name, sizeof(op_ptr->full_name), player_uid);
 
 		/* Set the savefile to load */
-		savefile_set_name(player_safe_name(p_ptr, FALSE));
+		savefile_set_name(player_safe_name(player, FALSE));
 	}
 
 	/* Create any missing directories */

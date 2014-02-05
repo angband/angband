@@ -341,7 +341,7 @@ bool add_monster_message(const char *mon_name, struct monster *m_ptr,
 	/* One more entry */
 	++size_mon_msg;
  
-	p_ptr->notice |= PN_MON_MESSAGE;
+	player->notice |= PN_MON_MESSAGE;
 
 	/* record which monster had this message stored */
 	if (size_mon_hist >= MAX_STORED_MON_CODES) return (TRUE);

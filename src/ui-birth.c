@@ -322,7 +322,7 @@ static void class_help(int i, void *db, const region *l)
 	int j;
 	size_t k;
 	struct player_class *c = player_id2class(i);
-	const struct player_race *r = p_ptr->race;
+	const struct player_race *r = player->race;
 	int len = (A_MAX + 1) / 2;
 
 	int n_flags = 0;
@@ -435,7 +435,7 @@ static void setup_menus(void)
 	struct birthmenu_data *mdata;
 
 	/* Sex menu fairly straightforward */
-	init_birth_menu(&sex_menu, MAX_SEXES, p_ptr->psex, &gender_region, TRUE, NULL);
+	init_birth_menu(&sex_menu, MAX_SEXES, player->psex, &gender_region, TRUE, NULL);
 	mdata = sex_menu.menu_data;
 	for (i = 0; i < MAX_SEXES; i++)
 		mdata->items[i] = sex_info[i].title;
@@ -444,7 +444,7 @@ static void setup_menus(void)
 	n = 0;
 	for (r = races; r; r = r->next) n++;
 	/* Race menu more complicated. */
-	init_birth_menu(&race_menu, n, p_ptr->race ? p_ptr->race->ridx : 0,
+	init_birth_menu(&race_menu, n, player->race ? player->race->ridx : 0,
 	                &race_region, TRUE, race_help);
 	mdata = race_menu.menu_data;
 
@@ -455,7 +455,7 @@ static void setup_menus(void)
 	n = 0;
 	for (c = classes; c; c = c->next) n++;
 	/* Class menu similar to race. */
-	init_birth_menu(&class_menu, n, p_ptr->class ? p_ptr->class->cidx : 0,
+	init_birth_menu(&class_menu, n, player->class ? player->class->cidx : 0,
 	                &class_region, TRUE, class_help);
 	mdata = class_menu.menu_data;
 

@@ -210,7 +210,7 @@ static void monster_list_collect(monster_list_t *list)
 		 * but this does not catch monsters detected by ESP which are
 		 * targetable, so we cheat and use projectable() instead
 		 */
-		los = projectable(p_ptr->py, p_ptr->px, monster->fy, monster->fx, PROJECT_NONE);
+		los = projectable(player->py, player->px, monster->fy, monster->fx, PROJECT_NONE);
 		field = (los) ? MONSTER_LIST_SECTION_LOS : MONSTER_LIST_SECTION_ESP;
 		entry->count[field]++;
 
@@ -218,8 +218,8 @@ static void monster_list_collect(monster_list_t *list)
 			entry->asleep[field]++;
 
 		/* Store the location offset from the player; this is only used for monster counts of 1 */
-		entry->dx = monster->fx - p_ptr->px;
-		entry->dy = monster->fy - p_ptr->py;
+		entry->dx = monster->fx - player->px;
+		entry->dy = monster->fy - player->py;
 	}
 
 	/* Skip calculations if nothing has changed, otherwise this will yield incorrect numbers. */
@@ -308,7 +308,7 @@ static byte monster_list_entry_line_attribute(const monster_list_entry_t *entry)
 	/* Display uniques in a special colour */
 	if (rf_has(entry->race->flags, RF_UNIQUE))
 		return TERM_VIOLET;
-	else if (entry->race->level > p_ptr->depth)
+	else if (entry->race->level > player->depth)
 		return TERM_RED;
 	else
 		return TERM_WHITE;
@@ -456,7 +456,7 @@ static void monster_list_format_section(const monster_list_t *list, textblock *t
  */
 static bool monster_list_format_special(const monster_list_t *list, textblock *tb, int max_lines, int max_width, size_t *max_height_result, size_t *max_width_result)
 {
-	if (p_ptr->timed[TMD_IMAGE] > 0) {
+	if (player->timed[TMD_IMAGE] > 0) {
 		/* Hack - message needs newline to calculate width properly. */
 		const char *message = "Your hallucinations are too wild to see things clearly.\n";
 

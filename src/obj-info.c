@@ -471,7 +471,7 @@ static bool describe_slays(textblock *tb, const bitflag flags[OF_SIZE],
 static void calculate_melee_crits(player_state *state, int weight,
 		int plus, int *mult, int *add, int *div)
 {
-	int k, to_crit = weight + 5*(state->to_h + plus) + 3*p_ptr->lev;
+	int k, to_crit = weight + 5*(state->to_h + plus) + 3*player->lev;
 	to_crit = MIN(5000, MAX(0, to_crit));
 
 	*mult = *add = 0;
@@ -500,7 +500,7 @@ static void calculate_melee_crits(player_state *state, int weight,
 static void calculate_missile_crits(player_state *state, int weight,
 		int plus, int *mult, int *add, int *div)
 {
-	int k, to_crit = weight + 4*(state->to_h + plus) + 2*p_ptr->lev;
+	int k, to_crit = weight + 4*(state->to_h + plus) + 2*player->lev;
 	to_crit = MIN(5000, MAX(0, to_crit));
 
 	*mult = *add = 0;
@@ -549,13 +549,13 @@ static bool describe_blows(textblock *tb, const object_type *o_ptr,
 	 * state does not track these */
 	for (i = INVEN_BOW; i < INVEN_TOTAL; i++)
 	{
-		if (!p_ptr->inventory[i].kind)
+		if (!player->inventory[i].kind)
 			continue;
 
-		object_flags_known(&p_ptr->inventory[i], tmp_f);
+		object_flags_known(&player->inventory[i], tmp_f);
 
 		if (of_has(tmp_f, OF_BLOWS))
-			extra_blows += p_ptr->inventory[i].pval[which_pval(&p_ptr->inventory[i], OF_BLOWS)];
+			extra_blows += player->inventory[i].pval[which_pval(&player->inventory[i], OF_BLOWS)];
 	}
 
 	/* Then we add blows from the weapon being examined */
@@ -627,12 +627,12 @@ static bool describe_damage(textblock *tb, const object_type *o_ptr,
 	int xtra_postcrit = 0, xtra_precrit = 0;
 	int crit_mult, crit_div, crit_add;
 	int old_blows = 0;
-	object_type *bow = &p_ptr->inventory[INVEN_BOW];
+	object_type *bow = &player->inventory[INVEN_BOW];
 
 	bitflag tmp_f[OF_SIZE], mask[OF_SIZE];
 
 	bool weapon = (wield_slot(o_ptr) == INVEN_WIELD);
-	bool ammo   = (p_ptr->state.ammo_tval == o_ptr->tval) &&
+	bool ammo   = (player->state.ammo_tval == o_ptr->tval) &&
 	              (bow->kind);
 	int multiplier = 1;
 	bool full = mode & OINFO_FULL;
@@ -667,7 +667,7 @@ static bool describe_damage(textblock *tb, const object_type *o_ptr,
 		if (object_attack_plusses_are_visible(o_ptr) || full)
 			plus += o_ptr->to_h;
 
-		calculate_missile_crits(&p_ptr->state, o_ptr->weight, plus,
+		calculate_missile_crits(&player->state, o_ptr->weight, plus,
 				&crit_mult, &crit_add, &crit_div);
 
 		if (object_attack_plusses_are_visible(o_ptr) || full)
@@ -688,10 +688,10 @@ static bool describe_damage(textblock *tb, const object_type *o_ptr,
 		bool nonweap_slay = FALSE;
 
 		for (i = INVEN_LEFT; i < INVEN_TOTAL; i++) {
-			if (!p_ptr->inventory[i].kind)
+			if (!player->inventory[i].kind)
 				continue;
 
-			object_flags_known(&p_ptr->inventory[i], tmp_f);
+			object_flags_known(&player->inventory[i], tmp_f);
 
 			/* Strip out non-slays */
 			of_inter(tmp_f, mask);
@@ -706,7 +706,7 @@ static bool describe_damage(textblock *tb, const object_type *o_ptr,
 
 	textblock_append(tb, "Average damage/round: ");
 
-	if (ammo) multiplier = p_ptr->state.ammo_mult;
+	if (ammo) multiplier = player->state.ammo_mult;
 
 	/* Output damage for creatures effected by the brands or slays */
 	cnt = list_slays(f, mask, desc, NULL, mult, TRUE);
@@ -722,7 +722,7 @@ static bool describe_damage(textblock *tb, const object_type *o_ptr,
 		if (weapon)
 			total_dam = (total_dam * old_blows) / 100;
 		else
-			total_dam *= p_ptr->state.num_shots;
+			total_dam *= player->state.num_shots;
 
 		if (total_dam <= 0)
 			textblock_append_c(tb, TERM_L_RED, "%d", 0);
@@ -746,7 +746,7 @@ static bool describe_damage(textblock *tb, const object_type *o_ptr,
 	if (weapon)
 		total_dam = (total_dam * old_blows) / 100;
 	else
-		total_dam *= p_ptr->state.num_shots;
+		total_dam *= player->state.num_shots;
 
 	if (total_dam <= 0)
 		textblock_append_c(tb, TERM_L_RED, "%d", 0);
@@ -771,12 +771,12 @@ static bool describe_combat(textblock *tb, const object_type *o_ptr,
 {
 	bool full = mode & OINFO_FULL;
 
-	object_type *bow = &p_ptr->inventory[INVEN_BOW];
+	object_type *bow = &player->inventory[INVEN_BOW];
 
 	bitflag f[OF_SIZE];
 
 	bool weapon = (wield_slot(o_ptr) == INVEN_WIELD);
-	bool ammo   = (p_ptr->state.ammo_tval == o_ptr->tval) &&
+	bool ammo   = (player->state.ammo_tval == o_ptr->tval) &&
 	              (bow->kind);
 
 	/* The player's hypothetical state, were they to wield this item */
@@ -806,7 +806,7 @@ static bool describe_combat(textblock *tb, const object_type *o_ptr,
 	if (weapon)	{
 		object_type inven[INVEN_TOTAL];
 
-		memcpy(inven, p_ptr->inventory, INVEN_TOTAL * sizeof(object_type));
+		memcpy(inven, player->inventory, INVEN_TOTAL * sizeof(object_type));
 		inven[INVEN_WIELD] = *o_ptr;
 
 		if (full) object_know_all_flags(&inven[INVEN_WIELD]);
@@ -822,7 +822,7 @@ static bool describe_combat(textblock *tb, const object_type *o_ptr,
 		describe_blows(tb, o_ptr, state, f);
 	} else { /* Ammo */
 		/* Range of the weapon */
-		int tdis = 6 + 2 * p_ptr->state.ammo_mult;
+		int tdis = 6 + 2 * player->state.ammo_mult;
 
 		/* Output the range */
 		textblock_append(tb, "Hits targets up to ");
@@ -880,14 +880,14 @@ static bool describe_digger(textblock *tb, const object_type *o_ptr,
 	if (sl < 0 || (sl != INVEN_WIELD && !of_has(f, OF_TUNNEL)))
 		return FALSE;
 
-	memcpy(inven, p_ptr->inventory, INVEN_TOTAL * sizeof(object_type));
+	memcpy(inven, player->inventory, INVEN_TOTAL * sizeof(object_type));
 
 	/*
 	 * Hack -- if we examine a ring that is worn on the right finger,
 	 * we shouldn't put a copy of it on the left finger before calculating
 	 * digging skills.
 	 */
-	if (o_ptr != &p_ptr->inventory[INVEN_RIGHT])
+	if (o_ptr != &player->inventory[INVEN_RIGHT])
 		inven[sl] = *o_ptr;
 
 	calc_bonuses(inven, &st, TRUE);
@@ -945,7 +945,7 @@ static bool describe_food(textblock *tb, const object_type *o_ptr,
 		o_ptr->pval[DEFAULT_PVAL])
 	{
 		/* Sometimes adjust for player speed */
-		int multiplier = extract_energy[p_ptr->state.speed];
+		int multiplier = extract_energy[player->state.speed];
 		if (!subjective) multiplier = 10;
 
 		if (object_is_known(o_ptr) || full) {
@@ -1098,7 +1098,7 @@ static bool describe_effect(textblock *tb, const object_type *o_ptr, bool full,
 		int min_time, max_time;
 
 		/* Sometimes adjust for player speed */
-		int multiplier = extract_energy[p_ptr->state.speed];
+		int multiplier = extract_energy[player->state.speed];
 		if (!subjective) multiplier = 10;
 
 		textblock_append(tb, "Takes ");
@@ -1116,7 +1116,7 @@ static bool describe_effect(textblock *tb, const object_type *o_ptr, bool full,
 		}
 
 		textblock_append(tb, " turns to recharge");
-		if (subjective && p_ptr->state.speed != 110)
+		if (subjective && player->state.speed != 110)
 			textblock_append(tb, " at your current speed");
 
 		textblock_append(tb, ".\n");

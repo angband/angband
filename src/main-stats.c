@@ -175,34 +175,34 @@ static void generate_player_for_stats()
 	OPT(birth_no_stacking) = FALSE;
 	OPT(auto_more) = TRUE;
 
-	p_ptr->wizard = 1; /* Set wizard mode on */
+	player->wizard = 1; /* Set wizard mode on */
 
-	p_ptr->psex = 0;   /* Female  */
-	p_ptr->race = races;  /* Human   */
-	p_ptr->class = classes; /* Warrior */
+	player->psex = 0;   /* Female  */
+	player->race = races;  /* Human   */
+	player->class = classes; /* Warrior */
 
 	/* Level 1 */
-	p_ptr->max_lev = p_ptr->lev = 1;
+	player->max_lev = player->lev = 1;
 
 	/* Experience factor */
-	p_ptr->expfact = p_ptr->race->r_exp + p_ptr->class->c_exp;
+	player->expfact = player->race->r_exp + player->class->c_exp;
 
 	/* Hitdice */
-	p_ptr->hitdie = p_ptr->race->r_mhp + p_ptr->class->c_mhp;
+	player->hitdie = player->race->r_mhp + player->class->c_mhp;
 
 	/* Initial hitpoints -- high just to be safe */
-	p_ptr->mhp = p_ptr->chp = 2000;
+	player->mhp = player->chp = 2000;
 
 	/* Pre-calculate level 1 hitdice */
-	p_ptr->player_hp[0] = p_ptr->hitdie;
+	player->player_hp[0] = player->hitdie;
 
 	/* Set age/height/weight */
-	p_ptr->ht = p_ptr->ht_birth = 66;
-	p_ptr->wt = p_ptr->wt_birth = 150;
-	p_ptr->age = 14;
+	player->ht = player->ht_birth = 66;
+	player->wt = player->wt_birth = 150;
+	player->age = 14;
 
 	/* Set social class and (null) history */
-	p_ptr->history = get_history(p_ptr->race->history);
+	player->history = get_history(player->race->history);
 }
 
 static void initialize_character(void)
@@ -218,7 +218,7 @@ static void initialize_character(void)
 	Rand_quick = FALSE;
 	Rand_state_init(seed);
 
-	player_init(p_ptr);
+	player_init(player);
 	generate_player_for_stats();
 
 	seed_flavor = randint0(0x10000000);
@@ -232,9 +232,9 @@ static void initialize_character(void)
 
 	store_reset();
 	flavor_init();
-	p_ptr->playing = TRUE;
-	p_ptr->autosave = FALSE;
-	cave_generate(cave, p_ptr);
+	player->playing = TRUE;
+	player->autosave = FALSE;
+	cave_generate(cave, player);
 }
 
 static void kill_all_monsters(int level)
@@ -360,7 +360,7 @@ static void descend_dungeon(void)
 		}
 
 		dungeon_change_level(level);
-		cave_generate(cave, p_ptr);
+		cave_generate(cave, player);
 
 		/* Store level feelings */
 		obj_f = cave->feeling / 10;
@@ -1582,7 +1582,7 @@ void progress_bar(u32b run, time_t start) {
 
 static void stats_cleanup_angband_run(void)
 {
-	if (p_ptr->history) FREE(p_ptr->history);
+	if (player->history) FREE(player->history);
 }
 
 static errr run_stats(void)

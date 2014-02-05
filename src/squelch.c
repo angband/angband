@@ -198,8 +198,8 @@ int add_autoinscription(s16b kind, const char *inscription)
 
 void autoinscribe_ground(void)
 {
-	int py = p_ptr->py;
-	int px = p_ptr->px;
+	int py = player->py;
+	int px = player->px;
 	s16b this_o_idx, next_o_idx = 0;
 
 	/* Scan the pile of objects */
@@ -221,10 +221,10 @@ void autoinscribe_pack(void)
 	for (i = INVEN_PACK; i >= 0; i--)
 	{
 		/* Skip empty items */
-		if (!p_ptr->inventory[i].kind) continue;
+		if (!player->inventory[i].kind) continue;
 
 		/* Apply the inscription */
-		apply_autoinscription(&p_ptr->inventory[i]);
+		apply_autoinscription(&player->inventory[i]);
 	}
 
 	return;
@@ -431,7 +431,7 @@ byte squelch_level_of(const object_type *o_ptr)
 void kind_squelch_clear(object_kind *k_ptr)
 {
 	k_ptr->squelch = 0;
-	p_ptr->notice |= PN_SQUELCH;
+	player->notice |= PN_SQUELCH;
 }
 
 bool kind_is_squelched_aware(const object_kind *k_ptr)
@@ -447,13 +447,13 @@ bool kind_is_squelched_unaware(const object_kind *k_ptr)
 void kind_squelch_when_aware(object_kind *k_ptr)
 {
 	k_ptr->squelch |= SQUELCH_IF_AWARE;
-	p_ptr->notice |= PN_SQUELCH;
+	player->notice |= PN_SQUELCH;
 }
 
 void kind_squelch_when_unaware(object_kind *k_ptr)
 {
 	k_ptr->squelch |= SQUELCH_IF_UNAWARE;
-	p_ptr->notice |= PN_SQUELCH;
+	player->notice |= PN_SQUELCH;
 }
 
 
@@ -464,7 +464,7 @@ bool squelch_item_ok(const object_type *o_ptr)
 {
 	byte type;
 
-	if (p_ptr->unignoring)
+	if (player->unignoring)
 		return FALSE;
 
 	/* Don't squelch artifacts unless marked to be squelched */
@@ -499,7 +499,7 @@ bool squelch_item_ok(const object_type *o_ptr)
 
 /*
  * Determines if an object is already squelched. Same as squelch_item_ok above,
- * without the first (p_ptr->unignoring) test.
+ * without the first (player->unignoring) test.
  */
 bool object_is_squelched(const object_type *o_ptr)
 {
@@ -545,7 +545,7 @@ void squelch_drop(void)
 	/* Scan through the slots backwards */
 	for (n = INVEN_TOTAL - 1; n >= 0; n--)
 	{
-		object_type *o_ptr = &p_ptr->inventory[n];
+		object_type *o_ptr = &player->inventory[n];
 
 		/* Skip non-objects and unsquelchable objects */
 		if (n == INVEN_PACK) continue; /* Skip overflow slot. */
@@ -581,7 +581,7 @@ void squelch_drop(void)
 	}
 
 	/* Combine/reorder the pack */
-	p_ptr->notice |= (PN_COMBINE | PN_REORDER);
+	player->notice |= (PN_COMBINE | PN_REORDER);
 }
 
 /**

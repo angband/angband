@@ -125,7 +125,7 @@ static void project_feature_handler_KILL_DOOR(project_feature_handler_context_t 
 			if (square_isdoor(cave, y, x))
 			{
 				/* Update the visuals */
-				p_ptr->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
+				player->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 			}
 		}
 
@@ -187,7 +187,7 @@ static void project_feature_handler_KILL_WALL(project_feature_handler_context_t 
 		square_destroy_wall(cave, y, x);
 
 		/* Place some gold */
-		place_gold(cave, y, x, p_ptr->depth, ORIGIN_FLOOR);
+		place_gold(cave, y, x, player->depth, ORIGIN_FLOOR);
 	}
 
 	/* Quartz / Magma */
@@ -229,7 +229,7 @@ static void project_feature_handler_KILL_WALL(project_feature_handler_context_t 
 				msg("There was something buried in the rubble!");
 				context->obvious = TRUE;
 			}
-			place_object(cave, y, x, p_ptr->depth, FALSE, FALSE,
+			place_object(cave, y, x, player->depth, FALSE, FALSE,
 						 ORIGIN_RUBBLE, 0);
 		}
 	}
@@ -252,10 +252,10 @@ static void project_feature_handler_KILL_WALL(project_feature_handler_context_t 
 	}
 
 	/* Update the visuals */
-	p_ptr->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
+	player->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 
 	/* Fully update the flow */
-	p_ptr->update |= (PU_FORGET_FLOW | PU_UPDATE_FLOW);
+	player->update |= (PU_FORGET_FLOW | PU_UPDATE_FLOW);
 }
 
 /* Make doors */
@@ -280,7 +280,7 @@ static void project_feature_handler_MAKE_DOOR(project_feature_handler_context_t 
 	if (sqinfo_on(cave->info[y][x], SQUARE_MARK)) context->obvious = TRUE;
 
 	/* Update the visuals */
-	p_ptr->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
+	player->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 }
 
 /* Make traps */
@@ -309,14 +309,14 @@ static void project_feature_handler_LIGHT(project_feature_handler_context_t *con
 	/* Grid is in line of sight */
 	if (player_has_los_bold(y, x))
 	{
-		if (!p_ptr->timed[TMD_BLIND])
+		if (!player->timed[TMD_BLIND])
 		{
 			/* Observe */
 			context->obvious = TRUE;
 		}
 
 		/* Fully update the visuals */
-		p_ptr->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
+		player->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
 	}
 }
 
@@ -326,7 +326,7 @@ static void project_feature_handler_DARK(project_feature_handler_context_t *cont
 	const int x = context->x;
 	const int y = context->y;
 
-	if (p_ptr->depth != 0 || !is_daytime())
+	if (player->depth != 0 || !is_daytime())
 	{
 		/* Turn off the light */
 		sqinfo_off(cave->info[y][x], SQUARE_GLOW);
@@ -343,7 +343,7 @@ static void project_feature_handler_DARK(project_feature_handler_context_t *cont
 		context->obvious = TRUE;
 
 		/* Fully update the visuals */
-		p_ptr->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
+		player->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
 	}
 }
 
@@ -745,7 +745,7 @@ static void project_monster_handler_COLD(project_monster_handler_context_t *cont
 /* Ice -- Cold + Stun */
 static void project_monster_handler_ICE(project_monster_handler_context_t *context)
 {
-	int player_amount = (randint1(15) + context->r + p_ptr->lev / 5) / (context->r + 1);
+	int player_amount = (randint1(15) + context->r + player->lev / 5) / (context->r + 1);
 	int monster_amount = (randint1(15) + context->r) / (context->r + 1);
 	project_monster_timed_damage(context, MON_TMD_STUN, player_amount, monster_amount);
 	project_monster_hurt_immune(context, RF_HURT_COLD, RF_IM_COLD, 2, 9, MON_MSG_BADLY_FROZEN, MON_MSG_FREEZE_SHATTER);
@@ -817,7 +817,7 @@ static void project_monster_handler_WATER(project_monster_handler_context_t *con
 /* Chaos -- Chaos breathers resist */
 static void project_monster_handler_CHAOS(project_monster_handler_context_t *context)
 {
-	int player_amount = (5 + randint1(11) + context->r + p_ptr->lev / 5) / (context->r + 1);
+	int player_amount = (5 + randint1(11) + context->r + player->lev / 5) / (context->r + 1);
 	int monster_amount = (5 + randint1(11) + context->r) / (context->r + 1);
 
 	/* Prevent polymorph on chaos breathers. */
@@ -841,7 +841,7 @@ static void project_monster_handler_SHARD(project_monster_handler_context_t *con
 /* Sound -- Sound breathers resist */
 static void project_monster_handler_SOUND(project_monster_handler_context_t *context)
 {
-	int player_amount = (10 + randint1(15) + context->r + p_ptr->lev / 5) / (context->r + 1);
+	int player_amount = (10 + randint1(15) + context->r + player->lev / 5) / (context->r + 1);
 	int monster_amount = (10 + randint1(15) + context->r) / (context->r + 1);
 	project_monster_timed_damage(context, MON_TMD_STUN, player_amount, monster_amount);
 	project_monster_breath(context, RSF_BR_SOUN, 2);
@@ -862,7 +862,7 @@ static void project_monster_handler_NEXUS(project_monster_handler_context_t *con
 /* Force */
 static void project_monster_handler_FORCE(project_monster_handler_context_t *context)
 {
-	int player_amount = (randint1(15) + context->r + p_ptr->lev / 5) / (context->r + 1);
+	int player_amount = (randint1(15) + context->r + player->lev / 5) / (context->r + 1);
 	int monster_amount = (randint1(15) + context->r) / (context->r + 1);
 	project_monster_timed_damage(context, MON_TMD_STUN, player_amount, monster_amount);
 	project_monster_breath(context, RSF_BR_WALL, 3);
@@ -949,7 +949,7 @@ static void project_monster_handler_OLD_HEAL(project_monster_handler_context_t *
 	if (context->m_ptr->hp > context->m_ptr->maxhp) context->m_ptr->hp = context->m_ptr->maxhp;
 
 	/* Redraw (later) if needed */
-	if (p_ptr->health_who == context->m_ptr) p_ptr->redraw |= (PR_HEALTH);
+	if (player->health_who == context->m_ptr) player->redraw |= (PR_HEALTH);
 
 	/* Message */
 	else context->hurt_msg = MON_MSG_HEALTHIER;
@@ -1250,10 +1250,10 @@ bool check_side_immune(int type)
 	const struct gf_type *gf_ptr = &gf_table[type];
 
 	if (gf_ptr->immunity) {
-		if (gf_ptr->side_immune && player_of_has(p_ptr, gf_ptr->immunity))
+		if (gf_ptr->side_immune && player_of_has(player, gf_ptr->immunity))
 			return TRUE;
-	} else if ((gf_ptr->resist && player_of_has(p_ptr, gf_ptr->resist)) ||
-				(gf_ptr->opp && p_ptr->timed[gf_ptr->opp]))
+	} else if ((gf_ptr->resist && player_of_has(player, gf_ptr->resist)) ||
+				(gf_ptr->opp && player->timed[gf_ptr->opp]))
 		return TRUE;
 
 	return FALSE;
@@ -1440,7 +1440,7 @@ static monster_race *poly_race(monster_race *race)
 	if (rf_has(race->flags, RF_UNIQUE)) return race;
 
 	/* Allowable range of "levels" for resulting monster */
-	goal = (p_ptr->depth + race->level) / 2 + 5;
+	goal = (player->depth + race->level) / 2 + 5;
 	minlvl = MIN(race->level - 10, (race->level * 3) / 4);
 	maxlvl = MAX(race->level + 10, (race->level * 5) / 4);
 
@@ -1456,7 +1456,7 @@ static monster_race *poly_race(monster_race *race)
 		if (new_race->level < minlvl || new_race->level > maxlvl) continue;
 
 		/* Avoid force-depth monsters, since it might cause a crash in project_m() */
-		if (rf_has(new_race->flags, RF_FORCE_DEPTH) && p_ptr->depth < new_race->level) continue;
+		if (rf_has(new_race->flags, RF_FORCE_DEPTH) && player->depth < new_race->level) continue;
 
 		return new_race;
 	}
@@ -1760,7 +1760,7 @@ static bool project_m_monster_attack(project_monster_handler_context_t *context,
 	}
 
 	/* Redraw (later) if needed */
-	if (p_ptr->health_who == m_ptr) p_ptr->redraw |= (PR_HEALTH);
+	if (player->health_who == m_ptr) player->redraw |= (PR_HEALTH);
 
 	/* Wake the monster up */
 	mon_clear_timed(m_ptr, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, FALSE);
@@ -1932,7 +1932,7 @@ static void project_m_apply_side_effects(project_monster_handler_context_t *cont
 
 		/* If sleep is caused by the player, base the time on the player's level. */
 		if (context->who == 0 && context->mon_timed[MON_TMD_SLEEP] > 0) {
-			context->mon_timed[MON_TMD_SLEEP] = 500 + p_ptr->lev * 10;
+			context->mon_timed[MON_TMD_SLEEP] = 500 + player->lev * 10;
 		}
 
 		for (i = 0; i < MON_TMD_MAX; i++) {
@@ -2120,9 +2120,9 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, int flg)
 		square_light_spot(cave, y, x);
 
 		/* Update monster recall window */
-		if (p_ptr->monster_race == m_ptr->race) {
+		if (player->monster_race == m_ptr->race) {
 			/* Window stuff */
-			p_ptr->redraw |= (PR_MONSTER);
+			player->redraw |= (PR_MONSTER);
 		}
 	}
 
@@ -2187,7 +2187,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ)
 	m_ptr = cave_monster(cave, who);
 
 	/* Player blind-ness */
-	blind = (p_ptr->timed[TMD_BLIND] ? TRUE : FALSE);
+	blind = (player->timed[TMD_BLIND] ? TRUE : FALSE);
 
 	/* Extract the "see-able-ness" */
 	seen = (!blind && m_ptr->ml);
@@ -2208,12 +2208,12 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ)
 	obvious = context.obvious;
 
 	/* Adjust damage for resistance, immunity or vulnerability, and apply it */
-	dam = adjust_dam(p_ptr, typ, dam, RANDOMISE, check_for_resist(p_ptr, typ, NULL, TRUE));
+	dam = adjust_dam(player, typ, dam, RANDOMISE, check_for_resist(player, typ, NULL, TRUE));
 	if (dam)
-		take_hit(p_ptr, dam, killer);
+		take_hit(player, dam, killer);
 
 	/* Disturb */
-	disturb(p_ptr, 1, 0);
+	disturb(player, 1, 0);
 
 	/* Return "Anything seen?" */
 	return (obvious);
@@ -2392,7 +2392,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 	bool drawn = FALSE;
 
 	/* Is the player blind? */
-	bool blind = (p_ptr->timed[TMD_BLIND] ? TRUE : FALSE);
+	bool blind = (player->timed[TMD_BLIND] ? TRUE : FALSE);
 
 	/* Number of grids in the "path" */
 	int num_path_grids = 0;
@@ -2414,7 +2414,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 	int *dam_at_dist = malloc((MAX_RANGE + 1) * sizeof(*dam_at_dist));
 
 	/* Flush any pending output */
-	handle_stuff(p_ptr);
+	handle_stuff(player);
 
 	/* No projection path - jump to target */
 	if (flg & (PROJECT_JUMP)) {
@@ -2426,7 +2426,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 
 	/* Start at player */
 	else if (who < 0)
-		source = loc(p_ptr->px, p_ptr->py);
+		source = loc(player->px, player->py);
 
 	/* Start at monster */
 	else if (who > 0)
@@ -2531,13 +2531,13 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 						print_rel(c, a, y, x);
 						move_cursor_relative(y, x);
 						Term_fresh();
-						if (p_ptr->redraw)
-							redraw_stuff(p_ptr);
+						if (player->redraw)
+							redraw_stuff(player);
 						Term_xtra(TERM_XTRA_DELAY, msec);
 						square_light_spot(cave, y, x);
 						Term_fresh();
-						if (p_ptr->redraw)
-							redraw_stuff(p_ptr);
+						if (player->redraw)
+							redraw_stuff(player);
 
 						/* Display "beam" grids */
 						if (flg & (PROJECT_BEAM)) {
@@ -2783,8 +2783,8 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 			if (i == num_grids) {
 				/* Flush each radius seperately */
 				Term_fresh();
-				if (p_ptr->redraw)
-					redraw_stuff(p_ptr);
+				if (player->redraw)
+					redraw_stuff(player);
 
 				/* Delay (efficiently) */
 				if (visual || drawn) {
@@ -2796,8 +2796,8 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 			else if (distance_to_grid[i + 1] > distance_to_grid[i]) {
 				/* Flush each radius seperately */
 				Term_fresh();
-				if (p_ptr->redraw)
-					redraw_stuff(p_ptr);
+				if (player->redraw)
+					redraw_stuff(player);
 
 				/* Delay (efficiently) */
 				if (visual || drawn) {
@@ -2825,8 +2825,8 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 
 			/* Flush the explosion */
 			Term_fresh();
-			if (p_ptr->redraw)
-				redraw_stuff(p_ptr);
+			if (player->redraw)
+				redraw_stuff(player);
 		}
 	}
 
@@ -2896,7 +2896,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 
 				/* Hack - auto-track */
 				if (m_ptr->ml)
-					health_track(p_ptr, m_ptr);
+					health_track(player, m_ptr);
 			}
 		}
 	}
@@ -2936,8 +2936,8 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 	}
 #endif
 	/* Update stuff if needed */
-	if (p_ptr->update)
-		update_stuff(p_ptr);
+	if (player->update)
+		update_stuff(player);
 
 	free(dam_at_dist);
 

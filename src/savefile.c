@@ -595,8 +595,8 @@ static bool try_load(ang_file *f, const struct blockinfo *loaders) {
 	}
 
 	/* XXX Reset cause of death */
-	if (p_ptr->chp >= 0)
-		my_strcpy(p_ptr->died_from, "(alive and well)", sizeof(p_ptr->died_from));
+	if (player->chp >= 0)
+		my_strcpy(player->died_from, "(alive and well)", sizeof(player->died_from));
 
 	return TRUE;
 }

@@ -70,7 +70,7 @@ typedef struct
  */
 static long total_points(void)
 {
-	return (p_ptr->max_exp + (100 * p_ptr->max_depth));
+	return (player->max_exp + (100 * player->max_depth));
 }
 
 
@@ -368,7 +368,7 @@ static void build_score(high_score *entry, const char *died_from, time_t *death_
 
 	WIPE(entry, high_score);
 
-	switch (p_ptr->psex) {
+	switch (player->psex) {
 		case SEX_MALE:   psex = 'm'; break;
 		case SEX_FEMALE: psex = 'f'; break;
 		case SEX_NEUTER:
@@ -382,7 +382,7 @@ static void build_score(high_score *entry, const char *died_from, time_t *death_
 	strnfmt(entry->pts, sizeof(entry->pts), "%9lu", (long)total_points());
 
 	/* Save the current gold */
-	strnfmt(entry->gold, sizeof(entry->gold), "%9lu", (long)p_ptr->au);
+	strnfmt(entry->gold, sizeof(entry->gold), "%9lu", (long)player->au);
 
 	/* Save the current turn */
 	strnfmt(entry->turns, sizeof(entry->turns), "%9lu", (long)turn);
@@ -399,14 +399,14 @@ static void build_score(high_score *entry, const char *died_from, time_t *death_
 	/* Save the player info XXX XXX XXX */
 	strnfmt(entry->uid, sizeof(entry->uid), "%7u", player_uid);
 	strnfmt(entry->sex, sizeof(entry->sex), "%c", psex);
-	strnfmt(entry->p_r, sizeof(entry->p_r), "%2d", p_ptr->race->ridx);
-	strnfmt(entry->p_c, sizeof(entry->p_c), "%2d", p_ptr->class->cidx);
+	strnfmt(entry->p_r, sizeof(entry->p_r), "%2d", player->race->ridx);
+	strnfmt(entry->p_c, sizeof(entry->p_c), "%2d", player->class->cidx);
 
 	/* Save the level and such */
-	strnfmt(entry->cur_lev, sizeof(entry->cur_lev), "%3d", p_ptr->lev);
-	strnfmt(entry->cur_dun, sizeof(entry->cur_dun), "%3d", p_ptr->depth);
-	strnfmt(entry->max_lev, sizeof(entry->max_lev), "%3d", p_ptr->max_lev);
-	strnfmt(entry->max_dun, sizeof(entry->max_dun), "%3d", p_ptr->max_depth);
+	strnfmt(entry->cur_lev, sizeof(entry->cur_lev), "%3d", player->lev);
+	strnfmt(entry->cur_dun, sizeof(entry->cur_dun), "%3d", player->depth);
+	strnfmt(entry->max_lev, sizeof(entry->max_lev), "%3d", player->max_lev);
+	strnfmt(entry->max_dun, sizeof(entry->max_dun), "%3d", player->max_depth);
 
 	/* No cause of death */
 	my_strcpy(entry->how, died_from, sizeof(entry->how));
@@ -434,21 +434,21 @@ void enter_score(time_t *death_time)
 	}
 
 	/* Wizard-mode pre-empts scoring */
-	if (p_ptr->noscore & (NOSCORE_WIZARD | NOSCORE_DEBUG))
+	if (player->noscore & (NOSCORE_WIZARD | NOSCORE_DEBUG))
 	{
 		msg("Score not registered for wizards.");
 		message_flush();
 	}
 
 	/* Hack -- Interupted */
-	else if (!p_ptr->total_winner && streq(p_ptr->died_from, "Interrupting"))
+	else if (!player->total_winner && streq(player->died_from, "Interrupting"))
 	{
 		msg("Score not registered due to interruption.");
 		message_flush();
 	}
 
 	/* Hack -- Quitter */
-	else if (!p_ptr->total_winner && streq(p_ptr->died_from, "Quitting"))
+	else if (!player->total_winner && streq(player->died_from, "Quitting"))
 	{
 		msg("Score not registered due to quitting.");
 		message_flush();
@@ -460,7 +460,7 @@ void enter_score(time_t *death_time)
 		high_score entry;
 		high_score scores[MAX_HISCORES];
 
-		build_score(&entry, p_ptr->died_from, death_time);
+		build_score(&entry, player->died_from, death_time);
 
 		highscore_read(scores, N_ELEMENTS(scores));
 		highscore_add(&entry, scores, N_ELEMENTS(scores));
@@ -487,7 +487,7 @@ void predict_score(void)
 	highscore_read(scores, N_ELEMENTS(scores));
 	build_score(&the_score, "nobody (yet!)", NULL);
 
-	if (p_ptr->is_dead)
+	if (player->is_dead)
 		j = highscore_where(&the_score, scores, N_ELEMENTS(scores));
 	else
 		j = highscore_add(&the_score, scores, N_ELEMENTS(scores));

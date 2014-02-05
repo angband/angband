@@ -414,8 +414,8 @@ void update_mon(struct monster *m_ptr, bool full)
 
 	/* Compute distance */
 	if (full) {
-		int py = p_ptr->py;
-		int px = p_ptr->px;
+		int py = player->py;
+		int px = player->px;
 
 		/* Distance components */
 		int dy = (py > fy) ? (py - fy) : (fy - py);
@@ -443,7 +443,7 @@ void update_mon(struct monster *m_ptr, bool full)
 	/* Nearby */
 	if (d <= MAX_SIGHT) {
 		/* Basic telepathy */
-		if (player_of_has(p_ptr, OF_TELEPATHY)) {
+		if (player_of_has(player, OF_TELEPATHY)) {
 			/* Empty mind, no telepathy */
 			if (rf_has(m_ptr->race->flags, RF_EMPTY_MIND))
 			{
@@ -473,9 +473,9 @@ void update_mon(struct monster *m_ptr, bool full)
 		}
 
 		/* Normal line of sight and player is not blind */
-		if (player_has_los_bold(fy, fx) && !p_ptr->timed[TMD_BLIND]) {
+		if (player_has_los_bold(fy, fx) && !player->timed[TMD_BLIND]) {
 			/* Use "infravision" */
-			if (d <= p_ptr->state.see_infra) {
+			if (d <= player->state.see_infra) {
 				/* Learn about warm/cold blood */
 				rf_on(l_ptr->flags, RF_COLD_BLOOD);
 
@@ -500,7 +500,7 @@ void update_mon(struct monster *m_ptr, bool full)
 				/* Handle "invisible" monsters */
 				if (rf_has(m_ptr->race->flags, RF_INVISIBLE)) {
 					/* See invisible */
-					if (player_of_has(p_ptr, OF_SEE_INVIS))
+					if (player_of_has(player, OF_SEE_INVIS))
 					{
 						/* Easy to see */
 						easy = flag = TRUE;
@@ -526,7 +526,7 @@ void update_mon(struct monster *m_ptr, bool full)
 	/* The monster is now visible */
 	if (flag) {
 		/* Learn about the monster's mind */
-		if (player_of_has(p_ptr, OF_TELEPATHY))
+		if (player_of_has(player, OF_TELEPATHY))
 			flags_set(l_ptr->flags, RF_SIZE, RF_EMPTY_MIND, RF_WEIRD_MIND,
 					RF_SMART, RF_STUPID, FLAG_END);
 
@@ -539,15 +539,15 @@ void update_mon(struct monster *m_ptr, bool full)
 			square_light_spot(cave, fy, fx);
 
 			/* Update health bar as needed */
-			if (p_ptr->health_who == m_ptr)
-				p_ptr->redraw |= (PR_HEALTH);
+			if (player->health_who == m_ptr)
+				player->redraw |= (PR_HEALTH);
 
 			/* Hack -- Count "fresh" sightings */
 			if (l_ptr->sights < MAX_SHORT)
 				l_ptr->sights++;
 
 			/* Window stuff */
-			p_ptr->redraw |= PR_MONLIST;
+			player->redraw |= PR_MONLIST;
 		}
 	}
 
@@ -566,10 +566,10 @@ void update_mon(struct monster *m_ptr, bool full)
 				square_light_spot(cave, fy, fx);
 
 				/* Update health bar as needed */
-				if (p_ptr->health_who == m_ptr) p_ptr->redraw |= (PR_HEALTH);
+				if (player->health_who == m_ptr) player->redraw |= (PR_HEALTH);
 
 				/* Window stuff */
-				p_ptr->redraw |= PR_MONLIST;
+				player->redraw |= PR_MONLIST;
 			}
 		}
 	}
@@ -583,10 +583,10 @@ void update_mon(struct monster *m_ptr, bool full)
 			m_ptr->mflag |= (MFLAG_VIEW);
 
 			/* Disturb on appearance */
-			if (OPT(disturb_near)) disturb(p_ptr, 1, 0);
+			if (OPT(disturb_near)) disturb(player, 1, 0);
 
 			/* Re-draw monster window */
-			p_ptr->redraw |= PR_MONLIST;
+			player->redraw |= PR_MONLIST;
 		}
 	}
 
@@ -598,10 +598,10 @@ void update_mon(struct monster *m_ptr, bool full)
 			m_ptr->mflag &= ~(MFLAG_VIEW);
 
 			/* Disturb on disappearance */
-			if (OPT(disturb_near) && !is_mimicking(m_ptr)) disturb(p_ptr, 1, 0);
+			if (OPT(disturb_near) && !is_mimicking(m_ptr)) disturb(player, 1, 0);
 
 			/* Re-draw monster list window */
-			p_ptr->redraw |= PR_MONLIST;
+			player->redraw |= PR_MONLIST;
 		}
 	}
 }
@@ -723,32 +723,32 @@ void monster_swap(int y1, int x1, int y2, int x2)
 
 		/* Radiate light? */
 		if (rf_has(m_ptr->race->flags, RF_HAS_LIGHT))
-			p_ptr->update |= PU_UPDATE_VIEW;
+			player->update |= PU_UPDATE_VIEW;
 
 		/* Redraw monster list */
-		p_ptr->redraw |= (PR_MONLIST);
+		player->redraw |= (PR_MONLIST);
 	}
 
 	/* Player 1 */
 	else if (m1 < 0) {
 		/* Move player */
-		p_ptr->py = y2;
-		p_ptr->px = x2;
+		player->py = y2;
+		player->px = x2;
 
 		/* Update the trap detection status */
-		p_ptr->redraw |= (PR_DTRAP);
+		player->redraw |= (PR_DTRAP);
 
 		/* Update the panel */
-		p_ptr->update |= (PU_PANEL);
+		player->update |= (PU_PANEL);
 
 		/* Update the visuals (and monster distances) */
-		p_ptr->update |= (PU_UPDATE_VIEW | PU_DISTANCE);
+		player->update |= (PU_UPDATE_VIEW | PU_DISTANCE);
 
 		/* Update the flow */
-		p_ptr->update |= (PU_UPDATE_FLOW);
+		player->update |= (PU_UPDATE_FLOW);
 
 		/* Redraw monster list */
-		p_ptr->redraw |= (PR_MONLIST);
+		player->redraw |= (PR_MONLIST);
 	}
 
 	/* Monster 2 */
@@ -764,32 +764,32 @@ void monster_swap(int y1, int x1, int y2, int x2)
 
 		/* Radiate light? */
 		if (rf_has(m_ptr->race->flags, RF_HAS_LIGHT))
-			p_ptr->update |= PU_UPDATE_VIEW;
+			player->update |= PU_UPDATE_VIEW;
 
 		/* Redraw monster list */
-		p_ptr->redraw |= (PR_MONLIST);
+		player->redraw |= (PR_MONLIST);
 	}
 
 	/* Player 2 */
 	else if (m2 < 0) {
 		/* Move player */
-		p_ptr->py = y1;
-		p_ptr->px = x1;
+		player->py = y1;
+		player->px = x1;
 
 		/* Update the trap detection status */
-		p_ptr->redraw |= (PR_DTRAP);
+		player->redraw |= (PR_DTRAP);
 
 		/* Update the panel */
-		p_ptr->update |= (PU_PANEL);
+		player->update |= (PU_PANEL);
 
 		/* Update the visuals (and monster distances) */
-		p_ptr->update |= (PU_UPDATE_VIEW | PU_DISTANCE);
+		player->update |= (PU_UPDATE_VIEW | PU_DISTANCE);
 
 		/* Update the flow */
-		p_ptr->update |= (PU_UPDATE_FLOW);
+		player->update |= (PU_UPDATE_FLOW);
 
 		/* Redraw monster list */
-		p_ptr->redraw |= (PR_MONLIST);
+		player->redraw |= (PR_MONLIST);
 	}
 
 	/* Redraw */
@@ -904,7 +904,7 @@ int summon_specific(int y1, int x1, int lev, int type, int delay)
 	get_mon_num_prep(summon_specific_okay);
 
 	/* Pick a monster, using the level calculation */
-	race = get_mon_num((p_ptr->depth + lev) / 2 + 5);
+	race = get_mon_num((player->depth + lev) / 2 + 5);
 
 	/* Prepare allocation table */
 	get_mon_num_prep(NULL);
@@ -923,7 +923,7 @@ int summon_specific(int y1, int x1, int lev, int type, int delay)
 	 * including slowing down faster monsters for one turn */
 	if (delay) {
 		m_ptr->energy = 0;
-		if (m_ptr->race->speed > p_ptr->state.speed)
+		if (m_ptr->race->speed > player->state.speed)
 			mon_inc_timed(m_ptr, MON_TMD_SLOW, 1,
 				MON_TMD_FLG_NOMESSAGE, FALSE);
 	}
@@ -1017,8 +1017,8 @@ void become_aware(struct monster *m_ptr)
 		}
 		
 		/* Update monster and item lists */
-		p_ptr->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
-		p_ptr->redraw |= (PR_MONLIST | PR_ITEMLIST);
+		player->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
+		player->redraw |= (PR_MONLIST | PR_ITEMLIST);
 	}
 }
 

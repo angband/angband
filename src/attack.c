@@ -85,7 +85,7 @@ bool test_hit(int chance, int ac, int vis) {
  * Factor in item weight, total plusses, and player level.
  */
 static int critical_shot(int weight, int plus, int dam, u32b *msg_type) {
-	int chance = weight + (p_ptr->state.to_h + plus) * 4 + p_ptr->lev * 2;
+	int chance = weight + (player->state.to_h + plus) * 4 + player->lev * 2;
 	int power = weight + randint1(500);
 
 	if (randint1(5000) > chance) {
@@ -113,7 +113,7 @@ static int critical_shot(int weight, int plus, int dam, u32b *msg_type) {
  * Factor in weapon weight, total plusses, player level.
  */
 static int critical_norm(int weight, int plus, int dam, u32b *msg_type) {
-	int chance = weight + (p_ptr->state.to_h + plus) * 5 + p_ptr->lev * 3;
+	int chance = weight + (player->state.to_h + plus) * 5 + player->lev * 3;
 	int power = weight + randint1(650);
 
 	if (randint1(5000) > chance) {
@@ -161,8 +161,8 @@ static const struct {
  */
 int py_attack_hit_chance(const object_type *weapon)
 {
-	int bonus = p_ptr->state.to_h + weapon->to_h;
-	int chance = p_ptr->state.skills[SKILL_TO_HIT_MELEE] + bonus * BTH_PLUS_ADJ;
+	int bonus = player->state.to_h + weapon->to_h;
+	int chance = player->state.skills[SKILL_TO_HIT_MELEE] + bonus * BTH_PLUS_ADJ;
 	return chance;
 }
 
@@ -178,7 +178,7 @@ static bool py_attack_real(int y, int x, bool *fear) {
 	bool stop = FALSE;
 
 	/* The weapon used */
-	object_type *o_ptr = &p_ptr->inventory[INVEN_WIELD];
+	object_type *o_ptr = &player->inventory[INVEN_WIELD];
 
 	/* Information about the attack */
 	int chance = py_attack_hit_chance(o_ptr);
@@ -197,10 +197,10 @@ static bool py_attack_real(int y, int x, bool *fear) {
 	if (m_ptr->ml) monster_race_track(m_ptr->race);
 
 	/* Track a new monster */
-	if (m_ptr->ml) health_track(p_ptr, m_ptr);
+	if (m_ptr->ml) health_track(player, m_ptr);
 
 	/* Handle player fear (only for invisible monsters) */
-	if (player_of_has(p_ptr, OF_AFRAID)) {
+	if (player_of_has(player, OF_AFRAID)) {
 		msgt(MSG_AFRAID, "You are too afraid to attack %s!", m_name);
 		return FALSE;
 	}
@@ -226,7 +226,7 @@ static bool py_attack_real(int y, int x, bool *fear) {
 		/* Get the best attack from all slays or
 		 * brands on all non-launcher equipment */
 		for (i = INVEN_LEFT; i < INVEN_TOTAL; i++) {
-			struct object *obj = &p_ptr->inventory[i];
+			struct object *obj = &player->inventory[i];
 			if (obj->kind)
 				improve_attack_modifier(obj, m_ptr, &best_s_ptr, TRUE, FALSE);
 		}
@@ -244,9 +244,9 @@ static bool py_attack_real(int y, int x, bool *fear) {
 		/* Learn by use for the weapon */
 		object_notice_attack_plusses(o_ptr);
 
-		if (player_of_has(p_ptr, OF_IMPACT) && dmg > 50) {
+		if (player_of_has(player, OF_IMPACT) && dmg > 50) {
 			do_quake = TRUE;
-			wieldeds_notice_flag(p_ptr, OF_IMPACT);
+			wieldeds_notice_flag(player, OF_IMPACT);
 		}
 	}
 
@@ -254,7 +254,7 @@ static bool py_attack_real(int y, int x, bool *fear) {
 	wieldeds_notice_on_attack();
 
 	/* Apply the player damage bonuses */
-	dmg += p_ptr->state.to_d;
+	dmg += player->state.to_d;
 
 	/* No negative damage; change verb if no damage done */
 	if (dmg <= 0) {
@@ -280,12 +280,12 @@ static bool py_attack_real(int y, int x, bool *fear) {
 	}
 
 	/* Confusion attack */
-	if (p_ptr->confusing) {
-		p_ptr->confusing = FALSE;
+	if (player->confusing) {
+		player->confusing = FALSE;
 		msg("Your hands stop glowing.");
 
 		mon_inc_timed(m_ptr, MON_TMD_CONF,
-				(10 + randint0(p_ptr->lev) / 10), MON_TMD_FLG_NOTIFY, FALSE);
+				(10 + randint0(player->lev) / 10), MON_TMD_FLG_NOTIFY, FALSE);
 	}
 
 	/* Damage, check for fear and death */
@@ -296,7 +296,7 @@ static bool py_attack_real(int y, int x, bool *fear) {
 
 	/* Apply earthquake brand */
 	if (do_quake) {
-		earthquake(p_ptr->py, p_ptr->px, 10);
+		earthquake(player->py, player->px, 10);
 		if (cave->m_idx[y][x] == 0) stop = TRUE;
 	}
 
@@ -313,23 +313,23 @@ static bool py_attack_real(int y, int x, bool *fear) {
  * monsters getting double moves.
  */
 void py_attack(int y, int x) {
-	int blow_energy = 10000 / p_ptr->state.num_blows;
+	int blow_energy = 10000 / player->state.num_blows;
 	int blows = 0;
 	bool fear = FALSE;
 	monster_type *m_ptr = square_monster(cave, y, x);
 	
 	/* disturb the player */
-	disturb(p_ptr, 0,0);
+	disturb(player, 0,0);
 
 	/* Initialize the energy used */
-	p_ptr->energy_use = 0;
+	player->energy_use = 0;
 
 	/* Attack until energy runs out or enemy dies. We limit energy use to 100
 	 * to avoid giving monsters a possible double move. */
-	while (p_ptr->energy >= blow_energy * (blows + 1)) {
+	while (player->energy >= blow_energy * (blows + 1)) {
 		bool stop = py_attack_real(y, x, &fear);
-		p_ptr->energy_use += blow_energy;
-		if (stop || p_ptr->energy_use + blow_energy > 100) break;
+		player->energy_use += blow_energy;
+		if (stop || player->energy_use + blow_energy > 100) break;
 		blows++;
 	}
 	
@@ -381,8 +381,8 @@ static void ranged_helper(int item, int dir, int range, int shots, ranged_attack
 	int msec = op_ptr->delay_factor;
 
 	/* Start at the player */
-	int x = p_ptr->px;
-	int y = p_ptr->py;
+	int x = player->px;
+	int y = player->py;
 
 	/* Predict the "target" location */
 	s16b ty = y + 99 * ddy[dir];
@@ -414,17 +414,17 @@ static void ranged_helper(int item, int dir, int range, int shots, ranged_attack
 	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_FULL | ODESC_SINGULAR);
 
 	/* Actually "fire" the object -- Take a partial turn */
-	p_ptr->energy_use = (100 / shots);
+	player->energy_use = (100 / shots);
 
 	/* Calculate the path */
 	path_n = project_path(path_g, range, y, x, ty, tx, 0);
 
 	/* Hack -- Handle stuff */
-	handle_stuff(p_ptr);
+	handle_stuff(player);
 
 	/* Start at the player */
-	x = p_ptr->px;
-	y = p_ptr->py;
+	x = player->px;
+	y = player->py;
 
 	/* Project along the path */
 	for (i = 0; i < path_n; ++i) {
@@ -444,13 +444,13 @@ static void ranged_helper(int item, int dir, int range, int shots, ranged_attack
 			move_cursor_relative(y, x);
 
 			Term_fresh();
-			if (p_ptr->redraw) redraw_stuff(p_ptr);
+			if (player->redraw) redraw_stuff(player);
 
 			Term_xtra(TERM_XTRA_DELAY, msec);
 			square_light_spot(cave, y, x);
 
 			Term_fresh();
-			if (p_ptr->redraw) redraw_stuff(p_ptr);
+			if (player->redraw) redraw_stuff(player);
 		} else {
 			/* Delay anyway for consistency */
 			Term_xtra(TERM_XTRA_DELAY, msec);
@@ -514,7 +514,7 @@ static void ranged_helper(int item, int dir, int range, int shots, ranged_attack
 
 				/* Track this monster */
 				if (m_ptr->ml) monster_race_track(m_ptr->race);
-				if (m_ptr->ml) health_track(p_ptr, m_ptr);
+				if (m_ptr->ml) health_track(player, m_ptr);
 			}
 		
 			/* Hit the monster, check for death */
@@ -557,15 +557,15 @@ static void ranged_helper(int item, int dir, int range, int shots, ranged_attack
 static struct attack_result make_ranged_shot(object_type *o_ptr, int y, int x) {
 	struct attack_result result = {FALSE, 0, 0, "hits"};
 
-	object_type *j_ptr = &p_ptr->inventory[INVEN_BOW];
+	object_type *j_ptr = &player->inventory[INVEN_BOW];
 
 	monster_type *m_ptr = square_monster(cave, y, x);
 	
-	int bonus = p_ptr->state.to_h + o_ptr->to_h + j_ptr->to_h;
-	int chance = p_ptr->state.skills[SKILL_TO_HIT_BOW] + bonus * BTH_PLUS_ADJ;
-	int chance2 = chance - distance(p_ptr->py, p_ptr->px, y, x);
+	int bonus = player->state.to_h + o_ptr->to_h + j_ptr->to_h;
+	int chance = player->state.skills[SKILL_TO_HIT_BOW] + bonus * BTH_PLUS_ADJ;
+	int chance2 = chance - distance(player->py, player->px, y, x);
 
-	int multiplier = p_ptr->state.ammo_mult;
+	int multiplier = player->state.ammo_mult;
 	const struct slay *best_s_ptr = NULL;
 
 	/* Did we hit it (penalize distance travelled) */
@@ -588,7 +588,7 @@ static struct attack_result make_ranged_shot(object_type *o_ptr, int y, int x) {
 	result.dmg *= multiplier;
 	result.dmg = critical_shot(o_ptr->weight, o_ptr->to_h, result.dmg, &result.msg_type);
 
-	object_notice_attack_plusses(&p_ptr->inventory[INVEN_BOW]);
+	object_notice_attack_plusses(&player->inventory[INVEN_BOW]);
 
 	return result;
 }
@@ -602,9 +602,9 @@ static struct attack_result make_ranged_throw(object_type *o_ptr, int y, int x) 
 
 	monster_type *m_ptr = square_monster(cave, y, x);
 	
-	int bonus = p_ptr->state.to_h + o_ptr->to_h;
-	int chance = p_ptr->state.skills[SKILL_TO_HIT_THROW] + bonus * BTH_PLUS_ADJ;
-	int chance2 = chance - distance(p_ptr->py, p_ptr->px, y, x);
+	int bonus = player->state.to_h + o_ptr->to_h;
+	int chance = player->state.skills[SKILL_TO_HIT_THROW] + bonus * BTH_PLUS_ADJ;
+	int chance2 = chance - distance(player->py, player->px, y, x);
 
 	int multiplier = 1;
 	const struct slay *best_s_ptr = NULL;
@@ -638,12 +638,12 @@ static struct attack_result make_ranged_throw(object_type *o_ptr, int y, int x) 
 void do_cmd_fire(struct command *cmd) {
 	int item;
 	int dir = cmd_get_arg_direction(cmd, 1);
-	int range = MIN(6 + 2 * p_ptr->state.ammo_mult, MAX_RANGE);
-	int shots = p_ptr->state.num_shots;
+	int range = MIN(6 + 2 * player->state.ammo_mult, MAX_RANGE);
+	int shots = player->state.num_shots;
 
 	ranged_attack attack = make_ranged_shot;
 
-	object_type *j_ptr = &p_ptr->inventory[INVEN_BOW];
+	object_type *j_ptr = &player->inventory[INVEN_BOW];
 	object_type *o_ptr;
 
 	if (!cmd_get_arg_item(cmd, 0, &item))
@@ -652,7 +652,7 @@ void do_cmd_fire(struct command *cmd) {
 	o_ptr = object_from_item_idx(item);
 
 	/* Require a usable launcher */
-	if (!j_ptr->tval || !p_ptr->state.ammo_tval) {
+	if (!j_ptr->tval || !player->state.ammo_tval) {
 		msg("You have nothing to fire with.");
 		return;
 	}
@@ -664,7 +664,7 @@ void do_cmd_fire(struct command *cmd) {
 	}
 
 	/* Check the ammo can be used with the launcher */
-	if (o_ptr->tval != p_ptr->state.ammo_tval) {
+	if (o_ptr->tval != player->state.ammo_tval) {
 		msg("That ammo cannot be fired by your current weapon.");
 		return;
 	}
@@ -680,7 +680,7 @@ void do_cmd_throw(struct command *cmd) {
 	int item;
 	int dir = cmd_get_arg_direction(cmd, 1);
 	int shots = 1;
-	int str = adj_str_blow[p_ptr->state.stat_ind[A_STR]];
+	int str = adj_str_blow[player->state.stat_ind[A_STR]];
 	ranged_attack attack = make_ranged_throw;
 
 	int weight;
@@ -744,14 +744,14 @@ void textui_cmd_fire_at_nearest(void) {
 	int i, dir = 5, item = -1;
 
 	/* Require a usable launcher */
-	if (!p_ptr->inventory[INVEN_BOW].tval || !p_ptr->state.ammo_tval) {
+	if (!player->inventory[INVEN_BOW].tval || !player->state.ammo_tval) {
 		msg("You have nothing to fire with.");
 		return;
 	}
 
 	/* Find first eligible ammo in the quiver */
 	for (i = QUIVER_START; i < QUIVER_END; i++) {
-		if (p_ptr->inventory[i].tval != p_ptr->state.ammo_tval) continue;
+		if (player->inventory[i].tval != player->state.ammo_tval) continue;
 		item = i;
 		break;
 	}

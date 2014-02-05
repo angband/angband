@@ -208,8 +208,8 @@ int count_chests(int *y, int *x, enum chest_query check_type)
 	for (d = 0; d < 9; d++)
 	{
 		/* Extract adjacent (legal) location */
-		int yy = p_ptr->py + ddy_ddd[d];
-		int xx = p_ptr->px + ddx_ddd[d];
+		int yy = player->py + ddy_ddd[d];
+		int xx = player->px + ddx_ddd[d];
 
 		/* No (visible) chest is there */
 		if ((o_idx = chest_check(yy, xx, check_type)) == 0) continue;
@@ -324,7 +324,7 @@ static void chest_trap(int y, int x, s16b o_idx)
 	if (trap & (CHEST_LOSE_STR))
 	{
 		msg("A small needle has pricked you!");
-		take_hit(p_ptr, damroll(1, 4), "a poison needle");
+		take_hit(player, damroll(1, 4), "a poison needle");
 		(void)do_dec_stat(A_STR, FALSE);
 	}
 
@@ -332,7 +332,7 @@ static void chest_trap(int y, int x, s16b o_idx)
 	if (trap & (CHEST_LOSE_CON))
 	{
 		msg("A small needle has pricked you!");
-		take_hit(p_ptr, damroll(1, 4), "a poison needle");
+		take_hit(player, damroll(1, 4), "a poison needle");
 		(void)do_dec_stat(A_CON, FALSE);
 	}
 
@@ -340,14 +340,14 @@ static void chest_trap(int y, int x, s16b o_idx)
 	if (trap & (CHEST_POISON))
 	{
 		msg("A puff of green gas surrounds you!");
-		(void)player_inc_timed(p_ptr, TMD_POISONED, 10 + randint1(20), TRUE, TRUE);
+		(void)player_inc_timed(player, TMD_POISONED, 10 + randint1(20), TRUE, TRUE);
 	}
 
 	/* Paralyze */
 	if (trap & (CHEST_PARALYZE))
 	{
 		msg("A puff of yellow gas surrounds you!");
-		(void)player_inc_timed(p_ptr, TMD_PARALYZED, 10 + randint1(20), TRUE, TRUE);
+		(void)player_inc_timed(player, TMD_PARALYZED, 10 + randint1(20), TRUE, TRUE);
 	}
 
 	/* Summon monsters */
@@ -358,7 +358,7 @@ static void chest_trap(int y, int x, s16b o_idx)
 		sound(MSG_SUM_MONSTER);
 		for (i = 0; i < num; i++)
 		{
-			(void)summon_specific(y, x, p_ptr->depth, 0, 1);
+			(void)summon_specific(y, x, player->depth, 0, 1);
 		}
 	}
 
@@ -368,7 +368,7 @@ static void chest_trap(int y, int x, s16b o_idx)
 		msg("There is a sudden explosion!");
 		msg("Everything inside the chest is destroyed!");
 		o_ptr->pval[DEFAULT_PVAL] = 0;
-		take_hit(p_ptr, damroll(5, 8), "an exploding chest");
+		take_hit(player, damroll(5, 8), "an exploding chest");
 	}
 }
 
@@ -398,11 +398,11 @@ bool do_cmd_open_chest(int y, int x, s16b o_idx)
 		flag = FALSE;
 
 		/* Get the "disarm" factor */
-		i = p_ptr->state.skills[SKILL_DISARM];
+		i = player->state.skills[SKILL_DISARM];
 
 		/* Penalize some conditions */
-		if (p_ptr->timed[TMD_BLIND] || no_light()) i = i / 10;
-		if (p_ptr->timed[TMD_CONFUSED] || p_ptr->timed[TMD_IMAGE]) i = i / 10;
+		if (player->timed[TMD_BLIND] || no_light()) i = i / 10;
+		if (player->timed[TMD_CONFUSED] || player->timed[TMD_IMAGE]) i = i / 10;
 
 		/* Extract the difficulty */
 		j = i - o_ptr->pval[DEFAULT_PVAL];
@@ -414,7 +414,7 @@ bool do_cmd_open_chest(int y, int x, s16b o_idx)
 		if (randint0(100) < j)
 		{
 			msgt(MSG_LOCKPICK, "You have picked the lock.");
-			player_exp_gain(p_ptr, 1);
+			player_exp_gain(player, 1);
 			flag = TRUE;
 		}
 
@@ -438,7 +438,7 @@ bool do_cmd_open_chest(int y, int x, s16b o_idx)
 		chest_death(y, x, o_idx);
 
 		/* Squelch chest if autosquelch calls for it */
-		p_ptr->notice |= PN_SQUELCH;
+		player->notice |= PN_SQUELCH;
 
 	}
 
@@ -478,11 +478,11 @@ bool do_cmd_disarm_chest(int y, int x, s16b o_idx)
 
 
 	/* Get the "disarm" factor */
-	i = p_ptr->state.skills[SKILL_DISARM];
+	i = player->state.skills[SKILL_DISARM];
 
 	/* Penalize some conditions */
-	if (p_ptr->timed[TMD_BLIND] || no_light()) i = i / 10;
-	if (p_ptr->timed[TMD_CONFUSED] || p_ptr->timed[TMD_IMAGE]) i = i / 10;
+	if (player->timed[TMD_BLIND] || no_light()) i = i / 10;
+	if (player->timed[TMD_CONFUSED] || player->timed[TMD_IMAGE]) i = i / 10;
 
 	/* Extract the difficulty */
 	j = i - o_ptr->pval[DEFAULT_PVAL];
@@ -506,7 +506,7 @@ bool do_cmd_disarm_chest(int y, int x, s16b o_idx)
 	else if (randint0(100) < j)
 	{
 		msgt(MSG_DISARM, "You have disarmed the chest.");
-		player_exp_gain(p_ptr, o_ptr->pval[DEFAULT_PVAL]);
+		player_exp_gain(player, o_ptr->pval[DEFAULT_PVAL]);
 		o_ptr->pval[DEFAULT_PVAL] = (0 - o_ptr->pval[DEFAULT_PVAL]);
 	}
 

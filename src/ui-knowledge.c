@@ -559,7 +559,7 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 		menu_refresh(inactive_menu, FALSE);
 		menu_refresh(active_menu, FALSE);
 
-		handle_stuff(p_ptr);
+		handle_stuff(player);
 
 		if (tile_picker) 
 		{
@@ -1269,7 +1269,7 @@ static void mon_lore(int oid)
 
 	/* Update the monster recall window */
 	monster_race_track(r_ptr);
-	handle_stuff(p_ptr);
+	handle_stuff(player);
 
 	tb = textblock_new();
 	lore_description(tb, r_ptr, l_ptr, FALSE);
@@ -1430,8 +1430,8 @@ static object_type *find_artifact(struct artifact *artifact)
 
 	for (i = 0; i < INVEN_TOTAL; i++)
 	{
-		if (p_ptr->inventory[i].artifact == artifact)
-			return &p_ptr->inventory[i];
+		if (player->inventory[i].artifact == artifact)
+			return &player->inventory[i];
 	}
 
 	for (s = stores; s; s = s->next)
@@ -1472,7 +1472,7 @@ static void desc_art_fake(int a_idx)
 	}
 
 	/* Hack -- Handle stuff */
-	handle_stuff(p_ptr);
+	handle_stuff(player);
 
 	tb = object_info(o_ptr, OINFO_NONE);
 	object_desc(header, sizeof(header), o_ptr,
@@ -1515,7 +1515,7 @@ static bool artifact_is_known(int a_idx)
 	if (!a_info[a_idx].name)
 		return FALSE;
 
-	if (p_ptr->wizard)
+	if (player->wizard)
 		return TRUE;
 
 	if (!a_info[a_idx].created)
@@ -1769,7 +1769,7 @@ static void desc_obj_fake(int k_idx)
 
 	/* Update the object recall window */
 	track_object_kind(kind);
-	handle_stuff(p_ptr);
+	handle_stuff(player);
 
 	/* Wipe the object */
 	object_wipe(o_ptr);
@@ -1784,7 +1784,7 @@ static void desc_obj_fake(int k_idx)
 	if (!kind->flavor) object_notice_everything(o_ptr);
 
 	/* Hack -- Handle stuff */
-	handle_stuff(p_ptr);
+	handle_stuff(player);
 
 	tb = object_info(o_ptr, OINFO_NONE);
 	object_desc(header, sizeof(header), o_ptr,
@@ -1932,8 +1932,8 @@ static void o_xtra_act(struct keypress ch, int oid)
 			add_autoinscription(oid, note_text);
 
 			/* Notice stuff (later) */
-			p_ptr->notice |= (PN_AUTOINSCRIBE);
-			p_ptr->redraw |= (PR_INVEN | PR_EQUIP);
+			player->notice |= (PN_AUTOINSCRIBE);
+			player->redraw |= (PR_INVEN | PR_EQUIP);
 		}
 
 		/* Reload the screen */

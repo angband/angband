@@ -545,13 +545,13 @@ static const char *process_pref_file_expr(char **sp, char *fp)
 			else if (streq(b+1, "GRAF"))
 				v = ANGBAND_GRAF;
 			else if (streq(b+1, "RACE"))
-				v = p_ptr->race->name;
+				v = player->race->name;
 			else if (streq(b+1, "CLASS"))
-				v = p_ptr->class->name;
+				v = player->class->name;
 			else if (streq(b+1, "PLAYER"))
-				v = player_safe_name(p_ptr, TRUE);
+				v = player_safe_name(player, TRUE);
 			else if (streq(b+1, "GENDER"))
-				v = p_ptr->sex->title;
+				v = player->sex->title;
 		}
 
 		/* Constant */

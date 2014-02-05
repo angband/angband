@@ -66,7 +66,7 @@ static void spell_menu_display(menu_type *m, int oid, bool cursor,
 {
 	struct spell_menu_data *d = menu_priv(m);
 	int spell = d->spells[oid];
-	const magic_type *s_ptr = &p_ptr->class->spells.info[spell];
+	const magic_type *s_ptr = &player->class->spells.info[spell];
 
 	char help[30];
 	char out[80];
@@ -78,20 +78,20 @@ static void spell_menu_display(menu_type *m, int oid, bool cursor,
 	if (s_ptr->slevel >= 99) {
 		illegible = "(illegible)";
 		attr = TERM_L_DARK;
-	} else if (p_ptr->spell_flags[spell] & PY_SPELL_FORGOTTEN) {
+	} else if (player->spell_flags[spell] & PY_SPELL_FORGOTTEN) {
 		comment = " forgotten";
 		attr = TERM_YELLOW;
-	} else if (p_ptr->spell_flags[spell] & PY_SPELL_LEARNED) {
-		if (p_ptr->spell_flags[spell] & PY_SPELL_WORKED) {
+	} else if (player->spell_flags[spell] & PY_SPELL_LEARNED) {
+		if (player->spell_flags[spell] & PY_SPELL_WORKED) {
 			/* Get extra info */
-			get_spell_info(p_ptr->class->spell_book, spell, help, sizeof(help));
+			get_spell_info(player->class->spell_book, spell, help, sizeof(help));
 			comment = help;
 			attr = TERM_WHITE;
 		} else {
 			comment = " untried";
 			attr = TERM_L_GREEN;
 		}
-	} else if (s_ptr->slevel <= p_ptr->lev) {
+	} else if (s_ptr->slevel <= player->lev) {
 		comment = " unknown";
 		attr = TERM_L_BLUE;
 	} else {
@@ -101,7 +101,7 @@ static void spell_menu_display(menu_type *m, int oid, bool cursor,
 
 	/* Dump the spell --(-- */
 	strnfmt(out, sizeof(out), "%-30s%2d %4d %3d%%%s",
-			get_spell_name(p_ptr->class->spell_book, spell),
+			get_spell_name(player->class->spell_book, spell),
 			s_ptr->slevel, s_ptr->smana, spell_chance(spell), comment);
 	c_prt(attr, illegible ? illegible : out, row, col);
 }
@@ -142,7 +142,7 @@ static void spell_menu_browser(int oid, void *data, const region *loc)
 		text_out_pad = 1;
 
 		Term_gotoxy(loc->col, loc->row + loc->page_rows);
-		text_out("\n%s\n", s_info[(p_ptr->class->spell_book == TV_MAGIC_BOOK) ? spell : spell + PY_MAX_SPELLS].text);
+		text_out("\n%s\n", s_info[(player->class->spell_book == TV_MAGIC_BOOK) ? spell : spell + PY_MAX_SPELLS].text);
 
 		/* XXX */
 		text_out_pad = 0;
@@ -256,7 +256,7 @@ int get_spell(const object_type *o_ptr, const char *verb,
 		bool (*spell_test)(int spell))
 {
 	menu_type *m;
-	const char *noun = (p_ptr->class->spell_book == TV_MAGIC_BOOK ?
+	const char *noun = (player->class->spell_book == TV_MAGIC_BOOK ?
 			"spell" : "prayer");
 
 	m = spell_menu_new(o_ptr, spell_test);
@@ -275,7 +275,7 @@ int get_spell(const object_type *o_ptr, const char *verb,
 void textui_book_browse(const object_type *o_ptr)
 {
 	menu_type *m;
-	const char *noun = (p_ptr->class->spell_book == TV_MAGIC_BOOK ?
+	const char *noun = (player->class->spell_book == TV_MAGIC_BOOK ?
 			"spell" : "prayer");
 
 	m = spell_menu_new(o_ptr, spell_okay_to_browse);
@@ -301,7 +301,7 @@ void textui_spell_browse(void)
 
 	/* Track the object kind */
 	track_object(item);
-	handle_stuff(p_ptr);
+	handle_stuff(player);
 
 	textui_book_browse(object_from_item_idx(item));
 }
@@ -319,7 +319,7 @@ void textui_obj_study(void)
 		return;
 
 	track_object(item);
-	handle_stuff(p_ptr);
+	handle_stuff(player);
 
 	if (player_has(PF_CHOOSE_SPELLS)) {
 		int spell = get_spell(object_from_item_idx(item),
@@ -342,7 +342,7 @@ void textui_obj_cast(void)
 	int item;
 	int spell;
 
-	const char *verb = ((p_ptr->class->spell_book == TV_MAGIC_BOOK) ? "cast" : "recite");
+	const char *verb = ((player->class->spell_book == TV_MAGIC_BOOK) ? "cast" : "recite");
 
 	if (!get_item(&item, "Cast from which book? ",
 			"You have no books that you can read.",
@@ -366,7 +366,7 @@ int textui_obj_cast_ret(void)
 	int item;
 	int spell;
 
-	const char *verb = ((p_ptr->class->spell_book == TV_MAGIC_BOOK) ? "cast" : "recite");
+	const char *verb = ((player->class->spell_book == TV_MAGIC_BOOK) ? "cast" : "recite");
 
 	if (!get_item(&item, "Cast from which book? ",
 			"You have no books that you can read.",

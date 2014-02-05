@@ -119,10 +119,10 @@ static void handle_signal_simple(int sig)
 
 
 	/* Terminate dead characters */
-	if (p_ptr->is_dead)
+	if (player->is_dead)
 	{
 		/* Mark the savefile */
-		my_strcpy(p_ptr->died_from, "Abortion", sizeof(p_ptr->died_from));
+		my_strcpy(player->died_from, "Abortion", sizeof(player->died_from));
 
 		close_game();
 
@@ -134,16 +134,16 @@ static void handle_signal_simple(int sig)
 	else if (signal_count >= 5)
 	{
 		/* Cause of "death" */
-		my_strcpy(p_ptr->died_from, "Interrupting", sizeof(p_ptr->died_from));
+		my_strcpy(player->died_from, "Interrupting", sizeof(player->died_from));
 
 		/* Commit suicide */
-		p_ptr->is_dead = TRUE;
+		player->is_dead = TRUE;
 
 		/* Stop playing */
-		p_ptr->playing = FALSE;
+		player->playing = FALSE;
 
 		/* Leaving */
-		p_ptr->leaving = TRUE;
+		player->leaving = TRUE;
 
 		/* Close stuff */
 		close_game();
@@ -210,10 +210,10 @@ static void handle_signal_abort(int sig)
 	Term_fresh();
 
 	/* Panic Save */
-	p_ptr->panic_save = 1;
+	player->panic_save = 1;
 
 	/* Panic save */
-	my_strcpy(p_ptr->died_from, "(panic save)", sizeof(p_ptr->died_from));
+	my_strcpy(player->died_from, "(panic save)", sizeof(player->died_from));
 
 	/* Forbid suspend */
 	signals_ignore_tstp();

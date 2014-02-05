@@ -12,7 +12,7 @@ int setup_tests(void **state) {
 	r_info = r;
 	*state = m;
 
-	p_ptr = NULL;
+	player = NULL;
 	rand_fix(100);
 	return 0;
 }

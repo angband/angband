@@ -485,7 +485,7 @@ void cave_generate(struct cave *c, struct player *p) {
 		}
 
 		/* Place dungeon squares to trigger feeling (not in town) */
-		if (p_ptr->depth)
+		if (player->depth)
 			place_feeling(c);
 		
 		c->feeling = calc_obj_feeling(c) + calc_mon_feeling(c);

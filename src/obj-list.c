@@ -197,8 +197,8 @@ static void object_list_collect(object_list_t *list)
 				/* We found an empty slot, so add this object here. */
 				list->entries[entry_index].object = object;
 				list->entries[entry_index].count = 0;
-				list->entries[entry_index].dy = object->iy - p_ptr->py;
-				list->entries[entry_index].dx = object->ix - p_ptr->px;
+				list->entries[entry_index].dy = object->iy - player->py;
+				list->entries[entry_index].dx = object->ix - player->px;
 				entry = &list->entries[entry_index];
 				break;
 			}
@@ -219,12 +219,12 @@ static void object_list_collect(object_list_t *list)
 			entry->count = 1;
 
 		/* Store the distance to the object in the stack that is closest to the player. */
-		current_distance = (object->iy - p_ptr->py) * (object->iy - p_ptr->py) + (object->ix - p_ptr->px) * (object->ix - p_ptr->px);
+		current_distance = (object->iy - player->py) * (object->iy - player->py) + (object->ix - player->px) * (object->ix - player->px);
 		entry_distance = entry->dy * entry->dy + entry->dx * entry->dx;
 
 		if (current_distance < entry_distance) {
-			entry->dy = object->iy - p_ptr->py;
-			entry->dx = object->ix - p_ptr->px;
+			entry->dy = object->iy - player->py;
+			entry->dx = object->ix - player->px;
 		}
 	}
 

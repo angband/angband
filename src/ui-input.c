@@ -359,8 +359,8 @@ void bell(const char *reason)
 		message_add(reason, MSG_BELL);
 
 		/* Window stuff */
-		p_ptr->redraw |= (PR_MESSAGE);
-		redraw_stuff(p_ptr);
+		player->redraw |= (PR_MESSAGE);
+		redraw_stuff(player);
 	}
 
 	/* Flush the input (later!) */
@@ -470,11 +470,11 @@ static void msg_print_aux(u16b type, const char *msg)
 
 
 	/* Memorize the message (if legal) */
-	if (character_generated && !(p_ptr->is_dead))
+	if (character_generated && !(player->is_dead))
 		message_add(msg, type);
 
 	/* Window stuff */
-	p_ptr->redraw |= (PR_MESSAGE);
+	player->redraw |= (PR_MESSAGE);
 
 	/* Copy it */
 	my_strcpy(buf, msg, sizeof(buf));
