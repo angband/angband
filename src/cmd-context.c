@@ -229,14 +229,14 @@ static void context_menu_player_display_floor(void)
 	int diff = weight_remaining();
 
 	/* Hack -- Start in "inventory" mode */
-	p_ptr->command_wrk = (USE_FLOOR);
+	player->command_wrk = (USE_FLOOR);
 
 	/* Save screen */
 	screen_save();
 
 	/* Prompt for a command */
 	prt(format("(Inventory) Burden %d.%d lb (%d.%d lb %s). Item for command: ",
-			   p_ptr->total_weight / 10, p_ptr->total_weight % 10,
+			   player->total_weight / 10, player->total_weight % 10,
 			   abs(diff) / 10, abs(diff) % 10,
 			   (diff < 0 ? "overweight" : "remaining")),
 		0, 0);
@@ -279,15 +279,15 @@ int context_menu_player(int mx, int my)
 	ADD_LABEL("Use", CMD_USE_ANY, MN_ROW_VALID);
 
 	/* if player can cast, add casting option */
-	if (player_can_cast(p_ptr, FALSE)) {
+	if (player_can_cast(player, FALSE)) {
 		ADD_LABEL("Cast", CMD_CAST, MN_ROW_VALID);
 	}
 
 	/* if player is on stairs add option to use them */
-	if (square_isupstairs(cave, p_ptr->py, p_ptr->px)) {
+	if (square_isupstairs(cave, player->py, player->px)) {
 		ADD_LABEL("Go Up", CMD_GO_UP, MN_ROW_VALID);
 	}
-	else if (square_isdownstairs(cave, p_ptr->py, p_ptr->px)) {
+	else if (square_isdownstairs(cave, player->py, player->px)) {
 		ADD_LABEL("Go Down", CMD_GO_DOWN, MN_ROW_VALID);
 	}
 
@@ -304,8 +304,8 @@ int context_menu_player(int mx, int my)
 	menu_dynamic_add_label(m, "Inventory", 'i', MENU_VALUE_INVENTORY, labels);
 
 	/* if object under player add pickup option */
-	if (cave->o_idx[p_ptr->py][p_ptr->px]) {
-		object_type *o_ptr = object_byid(cave->o_idx[p_ptr->py][p_ptr->px]);
+	if (cave->o_idx[player->py][player->px]) {
+		object_type *o_ptr = object_byid(cave->o_idx[player->py][player->px]);
 		if (!squelch_item_ok(o_ptr)) {
 			menu_row_validity_t valid;
 
@@ -429,7 +429,7 @@ int context_menu_player(int mx, int my)
 			break;
 
 		case MENU_VALUE_LOOK:
-			if (target_set_interactive(TARGET_LOOK, p_ptr->px, p_ptr->py)) {
+			if (target_set_interactive(TARGET_LOOK, player->px, player->py)) {
 				msg("Target Selected.");
 			}
 			break;
@@ -486,7 +486,7 @@ int context_menu_cave(struct cave *c, int y, int x, int adjacent, int mx, int my
 
 	ADD_LABEL("Use Item On", CMD_USE_ANY, MN_ROW_VALID);
 
-	if (player_can_cast(p_ptr, FALSE)) {
+	if (player_can_cast(player, FALSE)) {
 		ADD_LABEL("Cast On", CMD_CAST, MN_ROW_VALID);
 	}
 
@@ -542,7 +542,7 @@ int context_menu_cave(struct cave *c, int y, int x, int adjacent, int mx, int my
 		ADD_LABEL("Run Towards", CMD_RUN, MN_ROW_VALID);
 	}
 
-	if (player_can_fire(p_ptr, FALSE)) {
+	if (player_can_fire(player, FALSE)) {
 		ADD_LABEL("Fire On", CMD_FIRE, MN_ROW_VALID);
 	}
 
@@ -574,7 +574,7 @@ int context_menu_cave(struct cave *c, int y, int x, int adjacent, int mx, int my
 
 	menu_layout(m, &r);
 	region_erase_bordered(&r);
-	if (p_ptr->timed[TMD_IMAGE]) {
+	if (player->timed[TMD_IMAGE]) {
 		prt("(Enter to select command, ESC to cancel) You see something strange:", 0, 0);
 	} else
 	if (c->m_idx[y][x]) {
@@ -599,7 +599,7 @@ int context_menu_cave(struct cave *c, int y, int x, int adjacent, int mx, int my
 	} else
 	{
 		/* Feature (apply mimic) */
-		const char *name = square_apparent_name(c, p_ptr, y, x);
+		const char *name = square_apparent_name(c, player, y, x);
 
 		/* Hack -- special introduction for store doors */
 		if (square_isshop(cave, y, x)) {
@@ -747,18 +747,18 @@ int context_menu_object(const object_type *o_ptr, const int slot)
 	menu_dynamic_add_label(m, "Inspect", 'I', MENU_VALUE_INSPECT, labels);
 
 	if (obj_can_browse(o_ptr)) {
-		if (obj_can_cast_from(o_ptr) && player_can_cast(p_ptr, FALSE)) {
+		if (obj_can_cast_from(o_ptr) && player_can_cast(player, FALSE)) {
 			ADD_LABEL("Cast", CMD_CAST, MN_ROW_VALID);
 		}
 
-		if (obj_can_study(o_ptr) && player_can_study(p_ptr, FALSE)) {
+		if (obj_can_study(o_ptr) && player_can_study(player, FALSE)) {
 			cmd_code study_cmd = player_has(PF_CHOOSE_SPELLS) ? CMD_STUDY_SPELL : CMD_STUDY_BOOK;
 			/* Hack - Use the STUDY_BOOK command key so that we get the correct command key. */
 			cmdkey = cmd_lookup_key_unktrl(CMD_STUDY_BOOK, mode);
 			menu_dynamic_add_label(m, "Study", cmdkey, study_cmd, labels);
 		}
 
-		if (player_can_read(p_ptr, FALSE)) {
+		if (player_can_read(player, FALSE)) {
 			ADD_LABEL("Browse", CMD_BROWSE_SPELL, MN_ROW_VALID);
 		}
 	}
@@ -776,7 +776,7 @@ int context_menu_object(const object_type *o_ptr, const int slot)
 			ADD_LABEL("Use", CMD_USE_STAFF, valid);
 		}
 		else if (tval_is_scroll(o_ptr)) {
-			menu_row_validity_t valid = (player_can_read(p_ptr, FALSE)) ? MN_ROW_VALID : MN_ROW_INVALID;
+			menu_row_validity_t valid = (player_can_read(player, FALSE)) ? MN_ROW_VALID : MN_ROW_INVALID;
 			ADD_LABEL("Read", CMD_READ_SCROLL, valid);
 		}
 		else if (tval_is_potion(o_ptr)) {
@@ -814,7 +814,7 @@ int context_menu_object(const object_type *o_ptr, const int slot)
 	}
 
 	if (slot >= 0) {
-		if (!store_in_store || square_shopnum(cave, p_ptr->py, p_ptr->px) == STORE_HOME) {
+		if (!store_in_store || square_shopnum(cave, player->py, player->px) == STORE_HOME) {
 			ADD_LABEL("Drop", CMD_DROP, MN_ROW_VALID);
 
 			if (o_ptr->number > 1) {
@@ -955,7 +955,7 @@ int context_menu_object(const object_type *o_ptr, const int slot)
 	else if (selected == CMD_CAST) {
 		if (obj_can_browse(o_ptr)) {
 			/* copied from textui_obj_cast */
-			const char *verb = ((p_ptr->class->spell_book == TV_MAGIC_BOOK) ? "cast" : "recite");
+			const char *verb = ((player->class->spell_book == TV_MAGIC_BOOK) ? "cast" : "recite");
 			int spell = get_spell(o_ptr, verb, spell_okay_to_cast);
 
 			if (spell >= 0) {

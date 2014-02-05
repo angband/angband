@@ -3069,7 +3069,7 @@ static errr init_other(void)
 	/*** Prepare the inventory ***/
 
 	/* Allocate it */
-	p_ptr->inventory = C_ZNEW(ALL_INVEN_TOTAL, object_type);
+	player->inventory = C_ZNEW(ALL_INVEN_TOTAL, object_type);
 
 
 
@@ -3332,7 +3332,7 @@ void cleanup_angband(void)
 
 	quest_free();
 
-	FREE(p_ptr->inventory);
+	FREE(player->inventory);
 
 	/* Free the lore, monster, and object lists */
 	FREE(l_list);

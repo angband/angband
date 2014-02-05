@@ -258,7 +258,7 @@ void get_spell_info(int tval, int spell, char *p, size_t len)
 
 static int beam_chance(void)
 {
-	int plev = p_ptr->lev;
+	int plev = player->lev;
 	return (player_has(PF_BEAM) ? plev : (plev / 2));
 }
 
@@ -271,7 +271,7 @@ static void spell_wonder(int dir)
    This eliminates the worst effects later on, while
    keeping the results quite random.  It also allows
    some potent effects only at high level. */
-	effect_wonder(dir, randint1(100) + p_ptr->lev / 5, beam_chance());
+	effect_wonder(dir, randint1(100) + player->lev / 5, beam_chance());
 }
 
 
@@ -342,7 +342,7 @@ static bool spell_handler_identify(spell_handler_context_t *context)
 
 static bool spell_handler_satisfy_hunger(spell_handler_context_t *context)
 {
-	player_set_food(p_ptr, PY_FOOD_MAX - 1);
+	player_set_food(player, PY_FOOD_MAX - 1);
 	return TRUE;
 }
 
@@ -368,14 +368,14 @@ static bool spell_handler_detect_traps_doors_stairs(spell_handler_context_t *con
 static bool spell_handler_light_area(spell_handler_context_t *context)
 {
 	int dam = spell_calculate_value(context);
-	int radius = p_ptr->lev / 10 + 1;
+	int radius = player->lev / 10 + 1;
 	light_area(dam, radius);
 	return TRUE;
 }
 
 static bool spell_handler_cure_poison(spell_handler_context_t *context)
 {
-	player_clear_timed(p_ptr, TMD_POISONED, TRUE);
+	player_clear_timed(player, TMD_POISONED, TRUE);
 	return TRUE;
 }
 
@@ -388,21 +388,21 @@ static bool spell_handler_glyph_of_warding(spell_handler_context_t *context)
 static bool spell_handler_cure_light_wounds(spell_handler_context_t *context)
 {
 	heal_player(context->value.m_bonus, context->value.base);
-	player_dec_timed(p_ptr, TMD_CUT, 20, TRUE);
-	player_dec_timed(p_ptr, TMD_CONFUSED, 20, TRUE);
-	player_clear_timed(p_ptr, TMD_BLIND, TRUE);
+	player_dec_timed(player, TMD_CUT, 20, TRUE);
+	player_dec_timed(player, TMD_CONFUSED, 20, TRUE);
+	player_clear_timed(player, TMD_BLIND, TRUE);
 	return TRUE;
 }
 
 static bool spell_handler_word_of_destruction(spell_handler_context_t *context)
 {
-	destroy_area(p_ptr->py, p_ptr->px, 15, TRUE);
+	destroy_area(player->py, player->px, 15, TRUE);
 	return TRUE;
 }
 
 static bool spell_handler_earthquake(spell_handler_context_t *context)
 {
-	earthquake(p_ptr->py, p_ptr->px, 10);
+	earthquake(player->py, player->px, 10);
 	return TRUE;
 }
 
@@ -414,7 +414,7 @@ static bool spell_handler_recharge(spell_handler_context_t *context)
 static bool spell_handler_bless(spell_handler_context_t *context)
 {
 	int dur = spell_calculate_value(context);
-	player_inc_timed(p_ptr, TMD_BLESSED, dur, TRUE, TRUE);
+	player_inc_timed(player, TMD_BLESSED, dur, TRUE, TRUE);
 	return TRUE;
 }
 
@@ -435,21 +435,21 @@ static bool spell_handler_dispel_undead(spell_handler_context_t *context)
 static bool spell_handler_cure_serious_wounds(spell_handler_context_t *context)
 {
 	heal_player(context->value.m_bonus, context->value.base);
-	player_clear_timed(p_ptr, TMD_CUT, TRUE);
-	player_clear_timed(p_ptr, TMD_CONFUSED, TRUE);
-	player_clear_timed(p_ptr, TMD_BLIND, TRUE);
+	player_clear_timed(player, TMD_CUT, TRUE);
+	player_clear_timed(player, TMD_CONFUSED, TRUE);
+	player_clear_timed(player, TMD_BLIND, TRUE);
 	return TRUE;
 }
 
 static bool spell_handler_cure_critical_wounds(spell_handler_context_t *context)
 {
 	heal_player(context->value.m_bonus, context->value.base);
-	player_clear_timed(p_ptr, TMD_CUT, TRUE);
-	player_clear_timed(p_ptr, TMD_AMNESIA, TRUE);
-	player_clear_timed(p_ptr, TMD_CONFUSED, TRUE);
-	player_clear_timed(p_ptr, TMD_BLIND, TRUE);
-	player_clear_timed(p_ptr, TMD_POISONED, TRUE);
-	player_clear_timed(p_ptr, TMD_STUN, TRUE);
+	player_clear_timed(player, TMD_CUT, TRUE);
+	player_clear_timed(player, TMD_AMNESIA, TRUE);
+	player_clear_timed(player, TMD_CONFUSED, TRUE);
+	player_clear_timed(player, TMD_BLIND, TRUE);
+	player_clear_timed(player, TMD_POISONED, TRUE);
+	player_clear_timed(player, TMD_STUN, TRUE);
 	return TRUE;
 }
 
@@ -510,7 +510,7 @@ static bool spell_handler_arcane_OBJECT_DETECTION(spell_handler_context_t *conte
 
 static bool spell_handler_arcane_CONFUSE_MONSTER(spell_handler_context_t *context)
 {
-	(void)confuse_monster(context->dir, p_ptr->lev, TRUE);
+	(void)confuse_monster(context->dir, player->lev, TRUE);
 	return TRUE;
 }
 
@@ -604,14 +604,14 @@ static bool spell_handler_arcane_MASS_BANISHMENT(spell_handler_context_t *contex
 static bool spell_handler_arcane_RESIST_FIRE(spell_handler_context_t *context)
 {
 	int dur = spell_calculate_value(context);
-	(void)player_inc_timed(p_ptr, TMD_OPP_FIRE, dur, TRUE, TRUE);
+	(void)player_inc_timed(player, TMD_OPP_FIRE, dur, TRUE, TRUE);
 	return TRUE;
 }
 
 static bool spell_handler_arcane_RESIST_COLD(spell_handler_context_t *context)
 {
 	int dur = spell_calculate_value(context);
-	(void)player_inc_timed(p_ptr, TMD_OPP_COLD, dur, TRUE, TRUE);
+	(void)player_inc_timed(player, TMD_OPP_COLD, dur, TRUE, TRUE);
 	return TRUE;
 }
 
@@ -623,18 +623,18 @@ static bool spell_handler_arcane_ELEMENTAL_BRAND(spell_handler_context_t *contex
 static bool spell_handler_arcane_RESIST_POISON(spell_handler_context_t *context)
 {
 	int dur = spell_calculate_value(context);
-	(void)player_inc_timed(p_ptr, TMD_OPP_POIS, dur, TRUE, TRUE);
+	(void)player_inc_timed(player, TMD_OPP_POIS, dur, TRUE, TRUE);
 	return TRUE;
 }
 
 static bool spell_handler_arcane_RESISTANCE(spell_handler_context_t *context)
 {
 	int time = spell_calculate_value(context);
-	(void)player_inc_timed(p_ptr, TMD_OPP_ACID, time, TRUE, TRUE);
-	(void)player_inc_timed(p_ptr, TMD_OPP_ELEC, time, TRUE, TRUE);
-	(void)player_inc_timed(p_ptr, TMD_OPP_FIRE, time, TRUE, TRUE);
-	(void)player_inc_timed(p_ptr, TMD_OPP_COLD, time, TRUE, TRUE);
-	(void)player_inc_timed(p_ptr, TMD_OPP_POIS, time, TRUE, TRUE);
+	(void)player_inc_timed(player, TMD_OPP_ACID, time, TRUE, TRUE);
+	(void)player_inc_timed(player, TMD_OPP_ELEC, time, TRUE, TRUE);
+	(void)player_inc_timed(player, TMD_OPP_FIRE, time, TRUE, TRUE);
+	(void)player_inc_timed(player, TMD_OPP_COLD, time, TRUE, TRUE);
+	(void)player_inc_timed(player, TMD_OPP_POIS, time, TRUE, TRUE);
 	return TRUE;
 }
 
@@ -642,16 +642,16 @@ static bool spell_handler_arcane_HEROISM(spell_handler_context_t *context)
 {
 	int dur = spell_calculate_value(context);
 	(void)hp_player(10);
-	(void)player_clear_timed(p_ptr, TMD_AFRAID, TRUE);
-	(void)player_inc_timed(p_ptr, TMD_BOLD, dur, TRUE, TRUE);
-	(void)player_inc_timed(p_ptr, TMD_HERO, dur, TRUE, TRUE);
+	(void)player_clear_timed(player, TMD_AFRAID, TRUE);
+	(void)player_inc_timed(player, TMD_BOLD, dur, TRUE, TRUE);
+	(void)player_inc_timed(player, TMD_HERO, dur, TRUE, TRUE);
 	return TRUE;
 }
 
 static bool spell_handler_arcane_SHIELD(spell_handler_context_t *context)
 {
 	int dur = spell_calculate_value(context);
-	(void)player_inc_timed(p_ptr, TMD_SHIELD, dur, TRUE, TRUE);
+	(void)player_inc_timed(player, TMD_SHIELD, dur, TRUE, TRUE);
 	return TRUE;
 }
 
@@ -659,22 +659,22 @@ static bool spell_handler_arcane_BERSERKER(spell_handler_context_t *context)
 {
 	int dur = spell_calculate_value(context);
 	(void)hp_player(30);
-	(void)player_clear_timed(p_ptr, TMD_AFRAID, TRUE);
-	(void)player_inc_timed(p_ptr, TMD_BOLD, dur, TRUE, TRUE);
-	(void)player_inc_timed(p_ptr, TMD_SHERO, dur, TRUE, TRUE);
+	(void)player_clear_timed(player, TMD_AFRAID, TRUE);
+	(void)player_inc_timed(player, TMD_BOLD, dur, TRUE, TRUE);
+	(void)player_inc_timed(player, TMD_SHERO, dur, TRUE, TRUE);
 	return TRUE;
 }
 
 static bool spell_handler_arcane_HASTE_SELF(spell_handler_context_t *context)
 {
-	if (!p_ptr->timed[TMD_FAST])
+	if (!player->timed[TMD_FAST])
 	{
 		int dur = spell_calculate_value(context);
-		(void)player_set_timed(p_ptr, TMD_FAST, dur, TRUE);
+		(void)player_set_timed(player, TMD_FAST, dur, TRUE);
 	}
 	else
 	{
-		(void)player_inc_timed(p_ptr, TMD_FAST, randint1(5), TRUE, TRUE);
+		(void)player_inc_timed(player, TMD_FAST, randint1(5), TRUE, TRUE);
 	}
 	return TRUE;
 }
@@ -696,19 +696,19 @@ static bool spell_handler_prayer_DETECT_EVIL(spell_handler_context_t *context)
 
 static bool spell_handler_prayer_REMOVE_FEAR(spell_handler_context_t *context)
 {
-	(void)player_clear_timed(p_ptr, TMD_AFRAID, TRUE);
+	(void)player_clear_timed(player, TMD_AFRAID, TRUE);
 	return TRUE;
 }
 
 static bool spell_handler_prayer_SLOW_POISON(spell_handler_context_t *context)
 {
-	(void)player_set_timed(p_ptr, TMD_POISONED, p_ptr->timed[TMD_POISONED] / 2, TRUE);
+	(void)player_set_timed(player, TMD_POISONED, player->timed[TMD_POISONED] / 2, TRUE);
 	return TRUE;
 }
 
 static bool spell_handler_prayer_SCARE_MONSTER(spell_handler_context_t *context)
 {
-	(void)fear_monster(context->dir, p_ptr->lev, TRUE);
+	(void)fear_monster(context->dir, player->lev, TRUE);
 	return TRUE;
 }
 
@@ -729,15 +729,15 @@ static bool spell_handler_prayer_RESIST_HEAT_COLD(spell_handler_context_t *conte
 {
 	int dur1 = spell_calculate_value(context);
 	int dur2 = spell_calculate_value(context);
-	(void)player_inc_timed(p_ptr, TMD_OPP_FIRE, dur1, TRUE, TRUE);
-	(void)player_inc_timed(p_ptr, TMD_OPP_COLD, dur2, TRUE, TRUE);
+	(void)player_inc_timed(player, TMD_OPP_FIRE, dur1, TRUE, TRUE);
+	(void)player_inc_timed(player, TMD_OPP_COLD, dur2, TRUE, TRUE);
 	return TRUE;
 }
 
 static bool spell_handler_prayer_ORB_OF_DRAINING(spell_handler_context_t *context)
 {
 	int dam = spell_calculate_value(context);
-	int radius = (p_ptr->lev < 30) ? 2 : 3;
+	int radius = (player->lev < 30) ? 2 : 3;
 	fire_ball(GF_HOLY_ORB, context->dir, dam, radius);
 	return TRUE;
 }
@@ -745,14 +745,14 @@ static bool spell_handler_prayer_ORB_OF_DRAINING(spell_handler_context_t *contex
 static bool spell_handler_prayer_SENSE_INVISIBLE(spell_handler_context_t *context)
 {
 	int dur = spell_calculate_value(context);
-	player_inc_timed(p_ptr, TMD_SINVIS, dur, TRUE, TRUE);
+	player_inc_timed(player, TMD_SINVIS, dur, TRUE, TRUE);
 	return TRUE;
 }
 
 static bool spell_handler_prayer_PROTECTION_FROM_EVIL(spell_handler_context_t *context)
 {
 	int dur = spell_calculate_value(context);
-	player_inc_timed(p_ptr, TMD_PROTEVIL, dur, TRUE, TRUE);
+	player_inc_timed(player, TMD_PROTEVIL, dur, TRUE, TRUE);
 	return TRUE;
 }
 
@@ -770,27 +770,27 @@ static bool spell_handler_prayer_TURN_UNDEAD(spell_handler_context_t *context)
 
 static bool spell_handler_prayer_HEAL(spell_handler_context_t *context)
 {
-	int amt = (p_ptr->mhp * context->value.m_bonus) / 100;
+	int amt = (player->mhp * context->value.m_bonus) / 100;
 	if (amt < context->value.base) amt = context->value.base;
 
 	(void)hp_player(amt);
-	(void)player_clear_timed(p_ptr, TMD_CUT, TRUE);
-	(void)player_clear_timed(p_ptr, TMD_AMNESIA, TRUE);
-	(void)player_clear_timed(p_ptr, TMD_CONFUSED, TRUE);
-	(void)player_clear_timed(p_ptr, TMD_BLIND, TRUE);
-	(void)player_clear_timed(p_ptr, TMD_POISONED, TRUE);
-	(void)player_clear_timed(p_ptr, TMD_STUN, TRUE);
+	(void)player_clear_timed(player, TMD_CUT, TRUE);
+	(void)player_clear_timed(player, TMD_AMNESIA, TRUE);
+	(void)player_clear_timed(player, TMD_CONFUSED, TRUE);
+	(void)player_clear_timed(player, TMD_BLIND, TRUE);
+	(void)player_clear_timed(player, TMD_POISONED, TRUE);
+	(void)player_clear_timed(player, TMD_STUN, TRUE);
 	return TRUE;
 }
 
 static bool spell_handler_prayer_HOLY_WORD(spell_handler_context_t *context)
 {
-	(void)dispel_evil(randint1(p_ptr->lev * 4));
+	(void)dispel_evil(randint1(player->lev * 4));
 	(void)hp_player(context->value.base);
-	(void)player_clear_timed(p_ptr, TMD_AFRAID, TRUE);
-	(void)player_clear_timed(p_ptr, TMD_POISONED, TRUE);
-	(void)player_clear_timed(p_ptr, TMD_STUN, TRUE);
-	(void)player_clear_timed(p_ptr, TMD_CUT, TRUE);
+	(void)player_clear_timed(player, TMD_AFRAID, TRUE);
+	(void)player_clear_timed(player, TMD_POISONED, TRUE);
+	(void)player_clear_timed(player, TMD_STUN, TRUE);
+	(void)player_clear_timed(player, TMD_CUT, TRUE);
 	return TRUE;
 }
 
@@ -815,8 +815,8 @@ static bool spell_handler_prayer_CLAIRVOYANCE(spell_handler_context_t *context)
 static bool spell_handler_prayer_HEALING(spell_handler_context_t *context)
 {
 	(void)hp_player(context->value.base);
-	(void)player_clear_timed(p_ptr, TMD_STUN, TRUE);
-	(void)player_clear_timed(p_ptr, TMD_CUT, TRUE);
+	(void)player_clear_timed(player, TMD_STUN, TRUE);
+	(void)player_clear_timed(player, TMD_CUT, TRUE);
 	return TRUE;
 }
 
@@ -869,7 +869,7 @@ static bool spell_handler_prayer_ALTER_REALITY(spell_handler_context_t *context)
 	msg("The world changes!");
 
 	/* Leaving */
-	p_ptr->leaving = TRUE;
+	player->leaving = TRUE;
 
 	return TRUE;
 }
@@ -1145,13 +1145,13 @@ static void spell_append_value_info_prayer(int spell, char *p, size_t len)
 
 static int spell_value_base_player_level(void)
 {
-	return p_ptr->lev;
+	return player->lev;
 }
 
 static int spell_value_base_orb_of_draining(void)
 {
-	int base = player_has(PF_ZERO_FAIL) ? (p_ptr->lev / 2) : (p_ptr->lev / 4);
-	base += p_ptr->lev;
+	int base = player_has(PF_ZERO_FAIL) ? (player->lev / 2) : (player->lev / 4);
+	base += player->lev;
 	return base;
 }
 

@@ -346,7 +346,7 @@ void object_flavor_aware(object_type *o_ptr)
 	if (kind_is_squelched_unaware(o_ptr->kind)) {
 		kind_squelch_when_aware(o_ptr->kind);
 	}
-	p_ptr->notice |= PN_SQUELCH;
+	player->notice |= PN_SQUELCH;
 	apply_autoinscription(o_ptr);
 
 	for (i = 1; i < o_max; i++)
@@ -606,7 +606,7 @@ void object_notice_attack_plusses(object_type *o_ptr)
 				o_name, ((o_ptr->number > 1) ? "" : "s"));
 	}
 
-	p_ptr->update |= (PU_BONUS);
+	player->update |= (PU_BONUS);
 	event_signal(EVENT_INVENTORY);
 	event_signal(EVENT_EQUIPMENT);
 }
@@ -678,7 +678,7 @@ bool object_notice_curses(object_type *o_ptr)
 
 	object_check_for_ident(o_ptr);
 
-	p_ptr->notice |= PN_SQUELCH;
+	player->notice |= PN_SQUELCH;
 
 	return !of_is_empty(f);
 }
@@ -859,7 +859,7 @@ static void object_notice_after_time(void)
 	/* Check every item the player is wearing */
 	for (i = INVEN_WIELD; i < ALL_INVEN_TOTAL; i++)
 	{
-		o_ptr = &p_ptr->inventory[i];
+		o_ptr = &player->inventory[i];
 
 		if (!o_ptr->kind || object_is_known(o_ptr)) continue;
 
@@ -966,9 +966,9 @@ void wieldeds_notice_to_hit_on_attack(void)
 	int i;
 
 	for (i = INVEN_WIELD + 2; i < INVEN_TOTAL; i++)
-		if (p_ptr->inventory[i].kind &&
-		    p_ptr->inventory[i].to_h)
-			object_notice_attack_plusses(&p_ptr->inventory[i]);
+		if (player->inventory[i].kind &&
+		    player->inventory[i].to_h)
+			object_notice_attack_plusses(&player->inventory[i]);
 
 	return;
 }
@@ -983,8 +983,8 @@ void wieldeds_notice_on_attack(void)
 	int i;
 
 	for (i = INVEN_WIELD + 2; i < INVEN_TOTAL; i++)
-		if (p_ptr->inventory[i].kind)
-			object_notice_attack_plusses(&p_ptr->inventory[i]);
+		if (player->inventory[i].kind)
+			object_notice_attack_plusses(&player->inventory[i]);
 
 	/* XXX Eddie print message? */
 	/* XXX Eddie do we need to do more about ammo? */
@@ -1091,7 +1091,7 @@ void sense_inventory(void)
 	
 	
 	/* No ID when confused in a bad state */
-	if (p_ptr->timed[TMD_CONFUSED]) return;
+	if (player->timed[TMD_CONFUSED]) return;
 
 
 	/* Notice some things after a while */
@@ -1104,12 +1104,12 @@ void sense_inventory(void)
 
 	/* Get improvement rate */
 	if (player_has(PF_PSEUDO_ID_IMPROV))
-		rate = p_ptr->class->sense_base / (p_ptr->lev * p_ptr->lev + p_ptr->class->sense_div);
+		rate = player->class->sense_base / (player->lev * player->lev + player->class->sense_div);
 	else
-		rate = p_ptr->class->sense_base / (p_ptr->lev + p_ptr->class->sense_div);
+		rate = player->class->sense_base / (player->lev + player->class->sense_div);
 
 	/* Check if player may sense anything this time */
-	if (p_ptr->lev < 20 && !one_in_(rate)) return;
+	if (player->lev < 20 && !one_in_(rate)) return;
 
 	/*
 	 * Give each object one opportunity to have a chance at being sensed. Because the inventory
@@ -1131,7 +1131,7 @@ void sense_inventory(void)
 		bool okay = FALSE;
 
 		i++;
-		o_ptr = &p_ptr->inventory[i];
+		o_ptr = &player->inventory[i];
 
 		/* Skip empty slots */
 		if (!o_ptr->kind) continue;
@@ -1178,7 +1178,7 @@ void sense_inventory(void)
 		feel = object_pseudo(o_ptr);
 
 		/* Stop everything */
-		disturb(p_ptr, 0, 0);
+		disturb(player, 0, 0);
 
 		if (cursed)
 			text = "cursed";
@@ -1222,19 +1222,19 @@ void sense_inventory(void)
 
 		/* Set squelch flag as appropriate */
 		if (i < INVEN_WIELD)
-			p_ptr->notice |= PN_SQUELCH;
+			player->notice |= PN_SQUELCH;
 		
 		
 		/* Combine / Reorder the pack (later) */
-		p_ptr->notice |= (PN_COMBINE | PN_REORDER | PN_SORT_QUIVER);
+		player->notice |= (PN_COMBINE | PN_REORDER | PN_SORT_QUIVER);
 		
 		/* Redraw stuff */
-		p_ptr->redraw |= (PR_INVEN | PR_EQUIP);
+		player->redraw |= (PR_INVEN | PR_EQUIP);
 	}
 
 	/* Reset state so objects failing the check can be sensed later. */
 	for (i = 0; i < ALL_INVEN_TOTAL; i++)
-		p_ptr->inventory[i].ident &= ~IDENT_SENSED_THIS_TURN;
+		player->inventory[i].ident &= ~IDENT_SENSED_THIS_TURN;
 }
 
 

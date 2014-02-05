@@ -124,7 +124,7 @@ static void show_obj_list(int num_obj, int num_head, char labels[50][80],
 	}
 
 	/* Take the quiver message into consideration */
-	if (mode & OLIST_QUIVER && p_ptr->quiver_slots > 0)
+	if (mode & OLIST_QUIVER && player->quiver_slots > 0)
 		max_len = MAX(max_len, 24);
 
 	/* Width of extra fields */
@@ -225,14 +225,14 @@ static void show_obj_list(int num_obj, int num_head, char labels[50][80],
 		int count, j;
 
 		/* Quiver may take multiple lines */
-		for(j = 0; j < p_ptr->quiver_slots; j++, i++)
+		for(j = 0; j < player->quiver_slots; j++, i++)
 		{
 			const char *fmt = "in Quiver: %d missile%s";
 			char letter = index_to_label(in_term ? i - 1 : i);
 
 			/* Number of missiles in this "slot" */
-			if (j == p_ptr->quiver_slots - 1 && p_ptr->quiver_remainder > 0)
-				count = p_ptr->quiver_remainder;
+			if (j == player->quiver_slots - 1 && player->quiver_remainder > 0)
+				count = player->quiver_remainder;
 			else
 				count = MAX_STACK_SIZE-1;
 
@@ -288,7 +288,7 @@ void show_inven(int mode, item_tester tester)
 	{
 		strnfmt(labels[num_obj], sizeof(labels[num_obj]),
 		        "Burden %d.%d lb (%d.%d lb %s) ",
-		        p_ptr->total_weight / 10, p_ptr->total_weight % 10,
+		        player->total_weight / 10, player->total_weight % 10,
 		        abs(diff) / 10, abs(diff) % 10,
 		        (diff < 0 ? "overweight" : "remaining"));
 
@@ -299,14 +299,14 @@ void show_inven(int mode, item_tester tester)
 	/* Find the last occupied inventory slot */
 	for (i = 0; i < INVEN_PACK; i++)
 	{
-		o_ptr = &p_ptr->inventory[i];
+		o_ptr = &player->inventory[i];
 		if (o_ptr->kind) last_slot = i;
 	}
 
 	/* Build the object list */
 	for (i = 0; i <= last_slot; i++)
 	{
-		o_ptr = &p_ptr->inventory[i];
+		o_ptr = &player->inventory[i];
 
 		/* Acceptable items get a label */
 		if (object_test(tester, o_ptr))
@@ -356,14 +356,14 @@ void show_equip(int mode, item_tester tester)
 	/* Find the last equipment slot to display */
 	for (i = INVEN_WIELD; i < ALL_INVEN_TOTAL; i++)
 	{
-		o_ptr = &p_ptr->inventory[i];
+		o_ptr = &player->inventory[i];
 		if (i < INVEN_TOTAL || o_ptr->kind) last_slot = i;
 	}
 
 	/* Build the object list */
 	for (i = INVEN_WIELD; i <= last_slot; i++)
 	{
-		o_ptr = &p_ptr->inventory[i];
+		o_ptr = &player->inventory[i];
 
 		/* May need a blank line to separate the quiver */
 		if (i == INVEN_TOTAL)
@@ -374,7 +374,7 @@ void show_equip(int mode, item_tester tester)
 			/* Scan the rest of the items for acceptable entries */
 			for (j = i; j < last_slot; j++)
 			{
-				o_ptr = &p_ptr->inventory[j];
+				o_ptr = &player->inventory[j];
 				if (object_test(tester, o_ptr)) need_spacer = TRUE;
 			}
 
@@ -472,7 +472,7 @@ bool verify_item(const char *prompt, int item)
 	/* Inventory */
 	if (item >= 0)
 	{
-		o_ptr = &p_ptr->inventory[item];
+		o_ptr = &player->inventory[item];
 	}
 
 	/* Floor */
@@ -506,7 +506,7 @@ bool get_item_allow(int item, unsigned char ch, cmd_code cmd, bool is_harmless)
 
 	/* Inventory or floor */
 	if (item >= 0)
-		o_ptr = &p_ptr->inventory[item];
+		o_ptr = &player->inventory[item];
 	else
 		o_ptr = object_byid(0 - item);
 
@@ -566,7 +566,7 @@ static int get_tag(int *cp, char tag, cmd_code cmd, bool quiver_tags)
 	if (quiver_tags)
 	{
 		i = QUIVER_START + tag - '0';
-		if (p_ptr->inventory[i].kind)
+		if (player->inventory[i].kind)
 		{
 			*cp = i;
 			return (TRUE);
@@ -577,7 +577,7 @@ static int get_tag(int *cp, char tag, cmd_code cmd, bool quiver_tags)
 	/* Check every object */
 	for (i = 0; i < ALL_INVEN_TOTAL; ++i)
 	{
-		object_type *o_ptr = &p_ptr->inventory[i];
+		object_type *o_ptr = &player->inventory[i];
 
 		/* Skip non-objects */
 		if (!o_ptr->kind) continue;
@@ -662,7 +662,7 @@ static int get_tag(int *cp, char tag, cmd_code cmd, bool quiver_tags)
  *
  * If no item is selected, we do nothing to "cp", and return FALSE.
  *
- * Global "p_ptr->command_wrk" is used to choose between equip/inven/floor
+ * Global "player->command_wrk" is used to choose between equip/inven/floor
  * listings.  It is equal to USE_INVEN or USE_EQUIP or USE_FLOOR, except
  * when this function is first called, when it is equal to zero, which will
  * cause it to be set to USE_INVEN.
@@ -675,8 +675,8 @@ static int get_tag(int *cp, char tag, cmd_code cmd, bool quiver_tags)
  */
 bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, item_tester tester, int mode)
 {
-	int py = p_ptr->py;
-	int px = p_ptr->px;
+	int py = player->py;
+	int px = player->px;
 	unsigned char cmdkey = cmd_lookup_key(cmd,
 			OPT(rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG);
 
@@ -802,32 +802,32 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, item_test
 	else
 	{
 		/* Hack -- Start on equipment if requested */
-		if ((p_ptr->command_wrk == USE_EQUIP) && allow_equip)
-			p_ptr->command_wrk = USE_EQUIP;
-		else if ((p_ptr->command_wrk == USE_INVEN) && allow_inven)
-			p_ptr->command_wrk = USE_INVEN;
-		else if ((p_ptr->command_wrk == USE_FLOOR) && allow_floor)
-			p_ptr->command_wrk = USE_FLOOR;
+		if ((player->command_wrk == USE_EQUIP) && allow_equip)
+			player->command_wrk = USE_EQUIP;
+		else if ((player->command_wrk == USE_INVEN) && allow_inven)
+			player->command_wrk = USE_INVEN;
+		else if ((player->command_wrk == USE_FLOOR) && allow_floor)
+			player->command_wrk = USE_FLOOR;
 
 		/* If we are using the quiver then start on equipment */
 		else if (quiver_tags && allow_equip)
-			p_ptr->command_wrk = USE_EQUIP;
+			player->command_wrk = USE_EQUIP;
 
 		/* Use inventory if allowed */
 		else if (use_inven && allow_inven)
-			p_ptr->command_wrk = USE_INVEN;
+			player->command_wrk = USE_INVEN;
 
 		/* Use equipment if allowed */
 		else if (use_equip && allow_equip)
-			p_ptr->command_wrk = USE_EQUIP;
+			player->command_wrk = USE_EQUIP;
 
 		/* Use floor if allowed */
 		else if (use_floor && allow_floor)
-			p_ptr->command_wrk = USE_FLOOR;
+			player->command_wrk = USE_FLOOR;
 
 		/* Hack -- Use (empty) inventory */
 		else
-			p_ptr->command_wrk = USE_INVEN;
+			player->command_wrk = USE_INVEN;
 	}
 
 
@@ -859,8 +859,8 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, item_test
 		}
 
 		/* Toggle if needed */
-		if (((p_ptr->command_wrk == USE_EQUIP) && ni && !ne) ||
-		    ((p_ptr->command_wrk == USE_INVEN) && !ni && ne))
+		if (((player->command_wrk == USE_EQUIP) && ni && !ne) ||
+		    ((player->command_wrk == USE_INVEN) && !ni && ne))
 		{
 			/* Toggle */
 			toggle_inven_equip();
@@ -870,13 +870,13 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, item_test
 		}
 
 		/* Redraw */
-		p_ptr->redraw |= (PR_INVEN | PR_EQUIP);
+		player->redraw |= (PR_INVEN | PR_EQUIP);
 
 		/* Redraw windows */
-		redraw_stuff(p_ptr);
+		redraw_stuff(player);
 
 		/* Viewing inventory */
-		if (p_ptr->command_wrk == USE_INVEN)
+		if (player->command_wrk == USE_INVEN)
 		{
 			int nmode = olist_mode;
 
@@ -922,7 +922,7 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, item_test
 		}
 
 		/* Viewing equipment */
-		else if (p_ptr->command_wrk == USE_EQUIP)
+		else if (player->command_wrk == USE_EQUIP)
 		{
 			/* Redraw if needed */
 			if (show_list) show_equip(olist_mode, tester);
@@ -1021,13 +1021,13 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, item_test
 			} else
 			if (press.mouse.button == 1) {
 				k = -1;
-				if (p_ptr->command_wrk == USE_INVEN) {
+				if (player->command_wrk == USE_INVEN) {
 					if (press.mouse.y == 0) {
 						if (use_equip) {
-							p_ptr->command_wrk = USE_EQUIP;
+							player->command_wrk = USE_EQUIP;
 						} else
 						if (allow_floor) {
-							p_ptr->command_wrk = USE_FLOOR;
+							player->command_wrk = USE_FLOOR;
 						}
 					} else
 					if ((press.mouse.y <= i2-i1+1) ){
@@ -1045,13 +1045,13 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, item_test
 						}
 					}
 				} else
-				if (p_ptr->command_wrk == USE_EQUIP) {
+				if (player->command_wrk == USE_EQUIP) {
 					if (press.mouse.y == 0) {
 						if (allow_floor) {
-							p_ptr->command_wrk = USE_FLOOR;
+							player->command_wrk = USE_FLOOR;
 						} else
 						if (use_inven) {
-							p_ptr->command_wrk = USE_INVEN;
+							player->command_wrk = USE_INVEN;
 						}
 					} else
 					if (press.mouse.y <= e2-e1+1) {
@@ -1077,13 +1077,13 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, item_test
 						}
 					}
 				} else
-				if (p_ptr->command_wrk == USE_FLOOR) {
+				if (player->command_wrk == USE_FLOOR) {
 					if (press.mouse.y == 0) {
 						if (use_inven) {
-							p_ptr->command_wrk = USE_INVEN;
+							player->command_wrk = USE_INVEN;
 						} else
 						if (use_equip) {
-							p_ptr->command_wrk = USE_EQUIP;
+							player->command_wrk = USE_EQUIP;
 						}
 					} else
 					if ((press.mouse.y <= floor_num) && (press.mouse.y >= 1)) {
@@ -1158,15 +1158,15 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, item_test
 			case '/':
 			{
 				/* Toggle to inventory */
-				if (use_inven && (p_ptr->command_wrk != USE_INVEN))
+				if (use_inven && (player->command_wrk != USE_INVEN))
 				{
-					p_ptr->command_wrk = USE_INVEN;
+					player->command_wrk = USE_INVEN;
 				}
 
 				/* Toggle to equipment */
-				else if (use_equip && (p_ptr->command_wrk != USE_EQUIP))
+				else if (use_equip && (player->command_wrk != USE_EQUIP))
 				{
-					p_ptr->command_wrk = USE_EQUIP;
+					player->command_wrk = USE_EQUIP;
 				}
 
 				/* No toggle allowed */
@@ -1204,7 +1204,7 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, item_test
 				if (floor_num == 1)
 				{
 					/* Auto-select */
-					if (p_ptr->command_wrk == (USE_FLOOR))
+					if (player->command_wrk == (USE_FLOOR))
 					{
 						/* Special index */
 						k = 0 - floor_list[0];
@@ -1235,7 +1235,7 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, item_test
 					screen_save();
 				}
 
-				p_ptr->command_wrk = (USE_FLOOR);
+				player->command_wrk = (USE_FLOOR);
 
 #if 0
 				/* Check each legal object */
@@ -1305,7 +1305,7 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, item_test
 			case KC_ENTER:
 			{
 				/* Choose "default" inventory item */
-				if (p_ptr->command_wrk == USE_INVEN)
+				if (player->command_wrk == USE_INVEN)
 				{
 					if (i1 != i2)
 					{
@@ -1321,7 +1321,7 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, item_test
 					k = e1;
 
 				/* Choose "default" equipment item */
-				else if (p_ptr->command_wrk == USE_EQUIP)
+				else if (player->command_wrk == USE_EQUIP)
 				{
 					if (e1 != e2)
 					{
@@ -1378,7 +1378,7 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, item_test
 				press.key.code = tolower((unsigned char)press.key.code);
 
 				/* Convert letter to inventory index */
-				if (p_ptr->command_wrk == USE_INVEN)
+				if (player->command_wrk == USE_INVEN)
 				{
 					//k = label_to_inven(which.code);
 					k = label_to_inven(press.key.code);
@@ -1391,7 +1391,7 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, item_test
 				}
 
 				/* Convert letter to equipment index */
-				else if (p_ptr->command_wrk == USE_EQUIP)
+				else if (player->command_wrk == USE_EQUIP)
 				{
 					//k = label_to_equip(which.code);
 					k = label_to_equip(press.key.code);
@@ -1465,8 +1465,8 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, item_test
 	if (toggle) toggle_inven_equip();
 
 	/* Update */
-	p_ptr->redraw |= (PR_INVEN | PR_EQUIP);
-	redraw_stuff(p_ptr);
+	player->redraw |= (PR_INVEN | PR_EQUIP);
+	redraw_stuff(player);
 
 
 	/* Clear the prompt line */

@@ -128,7 +128,7 @@ static void drain_stats(int num, bool sustain, bool perma)
 			do_dec_stat(k, perma);
 		else {
 			msg("You're not as %s as you used to be...", act);
-			player_stat_dec(p_ptr, k, perma);
+			player_stat_dec(player, k, perma);
 		}
 	}
 
@@ -148,17 +148,17 @@ static void swap_stats(void)
     ii = randint0(A_MAX);
     for (jj = ii; jj == ii; jj = randint0(A_MAX)) /* loop */;
 
-    max1 = p_ptr->stat_max[ii];
-    cur1 = p_ptr->stat_cur[ii];
-    max2 = p_ptr->stat_max[jj];
-    cur2 = p_ptr->stat_cur[jj];
+    max1 = player->stat_max[ii];
+    cur1 = player->stat_cur[ii];
+    max2 = player->stat_max[jj];
+    cur2 = player->stat_cur[jj];
 
-    p_ptr->stat_max[ii] = max2;
-    p_ptr->stat_cur[ii] = cur2;
-    p_ptr->stat_max[jj] = max1;
-    p_ptr->stat_cur[jj] = cur1;
+    player->stat_max[ii] = max2;
+    player->stat_cur[ii] = cur2;
+    player->stat_max[jj] = max1;
+    player->stat_cur[jj] = cur1;
 
-    p_ptr->update |= (PU_BONUS);
+    player->update |= (PU_BONUS);
 
     return;
 }
@@ -178,7 +178,7 @@ static void drain_mana(struct monster *m_ptr, int rlev, bool seen)
 	/* Get the monster name (or "it") */
 	monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_STANDARD);
 
-	if (!p_ptr->csp) {
+	if (!player->csp) {
 		msg("The draining fails.");
 		if (OPT(birth_ai_learn) && !(m_ptr->smart & SM_IMM_MANA)) {
 			msg("%s notes that you have no mana!", m_name);
@@ -191,17 +191,17 @@ static void drain_mana(struct monster *m_ptr, int rlev, bool seen)
 	r1 = (randint1(rlev) / 2) + 1;
 
 	/* Full drain */
-	if (r1 >= p_ptr->csp) {
-		r1 = p_ptr->csp;
-		p_ptr->csp = 0;
-		p_ptr->csp_frac = 0;
+	if (r1 >= player->csp) {
+		r1 = player->csp;
+		player->csp = 0;
+		player->csp_frac = 0;
 	}
 	/* Partial drain */
 	else
-		p_ptr->csp -= r1;
+		player->csp -= r1;
 
 	/* Redraw mana */
-	p_ptr->redraw |= PR_MANA;
+	player->redraw |= PR_MANA;
 
 	/* Heal the monster */
 	if (m_ptr->hp < m_ptr->maxhp) {
@@ -210,8 +210,8 @@ static void drain_mana(struct monster *m_ptr, int rlev, bool seen)
 			m_ptr->hp = m_ptr->maxhp;
 
 		/* Redraw (later) if needed */
-		if (p_ptr->health_who == m_ptr)
-			p_ptr->redraw |= (PR_HEALTH);
+		if (player->health_who == m_ptr)
+			player->redraw |= (PR_HEALTH);
 
 		/* Special message */
 		if (seen)
@@ -255,7 +255,7 @@ static void heal_self(struct monster *m_ptr, int rlev, bool seen)
 	}
 
 	/* Redraw (later) if needed */
-	if (p_ptr->health_who == m_ptr) p_ptr->redraw |= (PR_HEALTH);
+	if (player->health_who == m_ptr) player->redraw |= (PR_HEALTH);
 
 	/* Cancel fear */
 	if (m_ptr->m_timed[MON_TMD_FEAR]) {
@@ -273,7 +273,7 @@ static int summon_monster_aux(int flag, struct monster *m_ptr, int rlev, int sum
 	int temp;
 
 	/* Continue adding summoned monsters until we reach the current dungeon level */
-	while ((val < p_ptr->depth * rlev) && (attempts < summon_max))
+	while ((val < player->depth * rlev) && (attempts < summon_max))
 	{
 		/* Get a monster */
 		temp = summon_specific(m_ptr->fy, m_ptr->fx,
@@ -347,17 +347,17 @@ static void do_side_effects(int spell, int dam, struct monster *m_ptr, bool seen
 			 * to replace the generic ones below. (See #1376)
 			 */
 			if (re_ptr->res_flag)
-				update_smart_learn(m_ptr, p_ptr, re_ptr->res_flag);
+				update_smart_learn(m_ptr, player, re_ptr->res_flag);
 
 			if ((rs_ptr->gf && check_side_immune(rs_ptr->gf)) ||
-					player_of_has(p_ptr, re_ptr->res_flag)) {
+					player_of_has(player, re_ptr->res_flag)) {
 				msg("You resist the effect!");
 				continue;
 			}
 
 			/* Allow saving throw if available */
 			if (re_ptr->save &&
-					randint0(100) < p_ptr->state.skills[SKILL_SAVE]) {
+					randint0(100) < player->state.skills[SKILL_SAVE]) {
 				msg("You avoid the effect!");
 				continue;
 			}
@@ -377,20 +377,20 @@ static void do_side_effects(int spell, int dam, struct monster *m_ptr, bool seen
 					dur = re_ptr->dam.m_bonus;
 
 				/* Apply the effect - we have already checked for resistance */
-				(void)player_inc_timed(p_ptr, re_ptr->flag, dur, TRUE, FALSE);
+				(void)player_inc_timed(player, re_ptr->flag, dur, TRUE, FALSE);
 
 			} else {
 				switch (re_ptr->flag) {
 					case S_INV_DAM:
 						if (dam > 0) {
 							int rand_dam = dam * randcalc(re_ptr->dam, 0, RANDOMISE);
-							inven_damage(p_ptr, re_ptr->gf, MIN(rand_dam, 300));
+							inven_damage(player, re_ptr->gf, MIN(rand_dam, 300));
 						}
 						break;
 
 					case S_TELEPORT: /* m_bonus is used as a clev filter */
 						if (!re_ptr->dam.m_bonus || 
-								randint1(re_ptr->dam.m_bonus) > p_ptr->lev)
+								randint1(re_ptr->dam.m_bonus) > player->lev)
 							teleport_player(randcalc(re_ptr->base, 0,
 								RANDOMISE));
 						break;
@@ -409,11 +409,11 @@ static void do_side_effects(int spell, int dam, struct monster *m_ptr, bool seen
 						break;
 
 					case S_DRAIN_LIFE:
-						d = re_ptr->base.base + (p_ptr->exp *
+						d = re_ptr->base.base + (player->exp *
 							re_ptr->base.sides / 100) * MON_DRAIN_LIFE;
 
 						msg("You feel your life force draining away!");
-						player_exp_lose(p_ptr, d, FALSE);
+						player_exp_lose(player, d, FALSE);
 						break;
 
 					case S_DRAIN_STAT: /* m_bonus is used as a flag */
@@ -435,7 +435,7 @@ static void do_side_effects(int spell, int dam, struct monster *m_ptr, bool seen
 						msg("You're not as powerful as you used to be...");
 
 						for (i = 0; i < A_MAX; i++)
-							player_stat_dec(p_ptr, i, FALSE);
+							player_stat_dec(player, i, FALSE);
 						break;
 
 					case S_DISEN:
@@ -478,7 +478,7 @@ static void do_side_effects(int spell, int dam, struct monster *m_ptr, bool seen
 						if ((!count) && ((re_ptr->flag == S_WRAITH) || (re_ptr->flag == S_UNIQUE)))
 							count = summon_monster_aux(S_HI_UNDEAD, m_ptr, rlev, re_ptr->base.base);
 
-						if (count && p_ptr->timed[TMD_BLIND])
+						if (count && player->timed[TMD_BLIND])
 							msgt(rs_ptr->msgt, "You hear %s appear nearby.",
 								(count > 1 ? "many things" : "something"));
 
@@ -539,10 +539,10 @@ void do_mon_spell(int spell, struct monster *m_ptr, bool seen)
 	else if (rs_ptr->hit == 0)
 		hits = FALSE;
 	else
-		hits = check_hit(p_ptr, rs_ptr->hit, rlev);
+		hits = check_hit(player, rs_ptr->hit, rlev);
 
 	/* Tell the player what's going on */
-	disturb(p_ptr, 1,0);
+	disturb(player, 1,0);
 
 	if (!seen)
 		msg("Something %s.", rs_ptr->blind_verb);
@@ -556,7 +556,7 @@ void do_mon_spell(int spell, struct monster *m_ptr, bool seen)
 
 
 	/* Try a saving throw if available */
-	if (rs_ptr->save && randint0(100) < p_ptr->state.skills[SKILL_SAVE]) {
+	if (rs_ptr->save && randint0(100) < player->state.skills[SKILL_SAVE]) {
 		msg("You avoid the effects!");
 		return;
 	}
@@ -576,11 +576,11 @@ void do_mon_spell(int spell, struct monster *m_ptr, bool seen)
 	}
 
 	if (rs_ptr->gf) {
-		(void)project(m_ptr->midx, rad, p_ptr->py, p_ptr->px, dam, rs_ptr->gf, flag, 0, 0);
-		monster_learn_resists(m_ptr, p_ptr, rs_ptr->gf);
+		(void)project(m_ptr->midx, rad, player->py, player->px, dam, rs_ptr->gf, flag, 0, 0);
+		monster_learn_resists(m_ptr, player, rs_ptr->gf);
 	}
 	else /* Note that non-projectable attacks are unresistable */
-		take_hit(p_ptr, dam, ddesc);
+		take_hit(player, dam, ddesc);
 
 	do_side_effects(spell, dam, m_ptr, seen);
 
@@ -637,7 +637,7 @@ void unset_spells(bitflag *spells, bitflag *flags, const monster_race *r_ptr)
 
 	/* First we test the gf (projectable) spells */
 	for (rs_ptr = mon_spell_table; rs_ptr->index < RSF_MAX; rs_ptr++)
-		if (rs_ptr->gf && randint0(100) < check_for_resist(p_ptr, rs_ptr->gf, flags,
+		if (rs_ptr->gf && randint0(100) < check_for_resist(player, rs_ptr->gf, flags,
 				FALSE) * (rf_has(r_ptr->flags, RF_SMART) ? 2 : 1) * 25)
 			rsf_off(spells, rs_ptr->index);
 
@@ -679,7 +679,7 @@ int best_spell_power(const monster_race *r_ptr, int resist)
 			/* Adjust the real damage by the assumed resistance (if it is a
 			 * resistable type) */
 			if (rs_ptr->gf)
-				dam = adjust_dam(p_ptr, rs_ptr->gf, dam, MAXIMISE, resist);
+				dam = adjust_dam(player, rs_ptr->gf, dam, MAXIMISE, resist);
 
 			/* Add the power ratings assigned to the various possible spell
 			 * effects (which is crucial for non-damaging spells) */

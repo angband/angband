@@ -24,10 +24,10 @@ void health_track(struct player *p, struct monster *m_ptr)
 void monster_race_track(monster_race *race)
 {
 	/* Save this monster ID */
-	p_ptr->monster_race = race;
+	player->monster_race = race;
 
 	/* Window stuff */
-	p_ptr->redraw |= (PR_MONSTER);
+	player->redraw |= (PR_MONSTER);
 }
 
 
@@ -37,21 +37,21 @@ void monster_race_track(monster_race *race)
  */
 void track_object(int item)
 {
-	p_ptr->object_idx = item;
-	p_ptr->object_kind = NULL;
-	p_ptr->redraw |= (PR_OBJECT);
+	player->object_idx = item;
+	player->object_kind = NULL;
+	player->redraw |= (PR_OBJECT);
 }
 
 void track_object_kind(struct object_kind *kind)
 {
-	p_ptr->object_idx = NO_OBJECT;
-	p_ptr->object_kind = kind;
-	p_ptr->redraw |= (PR_OBJECT);
+	player->object_idx = NO_OBJECT;
+	player->object_kind = kind;
+	player->redraw |= (PR_OBJECT);
 }
 
 bool tracked_object_is(int item)
 {
-	return (p_ptr->object_idx == item);
+	return (player->object_idx == item);
 }
 
 

@@ -164,7 +164,7 @@ bool history_add_full(u16b type, struct artifact *artifact, s16b dlev,
 	history_list[history_ctr].dlev = dlev;
 	history_list[history_ctr].clev = clev;
 	history_list[history_ctr].a_idx = artifact ? artifact->aidx : 0;
-	history_list[history_ctr].turn = p_ptr->total_energy / 100;
+	history_list[history_ctr].turn = player->total_energy / 100;
 	my_strcpy(history_list[history_ctr].event,
 	          text, sizeof(history_list[history_ctr].event));
 
@@ -183,7 +183,7 @@ bool history_add_full(u16b type, struct artifact *artifact, s16b dlev,
  */
 bool history_add(const char *event, u16b type, struct artifact *artifact)
 {
-	return history_add_full(type, artifact, p_ptr->depth, p_ptr->lev, turn, event);
+	return history_add_full(type, artifact, player->depth, player->lev, turn, event);
 }
 
 

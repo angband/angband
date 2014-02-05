@@ -327,7 +327,7 @@ int num_traps(struct cave *c, int y, int x, int vis)
  */
 bool trap_check_hit(int power)
 {
-	return test_hit(power, p_ptr->state.ac + p_ptr->state.to_a, TRUE);
+	return test_hit(power, player->state.ac + player->state.to_a, TRUE);
 }
 
 
@@ -357,7 +357,7 @@ static int pick_trap(int feat, int trap_level)
     int trap = 0;
     feature_type *f_ptr = &f_info[feat];
 	
-    trap_kind *trap_ptr;
+    trap_kind *traplayer;
     bool trap_is_okay = FALSE;
 	
     /* Paranoia */
@@ -372,27 +372,27 @@ static int pick_trap(int feat, int trap_level)
 		trap = TRAP_HEAD + randint0(TRAP_TAIL - TRAP_HEAD + 1);
 
 		/* Get this trap */
-		trap_ptr = &trap_info[trap];
+		traplayer = &trap_info[trap];
 	
 		/* Require that trap_level not be too low */
-		if (trap_ptr->min_depth > trap_level) continue;
+		if (traplayer->min_depth > trap_level) continue;
 
 		/* Assume legal until proven otherwise. */
 		trap_is_okay = TRUE;
 
 		/* Floor? */
 		if (tf_has(f_ptr->flags, TF_FLOOR) &&
-			!trf_has(trap_ptr->flags, TRF_FLOOR))
+			!trf_has(traplayer->flags, TRF_FLOOR))
 			trap_is_okay = FALSE;
 
 		/* Check legality of trapdoors. */
 		if (trap == TRAP_TRAPDOOR)
 	    {
 			/* No trap doors on quest levels */
-			if (is_quest(p_ptr->depth)) trap_is_okay = FALSE;
+			if (is_quest(player->depth)) trap_is_okay = FALSE;
 
 			/* No trap doors on the deepest level */
-			if (p_ptr->depth >= MAX_DEPTH - 1) trap_is_okay = FALSE;
+			if (player->depth >= MAX_DEPTH - 1) trap_is_okay = FALSE;
 	    }
 
     }
@@ -492,7 +492,7 @@ extern void hit_trap(int y, int x)
 		if ((t_ptr->fy == y) && (t_ptr->fx == x))
 		{
 			/* Disturb the player */
-			disturb(p_ptr, 0, 0);
+			disturb(player, 0, 0);
 
 			/* Fire off the trap */
 			effect_do(t_ptr->kind->effect, &ident, FALSE, 0, 0, 0);

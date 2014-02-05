@@ -271,7 +271,7 @@ bool player_clear_timed(struct player *p, int idx, bool notify)
 
 
 /*
- * Set "p_ptr->timed[TMD_STUN]", notice observable changes
+ * Set "player->timed[TMD_STUN]", notice observable changes
  *
  * Note the special code to only notice "range" changes.
  */
@@ -374,7 +374,7 @@ static bool set_stun(struct player *p, int v)
 			case 0:
 			{
 				msgt(MSG_RECOVER, "You are no longer stunned.");
-				disturb(p_ptr, 0, 0);
+				disturb(player, 0, 0);
 				break;
 			}
 		}
@@ -390,7 +390,7 @@ static bool set_stun(struct player *p, int v)
 	if (!notice) return (FALSE);
 
 	/* Disturb */
-	disturb(p_ptr, 0, 0);
+	disturb(player, 0, 0);
 
 	/* Recalculate bonuses */
 	p->update |= (PU_BONUS);
@@ -399,7 +399,7 @@ static bool set_stun(struct player *p, int v)
 	p->redraw |= (PR_STATUS);
 
 	/* Handle stuff */
-	handle_stuff(p_ptr);
+	handle_stuff(player);
 
 	/* Result */
 	return (TRUE);
@@ -407,7 +407,7 @@ static bool set_stun(struct player *p, int v)
 
 
 /*
- * Set "p_ptr->timed[TMD_CUT]", notice observable changes
+ * Set "player->timed[TMD_CUT]", notice observable changes
  *
  * Note the special code to only notice "range" changes.
  */
@@ -586,7 +586,7 @@ static bool set_cut(struct player *p, int v)
 			case 0:
 			{
 				msgt(MSG_RECOVER, "You are no longer bleeding.");
-				disturb(p_ptr, 0, 0);
+				disturb(player, 0, 0);
 				break;
 			}
 		}
@@ -602,7 +602,7 @@ static bool set_cut(struct player *p, int v)
 	if (!notice) return (FALSE);
 
 	/* Disturb */
-	disturb(p_ptr, 0, 0);
+	disturb(player, 0, 0);
 
 	/* Recalculate bonuses */
 	p->update |= (PU_BONUS);
@@ -611,7 +611,7 @@ static bool set_cut(struct player *p, int v)
 	p->redraw |= (PR_STATUS);
 
 	/* Handle stuff */
-	handle_stuff(p_ptr);
+	handle_stuff(player);
 
 	/* Result */
 	return (TRUE);
@@ -619,9 +619,9 @@ static bool set_cut(struct player *p, int v)
 
 
 /*
- * Set "p_ptr->food", notice observable changes
+ * Set "player->food", notice observable changes
  *
- * The "p_ptr->food" variable can get as large as 20000, allowing the
+ * The "player->food" variable can get as large as 20000, allowing the
  * addition of the most "filling" item, Elvish Waybread, which adds
  * 7500 food units, without overflowing the 32767 maximum limit.
  *
@@ -705,7 +705,7 @@ bool player_set_food(struct player *p, int v)
 	if (!notice) return (FALSE);
 
 	/* Disturb */
-	disturb(p_ptr, 0, 0);
+	disturb(player, 0, 0);
 
 	/* Recalculate bonuses */
 	p->update |= (PU_BONUS);
@@ -714,7 +714,7 @@ bool player_set_food(struct player *p, int v)
 	p->redraw |= (PR_STATUS);
 
 	/* Handle stuff */
-	handle_stuff(p_ptr);
+	handle_stuff(player);
 
 	/* Result */
 	return (TRUE);

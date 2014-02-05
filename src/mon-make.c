@@ -159,7 +159,7 @@ void delete_monster_idx(int m_idx)
 	if (target_get_monster() == m_ptr) target_set_monster(NULL);
 
 	/* Hack -- remove tracked monster */
-	if (p_ptr->health_who == m_ptr) health_track(p_ptr, NULL);
+	if (player->health_who == m_ptr) health_track(player, NULL);
 
 	/* Monster is gone */
 	cave->m_idx[y][x] = 0;
@@ -272,8 +272,8 @@ static void compact_monsters_aux(int i1, int i2)
 		target_set_monster(cave_monster(cave, i2));
 
 	/* Hack -- Update the health bar */
-	if (p_ptr->health_who == m_ptr)
-		p_ptr->health_who = cave_monster(cave, i2);
+	if (player->health_who == m_ptr)
+		player->health_who = cave_monster(cave, i2);
 
 	/* Hack -- move monster */
 	COPY(cave_monster(cave, i2), cave_monster(cave, i1), struct monster);
@@ -580,7 +580,7 @@ monster_race *get_mon_num(int level)
 
 		/* Some monsters never appear out of depth */
 		if (rf_has(race->flags, RF_FORCE_DEPTH) && 
-				race->level > p_ptr->depth)
+				race->level > player->depth)
 			continue;
 
 		/* Accept */
@@ -713,7 +713,7 @@ static bool mon_create_drop(struct monster *m_ptr, byte origin)
     
 	/* Take the best of (average of monster level and current depth)
 	   and (monster level) - to reward fighting OOD monsters */
-	level = MAX((monlevel + p_ptr->depth) / 2, monlevel);
+	level = MAX((monlevel + player->depth) / 2, monlevel);
     level = MIN(level, 100);
 
 	/* Specified drops */
@@ -734,7 +734,7 @@ static bool mon_create_drop(struct monster *m_ptr, byte origin)
 		}
 
 		i_ptr->origin = origin;
-		i_ptr->origin_depth = p_ptr->depth;
+		i_ptr->origin_depth = player->depth;
 		i_ptr->origin_xtra = m_ptr->race->ridx;
 		i_ptr->number = randint0(drop->max - drop->min) + drop->min;
 		if (monster_carry(m_ptr, i_ptr))
@@ -754,7 +754,7 @@ static bool mon_create_drop(struct monster *m_ptr, byte origin)
 		}
 
 		i_ptr->origin = origin;
-		i_ptr->origin_depth = p_ptr->depth;
+		i_ptr->origin_depth = player->depth;
 		i_ptr->origin_xtra = m_ptr->race->ridx;
 		if (monster_carry(m_ptr, i_ptr))
 			any = TRUE;
@@ -833,7 +833,7 @@ s16b place_monster(int y, int x, monster_type *mon, byte origin)
 		i_ptr = &object_type_body;
 
 		if (tval_is_money_k(kind)) {
-			make_gold(i_ptr, p_ptr->depth, kind->sval);
+			make_gold(i_ptr, player->depth, kind->sval);
 		} else {
 			object_prep(i_ptr, kind, m_ptr->race->level, RANDOMISE);
 			apply_magic(i_ptr, m_ptr->race->level, TRUE, FALSE, FALSE, FALSE);
@@ -929,14 +929,14 @@ static bool place_new_monster_one(int y, int x, monster_race *race,
 		return (FALSE);
 
 	/* Depth monsters may NOT be created out of depth */
-	if (rf_has(race->flags, RF_FORCE_DEPTH) && p_ptr->depth < race->level)
+	if (rf_has(race->flags, RF_FORCE_DEPTH) && player->depth < race->level)
 		return (FALSE);
 
 	/* Add to level feeling */
 	cave->mon_rating += race->power / 20;
 
 	/* Check out-of-depth-ness */
-	if (race->level > p_ptr->depth) {
+	if (race->level > player->depth) {
 		if (rf_has(race->flags, RF_UNIQUE)) { /* OOD unique */
 			if (OPT(cheat_hear))
 				msg("Deep unique (%s).", race->name);
@@ -945,7 +945,7 @@ static bool place_new_monster_one(int y, int x, monster_race *race,
 				msg("Deep monster (%s).", race->name);
 		}
 		/* Boost rating by power per 10 levels OOD */
-		cave->mon_rating += (race->level - p_ptr->depth) * race->power / 200;
+		cave->mon_rating += (race->level - player->depth) * race->power / 200;
 	}
 	/* Note uniques for cheaters */
 	else if (rf_has(race->flags, RF_UNIQUE) && OPT(cheat_hear))
@@ -996,7 +996,7 @@ static bool place_new_monster_one(int y, int x, monster_race *race,
 
 	/* Radiate light? */
 	if (rf_has(race->flags, RF_HAS_LIGHT))
-		p_ptr->update |= PU_UPDATE_VIEW;
+		player->update |= PU_UPDATE_VIEW;
 	
 	/* Is this obviously a monster? (Mimics etc. aren't) */
 	if (rf_has(race->flags, RF_UNAWARE)) 
@@ -1113,7 +1113,7 @@ static bool place_monster_base_okay(monster_race *race)
 	bool is_unique, success = TRUE;
 	
 	/* Find the difference between current dungeon depth and monster level */
-	level_difference = p_ptr->depth - friends_race->level + 5;
+	level_difference = player->depth - friends_race->level + 5;
 	
 	/* Handle unique monsters */
 	is_unique = rf_has(friends_race->flags, RF_UNIQUE);
@@ -1400,7 +1400,7 @@ void monster_death(struct monster *m_ptr, bool stats)
 		lore_treasure(m_ptr, dump_item, dump_gold);
 
 	/* Update monster list window */
-	p_ptr->redraw |= PR_MONLIST;
+	player->redraw |= PR_MONLIST;
 
 	/* Check if we finished a quest */
 	quest_check(m_ptr);
@@ -1430,7 +1430,7 @@ bool mon_take_hit(struct monster *m_ptr, int dam, bool *fear, const char *note)
 
 
 	/* Redraw (later) if needed */
-	if (p_ptr->health_who == m_ptr) p_ptr->redraw |= (PR_HEALTH);
+	if (player->health_who == m_ptr) player->redraw |= (PR_HEALTH);
 
 	/* Wake it up */
 	mon_clear_timed(m_ptr, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, FALSE);
@@ -1486,22 +1486,22 @@ bool mon_take_hit(struct monster *m_ptr, int dam, bool *fear, const char *note)
 			msgt(soundfx, "You have slain %s.", m_name);
 
 		/* Player level */
-		div = p_ptr->lev;
+		div = player->lev;
 
 		/* Give some experience for the kill */
 		new_exp = ((long)m_ptr->race->mexp * m_ptr->race->level) / div;
 
 		/* Handle fractional experience */
 		new_exp_frac = ((((long)m_ptr->race->mexp * m_ptr->race->level) % div)
-		                * 0x10000L / div) + p_ptr->exp_frac;
+		                * 0x10000L / div) + player->exp_frac;
 
 		/* Keep track of experience */
 		if (new_exp_frac >= 0x10000L) {
 			new_exp++;
-			p_ptr->exp_frac = (u16b)(new_exp_frac - 0x10000L);
+			player->exp_frac = (u16b)(new_exp_frac - 0x10000L);
 		}
 		else
-			p_ptr->exp_frac = (u16b)new_exp_frac;
+			player->exp_frac = (u16b)new_exp_frac;
 
 		/* When the player kills a Unique, it stays dead */
 		if (rf_has(m_ptr->race->flags, RF_UNIQUE)) {
@@ -1520,7 +1520,7 @@ bool mon_take_hit(struct monster *m_ptr, int dam, bool *fear, const char *note)
 		}
 
 		/* Gain experience */
-		player_exp_gain(p_ptr, new_exp);
+		player_exp_gain(player, new_exp);
 
 		/* Generate treasure */
 		monster_death(m_ptr, FALSE);

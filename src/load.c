@@ -1357,104 +1357,104 @@ int rd_player_2(void)
 	byte num;
 
 	rd_string(op_ptr->full_name, sizeof(op_ptr->full_name));
-	rd_string(p_ptr->died_from, 80);
-	p_ptr->history = mem_zalloc(250);
-	rd_string(p_ptr->history, 250);
+	rd_string(player->died_from, 80);
+	player->history = mem_zalloc(250);
+	rd_string(player->history, 250);
 
 	/* Player race */
 	rd_byte(&num);
-	p_ptr->race = player_id2race(num);
+	player->race = player_id2race(num);
 
 	/* Verify player race */
-	if (!p_ptr->race) {
+	if (!player->race) {
 		note(format("Invalid player race (%d).", num));
 		return -1;
 	}
 
 	/* Player class */
 	rd_byte(&num);
-	p_ptr->class = player_id2class(num);
+	player->class = player_id2class(num);
 
-	if (!p_ptr->class) {
+	if (!player->class) {
 		note(format("Invalid player class (%d).", num));
 		return -1;
 	}
 
 	/* Player gender */
-	rd_byte(&p_ptr->psex);
-	p_ptr->sex = &sex_info[p_ptr->psex];
+	rd_byte(&player->psex);
+	player->sex = &sex_info[player->psex];
 
 	/* Numeric name suffix */
 	rd_byte(&op_ptr->name_suffix);
 
 	/* Special Race/Class info */
-	rd_byte(&p_ptr->hitdie);
-	rd_byte(&p_ptr->expfact);
+	rd_byte(&player->hitdie);
+	rd_byte(&player->expfact);
 
 	/* Age/Height/Weight */
-	rd_s16b(&p_ptr->age);
-	rd_s16b(&p_ptr->ht);
-	rd_s16b(&p_ptr->wt);
+	rd_s16b(&player->age);
+	rd_s16b(&player->ht);
+	rd_s16b(&player->wt);
 
 	/* Read the stat info (ignoring CHR) */
-	for (i = 0; i < A_MAX; i++) rd_s16b(&p_ptr->stat_max[i]);
+	for (i = 0; i < A_MAX; i++) rd_s16b(&player->stat_max[i]);
 	strip_bytes(2);
-	for (i = 0; i < A_MAX; i++) rd_s16b(&p_ptr->stat_cur[i]);
+	for (i = 0; i < A_MAX; i++) rd_s16b(&player->stat_cur[i]);
 	strip_bytes(2);
-	for (i = 0; i < A_MAX; i++) rd_s16b(&p_ptr->stat_birth[i]);
+	for (i = 0; i < A_MAX; i++) rd_s16b(&player->stat_birth[i]);
 	strip_bytes(2);
 
-	rd_s16b(&p_ptr->ht_birth);
-	rd_s16b(&p_ptr->wt_birth);
+	rd_s16b(&player->ht_birth);
+	rd_s16b(&player->wt_birth);
 	strip_bytes(2);
-	rd_s32b(&p_ptr->au_birth);
+	rd_s32b(&player->au_birth);
 
 	strip_bytes(4);
 
-	rd_s32b(&p_ptr->au);
+	rd_s32b(&player->au);
 
-	rd_s32b(&p_ptr->max_exp);
-	rd_s32b(&p_ptr->exp);
-	rd_u16b(&p_ptr->exp_frac);
+	rd_s32b(&player->max_exp);
+	rd_s32b(&player->exp);
+	rd_u16b(&player->exp_frac);
 
-	rd_s16b(&p_ptr->lev);
+	rd_s16b(&player->lev);
 
 	/* Verify player level */
-	if ((p_ptr->lev < 1) || (p_ptr->lev > PY_MAX_LEVEL))
+	if ((player->lev < 1) || (player->lev > PY_MAX_LEVEL))
 	{
-		note(format("Invalid player level (%d).", p_ptr->lev));
+		note(format("Invalid player level (%d).", player->lev));
 		return (-1);
 	}
 
-	rd_s16b(&p_ptr->mhp);
-	rd_s16b(&p_ptr->chp);
-	rd_u16b(&p_ptr->chp_frac);
+	rd_s16b(&player->mhp);
+	rd_s16b(&player->chp);
+	rd_u16b(&player->chp_frac);
 
-	rd_s16b(&p_ptr->msp);
-	rd_s16b(&p_ptr->csp);
-	rd_u16b(&p_ptr->csp_frac);
+	rd_s16b(&player->msp);
+	rd_s16b(&player->csp);
+	rd_u16b(&player->csp_frac);
 
-	rd_s16b(&p_ptr->max_lev);
-	rd_s16b(&p_ptr->max_depth);
+	rd_s16b(&player->max_lev);
+	rd_s16b(&player->max_depth);
 
 	/* Hack -- Repair maximum player level */
-	if (p_ptr->max_lev < p_ptr->lev) p_ptr->max_lev = p_ptr->lev;
+	if (player->max_lev < player->lev) player->max_lev = player->lev;
 
 	/* Hack -- Repair maximum dungeon level */
-	if (p_ptr->max_depth < 0) p_ptr->max_depth = 1;
+	if (player->max_depth < 0) player->max_depth = 1;
 
 	/* More info */
 	strip_bytes(9);
-	rd_byte(&p_ptr->unignoring);
-	rd_s16b(&p_ptr->deep_descent);
+	rd_byte(&player->unignoring);
+	rd_s16b(&player->deep_descent);
 
 	/* Read the flags */
-	rd_s16b(&p_ptr->food);
-	rd_s16b(&p_ptr->energy);
-	rd_s16b(&p_ptr->word_recall);
-	rd_s16b(&p_ptr->state.see_infra);
-	rd_byte(&p_ptr->confusing);
-	rd_byte(&p_ptr->searching);
+	rd_s16b(&player->food);
+	rd_s16b(&player->energy);
+	rd_s16b(&player->word_recall);
+	rd_s16b(&player->state.see_infra);
+	rd_byte(&player->confusing);
+	rd_byte(&player->searching);
 
 	/* Find the number of timed effects */
 	rd_byte(&num);
@@ -1463,17 +1463,17 @@ int rd_player_2(void)
 	{
 		/* Read all the effects */
 		for (i = 0; i < num; i++)
-			rd_s16b(&p_ptr->timed[i]);
+			rd_s16b(&player->timed[i]);
 
 		/* Initialize any entries not read */
 		if (num < TMD_MAX)
-			C_WIPE(p_ptr->timed + num, TMD_MAX - num, s16b);
+			C_WIPE(player->timed + num, TMD_MAX - num, s16b);
 	}
 	else
 	{
 		/* Probably in trouble anyway */
 		for (i = 0; i < TMD_MAX; i++)
-			rd_s16b(&p_ptr->timed[i]);
+			rd_s16b(&player->timed[i]);
 
 		/* Discard unused entries */
 		strip_bytes(2 * (num - TMD_MAX));
@@ -1481,9 +1481,9 @@ int rd_player_2(void)
 	}
 
 	/* Total energy used so far */
-	rd_u32b(&p_ptr->total_energy);
+	rd_u32b(&player->total_energy);
 	/* # of turns spent resting */
-	rd_u32b(&p_ptr->resting_turn);
+	rd_u32b(&player->resting_turn);
 
 	/* Future use */
 	strip_bytes(32);
@@ -1501,103 +1501,103 @@ int rd_player_3(void)
 	byte a_max = 0;
 
 	rd_string(op_ptr->full_name, sizeof(op_ptr->full_name));
-	rd_string(p_ptr->died_from, 80);
-	p_ptr->history = mem_zalloc(250);
-	rd_string(p_ptr->history, 250);
+	rd_string(player->died_from, 80);
+	player->history = mem_zalloc(250);
+	rd_string(player->history, 250);
 
 	/* Player race */
 	rd_byte(&num);
-	p_ptr->race = player_id2race(num);
+	player->race = player_id2race(num);
 
 	/* Verify player race */
-	if (!p_ptr->race) {
+	if (!player->race) {
 		note(format("Invalid player race (%d).", num));
 		return -1;
 	}
 
 	/* Player class */
 	rd_byte(&num);
-	p_ptr->class = player_id2class(num);
+	player->class = player_id2class(num);
 
-	if (!p_ptr->class) {
+	if (!player->class) {
 		note(format("Invalid player class (%d).", num));
 		return -1;
 	}
 
 	/* Player gender */
-	rd_byte(&p_ptr->psex);
-	p_ptr->sex = &sex_info[p_ptr->psex];
+	rd_byte(&player->psex);
+	player->sex = &sex_info[player->psex];
 
 	/* Numeric name suffix */
 	rd_byte(&op_ptr->name_suffix);
 
 	/* Special Race/Class info */
-	rd_byte(&p_ptr->hitdie);
-	rd_byte(&p_ptr->expfact);
+	rd_byte(&player->hitdie);
+	rd_byte(&player->expfact);
 
 	/* Age/Height/Weight */
-	rd_s16b(&p_ptr->age);
-	rd_s16b(&p_ptr->ht);
-	rd_s16b(&p_ptr->wt);
+	rd_s16b(&player->age);
+	rd_s16b(&player->ht);
+	rd_s16b(&player->wt);
 
 	/* Read the stat info */
 	rd_byte(&a_max);
 	assert(a_max <= A_MAX);
-	for (i = 0; i < a_max; i++) rd_s16b(&p_ptr->stat_max[i]);
-	for (i = 0; i < a_max; i++) rd_s16b(&p_ptr->stat_cur[i]);
-	for (i = 0; i < a_max; i++) rd_s16b(&p_ptr->stat_birth[i]);
+	for (i = 0; i < a_max; i++) rd_s16b(&player->stat_max[i]);
+	for (i = 0; i < a_max; i++) rd_s16b(&player->stat_cur[i]);
+	for (i = 0; i < a_max; i++) rd_s16b(&player->stat_birth[i]);
 
-	rd_s16b(&p_ptr->ht_birth);
-	rd_s16b(&p_ptr->wt_birth);
+	rd_s16b(&player->ht_birth);
+	rd_s16b(&player->wt_birth);
 	strip_bytes(2);
-	rd_s32b(&p_ptr->au_birth);
+	rd_s32b(&player->au_birth);
 
 	strip_bytes(4);
 
-	rd_s32b(&p_ptr->au);
+	rd_s32b(&player->au);
 
-	rd_s32b(&p_ptr->max_exp);
-	rd_s32b(&p_ptr->exp);
-	rd_u16b(&p_ptr->exp_frac);
+	rd_s32b(&player->max_exp);
+	rd_s32b(&player->exp);
+	rd_u16b(&player->exp_frac);
 
-	rd_s16b(&p_ptr->lev);
+	rd_s16b(&player->lev);
 
 	/* Verify player level */
-	if ((p_ptr->lev < 1) || (p_ptr->lev > PY_MAX_LEVEL))
+	if ((player->lev < 1) || (player->lev > PY_MAX_LEVEL))
 	{
-		note(format("Invalid player level (%d).", p_ptr->lev));
+		note(format("Invalid player level (%d).", player->lev));
 		return (-1);
 	}
 
-	rd_s16b(&p_ptr->mhp);
-	rd_s16b(&p_ptr->chp);
-	rd_u16b(&p_ptr->chp_frac);
+	rd_s16b(&player->mhp);
+	rd_s16b(&player->chp);
+	rd_u16b(&player->chp_frac);
 
-	rd_s16b(&p_ptr->msp);
-	rd_s16b(&p_ptr->csp);
-	rd_u16b(&p_ptr->csp_frac);
+	rd_s16b(&player->msp);
+	rd_s16b(&player->csp);
+	rd_u16b(&player->csp_frac);
 
-	rd_s16b(&p_ptr->max_lev);
-	rd_s16b(&p_ptr->max_depth);
+	rd_s16b(&player->max_lev);
+	rd_s16b(&player->max_depth);
 
 	/* Hack -- Repair maximum player level */
-	if (p_ptr->max_lev < p_ptr->lev) p_ptr->max_lev = p_ptr->lev;
+	if (player->max_lev < player->lev) player->max_lev = player->lev;
 
 	/* Hack -- Repair maximum dungeon level */
-	if (p_ptr->max_depth < 0) p_ptr->max_depth = 1;
+	if (player->max_depth < 0) player->max_depth = 1;
 
 	/* More info */
 	strip_bytes(9);
-	rd_byte(&p_ptr->unignoring);
-	rd_s16b(&p_ptr->deep_descent);
+	rd_byte(&player->unignoring);
+	rd_s16b(&player->deep_descent);
 
 	/* Read the flags */
-	rd_s16b(&p_ptr->food);
-	rd_s16b(&p_ptr->energy);
-	rd_s16b(&p_ptr->word_recall);
-	rd_s16b(&p_ptr->state.see_infra);
-	rd_byte(&p_ptr->confusing);
-	rd_byte(&p_ptr->searching);
+	rd_s16b(&player->food);
+	rd_s16b(&player->energy);
+	rd_s16b(&player->word_recall);
+	rd_s16b(&player->state.see_infra);
+	rd_byte(&player->confusing);
+	rd_byte(&player->searching);
 
 	/* Find the number of timed effects */
 	rd_byte(&num);
@@ -1606,17 +1606,17 @@ int rd_player_3(void)
 	{
 		/* Read all the effects */
 		for (i = 0; i < num; i++)
-			rd_s16b(&p_ptr->timed[i]);
+			rd_s16b(&player->timed[i]);
 
 		/* Initialize any entries not read */
 		if (num < TMD_MAX)
-			C_WIPE(p_ptr->timed + num, TMD_MAX - num, s16b);
+			C_WIPE(player->timed + num, TMD_MAX - num, s16b);
 	}
 	else
 	{
 		/* Probably in trouble anyway */
 		for (i = 0; i < TMD_MAX; i++)
-			rd_s16b(&p_ptr->timed[i]);
+			rd_s16b(&player->timed[i]);
 
 		/* Discard unused entries */
 		strip_bytes(2 * (num - TMD_MAX));
@@ -1624,9 +1624,9 @@ int rd_player_3(void)
 	}
 
 	/* Total energy used so far */
-	rd_u32b(&p_ptr->total_energy);
+	rd_u32b(&player->total_energy);
 	/* # of turns spent resting */
-	rd_u32b(&p_ptr->resting_turn);
+	rd_u32b(&player->resting_turn);
 
 	/* Future use */
 	strip_bytes(32);
@@ -1716,14 +1716,14 @@ int rd_misc(void)
 
 
 	/* Special stuff */
-	rd_u16b(&p_ptr->panic_save);
-	rd_u16b(&p_ptr->total_winner);
-	rd_u16b(&p_ptr->noscore);
+	rd_u16b(&player->panic_save);
+	rd_u16b(&player->total_winner);
+	rd_u16b(&player->noscore);
 
 
 	/* Read "death" */
 	rd_byte(&tmp8u);
-	p_ptr->is_dead = tmp8u;
+	player->is_dead = tmp8u;
 
 	/* Read "feeling" */
 	rd_byte(&tmp8u);
@@ -1758,14 +1758,14 @@ int rd_misc_2(void)
 
 
 	/* Special stuff */
-	rd_u16b(&p_ptr->panic_save);
-	rd_u16b(&p_ptr->total_winner);
-	rd_u16b(&p_ptr->noscore);
+	rd_u16b(&player->panic_save);
+	rd_u16b(&player->total_winner);
+	rd_u16b(&player->noscore);
 
 
 	/* Read "death" */
 	rd_byte(&tmp8u);
-	p_ptr->is_dead = tmp8u;
+	player->is_dead = tmp8u;
 
 	/* Read "feeling" */
 	rd_byte(&tmp8u);
@@ -1798,7 +1798,7 @@ int rd_player_hp(void)
 
 	/* Read the player_hp array */
 	for (i = 0; i < tmp16u; i++)
-		rd_s16b(&p_ptr->player_hp[i]);
+		rd_s16b(&player->player_hp[i]);
 
 	return 0;
 }
@@ -1821,11 +1821,11 @@ int rd_player_spells(void)
 	
 	/* Read the spell flags */
 	for (i = 0; i < tmp16u; i++)
-		rd_byte(&p_ptr->spell_flags[i]);
+		rd_byte(&player->spell_flags[i]);
 	
 	/* Read the spell order */
 	for (i = 0, cnt = 0; i < tmp16u; i++, cnt++)
-		rd_byte(&p_ptr->spell_order[cnt]);
+		rd_byte(&player->spell_order[cnt]);
 	
 	/* Success */
 	return (0);
@@ -1878,17 +1878,17 @@ static int rd_inventory(rd_item_t rd_item_version)
 		if (n >= INVEN_WIELD)
 		{
 			/* Copy object */
-			object_copy(&p_ptr->inventory[n], i_ptr);
+			object_copy(&player->inventory[n], i_ptr);
 
 			/* Add the weight */
-			p_ptr->total_weight += (i_ptr->number * i_ptr->weight);
+			player->total_weight += (i_ptr->number * i_ptr->weight);
 
 			/* One more item */
-			p_ptr->equip_cnt++;
+			player->equip_cnt++;
 		}
 
 		/* Warning -- backpack is full */
-		else if (p_ptr->inven_cnt == INVEN_PACK)
+		else if (player->inven_cnt == INVEN_PACK)
 		{
 			/* Oops */
 			note("Too many items in the inventory!");
@@ -1904,17 +1904,17 @@ static int rd_inventory(rd_item_t rd_item_version)
 			n = slot++;
 
 			/* Copy object */
-			object_copy(&p_ptr->inventory[n], i_ptr);
+			object_copy(&player->inventory[n], i_ptr);
 
 			/* Add the weight */
-			p_ptr->total_weight += (i_ptr->number * i_ptr->weight);
+			player->total_weight += (i_ptr->number * i_ptr->weight);
 
 			/* One more item */
-			p_ptr->inven_cnt++;
+			player->inven_cnt++;
 		}
 	}
 
-	save_quiver_size(p_ptr);
+	save_quiver_size(player);
 
 	/* Success */
 	return (0);
@@ -2037,7 +2037,7 @@ int rd_dungeon(void)
 	u16b tmp16u, square_size;
 
 	/* Only if the player's alive */
-	if (p_ptr->is_dead)
+	if (player->is_dead)
 		return 0;
 
 	/*** Basic info ***/
@@ -2138,11 +2138,11 @@ int rd_dungeon(void)
 	/*** Player ***/
 
 	/* Load depth */
-	p_ptr->depth = depth;
+	player->depth = depth;
 
 
 	/* Place player in dungeon */
-	player_place(cave, p_ptr, py, px);
+	player_place(cave, player, py, px);
 
 	/*** Success ***/
 
@@ -2151,7 +2151,7 @@ int rd_dungeon(void)
 
 #if 0
 	/* Regenerate town in old versions */
-	if (p_ptr->depth == 0)
+	if (player->depth == 0)
 		character_dungeon = FALSE;
 #endif
 
@@ -2165,7 +2165,7 @@ static int rd_objects(rd_item_t rd_item_version)
 	u16b limit;
 
 	/* Only if the player's alive */
-	if (p_ptr->is_dead)
+	if (player->is_dead)
 		return 0;
 
 	/* Read the item count */
@@ -2256,7 +2256,7 @@ int rd_monsters_7(void)
 	u16b limit;
 
 	/* Only if the player's alive */
-	if (p_ptr->is_dead)
+	if (player->is_dead)
 		return 0;
 
 	/* Read the monster count */
@@ -2372,7 +2372,7 @@ int rd_monsters_6(void)
 	u16b limit;
 
 	/* Only if the player's alive */
-	if (p_ptr->is_dead)
+	if (player->is_dead)
 		return 0;
 	
 	/* Read the monster count */

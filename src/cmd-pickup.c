@@ -43,7 +43,7 @@
 void do_cmd_pickup(struct command *cmd)
 {
 	int energy_cost;
-	int item;
+	int item = 0;
 
 	/* Autopickup first */
 	energy_cost = do_autopickup() * 10;
@@ -55,7 +55,7 @@ void do_cmd_pickup(struct command *cmd)
 	if (energy_cost > 100) energy_cost = 100;
 
 	/* Charge this amount of energy. */
-	p_ptr->energy_use = energy_cost;
+	player->energy_use = energy_cost;
 }
 
 /*
@@ -63,7 +63,7 @@ void do_cmd_pickup(struct command *cmd)
  */
 void do_cmd_autopickup(struct command *cmd)
 {
-	p_ptr->energy_use = do_autopickup() * 10;
+	player->energy_use = do_autopickup() * 10;
 }
 
 
@@ -73,8 +73,8 @@ void do_cmd_autopickup(struct command *cmd)
  */
 static void py_pickup_gold(void)
 {
-	int py = p_ptr->py;
-	int px = p_ptr->px;
+	int py = player->py;
+	int px = player->px;
 
 	s32b total_gold = 0L;
 	byte *treasure;
@@ -175,10 +175,10 @@ static void py_pickup_gold(void)
 			msgt(sound_msg, "%s", buf);
 
 		/* Add gold to purse */
-		p_ptr->au += total_gold;
+		player->au += total_gold;
 
 		/* Redraw gold */
-		p_ptr->redraw |= (PR_GOLD);
+		player->redraw |= (PR_GOLD);
 	}
 
 	/* Free the gold array */
@@ -211,7 +211,7 @@ static void py_pickup_aux(int o_idx, bool domsg)
 	object_type *o_ptr = object_byid(o_idx);
 
 	/* Carry the object */
-	slot = inven_carry(p_ptr, o_ptr);
+	slot = inven_carry(player, o_ptr);
 
 	/* Handle errors (paranoia) */
 	if (slot < 0) return;
@@ -223,8 +223,8 @@ static void py_pickup_aux(int o_idx, bool domsg)
 		int i;
 		for (i = QUIVER_START; i < QUIVER_END; i++) 
 		{
-			if (!p_ptr->inventory[i].kind) continue;
-			if (!object_similar(&p_ptr->inventory[i], o_ptr,
+			if (!player->inventory[i].kind) continue;
+			if (!object_similar(&player->inventory[i], o_ptr,
 				OSTACK_QUIVER)) continue;
 			quiver_slot = i;
 			break;
@@ -232,10 +232,10 @@ static void py_pickup_aux(int o_idx, bool domsg)
 	}
 
 	/* Get the new object */
-	o_ptr = &p_ptr->inventory[slot];
+	o_ptr = &player->inventory[slot];
 
 	/* Set squelch status */
-	p_ptr->notice |= PN_SQUELCH;
+	player->notice |= PN_SQUELCH;
 
 	/* Automatically sense artifacts */
 	object_sense_artifact(o_ptr);
@@ -269,8 +269,8 @@ static void py_pickup_aux(int o_idx, bool domsg)
 
 int do_autopickup(void)
 {
-	int py = p_ptr->py;
-	int px = p_ptr->px;
+	int py = player->py;
+	int px = player->px;
 
 	s16b this_o_idx, next_o_idx = 0;
 
@@ -304,7 +304,7 @@ int do_autopickup(void)
 
 
 		/* Hack -- disturb */
-		disturb(p_ptr, 0, 0);
+		disturb(player, 0, 0);
 
 
 		/* Automatically pick up items into the backpack */
@@ -369,8 +369,8 @@ int do_autopickup(void)
  */
 byte py_pickup_item(int pickup, int item)
 {
-	int py = p_ptr->py;
-	int px = p_ptr->px;
+	int py = player->py;
+	int px = player->px;
 
 	s16b this_o_idx = 0;
 
@@ -471,8 +471,8 @@ byte py_pickup(int pickup)
  */
 void move_player(int dir, bool disarm)
 {
-	int py = p_ptr->py;
-	int px = p_ptr->px;
+	int py = player->py;
+	int px = player->px;
 
 	int y = py + ddy[dir];
 	int x = px + ddx[dir];
@@ -510,7 +510,7 @@ void move_player(int dir, bool disarm)
 	else if (!square_ispassable(cave, y, x))
 	{
 		/* Disturb the player */
-		disturb(p_ptr, 0, 0);
+		disturb(player, 0, 0);
 
 		/* Notice unknown obstacles */
 		if (!sqinfo_has(cave->info[y][x], SQUARE_MARK))
@@ -561,12 +561,12 @@ void move_player(int dir, bool disarm)
 
 		/* Note the change in the detect status */
 		if (old_dtrap != new_dtrap)
-			p_ptr->redraw |= (PR_DTRAP);
+			player->redraw |= (PR_DTRAP);
 
 		/* Disturb player if the player is about to leave the area */
-		if (p_ptr->running && !p_ptr->running_firststep && old_dtrap && !new_dtrap)
+		if (player->running && !player->running_firststep && old_dtrap && !new_dtrap)
 		{
-			disturb(p_ptr, 0, 0);
+			disturb(player, 0, 0);
 			return;
 		}
 
@@ -574,19 +574,19 @@ void move_player(int dir, bool disarm)
 		monster_swap(py, px, y, x);
   
 		/* New location */
-		y = py = p_ptr->py;
-		x = px = p_ptr->px;
+		y = py = player->py;
+		x = px = player->px;
 
 		/* Searching */
-		if (p_ptr->searching ||
-				(p_ptr->state.skills[SKILL_SEARCH_FREQUENCY] >= 50) ||
-				one_in_(50 - p_ptr->state.skills[SKILL_SEARCH_FREQUENCY]))
+		if (player->searching ||
+				(player->state.skills[SKILL_SEARCH_FREQUENCY] >= 50) ||
+				one_in_(50 - player->state.skills[SKILL_SEARCH_FREQUENCY]))
 			search(FALSE);
 
 		/* Handle "store doors" */
-		if (square_isshop(cave, p_ptr->py, p_ptr->px)) {
+		if (square_isshop(cave, player->py, player->px)) {
 			/* Disturb */
-			disturb(p_ptr, 0, 0);
+			disturb(player, 0, 0);
 			cmdq_push(CMD_ENTER_STORE);
 		}
 
@@ -594,7 +594,7 @@ void move_player(int dir, bool disarm)
 		else
 		{
 			/* Handle objects (later) */
-			p_ptr->notice |= (PN_PICKUP);
+			player->notice |= (PN_PICKUP);
 		}
 
 
@@ -602,7 +602,7 @@ void move_player(int dir, bool disarm)
 		if (square_invisible_trap(cave, y, x)) 
 		{
 			/* Disturb */
-			disturb(p_ptr, 0, 0);
+			disturb(player, 0, 0);
 			
 			/* Hit the trap. */
 			hit_trap(y, x);
@@ -612,12 +612,12 @@ void move_player(int dir, bool disarm)
 		else if (square_visible_trap(cave, y, x))
 		{
 			/* Disturb */
-			disturb(p_ptr, 0, 0);
+			disturb(player, 0, 0);
 
 			/* Hit the trap */
 			hit_trap(y, x);
 		}
 	}
 
-	p_ptr->running_firststep = FALSE;
+	player->running_firststep = FALSE;
 }

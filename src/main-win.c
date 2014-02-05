@@ -2505,7 +2505,7 @@ static void windows_map_aux(void)
 	}
 
 	/* Highlight the player */
-	Term_curs_win(p_ptr->px - min_x, p_ptr->py - min_y);
+	Term_curs_win(player->px - min_x, player->py - min_y);
 }
 
 
@@ -3179,7 +3179,7 @@ static void start_screensaver(void)
 	my_strcpy(op_ptr->full_name, saverfilename, sizeof(op_ptr->full_name));
 
 	/* Set 'savefile' to a valid name */
-	savefile_set_name(player_safe_name(p_ptr, FALSE));
+	savefile_set_name(player_safe_name(player, FALSE));
 
 	/* Does the savefile already exist? */
 	file_exist = file_exists(savefile);

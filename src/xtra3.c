@@ -120,10 +120,10 @@ static void prt_stat(int stat, int row, int col)
 	char tmp[32];
 
 	/* Display "injured" stat */
-	if (p_ptr->stat_cur[stat] < p_ptr->stat_max[stat])
+	if (player->stat_cur[stat] < player->stat_max[stat])
 	{
 		put_str(stat_names_reduced[stat], row, col);
-		cnv_stat(p_ptr->state.stat_use[stat], tmp, sizeof(tmp));
+		cnv_stat(player->state.stat_use[stat], tmp, sizeof(tmp));
 		c_put_str(TERM_YELLOW, tmp, row, col + 6);
 	}
 
@@ -131,12 +131,12 @@ static void prt_stat(int stat, int row, int col)
 	else
 	{
 		put_str(stat_names[stat], row, col);
-		cnv_stat(p_ptr->state.stat_use[stat], tmp, sizeof(tmp));
+		cnv_stat(player->state.stat_use[stat], tmp, sizeof(tmp));
 		c_put_str(TERM_L_GREEN, tmp, row, col + 6);
 	}
 
 	/* Indicate natural maximum */
-	if (p_ptr->stat_max[stat] == 18+100)
+	if (player->stat_max[stat] == 18+100)
 	{
 		put_str("!", row, col + 3);
 	}
@@ -151,13 +151,13 @@ static void prt_title(int row, int col)
 	const char *p;
 
 	/* Wizard */
-	if (p_ptr->wizard)
+	if (player->wizard)
 	{
 		p = "[=-WIZARD-=]";
 	}
 
 	/* Winner */
-	else if (p_ptr->total_winner || (p_ptr->lev > PY_MAX_LEVEL))
+	else if (player->total_winner || (player->lev > PY_MAX_LEVEL))
 	{
 		p = "***WINNER***";
 	}
@@ -165,7 +165,7 @@ static void prt_title(int row, int col)
 	/* Normal */
 	else
 	{
-		p = p_ptr->class->title[(p_ptr->lev - 1) / 5];
+		p = player->class->title[(player->lev - 1) / 5];
 	}
 
 	prt_field(p, row, col);
@@ -179,9 +179,9 @@ static void prt_level(int row, int col)
 {
 	char tmp[32];
 
-	strnfmt(tmp, sizeof(tmp), "%6d", p_ptr->lev);
+	strnfmt(tmp, sizeof(tmp), "%6d", player->lev);
 
-	if (p_ptr->lev >= p_ptr->max_lev)
+	if (player->lev >= player->max_lev)
 	{
 		put_str("LEVEL ", row, col);
 		c_put_str(TERM_L_GREEN, tmp, row, col + 6);
@@ -200,20 +200,20 @@ static void prt_level(int row, int col)
 static void prt_exp(int row, int col)
 {
 	char out_val[32];
-	bool lev50 = (p_ptr->lev == 50);
+	bool lev50 = (player->lev == 50);
 
-	long xp = (long)p_ptr->exp;
+	long xp = (long)player->exp;
 
 
 	/* Calculate XP for next level */
 	if (!lev50)
-		xp = (long)(player_exp[p_ptr->lev - 1] * p_ptr->expfact / 100L) - p_ptr->exp;
+		xp = (long)(player_exp[player->lev - 1] * player->expfact / 100L) - player->exp;
 
 	/* Format XP */
 	strnfmt(out_val, sizeof(out_val), "%8ld", (long)xp);
 
 
-	if (p_ptr->exp >= p_ptr->max_exp)
+	if (player->exp >= player->max_exp)
 	{
 		put_str((lev50 ? "EXP" : "NXT"), row, col);
 		c_put_str(TERM_L_GREEN, out_val, row, col + 4);
@@ -234,7 +234,7 @@ static void prt_gold(int row, int col)
 	char tmp[32];
 
 	put_str("AU ", row, col);
-	strnfmt(tmp, sizeof(tmp), "%9ld", (long)p_ptr->au);
+	strnfmt(tmp, sizeof(tmp), "%9ld", (long)player->au);
 	c_put_str(TERM_L_GREEN, tmp, row, col + 3);
 }
 
@@ -257,7 +257,7 @@ static void prt_equippy(int row, int col)
 	/* Dump equippy chars */
 	for (i = INVEN_WIELD; i < INVEN_TOTAL; i++) {
 		/* Object */
-		o_ptr = &p_ptr->inventory[i];
+		o_ptr = &player->inventory[i];
 
 		if (o_ptr->kind) {
 			c = object_char(o_ptr);
@@ -281,7 +281,7 @@ static void prt_ac(int row, int col)
 	char tmp[32];
 
 	put_str("Cur AC ", row, col);
-	strnfmt(tmp, sizeof(tmp), "%5d", p_ptr->state.dis_ac + p_ptr->state.dis_to_a);
+	strnfmt(tmp, sizeof(tmp), "%5d", player->state.dis_ac + player->state.dis_to_a);
 	c_put_str(TERM_L_GREEN, tmp, row, col + 7);
 }
 
@@ -291,12 +291,12 @@ static void prt_ac(int row, int col)
 static void prt_hp(int row, int col)
 {
 	char cur_hp[32], max_hp[32];
-	byte color = player_hp_attr(p_ptr);
+	byte color = player_hp_attr(player);
 
 	put_str("HP ", row, col);
 
-	strnfmt(max_hp, sizeof(max_hp), "%4d", p_ptr->mhp);
-	strnfmt(cur_hp, sizeof(cur_hp), "%4d", p_ptr->chp);
+	strnfmt(max_hp, sizeof(max_hp), "%4d", player->mhp);
+	strnfmt(cur_hp, sizeof(cur_hp), "%4d", player->chp);
 	
 	c_put_str(color, cur_hp, row, col + 3);
 	c_put_str(TERM_WHITE, "/", row, col + 7);
@@ -309,15 +309,15 @@ static void prt_hp(int row, int col)
 static void prt_sp(int row, int col)
 {
 	char cur_sp[32], max_sp[32];
-	byte color = player_sp_attr(p_ptr);
+	byte color = player_sp_attr(player);
 
 	/* Do not show mana unless we have some */
-	if (!p_ptr->msp) return;
+	if (!player->msp) return;
 
 	put_str("SP ", row, col);
 
-	strnfmt(max_sp, sizeof(max_sp), "%4d", p_ptr->msp);
-	strnfmt(cur_sp, sizeof(cur_sp), "%4d", p_ptr->csp);
+	strnfmt(max_sp, sizeof(max_sp), "%4d", player->msp);
+	strnfmt(cur_sp, sizeof(cur_sp), "%4d", player->csp);
 
 	/* Show mana */
 	c_put_str(color, cur_sp, row, col + 3);
@@ -330,14 +330,14 @@ static void prt_sp(int row, int col)
  */
 byte monster_health_attr(void)
 {
-	struct monster *mon = p_ptr->health_who;
+	struct monster *mon = player->health_who;
 	byte attr;
 
 	if (!mon) {
 		/* Not tracking */
 		attr = TERM_DARK;
 
-	} else if (!mon->ml || mon->hp < 0 || p_ptr->timed[TMD_IMAGE]) {
+	} else if (!mon->ml || mon->hp < 0 || player->timed[TMD_IMAGE]) {
 		/* The monster health is "unknown" */
 		attr = TERM_WHITE;
 
@@ -391,7 +391,7 @@ byte monster_health_attr(void)
 static void prt_health(int row, int col)
 {
 	byte attr = monster_health_attr();
-	struct monster *mon = p_ptr->health_who;
+	struct monster *mon = player->health_who;
 
 	/* Not tracking */
 	if (!mon)
@@ -403,7 +403,7 @@ static void prt_health(int row, int col)
 
 	/* Tracking an unseen, hallucinatory, or dead monster */
 	if (!mon->ml || /* Unseen */
-			(p_ptr->timed[TMD_IMAGE]) || /* Hallucination */
+			(player->timed[TMD_IMAGE]) || /* Hallucination */
 			(mon->hp < 0)) /* Dead (?) */
 	{
 		/* The monster health is "unknown" */
@@ -433,14 +433,14 @@ static void prt_health(int row, int col)
  */
 static void prt_speed(int row, int col)
 {
-	int i = p_ptr->state.speed;
+	int i = player->state.speed;
 
 	byte attr = TERM_WHITE;
 	const char *type = NULL;
 	char buf[32] = "";
 
 	/* Hack -- Visually "undo" the Search Mode Slowdown */
-	if (p_ptr->searching) i += 10;
+	if (player->searching) i += 10;
 
 	/* Fast */
 	if (i > 110)
@@ -471,14 +471,14 @@ static void prt_depth(int row, int col)
 {
 	char depths[32];
 
-	if (!p_ptr->depth)
+	if (!player->depth)
 	{
 		my_strcpy(depths, "Town", sizeof(depths));
 	}
 	else
 	{
 		strnfmt(depths, sizeof(depths), "%d' (L%d)",
-		        p_ptr->depth * 50, p_ptr->depth);
+		        player->depth * 50, player->depth);
 	}
 
 	/* Right-Adjust the "depth", and clear old values */
@@ -494,8 +494,8 @@ static void prt_dex(int row, int col) { prt_stat(A_DEX, row, col); }
 static void prt_wis(int row, int col) { prt_stat(A_WIS, row, col); }
 static void prt_int(int row, int col) { prt_stat(A_INT, row, col); }
 static void prt_con(int row, int col) { prt_stat(A_CON, row, col); }
-static void prt_race(int row, int col) { prt_field(p_ptr->race->name, row, col); }
-static void prt_class(int row, int col) { prt_field(p_ptr->class->name, row, col); }
+static void prt_race(int row, int col) { prt_field(player->race->name, row, col); }
+static void prt_class(int row, int col) { prt_field(player->class->name, row, col); }
 
 
 /*
@@ -594,7 +594,7 @@ static void hp_colour_change(game_event_type type, game_event_data *data, void *
 	 */
 	if ((OPT(hp_changes_color)) && (use_graphics == GRAPHICS_NONE))
 	{
-		square_light_spot(cave, p_ptr->py, p_ptr->px);
+		square_light_spot(cave, player->py, player->px);
 	}
 }
 
@@ -638,7 +638,7 @@ static const struct state_info stun_data[] =
 	{     0, S("Stun"),        TERM_ORANGE },
 };
 
-/* p_ptr->hunger descriptions */
+/* player->hunger descriptions */
 static const struct state_info hunger_data[] =
 {
 	{ PY_FOOD_FAINT, S("Faint"),    TERM_RED },
@@ -706,7 +706,7 @@ static const struct state_info effects[] =
  */
 static size_t prt_recall(int row, int col)
 {
-	if (p_ptr->word_recall)
+	if (player->word_recall)
 	{
 		c_put_str(TERM_WHITE, "Recall", row, col);
 		return sizeof "Recall";
@@ -721,7 +721,7 @@ static size_t prt_recall(int row, int col)
  */
 static size_t prt_cut(int row, int col)
 {
-	PRINT_STATE(>, cut_data, p_ptr->timed[TMD_CUT], row, col);
+	PRINT_STATE(>, cut_data, player->timed[TMD_CUT], row, col);
 	return 0;
 }
 
@@ -731,7 +731,7 @@ static size_t prt_cut(int row, int col)
  */
 static size_t prt_stun(int row, int col)
 {
-	PRINT_STATE(>, stun_data, p_ptr->timed[TMD_STUN], row, col);
+	PRINT_STATE(>, stun_data, player->timed[TMD_STUN], row, col);
 	return 0;
 }
 
@@ -741,7 +741,7 @@ static size_t prt_stun(int row, int col)
  */
 static size_t prt_hunger(int row, int col)
 {
-	PRINT_STATE(<=, hunger_data, p_ptr->food, row, col);
+	PRINT_STATE(<=, hunger_data, player->food, row, col);
 	return 0;
 }
 
@@ -762,10 +762,10 @@ static size_t prt_state(int row, int col)
 
 
 	/* Resting */
-	if (player_is_resting(p_ptr))
+	if (player_is_resting(player))
 	{
 		int i;
-		int n = player_resting_count(p_ptr);
+		int n = player_resting_count(player);
 
 		/* Start with "Rest" */
 		my_strcpy(text, "Rest      ", sizeof(text));
@@ -845,7 +845,7 @@ static size_t prt_state(int row, int col)
 	}
 
 	/* Searching */
-	else if (p_ptr->searching)
+	else if (player->searching)
 	{
 		my_strcpy(text, "Searching ", sizeof(text));
 	}
@@ -863,10 +863,10 @@ static size_t prt_state(int row, int col)
 static size_t prt_dtrap(int row, int col)
 {
 	/* The player is in a trap-detected grid */
-	if (sqinfo_has(cave->info[p_ptr->py][p_ptr->px], SQUARE_DTRAP))
+	if (sqinfo_has(cave->info[player->py][player->px], SQUARE_DTRAP))
 	{
 		/* The player is on the border */
-		if (sqinfo_has(cave->info[p_ptr->py][p_ptr->px], SQUARE_DEDGE))
+		if (sqinfo_has(cave->info[player->py][player->px], SQUARE_DEDGE))
 			c_put_str(TERM_YELLOW, "DTrap", row, col);
 		else
 			c_put_str(TERM_L_GREEN, "DTrap", row, col);
@@ -887,15 +887,15 @@ static size_t prt_study(int row, int col)
 	int attr = TERM_WHITE;
 
 	/* Can the player learn new spells? */
-	if (p_ptr->new_spells)
+	if (player->new_spells)
 	{
 		/* If the player does not carry a book with spells they can study,
 		   the message is displayed in a darker colour */
-		if (!player_book_has_unlearned_spells(p_ptr))
+		if (!player_book_has_unlearned_spells(player))
 			attr = TERM_L_DARK;
 
 		/* Print study message */
-		text = format("Study (%d)", p_ptr->new_spells);
+		text = format("Study (%d)", player->new_spells);
 		c_put_str(attr, text, row, col);
 		return strlen(text) + 1;
 	}
@@ -913,7 +913,7 @@ static size_t prt_tmd(int row, int col)
 
 	for (i = 0; i < N_ELEMENTS(effects); i++)
 	{
-		if (p_ptr->timed[effects[i].value])
+		if (player->timed[effects[i].value])
 		{
 			c_put_str(effects[i].attr, effects[i].str, row, col + len);
 			len += effects[i].len;
@@ -928,7 +928,7 @@ static size_t prt_tmd(int row, int col)
  */
 static size_t prt_unignore(int row, int col)
 {
-	if (p_ptr->unignoring) {
+	if (player->unignoring) {
 		const char *str = "Unignoring";
 		put_str(str, row, col);
 		return strlen(str) + 1;
@@ -1192,8 +1192,8 @@ static void update_monster_subwindow(game_event_type type, game_event_data *data
 	Term_activate(inv_term);
 
 	/* Display monster race info */
-	if (p_ptr->monster_race)
-		lore_show_subwindow(p_ptr->monster_race, get_lore(p_ptr->monster_race));
+	if (player->monster_race)
+		lore_show_subwindow(player->monster_race, get_lore(player->monster_race));
 
 	Term_fresh();
 	
@@ -1210,10 +1210,10 @@ static void update_object_subwindow(game_event_type type, game_event_data *data,
 	/* Activate */
 	Term_activate(inv_term);
 	
-	if (p_ptr->object_idx != NO_OBJECT)
-		display_object_idx_recall(p_ptr->object_idx);
-	else if (p_ptr->object_kind)
-		display_object_kind_recall(p_ptr->object_kind);
+	if (player->object_idx != NO_OBJECT)
+		display_object_idx_recall(player->object_idx);
+	else if (player->object_kind)
+		display_object_kind_recall(player->object_kind);
 	Term_fresh();
 	
 	/* Restore */
@@ -1370,8 +1370,8 @@ static void update_player_compact_subwindow(game_event_type type, game_event_dat
 	Term_activate(inv_term);
 
 	/* Race and Class */
-	prt_field(p_ptr->race->name, row++, col);
-	prt_field(p_ptr->class->name, row++, col);
+	prt_field(player->race->name, row++, col);
+	prt_field(player->class->name, row++, col);
 
 	/* Title */
 	prt_title(row++, col);
@@ -1709,12 +1709,12 @@ static void check_panel(game_event_type type, game_event_data *data, void *user)
 
 static void see_floor_items(game_event_type type, game_event_data *data, void *user)
 {
-	int py = p_ptr->py;
-	int px = p_ptr->px;
+	int py = player->py;
+	int px = player->px;
 
 	size_t floor_num = 0;
 	int floor_list[MAX_FLOOR_STACK + 1];
-	bool blind = ((p_ptr->timed[TMD_BLIND]) || (no_light()));
+	bool blind = ((player->timed[TMD_BLIND]) || (no_light()));
 
 	const char *p = "see";
 	int can_pickup = 0;

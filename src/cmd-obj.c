@@ -215,8 +215,8 @@ void do_cmd_uninscribe(struct command *cmd)
 
 	o_ptr->note = 0;
 
-	p_ptr->notice |= (PN_COMBINE | PN_SQUELCH | PN_SORT_QUIVER);
-	p_ptr->redraw |= (PR_INVEN | PR_EQUIP);
+	player->notice |= (PN_COMBINE | PN_SQUELCH | PN_SORT_QUIVER);
+	player->redraw |= (PR_INVEN | PR_EQUIP);
 }
 
 /* Add inscription */
@@ -234,8 +234,8 @@ void do_cmd_inscribe(struct command *cmd)
 	o_ptr->note = quark_add(str);
 	string_free((char *)str);
 
-	p_ptr->notice |= (PN_COMBINE | PN_SQUELCH | PN_SORT_QUIVER);
-	p_ptr->redraw |= (PR_INVEN | PR_EQUIP);
+	player->notice |= (PN_COMBINE | PN_SQUELCH | PN_SORT_QUIVER);
+	player->redraw |= (PR_INVEN | PR_EQUIP);
 }
 
 
@@ -263,7 +263,7 @@ void do_cmd_takeoff(struct command *cmd)
 
 	(void)inven_takeoff(item, 255);
 	pack_overflow();
-	p_ptr->energy_use = 50;
+	player->energy_use = 50;
 }
 
 
@@ -286,12 +286,12 @@ void wield_item(object_type *o_ptr, int item, int slot)
 	if (tval_is_ammo(o_ptr))
 	{
 		num = o_ptr->number;
-		combined_ammo = object_similar(o_ptr, &p_ptr->inventory[slot],
+		combined_ammo = object_similar(o_ptr, &player->inventory[slot],
 			OSTACK_QUIVER);
 	}
 
 	/* Take a turn */
-	p_ptr->energy_use = 100;
+	player->energy_use = 100;
 
 	/* Obtain local object */
 	object_copy(i_ptr, o_ptr);
@@ -320,7 +320,7 @@ void wield_item(object_type *o_ptr, int item, int slot)
 	}
 
 	/* Get the wield slot */
-	o_ptr = &p_ptr->inventory[slot];
+	o_ptr = &player->inventory[slot];
 
 	if (combined_ammo)
 	{
@@ -343,11 +343,11 @@ void wield_item(object_type *o_ptr, int item, int slot)
 		object_copy(o_ptr, i_ptr);
 
 		/* Increment the equip counter by hand */
-		p_ptr->equip_cnt++;
+		player->equip_cnt++;
 	}
 
 	/* Increase the weight */
-	p_ptr->total_weight += i_ptr->weight * num;
+	player->total_weight += i_ptr->weight * num;
 
 	/* Track object if necessary */
 	if (track_wielded_item)
@@ -389,15 +389,15 @@ void wield_item(object_type *o_ptr, int item, int slot)
 	}
 
 	/* Save quiver size */
-	save_quiver_size(p_ptr);
+	save_quiver_size(player);
 
 	/* See if we have to overflow the pack */
 	pack_overflow();
 
 	/* Recalculate bonuses, torch, mana */
-	p_ptr->notice |= PN_SORT_QUIVER;
-	p_ptr->update |= (PU_BONUS | PU_TORCH | PU_MANA);
-	p_ptr->redraw |= (PR_INVEN | PR_EQUIP);
+	player->notice |= PN_SORT_QUIVER;
+	player->update |= (PU_BONUS | PU_TORCH | PU_MANA);
+	player->redraw |= (PR_INVEN | PR_EQUIP);
 }
 
 
@@ -431,7 +431,7 @@ void do_cmd_wield(struct command *cmd)
 		return;
 	}
 
-	equip_o_ptr = &p_ptr->inventory[slot];
+	equip_o_ptr = &player->inventory[slot];
 
 	/* If the slot is open, wield and be done */
 	if (!equip_o_ptr->kind)
@@ -498,7 +498,7 @@ void do_cmd_drop(struct command *cmd)
 	}
 
 	inven_drop(item, amt);
-	p_ptr->energy_use = 50;
+	player->energy_use = 50;
 }
 
 /* Destroy an item */
@@ -527,7 +527,7 @@ void do_cmd_destroy(struct command *cmd)
 		msgt(MSG_DESTROY, "Ignoring %s.", o_name);
 
 		o_ptr->ignore = TRUE;
-		p_ptr->notice |= PN_SQUELCH;
+		player->notice |= PN_SQUELCH;
 	}
 }
 
@@ -564,7 +564,7 @@ void do_cmd_use(struct command *cmd)
 	bool ident = FALSE, used = FALSE;
 	bool was_aware;
 	int dir = 5;
-	int px = p_ptr->px, py = p_ptr->py;
+	int px = player->px, py = player->py;
 	int snd = MSG_GENERIC, boost, level;
 	enum {
 		USE_TIMEOUT,
@@ -628,7 +628,7 @@ void do_cmd_use(struct command *cmd)
 	else if (tval_is_scroll(o_ptr))
 	{
 		/* Check player can use scroll */
-		if (!player_can_read(p_ptr, TRUE))
+		if (!player_can_read(player, TRUE))
 			return;
 
 		use = USE_SINGLE;
@@ -712,7 +712,7 @@ void do_cmd_use(struct command *cmd)
 		if (effect_obvious(effect)) object_flavor_aware(o_ptr);
 
 		/* Boost damage effects if skill > difficulty */
-		boost = MAX(p_ptr->state.skills[SKILL_DEVICE] - level, 0);
+		boost = MAX(player->state.skills[SKILL_DEVICE] - level, 0);
 
 		/* Do effect */
 		used = effect_do(effect, &ident, was_aware, dir, beam, boost);
@@ -737,14 +737,14 @@ void do_cmd_use(struct command *cmd)
 
 	/* Food feeds the player */
 	if (tval_can_have_nourishment(o_ptr))
-		player_set_food(p_ptr, p_ptr->food + o_ptr->pval[DEFAULT_PVAL]);
+		player_set_food(player, player->food + o_ptr->pval[DEFAULT_PVAL]);
 
 	/* Use the turn */
-	p_ptr->energy_use = 100;
+	player->energy_use = 100;
 
 	/* Mark as tried and redisplay */
-	p_ptr->notice |= (PN_COMBINE | PN_REORDER);
-	p_ptr->redraw |= (PR_INVEN | PR_EQUIP | PR_OBJECT);
+	player->notice |= (PN_COMBINE | PN_REORDER);
+	player->redraw |= (PR_INVEN | PR_EQUIP | PR_OBJECT);
 
 	/*
 	 * If the player becomes aware of the item's function, then mark it as
@@ -758,8 +758,8 @@ void do_cmd_use(struct command *cmd)
 
 		object_flavor_aware(o_ptr);
 		if (tval_is_rod(o_ptr)) object_notice_everything(o_ptr);
-		player_exp_gain(p_ptr, (lev + (p_ptr->lev / 2)) / p_ptr->lev);
-		p_ptr->notice |= PN_SQUELCH;
+		player_exp_gain(player, (lev + (player->lev / 2)) / player->lev);
+		player->notice |= PN_SQUELCH;
 	}
 	else if (used)
 	{
@@ -859,13 +859,13 @@ static void refill_lamp(object_type *j_ptr, object_type *o_ptr, int item)
 
 			/* Unstack the used item */
 			o_ptr->number--;
-			p_ptr->total_weight -= i_ptr->weight;
+			player->total_weight -= i_ptr->weight;
 
 			/* Carry or drop */
 			if (item >= 0)
-				inven_carry(p_ptr, i_ptr);
+				inven_carry(player, i_ptr);
 			else
-				drop_near(cave, i_ptr, 0, p_ptr->py, p_ptr->px, FALSE);
+				drop_near(cave, i_ptr, 0, player->py, player->px, FALSE);
 		}
 
 		/* Empty a single lantern */
@@ -876,10 +876,10 @@ static void refill_lamp(object_type *j_ptr, object_type *o_ptr, int item)
 		}
 
 		/* Combine / Reorder the pack (later) */
-		p_ptr->notice |= (PN_COMBINE | PN_REORDER);
+		player->notice |= (PN_COMBINE | PN_REORDER);
 
 		/* Redraw stuff */
-		p_ptr->redraw |= (PR_INVEN);
+		player->redraw |= (PR_INVEN);
 	}
 
 	/* Refilled from a flask */
@@ -903,16 +903,16 @@ static void refill_lamp(object_type *j_ptr, object_type *o_ptr, int item)
 	}
 
 	/* Recalculate torch */
-	p_ptr->update |= (PU_TORCH);
+	player->update |= (PU_TORCH);
 
 	/* Redraw stuff */
-	p_ptr->redraw |= (PR_EQUIP);
+	player->redraw |= (PR_EQUIP);
 }
 
 
 void do_cmd_refill(struct command *cmd)
 {
-	object_type *j_ptr = &p_ptr->inventory[INVEN_LIGHT];
+	object_type *j_ptr = &player->inventory[INVEN_LIGHT];
 
 	int item;
 	object_type *o_ptr;
@@ -941,7 +941,7 @@ void do_cmd_refill(struct command *cmd)
 		return;
 	}
 
-	p_ptr->energy_use = 50;
+	player->energy_use = 50;
 }
 
 
@@ -958,7 +958,7 @@ void do_cmd_study_spell(struct command *cmd)
 	int i;
 
 	/* Check the player can study at all atm */
-	if (!player_can_study(p_ptr, TRUE))
+	if (!player_can_study(player, TRUE))
 		return;
 
 	/* Check that the player can actually learn the nominated spell. */
@@ -973,7 +973,7 @@ void do_cmd_study_spell(struct command *cmd)
 			{
 				/* Spell is in an available book, and player is capable. */
 				spell_learn(spell);
-				p_ptr->energy_use = 100;
+				player->energy_use = 100;
 			}
 			else
 			{
@@ -996,11 +996,11 @@ void do_cmd_cast(struct command *cmd)
 	int item_num;
 	int i;
 
-	const char *verb = ((p_ptr->class->spell_book == TV_MAGIC_BOOK) ? "cast" : "recite");
-	const char *noun = ((p_ptr->class->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
+	const char *verb = ((player->class->spell_book == TV_MAGIC_BOOK) ? "cast" : "recite");
+	const char *noun = ((player->class->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
 
 	/* Check the player can cast spells at all */
-	if (!player_can_cast(p_ptr, TRUE))
+	if (!player_can_cast(player, TRUE))
 		return;
 
 	/* Check spell is in a book they can access */
@@ -1014,16 +1014,16 @@ void do_cmd_cast(struct command *cmd)
 			if (spell_okay_to_cast(spell))
 			{
 				/* Get the spell */
-				const magic_type *s_ptr = &p_ptr->class->spells.info[spell];
+				const magic_type *s_ptr = &player->class->spells.info[spell];
 
 				/* Check for unknown objects to prevent wasted player turns. */
-				if (spell_is_identify(p_ptr->class->spell_book, spell) && !spell_identify_unknown_available()) {
+				if (spell_is_identify(player->class->spell_book, spell) && !spell_identify_unknown_available()) {
 					msg("You have nothing to identify.");
 					return;
 				}
 
 				/* Verify "dangerous" spells */
-				if (s_ptr->smana > p_ptr->csp)
+				if (s_ptr->smana > player->csp)
 				{
 					/* Warning */
 					msg("You do not have enough mana to %s this %s.", verb, noun);
@@ -1037,7 +1037,7 @@ void do_cmd_cast(struct command *cmd)
 
 				/* Cast a spell */
 				if (spell_cast(spell, dir))
-					p_ptr->energy_use = 100;
+					player->energy_use = 100;
 			}
 			else
 			{
@@ -1063,12 +1063,12 @@ void do_cmd_study_book(struct command *cmd)
 	struct spell *sp;
 	int k = 0;
 
-	const char *p = ((p_ptr->class->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
+	const char *p = ((player->class->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
 
 	o_ptr = object_from_item_idx(book);
 
 	/* Check the player can study at all atm */
-	if (!player_can_study(p_ptr, TRUE))
+	if (!player_can_study(player, TRUE))
 		return;
 
 	/* Check that the player has access to the nominated spell book. */
@@ -1094,7 +1094,7 @@ void do_cmd_study_book(struct command *cmd)
 	else
 	{
 		spell_learn(spell);
-		p_ptr->energy_use = 100;	
+		player->energy_use = 100;	
 	}
 }
 
@@ -1198,7 +1198,7 @@ void textui_cmd_destroy_menu(int item)
 		squelch_level[type] = value;
 	}
 
-	p_ptr->notice |= PN_SQUELCH;
+	player->notice |= PN_SQUELCH;
 
 	menu_dynamic_free(m);
 }
@@ -1218,8 +1218,8 @@ void textui_cmd_destroy(void)
 
 void textui_cmd_toggle_ignore(void)
 {
-	p_ptr->unignoring = !p_ptr->unignoring;
-	p_ptr->notice |= PN_SQUELCH;
+	player->unignoring = !player->unignoring;
+	player->notice |= PN_SQUELCH;
 	do_cmd_redraw();
 }
 

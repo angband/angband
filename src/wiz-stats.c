@@ -477,7 +477,7 @@ static bool first_find(int fl[TRIES_SIZE])
 	if (fl[iter] > 0) return FALSE;
 
 	/* assign the depth to this value */
-	fl[iter] = p_ptr->depth;
+	fl[iter] = player->depth;
 	
 	/* success */
 	return TRUE;
@@ -492,7 +492,7 @@ static void add_stats(double total[MAX_LVL], double mondrop[MAX_LVL], double inv
 		int lvl;
 		
 		/* get player level */
-		lvl=p_ptr->depth;
+		lvl=player->depth;
 
 		/* be careful about bounds */
 		if ((lvl > 100) || (lvl < 0)) return;
@@ -533,7 +533,7 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 	assert(o_ptr->kind);
 
 	/* get player depth */
-	lvl=p_ptr->depth;	
+	lvl=player->depth;	
 	
 	/* extract flags */
 	object_flags(o_ptr,f);
@@ -1275,14 +1275,14 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 		//msg_format("Found artifact %s",a_ptr->name);
 		
 		/* artifact is shallow */
-		if (a_ptr->alloc_min < (p_ptr->depth - 20)) art_shal[lvl] += addval;
+		if (a_ptr->alloc_min < (player->depth - 20)) art_shal[lvl] += addval;
 		
 		/* artifact is close to the player depth */
-		if ((a_ptr->alloc_min >= p_ptr->depth - 20) &&
-			(a_ptr->alloc_min <= p_ptr->depth )) art_ave[lvl] += addval;
+		if ((a_ptr->alloc_min >= player->depth - 20) &&
+			(a_ptr->alloc_min <= player->depth )) art_ave[lvl] += addval;
 		
 		/* artifact is out of depth */
-		if (a_ptr->alloc_min > (p_ptr->depth)) art_ood[lvl] += addval;
+		if (a_ptr->alloc_min > (player->depth)) art_ood[lvl] += addval;
 		
 		/* check to see if it's a special artifact */
 		if ((o_ptr->tval == TV_LIGHT) || (o_ptr->tval == TV_AMULET)
@@ -1399,7 +1399,7 @@ static bool stats_monster(monster_type *m_ptr, int i)
 	static int lvl;
 		
 	/* get player depth */
-	lvl=p_ptr->depth;
+	lvl=player->depth;
 		
 		
 	/* Increment monster count */
@@ -1419,8 +1419,8 @@ static bool stats_monster(monster_type *m_ptr, int i)
 	}	
 	
 	/* Is it mostly dangerous (10 levels ood or less?)*/
-	if ((m_ptr->race->level > p_ptr->depth) && 
-		(m_ptr->race->level <= p_ptr->depth+10)){
+	if ((m_ptr->race->level > player->depth) && 
+		(m_ptr->race->level <= player->depth+10)){
 		
 			mon_ood[lvl] += addval;
 			
@@ -1431,7 +1431,7 @@ static bool stats_monster(monster_type *m_ptr, int i)
 		
 		
 	/* Is it deadly? */
-	if (m_ptr->race->level > p_ptr->depth + 10){
+	if (m_ptr->race->level > player->depth + 10){
 	
 		mon_deadly[lvl] += addval;
 	
@@ -2019,7 +2019,7 @@ static void scan_for_monsters(void)
 static void stats_collect_level(void)
 {
 	/* Make a dungeon */
-	cave_generate(cave,p_ptr);
+	cave_generate(cave,player);
 	
 	/* Scan for objects, these are floor objects */
 	scan_for_objects();
@@ -2081,8 +2081,8 @@ static void diving_stats(void)
 	/* iterate through levels */
 	for (depth = 0; depth < MAX_LVL; depth += 5){
 	
-		p_ptr->depth = depth;
-		if (p_ptr->depth == 0) p_ptr->depth = 1;
+		player->depth = depth;
+		if (player->depth == 0) player->depth = 1;
 		
 		/* do many iterations of each level */
 		for (iter = 0; iter < tries; iter++){
@@ -2131,7 +2131,7 @@ static void clearing_stats(void)
 			//msg_format("Attempting level %d",depth);
 		
 			/* move player to that depth */
-			p_ptr->depth = depth;
+			player->depth = depth;
 		
 			/* get stats */
 			stats_collect_level();
@@ -2328,8 +2328,8 @@ void calc_cave_distances(void)
 	clear_cave_dist();
 	
 	/* Get player location */
-	oy = d_y_old[0] = p_ptr->py;
-	ox = d_x_old[0] = p_ptr->px;
+	oy = d_y_old[0] = player->py;
+	ox = d_x_old[0] = player->px;
 	d_old_max = 1;
 	
 	/* distance from player starts at 0*/
@@ -2429,7 +2429,7 @@ void pit_stats(void)
 	if (type < 1) type = 1;
 
 	/* Format second default value */	
-	strnfmt(tmp_val, sizeof(tmp_val), "%d", p_ptr->depth);
+	strnfmt(tmp_val, sizeof(tmp_val), "%d", player->depth);
 	
 	/* Ask for the input - take the first 7 characters*/
 	if (!get_string("Depth: ", tmp_val, 7)) return;
@@ -2519,7 +2519,7 @@ void disconnect_stats(void)
 	has_dsc_from_stairs = TRUE;
 	
 		/* Make a new cave */
-		cave_generate(cave,p_ptr);
+		cave_generate(cave,player);
 		
 		/* Fill the distance array */
 		calc_cave_distances();

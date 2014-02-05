@@ -1048,8 +1048,8 @@ static size_t Term_mbcs_cocoa(wchar_t *dest, const char *src, int n)
     /* Hack -- Forget messages */
     msg_flag = FALSE;
     
-    p_ptr->playing = FALSE;
-    p_ptr->leaving = TRUE;
+    player->playing = FALSE;
+    player->leaving = TRUE;
     quit_when_ready = TRUE;
 }
 
@@ -3406,7 +3406,7 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
 
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender
 {
-    if (p_ptr->playing == FALSE || game_is_finished == TRUE)
+    if (player->playing == FALSE || game_is_finished == TRUE)
     {
         return NSTerminateNow;
     }

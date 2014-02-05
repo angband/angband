@@ -307,7 +307,7 @@ bool los(int y1, int x1, int y2, int x2)
  */
 bool no_light(void)
 {
-	return (!player_can_see_bold(p_ptr->py, p_ptr->px));
+	return (!player_can_see_bold(player->py, player->px));
 }
 
 
@@ -684,7 +684,7 @@ void grid_data_as_text(grid_data *g, int *ap, wchar_t *cp, int *tap, wchar_t *tc
 		a = r_ptr->x_attr;
 		if ((OPT(hp_changes_color)) && !(a & 0x80))
 		{
-			switch(p_ptr->chp * 10 / p_ptr->mhp)
+			switch(player->chp * 10 / player->mhp)
 			{
 			case 10:
 			case  9: 
@@ -812,7 +812,7 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 	g->in_view = (sqinfo_has(cave->info[y][x], SQUARE_SEEN)) ? TRUE : FALSE;
 	g->is_player = (cave->m_idx[y][x] < 0) ? TRUE : FALSE;
 	g->m_idx = (g->is_player) ? 0 : cave->m_idx[y][x];
-	g->hallucinate = p_ptr->timed[TMD_IMAGE] ? TRUE : FALSE;
+	g->hallucinate = player->timed[TMD_IMAGE] ? TRUE : FALSE;
 	g->trapborder = (sqinfo_has(cave->info[y][x], SQUARE_DEDGE)) ? TRUE : FALSE;
 
 	if (g->in_view)
@@ -1281,8 +1281,8 @@ void prt_map(void)
  */
 void display_map(int *cy, int *cx)
 {
-	int py = p_ptr->py;
-	int px = p_ptr->px;
+	int py = player->py;
+	int px = player->px;
 
 	int map_hgt, map_wid;
 	int dungeon_hgt, dungeon_wid;
@@ -1970,8 +1970,8 @@ void cave_forget_flow(struct cave *c)
  */
 void cave_update_flow(struct cave *c)
 {
-	int py = p_ptr->py;
-	int px = p_ptr->px;
+	int py = player->py;
+	int px = player->px;
 
 	int ty, tx;
 
@@ -2141,10 +2141,10 @@ void wiz_light(bool full)
 	}
 
 	/* Fully update the visuals */
-	p_ptr->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
+	player->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
 
 	/* Redraw whole map, monster list */
-	p_ptr->redraw |= (PR_MAP | PR_MONLIST | PR_ITEMLIST);
+	player->redraw |= (PR_MAP | PR_MONLIST | PR_ITEMLIST);
 }
 
 
@@ -2184,10 +2184,10 @@ void wiz_dark(void)
 	}
 
 	/* Fully update the visuals */
-	p_ptr->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
+	player->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
 
 	/* Redraw map, monster list */
-	p_ptr->redraw |= (PR_MAP | PR_MONLIST | PR_ITEMLIST);
+	player->redraw |= (PR_MAP | PR_MONLIST | PR_ITEMLIST);
 }
 
 
@@ -2232,10 +2232,10 @@ void cave_illuminate(struct cave *c, bool daytime)
 
 
 	/* Fully update the visuals */
-	p_ptr->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
+	player->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
 
 	/* Redraw map, monster list */
-	p_ptr->redraw |= (PR_MAP | PR_MONLIST | PR_ITEMLIST);
+	player->redraw |= (PR_MAP | PR_MONLIST | PR_ITEMLIST);
 }
 
 struct feature *square_feat(struct cave *c, int y, int x)
@@ -3305,8 +3305,8 @@ int count_feats(int *y, int *x, bool (*test)(struct cave *cave, int y, int x), b
 		if ((d == 8) && !under) continue;
 
 		/* Extract adjacent (legal) location */
-		yy = p_ptr->py + ddy_ddd[d];
-		xx = p_ptr->px + ddx_ddd[d];
+		yy = player->py + ddy_ddd[d];
+		xx = player->px + ddx_ddd[d];
 
 		/* Paranoia */
 		if (!square_in_bounds_fully(cave, yy, xx)) continue;
