@@ -2418,7 +2418,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 
 	/* No projection path - jump to target */
 	if (flg & (PROJECT_JUMP)) {
-		source = loc(y, x);
+		source = loc(x, y);
 
 		/* Clear the flag */
 		flg &= ~(PROJECT_JUMP);
@@ -2426,21 +2426,21 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 
 	/* Start at player */
 	else if (who < 0)
-		source = loc(p_ptr->py, p_ptr->px);
+		source = loc(p_ptr->px, p_ptr->py);
 
 	/* Start at monster */
 	else if (who > 0)
-		source = loc(cave_monster(cave, who)->fy, cave_monster(cave, who)->fx);
+		source = loc(cave_monster(cave, who)->fx, cave_monster(cave, who)->fy);
 
 	/* Implies no caster, so assume source is target */
 	else
-		source = loc(y, x);
+		source = loc(x, y);
 
 	/* Default destination */
-	destination = loc(y, x);
+	destination = loc(x, y);
 
 	/* Default center of explosion (if any) */
-	centre = loc(source.y, source.x);
+	centre = loc(source.x, source.y);
 
 	/* 
 	 * An arc spell with no width and a non-zero radius is actually a 
