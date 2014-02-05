@@ -43,7 +43,7 @@
 void do_cmd_pickup(struct command *cmd)
 {
 	int energy_cost;
-	int item;
+	int item = 0;
 
 	/* Autopickup first */
 	energy_cost = do_autopickup() * 10;
