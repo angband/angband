@@ -22,6 +22,8 @@
 #include "mon-make.h"
 #include "monster.h"
 #include "mon-constants.h"
+#include "obj-tvalsval.h"
+#include "obj-util.h"
 #include "effects.h"
 #include "generate.h"
 /*
