@@ -1,8 +1,8 @@
 /* z-quark/quark.c */
 
 #include "unit-test.h"
+#include "z-color.h"
 #include "z-textblock.h"
-#include "z-term.h"
 
 int setup_tests(void **state) {
 	ok;

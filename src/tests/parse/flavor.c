@@ -6,7 +6,7 @@
 #include "obj-tvalsval.h"
 #include "obj-flag.h"
 #include "object.h"
-#include "z-term.h"
+#include "z-color.h"
 
 int setup_tests(void **state) {
 	*state = init_parse_flavor();

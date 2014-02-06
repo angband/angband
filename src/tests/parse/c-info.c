@@ -6,6 +6,7 @@
 #include "obj-flag.h"
 #include "object.h"
 #include "obj-tvalsval.h"
+#include "obj-util.h"
 #include "player.h"
 
 int setup_tests(void **state) {

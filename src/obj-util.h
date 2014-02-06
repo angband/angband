@@ -19,6 +19,9 @@
 #ifndef OBJECT_UTIL_H
 #define OBJECT_UTIL_H
 
+#include "cave.h"
+#include "player.h"
+
 struct object_kind *objkind_get(int tval, int sval);
 struct object_kind *objkind_byid(int kidx);
 void flavor_init(void);
