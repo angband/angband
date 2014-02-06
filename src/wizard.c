@@ -1465,7 +1465,6 @@ static void do_cmd_wiz_query(void)
 		case 's': mask |= (SQUARE_SEEN); break;
 		case 'v': mask |= (SQUARE_VIEW); break;
 		case 't': mask |= (SQUARE_WASSEEN); break;
-		case 'w': mask |= (SQUARE_WALL); break;
 	}
 
 	/* Scan map */

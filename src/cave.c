@@ -1517,11 +1517,6 @@ void do_cmd_view_map(void)
  * the player's torch.  This flag has special semantics for wall grids 
  * (see "update_view()").
  *
- * The "SQUARE_WALL" flag is used to determine which grids block the player's
- * line of sight.  This flag is used by the "update_view()" function to
- * determine which grids block line of sight, and to help determine which
- * grids can be "seen" by the player.  This flag must be very fast.
- *
  * The "SQUARE_VIEW" flag is used to determine which grids are currently in
  * line of sight of the player.  This flag is set by (and used by) the
  * "update_view()" function.  This flag is used by any code which needs to
@@ -1537,7 +1532,7 @@ void do_cmd_view_map(void)
  * The "SQUARE_SEEN" flag is used to determine which grids are currently in
  * line of sight of the player and also illuminated in some way.  This flag
  * is set by the "update_view()" function, using computations based on the
- * "SQUARE_VIEW" and "SQUARE_WALL" and "SQUARE_GLOW" flags of various grids.  
+ * "SQUARE_VIEW" and "SQUARE_GLOW" flags and terrain of various grids.  
  * This flag is used by any code which needs to know if the player can "see" a
  * given grid.  This flag is used by the "map_info()" function both to see
  * if a given "boring" grid can be seen by the player, and for some optional
@@ -1545,10 +1540,10 @@ void do_cmd_view_map(void)
  * abstraction around this flag, but certain code idioms are much more
  * efficient.  This flag is used to see if certain monsters are "visible" to
  * the player.  This flag is never set for a grid unless "SQUARE_VIEW" is also
- * set for the grid.  Whenever the "SQUARE_WALL" or "SQUARE_GLOW" flag changes
+ * set for the grid.  Whenever the terrain or "SQUARE_GLOW" flag changes
  * for a grid which has the "SQUARE_VIEW" flag set, the "SQUARE_SEEN" flag must
  * be recalculated.  The simplest way to do this is to call "forget_view()"
- * and "update_view()" whenever the "SQUARE_WALL" or "SQUARE_GLOW" flags change
+ * and "update_view()" whenever the terrain or "SQUARE_GLOW" flag changes
  * for a grid which has "SQUARE_VIEW" set.
  *
  * The "SQUARE_WASSEEN" flag is used for a variety of temporary purposes.  This
@@ -1608,8 +1603,8 @@ void do_cmd_view_map(void)
  * some way.  However, for the player to "see" the grid, as determined by
  * the "SQUARE_SEEN" flag, the player must not be blind, the grid must have
  * the "SQUARE_VIEW" flag set, and if the grid is a "wall" grid, and it is
- * not lit by the player's torch, then it must touch a grid which does not
- * have the "SQUARE_WALL" flag set, but which does have both the "SQUARE_GLOW"
+ * not lit by the player's torch, then it must touch a projectable grid 
+ * which has both the "SQUARE_GLOW"
  * and "SQUARE_VIEW" flags set.  This last part about wall grids is induced
  * by the semantics of "SQUARE_GLOW" as applied to wall grids, and checking
  * the technical requirements can be very expensive, especially since the
@@ -2249,8 +2244,6 @@ struct feature *square_feat(struct cave *c, int y, int x)
 
 void square_set_feat(struct cave *c, int y, int x, int feat)
 {
-	feature_type *f_ptr = &f_info[feat];
-
 	assert(c);
 	assert(y >= 0 && y < DUNGEON_HGT);
 	assert(x >= 0 && x < DUNGEON_WID);
@@ -2258,11 +2251,6 @@ void square_set_feat(struct cave *c, int y, int x, int feat)
 	 * honors those... */
 
 	c->feat[y][x] = feat;
-
-	if (!tf_has(f_ptr->flags, TF_PROJECT))
-		sqinfo_on(c->info[y][x], SQUARE_WALL);
-	else
-		sqinfo_off(c->info[y][x], SQUARE_WALL);
 
 	if (character_dungeon) {
 		square_note_spot(c, y, x);
@@ -2990,8 +2978,6 @@ bool feat_ispassable(feature_type *f_ptr) {
 
 /**
  * True if the square is passable by the player.
- *
- * This function is the logical negation of square_iswall().
  */
 bool square_ispassable(struct cave *c, int y, int x) {
 	assert(square_in_bounds(c, y, x));
@@ -2999,13 +2985,30 @@ bool square_ispassable(struct cave *c, int y, int x) {
 }
 
 /**
+ * True if any projectable can pass through the feature.
+ */
+bool feat_isprojectable(feature_type *f_ptr) {
+	return tf_has(f_ptr->flags, TF_PROJECT);
+}
+
+/**
+ * True if any projectable can pass through the square.
+ *
+ * This function is the logical negation of square_iswall().
+ */
+bool square_isprojectable(struct cave *c, int y, int x) {
+	assert(square_in_bounds(c, y, x));
+	return feat_isprojectable(&f_info[c->feat[y][x]]);
+}
+
+/**
  * True if the square is a wall square (impedes the player).
  *
- * This function is the logical negation of square_ispassable().
+ * This function is the logical negation of square_isprojectable().
  */
 bool square_iswall(struct cave *c, int y, int x) {
 	assert(square_in_bounds(c, y, x));
-	return sqinfo_has(c->info[y][x], SQUARE_WALL);
+	return !square_isprojectable(c, y, x);
 }
 
 /**
