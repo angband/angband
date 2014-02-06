@@ -25,9 +25,12 @@
 #include "dungeon.h"
 #include "init.h"
 #include "mon-make.h"
+#include "obj-identify.h"
 #include "obj-pval.h"
 #include "obj-tval.h"
 #include "obj-tvalsval.h"
+#include "obj-util.h"
+#include "project.h"
 #include "stats/db.h"
 #include "stats/structs.h"
 #include <stddef.h>
@@ -791,7 +794,7 @@ static int stats_dump_lists(void)
 		#define RV(b, x, y, m) {b, x, y, m}
 		#define EP(p1, p2, p3) {p1, p2, p3}
 		#define F(x) effect_handler_##x
-		#define EFFECT(x, a, r, h, v, c, d)	{ EF_##x, a, r, h, v, d },
+		#define EFFECT(x, a, r, h, v, c, d)	{ EF_##x, a, r, #x },
 		#include "list-effects.h"
 		#undef EFFECT
 		#undef F
@@ -819,8 +822,8 @@ static int stats_dump_lists(void)
 
 	struct object_flag object_flag_table[] =
 	{
-		#define OF(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s) \
-			{ OF_##a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, #a },
+		#define OF(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r) \
+			{ OF_##a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, #a },
 		#include "list-object-flags.h"
 		#undef OF
 	};
