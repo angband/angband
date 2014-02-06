@@ -1,6 +1,7 @@
 #ifndef INCLUDED_CMDS_H
 #define INCLUDED_CMDS_H
 
+#include "cave.h"
 #include "game-cmd.h"
 struct store;
 

@@ -63,7 +63,7 @@ int test_p0(void *state) {
 }
 
 int test_f0(void *state) {
-	enum parser_error r = parser_parse(state, "F:MWALK | LOOK");
+	enum parser_error r = parser_parse(state, "F:LOS | PERMANENT | DOWNSTAIR");
 	struct feature *f;
 
 	eq(r, PARSE_ERROR_NONE);
@@ -88,17 +88,6 @@ int test_x0(void *state) {
 	ok;
 }
 
-int test_e0(void *state) {
-	enum parser_error r = parser_parse(state, "E:TRAP_PIT");
-	struct feature *f;
-
-	eq(r, PARSE_ERROR_NONE);
-	f = parser_priv(state);
-	require(f);
-	require(f->effect);
-	ok;
-}
-
 const char *suite_name = "parse/f-info";
 struct test tests[] = {
 	{ "n0", test_n0 },
@@ -107,6 +96,5 @@ struct test tests[] = {
 	{ "p0", test_p0 },
 	{ "f0", test_f0 },
 	{ "x0", test_x0 },
-	{ "e0", test_e0 },
 	{ NULL, NULL }
 };
