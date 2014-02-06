@@ -431,8 +431,10 @@ static void ranged_helper(int item, int dir, int range, int shots, ranged_attack
 		int ny = GRID_Y(path_g[i]);
 		int nx = GRID_X(path_g[i]);
 
-		/* Hack -- Stop before hitting walls */
-		if (!square_ispassable(cave, ny, nx)) break;
+		/* Stop before hitting walls */
+		if (!(square_ispassable(cave, ny, nx)) &&
+			!(square_isprojectable(cave, ny, nx)))
+			break;
 
 		/* Advance */
 		x = nx;
@@ -458,75 +460,83 @@ static void ranged_helper(int item, int dir, int range, int shots, ranged_attack
 
 		/* Handle monster */
 		if (cave->m_idx[y][x] > 0) break;
-	}
 
-	/* Try the attack on the monster at (x, y) if any */
-	if (cave->m_idx[y][x] > 0) {
-		monster_type *m_ptr = square_monster(cave, y, x);
-		int visible = m_ptr->ml;
+		/* Try the attack on the monster at (x, y) if any */
+		if (cave->m_idx[y][x] > 0) {
+			monster_type *m_ptr = square_monster(cave, y, x);
+			int visible = m_ptr->ml;
 
-		bool fear = FALSE;
-		const char *note_dies = monster_is_unusual(m_ptr->race) ? " is destroyed." : " dies.";
+			bool fear = FALSE;
+			const char *note_dies = monster_is_unusual(m_ptr->race) ? 
+				" is destroyed." : " dies.";
 
-		struct attack_result result = attack(o_ptr, y, x);
-		int dmg = result.dmg;
-		u32b msg_type = result.msg_type;
-		const char *hit_verb = result.hit_verb;
+			struct attack_result result = attack(o_ptr, y, x);
+			int dmg = result.dmg;
+			u32b msg_type = result.msg_type;
+			const char *hit_verb = result.hit_verb;
 
-		if (result.success) {
-			hit_target = TRUE;
+			if (result.success) {
+				hit_target = TRUE;
 
-			object_notice_attack_plusses(o_ptr);
+				object_notice_attack_plusses(o_ptr);
 
-			/* Learn by use for other equipped items */
-			wieldeds_notice_to_hit_on_attack();
-		
-			/* No negative damage; change verb if no damage done */
-			if (dmg <= 0) {
-				dmg = 0;
-				msg_type = MSG_MISS;
-				hit_verb = "fails to harm";
-			}
-		
-			if (!visible) {
-				/* Invisible monster */
-				msgt(MSG_SHOOT_HIT, "The %s finds a mark.", o_name);
-			} else {
-				for (i = 0; i < (int)N_ELEMENTS(ranged_hit_types); i++) {
-					char m_name[80];
-					const char *dmg_text = "";
+				/* Learn by use for other equipped items */
+				wieldeds_notice_to_hit_on_attack();
 
-					if (msg_type != ranged_hit_types[i].msg)
-						continue;
-
-					if (OPT(show_damage))
-						dmg_text = format(" (%d)", dmg);
-
-					monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_OBJE);
-					
-					if (ranged_hit_types[i].text)
-						msgt(msg_type, "Your %s %s %s%s. %s", o_name, hit_verb,
-								m_name, dmg_text, ranged_hit_types[i].text);
-					else
-						msgt(msg_type, "Your %s %s %s%s.", o_name, hit_verb,
-								m_name, dmg_text);
+				/* No negative damage; change verb if no damage done */
+				if (dmg <= 0) {
+					dmg = 0;
+					msg_type = MSG_MISS;
+					hit_verb = "fails to harm";
 				}
 
-				/* Track this monster */
-				if (m_ptr->ml) monster_race_track(m_ptr->race);
-				if (m_ptr->ml) health_track(player, m_ptr);
-			}
-		
-			/* Hit the monster, check for death */
-			if (!mon_take_hit(m_ptr, dmg, &fear, note_dies)) {
-				message_pain(m_ptr, dmg);
-				if (fear && m_ptr->ml) {
-					char m_name[80];
-					monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_DEFAULT);
-					add_monster_message(m_name, m_ptr, MON_MSG_FLEE_IN_TERROR, TRUE);
+				if (!visible) {
+					/* Invisible monster */
+					msgt(MSG_SHOOT_HIT, "The %s finds a mark.", o_name);
+				} else {
+					for (i = 0; i < (int)N_ELEMENTS(ranged_hit_types); i++) {
+						char m_name[80];
+						const char *dmg_text = "";
+
+						if (msg_type != ranged_hit_types[i].msg)
+							continue;
+
+						if (OPT(show_damage))
+							dmg_text = format(" (%d)", dmg);
+
+						monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_OBJE);
+
+						if (ranged_hit_types[i].text)
+							msgt(msg_type, "Your %s %s %s%s. %s", o_name, 
+								 hit_verb, m_name, dmg_text, 
+								 ranged_hit_types[i].text);
+						else
+							msgt(msg_type, "Your %s %s %s%s.", o_name, hit_verb,
+								 m_name, dmg_text);
+					}
+					
+					/* Track this monster */
+					if (m_ptr->ml) monster_race_track(m_ptr->race);
+					if (m_ptr->ml) health_track(player, m_ptr);
+				}
+
+				/* Hit the monster, check for death */
+				if (!mon_take_hit(m_ptr, dmg, &fear, note_dies)) {
+					message_pain(m_ptr, dmg);
+					if (fear && m_ptr->ml) {
+						char m_name[80];
+						monster_desc(m_name, sizeof(m_name), m_ptr, 
+									 MDESC_DEFAULT);
+						add_monster_message(m_name, m_ptr, 
+											MON_MSG_FLEE_IN_TERROR, TRUE);
+					}
 				}
 			}
 		}
+
+		/* Stop if non-projectable but passable */
+		if (!(square_isprojectable(cave, ny, nx))) 
+			break;
 	}
 
 	/* Obtain a local object */

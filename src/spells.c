@@ -2755,7 +2755,7 @@ static void light_room(int y1, int x1, bool light)
 		x = ps->pts[i].x, y = ps->pts[i].y;
 
 		/* Walls get lit, but stop light */
-		if (!square_ispassable(cave, y, x)) continue;
+		if (!square_isprojectable(cave, y, x)) continue;
 
 		/* Spread adjacent */
 		cave_room_aux(ps, y + 1, x);

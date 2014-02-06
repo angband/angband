@@ -1191,7 +1191,7 @@ static int draw_path(u16b path_n, u16b *path_g, wchar_t *c, int *a, int y1, int 
 			/* Known objects are yellow. */
 			colour = TERM_YELLOW;
 
-		else if ((!square_ispassable(cave, y,x) &&
+		else if ((!square_isprojectable(cave, y,x) &&
 				  sqinfo_has(cave->info[y][x], SQUARE_MARK)) || player_can_see_bold(y,x))
 			/* Known walls are blue. */
 			colour = TERM_BLUE;

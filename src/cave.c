@@ -131,7 +131,7 @@ bool los(int y1, int x1, int y2, int x2)
 		{
 			for (ty = y1 + 1; ty < y2; ty++)
 			{
-				if (!square_ispassable(cave, ty, x1)) return (FALSE);
+				if (!square_isprojectable(cave, ty, x1)) return (FALSE);
 			}
 		}
 
@@ -140,7 +140,7 @@ bool los(int y1, int x1, int y2, int x2)
 		{
 			for (ty = y1 - 1; ty > y2; ty--)
 			{
-				if (!square_ispassable(cave, ty, x1)) return (FALSE);
+				if (!square_isprojectable(cave, ty, x1)) return (FALSE);
 			}
 		}
 
@@ -156,7 +156,7 @@ bool los(int y1, int x1, int y2, int x2)
 		{
 			for (tx = x1 + 1; tx < x2; tx++)
 			{
-				if (!square_ispassable(cave, y1, tx)) return (FALSE);
+				if (!square_isprojectable(cave, y1, tx)) return (FALSE);
 			}
 		}
 
@@ -165,7 +165,7 @@ bool los(int y1, int x1, int y2, int x2)
 		{
 			for (tx = x1 - 1; tx > x2; tx--)
 			{
-				if (!square_ispassable(cave, y1, tx)) return (FALSE);
+				if (!square_isprojectable(cave, y1, tx)) return (FALSE);
 			}
 		}
 
@@ -183,7 +183,7 @@ bool los(int y1, int x1, int y2, int x2)
 	{
 		if (ay == 2)
 		{
-			if (square_ispassable(cave, y1 + sy, x1)) return (TRUE);
+			if (square_isprojectable(cave, y1 + sy, x1)) return (TRUE);
 		}
 	}
 
@@ -192,7 +192,7 @@ bool los(int y1, int x1, int y2, int x2)
 	{
 		if (ax == 2)
 		{
-			if (square_ispassable(cave, y1, x1 + sx)) return (TRUE);
+			if (square_isprojectable(cave, y1, x1 + sx)) return (TRUE);
 		}
 	}
 
@@ -227,7 +227,7 @@ bool los(int y1, int x1, int y2, int x2)
 		/* the LOS exactly meets the corner of a tile. */
 		while (x2 - tx)
 		{
-			if (!square_ispassable(cave, ty, tx)) return (FALSE);
+			if (!square_isprojectable(cave, ty, tx)) return (FALSE);
 
 			qy += m;
 
@@ -238,7 +238,7 @@ bool los(int y1, int x1, int y2, int x2)
 			else if (qy > f2)
 			{
 				ty += sy;
-				if (!square_ispassable(cave, ty, tx)) return (FALSE);
+				if (!square_isprojectable(cave, ty, tx)) return (FALSE);
 				qy -= f1;
 				tx += sx;
 			}
@@ -274,7 +274,7 @@ bool los(int y1, int x1, int y2, int x2)
 		/* the LOS exactly meets the corner of a tile. */
 		while (y2 - ty)
 		{
-			if (!square_ispassable(cave, ty, tx)) return (FALSE);
+			if (!square_isprojectable(cave, ty, tx)) return (FALSE);
 
 			qx += m;
 
@@ -285,7 +285,7 @@ bool los(int y1, int x1, int y2, int x2)
 			else if (qx > f2)
 			{
 				tx += sx;
-				if (!square_ispassable(cave, ty, tx)) return (FALSE);
+				if (!square_isprojectable(cave, ty, tx)) return (FALSE);
 				qx -= f1;
 				ty += sy;
 			}
@@ -1713,7 +1713,7 @@ static void add_monster_lights(struct cave *c, struct loc from)
 				int sx = m->fx + j;
 				
 				/* If the monster isn't visible we can only light open tiles */
-				if (!in_los && !square_ispassable(cave, sy, sx))
+				if (!in_los && !square_isprojectable(cave, sy, sx))
 					continue;
 
 				/* If the tile is too far away we won't light it */
@@ -2396,7 +2396,7 @@ int project_path(u16b *gp, int range, int y1, int x1, int y2, int x2, int flg)
 			}
 
 			/* Always stop at non-initial wall grids */
-			if ((n > 0) && !square_ispassable(cave, y, x)) break;
+			if ((n > 0) && !square_isprojectable(cave, y, x)) break;
 
 			/* Sometimes stop at non-initial monsters/players */
 			if (flg & (PROJECT_STOP))
@@ -2458,7 +2458,7 @@ int project_path(u16b *gp, int range, int y1, int x1, int y2, int x2, int flg)
 			}
 
 			/* Always stop at non-initial wall grids */
-			if ((n > 0) && !square_ispassable(cave, y, x)) break;
+			if ((n > 0) && !square_isprojectable(cave, y, x)) break;
 
 			/* Sometimes stop at non-initial monsters/players */
 			if (flg & (PROJECT_STOP))
@@ -2514,7 +2514,7 @@ int project_path(u16b *gp, int range, int y1, int x1, int y2, int x2, int flg)
 			}
 
 			/* Always stop at non-initial wall grids */
-			if ((n > 0) && !square_ispassable(cave, y, x)) break;
+			if ((n > 0) && !square_isprojectable(cave, y, x)) break;
 
 			/* Sometimes stop at non-initial monsters/players */
 			if (flg & (PROJECT_STOP))

@@ -2039,7 +2039,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, int flg)
 	};
 
 	/* Walls protect monsters */
-	if (!square_ispassable(cave, y,x)) return (FALSE);
+	if (!square_isprojectable(cave, y,x)) return (FALSE);
 
 	/* No monster here */
 	if (!(m_idx > 0)) return (FALSE);
@@ -2632,7 +2632,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 				if ((flg & (PROJECT_THRU)) ||
 					square_ispassable(cave, y, x)){
 					/* If this is a wall grid, ... */
-					if (!cave_project(y, x)) {
+					if (!square_isprojectable(cave, y, x)) {
 						/* Check neighbors */
 						for (i = 0, k = 0; i < 8; i++) {
 							int yy = y + ddy_ddd[i];
@@ -2649,12 +2649,11 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 							continue;
 					}
 				}
-#endif
-				/* Most explosions are immediately stopped by walls. */
-				//else if (!cave_project(y, x))
-				if (!los(centre.y, centre.x, y, x))
-					continue;
 
+				/* Most explosions are immediately stopped by walls. */
+				else if (!square_isprojectable(cave, y, x))
+					continue;
+#endif
 				/* Must be within maximum distance. */
 				dist_from_centre  = (distance(centre.y, centre.x, y, x));
 				if (dist_from_centre > rad)

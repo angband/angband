@@ -603,7 +603,7 @@ static bool do_cmd_tunnel_test(int y, int x)
 	}
 
 	/* Must be a wall/door/etc */
-	if (square_ispassable(cave, y, x))
+	if (!(square_isdiggable(cave, y, x) || square_iscloseddoor(cave, y, x)))
 	{
 		/* Message */
 		msg("You see nothing there to tunnel.");
@@ -630,7 +630,8 @@ static bool do_cmd_tunnel_test(int y, int x)
 static bool twall(int y, int x)
 {
 	/* Paranoia -- Require a wall or door or some such */
-	if (square_ispassable(cave, y, x)) return (FALSE);
+	if (!(square_isdiggable(cave, y, x) || square_iscloseddoor(cave, y, x)))
+		return (FALSE);
 
 	/* Sound */
 	sound(MSG_DIG);
