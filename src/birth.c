@@ -180,8 +180,6 @@ static void get_stats(int stat_use[A_MAX])
 {
 	int i, j;
 
-	int bonus;
-
 	int dice[18];
 
 
@@ -205,6 +203,8 @@ static void get_stats(int stat_use[A_MAX])
 	/* Roll the stats */
 	for (i = 0; i < A_MAX; i++)
 	{
+		int bonus;
+
 		/* Extract 5 + 1d3 + 1d4 + 1d5 */
 		j = 5 + dice[3*i] + dice[3*i+1] + dice[3*i+2];
 
@@ -282,12 +282,11 @@ static void get_bonuses(void)
  */
 char *get_history(struct history_chart *chart)
 {
-	int roll;
 	struct history_entry *entry;
 	char *res = NULL;
 
 	while (chart) {
-		roll = randint1(100);
+		int roll = randint1(100);
 		for (entry = chart->entries; entry; entry = entry->next)
 			if (roll <= entry->roll)
 				break;

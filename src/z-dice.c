@@ -216,7 +216,6 @@ void dice_free(dice_t *dice)
 	}
 
 	FREE(dice);
-	dice = NULL;
 }
 
 /**
@@ -475,7 +474,7 @@ bool dice_parse_string(dice_t *dice, const char *string)
 					break;
 			}
 
-			WIPE(token, DICE_TOKEN_SIZE + 1);
+			memset(token, 0, DICE_TOKEN_SIZE + 1);
 			token_end = 0;
 		}
 	}

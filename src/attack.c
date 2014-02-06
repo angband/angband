@@ -395,10 +395,10 @@ static void ranged_helper(int item, int dir, int range, int shots, ranged_attack
 	/* Check for target validity */
 	if ((dir == 5) && target_okay()) {
 		int taim;
-		char msg[80];
 		target_get(&tx, &ty);
 		taim = distance(y, x, ty, tx);
 		if (taim > range) {
+			char msg[80];
 			strnfmt(msg, sizeof(msg), "Target out of range by %d squares. Fire anyway? ",
 				taim - range);
 			if (!get_check(msg)) return;
@@ -466,7 +466,6 @@ static void ranged_helper(int item, int dir, int range, int shots, ranged_attack
 		int visible = m_ptr->ml;
 
 		bool fear = FALSE;
-		char m_name[80];
 		const char *note_dies = monster_is_unusual(m_ptr->race) ? " is destroyed." : " dies.";
 
 		struct attack_result result = attack(o_ptr, y, x);
@@ -494,6 +493,7 @@ static void ranged_helper(int item, int dir, int range, int shots, ranged_attack
 				msgt(MSG_SHOOT_HIT, "The %s finds a mark.", o_name);
 			} else {
 				for (i = 0; i < (int)N_ELEMENTS(ranged_hit_types); i++) {
+					char m_name[80];
 					const char *dmg_text = "";
 
 					if (msg_type != ranged_hit_types[i].msg)
@@ -521,6 +521,7 @@ static void ranged_helper(int item, int dir, int range, int shots, ranged_attack
 			if (!mon_take_hit(m_ptr, dmg, &fear, note_dies)) {
 				message_pain(m_ptr, dmg);
 				if (fear && m_ptr->ml) {
+					char m_name[80];
 					monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_DEFAULT);
 					add_monster_message(m_name, m_ptr, MON_MSG_FLEE_IN_TERROR, TRUE);
 				}

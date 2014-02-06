@@ -1565,10 +1565,6 @@ void store_maint(struct store *s)
 		int min = 0;
 		int max = s->normal_stock_max;
 
-		/* Sell a few items */
-		stock = s->stock_num;
-		stock -= randint1(s->turnover);
-
 		if (stock < min) stock = min;
 		if (stock > max) stock = max;
 

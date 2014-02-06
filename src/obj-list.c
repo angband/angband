@@ -80,7 +80,6 @@ static void object_list_free(object_list_t *list)
 	}
 
 	FREE(list);
-	list = NULL;
 }
 
 /**
