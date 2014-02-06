@@ -625,7 +625,7 @@ const char *savefile_get_description(const char *path) {
 	if (!check_header(f)) {
 		my_strcpy(savefile_desc, "Invalid savefile", sizeof savefile_desc);
 	} else {
-		while ((err = next_blockheader(f, &b)) == 0) {
+		while (!next_blockheader(f, &b)) {
 			if (!streq(b.name, "description")) {
 				skip_block(f, &b);
 				continue;

@@ -121,7 +121,6 @@ void do_cmd_store_knowledge(void);
 
 /* xtra2.c */
 bool modify_panel(term *t, int wy, int wx);
-bool adjust_panel(int y, int x);
 bool change_panel(int dir);
 void verify_panel(void);
 void center_panel(void);

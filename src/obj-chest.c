@@ -199,7 +199,7 @@ s16b chest_check(int y, int x, enum chest_query check_type)
  */
 int count_chests(int *y, int *x, enum chest_query check_type)
 {
-	int d, count, o_idx;
+	int d, count;
 
 	/* Count how many matches */
 	count = 0;
@@ -212,7 +212,7 @@ int count_chests(int *y, int *x, enum chest_query check_type)
 		int xx = player->px + ddx_ddd[d];
 
 		/* No (visible) chest is there */
-		if ((o_idx = chest_check(yy, xx, check_type)) == 0) continue;
+		if (chest_check(yy, xx, check_type) == 0) continue;
 
 		/* Count it */
 		++count;

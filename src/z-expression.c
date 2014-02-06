@@ -161,7 +161,6 @@ void expression_free(expression_t *expression)
 	}
 
 	FREE(expression);
-	expression = NULL;
 }
 
 /**

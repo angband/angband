@@ -72,54 +72,6 @@ bool modify_panel(term *t, int wy, int wx)
 	return (FALSE);
 }
 
-
-/*
- * Perform the minimum "whole panel" adjustment to ensure that the given
- * location is contained inside the current panel, and return TRUE if any
- * such adjustment was performed.
- */
-bool adjust_panel(int y, int x)
-{
-	bool changed = FALSE;
-
-	int j;
-
-	/* Scan windows */
-	for (j = 0; j < ANGBAND_TERM_MAX; j++)
-	{
-		int wx, wy;
-		int screen_hgt, screen_wid;
-
-		term *t = angband_term[j];
-
-		/* No window */
-		if (!t) continue;
-
-		/* No relevant flags */
-		if ((j > 0) && !(window_flag[j] & PW_MAP)) continue;
-
-		wy = t->offset_y;
-		wx = t->offset_x;
-
-		screen_hgt = (j == 0) ? SCREEN_HGT : t->hgt;
-		screen_wid = (j == 0) ? SCREEN_WID : t->wid;
-
-		/* Adjust as needed */
-		while (y >= wy + screen_hgt) wy += screen_hgt / 2;
-		while (y < wy) wy -= screen_hgt / 2;
-
-		/* Adjust as needed */
-		while (x >= wx + screen_wid) wx += screen_wid / 2;
-		while (x < wx) wx -= screen_wid / 2;
-
-		/* Use "modify_panel" */
-		if (modify_panel(t, wy, wx)) changed = TRUE;
-	}
-
-	return (changed);
-}
-
-
 /*
  * Change the current panel to the panel lying in the given direction.
  *

@@ -1650,23 +1650,21 @@ bool target_set_interactive(int mode, int x, int y)
 					y = KEY_GRID_Y(press);//.mouse.y;
 					x = KEY_GRID_X(press);//.mouse.x;
 				  
-					if (Term) {
-						if (press.mouse.y <= 1) {
-							/* move the screen north */
-							y--;
-						} else
-						if (press.mouse.y >= (Term->hgt - 2)) {
-							/* move the screen south */
-							y++;
-						} else
-						if (press.mouse.x <= COL_MAP) {
-							/* move the screen in west */
-							x--;
-						} else
-						if (press.mouse.x >= (Term->wid - 2)) {
-							/* move the screen east */
-							x++;
-						}
+					if (press.mouse.y <= 1) {
+						/* move the screen north */
+						y--;
+					} else
+					if (press.mouse.y >= (Term->hgt - 2)) {
+						/* move the screen south */
+						y++;
+					} else
+					if (press.mouse.x <= COL_MAP) {
+						/* move the screen in west */
+						x--;
+					} else
+					if (press.mouse.x >= (Term->wid - 2)) {
+						/* move the screen east */
+						x++;
 					}
           
 					if (y < 0) y = 0;

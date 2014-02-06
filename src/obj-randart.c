@@ -464,8 +464,7 @@ static object_kind *choose_item(int a_idx)
 	 * loop.
 	 *
 	 * N.B. Could easily generate lights, rings and amulets this way if
-	 * the whole special/flavour issue was sorted out (see ticket #1014)
-	 * Note that Carlammas and Barahir have the same sval as Grond/Morgoth
+	 * the whole special/flavour issue was sorted out (see ticket #1014).
 	 */
 	while (tval == 0 || tval == TV_CHEST ||
 		tval == TV_SHOT || tval == TV_ARROW || tval == TV_BOLT ||
@@ -473,8 +472,10 @@ static object_kind *choose_item(int a_idx)
 		tval == TV_SCROLL || tval == TV_POTION || tval == TV_FLASK ||
 		tval == TV_FOOD || tval == TV_MUSHROOM || tval == TV_MAGIC_BOOK ||
 		tval == TV_PRAYER_BOOK || tval == TV_GOLD || tval == TV_LIGHT ||
-		tval == TV_AMULET || tval == TV_RING || sval == SV_GROND ||
-		sval == SV_MORGOTH || k_info[i].alloc_prob == 0)
+		tval == TV_AMULET || tval == TV_RING ||
+		(tval == TV_HAFTED && sval == SV_GROND) ||
+		(tval == TV_CROWN && sval == SV_MORGOTH) ||
+		k_info[i].alloc_prob == 0)
 	{
 		r = randint1(base_freq[z_info->k_max - 1]);
 		i = 0;
