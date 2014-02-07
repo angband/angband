@@ -424,9 +424,11 @@ void enter_score(time_t *death_time)
 	int j;
 
 	/* Cheaters are not scored */
-	for (j = OPT_SCORE; j < OPT_SCORE + N_OPTS_CHEAT; ++j)
-	{
-		if (!op_ptr->opt[j]) continue;
+	for (j = 0; j < OPT_MAX; ++j) {
+		if (option_type(j) != OP_SCORE)
+			continue;
+		if (!op_ptr->opt[j])
+			continue;
 
 		msg("Score not registered for cheaters.");
 		message_flush();

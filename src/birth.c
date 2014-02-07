@@ -980,10 +980,9 @@ void player_birth(bool quickstart_allowed)
 		else if (cmd->command == CMD_FINALIZE_OPTIONS)
 		{
 			/* Reset score options from cheat options */
-			for (i = OPT_CHEAT; i < OPT_CHEAT + N_OPTS_CHEAT; i++)
-			{
-				op_ptr->opt[OPT_SCORE + (i - OPT_CHEAT)] =
-					op_ptr->opt[i];
+			for (i = 0; i < OPT_MAX; i++) {
+				if (option_type(i) == OP_CHEAT)
+					op_ptr->opt[i + 1] = op_ptr->opt[i];
 			}
 		}
 		else if (cmd->command == CMD_BUY_STAT)
