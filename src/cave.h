@@ -89,7 +89,7 @@ struct monster;
 #define FEAT_QUARTZ_K 0x37
 
 /* Walls */
-#define FEAT_WALL_EXTRA 0x38
+#define FEAT_GRANITE 0x38
 #define FEAT_WALL_INNER 0x39
 #define FEAT_WALL_OUTER 0x3A
 #define FEAT_WALL_SOLID 0x3B

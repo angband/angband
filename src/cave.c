@@ -3218,7 +3218,7 @@ void square_destroy(struct cave *c, int y, int x) {
 	int r = randint0(200);
 
 	if (r < 20)
-		feat = FEAT_WALL_EXTRA;
+		feat = FEAT_GRANITE;
 	else if (r < 70)
 		feat = FEAT_QUARTZ;
 	else if (r < 100)
@@ -3237,7 +3237,7 @@ void square_earthquake(struct cave *c, int y, int x) {
 	}
 
 	if (t < 20)
-		f = FEAT_WALL_EXTRA;
+		f = FEAT_GRANITE;
 	else if (t < 70)
 		f = FEAT_QUARTZ;
 	else

@@ -396,7 +396,7 @@ bool default_gen(struct cave *c, struct player *p) {
     ROOM_LOG("height=%d  width=%d  nrooms=%d", c->height, c->width, num_rooms);
 
     /* Initially fill with basic granite */
-    fill_rectangle(c, 0, 0, DUNGEON_HGT - 1, DUNGEON_WID - 1, FEAT_WALL_EXTRA);
+    fill_rectangle(c, 0, 0, DUNGEON_HGT - 1, DUNGEON_WID - 1, FEAT_GRANITE);
 
     /* Actual maximum number of rooms on this level */
     dun->row_rooms = c->height / BLOCK_HGT;
