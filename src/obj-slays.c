@@ -17,6 +17,7 @@
  */
 
 #include "angband.h"
+#include "init.h"
 #include "obj-desc.h"
 #include "obj-identify.h"
 #include "obj-slays.h"

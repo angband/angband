@@ -1,6 +1,8 @@
 #ifndef INCLUDED_OPTIONS_H
 #define INCLUDED_OPTIONS_H
 
+#include "z-file.h"
+
 /*
  * Option types 
  */

@@ -3,6 +3,8 @@
 #ifndef ATTACK_H
 #define ATTACK_H
 
+#include "game-cmd.h"
+
 /* attack.c */
 extern void do_cmd_fire(struct command *cmd);
 extern void textui_cmd_fire_at_nearest(void);

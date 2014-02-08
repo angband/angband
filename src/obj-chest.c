@@ -18,6 +18,7 @@
  */
 
 #include "angband.h"
+#include "cave.h"
 #include "obj-chest.h"
 #include "obj-identify.h"
 #include "obj-make.h"

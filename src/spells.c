@@ -21,6 +21,7 @@
 #include "dungeon.h"
 #include "generate.h"
 #include "history.h"
+#include "init.h"
 #include "mon-lore.h"
 #include "mon-make.h"
 #include "mon-timed.h"

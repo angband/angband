@@ -21,32 +21,20 @@
  */
 #include "z-bitflag.h"
 #include "z-color.h"
-#include "z-file.h"
 #include "z-form.h"
 #include "z-util.h"
 #include "z-virt.h"
 #include "z-rand.h"
 #include "z-term.h"
-#include "z-textblock.h"
-#include "z-quark.h"
-#include "z-msg.h"
 
 /*
  * Include the high-level includes.
  */
 #include "config.h"
-
-#include "cave.h"
-#include "game-cmd.h"
-#include "init.h"
-#include "mon-constants.h"
-#include "monster.h"
 #include "option.h"
 #include "player.h"
-#include "store.h"
 #include "ui.h"
 #include "ui-input.h"
-#include "z-type.h"
 
 
 /***** Some older copyright messages follow below *****/

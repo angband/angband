@@ -18,6 +18,7 @@
  */
 #include "angband.h"
 #include "dungeon.h"
+#include "init.h"
 #include "obj-desc.h"
 #include "obj-identify.h"
 #include "obj-list.h"

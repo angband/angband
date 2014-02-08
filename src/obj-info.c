@@ -21,6 +21,7 @@
 #include "attack.h"
 #include "effects.h"
 #include "cmds.h"
+#include "init.h"
 #include "monster.h"
 #include "obj-identify.h"
 #include "obj-info.h"

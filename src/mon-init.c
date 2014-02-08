@@ -16,6 +16,8 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
+#include "angband.h"
+#include "init.h"
 #include "mon-init.h"
 #include "mon-msg.h"
 #include "mon-power.h"
@@ -28,8 +30,6 @@
 #include "obj-util.h"
 #include "object.h"
 #include "parser.h"
-#include "z-util.h"
-#include "z-virt.h"
 
 monster_pain *pain_messages;
 monster_base *rb_info;

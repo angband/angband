@@ -28,6 +28,7 @@
 #include "mon-make.h"
 #include "mon-spell.h"
 #include "parser.h"
+#include "store.h"
 #include "tables.h"
 #include "trap.h"
 #include "z-queue.h"

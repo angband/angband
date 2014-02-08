@@ -26,6 +26,7 @@
 #include "obj-tvalsval.h" /* Only for use_flavor_glyph() */
 #include "obj-ui.h"
 #include "obj-util.h"
+#include "store.h"
 #include "ui-game.h"
 
 /*

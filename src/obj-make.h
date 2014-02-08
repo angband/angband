@@ -19,6 +19,8 @@
 #ifndef OBJECT_MAKE_H
 #define OBJECT_MAKE_H
 
+#include "cave.h"
+
 void free_obj_alloc(void);
 bool init_obj_alloc(void);
 object_kind *get_obj_num(int level, bool good, int tval);

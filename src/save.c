@@ -20,6 +20,7 @@
 #include "cave.h"
 #include "dungeon.h"
 #include "history.h"
+#include "init.h"
 #include "mon-make.h"
 #include "monster.h"
 #include "object.h"

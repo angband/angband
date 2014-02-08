@@ -19,7 +19,7 @@
 #ifndef MONSTER_MAKE_H
 #define MONSTER_MAKE_H
 
-#include "angband.h"
+#include "monster.h"
 
 /** Constants **/
 

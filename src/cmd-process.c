@@ -23,6 +23,7 @@
 #include "files.h"
 #include "game-cmd.h"
 #include "keymap.h"
+#include "monster.h"
 #include "textui.h"
 #include "ui-event.h"
 #include "ui-menu.h"

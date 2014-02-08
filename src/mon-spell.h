@@ -19,7 +19,7 @@
 #ifndef MONSTER_SPELL_H
 #define MONSTER_SPELL_H
 
-#include "angband.h"
+#include "monster.h"
 
 /** Variables **/
 /* none so far */

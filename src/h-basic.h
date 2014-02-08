@@ -250,16 +250,6 @@ typedef int errr;
  */
 #define N_ELEMENTS(a) (sizeof(a) / sizeof((a)[0]))
 
-/*
- * Return "s" (or not) depending on whether n is singular.
- */
-#define PLURAL(n)		((n) == 1 ? "" : "s")
-
-/**
- * Return the verb form matching the given count
- */
-#define VERB_AGREEMENT(count, singular, plural)    (((count) == 1) ? (singular) : (plural))
-
 /*** Some hackish character manipulation ***/
 
 /*

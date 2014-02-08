@@ -18,6 +18,7 @@
 #ifndef INCLUDED_SLAYS_H
 #define INCLUDED_SLAYS_H
 
+#include "monster.h"
 
 /* Types of slay (including brands) */
 enum

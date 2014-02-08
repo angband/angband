@@ -23,6 +23,7 @@
 #include "game-cmd.h"
 #include "game-event.h"
 #include "grafmode.h"
+#include "init.h"
 #include "mon-util.h"
 #include "monster.h"
 #include "obj-tval.h"

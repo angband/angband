@@ -21,6 +21,7 @@
 #include "cave.h"
 #include "dungeon.h"
 #include "effects.h"
+#include "init.h"
 #include "spells.h"
 #include "trap.h"
 

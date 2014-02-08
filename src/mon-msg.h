@@ -19,7 +19,7 @@
 #ifndef MONSTER_MESSAGE_H
 #define MONSTER_MESSAGE_H
 
-#include "angband.h"
+#include "monster.h"
 
 /** Constants **/
 

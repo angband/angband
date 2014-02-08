@@ -17,6 +17,7 @@
  */
 
 #include "angband.h"
+#include "init.h"
 #include "mon-make.h"
 #include "mon-msg.h"
 #include "mon-spell.h"

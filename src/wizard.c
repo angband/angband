@@ -21,6 +21,7 @@
 #include "cmds.h"
 #include "effects.h"
 #include "files.h"
+#include "init.h"
 #include "mon-lore.h"
 #include "mon-make.h"
 #include "mon-util.h"
@@ -41,7 +42,6 @@
 #include "ui-input.h"
 #include "ui-menu.h"
 #include "wizard.h"
-#include "z-term.h"
 
 
 static void gf_display(menu_type *m, int type, bool cursor,

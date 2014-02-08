@@ -20,6 +20,17 @@ extern void (*quit_aux)(const char *);
 
 /**** Available Functions ****/
 
+/*
+ * Return "s" (or not) depending on whether n is singular.
+ */
+#define PLURAL(n)		((n) == 1 ? "" : "s")
+
+/**
+ * Return the verb form matching the given count
+ */
+#define VERB_AGREEMENT(count, singular, plural)    (((count) == 1) ? (singular) : (plural))
+
+
 /**
  * Case insensitive comparison between two strings
  */
