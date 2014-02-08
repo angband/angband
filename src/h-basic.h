@@ -141,8 +141,10 @@
  */
 
 /* C++ defines its own bool type, so we hack around it */
+#ifdef __cplusplus
 #undef bool
 #define bool bool_hack
+#endif
 
 typedef int errr;
 

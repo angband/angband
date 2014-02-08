@@ -3485,10 +3485,12 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
 
 @end
 
+#if !XCODE
 int main(int argc, char* argv[])
 {
     NSApplicationMain(argc, (void*)argv);    
     return (0);
 }
+#endif
 
 #endif /* MACINTOSH || MACH_O_CARBON */
