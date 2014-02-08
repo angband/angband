@@ -170,9 +170,8 @@ static void build_tunnel(struct cave *c, int row1, int col1, int row2, int col2)
 			y = tmp_row + row_dir;
 			x = tmp_col + col_dir;
 
-			/* Hack -- Avoid outer/solid permanent walls */
+			/* Hack -- Avoid solid permanent walls */
 			if (c->feat[y][x] == FEAT_PERM_SOLID) continue;
-			if (c->feat[y][x] == FEAT_PERM_OUTER) continue;
 
 			/* Hack -- Avoid outer/solid granite walls */
 			if (c->feat[y][x] == FEAT_WALL_OUTER) continue;

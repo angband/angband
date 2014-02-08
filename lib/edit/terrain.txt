@@ -405,14 +405,6 @@ P:10
 M:60
 F:WALL | ROCK | PERMANENT | NO_SCENT | NO_FLOW
 
-# 0x3E --> permanent wall -- outer (perm)
-
-N:62:permanent wall
-G:#:u
-P:10
-M:60
-F:WALL | ROCK | PERMANENT | NO_SCENT | NO_FLOW
-
 # 0x3F --> permanent wall -- solid (perm)
 
 N:63:permanent wall
