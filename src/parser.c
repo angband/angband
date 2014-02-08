@@ -24,7 +24,7 @@
  * assigned a value.
  */
 
-#include "externs.h"
+#include "init.h"
 #include "parser.h"
 #include "ui-input.h"
 #include "z-file.h"

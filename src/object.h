@@ -249,6 +249,11 @@ enum {
 };
 
 
+
+extern s16b o_max;
+extern s16b o_cnt;
+
+
 /*** Macros ***/
 
 /*** Structures ***/
@@ -271,6 +276,12 @@ typedef struct spell {
 	dice_t *dice;		/* Value information from spell file */
 	int params[3];		/* Extra parameters to be passed to the handler */
 } spell_type;
+
+/*
+ * The spell arrays
+ */
+extern spell_type *s_info;
+
 
 enum spell_param_project_type_e {
 	SPELL_PROJECT_NONE = 0,
@@ -306,6 +317,7 @@ typedef struct object_base
 	int break_perc;
 } object_base;
 
+extern object_base *kb_info;
 
 /**
  * Information about object kinds, including player knowledge.
@@ -384,7 +396,7 @@ typedef struct object_kind
 	struct spell *spells;
 } object_kind;
 
-
+extern object_kind *k_info;
 
 /*** Important artifact indexes (see "lib/edit/artifact.txt") ***/
 
@@ -458,6 +470,10 @@ typedef struct artifact
 	random_value time;  /**< Recharge time (if appropriate) */
 } artifact_type;
 
+/*
+ * The artifact arrays
+ */
+extern artifact_type *a_info;
 
 
 /*
@@ -516,6 +532,10 @@ typedef struct ego_item
 	bool everseen;			/* Do not spoil squelch menus */
 } ego_item_type;
 
+/*
+ * The ego-item arrays
+ */
+extern ego_item_type *e_info;
 
 
 /*
@@ -612,6 +632,8 @@ struct flavor
 	byte x_attr;    /* Desired flavor attribute */
 	wchar_t x_char;    /* Desired flavor character */
 };
+
+extern struct flavor *flavors;
 
 
 typedef bool (*item_tester)(const struct object *);

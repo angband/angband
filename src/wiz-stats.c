@@ -18,6 +18,8 @@
 #include "angband.h"
 #include "cave.h"
 #include "cmds.h"
+#include "dungeon.h"
+#include "init.h"
 #include "wizard.h"
 #include "mon-make.h"
 #include "monster.h"
@@ -27,6 +29,7 @@
 #include "object.h"
 #include "effects.h"
 #include "generate.h"
+#include "tables.h"
 /*
  * The stats programs here will provide information on the dungeon, the monsters
  * in it, and the items that they drop.  Statistics are gotten from a given level

@@ -20,6 +20,7 @@
 #include "cave.h"
 #include "effects.h"
 #include "obj-tvalsval.h"
+#include "object.h"
 #include "project.h"
 #include "spells.h"
 

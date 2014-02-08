@@ -22,12 +22,18 @@
 #include "history.h"
 #include "mon-make.h"
 #include "mon-spell.h"
+#include "monster.h"
 #include "obj-make.h"
 #include "obj-util.h"
+#include "object.h"
+#include "player.h"
 #include "savefile.h"
 #include "squelch.h"
+#include "store.h"
 #include "quest.h"
+#include "trap.h"
 #include "ui-game.h"
+#include "ui-input.h"
 
 
 /* Object constants */

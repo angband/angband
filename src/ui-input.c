@@ -18,13 +18,23 @@
 
 #include "angband.h"
 #include "cmds.h"
+#include "dungeon.h"
 #include "target.h"
 #include "files.h"
 #include "game-event.h"
+#include "init.h"
 #include "pathfind.h"
 #include "randname.h"
+#include "signals.h"
+#include "ui.h"
 
 static bool inkey_xtra;
+u32b inkey_scan;		/* See the "inkey()" function */
+bool inkey_flag;		/* See the "inkey()" function */
+
+/* Delay in centiseconds before moving to allow another keypress */
+/* Zero means normal instant movement. */
+u16b lazymove_delay = 0;
 
 /*
  * Flush all pending input.
@@ -371,6 +381,11 @@ void bell(const char *reason)
 
 
 /*
+ * Sound hook (for playing FX).
+ */
+void (*sound_hook)(int sound);
+
+/*
  * Hack -- Make a (relevant?) sound
  */
 void sound(int val)
@@ -403,6 +418,8 @@ static void msg_flush(int x)
 
 static int message_column = 0;
 
+
+bool msg_flag;			/* Player has pending message */
 
 /*
  * Output a message to the top line of the screen.

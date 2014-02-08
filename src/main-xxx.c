@@ -16,7 +16,7 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
-
+#include "init.h"
 
 /*
  * This file helps Angband work on non-existant computers.

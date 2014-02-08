@@ -1,7 +1,7 @@
 /* parse/store */
 
 #include "unit-test.h"
-
+#include "object.h"
 #include "store.h"
 
 int setup_tests(void **state) {

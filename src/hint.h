@@ -9,4 +9,6 @@ struct hint {
 	struct hint *next;
 };
 
+extern struct hint *hints; /* store.c */
+
 #endif /* HINT_H */

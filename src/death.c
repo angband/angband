@@ -21,6 +21,7 @@
 #include "death.h"
 #include "files.h"
 #include "history.h"
+#include "init.h"
 #include "savefile.h"
 #include "ui-menu.h"
 #include "wizard.h"
@@ -28,7 +29,9 @@
 #include "obj-identify.h"
 #include "obj-info.h"
 #include "obj-ui.h"
+#include "savefile.h"
 #include "score.h"
+#include "store.h"
 
 /*
  * Hack - save the time of death

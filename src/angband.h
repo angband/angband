@@ -47,7 +47,6 @@
 #include "ui.h"
 #include "ui-input.h"
 #include "z-type.h"
-#include "externs.h"
 
 
 /***** Some older copyright messages follow below *****/

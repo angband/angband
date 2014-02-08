@@ -19,17 +19,22 @@
 #include "angband.h"
 #include "birth.h"
 #include "cmds.h"
+#include "dungeon.h"
 #include "files.h"
 #include "game-event.h"
 #include "game-cmd.h"
 #include "history.h"
+#include "monster.h"
 #include "obj-identify.h"
 #include "obj-make.h"
 #include "obj-tval.h"
 #include "obj-util.h"
+#include "object.h"
+#include "player.h"
 #include "squelch.h"
 #include "quest.h"
 #include "ui-menu.h"
+#include "ui-input.h"
 
 /*
  * Overview

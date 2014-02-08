@@ -189,6 +189,7 @@ typedef struct pit_profile {
     struct pit_forbidden_monster *forbidden_monsters;
 } pit_profile;
 
+extern struct pit_profile *pit_info;
 
 
 /*
@@ -207,6 +208,8 @@ struct vault {
     byte hgt;			/* Vault height */
     byte wid;			/* Vault width */
 };
+
+extern struct vault *vaults;
 
 
 /*

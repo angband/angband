@@ -31,19 +31,24 @@
 #include "mon-list.h"
 #include "mon-msg.h"
 #include "mon-util.h"
+#include "monster.h"
 #include "obj-list.h"
 #include "obj-make.h"
 #include "obj-slays.h"
 #include "obj-tval.h"
 #include "obj-tvalsval.h"
 #include "obj-util.h"
+#include "object.h"
 #include "option.h"
 #include "parser.h"
+#include "player.h"
 #include "prefs.h"
 #include "project.h"
 #include "quest.h"
 #include "randname.h"
+#include "spells.h"
 #include "squelch.h"
+#include "store.h"
 #include "trap.h"
 
 /*
@@ -51,6 +56,38 @@
  */
 maxima *z_info;
 
+/*
+ * Hack -- The special Angband "System Suffix"
+ * This variable is used to choose an appropriate "pref-xxx" file
+ */
+const char *ANGBAND_SYS = "xxx";
+
+/*
+ * Hack -- The special Angband "Graphics Suffix"
+ * This variable is used to choose an appropriate "graf-xxx" file
+ */
+const char *ANGBAND_GRAF = "old";
+
+/*
+ * Various directories. These are no longer necessarily all subdirs of "lib"
+ */
+char *ANGBAND_DIR_APEX;
+char *ANGBAND_DIR_EDIT;
+char *ANGBAND_DIR_FILE;
+char *ANGBAND_DIR_HELP;
+char *ANGBAND_DIR_INFO;
+char *ANGBAND_DIR_SAVE;
+char *ANGBAND_DIR_PREF;
+char *ANGBAND_DIR_USER;
+char *ANGBAND_DIR_XTRA;
+
+/*
+ * Various xtra/ subdirectories.
+ */
+char *ANGBAND_DIR_XTRA_FONT;
+char *ANGBAND_DIR_XTRA_GRAF;
+char *ANGBAND_DIR_XTRA_SOUND;
+char *ANGBAND_DIR_XTRA_ICON;
 
 static struct history_chart *histories;
 

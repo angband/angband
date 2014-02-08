@@ -514,6 +514,7 @@ typedef struct player_sex {
 	const char *winner;		/* Name of winner */
 } player_sex;
 
+extern const player_sex sex_info[MAX_SEXES];
 
 /*
  * Player racial info
@@ -553,6 +554,7 @@ struct player_race {
 	bitflag pflags[PF_SIZE];  /* Racial (player) flags */
 };
 
+extern struct player_race *races;
 
 /*
  * Items the player starts with.  Used in player_class and specified in
@@ -623,6 +625,8 @@ typedef struct player_class {
 	player_magic spells; /* Magic spells */
 } player_class;
 
+extern struct player_class *classes;
+
 /*
  * Histories are a graph of charts; each chart contains a set of individual
  * entries for that chart, and each entry contains a text description and a
@@ -680,6 +684,11 @@ typedef struct {
 
 
 /*** Externs ***/
+
+extern const s32b player_exp[PY_MAX_LEVEL];
+extern player_other *op_ptr;
+extern player_type *player;
+
 
 /*
  * The range of possible indexes into tables based upon stats.

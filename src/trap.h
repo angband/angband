@@ -89,6 +89,8 @@ typedef struct trap
 	u32b effect;   /**< Effect on entry to grid */
 } trap_kind;
 
+extern trap_kind *trap_info;
+
 /*
  * An actual trap.
  */

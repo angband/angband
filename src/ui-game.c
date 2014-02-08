@@ -26,6 +26,7 @@
 #include "game-cmd.h"
 #include "grafmode.h"
 #include "hint.h"
+#include "init.h"
 #include "mon-lore.h"
 #include "mon-list.h"
 #include "mon-util.h"
@@ -34,6 +35,8 @@
 #include "obj-list.h"
 #include "obj-ui.h"
 #include "obj-util.h"
+#include "player.h"
+#include "prefs.h"
 #include "textui.h"
 #include "ui-birth.h"
 
@@ -69,6 +72,21 @@ static game_event_type statusline_events[] =
 	EVENT_STATE,
 };
 
+/*
+ * Abbreviations of healthy stats
+ */
+const char *stat_names[A_MAX] =
+{
+	"STR: ", "INT: ", "WIS: ", "DEX: ", "CON: "
+};
+
+/*
+ * Abbreviations of damaged stats
+ */
+const char *stat_names_reduced[A_MAX] =
+{
+	"Str: ", "Int: ", "Wis: ", "Dex: ", "Con: "
+};
 
 /*
  * Converts stat num into a six-char (right justified) string
@@ -1425,6 +1443,49 @@ static void flush_subwindow(game_event_type type, game_event_data *data, void *u
 	Term_activate(old);
 }
 
+/*
+ * Certain "screens" always use the main screen, including News, Birth,
+ * Dungeon, Tomb-stone, High-scores, Macros, Colors, Visuals, Options.
+ *
+ * Later, special flags may allow sub-windows to "steal" stuff from the
+ * main window, including File dump (help), File dump (artifacts, uniques),
+ * Character screen, Small scale map, Previous Messages, Store screen, etc.
+ */
+const char *window_flag_desc[32] =
+{
+	"Display inven/equip",
+	"Display equip/inven",
+	"Display player (basic)",
+	"Display player (extra)",
+	"Display player (compact)",
+	"Display map view",
+	"Display messages",
+	"Display overhead view",
+	"Display monster recall",
+	"Display object recall",
+	"Display monster list",
+	"Display status",
+	"Display item list",
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL
+};
 
 static void subwindow_flag_changed(int win_idx, u32b flag, bool new_state)
 {

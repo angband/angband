@@ -28,7 +28,9 @@
 #include "obj-util.h"
 #include "project.h"
 #include "squelch.h"
+#include "tables.h"
 #include "target.h"
+#include "trap.h"
 
 /*
  * Height of the help screen; any higher than 4 will overlap the health

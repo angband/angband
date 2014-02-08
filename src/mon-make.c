@@ -18,6 +18,7 @@
 
 #include "angband.h"
 #include "alloc.h"
+#include "dungeon.h"
 #include "history.h"
 #include "init.h"
 #include "target.h"
@@ -31,6 +32,7 @@
 #include "obj-tvalsval.h"
 #include "obj-util.h"
 #include "quest.h"
+#include "tables.h"
 
 s16b num_repro;
 

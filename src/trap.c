@@ -19,9 +19,12 @@
 #include "angband.h"
 #include "attack.h"
 #include "cave.h"
+#include "dungeon.h"
 #include "effects.h"
 #include "spells.h"
 #include "trap.h"
+
+trap_kind *trap_info;
 
 /**
  * Is there a specific kind of trap in this square?

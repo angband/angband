@@ -31,6 +31,7 @@
 #include "obj-util.h"
 #include "spells.h"
 #include "squelch.h"
+#include "ui.h"
 
 /*
  * Stat Table (INT) -- Magic devices

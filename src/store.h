@@ -26,6 +26,8 @@ enum
 	MAX_STORES	= 8
 };
 
+extern int store_knowledge;
+
 typedef struct owner {
 	unsigned int oidx;
 	struct owner *next;
@@ -58,6 +60,8 @@ struct store {
 	int normal_stock_min;
 	int normal_stock_max;
 };
+
+extern struct store *stores;
 
 void store_init(void);
 void free_stores(void);

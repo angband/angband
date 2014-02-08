@@ -23,6 +23,12 @@
 #define E_WORD S_WORD
 #define TOTAL  27
 
+/*
+ * Array[RANDNAME_NUM_TYPES][num_names] of random names
+ */
+const char *** name_sections;
+
+
 typedef unsigned short name_probs[S_WORD+1][S_WORD+1][TOTAL+1];
 
 /*

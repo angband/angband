@@ -1,11 +1,19 @@
 #ifndef INCLUDED_UI_INPUT_H
 #define INCLUDED_UI_INPUT_H
 
+#include "angband.h"
+#include "ui-event.h"
+
 #define SCAN_INSTANT ((u32b) -1)
 #define SCAN_OFF 0
 
 /* ui-input.c */
 extern struct keypress *inkey_next;
+extern u32b inkey_scan;
+extern bool inkey_flag;
+extern u16b lazymove_delay;
+extern void (*sound_hook)(int);
+extern bool msg_flag;
 
 extern void flush(void);
 extern void flush_fail(void);

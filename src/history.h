@@ -3,6 +3,7 @@
 #ifndef HISTORY_H
 #define HISTORY_H
 
+#include "angband.h"
 
 /* Player history table */
 struct history_info {

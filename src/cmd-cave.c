@@ -35,6 +35,7 @@
 #include "obj-chest.h"
 #include "obj-identify.h"
 #include "obj-util.h"
+#include "tables.h"
 
 /*
  * Go up one level

@@ -22,11 +22,16 @@
 #include "history.h"
 #include "mon-make.h"
 #include "monster.h"
+#include "object.h"
 #include "option.h"
 #include "quest.h"
 #include "savefile.h"
 #include "squelch.h"
+#include "store.h"
 #include "obj-util.h"
+#include "trap.h"
+#include "ui-game.h"
+#include "ui-input.h"
 
 
 /*

@@ -18,12 +18,15 @@
 
 #include "angband.h"
 #include "cave.h"
+#include "dungeon.h"
 #include "effects.h"
 #include "game-cmd.h"
 #include "generate.h"
 #include "grafmode.h"
 #include "history.h"
+#include "init.h"
 #include "mon-make.h"
+#include "monster.h"
 #include "obj-desc.h"
 #include "obj-identify.h"
 #include "obj-info.h"
@@ -38,6 +41,14 @@
 #include "z-queue.h"
 
 static struct object *o_list;
+s16b o_max = 1;			/* Number of allocated objects */
+s16b o_cnt = 0;			/* Number of live objects */
+spell_type *s_info;
+object_base *kb_info;
+object_kind *k_info;
+artifact_type *a_info;
+ego_item_type *e_info;
+struct flavor *flavors;
 
 /*
  * Hold the titles of scrolls, 6 to 14 characters each, plus quotes.

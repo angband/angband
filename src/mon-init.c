@@ -16,7 +16,6 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
-#include "externs.h"
 #include "mon-init.h"
 #include "mon-msg.h"
 #include "mon-power.h"
@@ -27,9 +26,15 @@
 #include "monster.h"
 #include "obj-tval.h"
 #include "obj-util.h"
+#include "object.h"
 #include "parser.h"
 #include "z-util.h"
 #include "z-virt.h"
+
+monster_pain *pain_messages;
+monster_base *rb_info;
+monster_race *r_info;
+monster_lore *l_list;
 
 /* Parsing functions for monster_base.txt */
 

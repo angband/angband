@@ -33,6 +33,7 @@
 #include "obj-ui.h"
 #include "obj-util.h"
 #include "squelch.h"
+#include "tables.h"
 #include "trap.h"
 
 

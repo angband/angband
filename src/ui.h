@@ -39,6 +39,7 @@ void textui_textblock_place(textblock *tb, region orig_area, const char *header)
 void text_out_to_screen(byte a, const char *str);
 
 /* Screen loading/saving */
+extern s16b character_icky;
 extern void screen_save(void);
 extern void screen_load(void);
 

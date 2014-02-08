@@ -18,6 +18,7 @@
 
 #include "angband.h"
 #include "grafmode.h"
+#include "init.h"
 #include "parser.h"
 
 graphics_mode *graphics_modes;

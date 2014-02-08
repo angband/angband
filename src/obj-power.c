@@ -26,6 +26,7 @@
 #include "init.h"
 #include "effects.h"
 #include "mon-power.h"
+#include "monster.h"
 
 /**
  * Constants for the power algorithm:

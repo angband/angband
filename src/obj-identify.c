@@ -19,6 +19,7 @@
 
 #include "angband.h"
 #include "cave.h"
+#include "dungeon.h"
 #include "game-event.h"
 #include "history.h"
 #include "obj-desc.h"
@@ -28,6 +29,7 @@
 #include "obj-tval.h"
 #include "obj-tvalsval.h"
 #include "obj-util.h"
+#include "object.h"
 #include "spells.h"
 #include "squelch.h"
 

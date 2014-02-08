@@ -30,6 +30,7 @@
 #include "obj-tvalsval.h"
 #include "obj-util.h"
 #include "parser.h"
+#include "tables.h"
 #include "trap.h"
 #include "z-queue.h"
 #include "z-type.h"

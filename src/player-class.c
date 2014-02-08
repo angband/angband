@@ -3,7 +3,6 @@
  */
 
 
-#include "externs.h"
 #include "player.h"
 
 struct player_class *player_id2class(guid id)

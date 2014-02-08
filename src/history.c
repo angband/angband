@@ -17,6 +17,7 @@
  */
 
 #include "angband.h"
+#include "dungeon.h"
 #include "history.h"
 #include "obj-desc.h"
 #include "obj-util.h"

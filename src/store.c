@@ -24,6 +24,7 @@
 #include "hint.h"
 #include "history.h"
 #include "init.h"
+#include "monster.h"
 #include "obj-desc.h"
 #include "obj-identify.h"
 #include "obj-info.h"
@@ -38,10 +39,27 @@
 #include "target.h"
 #include "textui.h"
 #include "ui-game.h"
+#include "ui-input.h"
 #include "ui-menu.h"
 #include "z-debug.h"
 
 /*** Constants and definitions ***/
+
+/*
+ * Array[MAX_STORES] of stores
+ */
+struct store *stores;
+
+/*
+ * Flag to override which store is selected if in a knowledge menu
+ */
+int store_knowledge = STORE_NONE;
+
+/*
+ * The hints array
+ */
+struct hint *hints;
+
 
 /* Easy names for the elements of the 'scr_places' arrays. */
 enum

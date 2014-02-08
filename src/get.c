@@ -1,5 +1,6 @@
 
 #include "get.h"
+#include "init.h"
 
 static struct getset = { 0 };
 

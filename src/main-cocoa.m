@@ -23,6 +23,9 @@
 #include "grafmode.h"
 #include "obj-util.h"
 #include "prefs.h"
+#include "savefile.h"
+#include "ui-game.h"
+#include "ui-input.h"
 
 #if defined(SAFE_DIRECTORY)
 #import "buildid.h"
@@ -1835,7 +1838,6 @@ static errr Term_xtra_cocoa_react(void)
         
         /* Record what we did */
         use_graphics = (new_mode != NULL);
-        use_transparency = (new_mode != NULL);
         ANGBAND_GRAF = (new_mode ? new_mode->pref : NULL);
         current_graphics_mode = new_mode;
         

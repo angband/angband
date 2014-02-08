@@ -17,6 +17,7 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
+#include "tables.h"
 #include "target.h"
 #include "ui-event.h"
 #include "ui-menu.h"

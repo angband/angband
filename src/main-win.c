@@ -74,8 +74,10 @@
 #include "init.h"
 #include "files.h"
 #include "grafmode.h"
+#include "prefs.h"
 #include "win/win-menu.h"
 #include "savefile.h" /* savefile_set_name() */
+#include "ui-input.h"
 
 /* Make sure the winver allows the AlphaBlend function */
 #if (WINVER < 0x0500)
@@ -1130,7 +1132,6 @@ static bool init_graphics(void)
 
 			name = mode->file;
 			ANGBAND_GRAF = mode->pref;
-			use_transparency = FALSE;
 
 			overdraw = mode->overdrawRow;
 			overdrawmax = mode->overdrawMax;
@@ -1629,9 +1630,6 @@ static errr Term_xtra_win_react(void)
 	/* Handle "arg_graphics" */
 	if (use_graphics != arg_graphics)
 	{
-		/* Switch off transparency */
-		use_transparency = FALSE;
-
 		/* Free the bitmap stuff */
 		FreeDIB(&infGraph);
 		FreeDIB(&infMask);

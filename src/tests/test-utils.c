@@ -10,7 +10,6 @@
 #include "config.h"
 #include "init.h"
 #include "z-util.h"
-#include "externs.h"
 
 /*
  * Call this function to simulate init_stuff() and populate the *_info arrays

@@ -17,6 +17,7 @@
  */
 
 #include "angband.h"
+#include "dungeon.h"
 #include "files.h"
 #include "savefile.h"
 #include "signals.h"
@@ -29,6 +30,7 @@
 # include <sys/types.h>
 #endif
 
+s16b signal_count;		/* Hack -- Count interrupts */
 
 typedef void (*Signal_Handler_t)(int);
 

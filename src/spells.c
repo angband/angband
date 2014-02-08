@@ -35,9 +35,11 @@
 #include "obj-tvalsval.h"
 #include "obj-ui.h"
 #include "obj-util.h"
+#include "object.h"
 #include "project.h"
 #include "spells.h"
 #include "squelch.h"
+#include "tables.h"
 #include "target.h"
 #include "trap.h"
 

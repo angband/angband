@@ -17,6 +17,8 @@
  */
 #include "angband.h"
 #include "buildid.h"
+#include "dungeon.h"
+#include "init.h"
 #include "score.h"
 
 

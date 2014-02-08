@@ -17,10 +17,13 @@
  */
 
 #include "angband.h"
+#include "init.h"
 #include "mon-power.h"
 #include "mon-spell.h"
 #include "mon-blow-methods.h"
 #include "mon-blow-effects.h"
+#include "prefs.h"
+#include "tables.h"
 
 s32b tot_mon_power;
 

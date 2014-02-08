@@ -26,6 +26,17 @@
 #include "obj-pval.h"
 #include "obj-util.h"
 
+const char *inscrip_text[] =
+{
+	NULL,
+	"strange",
+	"average",
+	"magical",
+	"splendid",
+	"excellent",
+	"special",
+	"unknown"
+};
 
 /**
  * Puts the object base kind's name into buf.

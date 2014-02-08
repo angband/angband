@@ -18,17 +18,24 @@
 
 #include "angband.h"
 #include "cave.h"
-#include "game-event.h"
+#include "cmds.h"
+#include "dungeon.h"
 #include "game-cmd.h"
+#include "game-event.h"
+#include "grafmode.h"
 #include "mon-util.h"
+#include "monster.h"
 #include "obj-tval.h"
 #include "obj-ui.h"
 #include "obj-util.h"
+#include "object.h"
+#include "prefs.h"
 #include "project.h"
 #include "squelch.h"
-#include "cmds.h"
+#include "tables.h"
 #include "trap.h"
-#include "grafmode.h"
+
+feature_type *f_info;
 
 /*
  * Approximate distance between two points.

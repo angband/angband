@@ -175,6 +175,8 @@ typedef struct feature
 	wchar_t x_char[4];   /**< Desired feature character (set by user/pref file) */
 } feature_type;
 
+extern feature_type *f_info;
+
 enum grid_light_level
 {
 	FEAT_LIGHTING_LOS = 0,   /* line of sight */

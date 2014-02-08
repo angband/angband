@@ -23,6 +23,7 @@
 #include <sys/stat.h>
 
 #include "angband.h"
+#include "init.h"
 
 /* Module state variables */
 static sqlite3 *db;

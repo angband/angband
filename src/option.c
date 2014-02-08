@@ -17,6 +17,7 @@
  */
 #include "angband.h"
 #include "option.h"
+#include "ui-game.h"
 
 typedef struct {
 	const char *name;

@@ -14,7 +14,6 @@ HEADERS = \
 	cmds.h \
 	config.h \
 	effects.h \
-	externs.h \
 	game-cmd.h \
 	game-event.h \
 	guid.h \
@@ -172,7 +171,6 @@ ANGFILES = \
 	ui-menu.o \
 	ui-options.o \
 	ui-spell.o \
-	variable.o \
 	wiz-spoil.o \
 	wiz-stats.o \
 	wizard.o \

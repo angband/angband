@@ -3,6 +3,7 @@
 #include "unit-test.h"
 #include "unit-test-data.h"
 #include "obj-tvalsval.h"
+#include "object.h"
 #include "init.h"
 	
 int setup_tests(void **state) {

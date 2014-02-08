@@ -6,8 +6,6 @@
 #include "mon-constants.h"
 #include "monster.h"
 
-#include "externs.h"
-
 int setup_tests(void **state) {
 	*state = init_parse_r();
 	return !*state;

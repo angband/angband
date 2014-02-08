@@ -25,6 +25,8 @@
 #include "obj-tvalsval.h"
 #include "obj-util.h"
 #include "mon-util.h" /* for summon_specific() */
+#include "spells.h"
+#include "tables.h"
 
 /*
  * Each chest has a certain set of traps, determined by pval

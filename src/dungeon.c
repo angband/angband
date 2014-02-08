@@ -41,13 +41,25 @@
 #include "prefs.h"
 #include "savefile.h"
 #include "spells.h"
+#include "store.h"
+#include "tables.h"
 #include "target.h"
 #include "ui-game.h"
+#include "ui-input.h"
+#include "ui.h"
 
 /* The minimum amount of energy a player has at the start of a new level */
 #define INITIAL_DUNGEON_ENERGY 100
 
 u16b daycount = 0;
+u32b seed_randart;		/* Hack -- consistent random artifacts */
+u32b seed_flavor;		/* Hack -- consistent object colors */
+u32b seed_town;			/* Hack -- consistent town layout */
+s32b turn;				/* Current game turn */
+bool character_generated;	/* The character exists */
+bool character_dungeon;		/* The character has a dungeon */
+bool character_saved;		/* The character was just saved to a savefile */
+s16b character_xtra;		/* Depth of the game in startup mode */
 
 /*
  * Say whether it's daytime or not

@@ -19,6 +19,7 @@
 
 #include "angband.h"
 #include "cave.h"
+#include "dungeon.h"
 #include "math.h"
 #include "files.h"
 #include "game-event.h"
@@ -26,11 +27,20 @@
 #include "init.h"
 #include "mon-make.h"
 #include "mon-spell.h"
+#include "monster.h"
 #include "obj-util.h"
+#include "object.h"
 #include "parser.h"
 #include "trap.h"
 #include "z-queue.h"
 #include "z-type.h"
+
+/*
+ * Array of pit types
+ */
+struct pit_profile *pit_info;
+struct vault *vaults;
+
 
 /**
  * Note that Level generation is *not* an important bottleneck, though it can

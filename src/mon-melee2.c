@@ -34,6 +34,7 @@
 #include "project.h"
 #include "spells.h"
 #include "squelch.h"
+#include "tables.h"
 
 /*
  * Determine if a bolt will arrive, checking that no monsters are in the way

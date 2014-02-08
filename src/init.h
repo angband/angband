@@ -48,6 +48,24 @@ struct init_module {
 
 extern maxima *z_info;
 
+extern const char *ANGBAND_SYS;
+extern const char *ANGBAND_GRAF;
+
+extern char *ANGBAND_DIR_APEX;
+extern char *ANGBAND_DIR_EDIT;
+extern char *ANGBAND_DIR_FILE;
+extern char *ANGBAND_DIR_HELP;
+extern char *ANGBAND_DIR_INFO;
+extern char *ANGBAND_DIR_SAVE;
+extern char *ANGBAND_DIR_PREF;
+extern char *ANGBAND_DIR_USER;
+extern char *ANGBAND_DIR_XTRA;
+
+extern char *ANGBAND_DIR_XTRA_FONT;
+extern char *ANGBAND_DIR_XTRA_GRAF;
+extern char *ANGBAND_DIR_XTRA_SOUND;
+extern char *ANGBAND_DIR_XTRA_ICON;
+
 extern struct parser *init_parse_a(void);
 extern struct parser *init_parse_c(void);
 extern struct parser *init_parse_e(void);

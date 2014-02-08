@@ -25,6 +25,9 @@
 #include "angband.h"
 #include "buildid.h"
 #include "main.h"
+#include "init.h"
+#include "prefs.h"
+#include "savefile.h"
 
 /* DS includes */
 #include "nds/ds_errfont.h"

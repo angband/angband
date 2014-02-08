@@ -14,6 +14,8 @@ typedef enum
 	RANDNAME_NUM_TYPES 
 } randname_type;
 
+extern const char *** name_sections;
+
 /*
  * Make a random name.
  */

@@ -18,16 +18,24 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
+#include "cave.h"
 #include "grafmode.h"
+#include "init.h"
 #include "keymap.h"
+#include "monster.h"
 #include "obj-tval.h"
 #include "obj-util.h"
+#include "object.h"
 #include "prefs.h"
 #include "project.h"
 #include "squelch.h"
 #include "spells.h"
 #include "ui-game.h"
 
+bool arg_wizard;			/* Command arg -- Request wizard mode */
+bool arg_rebalance;			/* Command arg -- Rebalance monsters */
+int arg_graphics;			/* Command arg -- Request graphics mode */
+bool arg_graphics_nice;			/* Command arg -- Request nice graphics mode */
 
 /*** Pref file saving code ***/
 
@@ -1164,6 +1172,8 @@ bool process_pref_file(const char *name, bool quiet, bool user)
 	/* If only one load was successful, that's okay; we loaded something. */
 	return root_success || user_success;
 }
+
+int use_graphics;		/* The "graphics" mode is enabled */
 
 /*
  * Reset the "visual" lists

@@ -26,6 +26,7 @@
 #include "obj-util.h"
 #include "project.h"
 #include "spells.h"
+#include "tables.h"
 #include "trap.h"
 
 

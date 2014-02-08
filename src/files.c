@@ -20,9 +20,11 @@
 #include "cave.h"
 #include "cmds.h"
 #include "death.h"
+#include "dungeon.h"
 #include "files.h"
 #include "game-cmd.h"
 #include "history.h"
+#include "init.h"
 #include "obj-desc.h"
 #include "obj-identify.h"
 #include "obj-info.h"
@@ -30,11 +32,14 @@
 #include "obj-ui.h"
 #include "obj-util.h"
 #include "option.h"
+#include "player.h"
 #include "savefile.h"
 #include "score.h"
+#include "store.h"
 #include "signals.h"
 #include "ui-game.h"
 #include "ui-menu.h"
+#include "ui.h"
 
 
 /** Panel utilities **/

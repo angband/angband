@@ -5,6 +5,8 @@
 
 /*** Savefile API ***/
 
+extern char savefile[1024];
+
 /**
  * Set the filename of the savefile.
  */
