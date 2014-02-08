@@ -887,16 +887,16 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 	/* Rare random hallucination on non-outer walls */
 	if (g->hallucinate && g->m_idx == 0 && g->first_kind == 0)
 	{
-		if (one_in_(128) && g->f_idx != FEAT_PERM_SOLID)
+		if (one_in_(128) && g->f_idx != FEAT_PERM)
 			g->m_idx = 1;
-		else if (one_in_(128) && g->f_idx != FEAT_PERM_SOLID)
+		else if (one_in_(128) && g->f_idx != FEAT_PERM)
 			/* if hallucinating, we just need first_kind to not be NULL */
 			g->first_kind = k_info;
 		else
 			g->hallucinate = FALSE;
 	}
 
-	assert(g->f_idx <= FEAT_PERM_SOLID);
+	assert(g->f_idx <= FEAT_PERM);
 	if (!g->hallucinate)
 		assert((int)g->m_idx < cave->mon_max);
 	/* All other g fields are 'flags', mostly booleans. */
@@ -2730,9 +2730,6 @@ bool square_isrock(struct cave *c, int y, int x) {
 
 /**
  * True if the square is a permanent wall.
- *
- * FEAT_PERM_SOLID is the normal feature type. The others are weird byproducts
- * of cave generation (and should be avoided).
  */
 bool square_isperm(struct cave *c, int y, int x) {
 	return (tf_has(f_info[c->feat[y][x]].flags, TF_PERMANENT) &&

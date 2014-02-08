@@ -93,8 +93,7 @@ struct monster;
 #define FEAT_WALL_INNER 0x39
 #define FEAT_WALL_OUTER 0x3A
 #define FEAT_WALL_SOLID 0x3B
-#define FEAT_PERM_INNER 0x3D
-#define FEAT_PERM_SOLID 0x3F
+#define FEAT_PERM 0x3C
 
 
 

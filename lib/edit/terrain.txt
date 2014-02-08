@@ -390,17 +390,9 @@ M:56
 F:WALL | ROCK | GRANITE | NO_SCENT | NO_FLOW
 X:0:0:0:4
 
-# 0x3D --> permanent wall -- inner (perm)
+# 0x3C --> permanent wall
 
-N:61:permanent wall
-G:#:u
-P:10
-M:63
-F:WALL | ROCK | PERMANENT | NO_SCENT | NO_FLOW
-
-# 0x3F --> permanent wall -- solid (perm)
-
-N:63:permanent wall
+N:60:permanent wall
 G:#:u
 P:10
 F:WALL | ROCK | PERMANENT | NO_SCENT | NO_FLOW

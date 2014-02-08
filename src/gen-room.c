@@ -1290,7 +1290,7 @@ static void build_vault(struct cave *c, int y0, int x0, int ymax, int xmax, cons
 				break;
 			}
 			case '#': square_set_feat(c, y, x, FEAT_WALL_INNER); break;
-			case '@': square_set_feat(c, y, x, FEAT_PERM_INNER); break;
+			case '@': square_set_feat(c, y, x, FEAT_PERM); break;
 			case '+': place_secret_door(c, y, x); break;
 			case '^': place_trap(c, y, x, -1, c->depth); break;
 			case '&': {

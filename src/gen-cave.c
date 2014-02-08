@@ -171,7 +171,7 @@ static void build_tunnel(struct cave *c, int row1, int col1, int row2, int col2)
 			x = tmp_col + col_dir;
 
 			/* Hack -- Avoid solid permanent walls */
-			if (c->feat[y][x] == FEAT_PERM_SOLID) continue;
+			if (c->feat[y][x] == FEAT_PERM) continue;
 
 			/* Hack -- Avoid outer/solid granite walls */
 			if (c->feat[y][x] == FEAT_WALL_OUTER) continue;
@@ -471,7 +471,7 @@ bool default_gen(struct cave *c, struct player *p) {
     }
 
     /* Generate permanent walls around the edge of the dungeon */
-    draw_rectangle(c, 0, 0, DUNGEON_HGT - 1, DUNGEON_WID - 1, FEAT_PERM_SOLID);
+    draw_rectangle(c, 0, 0, DUNGEON_HGT - 1, DUNGEON_WID - 1, FEAT_PERM);
 
     /* Hack -- Scramble the room order */
     for (i = 0; i < dun->cent_n; i++) {
@@ -690,10 +690,10 @@ bool labyrinth_gen(struct cave *c, struct player *p) {
     set_cave_dimensions(c, h + 2, w + 2);
 
     /* Fill whole level with perma-rock */
-    fill_rectangle(c, 0, 0, DUNGEON_HGT - 1, DUNGEON_WID - 1, FEAT_PERM_SOLID);
+    fill_rectangle(c, 0, 0, DUNGEON_HGT - 1, DUNGEON_WID - 1, FEAT_PERM);
 
     /* Fill the labyrinth area with rock */
-    fill_rectangle(c, 1, 1, h, w, soft ? FEAT_WALL_SOLID : FEAT_PERM_SOLID);
+    fill_rectangle(c, 1, 1, h, w, soft ? FEAT_WALL_SOLID : FEAT_PERM);
 
     /* Initialize each wall. */
     for (i = 0; i < n; i++) {
@@ -825,7 +825,7 @@ static void init_cavern(struct cave *c, struct player *p, int density) {
     int count = (size * density) / 100;
 
     /* Fill the edges with perma-rock, and rest with rock */
-    fill_rectangle(c, 0, 0, DUNGEON_HGT - 1, DUNGEON_WID - 1, FEAT_PERM_SOLID);
+    fill_rectangle(c, 0, 0, DUNGEON_HGT - 1, DUNGEON_WID - 1, FEAT_PERM);
     fill_rectangle(c, 1, 1, h - 2, w - 2, FEAT_WALL_SOLID);
 	
     while (count > 0) {
@@ -1306,7 +1306,7 @@ static void build_store(struct cave *c, int n, int yy, int xx) {
     int dx = rand_range(x1, x2);
 
     /* Build an invulnerable rectangular building */
-    fill_rectangle(c, y1, x1, y2, x2, FEAT_PERM_SOLID);
+    fill_rectangle(c, y1, x1, y2, x2, FEAT_PERM);
 
     /* Clear previous contents, add a store door */
     square_set_feat(c, dy, dx, FEAT_SHOP_HEAD + n);
@@ -1395,7 +1395,7 @@ bool town_gen(struct cave *c, struct player *p) {
      */
 
     /* Start with solid walls, and then create some floor in the middle */
-    fill_rectangle(c, 0, 0, DUNGEON_HGT - 1, DUNGEON_WID - 1, FEAT_PERM_SOLID);
+    fill_rectangle(c, 0, 0, DUNGEON_HGT - 1, DUNGEON_WID - 1, FEAT_PERM);
     fill_rectangle(c, 1, 1, c->height -2, c->width - 2, FEAT_FLOOR);
 
     /* Build stuff */
