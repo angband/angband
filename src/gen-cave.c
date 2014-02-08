@@ -1306,7 +1306,7 @@ static void build_store(struct cave *c, int n, int yy, int xx) {
     int dx = rand_range(x1, x2);
 
     /* Build an invulnerable rectangular building */
-    fill_rectangle(c, y1, x1, y2, x2, FEAT_PERM_EXTRA);
+    fill_rectangle(c, y1, x1, y2, x2, FEAT_PERM_SOLID);
 
     /* Clear previous contents, add a store door */
     square_set_feat(c, dy, dx, FEAT_SHOP_HEAD + n);
