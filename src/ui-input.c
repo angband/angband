@@ -21,6 +21,7 @@
 #include "target.h"
 #include "files.h"
 #include "game-event.h"
+#include "pathfind.h"
 #include "randname.h"
 
 static bool inkey_xtra;
@@ -1138,4 +1139,247 @@ void pause_line(struct term *term)
 	put_str("[Press any key to continue]", term->hgt - 1, 23);
 	(void)anykey();
 	prt("", term->hgt - 1, 0);
+}
+
+static int dir_transitions[10][10] =
+{
+	/* 0-> */ { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 },
+	/* 1-> */ { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+	/* 2-> */ { 0, 0, 2, 0, 1, 0, 3, 0, 5, 0 },
+	/* 3-> */ { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+	/* 4-> */ { 0, 0, 1, 0, 4, 0, 5, 0, 7, 0 },
+	/* 5-> */ { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+	/* 6-> */ { 0, 0, 3, 0, 5, 0, 6, 0, 9, 0 },
+	/* 7-> */ { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+	/* 8-> */ { 0, 0, 5, 0, 7, 0, 9, 0, 8, 0 },
+	/* 9-> */ { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+/*
+ * Request a "movement" direction (1,2,3,4,6,7,8,9) from the user.
+ *
+ * Return TRUE if a direction was chosen, otherwise return FALSE.
+ *
+ * This function should be used for all "repeatable" commands, such as
+ * run, walk, open, close, bash, disarm, spike, tunnel, etc, as well
+ * as all commands which must reference a grid adjacent to the player,
+ * and which may not reference the grid under the player.
+ *
+ * Directions "5" and "0" are illegal and will not be accepted.
+ *
+ * This function tracks and uses the "global direction", and uses
+ * that as the "desired direction", if it is set.
+ */
+bool get_rep_dir(int *dp, bool allow_5)
+{
+	int dir = 0;
+
+	ui_event ke;
+
+	/* Initialize */
+	(*dp) = 0;
+
+	/* Get a direction */
+	while (!dir)
+	{
+		/* Paranoia XXX XXX XXX */
+		message_flush();
+
+		/* Get first keypress - the first test is to avoid displaying the
+		 prompt for direction if there's already a keypress queued up
+		 and waiting - this just avoids a flickering prompt if there is
+		 a "lazy" movement delay. */
+		inkey_scan = SCAN_INSTANT;
+		ke = inkey_ex();
+		inkey_scan = SCAN_OFF;
+
+		if (ke.type == EVT_NONE ||
+			(ke.type == EVT_KBRD && target_dir(ke.key) == 0))
+		{
+			prt("Direction or <click> (Escape to cancel)? ", 0, 0);
+			ke = inkey_ex();
+		}
+
+		/* Check mouse coordinates */
+		if (ke.type == EVT_MOUSE) {
+			if (ke.mouse.button == 1) {
+				int y = KEY_GRID_Y(ke);
+				int x = KEY_GRID_X(ke);
+				struct loc from = loc(player->px, player->py);
+				struct loc to = loc(x, y);
+
+				dir = pathfind_direction_to(from, to);
+			} else
+				if (ke.mouse.button == 2) {
+					/* Clear the prompt */
+					prt("", 0, 0);
+
+					return (FALSE);
+				}
+		}
+
+		/* Get other keypresses until a direction is chosen. */
+		else if (ke.type == EVT_KBRD)
+		{
+			int keypresses_handled = 0;
+
+			while (ke.type == EVT_KBRD && ke.key.code != 0)
+			{
+				int this_dir;
+
+				if (ke.key.code == ESCAPE)
+				{
+					/* Clear the prompt */
+					prt("", 0, 0);
+
+					return (FALSE);
+				}
+
+				/* XXX Ideally show and move the cursor here to indicate
+				 the currently "Pending" direction. XXX */
+				this_dir = target_dir_allow(ke.key, allow_5);
+
+				if (this_dir)
+					dir = dir_transitions[dir][this_dir];
+
+				if (lazymove_delay == 0 || ++keypresses_handled > 1)
+					break;
+
+				inkey_scan = lazymove_delay;
+				ke = inkey_ex();
+			}
+
+			/* 5 is equivalent to "escape" */
+			if (dir == 5 && !allow_5)
+			{
+				/* Clear the prompt */
+				prt("", 0, 0);
+
+				return (FALSE);
+			}
+		}
+
+		/* Oops */
+		if (!dir) bell("Illegal repeatable direction!");
+	}
+
+	/* Clear the prompt */
+	prt("", 0, 0);
+
+	/* Save direction */
+	(*dp) = dir;
+
+	/* Success */
+	return (TRUE);
+}
+
+/*
+ * Get an "aiming direction" (1,2,3,4,6,7,8,9 or 5) from the user.
+ *
+ * Return TRUE if a direction was chosen, otherwise return FALSE.
+ *
+ * The direction "5" is special, and means "use current target".
+ *
+ * This function tracks and uses the "global direction", and uses
+ * that as the "desired direction", if it is set.
+ *
+ * Note that "Force Target", if set, will pre-empt user interaction,
+ * if there is a usable target already set.
+ */
+bool get_aim_dir(int *dp)
+{
+	/* Global direction */
+	int dir = 0;
+
+	ui_event ke;
+
+	const char *p;
+
+	/* Initialize */
+	(*dp) = 0;
+
+	/* Hack -- auto-target if requested */
+	if (OPT(use_old_target) && target_okay() && !dir) dir = 5;
+
+	/* Ask until satisfied */
+	while (!dir)
+	{
+		/* Choose a prompt */
+		if (!target_okay())
+			p = "Direction ('*' or <click> to target, \"'\" for closest, Escape to cancel)? ";
+		else
+			p = "Direction ('5' for target, '*' or <click> to re-target, Escape to cancel)? ";
+
+		/* Get a command (or Cancel) */
+		if (!get_com_ex(p, &ke)) break;
+
+		if (ke.type == EVT_MOUSE) {
+			if (ke.mouse.button == 1) {
+				if (target_set_interactive(TARGET_KILL, KEY_GRID_X(ke), KEY_GRID_Y(ke)))
+					dir = 5;
+			} else
+				if (ke.mouse.button == 2) {
+					break;
+				}
+		} else
+			if (ke.type == EVT_KBRD) {
+				if (ke.key.code == '*')
+				{
+					/* Set new target, use target if legal */
+					if (target_set_interactive(TARGET_KILL, -1, -1))
+						dir = 5;
+				}
+				else if (ke.key.code == '\'')
+				{
+					/* Set to closest target */
+					if (target_set_closest(TARGET_KILL))
+						dir = 5;
+				}
+				else if (ke.key.code == 't' || ke.key.code == '5' ||
+						 ke.key.code == '0' || ke.key.code == '.')
+				{
+					if (target_okay())
+						dir = 5;
+				}
+				else
+				{
+					/* Possible direction */
+					int keypresses_handled = 0;
+
+					while (ke.key.code != 0)
+					{
+						int this_dir;
+
+						/* XXX Ideally show and move the cursor here to indicate
+						 the currently "Pending" direction. XXX */
+						this_dir = target_dir(ke.key);
+
+						if (this_dir)
+							dir = dir_transitions[dir][this_dir];
+						else
+							break;
+
+						if (lazymove_delay == 0 || ++keypresses_handled > 1)
+							break;
+
+						/* See if there's a second keypress within the defined
+						 period of time. */
+						inkey_scan = lazymove_delay;
+						ke = inkey_ex();
+					}
+				}
+			}
+
+		/* Error */
+		if (!dir) bell("Illegal aim direction!");
+	}
+
+	/* No direction */
+	if (!dir) return (FALSE);
+	
+	/* Save direction */
+	(*dp) = dir;
+	
+	/* A "valid" direction was entered */
+	return (TRUE);
 }

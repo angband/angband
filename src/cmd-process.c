@@ -29,6 +29,7 @@
 #include "wizard.h"
 #include "target.h"
 #include "obj-util.h"
+#include "ui-game.h"
 
 /*
  * This file contains (several) big lists of commands, so that they can be

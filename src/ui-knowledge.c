@@ -31,11 +31,14 @@
 #include "obj-tvalsval.h"
 #include "obj-util.h"
 #include "squelch.h"
+#include "score.h"
 #include "store.h"
+#include "target.h"
 #include "ui.h"
 #include "ui-menu.h"
 #include "ui-options.h"
 #include "grafmode.h"
+#include "wizard.h"
 
 /* Flag value for missing array entry */
 #define MISSING -17

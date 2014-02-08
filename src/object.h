@@ -622,5 +622,6 @@ typedef bool (*item_tester)(const struct object *);
 /* obj-power.c and randart.c */
 s32b object_power(const object_type *o_ptr, int verbose, ang_file *log_file, bool known);
 char *artifact_gen_name(struct artifact *a, const char ***wordlist);
+errr do_randart(u32b randart_seed, bool full);
 
 #endif /* !INCLUDED_OBJECT_H */

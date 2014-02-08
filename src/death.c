@@ -28,6 +28,7 @@
 #include "obj-identify.h"
 #include "obj-info.h"
 #include "obj-ui.h"
+#include "score.h"
 
 /*
  * Hack - save the time of death

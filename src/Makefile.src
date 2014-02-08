@@ -166,6 +166,7 @@ ANGFILES = \
 	ui.o \
 	ui-birth.o \
 	ui-event.o \
+	ui-game.o \
 	ui-input.o \
 	ui-knowledge.o \
 	ui-menu.o \
@@ -176,8 +177,6 @@ ANGFILES = \
 	wiz-stats.o \
 	wizard.o \
 	x-spell.o \
-	xtra2.o \
-	xtra3.o \
 
 STATSMAINFILES = main-stats.o \
         stats/db.o

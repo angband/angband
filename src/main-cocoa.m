@@ -22,6 +22,7 @@
 #include "init.h"
 #include "grafmode.h"
 #include "obj-util.h"
+#include "prefs.h"
 
 #if defined(SAFE_DIRECTORY)
 #import "buildid.h"

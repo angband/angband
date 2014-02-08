@@ -71,5 +71,6 @@ extern struct owner *store_ownerbyidx(struct store *s, unsigned int idx);
 struct parser *init_parse_stores(void);
 extern struct parser *store_parser_new(void);
 extern struct parser *store_owner_parser_new(struct store *stores);
+void do_cmd_store_knowledge(void);
 
 #endif /* INCLUDED_STORE_H */

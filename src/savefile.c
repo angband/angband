@@ -613,7 +613,6 @@ static int get_desc(void) {
  * Try to get the 'description' block from a savefile.  Fail gracefully.
  */
 const char *savefile_get_description(const char *path) {
-	errr err;
 	struct blockheader b;
 
 	ang_file *f = file_open(path, MODE_READ, FTYPE_TEXT);

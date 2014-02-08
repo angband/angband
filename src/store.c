@@ -21,6 +21,7 @@
 #include "cave.h"
 #include "cmds.h"
 #include "game-event.h"
+#include "hint.h"
 #include "history.h"
 #include "init.h"
 #include "obj-desc.h"
@@ -36,6 +37,7 @@
 #include "store.h"
 #include "target.h"
 #include "textui.h"
+#include "ui-game.h"
 #include "ui-menu.h"
 #include "z-debug.h"
 
@@ -416,7 +418,16 @@ static bool store_can_carry(struct store *store, struct object_kind *kind) {
 	return store_is_staple(store, kind);
 }
 
-
+/* Return a random hint from the global hints list */
+char* random_hint(void)
+{
+	struct hint *v, *r = NULL;
+	int n;
+	for (v = hints, n = 1; v; v = v->next, n++)
+		if (one_in_(n))
+			r = v;
+	return r->hint;
+}
 
 /*
  * The greeting a shopkeeper gives the character says a lot about his

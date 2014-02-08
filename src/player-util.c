@@ -6,6 +6,7 @@
 #include "cave.h"
 #include "obj-tvalsval.h"
 #include "obj-util.h"
+#include "target.h"
 
 /*
  * Decreases players hit points and sets death flag if necessary

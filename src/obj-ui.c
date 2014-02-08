@@ -26,6 +26,7 @@
 #include "obj-tvalsval.h" /* Only for use_flavor_glyph() */
 #include "obj-ui.h"
 #include "obj-util.h"
+#include "ui-game.h"
 
 /*
  * Determine if the attr and char should consider the item's flavor

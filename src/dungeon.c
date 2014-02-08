@@ -36,11 +36,13 @@
 #include "obj-tval.h"
 #include "obj-tvalsval.h"
 #include "obj-util.h"
+#include "object.h"
 #include "pathfind.h"
 #include "prefs.h"
 #include "savefile.h"
 #include "spells.h"
 #include "target.h"
+#include "ui-game.h"
 
 /* The minimum amount of energy a player has at the start of a new level */
 #define INITIAL_DUNGEON_ENERGY 100

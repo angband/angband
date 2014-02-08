@@ -20,6 +20,7 @@
 #include "history.h"
 #include "obj-desc.h"
 #include "obj-util.h"
+#include "wizard.h" /* make_fake_artifact() */
 
 /*
  * Number of slots available at birth in the player history list.  Defaults to

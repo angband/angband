@@ -103,40 +103,4 @@ extern bool (*item_tester_hook)(const object_type *);
 extern bool use_transparency;
 extern void (*sound_hook)(int);
 
-/* randart.c */
-extern errr do_randart(u32b randart_seed, bool full);
-
-/* score.c */
-extern void enter_score(time_t *death_time);
-extern void show_scores(void);
-extern void predict_score(void);
-
-/* signals.c */
-extern void signals_ignore_tstp(void);
-extern void signals_handle_tstp(void);
-extern void signals_init(void);
-
-/* store.c */
-void do_cmd_store_knowledge(void);
-
-/* xtra2.c */
-bool modify_panel(term *t, int wy, int wx);
-bool change_panel(int dir);
-void verify_panel(void);
-void center_panel(void);
-int motion_dir(int y1, int x1, int y2, int x2);
-int target_dir(struct keypress ch);
-int target_dir_allow(struct keypress ch, bool allow_5);
-bool get_rep_dir(int *dp, bool allow_5);
-
-/* xtra3.c */
-byte monster_health_attr(void);
-void cnv_stat(int val, char *out_val, size_t out_len);
-void toggle_inven_equip(void);
-void subwindows_set_flags(u32b *new_flags, size_t n_subwindows);
-char* random_hint(void);
-
-/* wiz-spoil.c */
-bool make_fake_artifact(object_type *o_ptr, struct artifact *artifact);
-
 #endif /* !INCLUDED_EXTERNS_H */

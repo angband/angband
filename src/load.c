@@ -27,6 +27,7 @@
 #include "savefile.h"
 #include "squelch.h"
 #include "quest.h"
+#include "ui-game.h"
 
 
 /* Object constants */

@@ -31,6 +31,9 @@
 #include "obj-util.h"
 #include "option.h"
 #include "savefile.h"
+#include "score.h"
+#include "signals.h"
+#include "ui-game.h"
 #include "ui-menu.h"
 
 

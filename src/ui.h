@@ -52,6 +52,9 @@ extern void prt(const char *str, int row, int col);
 /*** Misc ***/
 
 void window_make(int origin_x, int origin_y, int end_x, int end_y);
-
+bool modify_panel(term *t, int wy, int wx);
+bool change_panel(int dir);
+void verify_panel(void);
+void center_panel(void);
 
 #endif /* INCLUDED_UI_H */

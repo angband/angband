@@ -24,6 +24,7 @@
 #include "mon-constants.h"
 #include "obj-tvalsval.h"
 #include "obj-util.h"
+#include "object.h"
 #include "effects.h"
 #include "generate.h"
 /*

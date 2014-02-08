@@ -24,6 +24,7 @@
 #include "obj-tvalsval.h"
 #include "obj-util.h"
 #include "randname.h"
+#include "wizard.h" /* make_fake_artifact() */
 
 /*
  * Original random artifact generator (randart) by Greg Wooledge.

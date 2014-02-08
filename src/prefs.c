@@ -26,6 +26,7 @@
 #include "project.h"
 #include "squelch.h"
 #include "spells.h"
+#include "ui-game.h"
 
 
 /*** Pref file saving code ***/

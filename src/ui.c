@@ -449,3 +449,163 @@ void window_make(int origin_x, int origin_y, int end_x, int end_y)
 	}
 }
 
+/*
+ * Modify the current panel to the given coordinates, adjusting only to
+ * ensure the coordinates are legal, and return TRUE if anything done.
+ *
+ * The town should never be scrolled around.
+ *
+ * Note that monsters are no longer affected in any way by panel changes.
+ *
+ * As a total hack, whenever the current panel changes, we assume that
+ * the "overhead view" window should be updated.
+ */
+bool modify_panel(term *t, int wy, int wx)
+{
+	int dungeon_hgt = cave->height;
+	int dungeon_wid = cave->width;
+
+	/* Verify wy, adjust if needed */
+	if (wy > dungeon_hgt - SCREEN_HGT) wy = dungeon_hgt - SCREEN_HGT;
+	if (wy < 0) wy = 0;
+
+	/* Verify wx, adjust if needed */
+	if (wx > dungeon_wid - SCREEN_WID) wx = dungeon_wid - SCREEN_WID;
+	if (wx < 0) wx = 0;
+
+	/* React to changes */
+	if ((t->offset_y != wy) || (t->offset_x != wx))
+	{
+		/* Save wy, wx */
+		t->offset_y = wy;
+		t->offset_x = wx;
+
+		/* Redraw map */
+		player->redraw |= (PR_MAP);
+
+		/* Redraw for big graphics */
+		if ((tile_width > 1) || (tile_height > 1)) redraw_stuff(player);
+
+		/* Changed */
+		return (TRUE);
+	}
+
+	/* No change */
+	return (FALSE);
+}
+
+static void verify_panel_int(bool centered)
+{
+	int wy, wx;
+	int screen_hgt, screen_wid;
+
+	int panel_wid, panel_hgt;
+
+	int py = player->py;
+	int px = player->px;
+
+	int j;
+
+	/* Scan windows */
+	for (j = 0; j < ANGBAND_TERM_MAX; j++)
+	{
+		term *t = angband_term[j];
+
+		/* No window */
+		if (!t) continue;
+
+		/* No relevant flags */
+		if ((j > 0) && !(window_flag[j] & (PW_MAP))) continue;
+
+		wy = t->offset_y;
+		wx = t->offset_x;
+
+		screen_hgt = (j == 0) ? SCREEN_HGT : t->hgt;
+		screen_wid = (j == 0) ? SCREEN_WID : t->wid;
+
+		panel_wid = screen_wid / 2;
+		panel_hgt = screen_hgt / 2;
+
+
+		/* Scroll screen vertically when off-center */
+		if (centered && !player->running && (py != wy + panel_hgt))
+			wy = py - panel_hgt;
+
+		/* Scroll screen vertically when 3 grids from top/bottom edge */
+		else if ((py < wy + 3) || (py >= wy + screen_hgt - 3))
+			wy = py - panel_hgt;
+
+
+		/* Scroll screen horizontally when off-center */
+		if (centered && !player->running && (px != wx + panel_wid))
+			wx = px - panel_wid;
+
+		/* Scroll screen horizontally when 3 grids from left/right edge */
+		else if ((px < wx + 3) || (px >= wx + screen_wid - 3))
+			wx = px - panel_wid;
+
+
+		/* Scroll if needed */
+		modify_panel(t, wy, wx);
+	}
+}
+
+/*
+ * Change the current panel to the panel lying in the given direction.
+ *
+ * Return TRUE if the panel was changed.
+ */
+bool change_panel(int dir)
+{
+	bool changed = FALSE;
+	int j;
+
+	/* Scan windows */
+	for (j = 0; j < ANGBAND_TERM_MAX; j++)
+	{
+		int screen_hgt, screen_wid;
+		int wx, wy;
+
+		term *t = angband_term[j];
+
+		/* No window */
+		if (!t) continue;
+
+		/* No relevant flags */
+		if ((j > 0) && !(window_flag[j] & PW_MAP)) continue;
+
+		screen_hgt = (j == 0) ? SCREEN_HGT : t->hgt;
+		screen_wid = (j == 0) ? SCREEN_WID : t->wid;
+
+		/* Shift by half a panel */
+		wy = t->offset_y + ddy[dir] * screen_hgt / 2;
+		wx = t->offset_x + ddx[dir] * screen_wid / 2;
+
+		/* Use "modify_panel" */
+		if (modify_panel(t, wy, wx)) changed = TRUE;
+	}
+
+	return (changed);
+}
+
+
+/*
+ * Verify the current panel (relative to the player location).
+ *
+ * By default, when the player gets "too close" to the edge of the current
+ * panel, the map scrolls one panel in that direction so that the player
+ * is no longer so close to the edge.
+ *
+ * The "OPT(center_player)" option allows the current panel to always be centered
+ * around the player, which is very expensive, and also has some interesting
+ * gameplay ramifications.
+ */
+void verify_panel(void)
+{
+	verify_panel_int(OPT(center_player));
+}
+
+void center_panel(void)
+{
+	verify_panel_int(TRUE);
+}

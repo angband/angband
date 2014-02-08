@@ -30,6 +30,7 @@
 #include "obj-tval.h"
 #include "obj-tvalsval.h"
 #include "obj-util.h"
+#include "object.h"
 #include "project.h"
 #include "stats/db.h"
 #include "stats/structs.h"
