@@ -350,7 +350,7 @@ static void death_examine(const char *title, int row)
 
 		object_type *o_ptr = &player->inventory[item];
 
-		tb = object_info(o_ptr, OINFO_FULL);
+		tb = object_info(o_ptr, OINFO_NONE);
 		object_desc(header, sizeof(header), o_ptr,
 				ODESC_PREFIX | ODESC_FULL | ODESC_CAPITAL);
 
