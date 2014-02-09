@@ -1342,7 +1342,8 @@ static textblock *object_info_out(const object_type *o_ptr, int mode)
 	}
 	
 	/* Grab the object flags */
-	if (full) {
+	if (full || ego) {
+		/* Looking at fake egos needs less info than object_flags_known() */
 		object_flags(o_ptr, flags);
 		object_pval_flags(o_ptr, pv_flags);
 	} else {
@@ -1435,7 +1436,10 @@ textblock *object_info_ego(struct ego_item *ego)
 	obj.ego = ego;
 	ego_apply_magic(&obj, 0);
 
-	return object_info_out(&obj, OINFO_FULL | OINFO_EGO | OINFO_DUMMY);
+	obj.ident |= IDENT_KNOWN;
+	object_know_all_flags(&obj);
+
+	return object_info_out(&obj, OINFO_EGO | OINFO_DUMMY);
 }
 
 
