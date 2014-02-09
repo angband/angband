@@ -598,7 +598,8 @@ void object_notice_attack_plusses(object_type *o_ptr)
 		char o_name[80];
 
 		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
-		msgt(MSG_PSEUDOID, "Your %s glows.", o_name);
+		msgt(MSG_PSEUDOID, "Your %s glow%s.",
+				o_name, ((o_ptr->number > 1) ? "" : "s"));
 	}
 
 	p_ptr->update |= (PU_BONUS);
@@ -807,9 +808,6 @@ void object_notice_on_wield(object_type *o_ptr)
 	if (of_has(f, OF_CON))
 		msg("You feel %s!", o_ptr->pval[which_pval(o_ptr,
 			OF_CON)] > 0 ? "healthier" : "sicklier");
-	if (of_has(f, OF_CHR))
-		msg("You feel %s!", o_ptr->pval[which_pval(o_ptr,
-			OF_CHR)] > 0 ? "cuter" : "uglier");
 	if (of_has(f, OF_SPEED))
 		msg("You feel strangely %s.", o_ptr->pval[which_pval(o_ptr,
 			OF_SPEED)] > 0 ? "quick" : "sluggish");
@@ -1109,17 +1107,27 @@ void sense_inventory(void)
 	/* Check if player may sense anything this time */
 	if (p_ptr->lev < 20 && !one_in_(rate)) return;
 
-
-	/* Check everything */
-	for (i = 0; i < ALL_INVEN_TOTAL; i++)
+	/*
+	 * Give each object one opportunity to have a chance at being sensed. Because the inventory
+	 * can be reordered in do_ident_item(), we want to prevent objects from having more than
+	 * one opportunity each turn. This state is stored in object_type->ident using the
+	 * IDENT_SENSED_THIS_TURN flag. If the pack is reordered, we start the loop over and skip
+	 * objects that have had their opportunity.
+	 *
+	 * Also, i is incremented at the top of the loop so that the conditions can properly use
+	 * "continue"; hence why we start at -1.
+	 */
+	i = -1;
+	while (i < ALL_INVEN_TOTAL - 1)
 	{
 		const char *text = NULL;
-
-		object_type *o_ptr = &p_ptr->inventory[i];
+		object_type *o_ptr;
 		obj_pseudo_t feel;
 		bool cursed;
-
 		bool okay = FALSE;
+
+		i++;
+		o_ptr = &p_ptr->inventory[i];
 
 		/* Skip empty slots */
 		if (!o_ptr->kind) continue;
@@ -1155,17 +1163,26 @@ void sense_inventory(void)
 		
 		/* It is known, no information needed */
 		if (object_is_known(o_ptr)) continue;
-		
-		
+
+		/* Do not allow an object to have more than one opportunity to have a chance of being fully ID'd or sensed again. */
+		if (o_ptr->ident & IDENT_SENSED_THIS_TURN)
+			continue;
+
 		/* It has already been sensed, do not sense it again */
 		if (object_was_sensed(o_ptr))
 		{
 			/* Small chance of wielded, sensed items getting complete ID */
-			if (!o_ptr->artifact && (i >= INVEN_WIELD) && one_in_(1000))
-				do_ident_item(i, o_ptr);
+			if (!o_ptr->artifact && (i >= INVEN_WIELD) && one_in_(1000)) {
+				/* Reset the loop to finish sensing. This item is now known, and will be skipped on the next pass. */
+				do_ident_item(o_ptr);
+				i = -1;
+			}
 
 			continue;
 		}
+
+		/* Prevent objects, which pass or fail the sense check for this turn, from getting another opportunity. */
+		o_ptr->ident |= IDENT_SENSED_THIS_TURN;
 
 		/* Occasional failure on inventory items */
 		if ((i < INVEN_WIELD) && one_in_(5)) continue;
@@ -1193,27 +1210,30 @@ void sense_inventory(void)
 		{
 			object_notice_everything(o_ptr);
 
-			msgt(MSG_PSEUDOID,
-					"You feel the %s (%c) %s %s average...",
-					o_name, index_to_label(i),((i >=
-					INVEN_WIELD) ? "you are using" : "in your pack"),
-					((o_ptr->number == 1) ? "is" : "are"));
+			msgt(MSG_PSEUDOID, "You feel the %s (%c) %s %s average...",
+				 o_name,
+				 index_to_label(i),
+				 ((i >= INVEN_WIELD) ? "you are using" : "in your pack"),
+				 VERB_AGREEMENT(o_ptr->number, "is", "are"));
 		}
 		else
 		{
 			if (i >= INVEN_WIELD)
 			{
 				msgt(MSG_PSEUDOID, "You feel the %s (%c) you are %s %s %s...",
-							   o_name, index_to_label(i), describe_use(i),
-							   ((o_ptr->number == 1) ? "is" : "are"),
-				                           text);
+					 o_name,
+					 index_to_label(i),
+					 describe_use(i),
+					 VERB_AGREEMENT(o_ptr->number, "is", "are"),
+					 text);
 			}
 			else
 			{
 				msgt(MSG_PSEUDOID, "You feel the %s (%c) in your pack %s %s...",
-							   o_name, index_to_label(i),
-							   ((o_ptr->number == 1) ? "is" : "are"),
-				                           text);
+					 o_name,
+					 index_to_label(i),
+					 VERB_AGREEMENT(o_ptr->number, "is", "are"),
+					 text);
 			}
 		}
 
@@ -1229,6 +1249,10 @@ void sense_inventory(void)
 		/* Redraw stuff */
 		p_ptr->redraw |= (PR_INVEN | PR_EQUIP);
 	}
+
+	/* Reset state so objects failing the check can be sensed later. */
+	for (i = 0; i < ALL_INVEN_TOTAL; i++)
+		p_ptr->inventory[i].ident &= ~IDENT_SENSED_THIS_TURN;
 }
 
 

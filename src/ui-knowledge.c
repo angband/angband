@@ -23,11 +23,13 @@
 #include "history.h"
 #include "monster/mon-lore.h"
 #include "monster/monster.h"
+#include "monster/mon-util.h"
 #include "object/tvalsval.h"
 #include "squelch.h"
 #include "store.h"
 #include "ui.h"
 #include "ui-menu.h"
+#include "ui-options.h"
 #include "grafmode.h"
 
 /* Flag value for missing array entry */
@@ -63,9 +65,7 @@ static const grouper object_text_order[] =
 	{TV_DRAG_ARMOR,		"Dragon Scale Mail" },
 	{TV_HARD_ARMOR,		"Hard Armor"	},
 	{TV_SOFT_ARMOR,		"Soft Armor"	},
-	{TV_SPIKE,			"Spike"			},
 	{TV_DIGGING,		"Digger"		},
-	{TV_JUNK,			"Junk"			},
 	{0,					NULL			}
 };
 
@@ -191,7 +191,7 @@ static struct
 /*
  * Description of each feature group.
  */
-const char *feature_group_text[] =
+static const char *feature_group_text[] =
 {
 	"Floors",
 	"Traps",
@@ -1251,34 +1251,24 @@ static const char *race_name(int gid) { return monster_group[gid].name; }
 static void mon_lore(int oid)
 {
 	int r_idx;
-	const monster_race *r_ptr;
+	monster_race *r_ptr;
 	const monster_lore *l_ptr;
+	textblock *tb;
 
 	r_idx = default_join[oid].oid;
 
-	/* Update the monster recall window */
-	monster_race_track(r_idx);
-	handle_stuff(p_ptr);
-
-	/* Save the screen */
-	screen_save();
-
-	/* Describe */
-	text_out_hook = text_out_to_screen;
-
-	/* Recall monster */
 	assert(r_idx);
 	r_ptr = &r_info[r_idx];
-	l_ptr = &l_list[r_idx];
-	roff_top(r_ptr);
-	Term_gotoxy(0, 2);
-	describe_monster(r_ptr, l_ptr, FALSE);
+	l_ptr = get_lore(r_ptr);
 
-	text_out_c(TERM_L_BLUE, "\n[Press any key to continue]\n");
-	(void)anykey();
+	/* Update the monster recall window */
+	monster_race_track(r_ptr);
+	handle_stuff(p_ptr);
 
-	/* Load the screen */
-	screen_load();
+	tb = textblock_new();
+	lore_description(tb, r_ptr, l_ptr, FALSE);
+	textui_textblock_show(tb, SCREEN_REGION, NULL);
+	textblock_free(tb);
 }
 
 static void mon_summary(int gid, const int *object_list, int n, int top, int row, int col)
@@ -1422,7 +1412,8 @@ static void display_artifact(int col, int row, bool cursor, int oid)
 
 static object_type *find_artifact(struct artifact *artifact)
 {
-	int i, j;
+	int i;
+	struct store *s;
 
 	/* Look for the artifact, either in inventory, store or the object list */
 	for (i = 0; i < z_info->o_max; i++)
@@ -1437,14 +1428,10 @@ static object_type *find_artifact(struct artifact *artifact)
 			return &p_ptr->inventory[i];
 	}
 
-	for (j = 1; j < (FEAT_SHOP_TAIL - FEAT_SHOP_HEAD + 1); j++)
-	{
-		for (i = 0; i < stores[j].stock_size; i++)
-		{
-			if (stores[j].stock[i].artifact == artifact)
-				return &stores[j].stock[i];
-		}
-	}
+	for (s = stores; s; s = s->next)
+		for (i = 0; i < s->stock_size; i++)
+			if (s->stock[i].artifact == artifact)
+				return &s->stock[i];
 
 	return NULL;
 }
@@ -1775,7 +1762,7 @@ static void desc_obj_fake(int k_idx)
 	}
 
 	/* Update the object recall window */
-	track_object_kind(k_idx);
+	track_object_kind(kind);
 	handle_stuff(p_ptr);
 
 	/* Wipe the object */
@@ -2002,13 +1989,15 @@ static void display_feature(int col, int row, bool cursor, int oid )
 
 	if (tile_height == 1) {
 		/* Display symbols */
-		col = 66;
+		col = 65;
 		col += big_pad(col, row, f_ptr->x_attr[FEAT_LIGHTING_DARK],
 				f_ptr->x_char[FEAT_LIGHTING_DARK]);
 		col += big_pad(col, row, f_ptr->x_attr[FEAT_LIGHTING_LIT],
 				f_ptr->x_char[FEAT_LIGHTING_LIT]);
-		col += big_pad(col, row, f_ptr->x_attr[FEAT_LIGHTING_BRIGHT],
-				f_ptr->x_char[FEAT_LIGHTING_BRIGHT]);
+		col += big_pad(col, row, f_ptr->x_attr[FEAT_LIGHTING_TORCH],
+				f_ptr->x_char[FEAT_LIGHTING_TORCH]);
+		col += big_pad(col, row, f_ptr->x_attr[FEAT_LIGHTING_LOS],
+				f_ptr->x_char[FEAT_LIGHTING_LOS]);
 	}
 }
 
@@ -2027,7 +2016,7 @@ static int f_cmp_fkind(const void *a, const void *b)
 }
 
 static const char *fkind_name(int gid) { return feature_group_text[gid]; }
-/* Disgusting hack to allow 3 in 1 editting of terrain visuals */
+/* Disgusting hack to allow 4 in 1 editing of terrain visuals */
 static enum grid_light_level f_uik_lighting = FEAT_LIGHTING_LIT;
 /* XXX needs *better* retooling for multi-light terrain */
 static byte *f_xattr(int oid) { return &f_info[oid].x_attr[f_uik_lighting]; }
@@ -2047,13 +2036,15 @@ static void f_xtra_act(struct keypress ch, int oid)
 	/* XXX must be a better way to cycle this */
 	if (ch.code == 'l') {
 		switch (f_uik_lighting) {
-				case FEAT_LIGHTING_LIT:  f_uik_lighting = FEAT_LIGHTING_BRIGHT; break;
-				case FEAT_LIGHTING_BRIGHT:  f_uik_lighting = FEAT_LIGHTING_DARK; break;
+				case FEAT_LIGHTING_LIT:  f_uik_lighting = FEAT_LIGHTING_TORCH; break;
+                case FEAT_LIGHTING_TORCH: f_uik_lighting = FEAT_LIGHTING_LOS; break;
+				case FEAT_LIGHTING_LOS:  f_uik_lighting = FEAT_LIGHTING_DARK; break;
 				default:	f_uik_lighting = FEAT_LIGHTING_LIT; break;
 		}		
 	} else if (ch.code == 'L') {
 		switch (f_uik_lighting) {
-				case FEAT_LIGHTING_DARK:  f_uik_lighting = FEAT_LIGHTING_BRIGHT; break;
+				case FEAT_LIGHTING_DARK:  f_uik_lighting = FEAT_LIGHTING_LOS; break;
+                case FEAT_LIGHTING_LOS: f_uik_lighting = FEAT_LIGHTING_TORCH; break;
 				case FEAT_LIGHTING_LIT:  f_uik_lighting = FEAT_LIGHTING_DARK; break;
 				default:	f_uik_lighting = FEAT_LIGHTING_LIT; break;
 		}

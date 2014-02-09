@@ -18,12 +18,13 @@
 
 #include "angband.h"
 #include "object/slays.h"
+#include "monster/mon-util.h"
 
 
 /**
  * Info about slays (see src/slays.h for structure)
  */
-const struct slay slay_table[] =
+static const struct slay slay_table[] =
 {
 	#define SLAY(a, b, c, d, e, f, g, h, i, j) \
 		{ SL_##a, b, c, d, e, f, g, h, i, j},
@@ -94,9 +95,9 @@ const struct slay *random_slay(const bitflag mask[OF_SIZE])
  * count is the number of matches
  * \param flags is the flagset to analyse for matches
  * \param mask is the flagset against which to test
- * \param desc[] is the array of descriptions of matching slays - can be null
- * \param brand[] is the array of descriptions of brands - can be null
- * \param mult[] is the array of multipliers of those slays - can be null
+ * \param desc is the array of descriptions of matching slays - can be null
+ * \param brand is the array of descriptions of brands - can be null
+ * \param mult is the array of multipliers of those slays - can be null
  * \param dedup is whether or not to remove duplicates
  *
  * desc[], brand[] and mult[] must be >= SL_MAX in size
@@ -156,7 +157,7 @@ void object_notice_slays(object_type *o_ptr, const bitflag mask[OF_SIZE])
 			learned = object_notice_flag(o_ptr, s_ptr->object_flag);
 			if (EASY_LEARN && learned) {
 				object_notice_ego(o_ptr);
-				object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
+				object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE | ODESC_SINGULAR);
 				msg("Your %s %s!", o_name, s_ptr->active_verb);
 			}
 		}
@@ -181,8 +182,7 @@ void object_notice_slays(object_type *o_ptr, const bitflag mask[OF_SIZE])
 void improve_attack_modifier(object_type *o_ptr, const monster_type
 	*m_ptr, const struct slay **best_s_ptr, bool real, bool known_only)
 {
-	monster_race *r_ptr = &r_info[m_ptr->r_idx];
-	monster_lore *l_ptr = &l_list[m_ptr->r_idx];
+	monster_lore *l_ptr = get_lore(m_ptr->race);
 	bitflag f[OF_SIZE], known_f[OF_SIZE], note_f[OF_SIZE];
 	int i;
 
@@ -199,8 +199,8 @@ void improve_attack_modifier(object_type *o_ptr, const monster_type
 		 * OR the monster is vulnerable to the slay/brand
 		 */
 		if (real && (of_has(known_f, s_ptr->object_flag) || (s_ptr->monster_flag
-				&& rf_has(r_ptr->flags,	s_ptr->monster_flag)) ||
-				(s_ptr->resist_flag && !rf_has(r_ptr->flags,
+				&& rf_has(m_ptr->race->flags, s_ptr->monster_flag)) ||
+				(s_ptr->resist_flag && !rf_has(m_ptr->race->flags,
 				s_ptr->resist_flag)))) {
 
 			/* notice any brand or slay that would affect monster */
@@ -216,8 +216,8 @@ void improve_attack_modifier(object_type *o_ptr, const monster_type
 		}
 
 		/* If the monster doesn't resist or the slay flag matches */
-		if ((s_ptr->brand && !rf_has(r_ptr->flags, s_ptr->resist_flag)) ||
-				(s_ptr->monster_flag && rf_has(r_ptr->flags,
+		if ((s_ptr->brand && !rf_has(m_ptr->race->flags, s_ptr->resist_flag)) ||
+				(s_ptr->monster_flag && rf_has(m_ptr->race->flags,
 				s_ptr->monster_flag))) {
 
 			/* compare multipliers to determine best attack */

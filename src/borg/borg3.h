@@ -153,7 +153,7 @@ typedef struct borg_magic borg_magic;
  */
 struct borg_magic
 {
-    char *name;      /* Textual name */
+    const char *name;      /* Textual name */
 
     byte status;    /* Status (see above) */
 
@@ -205,12 +205,12 @@ extern borg_magic borg_magics[9][9];    /* Spell info */
 /*
  * Determine which slot an item could be wielded into
  */
-extern int borg_wield_slot(borg_item *item);
+extern int borg_wield_slot(const borg_item *item);
 
 /*
  * Analyze an item, given a textual description
  */
-extern void borg_item_analyze(borg_item *item, object_type *real_item, char *desc);
+extern void borg_item_analyze(borg_item *item, const object_type *real_item, char *desc);
 
 
 /* look for a *id*'d item */
@@ -270,8 +270,8 @@ extern int borg_activate_failure(int tval, int sval);
 /*
  * Artifact usage function (by index)
  */
-extern bool borg_activate_artifact(int activation, int location); /*  */
-extern bool borg_equips_artifact(int activation, int location);  /*  */
+extern bool borg_activate_artifact(int activation); /*  */
+extern bool borg_equips_artifact(int activation);  /*  */
 extern bool borg_activate_dragon(int drag_sval); /*  */
 extern bool borg_equips_dragon(int drag_sval);  /*  */
 extern bool borg_activate_item(int tval, int sval, bool target);

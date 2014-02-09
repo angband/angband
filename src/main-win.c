@@ -82,10 +82,12 @@
 #include "buildid.h"
 #include "cmds.h"
 #include "cave.h"
+#include "dungeon.h"
 #include "init.h"
 #include "files.h"
 #include "grafmode.h"
 #include "win/win-menu.h"
+#include "savefile.h" /* savefile_set_name() */
 
 /* Make sure the winver allows the AlphaBlend function */
 #if (WINVER < 0x0500)
@@ -286,6 +288,7 @@
  */
 #include "win/win-term.h"
 
+bool use_graphics_nice;
 
 /*
  * An array of term_data's
@@ -976,10 +979,12 @@ static void load_sound_prefs(void)
 
 	for (i = 0; i < MSG_MAX; i++)
 	{
-		/* Ignore empty sound strings */
-		if (!angband_sound_name[i][0]) continue;
+		const char *sound_name = message_sound_name(i);
 
-		GetPrivateProfileString("Sound", angband_sound_name[i], "", tmp, sizeof(tmp), ini_path);
+		/* Ignore empty sound strings */
+		if (!sound_name[0]) continue;
+
+		GetPrivateProfileString("Sound", sound_name, "", tmp, sizeof(tmp), ini_path);
 
 		num = tokenize_whitespace(tmp, SAMPLE_MAX, zz);
 
@@ -1412,10 +1417,7 @@ static errr term_force_font(term_data *td, const char *path)
 	if (!file_exists(buf)) return (1);
 
 	/* Load the new font */
-	if (!AddFontResource(buf)) return (1);
-
-	/* Notify other applications that a new font is available  XXX */
-	PostMessage(HWND_BROADCAST, WM_FONTCHANGE, 0, 0);
+	if (!AddFontResourceEx(buf, FR_PRIVATE, 0)) return (1);
 
 	/* Save new font name */
 	td->font_file = string_make(base);
@@ -1586,8 +1588,8 @@ static void Term_nuke_win(term *t)
 #endif /* 0 */
 
 
-static errr Term_pict_win(int x, int y, int n, const byte *ap, const wchar_t *cp, const byte *tap, const wchar_t *tcp);
-static errr Term_pict_win_alpha(int x, int y, int n, const byte *ap, const wchar_t *cp, const byte *tap, const wchar_t *tcp);
+static errr Term_pict_win(int x, int y, int n, const int *ap, const wchar_t *cp, const int *tap, const wchar_t *tcp);
+static errr Term_pict_win_alpha(int x, int y, int n, const int *ap, const wchar_t *cp, const int *tap, const wchar_t *tcp);
 
 /*
  * React to global changes
@@ -2138,7 +2140,7 @@ static errr Term_wipe_win(int x, int y, int n)
  * what color it should be using to draw with, but perhaps simply changing
  * it every time is not too inefficient.  XXX XXX XXX
  */
-static errr Term_text_win(int x, int y, int n, byte a, const wchar_t *s)
+static errr Term_text_win(int x, int y, int n, int a, const wchar_t *s)
 {
 	term_data *td = (term_data*)(Term->data);
 	RECT rc;
@@ -2159,15 +2161,31 @@ static errr Term_text_win(int x, int y, int n, byte a, const wchar_t *s)
 	/* Foreground color */
 	if (colors16)
 	{
-		SetTextColor(hdc, PALETTEINDEX(win_pal[a]));
+		SetTextColor(hdc, PALETTEINDEX(win_pal[a % MAX_COLORS]));
 	}
-	else if (paletted)
+	else 
 	{
-		SetTextColor(hdc, win_clr[a & (BASIC_COLORS-1)]);
-	}
-	else
-	{
-		SetTextColor(hdc, win_clr[a]);
+		if (paletted)
+			SetTextColor(hdc, win_clr[(a % MAX_COLORS) & 0x1F]);
+		else
+			SetTextColor(hdc, win_clr[a % MAX_COLORS]);
+
+		/* Determine the background colour - from Sil */
+		switch (a / MAX_COLORS)
+		{
+			case BG_BLACK:
+				/* Default Background */
+				SetBkColor(hdc, win_clr[0]);
+				break;
+			case BG_SAME:
+				/* Background same as foreground*/
+				SetBkColor(hdc, win_clr[a % MAX_COLORS]);
+				break;
+			case BG_DARK:
+				/* Highlight Background */
+				SetBkColor(hdc, win_clr[TERM_SHADE]);
+				break;
+		}
 	}
 
 	/* Use the font */
@@ -2231,7 +2249,7 @@ static errr Term_text_win(int x, int y, int n, byte a, const wchar_t *s)
  *
  * If "graphics" is not available, we simply "wipe" the given grids.
  */
-static errr Term_pict_win(int x, int y, int n, const byte *ap, const wchar_t *cp, const byte *tap, const wchar_t *tcp)
+static errr Term_pict_win(int x, int y, int n, const int *ap, const wchar_t *cp, const int *tap, const wchar_t *tcp)
 {
 	term_data *td = (term_data*)(Term->data);
 
@@ -2289,7 +2307,7 @@ static errr Term_pict_win(int x, int y, int n, const byte *ap, const wchar_t *cp
 
 	/* Draw attr/char pairs */
 	for (i = n-1; i >= 0; i--, x2 -= w2) {
-		byte a = ap[i];
+		int a = ap[i];
 		wchar_t c = cp[i];
 
 		/* Extract picture */
@@ -2422,7 +2440,7 @@ size_t Term_mbstowcs_win(wchar_t *dest, const char *src, int n)
 #ifndef AC_SRC_ALPHA
 #define AC_SRC_ALPHA     0x01
 #endif
-static errr Term_pict_win_alpha(int x, int y, int n, const byte *ap, const wchar_t *cp, const byte *tap, const wchar_t *tcp)
+static errr Term_pict_win_alpha(int x, int y, int n, const int *ap, const wchar_t *cp, const int *tap, const wchar_t *tcp)
 {
 	term_data *td = (term_data*)(Term->data);
 
@@ -2476,7 +2494,7 @@ static errr Term_pict_win_alpha(int x, int y, int n, const byte *ap, const wchar
 	/* Draw attr/char pairs */
 	for (i = n-1; i >= 0; i--, x2 -= w2)
 	{
-		byte a = ap[i];
+		int a = ap[i];
 		wchar_t c = cp[i];
 
 		/* Extract picture */
@@ -2551,20 +2569,20 @@ static errr Term_pict_win_alpha(int x, int y, int n, const byte *ap, const wchar
 static void windows_map_aux(void)
 {
 	term_data *td = &data[0];
-	byte a;
+	int a;
 	wchar_t c;
 	int x, min_x, max_x;
 	int y, min_y, max_y;
-	byte ta;
+	int ta;
 	wchar_t tc;
 
-	td->map_tile_wid = (td->tile_wid * td->cols) / DUNGEON_WID;
-	td->map_tile_hgt = (td->tile_hgt * td->rows) / DUNGEON_HGT;
+	td->map_tile_wid = (td->tile_wid * td->cols) / cave->width;
+	td->map_tile_hgt = (td->tile_hgt * td->rows) / cave->height;
 
 	min_x = 0;
 	min_y = 0;
-	max_x = DUNGEON_WID;
-	max_y = DUNGEON_HGT;
+	max_x = cave->width;
+	max_y = cave->height;
 
 	/* Draw the map */
 	for (x = min_x; x < max_x; x++)
@@ -3303,7 +3321,7 @@ static void start_screensaver(void)
 	my_strcpy(op_ptr->full_name, saverfilename, sizeof(op_ptr->full_name));
 
 	/* Set 'savefile' to a valid name */
-	process_player_name(TRUE);
+	savefile_set_name(player_safe_name(p_ptr, FALSE));
 
 	/* Does the savefile already exist? */
 	file_exist = file_exists(savefile);
@@ -3729,9 +3747,12 @@ static void process_menus(WORD wCmd)
 			break;
 		}
 		case IDM_WINDOW_RESET: {
-			/* This feature is bugged and causes the game to crash in windows.  It's been disabled for the 3.4 release. */
-			plog("This feature is disabled for this version.");
-			break;
+			/* Paranoia */
+			if (!inkey_flag || !initialized)
+			{
+				plog("You may not do that right now.");
+				break;
+			}
 			
 			
 			if (MessageBox(NULL,
@@ -4417,7 +4438,6 @@ static LRESULT FAR PASCAL AngbandWndProc(HWND hWnd, UINT uMsg,
 		case WM_KEYDOWN:
 		{
 			return handle_keydown(wParam, lParam);
-			break;
 		}
 
 		case WM_CHAR:
@@ -4428,6 +4448,17 @@ static LRESULT FAR PASCAL AngbandWndProc(HWND hWnd, UINT uMsg,
 			/* printf("wParam=%d lParam=%d vsc=%d vk=%d kp=%d\n", */
 			/*        wParam, lParam, vsc, vk, extended_key); */
 			/* fflush(stdout); */
+
+			if (!game_in_progress) {
+				/* Handle keyboard shortcuts pre-game */
+				switch (wParam) {
+					case KTRL('N'): process_menus(IDM_FILE_NEW); break;
+					case KTRL('O'): process_menus(IDM_FILE_OPEN); break;
+					case KTRL('X'): process_menus(IDM_FILE_EXIT); break;
+					default: return TRUE;
+				}
+				return FALSE;
+			}
 
 			// We don't want to translate some keys to their ascii values
 			// so we have to intercept them here.
@@ -4450,6 +4481,7 @@ static LRESULT FAR PASCAL AngbandWndProc(HWND hWnd, UINT uMsg,
 					Term_keypress(wParam, 0);
 					return 0;
 			}
+
 			mods = extract_modifiers(ch, kp);
 			Term_keypress(ch, mods);
 
@@ -4531,28 +4563,40 @@ static LRESULT FAR PASCAL AngbandWndProc(HWND hWnd, UINT uMsg,
 			return 0;
 		}
 
+#ifndef WM_QUERYENDSESSION
+#define WM_QUERYENDSESSION 0x0011
+#endif
+
+		case WM_QUERYENDSESSION:
+		case WM_QUIT: {
+			if (game_in_progress && character_generated) {
+				if (uMsg == WM_QUERYENDSESSION && !inkey_flag) {
+					plog("Please exit any open menus before closing the game.");
+					return FALSE;
+				}
+
+				msg_flag = FALSE;
+				save_game();
+			}
+
+			quit(NULL);
+			return TRUE;
+		}
+
+
 		case WM_CLOSE:
 		{
-			if (game_in_progress && character_generated)
-			{
-				if (!inkey_flag)
-				{
-					plog("You may not do that right now.");
+			if (game_in_progress && character_generated) {
+				if (!inkey_flag) {
+					plog("Please exit any open menus before closing the game.");
 					return 0;
 				}
 
 				/* Hack -- Forget messages */
 				msg_flag = FALSE;
-
-				/* Save the game */
 				save_game();
 			}
-			quit(NULL);
-			return 0;
-		}
 
-		case WM_QUIT:
-		{
 			quit(NULL);
 			return 0;
 		}

@@ -33,10 +33,6 @@
 # together.
 
 
-# Version stamp (required)
-
-V:3.4.0
-
 
 # Mage spells 0 through 63
 
@@ -254,7 +250,7 @@ D:  Uniques or monsters that resist confusion are not affected.
 N:41:Rend Soul
 I:90:8:2
 D:Fires a nether bolt that always hits its target. Does
-D:not affect undead.
+D: not affect undead.
 D:  Sometimes a beam is fired instead that hurts each monster
 D: in its path.
 D:  The chance to get a beam goes up with your character level.

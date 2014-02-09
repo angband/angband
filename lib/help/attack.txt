@@ -195,17 +195,21 @@ versa. This damage generally is not affected by armor class, and does not
 need a hit roll to hit the player or monster being aimed at.
 
 Some attacks are purely magical: attack spells which blind, confuse, slow,
-care or paralyze the target. In some cases, a melee attack may also do
-this. These attacks are resisted by monsters of higher level (native to
-deeper dungeon depths) and characters with a high saving throw - saving
-throws being dependent on class, level and wisdom. There are also available
-resistances to fear, blindness, confusion and stunning, and the power of 
-"free action" prevents magical paralysis and most slowing attacks (the 
-player may still be paralyzed by being "knocked out" in melee or by a 
-stunning attack, but this is very rare.) It should also be noticed that 
-most unique monsters automatically pass their saving throws, and some 
-monsters are naturally resistant to confusion, fear and sleep-monster 
-attacks. Some monsters may have spells that 'cause wounds' that can be 
+care or paralyze the target. These attacks are resisted by monsters of
+higher level (native to deeper dungeon depths) and characters with a high
+saving throw - saving throws being dependent on class, level and wisdom.
+There are also available resistances to fear, blindness, confusion and 
+stunning, and the power of "free action" prevents magical paralysis and
+most slowing attacks (the player may still be paralyzed by being "knocked
+out" in melee or by a stunning attack, but this is very rare and can be
+prevented with protection from stunning.) There are monsters that can
+cause status effects such as blindness, paralysis or confusion through
+their melee attack.  Since this is a physical effect and not a mental one,
+the player will not get a saving throw.  However, having resistance to
+that effect will prevent the negative status in all cases. It should
+also be noticed that most unique monsters automatically pass their saving
+throws, and some monsters are naturally resistant to confusion, fear and
+sleep. Some monsters may have spells that 'cause wounds' that can be 
 deadly if successful but do no damage if the saving throw is passed.
 
 Some melee attacks by monsters may drain a stat, as can some traps: this is
@@ -294,19 +298,27 @@ melee or by a monster breath), chaos (breath or melee, which if unresisted
 will cause the player to hallucinate and be confused, and may drain life
 experience), nexus (which may teleport the player to the monster, away from
 the monster, up or down a level, or swap over two of the player's
-"internal" stats), light and darkness (which will blind a non-resistant
-character), sound (which will stun a non-resistant character and may destroy
-his potions), crystal shards (which will cut a non-resistant character and
-may destroy his potions), inertia (which will slow a character even if he
-has free action), gravity (which will blink a character, also stunning and
-slowing), force (which will stun the character), plasma (which will stun,
-and may destroy items which are vulnerable to either fire or lightning),
-time (which may drain experience regardless of hold life, or drain stats
-regardless of sustains), water bolts and balls (which may confuse and stun,
-and do considerable damage from high-level monsters), ice bolts (which may
+"internal" stats), light and darkness (which will blind a character unless
+they have protection from blindness or resistance to light or dark), sound
+(which will stun a character without sound resistance or protection from
+stunning), crystal shards (which will cut a non-resistant character),
+inertia (which will slow a character even if he has free action), gravity
+(which will blink a character, also stunning and slowing), force (which
+will stun the character), plasma and force (which will stun), time (which 
+may drain experience regardless of hold life, or drain stats regardless of 
+sustains), water bolts and balls (which may confuse and stun, and do 
+considerable damage from high-level monsters), ice bolts (which may
 cut and stun, and damage potions), and mana bolts and balls (the latter
 usually known as Mana Storms.) Magic missiles are included in the "mana"
 category, whether cast by the monster or the player.
+
+In addition items on the ground are especially vulnerable to elemental 
+effects.  Potions on the ground will always be destroyed by cold, shards,
+sound and force.  Scrolls, staves, books, and non-metal gear will always get
+destroyed by fire or plasma.  Scrolls, staves, and all non-mithril gear
+will be destroyed by acid.  Rings, amulets, wands and rods will be
+destroyed by lightning and plasma.  And finally nearly everything will be
+destroyed by a mana storm if left on the ground. 
 
 Some attacks may stun or cut the player. These can either be spells or
 breath attacks (sound, water balls) or from melee. A stunned character

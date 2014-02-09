@@ -5,6 +5,54 @@
 #include "externs.h" /* player_exp */
 #include "history.h" /* history_add */
 #include "player/player.h"
+#include "birth.h" /* find_roman_suffix_start */
+#include "z-util.h" /* my_strcpy */
+
+
+
+void health_track(struct player *p, struct monster *m_ptr)
+{
+	p->health_who = m_ptr;
+	p->redraw |= PR_HEALTH;
+}
+
+/*
+ * Hack -- track the given monster race
+ */
+void monster_race_track(monster_race *race)
+{
+	/* Save this monster ID */
+	p_ptr->monster_race = race;
+
+	/* Window stuff */
+	p_ptr->redraw |= (PR_MONSTER);
+}
+
+
+
+/*
+ * Hack -- track the given object kind
+ */
+void track_object(int item)
+{
+	p_ptr->object_idx = item;
+	p_ptr->object_kind = NULL;
+	p_ptr->redraw |= (PR_OBJECT);
+}
+
+void track_object_kind(struct object_kind *kind)
+{
+	p_ptr->object_idx = NO_OBJECT;
+	p_ptr->object_kind = kind;
+	p_ptr->redraw |= (PR_OBJECT);
+}
+
+bool tracked_object_is(int item)
+{
+	return (p_ptr->object_idx == item);
+}
+
+
 
 bool player_stat_inc(struct player *p, int stat)
 {
@@ -118,17 +166,11 @@ static void adjust_level(struct player *p, bool verbose)
 			msgt(MSG_LEVEL, "Welcome to level %d.",	p->lev);
 		}
 
-		/* Add to social class */
-		p->sc += randint1(2);
-		if (p->sc > 150)
-			p->sc = 150;
-
 		do_res_stat(A_STR);
 		do_res_stat(A_INT);
 		do_res_stat(A_WIS);
 		do_res_stat(A_DEX);
 		do_res_stat(A_CON);
-		do_res_stat(A_CHR);
 	}
 
 	while ((p->max_lev < PY_MAX_LEVEL) &&
@@ -185,4 +227,56 @@ byte player_sp_attr(struct player *p)
 		attr = TERM_RED;
 	
 	return attr;
+}
+
+bool player_restore_mana(struct player *p, int amt) {
+	int old_csp = p->csp;
+
+	p->csp += amt;
+	if (p->csp > p->msp) {
+		p->csp = p->msp;
+	}
+	p->redraw |= PR_MANA;
+
+	msg("You feel some of your energies returning.");
+
+	return p->csp != old_csp;
+}
+
+/**
+ * Return a version of the player's name safe for use in filesystems.
+ */
+const char *player_safe_name(struct player *p, bool strip_suffix)
+{
+	static char buf[40];
+	int i;
+	int limit = 0;
+
+	if (op_ptr->full_name[0]) {
+		char *suffix = find_roman_suffix_start(op_ptr->full_name);
+		if (suffix)
+			limit = suffix - op_ptr->full_name - 1; /* -1 for preceding space */
+		else
+			limit = strlen(op_ptr->full_name);
+	}
+
+	for (i = 0; i < limit; i++) {
+		char c = op_ptr->full_name[i];
+
+		/* Convert all non-alphanumeric symbols */
+		if (!isalpha((unsigned char)c) && !isdigit((unsigned char)c))
+			c = '_';
+
+		/* Build "base_name" */
+		buf[i] = c;
+	}
+
+	/* Terminate */
+	buf[i] = '\0';
+
+	/* Require a "base" name */
+	if (!buf[0])
+		my_strcpy(buf, "PLAYER", sizeof buf);
+
+	return buf;
 }

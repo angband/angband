@@ -46,7 +46,7 @@ void object_kind_name(char *buf, size_t max, const object_kind *kind, bool easy_
 	/* If not aware, use flavor */
 	if (!easy_know && !kind->aware && kind->flavor)
 	{
-		if (kind->tval == TV_FOOD && kind->sval > SV_FOOD_MIN_SHROOM)
+		if (kind->tval == TV_FOOD && kind->sval >= SV_FOOD_MIN_SHROOM)
 		{
 			strnfmt(buf, max, "%s Mushroom", kind->flavor->text);
 		}
@@ -62,7 +62,7 @@ void object_kind_name(char *buf, size_t max, const object_kind *kind, bool easy_
 	{
 		char *t;
 
-		if (kind->tval == TV_FOOD && kind->sval > SV_FOOD_MIN_SHROOM)
+		if (kind->tval == TV_FOOD && kind->sval >= SV_FOOD_MIN_SHROOM)
 		{
 			my_strcpy(buf, "Mushroom of ", max);
 			max -= strlen(buf);
@@ -102,27 +102,20 @@ static const char *obj_desc_get_modstr(const object_kind *kind)
 	return "";
 }
 
-static const char *obj_desc_get_basename(const object_type *o_ptr, bool aware)
+static const char *obj_desc_get_basename(const object_type *o_ptr, bool aware, bool terse)
 {
-	bool show_flavor = o_ptr->kind->flavor ? TRUE : FALSE;
-
+	bool show_flavor = !terse && o_ptr->kind->flavor;
 
 	if (o_ptr->ident & IDENT_STORE) show_flavor = FALSE;
 	if (aware && !OPT(show_flavors)) show_flavor = FALSE;
 
-
-
-	/* Known artifacts get special treatment */
-	if (o_ptr->artifact && aware)
+	/* Artifacts are special */
+	if (o_ptr->artifact && (aware || (o_ptr->ident & IDENT_NAME) || terse || !o_ptr->kind->flavor))
 		return o_ptr->kind->name;
 
 	/* Analyze the object */
 	switch (o_ptr->tval)
 	{
-		case TV_SKELETON:
-		case TV_BOTTLE:
-		case TV_JUNK:
-		case TV_SPIKE:
 		case TV_FLASK:
 		case TV_CHEST:
 		case TV_SHOT:
@@ -167,13 +160,19 @@ static const char *obj_desc_get_basename(const object_type *o_ptr, bool aware)
 			return (show_flavor ? "& Scroll~ titled #" : "& Scroll~");
 
 		case TV_MAGIC_BOOK:
-			return "& Book~ of Magic Spells #";
+			if (terse)
+				return "& Book~ #";
+			else
+				return "& Book~ of Magic Spells #";
 
 		case TV_PRAYER_BOOK:
-			return "& Holy Book~ of Prayers #";
+			if (terse)
+				return "& Book~ #";
+			else
+				return "& Holy Book~ of Prayers #";
 
 		case TV_FOOD:
-			if (o_ptr->sval > SV_FOOD_MIN_SHROOM)
+			if (o_ptr->sval >= SV_FOOD_MIN_SHROOM)
 				return (show_flavor ? "& # Mushroom~" : "& Mushroom~");
 			else
 				return o_ptr->kind->name;
@@ -185,7 +184,7 @@ static const char *obj_desc_get_basename(const object_type *o_ptr, bool aware)
 
 static size_t obj_desc_name_prefix(char *buf, size_t max, size_t end,
 		const object_type *o_ptr, bool known, const char *basename,
-		const char *modstr)
+		const char *modstr, bool terse)
 {
 	if (o_ptr->number <= 0)
 		strnfcat(buf, max, &end, "no more ");
@@ -211,10 +210,13 @@ static size_t obj_desc_name_prefix(char *buf, size_t max, size_t end,
 			an = TRUE;
 		}
 
-		if (an)
-			strnfcat(buf, max, &end, "an ");
-		else
-			strnfcat(buf, max, &end, "a ");
+		if (!terse)
+		{
+			if (an)
+				strnfcat(buf, max, &end, "an ");
+			else
+				strnfcat(buf, max, &end, "a ");			
+		}
 	}
 
 	return end;
@@ -312,13 +314,11 @@ size_t obj_desc_name_format(char *buf, size_t max, size_t end,
  * Format object o_ptr's name into 'buf'.
  */
 static size_t obj_desc_name(char *buf, size_t max, size_t end,
-		const object_type *o_ptr, bool prefix, odesc_detail_t mode,
-		bool spoil)
+		const object_type *o_ptr, bool prefix, int mode, bool spoil, bool terse)
 {
 	bool known = object_is_known(o_ptr) || (o_ptr->ident & IDENT_STORE) || spoil;
 	bool aware = object_flavor_is_aware(o_ptr) || (o_ptr->ident & IDENT_STORE) || spoil;
-
-	const char *basename = obj_desc_get_basename(o_ptr, aware);
+	const char *basename = obj_desc_get_basename(o_ptr, aware, terse);
 	const char *modstr = obj_desc_get_modstr(o_ptr->kind);
 
 	if (aware && !o_ptr->kind->everseen && !spoil)
@@ -326,7 +326,7 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end,
 
 	if (prefix)
 		end = obj_desc_name_prefix(buf, max, end, o_ptr, known,
-				basename, modstr);
+				basename, modstr, terse);
 
 	/* Pluralize if (not forced singular) and
 	 * (not a known/visible artifact) and
@@ -337,7 +337,6 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end,
 			  (object_name_is_visible(o_ptr) || known)) &&
 			(o_ptr->number != 1 || (mode & ODESC_PLURAL)));
 
-
 	/** Append extra names of various kinds **/
 
 	if ((object_name_is_visible(o_ptr) || known) && o_ptr->artifact)
@@ -347,8 +346,12 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end,
 		strnfcat(buf, max, &end, " %s", o_ptr->ego->name);
 
 	else if (aware && !o_ptr->artifact &&
-			(o_ptr->kind->flavor || o_ptr->kind->tval == TV_SCROLL))
-		strnfcat(buf, max, &end, " of %s", o_ptr->kind->name);
+			(o_ptr->kind->flavor || o_ptr->kind->tval == TV_SCROLL)) {
+		if (terse)
+			strnfcat(buf, max, &end, " '%s'", o_ptr->kind->name);
+		else
+			strnfcat(buf, max, &end, " of %s", o_ptr->kind->name);
+	}
 
 	return end;
 }
@@ -371,10 +374,7 @@ static bool obj_desc_show_armor(const object_type *o_ptr)
 		case TV_SOFT_ARMOR:
 		case TV_HARD_ARMOR:
 		case TV_DRAG_ARMOR:
-		{
 			return TRUE;
-			break;
-		}
 	}
 
 	return FALSE;
@@ -671,11 +671,11 @@ static size_t obj_desc_aware(const object_type *o_ptr, char *buf, size_t max,
  *
  * \returns The number of bytes used of the buffer.
  */
-size_t object_desc(char *buf, size_t max, const object_type *o_ptr,
-				   odesc_detail_t mode)
+size_t object_desc(char *buf, size_t max, const object_type *o_ptr, int mode)
 {
 	bool prefix = mode & ODESC_PREFIX;
-	bool spoil = (mode & ODESC_SPOIL);
+	bool spoil = mode & ODESC_SPOIL;
+	bool terse = mode & ODESC_TERSE;
 	bool known;
 
 	size_t end = 0, i = 0;
@@ -694,7 +694,9 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr,
 	/*** Some things get really simple descriptions ***/
 
 	if (o_ptr->marked == MARK_AWARE) {
-		return strnfmt(buf, max, "an unknown item");
+		if (prefix)
+			return strnfmt(buf, max, "an unknown item");
+		return strnfmt(buf, max, "unknown item");
 	}
 
 	if (o_ptr->tval == TV_GOLD)
@@ -705,7 +707,7 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr,
 	/** Construct the name **/
 
 	/* Copy the base name to the buffer */
-	end = obj_desc_name(buf, max, end, o_ptr, prefix, mode, spoil);
+	end = obj_desc_name(buf, max, end, o_ptr, prefix, mode, spoil, terse);
 
 	if (mode & ODESC_COMBAT)
 	{

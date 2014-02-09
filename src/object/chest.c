@@ -28,7 +28,7 @@
  * The "pval" of a chest determines the quality of its treasure
  * Note that disarming a trap on a chest also removes the lock.
  */
-const byte chest_traps[64] =
+static const byte chest_traps[64] =
 {
 	0,					/* 0 == empty */
 	(CHEST_POISON),
@@ -112,11 +112,11 @@ byte chest_trap_type(const object_type *o_ptr)
 bool is_trapped_chest(const object_type *o_ptr)
 {
 	if (o_ptr->tval != TV_CHEST)
-		return false;
+		return FALSE;
 
 	/* Disarmed or opened chests are not trapped */
 	if (o_ptr->pval[DEFAULT_PVAL] <= 0)
-		return false;
+		return FALSE;
 
 	/* Some chests simply don't have traps */
 	return (chest_traps[o_ptr->pval[DEFAULT_PVAL]] != 0);
@@ -129,7 +129,7 @@ bool is_trapped_chest(const object_type *o_ptr)
 bool is_locked_chest(const object_type *o_ptr)
 {
 	if (o_ptr->tval != TV_CHEST)
-		return false;
+		return FALSE;
 
 	/* Disarmed or opened chests are not locked */
 	return (o_ptr->pval[DEFAULT_PVAL] > 0);
@@ -276,7 +276,7 @@ static void chest_death(int y, int x, s16b o_idx)
 
 		/* Otherwise drop an item, as long as it isn't a chest */
 		else {
-			if (!make_object(cave, i_ptr, value, FALSE, FALSE, NULL)) continue;
+			if (!make_object(cave, i_ptr, value, FALSE, FALSE, FALSE, NULL, 0)) continue;
 			if (i_ptr->tval == TV_CHEST) continue;
 		}
 

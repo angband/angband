@@ -57,6 +57,7 @@ sub main {
     my $total   = 0;
     my $maxpath = (max map { length($_) } @paths) - 3;
     my $len     = $maxpath + 1 + 7;
+    my $exitcode = 0;
     
     print "Running ", scalar(@paths), " suites:\n" unless $quiet;
     foreach my $path (sort @paths) {
@@ -67,10 +68,16 @@ sub main {
 
         if ($? != 0) {
             print red("$path: Suite died"), "\n";
+            $exitcode = $?;
+
+            # We don't know how many tests the suite had,
+            # but at least one failed
+            $total += 1; 
             next;
         }
         unless ($lines[-1] =~ m#^([^:]+) finished: (\d+)/(\d+) passed$#) {
             print red("$path: Malformed output"), "\n";
+            $exitcode = 1;
             next;
         }
 
@@ -98,6 +105,11 @@ sub main {
     my $ps    = join('', &$color(sprintf("%.1f%%", ($total ? ($pass * 100) / $total : 100))));
     
     printf("Total: %s passed (%s)\n", $ns, $ps);
+
+    if ($exitcode != 0 && $pass != $total) {
+        $exitcode = 2;
+    }
+    exit($exitcode);
 }
 
 main();

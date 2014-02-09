@@ -23,7 +23,6 @@ int borg_respawn_int;
 int borg_respawn_wis;
 int borg_respawn_dex;
 int borg_respawn_con;
-int borg_respawn_chr;
 int borg_dump_level;
 int borg_save_death;
 bool borg_respawn_winners;
@@ -45,7 +44,6 @@ bool borg_scums_uniques;
 bool borg_kills_uniques;
 int borg_chest_fail_tolerance;
 s32b borg_money_scum_amount;
-char borg_money_scum_item;
 int borg_money_scum_who;
 int borg_money_scum_ware;
 bool borg_self_scum; 	/* borg scums on his own */
@@ -70,12 +68,11 @@ int *borg_has;
 int *borg_has_on;
 int *borg_artifact;
 int *borg_skill;
-int size_class;
 int size_depth;
 int size_obj;
 int *formula[1000];
 
-char *prefix_pref[] =
+const char *prefix_pref[] =
 {
 /* personal attributes */
     "_STR",
@@ -83,19 +80,16 @@ char *prefix_pref[] =
     "_WIS",
     "_DEX",
     "_CON",
-    "_CHR",
     "_CSTR",
     "_CINT",
     "_CWIS",
     "_CDEX",
     "_CCON",
-    "_CCHR",
     "_SSTR",
     "_SINT",
     "_SWIS",
     "_SDEX",
     "_SCON",
-    "_SCHR",
     "_LIGHT",
     "_CURHP",
     "_MAXHP",
@@ -204,7 +198,6 @@ char *prefix_pref[] =
     "_ISFIXWIS",
     "_ISFIXDEX",
     "_ISFIXCON",
-    "_ISFIXCHR",
     "_ISFIXALL",
 
 /* some combat stuff */
@@ -318,7 +311,6 @@ int successful_target = 0;
 int sold_item_tval[10];
 int sold_item_sval[10];
 int sold_item_pval[10];
-int sold_item_store[10];
 int sold_item_store[10];
 int sold_item_num = -1;
 int sold_item_nxt = 0;
@@ -794,7 +786,6 @@ s16b num_sustain_dex;
 s16b num_sustain_con;
 s16b num_sustain_all;
 
-s16b num_speed;
 s16b num_edged_weapon;
 s16b num_bad_gloves;
 s16b num_weapons;
@@ -868,14 +859,6 @@ u16b borg_step = 0;     /* Step count (if any) */
  */
 char borg_match[128] = "plain gold ring";  /* Search string */
 
-
-/*
- * Hack -- single character constants
- */
-
-const char p1 = '(', p2 = ')';
-const char c1 = '{', c2 = '}';
-const char b1 = '[', b2 = ']';
 
 
 /*
@@ -1432,16 +1415,16 @@ errr borg_what_text(int x, int y, int n, byte *a, char *s)
     int i;
     wchar_t screen_str[1024];
 
-    byte t_a;
+    int t_a;
     wchar_t t_c;
 
-    byte *aa;
+    int *aa;
     wchar_t *cc;
 
 	int w, h;
 
     /* Current attribute */
-    byte d_a = 0;
+    int d_a = 0;
 
     /* Max length to scan for */
     int m = ABS(n);
@@ -1667,7 +1650,7 @@ void borg_note(char *what)
 /*
  * Abort the Borg, noting the reason
  */
-void borg_oops(char *what)
+void borg_oops(const char *what)
 {
     /* Stop processing */
     borg_active = FALSE;
@@ -1722,12 +1705,12 @@ errr borg_keypress(keycode_t k)
 /*
  * Add a keypress to the "queue" (fake event)
  */
-errr borg_keypresses(char *str)
+errr borg_keypresses(const char *str)
 {
-    char *s;
+	const char *s;
 
     /* Enqueue them */
-    for (s = str; *s; s++) borg_keypress(*s);
+	for (s = str; *s; s++) borg_keypress(*s);
 
     /* Success */
     return (0);
@@ -1782,11 +1765,9 @@ void borg_flush(void)
  */
 bool borg_tell(char *what)
 {
-    char *s;
-
     /* Hack -- self note */
     borg_keypress(':');
-    for (s = what; *s; s++) borg_keypress(*s);
+    borg_keypresses(what);
     borg_keypress(KC_ENTER);
 
     /* Success */
@@ -1800,8 +1781,6 @@ bool borg_tell(char *what)
  */
 bool borg_change_name(char *str)
 {
-    char *s;
-
     /* Cancel everything */
     borg_keypress(ESCAPE);
     borg_keypress(ESCAPE);
@@ -1813,7 +1792,7 @@ bool borg_change_name(char *str)
     borg_keypress('c');
 
     /* Enter the new name */
-    for (s = str; *s; s++) borg_keypress(*s);
+    borg_keypresses(str);
 
     /* End the name */
     borg_keypress(KC_ENTER);
@@ -1832,8 +1811,6 @@ bool borg_change_name(char *str)
  */
 bool borg_dump_character(char *str)
 {
-    char *s;
-
     /* Cancel everything */
     borg_keypress(ESCAPE);
     borg_keypress(ESCAPE);
@@ -1845,7 +1822,7 @@ bool borg_dump_character(char *str)
     borg_keypress('f');
 
     /* Enter the new name */
-    for (s = str; *s; s++) borg_keypress(*s);
+    borg_keypresses(str);
 
     /* End the file name */
     borg_keypress(KC_ENTER);

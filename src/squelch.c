@@ -3,7 +3,7 @@
  * Purpose: Item destruction
  *
  * Copyright (c) 2007 David T. Blackston, Iain McFall, DarkGod, Jeff Greene,
- * David Vestal, Pete Mack, Andrew Sidwell.
+ * David Vestal, Pete Mack, Andi Sidwell.
  *
  * This work is free software; you can redistribute it and/or modify it
  * under the terms of either:
@@ -34,6 +34,9 @@ typedef struct
 
 static quality_squelch_struct quality_mapping[] =
 {
+	{ TYPE_WEAPON_GREAT,		TV_SWORD,		SV_BLADE_OF_CHAOS,	SV_BLADE_OF_CHAOS },
+	{ TYPE_WEAPON_GREAT,		TV_POLEARM,		SV_SCYTHE_OF_SLICING,	SV_SCYTHE_OF_SLICING },
+	{ TYPE_WEAPON_GREAT,		TV_HAFTED,		SV_MACE_OF_DISRUPTION,	SV_MACE_OF_DISRUPTION },
 	{ TYPE_WEAPON_POINTY,	TV_SWORD,		0,		SV_UNKNOWN },
 	{ TYPE_WEAPON_POINTY,	TV_POLEARM,		0,		SV_UNKNOWN },
 	{ TYPE_WEAPON_BLUNT,	TV_HAFTED,		0,		SV_UNKNOWN },
@@ -66,6 +69,7 @@ quality_name_struct quality_choices[TYPE_MAX] =
 {
 	{ TYPE_WEAPON_POINTY,		"Pointy Melee Weapons" },
 	{ TYPE_WEAPON_BLUNT,		"Blunt Melee Weapons" },
+	{ TYPE_WEAPON_GREAT,			"Great Weapons" },
 	{ TYPE_SHOOTER,				"Missile weapons" },
 	{ TYPE_MISSILE_SLING,		"Shots and Pebbles" },
 	{ TYPE_MISSILE_BOW,			"Arrows" },
@@ -534,17 +538,38 @@ void squelch_drop(void)
 	int n;
 
 	/* Scan through the slots backwards */
-	for (n = INVEN_PACK - 1; n >= 0; n--)
+	for (n = INVEN_TOTAL - 1; n >= 0; n--)
 	{
 		object_type *o_ptr = &p_ptr->inventory[n];
 
 		/* Skip non-objects and unsquelchable objects */
+		if (n == INVEN_PACK) continue; /* Skip overflow slot. */
 		if (!o_ptr->kind) continue;
 		if (!squelch_item_ok(o_ptr)) continue;
 
 		/* Check for !d (no drop) inscription */
 		if (!check_for_inscrip(o_ptr, "!d") && !check_for_inscrip(o_ptr, "!*"))
 		{
+			/* Confirm the drop if the item is equipped. */
+			if (n >= INVEN_WIELD) {
+				if (!verify_item("Really take off and drop", n)) {
+					/* Hack - inscribe the item with !d to prevent repeated confirmations. */
+					const char *inscription = quark_str(o_ptr->note);
+
+					if (inscription == NULL) {
+						o_ptr->note = quark_add("!d");
+					}
+					else {
+						char buffer[1024];
+						my_strcpy(buffer, inscription, sizeof(buffer));
+						my_strcat(buffer, "!d", sizeof(buffer));
+						o_ptr->note = quark_add(buffer);
+					}
+
+					continue;
+				}
+			}
+
 			/* We're allowed to drop it. */
 			inven_drop(n, o_ptr->number);
 		}
@@ -552,4 +577,19 @@ void squelch_drop(void)
 
 	/* Combine/reorder the pack */
 	p_ptr->notice |= (PN_COMBINE | PN_REORDER);
+}
+
+/**
+ * Return the name of a squelch type.
+ */
+const char *squelch_name_for_type(squelch_type_t type)
+{
+	size_t i;
+
+	for (i = 0; i < TYPE_MAX; i++) {
+		if (quality_choices[i].enum_val == type)
+			return quality_choices[i].name;
+	}
+
+	return "unknown";
 }

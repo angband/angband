@@ -675,7 +675,6 @@ static bool cast_mage_spell(int spell, int dir)
 		case SPELL_BANISHMENT:
 		{
 			return banishment();
-			break;
 		}
 
 		case SPELL_DOOR_CREATION:
@@ -704,8 +703,7 @@ static bool cast_mage_spell(int spell, int dir)
 
 		case SPELL_WORD_OF_RECALL:
 		{
-			set_recall();
-			break;
+			return set_recall();
 		}
 
 		case SPELL_ACID_BOLT:
@@ -1186,7 +1184,6 @@ static bool cast_priest_spell(int spell, int dir)
 			(void)do_res_stat(A_WIS);
 			(void)do_res_stat(A_DEX);
 			(void)do_res_stat(A_CON);
-			(void)do_res_stat(A_CHR);
 			break;
 		}
 
@@ -1237,7 +1234,7 @@ static bool cast_priest_spell(int spell, int dir)
 
 		case PRAYER_RECHARGING:
 		{
-			return recharge(15);
+			return recharge(20 + plev);
 		}
 		
         /* Dispel Curse has been removed in 3.4 until curses are redone 
@@ -1290,8 +1287,7 @@ static bool cast_priest_spell(int spell, int dir)
 
 		case PRAYER_WORD_OF_RECALL:
 		{
-			set_recall();
-			break;
+			return set_recall();
 		}
 
 		case PRAYER_ALTER_REALITY:
@@ -1320,4 +1316,9 @@ bool cast_spell(int tval, int index, int dir)
 	{
 		return cast_priest_spell(index, dir);
 	}
+}
+
+bool spell_is_identify(int book, int spell)
+{
+	return (book == TV_MAGIC_BOOK && spell == SPELL_IDENTIFY) || (book == TV_PRAYER_BOOK && spell == PRAYER_PERCEPTION);
 }

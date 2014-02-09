@@ -15,7 +15,7 @@
 
 #include "angband.h"
 #include "object/tvalsval.h"
-#include "player/types.h"
+#include "player/player.h"
 
 static struct player_sex TEST_DATA test_sex = {
 	.title = "Test Sex",
@@ -469,7 +469,6 @@ static struct player_race TEST_DATA test_race = {
 		[A_CON] = +3,
 		[A_INT] = -1,
 		[A_WIS] = -2,
-		[A_CHR] = +0,
 	},
 	.r_skills = {
 		[SKILL_DISARM] = 0,
@@ -542,7 +541,6 @@ static struct player_class TEST_DATA test_class = {
 		[A_CON] = -1,
 		[A_INT] = -2,
 		[A_WIS] = +3,
-		[A_CHR] = +0,
 	},
 
 	.c_skills = {
@@ -678,7 +676,6 @@ static struct player TEST_DATA test_player = {
 	.age = 12,
 	.ht = 40,
 	.wt = 80,
-	.sc = 100,
 	.au = 500,
 	.max_depth = 10,
 	.depth = 6,
@@ -696,7 +693,6 @@ static struct player TEST_DATA test_player = {
 		[A_CON] = 14,
 		[A_WIS] = 10,
 		[A_INT] = 8,
-		[A_CHR] = 12,
 	},
 	.stat_cur = {
 		[A_STR] = 14,
@@ -704,7 +700,6 @@ static struct player TEST_DATA test_player = {
 		[A_CON] = 14,
 		[A_WIS] = 10,
 		[A_INT] = 8,
-		[A_CHR] = 8,
 	},
 	.word_recall = 0,
 	.energy = 100,

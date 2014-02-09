@@ -70,8 +70,6 @@ typedef enum cmd_code
 	CMD_TUNNEL,
 	CMD_OPEN,
 	CMD_CLOSE,
-	CMD_JAM,
-	CMD_BASH,
 	CMD_RUN,
 	CMD_HOLD,
 	CMD_ENTER_STORE,
@@ -181,6 +179,13 @@ typedef struct game_command
 	/* Types of the arguments passed */
 	enum cmd_arg_type arg_type[CMD_MAX_ARGS];
 } game_command;
+
+/* 
+ * Command handlers will take a pointer to the command structure
+ * so that they can access any arguments supplied.
+ */
+typedef void (*cmd_handler_fn)(cmd_code code, cmd_arg args[]);
+
 
 
 /**

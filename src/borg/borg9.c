@@ -28,15 +28,8 @@ bool borg_cheat_death;
 /*
  * This file implements the "Ben Borg", an "Automatic Angband Player".
  *
- * This version of the "Ben Borg" is designed for use with Angband 2.7.9v6.
- *
  * Use of the "Ben Borg" requires re-compilation with ALLOW_BORG defined,
  * and with the various "borg*.c" files linked into the executable.
- *
- * Note that you can only use the Borg if your character has been marked
- * as a "Borg User".  You can do this, if necessary, by responding "y"
- * when asked if you really want to use the Borg.  This will (normally)
- * result in your character being inelligible for the high score list.
  *
  * The "do_cmd_borg()" function, called when the user hits "^Z", allows
  * the user to interact with the Borg.  You do so by typing "Borg Commands",
@@ -44,9 +37,7 @@ bool borg_cheat_death;
  * show objects, 'd' to toggle "demo mode", 'f' to open/shut the "log file",
  * 'i' to display internal flags, etc.  See "do_cmd_borg()" for more info.
  *
- * The first time you enter a Borg command, the Borg is initialized.  This
- * consists of three major steps, and requires at least 400K of free memory,
- * if the memory is not available, the game may abort.
+ * The first time you enter a Borg command:
  *
  * (1) The various "borg" modules are initialized.
  *
@@ -55,15 +46,6 @@ bool borg_cheat_death;
  *
  * (3) Some "historical" information (killed uniques, maximum dungeon depth)
  *     is "stolen" from the game.
- *
- * When the Ben Borg is "activated", it uses the "Term_inkey_hook" to steal
- * control from the user.  Later, if it detects any input from the real user,
- * it gracefully relinquishes control by clearing the "Term_inkey_hook" after
- * any pending key-sequences are complete.
- *
- * The Borg will abort if it detects any "errors", or if it detects any
- * "situations" such as "death", or if it detects any "panic" situations,
- * such as "imminent death", if the appropriate flags are set.
  *
  * The Ben Borg is only supposed to "know" what is visible on the screen,
  * which it learns by using the "term.c" screen access function "Term_what()",
@@ -76,38 +58,6 @@ bool borg_cheat_death;
  * control from the "Term_inkey()" and "Term_flush()" functions.  This
  * allows the Ben Borg to pretend to be a normal user.
  *
- * Note that if properly designed, the Ben Borg could be run as an external
- * process, which would actually examine the screen (or pseudo-terminal),
- * and send keypresses directly to the keyboard (or pseudo-terminal).  Thus
- * it should never access any "game variables", unless it is able to extract
- * those variables for itself by code duplication or complex interactions,
- * or, in certain situations, if those variables are not actually "required".
- *
- * Currently, the Ben Borg is a few steps away from being able to be run as
- * an external process, primarily in the "low level" details, such as knowing
- * when the game is ready for a keypress.  Also, the Ben Borg assumes that a
- * character has already been rolled, and maintains no state between saves,
- * which is partially offset by "cheating" to "acquire" the maximum dungeon
- * depth, without which equipment analysis will be faulty.
- *
- * The "theory" behind the Borg is that is should be able to run as a
- * separate process, playing Angband in a window just like a human, that
- * is, examining the screen for information, and sending keypresses to
- * the game.  The current Borg does not actually do this, because it would
- * be very slow and would not run except on Unix machines, but as far as
- * possible, I have attempted to make sure that the Borg *could* run that
- * way.  This involves "cheating" as little as possible, where "cheating"
- * means accessing information not available to a normal Angband player.
- * And whenever possible, this "cheating" should be optional, that is,
- * there should be software options to disable the cheating, and, if
- * necessary, to replace it with "complex" parsing of the screen.
- *
- * Thus, the Borg COULD be written as a separate process which runs Angband
- * in a pseudo-terminal and "examines" the "screen" and sends keypresses
- * directly (as with a terminal emulator), although it would then have
- * to explicitly "wait" to make sure that the game was completely done
- * sending information.
- *
  * The Borg is thus allowed to examine the screen directly (by efficient
  * direct access of the "Term->scr->a" and "Term->scr->c" arrays, which
  * could be replaced by calls to "Term_grab()"), and to access the cursor
@@ -115,14 +65,6 @@ bool borg_cheat_death;
  * and, as mentioned above, the Borg is allowed to send keypresses directly
  * to the game, and only when needed, using the "Term_inkey_hook" hook, and
  * uses the same hook to know when it should discard all pending keypresses.
- *
- * The Borg should not know when the game is ready for a keypress, and
- * should really do something nasty such as "pause" between turns for
- * some amount of time to ensure that the game is really waiting for
- * a keypress.
- *
- * Various other "cheats" (mostly optional) are described where they are
- * used, primarily in this file.
  *
  * Note that any "user input" will be ignored, and will cancel the Borg,
  * after the Borg has completed any key-sequences currently in progress.
@@ -138,14 +80,6 @@ bool borg_cheat_death;
  * 1000 on each new level, and we refuse to stay on any level longer than
  * 30000 turns, unless we are totally stuck, in which case we abort.
  *
- * Note that as of 2.7.9, the Borg can play any class, that is, he can make
- * "effective" use of at least a few spells/prayers, and is not "broken"
- * by low strength, blind-ness, hallucination, etc.  This does not, however,
- * mean that he plays all classes equally well, especially since he is so
- * dependant on a high strength for so many things.  The "demo" mode is useful
- * for many classes (especially Mage) since it allows the Borg to "die" a few
- * times, without being penalized.
- *
  * The Borg assumes that the "maximize" flag is off, and that the
  * "preserve" flag is on, since he cannot actually set those flags.
  * If the "maximize" flag is on, the Borg may not work correctly.
@@ -153,145 +87,8 @@ bool borg_cheat_death;
  */
 
 
-/*
- * We currently handle:
- *   Level changing (intentionally or accidentally)
- *   Embedded objects (gold) that must be extracted
- *   Ignore embedded objects if too "weak" to extract
- *   Traps (disarm), Doors (open/etc), Rubble (tunnel)
- *   Stores (enter via movement, exit via escape)
- *   Stores (limited commands, and different commands)
- *   Always deal with objects one at a time, not in piles
- *   Discard junk before trying to pick up more stuff
- *   Use "identify" to obtain knowledge and/or money
- *   Rely on "sensing" objects as much as possible
- *   Do not sell junk or worthless items to any shop
- *   Do not attempt to buy something without the cash
- *   Use the non-optimal stairs if stuck on a level
- *   Use "flow" code for all tasks for consistency
- *   Cancel all goals when major world changes occur
- *   Use the "danger" code to avoid potential death
- *   Use the "danger" code to avoid inconvenience
- *   Try to avoid danger (both actively and passively)
- *   Handle "Mace of Disruption", "Scythe of Slicing", etc
- *   Learn spells, and use them when appropriate
- *   Remember that studying prayers is slightly random
- *   Do not try to read scrolls when blind or confused
- *   Do not study/use spells/prayers when blind/confused
- *   Use spells/prayers at least once for the experience
- *   Attempt to heal when "confused", "blind", etc
- *   Attempt to fix "fear", "poison", "cuts", etc
- *   Analyze potential equipment in proper context
- *   Priests should avoid edged weapons (spell failure)
- *   Mages should avoid most gloves (lose mana)
- *   Non-warriors should avoid heavy armor (lose mana)
- *   Keep "best" ring on "tight" right finger in stores
- *   Remove items which do not contribute to total fitness
- *   Wear/Remove/Sell/Buy items in most optimal order
- *   Pursue optimal combination of available equipment
- *   Notice "failure" when using rods/staffs/artifacts
- *   Notice "failure" when attempting spells/prayers
- *   Attempt to correctly track terrain, objects, monsters
- *   Take account of "clear" and "multi-hued" monsters
- *   Take account of "flavored" (randomly colored) objects
- *   Handle similar objects/monsters (mushrooms, coins)
- *   Multi-hued/Clear monsters, and flavored objects
- *   Keep in mind that some monsters can move (quickly)
- *   Do not fire at monsters that may not actually exist
- *   Assume everything is an object until proven otherwise
- *   Parse messages to correct incorrect assumptions
- *   Search for secret doors after exploring the level
- *   React intelligently to changes in the wall structure
- *   Do not recalculate "flow" information unless required
- *   Collect monsters/objects/terrain not currently in view
- *   Keep in mind that word of recall is a delayed action
- *   Keep track of charging items (rods and artifacts)
- *   Be very careful not to access illegal locations!
- *   Do not rest next to dangerous (or immobile) monsters
- *   Recall into dungeon if prepared for resulting depth
- *   Do not attempt to destroy cursed ("terrible") artifacts
- *   Attempted destruction will yield "terrible" inscription
- *   Use "maximum" level and depth to prevent "thrashing"
- *   Use "maximum" hp's and sp's when checking "potentials"
- *   Attempt to recognize large groups of "disguised" monsters
- *   Beware of firing at a monster which is no longer present
- *   Stockpile items in the Home, and use those stockpiles
- *   Discounted spell-books (low level ones are ignored)
- *   Take items out of the home to sell them when no longer needed
- *   Trappers and Mimics (now treated as invisible monsters)
- *   Invisible monsters (induce "fear" of nearby regions)
- *   Fleeing monsters are "followed" down corridors and such
- *
- * We ignore:
- *   Long object descriptions may have clipped inscriptions
- *
- * We need to handle:
- *   Technically a room can have no exits, requiring digging
- *   Try to use a shovel/pick to help with tunnelling
- *   Conserve memory space (each grid byte costs about 15K)
- *   Conserve computation time (especially with the flow code)
- *   Becoming "afraid" (attacking takes a turn for no effect)
- *   Beware of firing missiles at a food ration under a mushroom
- *
- * We need to handle "loading" saved games:
- *   The "max_depth" value is lost if loaded in the town
- *   If we track "dead uniques" then this information is lost
- *   The "map" info, "flow" info, "tracking" info, etc is lost
- *   The contents of the shops (and the home) are lost
- *   We may be asked to "resume" a non-Borg character (icky)
- */
 
 
-/*
- * Currently, the Borg "cheats" in a few situations...
- *
- * Cheats that are significant, and possibly unavoidable:
- *   Knowledge of when we are being asked for a keypress.
- *   Note that this could be avoided by LONG timeouts/delays
- *
- * Cheats "required" by implementation, but not signifant:
- *   Direct access to the "screen image" (parsing screen)
- *   Direct access to the "keypress queue" (sending keys)
- *   Direct access to the "cursor visibility" (game state)
- *
- * Cheats that could be avoided by simple (ugly) code:
- *   Direct modification of the "current options"
- *
- * Cheats that could be avoided by duplicating code:
- *   Use of the tables in "tables.c"
- *   Use of the arrays initialized in "init.c"
- *
- * Cheats that the Borg would love:
- *   Immunity to hallucination, blindness, confusion
- *   Unique attr/char codes for every monster and object
- *   Removal of the "mimic" and "trapper" monsters
- *   Removal of the "mushroom" and "gold" monsters
- */
-
-
-/*
- * Stat advantages:
- *   High STR (attacks, to-dam, digging, weight limit)
- *   High DEX (attacks, to-hit, armor class)
- *   High CON (hitpoints, recovery)
- *   High WIS (better prayers, saving throws)
- *   High INT (better spells, disarming, device usage)
- *   High CHR (better item costs)
- *
- * Class advantages:
- *   Warrior (good fighting, sensing)
- *   Mage (good spells)
- *   Priest (good prayers, fighting)
- *   Ranger (some spells, fighting)
- *   Rogue (some spells, fighting, sensing)
- *   Paladin (prayers, fighting, sensing)
- *
- * Race advantages:
- *   Gnome (free action)
- *   Dwarf (resist blindness)
- *   High elf (see invisible)
- *   Non-human (infravision)
- */
 
 
 
@@ -314,14 +111,8 @@ void borg_log_death(void)
 	/* Build path to location of the definition file */
    path_build(buf, 1024, ANGBAND_DIR_USER, "borg-log.txt");
 
-   /* Hack -- drop permissions */
-   safe_setuid_drop();
-
    /* Append to the file */
    borg_log_file = file_open(buf, MODE_APPEND, FTYPE_TEXT);
-
-    /* Hack -- grab permissions */
-   safe_setuid_grab();
 
    /* Failure */
    if (!borg_log_file) return;
@@ -360,14 +151,8 @@ void borg_log_death_data(void)
 
    path_build(buf, 1024, ANGBAND_DIR_USER, "borg.dat");
 
-   /* Hack -- drop permissions */
-   safe_setuid_drop();
-
    /* Append to the file */
    borg_log_file = file_open(buf, MODE_APPEND, FTYPE_TEXT);
-
-    /* Hack -- grab permissions */
-   safe_setuid_grab();
 
    /* Failure */
    if (!borg_log_file) return;
@@ -1342,125 +1127,14 @@ static void borg_parse_aux(char *msg, int len)
 
     }
 
-    /* A bug in the 280 game fails to inscribe {empty} on a staff-wand after
-     * being hit by amnesia (if the item had a sale inscription).
-     * So we will try to use the wand, see that it is empty then inscribe
-     * it ourselves.
-     */
-    if (strstr(msg, " has no charges."))
-    {
-        /* make the inscription */
-
-        /* not needed in 285,  the game bug was fixed. */
-        borg_keypress('{');
-        borg_keypress(I2A(zap_slot));
-
-        /* "you inscribe the " */
-        borg_keypress('e');
-        borg_keypress('m');
-        borg_keypress('p');
-        borg_keypress('t');
-        borg_keypress('y');
-        borg_keypress(KC_ENTER);
-
-        /* done */
-
-	}
     /* amnesia attacks, re-id wands, staves, equipment. */
     if (prefix(msg, "You feel your memories fade."))
     {
 		/* Set the borg flag */
 		borg_skill[BI_ISFORGET] = TRUE;
-
-#if 0 /* 309 modified the amnesia attack, we dont forget */
-        int i;
-
-        /* I was hit by amnesia, forget things */
-        /* forget equipment */
-        /* Look for an item to forget (equipment) */
-        for (i = INVEN_WIELD; i <= INVEN_FEET; i++)
-        {
-            borg_item *item = &borg_items[i];
-
-            /* Skip empty items */
-            if (!item->iqty) continue;
-
-            /* Skip known items */
-            if (item->fully_identified) continue;
-
-            /* skip certain easy know items */
-            if ((item->tval == TV_RING) &&
-                ((item->sval == SV_RING_FREE_ACTION) ||
-                 (item->sval == SV_RING_SEE_INVIS) ||
-                 (item->sval <= SV_RING_SUSTAIN_CHR))) continue;
-
-            /* skip already forgotten or non id'd items */
-            if (!item->ident) continue;
-
-            /* forget it */
-            item->ident = FALSE;
-
-            /* note the forgeting */
-            borg_note(format("Borg 'forgetting' qualities of %s",item->desc));
-
-        }
-
-        /* Look for an item to forget (inventory) */
-        for (i = 0; i <= INVEN_MAX_PACK; i++)
-        {
-            borg_item *item = &borg_items[i];
-
-            /* Skip empty items */
-            if (!item->iqty) continue;
-
-            /* skip certain easy know items */
-            if ((item->tval == TV_RING) &&
-                (of_has(item->flags, OF_EASY_KNOW)) continue;
-
-            if (item->fully_identified) continue;
-
-            switch (item->tval)
-            {
-                /* forget wands, staffs, weapons, armour */
-                case TV_WAND:
-                case TV_STAFF:
-                case TV_ROD:
-                case TV_RING:
-                case TV_AMULET:
-                case TV_LIGHT:
-                case TV_SHOT:
-                case TV_ARROW:
-                case TV_BOLT:
-                case TV_BOW:
-                case TV_DIGGING:
-                case TV_HAFTED:
-                case TV_POLEARM:
-                case TV_SWORD:
-                case TV_BOOTS:
-                case TV_GLOVES:
-                case TV_HELM:
-                case TV_CROWN:
-                case TV_SHIELD:
-                case TV_CLOAK:
-                case TV_SOFT_ARMOR:
-                case TV_HARD_ARMOR:
-                case TV_DRAG_ARMOR:
-                break;
-
-                default:
-                    continue;
-            }
-                /* forget it */
-                item->ident = FALSE;
-
-                /* note the forgetting */
-                borg_note(format("Borg 'forgetting' qualities of %s",item->desc));
-         }
-#endif /* Amnesia attack */
     }
     if (streq(msg, "Your memories come flooding back."))
     {
-
         borg_skill[BI_ISFORGET] = FALSE;
     }
 
@@ -2452,41 +2126,7 @@ static s16b stat_use[6];
 
 static int adjust_stat_borg(int value, int amount, int borg_roll)
 {
-    /* Negative amounts or maximize mode */
-    if ((amount < 0) || op_ptr->opt[OPT_birth_maximize])
-    {
-        return (modify_stat_value(value, amount));
-    }
-
-    /* Special hack */
-    else
-    {
-        int i;
-
-        /* Apply reward */
-        for (i = 0; i < amount; i++)
-        {
-            if (value < 18)
-            {
-                value++;
-            }
-            else if (value < 18+70)
-            {
-                value += ((borg_roll ? 15 : randint1(15)) + 5);
-            }
-            else if (value < 18+90)
-            {
-                value += ((borg_roll ? 6 : randint1(6)) + 2);
-            }
-            else if (value < 18+100)
-            {
-                value++;
-            }
-        }
-    }
-
-    /* Return the result */
-    return (value);
+	return (modify_stat_value(value, amount));
 }
 
 static void get_stats_borg_aux(void)
@@ -2527,24 +2167,11 @@ static void get_stats_borg_aux(void)
         bonus = p_ptr->race->r_adj[i] + p_ptr->class->c_adj[i];
 
         /* Variable stat maxes */
-        if (op_ptr->opt[OPT_birth_maximize])
-        {
-            /* Start fully healed */
-            p_ptr->stat_cur[i] = p_ptr->stat_max[i];
+        /* Start fully healed */
+        p_ptr->stat_cur[i] = p_ptr->stat_max[i];
 
-            /* Efficiency -- Apply the racial/class bonuses */
-            stat_use[i] = modify_stat_value(p_ptr->stat_max[i], bonus);
-        }
-
-        /* Fixed stat maxes */
-        else
-        {
-            /* Apply the bonus to the stat (somewhat randomly) */
-            stat_use[i] = adjust_stat_borg(p_ptr->stat_max[i], bonus, FALSE);
-
-            /* Save the resulting stat maximum */
-            p_ptr->stat_cur[i] = p_ptr->stat_max[i] = stat_use[i];
-        }
+        /* Efficiency -- Apply the racial/class bonuses */
+        stat_use[i] = modify_stat_value(p_ptr->stat_max[i], bonus);
     }
 }
 /*
@@ -3640,7 +3267,7 @@ static void borg_prt_binary(u32b flags, int row, int col)
  * item has.  Select the item by inven # prior to hitting
  * the ^zo.
  */
-static void borg_display_item(object_type *item2)
+static void borg_display_item(object_type *item2, int n)
 {
 	int j = 0;
 
@@ -3648,7 +3275,7 @@ static void borg_display_item(object_type *item2)
 
 	borg_item *item;
 
-	item = &borg_items[p_ptr->command_arg];
+	item = &borg_items[n];
 
 	/* Extract the flags */
 	object_flags(item2, f);
@@ -4280,7 +3907,8 @@ void init_borg_txt_file(void)
         /* Complain */
         msg("*****WARNING***** You do not have a proper BORG.TXT file!");
         msg("Make sure BORG.TXT is located in the \\user\\ subdirectory!");
-        msg(NULL);
+		msg("Which is: %s", buf);
+        message_flush();
         return;
     }
 
@@ -4854,9 +4482,6 @@ void borg_write_map(bool ask)
 
     char o_name[80];
 
-    /* Hack -- drop permissions */
-    safe_setuid_drop();
-
     /* Process the player name */
     for (i = 0; op_ptr->full_name[i]; i++)
     {
@@ -4895,9 +4520,6 @@ void borg_write_map(bool ask)
         if (!borg_map_file) msg("Cannot open that file.");
     }
     else if (!ask) borg_map_file = file_open(buf2, MODE_WRITE, FTYPE_TEXT);
-
-    /* Hack -- grab permissions */
-    safe_setuid_grab();
 
    file_putf(borg_map_file, "%s the %s %s, Level %d/%d\n", op_ptr->full_name,
            p_ptr->race->name,
@@ -5679,10 +5301,6 @@ void borg_status(void)
    else attr = TERM_SLATE;
    Term_putstr(21, 5, -1, attr, "CON");
 
-   if (borg_skill[BI_SCHR]) attr = TERM_WHITE;
-   else attr = TERM_SLATE;
-   Term_putstr(21, 6, -1, attr, "CHR");
-
 
    /* Temporary effects */
    Term_putstr(28, 0, -1, TERM_WHITE, "Temp Effects");
@@ -5753,7 +5371,6 @@ void borg_status(void)
    {
 	   attr = TERM_WHITE;
 	   Term_putstr(42, 7, -1, attr,format("Scumming: $%d                  ", borg_money_scum_amount));
-	   /* Term_putstr(42, 7, -1, attr,format("Scumming:$%d,%s                  ", borg_money_scum_amount, borg_money_scum_item)); */
    }
    attr = TERM_SLATE;
    Term_putstr(42, 8, -1, attr,"Maximal Depth:");
@@ -5925,6 +5542,7 @@ void do_cmd_borg(void)
 
         /* Prompt for key */
         msg("Commands: ");
+		inkey();
 
         /* Restore the screen */
         Term_load();
@@ -6017,6 +5635,11 @@ void do_cmd_borg(void)
 		    borg_berserk = (p_ptr->timed[TMD_SHERO] ? TRUE : FALSE);
 		    if (p_ptr->timed[TMD_SINVIS]) borg_see_inv = 10000;
 
+			if (lazymove_delay != 0) {
+				borg_note("# Turning off lazy movement controls");
+				lazymove_delay = 0;
+			}
+
             /* Message */
             borg_note("# Installing keypress hook");
 
@@ -6083,7 +5706,7 @@ void do_cmd_borg(void)
             borg_cancel = FALSE;
 
             /* Step N times */
-			borg_step  = (p_ptr->command_arg ? p_ptr->command_arg : 1);
+			borg_step = get_quantity("Step how many times? ", 10);
 
             /* need to check all stats */
             my_need_stat_check[0] = TRUE;
@@ -6317,7 +5940,7 @@ void do_cmd_borg(void)
 
             /* Get keypress */
             msg("Press any key.");
-            msg(NULL);
+            message_flush();
 
             /* Redraw map */
             prt_map();
@@ -6403,7 +6026,7 @@ void do_cmd_borg(void)
 
             /* Get keypress */
             msg("Press any key.");
-            msg(NULL);
+            message_flush();
 
             /* Redraw map */
             prt_map();
@@ -6430,7 +6053,7 @@ void do_cmd_borg(void)
                 if (borg_grids[y][x].info & BORG_VIEW)	msg("Info for grid (%d, %d) is VIEW", y,x);
                 if (borg_grids[y][x].info & BORG_TEMP)	msg("Info for grid (%d, %d) is TEMP", y,x);
                 if (borg_grids[y][x].info & BORG_XTRA)	msg("Info for grid (%d, %d) is XTRA", y,x);
-				if (cave->info[y][x] & CAVE_ICKY) msg("Info for grid (%d, %d) is ICKY", y,x);
+				if (cave_isvault(cave, y, x)) msg("Info for grid (%d, %d) is ICKY", y,x);
 
 				borg_note(format("Info for grid (%d, %d) is %d", y,x,cave->info[y][x]));
 			prt_map();
@@ -6469,7 +6092,7 @@ void do_cmd_borg(void)
 
             /* Get keypress */
             msg("(%d,%d of %d,%d) Avoidance value %d.", c_y, c_x, Term->offset_y / PANEL_HGT,Term->offset_x / PANEL_WID,avoidance);
-            msg(NULL);
+            message_flush();
 
             /* Redraw map */
             prt_map();
@@ -6490,7 +6113,7 @@ void do_cmd_borg(void)
                         /* Display */
                         print_rel('*', a, track_step_y[track_step_num-i], track_step_x[track_step_num-i]);
 			            msg("(-%d) Steps noted %d,%d", i,track_step_y[track_step_num-i], track_step_x[track_step_num-i]);
-						msg(NULL);
+						message_flush();
                         print_rel('*', TERM_ORANGE, track_step_y[track_step_num-i], track_step_x[track_step_num-i]);
                     }
             /* Redraw map */
@@ -6525,7 +6148,7 @@ void do_cmd_borg(void)
 
             /* Get keypress */
             msg("There are %d known monsters.", n);
-            msg(NULL);
+            message_flush();
 
             /* Redraw map */
             prt_map();
@@ -6560,7 +6183,7 @@ void do_cmd_borg(void)
 
             /* Get keypress */
             msg("There are %d known objects.", n);
-            msg(NULL);
+            message_flush();
 
             /* Redraw map */
             prt_map();
@@ -6597,7 +6220,7 @@ void do_cmd_borg(void)
 			}
 
             msg("Borg's Targetting Path");
-            msg(NULL);
+            message_flush();
 
 		    /* Determine "path" */
 		    n_x = p_ptr->px;
@@ -6611,7 +6234,7 @@ void do_cmd_borg(void)
 
 
             msg("Actual Targetting Path");
-            msg(NULL);
+            message_flush();
 
             /* Redraw map */
             prt_map();
@@ -6685,7 +6308,7 @@ void do_cmd_borg(void)
                 }
                 print_rel('*', TERM_YELLOW, borg_flow_y[0], borg_flow_x[0]);
                 msg("Probable Flow Path");
-                msg(NULL);
+                message_flush();
 
                 /* Redraw map */
                 prt_map();
@@ -6703,7 +6326,7 @@ void do_cmd_borg(void)
 			target_get(&tx, &ty);
 
             /* Turns */
-            n = (p_ptr->command_arg ? p_ptr->command_arg : 1);
+            n = get_quantity("Quantity: ", 1);
 
             /* Danger of grid */
             msg("Danger(%d,%d,%d) is %d",
@@ -6743,7 +6366,7 @@ void do_cmd_borg(void)
 
             /* Get keypress */
             msg("(%d,%d of %d,%d) Regional Fear.", c_y, c_x, Term->offset_y / PANEL_HGT,Term->offset_x / PANEL_WID);
-            msg(NULL);
+            message_flush();
 
             /* Redraw map */
             prt_map();
@@ -6790,7 +6413,7 @@ void do_cmd_borg(void)
 
             /* Get keypress */
             msg("(%d,%d of %d,%d) Monster Fear.", c_y, c_x, Term->offset_y / PANEL_HGT,Term->offset_x / PANEL_WID);
-            msg(NULL);
+            message_flush();
 
             /* Redraw map */
             prt_map();
@@ -6864,7 +6487,7 @@ void do_cmd_borg(void)
 
             /* Get keypress */
             msg("Borg has Projectable to these places.");
-            msg(NULL);
+            message_flush();
 
             /* Scan map */
             for (y = w_y; y < w_y + SCREEN_HGT; y++)
@@ -6881,7 +6504,7 @@ void do_cmd_borg(void)
                 }
             }
             msg("Borg has Projectable Dark to these places.");
-            msg(NULL);
+            message_flush();
 
             /* Scan map */
             for (y = w_y; y < w_y + SCREEN_HGT; y++)
@@ -6898,7 +6521,7 @@ void do_cmd_borg(void)
                 }
             }
             msg("Borg has LOS to these places.");
-            msg(NULL);
+            message_flush();
             /* Redraw map */
             prt_map();
             break;
@@ -7195,7 +6818,8 @@ void do_cmd_borg(void)
 			object_type *item2;
 
 			/* use this item */
-            n = (p_ptr->command_arg ? p_ptr->command_arg : 1);
+			// XXX replace this with an item selector
+			n = get_quantity("Which item?", 1);
 
             /* Cheat the "equip" screen */
             borg_cheat_equip();
@@ -7220,11 +6844,11 @@ void do_cmd_borg(void)
 			item2 = &p_ptr->inventory[n];
 
 			/* Display the special screen */
-			borg_display_item(item2);
+			borg_display_item(item2, n);
 
 			/* pause for study */
             msg("Borg believes: ");
-            msg(NULL);
+            message_flush();
 
 			/* Restore the screen */
             Term_load();
@@ -7284,7 +6908,7 @@ void do_cmd_borg(void)
 					/* Display */
                     print_rel('*', a, track_glyph_y[glyph_check], track_glyph_x[glyph_check]);
 					msg("Borg has Glyph (%d)noted.", glyph_check);
-		            msg(NULL);
+		            message_flush();
             }
 
             /* Get keypress */

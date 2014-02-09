@@ -3,15 +3,19 @@
 #ifndef GENERATE_H
 #define GENERATE_H
 
+#include "monster/constants.h"
+#include "monster/monster.h"
+
 void ensure_connectedness(struct cave *c);
 
 void place_object(struct cave *c, int y, int x, int level, bool good,
-	bool great, byte origin);
+	bool great, byte origin, int tval);
 void place_gold(struct cave *c, int y, int x, int level, byte origin);
 void place_secret_door(struct cave *c, int y, int x);
 void place_closed_door(struct cave *c, int y, int x);
 void place_random_door(struct cave *c, int y, int x);
 
+extern struct room_template *random_room_template(int typ);
 extern struct vault *random_vault(int typ);
 
 struct tunnel_profile {
@@ -69,7 +73,7 @@ struct room_profile {
 	room_builder builder; /* Function used to build the room */
 	int height, width; /* Space required in blocks */
 	int level; /* Minimum dungeon level */
-	bool crowded; /* Whether this room is crowded or not */
+	bool pit; /* Whether this room is a pit/nest or not */
 	int rarity; /* How unusual this room is */
 	int cutoff; /* Upper limit of 1-100 random roll for room generation */
 };
@@ -83,14 +87,14 @@ struct pit_color_profile {
 struct pit_forbidden_monster {
 	struct pit_forbidden_monster *next;
 	
-	int r_idx;
+	monster_race *race;
 };
 
 typedef struct pit_profile {
 	struct pit_profile *next;
 
 	int pit_idx; /* Index in pit_info */
-	const char* name;
+	const char *name;
 	int room_type; /* Is this a pit or a nest? */
 	int ave; /* Level where this pit is most common */
 	int rarity; /* How unusual this pit is */
@@ -105,5 +109,43 @@ typedef struct pit_profile {
 	struct pit_forbidden_monster *forbidden_monsters;
 } pit_profile;
 
+
+
+/*
+ * Information about "vault generation"
+ */
+struct vault {
+	struct vault *next;
+	unsigned int vidx;
+	char *name;
+	char *text;
+
+	byte typ;			/* Vault type */
+
+	byte rat;			/* Vault rating */
+
+	byte hgt;			/* Vault height */
+	byte wid;			/* Vault width */
+};
+
+
+/*
+ * Information about "room generation"
+ */
+typedef struct room_template {
+	struct room_template *next;
+	unsigned int tidx;
+	char *name;
+	char *text;
+
+	byte typ;			/* Room type */
+
+	byte rat;			/* Room rating */
+
+	byte hgt;			/* Room height */
+	byte wid;			/* Room width */
+	byte dor;           /* Random door options */
+	byte tval;			/* tval for objects in this room */
+} room_template_type;
 
 #endif /* !GENERATE_H */

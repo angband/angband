@@ -21,7 +21,7 @@
  * Details of the different object flags in the game.
  * See src/object/obj-flag.h for structure
  */
-const struct object_flag object_flag_table[] =
+static const struct object_flag object_flag_table[] =
 {
     #define OF(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s) \
             { OF_##a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s },
@@ -90,7 +90,7 @@ void flag_message(int flag, char *name)
 /**
  * Determine whether a flagset includes any curse flags.
  */
-bool cursed_p(bitflag *f)
+bool cursed_p(const bitflag *f)
 {
 	bitflag f2[OF_SIZE];
 
@@ -140,10 +140,7 @@ void log_flags(bitflag *f, ang_file *log_file)
 }
 
 /**
- * Log the name of a flag to a file.
- *
- * \param flag is the flag to log.
- * \param log_file is ... oh come on how obvious does it need to be?
+ * Return the name of a flag.
  */
 const char *flag_name(int flag)
 {

@@ -10,6 +10,23 @@ enum
 	CURS_KNOWN = 1			/* Use white / light blue for cursor */
 };
 
+/**
+ * Type wrapper for various row styles.
+ */
+typedef enum _menu_row_style_t {
+	MN_ROW_STYLE_DISABLED = CURS_UNKNOWN,
+	MN_ROW_STYLE_ENABLED = CURS_KNOWN,
+} menu_row_style_t;
+
+/**
+ * Type wrapper for row validity.
+ */
+typedef enum _menu_row_validity_t {
+	MN_ROW_INVALID = 0,
+	MN_ROW_VALID = 1,
+	MN_ROW_HIDDEN = 2,
+} menu_row_validity_t;
+
 /* Cursor colours for different states */
 extern const byte curs_attrs[2][2];
 
@@ -156,7 +173,7 @@ enum
 
 	/* no select events to be triggered */
 	MN_NO_ACTION = 0x20
-} menu_type_flags;
+};
 
 
 /* Base menu type */
@@ -200,7 +217,7 @@ struct menu_type
 	int cursor;             /* Currently selected row */
 	int top;                /* Position in list for partial display */
 	region active;          /* Subregion actually active for selection */
-
+	int cursor_x_offset;    /* Adjustment to the default position of the cursor on a line. */
 };
 
 
@@ -311,12 +328,18 @@ void menu_ensure_cursor_valid(menu_type *m);
 bool menu_handle_mouse(menu_type *menu, const ui_event *in, ui_event *out);
 bool menu_handle_keypress(menu_type *menu, const ui_event *in, ui_event *out);
 
+/**
+ * Allow adjustment of the cursor's default x offset.
+ */
+void menu_set_cursor_x_offset(menu_type *m, int offset);
 
 /*** Dynamic menu handling ***/
 
 menu_type *menu_dynamic_new(void);
 void menu_dynamic_add(menu_type *m, const char *text, int value);
+void menu_dynamic_add_valid(menu_type *m, const char *text, int value, menu_row_validity_t valid);
 void menu_dynamic_add_label(menu_type *m, const char *text, const char label, int value, char *label_list);
+void menu_dynamic_add_label_valid(menu_type *m, const char *text, const char label, int value, char *label_list, menu_row_validity_t valid);
 size_t menu_dynamic_longest_entry(menu_type *m);
 int menu_dynamic_select(menu_type *m);
 void menu_dynamic_free(menu_type *m);

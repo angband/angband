@@ -47,7 +47,6 @@
 #define BASE_AC_POWER            2 /* i.e. 1 */
 #define TO_AC_POWER              2 /* i.e. 1 */
 #define MAX_BLOWS                5
-#define INHIBIT_IMMUNITIES       4
 
 /**
  * Define a set of constants for dealing with launchers and ammo:
@@ -118,7 +117,6 @@ static s32b slay_power(const object_type *o_ptr, int verbose, ang_file*
 	int i, j;
 	int mult;
 	const struct slay *best_s_ptr = NULL;
-	monster_race *r_ptr;
 	monster_type *m_ptr;
 	monster_type monster_type_body;
 	const char *desc[SL_MAX] = { 0 }, *brand[SL_MAX] = { 0 };
@@ -155,9 +153,8 @@ static s32b slay_power(const object_type *o_ptr, int verbose, ang_file*
 	for (i = 0; i < z_info->r_max; i++)	{
 		best_s_ptr = NULL;
 		mult = 1;
-		r_ptr = &r_info[i];
 		m_ptr = &monster_type_body;
-		m_ptr->r_idx = i;
+		m_ptr->race = &r_info[i];
 
 		/* Find the best multiplier against this monster */
 		improve_attack_modifier((object_type *)o_ptr, m_ptr, &best_s_ptr,
@@ -166,7 +163,7 @@ static s32b slay_power(const object_type *o_ptr, int verbose, ang_file*
 			mult = best_s_ptr->mult;
 
 		/* Add the multiple to sv */
-		sv += mult * r_ptr->scaled_power;
+		sv += mult * m_ptr->race->scaled_power;
 	}
 
 	/*
@@ -323,7 +320,8 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 		if (known || object_this_pval_is_visible(o_ptr, j)) {
 			if (o_ptr->pval[j] >= INHIBIT_MIGHT) {
 				p += INHIBIT_POWER;
-				mult = 1;	/* don't overflow */
+				/* mult is never used before returning */
+				/*mult = 1;*/	/* don't overflow */
 				file_putf(log_file, "INHIBITING - too much extra might - quitting\n");
 				return p;
 			} else
@@ -411,9 +409,9 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 			file_putf(log_file, "Adding power for %s, total is %d\n", flag_name(i), p);
 		}
 
-		/* Track combinations of flag types - note we ignore SUST_CHR */
+		/* Track combinations of flag types */
 		for (j = 0; j < N_ELEMENTS(sets); j++)
-			if ((sets[j].type == obj_flag_type(i)) && (i != OF_SUST_CHR))
+			if (sets[j].type == obj_flag_type(i))
 				sets[j].count++;
 	}
 

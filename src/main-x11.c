@@ -17,6 +17,7 @@
  */
 #include "angband.h"
 #include "buildid.h"
+#include "dungeon.h"
 
 /*
  * This file helps Angband work with UNIX/X11 computers.
@@ -398,41 +399,13 @@ struct term_data
 
 /**** Generic Macros ****/
 
-
-
-/* Set current metadpy (Metadpy) to 'M' */
-#define Metadpy_set(M) \
-	Metadpy = M
-
-
-/* Initialize 'M' using Display 'D' */
-#define Metadpy_init_dpy(D) \
-	Metadpy_init_2(D,cNULL)
-
 /* Initialize 'M' using a Display named 'N' */
 #define Metadpy_init_name(N) \
 	Metadpy_init_2((Display*)(NULL),N)
 
-/* Initialize 'M' using the standard Display */
-#define Metadpy_init() \
-	Metadpy_init_name("")
-
-
-/* Init an infowin by giving father as an (info_win*) (or NULL), and data */
-#define Infowin_init_dad(D,X,Y,W,H,B,FG,BG) \
-	Infowin_init_data(((D) ? ((D)->win) : (Window)(None)), \
-	                  X,Y,W,H,B,FG,BG)
-
-
 /* Init a top level infowin by pos,size,bord,Colors */
 #define Infowin_init_top(X,Y,W,H,B,FG,BG) \
 	Infowin_init_data(None,X,Y,W,H,B,FG,BG)
-
-
-/* Request a new standard window by giving Dad infowin and X,Y,W,H */
-#define Infowin_init_std(D,X,Y,W,H,B) \
-	Infowin_init_dad(D,X,Y,W,H,B,Metadpy->fg,Metadpy->bg)
-
 
 /* Set the current Infowin */
 #define Infowin_set(I) \
@@ -447,30 +420,12 @@ struct term_data
 #define Infoclr_init_ppo(F,B,O,M) \
 	Infoclr_init_data(F,B,O,M)
 
-#define Infoclr_init_cco(F,B,O,M) \
-	Infoclr_init_ppo(Infoclr_Pixell(F),Infoclr_Pixell(B),O,M)
-
 #define Infoclr_init_ppn(F,B,O,M) \
 	Infoclr_init_ppo(F,B,Infoclr_Opcode(O),M)
-
-#define Infoclr_init_ccn(F,B,O,M) \
-	Infoclr_init_cco(F,B,Infoclr_Opcode(O),M)
-
 
 /* Set the current infofnt */
 #define Infofnt_set(I) \
 	(Infofnt = (I))
-
-
-/* Errr: Expose Infowin */
-#define Infowin_expose() \
-	(!(Infowin->redraw = 1))
-
-/* Errr: Unxpose Infowin */
-#define Infowin_unexpose() \
-	(Infowin->redraw = 0)
-
-
 
 /**** Generic Globals ****/
 
@@ -493,7 +448,7 @@ static infofnt *Infofnt = (infofnt*)(NULL);
 /*
  * Actual color table
  */
-static infoclr *clr[MAX_COLORS];
+static infoclr *clr[MAX_COLORS * BG_MAX];
 
 
 
@@ -600,7 +555,7 @@ static const char *get_default_font(int term_num)
 
 /* look up keyboard modifiers using the Xkb extension */
 
-unsigned int xkb_mask_modifier( XkbDescPtr xkb, const char *name )
+static unsigned int xkb_mask_modifier( XkbDescPtr xkb, const char *name )
 {
 	unsigned int mask=0;
 	
@@ -1624,7 +1579,7 @@ static term_data data[MAX_TERM_DATA];
  * Path to the X11 settings file
  */
 static const char *x11_prefs = "x11-settings.prf";
-char settings[1024];
+static char settings[1024];
 
 
 
@@ -2117,7 +2072,7 @@ static errr Term_wipe_x11(int x, int y, int n)
 /*
  * Draw some textual characters.
  */
-static errr Term_text_x11(int x, int y, int n, byte a, const wchar_t *s)
+static errr Term_text_x11(int x, int y, int n, int a, const wchar_t *s)
 {
 	/* Draw the text */
 	Infoclr_set(clr[a]);
@@ -2248,7 +2203,7 @@ static errr term_data_init(term_data *td, int i)
 	font = get_default_font(i);
 
 	/* Open the file */
-	fff = file_open(settings, MODE_READ, -1);
+	fff = file_open(settings, MODE_READ, FTYPE_TEXT);
 
 	/* File exists */
 	if (fff)
@@ -2670,7 +2625,7 @@ errr init_x11(int argc, char **argv)
 		(void)path_build(settings, sizeof(settings), ANGBAND_DIR_USER, "x11-settings.prf");
 
 		/* Open the file */
-		fff = file_open(settings, MODE_READ, -1);
+		fff = file_open(settings, MODE_READ, FTYPE_TEXT);
 
 		/* File exists */
 		if (fff)
@@ -2719,7 +2674,7 @@ errr init_x11(int argc, char **argv)
 
 
 	/* Prepare normal colors */
-	for (i = 0; i < 256; ++i)
+	for (i = 0; i < MAX_COLORS * BG_MAX; ++i)
 	{
 		Pixell pixel;
 
@@ -2728,26 +2683,57 @@ errr init_x11(int argc, char **argv)
 		Infoclr_set(clr[i]);
 
 		/* Acquire Angband colors */
-		color_table_x11[i][0] = angband_color_table[i][0];
-		color_table_x11[i][1] = angband_color_table[i][1];
-		color_table_x11[i][2] = angband_color_table[i][2];
-		color_table_x11[i][3] = angband_color_table[i][3];
+		color_table_x11[i % MAX_COLORS][0] = angband_color_table[i % MAX_COLORS][0];
+		color_table_x11[i % MAX_COLORS][1] = angband_color_table[i % MAX_COLORS][1];
+		color_table_x11[i % MAX_COLORS][2] = angband_color_table[i % MAX_COLORS][2];
+		color_table_x11[i % MAX_COLORS][3] = angband_color_table[i % MAX_COLORS][3];
 
 		/* Default to monochrome */
 		pixel = ((i == 0) ? Metadpy->bg : Metadpy->fg);
 
-		/* Handle color */
+		/* Handle color 
+		   This block of code has added support for background colours
+                   (from Sil) */
+
 		if (Metadpy->color)
 		{
+			Pixell backpixel;
 			/* Create pixel */
 			pixel = create_pixel(Metadpy->dpy,
-					     color_table_x11[i][1],
-					     color_table_x11[i][2],
-					     color_table_x11[i][3]);
+					     color_table_x11[i % MAX_COLORS][1],
+					     color_table_x11[i % MAX_COLORS][2],
+					     color_table_x11[i % MAX_COLORS][3]);
+			switch (i / MAX_COLORS)
+			{
+				case BG_BLACK:
+					/* Default Background */
+					Infoclr_init_ppn(pixel, Metadpy->bg, "cpy", 0);
+					break;
+				case BG_SAME:
+					/* Background same as foreground*/
+					backpixel = create_pixel(Metadpy->dpy,
+											 color_table_x11[i % MAX_COLORS][1],
+											 color_table_x11[i % MAX_COLORS][2],
+											 color_table_x11[i % MAX_COLORS][3]);
+					Infoclr_init_ppn(pixel, backpixel, "cpy", 0);
+					break;
+				case BG_DARK:
+					/* Highlight Background */
+					backpixel = create_pixel(Metadpy->dpy,
+											 color_table_x11[TERM_SHADE][1],
+											 color_table_x11[TERM_SHADE][2],
+											 color_table_x11[TERM_SHADE][3]);
+					Infoclr_init_ppn(pixel, backpixel, "cpy", 0);
+					break;
+			}
 		}
 
-		/* Initialize the color */
-		Infoclr_init_ppn(pixel, Metadpy->bg, "cpy", 0);
+		/* Handle monochrome */
+		else
+		{
+		    /* Initialize the color */
+		    Infoclr_init_ppn(pixel, Metadpy->bg, "cpy", 0);
+		}
 	}
 
 

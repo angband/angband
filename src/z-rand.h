@@ -149,8 +149,6 @@ bool randcalc_valid(random_value v, int test);
  */
 bool randcalc_varies(random_value v);
 
-#ifdef TEST
 extern void rand_fix(u32b val);
-#endif
 
 #endif /* INCLUDED_Z_RAND_H */

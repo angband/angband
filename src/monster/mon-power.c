@@ -31,7 +31,6 @@ static long eval_blow_effect(int effect, int atk_dam, int rlev)
 		case RBE_EAT_ITEM:
 		case RBE_EAT_FOOD:
 		case RBE_EAT_LIGHT:
-		case RBE_LOSE_CHR:
 		{
 			atk_dam += 5;
 			break;
@@ -107,6 +106,14 @@ static long eval_blow_effect(int effect, int atk_dam, int rlev)
 	}
 
 	return (atk_dam);
+}
+
+static byte adj_energy(monster_race *r_ptr)
+{
+	unsigned i = r_ptr->speed + (rsf_has(r_ptr->spell_flags, RSF_HASTE) ? 5 : 0);
+
+	/* fastest monster in the game is currently +30, but let's bounds check anyway. */
+	return extract_energy[MIN(i, N_ELEMENTS(extract_energy) - 1)];
 }
 
 static long eval_max_dam(monster_race *r_ptr)
@@ -195,7 +202,7 @@ static long eval_max_dam(monster_race *r_ptr)
 				melee_dam *= 10;
 		else
 		{
-			melee_dam = melee_dam * 3 + melee_dam * extract_energy[r_ptr->speed + (rsf_has(r_ptr->spell_flags, RSF_HASTE) ? 5 : 0)] / 7;
+			melee_dam = melee_dam * 3 + melee_dam * adj_energy(r_ptr) / 7;
 		}
 
 		/*
@@ -254,20 +261,21 @@ static long eval_max_dam(monster_race *r_ptr)
 	 * Adjust for speed.  Monster at speed 120 will do double damage,
 	 * monster at speed 100 will do half, etc.  Bonus for monsters who can haste self.
 	 */
-	dam = (dam * extract_energy[r_ptr->speed + (rsf_has(r_ptr->spell_flags, RSF_HASTE) ? 5 : 0)]) / 10;
+	dam = (dam * adj_energy(r_ptr)) / 10;
 
 	/*
 	 * Adjust threat for speed -- multipliers are more threatening.
 	 */
 	if (rf_has(r_ptr->flags, RF_MULTIPLY))
-		r_ptr->highest_threat = (r_ptr->highest_threat * extract_energy[r_ptr->speed + (rsf_has(r_ptr->spell_flags, RSF_HASTE) ? 5 : 0)]) / 5;
+		r_ptr->highest_threat = (r_ptr->highest_threat * adj_energy(r_ptr)) / 5;
 
 	/*
-	 * Adjust threat for friends.
+	 * Adjust threat for friends, this can be improved, but is probably good enough for now.
 	 */
-	if (rf_has(r_ptr->flags, RF_FRIENDS))
+	if (r_ptr->friends)
 		r_ptr->highest_threat *= 2;
-	else if (rf_has(r_ptr->flags, RF_FRIEND))
+	else if (r_ptr->friends_base)
+		/* Friends base is weaker, because they are <= monster level */
 		r_ptr->highest_threat = r_ptr->highest_threat * 3 / 2;
 		
 	/*but deep in a minimum*/
@@ -380,7 +388,7 @@ static long eval_hp_adjust(monster_race *r_ptr)
 
 }
 
-errr eval_r_power(struct monster_race *races)
+errr eval_r_power(struct monster_race *racelist)
 {
 	int i, j, iteration;
 	byte lvl;
@@ -410,7 +418,7 @@ for (iteration = 0; iteration < 3; iteration ++) {
 	for (i = 0; i < z_info->r_max; i++)	{
 
 		/* Point at the "info" */
-		r_ptr = &races[i];
+		r_ptr = &racelist[i];
 
 		/* Set the current level */
 		lvl = r_ptr->level;
@@ -494,34 +502,33 @@ for (iteration = 0; iteration < 3; iteration ++) {
 		/* Define the power rating */
 		power[i] = hp * dam;
 
-		/* Adjust for group monsters.  Average in-level group size is 5 */
+		/* Adjust for group monsters, using somewhat arbitrary 
+		multipliers for now */
 		if (!rf_has(r_ptr->flags, RF_UNIQUE)) {
-			if (rf_has(r_ptr->flags, RF_FRIEND))
-				power[i] *= 2;
-			else if (rf_has(r_ptr->flags, RF_FRIENDS))
-				power[i] *= 5;
+			if (r_ptr->friends)
+				power[i] *= 3;
 		}
 	
 		/* Adjust for escorts */
-		if (rf_has(r_ptr->flags, RF_ESCORTS))
-			power[i] *= 3;
-		if (rf_has(r_ptr->flags, RF_ESCORT) && !rf_has(r_ptr->flags, RF_ESCORTS))
+		if (r_ptr->friends_base) 
 			power[i] *= 2;
+
 
 		/* Adjust for multiplying monsters. This is modified by the speed,
 		 * as fast multipliers are much worse than slow ones. We also adjust for
 		 * ability to bypass walls or doors.
 		 */
 		if (rf_has(r_ptr->flags, RF_MULTIPLY)) {
+			int adj_power;
+
 			if (flags_test(r_ptr->flags, RF_SIZE, RF_KILL_WALL, RF_PASS_WALL, FLAG_END))
-				power[i] = MAX(power[i], power[i] * extract_energy[r_ptr->speed
-					+ (rsf_has(r_ptr->spell_flags, RSF_HASTE) ? 5 : 0)]);
+				adj_power = power[i] * adj_energy(r_ptr);
 			else if (flags_test(r_ptr->flags, RF_SIZE, RF_OPEN_DOOR, RF_BASH_DOOR, FLAG_END))
-				power[i] = MAX(power[i], power[i] *  extract_energy[r_ptr->speed
-					+ (rsf_has(r_ptr->spell_flags, RSF_HASTE) ? 5 : 0)] * 3 / 2);
+				adj_power = power[i] * adj_energy(r_ptr) * 3 / 2;
 			else
-				power[i] = MAX(power[i], power[i] * extract_energy[r_ptr->speed
-					+ (rsf_has(r_ptr->spell_flags, RSF_HASTE) ? 5 : 0)] / 2);
+				adj_power = power[i] * adj_energy(r_ptr) / 2;
+
+			power[i] = MAX(power[i], adj_power);
 		}
 
 		/*
@@ -559,21 +566,20 @@ for (iteration = 0; iteration < 3; iteration ++) {
 			 * so that the averages don't get thrown off
 			 */
 
-			if (rf_has(r_ptr->flags, RF_FRIEND))
-				count = 20;
-			else if (rf_has(r_ptr->flags, RF_FRIENDS))
-				count = 50;
+			if (r_ptr->friends || r_ptr->friends_base)
+				count = 15;
 
 			if (rf_has(r_ptr->flags, RF_MULTIPLY)) {
+				int adj_energy_amt;
+
 				if (flags_test(r_ptr->flags, RF_SIZE, RF_KILL_WALL, RF_PASS_WALL, FLAG_END))
-					count = MAX(1, extract_energy[r_ptr->speed
-						+ (rsf_has(r_ptr->spell_flags, RSF_HASTE) ? 5 : 0)]) * count;
+					adj_energy_amt = adj_energy(r_ptr);
 				else if (flags_test(r_ptr->flags, RF_SIZE, RF_OPEN_DOOR, RF_BASH_DOOR, FLAG_END))
-					count = MAX(1, extract_energy[r_ptr->speed
-						+ (rsf_has(r_ptr->spell_flags, RSF_HASTE) ? 5 : 0)] * 3 / 2) * count;
+					adj_energy_amt = adj_energy(r_ptr) * 3 / 2;
 				else
-					count = MAX(1, extract_energy[r_ptr->speed
-						+ (rsf_has(r_ptr->spell_flags, RSF_HASTE) ? 5 : 0)] / 2) * count;
+					adj_energy_amt = adj_energy(r_ptr) / 2;
+
+				count = MAX(1, adj_energy_amt) * count;
 			}
 
 			/* Very rare monsters count less towards total monster power on the
@@ -598,7 +604,7 @@ for (iteration = 0; iteration < 3; iteration ++) {
 		int new_power;
 
 		/* Point at the "info" */
-		r_ptr = &races[i];
+		r_ptr = &racelist[i];
 
 		/* Extract level */
 		lvl = r_ptr->level;

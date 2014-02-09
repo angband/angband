@@ -20,14 +20,14 @@
 
 
 /* Types of slay (including brands) */
-typedef enum
+enum
 {
 	#define SLAY(a, b, c, d, e, f, g, h, i, j)    SL_##a,
 	#include "list-slays.h"
 	#undef SLAY
 
 	SL_MAX
-} slay_type;
+};
 
 
 /*

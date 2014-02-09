@@ -9,7 +9,11 @@ SRCS    = ${OBJECTS:.o=.c} ${MAINFILES:.o=.c}
 SUBDIRS = monster object player
 PROG    = angband$(PROG_SUFFIX)
 VERSION := $(shell ../scripts/version.sh)
-CFLAGS += -DBUILD_ID=${VERSION} -I. -std=c99 -Wdeclaration-after-statement -O0
+ifneq (${VERSION},)
+	CFLAGS += -DBUILD_ID=${VERSION}
+endif
+
+CFLAGS += -I. -std=c99 -Wdeclaration-after-statement -O0
 
 # gcov intermediate data
 GCOBJS = $(OBJECTS:.o=.gcno) $(OBJECTS:.o=.gcda)
@@ -28,7 +32,7 @@ win/angband.res: win/angband.rc
 	$(RC) $< -O coff -o $@
 
 angband.o: $(OBJECTS)
-	$(LD) -nostdlib -r -o $@ $(OBJECTS)
+	$(LD) -nostdlib -Wl,-r -o $@ $(OBJECTS)
 	@printf "%10s %-20s\n" LINK $@
 
 tests: angband.o

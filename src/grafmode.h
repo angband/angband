@@ -19,6 +19,13 @@
 #define INCLUDED_GRAFMODE_H
 
 #include "h-basic.h"
+
+/*
+ * Default graphic modes
+ */
+#define GRAPHICS_NONE           0
+
+
 /* Specifications for graphics modes.
  * 
  * grafID:      ID of tile set should be >0 and unique for anything new.

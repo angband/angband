@@ -1,4 +1,4 @@
-/*
+/* 
  * File: ui-options.c
  * Purpose: Text UI options handling code (everything accessible from '=')
  *
@@ -24,41 +24,53 @@
 #include "prefs.h"
 #include "object/tvalsval.h"
 #include "ui-menu.h"
+#include "ui-options.h"
 #include "files.h"
 
 
 
-
-static void dump_pref_file(void (*dump)(ang_file *), const char *title, int row)
-{
+/**
+ * Prompt the user for a filename to save the pref file to.
+ */
+static bool get_pref_path(const char *what, int row, char *buf, size_t max) {
 	char ftmp[80];
-	char buf[1024];
+	bool ok;
 
 	screen_save();
 
 	/* Prompt */
-	prt(format("%s to a pref file", title), row, 0);
-	
-	/* Prompt */
+	prt(format("%s to a pref file", what), row, 0);
 	prt("File: ", row + 2, 0);
-	
+
 	/* Default filename */
-	strnfmt(ftmp, sizeof ftmp, "%s.prf", op_ptr->base_name);
+	strnfmt(ftmp, sizeof ftmp, "%s.prf", player_safe_name(p_ptr, TRUE));
 	
 	/* Get a filename */
-	if (askfor_aux(ftmp, sizeof ftmp, NULL))
-	{
-		/* Build the filename */
-		path_build(buf, sizeof(buf), ANGBAND_DIR_USER, ftmp);
-	
-		prt("", 0, 0);
-		if (prefs_save(buf, dump, title))
-			msg("Dumped %s", strstr(title, " ") + 1);
-		else
-			msg("Failed");
-	}
-
+	ok = askfor_aux(ftmp, sizeof ftmp, NULL);
 	screen_load();
+
+	/* Build the filename */
+	if (ok)
+		path_build(buf, max, ANGBAND_DIR_USER, ftmp);
+
+	return ok;
+}
+
+
+static void dump_pref_file(void (*dump)(ang_file *), const char *title, int row) {
+	char buf[1024];
+
+	/* Get filename from user */
+	if (!get_pref_path(title, row, buf, sizeof(buf)))
+		return;
+
+	/* Try to save */
+	if (prefs_save(buf, dump, title))
+		msg("Saved %s.", strstr(title, " ") + 1);
+	else
+		msg("Failed to save %s.", strstr(title, " ") + 1);
+
+	message_flush();
 
 	return;
 }
@@ -110,6 +122,8 @@ static bool option_toggle_handle(menu_type *m, const ui_event *event,
 		} else if (event->key.code == 'n' || event->key.code == 'N') {
 			option_set(option_name(oid), FALSE);
 			next = TRUE;
+		} else if (event->key.code == 't' || event->key.code == 'T') {
+			option_set(option_name(oid), !op_ptr->opt[oid]);
 		} else if (event->key.code == '?') {
 			screen_save();
 			show_file(format("option.txt#%s", option_name(oid)), NULL, 0, 0);
@@ -565,7 +579,7 @@ static menu_type *keymap_menu;
 static menu_action keymap_actions[] =
 {
 	{ 0, 0, "Load a user pref file",    ui_keymap_pref_load },
-	{ 0, 0, "Append keymaps to a file", ui_keymap_pref_append },
+	{ 0, 0, "Save keymaps to file",     ui_keymap_pref_append },
 	{ 0, 0, "Query a keymap",           ui_keymap_query },
 	{ 0, 0, "Create a keymap",          ui_keymap_create },
 	{ 0, 0, "Remove a keymap",          ui_keymap_remove },
@@ -644,10 +658,10 @@ static menu_action visual_menu_items [] =
 {
 	{ 0, 0, "Load a user pref file",   visuals_pref_load },
 #ifdef ALLOW_VISUALS
-	{ 0, 0, "Dump monster attr/chars", visuals_dump_monsters },
-	{ 0, 0, "Dump object attr/chars",  visuals_dump_objects },
-	{ 0, 0, "Dump feature attr/chars", visuals_dump_features },
-	{ 0, 0, "Dump flavor attr/chars",  visuals_dump_flavors },
+	{ 0, 0, "Save monster attr/chars", visuals_dump_monsters },
+	{ 0, 0, "Save object attr/chars",  visuals_dump_objects },
+	{ 0, 0, "Save feature attr/chars", visuals_dump_features },
+	{ 0, 0, "Save flavor attr/chars",  visuals_dump_flavors },
 #endif /* ALLOW_VISUALS */
 	{ 0, 0, "Reset visuals",           visuals_reset },
 };
@@ -980,7 +994,7 @@ static void do_cmd_pref_file_hack(long row)
 	prt("File: ", row + 2, 0);
 
 	/* Default filename */
-	strnfmt(ftmp, sizeof ftmp, "%s.prf", op_ptr->base_name);
+	strnfmt(ftmp, sizeof ftmp, "%s.prf", player_safe_name(p_ptr, TRUE));
 
 	/* Ask for a file (or cancel) */
 	if (askfor_aux(ftmp, sizeof ftmp, NULL))
@@ -1003,13 +1017,17 @@ static void do_cmd_pref_file_hack(long row)
 	screen_load();
 }
 
-
+ 
+ 
 /*
  * Write options to a file.
  */
-static void do_dump_options(const char *title, int row)
-{
-	dump_pref_file(option_dump, "Dump options", 20);
+static void do_dump_options(const char *title, int row) {
+	(void)dump_pref_file(option_dump, "Dump window settings", 20);
+}
+
+static void do_dump_autoinsc(const char *title, int row) {
+	(void)dump_pref_file(dump_autoinscriptions, "Dump autoinscriptions", 20);
 }
 
 /*
@@ -1019,9 +1037,6 @@ static void options_load_pref_file(const char *n, int row)
 {
 	do_cmd_pref_file_hack(20);
 }
-
-
-
 
 
 
@@ -1048,12 +1063,29 @@ static tval_desc sval_dependent[] =
 	{ TV_FOOD,			"Food" },
 	{ TV_MAGIC_BOOK,	"Magic books" },
 	{ TV_PRAYER_BOOK,	"Prayer books" },
-	{ TV_SPIKE,			"Spikes" },
 	{ TV_LIGHT,			"Lights" },
 	{ TV_FLASK,			"Flasks of oil" },
 /*	{ TV_DRAG_ARMOR,	"Dragon Mail Armor" }, */
 	{ TV_GOLD,			"Money" },
 };
+
+
+/*
+ * Determines whether a tval is eligible for sval-squelch.
+ */
+bool squelch_tval(int tval)
+{
+	size_t i;
+
+	/* Only squelch if the tval's allowed */
+	for (i = 0; i < N_ELEMENTS(sval_dependent); i++)
+	{
+		if (tval == sval_dependent[i].tval)
+			return TRUE;
+	}
+
+	return FALSE;
+}
 
 
 /*
@@ -1092,6 +1124,7 @@ static int cmp_squelch(const void *a, const void *b)
  */
 static void quality_display(menu_type *menu, int oid, bool cursor, int row, int col, int width)
 {
+	/* Note: the order of the values in quality_choices do not align with the squelch_type_t enum order. */
 	const char *name = quality_choices[oid].name;
 
 	byte level = squelch_level[oid];
@@ -1225,7 +1258,8 @@ static bool squelch_sval_menu_action(menu_type *m, const ui_event *event,
 {
 	const squelch_choice *choice = menu_priv(m);
 
-	if (event->type == EVT_SELECT)
+	if (event->type == EVT_SELECT ||
+			(event->type == EVT_KBRD && tolower(event->key.code) == 't'))
 	{
 		object_kind *kind = choice[oid].kind;
 
@@ -1339,7 +1373,9 @@ static bool sval_menu(int tval, const char *desc)
 	/* Run menu */
 	menu = menu_new(MN_SKIN_COLUMNS, &squelch_sval_menu);
 	menu_setpriv(menu, n_choices, choices);
+	menu->cmd_keys = "Tt";
 	menu_layout(menu, &area);
+	menu_set_cursor_x_offset(menu, 1); /* Place cursor in brackets. */
 	menu_select(menu, 0, FALSE);
 
 	/* Free memory */
@@ -1374,7 +1410,7 @@ static bool seen_tval(int tval)
 
 
 /* Extra options on the "item options" menu */
-struct
+static struct
 {
 	char tag;
 	const char *name;
@@ -1508,25 +1544,26 @@ void do_cmd_options_item(const char *title, int row)
 static menu_type *option_menu;
 static menu_action option_actions[] = 
 {
-	{ 0, 'a', "Interface and display options", option_toggle_menu },
-	{ 0, 'e', "Warning and disturbance options", option_toggle_menu },
-	{ 0, 'f', "Birth (difficulty) options", option_toggle_menu },
-	{ 0, 'g', "Cheat options", option_toggle_menu },
-	{0, 0, 0, 0}, /* Load and append */
-	{ 0, 'w', "Subwindow display settings", do_cmd_options_win },
-	{ 0, 's', "Item squelch settings", do_cmd_options_item },
+	{ 0, 'a', "User interface options", option_toggle_menu },
+	{ 0, 'b', "Birth (difficulty) options", option_toggle_menu },
+	{ 0, 'c', "Cheat options", option_toggle_menu },
+	{ 0, 'w', "Subwindow setup", do_cmd_options_win },
+	{ 0, 'i', "Item ignoring setup", do_cmd_options_item },
+	{ 0, '{', "Auto-inscription setup", textui_browse_object_knowledge },
+	{ 0 },
 	{ 0, 'd', "Set base delay factor", do_cmd_delay },
 	{ 0, 'h', "Set hitpoint warning", do_cmd_hp_warn },
-	{ 0, 'i', "Set movement delay", do_cmd_lazymove_delay },
+	{ 0, 'm', "Set movement delay", do_cmd_lazymove_delay },
+	{ 0 },
+	{ 0, 's', "Save subwindow setup to pref file", do_dump_options },
+	{ 0, 't', "Save autoinscriptions to pref file", do_dump_autoinsc },
+	{ 0 },
 	{ 0, 'l', "Load a user pref file", options_load_pref_file },
-	{ 0, 'o', "Save options", do_dump_options }, 
-	{0, 0, 0, 0}, /* Interact with */	
-	{ 0, 'm', "Interact with keymaps (advanced)", do_cmd_keymaps },
-	{ 0, 'v', "Interact with visuals (advanced)", do_cmd_visuals },
-
+	{ 0, 'k', "Edit keymaps (advanced)", do_cmd_keymaps },
 #ifdef ALLOW_COLORS
-	{ 0, 'c', "Interact with colours (advanced)", do_cmd_colors },
+	{ 0, 'c', "Edit colours (advanced)", do_cmd_colors },
 #endif /* ALLOW_COLORS */
+	{ 0, 'v', "Save visuals (advanced)", do_cmd_visuals },
 };
 
 
@@ -1552,30 +1589,4 @@ void do_cmd_options(void)
 	menu_select(option_menu, 0, FALSE);
 
 	screen_load();
-}
-
-
-
-
-
-
-
-
-
-
-/*
- * Determines whether a tval is eligible for sval-squelch.
- */
-bool squelch_tval(int tval)
-{
-	size_t i;
-
-	/* Only squelch if the tval's allowed */
-	for (i = 0; i < N_ELEMENTS(sval_dependent); i++)
-	{
-		if (tval == sval_dependent[i].tval)
-			return TRUE;
-	}
-
-	return FALSE;
 }

@@ -175,7 +175,7 @@ Roguelike Keyset Command Summary
   u    (walk - north east)             U    (run - north east)
   v    Throw an item                   V    Version info
   w    Wear/wield equipment            W    Locate player on map (Where)
-  x    Look around                     X    (unused)
+  x    Look around                     X    Use an item
   y    (walk - north west)             Y    (run - north west)
   z    Aim a wand (Zap)                Z    Use a staff (Zap)
   !    Interact with system            ^A   (special - debug command)

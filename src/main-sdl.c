@@ -19,12 +19,13 @@
 #include "angband.h"
 #include "buildid.h"
 #include "cmds.h"
+#include "dungeon.h"
 #include "files.h"
 
 /*
  * Comments and suggestions are welcome. The UI probably needs some
  * adjustment, and I need comments from you.
- * perhaps also something like "Angband 3.0.8 by Andrew Sidwell and others;
+ * perhaps also something like "Angband 3.0.8 by Andi Sidwell and others;
  * SDL port by Iain McFall an others, please see the accompanying documentation
  * for credits" or something
  */
@@ -495,7 +496,7 @@ static errr sdl_FontCreate(sdl_Font *font, const char *fontname, SDL_Surface *su
 	if (TTF_SizeText(ttf_font, "M", &font->width, &font->height)) return (-1);
 	
 	/* Fill in some of the font struct */
-	my_strcpy(font->name, fontname, 30);
+	if (font->name != fontname) my_strcpy(font->name, fontname, 30);
 	font->pitch = surface->pitch;
 	font->bpp = surface->format->BytesPerPixel;
 	font->sdl_font = ttf_font;
@@ -506,6 +507,46 @@ static errr sdl_FontCreate(sdl_Font *font, const char *fontname, SDL_Surface *su
 
 
 
+
+/*
+ * Draw some text onto a surface, allowing shaded backgrounds
+ * The surface is first checked to see if it is compatible with
+ * this font, if it isn't the the font will be 're-precalculated'
+ *
+ * You can, I suppose, use one font on many surfaces, but it is
+ * definitely not recommended. One font per surface is good enough.
+ */
+static errr sdl_mapFontDraw(sdl_Font *font, SDL_Surface *surface, SDL_Color colour,
+			 SDL_Color bg, int x, int y, int n , const char *s)
+{
+	Uint8 bpp = surface->format->BytesPerPixel;
+	Uint16 pitch = surface->pitch;
+
+	SDL_Rect rc;
+	SDL_Surface *text;
+
+	if ((bpp != font->bpp) || (pitch != font->pitch))
+		sdl_FontCreate(font, font->name, surface);
+	
+	/* Lock the window surface (if necessary) */
+	if (SDL_MUSTLOCK(surface))
+	{
+		if (SDL_LockSurface(surface) < 0) return (-1);
+	}
+
+	RECT(x, y, n * font->width, font->height, &rc);
+	text = TTF_RenderUTF8_Shaded(font->sdl_font, s, colour, bg);
+	if (text) {
+	    SDL_BlitSurface(text, NULL, surface, &rc);
+	    SDL_FreeSurface(text);
+	}
+	
+	/* Unlock the surface */
+	if (SDL_MUSTLOCK(surface)) SDL_UnlockSurface(surface);
+	
+	/* Success */
+	return (0);
+}
 
 /*
  * Draw some text onto a surface
@@ -2891,10 +2932,11 @@ static errr Term_wipe_sdl(int col, int row, int n)
 /*
  * Draw some text to a window
  */
-static errr Term_text_sdl(int col, int row, int n, byte a, const wchar_t *s)
+static errr Term_text_sdl(int col, int row, int n, int a, const wchar_t *s)
 {
 	term_window *win = (term_window*)(Term->data);
-	SDL_Color colour = text_colours[a];
+	SDL_Color colour = text_colours[a % MAX_COLORS];
+	SDL_Color bg = text_colours[TERM_DARK];
 	int x = col * win->tile_wid;
 	int y = row * win->tile_hgt;
 	wchar_t src[255];
@@ -2917,8 +2959,25 @@ static errr Term_text_sdl(int col, int row, int n, byte a, const wchar_t *s)
 	/* Convert to UTF-8 for display */
 	len = wcstombs(mbstr, src, n * MB_LEN_MAX);
 	mbstr[len] = '\0';
+
+	/* Handle background */
+	switch (a / MAX_COLORS)
+	{
+	case BG_BLACK:
+	    /* Default Background */
+	    break;
+	case BG_SAME:
+	    /* Background same as foreground*/
+	    bg = colour;
+	    break;
+	case BG_DARK:
+	    /* Highlight Background */
+	    bg = text_colours[TERM_SHADE];
+	    break;
+	}
+
 	/* Draw it */
-	return (sdl_FontDraw(&win->font, win->surface, colour, x, y, n, mbstr));
+	return (sdl_mapFontDraw(&win->font, win->surface, colour, bg, x, y, n, mbstr));
 }
 
 #ifdef USE_GRAPHICS
@@ -3017,6 +3076,7 @@ static errr sdl_BuildTileset(term_window *win)
 	if (!GfxSurface) return (1);
 
 	info = get_graphics_mode(use_graphics);
+	if (info->grafID == 0) return (1);
 
 	/* Calculate the number of tiles across & down*/
 	ta = GfxSurface->w / info->cell_width;
@@ -3098,8 +3158,8 @@ static errr sdl_BuildTileset(term_window *win)
  * XXX - This function _never_ seems to get called with n > 1 ?
  * This needs improvement...
  */
-static errr Term_pict_sdl(int col, int row, int n, const byte *ap, const wchar_t *cp,
-						  const byte *tap, const wchar_t *tcp)
+static errr Term_pict_sdl(int col, int row, int n, const int *ap, const wchar_t *cp,
+						  const int *tap, const wchar_t *tcp)
 {
 	
 #ifdef USE_GRAPHICS

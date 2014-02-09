@@ -42,10 +42,6 @@
 #          1         2         3         4         5         6         7         8         9         0
 # 1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
 
-# Version stamp (required)
-
-V:3.0.11
-
 
 
 ### Simple Vaults (type 6) -- maximum size 44x22 ###
@@ -480,7 +476,7 @@ D:%.XXX^^^###+###^^^XXX.%
 D: %..XXXX*******XXXX..% 
 D:  %%...XXXXXXXXX...%%  
 D:    %%%.........%%%    
-D:       %%%%%%%%% 
+D:       %%%%%%%%%       
 
 N:31:Disguised 2x2
 X:7:15:11:25
@@ -521,6 +517,30 @@ D:%.XXXX,,,9,^^XX#XX^^,9,,,XXXX.%
 D: %...XXXXXXXXX...XXXXXXXXX...% 
 D:  %%%.........%%%.........%%%  
 D:     %%%%%%%%%   %%%%%%%%%     
+
+N:34:Pac-Man
+X:7:5:21:21
+D:#XXXXXXXXXXXXXXXXXXX#
+D:#X..&&&,..X..,&&&..X#
+D:#X9XX^XXX^X^XXX^XX9X#
+D:#X^....^&...&^....^X#
+D:#X.XX.X.XXXXX.X.XX.X#
+D:#X&..^X...X...X^..&X#
+D:#XXXX.XXX.X.XXX.XXXX#
+D:####X.X^*^@^*^X.X####
+D:%XXXX&X^XX+XX^X&XXXX%
+D:%^^^^&&^X888X^&&^^^^%
+D:%XXXX&X.XXXXX.X&XXXX%
+D:####X.X.*****.X.X####
+D:#XXXX.X.XXXXX.X.XXXX#
+D:#X*..^X...X...X^..*X#
+D:#X.XX.XXX.X.XXX.XX.X#
+D:#X9.X.^..&9&..^.X.9X#
+D:#XX.X.X.XXXXX.X.X.XX#
+D:#X....X...X...X....X#
+D:#X^XXXXXX^X^XXXXXX^X#
+D:#X.,&,&,.*^*.,&,&,.X#
+D:#XXXXXXXXXXXXXXXXXXX#
 
 ### Greater vaults (type 8) -- maximum size 66x44 ###
 
@@ -719,19 +739,19 @@ N:48:Huge - Modified
 X:8:45:17:39
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 D:%XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX%
-D:%#8#8#8#8#8#8#8#8#8#8#8#8#8#8#8#8#8#8X%
+D:%#&#8#&#8#&#8#&#8#&#8#&#8#&#8#&#8#&#8X%
 D:%XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX#X%
-D:%X8#8#8#8#8#8#8#8#8#8#8#8#8#8#8#8#8X8X%
+D:%X&#8#&#8#&#8#&#8#&#8#&#8#&#8#&#8#&X8X%
 D:%X#XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX#X#X%
-D:%X8X8#8#8#8#8#8#8#8#8#8#8#8#8#8#8X8X8X%
+D:%X8X&#8#&#8#&#8#&#8#&#8#&#8#&#8#&X8X&X%
 D:%X#X#XXXXXXXXXXXXXXXXXXXXXXXXXXX#X#X#X%
-D:%X8X8X8#8#8#8#8#8#8#8#8#8#8#8#8#8X8X8X%
+D:%X&X8X&#8#&#8#&#8#&#8#&#8#&#8#&#8X&X8X%
 D:%X#X#X#XXXXXXXXXXXXXXXXXXXXXXXXXXX#X#X%
-D:%X8X8X8#8#8#8#8#8#8#8#8#8#8#8#8#8#8X8X%
+D:%X8X&X8#&#8#&#8#&#8#&#8#&#8#&#8#&#8X&X%
 D:%X#X#XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX#X%
-D:%X8X8#8#8#8#8#8#8#8#8#8#8#8#8#8#8#8#8X%
+D:%X&X8#&#8#&#8#&#8#&#8#&#8#&#8#&#8#&#8X%
 D:%X#XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX%
-D:%X8#8#8#8#8#8#8#8#8#8#8#8#8#8#8#8#8#8#%
+D:%X8#&#8#&#8#&#8#&#8#&#8#&#8#&#8#&#8#&#%
 D:%XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX%
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

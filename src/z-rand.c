@@ -310,14 +310,12 @@ int damcalc(int num, int sides, aspect dam_aspect) {
 	switch (dam_aspect) {
 		case MAXIMISE:
 		case EXTREMIFY: return num * sides;
-
 		case RANDOMISE: return damroll(num, sides);
-
 		case MINIMISE: return num;
-
 		case AVERAGE: return num * (sides + 1) / 2;
 	}
 
+	assert(0 && "Should never reach here");
 	return 0;
 }
 
@@ -419,14 +417,12 @@ s16b m_bonus_calc(int max, int level, aspect bonus_aspect) {
 	switch (bonus_aspect) {
 		case EXTREMIFY:
 		case MAXIMISE:  return max;
-
 		case RANDOMISE: return m_bonus(max, level);
-
 		case MINIMISE:  return 0;
-
 		case AVERAGE:   return max * level / MAX_DEPTH;
 	}
 
+	assert(0 && "Should never reach here");
 	return 0;
 }
 

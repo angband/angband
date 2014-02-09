@@ -34,7 +34,7 @@
 /* Is this grid a grid which can be stepped on or can I see through it */
 bool borg_cave_floor_bold(int Y, int X)
 {
-	if (in_bounds_fully(Y,X))
+	if (cave_in_bounds_fully(cave, Y,X))
 	{
 		if ((borg_grids[Y][X].feat == FEAT_FLOOR) ||
 			(borg_grids[Y][X].feat >= FEAT_TRAP_HEAD && borg_grids[Y][X].feat <= FEAT_TRAP_TAIL) ||
@@ -91,7 +91,7 @@ bool borg_los(int y1, int x1, int y2, int x2)
 
 
     /* Paranoia -- require "safe" origin */
-    if (!in_bounds_fully(y1, x1)) return (FALSE);
+    if (!cave_in_bounds_fully(cave, y1, x1)) return (FALSE);
 
 
     /* Directly South/North */
@@ -924,7 +924,7 @@ void borg_update_view(void)
     /* Scan south-east */
     for (d = 1; d <= z; d++)
     {
-		if (!in_bounds_fully(y+d, x+d)) continue;
+		if (!cave_in_bounds_fully(cave, y+d, x+d)) continue;
 
         ag = &borg_grids[y+d][x+d];
         ag->info |= BORG_XTRA;
@@ -936,7 +936,7 @@ void borg_update_view(void)
     for (d = 1; d <= z; d++)
     {
 		/* Caution */
-		if (!in_bounds_fully(y+d, x-d)) continue;
+		if (!cave_in_bounds_fully(cave, y+d, x-d)) continue;
 
 		ag = &borg_grids[y+d][x-d];
         ag->info |= BORG_XTRA;
@@ -948,7 +948,7 @@ void borg_update_view(void)
     for (d = 1; d <= z; d++)
     {
 		/* Caution */
-		if (!in_bounds_fully(y-d, x+d)) continue;
+		if (!cave_in_bounds_fully(cave, y-d, x+d)) continue;
 
 		ag = &borg_grids[y-d][x+d];
         ag->info |= BORG_XTRA;
@@ -960,7 +960,7 @@ void borg_update_view(void)
     for (d = 1; d <= z; d++)
     {
 		/* Caution */
-		if (!in_bounds_fully(y-d, x-d)) continue;
+		if (!cave_in_bounds_fully(cave, y-d, x-d)) continue;
 
 		ag = &borg_grids[y-d][x-d];
         ag->info |= BORG_XTRA;
@@ -975,7 +975,7 @@ void borg_update_view(void)
     for (d = 1; d <= full; d++)
     {
 		/* Caution */
-		if (!in_bounds_fully(y+d, x)) continue;
+		if (!cave_in_bounds_fully(cave, y+d, x)) continue;
         ag = &borg_grids[y+d][x];
         ag->info |= BORG_XTRA;
         borg_cave_view_hack(ag, y+d, x);
@@ -989,7 +989,7 @@ void borg_update_view(void)
     for (d = 1; d <= full; d++)
     {
 		/* Caution */
-		if (!in_bounds_fully(y-d, x)) continue;
+		if (!cave_in_bounds_fully(cave, y-d, x)) continue;
 
 		ag = &borg_grids[y-d][x];
         ag->info |= BORG_XTRA;
@@ -1004,7 +1004,7 @@ void borg_update_view(void)
     for (d = 1; d <= full; d++)
     {
 		/* Caution */
-		if (!in_bounds_fully(y, x+d)) continue;
+		if (!cave_in_bounds_fully(cave, y, x+d)) continue;
         ag = &borg_grids[y][x+d];
         ag->info |= BORG_XTRA;
         borg_cave_view_hack(ag, y, x+d);
@@ -1018,7 +1018,7 @@ void borg_update_view(void)
     for (d = 1; d <= full; d++)
     {
 		/* Caution */
-		if (!in_bounds_fully(y, x-d)) continue;
+		if (!cave_in_bounds_fully(cave, y, x-d)) continue;
 
 		ag = &borg_grids[y][x-d];
         ag->info |= BORG_XTRA;

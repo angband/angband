@@ -3,7 +3,7 @@
  * Purpose: Handle objects in various ways
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
- * Copyright (c) 2007-9 Andrew Sidwell, Chris Carr, Ed Graham, Erik Osheim
+ * Copyright (c) 2007-9 Andi Sidwell, Chris Carr, Ed Graham, Erik Osheim
  *
  * This work is free software; you can redistribute it and/or modify it
  * under the terms of either:
@@ -18,6 +18,7 @@
  */
 
 #include "angband.h"
+#include "attack.h"
 #include "cave.h"
 #include "cmds.h"
 #include "effects.h"
@@ -25,7 +26,10 @@
 #include "object/inventory.h"
 #include "object/tvalsval.h"
 #include "spells.h"
+#include "squelch.h"
 #include "target.h"
+#include "ui-menu.h"
+#include "ui-options.h"
 
 /*** Utility bits and bobs ***/
 
@@ -202,6 +206,7 @@ void do_cmd_inscribe(cmd_code code, cmd_arg args[])
 	object_type *o_ptr = object_from_item_idx(args[0].item);
 
 	o_ptr->note = quark_add(args[1].string);
+	string_free((void *)args[1].string);
 
 	p_ptr->notice |= (PN_COMBINE | PN_SQUELCH | PN_SORT_QUIVER);
 	p_ptr->redraw |= (PR_INVEN | PR_EQUIP);
@@ -508,13 +513,18 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 {
 	int item = args[0].item;
 	object_type *o_ptr = object_from_item_idx(item);
+	object_type *original = NULL;
 	int effect;
 	bool ident = FALSE, used = FALSE;
 	bool was_aware = object_flavor_is_aware(o_ptr);
 	int dir = 5;
 	int px = p_ptr->px, py = p_ptr->py;
-	int snd, boost, level;
-	use_type use;
+	int snd = MSG_GENERIC, boost, level;
+	enum {
+		USE_TIMEOUT,
+		USE_CHARGE,
+		USE_SINGLE
+	} use = USE_SINGLE;
 	int items_allowed = 0;
 
 	/* Determine how this item is used. */
@@ -569,7 +579,7 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 	else if (obj_is_scroll(o_ptr))
 	{
 		/* Check player can use scroll */
-		if (!player_can_read_msg())
+		if (!player_can_read(p_ptr, TRUE))
 			return;
 
 		use = USE_SINGLE;
@@ -611,9 +621,22 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 	/* Figure out effect to use */
 	effect = object_effect(o_ptr);
 
+	/* Check for unknown objects to prevent wasted player turns. */
+	if (effect == EF_IDENTIFY && !spell_identify_unknown_available()) {
+		msg("You have nothing to identify.");
+		return;
+	}
+
 	/* If the item requires a direction, get one (allow cancelling) */
 	if (obj_needs_aim(o_ptr))
 		dir = args[1].direction;
+
+	if (item >= 0 && item < INVEN_PACK) {
+		/* Create a copy so that we can remember what we are working with, in case the
+		 * inventory is changed. */
+		original = ZNEW(object_type);
+		object_copy(original, o_ptr);
+	}
 
 	/* Check for use if necessary, and execute the effect */
 	if ((use != USE_CHARGE && use != USE_TIMEOUT) || check_devices(o_ptr))
@@ -647,6 +670,15 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 
 		/* Quit if the item wasn't used and no knowledge was gained */
 		if (!used && (was_aware || !ident)) return;
+	}
+
+	if (original != NULL) {
+		/* Restore o_ptr to the new inventory slot that contains the original object. We
+		 * have to do this because object mutating functions follow; "original" is a dummy
+		 * just so that we know what we are working with. */
+		item = inventory_index_matching_object(original);
+		o_ptr = object_from_item_idx(item);
+		FREE(original);
 	}
 
 	/* If the item is a null pointer or has been wiped, be done now */
@@ -728,7 +760,7 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 	}
 	
 	/* Hack to make Glyph of Warding work properly */
-	if (cave->feat[py][px] == FEAT_GLYPH)
+	if (cave_isglyph(cave, py, px))
 	{
 		/* Push objects off the grid */
 		if (cave->o_idx[py][px]) push_object(py, px);
@@ -782,7 +814,7 @@ static void refill_lamp(object_type *j_ptr, object_type *o_ptr, int item)
 
 			/* Carry or drop */
 			if (item >= 0)
-				item = inven_carry(p_ptr, i_ptr);
+				inven_carry(p_ptr, i_ptr);
 			else
 				drop_near(cave, i_ptr, 0, p_ptr->py, p_ptr->px, FALSE);
 		}
@@ -875,7 +907,7 @@ void do_cmd_study_spell(cmd_code code, cmd_arg args[])
 	int i;
 
 	/* Check the player can study at all atm */
-	if (!player_can_study_msg())
+	if (!player_can_study(p_ptr, TRUE))
 		return;
 
 	/* Check that the player can actually learn the nominated spell. */
@@ -918,7 +950,7 @@ void do_cmd_cast(cmd_code code, cmd_arg args[])
 	const char *noun = ((p_ptr->class->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
 
 	/* Check the player can cast spells at all */
-	if (!player_can_cast_msg())
+	if (!player_can_cast(p_ptr, TRUE))
 		return;
 
 	/* Check spell is in a book they can access */
@@ -934,7 +966,13 @@ void do_cmd_cast(cmd_code code, cmd_arg args[])
 			{
 				/* Get the spell */
 				const magic_type *s_ptr = &p_ptr->class->spells.info[spell];
-				
+
+				/* Check for unknown objects to prevent wasted player turns. */
+				if (spell_is_identify(p_ptr->class->spell_book, spell) && !spell_identify_unknown_available()) {
+					msg("You have nothing to identify.");
+					return;
+				}
+
 				/* Verify "dangerous" spells */
 				if (s_ptr->smana > p_ptr->csp)
 				{
@@ -978,7 +1016,7 @@ void do_cmd_study_book(cmd_code code, cmd_arg args[])
 	const char *p = ((p_ptr->class->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
 
 	/* Check the player can study at all atm */
-	if (!player_can_study_msg())
+	if (!player_can_study(p_ptr, TRUE))
 		return;
 
 	/* Check that the player has access to the nominated spell book. */
@@ -1007,3 +1045,158 @@ void do_cmd_study_book(cmd_code code, cmd_arg args[])
 		p_ptr->energy_use = 100;	
 	}
 }
+
+
+
+enum
+{
+	IGNORE_THIS_ITEM,
+	UNIGNORE_THIS_ITEM,
+	IGNORE_THIS_FLAVOR,
+	UNIGNORE_THIS_FLAVOR,
+	IGNORE_THIS_QUALITY
+};
+
+void textui_cmd_destroy_menu(int item)
+{
+	object_type *o_ptr;
+	char out_val[160];
+
+	menu_type *m;
+	region r;
+	int selected;
+
+	o_ptr = object_from_item_idx(item);
+	if (!(o_ptr->kind))
+		return;
+
+	m = menu_dynamic_new();
+	m->selections = lower_case;
+
+	/* Basic ignore option */
+	if (!o_ptr->ignore) {
+		menu_dynamic_add(m, "This item only", IGNORE_THIS_ITEM);
+	} else {
+		menu_dynamic_add(m, "Unignore this item", UNIGNORE_THIS_ITEM);
+	}
+
+	/* Flavour-aware squelch */
+	if (squelch_tval(o_ptr->tval) &&
+			(!o_ptr->artifact || !object_flavor_is_aware(o_ptr))) {
+		bool squelched = kind_is_squelched_aware(o_ptr->kind) ||
+				kind_is_squelched_unaware(o_ptr->kind);
+
+		char tmp[70];
+		object_desc(tmp, sizeof(tmp), o_ptr, ODESC_BASE | ODESC_PLURAL);
+		if (!squelched) {
+			strnfmt(out_val, sizeof out_val, "All %s", tmp);
+			menu_dynamic_add(m, out_val, IGNORE_THIS_FLAVOR);
+		} else {
+			strnfmt(out_val, sizeof out_val, "Unignore all %s", tmp);
+			menu_dynamic_add(m, out_val, UNIGNORE_THIS_FLAVOR);
+		}
+	}
+
+	/* Quality squelching */
+	if (object_was_sensed(o_ptr) || object_was_worn(o_ptr) ||
+			object_is_known_not_artifact(o_ptr)) {
+		byte value = squelch_level_of(o_ptr);
+		int type = squelch_type_of(o_ptr);
+
+		if (object_is_jewelry(o_ptr) &&
+					squelch_level_of(o_ptr) != SQUELCH_BAD)
+			value = SQUELCH_MAX;
+
+		if (value != SQUELCH_MAX && type != TYPE_MAX) {
+			strnfmt(out_val, sizeof out_val, "All %s %s",
+					quality_values[value].name, squelch_name_for_type(type));
+
+			menu_dynamic_add(m, out_val, IGNORE_THIS_QUALITY);
+		}
+	}
+
+	/* work out display region */
+	r.width = menu_dynamic_longest_entry(m) + 3 + 2; /* +3 for tag, 2 for pad */
+	r.col = 80 - r.width;
+	r.row = 1;
+	r.page_rows = m->count;
+
+	screen_save();
+	menu_layout(m, &r);
+	region_erase_bordered(&r);
+
+	prt("(Enter to select, ESC) Ignore:", 0, 0);
+	selected = menu_dynamic_select(m);
+
+	screen_load();
+
+	if (selected == IGNORE_THIS_ITEM) {
+		cmd_insert(CMD_DESTROY);
+		cmd_set_arg_item(cmd_get_top(), 0, item);
+	} else if (selected == UNIGNORE_THIS_ITEM) {
+		o_ptr->ignore = FALSE;
+	} else if (selected == IGNORE_THIS_FLAVOR) {
+		object_squelch_flavor_of(o_ptr);
+	} else if (selected == UNIGNORE_THIS_FLAVOR) {
+		kind_squelch_clear(o_ptr->kind);
+	} else if (selected == IGNORE_THIS_QUALITY) {
+		byte value = squelch_level_of(o_ptr);
+		int type = squelch_type_of(o_ptr);
+
+		squelch_level[type] = value;
+	}
+
+	p_ptr->notice |= PN_SQUELCH;
+
+	menu_dynamic_free(m);
+}
+
+void textui_cmd_destroy(void)
+{
+	int item;
+
+	/* Get an item */
+	const char *q = "Ignore which item? ";
+	const char *s = "You have nothing to ignore.";
+	if (!get_item(&item, q, s, CMD_DESTROY, USE_INVEN | USE_EQUIP | USE_FLOOR))
+		return;
+
+	textui_cmd_destroy_menu(item);
+}
+
+void textui_cmd_toggle_ignore(void)
+{
+	p_ptr->unignoring = !p_ptr->unignoring;
+	p_ptr->notice |= PN_SQUELCH;
+	do_cmd_redraw();
+}
+
+/* Examine an object */
+void textui_obj_examine(void)
+{
+	char header[120];
+
+	textblock *tb;
+	region area = { 0, 0, 0, 0 };
+
+	object_type *o_ptr;
+	int item;
+
+	/* Select item */
+	if (!get_item(&item, "Examine which item?", "You have nothing to examine.",
+			CMD_NULL, (USE_EQUIP | USE_INVEN | USE_FLOOR | IS_HARMLESS)))
+		return;
+
+	/* Track object for object recall */
+	track_object(item);
+
+	/* Display info */
+	o_ptr = object_from_item_idx(item);
+	tb = object_info(o_ptr, OINFO_NONE);
+	object_desc(header, sizeof(header), o_ptr,
+			ODESC_PREFIX | ODESC_FULL | ODESC_CAPITAL);
+
+	textui_textblock_show(tb, area, header);
+	textblock_free(tb);
+}
+

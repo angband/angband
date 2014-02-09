@@ -52,11 +52,9 @@
  * OPTION: Create and use a hidden directory in the users home directory
  * for storing pref files and character dumps.
  */
-#ifdef SET_UID
-# ifndef PRIVATE_USER_PATH
-#  define PRIVATE_USER_PATH "~/.angband"
-# endif /* PRIVATE_USER_PATH */
-#endif /* SET_UID */
+#if defined(UNIX) && !defined(MACH_O_CARBON) && !defined(PRIVATE_USER_PATH)
+# define PRIVATE_USER_PATH "~/.angband"
+#endif
 
 
 /*

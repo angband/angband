@@ -5,7 +5,6 @@
 
 #include "externs.h"
 #include "player/player.h"
-#include "player/types.h"
 
 struct player_class *player_id2class(guid id)
 {

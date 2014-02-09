@@ -14,12 +14,12 @@ Native builds
 To build the new Cocoa front-end:
 
     cd src
-    make -f Makefile.cocoa
+    make -f Makefile.osx
 
 To build the legacy Carbon front-end (which is deprecated):
 
     cd src
-    make -f Makefile.osx
+    make -f Makefile.crb
 
 
 

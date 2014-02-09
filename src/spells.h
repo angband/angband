@@ -90,7 +90,6 @@ enum
 /** Functions **/
 
 /* spells1.c */
-s16b poly_r_idx(int r_idx);
 void teleport_away(struct monster *m, int dis);
 void teleport_player(int dis);
 void teleport_player_to(int ny, int nx);
@@ -98,10 +97,6 @@ void teleport_player_level(void);
 int gf_name_to_idx(const char *name);
 const char *gf_idx_to_name(int type);
 void take_hit(struct player *p, int dam, const char *kb_str);
-void acid_dam(int dam, const char *kb_str);
-void elec_dam(int dam, const char *kb_str);
-void fire_dam(int dam, const char *kb_str);
-void cold_dam(int dam, const char *kb_str);
 bool res_stat(int stat);
 bool apply_disenchant(int mode);
 bool project(int who, int rad, int y, int x, int dam, int typ, int flg);
@@ -126,7 +121,7 @@ extern bool remove_all_curse(void);
 extern bool restore_item(void);
 extern bool restore_level(void);
 extern bool lose_all_info(void);
-extern void set_recall(void);
+extern bool set_recall(void);
 extern bool detect_traps(bool aware);
 extern bool detect_doorstairs(bool aware);
 extern bool detect_treasure(bool aware, bool full);
@@ -139,7 +134,7 @@ extern bool detect_all(bool aware);
 extern void stair_creation(void);
 extern bool enchant(object_type *o_ptr, int n, int eflag);
 extern bool enchant_spell(int num_hit, int num_dam, int num_ac);
-extern void do_ident_item(int item, object_type *o_ptr);
+extern void do_ident_item(object_type *o_ptr);
 extern bool ident_spell(void);
 extern bool recharge(int num);
 extern bool speed_monsters(void);
@@ -151,7 +146,7 @@ extern bool turn_undead(bool aware);
 extern bool dispel_undead(int dam);
 extern bool dispel_evil(int dam);
 extern bool dispel_monsters(int dam);
-extern void aggravate_monsters(int who);
+extern void aggravate_monsters(struct monster *who);
 extern bool banishment(void);
 extern bool mass_banishment(void);
 extern bool probing(void);
@@ -191,6 +186,7 @@ extern void brand_weapon(void);
 extern bool brand_ammo(void);
 extern bool brand_bolts(void);
 extern void ring_of_power(int dir);
+extern bool spell_identify_unknown_available(void);
 
 /* x-spell.c */
 extern int get_spell_index(const object_type *o_ptr, int index);
@@ -198,5 +194,6 @@ extern const char *get_spell_name(int tval, int index);
 extern void get_spell_info(int tval, int index, char *buf, size_t len);
 extern bool cast_spell(int tval, int index, int dir);
 extern bool spell_needs_aim(int tval, int spell);
+extern bool spell_is_identify(int book, int spell);
 
 #endif /* !SPELLS_H */

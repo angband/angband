@@ -17,8 +17,10 @@
  */
 
 #include "angband.h"
+#include "dungeon.h"
 #include "files.h"
 #include "init.h"
+#include "savefile.h"
 
 /* locale junk */
 #include "locale.h"
@@ -155,29 +157,69 @@ static void init_stuff(void)
 }
 
 
+static const struct {
+	const char *name;
+	char **path;
+	bool setgid_ok;
+} change_path_values[] = {
+	{ "apex", &ANGBAND_DIR_APEX, TRUE },
+	{ "edit", &ANGBAND_DIR_EDIT, FALSE },
+	{ "file", &ANGBAND_DIR_FILE, FALSE },
+	{ "help", &ANGBAND_DIR_HELP, TRUE },
+	{ "info", &ANGBAND_DIR_INFO, TRUE },
+	{ "pref", &ANGBAND_DIR_PREF, TRUE },
+	{ "xtra", &ANGBAND_DIR_XTRA, TRUE },
+	{ "user", &ANGBAND_DIR_USER, TRUE },
+	{ "save", &ANGBAND_DIR_SAVE, FALSE },
+};
 
 /*
- * Handle a "-d<what>=<path>" option
+ * Handle a "-d<dir>=<path>" option.
  *
- * The "<what>" can be any string starting with the same letter as the
- * name of a subdirectory of the "lib" folder (i.e. "i" or "info").
+ * Sets any of angband's special directories to <path>.
  *
  * The "<path>" can be any legal path for the given system, and should
  * not end in any special path separator (i.e. "/tmp" or "~/.ang-info").
  */
 static void change_path(const char *info)
 {
-	if (!info || !info[0])
-		quit_fmt("Try '-d<path>'.", info);
+	char *info_copy = NULL;
+	char *path = NULL;
+	char *dir = NULL;
+	unsigned int i = 0;
+	char dirpath[512];
 
-	string_free(ANGBAND_DIR_USER);
-	ANGBAND_DIR_USER = string_make(info);
+	if (!info || !info[0])
+		quit_fmt("Try '-d<dir>=<path>'.", info);
+
+	info_copy = string_make(info);
+	path = strtok(info_copy, "=");
+	dir = strtok(NULL, "=");
+
+	for (i = 0; i < N_ELEMENTS(change_path_values); i++) {
+		if (my_stricmp(path, change_path_values[i].name) == 0) {
+#ifdef SETGID
+			if (!change_path_values[i].setgid_ok)
+				quit_fmt("Can't redefine path to %s dir on multiuser setup", path);
+#endif
+
+			string_free(*change_path_values[i].path);
+			*change_path_values[i].path = string_make(dir);
+
+			/* the directory may not exist and may need to be created. */
+			path_build(dirpath, sizeof(dirpath), dir, "");
+			if (!dir_create(dirpath)) quit_fmt("Cannot create '%s'", dirpath);
+			return;
+		}
+	}
+
+	quit_fmt("Unrecognised -d paramater %s", path);
 }
 
 
 
 
-#ifdef SET_UID
+#ifdef UNIX
 
 /*
  * Find a default user name from the system.
@@ -197,7 +239,94 @@ static void user_name(char *buf, size_t len, int id)
 	my_strcap(buf);
 }
 
-#endif /* SET_UID */
+#endif /* UNIX */
+
+
+/**
+ * List all savefiles this player can access.
+ */
+static void list_saves(void)
+{
+	char fname[256];
+	ang_dir *d = my_dopen(ANGBAND_DIR_SAVE);
+
+#ifdef SETGID
+	char uid[10];
+	strnfmt(uid, sizeof(uid), "%d.", player_uid);
+#endif
+
+	if (!d) quit_fmt("Can't open savefile directory");
+
+	printf("Savefiles you can use are:\n");
+
+	while (my_dread(d, fname, sizeof fname)) {
+		char path[1024];
+		const char *desc;
+
+#ifdef SETGID
+		/* Check that the savefile name begins with the user'd ID */
+		if (strncmp(fname, uid, strlen(uid)))
+			continue;
+#endif
+
+		path_build(path, sizeof path, ANGBAND_DIR_SAVE, fname);
+		desc = savefile_get_description(path);
+
+		if (desc)
+			printf(" %-15s  %s\n", fname, desc);
+		else
+			printf(" %-15s\n", fname);
+	}
+
+	my_dclose(d);
+
+	printf("\nUse angband -u<name> to use savefile <name>.\n");
+}
+
+
+#ifndef SETGID
+
+/*
+ * Transition non-setgid installs away from using uid.name style savefile
+ * names.
+ */
+static void transition_savefile_names(void)
+{
+	char fname[256];
+	char uid[10];
+
+	ang_dir *d = my_dopen(ANGBAND_DIR_SAVE);
+	if (!d) return;
+
+	strnfmt(uid, sizeof(uid), "%d.", player_uid);
+
+	while (my_dread(d, fname, sizeof fname)) {
+		char *newname = fname+strlen(uid);
+		char oldpath[1024];
+		char newpath[1024];
+
+		/* Check that the savefile name begins with the user'd ID */
+		if (strncmp(fname, uid, strlen(uid)) != 0)
+			continue;
+
+		/* Sanity check - can't rename "1000." to "" */
+		if (!newname[0])
+			continue;
+
+		/* Move the file */
+		path_build(oldpath, sizeof oldpath, ANGBAND_DIR_SAVE, fname);
+		path_build(newpath, sizeof newpath, ANGBAND_DIR_SAVE, newname);
+
+		printf("Moving %s to %s\n", oldpath, newpath);
+		file_move(oldpath, newpath);
+	}
+
+	my_dclose(d);
+}
+
+#endif /* SETGID */
+
+
 
 static bool new_game;
 
@@ -265,7 +394,7 @@ int main(int argc, char *argv[])
 	argv0 = argv[0];
 
 
-#ifdef SET_UID
+#ifdef UNIX
 
 	/* Default permissions on files */
 	(void)umask(022);
@@ -273,15 +402,23 @@ int main(int argc, char *argv[])
 	/* Get the user id */
 	player_uid = getuid();
 
+#endif /* UNIX */
+
+#ifdef SETGID
+
 	/* Save the effective GID for later recall */
 	player_egid = getegid();
 
-#endif /* SET_UID */
+#endif /* UNIX */
 
 
 	/* Drop permissions */
 	safe_setuid_drop();
 
+	/* Get the file paths */
+	/* paths may be overriden by -d options, so this has to occur *before* 
+	   processing command line args */
+	init_stuff();
 
 	/* Process the command line arguments */
 	for (i = 1; args && (i < argc); i++)
@@ -294,6 +431,10 @@ int main(int argc, char *argv[])
 		/* Analyze option */
 		switch (*arg++)
 		{
+			case 'l':
+				list_saves();
+				exit(0);
+
 			case 'n':
 				new_game = TRUE;
 				break;
@@ -313,12 +454,27 @@ int main(int argc, char *argv[])
 				if (*arg) arg_graphics = atoi(arg);
 				break;
 
-			case 'u':
-				if (!*arg) goto usage;
+			case 'u': {
 
-				/* Get the savefile name */
-				my_strcpy(op_ptr->full_name, arg, sizeof(op_ptr->full_name));
+				if (!*arg) goto usage;
+				my_strcpy(op_ptr->full_name, arg, sizeof op_ptr->full_name);
+
+				/* The difference here is because on setgid we have to be
+				 * careful to only let the player have savefiles stored in
+				 * the central save directory.  Sanitising input using
+				 * player_safe_name() removes anything like that.
+				 *
+				 * But if the player is running with per-user saves, they
+				 * can do whatever the hell they want.
+				 */
+#ifdef SETGID
+				savefile_set_name(player_safe_name(p_ptr, FALSE));
+#else
+				savefile_set_name(arg);
+#endif /* SETGID */
+
 				continue;
+			}
 
 			case 'm':
 				if (!*arg) goto usage;
@@ -349,12 +505,20 @@ int main(int argc, char *argv[])
 			usage:
 				puts("Usage: angband [options] [-- subopts]");
 				puts("  -n             Start a new character (WARNING: overwrites default savefile without -u)");
+				puts("  -l             Lists all savefiles you can play");
 				puts("  -w             Resurrect dead character (marks savefile)");
 				puts("  -r             Rebalance monsters");
 				puts("  -g             Request graphics mode");
 				puts("  -x<opt>        Debug options; see -xhelp");
 				puts("  -u<who>        Use your <who> savefile");
-				puts("  -d<path>       Store pref files and screendumps in <path>");
+				puts("  -d<dir>=<path> Override a specific directory with <path>. <path> can be:");
+				for (i = 0; i < (int)N_ELEMENTS(change_path_values); i++) {
+#ifdef SETGID
+					if (!change_path_values[i].setgid_ok) continue;
+#endif
+					printf("    %s (default is %s)\n", change_path_values[i].name, *change_path_values[i].path);
+				}
+				puts("                 Multiple -d options are allowed.");
 				puts("  -s<mod>        Use sound module <sys>:");
 				for (i = 0; i < (int)N_ELEMENTS(sound_modules); i++)
 					printf("     %s   %s\n", sound_modules[i].name,
@@ -371,6 +535,11 @@ int main(int argc, char *argv[])
 		}
 		if (*arg) goto usage;
 	}
+
+#ifndef SETGID
+	/* Transition from 3.4 to 3.5 - rename savefiles with uid at the beginning */
+	transition_savefile_names();
+#endif
 
 	/* Hack -- Forget standard args */
 	if (args)
@@ -392,9 +561,6 @@ int main(int argc, char *argv[])
 			quit("Angband requires UTF-8 support");
 	}
 
-	/* Get the file paths */
-	init_stuff();
-
 	/* Try the modules in the order specified by modules[] */
 	for (i = 0; i < (int)N_ELEMENTS(modules); i++)
 	{
@@ -413,21 +579,20 @@ int main(int argc, char *argv[])
 	/* Make sure we have a display! */
 	if (!done) quit("Unable to prepare any 'display module'!");
 
-#ifdef SET_UID
+#ifdef UNIX
 
 	/* Get the "user name" as a default player name, unless set with -u switch */
-	if (!op_ptr->full_name[0])
-	{
+	if (!op_ptr->full_name[0]) {
 		user_name(op_ptr->full_name, sizeof(op_ptr->full_name), player_uid);
+
+		/* Set the savefile to load */
+		savefile_set_name(player_safe_name(p_ptr, FALSE));
 	}
 
 	/* Create any missing directories */
 	create_needed_dirs();
 
-#endif /* SET_UID */
-
-	/* Process the player name */
-	process_player_name(TRUE);
+#endif /* UNIX */
 
 	/* Try the modules in the order specified by sound_modules[] */
 	for (i = 0; i < (int)N_ELEMENTS(sound_modules); i++)

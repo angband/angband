@@ -616,7 +616,7 @@ static int borg_guess_race(byte a, wchar_t c, bool multi, int y, int x)
     m_ptr= cave_monster(cave, cave->m_idx[y][x]);
 
     /* Actual monsters */
-    return (m_ptr->r_idx);
+    return (m_ptr->race->ridx);
 
 #if 0
     /* If I cannot locate it, then use the old routine to id the monster */
@@ -679,10 +679,6 @@ static int borg_guess_race(byte a, wchar_t c, bool multi, int y, int x)
 
         /* Penalize "depth miss" */
         s = s - ABS(r_ptr->level - borg_skill[BI_CDEPTH]);
-
-
-        /* Hack -- Reward group monsters */
-        if (r_ptr->flags1 & (RF1_FRIEND | RF1_FRIENDS)) s = s + 5;
 
         /* Hack -- Reward multiplying monsters */
         if (rf_has(r_ptr->flags, RF_MULTIPLY)) s = s + 10;
@@ -894,7 +890,7 @@ static void borg_fear_grid(char *who, int y, int x, int k)  /* 8-8, this was uin
 	if (borg_morgoth_position || borg_as_position) return;
 
 	/* Do not add fear in a vault -- Cheating the cave info */
-	if (cave->info[y][x] & CAVE_ICKY) return;
+	if (cave_isvault(cave, y, x)) return;
 
 	/* Access the grid info */
 	ag = &borg_grids[y][x];
@@ -962,7 +958,7 @@ static void borg_fear_regional(char *who, int y, int x, int k, bool seen_guy) /*
     int x0, y0, x1, x2, y1, y2;
 
 	/* Do not add fear in a vault -- Cheating the cave info */
-  	if (cave->info[y][x] & CAVE_ICKY) return;
+  	if (cave_isvault(cave, y, x)) return;
 
     /* Messages */
     if (seen_guy)
@@ -1515,7 +1511,7 @@ static void borg_follow_kill(int i)
         y = oy + dy;
 
 		/* legal */
-		if (!in_bounds_fully(y,x)) continue;
+		if (!cave_in_bounds_fully(cave, y,x)) continue;
 
 		/* Access the grid */
         ag = &borg_grids[y][x];
@@ -3231,7 +3227,7 @@ static void borg_update_map(void)
                     }
 
 					/* Handle Glowing floors */
-                    else if (g.lighting == FEAT_LIGHTING_BRIGHT)
+                    else if (g.lighting == FEAT_LIGHTING_LIT)
 					{
 							/* Perma Glowing Grid */
 							ag->info |= BORG_GLOW;
@@ -3240,7 +3236,7 @@ static void borg_update_map(void)
 							ag->info &= ~BORG_DARK;
 					}
 
-                    /* torch-lit grids */
+                    /* torch-lit or line of sight grids */
                     else
                     {
 						ag->info |= BORG_LIGHT;
@@ -3521,7 +3517,7 @@ static void borg_update_map(void)
 				{
 					monster_type *m_ptr = cave_monster(cave, g.m_idx);
 					wank->t_a = m_ptr->attr;
-					wank->t_c = r_info[m_ptr->r_idx].d_char;
+					wank->t_c = r_info[m_ptr->race->ridx].d_char;
 				}
 				else
 				{
@@ -4739,7 +4735,7 @@ void borg_update(void)
         int x = c_x + borg_ddx_ddd[j];
 
 		/* Stay in the bounds */
-		if (!in_bounds(y, x))
+		if (!cave_in_bounds(cave, y, x))
 		{
 			floor_grid++;
 			continue;
@@ -5101,7 +5097,7 @@ void borg_update(void)
 	            y = kill->y + ddy_ddd[ii];
 
 				/* Legal grid */
-				if (!in_bounds_fully(y,x)) continue;
+				if (!cave_in_bounds_fully(cave, y,x)) continue;
 
 				/* Access the grid */
 	            ag = &borg_grids[y][x];

@@ -92,7 +92,7 @@ static void wiz_gf_demo(void)
  * This is a nice utility function; it determines if a (NULL-terminated)
  * string consists of only digits (starting with a non-zero digit).
  */
-s16b get_idx_from_name(char *s)
+static s16b get_idx_from_name(char *s)
 {
 	char *endptr = NULL;
 	long l = strtol(s, &endptr, 10);
@@ -121,7 +121,7 @@ static void do_cmd_wiz_hack_ben(void)
 			{
 				byte a = TERM_RED;
 
-				if (!in_bounds_fully(y, x)) continue;
+				if (!cave_in_bounds_fully(cave, y, x)) continue;
 
 				/* Display proper cost */
 				if (cave->cost[y][x] != i) continue;
@@ -133,7 +133,7 @@ static void do_cmd_wiz_hack_ben(void)
 				/* Display player/floors/walls */
 				if ((y == py) && (x == px))
 					print_rel(L'@', a, y, x);
-				else if (cave_floor_bold(y, x))
+				else if (cave_ispassable(cave, y, x))
 					print_rel(L'*', a, y, x);
 				else
 					print_rel(L'#', a, y, x);
@@ -463,7 +463,7 @@ static void wiz_display_item(const object_type *o_ptr, bool all)
 static const region wiz_create_item_area = { 0, 0, 0, 0 };
 
 /** Object kind selection */
-void wiz_create_item_subdisplay(menu_type *m, int oid, bool cursor,
+static void wiz_create_item_subdisplay(menu_type *m, int oid, bool cursor,
 		int row, int col, int width)
 {
 	object_kind **choices = menu_priv(m);
@@ -473,7 +473,7 @@ void wiz_create_item_subdisplay(menu_type *m, int oid, bool cursor,
 	c_prt(curs_attrs[CURS_KNOWN][0 != cursor], buf, row, col);
 }
 
-bool wiz_create_item_subaction(menu_type *m, const ui_event *e, int oid)
+static bool wiz_create_item_subaction(menu_type *m, const ui_event *e, int oid)
 {
 	object_kind **choices = menu_priv(m);
 	object_kind *kind = choices[oid];
@@ -492,7 +492,7 @@ bool wiz_create_item_subaction(menu_type *m, const ui_event *e, int oid)
 	object_prep(i_ptr, kind, p_ptr->depth, RANDOMISE);
 
 	/* Apply magic (no messages, no artifacts) */
-	apply_magic(i_ptr, p_ptr->depth, FALSE, FALSE, FALSE);
+	apply_magic(i_ptr, p_ptr->depth, FALSE, FALSE, FALSE, FALSE);
 
 	/* Mark as cheat, and where created */
 	i_ptr->origin = ORIGIN_CHEAT;
@@ -507,7 +507,7 @@ bool wiz_create_item_subaction(menu_type *m, const ui_event *e, int oid)
 	return FALSE;
 }
 
-menu_iter wiz_create_item_submenu =
+static menu_iter wiz_create_item_submenu =
 {
 	NULL,
 	NULL,
@@ -721,21 +721,21 @@ static void wiz_reroll_item(object_type *o_ptr)
 		else if (ch.code == 'n' || ch.code == 'N')
 		{
 			object_prep(i_ptr, o_ptr->kind, p_ptr->depth, RANDOMISE);
-			apply_magic(i_ptr, p_ptr->depth, FALSE, FALSE, FALSE);
+			apply_magic(i_ptr, p_ptr->depth, FALSE, FALSE, FALSE, FALSE);
 		}
 
 		/* Apply good magic, but first clear object */
 		else if (ch.code == 'g' || ch.code == 'G')
 		{
 			object_prep(i_ptr, o_ptr->kind, p_ptr->depth, RANDOMISE);
-			apply_magic(i_ptr, p_ptr->depth, FALSE, TRUE, FALSE);
+			apply_magic(i_ptr, p_ptr->depth, FALSE, TRUE, FALSE, FALSE);
 		}
 
 		/* Apply great magic, but first clear object */
 		else if (ch.code == 'e' || ch.code == 'E')
 		{
 			object_prep(i_ptr, o_ptr->kind, p_ptr->depth, RANDOMISE);
-			apply_magic(i_ptr, p_ptr->depth, FALSE, TRUE, TRUE);
+			apply_magic(i_ptr, p_ptr->depth, FALSE, TRUE, TRUE, FALSE);
 		}
 	}
 
@@ -881,7 +881,7 @@ static void wiz_statistics(object_type *o_ptr, int level)
 			object_wipe(i_ptr);
 
 			/* Create an object */
-			make_object(cave, i_ptr, level, good, great, NULL);
+			make_object(cave, i_ptr, level, good, great, FALSE, NULL, 0);
 
 			/* Allow multiple artifacts, because breaking the game is fine here */
 			if (o_ptr->artifact) o_ptr->artifact->created = FALSE;
@@ -1191,7 +1191,6 @@ static void do_cmd_wiz_cure_all(void)
 	(void)res_stat(A_WIS);
 	(void)res_stat(A_CON);
 	(void)res_stat(A_DEX);
-	(void)res_stat(A_CHR);
 
 	/* Restore the level */
 	(void)restore_level();
@@ -1232,37 +1231,34 @@ static void do_cmd_wiz_cure_all(void)
  */
 static void do_cmd_wiz_jump(void)
 {
-	/* Ask for level */
-	if (p_ptr->command_arg <= 0)
-	{
-		char ppp[80];
+	int depth;
 
-		char tmp_val[160];
+	char ppp[80];
+	char tmp_val[160];
 
-		/* Prompt */
-		strnfmt(ppp, sizeof(ppp), "Jump to level (0-%d): ", MAX_DEPTH-1);
+	/* Prompt */
+	strnfmt(ppp, sizeof(ppp), "Jump to level (0-%d): ", MAX_DEPTH-1);
 
-		/* Default */
-		strnfmt(tmp_val, sizeof(tmp_val), "%d", p_ptr->depth);
+	/* Default */
+	strnfmt(tmp_val, sizeof(tmp_val), "%d", p_ptr->depth);
 
-		/* Ask for a level */
-		if (!get_string(ppp, tmp_val, 11)) return;
+	/* Ask for a level */
+	if (!get_string(ppp, tmp_val, 11)) return;
 
-		/* Extract request */
-		p_ptr->command_arg = atoi(tmp_val);
-	}
+	/* Extract request */
+	depth = atoi(tmp_val);
 
 	/* Paranoia */
-	if (p_ptr->command_arg < 0) p_ptr->command_arg = 0;
+	if (depth < 0) depth = 0;
 
 	/* Paranoia */
-	if (p_ptr->command_arg > MAX_DEPTH - 1) p_ptr->command_arg = MAX_DEPTH - 1;
+	if (depth > MAX_DEPTH - 1) depth = MAX_DEPTH - 1;
 
 	/* Accept request */
-	msg("You jump to dungeon level %d.", p_ptr->command_arg);
+	msg("You jump to dungeon level %d.", depth);
 
 	/* New depth */
-	p_ptr->depth = p_ptr->command_arg;
+	p_ptr->depth = depth;
 
 	/* Leaving */
 	p_ptr->leaving = TRUE;
@@ -1272,7 +1268,7 @@ static void do_cmd_wiz_jump(void)
 /*
  * Become aware of a lot of objects
  */
-static void do_cmd_wiz_learn(void)
+static void do_cmd_wiz_learn(int lev)
 {
 	int i;
 
@@ -1287,7 +1283,7 @@ static void do_cmd_wiz_learn(void)
 		if (!k_ptr || !k_ptr->name) continue;
 
 		/* Induce awareness */
-		if (k_ptr->level <= p_ptr->command_arg)
+		if (k_ptr->level <= lev)
 		{
 			/* Get local object */
 			i_ptr = &object_type_body;
@@ -1371,7 +1367,7 @@ static void do_cmd_wiz_summon(int num)
  *
  * This function is rather dangerous XXX XXX XXX
  */
-static void do_cmd_wiz_named(int r_idx, bool slp)
+static void do_cmd_wiz_named(monster_race *r, bool slp)
 {
 	int py = p_ptr->py;
 	int px = p_ptr->px;
@@ -1379,21 +1375,20 @@ static void do_cmd_wiz_named(int r_idx, bool slp)
 	int i, x, y;
 
 	/* Paranoia */
-	if (!r_idx) return;
-	if (r_idx >= z_info->r_max-1) return;
+	assert(r);
 
 	/* Try 10 times */
 	for (i = 0; i < 10; i++) {
 		int d = 1;
 
 		/* Pick a location */
-		scatter(&y, &x, py, px, d, 0);
+		scatter(&y, &x, py, px, d, TRUE);
 
 		/* Require empty grids */
-		if (!cave_empty_bold(y, x)) continue;
+		if (!cave_isempty(cave, y, x)) continue;
 
 		/* Place it (allow groups) */
-		if (place_new_monster(cave, y, x, r_idx, slp, TRUE, ORIGIN_DROP_WIZARD)) break;
+		if (place_new_monster(cave, y, x, r, slp, TRUE, ORIGIN_DROP_WIZARD)) break;
 	}
 }
 
@@ -1412,7 +1407,7 @@ static void do_cmd_wiz_zap(int d)
 		monster_type *m_ptr = cave_monster(cave, i);
 
 		/* Skip dead monsters */
-		if (!m_ptr->r_idx) continue;
+		if (!m_ptr->race) continue;
 
 		/* Skip distant monsters */
 		if (m_ptr->cdis > d) continue;
@@ -1459,10 +1454,10 @@ static void do_cmd_wiz_query(void)
 		case 'm': mask |= (CAVE_MARK); break;
 		case 'g': mask |= (CAVE_GLOW); break;
 		case 'r': mask |= (CAVE_ROOM); break;
-		case 'i': mask |= (CAVE_ICKY); break;
+		case 'i': mask |= (CAVE_VAULT); break;
 		case 's': mask |= (CAVE_SEEN); break;
 		case 'v': mask |= (CAVE_VIEW); break;
-		case 't': mask |= (CAVE_TEMP); break;
+		case 't': mask |= (CAVE_WASSEEN); break;
 		case 'w': mask |= (CAVE_WALL); break;
 	}
 
@@ -1473,7 +1468,7 @@ static void do_cmd_wiz_query(void)
 		{
 			byte a = TERM_RED;
 
-			if (!in_bounds_fully(y, x)) continue;
+			if (!cave_in_bounds_fully(cave, y, x)) continue;
 
 			/* Given mask, show only those grids */
 			if (mask && !(cave->info[y][x] & mask)) continue;
@@ -1482,20 +1477,23 @@ static void do_cmd_wiz_query(void)
 			if (!mask && (cave->info[y][x] & (CAVE_MARK))) continue;
 
 			/* Color */
-			if (cave_floor_bold(y, x)) a = TERM_YELLOW;
+			if (cave_ispassable(cave, y, x)) a = TERM_YELLOW;
 
 			/* Display player/floors/walls */
 			if ((y == py) && (x == px))
 				print_rel(L'@', a, y, x);
-			else if (cave_floor_bold(y, x))
+			else if (cave_ispassable(cave, y, x))
 				print_rel(L'*', a, y, x);
 			else
 				print_rel(L'#', a, y, x);
 		}
 	}
 
+	Term_redraw();
+
 	/* Get keypress */
 	msg("Press any key.");
+	inkey_ex();
 	message_flush();
 
 	/* Redraw map */
@@ -1523,7 +1521,7 @@ static void wiz_test_kind(int tval)
 		object_prep(i_ptr, kind, p_ptr->depth, RANDOMISE);
 
 		/* Apply magic (no messages, no artifacts) */
-		apply_magic(i_ptr, p_ptr->depth, FALSE, FALSE, FALSE);
+		apply_magic(i_ptr, p_ptr->depth, FALSE, FALSE, FALSE, FALSE);
 
 		/* Mark as cheat, and where created */
 		i_ptr->origin = ORIGIN_CHEAT;
@@ -1594,8 +1592,6 @@ static void do_cmd_wiz_advance(void)
 
 /*
  * Ask for and parse a "debug command"
- *
- * The "p_ptr->command_arg" may have been set.
  */
 void do_cmd_debug(void)
 {
@@ -1603,8 +1599,6 @@ void do_cmd_debug(void)
 	int px = p_ptr->px;
 
 	struct keypress cmd;
-
-	const monster_race *r_ptr;
 
 
 	/* Get a "debug command" */
@@ -1671,41 +1665,35 @@ void do_cmd_debug(void)
 		/* Create an artifact */
 		case 'C':
 		{
-			if (p_ptr->command_arg > 0 && p_ptr->command_arg < z_info->a_max)
+			char name[80] = "";
+			int a_idx = -1;
+
+			/* Avoid the prompt getting in the way */
+			screen_save();
+
+			/* Prompt */
+			prt("Create which artifact? ", 0, 0);
+
+			/* Get the name */
+			if (askfor_aux(name, sizeof(name), NULL))
 			{
-				wiz_create_artifact(p_ptr->command_arg);
+				/* See if an a_idx was entered */
+				a_idx = get_idx_from_name(name);
+
+				/* If not, find the artifact with that name */
+				if (a_idx < 1)
+					a_idx = lookup_artifact_name(name); 
+
+				/* Did we find a valid artifact? */
+				if (a_idx != -1 && a_idx < z_info->a_max)
+					wiz_create_artifact(a_idx);
+				else
+					msg("No artifact found.");
 			}
-			else
-			{
-				char name[80] = "";
-				int a_idx = -1;
-
-				/* Avoid the prompt getting in the way */
-				screen_save();
-
-				/* Prompt */
-				prt("Create which artifact? ", 0, 0);
-
-				/* Get the name */
-				if (askfor_aux(name, sizeof(name), NULL))
-				{
-					/* See if an a_idx was entered */
-					a_idx = get_idx_from_name(name);
-					
-					/* If not, find the artifact with that name */
-					if (a_idx < 1)
-						a_idx = lookup_artifact_name(name); 
-					
-					/* Did we find a valid artifact? */
-					if (a_idx != -1 && a_idx < z_info->a_max)
-						wiz_create_artifact(a_idx);
-					else
-						msg("No artifact found.");
-				}
 				
-				/* Reload the screen */
-				screen_load();
-			}
+			/* Reload the screen */
+			screen_load();
+
 			break;
 		}
 
@@ -1739,8 +1727,12 @@ void do_cmd_debug(void)
 		/* Good Objects */
 		case 'g':
 		{
-			if (p_ptr->command_arg <= 0) p_ptr->command_arg = 1;
-			acquirement(py, px, p_ptr->depth, p_ptr->command_arg, FALSE);
+			int n;
+			screen_save();
+			n= get_quantity("How many good objects? ", 40);
+			screen_load();
+			if (n < 1) n = 1;
+			acquirement(py, px, p_ptr->depth, n, FALSE);
 			break;
 		}
 
@@ -1757,6 +1749,13 @@ void do_cmd_debug(void)
 			do_cmd_rerate();
 			break;
 		}
+        
+        /* Hit all monsters in LOS */
+        case 'H':
+        {
+            dispel_monsters(10000);
+            break;
+        }
 
 		/* Identify */
 		case 'i':
@@ -1775,7 +1774,7 @@ void do_cmd_debug(void)
 		/* Learn about objects */
 		case 'l':
 		{
-			do_cmd_wiz_learn();
+			do_cmd_wiz_learn(100);
 			break;
 		}
 
@@ -1791,41 +1790,34 @@ void do_cmd_debug(void)
 		/* Summon Named Monster */
 		case 'n':
 		{
-			s16b r_idx = 0; 
+			monster_race *r = NULL;
+			char name[80] = "";
 
-			if (p_ptr->command_arg > 0)
+			/* Avoid the prompt getting in the way */
+			screen_save();
+
+			/* Prompt */
+			prt("Summon which monster? ", 0, 0);
+
+			/* Get the name */
+			if (askfor_aux(name, sizeof(name), NULL))
 			{
-				r_idx = p_ptr->command_arg;
-			}
-			else
-			{
-				char name[80] = "";
-
-				/* Avoid the prompt getting in the way */
-				screen_save();
-
-				/* Prompt */
-				prt("Summon which monster? ", 0, 0);
-
-				/* Get the name */
-				if (askfor_aux(name, sizeof(name), NULL))
-				{
-					/* See if a r_idx was entered */
-					r_idx = get_idx_from_name(name);
-					
+				/* See if a r_idx was entered */
+				int r_idx = get_idx_from_name(name);
+				if (r_idx)
+					r = &r_info[r_idx];
+				else
 					/* If not, find the monster with that name */
-					if (r_idx < 1)
-						r_idx = lookup_monster(name); 
+					r = lookup_monster(name); 
 					
-					p_ptr->redraw |= (PR_MAP | PR_MONLIST);
-
-					/* Reload the screen */
-					screen_load();
-				}
+				p_ptr->redraw |= (PR_MAP | PR_MONLIST);
 			}
 
-			if (r_idx > 0)
-				do_cmd_wiz_named(r_idx, TRUE);
+			/* Reload the screen */
+			screen_load();
+
+			if (r)
+				do_cmd_wiz_named(r, TRUE);
 			else
 				msg("No monster found.");
 			
@@ -1863,78 +1855,65 @@ void do_cmd_debug(void)
 		/* Get full recall for a monster */
 		case 'r':
 		{
-			s16b r_idx = 0; 
+			const monster_race *r_ptr = NULL;
 
-			if (p_ptr->command_arg > 0)
+			struct keypress sym;
+			const char *prompt =
+				"Full recall for [a]ll monsters or [s]pecific monster? ";
+
+			if (!get_com(prompt, &sym)) return;
+
+			if (sym.code == 'a' || sym.code == 'A')
 			{
-				r_idx = p_ptr->command_arg;
+				int i;
+				for (i = 0; i < z_info->r_max; i++)
+					cheat_monster_lore(&r_info[i], &l_list[i]);
+				msg("Done.");
 			}
-			else
+			else if (sym.code == 's' || sym.code == 'S')
 			{
-				struct keypress sym;
-				const char *prompt =
-					"Full recall for [a]ll monsters or [s]pecific monster? ";
-
-				if (!get_com(prompt, &sym)) return;
-
-				if (sym.code == 'a' || sym.code == 'A')
-				{
-					int i;
-					for (i = 1; i < z_info->r_max; i++)
-					{
-						r_ptr = &r_info[i];
-						cheat_monster_lore(r_ptr, &l_list[i]);
-					}
-					break;
-				}
-				else if (sym.code == 's' || sym.code == 'S')
-				{
-					char name[80] = "";
+				char name[80] = "";
 					
-					/* Avoid the prompt getting in the way */
-					screen_save();
+				/* Avoid the prompt getting in the way */
+				screen_save();
 
-					/* Prompt */
-					prt("Which monster? ", 0, 0);
+				/* Prompt */
+				prt("Which monster? ", 0, 0);
 
-					/* Get the name */
-					if (askfor_aux(name, sizeof(name), NULL))
-					{
-						/* See if a r_idx was entered */
-						r_idx = get_idx_from_name(name);
-						
+				/* Get the name */
+				if (askfor_aux(name, sizeof(name), NULL))
+				{
+					/* See if a r_idx was entered */
+					int r_idx = get_idx_from_name(name);
+					if (r_idx)
+						r_ptr = &r_info[r_idx];
+					else
 						/* If not, find the monster with that name */
-						if (r_idx < 1)
-							r_idx = lookup_monster(name); 
-					}
-					
-					/* Reload the screen */
-					screen_load();
+						r_ptr = lookup_monster(name); 
 				}
+
+				/* Reload the screen */
+				screen_load();
+
+				/* Did we find a valid monster? */
+				if (r_ptr)
+					cheat_monster_lore(r_ptr, get_lore(r_ptr));
 				else
-				{
-					/* Assume user aborts */
-					break;
-				}
+					msg("No monster found.");
 			}
 
-			/* Did we find a valid monster? */
-			if (r_idx > 0)
-			{
-				r_ptr = &r_info[r_idx];
-				cheat_monster_lore(r_ptr, &l_list[r_idx]);
-			}
-			else
-				msg("No monster found.");
-	
 			break;
 		}
 
 		/* Summon Random Monster(s) */
 		case 's':
 		{
-			if (p_ptr->command_arg <= 0) p_ptr->command_arg = 1;
-			do_cmd_wiz_summon(p_ptr->command_arg);
+			int n;
+			screen_save();
+			n = get_quantity("How many monsters? ", 40);
+			screen_load();
+			if (n < 1) n = 1;
+			do_cmd_wiz_summon(n);
 			break;
 		}
 		
@@ -1955,12 +1934,12 @@ void do_cmd_debug(void)
 		/* Create a trap */
 		case 'T':
 		{
-			if (cave->feat[p_ptr->py][p_ptr->px] != FEAT_FLOOR) 
+			if (!cave_isfloor(cave, p_ptr->py, p_ptr->px))
 				msg("You can't place a trap there!");
 			else if (p_ptr->depth == 0)
 				msg("You can't place a trap in the town!");
 			else
-				cave_set_feat(cave, p_ptr->py, p_ptr->px, FEAT_INVIS);
+				cave_add_trap(cave, p_ptr->py, p_ptr->px);
 			break;
 		}
 
@@ -1974,14 +1953,23 @@ void do_cmd_debug(void)
 		/* Very Good Objects */
 		case 'v':
 		{
-			if (p_ptr->command_arg <= 0) p_ptr->command_arg = 1;
-			acquirement(py, px, p_ptr->depth, p_ptr->command_arg, TRUE);
+			int n;
+			screen_save();
+			n = get_quantity("How many great objects? ", 40);
+			screen_load();
+			if (n < 1) n = 1;
+			acquirement(py, px, p_ptr->depth, n, TRUE);
 			break;
 		}
 
 		case 'V':
 		{
-			wiz_test_kind(p_ptr->command_arg);
+			int n;
+			screen_save();
+			n = get_quantity("Create all items of what tval? ", 255);
+			screen_load();
+			if (n)
+				wiz_test_kind(n);
 			break;
 		}
 
@@ -1995,69 +1983,53 @@ void do_cmd_debug(void)
 		/* Wipe recall for a monster */
 		case 'W':
 		{
+			const monster_race *r_ptr = NULL;
 			s16b r_idx = 0; 
 
-			if (p_ptr->command_arg > 0)
+			struct keypress sym;
+			const char *prompt =
+				"Wipe recall for [a]ll monsters or [s]pecific monster? ";
+
+			if (!get_com(prompt, &sym)) return;
+
+			if (sym.code == 'a' || sym.code == 'A')
 			{
-				r_idx = p_ptr->command_arg;
+				int i;
+				for (i = 0; i < z_info->r_max; i++)
+					wipe_monster_lore(&r_info[i], &l_list[i]);
+				msg("Done.");
 			}
-			else
+			else if (sym.code == 's' || sym.code == 'S')
 			{
-				struct keypress sym;
-				const char *prompt =
-					"Wipe recall for [a]ll monsters or [s]pecific monster? ";
+				char name[80] = "";
 
-				if (!get_com(prompt, &sym)) return;
+				/* Avoid the prompt getting in the way */
+				screen_save();
 
-				if (sym.code == 'a' || sym.code == 'A')
+				/* Prompt */
+				prt("Which monster? ", 0, 0);
+
+				/* Get the name */
+				if (askfor_aux(name, sizeof(name), NULL))
 				{
-					int i;
-					for (i = 1; i < z_info->r_max; i++)
-					{
-						r_ptr = &r_info[i];
-						wipe_monster_lore(r_ptr, &l_list[i]);
-					}
-					break;
-				}
-				else if (sym.code == 's' || sym.code == 'S')
-				{
-					char name[80] = "";
-					
-					/* Avoid the prompt getting in the way */
-					screen_save();
-
-					/* Prompt */
-					prt("Which monster? ", 0, 0);
-
-					/* Get the name */
-					if (askfor_aux(name, sizeof(name), NULL))
-					{
-						/* See if a r_idx was entered */
-						r_idx = get_idx_from_name(name);
-						
+					/* See if a r_idx was entered */
+					r_idx = get_idx_from_name(name);
+					if (r_idx)
+						r_ptr = &r_info[r_idx];
+					else
 						/* If not, find the monster with that name */
-						if (r_idx < 1)
-							r_idx = lookup_monster(name); 
-					}
+						r_ptr = lookup_monster(name); 
+				}
 					
-					/* Reload the screen */
-					screen_load();
-				}
-				else
-				{
-					/* Assume user aborts */
-					break;
-				}
-			}
+				/* Reload the screen */
+				screen_load();
 
-			/* Did we find a valid monster? */
-			if (r_idx > 0)
-			{
-				r_ptr = &r_info[r_idx];
-				wipe_monster_lore(r_ptr, &l_list[r_idx]);
+				/* Did we find a valid monster? */
+				if (r_ptr)
+					wipe_monster_lore(r_ptr, get_lore(r_ptr));
+				else
+					msg("No monster found.");
 			}
-			else
-				msg("No monster found.");
 	
 			break;
 		}
@@ -2065,22 +2037,23 @@ void do_cmd_debug(void)
 		/* Increase Experience */
 		case 'x':
 		{
-			if (p_ptr->command_arg)
-			{
-				player_exp_gain(p_ptr, p_ptr->command_arg);
-			}
-			else
-			{
-				player_exp_gain(p_ptr, p_ptr->exp + 1);
-			}
+			int n;
+			screen_save();
+			n = get_quantity("Gain how much experience? ", 9999);
+			screen_load();
+			if (n < 1) n = 1;
+			player_exp_gain(p_ptr, n);
 			break;
 		}
 
 		/* Zap Monsters (Banishment) */
 		case 'z':
 		{
-			if (p_ptr->command_arg <= 0) p_ptr->command_arg = MAX_SIGHT;
-			do_cmd_wiz_zap(p_ptr->command_arg);
+			int n;
+			screen_save();
+			n = get_quantity("Zap within what distance? ", MAX_SIGHT);
+			screen_load();
+			do_cmd_wiz_zap(n);
 			break;
 		}
 

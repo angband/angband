@@ -8,21 +8,21 @@ so we can fix it. :)
 This version
 ============
 
- * Robert Au (myshkin)
- * Raymond "Shockbolt" Gaustadnes
- * Peter Denison (noz)
- * Nick McConnell
- * Kiyoshi Aman (Aerdan)
- * Gabe Cunningham
  * Erik Osheim (d_m)
- * Elly Jones
- * David Barr (david3x3x3)
- * Chris Weisiger (Derakon)
+ * Robert Au (myshkin)
  * Chris Carr (magnate)
- * Buzzkill
- * Brett Reid (blubaron)
  * Andi Sidwell (takkaria)
  * Aaron Bader (fizzix)
+ * Brett Reid (blubaron)
+ * Elly Jones
+ * Bardur Arantsson
+ * Ben Semmler
+ * Brett Reid
+ * Gabe Cunningham
+ * Han Boetes
+ * Janeene Beeforth
+ * Nick McConnell
+ * "Seebs"
 
 Previous maintainers
 ====================
@@ -77,8 +77,12 @@ Lars Haugseth, Jon Taylor, Roland Jay Roberts, "Sergey", "cb", Michael
 Pope, "hmj", Colin Spry, Ed Cogburn, "Yendor", Thomas Dedorson, "Ewert", 
 Rooslan S. Khayrov, Thapper, "Max Stats", "SSK", "ChodTheWacko", "Zaxx", 
 Jonas Lith, Jens Schou, "Lebannen", Daniel Santos, Edd Barrett (vext01),
-mtadd
+mtadd, Peter Denison (noz), Kiyoshi Aman (Aerdan), David Barr (david3x3x3),
+Chris Weisiger (Derakon), Buzzkill, Scott Michael, LastQuestion,
+danial.santos,
 
+Raymond "Shockbolt" Gaustadnes
+  The Shockbolt tiles.
 
 Greg Wooledge <greg at wooledge.org> 
   Basic autoconf support, the original random artifact generator, and
@@ -138,7 +142,7 @@ Eddie Grove
   particular for ID-by-use).
 
 Nomad 
-  8x16 tiles
+  8x16 tiles, loads of new room templates
 
 The UPX team (Markus Oberhumer and Laszlo Molnar) 
   The UPX packer for executables http://upx.tsx.org/ is used to reduce the
@@ -157,7 +161,8 @@ William Moore (MarbleDice)
   Bitflag code and numerous other improvements and fixes during 3.1.x
 
 Antony Sidwell (ajps) 
-  Default point-based stat allocations, and numerous UI improvements
+  Default point-based stat allocations, and numerous UI improvements,
+  original core-UI split code
 
 "PowerWyrm"
   Numerous bug fixes and code improvements

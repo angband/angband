@@ -18,6 +18,7 @@
 
 #include "angband.h"
 #include "cmds.h"
+#include "death.h"
 #include "files.h"
 #include "history.h"
 #include "savefile.h"
@@ -68,7 +69,7 @@ static void print_tomb(void)
 
 	/* Open the death file */
 	path_build(buf, sizeof(buf), ANGBAND_DIR_FILE, "dead.txt");
-	fp = file_open(buf, MODE_READ, -1);
+	fp = file_open(buf, MODE_READ, FTYPE_TEXT);
 
 	if (fp)
 	{
@@ -153,7 +154,7 @@ static void display_winner(void)
 
 
 	path_build(buf, sizeof(buf), ANGBAND_DIR_FILE, "crown.txt");
-	fp = file_open(buf, MODE_READ, -1);
+	fp = file_open(buf, MODE_READ, FTYPE_TEXT);
 
 	Term_clear();
 	Term_get_size(&wid, &hgt);
@@ -188,7 +189,7 @@ static void death_file(const char *title, int row)
 	char buf[1024];
 	char ftmp[80];
 
-	strnfmt(ftmp, sizeof(ftmp), "%s.txt", op_ptr->base_name);
+	strnfmt(ftmp, sizeof(ftmp), "%s.txt", player_safe_name(p_ptr, FALSE));
 
 	if (get_file(ftmp, buf, sizeof buf))
 	{
@@ -238,8 +239,7 @@ static void death_info(const char *title, int row)
 	if (p_ptr->equip_cnt)
 	{
 		Term_clear();
-		item_tester_full = TRUE;
-		show_equip(OLIST_WEIGHT);
+		show_equip(OLIST_WEIGHT | OLIST_SEMPTY);
 		prt("You are using: -more-", 0, 0);
 		(void)anykey();
 	}
@@ -248,7 +248,6 @@ static void death_info(const char *title, int row)
 	if (p_ptr->inven_cnt)
 	{
 		Term_clear();
-		item_tester_full = TRUE;
 		show_inven(OLIST_WEIGHT);
 		prt("You are carrying: -more-", 0, 0);
 		(void)anykey();

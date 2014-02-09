@@ -7,16 +7,13 @@
 # unless you wish to risk possible system crashes and broken savefiles.
 
 
-# Version stamp (required)
-
-V:3.0.11
 
 
 # Maximum number of object kinds
 M:K:570
 
 # Maximum number of monster races
-M:R:618
+M:R:620
 
 # Maximum number of objects on the level
 M:O:1024

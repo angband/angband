@@ -3,7 +3,9 @@
 #include "unit-test.h"
 
 #include "init.h"
-#include "types.h"
+#include "cave.h"
+#include "generate.h"
+
 
 int setup_tests(void **state) {
 	*state = init_parse_v();

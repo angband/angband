@@ -85,6 +85,10 @@ enum mon_messages {
 	MAX_MON_MSG
 };
 
+enum {
+	MON_DELAY_TAG_DEFAULT = 0,
+	MON_DELAY_TAG_DEATH,
+};
 
 /* Maxinum number of stacked monster messages */
 #define MAX_STORED_MON_MSG		200
@@ -100,11 +104,12 @@ enum mon_messages {
  */
 typedef struct monster_race_message
 {
-	s16b mon_race;		/* The race of the monster */
+	monster_race *race;	/* The race of the monster */
 	byte mon_flags;		/* Flags: 0x01 means hidden monster, 0x02 means offscreen monster */
  	int  msg_code;		/* The coded message */
 	byte mon_count;		/* How many monsters triggered this message */
 	bool delay;			/* Should this message be put off to the end */
+	byte delay_tag;		/* Tag to group delayed messages for better presentation */
 } monster_race_message;
 
 typedef struct monster_message_history
@@ -115,8 +120,8 @@ typedef struct monster_message_history
 
 
 /** Variables **/
-monster_race_message *mon_msg;
-monster_message_history *mon_message_hist;
+extern monster_race_message *mon_msg;
+extern monster_message_history *mon_message_hist;
 
 /** Functions **/
 void message_pain(struct monster *m, int dam);

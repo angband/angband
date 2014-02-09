@@ -18,7 +18,13 @@
 #include "angband.h"
 #include "z-textblock.h"
 
-/* =================== GEOMETRY ================= */
+
+/*** Regions ***/
+
+/*
+ * These functions are used for manipulating regions on the screen, used 
+ * mostly (but not exclusively) by the menu functions.
+ */
 
 region region_calculate(region loc)
 {
@@ -74,6 +80,13 @@ bool region_inside(const region *loc, const ui_event *key)
 
 /*** Text display ***/
 
+/*
+ * These functions are designed to display large blocks of text on the screen
+ * all at once.  They are the z-term specific layer on top of the z-textblock.c
+ * functions.
+ */
+
+/* Utility function */
 static void display_area(const wchar_t *text, const byte *attrs,
 		size_t *line_starts, size_t *line_lengths,
 		size_t n_lines,
@@ -93,6 +106,9 @@ static void display_area(const wchar_t *text, const byte *attrs,
 	}
 }
 
+/*
+ * Plonk a textblock on the screen in a certain bounding box.
+ */
 void textui_textblock_place(textblock *tb, region orig_area, const char *header)
 {
 	/* xxx on resize this should be recalculated */
@@ -104,13 +120,14 @@ void textui_textblock_place(textblock *tb, region orig_area, const char *header)
 	n_lines = textblock_calculate_lines(tb,
 			&line_starts, &line_lengths, area.width);
 
-	area.page_rows--;
+	if (header != NULL) {
+		area.page_rows--;
+		c_prt(TERM_L_BLUE, header, area.row, area.col);
+		area.row++;
+	}
 
 	if (n_lines > (size_t) area.page_rows)
 		n_lines = area.page_rows;
-
-	c_prt(TERM_L_BLUE, header, area.row, area.col);
-	area.row++;
 
 	display_area(textblock_text(tb), textblock_attrs(tb), line_starts,
 	             line_lengths, n_lines, area, 0);
@@ -119,6 +136,9 @@ void textui_textblock_place(textblock *tb, region orig_area, const char *header)
 	mem_free(line_lengths);
 }
 
+/*
+ * Show a textblock interactively
+ */
 void textui_textblock_show(textblock *tb, region orig_area, const char *header)
 {
 	/* xxx on resize this should be recalculated */
@@ -132,11 +152,14 @@ void textui_textblock_show(textblock *tb, region orig_area, const char *header)
 
 	screen_save();
 
-	/* make room for the header & footer */
-	area.page_rows -= 3;
+	/* make room for the footer */
+	area.page_rows -= 2;
 
-	c_prt(TERM_L_BLUE, header, area.row, area.col);
-	area.row++;
+	if (header != NULL) {
+		area.page_rows--;
+		c_prt(TERM_L_BLUE, header, area.row, area.col);
+		area.row++;
+	}
 
 	if (n_lines > (size_t) area.page_rows) {
 		int start_line = 0;
@@ -183,6 +206,83 @@ void textui_textblock_show(textblock *tb, region orig_area, const char *header)
 	screen_load();
 
 	return;
+}
+
+
+/** Simple text display **/
+
+/*
+ * Display a string on the screen using an attribute.
+ *
+ * At the given location, using the given attribute, if allowed,
+ * add the given string.  Do not clear the line.
+ */
+void c_put_str(byte attr, const char *str, int row, int col) {
+	/* Position cursor, Dump the attr/text */
+	Term_putstr(col, row, -1, attr, str);
+}
+
+
+/* As above, but in white */
+void put_str(const char *str, int row, int col) {
+	c_put_str(TERM_WHITE, str, row, col);
+}
+
+/*
+ * Display a string on the screen using an attribute, and clear to the end of the line.
+ */
+void c_prt(byte attr, const char *str, int row, int col) {
+	/* Clear line, position cursor */
+	Term_erase(col, row, 255);
+
+	/* Dump the attr/text */
+	Term_addstr(-1, attr, str);
+}
+
+/* As above, but in white */
+void prt(const char *str, int row, int col) {
+	c_prt(TERM_WHITE, str, row, col);
+}
+
+
+
+/** Screen loading/saving **/
+
+/*
+ * Screen loading and saving can be done to an arbitrary depth but it's
+ * important that every call to screen_save() is balanced by a call to
+ * screen_load() later on.  'character_icky' is used by the game to keep
+ * track of whether it should try to update the map and sidebar or not,
+ * so if you miss out a screen_load you will not get proper game updates.
+ *
+ * Term_save() / Term_load() do all the heavy lifting here.
+ */
+
+/* Depth of the screen_save() stack */
+s16b character_icky;
+
+/*
+ * Save the screen, and increase the "icky" depth.
+ */
+void screen_save(void)
+{
+	message_flush();
+	Term_save();
+	character_icky++;
+}
+
+/*
+ * Load the screen, and decrease the "icky" depth.
+ */
+void screen_load(void)
+{
+	message_flush();
+	Term_load();
+	character_icky--;
+
+	/* Mega hack - redraw big graphics - sorry NRM */
+	if (character_icky == 0 && (tile_width > 1 || tile_height > 1))
+		Term_redraw();
 }
 
 

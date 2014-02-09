@@ -7,7 +7,6 @@ TESTPROGS += parse/a-info \
              parse/names \
              parse/parser \
              parse/k-info \
-	     parse/owner \
 	     parse/p-info \
 	     parse/r-info \
 	     parse/s-info \

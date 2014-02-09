@@ -41,8 +41,8 @@ void verify_panel_int(bool centered);
  */
 bool modify_panel(term *t, int wy, int wx)
 {
-	int dungeon_hgt = (p_ptr->depth == 0) ? TOWN_HGT : DUNGEON_HGT;
-	int dungeon_wid = (p_ptr->depth == 0) ? TOWN_WID : DUNGEON_WID;
+	int dungeon_hgt = cave->height;
+	int dungeon_wid = cave->width;
 
 	/* Verify wy, adjust if needed */
 	if (wy > dungeon_hgt - SCREEN_HGT) wy = dungeon_hgt - SCREEN_HGT;
@@ -273,6 +273,11 @@ int motion_dir(int y1, int x1, int y2, int x2)
  */
 int target_dir(struct keypress ch)
 {
+	return target_dir_allow(ch, FALSE);
+}
+
+int target_dir_allow(struct keypress ch, bool allow_5)
+{
 	int d = 0;
 
 	/* Already a direction? */
@@ -306,14 +311,14 @@ int target_dir(struct keypress ch)
 	}
 
 	/* Paranoia */
-	if (d == 5) d = 0;
+	if (d == 5 && !allow_5) d = 0;
 
 	/* Return direction */
 	return (d);
 }
 
 
-int dir_transitions[10][10] = 
+static int dir_transitions[10][10] = 
 {
 	/* 0-> */ { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 },
 	/* 1-> */ { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
@@ -342,7 +347,7 @@ int dir_transitions[10][10] =
  * This function tracks and uses the "global direction", and uses
  * that as the "desired direction", if it is set.
  */
-bool get_rep_dir(int *dp)
+bool get_rep_dir(int *dp, bool allow_5)
 {
 	int dir = 0;
 
@@ -409,7 +414,7 @@ bool get_rep_dir(int *dp)
 
 				/* XXX Ideally show and move the cursor here to indicate 
 				   the currently "Pending" direction. XXX */
-				this_dir = target_dir(ke.key);
+				this_dir = target_dir_allow(ke.key, allow_5);
 
 				if (this_dir)
 					dir = dir_transitions[dir][this_dir];
@@ -422,7 +427,7 @@ bool get_rep_dir(int *dp)
 			}
 
 			/* 5 is equivalent to "escape" */
-			if (dir == 5)
+			if (dir == 5 && !allow_5)
 			{
 				/* Clear the prompt */
 				prt("", 0, 0);

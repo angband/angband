@@ -64,12 +64,12 @@ extern int borg_danger(int y, int x, int c, bool average, bool full_damage);
 /*
  * Determine if the Borg is out of "crucial" supplies.
  */
-extern char *borg_restock(int depth);
+extern const char *borg_restock(int depth);
 
 /*
  * Determine if the Borg is "prepared" for the given level
  */
-extern char *borg_prepared(int depth);
+extern const char *borg_prepared(int depth);
 
 
 /*

@@ -93,30 +93,35 @@ void object_pval_flags_known(const object_type *o_ptr,
  */
 bool object_this_pval_is_visible(const object_type *o_ptr, int pval)
 {
-    bitflag f[MAX_PVALS][OF_SIZE], f2[OF_SIZE];
+	bitflag f[MAX_PVALS][OF_SIZE], f2[OF_SIZE];
 
-    assert(o_ptr->kind);
+	assert(o_ptr->kind);
 
-    if (o_ptr->ident & IDENT_STORE)
-        return TRUE;
+	if (o_ptr->ident & IDENT_STORE)
+		return TRUE;
 
-    /* Aware jewelry with non-variable pval */
-    if (object_is_jewelry(o_ptr) && object_flavor_is_aware(o_ptr)) {
-        if (!randcalc_varies(o_ptr->kind->pval[pval]))
-            return TRUE;
-    }
+	/* Aware jewelry with non-variable pval */
+	if (object_is_jewelry(o_ptr) && object_flavor_is_aware(o_ptr)) {
+		if (!randcalc_varies(o_ptr->kind->pval[pval])) {
+			object_pval_flags_known(o_ptr, f);
+			of_wipe(f2);
+			of_on(f2, OF_LIGHT);
+			if (!of_is_equal(f[pval], f2))
+				return TRUE;
+		}
+	}
 
-    if (object_was_worn(o_ptr)) {
-        object_pval_flags_known(o_ptr, f);
+	if (object_was_worn(o_ptr)) {
+		object_pval_flags_known(o_ptr, f);
 
-        /* Create the mask for pval-related flags */
-        create_mask(f2, FALSE, OFT_STAT, OFT_PVAL, OFT_MAX);
+		/* Create the mask for pval-related flags */
+		create_mask(f2, FALSE, OFT_STAT, OFT_PVAL, OFT_MAX);
 
-        if (of_is_inter(f[pval], f2))
-            return TRUE;
-    }
-
-    return FALSE;
+		if (of_is_inter(f[pval], f2))
+			return TRUE;
+	}
+	
+	return FALSE;
 }
 
 /**

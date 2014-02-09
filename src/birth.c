@@ -17,6 +17,7 @@
  */
 
 #include "angband.h"
+#include "birth.h"
 #include "cmds.h"
 #include "files.h"
 #include "game-event.h"
@@ -26,6 +27,7 @@
 #include "object/tvalsval.h"
 #include "object/object.h"
 #include "squelch.h"
+#include "quest.h"
 #include "ui-menu.h"
 
 /*
@@ -53,6 +55,11 @@
  * game (clearing the history log, making sure options are set, etc)
  * before returning control to the game proper.
  */
+
+
+/* These functions are defined at the end of the file */
+static int roman_to_int(const char *roman);
+static int int_to_roman(int n, char *roman, size_t bufsize);
 
 
 /* 
@@ -106,7 +113,6 @@ static void save_roller_data(birther *player)
 	player->age = p_ptr->age;
 	player->wt = p_ptr->wt_birth;
 	player->ht = p_ptr->ht_birth;
-	player->sc = p_ptr->sc_birth;
 	player->au = p_ptr->au_birth;
 
 	/* Save the stats */
@@ -147,7 +153,6 @@ static void load_roller_data(birther *player, birther *prev_player)
 	p_ptr->age = player->age;
 	p_ptr->wt = p_ptr->wt_birth = player->wt;
 	p_ptr->ht = p_ptr->ht_birth = player->ht;
-	p_ptr->sc = p_ptr->sc_birth = player->sc;
 	p_ptr->au_birth = player->au;
 	p_ptr->au = STARTING_GOLD;
 
@@ -163,55 +168,6 @@ static void load_roller_data(birther *player, birther *prev_player)
 	/*** Save the current data if the caller is interested in it. ***/
 	if (prev_player) *prev_player = temp;
 }
-
-
-/*
- * Adjust a stat by an amount.
- *
- * This just uses "modify_stat_value()" unless "maximize" mode is false,
- * and a positive bonus is being applied, in which case, a special hack
- * is used.
- */
-static int adjust_stat(int value, int amount)
-{
-	/* Negative amounts or maximize mode */
-	if ((amount < 0) || OPT(birth_maximize))
-	{
-		return (modify_stat_value(value, amount));
-	}
-
-	/* Special hack */
-	else
-	{
-		int i;
-
-		/* Apply reward */
-		for (i = 0; i < amount; i++)
-		{
-			if (value < 18)
-			{
-				value++;
-			}
-			else if (value < 18+70)
-			{
-				value += randint1(15) + 5;
-			}
-			else if (value < 18+90)
-			{
-				value += randint1(6) + 2;
-			}
-			else if (value < 18+100)
-			{
-				value++;
-			}
-		}
-	}
-
-	/* Return the result */
-	return (value);
-}
-
-
 
 
 /*
@@ -258,24 +214,12 @@ static void get_stats(int stat_use[A_MAX])
 		bonus = p_ptr->race->r_adj[i] + p_ptr->class->c_adj[i];
 
 		/* Variable stat maxes */
-		if (OPT(birth_maximize))
-		{
-			/* Start fully healed */
-			p_ptr->stat_cur[i] = p_ptr->stat_max[i];
 
-			/* Efficiency -- Apply the racial/class bonuses */
-			stat_use[i] = modify_stat_value(p_ptr->stat_max[i], bonus);
-		}
+		/* Start fully healed */
+		p_ptr->stat_cur[i] = p_ptr->stat_max[i];
 
-		/* Fixed stat maxes */
-		else
-		{
-			/* Apply the bonus to the stat (somewhat randomly) */
-			stat_use[i] = adjust_stat(p_ptr->stat_max[i], bonus);
-
-			/* Save the resulting stat maximum */
-			p_ptr->stat_cur[i] = p_ptr->stat_max[i] = stat_use[i];
-		}
+		/* Efficiency -- Apply the racial/class bonuses */
+		stat_use[i] = modify_stat_value(p_ptr->stat_max[i], bonus);
 
 		p_ptr->stat_birth[i] = p_ptr->stat_max[i];
 	}
@@ -335,13 +279,11 @@ static void get_bonuses(void)
 /*
  * Get the racial history, and social class, using the "history charts".
  */
-char *get_history(struct history_chart *chart, s16b *sc)
+char *get_history(struct history_chart *chart)
 {
-	int roll, social_class;
+	int roll;
 	struct history_entry *entry;
 	char *res = NULL;
-
-	social_class = randint1(4);
 
 	while (chart) {
 		roll = randint1(100);
@@ -351,17 +293,9 @@ char *get_history(struct history_chart *chart, s16b *sc)
 		assert(entry);
 
 		res = string_append(res, entry->text);
-		social_class += entry->bonus - 50;
 		chart = entry->succ;
 	}
 
-	if (social_class > 75)
-		social_class = 75;
-	else if (social_class < 1)
-		social_class = 1;
-
-	if (sc)
-		*sc = social_class;
 	return res;
 }
 
@@ -386,6 +320,17 @@ static void get_ahw(struct player *p)
 	{
 		p->ht = p->ht_birth = Rand_normal(p->race->f_b_ht, p->race->f_m_ht);
 		p->wt = p->wt_birth = Rand_normal(p->race->f_b_wt, p->race->f_m_wt);
+	}
+
+	/* For neither, go inbetween */
+	else 
+	{
+		p->ht = p->ht_birth = Rand_normal(
+			(p->race->f_b_ht + p->race->m_b_ht) / 2,
+			(p->race->f_m_ht + p->race->m_m_ht) / 2);
+		p->wt = p->wt_birth = Rand_normal(
+			(p->race->f_b_wt + p->race->m_b_wt) / 2,
+			(p->race->f_m_wt + p->race->m_m_wt) / 2);
 	}
 }
 
@@ -425,17 +370,8 @@ void player_init(struct player *p)
 		a_ptr->seen = FALSE;
 	}
 
-
 	/* Start with no quests */
-	for (i = 0; q_list && i < MAX_Q_IDX; i++)
-	{
-		q_list[i].level = 0;
-	}
-
-	if (q_list) {
-		q_list[0].level = 99;
-		q_list[1].level = 100;
-	}
+	quest_reset();
 
 	for (i = 1; z_info && i < z_info->k_max; i++) {
 		object_kind *k_ptr = &k_info[i];
@@ -559,10 +495,18 @@ static void player_outfit(struct player *p)
 	{
 		/* Get local object */
 		struct object *i_ptr = &object_type_body;
+		int num = rand_range(si->min, si->max);
+
+		/* Without start_kit, only start with 1 food and 1 light */
+		if (!OPT(birth_start_kit)) {
+			if (si->kind->tval != TV_FOOD && si->kind->tval != TV_LIGHT)
+				continue;
+			num = 1;
+		}
 
 		/* Prepare the item */
 		object_prep(i_ptr, si->kind, 0, MINIMISE);
-		i_ptr->number = (byte)rand_range(si->min, si->max);
+		i_ptr->number = num;
 		i_ptr->origin = ORIGIN_BIRTH;
 
 		object_flavor_aware(i_ptr);
@@ -596,29 +540,10 @@ static void recalculate_stats(int *stats, int points_left)
 {
 	int i;
 
-	/* Process stats */
+	/* Variable stat maxes */
 	for (i = 0; i < A_MAX; i++)
-	{
-		/* Variable stat maxes */
-		if (OPT(birth_maximize))
-		{
-			/* Reset stats */
-			p_ptr->stat_cur[i] = p_ptr->stat_max[i] =
+		p_ptr->stat_cur[i] = p_ptr->stat_max[i] =
 				p_ptr->stat_birth[i] = stats[i];
-		}
-
-		/* Fixed stat maxes */
-		else
-		{
-			/* Obtain a "bonus" for "race" and "class" */
-			int bonus = p_ptr->race->r_adj[i] + p_ptr->class->c_adj[i];
-
-			/* Apply the racial/class bonuses */
-			p_ptr->stat_cur[i] = p_ptr->stat_max[i] = 
-				p_ptr->stat_birth[i] =
-				modify_stat_value(stats[i], bonus);
-		}
-	}
 
 	/* Gold is inversely proportional to cost */
 	p_ptr->au_birth = STARTING_GOLD + (50 * points_left);
@@ -733,7 +658,7 @@ static bool sell_stat(int choice, int stats[A_MAX], int points_spent[A_MAX],
  *    but only up to max base of 16 unless a pure class 
  *    [mage or priest or warrior]
  * 3. If there are any points left, spend as much as possible in order 
- *    on DEX, non-spell-stat, CHR. 
+ *    on DEX and then the non-spell-stat.
  */
 static void generate_stats(int stats[A_MAX], int points_spent[A_MAX], 
 						   int *points_left)
@@ -847,12 +772,10 @@ static void generate_stats(int stats[A_MAX], int points_spent[A_MAX],
 					   points_spent[A_CON] < points_trigger) {
 					   
 					if (!buy_stat(A_CON, stats, points_spent,points_left, FALSE)) {
-					
 						maxed[A_CON] = TRUE;
 					}
 					
 					if (points_spent[A_CON] > points_trigger) {
-					
 						sell_stat(A_CON, stats, points_spent, points_left, FALSE);
 						maxed[A_CON] = TRUE;
 					}
@@ -864,28 +787,19 @@ static void generate_stats(int stats[A_MAX], int points_spent[A_MAX],
 
 			/* 
 			 * If there are any points left, spend as much as possible in 
-			 * order on DEX, non-spell-stat, CHR. 
+			 * order on DEX, and the non-spell-stat. 
 			 */
 			case 4:{
 			
 				int next_stat;
 
 				if (!maxed[A_DEX]) {
-				
 					next_stat = A_DEX;
-					
 				} else if (!maxed[A_INT] && p_ptr->class->spell_stat != A_INT) {
-				
 					next_stat = A_INT;
-					
 				} else if (!maxed[A_WIS] && p_ptr->class->spell_stat != A_WIS) {
-				
 					next_stat = A_WIS;
-				} else if (!maxed[A_CHR]) {
-				
-					next_stat = A_CHR;
 				} else {
-				
 					step++;
 					break;
 				}
@@ -947,8 +861,7 @@ void player_generate(struct player *p, const player_sex *s,
 	/* Roll for age/height/weight */
 	get_ahw(p);
 
-	p->history = get_history(p->race->history, &p->sc);
-	p->sc_birth = p->sc;
+	p->history = get_history(p->race->history);
 }
 
 
@@ -1009,19 +922,11 @@ void player_birth(bool quickstart_allowed)
 	if (quickstart_allowed)
 		save_roller_data(&quickstart_prev);
 	else
-	{
-		p_ptr->psex = 0;
-		/* XXX default race/class */
-		p_ptr->class = classes;
-		p_ptr->race = races;
-		player_generate(p_ptr, NULL, NULL, NULL);
-	}
+		player_generate(p_ptr, &sex_info[p_ptr->psex], player_id2race(0), player_id2class(0));
 
 	/* Handle incrementing name suffix */
 	buf = find_roman_suffix_start(op_ptr->full_name);
-
-	if (buf)
-	{
+	if (buf) {
 		/* Try to increment the roman suffix */
 		success = int_to_roman((roman_to_int(buf) + 1), buf,
 			(sizeof(op_ptr->full_name) - (buf -
@@ -1104,8 +1009,6 @@ void player_birth(bool quickstart_allowed)
 		}
 		else if (cmd->command == CMD_ROLL_STATS)
 		{
-			int i;
-
 			save_roller_data(&prev);
 
 			/* Get a new character */
@@ -1116,8 +1019,7 @@ void player_birth(bool quickstart_allowed)
 
 			/* There's no real need to do this here, but it's tradition. */
 			get_ahw(p_ptr);
-			p_ptr->history = get_history(p_ptr->race->history, &p_ptr->sc);
-			p_ptr->sc_birth = p_ptr->sc;
+			p_ptr->history = get_history(p_ptr->race->history);
 
 			event_signal(EVENT_GOLD);
 			event_signal(EVENT_AC);
@@ -1158,19 +1060,15 @@ void player_birth(bool quickstart_allowed)
 					  sizeof(op_ptr->full_name));
 
 			string_free((void *) cmd->arg[0].string);
-
-			/* Don't change savefile name.  If the UI
-			   wants it changed, they can do it. XXX (Good idea?) */
-			process_player_name(FALSE);
 		}
 		/* Various not-specific-to-birth commands. */
 		else if (cmd->command == CMD_HELP)
 		{
-			char buf[80];
+			char filename[80];
 
-			strnfmt(buf, sizeof(buf), "birth.txt");
+			strnfmt(filename, sizeof(filename), "birth.txt");
 			screen_save();
-			show_file(buf, NULL, 0, 0);
+			show_file(filename, NULL, 0, 0);
 			screen_load();
 		}
 		else if (cmd->command == CMD_QUIT)
@@ -1201,11 +1099,181 @@ void player_birth(bool quickstart_allowed)
 	get_money();
 
 	/* Outfit the player, if they can sell the stuff */
-	if (!OPT(birth_no_selling)) player_outfit(p_ptr);
+	player_outfit(p_ptr);
 
 	/* Initialise the stores */
 	store_reset();
 
 	/* Now we're really done.. */
 	event_signal(EVENT_LEAVE_BIRTH);
+}
+
+
+
+
+
+/*** Roman numeral functions, for dynastic successions ***/
+
+/*
+ * Find the start of a possible Roman numerals suffix by going back from the
+ * end of the string to a space, then checking that all the remaining chars
+ * are valid Roman numerals.
+ * 
+ * Return the start position, or NULL if there isn't a valid suffix. 
+ */
+char *find_roman_suffix_start(const char *buf)
+{
+	const char *start = strrchr(buf, ' ');
+	const char *p;
+	
+	if (start)
+	{
+		start++;
+		p = start;
+		while (*p)
+		{
+			if (*p != 'I' && *p != 'V' && *p != 'X' && *p != 'L' &&
+			    *p != 'C' && *p != 'D' && *p != 'M')
+			{
+				start = NULL;
+				break;
+			}
+			++p;			    
+		}
+	}
+	return (char *)start;
+}
+
+/*
+ * Converts an arabic numeral (int) to a roman numeral (char *).
+ *
+ * An arabic numeral is accepted in parameter `n`, and the corresponding
+ * upper-case roman numeral is placed in the parameter `roman`.  The
+ * length of the buffer must be passed in the `bufsize` parameter.  When
+ * there is insufficient room in the buffer, or a roman numeral does not
+ * exist (e.g. non-positive integers) a value of 0 is returned and the
+ * `roman` buffer will be the empty string.  On success, a value of 1 is
+ * returned and the zero-terminated roman numeral is placed in the
+ * parameter `roman`.
+ */
+static int int_to_roman(int n, char *roman, size_t bufsize)
+{
+	/* Roman symbols */
+	char roman_symbol_labels[13][3] =
+		{"M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX",
+		 "V", "IV", "I"};
+	int  roman_symbol_values[13] =
+		{1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1};
+
+	/* Clear the roman numeral buffer */
+	roman[0] = '\0';
+
+	/* Roman numerals have no zero or negative numbers */
+	if (n < 1)
+		return 0;
+
+	/* Build the roman numeral in the buffer */
+	while (n > 0)
+	{
+		int i = 0;
+
+		/* Find the largest possible roman symbol */
+		while (n < roman_symbol_values[i])
+			i++;
+
+		/* No room in buffer, so abort */
+		if (strlen(roman) + strlen(roman_symbol_labels[i]) + 1
+			> bufsize)
+			break;
+
+		/* Add the roman symbol to the buffer */
+		my_strcat(roman, roman_symbol_labels[i], bufsize);
+
+		/* Decrease the value of the arabic numeral */
+		n -= roman_symbol_values[i];
+	}
+
+	/* Ran out of space and aborted */
+	if (n > 0)
+	{
+		/* Clean up and return */
+		roman[0] = '\0';
+
+		return 0;
+	}
+
+	return 1;
+}
+
+
+/*
+ * Converts a roman numeral (char *) to an arabic numeral (int).
+ *
+ * The null-terminated roman numeral is accepted in the `roman`
+ * parameter and the corresponding integer arabic numeral is returned.
+ * Only upper-case values are considered. When the `roman` parameter
+ * is empty or does not resemble a roman numeral, a value of -1 is
+ * returned.
+ *
+ * XXX This function will parse certain non-sense strings as roman
+ *     numerals, such as IVXCCCVIII
+ */
+static int roman_to_int(const char *roman)
+{
+	size_t i;
+	int n = 0;
+	char *p;
+
+	char roman_token_chr1[] = "MDCLXVI";
+	const char *roman_token_chr2[] = {0, 0, "DM", 0, "LC", 0, "VX"};
+
+	int roman_token_vals[7][3] = {{1000},
+	                              {500},
+	                              {100, 400, 900},
+	                              {50},
+	                              {10, 40, 90},
+	                              {5},
+	                              {1, 4, 9}};
+
+	if (strlen(roman) == 0)
+		return -1;
+
+	/* Check each character for a roman token, and look ahead to the
+	   character after this one to check for subtraction */
+	for (i = 0; i < strlen(roman); i++)
+	{
+		char c1, c2;
+		int c1i, c2i;
+
+		/* Get the first and second chars of the next roman token */
+		c1 = roman[i];
+		c2 = roman[i + 1];
+
+		/* Find the index for the first character */
+		p = strchr(roman_token_chr1, c1);
+		if (p)
+		{
+			c1i = p - roman_token_chr1;
+		} else {
+			return -1;
+		}
+
+		/* Find the index for the second character */
+		c2i = 0;
+		if (roman_token_chr2[c1i] && c2)
+		{
+			p = strchr(roman_token_chr2[c1i], c2);
+			if (p)
+			{
+				c2i = (p - roman_token_chr2[c1i]) + 1;
+				/* Two-digit token, so skip a char on the next pass */
+				i++;
+			}
+		}
+
+		/* Increase the arabic numeral */
+		n += roman_token_vals[c1i][c2i];
+	}
+
+	return n;
 }

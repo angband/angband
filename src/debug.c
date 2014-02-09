@@ -2,7 +2,7 @@
  * File: debug.c
  * Purpose: Simple debugging functions
  *
- * Copyright (c) 2007 Andrew Sidwell
+ * Copyright (c) 2007 Andi Sidwell
  *
  * This work is free software; you can redistribute it and/or modify it
  * under the terms of either:

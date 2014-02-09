@@ -18,8 +18,8 @@ progress), "flush" (forget any keypresses waiting in the keypress queue),
 "fresh" (dump any pending output to the screen), and "sub-windows" (see
 below).
 
-Interface and Display Options
-=============================
+User Interface Options
+======================
 
 .. _rogue_like_commands:
 
@@ -32,6 +32,12 @@ Use old target by default '[use_old_target]'
   Forces all commands which normally ask for a "direction" to use the
   current "target" if there is one. Use of this option can be dangerous if
   you target locations on the ground, unless you clear them when done.
+  
+.. _auto_more:
+
+Automatically clear -more- prompts '[auto_more]'
+  The game does not wait for a keypress when it comes to a '-more-'
+  prompt, but carries on going.  
 
 .. _pickup_always:
 
@@ -44,19 +50,19 @@ Always pickup items '[pickup_always]'
 Always pickup items matching inventory '[pickup_inven]'
   Like `pickup_always`_, but picks up an item only if it is a copy of an
   item that you already have in your inventory.
+  
+.. _notify_recharge:
 
-.. _easy_open:
+Notify on object recharge '[notify_recharge]'
+  This causes the game to print a message when any rechargeable object
+  (i.e. a rod or activatable weapon or armour item) finishes recharging. It
+  is the equivalent of inscribing '{!!}' on all such items.  
+  
+.. _show_flavors:
 
-Open/Disarm/Close without direction '[easy_open]'
-  If there is only one closed door next to the character, the game will not
-  bother asking for a direction when the player asks to |'o'pen| omething.
-  The same applies for |'c'losing| doors and |'D'isarming| traps.
-
-.. |'o'pen| replace:: 'o'\pen
-
-.. |'c'losing| replace:: 'c'\losing
-
-.. |'D'isarming| replace:: 'D'\isarming
+Show flavors in object descriptions '[show_flavors]'
+  Display "flavors" (color or variety) in object descriptions, even for
+  objects whose type is known. This does not affect objects in stores.  
 
 .. _center_player:
 
@@ -65,66 +71,7 @@ Center map continuously '[center_player]'
   is divided into 25 sections, with coordinates (0,0) to (4,4), and will
   how one section at a time - the display will "flip" to the next section
   when the player nears the edge.
-
-.. _view_yellow_light:
-
-Use special colors for torch-lit grids '[view_yellow_light]'
-  This option causes special colors to be used for "torch-lit" grids.
-  Turning this option off will slightly improve game speed.
-
-.. _hp_changes_color:
-
-Player color indicates low hit points '[hp_changes_color]'
-  This option makes the player '@' turn various shades of colour from
-  white to red, depending on percentage of HP remaining.
-
-.. _animate_flicker:
-
-Animate multi-coloured monsters and items '[animate_flicker]'
-  Certain powerful monsters and items will shimmer in real time, i.e.
-  between keypresses.
-
-.. _purple_uniques:
-
-Show unique monsters in a special colour '[purple_uniques]'
-  All "unique" monsters will be shown in a light purple colour, which is
-  not used for any "normal" monsters - so you can tell at a glance that
-  they are unique. If you like the idea but don't like the colour, you can
-  edit it via the "interact with colors" option.
-
-.. _show_flavors:
-
-Show flavors in object descriptions '[show_flavors]'
-  Display "flavors" (color or variety) in object descriptions, even for
-  objects whose type is known. This does not affect objects in stores.
-
-.. _mouse_movement:
-
-Allow mouse clicks to move the player  '[mouse_movement]'
-  Clicking on the main window will be interpreted as a move command to that
-  spot.
-
-.. _mouse_buttons:
-
-Show mouse status line buttons '[mouse_buttons]'
-  Creates clickable "buttons" on the bottom line of the main window, to
-  enhance mouse-led play.
-
-.. _use_sound:
-
-Use sound '[use_sound]'
-  Turns on sound effects, if your system supports them.
-
-Disturbance options
-===================
-
-.. _disturb_move:
-
-Disturb whenever any monster moves '[disturb_move]'
-  Disturb the player when any monster moves, appears, or disappears. This
-  includes monsters which are only visible due to telepathy, so you should
-  probably turn this option off if you want to "rest" near such monsters.
-
+  
 .. _disturb_near:
 
 Disturb whenever viewable monster moves '[disturb_near]'
@@ -134,52 +81,70 @@ Disturb whenever viewable monster moves '[disturb_near]'
   "telepathy" for the purpose of determining whether a monster is
   "viewable".
 
-.. _disturb_detect:
+.. _show_damage:
 
-Disturb whenever leaving trap detected area '[disturb_detect]'
-  This option causes you to be disturbed when you reach the edge of your
-  last invocation of detect traps.
+Show damage player deals to monsters '[show_damage]'
+  Shows the damage that the player deals to monsters for melee and ranged 
+  combat in the messages.
+  
+.. _show_target:
 
-.. _disturb_state:
+Hightlight target with cursor '[show_target]'
+  Highlights the current targeted monster with a cursor.  Useful when 
+  combined with "use old target by default"
 
-Disturb whenever player state changes '[disturb_state]'
-  This option causes you to be disturbed whenever the player state changes,
-  including changes in hunger, resistance, confusion, etc.
+.. _view_yellow_light:
 
-.. _auto_more:
+Use special colors for torch-lit grids '[view_yellow_light]'
+  This option causes special colors to be used for "torch-lit" grids.
+  Turning this option off will slightly improve game speed.
+  
+.. _animate_flicker:
 
-Automatically clear -more- prompts '[auto_more]'
-  The game does not wait for a keypress when it comes to a '-more-'
-  prompt, but carries on going.
+Animate multi-coloured monsters and items '[animate_flicker]'
+  Certain powerful monsters and items will shimmer in real time, i.e.
+  between keypresses.  
 
-.. _notify_recharge:
+.. _hp_changes_color:
 
-Notify on object recharge '[notify_recharge]'
-  This causes the game to print a message when any rechargeable object
-  (i.e. a rod or activatable weapon or armour item) finishes recharging. It
-  is the equivalent of inscribing '{!!}' on all such items.
+Player color indicates low hit points '[hp_changes_color]'
+  This option makes the player '@' turn various shades of colour from
+  white to red, depending on percentage of HP remaining.
+
+.. _purple_uniques:
+
+Show unique monsters in a special colour '[purple_uniques]'
+  All "unique" monsters will be shown in a light purple colour, which is
+  not used for any "normal" monsters - so you can tell at a glance that
+  they are unique. If you like the idea but don't like the colour, you can
+  edit it via the "interact with colors" option.
+  
+.. _solid_walls:
+
+Show walls as solid blocks '[solid_walls]'
+  Walls are solid blocks instead of # for granite and % for veins.  Veins
+  are coloured darker than granite for differentiation purposes.
+
+.. _hybrid_walls:
+
+Show walls with shaded backgrounds '[hybrid_walls]'
+  Walls appear as # and % symbols overlaid on a gray background block.  
+  This overrides '[solid_walls]'.
+
+.. _mouse_movement:
+
+Allow mouse clicks to move the player  '[mouse_movement]'
+  Clicking on the main window will be interpreted as a move command to that
+  spot.
+
+.. _use_sound:
+
+Use sound '[use_sound]'
+  Turns on sound effects, if your system supports them.
+
 
 Birth options
 =============
-
-.. _birth_maximize:
-
-Maximize effect of race/class bonuses '[birth_maximize]'
-  Normally, if a character should find potions that permanently increase
-  his stats, the maximum that can be achieved without equipment bonuses is
-  18/100. If maximize mode is on (which is the default), then the race and
-  class bonuses and penalties apply to this limit, so your half-troll will
-  have a greater maximum possible strength (unassisted by his equipment)
-  than a hobbit. With maximize mode off, all characters max out at 18/100
-  for all stats. This also affects the start of the game, because race and
-  class bonuses are applied as if they were "rings" in maximize mode (at an
-  exact rate of 0/10 percentile points equals 1 point for stats over 18),
-  and as "potions" in non-maximize mode (drinking six potions of [stat]
-  will probably increase your stat by more than 0/60 if it was at 18 to
-  start with.) To cut a long story short and a confusing explanation
-  simple, you get better starting stats in non-maximize mode, but can't get
-  as good at what you're supposed to be best at in the later stages of the
-  game.
 
 .. _birth_randarts:
 
@@ -199,52 +164,32 @@ Use previous set of randarts '[birth_keep_randarts]'
   mind). Note that switching to non-random artifacts will wipe randarts,
   regardless of this option.
 
-.. _birth_ai_smell:
-
-Monsters chase recent locations '[birth_ai_smell]'
-  Allow monsters to take advantage of "old" trails that you may have left
-  in the dungeon.
-
-.. _birth_ai_packs:
-
-Monsters act smarter in groups '[birth_ai_packs]'
-  "Group" monsters will use tactics that groups of monsters might
-  reasonably employ - such as hiding out of sight around a corner, trying
-  to draw the character out into the middle of a room so they can surround
-  him and all attack at once, rather than chasing one by one down a
-  corridor.
-
 .. _birth_ai_learn:
 
 Monsters learn from their mistakes '[birth_ai_learn]'
   Allow monsters to learn what spell attacks you are resistant to, and to
   use this information to choose the best attacks.  This option makes the
   game very difficult and is not recommended.
+  
+.. _birth_force_descend:
 
-.. _birth_ai_cheat:
+Force player descent '[birth_force_descend]'
+  Upwards staircases do not work.  All downward staircases, including the
+  one in town, transport the character one level below the previous maximum
+  depth.  Recalling from the dungeon works and brings the character to the
+  town.  However, recalling from town brings the character one level 
+  below the previous maximum depth.  The character cannot recall from quest
+  levels until the quest is complete, however you will be warned before
+  descending into a quest level.  Any status effects that sometimes 
+  teleports the character up and sometimes teleports them down will always
+  choose down.  When combined with the option for word of recall scrolls
+  to have no effect, this recreates the previous "ironman" option.  
 
-Monsters exploit players weaknesses '[birth_ai_cheat]'
-  Allow monsters to know what spell attacks you are resistant to, and to
-  use this information to choose the best attacks.  This option makes the 
-  game very difficult and is not recommended.
+.. _birth_no_recall:
 
-.. _birth_ai_smart:
-
-Monsters behave more intelligently (broken) '[birth_ai_smart]'
-  Monsters have a certain amount of intelligence and will use it -
-  teleporting away when low on hit points, using their more powerful spells
-  in preference to the less powerful spells, etc. Not all monsters are, of
-  course, intelligent - but those who are are almost unkillable with this
-  option on (especially if they can heal themselves).
-
-.. _birth_ironman:
-
-Restrict the use of stairs/recall '[birth_ironman]'
-  This option, not recommended for non-advanced players, prevents the
-  generation of up staircases, and makes the scroll and effect of Word of
-  Recall not function: and teleport-level always goes down, as does the
-  spell of stair-creation, except on the quest levels of Sauron and
-  Morgoth.
+Word of Recall has no effect '[birth_no_recall]'
+  Word of Recall scrolls have no effect.  When combined with the option
+  to force player descent, this recreates the previous "ironman" option.
 
 .. _birth_small_range:
 
@@ -293,6 +238,13 @@ Items always sell for 0 gold '[birth_no_selling]'
   identify unknown items for you, and will still sell you their wares. To
   balance out income in the game, gold found in the dungeon will be
   increased if this option is on.
+  
+.. _birth_start_kit:
+
+Start with a kit of useful gear '[birth_start_kit]'
+  Start with items, a useful option for new players, or ones that wish
+  to descend immediately into the dungeon.  If turned off, the character
+  will start with additional gold with which to purchase starting gear.
 
 Cheating options
 ================

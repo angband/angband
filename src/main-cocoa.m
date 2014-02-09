@@ -16,11 +16,18 @@
  */
 
 #include "angband.h"
-#include "button.h"
 #include "cmds.h"
+#include "dungeon.h"
 #include "files.h"
 #include "init.h"
 #include "grafmode.h"
+
+#if defined(SAFE_DIRECTORY)
+#import "buildid.h"
+#endif
+
+//#define NSLog(...) ;
+
 
 #if BORG
 #include "borg1.h"
@@ -38,10 +45,16 @@
 #include <Cocoa/Cocoa.h>
 #include <Carbon/Carbon.h> // For keycodes
 
-/* We know how to double-buffer either into a CGLayer or a CGImage.  Currently CGLayers are a lot faster, probably because NSImage thrashes between a CGImageRef and a bitmap context. */
-#ifndef BUFFER_WITH_CGLAYER
-# define BUFFER_WITH_CGLAYER 1
-#endif
+static NSSize const AngbandScaleIdentity = {1.0, 1.0};
+static NSString * const AngbandDirectoryNameLib = @"lib";
+static NSString * const AngbandDirectoryNameBase = @"Angband";
+
+static NSString * const AngbandTerminalsDefaultsKey = @"Terminals";
+static NSString * const AngbandTerminalRowsDefaultsKey = @"Rows";
+static NSString * const AngbandTerminalColumnsDefaultsKey = @"Columns";
+static NSString * const AngbandTerminalVisibleDefaultsKey = @"Visible";
+static NSInteger const AngbandWindowMenuItemTagBase = 1000;
+static NSInteger const AngbandCommandMenuItemTagBase = 2000;
 
 /* We can blit to a large layer or image and then scale it down during live resize, which makes resizing much faster, at the cost of some image quality during resizing */
 #ifndef USE_LIVE_RESIZE_CACHE
@@ -114,12 +127,8 @@ static NSFont *default_font;
     /* Our array of views */
     NSMutableArray *angbandViews;
     
-    /* The buffered image  (either CGLayerRef or NSImage) */
-#if BUFFER_WITH_CGLAYER
+    /* The buffered image */
     CGLayerRef angbandLayer;
-#else
-    NSImage *angbandImage;
-#endif
     
     /* The font of this context */
     NSFont *angbandViewFont;
@@ -145,8 +154,16 @@ static NSFont *default_font;
     
     /* To address subpixel rendering overdraw problems, we cache all the characters and attributes we're told to draw */
     wchar_t *charOverdrawCache;
-    byte *attrOverdrawCache;
+    int *attrOverdrawCache;
+
+@private
+
+    BOOL _hasSubwindowFlags;
+    BOOL _windowVisibilityChecked;
 }
+
+@property (nonatomic, assign) BOOL hasSubwindowFlags;
+@property (nonatomic, assign) BOOL windowVisibilityChecked;
 
 - (void)drawRect:(NSRect)rect inView:(NSView *)view;
 
@@ -155,12 +172,6 @@ static NSFont *default_font;
 
 /* Called when the context is going down. */
 - (void)dispose;
-
-/* Returns the scale factor, that is, the scaling between our base logical coordinates and the image size. */
-- (NSSize)scaleFactor;
-
-/* Sets the scale factor and resizes appropriately */
-- (void)setScaleFactor:(NSSize)newScaleFactor;
 
 /* Returns the size of the image. */
 - (NSSize)imageSize;
@@ -189,17 +200,14 @@ static NSFont *default_font;
 /* Make the context aware that one of its views changed size */
 - (void)angbandViewDidScale:(AngbandView *)view;
 
-/* Order the context's primary window frontmost */
-- (void)orderFront;
-
-/* Order the context's primary window out */
-- (void)orderOut;
+/* Handle becoming the main window */
+- (void)windowDidBecomeMain:(NSNotification *)notification;
 
 /* Return whether the context's primary window is ordered in or not */
 - (BOOL)isOrderedIn;
 
 /* Return whether the context's primary window is key */
-- (BOOL)isKeyWindow;
+- (BOOL)isMainWindow;
 
 /* Invalidate the whole image */
 - (void)setNeedsDisplay:(BOOL)val;
@@ -210,9 +218,15 @@ static NSFont *default_font;
 /* Display (flush) our Angband views */
 - (void)displayIfNeeded;
 
+/* Resize context to size of contentRect, and optionally save size to
+ * defaults */
+- (void)resizeTerminalWithContentRect: (NSRect)contentRect saveToDefaults: (BOOL)saveToDefaults;
+
 /* Called from the view to indicate that it is starting or ending live resize */
 - (void)viewWillStartLiveResize:(AngbandView *)view;
 - (void)viewDidEndLiveResize:(AngbandView *)view;
+- (void)saveWindowVisibleToDefaults: (BOOL)windowVisible;
+- (BOOL)windowVisibleUsingDefaults;
 
 /* Class methods */
 
@@ -226,6 +240,93 @@ static NSFont *default_font;
 - (AngbandView *)activeView;
 
 @end
+
+/**
+ *  Generate a mask for the subwindow flags. The mask is just a safety check to make sure that our windows show and hide as expected.
+ *  This function allows for future changes to the set of flags without needed to update it here (unless the underlying types change).
+ */
+u32b AngbandMaskForValidSubwindowFlags(void)
+{
+    int windowFlagBits = sizeof(*(op_ptr->window_flag)) * CHAR_BIT;
+    int maxBits = MIN( PW_MAX_FLAGS, windowFlagBits );
+    u32b mask = 0;
+
+    for( int i = 0; i < maxBits; i++ )
+    {
+        if( window_flag_desc[i] != NULL )
+        {
+            mask |= (1 << i);
+        }
+    }
+
+    return mask;
+}
+
+/**
+ *  Check for changes in the subwindow flags and update window visibility. This seems to be called for every user event, so we don't
+ *  want to do any unnecessary hiding or showing of windows.
+ */
+static void AngbandUpdateWindowVisibility(void)
+{
+    // because this function is called frequently, we'll make the mask static. it doesn't change between calls, since the flags themselves are hardcoded.
+    static u32b validWindowFlagsMask = 0;
+
+    if( validWindowFlagsMask == 0 )
+    {
+        validWindowFlagsMask = AngbandMaskForValidSubwindowFlags();
+    }
+
+    // loop through all of the subwindows and see if there is a change in the flags. if so, show or hide the corresponding window.
+    // we don't care about the flags themselves; we just want to know if any are set.
+    for( int i = 1; i < ANGBAND_TERM_MAX; i++ )
+    {
+        AngbandContext *angbandContext = angband_term[i]->data;
+
+        if( angbandContext == nil )
+        {
+            continue;
+        }
+
+        // this horrible mess of flags is so that we can try to maintain some user visibility preference. this should allow the user
+        // a window and have it stay closed between application launches. however, this means that when a subwindow is turned on, 
+        // it will no longer appear automatically. angband has no concept of user control over window visibility, other than the
+        // subwindow flags.
+        if( !angbandContext.windowVisibilityChecked )
+        {
+            if( [angbandContext windowVisibleUsingDefaults] )
+            {
+                [angbandContext->primaryWindow orderFront: nil];
+                angbandContext.windowVisibilityChecked = YES;
+            }
+            else
+            {
+                [angbandContext->primaryWindow close];
+                angbandContext.windowVisibilityChecked = NO;
+            }
+        }
+        else
+        {
+            BOOL termHasSubwindowFlags = ((op_ptr->window_flag[i] & validWindowFlagsMask) > 0);
+
+            if( angbandContext.hasSubwindowFlags && !termHasSubwindowFlags )
+            {
+                [angbandContext->primaryWindow close];
+                angbandContext.hasSubwindowFlags = NO;
+                [angbandContext saveWindowVisibleToDefaults: NO];
+            }
+            else if( !angbandContext.hasSubwindowFlags && termHasSubwindowFlags )
+            {
+                [angbandContext->primaryWindow orderFront: nil];
+                angbandContext.hasSubwindowFlags = YES;
+                [angbandContext saveWindowVisibleToDefaults: YES];
+            }
+        }
+    }
+
+    // make the main window key so that user events go to the right spot
+    AngbandContext *mainWindow = angband_term[0]->data;
+    [mainWindow->primaryWindow makeKeyAndOrderFront: nil];
+}
 
 /* To indicate that a grid element contains a picture, we store 0xFFFF. */
 #define NO_OVERDRAW ((wchar_t)(0xFFFF))
@@ -269,7 +370,7 @@ static NSRect crack_rect(NSRect rect, NSSize scale, unsigned pushOptions)
 /* Returns the pixel push options (describing how we round) for the tile at a given index. Currently it's pretty uniform! */
 static unsigned push_options(unsigned x, unsigned y)
 {
-    return PUSH_BOTTOM | PUSH_LEFT;
+    return PUSH_TOP | PUSH_LEFT;
 }
 
 /*
@@ -320,12 +421,11 @@ static void hook_quit(const char * str);
 static void load_prefs(void);
 static void load_sounds(void);
 static void init_windows(void);
-static void initialize_file_paths(void);
 static void handle_open_when_ready(void);
 static void play_sound(int event);
-static void update_term_visibility(void);
 static BOOL check_events(int wait);
 static void cocoa_file_open_hook(const char *path, file_type ftype);
+static bool cocoa_get_file(const char *suggested_name, char *path, size_t len);
 static BOOL send_event(NSEvent *event);
 static void record_current_savefile(void);
 
@@ -363,13 +463,10 @@ static bool initialized = FALSE;
 @interface AngbandView : NSView
 {
     IBOutlet AngbandContext *angbandContext;
-    NSSize scaleFromBaseSize;
 }
 
 - (void)setAngbandContext:(AngbandContext *)context;
 - (AngbandContext *)angbandContext;
-
-- (NSSize)scaleFromBaseSize;
 
 @end
 
@@ -391,6 +488,9 @@ static bool initialized = FALSE;
 
 @implementation AngbandContext
 
+@synthesize hasSubwindowFlags=_hasSubwindowFlags;
+@synthesize windowVisibilityChecked=_windowVisibilityChecked;
+
 - (NSFont *)selectionFont
 {
     return angbandViewFont;
@@ -408,24 +508,6 @@ static bool initialized = FALSE;
     return NSMakeSize(floor(cols * tileSize.width + 2 * borderSize.width), floor(rows * tileSize.height + 2 * borderSize.height));
 }
 
-- (NSSize)scaleFactor
-{
-    if (inLiveResize)
-    {
-        NSSize baseSize = [self baseSize];
-#if BUFFER_WITH_CGLAYER
-        CGSize currentSize = CGLayerGetSize(angbandLayer);
-#else
-        NSSize currentSize = [angbandImage size];
-#endif
-        return NSMakeSize(currentSize.width / baseSize.width, currentSize.height / baseSize.height);
-    }
-    else
-    {
-        return [[self activeView] scaleFromBaseSize];
-    }
-}
-
 // qsort-compatible compare function for CGSizes
 static int compare_advances(const void *ap, const void *bp)
 {
@@ -435,10 +517,9 @@ static int compare_advances(const void *ap, const void *bp)
 
 - (void)updateGlyphInfo
 {
-    
     // Update glyphArray and glyphWidths
     NSFont *screenFont = [angbandViewFont screenFont];
-    
+
     // Generate a string containing each MacRoman character
     unsigned char latinString[GLYPH_COUNT];
     size_t i;
@@ -451,7 +532,7 @@ static int compare_advances(const void *ap, const void *bp)
     [allCharsString autorelease];
     
     // Get glyphs
-    bzero(glyphArray, sizeof glyphArray);
+    memset(glyphArray, 0, sizeof glyphArray);
     CTFontGetGlyphsForCharacters((CTFontRef)screenFont, unicharString, glyphArray, GLYPH_COUNT);
     
     // Get advances. Record the max advance.
@@ -508,7 +589,6 @@ static int compare_advances(const void *ap, const void *bp)
     size.width = fmax(1, ceil(size.width));
     size.height = fmax(1, ceil(size.height));
     
-#if BUFFER_WITH_CGLAYER
     CGLayerRelease(angbandLayer);
     
     // make a bitmap context as an example for our layer
@@ -517,13 +597,7 @@ static int compare_advances(const void *ap, const void *bp)
     CGColorSpaceRelease(cs);
     angbandLayer = CGLayerCreateWithContext(exampleCtx, *(CGSize *)&size, NULL);
     CFRelease(exampleCtx);
-#else
-    
-    [angbandImage release];
-    angbandImage = [[NSImage alloc] initWithSize:size];
-    [angbandImage setFlipped:NO];
-#endif
-    
+
     [self lockFocus];
     [[NSColor blackColor] set];
     NSRectFill((NSRect){NSZeroPoint, [self baseSize]});
@@ -547,25 +621,6 @@ static int compare_advances(const void *ap, const void *bp)
     
     /* Restore the old term */
     Term_activate(old);
-}
-
-- (void)setScaleFactor:(NSSize)newScaleFactor
-{
-    NSSize baseSize = [self baseSize];
-    NSSize newSize = NSMakeSize(baseSize.width * newScaleFactor.width,
-        baseSize.height * newScaleFactor.height);
-    
-    NSWindow *window = [self makePrimaryWindow];
-    NSRect frame = [window frame];
-
-    // Note:
-    // oldorigin.y + frame.size.height == neworigin.y + newSize.height
-
-    frame.origin.y += frame.size.height - newSize.height;
-    frame.size = newSize;
-    
-    [window setFrame:frame display:YES];
-
 }
 
 - (void)setTerm:(term *)t
@@ -622,40 +677,17 @@ static int compare_advances(const void *ap, const void *bp)
     lastRefreshTime = CFAbsoluteTimeGetCurrent();
 }
 
-/* This is what our views call to get us to draw to the window */
-- (void)drawRect:(NSRect)rect inView:(NSView *)view
-{
-    /* Take this opportunity to throttle so we don't flush faster than desird. */
-    BOOL viewInLiveResize = [view inLiveResize];
-    if (! viewInLiveResize) [self throttle];
-    
-#if BUFFER_WITH_CGLAYER
-    /* With a GLayer, use CGContextDrawLayerInRect */
-    CGContextRef context = [[NSGraphicsContext currentContext] graphicsPort];
-    NSRect bounds = [view bounds];
-    if (viewInLiveResize) CGContextSetInterpolationQuality(context, kCGInterpolationLow);
-    CGContextSetBlendMode(context, kCGBlendModeCopy);
-    CGContextDrawLayerInRect(context, *(CGRect *)&bounds, angbandLayer); 
-    if (viewInLiveResize) CGContextSetInterpolationQuality(context, kCGInterpolationDefault);
-#else
-    /* NSImage just draws it. */
-    [angbandImage drawInRect:[view bounds] fromRect:NSZeroRect operation:NSCompositeCopy fraction:1.];
-#endif
-}
-
 - (void)drawWChar:(wchar_t)wchar inRect:(NSRect)tile
 {
     CGContextRef ctx = [[NSGraphicsContext currentContext] graphicsPort];
-    CGFloat tileOffsetY = -fontDescender;
-    CGFloat tileOffsetX;
+    CGFloat tileOffsetY = CTFontGetAscent( (CTFontRef)[angbandViewFont screenFont] );
+    CGFloat tileOffsetX = 0.0;
     NSFont *screenFont = [angbandViewFont screenFont];
     UniChar unicharString[2] = {(UniChar)wchar, 0};
 
     // Get glyph and advance
-    CGGlyph thisGlyphArray[1] = {};
-    CGSize advances[1] = {};
-    bzero(thisGlyphArray, 1);
-    bzero(advances, 1);
+    CGGlyph thisGlyphArray[1] = { 0 };
+    CGSize advances[1] = { { 0, 0 } };
     CTFontGetGlyphsForCharacters((CTFontRef)screenFont, unicharString, thisGlyphArray, 1);
     CGGlyph glyph = thisGlyphArray[0];
     CTFontGetAdvancesForGlyphs((CTFontRef)screenFont, kCTFontHorizontalOrientation, thisGlyphArray, advances, 1);
@@ -675,24 +707,24 @@ static int compare_advances(const void *ap, const void *bp)
         compressionRatio = NSWidth(tile) / advance.width;
         tileOffsetX = 0;
     }
-    
+
     
     /* Now draw it */
     CGAffineTransform textMatrix = CGContextGetTextMatrix(ctx);
     CGFloat savedA = textMatrix.a;
-    
+
     /* Set the position */
     textMatrix.tx = tile.origin.x + tileOffsetX;
     textMatrix.ty = tile.origin.y + tileOffsetY;
-    
+
     /* Maybe squish it horizontally. */
     if (compressionRatio != 1.)
     {
         textMatrix.a *= compressionRatio;
     }
-    
+
+    textMatrix = CGAffineTransformScale( textMatrix, 1.0, -1.0 );
     CGContextSetTextMatrix(ctx, textMatrix);
-    
     CGContextShowGlyphsWithAdvances(ctx, &glyph, &CGSizeZero, 1);
     
     /* Restore the text matrix if we messed with the compression ratio */
@@ -701,18 +733,19 @@ static int compare_advances(const void *ap, const void *bp)
         textMatrix.a = savedA;
         CGContextSetTextMatrix(ctx, textMatrix);
     }
+
+    textMatrix = CGAffineTransformScale( textMatrix, 1.0, -1.0 );
+    CGContextSetTextMatrix(ctx, textMatrix);
 }
 
 /* Indication that we're redrawing everything, so get rid of the overdraw cache. */
 - (void)clearOverdrawCache
 {
-    bzero(charOverdrawCache, self->cols * self->rows * sizeof *charOverdrawCache);
-    bzero(attrOverdrawCache, self->cols * self->rows * sizeof *attrOverdrawCache);
+    memset(charOverdrawCache, 0, self->cols * self->rows * sizeof *charOverdrawCache);
+    memset(attrOverdrawCache, 0, self->cols * self->rows * sizeof *attrOverdrawCache);
 }
 
 /* Lock and unlock focus on our image or layer, setting up the CTM appropriately. */
-#if BUFFER_WITH_CGLAYER
-
 - (CGContextRef)lockFocusUnscaled
 {
     /* Create an NSGraphicsContext representing this CGLayer */
@@ -739,53 +772,20 @@ static int compare_advances(const void *ap, const void *bp)
     return NSMakeSize(result.width, result.height);
 }
 
-#else
-
-- (CGContextRef)lockFocusUnscaled
-{
-    /* Just lock focus on our image */
-    [angbandImage lockFocus];
-    CGContextRef ctx = [[NSGraphicsContext currentContext] graphicsPort];
-    CGContextSaveGState(ctx);
-    return ctx;
-}
-
-- (void)unlockFocus
-{
-    /* Restore the graphics state */
-    CGContextRef ctx = [[NSGraphicsContext currentContext] graphicsPort];
-    CGContextRestoreGState(ctx);
-    [angbandImage unlockFocus];
-}
-
-- (NSSize)imageSize
-{
-    /* Return the image size */
-    return [angbandImage size];
-}
-
-#endif
-
 - (CGContextRef)lockFocus
 {
-    /* Do a lock focus unscaled, but then apply our scale factor */
-    CGContextRef ctx = [self lockFocusUnscaled];
-    NSSize scaleFactor = [self scaleFactor];
-    CGContextScaleCTM(ctx, scaleFactor.width, scaleFactor.height);
-    return ctx;
+    return [self lockFocusUnscaled];
 }
 
 
 - (NSRect)rectInImageForTileAtX:(int)x Y:(int)y
 {
-    /* Angband treats 0, 0 as upper left; we treat it as lower right */
-    int flippedY = rows - y - 1;
+    int flippedY = y;
     return NSMakeRect(x * tileSize.width + borderSize.width, flippedY * tileSize.height + borderSize.height, tileSize.width, tileSize.height);
 }
 
-- (void)setSelectionFont:(NSFont*)font
+- (void)setSelectionFont:(NSFont*)font adjustTerminal: (BOOL)adjustTerminal
 {
-    
     /* Record the new font */
     [font retain];
     [angbandViewFont release];
@@ -793,7 +793,14 @@ static int compare_advances(const void *ap, const void *bp)
     
     /* Update our glyph info */
     [self updateGlyphInfo];
-    
+
+    if( adjustTerminal )
+    {
+        // adjust terminal to fit window with new font; save the new columns and rows since they could be changed
+        NSRect contentRect = [self->primaryWindow contentRectForFrameRect: [self->primaryWindow frame]];
+        [self resizeTerminalWithContentRect: contentRect saveToDefaults: YES];
+    }
+
     /* Update our image */
     [self updateImage];
     
@@ -807,14 +814,14 @@ static int compare_advances(const void *ap, const void *bp)
 - (id)init
 {
     if ((self = [super init]))
-    {        
+    {
         /* Default rows and cols */
         self->cols = 80;
         self->rows = 24;
-        
+
         /* Default border size */
         self->borderSize = NSMakeSize(2, 2);
-        
+
         /* Allocate overdraw cache, unscanned and collectable. */
         self->charOverdrawCache = NSAllocateCollectable(self->cols * self->rows *sizeof *charOverdrawCache, 0);
         self->attrOverdrawCache = NSAllocateCollectable(self->cols * self->rows *sizeof *attrOverdrawCache, 0);
@@ -823,7 +830,9 @@ static int compare_advances(const void *ap, const void *bp)
         angbandViews = [[NSMutableArray alloc] init];
         
         /* Make the image. Since we have no views, it'll just be a puny 1x1 image. */
-        [self updateImage];        
+        [self updateImage];
+
+        _windowVisibilityChecked = NO;
     }
     return self;
 }
@@ -831,7 +840,6 @@ static int compare_advances(const void *ap, const void *bp)
 /* Destroy all the receiver's stuff. This is intended to be callable more than once. */
 - (void)dispose
 {
-    
     terminal = NULL;
     
     /* Disassociate ourselves from our angbandViews */
@@ -840,14 +848,9 @@ static int compare_advances(const void *ap, const void *bp)
     angbandViews = nil;
     
     /* Destroy the layer/image */
-#if BUFFER_WITH_CGLAYER
     CGLayerRelease(angbandLayer);
     angbandLayer = NULL;
-#else
-    [angbandImage release];
-    angbandImage = nil;
-#endif
-    
+
     /* Font */
     [angbandViewFont release];
     angbandViewFont = nil;
@@ -872,10 +875,67 @@ static int compare_advances(const void *ap, const void *bp)
     [super dealloc];
 }
 
+
+
+#pragma mark -
+#pragma mark Directories and Paths Setup
+
+/**
+ *  Return the path for Angband's lib directory and bail if it isn't found. The lib directory should be in the bundle's resources directory, since it's copied when built.
+ */
++ (NSString *)libDirectoryPath
+{
+    NSString *bundleLibPath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent: AngbandDirectoryNameLib];
+    BOOL isDirectory = NO;
+    BOOL libExists = [[NSFileManager defaultManager] fileExistsAtPath: bundleLibPath isDirectory: &isDirectory];
+
+    if( !libExists || !isDirectory )
+    {
+        NSLog( @"[%@ %@]: can't find %@/ in bundle: isDirectory: %d libExists: %d", NSStringFromClass( [self class] ), NSStringFromSelector( _cmd ), AngbandDirectoryNameLib, isDirectory, libExists );
+        NSRunAlertPanel( @"Missing Resources", @"Angband was unable to find required resources and must quit. Please report a bug on the Angband forums.", @"Quit", nil, nil );
+        exit( 0 );
+    }
+
+    // angband requires the trailing slash for the directory path
+    return [bundleLibPath stringByAppendingString: @"/"];
+}
+
+/**
+ *  Return the path for the directory where Angband should look for its standard user file tree.
+ */
++ (NSString *)angbandDocumentsPath
+{
+    // angband requires the trailing slash, so we'll just add it here; NSString won't care about it when we use the base path for other things
+    NSString *documents = [NSSearchPathForDirectoriesInDomains( NSDocumentDirectory, NSUserDomainMask, YES ) lastObject];
+
+#if defined(SAFE_DIRECTORY)
+    NSString *versionedDirectory = [NSString stringWithFormat: @"%@-%s", AngbandDirectoryNameBase, VERSION_STRING];
+    return [[documents stringByAppendingPathComponent: versionedDirectory] stringByAppendingString: @"/"];
+#else
+    return [[documents stringByAppendingPathComponent: AngbandDirectoryNameBase] stringByAppendingString: @"/"];
+#endif
+}
+
+/**
+ *  Give Angband the base paths that should be used for the various directories it needs. It will create any needed directories.
+ */
++ (void)prepareFilePathsAndDirectories
+{
+    char libpath[PATH_MAX + 1] = "\0";
+    char basepath[PATH_MAX + 1] = "\0";
+
+    [[self libDirectoryPath] getFileSystemRepresentation: libpath maxLength: sizeof(libpath)];
+    [[self angbandDocumentsPath] getFileSystemRepresentation: basepath maxLength: sizeof(basepath)];
+
+    init_file_paths( libpath, libpath, basepath );
+    create_needed_dirs();
+}
+
+#pragma mark -
+
 /* Entry point for initializing Angband */
 + (void)beginGame
 {
-    
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     
     //set the command hook
@@ -887,9 +947,12 @@ static int compare_advances(const void *ap, const void *bp)
     
 	/* Hook in to the file_open routine */
 	file_open_hook = cocoa_file_open_hook;
-    
+
+    /* Hook into file saving dialogue routine */
+    get_file = cocoa_get_file;
+
     // initialize file paths
-    initialize_file_paths();
+    [self prepareFilePathsAndDirectories];
 
     // load preferences
     load_prefs();
@@ -1007,6 +1070,7 @@ static int compare_advances(const void *ap, const void *bp)
     }
 }
 
+
 - (void)removeAngbandView:(AngbandView *)view
 {
     if ([angbandViews containsObject:view])
@@ -1047,35 +1111,59 @@ static NSMenuItem *superitem(NSMenuItem *self)
 {
     if (! primaryWindow)
     {
-        /* The base size is quite small, so double its width and height as an initial guess */
-        NSRect contentRect = {NSZeroPoint, [self baseSize]};
-        contentRect.size.width *= 2;
-        contentRect.size.height *= 2;
-        
-        primaryWindow = [[NSWindow alloc] initWithContentRect:contentRect styleMask:NSTitledWindowMask | NSResizableWindowMask | NSMiniaturizableWindowMask backing:NSBackingStoreBuffered defer:YES];
-        
+        // this has to be done after the font is set, which it already is in term_init_cocoa()
+        CGFloat width = self->cols * tileSize.width + borderSize.width * 2.0;
+        CGFloat height = self->rows * tileSize.height + borderSize.height * 2.0;
+        NSRect contentRect = NSMakeRect( 0.0, 0.0, width, height );
+
+        NSUInteger styleMask = NSTitledWindowMask | NSResizableWindowMask | NSMiniaturizableWindowMask;
+
+        // make every window other than the main window closable
+        if( angband_term[0]->data != self )
+        {
+            styleMask |= NSClosableWindowMask;
+        }
+
+        primaryWindow = [[NSWindow alloc] initWithContentRect:contentRect styleMask: styleMask backing:NSBackingStoreBuffered defer:YES];
+
         /* Not to be released when closed */
         [primaryWindow setReleasedWhenClosed:NO];
-        
+        [primaryWindow setExcludedFromWindowsMenu: YES]; // we're using custom window menu handling
+
         /* Make the view */
         AngbandView *angbandView = [[AngbandView alloc] initWithFrame:contentRect];
         [angbandView setAngbandContext:self];
         [angbandViews addObject:angbandView];
         [primaryWindow setContentView:angbandView];
         [angbandView release];
-        
+
         /* We are its delegate */
         [primaryWindow setDelegate:self];
-        
+
         /* Update our image, since this is probably the first angband view we've gotten. */
         [self updateImage];
     }
     return primaryWindow;
 }
 
-- (void)orderFront
+
+
+#pragma mark View/Window Passthrough
+
+/* This is what our views call to get us to draw to the window */
+- (void)drawRect:(NSRect)rect inView:(NSView *)view
 {
-    [[[angbandViews lastObject] window] makeKeyAndOrderFront:self];
+    /* Take this opportunity to throttle so we don't flush faster than desird. */
+    BOOL viewInLiveResize = [view inLiveResize];
+    if (! viewInLiveResize) [self throttle];
+
+    /* With a GLayer, use CGContextDrawLayerInRect */
+    CGContextRef context = [[NSGraphicsContext currentContext] graphicsPort];
+    NSRect bounds = [view bounds];
+    if (viewInLiveResize) CGContextSetInterpolationQuality(context, kCGInterpolationLow);
+    CGContextSetBlendMode(context, kCGBlendModeCopy);
+    CGContextDrawLayerInRect(context, *(CGRect *)&bounds, angbandLayer);
+    if (viewInLiveResize) CGContextSetInterpolationQuality(context, kCGInterpolationDefault);
 }
 
 - (BOOL)isOrderedIn
@@ -1083,32 +1171,9 @@ static NSMenuItem *superitem(NSMenuItem *self)
     return [[[angbandViews lastObject] window] isVisible];
 }
 
-- (BOOL)isKeyWindow
+- (BOOL)isMainWindow
 {
-    return [[[angbandViews lastObject] window] isKeyWindow];
-}
-
-- (void)orderOut
-{
-    [[[angbandViews lastObject] window] orderOut:self];
-}
-
-
-- (NSRect)convertBaseRect:(NSRect)rect toView:(NSView *)angbandView
-{
-    if (! angbandView) return NSZeroRect;
-    
-    NSSize ourSize = [self baseSize];
-    NSSize theirSize = [angbandView bounds].size;
-    
-    double dx = theirSize.width / ourSize.width;
-    double dy = theirSize.height / ourSize.height;
-    
-    rect.size.width *= dx;
-    rect.origin.x *= dx;
-    rect.size.height *= dy;
-    rect.origin.y *= dy;
-    return rect;
+    return [[[angbandViews lastObject] window] isMainWindow];
 }
 
 - (void)setNeedsDisplay:(BOOL)val
@@ -1123,7 +1188,7 @@ static NSMenuItem *superitem(NSMenuItem *self)
 {
     for (NSView *angbandView in angbandViews)
     {
-        [angbandView setNeedsDisplayInRect:[self convertBaseRect:rect toView:angbandView]];
+        [angbandView setNeedsDisplayInRect: rect];
     }
 }
 
@@ -1132,12 +1197,215 @@ static NSMenuItem *superitem(NSMenuItem *self)
     [[self activeView] displayIfNeeded];
 }
 
+- (void)resizeOverdrawCache
+{
+    /* Free overdraw cache (unless we're GC, in which case it was allocated collectable) */
+    if (! [NSGarbageCollector defaultCollector]) free(self->charOverdrawCache);
+    self->charOverdrawCache = NULL;
+    if (! [NSGarbageCollector defaultCollector]) free(self->attrOverdrawCache);
+    self->attrOverdrawCache = NULL;
+
+    /* Allocate overdraw cache, unscanned and collectable. */
+    self->charOverdrawCache = NSAllocateCollectable(self->cols * self->rows *sizeof *charOverdrawCache, 0);
+    self->attrOverdrawCache = NSAllocateCollectable(self->cols * self->rows *sizeof *attrOverdrawCache, 0);
+}
+
+- (int)terminalIndex
+{
+	int termIndex = 0;
+
+	for( termIndex = 0; termIndex < ANGBAND_TERM_MAX; termIndex++ )
+	{
+		if( angband_term[termIndex] == self->terminal )
+		{
+			break;
+		}
+	}
+
+	return termIndex;
+}
+
+- (void)resizeTerminalWithContentRect: (NSRect)contentRect saveToDefaults: (BOOL)saveToDefaults
+{
+    CGFloat newRows = floor( (contentRect.size.height - (borderSize.height * 2.0)) / tileSize.height );
+    CGFloat newColumns = ceil( (contentRect.size.width - (borderSize.width * 2.0)) / tileSize.width );
+
+    self->cols = newColumns;
+    self->rows = newRows;
+    [self resizeOverdrawCache];
+
+    if( saveToDefaults )
+    {
+        int termIndex = [self terminalIndex];
+        NSArray *terminals = [[NSUserDefaults standardUserDefaults] valueForKey: AngbandTerminalsDefaultsKey];
+
+        if( termIndex < (int)[terminals count] )
+        {
+            NSMutableDictionary *mutableTerm = [[NSMutableDictionary alloc] initWithDictionary: [terminals objectAtIndex: termIndex]];
+            [mutableTerm setValue: [NSNumber numberWithUnsignedInt: self->cols] forKey: AngbandTerminalColumnsDefaultsKey];
+            [mutableTerm setValue: [NSNumber numberWithUnsignedInt: self->rows] forKey: AngbandTerminalRowsDefaultsKey];
+
+            NSMutableArray *mutableTerminals = [[NSMutableArray alloc] initWithArray: terminals];
+            [mutableTerminals replaceObjectAtIndex: termIndex withObject: mutableTerm];
+
+            [[NSUserDefaults standardUserDefaults] setValue: mutableTerminals forKey: AngbandTerminalsDefaultsKey];
+            [mutableTerminals release];
+            [mutableTerm release];
+        }
+    }
+
+    term *old = Term;
+    Term_activate( self->terminal );
+    Term_resize( (int)newColumns, (int)newRows);
+    Term_redraw();
+    Term_activate( old );
+}
+
+- (void)saveWindowVisibleToDefaults: (BOOL)windowVisible
+{
+	int termIndex = [self terminalIndex];
+	BOOL safeVisibility = (termIndex == 0) ? YES : windowVisible; // ensure main term doesn't go away because of these defaults
+	NSArray *terminals = [[NSUserDefaults standardUserDefaults] valueForKey: AngbandTerminalsDefaultsKey];
+
+	if( termIndex < (int)[terminals count] )
+	{
+		NSMutableDictionary *mutableTerm = [[NSMutableDictionary alloc] initWithDictionary: [terminals objectAtIndex: termIndex]];
+		[mutableTerm setValue: [NSNumber numberWithBool: safeVisibility] forKey: AngbandTerminalVisibleDefaultsKey];
+
+		NSMutableArray *mutableTerminals = [[NSMutableArray alloc] initWithArray: terminals];
+		[mutableTerminals replaceObjectAtIndex: termIndex withObject: mutableTerm];
+
+		[[NSUserDefaults standardUserDefaults] setValue: mutableTerminals forKey: AngbandTerminalsDefaultsKey];
+		[mutableTerminals release];
+		[mutableTerm release];
+	}
+}
+
+- (BOOL)windowVisibleUsingDefaults
+{
+	int termIndex = [self terminalIndex];
+
+	if( termIndex == 0 )
+	{
+		return YES;
+	}
+
+	NSArray *terminals = [[NSUserDefaults standardUserDefaults] valueForKey: AngbandTerminalsDefaultsKey];
+	BOOL visible = NO;
+
+	if( termIndex < (int)[terminals count] )
+	{
+		NSDictionary *term = [terminals objectAtIndex: termIndex];
+		NSNumber *visibleValue = [term valueForKey: AngbandTerminalVisibleDefaultsKey];
+
+		if( visibleValue != nil )
+		{
+			visible = [visibleValue boolValue];
+		}
+	}
+
+	return visible;
+}
+
+#pragma mark -
+#pragma mark NSWindowDelegate Methods
+
+//- (void)windowWillStartLiveResize: (NSNotification *)notification
+//{
+//}
+
+- (void)windowDidEndLiveResize: (NSNotification *)notification
+{
+    NSWindow *window = [notification object];
+    NSRect contentRect = [window contentRectForFrameRect: [window frame]];
+    [self resizeTerminalWithContentRect: contentRect saveToDefaults: YES];
+}
+
+//- (NSSize)windowWillResize: (NSWindow *)sender toSize: (NSSize)frameSize
+//{
+//}
+
+- (void)windowDidEnterFullScreen: (NSNotification *)notification
+{
+    NSWindow *window = [notification object];
+    NSRect contentRect = [window contentRectForFrameRect: [window frame]];
+    [self resizeTerminalWithContentRect: contentRect saveToDefaults: NO];
+}
+
+- (void)windowDidExitFullScreen: (NSNotification *)notification
+{
+    NSWindow *window = [notification object];
+    NSRect contentRect = [window contentRectForFrameRect: [window frame]];
+    [self resizeTerminalWithContentRect: contentRect saveToDefaults: NO];
+}
+
+- (void)windowDidBecomeMain:(NSNotification *)notification
+{
+    NSWindow *window = [notification object];
+
+    if( window != self->primaryWindow )
+    {
+        return;
+    }
+
+    int termIndex = 0;
+
+    for( termIndex = 0; termIndex < ANGBAND_TERM_MAX; termIndex++ )
+    {
+        if( angband_term[termIndex] == self->terminal )
+        {
+            break;
+        }
+    }
+
+    NSMenuItem *item = [[[NSApplication sharedApplication] windowsMenu] itemWithTag: AngbandWindowMenuItemTagBase + termIndex];
+    [item setState: NSOnState];
+
+    if( [[NSFontPanel sharedFontPanel] isVisible] )
+    {
+        [[NSFontPanel sharedFontPanel] setPanelFont: [self selectionFont] isMultiple: NO];
+    }
+}
+
+- (void)windowDidResignMain: (NSNotification *)notification
+{
+    NSWindow *window = [notification object];
+
+    if( window != self->primaryWindow )
+    {
+        return;
+    }
+
+    int termIndex = 0;
+
+    for( termIndex = 0; termIndex < ANGBAND_TERM_MAX; termIndex++ )
+    {
+        if( angband_term[termIndex] == self->terminal )
+        {
+            break;
+        }
+    }
+
+    NSMenuItem *item = [[[NSApplication sharedApplication] windowsMenu] itemWithTag: AngbandWindowMenuItemTagBase + termIndex];
+    [item setState: NSOffState];
+}
+
+- (void)windowWillClose: (NSNotification *)notification
+{
+	[self saveWindowVisibleToDefaults: NO];
+}
+
 @end
 
 
 @implementation AngbandView
 
 - (BOOL)isOpaque
+{
+    return YES;
+}
+
+- (BOOL)isFlipped
 {
     return YES;
 }
@@ -1155,14 +1423,6 @@ static NSMenuItem *superitem(NSMenuItem *self)
         /* Tell the Angband context to draw into us */
         [angbandContext drawRect:rect inView:self];
     }
-}
-
-- (NSSize)scaleFromBaseSize
-{
-    if (! angbandContext) return NSMakeSize(1, 1);
-    NSSize baseSize = [angbandContext baseSize];
-    NSSize boundsSize = [self bounds].size;
-    return NSMakeSize(boundsSize.width / baseSize.width, boundsSize.height / baseSize.height);
 }
 
 - (void)setAngbandContext:(AngbandContext *)context
@@ -1239,7 +1499,6 @@ static void record_current_savefile(void)
 static void Term_init_cocoa(term *t)
 {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-    
     AngbandContext *context = [[AngbandContext alloc] init];
     
     /* Give the term a hard retain on context (for GC) */
@@ -1263,16 +1522,37 @@ static void Term_init_cocoa(term *t)
             break;
         }
     }
-    
+
     /* Set its font. */
-    NSString *fontName = [[NSUserDefaults angbandDefaults] 
-        stringForKey:[NSString stringWithFormat:@"FontName-%d", termIdx]];
+    NSString *fontName = [[NSUserDefaults angbandDefaults] stringForKey:[NSString stringWithFormat:@"FontName-%d", termIdx]];
     if (! fontName) fontName = [default_font fontName];
-    float fontSize = [[NSUserDefaults angbandDefaults] 
-        floatForKey:[NSString stringWithFormat:@"FontSize-%d", termIdx]];
-    if (! fontSize) fontSize = [default_font pointSize];
-    [context setSelectionFont:[NSFont fontWithName:fontName size:fontSize]];
-        
+
+    // use a smaller default font for the other windows, but only if the font hasn't been explicitly set
+    float fontSize = (termIdx > 0) ? 10.0 : [default_font pointSize];
+    NSNumber *fontSizeNumber = [[NSUserDefaults angbandDefaults] valueForKey: [NSString stringWithFormat: @"FontSize-%d", termIdx]];
+
+    if( fontSizeNumber != nil )
+    {
+        fontSize = [fontSizeNumber floatValue];
+    }
+
+    [context setSelectionFont:[NSFont fontWithName:fontName size:fontSize] adjustTerminal: NO];
+
+    NSArray *terminalDefaults = [[NSUserDefaults standardUserDefaults] valueForKey: AngbandTerminalsDefaultsKey];
+    NSInteger rows = 24;
+    NSInteger columns = 80;
+
+    if( termIdx < (int)[terminalDefaults count] )
+    {
+        NSDictionary *term = [terminalDefaults objectAtIndex: termIdx];
+        rows = [[term valueForKey: AngbandTerminalRowsDefaultsKey] integerValue];
+        columns = [[term valueForKey: AngbandTerminalColumnsDefaultsKey] integerValue];
+    }
+
+    context->cols = columns;
+    context->rows = rows;
+    [context resizeOverdrawCache];
+
     /* Get the window */
     NSWindow *window = [context makePrimaryWindow];
     
@@ -1284,7 +1564,6 @@ static void Term_init_cocoa(term *t)
     else
     {
         [window setTitle:[NSString stringWithFormat:@"Term %d", termIdx]];
-        [context setScaleFactor:NSMakeSize(1,1)];
     }
     
     
@@ -1301,22 +1580,76 @@ static void Term_init_cocoa(term *t)
     {
         [window setRestorable:NO];
     }
-    
-    /* Position the window, either through autosave or cascading it */
-    [window center];
-    
-    /* Cascade it */
-    static NSPoint lastPoint = {0, 0};
-    lastPoint = [window cascadeTopLeftFromPoint:lastPoint];
-    
-    /* And maybe that's all for naught */
-    if (autosaveName) [window setFrameAutosaveName:autosaveName];
-    
+
+	/* default window placement */ {
+		static NSRect overallBoundingRect;
+
+		if( termIdx == 0 )
+		{
+			// this is a bit of a trick to allow us to display multiple windows in the "standard default" window position in OS X: the upper center of the screen.
+			// the term sizes set in load_prefs() are based on a 5-wide by 3-high grid, with the main term being 4/5 wide by 2/3 high (hence the scaling to find
+			// what the containing rect would be).
+			NSRect originalMainTermFrame = [window frame];
+			NSRect scaledFrame = originalMainTermFrame;
+			scaledFrame.size.width *= 5.0 / 4.0;
+			scaledFrame.size.height *= 3.0 / 2.0;
+			scaledFrame.size.width += 1.0; // spacing between window columns
+			scaledFrame.size.height += 1.0; // spacing between window rows
+			[window setFrame: scaledFrame  display: NO];
+			[window center];
+			overallBoundingRect = [window frame];
+			[window setFrame: originalMainTermFrame display: NO];
+		}
+
+		static NSRect mainTermBaseRect;
+		NSRect windowFrame = [window frame];
+
+		if( termIdx == 0 )
+		{
+			// the height and width adjustments were determined experimentally, so that the rest of the windows line up nicely without overlapping
+            windowFrame.size.width += 7.0;
+			windowFrame.size.height += 9.0;
+			windowFrame.origin.x = NSMinX( overallBoundingRect );
+			windowFrame.origin.y = NSMaxY( overallBoundingRect ) - NSHeight( windowFrame );
+			mainTermBaseRect = windowFrame;
+		}
+		else if( termIdx == 1 )
+		{
+			windowFrame.origin.x = NSMinX( mainTermBaseRect );
+			windowFrame.origin.y = NSMinY( mainTermBaseRect ) - NSHeight( windowFrame ) - 1.0;
+		}
+		else if( termIdx == 2 )
+		{
+			windowFrame.origin.x = NSMaxX( mainTermBaseRect ) + 1.0;
+			windowFrame.origin.y = NSMaxY( mainTermBaseRect ) - NSHeight( windowFrame );
+		}
+		else if( termIdx == 3 )
+		{
+			windowFrame.origin.x = NSMaxX( mainTermBaseRect ) + 1.0;
+			windowFrame.origin.y = NSMinY( mainTermBaseRect ) - NSHeight( windowFrame ) - 1.0;
+		}
+		else if( termIdx == 4 )
+		{
+			windowFrame.origin.x = NSMaxX( mainTermBaseRect ) + 1.0;
+			windowFrame.origin.y = NSMinY( mainTermBaseRect );
+		}
+		else if( termIdx == 5 )
+		{
+			windowFrame.origin.x = NSMinX( mainTermBaseRect ) + NSWidth( windowFrame ) + 1.0;
+			windowFrame.origin.y = NSMinY( mainTermBaseRect ) - NSHeight( windowFrame ) - 1.0;
+		}
+
+		[window setFrame: windowFrame display: NO];
+	}
+
+	// override the default frame above if the user has adjusted windows in the past
+	if (autosaveName) [window setFrameAutosaveName:autosaveName];
+
     /* Tell it about its term. Do this after we've sized it so that the sizing doesn't trigger redrawing and such. */
     [context setTerm:t];
     
-    /* Only order front if it's the first term. Other terms will be ordered front from update_term_visibility(). This is to work around a problem where Angband aggressively tells us to initialize terms that don't do anything! */
-    if (t == angband_term[0]) [context orderFront];
+    /* Only order front if it's the first term. Other terms will be ordered front from AngbandUpdateWindowVisibility(). This is to work around a problem where Angband aggressively tells us to initialize terms that don't do anything! */
+    if (t == angband_term[0]) [context->primaryWindow makeKeyAndOrderFront: nil];
     
     NSEnableScreenUpdates();
     
@@ -1399,12 +1732,15 @@ static CGImageRef create_angband_image(NSString *name)
                 contextBitmapInfo |= kCGImageAlphaPremultipliedLast;
                 break;
         }
-        
+
+        // draw the source image flipped, since the view is flipped
         CGContextRef ctx = CGBitmapContextCreate(NULL, width, height, CGImageGetBitsPerComponent(decodedImage), CGImageGetBytesPerRow(decodedImage), CGImageGetColorSpace(decodedImage), contextBitmapInfo);
         CGContextSetBlendMode(ctx, kCGBlendModeCopy);
+        CGContextTranslateCTM(ctx, 0.0, height);
+        CGContextScaleCTM(ctx, 1.0, -1.0);
         CGContextDrawImage(ctx, CGRectMake(0, 0, width, height), decodedImage);
         result = CGBitmapContextCreateImage(ctx);
-        
+
         /* Done with these things */
         CFRelease(ctx);
         CGImageRelease(decodedImage);
@@ -1427,7 +1763,6 @@ static errr Term_xtra_cocoa_react(void)
     int expected_graf_mode = (current_graphics_mode ? current_graphics_mode->grafID : GRAF_MODE_NONE);
     if (graf_mode_req != expected_graf_mode)
     {
-        
         graphics_mode *new_mode;
 		if (graf_mode_req != GRAF_MODE_NONE) {
 			new_mode = get_graphics_mode(graf_mode_req);
@@ -1512,9 +1847,9 @@ static errr Term_xtra_cocoa(int n, int v)
             /* Process random events */
         case TERM_XTRA_BORED:
         {
-            /* Update our windows so that we reflect what's in p_ptr */
-            (void)update_term_visibility();
-            
+            // show or hide cocoa windows based on the subwindow flags set by the user
+            AngbandUpdateWindowVisibility();
+
             /* Process an event */
             (void)check_events(CHECK_EVENTS_NO_WAIT);
             
@@ -1552,7 +1887,7 @@ static errr Term_xtra_cocoa(int n, int v)
             /* Clear the screen */
         case TERM_XTRA_CLEAR:
         {        
-            [angbandContext lockFocusUnscaled];
+            [angbandContext lockFocus];
             [[NSColor blackColor] set];
             NSRect imageRect = {NSZeroPoint, [angbandContext imageSize]};            
             NSRectFillUsingOperation(imageRect, NSCompositeCopy);
@@ -1625,18 +1960,11 @@ static errr Term_curs_cocoa(int x, int y)
     /* We'll need to redisplay in that rect */
     NSRect redisplayRect = rect;
 
-    /* Scale the rect. Normally lockFocus would set up the CTM for us, but here we're calling lockFocusUnscaled so we can have a uniform cursor size (e.g. 1 px) regardless of the scale factor. */
-    NSSize scaleFactor = [angbandContext scaleFactor];
-    rect.origin.x *= scaleFactor.width;
-    rect.origin.y *= scaleFactor.height;
-    rect.size.width *= scaleFactor.width;
-    rect.size.height *= scaleFactor.height;
-    
     /* Go to the pixel boundaries corresponding to this tile */
-    rect = crack_rect(rect, NSMakeSize(1, 1), push_options(x, y));
+    rect = crack_rect(rect, AngbandScaleIdentity, push_options(x, y));
     
     /* Lock focus and draw it */
-    [angbandContext lockFocusUnscaled];
+    [angbandContext lockFocus];
     [[NSColor yellowColor] set];
     NSFrameRectWithWidth(rect, 1);
     [angbandContext unlockFocus];
@@ -1683,16 +2011,22 @@ static errr Term_wipe_cocoa(int x, int y, int n)
 
 static void draw_image_tile(CGImageRef image, NSRect srcRect, NSRect dstRect, NSCompositingOperation op)
 {
+    // flip the source rect since the source image is flipped
+    CGAffineTransform flip = CGAffineTransformIdentity;
+    flip = CGAffineTransformTranslate(flip, 0.0, CGImageGetHeight(image));
+    flip = CGAffineTransformScale(flip, 1.0, -1.0);
+    CGRect flippedSourceRect = CGRectApplyAffineTransform(NSRectToCGRect(srcRect), flip);
+
     /* When we use high-quality resampling to draw a tile, pixels from outside the tile may bleed in, causing graphics artifacts. Work around that. */
-    CGImageRef subimage = CGImageCreateWithImageInRect(image, *(CGRect *)&srcRect);
+    CGImageRef subimage = CGImageCreateWithImageInRect(image, flippedSourceRect);
     NSGraphicsContext *context = [NSGraphicsContext currentContext];
     [context setCompositingOperation:op];
-    CGContextDrawImage([context graphicsPort], *(CGRect *)&dstRect, subimage);
+    CGContextDrawImage([context graphicsPort], NSRectToCGRect(dstRect), subimage);
     CGImageRelease(subimage);
 }
 
-static errr Term_pict_cocoa(int x, int y, int n, const byte *ap,
-                            const wchar_t *cp, const byte *tap,
+static errr Term_pict_cocoa(int x, int y, int n, const int *ap,
+                            const wchar_t *cp, const int *tap,
                             const wchar_t *tcp)
 {
     
@@ -1701,7 +2035,7 @@ static errr Term_pict_cocoa(int x, int y, int n, const byte *ap,
     
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     AngbandContext* angbandContext = Term->data;
-    
+
     /* Indicate that we have a picture here (and hence this should not be overdrawn by Term_text_cocoa) */
     angbandContext->charOverdrawCache[y * angbandContext->cols + x] = NO_OVERDRAW;
     
@@ -1709,25 +2043,25 @@ static errr Term_pict_cocoa(int x, int y, int n, const byte *ap,
     [angbandContext lockFocus];
     
     NSRect destinationRect = [angbandContext rectInImageForTileAtX:x Y:y];
-    NSSize scaleFactor = [angbandContext scaleFactor];
-    
+
     /* Expand the rect to every touching pixel to figure out what to redisplay */
-    NSRect redisplayRect = crack_rect(destinationRect, scaleFactor, PUSH_RIGHT | PUSH_TOP | PUSH_BOTTOM | PUSH_LEFT);
+    NSRect redisplayRect = crack_rect(destinationRect, AngbandScaleIdentity, PUSH_RIGHT | PUSH_TOP | PUSH_BOTTOM | PUSH_LEFT);
     
     /* Expand our destinationRect */
-    destinationRect = crack_rect(destinationRect, scaleFactor, push_options(x, y));
+    destinationRect = crack_rect(destinationRect, AngbandScaleIdentity, push_options(x, y));
     
     /* Scan the input */
     int i;
     int graf_width = current_graphics_mode->cell_width;
     int graf_height = current_graphics_mode->cell_height;
+
     for (i = 0; i < n; i++)
     {
         
-        byte a = *ap++;
+        int a = *ap++;
         wchar_t c = *cp++;
         
-        byte ta = *tap++;
+        int ta = *tap++;
         wchar_t tc = *tcp++;
         
         
@@ -1786,10 +2120,10 @@ static errr Term_pict_cocoa(int x, int y, int n, const byte *ap,
  *
  * Draw several ("n") chars, with an attr, at a given location.
  */
-static errr Term_text_cocoa(int x, int y, int n, byte a, const wchar_t *cp)
+static errr Term_text_cocoa(int x, int y, int n, int a, const wchar_t *cp)
 {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-    
+
     /* Subpixel rendering looks really nice!  Unfortunately, drawing a string like this:
      .@
      causes subpixels to extend slightly into the region 'owned' by the period.  This means that when the user presses right,
@@ -1812,9 +2146,7 @@ static errr Term_text_cocoa(int x, int y, int n, byte a, const wchar_t *cp)
     
     /* Focus on our layer */
     [angbandContext lockFocus];
-    
-    NSSize scaleFactor = [angbandContext scaleFactor];
-    
+
     /* Starting pixel */
     NSRect charRect = [angbandContext rectInImageForTileAtX:x Y:y];
     
@@ -1826,10 +2158,21 @@ static errr Term_text_cocoa(int x, int y, int n, byte a, const wchar_t *cp)
     leftPushOptions &= ~ PUSH_RIGHT;
     rightPushOptions &= ~ PUSH_LEFT;
     
-    [[NSColor blackColor] set];
+    switch (a / MAX_COLORS) {
+    case BG_BLACK:
+	    [[NSColor blackColor] set];
+	    break;
+    case BG_SAME:
+	    set_color_for_index(a % MAX_COLORS);
+	    break;
+    case BG_DARK:
+	    set_color_for_index(TERM_SHADE);
+	    break;
+    }
+    
     NSRect rectToClear = charRect;
     rectToClear.size.width = tileWidth * n;
-    NSRectFill(crack_rect(rectToClear, scaleFactor, leftPushOptions | rightPushOptions));
+    NSRectFill(crack_rect(rectToClear, AngbandScaleIdentity, leftPushOptions | rightPushOptions));
     
     NSFont *selectionFont = [[angbandContext selectionFont] screenFont];
     [selectionFont set];
@@ -1844,14 +2187,25 @@ static errr Term_text_cocoa(int x, int y, int n, byte a, const wchar_t *cp)
         if (overdrawX >= 0 && (size_t)overdrawX < angbandContext->cols)
         {
             wchar_t previouslyDrawnVal = angbandContext->charOverdrawCache[y * angbandContext->cols + overdrawX];
+	    int previouslyDrawnAttr = angbandContext->attrOverdrawCache[y * angbandContext->cols + overdrawX];
             // Don't overdraw if it's not text
             if (previouslyDrawnVal != NO_OVERDRAW)
             {
                 NSRect overdrawRect = [angbandContext rectInImageForTileAtX:overdrawX Y:y];
-                NSRect expandedRect = crack_rect(overdrawRect, scaleFactor, push_options(overdrawX, y));
+                NSRect expandedRect = crack_rect(overdrawRect, AngbandScaleIdentity, push_options(overdrawX, y));
                 
                 // Make sure we redisplay it
-                [[NSColor blackColor] set];
+		switch (previouslyDrawnAttr / MAX_COLORS) {
+		case BG_BLACK:
+		    [[NSColor blackColor] set];
+		    break;
+		case BG_SAME:
+		    set_color_for_index(previouslyDrawnAttr % MAX_COLORS);
+		    break;
+		case BG_DARK:
+		    set_color_for_index(TERM_SHADE);
+		    break;
+		}
                 NSRectFill(expandedRect);
                 redisplayRect = NSUnionRect(redisplayRect, expandedRect);
                 
@@ -1868,7 +2222,7 @@ static errr Term_text_cocoa(int x, int y, int n, byte a, const wchar_t *cp)
     }
     
     /* Set the color */
-    set_color_for_index(a);
+    set_color_for_index(a % MAX_COLORS);
     
     /* Draw each */
     NSRect rectToDraw = charRect;
@@ -1954,12 +2308,23 @@ static void wakeup_event_loop(void)
  * Create and initialize window number "i"
  */
 static term *term_data_link(int i)
-{    
+{
+    NSArray *terminalDefaults = [[NSUserDefaults standardUserDefaults] valueForKey: AngbandTerminalsDefaultsKey];
+    NSInteger rows = 24;
+    NSInteger columns = 80;
+
+    if( i < (int)[terminalDefaults count] )
+    {
+        NSDictionary *term = [terminalDefaults objectAtIndex: i];
+        rows = [[term valueForKey: AngbandTerminalRowsDefaultsKey] integerValue];
+        columns = [[term valueForKey: AngbandTerminalColumnsDefaultsKey] integerValue];
+    }
+
     /* Allocate */
     term *newterm = ZNEW(term);
-    
+
     /* Initialize the term */
-    term_init(newterm, 80, 24, 256 /* keypresses, for some reason? */);
+    term_init(newterm, columns, rows, 256 /* keypresses, for some reason? */);
     
     /* Differentiate between BS/^h, Tab/^i, etc. */
     newterm->complex_input = TRUE;
@@ -1998,15 +2363,68 @@ static void load_prefs()
     NSUserDefaults *defs = [NSUserDefaults angbandDefaults];
     
     /* Make some default defaults */
+    NSMutableArray *defaultTerms = [[NSMutableArray alloc] init];
+
+    // the following default rows/cols were determined experimentally by first finding the ideal window/font size combinations.
+    // but because of awful temporal coupling in Term_init_cocoa(), it's impossible to set up the defaults there, so we do it
+    // this way.
+    for( NSUInteger i = 0; i < ANGBAND_TERM_MAX; i++ )
+    {
+		int columns, rows;
+		BOOL visible = YES;
+
+		switch( i )
+		{
+			case 0:
+				columns = 129;
+				rows = 32;
+				break;
+			case 1:
+				columns = 84;
+				rows = 20;
+				break;
+			case 2:
+				columns = 42;
+				rows = 24;
+				break;
+			case 3:
+				columns = 42;
+				rows = 20;
+				break;
+			case 4:
+				columns = 42;
+				rows = 16;
+				break;
+			case 5:
+				columns = 84;
+				rows = 20;
+				break;
+			default:
+				columns = 80;
+				rows = 24;
+				visible = NO;
+				break;
+		}
+
+		NSDictionary *standardTerm = [NSDictionary dictionaryWithObjectsAndKeys:
+									  [NSNumber numberWithInt: rows], AngbandTerminalRowsDefaultsKey,
+									  [NSNumber numberWithInt: columns], AngbandTerminalColumnsDefaultsKey,
+									  [NSNumber numberWithBool: visible], AngbandTerminalVisibleDefaultsKey,
+									  nil];
+        [defaultTerms addObject: standardTerm];
+    }
+
     NSDictionary *defaults = [[NSDictionary alloc] initWithObjectsAndKeys:
                               @"Menlo", @"FontName",
                               [NSNumber numberWithFloat:13.f], @"FontSize",
                               [NSNumber numberWithInt:60], @"FramesPerSecond",
                               [NSNumber numberWithBool:YES], @"AllowSound",
                               [NSNumber numberWithInt:GRAPHICS_NONE], @"GraphicsID",
+                              defaultTerms, AngbandTerminalsDefaultsKey,
                               nil];
     [defs registerDefaults:defaults];
     [defaults release];
+    [defaultTerms release];
     
     /* preferred graphics mode */
     graf_mode_req = [defs integerForKey:@"GraphicsID"];
@@ -2023,7 +2441,7 @@ static void load_prefs()
 }
 
 /* Arbitary limit on number of possible samples per event */
-#define MAX_SAMPLES            8
+#define MAX_SAMPLES            16
 
 /* Struct representing all data for a set of event samples */
 typedef struct
@@ -2102,11 +2520,7 @@ static void load_sounds(void)
 		search[0] = '\0';
         
 		/* Make sure this is a valid event name */
-		for (event = MSG_MAX - 1; event >= 0; event--)
-		{
-			if (strcmp(msg_name, angband_sound_name[event]) == 0)
-				break;
-		}
+		event = message_lookup_by_sound_name(msg_name);
 		if (event < 0) continue;
         
 		/* Advance the sample list pointer so it's at the beginning of text */
@@ -2351,17 +2765,74 @@ static BOOL contains_angband_view(NSView *view)
     return NO;
 }
 
+
+/**
+ * Queue mouse presses if they occur in the map section of the main window.
+ */
+static void AngbandHandleEventMouseDown( NSEvent *event )
+{
+	AngbandContext *angbandContext = [[[event window] contentView] angbandContext];
+	AngbandContext *mainAngbandContext = angband_term[0]->data;
+
+	if (mainAngbandContext->primaryWindow && [[event window] windowNumber] == [mainAngbandContext->primaryWindow windowNumber])
+	{
+		int cols, rows, x, y;
+		Term_get_size(&cols, &rows);
+		NSSize tileSize = angbandContext->tileSize;
+		NSSize border = angbandContext->borderSize;
+		NSPoint windowPoint = [event locationInWindow];
+
+		// adjust for border; add border height because window origin is at bottom
+		windowPoint = NSMakePoint( windowPoint.x - border.width, windowPoint.y + border.height );
+
+		NSPoint p = [[[event window] contentView] convertPoint: windowPoint fromView: nil];
+		x = floor( p.x / tileSize.width );
+		y = floor( p.y / tileSize.height );
+
+		// being safe about this, since xcode doesn't seem to like the bool_hack stuff
+		BOOL displayingMapInterface = ((int)inkey_flag != 0);
+
+		// Sidebar plus border == thirteen characters; top row is reserved.
+		// Coordinates run from (0,0) to (cols-1, rows-1).
+		BOOL mouseInMapSection = (x > 13 && x <= cols - 1 && y > 0  && y <= rows - 2);
+
+		// if we are displaying a menu, allow clicks anywhere; if we are displaying the main
+		// game interface, only allow clicks in the map section
+		if (!displayingMapInterface || (displayingMapInterface && mouseInMapSection))
+		{
+			// [event buttonNumber] will return 0 for left click, 1 for right click, but this is safer
+			int button = ([event type] == NSLeftMouseDown) ? 1 : 2;
+
+#ifdef KC_MOD_ALT
+			NSUInteger eventModifiers = [event modifierFlags];
+			byte angbandModifiers = 0;
+			angbandModifiers |= (eventModifiers & NSShiftKeyMask) ? KC_MOD_SHIFT : 0;
+			angbandModifiers |= (eventModifiers & NSControlKeyMask) ? KC_MOD_CONTROL : 0;
+			angbandModifiers |= (eventModifiers & NSAlternateKeyMask) ? KC_MOD_ALT : 0;
+			button |= (angbandModifiers & 0x0F) << 4; // encode modifiers in the button number (see Term_mousepress())
+#endif
+
+			Term_mousepress(x, y, button);
+		}
+	}
+
+	/* Pass click through to permit focus change, resize, etc. */
+	[NSApp sendEvent:event];
+}
+
+
+
 /* Encodes an NSEvent Angband-style, or forwards it along.  Returns YES if the event was sent to Angband, NO if Cocoa (or nothing) handled it */
 static BOOL send_event(NSEvent *event)
 {
-        
+
     /* If the receiving window is not an Angband window, then do nothing */
     if (! contains_angband_view([[event window] contentView]))
     {
         [NSApp sendEvent:event];
         return NO;
     }
-    
+
     /* Analyze the event */
     switch ([event type])
     {
@@ -2469,49 +2940,9 @@ static BOOL send_event(NSEvent *event)
         }
             
         case NSLeftMouseDown:
-        {
-            /* Queue mouse presses if they occur in the map section
-             * of the main window.
-             */
-
-            AngbandContext *angbandContext =
-                [[[event window] contentView] angbandContext];
-            AngbandContext *mainAngbandContext =
-                angband_term[0]->data;
-
-            if (mainAngbandContext->primaryWindow &&
-                [[event window] windowNumber] ==
-                [mainAngbandContext->primaryWindow windowNumber])
-            {
-                int cols, rows, x, y;
-                Term_get_size(&cols, &rows);
-
-                /* Term_mousepress() expects the origin (0,0) at the upper
-                 * left, while locationInWindow puts the origin at the lower
-                 * left.
-                 */
-                NSPoint p = [event locationInWindow];
-                NSSize tileSize = angbandContext->tileSize;
-                NSSize scaleFactor = [angbandContext scaleFactor];
-                x = p.x/(tileSize.width * scaleFactor.width);
-                y = rows - p.y/(tileSize.height * scaleFactor.height);
-                    
-                /* Sidebar plus border == thirteen characters;
-                 * top row is reserved, and bottom row may have mouse buttons.
-                 * Coordinates run from (0,0) to (cols-1, rows-1).
-                 */
-                if ((x > 13 && x <= cols - 1 &&
-                     y > 0  && y <= rows - 2) ||
-                    (OPT(mouse_buttons) && y == rows - 1 && 
-                     x >= COL_MAP && x < COL_MAP + button_get_length()))
-                {
-                    Term_mousepress(x, y, 1);
-                }
-            }
-            /* Pass click through to permit focus change, resize, etc. */
-            [NSApp sendEvent:event];
+		case NSRightMouseDown:
+			AngbandHandleEventMouseDown(event);
             break;
-        }
 
         case NSApplicationDefined:
         {
@@ -2525,7 +2956,6 @@ static BOOL send_event(NSEvent *event)
         default:
             [NSApp sendEvent:event];
             return YES;
-            break;
     }
     return YES;
 }
@@ -2556,6 +2986,21 @@ static BOOL check_events(int wait)
         }
         else {
             event = [NSApp nextEventMatchingMask:-1 untilDate:endDate inMode:NSDefaultRunLoopMode dequeue:YES];
+
+			static BOOL periodicStarted = NO;
+
+			if (OPT(animate_flicker) && !periodicStarted) {
+				[NSEvent startPeriodicEventsAfterDelay: 0.0 withPeriod: 0.2];
+				periodicStarted = YES;
+			}
+			else if (!OPT(animate_flicker) && periodicStarted) {
+				[NSEvent stopPeriodicEvents];
+				periodicStarted = NO;
+			}
+
+			if (OPT(animate_flicker) && wait && periodicStarted && [event type] == NSPeriodic)
+				idle_update();
+
             if (! event)
             {
                 [pool drain];
@@ -2570,51 +3015,6 @@ static BOOL check_events(int wait)
     /* Something happened */
     return YES;
     
-}
-
-/* Update window visibility to match what's in p_ptr, so we show or hide terms that have or do not have contents respectively. */
-static void update_term_visibility(void)
-{
-    if (! op_ptr) return; //paranoia
-    
-    /* Make a mask of window flags that matter */
-    size_t i;
-    u32b significantWindowFlagMask = 0;
-    for (i=0; i < CHAR_BIT * sizeof significantWindowFlagMask; i++) {
-        if (window_flag_desc[i])
-        {
-            significantWindowFlagMask |= (1 << i);
-        }
-    }
-    
-    for (i=0; i < ANGBAND_TERM_MAX; i++) {
-        /* Now show or hide */
-        term *t = angband_term[i];
-        if (t)
-        {
-            AngbandContext *angbandContext = t->data;
-            
-            /* Check if we are visible */
-            BOOL isVisible = [angbandContext isOrderedIn];
-            
-            /* Ensure the first term is always visible. The remaining terms depend on the op_ptr. */
-            BOOL shouldBeVisible = (i == 0 || (op_ptr->window_flag[i] & significantWindowFlagMask));
-            
-            if (isVisible && ! shouldBeVisible)
-            {
-                /* Make it not visible */
-                [angbandContext orderOut];
-            } else if (! isVisible && shouldBeVisible)
-            {
-                /* Make it visible */
-                [angbandContext orderFront];
-            }
-        }
-        
-    }
-
-    /* Ensure that the main window is frontmost */
-    [(id)angband_term[0]->data orderFront];
 }
 
 /*
@@ -2658,68 +3058,45 @@ static void cocoa_file_open_hook(const char *path, file_type ftype)
     [pool drain];
 }
 
-/*** Main program ***/
-
-
-/* Set up file paths, including the lib directory */
-static void initialize_file_paths(void)
+/* A platform-native file save dialogue box, e.g. for saving character dumps */
+static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
 {
-    NSFileManager *fm = [NSFileManager defaultManager];
-    
-    char libpath[PATH_MAX+1] = {0}, basepath[PATH_MAX+1] = {0};
-    
-    /* Get the path to the lib directory in the bundle */
-    NSString *libString = [[[NSBundle bundleForClass:[AngbandView class]] resourcePath] stringByAppendingPathComponent:@"/lib"];
-    BOOL isDir = NO;
-    if (! [fm fileExistsAtPath:libString isDirectory:&isDir] || ! isDir)
-    {
-        NSRunAlertPanel(@"Unable to find lib directory", @"Unable to find the lib directory at path %@.  Angband has to quit.", @"Nuts", nil, nil, libpath);
-        exit(0);
+    NSSavePanel *panel = [NSSavePanel savePanel];
+    NSString *directory = [NSString stringWithCString:ANGBAND_DIR_USER encoding:NSASCIIStringEncoding];
+    NSString *filename = [NSString stringWithCString:suggested_name encoding:NSASCIIStringEncoding];
+
+    if ([panel runModalForDirectory:directory file:filename] == NSOKButton) {
+        const char *p = [[[panel URL] path] UTF8String];
+        my_strcpy(path, p, len);
+        return TRUE;
     }
-    
-    /* Prepare the paths. We need to append the / at the end. */
-    [libString getFileSystemRepresentation:libpath maxLength:sizeof libpath];
-    strlcat(libpath, "/", sizeof libpath);
-    
-    /* Get the path to the Angband directory in ~/Documents */
-    NSString *angbandBase = get_data_directory();
-    [angbandBase getFileSystemRepresentation:basepath maxLength:sizeof basepath];
-    strlcat(basepath, "/", sizeof basepath);
-    
-    /* Create the save and config directories if necessary */
-    NSString *config = [angbandBase stringByAppendingPathComponent:@"/config/"];
-    NSString *save = [angbandBase stringByAppendingPathComponent:@"/save/"];
-    NSString *user = [angbandBase stringByAppendingPathComponent:@"/user/"];
-    NSError *error = nil;
-    BOOL success = YES;
-    success = success && [fm createDirectoryAtPath:config withIntermediateDirectories:YES attributes:nil error:&error];
-    success = success && [fm createDirectoryAtPath:save withIntermediateDirectories:YES attributes:nil error:&error];
-    success = success && [fm createDirectoryAtPath:user withIntermediateDirectories:YES attributes:nil error:&error];
-    if (! success)
-    {
-        NSRunAlertPanel(@"Unable to create directory", @"Unable to create directory in %@ (error was %@).  Angband has to quit.", @"Nuts", nil, nil, angbandBase, error);
-        [[NSApplication sharedApplication] presentError:error];
-        exit(0);
-    }
-    
-    
-    //void init_file_paths(const char *configpath, const char *libpath, const char *datapath)
-    init_file_paths(libpath, libpath, basepath);
-    create_needed_dirs();
-    
+
+    return FALSE;
 }
+
+/*** Main program ***/
 
 @interface AngbandAppDelegate : NSObject {
     IBOutlet NSMenu *terminalsMenu;
+    NSMenu *_commandMenu;
+    NSDictionary *_commandMenuTagMap;
 }
+
+@property (nonatomic, retain) IBOutlet NSMenu *commandMenu;
+@property (nonatomic, retain) NSDictionary *commandMenuTagMap;
 
 - (IBAction)newGame:sender;
 - (IBAction)editFont:sender;
 - (IBAction)openGame:sender;
 
+- (IBAction)selectWindow: (id)sender;
+
 @end
 
 @implementation AngbandAppDelegate
+
+@synthesize commandMenu=_commandMenu;
+@synthesize commandMenuTagMap=_commandMenuTagMap;
 
 - (IBAction)newGame:sender
 {
@@ -2735,7 +3112,7 @@ static void initialize_file_paths(void)
 
     int i;
     for (i=0; i < ANGBAND_TERM_MAX; i++) {
-        if ([(id)angband_term[i]->data isKeyWindow]) {
+        if ([(id)angband_term[i]->data isMainWindow]) {
             termFont = [(id)angband_term[i]->data selectionFont];
             break;
         }
@@ -2747,19 +3124,22 @@ static void initialize_file_paths(void)
 
 - (void)changeFont:(id)sender
 {
-    int keyTerm;
-    for (keyTerm=0; keyTerm < ANGBAND_TERM_MAX; keyTerm++) {
-        if ([(id)angband_term[keyTerm]->data isKeyWindow]) {
+    int mainTerm;
+    for (mainTerm=0; mainTerm < ANGBAND_TERM_MAX; mainTerm++) {
+        if ([(id)angband_term[mainTerm]->data isMainWindow]) {
             break;
         }
     }
+
+    /* Bug #1709: Only change font for angband windows */
+    if (mainTerm == ANGBAND_TERM_MAX) return;
     
     NSFont *oldFont = default_font;
     NSFont *newFont = [sender convertFont:oldFont];
     if (! newFont) return; //paranoia
     
-    /* Store it as the default font if we changed the main window */
-    if (keyTerm == 0) {
+    /* Store as the default font if we changed the first term */
+    if (mainTerm == 0) {
         [newFont retain];
         [default_font release];
         default_font = newFont;
@@ -2768,17 +3148,16 @@ static void initialize_file_paths(void)
     /* Record it in the preferences */
     NSUserDefaults *defs = [NSUserDefaults angbandDefaults];
     [defs setValue:[newFont fontName] 
-        forKey:[NSString stringWithFormat:@"FontName-%d", keyTerm]];
+        forKey:[NSString stringWithFormat:@"FontName-%d", mainTerm]];
     [defs setFloat:[newFont pointSize]
-        forKey:[NSString stringWithFormat:@"FontSize-%d", keyTerm]];
+        forKey:[NSString stringWithFormat:@"FontSize-%d", mainTerm]];
     [defs synchronize];
     
     NSDisableScreenUpdates();
     
-    /* Update main window */
-    AngbandContext *angbandContext = angband_term[keyTerm]->data;
-    [(id)angbandContext setSelectionFont:newFont];
-    [(id)angbandContext setScaleFactor:NSMakeSize(1,1)];
+    /* Update window */
+    AngbandContext *angbandContext = angband_term[mainTerm]->data;
+    [(id)angbandContext setSelectionFont:newFont adjustTerminal: YES];
     
     NSEnableScreenUpdates();
 }
@@ -2845,6 +3224,24 @@ static void initialize_file_paths(void)
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
 {
     SEL sel = [menuItem action];
+    NSInteger tag = [menuItem tag];
+
+    if( tag >= AngbandWindowMenuItemTagBase && tag < AngbandWindowMenuItemTagBase + ANGBAND_TERM_MAX )
+    {
+        if( tag == AngbandWindowMenuItemTagBase )
+        {
+            // the main window should always be available and visible
+            return YES;
+        }
+        else
+        {
+            NSInteger subwindowNumber = tag - AngbandWindowMenuItemTagBase;
+            return (op_ptr->window_flag[subwindowNumber] > 0);
+        }
+
+        return NO;
+    }
+
     if (sel == @selector(newGame:))
     {
         return ! game_in_progress;
@@ -2859,16 +3256,146 @@ static void initialize_file_paths(void)
     }
     else if (sel == @selector(setRefreshRate:) && [superitem(menuItem) tag] == 150)
     {
-        [menuItem setState:[menuItem tag] == frames_per_second];
+        NSInteger fps = [[NSUserDefaults standardUserDefaults] integerForKey: @"FramesPerSecond"];
+        [menuItem setState: ([menuItem tag] == fps)];
         return YES;
+    }
+    else if( sel == @selector(setGraphicsMode:) )
+    {
+        NSInteger requestedGraphicsMode = [[NSUserDefaults standardUserDefaults] integerForKey: @"GraphicsID"];
+        [menuItem setState: (tag == requestedGraphicsMode)];
+        return YES;
+    }
+    else if( sel == @selector(sendAngbandCommand:) )
+    {
+        // we only want to be able to send commands during an active game
+        return !!game_in_progress;
     }
     else return YES;
 }
+
 
 - (IBAction)setRefreshRate:(NSMenuItem *)menuItem
 {
     frames_per_second = [menuItem tag];
     [[NSUserDefaults angbandDefaults] setInteger:frames_per_second forKey:@"FramesPerSecond"];
+}
+
+- (IBAction)selectWindow: (id)sender
+{
+    NSInteger subwindowNumber = [(NSMenuItem *)sender tag] - AngbandWindowMenuItemTagBase;
+    AngbandContext *context = angband_term[subwindowNumber]->data;
+    [context->primaryWindow makeKeyAndOrderFront: self];
+	[context saveWindowVisibleToDefaults: YES];
+}
+
+- (void)prepareWindowsMenu
+{
+    // get the window menu with default items and add a separator and item for the main window
+    NSMenu *windowsMenu = [[NSApplication sharedApplication] windowsMenu];
+    [windowsMenu addItem: [NSMenuItem separatorItem]];
+
+    NSMenuItem *angbandItem = [[NSMenuItem alloc] initWithTitle: @"Angband" action: @selector(selectWindow:) keyEquivalent: @"0"];
+    [angbandItem setTarget: self];
+    [angbandItem setTag: AngbandWindowMenuItemTagBase];
+    [windowsMenu addItem: angbandItem];
+    [angbandItem release];
+
+    // add items for the additional term windows
+    for( NSInteger i = 1; i < ANGBAND_TERM_MAX; i++ )
+    {
+        NSString *title = [NSString stringWithFormat: @"Term %ld", (long)i];
+        NSMenuItem *windowItem = [[NSMenuItem alloc] initWithTitle: title action: @selector(selectWindow:) keyEquivalent: @""];
+        [windowItem setTarget: self];
+        [windowItem setTag: AngbandWindowMenuItemTagBase + i];
+        [windowsMenu addItem: windowItem];
+        [windowItem release];
+    }
+}
+
+/**
+ *  Send a command to Angband via a menu item. This places the appropriate key down events into the queue
+ *  so that it seems like the user pressed them (instead of trying to use the term directly).
+ */
+- (void)sendAngbandCommand: (id)sender
+{
+    NSMenuItem *menuItem = (NSMenuItem *)sender;
+    NSString *command = [self.commandMenuTagMap objectForKey: [NSNumber numberWithInteger: [menuItem tag]]];
+    NSInteger windowNumber = [((AngbandContext *)angband_term[0]->data)->primaryWindow windowNumber];
+
+    // send a \ to bypass keymaps
+    NSEvent *escape = [NSEvent keyEventWithType: NSKeyDown
+                                       location: NSZeroPoint
+                                  modifierFlags: 0
+                                      timestamp: 0.0
+                                   windowNumber: windowNumber
+                                        context: nil
+                                     characters: @"\\"
+                    charactersIgnoringModifiers: @"\\"
+                                      isARepeat: NO
+                                        keyCode: 0];
+    [[NSApplication sharedApplication] postEvent: escape atStart: NO];
+
+    // send the actual command (from the original command set)
+    NSEvent *keyDown = [NSEvent keyEventWithType: NSKeyDown
+                                        location: NSZeroPoint
+                                   modifierFlags: 0
+                                       timestamp: 0.0
+                                    windowNumber: windowNumber
+                                         context: nil
+                                      characters: command
+                     charactersIgnoringModifiers: command
+                                       isARepeat: NO
+                                         keyCode: 0];
+    [[NSApplication sharedApplication] postEvent: keyDown atStart: NO];
+}
+
+/**
+ *  Set up the command menu dynamically, based on CommandMenu.plist.
+ */
+- (void)prepareCommandMenu
+{
+    NSString *commandMenuPath = [[NSBundle mainBundle] pathForResource: @"CommandMenu" ofType: @"plist"];
+    NSArray *commandMenuItems = [[NSArray alloc] initWithContentsOfFile: commandMenuPath];
+    NSMutableDictionary *angbandCommands = [[NSMutableDictionary alloc] init];
+    NSInteger tagOffset = 0;
+
+    for( NSDictionary *item in commandMenuItems )
+    {
+        BOOL useShiftModifier = [[item valueForKey: @"ShiftModifier"] boolValue];
+        BOOL useOptionModifier = [[item valueForKey: @"OptionModifier"] boolValue];
+        NSUInteger keyModifiers = NSCommandKeyMask;
+        keyModifiers |= (useShiftModifier) ? NSShiftKeyMask : 0;
+        keyModifiers |= (useOptionModifier) ? NSAlternateKeyMask : 0;
+
+        NSString *title = [item valueForKey: @"Title"];
+        NSString *key = [item valueForKey: @"KeyEquivalent"];
+        NSMenuItem *menuItem = [[NSMenuItem alloc] initWithTitle: title action: @selector(sendAngbandCommand:) keyEquivalent: key];
+        [menuItem setTarget: self];
+        [menuItem setKeyEquivalentModifierMask: keyModifiers];
+        [menuItem setTag: AngbandCommandMenuItemTagBase + tagOffset];
+        [self.commandMenu addItem: menuItem];
+        [menuItem release];
+
+        NSString *angbandCommand = [item valueForKey: @"AngbandCommand"];
+        [angbandCommands setObject: angbandCommand forKey: [NSNumber numberWithInteger: [menuItem tag]]];
+        tagOffset++;
+    }
+
+    [commandMenuItems release];
+
+    NSDictionary *safeCommands = [[NSDictionary alloc] initWithDictionary: angbandCommands];
+    self.commandMenuTagMap = safeCommands;
+    [safeCommands release];
+    [angbandCommands release];
+}
+
+- (void)awakeFromNib
+{
+    [super awakeFromNib];
+
+    [self prepareWindowsMenu];
+    [self prepareCommandMenu];
 }
 
 - (void)applicationDidFinishLaunching:sender

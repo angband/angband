@@ -5,7 +5,7 @@
 #include "init.h"
 #include "monster/constants.h"
 #include "monster/monster.h"
-#include "types.h"
+
 #include "externs.h"
 
 int setup_tests(void **state) {

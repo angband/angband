@@ -18,8 +18,11 @@
  */
 
 #include "angband.h"
+#include "cmds.h"
 #include "cave.h"
+#include "pathfind.h"
 #include "squelch.h"
+#include "monster/mon-util.h"
 
 /****** Pathfinding code ******/
 
@@ -44,7 +47,7 @@ static bool is_valid_pf(int y, int x)
 	if (!(cave->info[y][x] & (CAVE_MARK))) return (TRUE);
 
 	/* Require open space */
-	return (cave_floor_bold(y, x));
+	return (cave_ispassable(cave, y, x));
 }
 
 static void fill_terrain_info(void)
@@ -54,8 +57,8 @@ static void fill_terrain_info(void)
 	ox = MAX(p_ptr->px - MAX_PF_RADIUS / 2, 0);
 	oy = MAX(p_ptr->py - MAX_PF_RADIUS / 2, 0);
 
-	ex = MIN(p_ptr->px + MAX_PF_RADIUS / 2 - 1, DUNGEON_WID);
-	ey = MIN(p_ptr->py + MAX_PF_RADIUS / 2 - 1, DUNGEON_HGT);
+	ex = MIN(p_ptr->px + MAX_PF_RADIUS / 2 - 1, cave->width);
+	ey = MIN(p_ptr->py + MAX_PF_RADIUS / 2 - 1, cave->height);
 
 	for (i = 0; i < MAX_PF_RADIUS * MAX_PF_RADIUS; i++)
 		terrain[0][i] = -1;
@@ -72,7 +75,8 @@ static void fill_terrain_info(void)
 
 bool findpath(int y, int x)
 {
-	int i, j, k, dir;
+	int i, j, k;
+	int dir = 10;
 	bool try_again;
 	int cur_distance;
 
@@ -407,10 +411,11 @@ static int see_wall(int dir, int y, int x)
 	x += ddx[dir];
 
 	/* Illegal grids are not known walls XXX XXX XXX */
-	if (!in_bounds(y, x)) return (FALSE);
+	if (!cave_in_bounds(cave, y, x)) return (FALSE);
 
 	/* Non-wall grids are not known walls */
-	if (cave->feat[y][x] < FEAT_SECRET) return (FALSE);
+	if (!cave_seemslikewall(cave, y, x))
+		return FALSE;
 
 	/* Unknown walls are not known walls */
 	if (!(cave->info[y][x] & (CAVE_MARK))) return (FALSE);
@@ -601,45 +606,7 @@ static bool run_test(void)
 		/* Check memorized grids */
 		if (cave->info[row][col] & (CAVE_MARK))
 		{
-			bool notice = TRUE;
-
-			/* Examine the terrain */
-			switch (cave->feat[row][col])
-			{
-				/* Floors */
-				case FEAT_FLOOR:
-
-				/* Invis traps */
-				case FEAT_INVIS:
-
-				/* Secret doors */
-				case FEAT_SECRET:
-
-				/* Normal veins */
-				case FEAT_MAGMA:
-				case FEAT_QUARTZ:
-
-				/* Hidden treasure */
-				case FEAT_MAGMA_H:
-				case FEAT_QUARTZ_H:
-
-				/* Walls */
-				case FEAT_WALL_EXTRA:
-				case FEAT_WALL_INNER:
-				case FEAT_WALL_OUTER:
-				case FEAT_WALL_SOLID:
-				case FEAT_PERM_EXTRA:
-				case FEAT_PERM_INNER:
-				case FEAT_PERM_OUTER:
-				case FEAT_PERM_SOLID:
-				{
-					/* Ignore */
-					notice = FALSE;
-
-					/* Done */
-					break;
-				}
-			}
+			bool notice = cave_noticeable(cave, row, col);
 
 			/* Interesting feature */
 			if (notice) return (TRUE);
@@ -649,7 +616,7 @@ static bool run_test(void)
 		}
 
 		/* Analyze unknown grids and floors */
-		if (inv || cave_floor_bold(row, col))
+		if (inv || cave_ispassable(cave, row, col))
 		{
 			/* Looking for open area */
 			if (p_ptr->run_open_area)
@@ -722,7 +689,7 @@ static bool run_test(void)
 		
 		/* HACK: Ugh. Sometimes we come up with illegal bounds. This will
 		 * treat the symptom but not the disease. */
-		if (row >= DUNGEON_HGT || col >= DUNGEON_WID) continue;
+		if (row >= cave->height || col >= cave->width) continue;
 		if (row < 0 || col < 0) continue;
 
 		/* Visible monsters abort running */
@@ -731,7 +698,7 @@ static bool run_test(void)
 			monster_type *m_ptr = cave_monster_at(cave, row, col);
 			
 			/* Visible monster */
-			if (m_ptr->ml) return (TRUE);			
+			if (m_ptr->ml && !is_mimicking(m_ptr)) return (TRUE);			
 		}
 	}
 
@@ -747,10 +714,9 @@ static bool run_test(void)
 			col = px + ddx[new_dir];
 
 			/* Unknown grid or non-wall */
-			/* Was: cave_floor_bold(row, col) */
+			/* Was: cave_ispassable(cave, row, col) */
 			if (!(cave->info[row][col] & (CAVE_MARK)) ||
-			    (cave->feat[row][col] < FEAT_SECRET))
-			{
+			    (cave_ispassable(cave, row, col))) {
 				/* Looking to break right */
 				if (p_ptr->run_break_right)
 				{
@@ -778,10 +744,9 @@ static bool run_test(void)
 			col = px + ddx[new_dir];
 
 			/* Unknown grid or non-wall */
-			/* Was: cave_floor_bold(row, col) */
+			/* Was: cave_ispassable(cave, row, col) */
 			if (!(cave->info[row][col] & (CAVE_MARK)) ||
-			    (cave->feat[row][col] < FEAT_SECRET))
-			{
+			    (cave_ispassable(cave, row, col))) {
 				/* Looking to break left */
 				if (p_ptr->run_break_left)
 				{
@@ -863,7 +828,7 @@ void run_step(int dir)
 		run_init(dir);
 
 		/* Hack -- Set the run counter */
-		p_ptr->running = (p_ptr->command_arg ? p_ptr->command_arg : 1000);
+		p_ptr->running = 1000;
 
 		/* Calculate torch radius */
 		p_ptr->update |= (PU_TORCH);
@@ -902,7 +867,7 @@ void run_step(int dir)
 				x = p_ptr->px + ddx[pf_result[pf_result_index] - '0'];
 
 				/* Known wall */
-				if ((cave->info[y][x] & (CAVE_MARK)) && !cave_floor_bold(y, x))
+				if ((cave->info[y][x] & (CAVE_MARK)) && !cave_ispassable(cave, y, x))
 				{
 					disturb(p_ptr, 0,0);
 					p_ptr->running_withpathfind = FALSE;
@@ -927,7 +892,7 @@ void run_step(int dir)
 				x = p_ptr->px + ddx[pf_result[pf_result_index] - '0'];
 
 				/* Known wall */
-				if ((cave->info[y][x] & (CAVE_MARK)) && !cave_floor_bold(y, x))
+				if ((cave->info[y][x] & (CAVE_MARK)) && !cave_ispassable(cave, y, x))
 				{
 					disturb(p_ptr, 0,0);
 					p_ptr->running_withpathfind = FALSE;
@@ -939,7 +904,7 @@ void run_step(int dir)
 				x = x + ddx[pf_result[pf_result_index-1] - '0'];
 
 				/* Known wall */
-				if ((cave->info[y][x] & (CAVE_MARK)) && !cave_floor_bold(y, x))
+				if ((cave->info[y][x] & (CAVE_MARK)) && !cave_ispassable(cave, y, x))
 				{
 					p_ptr->running_withpathfind = FALSE;
 

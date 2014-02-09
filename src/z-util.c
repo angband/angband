@@ -337,13 +337,13 @@ void quit(const char *str)
 	if (quit_aux) (*quit_aux)(str);
 
 	/* Success */
-	if (!str) (void)(exit(EXIT_SUCCESS));
+	if (!str) exit(EXIT_SUCCESS);
 
 	/* Send the string to plog() */
 	plog(str);
 
 	/* Failure */
-	(void)(exit(EXIT_FAILURE));
+	exit(EXIT_FAILURE);
 }
 
 /* Arithmetic mean of the first 'size' entries of the array 'nums' */

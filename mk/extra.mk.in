@@ -3,6 +3,7 @@ SETEGID = @SETEGID@
 LIBDIR = ${libdir}
 libdatadir = @libdatadir@
 vardatadir = @vardatadir@
+docdatadir = @docdatadir@
 configdir = @configdir@
 pdfdir ?= @pdfdir@
 ECHO_N ?= @ECHO_N@

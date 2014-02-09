@@ -316,7 +316,6 @@ static int borg_min_item_quantity(borg_item *item)
     /* Only allow some types */
     switch (item->tval)
     {
-    case TV_SPIKE:
     case TV_SHOT:
     case TV_ARROW:
     case TV_BOLT:
@@ -951,7 +950,7 @@ static bool borg_good_sell(borg_item *item, int who)
 	        case TV_LIGHT:
 
 				/* Never sell if not "known" */
-				if (!item->ident && !borg_item_icky(item) && (borg_skill[BI_MAXDEPTH] > 35)) return (FALSE);
+				if (!item->ident && borg_item_worth_id(item) && (borg_skill[BI_MAXDEPTH] > 35)) return (FALSE);
 
 				break;
 
@@ -971,7 +970,7 @@ static bool borg_good_sell(borg_item *item, int who)
 	        case TV_DRAG_ARMOR:
 
 	        /* Only sell "known" items (unless "icky") */
-	        if (!item->ident && !borg_item_icky(item)) return (FALSE);
+	        if (!item->ident && borg_item_worth_id(item)) return (FALSE);
 
 	        break;
 	    }
@@ -2104,7 +2103,7 @@ static bool borg_think_home_buy_swap_weapon(void)
     int old_armour_swap;
     s32b old_armour_swap_value;
     int n, b_n = -1;
-    s32b p, b_p = 0L;
+    s32b p = 0L, b_p = 0L;
 
     bool fix = FALSE;
 
@@ -2853,7 +2852,7 @@ bool borg_think_dungeon_light(void)
 	           	y = c_y + ddy_ddd[ii];
 
 				/* Bounds check */
-	            if (!in_bounds_fully(y,x)) continue;
+	            if (!cave_in_bounds_fully(cave, y,x)) continue;
 
 	           	/* Access the grid */
 	           	ag = &borg_grids[y][x];
@@ -2893,7 +2892,7 @@ bool borg_think_dungeon_light(void)
 
 
 			/* Bounds check */
-            if (!in_bounds_fully(y,x)) continue;
+            if (!cave_in_bounds_fully(cave, y,x)) continue;
 
            	/* Access the grid */
            	ag = &borg_grids[y][x];
@@ -2917,7 +2916,7 @@ bool borg_think_dungeon_light(void)
 				 !(ag->info & BORG_GLOW))   /* not glowing */
         	{
 				/* Attempt to Call Light */
-	        	if (borg_activate_artifact(EFF_ILLUMINATION, INVEN_LIGHT) ||
+	        	if (borg_activate_artifact(EF_ILLUMINATION) ||
 	        	    borg_zap_rod(SV_ROD_ILLUMINATION) ||
 	        	    borg_use_staff(SV_STAFF_LIGHT) ||
 	        	    borg_read_scroll(SV_SCROLL_LIGHT) ||
@@ -3999,7 +3998,7 @@ bool borg_think_dungeon_munchkin(void)
 			x = c_x + ddx_ddd[i];
 
 			/* Bounds check */
-			if (!in_bounds(y, x)) continue;
+			if (!cave_in_bounds(cave, y, x)) continue;
 
 			/* Get the grid */
 			ag = &borg_grids[y][x];
@@ -5275,7 +5274,7 @@ bool borg_think_dungeon(void)
         /* Phase */
         if (borg_spell(0, 2)  ||
             borg_prayer(4, 0) ||
-            borg_activate_artifact(EFF_TELE_PHASE,INVEN_BODY)||
+            borg_activate_artifact(EF_TELE_PHASE)||
             borg_read_scroll(SV_SCROLL_PHASE_DOOR) ||
             borg_spell(1, 5) ||
             borg_prayer(1, 1) ||

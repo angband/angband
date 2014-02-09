@@ -59,30 +59,21 @@
 # endif
 
 /*
- * OPTION: set "SET_UID" if the machine is a "multi-user" wmachine.
- *
- * This option is used to verify the use of "uids" and "gids" for
- * various "Unix" calls, and of "pids" for getting a random seed,
- * and of the "umask()" call for various reasons, and to guess if
- * the "kill()" function is available, and for permission to use
- * functions to extract user names and expand "tildes" in filenames.
- * It is also used for "locking" and "unlocking" the score file.
- * Basically, SET_UID should *only* be set for "Unix" machines.
+ * Define UNIX if our OS is UNIXy
  */
-#if !defined(MACH_O_CARBON) && !defined(WINDOWS) && \
-		!defined(GAMEBOY) && !defined(NDS)
-# define SET_UID
+#if !defined(WINDOWS) && !defined(GAMEBOY) && !defined(NDS)
+# define UNIX
 
-/* Without autoconf, turn on some things */
-# ifndef HAVE_CONFIG_H
+# ifndef HAVE_DIRENT_H
 #  define HAVE_DIRENT_H
-#  define HAVE_SETEGID
-#  if defined(linux)
-#   define HAVE_SETRESGID
-#  endif
 # endif
-
 #endif
+
+/*
+ * Define SETGID if we are running as a central install on a multiuser
+ * system that has setgid support.
+ */
+/* #define SETGID */
 
 
 /*
@@ -131,7 +122,7 @@
 #include <wctype.h>
 
 /** POSIX headers **/
-#if defined(SET_UID) || defined(MACH_O_CARBON)
+#ifdef UNIX
 # include <pwd.h>
 # include <sys/stat.h>
 # include <unistd.h>
@@ -262,6 +253,10 @@ typedef int errr;
  */
 #define PLURAL(n)		((n) == 1 ? "" : "s")
 
+/**
+ * Return the verb form matching the given count
+ */
+#define VERB_AGREEMENT(count, singular, plural)    (((count) == 1) ? (singular) : (plural))
 
 /*** Some hackish character manipulation ***/
 

@@ -4,8 +4,7 @@
 #include "unit-test-data.h"
 #include "object/tvalsval.h"
 #include "init.h"
-#include "types.h"
-
+	
 int setup_tests(void **state) {
 	*state = init_parse_a();
 	return !*state;
@@ -73,7 +72,6 @@ int test_w0(void *state) {
 	a = parser_priv(state);
 	require(a);
 	eq(a->level, 3);
-	eq(a->rarity, 5);
 	eq(a->weight, 8);
 	eq(a->cost, 200);
 	ok;

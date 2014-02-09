@@ -2,7 +2,7 @@
  * File: z-msg.c
  * Purpose: Message handling
  *
- * Copyright (c) 2007 Elly, Andrew Sidwell
+ * Copyright (c) 2007 Elly, Andi Sidwell
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -16,6 +16,7 @@
  */
 #include "z-virt.h"
 #include "z-term.h"
+#include "z-util.h"
 #include "z-msg.h"
 
 typedef struct _message_t
@@ -205,4 +206,56 @@ byte message_type_color(u16b type)
 	}
 
 	return color;
+}
+
+int message_lookup_by_name(const char *name)
+{
+	static const char *message_names[] = {
+		#define MSG(x, s) #x,
+		#include "z-msg-list.h"
+		#undef MSG
+	};
+	size_t i;
+	unsigned int number;
+
+	if (sscanf(name, "%u", &number) == 1)
+		return (number < MSG_MAX) ? (int)number : -1;
+
+	for (i = 0; i < N_ELEMENTS(message_names); i++) {
+		if (my_stricmp(name, message_names[i]) == 0)
+			return (int)i;
+	}
+
+	return -1;
+}
+
+int message_lookup_by_sound_name(const char *name)
+{
+	static const char *sound_names[] = {
+		#define MSG(x, s) s,
+		#include "z-msg-list.h"
+		#undef MSG
+	};
+	size_t i;
+
+	for (i = 0; i < N_ELEMENTS(sound_names); i++) {
+		if (my_stricmp(name, sound_names[i]) == 0)
+			return (int)i;
+	}
+
+	return MSG_GENERIC;
+}
+
+const char *message_sound_name(int message)
+{
+	static const char *sound_names[] = {
+		#define MSG(x, s) s,
+		#include "z-msg-list.h"
+		#undef MSG
+	};
+
+	if (message < MSG_GENERIC || message >= MSG_MAX)
+		return NULL;
+
+	return sound_names[message];
 }

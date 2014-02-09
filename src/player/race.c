@@ -4,7 +4,6 @@
 
 #include "externs.h"
 #include "player/player.h"
-#include "player/types.h"
 
 struct player_race *player_id2race(guid id)
 {

@@ -86,7 +86,6 @@ static const flag_type pval_flags[] =
 	{ OF_WIS,     "wisdom" },
 	{ OF_DEX,     "dexterity" },
 	{ OF_CON,     "constitution" },
-	{ OF_CHR,     "charisma" },
 	{ OF_STEALTH, "stealth" },
 	{ OF_INFRA,   "infravision" },
 	{ OF_TUNNEL,  "tunneling" },
@@ -160,7 +159,6 @@ static const flag_type sustain_flags[] =
 	{ OF_SUST_WIS, "wisdom" },
 	{ OF_SUST_DEX, "dexterity" },
 	{ OF_SUST_CON, "constitution" },
-	{ OF_SUST_CHR, "charisma" },
 };
 
 static const flag_type misc_flags[] =
@@ -210,7 +208,7 @@ static bool describe_stats(textblock *tb, const object_type *o_ptr,
 		bitflag flags[MAX_PVALS][OF_SIZE], oinfo_detail_t mode)
 {
 	const char *descs[N_ELEMENTS(pval_flags)];
-	size_t count, i;
+	size_t count = 0, i;
 	bool full = mode & OINFO_FULL;
 	bool dummy = mode & OINFO_DUMMY;
 	bool search = FALSE;
@@ -978,6 +976,11 @@ static bool describe_light(textblock *tb, const object_type *o_ptr,
 	if (!is_light && !of_has(flags, OF_LIGHT))
 		return FALSE;
 
+	/* Prevent unidentified objects (especially artifact lights) from showing bad radius
+	 and refueling info, but allow it to appear in ego knowledge and spoilers */
+	if (!object_is_known(o_ptr) && !(mode & (OINFO_EGO | OINFO_FULL | OINFO_DUMMY)))
+		return FALSE;
+
 	/* Work out radius */
 	if (of_has(flags, OF_LIGHT))
 		rad = o_ptr->pval[which_pval(o_ptr, OF_LIGHT)];
@@ -1069,7 +1072,7 @@ static bool describe_effect(textblock *tb, const object_type *o_ptr, bool full,
 	else if (o_ptr->tval == TV_FOOD)
 		textblock_append(tb, "When eaten, it ");
 	else if (o_ptr->tval == TV_POTION)
-		textblock_append(tb, "When drunk, it ");
+		textblock_append(tb, "When quaffed, it ");
 	else if (o_ptr->tval == TV_SCROLL)
 	    textblock_append(tb, "When read, it ");
 	else
@@ -1131,9 +1134,13 @@ static bool describe_effect(textblock *tb, const object_type *o_ptr, bool full,
 }
 
 
-static bool describe_origin(textblock *tb, const object_type *o_ptr)
+static bool describe_origin(textblock *tb, const object_type *o_ptr, bool terse)
 {
 	char origin_text[80];
+
+	/* Only give this info in chardumps if wieldable */
+	if (terse && !obj_can_wear(o_ptr))
+		return FALSE;
 
 	if (o_ptr->origin_depth)
 		strnfmt(origin_text, sizeof(origin_text), "%d feet (level %d)",
@@ -1308,10 +1315,10 @@ static bool describe_ego(textblock *tb, const struct ego_item *ego)
 /*
  * Output object information
  */
-static textblock *object_info_out(const object_type *o_ptr, oinfo_detail_t mode)
+static textblock *object_info_out(const object_type *o_ptr, int mode)
 {
 	bitflag flags[OF_SIZE];
-	bitflag pval_flags[MAX_PVALS][OF_SIZE];
+	bitflag pv_flags[MAX_PVALS][OF_SIZE];
 	bool something = FALSE;
 	bool known = object_is_known(o_ptr);
 
@@ -1331,13 +1338,17 @@ static textblock *object_info_out(const object_type *o_ptr, oinfo_detail_t mode)
 	/* Grab the object flags */
 	if (full) {
 		object_flags(o_ptr, flags);
-		object_pval_flags(o_ptr, pval_flags);
+		object_pval_flags(o_ptr, pv_flags);
 	} else {
 		object_flags_known(o_ptr, flags);
-		object_pval_flags_known(o_ptr, pval_flags);
+		object_pval_flags_known(o_ptr, pv_flags);
+
+		/* Don't include base flags when terse */
+		if (terse)
+			of_diff(flags, o_ptr->kind->base->flags);
 	}
 
-	if (subjective) describe_origin(tb, o_ptr);
+	if (subjective) describe_origin(tb, o_ptr, terse);
 	if (!terse) describe_flavor_text(tb, o_ptr, ego);
 
 	if (!full && !known)
@@ -1347,7 +1358,7 @@ static textblock *object_info_out(const object_type *o_ptr, oinfo_detail_t mode)
 	}
 
 	if (describe_curses(tb, o_ptr, flags)) something = TRUE;
-	if (describe_stats(tb, o_ptr, pval_flags, mode)) something = TRUE;
+	if (describe_stats(tb, o_ptr, pv_flags, mode)) something = TRUE;
 	if (describe_slays(tb, flags, o_ptr->tval)) something = TRUE;
 	if (describe_immune(tb, flags)) something = TRUE;
 	if (describe_ignores(tb, flags)) something = TRUE;
@@ -1355,6 +1366,7 @@ static textblock *object_info_out(const object_type *o_ptr, oinfo_detail_t mode)
 	if (describe_hates(tb, flags)) something = TRUE;
 	if (describe_sustains(tb, flags)) something = TRUE;
 	if (describe_misc_magic(tb, flags)) something = TRUE;
+	if (describe_light(tb, o_ptr, flags, mode)) something = TRUE;
 	if (ego && describe_ego(tb, o_ptr->ego)) something = TRUE;
 	if (something) textblock_append(tb, "\n");
 
@@ -1369,10 +1381,10 @@ static textblock *object_info_out(const object_type *o_ptr, oinfo_detail_t mode)
 	}
 
 	if (!terse && describe_food(tb, o_ptr, subjective, full)) something = TRUE;
-	if (describe_light(tb, o_ptr, flags, mode)) something = TRUE;
 	if (!terse && subjective && describe_digger(tb, o_ptr, mode)) something = TRUE;
 
-	if (!something)
+	/* Hack? Don't append anything in terse (for chararacter dump), since that seems to cause extra linebreaks */
+	if (!something && !terse)
 		textblock_append(tb, "\n\nThis item does not seem to possess any special abilities.");
 
 	return tb;

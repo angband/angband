@@ -88,141 +88,47 @@ static s16b value_feeling[] =
 };
 
 
-
-
-/*
- * Determine if an item is "probably" worthless
- *
- * This (very heuristic) function is a total hack, designed only to prevent
- * a very specific annoying situation described below.
- *
- * Note that a "cautious" priest (or low level mage/ranger) will leave town
- * with a few identify scrolls, wander around dungeon level 1 for a few turns,
- * and use all of the scrolls on leather gloves and broken daggers, and must
- * then return to town for more scrolls.  This may repeat indefinitely.
- *
- * The problem is that some characters (priests, mages, rangers) never get an
- * "average" feeling about items, and have no way to keep track of how long
- * they have been holding a given item for, so they cannot even attempt to
- * gain knowledge from the lack of "good" or "cursed" feelings.  But they
- * cannot afford to just identify everything they find by using scrolls of
- * identify, because, in general, some items are, on average, "icky", and
- * not even worth the price of a new scroll of identify.
- *
- * Even worse, the current algorithm refuses to sell un-identified items, so
- * the poor character will throw out all his good stuff to make room for crap.
- *
- * This function simply examines the item and assumes that certain items are
- * "icky", which is probably a total hack.  Perhaps we could do something like
- * compare the item to the item we are currently wearing, or perhaps we could
- * analyze the expected value of the item, or guess at the likelihood that the
- * item might be a blessed, or something.
- *
+/**
+ * Work out if it's worth using ID on an item.  Also used in other places
+ * as a general litmus test for whether an item is worth keeping hold of
+ * while it's not ID'd.
  */
-bool borg_item_icky(borg_item *item)
+bool borg_item_worth_id(const borg_item *item)
 {
-    int slot;
+	/* Never ID average stuff */
+	if (strstr(item->note, "average"))
+		return FALSE;
 
+	/** Some stuff should always be ID'd... **/
+	switch (item->tval)
+	{
+		case TV_BOW: case TV_SHOT: case TV_ARROW: case TV_BOLT:
+		case TV_HAFTED: case TV_POLEARM: case TV_SWORD:
+		case TV_BOOTS: case TV_GLOVES: case TV_HELM:
+		case TV_CROWN: case TV_SHIELD: case TV_CLOAK:
+		case TV_SOFT_ARMOR: case TV_HARD_ARMOR: case TV_DRAG_ARMOR:
 
-    /* if its average, dump it if you want to.*/
-    if (strstr(item->note, "average")) return (TRUE);
+			/* Don't bother IDing unidentified items until they are pseudo'd */
+			if (!item->ident) return FALSE;
+	}
 
-    /* Mega-Hack -- allow "icky" items */
-    if (borg_class == CLASS_PRIEST ||
-        borg_class == CLASS_RANGER ||
-        borg_class == CLASS_MAGE ||
-        borg_skill[BI_CLEVEL] < 20)
-    {
-        /* things that are good/excelent/special */
-        if (strstr(item->note, "special") ||
-            strstr(item->note, "terrible") ||
-            strstr(item->note, "indestructible") ||
-            strstr(item->note, "excellent"))
-            /* not icky */
-            return (FALSE);
+	/* Not worth IDing magical items if we have better ego/artifact stuff */
+	if (strstr(item->note, "magical"))
+	{
+		int slot;
+		borg_item *inven_item;
+	
+		/* Obtain the slot of the suspect item */
+		slot = borg_wield_slot(item);
+		if (slot < 0) return FALSE;
+	
+		/* Obtain my equipped item in the slot */
+		inven_item = &borg_items[slot];	
+		if (inven_item->name2 || inven_item->name1) return FALSE;
+	}
 
-#if 0
-	 	/* Broken dagger/sword, Filthy rag */
-       if (((item->tval == TV_SWORD) && (item->sval == SV_BROKEN_DAGGER)) ||
-            ((item->tval == TV_SWORD) && (item->sval == SV_BROKEN_SWORD)) ||
-            ((item->tval == TV_SOFT_ARMOR) && (item->sval == SV_FILTHY_RAG)))
-        {
-            return (TRUE);
-        }
-#endif
-        /* Dagger */
-        if ((item->tval == TV_SWORD) && (item->sval == SV_DAGGER))
-        {
-            return (TRUE);
-        }
-
-        /* Sling (and I already got one) */
-        if ((item->tval == TV_BOW) && (item->sval == SV_SLING) &&
-        	borg_items[INVEN_BOW].tval == TV_BOW)
-        {
-            return (TRUE);
-        }
-
-        /* Cloak, (and I already got one)*/
-        if ((item->tval == TV_CLOAK) && (item->sval == SV_CLOAK) &&
-        	borg_items[INVEN_OUTER].tval == TV_CLOAK)
-        {
-            return (TRUE);
-        }
-
-        /* Robe (and I already got one)*/
-        if ((item->tval == TV_SOFT_ARMOR) && (item->sval == SV_ROBE) &&
-        	borg_items[INVEN_BODY].tval >= TV_SOFT_ARMOR)
-        {
-            return (TRUE);
-        }
-
-        /* Leather Gloves (and I already got one)*/
-        if ((item->tval == TV_GLOVES) &&
-            (item->sval == SV_SET_OF_LEATHER_GLOVES) &&
-        	borg_items[INVEN_HANDS].tval == TV_GLOVES)
-        {
-            return (TRUE);
-        }
-
-        /* Assume the item is not icky */
-        return (FALSE);
-    }
-
-    /* Process other classes which do get pseudo ID */
-        /* things that are good/excelent/special/no P-ID */
-        if  (strstr(item->note, "special") ||
-             strstr(item->note, "terrible") ||
-             strstr(item->note, "excellent") ||
-             strstr(item->note, "ego") ||
-             strstr(item->note, "splendid") ||
-             strstr(item->note, "indestructible") ||
-             !item->note )  /* no pseudo-id yet */
-             /* not icky */
-             return (FALSE);
-
-
-        /*** {magical} items in inven, But I have {excellent} in equip ***/
-
-        if (strstr(item->note, "magical"))
-        {
-            /* Obtain the slot of the suspect item */
-            slot = borg_wield_slot(item);
-
-			/* safety check incase slot = -1 */
-			if (slot < 0) return (FALSE);
-
-            /* Obtain my equipped item in the slot */
-            item = &borg_items[slot];
-
-            /* Is my item an ego or artifact? */
-            if (item->name2 || item->name1) return (TRUE);
-        }
-    /* Assume not icky, I should have extra ID for the item */
-    return (FALSE);
+	return TRUE;
 }
-
-
 
 
 /*
@@ -235,7 +141,7 @@ bool borg_use_things(void)
     /* Quaff experience restoration potion */
     if (borg_skill[BI_ISFIXEXP] &&
        (borg_prayer(6,4) ||
-        borg_activate_artifact(EFF_RESTORE_LIFE, INVEN_OUTER) ||
+        borg_activate_artifact(EF_RESTORE_LIFE) ||
         borg_quaff_potion(SV_POTION_RESTORE_EXP)))
     {
         return (TRUE);
@@ -246,8 +152,7 @@ bool borg_use_things(void)
          borg_quaff_potion(SV_POTION_INC_INT) ||
          borg_quaff_potion(SV_POTION_INC_WIS) ||
          borg_quaff_potion(SV_POTION_INC_DEX) ||
-         borg_quaff_potion(SV_POTION_INC_CON) ||
-         borg_quaff_potion(SV_POTION_INC_CHR))
+         borg_quaff_potion(SV_POTION_INC_CON))
     {
         return (TRUE);
     }
@@ -274,10 +179,6 @@ bool borg_use_things(void)
          (borg_quaff_potion(SV_POTION_RES_CON) ||
           borg_quaff_potion(SV_POTION_INC_CON) ||
           borg_eat_food(SV_FOOD_PURGING) ||
-          borg_eat_food(SV_FOOD_RESTORING))) ||
-        ((borg_skill[BI_ISFIXCHR]) &&
-         (borg_quaff_potion(SV_POTION_RES_CHR) ||
-          borg_quaff_potion(SV_POTION_INC_CHR)||
           borg_eat_food(SV_FOOD_RESTORING))))
     {
         return (TRUE);
@@ -361,6 +262,136 @@ bool borg_use_things(void)
 }
 
 
+/*
+ * Check to see if the surrounding dungeon should be illuminated, and if
+ * it should, do it.
+ *
+ * Always case light when we have no torch.
+ *
+ * This is when resting to heal.  I don't want him teleporting into a room,
+ * resting to heal while there is a dragon sitting in a dark corner waiting
+ * to breathe on him.
+ *
+ * Returns TRUE if it did something, FALSE otherwise
+ */
+bool borg_check_LIGHT_only(void)
+{
+	/* Never in town, when blind or when hallucinating */
+	if (!borg_skill[BI_CDEPTH]) return (FALSE);
+	if (borg_skill[BI_ISBLIND] || borg_skill[BI_ISIMAGE]) return (FALSE);
+
+	/** Use wizard light sometimes **/
+
+	if (!when_wizard_LIGHT || (borg_t - when_wizard_LIGHT >= 1000)) {
+		if (borg_activate_artifact(EF_CLAIRVOYANCE) ||
+				borg_prayer_fail(5, 4, 40)) {
+			borg_note("# Wizard lighting the dungeon");
+			/* borg_react("SELF:wizard lite", "SELF:wizard lite"); */
+			when_wizard_LIGHT = borg_t;
+			return TRUE;
+		}
+	}
+
+	/** Work out if there's any reason to light */
+
+	/* Don't bother because we only just did it */
+	if (when_call_LIGHT != 0 && (borg_t - when_call_LIGHT) < 7)
+		return FALSE;
+
+	if (borg_skill[BI_CURLITE] == 1) {
+		int i;
+		int corners = 0;
+
+		/* Scan diagonal neighbors.
+		 *
+		 * 4 corners   3 corners    2 corners    1 corner    0 corners
+		 * ###         ##.  #..     ##.  #..     .#.         .#.  ... .#.
+		 * .@.         .@.  .@.     .@.  .@.     .@.         #@#  .@. .@.
+		 * ###         ###  ###     ##.  #..     ##.         .#.  ... .#.
+		 *
+		 * There's actually no way to tell which are rooms and which are
+		 * corridors from diagonals except 4 (always a corridor) and
+		 * 0 (always a room).  This is why we only use it for radius 1 light.
+		 */
+		for (i = 4; i < 8; i++) {
+			borg_grid *ag;
+	
+			/* Get location */
+			int x = c_x + ddx_ddd[i];
+			int y = c_y + ddy_ddd[i];
+			
+			/* Bounds check */
+			if (!cave_in_bounds_fully(cave, y, x)) continue;
+			
+			/* Get grid */
+			ag = &borg_grids[y][x];
+	
+			/* Location must be known */
+			if (ag->feat == FEAT_NONE) corners++;
+			
+			/* Location must be a wall/door */
+			if (!borg_cave_floor_grid(ag)) corners++;
+		}
+
+		/* This is quite an arbitrary cutoff */
+		if (corners > 2)
+			return FALSE;
+	} else if (borg_skill[BI_CURLITE] > 1) {
+		int x, y;
+		int floors = 0;
+
+		/*
+		 * Scan the surrounding 5x5 area for unlit tiles.
+		 *
+		 * Radius two light misses out the four corners but otherwise illumates
+		 * a 5x5 grid, which is 21 grids illumated incl player.
+		 *
+		 *  ...
+		 * .....
+		 * ..@..
+		 * .....
+		 *  ...
+		 */
+		for (y = c_y - 2; y <= c_y + 2; y++) {
+			for (x = c_x - 2; x <= c_x + 2; x++) {
+				borg_grid *ag;
+
+				/* Bounds check */
+				if (!cave_in_bounds_fully(cave, y, x)) continue;
+				
+				/* Get grid */
+				ag = &borg_grids[y][x];
+
+				/* Must be a floor grid lit by torchlight, not by magic */
+				if (borg_cave_floor_grid(ag) &&
+						(ag->info & BORG_LIGHT) &&
+						!(cave->info[y][x] & CAVE_GLOW)) {
+					floors++;
+				}
+			}
+		}
+
+		/* Don't bother unless there are enough unlit floors */
+		/* 11 is the empirical cutoff point for sensible behaviour here */
+		if (floors < 11) return FALSE;
+	}
+
+	/* Light it up! */
+	if (borg_activate_artifact(EF_ILLUMINATION) ||
+			borg_zap_rod(SV_ROD_ILLUMINATION) ||
+			borg_use_staff(SV_STAFF_LIGHT) ||
+			borg_read_scroll(SV_SCROLL_LIGHT) ||
+			borg_spell_fail(0, 3, 40) ||
+			borg_prayer_fail(0, 4, 40)) {
+		borg_note("# Illuminating the dungeon");
+		borg_react("SELF:lite", "SELF:lite");
+		when_call_LIGHT = borg_t;
+		return TRUE;
+	}
+
+	return FALSE;
+}
+
 
 /*
  * Refuel, call lite, detect traps/doors/walls/evil, etc
@@ -370,48 +401,18 @@ bool borg_use_things(void)
  * Note that we detect traps/doors/walls/evil at least once in each
  * panel, as soon as possible after entering a new panel.
  *
- * Note that we call lite whenever the current grid is dark, and
- * all the grids touching the current grid diagonally are known
- * floors, which catches all rooms, including "checkerboard" rooms,
- * and only occasionally calls lite in corridors, and then only once.
- *
- * Note that we also sometimes call lite whenever we are using a
- * lantern or artifact lite, and when all of the grids in the box
- * of grids containing the maximal torch-lit region (the 5x5 or 7x7
- * region centered at the player) are non-glowing floor grids, and
- * when at least one of them is known to be "dark".  This catches
- * most of the "probable rooms" before the standard check succeeds.
- *
  * We use the special "SELF" messages to "borg_react()" to delay the
  * processing of "detection" and "call lite" until we know if it has
  * worked or not.
- *
- * The matching function borg_check_LIGHT_only is used only with resting
- * to heal.  I don't want him teleporting into a room, resting to heal while
- * there is a dragon sitting in a dark corner waiting to breathe on him.
- * So now he will check for lite.
- *
  */
 bool borg_check_LIGHT(void)
 {
-    int i, x, y;
-    int corners, floors;
-	int floor_goal=0;
-	byte feat;
-
     int q_x, q_y;
-
-    borg_grid *ag;
-
-
-    bool do_LIGHT;
 
     bool do_trap;
     bool do_door;
     bool do_wall;
     bool do_evil;
-
-    bool do_LIGHT_aux = FALSE;
 
     /* Never in town when mature (scary guy)*/
     if (borg_skill[BI_MAXCLEVEL] > 10 && !borg_skill[BI_CDEPTH]) return (FALSE);
@@ -498,7 +499,6 @@ bool borg_check_LIGHT(void)
 		do_trap = FALSE;
 		do_door = FALSE;
 		do_wall = FALSE;
-		do_LIGHT = FALSE;
 	}
 
 	/*** Do Things ***/
@@ -513,7 +513,7 @@ bool borg_check_LIGHT(void)
 
 
         /* Check for traps and doors and evil*/
-        if (borg_activate_artifact(EFF_DETECT_ALL, INVEN_WIELD) ||
+        if (borg_activate_artifact(EF_DETECT_ALL) ||
             borg_zap_rod(SV_ROD_DETECTION) ||
             borg_prayer_fail(5, 1, 40))
         {
@@ -554,7 +554,7 @@ bool borg_check_LIGHT(void)
          borg_skill[BI_CDEPTH]) 	/* Never in town */
     {
         /* Check for traps and doors */
-        if (borg_activate_artifact(EFF_DETECT_ALL, INVEN_WIELD) ||
+        if (borg_activate_artifact(EF_DETECT_ALL) ||
             borg_spell_fail(0, 6, 40) ||
             borg_prayer_fail(0, 5, 40))
         {
@@ -576,7 +576,7 @@ bool borg_check_LIGHT(void)
          borg_skill[BI_CDEPTH]) 	/* Never in town */
     {
         /* Check for traps */
-        if (borg_activate_artifact(EFF_DETECT_TRAP, INVEN_WIELD) ||
+        if (borg_activate_artifact(EF_DETECT_TRAP) ||
         	borg_read_scroll(SV_SCROLL_DETECT_TRAP) ||
             borg_zap_rod(SV_ROD_DETECT_TRAP) ||
             borg_prayer_fail(0, 5, 40))
@@ -598,7 +598,7 @@ bool borg_check_LIGHT(void)
          borg_skill[BI_CDEPTH]) 	/* Never in town */
     {
         /* Check for traps */
-        if (borg_activate_artifact(EFF_DETECT_ALL, INVEN_WIELD) ||
+        if (borg_activate_artifact(EF_DETECT_ALL) ||
         	borg_read_scroll(SV_SCROLL_DETECT_DOOR) ||
             borg_zap_rod(SV_ROD_DETECT_DOOR) ||
             borg_prayer_fail(0, 5, 40))
@@ -620,7 +620,7 @@ bool borg_check_LIGHT(void)
          borg_skill[BI_CDEPTH]) 	/* Never in town */
     {
         /* Check for walls */
-        if (borg_activate_artifact(EFF_MAPPING, INVEN_LIGHT) ||
+        if (borg_activate_artifact(EF_MAPPING) ||
             borg_read_scroll(SV_SCROLL_MAPPING) ||
             borg_use_staff(SV_STAFF_MAPPING) ||
             borg_zap_rod(SV_ROD_MAPPING) ||
@@ -636,274 +636,8 @@ bool borg_check_LIGHT(void)
         }
     }
 
-    /* Never in town for the rest of this check */
-    if (!borg_skill[BI_CDEPTH]) return (FALSE);
-
-    /* Start */
-    do_LIGHT = FALSE;
-
-    /* Get central grid */
-    ag = &borg_grids[c_y][c_x];
-
-    corners = 0;
-    floors = 0;
-
-    /* Scan diagonal neighbors */
-    for (i = 4; i < 8; i++)
-    {
-        /* Get location */
-        x = c_x + ddx_ddd[i];
-        y = c_y + ddy_ddd[i];
-
-		/* Bounds check */
-        if (!in_bounds_fully(y,x)) continue;
-
-        /* Get grid */
-        ag = &borg_grids[y][x];
-
-        /* Location must be known */
-        if (ag->feat == FEAT_NONE) corners ++;
-
-        /* Location must not be a wall/door */
-        if (!borg_cave_floor_grid(ag)) corners ++;
-
-     }
-     /* Add them up */
-     if (corners <= 2) do_LIGHT = TRUE;
-
-    /* Hack are we in a dark room? */
-    if (do_LIGHT && (borg_skill[BI_CURLITE] >= 2) &&
-        (c_x >= borg_skill[BI_CURLITE]) && (c_x < AUTO_MAX_X - borg_skill[BI_CURLITE]) &&
-        (c_y >= borg_skill[BI_CURLITE]) && (c_y < AUTO_MAX_Y - borg_skill[BI_CURLITE]) &&
-        (randint0(100) < 90))
-    {
-		/*       #.#
-		 *       #.#
-		 *  ######@######
-		 *  #...........#
-		 *  #...........#
-		 *  #...........#
-		 *  #...........#
-		 *  #...........#
-		 *  #############
-		 */
-
-		/* Lantern */
-		if (borg_skill[BI_CURLITE] ==2) floor_goal = 11;
-
-		/* lantern and glowing items */
-		if (borg_skill[BI_CURLITE] == 3) floor_goal = 11;
-
-        floors = 0;
-        /* Scan the "local" grids (5x5) 2 same as lantern/torch grid*/
-        for (y = c_y - 2; y <= c_y + 2; y++)
-        {
-            /* Scan the "local" grids (5x5) */
-            for (x = c_x - 2; x <= c_x + 2; x++)
-            {
-
-				/* Bounds check */
-            	if (!in_bounds_fully(y,x)) continue;
-
-            	/* Get grid */
-                ag = &borg_grids[y][x];
-                feat = cave->feat[y][x]; /* Cheat this grid from game */
-
-                /* Location must be a lit floor */
-                if (ag->info & BORG_LIGHT) floors ++;
-
-                /* Location must not be glowing */
-                if (ag->info & BORG_GLOW ||
-                    feat == CAVE_GLOW) floors --;
-
-                /* Location must not be a wall/door */
-                if (!borg_cave_floor_grid(ag)) floors --;
-
-            }
-        }
-    }
-    /* add them up */
-    if (floors <= floor_goal) do_LIGHT = do_LIGHT_aux = FALSE;
-
-
-    /* Hack -- call lite */
-    if (do_LIGHT &&
-        (!when_call_LIGHT || (borg_t - when_call_LIGHT >= 7)))
-    {
-        /* Call light */
-        if (borg_activate_artifact(EFF_ILLUMINATION, INVEN_LIGHT) ||
-            borg_zap_rod(SV_ROD_ILLUMINATION) ||
-            borg_use_staff(SV_STAFF_LIGHT) ||
-            borg_read_scroll(SV_SCROLL_LIGHT) ||
-            borg_spell(0, 3) ||
-            borg_prayer(0, 4))
-        {
-            borg_note("# Illuminating the room");
-            borg_react("SELF:lite", "SELF:lite");
-
-            when_call_LIGHT = borg_t;
-
-            return (TRUE);
-        }
-    }
-
-
-    /* Hack -- Wizard Lite */
-    if (TRUE &&
-        (!when_wizard_LIGHT || (borg_t - when_wizard_LIGHT >= 1000)))
-    {
-        /* Wizard lite */
-        if (borg_activate_artifact(EFF_CLAIRVOYANCE, INVEN_LIGHT) ||
-            borg_prayer(5, 4))
-        {
-            borg_note("# Illuminating the dungeon");
-
-            /* borg_react("SELF:wizard lite", "SELF:wizard lite"); */
-
-            when_wizard_LIGHT = borg_t;
-
-            return (TRUE);
-        }
-    }
-
-
-    /* Oops */
-    return (FALSE);
-}
-bool borg_check_LIGHT_only(void)
-{
-    int i, x, y;
-    int corners, floors;
-
-    borg_grid *ag;
-
-
-    bool do_LIGHT;
-
-    bool do_LIGHT_aux = FALSE;
-
-
-    /* Never in town */
-    if (!borg_skill[BI_CDEPTH]) return (FALSE);
-
-    /* Never when blind or hallucinating */
-    if (borg_skill[BI_ISBLIND] || borg_skill[BI_ISIMAGE]) return (FALSE);
-
-    /* XXX XXX XXX Dark */
-
-
-    /* Start */
-    do_LIGHT = FALSE;
-
-    /* Get central grid */
-    ag = &borg_grids[c_y][c_x];
-
-    corners = 0;
-    floors = 0;
-
-    /* Scan diagonal neighbors */
-    for (i = 4; i < 8; i++)
-    {
-        /* Get location */
-        x = c_x + ddx_ddd[i];
-        y = c_y + ddy_ddd[i];
-
-		/* Bounds check */
-        if (!in_bounds_fully(y,x)) continue;
-
-        /* Get grid */
-        ag = &borg_grids[y][x];
-
-        /* Location must be known */
-        if (ag->feat == FEAT_NONE) corners ++;
-
-        /* Location must not be a wall/door */
-        if (!borg_cave_floor_grid(ag)) corners ++;
-
-     }
-     /* Add them up ..2*/
-     if (corners <= 2) do_LIGHT = TRUE;
-
-    /* Hack */
-    if (do_LIGHT && (borg_skill[BI_CURLITE] >= 2) &&
-        (c_x >= borg_skill[BI_CURLITE]) && (c_x < AUTO_MAX_X - borg_skill[BI_CURLITE]) &&
-        (c_y >= borg_skill[BI_CURLITE]) && (c_y < AUTO_MAX_Y - borg_skill[BI_CURLITE]) &&
-        (randint0(100) < 90))
-    {
-
-        floors = 0;
-        /* Scan the "local" grids (5x5) 2 same as torch grid*/
-        for (y = c_y - 2; y <= c_y + 2; y++)
-        {
-            /* Scan the "local" grids (5x5) */
-            for (x = c_x - 2; x <= c_x + 2; x++)
-            {
-				/* Bounds check */
-	            if (!in_bounds_fully(y,x)) continue;
-
-                /* Get grid */
-                ag = &borg_grids[y][x];
-
-                /* Location must be a lit floor */
-                if (ag->info & BORG_LIGHT) floors ++;
-
-                /* Location must not be glowing */
-                if (ag->info & BORG_GLOW) floors --;
-
-                /* Location must not be a wall/door */
-                if (!borg_cave_floor_grid(ag)) floors --;
-
-            }
-        }
-    }
-    /* add them up */
-    if (floors <= 11) do_LIGHT = do_LIGHT_aux = FALSE;
-
-    /* Hack -- call lite */
-    if (do_LIGHT &&
-        (!when_call_LIGHT || (borg_t - when_call_LIGHT >= 7)))
-    {
-        /* Call light */
-        if (borg_activate_artifact(EFF_ILLUMINATION, INVEN_LIGHT) ||
-            borg_zap_rod(SV_ROD_ILLUMINATION) ||
-            borg_use_staff(SV_STAFF_LIGHT) ||
-            borg_read_scroll(SV_SCROLL_LIGHT) ||
-            borg_spell_fail(0, 3, 40) ||
-            borg_prayer_fail(0, 4, 40))
-        {
-            borg_note("# Illuminating the room prior to resting");
-
-            borg_react("SELF:lite", "SELF:lite");
-
-            when_call_LIGHT = borg_t;
-
-            /* dont rest. call light instead */
-            return (TRUE);
-        }
-    }
-
-
-    /* Hack -- Wizard Lite */
-    if (TRUE &&
-        (!when_wizard_LIGHT || (borg_t - when_wizard_LIGHT >= 1000)))
-    {
-        /* Wizard lite */
-        if (borg_activate_artifact(EFF_CLAIRVOYANCE, INVEN_LIGHT) ||
-            borg_prayer_fail(5, 4, 40))
-        {
-            borg_note("# Illuminating the dungeon prior to resting");
-
-            /* borg_react("SELF:wizard lite", "SELF:wizard lite"); */
-
-            when_wizard_LIGHT = borg_t;
-
-            return (TRUE);
-        }
-    }
-
-
-    /* nothing to light up.  OK to rest. */
-    return (FALSE);
+	/* Do the actual illumination bit */
+	return borg_check_LIGHT_only();
 }
 
 
@@ -1401,7 +1135,7 @@ static bool borg_brand_weapon(void)
 	if (b_i == -1) return (FALSE);
 
     /* Enchant it */
-    if (borg_activate_artifact(EFF_FIREBRAND, INVEN_BOW) ||
+    if (borg_activate_artifact(EF_FIREBRAND) ||
         borg_spell_fail(7, 5, 65))
     {
 
@@ -1666,7 +1400,7 @@ bool borg_recharging(void)
             borg_read_scroll(SV_SCROLL_RECHARGING) ||
             borg_spell_fail(2, 1, 96) ||
             borg_prayer_fail(7, 1, 96) ||
-            borg_activate_artifact(EFF_RECHARGE, INVEN_OUTER))
+            borg_activate_artifact(EF_RECHARGE))
         {
             /* Message */
             borg_note(format("Recharging %s with current charge of %d", item->desc, item->pval));
@@ -1718,7 +1452,6 @@ static bool borg_consume(int i)
             case SV_POTION_RES_WIS:
             case SV_POTION_RES_DEX:
             case SV_POTION_RES_CON:
-            case SV_POTION_RES_CHR:
             case SV_POTION_RESTORE_EXP:
             case SV_POTION_RESTORE_MANA:
             case SV_POTION_HEROISM:
@@ -2395,8 +2128,8 @@ bool borg_crush_hole(void)
             }
         }
 
-        /* Hack -- try not to destroy "unknown" items (unless "icky") */
-        if (!item->ident && (value > 0) && !borg_item_icky(item))
+        /* Hack -- try not to destroy "unknown" items */
+        if (!item->ident && (value > 0) && borg_item_worth_id(item))
         {
             /* Reward "unknown" items */
             switch (item->tval)
@@ -2550,7 +2283,7 @@ bool borg_crush_slow(void)
         if (i == armour_swap) continue;
 
         /* Skip "good" unknown items (unless "icky") */
-        if (!item->ident && !borg_item_icky(item)) continue;
+        if (!item->ident && borg_item_worth_id(item)) continue;
 
 		/* Do not crush Boots, they could be SPEED */
 		if (item->tval == TV_BOOTS && !item->ident) continue;
@@ -2700,8 +2433,10 @@ bool borg_crush_slow(void)
  */
 bool borg_test_stuff(void)
 {
-    int i, b_i = -1;
-    s32b v, b_v = -1;
+    int i;
+    int b_i = -1, b_v = -1;
+    bool free_id = borg_spell_legal(2, 5) || borg_prayer_legal(5, 2) ||
+					borg_equips_artifact(EF_IDENTIFY);
 
     /* don't ID stuff when you can't recover spent spell point immediately */
     if (((borg_skill[BI_CURSP] < 50 && borg_spell_legal(2, 5)) ||
@@ -2710,38 +2445,28 @@ bool borg_test_stuff(void)
         return (FALSE);
 
     /* No ID if in danger */
-    if (borg_danger(c_y,c_x,1, TRUE, FALSE) > 1) return (FALSE);
+    if (borg_danger(c_y, c_x, 1, TRUE, FALSE) > 1) return (FALSE);
 
     /* Look for an item to identify (equipment) */
     for (i = INVEN_WIELD; i < QUIVER_END; i++)
     {
+    	int v = 0;
         borg_item *item = &borg_items[i];
 
         /* Skip empty items */
         if (!item->iqty) continue;
-
-		/* Reset the value */
-		v = -1;
-
         if (item->fully_identified) continue;
         if (item->ident && item->needs_I) continue;
 
-		if (e_info[borg_items[INVEN_OUTER].name2].xtra == OBJECT_XTRA_TYPE_RESIST ||
-				e_info[borg_items[INVEN_OUTER].name2].xtra == OBJECT_XTRA_TYPE_POWER)
-	        {
-					v = item->value + 100000L;
-            }
-            if (item->name1)
-            {
-                switch (item->name1)
-                {
-                    /* we will id all artifacts */
-                    default:
-			        /* Get the value */
-					v = item->value + 150000L;
-                       break;
-                }
-            }
+		/* Preferentially ID egos and artifacts */
+		if (item->name1)
+			v = item->value + 150000L;
+
+		if (e_info[item->name2].xtra == OBJECT_XTRA_TYPE_RESIST ||
+				e_info[item->name2].xtra == OBJECT_XTRA_TYPE_POWER) {
+			v = item->value + 100000L;
+		}
+
 		/* Prioritize the ID */
         if (strstr(item->note, "magical")) v = item->value +1000L;
         else if (strstr(item->note, "excellent")) v = item->value + 20000L;
@@ -2752,6 +2477,9 @@ bool borg_test_stuff(void)
         else if (strstr(item->note, "indestructible")) v = item->value + 50000L;
         else if (strstr(item->note, "tried")) v = item->value + 2500L;
 
+        /* Ignore */
+        if (!v) continue;
+
 		/* Track the best */
         if (v <= b_v) continue;
 
@@ -2760,36 +2488,23 @@ bool borg_test_stuff(void)
 
     }
 
-
-
     /* Look for an item to identify (inventory) */
     for (i = 0; i < INVEN_MAX_PACK; i++)
     {
+    	int v = 0;
         borg_item *item = &borg_items[i];
 
-        /* Skip empty items */
+        /* Skip empty and ID'd items */
         if (!item->iqty) continue;
-
-        /* Assume nothing */
-        v = 0;
-
         if (item->fully_identified) continue;
         if (item->ident && !item->needs_I) continue;
 
-        if (item->name1)
-        {
-              switch (item->name1)
-              {
-                  /* check all artifacts */
-                  default:
-		        /* Get the value */
-				v = item->value + 150000L;
-                     break;
-              }
-        }
+		/* Preferentially ID artifacts */
+		if (item->name1)
+			v = item->value + 150000L;
 
         /* Identify "good" (and "terrible") items */
-        if (strstr(item->note, "magical")) v = item->value +1000L;
+        if (strstr(item->note, "magical")) v = item->value + 1000L;
         else if (strstr(item->note, "excellent")) v = item->value + 20000L;
         else if (strstr(item->note, "ego")) v = item->value + 20000L;
         else if (strstr(item->note, "splendid")) v = item->value + 20000L;
@@ -2797,6 +2512,7 @@ bool borg_test_stuff(void)
         else if (strstr(item->note, "terrible")) v = item->value + 50000L;
         else if (strstr(item->note, "indestructible")) v = item->value + 50000L;
         else if (strstr(item->note, "tried")) v = item->value + 2500L;
+		else if (free_id || borg_item_worth_id(item)) v = item->value;
 
         /* Hack -- reward "unaware" items */
         if (!item->kind)
@@ -2806,139 +2522,31 @@ bool borg_test_stuff(void)
             {
                 case TV_RING:
                 case TV_AMULET:
-
-                /* Hack -- reward depth */
-                v += (borg_skill[BI_MAXDEPTH] * 5000L);
-
-                break;
+	                v += (borg_skill[BI_MAXDEPTH] * 5000L);
+	                break;
 
                 case TV_ROD:
-
-                /* Hack -- reward depth */
-                v += (borg_skill[BI_MAXDEPTH] * 3000L);
-
-                break;
+	                v += (borg_skill[BI_MAXDEPTH] * 3000L);
+	                break;
 
                 case TV_WAND:
                 case TV_STAFF:
-
-                /* Hack -- reward depth */
-                v += (borg_skill[BI_MAXDEPTH] * 2000L);
-
-                break;
+					v += (borg_skill[BI_MAXDEPTH] * 2000L);
+					break;
 
                 case TV_POTION:
                 case TV_SCROLL:
+					/* Hack -- boring levels */
+					if (borg_skill[BI_MAXDEPTH] < 5) break;
 
-                /* Hack -- boring levels */
-                if (borg_skill[BI_MAXDEPTH] < 5) break;
-
-                /* Hack -- reward depth */
-                v += (borg_skill[BI_MAXDEPTH] * 500L);
-
-                break;
+					/* Hack -- reward depth */
+					v += (borg_skill[BI_MAXDEPTH] * 500L);
+					break;
 
                 case TV_FOOD:
-
-                /* Hack -- reward depth */
-                v += (borg_skill[BI_MAXDEPTH] * 10L);
-
-                break;
+					v += (borg_skill[BI_MAXDEPTH] * 10L);	
+					break;
             }
-        }
-
-        /* Analyze the type */
-        switch (item->tval)
-        {
-            case TV_CHEST:
-
-            /* Hack -- Always identify chests */
-            v = item->value;
-            break;
-
-            case TV_WAND:
-            case TV_STAFF:
-
-            /* Hack -- Always identify (get charges) */
-            v = item->value;
-            break;
-
-            case TV_RING:
-            case TV_AMULET:
-
-            /* Hack -- Always identify (get information) */
-            v = item->value;
-            break;
-
-            case TV_LIGHT:
-
-            /* Hack -- Always identify (get artifact info) */
-            v = item->value;
-            break;
-
-            case TV_SHOT:
-            case TV_ARROW:
-            case TV_BOLT:
-            case TV_BOW:
-            case TV_DIGGING:
-            case TV_HAFTED:
-            case TV_POLEARM:
-            case TV_SWORD:
-            case TV_BOOTS:
-            case TV_GLOVES:
-            case TV_HELM:
-            case TV_CROWN:
-            case TV_SHIELD:
-            case TV_CLOAK:
-            case TV_SOFT_ARMOR:
-            case TV_HARD_ARMOR:
-            case TV_DRAG_ARMOR:
-
-            /* Mega-Hack -- use identify spell/prayer */
-            if (borg_spell_legal(2, 5) || borg_prayer_legal(5, 2) ||
-                borg_equips_artifact(EFF_IDENTIFY, INVEN_WIELD))
-            {
-                v = item->value;
-            }
-
-			/* Certain items needs ID'ing if low level */
-			if (borg_skill[BI_CLEVEL] <= 5)
-			{
-                /* Mega-Hack -- ignore "icky" items */
-                if (!borg_item_icky(item)) v = item->value;
-			}
-
-            /* Mega-Hack -- mages get bored */
-            if ((borg_class == CLASS_MAGE) && (randint0(1000) < borg_skill[BI_CLEVEL]))
-            {
-
-                /* Mega-Hack -- ignore "icky" items */
-                if (!borg_item_icky(item)) v = item->value;
-            }
-
-            /* Mega-Hack -- rangers get bored */
-            if ((borg_class == CLASS_RANGER) && (randint0(3000) < borg_skill[BI_CLEVEL]))
-            {
-
-                /* Mega-Hack -- ignore "icky" items */
-                if (!borg_item_icky(item)) v = item->value;
-            }
-
-            /* Mega-Hack -- priests get bored */
-            if ((borg_class == CLASS_PRIEST) && (randint0(5000) < borg_skill[BI_CLEVEL]))
-            {
-
-                /* Mega-Hack -- ignore "icky" items */
-                if (!borg_item_icky(item)) v = item->value;
-            }
-
-            /* try to ID shovels */
-            if (item->tval == TV_DIGGING) v = item->value;
-
-            /* try to ID my ammo type to stack them up */
-            if (item->tval == my_ammo_tval && borg_skill[BI_CLEVEL] >= 15) v = item->value;
-
-            break;
         }
 
         /* Ignore */
@@ -2948,92 +2556,61 @@ bool borg_test_stuff(void)
         if (v <= b_v) continue;
 
         /* Track it */
-        b_i = i; b_v = v;
+        b_i = i;
+        b_v = v;
     }
+
 
     /* Found something */
     if (b_i >= 0)
     {
         borg_item *item = &borg_items[b_i];
 
-            /* Use a artifact or activatable item to Identify */
-	        if (borg_activate_artifact(EFF_IDENTIFY, INVEN_WIELD))
-	        {
-                /* Log -- may be cancelled */
-                borg_note(format("# Identifying %s.", item->desc));
+		/* Use an item to identify */
+		if (borg_activate_artifact(EF_IDENTIFY) ||
+				borg_spell(2, 5) ||
+				borg_prayer(5, 2) ||
+				borg_zap_rod(SV_ROD_IDENTIFY) ||
+				borg_use_staff(SV_STAFF_IDENTIFY) ||
+				borg_read_scroll(SV_SCROLL_IDENTIFY))
+		{
+			/* Log -- may be cancelled */
+			borg_note(format("# Identifying %s.", item->desc));
 
-                /* Equipment */
-                if (b_i >= INVEN_WIELD)
-                {
+			/* Toggle if necessary */
+			if ((p_ptr->command_wrk == USE_INVEN && b_i >= INVEN_WIELD) ||
+					(p_ptr->command_wrk == USE_EQUIP && b_i < INVEN_WIELD))
+				borg_keypress('/');
 
-                    /* Select the item */
-                    borg_keypress(I2A(b_i - INVEN_WIELD));
+			/* Equipment */
+			if (b_i >= INVEN_WIELD)
+			{		
+				/* Select the item */
+				borg_keypress(I2A(b_i - INVEN_WIELD));
+		
+				/* HACK need to recheck stats if we id something on us. */
+				for (i = 0; i < 6; i++)
+				{
+					my_need_stat_check[i] = TRUE;
+					my_stat_max[i] = 0;
+				}
+			}
+		
+			/* Inventory */
+			else
+			{		
+				/* Select the item */
+				borg_keypress(I2A(b_i));
+			}
+		
+			borg_keypress(ESCAPE);
 
-                    /* HACK need to recheck stats if we id something on us. */
-                    for (i = 0; i < 6; i++)
-                    {
-                        my_need_stat_check[i] = TRUE;
-                        my_stat_max[i] = 0;
-                    }
-                }
-
-                /* Inventory */
-                else
-                {
-                    /* Select the inventory */
-                    borg_keypress('/');
-
-                    /* Select the item */
-                    borg_keypress(I2A(b_i));
-                }
-
-                borg_keypress(ESCAPE);
-                /* Success */
-                return (TRUE);
-            }
-
-            /* Use a Spell/Prayer/Rod/Staff/Scroll of Identify */
-            if (borg_spell(2, 5) ||
-                borg_prayer(5, 2) ||
-                borg_zap_rod(SV_ROD_IDENTIFY) ||
-                borg_use_staff(SV_STAFF_IDENTIFY) ||
-                borg_read_scroll(SV_SCROLL_IDENTIFY) )
-            {
-                /* Log -- may be cancelled */
-                borg_note(format("# Identifying %s.", item->desc));
-
-                /* Equipment */
-                if (b_i >= INVEN_WIELD)
-                {
-                    /* Select the equipment */
-                    borg_keypress('/');
-
-                    /* Select the item */
-                    borg_keypress(I2A(b_i - INVEN_WIELD));
-
-                    /* HACK need to recheck stats if we id something on us. */
-                    for (i = 0; i < 6; i++)
-                    {
-                        my_need_stat_check[i] = TRUE;
-                        my_stat_max[i] = 0;
-                    }
-                }
-
-                /* Inventory */
-                else
-                {
-                    /* Select the item */
-                    borg_keypress(I2A(b_i));
-                }
-
-                borg_keypress(ESCAPE);
-                /* Success */
-                return (TRUE);
-            }
+			return TRUE;
+		}
     }
 
     /* Nothing to do */
-    return (FALSE);
+    return FALSE;
 }
 
 /*
@@ -3076,7 +2653,7 @@ bool borg_swap_rings(void)
     /* Remove any naked loose ring */
     if (borg_items[INVEN_LEFT].iqty &&
         !borg_items[INVEN_RIGHT].iqty &&
-         borg_items[INVEN_LEFT].activation != EFF_BIZARRE)
+         borg_items[INVEN_LEFT].activation != EF_BIZARRE)
     {
         /* Log */
         borg_note("# Taking off naked loose ring.");
@@ -3097,7 +2674,7 @@ bool borg_swap_rings(void)
 
 
     /* Cannot remove the One Ring */
-    if (!borg_items[INVEN_RIGHT].activation == EFF_BIZARRE) return (FALSE);
+    if (!borg_items[INVEN_RIGHT].activation == EF_BIZARRE) return (FALSE);
 
 
     /*** Remove nasty "tight" rings ***/
@@ -3267,7 +2844,7 @@ bool borg_wear_rings(void)
         if (slot != INVEN_LEFT) continue;
 
         /* Occassionally evaluate swapping into the tight finger */
-        if (randint0(100) > 75 || item->activation == EFF_BIZARRE)
+        if (randint0(100) > 75 || item->activation == EF_BIZARRE)
         {
             slot = INVEN_RIGHT;
         }
@@ -3275,7 +2852,7 @@ bool borg_wear_rings(void)
         /* Need to be careful not to put the One Ring onto
          * the Left Hand
          */
-        if (item->activation == EFF_BIZARRE &&
+        if (item->activation == EF_BIZARRE &&
            (borg_items[INVEN_RIGHT].iqty))
             continue;
 
@@ -3304,7 +2881,7 @@ bool borg_wear_rings(void)
         p = borg_power();
 
 		/* the One Ring would be awsome */
-		if (item->activation == EFF_BIZARRE) p = my_power * 2;
+		if (item->activation == EF_BIZARRE) p = my_power * 2;
 
         /* Restore the old item (empty) */
         COPY(&borg_items[slot], &safe_items[slot], borg_item);
@@ -3943,7 +3520,7 @@ bool borg_wear_stuff(void)
 
         /* skip it if it has not been decursed, unless the One Ring */
         if ((item->cursed) &&
-            (item->activation != EFF_BIZARRE)) continue;
+            (item->activation != EF_BIZARRE)) continue;
 
     	/* Do not consider wearing this item if I worn it already this level,
     	 * I might be stuck in a loop.
@@ -4056,7 +3633,7 @@ bool borg_wear_stuff(void)
 	        /* Need to be careful not to put the One Ring onto
 	         * the Left Hand
 	         */
-	        if (item->activation == EFF_BIZARRE &&
+	        if (item->activation == EF_BIZARRE &&
 	        	!borg_items[INVEN_LEFT].tval)
 	            p = -99999;
 
@@ -4073,7 +3650,7 @@ bool borg_wear_stuff(void)
         } /* non-rings, non full */
 
 
-	if (randint0(100)==10 || item->activation == EFF_BIZARRE)
+	if (randint0(100)==10 || item->activation == EF_BIZARRE)
 	{
         /* ring, full hands */
         if (slot == INVEN_LEFT &&
@@ -4131,7 +3708,7 @@ bool borg_wear_stuff(void)
 			         * the Left Hand
 			         */
 			        if (ii == INVEN_LEFT &&
-			            item->activation == EFF_BIZARRE)
+			            item->activation == EF_BIZARRE)
 			            p = -99999;
 
                     /* Ignore "bad" swaps */

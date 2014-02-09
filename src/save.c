@@ -18,12 +18,36 @@
 
 #include "angband.h"
 #include "cave.h"
+#include "dungeon.h"
 #include "history.h"
 #include "monster/mon-make.h"
 #include "monster/monster.h"
 #include "option.h"
+#include "quest.h"
 #include "savefile.h"
 #include "squelch.h"
+
+
+/*
+ * Write a description of the character
+ */
+void wr_description(void)
+{
+	char buf[1024];
+
+	if (p_ptr->is_dead)
+		strnfmt(buf, sizeof buf, "%s, dead (%s)", op_ptr->full_name, p_ptr->died_from);
+	else
+		strnfmt(buf, sizeof buf, "%s, L%d %s %s, at DL%d",
+				op_ptr->full_name,
+				p_ptr->lev,
+				p_ptr->race->name,
+				p_ptr->class->name,
+				p_ptr->depth);
+
+	wr_string(buf);
+}
+
 
 /*
  * Write an "item" record
@@ -78,18 +102,15 @@ static void wr_item(const object_type *o_ptr)
 	wr_u16b(o_ptr->origin_xtra);
 	wr_byte(o_ptr->ignore);
 
-	for (i = 0; i < OF_BYTES && i < OF_SIZE; i++)
+	for (i = 0; i < OF_SIZE; i++)
 		wr_byte(o_ptr->flags[i]);
-	if (i < OF_BYTES) pad_bytes(OF_BYTES - i);
 
-	for (i = 0; i < OF_BYTES && i < OF_SIZE; i++)
+	for (i = 0; i < OF_SIZE; i++)
 		wr_byte(o_ptr->known_flags[i]);
-	if (i < OF_BYTES) pad_bytes(OF_BYTES - i);
 
 	for (j = 0; j < MAX_PVALS; j++) {
-		for (i = 0; i < OF_BYTES && i < OF_SIZE; i++)
+		for (i = 0; i < OF_SIZE; i++)
 			wr_byte(o_ptr->pval_flags[j][i]);
-		if (i < OF_BYTES) pad_bytes(OF_BYTES - i);
 	}
 
 	/* Held by monster index */
@@ -224,6 +245,9 @@ void wr_monster_memory(void)
 	int r_idx;
 
 	wr_u16b(z_info->r_max);
+	wr_byte(RF_SIZE);
+	wr_byte(RSF_SIZE);
+	wr_byte(MONSTER_BLOW_MAX);
 	for (r_idx = 0; r_idx < z_info->r_max; r_idx++)
 	{
 		monster_race *r_ptr = &r_info[r_idx];
@@ -252,13 +276,11 @@ void wr_monster_memory(void)
 			wr_byte(l_ptr->blows[i]);
 
 		/* Memorize flags */
-		for (i = 0; i < RF_BYTES && i < RF_SIZE; i++)
+		for (i = 0; i < RF_SIZE; i++)
 			wr_byte(l_ptr->flags[i]);
-		if (i < RF_BYTES) pad_bytes(RF_BYTES - i);
 
-		for (i = 0; i < RF_BYTES && i < RSF_SIZE; i++)
+		for (i = 0; i < RSF_SIZE; i++)
 			wr_byte(l_ptr->spell_flags[i]);
-		if (i < RF_BYTES) pad_bytes(RF_BYTES - i);
 
 		/* Monster limit per level */
 		wr_byte(r_ptr->max_num);
@@ -276,6 +298,8 @@ void wr_object_memory(void)
 	int k_idx;
 
 	wr_u16b(z_info->k_max);
+	wr_byte(OF_SIZE);
+	wr_byte(MAX_PVALS);
 	for (k_idx = 0; k_idx < z_info->k_max; k_idx++)
 	{
 		byte tmp8u = 0;
@@ -353,13 +377,14 @@ void wr_player(void)
 	wr_s16b(p_ptr->wt);
 
 	/* Dump the stats (maximum and current and birth) */
+	wr_byte(A_MAX);
 	for (i = 0; i < A_MAX; ++i) wr_s16b(p_ptr->stat_max[i]);
 	for (i = 0; i < A_MAX; ++i) wr_s16b(p_ptr->stat_cur[i]);
 	for (i = 0; i < A_MAX; ++i) wr_s16b(p_ptr->stat_birth[i]);
 
 	wr_s16b(p_ptr->ht_birth);
 	wr_s16b(p_ptr->wt_birth);
-	wr_s16b(p_ptr->sc_birth);
+	wr_s16b(0);
 	wr_u32b(p_ptr->au_birth);
 
 	/* Padding */
@@ -390,7 +415,8 @@ void wr_player(void)
 	wr_s16b(0);	/* oops */
 	wr_s16b(0);	/* oops */
 	wr_s16b(0);	/* oops */
-	wr_s16b(p_ptr->sc);
+	wr_byte(0);
+	wr_byte(p_ptr->unignoring);
 	wr_s16b(p_ptr->deep_descent);
 
 	wr_s16b(p_ptr->food);
@@ -459,9 +485,7 @@ void wr_squelch(void)
 
 void wr_misc(void)
 {
-
-	/* XXX Old random artifact version, remove after 3.3 */
-	wr_u32b(63);
+	wr_u32b(0L);
 
 	/* Random artifact seed */
 	wr_u32b(seed_randart);
@@ -518,15 +542,6 @@ void wr_player_spells(void)
 
 	for (i = 0; i < PY_MAX_SPELLS; i++)
 		wr_byte(p_ptr->spell_order[i]);
-}
-
-
-/*
- * We no longer save the random artifacts
- */
-void wr_randarts(void)
-{
-	return;
 }
 
 
@@ -589,7 +604,7 @@ void wr_stores(void)
 /*
  * The cave grid flags that get saved in the savefile
  */
-#define IMPORTANT_FLAGS (CAVE_MARK | CAVE_GLOW | CAVE_ICKY | CAVE_ROOM)
+#define IMPORTANT_FLAGS (CAVE_MARK | CAVE_GLOW | CAVE_VAULT | CAVE_ROOM)
 
 
 /*
@@ -785,7 +800,7 @@ void wr_monsters(void)
 	
 		const monster_type *m_ptr = cave_monster(cave, i);
 
-		wr_s16b(m_ptr->r_idx);
+		wr_s16b(m_ptr->race->ridx);
 		wr_byte(m_ptr->fy);
 		wr_byte(m_ptr->fx);
 		wr_s16b(m_ptr->hp);
@@ -800,9 +815,8 @@ void wr_monsters(void)
 		if (m_ptr->unaware) unaware |= 0x01;
 		wr_byte(unaware);
 
-		for (j = 0; j < OF_BYTES && j < OF_SIZE; j++)
+		for (j = 0; j < OF_SIZE; j++)
 			wr_byte(m_ptr->known_pflags[j]);
-		if (j < OF_BYTES) pad_bytes(OF_BYTES - j);
 		
 		wr_byte(0);
 	}

@@ -20,14 +20,17 @@
 
 #include "angband.h"
 #include "buildid.h"
-#include "button.h"
 #include "cave.h"
 #include "files.h"
 #include "game-event.h"
 #include "game-cmd.h"
+#include "grafmode.h"
+#include "hint.h"
 #include "monster/mon-lore.h"
+#include "monster/mon-list.h"
 #include "monster/mon-util.h"
 #include "monster/monster.h"
+#include "object/obj-list.h"
 #include "object/tvalsval.h"
 #include "textui.h"
 #include "ui-birth.h"
@@ -37,7 +40,7 @@
  * of the basic player events.  For convenience, these have been grouped 
  * in this list.
  */
-game_event_type player_events[] =
+static game_event_type player_events[] =
 {
 	EVENT_RACE_CLASS,
 	EVENT_PLAYERTITLE,
@@ -56,13 +59,12 @@ game_event_type player_events[] =
 	EVENT_DUNGEONLEVEL,
 };
 
-game_event_type statusline_events[] =
+static game_event_type statusline_events[] =
 {
 	EVENT_STUDYSTATUS,
 	EVENT_STATUS,
 	EVENT_DETECTIONSTATUS,
 	EVENT_STATE,
-	EVENT_MOUSEBUTTONS
 };
 
 
@@ -490,7 +492,6 @@ static void prt_dex(int row, int col) { prt_stat(A_DEX, row, col); }
 static void prt_wis(int row, int col) { prt_stat(A_WIS, row, col); }
 static void prt_int(int row, int col) { prt_stat(A_INT, row, col); }
 static void prt_con(int row, int col) { prt_stat(A_CON, row, col); }
-static void prt_chr(int row, int col) { prt_stat(A_CHR, row, col); }
 static void prt_race(int row, int col) { prt_field(p_ptr->race->name, row, col); }
 static void prt_class(int row, int col) { prt_field(p_ptr->class->name, row, col); }
 
@@ -517,7 +518,6 @@ static const struct side_handler_t
 	{ prt_wis,      4, EVENT_STATS },
 	{ prt_dex,      3, EVENT_STATS },
 	{ prt_con,      2, EVENT_STATS },
-	{ prt_chr,      1, EVENT_STATS },
 	{ NULL,        15, 0 },
 	{ prt_ac,       7, EVENT_AC },
 	{ prt_hp,       8, EVENT_HP },
@@ -644,7 +644,6 @@ static const struct state_info hunger_data[] =
 	{ PY_FOOD_ALERT, S("Hungry"),   TERM_YELLOW },
 	{ PY_FOOD_FULL,  S(""),         TERM_L_GREEN },
 	{ PY_FOOD_MAX,   S("Full"),     TERM_L_GREEN },
-	{ PY_FOOD_UPPER, S("Gorged"),   TERM_GREEN },
 };
 
 /* For the various TMD_* effects */
@@ -740,7 +739,7 @@ static size_t prt_stun(int row, int col)
  */
 static size_t prt_hunger(int row, int col)
 {
-	PRINT_STATE(<, hunger_data, p_ptr->food, row, col);
+	PRINT_STATE(<=, hunger_data, p_ptr->food, row, col);
 	return 0;
 }
 
@@ -761,10 +760,10 @@ static size_t prt_state(int row, int col)
 
 
 	/* Resting */
-	if (p_ptr->resting)
+	if (player_is_resting(p_ptr))
 	{
 		int i;
-		int n = p_ptr->resting;
+		int n = player_resting_count(p_ptr);
 
 		/* Start with "Rest" */
 		my_strcpy(text, "Rest      ", sizeof(text));
@@ -813,19 +812,19 @@ static size_t prt_state(int row, int col)
 		}
 
 		/* Rest until healed */
-		else if (n == -1)
+		else if (n == REST_ALL_POINTS)
 		{
 			text[5] = text[6] = text[7] = text[8] = text[9] = '*';
 		}
 
 		/* Rest until done */
-		else if (n == -2)
+		else if (n == REST_COMPLETE)
 		{
 			text[5] = text[6] = text[7] = text[8] = text[9] = '&';
 		}
 		
 		/* Rest until HP or SP filled */
-		else if (n == -3)
+		else if (n == REST_SOME_POINTS)
 		{
 			text[5] = text[6] = text[7] = text[8] = text[9] = '!';
 		}
@@ -892,7 +891,7 @@ static size_t prt_study(int row, int col)
 	{
 		/* If the player does not carry a book with spells they can study,
 		   the message is displayed in a darker colour */
-		if (!player_can_study_book())
+		if (!player_book_has_unlearned_spells(p_ptr))
 			attr = TERM_L_DARK;
 
 		/* Print study message */
@@ -938,23 +937,11 @@ static size_t prt_unignore(int row, int col)
 	return 0;
 }
 
-/*
- * Print mouse buttons
- */
-static size_t prt_buttons(int row, int col)
-{
-	if (OPT(mouse_buttons))
-		return button_print(row, col);
-
-	return 0;
-}
-
-
 /* Useful typedef */
 typedef size_t status_f(int row, int col);
 
-status_f *status_handlers[] =
-{ prt_buttons, prt_unignore, prt_recall, prt_state, prt_cut, prt_stun,
+static status_f *status_handlers[] =
+{ prt_unignore, prt_recall, prt_state, prt_cut, prt_stun,
   prt_hunger, prt_study, prt_tmd, prt_dtrap };
 
 
@@ -1006,7 +993,7 @@ static void update_maps(game_event_type type, game_event_data *data, void *user)
 	else
 	{
 		grid_data g;
-		byte a, ta;
+		int a, ta;
 		wchar_t c, tc;
 		
 		int ky, kx;
@@ -1171,7 +1158,8 @@ static void update_itemlist_subwindow(game_event_type type, game_event_data *dat
 	/* Activate */
 	Term_activate(inv_term);
 
-	display_itemlist();
+    clear_from(0);
+    object_list_show_subwindow(Term->hgt, Term->wid);
 	Term_fresh();
 	
 	/* Restore */
@@ -1186,7 +1174,8 @@ static void update_monlist_subwindow(game_event_type type, game_event_data *data
 	/* Activate */
 	Term_activate(inv_term);
 
-	display_monlist();
+	clear_from(0);
+	monster_list_show_subwindow(Term->hgt, Term->wid);
 	Term_fresh();
 	
 	/* Restore */
@@ -1198,19 +1187,13 @@ static void update_monster_subwindow(game_event_type type, game_event_data *data
 {
 	term *old = Term;
 	term *inv_term = user;
-	const monster_race *r_ptr;
-	const monster_lore *l_ptr;
 
 	/* Activate */
 	Term_activate(inv_term);
 
 	/* Display monster race info */
-	if (p_ptr->monster_race_idx)
-	{
-		r_ptr = &r_info[p_ptr->monster_race_idx];
-		l_ptr = &l_list[p_ptr->monster_race_idx];
-		display_roff(r_ptr, l_ptr);
-	}
+	if (p_ptr->monster_race)
+		lore_show_subwindow(p_ptr->monster_race, get_lore(p_ptr->monster_race));
 
 	Term_fresh();
 	
@@ -1229,8 +1212,8 @@ static void update_object_subwindow(game_event_type type, game_event_data *data,
 	
 	if (p_ptr->object_idx != NO_OBJECT)
 		display_object_idx_recall(p_ptr->object_idx);
-	else if(p_ptr->object_kind_idx != NO_OBJECT)
-		display_object_kind_recall(p_ptr->object_kind_idx);
+	else if (p_ptr->object_kind)
+		display_object_kind_recall(p_ptr->object_kind);
 	Term_fresh();
 	
 	/* Restore */
@@ -1264,6 +1247,8 @@ static void update_messages_subwindow(game_event_type type, game_event_data *dat
 
 		if (count == 1)
 			msg = str;
+		else if (count == 0)
+			msg = " ";
 		else
 			msg = format("%s <%dx>", str, count);
 
@@ -1313,6 +1298,17 @@ static void update_minimap_subwindow(game_event_type type,
 		Term_activate(old);
 
 		flags->needs_redraw = FALSE;
+	}
+	else if (type == EVENT_DUNGEONLEVEL) {
+		/* XXX map_height and map_width need to be kept in sync with display_map() */
+		term *t = angband_term[flags->win_idx];
+		int map_height = t->hgt - 2;
+		int map_width = t->wid - 2;
+
+		/* Clear the entire term if the new map isn't going to fit the entire thing */
+		if (cave->height <= map_height || cave->width <= map_width) {
+			flags->needs_redraw = TRUE;
+		}
 	}
 }
 
@@ -1521,6 +1517,8 @@ static void subwindow_flag_changed(int win_idx, u32b flag, bool new_state)
 					       update_minimap_subwindow,
 					       &minimap_data[win_idx]);
 
+			register_or_deregister(EVENT_DUNGEONLEVEL, update_minimap_subwindow, &minimap_data[win_idx]);
+
 			register_or_deregister(EVENT_END,
 					       update_minimap_subwindow,
 					       &minimap_data[win_idx]);
@@ -1672,7 +1670,7 @@ static void show_splashscreen(game_event_type type, game_event_data *data, void 
 
 	/* Open the News file */
 	path_build(buf, sizeof(buf), ANGBAND_DIR_FILE, "news.txt");
-	fp = file_open(buf, MODE_READ, -1);
+	fp = file_open(buf, MODE_READ, FTYPE_TEXT);
 
 	text_out_hook = text_out_to_screen;
 
@@ -1723,7 +1721,7 @@ static void see_floor_items(game_event_type type, game_event_data *data, void *u
 	size_t i;
 
 	/* Scan all marked objects in the grid */
-	floor_num = scan_floor(floor_list, N_ELEMENTS(floor_list), py, px, 0x0B);
+	floor_num = scan_floor(floor_list, N_ELEMENTS(floor_list), py, px, 0x09);
 	if (floor_num == 0) return;
 
 	for (i = 0; i < floor_num; i++)
@@ -1772,9 +1770,16 @@ static void see_floor_items(game_event_type type, game_event_data *data, void *u
 		/* Restore screen */
 		screen_load();
 	}
-}
 
-extern game_event_handler ui_enter_birthscreen;
+	/* Update the map to display the items that are felt during blindness. */
+	if (blind) {
+		for (i = 0; i < floor_num; i++) {
+			/* Since the messages are detailed, we use MARK_SEEN to match description. */
+			object_type *o_ptr = object_byid(floor_list[i]);
+			o_ptr->marked = MARK_SEEN;
+		}
+	}
+}
 
 /* ------------------------------------------------------------------------
  * Initialising

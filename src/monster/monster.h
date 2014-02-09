@@ -24,15 +24,25 @@
 #include "z-bitflag.h"
 #include "z-rand.h"
 #include "cave.h"
-#include "player/types.h"
 #include "monster/mon-timed.h"
+#include "object/obj-flag.h"
 
 /** Constants **/
+
+/*
+ * There is a 1/50 (2%) chance of inflating the requested monster level
+ * during the creation of a monsters (see "get_mon_num()" in "monster.c").
+ * Lower values yield harder monsters more often.
+ */
+#define NASTY_MON    25        /* 1/chance of inflated monster level */
+#define MON_OOD_MAX  10        /* maximum out-of-depth amount */
+
+
 
 /* Monster spell flags */
 enum
 {
-    #define RSF(a, b, c, d, e, f, g, h, i, j, k, l, m) RSF_##a,
+    #define RSF(a, b, c, d, e, f, g, h, i, j, k, l, m, n) RSF_##a,
     #include "list-mon-spells.h"
     #undef RSF
 };
@@ -96,6 +106,23 @@ struct monster_drop {
 	unsigned int max;
 };
 
+struct monster_friends {
+	struct monster_friends *next;
+	char *name;
+	struct monster_race *race;
+	unsigned int percent_chance;
+	unsigned int number_dice;
+	unsigned int number_side;
+};
+
+struct monster_friends_base {
+	struct monster_friends_base *next;
+	struct monster_base *base;
+	unsigned int percent_chance;
+	unsigned int number_dice;
+	unsigned int number_side;
+};
+
 struct monster_mimic {
 	struct monster_mimic *next;
 	struct object_kind *kind;
@@ -127,6 +154,7 @@ typedef struct monster_race
 
 	char *name;
 	char *text;
+	char *plural; /* Optional pluralized name */
 
 	struct monster_base *base;
 	
@@ -160,7 +188,7 @@ typedef struct monster_race
 	struct monster_blow blow[MONSTER_BLOW_MAX]; /* Up to four blows per round */
 
 	byte level;				/* Level of creature */
-	byte rarity;			/* Rarity of creature */
+	int rarity;			/* Rarity of creature */
 
 	byte d_attr;			/* Default monster attribute */
 	wchar_t d_char;			/* Default monster character */
@@ -172,7 +200,11 @@ typedef struct monster_race
 	byte cur_num;			/* Monster population on current level */
 
 	struct monster_drop *drops;
+    
+    struct monster_friends *friends;
 	
+    struct monster_friends_base *friends_base;
+    
 	struct monster_mimic *mimic_kinds;
 } monster_race;
 
@@ -222,7 +254,6 @@ typedef struct
 typedef struct monster
 {
 	struct monster_race *race;
-	s16b r_idx;			/* Monster race index */
 	int midx;
 
 	byte fy;			/* Y location on map */
@@ -260,9 +291,11 @@ typedef struct monster
 extern bool check_hit(struct player *p, int power, int level);
 extern void process_monsters(struct cave *c, byte min_energy);
 int mon_hp(const struct monster_race *r_ptr, aspect hp_aspect);
+extern bool make_attack_spell(struct monster *m);
 
-#ifdef TEST
+
+extern s16b num_repro;
+
 extern bool (*testfn_make_attack_normal)(struct monster *m, struct player *p);
-#endif /* !TEST */
 
 #endif /* !MONSTER_MONSTER_H */

@@ -1,0 +1,13 @@
+# Some hacky keymaps to allow shift-running with arrow keys in curses
+
+A:.[Up]
+C:0:\xf6
+
+A:.[Down]
+C:0:\xf7
+
+A:.[Right]
+C:0:\xb5
+
+A:.[Left]
+C:0:\xbe

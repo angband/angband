@@ -151,13 +151,13 @@ bool player_set_timed(struct player *p, int idx, int v, bool notify)
 	else if (idx == TMD_CUT) return set_cut(p, v);
 
 	/* Don't mention effects which already match the player state. */
-	if (idx == TMD_OPP_ACID && check_state(p_ptr, OF_IM_ACID, p->state.flags))
+	if (idx == TMD_OPP_ACID && check_state(p, OF_IM_ACID, p->state.flags))
 		notify = FALSE;
-	else if (idx == TMD_OPP_ELEC && check_state(p_ptr, OF_IM_ELEC, p->state.flags))
+	else if (idx == TMD_OPP_ELEC && check_state(p, OF_IM_ELEC, p->state.flags))
 		notify = FALSE;
-	else if (idx == TMD_OPP_FIRE && check_state(p_ptr, OF_IM_FIRE, p->state.flags))
+	else if (idx == TMD_OPP_FIRE && check_state(p, OF_IM_FIRE, p->state.flags))
 		notify = FALSE;
-	else if (idx == TMD_OPP_COLD && check_state(p_ptr, OF_IM_COLD, p->state.flags))
+	else if (idx == TMD_OPP_COLD && check_state(p, OF_IM_COLD, p->state.flags))
 		notify = FALSE;
 	else if (idx == TMD_OPP_CONF && of_has(p->state.flags, OF_RES_CONFU))
 		notify = FALSE;
@@ -201,7 +201,7 @@ bool player_set_timed(struct player *p, int idx, int v, bool notify)
 	if (!notify) return FALSE;
 
 	/* Disturb */
-	if (OPT(disturb_state)) disturb(p_ptr, 0, 0);
+	disturb(p, 0, 0);
 
 	/* Update the visuals, as appropriate. */
 	p->update |= effect->flag_update;
@@ -372,7 +372,7 @@ static bool set_stun(struct player *p, int v)
 			case 0:
 			{
 				msgt(MSG_RECOVER, "You are no longer stunned.");
-				if (OPT(disturb_state)) disturb(p_ptr, 0, 0);
+				disturb(p_ptr, 0, 0);
 				break;
 			}
 		}
@@ -388,7 +388,7 @@ static bool set_stun(struct player *p, int v)
 	if (!notice) return (FALSE);
 
 	/* Disturb */
-	if (OPT(disturb_state)) disturb(p_ptr, 0, 0);
+	disturb(p_ptr, 0, 0);
 
 	/* Recalculate bonuses */
 	p->update |= (PU_BONUS);
@@ -584,7 +584,7 @@ static bool set_cut(struct player *p, int v)
 			case 0:
 			{
 				msgt(MSG_RECOVER, "You are no longer bleeding.");
-				if (OPT(disturb_state)) disturb(p_ptr, 0, 0);
+				disturb(p_ptr, 0, 0);
 				break;
 			}
 		}
@@ -600,7 +600,7 @@ static bool set_cut(struct player *p, int v)
 	if (!notice) return (FALSE);
 
 	/* Disturb */
-	if (OPT(disturb_state)) disturb(p_ptr, 0, 0);
+	disturb(p_ptr, 0, 0);
 
 	/* Recalculate bonuses */
 	p->update |= (PU_BONUS);
@@ -628,15 +628,7 @@ static bool set_cut(struct player *p, int v)
  *
  * Digestion of food is handled in "dungeon.c", in which, normally,
  * the player digests about 20 food units per 100 game turns, more
- * when "fast", more when "regenerating", less with "slow digestion",
- * but when the player is "gorged", he digests 100 food units per 10
- * game turns, or a full 1000 food units per 100 game turns.
- *
- * Note that the player's speed is reduced by 10 units while gorged,
- * so if the player eats a single food ration (5000 food units) when
- * full (15000 food units), he will be gorged for (5000/100)*10 = 500
- * game turns, or 500/(100/5) = 25 player turns (if nothing else is
- * affecting the player speed).
+ * when "fast", more when "regenerating", less with "slow digestion".
  */
 bool player_set_food(struct player *p, int v)
 {
@@ -645,121 +637,38 @@ bool player_set_food(struct player *p, int v)
 	bool notice = FALSE;
 
 	/* Hack -- Force good values */
-	v = MIN(v, PY_FOOD_UPPER);
+	v = MIN(v, PY_FOOD_MAX);
 	v = MAX(v, 0);
 
-	/* Fainting / Starving */
-	if (p->food < PY_FOOD_FAINT)
-	{
-		old_aux = 0;
-	}
+	/* Current value */
+	if (p->food < PY_FOOD_FAINT)      old_aux = 0;
+	else if (p->food < PY_FOOD_WEAK)  old_aux = 1;
+	else if (p->food < PY_FOOD_ALERT) old_aux = 2;
+	else if (p->food < PY_FOOD_FULL)  old_aux = 3;
+	else                              old_aux = 4;
 
-	/* Weak */
-	else if (p->food < PY_FOOD_WEAK)
-	{
-		old_aux = 1;
-	}
-
-	/* Hungry */
-	else if (p->food < PY_FOOD_ALERT)
-	{
-		old_aux = 2;
-	}
-
-	/* Normal */
-	else if (p->food < PY_FOOD_FULL)
-	{
-		old_aux = 3;
-	}
-
-	/* Full */
-	else if (p->food < PY_FOOD_MAX)
-	{
-		old_aux = 4;
-	}
-
-	/* Gorged */
-	else
-	{
-		old_aux = 5;
-	}
-
-	/* Fainting / Starving */
-	if (v < PY_FOOD_FAINT)
-	{
-		new_aux = 0;
-	}
-
-	/* Weak */
-	else if (v < PY_FOOD_WEAK)
-	{
-		new_aux = 1;
-	}
-
-	/* Hungry */
-	else if (v < PY_FOOD_ALERT)
-	{
-		new_aux = 2;
-	}
-
-	/* Normal */
-	else if (v < PY_FOOD_FULL)
-	{
-		new_aux = 3;
-	}
-
-	/* Full */
-	else if (v < PY_FOOD_MAX)
-	{
-		new_aux = 4;
-	}
-
-	/* Gorged */
-	else
-	{
-		new_aux = 5;
-	}
+	/* New value */
+	if (v < PY_FOOD_FAINT)      new_aux = 0;
+	else if (v < PY_FOOD_WEAK)  new_aux = 1;
+	else if (v < PY_FOOD_ALERT) new_aux = 2;
+	else if (v < PY_FOOD_FULL)  new_aux = 3;
+	else                        new_aux = 4;
 
 	/* Food increase */
-	if (new_aux > old_aux)
-	{
-		/* Describe the state */
-		switch (new_aux)
-		{
-			/* Weak */
+	if (new_aux > old_aux) {
+		switch (new_aux) {
 			case 1:
-			{
 				msg("You are still weak.");
 				break;
-			}
-
-			/* Hungry */
 			case 2:
-			{
 				msg("You are still hungry.");
 				break;
-			}
-
-			/* Normal */
 			case 3:
-			{
 				msg("You are no longer hungry.");
 				break;
-			}
-
-			/* Full */
 			case 4:
-			{
 				msg("You are full!");
 				break;
-			}
-
-			/* Bloated */
-			case 5:
-			{
-				msg("You have gorged yourself!");
-				break;
-			}
 		}
 
 		/* Change */
@@ -767,45 +676,20 @@ bool player_set_food(struct player *p, int v)
 	}
 
 	/* Food decrease */
-	else if (new_aux < old_aux)
-	{
-		/* Describe the state */
-		switch (new_aux)
-		{
-			/* Fainting / Starving */
+	else if (new_aux < old_aux) {
+		switch (new_aux) {
 			case 0:
-			{
 				msgt(MSG_NOTICE, "You are getting faint from hunger!");
 				break;
-			}
-
-			/* Weak */
 			case 1:
-			{
 				msgt(MSG_NOTICE, "You are getting weak from hunger!");
 				break;
-			}
-
-			/* Hungry */
 			case 2:
-			{
 				msgt(MSG_HUNGRY, "You are getting hungry.");
 				break;
-			}
-
-			/* Normal */
 			case 3:
-			{
 				msgt(MSG_NOTICE, "You are no longer full.");
 				break;
-			}
-
-			/* Full */
-			case 4:
-			{
-				msgt(MSG_NOTICE, "You are no longer gorged.");
-				break;
-			}
 		}
 
 		/* Change */
@@ -819,7 +703,7 @@ bool player_set_food(struct player *p, int v)
 	if (!notice) return (FALSE);
 
 	/* Disturb */
-	if (OPT(disturb_state)) disturb(p_ptr, 0, 0);
+	disturb(p_ptr, 0, 0);
 
 	/* Recalculate bonuses */
 	p->update |= (PU_BONUS);

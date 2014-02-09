@@ -2,7 +2,7 @@
  * File: stats.c
  * Purpose: Statistics collection on dungeon generation
  *
- * Copyright (c) 2008 Andrew Sidwell
+ * Copyright (c) 2008 Andi Sidwell
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -484,50 +484,6 @@ static bool first_find(int fl[TRIES_SIZE])
 	return TRUE;
 }
 
-
-void drop_on_square(object_type *j_ptr, int y, int x, bool verbose)
-{
-	//int i, k, n, d, s;
-
-	int by, bx;
-	//int dy, dx;
-	//int ty, tx;
-
-	// object_type *o_ptr;
-
-	char o_name[80];
-
-	//bool flag = FALSE;
-
-	bool plural = FALSE;
-	
-	assert(j_ptr->kind);
-
-	/* Default */
-	by = y;
-	bx = x;
-	
-	/* Set floor to empty */
-	cave_set_feat(cave,y,x,FEAT_FLOOR);
-
-			
-			
-	/* Give it to the floor */
-	if (!floor_carry(cave, by, bx, j_ptr)){
-	
-		/* Message */
-		msg("The %s disappear%s.", o_name, PLURAL(plural));
-
-		/* Debug */
-		if (p_ptr->wizard) msg("Breakage (too many objects).");
-
-		if (j_ptr->artifact) j_ptr->artifact->created = FALSE;
-
-		/* Failure */
-		return;
-	}
-}
-
 /*
  * Add values to each category of statistics based 
  */
@@ -566,7 +522,7 @@ static void add_stats(double total[MAX_LVL], double mondrop[MAX_LVL], double inv
 static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool uniq)
 {
 	
-	bool vault = (cave->info[y][x] & (CAVE_ICKY));
+	bool vault = cave_isvault(cave, y, x);
 	bitflag f[OF_SIZE];
 	int effect;
 	int number = o_ptr->number;
@@ -742,7 +698,7 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 					add_stats( slweap_total,  slweap_mon,  slweap_vault, vault, mon,number);
 			/* slay evil */
 			if (of_has(f,OF_SLAY_EVIL))
-				add_stats( slweap_total,  slweap_mon,  slweap_vault, vault, mon,number);
+				add_stats( evweap_total,  evweap_mon,  evweap_vault, vault, mon,number);
 			
 			/* kill flag */
 			if ((of_has(f,OF_KILL_DRAGON)) ||
@@ -891,7 +847,6 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 			/*stat gain*/
 			switch(effect){
 			
-				/* skip CHR */
 				case EF_GAIN_STR:
 				case EF_GAIN_INT:
 				case EF_GAIN_WIS:
@@ -1391,17 +1346,15 @@ void monster_death_stats(int m_idx)
 	s16b this_o_idx, next_o_idx = 0;
 
 	monster_type *m_ptr;
-	monster_race *r_ptr;
 
 	bool uniq;
 
 	assert(m_idx > 0);
 	m_ptr = cave_monster(cave, m_idx);
-	r_ptr = &r_info[m_ptr->r_idx];
 
 	
 	/* Check if monster is UNIQUE */
-	uniq = rf_has(r_ptr->flags,RF_UNIQUE);
+	uniq = rf_has(m_ptr->race->flags,RF_UNIQUE);
 
 	/* Get the location */
 	y = m_ptr->fy;
@@ -1445,8 +1398,6 @@ void monster_death_stats(int m_idx)
 static bool stats_monster(monster_type *m_ptr, int i)
 {
 	static int lvl;
-	/* Get monster race */
-	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 		
 	/* get player depth */
 	lvl=p_ptr->depth;
@@ -1456,37 +1407,37 @@ static bool stats_monster(monster_type *m_ptr, int i)
 	mon_total[lvl] += addval;
 	
 	/* Increment unique count if appropriate */
-	if (rf_has(r_ptr->flags, RF_UNIQUE)){
+	if (rf_has(m_ptr->race->flags, RF_UNIQUE)){
 	
 		/* add to total */
 		uniq_total[lvl] += addval;
 	
 		/* kill the unique if we're in clearing mode */
-		if (clearing) r_ptr->max_num = 0;
+		if (clearing) m_ptr->race->max_num = 0;
 		
 		//debugging print that we killed it
 		//msg_format("Killed %s",r_ptr->name);
 	}	
 	
 	/* Is it mostly dangerous (10 levels ood or less?)*/
-	if ((r_ptr->level > p_ptr->depth) && 
-		(r_ptr->level <= p_ptr->depth+10)){
+	if ((m_ptr->race->level > p_ptr->depth) && 
+		(m_ptr->race->level <= p_ptr->depth+10)){
 		
 			mon_ood[lvl] += addval;
 			
 			/* Is it a unique */
-			if (rf_has(r_ptr->flags, RF_UNIQUE)) uniq_ood[lvl] += addval;
+			if (rf_has(m_ptr->race->flags, RF_UNIQUE)) uniq_ood[lvl] += addval;
 			
 		}
 		
 		
 	/* Is it deadly? */
-	if (r_ptr->level > p_ptr->depth + 10){
+	if (m_ptr->race->level > p_ptr->depth + 10){
 	
 		mon_deadly[lvl] += addval;
 	
 		/* Is it a unique? */
-		if (rf_has(r_ptr->flags, RF_UNIQUE)) uniq_deadly[lvl] += addval;
+		if (rf_has(m_ptr->race->flags, RF_UNIQUE)) uniq_deadly[lvl] += addval;
 						
 	}	
 	
@@ -1545,8 +1496,7 @@ static void print_heading(void)
 	file_putf(stats_log," Armor:     Low resist armor may have more than one basic resist (acid, \n");
 	file_putf(stats_log,"		     elec, fire, cold) but not all. \n");
 	file_putf(stats_log," Books:     Prayer and Magic books have the same probability. \n");
-	file_putf(stats_log," Potions:   Stat gain potions do not include CHR.  Aug counts \n");
-	file_putf(stats_log,"			 as 5 potions, *enlight* as 2.  Healing potions are \n");
+	file_putf(stats_log," Potions:   Aug counts as 5 potions, *enlight* as 2.  Healing potions are \n");
 	file_putf(stats_log,"			 only *Healing* and Life\n");
 	file_putf(stats_log," Scrolls:   Endgame scrolls include *Dest*, Rune, MBan and Ban \n");
 	file_putf(stats_log,"    		 *Acq* counts as two Acq scrolls");
@@ -2028,8 +1978,8 @@ static void scan_for_objects(void)
 { 
 	int y, x;
 
-	for (y = 1; y < DUNGEON_HGT - 1; y++) {
-		for (x = 1; x < DUNGEON_WID - 1; x++) {
+	for (y = 1; y < cave->height - 1; y++) {
+		for (x = 1; x < cave->width - 1; x++) {
 			const object_type *o_ptr;
 
 			
@@ -2058,7 +2008,7 @@ static void scan_for_monsters(void)
 		monster_type *m_ptr = cave_monster(cave, i);
 		
 		/* Skip dead monsters */
-		if (!m_ptr->r_idx) continue;
+		if (!m_ptr->race) continue;
 		
 		stats_monster(m_ptr,i);
 	}
@@ -2111,9 +2061,9 @@ static void revive_uniques(void)
 	int i;
 	
 	for (i = 1; i < z_info->r_max - 1; i++){
-	
+
 		/* get the monster info */
-		 monster_race *r_ptr = &r_info[i];
+		monster_race *r_ptr = &r_info[i];
 
 		/* revive the unique monster */
 		if (rf_has(r_ptr->flags, RF_UNIQUE)) r_ptr->max_num = 1;
@@ -2410,13 +2360,13 @@ void calc_cave_distances(void)
 				ty = oy + ddy_ddd[d];
 				tx = ox + ddx_ddd[d];
 				
-				if (!(in_bounds_fully(ty,tx))) continue;
+				if (!(cave_in_bounds_fully(cave, ty,tx))) continue;
 				
 				/* Have we been here before? */
 				if (cave_dist[ty][tx] >= 0) continue;
 				
 				/* Is it a wall? */
-				if (cave->feat[ty][tx] > FEAT_RUBBLE) continue;
+				if (cave_iswall(cave, ty, tx)) continue;
 				
 				/* Add the new location */
 				d_y_new[d_new_max] = ty;
@@ -2448,7 +2398,7 @@ void calc_cave_distances(void)
 void pit_stats(void)
 {
 	int tries = 1000;
-	int depth = p_ptr->command_arg;
+	int depth = 0;
 	int hist[z_info->pit_max];
 	int j, p;
 	int type = 1;
@@ -2478,21 +2428,16 @@ void pit_stats(void)
 	/* get the new value */
 	type = atoi(tmp_val);
 	if (type < 1) type = 1;
-	
-	if (depth <= 0){
-	
-		/* Format second default value */	
-		strnfmt(tmp_val, sizeof(tmp_val), "%d", p_ptr->depth);
-	
-		/* Ask for the input - take the first 7 characters*/
-		if (!get_string("Depth: ", tmp_val, 7)) return;
 
-		/* get the new value */
-		depth = atoi(tmp_val);
-		if (depth < 1) depth = 1;
+	/* Format second default value */	
+	strnfmt(tmp_val, sizeof(tmp_val), "%d", p_ptr->depth);
 	
-	}
+	/* Ask for the input - take the first 7 characters*/
+	if (!get_string("Depth: ", tmp_val, 7)) return;
 
+	/* get the new value */
+	depth = atoi(tmp_val);
+	if (depth < 1) depth = 1;
 
 	for (j = 0; j < tries; j++){
 	
@@ -2581,18 +2526,18 @@ void disconnect_stats(void)
 		calc_cave_distances();
 		
 		/*Cycle through the dungeon */
-		for (y = 1; y < DUNGEON_HGT - 1; y++){
+		for (y = 1; y < cave->height - 1; y++){
 		
-			for (x = 1; x < DUNGEON_WID - 1; x++){
+			for (x = 1; x < cave->width - 1; x++){
 			
 				/* don't care about walls */
-				if (cave->feat[y][x] > FEAT_RUBBLE) continue;
+				if (cave_iswall(cave, y, x)) continue;
 				
 				/* Can we get there? */
 				if (cave_dist[y][x] >= 0){
 				
 					/* Is it a  down stairs? */
-					if ((cave->feat[y][x] == FEAT_MORE)){
+					if (cave_isdownstairs(cave, y, x)) {
 
 						has_dsc_from_stairs = FALSE;
 					
@@ -2605,7 +2550,7 @@ void disconnect_stats(void)
 				}
 				
 				/* Ignore vaults as they are often disconnected */
-				if (cave->info[y][x] & (CAVE_ICKY)) continue;
+				if (cave_isvault(cave, y, x)) continue;
 				
 				/* We have a disconnected area */
 				has_dsc = TRUE;

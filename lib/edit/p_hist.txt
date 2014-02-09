@@ -26,10 +26,6 @@
 # Note that the "spacing" in the "description" lines is very important!
 
 
-# Version stamp (required)
-
-V:3.0.11
-
 
 N:1:2:10:25
 D:You are the illegitimate and unacknowledged child 
