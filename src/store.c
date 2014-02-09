@@ -1496,7 +1496,7 @@ static bool store_create_random(struct store *store)
 		/* The object is "known" and belongs to a store */
 		i_ptr->ident |= IDENT_STORE;
 		i_ptr->origin = ORIGIN_STORE;
-
+		object_know_all_flags(i_ptr);
 
 		/*** Post-generation filters ***/
 
@@ -1535,6 +1535,7 @@ static int store_create_item(struct store *store, object_kind *kind)
 	/* Item belongs to a store */
 	object.ident |= IDENT_STORE;
 	object.origin = ORIGIN_STORE;
+	object_know_all_flags(&object);
 
 	/* Attempt to carry the object */
 	return store_carry(store, &object);
@@ -2802,7 +2803,7 @@ static void store_examine(int item)
 	msg_flag = FALSE;
 
 	/* Show full info in most stores, but normal info in player home */
-	tb = object_info(o_ptr, (store->sidx != STORE_HOME) ? OINFO_FULL : OINFO_NONE);
+	tb = object_info(o_ptr, OINFO_NONE);
 	object_desc(header, sizeof(header), o_ptr, ODESC_PREFIX | ODESC_FULL |
 		ODESC_STORE);
 
