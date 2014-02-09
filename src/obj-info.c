@@ -1459,7 +1459,7 @@ void object_info_chardump(ang_file *f, const object_type *o_ptr, int indent, int
  */
 void object_info_spoil(ang_file *f, const object_type *o_ptr, int wrap)
 {
-	textblock *tb = object_info_out(o_ptr, OINFO_FULL);
+	textblock *tb = object_info_out(o_ptr, OINFO_NONE);
 	textblock_to_file(tb, f, 0, wrap);
 	textblock_free(tb);
 }
