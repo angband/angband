@@ -5,6 +5,7 @@
 
 #include "attack.h"
 #include "object.h"
+#include "obj-make.h"
 
 NOSETUP
 NOTEARDOWN
