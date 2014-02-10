@@ -5,8 +5,10 @@
 # across a range of different makefiles, to cut down on maintenance.
 #
 
+NAME = Angband
 VERSION = TNG
 COPYRIGHT = (c) 1995-2014 Angband contributors
+PROGNAME = angband
 
 HEADERS = \
 	angband.h \

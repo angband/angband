@@ -6,7 +6,7 @@ include Makefile.src
 INCLUDE = $(HDRS) $(INCS)
 OBJECTS = $(ANGFILES) $(ZFILES)
 SRCS    = ${OBJECTS:.o=.c} ${MAINFILES:.o=.c}
-PROG    = angband$(PROG_SUFFIX)
+PROG    = $(PROGNAME)$(PROG_SUFFIX)
 VERSION := $(shell ../scripts/version.sh)
 ifneq (${VERSION},)
 	CFLAGS += -DBUILD_ID=${VERSION}
@@ -23,18 +23,18 @@ DISTCLEAN = autoconf.h
 
 export CFLAGS LDFLAGS LIBS
 
-$(PROG): angband.o $(MAINFILES)
-	$(CC) -o $@ angband.o $(MAINFILES) $(LDFLAGS) $(LDADD) $(LIBS)
+$(PROG): $(PROGNAME).o $(MAINFILES)
+	$(CC) -o $@ $(PROGNAME).o $(MAINFILES) $(LDFLAGS) $(LDADD) $(LIBS)
 	@printf "%10s %-20s\n" LINK $@
 
-win/angband.res: win/angband.rc
+win/$(PROGNAME).res: win/$(PROGNAME).rc
 	$(RC) $< -O coff -o $@
 
-angband.o: $(OBJECTS)
+$(PROGNAME).o: $(OBJECTS)
 	$(LD) -nostdlib -Wl,-r -o $@ $(OBJECTS)
 	@printf "%10s %-20s\n" LINK $@
 
-tests: angband.o
+tests: $(PROGNAME).o
 	$(MAKE) -C tests all
 
 test-clean:

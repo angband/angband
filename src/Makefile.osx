@@ -10,13 +10,6 @@ CC = clang
 LD = ld
 OPT ?= -O2
 
-# NAME is how the bundle name will be displayed
-NAME = Angband
-APPNAME = $(NAME).app
-
-# EXE should stay as "angband", since there are other rules (in this file and in others) that are hardcoded as such
-EXE = angband
-
 # for consistency with older versions, use a lower case bundle ID
 BUNDLE_IDENTIFIER = org.rephial.angband
 
@@ -46,6 +39,10 @@ endif
 
 # Note that Makefile.inc sets VERSION, and so we must run version.sh after including Makefile.inc
 include Makefile.inc
+
+APPNAME = $(NAME).app
+EXE = $(PROGNAME)
+
 VERSION := $(shell ../scripts/version.sh)
 ifeq (${VERSION},)
 	BUNDLE_VERSION := ${VERSION}
@@ -68,7 +65,7 @@ $(EXE).o: $(OBJS)
 	@$(LD) -r -arch x86_64 -o $@.x86_64 $(OBJS)
 	@printf "%10s %-20s\n" LD $@.i386
 	@$(LD) -r -arch i386 -o $@.i386 $(OBJS)
-	lipo -arch x86_64 $@.x86_64 -arch i386 $@.i386 -create -output angband.o
+	lipo -arch x86_64 $@.x86_64 -arch i386 $@.i386 -create -output $(PROGNAME).o
 
 $(EXE): $(EXE).o $(OSX_OBJS)
 	$(DEPLOYMENT_TARGET) $(CC) $(CFLAGS) $(LDFLAGS) -o $(EXE) $(EXE).o $(OSX_OBJS) $(LIBS) 
@@ -118,9 +115,9 @@ APPRES = $(APPCONT)/Resources
 # of 8x8.png for Vanilla.  Make sure setting dpi to 72, *not* preserving
 # the actual size of image.  When you have them ready, put them in
 # the lib/xtra/graf directory and rebuild.
-PLIST = cocoa/Angband-Cocoa.xml
+PLIST = cocoa/$(NAME)-Cocoa.xml
 
-ICONFILES = cocoa/Angband_Icons.icns cocoa/Save.icns cocoa/Edit.icns cocoa/Data.icns
+ICONFILES = cocoa/$(NAME)_Icons.icns cocoa/Save.icns cocoa/Edit.icns cocoa/Data.icns
 
 LIBFILES = \
   ../lib/edit/*.txt \

@@ -58,9 +58,6 @@ INCLUDES = -I.
 LIBS = -lm
 
 
-# Version info
-EXE = angband
-
 
 
 #### Things you probably shouldn't change, unless there is a problem ####
@@ -72,7 +69,7 @@ EXE = angband
 
 
 # Extract CFLAGS and LIBS from the system definitions
-MODULES = $(SYS_x11) $(SYS_gcu) $(SYS_gtk) $(SYS_sdl) $(SOUND_sdl) $(SYS_stats)
+MODULES = $(SYS_x11) $(SYS_gcu) $(SYS_sdl) $(SOUND_sdl) $(SYS_stats)
 CFLAGS += $(patsubst -l%,,$(MODULES)) $(INCLUDES)
 LIBS += $(patsubst -D%,,$(patsubst -I%,, $(MODULES)))
 
@@ -92,6 +89,9 @@ default: install
 # Makefile.inc contains an up-to-date set of object files to compile, so
 # we include it
 include Makefile.inc
+
+# Version info
+EXE = $(PROGNAME)
 
 
 #
