@@ -1811,6 +1811,80 @@ bool build_greater_vault(struct cave *c, int y0, int x0)
 
 
 /**
+ * Type 10 -- Extremely large rooms.
+ *
+ * These are the largest, most difficult to position, and thus highest-
+ * priority rooms in the dungeon.  They should be rare, so as not to
+ * interfere with greater vaults.
+ *
+ *                     (huge chamber)
+ * - A single starburst-shaped room of extreme size, usually dotted or
+ * even divided with irregularly-shaped fields of rubble. No special
+ * monsters.  Appears deeper than level 40.
+ *
+ */
+bool build_huge(struct cave *c, int y0, int x0)
+{
+	bool light;
+
+	int i, count;
+
+	int y1, x1, y2, x2;
+	int y1_tmp, x1_tmp, y2_tmp, x2_tmp;
+	int width, height;
+	int width_tmp, height_tmp;
+
+
+	/* This room is usually lit. */
+	if (randint0(3) != 0)
+		light = TRUE;
+	else
+		light = FALSE;
+
+	/* Get a size */
+	//height = (2 + randint1(2)) * BLOCK_HGT;
+	//width = (3 + randint1(6)) * BLOCK_WID;
+	height = 3 * BLOCK_HGT;
+	width = 6 * BLOCK_WID;
+
+	/* Locate the room */
+	y1 = y0 - height / 2;
+	x1 = x0 - width / 2;
+	y2 = y1 + height - 1;
+	x2 = x1 + width - 1;
+
+	/* Make a huge starburst room with optional light. */
+	if (!generate_starburst_room(c, y1, x1, y2, x2, light, FEAT_FLOOR, FALSE))
+		return (FALSE);
+
+
+	/* Often, add rubble to break things up a bit. */
+	if (randint1(5) > 2) {
+		/* Determine how many rubble fields to add (between 1 and 6). */
+		count = height * width * randint1(2) / 1100;
+
+		/* Make the rubble fields. */
+		for (i = 0; i < count; i++) {
+			height_tmp = 8 + randint0(16);
+			width_tmp = 10 + randint0(24);
+
+			/* Semi-random location. */
+			y1_tmp = y1 + randint0(height - height_tmp);
+			x1_tmp = x1 + randint0(width - width_tmp);
+			y2_tmp = y1_tmp + height_tmp;
+			x2_tmp = x1_tmp + width_tmp;
+
+			/* Make the rubble field. */
+			generate_starburst_room(c, y1_tmp, x1_tmp, y2_tmp, x2_tmp,
+									FALSE, FEAT_RUBBLE, FALSE);
+		}
+	}
+
+	/* Success. */
+	return (TRUE);
+}
+
+/**
  * Attempt to build a room of the given type at the given block
  *
  * Note that we restrict the number of pits/nests to reduce

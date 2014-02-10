@@ -118,7 +118,7 @@ struct cave_profile town_profile = {
 };
 
 
-/* name function width height min-depth pit? rarity %cutoff */
+/* name function height width min-depth pit? rarity %cutoff */
 struct room_profile default_rooms[NUM_DEFAULT_ROOMS] = {
     /* greater vaults only have rarity 1 but they have other checks */
     {"greater vault", build_greater_vault, 4, 6, 35, FALSE, 0, 100},
@@ -141,7 +141,10 @@ struct room_profile default_rooms[NUM_DEFAULT_ROOMS] = {
     {"simple room", build_simple, 1, 3, 1, FALSE, 0, 100}
 };
 
-
+/* name function height width min-depth pit? rarity %cutoff */
+struct room_profile unused_rooms[] = {
+	{"huge room", build_huge, 3, 6, 40, FALSE, 0, 100}
+};
 
 /**
  * Profiles used for generating dungeon levels.

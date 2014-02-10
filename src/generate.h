@@ -262,6 +262,7 @@ bool build_template(struct cave *c, int y0, int x0);
 bool build_lesser_vault(struct cave *c, int y0, int x0);
 bool build_medium_vault(struct cave *c, int y0, int x0);
 bool build_greater_vault(struct cave *c, int y0, int x0);
+bool build_huge(struct cave *c, int y0, int x0);
 /**
  * Profile used for generating the town level.
  */
