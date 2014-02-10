@@ -218,7 +218,6 @@ static bool describe_stats(textblock *tb, const object_type *o_ptr,
 {
 	const char *descs[N_ELEMENTS(pval_flags)];
 	size_t count = 0, i;
-	bool full = mode & OINFO_FULL;
 	bool dummy = mode & OINFO_DUMMY;
 	bool search = FALSE;
 
@@ -230,7 +229,7 @@ static bool describe_stats(textblock *tb, const object_type *o_ptr,
 
 		if (count)
 		{
-			if ((object_this_pval_is_visible(o_ptr, i) || full) && !dummy)
+			if (object_this_pval_is_visible(o_ptr, i) && !dummy)
 				textblock_append_c(tb, (o_ptr->pval[i] > 0) ? TERM_L_GREEN : TERM_RED,
 					"%+i ", o_ptr->pval[i]);
 			else
@@ -244,7 +243,7 @@ static bool describe_stats(textblock *tb, const object_type *o_ptr,
 
 	if (search)
 	{
-		if ((object_this_pval_is_visible(o_ptr, which_pval(o_ptr, OF_SEARCH)) || full) && !dummy)
+		if (object_this_pval_is_visible(o_ptr, which_pval(o_ptr, OF_SEARCH)) && !dummy)
 		{
 			textblock_append_c(tb, (o_ptr->pval[which_pval(o_ptr, OF_SEARCH)] > 0) ? TERM_L_GREEN : TERM_RED,
 				"%+i%% ", o_ptr->pval[which_pval(o_ptr, OF_SEARCH)] * 5);
@@ -638,13 +637,12 @@ static bool describe_damage(textblock *tb, const object_type *o_ptr,
 	bool ammo   = (player->state.ammo_tval == o_ptr->tval) &&
 	              (bow->kind);
 	int multiplier = 1;
-	bool full = mode & OINFO_FULL;
 
 	/* Create the "all slays" mask */
 	create_mask(mask, FALSE, OFT_SLAY, OFT_KILL, OFT_BRAND, OFT_MAX);
 
 	/* Use displayed dice if real dice not known */
-	if (full || object_attack_plusses_are_visible(o_ptr)) {
+	if (object_attack_plusses_are_visible(o_ptr)) {
 		dice = o_ptr->dd;
 		sides = o_ptr->ds;
 	} else {
@@ -657,7 +655,7 @@ static bool describe_damage(textblock *tb, const object_type *o_ptr,
 
 	if (weapon)	{
 		xtra_postcrit = state.dis_to_d * 10;
-		if (object_attack_plusses_are_visible(o_ptr) || full) {
+		if (object_attack_plusses_are_visible(o_ptr)) {
 			xtra_precrit += o_ptr->to_d * 10;
 			plus += o_ptr->to_h;
 		}
@@ -667,13 +665,13 @@ static bool describe_damage(textblock *tb, const object_type *o_ptr,
 
 		old_blows = state.num_blows;
 	} else { /* Ammo */
-		if (object_attack_plusses_are_visible(o_ptr) || full)
+		if (object_attack_plusses_are_visible(o_ptr))
 			plus += o_ptr->to_h;
 
 		calculate_missile_crits(&player->state, o_ptr->weight, plus,
 				&crit_mult, &crit_add, &crit_div);
 
-		if (object_attack_plusses_are_visible(o_ptr) || full)
+		if (object_attack_plusses_are_visible(o_ptr))
 			dam += (o_ptr->to_d * 10);
 		if (object_attack_plusses_are_visible(bow))
 			dam += (bow->to_d * 10);
@@ -772,8 +770,6 @@ static bool describe_damage(textblock *tb, const object_type *o_ptr,
 static bool describe_combat(textblock *tb, const object_type *o_ptr,
 		oinfo_detail_t mode)
 {
-	bool full = mode & OINFO_FULL;
-
 	object_type *bow = &player->inventory[INVEN_BOW];
 
 	bitflag f[OF_SIZE];
@@ -799,10 +795,7 @@ static bool describe_combat(textblock *tb, const object_type *o_ptr,
 		return TRUE;
 	}
 
-	if (full)
-		object_flags(o_ptr, f);
-	else
-		object_flags_known(o_ptr, f);
+	object_flags_known(o_ptr, f);
 
 	textblock_append_c(tb, TERM_L_WHITE, "Combat info:\n");
 
@@ -811,8 +804,6 @@ static bool describe_combat(textblock *tb, const object_type *o_ptr,
 
 		memcpy(inven, player->inventory, INVEN_TOTAL * sizeof(object_type));
 		inven[INVEN_WIELD] = *o_ptr;
-
-		if (full) object_know_all_flags(&inven[INVEN_WIELD]);
 
 		/* Calculate the player's hypothetical state */
 		calc_bonuses(inven, &state, TRUE);
@@ -858,8 +849,6 @@ static bool describe_combat(textblock *tb, const object_type *o_ptr,
 static bool describe_digger(textblock *tb, const object_type *o_ptr,
 		oinfo_detail_t mode)
 {
-	bool full = mode & OINFO_FULL;
-
 	player_state st;
 
 	object_type inven[INVEN_TOTAL];
@@ -875,10 +864,7 @@ static bool describe_digger(textblock *tb, const object_type *o_ptr,
 	/* abort if we are a dummy object */
 	if (mode & OINFO_DUMMY) return FALSE;
 
-	if (full)
-		object_flags(o_ptr, f);
-	else
-		object_flags_known(o_ptr, f);
+	object_flags_known(o_ptr, f);
 
 	if (sl < 0 || (sl != INVEN_WIELD && !of_has(f, OF_TUNNEL)))
 		return FALSE;
@@ -941,7 +927,7 @@ static bool describe_digger(textblock *tb, const object_type *o_ptr,
 
 
 static bool describe_food(textblock *tb, const object_type *o_ptr,
-		bool subjective, bool full)
+		bool subjective)
 {
 	/* Describe boring bits */
 	if (tval_can_have_nourishment(o_ptr) &&
@@ -951,7 +937,7 @@ static bool describe_food(textblock *tb, const object_type *o_ptr,
 		int multiplier = extract_energy[player->state.speed];
 		if (!subjective) multiplier = 10;
 
-		if (object_is_known(o_ptr) || full) {
+		if (object_is_known(o_ptr)) {
 			textblock_append(tb, "Nourishes for around ");
 			textblock_append_c(tb, TERM_L_GREEN, "%d", (o_ptr->pval[DEFAULT_PVAL] / 2) *
 				multiplier / 10);
@@ -985,7 +971,7 @@ static bool describe_light(textblock *tb, const object_type *o_ptr,
 
 	/* Prevent unidentified objects (especially artifact lights) from showing bad radius
 	 and refueling info, but allow it to appear in ego knowledge and spoilers */
-	if (!object_is_known(o_ptr) && !(mode & (OINFO_EGO | OINFO_FULL | OINFO_DUMMY)))
+	if (!object_is_known(o_ptr) && !(mode & (OINFO_EGO | OINFO_DUMMY)))
 		return FALSE;
 
 	/* Work out radius */
@@ -1020,7 +1006,7 @@ static bool describe_light(textblock *tb, const object_type *o_ptr,
 /*
  * Describe an object's effect, if any.
  */
-static bool describe_effect(textblock *tb, const object_type *o_ptr, bool full,
+static bool describe_effect(textblock *tb, const object_type *o_ptr,
 		bool only_artifacts, bool subjective)
 {
 	const char *desc;
@@ -1030,7 +1016,7 @@ static bool describe_effect(textblock *tb, const object_type *o_ptr, bool full,
 
 	if (o_ptr->artifact)
 	{
-		if (object_effect_is_known(o_ptr) || full)
+		if (object_effect_is_known(o_ptr))
 		{
 			effect = o_ptr->artifact->effect;
 			timeout = o_ptr->artifact->time;
@@ -1046,7 +1032,7 @@ static bool describe_effect(textblock *tb, const object_type *o_ptr, bool full,
 		/* Sometimes only print artifact activation info */
 		if (only_artifacts == TRUE) return FALSE;
 
-		if (object_effect_is_known(o_ptr) || full)
+		if (object_effect_is_known(o_ptr))
 		{
 			effect = o_ptr->kind->effect;
 			timeout = o_ptr->kind->time;
@@ -1328,7 +1314,6 @@ static textblock *object_info_out(const object_type *o_ptr, int mode)
 	bool something = FALSE;
 	bool known = object_is_known(o_ptr);
 
-	bool full = mode & OINFO_FULL;
 	bool terse = mode & OINFO_TERSE;
 	bool subjective = mode & OINFO_SUBJ;
 	bool ego = mode & OINFO_EGO;
@@ -1336,13 +1321,14 @@ static textblock *object_info_out(const object_type *o_ptr, int mode)
 	textblock *tb = textblock_new();
 
 	/* Unaware objects get simple descriptions */
-	if (!full && (o_ptr->marked == MARK_AWARE)){
+	if (o_ptr->marked == MARK_AWARE) {
 		textblock_append(tb, "\n\nYou do not know what this is.\n");
 		return tb;
 	}
 	
 	/* Grab the object flags */
-	if (full) {
+	if (ego) {
+		/* Looking at fake egos needs less info than object_flags_known() */
 		object_flags(o_ptr, flags);
 		object_pval_flags(o_ptr, pv_flags);
 	} else {
@@ -1357,7 +1343,7 @@ static textblock *object_info_out(const object_type *o_ptr, int mode)
 	if (subjective) describe_origin(tb, o_ptr, terse);
 	if (!terse) describe_flavor_text(tb, o_ptr, ego);
 
-	if (!full && !known)
+	if (!known)
 	{
 		textblock_append(tb, "You do not know the full extent of this item's powers.\n");
 		something = TRUE;
@@ -1376,7 +1362,7 @@ static textblock *object_info_out(const object_type *o_ptr, int mode)
 	if (ego && describe_ego(tb, o_ptr->ego)) something = TRUE;
 	if (something) textblock_append(tb, "\n");
 
-	if (!ego && describe_effect(tb, o_ptr, full, terse, subjective)) {
+	if (!ego && describe_effect(tb, o_ptr, terse, subjective)) {
 		something = TRUE;
 		textblock_append(tb, "\n");
 	}
@@ -1386,7 +1372,7 @@ static textblock *object_info_out(const object_type *o_ptr, int mode)
 		textblock_append(tb, "\n");
 	}
 
-	if (!terse && describe_food(tb, o_ptr, subjective, full)) something = TRUE;
+	if (!terse && describe_food(tb, o_ptr, subjective)) something = TRUE;
 	if (!terse && subjective && describe_digger(tb, o_ptr, mode)) something = TRUE;
 
 	/* Hack? Don't append anything in terse (for chararacter dump), since that seems to cause extra linebreaks */
@@ -1400,9 +1386,6 @@ static textblock *object_info_out(const object_type *o_ptr, int mode)
 /**
  * Provide information on an item, including how it would affect the current
  * player's state.
- *
- * mode OINFO_FULL should be set if actual player knowledge should be ignored
- * in favour of full knowledge.
  *
  * returns TRUE if anything is printed.
  */
@@ -1435,7 +1418,10 @@ textblock *object_info_ego(struct ego_item *ego)
 	obj.ego = ego;
 	ego_apply_magic(&obj, 0);
 
-	return object_info_out(&obj, OINFO_FULL | OINFO_EGO | OINFO_DUMMY);
+	obj.ident |= IDENT_KNOWN;
+	object_know_all_flags(&obj);
+
+	return object_info_out(&obj, OINFO_EGO | OINFO_DUMMY);
 }
 
 
@@ -1459,7 +1445,7 @@ void object_info_chardump(ang_file *f, const object_type *o_ptr, int indent, int
  */
 void object_info_spoil(ang_file *f, const object_type *o_ptr, int wrap)
 {
-	textblock *tb = object_info_out(o_ptr, OINFO_FULL);
+	textblock *tb = object_info_out(o_ptr, OINFO_NONE);
 	textblock_to_file(tb, f, 0, wrap);
 	textblock_free(tb);
 }

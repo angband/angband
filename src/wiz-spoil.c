@@ -431,6 +431,7 @@ static void spoil_artifact(const char *fname)
 		{
 			artifact_type *a_ptr = &a_info[j];
 			char buf2[80];
+			char *temp;
 
 			/* We only want objects in the current group */
 			if (a_ptr->tval != group_artifact[i].tval) continue;
@@ -451,8 +452,20 @@ static void spoil_artifact(const char *fname)
 			/* Print name and underline */
 			spoiler_underline(buf2, '-');
 
+			/* Cheat extra knowledge */
+			object_know_all_flags(i_ptr); 
+			i_ptr->ident |=  IDENT_KNOWN | IDENT_WORN | IDENT_EFFECT;
+
+			/* Temporarily blank the artifact flavour text - spoilers
+			   spoil the mechanics, not the atmosphere. */
+			temp = i_ptr->artifact->text;
+			i_ptr->artifact->text = NULL;
+
 			/* Write out the artifact description to the spoiler file */
 			object_info_spoil(fh, i_ptr, 80);
+
+			/* Put back the flavour */
+			i_ptr->artifact->text = temp;
 
 			/*
 			 * Determine the minimum and maximum depths an
