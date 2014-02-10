@@ -48,7 +48,7 @@ else
   CFLAGS += -Iwin/include -Lwin/lib
   LDFLAGS += -Lwin/lib
 
-  IOBJS = $(BASEOBJS) win/angband.res main-win.o win/readdib.o win/readpng.o win/scrnshot.o win/win-layout.o
+  IOBJS = $(BASEOBJS) win/$(PROGNAME).res main-win.o win/readdib.o win/readpng.o win/scrnshot.o win/win-layout.o
   LIBS = -mwindows -lwinmm -lzlib -llibpng -lmsimg32
 endif
 
@@ -120,7 +120,7 @@ clean:
 # Rules
 #
 
-win/angband.res: win/angband.rc
+win/$(PROGNAME).res: win/$(PROGNAME).rc
 	$(WRES) $< -O coff -o $@
 
 $(OBJDIR)%.o: %.c $(INCS)
