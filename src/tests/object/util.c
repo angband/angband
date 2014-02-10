@@ -4,6 +4,8 @@
 #include "unit-test-data.h"
 
 #include "object.h"
+#include "obj-make.h"
+#include "obj-util.h"
 
 int setup_tests(void **state) {
     player->inventory = &test_inven[0];

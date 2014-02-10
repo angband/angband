@@ -14,6 +14,8 @@
 #endif /* TEST_DATA */
 
 #include "angband.h"
+#include "init.h"
+#include "monster.h"
 #include "obj-tvalsval.h"
 #include "player.h"
 
