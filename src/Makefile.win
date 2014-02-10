@@ -19,9 +19,11 @@ all: ../$(EXE)
 ifneq (,$(findstring \system32,$(PATH)))
   CP = copy
   RM = del
+  BAR = "\"
 else
   CP = -cp
   RM = -rm
+  BAR = "/"
 endif
 
 
@@ -102,8 +104,8 @@ endif
 
 ../$(EXE): $(EXE)
 	$(CP) $(EXE) ..
-	$(CP) win/dll/libpng12.dll ..
-	$(CP) win/dll/zlib1.dll ..
+	$(CP) win$(BAR)dll$(BAR)libpng12.dll ..
+	$(CP) win$(BAR)dll$(BAR)zlib1.dll ..
 
 $(EXE): $(OBJS)
 	$(CC) $(CFLAGS) -o $(EXE) $(OBJS) $(LIBS)
