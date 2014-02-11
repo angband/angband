@@ -157,13 +157,15 @@ int effect_calculate_value(effect_handler_context_t *context, bool use_boost)
 
 bool effect_increment_timed_normal(effect_handler_context_t *context, int type, int amount)
 {
-	context->ident = player_inc_timed(player, type, amount, TRUE, TRUE);
+	if (player_inc_timed(player, type, amount, TRUE, TRUE))
+		context->ident = TRUE;
 	return TRUE;
 }
 
 bool effect_clear_timed_one(effect_handler_context_t *context, int type)
 {
-	context->ident = player_clear_timed(player, type, TRUE);
+	if (player_clear_timed(player, type, TRUE));
+		context->ident = TRUE;
 	return TRUE;
 }
 
@@ -203,13 +205,15 @@ bool effect_breathe_random(effect_handler_context_t *context, int dam, effect_br
 
 bool effect_stat_gain(effect_handler_context_t *context, int stat)
 {
-	context->ident = do_inc_stat(stat);
+	if (do_inc_stat(stat))
+		context->ident = TRUE;
 	return TRUE;
 }
 
 bool effect_stat_restore_one(effect_handler_context_t *context, int stat)
 {
-	context->ident = do_res_stat(stat);
+	if (do_res_stat(stat))
+		context->ident = TRUE;
 	return TRUE;
 }
 
