@@ -481,6 +481,9 @@ static void do_side_effects(int spell, int dam, struct monster *m_ptr, bool seen
 						if (count && player->timed[TMD_BLIND])
 							msgt(rs_ptr->msgt, "You hear %s appear nearby.",
 								(count > 1 ? "many things" : "something"));
+							
+						if (!count)
+							msg("But nothing comes.");
 
 					default:
 						break;
