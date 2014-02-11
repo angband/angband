@@ -610,7 +610,7 @@ extern bool generate_starburst_room(struct cave *c, int y1, int x1, int y2,
 /**
  * Build a circular room (interior radius 4-7).
  */
-bool build_circular(struct cave *c, int y0, int x0)
+bool build_circular(struct cave *c, int y0, int x0, int height, int width)
 {
 	/* Pick a room size */
 	int radius = 2 + randint1(2) + randint1(3);
@@ -646,7 +646,7 @@ bool build_circular(struct cave *c, int y0, int x0)
 /**
  * Builds a normal rectangular room.
  */
-bool build_simple(struct cave *c, int y0, int x0)
+bool build_simple(struct cave *c, int y0, int x0, int height, int width)
 {
 	int y, x;
 	int light = FALSE;
@@ -692,7 +692,7 @@ bool build_simple(struct cave *c, int y0, int x0)
 /**
  * Builds an overlapping rectangular room.
  */
-bool build_overlap(struct cave *c, int y0, int x0)
+bool build_overlap(struct cave *c, int y0, int x0, int height, int width)
 {
 	int y1a, x1a, y2a, x2a;
 	int y1b, x1b, y2b, x2b;
@@ -746,7 +746,7 @@ bool build_overlap(struct cave *c, int y0, int x0)
  * below will work for 5x5 (and perhaps even for unsymetric values like 4x3 or
  * 5x3 or 3x4 or 3x5).
  */
-bool build_crossed(struct cave *c, int y0, int x0)
+bool build_crossed(struct cave *c, int y0, int x0, int height, int width)
 {
 	int y, x;
 
@@ -879,7 +879,7 @@ bool build_crossed(struct cave *c, int y0, int x0)
  *	4 - An inner room with a checkerboard
  *	5 - An inner room with four compartments
  */
-bool build_large(struct cave *c, int y0, int x0)
+bool build_large(struct cave *c, int y0, int x0, int height, int width)
 {
 	int y, x, y1, x1, y2, x2;
 
@@ -1179,7 +1179,7 @@ static int set_pit_type(int depth, int type)
  *
  * Monster nests will never contain unique monsters.
  */
-bool build_nest(struct cave *c, int y0, int x0)
+bool build_nest(struct cave *c, int y0, int x0, int height, int width)
 {
 	int y, x, y1, x1, y2, x2;
 	int i;
@@ -1295,7 +1295,7 @@ bool build_nest(struct cave *c, int y0, int x0)
  *
  * Like monster nests, monster pits will never contain unique monsters.
  */
-bool build_pit(struct cave *c, int y0, int x0)
+bool build_pit(struct cave *c, int y0, int x0, int height, int width)
 {
 	monster_race *what[16];
 	int i, j, y, x, y1, x1, y2, x2;
@@ -1606,7 +1606,7 @@ static bool build_room_template_type(struct cave*c, int y0, int x0, int typ, con
 }
 
 
-bool build_template(struct cave *c, int y0, int x0)
+bool build_template(struct cave *c, int y0, int x0, int height, int width)
 {
 	/* All room templates currently have type 1 */
 	return build_room_template_type(c, y0, x0, 1, "Special room");
@@ -1754,7 +1754,7 @@ static bool build_vault_type(struct cave*c, int y0, int x0, int typ, const char 
 /**
  * Build a lesser vault.
  */
-bool build_lesser_vault(struct cave *c, int y0, int x0)
+bool build_lesser_vault(struct cave *c, int y0, int x0, int height, int width)
 {
 	return build_vault_type(c, y0, x0, 6, "Lesser vault");
 }
@@ -1763,7 +1763,7 @@ bool build_lesser_vault(struct cave *c, int y0, int x0)
 /**
  * Build a (medium) vault.
  */
-bool build_medium_vault(struct cave *c, int y0, int x0)
+bool build_medium_vault(struct cave *c, int y0, int x0, int height, int width)
 {
 	return build_vault_type(c, y0, x0, 7, "Medium vault");
 }
@@ -1788,7 +1788,7 @@ bool build_medium_vault(struct cave *c, int y0, int x0)
  * 50-59  1.8 -  2.1%
  * 0-49   0.0 -  1.0%
  */
-bool build_greater_vault(struct cave *c, int y0, int x0)
+bool build_greater_vault(struct cave *c, int y0, int x0, int height, int width)
 {
 	int i;
 	int numerator   = 2;
@@ -1823,7 +1823,7 @@ bool build_greater_vault(struct cave *c, int y0, int x0)
  * monsters.  Appears deeper than level 40.
  *
  */
-bool build_huge(struct cave *c, int y0, int x0)
+bool build_huge(struct cave *c, int y0, int x0, int height, int width)
 {
 	bool light;
 
@@ -1831,21 +1831,16 @@ bool build_huge(struct cave *c, int y0, int x0)
 
 	int y1, x1, y2, x2;
 	int y1_tmp, x1_tmp, y2_tmp, x2_tmp;
-	int width, height;
 	int width_tmp, height_tmp;
 
+	height *= BLOCK_HGT;
+	width *= BLOCK_WID;
 
 	/* This room is usually lit. */
 	if (randint0(3) != 0)
 		light = TRUE;
 	else
 		light = FALSE;
-
-	/* Get a size */
-	//height = (2 + randint1(2)) * BLOCK_HGT;
-	//width = (3 + randint1(6)) * BLOCK_WID;
-	height = 3 * BLOCK_HGT;
-	width = 6 * BLOCK_WID;
 
 	/* Locate the room */
 	y1 = y0 - height / 2;
@@ -1895,8 +1890,8 @@ bool room_build(struct cave *c, int by0, int bx0, struct room_profile profile)
 	/* Extract blocks */
 	int by1 = by0;
 	int bx1 = bx0;
-	int by2 = by0 + profile.height;
-	int bx2 = bx0 + profile.width;
+	int by2 = by0 + randcalc(profile.height, player->depth, RANDOMISE);
+	int bx2 = bx0 + randcalc(profile.width, player->depth, RANDOMISE);
 
 	int allocated;
 	int y, x;
@@ -1931,7 +1926,7 @@ bool room_build(struct cave *c, int by0, int bx0, struct room_profile profile)
 	x = ((bx1 + bx2 + 1) * BLOCK_WID) / 2;
 
 	/* Try to build a room */
-	if (!profile.builder(c, y, x)) return FALSE;
+	if (!profile.builder(c, y, x, by2 - by1, bx2 - bx1)) return FALSE;
 
 	/* Save the room location */
 	if (dun->cent_n < CENT_MAX) {

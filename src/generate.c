@@ -121,29 +121,36 @@ struct cave_profile town_profile = {
 /* name function height width min-depth pit? rarity %cutoff */
 struct room_profile default_rooms[NUM_DEFAULT_ROOMS] = {
     /* greater vaults only have rarity 1 but they have other checks */
-    {"greater vault", build_greater_vault, 4, 6, 35, FALSE, 0, 100},
+    {"greater vault", build_greater_vault, {4, 0, 0, 0}, {6, 0, 0, 0}, 35, 
+	FALSE, 0, 100},
 
     /* very rare rooms (rarity=2) */
-    {"monster pit", build_pit, 1, 3, 5, TRUE, 2, 8},
-    {"monster nest", build_nest, 1, 3, 5, TRUE, 2, 16},
-    {"medium vault", build_medium_vault, 2, 3, 30, FALSE, 2, 38},
-    {"lesser vault", build_lesser_vault, 2, 3, 20, FALSE, 2, 55},
+    {"monster pit", build_pit, {1, 0, 0, 0}, {3, 0, 0, 0}, 5, TRUE, 2, 8},
+    {"monster nest", build_nest, {1, 0, 0, 0}, {3, 0, 0, 0}, 5, TRUE, 2, 16},
+    {"medium vault", build_medium_vault, {2, 0, 0, 0}, {3, 0, 0, 0}, 30, 
+	 FALSE, 2, 38},
+    {"lesser vault", build_lesser_vault, {2, 0, 0, 0}, {3, 0, 0, 0}, 20, 
+	 FALSE, 2, 55},
 	
 
     /* unusual rooms (rarity=1) */
-    {"large room", build_large, 1, 3, 3, FALSE, 1, 15},
-    {"crossed room", build_crossed, 1, 3, 3, FALSE, 1, 35},
-    {"circular room", build_circular, 2, 2, 1, FALSE, 1, 50},
-    {"overlap room", build_overlap, 1, 3, 1, FALSE, 1, 70},
-    {"room template", build_template, 1, 3, 5, FALSE, 1, 100},
+    {"large room", build_large, {1, 0, 0, 0}, {3, 0, 0, 0}, 3, FALSE, 1, 15},
+    {"crossed room", build_crossed, {1, 0, 0, 0}, {3, 0, 0, 0}, 3, 
+	 FALSE, 1, 35},
+    {"circular room", build_circular, {2, 0, 0, 0}, {2, 0, 0, 0}, 1, 
+	 FALSE, 1, 50},
+    {"overlap room", build_overlap, {1, 0, 0, 0}, {3, 0, 0, 0}, 1, 
+	 FALSE, 1, 70},
+    {"room template", build_template, {1, 0, 0, 0}, {3, 0, 0, 0}, 5, 
+	 FALSE, 1, 100},
 
     /* normal rooms */
-    {"simple room", build_simple, 1, 3, 1, FALSE, 0, 100}
+    {"simple room", build_simple, {1, 0, 0, 0}, {3, 0, 0, 0}, 1, FALSE, 0, 100}
 };
 
 /* name function height width min-depth pit? rarity %cutoff */
 struct room_profile unused_rooms[] = {
-	{"huge room", build_huge, 3, 6, 40, FALSE, 0, 100}
+	{"huge room", build_huge, {2, 1, 2, 0}, {3, 1, 6, 0}, 40, FALSE, 0, 100}
 };
 
 /**
