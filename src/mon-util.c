@@ -845,6 +845,91 @@ static bool summon_specific_okay(monster_race *race)
 }
 
 
+/* Check to see if you can call the monster */
+bool can_call_monster(int y, int x, monster_type *m_ptr)
+{
+	int oy, ox;
+
+	/* Skip dead monsters */
+	if (!m_ptr->race) return (FALSE);
+	
+	/* Only consider callable monsters */
+	if (!summon_specific_okay(m_ptr->race)) return (FALSE);
+	
+	/* Extract monster location */
+	oy = m_ptr->fy;
+	ox = m_ptr->fx;
+	
+	/* Make sure the summoned monster is not in LOS of the summoner */
+	if (los(y, x, oy, ox)) return (FALSE);
+	
+	return (TRUE);
+}
+
+
+/** Calls a monster from the level and moves it to the desired spot
+*/
+int call_monster(int y, int x)
+{
+	int i, mon_count, choice;
+	int oy, ox;
+	int *mon_indices;
+	monster_type *m_ptr;
+
+	mon_count = 0;
+	
+	for (i = 1; i < cave_monster_max(cave); i++)
+	{
+		m_ptr = cave_monster(cave, i);
+		
+		/* Figure out how many good mosnters there are */
+		if (can_call_monster(y, x, m_ptr)) mon_count++;
+	}
+	
+	/* There were no good monsters on the level */
+	if (mon_count == 0) return (0);
+  	
+	/* Make the array */
+	mon_indices = C_ZNEW(mon_count, int);
+	
+	/* reset mon_count */
+	mon_count = 0;
+	
+	/* Now go through a second time and store the indices */
+	for (i = 1; i < cave_monster_max(cave); i++)
+	{
+		m_ptr = cave_monster(cave, i);
+		
+		/* Save the values of the good monster */
+		if (can_call_monster(y, x, m_ptr)){
+			mon_indices[mon_count] = i;
+			mon_count++;
+		}
+	}
+	
+	/* Pick one */
+	choice = randint0(mon_count - 1);
+	
+	/* Get the lucky monster */
+	m_ptr = cave_monster(cave, mon_indices[choice]);
+	FREE(mon_indices);
+	
+	/* Extract monster location */
+	oy = m_ptr->fy;
+	ox = m_ptr->fx;
+	
+	/* Swap the moster */
+	monster_swap(oy, ox, y, x);
+	
+	/* wake it up */
+	mon_clear_timed(m_ptr, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, FALSE);
+		
+	/* Set it's energy to 0 */
+	m_ptr->energy = 0;
+		
+	return (m_ptr->race->level);
+
+}
 /**
  * Places a monster (of the specified "type") near the given
  * location.  Return TRUE iff a monster was actually summoned.
@@ -900,7 +985,13 @@ int summon_specific(int y1, int x1, int lev, int type, int delay)
 
 	/* Save the "summon" type */
 	summon_specific_type = type;
-
+#ifdef FIZZIX_SUMMON	
+	/* Use the new calling scheme 
+	  Hack - use delay to determine if it's a normal summon or a trap summon */
+	if ((type != S_UNIQUE) && (type != S_WRAITH)  && !delay ){
+		return (call_monster(y, x));
+	}
+#endif
 	/* Prepare allocation table */
 	get_mon_num_prep(summon_specific_okay);
 
