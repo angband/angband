@@ -370,12 +370,10 @@ bool default_gen(struct cave *c, struct player *p) {
     int num_rooms, size_percent;
     int dun_unusual = dun->profile->dun_unusual;
 
-    bool blocks_tried[MAX_ROOMS_ROW][MAX_ROOMS_COL];
-    for (by = 0; by < MAX_ROOMS_ROW; by++) {
-		for (bx = 0; bx < MAX_ROOMS_COL; bx++) {
-			blocks_tried[by][bx] = FALSE;
-		}
-    }
+    bool **blocks_tried = mem_zalloc(MAX_ROOMS_ROW * sizeof(bool*));
+
+	for (i = 0; i < MAX_ROOMS_ROW; i++)
+		blocks_tried[i] = mem_zalloc(MAX_ROOMS_COL * sizeof(bool));
 
     /* Possibly generate fewer rooms in a smaller area via a scaling factor.
      * Since we scale row_rooms and col_rooms by the same amount, DUN_ROOMS
@@ -405,9 +403,9 @@ bool default_gen(struct cave *c, struct player *p) {
     dun->col_rooms = c->width / BLOCK_WID;
 
     /* Initialize the room table */
-    for (by = 0; by < dun->row_rooms; by++)
-		for (bx = 0; bx < dun->col_rooms; bx++)
-			dun->room_map[by][bx] = blocks_tried[by][bx]  = FALSE;
+	dun->room_map = mem_zalloc(MAX_ROOMS_ROW * sizeof(bool*));
+	for (i = 0; i < MAX_ROOMS_ROW; i++)
+		dun->room_map[i] = mem_zalloc(MAX_ROOMS_COL * sizeof(bool));
 
     /* No rooms yet, pits or otherwise. */
     dun->pit_num = 0;
@@ -471,6 +469,13 @@ bool default_gen(struct cave *c, struct player *p) {
 			}
 		}
     }
+
+	for (i = 0; i < MAX_ROOMS_ROW; i++)
+		mem_free(blocks_tried[i]);
+	mem_free(blocks_tried);
+	for (i = 0; i < MAX_ROOMS_ROW; i++)
+		mem_free(dun->room_map[i]);
+	mem_free(dun->room_map);
 
     /* Generate permanent walls around the edge of the dungeon */
     draw_rectangle(c, 0, 0, DUNGEON_HGT - 1, DUNGEON_WID - 1, FEAT_PERM);

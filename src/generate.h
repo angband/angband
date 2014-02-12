@@ -88,7 +88,7 @@ struct dun_data {
     int col_rooms;
 
     /* Array of which blocks are used */
-    bool room_map[MAX_ROOMS_ROW][MAX_ROOMS_COL];
+    bool **room_map;
 
     /* Number of pits/nests on the level */
     int pit_num;

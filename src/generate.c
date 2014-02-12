@@ -423,18 +423,6 @@ static int calc_mon_feeling(struct cave *c)
 
 
 /**
- * Reset the current dungeon's generation data.
- */
-static void clear_dun_data(struct dun_data *d) {
-    int bx, by;
-    for (by = 0; by < MAX_ROOMS_ROW; by++) {
-		for (bx = 0; bx < MAX_ROOMS_COL; bx++) {
-			d->room_map[by][bx] = FALSE;
-		}
-    }
-}
-
-/**
  * Generate a random level.
  *
  * Confusingly, this function also generate the town level (level 0).
@@ -459,7 +447,6 @@ void cave_generate(struct cave *c, struct player *p) {
 
 		/* Allocate global data (will be freed when we leave the loop) */
 		dun = &dun_body;
-		clear_dun_data(dun);
 
 		if (p->depth == 0) {
 			dun->profile = &town_profile;
