@@ -364,7 +364,7 @@ static void set_cave_dimensions(struct cave *c, int h, int w)
 #define DUN_AMT_ITEM 3 /* Number of objects for rooms/corridors */
 #define DUN_AMT_GOLD 3 /* Amount of treasure for rooms/corridors */
 
-bool default_gen(struct cave *c, struct player *p) {
+bool classic_gen(struct cave *c, struct player *p) {
     int i, j, k, y, x, y1, x1;
     int by, bx = 0, tby, tbx, key, rarity, built;
     int num_rooms, size_percent;

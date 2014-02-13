@@ -141,8 +141,7 @@ struct cave_profile {
  * room_builder is a function pointer which builds rooms in the cave given
  * anchor coordinates.
  */
-typedef bool (*room_builder) (struct cave *c, int y0, int x0, int height, 
-							  int width);
+typedef bool (*room_builder) (struct cave *c, int y0, int x0);
 
 
 /**
@@ -151,7 +150,7 @@ typedef bool (*room_builder) (struct cave *c, int y0, int x0, int height,
  */
 struct room_profile {
     const char *name;
-    room_builder builder; /* Function used to build the room */
+    room_builder builder; /* Function used to build fixed size rooms */
     random_value height, width; /* Space required in blocks */
     int level; /* Minimum dungeon level */
     bool pit; /* Whether this room is a pit/nest or not */
@@ -246,34 +245,34 @@ int *cave_squares;
 
 bool town_gen(struct cave *c, struct player *p);
 
-bool default_gen(struct cave *c, struct player *p);
+bool classic_gen(struct cave *c, struct player *p);
 bool labyrinth_gen(struct cave *c, struct player *p);
 bool cavern_gen(struct cave *c, struct player *p);
 
 void fill_rectangle(struct cave *c, int y1, int x1, int y2, int x2, int feat);
 void draw_rectangle(struct cave *c, int y1, int x1, int y2, int x2, int feat);
-bool build_simple(struct cave *c, int y0, int x0, int height, int width);
-bool build_circular(struct cave *c, int y0, int x0, int height, int width);
-bool build_overlap(struct cave *c, int y0, int x0, int height, int width);
-bool build_crossed(struct cave *c, int y0, int x0, int height, int width);
-bool build_large(struct cave *c, int y0, int x0, int height, int width);
-bool build_nest(struct cave *c, int y0, int x0, int height, int width);
-bool build_pit(struct cave *c, int y0, int x0, int height, int width);
-bool build_template(struct cave *c, int y0, int x0, int height, int width);
-bool build_lesser_vault(struct cave *c, int y0, int x0, int height, int width);
-bool build_medium_vault(struct cave *c, int y0, int x0, int height, int width);
-bool build_greater_vault(struct cave *c, int y0, int x0, int height, int width);
-bool build_huge(struct cave *c, int y0, int x0, int height, int width);
+bool build_simple(struct cave *c, int y0, int x0);
+bool build_circular(struct cave *c, int y0, int x0);
+bool build_overlap(struct cave *c, int y0, int x0);
+bool build_crossed(struct cave *c, int y0, int x0);
+bool build_large(struct cave *c, int y0, int x0);
+bool build_nest(struct cave *c, int y0, int x0);
+bool build_pit(struct cave *c, int y0, int x0);
+bool build_template(struct cave *c, int y0, int x0);
+bool build_lesser_vault(struct cave *c, int y0, int x0);
+bool build_medium_vault(struct cave *c, int y0, int x0);
+bool build_greater_vault(struct cave *c, int y0, int x0);
+bool build_huge(struct cave *c, int y0, int x0);
 /**
  * Profile used for generating the town level.
  */
 struct cave_profile town_profile;
 
 
-#define NUM_DEFAULT_ROOMS 11
+#define NUM_CLASSIC_ROOMS 11
 
 /* name function width height min-depth pit? rarity %cutoff */
-struct room_profile default_rooms[NUM_DEFAULT_ROOMS];
+struct room_profile classic_rooms[NUM_CLASSIC_ROOMS];
 
 #define NUM_CAVE_PROFILES 3
 

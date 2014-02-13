@@ -119,7 +119,7 @@ struct cave_profile town_profile = {
 
 
 /* name function height width min-depth pit? rarity %cutoff */
-struct room_profile default_rooms[NUM_DEFAULT_ROOMS] = {
+struct room_profile classic_rooms[NUM_CLASSIC_ROOMS] = {
     /* greater vaults only have rarity 1 but they have other checks */
     {"greater vault", build_greater_vault, {4, 0, 0, 0}, {6, 0, 0, 0}, 35, 
 	FALSE, 0, 100},
@@ -161,10 +161,10 @@ struct cave_profile cave_profiles[NUM_CAVE_PROFILES] = {
 		"labyrinth", labyrinth_gen, 0, 200, 0, 0,
 
 		/* tunnels -- not applicable */
-		{"tunnel-default", 10, 30, 15, 25, 90},
+		{"tunnel-null", 0, 0, 0, 0, 0},
 
 		/* streamers -- not applicable */
-		{"streamer-default", 5, 2, 3, 90, 2, 40},
+		{"streamer-null", 0, 0, 0, 0, 0, 0},
 
 		/* room_profiles -- not applicable */
 		NULL,
@@ -176,10 +176,10 @@ struct cave_profile cave_profiles[NUM_CAVE_PROFILES] = {
 		"cavern", cavern_gen, 0, 200, 0, 0,
 
 		/* tunnels -- not applicable */
-		{"tunnel-default", 10, 30, 15, 25, 90},
+		{"tunnel-null", 0, 0, 0, 0, 0},
 
 		/* streamers -- not applicable */
-		{"streamer-default", 5, 2, 3, 90, 2, 40},
+		{"streamer-null", 0, 0, 0, 0, 0, 0},
 
 		/* room_profiles -- not applicable */
 		NULL,
@@ -189,16 +189,16 @@ struct cave_profile cave_profiles[NUM_CAVE_PROFILES] = {
     },
     {
 		/* name builder dun_rooms dun_unusual max_rarity n_room_profiles */
-		"default", default_gen, 50, 200, 2, N_ELEMENTS(default_rooms),
+		"classic", classic_gen, 50, 200, 2, N_ELEMENTS(classic_rooms),
 
 		/* name rnd chg con pen jct */
-		{"tunnel-default", 10, 30, 15, 25, 90},
+		{"tunnel-classic", 10, 30, 15, 25, 90},
 
 		/* name den rng mag mc qua qc */
-		{"streamer-default", 5, 2, 3, 90, 2, 40},
+		{"streamer-classic", 5, 2, 3, 90, 2, 40},
 
 		/* room_profiles */
-		default_rooms,
+		classic_rooms,
 
 		/* cutoff */
 		100
