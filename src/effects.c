@@ -164,7 +164,7 @@ bool effect_increment_timed_normal(effect_handler_context_t *context, int type, 
 
 bool effect_clear_timed_one(effect_handler_context_t *context, int type)
 {
-	if (player_clear_timed(player, type, TRUE));
+	if (player_clear_timed(player, type, TRUE))
 		context->ident = TRUE;
 	return TRUE;
 }

@@ -106,6 +106,23 @@ void fill_rectangle(struct cave *c, int y1, int x1, int y2, int x2, int feat)
 
 
 /**
+ * Mark a rectangle with a set of info flags
+ *
+ * The boundaries (y1, x1, y2, x2) are inclusive.
+ */
+void generate_mark(struct cave *c, int y1, int x1, int y2, int x2, int flg)
+{
+	int y, x;
+
+	for (y = y1; y <= y2; y++) {
+		for (x = x1; x <= x2; x++) {
+			sqinfo_on(c->info[y][x], flg);
+		}
+	}
+}
+
+
+/**
  * Fill the edges of a rectangle with a feature.
  *
  * The boundaries (y1, x1, y2, x2) are inclusive.
@@ -240,6 +257,15 @@ static void generate_hole(struct cave *c, int y1, int x1, int y2, int x2, int fe
 	}
 }
 
+
+/**
+ * Place a square of granite with a flag
+ */
+void set_marked_granite(struct cave *c, int y, int x, int flag)
+{
+	square_set_feat(c, y, x, FEAT_GRANITE);
+	generate_mark(c, y, x, y, x, flag);
+}
 
 /**
  * Make a starburst room. -LM-
