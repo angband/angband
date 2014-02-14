@@ -205,15 +205,6 @@ typedef struct
 
 
 
-/** An array of 256 cave square bitflag arrays */
-typedef bitflag grid_256[256][SQUARE_SIZE];
-
-/** An array of DUNGEON_WID bytes */
-typedef byte byte_wid[DUNGEON_WID];
-
-/** An array of DUNGEON_WID s16b's */
-typedef s16b s16b_wid[DUNGEON_WID];
-
 struct cave {
 	s32b created_at;
 	int depth;
@@ -228,12 +219,12 @@ struct cave {
 	
 	u16b feeling_squares; /* How many feeling squares the player has visited */
 
-	bitflag (*info)[256][SQUARE_SIZE];
-	byte (*feat)[DUNGEON_WID];
-	byte (*cost)[DUNGEON_WID];
-	byte (*when)[DUNGEON_WID];
-	s16b (*m_idx)[DUNGEON_WID];
-	s16b (*o_idx)[DUNGEON_WID];
+	bitflag ***info;
+	byte **feat;
+	byte **cost;
+	byte **when;
+	s16b **m_idx;
+	s16b **o_idx;
 
 	struct monster *monsters;
 	int mon_max;
