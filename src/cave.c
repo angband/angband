@@ -551,8 +551,8 @@ void grid_data_as_text(grid_data *g, int *ap, wchar_t *cp, int *tap, wchar_t *tc
 			 && (g->m_idx || g->first_kind)) {
 		/* if there is an object or monster here, and this is a plain floor
 		 * display the border here rather than an overlay below */
-		a = f_info[64].x_attr[g->lighting]; /* 64 is the index of the feat that */
-		c = f_info[64].x_char[g->lighting]; /* holds the trap detect border floor tile */
+		a = f_info[FEAT_DTRAP_FLOOR].x_attr[g->lighting];
+		c = f_info[FEAT_DTRAP_FLOOR].x_char[g->lighting];
 	}
 
 	/* Save the terrain info for the transparency effects */
@@ -739,8 +739,8 @@ void grid_data_as_text(grid_data *g, int *ap, wchar_t *cp, int *tap, wchar_t *tc
 	else if (g->trapborder && (g->f_idx) && !(g->first_kind)
 			 && (use_graphics != GRAPHICS_NONE)) {
 		/* no overlay is used, so we can use the trap border overlay */
-		a = f_info[65].x_attr[g->lighting]; /* 65 is the index of the feat that */
-		c = f_info[65].x_char[g->lighting]; /* holds the trap detect border overlay tile */
+		a = f_info[FEAT_DTRAP_WALL].x_attr[g->lighting];
+		c = f_info[FEAT_DTRAP_WALL].x_char[g->lighting];
 	}
 
 	/* Result */
@@ -2750,9 +2750,6 @@ bool square_isfloor(struct cave *c, int y, int x) {
 
 /**
  * True if the square is a normal granite rock wall.
- *
- * FEAT_WALL_SOLID is the normal feature type. The others are weird byproducts
- * of cave generation (and should be avoided).
  */
 bool square_isrock(struct cave *c, int y, int x) {
 	return (tf_has(f_info[c->feat[y][x]].flags, TF_GRANITE) &&

@@ -34,7 +34,13 @@
 #include "z-queue.h"
 #include "z-type.h"
 
+static bool square_is_granite_with_flag(struct cave *c, int y, int x, int flag)
+{
+	if (c->feat[y][x] != FEAT_GRANITE) return FALSE;
+	if (!sqinfo_has(c->info[y][x], flag)) return FALSE;
 
+	return TRUE;
+}
 
 /**
  * Places a streamer of rock through dungeon.
@@ -164,20 +170,25 @@ static void build_tunnel(struct cave *c, int row1, int col1, int row2, int col2)
 		if (square_isperm(c, tmp_row, tmp_col)) continue;
 
 		/* Avoid "solid" granite walls */
-		if (c->feat[tmp_row][tmp_col] == FEAT_WALL_SOLID) continue;
+		if (square_is_granite_with_flag(c, tmp_row, tmp_col, 
+										SQUARE_WALL_SOLID)) 
+			continue;
 
 		/* Pierce "outer" walls of rooms */
-		if (c->feat[tmp_row][tmp_col] == FEAT_WALL_OUTER) {
+		if (square_is_granite_with_flag(c, tmp_row, tmp_col, 
+										SQUARE_WALL_OUTER)) {
 			/* Get the "next" location */
 			y = tmp_row + row_dir;
 			x = tmp_col + col_dir;
 
 			/* Hack -- Avoid solid permanent walls */
-			if (c->feat[y][x] == FEAT_PERM) continue;
+			if (square_isperm(c, y, x)) continue;
 
 			/* Hack -- Avoid outer/solid granite walls */
-			if (c->feat[y][x] == FEAT_WALL_OUTER) continue;
-			if (c->feat[y][x] == FEAT_WALL_SOLID) continue;
+			if (square_is_granite_with_flag(c, y, x, SQUARE_WALL_OUTER)) 
+				continue;
+			if (square_is_granite_with_flag(c, y, x, SQUARE_WALL_SOLID)) 
+				continue;
 
 			/* Accept this location */
 			row1 = tmp_row;
@@ -193,8 +204,11 @@ static void build_tunnel(struct cave *c, int row1, int col1, int row2, int col2)
 			/* Forbid re-entry near this piercing */
 			for (y = row1 - 1; y <= row1 + 1; y++)
 				for (x = col1 - 1; x <= col1 + 1; x++)
-					if (c->feat[y][x] == FEAT_WALL_OUTER)
-						square_set_feat(c, y, x, FEAT_WALL_SOLID);
+					if (square_is_granite_with_flag(c, y, x, 
+													SQUARE_WALL_OUTER)) { 
+						set_marked_granite(c, y, x, SQUARE_WALL_SOLID);
+						sqinfo_off(c->info[y][x], SQUARE_WALL_OUTER);
+					}
 
 		} else if (sqinfo_has(c->info[tmp_row][tmp_col], SQUARE_ROOM)) {
 			/* Travel quickly through rooms */
@@ -396,7 +410,8 @@ bool classic_gen(struct cave *c, struct player *p) {
     ROOM_LOG("height=%d  width=%d  nrooms=%d", c->height, c->width, num_rooms);
 
     /* Initially fill with basic granite */
-    fill_rectangle(c, 0, 0, DUNGEON_HGT - 1, DUNGEON_WID - 1, FEAT_GRANITE);
+    fill_rectangle(c, 0, 0, DUNGEON_HGT - 1, DUNGEON_WID - 1, 
+				   FEAT_GRANITE, SQUARE_NONE);
 
     /* Actual maximum number of rooms on this level */
     dun->row_rooms = c->height / BLOCK_HGT;
@@ -478,7 +493,8 @@ bool classic_gen(struct cave *c, struct player *p) {
 	mem_free(dun->room_map);
 
     /* Generate permanent walls around the edge of the dungeon */
-    draw_rectangle(c, 0, 0, DUNGEON_HGT - 1, DUNGEON_WID - 1, FEAT_PERM);
+    draw_rectangle(c, 0, 0, DUNGEON_HGT - 1, DUNGEON_WID - 1, 
+				   FEAT_PERM, SQUARE_NONE);
 
     /* Hack -- Scramble the room order */
     for (i = 0; i < dun->cent_n; i++) {
@@ -697,10 +713,14 @@ bool labyrinth_gen(struct cave *c, struct player *p) {
     set_cave_dimensions(c, h + 2, w + 2);
 
     /* Fill whole level with perma-rock */
-    fill_rectangle(c, 0, 0, DUNGEON_HGT - 1, DUNGEON_WID - 1, FEAT_PERM);
+    fill_rectangle(c, 0, 0, DUNGEON_HGT - 1, DUNGEON_WID - 1, 
+				   FEAT_PERM, SQUARE_NONE);
 
     /* Fill the labyrinth area with rock */
-    fill_rectangle(c, 1, 1, h, w, soft ? FEAT_WALL_SOLID : FEAT_PERM);
+	if (soft)
+		fill_rectangle(c, 1, 1, h, w, FEAT_GRANITE, SQUARE_WALL_SOLID);
+	else
+		fill_rectangle(c, 1, 1, h, w, FEAT_PERM, SQUARE_NONE);
 
     /* Initialize each wall. */
     for (i = 0; i < n; i++) {
@@ -832,8 +852,9 @@ static void init_cavern(struct cave *c, struct player *p, int density) {
     int count = (size * density) / 100;
 
     /* Fill the edges with perma-rock, and rest with rock */
-    fill_rectangle(c, 0, 0, DUNGEON_HGT - 1, DUNGEON_WID - 1, FEAT_PERM);
-    fill_rectangle(c, 1, 1, h - 2, w - 2, FEAT_WALL_SOLID);
+    fill_rectangle(c, 0, 0, DUNGEON_HGT - 1, DUNGEON_WID - 1, 
+				   FEAT_PERM, SQUARE_NONE);
+    fill_rectangle(c, 1, 1, h - 2, w - 2, FEAT_GRANITE, SQUARE_WALL_SOLID);
 	
     while (count > 0) {
 		int y = randint1(h - 2);
@@ -877,7 +898,7 @@ static void mutate_cavern(struct cave *c) {
 		for (x = 1; x < w - 1; x++) {
 			int count = count_adj_walls(c, y, x);
 			if (count > 5)
-				temp[y * w + x] = FEAT_WALL_SOLID;
+				temp[y * w + x] = FEAT_GRANITE;
 			else if (count < 4)
 				temp[y * w + x] = FEAT_FLOOR;
 			else
@@ -1022,7 +1043,7 @@ static void clear_small_regions(struct cave *c, int colors[], int counts[]) {
 			if (!deleted[colors[i]]) continue;
 
 			colors[i] = 0;
-			square_set_feat(c, y, x, FEAT_WALL_SOLID);
+			set_marked_granite(c, y, x, SQUARE_WALL_SOLID);
 		}
     }
     FREE(deleted);
@@ -1313,7 +1334,7 @@ static void build_store(struct cave *c, int n, int yy, int xx) {
     int dx = rand_range(x1, x2);
 
     /* Build an invulnerable rectangular building */
-    fill_rectangle(c, y1, x1, y2, x2, FEAT_PERM);
+    fill_rectangle(c, y1, x1, y2, x2, FEAT_PERM, SQUARE_NONE);
 
     /* Clear previous contents, add a store door */
     square_set_feat(c, dy, dx, FEAT_SHOP_HEAD + n);
@@ -1402,8 +1423,10 @@ bool town_gen(struct cave *c, struct player *p) {
      */
 
     /* Start with solid walls, and then create some floor in the middle */
-    fill_rectangle(c, 0, 0, DUNGEON_HGT - 1, DUNGEON_WID - 1, FEAT_PERM);
-    fill_rectangle(c, 1, 1, c->height -2, c->width - 2, FEAT_FLOOR);
+    fill_rectangle(c, 0, 0, DUNGEON_HGT - 1, DUNGEON_WID - 1, 
+				   FEAT_PERM, SQUARE_NONE);
+    fill_rectangle(c, 1, 1, c->height -2, c->width - 2, 
+				   FEAT_FLOOR, SQUARE_NONE);
 
     /* Build stuff */
     town_gen_hack(c, p);

@@ -249,9 +249,11 @@ bool classic_gen(struct cave *c, struct player *p);
 bool labyrinth_gen(struct cave *c, struct player *p);
 bool cavern_gen(struct cave *c, struct player *p);
 
-void fill_rectangle(struct cave *c, int y1, int x1, int y2, int x2, int feat);
-void generate_mark(struct cave *c, int y1, int x1, int y2, int x2, int flg);
-void draw_rectangle(struct cave *c, int y1, int x1, int y2, int x2, int feat);
+void fill_rectangle(struct cave *c, int y1, int x1, int y2, int x2, int feat,
+					int flag);
+void generate_mark(struct cave *c, int y1, int x1, int y2, int x2, int flag);
+void draw_rectangle(struct cave *c, int y1, int x1, int y2, int x2, int feat, 
+					int flag);
 void set_marked_granite(struct cave *c, int y, int x, int flag);
 bool build_simple(struct cave *c, int y0, int x0);
 bool build_circular(struct cave *c, int y0, int x0);

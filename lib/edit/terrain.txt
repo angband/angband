@@ -355,7 +355,7 @@ P:19
 F:WALL | ROCK | INTERESTING | NO_SCENT | NO_FLOW | GOLD | QUARTZ
 X:0:0:0:3
 
-# 0x38 --> granite wall -- basic
+# 0x38 --> granite wall
 
 N:56:granite wall
 G:#:w
@@ -363,36 +363,9 @@ P:10
 F:WALL | ROCK | GRANITE | NO_SCENT | NO_FLOW
 X:0:0:0:4
 
-# 0x39 --> granite wall -- inner
+# 0x39 --> permanent wall
 
-N:57:granite wall
-G:#:w
-P:10
-M:56
-F:WALL | ROCK | GRANITE | NO_SCENT | NO_FLOW
-X:0:0:0:4
-
-# 0x3A --> granite wall -- outer
-
-N:58:granite wall
-G:#:w
-P:10
-M:56
-F:WALL | ROCK | GRANITE | NO_SCENT | NO_FLOW
-X:0:0:0:4
-
-# 0x3B --> granite wall -- solid
-
-N:59:granite wall
-G:#:w
-P:10
-M:56
-F:WALL | ROCK | GRANITE | NO_SCENT | NO_FLOW
-X:0:0:0:4
-
-# 0x3C --> permanent wall
-
-N:60:permanent wall
+N:57:permanent wall
 G:#:u
 P:10
 F:WALL | ROCK | PERMANENT | NO_SCENT | NO_FLOW

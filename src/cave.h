@@ -90,10 +90,11 @@ struct monster;
 
 /* Walls */
 #define FEAT_GRANITE 0x38
-#define FEAT_WALL_INNER 0x39
-#define FEAT_WALL_OUTER 0x3A
-#define FEAT_WALL_SOLID 0x3B
-#define FEAT_PERM 0x3C
+#define FEAT_PERM 0x39
+
+/* Special trap detect features  - should be replaced with square flags */
+#define FEAT_DTRAP_FLOOR 0x40
+#define FEAT_DTRAP_WALL 0x41
 
 
 
