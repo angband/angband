@@ -366,7 +366,7 @@ X:0:0:0:4
 # 0x39 --> permanent wall
 
 N:57:permanent wall
-G:#:u
+G:#:z
 P:10
 F:WALL | ROCK | PERMANENT | NO_SCENT | NO_FLOW
 
