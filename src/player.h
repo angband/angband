@@ -277,6 +277,18 @@ enum
 	PF_MAX
 };
 
+/* Terrain that the player has a chance of digging through */
+enum
+{
+	DIGGING_RUBBLE = 0,
+	DIGGING_MAGMA,
+	DIGGING_QUARTZ,
+	DIGGING_GRANITE,
+	DIGGING_DOORS,
+	
+	DIGGING_MAX
+};
+
 #define PF_SIZE                FLAG_SIZE(PF_MAX)
 
 #define pf_has(f, flag)        flag_has_dbg(f, PF_SIZE, flag, #f, #flag)
@@ -703,6 +715,7 @@ extern const byte adj_con_fix[STAT_RANGE];
 extern const byte adj_str_hold[STAT_RANGE];
 
 void calc_bonuses(object_type inventory[], player_state *state, bool id_only);
+void calc_digging_chances(player_state *state, int chances[DIGGING_MAX]);
 int calc_blows(const object_type *o_ptr, player_state *state, int extra_blows);
 void notice_stuff(struct player *p);
 void update_stuff(struct player *p);

@@ -858,7 +858,7 @@ static bool describe_digger(textblock *tb, const object_type *o_ptr,
 
 	bitflag f[OF_SIZE];
 
-	int chances[4]; /* These are out of 1600 */
+	int chances[DIGGING_MAX];
 	static const char *names[4] = { "rubble", "magma veins", "quartz veins", "granite" };
 
 	/* abort if we are a dummy object */
@@ -880,16 +880,12 @@ static bool describe_digger(textblock *tb, const object_type *o_ptr,
 		inven[sl] = *o_ptr;
 
 	calc_bonuses(inven, &st, TRUE);
+	calc_digging_chances(&st, chances); /* Out of 1600 */
 
-	chances[0] = st.skills[SKILL_DIGGING] * 8;
-	chances[1] = (st.skills[SKILL_DIGGING] - 10) * 4;
-	chances[2] = (st.skills[SKILL_DIGGING] - 20) * 2;
-	chances[3] = (st.skills[SKILL_DIGGING] - 40) * 1;
-
-	for (i = 0; i < 4; i++)
+	for (i = DIGGING_RUBBLE; i < DIGGING_DOORS; i++)
 	{
-		int chance = MAX(0, MIN(1600, chances[i]));
-		int decis = chance ? (16000 / chance) : 0;
+		int chance = MIN(1600, chances[i]);
+		int deciturns = chance ? (16000 / chance) : 0;
 
 		if (i == 0 && chance > 0) {
 			if (sl == INVEN_WIELD)
@@ -911,14 +907,14 @@ static bool describe_digger(textblock *tb, const object_type *o_ptr,
 
 		if (chance == 1600) {
 			textblock_append_c(tb, TERM_L_GREEN, "1 ");
-		} else if (decis < 100) {
-			textblock_append_c(tb, TERM_GREEN, "%d.%d ", decis/10, decis%10);
+		} else if (deciturns < 100) {
+			textblock_append_c(tb, TERM_GREEN, "%d.%d ", deciturns/10, deciturns%10);
 		} else {
-			textblock_append_c(tb, (decis < 1000) ? TERM_YELLOW : TERM_RED,
-			           "%d ", (decis+5)/10);
+			textblock_append_c(tb, (deciturns < 1000) ? TERM_YELLOW : TERM_RED,
+			           "%d ", (deciturns+5)/10);
 		}
 
-		textblock_append(tb, "turn%s%s", decis == 10 ? "" : "s",
+		textblock_append(tb, "turn%s%s", deciturns == 10 ? "" : "s",
 				(i == 3) ? ".\n" : ", ");
 	}
 

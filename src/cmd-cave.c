@@ -666,11 +666,12 @@ static bool twall(int y, int x)
 static bool do_cmd_tunnel_aux(int y, int x)
 {
 	bool more = FALSE;
-
+	int digging_chances[DIGGING_MAX];
 
 	/* Verify legality */
 	if (!do_cmd_tunnel_test(y, x)) return (FALSE);
 
+	calc_digging_chances(&player->state, digging_chances);
 
 	/* Sound XXX XXX XXX */
 	/* sound(MSG_DIG); */
@@ -685,7 +686,7 @@ static bool do_cmd_tunnel_aux(int y, int x)
 	else if (square_isrock(cave, y, x))
 	{
 		/* Tunnel */
-		if ((player->state.skills[SKILL_DIGGING] > 40 + randint0(1600)) && twall(y, x))
+		if (digging_chances[DIGGING_GRANITE] > randint0(1600) && twall(y, x))
 		{
 			msg("You have finished the tunnel.");
 		}
@@ -716,10 +717,10 @@ static bool do_cmd_tunnel_aux(int y, int x)
 
 		/* Quartz */
 		if (hard)
-			okay = (player->state.skills[SKILL_DIGGING] > 20 + randint0(800));
+			okay = (digging_chances[DIGGING_QUARTZ] > randint0(1600));
 		/* Magma */
 		else
-			okay = (player->state.skills[SKILL_DIGGING] > 10 + randint0(400));
+			okay = (digging_chances[DIGGING_MAGMA] > randint0(1600));
 
 		/* Success */
 		if (okay && twall(y, x))
@@ -763,7 +764,7 @@ static bool do_cmd_tunnel_aux(int y, int x)
 	else if (square_isrubble(cave, y, x))
 	{
 		/* Remove the rubble */
-		if ((player->state.skills[SKILL_DIGGING] > randint0(200)) && twall(y, x))
+		if ((digging_chances[DIGGING_RUBBLE] > randint0(1600)) && twall(y, x))
 		{
 			/* Message */
 			msg("You have removed the rubble.");
@@ -793,7 +794,7 @@ static bool do_cmd_tunnel_aux(int y, int x)
 	else if (square_issecretdoor(cave, y, x))
 	{
 		/* Tunnel */
-		if ((player->state.skills[SKILL_DIGGING] > 30 + randint0(1200)) && twall(y, x))
+		if ((digging_chances[DIGGING_DOORS] > randint0(1600)) && twall(y, x))
 		{
 			msg("You have finished the tunnel.");
 		}
@@ -814,7 +815,7 @@ static bool do_cmd_tunnel_aux(int y, int x)
 	else
 	{
 		/* Tunnel */
-		if ((player->state.skills[SKILL_DIGGING] > 30 + randint0(1200)) && twall(y, x))
+		if ((digging_chances[DIGGING_DOORS] > randint0(1600)) && twall(y, x))
 		{
 			msg("You have finished the tunnel.");
 		}
