@@ -1367,6 +1367,26 @@ static void calc_torch(void)
 	}
 }
 
+/**
+ * Populates `chances` with the player's chance of digging through
+ * the diggable terrain types in one turn out of 1600.
+ */
+void calc_digging_chances(player_state *state, int chances[DIGGING_MAX])
+{
+	int i;
+
+	chances[DIGGING_RUBBLE] = state->skills[SKILL_DIGGING] * 8;
+	chances[DIGGING_MAGMA] = (state->skills[SKILL_DIGGING] - 10) * 4;
+	chances[DIGGING_QUARTZ] = (state->skills[SKILL_DIGGING] - 20) * 2;
+	chances[DIGGING_GRANITE] = (state->skills[SKILL_DIGGING] - 40) * 1;
+	/* Approximate a 1/1200 chance per skill point over 30 */
+	chances[DIGGING_DOORS] = (state->skills[SKILL_DIGGING] * 4 - 119) / 3;
+
+	/* Don't let any negative chances through */
+	for (i = 0; i < DIGGING_MAX; i++)
+		chances[i] = MAX(0, chances[i]);
+}
+
 /*
  * Calculate the blows a player would get.
  *
