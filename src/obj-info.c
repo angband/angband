@@ -572,6 +572,8 @@ static bool describe_blows(textblock *tb, const object_type *o_ptr,
 			state.stat_ind[A_STR] += str_plus;
 			state.stat_ind[A_DEX] += dex_plus;
 			new_blows = calc_blows(o_ptr, &state, extra_blows);
+			state.stat_ind[A_STR] -= str_plus;
+			state.stat_ind[A_DEX] -= dex_plus;
 
 			/* Test to make sure that this extra blow is a
 			 * new str/dex combination, not a repeat
@@ -583,8 +585,6 @@ static bool describe_blows(textblock *tb, const object_type *o_ptr,
 				textblock_append(tb, "With +%d STR and +%d DEX you would get %d.%d blows\n",
 					str_plus, dex_plus, (new_blows / 100),
 					(new_blows / 10) % 10);
-				state.stat_ind[A_STR] -= str_plus;
-				state.stat_ind[A_DEX] -= dex_plus;
 				str_done = str_plus;
 				break;
 			}
@@ -601,14 +601,8 @@ static bool describe_blows(textblock *tb, const object_type *o_ptr,
 			{
 				textblock_append(tb, "With +%d STR and +%d DEX you would attack a bit faster\n",
 					str_plus, dex_plus);
-				state.stat_ind[A_STR] -= str_plus;
-				state.stat_ind[A_DEX] -= dex_plus;
 				str_faster = str_plus;
-				continue;
 			}
-
-			state.stat_ind[A_STR] -= str_plus;
-			state.stat_ind[A_DEX] -= dex_plus;
 		}
 	}
 
