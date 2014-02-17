@@ -124,7 +124,7 @@ static s32b slay_power(const object_type *o_ptr, int verbose, ang_file*
 	monster_type *m_ptr;
 	monster_type monster_type_body;
 	const char *desc[SL_MAX] = { 0 }, *brand[SL_MAX] = { 0 };
-	int s_mult[SL_MAX] = { 0 };
+	int s_mult[SL_MAX] = { 0 }, slay_list[SL_MAX] = { 0 };
 
 	if (known)
 		object_flags(o_ptr, f);
@@ -179,7 +179,8 @@ static s32b slay_power(const object_type *o_ptr, int verbose, ang_file*
 		/* Write info about the slay combination and multiplier */
 		file_putf(log_file, "Slay multiplier for: ");
 
-		j = list_slays(s_index, s_index, desc, brand, s_mult, FALSE);
+		j = list_slays(s_index, s_index, slay_list, FALSE);
+		slay_info_collect(slay_list, desc, brand, s_mult);
 
 		for (i = 0; i < j; i++) {
 			if (brand[i]) {
@@ -244,7 +245,7 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 
 	/* Get the slay power and number of slay/brand types */
 	create_mask(mask, FALSE, OFT_SLAY, OFT_KILL, OFT_BRAND, OFT_MAX);
-	num_slays = list_slays(flags, mask, NULL, NULL, NULL, TRUE);
+	num_slays = list_slays(flags, mask, NULL, TRUE);
 	if (num_slays)
 		slay_pwr = slay_power(o_ptr, verbose, log_file, known);
 

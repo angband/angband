@@ -49,7 +49,7 @@ static struct flag_cache *slay_cache;
  * \param flags is the flagset from which to remove duplicates.
  * count is the number of dups removed.
  */
-int dedup_slays(bitflag *flags) {
+static int dedup_slays(bitflag *flags) {
 	int i, j;
 	int count = 0;
 
@@ -94,20 +94,18 @@ const struct slay *random_slay(const bitflag mask[OF_SIZE])
 
 
 /**
- * Match slays in flags against a chosen flag mask
+ * Match slays in flags against a chosen flag mask.
  *
  * count is the number of matches
  * \param flags is the flagset to analyse for matches
  * \param mask is the flagset against which to test
- * \param desc is the array of descriptions of matching slays - can be null
- * \param brand is the array of descriptions of brands - can be null
- * \param mult is the array of multipliers of those slays - can be null
+ * \param slays is the array of slays found in the supplied flags - can be null
  * \param dedup is whether or not to remove duplicates
  *
- * desc[], brand[] and mult[] must be >= SL_MAX in size
+ * slays[] must be >= SL_MAX in size
  */
 int list_slays(const bitflag flags[OF_SIZE], const bitflag mask[OF_SIZE],
-	const char *desc[], const char *brand[], int mult[], bool dedup)
+			   int slays[], bool dedup)
 {
 	int i, count = 0;
 	bitflag f[OF_SIZE];
@@ -123,6 +121,36 @@ int list_slays(const bitflag flags[OF_SIZE], const bitflag mask[OF_SIZE],
 	for (i = 0; i < SL_MAX; i++) {
 		const struct slay *s_ptr = &slay_table[i];
 		if (of_has(f, s_ptr->object_flag)) {
+			if (slays)
+				slays[count] = i;
+
+			count++;
+		}
+	}
+
+	return count;
+}
+
+/**
+ * Fills in information about the given a list of `slays` such as returned by 
+ * list_slays().
+ * 
+ * \param slays is the array of slays to look up info for
+ * \param desc is the array of descriptions of matching slays - can be null
+ * \param brand is the array of descriptions of brands - can be null
+ * \param mult is the array of multipliers of those slays - can be null
+ *
+ * slays[], desc[], brand[] and mult[] must be >= SL_MAX in size
+ */
+int slay_info_collect(const int slays[], const char *desc[], 
+					  const char *brand[], int mult[])
+{
+	int i, count = 0;
+
+	for (i = 0; i < SL_MAX; i++) {
+		if (slays[i]) {
+			const struct slay *s_ptr = &slay_table[slays[i]];
+
 			if (mult)
 				mult[count] = s_ptr->mult;
 			if (brand)

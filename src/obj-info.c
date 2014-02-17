@@ -68,8 +68,8 @@ static void info_out_list(textblock *tb, const char *list[], size_t count)
 }
 
 
-/*
- *
+/**
+ * Fills recepticle with all the flags in `flags` that are in the given `list`.
  */
 static size_t info_collect(textblock *tb, const flag_type list[], size_t max,
 		const bitflag flags[OF_SIZE], const char *recepticle[])
@@ -403,6 +403,7 @@ static bool describe_slays(textblock *tb, const bitflag flags[OF_SIZE],
 		const struct object *o_ptr)
 {
 	bool printed = FALSE;
+	int slay_list[SL_MAX] = { 0 };
 	const char *slay_descs[SL_MAX] = { 0 };
 	bitflag slay_mask[OF_SIZE], kill_mask[OF_SIZE], brand_mask[OF_SIZE];
 	size_t count;
@@ -418,9 +419,10 @@ static bool describe_slays(textblock *tb, const bitflag flags[OF_SIZE],
 		fulldesc = TRUE;
 
 	/* Slays */
-	count = list_slays(flags, slay_mask, slay_descs, NULL, NULL, TRUE);
+	count = list_slays(flags, slay_mask, slay_list, TRUE);
 	if (count)
 	{
+		slay_info_collect(slay_list, slay_descs, NULL, NULL);
 		if (fulldesc)
 			textblock_append(tb, "It causes your melee attacks to slay ");
 		else
@@ -430,9 +432,10 @@ static bool describe_slays(textblock *tb, const bitflag flags[OF_SIZE],
 	}
 
 	/* Kills */
-	count = list_slays(flags, kill_mask, slay_descs, NULL, NULL, TRUE);
+	count = list_slays(flags, kill_mask, slay_list, TRUE);
 	if (count)
 	{
+		slay_info_collect(slay_list, slay_descs, NULL, NULL);
 		if (fulldesc)
 			textblock_append(tb, "It causes your melee attacks to *slay* ");
 		else
@@ -442,9 +445,10 @@ static bool describe_slays(textblock *tb, const bitflag flags[OF_SIZE],
 	}
 
 	/* Brands */
-	count = list_slays(flags, brand_mask, NULL, slay_descs, NULL, TRUE);
+	count = list_slays(flags, brand_mask, slay_list, TRUE);
 	if (count)
 	{
+		slay_info_collect(slay_list, NULL, slay_descs, NULL);
 		if (fulldesc)
 			textblock_append(tb, "It brands your melee attacks with ");
 		else
@@ -619,6 +623,7 @@ static bool describe_damage(textblock *tb, const object_type *o_ptr,
 	const char *desc[SL_MAX] = { 0 };
 	size_t i, cnt;
 	int mult[SL_MAX];
+	int slay_list[SL_MAX] = { 0 };
 	int dice, sides, dam, total_dam, plus = 0;
 	int xtra_postcrit = 0, xtra_precrit = 0;
 	int crit_mult, crit_div, crit_add;
@@ -704,7 +709,8 @@ static bool describe_damage(textblock *tb, const object_type *o_ptr,
 	if (ammo) multiplier = player->state.ammo_mult;
 
 	/* Output damage for creatures effected by the brands or slays */
-	cnt = list_slays(f, mask, desc, NULL, mult, TRUE);
+	cnt = list_slays(f, mask, slay_list, TRUE);
+	slay_info_collect(slay_list, desc, NULL, mult);
 	for (i = 0; i < cnt; i++) {
 		/* ammo mult adds fully, melee mult is times 1, so adds 1 less */
 		int melee_adj_mult = ammo ? 0 : 1;

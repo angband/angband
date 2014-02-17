@@ -775,9 +775,9 @@ static void parse_frequencies(void)
 			if (of_is_inter(a_ptr->flags, mask))
 			{
 				/* We have some brands or slays - count them */
-				temp = list_slays(a_ptr->flags, mask, NULL, NULL, NULL,	FALSE);
+				temp = list_slays(a_ptr->flags, mask, NULL,	FALSE);
 				create_mask(mask, FALSE, OFT_BRAND, OFT_MAX);
-				temp2 = list_slays(a_ptr->flags, mask, NULL, NULL, NULL, FALSE);
+				temp2 = list_slays(a_ptr->flags, mask, NULL, FALSE);
 
 				file_putf(log_file, "Adding %d for slays\n", temp - temp2);
 				file_putf(log_file, "Adding %d for brands\n", temp2);
@@ -873,9 +873,9 @@ static void parse_frequencies(void)
 			if (of_is_inter(a_ptr->flags, mask))
 			{
 				/* We have some brands or slays - count them */
-				temp = list_slays(a_ptr->flags, mask, NULL, NULL, NULL,	FALSE);
+				temp = list_slays(a_ptr->flags, mask, NULL, FALSE);
 				create_mask(mask, FALSE, OFT_BRAND, OFT_MAX);
-				temp2 = list_slays(a_ptr->flags, mask, NULL, NULL, NULL, FALSE);
+				temp2 = list_slays(a_ptr->flags, mask, NULL, FALSE);
 
 				file_putf(log_file, "Adding %d for slays\n", temp - temp2);
 				file_putf(log_file, "Adding %d for brands\n", temp2);
@@ -983,9 +983,9 @@ static void parse_frequencies(void)
 			if (of_is_inter(a_ptr->flags, mask))
 			{
 				/* We have some brands or slays - count them */
-				temp = list_slays(a_ptr->flags, mask, NULL, NULL, NULL,	FALSE);
+				temp = list_slays(a_ptr->flags, mask, NULL,	FALSE);
 				create_mask(mask, FALSE, OFT_BRAND, OFT_MAX);
-				temp2 = list_slays(a_ptr->flags, mask, NULL, NULL, NULL, FALSE);
+				temp2 = list_slays(a_ptr->flags, mask, NULL, FALSE);
 
 				file_putf(log_file, "Adding %d for slays\n", temp - temp2);
 				file_putf(log_file, "Adding %d for brands\n", temp2);
