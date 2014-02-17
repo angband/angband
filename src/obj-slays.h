@@ -59,6 +59,7 @@ struct flag_cache {
 
 /*** Functions ***/
 const struct slay *random_slay(const bitflag mask[OF_SIZE]);
+const struct slay *slay_from_object_flag(int flag);
 int list_slays(const bitflag flags[OF_SIZE], const bitflag mask[OF_SIZE],
 	int slay_list[], bool dedup);
 int slay_info_collect(const int slays[], const char *desc[], 

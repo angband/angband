@@ -94,6 +94,22 @@ const struct slay *random_slay(const bitflag mask[OF_SIZE])
 
 
 /**
+ * Get a slay from a corresponding object flag.
+ */
+const struct slay *slay_from_object_flag(int flag)
+{
+	int i;
+
+	for (i = 1; i < SL_MAX; i++) {
+		if (slay_table[i].object_flag == flag)
+			return &slay_table[i];
+	}
+
+	return NULL;
+}
+
+
+/**
  * Match slays in flags against a chosen flag mask.
  *
  * count is the number of matches

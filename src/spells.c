@@ -3237,20 +3237,15 @@ void brand_object(object_type *o_ptr, int brand_type)
 	    !o_ptr->artifact && !o_ptr->ego)
 	{
 		char o_name[80];
-		bitflag f[OF_SIZE];
-		const char *brand[SL_MAX];
-		int slay_list[SL_MAX];
+		const struct slay *slay;
 
 		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
+		slay = slay_from_object_flag(brand_type);
+		assert(slay != NULL);
 
-		of_wipe(f);
-		of_on(f, brand_type);
-		i = list_slays(f, f, slay_list, FALSE);
-		slay_info_collect(slay_list, NULL, brand, NULL);
-		
 		/* Describe */
 		msg("The %s %s surrounded with an aura of %s.", o_name,
-				(o_ptr->number > 1) ? "are" : "is", brand[0]);
+			(o_ptr->number > 1) ? "are" : "is", slay->brand);
 
 		/* Get the right ego type for the object - the first one
 		 * with the correct flag for this type of object - we assume
