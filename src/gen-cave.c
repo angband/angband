@@ -204,11 +204,8 @@ static void build_tunnel(struct cave *c, int row1, int col1, int row2, int col2)
 			/* Forbid re-entry near this piercing */
 			for (y = row1 - 1; y <= row1 + 1; y++)
 				for (x = col1 - 1; x <= col1 + 1; x++)
-					if (square_is_granite_with_flag(c, y, x, 
-													SQUARE_WALL_OUTER)) { 
+					if (square_is_granite_with_flag(c, y, x, SQUARE_WALL_OUTER))
 						set_marked_granite(c, y, x, SQUARE_WALL_SOLID);
-						sqinfo_off(c->info[y][x], SQUARE_WALL_OUTER);
-					}
 
 		} else if (sqinfo_has(c->info[tmp_row][tmp_col], SQUARE_ROOM)) {
 			/* Travel quickly through rooms */
