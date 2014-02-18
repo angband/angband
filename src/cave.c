@@ -2263,6 +2263,11 @@ void square_set_feat(struct cave *c, int y, int x, int feat)
 	if (character_dungeon) {
 		square_note_spot(c, y, x);
 		square_light_spot(c, y, x);
+	} else {
+		/* Make sure no incorrect wall flags set for dungeon generation */
+		   sqinfo_off(c->info[y][x], SQUARE_WALL_INNER);
+		   sqinfo_off(c->info[y][x], SQUARE_WALL_OUTER);
+		   sqinfo_off(c->info[y][x], SQUARE_WALL_SOLID);
 	}
 }
 
