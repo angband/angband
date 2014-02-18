@@ -15,16 +15,20 @@
 /*
  * Dungeon allocation places and types, used with alloc_object().
  */
-#define SET_CORR 1 /* Hallway */
-#define SET_ROOM 2 /* Room */
-#define SET_BOTH 3 /* Anywhere */
+#define SET_CORR   1 /* Hallway */
+#define SET_ROOM   2 /* Room */
+#define SET_BOTH   3 /* Anywhere */
 
 #define TYP_RUBBLE 1 /* Rubble */
-#define TYP_TRAP 3 /* Trap */
-#define TYP_GOLD 4 /* Gold */
+#define TYP_TRAP   3 /* Trap */
+#define TYP_GOLD   4 /* Gold */
 #define TYP_OBJECT 5 /* Object */
-#define TYP_GOOD 6 /* Great object */
-#define TYP_GREAT 7 /* Great object */
+#define TYP_GOOD   6 /* Great object */
+#define TYP_GREAT  7 /* Great object */
+
+#define AMT_ROOM   9 /* Number of objects for rooms */
+#define AMT_ITEM   3 /* Number of objects for rooms/corridors */
+#define AMT_GOLD   3 /* Amount of treasure for rooms/corridors */
 
 /*
  * Number of grids in each block (vertically)
