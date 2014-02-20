@@ -329,3 +329,51 @@ R:1
 A:1:90
 O:0
 T:ainu
+
+
+# New chosen monster types, not necessarily for pits and not used yet
+
+N:Insects
+R:3
+A:2:15
+T:ant
+T:centipede
+T:louse
+T:dragon fly
+T:insect
+T:killer beetle
+
+N:Reptiles
+R:3
+A:2:20
+T:naga
+T:snake
+T:reptile
+
+N:Cave dwellers
+R:3
+A:2:25
+T:yeek
+T:kobold
+T:orc
+T:troll
+T:ogre
+
+N:Moria dwellers
+R:3
+A:8:30
+T:orc
+T:ogre
+T:troll
+T:giant
+
+N:Creatures of Earth
+R:3
+A:8:35
+T:xorn
+
+N:Elemental creatures
+R:3
+A:2:50
+T:elemental
+T:vortex
