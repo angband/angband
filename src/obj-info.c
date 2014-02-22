@@ -632,7 +632,7 @@ static bool describe_damage(textblock *tb, const object_type *o_ptr,
 
 	bitflag tmp_f[OF_SIZE], mask[OF_SIZE];
 
-	bool weapon = tval_is_melee_weapon(o_ptr)
+	bool weapon = tval_is_melee_weapon(o_ptr);
 	bool ammo   = (player->state.ammo_tval == o_ptr->tval) &&
 	              (bow->kind);
 	int multiplier = 1;
@@ -845,9 +845,11 @@ static bool describe_combat(textblock *tb, const object_type *o_ptr,
 
 /*
  * Describe objects that can be used for digging.
+ *
+ * deciturns must be at least [DIGGING_MAX]
  */
-static bool describe_digger(textblock *tb, const object_type *o_ptr,
-		oinfo_detail_t mode)
+static bool obj_known_digger_info(const object_type *o_ptr,
+		oinfo_detail_t mode, int deciturns[])
 {
 	player_state st;
 
@@ -859,7 +861,6 @@ static bool describe_digger(textblock *tb, const object_type *o_ptr,
 	bitflag f[OF_SIZE];
 
 	int chances[DIGGING_MAX];
-	static const char *names[4] = { "rubble", "magma veins", "quartz veins", "granite" };
 
 	/* abort if we are a dummy object */
 	if (mode & OINFO_DUMMY) return FALSE;
@@ -886,19 +887,38 @@ static bool describe_digger(textblock *tb, const object_type *o_ptr,
 	for (i = DIGGING_RUBBLE; i < DIGGING_DOORS; i++)
 	{
 		int chance = MIN(1600, chances[i]);
-		int deciturns = chance ? (16000 / chance) : 0;
+		deciturns[i] = chance ? (16000 / chance) : 0;
+	}
 
-		if (i == 0 && chance > 0) {
-			if (sl == INVEN_WIELD)
+	return TRUE;
+}
+
+/*
+ * Describe objects that can be used for digging.
+ */
+static bool describe_digger(textblock *tb, const object_type *o_ptr,
+		oinfo_detail_t mode)
+{
+	int i;
+	int deciturns[DIGGING_MAX];
+	static const char *names[4] = { "rubble", "magma veins", "quartz veins", "granite" };
+
+	/* Get useful info or print nothing */
+	if (!obj_known_digger_info(o_ptr, mode, deciturns)) return FALSE;
+
+	for (i = DIGGING_RUBBLE; i < DIGGING_DOORS; i++)
+	{
+		if (i == 0 && deciturns[0] > 0) {
+			if (tval_is_melee_weapon(o_ptr))
 				textblock_append(tb, "Clears ");
 			else
 				textblock_append(tb, "With this item, your current weapon clears ");
 		}
 
-		if (i == 3 || (i != 0 && chance == 0))
+		if (i == 3 || (i != 0 && deciturns[i] == 0))
 			textblock_append(tb, "and ");
 
-		if (chance == 0) {
+		if (deciturns[i] == 0) {
 			textblock_append_c(tb, TERM_L_RED, "doesn't affect ");
 			textblock_append(tb, "%s.\n", names[i]);
 			break;
@@ -906,16 +926,16 @@ static bool describe_digger(textblock *tb, const object_type *o_ptr,
 
 		textblock_append(tb, "%s in ", names[i]);
 
-		if (chance == 1600) {
+		if (deciturns[i] == 10) {
 			textblock_append_c(tb, TERM_L_GREEN, "1 ");
-		} else if (deciturns < 100) {
-			textblock_append_c(tb, TERM_GREEN, "%d.%d ", deciturns/10, deciturns%10);
+		} else if (deciturns[i] < 100) {
+			textblock_append_c(tb, TERM_GREEN, "%d.%d ", deciturns[i]/10, deciturns[i]%10);
 		} else {
-			textblock_append_c(tb, (deciturns < 1000) ? TERM_YELLOW : TERM_RED,
-			           "%d ", (deciturns+5)/10);
+			textblock_append_c(tb, (deciturns[i] < 1000) ? TERM_YELLOW : TERM_RED,
+			           "%d ", (deciturns[i]+5)/10);
 		}
 
-		textblock_append(tb, "turn%s%s", deciturns == 10 ? "" : "s",
+		textblock_append(tb, "turn%s%s", deciturns[i] == 10 ? "" : "s",
 				(i == 3) ? ".\n" : ", ");
 	}
 
