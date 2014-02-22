@@ -1672,21 +1672,23 @@ bool build_template(struct cave *c, int y0, int x0)
 /**
  * Build a vault from its string representation.
  */
-static void build_vault(struct cave *c, int y0, int x0, int ymax, int xmax, const char *data)
+static void build_vault(struct cave *c, int y0, int x0, struct vault *v)
 {
-	int dx, dy, x, y;
+	const char *data = v->text;
+	int y1 = y0 - (v->hgt / 2);
+	int x1 = x0 - (v->wid / 2);
+	int y2 = y1 + v->hgt - 1;
+	int x2 = x1 + v->wid - 1;
+	int x, y, races = 0;
 	const char *t;
+	char racial_symbol[30] = "";
 	bool icky;
 
 	assert(c);
 
 	/* Place dungeon features and objects */
-	for (t = data, dy = 0; dy < ymax && *t; dy++) {
-		for (dx = 0; dx < xmax && *t; dx++, t++) {
-			/* Extract the location */
-			x = x0 - (xmax / 2) + dx;
-			y = y0 - (ymax / 2) + dy;
-
+	for (t = data, y = y1; y <= y2 && *t; y++) {
+		for (x = x1; x <= x2 && *t; x++, t++) {
 			/* Skip non-grids */
 			if (*t == ' ') continue;
 
@@ -1746,142 +1748,149 @@ static void build_vault(struct cave *c, int y0, int x0, int ymax, int xmax, cons
 	}
 
 
-	/* Place dungeon monsters and objects */
-	for (t = data, dy = 0; dy < ymax && *t; dy++) {
-		for (dx = 0; dx < xmax && *t; dx++, t++) {
-			/* Extract the grid */
-			x = x0 - (xmax / 2) + dx;
-			y = y0 - (ymax / 2) + dy;
-
+	/* Place regular dungeon monsters and objects */
+	for (t = data, y = y1; y <= y2 && *t; y++) {
+		for (x = x1; x <= x2 && *t; x++, t++) {
 			/* Hack -- skip "non-grids" */
 			if (*t == ' ') continue;
 
-			/* Analyze the symbol */
-			switch (*t) {
-				/* An ordinary monster, object (sometimes good), or trap. */
-			case '1': {
-				if (one_in_(2))
-					pick_and_place_monster(c, y, x, c->depth , TRUE, TRUE,
-										   ORIGIN_DROP_VAULT);
-				else if (one_in_(2))
-					place_object(c, y, x, c->depth, one_in_(8) ? TRUE : FALSE,
-								 FALSE, ORIGIN_VAULT, 0);
-				else
-					place_trap(c, y, x, -1, c->depth);
-				break;
+			/* Most alphabetic characters signify monster races. */
+			if (isalpha(*t) && (*t != 'x') && (*t != 'X')) {
+				/* If the symbol is not yet stored, ... */
+				if (!strchr(racial_symbol, *t)) {
+					/* ... store it for later processing. */
+					if (races < 30)
+						racial_symbol[races++] = *t;
+				}
 			}
-				/* Slightly out of depth monster. */
-			case '2': pick_and_place_monster(c, y, x, c->depth + 5, TRUE, TRUE,
-											 ORIGIN_DROP_VAULT); break;
-				/* Slightly out of depth object. */
-			case '3': place_object(c, y, x, c->depth + 3, FALSE, FALSE,
-								   ORIGIN_VAULT, 0); break;
-				/* Monster and/or object */
-			case '4': {
-				if (one_in_(2))
-					pick_and_place_monster(c, y, x, c->depth + 3, TRUE, TRUE,
+
+			/* Otherwise, analyze the symbol */
+			else
+				switch (*t) {
+					/* An ordinary monster, object (sometimes good), or trap. */
+				case '1': {
+					if (one_in_(2))
+						pick_and_place_monster(c, y, x, c->depth , TRUE, TRUE,
+											   ORIGIN_DROP_VAULT);
+					else if (one_in_(2))
+						place_object(c, y, x, c->depth, one_in_(8) ? TRUE : FALSE, FALSE, ORIGIN_VAULT, 0);
+					else
+						place_trap(c, y, x, -1, c->depth);
+					break;
+				}
+					/* Slightly out of depth monster. */
+				case '2': pick_and_place_monster(c, y, x, c->depth + 5, TRUE, TRUE, ORIGIN_DROP_VAULT); break;
+					/* Slightly out of depth object. */
+				case '3': place_object(c, y, x, c->depth + 3, FALSE, FALSE, 
+									   ORIGIN_VAULT, 0); break;
+					/* Monster and/or object */
+				case '4': {
+					if (one_in_(2))
+						pick_and_place_monster(c, y, x, c->depth + 3, TRUE, 
+											   TRUE, ORIGIN_DROP_VAULT);
+					if (one_in_(2))
+						place_object(c, y, x, c->depth + 7, FALSE, FALSE,
+									 ORIGIN_VAULT, 0);
+					break;
+				}
+					/* Out of depth object. */
+				case '5': place_object(c, y, x, c->depth + 7, FALSE, FALSE,
+									   ORIGIN_VAULT, 0); break;
+					/* Out of depth monster. */
+				case '6': pick_and_place_monster(c, y, x, c->depth + 11, TRUE, TRUE, ORIGIN_DROP_VAULT); break;
+					/* Very out of depth object. */
+				case '7': place_object(c, y, x, c->depth + 15, FALSE, FALSE,
+									   ORIGIN_VAULT, 0); break;
+					/* Very out of depth monster. */
+				case '0': pick_and_place_monster(c, y, x, c->depth + 20, TRUE, TRUE, ORIGIN_DROP_VAULT); break;
+					/* Meaner monster, plus treasure */
+				case '9': {
+					pick_and_place_monster(c, y, x, c->depth + 9, TRUE, TRUE,
 										   ORIGIN_DROP_VAULT);
-				if (one_in_(2))
-					place_object(c, y, x, c->depth + 7, FALSE, FALSE,
+					place_object(c, y, x, c->depth + 7, TRUE, FALSE,
 								 ORIGIN_VAULT, 0);
-				break;
-			}
-				/* Out of depth object. */
-			case '5': place_object(c, y, x, c->depth + 7, FALSE, FALSE,
-								 ORIGIN_VAULT, 0); break;
-				/* Out of depth monster. */
-			case '6': pick_and_place_monster(c, y, x, c->depth + 11, TRUE, TRUE,
-											 ORIGIN_DROP_VAULT); break;
-				/* Very out of depth object. */
-			case '7': place_object(c, y, x, c->depth + 15, FALSE, FALSE,
-								 ORIGIN_VAULT, 0); break;
-				/* Very out of depth monster. */
-			case '0': pick_and_place_monster(c, y, x, c->depth + 20, TRUE, TRUE,
-											 ORIGIN_DROP_VAULT); break;
-				/* Meaner monster, plus treasure */
-			case '9': {
-				pick_and_place_monster(c, y, x, c->depth + 9, TRUE, TRUE,
-									   ORIGIN_DROP_VAULT);
-				place_object(c, y, x, c->depth + 7, TRUE, FALSE,
-							 ORIGIN_VAULT, 0);
-				break;
-			}
-				/* Nasty monster and treasure */
-			case '8': {
-				pick_and_place_monster(c, y, x, c->depth + 40, TRUE, TRUE,
-									   ORIGIN_DROP_VAULT);
-				place_object(c, y, x, c->depth + 20, TRUE, TRUE,
-							 ORIGIN_VAULT, 0);
-				break;
-			}
-				/* A chest. */
-			case '~': place_object(c, y, x, c->depth + 5, TRUE, TRUE,
-							 ORIGIN_VAULT, TV_CHEST); break;
-				/* Treasure. */
-			case '$': place_gold(c, y, x, c->depth, ORIGIN_VAULT);break;
-				/* Armour. */
-			case ']': {
-				int	tval, temp = one_in_(3) ? randint1(9) : randint1(8);
-				switch (temp) {
-				case 1: tval = TV_BOOTS; break;
-				case 2: tval = TV_GLOVES; break;
-				case 3: tval = TV_HELM; break;
-				case 4: tval = TV_CROWN; break;
-				case 5: tval = TV_SHIELD; break;
-				case 6: tval = TV_CLOAK; break;
-				case 7: tval = TV_SOFT_ARMOR; break;
-				case 8: tval = TV_HARD_ARMOR; break;
-				case 9: tval = TV_DRAG_ARMOR; break;
+					break;
 				}
-				place_object(c, y, x, c->depth + 3, TRUE, FALSE,
-							 ORIGIN_VAULT, tval);
-				break;
-			}
-				/* Weapon. */
-			case '|': {
-				int	tval, temp = randint1(4);
-				switch (temp) {
-				case 1: tval = TV_SWORD; break;
-				case 2: tval = TV_POLEARM; break;
-				case 3: tval = TV_HAFTED; break;
-				case 4: tval = TV_BOW; break;
+					/* Nasty monster and treasure */
+				case '8': {
+					pick_and_place_monster(c, y, x, c->depth + 40, TRUE, TRUE,
+										   ORIGIN_DROP_VAULT);
+					place_object(c, y, x, c->depth + 20, TRUE, TRUE,
+								 ORIGIN_VAULT, 0);
+					break;
 				}
-				place_object(c, y, x, c->depth + 3, TRUE, FALSE,
-							 ORIGIN_VAULT, tval);
-				break;
-			}
-				/* Ring. */
-			case '=': place_object(c, y, x, c->depth + 3, one_in_(4), FALSE,
-							 ORIGIN_VAULT, TV_RING); break;
-				/* Amulet. */
-			case '"': place_object(c, y, x, c->depth + 3, one_in_(4), FALSE,
-							 ORIGIN_VAULT, TV_AMULET); break;
-				/* Potion. */
-			case '!': place_object(c, y, x, c->depth + 3, one_in_(4), FALSE,
-							 ORIGIN_VAULT, TV_POTION); break;
-				/* Scroll. */
-			case '?': place_object(c, y, x, c->depth + 3, one_in_(4), FALSE,
-							 ORIGIN_VAULT, TV_SCROLL); break;
-				/* Staff. */
-			case '_': place_object(c, y, x, c->depth + 3, one_in_(4), FALSE,
-							 ORIGIN_VAULT, TV_STAFF); break;
-				/* Wand or rod. */
-			case '-': place_object(c, y, x, c->depth + 3, one_in_(4), FALSE,
-								   ORIGIN_VAULT, one_in_(2) ? TV_WAND : TV_ROD);
-				break;
-				/* Food or mushroom. */
-			case ',': place_object(c, y, x, c->depth + 3, one_in_(4), FALSE,
-							 ORIGIN_VAULT, TV_FOOD); break;
-			}
+					/* A chest. */
+				case '~': place_object(c, y, x, c->depth + 5, TRUE, TRUE,
+									   ORIGIN_VAULT, TV_CHEST); break;
+					/* Treasure. */
+				case '$': place_gold(c, y, x, c->depth, ORIGIN_VAULT);break;
+					/* Armour. */
+				case ']': {
+					int	tval, temp = one_in_(3) ? randint1(9) : randint1(8);
+					switch (temp) {
+					case 1: tval = TV_BOOTS; break;
+					case 2: tval = TV_GLOVES; break;
+					case 3: tval = TV_HELM; break;
+					case 4: tval = TV_CROWN; break;
+					case 5: tval = TV_SHIELD; break;
+					case 6: tval = TV_CLOAK; break;
+					case 7: tval = TV_SOFT_ARMOR; break;
+					case 8: tval = TV_HARD_ARMOR; break;
+					case 9: tval = TV_DRAG_ARMOR; break;
+					}
+					place_object(c, y, x, c->depth + 3, TRUE, FALSE,
+								 ORIGIN_VAULT, tval);
+					break;
+				}
+					/* Weapon. */
+				case '|': {
+					int	tval, temp = randint1(4);
+					switch (temp) {
+					case 1: tval = TV_SWORD; break;
+					case 2: tval = TV_POLEARM; break;
+					case 3: tval = TV_HAFTED; break;
+					case 4: tval = TV_BOW; break;
+					}
+					place_object(c, y, x, c->depth + 3, TRUE, FALSE,
+								 ORIGIN_VAULT, tval);
+					break;
+				}
+					/* Ring. */
+				case '=': place_object(c, y, x, c->depth + 3, one_in_(4), FALSE,
+									   ORIGIN_VAULT, TV_RING); break;
+					/* Amulet. */
+				case '"': place_object(c, y, x, c->depth + 3, one_in_(4), FALSE,
+									   ORIGIN_VAULT, TV_AMULET); break;
+					/* Potion. */
+				case '!': place_object(c, y, x, c->depth + 3, one_in_(4), FALSE,
+									   ORIGIN_VAULT, TV_POTION); break;
+					/* Scroll. */
+				case '?': place_object(c, y, x, c->depth + 3, one_in_(4), FALSE,
+									   ORIGIN_VAULT, TV_SCROLL); break;
+					/* Staff. */
+				case '_': place_object(c, y, x, c->depth + 3, one_in_(4), FALSE,
+									   ORIGIN_VAULT, TV_STAFF); break;
+					/* Wand or rod. */
+				case '-': place_object(c, y, x, c->depth + 3, one_in_(4), FALSE,
+									   ORIGIN_VAULT, one_in_(2) ? TV_WAND : TV_ROD);
+					break;
+					/* Food or mushroom. */
+				case ',': place_object(c, y, x, c->depth + 3, one_in_(4), FALSE,
+									   ORIGIN_VAULT, TV_FOOD); break;
+				}
 		}
 	}
+
+	/* Place specified monsters */
+	get_vault_monsters(c, racial_symbol, v->typ, data, y1, y2, x1, x2);
 }
 
 
 /**
  * Helper function for building vaults.
  */
-static bool build_vault_type(struct cave*c, int y0, int x0, int typ, const char *label)
+static bool build_vault_type(struct cave*c, int y0, int x0, int typ, 
+							 const char *label)
 {
 	struct vault *v_ptr = random_vault(typ);
 	if (v_ptr == NULL) {
@@ -1895,7 +1904,7 @@ static bool build_vault_type(struct cave*c, int y0, int x0, int typ, const char 
 	c->mon_rating += v_ptr->rat;
 
 	/* Build the vault */
-	build_vault(c, y0, x0, v_ptr->hgt, v_ptr->wid, v_ptr->text);
+	build_vault(c, y0, x0, v_ptr);
 
 	return TRUE;
 }

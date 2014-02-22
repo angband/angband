@@ -52,7 +52,7 @@
 /**
  * Maximum number of rvals (monster templates) that a pit can specify.
  */
-#define MAX_RVALS 4
+#define MAX_RVALS 6
 
 /*
  * Bounds on some arrays used in the "dun_data" structure.
