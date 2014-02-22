@@ -429,7 +429,7 @@ static int calc_mon_feeling(struct cave *c)
  */
 void cave_generate(struct cave *c, struct player *p) {
     const char *error = "no generation";
-    int tries = 0;
+    int y, x, tries = 0;
 
     assert(c);
 
@@ -510,6 +510,16 @@ void cave_generate(struct cave *c, struct player *p) {
     cave_squares = NULL;
 
     if (error) quit_fmt("cave_generate() failed 100 times!");
+
+	/* Clear generation flags. */
+	for (y = 0; y < c->height; y++) {
+		for (x = 0; x < c->width; x++) {
+			sqinfo_off(c->info[y][x], SQUARE_WALL_INNER);
+			sqinfo_off(c->info[y][x], SQUARE_WALL_OUTER);
+			sqinfo_off(c->info[y][x], SQUARE_WALL_SOLID);
+			sqinfo_off(c->info[y][x], SQUARE_MON_RESTRICT);
+		}
+	}
 
     /* The dungeon is ready */
     character_dungeon = TRUE;

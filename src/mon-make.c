@@ -1302,6 +1302,11 @@ bool pick_and_place_distant_monster(struct cave *c, struct loc loc, int dis,
 		/* Require "naked" floor grid */
 		if (!square_isempty(c, y, x)) continue;
 
+		/* Do not put random monsters in marked rooms. */
+		if ((!character_dungeon) 
+			&& sqinfo_has(c->info[y][x], SQUARE_MON_RESTRICT))
+			continue;
+
 		/* Accept far away grids */
 		if (distance(y, x, py, px) > dis) break;
 	}

@@ -1686,6 +1686,9 @@ static void build_vault(struct cave *c, int y0, int x0, struct vault *v)
 
 	assert(c);
 
+	/* No random monsters in vaults. */
+	generate_mark(c, y1, x1, y2, x2, SQUARE_MON_RESTRICT);
+
 	/* Place dungeon features and objects */
 	for (t = data, y = y1; y <= y2 && *t; y++) {
 		for (x = x1; x <= x2 && *t; x++, t++) {
