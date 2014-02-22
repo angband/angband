@@ -843,10 +843,14 @@ static bool describe_combat(textblock *tb, const object_type *o_ptr,
 }
 
 
-/*
- * Describe objects that can be used for digging.
+/**
+ * Returns information about objects that can be used for digging.
  *
- * deciturns must be at least [DIGGING_MAX]
+ * `deciturns` will be filled in with the avg number of deciturns it will
+ * take to dig through each type of diggable terrain, and must be at least 
+ * [DIGGING_MAX].
+ *
+ * Returns FALSE if the object has no effect on digging.
  */
 static bool obj_known_digger_info(const object_type *o_ptr,
 		oinfo_detail_t mode, int deciturns[])
@@ -884,7 +888,7 @@ static bool obj_known_digger_info(const object_type *o_ptr,
 	calc_bonuses(inven, &st, TRUE);
 	calc_digging_chances(&st, chances); /* Out of 1600 */
 
-	for (i = DIGGING_RUBBLE; i < DIGGING_DOORS; i++)
+	for (i = DIGGING_RUBBLE; i < DIGGING_MAX; i++)
 	{
 		int chance = MIN(1600, chances[i]);
 		deciturns[i] = chance ? (16000 / chance) : 0;
@@ -942,21 +946,38 @@ static bool describe_digger(textblock *tb, const object_type *o_ptr,
 	return TRUE;
 }
 
+/**
+ * Gives the known nutritional value of the given object.
+ *
+ * Returns the number of player deciturns it will nourish for or -1 if 
+ * the exact value not known.
+ */
+static int obj_known_food(const object_type *o_ptr)
+{
+	if (tval_can_have_nourishment(o_ptr) && o_ptr->pval[DEFAULT_PVAL]) {
+		if (object_is_known(o_ptr)) {
+			return o_ptr->pval[DEFAULT_PVAL] / 2;
+		} else {
+			return -1;
+		}
+	}
+
+	return 0;
+}
 
 static bool describe_food(textblock *tb, const object_type *o_ptr,
 		bool subjective)
 {
-	/* Describe boring bits */
-	if (tval_can_have_nourishment(o_ptr) &&
-		o_ptr->pval[DEFAULT_PVAL])
-	{
+	int nourishment = obj_known_food(o_ptr);
+
+	if (nourishment) {
 		/* Sometimes adjust for player speed */
 		int multiplier = extract_energy[player->state.speed];
 		if (!subjective) multiplier = 10;
 
-		if (object_is_known(o_ptr)) {
+		if (nourishment > 0) {
 			textblock_append(tb, "Nourishes for around ");
-			textblock_append_c(tb, TERM_L_GREEN, "%d", (o_ptr->pval[DEFAULT_PVAL] / 2) *
+			textblock_append_c(tb, TERM_L_GREEN, "%d", nourishment *
 				multiplier / 10);
 			textblock_append(tb, " turns.\n");
 		} else {
