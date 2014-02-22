@@ -413,7 +413,7 @@ static bool describe_slays(textblock *tb, const bitflag flags[OF_SIZE],
 	create_mask(kill_mask, FALSE, OFT_KILL, OFT_MAX);
 	create_mask(brand_mask, FALSE, OFT_BRAND, OFT_MAX);
 
-    if (tval_is_weapon(o_ptr) || tval_is_fuel(o_ptr))
+    if (tval_is_melee_weapon(o_ptr) || tval_is_fuel(o_ptr))
 		fulldesc = FALSE;
 	else
 		fulldesc = TRUE;
@@ -632,7 +632,7 @@ static bool describe_damage(textblock *tb, const object_type *o_ptr,
 
 	bitflag tmp_f[OF_SIZE], mask[OF_SIZE];
 
-	bool weapon = (wield_slot(o_ptr) == INVEN_WIELD);
+	bool weapon = tval_is_melee_weapon(o_ptr)
 	bool ammo   = (player->state.ammo_tval == o_ptr->tval) &&
 	              (bow->kind);
 	int multiplier = 1;
@@ -774,7 +774,7 @@ static bool describe_combat(textblock *tb, const object_type *o_ptr,
 
 	bitflag f[OF_SIZE];
 
-	bool weapon = (wield_slot(o_ptr) == INVEN_WIELD);
+	bool weapon = tval_is_melee_weapon(o_ptr);
 	bool ammo   = (player->state.ammo_tval == o_ptr->tval) &&
 	              (bow->kind);
 
@@ -866,7 +866,8 @@ static bool describe_digger(textblock *tb, const object_type *o_ptr,
 
 	object_flags_known(o_ptr, f);
 
-	if (sl < 0 || (sl != INVEN_WIELD && !of_has(f, OF_TUNNEL)))
+	if (!tval_is_wearable(o_ptr) || 
+		(!tval_is_melee_weapon(o_ptr) && !of_has(f, OF_TUNNEL)))
 		return FALSE;
 
 	memcpy(inven, player->inventory, INVEN_TOTAL * sizeof(object_type));
