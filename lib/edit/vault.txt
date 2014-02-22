@@ -29,14 +29,34 @@
 #    % - outside of the vault, where corridors may be connected
 #    # - granite
 #    @ - impenetrable rock
+#    * - treasure vein
+#    : - rubble
 #    & - treasure or trap
 #    + - secret door
 #    ^ - trap
+#    < - upstair
+#    > - downstair
+#    1 - monster, object or trap
 #    2 - monster up to 5 levels out of depth (OOD)
+#    3 - object up to 3 levels OOD
+#    4 - monster up to 3 levels OOD and/or treasure up to 7 levels OOD
+#    5 - object up to 7 levels OOD
 #    6 - monster up to 11 levels OOD
+#    7 - object up to 15 levels OOD
+#    0 - monster up to 20 levels OOD
 #    9 - monster up to 9 levels OOD and treasure up to 7 levels OOD
 #    8 - monster up to 40 levels OOD and treasure up to 20 levels OOD
-#    4 - monster up to 3 levels OOD and/or treasure up to 7 levels OOD
+#    ~ - chest up to 5 levels OOD
+#    $ - gold
+#    ] - armor up to 3 levels OOD
+#    | - weapon up to 3 levels OOD
+#    = - ring up to 3 levels OOD
+#    " - amulet up to 3 levels OOD
+#    ! - potion up to 3 levels OOD
+#    ? - scroll up to 3 levels OOD
+#    _ - staff up to 3 levels OOD
+#    - - rod or wand up to 3 levels OOD
+#    , - food up to 3 levels OOD
 
 # Use this to measure columns                                                                        1
 #          1         2         3         4         5         6         7         8         9         0
