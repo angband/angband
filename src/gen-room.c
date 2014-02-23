@@ -1177,7 +1177,7 @@ bool mon_pit_hook(monster_race *r_ptr)
  * Sets pit_type, which is required for mon_pit_hook.
  * Returns the index of the chosen pit.
  */
-static int set_pit_type(int depth, int type)
+void set_pit_type(int depth, int type)
 {
 	int i;
 	int pit_idx = 0;
@@ -1203,8 +1203,6 @@ static int set_pit_type(int depth, int type)
 	}
 
 	dun->pit_type = &pit_info[pit_idx];
-        
-	return pit_idx;
 }
 
 
@@ -1267,10 +1265,10 @@ bool build_nest(struct cave *c, int y0, int x0)
 	generate_hole(c, y1-1, x1-1, y2+1, x2+1, FEAT_SECRET);
 
 	/* Decide on the pit type */
-	pit_idx = set_pit_type(c->depth, 2);
+	set_pit_type(c->depth, 2);
 
 	/* Chance of objects on the floor */
-	alloc_obj = pit_info[pit_idx].obj_rarity;
+	alloc_obj = dun->pit_type->obj_rarity;
 	
 	/* Prepare allocation table */
 	get_mon_num_prep(mon_pit_hook);
@@ -1291,10 +1289,10 @@ bool build_nest(struct cave *c, int y0, int x0)
 	if (empty) return FALSE;
 
 	/* Describe */
-	ROOM_LOG("Monster nest (%s)", pit_info[pit_idx].name);
+	ROOM_LOG("Monster nest (%s)", dun->pit_type->name);
 
 	/* Increase the level rating */
-	c->mon_rating += (size_vary + pit_info[pit_idx].ave / 20);
+	c->mon_rating += (size_vary + dun->pit_type->ave / 20);
 
 	/* Place some monsters */
 	for (y = y1; y <= y2; y++) {
@@ -1375,10 +1373,10 @@ bool build_pit(struct cave *c, int y0, int x0)
 	generate_hole(c, y1-1, x1-1, y2+1, x2+1, FEAT_SECRET);
 
 	/* Decide on the pit type */
-	pit_idx = set_pit_type(c->depth, 1);
+	set_pit_type(c->depth, 1);
 
 	/* Chance of objects on the floor */
-	alloc_obj = pit_info[pit_idx].obj_rarity;
+	alloc_obj = dun->pit_type->obj_rarity;
 	
 	/* Prepare allocation table */
 	get_mon_num_prep(mon_pit_hook);
@@ -1399,7 +1397,7 @@ bool build_pit(struct cave *c, int y0, int x0)
 	if (empty)
 		return FALSE;
 
-	ROOM_LOG("Monster pit (%s)", pit_info[pit_idx].name);
+	ROOM_LOG("Monster pit (%s)", dun->pit_type->name);
 
 	/* Sort the entries XXX XXX XXX */
 	for (i = 0; i < 16 - 1; i++) {
@@ -1425,7 +1423,7 @@ bool build_pit(struct cave *c, int y0, int x0)
 		what[i] = what[i * 2];
 
 	/* Increase the level rating */
-	c->mon_rating += (3 + pit_info[pit_idx].ave / 20);
+	c->mon_rating += (3 + dun->pit_type->ave / 20);
 
 	/* Top and bottom rows (middle) */
 	for (x = x0 - 3; x <= x0 + 3; x++) {

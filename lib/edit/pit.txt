@@ -355,14 +355,14 @@ T:killer beetle
 
 N:36:Reptiles
 R:3
-A:2:20
+A:1:20
 T:naga
 T:snake
 T:reptile
 
 N:37:Cave dwellers
 R:3
-A:2:25
+A:1:25
 T:yeek
 T:kobold
 T:orc
@@ -384,6 +384,6 @@ T:xorn
 
 N:40:Elemental creatures
 R:3
-A:2:50
+A:1:40
 T:elemental
 T:vortex
