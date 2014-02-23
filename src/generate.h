@@ -320,8 +320,9 @@ bool room_build(struct cave *c, int by0, int bx0, struct room_profile profile);
 
 void alloc_objects(struct cave *c, int set, int typ, int num, int depth, byte origin);
 bool alloc_object(struct cave *c, int set, int typ, int depth, byte origin);
-bool mon_restrict(char *monster_type, byte depth, bool unique_ok);
-void spread_monsters(struct cave *c, char *type, int depth, int num, int y0, int x0, int dy, int dx, byte origin);
+bool mon_restrict(const char *monster_type, int depth, bool unique_ok);
+void spread_monsters(struct cave *c, const char *type, int depth, int num, 
+					 int y0, int x0, int dy, int dx, byte origin);
 void get_vault_monsters(struct cave *c, char racial_symbol[], byte vault_type, const char *data, int y1, int y2, int x1, int x2);
 
 

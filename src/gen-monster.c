@@ -106,7 +106,7 @@ static bool mon_select(monster_race *r_ptr)
  * If called with monster_type "random", it will get a random monster base and 
  * describe the monsters by its name (for use by cheat_room).
  */
-bool mon_restrict(char *monster_type, byte depth, bool unique_ok)
+bool mon_restrict(const char *monster_type, int depth, bool unique_ok)
 {
     int i, j;
 
@@ -146,7 +146,6 @@ bool mon_restrict(char *monster_type, byte depth, bool unique_ok)
 		/* We've found a monster. */
 		if (i < 2499) {
 			/* Use that monster's base type for all monsters. */
-			strcpy(monster_type, r_info[j].base->name);
 			sprintf(base_d_char, "%c", r_info[j].base->d_char);
 
 			/* Prepare allocation table */
@@ -181,8 +180,8 @@ bool mon_restrict(char *monster_type, byte depth, bool unique_ok)
  * Return prematurely if the code starts looping too much (this may happen 
  * if y0 or x0 are out of bounds, or the area is already occupied).
  */
-void spread_monsters(struct cave *c, char *type, int depth, int num, int y0, 
-					 int x0, int dy, int dx, byte origin)
+void spread_monsters(struct cave *c, const char *type, int depth, int num, 
+					 int y0, int x0, int dy, int dx, byte origin)
 {
     int i, j;			/* Limits on loops */
     int count;
@@ -190,7 +189,7 @@ void spread_monsters(struct cave *c, char *type, int depth, int num, int y0,
     int start_mon_num = c->mon_max;
 
     /* Restrict monsters.  Allow uniques. Leave area empty if none found. */
-    if (!mon_restrict(type, (byte) depth, TRUE))
+    if (!mon_restrict(type, depth, TRUE))
 		return;
 
     /* Build the monster probability table. */
@@ -236,7 +235,7 @@ void spread_monsters(struct cave *c, char *type, int depth, int num, int y0,
     }
 
     /* Remove monster restrictions. */
-    (void) mon_restrict(NULL, (byte) depth, TRUE);
+    (void) mon_restrict(NULL, depth, TRUE);
 }
 
 
@@ -287,3 +286,65 @@ void get_vault_monsters(struct cave *c, char racial_symbol[], byte vault_type, c
     /* Clear any current monster restrictions. */
 	get_mon_num_prep(NULL);
 }
+
+/**
+ * Funtion for placing appropriate monsters in a room of chambers
+ */
+void get_chamber_monsters(struct cave *c, int y1, int x1, int y2, int x2)
+{
+	int i, y, x;
+	s16b monsters_left, depth;
+
+	/* Get a legal depth. */
+	depth = c->depth + randint0(11) - 5;
+
+	/* Choose a pit profile, using that depth. */
+	set_pit_type(depth, 0);
+
+	/* Allow (slightly) tougher monsters. */
+	depth = c->depth + (c->depth < 60 ? c->depth / 12 : 5);
+
+	/* Set monster generation restrictions.  Should not fail. */
+	if (!mon_restrict(dun->pit_type->name, depth, TRUE))
+		return;
+
+	/* Build the monster probability table. */
+	if (!get_mon_num(depth))
+		return;
+
+	/* No normal monsters. */
+	generate_mark(c, y1, x1, y2, x2, SQUARE_MON_RESTRICT);
+
+	/* Usually, we want 35 monsters. */
+	monsters_left = 35;
+
+	/* Fewer monsters near the surface. */
+	if (c->depth < 45)
+		monsters_left = 5 + 2 * c->depth / 3;
+
+	/* Place the monsters. */
+	for (i = 0; i < 300; i++) {
+		/* Check for early completion. */
+		if (!monsters_left)
+			break;
+
+		/* Pick a random in-room square. */
+		y = y1 + randint0(1 + ABS(y2 - y1));
+		x = x1 + randint0(1 + ABS(x2 - x1));
+
+		/* Require a passable square with no monster in it already. */
+		if (!square_isempty(c, y, x))
+			continue;
+
+		/* Place a single monster.  Sleeping 2/3rds of the time. */
+		pick_and_place_monster(c, y, x, c->depth, (randint0(3) != 0), FALSE,
+											 ORIGIN_DROP_SPECIAL);
+
+		/* One less monster to place. */
+		monsters_left--;
+	}
+
+	/* Remove our restrictions. */
+	(void) mon_restrict(NULL, depth, FALSE);
+}
+
