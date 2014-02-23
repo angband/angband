@@ -7,7 +7,8 @@
 # S : spell flag | spell flag | ...
 # D : description
 #
-# 'N' indicates the beginning of an entry. The template name is used in monster.txt.
+# 'N' indicates the beginning of an entry. The template name is used in 
+# monster.txt.
 #
 # 'G' indicates the default display character. This is used for displaying the
 # monster in ASCII mode, and also for determining which monsters are
@@ -24,7 +25,8 @@
 #
 # Note that some templates have hardcoded references. In particular, changing
 # the name of the following templates will cause certain summon spells to break:
-# ancient dragon, ainu, canine, hydra, lich, major demon, spider, vampire, wraith, zephyr hound.
+# ancient dragon, ainu, canine, hydra, lich, major demon, spider, vampire, 
+# wraith, zephyr hound.
 # Changing other characteristics of these monsters is fine.
 
 ##### Normal monster templates #####

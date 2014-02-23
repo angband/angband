@@ -94,9 +94,9 @@
 # used as are needed to specify all the flags and flags are separated by the
 # '|' symbol.
 
-# '-F' is for flags to remove from the template. For example, in monster_base.txt,
-# molds are given HURT_FIRE. We don't want the red mold to have that, so we
-# add a '-F:HURT_FIRE' line to subtract that flag.
+# '-F' is for flags to remove from the template. For example, in 
+# monster_base.txt, molds are given HURT_FIRE. We don't want the red mold 
+# to have that, so we add a '-F:HURT_FIRE' line to subtract that flag.
 
 # 'D' is for description. As many D: lines may be used as are needed to
 # describe the monster. Leading whitespace will be removed, and a single space

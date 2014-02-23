@@ -38,7 +38,8 @@
 #    1,2,3,4,5,6 - potential positions for random doors
 #    x - optional wall (generated 50% of the time)
 #    ( - optional door (generated if optional walls are generated)
-#    ) - optional door (generated if optional walls are NOT generated, otherwise rock)
+#    ) - optional door (generated if optional walls are NOT generated, 
+#        otherwise rock)
 #    8 - a treasure or stairs, with guardian monsters and traps
 #    9 - place some monsters and treasures nearby
 #	[ - a treasure of the specified tval

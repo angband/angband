@@ -55,10 +55,10 @@
 # it does when choosing the text for scrolls).
 
 # Format:
-# N: section type (1 for Tolkeinish names, 2 for scroll names)
+# N: section type (1 for Tolkienish names, 2 for scroll names)
 # D: data
 
-# Tolkein names
+# Tolkien names
 N:1
 D:adanedhel
 D:adurant

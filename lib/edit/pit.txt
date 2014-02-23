@@ -1,6 +1,7 @@
 # File: pit.txt
 
-# This file is used to initialize the "monster nest/pit" information for Angband.
+# This file is used to initialize the "monster nest/pit" information for 
+# Angband.
 
 # Do not modify this file unless you know exactly what you are doing, unless
 # you wish to risk possible system crashes and broken savefiles.
@@ -26,36 +27,45 @@
 # and a name.
 #
 # 'R' is for room type. Currently, room type is one of the following:
-#   (1) Pits (large room filled with many monsters of a few types in an ordered fashion)
-#   (2) Nests (large room filled with many types of monsters in a disordered fashion)
+#   (1) Pits (large room filled with many monsters of a few types in an 
+#       ordered fashion)
+#   (2) Nests (large room filled with many types of monsters in a 
+#       disordered fashion)
 #
-# 'A' is for rarity and average level. A rarity of N means that the pit is N times
-# more rare than a pit with a rarity of 1. The average level is the dungeon level
-# at which this pit is most common.
+# 'A' is for rarity and average level. A rarity of N means that the pit is 
+# N times more rare than a pit with a rarity of 1. The average level is the 
+# dungeon level at which this pit is most common.
 #
-# 'O' is for object rarity. A rarity of N means that every square of the pit has an
-# N % chance of having an item.
+# 'O' is for object rarity. A rarity of N means that every square of the pit 
+# has an N % chance of having an item.
 #
-# 'C' is for monster color. If any 'C' lines are present, then all monsters in this
-# pit will be one of the specified colors. You may use any number of 'C' lines.
+# 'C' is for monster color. If any 'C' lines are present, then all monsters 
+# in this pit will be one of the specified colors. 
+# You may use any number of 'C' lines.
 #
-# 'T' is for monster template (see monster_base.txt). Up to 4 'T' lines may be present.
-# If there are no 'T' lines, then monsters may have any monster template. Otherwise,
-# every monster in this pit/nest will be one of the listed templates.
+# 'T' is for monster template (see monster_base.txt). Up to 4 'T' lines may be 
+# present.  If there are no 'T' lines, then monsters may have any monster 
+# template. Otherwise, every monster in this pit/nest will be one of the 
+# listed templates.
 #
-# 'F' is for monster flags. Every monster in this pit/nest will have every listed flag.
+# 'F' is for monster flags. Every monster in this pit/nest will have every 
+# listed flag.  
 # As many 'F' lines as are necessary may be used.
 #
-# 'S' is for spell flags. Every monster in this nest/pit will have every listed spell flag.
+# 'S' is for spell flags. Every monster in this nest/pit will have every 
+# listed spell flag. 
 # As many 'S' lines as are necessary may be used.
 #
-# 'f' is for forbidden flags. No monster in this nest/pit will have any of the listed flags.
+# 'f' is for forbidden flags. No monster in this nest/pit will have any of 
+# the listed flags.
 # As many 'f' lines as are necessary may be used.
 #
-# 's' is for forbidden spell flags. No monster in this nest/pit will have any of the listed
-# spell flags. As many 's' lines as are necessary may be used.
+# 's' is for forbidden spell flags. No monster in this nest/pit will have 
+# any of the listed spell flags.
+# As many 's' lines as are necessary may be used.
 #
-# 'E' is for forbidden ('E'xcluded) monsters. The named monster will not appear in this pit.
+# 'E' is for forbidden ('E'xcluded) monsters. The named monster will not 
+# appear in this pit.
 # You may use any number of 'E' lines.
 
 N:1:Orc
