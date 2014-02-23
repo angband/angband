@@ -267,6 +267,7 @@ bool build_circular(struct cave *c, int y0, int x0);
 bool build_overlap(struct cave *c, int y0, int x0);
 bool build_crossed(struct cave *c, int y0, int x0);
 bool build_large(struct cave *c, int y0, int x0);
+bool mon_pit_hook(monster_race *r_ptr);
 bool build_nest(struct cave *c, int y0, int x0);
 bool build_pit(struct cave *c, int y0, int x0);
 bool build_template(struct cave *c, int y0, int x0);
@@ -318,9 +319,8 @@ bool room_build(struct cave *c, int by0, int bx0, struct room_profile profile);
 
 void alloc_objects(struct cave *c, int set, int typ, int num, int depth, byte origin);
 bool alloc_object(struct cave *c, int set, int typ, int depth, byte origin);
-char *mon_restrict(char symbol, byte depth, bool * ordered,
-				   bool unique_ok);
-void spread_monsters(struct cave *c, char symbol, int depth, int num, int y0, int x0, int dy, int dx, byte origin);
+bool mon_restrict(char *monster_type, byte depth, bool unique_ok);
+void spread_monsters(struct cave *c, char *type, int depth, int num, int y0, int x0, int dy, int dx, byte origin);
 void get_vault_monsters(struct cave *c, char racial_symbol[], byte vault_type, const char *data, int y1, int y2, int x1, int x2);
 
 

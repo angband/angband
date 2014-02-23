@@ -1117,7 +1117,7 @@ bool build_large(struct cave *c, int y0, int x0)
  *
  * Requires dun->pit_type to be set.
  */
-static bool mon_pit_hook(monster_race *r_ptr)
+bool mon_pit_hook(monster_race *r_ptr)
 {
 	bool match_base = TRUE;
 	bool match_color = TRUE;
