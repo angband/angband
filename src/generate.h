@@ -63,6 +63,39 @@
 #define WALL_MAX 500
 #define TUNN_MAX 900
 
+struct pit_color_profile {
+    struct pit_color_profile *next;
+
+    byte color;
+};
+
+struct pit_forbidden_monster {
+    struct pit_forbidden_monster *next;
+
+    monster_race *race;
+};
+
+typedef struct pit_profile {
+    struct pit_profile *next;
+
+    int pit_idx; /* Index in pit_info */
+    const char *name;
+    int room_type; /* Is this a pit or a nest? */
+    int ave; /* Level where this pit is most common */
+    int rarity; /* How unusual this pit is */
+    int obj_rarity; /* How rare objects are in this pit */
+    bitflag flags[RF_SIZE];         /* Required flags */
+    bitflag forbidden_flags[RF_SIZE];
+    bitflag spell_flags[RSF_SIZE];  /* Required spell flags */
+    bitflag forbidden_spell_flags[RSF_SIZE];
+    int n_bases;
+    struct monster_base *base[MAX_RVALS];
+    struct pit_color_profile *colors;
+    struct pit_forbidden_monster *forbidden_monsters;
+} pit_profile;
+
+extern struct pit_profile *pit_info;
+
 
 /**
  * Structure to hold all "dungeon generation" data
@@ -96,6 +129,9 @@ struct dun_data {
 
     /* Number of pits/nests on the level */
     int pit_num;
+
+	/* Current pit profile in use */
+	pit_profile *pit_type;
 };
 
 
@@ -161,39 +197,6 @@ struct room_profile {
     int rarity; /* How unusual this room is */
     int cutoff; /* Upper limit of 1-100 random roll for room generation */
 };
-
-struct pit_color_profile {
-    struct pit_color_profile *next;
-
-    byte color;
-};
-
-struct pit_forbidden_monster {
-    struct pit_forbidden_monster *next;
-	
-    monster_race *race;
-};
-
-typedef struct pit_profile {
-    struct pit_profile *next;
-
-    int pit_idx; /* Index in pit_info */
-    const char *name;
-    int room_type; /* Is this a pit or a nest? */
-    int ave; /* Level where this pit is most common */
-    int rarity; /* How unusual this pit is */
-    int obj_rarity; /* How rare objects are in this pit */
-    bitflag flags[RF_SIZE];         /* Required flags */
-    bitflag forbidden_flags[RF_SIZE];
-    bitflag spell_flags[RSF_SIZE];  /* Required spell flags */
-    bitflag forbidden_spell_flags[RSF_SIZE]; 
-    int n_bases; 
-    struct monster_base *base[MAX_RVALS];
-    struct pit_color_profile *colors;
-    struct pit_forbidden_monster *forbidden_monsters;
-} pit_profile;
-
-extern struct pit_profile *pit_info;
 
 
 /*

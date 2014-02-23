@@ -1112,15 +1112,10 @@ bool build_large(struct cave *c, int y0, int x0)
 }
 
 
-/* Hook for which type of pit we are building */
-/* TODO(elly): why is this file-static instead of an argument? */
-static pit_profile *pit_type = NULL;
-
-
 /**
- * Hook for picking monsters appropriate to a nest/pit.
+ * Hook for picking monsters appropriate to a nest/pit or region.
  *
- * Requires pit_type to be set.
+ * Requires dun->pit_type to be set.
  */
 static bool mon_pit_hook(monster_race *r_ptr)
 {
@@ -1128,41 +1123,41 @@ static bool mon_pit_hook(monster_race *r_ptr)
 	bool match_color = TRUE;
 
 	assert(r_ptr);
-	assert(pit_type);
+	assert(dun->pit_type);
 
 	if (rf_has(r_ptr->flags, RF_UNIQUE))
 		return FALSE;
-	else if (!rf_is_subset(r_ptr->flags, pit_type->flags))
+	else if (!rf_is_subset(r_ptr->flags, dun->pit_type->flags))
 		return FALSE;
-	else if (rf_is_inter(r_ptr->flags, pit_type->forbidden_flags))
+	else if (rf_is_inter(r_ptr->flags, dun->pit_type->forbidden_flags))
 		return FALSE;
-	else if (!rsf_is_subset(r_ptr->spell_flags, pit_type->spell_flags))
+	else if (!rsf_is_subset(r_ptr->spell_flags, dun->pit_type->spell_flags))
 		return FALSE;
-	else if (rsf_is_inter(r_ptr->spell_flags, pit_type->forbidden_spell_flags))
+	else if (rsf_is_inter(r_ptr->spell_flags, dun->pit_type->forbidden_spell_flags))
 		return FALSE;
-	else if (pit_type->forbidden_monsters) {
+	else if (dun->pit_type->forbidden_monsters) {
 		struct pit_forbidden_monster *monster;
-		for (monster = pit_type->forbidden_monsters; monster; monster = monster->next) {
+		for (monster = dun->pit_type->forbidden_monsters; monster; monster = monster->next) {
 			if (r_ptr == monster->race)
 				return FALSE;
 		}
 	}
 
-	if (pit_type->n_bases > 0) {
+	if (dun->pit_type->n_bases > 0) {
 		int i;
 		match_base = FALSE;
 
-		for (i = 0; i < pit_type->n_bases; i++) {
-			if (r_ptr->base == pit_type->base[i])
+		for (i = 0; i < dun->pit_type->n_bases; i++) {
+			if (r_ptr->base == dun->pit_type->base[i])
 				match_base = TRUE;
 		}
 	}
 	
-	if (pit_type->colors) {
+	if (dun->pit_type->colors) {
 		struct pit_color_profile *colors;
 		match_color = FALSE;
 
-		for (colors = pit_type->colors; colors; colors = colors->next) {
+		for (colors = dun->pit_type->colors; colors; colors = colors->next) {
 			if (r_ptr->d_attr == colors->color)
 				match_color = TRUE;
 		}
@@ -1207,7 +1202,7 @@ static int set_pit_type(int depth, int type)
 		}
 	}
 
-	pit_type = &pit_info[pit_idx];
+	dun->pit_type = &pit_info[pit_idx];
         
 	return pit_idx;
 }
