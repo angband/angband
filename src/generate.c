@@ -150,6 +150,8 @@ struct room_profile classic_rooms[NUM_CLASSIC_ROOMS] = {
 
 /* name function height width min-depth pit? rarity %cutoff */
 struct room_profile unused_rooms[] = {
+	{"room of chambers", build_room_of_chambers, {2, 1, 3, 0}, {2, 1, 5, 0}, 10,
+	 FALSE, 0, 100},
 	{"huge room", build_huge, {2, 1, 2, 0}, {3, 1, 6, 0}, 40, FALSE, 0, 100}
 };
 

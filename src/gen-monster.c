@@ -115,7 +115,7 @@ bool mon_restrict(const char *monster_type, int depth, bool unique_ok)
     for (i = 0; i < 10; i++)
 		base_d_char[i] = '\0';
 
-    /* No symbol, no restrictions. */
+    /* No mmonster type specified, no restrictions. */
     if (monster_type == NULL) {
 		get_mon_num_prep(NULL);
 		return TRUE;
@@ -290,27 +290,40 @@ void get_vault_monsters(struct cave *c, char racial_symbol[], byte vault_type, c
 /**
  * Funtion for placing appropriate monsters in a room of chambers
  */
-void get_chamber_monsters(struct cave *c, int y1, int x1, int y2, int x2)
+void get_chamber_monsters(struct cave *c, int y1, int x1, int y2, int x2, 
+						   char *name)
 {
 	int i, y, x;
 	s16b monsters_left, depth;
+	bool random = one_in_(20);
 
 	/* Get a legal depth. */
 	depth = c->depth + randint0(11) - 5;
 
 	/* Choose a pit profile, using that depth. */
-	set_pit_type(depth, 0);
+	if (!random)
+		set_pit_type(depth, 0);
 
 	/* Allow (slightly) tougher monsters. */
 	depth = c->depth + (c->depth < 60 ? c->depth / 12 : 5);
 
-	/* Set monster generation restrictions.  Should not fail. */
-	if (!mon_restrict(dun->pit_type->name, depth, TRUE))
-		return;
+	/* Set monster generation restrictions. Occasionally random. */
+	if (random) {
+		if (!mon_restrict("random", depth, TRUE))
+			return;
+		my_strcpy(name, "random", sizeof(name));
+	} else {
+		if (!mon_restrict(dun->pit_type->name, depth, TRUE))
+			return;
+		my_strcpy(name, dun->pit_type->name, sizeof(name));
+	}
 
 	/* Build the monster probability table. */
-	if (!get_mon_num(depth))
+	if (!get_mon_num(depth)) {
+		(void) mon_restrict(NULL, depth, FALSE);
+		name = NULL;
 		return;
+	}
 
 	/* No normal monsters. */
 	generate_mark(c, y1, x1, y2, x2, SQUARE_MON_RESTRICT);

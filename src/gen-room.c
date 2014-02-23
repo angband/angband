@@ -1965,7 +1965,479 @@ bool build_greater_vault(struct cave *c, int y0, int x0)
 
 
 /**
- * Type 10 -- Extremely large rooms.
+ * Helper function for rooms of chambers.  Fill a room matching
+ * the rectangle input with magma, and surround it with inner wall.
+ * Create a door in a random inner wall grid along the border of the
+ * rectangle.
+ */
+static void make_chamber(struct cave *c, int c_y1, int c_x1, int c_y2, int c_x2)
+{
+	int i, d, y, x;
+	int count;
+
+	/* Fill with soft granite (will later be replaced with floor). */
+	fill_rectangle(c, c_y1 + 1, c_x1 + 1, c_y2 - 1, c_x2 - 1, FEAT_MAGMA,
+				   SQUARE_NONE);
+
+	/* Generate inner walls over dungeon granite and magma. */
+	for (y = c_y1; y <= c_y2; y++) {
+		/* left wall */
+		x = c_x1;
+
+		if ((c->feat[y][x] == FEAT_GRANITE)
+			|| (c->feat[y][x] == FEAT_MAGMA))
+			set_marked_granite(c, y, x, SQUARE_WALL_INNER);
+	}
+
+	for (y = c_y1; y <= c_y2; y++) {
+		/* right wall */
+		x = c_x2;
+
+		if ((c->feat[y][x] == FEAT_GRANITE)
+			|| (c->feat[y][x] == FEAT_MAGMA))
+			set_marked_granite(c, y, x, SQUARE_WALL_INNER);
+	}
+
+	for (x = c_x1; x <= c_x2; x++) {
+		/* top wall */
+		y = c_y1;
+
+		if ((c->feat[y][x] == FEAT_GRANITE)
+			|| (c->feat[y][x] == FEAT_MAGMA))
+			set_marked_granite(c, y, x, SQUARE_WALL_INNER);
+	}
+
+	for (x = c_x1; x <= c_x2; x++) {
+		/* bottom wall */
+		y = c_y2;
+
+		if ((c->feat[y][x] == FEAT_GRANITE)
+			|| (c->feat[y][x] == FEAT_MAGMA))
+			set_marked_granite(c, y, x, SQUARE_WALL_INNER);
+	}
+
+	/* Try a few times to place a door. */
+	for (i = 0; i < 20; i++) {
+		/* Pick a square along the edge, not a corner. */
+		if (randint0(2) == 0) {
+			/* Somewhere along the (interior) side walls. */
+			if (randint0(2))
+				x = c_x1;
+			else
+				x = c_x2;
+			y = c_y1 + randint0(1 + ABS(c_y2 - c_y1));
+		} else {
+			/* Somewhere along the (interior) top and bottom walls. */
+			if (randint0(2))
+				y = c_y1;
+			else
+				y = c_y2;
+			x = c_x1 + randint0(1 + ABS(c_x2 - c_x1));
+		}
+
+		/* If not an inner wall square, try again. */
+		if (!sqinfo_has(c->info[y][x], SQUARE_WALL_INNER))
+			continue;
+
+		/* Paranoia */
+		if (!square_in_bounds_fully(c, y, x))
+			continue;
+
+		/* Reset wall count */
+		count = 0;
+
+		/* If square has not more than two adjacent walls, and no adjacent
+		 * doors, place door. */
+		for (d = 0; d < 9; d++) {
+			/* Extract adjacent (legal) location */
+			int yy = y + ddy_ddd[d];
+			int xx = x + ddx_ddd[d];
+
+			/* No doors beside doors. */
+			if (c->feat[yy][xx] == FEAT_OPEN)
+				break;
+
+			/* Count the inner walls. */
+			if (sqinfo_has(c->info[yy][xx], SQUARE_WALL_INNER))
+				count++;
+
+			/* No more than two walls adjacent (plus the one we're on). */
+			if (count > 3)
+				break;
+
+			/* Checked every direction? */
+			if (d == 8) {
+				/* Place an open door. */
+				square_set_feat(c, y, x, FEAT_OPEN);
+
+				/* Success. */
+				return;
+			}
+		}
+	}
+}
+
+
+
+/**
+ * Expand in every direction from a start point, turning magma into rooms.
+ * Stop only when the magma and the open doors totally run out.
+ */
+static void hollow_out_room(struct cave *c, int y, int x)
+{
+	int d, yy, xx;
+
+	for (d = 0; d < 9; d++) {
+		/* Extract adjacent location */
+		yy = y + ddy_ddd[d];
+		xx = x + ddx_ddd[d];
+
+		/* Change magma to floor. */
+		if (c->feat[yy][xx] == FEAT_MAGMA) {
+			square_set_feat(c, yy, xx, FEAT_FLOOR);
+
+			/* Hollow out the room. */
+			hollow_out_room(c, yy, xx);
+		}
+		/* Change open door to broken door. */
+		else if (c->feat[yy][xx] == FEAT_OPEN) {
+			square_set_feat(c, yy, xx, FEAT_BROKEN);
+
+			/* Hollow out the (new) room. */
+			hollow_out_room(c, yy, xx);
+		}
+	}
+}
+
+
+
+/**
+ * Type 6 -- Rooms of chambers
+ *
+ * Build a room, varying in size between 22x22 and 44x66, consisting of
+ * many smaller, irregularly placed, chambers all connected by doors or
+ * short tunnels. -LM-
+ *
+ * Plop down an area-dependent number of magma-filled chambers, and remove
+ * blind doors and tiny rooms.
+ *
+ * Hollow out a chamber near the center, connect it to new chambers, and
+ * hollow them out in turn.  Continue in this fashion until there are no
+ * remaining chambers within two squares of any cleared chamber.
+ *
+ * Clean up doors.  Neaten up the wall types.  Turn floor grids into rooms,
+ * illuminate if requested.
+ *
+ * Fill the room with up to 35 (sometimes up to 50) monsters of a creature
+ * race or type that offers a challenge at the character's depth.  This is
+ * similar to monster pits, except that we choose among a wider range of
+ * monsters.
+ *
+ */
+bool build_room_of_chambers(struct cave *c, int y0, int x0)
+{
+	int i, d;
+	int area, num_chambers;
+	int y, x, yy, xx;
+	int yy1, xx1, yy2, xx2, yy3, xx3;
+
+	int height, width, count;
+
+	int y1, x1, y2, x2;
+	char *name = NULL;
+
+	/* Deeper in the dungeon, chambers are less likely to be lit. */
+	bool light = (randint0(45) > c->depth) ? TRUE : FALSE;
+
+	/* Calculate a level-dependent room size modifier. */
+	if (c->depth > randint0(160))
+		i = 4;
+	else if (c->depth > randint0(100))
+		i = 3;
+	else
+		i = 2;
+
+	/* Calculate the room size. */
+	height = BLOCK_HGT * i;
+	width = BLOCK_WID * (i + randint0(3));
+
+	/* Find and reserve some space in the dungeon.  Get center of room. */
+	//if (!find_space(&y0, &x0, height, width))
+	//	return (FALSE);
+
+	/* Calculate the borders of the room. */
+	y1 = y0 - (height / 2);
+	x1 = x0 - (width / 2);
+	y2 = y0 + (height - 1) / 2;
+	x2 = x0 + (width - 1) / 2;
+
+	/* Make certain the room does not cross the dungeon edge. */
+	if ((!square_in_bounds(c, y1, x1)) || (!square_in_bounds(c, y2, x2)))
+		return (FALSE);
+
+	/* Determine how much space we have. */
+	area = ABS(y2 - y1) * ABS(x2 - x1);
+
+	/* Calculate the number of smaller chambers to make. */
+	num_chambers = 10 + area / 80;
+
+	/* Build the chambers. */
+	for (i = 0; i < num_chambers; i++) {
+		int c_y1, c_x1, c_y2, c_x2;
+		int size, width, height;
+
+		/* Determine size of chamber. */
+		size = 3 + randint0(4);
+		width = size + randint0(10);
+		height = size + randint0(4);
+
+		/* Pick an upper-left corner at random. */
+		c_y1 = y1 + randint0(1 + y2 - y1 - height);
+		c_x1 = x1 + randint0(1 + x2 - x1 - width);
+
+		/* Determine lower-right corner of chamber. */
+		c_y2 = c_y1 + height;
+		if (c_y2 > y2)
+			c_y2 = y2;
+
+		c_x2 = c_x1 + width;
+		if (c_x2 > x2)
+			c_x2 = x2;
+
+		/* Make me a (magma filled) chamber. */
+		make_chamber(c, c_y1, c_x1, c_y2, c_x2);
+	}
+
+	/* Remove useless doors, fill in tiny, narrow rooms. */
+	for (y = y1; y <= y2; y++) {
+		for (x = x1; x <= x2; x++) {
+			count = 0;
+
+			/* Stay legal. */
+			if (!square_in_bounds_fully(c, y, x))
+				continue;
+
+			/* Check all adjacent grids. */
+			for (d = 0; d < 8; d++) {
+				/* Extract adjacent location */
+				yy = y + ddy_ddd[d];
+				xx = x + ddx_ddd[d];
+
+				/* Count the walls and dungeon granite. */
+				if ((c->feat[yy][xx] == FEAT_GRANITE) &&
+					(!sqinfo_has(cave->info[yy][xx], SQUARE_WALL_OUTER)) &&
+					(!sqinfo_has(cave->info[yy][xx], SQUARE_WALL_SOLID)))
+					count++;
+			}
+
+			/* Five adjacent walls: Change non-chamber to wall. */
+			if ((count == 5) && (c->feat[y][x] != FEAT_MAGMA))
+				set_marked_granite(c, y, x, SQUARE_WALL_INNER);
+
+			/* More than five adjacent walls: Change anything to wall. */
+			else if (count > 5)
+				set_marked_granite(c, y, x, SQUARE_WALL_INNER);
+		}
+	}
+
+	/* Pick a random magma spot near the center of the room. */
+	for (i = 0; i < 50; i++) {
+		y = y1 + ABS(y2 - y1) / 4 + randint0(ABS(y2 - y1) / 2);
+		x = x1 + ABS(x2 - x1) / 4 + randint0(ABS(x2 - x1) / 2);
+		if (c->feat[y][x] == FEAT_MAGMA)
+			break;
+	}
+
+
+	/* Hollow out the first room. */
+	square_set_feat(c, y, x, FEAT_FLOOR);
+	hollow_out_room(c, y, x);
+
+
+	/* Attempt to change every in-room magma grid to open floor. */
+	for (i = 0; i < 100; i++) {
+		/* Assume this run will do no useful work. */
+		bool joy = FALSE;
+
+		/* Make new doors and tunnels between magma and open floor. */
+		for (y = y1; y < y2; y++) {
+			for (x = x1; x < x2; x++) {
+				/* Current grid must be magma. */
+				if (c->feat[y][x] != FEAT_MAGMA)
+					continue;
+
+				/* Stay legal. */
+				if (!square_in_bounds_fully(c, y, x))
+					continue;
+
+				/* Check only horizontal and vertical directions. */
+				for (d = 0; d < 4; d++) {
+					/* Extract adjacent location */
+					yy1 = y + ddy_ddd[d];
+					xx1 = x + ddx_ddd[d];
+
+					/* Find inner wall. */
+					if (sqinfo_has(c->info[yy1][xx1], SQUARE_WALL_INNER)) {
+						/* Keep going in the same direction. */
+						yy2 = yy1 + ddy_ddd[d];
+						xx2 = xx1 + ddx_ddd[d];
+
+						/* If we find open floor, place a door. */
+						if ((square_in_bounds(c, yy2, xx2))
+							&& (cave->feat[yy2][xx2] == FEAT_FLOOR)) {
+							joy = TRUE;
+
+							/* Make a broken door in the wall grid. */
+							square_set_feat(c, yy1, xx1, FEAT_BROKEN);
+
+							/* Hollow out the new room. */
+							square_set_feat(c, y, x, FEAT_FLOOR);
+							hollow_out_room(c, y, x);
+
+							break;
+						}
+
+						/* If we find more inner wall... */
+						if (square_in_bounds(c, yy2, xx2) &&
+							sqinfo_has(c->info[yy2][xx2], SQUARE_WALL_INNER)) {
+							/* ...Keep going in the same direction. */
+							yy3 = yy2 + ddy_ddd[d];
+							xx3 = xx2 + ddx_ddd[d];
+
+							/* If we /now/ find floor, make a tunnel. */
+							if (square_in_bounds(c, yy3, xx3) &&
+								(c->feat[yy3][xx3] == FEAT_FLOOR)) {
+								joy = TRUE;
+
+								/* Turn both wall grids into floor. */
+								square_set_feat(c, yy1, xx1, FEAT_FLOOR);
+								square_set_feat(c, yy2, xx2, FEAT_FLOOR);
+
+								/* Hollow out the new room. */
+								square_set_feat(c, y, x, FEAT_FLOOR);
+								hollow_out_room(c, y, x);
+
+								break;
+							}
+						}
+					}
+				}
+			}
+		}
+
+		/* If we could find no work to do, stop. */
+		if (!joy)
+			break;
+	}
+
+
+	/* Turn broken doors into a random kind of door, remove open doors. */
+	for (y = y1; y <= y2; y++) {
+		for (x = x1; x <= x2; x++) {
+			if (c->feat[y][x] == FEAT_OPEN)
+				set_marked_granite(c, y, x, SQUARE_WALL_INNER);
+			else if (c->feat[y][x] == FEAT_BROKEN)
+				place_random_door(c, y, x);
+		}
+	}
+
+
+	/* Turn all walls and magma not adjacent to floor into dungeon granite. */
+	/* Turn all floors and adjacent grids into rooms, sometimes lighting them */
+	for (y = (y1 - 1 > 0 ? y1 - 1 : 0);
+		 y < (y2 + 2 < DUNGEON_HGT ? y2 + 2 : DUNGEON_HGT); y++) {
+		for (x = (x1 - 1 > 0 ? x1 - 1 : 0);
+			 x < (x2 + 2 < DUNGEON_WID ? x2 + 2 : DUNGEON_WID); x++) {
+			if (sqinfo_has(c->info[y][x], SQUARE_WALL_INNER)
+				|| (c->feat[y][x] == FEAT_MAGMA)) {
+				for (d = 0; d < 9; d++) {
+					/* Extract adjacent location */
+					int yy = y + ddy_ddd[d];
+					int xx = x + ddx_ddd[d];
+
+					/* Stay legal */
+					if (!square_in_bounds(c, yy, xx))
+						continue;
+
+					/* No floors allowed */
+					if (c->feat[yy][xx] == FEAT_FLOOR)
+						break;
+
+					/* Turn me into dungeon granite. */
+					if (d == 8) {
+						set_marked_granite(c, y, x, SQUARE_NONE);
+					}
+				}
+			}
+			if (tf_has(f_info[c->feat[y][x]].flags, TF_FLOOR)) {
+				for (d = 0; d < 9; d++) {
+					/* Extract adjacent location */
+					int yy = y + ddy_ddd[d];
+					int xx = x + ddx_ddd[d];
+
+					/* Stay legal */
+					if (!square_in_bounds(c, yy, xx))
+						continue;
+
+					/* Turn into room. */
+					sqinfo_on(c->info[yy][xx], SQUARE_ROOM);
+
+					/* Illuminate if requested. */
+					if (light)
+						sqinfo_on(c->info[yy][xx], SQUARE_GLOW);
+				}
+			}
+		}
+	}
+
+
+	/* Turn all inner wall grids adjacent to dungeon granite into outer walls */
+	for (y = (y1 - 1 > 0 ? y1 - 1 : 0);
+		 y < (y2 + 2 < DUNGEON_HGT ? y2 + 2 : DUNGEON_HGT); y++) {
+		for (x = (x1 - 1 > 0 ? x1 - 1 : 0);
+			 x < (x2 + 2 < DUNGEON_WID ? x2 + 2 : DUNGEON_WID); x++) {
+			/* Stay legal. */
+			if (!square_in_bounds_fully(c, y, x))
+				continue;
+
+			if (sqinfo_has(c->info[y][x], SQUARE_WALL_INNER)) {
+				for (d = 0; d < 9; d++) {
+					/* Extract adjacent location */
+					int yy = y + ddy_ddd[d];
+					int xx = x + ddx_ddd[d];
+
+					/* Look for dungeon granite */
+					if ((c->feat[yy][xx] == FEAT_GRANITE) && 
+						(!sqinfo_has(c->info[y][x], SQUARE_WALL_INNER)) &&
+						(!sqinfo_has(c->info[y][x], SQUARE_WALL_OUTER)) &&
+						(!sqinfo_has(c->info[y][x], SQUARE_WALL_SOLID)))
+					{
+						/* Turn me into outer wall. */
+						set_marked_granite(c, y, x, SQUARE_WALL_OUTER);
+
+						/* Done; */
+						break;
+					}
+				}
+			}
+		}
+	}
+
+	/*** Now we get to place the monsters. ***/
+	get_chamber_monsters(c, y1, x1, y2, x2, name);
+
+	/* Increase the level rating */
+	c->mon_rating += 10;
+
+	/* Describe */
+	ROOM_LOG("Room of chambers (%s)", name ? name : "empty");
+
+	/* Success. */
+	return (TRUE);
+}
+
+/**
+ * Extremely large rooms.
  *
  * These are the largest, most difficult to position, and thus highest-
  * priority rooms in the dungeon.  They should be rare, so as not to
@@ -2048,8 +2520,8 @@ bool room_build(struct cave *c, int by0, int bx0, struct room_profile profile)
 	/* Extract blocks */
 	int by1 = by0;
 	int bx1 = bx0;
-	int by2 = by0 + randcalc(profile.height, player->depth, RANDOMISE);
-	int bx2 = bx0 + randcalc(profile.width, player->depth, RANDOMISE);
+	int by2 = by0 + randcalc(profile.height, c->depth, RANDOMISE);
+	int bx2 = bx0 + randcalc(profile.width, c->depth, RANDOMISE);
 
 	int allocated;
 	int y, x;
