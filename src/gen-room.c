@@ -1167,15 +1167,16 @@ bool mon_pit_hook(monster_race *r_ptr)
 }
 
 /**
- * Pick a type of monster pit, based on the level.
+ * Pick a type of monster for pits (or other purposes), based on the level.
  *
- * We scan through all pits, and for each one generate a random depth
+ * We scan through all pit profiles, and for each one generate a random depth
  * using a normal distribution, with the mean given in pit.txt, and a
- * standard deviation of 10. Then we pick the pit that gave us a depth that
+ * standard deviation of 10. Then we pick the profile that gave us a depth that
  * is closest to the player's actual depth.
  *
- * Sets pit_type, which is required for mon_pit_hook.
- * Returns the index of the chosen pit.
+ * Sets dun->pit_type, which is required for mon_pit_hook.
+ * \param depth is the pit profile depth to aim for in selection
+ * \param type is 1 for pits, 2 for nests, 0 for any profile
  */
 void set_pit_type(int depth, int type)
 {
@@ -1190,7 +1191,7 @@ void set_pit_type(int depth, int type)
 		pit_profile *pit = &pit_info[i];
 		
 		/* Skip empty pits or pits of the wrong room type */
-		if (!pit->name || pit->room_type != type) continue;
+		if (type && (!pit->name || pit->room_type != type)) continue;
 		
 		offset = Rand_normal(pit->ave, 10);
 		dist = ABS(offset - depth);
@@ -1234,7 +1235,6 @@ bool build_nest(struct cave *c, int y0, int x0)
 	monster_race *what[64];
 	bool empty = FALSE;
 	int light = FALSE;
-	int pit_idx;
 	int size_vary = randint0(4);
 
 	/* Large room */
@@ -1348,7 +1348,6 @@ bool build_pit(struct cave *c, int y0, int x0)
 	int i, j, y, x, y1, x1, y2, x2;
 	bool empty = FALSE;
 	int light = FALSE;
-	int pit_idx;
 	int alloc_obj;
 
 	/* Large room */

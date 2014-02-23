@@ -268,6 +268,7 @@ bool build_overlap(struct cave *c, int y0, int x0);
 bool build_crossed(struct cave *c, int y0, int x0);
 bool build_large(struct cave *c, int y0, int x0);
 bool mon_pit_hook(monster_race *r_ptr);
+void set_pit_type(int depth, int type);
 bool build_nest(struct cave *c, int y0, int x0);
 bool build_pit(struct cave *c, int y0, int x0);
 bool build_template(struct cave *c, int y0, int x0);
