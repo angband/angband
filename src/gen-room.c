@@ -2520,8 +2520,8 @@ bool room_build(struct cave *c, int by0, int bx0, struct room_profile profile)
 	/* Extract blocks */
 	int by1 = by0;
 	int bx1 = bx0;
-	int by2 = by0 + randcalc(profile.height, c->depth, RANDOMISE);
-	int bx2 = bx0 + randcalc(profile.width, c->depth, RANDOMISE);
+	int by2 = by0 + profile.height;
+	int bx2 = bx0 + profile.width;
 
 	int allocated;
 	int y, x;
