@@ -402,8 +402,12 @@ bool classic_gen(struct cave *c, struct player *p) {
     set_cave_dimensions(c, DUNGEON_HGT, DUNGEON_WID);
     ROOM_LOG("height=%d  width=%d  nrooms=%d", c->height, c->width, num_rooms);
 
-    /* Initially fill with basic granite */
+    /* Fill whole level with perma-rock */
     fill_rectangle(c, 0, 0, DUNGEON_HGT - 1, DUNGEON_WID - 1, 
+				   FEAT_PERM, SQUARE_NONE);
+
+    /* Fill cave area with basic granite */
+    fill_rectangle(c, 0, 0, c->height - 1, c->width - 1, 
 				   FEAT_GRANITE, SQUARE_NONE);
 
     /* Actual maximum number of rooms on this level */
@@ -485,8 +489,8 @@ bool classic_gen(struct cave *c, struct player *p) {
 		mem_free(dun->room_map[i]);
 	mem_free(dun->room_map);
 
-    /* Generate permanent walls around the edge of the dungeon */
-    draw_rectangle(c, 0, 0, DUNGEON_HGT - 1, DUNGEON_WID - 1, 
+    /* Generate permanent walls around the edge of the generated area */
+    draw_rectangle(c, 0, 0, c->height - 1, c->width - 1, 
 				   FEAT_PERM, SQUARE_NONE);
 
     /* Hack -- Scramble the room order */
