@@ -686,6 +686,83 @@ bool build_circular(struct cave *c, int y0, int x0)
 
 
 /**
+ * Find a good spot for the next room.
+ *
+ * Find and allocate a free space in the dungeon large enough to hold
+ * the room calling this function.
+ *
+ * We allocate space in blocks.
+ *
+ * Be careful to include the edges of the room in height and width!
+ *
+ * Return TRUE and values for the center of the room if all went well.
+ * Otherwise, return FALSE.
+ */
+static bool find_space(int *y, int *x, int height, int width)
+{
+	int i;
+	int by, bx, by1, bx1, by2, bx2;
+
+	bool filled;
+
+	/* Find out how many blocks we need. */
+	int blocks_high = 1 + ((height - 1) / BLOCK_HGT);
+	int blocks_wide = 1 + ((width - 1) / BLOCK_WID);
+
+	/* We'll allow twenty-five guesses. */
+	for (i = 0; i < 25; i++) {
+		filled = FALSE;
+
+		/* Pick a top left block at random */
+		by1 = randint0(dun->row_rooms);
+		bx1 = randint0(dun->col_rooms);
+
+		/* Extract bottom right corner block */
+		by2 = by1 + blocks_high - 1;
+		bx2 = bx1 + blocks_wide - 1;
+
+		/* Never run off the screen */
+		if (by1 < 0 || by2 >= dun->row_rooms) continue;
+		if (bx1 < 0 || bx2 >= dun->col_rooms) continue;
+
+		/* Verify open space */
+		for (by = by1; by <= by2; by++) {
+			for (bx = bx1; bx <= bx2; bx++) {
+				if (dun->room_map[by][bx])
+					filled = TRUE;
+			}
+		}
+
+		/* If space filled, try again. */
+		if (filled)	continue;
+
+		/* Get the location of the room */
+		*y = ((by1 + by2 + 1) * BLOCK_HGT) / 2;
+		*x = ((bx1 + bx2 + 1) * BLOCK_WID) / 2;
+
+		/* Save the room location */
+		if (dun->cent_n < CENT_MAX) {
+			dun->cent[dun->cent_n].y = *y;
+			dun->cent[dun->cent_n].x = *x;
+			dun->cent_n++;
+		}
+
+		/* Reserve some blocks */
+		for (by = by1; by < by2; by++) {
+			for (bx = bx1; bx < bx2; bx++) {
+				dun->room_map[by][bx] = TRUE;
+			}
+		}
+
+		/* Success. */
+		return (TRUE);
+	}
+
+	/* Failure. */
+	return (FALSE);
+}
+
+/**
  * Builds a normal rectangular room.
  */
 bool build_simple(struct cave *c, int y0, int x0)
@@ -2162,8 +2239,8 @@ bool build_room_of_chambers(struct cave *c, int y0, int x0)
 	width = BLOCK_WID * (i + randint0(3));
 
 	/* Find and reserve some space in the dungeon.  Get center of room. */
-	//if (!find_space(&y0, &x0, height, width))
-	//	return (FALSE);
+	if (!find_space(&y0, &x0, height, width))
+		return (FALSE);
 
 	/* Calculate the borders of the room. */
 	y1 = y0 - (height / 2);
@@ -2469,8 +2546,8 @@ bool build_huge(struct cave *c, int y0, int x0)
 		light = FALSE;
 
 	/* Find and reserve some space.  Get center of room. */
-	//if (!find_space(&y0, &x0, height, width))
-	//	return (FALSE);
+	if (!find_space(&y0, &x0, height, width))
+		return (FALSE);
 
 	/* Locate the room */
 	y1 = y0 - height / 2;
