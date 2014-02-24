@@ -40,13 +40,6 @@
  */
 #define BLOCK_WID	11
 
-/*
- * Maximum numbers of rooms along each axis (currently 6x18).
- * Used for building fixed-size arrays.
- */
-#define MAX_ROOMS_ROW (DUNGEON_HGT / BLOCK_HGT)
-#define MAX_ROOMS_COL (DUNGEON_WID / BLOCK_WID)
-
 #define MAX_PIT 2 /* Maximum number of pits or nests allowed */
 
 /**

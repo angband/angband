@@ -377,10 +377,7 @@ bool classic_gen(struct cave *c, struct player *p) {
     int num_rooms, size_percent;
     int dun_unusual = dun->profile->dun_unusual;
 
-    bool **blocks_tried = mem_zalloc(MAX_ROOMS_ROW * sizeof(bool*));
-
-	for (i = 0; i < MAX_ROOMS_ROW; i++)
-		blocks_tried[i] = mem_zalloc(MAX_ROOMS_COL * sizeof(bool));
+    bool **blocks_tried;
 
     /* Possibly generate fewer rooms in a smaller area via a scaling factor.
      * Since we scale row_rooms and col_rooms by the same amount, DUN_ROOMS
@@ -415,9 +412,15 @@ bool classic_gen(struct cave *c, struct player *p) {
     dun->col_rooms = c->width / BLOCK_WID;
 
     /* Initialize the room table */
-	dun->room_map = mem_zalloc(MAX_ROOMS_ROW * sizeof(bool*));
-	for (i = 0; i < MAX_ROOMS_ROW; i++)
-		dun->room_map[i] = mem_zalloc(MAX_ROOMS_COL * sizeof(bool));
+	dun->room_map = mem_zalloc(dun->row_rooms * sizeof(bool*));
+	for (i = 0; i < dun->row_rooms; i++)
+		dun->room_map[i] = mem_zalloc(dun->col_rooms * sizeof(bool));
+
+    /* Initialize the block table */
+    blocks_tried = mem_zalloc(dun->row_rooms * sizeof(bool*));
+
+	for (i = 0; i < dun->row_rooms; i++)
+		blocks_tried[i] = mem_zalloc(dun->col_rooms * sizeof(bool));
 
     /* No rooms yet, pits or otherwise. */
     dun->pit_num = 0;
@@ -482,11 +485,11 @@ bool classic_gen(struct cave *c, struct player *p) {
 		}
     }
 
-	for (i = 0; i < MAX_ROOMS_ROW; i++)
+	for (i = 0; i < dun->row_rooms; i++){
 		mem_free(blocks_tried[i]);
-	mem_free(blocks_tried);
-	for (i = 0; i < MAX_ROOMS_ROW; i++)
 		mem_free(dun->room_map[i]);
+	}
+	mem_free(blocks_tried);
 	mem_free(dun->room_map);
 
     /* Generate permanent walls around the edge of the generated area */
