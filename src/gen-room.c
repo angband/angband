@@ -2515,7 +2515,8 @@ bool build_huge(struct cave *c, int y0, int x0)
  * Note that we restrict the number of pits/nests to reduce
  * the chance of overflowing the monster list during level creation.
  */
-bool room_build(struct cave *c, int by0, int bx0, struct room_profile profile)
+bool room_build(struct cave *c, int by0, int bx0, struct room_profile profile,
+	bool finds_own_space)
 {
 	/* Extract blocks */
 	int by1 = by0;
@@ -2523,7 +2524,6 @@ bool room_build(struct cave *c, int by0, int bx0, struct room_profile profile)
 	int by2 = by0 + profile.height;
 	int bx2 = bx0 + profile.width;
 
-	int allocated;
 	int y, x;
 	int by, bx;
 
@@ -2535,42 +2535,47 @@ bool room_build(struct cave *c, int by0, int bx0, struct room_profile profile)
 		return FALSE;
 	}
 
-	/* Never run off the screen */
-	if (by1 < 0 || by2 >= dun->row_rooms) return FALSE;
-	if (bx1 < 0 || bx2 >= dun->col_rooms) return FALSE;
+	/* Does the profile allocate space, or the room find it? */
+	if (finds_own_space) {
+		/* Try to build a room, pass silly place so room finds its own */
+		if (!profile.builder(c, dun->row_rooms, dun->col_rooms))
+			return FALSE;
+	} else {
+		/* Never run off the screen */
+		if (by1 < 0 || by2 >= dun->row_rooms) return FALSE;
+		if (bx1 < 0 || bx2 >= dun->col_rooms) return FALSE;
 
-	/* Verify open space */
-	for (by = by1; by <= by2; by++) {
-		for (bx = bx1; bx <= bx2; bx++) {
-			if (1) {
-				/* previous rooms prevent new ones */
-				if (dun->room_map[by][bx]) return FALSE;
-			} else {
-				return FALSE; /* XYZ */
+		/* Verify open space */
+		for (by = by1; by <= by2; by++) {
+			for (bx = bx1; bx <= bx2; bx++) {
+				if (1) {
+					/* previous rooms prevent new ones */
+					if (dun->room_map[by][bx]) return FALSE;
+				} else {
+					return FALSE; /* XYZ */
+				}
 			}
 		}
-	}
 
-	/* Get the location of the room */
-	y = ((by1 + by2 + 1) * BLOCK_HGT) / 2;
-	x = ((bx1 + bx2 + 1) * BLOCK_WID) / 2;
+		/* Get the location of the room */
+		y = ((by1 + by2 + 1) * BLOCK_HGT) / 2;
+		x = ((bx1 + bx2 + 1) * BLOCK_WID) / 2;
 
-	/* Try to build a room */
-	if (!profile.builder(c, y, x)) return FALSE;
+		/* Try to build a room */
+		if (!profile.builder(c, y, x)) return FALSE;
 
-	/* Save the room location */
-	if (dun->cent_n < CENT_MAX) {
-		dun->cent[dun->cent_n].y = y;
-		dun->cent[dun->cent_n].x = x;
-		dun->cent_n++;
-	}
+		/* Save the room location */
+		if (dun->cent_n < CENT_MAX) {
+			dun->cent[dun->cent_n].y = y;
+			dun->cent[dun->cent_n].x = x;
+			dun->cent_n++;
+		}
 
-	/* Reserve some blocks */
-	allocated = 0;
-	for (by = by1; by < by2; by++) {
-		for (bx = bx1; bx < bx2; bx++) {
-			dun->room_map[by][bx] = TRUE;
-			allocated++;
+		/* Reserve some blocks */
+		for (by = by1; by < by2; by++) {
+			for (bx = bx1; bx < bx2; bx++) {
+				dun->room_map[by][bx] = TRUE;
+			}
 		}
 	}
 

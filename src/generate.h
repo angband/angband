@@ -23,7 +23,7 @@
 #define TYP_TRAP   3 /* Trap */
 #define TYP_GOLD   4 /* Gold */
 #define TYP_OBJECT 5 /* Object */
-#define TYP_GOOD   6 /* Great object */
+#define TYP_GOOD   6 /* Good object */
 #define TYP_GREAT  7 /* Great object */
 
 #define AMT_ROOM   9 /* Number of objects for rooms */
@@ -310,7 +310,8 @@ void alloc_stairs(struct cave *c, int feat, int num, int walls);
 void vault_objects(struct cave *c, int y, int x, int depth, int num);
 void vault_traps(struct cave *c, int y, int x, int yd, int xd, int num);
 void vault_monsters(struct cave *c, int y1, int x1, int depth, int num);
-bool room_build(struct cave *c, int by0, int bx0, struct room_profile profile);
+bool room_build(struct cave *c, int by0, int bx0, struct room_profile profile,
+	bool finds_own_space);
 
 void alloc_objects(struct cave *c, int set, int typ, int num, int depth, byte origin);
 bool alloc_object(struct cave *c, int set, int typ, int depth, byte origin);

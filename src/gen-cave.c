@@ -478,7 +478,7 @@ bool classic_gen(struct cave *c, struct player *p) {
 			if (profile.rarity > rarity) continue;
 			if (profile.cutoff <= key) continue;
 			
-			if (room_build(c, by, bx, profile)) {
+			if (room_build(c, by, bx, profile, FALSE)) {
 				built++;
 				break;
 			}
