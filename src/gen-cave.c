@@ -56,8 +56,8 @@ static void build_streamer(struct cave *c, int feat, int chance)
     int y, x, dir;
 
     /* Hack -- Choose starting point */
-    y = rand_spread(DUNGEON_HGT / 2, 10);
-    x = rand_spread(DUNGEON_WID / 2, 15);
+    y = rand_spread(c->height / 2, 10);
+    x = rand_spread(c->width / 2, 15);
 
     /* Choose a random direction */
     dir = ddd[randint0(8)];

@@ -2345,9 +2345,9 @@ bool build_room_of_chambers(struct cave *c, int y0, int x0)
 	/* Turn all walls and magma not adjacent to floor into dungeon granite. */
 	/* Turn all floors and adjacent grids into rooms, sometimes lighting them */
 	for (y = (y1 - 1 > 0 ? y1 - 1 : 0);
-		 y < (y2 + 2 < DUNGEON_HGT ? y2 + 2 : DUNGEON_HGT); y++) {
+		 y < (y2 + 2 < c->height ? y2 + 2 : c->height); y++) {
 		for (x = (x1 - 1 > 0 ? x1 - 1 : 0);
-			 x < (x2 + 2 < DUNGEON_WID ? x2 + 2 : DUNGEON_WID); x++) {
+			 x < (x2 + 2 < c->width ? x2 + 2 : c->width); x++) {
 			if (sqinfo_has(c->info[y][x], SQUARE_WALL_INNER)
 				|| (c->feat[y][x] == FEAT_MAGMA)) {
 				for (d = 0; d < 9; d++) {
@@ -2393,9 +2393,9 @@ bool build_room_of_chambers(struct cave *c, int y0, int x0)
 
 	/* Turn all inner wall grids adjacent to dungeon granite into outer walls */
 	for (y = (y1 - 1 > 0 ? y1 - 1 : 0);
-		 y < (y2 + 2 < DUNGEON_HGT ? y2 + 2 : DUNGEON_HGT); y++) {
+		 y < (y2 + 2 < c->height ? y2 + 2 : c->height); y++) {
 		for (x = (x1 - 1 > 0 ? x1 - 1 : 0);
-			 x < (x2 + 2 < DUNGEON_WID ? x2 + 2 : DUNGEON_WID); x++) {
+			 x < (x2 + 2 < c->width ? x2 + 2 : c->width); x++) {
 			/* Stay legal. */
 			if (!square_in_bounds_fully(c, y, x))
 				continue;
