@@ -735,9 +735,9 @@ bool build_circular(struct cave *c, int y0, int x0)
 	/* Occasional light */
 	bool light = c->depth <= randint1(25) ? TRUE : FALSE;
 
-	/* Find and reserve some space in the dungeon.  Get center of room. */
+	/* Find and reserve lots of space in the dungeon.  Get center of room. */
 	if ((y0 >= c->height) || (x0 >= c->width)) {
-		if (!find_space(&y0, &x0, 2 * radius + 2, 2 * radius + 2))
+		if (!find_space(&y0, &x0, 2 * radius + 10, 2 * radius + 10))
 			return (FALSE);
 	}
 
@@ -851,8 +851,8 @@ bool build_overlap(struct cave *c, int y0, int x0)
 	x2b = randint1(11);
 
 	/* Calculate height and width */
-	height = MAX(y1a + y2a + 1, y1b + y2b + 1);
-	width = MAX(x1a + x2a + 1, x1b + x2b + 1);
+	height = 2 * MAX(MAX(y1a, y2a), MAX(y1b, y2b)) + 1;
+	width = 2 * MAX(MAX(x1a, x2a), MAX(x1b, x2b)) + 1;
 
 	/* Find and reserve some space in the dungeon.  Get center of room. */
 	if ((y0 >= c->height) || (x0 >= c->width)) {
