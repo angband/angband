@@ -319,7 +319,7 @@ bool mon_restrict(const char *monster_type, int depth, bool unique_ok);
 void spread_monsters(struct cave *c, const char *type, int depth, int num, 
 					 int y0, int x0, int dy, int dx, byte origin);
 void get_vault_monsters(struct cave *c, char racial_symbol[], byte vault_type, const char *data, int y1, int y2, int x1, int x2);
-void get_chamber_monsters(struct cave *c, int y1, int x1, int y2, int x2, char *name);
+void get_chamber_monsters(struct cave *c, int y1, int x1, int y2, int x2, char *name, int area);
 
 
 #endif /* !GENERATE_H */

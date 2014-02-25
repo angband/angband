@@ -2233,15 +2233,17 @@ bool build_room_of_chambers(struct cave *c, int y0, int x0)
 		i = 3;
 	else
 		i = 2;
-
+	
 	/* Calculate the room size. */
 	height = BLOCK_HGT * i;
 	width = BLOCK_WID * (i + randint0(3));
-
+	
 	/* Find and reserve some space in the dungeon.  Get center of room. */
-	if (!find_space(&y0, &x0, height, width))
-		return (FALSE);
-
+	if ((y0 >= dun->row_rooms) || (x0 >= dun->col_rooms)) {
+		if (!find_space(&y0, &x0, height, width))
+			return (FALSE);
+	}
+	
 	/* Calculate the borders of the room. */
 	y1 = y0 - (height / 2);
 	x1 = x0 - (width / 2);
@@ -2501,7 +2503,7 @@ bool build_room_of_chambers(struct cave *c, int y0, int x0)
 	}
 
 	/*** Now we get to place the monsters. ***/
-	get_chamber_monsters(c, y1, x1, y2, x2, name);
+	get_chamber_monsters(c, y1, x1, y2, x2, name, height * width);
 
 	/* Increase the level rating */
 	c->mon_rating += 10;
@@ -2546,8 +2548,10 @@ bool build_huge(struct cave *c, int y0, int x0)
 		light = FALSE;
 
 	/* Find and reserve some space.  Get center of room. */
-	if (!find_space(&y0, &x0, height, width))
-		return (FALSE);
+	if ((y0 >= dun->row_rooms) || (x0 >= dun->col_rooms)) {
+		if (!find_space(&y0, &x0, height, width))
+			return (FALSE);
+	}
 
 	/* Locate the room */
 	y1 = y0 - height / 2;
@@ -2581,6 +2585,9 @@ bool build_huge(struct cave *c, int y0, int x0)
 									FALSE, FEAT_RUBBLE, FALSE);
 		}
 	}
+
+	/* Describe */
+	ROOM_LOG("Huge room");
 
 	/* Success. */
 	return (TRUE);

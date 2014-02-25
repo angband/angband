@@ -291,7 +291,7 @@ void get_vault_monsters(struct cave *c, char racial_symbol[], byte vault_type, c
  * Funtion for placing appropriate monsters in a room of chambers
  */
 void get_chamber_monsters(struct cave *c, int y1, int x1, int y2, int x2, 
-						   char *name)
+						  char *name, int area)
 {
 	int i, y, x;
 	s16b monsters_left, depth;
@@ -328,12 +328,8 @@ void get_chamber_monsters(struct cave *c, int y1, int x1, int y2, int x2,
 	/* No normal monsters. */
 	generate_mark(c, y1, x1, y2, x2, SQUARE_MON_RESTRICT);
 
-	/* Usually, we want 35 monsters. */
-	monsters_left = 35;
-
-	/* Fewer monsters near the surface. */
-	if (c->depth < 45)
-		monsters_left = 5 + 2 * c->depth / 3;
+	/* Allow about a monster every 20-30 grids. */
+	monsters_left = area / (30 - c->depth / 10);
 
 	/* Place the monsters. */
 	for (i = 0; i < 300; i++) {
