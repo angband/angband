@@ -2233,17 +2233,17 @@ bool build_room_of_chambers(struct cave *c, int y0, int x0)
 		i = 3;
 	else
 		i = 2;
-	
+
 	/* Calculate the room size. */
 	height = dun->block_hgt * i;
 	width = dun->block_wid * (i + randint0(3));
-	
+
 	/* Find and reserve some space in the dungeon.  Get center of room. */
-	if ((y0 >= dun->row_rooms) || (x0 >= dun->col_rooms)) {
+	if ((y0 >= c->height) || (x0 >= c->width)) {
 		if (!find_space(&y0, &x0, height, width))
 			return (FALSE);
 	}
-	
+
 	/* Calculate the borders of the room. */
 	y1 = y0 - (height / 2);
 	x1 = x0 - (width / 2);
@@ -2548,7 +2548,7 @@ bool build_huge(struct cave *c, int y0, int x0)
 		light = FALSE;
 
 	/* Find and reserve some space.  Get center of room. */
-	if ((y0 >= dun->row_rooms) || (x0 >= dun->col_rooms)) {
+	if ((y0 >= c->height) || (x0 >= c->width)) {
 		if (!find_space(&y0, &x0, height, width))
 			return (FALSE);
 	}
@@ -2622,7 +2622,7 @@ bool room_build(struct cave *c, int by0, int bx0, struct room_profile profile,
 	/* Does the profile allocate space, or the room find it? */
 	if (finds_own_space) {
 		/* Try to build a room, pass silly place so room finds its own */
-		if (!profile.builder(c, dun->row_rooms, dun->col_rooms))
+		if (!profile.builder(c, c->height, c->width))
 			return FALSE;
 	} else {
 		/* Never run off the screen */
