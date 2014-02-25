@@ -101,8 +101,8 @@ struct vault *vaults;
  * Profile used for generating the town level.
  */
 struct cave_profile town_profile = {
-    /* name builder dun_rooms dun_unusual max_rarity n_room_profiles */
-    "town-default", town_gen, 50, 200, 2, 0,
+    /* name builder block dun_rooms dun_unusual max_rarity n_room_profiles */
+    "town-default", town_gen, 11, 50, 200, 2, 0,
 
     /* name rnd chg con pen jct */
     {"tunnel-default", 10, 30, 15, 25, 90},
@@ -152,7 +152,7 @@ struct room_profile unused_rooms[] = {
  */
 struct cave_profile cave_profiles[NUM_CAVE_PROFILES] = {
     {
-		"labyrinth", labyrinth_gen, 0, 200, 0, 0,
+		"labyrinth", labyrinth_gen, 11, 0, 200, 0, 0,
 
 		/* tunnels -- not applicable */
 		{"tunnel-null", 0, 0, 0, 0, 0},
@@ -167,7 +167,7 @@ struct cave_profile cave_profiles[NUM_CAVE_PROFILES] = {
 		100
     },
     {
-		"cavern", cavern_gen, 0, 200, 0, 0,
+		"cavern", cavern_gen, 11, 0, 200, 0, 0,
 
 		/* tunnels -- not applicable */
 		{"tunnel-null", 0, 0, 0, 0, 0},
@@ -183,7 +183,7 @@ struct cave_profile cave_profiles[NUM_CAVE_PROFILES] = {
     },
     {
 		/* name builder dun_rooms dun_unusual max_rarity n_room_profiles */
-		"classic", classic_gen, 50, 200, 2, N_ELEMENTS(classic_rooms),
+		"classic", classic_gen, 11, 50, 200, 2, N_ELEMENTS(classic_rooms),
 
 		/* name rnd chg con pen jct */
 		{"tunnel-classic", 10, 30, 15, 25, 90},

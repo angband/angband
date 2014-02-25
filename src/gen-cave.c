@@ -396,6 +396,8 @@ bool classic_gen(struct cave *c, struct player *p) {
 
     /* scale the various generation variables */
     num_rooms = (dun->profile->dun_rooms * size_percent) / 100;
+	dun->block_hgt = dun->profile->block_size;
+	dun->block_wid = dun->profile->block_size;
     set_cave_dimensions(c, DUNGEON_HGT, DUNGEON_WID);
     ROOM_LOG("height=%d  width=%d  nrooms=%d", c->height, c->width, num_rooms);
 
@@ -408,8 +410,8 @@ bool classic_gen(struct cave *c, struct player *p) {
 				   FEAT_GRANITE, SQUARE_NONE);
 
     /* Actual maximum number of rooms on this level */
-    dun->row_rooms = c->height / BLOCK_HGT;
-    dun->col_rooms = c->width / BLOCK_WID;
+    dun->row_rooms = c->height / dun->block_hgt;
+    dun->col_rooms = c->width / dun->block_wid;
 
     /* Initialize the room table */
 	dun->room_map = mem_zalloc(dun->row_rooms * sizeof(bool*));

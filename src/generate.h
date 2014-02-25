@@ -30,16 +30,6 @@
 #define AMT_ITEM   3 /* Number of objects for rooms/corridors */
 #define AMT_GOLD   3 /* Amount of treasure for rooms/corridors */
 
-/*
- * Number of grids in each block (vertically)
- */
-#define BLOCK_HGT	11
-
-/*
- * Number of grids in each block (horizontally)
- */
-#define BLOCK_WID	11
-
 #define MAX_PIT 2 /* Maximum number of pits or nests allowed */
 
 /**
@@ -113,6 +103,12 @@ struct dun_data {
     int tunn_n;
     struct loc tunn[TUNN_MAX];
 
+	/* Number of grids in each block (vertically) */
+	int block_hgt;
+
+	/* Number of grids in each block (horizontally) */
+	int block_wid;
+
     /* Number of blocks along each axis */
     int row_rooms;
     int col_rooms;
@@ -159,6 +155,7 @@ typedef bool (*cave_builder) (struct cave *c, struct player *p);
 struct cave_profile {
     const char *name;
     cave_builder builder; /* Function used to build the level */
+	int block_size; /* Default height and width of dungeon blocks */
     int dun_rooms; /* Number of rooms to attempt */
     int dun_unusual; /* Level/chance of unusual room */
     int max_rarity; /* Max number of rarity levels used in room generation */
