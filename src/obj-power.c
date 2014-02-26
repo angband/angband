@@ -180,7 +180,7 @@ static s32b slay_power(const object_type *o_ptr, int verbose, ang_file*
 		file_putf(log_file, "Slay multiplier for: ");
 
 		j = list_slays(s_index, s_index, slay_list, FALSE);
-		slay_info_collect(slay_list, desc, brand, s_mult);
+		slay_info_collect(slay_list, desc, brand, s_mult, j);
 
 		for (i = 0; i < j; i++) {
 			if (brand[i]) {

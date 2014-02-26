@@ -159,11 +159,11 @@ int list_slays(const bitflag flags[OF_SIZE], const bitflag mask[OF_SIZE],
  * slays[], desc[], brand[] and mult[] must be >= SL_MAX in size
  */
 int slay_info_collect(const int slays[], const char *desc[], 
-					  const char *brand[], int mult[])
+					  const char *brand[], int mult[], int max_n)
 {
 	int i, count = 0;
 
-	for (i = 0; i < SL_MAX; i++) {
+	for (i = 0; i < max_n; i++) {
 		if (slays[i]) {
 			const struct slay *s_ptr = &slay_table[slays[i]];
 

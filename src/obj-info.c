@@ -205,7 +205,7 @@ static bool describe_curses(textblock *tb, const object_type *o_ptr,
 		textblock_append_c(tb, TERM_L_RED, "Cursed.\n");
 	else
 		return FALSE;
-
+ 
 	return TRUE;
 }
 
@@ -422,7 +422,7 @@ static bool describe_slays(textblock *tb, const bitflag flags[OF_SIZE],
 	count = list_slays(flags, slay_mask, slay_list, TRUE);
 	if (count)
 	{
-		slay_info_collect(slay_list, slay_descs, NULL, NULL);
+		slay_info_collect(slay_list, slay_descs, NULL, NULL, count);
 		if (fulldesc)
 			textblock_append(tb, "It causes your melee attacks to slay ");
 		else
@@ -435,7 +435,7 @@ static bool describe_slays(textblock *tb, const bitflag flags[OF_SIZE],
 	count = list_slays(flags, kill_mask, slay_list, TRUE);
 	if (count)
 	{
-		slay_info_collect(slay_list, slay_descs, NULL, NULL);
+		slay_info_collect(slay_list, slay_descs, NULL, NULL, count);
 		if (fulldesc)
 			textblock_append(tb, "It causes your melee attacks to *slay* ");
 		else
@@ -448,7 +448,7 @@ static bool describe_slays(textblock *tb, const bitflag flags[OF_SIZE],
 	count = list_slays(flags, brand_mask, slay_list, TRUE);
 	if (count)
 	{
-		slay_info_collect(slay_list, NULL, slay_descs, NULL);
+		slay_info_collect(slay_list, NULL, slay_descs, NULL, count);
 		if (fulldesc)
 			textblock_append(tb, "It brands your melee attacks with ");
 		else
@@ -523,12 +523,50 @@ static void calculate_missile_crits(player_state *state, int weight,
 	*div  = 100;
 }
 
+static void get_known_flags(const object_type *o_ptr, const oinfo_detail_t mode, bitflag flags[OF_SIZE], bitflag pv_flags[MAX_PVALS][OF_SIZE])
+{
+	/* Grab the object flags */
+	if (mode & OINFO_EGO) {
+		/* Looking at fake egos needs less info than object_flags_known() */
+		if (flags)
+			object_flags(o_ptr, flags);
+		if (pv_flags)
+			object_pval_flags(o_ptr, pv_flags);
+	} else {
+		if (flags)
+			object_flags_known(o_ptr, flags);
+		if (pv_flags)
+			object_pval_flags_known(o_ptr, pv_flags);
 
-/*
- * Describe blows.
+		/* Don't include base flags when terse */
+		if (flags && mode & OINFO_TERSE)
+			of_diff(flags, o_ptr->kind->base->flags);
+	}
+}
+
+struct blow_info {
+	int str_plus;
+	int dex_plus;  
+	int centiblows;
+};
+
+/**
+ * Gets information about the number of blows possible for the player with
+ * the given object.
+ *
+ * Fills in whether the object is too_heavy to wield effectively,
+ * and the possible_blows[] information of .str_plus and .dex_plus needed
+ * to achieve the approximate number of blows in centiblows. 
+ *
+ * `max_blows` must be at least 1 to hold the current number of blows
+ * `possible_blows` must be at least [`max_blows`] in size, and will be limited
+ * to that number of entries.  The theoretical maximum is STAT_RANGE * 2 if
+ * an extra blow/speed boost was given for each combination of STR and DEX.
+ *
+ * Returns the number of entries made in the possible_blows[] table, or 0
+ * if the object is not a weapon.
  */
-static bool describe_blows(textblock *tb, const object_type *o_ptr,
-		player_state state, bitflag f[OF_SIZE])
+static int obj_known_blows(const object_type *o_ptr, bool *too_heavy, int max_num, struct blow_info possible_blows[])
 {
 	int str_plus, dex_plus, old_blows = 0, new_blows, extra_blows;
 	int str_faster = -1, str_done = -1;
@@ -536,43 +574,63 @@ static bool describe_blows(textblock *tb, const object_type *o_ptr,
 	int str_plus_bound;
 	int i;
 
-	bitflag tmp_f[OF_SIZE];
+	player_state state;
+	bitflag f[OF_SIZE];
 
-	dex_plus_bound = STAT_RANGE - state.stat_ind[A_DEX];
-	str_plus_bound = STAT_RANGE - state.stat_ind[A_STR];
+	object_type inven[INVEN_TOTAL];
+	int num = 0;
 
-	/* Write to the text block */
-	textblock_append_c(tb, TERM_L_GREEN, "%d.%d ",
-			state.num_blows / 100, (state.num_blows / 10) % 10);
-	textblock_append(tb, "blow%s/round.\n",
-			(state.num_blows > 100) ? "s" : "");
+	/* Not a weapon - no blows! */
+	if (!tval_is_melee_weapon(o_ptr)) return 0;
+
+	memcpy(inven, player->inventory, INVEN_TOTAL * sizeof(object_type));
+	inven[INVEN_WIELD] = *o_ptr;
+
+	/* Calculate the player's hypothetical state */
+	calc_bonuses(inven, &state, TRUE);
+
+	/* Warn about heavy weapons */
+	*too_heavy = state.heavy_wield;
+
+	/* First entry is always the current num of blows. */
+	possible_blows[num].str_plus = 0;
+	possible_blows[num].dex_plus = 0;
+	possible_blows[num].centiblows = state.num_blows;
+	num++;
 
 	/* Check to see if extra STR or DEX would yield extra blows */
 	old_blows = state.num_blows;
 	extra_blows = 0;
 
-	/* First we need to look for extra blows on other items, as
+	/* Start with blows from the weapon being examined */
+	get_known_flags(o_ptr, 0, f, NULL);
+
+	if (of_has(f, OF_BLOWS))
+		extra_blows += o_ptr->pval[which_pval(o_ptr, OF_BLOWS)];
+
+	/* Then we need to look for extra blows on other items, as
 	 * state does not track these */
 	for (i = INVEN_BOW; i < INVEN_TOTAL; i++)
 	{
 		if (!player->inventory[i].kind)
 			continue;
 
-		object_flags_known(&player->inventory[i], tmp_f);
+		object_flags_known(&player->inventory[i], f);
 
-		if (of_has(tmp_f, OF_BLOWS))
+		if (of_has(f, OF_BLOWS))
 			extra_blows += player->inventory[i].pval[which_pval(&player->inventory[i], OF_BLOWS)];
 	}
 
-	/* Then we add blows from the weapon being examined */
-	if (of_has(f, OF_BLOWS))
-		extra_blows += o_ptr->pval[which_pval(o_ptr, OF_BLOWS)];
+	dex_plus_bound = STAT_RANGE - state.stat_ind[A_DEX];
+	str_plus_bound = STAT_RANGE - state.stat_ind[A_STR];
 
 	/* Then we check for extra "real" blows */
 	for (dex_plus = 0; dex_plus < dex_plus_bound; dex_plus++)
 	{
 		for (str_plus = 0; str_plus < str_plus_bound; str_plus++)
         {
+			if (num == max_num) return num;
+
 			state.stat_ind[A_STR] += str_plus;
 			state.stat_ind[A_DEX] += dex_plus;
 			new_blows = calc_blows(o_ptr, &state, extra_blows);
@@ -586,9 +644,12 @@ static bool describe_blows(textblock *tb, const object_type *o_ptr,
 				(str_plus < str_done ||
 				str_done == -1))
 			{
-				textblock_append(tb, "With +%d STR and +%d DEX you would get %d.%d blows\n",
-					str_plus, dex_plus, (new_blows / 100),
-					(new_blows / 10) % 10);
+				possible_blows[num].str_plus = str_plus;
+				possible_blows[num].dex_plus = dex_plus;
+				possible_blows[num].centiblows = new_blows / 10;
+				possible_blows[num].centiblows *= 10;
+				num++;
+
 				str_done = str_plus;
 				break;
 			}
@@ -603,10 +664,57 @@ static bool describe_blows(textblock *tb, const object_type *o_ptr,
 				(str_plus < str_done ||
 				str_done == -1))
 			{
-				textblock_append(tb, "With +%d STR and +%d DEX you would attack a bit faster\n",
-					str_plus, dex_plus);
+				possible_blows[num].str_plus = str_plus;
+				possible_blows[num].dex_plus = dex_plus;
+				possible_blows[num].centiblows = new_blows;
+				num++;
+
 				str_faster = str_plus;
 			}
+		}
+	}
+
+	return num;
+}
+
+
+/*
+ * Describe blows.
+ */
+static bool describe_blows(textblock *tb, const object_type *o_ptr)
+{
+	int i;
+	struct blow_info blow_info[STAT_RANGE * 2]; /* (Very) theoretical max */
+	bool too_heavy = FALSE;
+	int num_entries = 0;
+
+	num_entries = obj_known_blows(o_ptr, &too_heavy, STAT_RANGE * 2, blow_info);
+	if (num_entries == 0) return FALSE;
+
+	if (too_heavy)
+		textblock_append_c(tb, TERM_L_RED, "You are too weak to use this weapon.\n");
+
+	/* First entry is always current blows (+0, +0) */
+	textblock_append_c(tb, TERM_L_GREEN, "%d.%d ",
+			blow_info[0].centiblows / 100, 
+			(blow_info[0].centiblows / 10) % 10);
+	textblock_append(tb, "blow%s/round.\n",
+			(blow_info[0].centiblows > 100) ? "s" : "");
+
+	/* Then list combinations that give more blows / speed boost */
+	for (i = 1; i < num_entries; i++) {
+		struct blow_info entry = blow_info[i];
+
+		if (entry.centiblows % 10 == 0) {
+			textblock_append(tb, 
+				"With +%d STR and +%d DEX you would get %d.%d blows\n",
+				entry.str_plus, entry.dex_plus, 
+				(entry.centiblows / 100),
+				(entry.centiblows / 10) % 10);
+		} else {
+			textblock_append(tb, 
+				"With +%d STR and +%d DEX you would attack a bit faster\n",
+				entry.str_plus, entry.dex_plus);
 		}
 	}
 
@@ -614,16 +722,10 @@ static bool describe_blows(textblock *tb, const object_type *o_ptr,
 }
 
 
-/*
- * Describe damage.
- */
-static bool describe_damage(textblock *tb, const object_type *o_ptr,
-		player_state state, bitflag f[OF_SIZE], oinfo_detail_t mode)
+static int obj_known_damage(const object_type *o_ptr, oinfo_detail_t mode, int *normal_damage, int slay_list[], int slay_damage[], bool *nonweap_slay)
 {
-	const char *desc[SL_MAX] = { 0 };
 	size_t i, cnt;
 	int mult[SL_MAX];
-	int slay_list[SL_MAX] = { 0 };
 	int dice, sides, dam, total_dam, plus = 0;
 	int xtra_postcrit = 0, xtra_precrit = 0;
 	int crit_mult, crit_div, crit_add;
@@ -636,6 +738,17 @@ static bool describe_damage(textblock *tb, const object_type *o_ptr,
 	bool ammo   = (player->state.ammo_tval == o_ptr->tval) &&
 	              (bow->kind);
 	int multiplier = 1;
+
+	player_state state;
+	bitflag f[OF_SIZE];
+	object_type inven[INVEN_TOTAL];
+
+	/* Calculate the player's hypothetical state */
+	memcpy(inven, player->inventory, INVEN_TOTAL * sizeof(object_type));
+	inven[INVEN_WIELD] = *o_ptr;
+	calc_bonuses(inven, &state, TRUE);
+
+	get_known_flags(o_ptr, mode, f, NULL);
 
 	/* Create the "all slays" mask */
 	create_mask(mask, FALSE, OFT_SLAY, OFT_KILL, OFT_BRAND, OFT_MAX);
@@ -684,9 +797,8 @@ static bool describe_damage(textblock *tb, const object_type *o_ptr,
 
 	/* Collect slays */
 	/* Melee weapons get slays and brands from other items now */
+	*nonweap_slay = FALSE;
 	if (weapon)	{
-		bool nonweap_slay = FALSE;
-
 		for (i = INVEN_LEFT; i < INVEN_TOTAL; i++) {
 			if (!player->inventory[i].kind)
 				continue;
@@ -696,21 +808,18 @@ static bool describe_damage(textblock *tb, const object_type *o_ptr,
 			/* Strip out non-slays */
 			of_inter(tmp_f, mask);
 
-			if (of_union(f, tmp_f))
-				nonweap_slay = TRUE;
+			if (of_union(f, tmp_f)) {
+				*nonweap_slay = TRUE;
+				break;
+			}
 		}
-
-		if (nonweap_slay)
-			textblock_append(tb, "This weapon may benefit from one or more off-weapon brands or slays.\n");
 	}
-
-	textblock_append(tb, "Average damage/round: ");
 
 	if (ammo) multiplier = player->state.ammo_mult;
 
-	/* Output damage for creatures effected by the brands or slays */
+	/* Get damage for each slay type on the objects */
 	cnt = list_slays(f, mask, slay_list, TRUE);
-	slay_info_collect(slay_list, desc, NULL, mult);
+	slay_info_collect(slay_list, NULL, NULL, mult, cnt);
 	for (i = 0; i < cnt; i++) {
 		/* ammo mult adds fully, melee mult is times 1, so adds 1 less */
 		int melee_adj_mult = ammo ? 0 : 1;
@@ -725,18 +834,8 @@ static bool describe_damage(textblock *tb, const object_type *o_ptr,
 		else
 			total_dam *= player->state.num_shots;
 
-		if (total_dam <= 0)
-			textblock_append_c(tb, TERM_L_RED, "%d", 0);
-		else if (total_dam % 10)
-			textblock_append_c(tb, TERM_L_GREEN, "%d.%d",
-					total_dam / 10, total_dam % 10);
-		else
-			textblock_append_c(tb, TERM_L_GREEN, "%d", total_dam / 10);
-
-		textblock_append(tb, " vs. %s, ", desc[i]);
+		slay_damage[i] = total_dam;
 	}
-
-	if (cnt) textblock_append(tb, "and ");
 
 	/* Include bonus damage in stated average */
 	total_dam = dam * multiplier + xtra_precrit;
@@ -749,15 +848,59 @@ static bool describe_damage(textblock *tb, const object_type *o_ptr,
 	else
 		total_dam *= player->state.num_shots;
 
-	if (total_dam <= 0)
-		textblock_append_c(tb, TERM_L_RED, "%d", 0);
-	else if (total_dam % 10)
-		textblock_append_c(tb, TERM_L_GREEN, "%d.%d",
-				total_dam / 10, total_dam % 10);
-	else
-		textblock_append_c(tb, TERM_L_GREEN, "%d", total_dam / 10);
+	*normal_damage = total_dam;
 
-	if (cnt) textblock_append(tb, " vs. others");
+	return cnt;
+}
+
+
+/*
+ * Describe damage.
+ */
+static bool describe_damage(textblock *tb, const object_type *o_ptr, oinfo_detail_t mode)
+{
+	bool nonweap_slay = FALSE;
+	int normal_damage;
+	int slay_damage[SL_MAX];
+	int slays[SL_MAX];
+	const char *slay_desc[SL_MAX];
+	int num_slays;
+	int i;
+
+	num_slays = obj_known_damage(o_ptr, mode, &normal_damage, slays, slay_damage, &nonweap_slay);
+
+	/* Collect slays */
+	/* Melee weapons get slays and brands from other items now */
+	if (nonweap_slay)
+		textblock_append(tb, "This weapon may benefit from one or more off-weapon brands or slays.\n");
+
+	textblock_append(tb, "Average damage/round: ");
+
+	/* Output damage for creatures effected by the brands or slays */
+	slay_info_collect(slays, slay_desc, NULL, NULL, num_slays);
+	for (i = 0; i < num_slays; i++) {
+		if (slay_damage[i] <= 0)
+			textblock_append_c(tb, TERM_L_RED, "%d", 0);
+		else if (slay_damage[i] % 10)
+			textblock_append_c(tb, TERM_L_GREEN, "%d.%d",
+					slay_damage[i] / 10, slay_damage[i] % 10);
+		else
+			textblock_append_c(tb, TERM_L_GREEN, "%d", slay_damage[i] / 10);
+
+		textblock_append(tb, " vs. %s, ", slay_desc[i]);
+	}
+
+	if (num_slays) textblock_append(tb, "and ");
+
+	if (normal_damage <= 0)
+		textblock_append_c(tb, TERM_L_RED, "%d", 0);
+	else if (normal_damage % 10)
+		textblock_append_c(tb, TERM_L_GREEN, "%d.%d",
+			   normal_damage / 10, normal_damage % 10);
+	else
+		textblock_append_c(tb, TERM_L_GREEN, "%d", normal_damage / 10);
+
+	if (num_slays) textblock_append(tb, " vs. others");
 	textblock_append(tb, ".\n");
 
 	return TRUE;
@@ -778,9 +921,6 @@ static bool describe_combat(textblock *tb, const object_type *o_ptr,
 	bool ammo   = (player->state.ammo_tval == o_ptr->tval) &&
 	              (bow->kind);
 
-	/* The player's hypothetical state, were they to wield this item */
-	player_state state;
-
 	/* Abort if we've nothing to say */
 	if (mode & OINFO_DUMMY) return FALSE;
 
@@ -799,22 +939,9 @@ static bool describe_combat(textblock *tb, const object_type *o_ptr,
 
 	textblock_append_c(tb, TERM_L_WHITE, "Combat info:\n");
 
-	if (weapon)	{
-		object_type inven[INVEN_TOTAL];
+	describe_blows(tb, o_ptr);
 
-		memcpy(inven, player->inventory, INVEN_TOTAL * sizeof(object_type));
-		inven[INVEN_WIELD] = *o_ptr;
-
-		/* Calculate the player's hypothetical state */
-		calc_bonuses(inven, &state, TRUE);
-
-		/* Warn about heavy weapons */
-		if (adj_str_hold[state.stat_ind[A_STR]] < o_ptr->weight / 10)
-			textblock_append_c(tb, TERM_L_RED, "You are too weak to use this weapon.\n");
-
-		/* Describe blows */
-		describe_blows(tb, o_ptr, state, f);
-	} else { /* Ammo */
+	if (!weapon) { /* Ammo */
 		/* Range of the weapon */
 		int tdis = 6 + 2 * player->state.ammo_mult;
 
@@ -825,7 +952,7 @@ static bool describe_combat(textblock *tb, const object_type *o_ptr,
 	}
 
 	/* Describe damage */
-	describe_damage(tb, o_ptr, state, f, mode);
+	describe_damage(tb, o_ptr, mode);
 
 	/* Note the impact flag */
 	if (of_has(f, OF_IMPACT))
@@ -991,47 +1118,82 @@ static bool describe_food(textblock *tb, const object_type *o_ptr,
 }
 
 
-/*
- * Describe things that look like lights.
+/**
+ * Gives the known light-sourcey characteristics of the given object.
+ *
+ * Fills in the radius of the light in `rad`, whether it uses fuel and
+ * how many turns light it can refuel in similar items.
+ *
+ * Return FALSE if the object is not known to be a light source (which 
+ * includes it not actually being a light source).
  */
-static bool describe_light(textblock *tb, const object_type *o_ptr,
-		const bitflag flags[OF_SIZE], oinfo_detail_t mode)
+static bool obj_known_light(const object_type *o_ptr, oinfo_detail_t mode, int *rad, bool *uses_fuel, int *refuel_turns)
 {
-	int rad = 0;
-
-	bool artifact = o_ptr->artifact ? TRUE : FALSE;
-	bool no_fuel = of_has(flags, OF_NO_FUEL) ? TRUE : FALSE;
+	bitflag flags[OF_SIZE];
+	bool no_fuel;
 	bool is_light = tval_is_light(o_ptr);
-	bool terse = mode & OINFO_TERSE;
+
+	get_known_flags(o_ptr, mode, flags, NULL);
 
 	if (!is_light && !of_has(flags, OF_LIGHT))
 		return FALSE;
 
-	/* Prevent unidentified objects (especially artifact lights) from showing bad radius
-	 and refueling info, but allow it to appear in ego knowledge and spoilers */
+	/* Prevent unidentified objects (especially artifact lights) from showing
+	 * bad radius and refueling info, but allow it to appear in ego knowledge
+	 * and spoilers */
 	if (!object_is_known(o_ptr) && !(mode & (OINFO_EGO | OINFO_DUMMY)))
 		return FALSE;
 
 	/* Work out radius */
-	if (of_has(flags, OF_LIGHT))
-		rad = o_ptr->pval[which_pval(o_ptr, OF_LIGHT)];
+	if (of_has(flags, OF_LIGHT)) {
+		*rad = o_ptr->pval[which_pval(o_ptr, OF_LIGHT)];
+	} else {
+		*rad = 0;
+	}
 
-	/* Describe here */
+	no_fuel = of_has(flags, OF_NO_FUEL) ? TRUE : FALSE;
+
+	if (no_fuel || o_ptr->artifact) {
+		*uses_fuel = FALSE;
+	} else {
+		*uses_fuel = TRUE;
+	}
+
+	if (is_light && !no_fuel && o_ptr->sval != SV_LIGHT_TORCH) {
+		*refuel_turns = FUEL_LAMP;
+	} else {
+		*refuel_turns = 0;
+	}
+
+	return TRUE;
+}
+
+/*
+ * Describe things that look like lights.
+ */
+static bool describe_light(textblock *tb, const object_type *o_ptr,
+		oinfo_detail_t mode)
+{
+	int rad = 0;
+	bool uses_fuel = FALSE;
+	int refuel_turns = 0;
+
+	bool terse = mode & OINFO_TERSE;
+
+	if (!obj_known_light(o_ptr, mode, &rad, &uses_fuel, &refuel_turns))
+		return FALSE;
+
 	textblock_append(tb, "Radius ");
 	textblock_append_c(tb, TERM_L_GREEN, format("%d", rad));
-	if (no_fuel && !artifact)
-		textblock_append(tb, " light.  No fuel required.");
-/*	else if (is_light && o_ptr->sval == SV_LIGHT_TORCH)
-		textblock_append(tb, " light, reduced when running out of fuel."); */
-	else
-		textblock_append(tb, " light.");
+	textblock_append(tb, " light.");
 
-	if (!terse && is_light && !no_fuel && o_ptr->sval != SV_LIGHT_TORCH)
+	if (!o_ptr->artifact && !uses_fuel)
+		textblock_append(tb, "  No fuel required.");
+
+	if (!terse && refuel_turns)
 	{
 		const char *name = (o_ptr->sval == SV_LIGHT_TORCH) ? "torches" : "lanterns";
-		int turns = (o_ptr->sval == SV_LIGHT_TORCH) ? FUEL_TORCH : FUEL_LAMP;
-
-		textblock_append(tb, "  Refills other %s up to %d turns of fuel.", name, turns);
+		textblock_append(tb, "  Refills other %s up to %d turns of fuel.", name, refuel_turns);
 	}
 
 	textblock_append(tb, "\n");
@@ -1039,7 +1201,52 @@ static bool describe_light(textblock *tb, const object_type *o_ptr,
 	return TRUE;
 }
 
+#define OBJ_KNOWN_PRESENT -1
 
+static bool obj_known_effect(const object_type *o_ptr, int *effect, bool *aimed, int *min_recharge, int *max_recharge, int *failure_chance)
+{
+	random_value timeout = {0, 0, 0, 0};
+
+	*effect = 0;
+	*min_recharge = 0;
+	*max_recharge = 0;
+	*failure_chance = 0;
+	*aimed = FALSE;
+
+	if (object_effect_is_known(o_ptr)) {
+		if (o_ptr->artifact) {
+			*effect = o_ptr->artifact->effect;
+			timeout = o_ptr->artifact->time;
+		} else {
+			*effect = o_ptr->kind->effect;
+			timeout = o_ptr->kind->time;
+		}
+	} else if (object_effect(o_ptr)) {
+		/* Don't know much - be vague */
+		*effect = OBJ_KNOWN_PRESENT;
+
+		if (!o_ptr->artifact && effect_aim(o_ptr->kind->effect))
+			*aimed = TRUE;
+					
+		return TRUE;
+	} else {
+		/* No effect - no info */
+		return FALSE;
+	}
+	
+	if (randcalc(timeout, 0, MAXIMISE) > 0)	{
+		*min_recharge = randcalc(timeout, 0, MINIMISE);
+		*max_recharge = randcalc(timeout, 0, MAXIMISE);
+	}
+
+	if (tval_is_food(o_ptr) || tval_is_potion(o_ptr) || tval_is_scroll(o_ptr)) {
+		*failure_chance = 0;
+	} else {
+		*failure_chance = get_use_device_chance(o_ptr);
+	}
+
+	return TRUE;
+}
 
 /*
  * Describe an object's effect, if any.
@@ -1048,57 +1255,38 @@ static bool describe_effect(textblock *tb, const object_type *o_ptr,
 		bool only_artifacts, bool subjective)
 {
 	const char *desc;
-	random_value timeout = {0, 0, 0, 0};
 
-	int effect = 0, fail;
+	int effect = 0;
+	bool aimed = FALSE;
+	int min_time, max_time, failure_chance;
 
-	if (o_ptr->artifact)
-	{
-		if (object_effect_is_known(o_ptr))
-		{
-			effect = o_ptr->artifact->effect;
-			timeout = o_ptr->artifact->time;
-		}
-		else if (object_effect(o_ptr))
-		{
-			textblock_append(tb, "It can be activated.\n");
-			return TRUE;
-		}
+	/* Sometimes we only print artifact activation info */
+	if (only_artifacts && !o_ptr->artifact)
+		return FALSE;
+
+	if (obj_known_effect(o_ptr, &effect, &aimed, &min_time, &max_time, &failure_chance) == FALSE)
+		return FALSE;
+
+	/* We don't know much */
+	if (effect == OBJ_KNOWN_PRESENT) {
+		if (aimed)
+			textblock_append(tb, "It can be aimed.\n");
+		else if (tval_is_edible(o_ptr))
+			textblock_append(tb, "It can be eaten.\n");
+		else if (tval_is_potion(o_ptr))
+			textblock_append(tb, "It can be drunk.\n");
+		else if (tval_is_scroll(o_ptr))
+			textblock_append(tb, "It can be read.\n");
+		else textblock_append(tb, "It can be activated.\n");
+
+		return TRUE;
 	}
-	else
-	{
-		/* Sometimes only print artifact activation info */
-		if (only_artifacts == TRUE) return FALSE;
-
-		if (object_effect_is_known(o_ptr))
-		{
-			effect = o_ptr->kind->effect;
-			timeout = o_ptr->kind->time;
-		}
-		else if (object_effect(o_ptr) != 0)
-		{
-			if (effect_aim(o_ptr->kind->effect))
-				textblock_append(tb, "It can be aimed.\n");
-			else if (tval_is_edible(o_ptr))
-				textblock_append(tb, "It can be eaten.\n");
-			else if (tval_is_potion(o_ptr))
-				textblock_append(tb, "It can be drunk.\n");
-			else if (tval_is_scroll(o_ptr))
-				textblock_append(tb, "It can be read.\n");
-			else textblock_append(tb, "It can be activated.\n");
-
-			return TRUE;
-		}
-	}
-
-	/* Forget it without an effect */
-	if (!effect) return FALSE;
 
 	/* Obtain the description */
 	desc = effect_desc(effect);
 	if (!desc) return FALSE;
 
-	if (effect_aim(effect))
+	if (aimed)
 		textblock_append(tb, "When aimed, it ");
 	else if (tval_is_food(o_ptr))
 		textblock_append(tb, "When eaten, it ");
@@ -1110,8 +1298,7 @@ static bool describe_effect(textblock *tb, const object_type *o_ptr,
 	    textblock_append(tb, "When activated, it ");
 
 	/* Print a colourised description */
-	do
-	{
+	do {
 		if (isdigit((unsigned char) *desc))
 			textblock_append_c(tb, TERM_L_GREEN, "%c", *desc);
 		else
@@ -1120,10 +1307,8 @@ static bool describe_effect(textblock *tb, const object_type *o_ptr,
 
 	textblock_append(tb, ".\n");
 
-	if (randcalc(timeout, 0, MAXIMISE) > 0)
+	if (min_time || max_time)
 	{
-		int min_time, max_time;
-
 		/* Sometimes adjust for player speed */
 		int multiplier = extract_energy[player->state.speed];
 		if (!subjective) multiplier = 10;
@@ -1131,8 +1316,8 @@ static bool describe_effect(textblock *tb, const object_type *o_ptr,
 		textblock_append(tb, "Takes ");
 
 		/* Correct for player speed */
-		min_time = randcalc(timeout, 0, MINIMISE) * multiplier / 10;
-		max_time = randcalc(timeout, 0, MAXIMISE) * multiplier / 10;
+		min_time *= multiplier / 10;
+		max_time *= multiplier / 10;
 
 		textblock_append_c(tb, TERM_L_GREEN, "%d", min_time);
 
@@ -1149,15 +1334,9 @@ static bool describe_effect(textblock *tb, const object_type *o_ptr,
 		textblock_append(tb, ".\n");
 	}
 
-	if (!subjective || tval_is_food(o_ptr) || tval_is_potion(o_ptr) || tval_is_scroll(o_ptr))
-	{
-		return TRUE;
-	}
-	else
-	{
-		fail = get_use_device_chance(o_ptr);
-		textblock_append(tb, "Your chance of success is %d.%d%%\n", (1000 - fail) /
-			10, (1000 - fail) % 10);
+	if (failure_chance > 0) {
+		textblock_append(tb, "Your chance of success is %d.%d%%\n", 
+			(1000 - failure_chance) / 10, (1000 - failure_chance) % 10);
 	}
 
 	return TRUE;
@@ -1396,7 +1575,7 @@ static textblock *object_info_out(const object_type *o_ptr, int mode)
 	if (describe_hates(tb, flags)) something = TRUE;
 	if (describe_sustains(tb, flags)) something = TRUE;
 	if (describe_misc_magic(tb, flags)) something = TRUE;
-	if (describe_light(tb, o_ptr, flags, mode)) something = TRUE;
+	if (describe_light(tb, o_ptr, mode)) something = TRUE;
 	if (ego && describe_ego(tb, o_ptr->ego)) something = TRUE;
 	if (something) textblock_append(tb, "\n");
 
