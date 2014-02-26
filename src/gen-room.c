@@ -1914,6 +1914,10 @@ static bool build_vault(struct cave *c, int y0, int x0, struct vault *v)
 					square_set_feat(c, y, x, FEAT_MORE);
 				break;
 			}
+				/* Included to allow simple inclusion of FA vaults */
+			case '`': /*cave_set_feat(y, x, FEAT_LAVA)*/; break;
+			case '/': /*cave_set_feat(y, x, FEAT_WATER)*/; break;
+			case ';': /*cave_set_feat(y, x, FEAT_TREE)*/; break;
 			}
 
 			/* Part of a vault */
