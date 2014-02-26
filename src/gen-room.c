@@ -710,8 +710,8 @@ static bool find_space(int *y, int *x, int height, int width)
 		}
 
 		/* Reserve some blocks */
-		for (by = by1; by < by2; by++) {
-			for (bx = bx1; bx < bx2; bx++) {
+		for (by = by1; by <= by2; by++) {
+			for (bx = bx1; bx <= bx2; bx++) {
 				dun->room_map[by][bx] = TRUE;
 			}
 		}
