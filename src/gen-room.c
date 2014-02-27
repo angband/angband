@@ -2152,6 +2152,76 @@ bool build_greater_vault(struct cave *c, int y0, int x0)
 
 
 /**
+ * Moria room (from Oangband).  Uses the "starburst room" code.
+ */
+bool build_moria(struct cave *c, int y0, int x0)
+{
+	int y1, x1, y2, x2;
+	int i;
+	int height, width;
+
+	bool light = c->depth <= randint1(35);
+
+	/* Pick a room size */
+	height = dun->block_hgt;
+	width = dun->block_wid;
+
+
+	/* Try twice to find space for a room. */
+	for (i = 0; i < 2; i++) {
+		/* Really large room - only on first try. */
+		if ((i == 0) && one_in_(15)) {
+			height *= 1 + randint1(2);
+			width *= 2 + randint1(3);
+		}
+
+		/* Long, narrow room.  Sometimes tall and thin. */
+		else if (!one_in_(4)) {
+			if (one_in_(15))
+				height = (2 + randint0(2)) * height;
+			else
+				width = (2 + randint0(3)) * width;
+		}
+
+		/* Find and reserve some space in the dungeon.  Get center of room. */
+		if ((y0 >= c->height) || (x0 >= c->width)) {
+			if (!find_space(&y0, &x0, height, width)) {
+				if (i == 0)
+					continue;
+				if (i == 1)
+					return (FALSE);
+			} else
+				break;
+		} else
+			break;
+	}
+
+	/* Locate the room */
+	y1 = y0 - height / 2;
+	x1 = x0 - width / 2;
+	y2 = y1 + height - 1;
+	x2 = x1 + width - 1;
+
+
+	/* Generate starburst room.  Return immediately if out of bounds. */
+	if (!generate_starburst_room(c, y1, x1, y2, x2, light, FEAT_FLOOR, TRUE)) {
+		return (FALSE);
+	}
+
+	/* Sometimes, the room may have rubble in it. */
+	if (one_in_(10))
+		(void) generate_starburst_room(c, y1 + randint0(height / 4),
+									   x1 + randint0(width / 4),
+									   y2 - randint0(height / 4),
+									   x2 - randint0(width / 4), FALSE,
+									   FEAT_RUBBLE, FALSE);
+
+	/* Success */
+	return (TRUE);
+}
+
+
+/**
  * Helper function for rooms of chambers.  Fill a room matching
  * the rectangle input with magma, and surround it with inner wall.
  * Create a door in a random inner wall grid along the border of the

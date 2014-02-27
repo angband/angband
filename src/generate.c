@@ -128,7 +128,7 @@ struct room_profile classic_rooms[NUM_CLASSIC_ROOMS] = {
     {"monster nest", build_nest, 1, 3, 5, TRUE, 2, 16},
     {"medium vault", build_medium_vault, 2, 3, 30, FALSE, 2, 38},
     {"lesser vault", build_lesser_vault, 2, 3, 20, FALSE, 2, 55},
-	
+
 
     /* unusual rooms (rarity=1) */
     {"large room", build_large, 1, 3, 3, FALSE, 1, 15},
@@ -143,6 +143,7 @@ struct room_profile classic_rooms[NUM_CLASSIC_ROOMS] = {
 
 /* name function height width min-depth pit? rarity %cutoff */
 struct room_profile unused_rooms[] = {
+	{"moria room", build_moria, 3, 5, 10, FALSE, 0, 100},
 	{"room of chambers", build_room_of_chambers, 4, 6, 10, FALSE, 0, 100},
 	{"huge room", build_huge, 4, 6, 40, FALSE, 0, 100}
 };
@@ -182,7 +183,7 @@ struct cave_profile cave_profiles[NUM_CAVE_PROFILES] = {
 		10
     },
     {
-		/* name builder dun_rooms dun_unusual max_rarity n_room_profiles */
+		/* name builder block dun_rooms dun_unusual max_rarity n_room_profiles */
 		"classic", classic_gen, 11, 50, 200, 2, N_ELEMENTS(classic_rooms),
 
 		/* name rnd chg con pen jct */
