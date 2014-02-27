@@ -119,7 +119,7 @@ struct cave_profile town_profile = {
 
 
 /* name function height width min-depth pit? rarity %cutoff */
-struct room_profile classic_rooms[NUM_CLASSIC_ROOMS] = {
+struct room_profile classic_rooms[] = {
     /* greater vaults only have rarity 1 but they have other checks */
     {"greater vault", build_greater_vault, 44, 66, 35, FALSE, 0, 100},
 
@@ -152,7 +152,7 @@ struct room_profile unused_rooms[] = {
 /**
  * Profiles used for generating dungeon levels.
  */
-struct cave_profile cave_profiles[NUM_CAVE_PROFILES] = {
+struct cave_profile cave_profiles[] = {
     {
 		"labyrinth", labyrinth_gen, 1, 0, 200, 0, 0,
 
@@ -450,14 +450,14 @@ void cave_generate(struct cave *c, struct player *p) {
 		} else if (is_quest(c->depth)) {
 		
 			/* Quest levels must be normal levels */
-			dun->profile = &cave_profiles[NUM_CAVE_PROFILES - 1];
+			dun->profile = &cave_profiles[N_ELEMENTS(cave_profiles) - 1];
 			dun->profile->builder(c, p);
 			
 		} else {	
 			int perc = randint0(100);
-			int last = NUM_CAVE_PROFILES - 1;
-			int i;
-			for (i = 0; i < NUM_CAVE_PROFILES; i++) {
+			size_t last = N_ELEMENTS(cave_profiles) - 1;
+			size_t i;
+			for (i = 0; i < N_ELEMENTS(cave_profiles); i++) {
 				bool ok;
 				const struct cave_profile *profile;
 

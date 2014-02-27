@@ -269,23 +269,6 @@ bool build_greater_vault(struct cave *c, int y0, int x0);
 bool build_moria(struct cave *c, int y0, int x0);
 bool build_room_of_chambers(struct cave *c, int y0, int x0);
 bool build_huge(struct cave *c, int y0, int x0);
-/**
- * Profile used for generating the town level.
- */
-struct cave_profile town_profile;
-
-
-#define NUM_CLASSIC_ROOMS 11
-
-/* name function width height min-depth pit? rarity %cutoff */
-struct room_profile classic_rooms[NUM_CLASSIC_ROOMS];
-
-#define NUM_CAVE_PROFILES 3
-
-/**
- * Profiles used for generating dungeon levels.
- */
-struct cave_profile cave_profiles[NUM_CAVE_PROFILES];
 
 byte get_angle_to_grid[41][41];
 
