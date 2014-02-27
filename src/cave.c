@@ -2252,14 +2252,22 @@ struct feature *square_feat(struct cave *c, int y, int x)
 
 void square_set_feat(struct cave *c, int y, int x, int feat)
 {
+	int current_feat = c->feat[y][x];
+
 	assert(c);
 	assert(y >= 0 && y < DUNGEON_HGT);
 	assert(x >= 0 && x < DUNGEON_WID);
 	/* XXX: Check against c->height and c->width instead, once everywhere
 	 * honors those... */
 
+	/* Track changes */
+	if (current_feat) c->feat_count[current_feat]--;
+	if (feat) c->feat_count[feat]++;
+
+	/* Make the change */
 	c->feat[y][x] = feat;
 
+	/* Make the new terrain feel at home */
 	if (character_dungeon) {
 		square_note_spot(c, y, x);
 		square_light_spot(c, y, x);
@@ -2680,6 +2688,7 @@ struct cave *cave_new(void) {
 	int y, x;
 
 	struct cave *c = mem_zalloc(sizeof *c);
+	c->feat_count = mem_zalloc((z_info->f_max + 1) * sizeof(int));
 	c->info = mem_zalloc(DUNGEON_HGT * sizeof(bitflag**));
 	c->feat = mem_zalloc(DUNGEON_HGT * sizeof(byte*));
 	c->cost = mem_zalloc(DUNGEON_HGT * sizeof(byte*));
@@ -2720,6 +2729,7 @@ void cave_free(struct cave *c) {
 		mem_free(c->m_idx[y]);
 		mem_free(c->o_idx[y]);
 	}
+	mem_free(c->feat_count);
 	mem_free(c->info);
 	mem_free(c->feat);
 	mem_free(c->cost);

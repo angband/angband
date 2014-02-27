@@ -219,6 +219,7 @@ struct cave {
 	int width;
 	
 	u16b feeling_squares; /* How many feeling squares the player has visited */
+	int *feat_count;
 
 	bitflag ***info;
 	byte **feat;

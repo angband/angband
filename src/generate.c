@@ -290,7 +290,7 @@ static void run_room_parser(void) {
  * Clear the dungeon, ready for generation to begin.
  */
 static void cave_clear(struct cave *c, struct player *p) {
-    int x, y;
+    int i, x, y;
 
     wipe_o_list(c);
     wipe_mon_list(c, p);
@@ -317,6 +317,10 @@ static void cave_clear(struct cave *c, struct player *p) {
 			c->o_idx[y][x] = 0;
 		}
     }
+
+	/* Wipe feature counts */
+	for (i = 0; i < z_info->f_max + 1; i++)
+		c->feat_count[i] = 0;
 
     /* Unset the player's coordinates */
     p->px = p->py = 0;
