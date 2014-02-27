@@ -2109,6 +2109,7 @@ static enum parser_error parse_v_n(struct parser *p) {
 
 static enum parser_error parse_v_x(struct parser *p) {
 	struct vault *v = parser_priv(p);
+	int max_lev;
 
 	if (!v)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
@@ -2116,9 +2117,11 @@ static enum parser_error parse_v_x(struct parser *p) {
 	v->rat = parser_getint(p, "rating");
 	v->hgt = parser_getuint(p, "height");
 	v->wid = parser_getuint(p, "width");
+	v->min_lev = parser_getuint(p, "min_lev");
+	max_lev = parser_getuint(p, "max_lev");
+	v->max_lev = max_lev ? max_lev : MAX_DEPTH;
 
-	/* XXX: huh? These checks were in the original code and I have no idea
-	 * why. */
+	/* Make sure vaults are no bigger than the room profiles allow. */
 	if (v->typ == 6 && (v->wid > 33 || v->hgt > 22))
 		return PARSE_ERROR_VAULT_TOO_BIG;
 	if (v->typ == 7 && (v->wid > 66 || v->hgt > 44))
@@ -2139,7 +2142,7 @@ struct parser *init_parse_v(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
 	parser_reg(p, "N uint index str name", parse_v_n);
-	parser_reg(p, "X uint type int rating uint height uint width", parse_v_x);
+	parser_reg(p, "X uint type int rating uint height uint width uint min_lev uint max_lev", parse_v_x);
 	parser_reg(p, "D str text", parse_v_d);
 	return p;
 }

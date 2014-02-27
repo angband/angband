@@ -59,13 +59,14 @@ struct room_template *random_room_template(int typ)
  * currently the v->typ indices are one off from the room type indices, which
  * means that build_greater_vault will call this function with "typ=8".
  */
-struct vault *random_vault(int typ)
+struct vault *random_vault(struct cave *c, int typ)
 {
 	struct vault *v = vaults;
 	struct vault *r = NULL;
 	int n = 1;
 	do {
-		if (v->typ == typ) {
+		if ((v->typ == typ) && (v->min_lev <= c->depth)
+			&& (v->max_lev >= c->depth)) {
 			if (one_in_(n)) r = v;
 			n++;
 		}
@@ -2073,7 +2074,7 @@ static bool build_vault(struct cave *c, int y0, int x0, struct vault *v)
 static bool build_vault_type(struct cave *c, int y0, int x0, int typ, 
 							 const char *label)
 {
-	struct vault *v_ptr = random_vault(typ);
+	struct vault *v_ptr = random_vault(c, typ);
 	if (v_ptr == NULL) {
 		/*quit_fmt("got NULL from random_vault(%d)", typ);*/
 		return FALSE;

@@ -124,9 +124,6 @@ struct dun_data {
 };
 
 
-extern struct room_template *random_room_template(int typ);
-extern struct vault *random_vault(int typ);
-
 struct tunnel_profile {
     const char *name;
     int rnd; /* % chance of choosing random direction */
@@ -204,6 +201,9 @@ struct vault {
 
     byte hgt;			/* Vault height */
     byte wid;			/* Vault width */
+
+    byte min_lev;		/* Minimum allowable level, if specified. */
+    byte max_lev;		/* Maximum allowable level, if specified. */
 };
 
 extern struct vault *vaults;
