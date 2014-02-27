@@ -115,7 +115,7 @@ bool mon_restrict(const char *monster_type, int depth, bool unique_ok)
     for (i = 0; i < 10; i++)
 		base_d_char[i] = '\0';
 
-    /* No mmonster type specified, no restrictions. */
+    /* No monster type specified, no restrictions. */
     if (monster_type == NULL) {
 		get_mon_num_prep(NULL);
 		return TRUE;

@@ -2107,6 +2107,8 @@ bool build_interesting(struct cave *c, int y0, int x0)
  */
 bool build_lesser_vault(struct cave *c, int y0, int x0)
 {
+	if (!streq(dun->profile->name, "classic") && (one_in_(2)))
+		return build_vault_type(c, y0, x0, 4, "Lesser vault");
 	return build_vault_type(c, y0, x0, 6, "Lesser vault");
 }
 
@@ -2116,6 +2118,8 @@ bool build_lesser_vault(struct cave *c, int y0, int x0)
  */
 bool build_medium_vault(struct cave *c, int y0, int x0)
 {
+	if (!streq(dun->profile->name, "classic") && (one_in_(2)))
+		return build_vault_type(c, y0, x0, 3, "Medium vault");
 	return build_vault_type(c, y0, x0, 7, "Medium vault");
 }
 
@@ -2157,6 +2161,8 @@ bool build_greater_vault(struct cave *c, int y0, int x0)
 	/* Attempt to pass the depth check and build a GV */
 	if (randint0(denominator) >= numerator) return FALSE;
 
+	if (!streq(dun->profile->name, "classic") && (one_in_(2)))
+		return build_vault_type(c, y0, x0, 2, "Greater vault");
 	return build_vault_type(c, y0, x0, 8, "Greater vault");
 }
 
@@ -2730,6 +2736,12 @@ bool build_huge(struct cave *c, int y0, int x0)
 
 	int height = (2 + randint1(2)) * dun->block_hgt;
 	int width = (3 + randint1(6)) * dun->block_wid;
+
+	/* Only try to build a huge room as the first room. */
+	if (dun->cent_n > 0) return FALSE;
+
+	/* Flat 5% chance */
+	if (!one_in_(20)) return FALSE;
 
 	/* This room is usually lit. */
 	if (randint0(3) != 0)

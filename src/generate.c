@@ -142,8 +142,34 @@ struct room_profile classic_rooms[] = {
 };
 
 /* name function height width min-depth pit? rarity %cutoff */
+struct room_profile sample1_rooms[] = {
+    /* really big rooms have rarity 0 but they have other checks */
+    {"greater vault", build_greater_vault, 44, 66, 35, FALSE, 0, 100},
+	{"huge room", build_huge, 44, 66, 40, FALSE, 0, 100},
+
+    /* very rare rooms (rarity=2) */
+	{"room of chambers", build_room_of_chambers, 44, 66, 10, FALSE, 2, 4},
+    {"monster pit", build_pit, 11, 33, 5, TRUE, 2, 12},
+    {"monster nest", build_nest, 11, 33, 5, TRUE, 2, 20},
+    {"medium vault", build_medium_vault, 22, 33, 30, FALSE, 2, 40},
+    {"lesser vault", build_lesser_vault, 22, 33, 20, FALSE, 2, 60},
+
+
+    /* unusual rooms (rarity=1) */
+	{"interesting room", build_interesting, 44, 55, 0, FALSE, 1, 10},
+    {"large room", build_large, 11, 33, 3, FALSE, 1, 25},
+    {"crossed room", build_crossed, 11, 33, 3, FALSE, 1, 40},
+    {"circular room", build_circular, 22, 22, 1, FALSE, 1, 55},
+    {"overlap room", build_overlap, 11, 33, 1, FALSE, 1, 70},
+    {"room template", build_template, 11, 33, 5, FALSE, 1, 100},
+
+    /* normal rooms */
+    {"simple room", build_simple, 11, 33, 1, FALSE, 0, 100}
+};
+
+/* name function height width min-depth pit? rarity %cutoff */
 struct room_profile unused_rooms[] = {
-	{"interesting room", build_interesting, 44, 55, 10, FALSE, 0, 100},
+	{"interesting room", build_interesting, 44, 55, 0, FALSE, 0, 100},
 	{"moria room", build_moria, 33, 55, 10, FALSE, 0, 100},
 	{"room of chambers", build_room_of_chambers, 44, 66, 10, FALSE, 0, 100},
 	{"huge room", build_huge, 44, 66, 40, FALSE, 0, 100}
@@ -199,6 +225,28 @@ struct cave_profile cave_profiles[] = {
 		/* cutoff */
 		100
     }
+};
+
+
+/**
+ * Experimental profile using all the new stuff.  To test, edit in the code 
+ * at "sample1 test" below.
+ */
+struct cave_profile sample1 = {
+	/* name builder block dun_rooms dun_unusual max_rarity n_room_profiles */
+	"sample1", sample1_gen, 11, 50, 250, 2, N_ELEMENTS(sample1_rooms),
+
+	/* name rnd chg con pen jct */
+	{"tunnel-classic", 10, 30, 15, 25, 90},
+
+	/* name den rng mag mc qua qc */
+	{"streamer-classic", 5, 2, 3, 90, 2, 40},
+
+	/* room_profiles */
+	sample1_rooms,
+
+	/* cutoff */
+	100
 };
 
 
@@ -456,7 +504,12 @@ void cave_generate(struct cave *c, struct player *p) {
 			/* Quest levels must be normal levels */
 			dun->profile = &cave_profiles[N_ELEMENTS(cave_profiles) - 1];
 			dun->profile->builder(c, p);
-			
+#if 0  /* sample1 test */
+		} else if (1) {
+			/* Test */
+			dun->profile = &sample1;
+			dun->profile->builder(c, p);
+#endif
 		} else {	
 			int perc = randint0(100);
 			size_t last = N_ELEMENTS(cave_profiles) - 1;

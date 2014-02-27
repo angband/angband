@@ -245,6 +245,7 @@ bool town_gen(struct cave *c, struct player *p);
 bool classic_gen(struct cave *c, struct player *p);
 bool labyrinth_gen(struct cave *c, struct player *p);
 bool cavern_gen(struct cave *c, struct player *p);
+bool sample1_gen(struct cave *c, struct player *p);
 
 void fill_rectangle(struct cave *c, int y1, int x1, int y2, int x2, int feat,
 					int flag);
