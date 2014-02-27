@@ -110,8 +110,8 @@ struct dun_data {
 	int block_wid;
 
     /* Number of blocks along each axis */
-    int row_rooms;
-    int col_rooms;
+    int row_blocks;
+    int col_blocks;
 
     /* Array of which blocks are used */
     bool **room_map;
@@ -181,7 +181,7 @@ typedef bool (*room_builder) (struct cave *c, int y0, int x0);
 struct room_profile {
     const char *name;
     room_builder builder; /* Function used to build fixed size rooms */
-    int height, width; /* Space required in blocks */
+    int height, width; /* Space required in grids */
     int level; /* Minimum dungeon level */
     bool pit; /* Whether this room is a pit/nest or not */
     int rarity; /* How unusual this room is */

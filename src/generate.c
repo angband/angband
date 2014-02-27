@@ -102,7 +102,7 @@ struct vault *vaults;
  */
 struct cave_profile town_profile = {
     /* name builder block dun_rooms dun_unusual max_rarity n_room_profiles */
-    "town-default", town_gen, 11, 50, 200, 2, 0,
+    "town-default", town_gen, 1, 50, 200, 2, 0,
 
     /* name rnd chg con pen jct */
     {"tunnel-default", 10, 30, 15, 25, 90},
@@ -121,31 +121,31 @@ struct cave_profile town_profile = {
 /* name function height width min-depth pit? rarity %cutoff */
 struct room_profile classic_rooms[NUM_CLASSIC_ROOMS] = {
     /* greater vaults only have rarity 1 but they have other checks */
-    {"greater vault", build_greater_vault, 4, 6, 35, FALSE, 0, 100},
+    {"greater vault", build_greater_vault, 44, 66, 35, FALSE, 0, 100},
 
     /* very rare rooms (rarity=2) */
-    {"monster pit", build_pit, 1, 3, 5, TRUE, 2, 8},
-    {"monster nest", build_nest, 1, 3, 5, TRUE, 2, 16},
-    {"medium vault", build_medium_vault, 2, 3, 30, FALSE, 2, 38},
-    {"lesser vault", build_lesser_vault, 2, 3, 20, FALSE, 2, 55},
+    {"monster pit", build_pit, 11, 33, 5, TRUE, 2, 8},
+    {"monster nest", build_nest, 11, 33, 5, TRUE, 2, 16},
+    {"medium vault", build_medium_vault, 22, 33, 30, FALSE, 2, 38},
+    {"lesser vault", build_lesser_vault, 22, 33, 20, FALSE, 2, 55},
 
 
     /* unusual rooms (rarity=1) */
-    {"large room", build_large, 1, 3, 3, FALSE, 1, 15},
-    {"crossed room", build_crossed, 1, 3, 3, FALSE, 1, 35},
-    {"circular room", build_circular, 2, 2, 1, FALSE, 1, 50},
-    {"overlap room", build_overlap, 1, 3, 1, FALSE, 1, 70},
-    {"room template", build_template, 1, 3, 5, FALSE, 1, 100},
+    {"large room", build_large, 11, 33, 3, FALSE, 1, 15},
+    {"crossed room", build_crossed, 11, 33, 3, FALSE, 1, 35},
+    {"circular room", build_circular, 22, 22, 1, FALSE, 1, 50},
+    {"overlap room", build_overlap, 11, 33, 1, FALSE, 1, 70},
+    {"room template", build_template, 11, 33, 5, FALSE, 1, 100},
 
     /* normal rooms */
-    {"simple room", build_simple, 1, 3, 1, FALSE, 0, 100}
+    {"simple room", build_simple, 11, 33, 1, FALSE, 0, 100}
 };
 
 /* name function height width min-depth pit? rarity %cutoff */
 struct room_profile unused_rooms[] = {
-	{"moria room", build_moria, 3, 5, 10, FALSE, 0, 100},
-	{"room of chambers", build_room_of_chambers, 4, 6, 10, FALSE, 0, 100},
-	{"huge room", build_huge, 4, 6, 40, FALSE, 0, 100}
+	{"moria room", build_moria, 33, 55, 10, FALSE, 0, 100},
+	{"room of chambers", build_room_of_chambers, 44, 66, 10, FALSE, 0, 100},
+	{"huge room", build_huge, 44, 66, 40, FALSE, 0, 100}
 };
 
 /**
@@ -153,7 +153,7 @@ struct room_profile unused_rooms[] = {
  */
 struct cave_profile cave_profiles[NUM_CAVE_PROFILES] = {
     {
-		"labyrinth", labyrinth_gen, 11, 0, 200, 0, 0,
+		"labyrinth", labyrinth_gen, 1, 0, 200, 0, 0,
 
 		/* tunnels -- not applicable */
 		{"tunnel-null", 0, 0, 0, 0, 0},
@@ -168,7 +168,7 @@ struct cave_profile cave_profiles[NUM_CAVE_PROFILES] = {
 		100
     },
     {
-		"cavern", cavern_gen, 11, 0, 200, 0, 0,
+		"cavern", cavern_gen, 1, 0, 200, 0, 0,
 
 		/* tunnels -- not applicable */
 		{"tunnel-null", 0, 0, 0, 0, 0},

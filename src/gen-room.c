@@ -676,16 +676,16 @@ static bool find_space(int *y, int *x, int height, int width)
 		filled = FALSE;
 
 		/* Pick a top left block at random */
-		by1 = randint0(dun->row_rooms);
-		bx1 = randint0(dun->col_rooms);
+		by1 = randint0(dun->row_blocks);
+		bx1 = randint0(dun->col_blocks);
 
 		/* Extract bottom right corner block */
 		by2 = by1 + blocks_high - 1;
 		bx2 = bx1 + blocks_wide - 1;
 
 		/* Never run off the screen */
-		if (by1 < 0 || by2 >= dun->row_rooms) continue;
-		if (bx1 < 0 || bx2 >= dun->col_rooms) continue;
+		if (by1 < 0 || by2 >= dun->row_blocks) continue;
+		if (bx1 < 0 || bx2 >= dun->col_blocks) continue;
 
 		/* Verify open space */
 		for (by = by1; by <= by2; by++) {
@@ -2785,8 +2785,8 @@ bool room_build(struct cave *c, int by0, int bx0, struct room_profile profile,
 	/* Extract blocks */
 	int by1 = by0;
 	int bx1 = bx0;
-	int by2 = by0 + profile.height;
-	int bx2 = bx0 + profile.width;
+	int by2 = by0 + profile.height / dun->block_hgt;
+	int bx2 = bx0 + profile.width / dun->block_wid;
 
 	int y, x;
 	int by, bx;
@@ -2806,8 +2806,8 @@ bool room_build(struct cave *c, int by0, int bx0, struct room_profile profile,
 			return FALSE;
 	} else {
 		/* Never run off the screen */
-		if (by1 < 0 || by2 >= dun->row_rooms) return FALSE;
-		if (bx1 < 0 || bx2 >= dun->col_rooms) return FALSE;
+		if (by1 < 0 || by2 >= dun->row_blocks) return FALSE;
+		if (bx1 < 0 || bx2 >= dun->col_blocks) return FALSE;
 
 		/* Verify open space */
 		for (by = by1; by <= by2; by++) {

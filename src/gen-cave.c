@@ -380,7 +380,7 @@ bool classic_gen(struct cave *c, struct player *p) {
     bool **blocks_tried;
 
     /* Possibly generate fewer rooms in a smaller area via a scaling factor.
-     * Since we scale row_rooms and col_rooms by the same amount, DUN_ROOMS
+     * Since we scale row_blocks and col_blocks by the same amount, DUN_ROOMS
      * gives the same "room density" no matter what size the level turns out
      * to be. TODO: vary room density slightly? */
 
@@ -410,25 +410,27 @@ bool classic_gen(struct cave *c, struct player *p) {
 				   FEAT_GRANITE, SQUARE_NONE);
 
     /* Actual maximum number of rooms on this level */
-    dun->row_rooms = c->height / dun->block_hgt;
-    dun->col_rooms = c->width / dun->block_wid;
+    dun->row_blocks = c->height / dun->block_hgt;
+    dun->col_blocks = c->width / dun->block_wid;
 
     /* Initialize the room table */
-	dun->room_map = mem_zalloc(dun->row_rooms * sizeof(bool*));
-	for (i = 0; i < dun->row_rooms; i++)
-		dun->room_map[i] = mem_zalloc(dun->col_rooms * sizeof(bool));
+	dun->room_map = mem_zalloc(dun->row_blocks * sizeof(bool*));
+	for (i = 0; i < dun->row_blocks; i++)
+		dun->room_map[i] = mem_zalloc(dun->col_blocks * sizeof(bool));
 
     /* Initialize the block table */
-    blocks_tried = mem_zalloc(dun->row_rooms * sizeof(bool*));
+    blocks_tried = mem_zalloc(dun->row_blocks * sizeof(bool*));
 
-	for (i = 0; i < dun->row_rooms; i++)
-		blocks_tried[i] = mem_zalloc(dun->col_rooms * sizeof(bool));
+	for (i = 0; i < dun->row_blocks; i++)
+		blocks_tried[i] = mem_zalloc(dun->col_blocks * sizeof(bool));
 
     /* No rooms yet, pits or otherwise. */
     dun->pit_num = 0;
     dun->cent_n = 0;
 
-    /* Build some rooms */
+    /* Build some rooms.  Note that the theoretical maximum number of rooms
+	 * in this profile is currently 36, so built never reaches num_rooms,
+	 * and room generation is always terminated by having tried all blocks */
     built = 0;
     while(built < num_rooms) {
 
@@ -436,8 +438,8 @@ bool classic_gen(struct cave *c, struct player *p) {
 		j = 0;
 		tby = 0;
 		tbx = 0;
-		for(by = 0; by < dun->row_rooms; by++) {
-			for(bx = 0; bx < dun->col_rooms; bx++) {
+		for(by = 0; by < dun->row_blocks; by++) {
+			for(bx = 0; bx < dun->col_blocks; bx++) {
 				if (blocks_tried[by][bx]) continue;
 				j++;
 				if (one_in_(j)) {
@@ -487,7 +489,7 @@ bool classic_gen(struct cave *c, struct player *p) {
 		}
     }
 
-	for (i = 0; i < dun->row_rooms; i++){
+	for (i = 0; i < dun->row_blocks; i++){
 		mem_free(blocks_tried[i]);
 		mem_free(dun->room_map[i]);
 	}
