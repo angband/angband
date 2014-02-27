@@ -2094,6 +2094,15 @@ static bool build_vault_type(struct cave *c, int y0, int x0, int typ,
 
 
 /**
+ * Build an interesting room.
+ */
+bool build_interesting(struct cave *c, int y0, int x0)
+{
+	return build_vault_type(c, y0, x0, 5, "Interesting room");
+}
+
+
+/**
  * Build a lesser vault.
  */
 bool build_lesser_vault(struct cave *c, int y0, int x0)
