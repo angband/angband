@@ -566,7 +566,7 @@ struct blow_info {
  * Returns the number of entries made in the possible_blows[] table, or 0
  * if the object is not a weapon.
  */
-static int obj_known_blows(const object_type *o_ptr, bool *too_heavy, int max_num, struct blow_info possible_blows[])
+static int obj_known_blows(const object_type *o_ptr, int max_num, struct blow_info possible_blows[])
 {
 	int str_plus, dex_plus, old_blows = 0, new_blows, extra_blows;
 	int str_faster = -1, str_done = -1;
@@ -588,9 +588,6 @@ static int obj_known_blows(const object_type *o_ptr, bool *too_heavy, int max_nu
 
 	/* Calculate the player's hypothetical state */
 	calc_bonuses(inven, &state, TRUE);
-
-	/* Warn about heavy weapons */
-	*too_heavy = state.heavy_wield;
 
 	/* First entry is always the current num of blows. */
 	possible_blows[num].str_plus = 0;
@@ -685,14 +682,10 @@ static bool describe_blows(textblock *tb, const object_type *o_ptr)
 {
 	int i;
 	struct blow_info blow_info[STAT_RANGE * 2]; /* (Very) theoretical max */
-	bool too_heavy = FALSE;
 	int num_entries = 0;
 
-	num_entries = obj_known_blows(o_ptr, &too_heavy, STAT_RANGE * 2, blow_info);
+	num_entries = obj_known_blows(o_ptr, STAT_RANGE * 2, blow_info);
 	if (num_entries == 0) return FALSE;
-
-	if (too_heavy)
-		textblock_append_c(tb, TERM_L_RED, "You are too weak to use this weapon.\n");
 
 	/* First entry is always current blows (+0, +0) */
 	textblock_append_c(tb, TERM_L_GREEN, "%d.%d ",
@@ -906,6 +899,55 @@ static bool describe_damage(textblock *tb, const object_type *o_ptr, oinfo_detai
 	return TRUE;
 }
 
+static void obj_known_misc_combat(const object_type *o_ptr, bool *thrown_effect, int *range, bool *impactful, int *break_chance, bool *too_heavy)
+{
+	object_type *bow = &player->inventory[INVEN_BOW];
+	bool weapon = tval_is_melee_weapon(o_ptr);
+	bool ammo   = (player->state.ammo_tval == o_ptr->tval) &&
+	              (bow->kind);
+	bitflag f[OF_SIZE];
+
+	*thrown_effect = *impactful = *too_heavy = FALSE;
+	*range = *break_chance = 0;
+
+	get_known_flags(o_ptr, 0, f, NULL);
+
+	if (!weapon && !ammo) {
+		/* Potions can have special text */
+		if (tval_is_potion(o_ptr) &&
+				o_ptr->dd != 0 && o_ptr->ds != 0 &&
+				!object_flavor_is_aware(o_ptr))
+			*thrown_effect = TRUE;
+
+		return;
+	}
+
+	if (!weapon) /* Ammo */
+		*range = 6 + 2 * player->state.ammo_mult * 10;;
+
+	/* Note the impact flag */
+	*impactful = of_has(f, OF_IMPACT);
+
+	/* Add breakage chance */
+	if (ammo) 
+		*break_chance = breakage_chance(o_ptr, TRUE);
+
+	/* Is the weapon too heavy? */
+	if (weapon) {
+		player_state state;
+		object_type inven[INVEN_TOTAL];
+
+		memcpy(inven, player->inventory, INVEN_TOTAL * sizeof(object_type));
+		inven[INVEN_WIELD] = *o_ptr;
+
+		/* Calculate the player's hypothetical state */
+		calc_bonuses(inven, &state, TRUE);
+
+		/* Warn about heavy weapons */
+		*too_heavy = state.heavy_wield;
+	}
+}
+
 
 /*
  * Describe combat advantages.
@@ -914,54 +956,46 @@ static bool describe_combat(textblock *tb, const object_type *o_ptr,
 		oinfo_detail_t mode)
 {
 	object_type *bow = &player->inventory[INVEN_BOW];
-
-	bitflag f[OF_SIZE];
-
 	bool weapon = tval_is_melee_weapon(o_ptr);
 	bool ammo   = (player->state.ammo_tval == o_ptr->tval) &&
 	              (bow->kind);
 
+	int range, break_chance;
+	bool impactful, thrown_effect, too_heavy;
+
 	/* Abort if we've nothing to say */
 	if (mode & OINFO_DUMMY) return FALSE;
 
-	if (!weapon && !ammo) {
-		/* Potions can have special text */
-		if (!tval_is_potion(o_ptr) ||
-				o_ptr->dd == 0 || o_ptr->ds == 0 ||
-				!object_flavor_is_aware(o_ptr))
-			return FALSE;
+	obj_known_misc_combat(o_ptr, &thrown_effect, &range, &impactful, &break_chance, &too_heavy);
 
-		textblock_append(tb, "It can be thrown at creatures with damaging effect.\n");
-		return TRUE;
+	if (!weapon && !ammo) {
+		if (thrown_effect) {
+			textblock_append(tb, "It can be thrown at creatures with damaging effect.\n");
+			return TRUE;
+		}
+		else return FALSE;
 	}
 
-	object_flags_known(o_ptr, f);
-
 	textblock_append_c(tb, TERM_L_WHITE, "Combat info:\n");
+
+	if (too_heavy)
+		textblock_append_c(tb, TERM_L_RED, "You are too weak to use this weapon.\n");
 
 	describe_blows(tb, o_ptr);
 
 	if (!weapon) { /* Ammo */
-		/* Range of the weapon */
-		int tdis = 6 + 2 * player->state.ammo_mult;
-
-		/* Output the range */
 		textblock_append(tb, "Hits targets up to ");
-		textblock_append_c(tb, TERM_L_GREEN, format("%d", tdis * 10));
+		textblock_append_c(tb, TERM_L_GREEN, format("%d", range));
 		textblock_append(tb, " feet away.\n");
 	}
 
-	/* Describe damage */
 	describe_damage(tb, o_ptr, mode);
 
-	/* Note the impact flag */
-	if (of_has(f, OF_IMPACT))
+	if (impactful)
 		textblock_append(tb, "Sometimes creates earthquakes on impact.\n");
 
-	/* Add breakage chance */
 	if (ammo) {
-		int chance = breakage_chance(o_ptr, TRUE);
-		textblock_append_c(tb, TERM_L_GREEN, "%d%%", chance);
+		textblock_append_c(tb, TERM_L_GREEN, "%d%%", break_chance);
 		textblock_append(tb, " chance of breaking upon contact.\n");
 	}
 
