@@ -2401,7 +2401,7 @@ bool build_room_of_chambers(struct cave *c, int y0, int x0)
 	int height, width, count;
 
 	int y1, x1, y2, x2;
-	char *name = NULL;
+	char name[40];
 
 	/* Deeper in the dungeon, chambers are less likely to be lit. */
 	bool light = (randint0(45) > c->depth) ? TRUE : FALSE;
@@ -2689,7 +2689,7 @@ bool build_room_of_chambers(struct cave *c, int y0, int x0)
 	c->mon_rating += 10;
 
 	/* Describe */
-	ROOM_LOG("Room of chambers (%s)", name ? name : "empty");
+	ROOM_LOG("Room of chambers (%s)", strlen(name) ? name : "empty");
 
 	/* Success. */
 	return (TRUE);

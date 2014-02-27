@@ -52,7 +52,7 @@ pit_profile *lookup_pit_profile(const char *name)
 	pit_profile *profile;
 
 	/* Look for it */
-	for (profile = pit_info; profile; profile = profile->next) {
+	for (profile = &pit_info[z_info->pit_max - 1]; profile; profile = profile->next) {
 		if (streq(name, profile->name))
 			return profile;
 	}
