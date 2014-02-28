@@ -95,7 +95,7 @@ static void build_streamer(struct cave *c, int feat, int chance)
  * Constructs a tunnel between two points
  *
  * This function must be called BEFORE any streamers are created, since we use
- * the special "granite wall" sub-types to keep track of legal places for
+ * granite with the special SQUARE_WALL flags to keep track of legal places for
  * corridors to pierce rooms.
  *
  * We queue the tunnel grids to prevent door creation along a corridor which
@@ -355,7 +355,8 @@ static void try_door(struct cave *c, int y, int x)
 
 
 /**
- * 
+ * Set the height and width for this dungeon level.  Any grids outside these
+ * but less than DUNGEON_HGT, DUNGEON_WID should be set to permanent rock.
  */
 static void set_cave_dimensions(struct cave *c, int h, int w)
 {
@@ -379,12 +380,7 @@ bool classic_gen(struct cave *c, struct player *p) {
 
     bool **blocks_tried;
 
-    /* Possibly generate fewer rooms in a smaller area via a scaling factor.
-     * Since we scale row_blocks and col_blocks by the same amount, DUN_ROOMS
-     * gives the same "room density" no matter what size the level turns out
-     * to be. TODO: vary room density slightly? */
-
-    /* XXX: Until vault generation is improved, scaling variance is removed */
+    /* This code currently does nothing - see comments below */
     i = randint1(10) + c->depth / 24;
     if (is_quest(c->depth)) size_percent = 100;
     else if (i < 2) size_percent = 75;
@@ -1418,14 +1414,6 @@ bool town_gen(struct cave *c, struct player *p) {
 
     set_cave_dimensions(c, TOWN_HGT, TOWN_WID);
 
-    /* NOTE: We can't use c->height and c->width here because then there'll be
-     * a bunch of empty space in the level that monsters might spawn in (or
-     * teleport might take you to, or whatever).
-     *
-     * TODO: fix this to use c->height and c->width when all the 'choose
-     * random location' things honor them.
-     */
-
     /* Start with solid walls, and then create some floor in the middle */
     fill_rectangle(c, 0, 0, DUNGEON_HGT - 1, DUNGEON_WID - 1, 
 				   FEAT_PERM, SQUARE_NONE);
@@ -1448,6 +1436,9 @@ bool town_gen(struct cave *c, struct player *p) {
 
 /* ------------------ EXPERIMENTAL ---------------- */
 
+/**
+ * Room profiles for moria levels - idea stolen from Oangband
+ */
 struct room_profile moria_rooms[] = {
 	/* really big rooms have rarity 0 but they have other checks */
 	{"greater vault", build_greater_vault, 44, 66, 35, FALSE, 0, 100},
@@ -1466,6 +1457,24 @@ struct room_profile moria_rooms[] = {
 
 /**
  * Generate a new dungeon level.
+ *
+ * This is sample code to illustrate some of the new dungeon generation
+ * methods; I think it actually prdouces quite nice levels.  New stuff:
+ *
+ * - different sized levels
+ * - independence from block size: the block size can be set to any number
+ *   from 1 (no blocks) to about 15; beyond that it struggles to generate
+ *   enough floor space
+ * - the find_space function, called from the room builder functions, allows
+ *   the room to find space for itself rather than the generation algorithm
+ *   allocating it; this helps because the room knows better what size it is
+ * - a count is now kept of grids of the various terrains, allowing dungeon
+ *   generation to terminate when enough floor is generated
+ * - there are four new room types - moria rooms, huge rooms, rooms of
+ *   chambers and interesting rooms - as well as many new vaults
+ * - there is the ability to place specific monsters and objects in vaults and
+ *   interesting rooms, as well as to make general monster restrictions in
+ *   areas or the whole dungeon
  */
 bool sample1_gen(struct cave *c, struct player *p) {
     int i, k, y, x, y1, x1;

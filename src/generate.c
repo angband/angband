@@ -43,26 +43,20 @@ struct vault *vaults;
 
 
 /**
- * Note that Level generation is *not* an important bottleneck, though it can
- * be annoyingly slow on older machines...  Thus we emphasize "simplicity" and
- * "correctness" over "speed".
- *
  * See the "vault.txt" file for more on vault generation.
  * See the "room_template.txt" file for more room templates.
  *
- * In this file, we use the "special" granite and perma-wall sub-types, where
- * "basic" is normal, "inner" is inside a room, "outer" is the outer wall of a
- * room, and "solid" is the outer wall of the dungeon or any walls that may not
- * be pierced by corridors.  Thus the only wall type that may be pierced by a
- * corridor is the "outer granite" type. The "basic granite" type yields the
- * "actual" corridors.
+ * In this file, we use the SQUARE_WALL flags to cave->info, which should only
+ * be applied to granite.  SQUARE_WALL_SOLID indicates the wall should not be
+ * tunnelled; SQUARE_WALL_INNER is the inward-facing wall of a room;
+ * SQUARE_WALL_OUTER is the outer wall of a room.
  *
- * We use the special "solid" granite wall type to prevent multiple corridors
- * from piercing a wall in two adjacent locations, which would be messy, and we
- * use the special "outer" granite wall to indicate which walls "surround"
- * rooms, and may thus be "pierced" by corridors entering or leaving the room.
+ * We use SQUARE_WALL_SOLID to prevent multiple corridors from piercing a wall
+ * in two adjacent locations, which would be messy, and SQUARE_WALL_OUTER
+ * to indicate which walls surround rooms, and may thus be pierced by corridors
+ * entering or leaving the room.
  *
- * Note that a tunnel which attempts to leave a room near the "edge" of the
+ * Note that a tunnel which attempts to leave a room near the edge of the
  * dungeon in a direction toward that edge will cause "silly" wall piercings,
  * but will have no permanently incorrect effects, as long as the tunnel can
  * eventually exit from another side. And note that the wall may not come back
@@ -74,27 +68,24 @@ struct vault *vaults;
  *
  * Note that no two corridors may enter a room through adjacent grids, they
  * must either share an entryway or else use entryways at least two grids
- * apart. This prevents "large" (or "silly") doorways.
+ * apart. This prevents large (or "silly") doorways.
  *
- * To create rooms in the dungeon, we first divide the dungeon up into "blocks"
- * of 11x11 grids each, and require that all rooms occupy a rectangular group
- * of blocks.  As long as each room type reserves a sufficient number of
- * blocks, the room building routines will not need to check bounds. Note that
- * most of the normal rooms actually only use 23x11 grids, and so reserve 33x11
- * grids.
+ * Traditionally, to create rooms in the dungeon, it was divided up into
+ * "blocks" of 11x11 grids each, and all rooms were required to occupy a
+ * rectangular group of blocks.  As long as each room type reserved a
+ * sufficient number of blocks, the room building routines would not need to
+ * check bounds. Note that in classic generation most of the normal rooms
+ * actually only use 23x11 grids, and so reserve 33x11 grids.
  *
- * Note that the use of 11x11 blocks (instead of the 33x11 panels) allows more
- * variability in the horizontal placement of rooms, and at the same time has
- * the disadvantage that some rooms (two thirds of the normal rooms) may be
- * "split" by panel boundaries.  This can induce a situation where a player is
- * in a room and part of the room is off the screen.  This can be so annoying
- * that the player must set a special option to enable "non-aligned" room
- * generation.
- *
- * The 64 new "dungeon features" will also be used for "visual display"
- * but we must be careful not to allow, for example, the user to display
- * hidden traps in a different way from floors, or secret doors in a way
- * different from granite walls.
+ * Note that a lot of the original motivation for the block system was the
+ * fact that there was only one size of map available, 22x66 grids, and the
+ * dungeon level was divided up into nine of these in three rows of three.
+ * Now that the map can be resized and enlarged, and dungeon levels themselves
+ * can be different sizes, much of this original motivation has gone.  Blocks
+ * can still be used, but different cave profiles can set their own block
+ * sizes.  The classic generation method still uses the traditional blocks; the
+ * main motivation for using blocks now is for the aesthetic effect of placing
+ * rooms on a grid.
  */
 
 /**
@@ -167,14 +158,6 @@ struct room_profile sample1_rooms[] = {
     {"simple room", build_simple, 11, 33, 1, FALSE, 0, 100}
 };
 
-/* name function height width min-depth pit? rarity %cutoff */
-struct room_profile unused_rooms[] = {
-	{"interesting room", build_interesting, 44, 55, 0, FALSE, 0, 100},
-	{"moria room", build_moria, 33, 55, 10, FALSE, 0, 100},
-	{"room of chambers", build_room_of_chambers, 44, 66, 10, FALSE, 0, 100},
-	{"huge room", build_huge, 44, 66, 40, FALSE, 0, 100}
-};
-
 /**
  * Profiles used for generating dungeon levels.
  */
@@ -229,12 +212,16 @@ struct cave_profile cave_profiles[] = {
 
 
 /**
- * Experimental profile using all the new stuff.  To test, edit in the code 
- * at "sample1 test" below.
+ * Experimental profile using all the new stuff.  To test, edit in the test
+ * block of code in cave_generate below.
+ *
+ * Points to note about this particular profile:
+ * - block size is 1, which essentially means no blocks
+ * - there are more comments at the definition of sample1_gen in gen-cave.c
  */
 struct cave_profile sample1 = {
 	/* name builder block dun_rooms dun_unusual max_rarity n_room_profiles */
-	"sample1", sample1_gen, 11, 50, 250, 2, N_ELEMENTS(sample1_rooms),
+	"sample1", sample1_gen, 1, 50, 250, 2, N_ELEMENTS(sample1_rooms),
 
 	/* name rnd chg con pen jct */
 	{"tunnel-classic", 10, 30, 15, 25, 90},
@@ -504,9 +491,12 @@ void cave_generate(struct cave *c, struct player *p) {
 			/* Quest levels must be normal levels */
 			dun->profile = &cave_profiles[N_ELEMENTS(cave_profiles) - 1];
 			dun->profile->builder(c, p);
-#if 0  /* sample1 test */
+#if 0
+			/* Replacing #if 0 with #if 1 will force the use of the sample1
+			 * profile except in quest levels and the town.  This is handy for
+			 * experimenting with new generation methods.
+			 */
 		} else if (1) {
-			/* Test */
 			dun->profile = &sample1;
 			dun->profile->builder(c, p);
 #endif

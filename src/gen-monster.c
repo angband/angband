@@ -37,13 +37,6 @@ static bool allow_unique;
 static char base_d_char[15];
 
 
-/**************************************************************/
-/*                                                            */
-/*                 The monster-selection code                 */
-/*                                                            */
-/**************************************************************/
-
-
 /**
  * Return the pit profile matching the given name.
  */
