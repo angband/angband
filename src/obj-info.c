@@ -221,7 +221,7 @@ static bool describe_stats(textblock *tb, const object_type *o_ptr,
 	bool dummy = mode & OINFO_DUMMY;
 	bool search = FALSE;
 
-	if (!o_ptr->num_pvals && !dummy)
+	if (!o_ptr->num_pvals)
 		return FALSE;
 
 	for (i = 0; i < o_ptr->num_pvals; i++) {
@@ -1173,9 +1173,8 @@ static bool obj_known_light(const object_type *o_ptr, oinfo_detail_t mode, int *
 		return FALSE;
 
 	/* Prevent unidentified objects (especially artifact lights) from showing
-	 * bad radius and refueling info, but allow it to appear in ego knowledge
-	 * and spoilers */
-	if (!object_is_known(o_ptr) && !(mode & (OINFO_EGO | OINFO_DUMMY)))
+	 * bad radius and refueling info. */
+	if (!object_is_known(o_ptr))
 		return FALSE;
 
 	/* Work out radius */
