@@ -218,8 +218,11 @@ static bool describe_stats(textblock *tb, const object_type *o_ptr,
 {
 	const char *descs[N_ELEMENTS(pval_flags)];
 	size_t count = 0, i;
-	bool dummy = mode & OINFO_DUMMY;
 	bool search = FALSE;
+
+	/* Show details of exact pluses for fake artifacts (lost real items in
+	   knowledge menus), but not for egos (each real one may be different) */
+	bool suppress_details = (o_ptr->ident & IDENT_FAKE) && !o_ptr->artifact;
 
 	if (!o_ptr->num_pvals)
 		return FALSE;
@@ -229,7 +232,7 @@ static bool describe_stats(textblock *tb, const object_type *o_ptr,
 
 		if (count)
 		{
-			if (object_this_pval_is_visible(o_ptr, i) && !dummy)
+			if (object_this_pval_is_visible(o_ptr, i) && !suppress_details)
 				textblock_append_c(tb, (o_ptr->pval[i] > 0) ? TERM_L_GREEN : TERM_RED,
 					"%+i ", o_ptr->pval[i]);
 			else
@@ -243,7 +246,7 @@ static bool describe_stats(textblock *tb, const object_type *o_ptr,
 
 	if (search)
 	{
-		if (object_this_pval_is_visible(o_ptr, which_pval(o_ptr, OF_SEARCH)) && !dummy)
+		if (object_this_pval_is_visible(o_ptr, which_pval(o_ptr, OF_SEARCH)) && !suppress_details)
 		{
 			textblock_append_c(tb, (o_ptr->pval[which_pval(o_ptr, OF_SEARCH)] > 0) ? TERM_L_GREEN : TERM_RED,
 				"%+i%% ", o_ptr->pval[which_pval(o_ptr, OF_SEARCH)] * 5);
@@ -565,6 +568,9 @@ struct blow_info {
  *
  * Returns the number of entries made in the possible_blows[] table, or 0
  * if the object is not a weapon.
+ *
+ * Note that the results are meaningless if called on a fake ego object as
+ * the actual ego may have different properties.
  */
 static int obj_known_blows(const object_type *o_ptr, int max_num, struct blow_info possible_blows[])
 {
@@ -715,7 +721,10 @@ static bool describe_blows(textblock *tb, const object_type *o_ptr)
 }
 
 
-static int obj_known_damage(const object_type *o_ptr, oinfo_detail_t mode, int *normal_damage, int slay_list[], int slay_damage[], bool *nonweap_slay)
+/*
+ * Meaningless if called on a fake ego object.
+ */
+static int obj_known_damage(const object_type *o_ptr, int *normal_damage, int slay_list[], int slay_damage[], bool *nonweap_slay)
 {
 	size_t i, cnt;
 	int mult[SL_MAX];
@@ -741,7 +750,7 @@ static int obj_known_damage(const object_type *o_ptr, oinfo_detail_t mode, int *
 	inven[INVEN_WIELD] = *o_ptr;
 	calc_bonuses(inven, &state, TRUE);
 
-	get_known_flags(o_ptr, mode, f, NULL);
+	get_known_flags(o_ptr, 0, f, NULL);
 
 	/* Create the "all slays" mask */
 	create_mask(mask, FALSE, OFT_SLAY, OFT_KILL, OFT_BRAND, OFT_MAX);
@@ -850,7 +859,7 @@ static int obj_known_damage(const object_type *o_ptr, oinfo_detail_t mode, int *
 /*
  * Describe damage.
  */
-static bool describe_damage(textblock *tb, const object_type *o_ptr, oinfo_detail_t mode)
+static bool describe_damage(textblock *tb, const object_type *o_ptr)
 {
 	bool nonweap_slay = FALSE;
 	int normal_damage;
@@ -860,7 +869,7 @@ static bool describe_damage(textblock *tb, const object_type *o_ptr, oinfo_detai
 	int num_slays;
 	int i;
 
-	num_slays = obj_known_damage(o_ptr, mode, &normal_damage, slays, slay_damage, &nonweap_slay);
+	num_slays = obj_known_damage(o_ptr, &normal_damage, slays, slay_damage, &nonweap_slay);
 
 	/* Collect slays */
 	/* Melee weapons get slays and brands from other items now */
@@ -899,6 +908,9 @@ static bool describe_damage(textblock *tb, const object_type *o_ptr, oinfo_detai
 	return TRUE;
 }
 
+/*
+ * Meaningless if called on a fake ego object.
+ */
 static void obj_known_misc_combat(const object_type *o_ptr, bool *thrown_effect, int *range, bool *impactful, int *break_chance, bool *too_heavy)
 {
 	object_type *bow = &player->inventory[INVEN_BOW];
@@ -952,8 +964,7 @@ static void obj_known_misc_combat(const object_type *o_ptr, bool *thrown_effect,
 /*
  * Describe combat advantages.
  */
-static bool describe_combat(textblock *tb, const object_type *o_ptr,
-		oinfo_detail_t mode)
+static bool describe_combat(textblock *tb, const object_type *o_ptr)
 {
 	object_type *bow = &player->inventory[INVEN_BOW];
 	bool weapon = tval_is_melee_weapon(o_ptr);
@@ -962,9 +973,6 @@ static bool describe_combat(textblock *tb, const object_type *o_ptr,
 
 	int range, break_chance;
 	bool impactful, thrown_effect, too_heavy;
-
-	/* Abort if we've nothing to say */
-	if (mode & OINFO_DUMMY) return FALSE;
 
 	obj_known_misc_combat(o_ptr, &thrown_effect, &range, &impactful, &break_chance, &too_heavy);
 
@@ -989,7 +997,7 @@ static bool describe_combat(textblock *tb, const object_type *o_ptr,
 		textblock_append(tb, " feet away.\n");
 	}
 
-	describe_damage(tb, o_ptr, mode);
+	describe_damage(tb, o_ptr);
 
 	if (impactful)
 		textblock_append(tb, "Sometimes creates earthquakes on impact.\n");
@@ -1013,8 +1021,7 @@ static bool describe_combat(textblock *tb, const object_type *o_ptr,
  *
  * Returns FALSE if the object has no effect on digging.
  */
-static bool obj_known_digger_info(const object_type *o_ptr,
-		oinfo_detail_t mode, int deciturns[])
+static bool obj_known_digger_info(const object_type *o_ptr, int deciturns[])
 {
 	player_state st;
 
@@ -1028,7 +1035,7 @@ static bool obj_known_digger_info(const object_type *o_ptr,
 	int chances[DIGGING_MAX];
 
 	/* abort if we are a dummy object */
-	if (mode & OINFO_DUMMY) return FALSE;
+	if (o_ptr->ident & IDENT_FAKE) return FALSE;
 
 	object_flags_known(o_ptr, f);
 
@@ -1061,15 +1068,14 @@ static bool obj_known_digger_info(const object_type *o_ptr,
 /*
  * Describe objects that can be used for digging.
  */
-static bool describe_digger(textblock *tb, const object_type *o_ptr,
-		oinfo_detail_t mode)
+static bool describe_digger(textblock *tb, const object_type *o_ptr)
 {
 	int i;
 	int deciturns[DIGGING_MAX];
 	static const char *names[4] = { "rubble", "magma veins", "quartz veins", "granite" };
 
 	/* Get useful info or print nothing */
-	if (!obj_known_digger_info(o_ptr, mode, deciturns)) return FALSE;
+	if (!obj_known_digger_info(o_ptr, deciturns)) return FALSE;
 
 	for (i = DIGGING_RUBBLE; i < DIGGING_DOORS; i++)
 	{
@@ -1567,7 +1573,6 @@ static textblock *object_info_out(const object_type *o_ptr, int mode)
 	bool terse = mode & OINFO_TERSE;
 	bool subjective = mode & OINFO_SUBJ;
 	bool ego = mode & OINFO_EGO;
-
 	textblock *tb = textblock_new();
 
 	/* Unaware objects get simple descriptions */
@@ -1612,18 +1617,22 @@ static textblock *object_info_out(const object_type *o_ptr, int mode)
 	if (ego && describe_ego(tb, o_ptr->ego)) something = TRUE;
 	if (something) textblock_append(tb, "\n");
 
-	if (!ego && describe_effect(tb, o_ptr, terse, subjective)) {
-		something = TRUE;
-		textblock_append(tb, "\n");
+	/* Skip all the very specific information where we are giving general
+	   ego knowledge rather than for a single item - abilities can vary */
+	if (!ego) {
+		if (describe_effect(tb, o_ptr, terse, subjective)) {
+			something = TRUE;
+			textblock_append(tb, "\n");
+		}
+		
+		if (subjective && describe_combat(tb, o_ptr)) {
+			something = TRUE;
+			textblock_append(tb, "\n");
+		}
+		
+		if (!terse && describe_food(tb, o_ptr, subjective)) something = TRUE;
+		if (!terse && subjective && describe_digger(tb, o_ptr)) something = TRUE;
 	}
-
-	if (subjective && describe_combat(tb, o_ptr, mode)) {
-		something = TRUE;
-		textblock_append(tb, "\n");
-	}
-
-	if (!terse && describe_food(tb, o_ptr, subjective)) something = TRUE;
-	if (!terse && subjective && describe_digger(tb, o_ptr, mode)) something = TRUE;
 
 	/* Hack? Don't append anything in terse (for chararacter dump), since that seems to cause extra linebreaks */
 	if (!something && !terse)
@@ -1668,10 +1677,10 @@ textblock *object_info_ego(struct ego_item *ego)
 	obj.ego = ego;
 	ego_apply_magic(&obj, 0);
 
-	obj.ident |= IDENT_KNOWN;
+	obj.ident |= IDENT_KNOWN | IDENT_FAKE;
 	object_know_all_flags(&obj);
 
-	return object_info_out(&obj, OINFO_EGO | OINFO_DUMMY);
+	return object_info_out(&obj, OINFO_EGO);
 }
 
 
