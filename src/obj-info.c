@@ -529,7 +529,7 @@ static void calculate_missile_crits(player_state *state, int weight,
 static void get_known_flags(const object_type *o_ptr, const oinfo_detail_t mode, bitflag flags[OF_SIZE], bitflag pv_flags[MAX_PVALS][OF_SIZE])
 {
 	/* Grab the object flags */
-	if (mode & OINFO_EGO) {
+	if ((o_ptr->ident & IDENT_FAKE) && !o_ptr->artifact) {
 		/* Looking at fake egos needs less info than object_flags_known() */
 		if (flags)
 			object_flags(o_ptr, flags);
@@ -1572,7 +1572,7 @@ static textblock *object_info_out(const object_type *o_ptr, int mode)
 
 	bool terse = mode & OINFO_TERSE;
 	bool subjective = mode & OINFO_SUBJ;
-	bool ego = mode & OINFO_EGO;
+	bool ego = (o_ptr->ident & IDENT_FAKE) && !o_ptr->artifact;
 	textblock *tb = textblock_new();
 
 	/* Unaware objects get simple descriptions */
@@ -1582,18 +1582,7 @@ static textblock *object_info_out(const object_type *o_ptr, int mode)
 	}
 	
 	/* Grab the object flags */
-	if (ego) {
-		/* Looking at fake egos needs less info than object_flags_known() */
-		object_flags(o_ptr, flags);
-		object_pval_flags(o_ptr, pv_flags);
-	} else {
-		object_flags_known(o_ptr, flags);
-		object_pval_flags_known(o_ptr, pv_flags);
-
-		/* Don't include base flags when terse */
-		if (terse)
-			of_diff(flags, o_ptr->kind->base->flags);
-	}
+	get_known_flags(o_ptr, mode, flags, pv_flags);
 
 	if (subjective) describe_origin(tb, o_ptr, terse);
 	if (!terse) describe_flavor_text(tb, o_ptr, ego);
@@ -1680,7 +1669,7 @@ textblock *object_info_ego(struct ego_item *ego)
 	obj.ident |= IDENT_KNOWN | IDENT_FAKE;
 	object_know_all_flags(&obj);
 
-	return object_info_out(&obj, OINFO_EGO);
+	return object_info_out(&obj, OINFO_NONE);
 }
 
 
