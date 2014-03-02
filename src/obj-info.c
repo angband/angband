@@ -216,7 +216,7 @@ static bool describe_curses(textblock *tb, const object_type *o_ptr,
 		textblock_append_c(tb, TERM_L_RED, "Cursed.\n");
 	else
 		return FALSE;
- 
+
 	return TRUE;
 }
 
@@ -427,7 +427,7 @@ static bool describe_slays(textblock *tb, const bitflag flags[OF_SIZE],
 	create_mask(kill_mask, FALSE, OFT_KILL, OFT_MAX);
 	create_mask(brand_mask, FALSE, OFT_BRAND, OFT_MAX);
 
-    if (tval_is_melee_weapon(o_ptr) || tval_is_fuel(o_ptr))
+    if (tval_is_weapon(o_ptr) || tval_is_fuel(o_ptr))
 		fulldesc = FALSE;
 	else
 		fulldesc = TRUE;
@@ -954,7 +954,7 @@ static void obj_known_misc_combat(const object_type *o_ptr, bool *thrown_effect,
 		/* Potions can have special text */
 		if (tval_is_potion(o_ptr) &&
 				o_ptr->dd != 0 && o_ptr->ds != 0 &&
-				!object_flavor_is_aware(o_ptr))
+				object_flavor_is_aware(o_ptr))
 			*thrown_effect = TRUE;
 
 		return;
@@ -1152,7 +1152,7 @@ static int obj_known_food(const object_type *o_ptr)
 		if (object_is_known(o_ptr)) {
 			return o_ptr->pval[DEFAULT_PVAL] / 2;
 		} else {
-			return -1;
+			return OBJ_KNOWN_PRESENT;
 		}
 	}
 
@@ -1169,13 +1169,13 @@ static bool describe_food(textblock *tb, const object_type *o_ptr,
 		int multiplier = extract_energy[player->state.speed];
 		if (!subjective) multiplier = 10;
 
-		if (nourishment > 0) {
+		if (nourishment == OBJ_KNOWN_PRESENT) {
+			textblock_append(tb, "Provides some nourishment.\n");
+		} else {
 			textblock_append(tb, "Nourishes for around ");
 			textblock_append_c(tb, TERM_L_GREEN, "%d", nourishment *
 				multiplier / 10);
 			textblock_append(tb, " turns.\n");
-		} else {
-			textblock_append(tb, "Provides some nourishment.\n");
 		}
 
 		return TRUE;
