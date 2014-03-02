@@ -44,6 +44,17 @@ typedef struct
 	const char *name;
 } flag_type;
 
+/*
+ * Describes the number of blows possible for given stat bonuses
+ */
+struct blow_info {
+	int str_plus;
+	int dex_plus;  
+	int centiblows;
+};
+
+/* Denotes the property being present, but specifics being unknown */
+#define OBJ_KNOWN_PRESENT -1
 
 
 /*** Utility code ***/
@@ -220,8 +231,8 @@ static bool describe_stats(textblock *tb, const object_type *o_ptr,
 	size_t count = 0, i;
 	bool search = FALSE;
 
-	/* Show details of exact pluses for fake artifacts (lost real items in
-	   knowledge menus), but not for egos (each real one may be different) */
+	/* Don't give exact pluses for faked ego items as each real one 
+	   will be different */
 	bool suppress_details = obj_is_ego_template(o_ptr);
 
 	if (!o_ptr->num_pvals)
@@ -526,6 +537,10 @@ static void calculate_missile_crits(player_state *state, int weight,
 	*div  = 100;
 }
 
+/*
+ * Get the object flags the player should know about for the given object/
+ * viewing mode combination.
+ */
 static void get_known_flags(const object_type *o_ptr, const oinfo_detail_t mode, bitflag flags[OF_SIZE], bitflag pv_flags[MAX_PVALS][OF_SIZE])
 {
 	/* Grab the object flags */
@@ -546,12 +561,6 @@ static void get_known_flags(const object_type *o_ptr, const oinfo_detail_t mode,
 			of_diff(flags, o_ptr->kind->base->flags);
 	}
 }
-
-struct blow_info {
-	int str_plus;
-	int dex_plus;  
-	int centiblows;
-};
 
 /**
  * Gets information about the number of blows possible for the player with
@@ -721,8 +730,20 @@ static bool describe_blows(textblock *tb, const object_type *o_ptr)
 }
 
 
-/*
- * Meaningless if called on a fake ego object.
+/**
+ * Gets information about the average damage/turn that can be inflicted if
+ * the player wields the given weapon.
+ *
+ * Fills in the damage against normal adversaries in `normal_damage`, as well
+ * as the slays on the weapon in slay_list[] and corresponding damages in 
+ * slay_damage[].  These must both be at least SL_MAX long to be safe.
+ * `nonweap_slay` is set to whether other items being worn could add to the
+ * damage done by branding attacks.
+ *
+ * Returns the number of slays populated in slay_list[] and slay_damage[].
+ *
+ * Note that the results are meaningless if called on a fake ego object as
+ * the actual ego may have different properties.
  */
 static int obj_known_damage(const object_type *o_ptr, int *normal_damage, int slay_list[], int slay_damage[], bool *nonweap_slay)
 {
@@ -908,8 +929,13 @@ static bool describe_damage(textblock *tb, const object_type *o_ptr)
 	return TRUE;
 }
 
-/*
- * Meaningless if called on a fake ego object.
+/**
+ * Gets miscellaneous combat information about the given object.
+ *
+ * Fills in whether there is a special effect when thrown in `thrown effect`,
+ * the `range` in ft (or zero if not ammo), whether the weapon has the 
+ * impact flag set, the percentage chance of breakage and whether it is
+ * too heavy to be weilded effectively at the moment.
  */
 static void obj_known_misc_combat(const object_type *o_ptr, bool *thrown_effect, int *range, bool *impactful, int *break_chance, bool *too_heavy)
 {
@@ -1019,9 +1045,10 @@ static bool describe_combat(textblock *tb, const object_type *o_ptr)
  * take to dig through each type of diggable terrain, and must be at least 
  * [DIGGING_MAX].
  *
- * Returns FALSE if the object has no effect on digging.
+ * Returns FALSE if the object has no effect on digging, or if the specifics
+ * are meaningless (i.e. the object is an ego template, not a real item).
  */
-static bool obj_known_digger_info(const object_type *o_ptr, int deciturns[])
+static bool obj_known_digging(const object_type *o_ptr, int deciturns[])
 {
 	player_state st;
 
@@ -1034,8 +1061,8 @@ static bool obj_known_digger_info(const object_type *o_ptr, int deciturns[])
 
 	int chances[DIGGING_MAX];
 
-	/* abort if we are a dummy object */
-	if (o_ptr->ident & IDENT_FAKE) return FALSE;
+	/* abort if we are not a real object */
+	if (obj_is_ego_template(o_ptr)) return FALSE;
 
 	object_flags_known(o_ptr, f);
 
@@ -1075,7 +1102,7 @@ static bool describe_digger(textblock *tb, const object_type *o_ptr)
 	static const char *names[4] = { "rubble", "magma veins", "quartz veins", "granite" };
 
 	/* Get useful info or print nothing */
-	if (!obj_known_digger_info(o_ptr, deciturns)) return FALSE;
+	if (!obj_known_digging(o_ptr, deciturns)) return FALSE;
 
 	for (i = DIGGING_RUBBLE; i < DIGGING_DOORS; i++)
 	{
@@ -1240,8 +1267,20 @@ static bool describe_light(textblock *tb, const object_type *o_ptr,
 	return TRUE;
 }
 
-#define OBJ_KNOWN_PRESENT -1
 
+/**
+ * Gives the known effects of using the given item.
+ *
+ * Fills in:
+ *  - the effect id, or OBJ_KNOWN_PRESENT if there is an effect but details
+ *    are unknown
+ *  - whether the effect can be aimed
+ *  -  the minimum and maximum time in game turns for the item to recharge 
+ *     (or zero if it does not recharge)
+ *  - the percentage chance of the effect failing when used
+ *
+ * Return FALSE if the object has no effect.
+ */
 static bool obj_known_effect(const object_type *o_ptr, int *effect, bool *aimed, int *min_recharge, int *max_recharge, int *failure_chance)
 {
 	random_value timeout = {0, 0, 0, 0};
