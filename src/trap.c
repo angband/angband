@@ -38,10 +38,10 @@ bool square_trap_specific(struct cave *c, int y, int x, int t_idx)
     if (!sqinfo_has(c->info[y][x], SQUARE_TRAP)) return (FALSE);
 	
     /* Scan the current trap list */
-    for (i = 0; i < c->trap_max; i++)
+    for (i = 0; i < cave_trap_max(c); i++)
     {
 		/* Point to this trap */
-		trap_type *t_ptr = &c->traps[i];
+		trap_type *t_ptr = cave_trap(c, i);
 		
 		/* Find a trap in this position */
 		if ((t_ptr->fy == y) && (t_ptr->fx == x))
@@ -66,10 +66,10 @@ bool square_trap_flag(struct cave *c, int y, int x, int flag)
     if (!sqinfo_has(c->info[y][x], SQUARE_TRAP)) return (FALSE);
 	
     /* Scan the current trap list */
-    for (i = 0; i < c->trap_max; i++)
+    for (i = 0; i < cave_trap_max(c); i++)
     {
 		/* Point to this trap */
-		trap_type *t_ptr = &c->traps[i];
+		trap_type *t_ptr = cave_trap(c, i);
 		
 		/* Find a trap in this position */
 		if ((t_ptr->fy == y) && (t_ptr->fx == x))
@@ -97,10 +97,10 @@ static bool square_verify_trap(struct cave *c, int y, int x, int vis)
     bool trap = FALSE;
     
     /* Scan the current trap list */
-    for (i = 0; i < c->trap_max; i++)
+    for (i = 0; i < cave_trap_max(c); i++)
     {
 		/* Point to this trap */
-		trap_type *t_ptr = &c->traps[i];
+		trap_type *t_ptr = cave_trap(c, i);
 	
 		/* Find a trap in this position */
 		if ((t_ptr->fy == y) && (t_ptr->fx == x))
@@ -184,10 +184,10 @@ int square_visible_trap_idx(struct cave *c, int y, int x)
 		return -1;
     
     /* Scan the current trap list */
-    for (i = 0; i < c->trap_max; i++)
+    for (i = 0; i < cave_trap_max(c); i++)
     {
 		/* Point to this trap */
-		trap_type *t_ptr = &c->traps[i];
+		trap_type *t_ptr = cave_trap(c, i);
 		
 		/* Find a visible trap in this position */
 		if ((t_ptr->fy == y) && (t_ptr->fx == x) && 
@@ -208,7 +208,7 @@ int square_visible_trap_idx(struct cave *c, int y, int x)
  */
 bool get_trap_graphics(struct cave *c, int t_idx, int *a, wchar_t *ch, bool require_visible)
 {
-    trap_type *t_ptr = &c->traps[t_idx];
+    trap_type *t_ptr = cave_trap(c, t_idx);
     
     /* Trap is visible, or we don't care */
     if (!require_visible || trf_has(t_ptr->flags, TRF_VISIBLE))
@@ -237,10 +237,10 @@ bool square_reveal_trap(struct cave *c, int y, int x, int chance, bool domsg)
     if (!sqinfo_has(c->info[y][x], SQUARE_TRAP)) return (FALSE);
 
     /* Scan the current trap list */
-    for (i = 0; i < c->trap_max; i++)
+    for (i = 0; i < cave_trap_max(c); i++)
     {
 		/* Point to this trap */
-		trap_type *t_ptr = &c->traps[i];
+		trap_type *t_ptr = cave_trap(c, i);
 
 		/* Find a trap in this position */
 		if ((t_ptr->fy == y) && (t_ptr->fx == x))
@@ -293,10 +293,10 @@ int num_traps(struct cave *c, int y, int x, int vis)
     int i, num;
     
     /* Scan the current trap list */
-    for (num = 0, i = 0; i < c->trap_max; i++)
+    for (num = 0, i = 0; i < cave_trap_max(c); i++)
     {
 		/* Point to this trap */
-		trap_type *t_ptr = &c->traps[i];
+		trap_type *t_ptr = cave_trap(c, i);
 	
 		/* Find all traps in this position */
 		if ((t_ptr->fy == y) && (t_ptr->fx == x))
@@ -423,7 +423,7 @@ void place_trap(struct cave *c, int y, int x, int t_idx, int trap_level)
     /* Hack -- don't use up all the trap slots during dungeon generation */
     if (!character_dungeon)
     {
-		if (c->trap_max > z_info->l_max - 50) return;
+		if (cave_trap_max(c) > z_info->l_max - 50) return;
     }
 
     /* We've been called with an illegal index; choose a random trap */
@@ -440,7 +440,7 @@ void place_trap(struct cave *c, int y, int x, int t_idx, int trap_level)
     for (i = 1; i < z_info->l_max; i++)
     {
 		/* Point to this trap */
-		trap_type *t_ptr = &c->traps[i];
+		trap_type *t_ptr = cave_trap(c, i);
 
 		/* This space is available */
 		if (!t_ptr->t_idx)
@@ -456,7 +456,7 @@ void place_trap(struct cave *c, int y, int x, int t_idx, int trap_level)
 			trf_copy(t_ptr->flags, trap_info[t_ptr->t_idx].flags);
 
 			/* Adjust trap count if necessary */
-			if (i + 1 > c->trap_max) c->trap_max = i + 1;
+			if (i + 1 > cave_trap_max(c)) c->trap_max = i + 1;
 
 			/* Toggle on the trap marker */
 			sqinfo_on(c->info[y][x], SQUARE_TRAP);
@@ -487,10 +487,10 @@ extern void hit_trap(int y, int x)
     
     
     /* Scan the current trap list */
-    for (i = 0; i < cave->trap_max; i++)
+    for (i = 0; i < cave_trap_max(cave); i++)
     {
 		/* Point to this trap */
-		trap_type *t_ptr = &cave->traps[i];
+		trap_type *t_ptr = cave_trap(cave, i);
 	
 		/* Find all traps in this position */
 		if ((t_ptr->fy == y) && (t_ptr->fx == x))
@@ -519,9 +519,9 @@ void wipe_trap_list(struct cave *c)
 	int i;
 
 	/* Delete all the traps */
-	for (i = c->trap_max - 1; i >= 0; i--)
+	for (i = cave_trap_max(c) - 1; i >= 0; i--)
 	{
-		trap_type *t_ptr = &c->traps[i];
+		trap_type *t_ptr = cave_trap(c, i);
 
 		/* Wipe the trap */
 		WIPE(t_ptr, trap_type);
@@ -570,23 +570,23 @@ bool square_remove_trap(struct cave *c, int y, int x, bool domsg, int t_idx)
     if (t_idx >= 0)
     {
 		/* Point to this trap */
-		trap_type *t_ptr = &c->traps[t_idx];
+		trap_type *t_ptr = cave_trap(c, t_idx);
 	
 		/* Remove it */
 		remove_trap_aux(c, t_ptr, y, x, domsg);
 	
 		/* Note when trap list actually gets shorter */
-		if (t_idx == c->trap_max - 1) c->trap_max--;
+		if (t_idx == cave_trap_max(c) - 1) c->trap_max--;
     }
 
     /* No specific index -- remove all traps here */
     else
     {
 		/* Scan the current trap list (backwards) */
-		for (i = c->trap_max - 1; i >= 0; i--)
+		for (i = cave_trap_max(c) - 1; i >= 0; i--)
 		{
 			/* Point to this trap */
-			trap_type *t_ptr = &c->traps[i];
+			trap_type *t_ptr = cave_trap(c, i);
 	    
 			/* Find all traps in this position */
 			if ((t_ptr->fy == y) && (t_ptr->fx == x))
@@ -595,7 +595,7 @@ bool square_remove_trap(struct cave *c, int y, int x, bool domsg, int t_idx)
 				remove_trap_aux(c, t_ptr, y, x, domsg);
 		
 				/* Note when trap list actually gets shorter */
-				if (i == c->trap_max - 1) c->trap_max--;
+				if (i == cave_trap_max(c) - 1) c->trap_max--;
 			}
 		}
     }
@@ -618,10 +618,10 @@ void square_remove_trap_kind(struct cave *c, int y, int x, bool domsg, int t_idx
     int i;
 
     /* Scan the current trap list */
-    for (i = 0; i < c->trap_max; i++)
+    for (i = 0; i < cave_trap_max(c); i++)
     {
 		/* Point to this trap */
-		trap_type *t_ptr = &c->traps[i];
+		trap_type *t_ptr = cave_trap(c, i);
 
 		/* Find a trap in this position */
 		if ((t_ptr->fy == y) && (t_ptr->fx == x))

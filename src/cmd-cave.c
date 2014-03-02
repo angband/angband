@@ -999,7 +999,7 @@ static bool do_cmd_disarm_aux(int y, int x)
     /* Choose trap */
     trap = square_visible_trap_idx(cave, y, x);
     if (trap < 0) return (FALSE);
-    t_ptr = &cave->traps[trap];
+    t_ptr = cave_trap(cave, trap);
 
 	/* Get the "disarm" factor */
 	i = player->state.skills[SKILL_DISARM];
