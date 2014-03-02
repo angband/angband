@@ -41,7 +41,7 @@ bool square_trap_specific(struct cave *c, int y, int x, int t_idx)
     for (i = 0; i < c->trap_max; i++)
     {
 		/* Point to this trap */
-		trap_type *t_ptr = &cave->traps[i];
+		trap_type *t_ptr = &c->traps[i];
 		
 		/* Find a trap in this position */
 		if ((t_ptr->fy == y) && (t_ptr->fx == x))

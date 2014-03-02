@@ -229,18 +229,26 @@ static void do_cmd_keylog(void) {
 
 
 /*
- * Hack -- Teleport to the target
+ * Teleport to the requested target
  */
 static void do_cmd_wiz_bamf(void)
 {
-	s16b x, y;
+	s16b x = 0, y = 0;
 
-	/* Must have a target */
-	if (!target_okay()) return;
+	/* Use the targeting function. */
+	if (!target_set_interactive(TARGET_LOOK, -1, -1))
+		return;
+
+	/* grab the target coords. */
+	target_get(&x, &y);
+
+	/* Test for passable terrain. */
+	if (!square_ispassable(cave, y, x))
+		msg("The square you are aiming for is impassable.");
 
 	/* Teleport to the target */
-	target_get(&x, &y);
-	teleport_player_to(y, x);
+	else
+		teleport_player_to(y, x);
 }
 
 
