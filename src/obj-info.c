@@ -222,7 +222,7 @@ static bool describe_stats(textblock *tb, const object_type *o_ptr,
 
 	/* Show details of exact pluses for fake artifacts (lost real items in
 	   knowledge menus), but not for egos (each real one may be different) */
-	bool suppress_details = (o_ptr->ident & IDENT_FAKE) && !o_ptr->artifact;
+	bool suppress_details = obj_is_ego_template(o_ptr);
 
 	if (!o_ptr->num_pvals)
 		return FALSE;
@@ -529,7 +529,7 @@ static void calculate_missile_crits(player_state *state, int weight,
 static void get_known_flags(const object_type *o_ptr, const oinfo_detail_t mode, bitflag flags[OF_SIZE], bitflag pv_flags[MAX_PVALS][OF_SIZE])
 {
 	/* Grab the object flags */
-	if ((o_ptr->ident & IDENT_FAKE) && !o_ptr->artifact) {
+	if (obj_is_ego_template(o_ptr)) {
 		/* Looking at fake egos needs less info than object_flags_known() */
 		if (flags)
 			object_flags(o_ptr, flags);
@@ -1572,7 +1572,7 @@ static textblock *object_info_out(const object_type *o_ptr, int mode)
 
 	bool terse = mode & OINFO_TERSE;
 	bool subjective = mode & OINFO_SUBJ;
-	bool ego = (o_ptr->ident & IDENT_FAKE) && !o_ptr->artifact;
+	bool ego = obj_is_ego_template(o_ptr);
 	textblock *tb = textblock_new();
 
 	/* Unaware objects get simple descriptions */
