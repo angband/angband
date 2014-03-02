@@ -3786,6 +3786,15 @@ bool obj_is_used_unaimed(const object_type *o_ptr)
 	return FALSE;
 }
 
+/* Isn't a real item - is an ego item skeleton from e.g. knowledge menus */
+bool obj_is_ego_template(const object_type *o_ptr)
+{
+	if ((o_ptr->ident & IDENT_FAKE) && !o_ptr->artifact)
+		return TRUE;
+
+	return FALSE;
+}
+
 /*** Generic utility functions ***/
 
 /*
