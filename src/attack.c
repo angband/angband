@@ -648,8 +648,8 @@ static struct attack_result make_ranged_throw(object_type *o_ptr, int y, int x) 
  * Fire an object from the quiver, pack or floor at a target.
  */
 void do_cmd_fire(struct command *cmd) {
-	int item;
-	int dir = cmd_get_arg_direction(cmd, 1);
+	int err;
+	int item, dir;
 	int range = MIN(6 + 2 * player->state.ammo_mult, MAX_RANGE);
 	int shots = player->state.num_shots;
 
@@ -658,10 +658,18 @@ void do_cmd_fire(struct command *cmd) {
 	object_type *j_ptr = &player->inventory[INVEN_BOW];
 	object_type *o_ptr;
 
-	if (!cmd_get_arg_item(cmd, 0, &item))
+	/* Get arguments */
+	if (cmd_get_arg_item(cmd, 0, &item)) {
+		o_ptr = object_from_item_idx(item);		
+	} else {
 		return;
+	}
 
-	o_ptr = object_from_item_idx(item);
+	err = cmd_get_arg_direction(cmd, 1, &dir);
+	if (err) {
+		/* XXX do something */
+	}
+
 
 	/* Require a usable launcher */
 	if (!j_ptr->tval || !player->state.ammo_tval) {
@@ -689,8 +697,8 @@ void do_cmd_fire(struct command *cmd) {
  * Throw an object from the quiver, pack or floor.
  */
 void do_cmd_throw(struct command *cmd) {
-	int item;
-	int dir = cmd_get_arg_direction(cmd, 1);
+	int err;
+	int item, dir;
 	int shots = 1;
 	int str = adj_str_blow[player->state.stat_ind[A_STR]];
 	ranged_attack attack = make_ranged_throw;
@@ -699,10 +707,19 @@ void do_cmd_throw(struct command *cmd) {
 	int range;
 	object_type *o_ptr;
 
-	if (!cmd_get_arg_item(cmd, 0, &item))
+	/* Get arguments */
+	if (cmd_get_arg_item(cmd, 0, &item)) {
+		o_ptr = object_from_item_idx(item);		
+	} else {
 		return;
+	}
 
-	o_ptr = object_from_item_idx(item);
+	err = cmd_get_arg_direction(cmd, 1, &dir);
+	if (err) {
+		/* XXX do something */
+	}
+
+
 	weight = MAX(o_ptr->weight, 10);
 	range = MIN(((str + 20) * 10) / weight, 10);
 

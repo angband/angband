@@ -2642,6 +2642,9 @@ void scatter(struct cave *c, int *yp, int *xp, int y, int x, int d, bool need_lo
  * The second arg is currently unused, but could induce output flush.
  *
  * All disturbance cancels repeated commands, resting, and running.
+ * 
+ * XXX-AS: Remove unused_flag, make callers either pass in a command
+ * or call cmd_cancel_repeat inside the function calling this
  */
 void disturb(struct player *p, int stop_search, int unused_flag)
 {

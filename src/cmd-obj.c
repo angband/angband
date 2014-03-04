@@ -677,8 +677,11 @@ void do_cmd_use(struct command *cmd)
 	}
 
 	/* If the item requires a direction, get one (allow cancelling) */
-	if (obj_needs_aim(o_ptr))
-		dir = cmd_get_arg_direction(cmd, 1);
+	if (obj_needs_aim(o_ptr)) {
+		int err = cmd_get_arg_direction(cmd, 1, &dir);
+		if (err && !get_rep_dir(&dir, FALSE))
+			return;
+	}
 
 	if (item >= 0 && item < INVEN_PACK) {
 		/* Create a copy so that we can remember what we are working with, in case the
@@ -989,8 +992,8 @@ void do_cmd_study_spell(struct command *cmd)
 /* Cast a spell from a book */
 void do_cmd_cast(struct command *cmd)
 {
-	int spell = cmd_get_arg_choice(cmd, 0);
-	int dir = cmd_get_arg_direction(cmd, 1);
+	int err;
+	int spell, dir;
 
 	int item_list[INVEN_TOTAL + MAX_FLOOR_STACK];
 	int item_num;
@@ -1002,6 +1005,14 @@ void do_cmd_cast(struct command *cmd)
 	/* Check the player can cast spells at all */
 	if (!player_can_cast(player, TRUE))
 		return;
+
+	/* Get arguments */
+	spell = cmd_get_arg_choice(cmd, 0);
+
+	err = cmd_get_arg_direction(cmd, 1, &dir);
+	if (!err) {
+		/* XXX Do something */
+	}
 
 	/* Check spell is in a book they can access */
 	item_num = scan_items(item_list, N_ELEMENTS(item_list), (USE_INVEN | USE_FLOOR), obj_can_browse);

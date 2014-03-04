@@ -298,10 +298,15 @@ void cmd_set_arg_direction(struct command *cmd, int n, int dir)
 	cmd->arg_present[n] = TRUE;
 }
 
-int cmd_get_arg_direction(struct command *cmd, int n)
+int cmd_get_arg_direction(struct command *cmd, int n, int *dir)
 {
 	assert(n <= CMD_MAX_ARGS);
-	return cmd->arg_present[n] ? cmd->arg[n].direction : 0;
+
+	if (!cmd->arg_present[n]) return -1;
+	if (cmd->arg_type[n] != arg_DIRECTION) return -2;
+
+	*dir = cmd->arg[n].direction;
+	return 0;
 }
 
 void cmd_set_arg_target(struct command *cmd, int n, int target)
@@ -433,7 +438,6 @@ void process_command(cmd_context ctx, bool no_request)
 		int oldrepeats = cmd->nrepeats;
 		int idx = cmd_idx(cmd->command);
 		size_t i;
-		bool allow_5 = FALSE;
 
 		if (idx == -1) return;
 
@@ -507,82 +511,6 @@ void process_command(cmd_context ctx, bool no_request)
 					return;
 
 				cmd_set_arg_string(cmd, 1, tmp);
-				break;
-			}
-
-			case CMD_OPEN:
-			{
-				if (!cmd->arg_present[0] ||
-						cmd->arg[0].direction == DIR_UNKNOWN)
-				{
-					int y, x;
-					int n_closed_doors, n_locked_chests;
-			
-					n_closed_doors = count_feats(&y, &x, square_iscloseddoor, FALSE);
-					n_locked_chests = count_chests(&y, &x, CHEST_OPENABLE);
-			
-					if (n_closed_doors + n_locked_chests == 1)
-						cmd_set_arg_direction(cmd, 0, coords_to_dir(y, x));
-				}
-
-				goto get_dir;
-			}
-
-			case CMD_CLOSE:
-			{
-				if (!cmd->arg_present[0] ||
-						cmd->arg[0].direction == DIR_UNKNOWN)
-				{
-					int y, x;
-			
-					/* Count open doors */
-					if (count_feats(&y, &x, square_isopendoor, FALSE) == 1)
-						cmd_set_arg_direction(cmd, 0, coords_to_dir(y, x));
-				}
-
-				goto get_dir;
-			}
-
-			case CMD_DISARM:
-			{
-				if (!cmd->arg_present[0] ||
-						cmd->arg[0].direction == DIR_UNKNOWN)
-				{
-					int y, x;
-					int n_visible_traps, n_trapped_chests;
-			
-					n_visible_traps = count_feats(&y, &x, square_isknowntrap, TRUE);
-					n_trapped_chests = count_chests(&y, &x, CHEST_TRAPPED);
-
-					if (n_visible_traps + n_trapped_chests == 1)
-						cmd_set_arg_direction(cmd, 0, coords_to_dir(y, x));
-
-					/* If there are chests to disarm, allow 5 as a direction */
-					allow_5 = (n_trapped_chests > 0);
-				}
-
-				goto get_dir;
-			}
-
-			case CMD_TUNNEL:
-			case CMD_WALK:
-			case CMD_RUN:
-			case CMD_JUMP:
-			case CMD_ALTER:
-			{
-			get_dir:
-
-				/* Direction hasn't been specified, so we ask for one. */
-				if (!cmd->arg_present[0] ||
-						cmd->arg[0].direction == DIR_UNKNOWN)
-				{
-					int dir;
-					if (!get_rep_dir(&dir, allow_5))
-						return;
-
-					cmd_set_arg_direction(cmd, 0, dir);
-				}
-				
 				break;
 			}
 

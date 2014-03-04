@@ -37,6 +37,9 @@
 #include "obj-util.h"
 #include "tables.h"
 
+/* XXX-AS this is temporary */
+#include "target.h"
+
 /*
  * Go up one level
  */
@@ -384,24 +387,37 @@ static bool do_cmd_open_aux(int y, int x)
 void do_cmd_open(struct command *cmd)
 {
 	int y, x, dir;
-
 	s16b o_idx;
-
 	bool more = FALSE;
+	int err;
+	struct monster *m;
 
-	dir = cmd_get_arg_direction(cmd, 0);
+	/* Get arguments */
+	err = cmd_get_arg_direction(cmd, 0, &dir);
+	if (err || dir == DIR_UNKNOWN) {
+		int y, x;
+		int n_closed_doors, n_locked_chests;
+
+		n_closed_doors = count_feats(&y, &x, square_iscloseddoor, FALSE);
+		n_locked_chests = count_chests(&y, &x, CHEST_OPENABLE);
+
+		if (n_closed_doors + n_locked_chests == 1)
+			dir = coords_to_dir(y, x);
+		else if (!get_rep_dir(&dir, FALSE))
+			return;
+
+		cmd_set_arg_direction(cmd, 0, dir);
+	}
 
 	/* Get location */
 	y = player->py + ddy[dir];
 	x = player->px + ddx[dir];
 
-	/* Check for chests */
+	/* Check for chest */
 	o_idx = chest_check(y, x, CHEST_OPENABLE);
 
-
-	/* Verify legality */
-	if (!o_idx && !do_cmd_open_test(y, x))
-	{
+	/* Check for door */
+	if (!o_idx && !do_cmd_open_test(y, x)) {
 		/* Cancel repeat */
 		disturb(player, 0, 0);
 		return;
@@ -411,8 +427,7 @@ void do_cmd_open(struct command *cmd)
 	player->energy_use = 100;
 
 	/* Apply confusion */
-	if (player_confuse_dir(player, &dir, FALSE))
-	{
+	if (player_confuse_dir(player, &dir, FALSE)) {
 		/* Get location */
 		y = player->py + ddy[dir];
 		x = player->px + ddx[dir];
@@ -421,19 +436,15 @@ void do_cmd_open(struct command *cmd)
 		o_idx = chest_check(y, x, CHEST_OPENABLE);
 	}
 
-
 	/* Monster */
-	if (cave->m_idx[y][x] > 0)
-	{
-		int m_idx = cave->m_idx[y][x];
-		struct monster *m_ptr = cave_monster(cave, m_idx);
-
+	m = square_monster(cave, y, x);
+	if (m) {
 		/* Mimics surprise the player */
-		if (is_mimicking(m_ptr)) {
-			become_aware(m_ptr);
+		if (is_mimicking(m)) {
+			become_aware(m);
 
 			/* Mimic wakes up */
-			mon_clear_timed(m_ptr, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, FALSE);
+			mon_clear_timed(m, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, FALSE);
 		} else {
 			/* Message */
 			msg("There is a monster in the way!");
@@ -445,17 +456,11 @@ void do_cmd_open(struct command *cmd)
 
 	/* Chest */
 	else if (o_idx)
-	{
-		/* Open the chest */
 		more = do_cmd_open_chest(y, x, o_idx);
-	}
 
 	/* Door */
 	else
-	{
-		/* Open the door */
 		more = do_cmd_open_aux(y, x);
-	}
 
 	/* Cancel repeat unless we may continue */
 	if (!more) disturb(player, 0, 0);
@@ -537,18 +542,30 @@ static bool do_cmd_close_aux(int y, int x)
 void do_cmd_close(struct command *cmd)
 {
 	int y, x, dir;
+	int err;
 
 	bool more = FALSE;
 
-	dir = cmd_get_arg_direction(cmd, 0);
+	/* Get arguments */
+	err = cmd_get_arg_direction(cmd, 0, &dir);
+	if (err || dir == DIR_UNKNOWN) {
+		int y, x;
+
+		/* Count open doors */
+		if (count_feats(&y, &x, square_isopendoor, FALSE) == 1)
+			dir = coords_to_dir(y, x);
+		else if (!get_rep_dir(&dir, FALSE))
+			return;
+
+		cmd_set_arg_direction(cmd, 0, dir);
+	}
 
 	/* Get location */
 	y = player->py + ddy[dir];
 	x = player->px + ddx[dir];
 
 	/* Verify legality */
-	if (!do_cmd_close_test(y, x))
-	{
+	if (!do_cmd_close_test(y, x)) {
 		/* Cancel repeat */
 		disturb(player, 0, 0);
 		return;
@@ -558,30 +575,22 @@ void do_cmd_close(struct command *cmd)
 	player->energy_use = 100;
 
 	/* Apply confusion */
-	if (player_confuse_dir(player, &dir, FALSE))
-	{
+	if (player_confuse_dir(player, &dir, FALSE)) {
 		/* Get location */
 		y = player->py + ddy[dir];
 		x = player->px + ddx[dir];
 	}
 
-
-	/* Monster */
-	if (cave->m_idx[y][x] > 0)
-	{
-		/* Message */
+	/* Monster - alert, then attack */
+	if (cave->m_idx[y][x] > 0) {
 		msg("There is a monster in the way!");
-
-		/* Attack */
 		py_attack(y, x);
 	}
 
-	/* Door */
+	/* Door - close it */
 	else
-	{
-		/* Close door */
 		more = do_cmd_close_aux(y, x);
-	}
+
 
 	/* Cancel repeat unless told not to */
 	if (!more) disturb(player, 0, 0);
@@ -845,7 +854,14 @@ void do_cmd_tunnel(struct command *cmd)
 	int y, x, dir;
 	bool more = FALSE;
 
-	dir = cmd_get_arg_direction(cmd, 0);
+	/* Get arguments */
+	int err = cmd_get_arg_direction(cmd, 0, &dir);
+	if (err || dir == DIR_UNKNOWN) {
+		if (!get_rep_dir(&dir, FALSE))
+			return;
+
+		cmd_set_arg_direction(cmd, 0, dir);
+	}
 
 	/* Get location */
 	y = player->py + ddy[dir];
@@ -1068,12 +1084,29 @@ static bool do_cmd_disarm_aux(int y, int x)
 void do_cmd_disarm(struct command *cmd)
 {
 	int y, x, dir;
+	int err;
 
 	s16b o_idx;
-
 	bool more = FALSE;
 
-	dir = cmd_get_arg_direction(cmd, 0);
+	/* Get arguments */
+	err = cmd_get_arg_direction(cmd, 0, &dir);
+	if (err || dir == DIR_UNKNOWN) {
+		int y, x;
+		int n_visible_traps, n_trapped_chests;
+
+		n_visible_traps = count_feats(&y, &x, square_isknowntrap, TRUE);
+		n_trapped_chests = count_chests(&y, &x, CHEST_TRAPPED);
+
+		if (n_visible_traps + n_trapped_chests == 1)
+			dir = coords_to_dir(y, x);
+
+		/* If there are chests to disarm, allow 5 as a direction */
+		else if (!get_rep_dir(&dir, n_trapped_chests > 0))
+			return;
+
+		cmd_set_arg_direction(cmd, 0, dir);
+	}
 
 	/* Get location */
 	y = player->py + ddy[dir];
@@ -1081,7 +1114,6 @@ void do_cmd_disarm(struct command *cmd)
 
 	/* Check for chests */
 	o_idx = chest_check(y, x, CHEST_TRAPPED);
-
 
 	/* Verify legality */
 	if (!o_idx && !do_cmd_disarm_test(y, x))
@@ -1185,7 +1217,17 @@ void do_cmd_alter_aux(int dir)
 
 void do_cmd_alter(struct command *cmd)
 {
-	do_cmd_alter_aux(cmd_get_arg_direction(cmd, 0));
+	int dir;
+	/* Get arguments */
+	int err = cmd_get_arg_direction(cmd, 0, &dir);
+	if (err || dir == DIR_UNKNOWN) {
+		if (!get_rep_dir(&dir, FALSE))
+			return;
+
+		cmd_set_arg_direction(cmd, 0, dir);
+	}
+
+	do_cmd_alter_aux(dir);
 }
 
 /*
@@ -1252,14 +1294,20 @@ static bool do_cmd_walk_test(int y, int x)
  */
 void do_cmd_walk(struct command *cmd)
 {
-	int x, y;
-	int dir = cmd_get_arg_direction(cmd, 0);
+	int x, y, dir;
+
+	/* Get arguments */
+	int err = cmd_get_arg_direction(cmd, 0, &dir);
+	if (err || dir == DIR_UNKNOWN) {
+		if (!get_rep_dir(&dir, FALSE))
+			return;
+
+		cmd_set_arg_direction(cmd, 0, dir);
+	}
 
 	/* Apply confusion if necessary */
-	player_confuse_dir(player, &dir, FALSE);
-
 	/* Confused movements use energy no matter what */
-	if (dir != cmd_get_arg_direction(cmd, 0))	
+	if (player_confuse_dir(player, &dir, FALSE))
 		player->energy_use = 100;
 	
 	/* Verify walkability */
@@ -1279,11 +1327,20 @@ void do_cmd_walk(struct command *cmd)
  */
 void do_cmd_jump(struct command *cmd)
 {
-	int x, y;
-	int dir = cmd_get_arg_direction(cmd, 0);
+	int x, y, dir;
+
+	/* Get arguments */
+	int err = cmd_get_arg_direction(cmd, 0, &dir);
+	if (err || dir == DIR_UNKNOWN) {
+		if (!get_rep_dir(&dir, FALSE))
+			return;
+
+		cmd_set_arg_direction(cmd, 0, dir);
+	}
 
 	/* Apply confusion if necessary */
-	player_confuse_dir(player, &dir, FALSE);
+	if (player_confuse_dir(player, &dir, FALSE))
+		player->energy_use = 100;
 
 	/* Verify walkability */
 	y = player->py + ddy[dir];
@@ -1304,13 +1361,19 @@ void do_cmd_jump(struct command *cmd)
  */
 void do_cmd_run(struct command *cmd)
 {
-	int x, y;
-	int dir = cmd_get_arg_direction(cmd, 0);
+	int x, y, dir;
+
+	/* Get arguments */
+	int err = cmd_get_arg_direction(cmd, 0, &dir);
+	if (err || dir == DIR_UNKNOWN) {
+		if (!get_rep_dir(&dir, FALSE))
+			return;
+
+		cmd_set_arg_direction(cmd, 0, dir);
+	}
 
 	if (player_confuse_dir(player, &dir, TRUE))
-	{
 		return;
-	}
 
 	/* Get location */
 	y = player->py + ddy[dir];

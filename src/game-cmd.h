@@ -268,7 +268,7 @@ void cmd_set_arg_number(struct command *cmd, int n, int num);
  */
 int cmd_get_arg_choice(struct command *cmd, int n);
 const char *cmd_get_arg_string(struct command *cmd, int n);
-int cmd_get_arg_direction(struct command *cmd, int n);
+int cmd_get_arg_direction(struct command *cmd, int n, int *dir);
 bool cmd_get_arg_target(struct command *cmd, int n, int *target);
 bool cmd_get_arg_point(struct command *cmd, int n, int *x, int *y);
 bool cmd_get_arg_item(struct command *cmd, int n, int *item);
