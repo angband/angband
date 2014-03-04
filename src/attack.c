@@ -648,7 +648,6 @@ static struct attack_result make_ranged_throw(object_type *o_ptr, int y, int x) 
  * Fire an object from the quiver, pack or floor at a target.
  */
 void do_cmd_fire(struct command *cmd) {
-	int err;
 	int item, dir;
 	int range = MIN(6 + 2 * player->state.ammo_mult, MAX_RANGE);
 	int shots = player->state.num_shots;
@@ -659,17 +658,20 @@ void do_cmd_fire(struct command *cmd) {
 	object_type *o_ptr;
 
 	/* Get arguments */
-	if (cmd_get_arg_item(cmd, 0, &item)) {
-		o_ptr = object_from_item_idx(item);		
+	if (cmd_get_item(cmd, 0, &item,
+			/* Prompt */ "Fire which ammunition?",
+			/* Error  */ "You have no ammunition to fire.",
+			/* Filter */ obj_can_fire,
+			/* Choice */ USE_INVEN | USE_EQUIP | USE_FLOOR | QUIVER_TAGS) == CMD_OK) {
+		o_ptr = object_from_item_idx(item);
 	} else {
 		return;
 	}
 
-	err = cmd_get_arg_direction(cmd, 1, &dir);
-	if (err) {
-		/* XXX do something */
-	}
-
+	if (cmd_get_target(cmd, 1, &dir) == CMD_OK)
+		player_confuse_dir(player, &dir, FALSE);
+	else
+		return;
 
 	/* Require a usable launcher */
 	if (!j_ptr->tval || !player->state.ammo_tval) {
@@ -697,7 +699,6 @@ void do_cmd_fire(struct command *cmd) {
  * Throw an object from the quiver, pack or floor.
  */
 void do_cmd_throw(struct command *cmd) {
-	int err;
 	int item, dir;
 	int shots = 1;
 	int str = adj_str_blow[player->state.stat_ind[A_STR]];
@@ -708,16 +709,20 @@ void do_cmd_throw(struct command *cmd) {
 	object_type *o_ptr;
 
 	/* Get arguments */
-	if (cmd_get_arg_item(cmd, 0, &item)) {
-		o_ptr = object_from_item_idx(item);		
+	if (cmd_get_item(cmd, 0, &item,
+			/* Prompt */ "Throw which item?",
+			/* Error  */ "You have nothing to throw.",
+			/* Filter */ NULL,
+			/* Choice */ USE_EQUIP | USE_INVEN | USE_FLOOR) == CMD_OK) {
+		o_ptr = object_from_item_idx(item);
 	} else {
 		return;
 	}
 
-	err = cmd_get_arg_direction(cmd, 1, &dir);
-	if (err) {
-		/* XXX do something */
-	}
+	if (cmd_get_target(cmd, 1, &dir) == CMD_OK)
+		player_confuse_dir(player, &dir, FALSE);
+	else
+		return;
 
 
 	weight = MAX(o_ptr->weight, 10);

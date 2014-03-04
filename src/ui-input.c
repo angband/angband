@@ -1400,3 +1400,4 @@ bool get_aim_dir(int *dp)
 	/* A "valid" direction was entered */
 	return (TRUE);
 }
+

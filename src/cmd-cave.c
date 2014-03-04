@@ -1432,7 +1432,11 @@ void do_cmd_hold(struct command *cmd)
  */
 void do_cmd_rest(struct command *cmd)
 {
-	int n = cmd_get_arg_choice(cmd, 0);
+	int n;
+
+	/* XXX-AS need to insert UI here */
+	if (cmd_get_arg_choice(cmd, 0, &n) != CMD_OK)
+		return;
 
 	/* 
 	 * A little sanity checking on the input - only the specified negative 

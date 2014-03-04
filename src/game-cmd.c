@@ -45,7 +45,6 @@ struct command_info
 {
 	cmd_code cmd;
 	const char *verb;
-	enum cmd_arg_type arg_type[CMD_MAX_ARGS];
 	cmd_handler_fn fn;
 	bool repeat_allowed;
 	int auto_repeat_n;
@@ -53,105 +52,68 @@ struct command_info
 
 static const struct command_info game_cmds[] =
 {
-	{ CMD_LOADFILE, "load a savefile", { arg_NONE }, NULL, FALSE, 0 },
-	{ CMD_NEWGAME, "start a new game", { arg_NONE }, NULL, FALSE, 0 },
+	{ CMD_LOADFILE, "load a savefile", NULL, FALSE, 0 },
+	{ CMD_NEWGAME, "start a new game", NULL, FALSE, 0 },
 
-	{ CMD_BIRTH_RESET, "go back to the beginning", { arg_NONE }, NULL, FALSE, 0 },
-	{ CMD_CHOOSE_SEX, "select sex", { arg_CHOICE }, NULL, FALSE, 0 },
-	{ CMD_CHOOSE_RACE, "select race", { arg_CHOICE }, NULL, FALSE, 0 },
-	{ CMD_CHOOSE_CLASS, "select class", { arg_CHOICE }, NULL, FALSE, 0 },
- 	{ CMD_FINALIZE_OPTIONS, "finalise options", { arg_CHOICE }, NULL, FALSE },
-	{ CMD_BUY_STAT, "buy points in a stat", { arg_CHOICE }, NULL, FALSE, 0 },
-	{ CMD_SELL_STAT, "sell points in a stat", { arg_CHOICE }, NULL, FALSE, 0 },
-	{ CMD_RESET_STATS, "reset stats", { arg_CHOICE }, NULL, FALSE, 0 },
-	{ CMD_ROLL_STATS, "roll new stats", { arg_NONE }, NULL, FALSE, 0 },
-	{ CMD_PREV_STATS, "use previously rolled stats", { arg_NONE }, NULL, FALSE, 0 },
-	{ CMD_NAME_CHOICE, "choose name", { arg_STRING }, NULL, FALSE, 0 },
-	{ CMD_ACCEPT_CHARACTER, "accept character", { arg_NONE }, NULL, FALSE, 0 },
+	{ CMD_BIRTH_RESET, "go back to the beginning", NULL, FALSE, 0 },
+	{ CMD_CHOOSE_SEX, "select sex", NULL, FALSE, 0 },
+	{ CMD_CHOOSE_RACE, "select race", NULL, FALSE, 0 },
+	{ CMD_CHOOSE_CLASS, "select class", NULL, FALSE, 0 },
+ 	{ CMD_FINALIZE_OPTIONS, "finalise options", NULL, FALSE },
+	{ CMD_BUY_STAT, "buy points in a stat", NULL, FALSE, 0 },
+	{ CMD_SELL_STAT, "sell points in a stat", NULL, FALSE, 0 },
+	{ CMD_RESET_STATS, "reset stats", NULL, FALSE, 0 },
+	{ CMD_ROLL_STATS, "roll new stats", NULL, FALSE, 0 },
+	{ CMD_PREV_STATS, "use previously rolled stats", NULL, FALSE, 0 },
+	{ CMD_NAME_CHOICE, "choose name", NULL, FALSE, 0 },
+	{ CMD_ACCEPT_CHARACTER, "accept character", NULL, FALSE, 0 },
 
-	{ CMD_GO_UP, "go up stairs", { arg_NONE }, do_cmd_go_up, FALSE, 0 },
-	{ CMD_GO_DOWN, "go down stairs", { arg_NONE }, do_cmd_go_down, FALSE, 0 },
-	{ CMD_SEARCH, "search", { arg_NONE }, do_cmd_search, TRUE, 10 },
-	{ CMD_TOGGLE_SEARCH, "toggle search mode", { arg_NONE }, do_cmd_toggle_search, FALSE, 0 },
-	{ CMD_WALK, "walk", { arg_DIRECTION }, do_cmd_walk, TRUE, 0 },
-	{ CMD_RUN, "run", { arg_DIRECTION }, do_cmd_run, FALSE, 0 },
-	{ CMD_JUMP, "jump", { arg_DIRECTION }, do_cmd_jump, FALSE, 0 },
-	{ CMD_OPEN, "open", { arg_DIRECTION }, do_cmd_open, TRUE, 99 },
-	{ CMD_CLOSE, "close", { arg_DIRECTION }, do_cmd_close, TRUE, 99 },
-	{ CMD_TUNNEL, "tunnel", { arg_DIRECTION }, do_cmd_tunnel, TRUE, 99 },
-	{ CMD_HOLD, "stay still", { arg_NONE }, do_cmd_hold, TRUE, 0 },
-	{ CMD_DISARM, "disarm", { arg_DIRECTION }, do_cmd_disarm, TRUE, 99 },
-	{ CMD_ALTER, "alter", { arg_DIRECTION }, do_cmd_alter, TRUE, 99 },
-	{ CMD_REST, "rest", { arg_CHOICE }, do_cmd_rest, FALSE, 0 },
-	{ CMD_PATHFIND, "walk", { arg_POINT }, do_cmd_pathfind, FALSE, 0 },
-	{ CMD_PICKUP, "pickup", { arg_ITEM }, do_cmd_pickup, FALSE, 0 },
-	{ CMD_AUTOPICKUP, "autopickup", { arg_NONE }, do_cmd_autopickup, FALSE, 0 },
-	{ CMD_WIELD, "wear or wield", { arg_ITEM, arg_NUMBER }, do_cmd_wield, FALSE, 0 },
-	{ CMD_TAKEOFF, "take off", { arg_ITEM }, do_cmd_takeoff, FALSE, 0 },
-	{ CMD_DROP, "drop", { arg_ITEM, arg_NUMBER }, do_cmd_drop, FALSE, 0 },
-	{ CMD_UNINSCRIBE, "un-inscribe", { arg_ITEM }, do_cmd_uninscribe, FALSE, 0 },
-	{ CMD_EAT, "eat", { arg_ITEM }, do_cmd_use, FALSE, 0 },
-	{ CMD_QUAFF, "quaff", { arg_ITEM, arg_TARGET }, do_cmd_use, FALSE, 0 },
-	{ CMD_USE_ROD, "zap", { arg_ITEM, arg_TARGET }, do_cmd_use, FALSE, 0 },
-	{ CMD_USE_STAFF, "use", { arg_ITEM }, do_cmd_use, FALSE, 0 },
-	{ CMD_USE_WAND, "aim", { arg_ITEM, arg_TARGET }, do_cmd_use, FALSE, 0 },
-	{ CMD_READ_SCROLL, "read", { arg_ITEM, arg_TARGET }, do_cmd_use, FALSE, 0 },
-	{ CMD_ACTIVATE, "activate", { arg_ITEM, arg_TARGET }, do_cmd_use, FALSE, 0 },
-	{ CMD_REFILL, "refuel with", { arg_ITEM }, do_cmd_refill, FALSE, 0 },
-	{ CMD_FIRE, "fire", { arg_ITEM, arg_TARGET }, do_cmd_fire, FALSE, 0 },
-	{ CMD_THROW, "throw", { arg_ITEM, arg_TARGET }, do_cmd_throw, FALSE, 0 },
-	{ CMD_DESTROY, "ignore", { arg_ITEM }, do_cmd_destroy, FALSE, 0 },
-	{ CMD_ENTER_STORE, "go into", { arg_NONE }, do_cmd_store, FALSE, 0 },
-	{ CMD_INSCRIBE, "inscribe", { arg_ITEM, arg_STRING }, do_cmd_inscribe, FALSE, 0 },
-	{ CMD_STUDY_SPELL, "study", { arg_CHOICE }, do_cmd_study_spell, FALSE, 0 },
-	{ CMD_STUDY_BOOK, "study", { arg_ITEM }, do_cmd_study_book, FALSE, 0 },
-	{ CMD_CAST, "cast", { arg_CHOICE, arg_TARGET }, do_cmd_cast, FALSE, 0 },
-	{ CMD_SELL, "sell", { arg_ITEM, arg_NUMBER }, do_cmd_sell, FALSE, 0 },
-	{ CMD_STASH, "stash", { arg_ITEM, arg_NUMBER }, do_cmd_stash, FALSE, 0 },
-	{ CMD_BUY, "buy", { arg_CHOICE, arg_NUMBER }, do_cmd_buy, FALSE, 0 },
-	{ CMD_RETRIEVE, "retrieve", { arg_CHOICE, arg_NUMBER }, do_cmd_retrieve, FALSE, 0 },
-	{ CMD_USE_AIMED, "use", { arg_ITEM, arg_TARGET }, do_cmd_use, FALSE, 0 },
-	{ CMD_USE_UNAIMED, "use", { arg_ITEM, arg_TARGET }, do_cmd_use, FALSE, 0 },
-	{ CMD_USE_ANY, "use", { arg_ITEM, arg_TARGET }, do_cmd_use, FALSE, 0 },
-	{ CMD_SUICIDE, "commit suicide", { arg_NONE }, do_cmd_suicide, FALSE, 0 },
-	{ CMD_SAVE, "save", { arg_NONE }, do_cmd_save_game, FALSE, 0 },
-	{ CMD_QUIT, "quit", { arg_NONE }, do_cmd_quit, FALSE, 0 },
-	{ CMD_HELP, "help", { arg_NONE }, NULL, FALSE, 0 },
-	{ CMD_REPEAT, "repeat", { arg_NONE }, NULL, FALSE, 0 },
-
-};
-
-/* Item selector type (everything required for get_item()) */
-struct item_selector
-{
-	cmd_code command;
-	const char *type;
-	bool (*filter)(const object_type *o_ptr);
-	int mode;
-};
-
-/** List of requirements for various commands' objects */
-static struct item_selector item_selector[] =
-{
-	{ CMD_INSCRIBE, NULL, NULL, (USE_EQUIP | USE_INVEN | USE_FLOOR | IS_HARMLESS) },
-	{ CMD_UNINSCRIBE, NULL, obj_has_inscrip, (USE_EQUIP | USE_INVEN | USE_FLOOR) },
-	{ CMD_WIELD, NULL, obj_can_wear, (USE_INVEN | USE_FLOOR) },
-	{ CMD_TAKEOFF, NULL, obj_can_takeoff, USE_EQUIP },
-	{ CMD_DROP, NULL, NULL, (USE_EQUIP | USE_INVEN) },
-	{ CMD_THROW, NULL, NULL, (USE_EQUIP | USE_INVEN | USE_FLOOR) },
-	{ CMD_FIRE, NULL, obj_can_fire, (USE_INVEN | USE_EQUIP | USE_FLOOR | QUIVER_TAGS) },
-	{ CMD_USE_STAFF, "staff",  tval_is_staff, (USE_INVEN | USE_FLOOR | SHOW_FAIL) },
-	{ CMD_USE_WAND, "wand", tval_is_wand, (USE_INVEN | USE_FLOOR | SHOW_FAIL) },
-	{ CMD_USE_ROD, "rod", tval_is_rod, (USE_INVEN | USE_FLOOR | SHOW_FAIL) },
-	{ CMD_ACTIVATE, NULL, obj_is_activatable, (USE_EQUIP | SHOW_FAIL) },
-	{ CMD_EAT, "food", tval_is_edible, (USE_INVEN | USE_FLOOR) },
-	{ CMD_QUAFF, "potion", tval_is_potion, (USE_INVEN | USE_FLOOR) },
-	{ CMD_READ_SCROLL, "scroll", tval_is_scroll, (USE_INVEN | USE_FLOOR) },
-	{ CMD_REFILL, "fuel source", obj_can_refill, (USE_INVEN | USE_FLOOR) },
-	{ CMD_USE_AIMED, NULL, obj_is_used_aimed, (USE_EQUIP |USE_INVEN | USE_FLOOR | SHOW_FAIL | QUIVER_TAGS) },
-	{ CMD_USE_UNAIMED, NULL, obj_is_used_unaimed, (USE_EQUIP |USE_INVEN | USE_FLOOR | SHOW_FAIL) },
-	{ CMD_USE_ANY, NULL, obj_is_useable, (USE_EQUIP |USE_INVEN | USE_FLOOR | SHOW_FAIL | QUIVER_TAGS) },
-
+	{ CMD_GO_UP, "go up stairs", do_cmd_go_up, FALSE, 0 },
+	{ CMD_GO_DOWN, "go down stairs", do_cmd_go_down, FALSE, 0 },
+	{ CMD_SEARCH, "search", do_cmd_search, TRUE, 10 },
+	{ CMD_TOGGLE_SEARCH, "toggle search mode", do_cmd_toggle_search, FALSE, 0 },
+	{ CMD_WALK, "walk", do_cmd_walk, TRUE, 0 },
+	{ CMD_RUN, "run", do_cmd_run, FALSE, 0 },
+	{ CMD_JUMP, "jump", do_cmd_jump, FALSE, 0 },
+	{ CMD_OPEN, "open", do_cmd_open, TRUE, 99 },
+	{ CMD_CLOSE, "close", do_cmd_close, TRUE, 99 },
+	{ CMD_TUNNEL, "tunnel", do_cmd_tunnel, TRUE, 99 },
+	{ CMD_HOLD, "stay still", do_cmd_hold, TRUE, 0 },
+	{ CMD_DISARM, "disarm", do_cmd_disarm, TRUE, 99 },
+	{ CMD_ALTER, "alter", do_cmd_alter, TRUE, 99 },
+	{ CMD_REST, "rest", do_cmd_rest, FALSE, 0 },
+	{ CMD_PATHFIND, "walk", do_cmd_pathfind, FALSE, 0 },
+	{ CMD_PICKUP, "pickup", do_cmd_pickup, FALSE, 0 },
+	{ CMD_AUTOPICKUP, "autopickup", do_cmd_autopickup, FALSE, 0 },
+	{ CMD_WIELD, "wear or wield", do_cmd_wield, FALSE, 0 },
+	{ CMD_TAKEOFF, "take off", do_cmd_takeoff, FALSE, 0 },
+	{ CMD_DROP, "drop", do_cmd_drop, FALSE, 0 },
+	{ CMD_UNINSCRIBE, "un-inscribe", do_cmd_uninscribe, FALSE, 0 },
+	{ CMD_EAT, "eat", do_cmd_eat_food, FALSE, 0 },
+	{ CMD_QUAFF, "quaff", do_cmd_quaff_potion, FALSE, 0 },
+	{ CMD_USE_ROD, "zap", do_cmd_zap_rod, FALSE, 0 },
+	{ CMD_USE_STAFF, "use", do_cmd_use_staff, FALSE, 0 },
+	{ CMD_USE_WAND, "aim", do_cmd_aim_wand, FALSE, 0 },
+	{ CMD_READ_SCROLL, "read", do_cmd_read_scroll, FALSE, 0 },
+	{ CMD_ACTIVATE, "activate", do_cmd_activate, FALSE, 0 },
+	{ CMD_REFILL, "refuel with", do_cmd_refill, FALSE, 0 },
+	{ CMD_FIRE, "fire", do_cmd_fire, FALSE, 0 },
+	{ CMD_THROW, "throw", do_cmd_throw, FALSE, 0 },
+	{ CMD_DESTROY, "ignore", do_cmd_destroy, FALSE, 0 },
+	{ CMD_ENTER_STORE, "go into", do_cmd_store, FALSE, 0 },
+	{ CMD_INSCRIBE, "inscribe", do_cmd_inscribe, FALSE, 0 },
+	{ CMD_STUDY, "study", do_cmd_study, FALSE, 0 },
+	{ CMD_CAST, "cast", do_cmd_cast, FALSE, 0 },
+	{ CMD_SELL, "sell", do_cmd_sell, FALSE, 0 },
+	{ CMD_STASH, "stash", do_cmd_stash, FALSE, 0 },
+	{ CMD_BUY, "buy", do_cmd_buy, FALSE, 0 },
+	{ CMD_RETRIEVE, "retrieve", do_cmd_retrieve, FALSE, 0 },
+	{ CMD_USE, "use", do_cmd_use, FALSE, 0 },
+	{ CMD_SUICIDE, "commit suicide", do_cmd_suicide, FALSE, 0 },
+	{ CMD_SAVE, "save", do_cmd_save_game, FALSE, 0 },
+	{ CMD_QUIT, "quit", do_cmd_quit, FALSE, 0 },
+	{ CMD_HELP, "help", NULL, FALSE, 0 },
+	{ CMD_REPEAT, "repeat", NULL, FALSE, 0 },
 };
 
 const char *cmdq_pop_verb(cmd_code cmd)
@@ -247,51 +209,91 @@ static int cmd_idx(cmd_code code)
 			return i;
 	}
 
-	return -1;
+	return CMD_ARG_NOT_PRESENT;
 }
 
 void cmd_set_arg_choice(struct command *cmd, int n, int choice)
 {
-	int idx = cmd_idx(cmd->command);
-
 	assert(n <= CMD_MAX_ARGS);
-	assert(game_cmds[idx].arg_type[n] & arg_CHOICE);
 
 	cmd->arg[n].choice = choice;
 	cmd->arg_type[n] = arg_CHOICE;
 	cmd->arg_present[n] = TRUE;
 }
 
-int cmd_get_arg_choice(struct command *cmd, int n)
+int cmd_get_arg_choice(struct command *cmd, int n, int *choice)
 {
 	assert(n <= CMD_MAX_ARGS);
-	return cmd->arg_present[n] ? cmd->arg[n].choice : -1;
+
+	if (!cmd->arg_present[n]) return CMD_ARG_NOT_PRESENT;
+	if (cmd->arg_type[n] != arg_CHOICE) return CMD_ARG_WRONG_TYPE;
+
+	*choice = cmd->arg[n].choice;
+	return CMD_OK;
+}
+
+int cmd_get_spell(struct command *cmd, int arg, int *spell,
+	const char *verb, item_tester book_filter, const char *error, bool (*spell_filter)(int spell))
+{
+	if (cmd_get_arg_choice(cmd, arg, spell) == CMD_OK)
+		return CMD_OK;
+
+	*spell = get_spell(verb, book_filter, error, spell_filter);
+	if (*spell >= 0) {
+		cmd_set_arg_choice(cmd, arg, *spell);
+		return CMD_OK;
+	}
+
+	return CMD_ARG_ABORTED;
 }
 
 void cmd_set_arg_string(struct command *cmd, int n, const char *str)
 {
-	int idx = cmd_idx(cmd->command);
-
 	assert(n <= CMD_MAX_ARGS);
-	assert(game_cmds[idx].arg_type[n] & arg_STRING);
 
 	cmd->arg[n].string = string_make(str);
 	cmd->arg_type[n] = arg_STRING;
 	cmd->arg_present[n] = TRUE;
 }
 
-const char *cmd_get_arg_string(struct command *cmd, int n)
+int cmd_get_arg_string(struct command *cmd, int n, const char **str)
 {
 	assert(n <= CMD_MAX_ARGS);
-	return cmd->arg_present[n] ? cmd->arg[n].string : NULL;
+
+	if (!cmd->arg_present[n]) return CMD_ARG_NOT_PRESENT;
+	if (cmd->arg_type[n] != arg_STRING) return CMD_ARG_WRONG_TYPE;
+
+	*str = cmd->arg[n].string;
+	return CMD_OK;
+}
+
+int cmd_get_string(struct command *cmd, int arg, const char **str,
+		const char *initial, const char *title, const char *prompt)
+{
+	char tmp[80] = "";
+
+	if (cmd_get_arg_string(cmd, arg, str) == CMD_OK)
+		return CMD_OK;
+
+	/* Introduce */
+	msg("%s", title);
+	message_flush();
+
+	/* Prompt properly */
+	if (initial)
+		my_strcpy(tmp, initial, sizeof tmp);
+
+	if (get_string(prompt, tmp, sizeof tmp)) {
+		cmd_set_arg_string(cmd, arg, tmp);
+		return CMD_OK;
+	}
+
+	return CMD_ARG_ABORTED;
 }
 
 void cmd_set_arg_direction(struct command *cmd, int n, int dir)
 {
-	int idx = cmd_idx(cmd->command);
-
 	assert(n <= CMD_MAX_ARGS);
-	assert(game_cmds[idx].arg_type[n] & arg_DIRECTION);
 
 	cmd->arg[n].direction = dir;
 	cmd->arg_type[n] = arg_DIRECTION;
@@ -302,56 +304,65 @@ int cmd_get_arg_direction(struct command *cmd, int n, int *dir)
 {
 	assert(n <= CMD_MAX_ARGS);
 
-	if (!cmd->arg_present[n]) return -1;
-	if (cmd->arg_type[n] != arg_DIRECTION) return -2;
+	if (!cmd->arg_present[n]) return CMD_ARG_NOT_PRESENT;
+	if (cmd->arg_type[n] != arg_DIRECTION) return CMD_ARG_WRONG_TYPE;
 
 	*dir = cmd->arg[n].direction;
-	return 0;
+	return CMD_OK;
 }
 
-int cmd_get_direction(struct command *cmd, int arg, int *dir, bool allow_5) {
-
-	int err = cmd_get_arg_direction(cmd, arg, dir);
-	if (err == 0 && dir != DIR_UNKNOWN)
-		return 0;
+int cmd_get_direction(struct command *cmd, int arg, int *dir, bool allow_5)
+{
+	if (cmd_get_arg_direction(cmd, arg, dir) == CMD_OK && dir != DIR_UNKNOWN)
+		return CMD_OK;
 
 	/* We need to do extra work */
 	if (get_rep_dir(dir, allow_5)) {
 		cmd_set_arg_direction(cmd, 0, *dir);
-		return 0;
+		return CMD_OK;
 	}
 
-	return -3;
+	return CMD_ARG_ABORTED;
 }
 
 void cmd_set_arg_target(struct command *cmd, int n, int target)
 {
-	int idx = cmd_idx(cmd->command);
-
 	assert(n <= CMD_MAX_ARGS);
-	assert(game_cmds[idx].arg_type[n] & arg_TARGET);
 
 	cmd->arg[n].direction = target;
 	cmd->arg_type[n] = arg_TARGET;
 	cmd->arg_present[n] = TRUE;
 }
 
-bool cmd_get_arg_target(struct command *cmd, int n, int *target)
+int cmd_get_arg_target(struct command *cmd, int n, int *target)
 {
 	assert(n <= CMD_MAX_ARGS);
-	if (!cmd->arg_present[n])
-		return FALSE;
+
+	if (!cmd->arg_present[n]) return CMD_ARG_NOT_PRESENT;
+	if (cmd->arg_type[n] != arg_TARGET) return CMD_ARG_WRONG_TYPE;
 
 	*target = cmd->arg[n].direction;
-	return TRUE;
+	return CMD_OK;
+}
+
+int cmd_get_target(struct command *cmd, int arg, int *target)
+{
+	if (cmd_get_arg_target(cmd, arg, target) == CMD_OK &&
+			*target != DIR_UNKNOWN &&
+			(*target != DIR_TARGET || target_okay()))
+		return CMD_OK;
+
+	if (get_aim_dir(target)) {
+		cmd_set_arg_direction(cmd, arg, *target);
+		return CMD_OK;
+	}
+
+	return CMD_ARG_ABORTED;
 }
 
 void cmd_set_arg_point(struct command *cmd, int n, int x, int y)
 {
-	int idx = cmd_idx(cmd->command);
-
 	assert(n <= CMD_MAX_ARGS);
-	assert(game_cmds[idx].arg_type[n] & arg_POINT);
 
 	cmd->arg[n].point.x = x;
 	cmd->arg[n].point.y = y;
@@ -359,6 +370,7 @@ void cmd_set_arg_point(struct command *cmd, int n, int x, int y)
 	cmd->arg_present[n] = TRUE;
 }
 
+/* XXX-AS fix me */
 bool cmd_get_arg_point(struct command *cmd, int n, int *x, int *y)
 {
 	assert(n <= CMD_MAX_ARGS);
@@ -370,44 +382,82 @@ bool cmd_get_arg_point(struct command *cmd, int n, int *x, int *y)
 	return TRUE;
 }
 
+/** Item arguments **/
+
+/* Set argument 'n' to 'item' */
 void cmd_set_arg_item(struct command *cmd, int n, int item)
 {
-	int idx = cmd_idx(cmd->command);
-
 	assert(n <= CMD_MAX_ARGS);
-	assert(game_cmds[idx].arg_type[n] & arg_ITEM);
 
 	cmd->arg[n].item = item;
 	cmd->arg_type[n] = arg_ITEM;
 	cmd->arg_present[n] = TRUE;
 }
 
-bool cmd_get_arg_item(struct command *cmd, int n, int *item)
+/* Retrieve argument 'n' as an item, returning 0 for success */
+int cmd_get_arg_item(struct command *cmd, int n, int *item)
 {
 	assert(n <= CMD_MAX_ARGS);
-	if (!cmd->arg_present[n])
-		return FALSE;
+
+	if (!cmd->arg_present[n]) return CMD_ARG_NOT_PRESENT;
+	if (cmd->arg_type[n] != arg_ITEM) return CMD_ARG_WRONG_TYPE;
 
 	*item = cmd->arg[n].item;
-	return TRUE;
+	return CMD_OK;
 }
 
+/* Get an item, first from the command or try the UI otherwise */
+int cmd_get_item(struct command *cmd, int arg, int *item,
+		const char *prompt, const char *reject, item_tester filter, int mode)
+{
+	if (cmd_get_arg_item(cmd, arg, item) == CMD_OK)
+		return CMD_OK;
+
+	if (get_item(item, prompt, reject, cmd->command, filter, mode)) {
+		cmd_set_arg_item(cmd, 0, *item);
+		return CMD_OK;
+	}
+
+	return CMD_ARG_ABORTED;
+}
+
+/** Numbers, quantities **/
+
+/* Set argument 'n' to 'number' */
 void cmd_set_arg_number(struct command *cmd, int n, int num)
 {
-	int idx = cmd_idx(cmd->command);
-
 	assert(n <= CMD_MAX_ARGS);
-	assert(game_cmds[idx].arg_type[n] & arg_NUMBER);
 
 	cmd->arg[n].number = num;
 	cmd->arg_type[n] = arg_NUMBER;
 	cmd->arg_present[n] = TRUE;
 }
 
-int cmd_get_arg_number(struct command *cmd, int n)
+/* Get argument 'n' as a number */
+int cmd_get_arg_number(struct command *cmd, int n, int *amt)
 {
 	assert(n <= CMD_MAX_ARGS);
-	return cmd->arg_present[n] ? cmd->arg[n].number : -1;
+
+	if (!cmd->arg_present[n]) return CMD_ARG_NOT_PRESENT;
+	if (cmd->arg_type[n] != arg_ITEM) return CMD_ARG_WRONG_TYPE;
+
+	*amt = cmd->arg[n].number;
+	return TRUE;
+}
+
+/* Get argument 'n' as a number; failing that, prompt for input */
+int cmd_get_quantity(struct command *cmd, int arg, int *amt, int max)
+{
+	if (cmd_get_arg_number(cmd, arg, amt) == CMD_OK)
+		return CMD_OK;
+
+	*amt = get_quantity(NULL, max);
+	if (*amt > 0) {
+		cmd_set_arg_number(cmd, arg, *amt);
+		return CMD_OK;
+	}
+
+	return CMD_ARG_ABORTED;
 }
 
 /*
@@ -452,208 +502,8 @@ void process_command(cmd_context ctx, bool no_request)
 	{
 		int oldrepeats = cmd->nrepeats;
 		int idx = cmd_idx(cmd->command);
-		size_t i;
 
 		if (idx == -1) return;
-
-		for (i = 0; i < N_ELEMENTS(item_selector); i++)
-		{
-			struct item_selector *is = &item_selector[i];
-
-			if (is->command != cmd->command)
-				continue;
-
-			if (!cmd->arg_present[0])
-			{
-				int item;
-				const char *verb = game_cmds[idx].verb;
-				const char *type = is->type;
-				const char *type2 = is->type;
-
-				char prompt[1024], none[1024];
-				char capitalVerb[256];
-
-				/* Pluralise correctly or things look weird */
-				if (!type) {
-					type = "item";
-					type2 = "items";
-				}
-
-				my_strcpy(capitalVerb, verb, sizeof(capitalVerb));
-				my_strcap(capitalVerb);
-
-				strnfmt(prompt, sizeof(prompt), "%s which %s?", capitalVerb, type);
-				strnfmt(none, sizeof(none), "You have no %s you can %s.", type2, verb);
-
-				if (cmd->command == CMD_USE_ANY) player->command_wrk = USE_INVEN;
-				if (!get_item(&item, prompt, none, cmd->command, is->filter, is->mode))
-					return;
-
-				cmd_set_arg_item(cmd, 0, item);
-			}
-		}
-
-		/* XXX avoid dead objects from being re-used on repeat.
-		 * this needs to be expanded into a general safety-check
-		 * on args */
-		if ((game_cmds[idx].arg_type[0] == arg_ITEM) && cmd->arg_present[0]) {
-			object_type *o_ptr = object_from_item_idx(cmd->arg[0].item);
-			if (!o_ptr->kind)
-				return;
-		}
-
-		/* Do some sanity checking on those arguments that might have 
-		   been declared as "unknown", such as directions and targets. */
-		switch (cmd->command)
-		{
-			case CMD_INSCRIBE:
-			{
-				char o_name[80];
-				char tmp[80] = "";
-
-				object_type *o_ptr = object_from_item_idx(cmd->arg[0].item);
-			
-				object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
-				msg("Inscribing %s.", o_name);
-				message_flush();
-			
-				/* Use old inscription */
-				if (o_ptr->note)
-					strnfmt(tmp, sizeof(tmp), "%s", quark_str(o_ptr->note));
-			
-				/* Get a new inscription (possibly empty) */
-				if (!get_string("Inscription: ", tmp, sizeof(tmp)))
-					return;
-
-				cmd_set_arg_string(cmd, 1, tmp);
-				break;
-			}
-
-			case CMD_DROP:
-			case CMD_STASH:
-			{
-				if (!cmd->arg_present[1])
-				{
-					object_type *o_ptr = object_from_item_idx(cmd->arg[0].item);
-					int amt = get_quantity(NULL, o_ptr->number);
-					if (amt <= 0)
-						return;
-
-					cmd_set_arg_number(cmd, 1, amt);
-				}
-
-				break;
-			}
-			
-			/* 
-			 * These take an item number and a  "target" as arguments, 
-			 * though a target isn't always actually needed, so we'll 
-			 * only prompt for it via callback if the item being used needs it.
-			 */
-			case CMD_USE_WAND:
-			case CMD_USE_ROD:
-			case CMD_QUAFF:
-			case CMD_ACTIVATE:
-			case CMD_READ_SCROLL:
-			case CMD_FIRE:
-			case CMD_THROW:
-			case CMD_USE_ANY:
-			case CMD_USE_AIMED:
-			case CMD_USE_UNAIMED:
-			{
-				bool get_target = FALSE;
-				object_type *o_ptr = object_from_item_idx(cmd->arg[0].choice);
-
-				/* If we couldn't resolve the item, then abort this */
-				if (!o_ptr->kind) break;
-
-				/* Thrown objects always need an aim, others might, depending
-				 * on the object */
-				if (obj_needs_aim(o_ptr) || cmd->command == CMD_THROW)
-				{
-					if (!cmd->arg_present[1])
-						get_target = TRUE;
-
-					if (cmd->arg[1].direction == DIR_UNKNOWN)
-						get_target = TRUE;
-
-					if (cmd->arg[1].direction == DIR_TARGET && !target_okay())
-						get_target = TRUE;
-				}
-
-				if (get_target && !get_aim_dir(&cmd->arg[1].direction))
-						return;
-
-				player_confuse_dir(player, &cmd->arg[1].direction, FALSE);
-				cmd->arg_present[1] = TRUE;
-
-				break;
-			}
-			
-			/* This takes a choice and a direction. */
-			case CMD_CAST:
-			{
-				bool get_target = FALSE;
-
-				if (spell_needs_aim(player->class->spell_book, cmd->arg[0].choice))
-				{
-					if (!cmd->arg_present[1])
-						get_target = TRUE;
-
-					if (cmd->arg[1].direction == DIR_UNKNOWN)
-						get_target = TRUE;
-
-					if (cmd->arg[1].direction == DIR_TARGET && !target_okay())
-						get_target = TRUE;
-				}
-
-				if (get_target && !get_aim_dir(&cmd->arg[1].direction))
-						return;
-
-				player_confuse_dir(player, &cmd->arg[1].direction, FALSE);
-				cmd->arg_present[1] = TRUE;
-				
-				break;
-			}
-
-			case CMD_WIELD:
-			{
-				object_type *o_ptr = object_from_item_idx(cmd->arg[0].choice);
-				int slot = wield_slot(o_ptr);
-			
-				/* Usually if the slot is taken we'll just replace the item in the slot,
-				 * but in some cases we need to ask the user which slot they actually
-				 * want to replace */
-				if (player->inventory[slot].kind)
-				{
-					if (tval_is_ring(o_ptr))
-					{
-						const char *q = "Replace which ring? ";
-						const char *s = "Error in obj_wield, please report";
-						if (!get_item(&slot, q, s, CMD_WIELD, tval_is_ring, USE_EQUIP)) return;
-					}
-			
-					if (tval_is_ammo(o_ptr) && !object_similar(&player->inventory[slot],
-						o_ptr, OSTACK_QUIVER))
-					{
-						const char *q = "Replace which ammunition? ";
-						const char *s = "Error in obj_wield, please report";
-						if (!get_item(&slot, q, s, CMD_WIELD, tval_is_ammo, USE_EQUIP)) return;
-					}
-				}
-
-				/* Set relevant slot */
-				cmd_set_arg_number(cmd, 1, slot);
-
-				break;
-			}
-
-			default: 
-			{
-				/* I can see the point of the compiler warning, but still... */
-				break;
-			}
-		}
 
 		/* Command repetition */
 		if (game_cmds[idx].repeat_allowed)

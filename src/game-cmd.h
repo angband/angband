@@ -47,8 +47,7 @@ typedef enum cmd_code
 	CMD_WIELD,
 	CMD_DROP,
 	CMD_BROWSE_SPELL,
-	CMD_STUDY_SPELL,
-	CMD_STUDY_BOOK,
+	CMD_STUDY,
 	CMD_CAST, /* Casting a spell /or/ praying. */
 	CMD_USE_STAFF,
 	CMD_USE_WAND,
@@ -58,6 +57,7 @@ typedef enum cmd_code
 	CMD_QUAFF,
 	CMD_READ_SCROLL,
 	CMD_REFILL,
+	CMD_USE,
 	CMD_FIRE,
 	CMD_THROW,
 	CMD_PICKUP,
@@ -80,14 +80,6 @@ typedef enum cmd_code
 	CMD_BUY,
 	CMD_STASH,
 	CMD_RETRIEVE,
-
-  /* commands added by Brett */	
-  /* use a rod, wand, or fire ammo */
-  CMD_USE_AIMED,
-  /* use a staff, scroll, potion, or food */
-  CMD_USE_UNAIMED,
-  /* use a any useable item */
-  CMD_USE_ANY,
 
 	/* Hors categorie Commands */
 	CMD_SUICIDE,
@@ -179,6 +171,13 @@ struct command {
 	enum cmd_arg_type arg_type[CMD_MAX_ARGS];
 };
 
+enum cmd_return_codes {
+	CMD_OK = 0,
+	CMD_ARG_NOT_PRESENT = -1,
+	CMD_ARG_WRONG_TYPE = -2,
+	CMD_ARG_ABORTED = -3
+};
+
 /* 
  * Command handlers will take a pointer to the command structure
  * so that they can access any arguments supplied.
@@ -266,18 +265,26 @@ void cmd_set_arg_number(struct command *cmd, int n, int num);
 /**
  * Get the args of a command.
  */
-int cmd_get_arg_choice(struct command *cmd, int n);
-const char *cmd_get_arg_string(struct command *cmd, int n);
+int cmd_get_arg_choice(struct command *cmd, int n, int *choice);
+int cmd_get_arg_string(struct command *cmd, int n, const char **str);
 int cmd_get_arg_direction(struct command *cmd, int n, int *dir);
-bool cmd_get_arg_target(struct command *cmd, int n, int *target);
+int cmd_get_arg_target(struct command *cmd, int n, int *target);
 bool cmd_get_arg_point(struct command *cmd, int n, int *x, int *y);
-bool cmd_get_arg_item(struct command *cmd, int n, int *item);
-int cmd_get_arg_number(struct command *cmd, int n);
-
+int cmd_get_arg_item(struct command *cmd, int n, int *item);
+int cmd_get_arg_number(struct command *cmd, int n, int *amt);
 
 /**
  * Try a bit harder.
  */
 int cmd_get_direction(struct command *cmd, int arg, int *dir, bool allow_5);
+int cmd_get_target(struct command *cmd, int arg, int *target);
+int cmd_get_item(struct command *cmd, int arg, int *item,
+		const char *prompt, const char *reject, item_tester filter, int mode);
+int cmd_get_quantity(struct command *cmd, int arg, int *amt, int max);
+int cmd_get_string(struct command *cmd, int arg, const char **str,
+		const char *initial, const char *title, const char *prompt);
+int cmd_get_spell(struct command *cmd, int arg, int *spell,
+	const char *verb, item_tester book_filter, const char *error, bool (*spell_filter)(int spell));
+
 
 #endif

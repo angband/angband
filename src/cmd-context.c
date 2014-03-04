@@ -278,7 +278,7 @@ int context_menu_player(int mx, int my)
 	labels = string_make(lower_case);
 	m->selections = labels;
 
-	ADD_LABEL("Use", CMD_USE_ANY, MN_ROW_VALID);
+	ADD_LABEL("Use", CMD_USE, MN_ROW_VALID);
 
 	/* if player can cast, add casting option */
 	if (player_can_cast(player, FALSE)) {
@@ -374,7 +374,7 @@ int context_menu_player(int mx, int my)
 			/* User cancelled the menu. */
 			return 3;
 
-		case CMD_USE_ANY:
+		case CMD_USE:
 		case CMD_CAST:
 		case CMD_SEARCH:
 		case CMD_GO_UP:
@@ -409,7 +409,7 @@ int context_menu_player(int mx, int my)
 
 	/* Perform the command. */
 	switch(selected) {
-		case CMD_USE_ANY:
+		case CMD_USE:
 		case CMD_CAST:
 			cmdkey = cmd_lookup_key(selected, mode);
 			Term_keypress(cmdkey, 0);
@@ -486,7 +486,7 @@ int context_menu_cave(struct cave *c, int y, int x, int adjacent, int mx, int my
 		menu_dynamic_add_label(m, "Recall Info", '/', MENU_VALUE_RECALL, labels);
 	}
 
-	ADD_LABEL("Use Item On", CMD_USE_ANY, MN_ROW_VALID);
+	ADD_LABEL("Use Item On", CMD_USE, MN_ROW_VALID);
 
 	if (player_can_cast(player, FALSE)) {
 		ADD_LABEL("Cast On", CMD_CAST, MN_ROW_VALID);
@@ -645,7 +645,7 @@ int context_menu_cave(struct cave *c, int y, int x, int adjacent, int mx, int my
 		case CMD_CAST:
 		case CMD_FIRE:
 		case CMD_THROW:
-		case CMD_USE_ANY:
+		case CMD_USE:
 			/* Only check for ^ inscriptions, since we don't have an object selected (if we need one). */
 			allowed = key_confirm_command(cmdkey);
 			break;
@@ -701,14 +701,9 @@ int context_menu_cave(struct cave *c, int y, int x, int adjacent, int mx, int my
 			break;
 
 		case CMD_CAST:
-			if (textui_obj_cast_ret() >= 0) {
-				cmd_set_arg_target(cmdq_peek(), 1, DIR_TARGET);
-			}
-			break;
-
 		case CMD_FIRE:
 		case CMD_THROW:
-		case CMD_USE_ANY:
+		case CMD_USE:
 			cmdq_push(selected);
 			cmd_set_arg_target(cmdq_peek(), 1, DIR_TARGET);
 			break;
@@ -749,20 +744,14 @@ int context_menu_object(const object_type *o_ptr, const int slot)
 	menu_dynamic_add_label(m, "Inspect", 'I', MENU_VALUE_INSPECT, labels);
 
 	if (obj_can_browse(o_ptr)) {
-		if (obj_can_cast_from(o_ptr) && player_can_cast(player, FALSE)) {
+		if (obj_can_cast_from(o_ptr) && player_can_cast(player, FALSE))
 			ADD_LABEL("Cast", CMD_CAST, MN_ROW_VALID);
-		}
 
-		if (obj_can_study(o_ptr) && player_can_study(player, FALSE)) {
-			cmd_code study_cmd = player_has(PF_CHOOSE_SPELLS) ? CMD_STUDY_SPELL : CMD_STUDY_BOOK;
-			/* Hack - Use the STUDY_BOOK command key so that we get the correct command key. */
-			cmdkey = cmd_lookup_key_unktrl(CMD_STUDY_BOOK, mode);
-			menu_dynamic_add_label(m, "Study", cmdkey, study_cmd, labels);
-		}
+		if (obj_can_study(o_ptr) && player_can_study(player, FALSE))
+			ADD_LABEL("Study", CMD_STUDY, MN_ROW_VALID);
 
-		if (player_can_read(player, FALSE)) {
+		if (player_can_read(player, FALSE))
 			ADD_LABEL("Browse", CMD_BROWSE_SPELL, MN_ROW_VALID);
-		}
 	}
 	else if (obj_is_useable(o_ptr)) {
 		if (tval_is_wand(o_ptr)) {
@@ -795,7 +784,7 @@ int context_menu_object(const object_type *o_ptr, const int slot)
 			ADD_LABEL("Fire", CMD_FIRE, MN_ROW_VALID);
 		}
 		else {
-			ADD_LABEL("Use", CMD_USE_ANY, MN_ROW_VALID);
+			ADD_LABEL("Use", CMD_USE, MN_ROW_VALID);
 		}
 	}
 
@@ -896,12 +885,8 @@ int context_menu_object(const object_type *o_ptr, const int slot)
 			}
 			return 1;
 
-		case CMD_STUDY_SPELL:
-			/* Hack - Use the STUDY_BOOK command key so that get_item_allow() works properly. */
-			cmdkey = cmd_lookup_key(CMD_STUDY_BOOK, mode);
-			/* Fall through. */
 		case CMD_BROWSE_SPELL:
-		case CMD_STUDY_BOOK:
+		case CMD_STUDY:
 		case CMD_CAST:
 		case CMD_DESTROY:
 		case CMD_WIELD:
@@ -920,7 +905,7 @@ int context_menu_object(const object_type *o_ptr, const int slot)
 		case CMD_EAT:
 		case CMD_ACTIVATE:
 		case CMD_FIRE:
-		case CMD_USE_ANY:
+		case CMD_USE:
 			/* Check for inscriptions that trigger confirmation. */
 			allowed = key_confirm_command(cmdkey) && get_item_allow(slot, cmdkey, selected, FALSE);
 			break;
@@ -937,36 +922,21 @@ int context_menu_object(const object_type *o_ptr, const int slot)
 	if (selected == CMD_DESTROY) {
 		/* squelch or unsquelch the item */
 		textui_cmd_destroy_menu(slot);
-	}
-	else if (selected == CMD_BROWSE_SPELL) {
+	} else if (selected == CMD_BROWSE_SPELL) {
 		/* browse a spellbook */
 		/* copied from textui_spell_browse */
 		textui_book_browse(o_ptr);
 		return 2;
-	}
-	else if (selected == CMD_STUDY_SPELL) {
-		/* study a spell book */
-		/* copied from textui_obj_study */
-		int spell = get_spell(o_ptr, "study", spell_okay_to_study);
-
-		if (spell >= 0) {
-			cmdq_push(CMD_STUDY_SPELL);
-			cmd_set_arg_choice(cmdq_peek(), 0, spell);
+	} else if (selected == CMD_STUDY) {
+		cmdq_push(CMD_STUDY);
+		cmd_set_arg_item(cmdq_peek(), 0, slot);
+	} else if (selected == CMD_CAST) {
+		if (obj_can_cast_from(o_ptr)) {
+			cmdq_push(CMD_CAST);
+			cmd_set_arg_item(cmdq_peek(), 1, slot);
+			/* XXX-AS: change this from '1' to 'book' at some point */
 		}
-	}
-	else if (selected == CMD_CAST) {
-		if (obj_can_browse(o_ptr)) {
-			/* copied from textui_obj_cast */
-			const char *verb = ((player->class->spell_book == TV_MAGIC_BOOK) ? "cast" : "recite");
-			int spell = get_spell(o_ptr, verb, spell_okay_to_cast);
-
-			if (spell >= 0) {
-				cmdq_push(CMD_CAST);
-				cmd_set_arg_choice(cmdq_peek(), 0, spell);
-			}
-		}
-	}
-	else {
+	} else {
 		cmdq_push(selected);
 		cmd_set_arg_item(cmdq_peek(), 0, slot);
 

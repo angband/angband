@@ -2145,7 +2145,7 @@ static int find_inven(const object_type *o_ptr)
 void do_cmd_buy(struct command *cmd)
 {
 	int item;
-	int amt = cmd_get_arg_number(cmd, 1);
+	int amt;
 
 	object_type *o_ptr;	
 	object_type object_type_body;
@@ -2161,8 +2161,14 @@ void do_cmd_buy(struct command *cmd)
 		return;
 	}
 
-	if (!cmd_get_arg_item(cmd, 0, &item))
+	/* Get arguments */
+	/* XXX-AS fill this out, split into cmd-store.c */
+	if (cmd_get_arg_item(cmd, 0, &item) != CMD_OK)
 		return;
+
+	if (cmd_get_arg_number(cmd, 1, &amt) != CMD_OK)
+		return;
+
 
 	/* Get the actual object */
 	o_ptr = &store->stock[item];
@@ -2271,8 +2277,7 @@ void do_cmd_buy(struct command *cmd)
  */
 void do_cmd_retrieve(struct command *cmd)
 {
-	int item;
-	int amt = cmd_get_arg_number(cmd, 1);
+	int item, amt;
 
 	object_type *o_ptr;	
 	object_type picked_item;
@@ -2286,7 +2291,12 @@ void do_cmd_retrieve(struct command *cmd)
 		return;
 	}
 
-	if (!cmd_get_arg_item(cmd, 0, &item))
+	/* Get arguments */
+	/* XXX-AS fill this out, split into cmd-store.c */
+	if (cmd_get_arg_item(cmd, 0, &item) != CMD_OK)
+		return;
+
+	if (cmd_get_arg_number(cmd, 1, &amt) != CMD_OK)
 		return;
 
 	/* Get the actual object */
@@ -2484,16 +2494,20 @@ static bool store_will_buy_tester(const object_type *o_ptr)
  */
 void do_cmd_sell(struct command *cmd)
 {
-	int amt = cmd_get_arg_number(cmd, 1);
+	int item, amt;
 	object_type sold_item;
 	struct store *store = current_store();
 	int price, dummy, value;
 	char o_name[120];
 
-	int item;
 	object_type *o_ptr;
 
-	if (!cmd_get_arg_item(cmd, 0, &item))
+	/* Get arguments */
+	/* XXX-AS fill this out, split into cmd-store.c */
+	if (cmd_get_arg_item(cmd, 0, &item) != CMD_OK)
+		return;
+
+	if (cmd_get_arg_number(cmd, 1, &amt) != CMD_OK)
 		return;
 
 	o_ptr = object_from_item_idx(item);
@@ -2603,7 +2617,7 @@ void do_cmd_sell(struct command *cmd)
  */
 void do_cmd_stash(struct command *cmd)
 {
-	int amt = cmd_get_arg_number(cmd, 1);
+	int amt;
 	object_type dropped_item;
 	struct store *store = current_store();
 	char o_name[120];
@@ -2611,10 +2625,13 @@ void do_cmd_stash(struct command *cmd)
 	int item;
 	object_type *o_ptr;
 
-	if (!cmd_get_arg_item(cmd, 0, &item))
+	if (cmd_get_arg_item(cmd, 0, &item))
 		return;
 
 	o_ptr = object_from_item_idx(item);
+
+	if (cmd_get_quantity(cmd, 1, &amt, o_ptr->number) != CMD_OK)
+		return;
 
 	/* Check we are somewhere we can stash items. */
 	if (store->sidx != STORE_HOME)

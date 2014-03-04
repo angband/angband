@@ -75,11 +75,19 @@ void wield_item(object_type *o_ptr, int item, int slot);
 void do_cmd_wield(struct command *cmd);
 void do_cmd_drop(struct command *cmd);
 void do_cmd_destroy(struct command *cmd);
+void do_cmd_read_scroll(struct command *cmd);
+void do_cmd_use_staff(struct command *cmd);
+void do_cmd_aim_wand(struct command *cmd);
+void do_cmd_zap_rod(struct command *cmd);
+void do_cmd_activate(struct command *cmd);
+void do_cmd_eat_food(struct command *cmd);
+void do_cmd_quaff_potion(struct command *cmd);
 void do_cmd_use(struct command *cmd);
 void do_cmd_refill(struct command *cmd);
-void do_cmd_study_spell(struct command *cmd);
 void do_cmd_cast(struct command *cmd);
+void do_cmd_study_spell(struct command *cmd);
 void do_cmd_study_book(struct command *cmd);
+void do_cmd_study(struct command *cmd);
 void textui_cmd_destroy_menu(int item);
 void textui_cmd_destroy(void);
 void textui_cmd_toggle_ignore(void);
@@ -110,15 +118,6 @@ extern void do_cmd_sell(struct command *cmd);
 extern void do_cmd_stash(struct command *cmd);
 extern void do_cmd_buy(struct command *cmd);
 extern void do_cmd_retrieve(struct command *cmd);
-
-/* ui-spell.c -- just for now */
-int get_spell(const object_type *o_ptr, const char *verb,
-		bool (*spell_test)(int spell));
-void textui_book_browse(const object_type *o_ptr);
-void textui_spell_browse(void);
-void textui_obj_study(void);
-void textui_obj_cast(void);
-int textui_obj_cast_ret(void);
 
 /* ui-knowledge.c */
 extern int big_pad(int col, int row, byte a, wchar_t c);

@@ -38,6 +38,11 @@ extern bool get_com(const char *prompt, struct keypress *command);
 extern bool get_com_ex(const char *prompt, ui_event *command);
 extern void pause_line(struct term *term);
 
+/* ui-spell.c -- just for now */
+int get_spell(const char *verb, item_tester book_filter,
+		const char *error, bool (*spell_filter)(int spell));
+void textui_book_browse(const object_type *o_ptr);
+void textui_spell_browse(void);
 
 
 #endif /* INCLUDED_UI_INPUT_H */
