@@ -131,13 +131,11 @@ DONE:
 
 3a. Replace 'cmd_code code, cmd_arg args[]' in command handlers with 'struct command *', remove direct arg access (replace with a halfway house - e.g. cmd_get_arg_item(cmd, 0) )
 
+3b. Slowly switch things across to using the new system, which allows compilation and testing, without breaking things.  This involves relocating the 'fill-in' code from game-cmd.c to the various do_cmd_* functions as well as writing new cmd_get_* functions that check validity of inputs, etc. as above.
+
 NOT DONE:
 
-3b. Add a named parameter system side-by-side existing system.
-
-3c. Slowly switch things across to using the new system, which allows compilation and testing, without breaking things.  This involves relocating the 'fill-in' code from game-cmd.c to the various do_cmd_* functions as well as writing new cmd_get_* functions that check validity of inputs, etc. as above.
-
-3d. Remove the old system when done.
+3c. Switch from numbered to named arguments.
 
 
 4. Reimplement the following in terms of a core-UI split:
@@ -153,10 +151,6 @@ NOT DONE:
   - stores
 
     There should not be a CMD_STORE.  It should just be that the player can sell and purchase on the grid.  This will require some file splitting out (textui-store.c and store.c, for example).
-
-  - spell selection
-
-    [The way this is done now (with the textui-spell thing) is not the right way at all but I don't know the right way just yet XXX]
 
   - pickup
 
