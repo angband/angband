@@ -37,9 +37,6 @@
 #include "obj-util.h"
 #include "tables.h"
 
-/* XXX-AS this is temporary */
-#include "target.h"
-
 /*
  * Go up one level
  */
@@ -401,12 +398,12 @@ void do_cmd_open(struct command *cmd)
 		n_closed_doors = count_feats(&y, &x, square_iscloseddoor, FALSE);
 		n_locked_chests = count_chests(&y, &x, CHEST_OPENABLE);
 
-		if (n_closed_doors + n_locked_chests == 1)
+		if (n_closed_doors + n_locked_chests == 1) {
 			dir = coords_to_dir(y, x);
-		else if (!get_rep_dir(&dir, FALSE))
+			cmd_set_arg_direction(cmd, 0, dir);
+		} else if (cmd_get_direction(cmd, 0, &dir, FALSE)) {
 			return;
-
-		cmd_set_arg_direction(cmd, 0, dir);
+		}
 	}
 
 	/* Get location */
@@ -552,12 +549,12 @@ void do_cmd_close(struct command *cmd)
 		int y, x;
 
 		/* Count open doors */
-		if (count_feats(&y, &x, square_isopendoor, FALSE) == 1)
+		if (count_feats(&y, &x, square_isopendoor, FALSE) == 1) {
 			dir = coords_to_dir(y, x);
-		else if (!get_rep_dir(&dir, FALSE))
+			cmd_set_arg_direction(cmd, 0, dir);
+		} else if (cmd_get_direction(cmd, 0, &dir, FALSE)) {
 			return;
-
-		cmd_set_arg_direction(cmd, 0, dir);
+		}
 	}
 
 	/* Get location */
@@ -855,13 +852,8 @@ void do_cmd_tunnel(struct command *cmd)
 	bool more = FALSE;
 
 	/* Get arguments */
-	int err = cmd_get_arg_direction(cmd, 0, &dir);
-	if (err || dir == DIR_UNKNOWN) {
-		if (!get_rep_dir(&dir, FALSE))
-			return;
-
-		cmd_set_arg_direction(cmd, 0, dir);
-	}
+	if (cmd_get_direction(cmd, 0, &dir, FALSE))
+		return;
 
 	/* Get location */
 	y = player->py + ddy[dir];
@@ -1098,14 +1090,15 @@ void do_cmd_disarm(struct command *cmd)
 		n_visible_traps = count_feats(&y, &x, square_isknowntrap, TRUE);
 		n_trapped_chests = count_chests(&y, &x, CHEST_TRAPPED);
 
-		if (n_visible_traps + n_trapped_chests == 1)
+		if (n_visible_traps + n_trapped_chests == 1) {
 			dir = coords_to_dir(y, x);
+			cmd_set_arg_direction(cmd, 0, dir);
+		}
 
 		/* If there are chests to disarm, allow 5 as a direction */
-		else if (!get_rep_dir(&dir, n_trapped_chests > 0))
+		else if (cmd_get_direction(cmd, 0, &dir, n_trapped_chests > 0)) {
 			return;
-
-		cmd_set_arg_direction(cmd, 0, dir);
+		}
 	}
 
 	/* Get location */
@@ -1218,14 +1211,10 @@ void do_cmd_alter_aux(int dir)
 void do_cmd_alter(struct command *cmd)
 {
 	int dir;
-	/* Get arguments */
-	int err = cmd_get_arg_direction(cmd, 0, &dir);
-	if (err || dir == DIR_UNKNOWN) {
-		if (!get_rep_dir(&dir, FALSE))
-			return;
 
-		cmd_set_arg_direction(cmd, 0, dir);
-	}
+	/* Get arguments */
+	if (cmd_get_direction(cmd, 0, &dir, FALSE))
+		return;
 
 	do_cmd_alter_aux(dir);
 }
@@ -1297,13 +1286,8 @@ void do_cmd_walk(struct command *cmd)
 	int x, y, dir;
 
 	/* Get arguments */
-	int err = cmd_get_arg_direction(cmd, 0, &dir);
-	if (err || dir == DIR_UNKNOWN) {
-		if (!get_rep_dir(&dir, FALSE))
-			return;
-
-		cmd_set_arg_direction(cmd, 0, dir);
-	}
+	if (cmd_get_direction(cmd, 0, &dir, FALSE))
+		return;
 
 	/* Apply confusion if necessary */
 	/* Confused movements use energy no matter what */
@@ -1330,13 +1314,8 @@ void do_cmd_jump(struct command *cmd)
 	int x, y, dir;
 
 	/* Get arguments */
-	int err = cmd_get_arg_direction(cmd, 0, &dir);
-	if (err || dir == DIR_UNKNOWN) {
-		if (!get_rep_dir(&dir, FALSE))
-			return;
-
-		cmd_set_arg_direction(cmd, 0, dir);
-	}
+	if (cmd_get_direction(cmd, 0, &dir, FALSE))
+		return;
 
 	/* Apply confusion if necessary */
 	if (player_confuse_dir(player, &dir, FALSE))
@@ -1364,13 +1343,8 @@ void do_cmd_run(struct command *cmd)
 	int x, y, dir;
 
 	/* Get arguments */
-	int err = cmd_get_arg_direction(cmd, 0, &dir);
-	if (err || dir == DIR_UNKNOWN) {
-		if (!get_rep_dir(&dir, FALSE))
-			return;
-
-		cmd_set_arg_direction(cmd, 0, dir);
-	}
+	if (cmd_get_direction(cmd, 0, &dir, FALSE))
+		return;
 
 	if (player_confuse_dir(player, &dir, TRUE))
 		return;

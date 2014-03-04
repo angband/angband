@@ -309,6 +309,21 @@ int cmd_get_arg_direction(struct command *cmd, int n, int *dir)
 	return 0;
 }
 
+int cmd_get_direction(struct command *cmd, int arg, int *dir, bool allow_5) {
+
+	int err = cmd_get_arg_direction(cmd, arg, dir);
+	if (err == 0 && dir != DIR_UNKNOWN)
+		return 0;
+
+	/* We need to do extra work */
+	if (get_rep_dir(dir, allow_5)) {
+		cmd_set_arg_direction(cmd, 0, *dir);
+		return 0;
+	}
+
+	return -3;
+}
+
 void cmd_set_arg_target(struct command *cmd, int n, int target)
 {
 	int idx = cmd_idx(cmd->command);

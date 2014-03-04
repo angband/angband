@@ -275,4 +275,9 @@ bool cmd_get_arg_item(struct command *cmd, int n, int *item);
 int cmd_get_arg_number(struct command *cmd, int n);
 
 
+/**
+ * Try a bit harder.
+ */
+int cmd_get_direction(struct command *cmd, int arg, int *dir, bool allow_5);
+
 #endif
