@@ -2144,7 +2144,7 @@ void do_cmd_debug(void)
 		/* Wizard Light the Level */
 		case 'w':
 		{
-			wiz_light(TRUE);
+			wiz_light(cave, TRUE);
 			break;
 		}
 

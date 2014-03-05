@@ -2091,10 +2091,9 @@ void cave_update_flow(struct cave *c)
  * This function "illuminates" every grid in the dungeon, memorizes all
  * "objects", and memorizes all grids as with magic mapping.
  */
-void wiz_light(bool full)
+void wiz_light(struct cave *c, bool full)
 {
 	int i, y, x;
-
 
 	/* Memorize objects */
 	for (i = 1; i < o_max; i++)
@@ -2113,15 +2112,13 @@ void wiz_light(bool full)
 	}
 
 	/* Scan all normal grids */
-	for (y = 1; y < cave->height - 1; y++)
+	for (y = 1; y < c->height - 1; y++)
 	{
 		/* Scan all normal grids */
-		for (x = 1; x < cave->width - 1; x++)
+		for (x = 1; x < c->width - 1; x++)
 		{
-			feature_type *f_ptr = &f_info[cave->feat[y][x]];
-
 			/* Process all non-walls */
-			if (!tf_has(f_ptr->flags, TF_ROCK))
+			if (!square_seemslikewall(c, y, x))
 			{
 				/* Scan all neighbors */
 				for (i = 0; i < 9; i++)
@@ -2129,15 +2126,13 @@ void wiz_light(bool full)
 					int yy = y + ddy_ddd[i];
 					int xx = x + ddx_ddd[i];
 
-					f_ptr = &f_info[cave->feat[yy][xx]];		    
-
 					/* Perma-light the grid */
-					sqinfo_on(cave->info[yy][xx], SQUARE_GLOW);
+					sqinfo_on(c->info[yy][xx], SQUARE_GLOW);
 
 					/* Memorize normal features */
-					if (!tf_has(f_ptr->flags, TF_FLOOR) || 
-						square_visible_trap(cave, yy, xx))
-						sqinfo_on(cave->info[yy][xx], SQUARE_MARK);
+					if (!square_isfloor(c, yy, xx) || 
+						square_visible_trap(c, yy, xx))
+						sqinfo_on(c->info[yy][xx], SQUARE_MARK);
 				}
 			}
 		}
@@ -2255,10 +2250,8 @@ void square_set_feat(struct cave *c, int y, int x, int feat)
 	int current_feat = c->feat[y][x];
 
 	assert(c);
-	assert(y >= 0 && y < DUNGEON_HGT);
-	assert(x >= 0 && x < DUNGEON_WID);
-	/* XXX: Check against c->height and c->width instead, once everywhere
-	 * honors those... */
+	assert(y >= 0 && y < c->height);
+	assert(x >= 0 && x < c->width);
 
 	/* Track changes */
 	if (current_feat) c->feat_count[current_feat]--;

@@ -578,7 +578,7 @@ bool effect_handler_TMD_ESP(effect_handler_context_t *context)
 bool effect_handler_ENLIGHTENMENT(effect_handler_context_t *context)
 {
 	msg("An image of your surroundings forms in your mind...");
-	wiz_light(TRUE);
+	wiz_light(cave, TRUE);
 	context->ident = TRUE;
 	return TRUE;
 }
@@ -587,7 +587,7 @@ bool effect_handler_ENLIGHTENMENT2(effect_handler_context_t *context)
 {
 	msg("You begin to feel more enlightened...");
 	message_flush();
-	wiz_light(TRUE);
+	wiz_light(cave, TRUE);
 	(void)do_inc_stat(A_INT);
 	(void)do_inc_stat(A_WIS);
 	(void)detect_traps(TRUE);
@@ -976,7 +976,7 @@ bool effect_handler_ILLUMINATION(effect_handler_context_t *context)
 bool effect_handler_CLAIRVOYANCE(effect_handler_context_t *context)
 {
 	context->ident = TRUE;
-	wiz_light(FALSE);
+	wiz_light(cave, FALSE);
 	(void)detect_traps(TRUE);
 	(void)detect_doorstairs(TRUE);
 	return TRUE;

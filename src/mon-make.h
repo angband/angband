@@ -37,7 +37,7 @@ void wipe_mon_list(struct cave *c, struct player *p);
 void get_mon_num_prep(bool (*get_mon_num_hook)(monster_race *race));
 monster_race *get_mon_num(int level);
 void player_place(struct cave *c, struct player *p, int y, int x);
-s16b place_monster(int y, int x, struct monster *mon, byte origin);
+s16b place_monster(struct cave *c, int y, int x, struct monster *mon, byte origin);
 bool place_new_monster(struct cave *, int y, int x, monster_race *r, bool sleep,
 	bool group_okay, byte origin);
 bool pick_and_place_monster(struct cave *c, int y, int x, int depth, bool sleep,

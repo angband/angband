@@ -253,7 +253,7 @@ extern bool player_has_los_bold(int y, int x);
 extern bool player_can_see_bold(int y, int x);
 extern void update_view(struct cave *c, struct player *p);
 extern void map_area(void);
-extern void wiz_light(bool full);
+extern void wiz_light(struct cave *c, bool full);
 extern void wiz_dark(void);
 extern int project_path(u16b *gp, int range, int y1, int x1, int y2, int x2, int flg);
 extern bool projectable(struct cave *c, int y1, int x1, int y2, int x2, int flg);

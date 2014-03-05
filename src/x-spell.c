@@ -809,7 +809,7 @@ static bool spell_handler_prayer_PROBING(spell_handler_context_t *context)
 
 static bool spell_handler_prayer_CLAIRVOYANCE(spell_handler_context_t *context)
 {
-	wiz_light(FALSE);
+	wiz_light(cave, FALSE);
 	return TRUE;
 }
 

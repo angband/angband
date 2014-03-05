@@ -1145,7 +1145,7 @@ void wipe_o_list(struct cave *c)
 			monster_type *m_ptr;
 
 			/* Monster */
-			m_ptr = cave_monster(cave, o_ptr->held_m_idx);
+			m_ptr = cave_monster(c, o_ptr->held_m_idx);
 
 			/* Hack -- see above */
 			m_ptr->hold_o_idx = 0;
