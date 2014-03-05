@@ -212,6 +212,20 @@ static int cmd_idx(cmd_code code)
 	return CMD_ARG_NOT_PRESENT;
 }
 
+/** 'Choice' type **/
+
+/*
+ * XXX This type is a hack. The only places that use this are:
+ * - resting
+ * - birth choices
+ * - store items
+ * - spells
+ *
+ * Each of these should have its own type, which will allow for proper
+ * validity checking of data.
+ */
+
+/* Set arg 'n' to 'choice' */
 void cmd_set_arg_choice(struct command *cmd, int n, int choice)
 {
 	assert(n <= CMD_MAX_ARGS);
@@ -221,6 +235,7 @@ void cmd_set_arg_choice(struct command *cmd, int n, int choice)
 	cmd->arg_present[n] = TRUE;
 }
 
+/* Retrive a argument 'n' if it's a choice */
 int cmd_get_arg_choice(struct command *cmd, int n, int *choice)
 {
 	assert(n <= CMD_MAX_ARGS);
@@ -232,11 +247,17 @@ int cmd_get_arg_choice(struct command *cmd, int n, int *choice)
 	return CMD_OK;
 }
 
+/* Get a spell from the user, trying the command first but then prompting */
 int cmd_get_spell(struct command *cmd, int arg, int *spell,
-	const char *verb, item_tester book_filter, const char *error, bool (*spell_filter)(int spell))
+	const char *verb, item_tester book_filter, const char *error,
+	bool (*spell_filter)(int spell))
 {
-	if (cmd_get_arg_choice(cmd, arg, spell) == CMD_OK)
-		return CMD_OK;
+	/* See if we've been provided with this one */
+	if (cmd_get_arg_choice(cmd, arg, spell) == CMD_OK) {
+		/* Ensure it passes the filter */
+		if (!spell_filter || spell_filter(*spell) == TRUE)
+			return CMD_OK;
+	}
 
 	*spell = get_spell(verb, book_filter, error, spell_filter);
 	if (*spell >= 0) {
@@ -247,6 +268,9 @@ int cmd_get_spell(struct command *cmd, int arg, int *spell,
 	return CMD_ARG_ABORTED;
 }
 
+/** Strings **/
+
+/* Set arg 'n' to given string */
 void cmd_set_arg_string(struct command *cmd, int n, const char *str)
 {
 	assert(n <= CMD_MAX_ARGS);
@@ -256,6 +280,7 @@ void cmd_set_arg_string(struct command *cmd, int n, const char *str)
 	cmd->arg_present[n] = TRUE;
 }
 
+/* Retrieve arg 'n' if a string */
 int cmd_get_arg_string(struct command *cmd, int n, const char **str)
 {
 	assert(n <= CMD_MAX_ARGS);
@@ -267,6 +292,7 @@ int cmd_get_arg_string(struct command *cmd, int n, const char **str)
 	return CMD_OK;
 }
 
+/* Get a string, first from the command or failing that prompt the user */
 int cmd_get_string(struct command *cmd, int arg, const char **str,
 		const char *initial, const char *title, const char *prompt)
 {
@@ -291,6 +317,9 @@ int cmd_get_string(struct command *cmd, int arg, const char **str,
 	return CMD_ARG_ABORTED;
 }
 
+/** Directions **/
+
+/* Set arg 'n' to given direction */
 void cmd_set_arg_direction(struct command *cmd, int n, int dir)
 {
 	assert(n <= CMD_MAX_ARGS);
@@ -300,6 +329,7 @@ void cmd_set_arg_direction(struct command *cmd, int n, int dir)
 	cmd->arg_present[n] = TRUE;
 }
 
+/* Retrieve arg 'n' if a direction */
 int cmd_get_arg_direction(struct command *cmd, int n, int *dir)
 {
 	assert(n <= CMD_MAX_ARGS);
@@ -311,10 +341,14 @@ int cmd_get_arg_direction(struct command *cmd, int n, int *dir)
 	return CMD_OK;
 }
 
+/* Get a direction, first from command or prompt otherwise */
 int cmd_get_direction(struct command *cmd, int arg, int *dir, bool allow_5)
 {
-	if (cmd_get_arg_direction(cmd, arg, dir) == CMD_OK && dir != DIR_UNKNOWN)
-		return CMD_OK;
+	if (cmd_get_arg_direction(cmd, arg, dir) == CMD_OK) {
+		/* Validity check */
+		if (dir != DIR_UNKNOWN)
+			return CMD_OK;
+	}
 
 	/* We need to do extra work */
 	if (get_rep_dir(dir, allow_5)) {
@@ -325,6 +359,16 @@ int cmd_get_direction(struct command *cmd, int arg, int *dir, bool allow_5)
 	return CMD_ARG_ABORTED;
 }
 
+/** Targets **/
+
+/* 
+ * XXX Should this be unified with the arg_DIRECTION type?
+ *
+ * XXX Should we abolish DIR_TARGET and instead pass a struct target which
+ * contains all relevant info?
+ */
+
+/* Set arg 'n' to target */
 void cmd_set_arg_target(struct command *cmd, int n, int target)
 {
 	assert(n <= CMD_MAX_ARGS);
@@ -334,6 +378,7 @@ void cmd_set_arg_target(struct command *cmd, int n, int target)
 	cmd->arg_present[n] = TRUE;
 }
 
+/* Retrieve arg 'n' if it's a target */
 int cmd_get_arg_target(struct command *cmd, int n, int *target)
 {
 	assert(n <= CMD_MAX_ARGS);
@@ -345,21 +390,30 @@ int cmd_get_arg_target(struct command *cmd, int n, int *target)
 	return CMD_OK;
 }
 
+/* Get a target, first from command or prompt otherwise */
 int cmd_get_target(struct command *cmd, int arg, int *target)
 {
-	if (cmd_get_arg_target(cmd, arg, target) == CMD_OK &&
-			*target != DIR_UNKNOWN &&
-			(*target != DIR_TARGET || target_okay()))
-		return CMD_OK;
+	if (cmd_get_arg_target(cmd, arg, target) == CMD_OK) {
+		if (*target != DIR_UNKNOWN &&
+				(*target != DIR_TARGET || target_okay()))
+			return CMD_OK;
+	}
 
 	if (get_aim_dir(target)) {
-		cmd_set_arg_direction(cmd, arg, *target);
+		cmd_set_arg_target(cmd, arg, *target);
 		return CMD_OK;
 	}
 
 	return CMD_ARG_ABORTED;
 }
 
+/** Points (presently unused) **/
+
+/*
+ * XXX Use struct loc instead
+ */
+
+/* Set argument 'n' to point x,y */
 void cmd_set_arg_point(struct command *cmd, int n, int x, int y)
 {
 	assert(n <= CMD_MAX_ARGS);
@@ -370,16 +424,17 @@ void cmd_set_arg_point(struct command *cmd, int n, int x, int y)
 	cmd->arg_present[n] = TRUE;
 }
 
-/* XXX-AS fix me */
-bool cmd_get_arg_point(struct command *cmd, int n, int *x, int *y)
+/* Retrieve argument 'n' if it's a point */
+int cmd_get_arg_point(struct command *cmd, int n, int *x, int *y)
 {
 	assert(n <= CMD_MAX_ARGS);
-	if (!cmd->arg_present[n])
-		return FALSE;
+
+	if (!cmd->arg_present[n]) return CMD_ARG_NOT_PRESENT;
+	if (cmd->arg_type[n] != arg_POINT) return CMD_ARG_WRONG_TYPE;
 
 	*x = cmd->arg[n].point.x;
 	*y = cmd->arg[n].point.y;	
-	return TRUE;
+	return CMD_OK;
 }
 
 /** Item arguments **/
@@ -394,7 +449,7 @@ void cmd_set_arg_item(struct command *cmd, int n, int item)
 	cmd->arg_present[n] = TRUE;
 }
 
-/* Retrieve argument 'n' as an item, returning 0 for success */
+/* Retrieve argument 'n' as an item */
 int cmd_get_arg_item(struct command *cmd, int n, int *item)
 {
 	assert(n <= CMD_MAX_ARGS);
@@ -459,6 +514,8 @@ int cmd_get_quantity(struct command *cmd, int arg, int *amt, int max)
 
 	return CMD_ARG_ABORTED;
 }
+
+
 
 /*
  * Inserts a command in the queue to be carried out, with the given
