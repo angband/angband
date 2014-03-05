@@ -23,7 +23,7 @@
 #include "obj-ui.h"
 #include "obj-util.h"
 #include "object.h"
-#include "game-cmd.h"
+#include "cmd-core.h"
 #include "spells.h"
 
 #include "ui.h"

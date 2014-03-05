@@ -20,7 +20,7 @@
 #include "cave.h"
 #include "cmds.h"
 #include "dungeon.h"
-#include "game-cmd.h"
+#include "cmd-core.h"
 #include "game-event.h"
 #include "grafmode.h"
 #include "init.h"

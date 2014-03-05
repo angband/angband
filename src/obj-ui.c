@@ -18,7 +18,7 @@
 
 #include "angband.h"
 #include "cmds.h"
-#include "game-cmd.h"
+#include "cmd-core.h"
 #include "keymap.h"
 #include "obj-desc.h"
 #include "obj-identify.h"

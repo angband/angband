@@ -22,7 +22,7 @@ depgen:
   config.h option.h z-file.h list-options.h player.h guid.h obj-flag.h \
   list-object-flags.h list-object-modifiers.h object.h z-quark.h \
   z-dice.h z-expression.h list-gf-types.h list-player-flags.h ui.h \
-  z-textblock.h ui-input.h attack.h game-cmd.h cave.h z-type.h \
+  z-textblock.h ui-input.h attack.h cmd-core.h cave.h z-type.h \
   list-square-flags.h list-terrain-flags.h cmds.h mon-make.h monster.h \
   mon-constants.h list-mon-flags.h mon-timed.h mon-blow-methods.h \
   list-blow-methods.h mon-blow-effects.h list-blow-effects.h \
@@ -35,7 +35,7 @@ depgen:
   list-object-flags.h list-object-modifiers.h object.h z-quark.h \
   z-dice.h z-expression.h list-gf-types.h list-player-flags.h ui.h \
   z-textblock.h ui-input.h birth.h cmds.h cave.h z-type.h \
-  list-square-flags.h list-terrain-flags.h game-cmd.h dungeon.h files.h \
+  list-square-flags.h list-terrain-flags.h cmd-core.h dungeon.h files.h \
   game-event.h history.h init.h parser.h monster.h mon-constants.h \
   list-mon-flags.h mon-timed.h mon-blow-methods.h list-blow-methods.h \
   mon-blow-effects.h list-blow-effects.h list-mon-spells.h \
@@ -47,7 +47,7 @@ depgen:
   list-object-flags.h list-object-modifiers.h object.h z-quark.h \
   z-dice.h z-expression.h list-gf-types.h list-player-flags.h ui.h \
   z-textblock.h ui-input.h cave.h z-type.h list-square-flags.h \
-  list-terrain-flags.h cmds.h game-cmd.h dungeon.h game-event.h \
+  list-terrain-flags.h cmds.h cmd-core.h dungeon.h game-event.h \
   grafmode.h init.h parser.h mon-util.h monster.h mon-constants.h \
   list-mon-flags.h mon-timed.h mon-blow-methods.h list-blow-methods.h \
   mon-blow-effects.h list-blow-effects.h list-mon-spells.h obj-tval.h \
@@ -58,20 +58,30 @@ depgen:
   config.h option.h z-file.h list-options.h player.h guid.h obj-flag.h \
   list-object-flags.h list-object-modifiers.h object.h z-quark.h \
   z-dice.h z-expression.h list-gf-types.h list-player-flags.h ui.h \
-  z-textblock.h ui-input.h attack.h game-cmd.h cave.h z-type.h \
+  z-textblock.h ui-input.h attack.h cmd-core.h cave.h z-type.h \
   list-square-flags.h list-terrain-flags.h cmds.h dungeon.h files.h \
   game-event.h generate.h mon-constants.h list-mon-flags.h monster.h \
   mon-timed.h mon-blow-methods.h list-blow-methods.h mon-blow-effects.h \
   list-blow-effects.h list-mon-spells.h mon-util.h pathfind.h spells.h \
   squelch.h trap.h list-trap-flags.h obj-chest.h obj-identify.h \
   obj-util.h tables.h
+./cmd-core.o: cmd-core.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
+  z-color.h z-util.h z-rand.h z-term.h ui-event.h z-msg.h z-msg-list.h \
+  config.h option.h z-file.h list-options.h player.h guid.h obj-flag.h \
+  list-object-flags.h list-object-modifiers.h object.h z-quark.h \
+  z-dice.h z-expression.h list-gf-types.h list-player-flags.h ui.h \
+  z-textblock.h ui-input.h attack.h cmd-core.h cmds.h cave.h z-type.h \
+  list-square-flags.h list-terrain-flags.h obj-chest.h obj-desc.h \
+  obj-tval.h obj-ui.h obj-util.h spells.h monster.h mon-constants.h \
+  list-mon-flags.h mon-timed.h mon-blow-methods.h list-blow-methods.h \
+  mon-blow-effects.h list-blow-effects.h list-mon-spells.h target.h
 ./cmd-context.o: cmd-context.c angband.h h-basic.h z-bitflag.h z-form.h \
   z-virt.h z-color.h z-util.h z-rand.h z-term.h ui-event.h z-msg.h \
   z-msg-list.h config.h option.h z-file.h list-options.h player.h guid.h \
   obj-flag.h list-object-flags.h list-object-modifiers.h object.h \
   z-quark.h z-dice.h z-expression.h list-gf-types.h list-player-flags.h \
   ui.h z-textblock.h ui-input.h cave.h z-type.h list-square-flags.h \
-  list-terrain-flags.h cmds.h game-cmd.h files.h keymap.h textui.h \
+  list-terrain-flags.h cmds.h cmd-core.h files.h keymap.h textui.h \
   ui-menu.h wizard.h target.h squelch.h obj-chest.h obj-desc.h \
   obj-identify.h obj-info.h obj-tvalsval.h obj-tval.h obj-ui.h \
   obj-util.h mon-lore.h monster.h mon-constants.h list-mon-flags.h \
@@ -83,7 +93,7 @@ depgen:
   list-object-flags.h list-object-modifiers.h object.h z-quark.h \
   z-dice.h z-expression.h list-gf-types.h list-player-flags.h ui.h \
   z-textblock.h ui-input.h cave.h z-type.h list-square-flags.h \
-  list-terrain-flags.h cmds.h game-cmd.h dungeon.h files.h history.h \
+  list-terrain-flags.h cmds.h cmd-core.h dungeon.h files.h history.h \
   init.h parser.h mon-lore.h monster.h mon-constants.h list-mon-flags.h \
   mon-timed.h mon-blow-methods.h list-blow-methods.h mon-blow-effects.h \
   list-blow-effects.h list-mon-spells.h mon-list.h mon-util.h obj-list.h \
@@ -94,7 +104,7 @@ depgen:
   list-object-flags.h list-object-modifiers.h object.h z-quark.h \
   z-dice.h z-expression.h list-gf-types.h list-player-flags.h ui.h \
   z-textblock.h ui-input.h cave.h z-type.h list-square-flags.h \
-  list-terrain-flags.h cmds.h game-cmd.h init.h parser.h mon-util.h \
+  list-terrain-flags.h cmds.h cmd-core.h init.h parser.h mon-util.h \
   monster.h mon-constants.h list-mon-flags.h mon-timed.h \
   mon-blow-methods.h list-blow-methods.h mon-blow-effects.h \
   list-blow-effects.h list-mon-spells.h wizard.h target.h prefs.h \
@@ -104,7 +114,7 @@ depgen:
   config.h option.h z-file.h list-options.h player.h guid.h obj-flag.h \
   list-object-flags.h list-object-modifiers.h object.h z-quark.h \
   z-dice.h z-expression.h list-gf-types.h list-player-flags.h ui.h \
-  z-textblock.h ui-input.h attack.h game-cmd.h cave.h z-type.h \
+  z-textblock.h ui-input.h attack.h cmd-core.h cave.h z-type.h \
   list-square-flags.h list-terrain-flags.h cmds.h effects.h \
   list-effects.h obj-desc.h obj-identify.h obj-info.h obj-tval.h \
   obj-tvalsval.h obj-ui.h obj-util.h spells.h monster.h mon-constants.h \
@@ -116,7 +126,7 @@ depgen:
   z-msg-list.h config.h option.h z-file.h list-options.h player.h guid.h \
   obj-flag.h list-object-flags.h list-object-modifiers.h object.h \
   z-quark.h z-dice.h z-expression.h list-gf-types.h list-player-flags.h \
-  ui.h z-textblock.h ui-input.h attack.h game-cmd.h cave.h z-type.h \
+  ui.h z-textblock.h ui-input.h attack.h cmd-core.h cave.h z-type.h \
   list-square-flags.h list-terrain-flags.h cmds.h game-event.h \
   generate.h mon-constants.h list-mon-flags.h monster.h mon-timed.h \
   mon-blow-methods.h list-blow-methods.h mon-blow-effects.h \
@@ -128,7 +138,7 @@ depgen:
   z-msg-list.h config.h option.h z-file.h list-options.h player.h guid.h \
   obj-flag.h list-object-flags.h list-object-modifiers.h object.h \
   z-quark.h z-dice.h z-expression.h list-gf-types.h list-player-flags.h \
-  ui.h z-textblock.h ui-input.h attack.h game-cmd.h cave.h z-type.h \
+  ui.h z-textblock.h ui-input.h attack.h cmd-core.h cave.h z-type.h \
   list-square-flags.h list-terrain-flags.h cmds.h files.h keymap.h \
   monster.h mon-constants.h list-mon-flags.h mon-timed.h \
   mon-blow-methods.h list-blow-methods.h mon-blow-effects.h \
@@ -140,7 +150,7 @@ depgen:
   list-object-flags.h list-object-modifiers.h object.h z-quark.h \
   z-dice.h z-expression.h list-gf-types.h list-player-flags.h ui.h \
   z-textblock.h ui-input.h cmds.h cave.h z-type.h list-square-flags.h \
-  list-terrain-flags.h game-cmd.h death.h files.h history.h init.h \
+  list-terrain-flags.h cmd-core.h death.h files.h history.h init.h \
   parser.h savefile.h ui-menu.h wizard.h obj-desc.h obj-identify.h \
   obj-info.h obj-ui.h score.h store.h
 ./debug.o: debug.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
@@ -155,7 +165,7 @@ depgen:
   list-object-flags.h list-object-modifiers.h object.h z-quark.h \
   z-dice.h z-expression.h list-gf-types.h list-player-flags.h ui.h \
   z-textblock.h ui-input.h birth.h cave.h z-type.h list-square-flags.h \
-  list-terrain-flags.h cmds.h game-cmd.h dungeon.h files.h game-event.h \
+  list-terrain-flags.h cmds.h cmd-core.h dungeon.h files.h game-event.h \
   generate.h mon-constants.h list-mon-flags.h monster.h mon-timed.h \
   mon-blow-methods.h list-blow-methods.h mon-blow-effects.h \
   list-blow-effects.h list-mon-spells.h grafmode.h init.h parser.h \
@@ -181,20 +191,10 @@ depgen:
   list-object-flags.h list-object-modifiers.h object.h z-quark.h \
   z-dice.h z-expression.h list-gf-types.h list-player-flags.h ui.h \
   z-textblock.h ui-input.h buildid.h cave.h z-type.h list-square-flags.h \
-  list-terrain-flags.h cmds.h game-cmd.h death.h dungeon.h files.h \
+  list-terrain-flags.h cmds.h cmd-core.h death.h dungeon.h files.h \
   history.h init.h parser.h obj-desc.h obj-identify.h obj-info.h \
   obj-pval.h obj-ui.h obj-util.h savefile.h score.h store.h signals.h \
   ui-game.h ui-menu.h
-./game-cmd.o: game-cmd.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
-  z-color.h z-util.h z-rand.h z-term.h ui-event.h z-msg.h z-msg-list.h \
-  config.h option.h z-file.h list-options.h player.h guid.h obj-flag.h \
-  list-object-flags.h list-object-modifiers.h object.h z-quark.h \
-  z-dice.h z-expression.h list-gf-types.h list-player-flags.h ui.h \
-  z-textblock.h ui-input.h attack.h game-cmd.h cmds.h cave.h z-type.h \
-  list-square-flags.h list-terrain-flags.h obj-chest.h obj-desc.h \
-  obj-tval.h obj-ui.h obj-util.h spells.h monster.h mon-constants.h \
-  list-mon-flags.h mon-timed.h mon-blow-methods.h list-blow-methods.h \
-  mon-blow-effects.h list-blow-effects.h list-mon-spells.h target.h
 ./game-event.o: game-event.c z-virt.h h-basic.h game-event.h
 ./generate.o: generate.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
   z-color.h z-util.h z-rand.h z-term.h ui-event.h z-msg.h z-msg-list.h \
@@ -241,7 +241,8 @@ depgen:
   list-mon-flags.h monster.h mon-timed.h mon-blow-methods.h \
   list-blow-methods.h mon-blow-effects.h list-blow-effects.h \
   list-mon-spells.h init.h parser.h mon-make.h mon-spell.h \
-  list-spell-effects.h trap.h list-trap-flags.h z-queue.h
+  list-spell-effects.h obj-tvalsval.h tables.h trap.h list-trap-flags.h \
+  z-queue.h
 ./gen-util.o: gen-util.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
   z-color.h z-util.h z-rand.h z-term.h ui-event.h z-msg.h z-msg-list.h \
   config.h option.h z-file.h list-options.h player.h guid.h obj-flag.h \
@@ -274,7 +275,7 @@ depgen:
   list-object-flags.h list-object-modifiers.h object.h z-quark.h \
   z-dice.h z-expression.h list-gf-types.h list-player-flags.h ui.h \
   z-textblock.h ui-input.h buildid.h cave.h z-type.h list-square-flags.h \
-  list-terrain-flags.h cmds.h game-cmd.h game-event.h generate.h \
+  list-terrain-flags.h cmds.h cmd-core.h game-event.h generate.h \
   mon-constants.h list-mon-flags.h monster.h mon-timed.h \
   mon-blow-methods.h list-blow-methods.h mon-blow-effects.h \
   list-blow-effects.h list-mon-spells.h history.h hint.h keymap.h init.h \
@@ -340,7 +341,7 @@ depgen:
   list-mon-flags.h mon-timed.h mon-blow-methods.h list-blow-methods.h \
   mon-blow-effects.h list-blow-effects.h list-mon-spells.h mon-make.h \
   mon-spell.h list-spell-effects.h mon-util.h obj-identify.h obj-tval.h \
-  obj-util.h attack.h game-cmd.h
+  obj-util.h attack.h cmd-core.h
 ./mon-make.o: mon-make.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
   z-color.h z-util.h z-rand.h z-term.h ui-event.h z-msg.h z-msg-list.h \
   config.h option.h z-file.h list-options.h player.h guid.h obj-flag.h \
@@ -358,7 +359,7 @@ depgen:
   z-msg-list.h config.h option.h z-file.h list-options.h player.h guid.h \
   obj-flag.h list-object-flags.h list-object-modifiers.h object.h \
   z-quark.h z-dice.h z-expression.h list-gf-types.h list-player-flags.h \
-  ui.h z-textblock.h ui-input.h attack.h game-cmd.h cave.h z-type.h \
+  ui.h z-textblock.h ui-input.h attack.h cmd-core.h cave.h z-type.h \
   list-square-flags.h list-terrain-flags.h monster.h mon-constants.h \
   list-mon-flags.h mon-timed.h mon-blow-methods.h list-blow-methods.h \
   mon-blow-effects.h list-blow-effects.h list-mon-spells.h mon-make.h \
@@ -467,7 +468,7 @@ depgen:
   config.h option.h z-file.h list-options.h player.h guid.h obj-flag.h \
   list-object-flags.h list-object-modifiers.h object.h z-quark.h \
   z-dice.h z-expression.h list-gf-types.h list-player-flags.h ui.h \
-  z-textblock.h ui-input.h attack.h game-cmd.h effects.h list-effects.h \
+  z-textblock.h ui-input.h attack.h cmd-core.h effects.h list-effects.h \
   cmds.h cave.h z-type.h list-square-flags.h list-terrain-flags.h init.h \
   parser.h monster.h mon-constants.h list-mon-flags.h mon-timed.h \
   mon-blow-methods.h list-blow-methods.h mon-blow-effects.h \
@@ -481,7 +482,7 @@ depgen:
   z-dice.h z-expression.h list-gf-types.h list-player-flags.h ui.h \
   z-textblock.h ui-input.h dungeon.h init.h parser.h obj-desc.h \
   obj-identify.h obj-list.h obj-tval.h obj-tvalsval.h obj-ui.h \
-  game-cmd.h obj-util.h cave.h z-type.h list-square-flags.h \
+  cmd-core.h obj-util.h cave.h z-type.h list-square-flags.h \
   list-terrain-flags.h squelch.h
 ./obj-make.o: obj-make.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
   z-color.h z-util.h z-rand.h z-term.h ui-event.h z-msg.h z-msg-list.h \
@@ -540,7 +541,7 @@ depgen:
   list-object-flags.h list-object-modifiers.h object.h z-quark.h \
   z-dice.h z-expression.h list-gf-types.h list-player-flags.h ui.h \
   z-textblock.h ui-input.h cmds.h cave.h z-type.h list-square-flags.h \
-  list-terrain-flags.h game-cmd.h keymap.h obj-desc.h obj-identify.h \
+  list-terrain-flags.h cmd-core.h keymap.h obj-desc.h obj-identify.h \
   obj-tval.h obj-tvalsval.h obj-ui.h obj-util.h store.h parser.h \
   ui-game.h
 ./obj-util.o: obj-util.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
@@ -549,7 +550,7 @@ depgen:
   list-object-flags.h list-object-modifiers.h object.h z-quark.h \
   z-dice.h z-expression.h list-gf-types.h list-player-flags.h ui.h \
   z-textblock.h ui-input.h cave.h z-type.h list-square-flags.h \
-  list-terrain-flags.h dungeon.h effects.h list-effects.h game-cmd.h \
+  list-terrain-flags.h dungeon.h effects.h list-effects.h cmd-core.h \
   generate.h mon-constants.h list-mon-flags.h monster.h mon-timed.h \
   mon-blow-methods.h list-blow-methods.h mon-blow-effects.h \
   list-blow-effects.h list-mon-spells.h grafmode.h history.h init.h \
@@ -580,7 +581,7 @@ depgen:
   list-object-flags.h list-object-modifiers.h object.h z-quark.h \
   z-dice.h z-expression.h list-gf-types.h list-player-flags.h ui.h \
   z-textblock.h ui-input.h cmds.h cave.h z-type.h list-square-flags.h \
-  list-terrain-flags.h game-cmd.h pathfind.h squelch.h mon-util.h \
+  list-terrain-flags.h cmd-core.h pathfind.h squelch.h mon-util.h \
   monster.h mon-constants.h list-mon-flags.h mon-timed.h \
   mon-blow-methods.h list-blow-methods.h mon-blow-effects.h \
   list-blow-effects.h list-mon-spells.h obj-util.h tables.h
@@ -622,7 +623,7 @@ depgen:
   obj-flag.h list-object-flags.h list-object-modifiers.h object.h \
   z-quark.h z-dice.h z-expression.h list-gf-types.h list-player-flags.h \
   ui.h z-textblock.h ui-input.h cave.h z-type.h list-square-flags.h \
-  list-terrain-flags.h obj-tvalsval.h obj-util.h game-cmd.h spells.h \
+  list-terrain-flags.h obj-tvalsval.h obj-util.h cmd-core.h spells.h \
   monster.h mon-constants.h list-mon-flags.h mon-timed.h \
   mon-blow-methods.h list-blow-methods.h mon-blow-effects.h \
   list-blow-effects.h list-mon-spells.h
@@ -639,7 +640,8 @@ depgen:
   obj-flag.h list-object-flags.h list-object-modifiers.h object.h \
   z-quark.h z-dice.h z-expression.h list-gf-types.h list-player-flags.h \
   ui.h z-textblock.h ui-input.h cave.h z-type.h list-square-flags.h \
-  list-terrain-flags.h obj-tvalsval.h obj-util.h tables.h target.h
+  list-terrain-flags.h obj-tvalsval.h obj-util.h tables.h target.h \
+  cmd-core.h
 ./player.o: player.c history.h angband.h h-basic.h z-bitflag.h z-form.h \
   z-virt.h z-color.h z-util.h z-rand.h z-term.h ui-event.h z-msg.h \
   z-msg-list.h config.h option.h z-file.h list-options.h player.h guid.h \
@@ -711,7 +713,7 @@ depgen:
   list-blow-methods.h mon-blow-effects.h list-blow-effects.h \
   list-mon-spells.h history.h init.h parser.h mon-lore.h mon-make.h \
   mon-util.h obj-chest.h obj-desc.h obj-identify.h obj-make.h \
-  obj-slays.h list-slays.h obj-tval.h obj-tvalsval.h obj-ui.h game-cmd.h \
+  obj-slays.h list-slays.h obj-tval.h obj-tvalsval.h obj-ui.h cmd-core.h \
   obj-util.h project.h spells.h squelch.h tables.h target.h trap.h \
   list-trap-flags.h
 ./squelch.o: squelch.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
@@ -720,7 +722,7 @@ depgen:
   list-object-flags.h list-object-modifiers.h object.h z-quark.h \
   z-dice.h z-expression.h list-gf-types.h list-player-flags.h ui.h \
   z-textblock.h ui-input.h cmds.h cave.h z-type.h list-square-flags.h \
-  list-terrain-flags.h game-cmd.h init.h parser.h ui-menu.h obj-desc.h \
+  list-terrain-flags.h cmd-core.h init.h parser.h ui-menu.h obj-desc.h \
   obj-identify.h obj-pval.h obj-tval.h obj-tvalsval.h obj-ui.h \
   obj-util.h squelch.h
 ./store.o: store.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
@@ -729,7 +731,7 @@ depgen:
   list-object-flags.h list-object-modifiers.h object.h z-quark.h \
   z-dice.h z-expression.h list-gf-types.h list-player-flags.h ui.h \
   z-textblock.h ui-input.h cave.h z-type.h list-square-flags.h \
-  list-terrain-flags.h cmds.h game-cmd.h game-event.h hint.h history.h \
+  list-terrain-flags.h cmds.h cmd-core.h game-event.h hint.h history.h \
   init.h parser.h monster.h mon-constants.h list-mon-flags.h mon-timed.h \
   mon-blow-methods.h list-blow-methods.h mon-blow-effects.h \
   list-blow-effects.h list-mon-spells.h obj-desc.h obj-identify.h \
@@ -748,7 +750,7 @@ depgen:
   list-object-flags.h list-object-modifiers.h object.h z-quark.h \
   z-dice.h z-expression.h list-gf-types.h list-player-flags.h ui.h \
   z-textblock.h ui-input.h cave.h z-type.h list-square-flags.h \
-  list-terrain-flags.h game-cmd.h keymap.h mon-lore.h monster.h \
+  list-terrain-flags.h cmd-core.h keymap.h mon-lore.h monster.h \
   mon-constants.h list-mon-flags.h mon-timed.h mon-blow-methods.h \
   list-blow-methods.h mon-blow-effects.h list-blow-effects.h \
   list-mon-spells.h mon-util.h obj-desc.h obj-ui.h obj-util.h project.h \
@@ -758,7 +760,7 @@ depgen:
   config.h option.h z-file.h list-options.h player.h guid.h obj-flag.h \
   list-object-flags.h list-object-modifiers.h object.h z-quark.h \
   z-dice.h z-expression.h list-gf-types.h list-player-flags.h ui.h \
-  z-textblock.h ui-input.h attack.h game-cmd.h cave.h z-type.h \
+  z-textblock.h ui-input.h attack.h cmd-core.h cave.h z-type.h \
   list-square-flags.h list-terrain-flags.h dungeon.h effects.h \
   list-effects.h init.h parser.h spells.h monster.h mon-constants.h \
   list-mon-flags.h mon-timed.h mon-blow-methods.h list-blow-methods.h \
@@ -777,7 +779,7 @@ depgen:
   list-object-flags.h list-object-modifiers.h object.h z-quark.h \
   z-dice.h z-expression.h list-gf-types.h list-player-flags.h ui.h \
   z-textblock.h ui-input.h cmds.h cave.h z-type.h list-square-flags.h \
-  list-terrain-flags.h game-cmd.h files.h game-event.h obj-tvalsval.h \
+  list-terrain-flags.h cmd-core.h files.h game-event.h obj-tvalsval.h \
   target.h ui-birth.h ui-game.h ui-menu.h ui-options.h
 ./ui-event.o: ui-event.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
   z-color.h z-util.h z-rand.h z-term.h ui-event.h z-msg.h z-msg-list.h \
@@ -791,7 +793,7 @@ depgen:
   list-object-flags.h list-object-modifiers.h object.h z-quark.h \
   z-dice.h z-expression.h list-gf-types.h list-player-flags.h ui.h \
   z-textblock.h ui-input.h buildid.h cave.h z-type.h list-square-flags.h \
-  list-terrain-flags.h files.h game-event.h game-cmd.h grafmode.h hint.h \
+  list-terrain-flags.h files.h game-event.h cmd-core.h grafmode.h hint.h \
   init.h parser.h mon-lore.h monster.h mon-constants.h list-mon-flags.h \
   mon-timed.h mon-blow-methods.h list-blow-methods.h mon-blow-effects.h \
   list-blow-effects.h list-mon-spells.h mon-list.h mon-util.h obj-desc.h \
@@ -802,7 +804,7 @@ depgen:
   list-object-flags.h list-object-modifiers.h object.h z-quark.h \
   z-dice.h z-expression.h list-gf-types.h list-player-flags.h ui.h \
   z-textblock.h ui-input.h cmds.h cave.h z-type.h list-square-flags.h \
-  list-terrain-flags.h game-cmd.h dungeon.h target.h files.h \
+  list-terrain-flags.h cmd-core.h dungeon.h target.h files.h \
   game-event.h init.h parser.h pathfind.h randname.h signals.h
 ./ui-knowledge.o: ui-knowledge.c angband.h h-basic.h z-bitflag.h z-form.h \
   z-virt.h z-color.h z-util.h z-rand.h z-term.h ui-event.h z-msg.h \
@@ -810,7 +812,7 @@ depgen:
   obj-flag.h list-object-flags.h list-object-modifiers.h object.h \
   z-quark.h z-dice.h z-expression.h list-gf-types.h list-player-flags.h \
   ui.h z-textblock.h ui-input.h cave.h z-type.h list-square-flags.h \
-  list-terrain-flags.h cmds.h game-cmd.h history.h init.h parser.h \
+  list-terrain-flags.h cmds.h cmd-core.h history.h init.h parser.h \
   mon-lore.h monster.h mon-constants.h list-mon-flags.h mon-timed.h \
   mon-blow-methods.h list-blow-methods.h mon-blow-effects.h \
   list-blow-effects.h list-mon-spells.h mon-util.h obj-desc.h \
@@ -829,7 +831,7 @@ depgen:
   obj-flag.h list-object-flags.h list-object-modifiers.h object.h \
   z-quark.h z-dice.h z-expression.h list-gf-types.h list-player-flags.h \
   ui.h z-textblock.h ui-input.h cmds.h cave.h z-type.h \
-  list-square-flags.h list-terrain-flags.h game-cmd.h init.h parser.h \
+  list-square-flags.h list-terrain-flags.h cmd-core.h init.h parser.h \
   keymap.h squelch.h prefs.h obj-desc.h obj-tvalsval.h obj-tval.h \
   obj-util.h tables.h target.h ui-game.h ui-menu.h ui-options.h files.h
 ./ui-spell.o: ui-spell.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
@@ -838,7 +840,7 @@ depgen:
   list-object-flags.h list-object-modifiers.h object.h z-quark.h \
   z-dice.h z-expression.h list-gf-types.h list-player-flags.h ui.h \
   z-textblock.h ui-input.h cave.h z-type.h list-square-flags.h \
-  list-terrain-flags.h cmds.h game-cmd.h obj-tvalsval.h obj-ui.h \
+  list-terrain-flags.h cmds.h cmd-core.h obj-tvalsval.h obj-ui.h \
   obj-util.h spells.h monster.h mon-constants.h list-mon-flags.h \
   mon-timed.h mon-blow-methods.h list-blow-methods.h mon-blow-effects.h \
   list-blow-effects.h list-mon-spells.h ui-menu.h
@@ -848,7 +850,7 @@ depgen:
   obj-flag.h list-object-flags.h list-object-modifiers.h object.h \
   z-quark.h z-dice.h z-expression.h list-gf-types.h list-player-flags.h \
   ui.h z-textblock.h ui-input.h buildid.h cmds.h cave.h z-type.h \
-  list-square-flags.h list-terrain-flags.h game-cmd.h dungeon.h init.h \
+  list-square-flags.h list-terrain-flags.h cmd-core.h dungeon.h init.h \
   parser.h mon-lore.h monster.h mon-constants.h list-mon-flags.h \
   mon-timed.h mon-blow-methods.h list-blow-methods.h mon-blow-effects.h \
   list-blow-effects.h list-mon-spells.h obj-desc.h obj-identify.h \
@@ -860,7 +862,7 @@ depgen:
   obj-flag.h list-object-flags.h list-object-modifiers.h object.h \
   z-quark.h z-dice.h z-expression.h list-gf-types.h list-player-flags.h \
   ui.h z-textblock.h ui-input.h cave.h z-type.h list-square-flags.h \
-  list-terrain-flags.h cmds.h game-cmd.h dungeon.h init.h parser.h \
+  list-terrain-flags.h cmds.h cmd-core.h dungeon.h init.h parser.h \
   wizard.h mon-make.h monster.h mon-constants.h list-mon-flags.h \
   mon-timed.h mon-blow-methods.h list-blow-methods.h mon-blow-effects.h \
   list-blow-effects.h list-mon-spells.h obj-tvalsval.h obj-util.h \
@@ -871,7 +873,7 @@ depgen:
   list-object-flags.h list-object-modifiers.h object.h z-quark.h \
   z-dice.h z-expression.h list-gf-types.h list-player-flags.h ui.h \
   z-textblock.h ui-input.h cave.h z-type.h list-square-flags.h \
-  list-terrain-flags.h cmds.h game-cmd.h effects.h list-effects.h \
+  list-terrain-flags.h cmds.h cmd-core.h effects.h list-effects.h \
   files.h init.h parser.h mon-lore.h monster.h mon-constants.h \
   list-mon-flags.h mon-timed.h mon-blow-methods.h list-blow-methods.h \
   mon-blow-effects.h list-blow-effects.h list-mon-spells.h mon-make.h \

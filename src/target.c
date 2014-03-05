@@ -18,7 +18,7 @@
 
 #include "angband.h"
 #include "cave.h"
-#include "game-cmd.h"
+#include "cmd-core.h"
 #include "keymap.h"
 #include "mon-lore.h"
 #include "mon-util.h"

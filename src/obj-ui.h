@@ -19,7 +19,7 @@
 #ifndef OBJECT_UI_H
 #define OBJECT_UI_H
 
-#include "game-cmd.h"
+#include "cmd-core.h"
 
 byte object_kind_attr(const struct object_kind *kind);
 wchar_t object_kind_char(const struct object_kind *kind);

@@ -1,7 +1,7 @@
 /* pathfind/pathfind */
 
 #include "unit-test.h"
-#include "game-cmd.h"
+#include "cmd-core.h"
 #include "pathfind.h"
 
 NOSETUP

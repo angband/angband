@@ -2,7 +2,7 @@
 #define INCLUDED_CMDS_H
 
 #include "cave.h"
-#include "game-cmd.h"
+#include "cmd-core.h"
 struct store;
 
 /* cmd-cave.c */

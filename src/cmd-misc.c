@@ -19,7 +19,7 @@
 #include "angband.h"
 #include "cave.h"
 #include "cmds.h"
-#include "game-cmd.h"
+#include "cmd-core.h"
 #include "init.h"
 #include "mon-util.h"
 #include "wizard.h"

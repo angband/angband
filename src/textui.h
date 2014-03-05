@@ -1,5 +1,5 @@
 
-#include "game-cmd.h"
+#include "cmd-core.h"
 
 /* From xtra3.c */
 

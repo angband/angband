@@ -19,7 +19,7 @@
 #include "angband.h"
 #include "attack.h"
 #include "cmds.h"
-#include "game-cmd.h"
+#include "cmd-core.h"
 #include "obj-chest.h"
 #include "obj-desc.h"
 #include "obj-tval.h"

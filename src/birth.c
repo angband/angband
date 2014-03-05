@@ -22,7 +22,7 @@
 #include "dungeon.h"
 #include "files.h"
 #include "game-event.h"
-#include "game-cmd.h"
+#include "cmd-core.h"
 #include "history.h"
 #include "init.h"
 #include "monster.h"

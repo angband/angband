@@ -22,7 +22,7 @@
 #include "cave.h"
 #include "cmds.h"
 #include "effects.h"
-#include "game-cmd.h"
+#include "cmd-core.h"
 #include "obj-desc.h"
 #include "obj-identify.h"
 #include "obj-info.h"

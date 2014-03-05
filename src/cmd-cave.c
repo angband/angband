@@ -22,7 +22,7 @@
 #include "cmds.h"
 #include "dungeon.h"
 #include "files.h"
-#include "game-cmd.h"
+#include "cmd-core.h"
 #include "game-event.h"
 #include "generate.h"
 #include "mon-timed.h"

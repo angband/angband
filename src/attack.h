@@ -3,7 +3,7 @@
 #ifndef ATTACK_H
 #define ATTACK_H
 
-#include "game-cmd.h"
+#include "cmd-core.h"
 
 /* attack.c */
 extern void do_cmd_fire(struct command *cmd);

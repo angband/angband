@@ -20,7 +20,7 @@
 #include "cave.h"
 #include "cmds.h"
 #include "files.h"
-#include "game-cmd.h"
+#include "cmd-core.h"
 #include "keymap.h"
 #include "textui.h"
 #include "ui-menu.h"

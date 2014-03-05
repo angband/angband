@@ -19,7 +19,7 @@
 #include "angband.h"
 #include "cmds.h"
 #include "files.h"
-#include "game-cmd.h"
+#include "cmd-core.h"
 #include "game-event.h"
 #include "obj-tvalsval.h"
 #include "player.h"

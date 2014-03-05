@@ -23,7 +23,7 @@
 #include "cave.h"
 #include "files.h"
 #include "game-event.h"
-#include "game-cmd.h"
+#include "cmd-core.h"
 #include "grafmode.h"
 #include "hint.h"
 #include "init.h"
