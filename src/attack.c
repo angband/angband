@@ -734,48 +734,13 @@ void do_cmd_throw(struct command *cmd) {
 		return;
 	}
 
-	/* Check the item being thrown is usable by the player. */
-	if (!item_is_available(item, NULL, (USE_EQUIP | USE_INVEN | USE_FLOOR))) {
-		msg("That item is not within your reach.");
-		return;
-	}
-
 	ranged_helper(item, dir, range, shots, attack);
 }
-
-
-/**
- * Front-end 'throw' command.
- *
- * XXX-AS this is now redunant, remove
- */
-void textui_cmd_throw(void) {
-	int item, dir;
-	const char *q, *s;
-
-	/* Get an item */
-	q = "Throw which item? ";
-	s = "You have nothing to throw.";
-	if (!get_item(&item, q, s, CMD_THROW, NULL, (USE_EQUIP | USE_INVEN | USE_FLOOR))) return;
-
-	if (item >= INVEN_WIELD && item < QUIVER_START) {
-		msg("You cannot throw wielded items.");
-		return;
-	}
-
-	/* Get a direction (or cancel) */
-	if (!get_aim_dir(&dir)) return;
-
-	cmdq_push(CMD_THROW);
-	cmd_set_arg_item(cmdq_peek(), "item", item);
-	cmd_set_arg_target(cmdq_peek(), "target", dir);
-}
-
 
 /**
  * Front-end command which fires at the nearest target with default ammo.
  */
-void textui_cmd_fire_at_nearest(void) {
+void do_cmd_fire_at_nearest(void) {
 	int i, dir = DIR_TARGET, item = -1;
 
 	/* Require a usable launcher */

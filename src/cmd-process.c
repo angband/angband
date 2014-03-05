@@ -94,8 +94,8 @@ static struct cmd_info cmd_action[] =
 	{ "Toggle search mode", { 'S', '#' }, CMD_TOGGLE_SEARCH },
 	{ "Open a door or a chest", { 'o' }, CMD_OPEN },
 	{ "Close a door", { 'c' }, CMD_CLOSE },
-	{ "Fire at nearest target", { 'h', KC_TAB }, CMD_NULL, textui_cmd_fire_at_nearest },
-	{ "Throw an item", { 'v' }, CMD_THROW, textui_cmd_throw },
+	{ "Fire at nearest target", { 'h', KC_TAB }, CMD_NULL, do_cmd_fire_at_nearest },
+	{ "Throw an item", { 'v' }, CMD_THROW },
 	{ "Walk into a trap", { 'W', '-' }, CMD_JUMP, NULL },
 };
 
