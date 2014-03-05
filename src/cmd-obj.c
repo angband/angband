@@ -206,7 +206,7 @@ void do_cmd_uninscribe(struct command *cmd)
 	object_type *o_ptr;
 
 	/* Get arguments */
-	if (cmd_get_item(cmd, 0, &item,
+	if (cmd_get_item(cmd, "item", &item,
 			/* Prompt */ "Uninscribe which item?",
 			/* Error  */ "You have nothing you can uninscribe.",
 			/* Filter */ obj_has_inscrip,
@@ -234,7 +234,7 @@ void do_cmd_inscribe(struct command *cmd)
 	char o_name[80];
 
 	/* Get arguments */
-	if (cmd_get_item(cmd, 0, &item,
+	if (cmd_get_item(cmd, "item", &item,
 			/* Prompt */ "Inscribe which item?",
 			/* Error  */ "You have nothing to inscribe.",
 			/* Filter */ NULL,
@@ -248,7 +248,7 @@ void do_cmd_inscribe(struct command *cmd)
 	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
 	strnfmt(prompt, sizeof prompt, "Inscribing %s.", o_name);
 
-	if (cmd_get_string(cmd, 1, &str,
+	if (cmd_get_string(cmd, "inscription", &str,
 			quark_str(o_ptr->note) /* Default */,
 			prompt, "Inscribe with what? ") != CMD_OK)
 		return;
@@ -269,7 +269,7 @@ void do_cmd_takeoff(struct command *cmd)
 	int item;
 
 	/* Get arguments */
-	if (cmd_get_item(cmd, 0, &item,
+	if (cmd_get_item(cmd, "item", &item,
 			/* Prompt */ "Take off or unwield which item?",
 			/* Error  */ "You have nothing to take off or unwield.",
 			/* Filter */ obj_can_takeoff,
@@ -428,7 +428,7 @@ void do_cmd_wield(struct command *cmd)
 	object_type *o_ptr;
 
 	/* Get arguments */
-	if (cmd_get_item(cmd, 0, &item,
+	if (cmd_get_item(cmd, "item", &item,
 			/* Prompt */ "Wear or wield which item?",
 			/* Error  */ "You have nothing to wear or wield.",
 			/* Filter */ obj_can_wear,
@@ -443,7 +443,7 @@ void do_cmd_wield(struct command *cmd)
 	 * want to replace */
 	slot = wield_slot(o_ptr);
 	if (player->inventory[slot].kind) {
-		if (tval_is_ring(o_ptr) && cmd_get_item(cmd, 1, &slot,
+		if (tval_is_ring(o_ptr) && cmd_get_item(cmd, "replace", &slot,
 					/* Prompt */ "Replace which ring? ",
 					/* Error  */ "Error in do_cmd_wield(), please report.",
 					/* Filter */ tval_is_ring,
@@ -452,7 +452,7 @@ void do_cmd_wield(struct command *cmd)
 
 		if (tval_is_ammo(o_ptr) &&
 				!object_similar(&player->inventory[slot], o_ptr, OSTACK_QUIVER) &&
-				cmd_get_item(cmd, 1, &slot,
+				cmd_get_item(cmd, "replace", &slot,
 					/* Prompt */ "Replace which ammunition? ",
 					/* Error  */ "Error in do_cmd_wield(), please report.",
 					/* Filter */ tval_is_ammo,
@@ -508,7 +508,7 @@ void do_cmd_drop(struct command *cmd)
 	object_type *o_ptr;
 
 	/* Get arguments */
-	if (cmd_get_item(cmd, 0, &item,
+	if (cmd_get_item(cmd, "item", &item,
 			/* Prompt */ "Drop which item?",
 			/* Error  */ "You have nothing to drop.",
 			/* Filter */ NULL,
@@ -518,7 +518,7 @@ void do_cmd_drop(struct command *cmd)
 		return;
 	}
 
-	if (cmd_get_quantity(cmd, 1, &amt, o_ptr->number) != CMD_OK)
+	if (cmd_get_quantity(cmd, "quantity", &amt, o_ptr->number) != CMD_OK)
 		return;
 
 	/* Hack -- Cannot remove cursed items */
@@ -537,7 +537,8 @@ void do_cmd_destroy(struct command *cmd)
 	int item;
 	object_type *o_ptr;
 
-	if (cmd_get_arg_item(cmd, 0, &item))
+	/* XXX-AS rewrite */
+	if (cmd_get_arg_item(cmd, "item", &item))
 		return;
 
 	if (!item_is_available(item, NULL, USE_INVEN | USE_EQUIP | USE_FLOOR))
@@ -600,11 +601,11 @@ static void use_aux(struct command *cmd, int item, enum use use, int snd)
 	enum use;
 
 	/* Get arguments */
-	assert(cmd_get_arg_item(cmd, 0, &item) == CMD_OK);
+	assert(cmd_get_arg_item(cmd, "item", &item) == CMD_OK);
 	o_ptr = object_from_item_idx(item);
 
 	if (obj_needs_aim(o_ptr)) {
-		if (cmd_get_target(cmd, 1, &dir) != CMD_OK)
+		if (cmd_get_target(cmd, "target", &dir) != CMD_OK)
 			return;
 
 		player_confuse_dir(player, &dir, FALSE);
@@ -771,7 +772,7 @@ void do_cmd_read_scroll(struct command *cmd)
 		return;
 
 	/* Get the scroll */
-	if (cmd_get_item(cmd, 0, &item,
+	if (cmd_get_item(cmd, "item", &item,
 			"Read which scroll? ",
 			"You have no scrolls to read.",
 			tval_is_scroll,
@@ -786,7 +787,7 @@ void do_cmd_use_staff(struct command *cmd)
 	int item;
 
 	/* Get an item */
-	if (cmd_get_item(cmd, 0, &item,
+	if (cmd_get_item(cmd, "item", &item,
 			"Use which staff? ",
 			"You have no staves to use.",
 			tval_is_staff,
@@ -806,7 +807,7 @@ void do_cmd_aim_wand(struct command *cmd)
 	int item;
 
 	/* Get an item */
-	if (cmd_get_item(cmd, 0, &item,
+	if (cmd_get_item(cmd, "item", &item,
 			"Aim which wand? ",
 			"You have no wands to aim.",
 			tval_is_wand,
@@ -826,7 +827,7 @@ void do_cmd_zap_rod(struct command *cmd)
 	int item;
 
 	/* Get an item */
-	if (cmd_get_item(cmd, 0, &item,
+	if (cmd_get_item(cmd, "item", &item,
 			"Zap which rod? ",
 			"You have no rods to zap.",
 			tval_is_rod,
@@ -846,7 +847,7 @@ void do_cmd_activate(struct command *cmd)
 	int item;
 
 	/* Get an item */
-	if (cmd_get_item(cmd, 0, &item,
+	if (cmd_get_item(cmd, "item", &item,
 			"Active which item? ",
 			"You have no items to activate.",
 			obj_is_activatable,
@@ -866,7 +867,7 @@ void do_cmd_eat_food(struct command *cmd)
 	int item;
 
 	/* Get an item */
-	if (cmd_get_item(cmd, 0, &item,
+	if (cmd_get_item(cmd, "item", &item,
 			"Eat which food? ",
 			"You have no food to eat.",
 			tval_is_edible,
@@ -881,7 +882,7 @@ void do_cmd_quaff_potion(struct command *cmd)
 	int item;
 
 	/* Get an item */
-	if (cmd_get_item(cmd, 0, &item,
+	if (cmd_get_item(cmd, "item", &item,
 			"Quaff which potion? ",
 			"You have no potions from which to quaff.",
 			tval_is_potion,
@@ -897,7 +898,7 @@ void do_cmd_use(struct command *cmd)
 	const object_type *o_ptr;
 
 	/* Get an item */
-	if (cmd_get_item(cmd, 0, &item,
+	if (cmd_get_item(cmd, "item", &item,
 			"Use which item? ",
 			"You have no items to use.",
 			obj_is_useable,
@@ -1018,7 +1019,7 @@ void do_cmd_refill(struct command *cmd)
 	object_type *o_ptr;
 
 	/* Get an item */
-	if (cmd_get_item(cmd, 0, &item,
+	if (cmd_get_item(cmd, "item", &item,
 			"Refuel with with fuel source? ",
 			"You have nothing you can refuel with.",
 			obj_can_refill,
@@ -1060,7 +1061,7 @@ void do_cmd_cast(struct command *cmd)
 		return;
 
 	/* Get arguments */
-	if (cmd_get_spell(cmd, 0, &spell,
+	if (cmd_get_spell(cmd, "spell", &spell,
 			/* Verb */   "cast",
 			/* Book */   obj_can_cast_from,
 			/* Error */  "There are no spells you can cast.",
@@ -1068,7 +1069,7 @@ void do_cmd_cast(struct command *cmd)
 		return;
 
 	if (spell_needs_aim(player->class->spell_book, spell)) {
-		if (cmd_get_target(cmd, 1, &dir) == CMD_OK)
+		if (cmd_get_target(cmd, "target", &dir) == CMD_OK)
 			player_confuse_dir(player, &dir, FALSE);
 		else
 			return;
@@ -1111,7 +1112,7 @@ void do_cmd_study_spell(struct command *cmd)
 	if (!player_can_study(player, TRUE))
 		return;
 
-	if (cmd_get_spell(cmd, 0, &spell,
+	if (cmd_get_spell(cmd, "spell", &spell,
 			/* Verb */   "study",
 			/* Book */   obj_can_study,
 			/* Error  */ "You cannot learn any new spells from the books you have.",
@@ -1134,7 +1135,7 @@ void do_cmd_study_book(struct command *cmd)
 
 	const char *p = ((player->class->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
 
-	if (cmd_get_item(cmd, 0, &book,
+	if (cmd_get_item(cmd, "item", &book,
 			/* Prompt */ "Study which book? ",
 			/* Error  */ "You cannot learn any new spells from the books you have.",
 			/* Filter */ obj_can_study,
@@ -1268,7 +1269,7 @@ void textui_cmd_destroy_menu(int item)
 
 	if (selected == IGNORE_THIS_ITEM) {
 		cmdq_push(CMD_DESTROY);
-		cmd_set_arg_item(cmdq_peek(), 0, item);
+		cmd_set_arg_item(cmdq_peek(), "item", item);
 	} else if (selected == UNIGNORE_THIS_ITEM) {
 		o_ptr->ignore = FALSE;
 	} else if (selected == IGNORE_THIS_FLAVOR) {

@@ -2163,10 +2163,10 @@ void do_cmd_buy(struct command *cmd)
 
 	/* Get arguments */
 	/* XXX-AS fill this out, split into cmd-store.c */
-	if (cmd_get_arg_item(cmd, 0, &item) != CMD_OK)
+	if (cmd_get_arg_choice(cmd, "item", &item) != CMD_OK)
 		return;
 
-	if (cmd_get_arg_number(cmd, 1, &amt) != CMD_OK)
+	if (cmd_get_arg_number(cmd, "quantity", &amt) != CMD_OK)
 		return;
 
 
@@ -2293,10 +2293,10 @@ void do_cmd_retrieve(struct command *cmd)
 
 	/* Get arguments */
 	/* XXX-AS fill this out, split into cmd-store.c */
-	if (cmd_get_arg_item(cmd, 0, &item) != CMD_OK)
+	if (cmd_get_arg_choice(cmd, "item", &item) != CMD_OK)
 		return;
 
-	if (cmd_get_arg_number(cmd, 1, &amt) != CMD_OK)
+	if (cmd_get_arg_number(cmd, "quantity", &amt) != CMD_OK)
 		return;
 
 	/* Get the actual object */
@@ -2449,16 +2449,16 @@ static bool store_purchase(int item)
 		if (!response) return FALSE;
 
 		cmdq_push(CMD_BUY);
-		cmd_set_arg_choice(cmdq_peek(), 0, item);
-		cmd_set_arg_number(cmdq_peek(), 1, amt);
+		cmd_set_arg_choice(cmdq_peek(), "item", item);
+		cmd_set_arg_number(cmdq_peek(), "quantity", amt);
 	}
 
 	/* Home is much easier */
 	else
 	{
 		cmdq_push(CMD_RETRIEVE);
-		cmd_set_arg_choice(cmdq_peek(), 0, item);
-		cmd_set_arg_number(cmdq_peek(), 1, amt);
+		cmd_set_arg_choice(cmdq_peek(), "item", item);
+		cmd_set_arg_number(cmdq_peek(), "quantity", amt);
 	}
 
 	/* Not kicked out */
@@ -2504,10 +2504,10 @@ void do_cmd_sell(struct command *cmd)
 
 	/* Get arguments */
 	/* XXX-AS fill this out, split into cmd-store.c */
-	if (cmd_get_arg_item(cmd, 0, &item) != CMD_OK)
+	if (cmd_get_arg_item(cmd, "item", &item) != CMD_OK)
 		return;
 
-	if (cmd_get_arg_number(cmd, 1, &amt) != CMD_OK)
+	if (cmd_get_arg_number(cmd, "quantity", &amt) != CMD_OK)
 		return;
 
 	o_ptr = object_from_item_idx(item);
@@ -2625,12 +2625,12 @@ void do_cmd_stash(struct command *cmd)
 	int item;
 	object_type *o_ptr;
 
-	if (cmd_get_arg_item(cmd, 0, &item))
+	if (cmd_get_arg_item(cmd, "item", &item))
 		return;
 
 	o_ptr = object_from_item_idx(item);
 
-	if (cmd_get_quantity(cmd, 1, &amt, o_ptr->number) != CMD_OK)
+	if (cmd_get_quantity(cmd, "quantity", &amt, o_ptr->number) != CMD_OK)
 		return;
 
 	/* Check we are somewhere we can stash items. */
@@ -2781,16 +2781,16 @@ static bool store_sell(void)
 		screen_load();
 
 		cmdq_push(CMD_SELL);
-		cmd_set_arg_item(cmdq_peek(), 0, item);
-		cmd_set_arg_number(cmdq_peek(), 1, amt);
+		cmd_set_arg_item(cmdq_peek(), "item", item);
+		cmd_set_arg_number(cmdq_peek(), "quantity", amt);
 	}
 
 	/* Player is at home */
 	else
 	{
 		cmdq_push(CMD_STASH);
-		cmd_set_arg_item(cmdq_peek(), 0, item);
-		cmd_set_arg_number(cmdq_peek(), 1, amt);
+		cmd_set_arg_item(cmdq_peek(), "item", item);
+		cmd_set_arg_number(cmdq_peek(), "quantity", amt);
 	}
 
 	return TRUE;

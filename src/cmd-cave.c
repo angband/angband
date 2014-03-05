@@ -390,7 +390,7 @@ void do_cmd_open(struct command *cmd)
 	struct monster *m;
 
 	/* Get arguments */
-	err = cmd_get_arg_direction(cmd, 0, &dir);
+	err = cmd_get_arg_direction(cmd, "direction", &dir);
 	if (err || dir == DIR_UNKNOWN) {
 		int y, x;
 		int n_closed_doors, n_locked_chests;
@@ -400,8 +400,8 @@ void do_cmd_open(struct command *cmd)
 
 		if (n_closed_doors + n_locked_chests == 1) {
 			dir = coords_to_dir(y, x);
-			cmd_set_arg_direction(cmd, 0, dir);
-		} else if (cmd_get_direction(cmd, 0, &dir, FALSE)) {
+			cmd_set_arg_direction(cmd, "direction", dir);
+		} else if (cmd_get_direction(cmd, "direction", &dir, FALSE)) {
 			return;
 		}
 	}
@@ -544,15 +544,15 @@ void do_cmd_close(struct command *cmd)
 	bool more = FALSE;
 
 	/* Get arguments */
-	err = cmd_get_arg_direction(cmd, 0, &dir);
+	err = cmd_get_arg_direction(cmd, "direction", &dir);
 	if (err || dir == DIR_UNKNOWN) {
 		int y, x;
 
 		/* Count open doors */
 		if (count_feats(&y, &x, square_isopendoor, FALSE) == 1) {
 			dir = coords_to_dir(y, x);
-			cmd_set_arg_direction(cmd, 0, dir);
-		} else if (cmd_get_direction(cmd, 0, &dir, FALSE)) {
+			cmd_set_arg_direction(cmd, "direction", dir);
+		} else if (cmd_get_direction(cmd, "direction", &dir, FALSE)) {
 			return;
 		}
 	}
@@ -852,7 +852,7 @@ void do_cmd_tunnel(struct command *cmd)
 	bool more = FALSE;
 
 	/* Get arguments */
-	if (cmd_get_direction(cmd, 0, &dir, FALSE))
+	if (cmd_get_direction(cmd, "direction", &dir, FALSE))
 		return;
 
 	/* Get location */
@@ -1082,7 +1082,7 @@ void do_cmd_disarm(struct command *cmd)
 	bool more = FALSE;
 
 	/* Get arguments */
-	err = cmd_get_arg_direction(cmd, 0, &dir);
+	err = cmd_get_arg_direction(cmd, "direction", &dir);
 	if (err || dir == DIR_UNKNOWN) {
 		int y, x;
 		int n_visible_traps, n_trapped_chests;
@@ -1092,11 +1092,11 @@ void do_cmd_disarm(struct command *cmd)
 
 		if (n_visible_traps + n_trapped_chests == 1) {
 			dir = coords_to_dir(y, x);
-			cmd_set_arg_direction(cmd, 0, dir);
+			cmd_set_arg_direction(cmd, "direction", dir);
 		}
 
 		/* If there are chests to disarm, allow 5 as a direction */
-		else if (cmd_get_direction(cmd, 0, &dir, n_trapped_chests > 0)) {
+		else if (cmd_get_direction(cmd, "direction", &dir, n_trapped_chests > 0)) {
 			return;
 		}
 	}
@@ -1213,7 +1213,7 @@ void do_cmd_alter(struct command *cmd)
 	int dir;
 
 	/* Get arguments */
-	if (cmd_get_direction(cmd, 0, &dir, FALSE))
+	if (cmd_get_direction(cmd, "direction", &dir, FALSE) != CMD_OK)
 		return;
 
 	do_cmd_alter_aux(dir);
@@ -1286,7 +1286,7 @@ void do_cmd_walk(struct command *cmd)
 	int x, y, dir;
 
 	/* Get arguments */
-	if (cmd_get_direction(cmd, 0, &dir, FALSE))
+	if (cmd_get_direction(cmd, "direction", &dir, FALSE) != CMD_OK)
 		return;
 
 	/* Apply confusion if necessary */
@@ -1314,7 +1314,7 @@ void do_cmd_jump(struct command *cmd)
 	int x, y, dir;
 
 	/* Get arguments */
-	if (cmd_get_direction(cmd, 0, &dir, FALSE))
+	if (cmd_get_direction(cmd, "direction", &dir, FALSE) != CMD_OK)
 		return;
 
 	/* Apply confusion if necessary */
@@ -1343,7 +1343,7 @@ void do_cmd_run(struct command *cmd)
 	int x, y, dir;
 
 	/* Get arguments */
-	if (cmd_get_direction(cmd, 0, &dir, FALSE))
+	if (cmd_get_direction(cmd, "dirction", &dir, FALSE) != CMD_OK)
 		return;
 
 	if (player_confuse_dir(player, &dir, TRUE))
@@ -1369,7 +1369,8 @@ void do_cmd_pathfind(struct command *cmd)
 {
 	int x, y;
 
-	cmd_get_arg_point(cmd, 0, &x, &y);
+	/* XXX-AS Add better arg checking */
+	cmd_get_arg_point(cmd, "point", &x, &y);
 
 	if (player->timed[TMD_CONFUSED])
 		return;
@@ -1435,7 +1436,7 @@ void do_cmd_rest(struct command *cmd)
 	int n;
 
 	/* XXX-AS need to insert UI here */
-	if (cmd_get_arg_choice(cmd, 0, &n) != CMD_OK)
+	if (cmd_get_arg_choice(cmd, "choice", &n) != CMD_OK)
 		return;
 
 	/* 
@@ -1480,23 +1481,23 @@ void textui_cmd_rest(void)
 	if (out_val[0] == '&')
 	{
 		cmdq_push(CMD_REST);
-		cmd_set_arg_choice(cmdq_peek(), 0, REST_COMPLETE);
+		cmd_set_arg_choice(cmdq_peek(), "choice", REST_COMPLETE);
 	}
 
 	/* Rest a lot */
 	else if (out_val[0] == '*')
 	{
 		cmdq_push(CMD_REST);
-		cmd_set_arg_choice(cmdq_peek(), 0, REST_ALL_POINTS);
+		cmd_set_arg_choice(cmdq_peek(), "choice", REST_ALL_POINTS);
 	}
 
 	/* Rest until HP or SP filled */
 	else if (out_val[0] == '!')
 	{
 		cmdq_push(CMD_REST);
-		cmd_set_arg_choice(cmdq_peek(), 0, REST_SOME_POINTS);
+		cmd_set_arg_choice(cmdq_peek(), "choice", REST_SOME_POINTS);
 	}
-	
+
 	/* Rest some */
 	else
 	{
@@ -1505,7 +1506,7 @@ void textui_cmd_rest(void)
 		if (turns > 9999) turns = 9999;
 		
 		cmdq_push(CMD_REST);
-		cmd_set_arg_choice(cmdq_peek(), 0, turns);
+		cmd_set_arg_choice(cmdq_peek(), "choice", turns);
 	}
 }
 

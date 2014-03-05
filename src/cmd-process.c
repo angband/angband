@@ -748,20 +748,20 @@ static void textui_process_click(ui_event e)
 			if (e.mouse.mods & KC_MOD_SHIFT) {
 				/* shift-click - run */
 				cmdq_push(CMD_RUN);
-				cmd_set_arg_direction(cmdq_peek(), 0, coords_to_dir(y,x));
+				cmd_set_arg_direction(cmdq_peek(), "direction", coords_to_dir(y,x));
 				/*if ((y-player->py >= -1) && (y-player->py <= 1)
 					&& (x-player->px >= -1) && (x-player->px <= 1)) {
 					cmdq_push(CMD_JUMP);
-					cmd_set_arg_direction(cmdq_peek(), 0, coords_to_dir(y,x));
+					cmd_set_arg_direction(cmdq_peek(), "direction", coords_to_dir(y,x));
 				} else {
 				  cmdq_push(CMD_RUN);
-				  cmd_set_arg_direction(cmdq_peek(), 0, coords_to_dir(y,x));
+				  cmd_set_arg_direction(cmdq_peek(), "direction", coords_to_dir(y,x));
 				}*/
 			} else
 			if (e.mouse.mods & KC_MOD_CONTROL) {
 				/* control-click - alter */
 				cmdq_push(CMD_ALTER);
-				cmd_set_arg_direction(cmdq_peek(), 0, coords_to_dir(y,x));
+				cmd_set_arg_direction(cmdq_peek(), "direction", coords_to_dir(y,x));
 			} else
 			if (e.mouse.mods & KC_MOD_ALT) {
 				/* alt-click - look */
@@ -769,7 +769,7 @@ static void textui_process_click(ui_event e)
 					msg("Target Selected.");
 				}
 				//cmdq_push(CMD_LOOK);
-				//cmd_set_arg_point(cmdq_peek(), 0, y, x);
+				//cmd_set_arg_point(cmdq_peek(), "point", y, x);
 			} else
 			{
 				/* pathfind does not work well on trap detection borders,
@@ -777,10 +777,10 @@ static void textui_process_click(ui_event e)
 				if ((y-player->py >= -1) && (y-player->py <= 1)
 					&& (x-player->px >= -1) && (x-player->px <= 1)) {
 					cmdq_push(CMD_WALK);
-					cmd_set_arg_direction(cmdq_peek(), 0, coords_to_dir(y,x));
+					cmd_set_arg_direction(cmdq_peek(), "direction", coords_to_dir(y,x));
 				} else {
 					cmdq_push(CMD_PATHFIND);
-					cmd_set_arg_point(cmdq_peek(), 0, y, x);
+					cmd_set_arg_point(cmdq_peek(), "point", y, x);
 				}
 			}
 		}
@@ -801,15 +801,15 @@ static void textui_process_click(ui_event e)
 		if (e.mouse.mods & KC_MOD_SHIFT) {
 			/* shift-click - cast spell at target */
 			cmdq_push(CMD_CAST);
-			cmd_set_arg_target(cmdq_peek(), 1, DIR_TARGET);
+			cmd_set_arg_target(cmdq_peek(), "target", DIR_TARGET);
 		} else if (e.mouse.mods & KC_MOD_CONTROL) {
 			/* control-click - fire at target */
 			cmdq_push(CMD_USE);
-			cmd_set_arg_target(cmdq_peek(), 1, DIR_TARGET);
+			cmd_set_arg_target(cmdq_peek(), "target", DIR_TARGET);
 		} else if (e.mouse.mods & KC_MOD_ALT) {
 			/* alt-click - throw at target */
 			cmdq_push(CMD_THROW);
-			cmd_set_arg_target(cmdq_peek(), 1, DIR_TARGET);
+			cmd_set_arg_target(cmdq_peek(), "target", DIR_TARGET);
 		} else {
 			//msg("Target set.");
 			/* see if the click was adjacent to the player */

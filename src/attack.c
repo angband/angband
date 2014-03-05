@@ -658,7 +658,7 @@ void do_cmd_fire(struct command *cmd) {
 	object_type *o_ptr;
 
 	/* Get arguments */
-	if (cmd_get_item(cmd, 0, &item,
+	if (cmd_get_item(cmd, "item", &item,
 			/* Prompt */ "Fire which ammunition?",
 			/* Error  */ "You have no ammunition to fire.",
 			/* Filter */ obj_can_fire,
@@ -668,7 +668,7 @@ void do_cmd_fire(struct command *cmd) {
 		return;
 	}
 
-	if (cmd_get_target(cmd, 1, &dir) == CMD_OK)
+	if (cmd_get_target(cmd, "target", &dir) == CMD_OK)
 		player_confuse_dir(player, &dir, FALSE);
 	else
 		return;
@@ -709,7 +709,7 @@ void do_cmd_throw(struct command *cmd) {
 	object_type *o_ptr;
 
 	/* Get arguments */
-	if (cmd_get_item(cmd, 0, &item,
+	if (cmd_get_item(cmd, "item", &item,
 			/* Prompt */ "Throw which item?",
 			/* Error  */ "You have nothing to throw.",
 			/* Filter */ NULL,
@@ -719,7 +719,7 @@ void do_cmd_throw(struct command *cmd) {
 		return;
 	}
 
-	if (cmd_get_target(cmd, 1, &dir) == CMD_OK)
+	if (cmd_get_target(cmd, "target", &dir) == CMD_OK)
 		player_confuse_dir(player, &dir, FALSE);
 	else
 		return;
@@ -746,6 +746,8 @@ void do_cmd_throw(struct command *cmd) {
 
 /**
  * Front-end 'throw' command.
+ *
+ * XXX-AS this is now redunant, remove
  */
 void textui_cmd_throw(void) {
 	int item, dir;
@@ -765,8 +767,8 @@ void textui_cmd_throw(void) {
 	if (!get_aim_dir(&dir)) return;
 
 	cmdq_push(CMD_THROW);
-	cmd_set_arg_item(cmdq_peek(), 0, item);
-	cmd_set_arg_target(cmdq_peek(), 1, dir);
+	cmd_set_arg_item(cmdq_peek(), "item", item);
+	cmd_set_arg_target(cmdq_peek(), "target", dir);
 }
 
 
@@ -774,8 +776,7 @@ void textui_cmd_throw(void) {
  * Front-end command which fires at the nearest target with default ammo.
  */
 void textui_cmd_fire_at_nearest(void) {
-	/* the direction '5' means 'use the target' */
-	int i, dir = 5, item = -1;
+	int i, dir = DIR_TARGET, item = -1;
 
 	/* Require a usable launcher */
 	if (!player->inventory[INVEN_BOW].tval || !player->state.ammo_tval) {
@@ -801,6 +802,6 @@ void textui_cmd_fire_at_nearest(void) {
 
 	/* Fire! */
 	cmdq_push(CMD_FIRE);
-	cmd_set_arg_item(cmdq_peek(), 0, item);
-	cmd_set_arg_target(cmdq_peek(), 1, dir);
+	cmd_set_arg_item(cmdq_peek(), "item", item);
+	cmd_set_arg_target(cmdq_peek(), "target", dir);
 }

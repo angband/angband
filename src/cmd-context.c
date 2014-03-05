@@ -685,7 +685,7 @@ int context_menu_cave(struct cave *c, int y, int x, int adjacent, int mx, int my
 
 		case CMD_PATHFIND:
 			cmdq_push(selected);
-			cmd_set_arg_point(cmdq_peek(), 0, x, y);
+			cmd_set_arg_point(cmdq_peek(), "point", x, y);
 			break;
 
 		case CMD_ALTER:
@@ -697,7 +697,7 @@ int context_menu_cave(struct cave *c, int y, int x, int adjacent, int mx, int my
 		case CMD_WALK:
 		case CMD_RUN:
 			cmdq_push(selected);
-			cmd_set_arg_direction(cmdq_peek(), 0, coords_to_dir(y,x));
+			cmd_set_arg_direction(cmdq_peek(), "direction", coords_to_dir(y,x));
 			break;
 
 		case CMD_CAST:
@@ -705,7 +705,7 @@ int context_menu_cave(struct cave *c, int y, int x, int adjacent, int mx, int my
 		case CMD_THROW:
 		case CMD_USE:
 			cmdq_push(selected);
-			cmd_set_arg_target(cmdq_peek(), 1, DIR_TARGET);
+			cmd_set_arg_target(cmdq_peek(), "target", DIR_TARGET);
 			break;
 
 		default:
@@ -880,8 +880,8 @@ int context_menu_object(const object_type *o_ptr, const int slot)
 			/* Drop entire stack with confirmation. */
 			if (get_check(format("Drop %s? ", header))) {
 				cmdq_push(store_in_store ? CMD_STASH : CMD_DROP);
-				cmd_set_arg_item(cmdq_peek(), 0, slot);
-				cmd_set_arg_number(cmdq_peek(), 1, o_ptr->number);
+				cmd_set_arg_item(cmdq_peek(), "item", slot);
+				cmd_set_arg_number(cmdq_peek(), "quantity", o_ptr->number);
 			}
 			return 1;
 
@@ -929,16 +929,16 @@ int context_menu_object(const object_type *o_ptr, const int slot)
 		return 2;
 	} else if (selected == CMD_STUDY) {
 		cmdq_push(CMD_STUDY);
-		cmd_set_arg_item(cmdq_peek(), 0, slot);
+		cmd_set_arg_item(cmdq_peek(), "item", slot);
 	} else if (selected == CMD_CAST) {
 		if (obj_can_cast_from(o_ptr)) {
 			cmdq_push(CMD_CAST);
-			cmd_set_arg_item(cmdq_peek(), 1, slot);
+			cmd_set_arg_item(cmdq_peek(), "item", slot);
 			/* XXX-AS: change this from '1' to 'book' at some point */
 		}
 	} else {
 		cmdq_push(selected);
-		cmd_set_arg_item(cmdq_peek(), 0, slot);
+		cmd_set_arg_item(cmdq_peek(), "item", slot);
 
 		/* If we're in a store, we need to change the "drop" command to "stash". */
 		if (selected == CMD_DROP && store_in_store) {
@@ -1036,8 +1036,8 @@ int context_menu_store(struct store *store, const int oid, int mx, int my)
 		} else {
 			cmdq_push(CMD_SELL);
 		}
-		cmd_set_arg_item(cmdq_peek(), 0, oid);
-		cmd_set_arg_number(cmdq_peek(), 1, 1);*/
+		cmd_set_arg_item(cmdq_peek(), "item", oid);
+		cmd_set_arg_number(cmdq_peek(), "quantity", 1);*/
 	} else
 	if (selected == 3) {
 		Term_keypress('s', 0);
@@ -1051,8 +1051,8 @@ int context_menu_store(struct store *store, const int oid, int mx, int my)
 		} else {
 			cmdq_push(CMD_BUY);
 		}
-		cmd_set_arg_choice(cmdq_peek(), 0, oid);
-		cmd_set_arg_number(cmdq_peek(), 1, 1);
+		cmd_set_arg_choice(cmdq_peek(), "item", oid);
+		cmd_set_arg_number(cmdq_peek(), "quantity", 1);
 	} else
 	if (selected == 6) {
 		Term_keypress('p', 0);
@@ -1142,8 +1142,8 @@ int context_menu_store_item(struct store *store, const int oid, int mx, int my)
 		} else {
 			cmdq_push(CMD_BUY);
 		}
-		cmd_set_arg_choice(cmdq_peek(), 0, oid);
-		cmd_set_arg_number(cmdq_peek(), 1, 1);
+		cmd_set_arg_choice(cmdq_peek(), "item", oid);
+		cmd_set_arg_number(cmdq_peek(), "quantity", 1);
 	} else
 	if (selected == 6) {
 		Term_keypress('p', 0);

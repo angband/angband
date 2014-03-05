@@ -404,7 +404,7 @@ int cmd_get_direction(struct command *cmd, const char *arg, int *dir, bool allow
 
 	/* We need to do extra work */
 	if (get_rep_dir(dir, allow_5)) {
-		cmd_set_arg_direction(cmd, 0, *dir);
+		cmd_set_arg_direction(cmd, arg, *dir);
 		return CMD_OK;
 	}
 
@@ -515,7 +515,7 @@ int cmd_get_item(struct command *cmd, const char *arg, int *item,
 		return CMD_OK;
 
 	if (get_item(item, prompt, reject, cmd->command, filter, mode)) {
-		cmd_set_arg_item(cmd, 0, *item);
+		cmd_set_arg_item(cmd, arg, *item);
 		return CMD_OK;
 	}
 

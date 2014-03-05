@@ -965,12 +965,16 @@ void player_birth(bool quickstart_allowed)
 		}
 		else if (cmd->command == CMD_CHOOSE_SEX)
 		{
-			player->psex = cmd->arg[0].choice; 
+			int choice;
+			cmd_get_arg_choice(cmd, "choice", &choice);
+			player->psex = choice;
 			player_generate(player, NULL, NULL, NULL);
 		}
 		else if (cmd->command == CMD_CHOOSE_RACE)
 		{
-			player_generate(player, NULL, player_id2race(cmd->arg[0].choice), NULL);
+			int choice;
+			cmd_get_arg_choice(cmd, "choice", &choice);
+			player_generate(player, NULL, player_id2race(choice), NULL);
 
 			reset_stats(stats, points_spent, &points_left, FALSE);
 			generate_stats(stats, points_spent, &points_left);
@@ -978,7 +982,9 @@ void player_birth(bool quickstart_allowed)
 		}
 		else if (cmd->command == CMD_CHOOSE_CLASS)
 		{
-			player_generate(player, NULL, NULL, player_id2class(cmd->arg[0].choice));
+			int choice;
+			cmd_get_arg_choice(cmd, "choice", &choice);
+			player_generate(player, NULL, NULL, player_id2class(choice));
 
 			reset_stats(stats, points_spent, &points_left, FALSE);
 			generate_stats(stats, points_spent, &points_left);
@@ -995,21 +1001,29 @@ void player_birth(bool quickstart_allowed)
 		else if (cmd->command == CMD_BUY_STAT)
 		{
 			/* .choice is the stat to buy */
-			if (!rolled_stats)
-				buy_stat(cmd->arg[0].choice, stats, points_spent, &points_left, TRUE);
+			if (!rolled_stats) {
+				int choice;
+				cmd_get_arg_choice(cmd, "choice", &choice);
+				buy_stat(choice, stats, points_spent, &points_left, TRUE);
+			}
 		}
 		else if (cmd->command == CMD_SELL_STAT)
 		{
 			/* .choice is the stat to sell */
-			if (!rolled_stats)
-				sell_stat(cmd->arg[0].choice, stats, points_spent, &points_left, TRUE);
+			if (!rolled_stats) {
+				int choice;
+				cmd_get_arg_choice(cmd, "choice", &choice);
+				sell_stat(choice, stats, points_spent, &points_left, TRUE);
+			}
 		}
 		else if (cmd->command == CMD_RESET_STATS)
 		{
 			/* .choice is whether to regen stats */
 			reset_stats(stats, points_spent, &points_left, TRUE);
 
-			if (cmd->arg[0].choice)
+			int choice;
+			cmd_get_arg_choice(cmd, "choice", &choice);
+			if (choice)
 				generate_stats(stats, points_spent, &points_left);
 
 			rolled_stats = FALSE;
@@ -1062,11 +1076,13 @@ void player_birth(bool quickstart_allowed)
 		}
 		else if (cmd->command == CMD_NAME_CHOICE)
 		{
-			/* Set player name */
-			my_strcpy(op_ptr->full_name, cmd->arg[0].string,
-					  sizeof(op_ptr->full_name));
+			const char *str;
+			cmd_get_arg_string(cmd, "name", &str);
 
-			string_free((void *) cmd->arg[0].string);
+			/* Set player name */
+			my_strcpy(op_ptr->full_name, str, sizeof(op_ptr->full_name));
+
+			string_free((char *) str);
 		}
 		/* Various not-specific-to-birth commands. */
 		else if (cmd->command == CMD_HELP)
