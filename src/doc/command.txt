@@ -145,15 +145,15 @@ NOT DONE:
 
   - resting
 
-    This might be fine already, but resting will need its own type (gah).
+    Instead of having magic numbers and using the 'choice' type, it should take strings (e.g. "*" or "mana" or "hp") or numbers.
 
   - stores
 
-    There should not be a CMD_STORE.  It should just be that the player can sell and purchase on the grid.  This will require some file splitting out (textui-store.c and store.c, for example).
+    There should not be a CMD_ENTER_STORE.  It should just be that the player can sell and purchase on the grid and the UI side deals with the implications.
 
   - pickup
 
-    This is currently just a "pickup" command.  It should be separated into a "pick up item x" command and the UI frontend to it.
+    This is currently just a "pickup" command.  It should be separated into a "pick up item x" command and the UI frontend to it. This might be impossible until we get an event-driven game.
 
   - targetting
 

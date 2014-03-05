@@ -1,0 +1,50 @@
+Angband's event system
+======================
+
+XXX This is an unfinished but maybe useful document!
+
+
+State of play
+-------------
+
+The Angband event system, first introduced in 2007, is presently underutilised though it has great potential.  
+
+We can use the event system for:
+ * Producing sound
+ * Messages to the player
+ * Sending
+ * Tracking an object
+
+At the moment, generally only simple messages with no parameters are used.
+
+Vague plan
+----------
+
+Split out the argument system from cmd-core.c and re-use it for events.
+
+Convert msg() into an event, msg_print() etc into message handlers.
+
+Convert sound() into an event, sound() into a message handler (or the snd-*/main-* file handling it).
+
+
+
+New events needed
+-----------------
+
+'Path animation' type
+
+Used: project(), attack.c
+
+What it needs to do: Act as a buffer between the core code that works out what path things take, the UI which displays the paths.
+
+
+
+Core UI split notes
+-------------------
+
+obj-list.c - last two functions are textui specific, otherwise fine
+obj-util.c - has display_object_recall() & two below, otherwise fine
+obj-ui.c - 100% UI functions
+other object files fine
+
+target.c - half to be moved into cmd-cave, UI bit to become ui-target.c?
