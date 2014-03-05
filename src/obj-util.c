@@ -40,9 +40,6 @@
 #include "squelch.h"
 #include "z-queue.h"
 
-static struct object *o_list;
-s16b o_max = 1;			/* Number of allocated objects */
-s16b o_cnt = 0;			/* Number of live objects */
 spell_type *s_info;
 object_base *kb_info;
 object_kind *k_info;
@@ -607,7 +604,7 @@ int scan_floor(int *items, int max_size, int y, int x, int mode, item_tester tes
 
 
 		/* Get the object */
-		o_ptr = object_byid(this_o_idx);
+		o_ptr = cave_object(cave, this_o_idx);
 
 		/* Get the next object */
 		next_o_idx = o_ptr->next_o_idx;
@@ -651,7 +648,7 @@ void excise_object_idx(int o_idx)
 
 
 	/* Object */
-	j_ptr = object_byid(o_idx);
+	j_ptr = cave_object(cave, o_idx);
 
 	/* Monster */
 	if (j_ptr->held_m_idx)
@@ -667,7 +664,7 @@ void excise_object_idx(int o_idx)
 			object_type *o_ptr;
 
 			/* Get the object */
-			o_ptr = object_byid(this_o_idx);
+			o_ptr = cave_object(cave, this_o_idx);
 
 			/* Get the next object */
 			next_o_idx = o_ptr->next_o_idx;
@@ -688,7 +685,7 @@ void excise_object_idx(int o_idx)
 					object_type *i_ptr;
 
 					/* Previous object */
-					i_ptr = object_byid(prev_o_idx);
+					i_ptr = cave_object(cave, prev_o_idx);
 
 					/* Remove from list */
 					i_ptr->next_o_idx = next_o_idx;
@@ -718,7 +715,7 @@ void excise_object_idx(int o_idx)
 			object_type *o_ptr;
 
 			/* Get the object */
-			o_ptr = object_byid(this_o_idx);
+			o_ptr = cave_object(cave, this_o_idx);
 
 			/* Get the next object */
 			next_o_idx = o_ptr->next_o_idx;
@@ -739,7 +736,7 @@ void excise_object_idx(int o_idx)
 					object_type *i_ptr;
 
 					/* Previous object */
-					i_ptr = object_byid(prev_o_idx);
+					i_ptr = cave_object(cave, prev_o_idx);
 
 					/* Remove from list */
 					i_ptr->next_o_idx = next_o_idx;
@@ -772,7 +769,7 @@ void delete_object_idx(int o_idx)
 	excise_object_idx(o_idx);
 
 	/* Object */
-	j_ptr = object_byid(o_idx);
+	j_ptr = cave_object(cave, o_idx);
 
 	/* Dungeon floor */
 	if (!(j_ptr->held_m_idx))
@@ -805,7 +802,7 @@ void delete_object_idx(int o_idx)
 	object_wipe(j_ptr);
 
 	/* Count objects */
-	o_cnt--;
+	cave->obj_cnt--;
 
 	/* Stop tracking deleted objects if necessary */
 	if (tracked_object_is(0 - o_idx))
@@ -830,7 +827,7 @@ void delete_object(int y, int x)
 		object_type *o_ptr;
 
 		/* Get the object */
-		o_ptr = object_byid(this_o_idx);
+		o_ptr = cave_object(cave, this_o_idx);
 
 		/* Get the next object */
 		next_o_idx = o_ptr->next_o_idx;
@@ -855,7 +852,7 @@ void delete_object(int y, int x)
 		object_wipe(o_ptr);
 
 		/* Count objects */
-		o_cnt--;
+		cave->obj_cnt--;
 	}
 
 	/* Objects are gone */
@@ -882,10 +879,10 @@ static void compact_objects_aux(int i1, int i2)
 
 
 	/* Repair objects */
-	for (i = 1; i < o_max; i++)
+	for (i = 1; i < cave_object_max(cave); i++)
 	{
 		/* Get the object */
-		o_ptr = object_byid(i);
+		o_ptr = cave_object(cave, i);
 
 		/* Skip "dead" objects */
 		if (!o_ptr->kind) continue;
@@ -900,7 +897,7 @@ static void compact_objects_aux(int i1, int i2)
 
 
 	/* Get the object */
-	o_ptr = object_byid(i1);
+	o_ptr = cave_object(cave, i1);
 
 
 	/* Monster */
@@ -954,7 +951,7 @@ static void compact_objects_aux(int i1, int i2)
 
 
 	/* Hack -- move object */
-	COPY(object_byid(i2), object_byid(i1), object_type);
+	COPY(cave_object(cave, i2), cave_object(cave, i1), object_type);
 
 	/* Hack -- wipe hole */
 	object_wipe(o_ptr);
@@ -990,16 +987,16 @@ void compact_objects(int size)
 	if (!size)
 	{
 		/* Excise dead objects (backwards!) */
-		for (i = o_max - 1; i >= 1; i--)
+		for (i = cave_object_max(cave) - 1; i >= 1; i--)
 		{
-			object_type *o_ptr = object_byid(i);
+			object_type *o_ptr = cave_object(cave, i);
 			if (o_ptr->kind) continue;
 
 			/* Move last object into open hole */
-			compact_objects_aux(o_max - 1, i);
+			compact_objects_aux(cave_object_max(cave) - 1, i);
 
-			/* Compress "o_max" */
-			o_max--;
+			/* Compress cave->obj_max */
+			cave->obj_max--;
 		}
 
 		return;
@@ -1012,9 +1009,9 @@ void compact_objects(int size)
 	/*** Try destroying objects ***/
 
 	/* First do gold */
-	for (i = 1; (i < o_max) && (size); i++)
+	for (i = 1; (i < cave_object_max(cave)) && (size); i++)
 	{
-		object_type *o_ptr = object_byid(i);
+		object_type *o_ptr = cave_object(cave, i);
 
 		/* Nuke gold or squelched items */
 		if (tval_is_money(o_ptr) || squelch_item_ok(o_ptr))
@@ -1035,9 +1032,9 @@ void compact_objects(int size)
 		cur_dis = 5 * (20 - cnt);
 
 		/* Examine the objects */
-		for (i = 1; (i < o_max) && (size); i++)
+		for (i = 1; (i < cave_object_max(cave)) && (size); i++)
 		{
-			object_type *o_ptr = object_byid(i);
+			object_type *o_ptr = cave_object(cave, i);
 			if (!o_ptr->kind) continue;
 
 			/* Hack -- High level objects start out "immune" */
@@ -1123,9 +1120,9 @@ void wipe_o_list(struct cave *c)
 	int i;
 
 	/* Delete the existing objects */
-	for (i = 1; i < o_max; i++)
+	for (i = 1; i < cave_object_max(cave); i++)
 	{
-		object_type *o_ptr = object_byid(i);
+		object_type *o_ptr = cave_object(c, i);
 		if (!o_ptr->kind) continue;
 
 		/* Preserve artifacts or mark them as lost in the history */
@@ -1166,11 +1163,11 @@ void wipe_o_list(struct cave *c)
 		(void)WIPE(o_ptr, object_type);
 	}
 
-	/* Reset "o_max" */
-	o_max = 1;
+	/* Reset obj_max */
+	cave->obj_max = 1;
 
-	/* Reset "o_cnt" */
-	o_cnt = 0;
+	/* Reset obj_cnt */
+	cave->obj_cnt = 0;
 }
 
 
@@ -1180,22 +1177,22 @@ void wipe_o_list(struct cave *c)
  * This routine should almost never fail, but in case it does,
  * we must be sure to handle "failure" of this routine.
  */
-s16b o_pop(void)
+s16b o_pop(struct cave *c)
 {
 	int i;
 
 
 	/* Initial allocation */
-	if (o_max < z_info->o_max)
+	if (cave_object_max(c) < z_info->o_max)
 	{
 		/* Get next space */
-		i = o_max;
+		i = cave_object_max(c);
 
 		/* Expand object array */
-		o_max++;
+		c->obj_max++;
 
 		/* Count objects */
-		o_cnt++;
+		c->obj_cnt++;
 
 		/* Use this object */
 		return (i);
@@ -1203,13 +1200,13 @@ s16b o_pop(void)
 
 
 	/* Recycle dead objects */
-	for (i = 1; i < o_max; i++)
+	for (i = 1; i < cave_object_max(c); i++)
 	{
-		object_type *o_ptr = object_byid(i);
-		if (o_ptr->kind) continue;
+		object_type *obj = cave_object(c, i);
+		if (obj->kind) continue;
 
 		/* Count objects */
-		o_cnt++;
+		c->obj_cnt++;
 
 		/* Use this object */
 		return (i);
@@ -1233,7 +1230,7 @@ object_type *get_first_object(int y, int x)
 	s16b o_idx = cave->o_idx[y][x];
 
 	if (o_idx)
-		return object_byid(o_idx);
+		return cave_object(cave, o_idx);
 
 	/* No object */
 	return (NULL);
@@ -1246,7 +1243,7 @@ object_type *get_first_object(int y, int x)
 object_type *get_next_object(const object_type *o_ptr)
 {
 	if (o_ptr->next_o_idx)
-		return object_byid(o_ptr->next_o_idx);
+		return cave_object(cave, o_ptr->next_o_idx);
 
 	/* No more objects */
 	return NULL;
@@ -1764,7 +1761,7 @@ static s16b floor_get_idx_oldest_squelched(int y, int x)
 
 	for (this_o_idx = cave->o_idx[y][x]; this_o_idx; this_o_idx = o_ptr->next_o_idx)
 	{
-		o_ptr = object_byid(this_o_idx);
+		o_ptr = cave_object(cave, this_o_idx);
 
 		if (squelch_item_ok(o_ptr))
 			squelch_idx = this_o_idx;
@@ -1790,7 +1787,7 @@ s16b floor_carry(struct cave *c, int y, int x, object_type *j_ptr)
 	/* Scan objects in that grid for combination */
 	for (this_o_idx = c->o_idx[y][x]; this_o_idx; this_o_idx = next_o_idx)
 	{
-		object_type *o_ptr = object_byid(this_o_idx);
+		object_type *o_ptr = cave_object(c, this_o_idx);
 
 		/* Get the next object */
 		next_o_idx = o_ptr->next_o_idx;
@@ -1826,7 +1823,7 @@ s16b floor_carry(struct cave *c, int y, int x, object_type *j_ptr)
 
 
 	/* Make an object */
-	o_idx = o_pop();
+	o_idx = o_pop(c);
 
 	/* Success */
 	if (o_idx)
@@ -1834,7 +1831,7 @@ s16b floor_carry(struct cave *c, int y, int x, object_type *j_ptr)
 		object_type *o_ptr;
 
 		/* Get the object */
-		o_ptr = object_byid(o_idx);
+		o_ptr = cave_object(c, o_idx);
 
 		/* Structure Copy */
 		object_copy(o_ptr, j_ptr);
@@ -2552,7 +2549,7 @@ void inven_item_optimize(int item)
  */
 void floor_item_charges(int item)
 {
-	object_type *o_ptr = object_byid(item);
+	object_type *o_ptr = cave_object(cave, item);
 
 	/* Require staff/wand */
 	if (!tval_can_have_charges(o_ptr)) return;
@@ -2574,7 +2571,7 @@ void floor_item_charges(int item)
  */
 void floor_item_describe(int item)
 {
-	object_type *o_ptr = object_byid(item);
+	object_type *o_ptr = cave_object(cave, item);
 
 	char o_name[80];
 
@@ -2591,7 +2588,7 @@ void floor_item_describe(int item)
  */
 void floor_item_increase(int item, int num)
 {
-	object_type *o_ptr = object_byid(item);
+	object_type *o_ptr = cave_object(cave, item);
 
 	/* Apply */
 	num += o_ptr->number;
@@ -2613,7 +2610,7 @@ void floor_item_increase(int item, int num)
  */
 void floor_item_optimize(int item)
 {
-	object_type *o_ptr = object_byid(item);
+	object_type *o_ptr = cave_object(cave, item);
 
 	/* Paranoia -- be sure it exists */
 	if (!o_ptr->kind) return;
@@ -3814,7 +3811,7 @@ object_type *object_from_item_idx(int item)
 	if (item >= 0)
 		return &player->inventory[item];
 	else
-		return object_byid(0 - item);
+		return cave_object(cave, 0 - item);
 }
 
 /**
@@ -4071,19 +4068,3 @@ void pack_overflow(void)
 	if (player->redraw) redraw_stuff(player);
 }
 
-struct object *object_byid(s16b oidx)
-{
-	assert(oidx >= 0);
-	assert(oidx <= z_info->o_max);
-	return &o_list[oidx];
-}
-
-void objects_init(void)
-{
-	o_list = C_ZNEW(z_info->o_max, struct object);
-}
-
-void objects_destroy(void)
-{
-	mem_free(o_list);
-}

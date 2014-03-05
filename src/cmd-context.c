@@ -307,7 +307,7 @@ int context_menu_player(int mx, int my)
 
 	/* if object under player add pickup option */
 	if (cave->o_idx[player->py][player->px]) {
-		object_type *o_ptr = object_byid(cave->o_idx[player->py][player->px]);
+		object_type *o_ptr = square_object(cave, player->py, player->px);
 		if (!squelch_item_ok(o_ptr)) {
 			menu_row_validity_t valid;
 
@@ -498,7 +498,7 @@ int context_menu_cave(struct cave *c, int y, int x, int adjacent, int mx, int my
 		if (c->o_idx[y][x]) {
 			s16b o_idx = chest_check(y,x, CHEST_ANY);
 			if (o_idx) {
-				object_type *o_ptr = object_byid(o_idx);
+				object_type *o_ptr = cave_object(cave, o_idx);
 				if (!squelch_item_ok(o_ptr)) {
 					if (object_is_known(o_ptr)) {
 						if (is_locked_chest(o_ptr)) {
@@ -588,11 +588,11 @@ int context_menu_cave(struct cave *c, int y, int x, int adjacent, int mx, int my
 
 		prt(format("(Enter to select command, ESC to cancel) You see %s:", m_name), 0, 0);
 	} else
-	if (c->o_idx[y][x] && !squelch_item_ok(object_byid(c->o_idx[y][x]))) {
+		if (c->o_idx[y][x] && !squelch_item_ok(square_object(c, y, x))) {
 		char o_name[80];
 
 		/* Get the single object in the list */
-		object_type *o_ptr = object_byid(c->o_idx[y][x]);
+		object_type *o_ptr = square_object(c, y, x);
 
 		/* Obtain an object description */
 		object_desc(o_name, sizeof (o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);

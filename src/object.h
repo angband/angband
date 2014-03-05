@@ -247,10 +247,6 @@ enum {
 
 
 
-extern s16b o_max;
-extern s16b o_cnt;
-
-
 /*** Macros ***/
 
 /*** Structures ***/

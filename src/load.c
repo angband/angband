@@ -2210,7 +2210,7 @@ static int rd_objects(rd_item_t rd_item_version)
 		}
 
 		/* Make an object */
-		o_idx = o_pop();
+		o_idx = o_pop(cave);
 
 		/* Paranoia */
 		if (o_idx != i)
@@ -2220,7 +2220,7 @@ static int rd_objects(rd_item_t rd_item_version)
 		}
 
 		/* Get the object */
-		o_ptr = object_byid(o_idx);
+		o_ptr = cave_object(cave, o_idx);
 
 		/* Structure Copy */
 		object_copy(o_ptr, i_ptr);
@@ -2323,13 +2323,13 @@ int rd_monsters_7(void)
 	}
 
 	/* Reacquire objects */
-	for (i = 1; i < o_max; ++i)
+	for (i = 1; i < cave_object_max(cave); ++i)
 	{
 		object_type *o_ptr;
 		monster_type *m_ptr;
 
 		/* Get the object */
-		o_ptr = object_byid(i);
+		o_ptr = cave_object(cave, i);
 
 		/* Check for mimics */
 		if (o_ptr->mimicking_m_idx) {
@@ -2440,13 +2440,13 @@ int rd_monsters_6(void)
 	}
 
 	/* Reacquire objects */
-	for (i = 1; i < o_max; ++i)
+	for (i = 1; i < cave_object_max(cave); ++i)
 	{
 		object_type *o_ptr;
 		monster_type *m_ptr;
 
 		/* Get the object */
-		o_ptr = object_byid(i);
+		o_ptr = cave_object(cave, i);
 
 		/* Check for mimics */
 		if (o_ptr->mimicking_m_idx) {

@@ -42,7 +42,7 @@ void delete_object_idx(int o_idx);
 void delete_object(int y, int x);
 void compact_objects(int size);
 void wipe_o_list(struct cave *c);
-s16b o_pop(void);
+s16b o_pop(struct cave *c);
 object_type *get_first_object(int y, int x);
 object_type *get_next_object(const object_type *o_ptr);
 bool is_blessed(const object_type *o_ptr);
@@ -126,9 +126,5 @@ int compare_items(const object_type *o1, const object_type *o2);
 bool pack_is_full(void);
 bool pack_is_overfull(void);
 void pack_overflow(void);
-
-extern struct object *object_byid(s16b oidx);
-extern void objects_init(void);
-extern void objects_destroy(void);
 
 #endif /* OBJECT_UTIL_H */

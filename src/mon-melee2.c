@@ -1759,7 +1759,7 @@ static void process_monster(struct cave *c, struct monster *m_ptr)
 		for (k = 0, y = oy - 1; y <= oy + 1; y++)
 			for (x = ox - 1; x <= ox + 1; x++)
 				/* Count monsters */
-				if (cave->m_idx[y][x] > 0) k++;
+				if (c->m_idx[y][x] > 0) k++;
 
 		/* Multiply slower in crowded areas */
 		if ((k < 4) && (k == 0 || one_in_(k * MON_MULT_ADJ))) {
@@ -1828,7 +1828,7 @@ static void process_monster(struct cave *c, struct monster *m_ptr)
 	/* Normal movement */
 	if (!stagger)
 		/* Logical moves, may do nothing */
-		if (!get_moves(cave, m_ptr, mm)) return;
+		if (!get_moves(c, m_ptr, mm)) return;
 
 	/* Assume nothing */
 	do_turn = FALSE;
@@ -1845,12 +1845,12 @@ static void process_monster(struct cave *c, struct monster *m_ptr)
 		nx = ox + ddx[d];
 
 		/* Floor is open? */
-		if (square_ispassable(cave, ny, nx))
+		if (square_ispassable(c, ny, nx))
 			/* Go ahead and move */
 			do_move = TRUE;
 
 		/* Permanent wall in the way */
-		else if (square_iswall(cave, ny, nx) && square_isperm(cave, ny, nx))
+		else if (square_iswall(c, ny, nx) && square_isperm(c, ny, nx))
 		{
 			/* Nothing */
 		}
@@ -1875,7 +1875,7 @@ static void process_monster(struct cave *c, struct monster *m_ptr)
 				do_move = TRUE;
 
 				/* Forget the wall */
-				sqinfo_off(cave->info[ny][nx], SQUARE_MARK);
+				sqinfo_off(c->info[ny][nx], SQUARE_MARK);
 
 				/* Notice */
 				square_destroy_wall(c, ny, nx);
@@ -1885,7 +1885,7 @@ static void process_monster(struct cave *c, struct monster *m_ptr)
 			}
 
 			/* Handle doors and secret doors */
-			else if (square_iscloseddoor(cave, ny, nx) || square_issecretdoor(cave, ny, nx)) {
+			else if (square_iscloseddoor(c, ny, nx) || square_issecretdoor(c, ny, nx)) {
 				/* Take a turn */
 				do_turn = TRUE;
 
@@ -1900,8 +1900,8 @@ static void process_monster(struct cave *c, struct monster *m_ptr)
 					bool may_bash = ((rf_has(m_ptr->race->flags, RF_BASH_DOOR) && one_in_(2))? TRUE: FALSE);
 
 					/* Stuck door -- try to unlock it */
-					if (square_islockeddoor(cave, ny, nx)) {
-						int k = square_door_power(cave, ny, nx);
+					if (square_islockeddoor(c, ny, nx)) {
+						int k = square_door_power(c, ny, nx);
 
 						if (randint0(m_ptr->hp / 10) > k) {
 							/* Print a message */
@@ -1919,7 +1919,7 @@ static void process_monster(struct cave *c, struct monster *m_ptr)
 							}
 
 							/* Reduce the power of the door by one */
-							square_set_feat(c, ny, nx, cave->feat[ny][nx] - 1);
+							square_set_feat(c, ny, nx, c->feat[ny][nx] - 1);
 						}
 					}
 
@@ -1946,18 +1946,18 @@ static void process_monster(struct cave *c, struct monster *m_ptr)
 
 
 		/* Hack -- check for Glyph of Warding */
-		if (do_move && square_iswarded(cave, ny, nx)) {
+		if (do_move && square_iswarded(c, ny, nx)) {
 			/* Assume no move allowed */
 			do_move = FALSE;
 
 			/* Break the ward */
 			if (randint1(BREAK_GLYPH) < m_ptr->race->level) {
 				/* Describe observable breakage */
-				if (sqinfo_has(cave->info[ny][nx], SQUARE_MARK))
+				if (sqinfo_has(c->info[ny][nx], SQUARE_MARK))
 					msg("The rune of protection is broken!");
 
 				/* Forget the rune */
-				sqinfo_off(cave->info[ny][nx], SQUARE_MARK);
+				sqinfo_off(c->info[ny][nx], SQUARE_MARK);
 
 				/* Break the rune */
 				square_remove_ward(c, ny, nx);
@@ -1969,7 +1969,7 @@ static void process_monster(struct cave *c, struct monster *m_ptr)
 
 
 		/* The player is in the way. */
-		if (do_move && (cave->m_idx[ny][nx] < 0)) {
+		if (do_move && (c->m_idx[ny][nx] < 0)) {
 			/* Learn about if the monster attacks */
 			if (m_ptr->ml)
 				rf_on(l_ptr->flags, RF_NEVER_BLOW);
@@ -2005,8 +2005,8 @@ static void process_monster(struct cave *c, struct monster *m_ptr)
 
 
 		/* A monster is in the way */
-		if (do_move && (cave->m_idx[ny][nx] > 0)) {
-			monster_type *n_ptr = square_monster(cave, ny, nx);
+		if (do_move && (c->m_idx[ny][nx] > 0)) {
+			monster_type *n_ptr = square_monster(c, ny, nx);
 
 			/* Kill weaker monsters */
 			int kill_ok = rf_has(m_ptr->race->flags, RF_KILL_BODY);
@@ -2014,7 +2014,7 @@ static void process_monster(struct cave *c, struct monster *m_ptr)
 			/* Move weaker monsters if they can swap places */
 			/* (not in a wall) */
 			int move_ok = (rf_has(m_ptr->race->flags, RF_MOVE_BODY) &&
-						   square_ispassable(cave, m_ptr->fy, m_ptr->fx));
+						   square_ispassable(c, m_ptr->fy, m_ptr->fx));
 
 			/* Assume no movement */
 			do_move = FALSE;
@@ -2075,12 +2075,12 @@ static void process_monster(struct cave *c, struct monster *m_ptr)
 				disturb(player, 0, 0);
 
 			/* Scan all objects in the grid */
-			for (this_o_idx = cave->o_idx[ny][nx]; this_o_idx;
+			for (this_o_idx = c->o_idx[ny][nx]; this_o_idx;
 					this_o_idx = next_o_idx) {
 				object_type *o_ptr;
 
 				/* Get the object */
-				o_ptr = object_byid(this_o_idx);
+				o_ptr = cave_object(c, this_o_idx);
 
 				/* Get the next object */
 				next_o_idx = o_ptr->next_o_idx;
@@ -2147,7 +2147,7 @@ static void process_monster(struct cave *c, struct monster *m_ptr)
 						delete_object_idx(this_o_idx);
 
 						/* Carry the object */
-						monster_carry(m_ptr, i_ptr);
+						monster_carry(c, m_ptr, i_ptr);
 
 					/* Destroy the item */
 					} else {

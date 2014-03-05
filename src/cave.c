@@ -2096,9 +2096,9 @@ void wiz_light(struct cave *c, bool full)
 	int i, y, x;
 
 	/* Memorize objects */
-	for (i = 1; i < o_max; i++)
+	for (i = 1; i < cave_object_max(cave); i++)
 	{
-		object_type *o_ptr = object_byid(i);
+		object_type *o_ptr = cave_object(c, i);
 
 		/* Skip dead objects */
 		if (!o_ptr->kind) continue;
@@ -2167,9 +2167,9 @@ void wiz_dark(void)
 	}
 
 	/* Forget all objects */
-	for (i = 1; i < o_max; i++)
+	for (i = 1; i < cave_object_max(cave); i++)
 	{
-		object_type *o_ptr = object_byid(i);
+		object_type *o_ptr = cave_object(cave, i);
 
 		/* Skip dead objects */
 		if (!o_ptr->kind) continue;
@@ -2702,6 +2702,9 @@ struct cave *cave_new(void) {
 	c->monsters = mem_zalloc(z_info->m_max * sizeof(struct monster));
 	c->mon_max = 1;
 
+	c->objects = mem_zalloc(z_info->o_max * sizeof(struct object));
+	c->obj_max = 1;
+
 	c->traps = mem_zalloc(z_info->l_max * sizeof(struct trap_type));
 	c->trap_max = 1;
 
@@ -2729,6 +2732,7 @@ void cave_free(struct cave *c) {
 	mem_free(c->m_idx);
 	mem_free(c->o_idx);
 	mem_free(c->monsters);
+	mem_free(c->objects);
 	mem_free(c->traps);
 	mem_free(c);
 }
@@ -3147,6 +3151,41 @@ int cave_monster_max(struct cave *c) {
  */
 int cave_monster_count(struct cave *c) {
 	return c->mon_cnt;
+}
+
+/**
+ * Get an object on the current level by its index.
+ */
+struct object *cave_object(struct cave *c, int idx) {
+	assert(idx >= 0);
+	assert(idx <= z_info->o_max);
+	return &c->objects[idx];
+}
+
+/**
+ * Get the top object of a pile on the current level by its position.
+ */
+struct object *square_object(struct cave *c, int y, int x) {
+	if (c->o_idx[y][x] > 0) {
+	struct object *obj = cave_object(c, c->o_idx[y][x]);
+	return obj->kind ? obj : NULL;
+	}
+
+	return NULL;
+}
+
+/**
+ * The maximum number of objects allowed in the level.
+ */
+int cave_object_max(struct cave *c) {
+	return c->obj_max;
+}
+
+/**
+ * The current number of objects present on the level.
+ */
+int cave_object_count(struct cave *c) {
+	return c->obj_cnt;
 }
 
 /**

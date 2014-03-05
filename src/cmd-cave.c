@@ -776,7 +776,7 @@ static bool do_cmd_tunnel_aux(int y, int x)
 					ORIGIN_RUBBLE, 0);
 
 				/* Observe the new object */
-				if (!squelch_item_ok(object_byid(cave->o_idx[y][x])) &&
+				if (!squelch_item_ok(square_object(cave, y, x)) &&
 					    player_can_see_bold(y, x))
 					msg("You have found something!");
 			}

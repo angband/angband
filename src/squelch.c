@@ -208,10 +208,10 @@ void autoinscribe_ground(void)
 	for (this_o_idx = cave->o_idx[py][px]; this_o_idx; this_o_idx = next_o_idx)
 	{
 		/* Get the next object */
-		next_o_idx = object_byid(this_o_idx)->next_o_idx;
+		next_o_idx = cave_object(cave, this_o_idx)->next_o_idx;
 
 		/* Apply an autoinscription */
-		apply_autoinscription(object_byid(this_o_idx));
+		apply_autoinscription(cave_object(cave, this_o_idx));
 	}
 }
 

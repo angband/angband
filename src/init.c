@@ -3090,11 +3090,6 @@ static errr init_other(void)
 	mon_msg = C_ZNEW(MAX_STORED_MON_MSG, monster_race_message);
 	mon_message_hist = C_ZNEW(MAX_STORED_MON_CODES, monster_message_history);
 
-	/*** Prepare entity arrays ***/
-
-	/* Objects */
-	objects_init();
-
 	/*** Prepare lore array ***/
 
 	/* Lore */
@@ -3374,9 +3369,8 @@ void cleanup_angband(void)
 
 	FREE(player->inventory);
 
-	/* Free the lore, monster, and object lists */
+	/* Free the lore list */
 	FREE(l_list);
-	objects_destroy();
 
 	cave_free(cave);
 

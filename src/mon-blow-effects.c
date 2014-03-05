@@ -356,7 +356,7 @@ static void melee_effect_handler_eat_gold(melee_effect_handler_context_t *contex
             o.origin = ORIGIN_STOLEN;
 
             /* Give the gold to the monster */
-            monster_carry(context->m_ptr, &o);
+            monster_carry(cave, context->m_ptr, &o);
         }
 
         /* Redraw gold */
@@ -438,7 +438,7 @@ static void melee_effect_handler_eat_item(melee_effect_handler_context_t *contex
         distribute_charges(o_ptr, i_ptr, 1);
 
         /* Carry the object */
-        (void)monster_carry(context->m_ptr, i_ptr);
+        (void)monster_carry(cave, context->m_ptr, i_ptr);
 
         /* Steal the items */
         inven_item_increase(item, -1);

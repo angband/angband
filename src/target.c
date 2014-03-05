@@ -864,7 +864,7 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 					object_type *o_ptr;
 
 					/* Get the object */
-					o_ptr = object_byid(this_o_idx);
+					o_ptr = cave_object(cave, this_o_idx);
 
 					/* Get the next object */
 					next_o_idx = o_ptr->next_o_idx;
@@ -1061,7 +1061,7 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 			else
 			{
 				/* Get the single object in the list */
-				object_type *o_ptr = object_byid(floor_list[0]);
+				object_type *o_ptr = cave_object(cave, floor_list[0]);
 
 				/* Allow user to recall an object */
 				press = target_recall_loop_object(o_ptr, y, x, out_val, s1, s2, s3, coords);
@@ -1272,7 +1272,7 @@ static int draw_path(u16b path_n, u16b *path_g, wchar_t *c, int *a, int y1, int 
 				colour = TERM_L_RED;
 		}
 
-		else if (cave->o_idx[y][x] && object_byid(cave->o_idx[y][x])->marked)
+		else if (cave->o_idx[y][x] && square_object(cave, y, x)->marked)
 			/* Known objects are yellow. */
 			colour = TERM_YELLOW;
 

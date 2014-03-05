@@ -1374,7 +1374,7 @@ void monster_death_stats(int m_idx)
 		object_type *o_ptr;
 
 		/* Get the object */
-		o_ptr = object_byid(this_o_idx);
+		o_ptr = cave_object(cave, this_o_idx);
 
 		/* Line up the next object */
 		next_o_idx = o_ptr->next_o_idx;
@@ -1472,14 +1472,14 @@ static void delete_object_stat(int o_idx)
 	excise_object_idx(o_idx);
 
 	/* Object */
-	j_ptr = object_byid(o_idx);
+	j_ptr = cave_object(cave, o_idx);
 
 	
 	/* Wipe the object */
 	object_wipe(j_ptr);
 
 	/* Count objects */
-	o_cnt--;
+	cave->obj_cnt--;
 }
 
 

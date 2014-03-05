@@ -165,7 +165,7 @@ s16b chest_check(int y, int x, enum chest_query check_type)
 		object_type *o_ptr;
 
 		/* Get the object */
-		o_ptr = object_byid(this_o_idx);
+		o_ptr = cave_object(cave, this_o_idx);
 
 		/* Get the next object */
 		next_o_idx = o_ptr->next_o_idx;
@@ -253,7 +253,7 @@ static void chest_death(int y, int x, s16b o_idx)
 
 
 	/* Get the chest */
-	o_ptr = object_byid(o_idx);
+	o_ptr = cave_object(cave, o_idx);
 
 	/* Small chests often hold "gold" */
 	tiny = (o_ptr->sval < SV_CHEST_MIN_LARGE);
@@ -314,7 +314,7 @@ static void chest_trap(int y, int x, s16b o_idx)
 {
 	int i, trap;
 
-	object_type *o_ptr = object_byid(o_idx);
+	object_type *o_ptr = cave_object(cave, o_idx);
 
 
 	/* Ignore disarmed chests */
@@ -391,7 +391,7 @@ bool do_cmd_open_chest(int y, int x, s16b o_idx)
 
 	bool more = FALSE;
 
-	object_type *o_ptr = object_byid(o_idx);
+	object_type *o_ptr = cave_object(cave, o_idx);
 
 
 	/* Attempt to unlock it */
@@ -477,7 +477,7 @@ bool do_cmd_disarm_chest(int y, int x, s16b o_idx)
 
 	bool more = FALSE;
 
-	object_type *o_ptr = object_byid(o_idx);
+	object_type *o_ptr = cave_object(cave, o_idx);
 
 
 	/* Get the "disarm" factor */

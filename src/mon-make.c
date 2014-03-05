@@ -172,7 +172,7 @@ void delete_monster_idx(int m_idx)
 		object_type *o_ptr;
 
 		/* Get the object */
-		o_ptr = object_byid(this_o_idx);
+		o_ptr = cave_object(cave, this_o_idx);
 
 		/* Get the next object */
 		next_o_idx = o_ptr->next_o_idx;
@@ -249,7 +249,7 @@ static void compact_monsters_aux(int i1, int i2)
 		object_type *o_ptr;
 
 		/* Get the object */
-		o_ptr = object_byid(this_o_idx);
+		o_ptr = cave_object(cave, this_o_idx);
 
 		/* Get the next object */
 		next_o_idx = o_ptr->next_o_idx;
@@ -263,7 +263,7 @@ static void compact_monsters_aux(int i1, int i2)
 		object_type *o_ptr;
 
 		/* Get the object */
-		o_ptr = object_byid(m_ptr->mimicked_o_idx);
+		o_ptr = cave_object(cave, m_ptr->mimicked_o_idx);
 
 		/* Reset monster pointer */
 		o_ptr->mimicking_m_idx = i2;
@@ -683,7 +683,7 @@ int mon_create_drop_count(const struct monster_race *race, bool maximize)
  *
  * Returns TRUE if anything is created, FALSE if nothing is.
  */
-static bool mon_create_drop(struct monster *m_ptr, byte origin)
+static bool mon_create_drop(struct cave *c, struct monster *m_ptr, byte origin)
 {
 	struct monster_drop *drop;
 
@@ -739,7 +739,7 @@ static bool mon_create_drop(struct monster *m_ptr, byte origin)
 		i_ptr->origin_depth = player->depth;
 		i_ptr->origin_xtra = m_ptr->race->ridx;
 		i_ptr->number = randint0(drop->max - drop->min) + drop->min;
-		if (monster_carry(m_ptr, i_ptr))
+		if (monster_carry(c, m_ptr, i_ptr))
 			any = TRUE;
 	}
 
@@ -751,14 +751,14 @@ static bool mon_create_drop(struct monster *m_ptr, byte origin)
 		if (gold_ok && (!item_ok || (randint0(100) < 50))) {
 			make_gold(i_ptr, level, SV_GOLD_ANY);
 		} else {
-			if (!make_object(cave, i_ptr, level, good,
+			if (!make_object(c, i_ptr, level, good,
                 great, extra_roll, NULL, 0)) continue;
 		}
 
 		i_ptr->origin = origin;
 		i_ptr->origin_depth = player->depth;
 		i_ptr->origin_xtra = m_ptr->race->ridx;
-		if (monster_carry(m_ptr, i_ptr))
+		if (monster_carry(c, m_ptr, i_ptr))
 			any = TRUE;
 	}
 
@@ -816,7 +816,7 @@ s16b place_monster(struct cave *c, int y, int x, monster_type *mon, byte origin)
 
 	/* Create the monster's drop, if any */
 	if (origin)
-		(void)mon_create_drop(m_ptr, origin);
+		(void)mon_create_drop(c, m_ptr, origin);
 
 	/* Make mimics start mimicking */
 	if (origin && m_ptr->race->mimic_kinds) {
@@ -1363,7 +1363,7 @@ void monster_death(struct monster *m_ptr, bool stats)
 		object_type *o_ptr;
 
 		/* Get the object */
-		o_ptr = object_byid(this_o_idx);
+		o_ptr = cave_object(cave, this_o_idx);
 
 		/* Line up the next object */
 		next_o_idx = o_ptr->next_o_idx;

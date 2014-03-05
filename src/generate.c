@@ -541,7 +541,7 @@ void cave_generate(struct cave *c, struct player *p) {
 		c->feeling = calc_obj_feeling(c) + calc_mon_feeling(c);
 
 		/* Regenerate levels that overflow their maxima */
-		if (o_max >= z_info->o_max) 
+		if (cave_object_max(c) >= z_info->o_max) 
 			error = "too many objects";
 		if (cave_monster_max(c) >= z_info->m_max)
 			error = "too many monsters";

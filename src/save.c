@@ -749,12 +749,12 @@ void wr_objects(void)
 		return;
 	
 	/* Total objects */
-	wr_u16b(o_max);
+	wr_u16b(cave_object_max(cave));
 
 	/* Dump the objects */
-	for (i = 1; i < o_max; i++)
+	for (i = 1; i < cave_object_max(cave); i++)
 	{
-		object_type *o_ptr = object_byid(i);
+		object_type *o_ptr = cave_object(cave, i);
 
 		/* Dump it */
 		wr_item(o_ptr);

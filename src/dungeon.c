@@ -408,10 +408,10 @@ static void recharge_objects(void)
 	}
 
 	/*** Recharge the ground ***/
-	for (i = 1; i < o_max; i++)
+	for (i = 1; i < cave_object_max(cave); i++)
 	{
 		/* Get the object */
-		o_ptr = object_byid(i);
+		o_ptr = cave_object(cave, i);
 
 		/* Skip dead objects */
 		if (!o_ptr->kind) continue;
@@ -1398,16 +1398,20 @@ static void dungeon(struct cave *c)
 	while (TRUE)
 	{
 		/* Hack -- Compact the monster list occasionally */
-		if (cave_monster_count(cave) + 32 > z_info->m_max) compact_monsters(64);
+		if (cave_monster_count(cave) + 32 > z_info->m_max) 
+			compact_monsters(64);
 
 		/* Hack -- Compress the monster list occasionally */
-		if (cave_monster_count(cave) + 32 < cave_monster_max(cave)) compact_monsters(0);
+		if (cave_monster_count(cave) + 32 < cave_monster_max(cave)) 
+			compact_monsters(0);
 
 		/* Hack -- Compact the object list occasionally */
-		if (o_cnt + 32 > z_info->o_max) compact_objects(64);
+		if (cave_object_count(cave) + 32 > z_info->o_max) 
+			compact_objects(64);
 
 		/* Hack -- Compress the object list occasionally */
-		if (o_cnt + 32 < o_max) compact_objects(0);
+		if (cave_object_count(cave) + 32 < cave_object_max(cave)) 
+			compact_objects(0);
 
 		/* Can the player move? */
 		while ((player->energy >= 100) && !player->leaving)

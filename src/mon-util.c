@@ -519,7 +519,7 @@ void update_mon(struct monster *m_ptr, bool full)
 
 	/* If a mimic looks like a squelched item, it's not seen */
 	if (is_mimicking(m_ptr)) {
-		object_type *o_ptr = object_byid(m_ptr->mimicked_o_idx);
+		object_type *o_ptr = cave_object(cave, m_ptr->mimicked_o_idx);
 		if (squelch_item_ok(o_ptr))
 			easy = flag = FALSE;
 	}
@@ -558,7 +558,7 @@ void update_mon(struct monster *m_ptr, bool full)
 		if (m_ptr->ml) {
 			/* Treat mimics differently */
 			if (!m_ptr->mimicked_o_idx || 
-					squelch_item_ok(object_byid(m_ptr->mimicked_o_idx)))
+				squelch_item_ok(cave_object(cave, m_ptr->mimicked_o_idx)))
 			{
 				/* Mark as not visible */
 				m_ptr->ml = FALSE;
@@ -634,7 +634,7 @@ void update_monsters(bool full)
  * Returns the o_idx of the new object, or 0 if the object is
  * not successfully added.
  */
-s16b monster_carry(struct monster *m_ptr, object_type *j_ptr)
+s16b monster_carry(struct cave *c, struct monster *m_ptr, object_type *j_ptr)
 {
 	s16b o_idx;
 
@@ -645,7 +645,7 @@ s16b monster_carry(struct monster *m_ptr, object_type *j_ptr)
 		object_type *o_ptr;
 
 		/* Get the object */
-		o_ptr = object_byid(this_o_idx);
+		o_ptr = cave_object(c, this_o_idx);
 
 		/* Get the next object */
 		next_o_idx = o_ptr->next_o_idx;
@@ -662,14 +662,14 @@ s16b monster_carry(struct monster *m_ptr, object_type *j_ptr)
 
 
 	/* Make an object */
-	o_idx = o_pop();
+	o_idx = o_pop(c);
 
 	/* Success */
 	if (o_idx) {
 		object_type *o_ptr;
 
 		/* Get new object */
-		o_ptr = object_byid(o_idx);
+		o_ptr = cave_object(c, o_idx);
 
 		/* Copy object */
 		object_copy(o_ptr, j_ptr);
@@ -1078,7 +1078,7 @@ void become_aware(struct monster *m_ptr)
 
 		/* Delete any false items */
 		if (m_ptr->mimicked_o_idx > 0) {
-			object_type *o_ptr = object_byid(m_ptr->mimicked_o_idx);
+			object_type *o_ptr = cave_object(cave, m_ptr->mimicked_o_idx);
 			char o_name[80];
 			object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
 
@@ -1100,7 +1100,7 @@ void become_aware(struct monster *m_ptr)
 				object_copy(i_ptr, o_ptr);
 
 				/* Carry the object */
-				monster_carry(m_ptr, i_ptr);
+				monster_carry(cave, m_ptr, i_ptr);
 			}
 				
 			/* Delete the mimicked object */

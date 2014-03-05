@@ -1672,7 +1672,7 @@ static bool project_o(int who, int r, int y, int x, int dam, int typ)
 		project_object_handler_f object_handler = gf_object_handler(typ);
 
 		/* Get the object */
-		o_ptr = object_byid(this_o_idx);
+		o_ptr = cave_object(cave, this_o_idx);
 		context.o_ptr = o_ptr;
 
 		/* Get the next object */

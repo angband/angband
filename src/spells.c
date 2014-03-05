@@ -798,8 +798,8 @@ bool detect_treasure(bool aware, bool full)
 	}
 
 	/* Scan objects */
-	for (i = 1; i < o_max; i++)	{
-		object_type *o_ptr = object_byid(i);
+	for (i = 1; i < cave_object_max(cave); i++)	{
+		object_type *o_ptr = cave_object(cave, i);
 
 		/* Skip dead objects */
 		if (!o_ptr->kind) continue;
