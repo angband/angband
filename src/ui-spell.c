@@ -291,13 +291,17 @@ int get_spell(const char *verb, item_tester book_filter,
 		const char *error, bool (*spell_filter)(int spell))
 {
 	int item;
+	char prompt[1024];
 
 	menu_type *m;
 	const char *noun =
 			(player->class->spell_book == TV_MAGIC_BOOK ? "spell" : "prayer");
 
-	if (!get_item(&item, "XXX-AS Verb which book? ",
-			error,
+	/* Create prompt */
+	strnfmt(prompt, sizeof prompt, "%s which book?", verb);
+	my_strcap(prompt);
+
+	if (!get_item(&item, prompt, error,
 			CMD_CAST /* XXX-AS fix me */, book_filter, (USE_INVEN | USE_FLOOR)))
 		return -1;
 
