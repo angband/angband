@@ -2640,7 +2640,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 							int yy = y + ddy_ddd[i];
 							int xx = x + ddx_ddd[i];
 
-							if (los(centre.y, centre.x, yy, xx)) {
+							if (los(cave, centre.y, centre.x, yy, xx)) {
 								k++;
 								break;
 							}
@@ -2664,7 +2664,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 
 				/* If not an arc, accept all grids in LOS. */
 				if (!(flg & (PROJECT_ARC))) {
-					if (los(centre.y, centre.x, y, x)) {
+					if (los(cave, centre.y, centre.x, y, x)) {
 						blast_grid[num_grids].y = y;
 						blast_grid[num_grids].x = x;
 						distance_to_grid[num_grids] = dist_from_centre;
@@ -2694,7 +2694,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 					 * allowed, and the grid is in LOS, accept it.
 					 */
 					if (diff < (degrees_of_arc + 6) / 4) {
-						if (los(centre.y, centre.x, y, x)) {
+						if (los(cave, centre.y, centre.x, y, x)) {
 							blast_grid[num_grids].y = y;
 							blast_grid[num_grids].x = x;
 							distance_to_grid[num_grids] = dist_from_centre;

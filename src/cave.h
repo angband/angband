@@ -237,7 +237,7 @@ struct cave {
 };
 
 extern int distance(int y1, int x1, int y2, int x2);
-extern bool los(int y1, int x1, int y2, int x2);
+extern bool los(struct cave *c, int y1, int x1, int y2, int x2);
 extern bool no_light(void);
 extern bool square_valid_bold(int y, int x);
 extern byte get_color(byte a, int attr, int n);
@@ -256,8 +256,8 @@ extern void map_area(void);
 extern void wiz_light(bool full);
 extern void wiz_dark(void);
 extern int project_path(u16b *gp, int range, int y1, int x1, int y2, int x2, int flg);
-extern bool projectable(int y1, int x1, int y2, int x2, int flg);
-extern void scatter(int *yp, int *xp, int y, int x, int d, bool need_los);
+extern bool projectable(struct cave *c, int y1, int x1, int y2, int x2, int flg);
+extern void scatter(struct cave *c, int *yp, int *xp, int y, int x, int d, bool need_los);
 extern void disturb(struct player *p, int stop_search, int unused_flag);
 extern bool is_quest(int level);
 extern bool dtrap_edge(int y, int x);
@@ -363,7 +363,6 @@ extern int cave_monster_count(struct cave *c);
 
 extern struct trap_type *cave_trap(struct cave *c, int idx);
 extern int cave_trap_max(struct cave *c);
-extern int cave_trap_count(struct cave *c);
 
 void upgrade_mineral(struct cave *c, int y, int x);
 

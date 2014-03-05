@@ -976,7 +976,7 @@ static void build_color_point(struct cave *c, int colors[], int counts[], int y,
 
 		lab_toyx(n2, w, &y2, &x2);
 
-		if (ignore_point(cave, colors, y2, x2)) continue;
+		if (ignore_point(c, colors, y2, x2)) continue;
 
 		colors[n2] = color;
 		counts[color]++;
@@ -987,7 +987,7 @@ static void build_color_point(struct cave *c, int colors[], int counts[], int y,
 			int y3 = y2 + yds[i];
 			int x3 = x2 + xds[i];
 			int n3 = lab_toi(y3, x3, w);
-			if (ignore_point(cave, colors, y3, x3)) continue;
+			if (ignore_point(c, colors, y3, x3)) continue;
 			if (added[n3]) continue;
 
 			q_push_int(queue, n3);
@@ -1010,8 +1010,8 @@ static void build_colors(struct cave *c, int colors[], int counts[], bool diagon
 
     for (y = 0; y < h; y++) {
 		for (x = 0; x < w; x++) {
-			if (ignore_point(cave, colors, y, x)) continue;
-			build_color_point(cave, colors, counts, y, x, color, diagonal);
+			if (ignore_point(c, colors, y, x)) continue;
+			build_color_point(c, colors, counts, y, x, color, diagonal);
 			color++;
 		}
     }

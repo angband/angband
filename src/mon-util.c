@@ -861,7 +861,7 @@ bool can_call_monster(int y, int x, monster_type *m_ptr)
 	ox = m_ptr->fx;
 	
 	/* Make sure the summoned monster is not in LOS of the summoner */
-	if (los(y, x, oy, ox)) return (FALSE);
+	if (los(cave, y, x, oy, ox)) return (FALSE);
 	
 	return (TRUE);
 }
@@ -968,7 +968,7 @@ int summon_specific(int y1, int x1, int lev, int type, int delay)
 		int d = (i / 15) + 1;
 
 		/* Pick a location */
-		scatter(&y, &x, y1, x1, d, TRUE);
+		scatter(cave, &y, &x, y1, x1, d, TRUE);
 
 		/* Require "empty" floor grid */
 		if (!square_isempty(cave, y, x)) continue;
@@ -1041,7 +1041,7 @@ bool multiply_monster(const monster_type *m_ptr)
 		int d = 1;
 
 		/* Pick a location */
-		scatter(&y, &x, m_ptr->fy, m_ptr->fx, d, TRUE);
+		scatter(cave, &y, &x, m_ptr->fy, m_ptr->fx, d, TRUE);
 
 		/* Require an "empty" floor grid */
 		if (!square_isempty(cave, y, x)) continue;

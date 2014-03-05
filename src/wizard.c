@@ -1400,7 +1400,7 @@ static void do_cmd_wiz_named(monster_race *r, bool slp)
 		int d = 1;
 
 		/* Pick a location */
-		scatter(&y, &x, py, px, d, TRUE);
+		scatter(cave, &y, &x, py, px, d, TRUE);
 
 		/* Require empty grids */
 		if (!square_isempty(cave, y, x)) continue;

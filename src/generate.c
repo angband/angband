@@ -543,7 +543,7 @@ void cave_generate(struct cave *c, struct player *p) {
 		/* Regenerate levels that overflow their maxima */
 		if (o_max >= z_info->o_max) 
 			error = "too many objects";
-		if (cave_monster_max(cave) >= z_info->m_max)
+		if (cave_monster_max(c) >= z_info->m_max)
 			error = "too many monsters";
 
 		if (error) ROOM_LOG("Generation restarted: %s.", error);

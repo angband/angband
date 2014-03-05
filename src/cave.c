@@ -94,7 +94,7 @@ int distance(int y1, int x1, int y2, int x2)
  * determining which grids are illuminated by the player's torch, and which
  * grids and monsters can be "seen" by the player, etc).
  */
-bool los(int y1, int x1, int y2, int x2)
+bool los(struct cave *c, int y1, int x1, int y2, int x2)
 {
 	/* Delta */
 	int dx, dy;
@@ -139,7 +139,7 @@ bool los(int y1, int x1, int y2, int x2)
 		{
 			for (ty = y1 + 1; ty < y2; ty++)
 			{
-				if (!square_isprojectable(cave, ty, x1)) return (FALSE);
+				if (!square_isprojectable(c, ty, x1)) return (FALSE);
 			}
 		}
 
@@ -148,7 +148,7 @@ bool los(int y1, int x1, int y2, int x2)
 		{
 			for (ty = y1 - 1; ty > y2; ty--)
 			{
-				if (!square_isprojectable(cave, ty, x1)) return (FALSE);
+				if (!square_isprojectable(c, ty, x1)) return (FALSE);
 			}
 		}
 
@@ -164,7 +164,7 @@ bool los(int y1, int x1, int y2, int x2)
 		{
 			for (tx = x1 + 1; tx < x2; tx++)
 			{
-				if (!square_isprojectable(cave, y1, tx)) return (FALSE);
+				if (!square_isprojectable(c, y1, tx)) return (FALSE);
 			}
 		}
 
@@ -173,7 +173,7 @@ bool los(int y1, int x1, int y2, int x2)
 		{
 			for (tx = x1 - 1; tx > x2; tx--)
 			{
-				if (!square_isprojectable(cave, y1, tx)) return (FALSE);
+				if (!square_isprojectable(c, y1, tx)) return (FALSE);
 			}
 		}
 
@@ -191,7 +191,7 @@ bool los(int y1, int x1, int y2, int x2)
 	{
 		if (ay == 2)
 		{
-			if (square_isprojectable(cave, y1 + sy, x1)) return (TRUE);
+			if (square_isprojectable(c, y1 + sy, x1)) return (TRUE);
 		}
 	}
 
@@ -200,7 +200,7 @@ bool los(int y1, int x1, int y2, int x2)
 	{
 		if (ax == 2)
 		{
-			if (square_isprojectable(cave, y1, x1 + sx)) return (TRUE);
+			if (square_isprojectable(c, y1, x1 + sx)) return (TRUE);
 		}
 	}
 
@@ -235,7 +235,7 @@ bool los(int y1, int x1, int y2, int x2)
 		/* the LOS exactly meets the corner of a tile. */
 		while (x2 - tx)
 		{
-			if (!square_isprojectable(cave, ty, tx)) return (FALSE);
+			if (!square_isprojectable(c, ty, tx)) return (FALSE);
 
 			qy += m;
 
@@ -246,7 +246,7 @@ bool los(int y1, int x1, int y2, int x2)
 			else if (qy > f2)
 			{
 				ty += sy;
-				if (!square_isprojectable(cave, ty, tx)) return (FALSE);
+				if (!square_isprojectable(c, ty, tx)) return (FALSE);
 				qy -= f1;
 				tx += sx;
 			}
@@ -282,7 +282,7 @@ bool los(int y1, int x1, int y2, int x2)
 		/* the LOS exactly meets the corner of a tile. */
 		while (y2 - ty)
 		{
-			if (!square_isprojectable(cave, ty, tx)) return (FALSE);
+			if (!square_isprojectable(c, ty, tx)) return (FALSE);
 
 			qx += m;
 
@@ -293,7 +293,7 @@ bool los(int y1, int x1, int y2, int x2)
 			else if (qx > f2)
 			{
 				tx += sx;
-				if (!square_isprojectable(cave, ty, tx)) return (FALSE);
+				if (!square_isprojectable(c, ty, tx)) return (FALSE);
 				qx -= f1;
 				ty += sy;
 			}
@@ -1157,7 +1157,7 @@ void square_note_spot(struct cave *c, int y, int x)
 		return;
 
 	/* Memorize this grid */
-	sqinfo_on(cave->info[y][x], SQUARE_MARK);
+	sqinfo_on(c->info[y][x], SQUARE_MARK);
 }
 
 
@@ -1702,7 +1702,7 @@ static void add_monster_lights(struct cave *c, struct loc from)
 		/* Check the k'th monster */
 		struct monster *m = cave_monster(c, k);
 
-		bool in_los = los(from.y, from.x, m->fy, m->fx);
+		bool in_los = los(c, from.y, from.x, m->fy, m->fx);
 
 		/* Skip dead monsters */
 		if (!m->race)
@@ -1721,7 +1721,7 @@ static void add_monster_lights(struct cave *c, struct loc from)
 				int sx = m->fx + j;
 				
 				/* If the monster isn't visible we can only light open tiles */
-				if (!in_los && !square_isprojectable(cave, sy, sx))
+				if (!in_los && !square_isprojectable(c, sy, sx))
 					continue;
 
 				/* If the tile is too far away we won't light it */
@@ -1729,7 +1729,7 @@ static void add_monster_lights(struct cave *c, struct loc from)
 					continue;
 				
 				/* If the tile itself isn't in LOS, don't light it */
-				if (!los(from.y, from.x, sy, sx))
+				if (!los(c, from.y, from.x, sy, sx))
 					continue;
 
 				/* Mark the square lit and seen */
@@ -1848,7 +1848,7 @@ static void update_view_one(struct cave *c, int y, int x, int radius, int py, in
 	}
 
 
-	if (los(py, px, yc, xc))
+	if (los(c, py, px, yc, xc))
 		become_viewable(c, y, x, lit, py, px);
 }
 
@@ -1876,7 +1876,7 @@ void update_view(struct cave *c, struct player *p)
 	/* View squares we have LOS to */
 	for (y = 0; y < c->height; y++)
 		for (x = 0; x < c->width; x++)
-			update_view_one(cave, y, x, radius, p->py, p->px);
+			update_view_one(c, y, x, radius, p->py, p->px);
 
 	/*** Step 3 -- Complete the algorithm ***/
 
@@ -2244,10 +2244,10 @@ void cave_illuminate(struct cave *c, bool daytime)
 struct feature *square_feat(struct cave *c, int y, int x)
 {
 	assert(c);
-	assert(y >= 0 && y < DUNGEON_HGT);
-	assert(x >= 0 && x < DUNGEON_WID);
+	assert(y >= 0 && y < c->height);
+	assert(x >= 0 && x < c->width);
 
-	return &f_info[cave->feat[y][x]];
+	return &f_info[c->feat[y][x]];
 }
 
 void square_set_feat(struct cave *c, int y, int x, int feat)
@@ -2567,7 +2567,7 @@ int project_path(u16b *gp, int range, int y1, int x1, int y2, int x2, int flg)
  * This function is used to determine if the player can (easily) target
  * a given grid, and if a monster can target the player.
  */
-bool projectable(int y1, int x1, int y2, int x2, int flg)
+bool projectable(struct cave *c, int y1, int x1, int y2, int x2, int flg)
 {
 	int y, x;
 
@@ -2585,7 +2585,7 @@ bool projectable(int y1, int x1, int y2, int x2, int flg)
 	x = GRID_X(grid_g[grid_n-1]);
 
 	/* May not end in a wall grid */
-	if (!square_ispassable(cave, y, x)) return (FALSE);
+	if (!square_ispassable(c, y, x)) return (FALSE);
 
 	/* May not end in an unrequested grid */
 	if ((y != y2) || (x != x2)) return (FALSE);
@@ -2607,7 +2607,7 @@ bool projectable(int y1, int x1, int y2, int x2, int flg)
  *
  * need_los determines whether line of sight is needed
  */
-void scatter(int *yp, int *xp, int y, int x, int d, bool need_los)
+void scatter(struct cave *c, int *yp, int *xp, int y, int x, int d, bool need_los)
 {
 	int nx, ny;
 
@@ -2620,7 +2620,7 @@ void scatter(int *yp, int *xp, int y, int x, int d, bool need_los)
 		nx = rand_spread(x, d);
 
 		/* Ignore annoying locations */
-		if (!square_in_bounds_fully(cave, ny, nx)) continue;
+		if (!square_in_bounds_fully(c, ny, nx)) continue;
 
 		/* Ignore "excessively distant" locations */
 		if ((d > 1) && (distance(y, x, ny, nx) > d)) continue;
@@ -2629,7 +2629,7 @@ void scatter(int *yp, int *xp, int y, int x, int d, bool need_los)
 		if (!need_los) break;
 
 		/* Require "line of sight" if set */
-		if (need_los && (los(y, x, ny, nx))) break;
+		if (need_los && (los(c, y, x, ny, nx))) break;
 	}
 
 	/* Save the location */
@@ -2901,7 +2901,7 @@ bool square_isknowntrap(struct cave *c, int y, int x) {
  * True if the square contains a trap, known or unknown.
  */
 bool square_istrap(struct cave *c, int y, int x) {
-	return square_issecrettrap(cave, y, x) || square_isknowntrap(cave, y, x);
+	return square_issecrettrap(c, y, x) || square_isknowntrap(c, y, x);
 }
 
 /**
@@ -3193,7 +3193,7 @@ void square_smash_door(struct cave *c, int y, int x) {
 }
 
 void square_destroy_trap(struct cave *c, int y, int x) {
-	square_remove_trap(cave, y, x, FALSE, -1);
+	square_remove_trap(c, y, x, FALSE, -1);
 }
 
 void square_lock_door(struct cave *c, int y, int x, int power) {
@@ -3280,7 +3280,7 @@ void square_destroy(struct cave *c, int y, int x) {
 	else if (r < 100)
 		feat = FEAT_MAGMA;
 
-	square_set_feat(cave, y, x, feat);
+	square_set_feat(c, y, x, feat);
 }
 
 void square_earthquake(struct cave *c, int y, int x) {
@@ -3348,7 +3348,7 @@ void square_force_floor(struct cave *c, int y, int x) {
 /*
  * Return the number of doors/traps around (or under) the character.
  */
-int count_feats(int *y, int *x, bool (*test)(struct cave *cave, int y, int x), bool under)
+int count_feats(int *y, int *x, bool (*test)(struct cave *c, int y, int x), bool under)
 {
 	int d;
 	int xx, yy;

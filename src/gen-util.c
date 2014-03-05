@@ -594,10 +594,10 @@ void vault_monsters(struct cave *c, int y1, int x1, int depth, int num)
 			int d = 1;
 
 			/* Pick a nearby location */
-			scatter(&y, &x, y1, x1, d, TRUE);
+			scatter(c, &y, &x, y1, x1, d, TRUE);
 
 			/* Require "empty" floor grids */
-			if (!square_isempty(cave, y, x)) continue;
+			if (!square_isempty(c, y, x)) continue;
 
 			/* Place the monster (allow groups) */
 			pick_and_place_monster(c, y, x, depth, TRUE, TRUE, ORIGIN_DROP_SPECIAL);

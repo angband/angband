@@ -1939,7 +1939,7 @@ void drop_near(struct cave *c, object_type *j_ptr, int chance, int y, int x, boo
 			if (!square_in_bounds_fully(cave, ty, tx)) continue;
 
 			/* Require line of sight */
-			if (!los(y, x, ty, tx)) continue;
+			if (!los(cave, y, x, ty, tx)) continue;
 
 			/* Require floor space */
 			if (!square_isfloor(cave, ty, tx)) continue;

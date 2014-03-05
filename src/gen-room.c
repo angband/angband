@@ -1916,9 +1916,9 @@ static bool build_vault(struct cave *c, int y0, int x0, struct vault *v)
 				break;
 			}
 				/* Included to allow simple inclusion of FA vaults */
-			case '`': /*cave_set_feat(y, x, FEAT_LAVA)*/; break;
-			case '/': /*cave_set_feat(y, x, FEAT_WATER)*/; break;
-			case ';': /*cave_set_feat(y, x, FEAT_TREE)*/; break;
+			case '`': /*square_set_feat(c, y, x, FEAT_LAVA)*/; break;
+			case '/': /*square_set_feat(c, y, x, FEAT_WATER)*/; break;
+			case ';': /*square_set_feat(c, y, x, FEAT_TREE)*/; break;
 			}
 
 			/* Part of a vault */
@@ -2465,8 +2465,8 @@ bool build_room_of_chambers(struct cave *c, int y0, int x0)
 
 				/* Count the walls and dungeon granite. */
 				if ((c->feat[yy][xx] == FEAT_GRANITE) &&
-					(!sqinfo_has(cave->info[yy][xx], SQUARE_WALL_OUTER)) &&
-					(!sqinfo_has(cave->info[yy][xx], SQUARE_WALL_SOLID)))
+					(!sqinfo_has(c->info[yy][xx], SQUARE_WALL_OUTER)) &&
+					(!sqinfo_has(c->info[yy][xx], SQUARE_WALL_SOLID)))
 					count++;
 			}
 
@@ -2524,7 +2524,7 @@ bool build_room_of_chambers(struct cave *c, int y0, int x0)
 					if (!square_in_bounds(c, yy2, xx2)) continue;
 
 					/* If we find open floor, place a door. */
-					if (cave->feat[yy2][xx2] == FEAT_FLOOR) {
+					if (c->feat[yy2][xx2] == FEAT_FLOOR) {
 						joy = TRUE;
 
 						/* Make a broken door in the wall grid. */

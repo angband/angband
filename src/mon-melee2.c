@@ -39,8 +39,8 @@
 /*
  * Determine if a bolt will arrive, checking that no monsters are in the way
  */
-#define clean_shot(Y1, X1, Y2, X2) \
-	projectable(Y1, X1, Y2, X2, PROJECT_STOP)
+#define clean_shot(C, Y1, X1, Y2, X2)				\
+	projectable(C, Y1, X1, Y2, X2, PROJECT_STOP)
 
 /*
  * And now for Intelligent monster attacks (including spells).
@@ -140,7 +140,7 @@ static bool summon_possible(int y1, int x1)
 			if (square_iswarded(cave, y, x)) continue;
 
 			/* Require empty floor grid in line of sight */
-			if (square_isempty(cave, y, x) && los(y1, x1, y, x))
+			if (square_isempty(cave, y, x) && los(cave, y1, x1, y, x))
 			{
 				return (TRUE);
 			}
@@ -272,7 +272,7 @@ bool make_attack_spell(struct monster *m_ptr)
 		if (m_ptr->cdis > MAX_RANGE) return FALSE;
 
 		/* Check path */
-		if (!projectable(m_ptr->fy, m_ptr->fx, py, px, PROJECT_NONE))
+		if (!projectable(cave, m_ptr->fy, m_ptr->fx, py, px, PROJECT_NONE))
 			return FALSE;
 	}
 
@@ -298,7 +298,7 @@ bool make_attack_spell(struct monster *m_ptr)
 	{
 		/* Check for a clean bolt shot */
 		if (test_spells(f, RST_BOLT) &&
-			!clean_shot(m_ptr->fy, m_ptr->fx, py, px))
+			!clean_shot(cave, m_ptr->fy, m_ptr->fx, py, px))
 
 			/* Remove spells that will only hurt friends */
 			set_spells(f, ~RST_BOLT);
@@ -460,7 +460,8 @@ static bool near_permwall(const monster_type *m_ptr, struct cave *c)
 	int mx = m_ptr->fx;
 	
 	/* if PC is in LOS, there's no need to go around walls */
-    if (projectable(my, mx, player->py, player->px, PROJECT_NONE)) return FALSE;
+    if (projectable(cave, my, mx, player->py, player->px, PROJECT_NONE)) 
+		return FALSE;
     
     /* PASS_WALL & KILL_WALL monsters occasionally flow for a turn anyway */
     if (randint0(99) < 5) return TRUE;
@@ -922,7 +923,7 @@ static bool find_hiding(struct monster *m_ptr, int *yp, int *xp)
 			if (!square_isempty(cave, y, x)) continue;
 
 			/* Check for hidden, available grid */
-			if (!player_has_los_bold(y, x) && (clean_shot(fy, fx, y, x)))
+			if (!player_has_los_bold(y, x) && (clean_shot(cave, fy, fx, y, x)))
 			{
 				/* Calculate distance from player */
 				dis = distance(y, x, py, px);

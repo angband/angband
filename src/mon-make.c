@@ -383,9 +383,9 @@ void wipe_mon_list(struct cave *c, struct player *p)
 	int m_idx;
 
 	/* Delete all the monsters */
-	for (m_idx = cave_monster_max(cave) - 1; m_idx >= 1; m_idx--)
+	for (m_idx = cave_monster_max(c) - 1; m_idx >= 1; m_idx--)
 	{
-		monster_type *m_ptr = cave_monster(cave, m_idx);
+		monster_type *m_ptr = cave_monster(c, m_idx);
 
 		/* Skip dead monsters */
 		if (!m_ptr->race) continue;
@@ -401,10 +401,10 @@ void wipe_mon_list(struct cave *c, struct player *p)
 	}
 
 	/* Reset "cave->mon_max" */
-	cave->mon_max = 1;
+	c->mon_max = 1;
 
 	/* Reset "mon_cnt" */
-	cave->mon_cnt = 0;
+	c->mon_cnt = 0;
 
 	/* Hack -- reset "reproducer" count */
 	num_repro = 0;
@@ -1155,8 +1155,8 @@ static bool place_monster_base_okay(monster_race *race)
 	
 	/* Find a nearby place to put the other groups */
 	for (j = 0; j < 50; j++){
-		scatter(&ny, &nx, y, x, GROUP_DISTANCE, FALSE);
-		if (square_isopen(cave, ny, nx)) break;
+		scatter(c, &ny, &nx, y, x, GROUP_DISTANCE, FALSE);
+		if (square_isopen(c, ny, nx)) break;
 	}
 		
 	/* Place the monsters */
