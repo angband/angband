@@ -133,10 +133,9 @@ DONE:
 
 3b. Slowly switch things across to using the new system, which allows compilation and testing, without breaking things.  This involves relocating the 'fill-in' code from game-cmd.c to the various do_cmd_* functions as well as writing new cmd_get_* functions that check validity of inputs, etc. as above.
 
-NOT DONE:
-
 3c. Switch from numbered to named arguments.
 
+NOT DONE:
 
 4. Reimplement the following in terms of a core-UI split:
 
@@ -164,7 +163,6 @@ NOT DONE:
 5. Reorganise files:
 
 	cmd-process.c -> ui-cmd.c
-	game-cmd.c -> cmd-core.c
 	{game-cmd.h + cmds.h} -> cmds.h
 	{cmd-misc.c + cmd-cave.c(textui_cmd_rest)} -> [ui-misc.c XXX]
 	cmd-know.c -> [ui-know.c XXX]

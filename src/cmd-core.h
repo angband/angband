@@ -1,6 +1,8 @@
 #ifndef INCLUDED_GAME_CMD_H
 #define INCLUDED_GAME_CMD_H
 
+#include "z-type.h"
+
 /*
  * All valid game commands.  Not all implemented yet.
  */
@@ -115,8 +117,10 @@ enum {
 	DIR_SE = 3,
 };
 
-typedef union 
-{
+/** Argument structures **/
+
+/* The data of the argument */
+union cmd_arg_data {
 	const char *string;
 	
 	int choice;
@@ -124,26 +128,33 @@ typedef union
 	int number;
 	int direction;
 	
-	struct 
-	{
-		int x, y;
-	} point;
-} cmd_arg;
+	struct loc point;
+};
+
+/* The type of the data */
+enum cmd_arg_type {
+	arg_NONE = 0,
+	arg_STRING = 1,
+	arg_CHOICE,
+	arg_ITEM,
+	arg_NUMBER,
+	arg_DIRECTION,
+	arg_TARGET,
+	arg_POINT
+};
+
+/* A single argument */
+struct cmd_arg {
+	enum cmd_arg_type type;
+	union cmd_arg_data data;
+	char name[20];		/* Better than dynamic allocation */
+};
+
 
 /* Maximum number of arguments a command needs to take. */
-#define CMD_MAX_ARGS 2
+#define CMD_MAX_ARGS 4
 
-enum cmd_arg_type
-{
-	arg_NONE = 0,
-	arg_STRING = 0x01,
-	arg_CHOICE = 0x02,
-	arg_NUMBER = 0x04,
-	arg_ITEM = 0x08,
-	arg_DIRECTION = 0x10,
-	arg_TARGET = 0x20,
-	arg_POINT = 0x40
-};
+
 
 /*
  * The struct command type is used to return details of the command the
@@ -156,27 +167,25 @@ enum cmd_arg_type
  */
 struct command {
 	/* A valid command code. */
+	/* XXX-AS rename to 'code' */
 	cmd_code command;
 
 	/* Number of times to attempt to repeat command. */
 	int nrepeats;
 
-	/* Arguments to the command */
-	cmd_arg arg[CMD_MAX_ARGS];
-
-	/* Whether an argument was passed or not */
-	bool arg_present[CMD_MAX_ARGS];
-
-	/* Types of the arguments passed */
-	enum cmd_arg_type arg_type[CMD_MAX_ARGS];
+	/* Arguments */
+	struct cmd_arg arg[CMD_MAX_ARGS];
 };
 
+
+/* Return codes for cmd_get_arg() */
 enum cmd_return_codes {
 	CMD_OK = 0,
 	CMD_ARG_NOT_PRESENT = -1,
 	CMD_ARG_WRONG_TYPE = -2,
 	CMD_ARG_ABORTED = -3
 };
+
 
 /* 
  * Command handlers will take a pointer to the command structure
@@ -253,37 +262,37 @@ int cmd_get_nrepeats(void);
 /**
  * Set the args of a command.
  */
-void cmd_set_arg_choice(struct command *cmd, int n, int choice);
-void cmd_set_arg_string(struct command *cmd, int n, const char *str);
-void cmd_set_arg_direction(struct command *cmd, int n, int dir);
-void cmd_set_arg_target(struct command *cmd, int n, int target);
-void cmd_set_arg_point(struct command *cmd, int n, int x, int y);
-void cmd_set_arg_item(struct command *cmd, int n, int item);
-void cmd_set_arg_number(struct command *cmd, int n, int num);
+void cmd_set_arg_choice(struct command *cmd, const char *arg, int choice);
+void cmd_set_arg_string(struct command *cmd, const char *arg, const char *str);
+void cmd_set_arg_direction(struct command *cmd, const char *arg, int dir);
+void cmd_set_arg_target(struct command *cmd, const char *arg, int target);
+void cmd_set_arg_point(struct command *cmd, const char *arg, int x, int y);
+void cmd_set_arg_item(struct command *cmd, const char *arg, int item);
+void cmd_set_arg_number(struct command *cmd, const char *arg, int amt);
 
 
 /**
  * Get the args of a command.
  */
-int cmd_get_arg_choice(struct command *cmd, int n, int *choice);
-int cmd_get_arg_string(struct command *cmd, int n, const char **str);
-int cmd_get_arg_direction(struct command *cmd, int n, int *dir);
-int cmd_get_arg_target(struct command *cmd, int n, int *target);
-int cmd_get_arg_point(struct command *cmd, int n, int *x, int *y);
-int cmd_get_arg_item(struct command *cmd, int n, int *item);
-int cmd_get_arg_number(struct command *cmd, int n, int *amt);
+int cmd_get_arg_choice(struct command *cmd, const char *arg, int *choice);
+int cmd_get_arg_string(struct command *cmd, const char *arg, const char **str);
+int cmd_get_arg_direction(struct command *cmd, const char *arg, int *dir);
+int cmd_get_arg_target(struct command *cmd, const char *arg, int *target);
+int cmd_get_arg_point(struct command *cmd, const char *arg, int *x, int *y);
+int cmd_get_arg_item(struct command *cmd, const char *arg, int *item);
+int cmd_get_arg_number(struct command *cmd, const char *arg, int *amt);
 
 /**
  * Try a bit harder.
  */
-int cmd_get_direction(struct command *cmd, int arg, int *dir, bool allow_5);
-int cmd_get_target(struct command *cmd, int arg, int *target);
-int cmd_get_item(struct command *cmd, int arg, int *item,
+int cmd_get_direction(struct command *cmd, const char *arg, int *dir, bool allow_5);
+int cmd_get_target(struct command *cmd, const char *arg, int *target);
+int cmd_get_item(struct command *cmd, const char *arg, int *item,
 		const char *prompt, const char *reject, item_tester filter, int mode);
-int cmd_get_quantity(struct command *cmd, int arg, int *amt, int max);
-int cmd_get_string(struct command *cmd, int arg, const char **str,
+int cmd_get_quantity(struct command *cmd, const char *arg, int *amt, int max);
+int cmd_get_string(struct command *cmd, const char *arg, const char **str,
 		const char *initial, const char *title, const char *prompt);
-int cmd_get_spell(struct command *cmd, int arg, int *spell,
+int cmd_get_spell(struct command *cmd, const char *arg, int *spell,
 	const char *verb, item_tester book_filter, const char *error, bool (*spell_filter)(int spell));
 
 
