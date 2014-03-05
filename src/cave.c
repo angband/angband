@@ -2250,8 +2250,11 @@ void square_set_feat(struct cave *c, int y, int x, int feat)
 	int current_feat = c->feat[y][x];
 
 	assert(c);
-	assert(y >= 0 && y < c->height);
-	assert(x >= 0 && x < c->width);
+	//assert(y >= 0 && y < c->height);
+	//assert(x >= 0 && x < c->width);
+	// AAARGH temp fix
+	assert(y >= 0 && y < DUNGEON_HGT);
+	assert(x >= 0 && x < DUNGEON_WID);
 
 	/* Track changes */
 	if (current_feat) c->feat_count[current_feat]--;
