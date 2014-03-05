@@ -19,6 +19,7 @@
 
 #include "cave.h"
 #include "cmds.h"
+#include "cmd-core.h"
 #include "obj-tvalsval.h"
 #include "obj-ui.h"
 #include "obj-util.h"
@@ -284,29 +285,20 @@ void textui_spell_browse(void)
 	textui_book_browse(object_from_item_idx(item));
 }
 
+
 /**
- * Get a spell from the player.
+ * Get a spell from specified book.
  */
-int get_spell(const char *verb, item_tester book_filter,
+int get_spell_from_book(const char *verb, int book,
 		const char *error, bool (*spell_filter)(int spell))
 {
-	int item;
-	char prompt[1024];
-
-	menu_type *m;
 	const char *noun =
 			(player->class->spell_book == TV_MAGIC_BOOK ? "spell" : "prayer");
 
-	/* Create prompt */
-	strnfmt(prompt, sizeof prompt, "%s which book?", verb);
-	my_strcap(prompt);
+	menu_type *m;
+	struct object *o_ptr = object_from_item_idx(book);
 
-	if (!get_item(&item, prompt, error,
-			CMD_CAST /* XXX-AS fix me */, book_filter, (USE_INVEN | USE_FLOOR)))
-		return -1;
-
-	struct object *o_ptr = object_from_item_idx(item);
-	track_object(item);
+	track_object(book);
 	handle_stuff(player);
 
 	m = spell_menu_new(o_ptr, spell_filter);
@@ -317,4 +309,24 @@ int get_spell(const char *verb, item_tester book_filter,
 	}
 
 	return -1;
+}
+
+/**
+ * Get a spell from the player.
+ */
+int get_spell(const char *verb, item_tester book_filter,
+		cmd_code cmd, const char *error, bool (*spell_filter)(int spell))
+{
+	char prompt[1024];
+	int book;
+
+	/* Create prompt */
+	strnfmt(prompt, sizeof prompt, "%s which book?", verb);
+	my_strcap(prompt);
+
+	if (!get_item(&book, prompt, error,
+			cmd, book_filter, (USE_INVEN | USE_FLOOR)))
+		return -1;
+
+	return get_spell_from_book(verb, book, error, spell_filter);
 }

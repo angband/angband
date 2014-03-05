@@ -216,7 +216,7 @@ static int cmd_idx(cmd_code code)
 /** Argument setting/getting generics **/
 
 /* Set an argument of name 'arg' to data 'data' */
-static void cmd_set_arg(struct command *cmd, const char *arg,
+static void cmd_set_arg(struct command *cmd, const char *name,
 		enum cmd_arg_type type, union cmd_arg_data data)
 {
 	size_t i;
@@ -224,8 +224,8 @@ static void cmd_set_arg(struct command *cmd, const char *arg,
 	int first_empty = -1;
 	int idx = -1;
 
-	assert(arg);
-	assert(arg[0]);
+	assert(name);
+	assert(name[0]);
 
 	/* Find an arg that either... */
 	for (i = 0; i < CMD_MAX_ARGS; i++) {
@@ -233,7 +233,7 @@ static void cmd_set_arg(struct command *cmd, const char *arg,
 		if (!arg->name[0] && first_empty == -1)
 			first_empty = i;
 
-		if (streq(arg->name, arg)) {
+		if (streq(arg->name, name)) {
 			idx = i;
 			break;
 		}
@@ -246,7 +246,7 @@ static void cmd_set_arg(struct command *cmd, const char *arg,
 
 	cmd->arg[idx].type = type;
 	cmd->arg[idx].data = data;
-	my_strcpy(cmd->arg[idx].name, arg, sizeof cmd->arg[0].name);
+	my_strcpy(cmd->arg[idx].name, name, sizeof cmd->arg[0].name);
 }
 
 /* Get an argument with name 'arg' */
@@ -308,6 +308,8 @@ int cmd_get_spell(struct command *cmd, const char *arg, int *spell,
 	const char *verb, item_tester book_filter, const char *error,
 	bool (*spell_filter)(int spell))
 {
+	int book;
+
 	/* See if we've been provided with this one */
 	if (cmd_get_arg_choice(cmd, arg, spell) == CMD_OK) {
 		/* Ensure it passes the filter */
@@ -315,7 +317,12 @@ int cmd_get_spell(struct command *cmd, const char *arg, int *spell,
 			return CMD_OK;
 	}
 
-	*spell = get_spell(verb, book_filter, error, spell_filter);
+	/* See if we've been given a book to look at */
+	if (cmd_get_arg_item(cmd, "book", &book) == CMD_OK)
+		*spell = get_spell_from_book(verb, book, error, spell_filter);
+	else
+		*spell = get_spell(verb, book_filter, cmd->command, error, spell_filter);
+
 	if (*spell >= 0) {
 		cmd_set_arg_choice(cmd, arg, *spell);
 		return CMD_OK;

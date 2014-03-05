@@ -933,8 +933,7 @@ int context_menu_object(const object_type *o_ptr, const int slot)
 	} else if (selected == CMD_CAST) {
 		if (obj_can_cast_from(o_ptr)) {
 			cmdq_push(CMD_CAST);
-			cmd_set_arg_item(cmdq_peek(), "item", slot);
-			/* XXX-AS: change this from '1' to 'book' at some point */
+			cmd_set_arg_item(cmdq_peek(), "book", slot);
 		}
 	} else {
 		cmdq_push(selected);
