@@ -173,6 +173,7 @@ ANGFILES = \
 	ui-menu.o \
 	ui-options.o \
 	ui-spell.o \
+	ui-store.o \
 	wiz-spoil.o \
 	wiz-stats.o \
 	wizard.o \

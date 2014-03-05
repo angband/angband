@@ -195,10 +195,14 @@ static void show_obj_list(int num_obj, int num_head, char labels[50][80],
 		
 		if (mode & OLIST_PRICE)
 		{
-			int price = price_item(o_ptr, TRUE, o_ptr->number);
-			strnfmt(tmp_val, sizeof(tmp_val), "%6d au", price);
-			put_str(tmp_val, row + i, col + ex_offset_ctr);
-			ex_offset_ctr += 9;
+			struct store *store = store_at(cave, player->py, player->px);
+			if (store) {
+				int price = price_item(store, o_ptr, TRUE, o_ptr->number);
+
+				strnfmt(tmp_val, sizeof(tmp_val), "%6d au", price);
+				put_str(tmp_val, row + i, col + ex_offset_ctr);
+				ex_offset_ctr += 9;
+			}
 		}
 
 		if (mode & OLIST_FAIL && obj_can_fail(o_ptr))

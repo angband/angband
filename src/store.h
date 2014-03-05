@@ -26,8 +26,6 @@ enum
 	MAX_STORES	= 8
 };
 
-extern int store_knowledge;
-
 typedef struct owner {
 	unsigned int oidx;
 	struct owner *next;
@@ -63,18 +61,19 @@ struct store {
 
 extern struct store *stores;
 
+struct store *store_at(struct cave *c, int y, int x);
 void store_init(void);
 void free_stores(void);
 void store_reset(void);
 void store_shuffle(struct store *store);
 void store_maint(struct store *store);
-s32b price_item(const object_type *o_ptr, bool store_buying, int qty);
+int price_item(struct store *store, const object_type *o_ptr, bool store_buying, int qty);
 
 extern struct owner *store_ownerbyidx(struct store *s, unsigned int idx);
 
 struct parser *init_parse_stores(void);
 extern struct parser *store_parser_new(void);
 extern struct parser *store_owner_parser_new(struct store *stores);
-void do_cmd_store_knowledge(void);
+void textui_store_knowledge(int store);
 
 #endif /* INCLUDED_STORE_H */

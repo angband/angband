@@ -2100,9 +2100,7 @@ static void do_cmd_knowledge_features(const char *name, int row)
 
 static void do_cmd_knowledge_store(const char *name, int row)
 {
-	store_knowledge = row - 5;
-	do_cmd_store_knowledge();
-	store_knowledge = STORE_NONE;
+	textui_store_knowledge(row - 5);
 }
 
 static void do_cmd_knowledge_scores(const char *name, int row)
