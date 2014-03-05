@@ -458,10 +458,6 @@ void do_cmd_wield(struct command *cmd)
 					/* Filter */ tval_is_ammo,
 					/* Choice */ USE_EQUIP) != CMD_OK)
 				return;
-
-		/* convert slot from 'item' type to 'slot' type */
-		/* XXX-AS check this over */
-		slot = 0 - slot;
 	}
 
 	equip_o_ptr = &player->inventory[slot];
