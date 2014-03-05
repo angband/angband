@@ -305,7 +305,7 @@ int do_autopickup(void)
 
 
 		/* Hack -- disturb */
-		disturb(player, 0, 0);
+		disturb(player, 0);
 
 
 		/* Automatically pick up items into the backpack */
@@ -511,7 +511,7 @@ void move_player(int dir, bool disarm)
 	else if (!square_ispassable(cave, y, x))
 	{
 		/* Disturb the player */
-		disturb(player, 0, 0);
+		disturb(player, 0);
 
 		/* Notice unknown obstacles */
 		if (!sqinfo_has(cave->info[y][x], SQUARE_MARK))
@@ -567,7 +567,7 @@ void move_player(int dir, bool disarm)
 		/* Disturb player if the player is about to leave the area */
 		if (player->running && !player->running_firststep && old_dtrap && !new_dtrap)
 		{
-			disturb(player, 0, 0);
+			disturb(player, 0);
 			return;
 		}
 
@@ -587,7 +587,7 @@ void move_player(int dir, bool disarm)
 		/* Handle "store doors" */
 		if (square_isshop(cave, player->py, player->px)) {
 			/* Disturb */
-			disturb(player, 0, 0);
+			disturb(player, 0);
 			cmdq_push(CMD_ENTER_STORE);
 		}
 
@@ -603,7 +603,7 @@ void move_player(int dir, bool disarm)
 		if (square_invisible_trap(cave, y, x)) 
 		{
 			/* Disturb */
-			disturb(player, 0, 0);
+			disturb(player, 0);
 			
 			/* Hit the trap. */
 			hit_trap(y, x);
@@ -613,7 +613,7 @@ void move_player(int dir, bool disarm)
 		else if (square_visible_trap(cave, y, x))
 		{
 			/* Disturb */
-			disturb(player, 0, 0);
+			disturb(player, 0);
 
 			/* Hit the trap */
 			hit_trap(y, x);

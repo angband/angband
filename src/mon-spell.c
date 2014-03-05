@@ -545,7 +545,7 @@ void do_mon_spell(int spell, struct monster *m_ptr, bool seen)
 		hits = check_hit(player, rs_ptr->hit, rlev);
 
 	/* Tell the player what's going on */
-	disturb(player, 1,0);
+	disturb(player, 1);
 
 	if (!seen)
 		msg("Something %s.", rs_ptr->blind_verb);

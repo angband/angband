@@ -796,5 +796,6 @@ void player_resting_step_turn(struct player *p);
 void player_resting_complete_special(struct player *p);
 bool player_of_has(struct player *p, int flag);
 int coords_to_dir(int y, int x);
+void disturb(struct player *p, int stop_search);
 
 #endif /* !PLAYER_PLAYER_H */

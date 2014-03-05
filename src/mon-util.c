@@ -584,7 +584,7 @@ void update_mon(struct monster *m_ptr, bool full)
 			m_ptr->mflag |= (MFLAG_VIEW);
 
 			/* Disturb on appearance */
-			if (OPT(disturb_near)) disturb(player, 1, 0);
+			if (OPT(disturb_near)) disturb(player, 1);
 
 			/* Re-draw monster window */
 			player->redraw |= PR_MONLIST;
@@ -599,7 +599,7 @@ void update_mon(struct monster *m_ptr, bool full)
 			m_ptr->mflag &= ~(MFLAG_VIEW);
 
 			/* Disturb on disappearance */
-			if (OPT(disturb_near) && !is_mimicking(m_ptr)) disturb(player, 1, 0);
+			if (OPT(disturb_near) && !is_mimicking(m_ptr)) disturb(player, 1);
 
 			/* Re-draw monster list window */
 			player->redraw |= PR_MONLIST;

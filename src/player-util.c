@@ -8,6 +8,7 @@
 #include "obj-util.h"
 #include "tables.h"
 #include "target.h"
+#include "game-cmd.h"
 
 /*
  * Decreases players hit points and sets death flag if necessary
@@ -30,7 +31,7 @@ void take_hit(struct player *p, int dam, const char *kb_str)
 
 
 	/* Disturb */
-	disturb(p, 1, 0);
+	disturb(p, 1);
 
 	/* Mega-Hack -- Apply "invulnerability" */
 	if (p->timed[TMD_INVULN] && (dam < 9000)) return;
@@ -484,7 +485,7 @@ void player_resting_complete_special(struct player *p)
 			if ((p->chp == p->mhp) &&
 			    (p->csp == p->msp))
 			{
-				disturb(p, 0, 0);
+				disturb(p, 0);
 			}
 		}
 
@@ -501,7 +502,7 @@ void player_resting_complete_special(struct player *p)
 			    !p->timed[TMD_SLOW] && !p->timed[TMD_PARALYZED] &&
 			    !p->timed[TMD_IMAGE] && !p->word_recall)
 			{
-				disturb(p, 0, 0);
+				disturb(p, 0);
 			}
 		}
 
@@ -512,7 +513,7 @@ void player_resting_complete_special(struct player *p)
 			if ((p->chp == p->mhp) ||
 			    (p->csp == p->msp))
 			{
-				disturb(p, 0, 0);
+				disturb(p, 0);
 			}
 		}
 	}
@@ -537,3 +538,48 @@ int coords_to_dir(int y, int x)
 	return (motion_dir(player->py, player->px, y, x));
 }
 
+
+
+/*
+ * Something has happened to disturb the player.
+ *
+ * The first arg indicates a major disturbance, which affects search.
+ *
+ * The second arg is currently unused, but could induce output flush.
+ *
+ * All disturbance cancels repeated commands, resting, and running.
+ * 
+ * XXX-AS: Make callers either pass in a command
+ * or call cmd_cancel_repeat inside the function calling this
+ */
+void disturb(struct player *p, int stop_search)
+{
+	/* Cancel repeated commands */
+	cmd_cancel_repeat();
+
+	/* Cancel Resting */
+	if (player_is_resting(p)) {
+		player_resting_cancel(p);
+		p->redraw |= PR_STATE;
+	}
+
+	/* Cancel running */
+	if (p->running) {
+		p->running = 0;
+
+		/* Check for new panel if appropriate */
+		if (OPT(center_player)) verify_panel();
+		p->update |= PU_TORCH;
+	}
+
+	/* Cancel searching if requested */
+	if (stop_search && p->searching)
+	{
+		p->searching = FALSE;
+		p->update |= PU_BONUS;
+		p->redraw |= PR_STATE;
+	}
+
+	/* Flush input */
+	flush();
+}

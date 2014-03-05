@@ -632,7 +632,7 @@ bool detect_traps(bool aware)
 					object_notice_everything(o_ptr);
 
 					/* Notice it */
-					disturb(player, 0, 0);
+					disturb(player, 0);
 
 					/* We found something to detect */
 					detect = TRUE;

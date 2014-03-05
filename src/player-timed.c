@@ -202,7 +202,7 @@ bool player_set_timed(struct player *p, int idx, int v, bool notify)
 	if (!notify) return FALSE;
 
 	/* Disturb */
-	disturb(p, 0, 0);
+	disturb(p, 0);
 
 	/* Update the visuals, as appropriate. */
 	p->update |= effect->flag_update;
@@ -374,7 +374,7 @@ static bool set_stun(struct player *p, int v)
 			case 0:
 			{
 				msgt(MSG_RECOVER, "You are no longer stunned.");
-				disturb(player, 0, 0);
+				disturb(player, 0);
 				break;
 			}
 		}
@@ -390,7 +390,7 @@ static bool set_stun(struct player *p, int v)
 	if (!notice) return (FALSE);
 
 	/* Disturb */
-	disturb(player, 0, 0);
+	disturb(player, 0);
 
 	/* Recalculate bonuses */
 	p->update |= (PU_BONUS);
@@ -586,7 +586,7 @@ static bool set_cut(struct player *p, int v)
 			case 0:
 			{
 				msgt(MSG_RECOVER, "You are no longer bleeding.");
-				disturb(player, 0, 0);
+				disturb(player, 0);
 				break;
 			}
 		}
@@ -602,7 +602,7 @@ static bool set_cut(struct player *p, int v)
 	if (!notice) return (FALSE);
 
 	/* Disturb */
-	disturb(player, 0, 0);
+	disturb(player, 0);
 
 	/* Recalculate bonuses */
 	p->update |= (PU_BONUS);
@@ -705,7 +705,7 @@ bool player_set_food(struct player *p, int v)
 	if (!notice) return (FALSE);
 
 	/* Disturb */
-	disturb(player, 0, 0);
+	disturb(player, 0);
 
 	/* Recalculate bonuses */
 	p->update |= (PU_BONUS);

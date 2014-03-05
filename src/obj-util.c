@@ -4039,7 +4039,7 @@ void pack_overflow(void)
 	o_ptr = &player->inventory[item];
 
 	/* Disturbing */
-	disturb(player, 0, 0);
+	disturb(player, 0);
 
 	/* Warning */
 	msg("Your pack overflows!");

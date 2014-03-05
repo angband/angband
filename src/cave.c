@@ -2634,53 +2634,6 @@ void scatter(struct cave *c, int *yp, int *xp, int y, int x, int d, bool need_lo
 }
 
 
-/*
- * Something has happened to disturb the player.
- *
- * The first arg indicates a major disturbance, which affects search.
- *
- * The second arg is currently unused, but could induce output flush.
- *
- * All disturbance cancels repeated commands, resting, and running.
- * 
- * XXX-AS: Remove unused_flag, make callers either pass in a command
- * or call cmd_cancel_repeat inside the function calling this
- */
-void disturb(struct player *p, int stop_search, int unused_flag)
-{
-	/* Unused parameter */
-	(void)unused_flag;
-
-	/* Cancel repeated commands */
-	cmd_cancel_repeat();
-
-	/* Cancel Resting */
-	if (player_is_resting(p)) {
-		player_resting_cancel(p);
-		p->redraw |= PR_STATE;
-	}
-
-	/* Cancel running */
-	if (p->running) {
-		p->running = 0;
-
-		/* Check for new panel if appropriate */
-		if (OPT(center_player)) verify_panel();
-		p->update |= PU_TORCH;
-	}
-
-	/* Cancel searching if requested */
-	if (stop_search && p->searching)
-	{
-		p->searching = FALSE;
-		p->update |= PU_BONUS;
-		p->redraw |= PR_STATE;
-	}
-
-	/* Flush input */
-	flush();
-}
-
 struct cave *cave = NULL;
 
 struct cave *cave_new(void) {

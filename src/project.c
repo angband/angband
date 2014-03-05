@@ -2215,7 +2215,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ)
 		take_hit(player, dam, killer);
 
 	/* Disturb */
-	disturb(player, 1, 0);
+	disturb(player, 1);
 
 	/* Return "Anything seen?" */
 	return (obvious);

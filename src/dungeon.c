@@ -312,7 +312,7 @@ static void recharged_notice(const object_type *o_ptr, bool all)
 	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
 
 	/* Disturb the player */
-	disturb(player, 0, 0);
+	disturb(player, 0);
 
 	/* Notify the player */
 	if (o_ptr->number > 1)
@@ -643,7 +643,7 @@ static void process_world(struct cave *c)
 		{
 			/* Message */
 			msg("You faint from the lack of food.");
-			disturb(player, 1, 0);
+			disturb(player, 1);
 
 			/* Faint (bypass free action) */
 			(void)player_inc_timed(player, TMD_PARALYZED, 1 + randint0(5), TRUE, FALSE);
@@ -755,7 +755,7 @@ static void process_world(struct cave *c)
 
 			/* The light is now out */
 			} else if (o_ptr->timeout == 0) {
-				disturb(player, 0, 0);
+				disturb(player, 0);
 				msg("Your light has gone out!");
 
 				/* If it's a torch, now is the time to delete it */
@@ -767,7 +767,7 @@ static void process_world(struct cave *c)
 
 			/* The light is getting dim */
 			else if ((o_ptr->timeout < 50) && (!(o_ptr->timeout % 20))) {
-				disturb(player, 0, 0);
+				disturb(player, 0);
 				msg("Your light is growing faint.");
 			}
 		}
@@ -804,7 +804,7 @@ static void process_world(struct cave *c)
 	{
 		wieldeds_notice_flag(player, OF_TELEPORT);
 		teleport_player(40);
-		disturb(player, 0, 0);
+		disturb(player, 0);
 	}
 
 	/* Delayed Word-of-Recall */
@@ -817,7 +817,7 @@ static void process_world(struct cave *c)
 		if (!player->word_recall)
 		{
 			/* Disturbing! */
-			disturb(player, 0, 0);
+			disturb(player, 0);
 
 			/* Determine the level */
 			if (player->depth)
@@ -859,7 +859,7 @@ static void process_world(struct cave *c)
 				target_depth++;
 			}
 
-			disturb(player, 0, 0);
+			disturb(player, 0);
 
 			/* Determine the level */
 			if (target_depth > player->depth) {
@@ -995,7 +995,7 @@ static void process_player(void)
 		if (e.type != EVT_NONE) {
 			/* Flush and disturb */
 			flush();
-			disturb(player, 0, 0);
+			disturb(player, 0);
 			msg("Cancelled.");
 		}
 	}
@@ -1286,7 +1286,7 @@ static void dungeon(struct cave *c)
 	health_track(player, NULL);
 
 	/* Disturb */
-	disturb(player, 1, 0);
+	disturb(player, 1);
 
 	/*
 	 * Because changing levels doesn't take a turn and PR_MONLIST might not be

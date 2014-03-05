@@ -496,7 +496,7 @@ extern void hit_trap(int y, int x)
 		if ((t_ptr->fy == y) && (t_ptr->fx == x))
 		{
 			/* Disturb the player */
-			disturb(player, 0, 0);
+			disturb(player, 0);
 
 			/* Fire off the trap */
 			effect_do(t_ptr->kind->effect, &ident, FALSE, 0, 0, 0);

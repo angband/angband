@@ -852,7 +852,7 @@ void run_step(int dir)
 			if (run_test())
 			{
 				/* Disturb */
-				disturb(player, 0, 0);
+				disturb(player, 0);
 	
 				/* Done */
 				return;
@@ -863,7 +863,7 @@ void run_step(int dir)
 			/* Abort if we have finished */
 			if (pf_result_index < 0)
 			{
-				disturb(player, 0, 0);
+				disturb(player, 0);
 				player->running_withpathfind = FALSE;
 				return;
 			}
@@ -878,7 +878,7 @@ void run_step(int dir)
 				/* Known wall */
 				if (sqinfo_has(cave->info[y][x], SQUARE_MARK) && !square_ispassable(cave, y, x))
 				{
-					disturb(player, 0,0);
+					disturb(player, 0);
 					player->running_withpathfind = FALSE;
 					return;
 				}
@@ -903,7 +903,7 @@ void run_step(int dir)
 				/* Known wall */
 				if (sqinfo_has(cave->info[y][x], SQUARE_MARK) && !square_ispassable(cave, y, x))
 				{
-					disturb(player, 0,0);
+					disturb(player, 0);
 					player->running_withpathfind = FALSE;
 					return;
 				}

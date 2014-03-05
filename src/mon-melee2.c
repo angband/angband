@@ -351,7 +351,7 @@ bool make_attack_spell(struct monster *m_ptr)
 	}
 
 	/* Cast the spell. */
-	disturb(player, 1, 0);
+	disturb(player, 1);
 
 	/* Special case RSF_HASTE until TMD_* and MON_TMD_* are rationalised */
 	if (thrown_spell == RSF_HASTE) {
@@ -1408,7 +1408,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 		/* Monster hits player */
 		if (!effect || check_hit(p, power, rlev)) {
 			/* Always disturbing */
-			disturb(p, 1, 0);
+			disturb(p, 1);
 
 			/* Hack -- Apply "protection from evil" */
 			if (p->timed[TMD_PROTEVIL] > 0)
@@ -1543,7 +1543,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 			/* Visible monster missed player, so notify if appropriate. */
 			if (m_ptr->ml && monster_blow_method_miss(method)) {
 				/* Disturbing */
-				disturb(p, 1, 0);
+				disturb(p, 1);
 				msg("%s misses you.", m_name);
 			}
 		}
@@ -1929,7 +1929,7 @@ static void process_monster(struct cave *c, struct monster *m_ptr)
 							square_smash_door(c, ny, nx);
 							msg("You hear a door burst open!");
 
-							disturb(player, 0, 0);
+							disturb(player, 0);
 
 							/* Fall into doorway */
 							do_move = TRUE;
@@ -2072,7 +2072,7 @@ static void process_monster(struct cave *c, struct monster *m_ptr)
 
 			/* Possible disturb */
 			if (m_ptr->ml && (m_ptr->mflag & MFLAG_VIEW) && OPT(disturb_near))
-				disturb(player, 0, 0);
+				disturb(player, 0);
 
 			/* Scan all objects in the grid */
 			for (this_o_idx = c->o_idx[ny][nx]; this_o_idx;

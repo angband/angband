@@ -146,7 +146,7 @@ bool search(bool verbose)
 			msg("You can't make out your surroundings well enough to search.");
 
 			/* Cancel repeat */
-			disturb(player, 0, 0);
+			disturb(player, 0);
 		}
 
 		return FALSE;
@@ -168,7 +168,7 @@ bool search(bool verbose)
 					if (square_reveal_trap(cave, y, x, chance, TRUE))
 					{
 						/* Disturb */
-						disturb(player, 0, 0);
+						disturb(player, 0);
 					}
 				}
 
@@ -184,7 +184,7 @@ bool search(bool verbose)
 					place_closed_door(cave, y, x);
 
 					/* Disturb */
-					disturb(player, 0, 0);
+					disturb(player, 0);
 				}
 
 				/* Scan all objects in the grid */
@@ -205,7 +205,7 @@ bool search(bool verbose)
 						object_notice_everything(o_ptr);
 
 						/* Notice it */
-						disturb(player, 0, 0);
+						disturb(player, 0);
 					}
 				}
 			}
@@ -416,7 +416,7 @@ void do_cmd_open(struct command *cmd)
 	/* Check for door */
 	if (!o_idx && !do_cmd_open_test(y, x)) {
 		/* Cancel repeat */
-		disturb(player, 0, 0);
+		disturb(player, 0);
 		return;
 	}
 
@@ -460,7 +460,7 @@ void do_cmd_open(struct command *cmd)
 		more = do_cmd_open_aux(y, x);
 
 	/* Cancel repeat unless we may continue */
-	if (!more) disturb(player, 0, 0);
+	if (!more) disturb(player, 0);
 }
 
 
@@ -564,7 +564,7 @@ void do_cmd_close(struct command *cmd)
 	/* Verify legality */
 	if (!do_cmd_close_test(y, x)) {
 		/* Cancel repeat */
-		disturb(player, 0, 0);
+		disturb(player, 0);
 		return;
 	}
 
@@ -590,7 +590,7 @@ void do_cmd_close(struct command *cmd)
 
 
 	/* Cancel repeat unless told not to */
-	if (!more) disturb(player, 0, 0);
+	if (!more) disturb(player, 0);
 }
 
 
@@ -864,7 +864,7 @@ void do_cmd_tunnel(struct command *cmd)
 	if (!do_cmd_tunnel_test(y, x))
 	{
 		/* Cancel repeat */
-		disturb(player, 0, 0);
+		disturb(player, 0);
 		return;
 	}
 
@@ -898,7 +898,7 @@ void do_cmd_tunnel(struct command *cmd)
 	}
 
 	/* Cancel repetition unless we can continue */
-	if (!more) disturb(player, 0, 0);
+	if (!more) disturb(player, 0);
 }
 
 /*
@@ -1112,7 +1112,7 @@ void do_cmd_disarm(struct command *cmd)
 	if (!o_idx && !do_cmd_disarm_test(y, x))
 	{
 		/* Cancel repeat */
-		disturb(player, 0, 0);
+		disturb(player, 0);
 		return;
 	}
 
@@ -1151,7 +1151,7 @@ void do_cmd_disarm(struct command *cmd)
 		more = do_cmd_disarm_aux(y, x);
 
 	/* Cancel repeat unless told not to */
-	if (!more) disturb(player, 0, 0);
+	if (!more) disturb(player, 0);
 }
 
 /*
@@ -1205,7 +1205,7 @@ void do_cmd_alter_aux(int dir)
 		msg("You spin around.");
 
 	/* Cancel repetition unless we can continue */
-	if (!more) disturb(player, 0, 0);
+	if (!more) disturb(player, 0);
 }
 
 void do_cmd_alter(struct command *cmd)
@@ -1267,7 +1267,7 @@ static bool do_cmd_walk_test(int y, int x)
 			msgt(MSG_HITWALL, "There is a wall in the way!");
 
 		/* Cancel repeat */
-		disturb(player, 0, 0);
+		disturb(player, 0);
 
 		/* Nope */
 		return (FALSE);
@@ -1413,7 +1413,7 @@ void do_cmd_hold(struct command *cmd)
 	/* Hack -- enter a store if we are on one */
 	if (square_isshop(cave, player->py, player->px)) {
 		/* Disturb */
-		disturb(player, 0, 0);
+		disturb(player, 0);
 
 		cmdq_push(CMD_ENTER_STORE);
 

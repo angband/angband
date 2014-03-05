@@ -320,7 +320,7 @@ void py_attack(int y, int x) {
 	monster_type *m_ptr = square_monster(cave, y, x);
 	
 	/* disturb the player */
-	disturb(player, 0,0);
+	disturb(player, 0);
 
 	/* Initialize the energy used */
 	player->energy_use = 0;
