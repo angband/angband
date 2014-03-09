@@ -802,8 +802,8 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 {
 	object_type *o_ptr;
 
-	assert(x < DUNGEON_WID);
-	assert(y < DUNGEON_HGT);
+	assert(x < (unsigned) cave->width);
+	assert(y < (unsigned) cave->height);
 
 	/* Default "clear" values, others will be set later where appropriate. */
 	g->first_kind = NULL;
@@ -1942,9 +1942,9 @@ void cave_forget_flow(struct cave *c)
 	if (!flow_save) return;
 
 	/* Check the entire dungeon */
-	for (y = 0; y < DUNGEON_HGT; y++)
+	for (y = 0; y < c->height; y++)
 	{
-		for (x = 0; x < DUNGEON_WID; x++)
+		for (x = 0; x < c->width; x++)
 		{
 			/* Forget the old data */
 			c->cost[y][x] = 0;
@@ -1997,9 +1997,9 @@ void cave_update_flow(struct cave *c)
 	if (flow_save++ == 255)
 	{
 		/* Cycle the flow */
-		for (y = 0; y < DUNGEON_HGT; y++)
+		for (y = 0; y < c->height; y++)
 		{
-			for (x = 0; x < DUNGEON_WID; x++)
+			for (x = 0; x < c->width; x++)
 			{
 				int w = c->when[y][x];
 				c->when[y][x] = (w >= 128) ? (w - 128) : 0;
@@ -2056,6 +2056,7 @@ void cave_update_flow(struct cave *c)
 			/* Child location */
 			y = ty + ddy_ddd[d];
 			x = tx + ddx_ddd[d];
+			if (!square_in_bounds(c, y, x)) continue;
 
 			/* Ignore "pre-stamped" entries */
 			if (c->when[y][x] == flow_n) continue;
@@ -2250,11 +2251,8 @@ void square_set_feat(struct cave *c, int y, int x, int feat)
 	int current_feat = c->feat[y][x];
 
 	assert(c);
-	//assert(y >= 0 && y < c->height);
-	//assert(x >= 0 && x < c->width);
-	// AAARGH temp fix
-	assert(y >= 0 && y < DUNGEON_HGT);
-	assert(x >= 0 && x < DUNGEON_WID);
+	assert(y >= 0 && y < c->height);
+	assert(x >= 0 && x < c->width);
 
 	/* Track changes */
 	if (current_feat) c->feat_count[current_feat]--;
@@ -2640,22 +2638,24 @@ struct cave *cave_new(void) {
 	int y, x;
 
 	struct cave *c = mem_zalloc(sizeof *c);
+	c->height = DUNGEON_HGT;
+	c->width = DUNGEON_WID;
 	c->feat_count = mem_zalloc((z_info->f_max + 1) * sizeof(int));
-	c->info = mem_zalloc(DUNGEON_HGT * sizeof(bitflag**));
-	c->feat = mem_zalloc(DUNGEON_HGT * sizeof(byte*));
-	c->cost = mem_zalloc(DUNGEON_HGT * sizeof(byte*));
-	c->when = mem_zalloc(DUNGEON_HGT * sizeof(byte*));
-	c->m_idx = mem_zalloc(DUNGEON_HGT * sizeof(s16b*));
-	c->o_idx = mem_zalloc(DUNGEON_HGT * sizeof(s16b*));
-	for (y = 0; y < DUNGEON_HGT; y++){
-		c->info[y] = mem_zalloc(DUNGEON_WID * sizeof(bitflag*));
-		for (x = 0; x < DUNGEON_WID; x++)
+	c->info = mem_zalloc(c->height * sizeof(bitflag**));
+	c->feat = mem_zalloc(c->height * sizeof(byte*));
+	c->cost = mem_zalloc(c->height * sizeof(byte*));
+	c->when = mem_zalloc(c->height * sizeof(byte*));
+	c->m_idx = mem_zalloc(c->height * sizeof(s16b*));
+	c->o_idx = mem_zalloc(c->height * sizeof(s16b*));
+	for (y = 0; y < c->height; y++){
+		c->info[y] = mem_zalloc(c->width * sizeof(bitflag*));
+		for (x = 0; x < c->width; x++)
 			c->info[y][x] = mem_zalloc(SQUARE_SIZE * sizeof(bitflag));
-		c->feat[y] = mem_zalloc(DUNGEON_WID * sizeof(byte));
-		c->cost[y] = mem_zalloc(DUNGEON_WID * sizeof(byte));
-		c->when[y] = mem_zalloc(DUNGEON_WID * sizeof(byte));
-		c->m_idx[y] = mem_zalloc(DUNGEON_WID * sizeof(s16b));
-		c->o_idx[y] = mem_zalloc(DUNGEON_WID * sizeof(s16b));
+		c->feat[y] = mem_zalloc(c->width * sizeof(byte));
+		c->cost[y] = mem_zalloc(c->width * sizeof(byte));
+		c->when[y] = mem_zalloc(c->width * sizeof(byte));
+		c->m_idx[y] = mem_zalloc(c->width * sizeof(s16b));
+		c->o_idx[y] = mem_zalloc(c->width * sizeof(s16b));
 	}
 
 	c->monsters = mem_zalloc(z_info->m_max * sizeof(struct monster));
@@ -2673,8 +2673,8 @@ struct cave *cave_new(void) {
 
 void cave_free(struct cave *c) {
 	int y, x;
-	for (y = 0; y < DUNGEON_HGT; y++){
-		for (x = 0; x < DUNGEON_WID; x++)
+	for (y = 0; y < c->height; y++){
+		for (x = 0; x < c->width; x++)
 			mem_free(c->info[y][x]);
 		mem_free(c->info[y]);
 		mem_free(c->feat[y]);

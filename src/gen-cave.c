@@ -363,9 +363,10 @@ static void set_cave_dimensions(struct cave *c, int h, int w)
     int i, n = h * w;
     c->height = h;
     c->width = w;
-    if (cave_squares != NULL) FREE(cave_squares);
-    cave_squares = C_ZNEW(n, int);
-    for (i = 0; i < n; i++) cave_squares[i] = i;
+
+	/* Allocate the cave_squares array */
+    dun->cave_squares = mem_zalloc(n * sizeof(int));
+    for (i = 0; i < n; i++) dun->cave_squares[i] = i;
 }
 
 
@@ -712,8 +713,8 @@ bool labyrinth_gen(struct cave *c, struct player *p) {
     /* This is the dungeon size, which does include the enclosing walls */
     set_cave_dimensions(c, h + 2, w + 2);
 
-    /* Fill whole level with perma-rock */
-    fill_rectangle(c, 0, 0, DUNGEON_HGT - 1, DUNGEON_WID - 1, 
+    /* Bound with perma-rock */
+    draw_rectangle(c, 0, 0, h + 1, w + 1, 
 				   FEAT_PERM, SQUARE_NONE);
 
     /* Fill the labyrinth area with rock */
@@ -851,9 +852,8 @@ static void init_cavern(struct cave *c, struct player *p, int density) {
 	
     int count = (size * density) / 100;
 
-    /* Fill the edges with perma-rock, and rest with rock */
-    fill_rectangle(c, 0, 0, DUNGEON_HGT - 1, DUNGEON_WID - 1, 
-				   FEAT_PERM, SQUARE_NONE);
+    /* Fill the edges with perma-rock, and fill the rest with rock */
+    draw_rectangle(c, 0, 0, h - 1, w - 1, FEAT_PERM, SQUARE_NONE);
     fill_rectangle(c, 1, 1, h - 2, w - 2, FEAT_GRANITE, SQUARE_WALL_SOLID);
 	
     while (count > 0) {
@@ -902,7 +902,7 @@ static void mutate_cavern(struct cave *c) {
 			else if (count < 4)
 				temp[y * w + x] = FEAT_FLOOR;
 			else
-				temp[y * w + x] = cave->feat[y][x];
+				temp[y * w + x] = c->feat[y][x];
 		}
     }
 
@@ -1180,21 +1180,6 @@ static void join_regions(struct cave *c, int colors[], int counts[]) {
 
 
 /**
- * Count the number of open cells in the dungeon.
- */
-static int open_count(struct cave *c) {
-    int x, y;
-    int h = c->height;
-    int w = c->width;
-    int num = 0;
-    for (y = 0; y < h; y++)
-		for (x = 0; x < w; x++)
-			if (square_ispassable(c, y, x)) num++;
-    return num;
-}
-
-
-/**
  * Make sure that all the regions of the dungeon are connected.
  *
  * This function colors each connected region of the dungeon, then uses that
@@ -1253,7 +1238,7 @@ bool cavern_gen(struct cave *c, struct player *p) {
 			for (i = 0; i < times; i++) mutate_cavern(c);
 	
 			/* If there are enough open squares then we're done */
-			openc = open_count(c);
+			openc = c->feat_count[FEAT_FLOOR];
 			if (openc >= limit) {
 				ROOM_LOG("cavern ok (%d vs %d)", openc, limit);
 				break;
@@ -1414,10 +1399,12 @@ bool town_gen(struct cave *c, struct player *p) {
 
     set_cave_dimensions(c, TOWN_HGT, TOWN_WID);
 
-    /* Start with solid walls, and then create some floor in the middle */
-    fill_rectangle(c, 0, 0, DUNGEON_HGT - 1, DUNGEON_WID - 1, 
+    /* Create walls */
+    draw_rectangle(c, 0, 0, c->height - 1, c->width - 1, 
 				   FEAT_PERM, SQUARE_NONE);
-    fill_rectangle(c, 1, 1, c->height -2, c->width - 2, 
+
+    /* Create some floor */
+    fill_rectangle(c, 1, 1, c->height - 2, c->width - 2, 
 				   FEAT_FLOOR, SQUARE_NONE);
 
     /* Build stuff */
@@ -1506,10 +1493,6 @@ bool sample1_gen(struct cave *c, struct player *p) {
 	/* Set the intended number of floor grids based on cave floor area */
     num_floors = c->height * c->width / 7;
     ROOM_LOG("height=%d  width=%d  nfloors=%d", c->height, c->width,num_floors);
-
-    /* Fill whole level with perma-rock */
-    fill_rectangle(c, 0, 0, DUNGEON_HGT - 1, DUNGEON_WID - 1, 
-				   FEAT_PERM, SQUARE_NONE);
 
     /* Fill cave area with basic granite */
     fill_rectangle(c, 0, 0, c->height - 1, c->width - 1, 

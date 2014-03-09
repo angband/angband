@@ -34,6 +34,7 @@ void delete_monster_idx(int m_idx);
 void delete_monster(int y, int x);
 void compact_monsters(int num_to_compact);
 void wipe_mon_list(struct cave *c, struct player *p);
+s16b mon_pop(struct cave *c);
 void get_mon_num_prep(bool (*get_mon_num_hook)(monster_race *race));
 monster_race *get_mon_num(int level);
 void player_place(struct cave *c, struct player *p, int y, int x);

@@ -322,6 +322,146 @@ static void run_room_parser(void) {
 
 
 /**
+ * Write a chunk to another chunk
+ */
+bool chunk_write(struct cave *source, struct cave *dest, int y0, int x0)
+{
+	int i;
+	int x, y;
+
+	/* Check bounds */
+	if ((source->height + y0 > dest->height) ||
+		(source->width + x0 > dest->width))
+		return FALSE;
+
+	/* Write the location stuff */
+	for (y = 0; y < source->height; y++) {
+		for (x = 0; x < source->width; x++) {
+			int this_o_idx, next_o_idx, held;
+			bool first_obj = TRUE;
+
+			/* Terrain */
+			dest->feat[y + y0][x + x0] = source->feat[y][x];
+			sqinfo_copy(dest->info[y + y0][x + x0], source->info[y][x]);
+
+			/* Dungeon objects */
+			held = 0;
+			if (source->o_idx[y][x]) {
+				for (this_o_idx = source->o_idx[y][x]; this_o_idx;
+					 this_o_idx = next_o_idx) {
+					object_type *source_obj = cave_object(source, this_o_idx);
+					object_type *dest_obj = NULL;
+					int o_idx;
+
+					/* Is this the first object on this square? */
+					if (first_obj) {
+						/* Make an object */
+						o_idx = o_pop(dest);
+
+						/* Hope this never happens */
+						if (!o_idx)
+							break;
+
+						/* Mark this square as holding this object */
+						dest->o_idx[y + y0][x + x0] = o_idx;
+
+						first_obj = FALSE;
+					}
+
+					/* Copy over */
+					dest_obj = cave_object(dest, o_idx);
+					object_copy(dest_obj, source_obj);
+
+					/* Adjust position */
+					dest_obj->iy = y + y0;
+					dest_obj->ix = x + x0;
+
+					/* Tell the monster on this square what it's holding */
+					if (source_obj->held_m_idx) {
+						if (!held)
+							held = o_idx;
+					}
+
+					/* Look at the next object, if there is one */
+					next_o_idx = source_obj->next_o_idx;
+
+					/* Make a slot for it if there is, and point to it */
+					if (next_o_idx) {
+						o_idx = o_pop(dest);
+						if (!o_idx)
+							break;
+						dest_obj->next_o_idx = o_idx;
+					}
+				}
+			}
+
+			/* Monsters */
+			if (source->m_idx[y][x] > 0) {
+				monster_type *source_mon = square_monster(source, y, x);
+				monster_type *dest_mon = NULL;
+				int idx;
+
+				/* Valid monster */
+				if (!source_mon->race)
+					continue;
+
+				/* Make a monster */
+				idx = mon_pop(dest);
+
+				/* Hope this never happens */
+				if (!idx)
+					break;
+
+				/* Copy over */
+				dest_mon = cave_monster(dest, idx);
+				dest->m_idx[y + y0][x + x0] = idx;
+				memcpy(dest_mon, source_mon, sizeof(*source_mon));
+
+				/* Adjust stuff */
+				dest_mon->midx = idx;
+				dest_mon->fy = y + y0;
+				dest_mon->fx = x + x0;
+				dest_mon->hold_o_idx = held;
+				cave_object(dest, held)->held_m_idx = idx;
+			}
+
+			/* Player */
+			if (source->m_idx[y][x] == -1) 
+				dest->m_idx[y0 + y][x0 + x] = -1;
+		}
+	}
+
+	/* Traps */
+	for (i = 0; i < cave_trap_max(source); i++) {
+		/* Point to this trap */
+		trap_type *t_ptr = cave_trap(source, cave_trap_max(dest) + 1);
+		trap_type *u_ptr = cave_trap(dest, i);
+		int ty = t_ptr->fy;
+		int tx = t_ptr->fx;
+
+		/* Copy over */
+		memcpy(u_ptr, t_ptr, sizeof(*t_ptr));
+
+		/* Adjust stuff */
+		dest->trap_max++;
+		u_ptr->fy = ty + y0;
+		u_ptr->fx = tx + x0;
+	}
+
+	/* Miscellany */
+	for (i = 0; i < z_info->f_max + 1; i++)
+		dest->feat_count[i] += source->feat_count[i];
+
+	dest->obj_rating += source->obj_rating;
+	dest->mon_rating += source->mon_rating;
+
+	if (source->good_item)
+		dest->good_item = TRUE;
+
+	return TRUE;
+}
+
+/**
  * Clear the dungeon, ready for generation to begin.
  */
 static void cave_clear(struct cave *c, struct player *p) {
@@ -333,8 +473,8 @@ static void cave_clear(struct cave *c, struct player *p) {
 
 
     /* Clear flags and flow information. */
-    for (y = 0; y < DUNGEON_HGT; y++) {
-		for (x = 0; x < DUNGEON_WID; x++) {
+    for (y = 0; y < c->height; y++) {
+		for (x = 0; x < c->width; x++) {
 			/* Erase features */
 			c->feat[y][x] = 0;
 
@@ -466,9 +606,14 @@ void cave_generate(struct cave *c, struct player *p) {
     const char *error = "no generation";
     int y, x, tries = 0;
 
+    /* Start with dungeon-wide permanent rock */
+	cave_clear(cave, p);
+    fill_rectangle(cave, 0, 0, DUNGEON_HGT - 1, DUNGEON_WID - 1, 
+				   FEAT_PERM, SQUARE_NONE);
+
     assert(c);
 
-    c->depth = p->depth;
+    cave->depth = p->depth;
 
     /* Generate */
     for (tries = 0; tries < 100 && error; tries++) {
@@ -476,6 +621,7 @@ void cave_generate(struct cave *c, struct player *p) {
 
 		error = NULL;
 		cave_clear(c, p);
+		c->depth = cave->depth;
 
 		/* Mark the dungeon as being unready (to avoid artifact loss, etc) */
 		character_dungeon = FALSE;
@@ -534,11 +680,18 @@ void cave_generate(struct cave *c, struct player *p) {
 			}
 		}
 
-		/* Place dungeon squares to trigger feeling (not in town) */
-		if (player->depth)
-			place_feeling(c);
-		
-		c->feeling = calc_obj_feeling(c) + calc_mon_feeling(c);
+		FREE(dun->cave_squares);
+		dun->cave_squares = NULL;
+
+		/* Clear generation flags. */
+		for (y = 0; y < c->height; y++) {
+			for (x = 0; x < c->width; x++) {
+				sqinfo_off(c->info[y][x], SQUARE_WALL_INNER);
+				sqinfo_off(c->info[y][x], SQUARE_WALL_OUTER);
+				sqinfo_off(c->info[y][x], SQUARE_WALL_SOLID);
+				sqinfo_off(c->info[y][x], SQUARE_MON_RESTRICT);
+			}
+		}
 
 		/* Regenerate levels that overflow their maxima */
 		if (cave_object_max(c) >= z_info->o_max) 
@@ -549,25 +702,23 @@ void cave_generate(struct cave *c, struct player *p) {
 		if (error) ROOM_LOG("Generation restarted: %s.", error);
     }
 
-    FREE(cave_squares);
-    cave_squares = NULL;
-
     if (error) quit_fmt("cave_generate() failed 100 times!");
 
-	/* Clear generation flags. */
-	for (y = 0; y < c->height; y++) {
-		for (x = 0; x < c->width; x++) {
-			sqinfo_off(c->info[y][x], SQUARE_WALL_INNER);
-			sqinfo_off(c->info[y][x], SQUARE_WALL_OUTER);
-			sqinfo_off(c->info[y][x], SQUARE_WALL_SOLID);
-			sqinfo_off(c->info[y][x], SQUARE_MON_RESTRICT);
-		}
-	}
+	/* Copy into the cave */
+	if (!chunk_write(c, cave, 0, 0))
+		quit_fmt("chunk_write() level bounds failed!");
+	cave_free(c);
+
+	/* Place dungeon squares to trigger feeling (not in town) */
+	if (player->depth)
+		place_feeling(cave);
+
+	cave->feeling = calc_obj_feeling(cave) + calc_mon_feeling(cave);
 
     /* The dungeon is ready */
     character_dungeon = TRUE;
 
-    c->created_at = turn;
+    cave->created_at = turn;
 }
 
 

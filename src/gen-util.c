@@ -155,7 +155,7 @@ bool cave_find(struct cave *c, int *y, int *x, square_predicate pred)
 {
     int h = c->height;
     int w = c->width;
-    return _find_in_range(c, y, 0, h, x, 0, w, cave_squares, pred);
+    return _find_in_range(c, y, 0, h, x, 0, w, dun->cave_squares, pred);
 }
 
 

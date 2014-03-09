@@ -422,7 +422,7 @@ void wipe_mon_list(struct cave *c, struct player *p)
  * This routine should almost never fail, but it *can* happen.
  * The calling code must check for and handle a 0 return.
  */
-static s16b mon_pop(struct cave *c)
+s16b mon_pop(struct cave *c)
 {
 	int m_idx;
 
