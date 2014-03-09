@@ -3084,7 +3084,7 @@ static errr init_other(void)
 
 	/*** Prepare grid arrays ***/
 
-	cave = cave_new();
+	cave = cave_new(DUNGEON_HGT, DUNGEON_WID);
 
 	/* Array of stacked monster messages */
 	mon_msg = C_ZNEW(MAX_STORED_MON_MSG, monster_race_message);

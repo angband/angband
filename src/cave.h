@@ -268,7 +268,7 @@ extern bool dtrap_edge(int y, int x);
 /* XXX: temporary while I refactor */
 extern struct cave *cave;
 
-extern struct cave *cave_new(void);
+extern struct cave *cave_new(int height, int width);
 extern void cave_free(struct cave *c);
 
 extern struct feature *square_feat(struct cave *c, int y, int x);

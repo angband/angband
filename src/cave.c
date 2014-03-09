@@ -2634,12 +2634,12 @@ void scatter(struct cave *c, int *yp, int *xp, int y, int x, int d, bool need_lo
 
 struct cave *cave = NULL;
 
-struct cave *cave_new(void) {
+struct cave *cave_new(int height, int width) {
 	int y, x;
 
 	struct cave *c = mem_zalloc(sizeof *c);
-	c->height = DUNGEON_HGT;
-	c->width = DUNGEON_WID;
+	c->height = height;
+	c->width = width;
 	c->feat_count = mem_zalloc((z_info->f_max + 1) * sizeof(int));
 	c->info = mem_zalloc(c->height * sizeof(bitflag**));
 	c->feat = mem_zalloc(c->height * sizeof(byte*));
