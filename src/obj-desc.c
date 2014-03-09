@@ -295,7 +295,7 @@ size_t obj_desc_name_format(char *buf, size_t max, size_t end,
 static size_t obj_desc_name(char *buf, size_t max, size_t end,
 		const object_type *o_ptr, bool prefix, int mode, bool spoil, bool terse)
 {
-	bool known = object_is_known(o_ptr) || (o_ptr->ident & IDENT_STORE) || spoil;
+	bool known = object_is_known(o_ptr) || spoil;
 	bool aware = object_flavor_is_aware(o_ptr) || (o_ptr->ident & IDENT_STORE) || spoil;
 	const char *basename = obj_desc_get_basename(o_ptr, aware, terse);
 	const char *modstr = obj_desc_get_modstr(o_ptr->kind);
@@ -434,8 +434,7 @@ static size_t obj_desc_combat(const object_type *o_ptr, char *buf, size_t max,
 
 	/* Show weapon bonuses */
 	if (spoil || object_attack_plusses_are_visible(o_ptr)) {
-		if (wield_slot(o_ptr) == INVEN_WIELD || wield_slot(o_ptr) == INVEN_BOW
-				|| tval_is_ammo(o_ptr) || o_ptr->to_d || o_ptr->to_h) {
+		if (tval_is_weapon(o_ptr) || o_ptr->to_d || o_ptr->to_h) {
 			/* Make an exception for body armor with only a to-hit penalty */
 			if (o_ptr->to_h < 0 && o_ptr->to_d == 0 && tval_is_body_armor(o_ptr))
 				strnfcat(buf, max, &end, " (%+d)", o_ptr->to_h);
@@ -506,26 +505,10 @@ static size_t obj_desc_charges(const object_type *o_ptr, char *buf, size_t max, 
 	/* Charging things */
 	else if (o_ptr->timeout > 0)
 	{
-		if (tval_can_have_timeout(o_ptr) && o_ptr->number > 1)
+		if (o_ptr->number > 1)
 		{
-			int power;
-			int time_base = randcalc(o_ptr->kind->time, 0, MINIMISE);
-
-			if (!time_base) time_base = 1;
-
-			/*
-			 * Find out how many rods are charging, by dividing
-			 * current timeout by each rod's maximum timeout.
-			 * Ensure that any remainder is rounded up.  Display
-			 * very discharged stacks as merely fully discharged.
-			 */
-			power = (o_ptr->timeout + (time_base - 1)) / time_base;
-			if (power > o_ptr->number) power = o_ptr->number;
-
-			/* Display prettily */
-			strnfcat(buf, max, &end, " (%d charging)", power);
+			strnfcat(buf, max, &end, " (%d charging)", number_charging(o_ptr));
 		}
-
 		/* Artifacts, single rods */
 		else if (!(tval_is_light(o_ptr) && !o_ptr->artifact))
 		{
@@ -639,8 +622,7 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr, int mode)
 	if (!o_ptr->tval)
 		return strnfmt(buf, max, "(nothing)");
 
-	known = object_is_known(o_ptr) ||
-			(o_ptr->ident & IDENT_STORE) || spoil;
+	known = object_is_known(o_ptr) || spoil;
 
 	/* We've seen it at least once now we're aware of it */
 	if (known && o_ptr->ego && !spoil) o_ptr->ego->everseen = TRUE;

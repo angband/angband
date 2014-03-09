@@ -956,8 +956,6 @@ static void obj_known_misc_combat(const object_type *o_ptr, bool *thrown_effect,
 				o_ptr->dd != 0 && o_ptr->ds != 0 &&
 				object_flavor_is_aware(o_ptr))
 			*thrown_effect = TRUE;
-
-		return;
 	}
 
 	if (!weapon) /* Ammo */
@@ -967,8 +965,7 @@ static void obj_known_misc_combat(const object_type *o_ptr, bool *thrown_effect,
 	*impactful = of_has(f, OF_IMPACT);
 
 	/* Add breakage chance */
-	if (ammo) 
-		*break_chance = breakage_chance(o_ptr, TRUE);
+	*break_chance = breakage_chance(o_ptr, TRUE);
 
 	/* Is the weapon too heavy? */
 	if (weapon) {
