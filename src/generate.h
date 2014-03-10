@@ -245,6 +245,14 @@ bool labyrinth_gen(struct cave *c, struct player *p);
 bool cavern_gen(struct cave *c, struct player *p);
 bool sample1_gen(struct cave *c, struct player *p);
 
+struct cave *chunk_write(int y0, int x0, int height, int width, bool monsters,
+						 bool objects, bool traps, bool delete_old);
+void chunk_list_add(struct cave *c);
+bool chunk_list_remove(char *name);
+struct cave *chunk_find(char *name);
+bool chunk_copy(struct cave *source, struct cave *dest, int y0, int x0);
+
+
 void fill_rectangle(struct cave *c, int y1, int x1, int y2, int x2, int feat,
 					int flag);
 void generate_mark(struct cave *c, int y1, int x1, int y2, int x2, int flag);

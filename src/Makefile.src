@@ -105,6 +105,7 @@ ANGFILES = \
 	game-event.o \
 	generate.o \
 	gen-cave.o \
+	gen-chunk.o \
 	gen-monster.o \
 	gen-room.o \
 	gen-util.o \

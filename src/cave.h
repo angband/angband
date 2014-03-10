@@ -207,6 +207,7 @@ typedef struct
 
 
 struct cave {
+	char *name;
 	s32b created_at;
 	int depth;
 
@@ -267,6 +268,7 @@ extern bool dtrap_edge(int y, int x);
 
 /* XXX: temporary while I refactor */
 extern struct cave *cave;
+extern struct cave **chunk_list;
 
 extern struct cave *cave_new(int height, int width);
 extern void cave_free(struct cave *c);
