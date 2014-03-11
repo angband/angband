@@ -2667,7 +2667,7 @@ struct cave *cave_new(int height, int width) {
 	c->traps = mem_zalloc(z_info->l_max * sizeof(struct trap_type));
 	c->trap_max = 1;
 
-	c->created_at = 1;
+	c->created_at = turn;
 	return c;
 }
 

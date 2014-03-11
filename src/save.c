@@ -138,6 +138,35 @@ static void wr_item(const object_type *o_ptr)
 
 
 /**
+ * Write a monster record
+ */
+static void wr_monster(const monster_type *m_ptr)
+{
+	byte unaware = 0;
+	size_t j;
+
+	wr_s16b(m_ptr->race->ridx);
+	wr_byte(m_ptr->fy);
+	wr_byte(m_ptr->fx);
+	wr_s16b(m_ptr->hp);
+	wr_s16b(m_ptr->maxhp);
+	wr_byte(m_ptr->mspeed);
+	wr_byte(m_ptr->energy);
+	wr_byte(MON_TMD_MAX);
+
+	for (j = 0; j < MON_TMD_MAX; j++)
+		wr_s16b(m_ptr->m_timed[j]);
+
+	if (m_ptr->unaware) unaware |= 0x01;
+	wr_byte(unaware);
+
+	for (j = 0; j < OF_SIZE; j++)
+		wr_byte(m_ptr->known_pflags[j]);
+
+	wr_byte(0);
+}
+
+/**
  * Write a trap record
  */
 static void wr_trap(trap_type *t_ptr)
@@ -741,6 +770,147 @@ void wr_dungeon(void)
 }
 
 
+/*
+ * Write the chunk list
+ */
+void wr_chunks(void)
+{
+	int y, x;
+	int i, j;
+	size_t k;
+
+	byte tmp8u;
+
+	byte count;
+	byte prev_char;
+
+
+	if (player->is_dead)
+		return;
+
+	wr_u16b(chunk_list_max);
+	for (j = 0; j < chunk_list_max; j++) {
+		struct cave *c = chunk_list[j];
+
+		/* Write the name and dimensions */
+		wr_string(c->name);
+		wr_u16b(c->height);
+		wr_u16b(c->width);
+
+		/*** Simple "Run-Length-Encoding" of info ***/
+
+		/* Loop across bytes of c->info */
+		for (k = 0; k < SQUARE_SIZE; k++)
+		{
+			/* Note that this will induce two wasted bytes */
+			count = 0;
+			prev_char = 0;
+
+			/* Dump the chunk */
+			for (y = 0; y < c->height; y++)
+			{
+				for (x = 0; x < c->width; x++)
+				{
+					/* Extract the important cave->info flags */
+					tmp8u = c->info[y][x][k];
+
+					/* If the run is broken, or too full, flush it */
+					if ((tmp8u != prev_char) || (count == MAX_UCHAR))
+					{
+						wr_byte((byte)count);
+						wr_byte((byte)prev_char);
+						prev_char = tmp8u;
+						count = 1;
+					}
+
+					/* Continue the run */
+					else
+					{
+						count++;
+					}
+				}
+			}
+
+			/* Flush the data (if any) */
+			if (count)
+			{
+				wr_byte((byte)count);
+				wr_byte((byte)prev_char);
+			}
+		}
+
+		/*** Simple "Run-Length-Encoding" of cave ***/
+
+		/* Note that this will induce two wasted bytes */
+		count = 0;
+		prev_char = 0;
+
+		/* Dump the chunk */
+		for (y = 0; y < c->height; y++)
+		{
+			for (x = 0; x < c->width; x++)
+			{
+				/* Extract a byte */
+				tmp8u = c->feat[y][x];
+
+				/* If the run is broken, or too full, flush it */
+				if ((tmp8u != prev_char) || (count == MAX_UCHAR))
+				{
+					wr_byte((byte)count);
+					wr_byte((byte)prev_char);
+					prev_char = tmp8u;
+					count = 1;
+				}
+
+				/* Continue the run */
+				else
+				{
+					count++;
+				}
+			}
+		}
+
+		/* Flush the data (if any) */
+		if (count)
+		{
+			wr_byte((byte)count);
+			wr_byte((byte)prev_char);
+		}
+
+		/* Total objects */
+		wr_u16b(c->obj_cnt);
+
+		/* Dump the objects */
+		for (i = 1; i < c->obj_cnt; i++) {
+			object_type *o_ptr = &c->objects[i];
+
+			/* Dump it */
+			wr_item(o_ptr);
+		}
+
+		/* Total monsters */
+		wr_u16b(c->mon_cnt);
+
+		/* Dump the monsters */
+		for (i = 1; i < c->mon_cnt; i++) {
+			monster_type *m_ptr = &c->monsters[i];
+
+			/* Dump it */
+			wr_monster(m_ptr);
+		}
+
+		/* Total traps */
+		wr_u16b(c->trap_max);
+
+		for (i = 0; i < c->trap_max; i++) {
+			trap_type *t_ptr = &c->traps[i];
+
+			wr_trap(t_ptr);
+		}
+	}
+}
+
+
 void wr_objects(void)
 {
 	int i;
@@ -765,7 +935,6 @@ void wr_objects(void)
 void wr_monsters(void)
 {
 	int i;
-	size_t j;
 
 	if (player->is_dead)
 		return;
@@ -775,29 +944,9 @@ void wr_monsters(void)
 
 	/* Dump the monsters */
 	for (i = 1; i < cave_monster_max(cave); i++) {
-		byte unaware = 0;
-	
 		const monster_type *m_ptr = cave_monster(cave, i);
 
-		wr_s16b(m_ptr->race->ridx);
-		wr_byte(m_ptr->fy);
-		wr_byte(m_ptr->fx);
-		wr_s16b(m_ptr->hp);
-		wr_s16b(m_ptr->maxhp);
-		wr_byte(m_ptr->mspeed);
-		wr_byte(m_ptr->energy);
-		wr_byte(MON_TMD_MAX);
-
-		for (j = 0; j < MON_TMD_MAX; j++)
-			wr_s16b(m_ptr->m_timed[j]);
-
-		if (m_ptr->unaware) unaware |= 0x01;
-		wr_byte(unaware);
-
-		for (j = 0; j < OF_SIZE; j++)
-			wr_byte(m_ptr->known_pflags[j]);
-		
-		wr_byte(0);
+		wr_monster(m_ptr);
 	}
 }
 

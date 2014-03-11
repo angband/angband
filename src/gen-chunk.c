@@ -26,7 +26,7 @@
 
 #define CHUNK_LIST_INCR 10
 struct cave **chunk_list;
-int chunk_list_max = 0;
+u16b chunk_list_max = 0;
 
 /**
  * Write a chunk to memory and return a pointer to it.  Optionally write
@@ -173,7 +173,7 @@ void chunk_list_add(struct cave *c)
 bool chunk_list_remove(char *name)
 {
 	int i, j;
-	int newsize;
+	int newsize = 0;
 
 	for (i = 0; i < chunk_list_max; i++) {
 		/* Find the match */
@@ -183,13 +183,14 @@ bool chunk_list_remove(char *name)
 				chunk_list[j - 1] = chunk_list[j];
 
 			/* Destroy the last one, and shorten the list */
-			chunk_list_max--;
-			chunk_list[chunk_list_max] = NULL;
-			if ((chunk_list_max % CHUNK_LIST_INCR) == 0) {
+			if ((chunk_list_max % CHUNK_LIST_INCR) == 0)
 				newsize = (chunk_list_max - CHUNK_LIST_INCR) *	
 					sizeof(struct cave *);
+			chunk_list_max--;
+			chunk_list[chunk_list_max] = NULL;
+			if (newsize)
 				chunk_list = (struct cave **) mem_realloc(chunk_list, newsize);
-			}
+
 			return TRUE;
 		}
 	}

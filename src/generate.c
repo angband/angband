@@ -480,6 +480,7 @@ void cave_generate(struct cave *c, struct player *p) {
 		struct dun_data dun_body;
 
 		error = NULL;
+
 		cave_clear(c, p);
 		c->depth = cave->depth;
 
@@ -490,8 +491,46 @@ void cave_generate(struct cave *c, struct player *p) {
 		dun = &dun_body;
 
 		if (p->depth == 0) {
-			dun->profile = &town_profile;
-			dun->profile->builder(c, p);
+			/* Testing town saving */
+			cave_free(c);
+			c = chunk_find("Town");
+
+			if (c) {
+				bool daytime = turn % (10 * TOWN_DAWN) < (10 * TOWN_DUSK);
+				int residents = daytime ? MIN_M_ALLOC_TD : MIN_M_ALLOC_TN;
+				int i;
+
+				/* Find the stairs (lame) */
+				for (y = 0; y < c->height; y++) {
+					bool found = FALSE;
+					for (x = 0; x < c->width; x++) {
+						if (c->feat[y][x] == FEAT_MORE) {
+							found = TRUE;
+							break;
+						}
+					}
+					if (found) break;
+				}
+
+				/* Place the player */
+				player_place(c, p, y, x);
+
+				/* Apply illumination */
+				cave_illuminate(c, daytime);
+
+				/* Make some residents */
+				for (i = 0; i < residents; i++)
+					pick_and_place_distant_monster(c, loc(p->px, p->py), 
+												   3, TRUE, c->depth);
+
+				chunk_list_remove("Town");
+				break;
+			} else {
+				/* Standard method */
+				c = cave_new(TOWN_HGT, TOWN_WID);
+				dun->profile = &town_profile;
+				dun->profile->builder(c, p);
+			}
 		} else if (is_quest(c->depth)) {
 		
 			/* Quest levels must be normal levels */
@@ -572,6 +611,14 @@ void cave_generate(struct cave *c, struct player *p) {
 	/* Place dungeon squares to trigger feeling (not in town) */
 	if (player->depth)
 		place_feeling(cave);
+
+	/* Testing town saving */
+	else if (!chunk_find("Town")) {
+		struct cave *town = chunk_write(0, 0, TOWN_HGT, TOWN_WID, FALSE,
+										FALSE, FALSE, TRUE);
+		town->name = string_make("Town");
+		chunk_list_add(town);
+	}
 
 	cave->feeling = calc_obj_feeling(cave) + calc_mon_feeling(cave);
 

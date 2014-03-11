@@ -230,15 +230,15 @@ struct cave {
 	s16b **o_idx;
 
 	struct monster *monsters;
-	int mon_max;
-	int mon_cnt;
+	u16b mon_max;
+	u16b mon_cnt;
 
 	struct object *objects;
-	s16b obj_max;
-	s16b obj_cnt;
+	u16b obj_max;
+	u16b obj_cnt;
 
 	struct trap_type *traps;
-	s16b trap_max;
+	u16b trap_max;
 };
 
 extern int distance(int y1, int x1, int y2, int x2);
@@ -269,6 +269,7 @@ extern bool dtrap_edge(int y, int x);
 /* XXX: temporary while I refactor */
 extern struct cave *cave;
 extern struct cave **chunk_list;
+extern u16b chunk_list_max;
 
 extern struct cave *cave_new(int height, int width);
 extern void cave_free(struct cave *c);

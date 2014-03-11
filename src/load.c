@@ -19,6 +19,7 @@
 #include "angband.h"
 #include "cave.h"
 #include "dungeon.h"
+#include "generate.h"
 #include "history.h"
 #include "init.h"
 #include "mon-make.h"
@@ -2166,6 +2167,154 @@ int rd_dungeon(void)
 	return 0;
 }
 
+/*
+ * Write the chunk list
+ */
+int rd_chunks(void)
+{
+	int y, x;
+	int i, j;
+	size_t k;
+	u16b chunk_max;
+
+	byte tmp8u;
+
+	byte count;
+
+
+	if (player->is_dead)
+		return 0;
+
+	rd_u16b(&chunk_max);
+	for (j = 0; j < chunk_max; j++) {
+		struct cave *c;
+		char name[100];
+		u16b height, width;
+
+		/* Read the name and dimensions */
+		rd_string(name, sizeof(name));
+		rd_u16b(&height);
+		rd_u16b(&width);
+		c = cave_new(height, width);
+		c->name = string_make(name);
+
+		/* Loop across bytes of c->info */
+		for (k = 0; k < SQUARE_SIZE; k++)
+		{
+			/* Load the chunk data */
+			for (x = y = 0; y < height; )
+			{
+                /* Grab RLE info */
+                rd_byte(&count);
+                rd_byte(&tmp8u);
+
+                /* Apply the RLE info */
+                for (i = count; i > 0; i--)
+                {
+					/* Extract "info" */
+					c->info[y][x][k] = tmp8u;
+
+					/* Advance/Wrap */
+					if (++x >= width)
+					{
+						/* Wrap */
+						x = 0;
+
+						/* Advance/Wrap */
+						if (++y >= height) break;
+					}
+                }
+			}
+		}
+
+        /*** Run length decoding ***/
+
+        /* Load the dungeon data */
+        for (x = y = 0; y < height; )
+        {
+			/* Grab RLE info */
+			rd_byte(&count);
+			rd_byte(&tmp8u);
+
+			/* Apply the RLE info */
+			for (i = count; i > 0; i--)
+			{
+				/* Extract "feat" */
+				square_set_feat(c, y, x, tmp8u);
+
+				/* Advance/Wrap */
+				if (++x >= width)
+				{
+					/* Wrap */
+					x = 0;
+
+					/* Advance/Wrap */
+					if (++y >= height) break;
+				}
+			}
+        }
+
+		/* Total objects */
+		rd_u16b(&c->obj_cnt);
+
+		/* Read the objects */
+		for (i = 1; i < c->obj_cnt; i++) {
+			object_type *o_ptr = &c->objects[i];
+
+			/* Read it TODO NRM fix versioning*/
+			rd_item_6(o_ptr);
+		}
+
+		/* Total monsters */
+		rd_u16b(&c->mon_cnt);
+
+		/* Read the monsters */
+		for (i = 1; i < c->mon_cnt; i++) {
+			monster_type *m_ptr = &c->monsters[i];
+			size_t j;
+			s16b r_idx;
+			byte flags;
+
+			/* Read in record */
+			/* TODO NRM - rd_monster() */
+			rd_s16b(&r_idx);
+			m_ptr->race = &r_info[r_idx];
+			rd_byte(&m_ptr->fy);
+			rd_byte(&m_ptr->fx);
+			rd_s16b(&m_ptr->hp);
+			rd_s16b(&m_ptr->maxhp);
+			rd_byte(&m_ptr->mspeed);
+			rd_byte(&m_ptr->energy);
+			rd_byte(&tmp8u);
+
+			for (j = 0; j < tmp8u; j++)
+				rd_s16b(&m_ptr->m_timed[j]);
+
+			/* Read and extract the flag */
+			rd_byte(&flags);
+			m_ptr->unaware = (flags & 0x01) ? TRUE : FALSE;
+
+			for (j = 0; j < of_size; j++)
+				rd_byte(&m_ptr->known_pflags[j]);
+
+			strip_bytes(1);
+		}
+
+		/* Total traps */
+		rd_u16b(&c->trap_max);
+
+		for (i = 0; i < c->trap_max; i++) {
+			trap_type *t_ptr = &c->traps[i];
+
+			rd_trap(t_ptr);
+		}
+		chunk_list_add(c);
+	}
+
+	return 0;
+}
+
+
 /* Read the floor object list */
 static int rd_objects(rd_item_t rd_item_version)
 {
@@ -2522,7 +2671,7 @@ int rd_traps(void)
     u32b tmp32u;
 
     rd_byte(&trf_size);
-    rd_s16b(&cave->trap_max);
+    rd_u16b(&cave->trap_max);
 
     for (i = 0; i < cave_trap_max(cave); i++)
     {
