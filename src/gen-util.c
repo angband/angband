@@ -124,12 +124,16 @@ void shuffle(int *arr, int n)
  * predicate.
  */
 static bool _find_in_range(struct cave *c, int *y, int y1, int y2, int *x,
-						   int x1, int x2, int *squares, square_predicate pred)
+						   int x1, int x2, square_predicate pred)
 {
     int yd = y2 - y1;
     int xd = x2 - x1;
     int i, n = yd * xd;
     bool found = FALSE;
+
+    /* Allocate the squares, and randomize their order */
+    int *squares = mem_alloc(n * sizeof(int));
+    for (i = 0; i < n; i++) squares[i] = i;
 
     /* Test each square in (random) order for openness */
     for (i = 0; i < n && !found; i++) {
@@ -143,6 +147,8 @@ static bool _find_in_range(struct cave *c, int *y, int y1, int y2, int *x,
 		if (pred(c, *y, *x)) found = TRUE;
     }
 
+	mem_free(squares);
+
     /* Return whether we found an empty square or not. */
     return found;
 }
@@ -153,9 +159,7 @@ static bool _find_in_range(struct cave *c, int *y, int y1, int y2, int *x,
  */
 bool cave_find(struct cave *c, int *y, int *x, square_predicate pred)
 {
-    int h = c->height;
-    int w = c->width;
-    return _find_in_range(c, y, 0, h, x, 0, w, dun->cave_squares, pred);
+    return _find_in_range(c, y, 0, c->height, x, 0, c->width, pred);
 }
 
 
@@ -166,23 +170,7 @@ bool cave_find(struct cave *c, int *y, int *x, square_predicate pred)
 static bool cave_find_in_range(struct cave *c, int *y, int y1, int y2,
 							   int *x, int x1, int x2, square_predicate pred)
 {
-    int yd = y2 - y1;
-    int xd = x2 - x1;
-    int n = yd * xd;
-    int i, found;
-
-    /* Allocate the squares, and randomize their order */
-    int *squares = C_ZNEW(n, int);
-    for (i = 0; i < n; i++) squares[i] = i;
-
-    /* Do the actual search */
-    found = _find_in_range(c, y, y1, y2, x, x1, x2, squares, pred);
-
-    /* Deallocate memory */
-    FREE(squares);
-
-    /* Return whether or not we found an empty square */
-    return found;
+    return _find_in_range(c, y, y1, y2, x, x1, x2, pred);
 }
 
 

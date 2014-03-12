@@ -116,9 +116,6 @@ struct dun_data {
     /* Array of which blocks are used */
     bool **room_map;
 
-	/* Global array of positions used to quickly randomize current positions. */
-	int *cave_squares;
-
     /* Number of pits/nests on the level */
     int pit_num;
 
@@ -236,7 +233,6 @@ typedef struct room_template {
  */
 struct dun_data *dun;
 struct room_template *room_templates;
-
 
 bool town_gen(struct cave *c, struct player *p);
 

@@ -579,9 +579,6 @@ void cave_generate(struct cave *c, struct player *p) {
 			}
 		}
 
-		FREE(dun->cave_squares);
-		dun->cave_squares = NULL;
-
 		/* Clear generation flags. */
 		for (y = 0; y < c->height; y++) {
 			for (x = 0; x < c->width; x++) {

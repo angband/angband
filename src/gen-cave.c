@@ -360,13 +360,8 @@ static void try_door(struct cave *c, int y, int x)
  */
 static void set_cave_dimensions(struct cave *c, int h, int w)
 {
-    int i, n = h * w;
     c->height = h;
     c->width = w;
-
-	/* Allocate the cave_squares array */
-    dun->cave_squares = mem_zalloc(n * sizeof(int));
-    for (i = 0; i < n; i++) dun->cave_squares[i] = i;
 }
 
 
