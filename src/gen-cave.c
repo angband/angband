@@ -586,34 +586,19 @@ bool classic_gen(struct cave *c, struct player *p) {
 /* ------------------ LABYRINTH ---------------- */
 
 /**
- * Used to convert (x, y) into an array index (i) in labyrinth_gen().
- */
-static int lab_toi(int y, int x, int w) {
-    return y * w + x;
-}
-
-/**
- * Used to convert an array index (i) into (x, y) in labyrinth_gen().
- */
-static void lab_toyx(int i, int w, int *y, int *x) {
-    *y = i / w;
-    *x = i % w;
-}
-
-/**
  * Given an adjoining wall (a wall which separates two labyrinth cells)
  * set a and b to point to the cell indices which are separated. Used by
  * labyrinth_gen().
  */
 static void lab_get_adjoin(int i, int w, int *a, int *b) {
     int y, x;
-    lab_toyx(i, w, &y, &x);
+    i_to_yx(i, w, &y, &x);
     if (x % 2 == 0) {
-		*a = lab_toi(y - 1, x, w);
-		*b = lab_toi(y + 1, x, w);
+		*a = yx_to_i(y - 1, x, w);
+		*b = yx_to_i(y + 1, x, w);
     } else {
-		*a = lab_toi(y, x - 1, w);
-		*b = lab_toi(y, x + 1, w);
+		*a = yx_to_i(y, x - 1, w);
+		*b = yx_to_i(y, x + 1, w);
     }
 }
 
@@ -639,23 +624,12 @@ static bool lab_is_tunnel(struct cave *c, int y, int x) {
 
 
 /**
- * Build a labyrinth level.
- *
- * Note that if the function returns FALSE, a level wasn't generated.
- * Labyrinths use the dungeon level's number to determine whether to generate
- * themselves (which means certain level numbers are more likely to generate
- * labyrinths than others).
+ * Build a labyrinth chunk of a given height and width, optionally lit, mapped
+ * and/or permanent-walled
  */
-bool labyrinth_gen(struct cave *c, struct player *p) {
+struct cave *labyrinth_chunk(int depth, int h, int w, bool lit, bool soft)
+{
     int i, j, k, y, x;
-
-    /* Size of the actual labyrinth part must be odd. */
-    /* NOTE: these are not the actual dungeon size, but rather the size of the
-     * area we're genearting a labyrinth in (which doesn't count theh enclosing
-     * outer walls. */
-    int h = 15 + randint0(c->depth / 10) * 2;
-    int w = 51 + randint0(c->depth / 10) * 2;
-
     /* This is the number of squares in the labyrinth */
     int n = h * w;
 
@@ -670,6 +644,123 @@ bool labyrinth_gen(struct cave *c, struct player *p) {
 
     /* 'walls' is a list of wall coordinates which we will randomize */
     int *walls;
+
+	/* The labyrinth chunk */
+	struct cave *c = cave_new(h + 2, w + 2);
+	c->depth = depth;
+    /* allocate our arrays */
+    sets = mem_zalloc(n * sizeof(int));
+    walls = mem_zalloc(n * sizeof(int));
+
+    /* This is the dungeon size, which does include the enclosing walls */
+    set_cave_dimensions(c, h + 2, w + 2);
+
+    /* Bound with perma-rock */
+    draw_rectangle(c, 0, 0, h + 1, w + 1, 
+				   FEAT_PERM, SQUARE_NONE);
+
+    /* Fill the labyrinth area with rock */
+	if (soft)
+		fill_rectangle(c, 1, 1, h, w, FEAT_GRANITE, SQUARE_WALL_SOLID);
+	else
+		fill_rectangle(c, 1, 1, h, w, FEAT_PERM, SQUARE_NONE);
+
+    /* Initialize each wall. */
+    for (i = 0; i < n; i++) {
+		walls[i] = i;
+		sets[i] = -1;
+    }
+
+    /* Cut out a grid of 1x1 rooms which we will call "cells" */
+    for (y = 0; y < h; y += 2) {
+		for (x = 0; x < w; x += 2) {
+			int k = yx_to_i(y, x, w);
+			sets[k] = k;
+			square_set_feat(c, y + 1, x + 1, FEAT_FLOOR);
+			if (lit) sqinfo_on(c->info[y + 1][x + 1], SQUARE_GLOW);
+		}
+    }
+
+    /* Shuffle the walls, using Knuth's shuffle. */
+    shuffle(walls, n);
+
+    /* For each adjoining wall, look at the cells it divides. If they aren't
+     * in the same set, remove the wall and join their sets.
+     *
+     * This is a randomized version of Kruskal's algorithm. */
+    for (i = 0; i < n; i++) {
+		int a, b, x, y;
+
+		j = walls[i];
+
+		/* If this cell isn't an adjoining wall, skip it */
+		i_to_yx(j, w, &y, &x);
+		if ((x < 1 && y < 1) || (x > w - 2 && y > h - 2)) continue;
+		if (x % 2 == y % 2) continue;
+
+		/* Figure out which cells are separated by this wall */
+		lab_get_adjoin(j, w, &a, &b);
+
+		/* If the cells aren't connected, kill the wall and join the sets */
+		if (sets[a] != sets[b]) {
+			int sa = sets[a];
+			int sb = sets[b];
+			square_set_feat(c, y + 1, x + 1, FEAT_FLOOR);
+			if (lit) sqinfo_on(c->info[y + 1][x + 1], SQUARE_GLOW);
+
+			for (k = 0; k < n; k++) {
+				if (sets[k] == sb) sets[k] = sa;
+			}
+		}
+    }
+
+    /* Generate a door for every 100 squares in the labyrinth */
+    for (i = n / 100; i > 0; i--) {
+		/* Try 10 times to find a useful place for a door, then place it */
+		for (j = 0; j < 10; j++) {
+			find_empty(c, &y, &x);
+			if (lab_is_tunnel(c, y, x)) break;
+
+		}
+
+		place_closed_door(c, y, x);
+    }
+
+    /* Unlit labyrinths will have some good items */
+    if (!lit)
+		alloc_objects(c, SET_BOTH, TYP_GOOD, Rand_normal(3, 2), c->depth,
+					  ORIGIN_LABYRINTH);
+
+    /* Hard (non-diggable) labyrinths will have some great items */
+    if (!soft)
+		alloc_objects(c, SET_BOTH, TYP_GREAT, Rand_normal(2, 1), c->depth,
+					  ORIGIN_LABYRINTH);
+
+    /* Deallocate our lists */
+    mem_free(sets);
+    mem_free(walls);
+
+	return c;
+}
+
+/**
+ * Build a labyrinth level.
+ *
+ * Note that if the function returns FALSE, a level wasn't generated.
+ * Labyrinths use the dungeon level's number to determine whether to generate
+ * themselves (which means certain level numbers are more likely to generate
+ * labyrinths than others).
+ */
+bool labyrinth_gen(struct cave *c, struct player *p) {
+    int i, k, y, x;
+	struct cave *lab;
+
+    /* Size of the actual labyrinth part must be odd. */
+    /* NOTE: these are not the actual dungeon size, but rather the size of the
+     * area we're genearting a labyrinth in (which doesn't count the enclosing
+     * outer walls. */
+    int h = 15 + randint0(c->depth / 10) * 2;
+    int w = 51 + randint0(c->depth / 10) * 2;
 
     /* Most labyrinths are lit */
     bool lit = randint0(c->depth) < 25 || randint0(2) < 1;
@@ -701,71 +792,13 @@ bool labyrinth_gen(struct cave *c, struct player *p) {
      * labyrinth cave profile. */
     if (randint0(100) >= chance) return FALSE;
 
-    /* allocate our arrays */
-    sets = C_ZNEW(n, int);
-    walls = C_ZNEW(n, int);
-
-    /* This is the dungeon size, which does include the enclosing walls */
-    set_cave_dimensions(c, h + 2, w + 2);
-
-    /* Bound with perma-rock */
-    draw_rectangle(c, 0, 0, h + 1, w + 1, 
-				   FEAT_PERM, SQUARE_NONE);
-
-    /* Fill the labyrinth area with rock */
-	if (soft)
-		fill_rectangle(c, 1, 1, h, w, FEAT_GRANITE, SQUARE_WALL_SOLID);
-	else
-		fill_rectangle(c, 1, 1, h, w, FEAT_PERM, SQUARE_NONE);
-
-    /* Initialize each wall. */
-    for (i = 0; i < n; i++) {
-		walls[i] = i;
-		sets[i] = -1;
-    }
-
-    /* Cut out a grid of 1x1 rooms which we will call "cells" */
-    for (y = 0; y < h; y += 2) {
-		for (x = 0; x < w; x += 2) {
-			int k = lab_toi(y, x, w);
-			sets[k] = k;
-			square_set_feat(c, y + 1, x + 1, FEAT_FLOOR);
-			if (lit) sqinfo_on(c->info[y + 1][x + 1], SQUARE_GLOW);
-		}
-    }
-
-    /* Shuffle the walls, using Knuth's shuffle. */
-    shuffle(walls, n);
-
-    /* For each adjoining wall, look at the cells it divides. If they aren't
-     * in the same set, remove the wall and join their sets.
-     *
-     * This is a randomized version of Kruskal's algorithm. */
-    for (i = 0; i < n; i++) {
-		int a, b, x, y;
-
-		j = walls[i];
-
-		/* If this cell isn't an adjoining wall, skip it */
-		lab_toyx(j, w, &y, &x);
-		if ((x < 1 && y < 1) || (x > w - 2 && y > h - 2)) continue;
-		if (x % 2 == y % 2) continue;
-
-		/* Figure out which cells are separated by this wall */
-		lab_get_adjoin(j, w, &a, &b);
-
-		/* If the cells aren't connected, kill the wall and join the sets */
-		if (sets[a] != sets[b]) {
-			int sa = sets[a];
-			int sb = sets[b];
-			square_set_feat(c, y + 1, x + 1, FEAT_FLOOR);
-			if (lit) sqinfo_on(c->info[y + 1][x + 1], SQUARE_GLOW);
-
-			for (k = 0; k < n; k++) {
-				if (sets[k] == sb) sets[k] = sa;
-			}
-		}
-    }
+	/* Generate the actual labyrinth */
+	lab = labyrinth_chunk(c->depth, h, w, lit, soft);
+	if (!chunk_copy(lab, c, 0, 0)) {
+		cave_free(lab);
+		return FALSE;
+	}
+	cave_free(lab);
 
     /* Determine the character location */
     new_player_spot(c, p);
@@ -777,18 +810,6 @@ bool labyrinth_gen(struct cave *c, struct player *p) {
     /* Generate a single set of stairs down if necessary. */
     if (!cave_find(c, &y, &x, square_isdownstairs))
 		alloc_stairs(c, FEAT_MORE, 1, 3);
-
-    /* Generate a door for every 100 squares in the labyrinth */
-    for (i = n / 100; i > 0; i--) {
-		/* Try 10 times to find a useful place for a door, then place it */
-		for (j = 0; j < 10; j++) {
-			find_empty(c, &y, &x);
-			if (lab_is_tunnel(c, y, x)) break;
-
-		}
-
-		place_closed_door(c, y, x);
-    }
 
     /* General some rubble, traps and monsters */
     k = MAX(MIN(c->depth / 3, 10), 2);
@@ -814,22 +835,8 @@ bool labyrinth_gen(struct cave *c, struct player *p) {
     alloc_objects(c, SET_BOTH, TYP_GOOD, randint1(2), c->depth,
 				  ORIGIN_LABYRINTH);
 
-    /* Unlit labyrinths will have some good items */
-    if (!lit)
-		alloc_objects(c, SET_BOTH, TYP_GOOD, Rand_normal(3, 2), c->depth,
-					  ORIGIN_LABYRINTH);
-
-    /* Hard (non-diggable) labyrinths will have some great items */
-    if (!soft)
-		alloc_objects(c, SET_BOTH, TYP_GREAT, Rand_normal(2, 1), c->depth,
-					  ORIGIN_LABYRINTH);
-
     /* If we want the players to see the maze layout, do that now */
     if (known) wiz_light(c, FALSE);
-
-    /* Deallocate our lists */
-    FREE(sets);
-    FREE(walls);
 
     return TRUE;
 }
@@ -924,7 +931,7 @@ static void array_filler(int data[], int value, int size) {
 static int ignore_point(struct cave *c, int colors[], int y, int x) {
     int h = c->height;
     int w = c->width;
-    int n = lab_toi(y, x, w);
+    int n = yx_to_i(y, x, w);
 
     if (y < 0 || x < 0 || y >= h || x >= w) return TRUE;
     if (colors[n]) return TRUE;
@@ -961,7 +968,7 @@ static void build_color_point(struct cave *c, int colors[], int counts[], int y,
     int *added = C_ZNEW(size, int);
     array_filler(added, 0, size);
 
-    q_push_int(queue, lab_toi(y, x, w));
+    q_push_int(queue, yx_to_i(y, x, w));
 
     counts[color] = 0;
 
@@ -969,7 +976,7 @@ static void build_color_point(struct cave *c, int colors[], int counts[], int y,
 		int i, y2, x2;
 		int n2 = q_pop_int(queue);
 
-		lab_toyx(n2, w, &y2, &x2);
+		i_to_yx(n2, w, &y2, &x2);
 
 		if (ignore_point(c, colors, y2, x2)) continue;
 
@@ -981,7 +988,7 @@ static void build_color_point(struct cave *c, int colors[], int counts[], int y,
 		for (i = 0; i < dslimit; i++) {
 			int y3 = y2 + yds[i];
 			int x3 = x2 + xds[i];
-			int n3 = lab_toi(y3, x3, w);
+			int n3 = yx_to_i(y3, x3, w);
 			if (ignore_point(c, colors, y3, x3)) continue;
 			if (added[n3]) continue;
 
@@ -1033,7 +1040,7 @@ static void clear_small_regions(struct cave *c, int colors[], int counts[]) {
 
     for (y = 1; y < c->height - 1; y++) {
 		for (x = 1; x < c->width - 1; x++) {
-			i = lab_toi(y, x, w);
+			i = yx_to_i(y, x, w);
 
 			if (!deleted[colors[i]]) continue;
 
@@ -1110,7 +1117,7 @@ static void join_region(struct cave *c, int colors[], int counts[], int color) {
 			/* Step backward through the path, turning stone to tunnel */
 			while (colors[n] != color) {
 				int x, y;
-				lab_toyx(n, w, &y, &x);
+				i_to_yx(n, w, &y, &x);
 				colors[n] = color;
 				if (!square_isperm(c, y, x) && !square_isvault(c, y, x)) {
 					square_set_feat(c, y, x, FEAT_FLOOR);
@@ -1130,7 +1137,7 @@ static void join_region(struct cave *c, int colors[], int counts[], int color) {
 		 */
 		for (i = 0; i < 4; i++) {
 			int y, x, n2;
-			lab_toyx(n, w, &y, &x);
+			i_to_yx(n, w, &y, &x);
 
 			/* Move to the adjacent square */
 			y += yds[i];
@@ -1141,7 +1148,7 @@ static void join_region(struct cave *c, int colors[], int counts[], int color) {
 			if (x < 0 || x >= w) continue;
 
 			/* If the cell hasn't already been procssed, add it to the queue */
-			n2 = lab_toi(y, x, w);
+			n2 = yx_to_i(y, x, w);
 			if (previous[n2] >= 0) continue;
 			q_push_int(queue, n2);
 			previous[n2] = n;

@@ -105,6 +105,21 @@ byte get_angle_to_grid[41][41] =
 
 
 /**
+ * Used to convert (x, y) into an array index (i) in a chunk of width w.
+ */
+int yx_to_i(int y, int x, int w) {
+    return y * w + x;
+}
+
+/**
+ * Used to convert an array index (i) into (x, y) in a chunk of width w.
+ */
+void i_to_yx(int i, int w, int *y, int *x) {
+    *y = i / w;
+    *x = i % w;
+}
+
+/**
  * Shuffle an array using Knuth's shuffle.
  */
 void shuffle(int *arr, int n)

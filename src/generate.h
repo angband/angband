@@ -276,6 +276,8 @@ bool build_huge(struct cave *c, int y0, int x0);
 byte get_angle_to_grid[41][41];
 
 void ensure_connectedness(struct cave *c);
+int yx_to_i(int y, int x, int w);
+void i_to_yx(int i, int w, int *y, int *x);
 void shuffle(int *arr, int n);
 bool cave_find(struct cave *c, int *y, int *x, square_predicate pred);
 bool find_empty(struct cave *c, int *y, int *x);
