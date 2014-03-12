@@ -1281,6 +1281,8 @@ bool cavern_gen(struct cave *c, struct player *p) {
 		cave_free(cavern);
     }
 
+	set_cave_dimensions(c, h, w);
+
 	/* Place 2-3 down stairs near some walls */
 	alloc_stairs(c, FEAT_MORE, rand_range(1, 3), 3);
 
