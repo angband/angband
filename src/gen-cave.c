@@ -847,7 +847,7 @@ bool labyrinth_gen(struct cave *c, struct player *p) {
 /**
  * Initialize the dungeon array, with a random percentage of squares open.
  */
-static void init_cavern(struct cave *c, struct player *p, int density) {
+static void init_cavern(struct cave *c, int density) {
     int h = c->height;
     int w = c->width;
     int size = h * w;
@@ -1204,97 +1204,117 @@ void ensure_connectedness(struct cave *c) {
 /**
  * The generator's main function.
  */
+struct cave *cavern_chunk(int depth, int h, int w, int density, int times)
+{
+    int i;
+    int size = h * w;
+    int limit = size / 13;
+    int *colors = mem_zalloc(size * sizeof(int));
+    int *counts = mem_zalloc(size * sizeof(int));
+
+    int tries;
+
+	struct cave *c = cave_new(h, w);
+	c->depth = depth;
+
+    ROOM_LOG("cavern h=%d w=%d size=%d density=%d times=%d", h, w, size,
+			 density, times);
+
+	/* Start trying to build caverns */
+	for (tries = 0; tries < MAX_CAVERN_TRIES; tries++) {
+		/* Build a random cavern and mutate it a number of times */
+		init_cavern(c, density);
+		for (i = 0; i < times; i++) mutate_cavern(c);
+
+		/* If there are enough open squares then we're done */
+		if (c->feat_count[FEAT_FLOOR] >= limit) {
+			ROOM_LOG("cavern ok (%d vs %d)", c->feat_count[FEAT_FLOOR], limit);
+			break;
+		}
+		ROOM_LOG("cavern failed--try again (%d vs %d)",
+				 c->feat_count[FEAT_FLOOR], limit);
+	}
+
+	/* If we couldn't make a big enough cavern then fail */
+	if (tries == MAX_CAVERN_TRIES) {
+		cave_free(c);
+		return NULL;
+	}
+
+	build_colors(c, colors, counts, FALSE);
+	clear_small_regions(c, colors, counts);
+	join_regions(c, colors, counts);
+
+    mem_free(colors);
+    mem_free(counts);
+
+	return c;
+}
+
+
+/**
+ * Make a cavern level.
+ */
 bool cavern_gen(struct cave *c, struct player *p) {
-    int i, k, openc;
+    int i, k;
 
     int h = rand_range(DUNGEON_HGT / 2, (DUNGEON_HGT * 3) / 4);
     int w = rand_range(DUNGEON_WID / 2, (DUNGEON_WID * 3) / 4);
-    int size = h * w;
-    int limit = size / 13;
 
     int density = rand_range(25, 40);
     int times = rand_range(3, 6);
 
-    int *colors = C_ZNEW(size, int);
-    int *counts = C_ZNEW(size, int);
-
-    int tries = 0;
-
-    bool ok = TRUE;
-
-    set_cave_dimensions(c, h, w);
-    ROOM_LOG("cavern h=%d w=%d size=%d density=%d times=%d", h, w, size, density, times);
+	struct cave *cavern;
 
     if (c->depth < 15) {
 		/* If we're too shallow then don't do it */
-		ok = FALSE;
+		return FALSE;
 
     } else {
-		/* Start trying to build caverns */
-		array_filler(colors, 0, size);
-		array_filler(counts, 0, size);
-	
-		for (tries = 0; tries < MAX_CAVERN_TRIES; tries++) {
-			/* Build a random cavern and mutate it a number of times */
-			init_cavern(c, p, density);
-			for (i = 0; i < times; i++) mutate_cavern(c);
-	
-			/* If there are enough open squares then we're done */
-			openc = c->feat_count[FEAT_FLOOR];
-			if (openc >= limit) {
-				ROOM_LOG("cavern ok (%d vs %d)", openc, limit);
-				break;
-			}
-			ROOM_LOG("cavern failed--try again (%d vs %d)", openc, limit);
+		/* Try to build the cavern, fail gracefully */
+		cavern = cavern_chunk(c->depth, h, w, density, times);
+		if (!cavern) return FALSE;
+		if (!chunk_copy(cavern, c, 0, 0)) {
+			cave_free(cavern);
+			return FALSE;
 		}
-
-		/* If we couldn't make a big enough cavern then fail */
-		if (tries == MAX_CAVERN_TRIES) ok = FALSE;
+		cave_free(cavern);
     }
 
-    if (ok) {
-		build_colors(c, colors, counts, FALSE);
-		clear_small_regions(c, colors, counts);
-		join_regions(c, colors, counts);
-	
-		/* Place 2-3 down stairs near some walls */
-		alloc_stairs(c, FEAT_MORE, rand_range(1, 3), 3);
-	
-		/* Place 1-2 up stairs near some walls */
-		alloc_stairs(c, FEAT_LESS, rand_range(1, 2), 3);
-	
-		/* General some rubble, traps and monsters */
-		k = MAX(MIN(c->depth / 3, 10), 2);
-	
-		/* Scale number of monsters items by cavern size */
-		k = MAX((4 * k * (h *  w)) / (DUNGEON_HGT * DUNGEON_WID), 6);
-	
-		/* Put some rubble in corridors */
-		alloc_objects(c, SET_BOTH, TYP_RUBBLE, randint1(k), c->depth, 0);
-	
-		/* Place some traps in the dungeon */
-		alloc_objects(c, SET_BOTH, TYP_TRAP, randint1(k), c->depth, 0);
-	
-		/* Determine the character location */
-		new_player_spot(c, p);
-	
-		/* Put some monsters in the dungeon */
-		for (i = randint1(8) + k; i > 0; i--)
-			pick_and_place_distant_monster(c, loc(p->px, p->py), 0, TRUE, c->depth);
-	
-		/* Put some objects/gold in the dungeon */
-		alloc_objects(c, SET_BOTH, TYP_OBJECT, Rand_normal(k, 2), c->depth + 5,
-					  ORIGIN_CAVERN);
-		alloc_objects(c, SET_BOTH, TYP_GOLD, Rand_normal(k / 2, 2), c->depth,
-					  ORIGIN_CAVERN);
-		alloc_objects(c, SET_BOTH, TYP_GOOD, randint0(k / 4), c->depth,
-					  ORIGIN_CAVERN);
-    }
+	/* Place 2-3 down stairs near some walls */
+	alloc_stairs(c, FEAT_MORE, rand_range(1, 3), 3);
 
-    FREE(colors);
-    FREE(counts);
+	/* Place 1-2 up stairs near some walls */
+	alloc_stairs(c, FEAT_LESS, rand_range(1, 2), 3);
 
-    return ok;
+	/* General some rubble, traps and monsters */
+	k = MAX(MIN(c->depth / 3, 10), 2);
+
+	/* Scale number of monsters items by cavern size */
+	k = MAX((4 * k * (h *  w)) / (DUNGEON_HGT * DUNGEON_WID), 6);
+
+	/* Put some rubble in corridors */
+	alloc_objects(c, SET_BOTH, TYP_RUBBLE, randint1(k), c->depth, 0);
+
+	/* Place some traps in the dungeon */
+	alloc_objects(c, SET_BOTH, TYP_TRAP, randint1(k), c->depth, 0);
+
+	/* Determine the character location */
+	new_player_spot(c, p);
+
+	/* Put some monsters in the dungeon */
+	for (i = randint1(8) + k; i > 0; i--)
+		pick_and_place_distant_monster(c, loc(p->px, p->py), 0, TRUE, c->depth);
+
+	/* Put some objects/gold in the dungeon */
+	alloc_objects(c, SET_BOTH, TYP_OBJECT, Rand_normal(k, 2), c->depth + 5,
+				  ORIGIN_CAVERN);
+	alloc_objects(c, SET_BOTH, TYP_GOLD, Rand_normal(k / 2, 2), c->depth,
+				  ORIGIN_CAVERN);
+	alloc_objects(c, SET_BOTH, TYP_GOOD, randint0(k / 4), c->depth,
+				  ORIGIN_CAVERN);
+
+	return TRUE;
 }
 
 /* ------------------ TOWN ---------------- */
