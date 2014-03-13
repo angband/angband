@@ -893,6 +893,7 @@ void wr_chunks(void)
 		/* Dump the monsters */
 		for (i = 1; i < c->mon_cnt; i++) {
 			monster_type *m_ptr = &c->monsters[i];
+			if (!m_ptr->race) continue;
 
 			/* Dump it */
 			wr_monster(m_ptr);

@@ -1578,7 +1578,6 @@ void play_game(void)
 	u32b default_window_flag[ANGBAND_TERM_MAX];
 	/* Initialize */
 	bool new_game = init_angband();
-	struct cave *level = cave_new(DUNGEON_HGT, DUNGEON_WID);
 
 	/*** Do horrible, hacky things, to start the game off ***/
 
@@ -1730,7 +1729,7 @@ void play_game(void)
 
 	/* Generate a dungeon level if needed */
 	if (!character_dungeon)
-		cave_generate(level, player);
+		cave_generate(cave , player);
 
 
 	/* Character is now "complete" */
@@ -1855,8 +1854,7 @@ void play_game(void)
 		if (player->is_dead) break;
 
 		/* Make a new level */
-		level = cave_new(DUNGEON_HGT, DUNGEON_WID);
-		cave_generate(level, player);
+		cave_generate(cave, player);
 	}
 
 	/* Disallow big cursor */

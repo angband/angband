@@ -465,15 +465,16 @@ static int calc_mon_feeling(struct cave *c)
 void cave_generate(struct cave *c, struct player *p) {
     const char *error = "no generation";
     int y, x, tries = 0;
+	struct cave *chunk;
 
     /* Start with dungeon-wide permanent rock */
-	cave_clear(cave, p);
-    fill_rectangle(cave, 0, 0, DUNGEON_HGT - 1, DUNGEON_WID - 1, 
-				   FEAT_PERM, SQUARE_NONE);
+	cave_clear(c, p);
+    fill_rectangle(c, 0, 0, DUNGEON_HGT - 1, DUNGEON_WID - 1, FEAT_PERM,
+				   SQUARE_NONE);
 
     assert(c);
 
-    cave->depth = p->depth;
+    c->depth = p->depth;
 
     /* Generate */
     for (tries = 0; tries < 100 && error; tries++) {
@@ -481,36 +482,20 @@ void cave_generate(struct cave *c, struct player *p) {
 
 		error = NULL;
 
-		cave_clear(c, p);
-		c->depth = cave->depth;
-
 		/* Mark the dungeon as being unready (to avoid artifact loss, etc) */
 		character_dungeon = FALSE;
 
 		/* Allocate global data (will be freed when we leave the loop) */
 		dun = &dun_body;
 
-		if (p->depth == 0) {
-			bool temp_hack = FALSE;
-			/* Testing town saving */
-			cave_free(c);
-			c = chunk_find("Town");
-
-			if (c) {
-				temp_hack = TRUE;
-			//	chunk_list_remove("Town");
-			} else {
-				/* Generate */
-				c = cave_new(TOWN_HGT, TOWN_WID);
-			}
+		if (c->depth == 0) {
 			dun->profile = &town_profile;
-			dun->profile->builder(c, p);
-			if (temp_hack) chunk_list_remove("Town");
+			chunk = dun->profile->builder(p);
 		} else if (is_quest(c->depth)) {
 		
 			/* Quest levels must be normal levels */
 			dun->profile = &cave_profiles[N_ELEMENTS(cave_profiles) - 1];
-			dun->profile->builder(c, p);
+			chunk = dun->profile->builder(p);
 #if 0
 			/* Replacing #if 0 with #if 1 will force the use of the sample1
 			 * profile except in quest levels and the town.  This is handy for
@@ -518,26 +503,25 @@ void cave_generate(struct cave *c, struct player *p) {
 			 */
 		} else if (1) {
 			dun->profile = &sample1;
-			dun->profile->builder(c, p);
+			chunk = dun->profile->builder(p);
 #endif
 		} else {	
 			int perc = randint0(100);
 			size_t last = N_ELEMENTS(cave_profiles) - 1;
 			size_t i;
 			for (i = 0; i < N_ELEMENTS(cave_profiles); i++) {
-				bool ok;
 				const struct cave_profile *profile;
 
 				profile = dun->profile = &cave_profiles[i];
 				if (i < last && profile->cutoff < perc) continue;
 
-				ok = dun->profile->builder(c, p);
-				if (ok) break;
+				chunk = dun->profile->builder (p);
+				if (chunk) break;
 			}
 		}
 
 		/* Ensure quest monsters */
-		if (is_quest(c->depth)) {
+		if (is_quest(chunk->depth)) {
 			int i;
 			for (i = 1; i < z_info->r_max; i++) {
 				monster_race *r_ptr = &r_info[i];
@@ -546,28 +530,28 @@ void cave_generate(struct cave *c, struct player *p) {
 				/* The monster must be an unseen quest monster of this depth. */
 				if (r_ptr->cur_num > 0) continue;
 				if (!rf_has(r_ptr->flags, RF_QUESTOR)) continue;
-				if (r_ptr->level != c->depth) continue;
+				if (r_ptr->level != chunk->depth) continue;
 	
 				/* Pick a location and place the monster */
-				find_empty(c, &y, &x);
-				place_new_monster(c, y, x, r_ptr, TRUE, TRUE, ORIGIN_DROP);
+				find_empty(chunk, &y, &x);
+				place_new_monster(chunk, y, x, r_ptr, TRUE, TRUE, ORIGIN_DROP);
 			}
 		}
 
 		/* Clear generation flags. */
-		for (y = 0; y < c->height; y++) {
-			for (x = 0; x < c->width; x++) {
-				sqinfo_off(c->info[y][x], SQUARE_WALL_INNER);
-				sqinfo_off(c->info[y][x], SQUARE_WALL_OUTER);
-				sqinfo_off(c->info[y][x], SQUARE_WALL_SOLID);
-				sqinfo_off(c->info[y][x], SQUARE_MON_RESTRICT);
+		for (y = 0; y < chunk->height; y++) {
+			for (x = 0; x < chunk->width; x++) {
+				sqinfo_off(chunk->info[y][x], SQUARE_WALL_INNER);
+				sqinfo_off(chunk->info[y][x], SQUARE_WALL_OUTER);
+				sqinfo_off(chunk->info[y][x], SQUARE_WALL_SOLID);
+				sqinfo_off(chunk->info[y][x], SQUARE_MON_RESTRICT);
 			}
 		}
 
 		/* Regenerate levels that overflow their maxima */
-		if (cave_object_max(c) >= z_info->o_max) 
+		if (cave_object_max(chunk) >= z_info->o_max)
 			error = "too many objects";
-		if (cave_monster_max(c) >= z_info->m_max)
+		if (cave_monster_max(chunk) >= z_info->m_max)
 			error = "too many monsters";
 
 		if (error) ROOM_LOG("Generation restarted: %s.", error);
@@ -576,28 +560,31 @@ void cave_generate(struct cave *c, struct player *p) {
     if (error) quit_fmt("cave_generate() failed 100 times!");
 
 	/* Copy into the cave */
-	if (!chunk_copy(c, cave, 0, 0))
+	if (!chunk_copy(chunk, c, 0, 0))
 		quit_fmt("chunk_copy() level bounds failed!");
-	cave_free(c);
+
+	/* Free it TODO make this process more robust */
+	if (chunk_find(chunk)) chunk_list_remove(chunk->name);
+	cave_free(chunk);
 
 	/* Place dungeon squares to trigger feeling (not in town) */
 	if (player->depth)
-		place_feeling(cave);
+		place_feeling(c);
 
 	/* Testing town saving */
-	else if (!chunk_find("Town")) {
+	else if (!chunk_find_name("Town")) {
 		struct cave *town = chunk_write(0, 0, TOWN_HGT, TOWN_WID, FALSE,
 										FALSE, FALSE, TRUE);
 		town->name = string_make("Town");
 		chunk_list_add(town);
 	}
 
-	cave->feeling = calc_obj_feeling(cave) + calc_mon_feeling(cave);
+	c->feeling = calc_obj_feeling(c) + calc_mon_feeling(c);
 
     /* The dungeon is ready */
     character_dungeon = TRUE;
 
-    cave->created_at = turn;
+    c->created_at = turn;
 }
 
 

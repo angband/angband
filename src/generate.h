@@ -146,7 +146,7 @@ struct streamer_profile {
 /*
  * cave_builder is a function pointer which builds a level.
  */
-typedef bool (*cave_builder) (struct cave *c, struct player *p);
+typedef struct cave * (*cave_builder) (struct player *p);
 
 
 struct cave_profile {
@@ -234,18 +234,18 @@ typedef struct room_template {
 struct dun_data *dun;
 struct room_template *room_templates;
 
-bool town_gen(struct cave *c, struct player *p);
-
-bool classic_gen(struct cave *c, struct player *p);
-bool labyrinth_gen(struct cave *c, struct player *p);
-bool cavern_gen(struct cave *c, struct player *p);
-bool sample1_gen(struct cave *c, struct player *p);
+struct cave *town_gen(struct player *p);
+struct cave *classic_gen(struct player *p);
+struct cave *labyrinth_gen(struct player *p);
+struct cave *cavern_gen(struct player *p);
+struct cave *sample1_gen(struct player *p);
 
 struct cave *chunk_write(int y0, int x0, int height, int width, bool monsters,
 						 bool objects, bool traps, bool delete_old);
 void chunk_list_add(struct cave *c);
 bool chunk_list_remove(char *name);
-struct cave *chunk_find(char *name);
+struct cave *chunk_find_name(char *name);
+bool chunk_find(struct cave *c);
 bool chunk_copy(struct cave *source, struct cave *dest, int y0, int x0);
 
 

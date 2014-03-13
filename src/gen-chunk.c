@@ -201,7 +201,7 @@ bool chunk_list_remove(char *name)
 /**
  * Find a chunk by name
  */
-struct cave *chunk_find(char *name)
+struct cave *chunk_find_name(char *name)
 {
 	int i;
 
@@ -210,6 +210,19 @@ struct cave *chunk_find(char *name)
 			return chunk_list[i];
 
 	return NULL;
+}
+
+/**
+ * Find a chunk by pointer
+ */
+bool chunk_find(struct cave *c)
+{
+	int i;
+
+	for (i = 0; i < chunk_list_max; i++)
+		if (c == chunk_list[i]) return TRUE;
+
+	return FALSE;
 }
 
 /**
