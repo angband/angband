@@ -547,7 +547,6 @@ void wr_misc(void)
 
 	/* Write the "object seeds" */
 	wr_u32b(seed_flavor);
-	wr_u32b(seed_town);
 
 
 	/* Special stuff */

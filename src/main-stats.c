@@ -228,7 +228,6 @@ static void initialize_character(void)
 	generate_player_for_stats();
 
 	seed_flavor = randint0(0x10000000);
-	seed_town = randint0(0x10000000);
 	seed_randart = randint0(0x10000000);
 
 	if (randarts)

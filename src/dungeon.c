@@ -54,7 +54,6 @@
 u16b daycount = 0;
 u32b seed_randart;		/* Hack -- consistent random artifacts */
 u32b seed_flavor;		/* Hack -- consistent object colors */
-u32b seed_town;			/* Hack -- consistent town layout */
 s32b turn;				/* Current game turn */
 bool character_generated;	/* The character exists */
 bool character_dungeon;		/* The character has a dungeon */
@@ -1673,9 +1672,6 @@ void play_game(void)
 
 		/* Seed for flavors */
 		seed_flavor = randint0(0x10000000);
-
-		/* Seed for town layout */
-		seed_town = randint0(0x10000000);
 
 		/* Roll up a new character. Quickstart is allowed if ht_birth is set */
 		player_birth(player->ht_birth ? TRUE : FALSE);

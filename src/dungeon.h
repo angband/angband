@@ -9,7 +9,6 @@
 extern u16b daycount;
 extern u32b seed_randart;
 extern u32b seed_flavor;
-extern u32b seed_town;
 extern s32b turn;
 extern bool character_generated;
 extern bool character_dungeon;

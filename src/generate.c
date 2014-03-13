@@ -491,46 +491,21 @@ void cave_generate(struct cave *c, struct player *p) {
 		dun = &dun_body;
 
 		if (p->depth == 0) {
+			bool temp_hack = FALSE;
 			/* Testing town saving */
 			cave_free(c);
 			c = chunk_find("Town");
 
 			if (c) {
-				bool daytime = turn % (10 * TOWN_DAWN) < (10 * TOWN_DUSK);
-				int residents = daytime ? MIN_M_ALLOC_TD : MIN_M_ALLOC_TN;
-				int i;
-
-				/* Find the stairs (lame) */
-				for (y = 0; y < c->height; y++) {
-					bool found = FALSE;
-					for (x = 0; x < c->width; x++) {
-						if (c->feat[y][x] == FEAT_MORE) {
-							found = TRUE;
-							break;
-						}
-					}
-					if (found) break;
-				}
-
-				/* Place the player */
-				player_place(c, p, y, x);
-
-				/* Apply illumination */
-				cave_illuminate(c, daytime);
-
-				/* Make some residents */
-				for (i = 0; i < residents; i++)
-					pick_and_place_distant_monster(c, loc(p->px, p->py), 
-												   3, TRUE, c->depth);
-
-				chunk_list_remove("Town");
-				break;
+				temp_hack = TRUE;
+			//	chunk_list_remove("Town");
 			} else {
-				/* Standard method */
+				/* Generate */
 				c = cave_new(TOWN_HGT, TOWN_WID);
-				dun->profile = &town_profile;
-				dun->profile->builder(c, p);
 			}
+			dun->profile = &town_profile;
+			dun->profile->builder(c, p);
+			if (temp_hack) chunk_list_remove("Town");
 		} else if (is_quest(c->depth)) {
 		
 			/* Quest levels must be normal levels */

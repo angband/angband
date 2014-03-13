@@ -811,7 +811,6 @@ int rd_misc(void)
 
 	/* Hack -- the two "special seeds" */
 	rd_u32b(&seed_flavor);
-	rd_u32b(&seed_town);
 
 
 	/* Special stuff */

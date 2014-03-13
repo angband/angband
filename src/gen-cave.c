@@ -1351,28 +1351,14 @@ static void build_store(struct cave *c, int n, int yy, int xx) {
 
 
 /**
- * Generate the "consistent" town features, and place the player
- *
- * HACK: We seed the simple RNG, so we always get the same town layout,
- * including the size and shape of the buildings, the locations of the
- * doorways, and the location of the stairs. This means that if any of the
- * functions used to build the town change the way they use the RNG, the
- * town layout will be generated differently.
- *
- * XXX: Remove this gross hack when this piece of code is fully reentrant -
- * i.e., when all we need to do is swing a pointer to change caves, we just
- * need to generate the town once (we will also need to save/load the town).
+ * Generate the town for the first time, and place the player
  */
-static void town_gen_hack(struct cave *c, struct player *p) {
+static void town_gen_layout(struct cave *c, struct player *p) {
     int y, x, n, k;
     int rooms[MAX_STORES];
 
     int n_rows = 2;
     int n_cols = (MAX_STORES + 1) / n_rows;
-
-    /* Switch to the "simple" RNG and use our original town seed */
-    Rand_quick = TRUE;
-    Rand_value = seed_town;
 
     /* Prepare an Array of "remaining stores", and count them */
     for (n = 0; n < MAX_STORES; n++) rooms[n] = n;
@@ -1401,9 +1387,6 @@ static void town_gen_hack(struct cave *c, struct player *p) {
 
     /* Place the player */
     player_place(c, p, y, x);
-
-    /* go back to using the "complex" RNG */
-    Rand_quick = FALSE;
 }
 
 
@@ -1415,24 +1398,42 @@ static void town_gen_hack(struct cave *c, struct player *p) {
  * handles the physical layout.
  */
 bool town_gen(struct cave *c, struct player *p) {
-    int i;
+    int i, y, x;
     bool daytime = turn % (10 * TOWN_DAWN) < (10 * TOWN_DUSK);
     int residents = daytime ? MIN_M_ALLOC_TD : MIN_M_ALLOC_TN;
 
     assert(c);
 
-    set_cave_dimensions(c, TOWN_HGT, TOWN_WID);
+	/* Hack to be removed SOON */
+	if (!c->feat[0][0]) {
 
-    /* Create walls */
-    draw_rectangle(c, 0, 0, c->height - 1, c->width - 1, 
-				   FEAT_PERM, SQUARE_NONE);
+		/* Create walls */
+		draw_rectangle(c, 0, 0, c->height - 1, c->width - 1, 
+					   FEAT_PERM, SQUARE_NONE);
 
-    /* Create some floor */
-    fill_rectangle(c, 1, 1, c->height - 2, c->width - 2, 
-				   FEAT_FLOOR, SQUARE_NONE);
+		/* Create some floor */
+		fill_rectangle(c, 1, 1, c->height - 2, c->width - 2, 
+					   FEAT_FLOOR, SQUARE_NONE);
 
-    /* Build stuff */
-    town_gen_hack(c, p);
+		/* Build stuff */
+		town_gen_layout(c, p);
+	} else {
+
+		/* Find the stairs (lame) */
+		for (y = 0; y < c->height; y++) {
+			bool found = FALSE;
+			for (x = 0; x < c->width; x++) {
+				if (c->feat[y][x] == FEAT_MORE) {
+					found = TRUE;
+					break;
+				}
+			}
+			if (found) break;
+		}
+
+		/* Place the player */
+		player_place(c, p, y, x);
+	}
 
     /* Apply illumination */
     cave_illuminate(c, daytime);
