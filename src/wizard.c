@@ -1272,6 +1272,13 @@ static void do_cmd_wiz_jump(void)
 	/* Paranoia */
 	if (depth > MAX_DEPTH - 1) depth = MAX_DEPTH - 1;
 
+	/* Prompt */
+	strnfmt(ppp, sizeof(ppp), "Choose cave_profile (eg classic_gen)?");
+
+	/* Get to choose generation algorithm */
+	if (get_check(ppp))
+		player->noscore |= NOSCORE_JUMPING;
+
 	/* Accept request */
 	msg("You jump to dungeon level %d.", depth);
 
