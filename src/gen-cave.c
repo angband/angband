@@ -759,27 +759,6 @@ struct cave *labyrinth_gen(struct player *p) {
     /* Most labyrinths have soft (diggable) walls */
     bool soft = randint0(p->depth) < 35 || randint0(3) < 2;
 
-    /* There's a base 2 in 100 to accept the labyrinth */
-    int chance = 2;
-
-    /* If we're too shallow then don't do it */
-    if (p->depth < 13) return NULL;
-
-    /* Don't try this on quest levels, kids... */
-    if (is_quest(p->depth)) return NULL;
-
-    /* Certain numbers increase the chance of having a labyrinth */
-    if (p->depth % 3 == 0) chance += 1;
-    if (p->depth % 5 == 0) chance += 1;
-    if (p->depth % 7 == 0) chance += 1;
-    if (p->depth % 11 == 0) chance += 1;
-    if (p->depth % 13 == 0) chance += 1;
-
-    /* Only generate the level if we pass a check */
-    /* NOTE: This test gets performed after we pass the test to use the
-     * labyrinth cave profile. */
-    if (randint0(100) >= chance) return NULL;
-
 	/* Generate the actual labyrinth */
 	c = labyrinth_chunk(p->depth, h, w, lit, soft);
 	if (!c) return NULL;

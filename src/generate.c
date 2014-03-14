@@ -109,6 +109,24 @@ struct cave_profile town_profile = {
 };
 
 
+struct cave_profile labyrinth_profile = {
+    /* name builder block dun_rooms dun_unusual max_rarity n_room_profiles */
+	"labyrinth", labyrinth_gen, 1, 0, 200, 0, 0,
+
+	/* tunnels -- not applicable */
+	{"tunnel-null", 0, 0, 0, 0, 0},
+
+	/* streamers -- not applicable */
+	{"streamer-null", 0, 0, 0, 0, 0, 0},
+
+	/* room_profiles -- not applicable */
+	NULL,
+
+	/* cutoff -- unused because of special check in labyrinth_check  */
+	0
+};
+
+
 /* name function height width min-depth pit? rarity %cutoff */
 struct room_profile classic_rooms[] = {
     /* greater vaults only have rarity 1 but they have other checks */
@@ -162,21 +180,6 @@ struct room_profile sample1_rooms[] = {
  * Profiles used for generating dungeon levels.
  */
 struct cave_profile cave_profiles[] = {
-    {
-		"labyrinth", labyrinth_gen, 1, 0, 200, 0, 0,
-
-		/* tunnels -- not applicable */
-		{"tunnel-null", 0, 0, 0, 0, 0},
-
-		/* streamers -- not applicable */
-		{"streamer-null", 0, 0, 0, 0, 0, 0},
-
-		/* room_profiles -- not applicable */
-		NULL,
-
-		/* cutoff -- unused because of internal checks in labyrinth_gen  */
-		100
-    },
     {
 		"cavern", cavern_gen, 1, 0, 200, 0, 0,
 
@@ -456,6 +459,71 @@ static int calc_mon_feeling(struct cave *c)
     return 9;
 }
 
+/**
+ * Do d_m's prime check for labyrinths
+ */
+bool labyrinth_check(struct cave *c)
+{
+    /* There's a base 2 in 100 to accept the labyrinth */
+    int chance = 2;
+
+    /* If we're too shallow then don't do it */
+    if (c->depth < 13) return FALSE;
+
+    /* Don't try this on quest levels, kids... */
+    if (is_quest(c->depth)) return FALSE;
+
+    /* Certain numbers increase the chance of having a labyrinth */
+    if (c->depth % 3 == 0) chance += 1;
+    if (c->depth % 5 == 0) chance += 1;
+    if (c->depth % 7 == 0) chance += 1;
+    if (c->depth % 11 == 0) chance += 1;
+    if (c->depth % 13 == 0) chance += 1;
+
+    /* Only generate the level if we pass a check */
+    if (randint0(100) >= chance) return FALSE;
+
+	/* Successfully ran the gauntlet! */
+	return TRUE;
+}
+
+/**
+ * Choose a cave profile
+ */
+const struct cave_profile *choose_profile(struct cave *c)
+{
+	if (c->depth == 0)
+		return &town_profile;
+	else if (is_quest(c->depth))
+		/* Quest levels must be normal levels */
+		return &cave_profiles[N_ELEMENTS(cave_profiles) - 1];
+#if 0
+	/* Replacing #if 0 with #if 1 will force the use of the sample1
+	 * profile except in quest levels and the town.  This is handy for
+	 * experimenting with new generation methods.
+	 */
+	else if (1)
+		return &sample1;
+#endif
+	else if (labyrinth_check(c))
+		return &labyrinth_profile;
+	else {
+		int perc = randint0(100);
+		size_t last = N_ELEMENTS(cave_profiles) - 1;
+		size_t i;
+		for (i = 0; i < N_ELEMENTS(cave_profiles); i++) {
+			const struct cave_profile *profile;
+
+			profile = &cave_profiles[i];
+			if (i < last && profile->cutoff < perc) continue;
+
+			return profile;
+		}
+	}
+
+	/* Shouldn't reach here */
+	return &cave_profiles[N_ELEMENTS(cave_profiles) - 1];
+}
 
 /**
  * Generate a random level.
@@ -488,36 +556,11 @@ void cave_generate(struct cave *c, struct player *p) {
 		/* Allocate global data (will be freed when we leave the loop) */
 		dun = &dun_body;
 
-		if (c->depth == 0) {
-			dun->profile = &town_profile;
-			chunk = dun->profile->builder(p);
-		} else if (is_quest(c->depth)) {
-		
-			/* Quest levels must be normal levels */
-			dun->profile = &cave_profiles[N_ELEMENTS(cave_profiles) - 1];
-			chunk = dun->profile->builder(p);
-#if 0
-			/* Replacing #if 0 with #if 1 will force the use of the sample1
-			 * profile except in quest levels and the town.  This is handy for
-			 * experimenting with new generation methods.
-			 */
-		} else if (1) {
-			dun->profile = &sample1;
-			chunk = dun->profile->builder(p);
-#endif
-		} else {	
-			int perc = randint0(100);
-			size_t last = N_ELEMENTS(cave_profiles) - 1;
-			size_t i;
-			for (i = 0; i < N_ELEMENTS(cave_profiles); i++) {
-				const struct cave_profile *profile;
-
-				profile = dun->profile = &cave_profiles[i];
-				if (i < last && profile->cutoff < perc) continue;
-
-				chunk = dun->profile->builder (p);
-				if (chunk) break;
-			}
+		dun->profile = choose_profile(c);
+		chunk = dun->profile->builder(p);
+		if (!chunk) {
+			error = "Failed to find builder";
+			continue;
 		}
 
 		/* Ensure quest monsters */
