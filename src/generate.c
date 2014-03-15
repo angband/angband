@@ -495,21 +495,29 @@ const struct cave_profile *find_cave_profile(char *name)
  */
 const struct cave_profile *choose_profile(struct cave *c)
 {
-	const struct cave_profile *profile;
+	const struct cave_profile *profile = NULL;
 
+	/* A bit of a hack, but worth it for now NRM */
+	if (player->noscore & NOSCORE_JUMPING) {
+		char name[30];
+
+		/* Cancel the query */
+		player->noscore &= ~(NOSCORE_JUMPING);
+
+		/* Ask debug players for the profile they want */
+		if (get_string("Profile name (eg classic): ", name, sizeof(name)))
+			profile = find_cave_profile(name);
+
+		/* If no valid profile name given, fall through */
+		if (profile) return profile;
+	}
+
+	/* Make the profile choice */
 	if (c->depth == 0)
 		profile = find_cave_profile("town");
 	else if (is_quest(c->depth))
 		/* Quest levels must be normal levels */
 		profile = find_cave_profile("classic");
-#if 0
-	/* Replacing #if 0 with #if 1 will force the use of the modified
-	 * profile except in quest levels and the town.  This is handy for
-	 * experimenting with new generation methods.
-	 */
-	else if (1)
-		return &modified;
-#endif
 	else if (labyrinth_check(c))
 		profile = find_cave_profile("labyrinth");
 	else {

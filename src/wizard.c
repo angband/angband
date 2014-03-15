@@ -1253,6 +1253,7 @@ static void do_cmd_wiz_jump(void)
 
 	char ppp[80];
 	char tmp_val[160];
+	char answer;
 
 	/* Prompt */
 	strnfmt(ppp, sizeof(ppp), "Jump to level (0-%d): ", MAX_DEPTH-1);
@@ -1273,10 +1274,11 @@ static void do_cmd_wiz_jump(void)
 	if (depth > MAX_DEPTH - 1) depth = MAX_DEPTH - 1;
 
 	/* Prompt */
-	strnfmt(ppp, sizeof(ppp), "Choose cave_profile (eg classic_gen)?");
+	strnfmt(ppp, sizeof(ppp), "Choose cave_profile?");
 
 	/* Get to choose generation algorithm */
-	if (get_check(ppp))
+	answer = get_char(ppp, "yn", 2, 'n');
+	if ((answer == 'y') || (answer == 'Y'))
 		player->noscore |= NOSCORE_JUMPING;
 
 	/* Accept request */
