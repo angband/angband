@@ -88,45 +88,6 @@ struct vault *vaults;
  * rooms on a grid.
  */
 
-/**
- * Profile used for generating the town level.
- */
-struct cave_profile town_profile = {
-    /* name builder block dun_rooms dun_unusual max_rarity n_room_profiles */
-    "town-default", town_gen, 1, 50, 200, 2, 0,
-
-    /* name rnd chg con pen jct */
-    {"tunnel-default", 10, 30, 15, 25, 90},
-
-    /* name den rng mag mc qua qc */
-    {"streamer-default", 5, 2, 3, 90, 2, 40},
-
-    /* room_profiles -- not applicable */
-    NULL,
-
-    /* cutoff -- not applicable */
-    0
-};
-
-
-struct cave_profile labyrinth_profile = {
-    /* name builder block dun_rooms dun_unusual max_rarity n_room_profiles */
-	"labyrinth", labyrinth_gen, 1, 0, 200, 0, 0,
-
-	/* tunnels -- not applicable */
-	{"tunnel-null", 0, 0, 0, 0, 0},
-
-	/* streamers -- not applicable */
-	{"streamer-null", 0, 0, 0, 0, 0, 0},
-
-	/* room_profiles -- not applicable */
-	NULL,
-
-	/* cutoff -- unused because of special check in labyrinth_check  */
-	0
-};
-
-
 /* name function height width min-depth pit? rarity %cutoff */
 struct room_profile classic_rooms[] = {
     /* greater vaults only have rarity 1 but they have other checks */
@@ -151,7 +112,7 @@ struct room_profile classic_rooms[] = {
 };
 
 /* name function height width min-depth pit? rarity %cutoff */
-struct room_profile sample1_rooms[] = {
+struct room_profile modified_rooms[] = {
     /* really big rooms have rarity 0 but they have other checks */
     {"greater vault", build_greater_vault, 44, 66, 35, FALSE, 0, 100},
 	{"huge room", build_huge, 44, 66, 40, FALSE, 0, 100},
@@ -180,6 +141,55 @@ struct room_profile sample1_rooms[] = {
  * Profiles used for generating dungeon levels.
  */
 struct cave_profile cave_profiles[] = {
+	{
+		"town", town_gen, 1, 00, 200, 0, 0,
+
+		/* tunnels -- not applicable */
+		{"tunnel-null", 0, 0, 0, 0, 0},
+
+		/* streamers -- not applicable */
+		{"streamer-null", 0, 0, 0, 0, 0, 0},
+
+		/* room_profiles -- not applicable */
+		NULL,
+
+		/* cutoff -- not applicable */
+		-1
+	},
+	/* Points to note about this particular profile:
+	 * - block size is 1, which essentially means no blocks
+	 * - more comments at the definition of modified_gen in gen-cave.c */
+	{
+		/* name builder block dun_rooms dun_unusual max_rarity #room_profiles */
+		"modified", modified_gen, 1, 50, 250, 2, N_ELEMENTS(modified_rooms),
+
+		/* name rnd chg con pen jct */
+		{"tunnel-classic", 10, 30, 15, 25, 90},
+
+		/* name den rng mag mc qua qc */
+		{"streamer-classic", 5, 2, 3, 90, 2, 40},
+
+		/* room_profiles */
+		modified_rooms,
+
+		/* cutoff  -- not applicable because profile currently unused */
+		-1
+	},
+	{
+		"labyrinth", labyrinth_gen, 1, 0, 200, 0, 0,
+
+		/* tunnels -- not applicable */
+		{"tunnel-null", 0, 0, 0, 0, 0},
+
+		/* streamers -- not applicable */
+		{"streamer-null", 0, 0, 0, 0, 0, 0},
+
+		/* room_profiles -- not applicable */
+		NULL,
+
+		/* cutoff -- unused because of special labyrinth_check  */
+		-1
+	},
     {
 		"cavern", cavern_gen, 1, 0, 200, 0, 0,
 
@@ -192,7 +202,7 @@ struct cave_profile cave_profiles[] = {
 		/* room_profiles -- not applicable */
 		NULL,
 
-		/* cutoff -- debug  */
+		/* cutoff */
 		10
     },
     {
@@ -211,32 +221,6 @@ struct cave_profile cave_profiles[] = {
 		/* cutoff */
 		100
     }
-};
-
-
-/**
- * Experimental profile using all the new stuff.  To test, edit in the test
- * block of code in cave_generate below.
- *
- * Points to note about this particular profile:
- * - block size is 1, which essentially means no blocks
- * - there are more comments at the definition of sample1_gen in gen-cave.c
- */
-struct cave_profile sample1 = {
-	/* name builder block dun_rooms dun_unusual max_rarity n_room_profiles */
-	"sample1", sample1_gen, 1, 50, 250, 2, N_ELEMENTS(sample1_rooms),
-
-	/* name rnd chg con pen jct */
-	{"tunnel-classic", 10, 30, 15, 25, 90},
-
-	/* name den rng mag mc qua qc */
-	{"streamer-classic", 5, 2, 3, 90, 2, 40},
-
-	/* room_profiles */
-	sample1_rooms,
-
-	/* cutoff */
-	100
 };
 
 
@@ -488,41 +472,62 @@ bool labyrinth_check(struct cave *c)
 }
 
 /**
+ * Find a cave_profile by name
+ */
+const struct cave_profile *find_cave_profile(char *name)
+{
+	size_t i;
+
+	for (i = 0; i < N_ELEMENTS(cave_profiles); i++) {
+		const struct cave_profile *profile;
+
+		profile = &cave_profiles[i];
+		if (!strcmp(name, profile->name))
+			return profile;
+	}
+
+	/* Not there */
+	return NULL;
+}
+
+/**
  * Choose a cave profile
  */
 const struct cave_profile *choose_profile(struct cave *c)
 {
+	const struct cave_profile *profile;
+
 	if (c->depth == 0)
-		return &town_profile;
+		profile = find_cave_profile("town");
 	else if (is_quest(c->depth))
 		/* Quest levels must be normal levels */
-		return &cave_profiles[N_ELEMENTS(cave_profiles) - 1];
+		profile = find_cave_profile("classic");
 #if 0
-	/* Replacing #if 0 with #if 1 will force the use of the sample1
+	/* Replacing #if 0 with #if 1 will force the use of the modified
 	 * profile except in quest levels and the town.  This is handy for
 	 * experimenting with new generation methods.
 	 */
 	else if (1)
-		return &sample1;
+		return &modified;
 #endif
 	else if (labyrinth_check(c))
-		return &labyrinth_profile;
+		profile = find_cave_profile("labyrinth");
 	else {
 		int perc = randint0(100);
-		size_t last = N_ELEMENTS(cave_profiles) - 1;
 		size_t i;
 		for (i = 0; i < N_ELEMENTS(cave_profiles); i++) {
-			const struct cave_profile *profile;
-
 			profile = &cave_profiles[i];
-			if (i < last && profile->cutoff < perc) continue;
-
-			return profile;
+			if (profile->cutoff >= perc) break;
 		}
 	}
 
-	/* Shouldn't reach here */
-	return &cave_profiles[N_ELEMENTS(cave_profiles) - 1];
+	/* Return the profile or fail horribly */
+	if (profile)
+		return profile;
+	else
+		quit("Failed to find cave profile!");
+
+	return NULL;
 }
 
 /**
@@ -556,6 +561,7 @@ void cave_generate(struct cave *c, struct player *p) {
 		/* Allocate global data (will be freed when we leave the loop) */
 		dun = &dun_body;
 
+		/* Choose a profile and build the level */
 		dun->profile = choose_profile(c);
 		chunk = dun->profile->builder(p);
 		if (!chunk) {
@@ -614,7 +620,7 @@ void cave_generate(struct cave *c, struct player *p) {
 	if (player->depth)
 		place_feeling(c);
 
-	/* Testing town saving */
+	/* Save the town */
 	else if (!chunk_find_name("Town")) {
 		struct cave *town = chunk_write(0, 0, TOWN_HGT, TOWN_WID, FALSE,
 										FALSE, FALSE, TRUE);

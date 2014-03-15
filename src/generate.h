@@ -238,7 +238,7 @@ struct cave *town_gen(struct player *p);
 struct cave *classic_gen(struct player *p);
 struct cave *labyrinth_gen(struct player *p);
 struct cave *cavern_gen(struct player *p);
-struct cave *sample1_gen(struct player *p);
+struct cave *modified_gen(struct player *p);
 
 struct cave *chunk_write(int y0, int x0, int height, int width, bool monsters,
 						 bool objects, bool traps, bool delete_old);

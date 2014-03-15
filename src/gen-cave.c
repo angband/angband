@@ -1448,7 +1448,7 @@ struct room_profile moria_rooms[] = {
  *   interesting rooms, as well as to make general monster restrictions in
  *   areas or the whole dungeon
  */
-struct cave *sample1_gen(struct player *p) {
+struct cave *modified_gen(struct player *p) {
     int i, k, y, x, y1, x1;
     int by = 0, bx = 0, key, rarity;
     int num_floors, size_percent, y_size, x_size;
