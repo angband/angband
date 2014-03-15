@@ -413,7 +413,7 @@ static void store_display_help(struct store *store)
 		}
 	} else {
 		text_out_c(TERM_L_GREEN, "I");
-		text_out("' inspects an item from your inventory. ");
+		text_out(" inspects an item from your inventory. ");
 	}
 
 	text_out_c(TERM_L_GREEN, "ESC");
@@ -1019,7 +1019,7 @@ static const menu_iter store_menu =
 };
 
 /* Init the store menu */
-void store_menu_init(struct store *store, menu_type *menu)
+void store_menu_init(struct store *store, menu_type *menu, bool inspect_only)
 {
 	/* Init the menu structure */
 	menu_init(menu, MN_SKIN_SCROLL, &store_menu);
@@ -1027,7 +1027,7 @@ void store_menu_init(struct store *store, menu_type *menu)
 
 	/* Calculate the positions of things and draw */
 	menu_layout(menu, &store_menu_region);
-	store_menu_set_selections(menu, TRUE);
+	store_menu_set_selections(menu, inspect_only);
 	store_flags = STORE_INIT_CHANGE;
 	store_display_recalc(menu);
 	store_menu_recalc(menu);
@@ -1049,7 +1049,7 @@ void textui_store_knowledge(int n)
 	screen_save();
 	clear_from(0);
 
-	store_menu_init(store, &menu);
+	store_menu_init(store, &menu, TRUE);
 	menu_select(&menu, 0, FALSE);
 
 	/* Flush messages XXX XXX XXX */
@@ -1064,7 +1064,7 @@ void do_cmd_store(struct command *cmd)
 	struct store *store = store_at(cave, player->py, player->px);
 	menu_type menu;
 
-	/* Check that we're on as tore */
+	/* Check that we're on a store */
 	if (!store) {
 		msg("You see no store here.");
 		return;
@@ -1087,7 +1087,7 @@ void do_cmd_store(struct command *cmd)
 	screen_save();
 	msg_flag = FALSE;
 
-	store_menu_init(store, &menu);
+	store_menu_init(store, &menu, FALSE);
 
 	/* Say a friendly hello. */
 	if (store->sidx != STORE_HOME)
