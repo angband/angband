@@ -617,7 +617,7 @@ void cave_generate(struct cave *c, struct player *p) {
     if (error) quit_fmt("cave_generate() failed 100 times!");
 
 	/* Copy into the cave */
-	if (!chunk_copy(chunk, c, 0, 0))
+	if (!chunk_copy(c, chunk, 0, 0, 0, 0))
 		quit_fmt("chunk_copy() level bounds failed!");
 
 	/* Free it TODO make this process more robust */

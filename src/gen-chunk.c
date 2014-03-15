@@ -226,27 +226,64 @@ bool chunk_find(struct cave *c)
 }
 
 /**
- * Write a chunk to a given offset in another chunk
+ * Transform y, x coordinates by rotation, reflection and translation
+ * Stolen from PosChengband
  */
-bool chunk_copy(struct cave *source, struct cave *dest, int y0, int x0)
+void symmetry_transform(int *y, int *x, int y0, int x0, int height, int width,
+						int rotate, bool reflect)
 {
 	int i;
-	int x, y;
+
+	/* Rotate (in multiples of 90 degrees clockwise) */
+    for (i = 0; i < rotate % 4; i++)
+    {
+        int temp = *x;
+        *x = height - 1 - (*y);
+        *y = temp;
+    }
+
+	/* Reflect (horizontally) */
+	if (reflect)
+		*x = width - 1 - *x;
+
+	/* Translate */
+	*y += y0;
+	*x += x0;
+}
+
+/**
+ * Write a chunk, transformed, to a given offset in another chunk
+ */
+bool chunk_copy(struct cave *dest, struct cave *source, int y0, int x0,
+				int rotate, bool reflect)
+{
+	int i;
+	int y, x;
+	int h = source->height, w = source->width;
 
 	/* Check bounds */
-	if ((source->height + y0 > dest->height) ||
-		(source->width + x0 > dest->width))
-		return FALSE;
+	if (rotate % 1) {
+		if ((w + y0 > dest->height) || (h + x0 > dest->width))
+			return FALSE;
+	} else {
+		if ((h + y0 > dest->height) || (w + x0 > dest->width))
+			return FALSE;
+	}
 
 	/* Write the location stuff */
-	for (y = 0; y < source->height; y++) {
-		for (x = 0; x < source->width; x++) {
+	for (y = 0; y < h; y++) {
+		for (x = 0; x < w; x++) {
 			int this_o_idx, next_o_idx, held;
 			bool first_obj = TRUE;
 
+			/* Work out where we're going */
+			int dest_y = y;
+			int dest_x = x;
+			symmetry_transform(&dest_y, &dest_x, y0, x0, h, w, rotate, reflect);
+
 			/* Terrain */
-			dest->feat[y + y0][x + x0] = source->feat[y][x];
-			sqinfo_copy(dest->info[y + y0][x + x0], source->info[y][x]);
+			dest->feat[dest_y][dest_x] = source->feat[y][x];
+			sqinfo_copy(dest->info[dest_y][dest_x], source->info[y][x]);
 
 			/* Dungeon objects */
 			held = 0;
@@ -267,7 +304,7 @@ bool chunk_copy(struct cave *source, struct cave *dest, int y0, int x0)
 							break;
 
 						/* Mark this square as holding this object */
-						dest->o_idx[y + y0][x + x0] = o_idx;
+						dest->o_idx[dest_y][dest_x] = o_idx;
 
 						first_obj = FALSE;
 					}
@@ -277,8 +314,8 @@ bool chunk_copy(struct cave *source, struct cave *dest, int y0, int x0)
 					object_copy(dest_obj, source_obj);
 
 					/* Adjust position */
-					dest_obj->iy = y + y0;
-					dest_obj->ix = x + x0;
+					dest_obj->iy = dest_y;
+					dest_obj->ix = dest_x;
 
 					/* Tell the monster on this square what it's holding */
 					if (source_obj->held_m_idx) {
@@ -318,20 +355,20 @@ bool chunk_copy(struct cave *source, struct cave *dest, int y0, int x0)
 
 				/* Copy over */
 				dest_mon = cave_monster(dest, idx);
-				dest->m_idx[y + y0][x + x0] = idx;
+				dest->m_idx[dest_y][dest_x] = idx;
 				memcpy(dest_mon, source_mon, sizeof(*source_mon));
 
 				/* Adjust stuff */
 				dest_mon->midx = idx;
-				dest_mon->fy = y + y0;
-				dest_mon->fx = x + x0;
+				dest_mon->fy = dest_y;
+				dest_mon->fx = dest_x;
 				dest_mon->hold_o_idx = held;
 				cave_object(dest, held)->held_m_idx = idx;
 			}
 
 			/* Player */
 			if (source->m_idx[y][x] == -1) 
-				dest->m_idx[y0 + y][x0 + x] = -1;
+				dest->m_idx[dest_y][dest_x] = -1;
 		}
 	}
 
@@ -340,16 +377,17 @@ bool chunk_copy(struct cave *source, struct cave *dest, int y0, int x0)
 		/* Point to this trap */
 		trap_type *t_ptr = cave_trap(source, cave_trap_max(dest) + 1);
 		trap_type *u_ptr = cave_trap(dest, i);
-		int ty = t_ptr->fy;
-		int tx = t_ptr->fx;
 
 		/* Copy over */
 		memcpy(u_ptr, t_ptr, sizeof(*t_ptr));
 
 		/* Adjust stuff */
 		dest->trap_max++;
-		u_ptr->fy = ty + y0;
-		u_ptr->fx = tx + x0;
+		y = t_ptr->fy;
+		x = t_ptr->fx;
+		symmetry_transform(&y, &x, y0, x0, h, w, rotate, reflect);
+		u_ptr->fy = y;
+		u_ptr->fx = x;
 	}
 
 	/* Miscellany */

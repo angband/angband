@@ -246,7 +246,8 @@ void chunk_list_add(struct cave *c);
 bool chunk_list_remove(char *name);
 struct cave *chunk_find_name(char *name);
 bool chunk_find(struct cave *c);
-bool chunk_copy(struct cave *source, struct cave *dest, int y0, int x0);
+bool chunk_copy(struct cave *dest, struct cave *source, int y0, int x0,
+				int rotate, bool reflect);
 
 
 void fill_rectangle(struct cave *c, int y1, int x1, int y2, int x2, int feat,
