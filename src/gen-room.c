@@ -56,14 +56,14 @@ struct room_template *random_room_template(int typ)
  * Chooses a vault of a particular kind at random.
  * 
  */
-struct vault *random_vault(struct cave *c, int typ)
+struct vault *random_vault(int depth, int typ)
 {
 	struct vault *v = vaults;
 	struct vault *r = NULL;
 	int n = 1;
 	do {
-		if ((v->typ == typ) && (v->min_lev <= c->depth)
-			&& (v->max_lev >= c->depth)) {
+		if ((v->typ == typ) && (v->min_lev <= depth)
+			&& (v->max_lev >= depth)) {
 			if (one_in_(n)) r = v;
 			n++;
 		}
@@ -1829,7 +1829,7 @@ bool build_template(struct cave *c, int y0, int x0)
 /**
  * Build a vault from its string representation.
  */
-static bool build_vault(struct cave *c, int y0, int x0, struct vault *v)
+bool build_vault(struct cave *c, int y0, int x0, struct vault *v)
 {
 	const char *data = v->text;
 	int y1, x1, y2, x2;
@@ -2074,7 +2074,7 @@ static bool build_vault(struct cave *c, int y0, int x0, struct vault *v)
 static bool build_vault_type(struct cave *c, int y0, int x0, int typ, 
 							 const char *label)
 {
-	struct vault *v_ptr = random_vault(c, typ);
+	struct vault *v_ptr = random_vault(c->depth, typ);
 	if (v_ptr == NULL) {
 		/*quit_fmt("got NULL from random_vault(%d)", typ);*/
 		return FALSE;

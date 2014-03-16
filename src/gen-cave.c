@@ -818,9 +818,8 @@ static void init_cavern(struct cave *c, int density) {
 	
     int count = (size * density) / 100;
 
-    /* Fill the edges with perma-rock, and fill the rest with rock */
-    draw_rectangle(c, 0, 0, h - 1, w - 1, FEAT_PERM, SQUARE_NONE);
-    fill_rectangle(c, 1, 1, h - 2, w - 2, FEAT_GRANITE, SQUARE_WALL_SOLID);
+    /* Fill the entire chunk with rock */
+    fill_rectangle(c, 0, 0, h - 1, w - 1, FEAT_GRANITE, SQUARE_WALL_SOLID);
 	
     while (count > 0) {
 		int y = randint1(h - 2);
@@ -899,7 +898,7 @@ static int ignore_point(struct cave *c, int colors[], int y, int x) {
 
     if (y < 0 || x < 0 || y >= h || x >= w) return TRUE;
     if (colors[n]) return TRUE;
-    if (square_isvault(c, y, x)) return FALSE;
+    //if (square_isvault(c, y, x)) return FALSE;
     if (square_ispassable(c, y, x)) return FALSE;
     if (square_isdoor(c, y, x)) return FALSE;
     return TRUE;
@@ -1045,8 +1044,11 @@ static void fix_colors(int colors[], int counts[], int from, int to, int size) {
 
 /**
  * Create a tunnel connecting a region to one of its nearest neighbors.
+ * Set new_color = -1 for any neighbour, the required color for a specific one
  */
-static void join_region(struct cave *c, int colors[], int counts[], int color) {
+static void join_region(struct cave *c, int colors[], int counts[], int color,
+	int new_color)
+{
     int i;
     int h = c->height;
     int w = c->width;
@@ -1075,8 +1077,12 @@ static void join_region(struct cave *c, int colors[], int counts[], int color) {
 		int n = q_pop_int(queue);
 		int color2 = colors[n];
 
+		/* If we're not looking for a specific color, any new one will do */
+		if ((new_color == -1) && color2 && (color2 != color))
+			new_color = color2;
+
 		/* See if we've reached a square with a new color */
-		if (color2 && color2 != color) {
+		if (color2 == new_color) {
 			/* Step backward through the path, turning stone to tunnel */
 			while (colors[n] != color) {
 				int x, y;
@@ -1138,7 +1144,7 @@ static void join_regions(struct cave *c, int colors[], int counts[]) {
      */
     while (num > 1) {
 		int color = first_color(counts, size);
-		join_region(c, colors, counts, color);
+		join_region(c, colors, counts, color, -1);
 		num--;
     }
 }
@@ -1167,11 +1173,14 @@ void ensure_connectedness(struct cave *c) {
 /**
  * The generator's main function.
  */
-struct cave *cavern_chunk(int depth, int h, int w, int density, int times)
+struct cave *cavern_chunk(int depth, int h, int w)
 {
     int i;
     int size = h * w;
     int limit = size / 13;
+    int density = rand_range(25, 40);
+    int times = rand_range(3, 6);
+
     int *colors = mem_zalloc(size * sizeof(int));
     int *counts = mem_zalloc(size * sizeof(int));
 
@@ -1224,9 +1233,6 @@ struct cave *cavern_gen(struct player *p) {
     int h = rand_range(DUNGEON_HGT / 2, (DUNGEON_HGT * 3) / 4);
     int w = rand_range(DUNGEON_WID / 2, (DUNGEON_WID * 3) / 4);
 
-    int density = rand_range(25, 40);
-    int times = rand_range(3, 6);
-
 	struct cave *c;
 
     if (p->depth < 15) {
@@ -1235,10 +1241,13 @@ struct cave *cavern_gen(struct player *p) {
 
     } else {
 		/* Try to build the cavern, fail gracefully */
-		c = cavern_chunk(p->depth, h, w, density, times);
+		c = cavern_chunk(p->depth, h, w);
 		if (!c) return NULL;
     }
 	c->depth = p->depth;
+
+	/* Surround the level with perma-rock */
+    draw_rectangle(c, 0, 0, h - 1, w - 1, FEAT_PERM, SQUARE_NONE);
 
 	/* Place 2-3 down stairs near some walls */
 	alloc_stairs(c, FEAT_MORE, rand_range(1, 3), 3);
@@ -1406,7 +1415,7 @@ struct cave *town_gen(struct player *p) {
 }
 
 
-/* ------------------ EXPERIMENTAL ---------------- */
+/* ------------------ MODIFIED ---------------- */
 
 /**
  * Room profiles for moria levels - idea stolen from Oangband
@@ -1643,3 +1652,181 @@ struct cave *modified_gen(struct player *p) {
 }
 
 
+/* ------------------ HARD CENTRE ---------------- */
+
+struct cave *vault_chunk(struct player *p)
+{
+	struct vault *v;
+	struct cave *c;
+
+	if (one_in_(2)) v = random_vault(p->depth, 2);
+	else v = random_vault(p->depth, 8);
+
+	/* Make the chunk */
+	c = cave_new(v->hgt, v->wid);
+	c->depth = p->depth;
+
+	/* Build the vault in it */
+	build_vault(c, v->hgt / 2, v->wid / 2, v);
+
+	return c;
+}
+
+/**
+ * Make sure that all the caverns surrounding the centre are connected.
+ */
+void connect_caverns(struct cave *c, struct loc floor[])
+{
+	int i;
+    int size = c->height * c->width;
+    int *colors = mem_zalloc(size * sizeof(int));
+    int *counts = mem_zalloc(size * sizeof(int));
+	int color_of_floor[4];
+
+	/* Color the regions, find which cavern os which color */
+    build_colors(c, colors, counts, TRUE);
+	for (i = 0; i < 4; i++) {
+		int spot = yx_to_i(floor[i].y, floor[i].x, c->width);
+		color_of_floor[i] = colors[spot];
+	}
+
+	/* Join left and upper, right and lower */
+	join_region(c, colors, counts, color_of_floor[0], color_of_floor[1]);
+	join_region(c, colors, counts, color_of_floor[2], color_of_floor[3]);
+
+	/* Redo the colors, join the two big caverns */
+    build_colors(c, colors, counts, TRUE);
+	for (i = 1; i < 3; i++) {
+		int spot = yx_to_i(floor[i].y, floor[i].x, c->width);
+		color_of_floor[i] = colors[spot];
+	}
+	join_region(c, colors, counts, color_of_floor[1], color_of_floor[2]);
+
+    mem_free(colors);
+    mem_free(counts);
+}
+
+struct cave *hard_centre_gen(struct player *p)
+{
+	/* Make a vault for the centre */
+	struct cave *centre = vault_chunk(p);
+	int rotate = 0;
+
+	/* Dimensions for the surrounding caverns */
+	int centre_cavern_hgt;
+	int centre_cavern_wid;
+	struct cave *upper_cavern;
+	struct cave *lower_cavern;
+	int lower_cavern_ypos;
+	int side_cavern_wid;
+	struct cave *left_cavern;
+	struct cave *right_cavern;
+	struct cave *c;
+	int i, k, y, x, cavern_area;
+	struct loc floor[4];
+
+	/* Measure the vault, rotate to make it wider than it is high */
+	if (centre->height > centre->width) {
+		rotate = 1;
+		centre_cavern_hgt = (DUNGEON_HGT - centre->width) / 2;
+		centre_cavern_wid = centre->height;
+		lower_cavern_ypos = centre_cavern_hgt + centre->width;
+	} else {
+		centre_cavern_hgt = (DUNGEON_HGT - centre->height) / 2;
+		centre_cavern_wid = centre->width;
+		lower_cavern_ypos = centre_cavern_hgt + centre->height;
+	}
+
+	/* Make the caverns */
+	upper_cavern = cavern_chunk(p->depth, centre_cavern_hgt, centre_cavern_wid);
+	lower_cavern = cavern_chunk(p->depth, centre_cavern_hgt, centre_cavern_wid);
+	side_cavern_wid = (DUNGEON_WID - centre_cavern_wid) / 2;
+	left_cavern = cavern_chunk(p->depth, DUNGEON_HGT, side_cavern_wid);
+	right_cavern = cavern_chunk(p->depth, DUNGEON_HGT, side_cavern_wid);
+
+	/* Return on failure */
+	if (!upper_cavern || !lower_cavern || !left_cavern || !right_cavern)
+		return NULL;
+
+	/* Make a cave to copy them into, and find a floor square in each cavern */
+	c = cave_new(DUNGEON_HGT, DUNGEON_WID);
+	c->depth = p->depth;
+
+	/* Left */
+	chunk_copy(c, left_cavern, 0, 0, 0, FALSE);
+	find_empty_range(c, &y, 0, DUNGEON_HGT, &x, 0, side_cavern_wid);
+	floor[0].y = y;
+	floor[0].x = x;
+
+	/* Upper */
+	chunk_copy(c, upper_cavern, 0, side_cavern_wid, 0, FALSE);
+	find_empty_range(c, &y, 0, centre_cavern_hgt, &x, side_cavern_wid,
+					 side_cavern_wid + centre_cavern_wid);
+	floor[1].y = y;
+	floor[1].x = x;
+
+	/* Centre */
+	chunk_copy(c, centre, centre_cavern_hgt, side_cavern_wid, rotate, FALSE);
+
+	/* Lower */
+	chunk_copy(c, lower_cavern, lower_cavern_ypos, side_cavern_wid, 0, FALSE);
+	find_empty_range(c, &y, lower_cavern_ypos, DUNGEON_HGT, &x,
+					 side_cavern_wid, side_cavern_wid + centre_cavern_wid);
+	floor[3].y = y;
+	floor[3].x = x;
+
+	/* Right */
+	chunk_copy(c, right_cavern, 0, side_cavern_wid + centre_cavern_wid, 0, FALSE);
+	find_empty_range(c, &y, 0, DUNGEON_HGT, &x,
+					 side_cavern_wid + centre_cavern_wid, DUNGEON_WID);
+	floor[2].y = y;
+	floor[2].x = x;
+
+	/* Encase in perma-rock */
+    draw_rectangle(c, 0, 0, c->height - 1, c->width - 1,
+				   FEAT_PERM, SQUARE_NONE);
+
+	/* Connect up all the caverns */
+	connect_caverns(c, floor);
+
+	/* Connect to the centre */
+	ensure_connectedness(c);
+
+	cavern_area = 2 * (side_cavern_wid * DUNGEON_HGT +
+					   centre_cavern_wid * centre_cavern_hgt);
+
+	/* Place 2-3 down stairs near some walls */
+	alloc_stairs(c, FEAT_MORE, rand_range(1, 3), 3);
+
+	/* Place 1-2 up stairs near some walls */
+	alloc_stairs(c, FEAT_LESS, rand_range(1, 2), 3);
+
+	/* Generate some rubble, traps and monsters */
+	k = MAX(MIN(c->depth / 3, 10), 2);
+
+	/* Scale number by total cavern size - caverns are fairly sparse */
+	k = (k * cavern_area) / (DUNGEON_HGT * DUNGEON_WID);
+
+	/* Put some rubble in corridors */
+	alloc_objects(c, SET_BOTH, TYP_RUBBLE, randint1(k), c->depth, 0);
+
+	/* Place some traps in the dungeon */
+	alloc_objects(c, SET_BOTH, TYP_TRAP, randint1(k), c->depth, 0);
+
+	/* Determine the character location */
+	new_player_spot(c, p);
+
+	/* Put some monsters in the dungeon */
+	for (i = randint1(8) + k; i > 0; i--)
+		pick_and_place_distant_monster(c, loc(p->px, p->py), 0, TRUE, c->depth);
+
+	/* Put some objects/gold in the dungeon */
+	alloc_objects(c, SET_BOTH, TYP_OBJECT, Rand_normal(k, 2), c->depth + 5,
+				  ORIGIN_CAVERN);
+	alloc_objects(c, SET_BOTH, TYP_GOLD, Rand_normal(k / 2, 2), c->depth,
+				  ORIGIN_CAVERN);
+	alloc_objects(c, SET_BOTH, TYP_GOOD, randint0(k / 4), c->depth,
+				  ORIGIN_CAVERN);
+
+	return c;
+}

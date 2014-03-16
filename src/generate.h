@@ -239,6 +239,7 @@ struct cave *classic_gen(struct player *p);
 struct cave *labyrinth_gen(struct player *p);
 struct cave *cavern_gen(struct player *p);
 struct cave *modified_gen(struct player *p);
+struct cave *hard_centre_gen(struct player *p);
 
 struct cave *chunk_write(int y0, int x0, int height, int width, bool monsters,
 						 bool objects, bool traps, bool delete_old);
@@ -256,6 +257,10 @@ void generate_mark(struct cave *c, int y1, int x1, int y2, int x2, int flag);
 void draw_rectangle(struct cave *c, int y1, int x1, int y2, int x2, int feat, 
 					int flag);
 void set_marked_granite(struct cave *c, int y, int x, int flag);
+
+struct vault *random_vault(int depth, int typ);
+bool build_vault(struct cave *c, int y0, int x0, struct vault *v);
+
 bool build_simple(struct cave *c, int y0, int x0);
 bool build_circular(struct cave *c, int y0, int x0);
 bool build_overlap(struct cave *c, int y0, int x0);
