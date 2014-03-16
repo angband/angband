@@ -1437,54 +1437,20 @@ struct room_profile moria_rooms[] = {
 };
 
 /**
- * Generate a new dungeon level.
- *
- * This is sample code to illustrate some of the new dungeon generation
- * methods; I think it actually prdouces quite nice levels.  New stuff:
- *
- * - different sized levels
- * - independence from block size: the block size can be set to any number
- *   from 1 (no blocks) to about 15; beyond that it struggles to generate
- *   enough floor space
- * - the find_space function, called from the room builder functions, allows
- *   the room to find space for itself rather than the generation algorithm
- *   allocating it; this helps because the room knows better what size it is
- * - a count is now kept of grids of the various terrains, allowing dungeon
- *   generation to terminate when enough floor is generated
- * - there are four new room types - moria rooms, huge rooms, rooms of
- *   chambers and interesting rooms - as well as many new vaults
- * - there is the ability to place specific monsters and objects in vaults and
- *   interesting rooms, as well as to make general monster restrictions in
- *   areas or the whole dungeon
+ * The main modified generation algorithm
  */
-struct cave *modified_gen(struct player *p) {
-    int i, k, y, x, y1, x1;
+struct cave *modified_chunk(int depth, int height, int width)
+{
+    int i, y, x, y1, x1;
     int by = 0, bx = 0, key, rarity;
-    int num_floors, size_percent, y_size, x_size;
+    int num_floors;
 	int num_rooms = dun->profile->n_room_profiles;
     int dun_unusual = dun->profile->dun_unusual;
 	bool moria_level = FALSE;
-	struct cave *c;
-
-    /* Scale the level */
-    i = randint1(10) + p->depth / 24;
-    if (is_quest(p->depth)) size_percent = 100;
-    else if (i < 2) size_percent = 75;
-    else if (i < 3) size_percent = 80;
-    else if (i < 4) size_percent = 85;
-    else if (i < 5) size_percent = 90;
-    else if (i < 6) size_percent = 95;
-    else size_percent = 100;
-	y_size = DUNGEON_HGT * (size_percent - 5 + randint0(10)) / 100;
-	x_size = DUNGEON_WID * (size_percent - 5 + randint0(10)) / 100;
-
-    /* Set the block height and width */
-	dun->block_hgt = dun->profile->block_size;
-	dun->block_wid = dun->profile->block_size;
 
     /* Make the cave */
-    c = cave_new(MIN(DUNGEON_HGT, y_size), MIN(DUNGEON_WID, x_size));
-	c->depth = p->depth;
+    struct cave *c = cave_new(height, width);
+	c->depth = depth;
 
 	/* Set the intended number of floor grids based on cave floor area */
     num_floors = c->height * c->width / 7;
@@ -1595,6 +1561,56 @@ struct cave *modified_gen(struct player *p) {
     }
 
     ensure_connectedness(c);
+
+	return c;
+}
+
+/**
+ * Generate a new dungeon level.
+ *
+ * This is sample code to illustrate some of the new dungeon generation
+ * methods; I think it actually prdouces quite nice levels.  New stuff:
+ *
+ * - different sized levels
+ * - independence from block size: the block size can be set to any number
+ *   from 1 (no blocks) to about 15; beyond that it struggles to generate
+ *   enough floor space
+ * - the find_space function, called from the room builder functions, allows
+ *   the room to find space for itself rather than the generation algorithm
+ *   allocating it; this helps because the room knows better what size it is
+ * - a count is now kept of grids of the various terrains, allowing dungeon
+ *   generation to terminate when enough floor is generated
+ * - there are four new room types - moria rooms, huge rooms, rooms of
+ *   chambers and interesting rooms - as well as many new vaults
+ * - there is the ability to place specific monsters and objects in vaults and
+ *   interesting rooms, as well as to make general monster restrictions in
+ *   areas or the whole dungeon
+ */
+struct cave *modified_gen(struct player *p) {
+    int i, k;
+    int size_percent, y_size, x_size;
+	bool moria_level = FALSE;
+	struct cave *c;
+
+    /* Scale the level */
+    i = randint1(10) + p->depth / 24;
+    if (is_quest(p->depth)) size_percent = 100;
+    else if (i < 2) size_percent = 75;
+    else if (i < 3) size_percent = 80;
+    else if (i < 4) size_percent = 85;
+    else if (i < 5) size_percent = 90;
+    else if (i < 6) size_percent = 95;
+    else size_percent = 100;
+	y_size = DUNGEON_HGT * (size_percent - 5 + randint0(10)) / 100;
+	x_size = DUNGEON_WID * (size_percent - 5 + randint0(10)) / 100;
+
+    /* Set the block height and width */
+	dun->block_hgt = dun->profile->block_size;
+	dun->block_wid = dun->profile->block_size;
+
+    c = modified_chunk(p->depth, MIN(DUNGEON_HGT, y_size),
+					   MIN(DUNGEON_WID, x_size));
+	c->depth = p->depth;
 
     /* Add some magma streamers */
     for (i = 0; i < dun->profile->str.mag; i++)
