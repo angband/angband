@@ -688,9 +688,9 @@ void wr_dungeon(void)
 	prev_char = 0;
 
 	/* Dump the cave */
-	for (y = 0; y < DUNGEON_HGT; y++)
+	for (y = 0; y < cave->height; y++)
 	{
-		for (x = 0; x < DUNGEON_WID; x++)
+		for (x = 0; x < cave->width; x++)
 		{
 			/* Extract the important cave->info flags */
 			tmp8u = cave->info[y][x][i];
@@ -727,9 +727,9 @@ void wr_dungeon(void)
 	prev_char = 0;
 
 	/* Dump the cave */
-	for (y = 0; y < DUNGEON_HGT; y++)
+	for (y = 0; y < cave->height; y++)
 	{
-		for (x = 0; x < DUNGEON_WID; x++)
+		for (x = 0; x < cave->width; x++)
 		{
 			/* Extract a byte */
 			tmp8u = cave->feat[y][x];

@@ -1127,7 +1127,7 @@ int rd_dungeon(void)
     for (n = 0; n < square_size; n++)
     {
 	/* Load the dungeon data */
-	for (x = y = 0; y < DUNGEON_HGT; )
+	for (x = y = 0; y < cave->height; )
 	{
 		/* Grab RLE info */
 		rd_byte(&count);
@@ -1140,13 +1140,13 @@ int rd_dungeon(void)
 			cave->info[y][x][n] = tmp8u;
 
 			/* Advance/Wrap */
-			if (++x >= DUNGEON_WID)
+			if (++x >= cave->width)
 			{
 				/* Wrap */
 				x = 0;
 
 				/* Advance/Wrap */
-				if (++y >= DUNGEON_HGT) break;
+				if (++y >= cave->height) break;
 			}
 		}
 	}
@@ -1156,7 +1156,7 @@ int rd_dungeon(void)
 	/*** Run length decoding ***/
 
 	/* Load the dungeon data */
-	for (x = y = 0; y < DUNGEON_HGT; )
+	for (x = y = 0; y < cave->height; )
 	{
 		/* Grab RLE info */
 		rd_byte(&count);
@@ -1169,13 +1169,13 @@ int rd_dungeon(void)
 			square_set_feat(cave, y, x, tmp8u);
 
 			/* Advance/Wrap */
-			if (++x >= DUNGEON_WID)
+			if (++x >= cave->width)
 			{
 				/* Wrap */
 				x = 0;
 
 				/* Advance/Wrap */
-				if (++y >= DUNGEON_HGT) break;
+				if (++y >= cave->height) break;
 			}
 		}
 	}
