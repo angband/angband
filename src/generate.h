@@ -240,6 +240,7 @@ struct cave *labyrinth_gen(struct player *p);
 struct cave *cavern_gen(struct player *p);
 struct cave *modified_gen(struct player *p);
 struct cave *hard_centre_gen(struct player *p);
+struct cave *lair_gen(struct player *p);
 
 struct cave *chunk_write(int y0, int x0, int height, int width, bool monsters,
 						 bool objects, bool traps, bool delete_old);

@@ -181,6 +181,9 @@ static void build_tunnel(struct cave *c, int row1, int col1, int row2, int col2)
 			y = tmp_row + row_dir;
 			x = tmp_col + col_dir;
 
+			/* Stay in bounds */
+			if (!square_in_bounds(c, y, x)) continue;
+ 
 			/* Hack -- Avoid solid permanent walls */
 			if (square_isperm(c, y, x)) continue;
 
@@ -1460,6 +1463,10 @@ struct cave *modified_chunk(int depth, int height, int width)
     fill_rectangle(c, 0, 0, c->height - 1, c->width - 1, 
 				   FEAT_GRANITE, SQUARE_NONE);
 
+    /* Generate permanent walls around the generated area (temporarily!) */
+    draw_rectangle(c, 0, 0, c->height - 1, c->width - 1, 
+				   FEAT_PERM, SQUARE_NONE);
+
     /* Actual maximum number of blocks on this level */
     dun->row_blocks = c->height / dun->block_hgt;
     dun->col_blocks = c->width / dun->block_wid;
@@ -1514,10 +1521,6 @@ struct cave *modified_chunk(int depth, int height, int width)
 		mem_free(dun->room_map[i]);
 	mem_free(dun->room_map);
 
-    /* Generate permanent walls around the edge of the generated area */
-    draw_rectangle(c, 0, 0, c->height - 1, c->width - 1, 
-				   FEAT_PERM, SQUARE_NONE);
-
     /* Hack -- Scramble the room order */
     for (i = 0; i < dun->cent_n; i++) {
 		int pick1 = randint0(dun->cent_n);
@@ -1561,6 +1564,10 @@ struct cave *modified_chunk(int depth, int height, int width)
     }
 
     ensure_connectedness(c);
+
+    /* Turn the outer permanent walls back to granite  */
+    draw_rectangle(c, 0, 0, c->height - 1, c->width - 1, 
+				   FEAT_GRANITE, SQUARE_NONE);
 
 	return c;
 }
@@ -1611,6 +1618,10 @@ struct cave *modified_gen(struct player *p) {
     c = modified_chunk(p->depth, MIN(DUNGEON_HGT, y_size),
 					   MIN(DUNGEON_WID, x_size));
 	c->depth = p->depth;
+
+    /* Generate permanent walls around the edge of the generated area */
+    draw_rectangle(c, 0, 0, c->height - 1, c->width - 1,
+				   FEAT_PERM, SQUARE_NONE);
 
     /* Add some magma streamers */
     for (i = 0; i < dun->profile->str.mag; i++)
@@ -1798,6 +1809,13 @@ struct cave *hard_centre_gen(struct player *p)
 	floor[2].y = y;
 	floor[2].x = x;
 
+	/* Free all the chunks */
+	cave_free(left_cavern);
+	cave_free(upper_cavern);
+	cave_free(centre);
+	cave_free(lower_cavern);
+	cave_free(right_cavern);
+
 	/* Encase in perma-rock */
     draw_rectangle(c, 0, 0, c->height - 1, c->width - 1,
 				   FEAT_PERM, SQUARE_NONE);
@@ -1845,4 +1863,120 @@ struct cave *hard_centre_gen(struct player *p)
 				  ORIGIN_CAVERN);
 
 	return c;
+}
+
+
+/* ------------------ LAIR ---------------- */
+
+struct cave *lair_gen(struct player *p) {
+    int i, k;
+	struct cave *c;
+	struct cave *normal;
+	struct cave *lair;
+
+    /* Set the block height and width */
+	dun->block_hgt = dun->profile->block_size;
+	dun->block_wid = dun->profile->block_size;
+
+    normal = modified_chunk(p->depth, DUNGEON_HGT, DUNGEON_WID / 2);
+	if (!normal) return NULL;
+	normal->depth = p->depth;
+
+	lair = cavern_chunk(p->depth, DUNGEON_HGT, DUNGEON_WID / 2);
+	if (!lair) return NULL;
+	lair->depth = p->depth;
+
+    /* General amount of rubble, traps and monsters */
+    k = MAX(MIN(p->depth / 3, 10), 2) / 2;
+
+    /* Put the character in the normal half */
+    new_player_spot(normal, p);
+
+    /* Pick a smallish number of monsters for the normal half */
+    i = randint1(4) + k;
+
+    /* Put some monsters in the dungeon */
+    for (; i > 0; i--)
+		pick_and_place_distant_monster(normal, loc(p->px, p->py), 0, TRUE,
+									   normal->depth);
+
+    /* Add some magma streamers */
+    for (i = 0; i < dun->profile->str.mag; i++)
+		build_streamer(normal, FEAT_MAGMA, dun->profile->str.mc);
+
+    /* Add some quartz streamers */
+    for (i = 0; i < dun->profile->str.qua; i++)
+		build_streamer(normal, FEAT_QUARTZ, dun->profile->str.qc);
+
+    /* Pick a larger number of monsters for the lair */
+    i = (MIN_M_ALLOC_LEVEL + randint1(6) + k);
+
+	/* Find appropriate monsters */
+	while (TRUE) {
+		/* Choose a pit profile */
+		set_pit_type(lair->depth, 0);
+
+		/* Set monster generation restrictions */
+		if (mon_restrict(dun->pit_type->name, lair->depth, TRUE))
+			break;
+	}
+
+	ROOM_LOG("Monster lair - %s", dun->pit_type->name);
+
+    /* Place lair monsters */
+	spread_monsters(lair, dun->pit_type->name, lair->depth, i, lair->height / 2,
+					lair->width / 2, lair->height / 2, lair->width / 2, 
+					ORIGIN_CAVERN);
+
+	/* Remove our restrictions. */
+	(void) mon_restrict(NULL, lair->depth, FALSE);
+
+	/* Make the level */
+	c = cave_new(DUNGEON_HGT, DUNGEON_WID);
+	c->depth = p->depth;
+	if (one_in_(2)) {
+		chunk_copy(c, lair, 0, 0, 0, FALSE);
+		chunk_copy(c, normal, 0, DUNGEON_WID / 2, 0, FALSE);
+
+		/* The player needs to move */
+		p->px += DUNGEON_WID / 2;
+	} else {
+		chunk_copy(c, normal, 0, 0, 0, FALSE);
+		chunk_copy(c, lair, 0, DUNGEON_WID / 2, 0, FALSE);
+	}
+
+	/* Free the chunks */
+	cave_free(normal);
+	cave_free(lair);
+
+    /* Generate permanent walls around the edge of the generated area */
+    draw_rectangle(c, 0, 0, c->height - 1, c->width - 1, 
+				   FEAT_PERM, SQUARE_NONE);
+
+	/* Connect */
+	ensure_connectedness(c);
+
+    /* Place 3 or 4 down stairs near some walls */
+    alloc_stairs(c, FEAT_MORE, rand_range(3, 4), 3);
+
+    /* Place 1 or 2 up stairs near some walls */
+    alloc_stairs(c, FEAT_LESS, rand_range(1, 2), 3);
+
+    /* Put some rubble in corridors */
+    alloc_objects(c, SET_CORR, TYP_RUBBLE, randint1(k), c->depth, 0);
+
+    /* Place some traps in the dungeon */
+    alloc_objects(c, SET_BOTH, TYP_TRAP, randint1(k), c->depth, 0);
+
+    /* Put some objects in rooms */
+    alloc_objects(c, SET_ROOM, TYP_OBJECT, Rand_normal(AMT_ROOM, 3),
+				  c->depth, ORIGIN_FLOOR);
+
+    /* Put some objects/gold in the dungeon */
+    alloc_objects(c, SET_BOTH, TYP_OBJECT, Rand_normal(AMT_ITEM, 3),
+				  c->depth, ORIGIN_FLOOR);
+    alloc_objects(c, SET_BOTH, TYP_GOLD, Rand_normal(AMT_GOLD, 3),
+				  c->depth, ORIGIN_FLOOR);
+
+    return c;
 }

@@ -176,6 +176,21 @@ struct cave_profile cave_profiles[] = {
 		-1
 	},
 	{
+		"lair", lair_gen, 1, 50, 500, 2, N_ELEMENTS(modified_rooms),
+
+		/* name rnd chg con pen jct */
+		{"tunnel-classic", 10, 30, 15, 25, 90},
+
+		/* name den rng mag mc qua qc */
+		{"streamer-classic", 5, 2, 3, 90, 2, 40},
+
+		/* room_profiles */
+		modified_rooms,
+
+		/* cutoff  -- not applicable because profile currently unused */
+		-1
+	},
+	{
 		"hard_centre", hard_centre_gen, 1, 0, 200, 0, 0,
 
 		/* tunnels -- not applicable */
