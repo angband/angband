@@ -1293,7 +1293,6 @@ void display_map(int *cy, int *cx)
 	int px = player->px;
 
 	int map_hgt, map_wid;
-	int dungeon_hgt, dungeon_wid;
 	int row, col;
 
 	int x, y;
@@ -1304,25 +1303,28 @@ void display_map(int *cy, int *cx)
 
 	byte tp;
 
-	/* Large array on the stack */
-	byte mp[DUNGEON_HGT][DUNGEON_WID];
-
 	monster_race *r_ptr = &r_info[0];
+
+	/* Priority array */
+	byte **mp = mem_zalloc(cave->height * sizeof(byte*));
+	for (y = 0; y < cave->height; y++)
+		mp[y] = mem_zalloc(cave->width * sizeof(byte));
 
 	/* Desired map height */
 	map_hgt = Term->hgt - 2;
 	map_wid = Term->wid - 2;
 
-	dungeon_hgt = cave->height;
-	dungeon_wid = cave->width;
+	/* Prevent accidents */
+	if (map_hgt > cave->height) map_hgt = cave->height;
+	if (map_wid > cave->width) map_wid = cave->width;
 
 	/* Prevent accidents */
-	if (map_hgt > dungeon_hgt) map_hgt = dungeon_hgt;
-	if (map_wid > dungeon_wid) map_wid = dungeon_wid;
-
-	/* Prevent accidents */
-	if ((map_wid < 1) || (map_hgt < 1)) return;
-
+	if ((map_wid < 1) || (map_hgt < 1)) {
+		for (y = 0; y < cave->height; y++)
+			mem_free(mp[y]);
+		mem_free(mp);
+		return;
+	}
 
 	/* Nothing here */
 	a = TERM_WHITE;
@@ -1330,27 +1332,16 @@ void display_map(int *cy, int *cx)
 	ta = TERM_WHITE;
 	tc = L' ';
 
-	/* Clear the priorities */
-	for (y = 0; y < map_hgt; ++y)
-	{
-		for (x = 0; x < map_wid; ++x)
-		{
-			/* No priority */
-			mp[y][x] = 0;
-		}
-	}
-
-
 	/* Draw a box around the edge of the term */
 	window_make(0, 0, map_wid + 1, map_hgt + 1);
 
 	/* Analyze the actual map */
-	for (y = 0; y < dungeon_hgt; y++)
+	for (y = 0; y < cave->height; y++)
 	{
-		for (x = 0; x < dungeon_wid; x++)
+		for (x = 0; x < cave->width; x++)
 		{
-			row = (y * map_hgt / dungeon_hgt);
-			col = (x * map_wid / dungeon_wid);
+			row = (y * map_hgt / cave->height);
+			col = (x * map_wid / cave->width);
 
 			if (tile_width > 1)
 				col = col - (col % tile_width);
@@ -1388,8 +1379,8 @@ void display_map(int *cy, int *cx)
 	/*** Display the player ***/
 
 	/* Player location */
-	row = (py * map_hgt / dungeon_hgt);
-	col = (px * map_wid / dungeon_wid);
+	row = (py * map_hgt / cave->height);
+	col = (px * map_wid / cave->width);
 
 	if (tile_width > 1)
 		col = col - (col % tile_width);
@@ -1409,6 +1400,10 @@ void display_map(int *cy, int *cx)
 	/* Return player location */
 	if (cy != NULL) (*cy) = row + 1;
 	if (cx != NULL) (*cx) = col + 1;
+
+	for (y = 0; y < cave->height; y++)
+		mem_free(mp[y]);
+	mem_free(mp);
 }
 
 

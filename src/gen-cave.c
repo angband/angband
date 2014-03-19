@@ -387,10 +387,6 @@ struct cave *classic_gen(struct player *p) {
 	c->depth = p->depth;
     ROOM_LOG("height=%d  width=%d  nrooms=%d", c->height, c->width, num_rooms);
 
-    /* Fill whole level with perma-rock */
-    fill_rectangle(c, 0, 0, DUNGEON_HGT - 1, DUNGEON_WID - 1, 
-				   FEAT_PERM, SQUARE_NONE);
-
     /* Fill cave area with basic granite */
     fill_rectangle(c, 0, 0, c->height - 1, c->width - 1, 
 				   FEAT_GRANITE, SQUARE_NONE);

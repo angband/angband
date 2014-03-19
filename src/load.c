@@ -1058,9 +1058,8 @@ int rd_stores(void) { return rd_stores_aux(rd_item); }
  * The monsters/objects must be loaded in the same order
  * that they were stored, since the actual indexes matter.
  *
- * Note that the size of the dungeon is now hard-coded to
- * DUNGEON_HGT by DUNGEON_WID, and any dungeon with another
- * size will be silently discarded by this routine.
+ * Note that the size of the dungeon is now the currrent dimensions of the
+ * cave global variable.
  *
  * Note that dungeon objects, including objects held by monsters, are
  * placed directly into the dungeon, using "object_copy()", which will
@@ -1113,8 +1112,8 @@ int rd_dungeon(void)
 	cave->height = ymax;
 
 	/* Ignore illegal dungeons */
-	if ((px < 0) || (px >= DUNGEON_WID) ||
-	    (py < 0) || (py >= DUNGEON_HGT))
+	if ((px < 0) || (px >= cave->width) ||
+	    (py < 0) || (py >= cave->height))
 	{
 		note(format("Ignoring illegal player location (%d,%d).", py, px));
 		return (1);
