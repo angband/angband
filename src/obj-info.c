@@ -958,7 +958,7 @@ static void obj_known_misc_combat(const object_type *o_ptr, bool *thrown_effect,
 			*thrown_effect = TRUE;
 	}
 
-	if (!weapon) /* Ammo */
+	if (ammo)
 		*range = 6 + 2 * player->state.ammo_mult * 10;;
 
 	/* Note the impact flag */

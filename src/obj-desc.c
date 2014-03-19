@@ -347,7 +347,7 @@ static bool obj_desc_show_armor(const object_type *o_ptr)
 
 static size_t obj_desc_chest(const object_type *o_ptr, char *buf, size_t max, size_t end)
 {
-	bool known = object_is_known(o_ptr) || (o_ptr->ident & IDENT_STORE);
+	bool known = object_is_known(o_ptr);
 
 	if (!tval_is_chest(o_ptr)) return end;
 	if (!known) return end;
@@ -533,26 +533,23 @@ static size_t obj_desc_inscrip(const object_type *o_ptr, char *buf, size_t max, 
 		u[n++] = quark_str(o_ptr->note);
 
 	/* Use special inscription, if any */
-	if (!object_is_known(o_ptr) && feel)
-	{
-		/* cannot tell excellent vs strange vs splendid until wield */
-		if (!object_was_worn(o_ptr) && o_ptr->ego)
-			u[n++] = "ego";
-		else
-			u[n++] = inscrip_text[feel];
+	if (!object_is_known(o_ptr)) {
+		if (feel) {
+			/* cannot tell excellent vs strange vs splendid until wield */
+			if (!object_was_worn(o_ptr) && o_ptr->ego)
+				u[n++] = "ego";
+			else
+				u[n++] = inscrip_text[feel];
+		} 
+		else if (o_ptr->ident & IDENT_EMPTY)
+			u[n++] = "empty";
+		else if (object_was_worn(o_ptr))
+			u[n++] = (tval_is_weapon(o_ptr)) ? "wielded" : "worn";
+		else if (object_was_fired(o_ptr))
+			u[n++] = "fired";
+		else if (!object_flavor_is_aware(o_ptr) && object_flavor_was_tried(o_ptr))
+			u[n++] = "tried";
 	}
-	else if ((o_ptr->ident & IDENT_EMPTY) && !object_is_known(o_ptr))
-		u[n++] = "empty";
-	else if (!object_is_known(o_ptr) && object_was_worn(o_ptr))
-	{
-		if (wield_slot(o_ptr) == INVEN_WIELD || wield_slot(o_ptr) == INVEN_BOW)
-			u[n++] = "wielded";
-		else u[n++] = "worn";
-	}
-	else if (!object_is_known(o_ptr) && object_was_fired(o_ptr))
-		u[n++] = "fired";
-	else if (!object_flavor_is_aware(o_ptr) && object_flavor_was_tried(o_ptr))
-		u[n++] = "tried";
 
 	/* Note curses */
 	create_mask(f2, FALSE, OFT_CURSE, OFT_MAX);
