@@ -35,8 +35,8 @@ int test_n0(void *state) {
 	ok;
 }
 
-int test_w0(void *state) {
-	enum parser_error r = parser_parse(state, "W:2:4:6:8");
+int test_x0(void *state) {
+	enum parser_error r = parser_parse(state, "X:2:4:6:8");
 	struct ego_item *e;
 
 	eq(r, PARSE_ERROR_NONE);
@@ -44,20 +44,9 @@ int test_w0(void *state) {
 	require(e);
 	eq(e->level, 2);
 	eq(e->rarity, 4);
+	eq(e->rating, 6);
 	eq(e->cost, 8);
 	return PARSE_ERROR_NONE;
-}
-
-int test_x0(void *state) {
-	enum parser_error r = parser_parse(state, "X:5:1");
-	struct ego_item *e;
-
-	eq(r, PARSE_ERROR_NONE);
-	e = parser_priv(state);
-	require(e);
-	eq(e->rating, 5);
-	eq(e->xtra, 1);
-	ok;
 }
 
 int test_t0(void *state) {
@@ -160,7 +149,6 @@ const char *suite_name = "parse/e-info";
 struct test tests[] = {
 	{ "order", test_order },
 	{ "n0", test_n0 },
-	{ "w0", test_w0 },
 	{ "x0", test_x0 },
 	{ "t0", test_t0 },
 	/* { "t1", test_t1 }, */

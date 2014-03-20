@@ -524,8 +524,6 @@ typedef struct ego_item
 	byte min_to_a;			/* Minimum to-ac value */
 	byte min_pval[MAX_PVALS];	/* Minimum pval */
 
-	byte xtra;			/* Extra sustain/resist/power */
-
 	bool everseen;			/* Do not spoil squelch menus */
 } ego_item_type;
 

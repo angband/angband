@@ -1583,11 +1583,18 @@ static void describe_flavor_text(textblock *tb, const object_type *o_ptr,
 
 static bool describe_ego(textblock *tb, const struct ego_item *ego)
 {
-	if (ego && ego->xtra)
+	int i, num = 3;
+
+	/* Hackish */
+	for (i = 0; i < 3; i++) {
+		if (kf_has(ego->kind_flags, KF_RAND_HI_RES + i))
+			num = i;
+	}
+
+	if (num < 3)
 	{
 		const char *xtra[] = { "sustain", "higher resistance", "ability" };
-		textblock_append(tb, "It provides one random %s.  ",
-				xtra[ego->xtra - 1]);
+		textblock_append(tb, "It provides one random %s.  ", xtra[num]);
 
 		return TRUE;
 	}

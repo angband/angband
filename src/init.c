@@ -1436,10 +1436,11 @@ static enum parser_error parse_e_n(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_e_w(struct parser *p) {
+static enum parser_error parse_e_x(struct parser *p) {
 	int level = parser_getint(p, "level");
 	int rarity = parser_getint(p, "rarity");
 	int cost = parser_getint(p, "cost");
+	int rating = parser_getint(p, "rating");
 	struct ego_item *e = parser_priv(p);
 
 	if (!e)
@@ -1447,18 +1448,7 @@ static enum parser_error parse_e_w(struct parser *p) {
 	e->level = level;
 	e->rarity = rarity;
 	e->cost = cost;
-	return PARSE_ERROR_NONE;
-}
-
-static enum parser_error parse_e_x(struct parser *p) {
-	int rating = parser_getint(p, "rating");
-	int xtra = parser_getint(p, "xtra");
-	struct ego_item *e = parser_priv(p);
-
-	if (!e)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
 	e->rating = rating;
-	e->xtra = xtra;
 	return PARSE_ERROR_NONE;
 }
 
@@ -1617,8 +1607,7 @@ struct parser *init_parse_e(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
 	parser_reg(p, "N int index str name", parse_e_n);
-	parser_reg(p, "W int level int rarity int pad int cost", parse_e_w);
-	parser_reg(p, "X int rating int xtra", parse_e_x);
+	parser_reg(p, "X int level int rarity int cost int rating", parse_e_x);
 	parser_reg(p, "A int common str minmax", parse_e_a);
 	parser_reg(p, "T sym tval int min-sval int max-sval", parse_e_t);
 	parser_reg(p, "C rand th rand td rand ta", parse_e_c);

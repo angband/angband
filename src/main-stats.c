@@ -521,7 +521,7 @@ static int stats_dump_egos(void)
 		err = stats_db_bind_ints(info_stmt, 9, 5, 
 			e_ptr->cost, e_ptr->level, e_ptr->rarity,
 			e_ptr->rating, e_ptr->num_pvals, e_ptr->min_to_h, 
-			e_ptr->min_to_d, e_ptr->min_to_a, e_ptr->xtra);
+			e_ptr->min_to_d, e_ptr->min_to_a);
 		if (err) return err;
 		STATS_DB_STEP_RESET(info_stmt)
 

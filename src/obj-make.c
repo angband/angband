@@ -234,7 +234,7 @@ static struct ego_item *ego_find_random(object_type *o_ptr, int level)
 void ego_apply_magic(object_type *o_ptr, int level)
 {
 	int i, flag, x;
-
+	bool extras = TRUE;
 	bitflag flags[OF_SIZE], newf[OF_SIZE], f2[OF_SIZE];
 	object_flags(o_ptr, flags);
 
@@ -245,8 +245,10 @@ void ego_apply_magic(object_type *o_ptr, int level)
 		create_mask(newf, FALSE, OFT_HRES, OFT_MAX);
 	else if (kf_has(o_ptr->ego->kind_flags, KF_RAND_POWER))
 		create_mask(newf, FALSE, OFT_PROT, OFT_MISC, OFT_MAX);
+	else
+		extras = FALSE;
 
-	if (o_ptr->ego->xtra)
+	if (extras)
 		of_on(o_ptr->flags, get_new_attr(flags, newf));
 
 	/* Apply extra o_ptr->ego bonuses */
