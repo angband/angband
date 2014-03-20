@@ -239,11 +239,11 @@ void ego_apply_magic(object_type *o_ptr, int level)
 	object_flags(o_ptr, flags);
 
 	/* Extra powers */
-	if (o_ptr->ego->xtra == OBJECT_XTRA_TYPE_SUSTAIN)
+	if (kf_has(o_ptr->ego->kind_flags, KF_RAND_SUSTAIN))
 		create_mask(newf, FALSE, OFT_SUST, OFT_MAX);
-	else if (o_ptr->ego->xtra == OBJECT_XTRA_TYPE_RESIST)
+	else if (kf_has(o_ptr->ego->kind_flags, KF_RAND_HI_RES))
 		create_mask(newf, FALSE, OFT_HRES, OFT_MAX);
-	else if (o_ptr->ego->xtra == OBJECT_XTRA_TYPE_POWER)
+	else if (kf_has(o_ptr->ego->kind_flags, KF_RAND_POWER))
 		create_mask(newf, FALSE, OFT_PROT, OFT_MISC, OFT_MAX);
 
 	if (o_ptr->ego->xtra)

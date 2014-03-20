@@ -117,17 +117,6 @@ enum object_flag_id {
 #define kf_inter(f1, f2)       	flag_inter(f1, f2, KF_SIZE)
 #define kf_diff(f1, f2)        	flag_diff(f1, f2, KF_SIZE)
 
-/* Hack -- special "xtra" object flag info (type) */
-/* Can get rid of these now we have OFT_ flags */
-/* No - because "POWER" uses two types of OFTs, so cannot get rid of these
- * until ego_item.txt has an X: line with a variable number of OFTs - that's
- * basically waiting for a rewrite of ego generation 
- * -- or we could change OFTs to a bitflag */
-#define OBJECT_XTRA_TYPE_NONE     0
-#define OBJECT_XTRA_TYPE_SUSTAIN  1
-#define OBJECT_XTRA_TYPE_RESIST   2
-#define OBJECT_XTRA_TYPE_POWER    3
-
 
 /*** Structures ***/
 

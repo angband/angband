@@ -473,25 +473,18 @@ void object_notice_ego(object_type *o_ptr)
 	/* Learn all flags except random abilities */
 	of_setall(learned_flags);
 
-	switch (o_ptr->ego->xtra)
-	{
-		case OBJECT_XTRA_TYPE_NONE:
-			break;
-		case OBJECT_XTRA_TYPE_SUSTAIN:
-			create_mask(xtra_flags, FALSE, OFT_SUST, OFT_MAX);
-			of_diff(learned_flags, xtra_flags);
-			break;
-		case OBJECT_XTRA_TYPE_RESIST:
-			create_mask(xtra_flags, FALSE, OFT_HRES, OFT_MAX);
-			of_diff(learned_flags, xtra_flags);
-			break;
-		case OBJECT_XTRA_TYPE_POWER:
-			create_mask(xtra_flags, FALSE, OFT_MISC, OFT_PROT, OFT_MAX);
-			of_diff(learned_flags, xtra_flags);
-			break;
-		default:
-			assert(0);
+	/* Random ego extras */
+	if (kf_has(o_ptr->ego->kind_flags, KF_RAND_SUSTAIN)) {
+		create_mask(xtra_flags, FALSE, OFT_SUST, OFT_MAX);
+		of_diff(learned_flags, xtra_flags);
+	} else if (kf_has(o_ptr->ego->kind_flags, KF_RAND_HI_RES)) {
+		create_mask(xtra_flags, FALSE, OFT_HRES, OFT_MAX);
+		of_diff(learned_flags, xtra_flags);
+	} else if (kf_has(o_ptr->ego->kind_flags, KF_RAND_POWER)) {
+		create_mask(xtra_flags, FALSE, OFT_MISC, OFT_PROT, OFT_MAX);
+		of_diff(learned_flags, xtra_flags);
 	}
+
 
 	of_union(o_ptr->known_flags, learned_flags);
 
