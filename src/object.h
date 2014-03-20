@@ -306,6 +306,7 @@ typedef struct object_base
 	int attr;
 
 	bitflag flags[OF_SIZE];
+	bitflag kind_flags[KF_SIZE];			/**< Kind flags */
 
 	int break_perc;
 } object_base;
@@ -345,6 +346,7 @@ typedef struct object_kind
 	s32b cost;         /**< Object base cost */
 
 	bitflag flags[OF_SIZE];			/**< Flags */
+	bitflag kind_flags[KF_SIZE];			/**< Kind flags */
 	bitflag pval_flags[MAX_PVALS][OF_SIZE];	/**< pval flags */
 
 	random_value modifiers[OBJ_MOD_MAX];
@@ -439,6 +441,7 @@ typedef struct artifact
 	s32b cost;    /**< Artifact (pseudo-)worth */
 
 	bitflag flags[OF_SIZE];		/**< Flags */
+	bitflag kind_flags[KF_SIZE];			/**< Kind flags */
 	bitflag pval_flags[MAX_PVALS][OF_SIZE];	/**< pval flags */
 
 	s16b modifiers[OBJ_MOD_MAX];
@@ -489,6 +492,7 @@ typedef struct ego_item
 	s32b cost;			/* Ego-item "cost" */
 
 	bitflag flags[OF_SIZE];		/**< Flags */
+	bitflag kind_flags[KF_SIZE];			/**< Kind flags */
 	bitflag pval_flags[MAX_PVALS][OF_SIZE];	/**< pval flags */
 
 	random_value modifiers[OBJ_MOD_MAX];

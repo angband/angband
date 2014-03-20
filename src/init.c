@@ -106,17 +106,24 @@ static struct history_chart *histories;
  * of text, even though technically, up to 64K should be legal.
  */
 
-static const char *k_info_flags[] = {
+static const char *obj_flags[] = {
 	#define OF(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r) #a,
 	#include "list-object-flags.h"
 	#undef OF
 	NULL
 };
 
-static const char *k_info_mods[] = {
+static const char *obj_mods[] = {
 	#define OBJ_MOD(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r) #a,
 	#include "list-object-modifiers.h"
 	#undef OBJ_MOD
+	NULL
+};
+
+static const char *kind_flags[] = {
+	#define KF(a, b) #a,
+	#include "list-kind-flags.h"
+	#undef KF
 	NULL
 };
 
@@ -439,7 +446,12 @@ static enum parser_error parse_kb_f(struct parser *p) {
 	s = string_make(parser_getstr(p, "flags"));
 	t = strtok(s, " |");
 	while (t) {
-		if (grab_flag(kb->flags, OF_SIZE, k_info_flags, t))
+		bool found = FALSE;
+		if (!grab_flag(kb->flags, OF_SIZE, obj_flags, t))
+			found = TRUE;
+		if (!grab_flag(kb->kind_flags, KF_SIZE, kind_flags, t))
+			found = TRUE;
+		if (!found)
 			break;
 		t = strtok(NULL, " |");
 	}
@@ -620,7 +632,12 @@ static enum parser_error parse_k_f(struct parser *p) {
 
 	t = strtok(s, " |");
 	while (t) {
-		if (grab_flag(k->flags, OF_SIZE, k_info_flags, t))
+		bool found = FALSE;
+		if (!grab_flag(k->flags, OF_SIZE, obj_flags, t))
+			found = TRUE;
+		if (!grab_flag(k->kind_flags, KF_SIZE, kind_flags, t))
+			found = TRUE;
+		if (!found)
 			break;
 		t = strtok(NULL, " |");
 	}
@@ -664,9 +681,9 @@ static enum parser_error parse_k_l(struct parser *p) {
 	t = strtok(s, " |");
 
 	while (t) {
-		int i = lookup_flag(k_info_mods, t);
-		if (grab_flag(k->flags, OF_SIZE, k_info_flags, t) ||
-			grab_flag(k->pval_flags[k->num_pvals], OF_SIZE, k_info_flags, t))
+		int i = lookup_flag(obj_mods, t);
+		if (grab_flag(k->flags, OF_SIZE, obj_flags, t) ||
+			grab_flag(k->pval_flags[k->num_pvals], OF_SIZE, obj_flags, t))
 			break;
 
 		if (i)
@@ -849,7 +866,12 @@ static enum parser_error parse_a_f(struct parser *p) {
 
 	t = strtok(s, " |");
 	while (t) {
-		if (grab_flag(a->flags, OF_SIZE, k_info_flags, t))
+		bool found = FALSE;
+		if (!grab_flag(a->flags, OF_SIZE, obj_flags, t))
+			found = TRUE;
+		if (!grab_flag(a->kind_flags, KF_SIZE, kind_flags, t))
+			found = TRUE;
+		if (!found)
 			break;
 		t = strtok(NULL, " |");
 	}
@@ -891,9 +913,9 @@ static enum parser_error parse_a_l(struct parser *p) {
 	t = strtok(s, " |");
 
 	while (t) {
-		int i = lookup_flag(k_info_mods, t);
-		if (grab_flag(a->flags, OF_SIZE, k_info_flags, t) ||
-			grab_flag(a->pval_flags[a->num_pvals], OF_SIZE, k_info_flags, t))
+		int i = lookup_flag(obj_mods, t);
+		if (grab_flag(a->flags, OF_SIZE, obj_flags, t) ||
+			grab_flag(a->pval_flags[a->num_pvals], OF_SIZE, obj_flags, t))
 			break;
 
 		if (i)
@@ -1531,7 +1553,12 @@ static enum parser_error parse_e_f(struct parser *p) {
 	s = string_make(parser_getstr(p, "flags"));
 	t = strtok(s, " |");
 	while (t) {
-		if (grab_flag(e->flags, OF_SIZE, k_info_flags,t))
+		bool found = FALSE;
+		if (!grab_flag(e->flags, OF_SIZE, obj_flags, t))
+			found = TRUE;
+		if (!grab_flag(e->kind_flags, KF_SIZE, kind_flags, t))
+			found = TRUE;
+		if (!found)
 			break;
 		t = strtok(NULL, " |");
 	}
@@ -1556,9 +1583,9 @@ static enum parser_error parse_e_l(struct parser *p) {
 	t = strtok(s, " |");
 
 	while (t) {
-		int i = lookup_flag(k_info_mods, t);
-		if (grab_flag(e->flags, OF_SIZE, k_info_flags, t) ||
-			grab_flag(e->pval_flags[e->num_pvals], OF_SIZE, k_info_flags, t))
+		int i = lookup_flag(obj_mods, t);
+		if (grab_flag(e->flags, OF_SIZE, obj_flags, t) ||
+			grab_flag(e->pval_flags[e->num_pvals], OF_SIZE, obj_flags, t))
 			break;
 
 		if (i) {
@@ -1751,7 +1778,7 @@ static enum parser_error parse_p_f(struct parser *p) {
 	flags = string_make(parser_getstr(p, "flags"));
 	s = strtok(flags, " |");
 	while (s) {
-		if (grab_flag(r->flags, OF_SIZE, k_info_flags, s))
+		if (grab_flag(r->flags, OF_SIZE, obj_flags, s))
 			break;
 		s = strtok(NULL, " |");
 	}

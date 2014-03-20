@@ -30,6 +30,13 @@ enum {
     #undef OF
 };
 
+/* The object kind flags */
+enum {
+    #define KF(a, b) KF_##a,
+    #include "list-kind-flags.h"
+    #undef KF
+};
+
 /* Object modifiers here for now too */
 enum {
     #define OBJ_MOD(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r) OBJ_MOD_##a,
@@ -71,7 +78,6 @@ enum object_flag_id {
 };
 
 #define OF_SIZE                	FLAG_SIZE(OF_MAX)
-#define OF_BYTES           		32  /* savefile bytes, i.e. 256 flags */
 
 #define of_has(f, flag)        	flag_has_dbg(f, OF_SIZE, flag, #f, #flag)
 #define of_next(f, flag)       	flag_next(f, OF_SIZE, flag)
@@ -90,6 +96,26 @@ enum object_flag_id {
 #define of_comp_union(f1, f2)  	flag_comp_union(f1, f2, OF_SIZE)
 #define of_inter(f1, f2)       	flag_inter(f1, f2, OF_SIZE)
 #define of_diff(f1, f2)        	flag_diff(f1, f2, OF_SIZE)
+
+#define KF_SIZE                	FLAG_SIZE(KF_MAX)
+
+#define kf_has(f, flag)        	flag_has_dbg(f, KF_SIZE, flag, #f, #flag)
+#define kf_next(f, flag)       	flag_next(f, KF_SIZE, flag)
+#define kf_is_empty(f)         	flag_is_empty(f, KF_SIZE)
+#define kf_is_full(f)          	flag_is_full(f, KF_SIZE)
+#define kf_is_inter(f1, f2)    	flag_is_inter(f1, f2, KF_SIZE)
+#define kf_is_subset(f1, f2)   	flag_is_subset(f1, f2, KF_SIZE)
+#define kf_is_equal(f1, f2)    	flag_is_equal(f1, f2, KF_SIZE)
+#define kf_on(f, flag)         	flag_on_dbg(f, KF_SIZE, flag, #f, #flag)
+#define kf_off(f, flag)        	flag_off(f, KF_SIZE, flag)
+#define kf_wipe(f)             	flag_wipe(f, KF_SIZE)
+#define kf_setall(f)           	flag_setall(f, KF_SIZE)
+#define kf_negate(f)           	flag_negate(f, KF_SIZE)
+#define kf_copy(f1, f2)        	flag_copy(f1, f2, KF_SIZE)
+#define kf_union(f1, f2)       	flag_union(f1, f2, KF_SIZE)
+#define kf_comp_union(f1, f2)  	flag_comp_union(f1, f2, KF_SIZE)
+#define kf_inter(f1, f2)       	flag_inter(f1, f2, KF_SIZE)
+#define kf_diff(f1, f2)        	flag_diff(f1, f2, KF_SIZE)
 
 /* Hack -- special "xtra" object flag info (type) */
 /* Can get rid of these now we have OFT_ flags */
