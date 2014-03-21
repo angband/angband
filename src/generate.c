@@ -399,6 +399,8 @@ static void run_template_parser(void) {
 
 /**
  * Clear the dungeon, ready for generation to begin.
+ * \param c is the cave struct being cleared, in practice the global cave
+ * \param p is the current player struct, in practice the global player
  */
 static void cave_clear(struct cave *c, struct player *p) {
     int i, x, y;
@@ -446,6 +448,7 @@ static void cave_clear(struct cave *c, struct player *p) {
 
 /**
  * Place hidden squares that will be used to generate feeling
+ * \param c is the cave struct the feeling squares are being placed in
  */
 static void place_feeling(struct cave *c)
 {
@@ -480,6 +483,7 @@ static void place_feeling(struct cave *c)
 
 /**
  * Calculate the level feeling for objects.
+ * \param c is the cave where the feeling is being measured
  */
 static int calc_obj_feeling(struct cave *c)
 {
@@ -510,6 +514,7 @@ static int calc_obj_feeling(struct cave *c)
 
 /**
  * Calculate the level feeling for monsters.
+ * \param c is the cave where the feeling is being measured
  */
 static int calc_mon_feeling(struct cave *c)
 {
@@ -534,6 +539,7 @@ static int calc_mon_feeling(struct cave *c)
 
 /**
  * Do d_m's prime check for labyrinths
+ * \param c is the cave where we're trying to generate a labyrinth
  */
 bool labyrinth_check(struct cave *c)
 {
@@ -562,6 +568,7 @@ bool labyrinth_check(struct cave *c)
 
 /**
  * Find a cave_profile by name
+ * \param name is the name of the cave_profile being looked for
  */
 const struct cave_profile *find_cave_profile(char *name)
 {
@@ -581,6 +588,7 @@ const struct cave_profile *find_cave_profile(char *name)
 
 /**
  * Choose a cave profile
+ * \param c is the cave which we're about to use the profile for
  */
 const struct cave_profile *choose_profile(struct cave *c)
 {
@@ -631,6 +639,8 @@ const struct cave_profile *choose_profile(struct cave *c)
  * Generate a random level.
  *
  * Confusingly, this function also generate the town level (level 0).
+ * \param c is the level we're going to end up with, in practice the global cave
+ * \param p is the current player struct, in practice the global player
  */
 void cave_generate(struct cave *c, struct player *p) {
     const char *error = "no generation";
@@ -739,7 +749,10 @@ void cave_generate(struct cave *c, struct player *p) {
     c->created_at = turn;
 }
 
-
+/**
+ * The generate module, which initialises template rooms and vaults
+ * Should it clean up?
+ */
 
 struct init_module generate_module = {
     .name = "generate",

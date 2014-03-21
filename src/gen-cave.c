@@ -74,6 +74,13 @@
 #include "z-queue.h"
 #include "z-type.h"
 
+/**
+ * Check whether a square has one of the tunnelling helper flags
+ * \param c is the current chunk
+ * \param y
+ * \param x are the co-ordinates
+ * \param flag is the relevant flag
+ */
 static bool square_is_granite_with_flag(struct cave *c, int y, int x, int flag)
 {
 	if (c->feat[y][x] != FEAT_GRANITE) return FALSE;
@@ -84,6 +91,10 @@ static bool square_is_granite_with_flag(struct cave *c, int y, int x, int flag)
 
 /**
  * Places a streamer of rock through dungeon.
+ *
+ * \param c is the current chunk
+ * \param feat is the base feature (FEAT_MAGMA or FEAT_QUARTZ)
+ * \param chance is the number of regular features per one gold
  *
  * Note that their are actually six different terrain features used to
  * represent streamers. Three each of magma and quartz, one for basic vein, one
@@ -133,6 +144,12 @@ static void build_streamer(struct cave *c, int feat, int chance)
 
 /**
  * Constructs a tunnel between two points
+ *
+ * \param c is the current chunk
+ * \param row1 
+ * \param col1 are the co-ordinates of the first point
+ * \param row2
+ * \param col2 are the co-ordinates of the second point
  *
  * This function must be called BEFORE any streamers are created, since we use
  * granite with the special SQUARE_WALL flags to keep track of legal places for
@@ -340,6 +357,9 @@ static void build_tunnel(struct cave *c, int row1, int col1, int row2, int col2)
  *
  * This routine currently only counts actual "empty floor" grids which are not
  * in rooms.
+ * \param c is the current chunk
+ * \param y1
+ * \param x1 are the co-ordinates
  *
  * TODO: count stairs, open doors, closed doors?
  */
@@ -364,6 +384,9 @@ static int next_to_corr(struct cave *c, int y1, int x1)
 
 /**
  * Returns whether a doorway can be built in a space.
+ * \param c is the current chunk
+ * \param y
+ * \param x are the co-ordinates
  *
  * To have a doorway, a space must be adjacent to at least two corridors and be
  * between two walls.
@@ -384,6 +407,9 @@ static bool possible_doorway(struct cave *c, int y, int x)
 
 /**
  * Places door at y, x position if at least 2 walls found
+ * \param c is the current chunk
+ * \param y
+ * \param x are the co-ordinates
  */
 static void try_door(struct cave *c, int y, int x)
 {
@@ -399,6 +425,7 @@ static void try_door(struct cave *c, int y, int x)
 
 /**
  * Generate a new dungeon level.
+ * \param p is the player 
  */
 struct cave *classic_gen(struct player *p) {
     int i, j, k, y, x, y1, x1;
@@ -619,6 +646,10 @@ struct cave *classic_gen(struct player *p) {
  * Given an adjoining wall (a wall which separates two labyrinth cells)
  * set a and b to point to the cell indices which are separated. Used by
  * labyrinth_gen().
+ * \param i is the wall index
+ * \param w is the width of the labyrinth
+ * \param a
+ * \param b are the two cell indices
  */
 static void lab_get_adjoin(int i, int w, int *a, int *b) {
     int y, x;
@@ -634,6 +665,10 @@ static void lab_get_adjoin(int i, int w, int *a, int *b) {
 
 /**
  * Return whether (x, y) is in a tunnel.
+ *
+ * \param c is the current chunk
+ * \param y
+ * \param x are the co-ordinates
  *
  * For our purposes a tunnel is a horizontal or vertical path, not an
  * intersection. Thus, we want the squares on either side to walls in one
@@ -654,8 +689,13 @@ static bool lab_is_tunnel(struct cave *c, int y, int x) {
 
 
 /**
- * Build a labyrinth chunk of a given height and width, optionally lit, mapped
- * and/or permanent-walled
+ * Build a labyrinth chunk of a given height and width
+ *
+ * \param depth is the native depth 
+ * \param h
+ * \param w are the dimensions of the chunk
+ * \param lit is whether the labyrinth is lit
+ * \param soft is true if we use regular walls, false if permanent walls
  */
 struct cave *labyrinth_chunk(int depth, int h, int w, bool lit, bool soft)
 {
@@ -772,7 +812,7 @@ struct cave *labyrinth_chunk(int depth, int h, int w, bool lit, bool soft)
 
 /**
  * Build a labyrinth level.
- *
+ * \param p is the player
  * Note that if the function returns FALSE, a level wasn't generated.
  * Labyrinths use the dungeon level's number to determine whether to generate
  * themselves (which means certain level numbers are more likely to generate
@@ -849,6 +889,8 @@ struct cave *labyrinth_gen(struct player *p) {
 
 /**
  * Initialize the dungeon array, with a random percentage of squares open.
+ * \param c is the current chunk
+ * \param density is the percentage of floors we are aiming for
  */
 static void init_cavern(struct cave *c, int density) {
     int h = c->height;
@@ -872,6 +914,9 @@ static void init_cavern(struct cave *c, int density) {
 
 /**
  * Return the number of walls (0-8) adjacent to this square.
+ * \param c is the current chunk
+ * \param y
+ * \param x are the co-ordinates
  */
 static int count_adj_walls(struct cave *c, int y, int x) {
     int yd, xd;
@@ -890,6 +935,7 @@ static int count_adj_walls(struct cave *c, int y, int x) {
 
 /**
  * Run a single pass of the cellular automata rules (4,5) on the dungeon.
+ * \param c is the chunk being mutated
  */
 static void mutate_cavern(struct cave *c) {
     int y, x;
@@ -921,6 +967,9 @@ static void mutate_cavern(struct cave *c) {
 
 /**
  * Fill an int[] with a single value.
+ * \param data is the array
+ * \param value is what it's being filled with
+ * \param size is the array length
  */
 static void array_filler(int data[], int value, int size) {
     int i;
