@@ -1,6 +1,5 @@
-/*
- * File: gen-cave.c
- * Purpose: Dungeon generation.
+/** \file gen-cave.c
+	\brief Generation of dungeon levels
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  * Copyright (c) 2013 Erik Osheim, Nick McConnell
@@ -15,6 +14,47 @@
  *    This software may be copied and distributed for educational, research,
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
+ *
+ * In this file, we use the SQUARE_WALL flags to cave->info, which should only
+ * be applied to granite.  SQUARE_WALL_SOLID indicates the wall should not be
+ * tunnelled; SQUARE_WALL_INNER is the inward-facing wall of a room;
+ * SQUARE_WALL_OUTER is the outer wall of a room.
+ *
+ * We use SQUARE_WALL_SOLID to prevent multiple corridors from piercing a wall
+ * in two adjacent locations, which would be messy, and SQUARE_WALL_OUTER
+ * to indicate which walls surround rooms, and may thus be pierced by corridors
+ * entering or leaving the room.
+ *
+ * Note that a tunnel which attempts to leave a room near the edge of the
+ * dungeon in a direction toward that edge will cause "silly" wall piercings,
+ * but will have no permanently incorrect effects, as long as the tunnel can
+ * eventually exit from another side. And note that the wall may not come back
+ * into the room by the hole it left through, so it must bend to the left or
+ * right and then optionally re-enter the room (at least 2 grids away). This is
+ * not a problem since every room that is large enough to block the passage of
+ * tunnels is also large enough to allow the tunnel to pierce the room itself
+ * several times.
+ *
+ * Note that no two corridors may enter a room through adjacent grids, they
+ * must either share an entryway or else use entryways at least two grids
+ * apart. This prevents large (or "silly") doorways.
+ *
+ * Traditionally, to create rooms in the dungeon, it was divided up into
+ * "blocks" of 11x11 grids each, and all rooms were required to occupy a
+ * rectangular group of blocks.  As long as each room type reserved a
+ * sufficient number of blocks, the room building routines would not need to
+ * check bounds. Note that in classic generation most of the normal rooms
+ * actually only use 23x11 grids, and so reserve 33x11 grids.
+ *
+ * Note that a lot of the original motivation for the block system was the
+ * fact that there was only one size of map available, 22x66 grids, and the
+ * dungeon level was divided up into nine of these in three rows of three.
+ * Now that the map can be resized and enlarged, and dungeon levels themselves
+ * can be different sizes, much of this original motivation has gone.  Blocks
+ * can still be used, but different cave profiles can set their own block
+ * sizes.  The classic generation method still uses the traditional blocks; the
+ * main motivation for using blocks now is for the aesthetic effect of placing
+ * rooms on a grid.
  */
 
 #include "angband.h"

@@ -2111,87 +2111,6 @@ static struct file_parser c_parser = {
 	cleanup_c
 };
 
-/* Parsing functions for vault.txt */
-static enum parser_error parse_v_n(struct parser *p) {
-	struct vault *h = parser_priv(p);
-	struct vault *v = mem_zalloc(sizeof *v);
-
-	v->vidx = parser_getuint(p, "index");
-	v->name = string_make(parser_getstr(p, "name"));
-	v->next = h;
-	parser_setpriv(p, v);
-	return PARSE_ERROR_NONE;
-}
-
-static enum parser_error parse_v_x(struct parser *p) {
-	struct vault *v = parser_priv(p);
-	int max_lev;
-
-	if (!v)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	v->typ = parser_getuint(p, "type");
-	v->rat = parser_getint(p, "rating");
-	v->hgt = parser_getuint(p, "height");
-	v->wid = parser_getuint(p, "width");
-	v->min_lev = parser_getuint(p, "min_lev");
-	max_lev = parser_getuint(p, "max_lev");
-	v->max_lev = max_lev ? max_lev : MAX_DEPTH;
-
-	/* Make sure vaults are no bigger than the room profiles allow. */
-	if (v->typ == 6 && (v->wid > 33 || v->hgt > 22))
-		return PARSE_ERROR_VAULT_TOO_BIG;
-	if (v->typ == 7 && (v->wid > 66 || v->hgt > 44))
-		return PARSE_ERROR_VAULT_TOO_BIG;
-	return PARSE_ERROR_NONE;
-}
-
-static enum parser_error parse_v_d(struct parser *p) {
-	struct vault *v = parser_priv(p);
-
-	if (!v)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	v->text = string_append(v->text, parser_getstr(p, "text"));
-	return PARSE_ERROR_NONE;
-}
-
-struct parser *init_parse_v(void) {
-	struct parser *p = parser_new();
-	parser_setpriv(p, NULL);
-	parser_reg(p, "N uint index str name", parse_v_n);
-	parser_reg(p, "X uint type int rating uint height uint width uint min_lev uint max_lev", parse_v_x);
-	parser_reg(p, "D str text", parse_v_d);
-	return p;
-}
-
-static errr run_parse_v(struct parser *p) {
-	return parse_file(p, "vault");
-}
-
-static errr finish_parse_v(struct parser *p) {
-	vaults = parser_priv(p);
-	parser_destroy(p);
-	return 0;
-}
-
-static void cleanup_v(void)
-{
-	struct vault *v, *next;
-	for (v = vaults; v; v = next) {
-		next = v->next;
-		mem_free(v->name);
-		mem_free(v->text);
-		mem_free(v);
-	}
-}
-
-static struct file_parser v_parser = {
-	"vault",
-	init_parse_v,
-	run_parse_v,
-	finish_parse_v,
-	cleanup_v
-};
-
 /* Parsing functions for p_hist.txt */
 static enum parser_error parse_h_n(struct parser *p) {
 	struct history_chart *oc = parser_priv(p);
@@ -3211,10 +3130,6 @@ void init_arrays(void)
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (monster pits)");
 	if (run_parser(&pit_parser)) quit("Cannot initialize monster pits");
 	
-	/* Initialize vault info */
-	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (vaults)");
-	if (run_parser(&v_parser)) quit("Cannot initialize vaults");
-
 	/* Initialize history info */
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (histories)");
 	if (run_parser(&h_parser)) quit("Cannot initialize histories");
@@ -3416,7 +3331,6 @@ void cleanup_angband(void)
 	cleanup_parser(&e_parser);
 	cleanup_parser(&p_parser);
 	cleanup_parser(&c_parser);
-	cleanup_parser(&v_parser);
 	cleanup_parser(&h_parser);
 	cleanup_parser(&flavor_parser);
 	cleanup_parser(&s_parser);

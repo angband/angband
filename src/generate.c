@@ -1,7 +1,6 @@
-/*
- * File: generate.c
- * Purpose: Dungeon generation.
- *
+/** \file generate.c
+	\brief Dungeon generation.
+
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  * Copyright (c) 2013 Erik Osheim, Nick McConnell
  *
@@ -15,6 +14,16 @@
  *    This software may be copied and distributed for educational, research,
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
+ *
+ * This is the top level dungeon generation file, which contains room profiles
+ * (for determining what rooms are available and their parameters), cave
+ * profiles (for determining the level generation function and parameters for
+ * different styles of levels), initialisation functions for template rooms and
+ * vaults, and the main level generation function (which calls the level
+ * builders from gen-cave.c).
+ *
+ * See the "vault.txt" file for more on vault generation.
+ * See the "room_template.txt" file for more room templates.
  */
 
 #include "angband.h"
@@ -41,55 +50,12 @@
 struct pit_profile *pit_info;
 struct vault *vaults;
 
-
 /**
- * See the "vault.txt" file for more on vault generation.
- * See the "room_template.txt" file for more room templates.
- *
- * In this file, we use the SQUARE_WALL flags to cave->info, which should only
- * be applied to granite.  SQUARE_WALL_SOLID indicates the wall should not be
- * tunnelled; SQUARE_WALL_INNER is the inward-facing wall of a room;
- * SQUARE_WALL_OUTER is the outer wall of a room.
- *
- * We use SQUARE_WALL_SOLID to prevent multiple corridors from piercing a wall
- * in two adjacent locations, which would be messy, and SQUARE_WALL_OUTER
- * to indicate which walls surround rooms, and may thus be pierced by corridors
- * entering or leaving the room.
- *
- * Note that a tunnel which attempts to leave a room near the edge of the
- * dungeon in a direction toward that edge will cause "silly" wall piercings,
- * but will have no permanently incorrect effects, as long as the tunnel can
- * eventually exit from another side. And note that the wall may not come back
- * into the room by the hole it left through, so it must bend to the left or
- * right and then optionally re-enter the room (at least 2 grids away). This is
- * not a problem since every room that is large enough to block the passage of
- * tunnels is also large enough to allow the tunnel to pierce the room itself
- * several times.
- *
- * Note that no two corridors may enter a room through adjacent grids, they
- * must either share an entryway or else use entryways at least two grids
- * apart. This prevents large (or "silly") doorways.
- *
- * Traditionally, to create rooms in the dungeon, it was divided up into
- * "blocks" of 11x11 grids each, and all rooms were required to occupy a
- * rectangular group of blocks.  As long as each room type reserved a
- * sufficient number of blocks, the room building routines would not need to
- * check bounds. Note that in classic generation most of the normal rooms
- * actually only use 23x11 grids, and so reserve 33x11 grids.
- *
- * Note that a lot of the original motivation for the block system was the
- * fact that there was only one size of map available, 22x66 grids, and the
- * dungeon level was divided up into nine of these in three rows of three.
- * Now that the map can be resized and enlarged, and dungeon levels themselves
- * can be different sizes, much of this original motivation has gone.  Blocks
- * can still be used, but different cave profiles can set their own block
- * sizes.  The classic generation method still uses the traditional blocks; the
- * main motivation for using blocks now is for the aesthetic effect of placing
- * rooms on a grid.
+ * Room profiles for the current (classic) dungeon generation algorithm
  */
-
-/* name function height width min-depth pit? rarity %cutoff */
 struct room_profile classic_rooms[] = {
+	/* name function height width min-depth pit? rarity %cutoff */
+
     /* greater vaults only have rarity 1 but they have other checks */
     {"greater vault", build_greater_vault, 44, 66, 35, FALSE, 0, 100},
 
@@ -111,8 +77,12 @@ struct room_profile classic_rooms[] = {
     {"simple room", build_simple, 11, 33, 1, FALSE, 0, 100}
 };
 
-/* name function height width min-depth pit? rarity %cutoff */
+/**
+ * Room profiles for the modified dungeon generation algorithm
+ */
 struct room_profile modified_rooms[] = {
+	/* name function height width min-depth pit? rarity %cutoff */
+
     /* really big rooms have rarity 0 but they have other checks */
     {"greater vault", build_greater_vault, 44, 66, 35, FALSE, 0, 100},
 	{"huge room", build_huge, 44, 66, 40, FALSE, 0, 100},
@@ -254,7 +224,9 @@ struct cave_profile cave_profiles[] = {
 };
 
 
-/* Parsing functions for room_template.txt */
+/**
+ * Parsing functions for room_template.txt
+ */
 static enum parser_error parse_room_n(struct parser *p) {
     struct room_template *h = parser_priv(p);
     struct room_template *t = mem_zalloc(sizeof *t);
@@ -329,12 +301,99 @@ static struct file_parser room_parser = {
     cleanup_room
 };
 
-static void run_room_parser(void) {
+
+/* Parsing functions for vault.txt */
+static enum parser_error parse_v_n(struct parser *p) {
+	struct vault *h = parser_priv(p);
+	struct vault *v = mem_zalloc(sizeof *v);
+
+	v->vidx = parser_getuint(p, "index");
+	v->name = string_make(parser_getstr(p, "name"));
+	v->next = h;
+	parser_setpriv(p, v);
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_v_x(struct parser *p) {
+	struct vault *v = parser_priv(p);
+	int max_lev;
+
+	if (!v)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	v->typ = parser_getuint(p, "type");
+	v->rat = parser_getint(p, "rating");
+	v->hgt = parser_getuint(p, "height");
+	v->wid = parser_getuint(p, "width");
+	v->min_lev = parser_getuint(p, "min_lev");
+	max_lev = parser_getuint(p, "max_lev");
+	v->max_lev = max_lev ? max_lev : MAX_DEPTH;
+
+	/* Make sure vaults are no bigger than the room profiles allow. */
+	if (v->typ == 6 && (v->wid > 33 || v->hgt > 22))
+		return PARSE_ERROR_VAULT_TOO_BIG;
+	if (v->typ == 7 && (v->wid > 66 || v->hgt > 44))
+		return PARSE_ERROR_VAULT_TOO_BIG;
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_v_d(struct parser *p) {
+	struct vault *v = parser_priv(p);
+
+	if (!v)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	v->text = string_append(v->text, parser_getstr(p, "text"));
+	return PARSE_ERROR_NONE;
+}
+
+struct parser *init_parse_v(void) {
+	struct parser *p = parser_new();
+	parser_setpriv(p, NULL);
+	parser_reg(p, "N uint index str name", parse_v_n);
+	parser_reg(p, "X uint type int rating uint height uint width uint min_lev uint max_lev", parse_v_x);
+	parser_reg(p, "D str text", parse_v_d);
+	return p;
+}
+
+static errr run_parse_v(struct parser *p) {
+	return parse_file(p, "vault");
+}
+
+static errr finish_parse_v(struct parser *p) {
+	vaults = parser_priv(p);
+	parser_destroy(p);
+	return 0;
+}
+
+static void cleanup_v(void)
+{
+	struct vault *v, *next;
+	for (v = vaults; v; v = next) {
+		next = v->next;
+		mem_free(v->name);
+		mem_free(v->text);
+		mem_free(v);
+	}
+}
+
+static struct file_parser v_parser = {
+	"vault",
+	init_parse_v,
+	run_parse_v,
+	finish_parse_v,
+	cleanup_v
+};
+
+static void run_template_parser(void) {
+	/* Initialize room info */
     event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (room templates)");
     if (run_parser(&room_parser))
 		quit("Cannot initialize room templates");
-}
 
+	/* Initialize vault info */
+	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (vaults)");
+	if (run_parser(&v_parser))
+		quit("Cannot initialize vaults");
+}
 
 
 
@@ -684,6 +743,6 @@ void cave_generate(struct cave *c, struct player *p) {
 
 struct init_module generate_module = {
     .name = "generate",
-    .init = run_room_parser,
+    .init = run_template_parser,
     .cleanup = NULL
 };
