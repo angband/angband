@@ -19,7 +19,7 @@ int teardown_tests(void *state) {
 
 int test_order(void *state) {
 	enum parser_error r = parser_parse(state, "X:3:4");
-	eq(r, PARSE_ERROR_MISSING_RECORD_HEADER);
+	eq(r, PARSE_ERROR_MISSING_FIELD);
 	ok;
 }
 
@@ -44,8 +44,8 @@ int test_x0(void *state) {
 	require(e);
 	eq(e->level, 2);
 	eq(e->rarity, 4);
-	eq(e->rating, 6);
-	eq(e->cost, 8);
+	eq(e->cost, 6);
+	eq(e->rating, 8);
 	return PARSE_ERROR_NONE;
 }
 

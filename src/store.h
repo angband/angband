@@ -1,6 +1,7 @@
 #ifndef INCLUDED_STORE_H
 #define INCLUDED_STORE_H
 
+#include "cave.h"
 #include "object.h"
 #include "parser.h"
 
