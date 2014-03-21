@@ -1,6 +1,7 @@
 #ifndef INCLUDED_GAME_CMD_H
 #define INCLUDED_GAME_CMD_H
 
+#include "object.h"
 #include "z-type.h"
 
 /*

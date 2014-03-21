@@ -30,7 +30,7 @@ int test_n0(void *state) {
 }
 
 int test_x0(void *state) {
-	enum parser_error r = parser_parse(state, "X:6:5:12:20");
+	enum parser_error r = parser_parse(state, "X:6:5:12:20:15:25");
 	struct vault *v;
 
 	eq(r, PARSE_ERROR_NONE);
@@ -40,6 +40,8 @@ int test_x0(void *state) {
 	eq(v->rat, 5);
 	eq(v->hgt, 12);
 	eq(v->wid, 20);
+	eq(v->min_lev, 15);
+	eq(v->max_lev, 25);
 	ok;
 }
 
