@@ -1288,12 +1288,12 @@ bool mon_pit_hook(monster_race *r_ptr)
 		}
 	}
 
-	if (dun->pit_type->n_bases > 0) {
-		int i;
+	if (dun->pit_type->bases) {
+		struct pit_monster_profile *bases;
 		match_base = FALSE;
 
-		for (i = 0; i < dun->pit_type->n_bases; i++) {
-			if (r_ptr->base == dun->pit_type->base[i])
+		for (bases = dun->pit_type->bases; bases; bases = bases->next) {
+			if (r_ptr->base == bases->base)
 				match_base = TRUE;
 		}
 	}

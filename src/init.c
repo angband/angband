@@ -2761,18 +2761,19 @@ static enum parser_error parse_pit_o(struct parser *p) {
 
 static enum parser_error parse_pit_t(struct parser *p) {
 	struct pit_profile *pit = parser_priv(p);
+	struct pit_monster_profile *bases;
 	monster_base *base = lookup_monster_base(parser_getsym(p, "base"));
 
 	if (!pit)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	else if (pit->n_bases == MAX_RVALS)
-		return PARSE_ERROR_TOO_MANY_ENTRIES;
 	else if (!base)
 		return PARSE_ERROR_UNRECOGNISED_TVAL;
-	else {
-		pit->base[pit->n_bases++] = base;
-		return PARSE_ERROR_NONE;		
-	}
+
+	bases = mem_zalloc(sizeof *bases);
+	bases->base = base;
+	bases->next = pit->bases;
+	pit->bases = bases;
+	return PARSE_ERROR_NONE;
 }
 
 static enum parser_error parse_pit_c(struct parser *p) {

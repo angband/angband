@@ -15,27 +15,22 @@
 /*
  * Dungeon allocation places and types, used with alloc_object().
  */
-#define SET_CORR   1 /* Hallway */
-#define SET_ROOM   2 /* Room */
-#define SET_BOTH   3 /* Anywhere */
+#define SET_CORR   1 /*!< Hallway */
+#define SET_ROOM   2 /*!< Room */
+#define SET_BOTH   3 /*!< Anywhere */
 
-#define TYP_RUBBLE 1 /* Rubble */
-#define TYP_TRAP   3 /* Trap */
-#define TYP_GOLD   4 /* Gold */
-#define TYP_OBJECT 5 /* Object */
-#define TYP_GOOD   6 /* Good object */
-#define TYP_GREAT  7 /* Great object */
+#define TYP_RUBBLE 1 /*!< Rubble */
+#define TYP_TRAP   3 /*!< Trap */
+#define TYP_GOLD   4 /*!< Gold */
+#define TYP_OBJECT 5 /*!< Object */
+#define TYP_GOOD   6 /*!< Good object */
+#define TYP_GREAT  7 /*!< Great object */
 
-#define AMT_ROOM   9 /* Number of objects for rooms */
-#define AMT_ITEM   3 /* Number of objects for rooms/corridors */
-#define AMT_GOLD   3 /* Amount of treasure for rooms/corridors */
+#define AMT_ROOM   9 /*!< Number of objects for rooms */
+#define AMT_ITEM   3 /*!< Number of objects for rooms/corridors */
+#define AMT_GOLD   3 /*!< Amount of treasure for rooms/corridors */
 
-#define MAX_PIT 2 /* Maximum number of pits or nests allowed */
-
-/**
- * Maximum number of rvals (monster templates) that a pit can specify.
- */
-#define MAX_RVALS 6
+#define MAX_PIT 2 /*!< Maximum number of pits or nests allowed */
 
 /*
  * Bounds on some arrays used in the "dun_data" structure.
@@ -45,6 +40,12 @@
 #define DOOR_MAX 200
 #define WALL_MAX 500
 #define TUNN_MAX 900
+
+struct pit_monster_profile {
+    struct pit_monster_profile *next;
+
+    struct monster_base *base;
+};
 
 struct pit_color_profile {
     struct pit_color_profile *next;
@@ -58,23 +59,25 @@ struct pit_forbidden_monster {
     monster_race *race;
 };
 
+/**
+ * Profile for choosing monsters for pits, nests or other themed areas
+ */
 typedef struct pit_profile {
-    struct pit_profile *next;
+    struct pit_profile *next; /*!< Pointer to next pit profile */
 
-    int pit_idx; /* Index in pit_info */
+    int pit_idx;              /**< Index in pit_info */
     const char *name;
-    int room_type; /* Is this a pit or a nest? */
-    int ave; /* Level where this pit is most common */
-    int rarity; /* How unusual this pit is */
-    int obj_rarity; /* How rare objects are in this pit */
-    bitflag flags[RF_SIZE];         /* Required flags */
-    bitflag forbidden_flags[RF_SIZE];
-    bitflag spell_flags[RSF_SIZE];  /* Required spell flags */
-    bitflag forbidden_spell_flags[RSF_SIZE];
-    int n_bases;
-    struct monster_base *base[MAX_RVALS];
-    struct pit_color_profile *colors;
-    struct pit_forbidden_monster *forbidden_monsters;
+    int room_type;            /**< Is this a pit or a nest? */
+    int ave;                  /**< Level where this pit is most common */
+    int rarity;               /**< How unusual this pit is */
+    int obj_rarity;           /**< How rare objects are in this pit */
+    bitflag flags[RF_SIZE];   /**< Required flags */
+    bitflag forbidden_flags[RF_SIZE];         /**< Forbidden flags */
+    bitflag spell_flags[RSF_SIZE];            /**< Required spell flags */
+    bitflag forbidden_spell_flags[RSF_SIZE];  /**< Forbidden spell flags */
+    struct pit_monster_profile *bases;     /**< List of vaild monster bases */
+    struct pit_color_profile *colors;      /**< List of valid monster colors */
+    struct pit_forbidden_monster *forbidden_monsters; /**< Forbidden monsters */
 } pit_profile;
 
 extern struct pit_profile *pit_info;
@@ -84,63 +87,63 @@ extern struct pit_profile *pit_info;
  * Structure to hold all "dungeon generation" data
  */
 struct dun_data {
-    /* The profile used to generate the level */
+    /*!< The profile used to generate the level */
     const struct cave_profile *profile;
 
-    /* Array of centers of rooms */
+    /*!< Array of centers of rooms */
     int cent_n;
     struct loc cent[CENT_MAX];
 
-    /* Array of possible door locations */
+    /*!< Array of possible door locations */
     int door_n;
     struct loc door[DOOR_MAX];
 
-    /* Array of wall piercing locations */
+    /*!< Array of wall piercing locations */
     int wall_n;
     struct loc wall[WALL_MAX];
 
-    /* Array of tunnel grids */
+    /*!< Array of tunnel grids */
     int tunn_n;
     struct loc tunn[TUNN_MAX];
 
-	/* Number of grids in each block (vertically) */
+	/*!< Number of grids in each block (vertically) */
 	int block_hgt;
 
-	/* Number of grids in each block (horizontally) */
+	/*!< Number of grids in each block (horizontally) */
 	int block_wid;
 
-    /* Number of blocks along each axis */
+    /*!< Number of blocks along each axis */
     int row_blocks;
     int col_blocks;
 
-    /* Array of which blocks are used */
+    /*!< Array of which blocks are used */
     bool **room_map;
 
-    /* Number of pits/nests on the level */
+    /*!< Number of pits/nests on the level */
     int pit_num;
 
-	/* Current pit profile in use */
+	/*!< Current pit profile in use */
 	pit_profile *pit_type;
 };
 
 
 struct tunnel_profile {
     const char *name;
-    int rnd; /* % chance of choosing random direction */
-    int chg; /* % chance of changing direction */
-    int con; /* % chance of extra tunneling */
-    int pen; /* % chance of placing doors at room entrances */
-    int jct; /* % chance of doors at tunnel junctions */
+    int rnd; /*!< % chance of choosing random direction */
+    int chg; /*!< % chance of changing direction */
+    int con; /*!< % chance of extra tunneling */
+    int pen; /*!< % chance of placing doors at room entrances */
+    int jct; /*!< % chance of doors at tunnel junctions */
 };
 
 struct streamer_profile {
     const char *name;
-    int den; /* Density of streamers */    
-    int rng; /* Width of streamers */
-    int mag; /* Number of magma streamers */
-    int mc; /* 1/chance of treasure per magma */
-    int qua; /* Number of quartz streamers */
-    int qc; /* 1/chance of treasure per quartz */
+    int den; /*!< Density of streamers */
+    int rng; /*!< Width of streamers */
+    int mag; /*!< Number of magma streamers */
+    int mc;  /*!< 1/chance of treasure per magma */
+    int qua; /*!< Number of quartz streamers */
+    int qc;  /*!< 1/chance of treasure per quartz */
 };
 
 /*
@@ -151,16 +154,16 @@ typedef struct cave * (*cave_builder) (struct player *p);
 
 struct cave_profile {
     const char *name;
-    cave_builder builder; /* Function used to build the level */
-	int block_size; /* Default height and width of dungeon blocks */
-    int dun_rooms; /* Number of rooms to attempt */
-    int dun_unusual; /* Level/chance of unusual room */
-    int max_rarity; /* Max number of rarity levels used in room generation */
-    int n_room_profiles; /* Number of room profiles */
-    struct tunnel_profile tun; /* Used to build tunnels */
-    struct streamer_profile str; /* Used to build mineral streamers*/
-    const struct room_profile *room_profiles; /* Used to build rooms */
-    int cutoff; /* Used to see if we should try this dungeon */
+    cave_builder builder; /*!< Function used to build the level */
+	int block_size;       /*!< Default height and width of dungeon blocks */
+    int dun_rooms;        /*!< Number of rooms to attempt */
+    int dun_unusual;      /*!< Level/chance of unusual room */
+    int max_rarity; /*!< Max number of rarity levels used in room generation */
+    int n_room_profiles; /*!< Number of room profiles */
+    struct tunnel_profile tun; /*!< Used to build tunnels */
+    struct streamer_profile str; /*!< Used to build mineral streamers*/
+    const struct room_profile *room_profiles; /*!< Used to build rooms */
+    int cutoff;    /*!< Used to see if we should try this dungeon */
 };
 
 
@@ -177,12 +180,12 @@ typedef bool (*room_builder) (struct cave *c, int y0, int x0);
  */
 struct room_profile {
     const char *name;
-    room_builder builder; /* Function used to build fixed size rooms */
-    int height, width; /* Space required in grids */
-    int level; /* Minimum dungeon level */
-    bool pit; /* Whether this room is a pit/nest or not */
-    int rarity; /* How unusual this room is */
-    int cutoff; /* Upper limit of 1-100 random roll for room generation */
+    room_builder builder; /*!< Function used to build fixed size rooms */
+    int height, width; /*!< Space required in grids */
+    int level; /*!< Minimum dungeon level */
+    bool pit; /*!< Whether this room is a pit/nest or not */
+    int rarity; /*!< How unusual this room is */
+    int cutoff; /*!< Upper limit of 1-100 random roll for room generation */
 };
 
 
@@ -190,20 +193,20 @@ struct room_profile {
  * Information about "vault generation"
  */
 struct vault {
-    struct vault *next;
-    unsigned int vidx;
-    char *name;
-    char *text;
+    struct vault *next; /*!< Pointer to next vault template */
+    unsigned int vidx;  /*!< Vault index */
+    char *name;         /*!< Vault name */
+    char *text;         /*!< Grid by grid description of vault layout */
 
-    byte typ;			/* Vault type */
+    byte typ;			/*!< Vault type */
 
-    byte rat;			/* Vault rating */
+    byte rat;			/*!< Vault rating */
 
-    byte hgt;			/* Vault height */
-    byte wid;			/* Vault width */
+    byte hgt;			/*!< Vault height */
+    byte wid;			/*!< Vault width */
 
-    byte min_lev;		/* Minimum allowable level, if specified. */
-    byte max_lev;		/* Maximum allowable level, if specified. */
+    byte min_lev;		/*!< Minimum allowable level, if specified. */
+    byte max_lev;		/*!< Maximum allowable level, if specified. */
 };
 
 extern struct vault *vaults;
@@ -213,19 +216,19 @@ extern struct vault *vaults;
  * Information about "room generation"
  */
 typedef struct room_template {
-    struct room_template *next;
-    unsigned int tidx;
-    char *name;
-    char *text;
+    struct room_template *next; /*!< Pointer to next room template */
+    unsigned int tidx;  /*!< Template index */
+    char *name;         /*!< Room name */
+    char *text;         /*!< Grid by grid description of room layout */
 
-    byte typ;			/* Room type */
+    byte typ;			/*!< Room type */
 
-    byte rat;			/* Room rating */
+    byte rat;			/*!< Room rating */
 
-    byte hgt;			/* Room height */
-    byte wid;			/* Room width */
-    byte dor;           /* Random door options */
-    byte tval;			/* tval for objects in this room */
+    byte hgt;			/*!< Room height */
+    byte wid;			/*!< Room width */
+    byte dor;           /*!< Random door options */
+    byte tval;			/*!< tval for objects in this room */
 } room_template_type;
 
 /**
