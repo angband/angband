@@ -736,7 +736,7 @@ extern bool generate_starburst_room(struct chunk *c, int y1, int x1, int y2,
  * \param y
  * \param x centre of the room
  * \param height
- * \param dimensions of the room
+ * \param width dimensions of the room
  * \return success
  *
  * Find and allocate a free space in the dungeon large enough to hold

@@ -406,6 +406,9 @@ void update_mon(struct monster *m_ptr, bool full)
 	/* Seen by vision */
 	bool easy = FALSE;
 
+	/* ESP permitted */
+	bool telepathy_ok = TRUE;
+
 	assert(m_ptr != NULL);
 
 	l_ptr = get_lore(m_ptr->race);
@@ -441,10 +444,15 @@ void update_mon(struct monster *m_ptr, bool full)
 	/* Detected */
 	if (m_ptr->mflag & (MFLAG_MARK)) flag = TRUE;
 
+	/* Check if telepathy works */
+	if (square_is_no_esp(cave, fy, fx) ||
+		square_is_no_esp(cave, player->py, player->px))
+		telepathy_ok = FALSE;
+
 	/* Nearby */
 	if (d <= MAX_SIGHT) {
 		/* Basic telepathy */
-		if (player_of_has(player, OF_TELEPATHY)) {
+		if (player_of_has(player, OF_TELEPATHY) && telepathy_ok) {
 			/* Empty mind, no telepathy */
 			if (rf_has(m_ptr->race->flags, RF_EMPTY_MIND))
 			{

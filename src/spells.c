@@ -543,6 +543,9 @@ void map_area(void)
 	{
 		for (x = x1; x < x2; x++)
 		{
+			/* Some squares can't be mapped */
+			if (square_is_no_map(cave, y, x)) continue;
+
 			/* All non-walls are "checked" */
 			if (!square_seemslikewall(cave, y, x))
 			{
@@ -2029,6 +2032,11 @@ void teleport_player(int dis)
 
 	bool look = TRUE;
 
+	/* Check for a no teleport grid */
+	if (square_is_no_teleport(cave, py, px) && (dis > 10)) {
+		msg("Teleportation forbidden!");
+		return;
+	}
 
 	/* Initialize */
 	y = py;

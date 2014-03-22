@@ -3059,6 +3059,21 @@ bool square_isglow(struct chunk *c, int y, int x) {
 	return sqinfo_has(c->info[y][x], SQUARE_GLOW);
 }
 
+bool square_is_no_teleport(struct chunk *c, int y, int x) {
+	assert(square_in_bounds(c, y, x));
+	return sqinfo_has(c->info[y][x], SQUARE_NO_TELEPORT);
+}
+
+bool square_is_no_map(struct chunk *c, int y, int x) {
+	assert(square_in_bounds(c, y, x));
+	return sqinfo_has(c->info[y][x], SQUARE_NO_MAP);
+}
+
+bool square_is_no_esp(struct chunk *c, int y, int x) {
+	assert(square_in_bounds(c, y, x));
+	return sqinfo_has(c->info[y][x], SQUARE_NO_ESP);
+}
+
 /**
  * True if the feature is "boring".
  */

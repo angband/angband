@@ -340,6 +340,9 @@ extern bool square_isview(struct chunk *c, int y, int x);
 extern bool square_isseen(struct chunk *c, int y, int x);
 extern bool square_wasseen(struct chunk *c, int y, int x);
 extern bool square_isglow(struct chunk *c, int y, int x);
+extern bool square_is_no_teleport(struct chunk *c, int y, int x);
+extern bool square_is_no_map(struct chunk *c, int y, int x);
+extern bool square_is_no_esp(struct chunk *c, int y, int x);
 extern bool square_iswarded(struct chunk *c, int y, int x);
 extern bool square_canward(struct chunk *c, int y, int x);
 
