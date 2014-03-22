@@ -378,7 +378,7 @@ void compact_monsters(int num_to_compact)
  * Note that we do not delete the objects the monsters are carrying;
  * that must be taken care of separately via wipe_o_list().
  */
-void wipe_mon_list(struct cave *c, struct player *p)
+void wipe_mon_list(struct chunk *c, struct player *p)
 {
 	int m_idx;
 
@@ -422,7 +422,7 @@ void wipe_mon_list(struct cave *c, struct player *p)
  * This routine should almost never fail, but it *can* happen.
  * The calling code must check for and handle a 0 return.
  */
-s16b mon_pop(struct cave *c)
+s16b mon_pop(struct chunk *c)
 {
 	int m_idx;
 
@@ -630,7 +630,7 @@ monster_race *get_mon_num(int level)
 /**
  * Places the player at the given coordinates in the cave.
  */
-void player_place(struct cave *c, struct player *p, int y, int x)
+void player_place(struct chunk *c, struct player *p, int y, int x)
 {
 	assert(!c->m_idx[y][x]);
 
@@ -683,7 +683,7 @@ int mon_create_drop_count(const struct monster_race *race, bool maximize)
  *
  * Returns TRUE if anything is created, FALSE if nothing is.
  */
-static bool mon_create_drop(struct cave *c, struct monster *m_ptr, byte origin)
+static bool mon_create_drop(struct chunk *c, struct monster *m_ptr, byte origin)
 {
 	struct monster_drop *drop;
 
@@ -781,7 +781,7 @@ static bool mon_create_drop(struct cave *c, struct monster *m_ptr, byte origin)
  *
  * Returns the m_idx of the newly copied monster, or 0 if the placement fails.
  */
-s16b place_monster(struct cave *c, int y, int x, monster_type *mon, byte origin)
+s16b place_monster(struct chunk *c, int y, int x, monster_type *mon, byte origin)
 {
 	s16b m_idx;
 	monster_type *m_ptr;
@@ -904,7 +904,7 @@ int mon_hp(const struct monster_race *race, aspect hp_aspect)
  * except for the savefile loading code, which calls place_monster()
  * directly.
  */
-static bool place_new_monster_one(struct cave *c, int y, int x, monster_race *race, bool sleep, byte origin)
+static bool place_new_monster_one(struct chunk *c, int y, int x, monster_race *race, bool sleep, byte origin)
 {
 	int i;
 
@@ -1034,7 +1034,7 @@ static bool place_new_monster_one(struct cave *c, int y, int x, monster_race *ra
  * `origin` is the item origin to use for any monster drops (e.g. ORIGIN_DROP,
  * ORIGIN_DROP_PIT, etc.) 
  */
-static bool place_new_monster_group(struct cave *c, int y, int x, 
+static bool place_new_monster_group(struct chunk *c, int y, int x, 
 		monster_race *r_ptr, bool sleep, int total, byte origin)
 {
 	int n, i;
@@ -1106,7 +1106,7 @@ static bool place_monster_base_okay(monster_race *race)
 /** 
  * Helper function to place monsters that appear as friends or escorts
  */
- bool place_friends(struct cave *c, int y, int x, monster_race *race, 
+ bool place_friends(struct chunk *c, int y, int x, monster_race *race, 
 		monster_race *friends_race, int total, bool sleep, byte origin)
  {
 	int level_difference, extra_chance, nx, ny;
@@ -1181,7 +1181,7 @@ static bool place_monster_base_okay(monster_race *race)
  * `origin` is the item origin to use for any monster drops (e.g. ORIGIN_DROP,
  * ORIGIN_DROP_PIT, etc.) 
  */
-bool place_new_monster(struct cave *c, int y, int x, monster_race *race, bool sleep,
+bool place_new_monster(struct chunk *c, int y, int x, monster_race *race, bool sleep,
 	bool group_okay, byte origin)
 {
 	struct monster_friends *friends;
@@ -1259,7 +1259,7 @@ bool place_new_monster(struct cave *c, int y, int x, monster_race *race, bool sl
  *
  * Returns TRUE if we successfully place a monster.
  */
-bool pick_and_place_monster(struct cave *c, int y, int x, int depth, bool sleep,
+bool pick_and_place_monster(struct chunk *c, int y, int x, int depth, bool sleep,
 	bool group_okay, byte origin)
 {
 	/* Pick a monster race */
@@ -1281,7 +1281,7 @@ bool pick_and_place_monster(struct cave *c, int y, int x, int depth, bool sleep,
  *
  * Returns TRUE if we successfully place a monster.
  */
-bool pick_and_place_distant_monster(struct cave *c, struct loc loc, int dis,
+bool pick_and_place_distant_monster(struct chunk *c, struct loc loc, int dis,
 		bool sleep, int depth)
 {
 	int py = loc.y;

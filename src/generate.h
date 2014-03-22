@@ -149,7 +149,7 @@ struct streamer_profile {
 /*
  * cave_builder is a function pointer which builds a level.
  */
-typedef struct cave * (*cave_builder) (struct player *p);
+typedef struct chunk * (*cave_builder) (struct player *p);
 
 
 struct cave_profile {
@@ -171,7 +171,7 @@ struct cave_profile {
  * room_builder is a function pointer which builds rooms in the cave given
  * anchor coordinates.
  */
-typedef bool (*room_builder) (struct cave *c, int y0, int x0);
+typedef bool (*room_builder) (struct chunk *c, int y0, int x0);
 
 
 /**
@@ -237,86 +237,86 @@ typedef struct room_template {
 struct dun_data *dun;
 struct room_template *room_templates;
 
-struct cave *town_gen(struct player *p);
-struct cave *classic_gen(struct player *p);
-struct cave *labyrinth_gen(struct player *p);
-struct cave *cavern_gen(struct player *p);
-struct cave *modified_gen(struct player *p);
-struct cave *hard_centre_gen(struct player *p);
-struct cave *lair_gen(struct player *p);
+struct chunk *town_gen(struct player *p);
+struct chunk *classic_gen(struct player *p);
+struct chunk *labyrinth_gen(struct player *p);
+struct chunk *cavern_gen(struct player *p);
+struct chunk *modified_gen(struct player *p);
+struct chunk *hard_centre_gen(struct player *p);
+struct chunk *lair_gen(struct player *p);
 
-struct cave *chunk_write(int y0, int x0, int height, int width, bool monsters,
+struct chunk *chunk_write(int y0, int x0, int height, int width, bool monsters,
 						 bool objects, bool traps, bool delete_old);
-void chunk_list_add(struct cave *c);
+void chunk_list_add(struct chunk *c);
 bool chunk_list_remove(char *name);
-struct cave *chunk_find_name(char *name);
-bool chunk_find(struct cave *c);
-bool chunk_copy(struct cave *dest, struct cave *source, int y0, int x0,
+struct chunk *chunk_find_name(char *name);
+bool chunk_find(struct chunk *c);
+bool chunk_copy(struct chunk *dest, struct chunk *source, int y0, int x0,
 				int rotate, bool reflect);
 
 
-void fill_rectangle(struct cave *c, int y1, int x1, int y2, int x2, int feat,
+void fill_rectangle(struct chunk *c, int y1, int x1, int y2, int x2, int feat,
 					int flag);
-void generate_mark(struct cave *c, int y1, int x1, int y2, int x2, int flag);
-void draw_rectangle(struct cave *c, int y1, int x1, int y2, int x2, int feat, 
+void generate_mark(struct chunk *c, int y1, int x1, int y2, int x2, int flag);
+void draw_rectangle(struct chunk *c, int y1, int x1, int y2, int x2, int feat, 
 					int flag);
-void set_marked_granite(struct cave *c, int y, int x, int flag);
+void set_marked_granite(struct chunk *c, int y, int x, int flag);
 
 struct vault *random_vault(int depth, int typ);
-bool build_vault(struct cave *c, int y0, int x0, struct vault *v);
+bool build_vault(struct chunk *c, int y0, int x0, struct vault *v);
 
-bool build_simple(struct cave *c, int y0, int x0);
-bool build_circular(struct cave *c, int y0, int x0);
-bool build_overlap(struct cave *c, int y0, int x0);
-bool build_crossed(struct cave *c, int y0, int x0);
-bool build_large(struct cave *c, int y0, int x0);
+bool build_simple(struct chunk *c, int y0, int x0);
+bool build_circular(struct chunk *c, int y0, int x0);
+bool build_overlap(struct chunk *c, int y0, int x0);
+bool build_crossed(struct chunk *c, int y0, int x0);
+bool build_large(struct chunk *c, int y0, int x0);
 bool mon_pit_hook(monster_race *r_ptr);
 void set_pit_type(int depth, int type);
-bool build_nest(struct cave *c, int y0, int x0);
-bool build_pit(struct cave *c, int y0, int x0);
-bool build_template(struct cave *c, int y0, int x0);
-bool build_interesting(struct cave *c, int y0, int x0);
-bool build_lesser_vault(struct cave *c, int y0, int x0);
-bool build_medium_vault(struct cave *c, int y0, int x0);
-bool build_greater_vault(struct cave *c, int y0, int x0);
-bool build_moria(struct cave *c, int y0, int x0);
-bool build_room_of_chambers(struct cave *c, int y0, int x0);
-bool build_huge(struct cave *c, int y0, int x0);
+bool build_nest(struct chunk *c, int y0, int x0);
+bool build_pit(struct chunk *c, int y0, int x0);
+bool build_template(struct chunk *c, int y0, int x0);
+bool build_interesting(struct chunk *c, int y0, int x0);
+bool build_lesser_vault(struct chunk *c, int y0, int x0);
+bool build_medium_vault(struct chunk *c, int y0, int x0);
+bool build_greater_vault(struct chunk *c, int y0, int x0);
+bool build_moria(struct chunk *c, int y0, int x0);
+bool build_room_of_chambers(struct chunk *c, int y0, int x0);
+bool build_huge(struct chunk *c, int y0, int x0);
 
 byte get_angle_to_grid[41][41];
 
-void ensure_connectedness(struct cave *c);
+void ensure_connectedness(struct chunk *c);
 int yx_to_i(int y, int x, int w);
 void i_to_yx(int i, int w, int *y, int *x);
 void shuffle(int *arr, int n);
-bool cave_find(struct cave *c, int *y, int *x, square_predicate pred);
-bool find_empty(struct cave *c, int *y, int *x);
-bool find_empty_range(struct cave *c, int *y, int y1, int y2, int *x, int x1, int x2);
-bool find_nearby_grid(struct cave *c, int *y, int y0, int yd, int *x, int x0, int xd);
+bool cave_find(struct chunk *c, int *y, int *x, square_predicate pred);
+bool find_empty(struct chunk *c, int *y, int *x);
+bool find_empty_range(struct chunk *c, int *y, int y1, int y2, int *x, int x1, int x2);
+bool find_nearby_grid(struct chunk *c, int *y, int y0, int yd, int *x, int x0, int xd);
 void correct_dir(int *rdir, int *cdir, int y1, int x1, int y2, int x2);
 void rand_dir(int *rdir, int *cdir);
-void new_player_spot(struct cave *c, struct player *p);
-void place_object(struct cave *c, int y, int x, int level, bool good,
+void new_player_spot(struct chunk *c, struct player *p);
+void place_object(struct chunk *c, int y, int x, int level, bool good,
 				  bool great, byte origin, int tval);
-void place_gold(struct cave *c, int y, int x, int level, byte origin);
-void place_secret_door(struct cave *c, int y, int x);
-void place_closed_door(struct cave *c, int y, int x);
-void place_random_door(struct cave *c, int y, int x);
-void place_random_stairs(struct cave *c, int y, int x);
-void alloc_stairs(struct cave *c, int feat, int num, int walls);
-void vault_objects(struct cave *c, int y, int x, int depth, int num);
-void vault_traps(struct cave *c, int y, int x, int yd, int xd, int num);
-void vault_monsters(struct cave *c, int y1, int x1, int depth, int num);
-bool room_build(struct cave *c, int by0, int bx0, struct room_profile profile,
+void place_gold(struct chunk *c, int y, int x, int level, byte origin);
+void place_secret_door(struct chunk *c, int y, int x);
+void place_closed_door(struct chunk *c, int y, int x);
+void place_random_door(struct chunk *c, int y, int x);
+void place_random_stairs(struct chunk *c, int y, int x);
+void alloc_stairs(struct chunk *c, int feat, int num, int walls);
+void vault_objects(struct chunk *c, int y, int x, int depth, int num);
+void vault_traps(struct chunk *c, int y, int x, int yd, int xd, int num);
+void vault_monsters(struct chunk *c, int y1, int x1, int depth, int num);
+bool room_build(struct chunk *c, int by0, int bx0, struct room_profile profile,
 	bool finds_own_space);
 
-void alloc_objects(struct cave *c, int set, int typ, int num, int depth, byte origin);
-bool alloc_object(struct cave *c, int set, int typ, int depth, byte origin);
+void alloc_objects(struct chunk *c, int set, int typ, int num, int depth, byte origin);
+bool alloc_object(struct chunk *c, int set, int typ, int depth, byte origin);
 bool mon_restrict(const char *monster_type, int depth, bool unique_ok);
-void spread_monsters(struct cave *c, const char *type, int depth, int num, 
+void spread_monsters(struct chunk *c, const char *type, int depth, int num, 
 					 int y0, int x0, int dy, int dx, byte origin);
-void get_vault_monsters(struct cave *c, char racial_symbol[], byte vault_type, const char *data, int y1, int y2, int x1, int x2);
-void get_chamber_monsters(struct cave *c, int y1, int x1, int y2, int x2, char *name, int area);
+void get_vault_monsters(struct chunk *c, char racial_symbol[], byte vault_type, const char *data, int y1, int y2, int x1, int x2);
+void get_chamber_monsters(struct chunk *c, int y1, int x1, int y2, int x2, char *name, int area);
 
 
 #endif /* !GENERATE_H */

@@ -173,7 +173,7 @@ bool mon_restrict(const char *monster_type, int depth, bool unique_ok)
  * Return prematurely if the code starts looping too much (this may happen 
  * if y0 or x0 are out of bounds, or the area is already occupied).
  */
-void spread_monsters(struct cave *c, const char *type, int depth, int num, 
+void spread_monsters(struct chunk *c, const char *type, int depth, int num, 
 					 int y0, int x0, int dy, int dx, byte origin)
 {
     int i, j;			/* Limits on loops */
@@ -236,7 +236,7 @@ void spread_monsters(struct cave *c, const char *type, int depth, int num,
  * To avoid rebuilding the monster list too often (which can quickly 
  * get expensive), we handle monsters of a specified race separately.
  */
-void get_vault_monsters(struct cave *c, char racial_symbol[], byte vault_type, const char *data, int y1, int y2, int x1, int x2)
+void get_vault_monsters(struct chunk *c, char racial_symbol[], byte vault_type, const char *data, int y1, int y2, int x1, int x2)
 {
     int i, y, x, depth;
     const char *t;
@@ -283,7 +283,7 @@ void get_vault_monsters(struct cave *c, char racial_symbol[], byte vault_type, c
 /**
  * Funtion for placing appropriate monsters in a room of chambers
  */
-void get_chamber_monsters(struct cave *c, int y1, int x1, int y2, int x2, 
+void get_chamber_monsters(struct chunk *c, int y1, int x1, int y2, int x2, 
 						  char *name, int area)
 {
 	int i, y, x;

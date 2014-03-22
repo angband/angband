@@ -789,7 +789,7 @@ void wr_chunks(void)
 
 	wr_u16b(chunk_list_max);
 	for (j = 0; j < chunk_list_max; j++) {
-		struct cave *c = chunk_list[j];
+		struct chunk *c = chunk_list[j];
 
 		/* Write the name and dimensions */
 		wr_string(c->name);

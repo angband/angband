@@ -30,7 +30,7 @@ trap_kind *trap_info;
 /**
  * Is there a specific kind of trap in this square?
  */
-bool square_trap_specific(struct cave *c, int y, int x, int t_idx)
+bool square_trap_specific(struct chunk *c, int y, int x, int t_idx)
 {
     int i;
 	
@@ -58,7 +58,7 @@ bool square_trap_specific(struct cave *c, int y, int x, int t_idx)
 /**
  * Is there a trap with a given flag in this square?
  */
-bool square_trap_flag(struct cave *c, int y, int x, int flag)
+bool square_trap_flag(struct chunk *c, int y, int x, int flag)
 {
     int i;
 
@@ -91,7 +91,7 @@ bool square_trap_flag(struct cave *c, int y, int x, int flag)
  *
  * Clear the SQUARE_TRAP flag if none exist.
  */
-static bool square_verify_trap(struct cave *c, int y, int x, int vis)
+static bool square_verify_trap(struct chunk *c, int y, int x, int vis)
 {
     int i;
     bool trap = FALSE;
@@ -146,7 +146,7 @@ static bool square_verify_trap(struct cave *c, int y, int x, int vis)
 /**
  * Is there a visible trap in this square?
  */
-bool square_visible_trap(struct cave *c, int y, int x)
+bool square_visible_trap(struct chunk *c, int y, int x)
 {
     /* Look for a visible trap */
     return (square_trap_flag(c, y, x, TRF_VISIBLE));
@@ -155,7 +155,7 @@ bool square_visible_trap(struct cave *c, int y, int x)
 /**
  * Is there an invisible trap in this square?
  */
-bool square_invisible_trap(struct cave *c, int y, int x)
+bool square_invisible_trap(struct chunk *c, int y, int x)
 {
     /* First, check the trap marker */
     if (!sqinfo_has(c->info[y][x], SQUARE_TRAP)) return (FALSE);
@@ -167,7 +167,7 @@ bool square_invisible_trap(struct cave *c, int y, int x)
 /**
  * Is there a player trap in this square?
  */
-bool square_player_trap(struct cave *c, int y, int x)
+bool square_player_trap(struct chunk *c, int y, int x)
 {
     /* Look for a player trap */
     return (square_trap_flag(c, y, x, TRF_TRAP));
@@ -176,7 +176,7 @@ bool square_player_trap(struct cave *c, int y, int x)
 /**
  * Return the index of any visible trap 
  */
-int square_visible_trap_idx(struct cave *c, int y, int x)
+int square_visible_trap_idx(struct chunk *c, int y, int x)
 {
     int i;
 
@@ -206,7 +206,7 @@ int square_visible_trap_idx(struct cave *c, int y, int x)
  * wait until we do, in fact, have stacked traps under normal conditions.
  *
  */
-bool get_trap_graphics(struct cave *c, int t_idx, int *a, wchar_t *ch, bool require_visible)
+bool get_trap_graphics(struct chunk *c, int t_idx, int *a, wchar_t *ch, bool require_visible)
 {
     trap_type *t_ptr = cave_trap(c, t_idx);
     
@@ -228,7 +228,7 @@ bool get_trap_graphics(struct cave *c, int t_idx, int *a, wchar_t *ch, bool requ
 /**
  * Reveal some of the traps in a square
  */
-bool square_reveal_trap(struct cave *c, int y, int x, int chance, bool domsg)
+bool square_reveal_trap(struct chunk *c, int y, int x, int chance, bool domsg)
 {
     int i;
     int found_trap = 0;
@@ -288,7 +288,7 @@ bool square_reveal_trap(struct cave *c, int y, int x, int chance, bool domsg)
  * Called with vis = 0 to accept any trap, = 1 to accept only visible
  * traps, and = -1 to accept only invisible traps.
  */
-int num_traps(struct cave *c, int y, int x, int vis)
+int num_traps(struct chunk *c, int y, int x, int vis)
 {
     int i, num;
     
@@ -338,7 +338,7 @@ bool trap_check_hit(int power)
 /**
  * Determine if a cave grid is allowed to have traps in it.
  */
-bool square_trap_allowed(struct cave *c, int y, int x)
+bool square_trap_allowed(struct chunk *c, int y, int x)
 {
     /*
      * We currently forbid multiple traps in a grid under normal conditions.
@@ -413,7 +413,7 @@ static int pick_trap(int feat, int trap_level)
  * This should be the only function that places traps in the dungeon
  * except the savefile loading code.
  */
-void place_trap(struct cave *c, int y, int x, int t_idx, int trap_level)
+void place_trap(struct chunk *c, int y, int x, int t_idx, int trap_level)
 {
     int i;
 
@@ -514,7 +514,7 @@ extern void hit_trap(int y, int x)
 /**
  * Delete/Remove all the traps when the player leaves the level
  */
-void wipe_trap_list(struct cave *c)
+void wipe_trap_list(struct chunk *c)
 {
 	int i;
 
@@ -536,7 +536,7 @@ void wipe_trap_list(struct cave *c)
 /**
  * Remove a trap
  */
-static void remove_trap_aux(struct cave *c, trap_type *t_ptr, int y, int x, bool domsg)
+static void remove_trap_aux(struct chunk *c, trap_type *t_ptr, int y, int x, bool domsg)
 {
     /* We are deleting a rune */
     if (trf_has(t_ptr->flags, TRF_RUNE))
@@ -561,7 +561,7 @@ static void remove_trap_aux(struct cave *c, trap_type *t_ptr, int y, int x, bool
  *
  * Return TRUE if no traps now exist in this grid.
  */
-bool square_remove_trap(struct cave *c, int y, int x, bool domsg, int t_idx)
+bool square_remove_trap(struct chunk *c, int y, int x, bool domsg, int t_idx)
 {
     int i;
     bool trap_exists;
@@ -613,7 +613,7 @@ bool square_remove_trap(struct cave *c, int y, int x, bool domsg, int t_idx)
 /**
  * Remove all traps of a specific kind from a location.
  */
-void square_remove_trap_kind(struct cave *c, int y, int x, bool domsg, int t_idx)
+void square_remove_trap_kind(struct chunk *c, int y, int x, bool domsg, int t_idx)
 {
     int i;
 

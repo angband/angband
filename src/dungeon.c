@@ -514,7 +514,7 @@ static void decrease_timeouts(void)
 /*
  * Handle certain things once every 10 game turns
  */
-static void process_world(struct cave *c)
+static void process_world(struct chunk *c)
 {
 	int i;
 
@@ -1262,7 +1262,7 @@ void idle_update(void)
  * This function will not exit until the level is completed,
  * the user dies, or the game is terminated.
  */
-static void dungeon(struct cave *c)
+static void dungeon(struct chunk *c)
 {
 	monster_type *m_ptr;
 	int i;

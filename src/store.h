@@ -62,7 +62,7 @@ struct store {
 
 extern struct store *stores;
 
-struct store *store_at(struct cave *c, int y, int x);
+struct store *store_at(struct chunk *c, int y, int x);
 void store_init(void);
 void free_stores(void);
 void store_reset(void);

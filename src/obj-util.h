@@ -41,8 +41,8 @@ void excise_object_idx(int o_idx);
 void delete_object_idx(int o_idx);
 void delete_object(int y, int x);
 void compact_objects(int size);
-void wipe_o_list(struct cave *c);
-s16b o_pop(struct cave *c);
+void wipe_o_list(struct chunk *c);
+s16b o_pop(struct chunk *c);
 object_type *get_first_object(int y, int x);
 object_type *get_next_object(const object_type *o_ptr);
 bool is_blessed(const object_type *o_ptr);
@@ -56,8 +56,8 @@ void object_wipe(object_type *o_ptr);
 void object_copy(object_type *o_ptr, const object_type *j_ptr);
 void object_copy_amt(object_type *dst, object_type *src, int amt);
 void object_split(struct object *dest, struct object *src, int amt);
-s16b floor_carry(struct cave *c, int y, int x, object_type *j_ptr);
-void drop_near(struct cave *c, object_type *j_ptr, int chance, int y, int x,
+s16b floor_carry(struct chunk *c, int y, int x, object_type *j_ptr);
+void drop_near(struct chunk *c, object_type *j_ptr, int chance, int y, int x,
 			   bool verbose);
 void push_object(int y, int x);
 void acquirement(int y1, int x1, int level, int num, bool great);

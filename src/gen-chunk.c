@@ -14,6 +14,13 @@
  *    This software may be copied and distributed for educational, research,
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
+ *
+ * This file maintains a list of saved chunks of world which can be reloaded
+ * at any time.  The intitial example of this is the town, which is saved 
+ * immediately after generation and restored when the player returns there.
+ *
+ * The copying routines are also useful for generating a level in pieces and
+ * then copying those pieces into the actual level chunk.
  */
 
 #include "angband.h"
@@ -25,21 +32,30 @@
 #include "trap.h"
 
 #define CHUNK_LIST_INCR 10
-struct cave **chunk_list;
-u16b chunk_list_max = 0;
+struct chunk **chunk_list;     /**< list of pointers to saved chunks */
+u16b chunk_list_max = 0;      /**< current max actual chunk index */
 
 /**
  * Write a chunk to memory and return a pointer to it.  Optionally write
  * monsters, objects and/or traps, and optionally delete those things from
  * the source chunk
+ * \param y0
+ * \param x0 coordinates of the top left corner of the chunk being written
+ * \param height
+ * \param width dimensions of the chunk being written
+ * \param monsters whether monsters get written
+ * \param objects whether objects get written
+ * \param traps whether traps get written
+ * \param delete_old whether monsters/objects/traps get deleted from the source
+ * \return the memory location of the chunk
  */
-struct cave *chunk_write(int y0, int x0, int height, int width, bool monsters,
+struct chunk *chunk_write(int y0, int x0, int height, int width, bool monsters,
 						 bool objects, bool traps, bool delete_old)
 {
 	int i;
 	int x, y;
 
-	struct cave *new = cave_new(height, width);
+	struct chunk *new = cave_new(height, width);
 
 	/* Write the location stuff */
 	for (y = 0; y < height; y++) {
@@ -152,16 +168,17 @@ struct cave *chunk_write(int y0, int x0, int height, int width, bool monsters,
 /**
  * Add an entry to the chunk list - any problems with the length of this will
  * be more in the memory used by the chunks themselves rather than the list
+ * \param c the chunk being added to the list
  */
-void chunk_list_add(struct cave *c)
+void chunk_list_add(struct chunk *c)
 {
-	int newsize = (chunk_list_max + CHUNK_LIST_INCR) *	sizeof(struct cave *);
+	int newsize = (chunk_list_max + CHUNK_LIST_INCR) *	sizeof(struct chunk *);
 
 	/* Lengthen the list if necessary */
 	if (chunk_list_max == 0)
 		chunk_list = mem_zalloc(newsize);
 	else if ((chunk_list_max % CHUNK_LIST_INCR) == 0)
-		chunk_list = (struct cave **) mem_realloc(chunk_list, newsize);
+		chunk_list = (struct chunk **) mem_realloc(chunk_list, newsize);
 
 	/* Add the new one */
 	chunk_list[chunk_list_max++] = c;
@@ -169,6 +186,8 @@ void chunk_list_add(struct cave *c)
 
 /**
  * Remove an entry from the chunk list, return whether it was found
+ * \param name the name of the chunk being removed from the list
+ * \return whether it was found; success means it was successfully removed
  */
 bool chunk_list_remove(char *name)
 {
@@ -185,11 +204,11 @@ bool chunk_list_remove(char *name)
 			/* Destroy the last one, and shorten the list */
 			if ((chunk_list_max % CHUNK_LIST_INCR) == 0)
 				newsize = (chunk_list_max - CHUNK_LIST_INCR) *	
-					sizeof(struct cave *);
+					sizeof(struct chunk *);
 			chunk_list_max--;
 			chunk_list[chunk_list_max] = NULL;
 			if (newsize)
-				chunk_list = (struct cave **) mem_realloc(chunk_list, newsize);
+				chunk_list = (struct chunk **) mem_realloc(chunk_list, newsize);
 
 			return TRUE;
 		}
@@ -200,8 +219,10 @@ bool chunk_list_remove(char *name)
 
 /**
  * Find a chunk by name
+ * \param name the name of the chunk being sought
+ * \return the pointer to the chunk
  */
-struct cave *chunk_find_name(char *name)
+struct chunk *chunk_find_name(char *name)
 {
 	int i;
 
@@ -214,8 +235,10 @@ struct cave *chunk_find_name(char *name)
 
 /**
  * Find a chunk by pointer
+ * \param c the actual pointer to the sought chunk
+ * \return if it was found
  */
-bool chunk_find(struct cave *c)
+bool chunk_find(struct chunk *c)
 {
 	int i;
 
@@ -228,6 +251,12 @@ bool chunk_find(struct cave *c)
 /**
  * Transform y, x coordinates by rotation, reflection and translation
  * Stolen from PosChengband
+ * \param y
+ * \param x the coordinates being transformed
+ * \param y0
+ * \param x0 how much the coordinates are being translated
+ * \param rotate how much to rotate, in multiples of 90 degrees clockwise
+ * \param reflect whether to reflect horizontally
  */
 void symmetry_transform(int *y, int *x, int y0, int x0, int height, int width,
 						int rotate, bool reflect)
@@ -253,8 +282,15 @@ void symmetry_transform(int *y, int *x, int y0, int x0, int height, int width,
 
 /**
  * Write a chunk, transformed, to a given offset in another chunk
+ * \param dest the chunk where the copy is going
+ * \param source the chunk being copied
+ * \param y0
+ * \param x0 
+ * \param rotate 
+ * \param reflect transformation parameters  - see symmetry_transform()
+ * \return success - fails if the copy would not fit in the destination chunk
  */
-bool chunk_copy(struct cave *dest, struct cave *source, int y0, int x0,
+bool chunk_copy(struct chunk *dest, struct chunk *source, int y0, int x0,
 				int rotate, bool reflect)
 {
 	int i;

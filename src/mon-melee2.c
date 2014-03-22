@@ -453,7 +453,7 @@ static int mon_will_run(struct monster *m_ptr)
  * this decides whether PASS_WALL & KILL_WALL monsters 
  * use the monster flow code
  */
-static bool near_permwall(const monster_type *m_ptr, struct cave *c)
+static bool near_permwall(const monster_type *m_ptr, struct chunk *c)
 {
 	int y, x;
 	int my = m_ptr->fy;
@@ -501,7 +501,7 @@ static bool near_permwall(const monster_type *m_ptr, struct cave *c)
  * being close enough to chase directly.  I have no idea what will
  * happen if you combine "smell" with low "aaf" values.
  */
-static bool get_moves_aux(struct cave *c, struct monster *m_ptr, int *yp, int *xp)
+static bool get_moves_aux(struct chunk *c, struct monster *m_ptr, int *yp, int *xp)
 {
 	int py = player->py;
 	int px = player->px;
@@ -575,7 +575,7 @@ static bool get_moves_aux(struct cave *c, struct monster *m_ptr, int *yp, int *x
  * but instead of heading directly for it, the monster should "swerve"
  * around the player so that he has a smaller chance of getting hit.
  */
-static bool get_fear_moves_aux(struct cave *c, struct monster *m_ptr, int *yp, int *xp)
+static bool get_fear_moves_aux(struct chunk *c, struct monster *m_ptr, int *yp, int *xp)
 {
 	int y, x, y1, x1, fy, fx, py, px, gy = 0, gx = 0;
 	int when = 0, score = -1;
@@ -801,7 +801,7 @@ static const int *dist_offsets_x[10] =
  *
  * Return TRUE if a safe location is available.
  */
-static bool find_safety(struct cave *c, struct monster *m_ptr, int *yp, int *xp)
+static bool find_safety(struct chunk *c, struct monster *m_ptr, int *yp, int *xp)
 {
 	int fy = m_ptr->fy;
 	int fx = m_ptr->fx;
@@ -960,7 +960,7 @@ static bool find_hiding(struct monster *m_ptr, int *yp, int *xp)
  *
  * We store the directions in a special "mm" array
  */
-static bool get_moves(struct cave *c, struct monster *m_ptr, int mm[5])
+static bool get_moves(struct chunk *c, struct monster *m_ptr, int mm[5])
 {
 	int py = player->py;
 	int px = player->px;
@@ -1609,7 +1609,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
  * Technically, need to check for monster in the way combined
  * with that monster being in a wall (or door?) XXX
  */
-static void process_monster(struct cave *c, struct monster *m_ptr)
+static void process_monster(struct chunk *c, struct monster *m_ptr)
 {
 	monster_lore *l_ptr = get_lore(m_ptr->race);
 
@@ -2191,7 +2191,7 @@ static void process_monster(struct cave *c, struct monster *m_ptr)
 }
 
 
-static bool monster_can_flow(struct cave *c, struct monster *m_ptr)
+static bool monster_can_flow(struct chunk *c, struct monster *m_ptr)
 {
 	int fy = m_ptr->fy;
 	int fx = m_ptr->fx;
@@ -2229,7 +2229,7 @@ static bool monster_can_flow(struct cave *c, struct monster *m_ptr)
  * Note the special "MFLAG_NICE" flag, which prevents "nasty" monsters from
  * using any of their spell attacks until the player gets a turn.
  */
-void process_monsters(struct cave *c, byte minimum_energy)
+void process_monsters(struct chunk *c, byte minimum_energy)
 {
 	int i;
 

@@ -402,7 +402,7 @@ static void run_template_parser(void) {
  * \param c is the cave struct being cleared, in practice the global cave
  * \param p is the current player struct, in practice the global player
  */
-static void cave_clear(struct cave *c, struct player *p) {
+static void cave_clear(struct chunk *c, struct player *p) {
     int i, x, y;
 
     wipe_o_list(c);
@@ -450,7 +450,7 @@ static void cave_clear(struct cave *c, struct player *p) {
  * Place hidden squares that will be used to generate feeling
  * \param c is the cave struct the feeling squares are being placed in
  */
-static void place_feeling(struct cave *c)
+static void place_feeling(struct chunk *c)
 {
     int y,x,i,j;
     int tries = 500;
@@ -485,7 +485,7 @@ static void place_feeling(struct cave *c)
  * Calculate the level feeling for objects.
  * \param c is the cave where the feeling is being measured
  */
-static int calc_obj_feeling(struct cave *c)
+static int calc_obj_feeling(struct chunk *c)
 {
     u32b x;
 
@@ -516,7 +516,7 @@ static int calc_obj_feeling(struct cave *c)
  * Calculate the level feeling for monsters.
  * \param c is the cave where the feeling is being measured
  */
-static int calc_mon_feeling(struct cave *c)
+static int calc_mon_feeling(struct chunk *c)
 {
     u32b x;
 
@@ -541,7 +541,7 @@ static int calc_mon_feeling(struct cave *c)
  * Do d_m's prime check for labyrinths
  * \param c is the cave where we're trying to generate a labyrinth
  */
-bool labyrinth_check(struct cave *c)
+bool labyrinth_check(struct chunk *c)
 {
     /* There's a base 2 in 100 to accept the labyrinth */
     int chance = 2;
@@ -590,7 +590,7 @@ const struct cave_profile *find_cave_profile(char *name)
  * Choose a cave profile
  * \param c is the cave which we're about to use the profile for
  */
-const struct cave_profile *choose_profile(struct cave *c)
+const struct cave_profile *choose_profile(struct chunk *c)
 {
 	const struct cave_profile *profile = NULL;
 
@@ -642,10 +642,10 @@ const struct cave_profile *choose_profile(struct cave *c)
  * \param c is the level we're going to end up with, in practice the global cave
  * \param p is the current player struct, in practice the global player
  */
-void cave_generate(struct cave *c, struct player *p) {
+void cave_generate(struct chunk *c, struct player *p) {
     const char *error = "no generation";
     int y, x, tries = 0;
-	struct cave *chunk;
+	struct chunk *chunk;
 
     assert(c);
 
@@ -735,7 +735,7 @@ void cave_generate(struct cave *c, struct player *p) {
 
 	/* Save the town */
 	else if (!chunk_find_name("Town")) {
-		struct cave *town = chunk_write(0, 0, TOWN_HGT, TOWN_WID, FALSE,
+		struct chunk *town = chunk_write(0, 0, TOWN_HGT, TOWN_WID, FALSE,
 										FALSE, FALSE, TRUE);
 		town->name = string_make("Town");
 		chunk_list_add(town);

@@ -138,7 +138,7 @@ void shuffle(int *arr, int n)
  * Locate a square in y1 <= y < y2, x1 <= x < x2 which satisfies the given
  * predicate.
  */
-static bool _find_in_range(struct cave *c, int *y, int y1, int y2, int *x,
+static bool _find_in_range(struct chunk *c, int *y, int y1, int y2, int *x,
 						   int x1, int x2, square_predicate pred)
 {
     int yd = y2 - y1;
@@ -172,7 +172,7 @@ static bool _find_in_range(struct cave *c, int *y, int y1, int y2, int *x,
 /**
  * Locate a square in the dungeon which satisfies the given predicate.
  */
-bool cave_find(struct cave *c, int *y, int *x, square_predicate pred)
+bool cave_find(struct chunk *c, int *y, int *x, square_predicate pred)
 {
     return _find_in_range(c, y, 0, c->height, x, 0, c->width, pred);
 }
@@ -182,7 +182,7 @@ bool cave_find(struct cave *c, int *y, int *x, square_predicate pred)
  * Locate a square in y1 <= y < y2, x1 <= x < x2 which satisfies the given
  * predicate.
  */
-static bool cave_find_in_range(struct cave *c, int *y, int y1, int y2,
+static bool cave_find_in_range(struct chunk *c, int *y, int y1, int y2,
 							   int *x, int x1, int x2, square_predicate pred)
 {
     return _find_in_range(c, y, y1, y2, x, x1, x2, pred);
@@ -192,7 +192,7 @@ static bool cave_find_in_range(struct cave *c, int *y, int y1, int y2,
 /**
  * Locate an empty square for 0 <= y < ymax, 0 <= x < xmax.
  */
-bool find_empty(struct cave *c, int *y, int *x)
+bool find_empty(struct chunk *c, int *y, int *x)
 {
     return cave_find(c, y, x, square_isempty);
 }
@@ -201,7 +201,7 @@ bool find_empty(struct cave *c, int *y, int *x)
 /**
  * Locate an empty square for y1 <= y < y2, x1 <= x < x2.
  */
-bool find_empty_range(struct cave *c, int *y, int y1, int y2, int *x, int x1, int x2)
+bool find_empty_range(struct chunk *c, int *y, int y1, int y2, int *x, int x1, int x2)
 {
     return cave_find_in_range(c, y, y1, y2, x, x1, x2, square_isempty);
 }
@@ -210,7 +210,7 @@ bool find_empty_range(struct cave *c, int *y, int y1, int y2, int *x, int x1, in
 /**
  * Locate a grid nearby (y0, x0) within +/- yd, xd.
  */
-bool find_nearby_grid(struct cave *c, int *y, int y0, int yd, int *x, int x0, int xd)
+bool find_nearby_grid(struct chunk *c, int *y, int y0, int yd, int *x, int x0, int xd)
 {
     int y1 = y0 - yd;
     int x1 = x0 - xd;
@@ -255,7 +255,7 @@ void rand_dir(int *rdir, int *cdir)
 /**
  * Determine whether the given coordinate is a valid starting location.
  */
-static bool square_isstart(struct cave *c, int y, int x)
+static bool square_isstart(struct chunk *c, int y, int x)
 {
     if (!square_isempty(c, y, x)) return FALSE;
     if (square_isvault(c, y, x)) return FALSE;
@@ -266,7 +266,7 @@ static bool square_isstart(struct cave *c, int y, int x)
 /**
  * Place the player at a random starting location.
  */
-void new_player_spot(struct cave *c, struct player *p)
+void new_player_spot(struct chunk *c, struct player *p)
 {
     int y, x;
 
@@ -290,7 +290,7 @@ void new_player_spot(struct cave *c, struct player *p)
 /**
  * Return how many cardinal directions around (x, y) contain walls.
  */
-static int next_to_walls(struct cave *c, int y, int x)
+static int next_to_walls(struct chunk *c, int y, int x)
 {
     int k = 0;
     assert(square_in_bounds(c, y, x));
@@ -307,7 +307,7 @@ static int next_to_walls(struct cave *c, int y, int x)
 /**
  * Place rubble at (x, y).
  */
-static void place_rubble(struct cave *c, int y, int x)
+static void place_rubble(struct chunk *c, int y, int x)
 {
     square_set_feat(c, y, x, FEAT_RUBBLE);
 }
@@ -318,7 +318,7 @@ static void place_rubble(struct cave *c, int y, int x)
  *
  * All stairs from town go down. All stairs on an unfinished quest level go up.
  */
-static void place_stairs(struct cave *c, int y, int x, int feat)
+static void place_stairs(struct chunk *c, int y, int x, int feat)
 {
     if (!c->depth)
 		square_set_feat(c, y, x, FEAT_MORE);
@@ -332,7 +332,7 @@ static void place_stairs(struct cave *c, int y, int x, int feat)
 /**
  * Place random stairs at (x, y).
  */
-void place_random_stairs(struct cave *c, int y, int x)
+void place_random_stairs(struct chunk *c, int y, int x)
 {
     int feat = randint0(100) < 50 ? FEAT_LESS : FEAT_MORE;
     if (square_canputitem(c, y, x)) place_stairs(c, y, x, feat);
@@ -342,7 +342,7 @@ void place_random_stairs(struct cave *c, int y, int x)
 /**
  * Place a random object at (x, y).
  */
-void place_object(struct cave *c, int y, int x, int level, bool good, bool great, byte origin, int tval)
+void place_object(struct chunk *c, int y, int x, int level, bool good, bool great, byte origin, int tval)
 {
     s32b rating = 0;
     object_type otype;
@@ -376,7 +376,7 @@ void place_object(struct cave *c, int y, int x, int level, bool good, bool great
 /**
  * Place a random amount of gold at (x, y).
  */
-void place_gold(struct cave *c, int y, int x, int level, byte origin)
+void place_gold(struct chunk *c, int y, int x, int level, byte origin)
 {
     object_type *i_ptr;
     object_type object_type_body;
@@ -399,7 +399,7 @@ void place_gold(struct cave *c, int y, int x, int level, byte origin)
 /**
  * Place a secret door at (x, y).
  */
-void place_secret_door(struct cave *c, int y, int x)
+void place_secret_door(struct chunk *c, int y, int x)
 {
     square_set_feat(c, y, x, FEAT_SECRET);
 }
@@ -408,7 +408,7 @@ void place_secret_door(struct cave *c, int y, int x)
 /**
  * Place a closed door at (x, y).
  */
-void place_closed_door(struct cave *c, int y, int x)
+void place_closed_door(struct chunk *c, int y, int x)
 {
     int tmp = randint0(400);
 
@@ -426,7 +426,7 @@ void place_closed_door(struct cave *c, int y, int x)
  *
  * The door generated could be closed, open, broken, or secret.
  */
-void place_random_door(struct cave *c, int y, int x)
+void place_random_door(struct chunk *c, int y, int x)
 {
     int tmp = randint0(100);
 
@@ -443,7 +443,7 @@ void place_random_door(struct cave *c, int y, int x)
 /**
  * Place some staircases near walls.
  */
-void alloc_stairs(struct cave *c, int feat, int num, int walls)
+void alloc_stairs(struct chunk *c, int feat, int num, int walls)
 {
     int y, x, i, j, done;
 
@@ -473,7 +473,7 @@ void alloc_stairs(struct cave *c, int feat, int num, int walls)
  *
  * See alloc_object() for more information.
  */
-void alloc_objects(struct cave *c, int set, int typ, int num, int depth, byte origin)
+void alloc_objects(struct chunk *c, int set, int typ, int num, int depth, byte origin)
 {
     int k, l = 0;
     for (k = 0; k < num; k++) {
@@ -489,7 +489,7 @@ void alloc_objects(struct cave *c, int set, int typ, int num, int depth, byte or
  * 'set' controls where the object is placed (corridor, room, either).
  * 'typ' conrols the kind of object (rubble, trap, gold, item).
  */
-bool alloc_object(struct cave *c, int set, int typ, int depth, byte origin)
+bool alloc_object(struct chunk *c, int set, int typ, int depth, byte origin)
 {
     int x = 0, y = 0;
     int tries = 0;
@@ -528,7 +528,7 @@ bool alloc_object(struct cave *c, int set, int typ, int depth, byte origin)
 /**
  * Create up to 'num' objects near the given coordinates in a vault.
  */
-void vault_objects(struct cave *c, int y, int x, int depth, int num)
+void vault_objects(struct chunk *c, int y, int x, int depth, int num)
 {
     int i, j, k;
 
@@ -557,7 +557,7 @@ void vault_objects(struct cave *c, int y, int x, int depth, int num)
 /**
  * Place a trap near (x, y), with a given displacement.
  */
-static void vault_trap_aux(struct cave *c, int y, int x, int yd, int xd)
+static void vault_trap_aux(struct chunk *c, int y, int x, int yd, int xd)
 {
     int tries, y1, x1;
 
@@ -575,7 +575,7 @@ static void vault_trap_aux(struct cave *c, int y, int x, int yd, int xd)
 /**
  * Place 'num' traps near (x, y), with a given displacement.
  */
-void vault_traps(struct cave *c, int y, int x, int yd, int xd, int num)
+void vault_traps(struct chunk *c, int y, int x, int yd, int xd, int num)
 {
     int i;
     for (i = 0; i < num; i++)
@@ -586,7 +586,7 @@ void vault_traps(struct cave *c, int y, int x, int yd, int xd, int num)
 /**
  * Place 'num' sleeping monsters near (x, y).
  */
-void vault_monsters(struct cave *c, int y1, int x1, int depth, int num)
+void vault_monsters(struct chunk *c, int y1, int x1, int depth, int num)
 {
     int k, i, y, x;
 

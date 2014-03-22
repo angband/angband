@@ -81,7 +81,7 @@
  * \param x are the co-ordinates
  * \param flag is the relevant flag
  */
-static bool square_is_granite_with_flag(struct cave *c, int y, int x, int flag)
+static bool square_is_granite_with_flag(struct chunk *c, int y, int x, int flag)
 {
 	if (c->feat[y][x] != FEAT_GRANITE) return FALSE;
 	if (!sqinfo_has(c->info[y][x], flag)) return FALSE;
@@ -101,7 +101,7 @@ static bool square_is_granite_with_flag(struct cave *c, int y, int x, int flag)
  * with hidden gold, and one with known gold. The hidden gold types are
  * currently unused.
  */
-static void build_streamer(struct cave *c, int feat, int chance)
+static void build_streamer(struct chunk *c, int feat, int chance)
 {
     int i, tx, ty;
     int y, x, dir;
@@ -168,7 +168,7 @@ static void build_streamer(struct cave *c, int feat, int chance)
  * The solid wall check prevents corridors from chopping the corners of rooms
  * off, as well as silly door placement, and excessively wide room entrances.
  */
-static void build_tunnel(struct cave *c, int row1, int col1, int row2, int col2)
+static void build_tunnel(struct chunk *c, int row1, int col1, int row2, int col2)
 {
     int i, y, x;
     int tmp_row, tmp_col;
@@ -363,7 +363,7 @@ static void build_tunnel(struct cave *c, int row1, int col1, int row2, int col2)
  *
  * TODO: count stairs, open doors, closed doors?
  */
-static int next_to_corr(struct cave *c, int y1, int x1)
+static int next_to_corr(struct chunk *c, int y1, int x1)
 {
     int i, k = 0;
     assert(square_in_bounds(c, y1, x1));
@@ -391,7 +391,7 @@ static int next_to_corr(struct cave *c, int y1, int x1)
  * To have a doorway, a space must be adjacent to at least two corridors and be
  * between two walls.
  */
-static bool possible_doorway(struct cave *c, int y, int x)
+static bool possible_doorway(struct chunk *c, int y, int x)
 {
     assert(square_in_bounds(c, y, x));
     if (next_to_corr(c, y, x) < 2)
@@ -411,7 +411,7 @@ static bool possible_doorway(struct cave *c, int y, int x)
  * \param y
  * \param x are the co-ordinates
  */
-static void try_door(struct cave *c, int y, int x)
+static void try_door(struct chunk *c, int y, int x)
 {
     assert(square_in_bounds(c, y, x));
 
@@ -426,15 +426,16 @@ static void try_door(struct cave *c, int y, int x)
 /**
  * Generate a new dungeon level.
  * \param p is the player 
+ * \return a pointer to the generated chunk
  */
-struct cave *classic_gen(struct player *p) {
+struct chunk *classic_gen(struct player *p) {
     int i, j, k, y, x, y1, x1;
     int by, bx = 0, tby, tbx, key, rarity, built;
     int num_rooms, size_percent;
     int dun_unusual = dun->profile->dun_unusual;
 
     bool **blocks_tried;
-	struct cave *c;
+	struct chunk *c;
 
     /* This code currently does nothing - see comments below */
     i = randint1(10) + p->depth / 24;
@@ -678,7 +679,7 @@ static void lab_get_adjoin(int i, int w, int *a, int *b) {
  * The high-level idea is that these are squares which can't be avoided (by
  * walking diagonally around them).
  */
-static bool lab_is_tunnel(struct cave *c, int y, int x) {
+static bool lab_is_tunnel(struct chunk *c, int y, int x) {
     bool west = square_isopen(c, y, x - 1);
     bool east = square_isopen(c, y, x + 1);
     bool north = square_isopen(c, y - 1, x);
@@ -696,8 +697,9 @@ static bool lab_is_tunnel(struct cave *c, int y, int x) {
  * \param w are the dimensions of the chunk
  * \param lit is whether the labyrinth is lit
  * \param soft is true if we use regular walls, false if permanent walls
+ * \return a pointer to the generated chunk
  */
-struct cave *labyrinth_chunk(int depth, int h, int w, bool lit, bool soft)
+struct chunk *labyrinth_chunk(int depth, int h, int w, bool lit, bool soft)
 {
     int i, j, k, y, x;
     /* This is the number of squares in the labyrinth */
@@ -716,7 +718,7 @@ struct cave *labyrinth_chunk(int depth, int h, int w, bool lit, bool soft)
     int *walls;
 
 	/* The labyrinth chunk */
-	struct cave *c = cave_new(h + 2, w + 2);
+	struct chunk *c = cave_new(h + 2, w + 2);
 	c->depth = depth;
     /* allocate our arrays */
     sets = mem_zalloc(n * sizeof(int));
@@ -818,9 +820,9 @@ struct cave *labyrinth_chunk(int depth, int h, int w, bool lit, bool soft)
  * themselves (which means certain level numbers are more likely to generate
  * labyrinths than others).
  */
-struct cave *labyrinth_gen(struct player *p) {
+struct chunk *labyrinth_gen(struct player *p) {
     int i, k, y, x;
-	struct cave *c;
+	struct chunk *c;
 
     /* Size of the actual labyrinth part must be odd. */
     /* NOTE: these are not the actual dungeon size, but rather the size of the
@@ -892,7 +894,7 @@ struct cave *labyrinth_gen(struct player *p) {
  * \param c is the current chunk
  * \param density is the percentage of floors we are aiming for
  */
-static void init_cavern(struct cave *c, int density) {
+static void init_cavern(struct chunk *c, int density) {
     int h = c->height;
     int w = c->width;
     int size = h * w;
@@ -918,7 +920,7 @@ static void init_cavern(struct cave *c, int density) {
  * \param y
  * \param x are the co-ordinates
  */
-static int count_adj_walls(struct cave *c, int y, int x) {
+static int count_adj_walls(struct chunk *c, int y, int x) {
     int yd, xd;
     int count = 0;
 
@@ -937,7 +939,7 @@ static int count_adj_walls(struct cave *c, int y, int x) {
  * Run a single pass of the cellular automata rules (4,5) on the dungeon.
  * \param c is the chunk being mutated
  */
-static void mutate_cavern(struct cave *c) {
+static void mutate_cavern(struct chunk *c) {
     int y, x;
     int h = c->height;
     int w = c->width;
@@ -978,8 +980,12 @@ static void array_filler(int data[], int value, int size) {
 
 /**
  * Determine if we need to worry about coloring a point, or can ignore it.
+ * \param c is the current chunk
+ * \param colors is the array of current point colors
+ * \param y
+ * \param x are the co-ordinates
  */
-static int ignore_point(struct cave *c, int colors[], int y, int x) {
+static int ignore_point(struct chunk *c, int colors[], int y, int x) {
     int h = c->height;
     int w = c->width;
     int n = yx_to_i(y, x, w);
@@ -996,7 +1002,7 @@ static int xds[] = {0, 0, 1, -1, -1, -1, 1, 1};
 static int yds[] = {1, -1, 0, 0, -1, 1, -1, 1};
 
 #if 0 /* XXX d_m - is this meant to be in use? */
-static void glow_point(struct cave *c, int y, int x) {
+static void glow_point(struct chunk *c, int y, int x) {
     int i, j;
     for (i = -1; i <= -1; i++)
 		for (j = -1; j <= -1; j++)
@@ -1006,8 +1012,15 @@ static void glow_point(struct cave *c, int y, int x) {
 
 /**
  * Color a particular point, and all adjacent points.
+ * \param c is the current chunk
+ * \param colors is the array of current point colors
+ * \param counts is the array of current color counts
+ * \param y
+ * \param x are the co-ordinates
+ * \param color is the color we are coloring
+ * \param diagonal controls whether we can progress diagonally
  */
-static void build_color_point(struct cave *c, int colors[], int counts[], int y, int x, int color, bool diagonal) {
+static void build_color_point(struct chunk *c, int colors[], int counts[], int y, int x, int color, bool diagonal) {
     int h = c->height;
     int w = c->width;
     int size = h * w;
@@ -1053,8 +1066,12 @@ static void build_color_point(struct cave *c, int colors[], int counts[], int y,
 
 /**
  * Create a color for each "NESW contiguous" region of the dungeon.
+ * \param c is the current chunk
+ * \param colors is the array of current point colors
+ * \param counts is the array of current color counts
+ * \param diagonal controls whether we can progress diagonally
  */
-static void build_colors(struct cave *c, int colors[], int counts[], bool diagonal) {
+static void build_colors(struct chunk *c, int colors[], int counts[], bool diagonal) {
     int y, x;
     int h = c->height;
     int w = c->width;
@@ -1071,8 +1088,11 @@ static void build_colors(struct cave *c, int colors[], int counts[], bool diagon
 
 /**
  * Find and delete all small (<9 square) open regions.
+ * \param c is the current chunk
+ * \param colors is the array of current point colors
+ * \param counts is the array of current color counts
  */
-static void clear_small_regions(struct cave *c, int colors[], int counts[]) {
+static void clear_small_regions(struct chunk *c, int colors[], int counts[]) {
     int i, y, x;
     int h = c->height;
     int w = c->width;
@@ -1103,6 +1123,8 @@ static void clear_small_regions(struct cave *c, int colors[], int counts[]) {
 
 /**
  * Return the number of colors which have active cells.
+ * \param counts is the array of current color counts
+ * \param size is the total area
  */
 static int count_colors(int counts[], int size) {
     int i;
@@ -1113,6 +1135,8 @@ static int count_colors(int counts[], int size) {
 
 /**
  * Return the first color which has one or more active cells.
+ * \param counts is the array of current color counts
+ * \param size is the total area
  */
 static int first_color(int counts[], int size) {
     int i;
@@ -1122,6 +1146,11 @@ static int first_color(int counts[], int size) {
 
 /**
  * Find all cells of 'fromcolor' and repaint them to 'tocolor'.
+ * \param colors is the array of current point colors
+ * \param counts is the array of current color counts
+ * \param from is the color to change
+ * \param to is the color to change to
+ * \param size is the total area
  */
 static void fix_colors(int colors[], int counts[], int from, int to, int size) {
     int i;
@@ -1133,8 +1162,13 @@ static void fix_colors(int colors[], int counts[], int from, int to, int size) {
 /**
  * Create a tunnel connecting a region to one of its nearest neighbors.
  * Set new_color = -1 for any neighbour, the required color for a specific one
+ * \param c is the current chunk
+ * \param colors is the array of current point colors
+ * \param counts is the array of current color counts
+ * \param color is the color of the region we want to connect
+ * \param new_color is the color of the region we want to connect to (if used)
  */
-static void join_region(struct cave *c, int colors[], int counts[], int color,
+static void join_region(struct chunk *c, int colors[], int counts[], int color,
 	int new_color)
 {
     int i;
@@ -1220,8 +1254,11 @@ static void join_region(struct cave *c, int colors[], int counts[], int color,
 
 /**
  * Start connecting regions, stopping when the cave is entirely connected.
+ * \param c is the current chunk
+ * \param colors is the array of current point colors
+ * \param counts is the array of current color counts
  */
-static void join_regions(struct cave *c, int colors[], int counts[]) {
+static void join_regions(struct chunk *c, int colors[], int counts[]) {
     int h = c->height;
     int w = c->width;
     int size = h * w;
@@ -1240,11 +1277,12 @@ static void join_regions(struct cave *c, int colors[], int counts[]) {
 
 /**
  * Make sure that all the regions of the dungeon are connected.
+ * \param c is the current chunk
  *
  * This function colors each connected region of the dungeon, then uses that
  * information to join them into one conected region.
  */
-void ensure_connectedness(struct cave *c) {
+void ensure_connectedness(struct chunk *c) {
     int size = c->height * c->width;
     int *colors = C_ZNEW(size, int);
     int *counts = C_ZNEW(size, int);
@@ -1259,9 +1297,13 @@ void ensure_connectedness(struct cave *c) {
 
 #define MAX_CAVERN_TRIES 10
 /**
- * The generator's main function.
+ * The cavern generator's main function.
+ * \param depth the chunk's native depth
+ * \param h
+ * \param w the chunk's dimensions
+ * \return a pointer to the generated chunk
  */
-struct cave *cavern_chunk(int depth, int h, int w)
+struct chunk *cavern_chunk(int depth, int h, int w)
 {
     int i;
     int size = h * w;
@@ -1274,7 +1316,7 @@ struct cave *cavern_chunk(int depth, int h, int w)
 
     int tries;
 
-	struct cave *c = cave_new(h, w);
+	struct chunk *c = cave_new(h, w);
 	c->depth = depth;
 
     ROOM_LOG("cavern h=%d w=%d size=%d density=%d times=%d", h, w, size,
@@ -1314,14 +1356,15 @@ struct cave *cavern_chunk(int depth, int h, int w)
 
 /**
  * Make a cavern level.
+ * \param p is the player
  */
-struct cave *cavern_gen(struct player *p) {
+struct chunk *cavern_gen(struct player *p) {
     int i, k;
 
     int h = rand_range(DUNGEON_HGT / 2, (DUNGEON_HGT * 3) / 4);
     int w = rand_range(DUNGEON_WID / 2, (DUNGEON_WID * 3) / 4);
 
-	struct cave *c;
+	struct chunk *c;
 
     if (p->depth < 15) {
 		/* If we're too shallow then don't do it */
@@ -1377,11 +1420,15 @@ struct cave *cavern_gen(struct player *p) {
 
 /**
  * Builds a store at a given pseudo-location
+ * \param c is the current chunk
+ * \param n is which shop it is
+ * \param yy
+ * \param xx the row and column of this store in the store layout
  *
  * Currently, there is a main street horizontally through the middle of town,
  * and all the shops face it (e.g. the shops on the north side face south).
  */
-static void build_store(struct cave *c, int n, int yy, int xx) {
+static void build_store(struct chunk *c, int n, int yy, int xx) {
     /* Find the "center" of the store */
     int y0 = yy * 9 + 6;
     int x0 = xx * 14 + 12;
@@ -1406,8 +1453,10 @@ static void build_store(struct cave *c, int n, int yy, int xx) {
 
 /**
  * Generate the town for the first time, and place the player
+ * \param c is the current chunk
+ * \param p is the player
  */
-static void town_gen_layout(struct cave *c, struct player *p) {
+static void town_gen_layout(struct chunk *c, struct player *p) {
     int y, x, n, k;
     int rooms[MAX_STORES];
 
@@ -1454,16 +1503,17 @@ static void town_gen_layout(struct cave *c, struct player *p) {
 
 /**
  * Town logic flow for generation of new town.
- *
+ * \param p is the player
+ * \return a pointer to the generated chunk
  * We start with a fully wiped cave of normal floors. This function does NOT do
  * anything about the owners of the stores, nor the contents thereof. It only
  * handles the physical layout.
  */
-struct cave *town_gen(struct player *p) {
+struct chunk *town_gen(struct player *p) {
     int i, y, x;
     bool daytime = turn % (10 * TOWN_DAWN) < (10 * TOWN_DUSK);
     int residents = daytime ? MIN_M_ALLOC_TD : MIN_M_ALLOC_TN;
-	struct cave *c;
+	struct chunk *c;
 
 	c = chunk_find_name("Town");
 
@@ -1526,8 +1576,12 @@ struct room_profile moria_rooms[] = {
 
 /**
  * The main modified generation algorithm
+ * \param depth is the chunk's native depth
+ * \param height
+ * \param width are the chunk's dimensions
+ * \return a pointer to the generated chunk
  */
-struct cave *modified_chunk(int depth, int height, int width)
+struct chunk *modified_chunk(int depth, int height, int width)
 {
     int i, y, x, y1, x1;
     int by = 0, bx = 0, key, rarity;
@@ -1537,7 +1591,7 @@ struct cave *modified_chunk(int depth, int height, int width)
 	bool moria_level = FALSE;
 
     /* Make the cave */
-    struct cave *c = cave_new(height, width);
+    struct chunk *c = cave_new(height, width);
 	c->depth = depth;
 
 	/* Set the intended number of floor grids based on cave floor area */
@@ -1659,6 +1713,8 @@ struct cave *modified_chunk(int depth, int height, int width)
 
 /**
  * Generate a new dungeon level.
+ * \param p is the player
+ * \return a pointer to the generated chunk
  *
  * This is sample code to illustrate some of the new dungeon generation
  * methods; I think it actually prdouces quite nice levels.  New stuff:
@@ -1678,11 +1734,11 @@ struct cave *modified_chunk(int depth, int height, int width)
  *   interesting rooms, as well as to make general monster restrictions in
  *   areas or the whole dungeon
  */
-struct cave *modified_gen(struct player *p) {
+struct chunk *modified_gen(struct player *p) {
     int i, k;
     int size_percent, y_size, x_size;
 	bool moria_level = FALSE;
-	struct cave *c;
+	struct chunk *c;
 
     /* Scale the level */
     i = randint1(10) + p->depth / 24;
@@ -1765,11 +1821,15 @@ struct cave *modified_gen(struct player *p) {
 
 
 /* ------------------ HARD CENTRE ---------------- */
-
-struct cave *vault_chunk(struct player *p)
+/**
+ * Make a chunk consisting only of a greater vault
+ * \param p is the player
+ * \return a pointer to the generated chunk
+ */
+struct chunk *vault_chunk(struct player *p)
 {
 	struct vault *v;
-	struct cave *c;
+	struct chunk *c;
 
 	if (one_in_(2)) v = random_vault(p->depth, 2);
 	else v = random_vault(p->depth, 8);
@@ -1786,8 +1846,11 @@ struct cave *vault_chunk(struct player *p)
 
 /**
  * Make sure that all the caverns surrounding the centre are connected.
+ * \param c is the entire current chunk (containing the caverns)
+ * \param floor is an array of sample floor grids, one from each cavern in the
+ * order left, upper, lower, right
  */
-void connect_caverns(struct cave *c, struct loc floor[])
+void connect_caverns(struct chunk *c, struct loc floor[])
 {
 	int i;
     int size = c->height * c->width;
@@ -1817,23 +1880,27 @@ void connect_caverns(struct cave *c, struct loc floor[])
     mem_free(colors);
     mem_free(counts);
 }
-
-struct cave *hard_centre_gen(struct player *p)
+/**
+ * Generate a hard centre level - a greater vault surrounded by caverns
+ * \param p is the player
+ * \return a pointer to the generated chunk
+*/
+struct chunk *hard_centre_gen(struct player *p)
 {
 	/* Make a vault for the centre */
-	struct cave *centre = vault_chunk(p);
+	struct chunk *centre = vault_chunk(p);
 	int rotate = 0;
 
 	/* Dimensions for the surrounding caverns */
 	int centre_cavern_hgt;
 	int centre_cavern_wid;
-	struct cave *upper_cavern;
-	struct cave *lower_cavern;
+	struct chunk *upper_cavern;
+	struct chunk *lower_cavern;
 	int lower_cavern_ypos;
 	int side_cavern_wid;
-	struct cave *left_cavern;
-	struct cave *right_cavern;
-	struct cave *c;
+	struct chunk *left_cavern;
+	struct chunk *right_cavern;
+	struct chunk *c;
 	int i, k, y, x, cavern_area;
 	struct loc floor[4];
 
@@ -1953,11 +2020,17 @@ struct cave *hard_centre_gen(struct player *p)
 
 /* ------------------ LAIR ---------------- */
 
-struct cave *lair_gen(struct player *p) {
+/**
+ * Generate a lair level - a regular cave generated with the modified
+ * algorithm, connected to a cavern with themed monsters
+ * \param p is the player
+ * \return a pointer to the generated chunk
+ */
+struct chunk *lair_gen(struct player *p) {
     int i, k;
-	struct cave *c;
-	struct cave *normal;
-	struct cave *lair;
+	struct chunk *c;
+	struct chunk *normal;
+	struct chunk *lair;
 
     /* Set the block height and width */
 	dun->block_hgt = dun->profile->block_size;

@@ -33,17 +33,17 @@
 void delete_monster_idx(int m_idx);
 void delete_monster(int y, int x);
 void compact_monsters(int num_to_compact);
-void wipe_mon_list(struct cave *c, struct player *p);
-s16b mon_pop(struct cave *c);
+void wipe_mon_list(struct chunk *c, struct player *p);
+s16b mon_pop(struct chunk *c);
 void get_mon_num_prep(bool (*get_mon_num_hook)(monster_race *race));
 monster_race *get_mon_num(int level);
-void player_place(struct cave *c, struct player *p, int y, int x);
-s16b place_monster(struct cave *c, int y, int x, struct monster *mon, byte origin);
-bool place_new_monster(struct cave *, int y, int x, monster_race *r, bool sleep,
-	bool group_okay, byte origin);
-bool pick_and_place_monster(struct cave *c, int y, int x, int depth, bool sleep,
-	bool group_okay, byte origin);
-bool pick_and_place_distant_monster(struct cave *c, struct loc loc, int dis, bool sleep, int depth);
+void player_place(struct chunk *c, struct player *p, int y, int x);
+s16b place_monster(struct chunk *c, int y, int x, struct monster *mon, byte origin);
+bool place_new_monster(struct chunk *, int y, int x, monster_race *r, 
+					   bool sleep, bool group_okay, byte origin);
+bool pick_and_place_monster(struct chunk *c, int y, int x, int depth, 
+							bool sleep,	bool group_okay, byte origin);
+bool pick_and_place_distant_monster(struct chunk *c, struct loc loc, int dis, bool sleep, int depth);
 void monster_death(struct monster *m, bool stats);
 bool mon_take_hit(struct monster *m, int dam, bool *fear, const char *note);
 int mon_create_drop_count(const struct monster_race *race, bool maximize);

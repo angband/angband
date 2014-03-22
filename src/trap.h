@@ -107,18 +107,18 @@ typedef struct trap_type
     bitflag flags[TRF_SIZE]; /**< Trap flags (only this particular trap) */
 } trap_type;
 
-bool square_trap_specific(struct cave *c, int y, int x, int t_idx);
-bool square_visible_trap(struct cave *c, int y, int x);
-bool square_invisible_trap(struct cave *c, int y, int x);
-bool square_player_trap(struct cave *c, int y, int x);
-int square_visible_trap_idx(struct cave *c, int y, int x);
-bool get_trap_graphics(struct cave *c, int t_idx, int *a, wchar_t *ch, bool require_visible);
-bool square_reveal_trap(struct cave *c, int y, int x, int chance, bool domsg);
+bool square_trap_specific(struct chunk *c, int y, int x, int t_idx);
+bool square_visible_trap(struct chunk *c, int y, int x);
+bool square_invisible_trap(struct chunk *c, int y, int x);
+bool square_player_trap(struct chunk *c, int y, int x);
+int square_visible_trap_idx(struct chunk *c, int y, int x);
+bool get_trap_graphics(struct chunk *c, int t_idx, int *a, wchar_t *ch, bool require_visible);
+bool square_reveal_trap(struct chunk *c, int y, int x, int chance, bool domsg);
 bool trap_check_hit(int power);
 extern void hit_trap(int y, int x);
-void place_trap(struct cave *c, int y, int x, int t_idx, int trap_level);
-void wipe_trap_list(struct cave *c);
-bool square_remove_trap(struct cave *c, int y, int x, bool domsg, int t_idx);
-void square_remove_trap_kind(struct cave *c, int y, int x, bool domsg, int t_idx);
+void place_trap(struct chunk *c, int y, int x, int t_idx, int trap_level);
+void wipe_trap_list(struct chunk *c);
+bool square_remove_trap(struct chunk *c, int y, int x, bool domsg, int t_idx);
+void square_remove_trap_kind(struct chunk *c, int y, int x, bool domsg, int t_idx);
 
 #endif /* !TRAP_H */

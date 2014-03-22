@@ -78,7 +78,7 @@ struct vault *random_vault(int depth, int typ)
  *
  * The boundaries (y1, x1, y2, x2) are inclusive.
  */
-static void generate_room(struct cave *c, int y1, int x1, int y2, int x2, int light)
+static void generate_room(struct chunk *c, int y1, int x1, int y2, int x2, int light)
 {
 	int y, x;
 	for (y = y1; y <= y2; y++)
@@ -95,7 +95,7 @@ static void generate_room(struct cave *c, int y1, int x1, int y2, int x2, int li
  *
  * The boundaries (y1, x1, y2, x2) are inclusive.
  */
-void generate_mark(struct cave *c, int y1, int x1, int y2, int x2, int flag)
+void generate_mark(struct chunk *c, int y1, int x1, int y2, int x2, int flag)
 {
 	int y, x;
 
@@ -112,7 +112,7 @@ void generate_mark(struct cave *c, int y1, int x1, int y2, int x2, int flag)
  *
  * The boundaries (y1, x1, y2, x2) are inclusive.
  */
-void fill_rectangle(struct cave *c, int y1, int x1, int y2, int x2, int feat,
+void fill_rectangle(struct chunk *c, int y1, int x1, int y2, int x2, int feat,
 					int flag)
 {
 	int y, x;
@@ -128,7 +128,7 @@ void fill_rectangle(struct cave *c, int y1, int x1, int y2, int x2, int feat,
  *
  * The boundaries (y1, x1, y2, x2) are inclusive.
  */
-void draw_rectangle(struct cave *c, int y1, int x1, int y2, int x2, int feat,
+void draw_rectangle(struct chunk *c, int y1, int x1, int y2, int x2, int feat,
 					int flag)
 {
 	int y, x;
@@ -150,7 +150,7 @@ void draw_rectangle(struct cave *c, int y1, int x1, int y2, int x2, int feat,
 /**
  * Fill a horizontal range with the given feature/info.
  */
-static void fill_xrange(struct cave *c, int y, int x1, int x2, int feat, 
+static void fill_xrange(struct chunk *c, int y, int x1, int x2, int feat, 
 						int flag, bool light)
 {
 	int x;
@@ -167,7 +167,7 @@ static void fill_xrange(struct cave *c, int y, int x1, int x2, int feat,
 /**
  * Fill a vertical range with the given feature/info.
  */
-static void fill_yrange(struct cave *c, int x, int y1, int y2, int feat, 
+static void fill_yrange(struct chunk *c, int x, int y1, int y2, int feat, 
 						int flag, bool light)
 {
 	int y;
@@ -184,7 +184,7 @@ static void fill_yrange(struct cave *c, int x, int y1, int y2, int feat,
 /**
  * Fill a circle with the given feature/info.
  */
-static void fill_circle(struct cave *c, int y0, int x0, int radius, int border,
+static void fill_circle(struct chunk *c, int y0, int x0, int radius, int border,
 						int feat, int flag, bool light)
 {
 	int i, last = 0;
@@ -212,7 +212,7 @@ static void fill_circle(struct cave *c, int y0, int x0, int radius, int border,
  * draw_rectangle() this will generate a large rectangular room which is split
  * into four sub-rooms.
  */
-static void generate_plus(struct cave *c, int y1, int x1, int y2, int x2, 
+static void generate_plus(struct chunk *c, int y1, int x1, int y2, int x2, 
 						  int feat, int flag)
 {
 	int y, x;
@@ -233,7 +233,7 @@ static void generate_plus(struct cave *c, int y1, int x1, int y2, int x2,
 /**
  * Generate helper -- open all sides of a rectangle with a feature
  */
-static void generate_open(struct cave *c, int y1, int x1, int y2, int x2, int feat)
+static void generate_open(struct chunk *c, int y1, int x1, int y2, int x2, int feat)
 {
 	int y0, x0;
 
@@ -252,7 +252,7 @@ static void generate_open(struct cave *c, int y1, int x1, int y2, int x2, int fe
 /**
  * Generate helper -- open one side of a rectangle with a feature
  */
-static void generate_hole(struct cave *c, int y1, int x1, int y2, int x2, int feat)
+static void generate_hole(struct chunk *c, int y1, int x1, int y2, int x2, int feat)
 {
 	/* Find the center */
 	int y0 = (y1 + y2) / 2;
@@ -273,7 +273,7 @@ static void generate_hole(struct cave *c, int y1, int x1, int y2, int x2, int fe
 /**
  * Place a square of granite with a flag
  */
-void set_marked_granite(struct cave *c, int y, int x, int flag)
+void set_marked_granite(struct chunk *c, int y, int x, int flag)
 {
 	square_set_feat(c, y, x, FEAT_GRANITE);
 	if (flag) generate_mark(c, y, x, y, x, flag);
@@ -309,7 +309,7 @@ void set_marked_granite(struct cave *c, int y, int x, int flag)
  *   this code does works well for lakes, etc.
  *
  */
-extern bool generate_starburst_room(struct cave *c, int y1, int x1, int y2, 
+extern bool generate_starburst_room(struct chunk *c, int y1, int x1, int y2, 
 									int x2, bool light, int feat, 
 									bool special_ok)
 {
@@ -725,7 +725,7 @@ static bool find_space(int *y, int *x, int height, int width)
 /**
  * Build a circular room (interior radius 4-7).
  */
-bool build_circular(struct cave *c, int y0, int x0)
+bool build_circular(struct chunk *c, int y0, int x0)
 {
 	/* Pick a room size */
 	int radius = 2 + randint1(2) + randint1(3);
@@ -769,7 +769,7 @@ bool build_circular(struct cave *c, int y0, int x0)
 /**
  * Builds a normal rectangular room.
  */
-bool build_simple(struct cave *c, int y0, int x0)
+bool build_simple(struct chunk *c, int y0, int x0)
 {
 	int y, x, y1, x1, y2, x2;
 	int light = FALSE;
@@ -825,7 +825,7 @@ bool build_simple(struct cave *c, int y0, int x0)
 /**
  * Builds an overlapping rectangular room.
  */
-bool build_overlap(struct cave *c, int y0, int x0)
+bool build_overlap(struct chunk *c, int y0, int x0)
 {
 	int y1a, x1a, y2a, x2a;
 	int y1b, x1b, y2b, x2b;
@@ -904,7 +904,7 @@ bool build_overlap(struct cave *c, int y0, int x0)
  * below will work for 5x5 (and perhaps even for unsymetric values like 4x3 or
  * 5x3 or 3x4 or 3x5).
  */
-bool build_crossed(struct cave *c, int y0, int x0)
+bool build_crossed(struct chunk *c, int y0, int x0)
 {
 	int y, x;
 	int height, width;
@@ -1063,7 +1063,7 @@ bool build_crossed(struct cave *c, int y0, int x0)
  *	4 - An inner room with a checkerboard
  *	5 - An inner room with four compartments
  */
-bool build_large(struct cave *c, int y0, int x0)
+bool build_large(struct chunk *c, int y0, int x0)
 {
 	int y, x, y1, x1, y2, x2;
 	int height = 9;
@@ -1372,7 +1372,7 @@ void set_pit_type(int depth, int type)
  *
  * Monster nests will never contain unique monsters.
  */
-bool build_nest(struct cave *c, int y0, int x0)
+bool build_nest(struct chunk *c, int y0, int x0)
 {
 	int y, x, y1, x1, y2, x2;
 	int i;
@@ -1495,7 +1495,7 @@ bool build_nest(struct cave *c, int y0, int x0)
  *
  * Like monster nests, monster pits will never contain unique monsters.
  */
-bool build_pit(struct cave *c, int y0, int x0)
+bool build_pit(struct chunk *c, int y0, int x0)
 {
 	monster_race *what[16];
 	int i, j, y, x, y1, x1, y2, x2;
@@ -1654,7 +1654,7 @@ bool build_pit(struct cave *c, int y0, int x0)
 /**
  * Build a room template from its string representation.
  */
-static bool build_room_template(struct cave *c, int y0, int x0, int ymax, int xmax, int doors, const char *data, int tval)
+static bool build_room_template(struct chunk *c, int y0, int x0, int ymax, int xmax, int doors, const char *data, int tval)
 {
 	int dx, dy, x, y, rnddoors, doorpos;
 	const char *t;
@@ -1798,7 +1798,7 @@ static bool build_room_template(struct cave *c, int y0, int x0, int ymax, int xm
 /**
  * Helper function for building room templates.
  */
-static bool build_room_template_type(struct cave*c, int y0, int x0, int typ, const char *label)
+static bool build_room_template_type(struct chunk*c, int y0, int x0, int typ, const char *label)
 {
 	room_template_type *t_ptr = random_room_template(typ);
 	
@@ -1817,7 +1817,7 @@ static bool build_room_template_type(struct cave*c, int y0, int x0, int typ, con
 }
 
 
-bool build_template(struct cave *c, int y0, int x0)
+bool build_template(struct chunk *c, int y0, int x0)
 {
 	/* All room templates currently have type 1 */
 	return build_room_template_type(c, y0, x0, 1, "Special room");
@@ -1829,7 +1829,7 @@ bool build_template(struct cave *c, int y0, int x0)
 /**
  * Build a vault from its string representation.
  */
-bool build_vault(struct cave *c, int y0, int x0, struct vault *v)
+bool build_vault(struct chunk *c, int y0, int x0, struct vault *v)
 {
 	const char *data = v->text;
 	int y1, x1, y2, x2;
@@ -2071,7 +2071,7 @@ bool build_vault(struct cave *c, int y0, int x0, struct vault *v)
 /**
  * Helper function for building vaults.
  */
-static bool build_vault_type(struct cave *c, int y0, int x0, int typ, 
+static bool build_vault_type(struct chunk *c, int y0, int x0, int typ, 
 							 const char *label)
 {
 	struct vault *v_ptr = random_vault(c->depth, typ);
@@ -2096,7 +2096,7 @@ static bool build_vault_type(struct cave *c, int y0, int x0, int typ,
 /**
  * Build an interesting room.
  */
-bool build_interesting(struct cave *c, int y0, int x0)
+bool build_interesting(struct chunk *c, int y0, int x0)
 {
 	return build_vault_type(c, y0, x0, 5, "Interesting room");
 }
@@ -2105,7 +2105,7 @@ bool build_interesting(struct cave *c, int y0, int x0)
 /**
  * Build a lesser vault.
  */
-bool build_lesser_vault(struct cave *c, int y0, int x0)
+bool build_lesser_vault(struct chunk *c, int y0, int x0)
 {
 	if (!streq(dun->profile->name, "classic") && (one_in_(2)))
 		return build_vault_type(c, y0, x0, 4, "Lesser vault");
@@ -2116,7 +2116,7 @@ bool build_lesser_vault(struct cave *c, int y0, int x0)
 /**
  * Build a medium vault.
  */
-bool build_medium_vault(struct cave *c, int y0, int x0)
+bool build_medium_vault(struct chunk *c, int y0, int x0)
 {
 	if (!streq(dun->profile->name, "classic") && (one_in_(2)))
 		return build_vault_type(c, y0, x0, 3, "Medium vault");
@@ -2143,7 +2143,7 @@ bool build_medium_vault(struct cave *c, int y0, int x0)
  * 50-59  1.8 -  2.1%
  * 0-49   0.0 -  1.0%
  */
-bool build_greater_vault(struct cave *c, int y0, int x0)
+bool build_greater_vault(struct chunk *c, int y0, int x0)
 {
 	int i;
 	int numerator   = 2;
@@ -2170,7 +2170,7 @@ bool build_greater_vault(struct cave *c, int y0, int x0)
 /**
  * Moria room (from Oangband).  Uses the "starburst room" code.
  */
-bool build_moria(struct cave *c, int y0, int x0)
+bool build_moria(struct chunk *c, int y0, int x0)
 {
 	int y1, x1, y2, x2;
 	int i;
@@ -2233,7 +2233,7 @@ bool build_moria(struct cave *c, int y0, int x0)
 }
 
 
-static void make_inner_chamber_wall(struct cave *c, int y, int x)
+static void make_inner_chamber_wall(struct chunk *c, int y, int x)
 {
 	if ((c->feat[y][x] != FEAT_GRANITE) && (c->feat[y][x] != FEAT_MAGMA))
 		return;
@@ -2248,7 +2248,7 @@ static void make_inner_chamber_wall(struct cave *c, int y, int x)
  * Create a door in a random inner wall grid along the border of the
  * rectangle.
  */
-static void make_chamber(struct cave *c, int y1, int x1, int y2, int x2)
+static void make_chamber(struct chunk *c, int y1, int x1, int y2, int x2)
 {
 	int i, d, y, x;
 	int count;
@@ -2333,7 +2333,7 @@ static void make_chamber(struct cave *c, int y1, int x1, int y2, int x2)
  * Expand in every direction from a start point, turning magma into rooms.
  * Stop only when the magma and the open doors totally run out.
  */
-static void hollow_out_room(struct cave *c, int y, int x)
+static void hollow_out_room(struct chunk *c, int y, int x)
 {
 	int d, yy, xx;
 
@@ -2384,7 +2384,7 @@ static void hollow_out_room(struct cave *c, int y, int x)
  * monsters.
  *
  */
-bool build_room_of_chambers(struct cave *c, int y0, int x0)
+bool build_room_of_chambers(struct chunk *c, int y0, int x0)
 {
 	int i, d;
 	int area, num_chambers;
@@ -2676,7 +2676,7 @@ bool build_room_of_chambers(struct cave *c, int y0, int x0)
  * priority rooms in the dungeon.  They should be rare, so as not to
  * interfere with greater vaults.
  */
-bool build_huge(struct cave *c, int y0, int x0)
+bool build_huge(struct chunk *c, int y0, int x0)
 {
 	bool light;
 
@@ -2754,7 +2754,7 @@ bool build_huge(struct cave *c, int y0, int x0)
  * Note that we restrict the number of pits/nests to reduce
  * the chance of overflowing the monster list during level creation.
  */
-bool room_build(struct cave *c, int by0, int bx0, struct room_profile profile,
+bool room_build(struct chunk *c, int by0, int bx0, struct room_profile profile,
 	bool finds_own_space)
 {
 	/* Extract blocks */

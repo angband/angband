@@ -30,7 +30,7 @@ void textui_cmd_rest(void);
 
 /* cmd-context.c */
 int context_menu_player(int mx, int my);
-int context_menu_cave(struct cave *c, int y, int x, int adjacent, int mx, int my);
+int context_menu_cave(struct chunk *c, int y, int x, int adjacent, int mx, int my);
 int context_menu_object(const object_type *o_ptr, const int slot);
 int context_menu_store(struct store *store, const int oid, int mx, int my);
 int context_menu_store_item(struct store *store, const int oid, int mx, int my);

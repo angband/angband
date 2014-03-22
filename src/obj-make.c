@@ -1008,7 +1008,7 @@ object_kind *get_obj_num(int level, bool good, int tval)
  *
  * Returns the whether or not creation worked.
  */
-bool make_object(struct cave *c, object_type *j_ptr, int lev, bool good,
+bool make_object(struct chunk *c, object_type *j_ptr, int lev, bool good,
 	bool great, bool extra_roll, s32b *value, int tval)
 {
 	int base;

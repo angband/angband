@@ -302,7 +302,7 @@ typedef struct monster
 
 /* melee2.c */
 extern bool check_hit(struct player *p, int power, int level);
-extern void process_monsters(struct cave *c, byte min_energy);
+extern void process_monsters(struct chunk *c, byte min_energy);
 extern int mon_hp(const struct monster_race *r_ptr, aspect hp_aspect);
 extern bool make_attack_spell(struct monster *m);
 extern int adjust_dam_armor(int damage, int ac);

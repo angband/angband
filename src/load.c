@@ -1223,7 +1223,7 @@ int rd_chunks(void)
 
 	rd_u16b(&chunk_max);
 	for (j = 0; j < chunk_max; j++) {
-		struct cave *c;
+		struct chunk *c;
 		char name[100];
 		u16b height, width;
 

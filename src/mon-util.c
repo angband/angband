@@ -634,7 +634,7 @@ void update_monsters(bool full)
  * Returns the o_idx of the new object, or 0 if the object is
  * not successfully added.
  */
-s16b monster_carry(struct cave *c, struct monster *m_ptr, object_type *j_ptr)
+s16b monster_carry(struct chunk *c, struct monster *m_ptr, object_type *j_ptr)
 {
 	s16b o_idx;
 

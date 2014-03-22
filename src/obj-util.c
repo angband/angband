@@ -1115,7 +1115,7 @@ void compact_objects(int size)
  * clear those fields for grids/monsters containing objects,
  * and we clear it once for every such object.
  */
-void wipe_o_list(struct cave *c)
+void wipe_o_list(struct chunk *c)
 {
 	int i;
 
@@ -1177,7 +1177,7 @@ void wipe_o_list(struct cave *c)
  * This routine should almost never fail, but in case it does,
  * we must be sure to handle "failure" of this routine.
  */
-s16b o_pop(struct cave *c)
+s16b o_pop(struct chunk *c)
 {
 	int i;
 
@@ -1775,7 +1775,7 @@ static s16b floor_get_idx_oldest_squelched(int y, int x)
 /*
  * Let the floor carry an object, deleting old squelched items if necessary
  */
-s16b floor_carry(struct cave *c, int y, int x, object_type *j_ptr)
+s16b floor_carry(struct chunk *c, int y, int x, object_type *j_ptr)
 {
 	int n = 0;
 
@@ -1874,7 +1874,7 @@ s16b floor_carry(struct cave *c, int y, int x, object_type *j_ptr)
  * the object can combine, stack, or be placed.  Artifacts will try very
  * hard to be placed, including "teleporting" to a useful grid if needed.
  */
-void drop_near(struct cave *c, object_type *j_ptr, int chance, int y, int x, bool verbose)
+void drop_near(struct chunk *c, object_type *j_ptr, int chance, int y, int x, bool verbose)
 {
 	int i, k, n, d, s;
 

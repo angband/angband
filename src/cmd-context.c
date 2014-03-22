@@ -459,7 +459,7 @@ int context_menu_player(int mx, int my)
 	return 1;
 }
 
-int context_menu_cave(struct cave *c, int y, int x, int adjacent, int mx, int my)
+int context_menu_cave(struct chunk *c, int y, int x, int adjacent, int mx, int my)
 {
 	menu_type *m;
 	region r;
