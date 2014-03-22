@@ -247,6 +247,7 @@ struct chunk *cavern_gen(struct player *p);
 struct chunk *modified_gen(struct player *p);
 struct chunk *hard_centre_gen(struct player *p);
 struct chunk *lair_gen(struct player *p);
+struct chunk *gauntlet_gen(struct player *p);
 
 struct chunk *chunk_write(int y0, int x0, int height, int width, bool monsters,
 						 bool objects, bool traps, bool delete_old);

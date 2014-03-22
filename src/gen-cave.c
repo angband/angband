@@ -725,8 +725,7 @@ struct chunk *labyrinth_chunk(int depth, int h, int w, bool lit, bool soft)
     walls = mem_zalloc(n * sizeof(int));
 
     /* Bound with perma-rock */
-    draw_rectangle(c, 0, 0, h + 1, w + 1, 
-				   FEAT_PERM, SQUARE_NONE);
+    draw_rectangle(c, 0, 0, h + 1, w + 1, FEAT_PERM, SQUARE_NONE);
 
     /* Fill the labyrinth area with rock */
 	if (soft)
@@ -1961,13 +1960,6 @@ struct chunk *hard_centre_gen(struct player *p)
 	floor[2].y = y;
 	floor[2].x = x;
 
-	/* Free all the chunks */
-	cave_free(left_cavern);
-	cave_free(upper_cavern);
-	cave_free(centre);
-	cave_free(lower_cavern);
-	cave_free(right_cavern);
-
 	/* Encase in perma-rock */
     draw_rectangle(c, 0, 0, c->height - 1, c->width - 1,
 				   FEAT_PERM, SQUARE_NONE);
@@ -1977,6 +1969,27 @@ struct chunk *hard_centre_gen(struct player *p)
 
 	/* Connect to the centre */
 	ensure_connectedness(c);
+
+	/* Temporary until connecting to vault entrances works better */
+	for (y = 0; y < centre->height; y++) {
+		square_set_feat(c, y + centre_cavern_hgt, side_cavern_wid,
+						FEAT_FLOOR);
+		square_set_feat(c, y + centre_cavern_hgt,
+						side_cavern_wid + centre_cavern_wid - 1, FEAT_FLOOR);
+	}
+	for (x = 0; x < centre->width; x++) {
+		square_set_feat(c, centre_cavern_hgt, x + side_cavern_wid,
+						FEAT_FLOOR);
+		square_set_feat(c, centre_cavern_hgt + centre->height - 1,
+						x + side_cavern_wid, FEAT_FLOOR);
+	}
+
+	/* Free all the chunks */
+	cave_free(left_cavern);
+	cave_free(upper_cavern);
+	cave_free(centre);
+	cave_free(lower_cavern);
+	cave_free(right_cavern);
 
 	cavern_area = 2 * (side_cavern_wid * DUNGEON_HGT +
 					   centre_cavern_wid * centre_cavern_hgt);
@@ -2137,4 +2150,171 @@ struct chunk *lair_gen(struct player *p) {
 				  c->depth, ORIGIN_FLOOR);
 
     return c;
+}
+
+
+/* ------------------ GAUNTLET ---------------- */
+
+/**
+ * Generate a gauntlet level - two separate caverns with an unmappable labyrinth
+ * between them, and no teleport and only upstairs from the side where the
+ * player starts.
+ *
+ * \param p is the player
+ * \return a pointer to the generated chunk
+ */
+struct chunk *gauntlet_gen(struct player *p) {
+	int i, k, y;
+	struct chunk *c;
+	struct chunk *arrival;
+	struct chunk *gauntlet;
+	struct chunk *departure;
+	int gauntlet_hgt = 2 * randint1(5) + 3;
+	int gauntlet_wid = 2 * randint1(10) + 19;
+	int line1, line2;
+
+	gauntlet = labyrinth_chunk(p->depth, gauntlet_hgt, gauntlet_wid, FALSE,
+							   FALSE);
+	if (!gauntlet) return NULL;
+	gauntlet->depth = p->depth;
+
+	arrival = cavern_chunk(p->depth, DUNGEON_HGT, DUNGEON_WID * 2 / 5);
+	if (!arrival) {
+		cave_free(gauntlet);
+		return NULL;
+	}
+	arrival->depth = p->depth;
+
+	departure = cavern_chunk(p->depth, DUNGEON_HGT, DUNGEON_WID * 2 / 5);
+	if (!departure) {
+		cave_free(gauntlet);
+		cave_free(arrival);
+		return NULL;
+	}
+	departure->depth = p->depth;
+
+	/* Record lines between chunks */
+	line1 = arrival->width;
+	line2 = line1 + gauntlet->width;
+
+	/* Set the movement and mapping restrictions */
+	generate_mark(arrival, 0, 0, arrival->height - 1, arrival->width - 1,
+				  SQUARE_NO_TELEPORT);
+	generate_mark(gauntlet, 0, 0, gauntlet->height - 1, gauntlet->width - 1,
+				  SQUARE_NO_MAP);
+	generate_mark(gauntlet, 0, 0, gauntlet->height - 1, gauntlet->width - 1,
+				  SQUARE_NO_TELEPORT);
+
+	/* Place down stairs in the departure cavern */
+	alloc_stairs(departure, FEAT_MORE, rand_range(2, 3), 3);
+
+	/* Place up stairs in the arrival cavern */
+	alloc_stairs(arrival, FEAT_LESS, rand_range(1, 3), 3);
+
+	/* Open the ends of the gauntlet */
+	square_set_feat(gauntlet, randint1(gauntlet->height - 2), 0, FEAT_GRANITE);
+	square_set_feat(gauntlet, randint1(gauntlet->height - 2),
+					gauntlet->width - 1, FEAT_GRANITE);
+
+	/* General amount of rubble, traps and monsters */
+	k = MAX(MIN(p->depth / 3, 10), 2) / 2;
+
+	/* Put the character in the arrival cavern */
+	new_player_spot(arrival, p);
+
+	/* Pick some monsters for the arrival cavern */
+	i = MIN_M_ALLOC_LEVEL + randint1(4) + k;
+
+	/* Place the monsters */
+	for (; i > 0; i--)
+		pick_and_place_distant_monster(arrival, loc(p->px, p->py), 0, TRUE,
+									   arrival->depth);
+
+	/* Pick some of monsters for the departure cavern */
+	i = MIN_M_ALLOC_LEVEL + randint1(4) + k;
+
+	/* Place the monsters */
+	for (; i > 0; i--)
+		pick_and_place_distant_monster(departure, loc(p->px, p->py), 0, TRUE,
+									   departure->depth);
+
+	/* Pick a larger number of monsters for the gauntlet */
+	i = (MIN_M_ALLOC_LEVEL + randint1(6) + k);
+
+	/* Find appropriate monsters */
+	while (TRUE) {
+		/* Choose a pit profile */
+		set_pit_type(gauntlet->depth, 0);
+
+		/* Set monster generation restrictions */
+		if (mon_restrict(dun->pit_type->name, gauntlet->depth, TRUE))
+			break;
+	}
+
+	ROOM_LOG("Gauntlet - %s", dun->pit_type->name);
+
+	/* Place labyrinth monsters */
+	spread_monsters(gauntlet, dun->pit_type->name, gauntlet->depth, i,
+					gauntlet->height / 2, gauntlet->width / 2,
+					gauntlet->height / 2, gauntlet->width / 2,
+					ORIGIN_LABYRINTH);
+
+	/* Remove our restrictions. */
+	(void) mon_restrict(NULL, gauntlet->depth, FALSE);
+
+	/* Make the level */
+	c = cave_new(DUNGEON_HGT, DUNGEON_WID);
+	c->depth = p->depth;
+
+	/* Fill cave area with basic granite */
+	fill_rectangle(c, 0, 0, c->height - 1, c->width - 1,
+				   FEAT_GRANITE, SQUARE_NONE);
+
+	/* Fill the area between the caverns with permanent rock */
+	fill_rectangle(c, 0, line1, c->height - 1, line2 - 1, FEAT_PERM,
+				   SQUARE_NONE);
+
+	/* Copy in the pieces */
+	chunk_copy(c, arrival, 0, 0, 0, FALSE);
+	chunk_copy(c, gauntlet, (DUNGEON_HGT - gauntlet->height) / 2, line1, 0,
+			   FALSE);
+	chunk_copy(c, departure, 0, line2, 0, FALSE);
+
+	/* Free the chunks */
+	cave_free(arrival);
+	cave_free(gauntlet);
+	cave_free(departure);
+
+	/* Generate permanent walls around the edge of the generated area */
+	draw_rectangle(c, 0, 0, c->height - 1, c->width - 1, 
+				   FEAT_PERM, SQUARE_NONE);
+
+	/* Connect */
+	ensure_connectedness(c);
+
+	/* Temporary until connecting to vault entrances works better */
+	for (y = 0; y < gauntlet_hgt; y++) {
+		square_set_feat(c, y + (DUNGEON_HGT - gauntlet_hgt) / 2, line1 - 1,
+						FEAT_FLOOR);
+		square_set_feat(c, y + (DUNGEON_HGT - gauntlet_hgt) / 2, line2,
+						FEAT_FLOOR);
+	}
+
+	/* Put some rubble in corridors */
+	alloc_objects(c, SET_CORR, TYP_RUBBLE, randint1(k), c->depth, 0);
+
+	/* Place some traps in the dungeon */
+	alloc_objects(c, SET_BOTH, TYP_TRAP, randint1(k), c->depth, 0);
+
+	/* Put some objects in rooms */
+	alloc_objects(c, SET_ROOM, TYP_OBJECT, Rand_normal(AMT_ROOM, 3),
+				  c->depth, ORIGIN_FLOOR);
+
+	/* Put some objects/gold in the dungeon */
+	alloc_objects(c, SET_BOTH, TYP_OBJECT, Rand_normal(AMT_ITEM, 3),
+				  c->depth, ORIGIN_FLOOR);
+	alloc_objects(c, SET_BOTH, TYP_GOLD, Rand_normal(AMT_GOLD, 3),
+				  c->depth, ORIGIN_FLOOR);
+
+	return c;
 }

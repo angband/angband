@@ -161,6 +161,21 @@ struct cave_profile cave_profiles[] = {
 		-1
 	},
 	{
+		"gauntlet", gauntlet_gen, 1, 0, 200, 0, 0,
+
+		/* tunnels -- not applicable */
+		{"tunnel-null", 0, 0, 0, 0, 0},
+
+		/* streamers -- not applicable */
+		{"streamer-null", 0, 0, 0, 0, 0, 0},
+
+		/* room_profiles -- not applicable */
+		NULL,
+
+		/* cutoff  -- not applicable because profile currently unused */
+		-1
+	},
+	{
 		"hard_centre", hard_centre_gen, 1, 0, 200, 0, 0,
 
 		/* tunnels -- not applicable */
@@ -172,7 +187,7 @@ struct cave_profile cave_profiles[] = {
 		/* room_profiles -- not applicable */
 		NULL,
 
-		/* cutoff -- unused because of special labyrinth_check  */
+		/* cutoff  -- not applicable because profile currently unused */
 		-1
 	},
 	{
