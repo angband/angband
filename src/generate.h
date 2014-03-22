@@ -1,4 +1,7 @@
-/* generate.h - dungeon generation interface */
+/** \file generate.h
+	\brief Dungeon generation.
+*/
+
 
 #ifndef GENERATE_H
 #define GENERATE_H
@@ -12,7 +15,7 @@
 #define ROOM_LOG(...) if (OPT(cheat_room)) msg(__VA_ARGS__);
 #endif
 
-/*
+/**
  * Dungeon allocation places and types, used with alloc_object().
  */
 #define SET_CORR   1 /*!< Hallway */

@@ -1,7 +1,6 @@
-/*
- * File: gen-util.c
- * Purpose: Dungeon generation.
- *
+/** \file gen-util.c
+	\brief Dungeon generation utilities
+
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  * Copyright (c) 2013 Erik Osheim, Nick McConnell
  *
@@ -15,6 +14,9 @@
  *    This software may be copied and distributed for educational, research,
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
+ *
+ * This file contains various utility functions for dungeon generation - mostly
+ * for finding appropriate grids for some purposes, or placing things. 
  */
 
 #include "angband.h"
@@ -106,6 +108,10 @@ byte get_angle_to_grid[41][41] =
 
 /**
  * Used to convert (x, y) into an array index (i) in a chunk of width w.
+ * \param y
+ * \param x co-ordinates
+ * \param w area width
+ * \return grid index
  */
 int yx_to_i(int y, int x, int w) {
     return y * w + x;
@@ -113,6 +119,10 @@ int yx_to_i(int y, int x, int w) {
 
 /**
  * Used to convert an array index (i) into (x, y) in a chunk of width w.
+ * \param i grid index
+ * \param w area width
+ * \param y
+ * \param x co-ordinates
  */
 void i_to_yx(int i, int w, int *y, int *x) {
     *y = i / w;
@@ -121,6 +131,8 @@ void i_to_yx(int i, int w, int *y, int *x) {
 
 /**
  * Shuffle an array using Knuth's shuffle.
+ * \param arr array
+ * \param n number of shuffle moves
  */
 void shuffle(int *arr, int n)
 {
@@ -137,6 +149,15 @@ void shuffle(int *arr, int n)
 /**
  * Locate a square in y1 <= y < y2, x1 <= x < x2 which satisfies the given
  * predicate.
+ * \param c current chunk
+ * \param y found y co-ordinate
+ * \param y1
+ * \param y2 y-range
+ * \param x found x co-ordinate
+ * \param x1
+ * \param x2 x-range
+ * \param pred square_predicate specifying what we're looking for
+ * \return success
  */
 static bool _find_in_range(struct chunk *c, int *y, int y1, int y2, int *x,
 						   int x1, int x2, square_predicate pred)
@@ -171,6 +192,11 @@ static bool _find_in_range(struct chunk *c, int *y, int y1, int y2, int *x,
 
 /**
  * Locate a square in the dungeon which satisfies the given predicate.
+ * \param c current chunk
+ * \param y found y co-ordinate
+ * \param x found x co-ordinate
+ * \param pred square_predicate specifying what we're looking for
+ * \return success
  */
 bool cave_find(struct chunk *c, int *y, int *x, square_predicate pred)
 {
@@ -181,6 +207,15 @@ bool cave_find(struct chunk *c, int *y, int *x, square_predicate pred)
 /**
  * Locate a square in y1 <= y < y2, x1 <= x < x2 which satisfies the given
  * predicate.
+ * \param c current chunk
+ * \param y found y co-ordinate
+ * \param y1
+ * \param y2 y-range
+ * \param x found x co-ordinate
+ * \param x1
+ * \param x2 x-range
+ * \param pred square_predicate specifying what we're looking for
+ * \return success
  */
 static bool cave_find_in_range(struct chunk *c, int *y, int y1, int y2,
 							   int *x, int x1, int x2, square_predicate pred)
@@ -191,6 +226,10 @@ static bool cave_find_in_range(struct chunk *c, int *y, int y1, int y2,
 
 /**
  * Locate an empty square for 0 <= y < ymax, 0 <= x < xmax.
+ * \param c current chunk
+ * \param y found y co-ordinate
+ * \param x found x co-ordinate
+ * \return success
  */
 bool find_empty(struct chunk *c, int *y, int *x)
 {
@@ -200,6 +239,14 @@ bool find_empty(struct chunk *c, int *y, int *x)
 
 /**
  * Locate an empty square for y1 <= y < y2, x1 <= x < x2.
+ * \param c current chunk
+ * \param y found y co-ordinate
+ * \param y1
+ * \param y2 y-range
+ * \param x found x co-ordinate
+ * \param x1
+ * \param x2 x-range
+ * \return success
  */
 bool find_empty_range(struct chunk *c, int *y, int y1, int y2, int *x, int x1, int x2)
 {
@@ -209,6 +256,14 @@ bool find_empty_range(struct chunk *c, int *y, int y1, int y2, int *x, int x1, i
 
 /**
  * Locate a grid nearby (y0, x0) within +/- yd, xd.
+ * \param c current chunk
+ * \param y found y co-ordinate
+ * \param y0 starting y co-ordinate
+ * \param yd y-range
+ * \param x found x co-ordinate
+ * \param x0 starting x co-ordinate
+ * \param xd x-range
+ * \return success
  */
 bool find_nearby_grid(struct chunk *c, int *y, int y0, int yd, int *x, int x0, int xd)
 {
@@ -222,6 +277,12 @@ bool find_nearby_grid(struct chunk *c, int *y, int y0, int yd, int *x, int x0, i
 
 /**
  * Given two points, pick a valid cardinal direction from one to the other.
+ * \param rdir found row change (up or down)
+ * \param cdir found column change (left or right)
+ * \param y1
+ * \param x1 starting co-ordinates
+ * \param y2
+ * \param x2 target co-ordinates
  */
 void correct_dir(int *rdir, int *cdir, int y1, int x1, int y2, int x2)
 {
@@ -242,6 +303,8 @@ void correct_dir(int *rdir, int *cdir, int y1, int x1, int y2, int x2)
 
 /**
  * Pick a random cardinal direction.
+ * \param rdir
+ * \param cdir direction co-ordinates
  */
 void rand_dir(int *rdir, int *cdir)
 {
@@ -254,6 +317,10 @@ void rand_dir(int *rdir, int *cdir)
 
 /**
  * Determine whether the given coordinate is a valid starting location.
+ * \param c current chunk
+ * \param y
+ * \param x co-ordinates
+ * \return success
  */
 static bool square_isstart(struct chunk *c, int y, int x)
 {
@@ -265,6 +332,8 @@ static bool square_isstart(struct chunk *c, int y, int x)
 
 /**
  * Place the player at a random starting location.
+ * \param c current chunk
+ * \param p the player
  */
 void new_player_spot(struct chunk *c, struct player *p)
 {
@@ -289,6 +358,10 @@ void new_player_spot(struct chunk *c, struct player *p)
 
 /**
  * Return how many cardinal directions around (x, y) contain walls.
+ * \param c current chunk
+ * \param y
+ * \param x co-ordinates
+ * \return the number of walls 
  */
 static int next_to_walls(struct chunk *c, int y, int x)
 {
@@ -306,6 +379,9 @@ static int next_to_walls(struct chunk *c, int y, int x)
 
 /**
  * Place rubble at (x, y).
+ * \param c current chunk
+ * \param y
+ * \param x co-ordinates
  */
 static void place_rubble(struct chunk *c, int y, int x)
 {
@@ -315,6 +391,10 @@ static void place_rubble(struct chunk *c, int y, int x)
 
 /**
  * Place stairs (of the requested type 'feat' if allowed) at (x, y).
+ * \param c current chunk
+ * \param y
+ * \param x co-ordinates
+ * \param feat stair terrain type
  *
  * All stairs from town go down. All stairs on an unfinished quest level go up.
  */
@@ -331,6 +411,9 @@ static void place_stairs(struct chunk *c, int y, int x, int feat)
 
 /**
  * Place random stairs at (x, y).
+ * \param c current chunk
+ * \param y
+ * \param x co-ordinates
  */
 void place_random_stairs(struct chunk *c, int y, int x)
 {
@@ -341,6 +424,14 @@ void place_random_stairs(struct chunk *c, int y, int x)
 
 /**
  * Place a random object at (x, y).
+ * \param c current chunk
+ * \param y
+ * \param x co-ordinates
+ * \param level generation depth
+ * \param good is it a good object?
+ * \param great is it a great object?
+ * \param origin item origin
+ * \param specified tval, if any
  */
 void place_object(struct chunk *c, int y, int x, int level, bool good, bool great, byte origin, int tval)
 {
@@ -375,6 +466,11 @@ void place_object(struct chunk *c, int y, int x, int level, bool good, bool grea
 
 /**
  * Place a random amount of gold at (x, y).
+ * \param c current chunk
+ * \param y
+ * \param x co-ordinates
+ * \param level generation depth
+ * \param origin item origin
  */
 void place_gold(struct chunk *c, int y, int x, int level, byte origin)
 {
@@ -398,6 +494,9 @@ void place_gold(struct chunk *c, int y, int x, int level, byte origin)
 
 /**
  * Place a secret door at (x, y).
+ * \param c current chunk
+ * \param y
+ * \param x co-ordinates
  */
 void place_secret_door(struct chunk *c, int y, int x)
 {
@@ -407,6 +506,9 @@ void place_secret_door(struct chunk *c, int y, int x)
 
 /**
  * Place a closed door at (x, y).
+ * \param c current chunk
+ * \param y
+ * \param x co-ordinates
  */
 void place_closed_door(struct chunk *c, int y, int x)
 {
@@ -423,6 +525,9 @@ void place_closed_door(struct chunk *c, int y, int x)
 
 /**
  * Place a random door at (x, y).
+ * \param c current chunk
+ * \param y
+ * \param x co-ordinates
  *
  * The door generated could be closed, open, broken, or secret.
  */
@@ -442,6 +547,10 @@ void place_random_door(struct chunk *c, int y, int x)
 
 /**
  * Place some staircases near walls.
+ * \param c the current chunk
+ * \param feat the stair terrain type
+ * \param num number of staircases to place
+ * \param walls number of walls to surround the stairs (negotiable)
  */
 void alloc_stairs(struct chunk *c, int feat, int num, int walls)
 {
@@ -469,7 +578,13 @@ void alloc_stairs(struct chunk *c, int feat, int num, int walls)
 
 
 /**
- * Allocates 'num' random objects in the dungeon.
+ * Allocates 'num' random entities in the dungeon.
+ * \param c the current chunk
+ * \param set where the entity is placed (corridor, room or either)
+ * \param typ what is placed (rubble, trap, gold, item)
+ * \param num number to place
+ * \param depth generation depth
+ * \param origin item origin (if appropriate)
  *
  * See alloc_object() for more information.
  */
@@ -485,6 +600,11 @@ void alloc_objects(struct chunk *c, int set, int typ, int num, int depth, byte o
 
 /**
  * Allocates a single random object in the dungeon.
+ * \param c the current chunk
+ * \param set where the entity is placed (corridor, room or either)
+ * \param typ what is placed (rubble, trap, gold, item)
+ * \param depth generation depth
+ * \param origin item origin (if appropriate)
  *
  * 'set' controls where the object is placed (corridor, room, either).
  * 'typ' conrols the kind of object (rubble, trap, gold, item).
@@ -527,6 +647,11 @@ bool alloc_object(struct chunk *c, int set, int typ, int depth, byte origin)
 
 /**
  * Create up to 'num' objects near the given coordinates in a vault.
+ * \param c the current chunk
+ * \param y
+ * \param x co-ordinates
+ * \param depth geneeration depth
+ * \param num number of objects
  */
 void vault_objects(struct chunk *c, int y, int x, int depth, int num)
 {
@@ -556,6 +681,11 @@ void vault_objects(struct chunk *c, int y, int x, int depth, int num)
 
 /**
  * Place a trap near (x, y), with a given displacement.
+ * \param c the current chunk
+ * \param y
+ * \param x co-ordinates to place the trap near
+ * \param yd
+ * \param xd how far afield to look for a place
  */
 static void vault_trap_aux(struct chunk *c, int y, int x, int yd, int xd)
 {
@@ -574,6 +704,12 @@ static void vault_trap_aux(struct chunk *c, int y, int x, int yd, int xd)
 
 /**
  * Place 'num' traps near (x, y), with a given displacement.
+ * \param c the current chunk
+ * \param y
+ * \param x co-ordinates to place the trap near
+ * \param yd
+ * \param xd how far afield to look for a place
+ * \param num number of traps to place
  */
 void vault_traps(struct chunk *c, int y, int x, int yd, int xd, int num)
 {
@@ -585,6 +721,11 @@ void vault_traps(struct chunk *c, int y, int x, int yd, int xd, int num)
 
 /**
  * Place 'num' sleeping monsters near (x, y).
+ * \param c the current chunk
+ * \param y
+ * \param x co-ordinates to place the monsters near
+ * \param depth generation depth
+ * \param num number of monsters to place
  */
 void vault_monsters(struct chunk *c, int y1, int x1, int depth, int num)
 {

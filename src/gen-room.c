@@ -1,6 +1,5 @@
-/*
- * File: gen-room.c
- * Purpose: Dungeon generation.
+/** \file gen-room.c
+	\brief Dungeon room generation.
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  * Copyright (c) 2013 Erik Osheim, Nick McConnell
@@ -15,6 +14,17 @@
  *    This software may be copied and distributed for educational, research,
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
+ *
+ * This file covers everything to do with generation of individual rooms in
+ * the dungeon.  It consists of room generating helper functions plus the 
+ * actual room builders (which are referred to in the room profiles in
+ * generate.c).
+ *
+ * The room builders all take as arguments the chunk they are being generated
+ * in, and the co-ordinates of the room centre in that chunk.  Each room
+ * builder is also able to find space for itself in the chunk using the 
+ * find_space() function; the chunk generating functions can ask it to do that
+ * by passing too large centre co-ordinates.
  */
 
 #include "angband.h"
@@ -35,7 +45,8 @@
 
 /**
  * Chooses a room template of a particular kind at random.
- *
+ * \param typ template room type - currently unused
+ * \return a pointer to the room template
  */
 struct room_template *random_room_template(int typ)
 {
@@ -54,7 +65,9 @@ struct room_template *random_room_template(int typ)
 
 /**
  * Chooses a vault of a particular kind at random.
- * 
+ * \param depth the current depth, for vault boun checking
+ * \param typ vault type
+ * \return a pointer to the vault template
  */
 struct vault *random_vault(int depth, int typ)
 {
@@ -75,8 +88,12 @@ struct vault *random_vault(int depth, int typ)
 
 /**
  * Mark squares as being in a room, and optionally light them.
- *
- * The boundaries (y1, x1, y2, x2) are inclusive.
+ * \param c the current chunk
+ * \param y1
+ * \param x1
+ * \param y2
+ * \param x2 inclusive room boundaries
+ * \param light whether or not to light the room
  */
 static void generate_room(struct chunk *c, int y1, int x1, int y2, int x2, int light)
 {
@@ -91,9 +108,13 @@ static void generate_room(struct chunk *c, int y1, int x1, int y2, int x2, int l
 
 
 /**
- * Mark a rectangle with a set of info flags
- *
- * The boundaries (y1, x1, y2, x2) are inclusive.
+ * Mark a rectangle with a sqinfo flag
+ * \param c the current chunk
+ * \param y1
+ * \param x1
+ * \param y2
+ * \param x2 inclusive room boundaries
+ * \param flag the SQUARE_* flag we are marking with
  */
 void generate_mark(struct chunk *c, int y1, int x1, int y2, int x2, int flag)
 {
@@ -109,8 +130,13 @@ void generate_mark(struct chunk *c, int y1, int x1, int y2, int x2, int flag)
 
 /**
  * Fill a rectangle with a feature.
- *
- * The boundaries (y1, x1, y2, x2) are inclusive.
+ * \param c the current chunk
+ * \param y1
+ * \param x1
+ * \param y2
+ * \param x2 inclusive room boundaries
+ * \param feat the terrain feature
+ * \param flag the SQUARE_* flag we are marking with
  */
 void fill_rectangle(struct chunk *c, int y1, int x1, int y2, int x2, int feat,
 					int flag)
@@ -125,8 +151,13 @@ void fill_rectangle(struct chunk *c, int y1, int x1, int y2, int x2, int feat,
 
 /**
  * Fill the edges of a rectangle with a feature.
- *
- * The boundaries (y1, x1, y2, x2) are inclusive.
+ * \param c the current chunk
+ * \param y1
+ * \param x1
+ * \param y2
+ * \param x2 inclusive room boundaries
+ * \param feat the terrain feature
+ * \param flag the SQUARE_* flag we are marking with
  */
 void draw_rectangle(struct chunk *c, int y1, int x1, int y2, int x2, int feat,
 					int flag)
@@ -149,6 +180,13 @@ void draw_rectangle(struct chunk *c, int y1, int x1, int y2, int x2, int feat,
 
 /**
  * Fill a horizontal range with the given feature/info.
+ * \param c the current chunk
+ * \param y
+ * \param x1
+ * \param x2 inclusive range boundaries
+ * \param feat the terrain feature
+ * \param flag the SQUARE_* flag we are marking with
+ * \para light lit or not
  */
 static void fill_xrange(struct chunk *c, int y, int x1, int x2, int feat, 
 						int flag, bool light)
@@ -166,6 +204,13 @@ static void fill_xrange(struct chunk *c, int y, int x1, int x2, int feat,
 
 /**
  * Fill a vertical range with the given feature/info.
+ * \param c the current chunk
+ * \param x
+ * \param y1
+ * \param y2 inclusive range boundaries
+ * \param feat the terrain feature
+ * \param flag the SQUARE_* flag we are marking with
+ * \para light lit or not
  */
 static void fill_yrange(struct chunk *c, int x, int y1, int y2, int feat, 
 						int flag, bool light)
@@ -183,6 +228,14 @@ static void fill_yrange(struct chunk *c, int x, int y1, int y2, int feat,
 
 /**
  * Fill a circle with the given feature/info.
+ * \param c the current chunk
+ * \param y0
+ * \param x0 the circle centre
+ * \param radius the circle radius
+ * \param border the width of the circle border
+ * \param feat the terrain feature
+ * \param flag the SQUARE_* flag we are marking with
+ * \para light lit or not
  */
 static void fill_circle(struct chunk *c, int y0, int x0, int radius, int border,
 						int feat, int flag, bool light)
@@ -208,9 +261,15 @@ static void fill_circle(struct chunk *c, int y0, int x0, int radius, int border,
 /**
  * Fill the lines of a cross/plus with a feature.
  *
- * The boundaries (y1, x1, y2, x2) are inclusive. When combined with
- * draw_rectangle() this will generate a large rectangular room which is split
- * into four sub-rooms.
+ * \param c the current chunk
+ * \param y1
+ * \param x1
+ * \param y2
+ * \param x2 inclusive room boundaries
+ * \param feat the terrain feature
+ * \param flag the SQUARE_* flag we are marking with
+ * When combined with draw_rectangle() this will generate a large rectangular 
+ * room which is split into four sub-rooms.
  */
 static void generate_plus(struct chunk *c, int y1, int x1, int y2, int x2, 
 						  int feat, int flag)
@@ -232,6 +291,12 @@ static void generate_plus(struct chunk *c, int y1, int x1, int y2, int x2,
 
 /**
  * Generate helper -- open all sides of a rectangle with a feature
+ * \param c the current chunk
+ * \param y1
+ * \param x1
+ * \param y2
+ * \param x2 inclusive room boundaries
+ * \param feat the terrain feature
  */
 static void generate_open(struct chunk *c, int y1, int x1, int y2, int x2, int feat)
 {
@@ -251,6 +316,12 @@ static void generate_open(struct chunk *c, int y1, int x1, int y2, int x2, int f
 
 /**
  * Generate helper -- open one side of a rectangle with a feature
+ * \param c the current chunk
+ * \param y1
+ * \param x1
+ * \param y2
+ * \param x2 inclusive room boundaries
+ * \param feat the terrain feature
  */
 static void generate_hole(struct chunk *c, int y1, int x1, int y2, int x2, int feat)
 {
@@ -272,6 +343,10 @@ static void generate_hole(struct chunk *c, int y1, int x1, int y2, int x2, int f
 
 /**
  * Place a square of granite with a flag
+ * \param c the current chunk
+ * \param y
+ * \param x the square co-ordinates
+ * \param flag the SQUARE_* flag we are marking with
  */
 void set_marked_granite(struct chunk *c, int y, int x, int flag)
 {
@@ -281,6 +356,16 @@ void set_marked_granite(struct chunk *c, int y, int x, int flag)
 
 /**
  * Make a starburst room. -LM-
+ *
+ * \param c the current chunk
+ * \param y1
+ * \param x1
+ * \param y2
+ * \param x2 boundaries which will contain the starburst
+ * \param light lit or not
+ * \param feat the terrain feature to make the starburst of
+ * \param special_ok allow wacky cloverleaf rooms
+ * \return success
  *
  * Starburst rooms are made in three steps:
  * 1: Choose a room size-dependant number of arcs.  Large rooms need to 
@@ -648,6 +733,12 @@ extern bool generate_starburst_room(struct chunk *c, int y1, int x1, int y2,
 /**
  * Find a good spot for the next room.
  *
+ * \param y
+ * \param x centre of the room
+ * \param height
+ * \param dimensions of the room
+ * \return success
+ *
  * Find and allocate a free space in the dungeon large enough to hold
  * the room calling this function.
  *
@@ -724,6 +815,10 @@ static bool find_space(int *y, int *x, int height, int width)
 
 /**
  * Build a circular room (interior radius 4-7).
+ * \param c the chunk the room is being built in
+ * \param y0
+ * \param x0 co-ordinates of the centre; out of chunk bounds invoke find_space()
+ * \return success
  */
 bool build_circular(struct chunk *c, int y0, int x0)
 {
@@ -768,6 +863,10 @@ bool build_circular(struct chunk *c, int y0, int x0)
 
 /**
  * Builds a normal rectangular room.
+ * \param c the chunk the room is being built in
+ * \param y0
+ * \param x0 co-ordinates of the centre; out of chunk bounds invoke find_space()
+ * \return success
  */
 bool build_simple(struct chunk *c, int y0, int x0)
 {
@@ -824,6 +923,10 @@ bool build_simple(struct chunk *c, int y0, int x0)
 
 /**
  * Builds an overlapping rectangular room.
+ * \param c the chunk the room is being built in
+ * \param y0
+ * \param x0 co-ordinates of the centre; out of chunk bounds invoke find_space()
+ * \return success
  */
 bool build_overlap(struct chunk *c, int y0, int x0)
 {
@@ -896,6 +999,10 @@ bool build_overlap(struct chunk *c, int y0, int x0)
 
 /**
  * Builds a cross-shaped room.
+ * \param c the chunk the room is being built in
+ * \param y0
+ * \param x0 co-ordinates of the centre; out of chunk bounds invoke find_space()
+ * \return success
  *
  * Room "a" runs north/south, and Room "b" runs east/east 
  * So a "central pillar" would run from x1a,y1b to x2a,y2b.
@@ -1055,6 +1162,10 @@ bool build_crossed(struct chunk *c, int y0, int x0)
 
 /**
  * Build a large room with an inner room.
+ * \param c the chunk the room is being built in
+ * \param y0
+ * \param x0 co-ordinates of the centre; out of chunk bounds invoke find_space()
+ * \return success
  *
  * Possible sub-types:
  *	1 - An inner room
@@ -1259,31 +1370,32 @@ bool build_large(struct chunk *c, int y0, int x0)
 
 /**
  * Hook for picking monsters appropriate to a nest/pit or region.
- *
+ * \param race the race being tested for inclusion
+ * \return the race is acceptable
  * Requires dun->pit_type to be set.
  */
-bool mon_pit_hook(monster_race *r_ptr)
+bool mon_pit_hook(monster_race *race)
 {
 	bool match_base = TRUE;
 	bool match_color = TRUE;
 
-	assert(r_ptr);
+	assert(race);
 	assert(dun->pit_type);
 
-	if (rf_has(r_ptr->flags, RF_UNIQUE))
+	if (rf_has(race->flags, RF_UNIQUE))
 		return FALSE;
-	else if (!rf_is_subset(r_ptr->flags, dun->pit_type->flags))
+	else if (!rf_is_subset(race->flags, dun->pit_type->flags))
 		return FALSE;
-	else if (rf_is_inter(r_ptr->flags, dun->pit_type->forbidden_flags))
+	else if (rf_is_inter(race->flags, dun->pit_type->forbidden_flags))
 		return FALSE;
-	else if (!rsf_is_subset(r_ptr->spell_flags, dun->pit_type->spell_flags))
+	else if (!rsf_is_subset(race->spell_flags, dun->pit_type->spell_flags))
 		return FALSE;
-	else if (rsf_is_inter(r_ptr->spell_flags, dun->pit_type->forbidden_spell_flags))
+	else if (rsf_is_inter(race->spell_flags, dun->pit_type->forbidden_spell_flags))
 		return FALSE;
 	else if (dun->pit_type->forbidden_monsters) {
 		struct pit_forbidden_monster *monster;
 		for (monster = dun->pit_type->forbidden_monsters; monster; monster = monster->next) {
-			if (r_ptr == monster->race)
+			if (race == monster->race)
 				return FALSE;
 		}
 	}
@@ -1293,7 +1405,7 @@ bool mon_pit_hook(monster_race *r_ptr)
 		match_base = FALSE;
 
 		for (bases = dun->pit_type->bases; bases; bases = bases->next) {
-			if (r_ptr->base == bases->base)
+			if (race->base == bases->base)
 				match_base = TRUE;
 		}
 	}
@@ -1303,7 +1415,7 @@ bool mon_pit_hook(monster_race *r_ptr)
 		match_color = FALSE;
 
 		for (colors = dun->pit_type->colors; colors; colors = colors->next) {
-			if (r_ptr->d_attr == colors->color)
+			if (race->d_attr == colors->color)
 				match_color = TRUE;
 		}
 	}
@@ -1313,7 +1425,7 @@ bool mon_pit_hook(monster_race *r_ptr)
 
 /**
  * Pick a type of monster for pits (or other purposes), based on the level.
- *
+ * 
  * We scan through all pit profiles, and for each one generate a random depth
  * using a normal distribution, with the mean given in pit.txt, and a
  * standard deviation of 10. Then we pick the profile that gave us a depth that
@@ -1354,6 +1466,10 @@ void set_pit_type(int depth, int type)
 
 /**
  * Build a monster nest
+ * \param c the chunk the room is being built in
+ * \param y0
+ * \param x0 co-ordinates of the centre; out of chunk bounds invoke find_space()
+ * \return success
  *
  * A monster nest consists of a rectangular moat around a room containing
  * monsters of a given type.
@@ -1466,6 +1582,10 @@ bool build_nest(struct chunk *c, int y0, int x0)
 
 /**
  * Build a monster pit
+ * \param c the chunk the room is being built in
+ * \param y0
+ * \param x0 co-ordinates of the centre; out of chunk bounds invoke find_space()
+ * \return success
  *
  * Monster pits are laid-out similarly to monster nests.
  *
@@ -1653,6 +1773,15 @@ bool build_pit(struct chunk *c, int y0, int x0)
 
 /**
  * Build a room template from its string representation.
+ * \param c the chunk the room is being built in
+ * \param y0
+ * \param x0 co-ordinates of the centre; out of chunk bounds invoke find_space()
+ * \param ymax 
+ * \param xmax the room dimensions
+ * \param doors the door position
+ * \param data the room template text description
+ * \param tval the object type for any included objects
+ * \return success
  */
 static bool build_room_template(struct chunk *c, int y0, int x0, int ymax, int xmax, int doors, const char *data, int tval)
 {
@@ -1797,8 +1926,13 @@ static bool build_room_template(struct chunk *c, int y0, int x0, int ymax, int x
 
 /**
  * Helper function for building room templates.
+ * \param c the chunk the room is being built in
+ * \param y0
+ * \param x0 co-ordinates of the centre; out of chunk bounds invoke find_space()
+ * \param typ the room template type (currently unused)
+ * \return success
  */
-static bool build_room_template_type(struct chunk*c, int y0, int x0, int typ, const char *label)
+static bool build_room_template_type(struct chunk*c, int y0, int x0, int typ)
 {
 	room_template_type *t_ptr = random_room_template(typ);
 	
@@ -1816,11 +1950,17 @@ static bool build_room_template_type(struct chunk*c, int y0, int x0, int typ, co
 	return TRUE;
 }
 
-
+/**
+ * Build a template room
+ * \param c the chunk the room is being built in
+ * \param y0
+ * \param x0 co-ordinates of the centre; out of chunk bounds invoke find_space()
+ * \return success
+*/
 bool build_template(struct chunk *c, int y0, int x0)
 {
 	/* All room templates currently have type 1 */
-	return build_room_template_type(c, y0, x0, 1, "Special room");
+	return build_room_template_type(c, y0, x0, 1);
 }
 
 
@@ -1828,6 +1968,11 @@ bool build_template(struct chunk *c, int y0, int x0)
 
 /**
  * Build a vault from its string representation.
+ * \param c the chunk the room is being built in
+ * \param y0
+ * \param x0 co-ordinates of the centre; out of chunk bounds invoke find_space()
+ * \param v pointer to the vault template
+ * \return success
  */
 bool build_vault(struct chunk *c, int y0, int x0, struct vault *v)
 {
@@ -2070,6 +2215,12 @@ bool build_vault(struct chunk *c, int y0, int x0, struct vault *v)
 
 /**
  * Helper function for building vaults.
+ * \param c the chunk the room is being built in
+ * \param y0
+ * \param x0 co-ordinates of the centre; out of chunk bounds invoke find_space()
+ * \param typ the vault type
+ * \param label name of the vault type (eg "Greater vault")
+ * \return success
  */
 static bool build_vault_type(struct chunk *c, int y0, int x0, int typ, 
 							 const char *label)
@@ -2095,6 +2246,10 @@ static bool build_vault_type(struct chunk *c, int y0, int x0, int typ,
 
 /**
  * Build an interesting room.
+ * \param c the chunk the room is being built in
+ * \param y0
+ * \param x0 co-ordinates of the centre; out of chunk bounds invoke find_space()
+ * \return success
  */
 bool build_interesting(struct chunk *c, int y0, int x0)
 {
@@ -2104,6 +2259,10 @@ bool build_interesting(struct chunk *c, int y0, int x0)
 
 /**
  * Build a lesser vault.
+ * \param c the chunk the room is being built in
+ * \param y0
+ * \param x0 co-ordinates of the centre; out of chunk bounds invoke find_space()
+ * \return success
  */
 bool build_lesser_vault(struct chunk *c, int y0, int x0)
 {
@@ -2115,6 +2274,10 @@ bool build_lesser_vault(struct chunk *c, int y0, int x0)
 
 /**
  * Build a medium vault.
+ * \param c the chunk the room is being built in
+ * \param y0
+ * \param x0 co-ordinates of the centre; out of chunk bounds invoke find_space()
+ * \return success
  */
 bool build_medium_vault(struct chunk *c, int y0, int x0)
 {
@@ -2126,6 +2289,10 @@ bool build_medium_vault(struct chunk *c, int y0, int x0)
 
 /**
  * Build a greater vaults.
+ * \param c the chunk the room is being built in
+ * \param y0
+ * \param x0 co-ordinates of the centre; out of chunk bounds invoke find_space()
+ * \return success
  *
  * Since Greater Vaults are so large (4x6 blocks, in a 6x18 dungeon) there is
  * a 63% chance that a randomly chosen quadrant to start a GV on won't work.
@@ -2169,6 +2336,10 @@ bool build_greater_vault(struct chunk *c, int y0, int x0)
 
 /**
  * Moria room (from Oangband).  Uses the "starburst room" code.
+ * \param c the chunk the room is being built in
+ * \param y0
+ * \param x0 co-ordinates of the centre; out of chunk bounds invoke find_space()
+ * \return success
  */
 bool build_moria(struct chunk *c, int y0, int x0)
 {
@@ -2232,7 +2403,12 @@ bool build_moria(struct chunk *c, int y0, int x0)
 	return (TRUE);
 }
 
-
+/**
+ * Helper for rooms of chambers; builds a marked wall grid if appropriate
+ * \param c the chunk the room is being built in
+ * \param y
+ * \param x co-ordinates 
+ */
 static void make_inner_chamber_wall(struct chunk *c, int y, int x)
 {
 	if ((c->feat[y][x] != FEAT_GRANITE) && (c->feat[y][x] != FEAT_MAGMA))
@@ -2247,6 +2423,11 @@ static void make_inner_chamber_wall(struct chunk *c, int y, int x)
  * the rectangle input with magma, and surround it with inner wall.
  * Create a door in a random inner wall grid along the border of the
  * rectangle.
+ * \param c the chunk the room is being built in
+ * \param y1
+ * \param x1
+ * \param y2
+ * \param x2 chamber dimensions
  */
 static void make_chamber(struct chunk *c, int y1, int x1, int y2, int x2)
 {
@@ -2332,6 +2513,9 @@ static void make_chamber(struct chunk *c, int y1, int x1, int y2, int x2)
 /**
  * Expand in every direction from a start point, turning magma into rooms.
  * Stop only when the magma and the open doors totally run out.
+ * \param c the chunk the room is being built in
+ * \param y
+ * \param x co-ordinates to start hollowing
  */
 static void hollow_out_room(struct chunk *c, int y, int x)
 {
@@ -2362,7 +2546,11 @@ static void hollow_out_room(struct chunk *c, int y, int x)
 
 
 /**
- * Type 6 -- Rooms of chambers
+ * Rooms of chambers
+ * \param c the chunk the room is being built in
+ * \param y0
+ * \param x0 co-ordinates of the centre; out of chunk bounds invoke find_space()
+ * \return success
  *
  * Build a room, varying in size between 22x22 and 44x66, consisting of
  * many smaller, irregularly placed, chambers all connected by doors or
@@ -2671,6 +2859,10 @@ bool build_room_of_chambers(struct chunk *c, int y0, int x0)
  * A single starburst-shaped room of extreme size, usually dotted or
  * even divided with irregularly-shaped fields of rubble. No special
  * monsters.  Appears deeper than level 40.
+ * \param c the chunk the room is being built in
+ * \param y0
+ * \param x0 co-ordinates of the centre; out of chunk bounds invoke find_space()
+ * \return success
  *
  * These are the largest, most difficult to position, and thus highest-
  * priority rooms in the dungeon.  They should be rare, so as not to
@@ -2746,6 +2938,13 @@ bool build_huge(struct chunk *c, int y0, int x0)
 
 /**
  * Attempt to build a room of the given type at the given block
+ *
+ * \param c the chunk the room is being built in
+ * \param by0
+ * \param bx0 block co-ordinates of the top left block
+ * \param profile the profile of the rooom we're trying to build
+ * \param finds_own_space whether we are allowing the room to place itself
+ * \return success
  *
  * Note that this code assumes that profile height and width are the maximum
  * possible grid sizes, and then allocates a number of blocks that will always

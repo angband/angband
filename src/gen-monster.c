@@ -1,7 +1,6 @@
-/* 
- *  File gen-monster.c 
- *  Purpose: Dungeon monster generation
- *  Code for selecting appropriate monsters for levels when generated.  
+/**  \file gen-monster.c 
+	 \brief Dungeon monster generation
+
  *
  * Copyright (c) 2013
  * Nick McConnell, Leon Marrick, Ben Harrison, James E. Wilson, 
@@ -17,6 +16,10 @@
  *    This software may be copied and distributed for educational, research,
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
+ *
+ * Code for selecting appropriate monsters for levels when generated.  The
+ * intent is to enable easy theming of monsters in sections of the dungeon 
+ * level, or even whole levels.
  */
 
 #include "angband.h"
@@ -39,6 +42,8 @@ static char base_d_char[15];
 
 /**
  * Return the pit profile matching the given name.
+ * \param name the pit profile name
+ * \return the pit profile
  */
 pit_profile *lookup_pit_profile(const char *name)
 {
@@ -56,24 +61,28 @@ pit_profile *lookup_pit_profile(const char *name)
 /**
  * This function selects monsters by monster base symbol 
  * (may be any of the characters allowed)
+ * \param race the monster race being tested for suitability
+ * \return TRUE if the race is accepted
  *
  * Uniques may be forbidden, or allowed on rare occasions.
+ *
+ * This is a hook called as an argument to get_mon_num_prep()
  */
-static bool mon_select(monster_race *r_ptr)
+static bool mon_select(monster_race *race)
 {
     /* Require that the monster symbol be correct. */
     if (base_d_char[0] != '\0') {
-		if (strchr(base_d_char, r_ptr->base->d_char) == 0)
+		if (strchr(base_d_char, race->base->d_char) == 0)
 			return (FALSE);
     }
 
 	/* No invisible undead until deep. */
-	if ((player->depth < 40) && (rf_has(r_ptr->flags, RF_UNDEAD))
-		&& (rf_has(r_ptr->flags, RF_INVISIBLE)))
+	if ((player->depth < 40) && (rf_has(race->flags, RF_UNDEAD))
+		&& (rf_has(race->flags, RF_INVISIBLE)))
 		return (FALSE);
 
     /* Usually decline unique monsters. */
-    if (rf_has(r_ptr->flags, RF_UNIQUE)) {
+    if (rf_has(race->flags, RF_UNIQUE)) {
 		if (!allow_unique)
 			return (FALSE);
 		else if (randint0(5) != 0)
@@ -88,6 +97,11 @@ static bool mon_select(monster_race *r_ptr)
  * Accept characters representing a race or group of monsters and 
  * an (adjusted) depth, and use these to set values for required
  * monster base symbol.
+ *
+ * \param monster_type the monster type to be selected, as described below
+ * \param depth the native depth to choose monsters
+ * \param unique_ok whether to allow uniques to be chosen
+ * \return success if the monster allocation table has been rebuilt
  *
  * This code has been adapted from Oangband code to make use of monster bases.
  *
@@ -169,6 +183,15 @@ bool mon_restrict(const char *monster_type, int depth, bool unique_ok)
  * y0, x0.  Accept values for monster depth, symbol, and maximum vertical 
  * and horizontal displacement.  Call monster restriction functions if 
  * needed.
+ * \param c the current chunk being generated
+ * \param type the type of monster (see comments to mon_restrict())
+ * \param depth selection depth
+ * \param num the number of monsters to try and place - inexact due to groups
+ * \param y0
+ * \param x0 the centre of the rectangle for monster placement
+ * \param dy
+ * \param dx the dimensions of the rectangle
+ * \param origin the origin for monster drops
  *
  * Return prematurely if the code starts looping too much (this may happen 
  * if y0 or x0 are out of bounds, or the area is already occupied).
@@ -235,6 +258,15 @@ void spread_monsters(struct chunk *c, const char *type, int depth, int num,
 /**
  * To avoid rebuilding the monster list too often (which can quickly 
  * get expensive), we handle monsters of a specified race separately.
+ *
+ * \param c the current chunk being generated
+ * \param racial_symbol the allowable monster_base symbols
+ * \param vault_type the type of vault, which affects monster selection depth
+ * \param data the vault text description, which contains the racial symbol
+ * \param y1
+ * \param y2
+ * \param x1
+ * \param x2 the limits of the vault
  */
 void get_vault_monsters(struct chunk *c, char racial_symbol[], byte vault_type, const char *data, int y1, int y2, int x1, int x2)
 {
@@ -282,6 +314,14 @@ void get_vault_monsters(struct chunk *c, char racial_symbol[], byte vault_type, 
 
 /**
  * Funtion for placing appropriate monsters in a room of chambers
+ *
+ * \param c the current chunk being generated
+ * \param y1
+ * \param x1
+ * \param y2
+ * \param x2 the limits of the vault
+ * \param name the name of the monster type for use in mon_select()
+ * \param area the total room area, used for scaling monster quantity
  */
 void get_chamber_monsters(struct chunk *c, int y1, int x1, int y2, int x2, 
 						  char *name, int area)
