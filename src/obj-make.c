@@ -372,6 +372,8 @@ void copy_artifact_data(object_type *o_ptr, const artifact_type *a_ptr)
 			of_copy(o_ptr->pval_flags[i], a_ptr->pval_flags[i]);
 		}
 	o_ptr->num_pvals = a_ptr->num_pvals;
+	for (i = 0; i < OBJ_MOD_MAX; i++)
+		o_ptr->modifiers[i] = a_ptr->modifiers[i];
 	o_ptr->ac = a_ptr->ac;
 	o_ptr->dd = a_ptr->dd;
 	o_ptr->ds = a_ptr->ds;
@@ -629,6 +631,10 @@ void object_prep(object_type *o_ptr, struct object_kind *k, int lev,
     }
 	of_copy(o_ptr->flags, k->base->flags);
 	of_union(o_ptr->flags, f2);
+
+	/* Assign modifiers */
+	for (i = 0; i < OBJ_MOD_MAX; i++)
+		o_ptr->modifiers[i] = randcalc(k->modifiers[i], lev, rand_aspect);
 
 	/* Assign charges (wands/staves only) */
 	if (tval_can_have_charges(o_ptr))
