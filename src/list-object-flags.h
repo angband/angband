@@ -97,8 +97,6 @@ OF(IGNORE_FIRE, FALSE,	OFID_NORMAL,OFT_IGNORE,	3,		0,	1,  1,  1,      1,  1,    
 OF(IGNORE_COLD, FALSE,	OFID_NORMAL,OFT_IGNORE,	1,		0,	1,  1,  1,      1,  1,      1,      1,      1,      1,  1,      1,		"")
 OF(RES_STUN,    FALSE,	OFID_NORMAL,OFT_PROT,	12,		0,	1,  1,  1,      1,  1,      1,      1,      1,      1,  1,      1,		"Your %s glows.")
 OF(BLESSED,     FALSE,	OFID_WIELD,	OFT_MELEE,	1,		0,	1,	0,	0,		0,	0,		0,		0,		0,		0,	0,		0,		"")
-OF(INSTA_ART,   FALSE,	OFID_NONE,	OFT_INT,	0,      0,	0,  0,  0,      0,  0,      0,      0,      0,      0,  0,      0,		"")
-OF(EASY_KNOW,   FALSE,	OFID_NONE,	OFT_INT,	0,      0,	0,  0,  0,      0,  0,      0,      0,      0,      0,  0,      0,		"")
 OF(LIGHT_CURSE, FALSE,	OFID_WIELD,	OFT_CURSE,	-5,     0,	1,  1,  1,      1,  1,      1,      1,      1,      1,  1,      1,		"")
 OF(HEAVY_CURSE, FALSE,	OFID_WIELD,	OFT_CURSE,	-15,    0,	1,  1,  1,      1,  1,      1,      1,      1,      1,  1,      1,		"")
 OF(PERMA_CURSE, FALSE,	OFID_WIELD,	OFT_CURSE,	-25,    0,	1,  1,  1,      1,  1,      1,      1,      1,      1,  1,      1,		"")

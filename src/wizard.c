@@ -564,7 +564,7 @@ static bool wiz_create_item_action(menu_type *m, const ui_event *e, int oid)
 		object_kind *kind = &k_info[i];
 
 		if (kind->tval != oid ||
-				of_has(kind->flags, OF_INSTA_ART))
+				kf_has(kind->kind_flags, KF_INSTA_ART))
 			continue;
 
 		choice[n_choices++] = kind;

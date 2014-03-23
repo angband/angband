@@ -1688,7 +1688,7 @@ static int get_artifact_from_kind(object_kind *kind)
 {
 	int i;
 
-	assert(of_has(kind->flags, OF_INSTA_ART));
+	assert(kf_has(kind->kind_flags, KF_INSTA_ART));
 
 	/* Look for the corresponding artifact */
 	for (i = 0; i < z_info->a_max; i++)
@@ -1725,8 +1725,10 @@ static void display_object(int col, int row, bool cursor, int oid)
 	wchar_t c = use_flavour ? kind->flavor->x_char : kind->x_char;
 
 	/* Display known artifacts differently */
-	if (of_has(kind->flags, OF_INSTA_ART) && artifact_is_known(get_artifact_from_kind(kind)))
-		get_artifact_display_name(o_name, sizeof(o_name), get_artifact_from_kind(kind));
+	if (kf_has(kind->kind_flags, KF_INSTA_ART) && 
+		artifact_is_known(get_artifact_from_kind(kind)))
+		get_artifact_display_name(o_name, sizeof(o_name), 
+								  get_artifact_from_kind(kind));
 	else
  		object_kind_name(o_name, sizeof(o_name), kind, OPT(cheat_xtra));
 
@@ -1767,8 +1769,8 @@ static void desc_obj_fake(int k_idx)
 	region area = { 0, 0, 0, 0 };
 
 	/* Check for known artifacts, display them as artifacts */
-	if (of_has(kind->flags, OF_INSTA_ART) && artifact_is_known(get_artifact_from_kind(kind)))
-	{
+	if (kf_has(kind->kind_flags, KF_INSTA_ART) && 
+		artifact_is_known(get_artifact_from_kind(kind))) {
 		desc_art_fake(get_artifact_from_kind(kind));
 		return;
 	}
@@ -1973,7 +1975,7 @@ void textui_browse_object_knowledge(const char *name, int row)
 		 * until it is found.
 		 */
 		if ((kind->everseen || kind->flavor || OPT(cheat_xtra)) &&
-				(!of_has(kind->flags, OF_INSTA_ART) ||
+				(!kf_has(kind->kind_flags, KF_INSTA_ART) ||
 				 !artifact_is_known(get_artifact_from_kind(kind))))
 		{
 			int c = obj_group_order[k_info[i].tval];

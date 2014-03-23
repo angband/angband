@@ -1315,11 +1315,13 @@ static int squelch_collect_kind(int tval, squelch_choice **ch)
 			choice[num++].aware = FALSE;
 		}
 
-		if ((k_ptr->everseen && !of_has(k_ptr->flags, OF_INSTA_ART)) || tval_is_money_k(k_ptr))
+		if ((k_ptr->everseen && !kf_has(k_ptr->kind_flags, KF_INSTA_ART)) || 
+			tval_is_money_k(k_ptr))
 		{
-			/* Do not display the artifact base kinds in this list */
-			/* aware squelch requires everseen */
-			/* do not require awareness for aware squelch, so people can set at game start */
+			/* Do not display the artifact base kinds in this list 
+			 * aware squelch requires everseen 
+			 * do not require awareness for aware squelch, so people can set 
+			 * at game start */
 			choice[num].kind = k_ptr;
 			choice[num++].aware = TRUE;
 		}

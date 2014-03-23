@@ -3000,7 +3000,7 @@ static void scramble_artifact(int a_idx)
 
 	/* This will go */
 	if (a_idx < ART_MIN_NORMAL)
-		of_on(a_ptr->flags, OF_INSTA_ART);
+		kf_on(a_ptr->kind_flags, KF_INSTA_ART);
 
 	/* Success */
 	file_putf(log_file, ">>>>>>>>>>>>>>>>>>>>>>>>>> ARTIFACT COMPLETED <<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n");

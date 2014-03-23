@@ -44,7 +44,7 @@ s32b object_last_wield;
  */
 bool easy_know(const object_type *o_ptr)
 {
-	if (o_ptr->kind->aware && of_has(o_ptr->kind->flags, OF_EASY_KNOW))
+	if (o_ptr->kind->aware && kf_has(o_ptr->kind->kind_flags, KF_EASY_KNOW))
 		return TRUE;
 	else
 		return FALSE;
