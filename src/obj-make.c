@@ -270,6 +270,12 @@ void ego_apply_magic(object_type *o_ptr, int level)
 				of_off(f2, flag);
 	}
 
+	/* Apply modifiers */
+	for (i = 0; i < OBJ_MOD_MAX; i++) {
+		x = randcalc(o_ptr->ego->modifiers[i], level, RANDOMISE);
+		o_ptr->modifiers[i] += x;
+	}
+
 	/* Apply remaining flags */
 	of_union(o_ptr->flags, f2);
 
@@ -297,6 +303,11 @@ void ego_min_pvals(object_type *o_ptr)
 						o_ptr->pval[i] < o_ptr->ego->min_pval[j]))
 					object_add_pval(o_ptr, o_ptr->ego->min_pval[j] -
 						o_ptr->pval[i], flag);
+
+	for (i = 0; i < OBJ_MOD_MAX; i++) {
+		if (o_ptr->modifiers[i] < o_ptr->ego->min_modifiers[i])
+			o_ptr->modifiers[i] = o_ptr->ego->min_modifiers[i];
+	}
 }
 
 /**
