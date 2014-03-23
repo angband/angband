@@ -75,10 +75,13 @@ static void wr_item(const object_type *o_ptr)
 	wr_byte(o_ptr->tval);
 	wr_byte(o_ptr->sval);
 
-        for (i = 0; i < MAX_PVALS; i++) {
+	for (i = 0; i < MAX_PVALS; i++) {
 		wr_s16b(o_ptr->pval[i]);
-        }
-        wr_byte(o_ptr->num_pvals);
+	}
+	wr_byte(o_ptr->num_pvals);
+	for (i = 0; i < OBJ_MOD_MAX; i++) {
+		wr_s16b(o_ptr->modifiers[i]);
+	}
 
 	wr_byte(0);
 
@@ -348,6 +351,7 @@ void wr_object_memory(void)
 	wr_u16b(z_info->k_max);
 	wr_byte(OF_SIZE);
 	wr_byte(MAX_PVALS);
+	wr_byte(OBJ_MOD_MAX);
 	for (k_idx = 0; k_idx < z_info->k_max; k_idx++)
 	{
 		byte tmp8u = 0;

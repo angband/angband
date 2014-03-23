@@ -40,6 +40,7 @@
 
 /* Object constants */
 byte max_pvals = 0;
+byte obj_mod_max = 0;
 byte of_size = 0;
 
 /* Monster constants */
@@ -99,6 +100,9 @@ static int rd_item(object_type *o_ptr)
 		rd_s16b(&o_ptr->pval[i]);
 	}
 	rd_byte(&o_ptr->num_pvals);
+	for (i = 0; i < obj_mod_max; i++) {
+		rd_s16b(&o_ptr->modifiers[i]);
+	}
 
 	/* Pseudo-ID bit */
 	rd_byte(&tmp8u);
@@ -500,6 +504,17 @@ int rd_object_memory(void)
 	if (max_pvals > MAX_PVALS)
 	{
 	        note(format("Too many (%u) pvals allowed!", max_pvals));
+		return (-1);
+	}
+
+	/* Object modifiers */
+	rd_byte(&obj_mod_max);
+
+	/* Incompatible save files */
+	if (obj_mod_max > OBJ_MOD_MAX)
+	{
+	        note(format("Too many (%u) object modifiers allowed!", 
+						obj_mod_max));
 		return (-1);
 	}
 
