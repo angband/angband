@@ -309,12 +309,13 @@ bool object_check_for_ident(object_type *o_ptr)
 	    (object_defence_plusses_are_visible(o_ptr) || (object_was_sensed(o_ptr) && o_ptr->to_a == 0)) &&
 	    (object_effect_is_known(o_ptr) || !object_effect(o_ptr)))
 	{
-		/* In addition to knowing the pval flags, it is necessary to know the pvals to know everything */
+		/* In addition to knowing the pval flags, it is necessary to know 
+		 * the modifiers to know everything */
 		int i;
-		for (i = 0; i < o_ptr->num_pvals; i++)
-			if (!object_this_pval_is_visible(o_ptr, i))
+		for (i = 0; i < OBJ_MOD_MAX; i++)
+			if (!object_this_mod_is_visible(o_ptr, i))
 				break;
-		if (i == o_ptr->num_pvals) {
+		if (i == OBJ_MOD_MAX) {
 			object_notice_everything(o_ptr);
 			return TRUE;
 		}
@@ -323,7 +324,8 @@ bool object_check_for_ident(object_type *o_ptr)
 	/* We still know all the flags, so we still know if it's an ego */
 	if (o_ptr->ego)
 	{
-		/* require worn status so you don't learn launcher of accuracy or gloves of slaying before wield */
+		/* require worn status so you don't learn launcher of accuracy or 
+		 * gloves of slaying before wield */
 		if (object_was_worn(o_ptr))
 			object_notice_ego(o_ptr);
 	}
@@ -720,6 +722,7 @@ void object_notice_on_wield(object_type *o_ptr)
 {
 	bitflag f[OF_SIZE], f2[OF_SIZE], obvious_mask[OF_SIZE];
 	bool obvious = FALSE;
+	int i;
 
 	create_mask(obvious_mask, TRUE, OFID_WIELD, OFT_MAX);
 
@@ -764,6 +767,8 @@ void object_notice_on_wield(object_type *o_ptr)
 	of_diff(obvious_mask, f2);
 	if (of_is_inter(f, obvious_mask)) obvious = TRUE;
 	create_mask(obvious_mask, TRUE, OFID_WIELD, OFT_MAX);
+	for (i = 0; i < OBJ_MOD_MAX; i++)
+		if (o_ptr->modifiers[i]) obvious = TRUE;
 
 	/* Notice any obvious brands or slays */
 	object_notice_slays(o_ptr, obvious_mask);
@@ -792,35 +797,41 @@ void object_notice_on_wield(object_type *o_ptr)
 
 	/* XXX Eddie need to add stealth here, also need to assert/double-check everything is covered */
 	/* CC: also need to add FA! */
-	if (of_has(f, OF_STR))
-		msg("You feel %s!", o_ptr->pval[which_pval(o_ptr,
-			OF_STR)] > 0 ? "stronger" : "weaker");
-	if (of_has(f, OF_INT))
-		msg("You feel %s!", o_ptr->pval[which_pval(o_ptr,
-			OF_INT)] > 0 ? "smarter" : "more stupid");
-	if (of_has(f, OF_WIS))
-		msg("You feel %s!", o_ptr->pval[which_pval(o_ptr,
-			OF_WIS)] > 0 ? "wiser" : "more naive");
-	if (of_has(f, OF_DEX))
-		msg("You feel %s!", o_ptr->pval[which_pval(o_ptr,
-			OF_DEX)] > 0 ? "more dextrous" : "clumsier");
-	if (of_has(f, OF_CON))
-		msg("You feel %s!", o_ptr->pval[which_pval(o_ptr,
-			OF_CON)] > 0 ? "healthier" : "sicklier");
-	if (of_has(f, OF_SPEED))
-		msg("You feel strangely %s.", o_ptr->pval[which_pval(o_ptr,
-			OF_SPEED)] > 0 ? "quick" : "sluggish");
-	if (of_has(f, OF_BLOWS))
-		msg("Your weapon %s in your hands.",
-			o_ptr->pval[which_pval(o_ptr, OF_BLOWS)] > 0 ?
-				"tingles" : "aches");
-	if (of_has(f, OF_SHOTS))
-		msg("Your bow %s in your hands.",
-			o_ptr->pval[which_pval(o_ptr, OF_SHOTS)] > 0 ?
-				"tingles" : "aches");
-	if (of_has(f, OF_INFRA))
+	if (o_ptr->modifiers[OBJ_MOD_STR] > 0)
+		msg("You feel stronger!");
+	else if (o_ptr->modifiers[OBJ_MOD_STR] < 0)
+		msg("You feel weaker!");
+	if (o_ptr->modifiers[OBJ_MOD_INT] > 0)
+		msg("You feel smarter!");
+	else if (o_ptr->modifiers[OBJ_MOD_INT] < 0)
+		msg("You feel more stupid!");
+	if (o_ptr->modifiers[OBJ_MOD_WIS] > 0)
+		msg("You feel wiser!");
+	else if (o_ptr->modifiers[OBJ_MOD_WIS] < 0)
+		msg("You feel more naive!");
+	if (o_ptr->modifiers[OBJ_MOD_DEX] > 0)
+		msg("You feel more dextrous!");
+	else if (o_ptr->modifiers[OBJ_MOD_DEX] < 0)
+		msg("You feel clumsier!");
+	if (o_ptr->modifiers[OBJ_MOD_CON] > 0)
+		msg("You feel healthier!");
+	else if (o_ptr->modifiers[OBJ_MOD_CON] < 0)
+		msg("You feel sicklier!");
+	if (o_ptr->modifiers[OBJ_MOD_SPEED] > 0)
+		msg("You feel strangely quick.");
+	else if (o_ptr->modifiers[OBJ_MOD_SPEED] < 0)
+		msg("You feel strangely sluggish.");
+	if (o_ptr->modifiers[OBJ_MOD_BLOWS] > 0)
+		msg("Your weapon tingles in your hands.");
+	else if (o_ptr->modifiers[OBJ_MOD_BLOWS] < 0)
+		msg("Your weapon aches in your hands.");
+	if (o_ptr->modifiers[OBJ_MOD_SHOTS] > 0)
+		msg("Your bow tingles in your hands.");
+	else if (o_ptr->modifiers[OBJ_MOD_SHOTS] < 0)
+		msg("Your bow aches in your hands.");
+	if (o_ptr->modifiers[OBJ_MOD_INFRA])
 		msg("Your eyes tingle.");
-	if (of_has(f, OF_LIGHT))
+	if (o_ptr->modifiers[OBJ_MOD_LIGHT])
 		msg("It glows!");
 	if (of_has(f, OF_TELEPATHY))
 		msg("Your mind feels strangely sharper!");

@@ -23,6 +23,7 @@
 /** Functions **/
 bool object_add_pval(object_type *o_ptr, int pval, int flag);
 bool object_this_pval_is_visible(const object_type *o_ptr, int pval);
+bool object_this_mod_is_visible(const object_type *o_ptr, int mod);
 int which_pval(const object_type *o_ptr, const int flag);
 void object_pval_flags(const object_type *o_ptr, bitflag flags[MAX_PVALS][OF_SIZE]);
 void object_pval_flags_known(const object_type *o_ptr, bitflag flags[MAX_PVALS][OF_SIZE]);

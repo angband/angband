@@ -508,9 +508,11 @@ static void display_player_sust_info(void)
 		/* Get the "known" flags */
 		object_flags_known(o_ptr, f);
 
-		/* Initialize color based of sign of pval. */
+		/* Initialize color based on sign of modifier. */
 		for (stat = 0; stat < A_MAX; stat++)
 		{
+			int mod = stat + 1;
+
 			/* Default */
 			a = TERM_SLATE;
 			c = '.';
@@ -518,24 +520,24 @@ static void display_player_sust_info(void)
 			/* Boost */
 			/* Assumption is that stats appear first in list-object-modifiers.h
 			 * This assumption should be removed asap NRM */
-			if (o_ptr->modifiers[stat] > 0) {
+			if (o_ptr->modifiers[mod] > 0) {
 				/* Good */
 				a = TERM_L_GREEN;
 
 				/* Label boost */
-				if (o_ptr->modifiers[stat] < 10)
-						c = I2D(o_ptr->modifiers[stat]);
-			} else if (o_ptr->modifiers[stat] > 0) {
+				if (o_ptr->modifiers[mod] < 10)
+						c = I2D(o_ptr->modifiers[mod]);
+			} else if (o_ptr->modifiers[mod] > 0) {
 				/* Bad */
 				a = TERM_RED;
 
 				/* Label boost */
-				if (o_ptr->modifiers[stat] > -10)
-					c = I2D(-(o_ptr->modifiers[stat]));
+				if (o_ptr->modifiers[mod] > -10)
+					c = I2D(-(o_ptr->modifiers[mod]));
 			}
 
 			/* Sustain */
-			if (of_has(f, sustain_flags[stat]))
+			if (of_has(f, sustain_flags[mod]))
 			{
 				/* Dark green */
 				a = TERM_GREEN;
@@ -544,7 +546,8 @@ static void display_player_sust_info(void)
 				if (c == '.') c = 's';
 			}
 
-			if ((c == '.') && o_ptr->kind && !object_flag_is_known(o_ptr, sustain_flags[stat]))
+			if ((c == '.') && o_ptr->kind && 
+				!object_flag_is_known(o_ptr, sustain_flags[stat]))
 				c = '?';
 
 			/* Dump proper character */

@@ -476,14 +476,10 @@ static size_t obj_desc_mods(const object_type *o_ptr, char *buf, size_t max,
 	/* Show maximum of (a fairly arbitrary) 4 modifiers */
 	int mods[4] = { 0, 0, 0, 0 };
 
-	/* Special case for jewelery kinds of fixed light radius */
-	bool light = tval_is_jewelry(o_ptr) && object_flavor_is_aware(o_ptr)
-		&& !randcalc_varies(o_ptr->kind->modifiers[OBJ_MOD_LIGHT]);
-
 	/* Run through possible modifiers and store distinct ones */
 	for (i = 0; i < OBJ_MOD_MAX; i++) {
 		/* Check for known non-zero mods */
-		if ((spoil || object_was_worn(o_ptr) || (light && (i == OBJ_MOD_LIGHT)))
+		if ((spoil || object_this_mod_is_visible(o_ptr, i))
 			&& (o_ptr->modifiers[i] != 0)) {
 			/* If no mods stored yet, store and move on */
 			if (!num_mods) {
@@ -636,7 +632,7 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr, int mode)
 	bool terse = mode & ODESC_TERSE;
 	bool known;
 
-	size_t end = 0, i = 0;
+	size_t end = 0;
 
 	/* Simple description for null item */
 	if (!o_ptr->tval)

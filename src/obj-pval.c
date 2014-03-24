@@ -126,6 +126,29 @@ bool object_this_pval_is_visible(const object_type *o_ptr, int pval)
 }
 
 /**
+ * \returns whether a specific modifier is known to the player
+ */
+bool object_this_mod_is_visible(const object_type *o_ptr, int mod)
+{
+	assert(o_ptr->kind);
+
+	/* Store objects */
+	if (o_ptr->ident & IDENT_STORE)
+		return TRUE;
+
+	/* Aware jewelry with a fixed modifier (usually light) */
+	if (tval_is_jewelry(o_ptr) && object_flavor_is_aware(o_ptr)
+		&& !randcalc_varies(o_ptr->kind->modifiers[mod]))
+		return TRUE;
+
+	/* Wearing shows all modifiers */
+	if (object_was_worn(o_ptr))
+		return TRUE;
+
+	return FALSE;
+}
+
+/**
  * Combine two pvals of the same value on an object. Returns TRUE if changes
  * were made, i.e. o_ptr->num_pvals has decreased by one.
  */
