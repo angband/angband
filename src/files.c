@@ -467,12 +467,11 @@ void display_player_stat_info(void)
  */
 static void display_player_sust_info(void)
 {
-	int i, j, row, col, stat;
+	int i, row, col, stat;
 
 	object_type *o_ptr;
 	bitflag f[OF_SIZE];
 
-	int stat_flags[A_MAX];
 	int sustain_flags[A_MAX];
 
 	byte a;
@@ -486,11 +485,6 @@ static void display_player_sust_info(void)
 	col = 26;
 
 	/* Build the stat flags tables */
-	stat_flags[A_STR] = OF_STR;
-	stat_flags[A_INT] = OF_INT;
-	stat_flags[A_WIS] = OF_WIS;
-	stat_flags[A_DEX] = OF_DEX;
-	stat_flags[A_CON] = OF_CON;
 	sustain_flags[A_STR] = OF_SUST_STR;
 	sustain_flags[A_INT] = OF_SUST_INT;
 	sustain_flags[A_WIS] = OF_SUST_WIS;
@@ -522,35 +516,22 @@ static void display_player_sust_info(void)
 			c = '.';
 
 			/* Boost */
-			if (of_has(f, stat_flags[stat]))
-			{
-				/* Default */
-				c = '*';
-
-				/* Work out which pval we're talking about */
-				j = which_pval(o_ptr, stat_flags[stat]);
-
+			/* Assumption is that stats appear first in list-object-modifiers.h
+			 * This assumption should be removed asap NRM */
+			if (o_ptr->modifiers[stat] > 0) {
 				/* Good */
-				if (o_ptr->pval[j] > 0)
-				{
-					/* Good */
-					a = TERM_L_GREEN;
+				a = TERM_L_GREEN;
 
-					/* Label boost */
-					if (o_ptr->pval[j] < 10)
-						c = I2D(o_ptr->pval[j]);
-				}
-
+				/* Label boost */
+				if (o_ptr->modifiers[stat] < 10)
+						c = I2D(o_ptr->modifiers[stat]);
+			} else if (o_ptr->modifiers[stat] > 0) {
 				/* Bad */
-				if (o_ptr->pval[j] < 0)
-				{
-					/* Bad */
-					a = TERM_RED;
+				a = TERM_RED;
 
-					/* Label boost */
-					if (o_ptr->pval[j] > -10)
-						c = I2D(-(o_ptr->pval[j]));
-				}
+				/* Label boost */
+				if (o_ptr->modifiers[stat] > -10)
+					c = I2D(-(o_ptr->modifiers[stat]));
 			}
 
 			/* Sustain */

@@ -427,7 +427,7 @@ static size_t obj_desc_combat(const object_type *o_ptr, char *buf, size_t max,
 		/* Display shooting power as part of the multiplier */
 		if (of_has(o_ptr->flags, OF_MIGHT) &&
 		    (spoil || object_flag_is_known(o_ptr, OF_MIGHT)))
-			strnfcat(buf, max, &end, " (x%d)", (o_ptr->sval % 10) + o_ptr->pval[which_pval(o_ptr, OF_MIGHT)]);
+			strnfcat(buf, max, &end, " (x%d)", (o_ptr->sval % 10) + o_ptr->modifiers[OBJ_MOD_MIGHT]);
 		else
 			strnfcat(buf, max, &end, " (x%d)", o_ptr->sval % 10);
 	}
