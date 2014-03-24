@@ -99,20 +99,21 @@ static size_t info_collect(textblock *tb, const flag_type list[], size_t max,
 
 /*** Big fat data tables ***/
 
-static const flag_type pval_flags[] =
+static const flag_type mod_flags[] =
 {
-	{ OF_STR,     "strength" },
-	{ OF_INT,     "intelligence" },
-	{ OF_WIS,     "wisdom" },
-	{ OF_DEX,     "dexterity" },
-	{ OF_CON,     "constitution" },
-	{ OF_STEALTH, "stealth" },
-	{ OF_INFRA,   "infravision" },
-	{ OF_TUNNEL,  "tunneling" },
-	{ OF_SPEED,   "speed" },
-	{ OF_BLOWS,   "attack speed" },
-	{ OF_SHOTS,   "shooting speed" },
-	{ OF_MIGHT,   "shooting power" },
+	{ OBJ_MOD_STR,     "strength" },
+	{ OBJ_MOD_INT,     "intelligence" },
+	{ OBJ_MOD_WIS,     "wisdom" },
+	{ OBJ_MOD_DEX,     "dexterity" },
+	{ OBJ_MOD_CON,     "constitution" },
+	{ OBJ_MOD_STEALTH, "stealth" },
+	{ OBJ_MOD_STEALTH, "searching skill" },
+	{ OBJ_MOD_INFRA,   "infravision" },
+	{ OBJ_MOD_TUNNEL,  "tunneling" },
+	{ OBJ_MOD_SPEED,   "speed" },
+	{ OBJ_MOD_BLOWS,   "attack speed" },
+	{ OBJ_MOD_SHOTS,   "shooting speed" },
+	{ OBJ_MOD_MIGHT,   "shooting power" },
 };
 
 static const flag_type immunity_flags[] =
@@ -225,48 +226,37 @@ static bool describe_curses(textblock *tb, const object_type *o_ptr,
  * Describe stat modifications.
  */
 static bool describe_stats(textblock *tb, const object_type *o_ptr,
-		bitflag flags[MAX_PVALS][OF_SIZE], oinfo_detail_t mode)
+						   oinfo_detail_t mode)
 {
-	const char *descs[N_ELEMENTS(pval_flags)];
 	size_t count = 0, i;
-	bool search = FALSE;
+	bool detail = FALSE;
 
 	/* Don't give exact pluses for faked ego items as each real one 
 	   will be different */
 	bool suppress_details = obj_is_ego_template(o_ptr);
 
-	if (!o_ptr->num_pvals)
+	/* See what we've got */
+	for (i = 0; i < N_ELEMENTS(mod_flags); i++)
+		if (o_ptr->modifiers[mod_flags[i].flag] != 0) {
+			count++;
+			/* Either all mods are visible, or none are */
+			if (object_this_mod_is_visible(o_ptr, i))
+				detail = TRUE;
+		}
+	
+	if (!count)
 		return FALSE;
-
-	for (i = 0; i < o_ptr->num_pvals; i++) {
-		count = info_collect(tb, pval_flags, N_ELEMENTS(pval_flags), flags[i], descs);
-
-		if (count)
-		{
-			if (object_this_pval_is_visible(o_ptr, i) && !suppress_details)
-				textblock_append_c(tb, (o_ptr->pval[i] > 0) ? TERM_L_GREEN : TERM_RED,
-					"%+i ", o_ptr->pval[i]);
-			else
-				textblock_append(tb, "Affects your ");
-
-			info_out_list(tb, descs, count);
-		}
-		if (of_has(flags[i], OF_SEARCH))
-			search = TRUE;
-	}
-
-	if (search)
-	{
-		if (object_this_pval_is_visible(o_ptr, which_pval(o_ptr, OF_SEARCH)) && !suppress_details)
-		{
-			textblock_append_c(tb, (o_ptr->pval[which_pval(o_ptr, OF_SEARCH)] > 0) ? TERM_L_GREEN : TERM_RED,
-				"%+i%% ", o_ptr->pval[which_pval(o_ptr, OF_SEARCH)] * 5);
-			textblock_append(tb, "to searching.\n");
-		}
-		else if (count)
-			textblock_append(tb, "Also affects your searching skill.\n");
+	
+	for (i = 0; i < N_ELEMENTS(mod_flags); i++) {
+		const char *desc = mod_flags[i].name;
+		int val = o_ptr->modifiers[mod_flags[i].flag];
+		if (!val) continue;
+		if (detail && !suppress_details) {
+			int attr = (val > 0) ? TERM_L_GREEN : TERM_RED;
+			textblock_append_c(tb, attr, "%+i %s.\n", val, desc);
+		} 
 		else
-			textblock_append(tb, "Affects your searching skill.\n");
+			textblock_append(tb, "Affects your %s\n", desc);
 	}
 
 	return TRUE;
@@ -541,20 +531,16 @@ static void calculate_missile_crits(player_state *state, int weight,
  * Get the object flags the player should know about for the given object/
  * viewing mode combination.
  */
-static void get_known_flags(const object_type *o_ptr, const oinfo_detail_t mode, bitflag flags[OF_SIZE], bitflag pv_flags[MAX_PVALS][OF_SIZE])
+static void get_known_flags(const object_type *o_ptr, const oinfo_detail_t mode, bitflag flags[OF_SIZE])
 {
 	/* Grab the object flags */
 	if (obj_is_ego_template(o_ptr)) {
 		/* Looking at fake egos needs less info than object_flags_known() */
 		if (flags)
 			object_flags(o_ptr, flags);
-		if (pv_flags)
-			object_pval_flags(o_ptr, pv_flags);
 	} else {
 		if (flags)
 			object_flags_known(o_ptr, flags);
-		if (pv_flags)
-			object_pval_flags_known(o_ptr, pv_flags);
 
 		/* Don't include base flags when terse */
 		if (flags && mode & OINFO_TERSE)
@@ -590,7 +576,6 @@ static int obj_known_blows(const object_type *o_ptr, int max_num, struct blow_in
 	int i;
 
 	player_state state;
-	bitflag f[OF_SIZE];
 
 	object_type inven[INVEN_TOTAL];
 	int num = 0;
@@ -615,22 +600,20 @@ static int obj_known_blows(const object_type *o_ptr, int max_num, struct blow_in
 	extra_blows = 0;
 
 	/* Start with blows from the weapon being examined */
-	get_known_flags(o_ptr, 0, f, NULL);
-
-	if (of_has(f, OF_BLOWS))
-		extra_blows += o_ptr->pval[which_pval(o_ptr, OF_BLOWS)];
+	if (object_this_mod_is_visible(o_ptr, OBJ_MOD_BLOWS))
+		extra_blows += o_ptr->modifiers[OBJ_MOD_BLOWS];
 
 	/* Then we need to look for extra blows on other items, as
 	 * state does not track these */
 	for (i = INVEN_BOW; i < INVEN_TOTAL; i++)
 	{
-		if (!player->inventory[i].kind)
+		object_type *helper = &player->inventory[i];
+
+		if (!helper->kind)
 			continue;
 
-		object_flags_known(&player->inventory[i], f);
-
-		if (of_has(f, OF_BLOWS))
-			extra_blows += player->inventory[i].pval[which_pval(&player->inventory[i], OF_BLOWS)];
+		if (object_this_mod_is_visible(helper, OBJ_MOD_BLOWS))
+			extra_blows += helper->modifiers[OBJ_MOD_BLOWS];
 	}
 
 	dex_plus_bound = STAT_RANGE - state.stat_ind[A_DEX];
@@ -771,7 +754,7 @@ static int obj_known_damage(const object_type *o_ptr, int *normal_damage, int sl
 	inven[INVEN_WIELD] = *o_ptr;
 	calc_bonuses(inven, &state, TRUE);
 
-	get_known_flags(o_ptr, 0, f, NULL);
+	get_known_flags(o_ptr, 0, f);
 
 	/* Create the "all slays" mask */
 	create_mask(mask, FALSE, OFT_SLAY, OFT_KILL, OFT_BRAND, OFT_MAX);
@@ -948,7 +931,7 @@ static void obj_known_misc_combat(const object_type *o_ptr, bool *thrown_effect,
 	*thrown_effect = *impactful = *too_heavy = FALSE;
 	*range = *break_chance = 0;
 
-	get_known_flags(o_ptr, 0, f, NULL);
+	get_known_flags(o_ptr, 0, f);
 
 	if (!weapon && !ammo) {
 		/* Potions can have special text */
@@ -1197,7 +1180,7 @@ static bool obj_known_light(const object_type *o_ptr, oinfo_detail_t mode, int *
 	bool no_fuel;
 	bool is_light = tval_is_light(o_ptr);
 
-	get_known_flags(o_ptr, mode, flags, NULL);
+	get_known_flags(o_ptr, mode, flags);
 
 	if (!is_light && !of_has(flags, OF_LIGHT))
 		return FALSE;
@@ -1208,11 +1191,7 @@ static bool obj_known_light(const object_type *o_ptr, oinfo_detail_t mode, int *
 		return FALSE;
 
 	/* Work out radius */
-	if (of_has(flags, OF_LIGHT)) {
-		*rad = o_ptr->pval[which_pval(o_ptr, OF_LIGHT)];
-	} else {
-		*rad = 0;
-	}
+	*rad = o_ptr->modifiers[OBJ_MOD_LIGHT];
 
 	no_fuel = of_has(flags, OF_NO_FUEL) ? TRUE : FALSE;
 
@@ -1609,7 +1588,6 @@ static bool describe_ego(textblock *tb, const struct ego_item *ego)
 static textblock *object_info_out(const object_type *o_ptr, int mode)
 {
 	bitflag flags[OF_SIZE];
-	bitflag pv_flags[MAX_PVALS][OF_SIZE];
 	bool something = FALSE;
 	bool known = object_is_known(o_ptr);
 
@@ -1625,7 +1603,7 @@ static textblock *object_info_out(const object_type *o_ptr, int mode)
 	}
 	
 	/* Grab the object flags */
-	get_known_flags(o_ptr, mode, flags, pv_flags);
+	get_known_flags(o_ptr, mode, flags);
 
 	if (subjective) describe_origin(tb, o_ptr, terse);
 	if (!terse) describe_flavor_text(tb, o_ptr, ego);
@@ -1637,7 +1615,7 @@ static textblock *object_info_out(const object_type *o_ptr, int mode)
 	}
 
 	if (describe_curses(tb, o_ptr, flags)) something = TRUE;
-	if (describe_stats(tb, o_ptr, pv_flags, mode)) something = TRUE;
+	if (describe_stats(tb, o_ptr, mode)) something = TRUE;
 	if (describe_slays(tb, flags, o_ptr)) something = TRUE;
 	if (describe_immune(tb, flags)) something = TRUE;
 	if (describe_ignores(tb, flags)) something = TRUE;
