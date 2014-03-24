@@ -468,27 +468,50 @@ static size_t obj_desc_light(const object_type *o_ptr, char *buf, size_t max, si
 	return end;
 }
 
-static size_t obj_desc_pval(const object_type *o_ptr, char *buf, size_t max,
+static size_t obj_desc_mods(const object_type *o_ptr, char *buf, size_t max,
 	size_t end, bool spoil)
 {
-	bitflag f[OF_SIZE];
-	int i;
-	bool any = FALSE;
+	int i, j, num_mods = 0;
 
-	create_mask(f, FALSE, OFT_PVAL, OFT_STAT, OFT_MAX);
+	/* Show maximum of (a fairly arbitrary) 4 modifiers */
+	int mods[4] = { 0, 0, 0, 0 };
 
-	if (!of_is_inter(o_ptr->flags, f)) return end;
+	/* Special case for jewelery kinds of fixed light radius */
+	bool light = tval_is_jewelry(o_ptr) && object_flavor_is_aware(o_ptr)
+		&& !randcalc_varies(o_ptr->kind->modifiers[OBJ_MOD_LIGHT]);
 
-	strnfcat(buf, max, &end, " <");
-	for (i = 0; i < o_ptr->num_pvals; i++) {
-		if (spoil || object_this_pval_is_visible(o_ptr, i)) {
-			if (any)
-				strnfcat(buf, max, &end, ", ");
-			strnfcat(buf, max, &end, "%+d", o_ptr->pval[i]);
-			any = TRUE;
+	/* Run through possible modifiers and store distinct ones */
+	for (i = 0; i < OBJ_MOD_MAX; i++) {
+		/* Check for known non-zero mods */
+		if ((spoil || object_was_worn(o_ptr) || (light && (i == OBJ_MOD_LIGHT)))
+			&& (o_ptr->modifiers[i] != 0)) {
+			/* If no mods stored yet, store and move on */
+			if (!num_mods) {
+				mods[num_mods++] = o_ptr->modifiers[i];
+				continue;
+			}
+
+			/* Run through the existing mods, quit on duplicates */
+			for (j = 0; j < num_mods; j++)
+				if (mods[j] == o_ptr->modifiers[i]) break;
+
+			/* Add another mod if needed */
+			if (j == num_mods)
+				mods[num_mods++] = o_ptr->modifiers[i];
+
+			/* Quit if we've reached our limit */
+			if (num_mods == 4) break;
 		}
 	}
 
+	if (!num_mods) return end;
+
+	/* Print the modifiers */
+	strnfcat(buf, max, &end, " <");
+	for (j = 0; j < num_mods; j++) {
+		if (j) strnfcat(buf, max, &end, ", ");
+		strnfcat(buf, max, &end, "%+d", mods[j]);
+	}
 	strnfcat(buf, max, &end, ">");
 
 	return end;
@@ -655,11 +678,7 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr, int mode)
 
 	if (mode & ODESC_EXTRA)
 	{
-		for (i = 0; i < o_ptr->num_pvals; i++)
-			if (spoil || object_this_pval_is_visible(o_ptr, i)) {
-				end = obj_desc_pval(o_ptr, buf, max, end, spoil);
-				break;
-			}
+		end = obj_desc_mods(o_ptr, buf, max, end, spoil);
 
 		end = obj_desc_charges(o_ptr, buf, max, end);
 

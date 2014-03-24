@@ -16,6 +16,7 @@
  * message: what is printed when the flag is IDd (but see also identify.c and list-slays.h)
  */
 /* index       	pval	id			type		power	p_m	wpn	bow	ring	amu	light	body	cloak	shield	hat	gloves	boots	message */
+OBJ_MOD(NONE,        FALSE, 0,          0,          0,      0,  0,	0,	0,		0,	0,		0,		0,		0,		0,	0,		0,		"")
 OBJ_MOD(STR,         TRUE,	OFID_WIELD,	OFT_STAT,	9,		13,	1,	1,	1,		1,	1,		1,		1,		1,		1,	1,		1,		"")
 OBJ_MOD(INT,         TRUE,	OFID_WIELD,	OFT_STAT,	5,		10,	1,	1,	1,		1,	1,		1,		1,		1,		1,	1,		1,		"")
 OBJ_MOD(WIS,         TRUE,	OFID_WIELD,	OFT_STAT,	5,		10,	1,	1,	1,		1,	1,		1,		1,		1,		1,	1,		1,		"")
