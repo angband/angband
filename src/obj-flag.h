@@ -153,8 +153,10 @@ s32b flag_power(int flag);
 void log_flags(bitflag *f, ang_file *log_file);
 const char *flag_name(int flag);
 s16b slot_mult(int flag, int slot);
-bool flag_uses_pval(int flag);
 int obj_flag_type(int flag);
-int pval_mult(int flag);
+s32b mod_power(int mod);
+int mod_mult(int mod);
+const char *mod_name(int mod);
+s16b slot_mod_mult(int mod, int slot);
 
 #endif /* !INCLUDED_OBJFLAG_H */

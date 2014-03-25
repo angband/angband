@@ -288,51 +288,45 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 	}
 
 	/* Add power for extra blows */
-	if (of_has(flags, OF_BLOWS)) {
-		j = which_pval(o_ptr, OF_BLOWS);
-		if (known || object_this_pval_is_visible(o_ptr, j)) {
-			if (o_ptr->pval[j] >= INHIBIT_BLOWS) {
-				p += INHIBIT_POWER;
-				file_putf(log_file, "INHIBITING - too many extra blows - quitting\n");
-				return p;
-			} else {
-				p = p * (MAX_BLOWS + o_ptr->pval[j]) / MAX_BLOWS;
-				/* Add boost for assumed off-weapon damage */
-				p += (NONWEAP_DAMAGE * o_ptr->pval[j] * DAMAGE_POWER / 2);
-				file_putf(log_file, "Adding power for extra blows, total is %d\n", p);
-			}
+	if (known || object_this_mod_is_visible(o_ptr, OBJ_MOD_BLOWS)) {
+		if (o_ptr->modifiers[OBJ_MOD_BLOWS] >= INHIBIT_BLOWS) {
+			p += INHIBIT_POWER;
+			file_putf(log_file, "INHIBITING - too many extra blows - quitting\n");
+			return p;
+		} else {
+			p = p * (MAX_BLOWS + o_ptr->modifiers[OBJ_MOD_BLOWS]) / MAX_BLOWS;
+			/* Add boost for assumed off-weapon damage */
+			p += (NONWEAP_DAMAGE * o_ptr->modifiers[OBJ_MOD_BLOWS] 
+				  * DAMAGE_POWER / 2);
+			file_putf(log_file, "Adding power for extra blows, total is %d\n", p);
 		}
 	}
 
 	/* Add power for extra shots - note that we cannot handle negative shots */
-	if (of_has(flags, OF_SHOTS)) {
-		j = which_pval(o_ptr, OF_SHOTS);
-		if (known || object_this_pval_is_visible(o_ptr, j)) {
-			if (o_ptr->pval[j] >= INHIBIT_SHOTS) {
-				p += INHIBIT_POWER;
-				file_putf(log_file, "INHIBITING - too many extra shots - quitting\n");
-				return p;
-			} else if (o_ptr->pval[j] > 0) {
-				p = (p * (1 + o_ptr->pval[j]));
-				file_putf(log_file, "Extra shots: multiplying power by 1 + %d, total is %d\n", o_ptr->pval[j], p);
-			}
+	if (known || object_this_mod_is_visible(o_ptr, OBJ_MOD_SHOTS)) {
+		if (o_ptr->modifiers[OBJ_MOD_SHOTS] >= INHIBIT_SHOTS) {
+			p += INHIBIT_POWER;
+			file_putf(log_file, "INHIBITING - too many extra shots - quitting\n");
+			return p;
+		} else if (o_ptr->modifiers[OBJ_MOD_SHOTS] > 0) {
+			p = (p * (1 + o_ptr->modifiers[OBJ_MOD_SHOTS]));
+			file_putf(log_file, "Extra shots: multiplying power by 1 + %d, total is %d\n", o_ptr->modifiers[OBJ_MOD_SHOTS], p);
 		}
 	}
 
+
 	/* Add power for extra might */
-	if (of_has(flags, OF_MIGHT)) {
-		j = which_pval(o_ptr, OF_MIGHT);
-		if (known || object_this_pval_is_visible(o_ptr, j)) {
-			if (o_ptr->pval[j] >= INHIBIT_MIGHT) {
+	if (known || object_this_mod_is_visible(o_ptr, OBJ_MOD_MIGHT)) {
+		if (o_ptr->modifiers[OBJ_MOD_MIGHT] >= INHIBIT_MIGHT) {
 				p += INHIBIT_POWER;
 				/* mult is never used before returning */
 				/*mult = 1;*/	/* don't overflow */
 				file_putf(log_file, "INHIBITING - too much extra might - quitting\n");
 				return p;
-			} else
-				mult += o_ptr->pval[j];
-			file_putf(log_file, "Mult after extra might is %d\n", mult);
+		} else {
+			mult += o_ptr->modifiers[OBJ_MOD_MIGHT];
 		}
+		file_putf(log_file, "Mult after extra might is %d\n", mult);
 	}
 	p *= mult;
 	file_putf(log_file, "After multiplying power for might, total is %d\n", p);
@@ -398,19 +392,24 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 		file_putf(log_file, "Adding power for jewelry, total is %d\n", p);
 	}
 
+	/* Add power for modifiers */
+	for (i = 0; i < OBJ_MOD_MAX; i++) {
+		if (known || object_this_mod_is_visible(o_ptr, i)) {
+			k = o_ptr->modifiers[i];
+			extra_stat_bonus += (k * mod_mult(i));
+		}
+
+		if (mod_power(i)) {
+			p += (k * mod_power(i) * slot_mod_mult(i, wield_slot(o_ptr)));
+			file_putf(log_file, "Adding power for %s, total is %d\n", 
+					  mod_name(i), p);
+		}
+	}
+
 	/* Add power for non-derived flags (derived flags have flag_power 0) */
 	for (i = of_next(flags, FLAG_START); i != FLAG_END; i = of_next(flags, i + 1)) {
-		if (flag_uses_pval(i)) {
-			j = which_pval(o_ptr, i);
-			if (known || object_this_pval_is_visible(o_ptr, j)) {
-				k = o_ptr->pval[j];
-				extra_stat_bonus += (k * pval_mult(i));
-			}
-		} else
-			k = 1;
-
 		if (flag_power(i)) {
-			p += (k * flag_power(i) * slot_mult(i, wield_slot(o_ptr)));
+			p += (flag_power(i) * slot_mult(i, wield_slot(o_ptr)));
 			file_putf(log_file, "Adding power for %s, total is %d\n", flag_name(i), p);
 		}
 
@@ -426,7 +425,7 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 		p += INHIBIT_POWER;
 	} else if (extra_stat_bonus > 0) {
 		p += ability_power[extra_stat_bonus / 10];
-		file_putf(log_file, "Adding power for pval total of %d, total is %d\n", extra_stat_bonus, p);
+		file_putf(log_file, "Adding power for modifier total of %d, total is %d\n", extra_stat_bonus, p);
 	}
 
 	/* Add extra power for multiple flags of the same type */

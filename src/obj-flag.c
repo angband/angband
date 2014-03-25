@@ -41,6 +41,30 @@ static const char *flag_names[] =
 };
 
 /**
+ * Details of the different object modifiers in the game.
+ * See src/obj-flag.h for structure
+ * This is temporary NRM
+ */
+static const struct object_flag object_mod_table[] =
+{
+    #define OBJ_MOD(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r) \
+            { OF_##a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r },
+    #include "list-object-modifiers.h"
+    #undef OBJ_MOD
+};
+
+/**
+ * Object flag names
+ */
+static const char *mod_names[] =
+{
+    #define OBJ_MOD(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r) #a,
+    #include "list-object-modifiers.h"
+    #undef OBJ_MOD
+    ""
+};
+
+/**
  * Create a "mask" of flags of a specific type or ID threshold.
  *
  * \param f is the flag array we're filling
@@ -163,16 +187,6 @@ s32b flag_power(int flag)
 }
 
 /**
- * Ascertain whether a flag is granular (pval-based) or binary.
- */
-bool flag_uses_pval(int flag)
-{
-	const struct object_flag *of_ptr = &object_flag_table[flag];
-
-	return of_ptr->pval;
-}
-
-/**
  * Return the OFT_ type of a flag.
  */
 int obj_flag_type(int flag)
@@ -183,12 +197,57 @@ int obj_flag_type(int flag)
 }
 
 /**
- * Return the pval weighting of a flag. (Some pvals are more important than
- * others.)
+ * Return the base power rating for a mod.
  */
-int pval_mult(int flag)
+s32b mod_power(int mod)
 {
-	const struct object_flag *of_ptr = &object_flag_table[flag];
+	const struct object_flag *of_ptr = &object_mod_table[mod];
+
+	return of_ptr->power;
+}
+
+/**
+ * Return the mod weighting of a flag^H^H^H^Hmod
+ */
+int mod_mult(int mod)
+{
+	const struct object_flag *of_ptr = &object_mod_table[mod];
 
 	return of_ptr->pval_mult;
 }
+
+/**
+ * Return the name of a flag.
+ */
+const char *mod_name(int mod)
+{
+	return mod_names[mod];
+}
+
+/**
+ * Get the slot multiplier for a mod's power rating
+ *
+ * \param mod is the mod in question.
+ * \param slot is the wield_slot it's in.
+ */
+s16b slot_mod_mult(int mod, int slot)
+{
+	const struct object_flag *of_ptr = &object_mod_table[mod];
+
+	switch (slot) {
+		case INVEN_WIELD: 	return of_ptr->weapon;
+		case INVEN_BOW:		return of_ptr->bow;
+		case INVEN_LEFT:
+		case INVEN_RIGHT:	return of_ptr->ring;
+		case INVEN_NECK:	return of_ptr->amulet;
+		case INVEN_LIGHT:	return of_ptr->light;
+		case INVEN_BODY:	return of_ptr->body;
+		case INVEN_OUTER:	return of_ptr->cloak;
+		case INVEN_ARM:		return of_ptr->shield;
+		case INVEN_HEAD:	return of_ptr->hat;
+		case INVEN_HANDS:	return of_ptr->gloves;
+		case INVEN_FEET:	return of_ptr->boots;
+		default: 			return 1;
+	}
+}
+
