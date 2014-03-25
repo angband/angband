@@ -49,8 +49,6 @@
 #define TOP_POWER		999
 #define TOP_MOD 		 25
 #define RUNS_PER_CHECKPOINT	10000
-/* temp hack NRM*/
-#define OBJ_MOD_MAX      15
 
 /* For ref, e_max is 128, a_max is 136, r_max is ~650,
 	ORIGIN_STATS is 14, OF_MAX is ~120 */
@@ -807,7 +805,7 @@ static int stats_dump_lists(void)
 	struct object_flag object_mod_table[] =
 	{
         #define OBJ_MOD(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r)  \
-            { OF_##a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, #a },
+            { OBJ_MOD_##a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, #a },
         #include "list-object-modifiers.h"
         #undef OBJ_MOD
 	};
