@@ -49,6 +49,8 @@
 #define TOP_POWER		999
 #define TOP_MOD 		 25
 #define RUNS_PER_CHECKPOINT	10000
+/* temp hack NRM*/
+#define OBJ_MOD_MAX      15
 
 /* For ref, e_max is 128, a_max is 136, r_max is ~650,
 	ORIGIN_STATS is 14, OF_MAX is ~120 */
@@ -456,7 +458,6 @@ static int stats_dump_artifacts(void)
 									 a_ptr->modifiers[i]);
 				if (err) return err;
 				STATS_DB_STEP_RESET(mods_stmt)
-			}
 		}
 	}
 
@@ -522,7 +523,6 @@ static int stats_dump_egos(void)
 									 e_ptr->min_modifiers[i]);
 				if (err) return err;
 				STATS_DB_STEP_RESET(mods_stmt)
-			}
 		}
 
 		for (i = 0; i < EGO_TVALS_MAX; i++)
@@ -602,7 +602,6 @@ static int stats_dump_objects(void)
 				err = stats_db_bind_rv(mods_stmt, 3, k_ptr->modifiers[i]);
 				if (err) return err;
 				STATS_DB_STEP_RESET(mods_stmt)
-			}
 		}
 	}
 
@@ -1231,7 +1230,7 @@ static int stats_wearables_data_offsetof(const char *member)
 	else if (streq(member, "flags"))
 		return offsetof(struct wearables_data, flags);
 	else if (streq(member, "mods"))
-		return offsetof(struct wearables_data, mods);
+		return offsetof(struct wearables_data, modifiers);
 		
 	/* We should not get to this point. */
 	assert(0);
@@ -1547,7 +1546,7 @@ static int stats_write_db(u32b run)
 	err = stats_write_db_wearables_array("flags", OF_MAX, true);
 	if (err) return err;
 
-	err = stats_write_db_wearables_2d_array("mods", TOP_PVAL, OBJ_MOD_MAX + 1, false);
+	err = stats_write_db_wearables_2d_array("mods", TOP_MOD, OBJ_MOD_MAX + 1, false);
 	if (err) return err;
 
 	/* Commit transaction */
