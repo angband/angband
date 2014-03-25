@@ -1177,7 +1177,7 @@ static void calc_mana(void)
 			!of_has(o_ptr->flags, OF_FREE_ACT) && 
 			!of_has(o_ptr->flags, OF_SPELLS_OK) &&
 			!(of_has(o_ptr->flags, OF_DEX) && 
-			  (o_ptr->pval[which_pval(o_ptr, OF_DEX)] > 0)))
+			  (o_ptr->modifiers[OBJ_MOD_DEX] > 0)))
 		{
 			/* Encumbered */
 			player->state.cumber_glove = TRUE;
@@ -1337,9 +1337,8 @@ static void calc_torch(void)
 		/* Skip empty slots */
 		if (!o_ptr->kind) continue;
 
-		/* Light radius is now a pval */
-		if (of_has(o_ptr->flags, OF_LIGHT))
-			amt = o_ptr->pval[which_pval(o_ptr, OF_LIGHT)];
+		/* Light radius is now a modifier */
+		amt = o_ptr->modifiers[OBJ_MOD_LIGHT];
 
 		/* Cursed objects emit no light */
 		if (of_has(o_ptr->flags, OF_LIGHT_CURSE))
@@ -1537,52 +1536,39 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 		of_union(collect_f, f);
 
 		/* Affect stats */
-		if (of_has(f, OF_STR))
-			state->stat_add[A_STR] += o_ptr->pval[which_pval(o_ptr, OF_STR)];
-		if (of_has(f, OF_INT))
-			state->stat_add[A_INT] += o_ptr->pval[which_pval(o_ptr, OF_INT)];
-		if (of_has(f, OF_WIS))
-			state->stat_add[A_WIS] += o_ptr->pval[which_pval(o_ptr, OF_WIS)];
-		if (of_has(f, OF_DEX))
-			state->stat_add[A_DEX] += o_ptr->pval[which_pval(o_ptr, OF_DEX)];
-		if (of_has(f, OF_CON))
-			state->stat_add[A_CON] += o_ptr->pval[which_pval(o_ptr, OF_CON)];
+		state->stat_add[A_STR] += o_ptr->modifiers[OBJ_MOD_STR];
+		state->stat_add[A_INT] += o_ptr->modifiers[OBJ_MOD_INT];
+		state->stat_add[A_WIS] += o_ptr->modifiers[OBJ_MOD_WIS];
+		state->stat_add[A_DEX] += o_ptr->modifiers[OBJ_MOD_DEX];
+		state->stat_add[A_CON] += o_ptr->modifiers[OBJ_MOD_CON];
 
 		/* Affect stealth */
-		if (of_has(f, OF_STEALTH))
-			state->skills[SKILL_STEALTH] += o_ptr->pval[which_pval(o_ptr, OF_STEALTH)];
+		state->skills[SKILL_STEALTH] += o_ptr->modifiers[OBJ_MOD_STEALTH];
 
 		/* Affect searching ability (factor of five) */
-		if (of_has(f, OF_SEARCH))
-			state->skills[SKILL_SEARCH] += (o_ptr->pval[which_pval(o_ptr, OF_SEARCH)] * 5);
+		state->skills[SKILL_SEARCH] += (o_ptr->modifiers[OBJ_MOD_SEARCH] * 5);
 
 		/* Affect searching frequency (factor of five) */
-		if (of_has(f, OF_SEARCH))
-			state->skills[SKILL_SEARCH_FREQUENCY] += (o_ptr->pval[which_pval(o_ptr, OF_SEARCH)] * 5);
+		state->skills[SKILL_SEARCH_FREQUENCY] += 
+			(o_ptr->modifiers[OBJ_MOD_SEARCH] * 5);
 
 		/* Affect infravision */
-		if (of_has(f, OF_INFRA))
-			state->see_infra += o_ptr->pval[which_pval(o_ptr, OF_INFRA)];
+		state->see_infra += o_ptr->modifiers[OBJ_MOD_INFRA];
 
 		/* Affect digging (factor of 20) */
-		if (of_has(f, OF_TUNNEL))
-			state->skills[SKILL_DIGGING] += (o_ptr->pval[which_pval(o_ptr, OF_TUNNEL)] * 20);
+		state->skills[SKILL_DIGGING] += (o_ptr->modifiers[OBJ_MOD_TUNNEL] * 20);
 
 		/* Affect speed */
-		if (of_has(f, OF_SPEED))
-			state->speed += o_ptr->pval[which_pval(o_ptr, OF_SPEED)];
+		state->speed += o_ptr->modifiers[OBJ_MOD_SPEED];
 
 		/* Affect blows */
-		if (of_has(f, OF_BLOWS))
-			extra_blows += o_ptr->pval[which_pval(o_ptr, OF_BLOWS)];
+		extra_blows += o_ptr->modifiers[OBJ_MOD_BLOWS];
 
 		/* Affect shots */
-		if (of_has(f, OF_SHOTS))
-			extra_shots += o_ptr->pval[which_pval(o_ptr, OF_SHOTS)];
+		extra_shots += o_ptr->modifiers[OBJ_MOD_SHOTS];
 
 		/* Affect Might */
-		if (of_has(f, OF_MIGHT))
-			extra_might += o_ptr->pval[which_pval(o_ptr, OF_MIGHT)];
+		extra_might += o_ptr->modifiers[OBJ_MOD_MIGHT];
 
 		/* Modify the base armor class */
 		state->ac += o_ptr->ac;
