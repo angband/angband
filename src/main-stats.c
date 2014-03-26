@@ -36,6 +36,7 @@
 #include "project.h"
 #include "stats/db.h"
 #include "stats/structs.h"
+#include "store.h"
 #include <stddef.h>
 #include <time.h>
 
@@ -412,7 +413,7 @@ static int stats_dump_oflags(sqlite3_stmt *flags_stmt, int idx,
 
 static int stats_dump_artifacts(void)
 {
-	int err, idx, i, flag;
+	int err, idx, i;
 	char sql_buf[256];
 	sqlite3_stmt *info_stmt, *flags_stmt, *mods_stmt;
 
@@ -468,7 +469,7 @@ static int stats_dump_artifacts(void)
 
 static int stats_dump_egos(void)
 {
-	int err, idx, flag, i;
+	int err, idx, i;
 	char sql_buf[256];
 	sqlite3_stmt *info_stmt, *flags_stmt, *mods_stmt, *type_stmt;
 
@@ -893,7 +894,7 @@ static int stats_dump_lists(void)
 	STATS_DB_FINALIZE(sql_stmt)
 
 	err = stats_db_stmt_prep(&sql_stmt, 
-		"INSERT INTO object_mods_list VALUES(?,?,?,?,?,?);");
+		"INSERT INTO object_mods_list VALUES(?,?,?,?,?);");
 	if (err) return err;
 
 	for (idx = 1; idx < OBJ_MOD_MAX; idx++)
@@ -1671,7 +1672,8 @@ static errr run_stats(void)
 	stats_db_close();
 	if (err) quit_fmt("Problems writing to database!  sqlite3 errno %d.", err);
 
-    mem_free(a_info_save);
+	if (randarts)
+		mem_free(a_info_save);
 	free_stats_memory();
 	cleanup_angband();
 	if (!quiet) printf("Done!\n");
