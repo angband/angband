@@ -925,7 +925,7 @@ static void wiz_statistics(object_type *o_ptr, int level)
 			/* Check for match */
 			if (ismatch && (i_ptr->to_a == o_ptr->to_a) &&
 				(i_ptr->to_h == o_ptr->to_h) &&
-				(i_ptr->to_d == o_ptr->to_d) &&
+				(i_ptr->to_d == o_ptr->to_d))
 			{
 				matches++;
 			}
