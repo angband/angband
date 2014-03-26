@@ -1653,7 +1653,7 @@ int find_inven(const object_type *o_ptr)
 				if (o_ptr->to_a != j_ptr->to_a) continue;
 
 				/* Require identical modifiers */
-				for (i = 0; i < OBJ_MOD_MAXMAX; i++)
+				for (i = 0; i < OBJ_MOD_MAX; i++)
 					if (o_ptr->modifiers[i] != j_ptr->modifiers[i])
 						continue;
 

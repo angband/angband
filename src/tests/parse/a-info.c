@@ -136,8 +136,8 @@ int test_l0(void *state) {
 
 	eq(r, PARSE_ERROR_NONE);
 	a = parser_priv(state);
-	eq(a->pval[0], 17);
-	require(a->pval_flags[0]);
+	eq(a->modifiers[0], 17);
+	eq(a->modifiers[4], 17);
 	ok;
 }
 

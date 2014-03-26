@@ -99,12 +99,11 @@ int test_l0(void *state) {
 	eq(r, PARSE_ERROR_NONE);
 	e = parser_priv(state);
 	require(e);
-	eq(e->pval[0].base, 1);
-	eq(e->pval[0].dice, 2);
-	eq(e->pval[0].sides, 3);
-	eq(e->pval[0].m_bonus, 4);
-	eq(e->min_pval[0], 5);
-	require(e->pval_flags[0]);
+	eq(e->modifiers[0].base, 1);
+	eq(e->modifiers[0].dice, 2);
+	eq(e->modifiers[0].sides, 3);
+	eq(e->modifiers[0].m_bonus, 4);
+	eq(e->min_modifiers[0], 5);
 	ok;
 }
 

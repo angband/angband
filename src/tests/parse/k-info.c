@@ -164,11 +164,10 @@ int test_l0(void *state) {
 	eq(r, 0);
 	k = parser_priv(state);
 	require(k);
-	eq(k->pval[0].base, 1);
-	eq(k->pval[0].dice, 2);
-	eq(k->pval[0].sides, 3);
-	eq(k->pval[0].m_bonus, 4);
-	require(k->pval_flags[0]);
+	eq(k->modifiers[0].base, 1);
+	eq(k->modifiers[0].dice, 2);
+	eq(k->modifiers[0].sides, 3);
+	eq(k->modifiers[0].m_bonus, 4);
 	ok;
 }
 
