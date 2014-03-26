@@ -154,8 +154,8 @@ static void kind_info(char *buf, size_t buf_len,
 	k_ptr = i_ptr->kind;
 
 	/* Cancel bonuses */
-	for (i = 0; i < MAX_PVALS; i++)
-		i_ptr->pval[i] = 0;
+	for (i = 0; i < OBJ_MOD_MAX; i++)
+		i_ptr->modifiers[i] = 0;
 	i_ptr->to_a = 0;
 	i_ptr->to_h = 0;
 	i_ptr->to_d = 0;

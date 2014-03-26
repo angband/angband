@@ -1652,13 +1652,10 @@ int find_inven(const object_type *o_ptr)
 				if (o_ptr->to_d != j_ptr->to_d) continue;
 				if (o_ptr->to_a != j_ptr->to_a) continue;
 
-				/* Require identical "pval" codes */
-				for (i = 0; i < MAX_PVALS; i++)
-					if (o_ptr->pval[i] != j_ptr->pval[i])
+				/* Require identical modifiers */
+				for (i = 0; i < OBJ_MOD_MAXMAX; i++)
+					if (o_ptr->modifiers[i] != j_ptr->modifiers[i])
 						continue;
-
-				if (o_ptr->num_pvals != j_ptr->num_pvals)
-					continue;
 
 				/* Require identical "artifact" names */
 				if (o_ptr->artifact != j_ptr->artifact) continue;

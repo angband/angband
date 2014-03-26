@@ -3483,9 +3483,9 @@ void do_ident_item(object_type *o_ptr)
 
 	/* Determine the message type. */
 	/* CC: we need to think more carefully about how we define "bad" with
-	 * multiple pvals - currently using "all nonzero pvals < 0" */
-	for (i = 0; i < original->num_pvals; i++)
-		if (original->pval[i] > 0)
+	 * multiple modifiers - currently using "all nonzero modifiers < 0" */
+	for (i = 0; i < OBJ_MOD_MAX; i++)
+		if (original->modifiers[i] > 0)
 			bad = FALSE;
 
 	if (bad)
