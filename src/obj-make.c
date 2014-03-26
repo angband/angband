@@ -737,7 +737,7 @@ s16b apply_magic(object_type *o_ptr, int lev, bool allow_artifacts,
 		if (o_ptr->sval == SV_RING_SPEED) {
 			/* Super-charge the ring */
 			while (one_in_(2))
-				o_ptr->pval[which_pval(o_ptr, OF_SPEED)]++;
+				o_ptr->modifiers[OBJ_MOD_SPEED]++;
 		}
 	}
 	else if (tval_is_chest(o_ptr)) {

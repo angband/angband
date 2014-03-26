@@ -317,9 +317,10 @@ byte squelch_level_of(const object_type *o_ptr)
 	/* Deal with jewelry specially. */
 	if (tval_is_jewelry(o_ptr))
 	{
-		/* CC: average jewelry has at least one known positive pval */
-		for (i = 0; i < o_ptr->num_pvals; i++)
-			if ((object_this_pval_is_visible(o_ptr, i)) && (o_ptr->pval[i] > 0))
+		/* CC: average jewelry has at least one known positive modifier */
+		for (i = 0; i < OBJ_MOD_MAX; i++)
+			if ((object_this_mod_is_visible(o_ptr, i)) && 
+				(o_ptr->modifiers[i] > 0))
 				return SQUELCH_AVERAGE;
 
 		if ((o_ptr->to_h > 0) || (o_ptr->to_d > 0) || (o_ptr->to_a > 0))
@@ -346,16 +347,16 @@ byte squelch_level_of(const object_type *o_ptr)
 		return SQUELCH_AVERAGE;
 	}
 
-	/* CC: we need to redefine "bad" with multiple pvals
-	 * At the moment we use "all pvals known and negative" */
-	for (i = 0; i < o_ptr->num_pvals; i++) {
-		if (!object_this_pval_is_visible(o_ptr, i) ||
-			(o_ptr->pval[i] > 0))
+	/* We need to redefine "bad" 
+	 * At the moment we use "all modifiers known and negative" */
+	for (i = 0; i < OBJ_MOD_MAX; i++) {
+		if (!object_this_mod_is_visible(o_ptr, i) ||
+			(o_ptr->modifiers[i] > 0))
 			break;
-
-		if (i == (o_ptr->num_pvals - 1))
-			return SQUELCH_BAD;
 	}
+
+	if (i == OBJ_MOD_MAX)
+		return SQUELCH_BAD;
 
 	if (object_was_sensed(o_ptr)) {
 		obj_pseudo_t pseudo = object_pseudo(o_ptr);
