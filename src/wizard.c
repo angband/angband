@@ -683,10 +683,8 @@ static void wiz_tweak_item(object_type *o_ptr)
 	o_ptr->attribute = atoi(tmp_val);\
 	wiz_display_item(o_ptr, TRUE);\
 } while (0)
-	for (i = 0; i < MAX_PVALS; i++) {
-		WIZ_TWEAK(pval[i]);
-		if (o_ptr->pval[i])
-			o_ptr->num_pvals = (i + 1);
+	for (i = 0; i < OBJ_MOD_MAX; i++) {
+		WIZ_TWEAK(modifiers[i]);
 	}
 	WIZ_TWEAK(to_a);
 	WIZ_TWEAK(to_h);
@@ -908,27 +906,26 @@ static void wiz_statistics(object_type *o_ptr, int level)
 			if ((o_ptr->tval) != (i_ptr->tval)) continue;
 			if ((o_ptr->sval) != (i_ptr->sval)) continue;
 
-			/* Check pvals */
+			/* Check modifiers */
 			ismatch = TRUE;
-			for (j = 0; j < MAX_PVALS; j++)
-				if (i_ptr->pval[j] != o_ptr->pval[j])
+			for (j = 0; j < OBJ_MOD_MAX; j++)
+				if (i_ptr->modifiers[j] != o_ptr->modifiers[j])
 					ismatch = FALSE;
 
 			isbetter = TRUE;
-			for (j = 0; j < MAX_PVALS; j++)
-				if (i_ptr->pval[j] < o_ptr->pval[j])
+			for (j = 0; j < OBJ_MOD_MAX; j++)
+				if (i_ptr->modifiers[j] < o_ptr->modifiers[j])
 					isbetter = FALSE;
 
 			isworse = TRUE;
-			for (j = 0; j < MAX_PVALS; j++)
-				if (i_ptr->pval[j] > o_ptr->pval[j])
+			for (j = 0; j < OBJ_MOD_MAX; j++)
+				if (i_ptr->modifiers[j] > o_ptr->modifiers[j])
 					isworse = FALSE;
 
 			/* Check for match */
 			if (ismatch && (i_ptr->to_a == o_ptr->to_a) &&
 				(i_ptr->to_h == o_ptr->to_h) &&
 				(i_ptr->to_d == o_ptr->to_d) &&
-				(i_ptr->num_pvals == o_ptr->num_pvals))
 			{
 				matches++;
 			}
