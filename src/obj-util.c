@@ -1513,9 +1513,9 @@ static bool inventory_object_stackable(const object_type *o_ptr, const object_ty
 		if (o_ptr->to_d != j_ptr->to_d) return FALSE;
 		if (o_ptr->to_a != j_ptr->to_a) return FALSE;
 
-		/* Require all identical pvals */
-		for (i = 0; i < MAX_PVALS; i++)
-			if (o_ptr->pval[i] != j_ptr->pval[i])
+		/* Require all identical modifiers */
+		for (i = 0; i < OBJ_MOD_MAX; i++)
+			if (o_ptr->modifiers[i] != j_ptr->modifiers[i])
 				return (FALSE);
 
 		/* Require identical ego-item types */
@@ -3836,7 +3836,6 @@ bool object_equals_object(const object_type *a, const object_type *b)
 	MUST_EQUAL(tval);
 	MUST_EQUAL(sval);
 
-	MUST_EQUAL(num_pvals);
 	MUST_EQUAL(weight);
 	MUST_EQUAL(ident);
 
@@ -3865,11 +3864,8 @@ bool object_equals_object(const object_type *a, const object_type *b)
 	MUST_EQUAL(note);
 #undef MUST_EQUAL
 
-	for (i = 0; i < MAX_PVALS; i++) {
-		if (a->pval[i] != b->pval[i])
-			return FALSE;
-
-		if (!of_is_equal((const bitflag *)&a->pval_flags[i], (const bitflag *)&b->pval_flags[i]))
+	for (i = 0; i < OBJ_MOD_MAX; i++) {
+		if (a->modifiers[i] != b->modifiers[i])
 			return FALSE;
 	}
 
