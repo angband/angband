@@ -1046,7 +1046,8 @@ static bool obj_known_digging(const object_type *o_ptr, int deciturns[])
 	object_flags_known(o_ptr, f);
 
 	if (!tval_is_wearable(o_ptr) || 
-		(!tval_is_melee_weapon(o_ptr) && !of_has(f, OF_TUNNEL)))
+		(!tval_is_melee_weapon(o_ptr) && 
+		 (o_ptr->modifiers[OBJ_MOD_TUNNEL] <= 0)))
 		return FALSE;
 
 	memcpy(inven, player->inventory, INVEN_TOTAL * sizeof(object_type));
@@ -1127,9 +1128,9 @@ static bool describe_digger(textblock *tb, const object_type *o_ptr)
  */
 static int obj_known_food(const object_type *o_ptr)
 {
-	if (tval_can_have_nourishment(o_ptr) && o_ptr->pval[DEFAULT_PVAL]) {
+	if (tval_can_have_nourishment(o_ptr) && o_ptr->pval) {
 		if (object_is_known(o_ptr)) {
-			return o_ptr->pval[DEFAULT_PVAL] / 2;
+			return o_ptr->pval / 2;
 		} else {
 			return OBJ_KNOWN_PRESENT;
 		}
@@ -1181,7 +1182,7 @@ static bool obj_known_light(const object_type *o_ptr, oinfo_detail_t mode, int *
 
 	get_known_flags(o_ptr, mode, flags);
 
-	if (!is_light && !of_has(flags, OF_LIGHT))
+	if (!is_light && (o_ptr->modifiers[OBJ_MOD_LIGHT] <= 0))
 		return FALSE;
 
 	/* Prevent unidentified objects (especially artifact lights) from showing

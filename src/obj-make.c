@@ -581,12 +581,12 @@ void object_prep(object_type *o_ptr, struct object_kind *k, int lev,
 
 	/* Assign charges (wands/staves only) */
 	if (tval_can_have_charges(o_ptr))
-		o_ptr->pval[DEFAULT_PVAL] = randcalc(k->charge, lev, rand_aspect);
+		o_ptr->pval = randcalc(k->charge, lev, rand_aspect);
 
 	/* Assign flagless pval for food or oil */
 	if (tval_is_food(o_ptr) || tval_is_potion(o_ptr) || tval_is_fuel(o_ptr))
-		o_ptr->pval[DEFAULT_PVAL]
-			= randcalc(k->pval[DEFAULT_PVAL], lev, rand_aspect);
+		o_ptr->pval
+			= randcalc(k->pval, lev, rand_aspect);
 
 	/* Default fuel for lamps */
 	if (tval_is_light(o_ptr)) {
@@ -687,11 +687,11 @@ s16b apply_magic(object_type *o_ptr, int lev, bool allow_artifacts,
 		/* Hack -- skip ruined chests */
 		if (o_ptr->kind->level > 0) {
 			/* Hack -- pick a "difficulty" */
-			o_ptr->pval[DEFAULT_PVAL] = randint1(o_ptr->kind->level);
+			o_ptr->pval = randint1(o_ptr->kind->level);
 
 			/* Never exceed "difficulty" of 55 to 59 */
-			if (o_ptr->pval[DEFAULT_PVAL] > 55)
-				o_ptr->pval[DEFAULT_PVAL] = (s16b)(55 + randint0(5));
+			if (o_ptr->pval > 55)
+				o_ptr->pval = (s16b)(55 + randint0(5));
 		}
 	}
 
@@ -1054,7 +1054,7 @@ void make_gold(object_type *j_ptr, int lev, int coin_type)
 	if (value > MAX_SHORT)
 		value = MAX_SHORT;
 
-	j_ptr->pval[DEFAULT_PVAL] = value;
+	j_ptr->pval = value;
 }
 
 struct init_module obj_make_module = {

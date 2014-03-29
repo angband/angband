@@ -608,7 +608,7 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 	}
 	
 	/* has speed */
-	if (of_has(f,OF_SPEED))
+	if (o_ptr->modifiers[OBJ_MOD_SPEED] != 0)
 		add_stats( speq_total,  speq_mon,  speq_vault,vault,mon,number);
 				
 	/* has telepathy */
@@ -646,21 +646,21 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 				add_stats( gdarm_total,  gdarm_mon,  gdarm_vault, vault, mon,number);
 						
 			/* has str boost */
-			if (of_has(f,OF_STR))
+			if (o_ptr->modifiers[OBJ_MOD_STR] != 0)
 				add_stats( strarm_total,  strarm_mon,  strarm_vault,vault,mon,number);
 			
 			/* has dex boost */
-			if (of_has(f,OF_DEX))
+			if (o_ptr->modifiers[OBJ_MOD_DEX] != 0)
 				add_stats( dexarm_total,  dexarm_mon,  dexarm_vault,vault,mon,number);
 				
 			/* has int boost */
-			if (of_has(f,OF_INT))
+			if (o_ptr->modifiers[OBJ_MOD_INT] != 0)
 				add_stats( intarm_total,  intarm_mon,  intarm_vault,vault,mon,number);
 
-			if (of_has(f,OF_WIS))
+			if (o_ptr->modifiers[OBJ_MOD_WIS] != 0)
 				add_stats( wisarm_total,  wisarm_mon,  wisarm_vault,vault,mon,number);
 
-			if (of_has(f,OF_CON))
+			if (o_ptr->modifiers[OBJ_MOD_CON] != 0)
 				add_stats( conarm_total,  conarm_mon,  conarm_vault,vault,mon,number);
 				
 			if (of_has(f,OF_LIGHT_CURSE))
@@ -720,9 +720,9 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 					add_stats( brweap_total,  brweap_mon,  brweap_vault, vault, mon,number);
 			
 			/* determine westernesse by flags */
-			if ((of_has(f,OF_STR)) &&
-				(of_has(f,OF_DEX)) &&
-				(of_has(f,OF_CON)) &&
+			if ((o_ptr->modifiers[OBJ_MOD_STR] > 0) &&
+				(o_ptr->modifiers[OBJ_MOD_DEX] > 0) &&
+				(o_ptr->modifiers[OBJ_MOD_CON] > 0) &&
 				(of_has(f,OF_FREE_ACT)) &&
 				(of_has(f,OF_SEE_INVIS)) &&
 				(of_has(f,OF_SLAY_TROLL)) &&
@@ -738,7 +738,7 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 				(of_has(f,OF_FREE_ACT)) &&
 				(of_has(f,OF_SEE_INVIS)) &&
 				(of_has(f,OF_FEATHER)) &&
-				(of_has(f,OF_STEALTH)) &&
+				(o_ptr->modifiers[OBJ_MOD_STEALTH] > 0) &&
 				(of_has(f,OF_REGEN)))
 					add_stats( deweap_total,  deweap_mon,  deweap_vault, vault, mon,number);
 			
@@ -749,7 +749,7 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 				(of_has(f,OF_SLAY_DRAGON)) &&
 				(of_has(f,OF_FREE_ACT)) &&
 				(of_has(f,OF_SEE_INVIS)) &&
-				(of_has(f,OF_LIGHT)) &&
+				(o_ptr->modifiers[OBJ_MOD_LIGHT] > 0) &&
 				(of_has(f,OF_RES_DARK)))
 					add_stats( goweap_total,  goweap_mon,  goweap_vault, vault, mon,number);
 					
@@ -763,7 +763,7 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 					add_stats( haweap_total,  haweap_mon,  haweap_vault, vault, mon,number);
 					
 			/* extra blows */
-			if (of_has(f,OF_BLOWS))
+			if (o_ptr->modifiers[OBJ_MOD_BLOWS] > 0)
 				add_stats( xbweap_total,  xbweap_mon,  xbweap_vault, vault, mon,number);
 				
 			/* telepathy */	
@@ -778,7 +778,7 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 				add_stats( huweap_total,  huweap_mon,  huweap_vault, vault, mon,number);
 			
 				/* is uber */
-				if ((of_has(f,OF_SLAY_EVIL)) || (of_has(f,OF_BLOWS)))
+				if ((of_has(f,OF_SLAY_EVIL)) || (o_ptr->modifiers[OBJ_MOD_BLOWS] > 0))
 					add_stats( ubweap_total,  ubweap_mon,  ubweap_vault, vault, mon,number);
 			
 			}
@@ -817,17 +817,17 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 				(o_ptr->sval == SV_LIGHT_XBOW) ||
 				(o_ptr->sval == SV_HEAVY_XBOW))
 			{	
-				if (of_has(f,OF_SHOTS))
+				if (o_ptr->modifiers[OBJ_MOD_SHOTS] > 0)
 					add_stats( xsbow_total,  xsbow_mon,  xsbow_vault, vault, mon,number);
 					
-				if (of_has(f,OF_MIGHT))
+				if (o_ptr->modifiers[OBJ_MOD_MIGHT] > 0)
 					add_stats( xmbow_total,  xmbow_mon,  xmbow_vault, vault, mon,number);
 			}
 			
 			/* check for buckland */
 			if ((o_ptr->sval == SV_SLING) &&
-				(of_has(f,OF_MIGHT)) &&
-				(of_has(f,OF_SHOTS)))
+				(o_ptr->modifiers[OBJ_MOD_MIGHT] > 0) &&
+				(o_ptr->modifiers[OBJ_MOD_SHOTS] > 0))
 					add_stats( bubow_total,  bubow_mon,  bubow_vault, vault, mon,number);
 					
 			/* has telep */
@@ -1324,7 +1324,7 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 	/* Get info on gold. */
 	if (o_ptr->tval == TV_GOLD){
 	
-		int temp = o_ptr->pval[DEFAULT_PVAL];
+		int temp = o_ptr->pval;
 		gold_temp = temp;
 	    gold_total[lvl] += (gold_temp / tries);
 	

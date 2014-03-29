@@ -39,7 +39,6 @@
 
 
 /* Object constants */
-byte max_pvals = 0;
 byte obj_mod_max = 0;
 byte of_size = 0;
 
@@ -77,7 +76,7 @@ static int rd_item(object_type *o_ptr)
 	byte ego_idx;
 	byte art_idx;
 
-	size_t i, j;
+	size_t i;
 
 	char buf[128];
 
@@ -96,10 +95,8 @@ static int rd_item(object_type *o_ptr)
 	/* Type/Subtype */
 	rd_byte(&o_ptr->tval);
 	rd_byte(&o_ptr->sval);
-	for (i = 0; i < max_pvals; i++) {
-		rd_s16b(&o_ptr->pval[i]);
-	}
-	rd_byte(&o_ptr->num_pvals);
+	rd_s16b(&o_ptr->pval);
+
 	for (i = 0; i < obj_mod_max; i++) {
 		rd_s16b(&o_ptr->modifiers[i]);
 	}
@@ -140,11 +137,6 @@ static int rd_item(object_type *o_ptr)
 
 	for (i = 0; i < of_size; i++)
 		rd_byte(&o_ptr->known_flags[i]);
-
-	for (j = 0; j < max_pvals; j++) {
-		for (i = 0; i < of_size; i++)
-			rd_byte(&o_ptr->pval_flags[j][i]);
-	}
 
 	/* Monster holding object */
 	rd_s16b(&o_ptr->held_m_idx);
@@ -494,16 +486,6 @@ int rd_object_memory(void)
 	if (of_size > OF_SIZE)
 	{
 	        note(format("Too many (%u) object flags!", of_size));
-		return (-1);
-	}
-
-	/* Max pvals */
-	rd_byte(&max_pvals);
-
-	/* Incompatible save files */
-	if (max_pvals > MAX_PVALS)
-	{
-	        note(format("Too many (%u) pvals allowed!", max_pvals));
 		return (-1);
 	}
 

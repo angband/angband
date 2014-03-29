@@ -609,9 +609,9 @@ static void do_mod(artifact_type *a_ptr)
 	int factor = 1;
 
 	/* Track whether we have blows, might or shots on this item */
-	if (of_has(a_ptr->flags, OF_BLOWS)) factor++;
-	if (of_has(a_ptr->flags, OF_MIGHT)) factor++;
-	if (of_has(a_ptr->flags, OF_SHOTS)) factor++;
+	if (a_ptr->modifiers[OBJ_MOD_BLOWS] > 0) factor++;
+	if (a_ptr->modifiers[OBJ_MOD_MIGHT] > 0) factor++;
+	if (a_ptr->modifiers[OBJ_MOD_SHOTS] > 0) factor++;
 
 	if (fake_pval[0] == 0)
 	{
@@ -666,7 +666,7 @@ static void remove_contradictory(artifact_type *a_ptr)
 			of_off(a_ptr->flags, OF_SUST_DEX);
 		if (a_ptr->modifiers[OBJ_MOD_CON] != 0)
 			of_off(a_ptr->flags, OF_SUST_CON);
-		of_off(a_ptr->flags, OF_BLOWS);
+		a_ptr->modifiers[OBJ_MOD_BLOWS] = 0;
 	}
 
 	if (of_has(a_ptr->flags, OF_LIGHT_CURSE))
@@ -935,13 +935,13 @@ static void parse_frequencies(void)
 				artprobs[ART_IDX_NONWEAPON_BRAND] += temp2;
 			}
 
-			if (of_has(a_ptr->flags, OF_BLOWS))
+			if (a_ptr->modifiers[OBJ_MOD_BLOWS] > 0)
 			{
 				file_putf(log_file, "Adding 1 for extra blows on nonweapon\n");
 				(artprobs[ART_IDX_NONWEAPON_BLOWS])++;
 			}
 
-			if (of_has(a_ptr->flags, OF_SHOTS))
+			if (a_ptr->modifiers[OBJ_MOD_SHOTS] > 0)
 			{
 				file_putf(log_file, "Adding 1 for extra shots on nonweapon\n");
 				(artprobs[ART_IDX_NONWEAPON_SHOTS])++;
@@ -1016,7 +1016,7 @@ static void parse_frequencies(void)
 			}
 
 			/* Check for tunnelling ability */
-			if (of_has(a_ptr->flags, OF_TUNNEL))
+			if (a_ptr->modifiers[OBJ_MOD_TUNNEL] > 0)
 			{
 				file_putf(log_file, "Adding 1 for tunnelling bonus.\n");
 
@@ -1045,7 +1045,7 @@ static void parse_frequencies(void)
 		else
 		{
 			/* Check for tunnelling ability */
-			if (of_has(a_ptr->flags, OF_TUNNEL))
+			if (a_ptr->modifiers[OBJ_MOD_TUNNEL] > 0)
 			{
 				file_putf(log_file, "Adding 1 for tunnelling bonus - general.\n");
 
@@ -2847,7 +2847,6 @@ static void scramble_artifact(int a_idx)
 
 		/* Clear the following fields; leave the rest alone */
 		a_ptr->to_h = a_ptr->to_d = a_ptr->to_a = 0;
-		a_ptr->num_pvals = 0;
 		of_wipe(a_ptr->flags);
 		for (i = 0; i < OBJ_MOD_MAX; i++)
 		{

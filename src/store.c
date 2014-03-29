@@ -768,7 +768,7 @@ static void store_object_absorb(object_type *o_ptr, object_type *j_ptr)
 	/* Hack -- if wands/staves are stacking, combine the charges */
 	if (tval_can_have_charges(o_ptr))
 	{
-		o_ptr->pval[DEFAULT_PVAL] += j_ptr->pval[DEFAULT_PVAL];
+		o_ptr->pval += j_ptr->pval;
 	}
 
 	if ((o_ptr->origin != j_ptr->origin) ||
@@ -1008,8 +1008,8 @@ static int store_carry(struct store *store, object_type *o_ptr)
 				charges += randcalc(kind->charge, 0, RANDOMISE);
 
 			/* Use recharged value only if greater */
-			if (charges > o_ptr->pval[DEFAULT_PVAL])
-				o_ptr->pval[DEFAULT_PVAL] = charges;
+			if (charges > o_ptr->pval)
+				o_ptr->pval = charges;
 		}
 	}
 
@@ -1173,7 +1173,7 @@ static void store_delete_index(struct store *store, int what)
 			/* Hack -- decrement the total charges of staves and wands. */
 			if (tval_can_have_charges(o_ptr))
 			{
-				o_ptr->pval[DEFAULT_PVAL] -= num * o_ptr->pval[DEFAULT_PVAL] / o_ptr->number;
+				o_ptr->pval -= num * o_ptr->pval / o_ptr->number;
 			}
 		}
 	}
@@ -1786,7 +1786,7 @@ void do_cmd_buy(struct command *cmd)
 	/* Hack - Reduce the number of charges in the original stack */
 	if (tval_can_have_charges(o_ptr))
 	{
-		o_ptr->pval[DEFAULT_PVAL] -= i_ptr->pval[DEFAULT_PVAL];
+		o_ptr->pval -= i_ptr->pval;
 	}
 
 	/* Handle stuff */

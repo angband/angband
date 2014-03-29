@@ -238,6 +238,7 @@ static void display_player_equippy(int y, int x)
 struct player_flag_record
 {
 	const char name[7];		/* Name of resistance/ability */
+	bool mod;				/* True if it's a modifier not a flag */
 	int res_flag;			/* resistance flag bit */
 	int im_flag;			/* corresponding immunity bit, if any */
 	int vuln_flag;			/* corresponding vulnerability flag, if any */
@@ -246,45 +247,45 @@ struct player_flag_record
 
 static const struct player_flag_record player_flag_table[RES_ROWS*4] =
 {
-	{ "rAcid",	OF_RES_ACID,    OF_IM_ACID, OF_VULN_ACID, TMD_OPP_ACID },
-	{ "rElec",	OF_RES_ELEC,    OF_IM_ELEC, OF_VULN_ELEC, TMD_OPP_ELEC },
-	{ "rFire",	OF_RES_FIRE,    OF_IM_FIRE, OF_VULN_FIRE, TMD_OPP_FIRE },
-	{ "rCold",	OF_RES_COLD,    OF_IM_COLD, OF_VULN_COLD, TMD_OPP_COLD },
-	{ "rPois",	OF_RES_POIS,    FLAG_END,   FLAG_END,     TMD_OPP_POIS },
-	{ "rLite",	OF_RES_LIGHT,   FLAG_END,   FLAG_END,     -1 },
-	{ "rDark",	OF_RES_DARK,    FLAG_END,   FLAG_END,     -1 },
-	{ "Sound",	OF_RES_SOUND,   FLAG_END,   FLAG_END,     -1 },
-	{ "Shard",	OF_RES_SHARD,   FLAG_END,   FLAG_END,     -1 },
+	{ "rAcid",	0, OF_RES_ACID,    OF_IM_ACID, OF_VULN_ACID, TMD_OPP_ACID },
+	{ "rElec",	0, OF_RES_ELEC,    OF_IM_ELEC, OF_VULN_ELEC, TMD_OPP_ELEC },
+	{ "rFire",	0, OF_RES_FIRE,    OF_IM_FIRE, OF_VULN_FIRE, TMD_OPP_FIRE },
+	{ "rCold",	0, OF_RES_COLD,    OF_IM_COLD, OF_VULN_COLD, TMD_OPP_COLD },
+	{ "rPois",	0, OF_RES_POIS,    FLAG_END,   FLAG_END,     TMD_OPP_POIS },
+	{ "rLite",	0, OF_RES_LIGHT,   FLAG_END,   FLAG_END,     -1 },
+	{ "rDark",	0, OF_RES_DARK,    FLAG_END,   FLAG_END,     -1 },
+	{ "Sound",	0, OF_RES_SOUND,   FLAG_END,   FLAG_END,     -1 },
+	{ "Shard",	0, OF_RES_SHARD,   FLAG_END,   FLAG_END,     -1 },
 
-	{ "Nexus",	OF_RES_NEXUS,   FLAG_END,   FLAG_END,     -1 },
-	{ "Nethr",	OF_RES_NETHR,   FLAG_END,   FLAG_END,     -1 },
-	{ "Chaos",	OF_RES_CHAOS,   FLAG_END,   FLAG_END,     -1 },
-	{ "Disen",	OF_RES_DISEN,   FLAG_END,   FLAG_END,     -1 },
-	{ "Feath",	OF_FEATHER,     FLAG_END,   FLAG_END,     -1 },
-	{ "pFear",	OF_RES_FEAR,    FLAG_END,   FLAG_END,     -1 },
-	{ "pBlnd",	OF_RES_BLIND,   FLAG_END,   FLAG_END,     -1 },
-	{ "pConf",	OF_RES_CONFU,   FLAG_END,   FLAG_END,     TMD_OPP_CONF },
-	{ "pStun",	OF_RES_STUN,	FLAG_END,   FLAG_END,     -1 },
+	{ "Nexus",	0, OF_RES_NEXUS,   FLAG_END,   FLAG_END,     -1 },
+	{ "Nethr",	0, OF_RES_NETHR,   FLAG_END,   FLAG_END,     -1 },
+	{ "Chaos",	0, OF_RES_CHAOS,   FLAG_END,   FLAG_END,     -1 },
+	{ "Disen",	0, OF_RES_DISEN,   FLAG_END,   FLAG_END,     -1 },
+	{ "Feath",	0, OF_FEATHER,     FLAG_END,   FLAG_END,     -1 },
+	{ "pFear",	0, OF_RES_FEAR,    FLAG_END,   FLAG_END,     -1 },
+	{ "pBlnd",	0, OF_RES_BLIND,   FLAG_END,   FLAG_END,     -1 },
+	{ "pConf",	0, OF_RES_CONFU,   FLAG_END,   FLAG_END,     TMD_OPP_CONF },
+	{ "pStun",	0, OF_RES_STUN,	FLAG_END,   FLAG_END,     -1 },
 
-	{ "Light",	OF_LIGHT,       FLAG_END,   FLAG_END,     -1 },
-	{ "Regen",	OF_REGEN,       FLAG_END,   FLAG_END,     -1 },
-	{ "  ESP",	OF_TELEPATHY,   FLAG_END,   FLAG_END,     TMD_TELEPATHY },
-	{ "Invis",	OF_SEE_INVIS,   FLAG_END,   FLAG_END,     TMD_SINVIS },
-	{ "FrAct",	OF_FREE_ACT,    FLAG_END,   FLAG_END,     -1 },
-	{ "HLife",	OF_HOLD_LIFE,   FLAG_END,   FLAG_END,     -1 },
-	{ "Stea.",	OF_STEALTH,     FLAG_END,   FLAG_END,     -1 },
-	{ "Sear.",	OF_SEARCH,      FLAG_END,   FLAG_END,     -1 },
-	{ "Infra",	OF_INFRA,       FLAG_END,   FLAG_END,     TMD_SINFRA },
+	{ "Light",	0, OBJ_MOD_LIGHT,  FLAG_END,   FLAG_END,     -1 },
+	{ "Regen",	0, OF_REGEN,       FLAG_END,   FLAG_END,     -1 },
+	{ "  ESP",	0, OF_TELEPATHY,   FLAG_END,   FLAG_END,     TMD_TELEPATHY },
+	{ "Invis",	0, OF_SEE_INVIS,   FLAG_END,   FLAG_END,     TMD_SINVIS },
+	{ "FrAct",	0, OF_FREE_ACT,    FLAG_END,   FLAG_END,     -1 },
+	{ "HLife",	0, OF_HOLD_LIFE,   FLAG_END,   FLAG_END,     -1 },
+	{ "Stea.",	1, OBJ_MOD_STEALTH,FLAG_END,   FLAG_END,     -1 },
+	{ "Sear.",	1, OBJ_MOD_SEARCH, FLAG_END,   FLAG_END,     -1 },
+	{ "Infra",	1, OBJ_MOD_INFRA,  FLAG_END,   FLAG_END,     TMD_SINFRA },
 
-	{ "Tunn.",	OF_TUNNEL,      FLAG_END,   FLAG_END,     -1 },
-	{ "Speed",	OF_SPEED,       FLAG_END,   FLAG_END,     TMD_FAST },
-	{ "Blows",	OF_BLOWS,       FLAG_END,   FLAG_END,     -1 },
-	{ "Shots",	OF_SHOTS,       FLAG_END,   FLAG_END,     -1 },
-	{ "Might",	OF_MIGHT,       FLAG_END,   FLAG_END,     -1 },
-	{ "S.Dig",	OF_SLOW_DIGEST, FLAG_END,   FLAG_END,     -1 },
-	{ "ImpHP",	OF_IMPAIR_HP,   FLAG_END,   FLAG_END,     -1 },
-	{ " Fear",	OF_AFRAID,      FLAG_END,   FLAG_END,     TMD_AFRAID },
-	{ "Aggrv",	OF_AGGRAVATE,   FLAG_END,   FLAG_END,     -1 },
+	{ "Tunn.",	1, OBJ_MOD_TUNNEL, FLAG_END,   FLAG_END,     -1 },
+	{ "Speed",	1, OBJ_MOD_SPEED,  FLAG_END,   FLAG_END,     TMD_FAST },
+	{ "Blows",	1, OBJ_MOD_BLOWS,  FLAG_END,   FLAG_END,     -1 },
+	{ "Shots",	1, OBJ_MOD_SHOTS,  FLAG_END,   FLAG_END,     -1 },
+	{ "Might",	1, OBJ_MOD_MIGHT,  FLAG_END,   FLAG_END,     -1 },
+	{ "S.Dig",	0, OF_SLOW_DIGEST, FLAG_END,   FLAG_END,     -1 },
+	{ "ImpHP",	0, OF_IMPAIR_HP,   FLAG_END,   FLAG_END,     -1 },
+	{ " Fear",	0, OF_AFRAID,      FLAG_END,   FLAG_END,     TMD_AFRAID },
+	{ "Aggrv",	0, OF_AGGRAVATE,   FLAG_END,   FLAG_END,     -1 },
 };
 
 #define RES_COLS (5 + 2 + INVEN_TOTAL - INVEN_WIELD)
@@ -333,17 +334,21 @@ static void display_resistance_panel(const struct player_flag_record *resists,
 				/* Timed flags only in the player column */
 				if (resists[i].tmd_flag >= 0)
 	 				timed = player->timed[resists[i].tmd_flag] ? TRUE : FALSE;
-
-				/* If the race has innate infravision/digging, force the corresponding flag
-				   here.  If we set it in player_flags(), then all callers of that
-				   function will think the infravision is caused by equipment. */
-				if (player->race->infra > 0)
-					of_on(f, OF_INFRA);
-				if (player->race->r_skills[SKILL_DIGGING] > 0)
-					of_on(f, OF_TUNNEL);
 			}
 
-			res = of_has(f, resists[i].res_flag);
+			if (resists[i].mod) {
+				if (j != INVEN_TOTAL)
+					res = (o_ptr->modifiers[j] != 0);
+				else {
+					/* Messy special cases NRM */
+					if (resists[i].res_flag == OBJ_MOD_INFRA)
+						res = (player->race->infra > 0);
+					if (resists[i].res_flag == OBJ_MOD_TUNNEL)
+						res = (player->race->r_skills[SKILL_DIGGING] > 0);
+				}
+			}
+			else
+				res = of_has(f, resists[i].res_flag);
 			imm = of_has(f, resists[i].im_flag);
 			vuln = of_has(f, resists[i].vuln_flag);
 

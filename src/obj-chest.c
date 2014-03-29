@@ -106,7 +106,7 @@ static const byte chest_traps[64] =
 
 byte chest_trap_type(const object_type *o_ptr)
 {
-	s16b trap_value = o_ptr->pval[DEFAULT_PVAL];
+	s16b trap_value = o_ptr->pval;
 
 	if (trap_value >= 0)
 		return chest_traps[trap_value];
@@ -123,11 +123,11 @@ bool is_trapped_chest(const object_type *o_ptr)
 		return FALSE;
 
 	/* Disarmed or opened chests are not trapped */
-	if (o_ptr->pval[DEFAULT_PVAL] <= 0)
+	if (o_ptr->pval <= 0)
 		return FALSE;
 
 	/* Some chests simply don't have traps */
-	return (chest_traps[o_ptr->pval[DEFAULT_PVAL]] != 0);
+	return (chest_traps[o_ptr->pval] != 0);
 }
 
 
@@ -140,7 +140,7 @@ bool is_locked_chest(const object_type *o_ptr)
 		return FALSE;
 
 	/* Disarmed or opened chests are not locked */
-	return (o_ptr->pval[DEFAULT_PVAL] > 0);
+	return (o_ptr->pval > 0);
 }
 
 /*
@@ -148,7 +148,7 @@ bool is_locked_chest(const object_type *o_ptr)
  */
 void unlock_chest(object_type *o_ptr)
 {
-	o_ptr->pval[DEFAULT_PVAL] = (0 - o_ptr->pval[DEFAULT_PVAL]);
+	o_ptr->pval = (0 - o_ptr->pval);
 }
 
 /*
@@ -181,7 +181,7 @@ s16b chest_check(int y, int x, enum chest_query check_type)
 				return this_o_idx;
 			break;
 		case CHEST_OPENABLE:
-			if (tval_is_chest(o_ptr) && (o_ptr->pval[DEFAULT_PVAL] != 0))
+			if (tval_is_chest(o_ptr) && (o_ptr->pval != 0))
 				return this_o_idx;
 			break;
 		case CHEST_TRAPPED:
@@ -262,7 +262,7 @@ static void chest_death(int y, int x, s16b o_idx)
 	number = (o_ptr->sval % SV_CHEST_MIN_LARGE) * 2;
 
 	/* Zero pval means empty chest */
-	if (!o_ptr->pval[DEFAULT_PVAL]) number = 0;
+	if (!o_ptr->pval) number = 0;
 
 	/* Determine the "value" of the items */
 	value = o_ptr->origin_depth - 10 + 2 * o_ptr->sval;
@@ -297,7 +297,7 @@ static void chest_death(int y, int x, s16b o_idx)
 	}
 
 	/* Empty */
-	o_ptr->pval[DEFAULT_PVAL] = 0;
+	o_ptr->pval = 0;
 
 	/* Known */
 	object_notice_everything(o_ptr);
@@ -318,10 +318,10 @@ static void chest_trap(int y, int x, s16b o_idx)
 
 
 	/* Ignore disarmed chests */
-	if (o_ptr->pval[DEFAULT_PVAL] <= 0) return;
+	if (o_ptr->pval <= 0) return;
 
 	/* Obtain the traps */
-	trap = chest_traps[o_ptr->pval[DEFAULT_PVAL]];
+	trap = chest_traps[o_ptr->pval];
 
 	/* Lose strength */
 	if (trap & (CHEST_LOSE_STR))
@@ -370,7 +370,7 @@ static void chest_trap(int y, int x, s16b o_idx)
 	{
 		msg("There is a sudden explosion!");
 		msg("Everything inside the chest is destroyed!");
-		o_ptr->pval[DEFAULT_PVAL] = 0;
+		o_ptr->pval = 0;
 		take_hit(player, damroll(5, 8), "an exploding chest");
 	}
 }
@@ -395,7 +395,7 @@ bool do_cmd_open_chest(int y, int x, s16b o_idx)
 
 
 	/* Attempt to unlock it */
-	if (o_ptr->pval[DEFAULT_PVAL] > 0)
+	if (o_ptr->pval > 0)
 	{
 		/* Assume locked, and thus not open */
 		flag = FALSE;
@@ -408,7 +408,7 @@ bool do_cmd_open_chest(int y, int x, s16b o_idx)
 		if (player->timed[TMD_CONFUSED] || player->timed[TMD_IMAGE]) i = i / 10;
 
 		/* Extract the difficulty */
-		j = i - o_ptr->pval[DEFAULT_PVAL];
+		j = i - o_ptr->pval;
 
 		/* Always have a small chance of success */
 		if (j < 2) j = 2;
@@ -449,7 +449,7 @@ bool do_cmd_open_chest(int y, int x, s16b o_idx)
 	 * empty chests were always squelched in squelch_item_okay so we
 	 * might as well squelch it here
 	 */
-	if (o_ptr->pval[DEFAULT_PVAL] == 0) {
+	if (o_ptr->pval == 0) {
 		o_ptr->ignore = TRUE;
 	}
 
@@ -488,7 +488,7 @@ bool do_cmd_disarm_chest(int y, int x, s16b o_idx)
 	if (player->timed[TMD_CONFUSED] || player->timed[TMD_IMAGE]) i = i / 10;
 
 	/* Extract the difficulty */
-	j = i - o_ptr->pval[DEFAULT_PVAL];
+	j = i - o_ptr->pval;
 
 	/* Always have a small chance of success */
 	if (j < 2) j = 2;
@@ -509,8 +509,8 @@ bool do_cmd_disarm_chest(int y, int x, s16b o_idx)
 	else if (randint0(100) < j)
 	{
 		msgt(MSG_DISARM, "You have disarmed the chest.");
-		player_exp_gain(player, o_ptr->pval[DEFAULT_PVAL]);
-		o_ptr->pval[DEFAULT_PVAL] = (0 - o_ptr->pval[DEFAULT_PVAL]);
+		player_exp_gain(player, o_ptr->pval);
+		o_ptr->pval = (0 - o_ptr->pval);
 	}
 
 	/* Failure -- Keep trying */

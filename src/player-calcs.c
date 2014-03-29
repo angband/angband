@@ -1175,8 +1175,7 @@ static void calc_mana(void)
 		if (o_ptr->kind &&
 			!of_has(o_ptr->flags, OF_FREE_ACT) && 
 			!of_has(o_ptr->flags, OF_SPELLS_OK) &&
-			!(of_has(o_ptr->flags, OF_DEX) && 
-			  (o_ptr->modifiers[OBJ_MOD_DEX] > 0)))
+			(o_ptr->modifiers[OBJ_MOD_DEX] <= 0))
 		{
 			/* Encumbered */
 			player->state.cumber_glove = TRUE;

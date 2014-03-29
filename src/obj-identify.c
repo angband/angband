@@ -1027,7 +1027,8 @@ bool object_FA_would_be_obvious(const object_type *o_ptr)
 		bitflag flags[OF_SIZE];
 		object_flags(o_ptr, flags);
 
-		if (!of_has(flags, OF_DEX) && !of_has(flags, OF_SPELLS_OK))
+		if ((o_ptr->modifiers[OBJ_MOD_DEX] <= 0) && 
+			!of_has(flags, OF_SPELLS_OK))
 			return TRUE;
 	}
 

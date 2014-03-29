@@ -76,24 +76,10 @@ static struct object_kind TEST_DATA test_longsword = {
 	.tval = TV_SWORD,
 	.sval = SV_LONG_SWORD,
 	.pval = {
-			{
 				.base = 0,
 				.dice = 0,
 				.sides = 0,
 				.m_bonus = 0,
-			},
-			{
-				.base = 0,
-				.dice = 0,
-				.sides = 0,
-				.m_bonus = 0,
-			},
-			{
-				.base = 0,
-				.dice = 0,
-				.sides = 0,
-				.m_bonus = 0,
-			},
 	},
 	.modifiers = { 
 		[OBJ_MOD_NONE] = { 0, 0, 0, 0 }, 
@@ -158,24 +144,10 @@ static struct object_kind TEST_DATA test_torch = {
 	.tval = TV_LIGHT,
 	.sval = SV_LIGHT_TORCH,
 	.pval = {
-			{
 				.base = 5000,
 				.dice = 0,
 				.sides = 0,
 				.m_bonus = 0,
-			},
-			{
-				.base = 0,
-				.dice = 0,
-				.sides = 0,
-				.m_bonus = 0,
-			},
-			{
-				.base = 0,
-				.dice = 0,
-				.sides = 0,
-				.m_bonus = 0,
-			},
 	},
 
 	.modifiers = { 
@@ -241,24 +213,10 @@ static struct object_kind TEST_DATA test_lantern = {
 	.tval = TV_LIGHT,
 	.sval = SV_LIGHT_LANTERN,
 	.pval = {
-			{
 				.base = 5000,
 				.dice = 0,
 				.sides = 0,
 				.m_bonus = 0,
-			},
-			{
-				.base = 0,
-				.dice = 0,
-				.sides = 0,
-				.m_bonus = 0,
-			},
-			{
-				.base = 0,
-				.dice = 0,
-				.sides = 0,
-				.m_bonus = 0,
-			},
 	},
 
 	.modifiers = { 
@@ -324,24 +282,10 @@ static struct object_kind TEST_DATA test_flask = {
 	.tval = TV_FLASK,
 	.sval = 0,
 	.pval = {
-			{
 				.base = 7500,
 				.dice = 0,
 				.sides = 0,
 				.m_bonus = 0,
-			},
-			{
-				.base = 0,
-				.dice = 0,
-				.sides = 0,
-				.m_bonus = 0,
-			},
-			{
-				.base = 0,
-				.dice = 0,
-				.sides = 0,
-				.m_bonus = 0,
-			},
 	},
 
 	.modifiers = { 
@@ -407,24 +351,10 @@ static struct object_kind TEST_DATA test_rod_treasure_location = {
 	.tval = TV_ROD,
 	.sval = 1,
 	.pval = {
-			{
 				.base = 0,
 				.dice = 0,
 				.sides = 0,
 				.m_bonus = 0,
-			},
-			{
-				.base = 0,
-				.dice = 0,
-				.sides = 0,
-				.m_bonus = 0,
-			},
-			{
-				.base = 0,
-				.dice = 0,
-				.sides = 0,
-				.m_bonus = 0,
-			},
 	},
 
 	.modifiers = { 
@@ -489,24 +419,10 @@ static struct object_kind TEST_DATA test_gold = {
 	.tval = TV_GOLD,
 	.sval = 0,
 	.pval = {
-			{
 				.base = 0,
 				.dice = 0,
 				.sides = 0,
 				.m_bonus = 0,
-			},
-			{
-				.base = 0,
-				.dice = 0,
-				.sides = 0,
-				.m_bonus = 0,
-			},
-			{
-				.base = 0,
-				.dice = 0,
-				.sides = 0,
-				.m_bonus = 0,
-			},
 	},
 
 	.modifiers = { 

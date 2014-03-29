@@ -261,10 +261,12 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 		p += (o_ptr->to_d * DAMAGE_POWER);
 		file_putf(log_file, "Adding power from nonweap to_dam, total is %d\n", p);
 		/* Add power boost for nonweapons with combat flags */
-		if (num_slays || of_has(flags, OF_BLOWS) || of_has(flags, OF_SHOTS) ||
-				of_has(flags, OF_MIGHT)) {
+		if (num_slays || (o_ptr->modifiers[OBJ_MOD_BLOWS] > 0)
+			|| (o_ptr->modifiers[OBJ_MOD_SHOTS] > 0)
+			|| (o_ptr->modifiers[OBJ_MOD_MIGHT] > 0)) {
 			dice_pwr = (WEAP_DAMAGE * DAMAGE_POWER);
-			file_putf(log_file, "Adding %d power for nonweap combat flags\n", dice_pwr);
+			file_putf(log_file, "Adding %d power for nonweap combat flags\n", 
+					  dice_pwr);
 		}
 	}
 	p += dice_pwr;

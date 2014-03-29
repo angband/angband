@@ -61,7 +61,7 @@ void wr_description(void)
  */
 static void wr_item(const object_type *o_ptr)
 {
-	size_t i, j;
+	size_t i;
 
 	wr_u16b(0xffff);
 	wr_byte(ITEM_VERSION);
@@ -75,10 +75,8 @@ static void wr_item(const object_type *o_ptr)
 	wr_byte(o_ptr->tval);
 	wr_byte(o_ptr->sval);
 
-	for (i = 0; i < MAX_PVALS; i++) {
-		wr_s16b(o_ptr->pval[i]);
-	}
-	wr_byte(o_ptr->num_pvals);
+	wr_s16b(o_ptr->pval);
+
 	for (i = 0; i < OBJ_MOD_MAX; i++) {
 		wr_s16b(o_ptr->modifiers[i]);
 	}
@@ -117,11 +115,6 @@ static void wr_item(const object_type *o_ptr)
 
 	for (i = 0; i < OF_SIZE; i++)
 		wr_byte(o_ptr->known_flags[i]);
-
-	for (j = 0; j < MAX_PVALS; j++) {
-		for (i = 0; i < OF_SIZE; i++)
-			wr_byte(o_ptr->pval_flags[j][i]);
-	}
 
 	/* Held by monster index */
 	wr_s16b(o_ptr->held_m_idx);
@@ -350,7 +343,6 @@ void wr_object_memory(void)
 
 	wr_u16b(z_info->k_max);
 	wr_byte(OF_SIZE);
-	wr_byte(MAX_PVALS);
 	wr_byte(OBJ_MOD_MAX);
 	for (k_idx = 0; k_idx < z_info->k_max; k_idx++)
 	{

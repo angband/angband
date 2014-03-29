@@ -82,16 +82,6 @@ enum {
 #define ORIGIN_BYTES 4 /* savefile bytes - room for 32 origin types */
 
 
-/**
- * Maximum number of pvals on objects
- *
- * Note: all pvals other than DEFAULT_PVAL are assumed to be associated with
- * flags, and any non-flag uses of pval (e.g. chest quality, gold quantity)
- * are assumed to use DEFAULT_PVAL.
- */
-#define MAX_PVALS 3
-#define DEFAULT_PVAL 0
-
 /* ID flags */
 #define IDENT_SENSE     0x0001  /* Has been "sensed" */
 #define IDENT_WORN      0x0002  /* Has been tried on */
@@ -331,8 +321,8 @@ typedef struct object_kind
 
 	byte tval;         /**< General object type (see TV_ macros) */
 	byte sval;         /**< Object sub-type (see SV_ macros) */
-	random_value pval[MAX_PVALS]; /**< Power for any flags which need it */
-	byte num_pvals;	   /**< Number of pvals in use on this item */
+
+	random_value pval;	/* Item extra-parameter */
 
 	random_value to_h; /**< Bonus to hit */
 	random_value to_d; /**< Bonus to damage */
@@ -347,7 +337,6 @@ typedef struct object_kind
 
 	bitflag flags[OF_SIZE];			/**< Flags */
 	bitflag kind_flags[KF_SIZE];			/**< Kind flags */
-	bitflag pval_flags[MAX_PVALS][OF_SIZE];	/**< pval flags */
 
 	random_value modifiers[OBJ_MOD_MAX];
 	s16b resists[GF_COUNT_MAX];
@@ -425,8 +414,6 @@ typedef struct artifact
 
 	byte tval;    /**< General artifact type (see TV_ macros) */
 	byte sval;    /**< Artifact sub-type (see SV_ macros) */
-	s16b pval[MAX_PVALS];    /**< Power for any flags which need it */
-	byte num_pvals;/**< Number of pvals in use on this item */
 
 	s16b to_h;    /**< Bonus to hit */
 	s16b to_d;    /**< Bonus to damage */
@@ -442,7 +429,6 @@ typedef struct artifact
 
 	bitflag flags[OF_SIZE];		/**< Flags */
 	bitflag kind_flags[KF_SIZE];			/**< Kind flags */
-	bitflag pval_flags[MAX_PVALS][OF_SIZE];	/**< pval flags */
 
 	s16b modifiers[OBJ_MOD_MAX];
 	s16b resists[GF_COUNT_MAX];
@@ -493,7 +479,6 @@ typedef struct ego_item
 
 	bitflag flags[OF_SIZE];		/**< Flags */
 	bitflag kind_flags[KF_SIZE];			/**< Kind flags */
-	bitflag pval_flags[MAX_PVALS][OF_SIZE];	/**< pval flags */
 
 	random_value modifiers[OBJ_MOD_MAX];
 	byte min_modifiers[OBJ_MOD_MAX];
@@ -516,13 +501,10 @@ typedef struct ego_item
 	random_value to_h;     		/* Extra to-hit bonus */
 	random_value to_d; 		/* Extra to-dam bonus */
 	random_value to_a; 		/* Extra to-ac bonus */
-	random_value pval[MAX_PVALS]; 	/* Extra pval bonus */
-	byte num_pvals;			/* Number of pvals used */
 
 	byte min_to_h;			/* Minimum to-hit value */
 	byte min_to_d;			/* Minimum to-dam value */
 	byte min_to_a;			/* Minimum to-ac value */
-	byte min_pval[MAX_PVALS];	/* Minimum pval */
 
 	bool everseen;			/* Do not spoil squelch menus */
 } ego_item_type;
@@ -572,14 +554,12 @@ typedef struct object
 	byte tval;			/* Item type (from kind) */
 	byte sval;			/* Item sub-type (from kind) */
 
-	s16b pval[MAX_PVALS];		/* Item extra-parameter */
-	byte num_pvals;			/* Number of pvals in use */
+	s16b pval;			/* Item extra-parameter */
 
 	s16b weight;			/* Item weight */
 
 	bitflag flags[OF_SIZE];		/**< Flags */
 	bitflag known_flags[OF_SIZE];	/**< Player-known flags */
-	bitflag pval_flags[MAX_PVALS][OF_SIZE];	/**< pval flags */
 	u16b ident;			/* Special flags */
 
 	s16b modifiers[OBJ_MOD_MAX];

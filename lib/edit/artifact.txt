@@ -182,22 +182,22 @@ D:it rests upon the bearer.
 
 # New Artifact (7): The Palantir of Westernesse
 
-N:7:of Westernesse
-I:light:7
-W:75:60:200:100000
+#N:7:of Westernesse
+#I:light:7
+#W:75:60:200:100000
 #A:2:75 to 127
-P:0:10d10:0:0:0
+#P:0:10d10:0:0:0
 # F:DRAIN_MANA | 
-F:NO_FUEL
-F:SEE_INVIS | TELEPATHY | 
-F:RES_CHAOS | RES_BLIND | AGGRAVATE | DRAIN_EXP | 
-F:INSTA_ART | LIGHT
-E:CLAIRVOYANCE:50+d50
-M:The {kind} glow{s} a deep green...
-L:2:INT | WIS
-L:3:SEARCH | INFRA | LIGHT
-D:A great globe with a heart of fire, the Palantír provides the wearer with 
-D:sight of far places - at a cost, for those espied upon are aware of it.
+#F:NO_FUEL
+#F:SEE_INVIS | TELEPATHY | 
+#F:RES_CHAOS | RES_BLIND | AGGRAVATE | DRAIN_EXP | 
+#F:INSTA_ART | LIGHT
+#E:CLAIRVOYANCE:50+d50
+#M:The {kind} glow{s} a deep green...
+#L:2:INT | WIS
+#L:3:SEARCH | INFRA | LIGHT
+#D:A great globe with a heart of fire, the Palantír provides the wearer with 
+#D:sight of far places - at a cost, for those espied upon are aware of it.
 
 
 # The Ring of Barahir

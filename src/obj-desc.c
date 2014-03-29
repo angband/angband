@@ -352,7 +352,7 @@ static size_t obj_desc_chest(const object_type *o_ptr, char *buf, size_t max, si
 	if (!known) return end;
 
 	/* May be "empty" */
-	if (!o_ptr->pval[DEFAULT_PVAL])
+	if (!o_ptr->pval)
 		strnfcat(buf, max, &end, " (empty)");
 
 	/* May be "disarmed" */
@@ -424,8 +424,8 @@ static size_t obj_desc_combat(const object_type *o_ptr, char *buf, size_t max,
 
 	if (of_has(o_ptr->flags, OF_SHOW_MULT)) {
 		/* Display shooting power as part of the multiplier */
-		if (of_has(o_ptr->flags, OF_MIGHT) &&
-		    (spoil || object_flag_is_known(o_ptr, OF_MIGHT)))
+		if ((o_ptr->modifiers[OBJ_MOD_MIGHT] > 0) &&
+		    (spoil || object_this_mod_is_visible(o_ptr, OBJ_MOD_MIGHT)))
 			strnfcat(buf, max, &end, " (x%d)", (o_ptr->sval % 10) + o_ptr->modifiers[OBJ_MOD_MIGHT]);
 		else
 			strnfcat(buf, max, &end, " (x%d)", o_ptr->sval % 10);
@@ -518,7 +518,7 @@ static size_t obj_desc_charges(const object_type *o_ptr, char *buf, size_t max, 
 
 	/* Wands and Staffs have charges */
 	if (aware && tval_can_have_charges(o_ptr))
-		strnfcat(buf, max, &end, " (%d charge%s)", o_ptr->pval[DEFAULT_PVAL], PLURAL(o_ptr->pval[DEFAULT_PVAL]));
+		strnfcat(buf, max, &end, " (%d charge%s)", o_ptr->pval, PLURAL(o_ptr->pval));
 
 	/* Charging things */
 	else if (o_ptr->timeout > 0)
@@ -653,7 +653,7 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr, int mode)
 
 	if (tval_is_money(o_ptr))
 		return strnfmt(buf, max, "%d gold pieces worth of %s%s",
-				o_ptr->pval[DEFAULT_PVAL], o_ptr->kind->name,
+				o_ptr->pval, o_ptr->kind->name,
 				squelch_item_ok(o_ptr) ? " {squelch}" : "");
 
 	/** Construct the name **/

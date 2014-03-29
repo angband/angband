@@ -25,7 +25,7 @@
 
 /* The object flags */
 enum {
-    #define OF(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r) OF_##a,
+    #define OF(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q) OF_##a,
     #include "list-object-flags.h"
     #undef OF
 };
@@ -39,7 +39,7 @@ enum {
 
 /* Object modifiers here for now too */
 enum {
-    #define OBJ_MOD(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r) OBJ_MOD_##a,
+    #define OBJ_MOD(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q) OBJ_MOD_##a,
     #include "list-object-modifiers.h"
     #undef OBJ_MOD
 };
@@ -125,11 +125,10 @@ enum object_flag_id {
  */
 struct object_flag {
 	u16b index;				/* the OF_ index */
-	bool pval;				/* is it granular (TRUE) or binary (FALSE) */
 	u16b id;				/* how is it identified */
 	u16b type;				/* OFT_ category */
 	s16b power;				/* base power rating */
-	s16b pval_mult;			/* pval weight rating */
+	s16b mod_mult;			/* pval weight rating */
 	s16b weapon;			/* power mult for melee weapon */
 	s16b bow;				/* power mult for launcher */
 	s16b ring;				/* etc. ... */

@@ -299,7 +299,7 @@ static void log_all_objects(int level)
 
 				/* Capture gold amounts */
 				if (tval_is_money(o_ptr))
-					level_data[level].gold[o_ptr->origin] += o_ptr->pval[DEFAULT_PVAL];
+					level_data[level].gold[o_ptr->origin] += o_ptr->pval;
 
 				/* Capture artifact drops */
 				if (o_ptr->artifact)
@@ -796,16 +796,16 @@ static int stats_dump_lists(void)
 
 	struct object_flag object_flag_table[] =
 	{
-		#define OF(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r) \
-			{ OF_##a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, #a },
+		#define OF(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q) \
+			{ OF_##a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, #a },
 		#include "list-object-flags.h"
 		#undef OF
 	};
 
 	struct object_flag object_mod_table[] =
 	{
-        #define OBJ_MOD(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r)  \
-            { OBJ_MOD_##a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, #a },
+        #define OBJ_MOD(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q)  \
+            { OBJ_MOD_##a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, #a },
         #include "list-object-modifiers.h"
         #undef OBJ_MOD
 	};
@@ -902,7 +902,7 @@ static int stats_dump_lists(void)
 		if (! of_ptr->message) continue;
 
 		err = stats_db_bind_ints(sql_stmt, 4, 0, idx, 
-			of_ptr->type, of_ptr->power, of_ptr->pval_mult);
+			of_ptr->type, of_ptr->power, of_ptr->mod_mult);
 		if (err) return err;
 		err = sqlite3_bind_text(sql_stmt, 5, of_ptr->message,
 			strlen(of_ptr->message), SQLITE_STATIC);
@@ -1126,7 +1126,7 @@ static bool stats_prep_db(void)
 	err = stats_db_exec("CREATE TABLE object_flags_list(idx INT PRIMARY KEY, type INT, power INT, name TEXT);");
 	if (err) return false;
 
-	err = stats_db_exec("CREATE TABLE object_mods_list(idx INT PRIMARY KEY, type INT, power INT, pval_mult INT, name TEXT);");
+	err = stats_db_exec("CREATE TABLE object_mods_list(idx INT PRIMARY KEY, type INT, power INT, mod_mult INT, name TEXT);");
 	if (err) return false;
 
 	err = stats_db_exec("CREATE TABLE object_slays_list(idx INT PRIMARY KEY, object_flag INT, monster_flag INT, resist_flag INT, mult INT, name TEXT);");

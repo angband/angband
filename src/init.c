@@ -107,14 +107,14 @@ static struct history_chart *histories;
  */
 
 static const char *obj_flags[] = {
-	#define OF(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r) #a,
+	#define OF(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q) #a,
 	#include "list-object-flags.h"
 	#undef OF
 	NULL
 };
 
 static const char *obj_mods[] = {
-	#define OBJ_MOD(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r) #a,
+	#define OBJ_MOD(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q) #a,
 	#include "list-object-modifiers.h"
 	#undef OBJ_MOD
 	NULL
@@ -668,12 +668,13 @@ static enum parser_error parse_k_l(struct parser *p) {
 	struct object_kind *k = parser_priv(p);
 	char *s;
 	char *t;
+	random_value mod;
 	assert(k);
 
-	k->pval[k->num_pvals] = parser_getrand(p, "pval");
+	mod = parser_getrand(p, "mod");
 
 	if (!parser_hasval(p, "flags")) {
-		k->num_pvals++;
+		k->pval = mod;
 		return PARSE_ERROR_NONE;
 	}
 
@@ -682,19 +683,13 @@ static enum parser_error parse_k_l(struct parser *p) {
 
 	while (t) {
 		int i = lookup_flag(obj_mods, t);
-		if (grab_flag(k->flags, OF_SIZE, obj_flags, t) ||
-			grab_flag(k->pval_flags[k->num_pvals], OF_SIZE, obj_flags, t))
-			break;
-
 		if (i)
-			k->modifiers[i] = k->pval[k->num_pvals];
+			k->modifiers[i] = mod;
+		else
+			break;
 
 		t = strtok(NULL, " |");
 	}
-
-	k->num_pvals++;
-	if (k->num_pvals > MAX_PVALS)
-		return PARSE_ERROR_TOO_MANY_ENTRIES;
 
 	mem_free(s);
 	return t ? PARSE_ERROR_INVALID_FLAG : PARSE_ERROR_NONE;
@@ -713,7 +708,7 @@ struct parser *init_parse_k(void) {
 	parser_reg(p, "M int prob rand stack", parse_k_m);
 	parser_reg(p, "F str flags", parse_k_f);
 	parser_reg(p, "E sym name ?rand time", parse_k_e);
-	parser_reg(p, "L rand pval ?str flags", parse_k_l);
+	parser_reg(p, "L rand mod ?str flags", parse_k_l);
 	parser_reg(p, "D str text", parse_k_d);
 	return p;
 }
@@ -902,9 +897,10 @@ static enum parser_error parse_a_l(struct parser *p) {
 	struct artifact *a = parser_priv(p);
 	char *s; 
 	char *t;
+	int mod;
 	assert(a);
 
-	a->pval[a->num_pvals] = parser_getint(p, "pval");
+	mod = parser_getint(p, "mod");
 
 	if (!parser_hasval(p, "flags"))
 		return PARSE_ERROR_MISSING_FIELD;
@@ -914,19 +910,13 @@ static enum parser_error parse_a_l(struct parser *p) {
 
 	while (t) {
 		int i = lookup_flag(obj_mods, t);
-		if (grab_flag(a->flags, OF_SIZE, obj_flags, t) ||
-			grab_flag(a->pval_flags[a->num_pvals], OF_SIZE, obj_flags, t))
-			break;
-
 		if (i)
-			a->modifiers[i] = a->pval[a->num_pvals];
+			a->modifiers[i] = mod;
+		else
+			break;
 
 		t = strtok(NULL, " |");
 	}
-
-	a->num_pvals++;
-	if (a->num_pvals > MAX_PVALS)
-		return PARSE_ERROR_TOO_MANY_ENTRIES;
 
 	mem_free(s);
 	return t ? PARSE_ERROR_INVALID_FLAG : PARSE_ERROR_NONE;
@@ -951,7 +941,7 @@ struct parser *init_parse_a(void) {
 	parser_reg(p, "F ?str flags", parse_a_f);
 	parser_reg(p, "E sym name rand time", parse_a_e);
 	parser_reg(p, "M str text", parse_a_m);
-	parser_reg(p, "L int pval str flags", parse_a_l);
+	parser_reg(p, "L int mod str flags", parse_a_l);
 	parser_reg(p, "D str text", parse_a_d);
 	return p;
 }
@@ -1560,35 +1550,31 @@ static enum parser_error parse_e_l(struct parser *p) {
 	struct ego_item *e = parser_priv(p);
 	char *s; 
 	char *t;
+	random_value mod;
+	int min;
 
 	if (!e)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 	if (!parser_hasval(p, "flags"))
 		return PARSE_ERROR_MISSING_FIELD;
 
-	e->pval[e->num_pvals] = parser_getrand(p, "pval");
-	e->min_pval[e->num_pvals] = parser_getint(p, "min");
+	mod = parser_getrand(p, "mod");
+	min = parser_getint(p, "min");
 
 	s = string_make(parser_getstr(p, "flags"));
 	t = strtok(s, " |");
 
 	while (t) {
 		int i = lookup_flag(obj_mods, t);
-		if (grab_flag(e->flags, OF_SIZE, obj_flags, t) ||
-			grab_flag(e->pval_flags[e->num_pvals], OF_SIZE, obj_flags, t))
-			break;
-
 		if (i) {
-			e->modifiers[i] = e->pval[e->num_pvals];
-			e->min_modifiers[i] = e->min_pval[e->num_pvals];
+			e->modifiers[i] = mod;
+			e->min_modifiers[i] = min;
 		}
+		else
+			break;
 
 		t = strtok(NULL, " |");
 	}
-
-	e->num_pvals++;
-	if (e->num_pvals > MAX_PVALS)
-		return PARSE_ERROR_TOO_MANY_ENTRIES;
 
 	mem_free(s);
 	return t ? PARSE_ERROR_INVALID_FLAG : PARSE_ERROR_NONE;
@@ -1613,7 +1599,7 @@ struct parser *init_parse_e(void) {
 	parser_reg(p, "C rand th rand td rand ta", parse_e_c);
 	parser_reg(p, "M int th int td int ta", parse_e_m);
 	parser_reg(p, "F ?str flags", parse_e_f);
-	parser_reg(p, "L rand pval int min str flags", parse_e_l);
+	parser_reg(p, "L rand mod int min str flags", parse_e_l);
 	parser_reg(p, "D str text", parse_e_d);
 	return p;
 }

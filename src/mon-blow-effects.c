@@ -252,16 +252,16 @@ static void melee_effect_handler_drain_charges(melee_effect_handler_context_t *c
 		if (tval_can_have_charges(o_ptr))
 		{
 			/* Charged? */
-			if (o_ptr->pval[DEFAULT_PVAL])
+			if (o_ptr->pval)
 			{
 				/* Get number of charge to drain */
 				unpower = (context->rlev / (o_ptr->kind->level + 2)) + 1;
 
 				/* Get new charge value, don't allow negative */
-				newcharge = MAX((o_ptr->pval[DEFAULT_PVAL] - unpower),0);
+				newcharge = MAX((o_ptr->pval - unpower),0);
 
 				/* Remove the charges */
-				o_ptr->pval[DEFAULT_PVAL] = newcharge;
+				o_ptr->pval = newcharge;
 			}
 		}
 
@@ -348,7 +348,7 @@ static void melee_effect_handler_eat_gold(melee_effect_handler_context_t *contex
 
             /* Amount of gold to put in this object */
             amt = gold > MAX_PVAL ? MAX_PVAL : gold;
-            o.pval[DEFAULT_PVAL] = amt;
+            o.pval = amt;
             gold -= amt;
 
             /* Set origin to stolen, so it is not confused with

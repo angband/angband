@@ -1378,9 +1378,9 @@ s32b object_value_real(const object_type *o_ptr, int qty, int verbose,
 		total_value = value * qty;
 
 		/* Calculate number of charges, rounded up */
-		charges = o_ptr->pval[DEFAULT_PVAL]
+		charges = o_ptr->pval
 		* qty / o_ptr->number;
-		if ((o_ptr->pval[DEFAULT_PVAL] * qty) % o_ptr->number != 0)
+		if ((o_ptr->pval * qty) % o_ptr->number != 0)
 			charges++;
 
 		/* Pay extra for charges, depending on standard number of charges */
@@ -1496,7 +1496,7 @@ static bool inventory_object_stackable(const object_type *o_ptr, const object_ty
 	else if (tval_can_have_charges(o_ptr) || tval_is_money(o_ptr)) {
 		/* Gold, staves and wands stack most of the time */
 		/* Too much gold or too many charges */
-		if (o_ptr->pval[DEFAULT_PVAL] + j_ptr->pval[DEFAULT_PVAL] > MAX_PVAL)
+		if (o_ptr->pval + j_ptr->pval > MAX_PVAL)
 			return FALSE;
 
 		/* ... otherwise ok */
@@ -1609,8 +1609,8 @@ static void object_absorb_merge(object_type *o_ptr, const object_type *j_ptr)
 	/* Combine pvals for wands and staves */
 	if (tval_can_have_charges(o_ptr) || tval_is_money(o_ptr))
 	{
-		total = o_ptr->pval[DEFAULT_PVAL] + j_ptr->pval[DEFAULT_PVAL];
-		o_ptr->pval[DEFAULT_PVAL] = total >= MAX_PVAL ? MAX_PVAL : total;
+		total = o_ptr->pval + j_ptr->pval;
+		o_ptr->pval = total >= MAX_PVAL ? MAX_PVAL : total;
 	}
 
 	/* Combine origin data as best we can */
@@ -1719,8 +1719,8 @@ void object_copy_amt(object_type *dst, object_type *src, int amt)
 	 */
 	if (tval_can_have_charges(src))
 	{
-		dst->pval[DEFAULT_PVAL] =
-			src->pval[DEFAULT_PVAL] * amt / src->number;
+		dst->pval =
+			src->pval * amt / src->number;
 	}
 
 	if (tval_can_have_timeout(src))
@@ -2213,8 +2213,8 @@ void inven_item_charges(int item)
 	if (!object_is_known(o_ptr)) return;
 
 	/* Print a message */
-	msg("You have %d charge%s remaining.", o_ptr->pval[DEFAULT_PVAL],
-	    (o_ptr->pval[DEFAULT_PVAL] != 1) ? "s" : "");
+	msg("You have %d charge%s remaining.", o_ptr->pval,
+	    (o_ptr->pval != 1) ? "s" : "");
 }
 
 
@@ -2559,9 +2559,9 @@ void floor_item_charges(int item)
 
 	/* Print a message */
 	msg("There %s %d charge%s remaining.",
-	    (o_ptr->pval[DEFAULT_PVAL] != 1) ? "are" : "is",
-	     o_ptr->pval[DEFAULT_PVAL],
-	    (o_ptr->pval[DEFAULT_PVAL] != 1) ? "s" : "");
+	    (o_ptr->pval != 1) ? "are" : "is",
+	     o_ptr->pval,
+	    (o_ptr->pval != 1) ? "s" : "");
 }
 
 
@@ -2727,8 +2727,8 @@ static int inventory_slot_for_object(const struct object *o_ptr, size_t max_slot
 		/* Lights sort by decreasing fuel */
 		if (tval_is_light(o_ptr))
 		{
-			if (o_ptr->pval[DEFAULT_PVAL] > j_ptr->pval[DEFAULT_PVAL]) break;
-			if (o_ptr->pval[DEFAULT_PVAL] < j_ptr->pval[DEFAULT_PVAL]) continue;
+			if (o_ptr->pval > j_ptr->pval) break;
+			if (o_ptr->pval < j_ptr->pval) continue;
 		}
 		
 		/* Determine the "value" of the pack item */
@@ -3073,7 +3073,7 @@ void combine_pack(void)
 		{
 			/* Count the gold */
 			slide = TRUE;
-			player->au += o_ptr->pval[DEFAULT_PVAL];
+			player->au += o_ptr->pval;
 		}
 
 		/* Scan the items above that item */
@@ -3271,10 +3271,10 @@ void distribute_charges(object_type *o_ptr, object_type *q_ptr, int amt)
 	 */
 	if (tval_can_have_charges(o_ptr))
 	{
-		q_ptr->pval[DEFAULT_PVAL] = o_ptr->pval[DEFAULT_PVAL] * amt / o_ptr->number;
+		q_ptr->pval = o_ptr->pval * amt / o_ptr->number;
 
 		if (amt < o_ptr->number)
-			o_ptr->pval[DEFAULT_PVAL] -= q_ptr->pval[DEFAULT_PVAL];
+			o_ptr->pval -= q_ptr->pval;
 	}
 
 	/*
@@ -3306,7 +3306,7 @@ void reduce_charges(object_type *o_ptr, int amt)
 	 * being destroyed. -LM-
 	 */
 	if (tval_can_have_charges(o_ptr) && amt < o_ptr->number)
-		o_ptr->pval[DEFAULT_PVAL] -= o_ptr->pval[DEFAULT_PVAL] * amt / o_ptr->number;
+		o_ptr->pval -= o_ptr->pval * amt / o_ptr->number;
 
 	if (tval_can_have_timeout(o_ptr) && amt < o_ptr->number)
 		o_ptr->timeout -= o_ptr->timeout * amt / o_ptr->number;
@@ -3626,7 +3626,7 @@ bool obj_has_charges(const object_type *o_ptr)
 {
 	if (!tval_can_have_charges(o_ptr)) return FALSE;
 
-	if (o_ptr->pval[DEFAULT_PVAL] <= 0) return FALSE;
+	if (o_ptr->pval <= 0) return FALSE;
 
 	return TRUE;
 }

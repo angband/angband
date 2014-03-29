@@ -23,8 +23,8 @@
  */
 static const struct object_flag object_flag_table[] =
 {
-    #define OF(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r) \
-            { OF_##a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r },
+    #define OF(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q) \
+            { OF_##a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q },
     #include "list-object-flags.h"
     #undef OF
 };
@@ -34,7 +34,7 @@ static const struct object_flag object_flag_table[] =
  */
 static const char *flag_names[] =
 {
-    #define OF(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r) #a,
+    #define OF(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q) #a,
     #include "list-object-flags.h"
     #undef OF
     ""
@@ -47,8 +47,8 @@ static const char *flag_names[] =
  */
 static const struct object_flag object_mod_table[] =
 {
-    #define OBJ_MOD(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r) \
-            { OF_##a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r },
+    #define OBJ_MOD(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q) \
+            { OBJ_MOD_##a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q },
     #include "list-object-modifiers.h"
     #undef OBJ_MOD
 };
@@ -58,7 +58,7 @@ static const struct object_flag object_mod_table[] =
  */
 static const char *mod_names[] =
 {
-    #define OBJ_MOD(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r) #a,
+    #define OBJ_MOD(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q) #a,
     #include "list-object-modifiers.h"
     #undef OBJ_MOD
     ""
@@ -213,7 +213,7 @@ int mod_mult(int mod)
 {
 	const struct object_flag *of_ptr = &object_mod_table[mod];
 
-	return of_ptr->pval_mult;
+	return of_ptr->mod_mult;
 }
 
 /**

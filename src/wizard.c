@@ -426,7 +426,7 @@ static void wiz_display_item(const object_type *o_ptr, bool all)
 
 	/* CC: multiple pvals not shown, pending #1290 */
 	prt(format("number = %-3d  pval = %-5d  name1 = %-4d  egoidx = %-4d  cost = %ld",
-			o_ptr->number, o_ptr->pval[DEFAULT_PVAL],
+			o_ptr->number, o_ptr->pval,
 			o_ptr->artifact ? o_ptr->artifact->aidx : 0,
 			o_ptr->ego ? o_ptr->ego->eidx : 0,
 			(long)object_value(o_ptr, 1, FALSE)), 6, j);

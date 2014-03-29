@@ -113,7 +113,7 @@ static void py_pickup_gold(void)
 			verbal = TRUE;
 
 		/* Increment total value */
-		total_gold += (s32b)o_ptr->pval[DEFAULT_PVAL];
+		total_gold += (s32b)o_ptr->pval;
 
 		/* Delete the gold */
 		delete_object_idx(this_o_idx);

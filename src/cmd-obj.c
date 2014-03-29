@@ -76,7 +76,7 @@ static int check_devices(object_type *o_ptr)
 	}
 
 	/* Notice empty staffs */
-	if (what && o_ptr->pval[DEFAULT_PVAL] <= 0)
+	if (what && o_ptr->pval <= 0)
 	{
 		flush();
 		msg("The %s has no charges left.", what);
@@ -678,7 +678,7 @@ static void use_aux(struct command *cmd, int item, enum use use, int snd)
 
 	/* Food feeds the player */
 	if (tval_can_have_nourishment(o_ptr))
-		player_set_food(player, player->food + o_ptr->pval[DEFAULT_PVAL]);
+		player_set_food(player, player->food + o_ptr->pval);
 
 	/* Use the turn */
 	player->energy_use = 100;
@@ -714,7 +714,7 @@ static void use_aux(struct command *cmd, int item, enum use use, int snd)
 	if (used && use == USE_CHARGE)
 	{
 		/* Use a single charge */
-		o_ptr->pval[DEFAULT_PVAL]--;
+		o_ptr->pval--;
 
 		/* Describe charges */
 		if (item >= 0)
@@ -921,7 +921,7 @@ void do_cmd_use(struct command *cmd)
 static void refill_lamp(object_type *j_ptr, object_type *o_ptr, int item)
 {
 	/* Refuel */
-	j_ptr->timeout += o_ptr->timeout ? o_ptr->timeout : o_ptr->pval[DEFAULT_PVAL];
+	j_ptr->timeout += o_ptr->timeout ? o_ptr->timeout : o_ptr->pval;
 
 	/* Message */
 	msg("You fuel your lamp.");

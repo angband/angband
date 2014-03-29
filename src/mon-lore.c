@@ -83,7 +83,7 @@ static void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MA
 		known = object_is_known(o_ptr);
 
 		/* Drain charges - requires a charged item */
-		if (i < INVEN_PACK && (!known || o_ptr->pval[DEFAULT_PVAL] > 0) &&
+		if (i < INVEN_PACK && (!known || o_ptr->pval > 0) &&
 				tval_can_have_charges(o_ptr))
 			melee_colors[RBE_UN_POWER] = TERM_L_RED;
 
