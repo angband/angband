@@ -233,9 +233,9 @@ static struct ego_item *ego_find_random(object_type *o_ptr, int level)
  */
 void ego_apply_magic(object_type *o_ptr, int level)
 {
-	int i, flag, x;
+	int i, x;
 	bool extras = TRUE;
-	bitflag flags[OF_SIZE], newf[OF_SIZE], f2[OF_SIZE];
+	bitflag flags[OF_SIZE], newf[OF_SIZE];
 	object_flags(o_ptr, flags);
 
 	/* Extra powers */
@@ -256,58 +256,16 @@ void ego_apply_magic(object_type *o_ptr, int level)
 	o_ptr->to_d += randcalc(o_ptr->ego->to_d, level, RANDOMISE);
 	o_ptr->to_a += randcalc(o_ptr->ego->to_a, level, RANDOMISE);
 
-	/* Apply pvals */
-	of_copy(f2, o_ptr->ego->flags);
-	for (i = 0; i < o_ptr->ego->num_pvals; i++) {
-		of_copy(flags, o_ptr->ego->pval_flags[i]);
-		x = randcalc(o_ptr->ego->pval[i], level, RANDOMISE);
-		for (flag = of_next(flags, FLAG_START); flag != FLAG_END;
-				flag = of_next(flags, flag + 1))
-			/* Prevent phantom flags */
-			if (x)
-				object_add_pval(o_ptr, x, flag);
-			else
-				of_off(f2, flag);
-	}
-
 	/* Apply modifiers */
 	for (i = 0; i < OBJ_MOD_MAX; i++) {
 		x = randcalc(o_ptr->ego->modifiers[i], level, RANDOMISE);
 		o_ptr->modifiers[i] += x;
 	}
 
-	/* Apply remaining flags */
-	of_union(o_ptr->flags, f2);
+	/* Apply flags */
+	of_union(o_ptr->flags, o_ptr->ego->flags);
 
 	return;
-}
-
-/**
- * Apply minimum pvals to an ego item.
- */
-void ego_min_pvals(object_type *o_ptr)
-{
-	int i, j, flag;
-
-	if (!o_ptr->ego) return;
-
-	for (i = 0; i < o_ptr->num_pvals; i++)
-		for (j = 0; j < o_ptr->ego->num_pvals; j++)
-			for (flag = of_next(o_ptr->ego->pval_flags[j], FLAG_START);
-					flag != FLAG_END;
-					flag = of_next(o_ptr->ego->pval_flags[j], flag + 1))
-				if ((!of_has(o_ptr->flags, flag) &&
-						o_ptr->ego->min_pval[j] > 0) ||
-						(o_ptr->ego->min_pval[j] != NO_MINIMUM
-						&& of_has(o_ptr->pval_flags[i], flag) &&
-						o_ptr->pval[i] < o_ptr->ego->min_pval[j]))
-					object_add_pval(o_ptr, o_ptr->ego->min_pval[j] -
-						o_ptr->pval[i], flag);
-
-	for (i = 0; i < OBJ_MOD_MAX; i++) {
-		if (o_ptr->modifiers[i] < o_ptr->ego->min_modifiers[i])
-			o_ptr->modifiers[i] = o_ptr->ego->min_modifiers[i];
-	}
 }
 
 /**
@@ -315,6 +273,8 @@ void ego_min_pvals(object_type *o_ptr)
  */
 static void ego_apply_minima(object_type *o_ptr)
 {
+	int i;
+
 	if (!o_ptr->ego) return;
 
 	if (o_ptr->ego->min_to_h != NO_MINIMUM &&
@@ -327,7 +287,10 @@ static void ego_apply_minima(object_type *o_ptr)
 			o_ptr->to_a < o_ptr->ego->min_to_a)
 		o_ptr->to_a = o_ptr->ego->min_to_a;
 
-	ego_min_pvals(o_ptr);
+	for (i = 0; i < OBJ_MOD_MAX; i++) {
+		if (o_ptr->modifiers[i] < o_ptr->ego->min_modifiers[i])
+			o_ptr->modifiers[i] = o_ptr->ego->min_modifiers[i];
+	}
 }
 
 
@@ -366,12 +329,6 @@ void copy_artifact_data(object_type *o_ptr, const artifact_type *a_ptr)
 	int i;
 
 	/* Extract the data */
-	for (i = 0; i < a_ptr->num_pvals; i++)
-		if (a_ptr->pval[i]) {
-			o_ptr->pval[i] = a_ptr->pval[i];
-			of_copy(o_ptr->pval_flags[i], a_ptr->pval_flags[i]);
-		}
-	o_ptr->num_pvals = a_ptr->num_pvals;
 	for (i = 0; i < OBJ_MOD_MAX; i++)
 		o_ptr->modifiers[i] = a_ptr->modifiers[i];
 	o_ptr->ac = a_ptr->ac;
@@ -598,8 +555,7 @@ static void apply_magic_armour(object_type *o_ptr, int level, int power)
 void object_prep(object_type *o_ptr, struct object_kind *k, int lev,
 		aspect rand_aspect)
 {
-	int i, flag, pval;
-	bitflag flags[OF_SIZE], f2[OF_SIZE];
+	int i;
 
 	/* Clean slate */
 	WIPE(o_ptr, object_type);
@@ -616,21 +572,9 @@ void object_prep(object_type *o_ptr, struct object_kind *k, int lev,
 	/* Default number */
 	o_ptr->number = 1;
 
-	/* Apply pvals and then copy flags */
-	of_copy(f2, k->flags);
-    for (i = 0; i < k->num_pvals; i++) {
-        of_copy(flags, k->pval_flags[i]);
-        pval = randcalc(k->pval[i], lev, rand_aspect);
-        for (flag = of_next(flags, FLAG_START); flag != FLAG_END;
-                flag = of_next(flags, flag + 1))
-			/* Prevent phantom flags */
-			if (pval)
-				object_add_pval(o_ptr, pval, flag);
-			else
-				of_off(f2, flag);
-    }
+	/* Copy flags */
 	of_copy(o_ptr->flags, k->base->flags);
-	of_union(o_ptr->flags, f2);
+	of_copy(o_ptr->flags, k->flags);
 
 	/* Assign modifiers */
 	for (i = 0; i < OBJ_MOD_MAX; i++)

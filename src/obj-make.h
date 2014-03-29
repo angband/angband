@@ -30,6 +30,5 @@ bool make_object(struct chunk *c, object_type *j_ptr, int lev, bool good, bool g
 void make_gold(object_type *j_ptr, int lev, int coin_type);
 void copy_artifact_data(object_type *o_ptr, const artifact_type *a_ptr);
 void ego_apply_magic(object_type *o_ptr, int level);
-void ego_min_pvals(object_type *o_ptr);
 
 #endif /* OBJECT_MAKE_H */
