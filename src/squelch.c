@@ -22,7 +22,6 @@
 #include "ui-menu.h"
 #include "obj-desc.h"
 #include "obj-identify.h"
-#include "obj-pval.h"
 #include "obj-tval.h"
 #include "obj-tvalsval.h"
 #include "obj-ui.h"

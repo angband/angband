@@ -135,7 +135,6 @@ ANGFILES = \
 	obj-list.o \
 	obj-make.o \
 	obj-power.o \
-	obj-pval.o \
 	obj-randart.o \
 	obj-slays.o \
 	obj-tval.o \

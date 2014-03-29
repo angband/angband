@@ -24,7 +24,6 @@
 #include "history.h"
 #include "obj-desc.h"
 #include "obj-identify.h"
-#include "obj-pval.h"
 #include "obj-slays.h"
 #include "obj-tval.h"
 #include "obj-tvalsval.h"
@@ -236,6 +235,29 @@ bool object_flag_is_known(const object_type *o_ptr, int flag)
 	return FALSE;
 }
 
+
+/**
+ * \returns whether a specific modifier is known to the player
+ */
+bool object_this_mod_is_visible(const object_type *o_ptr, int mod)
+{
+	assert(o_ptr->kind);
+
+	/* Store objects */
+	if (o_ptr->ident & IDENT_STORE)
+		return TRUE;
+
+	/* Aware jewelry with a fixed modifier (usually light) */
+	if (tval_is_jewelry(o_ptr) && object_flavor_is_aware(o_ptr)
+		&& !randcalc_varies(o_ptr->kind->modifiers[mod]))
+		return TRUE;
+
+	/* Wearing shows all modifiers */
+	if (object_was_worn(o_ptr))
+		return TRUE;
+
+	return FALSE;
+}
 
 /*
  * \returns whether it is possible an object has a high resist given the

@@ -28,7 +28,6 @@
 #include "obj-desc.h"
 #include "obj-identify.h"
 #include "obj-info.h"
-#include "obj-pval.h"
 #include "obj-ui.h"
 #include "obj-util.h"
 #include "option.h"

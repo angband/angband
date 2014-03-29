@@ -23,7 +23,6 @@
 #include "obj-identify.h"
 #include "obj-tval.h"
 #include "obj-tvalsval.h"
-#include "obj-pval.h"
 #include "obj-util.h"
 
 const char *inscrip_text[] =

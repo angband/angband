@@ -18,7 +18,6 @@
  */
 #include "angband.h"
 #include "obj-identify.h"
-#include "obj-pval.h"
 #include "obj-slays.h"
 #include "obj-tval.h"
 #include "obj-tvalsval.h"

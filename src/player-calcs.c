@@ -25,7 +25,6 @@
 #include "mon-msg.h"
 #include "mon-util.h"
 #include "obj-identify.h"
-#include "obj-pval.h"
 #include "obj-tval.h"
 #include "obj-tvalsval.h"
 #include "obj-util.h"
