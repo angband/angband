@@ -666,34 +666,35 @@ static enum parser_error parse_k_d(struct parser *p) {
 
 static enum parser_error parse_k_l(struct parser *p) {
 	struct object_kind *k = parser_priv(p);
-	char *s;
-	char *t;
-	random_value mod;
 	assert(k);
 
-	mod = parser_getrand(p, "mod");
+	k->pval = parser_getrand(p, "pval");
+	return PARSE_ERROR_NONE;
+}
 
-	if (!parser_hasval(p, "flags")) {
-		k->pval = mod;
-		return PARSE_ERROR_NONE;
-	}
+static enum parser_error parse_k_v(struct parser *p) {
+	struct object_kind *k = parser_priv(p);
+	char *s;
+	char *t;
+	assert(k);
 
-	s = string_make(parser_getstr(p, "flags"));
+	s = string_make(parser_getstr(p, "values"));
 	t = strtok(s, " |");
 
 	while (t) {
-		int i = lookup_flag(obj_mods, t);
-		if (i)
-			k->modifiers[i] = mod;
-		else
+		bool found = FALSE;
+		if (!grab_rand_value(k->modifiers, obj_mods, t))
+			found = TRUE;
+		if (!found)
 			break;
 
 		t = strtok(NULL, " |");
 	}
 
 	mem_free(s);
-	return t ? PARSE_ERROR_INVALID_FLAG : PARSE_ERROR_NONE;
+	return t ? PARSE_ERROR_INVALID_VALUE : PARSE_ERROR_NONE;
 }
+
 
 struct parser *init_parse_k(void) {
 	struct parser *p = parser_new();
@@ -708,7 +709,8 @@ struct parser *init_parse_k(void) {
 	parser_reg(p, "M int prob rand stack", parse_k_m);
 	parser_reg(p, "F str flags", parse_k_f);
 	parser_reg(p, "E sym name ?rand time", parse_k_e);
-	parser_reg(p, "L rand mod ?str flags", parse_k_l);
+	parser_reg(p, "L rand pval", parse_k_l);
+	parser_reg(p, "V str values", parse_k_v);
 	parser_reg(p, "D str text", parse_k_d);
 	return p;
 }

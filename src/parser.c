@@ -667,6 +667,46 @@ int lookup_flag(const char **flag_table, const char *flag_name) {
 	return i;
 }
 
+errr grab_rand_value(random_value *value, const char **value_type, const char *name_and_value)
+{
+	int i = 0;
+	char value_name[80];
+	char dice_string[40];
+	char *t;
+	dice_t *dice;
+
+	/* Get a rewritable string */
+	my_strcpy(value_name, name_and_value, strlen(name_and_value));
+
+	/* Find the first bracket */
+	for (t = value_name; *t && (*t != '['); ++t)
+		;
+
+	/* Get the dice */
+	if (1 != sscanf(t + 1, "%s", dice_string))
+		return (PARSE_ERROR_INVALID_VALUE);
+
+	/* Terminate the string */
+	*t = '\0';
+
+	dice = dice_new();
+
+	while (value_type[i] && !streq(value_type[i], value_name))
+		i++;
+
+	if (value_type[i]) {
+		if (!dice_parse_string(dice, dice_string)) {
+			dice_free(dice);
+			return PARSE_ERROR_NOT_RANDOM;
+		}
+		dice_random_value(dice, &value[i]);
+	}
+
+	dice_free(dice);
+
+	return value_type[i] ? PARSE_ERROR_NONE : PARSE_ERROR_INTERNAL;
+}
+
 errr grab_flag(bitflag *flags, const size_t size, const char **flag_table, const char *flag_name) {
 	int flag = lookup_flag(flag_table, flag_name);
 

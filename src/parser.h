@@ -10,6 +10,7 @@
 
 #include "h-basic.h"
 #include "z-bitflag.h"
+#include "z-dice.h"
 #include "z-rand.h"
 
 struct parser;
@@ -136,6 +137,7 @@ errr run_parser(struct file_parser *fp);
 errr parse_file(struct parser *p, const char *filename);
 void cleanup_parser(struct file_parser *fp);
 int lookup_flag(const char **flag_table, const char *flag_name);
+errr grab_rand_value(random_value *value, const char **value_type, const char *name_and_value);
 errr grab_flag(bitflag *flags, const size_t size, const char **flag_table, const char *flag_name);
 errr remove_flag(bitflag *flags, const size_t size, const char **flag_table, const char *flag_name);
 

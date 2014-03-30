@@ -488,7 +488,7 @@ bool dice_parse_string(dice_t *dice, const char *string)
  * \param dice is the object to get the random_value from.
  * \param v is the random_value to place the values into.
  */
-static void dice_random_value(dice_t *dice, random_value *v)
+void dice_random_value(dice_t *dice, random_value *v)
 {
 	if (v == NULL)
 		return;
