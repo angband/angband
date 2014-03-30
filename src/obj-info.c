@@ -106,7 +106,7 @@ static const flag_type mod_flags[] =
 	{ OBJ_MOD_DEX,     "dexterity" },
 	{ OBJ_MOD_CON,     "constitution" },
 	{ OBJ_MOD_STEALTH, "stealth" },
-	{ OBJ_MOD_STEALTH, "searching skill" },
+	{ OBJ_MOD_SEARCH,  "searching skill" },
 	{ OBJ_MOD_INFRA,   "infravision" },
 	{ OBJ_MOD_TUNNEL,  "tunneling" },
 	{ OBJ_MOD_SPEED,   "speed" },
