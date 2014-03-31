@@ -481,7 +481,7 @@ typedef struct ego_item
 	bitflag kind_flags[KF_SIZE];			/**< Kind flags */
 
 	random_value modifiers[OBJ_MOD_MAX];
-	byte min_modifiers[OBJ_MOD_MAX];
+	int min_modifiers[OBJ_MOD_MAX];
 	s16b resists[GF_COUNT_MAX];
 
 	brand_or_slay brands;

@@ -1542,38 +1542,58 @@ static enum parser_error parse_e_f(struct parser *p) {
 	return t ? PARSE_ERROR_INVALID_FLAG : PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_e_l(struct parser *p) {
+static enum parser_error parse_e_v(struct parser *p) {
 	struct ego_item *e = parser_priv(p);
 	char *s; 
 	char *t;
-	random_value mod;
-	int min;
 
 	if (!e)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	if (!parser_hasval(p, "flags"))
+	if (!parser_hasval(p, "values"))
 		return PARSE_ERROR_MISSING_FIELD;
 
-	mod = parser_getrand(p, "mod");
-	min = parser_getint(p, "min");
-
-	s = string_make(parser_getstr(p, "flags"));
+	s = string_make(parser_getstr(p, "values"));
 	t = strtok(s, " |");
 
 	while (t) {
-		int i = lookup_flag(obj_mods, t);
-		if (i) {
-			e->modifiers[i] = mod;
-			e->min_modifiers[i] = min;
-		}
-		else
+		bool found = FALSE;
+		if (!grab_rand_value(e->modifiers, obj_mods, t))
+			found = TRUE;
+		if (!found)
 			break;
 
 		t = strtok(NULL, " |");
 	}
 
 	mem_free(s);
-	return t ? PARSE_ERROR_INVALID_FLAG : PARSE_ERROR_NONE;
+	return t ? PARSE_ERROR_INVALID_VALUE : PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_e_l(struct parser *p) {
+	struct ego_item *e = parser_priv(p);
+	char *s; 
+	char *t;
+
+	if (!e)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	if (!parser_hasval(p, "min_values"))
+		return PARSE_ERROR_MISSING_FIELD;
+
+	s = string_make(parser_getstr(p, "min_values"));
+	t = strtok(s, " |");
+
+	while (t) {
+		bool found = FALSE;
+		if (!grab_int_value(e->min_modifiers, obj_mods, t))
+			found = TRUE;
+		if (!found)
+			break;
+
+		t = strtok(NULL, " |");
+	}
+
+	mem_free(s);
+	return t ? PARSE_ERROR_INVALID_VALUE : PARSE_ERROR_NONE;
 }
 
 static enum parser_error parse_e_d(struct parser *p) {
@@ -1595,7 +1615,8 @@ struct parser *init_parse_e(void) {
 	parser_reg(p, "C rand th rand td rand ta", parse_e_c);
 	parser_reg(p, "M int th int td int ta", parse_e_m);
 	parser_reg(p, "F ?str flags", parse_e_f);
-	parser_reg(p, "L rand mod int min str flags", parse_e_l);
+	parser_reg(p, "V str values", parse_e_v);
+	parser_reg(p, "L str min_values", parse_e_l);
 	parser_reg(p, "D str text", parse_e_d);
 	return p;
 }
