@@ -430,8 +430,8 @@ typedef struct artifact
 	bitflag flags[OF_SIZE];		/**< Flags */
 	bitflag kind_flags[KF_SIZE];			/**< Kind flags */
 
-	s16b modifiers[OBJ_MOD_MAX];
-	s16b resists[GF_COUNT_MAX];
+	int modifiers[OBJ_MOD_MAX];
+	int resists[GF_COUNT_MAX];
 
 	brand_or_slay brands;
 	brand_or_slay slays;

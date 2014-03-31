@@ -895,33 +895,27 @@ static enum parser_error parse_a_m(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_a_l(struct parser *p) {
+static enum parser_error parse_a_v(struct parser *p) {
 	struct artifact *a = parser_priv(p);
 	char *s; 
 	char *t;
-	int mod;
 	assert(a);
 
-	mod = parser_getint(p, "mod");
-
-	if (!parser_hasval(p, "flags"))
-		return PARSE_ERROR_MISSING_FIELD;
-
-	s = string_make(parser_getstr(p, "flags"));
+	s = string_make(parser_getstr(p, "values"));
 	t = strtok(s, " |");
 
 	while (t) {
-		int i = lookup_flag(obj_mods, t);
-		if (i)
-			a->modifiers[i] = mod;
-		else
+		bool found = FALSE;
+		if (!grab_int_value(a->modifiers, obj_mods, t))
+			found = TRUE;
+		if (!found)
 			break;
 
 		t = strtok(NULL, " |");
 	}
 
 	mem_free(s);
-	return t ? PARSE_ERROR_INVALID_FLAG : PARSE_ERROR_NONE;
+	return t ? PARSE_ERROR_INVALID_VALUE : PARSE_ERROR_NONE;
 }
 
 static enum parser_error parse_a_d(struct parser *p) {
@@ -943,7 +937,7 @@ struct parser *init_parse_a(void) {
 	parser_reg(p, "F ?str flags", parse_a_f);
 	parser_reg(p, "E sym name rand time", parse_a_e);
 	parser_reg(p, "M str text", parse_a_m);
-	parser_reg(p, "L int mod str flags", parse_a_l);
+	parser_reg(p, "V str values", parse_a_v);
 	parser_reg(p, "D str text", parse_a_d);
 	return p;
 }
