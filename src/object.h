@@ -5,7 +5,7 @@
 #include "z-quark.h"
 #include "z-bitflag.h"
 #include "z-dice.h"
-#include "obj-flag.h"
+#include "obj-properties.h"
 
 
 

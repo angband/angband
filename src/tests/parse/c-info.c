@@ -3,7 +3,7 @@
 #include "unit-test.h"
 
 #include "init.h"
-#include "obj-flag.h"
+#include "obj-properties.h"
 #include "object.h"
 #include "obj-tvalsval.h"
 #include "obj-util.h"

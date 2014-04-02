@@ -373,7 +373,8 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 	}
 	/* Add power for +to_ac */
 	p += (o_ptr->to_a * TO_AC_POWER / 2);
-	file_putf(log_file, "Adding power for to_ac of %d, total is %d\n", o_ptr->to_a, p);
+	file_putf(log_file, "Adding power for to_ac of %d, total is %d\n", 
+			  o_ptr->to_a, p);
 	if (o_ptr->to_a > HIGH_TO_AC) {
 		p += ((o_ptr->to_a - (HIGH_TO_AC - 1)) * TO_AC_POWER);
 		file_putf(log_file, "Adding power for high to_ac value, total is %d\n", p);
@@ -401,17 +402,19 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 		}
 
 		if (mod_power(i)) {
-			p += (k * mod_power(i) * slot_mod_mult(i, wield_slot(o_ptr)));
+			p += (k * mod_power(i) * mod_slot_mult(i, wield_slot(o_ptr)));
 			file_putf(log_file, "Adding power for %s, total is %d\n", 
 					  mod_name(i), p);
 		}
 	}
 
 	/* Add power for non-derived flags (derived flags have flag_power 0) */
-	for (i = of_next(flags, FLAG_START); i != FLAG_END; i = of_next(flags, i + 1)) {
+	for (i = of_next(flags, FLAG_START); i != FLAG_END; 
+		 i = of_next(flags, i + 1)) {
 		if (flag_power(i)) {
-			p += (flag_power(i) * slot_mult(i, wield_slot(o_ptr)));
-			file_putf(log_file, "Adding power for %s, total is %d\n", flag_name(i), p);
+			p += (flag_power(i) * flag_slot_mult(i, wield_slot(o_ptr)));
+			file_putf(log_file, "Adding power for %s, total is %d\n", 
+					  flag_name(i), p);
 		}
 
 		/* Track combinations of flag types */
@@ -437,7 +440,8 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 			if (sets[i].dam_dep)
 				q = q * dice_pwr / (DAMAGE_POWER * 5);
 			p += q;
-			file_putf(log_file, "Adding power for multiple %s, total is %d\n", sets[i].desc, p);
+			file_putf(log_file, "Adding power for multiple %s, total is %d\n",
+					  sets[i].desc, p);
 		}
 
 		/* Add bonus if item has a full set of these flags */

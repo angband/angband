@@ -1,7 +1,7 @@
 /* artifact/randname */
 
 #include "unit-test.h"
-#include "obj-flag.h"
+#include "obj-properties.h"
 #include "object.h"
 
 NOSETUP

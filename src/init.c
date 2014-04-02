@@ -107,14 +107,14 @@ static struct history_chart *histories;
  */
 
 static const char *obj_flags[] = {
-	#define OF(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q) #a,
+	#define OF(a, b, c, d, e) #a,
 	#include "list-object-flags.h"
 	#undef OF
 	NULL
 };
 
 static const char *obj_mods[] = {
-	#define OBJ_MOD(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q) #a,
+	#define OBJ_MOD(a, b, c, d, e) #a,
 	#include "list-object-modifiers.h"
 	#undef OBJ_MOD
 	NULL

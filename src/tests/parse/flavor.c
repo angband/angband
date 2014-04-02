@@ -4,7 +4,7 @@
 
 #include "init.h"
 #include "obj-tvalsval.h"
-#include "obj-flag.h"
+#include "obj-properties.h"
 #include "object.h"
 #include "z-color.h"
 

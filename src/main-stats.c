@@ -796,16 +796,14 @@ static int stats_dump_lists(void)
 
 	struct object_flag object_flag_table[] =
 	{
-		#define OF(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q) \
-			{ OF_##a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, #a },
+		#define OF(a, b, c, d, e) { OF_##a, b, c, d, #a },
 		#include "list-object-flags.h"
 		#undef OF
 	};
 
-	struct object_flag object_mod_table[] =
+	struct object_mod object_mod_table[] =
 	{
-        #define OBJ_MOD(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q)  \
-            { OBJ_MOD_##a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, #a },
+        #define OBJ_MOD(a, b, c, d, e)  { OBJ_MOD_##a, b, c, d, #a },
         #include "list-object-modifiers.h"
         #undef OBJ_MOD
 	};
@@ -878,14 +876,14 @@ static int stats_dump_lists(void)
 
 	for (idx = 1; idx < OF_MAX; idx++)
 	{
-		struct object_flag *of_ptr = &object_flag_table[idx];
-		if (! of_ptr->message) continue;
+		struct object_flag *of = &object_flag_table[idx];
+		if (! of->message) continue;
 
 		err = stats_db_bind_ints(sql_stmt, 3, 0, idx, 
-			of_ptr->type, of_ptr->power);
+			of->type, of->power);
 		if (err) return err;
-		err = sqlite3_bind_text(sql_stmt, 4, of_ptr->message,
-			strlen(of_ptr->message), SQLITE_STATIC);
+		err = sqlite3_bind_text(sql_stmt, 4, of->message,
+			strlen(of->message), SQLITE_STATIC);
 		if (err) return err;
 		STATS_DB_STEP_RESET(sql_stmt)
 	}
@@ -893,19 +891,18 @@ static int stats_dump_lists(void)
 	STATS_DB_FINALIZE(sql_stmt)
 
 	err = stats_db_stmt_prep(&sql_stmt, 
-		"INSERT INTO object_mods_list VALUES(?,?,?,?,?);");
+		"INSERT INTO object_mods_list VALUES(?,?,?,?);");
 	if (err) return err;
 
 	for (idx = 1; idx < OBJ_MOD_MAX; idx++)
 	{
-		struct object_flag *of_ptr = &object_mod_table[idx];
-		if (! of_ptr->message) continue;
+		struct object_mod *om = &object_mod_table[idx];
+		if (!om->message) continue;
 
-		err = stats_db_bind_ints(sql_stmt, 4, 0, idx, 
-			of_ptr->type, of_ptr->power, of_ptr->mod_mult);
+		err = stats_db_bind_ints(sql_stmt, 3, 0, idx, om->power, om->mod_mult);
 		if (err) return err;
-		err = sqlite3_bind_text(sql_stmt, 5, of_ptr->message,
-			strlen(of_ptr->message), SQLITE_STATIC);
+		err = sqlite3_bind_text(sql_stmt, 4, om->message,
+			strlen(om->message), SQLITE_STATIC);
 		if (err) return err;
 		STATS_DB_STEP_RESET(sql_stmt)
 	}

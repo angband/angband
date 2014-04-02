@@ -1,8 +1,8 @@
 /*
- * File: src/obj-flag.h
+ * File: src/obj-properties.h
  * Purpose: definitions and functions for object flags
  *
- * Copyright (c) 2011 Chris Carr
+ * Copyright (c) 2014 Chris Carr, Nick McConnell
  *
  * This work is free software; you can redistribute it and/or modify it
  * under the terms of either:
@@ -15,8 +15,8 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
-#ifndef INCLUDED_OBJFLAG_H
-#define INCLUDED_OBJFLAG_H
+#ifndef INCLUDED_OBJPROPERTIES_H
+#define INCLUDED_OBJPROPERTIES_H
 
 #include "z-file.h"
 #include "z-bitflag.h"
@@ -25,7 +25,7 @@
 
 /* The object flags */
 enum {
-    #define OF(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q) OF_##a,
+    #define OF(a, b, c, d, e) OF_##a,
     #include "list-object-flags.h"
     #undef OF
 };
@@ -37,18 +37,16 @@ enum {
     #undef KF
 };
 
-/* Object modifiers here for now too */
+/* The object modifiers */
 enum {
-    #define OBJ_MOD(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q) OBJ_MOD_##a,
+    #define OBJ_MOD(a, b, c, d, e) OBJ_MOD_##a,
     #include "list-object-modifiers.h"
     #undef OBJ_MOD
 };
 
 /* The object flag types */
 enum object_flag_type {
-	OFT_PVAL = 1,	/* pval-related but not to a stat */
-	OFT_STAT,		/* affects a stat */
-	OFT_SUST,		/* sustains a stat */
+	OFT_SUST = 1,	/* sustains a stat */
 	OFT_SLAY,		/* a "normal" creature-type slay */
 	OFT_BRAND,		/* a brand against monsters lacking the resist */
 	OFT_KILL,		/* a powerful creature-type slay */
@@ -128,34 +126,34 @@ struct object_flag {
 	u16b id;				/* how is it identified */
 	u16b type;				/* OFT_ category */
 	s16b power;				/* base power rating */
-	s16b mod_mult;			/* pval weight rating */
-	s16b weapon;			/* power mult for melee weapon */
-	s16b bow;				/* power mult for launcher */
-	s16b ring;				/* etc. ... */
-	s16b amulet;
-	s16b light;
-	s16b body;
-	s16b cloak;
-	s16b shield;
-	s16b hat;
-	s16b gloves;
-	s16b boots;
 	const char *message;	/* id message */
 };
-	
+
+/**
+ * The object modifier structure
+ */
+struct object_mod {
+	u16b index;				/* the OBJ_MOD_ index */
+	u16b id;				/* how is it identified */
+	s16b power;				/* base power rating */
+	s16b mod_mult;			/* modifier weight rating */
+	const char *message;	/* id message */
+};
+
 
 /*** Functions ***/
 bool cursed_p(const bitflag *f);
 void create_mask(bitflag *f, bool id, ...);
-void flag_message(int flag, char *name);
 s32b flag_power(int flag);
 void log_flags(bitflag *f, ang_file *log_file);
 const char *flag_name(int flag);
-s16b slot_mult(int flag, int slot);
+s16b flag_slot_mult(int flag, int slot);
 int obj_flag_type(int flag);
+void flag_message(int flag, char *name);
+const char *mod_name(int mod);
 s32b mod_power(int mod);
 int mod_mult(int mod);
-const char *mod_name(int mod);
-s16b slot_mod_mult(int mod, int slot);
+s16b mod_slot_mult(int mod, int slot);
+void mod_message(int mod, char *name);
 
-#endif /* !INCLUDED_OBJFLAG_H */
+#endif /* !INCLUDED_OBJPROPERTIES_H */

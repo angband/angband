@@ -129,12 +129,12 @@ ANGFILES = \
 	mon-init.o \
 	obj-chest.o \
 	obj-desc.o \
-	obj-flag.o \
 	obj-identify.o \
 	obj-info.o \
 	obj-list.o \
 	obj-make.o \
 	obj-power.o \
+	obj-properties.o \
 	obj-randart.o \
 	obj-slays.o \
 	obj-tval.o \
