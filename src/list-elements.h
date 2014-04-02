@@ -17,13 +17,13 @@
  * mon_vuln - monster flag for vulnerability
  * obj_hates - object flag for object vulnerability
  * obj_imm - object flag for object immunity
- * floor handler - handler affecting the floor
+ * feature handler - handler affecting the environment
  * object handler - handler affecting an object
  * monster handler - handler affecting a monster
  * player handler - handler effecting the player
  */
 
-/* name  		desc				resist          num denom           color				opp             immunity    side_im	vuln            mon_resist  mon_vuln		obj_hates		obj_imm			floor handler	object handler	monster handler		player handler*/
+/* name  		desc				resist          num denom           color				opp             immunity    side_im	vuln            mon_resist  mon_vuln		obj_hates		obj_imm			feature handler	object handler	monster handler		player handler*/
 ELEM(ARROW,		"something sharp",	0,				0,	RV(0,0,0,0),	TERM_WHITE,			0,				0,			TRUE,	0,				0,			0,				0,				0,				NULL,			NULL,			NULL,				NULL)
 ELEM(MISSILE,	"something",		0,				0,	RV(0,0,0,0),	TERM_VIOLET,		0,				0,			TRUE,	0,				0,			0,				0,				0,				NULL,			NULL,			NULL,				NULL)
 ELEM(MANA,		"something",		0,				0,	RV(0,0,0,0),	TERM_L_DARK,		0,				0,			TRUE,	0,				0,			0,				0,				0,				NULL,			OH(MANA),		NULL,				NULL)
@@ -43,10 +43,10 @@ ELEM(COLD,		"cold",				OF_RES_COLD,    1,  RV(3,0,0,0),	TERM_WHITE,		    TMD_OPP
 ELEM(POIS,		"poison",			OF_RES_POIS,    1,  RV(3,0,0,0),	TERM_GREEN,		    TMD_OPP_POIS,   0,          TRUE ,	0,              RF_IM_POIS, 0,				0,				0,				NULL,			NULL,			MH(POIS),			NULL)
 ELEM(LIGHT,		"something",		OF_RES_LIGHT,   4,  RV(6,1,6,0),	TERM_ORANGE,	    0,              0,          TRUE,	0,              0,          RF_HURT_LIGHT,	0,				0,				FH(LIGHT),		NULL,			MH(LIGHT),			NULL)
 ELEM(DARK,		"something",		OF_RES_DARK,    4,  RV(6,1,6,0),	TERM_L_DARK,	    0,              0,          TRUE,	0,              0,          0,				0,				0,				FH(DARK),		NULL,			MH(DARK),			NULL)
+ELEM(CONFU,		"something",		OF_RES_CONFU,	6,	RV(6,1,6,0),	TERM_L_UMBER,		TMD_OPP_CONF,	0,			TRUE,	0,				0,			0,				0,				0,				NULL,			NULL,			NULL,				NULL)
 ELEM(SOUND,		"noise",			OF_RES_SOUND,   5,  RV(6,1,6,0),	TERM_YELLOW,	    0,              0,          TRUE,	0,              0,          0,				0,				0,				NULL,			OH(shatter),	MH(SOUND),			NULL)
 ELEM(SHARD,		"something sharp",	OF_RES_SHARD,   6,  RV(6,1,6,0),	TERM_UMBER,		    0,              0,          TRUE,	0,              0,          0,				0,				0,				NULL,			OH(shatter),	MH(SHARD),			NULL)
 ELEM(NEXUS,		"something strange",OF_RES_NEXUS,   6,  RV(6,1,6,0),	TERM_L_RED,		    0,              0,          TRUE,	0,              RF_RES_NEXUS,0,				0,				0,				NULL,			NULL,			MH(NEXUS),			NULL)
 ELEM(NETHER,	"something cold",	OF_RES_NETHR,   6,  RV(6,1,6,0),	TERM_L_GREEN,	    0,              0,          TRUE,	0,              RF_RES_NETH,0,				0,				0,				NULL,			NULL,			MH(NETHER),			NULL)
 ELEM(CHAOS,		"something strange",OF_RES_CHAOS,	6,	RV(6,1,6,0),	TERM_VIOLET,	 	0,              0,          TRUE,	0,              0,          0,				0,				0,				NULL,			NULL,			MH(CHAOS),			NULL)
 ELEM(DISEN,		"something strange",OF_RES_DISEN,   6,  RV(6,1,6,0),	TERM_VIOLET,	    0,              0,          TRUE,	0,              RF_RES_DISE,0,				0,				0,				NULL,			NULL,			MH(DISEN),			NULL)
-ELEM(MAX,		"",					0,   			0,  RV(0,0,0,0),	TERM_WHITE,		    0,              0,          TRUE,	0,              0,			0,				0,				0,				NULL,			NULL,			NULL,				NULL)

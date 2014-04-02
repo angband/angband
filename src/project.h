@@ -10,9 +10,17 @@
  */
 enum
 {
-    #define GF(a, b, c, d, e, obv, col, f, g, h, i, j, k, l, m, fh, oh, mh, ph) GF_##a,
-    #include "list-gf-types.h"
-    #undef GF
+	#define ELEM(a, b, c, d, e, col, f, g, h, i, j, k, l, m, fh, oh, mh, ph) \
+		GF_##a,
+	#include "list-elements.h"
+	#undef ELEM
+	#define PROJ_ENV(a, col, i, fh, oh, mh) GF_##a,
+	#include "list-project-environs.h"
+	#undef PROJ_ENV
+	#define PROJ_MON(a, obv, mh) GF_##a, 
+	#include "list-project-monsters.h"
+	#undef PROJ_MON
+	GF_MAX
 };
 
 /**
