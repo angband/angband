@@ -10,6 +10,7 @@
  */
 enum
 {
+	GF_NONE,
 	#define ELEM(a, b, c, d, e, col, f, g, h, i, j, k, l, m, fh, oh, mh, ph) \
 		GF_##a,
 	#include "list-elements.h"

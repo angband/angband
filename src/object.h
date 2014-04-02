@@ -16,7 +16,8 @@
  */
 enum
 {
-#define ELEM(a, b, c, d, e, col, f, g, h, i, j, k, l, m, fh, oh, mh, ph) ELEM_COUNT_##a,
+#define ELEM(a, b, c, d, e, col, f, g, h, i, j, k, l, m, fh, oh, mh, ph) \
+	ELEM_COUNT_##a,
     #include "list-elements.h"
     #undef ELEM
 
