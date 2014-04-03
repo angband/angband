@@ -127,6 +127,13 @@ static const char *kind_flags[] = {
 	NULL
 };
 
+static const char *brands[] = {
+	#define ELEM(a, b, c, d, e, col, f, g, h, i, j, k, l, m, fh, oh, mh, ph) #a,
+	#include "list-elements.h"
+	#undef ELEM
+	NULL
+};
+
 static const char *effect_list[] = {
 	#define EFFECT(x, a, r, h, v, c, d)	#x,
 	#include "list-effects.h"
@@ -676,6 +683,9 @@ static enum parser_error parse_k_v(struct parser *p) {
 	struct object_kind *k = parser_priv(p);
 	char *s;
 	char *t;
+	int value = 0;
+	int index = 0;
+	struct brand *b;
 	assert(k);
 
 	s = string_make(parser_getstr(p, "values"));
@@ -685,6 +695,15 @@ static enum parser_error parse_k_v(struct parser *p) {
 		bool found = FALSE;
 		if (!grab_rand_value(k->modifiers, obj_mods, t))
 			found = TRUE;
+		if (!grab_index_and_int(&value, &index, brands, "BRAND_", t)) {
+			found = TRUE;
+			b = mem_zalloc(sizeof *b);
+			b->name = string_make(brands[index]);
+			b->element = index;
+			b->multiplier = value;
+			b->next = k->brands;
+			k->brands = b;
+		}
 		if (!found)
 			break;
 
@@ -899,6 +918,9 @@ static enum parser_error parse_a_v(struct parser *p) {
 	struct artifact *a = parser_priv(p);
 	char *s; 
 	char *t;
+	int value = 0;
+	int index = 0;
+	struct brand *b;
 	assert(a);
 
 	s = string_make(parser_getstr(p, "values"));
@@ -908,6 +930,15 @@ static enum parser_error parse_a_v(struct parser *p) {
 		bool found = FALSE;
 		if (!grab_int_value(a->modifiers, obj_mods, t))
 			found = TRUE;
+		if (!grab_index_and_int(&value, &index, brands, "BRAND_", t)) {
+			found = TRUE;
+			b = mem_zalloc(sizeof *b);
+			b->name = string_make(brands[index]);
+			b->element = index;
+			b->multiplier = value;
+			b->next = a->brands;
+			a->brands = b;
+		}
 		if (!found)
 			break;
 
@@ -1546,6 +1577,9 @@ static enum parser_error parse_e_v(struct parser *p) {
 	struct ego_item *e = parser_priv(p);
 	char *s; 
 	char *t;
+	int value = 0;
+	int index = 0;
+	struct brand *b;
 
 	if (!e)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
@@ -1559,6 +1593,15 @@ static enum parser_error parse_e_v(struct parser *p) {
 		bool found = FALSE;
 		if (!grab_rand_value(e->modifiers, obj_mods, t))
 			found = TRUE;
+		if (!grab_index_and_int(&value, &index, brands, "BRAND_", t)) {
+			found = TRUE;
+			b = mem_zalloc(sizeof *b);
+			b->name = string_make(brands[index]);
+			b->element = index;
+			b->multiplier = value;
+			b->next = e->brands;
+			e->brands = b;
+		}
 		if (!found)
 			break;
 

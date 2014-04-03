@@ -875,6 +875,7 @@ W:20:20:25:13000
 A:5:50 to 127
 P:3:1d1:0:0:14
 F:RES_COLD | SLOW_DIGEST | BRAND_COOL
+V:BRAND_COLD[2]
 E:COLD_BOLT:7+d7
 M:Your {kind} {is} covered in frost...
 D:A set of handgear, freezing with unnatural cold.
@@ -1008,7 +1009,7 @@ A:2:20 to 100
 P:0:2d4:10:15:5
 F:BRAND_ACID | RES_ACID | 
 F:SLAY_EVIL | SLAY_TROLL | SLAY_ORC | FREE_ACT | RES_DARK | SUST_DEX | 
-V:DEX[4]
+V:DEX[4] | BRAND_ACID[3]
 D:Forged by Telchar, greatest of Dwarven smiths, and used by Beren to gouge a 
 D:Silmaril out of Morgoth's crown, this long chopping dagger slices through 
 D:ordinary metal as easily as its name, "Iron Cleaver", suggests.
@@ -1020,6 +1021,7 @@ W:1:2:12:12000
 A:40:1 to 50
 P:0:2d4:9:12:10
 F:BRAND_FIRE | RES_FIRE | 
+V:BRAND_FIRE[3]
 E:FIRE_BOLT:8+d8
 M:{name} is covered in fire...
 D:Instead of a blade, a flame seems to emerge from this dagger's hilt.
@@ -1031,6 +1033,7 @@ W:1:2:12:11000
 A:40:1 to 50
 P:0:2d4:9:12:10
 F:BRAND_COLD | RES_COLD | 
+V:BRAND_COLD[3]
 E:COLD_BOLT:7+d8
 M:{name} is covered in frost...
 D:From the hilt of this dagger springs not so much a blade as an icicle.
@@ -1042,6 +1045,7 @@ W:1:2:12:13000
 A:40:1 to 50
 P:0:2d4:9:12:10
 F:BRAND_ELEC | RES_ELEC | 
+V:BRAND_ELEC[3]
 E:ELEC_BOLT:6+d6
 M:{name} is covered in sparks...
 D:In this dagger is bound the very force of lightning.
@@ -1053,6 +1057,7 @@ W:5:20:12:15000
 A:5:5 to 75
 P:0:2d4:14:13:0
 F:SLAY_ORC | SLAY_TROLL | BRAND_POIS | RES_POIS | RES_DISEN | 
+V:BRAND_POIS[3]
 E:STINKING_CLOUD:4+d4
 M:{name} throws deep green shadows...
 D:A large stiletto dagger that glistens with odorless poison, to which the 
@@ -1065,6 +1070,7 @@ W:10:40:12:40000
 A:2:10 to 80
 P:0:3d4:16:14:0
 F:BRAND_COLD | RES_COLD | SEE_INVIS | SLOW_DIGEST | REGEN | 
+V:BRAND_COLD[3]
 E:COLD_BALL50:5+d5
 M:Your {kind} {is} covered in frost...
 V:DEX[2]
@@ -1109,7 +1115,7 @@ P:0:2d5:10:15:0
 F:BLESSED | 
 F:SLAY_EVIL | BRAND_FIRE | SLAY_ORC | SLAY_DEMON | RES_FIRE | RES_LIGHT | 
 F:SLOW_DIGEST | 
-V:SEARCH[1] | LIGHT[1]
+V:SEARCH[1] | LIGHT[1] | BRAND_FIRE[3]
 D:This fiery, shining blade, mate to Orcrist, earned its sobriquet "Beater" 
 D:from dying orcs who dared to behold hidden Gondolin.
 
@@ -1122,7 +1128,7 @@ P:0:2d5:12:16:0
 F:BLESSED | 
 F:SLAY_ORC | SLAY_TROLL | SLAY_GIANT | BRAND_ELEC | RES_ELEC | RES_BLIND | 
 F:SLOW_DIGEST | 
-V:SEARCH[1] | LIGHT[1]
+V:SEARCH[1] | LIGHT[1] | BRAND_ELEC[3]
 D:Like unto Orcrist and Glamdring, and like them long lost, this sword is 
 D:continually covered in tiny arcs of captive lightning that flash and dance 
 D:eerily in the globes of light they create.
@@ -1136,7 +1142,7 @@ P:0:2d5:10:15:0
 F:BLESSED |  
 F:SLAY_EVIL | BRAND_COLD | SLAY_ORC | SLAY_DRAGON | RES_COLD | RES_DARK | 
 F:SLOW_DIGEST | 
-V:SEARCH[3] | LIGHT[1]
+V:SEARCH[3] | LIGHT[1] | BRAND_COLD[3]
 D:This coldly gleaming blade, mate to Glamdring, is called simply "Biter" 
 D:by orcs who came to know its power all too well.
 
@@ -1149,7 +1155,7 @@ P:0:3d6:13:17:0
 F:RES_FIRE | RES_POIS | 
 F:BRAND_FIRE | BRAND_POIS | 
 F:KILL_DRAGON | FREE_ACT | SLOW_DIGEST | REGEN | 
-V:STR[2]
+V:STR[2] | BRAND_FIRE[3] | BRAND_POIS[3]
 D:A giant sword once wielded by mighty Túrin, and an even greater 
 D:dragonbane; for what wyrm could stand against the blade that bathed in 
 D:Glaurung's blood?
@@ -1164,7 +1170,7 @@ P:0:4d6:19:21:0
 F:KILL_DRAGON | SLAY_ANIMAL | SLAY_EVIL | BRAND_FIRE | 
 F:SLAY_UNDEAD | SLAY_DEMON | SLAY_TROLL | SLAY_GIANT | SLAY_ORC | 
 F:RES_FIRE | RES_CHAOS | FREE_ACT | SEE_INVIS | AGGRAVATE | 
-V:STR[4] | INFRA[2]
+V:STR[4] | INFRA[2] | BRAND_FIRE[3]
 D:Runes dark and deadly stand stark against the naked steel of this awesome 
 D:weapon, and you feel a wrathful power of slaying and rending as you 
 D:slowly approach.
@@ -1179,7 +1185,7 @@ P:0:3d6:-15:-15:-10
 F:BRAND_POIS | KILL_DRAGON | SLAY_UNDEAD | 
 F: SEE_INVIS | HOLD_LIFE | 
 F:AGGRAVATE | DRAIN_EXP | LIGHT_CURSE | HEAVY_CURSE
-V:SPEED[-10]
+V:SPEED[-10] | BRAND_POIS[3]
 D:A foul, twisted sword with blackened spines and knobs, its very name is 
 D:a curse upon the lips of Elves and Men.  It is said that it will drink the 
 D:very lifeblood of its wielder.
@@ -1232,7 +1238,7 @@ F:SLAY_EVIL | BRAND_COLD | SLAY_UNDEAD | KILL_DEMON | SLAY_TROLL |
 F:FREE_ACT | RES_COLD | RES_LIGHT | SEE_INVIS | SLOW_DIGEST | REGEN | 
 E:COLD_BALL100:40
 M:{name} glows an intense blue...
-V:SPEED[10] | LIGHT[1]
+V:SPEED[10] | LIGHT[1] | BRAND_COLD[3]
 D:The weapon of Fingolfin, High King of the Noldor; it shines like a column 
 D:of ice lit by light unquenchable.  Morgoth came but unwillingly to meet it 
 D:of old; his lame foot will remind him of its might should he face it again.
@@ -1249,7 +1255,7 @@ F:RES_FIRE | RES_DISEN |
 F:SUST_STR | SUST_DEX | SEE_INVIS | 
 E:FIRE_BOLT72:40
 M:{name} rages in fire...
-V:STR[4] | DEX[4]
+V:STR[4] | DEX[4] | BRAND_FIRE[3]
 D:The famed "Flame of the West", the Sword that was Broken and is forged 
 D:again.  It glows with the essence of fire, its wearer is mighty in combat, 
 D:and no creature of Sauron can withstand it.
@@ -1263,7 +1269,7 @@ P:0:2d5:10:12:0
 F:AGGRAVATE | 
 F:SLAY_EVIL | BRAND_POIS | SLAY_DEMON | FREE_ACT | RES_ELEC | 
 F:RES_LIGHT | RES_DARK | SEE_INVIS | 
-V:SPEED[3] | STR[2] | CON[2] | BLOWS[1] | LIGHT[1]
+V:SPEED[3] | STR[2] | CON[2] | BLOWS[1] | LIGHT[1] | BRAND_POIS[3]
 D:Forged of meteoric iron by Eöl the Dark Elf, and as deadly as any 
 D:other blade he forged.
 
@@ -1285,7 +1291,7 @@ W:1:3:40:15000
 A:38:5 to 50
 P:0:1d6:12:19:0
 F:SLAY_ANIMAL | BRAND_COLD | RES_COLD | RES_LIGHT | 
-V:LIGHT[1]
+V:LIGHT[1] | BRAND_COLD[3]
 D:A slender, tapered needle of ice that coldly grips its impaled prey.
 
 
@@ -1334,7 +1340,7 @@ A:12:20 to 80
 P:0:1d7:13:11:0
 F:BRAND_POIS | 
 F:SLAY_ANIMAL | SLOW_DIGEST | REGEN | 
-V:BLOWS[2]
+V:BLOWS[2] | BRAND_POIS[3]
 D:A stubby blade worn by Beren, whose horn sounded of old in the glades of 
 D:Brethil.
 
@@ -1348,6 +1354,7 @@ P:0:6d5:18:28:-50
 F:KILL_DRAGON | SLAY_ANIMAL | SLAY_EVIL | BRAND_COLD | SLAY_TROLL | 
 F:SLAY_DEMON | FREE_ACT | RES_ACID | RES_ELEC | RES_FIRE | RES_COLD | 
 F:RES_CHAOS | SEE_INVIS | TELEPATHY | AGGRAVATE | 
+V:BRAND_COLD[3]
 D:This weapon of wrath, wrought by a desperate berserker gang, dives hungrily 
 D:into the yielding flesh of your enemies.  You yourself fall under the 
 D:shadow of death even as you inflict wounds that will not heal.
@@ -1363,7 +1370,7 @@ P:0:4d6:-12:20:0
 # F:DRAIN_MANA | DRAIN_HP | 
 F:LIGHT_CURSE | HEAVY_CURSE | DRAIN_EXP | AGGRAVATE | 
 F:BRAND_POIS | RES_DARK | RES_BLIND | RES_LIGHT | RES_NETHR
-V:STEALTH[-4] | WIS[-4]
+V:STEALTH[-4] | WIS[-4] | BRAND_POIS[3]
 D:A mighty, heavy black spear, once wielded by the Lord of Darkness 
 D:himself as he came to Valinor in wrath.  Its envenomed bite pierced 
 D:the Two Trees with wounds that would not heal.
@@ -1400,7 +1407,7 @@ P:0:3d5:16:12:0
 F:BLESSED
 F:BRAND_FIRE | SLAY_UNDEAD | SLAY_GIANT | RES_FIRE | RES_SOUND | 
 F:FEATHER | SEE_INVIS | 
-V:STR[3] | WIS[3]
+V:STR[3] | WIS[3] | BRAND_FIRE[3]
 D:Lordly and tall did Osondir stand against the wrath of giants, and 
 D:clear-eyed in barrows fell, wielding a halberd glowing ruby red.
 
@@ -1412,7 +1419,7 @@ A:7:20 to 80
 P:0:3d5:10:12:10
 F:BRAND_COLD | BRAND_FIRE | SLAY_DEMON | SLAY_TROLL | SLAY_GIANT | 
 F:RES_FIRE | RES_COLD | SUST_INT | SLOW_DIGEST | 
-V:STR[3] | INT[3] | SPEED[2]
+V:STR[3] | INT[3] | SPEED[2] | BRAND_COLD[3] | BRAND_FIRE[3]
 D:Within this long two-handed spear dwell the spirits of frost giants and 
 D:fire demons, who war forever, fettered by sorcerous binds.
 
@@ -1427,7 +1434,7 @@ F:BRAND_COLD | RES_COLD | SLAY_EVIL | SLAY_TROLL | SLAY_ORC | KILL_UNDEAD |
 F:FREE_ACT | SLOW_DIGEST | BLESSED | 
 E:COLD_BALL100:35
 M:{name} glows an intense blue...
-V:DEX[4] | WIS[2]
+V:DEX[4] | WIS[2] | BRAND_COLD[3]
 D:The mighty spear of Gil-galad, famed as "Snow-point" in the songs of Elves.  
 D:Against it, all the foul corruptions of Sauron dashed in vain.
 
@@ -1442,7 +1449,7 @@ F:BRAND_FIRE | SLAY_GIANT | SLAY_ANIMAL | RES_FIRE | RES_LIGHT |
 F:FEATHER | SEE_INVIS | BLESSED | 
 E:STONE_TO_MUD:5
 M:Your {kind} pulsate{s}...
-V:INT[4] | SPEED[4] | INFRA[4] | LIGHT[1]
+V:INT[4] | SPEED[4] | INFRA[4] | LIGHT[1] | BRAND_FIRE[3]
 D:The thrusting spear of wise Oromë the Vala, strong against giants of 
 D:frost, and able to pierce rock or flesh with ease.
 
@@ -1454,7 +1461,7 @@ A:8:15 to 65
 P:0:1d6:11:13:0
 F:BLESSED | 
 F:BRAND_COLD | SLAY_UNDEAD | RES_COLD | SEE_INVIS | 
-V:STEALTH[3] | SPEED[3]
+V:STEALTH[3] | SPEED[3] | BRAND_COLD[3]
 D:A thin spike of thrice-forged steel caps a straight silvan shaft cut from 
 D:a legendary tree, and spells to break the wills of the undead and strike 
 D:cold into the breasts of your enemies lay upon this perfectly balanced 
@@ -1483,7 +1490,7 @@ F:BRAND_ACID | BRAND_FIRE |
 F:KILL_DRAGON | SLAY_DEMON | SLAY_TROLL | SLAY_ORC | FREE_ACT | 
 F:RES_FEAR | 
 F:RES_ACID | RES_FIRE | RES_LIGHT | RES_DARK | RES_CHAOS | 
-V:TUNNEL[5] | STR[3] | CON[3] | STEALTH[-1]
+V:TUNNEL[5] | STR[3] | CON[3] | STEALTH[-1] | BRAND_ACID[3] | BRAND_FIRE[3]
 D:The twin massive axe heads of this ancient demon's dread gleam with 
 D:mithril inlay telling sagas of endurance.  The powers of 
 D:Khazad-dûm protect its wielder and slay all evils found underground.
@@ -1501,7 +1508,7 @@ F:SEE_INVIS |
 F:BLESSED | 
 E:LOSKILL:1000
 M:Your {kind} let{s} out a long, shrill note...
-V:STR[2] | INT[2] | WIS[2] | DEX[2] | CON[2] 
+V:STR[2] | INT[2] | WIS[2] | DEX[2] | CON[2] | BRAND_COLD[3]
 D:The axe of Eönwë, leader of the Hosts of the West in the War of 
 D:Wrath, strikes with icy wrath at the undead, disperses hosts of 
 D:evil at a word, and grants Maia-like powers of body and mind.
@@ -1568,7 +1575,7 @@ P:0:3d10:16:18:0
 F:BRAND_POIS | 
 F:SLAY_EVIL | KILL_UNDEAD | RES_LIGHT | RES_DARK | SEE_INVIS | 
 F:BLESSED | 
-V:STR[2] | DEX[2]
+V:STR[2] | DEX[2] | BRAND_POIS[3]
 D:A massive triple-pronged spear, so great it normally requires two hands 
 D:to wield, evoking the spirit of Osse who with it pierced legions of 
 D:evil and undead.
@@ -1600,7 +1607,7 @@ F:BRAND_COLD | BRAND_FIRE | FREE_ACT | RES_FIRE | RES_COLD |
 F:RES_LIGHT | SEE_INVIS | 
 E:RECALL:200
 M:{name} pulses a soft white.
-V:DEX[3] | SPEED[3] | LIGHT[1]
+V:DEX[3] | SPEED[3] | LIGHT[1] | BRAND_COLD[3] | BRAND_FIRE[3]
 D:Holding elemental powers whose struggles turn this weapon red and purest 
 D:white, this shining reaper bears within it a power of going forth and 
 D:returning.
@@ -1617,7 +1624,7 @@ F:BRAND_ACID | RES_ACID | RES_DARK | RES_FIRE
 F:SLAY_DRAGON | SLAY_TROLL | 
 E:BERSERKER:80+d80
 M:{name} glows in anger!
-V:STR[2] | CON[2] | LIGHT[1]
+V:STR[2] | CON[2] | LIGHT[1] | BRAND_ACID[3]
 D:Wielded by Húrin Thalion, last lord of Dor-Lómin at the Battle 
 D:of Tears Unnumbered.  He stood alone, his friends and kinsmen 
 D:dead about him, his axe smoking in the black blood of Gothmog's 
@@ -1648,7 +1655,7 @@ P:0:3d6:16:12:0
 F:SLAY_EVIL | BRAND_FIRE | RES_FIRE | RES_CONFU | 
 E:CONFUSE2:15
 M:{name} glows in scintillating colours...
-V:STEALTH[2] | SPEED[2]
+V:STEALTH[2] | SPEED[2] | BRAND_FIRE[3]
 D:A flail whose head befuddles those who stare as you whirl it round and 
 D:becomes a fiery comet as you bring it down.
 
@@ -1661,7 +1668,7 @@ P:0:4d6:5:18:0
 F:RES_FEAR | 
 F:SLAY_ANIMAL | BRAND_FIRE | BRAND_ELEC | SLAY_TROLL | SLAY_ORC | 
 F:RES_ELEC | RES_FIRE | RES_DARK | 
-V:STR[4] | CON[3]
+V:STR[4] | CON[3] | BRAND_FIRE[3] | BRAND_ELEC[3]
 D:The long-lost weapon of Kzurin, Dwarven champion of ancient Belegost 
 D:Runes of strength adorn its handle, and flames and sparks roar and 
 D:crackle around its massive head.
@@ -1674,7 +1681,7 @@ A:3:20 to 75
 P:0:2d6:8:22:0
 F:BRAND_POIS | 
 F:SLAY_ANIMAL | SLAY_TROLL | SLAY_ORC | RES_NEXUS | SEE_INVIS | 
-V:STR[4]
+V:STR[4] | BRAND_POIS[3]
 D:You feel strong and firm of foot as you whip its spiked orb around and 
 D:bathe it in the blood of your foes.
 
@@ -1685,6 +1692,7 @@ W:20:15:150:35000
 A:7:20 to 100
 P:0:2d6:15:17:2
 F:BRAND_FIRE | IM_FIRE | 
+V:BRAND_FIRE[3]
 E:FIRE_BOLT72:20
 M:{name} rages in fire...
 D:A famed battle-lord of old with a head as ruddy as embers that can yet rise 
@@ -1697,6 +1705,7 @@ W:20:15:200:50000
 A:7:20 to 100
 P:0:3d4:12:12:0
 F:KILL_DRAGON | BRAND_ELEC | IM_ELEC
+V:BRAND_ELEC[3]
 E:HASTE1:100+d100
 M:{name} glows bright green...
 D:A great ridged mace that surrounds you with a nimbus of living lightning.  
@@ -1714,7 +1723,7 @@ F:RES_FEAR |
 F:KILL_DRAGON | SLAY_EVIL | BRAND_ACID | SLAY_UNDEAD | SLAY_DEMON | 
 F:FREE_ACT | RES_ACID | RES_ELEC | RES_FIRE | RES_COLD | RES_NEXUS | 
 F:SEE_INVIS | 
-V:TUNNEL[8] | WIS[4]
+V:TUNNEL[8] | WIS[4] | BRAND_ACID[3]
 D:The wondrous hammer of Aulë, creator of the wise Dwarven lords of old.   
 D:It bears demolishing magics that no serpent or demon can withstand, and 
 D:invokes the strength of mountains to ward off the tumult of the elements.
@@ -1726,7 +1735,7 @@ W:20:18:150:70000
 A:5:20 to 80
 P:0:1d9:10:20:0
 F:SLAY_ANIMAL | BRAND_FIRE | RES_FIRE | RES_POIS | 
-V:INT[4]
+V:INT[4] | BRAND_FIRE[3]
 D:Named for a fiery star and set with priceless gems bearing mystic 
 D:auras of protection and thought.
 
@@ -1754,7 +1763,7 @@ F:SLAY_EVIL | BRAND_FIRE | SLAY_TROLL | SLAY_ORC |
 F:HOLD_LIFE | RES_FIRE | RES_NETHR | SEE_INVIS | 
 E:PROBING:20
 M:{name} glows brightly...
-V:INT[4] | WIS[4]
+V:INT[4] | WIS[4] | BRAND_FIRE[3]
 D:A staff tall and sturdy, borne of old by Gandalf.  Rough-hewn runes that 
 D:invoke the element of Earth stand bold upon its gnarled surface, and no 
 D:creature who lives in the shadow of mountains can withstand the blows it 
@@ -1769,7 +1778,7 @@ P:0:7d8:18:18:0
 # F:DRAIN_MANA | 
 F:SLAY_DRAGON | SLAY_ANIMAL | SLAY_EVIL | KILL_UNDEAD | BRAND_FIRE | 
 F:IM_FIRE | RES_FIRE | RES_DARK | RES_CHAOS | RES_DISEN | AGGRAVATE | 
-V:STR[6] | TUNNEL[4]
+V:STR[6] | TUNNEL[4] | BRAND_FIRE[3]
 D:A weapon so massive it seems beyond the strength of mortals, yet you feel 
 D:the might of giants within you as you heft it.  As you grip the handle 
 D:of ebony and steel, coronas of fire blaze, and mighty spells to preserve 
@@ -1786,7 +1795,7 @@ F:BLESSED
 F:BRAND_COLD | SLAY_ORC | IM_COLD | RES_LIGHT | REGEN | 
 E:DRAIN_LIFE1:40
 M:{name} glows white...
-V:WIS[4] | INFRA[4] | LIGHT[1]
+V:WIS[4] | INFRA[4] | LIGHT[1] | BRAND_COLD[3]
 D:Once wielded by the High Priest of Meneltarma, this great mace gleams coldly 
 D:as though moonlit, and can strike equally mighty spiritual and physical 
 D:blows.
@@ -1803,7 +1812,7 @@ F:BRAND_FIRE | IM_FIRE | RES_ELEC | RES_DARK |
 F:SLAY_ANIMAL | KILL_DRAGON | SLAY_TROLL | SLAY_GIANT | 
 E:FIRE_BALL:15
 M:The {kind} glow{s} deep red...
-V:STR[3] | INT[-3] | DEX[-3] | WIS[-3] | LIGHT[1]
+V:STR[3] | INT[-3] | DEX[-3] | WIS[-3] | LIGHT[1] | BRAND_FIRE[3]
 D:A great crackling Balrog's whip of flame, this weapon could bring 
 D:even Ungoliant to heel.
 
@@ -1840,7 +1849,7 @@ A:4:50 to 127
 P:0:0d0:10:14:0
 F:BRAND_FIRE
 F:RES_FIRE | 
-V:SPEED[10]
+V:SPEED[10] | BRAND_FIRE[3]
 D:A crossbow that grants fiery speed to he who finds it, and from which 
 D:shoot bolts that blaze with flame unquenchable.
 
@@ -1907,7 +1916,7 @@ P:0:4d3:5:20:0
 F:SUST_STR | 
 F:SLAY_ORC | SLAY_TROLL | SLAY_DEMON | BRAND_ACID | 
 F:RES_CHAOS | RES_LIGHT | RES_DARK
-V:TUNNEL[5] | STR[3] | CON[3] | LIGHT[1]
+V:TUNNEL[5] | STR[3] | CON[3] | LIGHT[1] | BRAND_ACID[3]
 D:A fine dwarven pick, good for a miner, and suitable as a weapon 
 D:should the wielder ever tunnel through into a foe's stronghold.
 

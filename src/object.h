@@ -6,23 +6,25 @@
 #include "z-bitflag.h"
 #include "z-dice.h"
 #include "obj-properties.h"
-
+//#include "monster.h"
 
 
 /*** Game constants ***/
 
 /*
- * Spell types used by project(), needed for object resistances.
+ * Elements
  */
 enum
 {
 #define ELEM(a, b, c, d, e, col, f, g, h, i, j, k, l, m, fh, oh, mh, ph) \
-	ELEM_COUNT_##a,
+	ELEM_##a,
     #include "list-elements.h"
     #undef ELEM
 
-	ELEM_COUNT_MAX
+	ELEM_MAX
 };
+
+#define MAX_BRAND_ELEM ELEM_POIS
 
 /*
  * Refueling constants
@@ -278,13 +280,21 @@ enum spell_param_project_type_e {
 };
 
 
-/* Brand or slay type */
-typedef struct brand_or_slay
-{
+/* Brand type */
+struct brand {
 	char *name;
+	int element;
 	int multiplier;
-	struct brand_or_slay *next;
-} brand_or_slay;
+	struct brand *next;
+};
+
+/* Slay type */
+struct new_slay {
+	char *name;
+//	struct monster_base base;
+	int race_flag;
+	struct new_slay *next;
+};
 
 /**
  * Information about object types, like rods, wands, etc.
@@ -342,10 +352,10 @@ typedef struct object_kind
 	bitflag kind_flags[KF_SIZE];			/**< Kind flags */
 
 	random_value modifiers[OBJ_MOD_MAX];
-	s16b resists[ELEM_COUNT_MAX];
+	s16b resists[ELEM_MAX];
 
-	brand_or_slay brands;
-	brand_or_slay slays;
+	struct brand *brands;
+	struct new_slay slays;
 
 	byte d_attr;       /**< Default object attribute */
 	wchar_t d_char;       /**< Default object character */
@@ -434,10 +444,10 @@ typedef struct artifact
 	bitflag kind_flags[KF_SIZE];			/**< Kind flags */
 
 	int modifiers[OBJ_MOD_MAX];
-	int resists[ELEM_COUNT_MAX];
+	int resists[ELEM_MAX];
 
-	brand_or_slay brands;
-	brand_or_slay slays;
+	struct brand *brands;
+	struct new_slay slays;
 
 	byte level;   /** Difficulty level for activation */
 
@@ -485,10 +495,10 @@ typedef struct ego_item
 
 	random_value modifiers[OBJ_MOD_MAX];
 	int min_modifiers[OBJ_MOD_MAX];
-	s16b resists[ELEM_COUNT_MAX];
+	s16b resists[ELEM_MAX];
 
-	brand_or_slay brands;
-	brand_or_slay slays;
+	struct brand *brands;
+	struct new_slay slays;
 
 	byte level;		/* Minimum level */
 	byte rarity;		/* Object rarity */
@@ -566,10 +576,10 @@ typedef struct object
 	u16b ident;			/* Special flags */
 
 	s16b modifiers[OBJ_MOD_MAX];
-	s16b resists[ELEM_COUNT_MAX];
+	s16b resists[ELEM_MAX];
 
-	brand_or_slay brands;
-	brand_or_slay slays;
+	struct brand *brands;
+	struct new_slay slays;
 
 	s16b ac;			/* Normal AC */
 	s16b to_a;			/* Plusses to AC */

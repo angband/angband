@@ -667,27 +667,59 @@ int lookup_flag(const char **flag_table, const char *flag_name) {
 	return i;
 }
 
-errr grab_rand_value(random_value *value, const char **value_type, const char *name_and_value)
+/**
+ * Gets a name and argument for a value expression of the form NAME[arg]
+ * \param name_and_value is the expression
+ * \param string is the random value string to return (NULL if not required)
+ * \param num is the integer to return (NULL if not required)
+ */
+bool find_value_arg(char *value_name, char *string, int *num)
 {
-	int i = 0;
-	char value_name[80];
-	char dice_string[40];
 	char *t;
-	dice_t *dice;
-
-	/* Get a rewritable string */
-	my_strcpy(value_name, name_and_value, strlen(name_and_value));
 
 	/* Find the first bracket */
 	for (t = value_name; *t && (*t != '['); ++t)
 		;
 
-	/* Get the dice */
-	if (1 != sscanf(t + 1, "%s", dice_string))
-		return (PARSE_ERROR_INVALID_VALUE);
+	/* Choose random_value value or int or fail */
+	if (string) {
+		/* Get the dice */
+		if (1 != sscanf(t + 1, "%s", string))
+			return FALSE;
+	} else if (num) {
+		/* Get the value */
+		if (1 != sscanf(t + 1, "%d", num))
+			return FALSE;
+	} else return FALSE;
 
 	/* Terminate the string */
 	*t = '\0';
+
+	/* Success */
+	return TRUE;
+}
+
+/**
+ * Get the random value argument from a value expression and put it into the
+ * appropriate place in an array
+ * \param value the target array of values
+ * \param value_type the possible value strings
+ * \param name_and_value the value expression being matched
+ * \return 0 if successful, otherwise an error value
+ */
+errr grab_rand_value(random_value *value, const char **value_type, const char *name_and_value)
+{
+	int i = 0;
+	char value_name[80];
+	char dice_string[40];
+	dice_t *dice;
+
+	/* Get a rewritable string */
+	my_strcpy(value_name, name_and_value, strlen(name_and_value));
+
+	/* Parse the value expression */
+	if (!find_value_arg(value_name, dice_string, NULL))
+		return PARSE_ERROR_INVALID_VALUE;
 
 	dice = dice_new();
 
@@ -707,31 +739,69 @@ errr grab_rand_value(random_value *value, const char **value_type, const char *n
 	return value_type[i] ? PARSE_ERROR_NONE : PARSE_ERROR_INTERNAL;
 }
 
+/**
+ * Get the integer argument from a value expression and put it into the
+ * appropriate place in an array
+ * \param value the target array of integers
+ * \param value_type the possible value strings
+ * \param name_and_value the value expression being matched
+ * \return 0 if successful, otherwise an error value
+ */
 errr grab_int_value(int *value, const char **value_type, const char *name_and_value)
 {
 	int val, i = 0;
 	char value_name[80];
-	char *t;
 
 	/* Get a rewritable string */
 	my_strcpy(value_name, name_and_value, strlen(name_and_value));
 
-	/* Find the first bracket */
-	for (t = value_name; *t && (*t != '['); ++t)
-		;
-
-	/* Get the value */
-	if (1 != sscanf(t + 1, "%d", &val))
-		return (PARSE_ERROR_INVALID_VALUE);
-
-	/* Terminate the string */
-	*t = '\0';
+	/* Parse the value expression */
+	if (!find_value_arg(value_name, NULL, &val))
+		return PARSE_ERROR_INVALID_VALUE;
 
 	while (value_type[i] && !streq(value_type[i], value_name))
 		i++;
 
 	if (value_type[i])
 		value[i] = val;
+
+	return value_type[i] ? PARSE_ERROR_NONE : PARSE_ERROR_INTERNAL;
+}
+
+/**
+ * Get the integer argument from a value expression and the index in the
+ * value_type array of the suffix used to build the value string
+ * \param value the integer value
+ * \param index the information on where to put it (eg array index)
+ * \param value_type the variable suffix of the possible value strings
+ * \param prefix the constant prefix of the possible value strings
+ * \param name_and_value the value expression being matched
+ * \return 0 if successful, otherwise an error value
+ */
+errr grab_index_and_int(int *value, int *index, const char **value_type,
+						const char *prefix, const char *name_and_value)
+{
+	int i;
+	char value_name[80];
+	char value_string[80];
+
+	/* Get a rewritable string */
+	my_strcpy(value_name, name_and_value, strlen(name_and_value));
+
+	/* Parse the value expression */
+	if (!find_value_arg(value_name, NULL, value))
+		return PARSE_ERROR_INVALID_VALUE;
+
+	/* Compose the value string and look for it */
+	for (i = 0; value_type[i]; i++) {
+		my_strcpy(value_string, prefix, sizeof(value_string));
+		my_strcat(value_string, value_type[i],
+				  sizeof(value_string) - strlen(value_string));
+		if (streq(value_string, value_name)) break;
+	}
+
+	if (value_type[i])
+		*index = i;
 
 	return value_type[i] ? PARSE_ERROR_NONE : PARSE_ERROR_INTERNAL;
 }
