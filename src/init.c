@@ -1,6 +1,5 @@
-/*
- * File: init.c
- * Purpose: Various game initialistion routines
+/** \file init.c
+	\brief Various game initialistion routines
  *
  * Copyright (c) 1997 Ben Harrison
  *
@@ -14,7 +13,14 @@
  *    This software may be copied and distributed for educational, research,
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
+ *
+ * This file is used to initialize various variables and arrays for the
+ * Angband game.
+ *
+ * Several of the arrays for Angband are built from "template" files in
+ * the "lib/edit" directory.
  */
+
 
 #include "angband.h"
 #include "buildid.h"
@@ -91,21 +97,6 @@ char *ANGBAND_DIR_XTRA_ICON;
 
 static struct history_chart *histories;
 
-/*
- * This file is used to initialize various variables and arrays for the
- * Angband game.  Note the use of "fd_read()" and "fd_write()" to bypass
- * the common limitation of "read()" and "write()" to only 32767 bytes
- * at a time.
- *
- * Several of the arrays for Angband are built from "template" files in
- * the "lib/edit" directory.
- *
- * Warning -- the "ascii" file parsers use a minor hack to collect the
- * name and text information in a single pass.  Thus, the game will not
- * be able to load any template file with more than 20K of names or 60K
- * of text, even though technically, up to 64K should be legal.
- */
-
 static const char *obj_flags[] = {
 	#define OF(a, b, c, d, e) #a,
 	#include "list-object-flags.h"
@@ -131,6 +122,13 @@ static const char *brands[] = {
 	#define ELEM(a, b, c, d, e, col, f, g, h, i, j, k, l, m, fh, oh, mh, ph) #a,
 	#include "list-elements.h"
 	#undef ELEM
+	NULL
+};
+
+static const char *slays[] = {
+	#define RF(a, b) #a,
+	#include "list-mon-flags.h"
+	#undef RF
 	NULL
 };
 
@@ -164,7 +162,7 @@ static struct history_chart *findchart(struct history_chart *hs, unsigned int id
 	return hs;
 }
 
-/*
+/**
  * Find the default paths to all of our important sub-directories.
  *
  * All of the sub-directories should, by default, be located inside
@@ -261,7 +259,7 @@ void init_file_paths(const char *configpath, const char *libpath, const char *da
 }
 
 
-/*
+/**
  * Create any missing directories. We create only those dirs which may be
  * empty (user/, save/, apex/, info/, help/). The others are assumed 
  * to contain required files and therefore must exist at startup 
@@ -683,19 +681,20 @@ static enum parser_error parse_k_v(struct parser *p) {
 	struct object_kind *k = parser_priv(p);
 	char *s;
 	char *t;
-	int value = 0;
-	int index = 0;
-	struct brand *b;
 	assert(k);
 
 	s = string_make(parser_getstr(p, "values"));
 	t = strtok(s, " |");
 
 	while (t) {
+		int value = 0;
+		int index = 0;
+		char *name;
 		bool found = FALSE;
 		if (!grab_rand_value(k->modifiers, obj_mods, t))
 			found = TRUE;
 		if (!grab_index_and_int(&value, &index, brands, "BRAND_", t)) {
+			struct brand *b;
 			found = TRUE;
 			b = mem_zalloc(sizeof *b);
 			b->name = string_make(brands[index]);
@@ -703,6 +702,24 @@ static enum parser_error parse_k_v(struct parser *p) {
 			b->multiplier = value;
 			b->next = k->brands;
 			k->brands = b;
+		}
+		if (!grab_index_and_int(&value, &index, slays, "SLAY_", t)) {
+			struct new_slay *s;
+			found = TRUE;
+			s = mem_zalloc(sizeof *s);
+			s->name = string_make(slays[index]);
+			s->race_flag = index;
+			s->multiplier = value;
+			s->next = k->slays;
+			k->slays = s;
+		} else if (!grab_base_and_int(&value, &name, t)) {
+			struct new_slay *s;
+			found = TRUE;
+			s = mem_zalloc(sizeof *s);
+			s->name = name;
+			s->multiplier = value;
+			s->next = k->slays;
+			k->slays = s;
 		}
 		if (!found)
 			break;
@@ -918,9 +935,6 @@ static enum parser_error parse_a_v(struct parser *p) {
 	struct artifact *a = parser_priv(p);
 	char *s; 
 	char *t;
-	int value = 0;
-	int index = 0;
-	struct brand *b;
 	assert(a);
 
 	s = string_make(parser_getstr(p, "values"));
@@ -928,9 +942,13 @@ static enum parser_error parse_a_v(struct parser *p) {
 
 	while (t) {
 		bool found = FALSE;
+		int value = 0;
+		int index = 0;
+		char *name;
 		if (!grab_int_value(a->modifiers, obj_mods, t))
 			found = TRUE;
 		if (!grab_index_and_int(&value, &index, brands, "BRAND_", t)) {
+			struct brand *b;
 			found = TRUE;
 			b = mem_zalloc(sizeof *b);
 			b->name = string_make(brands[index]);
@@ -938,6 +956,24 @@ static enum parser_error parse_a_v(struct parser *p) {
 			b->multiplier = value;
 			b->next = a->brands;
 			a->brands = b;
+		}
+		if (!grab_index_and_int(&value, &index, slays, "SLAY_", t)) {
+			struct new_slay *s;
+			found = TRUE;
+			s = mem_zalloc(sizeof *s);
+			s->name = string_make(slays[index]);
+			s->race_flag = index;
+			s->multiplier = value;
+			s->next = a->slays;
+			a->slays = s;
+		} else if (!grab_base_and_int(&value, &name, t)) {
+			struct new_slay *s;
+			found = TRUE;
+			s = mem_zalloc(sizeof *s);
+			s->name = name;
+			s->multiplier = value;
+			s->next = a->slays;
+			a->slays = s;
 		}
 		if (!found)
 			break;
@@ -1577,9 +1613,6 @@ static enum parser_error parse_e_v(struct parser *p) {
 	struct ego_item *e = parser_priv(p);
 	char *s; 
 	char *t;
-	int value = 0;
-	int index = 0;
-	struct brand *b;
 
 	if (!e)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
@@ -1591,9 +1624,13 @@ static enum parser_error parse_e_v(struct parser *p) {
 
 	while (t) {
 		bool found = FALSE;
+		int value = 0;
+		int index = 0;
+		char *name;
 		if (!grab_rand_value(e->modifiers, obj_mods, t))
 			found = TRUE;
 		if (!grab_index_and_int(&value, &index, brands, "BRAND_", t)) {
+			struct brand *b;
 			found = TRUE;
 			b = mem_zalloc(sizeof *b);
 			b->name = string_make(brands[index]);
@@ -1601,6 +1638,24 @@ static enum parser_error parse_e_v(struct parser *p) {
 			b->multiplier = value;
 			b->next = e->brands;
 			e->brands = b;
+		}
+		if (!grab_index_and_int(&value, &index, slays, "SLAY_", t)) {
+			struct new_slay *s;
+			found = TRUE;
+			s = mem_zalloc(sizeof *s);
+			s->name = string_make(slays[index]);
+			s->race_flag = index;
+			s->multiplier = value;
+			s->next = e->slays;
+			e->slays = s;
+		} else if (!grab_base_and_int(&value, &name, t)) {
+			struct new_slay *s;
+			found = TRUE;
+			s = mem_zalloc(sizeof *s);
+			s->name = name;
+			s->multiplier = value;
+			s->next = e->slays;
+			e->slays = s;
 		}
 		if (!found)
 			break;
@@ -3041,7 +3096,7 @@ static struct file_parser pit_parser = {
 
 
 
-/*
+/**
  * Initialize some other arrays
  */
 static errr init_other(void)
@@ -3112,8 +3167,8 @@ static errr init_other(void)
 
 
 
-/*
- * Initialize some other arrays
+/**
+ * Initialize some object allocation
  */
 static errr init_alloc(void)
 {
@@ -3124,7 +3179,7 @@ static errr init_alloc(void)
 	return (0);
 }
 
-/*
+/**
  * Initialise just the internal arrays.
  * This should be callable by the test suite, without relying on input, or
  * anything to do with a user or savefiles.
@@ -3229,7 +3284,7 @@ static struct init_module* modules[] = {
 	NULL
 };
 
-/*
+/**
  * Hack -- main Angband initialization entry point
  *
  * Verify some files, display the "news.txt" file, create

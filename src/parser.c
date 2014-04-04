@@ -25,6 +25,7 @@
  */
 
 #include "init.h"
+#include "mon-util.h"
 #include "parser.h"
 #include "ui-input.h"
 #include "z-file.h"
@@ -804,6 +805,35 @@ errr grab_index_and_int(int *value, int *index, const char **value_type,
 		*index = i;
 
 	return value_type[i] ? PARSE_ERROR_NONE : PARSE_ERROR_INTERNAL;
+}
+
+/**
+ * Get the integer argument from a slay value expression and the monster base
+ * name it is slaying
+ * \param value the integer value
+ * \param base the monster base name
+ * \param name_and_value the value expression being matched
+ * \return 0 if successful, otherwise an error value
+ */
+errr grab_base_and_int(int *value, char **base, const char *name_and_value)
+{
+	char value_name[80];
+
+	/* Get a rewritable string */
+	my_strcpy(value_name, name_and_value, strlen(name_and_value));
+
+	/* Parse the value expression */
+	if (!find_value_arg(value_name, NULL, value))
+		return PARSE_ERROR_INVALID_VALUE;
+
+	/* Must be a slay */
+	if (strncmp(value_name, "SLAY_", 5))
+		return PARSE_ERROR_INVALID_VALUE;
+	else
+		*base = string_make(value_name + 5);
+
+	/* If we've got this far, assume it's a valid monster base name */
+	return PARSE_ERROR_NONE;
 }
 
 errr grab_flag(bitflag *flags, const size_t size, const char **flag_table, const char *flag_name) {

@@ -6,7 +6,6 @@
 #include "z-bitflag.h"
 #include "z-dice.h"
 #include "obj-properties.h"
-//#include "monster.h"
 
 
 /*** Game constants ***/
@@ -23,8 +22,6 @@ enum
 
 	ELEM_MAX
 };
-
-#define MAX_BRAND_ELEM ELEM_POIS
 
 /*
  * Refueling constants
@@ -291,8 +288,8 @@ struct brand {
 /* Slay type */
 struct new_slay {
 	char *name;
-//	struct monster_base base;
 	int race_flag;
+	int multiplier;
 	struct new_slay *next;
 };
 
@@ -355,7 +352,7 @@ typedef struct object_kind
 	s16b resists[ELEM_MAX];
 
 	struct brand *brands;
-	struct new_slay slays;
+	struct new_slay *slays;
 
 	byte d_attr;       /**< Default object attribute */
 	wchar_t d_char;       /**< Default object character */
@@ -447,7 +444,7 @@ typedef struct artifact
 	int resists[ELEM_MAX];
 
 	struct brand *brands;
-	struct new_slay slays;
+	struct new_slay *slays;
 
 	byte level;   /** Difficulty level for activation */
 
@@ -498,7 +495,7 @@ typedef struct ego_item
 	s16b resists[ELEM_MAX];
 
 	struct brand *brands;
-	struct new_slay slays;
+	struct new_slay *slays;
 
 	byte level;		/* Minimum level */
 	byte rarity;		/* Object rarity */
@@ -579,7 +576,7 @@ typedef struct object
 	s16b resists[ELEM_MAX];
 
 	struct brand *brands;
-	struct new_slay slays;
+	struct new_slay *slays;
 
 	s16b ac;			/* Normal AC */
 	s16b to_a;			/* Plusses to AC */
