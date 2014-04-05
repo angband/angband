@@ -21,6 +21,7 @@
 #include "cave.h"
 #include "init.h"
 #include "obj-make.h"
+#include "obj-slays.h"
 #include "obj-tval.h"
 #include "obj-tvalsval.h"
 #include "obj-util.h"
@@ -235,6 +236,7 @@ void ego_apply_magic(object_type *o_ptr, int level)
 	int i, x;
 	bool extras = TRUE;
 	bitflag flags[OF_SIZE], newf[OF_SIZE];
+
 	object_flags(o_ptr, flags);
 
 	/* Extra powers */
@@ -263,6 +265,10 @@ void ego_apply_magic(object_type *o_ptr, int level)
 
 	/* Apply flags */
 	of_union(o_ptr->flags, o_ptr->ego->flags);
+
+	/* Add slays and brands */
+	add_new_slay(&o_ptr->slays, o_ptr->ego->slays);
+	add_brand(&o_ptr->brands, o_ptr->ego->brands);
 
 	return;
 }
@@ -338,6 +344,8 @@ void copy_artifact_data(object_type *o_ptr, const artifact_type *a_ptr)
 	o_ptr->to_d = a_ptr->to_d;
 	o_ptr->weight = a_ptr->weight;
 	of_union(o_ptr->flags, a_ptr->flags);
+	add_new_slay(&o_ptr->slays, a_ptr->slays);
+	add_brand(&o_ptr->brands, a_ptr->brands);
 }
 
 
@@ -600,6 +608,10 @@ void object_prep(object_type *o_ptr, struct object_kind *k, int lev,
 	o_ptr->to_h = randcalc(k->to_h, lev, rand_aspect);
 	o_ptr->to_d = randcalc(k->to_d, lev, rand_aspect);
 	o_ptr->to_a = randcalc(k->to_a, lev, rand_aspect);
+
+	/* Default slays and brands */
+	add_new_slay(&o_ptr->slays, k->slays);
+	add_brand(&o_ptr->brands, k->brands);
 }
 
 

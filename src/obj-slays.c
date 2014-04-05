@@ -43,6 +43,42 @@ static struct flag_cache *slay_cache;
 
 
 /**
+ * Add slays
+ */
+void add_new_slay(struct new_slay **dest, struct new_slay *source)
+{
+	struct new_slay *s = source;
+
+	while (s) {
+		struct new_slay *os = mem_zalloc(sizeof *os);
+		os->name = string_make(s->name);
+		os->race_flag = s->race_flag;
+		os->multiplier = s->multiplier;
+		os->next = *dest;
+		*dest = os;
+		s = s->next;
+	}
+}
+
+/**
+ * Add brands
+ */
+void add_brand(struct brand **dest, struct brand *source)
+{
+	struct brand *b = source;
+
+	while (b) {
+		struct brand *ob = mem_zalloc(sizeof *ob);
+		ob->name = string_make(b->name);
+		ob->element = b->element;
+		ob->multiplier = b->multiplier;
+		ob->next = *dest;
+		*dest = ob;
+		b = b->next;
+	}
+}
+
+/**
  * Remove slays which are duplicates, i.e. they have exactly the same "monster
  * flag" and the same "resist flag". The one with highest multiplier is kept.
  *

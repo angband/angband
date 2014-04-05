@@ -58,6 +58,8 @@ struct flag_cache {
 
 
 /*** Functions ***/
+void add_new_slay(struct new_slay **dest, struct new_slay *source);
+void add_brand(struct brand **dest, struct brand *source);
 const struct slay *random_slay(const bitflag mask[OF_SIZE]);
 const struct slay *slay_from_object_flag(int flag);
 int list_slays(const bitflag flags[OF_SIZE], const bitflag mask[OF_SIZE],

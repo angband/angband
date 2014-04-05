@@ -402,6 +402,62 @@ static bool describe_misc_magic(textblock *tb, const bitflag flags[OF_SIZE])
 /*
  * Describe slays and brands on weapons
  */
+static bool describe_new_slays(textblock *tb, const struct object *o_ptr)
+{
+	struct new_slay *s = o_ptr->slays;
+
+	if (!s) return FALSE;
+
+	if (tval_is_weapon(o_ptr) || tval_is_fuel(o_ptr))
+		textblock_append(tb, "Slays ");
+	else
+		textblock_append(tb, "It causes your melee attacks to slay ");
+
+	while (s) {
+		textblock_append(tb, s->name);
+		if (s->multiplier > 3)
+			textblock_append(tb, " powerfully");
+		if (s->next)
+			textblock_append(tb, ", ");
+		else
+			textblock_append(tb, ".\n");
+		s = s->next;
+	}
+
+	return TRUE;
+}
+
+/*
+ * Describe slays and brands on weapons
+ */
+static bool describe_brands(textblock *tb, const struct object *o_ptr)
+{
+	struct brand *b = o_ptr->brands;
+
+	if (!b) return FALSE;
+
+	if (tval_is_weapon(o_ptr) || tval_is_fuel(o_ptr))
+		textblock_append(tb, "Branded with ");
+	else
+		textblock_append(tb, "It brands your melee attacks with ");
+
+	while (b) {
+		if (b->multiplier < 3)
+			textblock_append(tb, "weak ");
+		textblock_append(tb, b->name);
+		if (b->next)
+			textblock_append(tb, ", ");
+		else
+			textblock_append(tb, ".\n");
+		b = b->next;
+	}
+
+	return TRUE;
+}
+
+/*
+ * Describe slays and brands on weapons
+ */
 static bool describe_slays(textblock *tb, const bitflag flags[OF_SIZE],
 		const struct object *o_ptr)
 {
@@ -1616,7 +1672,8 @@ static textblock *object_info_out(const object_type *o_ptr, int mode)
 
 	if (describe_curses(tb, o_ptr, flags)) something = TRUE;
 	if (describe_stats(tb, o_ptr, mode)) something = TRUE;
-	if (describe_slays(tb, flags, o_ptr)) something = TRUE;
+	if (describe_new_slays(tb, o_ptr)) something = TRUE;
+	if (describe_brands(tb, o_ptr)) something = TRUE;
 	if (describe_immune(tb, flags)) something = TRUE;
 	if (describe_ignores(tb, flags)) something = TRUE;
 	dedup_hates_flags(flags);
