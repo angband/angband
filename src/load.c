@@ -72,6 +72,7 @@ static int rd_item(object_type *o_ptr)
 {
 	byte tmp8u;
 	u16b tmp16u;
+	s16b tmp16s;
 
 	byte ego_idx;
 	byte art_idx;
@@ -81,6 +82,7 @@ static int rd_item(object_type *o_ptr)
 	char buf[128];
 
 	byte ver = 1;
+
 
 	rd_u16b(&tmp16u);
 	rd_byte(&ver);
@@ -96,10 +98,6 @@ static int rd_item(object_type *o_ptr)
 	rd_byte(&o_ptr->tval);
 	rd_byte(&o_ptr->sval);
 	rd_s16b(&o_ptr->pval);
-
-	for (i = 0; i < obj_mod_max; i++) {
-		rd_s16b(&o_ptr->modifiers[i]);
-	}
 
 	/* Pseudo-ID bit */
 	rd_byte(&tmp8u);
@@ -137,6 +135,46 @@ static int rd_item(object_type *o_ptr)
 
 	for (i = 0; i < of_size; i++)
 		rd_byte(&o_ptr->known_flags[i]);
+
+	for (i = 0; i < obj_mod_max; i++) {
+		rd_s16b(&o_ptr->modifiers[i]);
+	}
+
+	/* Read brands */
+	rd_byte(&tmp8u);
+	while (tmp8u) {
+		char buf[40];
+		struct brand *b = mem_zalloc(sizeof *b);
+		rd_string(buf, sizeof(buf));
+		b->name = string_make(buf);
+		rd_s16b(&tmp16s);
+		b->element = tmp16s;
+		rd_s16b(&tmp16s);
+		b->multiplier = tmp16s;
+		rd_byte(&tmp8u);
+		b->known = tmp8u ? TRUE : FALSE;
+		b->next = o_ptr->brands;
+		o_ptr->brands = b;
+		rd_byte(&tmp8u);
+	}
+
+	/* Read slays */
+	rd_byte(&tmp8u);
+	while (tmp8u) {
+		char buf[40];
+		struct new_slay *s = mem_zalloc(sizeof *s);
+		rd_string(buf, sizeof(buf));
+		s->name = string_make(buf);
+		rd_s16b(&tmp16s);
+		s->race_flag = tmp16s;
+		rd_s16b(&tmp16s);
+		s->multiplier = tmp16s;
+		rd_byte(&tmp8u);
+		s->known = tmp8u ? TRUE : FALSE;
+		s->next = o_ptr->slays;
+		o_ptr->slays = s;
+		rd_byte(&tmp8u);
+	}
 
 	/* Monster holding object */
 	rd_s16b(&o_ptr->held_m_idx);

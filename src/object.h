@@ -282,6 +282,7 @@ struct brand {
 	char *name;
 	int element;
 	int multiplier;
+	bool known;
 	struct brand *next;
 };
 
@@ -290,6 +291,7 @@ struct new_slay {
 	char *name;
 	int race_flag;
 	int multiplier;
+	bool known;
 	struct new_slay *next;
 };
 

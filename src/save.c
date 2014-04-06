@@ -62,6 +62,8 @@ void wr_description(void)
 static void wr_item(const object_type *o_ptr)
 {
 	size_t i;
+	struct brand *b;
+	struct new_slay *s;
 
 	wr_u16b(0xffff);
 	wr_byte(ITEM_VERSION);
@@ -76,10 +78,6 @@ static void wr_item(const object_type *o_ptr)
 	wr_byte(o_ptr->sval);
 
 	wr_s16b(o_ptr->pval);
-
-	for (i = 0; i < OBJ_MOD_MAX; i++) {
-		wr_s16b(o_ptr->modifiers[i]);
-	}
 
 	wr_byte(0);
 
@@ -115,6 +113,30 @@ static void wr_item(const object_type *o_ptr)
 
 	for (i = 0; i < OF_SIZE; i++)
 		wr_byte(o_ptr->known_flags[i]);
+
+	for (i = 0; i < OBJ_MOD_MAX; i++) {
+		wr_s16b(o_ptr->modifiers[i]);
+	}
+
+	/* Write a sentinel byte */
+	wr_byte(o_ptr->brands ? 1 : 0);
+	for (b = o_ptr->brands; b; b = b->next) {
+		wr_string(b->name);
+		wr_s16b(b->element);
+		wr_s16b(b->multiplier);
+		wr_byte(b->known ? 1 : 0);
+		wr_byte(b->next ? 1 : 0);
+	}
+
+	/* Write a sentinel byte */
+	wr_byte(o_ptr->slays ? 1 : 0);
+	for (s = o_ptr->slays; s; s = s->next) {
+		wr_string(s->name);
+		wr_s16b(s->race_flag);
+		wr_s16b(s->multiplier);
+		wr_byte(s->known ? 1 : 0);
+		wr_byte(s->next ? 1 : 0);
+	}
 
 	/* Held by monster index */
 	wr_s16b(o_ptr->held_m_idx);

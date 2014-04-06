@@ -416,7 +416,7 @@ static bool describe_new_slays(textblock *tb, const struct object *o_ptr)
 	while (s) {
 		textblock_append(tb, s->name);
 		if (s->multiplier > 3)
-			textblock_append(tb, " powerfully");
+			textblock_append(tb, " (powerfully)");
 		if (s->next)
 			textblock_append(tb, ", ");
 		else
