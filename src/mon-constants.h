@@ -75,7 +75,7 @@
  */
 enum
 {
-	#define RF(a,b) RF_##a,
+	#define RF(a,b,c) RF_##a,
 	#include "list-mon-flags.h"
 	#undef RF
 	RF_MAX

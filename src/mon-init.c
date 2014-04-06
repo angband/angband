@@ -76,7 +76,7 @@ static enum parser_error parse_rb_m(struct parser *p) {
 
 const char *r_info_flags[] =
 {
-	#define RF(a, b) #a,
+	#define RF(a, b, c) #a,
 	#include "list-mon-flags.h"
 	#undef RF
 	NULL

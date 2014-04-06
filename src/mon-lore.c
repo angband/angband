@@ -579,7 +579,7 @@ void monster_flags_known(const monster_race *r_ptr, const monster_lore *l_ptr,
 static const char *lore_describe_race_flag(int flag)
 {
 	static const char *r_flag_description[] = {
-		#define RF(a, b) b,
+		#define RF(a, b, c) c,
 		#include "list-mon-flags.h"
 		#undef RF
 		NULL

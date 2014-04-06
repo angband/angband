@@ -778,7 +778,7 @@ static int stats_dump_lists(void)
 
 	char *r_info_flags[] =
 	{
-		#define RF(a, b) #a,
+		#define RF(a, b, c) #a,
 		#include "list-mon-flags.h"
 		#undef RF
 		NULL

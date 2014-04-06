@@ -126,7 +126,21 @@ static const char *brands[] = {
 };
 
 static const char *slays[] = {
-	#define RF(a, b) #a,
+	#define RF(a, b, c) #a,
+	#include "list-mon-flags.h"
+	#undef RF
+	NULL
+};
+
+static const char *brand_names[] = {
+	#define ELEM(a, b, c, d, e, col, f, g, h, i, j, k, l, m, fh, oh, mh, ph) b,
+	#include "list-elements.h"
+	#undef ELEM
+	NULL
+};
+
+static const char *slay_names[] = {
+	#define RF(a, b, c) b,
 	#include "list-mon-flags.h"
 	#undef RF
 	NULL
@@ -697,7 +711,7 @@ static enum parser_error parse_k_v(struct parser *p) {
 			struct brand *b;
 			found = TRUE;
 			b = mem_zalloc(sizeof *b);
-			b->name = string_make(brands[index]);
+			b->name = string_make(brand_names[index]);
 			b->element = index;
 			b->multiplier = value;
 			b->next = k->brands;
@@ -707,7 +721,7 @@ static enum parser_error parse_k_v(struct parser *p) {
 			struct new_slay *s;
 			found = TRUE;
 			s = mem_zalloc(sizeof *s);
-			s->name = string_make(slays[index]);
+			s->name = string_make(slay_names[index]);
 			s->race_flag = index;
 			s->multiplier = value;
 			s->next = k->slays;
@@ -951,7 +965,7 @@ static enum parser_error parse_a_v(struct parser *p) {
 			struct brand *b;
 			found = TRUE;
 			b = mem_zalloc(sizeof *b);
-			b->name = string_make(brands[index]);
+			b->name = string_make(brand_names[index]);
 			b->element = index;
 			b->multiplier = value;
 			b->next = a->brands;
@@ -961,7 +975,7 @@ static enum parser_error parse_a_v(struct parser *p) {
 			struct new_slay *s;
 			found = TRUE;
 			s = mem_zalloc(sizeof *s);
-			s->name = string_make(slays[index]);
+			s->name = string_make(slay_names[index]);
 			s->race_flag = index;
 			s->multiplier = value;
 			s->next = a->slays;
@@ -1633,7 +1647,7 @@ static enum parser_error parse_e_v(struct parser *p) {
 			struct brand *b;
 			found = TRUE;
 			b = mem_zalloc(sizeof *b);
-			b->name = string_make(brands[index]);
+			b->name = string_make(brand_names[index]);
 			b->element = index;
 			b->multiplier = value;
 			b->next = e->brands;
@@ -1643,7 +1657,7 @@ static enum parser_error parse_e_v(struct parser *p) {
 			struct new_slay *s;
 			found = TRUE;
 			s = mem_zalloc(sizeof *s);
-			s->name = string_make(slays[index]);
+			s->name = string_make(slay_names[index]);
 			s->race_flag = index;
 			s->multiplier = value;
 			s->next = e->slays;
