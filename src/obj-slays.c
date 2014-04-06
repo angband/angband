@@ -30,7 +30,7 @@
  */
 static const struct slay slay_table[] =
 {
-	#define SLAY(a, b, c, d, e, f, g, h, i, j) \
+	#define SLAY(a, b, c, d, e, f, g, h, i, j)	\
 		{ SL_##a, b, c, d, e, f, g, h, i, j},
 	#include "list-slays.h"
 	#undef SLAY
@@ -315,17 +315,24 @@ void improve_attack_modifier(object_type *o_ptr, const monster_type
 /**
  * React to slays which hurt a monster
  * 
- * \param obj_flags is the set of flags we're testing for slays
- * \param mon_flags is the set of flags we're adjusting as a result
+ * \param obj is the object we're testing for slays
+ * \param mon is the monster we're testing for being slain
  */
-void react_to_slay(bitflag *obj_flags, bitflag *mon_flags)
+bool react_to_slay(struct object *obj, struct monster *mon)
 {
-	int i;
-	for (i = 0; i < SL_MAX; i++) {
-		const struct slay *s_ptr = &slay_table[i];
-		if (of_has(obj_flags, s_ptr->object_flag) && s_ptr->monster_flag)
-			rf_on(mon_flags, s_ptr->monster_flag);
+	struct new_slay *s;
+
+	for (s = obj->slays; s; s = s->next) {
+		/* Check the race flag */
+		if (rf_has(mon->race->flags, s->race_flag))
+			return TRUE;
+
+		/* Check for monster base */
+		if (!streq(s->name, mon->race->base->name))
+			return TRUE;
 	}
+
+	return FALSE;
 }
 
 

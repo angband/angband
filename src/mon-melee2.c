@@ -2096,13 +2096,11 @@ static void process_monster(struct chunk *c, struct monster *m_ptr)
 
 				/* Take or Kill objects on the floor */
 				if (rf_has(m_ptr->race->flags, RF_TAKE_ITEM) ||
-						rf_has(m_ptr->race->flags, RF_KILL_ITEM))	{
-					bitflag mon_flags[RF_SIZE];
-
+						rf_has(m_ptr->race->flags, RF_KILL_ITEM)) {
 					char m1_name[80];
 					char o_name[80];
 
-					rf_wipe(mon_flags);
+					bool safe = o_ptr->artifact ? TRUE : FALSE;
 
 					/* Get the object name */
 					object_desc(o_name, sizeof(o_name), o_ptr,
@@ -2112,12 +2110,13 @@ static void process_monster(struct chunk *c, struct monster *m_ptr)
 					monster_desc(m1_name, sizeof(m1_name), m_ptr, MDESC_IND_HID | MDESC_CAPITAL);
 
 					/* React to objects that hurt the monster */
-					react_to_slay(o_ptr->flags, mon_flags);
+					if (react_to_slay(o_ptr, m_ptr))
+						safe = TRUE;
 
 					/* The object cannot be picked up by the monster */
-					if (o_ptr->artifact || rf_is_inter(m_ptr->race->flags, mon_flags)) {
+					if (safe) {
 						/* Only give a message for "take_item" */
-						if (rf_has(m_ptr->race->flags, RF_TAKE_ITEM))	{
+						if (rf_has(m_ptr->race->flags, RF_TAKE_ITEM)) {
 							/* Describe observable situations */
 							if (m_ptr->ml && player_has_los_bold(ny, nx) &&
 									!squelch_item_ok(o_ptr))
