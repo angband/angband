@@ -805,7 +805,7 @@ void object_notice_on_wield(object_type *o_ptr)
 	if (tval_is_jewelry(o_ptr))
 	{
 		/* Learn the flavor of jewelry with obvious flags */
-		if (EASY_LEARN && obvious)
+		if (obvious)
 			object_flavor_aware(o_ptr);
 
 		/* Learn all flags on any aware non-artifact jewelry */
@@ -959,9 +959,8 @@ void wieldeds_notice_flag(struct player *p, int flag)
 			object_notice_flag(o_ptr, flag);
 
 			/* XXX Eddie should this go before noticing the flag to avoid learning twice? */
-			if (EASY_LEARN && tval_is_jewelry(o_ptr))
+			if (tval_is_jewelry(o_ptr))
 			{
-				/* XXX Eddie EASY_LEARN Possible concern: gets =teleportation just from +2 speed */
 				object_flavor_aware(o_ptr);
 				object_check_for_ident(o_ptr);
 			}

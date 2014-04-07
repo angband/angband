@@ -101,9 +101,6 @@ enum {
 #define IDENT_FAKE      0x2000  /* Item is a fake, for displaying knowledge */
 #define IDENT_SENSED_THIS_TURN 0x4000 /* Item has had a chance to be sensed on this turn (see sense_inventory()) */
 
-/* Whether to learn egos and flavors with less than complete information */
-#define EASY_LEARN 1
-
 /* Maximum number of scroll titles generated */
 #define MAX_TITLES     50
 
