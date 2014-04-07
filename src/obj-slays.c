@@ -41,6 +41,20 @@ static const struct slay slay_table[] =
  */
 static struct flag_cache *slay_cache;
 
+struct brand_info {
+	const char *active_verb;
+}
+
+/**
+ * Brand info - until there's a better place NRM
+ */
+const brand_info[] = {
+	{ "spits" },
+	{ "crackles" },
+	{ "flares" },
+	{ "grows cold" },
+	{ "seethes" }
+};
 
 /**
  * Add slays
@@ -221,33 +235,39 @@ int slay_info_collect(const int slays[], const char *desc[],
  * Notice any slays on a particular object which are in mask.
  *
  * \param o_ptr is the object on which we are noticing slays
- * \param mask is the flagset within which we are noticing them
+ * \param wield is whether we are learning from wield (brands only)
  */
-void object_notice_slays(object_type *o_ptr, const bitflag mask[OF_SIZE])
+void object_notice_slays(object_type *o_ptr, bool wield)
 {
-	bool learned;
-	bitflag f[OF_SIZE];
 	char o_name[40];
-	int i;
+	struct brand *b;
+	struct new_slay *s;
 
-	/* We are only interested in the flags specified in mask */
-	object_flags(o_ptr, f);
-	of_inter(f, mask);
+	for (b = o_ptr->brands; b; b = b->next) {
+		/* Already know it */
+		if (b->known) continue;
 
-	/* if you learn a slay, learn the ego and print a message */
-	for (i = 0; i < SL_MAX; i++) {
-		const struct slay *s_ptr = &slay_table[i];
-		if (of_has(f, s_ptr->object_flag)) {
-			learned = object_notice_flag(o_ptr, s_ptr->object_flag);
-			if (learned) {
-				object_notice_ego(o_ptr);
-				object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE | ODESC_SINGULAR);
-				msg("Your %s %s!", o_name, s_ptr->active_verb);
-			}
-		}
+		/* Learn */
+		b->known = TRUE;
+		object_notice_ego(o_ptr);
+		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE | ODESC_SINGULAR);
+		msg("Your %s %s!", o_name, brand_info[b->element].active_verb);
 	}
 
-	object_check_for_ident(o_ptr);
+	if (wield) return;
+
+	for (s = o_ptr->slays; s; s = s->next) {
+		/* Already know it */
+		if (s->known) continue;
+
+		/* Learn */
+		s->known = TRUE;
+		object_notice_ego(o_ptr);
+		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE | ODESC_SINGULAR);
+		msg("Your %s glows%s!", o_name, s->multiplier > 3 ? " brightly" : "");
+	}
+
+	/* Unnecessary, I think - NRM object_check_for_ident(o_ptr); */
 }
 
 
@@ -290,7 +310,7 @@ void improve_attack_modifier(object_type *o_ptr, const monster_type
 			/* notice any brand or slay that would affect monster */
 			of_wipe(note_f);
 			of_on(note_f, s_ptr->object_flag);
-			object_notice_slays(o_ptr, note_f);
+			object_notice_slays(o_ptr, FALSE);
 
 			if (m_ptr->ml && s_ptr->monster_flag)
 				rf_on(l_ptr->flags, s_ptr->monster_flag);

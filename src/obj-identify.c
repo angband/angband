@@ -792,8 +792,8 @@ void object_notice_on_wield(object_type *o_ptr)
 	for (i = 0; i < OBJ_MOD_MAX; i++)
 		if (o_ptr->modifiers[i]) obvious = TRUE;
 
-	/* Notice any obvious brands or slays */
-	object_notice_slays(o_ptr, obvious_mask);
+	/* Notice any brands */
+	object_notice_slays(o_ptr, TRUE);
 
 	/* Learn about obvious flags */
 	of_union(o_ptr->known_flags, obvious_mask);
