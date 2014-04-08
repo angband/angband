@@ -43,17 +43,20 @@ static struct flag_cache *slay_cache;
 
 struct brand_info {
 	const char *active_verb;
+	const char *melee_verb;
+	const char *melee_verb_weak;
+	int resist_flag;
 }
 
 /**
  * Brand info - until there's a better place NRM
  */
 const brand_info[] = {
-	{ "spits" },
-	{ "crackles" },
-	{ "flares" },
-	{ "grows cold" },
-	{ "seethes" }
+	{ "spits", "dissolve", "corrode", RF_IM_ACID },
+	{ "crackles", "shock", "zap", RF_IM_ELEC },
+	{ "flares", "burn", "singe", RF_IM_FIRE },
+	{ "grows cold", "freeze", "chill", RF_IM_COLD },
+	{ "seethes", "poison", "sicken", RF_IM_POIS }
 };
 
 /**
@@ -232,20 +235,24 @@ int slay_info_collect(const int slays[], const char *desc[],
 
 
 /**
- * Notice any slays on a particular object which are in mask.
+ * Notice any brands on a particular object which affect a particular monster.
  *
- * \param o_ptr is the object on which we are noticing slays
- * \param wield is whether we are learning from wield (brands only)
+ * \param o_ptr is the object on which we are noticing brands
+ * \param m_ptr the monster we are hitting, if there is one
  */
-void object_notice_slays(object_type *o_ptr, bool wield)
+void object_notice_brands(object_type *o_ptr,const monster_type *m_ptr)
 {
 	char o_name[40];
 	struct brand *b;
-	struct new_slay *s;
 
 	for (b = o_ptr->brands; b; b = b->next) {
 		/* Already know it */
 		if (b->known) continue;
+
+		/* Not applicable */
+		if (m_ptr && rf_has(m_ptr->race->flags,
+						brand_info[b->element].resist_flag))
+			continue;
 
 		/* Learn */
 		b->known = TRUE;
@@ -254,11 +261,28 @@ void object_notice_slays(object_type *o_ptr, bool wield)
 		msg("Your %s %s!", o_name, brand_info[b->element].active_verb);
 	}
 
-	if (wield) return;
+	object_check_for_ident(o_ptr);
+}
+
+/**
+ * Notice any slays on a particular object which affect a particular monster.
+ *
+ * \param o_ptr is the object on which we are noticing slays
+ * \param m_ptr the monster we are trying to slay
+ */
+void object_notice_slays(object_type *o_ptr,const monster_type *m_ptr)
+{
+	char o_name[40];
+	struct new_slay *s;
 
 	for (s = o_ptr->slays; s; s = s->next) {
 		/* Already know it */
 		if (s->known) continue;
+
+		/* Not applicable */
+		if (streq(lookup_monster_base(s->name)->name, m_ptr->race->name) &&
+			!rf_has(m_ptr->race->flags, s->race_flag))
+			continue;
 
 		/* Learn */
 		s->known = TRUE;
@@ -267,7 +291,7 @@ void object_notice_slays(object_type *o_ptr, bool wield)
 		msg("Your %s glows%s!", o_name, s->multiplier > 3 ? " brightly" : "");
 	}
 
-	/* Unnecessary, I think - NRM object_check_for_ident(o_ptr); */
+	object_check_for_ident(o_ptr);
 }
 
 
@@ -283,51 +307,70 @@ void object_notice_slays(object_type *o_ptr, bool wield)
  * \param known_only is whether we are using all the object flags, or only
  * the ones we *already* know about
  */
-void improve_attack_modifier(object_type *o_ptr, const monster_type
-	*m_ptr, const struct slay **best_s_ptr, bool real, bool known_only)
+void improve_attack_modifier(object_type *o_ptr, const monster_type *m_ptr,
+							 const struct brand **brand_used, 
+							 const struct new_slay **slay_used, 
+							 char **verb, bool real, bool known_only)
 {
 	monster_lore *l_ptr = get_lore(m_ptr->race);
-	bitflag f[OF_SIZE], known_f[OF_SIZE], note_f[OF_SIZE];
-	int i;
+	struct brand *b;
+	struct new_slay *s;
+	int best_mult = 1;
 
-	object_flags(o_ptr, f);
-	object_flags_known(o_ptr, known_f);
+	/* Brands */
+	for (b = o_ptr->brands; b; b = b->next) {
+		if (known_only && !b->known) continue;
 
-	for (i = 0; i < SL_MAX; i++) {
-		const struct slay *s_ptr = &slay_table[i];
-		if ((known_only && !of_has(known_f, s_ptr->object_flag)) ||
-				(!known_only && !of_has(f, s_ptr->object_flag))) continue;
-
-		/* In a real attack, learn about monster resistance or slay match if:
-		 * EITHER the slay flag on the object is known,
-		 * OR the monster is vulnerable to the slay/brand
-		 */
-		if (real && (of_has(known_f, s_ptr->object_flag) || (s_ptr->monster_flag
-				&& rf_has(m_ptr->race->flags, s_ptr->monster_flag)) ||
-				(s_ptr->resist_flag && !rf_has(m_ptr->race->flags,
-				s_ptr->resist_flag)))) {
-
-			/* notice any brand or slay that would affect monster */
-			of_wipe(note_f);
-			of_on(note_f, s_ptr->object_flag);
-			object_notice_slays(o_ptr, FALSE);
-
-			if (m_ptr->ml && s_ptr->monster_flag)
-				rf_on(l_ptr->flags, s_ptr->monster_flag);
-
-			if (m_ptr->ml && s_ptr->resist_flag)
-				rf_on(l_ptr->flags, s_ptr->resist_flag);
+		/* If the monster is vulnerable, record and learn from real attacks */
+		if (!rf_has(m_ptr->race->flags,
+					brand_info[b->element].resist_flag)) {
+			if (best_mult < b->multiplier) {
+				best_mult = b->multiplier;
+				*brand_used = b;
+				if (b->multiplier < 3)
+					my_strcpy(*verb, brand_info[b->element].melee_verb_weak, 
+							  20);
+				else
+					my_strcpy(*verb, brand_info[b->element].melee_verb, 20);
+			}
+			if (real) {
+				object_notice_brands(o_ptr, m_ptr);
+				if (m_ptr->ml)
+					rf_on(l_ptr->flags, brand_info[b->element].resist_flag);
+			}
 		}
 
-		/* If the monster doesn't resist or the slay flag matches */
-		if ((s_ptr->brand && !rf_has(m_ptr->race->flags, s_ptr->resist_flag)) ||
-				(s_ptr->monster_flag && rf_has(m_ptr->race->flags,
-				s_ptr->monster_flag))) {
+		/* Brand is known, attack is real, learn about the monster */
+		if (b->known && m_ptr->ml && real)
+			rf_on(l_ptr->flags, brand_info[b->element].resist_flag);
+	}
 
-			/* compare multipliers to determine best attack */
-			if ((*best_s_ptr == NULL) || ((*best_s_ptr)->mult < s_ptr->mult))
-				*best_s_ptr = s_ptr;
+	/* Slays */
+	for (s = o_ptr->slays; s; s = s->next) {
+		if (known_only && !s->known) continue;
+
+		/* If the monster is vulnerable, record and learn from real attacks */
+		if (!streq(lookup_monster_base(s->name)->name, m_ptr->race->name) || 
+			rf_has(m_ptr->race->flags, s->race_flag)) {
+			if (best_mult < s->multiplier) {
+				best_mult = s->multiplier;
+				*brand_used = NULL;
+				*slay_used = s;
+				if (s->multiplier <= 3)
+					my_strcpy(*verb, "smite", 20);
+				else
+					my_strcpy(*verb, "fiercely smite", 20);
+			}
+			if (real) {
+				object_notice_slays(o_ptr, m_ptr);
+				if (m_ptr->ml)
+					rf_on(l_ptr->flags, s->race_flag);
+			}
 		}
+
+		/* Slay is known, attack is real, learn about the monster */
+		if (s->known && m_ptr->ml && real)
+			rf_on(l_ptr->flags, s->race_flag);
 	}
 }
 

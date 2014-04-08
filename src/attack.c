@@ -187,12 +187,17 @@ static bool py_attack_real(int y, int x, bool *fear) {
 	bool success = FALSE;
 
 	/* Default to punching for one damage */
-	const char *hit_verb = "punch";
+	char *hit_verb;
 	int dmg = 1;
 	u32b msg_type = MSG_HIT;
 
+	/* Default to punching for one damage */
+	hit_verb = mem_alloc(20);
+	my_strcpy(hit_verb, "punch", sizeof(hit_verb));
+
 	/* Extract monster name (or "it") */
-	monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_OBJE | MDESC_IND_HID | MDESC_PRO_HID);
+	monster_desc(m_name, sizeof(m_name), m_ptr, 
+				 MDESC_OBJE | MDESC_IND_HID | MDESC_PRO_HID);
 
 	/* Auto-Recall if possible and visible */
 	if (m_ptr->ml) monster_race_track(m_ptr->race);
@@ -220,24 +225,27 @@ static bool py_attack_real(int y, int x, bool *fear) {
 
 	/* Handle normal weapon */
 	if (o_ptr->kind) {
-		const struct slay *best_s_ptr = NULL;
+		const struct brand *b = NULL;
+		const struct new_slay *s = NULL;
 
-		hit_verb = "hit";
+		my_strcpy(hit_verb, "hit", sizeof(hit_verb));
 
 		/* Get the best attack from all slays or
 		 * brands on all non-launcher equipment */
 		for (i = INVEN_LEFT; i < INVEN_TOTAL; i++) {
 			struct object *obj = &player->inventory[i];
 			if (obj->kind)
-				improve_attack_modifier(obj, m_ptr, &best_s_ptr, TRUE, FALSE);
+				improve_attack_modifier(obj, m_ptr, &b, &s, &hit_verb, TRUE, 
+										FALSE);
 		}
 
-		improve_attack_modifier(o_ptr, m_ptr, &best_s_ptr, TRUE, FALSE);
-		if (best_s_ptr != NULL)
-			hit_verb = best_s_ptr->melee_verb;
+		improve_attack_modifier(o_ptr, m_ptr, &b, &s, &hit_verb, TRUE, FALSE);
 
 		dmg = damroll(o_ptr->dd, o_ptr->ds);
-		dmg *= (best_s_ptr == NULL) ? 1 : best_s_ptr->mult;
+		if (s)
+			dmg *= s->multiplier;
+		else if (b)
+			dmg *= b->multiplier;
 
 		dmg += o_ptr->to_d;
 		dmg = critical_norm(o_ptr->weight, o_ptr->to_h, dmg, &msg_type);
@@ -261,7 +269,7 @@ static bool py_attack_real(int y, int x, bool *fear) {
 	if (dmg <= 0) {
 		dmg = 0;
 		msg_type = MSG_MISS;
-		hit_verb = "fail to harm";
+		my_strcpy(hit_verb, "fail to harm", sizeof(hit_verb));
 	}
 
 	for (i = 0; i < N_ELEMENTS(melee_hit_types); i++) {
@@ -578,21 +586,24 @@ static struct attack_result make_ranged_shot(object_type *o_ptr, int y, int x) {
 	int chance2 = chance - distance(player->py, player->px, y, x);
 
 	int multiplier = player->state.ammo_mult;
-	const struct slay *best_s_ptr = NULL;
+	const struct brand *b = NULL;
+	const struct new_slay *s = NULL;
 
 	/* Did we hit it (penalize distance travelled) */
 	if (!test_hit(chance2, m_ptr->race->ac, m_ptr->ml)) return result;
 
 	result.success = TRUE;
 
-	improve_attack_modifier(o_ptr, m_ptr, &best_s_ptr, TRUE, FALSE);
-	improve_attack_modifier(j_ptr, m_ptr, &best_s_ptr, TRUE, FALSE);
+	improve_attack_modifier(o_ptr, m_ptr, &b, &s, (char **) &result.hit_verb,
+							TRUE, FALSE);
+	improve_attack_modifier(j_ptr, m_ptr, &b, &s, (char **) &result.hit_verb,
+							TRUE, FALSE);
 
 	/* If we have a slay, modify the multiplier appropriately */
-	if (best_s_ptr != NULL) {
-		result.hit_verb = best_s_ptr->range_verb;
-		multiplier += best_s_ptr->mult;
-	}
+	if (b)
+		multiplier += b->multiplier;
+	else if (s)
+		multiplier += s->multiplier;
 
 	/* Apply damage: multiplier, slays, criticals, bonuses */
 	result.dmg = damroll(o_ptr->dd, o_ptr->ds);
@@ -619,20 +630,22 @@ static struct attack_result make_ranged_throw(object_type *o_ptr, int y, int x) 
 	int chance2 = chance - distance(player->py, player->px, y, x);
 
 	int multiplier = 1;
-	const struct slay *best_s_ptr = NULL;
+	const struct brand *b = NULL;
+	const struct new_slay *s = NULL;
 
 	/* If we missed then we're done */
 	if (!test_hit(chance2, m_ptr->race->ac, m_ptr->ml)) return result;
 
 	result.success = TRUE;
 
-	improve_attack_modifier(o_ptr, m_ptr, &best_s_ptr, TRUE, FALSE);
+	improve_attack_modifier(o_ptr, m_ptr, &b, &s, (char **) &result.hit_verb,
+							TRUE, FALSE);
 
 	/* If we have a slay, modify the multiplier appropriately */
-	if (best_s_ptr != NULL) {
-		result.hit_verb = best_s_ptr->range_verb;
-		multiplier += best_s_ptr->mult;
-	}
+	if (b)
+		multiplier += b->multiplier;
+	else if (s)
+		multiplier += s->multiplier;
 
 	/* Apply damage: multiplier, slays, criticals, bonuses */
 	result.dmg = damroll(o_ptr->dd, o_ptr->ds);

@@ -52,8 +52,8 @@ struct slay {
  * Slay cache. Used for looking up slay values in obj-power.c
  */
 struct flag_cache {
-        bitflag flags[OF_SIZE];   	/* Combination of slays and brands */
-        s32b value;            		/* Value of this combination */
+	bitflag flags[OF_SIZE];   	/* Combination of slays and brands */
+	s32b value;            		/* Value of this combination */
 };
 
 
@@ -63,12 +63,15 @@ void add_brand(struct brand **dest, struct brand *source);
 const struct slay *random_slay(const bitflag mask[OF_SIZE]);
 const struct slay *slay_from_object_flag(int flag);
 int list_slays(const bitflag flags[OF_SIZE], const bitflag mask[OF_SIZE],
-	int slay_list[], bool dedup);
+			   int slay_list[], bool dedup);
 int slay_info_collect(const int slays[], const char *desc[], 
 					  const char *brand[], int mult[], int max_n);
-void object_notice_slays(object_type *o_ptr, bool wield);
-void improve_attack_modifier(object_type *o_ptr, const monster_type
-	*m_ptr, const struct slay **best_s_ptr, bool lore, bool known_only);
+void object_notice_brands(object_type *o_ptr, const monster_type *m_ptr);
+void object_notice_slays(object_type *o_ptr, const monster_type *m_ptr);
+void improve_attack_modifier(object_type *o_ptr, const monster_type	*m_ptr, 
+							 const struct brand **brand_used, 
+							 const struct new_slay **slay_used, 
+							 char **verb, bool real, bool known_only);
 bool react_to_slay(struct object *obj, struct monster *mon);
 errr create_slay_cache(struct ego_item *items);
 s32b check_slay_cache(bitflag *index);

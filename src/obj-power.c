@@ -119,7 +119,6 @@ static s32b slay_power(const object_type *o_ptr, int verbose, ang_file*
 	u32b sv = 0;
 	int i, j;
 	int mult;
-	const struct slay *best_s_ptr = NULL;
 	monster_type *m_ptr;
 	monster_type monster_type_body;
 	const char *desc[SL_MAX] = { 0 }, *brand[SL_MAX] = { 0 };
@@ -154,16 +153,21 @@ static s32b slay_power(const object_type *o_ptr, int verbose, ang_file*
 	 * monsters, which we'll divide out later).
 	 */
 	for (i = 0; i < z_info->r_max; i++)	{
-		best_s_ptr = NULL;
+		const struct brand *b = NULL;
+		const struct new_slay *s = NULL;
+		char verb[20];
+
 		mult = 1;
 		m_ptr = &monster_type_body;
 		m_ptr->race = &r_info[i];
 
 		/* Find the best multiplier against this monster */
-		improve_attack_modifier((object_type *)o_ptr, m_ptr, &best_s_ptr,
-				FALSE, !known);
-		if (best_s_ptr)
-			mult = best_s_ptr->mult;
+		improve_attack_modifier((object_type *)o_ptr, m_ptr, &b, &s, 
+								(char **) &verb, FALSE, !known);
+		if (s)
+			mult = s->multiplier;
+		else if (b)
+			mult = b->multiplier;
 
 		/* Add the multiple to sv */
 		sv += mult * m_ptr->race->scaled_power;
