@@ -147,22 +147,6 @@ const struct slay *random_slay(const bitflag mask[OF_SIZE])
 
 
 /**
- * Get a slay from a corresponding object flag.
- */
-const struct slay *slay_from_object_flag(int flag)
-{
-	int i;
-
-	for (i = 1; i < SL_MAX; i++) {
-		if (slay_table[i].object_flag == flag)
-			return &slay_table[i];
-	}
-
-	return NULL;
-}
-
-
-/**
  * Match slays in flags against a chosen flag mask.
  *
  * count is the number of matches
@@ -235,12 +219,35 @@ int slay_info_collect(const int slays[], const char *desc[],
 
 
 /**
+ * React to slays which hurt a monster
+ * 
+ * \param slay is the slay we're testing for effectiveness
+ * \param mon is the monster we're testing for being slain
+ */
+bool react_to_specific_slay(struct new_slay *slay, const struct monster *mon)
+{
+	if (!slay->name) return FALSE;
+	if (!mon->race->base) return FALSE;
+
+	/* Check the race flag */
+	if (rf_has(mon->race->flags, slay->race_flag))
+		return TRUE;
+
+	/* Check for monster base */
+	if (streq(slay->name, mon->race->base->name))
+		return TRUE;
+
+	return FALSE;
+}
+
+
+/**
  * Notice any brands on a particular object which affect a particular monster.
  *
  * \param o_ptr is the object on which we are noticing brands
  * \param m_ptr the monster we are hitting, if there is one
  */
-void object_notice_brands(object_type *o_ptr,const monster_type *m_ptr)
+void object_notice_brands(object_type *o_ptr, const monster_type *m_ptr)
 {
 	char o_name[40];
 	struct brand *b;
@@ -270,7 +277,7 @@ void object_notice_brands(object_type *o_ptr,const monster_type *m_ptr)
  * \param o_ptr is the object on which we are noticing slays
  * \param m_ptr the monster we are trying to slay
  */
-void object_notice_slays(object_type *o_ptr,const monster_type *m_ptr)
+void object_notice_slays(object_type *o_ptr, const monster_type *m_ptr)
 {
 	char o_name[40];
 	struct new_slay *s;
@@ -280,8 +287,7 @@ void object_notice_slays(object_type *o_ptr,const monster_type *m_ptr)
 		if (s->known) continue;
 
 		/* Not applicable */
-		if (!streq(lookup_monster_base(s->name)->name, m_ptr->race->name) &&
-			!rf_has(m_ptr->race->flags, s->race_flag))
+		if (!react_to_specific_slay(s, m_ptr))
 			continue;
 
 		/* Learn */
@@ -350,8 +356,7 @@ void improve_attack_modifier(object_type *o_ptr, const monster_type *m_ptr,
 		if (known_only && !s->known) continue;
 
 		/* If the monster is vulnerable, record and learn from real attacks */
-		if (streq(lookup_monster_base(s->name)->name, m_ptr->race->name) || 
-			rf_has(m_ptr->race->flags, s->race_flag)) {
+		if (react_to_specific_slay(s, m_ptr)) {
 			if (best_mult < s->multiplier) {
 				best_mult = s->multiplier;
 				*brand_used = NULL;
@@ -381,17 +386,12 @@ void improve_attack_modifier(object_type *o_ptr, const monster_type *m_ptr,
  * \param obj is the object we're testing for slays
  * \param mon is the monster we're testing for being slain
  */
-bool react_to_slay(struct object *obj, struct monster *mon)
+bool react_to_slay(struct object *obj, const struct monster *mon)
 {
 	struct new_slay *s;
 
 	for (s = obj->slays; s; s = s->next) {
-		/* Check the race flag */
-		if (rf_has(mon->race->flags, s->race_flag))
-			return TRUE;
-
-		/* Check for monster base */
-		if (streq(s->name, mon->race->base->name))
+		if (react_to_specific_slay(s, mon))
 			return TRUE;
 	}
 

@@ -61,7 +61,6 @@ struct flag_cache {
 void add_slay(struct new_slay **dest, struct new_slay *source);
 void add_brand(struct brand **dest, struct brand *source);
 const struct slay *random_slay(const bitflag mask[OF_SIZE]);
-const struct slay *slay_from_object_flag(int flag);
 int list_slays(const bitflag flags[OF_SIZE], const bitflag mask[OF_SIZE],
 			   int slay_list[], bool dedup);
 int slay_info_collect(const int slays[], const char *desc[], 
@@ -72,7 +71,7 @@ void improve_attack_modifier(object_type *o_ptr, const monster_type	*m_ptr,
 							 const struct brand **brand_used, 
 							 const struct new_slay **slay_used, 
 							 char **verb, bool real, bool known_only);
-bool react_to_slay(struct object *obj, struct monster *mon);
+bool react_to_slay(struct object *obj, const struct monster *mon);
 errr create_slay_cache(struct ego_item *items);
 s32b check_slay_cache(bitflag *index);
 bool fill_slay_cache(bitflag *index, s32b value);

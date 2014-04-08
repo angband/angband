@@ -412,6 +412,19 @@ void object_know_all_flags(object_type *o_ptr)
 }
 
 
+void object_know_brands_and_slays(object_type *o_ptr)
+{
+	struct brand *b;
+	struct new_slay *s;
+
+	for (b = o_ptr->brands; b; b = b->next)
+		b->known = TRUE;
+	for (s = o_ptr->slays; s; s = s->next)
+		s->known = TRUE;
+}
+
+
+
 #define IDENTS_SET_BY_IDENTIFY ( IDENT_KNOWN | IDENT_ATTACK | IDENT_DEFENCE | IDENT_SENSE | IDENT_EFFECT | IDENT_WORN | IDENT_FIRED | IDENT_NAME )
 
 /**
@@ -462,6 +475,9 @@ void object_notice_everything(object_type *o_ptr)
 
 	/* Know all flags there are to be known */
 	object_know_all_flags(o_ptr);
+
+	/* Know all brands and slays */
+	object_know_brands_and_slays(o_ptr);
 }
 
 
