@@ -105,6 +105,15 @@ static s16b ability_power[25] =
 	12, 16, 20, 24, 30, 36, 42, 48, 56, 64,
 	74, 84, 96, 110};
 
+/* Log file declared here for simplicity */
+ang_file *object_log;
+
+/* Log progress info to the object log */
+void log_progress(char *message, int p)
+{
+	if (p) file_putf(object_log, message, p);
+}
+
 /*
  * Calculate the multiplier we'll get with a given bow type.
  */
@@ -121,7 +130,7 @@ static int bow_multiplier(const object_type *o_ptr, ang_file *log_file)
 	case SV_LIGHT_XBOW: mult = 3; break;
 	case SV_HEAVY_XBOW: mult = 4; break;
 	}
-	file_putf(log_file, "Base mult for this weapon is %d\n", mult);
+	log_progress("Base mult for this weapon is %d\n", mult);
 	return mult;
 }
 
@@ -131,15 +140,14 @@ static int to_damage_power(const object_type *o_ptr, ang_file *log_file)
 	int p;
 
 	p = (o_ptr->to_d * DAMAGE_POWER / 2);
-	file_putf(log_file, "Adding power from to_dam, total is %d\n", p);
+	log_progress("Adding power from to_dam, total is %d\n", p);
 
 	/* Add second lot of damage power for non-weapons */
 	if ((wield_slot(o_ptr) != INVEN_BOW) &&
 		(wield_slot(o_ptr) != INVEN_WIELD) &&
 		!tval_is_ammo(o_ptr)) {
 		p += (o_ptr->to_d * DAMAGE_POWER);
-		file_putf(log_file, 
-				  "Adding power from non-weapon to_dam, total is %d\n", p);
+		log_progress("Adding power from non-weapon to_dam, total is %d\n", p);
 	}
 	return p;
 }
@@ -152,7 +160,7 @@ static int damage_dice_power(const object_type *o_ptr, ang_file *log_file)
 	/* Add damage from dice for any wieldable weapon or ammo */
 	if (wield_slot(o_ptr) == INVEN_WIELD || tval_is_ammo(o_ptr)) {
 		dice = (o_ptr->dd * (o_ptr->ds + 1) * DAMAGE_POWER / 4);
-		file_putf(log_file, "Adding %d power for damage dice\n", dice);
+		log_progress("Adding %d power for damage dice\n", dice);
 	} else if (wield_slot(o_ptr) != INVEN_BOW) {
 		/* Add power boost for nonweapons with combat flags */
 		if (o_ptr->brands || o_ptr->slays || 
@@ -160,8 +168,7 @@ static int damage_dice_power(const object_type *o_ptr, ang_file *log_file)
 			(o_ptr->modifiers[OBJ_MOD_SHOTS] > 0) ||
 			(o_ptr->modifiers[OBJ_MOD_MIGHT] > 0)) {
 			dice = (WEAP_DAMAGE * DAMAGE_POWER);
-			file_putf(log_file, 
-					  "Adding %d power for non-weapon combat flags\n", dice);
+			log_progress("Adding %d power for non-weapon combat flags\n", dice);
 		}
 	}
 	return dice;
@@ -182,7 +189,7 @@ static int ammo_damage_power(const object_type *o_ptr, int p,
 				 (o_ptr->sval == SV_HEAVY_XBOW)) launcher = 2;
 
 		q = (archery[launcher].ammo_dam * DAMAGE_POWER / 2);
-		file_putf(log_file, "Adding power from ammo, total is %d\n", p + q);
+		log_progress("Adding power from ammo, total is %d\n", p + q);
 	}
 	return q;
 }
@@ -199,8 +206,7 @@ static int launcher_ammo_damage_power(const object_type *o_ptr, int p,
 		if (o_ptr->ego)
 			p += (archery[ammo_type].launch_dam * DAMAGE_POWER / 2);
 		p = p * archery[ammo_type].launch_mult / (2 * MAX_BLOWS);
-		file_putf(log_file, 
-				  "After multiplying ammo and rescaling, power is %d\n", p);
+		log_progress("After multiplying ammo and rescaling, power is %d\n", p);
 	}
 	return p;
 }
@@ -220,8 +226,7 @@ static int extra_blows_power(const object_type *o_ptr, int p,
 			/* Add boost for assumed off-weapon damage */
 			p += (NONWEAP_DAMAGE * o_ptr->modifiers[OBJ_MOD_BLOWS] 
 				  * DAMAGE_POWER / 2);
-			file_putf(log_file, 
-					  "Adding power for extra blows, total is %d\n", p);
+			log_progress( "Adding power for extra blows, total is %d\n", p);
 		}
 	}
 	return p;
@@ -260,10 +265,10 @@ static int extra_might_power(const object_type *o_ptr, int p,
 		} else {
 			mult += o_ptr->modifiers[OBJ_MOD_MIGHT];
 		}
-		file_putf(log_file, "Mult after extra might is %d\n", mult);
+		log_progress("Mult after extra might is %d\n", mult);
 	}
 	p *= mult;
-	file_putf(log_file, "After multiplying power for might, total is %d\n", p);
+	log_progress("After multiplying power for might, total is %d\n", p);
 	return p;
 }
 
@@ -367,11 +372,11 @@ static s32b slay_power(const object_type *o_ptr, int p, int verbose,
 				} else {
 					file_putf(log_file, desc[i]);
 				}
-				file_putf(log_file, "x%d ", s_mult[i]); 
+				log_progress("x%d ", s_mult[i]); 
 			}
-			file_putf(log_file, "\nsv is: %d\n", sv);
-			file_putf(log_file, " and t_m_p is: %d \n", tot_mon_power);
-			file_putf(log_file, "times 1000 is: %d\n", 
+			log_progress("\nsv is: %d\n", sv);
+			log_progress(" and t_m_p is: %d \n", tot_mon_power);
+			log_progress("times 1000 is: %d\n", 
 					  (1000 * sv) / tot_mon_power);
 		}
 
@@ -381,41 +386,35 @@ static s32b slay_power(const object_type *o_ptr, int p, int verbose,
 	}
 
 	p += (dice_pwr * (sv / 100)) / (tot_mon_power / 100);
-	file_putf(log_file, "Adjusted for slay power, total is %d\n", p);
+	log_progress("Adjusted for slay power, total is %d\n", p);
 
 	/* Bonuses for multiple brands and slays */
 	if (num_slays > 1) {
 		int q = (num_slays * num_slays * dice_pwr) / (DAMAGE_POWER * 5);
 		p += q;
-		file_putf(log_file, 
-				  "Adding power for multiple slays, total is %d\n", p);
+		log_progress("Adding power for multiple slays, total is %d\n", p);
 	}
 	if (num_brands > 1) {
 		int q = (2 * num_brands * num_brands * dice_pwr) / (DAMAGE_POWER * 5);
 		p += q;
-		file_putf(log_file, 
-				  "Adding power for multiple brands, total is %d\n", p);
+		log_progress("Adding power for multiple brands, total is %d\n", p);
 	}
 	if (num_kills > 1) {
 		int q = (3 * num_kills * num_kills * dice_pwr) / (DAMAGE_POWER * 5);
 		p += q;
-		file_putf(log_file, 
-				  "Adding power for multiple kills, total is %d\n", p);
+		log_progress("Adding power for multiple kills, total is %d\n", p);
 	}
 	if (num_slays == 8) {
 		p += 10;
-		file_putf(log_file, 
-				  "Adding power for full set of slays, total is %d\n", p);
+		log_progress("Adding power for full set of slays, total is %d\n", p);
 	}
 	if (num_brands == 5) {
 		p += 20;
-		file_putf(log_file, 
-				  "Adding power for full set of brands, total is %d\n", p);
+		log_progress("Adding power for full set of brands, total is %d\n", p);
 	}
 	if (num_kills == 3) {
 		p += 20;
-		file_putf(log_file, 
-				  "Adding power for full set of kills, total is %d\n", p);
+		log_progress("Adding power for full set of kills, total is %d\n", p);
 	}
 
 	return p;
@@ -428,7 +427,7 @@ static int rescale_bow_power(const object_type *o_ptr, int p,
 {
 	if (wield_slot(o_ptr) == INVEN_BOW) {
 		p /= MAX_BLOWS;
-		file_putf(log_file, "Rescaling bow power, total is %d\n", p);
+		log_progress("Rescaling bow power, total is %d\n", p);
 	}
 	return p;
 }
@@ -437,7 +436,7 @@ static int rescale_bow_power(const object_type *o_ptr, int p,
 static int to_hit_power(const object_type *o_ptr, int p, ang_file *log_file)
 {
 	p += (o_ptr->to_h * TO_HIT_POWER / 2);
-	file_putf(log_file, "Adding power for to hit, total is %d\n", p);
+	log_progress("Adding power for to hit, total is %d\n", p);
 	return p;
 }
 
@@ -449,7 +448,7 @@ static int ac_power(const object_type *o_ptr, int p, ang_file *log_file)
 	if (o_ptr->ac) {
 		p += BASE_ARMOUR_POWER;
 		q += (o_ptr->ac * BASE_AC_POWER / 2);
-		file_putf(log_file, "Adding %d power for base AC value\n", q);
+		log_progress("Adding %d power for base AC value\n", q);
 
 		/* Add power for AC per unit weight */
 		if (o_ptr->weight > 0) {
@@ -465,7 +464,7 @@ static int ac_power(const object_type *o_ptr, int p, ang_file *log_file)
 		} else
 			q *= 5;
 		p += q;
-		file_putf(log_file, "Adding power for AC per unit weight, now %d\n", p);
+		log_progress("Adding power for AC per unit weight, now %d\n", p);
 	}
 	return p;
 }
@@ -479,13 +478,12 @@ static int to_ac_power(const object_type *o_ptr, int p, ang_file *log_file)
 			  "Adding power for to_ac of %d, total is %d\n", o_ptr->to_a, p);
 	if (o_ptr->to_a > HIGH_TO_AC) {
 		p += ((o_ptr->to_a - (HIGH_TO_AC - 1)) * TO_AC_POWER);
-		file_putf(log_file, 
-				  "Adding power for high to_ac value, total is %d\n", p);
+		log_progress("Adding power for high to_ac value, total is %d\n", p);
 	}
 	if (o_ptr->to_a > VERYHIGH_TO_AC) {
 		p += ((o_ptr->to_a - (VERYHIGH_TO_AC -1)) * TO_AC_POWER * 2);
-		file_putf(log_file, 
-				  "Adding power for very high to_ac value, total is %d\n", p);
+		log_progress("Adding power for very high to_ac value, total is %d\n", 
+					 p);
 	}
 	if (o_ptr->to_a >= INHIBIT_AC) {
 		p += INHIBIT_POWER;
@@ -499,7 +497,7 @@ static int jewelry_power(const object_type *o_ptr, int p, ang_file *log_file)
 {
 	if (tval_is_jewelry(o_ptr)) {
 		p += BASE_JEWELRY_POWER;
-		file_putf(log_file, "Adding power for jewelry, total is %d\n", p);
+		log_progress("Adding power for jewelry, total is %d\n", p);
 	}
 	return p;
 }
@@ -525,9 +523,8 @@ static int modifier_power(const object_type *o_ptr, int p, ang_file *log_file,
 
 	/* Add extra power term if there are a lot of ability bonuses */
 	if (extra_stat_bonus > 249) {
-		file_putf(log_file, 
-				  "Inhibiting!  (Total ability bonus of %d is too high)\n", 
-				  extra_stat_bonus);
+		log_progress("Inhibiting!  (Total ability bonus of %d is too high)\n", 
+					 extra_stat_bonus);
 		p += INHIBIT_POWER;
 	} else if (extra_stat_bonus > 0) {
 		p += ability_power[extra_stat_bonus / 10];
@@ -603,12 +600,11 @@ static int effects_power(const object_type *o_ptr, int p, ang_file *log_file,
 	if (known || object_effect_is_known(o_ptr))	{
 		if (o_ptr->artifact && o_ptr->artifact->effect) {
 			p += effect_power(o_ptr->artifact->effect);
-			file_putf(log_file, 
+			log_progress(
 					  "Adding power for artifact activation, total is %d\n", p);
 		} else {
 			p += effect_power(o_ptr->kind->effect);
-			file_putf(log_file, 
-					  "Adding power for item activation, total is %d\n", p);
+			log_progress("Adding power for item activation, total is %d\n", p);
 		}
 	}
 	return p;
@@ -623,55 +619,58 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 	s32b p = 0, dice_pwr = 0;
 	int mult = 1;
 
+	/* Set the log file */
+	object_log = object_log;
+
 	/* Known status */
 	if (known)
-		file_putf(log_file, "Object is deemed known\n");
+		file_putf(object_log, "Object is deemed known\n");
 	else
-		file_putf(log_file, "Object may not be fully known\n");
+		file_putf(object_log, "Object may not be fully known\n");
 
 	/* Get all the attack power */
-	p = to_damage_power(o_ptr, log_file);
+	p = to_damage_power(o_ptr, object_log);
 
-	dice_pwr = damage_dice_power(o_ptr, log_file);
+	dice_pwr = damage_dice_power(o_ptr, object_log);
 	p += dice_pwr;
 
-	p += ammo_damage_power(o_ptr, p, log_file);
+	p += ammo_damage_power(o_ptr, p, object_log);
 
-	mult = bow_multiplier(o_ptr, log_file);
+	mult = bow_multiplier(o_ptr, object_log);
 
-	p = launcher_ammo_damage_power(o_ptr, p, log_file);
+	p = launcher_ammo_damage_power(o_ptr, p, object_log);
 
-	p = extra_blows_power(o_ptr, p, log_file, known);
+	p = extra_blows_power(o_ptr, p, object_log, known);
 	if (p > INHIBIT_POWER) return p;
 
-	p = extra_shots_power(o_ptr, p, log_file, known);
+	p = extra_shots_power(o_ptr, p, object_log, known);
 	if (p > INHIBIT_POWER) return p;
 
-	p = extra_might_power(o_ptr, p, log_file, mult, known);
+	p = extra_might_power(o_ptr, p, object_log, mult, known);
 	if (p > INHIBIT_POWER) return p;
 
-	p = slay_power(o_ptr, p, verbose, dice_pwr, log_file, known);
+	p = slay_power(o_ptr, p, verbose, dice_pwr, object_log, known);
 
-	p = rescale_bow_power(o_ptr, p, log_file);
+	p = rescale_bow_power(o_ptr, p, object_log);
 
-	p = to_hit_power(o_ptr, p, log_file);
+	p = to_hit_power(o_ptr, p, object_log);
 
 	/* Armour class power */
-	p = ac_power(o_ptr, p, log_file);
+	p = ac_power(o_ptr, p, object_log);
 
-	p = to_ac_power(o_ptr, p, log_file);
+	p = to_ac_power(o_ptr, p, object_log);
 
 	/* Bonus for jewelry */
-	p = jewelry_power(o_ptr, p, log_file);
+	p = jewelry_power(o_ptr, p, object_log);
 
 	/* Other object properties */
-	p = modifier_power(o_ptr, p, log_file, known);
+	p = modifier_power(o_ptr, p, object_log, known);
 
-	p = flags_power(o_ptr, p, log_file, verbose, known);
+	p = flags_power(o_ptr, p, object_log, verbose, known);
 
-	p = effects_power(o_ptr, p, log_file, known);
+	p = effects_power(o_ptr, p, object_log, known);
 
-	file_putf(log_file, "FINAL POWER IS %d\n", p);
+	file_putf(object_log, "FINAL POWER IS %d\n", p);
 
 	return p;
 }
