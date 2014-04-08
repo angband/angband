@@ -46,7 +46,7 @@ int test_x0(void *state) {
 	eq(e->rarity, 4);
 	eq(e->cost, 6);
 	eq(e->rating, 8);
-	return PARSE_ERROR_NONE;
+	ok;
 }
 
 int test_t0(void *state) {
