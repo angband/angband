@@ -62,7 +62,7 @@ const brand_info[] = {
 /**
  * Add slays
  */
-void add_new_slay(struct new_slay **dest, struct new_slay *source)
+void add_slay(struct new_slay **dest, struct new_slay *source)
 {
 	struct new_slay *s = source;
 

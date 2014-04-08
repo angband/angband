@@ -1958,16 +1958,33 @@ static void add_high_resist(artifact_type *a_ptr)
 	}
 }
 
-static void add_slay(artifact_type *a_ptr, bool brand)
+static void add_brand_randart(artifact_type *a_ptr)
 {
 	int count = 0;
 	const struct slay *s_ptr;
 	bitflag mask[OF_SIZE];
 
-	if (brand)
-		create_mask(mask, FALSE, OFT_BRAND, OFT_MAX);
-	else
-		create_mask(mask, FALSE, OFT_SLAY, OFT_KILL, OFT_MAX);
+	create_mask(mask, FALSE, OFT_BRAND, OFT_MAX);
+
+	for (count = 0; count < MAX_TRIES; count++) {
+		s_ptr = random_slay(mask);
+
+		if (!of_has(a_ptr->flags, s_ptr->object_flag)) {
+			of_on(a_ptr->flags, s_ptr->object_flag);
+
+			file_putf(log_file, "Adding brand: %s\n", s_ptr->brand);
+			return;
+		}
+	}
+}
+
+static void add_slay_randart(artifact_type *a_ptr)
+{
+	int count = 0;
+	const struct slay *s_ptr;
+	bitflag mask[OF_SIZE];
+
+	create_mask(mask, FALSE, OFT_SLAY, OFT_KILL, OFT_MAX);
 
 	for(count = 0; count < MAX_TRIES; count++) {
 		s_ptr = random_slay(mask);
@@ -1975,7 +1992,7 @@ static void add_slay(artifact_type *a_ptr, bool brand)
 		if (!of_has(a_ptr->flags, s_ptr->object_flag)) {
 			of_on(a_ptr->flags, s_ptr->object_flag);
 
-			file_putf(log_file, "Adding %s: %s\n", s_ptr->brand ? "brand" : "slay", s_ptr->brand ? s_ptr->brand : s_ptr->desc);
+			file_putf(log_file, "Adding slay: %s\n", s_ptr->desc);
 			return;
 		}
 	}
@@ -2380,13 +2397,13 @@ static void add_ability_aux(artifact_type *a_ptr, int r, s32b target_power)
 		case ART_IDX_BOW_BRAND:
 		case ART_IDX_MELEE_BRAND:
 		case ART_IDX_NONWEAPON_BRAND:
-			add_slay(a_ptr, TRUE);
+			add_brand_randart(a_ptr);
 			break;
 
 		case ART_IDX_BOW_SLAY:
 		case ART_IDX_MELEE_SLAY:
 		case ART_IDX_NONWEAPON_SLAY:
-			add_slay(a_ptr, FALSE);
+			add_slay_randart(a_ptr);
 			break;
 
 		case ART_IDX_MELEE_SINV:
