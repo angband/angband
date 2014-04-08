@@ -97,7 +97,7 @@ extern bool destroy_doors_touch(void);
 extern bool sleep_monsters_touch(bool aware);
 extern bool curse_armor(void);
 extern bool curse_weapon(void);
-extern void brand_object(object_type *o_ptr, int brand_type);
+extern void brand_object(object_type *o_ptr, const char *name);
 extern void brand_weapon(void);
 extern bool brand_ammo(void);
 extern bool brand_bolts(void);

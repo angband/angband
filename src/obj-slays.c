@@ -280,7 +280,7 @@ void object_notice_slays(object_type *o_ptr,const monster_type *m_ptr)
 		if (s->known) continue;
 
 		/* Not applicable */
-		if (streq(lookup_monster_base(s->name)->name, m_ptr->race->name) &&
+		if (!streq(lookup_monster_base(s->name)->name, m_ptr->race->name) &&
 			!rf_has(m_ptr->race->flags, s->race_flag))
 			continue;
 
@@ -350,7 +350,7 @@ void improve_attack_modifier(object_type *o_ptr, const monster_type *m_ptr,
 		if (known_only && !s->known) continue;
 
 		/* If the monster is vulnerable, record and learn from real attacks */
-		if (!streq(lookup_monster_base(s->name)->name, m_ptr->race->name) || 
+		if (streq(lookup_monster_base(s->name)->name, m_ptr->race->name) || 
 			rf_has(m_ptr->race->flags, s->race_flag)) {
 			if (best_mult < s->multiplier) {
 				best_mult = s->multiplier;
@@ -391,7 +391,7 @@ bool react_to_slay(struct object *obj, struct monster *mon)
 			return TRUE;
 
 		/* Check for monster base */
-		if (!streq(s->name, mon->race->base->name))
+		if (streq(s->name, mon->race->base->name))
 			return TRUE;
 	}
 

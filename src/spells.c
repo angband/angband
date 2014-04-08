@@ -3233,7 +3233,7 @@ bool curse_weapon(void)
  *
  * Turns the (non-magical) object into an ego-item of 'brand_type'.
  */
-void brand_object(object_type *o_ptr, int brand_type)
+void brand_object(object_type *o_ptr, const char *name)
 {
 	int i, j;
 	ego_item_type *e_ptr;
@@ -3245,23 +3245,22 @@ void brand_object(object_type *o_ptr, int brand_type)
 	    !o_ptr->artifact && !o_ptr->ego)
 	{
 		char o_name[80];
-		const struct slay *slay;
+		char brand[20];
 
 		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
-		slay = slay_from_object_flag(brand_type);
-		assert(slay != NULL);
+		strnfmt(brand, sizeof(brand), "of %s", name);
 
 		/* Describe */
 		msg("The %s %s surrounded with an aura of %s.", o_name,
-			(o_ptr->number > 1) ? "are" : "is", slay->brand);
+			(o_ptr->number > 1) ? "are" : "is", name);
 
-		/* Get the right ego type for the object - the first one
-		 * with the correct flag for this type of object - we assume
-		 * that anyone adding new ego types adds them after the
-		 * existing ones */
+		/* Get the right ego type for the object */
 		for (i = 0; i < z_info->e_max; i++) {
 			e_ptr = &e_info[i];
-			if (of_has(e_ptr->flags, brand_type)) {
+
+			/* Match the name */
+			if (!e_ptr->name) continue;
+			if (streq(e_ptr->name, brand)) {
 				for (j = 0; j < EGO_TVALS_MAX; j++)
 					if ((o_ptr->tval == e_ptr->tval[j]) &&
 						(o_ptr->sval >= e_ptr->min_sval[j]) &&
@@ -3271,6 +3270,7 @@ void brand_object(object_type *o_ptr, int brand_type)
 			if (ok) break;
 		}
 
+		/* Make it an ego item */
 		o_ptr->ego = &e_info[i];
 		ego_apply_magic(o_ptr, 0);
 		object_notice_ego(o_ptr);
@@ -3297,18 +3297,13 @@ void brand_object(object_type *o_ptr, int brand_type)
  */
 void brand_weapon(void)
 {
-	object_type *o_ptr;
-	bitflag f[OF_SIZE];
-	const struct slay *s_ptr;
+	object_type *o_ptr = &player->inventory[INVEN_WIELD];
 
-	o_ptr = &player->inventory[INVEN_WIELD];
-
-	/* Select a brand */
-	flags_init(f, OF_SIZE, OF_BRAND_FIRE, OF_BRAND_COLD, FLAG_END);
-	s_ptr = random_slay(f);	
+	/* Select the brand */
+	const char *brand = one_in_(2) ? "Flame" : "Frost";
 
 	/* Brand the weapon */
-	brand_object(o_ptr, s_ptr->object_flag);
+	brand_object(o_ptr, brand);
 }
 
 
@@ -3329,8 +3324,9 @@ bool brand_ammo(void)
 	int item;
 	object_type *o_ptr;
 	const char *q, *s;
-	const struct slay *s_ptr;
-	bitflag f[OF_SIZE];
+
+	/* Select the brand */
+	const char *brand = one_in_(3) ? "Flame" : (one_in_(2) ? "Frost" : "Venom");
 
 	/* Get an item */
 	q = "Brand which kind of ammunition? ";
@@ -3339,13 +3335,8 @@ bool brand_ammo(void)
 
 	o_ptr = object_from_item_idx(item);
 
-	/* Select the brand */
-	flags_init(f, OF_SIZE, OF_BRAND_FIRE, OF_BRAND_COLD, OF_BRAND_POIS,
-			FLAG_END);
-	s_ptr = random_slay(f);
-
 	/* Brand the ammo */
-	brand_object(o_ptr, s_ptr->object_flag);
+	brand_object(o_ptr, brand);
 
 	/* Done */
 	return (TRUE);
@@ -3373,7 +3364,7 @@ bool brand_bolts(void)
 	o_ptr = object_from_item_idx(item);
 
 	/* Brand the bolts */
-	brand_object(o_ptr, OF_BRAND_FIRE);
+	brand_object(o_ptr, "of Flame");
 
 	/* Done */
 	return (TRUE);
