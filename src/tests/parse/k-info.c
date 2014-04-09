@@ -147,13 +147,18 @@ int test_m0(void *state) {
 }
 
 int test_f0(void *state) {
-	errr r = parser_parse(state, "F:STR");
+	errr r = parser_parse(state, "F:EASY_KNOW | FEATHER");
 	struct object_kind *k;
 
 	eq(r, 0);
 	k = parser_priv(state);
 	require(k);
 	require(k->flags);
+	require(k->kind_flags);
+	eq(of_has(k->flags, OF_FEATHER), 1);
+	eq(of_has(k->flags, OF_SLOW_DIGEST), 0);
+	eq(kf_has(k->kind_flags, KF_EASY_KNOW), 1);
+	eq(kf_has(k->kind_flags, KF_INSTA_ART), 0);
 	ok;
 }
 
