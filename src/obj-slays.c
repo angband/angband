@@ -60,9 +60,9 @@ const brand_info[] = {
 };
 
 /**
- * Add slays
+ * Copy all the slays from one structure to another
  */
-void add_slay(struct new_slay **dest, struct new_slay *source)
+void copy_slay(struct new_slay **dest, struct new_slay *source)
 {
 	struct new_slay *s = source;
 
@@ -78,9 +78,9 @@ void add_slay(struct new_slay **dest, struct new_slay *source)
 }
 
 /**
- * Add brands
+ * Copy all the brands from one structure to another
  */
-void add_brand(struct brand **dest, struct brand *source)
+void copy_brand(struct brand **dest, struct brand *source)
 {
 	struct brand *b = source;
 

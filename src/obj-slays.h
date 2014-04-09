@@ -58,8 +58,8 @@ struct flag_cache {
 
 
 /*** Functions ***/
-void add_slay(struct new_slay **dest, struct new_slay *source);
-void add_brand(struct brand **dest, struct brand *source);
+void copy_slay(struct new_slay **dest, struct new_slay *source);
+void copy_brand(struct brand **dest, struct brand *source);
 const struct slay *random_slay(const bitflag mask[OF_SIZE]);
 int list_slays(const bitflag flags[OF_SIZE], const bitflag mask[OF_SIZE],
 			   int slay_list[], bool dedup);

@@ -1958,7 +1958,7 @@ static void add_high_resist(artifact_type *a_ptr)
 	}
 }
 
-static void add_brand_randart(artifact_type *a_ptr)
+static void add_brand(artifact_type *a_ptr)
 {
 	int count = 0;
 	const struct slay *s_ptr;
@@ -1978,7 +1978,7 @@ static void add_brand_randart(artifact_type *a_ptr)
 	}
 }
 
-static void add_slay_randart(artifact_type *a_ptr)
+static void add_slay(artifact_type *a_ptr)
 {
 	int count = 0;
 	const struct slay *s_ptr;
@@ -2397,13 +2397,13 @@ static void add_ability_aux(artifact_type *a_ptr, int r, s32b target_power)
 		case ART_IDX_BOW_BRAND:
 		case ART_IDX_MELEE_BRAND:
 		case ART_IDX_NONWEAPON_BRAND:
-			add_brand_randart(a_ptr);
+			add_brand(a_ptr);
 			break;
 
 		case ART_IDX_BOW_SLAY:
 		case ART_IDX_MELEE_SLAY:
 		case ART_IDX_NONWEAPON_SLAY:
-			add_slay_randart(a_ptr);
+			add_slay(a_ptr);
 			break;
 
 		case ART_IDX_MELEE_SINV:

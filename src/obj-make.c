@@ -267,8 +267,8 @@ void ego_apply_magic(object_type *o_ptr, int level)
 	of_union(o_ptr->flags, o_ptr->ego->flags);
 
 	/* Add slays and brands */
-	add_slay(&o_ptr->slays, o_ptr->ego->slays);
-	add_brand(&o_ptr->brands, o_ptr->ego->brands);
+	copy_slay(&o_ptr->slays, o_ptr->ego->slays);
+	copy_brand(&o_ptr->brands, o_ptr->ego->brands);
 
 	return;
 }
@@ -344,8 +344,8 @@ void copy_artifact_data(object_type *o_ptr, const artifact_type *a_ptr)
 	o_ptr->to_d = a_ptr->to_d;
 	o_ptr->weight = a_ptr->weight;
 	of_union(o_ptr->flags, a_ptr->flags);
-	add_slay(&o_ptr->slays, a_ptr->slays);
-	add_brand(&o_ptr->brands, a_ptr->brands);
+	copy_slay(&o_ptr->slays, a_ptr->slays);
+	copy_brand(&o_ptr->brands, a_ptr->brands);
 }
 
 
@@ -610,8 +610,8 @@ void object_prep(object_type *o_ptr, struct object_kind *k, int lev,
 	o_ptr->to_a = randcalc(k->to_a, lev, rand_aspect);
 
 	/* Default slays and brands */
-	add_slay(&o_ptr->slays, k->slays);
-	add_brand(&o_ptr->brands, k->brands);
+	copy_slay(&o_ptr->slays, k->slays);
+	copy_brand(&o_ptr->brands, k->brands);
 }
 
 
