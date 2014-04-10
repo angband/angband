@@ -719,36 +719,34 @@ static bool describe_blows(textblock *tb, const object_type *o_ptr)
  * Note that the results are meaningless if called on a fake ego object as
  * the actual ego may have different properties.
  */
-static int obj_known_damage(const object_type *o_ptr, int *normal_damage, int slay_list[], int slay_damage[], bool *nonweap_slay)
+static int obj_known_damage(const object_type *o_ptr, int *normal_damage, 
+							struct brand **brand_list, int **brand_damage, 
+							struct new_slay **slay_list, int **slay_damage, 
+							bool *nonweap_slay)
 {
-	size_t i, cnt;
-	int mult[SL_MAX];
+	int i;
 	int dice, sides, dam, total_dam, plus = 0;
 	int xtra_postcrit = 0, xtra_precrit = 0;
 	int crit_mult, crit_div, crit_add;
 	int old_blows = 0;
+
 	object_type *bow = &player->inventory[INVEN_BOW];
-
-	bitflag tmp_f[OF_SIZE], mask[OF_SIZE];
-
 	bool weapon = tval_is_melee_weapon(o_ptr);
 	bool ammo   = (player->state.ammo_tval == o_ptr->tval) &&
 	              (bow->kind);
 	int multiplier = 1;
 
 	player_state state;
-	bitflag f[OF_SIZE];
 	object_type inven[INVEN_TOTAL];
+	struct new_slay *s;
+	struct brand *b;
+	int num_slays;
+	int num_brands;
 
 	/* Calculate the player's hypothetical state */
 	memcpy(inven, player->inventory, INVEN_TOTAL * sizeof(object_type));
 	inven[INVEN_WIELD] = *o_ptr;
 	calc_bonuses(inven, &state, TRUE);
-
-	get_known_flags(o_ptr, 0, f);
-
-	/* Create the "all slays" mask */
-	create_mask(mask, FALSE, OFT_SLAY, OFT_KILL, OFT_BRAND, OFT_MAX);
 
 	/* Use displayed dice if real dice not known */
 	if (object_attack_plusses_are_visible(o_ptr)) {
@@ -784,45 +782,45 @@ static int obj_known_damage(const object_type *o_ptr, int *normal_damage, int sl
 			dam += (o_ptr->to_d * 10);
 		if (object_attack_plusses_are_visible(bow))
 			dam += (bow->to_d * 10);
-
-		/* Apply brands/slays from the shooter to the ammo, but only if known
-		 * Note that this is not dependent on mode, so that viewing shop-held
-		 * ammo (fully known) does not leak information about launcher */
-		object_flags_known(bow, tmp_f);
-		of_union(f, tmp_f);
 	}
 
-	/* Collect slays */
-	/* Melee weapons get slays and brands from other items now */
+	/* Melee weapons may get slays and brands from other items */
 	*nonweap_slay = FALSE;
 	if (weapon)	{
 		for (i = INVEN_LEFT; i < INVEN_TOTAL; i++) {
 			if (!player->inventory[i].kind)
 				continue;
 
-			object_flags_known(&player->inventory[i], tmp_f);
-
-			/* Strip out non-slays */
-			of_inter(tmp_f, mask);
-
-			if (of_union(f, tmp_f)) {
-				*nonweap_slay = TRUE;
-				break;
+			for (s = player->inventory[i].slays; s; s = s->next) {
+				if (s->known) {
+					*nonweap_slay = TRUE;
+					break;
+				}
 			}
+			for (b = player->inventory[i].brands; b; b = b->next) {
+				if (b->known) {
+					*nonweap_slay = TRUE;
+					break;
+				}
+			}
+			if (*nonweap_slay) break;
 		}
 	}
 
 	if (ammo) multiplier = player->state.ammo_mult;
 
-	/* Get damage for each slay type on the objects */
-	cnt = list_slays(f, mask, slay_list, TRUE);
-	slay_info_collect(slay_list, NULL, NULL, mult, cnt);
-	for (i = 0; i < cnt; i++) {
+	/* Get the brands */
+	*brand_list = brand_collect(o_ptr, ammo ? bow : NULL, &num_brands, TRUE);
+	if (*brand_list) *brand_damage = mem_zalloc(num_brands * sizeof(int));
+
+	/* Get damage for each brand on the objects */
+	for (i = 0; i < num_brands; i++) {
 		/* ammo mult adds fully, melee mult is times 1, so adds 1 less */
 		int melee_adj_mult = ammo ? 0 : 1;
 
 		/* Include bonus damage and slay in stated average */
-		total_dam = dam * (multiplier + mult[i] - melee_adj_mult) + xtra_precrit;
+		total_dam = dam * (multiplier + (*brand_list)[i].multiplier
+						   - melee_adj_mult) + xtra_precrit;
 		total_dam = (total_dam * crit_mult + crit_add) / crit_div;
 		total_dam += xtra_postcrit;
 
@@ -831,7 +829,31 @@ static int obj_known_damage(const object_type *o_ptr, int *normal_damage, int sl
 		else
 			total_dam *= player->state.num_shots;
 
-		slay_damage[i] = total_dam;
+		(*brand_damage)[i] = total_dam;
+		i++;
+	}
+
+	/* Get the slays */
+	*slay_list = slay_collect(o_ptr, ammo ? bow : NULL, &num_slays, TRUE);
+	if (*slay_list) *slay_damage = mem_zalloc(num_slays * sizeof(int));
+
+	/* Get damage for each slay on the objects */
+	for (i = 0; i < num_slays; i++) {
+		/* ammo mult adds fully, melee mult is times 1, so adds 1 less */
+		int melee_adj_mult = ammo ? 0 : 1;
+
+		/* Include bonus damage and slay in stated average */
+		total_dam = dam * (multiplier + (*slay_list)[i].multiplier
+						   - melee_adj_mult) + xtra_precrit;
+		total_dam = (total_dam * crit_mult + crit_add) / crit_div;
+		total_dam += xtra_postcrit;
+
+		if (weapon)
+			total_dam = (total_dam * old_blows) / 100;
+		else
+			total_dam *= player->state.num_shots;
+
+		(*slay_damage)[i] = total_dam;
 	}
 
 	/* Include bonus damage in stated average */
@@ -847,7 +869,7 @@ static int obj_known_damage(const object_type *o_ptr, int *normal_damage, int sl
 
 	*normal_damage = total_dam;
 
-	return cnt;
+	return num_brands + num_slays;
 }
 
 
@@ -858,36 +880,55 @@ static bool describe_damage(textblock *tb, const object_type *o_ptr)
 {
 	bool nonweap_slay = FALSE;
 	int normal_damage;
-	int slay_damage[SL_MAX];
-	int slays[SL_MAX];
-	const char *slay_desc[SL_MAX];
-	int num_slays;
+	int *brand_damage = NULL;
+	struct brand *brands = NULL;
+	int *slay_damage = NULL;
+	struct new_slay *slays = NULL;
+	int num;
 	int i;
 
-	num_slays = obj_known_damage(o_ptr, &normal_damage, slays, slay_damage, &nonweap_slay);
+	/* Collect brands and slays */
+	num = obj_known_damage(o_ptr, &normal_damage, &brands, &brand_damage,
+						   &slays, &slay_damage, &nonweap_slay);
 
-	/* Collect slays */
-	/* Melee weapons get slays and brands from other items now */
+	/* Mention slays and brands from other items */
 	if (nonweap_slay)
 		textblock_append(tb, "This weapon may benefit from one or more off-weapon brands or slays.\n");
 
 	textblock_append(tb, "Average damage/round: ");
 
-	/* Output damage for creatures effected by the brands or slays */
-	slay_info_collect(slays, slay_desc, NULL, NULL, num_slays);
-	for (i = 0; i < num_slays; i++) {
-		if (slay_damage[i] <= 0)
-			textblock_append_c(tb, TERM_L_RED, "%d", 0);
-		else if (slay_damage[i] % 10)
-			textblock_append_c(tb, TERM_L_GREEN, "%d.%d",
-					slay_damage[i] / 10, slay_damage[i] % 10);
-		else
-			textblock_append_c(tb, TERM_L_GREEN, "%d", slay_damage[i] / 10);
+	/* Output damage for creatures effected by the brands */
+	i = 0;
+	if (brands)
+		do {
+			if (brand_damage[i] <= 0)
+				textblock_append_c(tb, TERM_L_RED, "%d", 0);
+			else if (brand_damage[i] % 10)
+				textblock_append_c(tb, TERM_L_GREEN, "%d.%d",
+								   brand_damage[i] / 10, brand_damage[i] % 10);
+			else
+				textblock_append_c(tb, TERM_L_GREEN, "%d",brand_damage[i] / 10);
 
-		textblock_append(tb, " vs. %s, ", slay_desc[i]);
-	}
+			textblock_append(tb, " vs. creatures not resistant to %s, ",
+							 brands[i].name);
+		} while (brands[i].next);
 
-	if (num_slays) textblock_append(tb, "and ");
+	/* Output damage for creatures effected by the slays */
+	i = 0;
+	if (slays)
+		do {
+			if (slay_damage[i] <= 0)
+				textblock_append_c(tb, TERM_L_RED, "%d", 0);
+			else if (slay_damage[i] % 10)
+				textblock_append_c(tb, TERM_L_GREEN, "%d.%d",
+								   slay_damage[i] / 10, slay_damage[i] % 10);
+			else
+				textblock_append_c(tb, TERM_L_GREEN, "%d", slay_damage[i] / 10);
+
+			textblock_append(tb, " vs. %s, ", slays[i].name);
+		} while (slays[i].next);
+
+	if (num) textblock_append(tb, "and ");
 
 	if (normal_damage <= 0)
 		textblock_append_c(tb, TERM_L_RED, "%d", 0);
@@ -897,9 +938,13 @@ static bool describe_damage(textblock *tb, const object_type *o_ptr)
 	else
 		textblock_append_c(tb, TERM_L_GREEN, "%d", normal_damage / 10);
 
-	if (num_slays) textblock_append(tb, " vs. others");
+	if (num) textblock_append(tb, " vs. others");
 	textblock_append(tb, ".\n");
 
+	if (brands) mem_free(brands);
+	if (brand_damage) mem_free(brand_damage);
+	if (slays) mem_free(slays);
+	if (slay_damage) mem_free(slay_damage);
 	return TRUE;
 }
 

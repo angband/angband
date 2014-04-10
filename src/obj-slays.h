@@ -65,6 +65,10 @@ int list_slays(const bitflag flags[OF_SIZE], const bitflag mask[OF_SIZE],
 			   int slay_list[], bool dedup);
 int slay_info_collect(const int slays[], const char *desc[], 
 					  const char *brand[], int mult[], int max_n);
+struct brand *brand_collect(const object_type *obj1, const object_type *obj2,
+							int *total,	bool known);
+struct new_slay *slay_collect(const object_type *obj1, const object_type *obj2,
+							  int *total, bool known);
 void object_notice_brands(object_type *o_ptr, const monster_type *m_ptr);
 void object_notice_slays(object_type *o_ptr, const monster_type *m_ptr);
 void improve_attack_modifier(object_type *o_ptr, const monster_type	*m_ptr, 
