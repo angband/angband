@@ -911,6 +911,7 @@ static bool describe_damage(textblock *tb, const object_type *o_ptr)
 
 			textblock_append(tb, " vs. creatures not resistant to %s, ",
 							 brands[i].name);
+			i++;
 		} while (brands[i].next);
 
 	/* Output damage for creatures effected by the slays */
@@ -926,6 +927,7 @@ static bool describe_damage(textblock *tb, const object_type *o_ptr)
 				textblock_append_c(tb, TERM_L_GREEN, "%d", slay_damage[i] / 10);
 
 			textblock_append(tb, " vs. %s, ", slays[i].name);
+			i++;
 		} while (slays[i].next);
 
 	if (num) textblock_append(tb, "and ");
