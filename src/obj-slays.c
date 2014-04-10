@@ -51,7 +51,7 @@ struct brand_info {
 /**
  * Brand info - until there's a better place NRM
  */
-const brand_info[] = {
+const brand_info brand_names[] = {
 	{ "spits", "dissolve", "corrode", RF_IM_ACID },
 	{ "crackles", "shock", "zap", RF_IM_ELEC },
 	{ "flares", "burn", "singe", RF_IM_FIRE },
@@ -368,14 +368,14 @@ void object_notice_brands(object_type *o_ptr, const monster_type *m_ptr)
 
 		/* Not applicable */
 		if (m_ptr && rf_has(m_ptr->race->flags,
-						brand_info[b->element].resist_flag))
+						brand_names[b->element].resist_flag))
 			continue;
 
 		/* Learn */
 		b->known = TRUE;
 		object_notice_ego(o_ptr);
 		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE | ODESC_SINGULAR);
-		msg("Your %s %s!", o_name, brand_info[b->element].active_verb);
+		msg("Your %s %s!", o_name, brand_names[b->element].active_verb);
 	}
 
 	object_check_for_ident(o_ptr);
@@ -439,26 +439,26 @@ void improve_attack_modifier(object_type *o_ptr, const monster_type *m_ptr,
 
 		/* If the monster is vulnerable, record and learn from real attacks */
 		if (!rf_has(m_ptr->race->flags,
-					brand_info[b->element].resist_flag)) {
+					brand_names[b->element].resist_flag)) {
 			if (best_mult < b->multiplier) {
 				best_mult = b->multiplier;
 				*brand_used = b;
 				if (b->multiplier < 3)
-					my_strcpy(*verb, brand_info[b->element].melee_verb_weak, 
+					my_strcpy(*verb, brand_names[b->element].melee_verb_weak, 
 							  20);
 				else
-					my_strcpy(*verb, brand_info[b->element].melee_verb, 20);
+					my_strcpy(*verb, brand_names[b->element].melee_verb, 20);
 			}
 			if (real) {
 				object_notice_brands(o_ptr, m_ptr);
 				if (m_ptr->ml)
-					rf_on(l_ptr->flags, brand_info[b->element].resist_flag);
+					rf_on(l_ptr->flags, brand_names[b->element].resist_flag);
 			}
 		}
 
 		/* Brand is known, attack is real, learn about the monster */
 		if (b->known && m_ptr->ml && real)
-			rf_on(l_ptr->flags, brand_info[b->element].resist_flag);
+			rf_on(l_ptr->flags, brand_names[b->element].resist_flag);
 	}
 
 	/* Slays */
