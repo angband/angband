@@ -46,12 +46,12 @@ struct brand_info {
 	const char *melee_verb;
 	const char *melee_verb_weak;
 	int resist_flag;
-}
+};
 
 /**
  * Brand info - until there's a better place NRM
  */
-const brand_info brand_names[] = {
+const struct brand_info brand_names[] = {
 	{ "spits", "dissolve", "corrode", RF_IM_ACID },
 	{ "crackles", "shock", "zap", RF_IM_ELEC },
 	{ "flares", "burn", "singe", RF_IM_FIRE },
