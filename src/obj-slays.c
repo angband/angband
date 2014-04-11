@@ -508,6 +508,66 @@ bool react_to_slay(struct object *obj, const struct monster *mon)
 	return FALSE;
 }
 
+bool brands_are_equal(struct brand *brand1, struct brand *brand2)
+{
+	struct brand *b1, *b2;
+	int count = 0, match = 0;
+
+	for (b1 = brand1; b1; b1 = b1->next) {
+		count++;
+		for (b2 = brand2; b2; b2 = b2->next) {
+			/* Go to the next one if any differences */
+			if (!streq(b1->name, b2->name)) continue;
+			if (b1->element != b2->element) continue;
+			if (b1->multiplier != b2->multiplier) continue;
+
+			/* Count if the same */
+			match++;
+		}
+
+		/* Fail if we didn't find a match */
+		if (match != count) return FALSE;
+	}
+
+	/* Now count back and make sure brand2 isn't strictly bigger */
+	for (b2 = brand2; b2; b2 = b2->next)
+		count--;
+
+	if (count != 0) return FALSE;
+
+	return TRUE;
+}
+
+bool slays_are_equal(struct new_slay *slay1, struct new_slay *slay2)
+{
+	struct new_slay *s1, *s2;
+	int count = 0, match = 0;
+
+	for (s1 = slay1; s1; s1 = s1->next) {
+		count++;
+		for (s2 = slay2; s2; s2 = s2->next) {
+			/* Go to the next one if any differences */
+			if (!streq(s1->name, s2->name)) continue;
+			if (s1->race_flag != s2->race_flag) continue;
+			if (s1->multiplier != s2->multiplier) continue;
+
+			/* Count if the same */
+			match++;
+		}
+
+		/* Fail if we didn't find a match */
+		if (match != count) return FALSE;
+	}
+
+	/* Now count back and make sure slay2 isn't strictly bigger */
+	for (s2 = slay2; s2; s2 = s2->next)
+		count--;
+
+	if (count != 0) return FALSE;
+
+	return TRUE;
+}
+
 
 /**
  * Check the slay cache for a combination of slays and return a slay value
