@@ -287,12 +287,9 @@ static int extra_might_power(const object_type *o_ptr, int p, int mult,
 static s32b slay_power(const object_type *o_ptr, int p, int verbose, 
 					   int dice_pwr, ang_file* log_file, bool known)
 {
-	bitflag s_index[OF_SIZE], f[OF_SIZE], f2[OF_SIZE];
 	u32b sv = 0;
-	int i, j, q, num_brands = 0, num_slays = 0, num_kills = 0;
+	int i, q, num_brands = 0, num_slays = 0, num_kills = 0;
 	int mult;
-	const char *desc[SL_MAX] = { 0 }, *brand[SL_MAX] = { 0 };
-	int s_mult[SL_MAX] = { 0 }, slay_list[SL_MAX] = { 0 };
 	struct brand *brands = o_ptr->brands;
 	struct new_slay *slays = o_ptr->slays;
 
@@ -311,20 +308,6 @@ static s32b slay_power(const object_type *o_ptr, int p, int verbose,
 		}
 		slays = slays->next;
 	}
-
-	if (known)
-		object_flags(o_ptr, f);
-	else
-		object_flags_known(o_ptr, f);
-
-	/* Combine the slay bytes into an index value, return if there are none */
-	of_copy(s_index, f);
-	create_mask(f2, FALSE, OFT_SLAY, OFT_KILL, OFT_BRAND, OFT_MAX);
-
-	if (!of_is_inter(s_index, f2))
-		return p;
-	else
-		of_inter(s_index, f2);
 
 	/* Look in the cache to see if we know this one yet */
 	sv = check_slay_cache(o_ptr);
@@ -369,23 +352,28 @@ static s32b slay_power(const object_type *o_ptr, int p, int verbose,
 		 * total number of monsters.
 		 */
 		if (verbose) {
+			struct brand *brands = NULL;
+			struct new_slay *slays = NULL;
+			int num_slays;
+			int num_brands;
+
 			/* Write info about the slay combination and multiplier */
 			log_obj("Slay multiplier for: ");
 
-			j = list_slays(s_index, s_index, slay_list, FALSE);
-			slay_info_collect(slay_list, desc, brand, s_mult, j);
+			brands = brand_collect(o_ptr, NULL, &num_brands, !known);
+			slays = slay_collect(o_ptr, NULL, &num_slays, !known);
 
-			for (i = 0; i < j; i++) {
-				if (brand[i]) {
-					log_obj((char *) brand[i]);
-				} else {
-					log_obj((char *) desc[i]);
-				}
-				log_obj(format("x%d ", s_mult[i])); 
+			for (i = 0; i < num_brands; i++) {
+				log_obj(format("%sx%d ", brands[i].name,brands[i].multiplier)); 
+			}
+			for (i = 0; i < num_slays; i++) {
+				log_obj(format("%sx%d ", slays[i].name, slays[i].multiplier)); 
 			}
 			log_obj(format("\nsv is: %d\n", sv));
 			log_obj(format(" and t_m_p is: %d \n", tot_mon_power));
 			log_obj(format("times 1000 is: %d\n", (1000 * sv) / tot_mon_power));
+			if (brands) mem_free(brands);
+			if (slays) mem_free(slays);
 		}
 
 		/* Add to the cache */

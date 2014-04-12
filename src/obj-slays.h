@@ -64,8 +64,6 @@ void copy_brand(struct brand **dest, struct brand *source);
 const struct slay *random_slay(const bitflag mask[OF_SIZE]);
 int list_slays(const bitflag flags[OF_SIZE], const bitflag mask[OF_SIZE],
 			   int slay_list[], bool dedup);
-int slay_info_collect(const int slays[], const char *desc[], 
-					  const char *brand[], int mult[], int max_n);
 struct brand *brand_collect(const object_type *obj1, const object_type *obj2,
 							int *total,	bool known);
 struct new_slay *slay_collect(const object_type *obj1, const object_type *obj2,

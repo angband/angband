@@ -185,39 +185,6 @@ int list_slays(const bitflag flags[OF_SIZE], const bitflag mask[OF_SIZE],
 }
 
 /**
- * Fills in information about the given a list of `slays` such as returned by 
- * list_slays().
- * 
- * \param slays is the array of slays to look up info for
- * \param desc is the array of descriptions of matching slays - can be null
- * \param brand is the array of descriptions of brands - can be null
- * \param mult is the array of multipliers of those slays - can be null
- *
- * slays[], desc[], brand[] and mult[] must be >= SL_MAX in size
- */
-int slay_info_collect(const int slays[], const char *desc[], 
-					  const char *brand[], int mult[], int max_n)
-{
-	int i, count = 0;
-
-	for (i = 0; i < max_n; i++) {
-		if (slays[i]) {
-			const struct slay *s_ptr = &slay_table[slays[i]];
-
-			if (mult)
-				mult[count] = s_ptr->mult;
-			if (brand)
-				brand[count] = s_ptr->brand;
-			if (desc)
-				desc[count] = s_ptr->desc;
-			count++;
-		}
-	}
-
-	return count;
-}
-
-/**
  * Collect the (optionally known) brands from one or two objects into a
  * linked array
  * \param obj1 the first object (not NULL)
