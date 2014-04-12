@@ -291,8 +291,6 @@ static s32b slay_power(const object_type *o_ptr, int p, int verbose,
 	u32b sv = 0;
 	int i, j, q, num_brands = 0, num_slays = 0, num_kills = 0;
 	int mult;
-	monster_type *m_ptr;
-	monster_type monster_type_body;
 	const char *desc[SL_MAX] = { 0 }, *brand[SL_MAX] = { 0 };
 	int s_mult[SL_MAX] = { 0 }, slay_list[SL_MAX] = { 0 };
 	struct brand *brands = o_ptr->brands;
@@ -329,7 +327,7 @@ static s32b slay_power(const object_type *o_ptr, int p, int verbose,
 		of_inter(s_index, f2);
 
 	/* Look in the cache to see if we know this one yet */
-	sv = check_slay_cache(s_index);
+	sv = check_slay_cache(o_ptr);
 
 	/* If it's cached (or there are no slays), return the value */
 	if (sv)	{
@@ -342,6 +340,8 @@ static s32b slay_power(const object_type *o_ptr, int p, int verbose,
 		 * monsters, which we'll divide out later).
 		 */
 		for (i = 0; i < z_info->r_max; i++)	{
+			monster_type *m_ptr;
+			monster_type monster_type_body;
 			const struct brand *b = NULL;
 			const struct new_slay *s = NULL;
 			char **verb;
@@ -389,7 +389,7 @@ static s32b slay_power(const object_type *o_ptr, int p, int verbose,
 		}
 
 		/* Add to the cache */
-		if (fill_slay_cache(s_index, sv))
+		if (fill_slay_cache(o_ptr, sv))
 			log_obj("Added to slay cache\n");
 	}
 

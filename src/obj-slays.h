@@ -51,8 +51,9 @@ struct slay {
 /*
  * Slay cache. Used for looking up slay values in obj-power.c
  */
-struct flag_cache {
-	bitflag flags[OF_SIZE];   	/* Combination of slays and brands */
+struct slay_cache {
+	struct brand *brands;   	/* Brands */
+	struct new_slay *slays;   	/* Slays */
 	s32b value;            		/* Value of this combination */
 };
 
@@ -77,8 +78,8 @@ void improve_attack_modifier(object_type *o_ptr, const monster_type	*m_ptr,
 							 char **verb, bool real, bool known_only);
 bool react_to_slay(struct object *obj, const struct monster *mon);
 errr create_slay_cache(struct ego_item *items);
-s32b check_slay_cache(bitflag *index);
-bool fill_slay_cache(bitflag *index, s32b value);
+s32b check_slay_cache(const object_type *obj);
+bool fill_slay_cache(const object_type *obj, s32b value);
 void free_slay_cache(void);
 
 #endif /* INCLUDED_SLAYS_H */

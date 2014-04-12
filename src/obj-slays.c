@@ -39,7 +39,7 @@ static const struct slay slay_table[] =
 /**
  * Cache of slay values (for object_power)
  */
-static struct flag_cache *slay_cache;
+static struct slay_cache *slay_cache;
 
 struct brand_info {
 	const char *active_verb;
@@ -574,12 +574,15 @@ bool slays_are_equal(struct new_slay *slay1, struct new_slay *slay2)
  * 
  * \param index is the set of slay flags to look for
  */
-s32b check_slay_cache(bitflag *index)
+s32b check_slay_cache(const object_type *obj)
 {
-	int i;
+	int i = 0;
 
-	for (i = 0; !of_is_empty(slay_cache[i].flags); i++)
-		if (of_is_equal(index, slay_cache[i].flags)) break;
+	while ((slay_cache[i].brands != NULL) && (slay_cache[i].slays != NULL)) {
+		if (brands_are_equal(obj->brands, slay_cache[i].brands) &&
+			slays_are_equal(obj->slays, slay_cache[i].slays)) 
+			break;
+	}
 
 	return slay_cache[i].value;
 }
@@ -591,15 +594,17 @@ s32b check_slay_cache(bitflag *index)
  * \param index is the set of slay flags whose value we are adding
  * \param value is the value of the slay flags in index
  */
-bool fill_slay_cache(bitflag *index, s32b value)
+bool fill_slay_cache(const object_type *obj, s32b value)
 {
-	int i;
+	int i = 0;
 
-	for (i = 0; !of_is_empty(slay_cache[i].flags); i++) {
-		if (of_is_equal(index, slay_cache[i].flags)) {
+	while ((slay_cache[i].brands != NULL) && (slay_cache[i].slays != NULL)) {
+		if (brands_are_equal(obj->brands, slay_cache[i].brands) &&
+			slays_are_equal(obj->slays, slay_cache[i].slays)) {
 			slay_cache[i].value = value;
 			return TRUE;
 		}
+		i++;
 	}
 
 	return FALSE;
@@ -618,54 +623,53 @@ errr create_slay_cache(struct ego_item *items)
     int i;
     int j;
     int count = 0;
-    bitflag cacheme[OF_SIZE];
-    bitflag slay_mask[OF_SIZE];
-    bitflag **dupcheck;
+    struct slay_cache *dupcheck;
     ego_item_type *e_ptr;
 
-    /* Build the slay mask */
-	create_mask(slay_mask, FALSE, OFT_SLAY, OFT_KILL, OFT_BRAND, OFT_MAX);
-
     /* Calculate necessary size of slay_cache */
-    dupcheck = C_ZNEW(z_info->e_max, bitflag *);
+    dupcheck = mem_zalloc(z_info->e_max * sizeof(struct slay_cache));
 
     for (i = 0; i < z_info->e_max; i++) {
-        dupcheck[i] = C_ZNEW(OF_SIZE, bitflag);
         e_ptr = items + i;
 
-        /* Find the slay flags on this ego */
-        of_copy(cacheme, e_ptr->flags);
-        of_inter(cacheme, slay_mask);
+        /* Only consider things with brands and slays */
+        if (!e_ptr->brands && !e_ptr->slays) continue;
 
-        /* Only consider non-empty combinations of slay flags */
-        if (!of_is_empty(cacheme)) {
-            /* Skip previously scanned combinations */
-            for (j = 0; j < i; j++)
-                if (of_is_equal(cacheme, dupcheck[j])) continue;
+		/* Check previously scanned combinations */
+		for (j = 0; j < i; j++) {
+			if (!dupcheck[j].brands && !dupcheck[j].slays) continue;
+			if (!brands_are_equal(e_ptr->brands, dupcheck[j].brands)) continue;
+			if (!slays_are_equal(e_ptr->slays, dupcheck[j].slays)) continue;
 
-            /* msg("Found a new slay combo on an ego item"); */
-            count++;
-            of_copy(dupcheck[i], cacheme);
-        }
-    }
+			/* Both equal, we don't want this one */
+			break;
+		}
+
+		/* If we left early, we found a match */
+		if (j != i) continue;
+
+		/* msg("Found a new slay combo on an ego item"); */
+		count++;
+		copy_brand(&dupcheck[i].brands, e_ptr->brands);
+		copy_slay(&dupcheck[i].slays, e_ptr->slays);
+	}
 
     /* Allocate slay_cache with an extra empty element for an iteration stop */
-    slay_cache = C_ZNEW((count + 1), struct flag_cache);
+    slay_cache = mem_zalloc((count + 1) * sizeof(struct slay_cache));
     count = 0;
 
     /* Populate the slay_cache */
     for (i = 0; i < z_info->e_max; i++) {
-        if (!of_is_empty(dupcheck[i])) {
-            of_copy(slay_cache[count].flags, dupcheck[i]);
-            slay_cache[count].value = 0;
-            count++;
-            /*msg("Cached a slay combination");*/
-        }
-    }
+		if (!dupcheck[i].brands && !dupcheck[i].slays) continue;
 
-    for (i = 0; i < z_info->e_max; i++)
-        FREE(dupcheck[i]);
-    FREE(dupcheck);
+		copy_brand(&slay_cache[count].brands, dupcheck[i].brands);
+		copy_slay(&slay_cache[count].slays, dupcheck[i].slays);
+		slay_cache[count].value = 0;
+		count++;
+		/*msg("Cached a slay combination");*/
+	}
+
+    mem_free(dupcheck);
 
     /* Success */
     return 0;
