@@ -187,12 +187,11 @@ static bool py_attack_real(int y, int x, bool *fear) {
 	bool success = FALSE;
 
 	/* Default to punching for one damage */
-	char *hit_verb;
+	char hit_verb[20];
 	int dmg = 1;
 	u32b msg_type = MSG_HIT;
 
 	/* Default to punching for one damage */
-	hit_verb = mem_alloc(20);
 	my_strcpy(hit_verb, "punch", sizeof(hit_verb));
 
 	/* Extract monster name (or "it") */
@@ -235,11 +234,12 @@ static bool py_attack_real(int y, int x, bool *fear) {
 		for (i = INVEN_LEFT; i < INVEN_TOTAL; i++) {
 			struct object *obj = &player->inventory[i];
 			if (obj->kind)
-				improve_attack_modifier(obj, m_ptr, &b, &s, &hit_verb, TRUE, 
-										FALSE);
+				improve_attack_modifier(obj, m_ptr, &b, &s, (char **) &hit_verb,
+										TRUE, FALSE);
 		}
 
-		improve_attack_modifier(o_ptr, m_ptr, &b, &s, &hit_verb, TRUE, FALSE);
+		improve_attack_modifier(o_ptr, m_ptr, &b, &s, (char **) &hit_verb, 
+								TRUE, FALSE);
 
 		dmg = damroll(o_ptr->dd, o_ptr->ds);
 		if (s)
@@ -482,7 +482,8 @@ static void ranged_helper(int item, int dir, int range, int shots, ranged_attack
 			struct attack_result result = attack(o_ptr, y, x);
 			int dmg = result.dmg;
 			u32b msg_type = result.msg_type;
-			const char *hit_verb = result.hit_verb;
+			char hit_verb[20];
+			my_strcpy(hit_verb, result.hit_verb, sizeof(hit_verb));
 
 			if (result.success) {
 				hit_target = TRUE;
@@ -496,7 +497,7 @@ static void ranged_helper(int item, int dir, int range, int shots, ranged_attack
 				if (dmg <= 0) {
 					dmg = 0;
 					msg_type = MSG_MISS;
-					hit_verb = "fails to harm";
+					my_strcpy(hit_verb, "fails to harm", sizeof(hit_verb));
 				}
 
 				if (!visible) {
