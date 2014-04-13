@@ -63,7 +63,7 @@ static void wr_item(const object_type *o_ptr)
 {
 	size_t i;
 	struct brand *b;
-	struct new_slay *s;
+	struct slay *s;
 
 	wr_u16b(0xffff);
 	wr_byte(ITEM_VERSION);

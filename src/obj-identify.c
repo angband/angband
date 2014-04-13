@@ -415,7 +415,7 @@ void object_know_all_flags(object_type *o_ptr)
 void object_know_brands_and_slays(object_type *o_ptr)
 {
 	struct brand *b;
-	struct new_slay *s;
+	struct slay *s;
 
 	for (b = o_ptr->brands; b; b = b->next)
 		b->known = TRUE;

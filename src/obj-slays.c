@@ -26,22 +26,12 @@
 
 
 /**
- * Info about slays (see src/slays.h for structure)
- */
-static const struct slay slay_table[] =
-{
-	#define SLAY(a, b, c, d, e, f, g, h, i, j)	\
-		{ SL_##a, b, c, d, e, f, g, h, i, j},
-	#include "list-slays.h"
-	#undef SLAY
-};
-
-/**
  * Cache of slay values (for object_power)
  */
 static struct slay_cache *slay_cache;
 
 struct brand_info {
+	const char* name;
 	const char *active_verb;
 	const char *melee_verb;
 	const char *melee_verb_weak;
@@ -52,22 +42,45 @@ struct brand_info {
  * Brand info - until there's a better place NRM
  */
 const struct brand_info brand_names[] = {
-	{ "spits", "dissolve", "corrode", RF_IM_ACID },
-	{ "crackles", "shock", "zap", RF_IM_ELEC },
-	{ "flares", "burn", "singe", RF_IM_FIRE },
-	{ "grows cold", "freeze", "chill", RF_IM_COLD },
-	{ "seethes", "poison", "sicken", RF_IM_POIS }
+	{ "acid", "spits", "dissolve", "corrode", RF_IM_ACID },
+	{ "lightning", "crackles", "shock", "zap", RF_IM_ELEC },
+	{ "fire", "flares", "burn", "singe", RF_IM_FIRE },
+	{ "cold", "grows cold", "freeze", "chill", RF_IM_COLD },
+	{ "poison", "seethes", "poison", "sicken", RF_IM_POIS }
+};
+
+struct slay_info {
+	const char *name;
+	int race_flag;
+	int multiplier;
+};
+
+/**
+ * Slay info - until there's a better place NRM
+ */
+const struct slay_info slay_names[] = {
+	{ "evil creatures", RF_EVIL, 2 },
+	{ "animals", RF_ANIMAL, 2 },
+	{ "orcs", RF_ORC, 3 },
+	{ "trolls", RF_TROLL, 3 },
+	{ "giants", RF_GIANT, 3 },
+	{ "demons", RF_DEMON, 3 },
+	{ "dragons", RF_DRAGON, 3 },
+	{ "undead", RF_UNDEAD, 3 },
+	{ "demons", RF_DEMON, 5 },
+	{ "dragons", RF_DRAGON, 5 },
+	{ "undead", RF_UNDEAD, 5 }
 };
 
 /**
  * Copy all the slays from one structure to another
  */
-void copy_slay(struct new_slay **dest, struct new_slay *source)
+void copy_slay(struct slay **dest, struct slay *source)
 {
-	struct new_slay *s = source;
+	struct slay *s = source;
 
 	while (s) {
-		struct new_slay *os = mem_zalloc(sizeof *os);
+		struct slay *os = mem_zalloc(sizeof *os);
 		os->name = string_make(s->name);
 		os->race_flag = s->race_flag;
 		os->multiplier = s->multiplier;
@@ -95,101 +108,107 @@ void copy_brand(struct brand **dest, struct brand *source)
 	}
 }
 
+bool append_random_brand(struct brand *current, char **name)
+{
+	int pick;
+	struct brand *b, *b_last = NULL;
+
+	pick = randint0(N_ELEMENTS(brand_names));
+	for (b = current; b; b = b->next) {
+		/* If we get the same one, fail */
+		if (streq(b->name, brand_names[pick].name) &&
+			(b->element == pick) && 
+			(b->multiplier == 3))
+			return FALSE;
+
+		/* Remember the last one */
+		b_last = b;
+	}
+
+	/* We can add the new one now */
+	b = mem_zalloc(sizeof(*b));
+	b->name = string_make(brand_names[pick].name);
+	b->element = pick;
+	b->multiplier = 3;
+	if (b_last) b_last->next = b;
+	*name = b->name;
+
+	return TRUE;
+}
+
+bool append_random_slay(struct slay *current, char **name)
+{
+	int pick;
+	struct slay *s, *s_last = NULL;
+
+	pick = randint0(N_ELEMENTS(slay_names));
+	for (s = current; s; s = s->next) {
+		/* If we get the same race, check the multiplier */
+		if (streq(s->name, slay_names[pick].name) &&
+			(s->race_flag == slay_names[pick].race_flag)) {
+			/* Same multiplier or smaller, fail */
+			if (slay_names[pick].multiplier <= s->multiplier)
+				return FALSE;
+
+			/* Greater multiplier, increase and accept */
+			s->multiplier = slay_names[pick].multiplier;
+			return TRUE;
+		}
+
+		/* Remember the last one */
+		s_last = s;
+	}
+
+	/* We can add the new one now */
+	s = mem_zalloc(sizeof(*s));
+	s->name = string_make(slay_names[pick].name);
+	s->race_flag = slay_names[pick].race_flag;
+	s->multiplier = slay_names[pick].multiplier;
+	if (s_last) s_last->next = s;
+	*name = s->name;
+
+	return TRUE;
+}
+
 /**
- * Remove slays which are duplicates, i.e. they have exactly the same "monster
- * flag" and the same "resist flag". The one with highest multiplier is kept.
- *
- * \param flags is the flagset from which to remove duplicates.
- * count is the number of dups removed.
+ * Count the brands in a struct brand
+ * \param brands 
  */
-static int dedup_slays(bitflag *flags) {
-	int i, j;
+int brand_count(struct brand *brands)
+{
 	int count = 0;
+	struct brand *b;
 
-	for (i = 0; i < SL_MAX; i++) {
-		const struct slay *s_ptr = &slay_table[i];
-		if (of_has(flags, s_ptr->object_flag)) {
-			for (j = i + 1; j < SL_MAX; j++) {
-				const struct slay *t_ptr = &slay_table[j];
-				if (of_has(flags, t_ptr->object_flag) &&
-						(t_ptr->monster_flag == s_ptr->monster_flag) &&
-						(t_ptr->resist_flag == s_ptr->resist_flag) &&
-						(t_ptr->mult != s_ptr->mult)) {
-					count++;
-					if (t_ptr->mult > s_ptr->mult)
-						of_off(flags, s_ptr->object_flag);
-					else
-						of_off(flags, t_ptr->object_flag);
-				}
-			}
-		}
-	}
+	/* Count the brands */
+	for (b = brands; b; b = b->next)
+		count++;
 
 	return count;
 }
 
-
 /**
- * Get a random slay (or brand).
- * We use randint1 because the first entry in slay_table is null.
- *
- * \param mask is the set of slays from which we are choosing.
+ * Count the slays in a struct slay
+ * \param slays 
  */
-const struct slay *random_slay(const bitflag mask[OF_SIZE])
+int slay_count(struct slay *slays)
 {
-	const struct slay *s_ptr;
-	do {
-		s_ptr = &slay_table[randint1(SL_MAX - 1)];
-	} while (!of_has(mask, s_ptr->object_flag));
+	int count = 0;
+	struct slay *s;
 
-	return s_ptr;
-}
-
-
-/**
- * Match slays in flags against a chosen flag mask.
- *
- * count is the number of matches
- * \param flags is the flagset to analyse for matches
- * \param mask is the flagset against which to test
- * \param slays is the array of slays found in the supplied flags - can be null
- * \param dedup is whether or not to remove duplicates
- *
- * slays[] must be >= SL_MAX in size
- */
-int list_slays(const bitflag flags[OF_SIZE], const bitflag mask[OF_SIZE],
-			   int slays[], bool dedup)
-{
-	int i, count = 0;
-	bitflag f[OF_SIZE];
-
-	/* We are only interested in the flags specified in mask */
-	of_copy(f, flags);
-	of_inter(f, mask);
-
-	/* Remove "duplicate" flags if desired */
-	if (dedup) dedup_slays(f);
-
-	/* Collect slays */
-	for (i = 0; i < SL_MAX; i++) {
-		const struct slay *s_ptr = &slay_table[i];
-		if (of_has(f, s_ptr->object_flag)) {
-			if (slays)
-				slays[count] = i;
-
-			count++;
-		}
-	}
+	/* Count the slays */
+	for (s = slays; s; s = s->next)
+		count++;
 
 	return count;
 }
+
 
 /**
  * Collect the (optionally known) brands from one or two objects into a
  * linked array
  * \param obj1 the first object (not NULL)
  * \param obj2 the second object (can be NULL)
- * \known whether we are after only known brands
+ * \param known whether we are after only known brands
  * \return a pointer to the first brand
  */
 struct brand *brand_collect(const object_type *obj1, const object_type *obj2,
@@ -244,14 +263,14 @@ struct brand *brand_collect(const object_type *obj1, const object_type *obj2,
  * linked array
  * \param obj1 the first object (not NULL)
  * \param obj2 the second object (can be NULL)
- * \known whether we are after only known slays
+ * \param known whether we are after only known slays
  * \return a pointer to the first slay
  */
-struct new_slay *slay_collect(const object_type *obj1, const object_type *obj2,
+struct slay *slay_collect(const object_type *obj1, const object_type *obj2,
 							  int *total, bool known)
 {
 	int i, count = 0;
-	struct new_slay *s, *s_new = NULL;
+	struct slay *s, *s_new = NULL;
 
 	/* Count the slays */
 	for (s = obj1->slays; s; s = s->next)
@@ -301,7 +320,7 @@ struct new_slay *slay_collect(const object_type *obj1, const object_type *obj2,
  * \param slay is the slay we're testing for effectiveness
  * \param mon is the monster we're testing for being slain
  */
-bool react_to_specific_slay(struct new_slay *slay, const struct monster *mon)
+bool react_to_specific_slay(struct slay *slay, const struct monster *mon)
 {
 	if (!slay->name) return FALSE;
 	if (!mon->race->base) return FALSE;
@@ -357,7 +376,7 @@ void object_notice_brands(object_type *o_ptr, const monster_type *m_ptr)
 void object_notice_slays(object_type *o_ptr, const monster_type *m_ptr)
 {
 	char o_name[40];
-	struct new_slay *s;
+	struct slay *s;
 
 	for (s = o_ptr->slays; s; s = s->next) {
 		/* Already know it */
@@ -392,12 +411,12 @@ void object_notice_slays(object_type *o_ptr, const monster_type *m_ptr)
  */
 void improve_attack_modifier(object_type *o_ptr, const monster_type *m_ptr,
 							 const struct brand **brand_used, 
-							 const struct new_slay **slay_used, 
+							 const struct slay **slay_used, 
 							 char **verb, bool real, bool known_only)
 {
 	monster_lore *l_ptr = get_lore(m_ptr->race);
 	struct brand *b;
-	struct new_slay *s;
+	struct slay *s;
 	int best_mult = 1;
 
 	/* Brands */
@@ -465,7 +484,7 @@ void improve_attack_modifier(object_type *o_ptr, const monster_type *m_ptr,
  */
 bool react_to_slay(struct object *obj, const struct monster *mon)
 {
-	struct new_slay *s;
+	struct slay *s;
 
 	for (s = obj->slays; s; s = s->next) {
 		if (react_to_specific_slay(s, mon))
@@ -505,9 +524,9 @@ bool brands_are_equal(struct brand *brand1, struct brand *brand2)
 	return TRUE;
 }
 
-bool slays_are_equal(struct new_slay *slay1, struct new_slay *slay2)
+bool slays_are_equal(struct slay *slay1, struct slay *slay2)
 {
-	struct new_slay *s1, *s2;
+	struct slay *s1, *s2;
 	int count = 0, match = 0;
 
 	for (s1 = slay1; s1; s1 = s1->next) {
@@ -533,6 +552,26 @@ bool slays_are_equal(struct new_slay *slay1, struct new_slay *slay2)
 	if (count != 0) return FALSE;
 
 	return TRUE;
+}
+
+void wipe_brands(struct brand *brands)
+{
+	struct brand *b = brands, *b1;
+	while (b) {
+		b1 = b;
+		b = b->next;
+		mem_free(b1);
+	}
+}
+
+void wipe_slays(struct slay *slays)
+{
+	struct slay *s = slays, *s1;
+	while (s) {
+		s1 = s;
+		s = s->next;
+		mem_free(s1);
+	}
 }
 
 

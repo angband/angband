@@ -20,61 +20,36 @@
 
 #include "monster.h"
 
-/* Types of slay (including brands) */
-enum
-{
-	#define SLAY(a, b, c, d, e, f, g, h, i, j)    SL_##a,
-	#include "list-slays.h"
-	#undef SLAY
-
-	SL_MAX
-};
-
-
-/*
- * Slay type.  Used for the table of brands/slays and their effects.
- */
-struct slay {
-	u16b index;					/* Numerical index */
-	int object_flag;			/* Object flag for the slay */
-	int monster_flag;			/* Which monster flag(s) make it vulnerable */
-	int resist_flag;			/* Which monster flag(s) make it resist */
-	int mult;					/* Slay multiplier */
-	const char *range_verb;		/* attack verb for ranged hits */
-	const char *melee_verb; 	/* attack verb for melee hits */
-	const char *active_verb; 	/* verb for when the object is active */
-	const char *desc;			/* description of vulnerable creatures */
-	const char *brand;			/* name of brand */
-};
-
-
 /*
  * Slay cache. Used for looking up slay values in obj-power.c
  */
 struct slay_cache {
 	struct brand *brands;   	/* Brands */
-	struct new_slay *slays;   	/* Slays */
+	struct slay *slays;   	/* Slays */
 	s32b value;            		/* Value of this combination */
 };
 
 
 /*** Functions ***/
-void copy_slay(struct new_slay **dest, struct new_slay *source);
+void copy_slay(struct slay **dest, struct slay *source);
 void copy_brand(struct brand **dest, struct brand *source);
-const struct slay *random_slay(const bitflag mask[OF_SIZE]);
-int list_slays(const bitflag flags[OF_SIZE], const bitflag mask[OF_SIZE],
-			   int slay_list[], bool dedup);
+	bool append_random_brand(struct brand *current, char **name);
+	bool append_random_slay(struct slay *current, char **name);
+int brand_count(struct brand *brands);
+int slay_count(struct slay *slays);
 struct brand *brand_collect(const object_type *obj1, const object_type *obj2,
 							int *total,	bool known);
-struct new_slay *slay_collect(const object_type *obj1, const object_type *obj2,
+struct slay *slay_collect(const object_type *obj1, const object_type *obj2,
 							  int *total, bool known);
 void object_notice_brands(object_type *o_ptr, const monster_type *m_ptr);
 void object_notice_slays(object_type *o_ptr, const monster_type *m_ptr);
 void improve_attack_modifier(object_type *o_ptr, const monster_type	*m_ptr, 
 							 const struct brand **brand_used, 
-							 const struct new_slay **slay_used, 
+							 const struct slay **slay_used, 
 							 char **verb, bool real, bool known_only);
 bool react_to_slay(struct object *obj, const struct monster *mon);
+void wipe_brands(struct brand *brands);
+void wipe_slays(struct slay *slays);
 errr create_slay_cache(struct ego_item *items);
 s32b check_slay_cache(const object_type *obj);
 bool fill_slay_cache(const object_type *obj, s32b value);

@@ -753,8 +753,7 @@ static void parse_frequencies(void)
 	int j;
 	const artifact_type *a_ptr;
 	object_kind *k_ptr;
-	s32b m, temp, temp2;
-	bitflag mask[OF_SIZE];
+	s32b m, temp;
 
 	file_putf(log_file, "\n****** BEGINNING GENERATION OF FREQUENCIES\n\n");
 
@@ -820,21 +819,16 @@ static void parse_frequencies(void)
 				(artprobs[ART_IDX_BOW_MIGHT])++;
 			}
 
-			/* Brands or slays - count all together */
-			create_mask(mask, FALSE, OFT_SLAY, OFT_BRAND, OFT_KILL, OFT_MAX);
-			if (of_is_inter(a_ptr->flags, mask))
-			{
-				/* We have some brands or slays - count them */
-				temp = list_slays(a_ptr->flags, mask, NULL,	FALSE);
-				create_mask(mask, FALSE, OFT_BRAND, OFT_MAX);
-				temp2 = list_slays(a_ptr->flags, mask, NULL, FALSE);
-
-				file_putf(log_file, "Adding %d for slays\n", temp - temp2);
-				file_putf(log_file, "Adding %d for brands\n", temp2);
-
-				/* Add these to the frequency count */
-				artprobs[ART_IDX_BOW_SLAY] += (temp - temp2);
-				artprobs[ART_IDX_BOW_BRAND] += temp2;
+			/* Count brands and slays */
+			if (a_ptr->slays) {
+				temp = slay_count(a_ptr->slays);
+				artprobs[ART_IDX_MELEE_SLAY] += temp;
+				file_putf(log_file, "Adding %d for slays\n", temp);
+			}
+			if (a_ptr->brands) {
+				temp = brand_count(a_ptr->brands);
+				artprobs[ART_IDX_MELEE_BRAND] += temp;
+				file_putf(log_file, "Adding %d for brands\n", temp);
 			}
 		}
 
@@ -918,21 +912,16 @@ static void parse_frequencies(void)
 				(artprobs[ART_IDX_NONWEAPON_AGGR])++;
 			}
 
-			/* Brands or slays - count all together */
-			create_mask(mask, FALSE, OFT_SLAY, OFT_BRAND, OFT_KILL, OFT_MAX);
-			if (of_is_inter(a_ptr->flags, mask))
-			{
-				/* We have some brands or slays - count them */
-				temp = list_slays(a_ptr->flags, mask, NULL, FALSE);
-				create_mask(mask, FALSE, OFT_BRAND, OFT_MAX);
-				temp2 = list_slays(a_ptr->flags, mask, NULL, FALSE);
-
-				file_putf(log_file, "Adding %d for slays\n", temp - temp2);
-				file_putf(log_file, "Adding %d for brands\n", temp2);
-
-				/* Add these to the frequency count */
-				artprobs[ART_IDX_NONWEAPON_SLAY] += (temp - temp2);
-				artprobs[ART_IDX_NONWEAPON_BRAND] += temp2;
+			/* Count brands and slays */
+			if (a_ptr->slays) {
+				temp = slay_count(a_ptr->slays);
+				artprobs[ART_IDX_MELEE_SLAY] += temp;
+				file_putf(log_file, "Adding %d for slays\n", temp);
+			}
+			if (a_ptr->brands) {
+				temp = brand_count(a_ptr->brands);
+				artprobs[ART_IDX_MELEE_BRAND] += temp;
+				file_putf(log_file, "Adding %d for brands\n", temp);
 			}
 
 			if (a_ptr->modifiers[OBJ_MOD_BLOWS] > 0)
@@ -1023,21 +1012,16 @@ static void parse_frequencies(void)
 				(artprobs[ART_IDX_MELEE_TUNN])++;
 			}
 
-			/* Brands or slays - count all together */
-			create_mask(mask, FALSE, OFT_SLAY, OFT_BRAND, OFT_KILL, OFT_MAX);
-			if (of_is_inter(a_ptr->flags, mask))
-			{
-				/* We have some brands or slays - count them */
-				temp = list_slays(a_ptr->flags, mask, NULL,	FALSE);
-				create_mask(mask, FALSE, OFT_BRAND, OFT_MAX);
-				temp2 = list_slays(a_ptr->flags, mask, NULL, FALSE);
-
-				file_putf(log_file, "Adding %d for slays\n", temp - temp2);
-				file_putf(log_file, "Adding %d for brands\n", temp2);
-
-				/* Add these to the frequency count */
-				artprobs[ART_IDX_MELEE_SLAY] += (temp - temp2);
-				artprobs[ART_IDX_MELEE_BRAND] += temp2;
+			/* Count brands and slays */
+			if (a_ptr->slays) {
+				temp = slay_count(a_ptr->slays);
+				artprobs[ART_IDX_MELEE_SLAY] += temp;
+				file_putf(log_file, "Adding %d for slays\n", temp);
+			}
+			if (a_ptr->brands) {
+				temp = brand_count(a_ptr->brands);
+				artprobs[ART_IDX_MELEE_BRAND] += temp;
+				file_putf(log_file, "Adding %d for brands\n", temp);
 			}
 
 			/* End of weapon-specific stuff */
@@ -1960,41 +1944,25 @@ static void add_high_resist(artifact_type *a_ptr)
 
 static void add_brand(artifact_type *a_ptr)
 {
-	int count = 0;
-	const struct slay *s_ptr;
-	bitflag mask[OF_SIZE];
-
-	create_mask(mask, FALSE, OFT_BRAND, OFT_MAX);
+	int count;
+	char *name;
 
 	for (count = 0; count < MAX_TRIES; count++) {
-		s_ptr = random_slay(mask);
-
-		if (!of_has(a_ptr->flags, s_ptr->object_flag)) {
-			of_on(a_ptr->flags, s_ptr->object_flag);
-
-			file_putf(log_file, "Adding brand: %s\n", s_ptr->brand);
-			return;
-		}
+		if (!append_random_brand(a_ptr->brands, &name)) continue;
+		file_putf(log_file, "Adding brand: %s\n", name);
+		return;
 	}
 }
 
 static void add_slay(artifact_type *a_ptr)
 {
-	int count = 0;
-	const struct slay *s_ptr;
-	bitflag mask[OF_SIZE];
+	int count;
+	char *name;
 
-	create_mask(mask, FALSE, OFT_SLAY, OFT_KILL, OFT_MAX);
-
-	for(count = 0; count < MAX_TRIES; count++) {
-		s_ptr = random_slay(mask);
-
-		if (!of_has(a_ptr->flags, s_ptr->object_flag)) {
-			of_on(a_ptr->flags, s_ptr->object_flag);
-
-			file_putf(log_file, "Adding slay: %s\n", s_ptr->desc);
-			return;
-		}
+	for (count = 0; count < MAX_TRIES; count++) {
+		if (!append_random_slay(a_ptr->slays, &name)) continue;
+		file_putf(log_file, "Adding slay: %s\n", name);
+		return;
 	}
 }
 
@@ -2869,6 +2837,8 @@ static void scramble_artifact(int a_idx)
 		{
 			a_ptr->modifiers[i] = 0;
 		}
+		wipe_brands(a_ptr->brands);
+		wipe_slays(a_ptr->slays);
 
 		/* Clear the activations for rings and amulets but not lights */
 		if (a_ptr->tval != TV_LIGHT)

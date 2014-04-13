@@ -718,7 +718,7 @@ static enum parser_error parse_k_v(struct parser *p) {
 			k->brands = b;
 		}
 		if (!grab_index_and_int(&value, &index, slays, "SLAY_", t)) {
-			struct new_slay *s;
+			struct slay *s;
 			found = TRUE;
 			s = mem_zalloc(sizeof *s);
 			s->name = string_make(slay_names[index]);
@@ -727,7 +727,7 @@ static enum parser_error parse_k_v(struct parser *p) {
 			s->next = k->slays;
 			k->slays = s;
 		} else if (!grab_base_and_int(&value, &name, t)) {
-			struct new_slay *s;
+			struct slay *s;
 			found = TRUE;
 			s = mem_zalloc(sizeof *s);
 			s->name = name;
@@ -972,7 +972,7 @@ static enum parser_error parse_a_v(struct parser *p) {
 			a->brands = b;
 		}
 		if (!grab_index_and_int(&value, &index, slays, "SLAY_", t)) {
-			struct new_slay *s;
+			struct slay *s;
 			found = TRUE;
 			s = mem_zalloc(sizeof *s);
 			s->name = string_make(slay_names[index]);
@@ -981,7 +981,7 @@ static enum parser_error parse_a_v(struct parser *p) {
 			s->next = a->slays;
 			a->slays = s;
 		} else if (!grab_base_and_int(&value, &name, t)) {
-			struct new_slay *s;
+			struct slay *s;
 			found = TRUE;
 			s = mem_zalloc(sizeof *s);
 			s->name = name;
@@ -1654,7 +1654,7 @@ static enum parser_error parse_e_v(struct parser *p) {
 			e->brands = b;
 		}
 		if (!grab_index_and_int(&value, &index, slays, "SLAY_", t)) {
-			struct new_slay *s;
+			struct slay *s;
 			found = TRUE;
 			s = mem_zalloc(sizeof *s);
 			s->name = string_make(slay_names[index]);
@@ -1663,7 +1663,7 @@ static enum parser_error parse_e_v(struct parser *p) {
 			s->next = e->slays;
 			e->slays = s;
 		} else if (!grab_base_and_int(&value, &name, t)) {
-			struct new_slay *s;
+			struct slay *s;
 			found = TRUE;
 			s = mem_zalloc(sizeof *s);
 			s->name = name;

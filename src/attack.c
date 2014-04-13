@@ -225,7 +225,7 @@ static bool py_attack_real(int y, int x, bool *fear) {
 	/* Handle normal weapon */
 	if (o_ptr->kind) {
 		const struct brand *b = NULL;
-		const struct new_slay *s = NULL;
+		const struct slay *s = NULL;
 
 		my_strcpy(hit_verb, "hit", sizeof(hit_verb));
 
@@ -588,7 +588,7 @@ static struct attack_result make_ranged_shot(object_type *o_ptr, int y, int x) {
 
 	int multiplier = player->state.ammo_mult;
 	const struct brand *b = NULL;
-	const struct new_slay *s = NULL;
+	const struct slay *s = NULL;
 
 	/* Did we hit it (penalize distance travelled) */
 	if (!test_hit(chance2, m_ptr->race->ac, m_ptr->ml)) return result;
@@ -632,7 +632,7 @@ static struct attack_result make_ranged_throw(object_type *o_ptr, int y, int x) 
 
 	int multiplier = 1;
 	const struct brand *b = NULL;
-	const struct new_slay *s = NULL;
+	const struct slay *s = NULL;
 
 	/* If we missed then we're done */
 	if (!test_hit(chance2, m_ptr->race->ac, m_ptr->ml)) return result;

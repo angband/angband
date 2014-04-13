@@ -404,7 +404,7 @@ static bool describe_misc_magic(textblock *tb, const bitflag flags[OF_SIZE])
  */
 static bool describe_new_slays(textblock *tb, const struct object *o_ptr)
 {
-	struct new_slay *s = o_ptr->slays;
+	struct slay *s = o_ptr->slays;
 
 	if (!s) return FALSE;
 
@@ -721,7 +721,7 @@ static bool describe_blows(textblock *tb, const object_type *o_ptr)
  */
 static int obj_known_damage(const object_type *o_ptr, int *normal_damage, 
 							struct brand **brand_list, int **brand_damage, 
-							struct new_slay **slay_list, int **slay_damage, 
+							struct slay **slay_list, int **slay_damage, 
 							bool *nonweap_slay)
 {
 	int i;
@@ -738,7 +738,7 @@ static int obj_known_damage(const object_type *o_ptr, int *normal_damage,
 
 	player_state state;
 	object_type inven[INVEN_TOTAL];
-	struct new_slay *s;
+	struct slay *s;
 	struct brand *b;
 	int num_slays;
 	int num_brands;
@@ -883,7 +883,7 @@ static bool describe_damage(textblock *tb, const object_type *o_ptr)
 	int *brand_damage = NULL;
 	struct brand *brands = NULL;
 	int *slay_damage = NULL;
-	struct new_slay *slays = NULL;
+	struct slay *slays = NULL;
 	int num;
 	int i;
 

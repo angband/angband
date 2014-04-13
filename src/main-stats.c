@@ -808,14 +808,6 @@ static int stats_dump_lists(void)
         #undef OBJ_MOD
 	};
 
-	struct slay slay_table[] =
-	{
-		#define SLAY(a, b, c, d, e, f, g, h, i, j) \
-			{ SL_##a, b, c, d, e, f, g, h, #a, j},
-		#include "list-slays.h"
-		#undef SLAY
-	};
-
 	err = stats_db_stmt_prep(&sql_stmt, 
 		"INSERT INTO effects_list VALUES(?,?,?,?);");
 	if (err) return err;
@@ -903,27 +895,6 @@ static int stats_dump_lists(void)
 		if (err) return err;
 		err = sqlite3_bind_text(sql_stmt, 4, om->message,
 			strlen(om->message), SQLITE_STATIC);
-		if (err) return err;
-		STATS_DB_STEP_RESET(sql_stmt)
-	}
-
-	STATS_DB_FINALIZE(sql_stmt)
-
-	err = stats_db_stmt_prep(&sql_stmt, 
-		"INSERT INTO object_slays_list VALUES(?,?,?,?,?,?);");
-	if (err) return err;
-
-	for (idx = 1; idx < SL_MAX; idx++)
-	{
-		struct slay *s_ptr = &slay_table[idx];
-		if (! s_ptr->desc) continue;
-
-		err = stats_db_bind_ints(sql_stmt, 5, 0, idx, 
-			s_ptr->object_flag, s_ptr->monster_flag, 
-			s_ptr->resist_flag, s_ptr->mult);
-		if (err) return err;
-		err = sqlite3_bind_text(sql_stmt, 6, s_ptr->desc,
-			strlen(s_ptr->desc), SQLITE_STATIC);
 		if (err) return err;
 		STATS_DB_STEP_RESET(sql_stmt)
 	}
@@ -1029,7 +1000,6 @@ static int stats_dump_info(void)
  *     monster_spell_flags_list -- dump of list-mon-spells.h
  *     object_flags_list -- dump of list-object-flags.h
  *     object_mods_list -- dump of list-object-modifiers.h
- *     object_slays_list -- dump of list-object-slays.h
  *     origin_flags_list -- dump of origin enum
  * Count tables:
  *     monsters
@@ -1124,9 +1094,6 @@ static bool stats_prep_db(void)
 	if (err) return false;
 
 	err = stats_db_exec("CREATE TABLE object_mods_list(idx INT PRIMARY KEY, type INT, power INT, mod_mult INT, name TEXT);");
-	if (err) return false;
-
-	err = stats_db_exec("CREATE TABLE object_slays_list(idx INT PRIMARY KEY, object_flag INT, monster_flag INT, resist_flag INT, mult INT, name TEXT);");
 	if (err) return false;
 
 	err = stats_db_exec("CREATE TABLE origin_flags_list(idx INT PRIMARY KEY, name TEXT);");

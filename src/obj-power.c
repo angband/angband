@@ -291,7 +291,7 @@ static s32b slay_power(const object_type *o_ptr, int p, int verbose,
 	int i, q, num_brands = 0, num_slays = 0, num_kills = 0;
 	int mult;
 	struct brand *brands = o_ptr->brands;
-	struct new_slay *slays = o_ptr->slays;
+	struct slay *slays = o_ptr->slays;
 
 	/* Count the known brands and slays */
 	while (brands) {
@@ -326,7 +326,7 @@ static s32b slay_power(const object_type *o_ptr, int p, int verbose,
 			monster_type *m_ptr;
 			monster_type monster_type_body;
 			const struct brand *b = NULL;
-			const struct new_slay *s = NULL;
+			const struct slay *s = NULL;
 			char **verb;
 			verb = mem_zalloc(20 * sizeof(char));
 
@@ -353,7 +353,7 @@ static s32b slay_power(const object_type *o_ptr, int p, int verbose,
 		 */
 		if (verbose) {
 			struct brand *brands = NULL;
-			struct new_slay *slays = NULL;
+			struct slay *slays = NULL;
 			int num_slays;
 			int num_brands;
 

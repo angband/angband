@@ -162,7 +162,7 @@ static int rd_item(object_type *o_ptr)
 	rd_byte(&tmp8u);
 	while (tmp8u) {
 		char buf[40];
-		struct new_slay *s = mem_zalloc(sizeof *s);
+		struct slay *s = mem_zalloc(sizeof *s);
 		rd_string(buf, sizeof(buf));
 		s->name = string_make(buf);
 		rd_s16b(&tmp16s);
