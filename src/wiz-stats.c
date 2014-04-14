@@ -594,14 +594,14 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 		first_find(nx_it);
 	}
 	/* has resist blind */
-	if (of_has(f,OF_RES_BLIND)){
+	if (of_has(f,OF_PROT_BLIND)){
 
 		add_stats( bleq_total,  bleq_mon,  bleq_vault,vault,mon,number);
 		first_find(bl_it);
 	}
 
 	/* has resist conf */
-	if (of_has(f,OF_RES_CONFU)){
+	if (of_has(f,OF_PROT_CONF)){
 
 		add_stats( cfeq_total,  cfeq_mon,  cfeq_vault,vault,mon,number);
 		first_find(cf_it);

@@ -240,7 +240,6 @@ EFFECT(DRAGON_BLUE,			TRUE,	18,				F(DRAGON_BLUE),			RV(150, 0, 0, 0),	EP(0, 0, 
 EFFECT(DRAGON_GREEN,		TRUE,	19,				F(DRAGON_GREEN),		RV(150, 0, 0, 0),	EP(0, 0, 0),				"allows you to breathe poison gas for 150 damage")
 EFFECT(DRAGON_RED,			TRUE,	20,				F(DRAGON_RED),			RV(200, 0, 0, 0),	EP(0, 0, 0),				"allows you to breathe fire for 200 damage")
 EFFECT(DRAGON_MULTIHUED,	TRUE,	20,				F(DRAGON_MULTIHUED),	RV(250, 0, 0, 0),	EP(0, 0, 0),				"allows you to breathe the elements for 250 damage")
-EFFECT(DRAGON_BRONZE,		TRUE,	INHIBIT_POWER,	F(DRAGON_BRONZE),		RV(150, 0, 0, 0),	EP(0, 0, 0),				"allows you to breathe confusion for 150 damage")
 EFFECT(DRAGON_GOLD,			TRUE,	19,				F(DRAGON_GOLD),			RV(150, 0, 0, 0),	EP(0, 0, 0),				"allows you to breathe sound for 150 damage")
 EFFECT(DRAGON_CHAOS,		TRUE,	23,				F(DRAGON_CHAOS),		RV(220, 0, 0, 0),	EP(0, 0, 0),				"allows you to breathe chaos or disenchantment for 220 damage")
 EFFECT(DRAGON_LAW,			TRUE,	23,				F(DRAGON_LAW),			RV(230, 0, 0, 0),	EP(0, 0, 0),				"allows you to breathe sound/shards for 230 damage")

@@ -193,7 +193,7 @@ void player_flags(bitflag f[OF_SIZE])
 
 	/* Some classes become immune to fear at a certain plevel */
 	if (player_has(PF_BRAVERY_30) && player->lev >= 30)
-		of_on(f, OF_RES_FEAR);
+		of_on(f, OF_PROT_FEAR);
 }
 
 
@@ -262,10 +262,10 @@ static const struct player_flag_record player_flag_table[RES_ROWS*4] =
 	{ "Chaos",	0, OF_RES_CHAOS,   FLAG_END,   FLAG_END,     -1 },
 	{ "Disen",	0, OF_RES_DISEN,   FLAG_END,   FLAG_END,     -1 },
 	{ "Feath",	0, OF_FEATHER,     FLAG_END,   FLAG_END,     -1 },
-	{ "pFear",	0, OF_RES_FEAR,    FLAG_END,   FLAG_END,     -1 },
-	{ "pBlnd",	0, OF_RES_BLIND,   FLAG_END,   FLAG_END,     -1 },
-	{ "pConf",	0, OF_RES_CONFU,   FLAG_END,   FLAG_END,     TMD_OPP_CONF },
-	{ "pStun",	0, OF_RES_STUN,	FLAG_END,   FLAG_END,     -1 },
+	{ "pFear",	0, OF_PROT_FEAR,   FLAG_END,   FLAG_END,     -1 },
+	{ "pBlnd",	0, OF_PROT_BLIND,  FLAG_END,   FLAG_END,     -1 },
+	{ "pConf",	0, OF_PROT_CONF,   FLAG_END,   FLAG_END,     TMD_OPP_CONF },
+	{ "pStun",	0, OF_PROT_STUN,   FLAG_END,   FLAG_END,     -1 },
 
 	{ "Light",	0, OBJ_MOD_LIGHT,  FLAG_END,   FLAG_END,     -1 },
 	{ "Regen",	0, OF_REGEN,       FLAG_END,   FLAG_END,     -1 },

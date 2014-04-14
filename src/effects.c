@@ -307,7 +307,7 @@ bool effect_handler_CURE_MIND(effect_handler_context_t *context)
 	if (player_restore_mana(player, 10)) context->ident = TRUE;
 	effect_clear_timed_multiple(context, TMD_CONFUSED, TMD_AFRAID, TMD_IMAGE, EFFECT_STOP);
 
-	if (!player_of_has(player, OF_RES_CONFU) &&
+	if (!player_of_has(player, OF_PROT_CONF) &&
 		player_inc_timed(player, TMD_OPP_CONF, 12 + damroll(6, 10), TRUE, TRUE))
 		context->ident = TRUE;
 
@@ -1544,12 +1544,6 @@ bool effect_handler_DRAGON_MULTIHUED(effect_handler_context_t *context)
 
 	int dam = effect_calculate_value(context, TRUE);
 	return effect_breathe_random(context, dam, multihued, N_ELEMENTS(multihued));
-}
-
-bool effect_handler_DRAGON_BRONZE(effect_handler_context_t *context)
-{
-	int dam = effect_calculate_value(context, TRUE);
-	return effect_breathe_one(context, dam, GF_CONFU, MSG_BR_CONF, "confusion");
 }
 
 bool effect_handler_DRAGON_GOLD(effect_handler_context_t *context)

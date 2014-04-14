@@ -53,16 +53,16 @@ static timed_effect effects[] =
 	{ "You are blind.", "You blink and your eyes clear.",
 			NULL, NULL,
 			PR_MAP, PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS, MSG_BLIND,
-			OF_RES_BLIND },
+			OF_PROT_BLIND },
 	{ "You are paralysed!", "You can move again.",
 			NULL, NULL,
 			0, 0, MSG_PARALYZED, OF_FREE_ACT },
 	{ "You are confused!", "You are no longer confused.",
 			"You are more confused!", "You feel a little less confused.",
-			0, 0, MSG_CONFUSED, OF_RES_CONFU },
+			0, 0, MSG_CONFUSED, OF_PROT_CONF },
 	{ "You are terrified!", "You feel bolder now.",
 			"You are more scared!", "You feel a little less scared.",
-			0, PU_BONUS, MSG_AFRAID, OF_RES_FEAR },
+			0, PU_BONUS, MSG_AFRAID, OF_PROT_FEAR },
 	{ "You feel drugged!", "You can see clearly again.",
 			"You feel more drugged!", "You feel less drugged.",
 			PR_MAP | PR_MONLIST | PR_ITEMLIST, 0, MSG_DRUGGED, OF_RES_CHAOS },
@@ -70,7 +70,7 @@ static timed_effect effects[] =
 			"You are more poisoned!", "You are less poisoned.",
 			0, 0, MSG_POISONED, OF_RES_POIS },
 	{ NULL, NULL, NULL, NULL, 0, 0, 0, 0 },  /* TMD_CUT -- handled seperately */
-	{ NULL, NULL, NULL, NULL, 0, 0, 0, OF_RES_STUN },  /* TMD_STUN -- handled seperately */
+	{ NULL, NULL, NULL, NULL, 0, 0, 0, OF_PROT_STUN },  /* TMD_STUN -- handled seperately */
 	{ "You feel safe from evil!", "You no longer feel safe from evil.",
 			"You feel even safer from evil!", "You feel less safe from evil.",
 			0, 0, MSG_PROT_EVIL, 0 },
@@ -160,7 +160,7 @@ bool player_set_timed(struct player *p, int idx, int v, bool notify)
 		notify = FALSE;
 	else if (idx == TMD_OPP_COLD && player_of_has(p, OF_IM_COLD))
 		notify = FALSE;
-	else if (idx == TMD_OPP_CONF && player_of_has(p, OF_RES_CONFU))
+	else if (idx == TMD_OPP_CONF && player_of_has(p, OF_PROT_CONF))
 		notify = FALSE;
 
 	/* Find the effect */

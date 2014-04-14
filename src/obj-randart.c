@@ -1466,18 +1466,18 @@ static void parse_frequencies(void)
 		{
 			temp = 0;
 			if (of_has(a_ptr->flags, OF_RES_POIS)) temp++;
-			if (of_has(a_ptr->flags, OF_RES_FEAR)) temp++;
+			if (of_has(a_ptr->flags, OF_PROT_FEAR)) temp++;
 			if (of_has(a_ptr->flags, OF_RES_LIGHT)) temp++;
 			if (of_has(a_ptr->flags, OF_RES_DARK)) temp++;
-			if (of_has(a_ptr->flags, OF_RES_BLIND)) temp++;
-			if (of_has(a_ptr->flags, OF_RES_CONFU)) temp++;
+			if (of_has(a_ptr->flags, OF_PROT_BLIND)) temp++;
+			if (of_has(a_ptr->flags, OF_PROT_CONF)) temp++;
 			if (of_has(a_ptr->flags, OF_RES_SOUND)) temp++;
 			if (of_has(a_ptr->flags, OF_RES_SHARD)) temp++;
 			if (of_has(a_ptr->flags, OF_RES_NEXUS)) temp++;
 			if (of_has(a_ptr->flags, OF_RES_NETHR)) temp++;
 			if (of_has(a_ptr->flags, OF_RES_CHAOS)) temp++;
 			if (of_has(a_ptr->flags, OF_RES_DISEN)) temp++;
-			if (of_has(a_ptr->flags, OF_RES_STUN)) temp++;
+			if (of_has(a_ptr->flags, OF_PROT_STUN)) temp++;
 			file_putf(log_file, "Adding %d for high resists on body armor.\n", temp);
 
 			(artprobs[ART_IDX_ARMOR_HRES]) += temp;
@@ -1492,7 +1492,7 @@ static void parse_frequencies(void)
 			(artprobs[ART_IDX_GEN_RPOIS])++;
 		}
 
-		if (of_has(a_ptr->flags, OF_RES_FEAR))
+		if (of_has(a_ptr->flags, OF_PROT_FEAR))
 		{
 			/* Resist fear ability */
 			file_putf(log_file, "Adding 1 for resist fear - general.\n");
@@ -1516,7 +1516,7 @@ static void parse_frequencies(void)
 			(artprobs[ART_IDX_GEN_RDARK])++;
 		}
 
-		if (of_has(a_ptr->flags, OF_RES_BLIND))
+		if (of_has(a_ptr->flags, OF_PROT_BLIND))
 		{
 			/* Resist blind ability - helms/crowns are separate */
 			if(a_ptr->tval == TV_HELM || a_ptr->tval == TV_CROWN)
@@ -1534,7 +1534,7 @@ static void parse_frequencies(void)
 			}
 		}
 
-		if (of_has(a_ptr->flags, OF_RES_CONFU))
+		if (of_has(a_ptr->flags, OF_PROT_CONF))
 		{
 			/* Resist confusion ability */
 			file_putf(log_file, "Adding 1 for resist confusion - general.\n");
@@ -1590,7 +1590,7 @@ static void parse_frequencies(void)
 			(artprobs[ART_IDX_GEN_RDISEN])++;
 		}
 
-		if (of_has(a_ptr->flags, OF_RES_STUN))
+		if (of_has(a_ptr->flags, OF_PROT_STUN))
 		{
 			/* Resist stunning ability */
 			file_putf(log_file, "Adding 1 for res_stun - general.\n");
@@ -1919,18 +1919,18 @@ static void add_high_resist(artifact_type *a_ptr)
 
 		/* Now i should give us the index of the correct high resist */
 		if (i == 0) success = add_flag(a_ptr, OF_RES_POIS);
-		else if (i == 1) success = add_flag(a_ptr, OF_RES_FEAR);
+		else if (i == 1) success = add_flag(a_ptr, OF_PROT_FEAR);
 		else if (i == 2) success = add_flag(a_ptr, OF_RES_LIGHT);
 		else if (i == 3) success = add_flag(a_ptr, OF_RES_DARK);
-		else if (i == 4) success = add_flag(a_ptr, OF_RES_BLIND);
-		else if (i == 5) success = add_flag(a_ptr, OF_RES_CONFU);
+		else if (i == 4) success = add_flag(a_ptr, OF_PROT_BLIND);
+		else if (i == 5) success = add_flag(a_ptr, OF_PROT_CONF);
 		else if (i == 6) success = add_flag(a_ptr, OF_RES_SOUND);
 		else if (i == 7) success = add_flag(a_ptr, OF_RES_SHARD);
 		else if (i == 8) success = add_flag(a_ptr, OF_RES_NEXUS);
 		else if (i == 9) success = add_flag(a_ptr, OF_RES_NETHR);
 		else if (i == 10) success = add_flag(a_ptr, OF_RES_CHAOS);
 		else if (i == 11) success = add_flag(a_ptr, OF_RES_DISEN);
-		else if (i == 12) success = add_flag(a_ptr, OF_RES_STUN);
+		else if (i == 12) success = add_flag(a_ptr, OF_PROT_STUN);
 
 		count++;
 	}
@@ -2432,7 +2432,7 @@ static void add_ability_aux(artifact_type *a_ptr, int r, s32b target_power)
 
 		case ART_IDX_HELM_RBLIND:
 		case ART_IDX_GEN_RBLIND:
-			add_flag(a_ptr, OF_RES_BLIND);
+			add_flag(a_ptr, OF_PROT_BLIND);
 			break;
 
 		case ART_IDX_HELM_ESP:
@@ -2516,7 +2516,7 @@ static void add_ability_aux(artifact_type *a_ptr, int r, s32b target_power)
 			break;
 
 		case ART_IDX_GEN_RFEAR:
-			add_flag(a_ptr, OF_RES_FEAR);
+			add_flag(a_ptr, OF_PROT_FEAR);
 			break;
 
 		case ART_IDX_GEN_RLIGHT:
@@ -2528,7 +2528,7 @@ static void add_ability_aux(artifact_type *a_ptr, int r, s32b target_power)
 			break;
 
 		case ART_IDX_GEN_RCONF:
-			add_flag(a_ptr, OF_RES_CONFU);
+			add_flag(a_ptr, OF_PROT_CONF);
 			break;
 
 		case ART_IDX_GEN_RSOUND:
@@ -2556,7 +2556,7 @@ static void add_ability_aux(artifact_type *a_ptr, int r, s32b target_power)
 			break;
 
 		case ART_IDX_GEN_PSTUN:
-			add_flag(a_ptr, OF_RES_STUN);
+			add_flag(a_ptr, OF_PROT_STUN);
 			break;
 
 		case ART_IDX_GEN_ACTIV:

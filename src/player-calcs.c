@@ -1709,7 +1709,7 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 
 	/* Temporary resistance to fear */
 	if (player->timed[TMD_BOLD])
-		of_on(state->flags, OF_RES_FEAR);
+		of_on(state->flags, OF_PROT_FEAR);
 
 	/* Temporary "Hero" */
 	if (player->timed[TMD_HERO])
@@ -1759,7 +1759,7 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 
 	/* Resist confusion */
 	if (player->timed[TMD_OPP_CONF])
-		of_on(state->flags, OF_RES_CONFU);
+		of_on(state->flags, OF_PROT_CONF);
 
 	/* Confusion */
 	if (player->timed[TMD_CONFUSED])

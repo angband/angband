@@ -197,7 +197,7 @@ static void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MA
 	/* Sound */
 	if (of_has(st.flags, OF_RES_SOUND))
 		spell_colors[RSF_BR_SOUN] = TERM_L_GREEN;
-	else if (!of_has(st.flags, OF_RES_SOUND) && of_has(st.flags, OF_RES_STUN))
+	else if (!of_has(st.flags, OF_RES_SOUND) && of_has(st.flags, OF_PROT_STUN))
 		spell_colors[RSF_BR_SOUN] = TERM_YELLOW;
 	else
 		spell_colors[RSF_BR_SOUN] = TERM_ORANGE;
@@ -207,14 +207,13 @@ static void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MA
  		spell_colors[RSF_BR_SHAR] = TERM_ORANGE;
 
 	/* Confusion */
-	if (!of_has(st.flags, OF_RES_CONFU))
+	if (!of_has(st.flags, OF_PROT_CONF))
 	{
 		melee_colors[RBE_CONFUSE] = TERM_ORANGE;
-		spell_colors[RSF_BR_CONF] = TERM_ORANGE;
 	}
 
 	/* Stunning */
-	if (!of_has(st.flags, OF_RES_STUN)) {
+	if (!of_has(st.flags, OF_PROT_STUN)) {
 		spell_colors[RSF_BR_WALL] = TERM_YELLOW;
 		spell_colors[RSF_BR_PLAS] = TERM_ORANGE;
 		spell_colors[RSF_BO_PLAS] = TERM_ORANGE;
@@ -242,8 +241,8 @@ static void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MA
 	}
 
 	/* Water */
-	if (!of_has(st.flags, OF_RES_CONFU) ||
-			!of_has(st.flags, OF_RES_STUN))
+	if (!of_has(st.flags, OF_PROT_CONF) ||
+			!of_has(st.flags, OF_PROT_STUN))
 	{
 		spell_colors[RSF_BA_WATE] = TERM_L_RED;
 		spell_colors[RSF_BO_WATE] = TERM_L_RED;
@@ -266,7 +265,7 @@ static void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MA
 		spell_colors[RSF_FORGET] = TERM_YELLOW;
 
 		/* Fear */
-		if (!of_has(st.flags, OF_RES_FEAR))
+		if (!of_has(st.flags, OF_PROT_FEAR))
 		{
 			melee_colors[RBE_TERRIFY] = TERM_YELLOW;
 			spell_colors[RSF_SCARE] = TERM_YELLOW;
@@ -281,11 +280,11 @@ static void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MA
 		}
 
 		/* Blind */
-		if (!of_has(st.flags, OF_RES_BLIND))
+		if (!of_has(st.flags, OF_PROT_BLIND))
 			spell_colors[RSF_BLIND] = TERM_ORANGE;
 
 		/* Confusion */
-		if (!of_has(st.flags, OF_RES_CONFU))
+		if (!of_has(st.flags, OF_PROT_CONF))
 			spell_colors[RSF_CONF] = TERM_ORANGE;
 
 		/* Cause wounds */
@@ -295,13 +294,13 @@ static void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MA
 		spell_colors[RSF_CAUSE_4] = TERM_YELLOW;
 
 		/* Mind blast */
-		spell_colors[RSF_MIND_BLAST] = (of_has(st.flags, OF_RES_CONFU) ?
+		spell_colors[RSF_MIND_BLAST] = (of_has(st.flags, OF_PROT_CONF) ?
 				TERM_YELLOW : TERM_ORANGE);
 
 		/* Brain smash slows even when conf/blind resisted */
-		spell_colors[RSF_BRAIN_SMASH] = (of_has(st.flags, OF_RES_BLIND) &&
+		spell_colors[RSF_BRAIN_SMASH] = (of_has(st.flags, OF_PROT_BLIND) &&
 				of_has(st.flags, OF_FREE_ACT) &&
-				of_has(st.flags, OF_RES_CONFU)	? TERM_ORANGE : TERM_L_RED);
+				of_has(st.flags, OF_PROT_CONF)	? TERM_ORANGE : TERM_L_RED);
 	}
 
 	/* Gold theft */
@@ -309,7 +308,7 @@ static void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MA
 		melee_colors[RBE_EAT_GOLD] = TERM_YELLOW;
 
 	/* Melee blindness and hallucinations */
-	if (!of_has(st.flags, OF_RES_BLIND))
+	if (!of_has(st.flags, OF_PROT_BLIND))
 		melee_colors[RBE_BLIND] = TERM_YELLOW;
 	if (!of_has(st.flags, OF_RES_CHAOS))
 		melee_colors[RBE_HALLU] = TERM_YELLOW;
@@ -1554,7 +1553,6 @@ static void lore_append_spells(textblock *tb, const monster_race *race, const mo
 	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BR_PLAS);
 	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BR_WALL);
 	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BR_MANA);
-	/* Enum counting note: RSF_BR_CONF isn't used anymore */
 
 	if (list_index > 0) {
 		breath = TRUE;

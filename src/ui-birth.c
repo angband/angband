@@ -226,7 +226,7 @@ static const char *get_flag_desc(bitflag flag)
 		case OF_RES_POIS: return "Resists poison";
 		case OF_RES_LIGHT: return "Resists light damage";
 		case OF_RES_DARK: return "Resists darkness damage";
-		case OF_RES_BLIND: return "Resists blindness";
+		case OF_PROT_BLIND: return "Resists blindness";
 		case OF_HOLD_LIFE: return "Sustains experience";
 		case OF_FREE_ACT: return "Resists paralysis";
 		case OF_REGEN: return "Regenerates quickly";

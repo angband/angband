@@ -107,16 +107,13 @@ static bool mon_resist_effect(const struct monster *mon, int ef_idx, int timer, 
 
 	/* Monsters with specific breaths resist confusion */
 	if ((ef_idx == MON_TMD_CONF) &&
-		((rsf_has(mon->race->spell_flags, RSF_BR_CHAO)) ||
-		 (rsf_has(mon->race->spell_flags, RSF_BR_CONF))) )
+		rsf_has(mon->race->spell_flags, RSF_BR_CHAO))
 	{
 		/* Add the lore */
 		if (mon->ml)
 		{
 			if (rsf_has(mon->race->spell_flags, RSF_BR_CHAO))
 				rsf_on(lore->spell_flags, RSF_BR_CHAO);
-			if (rsf_has(mon->race->spell_flags, RSF_BR_CONF))
-				rsf_on(lore->spell_flags, RSF_BR_CONF);
 		}
 
 		return (TRUE);

@@ -1366,18 +1366,6 @@ S:BR_SOUN
 D:Large beating wings support this dazzling insect.  A loud buzzing noise
 D: pervades the air.
 
-N:266:Giant bronze dragon fly
-plural:Giant bronze dragon flies
-T:dragon fly
-C:U
-I:120:14:12:30:1
-W:6:0:0:18
-F:NEVER_BLOW | RAND_25
-F:NO_CONF | NO_SLEEP
-S:1_IN_10
-S:BR_CONF
-D:This vast gleaming bronze fly has wings which beat mesmerically fast.
-
 ### Dungeon level 7 ###
 
 N:98:Cave orc
@@ -1846,22 +1834,6 @@ B:BITE:POISON:3d4
 F:RAND_50
 F:IM_POIS
 D:It is a large snake with a hooded face.
-
-N:574:Baby bronze dragon
-T:dragon
-C:U
-I:110:88:20:36:70
-W:9:0:0:35
-B:CLAW:HURT:1d3
-B:CLAW:HURT:1d3
-B:BITE:HURT:1d5
-F:DROP_40 | DROP_1 | ONLY_GOLD
-F:OPEN_DOOR | BASH_DOOR
-F:NO_CONF
-S:1_IN_12
-S:BR_CONF
-D:This hatchling dragon is still soft, its eyes unaccustomed to light and its
-D: scales a dull bronze.
 
 N:575:Baby gold dragon
 T:dragon
@@ -4802,23 +4774,6 @@ S:BR_POIS
 D:It has a form that legends are made of.  Its still-tender scales are a deep
 D: green in hue.  Foul gas seeps through its scales.
 
-N:317:Young bronze dragon
-T:dragon
-C:U
-I:110:237:20:60:70
-W:29:0:0:500
-B:CLAW:HURT:2d4
-B:CLAW:HURT:2d4
-B:BITE:HURT:2d6
-F:DROP_2
-F:OPEN_DOOR | BASH_DOOR
-F:NO_CONF
-S:1_IN_10
-S:SCARE
-S:BR_CONF
-D:It has a form that legends are made of.  Its still-tender scales are a rich
-D: bronze hue, and its shape glitters with strange colours that confuse you.
-
 
 
 ########## DUNGEON LEVELS 30-39 ##########
@@ -5674,24 +5629,6 @@ S:BR_POIS
 friends:50:1d4:Baby green dragon
 friends:50:1d2:Young green dragon
 D:A large dragon, scales tinted deep green.
-
-N:386:Mature bronze dragon
-T:dragon
-C:U
-I:110:352:20:84:70
-W:34:0:0:1200
-B:CLAW:HURT:2d8
-B:CLAW:HURT:2d8
-B:BITE:HURT:4d8
-F:DROP_4
-F:BASH_DOOR
-F:NO_CONF | NO_SLEEP
-S:1_IN_9
-S:CONF | SCARE
-S:BR_CONF
-friends:50:1d4:Baby bronze dragon
-friends:50:1d2:Young bronze dragon
-D:A large dragon with scales of rich bronze.
 
 ### Dungeon level 35 ###
 
@@ -6752,20 +6689,6 @@ S:1_IN_6
 S:BLIND | CONF | SCARE
 S:BR_ELEC
 D:A huge draconic form.  Lightning crackles along its length.
-
-N:412:Ancient bronze dragon
-T:ancient dragon
-C:U
-I:120:633:20:108:80
-W:40:0:0:2000
-B:CLAW:HURT:4d8
-B:CLAW:HURT:4d8
-B:BITE:HURT:7d8
-F:BASH_DOOR
-S:1_IN_6
-S:BLIND | CONF | SCARE
-S:BR_CONF
-D:A huge draconic form enveloped in a cascade of colour.
 
 N:413:Beholder
 T:eye
@@ -8799,26 +8722,6 @@ S:BR_POIS
 D:A truly enormous dragon with great powers.  The foul gases issuing from the
 D: beast nearly make you vomit; and while you may try to hold your breath as you
 D: fight it, it sees no reason to do likewise.
-
-N:577:Great Wyrm of Perplexity
-plural:Great Wyrms of Perplexity
-T:ancient dragon
-C:U
-I:120:3080:30:225:30
-W:63:0:0:20000
-B:CLAW:HURT:4d12
-B:CLAW:HURT:4d12
-B:BITE:CONFUSE:6d14
-B:BITE:CONFUSE:6d14
-F:ATTR_FLICKER
-F:ONLY_ITEM
-F:BASH_DOOR
-S:1_IN_4
-S:BLIND | CONF | SCARE
-S:BR_CONF
-D:A dragon of great size and power.  Its polished bronze scales reflect the
-D: light in strange and confusing patterns, and you find it hard to keep your
-D: mind on the job of fighting for your life.
 
 ### Dungeon level 64 ###
 

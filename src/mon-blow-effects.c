@@ -568,7 +568,7 @@ static void melee_effect_handler_cold(melee_effect_handler_context_t *context)
  */
 static void melee_effect_handler_blind(melee_effect_handler_context_t *context)
 {
-	melee_effect_timed(context, TMD_BLIND, 10 + randint1(context->rlev), OF_RES_BLIND, FALSE, NULL);
+	melee_effect_timed(context, TMD_BLIND, 10 + randint1(context->rlev), OF_PROT_BLIND, FALSE, NULL);
 }
 
 /**
@@ -576,7 +576,7 @@ static void melee_effect_handler_blind(melee_effect_handler_context_t *context)
  */
 static void melee_effect_handler_confuse(melee_effect_handler_context_t *context)
 {
-	melee_effect_timed(context, TMD_CONFUSED, 3 + randint1(context->rlev), OF_RES_CONFU, FALSE, NULL);
+	melee_effect_timed(context, TMD_CONFUSED, 3 + randint1(context->rlev), OF_PROT_CONF, FALSE, NULL);
 }
 
 /**
@@ -584,7 +584,7 @@ static void melee_effect_handler_confuse(melee_effect_handler_context_t *context
  */
 static void melee_effect_handler_terrify(melee_effect_handler_context_t *context)
 {
-	melee_effect_timed(context, TMD_AFRAID, 3 + randint1(context->rlev), OF_RES_FEAR, TRUE, "You stand your ground!");
+	melee_effect_timed(context, TMD_AFRAID, 3 + randint1(context->rlev), OF_PROT_FEAR, TRUE, "You stand your ground!");
 }
 
 /**

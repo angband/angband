@@ -150,10 +150,10 @@ static const flag_type resist_flags[] =
 
 static const flag_type protect_flags[] =
 {
-	{ OF_RES_FEAR,  "fear" },
-	{ OF_RES_BLIND, "blindness" },
-	{ OF_RES_CONFU, "confusion" },
-	{ OF_RES_STUN,  "stunning" },
+	{ OF_PROT_FEAR, "fear" },
+	{ OF_PROT_BLIND, "blindness" },
+	{ OF_PROT_CONF, "confusion" },
+	{ OF_PROT_STUN,  "stunning" },
 };
 
 static const flag_type ignore_flags[] =
