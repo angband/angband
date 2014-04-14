@@ -44,7 +44,7 @@ static const char *flag_names[] =
  */
 static const struct object_mod object_mod_table[] =
 {
-    #define OBJ_MOD(a, b, c, d, e) { OBJ_MOD_##a, b, c, d, e },
+    #define OBJ_MOD(a, b, c, d) { OBJ_MOD_##a, b, c, d },
     #include "list-object-modifiers.h"
     #undef OBJ_MOD
 };
@@ -54,7 +54,7 @@ static const struct object_mod object_mod_table[] =
  */
 static const char *mod_names[] =
 {
-    #define OBJ_MOD(a, b, c, d, e) #a,
+    #define OBJ_MOD(a, b, c, d) #a,
     #include "list-object-modifiers.h"
     #undef OBJ_MOD
     ""
@@ -153,10 +153,6 @@ s16b flag_slot_mult(int flag, int slot)
 		/* Some flags have no effect */
 	case OFT_INT:
 	case OFT_HATES: return 0;
-		/* Slays and brands in off-weapon slots are more powerful */
-	case OFT_SLAY:
-	case OFT_KILL:
-	case OFT_BRAND: return (slot == INVEN_WIELD) ? 1 : 3;
 		/* Light-specific */
 	case OFT_LIGHT: return (slot == INVEN_LIGHT) ? 1 : 0;
 		/* Melee weapon specific */

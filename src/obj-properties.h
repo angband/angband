@@ -39,7 +39,7 @@ enum {
 
 /* The object modifiers */
 enum {
-    #define OBJ_MOD(a, b, c, d, e) OBJ_MOD_##a,
+    #define OBJ_MOD(a, b, c, d) OBJ_MOD_##a,
     #include "list-object-modifiers.h"
     #undef OBJ_MOD
 };
@@ -47,9 +47,6 @@ enum {
 /* The object flag types */
 enum object_flag_type {
 	OFT_SUST = 1,	/* sustains a stat */
-	OFT_SLAY,		/* a "normal" creature-type slay */
-	OFT_BRAND,		/* a brand against monsters lacking the resist */
-	OFT_KILL,		/* a powerful creature-type slay */
 	OFT_VULN,		/* lowers resistance to an element */
 	OFT_IMM,		/* offers immunity to an element */
 	OFT_LRES,		/* a "base" elemental resistance */
@@ -134,7 +131,6 @@ struct object_flag {
  */
 struct object_mod {
 	u16b index;				/* the OBJ_MOD_ index */
-	u16b id;				/* how is it identified */
 	s16b power;				/* base power rating */
 	s16b mod_mult;			/* modifier weight rating */
 	const char *message;	/* id message */

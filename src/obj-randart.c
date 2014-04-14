@@ -671,12 +671,6 @@ static void remove_contradictory(artifact_type *a_ptr)
 
 	if (of_has(a_ptr->flags, OF_LIGHT_CURSE))
 		of_off(a_ptr->flags, OF_BLESSED);
-	if (of_has(a_ptr->flags, OF_KILL_DRAGON))
-		of_off(a_ptr->flags, OF_SLAY_DRAGON);
-	if (of_has(a_ptr->flags, OF_KILL_DEMON))
-		of_off(a_ptr->flags, OF_SLAY_DEMON);
-	if (of_has(a_ptr->flags, OF_KILL_UNDEAD))
-		of_off(a_ptr->flags, OF_SLAY_UNDEAD);
 	if (of_has(a_ptr->flags, OF_DRAIN_EXP))
 		of_off(a_ptr->flags, OF_HOLD_LIFE);
 }

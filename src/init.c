@@ -105,7 +105,7 @@ static const char *obj_flags[] = {
 };
 
 static const char *obj_mods[] = {
-	#define OBJ_MOD(a, b, c, d, e) #a,
+	#define OBJ_MOD(a, b, c, d) #a,
 	#include "list-object-modifiers.h"
 	#undef OBJ_MOD
 	NULL
