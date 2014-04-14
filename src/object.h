@@ -15,7 +15,7 @@
  */
 enum
 {
-#define ELEM(a, b, c, d, e, col, f, g, h, i, j, k, l, m, fh, oh, mh, ph) \
+	#define ELEM(a, b, c, d, e, col, f, g, h, i, j, k, l, m, fh, oh, mh, ph) \
 	ELEM_##a,
     #include "list-elements.h"
     #undef ELEM
@@ -348,7 +348,7 @@ typedef struct object_kind
 	bitflag kind_flags[KF_SIZE];			/**< Kind flags */
 
 	random_value modifiers[OBJ_MOD_MAX];
-	s16b resists[ELEM_MAX];
+	s16b res_level[ELEM_MAX];
 
 	struct brand *brands;
 	struct slay *slays;
@@ -440,7 +440,7 @@ typedef struct artifact
 	bitflag kind_flags[KF_SIZE];			/**< Kind flags */
 
 	int modifiers[OBJ_MOD_MAX];
-	int resists[ELEM_MAX];
+	int res_level[ELEM_MAX];
 
 	struct brand *brands;
 	struct slay *slays;
@@ -491,7 +491,7 @@ typedef struct ego_item
 
 	random_value modifiers[OBJ_MOD_MAX];
 	int min_modifiers[OBJ_MOD_MAX];
-	s16b resists[ELEM_MAX];
+	s16b res_level[ELEM_MAX];
 
 	struct brand *brands;
 	struct slay *slays;
@@ -572,7 +572,7 @@ typedef struct object
 	u16b ident;			/* Special flags */
 
 	s16b modifiers[OBJ_MOD_MAX];
-	s16b resists[ELEM_MAX];
+	s16b res_level[ELEM_MAX];
 
 	struct brand *brands;
 	struct slay *slays;

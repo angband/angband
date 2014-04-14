@@ -118,7 +118,7 @@ static const char *kind_flags[] = {
 	NULL
 };
 
-static const char *brands[] = {
+static const char *elements[] = {
 	#define ELEM(a, b, c, d, e, col, f, g, h, i, j, k, l, m, fh, oh, mh, ph) #a,
 	#include "list-elements.h"
 	#undef ELEM
@@ -707,7 +707,7 @@ static enum parser_error parse_k_v(struct parser *p) {
 		bool found = FALSE;
 		if (!grab_rand_value(k->modifiers, obj_mods, t))
 			found = TRUE;
-		if (!grab_index_and_int(&value, &index, brands, "BRAND_", t)) {
+		if (!grab_index_and_int(&value, &index, elements, "BRAND_", t)) {
 			struct brand *b;
 			found = TRUE;
 			b = mem_zalloc(sizeof *b);
@@ -734,6 +734,10 @@ static enum parser_error parse_k_v(struct parser *p) {
 			s->multiplier = value;
 			s->next = k->slays;
 			k->slays = s;
+		}
+		if (!grab_index_and_int(&value, &index, elements, "RES_", t)) {
+			found = TRUE;
+			k->res_level[index] = value;
 		}
 		if (!found)
 			break;
@@ -961,7 +965,7 @@ static enum parser_error parse_a_v(struct parser *p) {
 		char *name;
 		if (!grab_int_value(a->modifiers, obj_mods, t))
 			found = TRUE;
-		if (!grab_index_and_int(&value, &index, brands, "BRAND_", t)) {
+		if (!grab_index_and_int(&value, &index, elements, "BRAND_", t)) {
 			struct brand *b;
 			found = TRUE;
 			b = mem_zalloc(sizeof *b);
@@ -988,6 +992,10 @@ static enum parser_error parse_a_v(struct parser *p) {
 			s->multiplier = value;
 			s->next = a->slays;
 			a->slays = s;
+		}
+		if (!grab_index_and_int(&value, &index, elements, "RES_", t)) {
+			found = TRUE;
+			a->res_level[index] = value;
 		}
 		if (!found)
 			break;
@@ -1643,7 +1651,7 @@ static enum parser_error parse_e_v(struct parser *p) {
 		char *name;
 		if (!grab_rand_value(e->modifiers, obj_mods, t))
 			found = TRUE;
-		if (!grab_index_and_int(&value, &index, brands, "BRAND_", t)) {
+		if (!grab_index_and_int(&value, &index, elements, "BRAND_", t)) {
 			struct brand *b;
 			found = TRUE;
 			b = mem_zalloc(sizeof *b);
@@ -1670,6 +1678,10 @@ static enum parser_error parse_e_v(struct parser *p) {
 			s->multiplier = value;
 			s->next = e->slays;
 			e->slays = s;
+		}
+		if (!grab_index_and_int(&value, &index, elements, "RES_", t)) {
+			found = TRUE;
+			e->res_level[index] = value;
 		}
 		if (!found)
 			break;
@@ -1937,6 +1949,34 @@ static enum parser_error parse_p_c(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_p_v(struct parser *p) {
+	struct player_race *r = parser_priv(p);
+	char *s;
+	char *t;
+
+	if (!r)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	s = string_make(parser_getstr(p, "values"));
+	t = strtok(s, " |");
+
+	while (t) {
+		int value = 0;
+		int index = 0;
+		bool found = FALSE;
+		if (!grab_index_and_int(&value, &index, elements, "RES_", t)) {
+			found = TRUE;
+			r->res_level[index] = value;
+		}
+		if (!found)
+			break;
+
+		t = strtok(NULL, " |");
+	}
+
+	mem_free(s);
+	return t ? PARSE_ERROR_INVALID_VALUE : PARSE_ERROR_NONE;
+}
+
 struct parser *init_parse_p(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
@@ -1950,6 +1990,7 @@ struct parser *init_parse_p(void) {
 	parser_reg(p, "F ?str flags", parse_p_f);
 	parser_reg(p, "Y ?str flags", parse_p_y);
 	parser_reg(p, "C ?str classes", parse_p_c);
+	parser_reg(p, "V str values", parse_p_v);
 	return p;
 }
 

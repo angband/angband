@@ -258,7 +258,7 @@ static const struct player_flag_record player_flag_table[RES_ROWS*4] =
 	{ "Shard",	0, OF_RES_SHARD,   FLAG_END,   FLAG_END,     -1 },
 
 	{ "Nexus",	0, OF_RES_NEXUS,   FLAG_END,   FLAG_END,     -1 },
-	{ "Nethr",	0, OF_RES_NETHR,   FLAG_END,   FLAG_END,     -1 },
+	{ "Nethr",	0, OF_RES_NETHER,  FLAG_END,   FLAG_END,     -1 },
 	{ "Chaos",	0, OF_RES_CHAOS,   FLAG_END,   FLAG_END,     -1 },
 	{ "Disen",	0, OF_RES_DISEN,   FLAG_END,   FLAG_END,     -1 },
 	{ "Feath",	0, OF_FEATHER,     FLAG_END,   FLAG_END,     -1 },

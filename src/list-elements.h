@@ -34,7 +34,7 @@ ELEM(DARK,		"something",		OF_RES_DARK,    4,  RV(6,1,6,0),	TERM_L_DARK,	    0,  
 ELEM(SOUND,		"noise",			OF_RES_SOUND,   5,  RV(6,1,6,0),	TERM_YELLOW,	    0,              0,          TRUE,	0,              0,          0,				0,				0,				NULL,			OH(shatter),	MH(SOUND),			NULL)
 ELEM(SHARD,		"something sharp",	OF_RES_SHARD,   6,  RV(6,1,6,0),	TERM_UMBER,		    0,              0,          TRUE,	0,              0,          0,				0,				0,				NULL,			OH(shatter),	MH(SHARD),			NULL)
 ELEM(NEXUS,		"something strange",OF_RES_NEXUS,   6,  RV(6,1,6,0),	TERM_L_RED,		    0,              0,          TRUE,	0,              RF_IM_NEXUS,0,				0,				0,				NULL,			NULL,			MH(NEXUS),			NULL)
-ELEM(NETHER,	"something cold",	OF_RES_NETHR,   6,  RV(6,1,6,0),	TERM_L_GREEN,	    0,              0,          TRUE,	0,              RF_IM_NETHER,0,				0,				0,				NULL,			NULL,			MH(NETHER),			NULL)
+ELEM(NETHER,	"something cold",	OF_RES_NETHER,  6,  RV(6,1,6,0),	TERM_L_GREEN,	    0,              0,          TRUE,	0,              RF_IM_NETHER,0,				0,				0,				NULL,			NULL,			MH(NETHER),			NULL)
 ELEM(CHAOS,		"something strange",OF_RES_CHAOS,	6,	RV(6,1,6,0),	TERM_VIOLET,	 	0,              0,          TRUE,	0,              0,          0,				0,				0,				NULL,			NULL,			MH(CHAOS),			NULL)
 ELEM(DISEN,		"something strange",OF_RES_DISEN,   6,  RV(6,1,6,0),	TERM_VIOLET,	    0,              0,          TRUE,	0,              RF_IM_DISEN,0,				0,				0,				NULL,			NULL,			MH(DISEN),			NULL)
 ELEM(WATER,		"water",			0,				0,	RV(0,0,0,0),	TERM_SLATE,			0,				0,			TRUE,	0,				RF_IM_WATER,0,				0,				0,				NULL,			NULL,			MH(WATER),			NULL)

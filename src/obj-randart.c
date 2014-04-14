@@ -1474,7 +1474,7 @@ static void parse_frequencies(void)
 			if (of_has(a_ptr->flags, OF_RES_SOUND)) temp++;
 			if (of_has(a_ptr->flags, OF_RES_SHARD)) temp++;
 			if (of_has(a_ptr->flags, OF_RES_NEXUS)) temp++;
-			if (of_has(a_ptr->flags, OF_RES_NETHR)) temp++;
+			if (of_has(a_ptr->flags, OF_RES_NETHER)) temp++;
 			if (of_has(a_ptr->flags, OF_RES_CHAOS)) temp++;
 			if (of_has(a_ptr->flags, OF_RES_DISEN)) temp++;
 			if (of_has(a_ptr->flags, OF_PROT_STUN)) temp++;
@@ -1566,7 +1566,7 @@ static void parse_frequencies(void)
 			(artprobs[ART_IDX_GEN_RNEXUS])++;
 		}
 
-		if (of_has(a_ptr->flags, OF_RES_NETHR))
+		if (of_has(a_ptr->flags, OF_RES_NETHER))
 		{
 			/* Resist nether ability */
 			file_putf(log_file, "Adding 1 for resist nether - general.\n");
@@ -1927,7 +1927,7 @@ static void add_high_resist(artifact_type *a_ptr)
 		else if (i == 6) success = add_flag(a_ptr, OF_RES_SOUND);
 		else if (i == 7) success = add_flag(a_ptr, OF_RES_SHARD);
 		else if (i == 8) success = add_flag(a_ptr, OF_RES_NEXUS);
-		else if (i == 9) success = add_flag(a_ptr, OF_RES_NETHR);
+		else if (i == 9) success = add_flag(a_ptr, OF_RES_NETHER);
 		else if (i == 10) success = add_flag(a_ptr, OF_RES_CHAOS);
 		else if (i == 11) success = add_flag(a_ptr, OF_RES_DISEN);
 		else if (i == 12) success = add_flag(a_ptr, OF_PROT_STUN);
@@ -2544,7 +2544,7 @@ static void add_ability_aux(artifact_type *a_ptr, int r, s32b target_power)
 			break;
 
 		case ART_IDX_GEN_RNETHER:
-			add_flag(a_ptr, OF_RES_NETHR);
+			add_flag(a_ptr, OF_RES_NETHER);
 			break;
 
 		case ART_IDX_GEN_RCHAOS:

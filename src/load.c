@@ -41,6 +41,7 @@
 /* Object constants */
 byte obj_mod_max = 0;
 byte of_size = 0;
+byte elem_max = 0;
 
 /* Monster constants */
 byte monster_blow_max = 0;
@@ -174,6 +175,10 @@ static int rd_item(object_type *o_ptr)
 		s->next = o_ptr->slays;
 		o_ptr->slays = s;
 		rd_byte(&tmp8u);
+	}
+
+	for (i = 0; i < elem_max; i++) {
+		rd_s16b(&o_ptr->res_level[i]);
 	}
 
 	/* Monster holding object */
@@ -535,6 +540,17 @@ int rd_object_memory(void)
 	{
 	        note(format("Too many (%u) object modifiers allowed!", 
 						obj_mod_max));
+		return (-1);
+	}
+
+	/* Elements */
+	rd_byte(&elem_max);
+
+	/* Incompatible save files */
+	if (elem_max > ELEM_MAX)
+	{
+	        note(format("Too many (%u) elements allowed!", 
+						elem_max));
 		return (-1);
 	}
 

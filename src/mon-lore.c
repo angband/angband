@@ -182,7 +182,7 @@ static void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MA
 	}
 
 	/* Nether */
-	if (!of_has(st.flags, OF_RES_NETHR))
+	if (!of_has(st.flags, OF_RES_NETHER))
 	{
 		spell_colors[RSF_BR_NETH] = TERM_ORANGE;
 		spell_colors[RSF_BA_NETH] = TERM_ORANGE;

@@ -138,6 +138,10 @@ static void wr_item(const object_type *o_ptr)
 		wr_byte(s->next ? 1 : 0);
 	}
 
+	for (i = 0; i < ELEM_MAX; i++) {
+		wr_s16b(o_ptr->res_level[i]);
+	}
+
 	/* Held by monster index */
 	wr_s16b(o_ptr->held_m_idx);
 	
@@ -366,6 +370,7 @@ void wr_object_memory(void)
 	wr_u16b(z_info->k_max);
 	wr_byte(OF_SIZE);
 	wr_byte(OBJ_MOD_MAX);
+	wr_byte(ELEM_MAX);
 	for (k_idx = 0; k_idx < z_info->k_max; k_idx++)
 	{
 		byte tmp8u = 0;

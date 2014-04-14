@@ -143,7 +143,7 @@ static const flag_type resist_flags[] =
 	{ OF_RES_SOUND, "sound" },
 	{ OF_RES_SHARD, "shards" },
 	{ OF_RES_NEXUS, "nexus"  },
-	{ OF_RES_NETHR, "nether" },
+	{ OF_RES_NETHER, "nether" },
 	{ OF_RES_CHAOS, "chaos" },
 	{ OF_RES_DISEN, "disenchantment" },
 };
