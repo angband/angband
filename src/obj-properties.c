@@ -151,7 +151,6 @@ s16b flag_slot_mult(int flag, int slot)
 	case OFT_BAD:
 	case OFT_CURSE: return 1;
 		/* Some flags have no effect */
-	case OFT_INT:
 	case OFT_HATES: return 0;
 		/* Light-specific */
 	case OFT_LIGHT: return (slot == INVEN_LIGHT) ? 1 : 0;

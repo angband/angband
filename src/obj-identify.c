@@ -318,7 +318,7 @@ bool object_check_for_ident(object_type *o_ptr)
 	object_flags_known(o_ptr, known_flags);
 
 	/* Some flags are irrelevant or never learned or too hard to learn */
-	create_mask(f2, FALSE, OFT_INT, OFT_IGNORE, OFT_HATES, OFT_MAX);
+	create_mask(f2, FALSE, OFT_IGNORE, OFT_HATES, OFT_MAX);
 
 	of_diff(flags, f2);
 	of_diff(known_flags, f2);
@@ -1039,11 +1039,9 @@ void wieldeds_notice_on_attack(void)
 bool object_FA_would_be_obvious(const object_type *o_ptr)
 {
 	if (player_has(PF_CUMBER_GLOVE) && wield_slot(o_ptr) == INVEN_HANDS) {
-		bitflag flags[OF_SIZE];
-		object_flags(o_ptr, flags);
 
 		if ((o_ptr->modifiers[OBJ_MOD_DEX] <= 0) && 
-			!of_has(flags, OF_SPELLS_OK))
+			!kf_has(o_ptr->kind->kind_flags, KF_SPELLS_OK))
 			return TRUE;
 	}
 

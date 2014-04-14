@@ -414,7 +414,7 @@ static size_t obj_desc_combat(const object_type *o_ptr, char *buf, size_t max,
 
 	object_flags_known(o_ptr, flags_known);
 
-	if (of_has(o_ptr->flags, OF_SHOW_DICE)) {
+	if (kf_has(o_ptr->kind->kind_flags, KF_SHOW_DICE)) {
 		/* Only display the real damage dice if the combat stats are known */
 		if (spoil || object_attack_plusses_are_visible(o_ptr))
 			strnfcat(buf, max, &end, " (%dd%d)", o_ptr->dd, o_ptr->ds);
@@ -422,7 +422,7 @@ static size_t obj_desc_combat(const object_type *o_ptr, char *buf, size_t max,
 			strnfcat(buf, max, &end, " (%dd%d)", o_ptr->kind->dd, o_ptr->kind->ds);
 	}
 
-	if (of_has(o_ptr->flags, OF_SHOW_MULT)) {
+	if (kf_has(o_ptr->kind->kind_flags, KF_SHOW_MULT)) {
 		/* Display shooting power as part of the multiplier */
 		if ((o_ptr->modifiers[OBJ_MOD_MIGHT] > 0) &&
 		    (spoil || object_this_mod_is_visible(o_ptr, OBJ_MOD_MIGHT)))

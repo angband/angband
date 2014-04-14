@@ -1174,7 +1174,7 @@ static void calc_mana(void)
 		/* Normal gloves hurt mage-type spells */
 		if (o_ptr->kind &&
 			!of_has(o_ptr->flags, OF_FREE_ACT) && 
-			!of_has(o_ptr->flags, OF_SPELLS_OK) &&
+			!kf_has(o_ptr->kind->kind_flags, KF_SPELLS_OK) &&
 			(o_ptr->modifiers[OBJ_MOD_DEX] <= 0))
 		{
 			/* Encumbered */
