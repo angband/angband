@@ -768,7 +768,7 @@ static void project_monster_handler_HOLY_ORB(project_monster_handler_context_t *
 /* Plasma */
 static void project_monster_handler_PLASMA(project_monster_handler_context_t *context)
 {
-	project_monster_resist_other(context, RF_RES_PLAS, 3, TRUE, MON_MSG_RESIST);
+	project_monster_resist_other(context, RF_IM_PLASMA, 3, TRUE, MON_MSG_RESIST);
 }
 
 /* Nether -- see above */
@@ -778,7 +778,7 @@ static void project_monster_handler_NETHER(project_monster_handler_context_t *co
 	if (context->seen) {
 		/* Acquire knowledge of undead type and nether resistance */
 		rf_on(context->l_ptr->flags, RF_UNDEAD);
-		rf_on(context->l_ptr->flags, RF_RES_NETH);
+		rf_on(context->l_ptr->flags, RF_IM_NETHER);
 
 		/* If it isn't undead, acquire extra knowledge */
 		if (!rf_has(context->m_ptr->race->flags, RF_UNDEAD)) {
@@ -798,7 +798,7 @@ static void project_monster_handler_NETHER(project_monster_handler_context_t *co
 		context->hurt_msg = MON_MSG_IMMUNE;
 		context->dam = 0;
 	}
-	else if (rf_has(context->m_ptr->race->flags, RF_RES_NETH)) {
+	else if (rf_has(context->m_ptr->race->flags, RF_IM_NETHER)) {
 		context->hurt_msg = MON_MSG_RESIST;
 		context->dam *= 3;
 		context->dam /= (randint1(6)+6);
@@ -852,13 +852,13 @@ static void project_monster_handler_SOUND(project_monster_handler_context_t *con
 /* Disenchantment */
 static void project_monster_handler_DISEN(project_monster_handler_context_t *context)
 {
-	project_monster_resist_other(context, RF_RES_DISE, 3, TRUE, MON_MSG_RESIST);
+	project_monster_resist_other(context, RF_IM_DISEN, 3, TRUE, MON_MSG_RESIST);
 }
 
 /* Nexus */
 static void project_monster_handler_NEXUS(project_monster_handler_context_t *context)
 {
-	project_monster_resist_other(context, RF_RES_NEXUS, 3, TRUE, MON_MSG_RESIST);
+	project_monster_resist_other(context, RF_IM_NEXUS, 3, TRUE, MON_MSG_RESIST);
 }
 
 /* Force */

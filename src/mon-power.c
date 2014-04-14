@@ -298,9 +298,9 @@ static long eval_hp_adjust(monster_race *r_ptr)
 	if (resists >= 3)
 	{
 		if (rf_has(r_ptr->flags, RF_IM_WATER)) resists += 1;
-		if (rf_has(r_ptr->flags, RF_RES_NETH)) resists += 1;
-		if (rf_has(r_ptr->flags, RF_RES_NEXUS)) resists += 1;
-		if (rf_has(r_ptr->flags, RF_RES_DISE)) resists += 1;
+		if (rf_has(r_ptr->flags, RF_IM_NETHER)) resists += 1;
+		if (rf_has(r_ptr->flags, RF_IM_NEXUS)) resists += 1;
+		if (rf_has(r_ptr->flags, RF_IM_DISEN)) resists += 1;
 	}
 
 	/* Scale resists */

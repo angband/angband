@@ -1351,10 +1351,10 @@ static void lore_append_abilities(textblock *tb, const monster_race *race, const
 	list_index = LORE_INSERT_FLAG_DESCRIPTION(RF_IM_COLD);
 	list_index = LORE_INSERT_FLAG_DESCRIPTION(RF_IM_POIS);
 	list_index = LORE_INSERT_FLAG_DESCRIPTION(RF_IM_WATER);
-	list_index = LORE_INSERT_FLAG_DESCRIPTION(RF_RES_NETH);
-	list_index = LORE_INSERT_FLAG_DESCRIPTION(RF_RES_PLAS);
-	list_index = LORE_INSERT_FLAG_DESCRIPTION(RF_RES_NEXUS);
-	list_index = LORE_INSERT_FLAG_DESCRIPTION(RF_RES_DISE);
+	list_index = LORE_INSERT_FLAG_DESCRIPTION(RF_IM_NETHER);
+	list_index = LORE_INSERT_FLAG_DESCRIPTION(RF_IM_PLASMA);
+	list_index = LORE_INSERT_FLAG_DESCRIPTION(RF_IM_NEXUS);
+	list_index = LORE_INSERT_FLAG_DESCRIPTION(RF_IM_DISEN);
 
 	/* Note lack of vulnerability as a resistance */
 	list_index = LORE_INSERT_UNKNOWN_VULN(RF_HURT_LIGHT);
@@ -1381,10 +1381,10 @@ static void lore_append_abilities(textblock *tb, const monster_race *race, const
 		descs[list_index++] = lore_describe_race_flag(RF_HURT_COLD);
 	list_index = LORE_INSERT_UNKNOWN_VULN(RF_IM_POIS);
 	list_index = LORE_INSERT_UNKNOWN_VULN(RF_IM_WATER);
-	list_index = LORE_INSERT_UNKNOWN_VULN(RF_RES_NETH);
-	list_index = LORE_INSERT_UNKNOWN_VULN(RF_RES_PLAS);
-	list_index = LORE_INSERT_UNKNOWN_VULN(RF_RES_NEXUS);
-	list_index = LORE_INSERT_UNKNOWN_VULN(RF_RES_DISE);
+	list_index = LORE_INSERT_UNKNOWN_VULN(RF_IM_NETHER);
+	list_index = LORE_INSERT_UNKNOWN_VULN(RF_IM_PLASMA);
+	list_index = LORE_INSERT_UNKNOWN_VULN(RF_IM_NEXUS);
+	list_index = LORE_INSERT_UNKNOWN_VULN(RF_IM_DISEN);
 
 	if (list_index > 0) {
 		/* Output connecting text */
