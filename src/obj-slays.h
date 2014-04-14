@@ -1,8 +1,8 @@
 /*
- * File: obj-slays.h
- * Purpose: Structures and functions for dealing with slays and brands
+  \file obj-slays.h
+  \brief Structures and functions for dealing with slays and brands
  *
- * Copyright (c) 2010 Chris Carr
+ * Copyright (c) 2014 Chris Carr, Nick McConnell
  *
  * This work is free software; you can redistribute it and/or modify it
  * under the terms of either:
@@ -33,8 +33,8 @@ struct slay_cache {
 /*** Functions ***/
 void copy_slay(struct slay **dest, struct slay *source);
 void copy_brand(struct brand **dest, struct brand *source);
-	bool append_random_brand(struct brand *current, char **name);
-	bool append_random_slay(struct slay *current, char **name);
+bool append_random_brand(struct brand *current, char **name);
+bool append_random_slay(struct slay *current, char **name);
 int brand_count(struct brand *brands);
 int slay_count(struct slay *slays);
 struct brand *brand_collect(const object_type *obj1, const object_type *obj2,

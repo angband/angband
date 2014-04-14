@@ -1,8 +1,9 @@
 /*
- * File: slays.c
- * Purpose: encapsulation of slay_table and accessor functions for slays/brands
+  \file obj-slays.c
+  \brief Functions for manipulating slays/brands
  *
  * Copyright (c) 2010 Chris Carr and Peter Denison
+ * Copyright (c) 2014 Nick McConnell
  *
  * This work is free software; you can redistribute it and/or modify it
  * under the terms of either:
@@ -39,7 +40,10 @@ struct brand_info {
 };
 
 /**
- * Brand info - until there's a better place NRM
+ * Brand info
+ * The verbs here probably should go in list-elements.h, when that's been
+ * sorted properly, and there will also need to be a list of possibilities
+ * in obj-randart.c
  */
 const struct brand_info brand_names[] = {
 	{ "acid", "spits", "dissolve", "corrode", RF_IM_ACID },
@@ -56,7 +60,9 @@ struct slay_info {
 };
 
 /**
- * Slay info - until there's a better place NRM
+ * Slay info
+ * These should go into obj-randart.c, but can wait for brands to be done
+ * (because they're more complicated) - NRM
  */
 const struct slay_info slay_names[] = {
 	{ "evil creatures", RF_EVIL, 2 },
@@ -74,6 +80,9 @@ const struct slay_info slay_names[] = {
 
 /**
  * Copy all the slays from one structure to another
+ *
+ * \param dest the address the slays are going to
+ * \param the slays being copied
  */
 void copy_slay(struct slay **dest, struct slay *source)
 {
@@ -92,6 +101,9 @@ void copy_slay(struct slay **dest, struct slay *source)
 
 /**
  * Copy all the brands from one structure to another
+ *
+ * \param dest the address the brands are going to
+ * \param the brands being copied
  */
 void copy_brand(struct brand **dest, struct brand *source)
 {
@@ -108,6 +120,13 @@ void copy_brand(struct brand **dest, struct brand *source)
 	}
 }
 
+/**
+ * Append a random brand, currently to a randart
+ * This will later change so that selection is done elsewhere
+ *
+ * \param current the list of brands the object already has
+ * \param name the name to report for randart logging
+ */
 bool append_random_brand(struct brand *current, char **name)
 {
 	int pick;
@@ -136,6 +155,13 @@ bool append_random_brand(struct brand *current, char **name)
 	return TRUE;
 }
 
+/**
+ * Append a random slay, currently to a randart
+ * This will later change so that selection is done elsewhere
+ *
+ * \param current the list of slays the object already has
+ * \param name the name to report for randart logging
+ */
 bool append_random_slay(struct slay *current, char **name)
 {
 	int pick;
@@ -402,11 +428,12 @@ void object_notice_slays(object_type *o_ptr, const monster_type *m_ptr)
  *
  * \param o_ptr is the object being used to attack
  * \param m_ptr is the monster being attacked
- * \param best_s_ptr is the best applicable slay_table entry, or NULL if no
- *  slay already known
+ * \param brand_used is the brand that gave the best multiplier, or NULL
+ * \param slay_used is the slay that gave the best multiplier, or NULL
+ * \param verb is the verb used in the attack ("smite", etc)
  * \param real is whether this is a real attack (where we update lore) or a
  *  simulation (where we don't)
- * \param known_only is whether we are using all the object flags, or only
+ * \param known_only is whether we are using all the brands and slays, or only
  * the ones we *already* know about
  */
 void improve_attack_modifier(object_type *o_ptr, const monster_type *m_ptr,
@@ -494,6 +521,12 @@ bool react_to_slay(struct object *obj, const struct monster *mon)
 	return FALSE;
 }
 
+/**
+ * Determine whether two lists of brands are the same
+ *
+ * \param brand1
+ * \param brand2 the lists being compared
+ */
 bool brands_are_equal(struct brand *brand1, struct brand *brand2)
 {
 	struct brand *b1, *b2;
@@ -524,6 +557,12 @@ bool brands_are_equal(struct brand *brand1, struct brand *brand2)
 	return TRUE;
 }
 
+/**
+ * Determine whether two lists of slays are the same
+ *
+ * \param slay1
+ * \param slay2 the lists being compared
+ */
 bool slays_are_equal(struct slay *slay1, struct slay *slay2)
 {
 	struct slay *s1, *s2;
@@ -554,6 +593,9 @@ bool slays_are_equal(struct slay *slay1, struct slay *slay2)
 	return TRUE;
 }
 
+/**
+ * Remove a list of brands and de-allocate their memory
+ */
 void wipe_brands(struct brand *brands)
 {
 	struct brand *b = brands, *b1;
@@ -564,6 +606,9 @@ void wipe_brands(struct brand *brands)
 	}
 }
 
+/**
+ * Remove a list of slays and de-allocate their memory
+ */
 void wipe_slays(struct slay *slays)
 {
 	struct slay *s = slays, *s1;
@@ -576,9 +621,10 @@ void wipe_slays(struct slay *slays)
 
 
 /**
- * Check the slay cache for a combination of slays and return a slay value
+ * Check the slay cache for a combination of slays and brands
  * 
- * \param index is the set of slay flags to look for
+ * \param obj is the object the combination is on
+ * \return the power value of the combination
  */
 s32b check_slay_cache(const object_type *obj)
 {
@@ -597,8 +643,8 @@ s32b check_slay_cache(const object_type *obj)
 /**
  * Fill in a value in the slay cache. Return TRUE if a change is made.
  *
- * \param index is the set of slay flags whose value we are adding
- * \param value is the value of the slay flags in index
+ * \param obj is the object the combination is on
+ * \param value is the value of the slay flags on the object
  */
 bool fill_slay_cache(const object_type *obj, s32b value)
 {
@@ -617,8 +663,8 @@ bool fill_slay_cache(const object_type *obj, s32b value)
 }
 
 /**
- * Create a cache of slay combinations found on ego items, and the values of
- * these combinations. This is to speed up slay_power(), which will be called
+ * Create a cache of slay/brand combinations found on ego items, and the values
+ * of these combinations. This is to speed up slay_power(), which will be called
  * many times for ego items during the game.
  *
  * \param items is the set of ego types from which we are extracting slay
@@ -681,6 +727,9 @@ errr create_slay_cache(struct ego_item *items)
     return 0;
 }
 
+/**
+ * Free the slay cache
+ */
 void free_slay_cache(void)
 {
 	mem_free(slay_cache);
