@@ -11,11 +11,10 @@
 enum
 {
 	GF_NONE,
-	#define ELEM(a, b, c, d, e, col, f, g, h, i, j, k, l, m, fh, oh, mh, ph) \
-		GF_##a,
+	#define ELEM(a, b, c, d, e, col, f, g, h, i, j, k, fh, oh, mh, ph) GF_##a,
 	#include "list-elements.h"
 	#undef ELEM
-	#define PROJ_ENV(a, col, i, fh, oh, mh) GF_##a,
+	#define PROJ_ENV(a, col, fh, oh, mh) GF_##a,
 	#include "list-project-environs.h"
 	#undef PROJ_ENV
 	#define PROJ_MON(a, obv, mh) GF_##a, 

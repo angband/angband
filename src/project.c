@@ -1117,8 +1117,6 @@ static const struct gf_type {
 	int immunity;		/* object flag for total immunity */
 	bool side_immune;	/* whether immunity protects from ALL side effects */
 	int vuln;			/* object flag for vulnerability */
-	int mon_res;		/* monster flag for resistance */
-	int mon_vuln;		/* monster flag for vulnerability */
 	int obj_hates;		/* object flag for object vulnerability */
 	int obj_imm;		/* object flag for object immunity */
 	project_feature_handler_f feature_handler;
@@ -1126,8 +1124,8 @@ static const struct gf_type {
 	project_monster_handler_f monster_handler;
 	project_player_handler_f player_handler;
 } gf_table[] = {
-	{GF_NONE, NULL, 0, 0, {0, 0, 0, 0}, FALSE, TERM_WHITE, 0, 0, FALSE, 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL},
-	#define ELEM(a, b, c, d, e, col, f, g, h, i, j, k, l, m, fh, oh, mh, ph) { GF_##a, b, c, d, e, TRUE, col, f, g, h, i, j, k, l, m, fh, oh, mh, ph },
+	{GF_NONE, NULL, 0, 0, {0, 0, 0, 0}, FALSE, TERM_WHITE, 0, 0, FALSE, 0, 0, 0, NULL, NULL, NULL, NULL},
+	#define ELEM(a, b, c, d, e, col, f, g, h, i, j, k, fh, oh, mh, ph) { GF_##a, b, c, d, e, TRUE, col, f, g, h, i, j, k, fh, oh, mh, ph },
 	#define RV(b, x, y, m) {b, x, y, m}
 	#define FH(x) project_feature_handler_##x
 	#define OH(x) project_object_handler_##x
@@ -1137,25 +1135,25 @@ static const struct gf_type {
 	#undef ELEM
 	#undef RV
 	#undef PH
-#define PROJ_ENV(a, col, i, fh, oh, mh) { GF_##a, NULL, 0, 0, {0, 0, 0, 0}, FALSE, col, 0, 0, TRUE, i, 0, 0, 0, 0, fh, oh, mh, NULL },
+#define PROJ_ENV(a, col, fh, oh, mh) { GF_##a, NULL, 0, 0, {0, 0, 0, 0}, FALSE, col, 0, 0, TRUE, 0, 0, 0, fh, oh, mh, NULL },
 	#include "list-project-environs.h"
 	#undef PROJ_ENV
 	#undef FH
 	#undef OH
-	#define PROJ_MON(a, obv, mh) { GF_##a, NULL, 0, 0, {0, 0, 0, 0}, obv, TERM_WHITE, 0, 0, TRUE, 0, 0, 0, 0, 0, NULL, NULL, mh, NULL }, 
+	#define PROJ_MON(a, obv, mh) { GF_##a, NULL, 0, 0, {0, 0, 0, 0}, obv, TERM_WHITE, 0, 0, TRUE, 0, 0, 0, NULL, NULL, mh, NULL }, 
 	#include "list-project-monsters.h"
 	#undef PROJ_MON
 	#undef MH
-	{GF_MAX, NULL, 0, 0, {0, 0, 0, 0}, FALSE, TERM_WHITE, 0, 0, FALSE, 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL}
+	{GF_MAX, NULL, 0, 0, {0, 0, 0, 0}, FALSE, TERM_WHITE, 0, 0, FALSE, 0, 0, 0, NULL, NULL, NULL, NULL}
 };
 
 static const char *gf_name_list[] =
 {
 	"NONE",
-	#define ELEM(a, b, c, d, e, col, f, g, h, i, j, k, l, m, fh, oh, mh, ph) #a,
+	#define ELEM(a, b, c, d, e, col, f, g, h, i, j, k, fh, oh, mh, ph) #a,
 	#include "list-elements.h"
 	#undef ELEM
-	#define PROJ_ENV(a, col, i, fh, oh, mh) #a,
+	#define PROJ_ENV(a, col, fh, oh, mh) #a,
 	#include "list-project-environs.h"
 	#undef PROJ_ENV
 	#define PROJ_MON(a, obv, mh) #a, 
