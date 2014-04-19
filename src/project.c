@@ -1095,9 +1095,105 @@ typedef struct project_player_handler_context_s {
 } project_player_handler_context_t;
 typedef void (*project_player_handler_f)(project_player_handler_context_t *);
 
+static void project_player_handler_ACID(project_player_handler_context_t *context)
+{
+}
+
+static void project_player_handler_ELEC(project_player_handler_context_t *context)
+{
+}
+
+static void project_player_handler_FIRE(project_player_handler_context_t *context)
+{
+}
+
+static void project_player_handler_COLD(project_player_handler_context_t *context)
+{
+}
+
+static void project_player_handler_POIS(project_player_handler_context_t *context)
+{
+}
+
+static void project_player_handler_LIGHT(project_player_handler_context_t *context)
+{
+}
+
+static void project_player_handler_DARK(project_player_handler_context_t *context)
+{
+}
+
+static void project_player_handler_SOUND(project_player_handler_context_t *context)
+{
+}
+
+static void project_player_handler_SHARD(project_player_handler_context_t *context)
+{
+}
+
+static void project_player_handler_NEXUS(project_player_handler_context_t *context)
+{
+}
+
+static void project_player_handler_NETHER(project_player_handler_context_t *context)
+{
+}
+
+static void project_player_handler_CHAOS(project_player_handler_context_t *context)
+{
+}
+
+static void project_player_handler_DISEN(project_player_handler_context_t *context)
+{
+}
+
+static void project_player_handler_WATER(project_player_handler_context_t *context)
+{
+}
+
+static void project_player_handler_ICE(project_player_handler_context_t *context)
+{
+}
+
 static void project_player_handler_GRAVITY(project_player_handler_context_t *context)
 {
 	msg("Gravity warps around you.");
+}
+
+static void project_player_handler_INERTIA(project_player_handler_context_t *context)
+{
+}
+
+static void project_player_handler_FORCE(project_player_handler_context_t *context)
+{
+}
+
+static void project_player_handler_TIME(project_player_handler_context_t *context)
+{
+}
+
+static void project_player_handler_PLASMA(project_player_handler_context_t *context)
+{
+}
+
+static void project_player_handler_METEOR(project_player_handler_context_t *context)
+{
+}
+
+static void project_player_handler_MISSILE(project_player_handler_context_t *context)
+{
+}
+
+static void project_player_handler_MANA(project_player_handler_context_t *context)
+{
+}
+
+static void project_player_handler_HOLY_ORB(project_player_handler_context_t *context)
+{
+}
+
+static void project_player_handler_ARROW(project_player_handler_context_t *context)
+{
 }
 
 #pragma mark other functions
