@@ -29,12 +29,12 @@
  */
 static const struct mon_spell mon_spell_table[] =
 {
-    #define RSF(a, b, c, d, e, f, g, h, i, j, k, l, m, n) \
+    #define RSF(a, b, c, d, e, f, g, h, i, j, k, l, m, n)		\
 			{ RSF_##a, b, c, d, e, f, g, h, i, j, k, l, m, n },
-		#define RV(b, x, y, m) {b, x, y, m}
+	#define RV(b, x, y, m) {b, x, y, m}
     #include "list-mon-spells.h"
     #undef RSF
-		#undef RV
+	#undef RV
 };
 
 
@@ -44,12 +44,12 @@ static const struct mon_spell mon_spell_table[] =
  */
 static const struct spell_effect spell_effect_table[] =
 {
-    #define RSE(a, b, c, d, e, f, g, h, i, j, k) \
-			{ RSE_##a, b, c, d, e, f, g, h, i, j, k },
-		#define RV(b, x, y, m) {b, x, y, m}
+    #define RSE(a, b, c, d, e, f, g, h, i) \
+			{ RSE_##a, b, c, d, e, f, g, h, i },
+	#define RV(b, x, y, m) {b, x, y, m}
     #include "list-spell-effects.h"
     #undef RSE
-		#undef RV
+	#undef RV
 };
 
 
@@ -240,38 +240,22 @@ static int summon_monster_aux(int flag, struct monster *m_ptr, int rlev, int sum
  * \param m_ptr is the attacking monster
  * \param seen is whether @ can see it
  */
-static void do_side_effects(int spell, int dam, struct monster *m_ptr, bool seen)
+static void do_spell_effects(int spell, int dam, struct monster *m_ptr, bool seen)
 {
 	const struct spell_effect *re_ptr;
 	const struct mon_spell *rs_ptr = &mon_spell_table[spell];
 
-	int i, choice[99], dur = 0, j = 0, count = 0;
-	s32b d = 0;
+	int dur = 0, count = 0;
 
-	bool sustain = FALSE, perma = FALSE, chosen[RSE_MAX] = { 0 };
+	bool chosen[RSE_MAX] = { 0 };
 
 	/* Extract the monster level */
 	int rlev = ((m_ptr->race->level >= 1) ? m_ptr->race->level : 1);
 
 	/* First we note all the effects we'll be doing. */
-	for (re_ptr = spell_effect_table; re_ptr->index < RSE_MAX; re_ptr++) {
-		if ((re_ptr->method && (re_ptr->method == rs_ptr->index)) ||
-				(re_ptr->gf && (re_ptr->gf == rs_ptr->gf))) {
-
-			/* If we have a choice of effects, we create a cum freq table */
-			if (re_ptr->chance) {
-				for (i = j; i < (j + re_ptr->chance); i++)
-					choice[i] = re_ptr->index;
-				j = i;
-			}
-			else
-				chosen[re_ptr->index] = TRUE;
-		}
-	}
-
-	/* If we have built a cum freq table, choose an effect from it */
-	if (j)
-		chosen[choice[randint0(j)]] = TRUE;
+	for (re_ptr = spell_effect_table; re_ptr->index < RSE_MAX; re_ptr++)
+		if (re_ptr->method && (re_ptr->method == rs_ptr->index))
+			chosen[re_ptr->index] = TRUE;
 
 	/* Now we cycle through again to activate the chosen effects */
 	for (re_ptr = spell_effect_table; re_ptr->index < RSE_MAX; re_ptr++) {
@@ -290,15 +274,8 @@ static void do_side_effects(int spell, int dam, struct monster *m_ptr, bool seen
 				update_smart_learn(m_ptr, player, re_ptr->res_flag);
 
 			if ((rs_ptr->gf && check_side_immune(rs_ptr->gf)) ||
-					player_of_has(player, re_ptr->res_flag)) {
+				player_of_has(player, re_ptr->res_flag)) {
 				msg("You resist the effect!");
-				continue;
-			}
-
-			/* Allow saving throw if available */
-			if (re_ptr->save &&
-					randint0(100) < player->state.skills[SKILL_SAVE]) {
-				msg("You avoid the effect!");
 				continue;
 			}
 
@@ -484,7 +461,7 @@ void do_mon_spell(int spell, struct monster *m_ptr, bool seen)
 	else {
 		/* Note that non-projectable attacks are unresistable */
 		take_hit(player, dam, ddesc);
-		do_side_effects(spell, dam, m_ptr, seen);
+		do_spell_effects(spell, dam, m_ptr, seen);
 	}
 
 	return;
