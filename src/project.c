@@ -1084,6 +1084,66 @@ static void project_monster_handler_DISP_ALL(project_monster_handler_context_t *
 
 #pragma mark player handlers
 
+/**
+ * Drain stats at random
+ *
+ * \param num is the number of points to drain
+ * \param sustain is whether sustains will prevent draining
+ * \param perma is whether the drains are permanent
+ */
+static void project_player_drain_stats(int num, bool sustain, bool perma)
+{
+	int i, k = 0;
+	const char *act = NULL;
+
+	for (i = 0; i < num; i++) {
+		switch (randint1(5)) {
+			case 1: k = A_STR; act = "strong"; break;
+			case 2: k = A_INT; act = "bright"; break;
+			case 3: k = A_WIS; act = "wise"; break;
+			case 4: k = A_DEX; act = "agile"; break;
+			case 5: k = A_CON; act = "hale"; break;
+		}
+
+		if (sustain)
+			do_dec_stat(k, perma);
+		else {
+			msg("You're not as %s as you used to be...", act);
+			player_stat_dec(player, k, perma);
+		}
+	}
+
+	return;
+}
+
+/**
+ * Swap a random pair of stats
+ */
+static void project_player_swap_stats(void)
+{
+    int max1, cur1, max2, cur2, ii, jj;
+
+    msg("Your body starts to scramble...");
+
+    /* Pick a pair of stats */
+    ii = randint0(A_MAX);
+    for (jj = ii; jj == ii; jj = randint0(A_MAX)) /* loop */;
+
+    max1 = player->stat_max[ii];
+    cur1 = player->stat_cur[ii];
+    max2 = player->stat_max[jj];
+    cur2 = player->stat_cur[jj];
+
+    player->stat_max[ii] = max2;
+    player->stat_cur[ii] = cur2;
+    player->stat_max[jj] = max1;
+    player->stat_cur[jj] = cur1;
+
+    player->update |= (PU_BONUS);
+
+    return;
+}
+
 typedef struct project_player_handler_context_s {
 	const int who;
 	const int r;
@@ -1097,103 +1157,231 @@ typedef void (*project_player_handler_f)(project_player_handler_context_t *);
 
 static void project_player_handler_ACID(project_player_handler_context_t *context)
 {
+	inven_damage(player, GF_ACID, MIN(context->dam * 5, 300));
 }
 
 static void project_player_handler_ELEC(project_player_handler_context_t *context)
 {
+	inven_damage(player, GF_ELEC, MIN(context->dam * 5, 300));
 }
 
 static void project_player_handler_FIRE(project_player_handler_context_t *context)
 {
+	inven_damage(player, GF_FIRE, MIN(context->dam * 5, 300));
 }
 
 static void project_player_handler_COLD(project_player_handler_context_t *context)
 {
+	inven_damage(player, GF_COLD, MIN(context->dam * 5, 300));
 }
 
 static void project_player_handler_POIS(project_player_handler_context_t *context)
 {
+	(void)player_inc_timed(player, TMD_POISONED, 10 + randint0(context->dam),
+						   TRUE, TRUE);
 }
 
 static void project_player_handler_LIGHT(project_player_handler_context_t *context)
 {
+	if (player_of_has(player, OF_RES_LIGHT)) {
+		msg("You resist the effect!");
+		return;
+	}
+
+	(void)player_inc_timed(player, TMD_BLIND, 2 + randint1(5), TRUE, TRUE);
 }
 
 static void project_player_handler_DARK(project_player_handler_context_t *context)
 {
+	if (player_of_has(player, OF_RES_DARK)) {
+		msg("You resist the effect!");
+		return;
+	}
+
+	(void)player_inc_timed(player, TMD_BLIND, 2 + randint1(5), TRUE, TRUE);
 }
 
 static void project_player_handler_SOUND(project_player_handler_context_t *context)
 {
+	/* Stun */
+	if (!player_of_has(player, OF_PROT_STUN)) {
+		int duration = 5 + randint1(context->dam / 3);
+		if (duration > 35) duration = 35;
+		(void)player_inc_timed(player, TMD_STUN, duration, TRUE, TRUE);
+	}
 }
 
 static void project_player_handler_SHARD(project_player_handler_context_t *context)
 {
+	/* Cuts */
+	if (!player_of_has(player, OF_RES_SHARD))
+		(void)player_inc_timed(player, TMD_CUT, context->dam, TRUE, FALSE);
 }
 
 static void project_player_handler_NEXUS(project_player_handler_context_t *context)
 {
+	struct monster *mon = cave_monster(cave, context->who);
+
+	if (player_of_has(player, OF_RES_NEXUS)) {
+		msg("You resist the effect!");
+		return;
+	}
+
+	/* Stat swap */
+	if (one_in_(7)) {
+		if (randint0(100) < player->state.skills[SKILL_SAVE]) {
+			msg("You avoid the effect!");
+			return;
+		}
+		project_player_swap_stats();
+	}
+
+	/* Teleport to */
+	else if (one_in_(3))
+		teleport_player_to(mon->fy, mon->fx);
+
+	/* Teleport level */
+	else if (one_in_(4)) {
+		if (randint0(100) < player->state.skills[SKILL_SAVE]) {
+			msg("You avoid the effect!");
+			return;
+		}
+		teleport_player_level();
+	}
+
+	/* Teleport */
+	else
+		teleport_player(200);
 }
 
 static void project_player_handler_NETHER(project_player_handler_context_t *context)
 {
+	if (player_of_has(player, OF_RES_NETHER) || 
+		player_of_has(player, OF_HOLD_LIFE)) {
+		msg("You resist the effect!");
+		return;
+	}
+
+	/* Life draining */
+	msg("You feel your life force draining away!");
+	player_exp_lose(player, 200 + (player->exp / 100) * MON_DRAIN_LIFE, FALSE);
 }
 
 static void project_player_handler_CHAOS(project_player_handler_context_t *context)
 {
+	if (player_of_has(player, OF_RES_CHAOS)) {
+		msg("You resist the effect!");
+		return;
+	}
+
+	/* Hallucination */
+	(void)player_inc_timed(player, TMD_IMAGE, randint1(10), TRUE, FALSE);
+
+	/* Confusion */
+	(void)player_inc_timed(player, TMD_CONFUSED, 10 + randint0(20), TRUE, TRUE);
+
+	/* Life draining */
+	if (player_of_has(player, OF_HOLD_LIFE)) {
+		msg("You feel your life force draining away!");
+		player_exp_lose(player, 5000 + (player->exp / 100) * MON_DRAIN_LIFE,
+						FALSE);
+	}
 }
 
 static void project_player_handler_DISEN(project_player_handler_context_t *context)
 {
+	if (player_of_has(player, OF_RES_DISEN)) {
+		msg("You resist the effect!");
+		return;
+	}
+
+	/* Disenchant gear */
+	(void)apply_disenchant(0);
 }
 
 static void project_player_handler_WATER(project_player_handler_context_t *context)
 {
+	/* Confusion */
+	(void)player_inc_timed(player, TMD_CONFUSED, 5 + randint1(5), TRUE, TRUE);
+
+	/* Stun */
+	(void)player_inc_timed(player, TMD_STUN, randint0(40), TRUE, TRUE);
 }
 
 static void project_player_handler_ICE(project_player_handler_context_t *context)
 {
+	inven_damage(player, GF_COLD, MIN(context->dam * 5, 300));
+
+	/* Cuts */
+	if (!player_of_has(player, OF_RES_SHARD))
+		(void)player_inc_timed(player, TMD_CUT, damroll(5, 8), TRUE, FALSE);
+
+	/* Stun */
+	(void)player_inc_timed(player, TMD_STUN, randint0(15), TRUE, TRUE);
 }
 
 static void project_player_handler_GRAVITY(project_player_handler_context_t *context)
 {
 	msg("Gravity warps around you.");
+
+	/* Blink */
+	if (randint1(127) > player->lev)
+		teleport_player(5);
+
+	/* Slow */
+	(void)player_inc_timed(player, TMD_SLOW, 4 + randint0(4), TRUE, FALSE);
+
+	/* Stun */
+	if (!player_of_has(player, OF_PROT_STUN)) {
+		int duration = 5 + randint1(context->dam / 3);
+		if (duration > 35) duration = 35;
+		(void)player_inc_timed(player, TMD_STUN, duration, TRUE, TRUE);
+	}
 }
 
 static void project_player_handler_INERTIA(project_player_handler_context_t *context)
 {
+	/* Slow */
+	(void)player_inc_timed(player, TMD_SLOW, 4 + randint0(4), TRUE, FALSE);
 }
 
 static void project_player_handler_FORCE(project_player_handler_context_t *context)
 {
+	/* Stun */
+	(void)player_inc_timed(player, TMD_STUN, randint0(20), TRUE, TRUE);
 }
 
 static void project_player_handler_TIME(project_player_handler_context_t *context)
 {
+	/* Life draining */
+	if (one_in_(2)) {
+		msg("You feel your life force draining away!");
+		player_exp_lose(player, 100 + (player->exp / 100) * MON_DRAIN_LIFE, 
+						FALSE);
+	}
+
+	/* Drain some stats */
+	else if (!one_in_(5))
+		project_player_drain_stats(2, FALSE, FALSE);
+
+	/* Drain all stats */
+	else {
+		int i;
+		msg("You're not as powerful as you used to be...");
+
+		for (i = 0; i < A_MAX; i++)
+			player_stat_dec(player, i, FALSE);
+	}
 }
 
 static void project_player_handler_PLASMA(project_player_handler_context_t *context)
 {
-}
-
-static void project_player_handler_METEOR(project_player_handler_context_t *context)
-{
-}
-
-static void project_player_handler_MISSILE(project_player_handler_context_t *context)
-{
-}
-
-static void project_player_handler_MANA(project_player_handler_context_t *context)
-{
-}
-
-static void project_player_handler_HOLY_ORB(project_player_handler_context_t *context)
-{
-}
-
-static void project_player_handler_ARROW(project_player_handler_context_t *context)
-{
+	/* Stun */
+	if (!player_of_has(player, OF_PROT_STUN)) {
+		int duration = 5 + randint1(context->dam * 3 / 4);
+		if (duration > 35) duration = 35;
+		(void)player_inc_timed(player, TMD_STUN, duration, TRUE, TRUE);
+	}
 }
 
 #pragma mark other functions
@@ -1424,6 +1612,9 @@ int inven_damage(struct player *p, int type, int cperc)
 	char o_name[80];
 	
 	bool damage;
+
+	/* No chance means no damage */
+	if (cperc <= 0) return 0;
 
 	/* Count the casualties */
 	k = 0;
@@ -2314,15 +2505,16 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ)
 	if (!seen)
 		msg("You are hit by %s!", gf_ptr->desc);
 
-	if (player_handler != NULL)
-		player_handler(&context);
-
-	obvious = context.obvious;
-
 	/* Adjust damage for resistance, immunity or vulnerability, and apply it */
 	dam = adjust_dam(player, typ, dam, RANDOMISE, check_for_resist(player, typ, NULL, TRUE));
 	if (dam)
 		take_hit(player, dam, killer);
+
+	/* Handle side effects */
+	if (player_handler != NULL)
+		player_handler(&context);
+
+	obvious = context.obvious;
 
 	/* Disturb */
 	disturb(player, 1);

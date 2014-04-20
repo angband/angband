@@ -104,66 +104,6 @@ static int hp_dam(int spell, int hp)
 }
 
 /**
- * Drain stats at random
- *
- * \param num is the number of points to drain
- * \param sustain is whether sustains will prevent draining
- * \param perma is whether the drains are permanent
- */
-static void drain_stats(int num, bool sustain, bool perma)
-{
-	int i, k = 0;
-	const char *act = NULL;
-
-	for (i = 0; i < num; i++) {
-		switch (randint1(5)) {
-			case 1: k = A_STR; act = "strong"; break;
-			case 2: k = A_INT; act = "bright"; break;
-			case 3: k = A_WIS; act = "wise"; break;
-			case 4: k = A_DEX; act = "agile"; break;
-			case 5: k = A_CON; act = "hale"; break;
-		}
-
-		if (sustain)
-			do_dec_stat(k, perma);
-		else {
-			msg("You're not as %s as you used to be...", act);
-			player_stat_dec(player, k, perma);
-		}
-	}
-
-	return;
-}
-
-/**
- * Swap a random pair of stats
- */
-static void swap_stats(void)
-{
-    int max1, cur1, max2, cur2, ii, jj;
-
-    msg("Your body starts to scramble...");
-
-    /* Pick a pair of stats */
-    ii = randint0(A_MAX);
-    for (jj = ii; jj == ii; jj = randint0(A_MAX)) /* loop */;
-
-    max1 = player->stat_max[ii];
-    cur1 = player->stat_cur[ii];
-    max2 = player->stat_max[jj];
-    cur2 = player->stat_cur[jj];
-
-    player->stat_max[ii] = max2;
-    player->stat_cur[ii] = cur2;
-    player->stat_max[jj] = max1;
-    player->stat_cur[jj] = cur1;
-
-    player->update |= (PU_BONUS);
-
-    return;
-}
-
-/**
  * Drain mana from the player, healing the caster.
  *
  * \param m_ptr is the monster casting
@@ -381,13 +321,6 @@ static void do_side_effects(int spell, int dam, struct monster *m_ptr, bool seen
 
 			} else {
 				switch (re_ptr->flag) {
-					case S_INV_DAM:
-						if (dam > 0) {
-							int rand_dam = dam * randcalc(re_ptr->dam, 0, RANDOMISE);
-							inven_damage(player, re_ptr->gf, MIN(rand_dam, 300));
-						}
-						break;
-
 					case S_TELEPORT: /* m_bonus is used as a clev filter */
 						if (!re_ptr->dam.m_bonus || 
 								randint1(re_ptr->dam.m_bonus) > player->lev)
@@ -406,40 +339,6 @@ static void do_side_effects(int spell, int dam, struct monster *m_ptr, bool seen
 					case S_TELE_SELF:
 						teleport_away(m_ptr, randcalc(re_ptr->base, 0,
 							RANDOMISE));
-						break;
-
-					case S_DRAIN_LIFE:
-						d = re_ptr->base.base + (player->exp *
-							re_ptr->base.sides / 100) * MON_DRAIN_LIFE;
-
-						msg("You feel your life force draining away!");
-						player_exp_lose(player, d, FALSE);
-						break;
-
-					case S_DRAIN_STAT: /* m_bonus is used as a flag */
-						if (re_ptr->dam.m_bonus > 0)
-							sustain = TRUE;
-
-						if (abs(re_ptr->dam.m_bonus) > 1)
-							perma = TRUE;
-
-						drain_stats(randcalc(re_ptr->base, 0, RANDOMISE),
-							sustain, perma);
-						break;
-
-					case S_SWAP_STAT:
-						swap_stats();
-						break;
-
-					case S_DRAIN_ALL:
-						msg("You're not as powerful as you used to be...");
-
-						for (i = 0; i < A_MAX; i++)
-							player_stat_dec(player, i, FALSE);
-						break;
-
-					case S_DISEN:
-						(void)apply_disenchant(0);
 						break;
 
 					case S_DRAIN_MANA:
@@ -582,10 +481,11 @@ void do_mon_spell(int spell, struct monster *m_ptr, bool seen)
 		(void)project(m_ptr->midx, rad, player->py, player->px, dam, rs_ptr->gf, flag, 0, 0);
 		monster_learn_resists(m_ptr, player, rs_ptr->gf);
 	}
-	else /* Note that non-projectable attacks are unresistable */
+	else {
+		/* Note that non-projectable attacks are unresistable */
 		take_hit(player, dam, ddesc);
-
-	do_side_effects(spell, dam, m_ptr, seen);
+		do_side_effects(spell, dam, m_ptr, seen);
+	}
 
 	return;
 }
