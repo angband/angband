@@ -1157,21 +1157,25 @@ typedef void (*project_player_handler_f)(project_player_handler_context_t *);
 
 static void project_player_handler_ACID(project_player_handler_context_t *context)
 {
+	if (player_of_has(player, OF_IM_ACID)) return;
 	inven_damage(player, GF_ACID, MIN(context->dam * 5, 300));
 }
 
 static void project_player_handler_ELEC(project_player_handler_context_t *context)
 {
+	if (player_of_has(player, OF_IM_ELEC)) return;
 	inven_damage(player, GF_ELEC, MIN(context->dam * 5, 300));
 }
 
 static void project_player_handler_FIRE(project_player_handler_context_t *context)
 {
+	if (player_of_has(player, OF_IM_FIRE)) return;
 	inven_damage(player, GF_FIRE, MIN(context->dam * 5, 300));
 }
 
 static void project_player_handler_COLD(project_player_handler_context_t *context)
 {
+	if (player_of_has(player, OF_IM_COLD)) return;
 	inven_damage(player, GF_COLD, MIN(context->dam * 5, 300));
 }
 
@@ -1399,7 +1403,6 @@ static const struct gf_type {
 	byte color;			/* */
 	int opp;			/* timed flag for temporary resistance ("opposition") */
 	int immunity;		/* object flag for total immunity */
-	bool side_immune;	/* whether immunity protects from ALL side effects */
 	int vuln;			/* object flag for vulnerability */
 	int obj_hates;		/* object flag for object vulnerability */
 	int obj_imm;		/* object flag for object immunity */
@@ -1408,8 +1411,8 @@ static const struct gf_type {
 	project_monster_handler_f monster_handler;
 	project_player_handler_f player_handler;
 } gf_table[] = {
-	{GF_NONE, NULL, 0, 0, {0, 0, 0, 0}, FALSE, TERM_WHITE, 0, 0, FALSE, 0, 0, 0, NULL, NULL, NULL, NULL},
-	#define ELEM(a, b, c, d, e, col, f, g, h, i, j, k, fh, oh, mh, ph) { GF_##a, b, c, d, e, TRUE, col, f, g, h, i, j, k, fh, oh, mh, ph },
+	{GF_NONE, NULL, 0, 0, {0, 0, 0, 0}, FALSE, TERM_WHITE, 0, 0, FALSE, 0, 0, NULL, NULL, NULL, NULL},
+	#define ELEM(a, b, c, d, e, col, f, g, h, i, j, fh, oh, mh, ph) { GF_##a, b, c, d, e, TRUE, col, f, g, h, i, j, fh, oh, mh, ph },
 	#define RV(b, x, y, m) {b, x, y, m}
 	#define FH(x) project_feature_handler_##x
 	#define OH(x) project_object_handler_##x
@@ -1419,22 +1422,22 @@ static const struct gf_type {
 	#undef ELEM
 	#undef RV
 	#undef PH
-#define PROJ_ENV(a, col, fh, oh, mh) { GF_##a, NULL, 0, 0, {0, 0, 0, 0}, FALSE, col, 0, 0, TRUE, 0, 0, 0, fh, oh, mh, NULL },
+#define PROJ_ENV(a, col, fh, oh, mh) { GF_##a, NULL, 0, 0, {0, 0, 0, 0}, FALSE, col, 0, 0, TRUE, 0, 0, fh, oh, mh, NULL },
 	#include "list-project-environs.h"
 	#undef PROJ_ENV
 	#undef FH
 	#undef OH
-	#define PROJ_MON(a, obv, mh) { GF_##a, NULL, 0, 0, {0, 0, 0, 0}, obv, TERM_WHITE, 0, 0, TRUE, 0, 0, 0, NULL, NULL, mh, NULL }, 
+	#define PROJ_MON(a, obv, mh) { GF_##a, NULL, 0, 0, {0, 0, 0, 0}, obv, TERM_WHITE, 0, 0, TRUE, 0, 0, NULL, NULL, mh, NULL }, 
 	#include "list-project-monsters.h"
 	#undef PROJ_MON
 	#undef MH
-	{GF_MAX, NULL, 0, 0, {0, 0, 0, 0}, FALSE, TERM_WHITE, 0, 0, FALSE, 0, 0, 0, NULL, NULL, NULL, NULL}
+	{GF_MAX, NULL, 0, 0, {0, 0, 0, 0}, FALSE, TERM_WHITE, 0, 0, FALSE, 0, 0, NULL, NULL, NULL, NULL}
 };
 
 static const char *gf_name_list[] =
 {
 	"NONE",
-	#define ELEM(a, b, c, d, e, col, f, g, h, i, j, k, fh, oh, mh, ph) #a,
+	#define ELEM(a, b, c, d, e, col, f, g, h, i, j, fh, oh, mh, ph) #a,
 	#include "list-elements.h"
 	#undef ELEM
 	#define PROJ_ENV(a, col, fh, oh, mh) #a,
@@ -1538,25 +1541,6 @@ int check_for_resist(struct player *p, int type, bitflag *flags, bool real)
 		wieldeds_notice_flag(p, gf_ptr->vuln);
 
 	return result;
-}
-
-/**
- * Check whether the player is immune to side effects of a GF_ type.
- *
- * \param type is the GF_ type we are checking.
- */
-bool check_side_immune(int type)
-{
-	const struct gf_type *gf_ptr = &gf_table[type];
-
-	if (gf_ptr->immunity) {
-		if (gf_ptr->side_immune && player_of_has(player, gf_ptr->immunity))
-			return TRUE;
-	} else if ((gf_ptr->resist && player_of_has(player, gf_ptr->resist)) ||
-				(gf_ptr->opp && player->timed[gf_ptr->opp]))
-		return TRUE;
-
-	return FALSE;
 }
 
 /**

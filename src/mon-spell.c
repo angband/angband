@@ -263,7 +263,6 @@ static void do_spell_effects(int spell, int dam, struct monster *m_ptr, bool see
 
 			/*
 			 * Check for resistance - there are three possibilities:
-			 * 1. Immunity to the attack type if side_immune is TRUE
 			 * 2. Resistance to the attack type if it affords no immunity
 			 * 3. Resistance to the specific side-effect
 			 *
@@ -273,8 +272,7 @@ static void do_spell_effects(int spell, int dam, struct monster *m_ptr, bool see
 			if (re_ptr->res_flag)
 				update_smart_learn(m_ptr, player, re_ptr->res_flag);
 
-			if ((rs_ptr->gf && check_side_immune(rs_ptr->gf)) ||
-				player_of_has(player, re_ptr->res_flag)) {
+			if (player_of_has(player, re_ptr->res_flag)) {
 				msg("You resist the effect!");
 				continue;
 			}

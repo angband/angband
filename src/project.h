@@ -11,7 +11,7 @@
 enum
 {
 	GF_NONE,
-	#define ELEM(a, b, c, d, e, col, f, g, h, i, j, k, fh, oh, mh, ph) GF_##a,
+	#define ELEM(a, b, c, d, e, col, f, g, h, i, j, fh, oh, mh, ph) GF_##a,
 	#include "list-elements.h"
 	#undef ELEM
 	#define PROJ_ENV(a, col, fh, oh, mh) GF_##a,
@@ -92,7 +92,6 @@ extern wchar_t gf_to_char[GF_MAX][BOLT_MAX];
 int gf_name_to_idx(const char *name);
 const char *gf_idx_to_name(int type);
 int check_for_resist(struct player *p, int type, bitflag *flags, bool real);
-bool check_side_immune(int type);
 int inven_damage(struct player *p, int type, int cperc);
 int adjust_dam(struct player *p, int type, int dam, aspect dam_aspect, int resist);
 void monster_learn_resists(struct monster *m, struct player *p, int type);
