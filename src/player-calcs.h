@@ -1,6 +1,6 @@
 /**
- \file player/calcs.h
- \brief Player status calculation, signalling ui events based on status changes.
+   \file player/calcs.h
+   \brief Player temporary status structures.
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  *

@@ -1,6 +1,7 @@
 /**
- \file player/calcs.c
- \brief Player status calculation, signalling ui events based on status changes.
+   \file player/calcs.c
+   \brief Player status calculation, signalling ui events based on 
+   status changes.
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  *

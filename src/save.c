@@ -493,7 +493,6 @@ void wr_player(void)
 	wr_s16b(player->food);
 	wr_s16b(player->energy);
 	wr_s16b(player->word_recall);
-	wr_s16b(player->state.see_infra);
 	wr_byte(player->confusing);
 	wr_byte(player->searching);
 
