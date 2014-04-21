@@ -516,7 +516,7 @@ void lore_do_probe(struct monster *m)
 
 	/* Update monster recall window */
 	if (player->monster_race == m->race)
-		player->redraw |= (PR_MONSTER);
+		player->upkeep->redraw |= (PR_MONSTER);
 }
 
 /**
@@ -551,7 +551,7 @@ void lore_treasure(struct monster *m_ptr, int num_item, int num_gold)
 
 	/* Update monster recall window */
 	if (player->monster_race == m_ptr->race)
-		player->redraw |= (PR_MONSTER);
+		player->upkeep->redraw |= (PR_MONSTER);
 }
 
 /**

@@ -281,13 +281,13 @@ static void melee_effect_handler_drain_charges(melee_effect_handler_context_t *c
 
 			/* Redraw (later) if needed */
 			if (player->health_who == monster)
-				player->redraw |= (PR_HEALTH);
+				player->upkeep->redraw |= (PR_HEALTH);
 
 			/* Combine / Reorder the pack */
-			player->notice |= (PN_COMBINE | PN_REORDER);
+			player->upkeep->notice |= (PN_COMBINE | PN_REORDER);
 
 			/* Redraw stuff */
-			player->redraw |= (PR_INVEN);
+			player->upkeep->redraw |= (PR_INVEN);
 
 			/* Affect only a single inventory slot */
 			break;
@@ -360,7 +360,7 @@ static void melee_effect_handler_eat_gold(melee_effect_handler_context_t *contex
         }
 
         /* Redraw gold */
-        player->redraw |= (PR_GOLD);
+        player->upkeep->redraw |= (PR_GOLD);
 
         /* Blink away */
         context->blinked = TRUE;
@@ -527,7 +527,7 @@ static void melee_effect_handler_eat_light(melee_effect_handler_context_t *conte
 		}
 
 		/* Redraw stuff */
-		context->p->redraw |= (PR_EQUIP);
+		context->p->upkeep->redraw |= (PR_EQUIP);
 	}
 }
 

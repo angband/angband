@@ -1,7 +1,6 @@
-/*
- * File: player/calcs.c
- * Purpose: Player status calculation, signalling ui events based on status
- *          changes.
+/**
+ \file player/calcs.c
+ \brief Player status calculation, signalling ui events based on status changes.
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  *
@@ -1120,7 +1119,7 @@ static void calc_spells(void)
 		}
 
 		/* Redraw Study Status */
-		player->redraw |= (PR_STUDY | PR_OBJECT);
+		player->upkeep->redraw |= (PR_STUDY | PR_OBJECT);
 	}
 }
 
@@ -1227,7 +1226,7 @@ static void calc_mana(void)
 		}
 
 		/* Display mana later */
-		player->redraw |= (PR_MANA);
+		player->upkeep->redraw |= (PR_MANA);
 	}
 
 	/* Hack -- handle "xtra" mode */
@@ -1296,7 +1295,7 @@ static void calc_hitpoints(void)
 		}
 
 		/* Display hitpoints (later) */
-		player->redraw |= (PR_HP);
+		player->upkeep->redraw |= (PR_HP);
 	}
 }
 
@@ -1322,7 +1321,7 @@ static void calc_torch(void)
 		if (old_light != new_light) {
 			/* Update the visuals */
 			player->state.cur_light = new_light;
-			player->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
+			player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 		}
 		return;
 	}
@@ -1360,7 +1359,7 @@ static void calc_torch(void)
 	if (old_light != new_light) {
 		/* Update the visuals */
 		player->state.cur_light = new_light;
-		player->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
+		player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 	}
 }
 
@@ -2029,14 +2028,14 @@ static void update_bonuses(void)
 		if (state->stat_top[i] != old.stat_top[i])
 		{
 			/* Redisplay the stats later */
-			player->redraw |= (PR_STATS);
+			player->upkeep->redraw |= (PR_STATS);
 		}
 
 		/* Notice changes */
 		if (state->stat_use[i] != old.stat_use[i])
 		{
 			/* Redisplay the stats later */
-			player->redraw |= (PR_STATS);
+			player->upkeep->redraw |= (PR_STATS);
 		}
 
 		/* Notice changes */
@@ -2045,7 +2044,7 @@ static void update_bonuses(void)
 			/* Change in CON affects Hitpoints */
 			if (i == A_CON)
 			{
-				player->update |= (PU_HP);
+				player->upkeep->update |= (PU_HP);
 			}
 
 			/* Change in INT may affect Mana/Spells */
@@ -2053,7 +2052,7 @@ static void update_bonuses(void)
 			{
 				if (player->class->spell_stat == A_INT)
 				{
-					player->update |= (PU_MANA | PU_SPELLS);
+					player->upkeep->update |= (PU_MANA | PU_SPELLS);
 				}
 			}
 
@@ -2062,7 +2061,7 @@ static void update_bonuses(void)
 			{
 				if (player->class->spell_stat == A_WIS)
 				{
-					player->update |= (PU_MANA | PU_SPELLS);
+					player->upkeep->update |= (PU_MANA | PU_SPELLS);
 				}
 			}
 		}
@@ -2073,28 +2072,28 @@ static void update_bonuses(void)
 	if (of_has(state->flags, OF_TELEPATHY) != of_has(old.flags, OF_TELEPATHY))
 	{
 		/* Update monster visibility */
-		player->update |= (PU_MONSTERS);
+		player->upkeep->update |= (PU_MONSTERS);
 	}
 
 	/* Hack -- See Invis Change */
 	if (of_has(state->flags, OF_SEE_INVIS) != of_has(old.flags, OF_SEE_INVIS))
 	{
 		/* Update monster visibility */
-		player->update |= (PU_MONSTERS);
+		player->upkeep->update |= (PU_MONSTERS);
 	}
 
 	/* Redraw speed (if needed) */
 	if (state->speed != old.speed)
 	{
 		/* Redraw speed */
-		player->redraw |= (PR_SPEED);
+		player->upkeep->redraw |= (PR_SPEED);
 	}
 
 	/* Redraw armor (if needed) */
 	if ((state->dis_ac != old.dis_ac) || (state->dis_to_a != old.dis_to_a))
 	{
 		/* Redraw */
-		player->redraw |= (PR_ARMOR);
+		player->upkeep->redraw |= (PR_ARMOR);
 	}
 
 	/* Hack -- handle "xtra" mode */
@@ -2145,52 +2144,52 @@ static void update_bonuses(void)
 /*
  * Handle "player->notice"
  */
-void notice_stuff(struct player *p)
+void notice_stuff(struct player_upkeep *upkeep)
 {
 	/* Notice stuff */
-	if (!p->notice) return;
+	if (!upkeep->notice) return;
 
 
 	/* Deal with autoinscribe stuff */
-	if (p->notice & PN_AUTOINSCRIBE)
+	if (upkeep->notice & PN_AUTOINSCRIBE)
 	{
-		p->notice &= ~(PN_AUTOINSCRIBE);
+		upkeep->notice &= ~(PN_AUTOINSCRIBE);
 		autoinscribe_pack();
 		autoinscribe_ground();
 	}
 
 	/* Deal with squelch stuff */
-	if (p->notice & PN_SQUELCH)
+	if (upkeep->notice & PN_SQUELCH)
 	{
-		p->notice &= ~(PN_SQUELCH);
+		upkeep->notice &= ~(PN_SQUELCH);
 		squelch_drop();
 	}
 
 	/* Combine the pack */
-	if (p->notice & PN_COMBINE)
+	if (upkeep->notice & PN_COMBINE)
 	{
-		p->notice &= ~(PN_COMBINE);
+		upkeep->notice &= ~(PN_COMBINE);
 		combine_pack();
 	}
 
 	/* Reorder the pack */
-	if (p->notice & PN_REORDER)
+	if (upkeep->notice & PN_REORDER)
 	{
-		p->notice &= ~(PN_REORDER);
+		upkeep->notice &= ~(PN_REORDER);
 		reorder_pack();
 	}
 
 	/* Sort the quiver */
-	if (p->notice & PN_SORT_QUIVER)
+	if (upkeep->notice & PN_SORT_QUIVER)
 	{
-		p->notice &= ~(PN_SORT_QUIVER);
+		upkeep->notice &= ~(PN_SORT_QUIVER);
 		sort_quiver();
 	}
 
 	/* Dump the monster messages */
-	if (p->notice & PN_MON_MESSAGE)
+	if (upkeep->notice & PN_MON_MESSAGE)
 	{
-		p->notice &= ~(PN_MON_MESSAGE);
+		upkeep->notice &= ~(PN_MON_MESSAGE);
 
 		/* Make sure this comes after all of the monster messages */
 		flush_all_monster_messages();
@@ -2198,41 +2197,41 @@ void notice_stuff(struct player *p)
 }
 
 /*
- * Handle "player->update"
+ * Handle "player->upkeep->update"
  */
-void update_stuff(struct player *p)
+void update_stuff(struct player_upkeep *upkeep)
 {
 	/* Update stuff */
-	if (!p->update) return;
+	if (!upkeep->update) return;
 
 
-	if (p->update & (PU_BONUS))
+	if (upkeep->update & (PU_BONUS))
 	{
-		p->update &= ~(PU_BONUS);
+		upkeep->update &= ~(PU_BONUS);
 		update_bonuses();
 	}
 
-	if (p->update & (PU_TORCH))
+	if (upkeep->update & (PU_TORCH))
 	{
-		p->update &= ~(PU_TORCH);
+		upkeep->update &= ~(PU_TORCH);
 		calc_torch();
 	}
 
-	if (p->update & (PU_HP))
+	if (upkeep->update & (PU_HP))
 	{
-		p->update &= ~(PU_HP);
+		upkeep->update &= ~(PU_HP);
 		calc_hitpoints();
 	}
 
-	if (p->update & (PU_MANA))
+	if (upkeep->update & (PU_MANA))
 	{
-		p->update &= ~(PU_MANA);
+		upkeep->update &= ~(PU_MANA);
 		calc_mana();
 	}
 
-	if (p->update & (PU_SPELLS))
+	if (upkeep->update & (PU_SPELLS))
 	{
-		p->update &= ~(PU_SPELLS);
+		upkeep->update &= ~(PU_SPELLS);
 		calc_spells();
 	}
 
@@ -2245,49 +2244,49 @@ void update_stuff(struct player *p)
 	if (character_icky) return;
 
 
-	if (p->update & (PU_FORGET_VIEW))
+	if (upkeep->update & (PU_FORGET_VIEW))
 	{
-		p->update &= ~(PU_FORGET_VIEW);
+		upkeep->update &= ~(PU_FORGET_VIEW);
 		forget_view(cave);
 	}
 
-	if (p->update & (PU_UPDATE_VIEW))
+	if (upkeep->update & (PU_UPDATE_VIEW))
 	{
-		p->update &= ~(PU_UPDATE_VIEW);
-		update_view(cave, p);
+		upkeep->update &= ~(PU_UPDATE_VIEW);
+		update_view(cave, player);
 	}
 
 
-	if (p->update & (PU_FORGET_FLOW))
+	if (upkeep->update & (PU_FORGET_FLOW))
 	{
-		p->update &= ~(PU_FORGET_FLOW);
+		upkeep->update &= ~(PU_FORGET_FLOW);
 		cave_forget_flow(cave);
 	}
 
-	if (p->update & (PU_UPDATE_FLOW))
+	if (upkeep->update & (PU_UPDATE_FLOW))
 	{
-		p->update &= ~(PU_UPDATE_FLOW);
+		upkeep->update &= ~(PU_UPDATE_FLOW);
 		cave_update_flow(cave);
 	}
 
 
-	if (p->update & (PU_DISTANCE))
+	if (upkeep->update & (PU_DISTANCE))
 	{
-		p->update &= ~(PU_DISTANCE);
-		p->update &= ~(PU_MONSTERS);
+		upkeep->update &= ~(PU_DISTANCE);
+		upkeep->update &= ~(PU_MONSTERS);
 		update_monsters(TRUE);
 	}
 
-	if (p->update & (PU_MONSTERS))
+	if (upkeep->update & (PU_MONSTERS))
 	{
-		p->update &= ~(PU_MONSTERS);
+		upkeep->update &= ~(PU_MONSTERS);
 		update_monsters(FALSE);
 	}
 
 
-	if (p->update & (PU_PANEL))
+	if (upkeep->update & (PU_PANEL))
 	{
-		p->update &= ~(PU_PANEL);
+		upkeep->update &= ~(PU_PANEL);
 		event_signal(EVENT_PLAYERMOVED);
 	}
 }
@@ -2334,14 +2333,14 @@ static const struct flag_event_trigger redraw_events[] =
 };
 
 /*
- * Handle "player->redraw"
+ * Handle "player->upkeep->redraw"
  */
-void redraw_stuff(struct player *p)
+void redraw_stuff(struct player_upkeep *upkeep)
 {
 	size_t i;
 
 	/* Redraw stuff */
-	if (!p->redraw) return;
+	if (!upkeep->redraw) return;
 
 	/* Character is not ready yet, no screen updates */
 	if (!character_generated) return;
@@ -2354,18 +2353,18 @@ void redraw_stuff(struct player *p)
 	{
 		const struct flag_event_trigger *hnd = &redraw_events[i];
 
-		if (p->redraw & hnd->flag)
+		if (upkeep->redraw & hnd->flag)
 			event_signal(hnd->event);
 	}
 
 	/* Then the ones that require parameters to be supplied. */
-	if (p->redraw & PR_MAP)
+	if (upkeep->redraw & PR_MAP)
 	{
 		/* Mark the whole map to be redrawn */
 		event_signal_point(EVENT_MAP, -1, -1);
 	}
 
-	p->redraw = 0;
+	upkeep->redraw = 0;
 
 	/*
 	 * Do any plotting, etc. delayed from earlier - this set of updates
@@ -2376,11 +2375,11 @@ void redraw_stuff(struct player *p)
 
 
 /*
- * Handle "player->update" and "player->redraw"
+ * Handle "player->upkeep->update" and "player->upkeep->redraw"
  */
-void handle_stuff(struct player *p)
+void handle_stuff(struct player_upkeep *upkeep)
 {
-	if (p->update) update_stuff(p);
-	if (p->redraw) redraw_stuff(p);
+	if (upkeep->update) update_stuff(upkeep);
+	if (upkeep->redraw) redraw_stuff(upkeep);
 }
 

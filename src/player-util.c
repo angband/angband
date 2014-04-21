@@ -41,7 +41,7 @@ void take_hit(struct player *p, int dam, const char *kb_str)
 	p->chp -= dam;
 
 	/* Display the hitpoints */
-	p->redraw |= (PR_HP);
+	p->upkeep->redraw |= (PR_HP);
 
 	/* Dead player */
 	if (p->chp < 0)
@@ -461,7 +461,7 @@ void player_resting_step_turn(struct player *p)
 		p->resting--;
 
 		/* Redraw the state */
-		p->redraw |= (PR_STATE);
+		p->upkeep->redraw |= (PR_STATE);
 	}
 
 	/* Take a turn */
@@ -561,7 +561,7 @@ void disturb(struct player *p, int stop_search)
 	/* Cancel Resting */
 	if (player_is_resting(p)) {
 		player_resting_cancel(p);
-		p->redraw |= PR_STATE;
+		p->upkeep->redraw |= PR_STATE;
 	}
 
 	/* Cancel running */
@@ -570,15 +570,15 @@ void disturb(struct player *p, int stop_search)
 
 		/* Check for new panel if appropriate */
 		if (OPT(center_player)) verify_panel();
-		p->update |= PU_TORCH;
+		p->upkeep->update |= PU_TORCH;
 	}
 
 	/* Cancel searching if requested */
 	if (stop_search && p->searching)
 	{
 		p->searching = FALSE;
-		p->update |= PU_BONUS;
-		p->redraw |= PR_STATE;
+		p->upkeep->update |= PU_BONUS;
+		p->upkeep->redraw |= PR_STATE;
 	}
 
 	/* Flush input */

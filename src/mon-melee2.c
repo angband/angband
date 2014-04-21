@@ -1642,7 +1642,7 @@ static void process_monster(struct chunk *c, struct monster *m_ptr)
 			if (m_ptr->ml && !m_ptr->unaware) {
 				
 				/* Hack -- Update the health bar */
-				if (player->health_who == m_ptr) player->redraw |= (PR_HEALTH);
+				if (player->health_who == m_ptr) player->upkeep->redraw |= (PR_HEALTH);
 			}
 
 			/* Efficiency XXX XXX */
@@ -1682,7 +1682,8 @@ static void process_monster(struct chunk *c, struct monster *m_ptr)
 					msg("%s wakes up.", m_name);
 
 					/* Hack -- Update the health bar */
-					if (player->health_who == m_ptr) player->redraw |= (PR_HEALTH);
+					if (player->health_who == m_ptr)
+						player->upkeep->redraw |= (PR_HEALTH);
 
 					/* Hack -- Count the wakings */
 					if (l_ptr->wake < MAX_UCHAR)
@@ -2173,10 +2174,10 @@ static void process_monster(struct chunk *c, struct monster *m_ptr)
 	/* Notice changes in view */
 	if (do_view) {
 		/* Update the visuals */
-		player->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
+		player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 
 		/* Fully update the flow XXX XXX XXX */
-		player->update |= (PU_FORGET_FLOW | PU_UPDATE_FLOW);
+		player->upkeep->update |= (PU_FORGET_FLOW | PU_UPDATE_FLOW);
 	}
 
 

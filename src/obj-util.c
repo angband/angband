@@ -2193,8 +2193,8 @@ int minus_ac(struct player *p)
 	/* Damage the item */
 	o_ptr->to_a--;
 
-	p->update |= PU_BONUS;
-	p->redraw |= (PR_EQUIP);
+	p->upkeep->update |= PU_BONUS;
+	p->upkeep->redraw |= (PR_EQUIP);
 
 	/* Item was damaged */
 	return (TRUE);
@@ -2276,16 +2276,16 @@ void inven_item_increase(int item, int num)
 		player->total_weight += (num * o_ptr->weight);
 
 		/* Recalculate bonuses */
-		player->update |= (PU_BONUS);
+		player->upkeep->update |= (PU_BONUS);
 
 		/* Recalculate mana XXX */
-		player->update |= (PU_MANA);
+		player->upkeep->update |= (PU_MANA);
 
 		/* Combine the pack */
-		player->notice |= (PN_COMBINE);
+		player->upkeep->notice |= (PN_COMBINE);
 
 		/* Redraw stuff */
-		player->redraw |= (PR_INVEN | PR_EQUIP);
+		player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
 	}
 }
 
@@ -2485,7 +2485,7 @@ void inven_item_optimize(int item)
 	if (item < INVEN_WIELD)
 	{
 		player->inven_cnt--;
-		player->redraw |= PR_INVEN;
+		player->upkeep->redraw |= PR_INVEN;
 		limit = INVEN_MAX_PACK;
 	}
 
@@ -2493,7 +2493,7 @@ void inven_item_optimize(int item)
 	else
 	{
 		player->equip_cnt--;
-		player->redraw |= PR_EQUIP;
+		player->upkeep->redraw |= PR_EQUIP;
 		limit = item >= QUIVER_START ? QUIVER_END : 0;
 	}
 
@@ -2505,9 +2505,9 @@ void inven_item_optimize(int item)
 		object_wipe(&player->inventory[item]);
 		
 		/* Recalculate stuff */
-		player->update |= (PU_BONUS);
-		player->update |= (PU_TORCH);
-		player->update |= (PU_MANA);
+		player->upkeep->update |= (PU_BONUS);
+		player->upkeep->update |= (PU_TORCH);
+		player->upkeep->update |= (PU_MANA);
 		
 		return;
 	}
@@ -2789,10 +2789,10 @@ extern s16b inven_carry(struct player *p, struct object *o)
 			p->total_weight += (o->number * o->weight);
 
 			/* Recalculate bonuses */
-			p->update |= (PU_BONUS);
+			p->upkeep->update |= (PU_BONUS);
 
 			/* Redraw stuff */
-			p->redraw |= (PR_INVEN);
+			p->upkeep->redraw |= (PR_INVEN);
 
 			/* Save quiver size */
 			save_quiver_size(p);
@@ -2852,9 +2852,9 @@ extern s16b inven_carry(struct player *p, struct object *o)
 
 	p->total_weight += (j_ptr->number * j_ptr->weight);
 	p->inven_cnt++;
-	p->update |= (PU_BONUS);
-	p->notice |= (PN_COMBINE | PN_REORDER);
-	p->redraw |= (PR_INVEN);
+	p->upkeep->update |= (PU_BONUS);
+	p->upkeep->notice |= (PN_COMBINE | PN_REORDER);
+	p->upkeep->redraw |= (PR_INVEN);
 
 	/* Hobbits ID mushrooms on pickup, gnomes ID wands and staffs on pickup */
 	if (!object_is_known(j_ptr))
@@ -2971,7 +2971,7 @@ s16b inven_takeoff(int item, int amt)
 	/* Message */
 	msgt(MSG_WIELD, "%s %s (%c).", act, o_name, index_to_label(slot));
 
-	player->notice |= PN_SQUELCH;
+	player->upkeep->notice |= PN_SQUELCH;
 
 	/* Return slot */
 	return (slot);
@@ -3131,7 +3131,7 @@ void combine_pack(void)
 
 	/* Redraw stuff */
 	if (redraw)
-		player->redraw |= (PR_INVEN);
+		player->upkeep->redraw |= (PR_INVEN);
 
 	/* Message */
 	if (display_message)
@@ -3202,7 +3202,7 @@ void reorder_pack(void)
 		}
 
 		/* Redraw stuff */
-		player->redraw |= (PR_INVEN);
+		player->upkeep->redraw |= (PR_INVEN);
 	}
 
 	if (flag) 
@@ -4056,12 +4056,12 @@ void pack_overflow(void)
 	inven_item_optimize(item);
 
 	/* Notice stuff (if needed) */
-	if (player->notice) notice_stuff(player);
+	if (player->upkeep->notice) notice_stuff(player->upkeep);
 
 	/* Update stuff (if needed) */
-	if (player->update) update_stuff(player);
+	if (player->upkeep->update) update_stuff(player->upkeep);
 
 	/* Redraw stuff (if needed) */
-	if (player->redraw) redraw_stuff(player);
+	if (player->upkeep->redraw) redraw_stuff(player->upkeep);
 }
 

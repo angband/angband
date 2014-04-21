@@ -280,7 +280,7 @@ void textui_spell_browse(void)
 
 	/* Track the object kind */
 	track_object(item);
-	handle_stuff(player);
+	handle_stuff(player->upkeep);
 
 	textui_book_browse(object_from_item_idx(item));
 }
@@ -299,7 +299,7 @@ int get_spell_from_book(const char *verb, int book,
 	struct object *o_ptr = object_from_item_idx(book);
 
 	track_object(book);
-	handle_stuff(player);
+	handle_stuff(player->upkeep);
 
 	m = spell_menu_new(o_ptr, spell_filter);
 	if (m) {

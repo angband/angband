@@ -370,8 +370,8 @@ void bell(const char *reason)
 		message_add(reason, MSG_BELL);
 
 		/* Window stuff */
-		player->redraw |= (PR_MESSAGE);
-		redraw_stuff(player);
+		player->upkeep->redraw |= (PR_MESSAGE);
+		redraw_stuff(player->upkeep);
 	}
 
 	/* Flush the input (later!) */
@@ -492,7 +492,7 @@ static void msg_print_aux(u16b type, const char *msg)
 		message_add(msg, type);
 
 	/* Window stuff */
-	player->redraw |= (PR_MESSAGE);
+	player->upkeep->redraw |= (PR_MESSAGE);
 
 	/* Copy it */
 	my_strcpy(buf, msg, sizeof(buf));

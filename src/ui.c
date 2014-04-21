@@ -483,10 +483,10 @@ bool modify_panel(term *t, int wy, int wx)
 		t->offset_x = wx;
 
 		/* Redraw map */
-		player->redraw |= (PR_MAP);
+		player->upkeep->redraw |= (PR_MAP);
 
 		/* Redraw for big graphics */
-		if ((tile_width > 1) || (tile_height > 1)) redraw_stuff(player);
+		if ((tile_width > 1) || (tile_height > 1)) redraw_stuff(player->upkeep);
 
 		/* Changed */
 		return (TRUE);

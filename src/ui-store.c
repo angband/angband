@@ -907,8 +907,8 @@ static bool store_menu_handle(menu_type *m, const ui_event *event, int oid)
 				process_command(CMD_STORE, TRUE);
 
 				/* Notice and handle stuff */
-				notice_stuff(player);
-				handle_stuff(player);
+				notice_stuff(player->upkeep);
+				handle_stuff(player->upkeep);
 
 				/* Display the store */
 				store_display_recalc(m);
@@ -994,8 +994,8 @@ static bool store_menu_handle(menu_type *m, const ui_event *event, int oid)
 		}
 
 		/* Notice and handle stuff */
-		notice_stuff(player);
-		handle_stuff(player);
+		notice_stuff(player->upkeep);
+		handle_stuff(player->upkeep);
 
 		/* Display the store */
 		store_display_recalc(m);
@@ -1114,12 +1114,12 @@ void do_cmd_store(struct command *cmd)
 	screen_load();
 
 	/* Update the visuals */
-	player->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
+	player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 
 	/* Redraw entire screen */
-	player->redraw |= (PR_BASIC | PR_EXTRA);
+	player->upkeep->redraw |= (PR_BASIC | PR_EXTRA);
 
 	/* Redraw map */
-	player->redraw |= (PR_MAP);
+	player->upkeep->redraw |= (PR_MAP);
 }
 

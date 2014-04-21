@@ -142,8 +142,8 @@ static void death_knowledge(void)
 	history_unmask_unknown();
 
 	/* Hack -- Recalculate bonuses */
-	player->update |= (PU_BONUS);
-	handle_stuff(player);
+	player->upkeep->update |= (PU_BONUS);
+	handle_stuff(player->upkeep);
 }
 
 

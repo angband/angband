@@ -372,7 +372,7 @@ void object_flavor_aware(object_type *o_ptr)
 	if (kind_is_squelched_unaware(o_ptr->kind)) {
 		kind_squelch_when_aware(o_ptr->kind);
 	}
-	player->notice |= PN_SQUELCH;
+	player->upkeep->notice |= PN_SQUELCH;
 	apply_autoinscription(o_ptr);
 
 	for (i = 1; i < cave_object_max(cave); i++)
@@ -605,7 +605,7 @@ static void object_notice_defence_plusses(struct player *p, object_type *o_ptr)
 				o_name);
 	}
 
-	p->update |= (PU_BONUS);
+	p->upkeep->update |= (PU_BONUS);
 	event_signal(EVENT_INVENTORY);
 	event_signal(EVENT_EQUIPMENT);
 }
@@ -641,7 +641,7 @@ void object_notice_attack_plusses(object_type *o_ptr)
 				o_name, ((o_ptr->number > 1) ? "" : "s"));
 	}
 
-	player->update |= (PU_BONUS);
+	player->upkeep->update |= (PU_BONUS);
 	event_signal(EVENT_INVENTORY);
 	event_signal(EVENT_EQUIPMENT);
 }
@@ -713,7 +713,7 @@ bool object_notice_curses(object_type *o_ptr)
 
 	object_check_for_ident(o_ptr);
 
-	player->notice |= PN_SQUELCH;
+	player->upkeep->notice |= PN_SQUELCH;
 
 	return !of_is_empty(f);
 }
@@ -1264,14 +1264,14 @@ void sense_inventory(void)
 
 		/* Set squelch flag as appropriate */
 		if (i < INVEN_WIELD)
-			player->notice |= PN_SQUELCH;
+			player->upkeep->notice |= PN_SQUELCH;
 		
 		
 		/* Combine / Reorder the pack (later) */
-		player->notice |= (PN_COMBINE | PN_REORDER | PN_SORT_QUIVER);
+		player->upkeep->notice |= (PN_COMBINE | PN_REORDER | PN_SORT_QUIVER);
 		
 		/* Redraw stuff */
-		player->redraw |= (PR_INVEN | PR_EQUIP);
+		player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
 	}
 
 	/* Reset state so objects failing the check can be sensed later. */

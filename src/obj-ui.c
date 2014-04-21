@@ -876,10 +876,10 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, item_test
 		}
 
 		/* Redraw */
-		player->redraw |= (PR_INVEN | PR_EQUIP);
+		player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
 
 		/* Redraw windows */
-		redraw_stuff(player);
+		redraw_stuff(player->upkeep);
 
 		/* Viewing inventory */
 		if (player->command_wrk == USE_INVEN)
@@ -1464,8 +1464,8 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, item_test
 	if (toggle) toggle_inven_equip();
 
 	/* Update */
-	player->redraw |= (PR_INVEN | PR_EQUIP);
-	redraw_stuff(player);
+	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
+	redraw_stuff(player->upkeep);
 
 
 	/* Clear the prompt line */

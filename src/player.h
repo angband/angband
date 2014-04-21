@@ -7,6 +7,7 @@
 #include "obj-properties.h"
 #include "object.h"
 #include "option.h"
+#include "player-calcs.h"
 
 
 /*** Game constants ***/
@@ -20,101 +21,25 @@
 #define PY_FOOD_FULL	10000	/* Food value (Normal) */
 #define PY_FOOD_ALERT	2000	/* Food value (Hungry) */
 #define PY_FOOD_WEAK	1000	/* Food value (Weak) */
-#define PY_FOOD_FAINT	500	/* Food value (Fainting) */
-#define PY_FOOD_STARVE	100	/* Food value (Starving) */
+#define PY_FOOD_FAINT	500		/* Food value (Fainting) */
+#define PY_FOOD_STARVE	100		/* Food value (Starving) */
 
 /* Player regeneration constants */
-#define PY_REGEN_NORMAL		197	/* Regen factor*2^16 when full */
-#define PY_REGEN_WEAK		98	/* Regen factor*2^16 when weak */
-#define PY_REGEN_FAINT		33	/* Regen factor*2^16 when fainting */
+#define PY_REGEN_NORMAL		197		/* Regen factor*2^16 when full */
+#define PY_REGEN_WEAK		98		/* Regen factor*2^16 when weak */
+#define PY_REGEN_FAINT		33		/* Regen factor*2^16 when fainting */
 #define PY_REGEN_HPBASE		1442	/* Min amount hp regen*2^16 */
-#define PY_REGEN_MNBASE		524	/* Min amount mana regen*2^16 */
+#define PY_REGEN_MNBASE		524		/* Min amount mana regen*2^16 */
 
 /* Maximum number of player spells */
 #define PY_MAX_SPELLS 64
 
 /* Flags for player.spell_flags[] */
-#define PY_SPELL_LEARNED    0x01 /* Spell has been learned */
-#define PY_SPELL_WORKED     0x02 /* Spell has been successfully tried */
-#define PY_SPELL_FORGOTTEN  0x04 /* Spell has been forgotten */
+#define PY_SPELL_LEARNED    0x01 	/* Spell has been learned */
+#define PY_SPELL_WORKED     0x02 	/* Spell has been successfully tried */
+#define PY_SPELL_FORGOTTEN  0x04 	/* Spell has been forgotten */
 
-#define BTH_PLUS_ADJ    	3 	/* Adjust BTH per plus-to-hit */
-
-/*
- * Bit flags for the "player->notice" variable
- */
-#define PN_COMBINE      0x00000001L    /* Combine the pack */
-#define PN_REORDER      0x00000002L    /* Reorder the pack */
-#define PN_AUTOINSCRIBE 0x00000004L    /* Autoinscribe items */
-#define PN_PICKUP       0x00000008L    /* Pick stuff up */
-#define PN_SQUELCH      0x00000010L    /* Squelch stuff */
-#define PN_SORT_QUIVER  0x00000020L    /* Sort the quiver */
-#define PN_MON_MESSAGE	0x00000040L	   /* flush monster pain messages */
-/* xxx (many) */
-
-
-/*
- * Bit flags for the "player->update" variable
- */
-#define PU_BONUS		0x00000001L	/* Calculate bonuses */
-#define PU_TORCH		0x00000002L	/* Calculate torch radius */
-/* xxx (many) */
-#define PU_HP			0x00000010L	/* Calculate chp and mhp */
-#define PU_MANA			0x00000020L	/* Calculate csp and msp */
-#define PU_SPELLS		0x00000040L	/* Calculate spells */
-/* xxx (many) */
-#define PU_FORGET_VIEW	0x00010000L	/* Forget field of view */
-#define PU_UPDATE_VIEW	0x00020000L	/* Update field of view */
-/* xxx (many) */
-#define PU_FORGET_FLOW	0x00100000L	/* Forget flow data */
-#define PU_UPDATE_FLOW	0x00200000L	/* Update flow data */
-/* xxx (many) */
-#define PU_MONSTERS		0x10000000L	/* Update monsters */
-#define PU_DISTANCE		0x20000000L	/* Update distances */
-/* xxx */
-#define PU_PANEL		0x80000000L	/* Update panel */
-
-
-/*
- * Bit flags for the "player->redraw" variable
- */
-#define PR_MISC			0x00000001L	/* Display Race/Class */
-#define PR_TITLE		0x00000002L	/* Display Title */
-#define PR_LEV			0x00000004L	/* Display Level */
-#define PR_EXP			0x00000008L	/* Display Experience */
-#define PR_STATS		0x00000010L	/* Display Stats */
-#define PR_ARMOR		0x00000020L	/* Display Armor */
-#define PR_HP			0x00000040L	/* Display Hitpoints */
-#define PR_MANA			0x00000080L	/* Display Mana */
-#define PR_GOLD			0x00000100L	/* Display Gold */
-
-#define PR_HEALTH		0x00000800L	/* Display Health Bar */
-#define PR_SPEED		0x00001000L	/* Display Extra (Speed) */
-#define PR_STUDY		0x00002000L	/* Display Extra (Study) */
-#define PR_DEPTH		0x00004000L	/* Display Depth */
-#define PR_STATUS		0x00008000L
-#define PR_DTRAP		0x00010000L /* Trap detection indicator */
-#define PR_STATE		0x00020000L	/* Display Extra (State) */
-#define PR_MAP			0x00040000L	/* Redraw whole map */
-
-#define PR_INVEN		0x00080000L /* Display inven/equip */
-#define PR_EQUIP		0x00100000L /* Display equip/inven */
-#define PR_MESSAGE		0x00200000L /* Display messages */
-#define PR_MONSTER		0x00400000L /* Display monster recall */
-#define PR_OBJECT		0x00800000L /* Display object recall */
-#define PR_MONLIST		0x01000000L /* Display monster list */
-/* xxx */
-#define PR_ITEMLIST     0x04000000L /* Display item list */
-
-/* Display Basic Info */
-#define PR_BASIC \
-	(PR_MISC | PR_TITLE | PR_STATS | PR_LEV |\
-	 PR_EXP | PR_GOLD | PR_ARMOR | PR_HP |\
-	 PR_MANA | PR_DEPTH | PR_HEALTH | PR_SPEED)
-
-/* Display Extra Info */
-#define PR_EXTRA \
-	(PR_STATUS | PR_STATE | PR_STUDY)
+#define BTH_PLUS_ADJ    	3 		/* Adjust BTH per plus-to-hit */
 
 /* 
  * Special values for the number of turns to rest, these need to be
@@ -233,40 +158,6 @@ enum
 };
 
 /*
- * Skill indexes
- */
-enum
-{
-	SKILL_DISARM,			/* Skill: Disarming */
-	SKILL_DEVICE,			/* Skill: Magic Devices */
-	SKILL_SAVE,			/* Skill: Saving throw */
-	SKILL_STEALTH,			/* Skill: Stealth factor */
-	SKILL_SEARCH,			/* Skill: Searching ability */
-	SKILL_SEARCH_FREQUENCY,		/* Skill: Searching frequency */
-	SKILL_TO_HIT_MELEE,		/* Skill: To hit (normal) */
-	SKILL_TO_HIT_BOW,		/* Skill: To hit (shooting) */
-	SKILL_TO_HIT_THROW,		/* Skill: To hit (throwing) */
-	SKILL_DIGGING,			/* Skill: Digging */
-
-	SKILL_MAX
-};
-
-/*
- * Indexes of the various "stats" (hard-coded by savefiles, etc).
- */
-enum
-{
-	A_STR = 0,
-	A_INT,
-	A_WIS,
-	A_DEX,
-	A_CON,
-
-	A_MAX
-};
-
-
-/*
  * Player race and class flags
  */
 enum
@@ -275,18 +166,6 @@ enum
 	#include "list-player-flags.h"
 	#undef PF
 	PF_MAX
-};
-
-/* Terrain that the player has a chance of digging through */
-enum
-{
-	DIGGING_RUBBLE = 0,
-	DIGGING_MAGMA,
-	DIGGING_QUARTZ,
-	DIGGING_GRANITE,
-	DIGGING_DOORS,
-	
-	DIGGING_MAX
 };
 
 #define PF_SIZE                FLAG_SIZE(PF_MAX)
@@ -316,56 +195,6 @@ enum
 #define NOSCORE_WIZARD		0x0002
 #define NOSCORE_DEBUG		0x0008
 #define NOSCORE_JUMPING     0x0010
-
-/*** Structures ***/
-
-/*
- * All the variable state that changes when you put on/take off equipment.
- */
-typedef struct player_state {
-	s16b speed;		/* Current speed */
-
-	s16b num_blows;		/* Number of blows x100 */
-	s16b num_shots;		/* Number of shots */
-
-	byte ammo_mult;		/* Ammo multiplier */
-	byte ammo_tval;		/* Ammo variety */
-
-	s16b stat_add[A_MAX];	/* Equipment stat bonuses */
-	s16b stat_ind[A_MAX];	/* Indexes into stat tables */
-	s16b stat_use[A_MAX];	/* Current modified stats */
-	s16b stat_top[A_MAX];	/* Maximal modified stats */
-
-	s16b dis_ac;		/* Known base ac */
-	s16b ac;			/* Base ac */
-
-	s16b dis_to_a;		/* Known bonus to ac */
-	s16b to_a;			/* Bonus to ac */
-
-	s16b to_h;			/* Bonus to hit */
-	s16b dis_to_h;		/* Known bonus to hit */
-
-	s16b to_d;			/* Bonus to dam */
-	s16b dis_to_d;		/* Known bonus to dam */
-
-	s16b see_infra;		/* Infravision range */
-
-	s16b cur_light;		/* Radius of light (if any) */
-
-	s16b skills[SKILL_MAX];	/* Skills */
-
-	u32b noise;			/* Derived from stealth */
-
-	bool heavy_wield;	/* Heavy weapon */
-	bool heavy_shoot;	/* Heavy shooter */
-	bool icky_wield;	/* Icky weapon shooter */
-
-	bool cumber_armor;	/* Mana draining armor */
-	bool cumber_glove;	/* Mana draining gloves */
-
-	bitflag flags[OF_SIZE];	/* Status flags from race and items */
-} player_state;
-
 
 /*
  * Most of the "player" information goes here.
@@ -486,16 +315,6 @@ typedef struct player {
 
 	s16b new_spells;		/* Number of spells available */
 
-	u32b notice;		/* Bit flags for pending "special" actions to 
-				   carry out after the current "action", 
-				   such as reordering inventory, squelching, 
-				   etc. */
-	u32b update;		/* Bit flags for recalculations needed after
-				   this "action", such as HP, or visible area */
-	u32b redraw;	        /* Bit flags for things that /have/ changed,
-				   and just need to be redrawn by the UI,
-				   such as HP, Speed, etc.*/
-
 	u32b total_energy;	/* Total energy used (including resting) */
 	u32b resting_turn;	/* Number of player turns spent resting */
 
@@ -507,6 +326,9 @@ typedef struct player {
 
 	/* Variable and calculatable player state */
 	player_state state;
+
+	/* Tracking of various housekeeping things that need to be done */
+	player_upkeep *upkeep;
 
 	/* "cached" quiver statistics*/
 	u16b quiver_size;
@@ -703,27 +525,6 @@ extern const s32b player_exp[PY_MAX_LEVEL];
 extern player_other *op_ptr;
 extern player_type *player;
 
-
-/*
- * The range of possible indexes into tables based upon stats.
- * Currently things range from 3 to 18/220 = 40.
- */
-#define STAT_RANGE 38
-
-/* calcs.c */
-extern const byte adj_str_blow[STAT_RANGE];
-extern const byte adj_dex_safe[STAT_RANGE];
-extern const byte adj_con_fix[STAT_RANGE];
-extern const byte adj_str_hold[STAT_RANGE];
-
-void calc_bonuses(object_type inventory[], player_state *state, bool id_only);
-void calc_digging_chances(player_state *state, int chances[DIGGING_MAX]);
-int calc_blows(const object_type *o_ptr, player_state *state, int extra_blows);
-void notice_stuff(struct player *p);
-void update_stuff(struct player *p);
-void redraw_stuff(struct player *p);
-void handle_stuff(struct player *p);
-int weight_remaining(void);
 
 /* class.c */
 extern struct player_class *player_id2class(guid id);

@@ -433,7 +433,7 @@ byte squelch_level_of(const object_type *o_ptr)
 void kind_squelch_clear(object_kind *k_ptr)
 {
 	k_ptr->squelch = 0;
-	player->notice |= PN_SQUELCH;
+	player->upkeep->notice |= PN_SQUELCH;
 }
 
 bool kind_is_squelched_aware(const object_kind *k_ptr)
@@ -449,13 +449,13 @@ bool kind_is_squelched_unaware(const object_kind *k_ptr)
 void kind_squelch_when_aware(object_kind *k_ptr)
 {
 	k_ptr->squelch |= SQUELCH_IF_AWARE;
-	player->notice |= PN_SQUELCH;
+	player->upkeep->notice |= PN_SQUELCH;
 }
 
 void kind_squelch_when_unaware(object_kind *k_ptr)
 {
 	k_ptr->squelch |= SQUELCH_IF_UNAWARE;
-	player->notice |= PN_SQUELCH;
+	player->upkeep->notice |= PN_SQUELCH;
 }
 
 
@@ -583,7 +583,7 @@ void squelch_drop(void)
 	}
 
 	/* Combine/reorder the pack */
-	player->notice |= (PN_COMBINE | PN_REORDER);
+	player->upkeep->notice |= (PN_COMBINE | PN_REORDER);
 }
 
 /**

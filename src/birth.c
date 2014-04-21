@@ -271,10 +271,10 @@ static void roll_hp(void)
 static void get_bonuses(void)
 {
 	/* Calculate the bonuses and hitpoints */
-	player->update |= (PU_BONUS | PU_HP);
+	player->upkeep->update |= (PU_BONUS | PU_HP);
 
 	/* Update stuff */
-	update_stuff(player);
+	update_stuff(player->upkeep);
 
 	/* Fully healed */
 	player->chp = player->mhp;

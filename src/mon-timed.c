@@ -198,10 +198,10 @@ static bool mon_set_timed(monster_type *m_ptr, int ef_idx, int timer,
 	else
 		m_ptr->m_timed[ef_idx] = timer;
 
-	if (player->health_who == m_ptr) player->redraw |= (PR_HEALTH);
+	if (player->health_who == m_ptr) player->upkeep->redraw |= (PR_HEALTH);
 
 	/* Update the visuals, as appropriate. */
-	player->redraw |= (PR_MONLIST);
+	player->upkeep->redraw |= (PR_MONLIST);
 
 	/* Print a message if there is one, if the effect allows for it, and if
 	 * either the monster is visible, or we're trying to ID something */

@@ -423,7 +423,7 @@ bool effect_handler_RESTORE_MANA(effect_handler_context_t *context)
 		player->csp = player->msp;
 		player->csp_frac = 0;
 		msg("You feel your head clear.");
-		player->redraw |= (PR_MANA);
+		player->upkeep->redraw |= (PR_MANA);
 		context->ident = TRUE;
 	}
 	return TRUE;
@@ -531,7 +531,7 @@ bool effect_handler_CURE_NONORLYBIG(effect_handler_context_t *context)
 	effect_stat_restore_all(context);
 
 	/* Recalculate max. hitpoints */
-	update_stuff(player);
+	update_stuff(player->upkeep);
 
 	hp_player(5000);
 
@@ -1301,7 +1301,7 @@ bool effect_handler_STAFF_MAGI(effect_handler_context_t *context)
 		player->csp_frac = 0;
 		context->ident = TRUE;
 		msg("Your feel your head clear.");
-		player->redraw |= (PR_MANA);
+		player->upkeep->redraw |= (PR_MANA);
 	}
 	return TRUE;
 }
@@ -1459,7 +1459,7 @@ bool effect_handler_SHROOM_DEBILITY(effect_handler_context_t *context)
 		player->csp = player->msp;
 		player->csp_frac = 0;
 		msg("Your feel your head clear.");
-		player->redraw |= (PR_MANA);
+		player->upkeep->redraw |= (PR_MANA);
 		context->ident = TRUE;
 	}
 

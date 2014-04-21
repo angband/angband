@@ -179,7 +179,7 @@ static void py_pickup_gold(void)
 		player->au += total_gold;
 
 		/* Redraw gold */
-		player->redraw |= (PR_GOLD);
+		player->upkeep->redraw |= (PR_GOLD);
 	}
 
 	/* Free the gold array */
@@ -236,7 +236,7 @@ static void py_pickup_aux(int o_idx, bool domsg)
 	o_ptr = &player->inventory[slot];
 
 	/* Set squelch status */
-	player->notice |= PN_SQUELCH;
+	player->upkeep->notice |= PN_SQUELCH;
 
 	/* Automatically sense artifacts */
 	object_sense_artifact(o_ptr);
@@ -562,7 +562,7 @@ void move_player(int dir, bool disarm)
 
 		/* Note the change in the detect status */
 		if (old_dtrap != new_dtrap)
-			player->redraw |= (PR_DTRAP);
+			player->upkeep->redraw |= (PR_DTRAP);
 
 		/* Disturb player if the player is about to leave the area */
 		if (player->running && !player->running_firststep && old_dtrap && !new_dtrap)
@@ -595,7 +595,7 @@ void move_player(int dir, bool disarm)
 		else
 		{
 			/* Handle objects (later) */
-			player->notice |= (PN_PICKUP);
+			player->upkeep->notice |= (PN_PICKUP);
 		}
 
 

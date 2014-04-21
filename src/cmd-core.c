@@ -655,7 +655,7 @@ void cmd_cancel_repeat(void)
 		repeating = FALSE;
 		
 		/* Redraw the state (later) */
-		player->redraw |= (PR_STATE);
+		player->upkeep->redraw |= (PR_STATE);
 	}
 }
 
@@ -671,7 +671,7 @@ void cmd_set_repeat(int nrepeats)
 	else repeating = FALSE;
 
 	/* Redraw the state (later) */
-	player->redraw |= (PR_STATE);
+	player->upkeep->redraw |= (PR_STATE);
 }
 
 /* 

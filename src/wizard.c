@@ -631,8 +631,8 @@ static void wiz_create_item(void)
 	screen_load();
 	
 	/* Redraw map */
-	player->redraw |= (PR_MAP | PR_ITEMLIST);
-	handle_stuff(player);
+	player->upkeep->redraw |= (PR_MAP | PR_ITEMLIST);
+	handle_stuff(player->upkeep);
 
 }
 
@@ -772,13 +772,13 @@ static void wiz_reroll_item(object_type *o_ptr)
 		object_copy(o_ptr, i_ptr);
 
 		/* Recalculate bonuses */
-		player->update |= (PU_BONUS);
+		player->upkeep->update |= (PU_BONUS);
 
 		/* Combine / Reorder the pack (later) */
-		player->notice |= (PN_COMBINE | PN_REORDER | PN_SORT_QUIVER);
+		player->upkeep->notice |= (PN_COMBINE | PN_REORDER | PN_SORT_QUIVER);
 
 		/* Window stuff */
-		player->redraw |= (PR_INVEN | PR_EQUIP );
+		player->upkeep->redraw |= (PR_INVEN | PR_EQUIP );
 	}
 }
 
@@ -1124,13 +1124,13 @@ static void do_cmd_wiz_play(void)
 		object_copy(o_ptr, i_ptr);
 
 		/* Recalculate bonuses */
-		player->update |= (PU_BONUS);
+		player->upkeep->update |= (PU_BONUS);
 
 		/* Combine / Reorder the pack (later) */
-		player->notice |= (PN_COMBINE | PN_REORDER);
+		player->upkeep->notice |= (PN_COMBINE | PN_REORDER);
 
 		/* Window stuff */
-		player->redraw |= (PR_INVEN | PR_EQUIP );
+		player->upkeep->redraw |= (PR_INVEN | PR_EQUIP );
 	}
 
 	/* Ignore change */
@@ -1187,8 +1187,8 @@ static void wiz_create_artifact(int a_idx)
 	msg("Allocated.");
 	
 	/* Redraw map */
-	player->redraw |= (PR_MAP | PR_ITEMLIST);
-	handle_stuff(player);
+	player->upkeep->redraw |= (PR_MAP | PR_ITEMLIST);
+	handle_stuff(player->upkeep);
 }
 
 
@@ -1358,11 +1358,11 @@ static void do_cmd_rerate(void)
 	                (player->hitdie + ((PY_MAX_LEVEL - 1) * player->hitdie)));
 
 	/* Update and redraw hitpoints */
-	player->update |= (PU_HP);
-	player->redraw |= (PR_HP);
+	player->upkeep->update |= (PU_HP);
+	player->upkeep->redraw |= (PR_HP);
 
 	/* Handle stuff */
-	handle_stuff(player);
+	handle_stuff(player->upkeep);
 
 	/* Message */
 	msg("Current Life Rating is %d/100.", percent);
@@ -1441,7 +1441,7 @@ static void do_cmd_wiz_zap(int d)
 	}
 
 	/* Update monster list window */
-	player->redraw |= PR_MONLIST;
+	player->upkeep->redraw |= PR_MONLIST;
 }
 
 
@@ -1707,15 +1707,15 @@ static void do_cmd_wiz_advance(void)
 	/* Artifacts: 3, 5, 12, ...*/
 	
 	/* Update stuff */
-	player->update |= (PU_BONUS | PU_HP | PU_MANA | PU_SPELLS);
+	player->upkeep->update |= (PU_BONUS | PU_HP | PU_MANA | PU_SPELLS);
 
 	/* Redraw everything */
-	player->redraw |= (PR_BASIC | PR_EXTRA | PR_MAP | PR_INVEN | PR_EQUIP |
+	player->upkeep->redraw |= (PR_BASIC | PR_EXTRA | PR_MAP | PR_INVEN | PR_EQUIP |
 	                  PR_MESSAGE | PR_MONSTER | PR_OBJECT |
 					  PR_MONLIST | PR_ITEMLIST);
 
 	/* Hack -- update */
-	handle_stuff(player);
+	handle_stuff(player->upkeep);
 
 }
 
@@ -1984,7 +1984,7 @@ void do_cmd_debug(void)
 					/* If not, find the monster with that name */
 					r = lookup_monster(name); 
 					
-				player->redraw |= (PR_MAP | PR_MONLIST);
+				player->upkeep->redraw |= (PR_MAP | PR_MONLIST);
 			}
 
 			/* Reload the screen */

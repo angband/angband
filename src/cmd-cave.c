@@ -248,10 +248,10 @@ void do_cmd_toggle_search(struct command *cmd)
 		player->searching = FALSE;
 
 		/* Recalculate bonuses */
-		player->update |= (PU_BONUS);
+		player->upkeep->update |= (PU_BONUS);
 
 		/* Redraw the state */
-		player->redraw |= (PR_STATE);
+		player->upkeep->redraw |= (PR_STATE);
 	}
 
 	/* Start searching */
@@ -261,10 +261,10 @@ void do_cmd_toggle_search(struct command *cmd)
 		player->searching = TRUE;
 
 		/* Update stuff */
-		player->update |= (PU_BONUS);
+		player->upkeep->update |= (PU_BONUS);
 
 		/* Redraw stuff */
-		player->redraw |= (PR_STATE | PR_SPEED);
+		player->upkeep->redraw |= (PR_STATE | PR_SPEED);
 	}
 }
 
@@ -337,7 +337,7 @@ static bool do_cmd_open_aux(int y, int x)
 			square_open_door(cave, y, x);
 
 			/* Update the visuals */
-			player->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
+			player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 
 			/* Experience */
 			/* Removed to avoid exploit by repeatedly locking and unlocking door */
@@ -364,7 +364,7 @@ static bool do_cmd_open_aux(int y, int x)
 		square_open_door(cave, y, x);
 
 		/* Update the visuals */
-		player->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
+		player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 
 		/* Sound */
 		sound(MSG_OPENDOOR);
@@ -522,7 +522,7 @@ static bool do_cmd_close_aux(int y, int x)
 		square_close_door(cave, y, x);
 
 		/* Update the visuals */
-		player->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
+		player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 
 		/* Sound */
 		sound(MSG_SHUTDOOR);
@@ -650,10 +650,10 @@ static bool twall(int y, int x)
 	square_tunnel_wall(cave, y, x);
 
 	/* Update the visuals */
-	player->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
+	player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 
 	/* Fully update the flow */
-	player->update |= (PU_FORGET_FLOW | PU_UPDATE_FLOW);
+	player->upkeep->update |= (PU_FORGET_FLOW | PU_UPDATE_FLOW);
 
 	/* Result */
 	return (TRUE);
@@ -1378,7 +1378,7 @@ void do_cmd_pathfind(struct command *cmd)
 	if (findpath(x, y)) {
 		player->running = 1000;
 		/* Calculate torch radius */
-		player->update |= (PU_TORCH);
+		player->upkeep->update |= (PU_TORCH);
 		player->running_withpathfind = TRUE;
 		run_step(0);
 	}
@@ -1455,13 +1455,13 @@ void do_cmd_rest(struct command *cmd)
 	player->searching = FALSE;
 
 	/* Recalculate bonuses */
-	player->update |= (PU_BONUS);
+	player->upkeep->update |= (PU_BONUS);
 
 	/* Redraw the state */
-	player->redraw |= (PR_STATE);
+	player->upkeep->redraw |= (PR_STATE);
 
 	/* Handle stuff */
-	handle_stuff(player);
+	handle_stuff(player->upkeep);
 
 	/* Refresh XXX XXX XXX */
 	Term_fresh();

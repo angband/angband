@@ -429,7 +429,7 @@ static void ranged_helper(int item, int dir, int range, int shots, ranged_attack
 	path_n = project_path(path_g, range, y, x, ty, tx, 0);
 
 	/* Hack -- Handle stuff */
-	handle_stuff(player);
+	handle_stuff(player->upkeep);
 
 	/* Start at the player */
 	x = player->px;
@@ -455,13 +455,13 @@ static void ranged_helper(int item, int dir, int range, int shots, ranged_attack
 			move_cursor_relative(y, x);
 
 			Term_fresh();
-			if (player->redraw) redraw_stuff(player);
+			if (player->upkeep->redraw) redraw_stuff(player->upkeep);
 
 			Term_xtra(TERM_XTRA_DELAY, msec);
 			square_light_spot(cave, y, x);
 
 			Term_fresh();
-			if (player->redraw) redraw_stuff(player);
+			if (player->upkeep->redraw) redraw_stuff(player->upkeep);
 		} else {
 			/* Delay anyway for consistency */
 			Term_xtra(TERM_XTRA_DELAY, msec);

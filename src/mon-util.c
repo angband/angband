@@ -549,14 +549,14 @@ void update_mon(struct monster *m_ptr, bool full)
 
 			/* Update health bar as needed */
 			if (player->health_who == m_ptr)
-				player->redraw |= (PR_HEALTH);
+				player->upkeep->redraw |= (PR_HEALTH);
 
 			/* Hack -- Count "fresh" sightings */
 			if (l_ptr->sights < MAX_SHORT)
 				l_ptr->sights++;
 
 			/* Window stuff */
-			player->redraw |= PR_MONLIST;
+			player->upkeep->redraw |= PR_MONLIST;
 		}
 	}
 
@@ -575,10 +575,10 @@ void update_mon(struct monster *m_ptr, bool full)
 				square_light_spot(cave, fy, fx);
 
 				/* Update health bar as needed */
-				if (player->health_who == m_ptr) player->redraw |= (PR_HEALTH);
+				if (player->health_who == m_ptr) player->upkeep->redraw |= (PR_HEALTH);
 
 				/* Window stuff */
-				player->redraw |= PR_MONLIST;
+				player->upkeep->redraw |= PR_MONLIST;
 			}
 		}
 	}
@@ -595,7 +595,7 @@ void update_mon(struct monster *m_ptr, bool full)
 			if (OPT(disturb_near)) disturb(player, 1);
 
 			/* Re-draw monster window */
-			player->redraw |= PR_MONLIST;
+			player->upkeep->redraw |= PR_MONLIST;
 		}
 	}
 
@@ -610,7 +610,7 @@ void update_mon(struct monster *m_ptr, bool full)
 			if (OPT(disturb_near) && !is_mimicking(m_ptr)) disturb(player, 1);
 
 			/* Re-draw monster list window */
-			player->redraw |= PR_MONLIST;
+			player->upkeep->redraw |= PR_MONLIST;
 		}
 	}
 }
@@ -732,10 +732,10 @@ void monster_swap(int y1, int x1, int y2, int x2)
 
 		/* Radiate light? */
 		if (rf_has(m_ptr->race->flags, RF_HAS_LIGHT))
-			player->update |= PU_UPDATE_VIEW;
+			player->upkeep->update |= PU_UPDATE_VIEW;
 
 		/* Redraw monster list */
-		player->redraw |= (PR_MONLIST);
+		player->upkeep->redraw |= (PR_MONLIST);
 	}
 
 	/* Player 1 */
@@ -745,19 +745,19 @@ void monster_swap(int y1, int x1, int y2, int x2)
 		player->px = x2;
 
 		/* Update the trap detection status */
-		player->redraw |= (PR_DTRAP);
+		player->upkeep->redraw |= (PR_DTRAP);
 
 		/* Update the panel */
-		player->update |= (PU_PANEL);
+		player->upkeep->update |= (PU_PANEL);
 
 		/* Update the visuals (and monster distances) */
-		player->update |= (PU_UPDATE_VIEW | PU_DISTANCE);
+		player->upkeep->update |= (PU_UPDATE_VIEW | PU_DISTANCE);
 
 		/* Update the flow */
-		player->update |= (PU_UPDATE_FLOW);
+		player->upkeep->update |= (PU_UPDATE_FLOW);
 
 		/* Redraw monster list */
-		player->redraw |= (PR_MONLIST);
+		player->upkeep->redraw |= (PR_MONLIST);
 	}
 
 	/* Monster 2 */
@@ -773,10 +773,10 @@ void monster_swap(int y1, int x1, int y2, int x2)
 
 		/* Radiate light? */
 		if (rf_has(m_ptr->race->flags, RF_HAS_LIGHT))
-			player->update |= PU_UPDATE_VIEW;
+			player->upkeep->update |= PU_UPDATE_VIEW;
 
 		/* Redraw monster list */
-		player->redraw |= (PR_MONLIST);
+		player->upkeep->redraw |= (PR_MONLIST);
 	}
 
 	/* Player 2 */
@@ -786,19 +786,19 @@ void monster_swap(int y1, int x1, int y2, int x2)
 		player->px = x1;
 
 		/* Update the trap detection status */
-		player->redraw |= (PR_DTRAP);
+		player->upkeep->redraw |= (PR_DTRAP);
 
 		/* Update the panel */
-		player->update |= (PU_PANEL);
+		player->upkeep->update |= (PU_PANEL);
 
 		/* Update the visuals (and monster distances) */
-		player->update |= (PU_UPDATE_VIEW | PU_DISTANCE);
+		player->upkeep->update |= (PU_UPDATE_VIEW | PU_DISTANCE);
 
 		/* Update the flow */
-		player->update |= (PU_UPDATE_FLOW);
+		player->upkeep->update |= (PU_UPDATE_FLOW);
 
 		/* Redraw monster list */
-		player->redraw |= (PR_MONLIST);
+		player->upkeep->redraw |= (PR_MONLIST);
 	}
 
 	/* Redraw */
@@ -1117,8 +1117,8 @@ void become_aware(struct monster *m_ptr)
 		}
 		
 		/* Update monster and item lists */
-		player->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
-		player->redraw |= (PR_MONLIST | PR_ITEMLIST);
+		player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
+		player->upkeep->redraw |= (PR_MONLIST | PR_ITEMLIST);
 	}
 }
 

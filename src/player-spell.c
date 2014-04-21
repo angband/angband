@@ -334,7 +334,7 @@ void spell_learn(int spell)
 	}
 
 	/* Redraw Study Status */
-	player->redraw |= (PR_STUDY | PR_OBJECT);
+	player->upkeep->redraw |= (PR_STUDY | PR_OBJECT);
 }
 
 
@@ -376,7 +376,7 @@ bool spell_cast(int spell, int dir)
 			player_exp_gain(player, e * s_ptr->slevel);
 
 			/* Redraw object recall */
-			player->redraw |= (PR_OBJECT);
+			player->upkeep->redraw |= (PR_OBJECT);
 		}
 	}
 
@@ -416,7 +416,7 @@ bool spell_cast(int spell, int dir)
 	}
 
 	/* Redraw mana */
-	player->redraw |= (PR_MANA);
+	player->upkeep->redraw |= (PR_MANA);
 
 	return TRUE;
 }

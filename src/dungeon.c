@@ -167,7 +167,7 @@ static void regenhp(int percent)
 	if (old_chp != player->chp)
 	{
 		/* Redraw */
-		player->redraw |= (PR_HP);
+		player->upkeep->redraw |= (PR_HP);
 		wieldeds_notice_flag(player, OF_REGEN);
 		wieldeds_notice_flag(player, OF_IMPAIR_HP);
 	}
@@ -212,7 +212,7 @@ static void regenmana(int percent)
 	if (old_csp != player->csp)
 	{
 		/* Redraw */
-		player->redraw |= (PR_MANA);
+		player->upkeep->redraw |= (PR_MANA);
 		wieldeds_notice_flag(player, OF_REGEN);
 		wieldeds_notice_flag(player, OF_IMPAIR_MANA);
 	}
@@ -260,7 +260,7 @@ static void regen_monsters(void)
 			if (m_ptr->hp > m_ptr->maxhp) m_ptr->hp = m_ptr->maxhp;
 
 			/* Redraw (later) if needed */
-			if (player->health_who == m_ptr) player->redraw |= (PR_HEALTH);
+			if (player->health_who == m_ptr) player->upkeep->redraw |= (PR_HEALTH);
 		}
 	}
 }
@@ -366,7 +366,7 @@ static void recharge_objects(void)
 	if (charged)
 	{
 		/* Window stuff */
-		player->redraw |= (PR_EQUIP);
+		player->upkeep->redraw |= (PR_EQUIP);
 	}
 
 	charged = FALSE;
@@ -400,10 +400,10 @@ static void recharge_objects(void)
 	if (charged)
 	{
 		/* Combine pack */
-		player->notice |= (PN_COMBINE);
+		player->upkeep->notice |= (PN_COMBINE);
 
 		/* Redraw stuff */
-		player->redraw |= (PR_INVEN);
+		player->upkeep->redraw |= (PR_INVEN);
 	}
 
 	/*** Recharge the ground ***/
@@ -745,7 +745,7 @@ static void process_world(struct chunk *c)
 			/* Hack -- notice interesting fuel steps */
 			if ((o_ptr->timeout < 100) || (!(o_ptr->timeout % 100)))
 				/* Redraw stuff */
-				player->redraw |= (PR_EQUIP);
+				player->upkeep->redraw |= (PR_EQUIP);
 
 			/* Hack -- Special treatment when blind */
 			if (player->timed[TMD_BLIND]) {
@@ -773,7 +773,7 @@ static void process_world(struct chunk *c)
 	}
 
 	/* Calculate torch radius */
-	player->update |= (PU_TORCH);
+	player->upkeep->update |= (PU_TORCH);
 
 
 	/*** Process Inventory ***/
@@ -934,8 +934,8 @@ static void process_player_aux(void)
 			old_cast_spell = l_ptr->cast_spell;
 
 			/* Redraw stuff */
-			player->redraw |= (PR_MONSTER);
-			redraw_stuff(player);
+			player->upkeep->redraw |= (PR_MONSTER);
+			redraw_stuff(player->upkeep);
 		}
 	}
 }
@@ -1006,13 +1006,13 @@ static void process_player(void)
 	do
 	{
 		/* Notice stuff (if needed) */
-		if (player->notice) notice_stuff(player);
+		if (player->upkeep->notice) notice_stuff(player->upkeep);
 
 		/* Update stuff (if needed) */
-		if (player->update) update_stuff(player);
+		if (player->upkeep->update) update_stuff(player->upkeep);
 
 		/* Redraw stuff (if needed) */
-		if (player->redraw) redraw_stuff(player);
+		if (player->upkeep->redraw) redraw_stuff(player->upkeep);
 
 
 		/* Place cursor on player/target */
@@ -1050,12 +1050,12 @@ static void process_player(void)
 		}
 
 		/* Picking up objects */
-		else if (player->notice & PN_PICKUP)
+		else if (player->upkeep->notice & PN_PICKUP)
 		{
 			player->energy_use = do_autopickup() * 10;
 			if (player->energy_use > 100)
 				player->energy_use = 100;
-			player->notice &= ~(PN_PICKUP);
+			player->upkeep->notice &= ~(PN_PICKUP);
 			
 			/* Appropriate time for the player to see objects */
 			event_signal(EVENT_SEEFLOOR);
@@ -1101,7 +1101,7 @@ static void process_player(void)
 
 			/* Mega hack - redraw if big graphics - sorry NRM */
 			if ((tile_width > 1) || (tile_height > 1)) 
-			        player->redraw |= (PR_MAP);
+			        player->upkeep->redraw |= (PR_MAP);
 		}
 
 
@@ -1119,7 +1119,7 @@ static void process_player(void)
 			/* Hack -- constant hallucination */
 			if (player->timed[TMD_IMAGE])
 			{
-				player->redraw |= (PR_MAP);
+				player->upkeep->redraw |= (PR_MAP);
 			}
 
 			/* Shimmer multi-hued monsters */
@@ -1156,13 +1156,13 @@ static void process_player(void)
 
 		/* HACK: This will redraw the itemlist too frequently, but I'm don't
 		   know all the individual places it should go. */
-		player->redraw |= PR_ITEMLIST;
+		player->upkeep->redraw |= PR_ITEMLIST;
 	}
 
 	while (!player->energy_use && !player->leaving);
 
 	/* Notice stuff (if needed) */
-	if (player->notice) notice_stuff(player);
+	if (player->upkeep->notice) notice_stuff(player->upkeep);
 }
 
 static byte flicker = 0;
@@ -1230,7 +1230,7 @@ static void do_animation(void)
 			continue;
 
 		m_ptr->attr = attr;
-		player->redraw |= (PR_MAP | PR_MONLIST);
+		player->upkeep->redraw |= (PR_MAP | PR_MONLIST);
 	}
 
 	flicker++;
@@ -1249,7 +1249,7 @@ void idle_update(void)
 
 	/* Animate and redraw if necessary */
 	do_animation();
-	redraw_stuff(player);
+	redraw_stuff(player->upkeep);
 
 	/* Refresh the main screen */
 	Term_fresh();
@@ -1330,32 +1330,32 @@ static void dungeon(struct chunk *c)
 
 
 	/* Update stuff */
-	player->update |= (PU_BONUS | PU_HP | PU_MANA | PU_SPELLS);
+	player->upkeep->update |= (PU_BONUS | PU_HP | PU_MANA | PU_SPELLS);
 
 	/* Calculate torch radius */
-	player->update |= (PU_TORCH);
+	player->upkeep->update |= (PU_TORCH);
 
 	/* Update stuff */
-	update_stuff(player);
+	update_stuff(player->upkeep);
 
 
 	/* Fully update the visuals (and monster distances) */
-	player->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_DISTANCE);
+	player->upkeep->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_DISTANCE);
 
 	/* Fully update the flow */
-	player->update |= (PU_FORGET_FLOW | PU_UPDATE_FLOW);
+	player->upkeep->update |= (PU_FORGET_FLOW | PU_UPDATE_FLOW);
 
 	/* Redraw dungeon */
-	player->redraw |= (PR_BASIC | PR_EXTRA | PR_MAP);
+	player->upkeep->redraw |= (PR_BASIC | PR_EXTRA | PR_MAP);
 
 	/* Redraw "statusy" things */
-	player->redraw |= (PR_INVEN | PR_EQUIP | PR_MONSTER | PR_MONLIST | PR_ITEMLIST);
+	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP | PR_MONSTER | PR_MONLIST | PR_ITEMLIST);
 
 	/* Update stuff */
-	update_stuff(player);
+	update_stuff(player->upkeep);
 
 	/* Redraw stuff */
-	redraw_stuff(player);
+	redraw_stuff(player->upkeep);
 
 
 	/* Hack -- Decrease "xtra" depth */
@@ -1363,19 +1363,19 @@ static void dungeon(struct chunk *c)
 
 
 	/* Update stuff */
-	player->update |= (PU_BONUS | PU_HP | PU_MANA | PU_SPELLS);
+	player->upkeep->update |= (PU_BONUS | PU_HP | PU_MANA | PU_SPELLS);
 
 	/* Combine / Reorder the pack */
-	player->notice |= (PN_COMBINE | PN_REORDER | PN_SORT_QUIVER);
+	player->upkeep->notice |= (PN_COMBINE | PN_REORDER | PN_SORT_QUIVER);
 
 	/* Notice stuff */
-	notice_stuff(player);
+	notice_stuff(player->upkeep);
 
 	/* Update stuff */
-	update_stuff(player);
+	update_stuff(player->upkeep);
 
 	/* Redraw stuff */
-	redraw_stuff(player);
+	redraw_stuff(player->upkeep);
 
 	/* Refresh */
 	Term_fresh();
@@ -1426,7 +1426,7 @@ static void dungeon(struct chunk *c)
 			{
 			        /* Mega hack -redraw big graphics - sorry NRM */
 			        if ((tile_width > 1) || (tile_height > 1)) 
-				        player->redraw |= (PR_MAP);
+				        player->upkeep->redraw |= (PR_MAP);
 
 				/* Process the player */
 				process_player();
@@ -1434,13 +1434,13 @@ static void dungeon(struct chunk *c)
 		}
 
 		/* Notice stuff */
-		if (player->notice) notice_stuff(player);
+		if (player->upkeep->notice) notice_stuff(player->upkeep);
 
 		/* Update stuff */
-		if (player->update) update_stuff(player);
+		if (player->upkeep->update) update_stuff(player->upkeep);
 
 		/* Redraw stuff */
-		if (player->redraw) redraw_stuff(player);
+		if (player->upkeep->redraw) redraw_stuff(player->upkeep);
 
 		/* Place cursor on player/target */
 		place_cursor();
@@ -1453,13 +1453,13 @@ static void dungeon(struct chunk *c)
 		process_monsters(c, 100);
 
 		/* Notice stuff */
-		if (player->notice) notice_stuff(player);
+		if (player->upkeep->notice) notice_stuff(player->upkeep);
 
 		/* Update stuff */
-		if (player->update) update_stuff(player);
+		if (player->upkeep->update) update_stuff(player->upkeep);
 
 		/* Redraw stuff */
-		if (player->redraw) redraw_stuff(player);
+		if (player->upkeep->redraw) redraw_stuff(player->upkeep);
 
 		/* Place cursor on player/target */
 		place_cursor();
@@ -1472,13 +1472,13 @@ static void dungeon(struct chunk *c)
 		process_world(c);
 
 		/* Notice stuff */
-		if (player->notice) notice_stuff(player);
+		if (player->upkeep->notice) notice_stuff(player->upkeep);
 
 		/* Update stuff */
-		if (player->update) update_stuff(player);
+		if (player->upkeep->update) update_stuff(player->upkeep);
 
 		/* Redraw stuff */
-		if (player->redraw) redraw_stuff(player);
+		if (player->upkeep->redraw) redraw_stuff(player->upkeep);
 
 		/* Place cursor on player/target */
 		place_cursor();
@@ -1715,8 +1715,8 @@ void play_game(void)
 	event_signal(EVENT_ENTER_GAME);
 
 	/* Redraw stuff */
-	player->redraw |= (PR_INVEN | PR_EQUIP | PR_MONSTER | PR_MESSAGE);
-	redraw_stuff(player);
+	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP | PR_MONSTER | PR_MESSAGE);
+	redraw_stuff(player->upkeep);
 
 
 	/* Process some user pref files */
@@ -1759,13 +1759,13 @@ void play_game(void)
 		dungeon(cave);
 
 		/* Notice stuff */
-		if (player->notice) notice_stuff(player);
+		if (player->upkeep->notice) notice_stuff(player->upkeep);
 
 		/* Update stuff */
-		if (player->update) update_stuff(player);
+		if (player->upkeep->update) update_stuff(player->upkeep);
 
 		/* Redraw stuff */
-		if (player->redraw) redraw_stuff(player);
+		if (player->upkeep->redraw) redraw_stuff(player->upkeep);
 
 
 		/* Cancel the target */

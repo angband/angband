@@ -81,28 +81,28 @@ void do_cmd_redraw(void)
 
 
 	/* Combine and Reorder the pack (later) */
-	player->notice |= (PN_COMBINE | PN_REORDER);
+	player->upkeep->notice |= (PN_COMBINE | PN_REORDER);
 
 
 	/* Update torch */
-	player->update |= (PU_TORCH);
+	player->upkeep->update |= (PU_TORCH);
 
 	/* Update stuff */
-	player->update |= (PU_BONUS | PU_HP | PU_MANA | PU_SPELLS);
+	player->upkeep->update |= (PU_BONUS | PU_HP | PU_MANA | PU_SPELLS);
 
 	/* Fully update the visuals */
-	player->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
+	player->upkeep->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
 
 	/* Redraw everything */
-	player->redraw |= (PR_BASIC | PR_EXTRA | PR_MAP | PR_INVEN | PR_EQUIP |
-	                  PR_MESSAGE | PR_MONSTER | PR_OBJECT |
-					  PR_MONLIST | PR_ITEMLIST);
+	player->upkeep->redraw |= (PR_BASIC | PR_EXTRA | PR_MAP | PR_INVEN |
+							   PR_EQUIP | PR_MESSAGE | PR_MONSTER |
+							   PR_OBJECT | PR_MONLIST | PR_ITEMLIST);
 
 	/* Clear screen */
 	Term_clear();
 
 	/* Hack -- update */
-	handle_stuff(player);
+	handle_stuff(player->upkeep);
 
 	/* Place the cursor on the player */
 	if (0 != character_dungeon)
@@ -622,7 +622,7 @@ void do_cmd_locate(void)
 		change_panel(dir);
 
 		/* Handle stuff */
-		handle_stuff(player);
+		handle_stuff(player->upkeep);
 	}
 
 	/* Verify panel */
@@ -871,7 +871,7 @@ void do_cmd_query_symbol(void)
 		monster_race_track(r_ptr);
 
 		/* Hack -- Handle stuff */
-		handle_stuff(player);
+		handle_stuff(player->upkeep);
 
 		tb = textblock_new();
 		lore_title(tb, r_ptr);

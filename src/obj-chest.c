@@ -441,7 +441,7 @@ bool do_cmd_open_chest(int y, int x, s16b o_idx)
 		chest_death(y, x, o_idx);
 
 		/* Squelch chest if autosquelch calls for it */
-		player->notice |= PN_SQUELCH;
+		player->upkeep->notice |= PN_SQUELCH;
 
 	}
 

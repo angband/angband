@@ -1270,7 +1270,7 @@ static bool squelch_sval_menu_action(menu_type *m, const ui_event *event,
 		else
 			kind->squelch ^= SQUELCH_IF_UNAWARE;
 
-		player->notice |= PN_SQUELCH;
+		player->upkeep->notice |= PN_SQUELCH;
 		return TRUE;
 	}
 
@@ -1535,7 +1535,7 @@ void do_cmd_options_item(const char *title, int row)
 	menu_select(&menu, 0, FALSE);
 	screen_load();
 
-	player->notice |= PN_SQUELCH;
+	player->upkeep->notice |= PN_SQUELCH;
 
 	return;
 }

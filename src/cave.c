@@ -2135,10 +2135,10 @@ void wiz_light(struct chunk *c, bool full)
 	}
 
 	/* Fully update the visuals */
-	player->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
+	player->upkeep->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
 
 	/* Redraw whole map, monster list */
-	player->redraw |= (PR_MAP | PR_MONLIST | PR_ITEMLIST);
+	player->upkeep->redraw |= (PR_MAP | PR_MONLIST | PR_ITEMLIST);
 }
 
 
@@ -2178,10 +2178,10 @@ void wiz_dark(void)
 	}
 
 	/* Fully update the visuals */
-	player->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
+	player->upkeep->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
 
 	/* Redraw map, monster list */
-	player->redraw |= (PR_MAP | PR_MONLIST | PR_ITEMLIST);
+	player->upkeep->redraw |= (PR_MAP | PR_MONLIST | PR_ITEMLIST);
 }
 
 
@@ -2226,10 +2226,10 @@ void cave_illuminate(struct chunk *c, bool daytime)
 
 
 	/* Fully update the visuals */
-	player->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
+	player->upkeep->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
 
 	/* Redraw map, monster list */
-	player->redraw |= (PR_MAP | PR_MONLIST | PR_ITEMLIST);
+	player->upkeep->redraw |= (PR_MAP | PR_MONLIST | PR_ITEMLIST);
 }
 
 struct feature *square_feat(struct chunk *c, int y, int x)

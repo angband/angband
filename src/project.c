@@ -127,7 +127,7 @@ static void project_feature_handler_KILL_DOOR(project_feature_handler_context_t 
 			if (square_isdoor(cave, y, x))
 			{
 				/* Update the visuals */
-				player->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
+				player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 			}
 		}
 
@@ -254,10 +254,10 @@ static void project_feature_handler_KILL_WALL(project_feature_handler_context_t 
 	}
 
 	/* Update the visuals */
-	player->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
+	player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 
 	/* Fully update the flow */
-	player->update |= (PU_FORGET_FLOW | PU_UPDATE_FLOW);
+	player->upkeep->update |= (PU_FORGET_FLOW | PU_UPDATE_FLOW);
 }
 
 /* Make doors */
@@ -282,7 +282,7 @@ static void project_feature_handler_MAKE_DOOR(project_feature_handler_context_t 
 	if (sqinfo_on(cave->info[y][x], SQUARE_MARK)) context->obvious = TRUE;
 
 	/* Update the visuals */
-	player->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
+	player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 }
 
 /* Make traps */
@@ -318,7 +318,7 @@ static void project_feature_handler_LIGHT(project_feature_handler_context_t *con
 		}
 
 		/* Fully update the visuals */
-		player->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
+		player->upkeep->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
 	}
 }
 
@@ -345,7 +345,7 @@ static void project_feature_handler_DARK(project_feature_handler_context_t *cont
 		context->obvious = TRUE;
 
 		/* Fully update the visuals */
-		player->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
+		player->upkeep->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
 	}
 }
 
@@ -951,7 +951,7 @@ static void project_monster_handler_OLD_HEAL(project_monster_handler_context_t *
 	if (context->m_ptr->hp > context->m_ptr->maxhp) context->m_ptr->hp = context->m_ptr->maxhp;
 
 	/* Redraw (later) if needed */
-	if (player->health_who == context->m_ptr) player->redraw |= (PR_HEALTH);
+	if (player->health_who == context->m_ptr) player->upkeep->redraw |= (PR_HEALTH);
 
 	/* Message */
 	else context->hurt_msg = MON_MSG_HEALTHIER;
@@ -1139,7 +1139,7 @@ static void project_player_swap_stats(void)
     player->stat_max[jj] = max1;
     player->stat_cur[jj] = cur1;
 
-    player->update |= (PU_BONUS);
+    player->upkeep->update |= (PU_BONUS);
 
     return;
 }
@@ -1663,8 +1663,8 @@ int inven_damage(struct player *p, int type, int cperc)
 			/* Damage instead of destroy */
 			if (damage)
 			{
-				p->update |= (PU_BONUS);
-				p->redraw |= (PR_EQUIP);
+				p->upkeep->update |= (PU_BONUS);
+				p->upkeep->redraw |= (PR_EQUIP);
 
 				/* Casualty count */
 				amt = o_ptr->number;
@@ -2047,7 +2047,7 @@ static bool project_m_monster_attack(project_monster_handler_context_t *context,
 	}
 
 	/* Redraw (later) if needed */
-	if (player->health_who == m_ptr) player->redraw |= (PR_HEALTH);
+	if (player->health_who == m_ptr) player->upkeep->redraw |= (PR_HEALTH);
 
 	/* Wake the monster up */
 	mon_clear_timed(m_ptr, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, FALSE);
@@ -2409,7 +2409,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, int flg)
 		/* Update monster recall window */
 		if (player->monster_race == m_ptr->race) {
 			/* Window stuff */
-			player->redraw |= (PR_MONSTER);
+			player->upkeep->redraw |= (PR_MONSTER);
 		}
 	}
 
@@ -2702,7 +2702,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 	int *dam_at_dist = malloc((MAX_RANGE + 1) * sizeof(*dam_at_dist));
 
 	/* Flush any pending output */
-	handle_stuff(player);
+	handle_stuff(player->upkeep);
 
 	/* No projection path - jump to target */
 	if (flg & (PROJECT_JUMP)) {
@@ -2819,13 +2819,13 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 						print_rel(c, a, y, x);
 						move_cursor_relative(y, x);
 						Term_fresh();
-						if (player->redraw)
-							redraw_stuff(player);
+						if (player->upkeep->redraw)
+							redraw_stuff(player->upkeep);
 						Term_xtra(TERM_XTRA_DELAY, msec);
 						square_light_spot(cave, y, x);
 						Term_fresh();
-						if (player->redraw)
-							redraw_stuff(player);
+						if (player->upkeep->redraw)
+							redraw_stuff(player->upkeep);
 
 						/* Display "beam" grids */
 						if (flg & (PROJECT_BEAM)) {
@@ -3070,8 +3070,8 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 			if (i == num_grids) {
 				/* Flush each radius seperately */
 				Term_fresh();
-				if (player->redraw)
-					redraw_stuff(player);
+				if (player->upkeep->redraw)
+					redraw_stuff(player->upkeep);
 
 				/* Delay (efficiently) */
 				if (visual || drawn) {
@@ -3083,8 +3083,8 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 			else if (distance_to_grid[i + 1] > distance_to_grid[i]) {
 				/* Flush each radius seperately */
 				Term_fresh();
-				if (player->redraw)
-					redraw_stuff(player);
+				if (player->upkeep->redraw)
+					redraw_stuff(player->upkeep);
 
 				/* Delay (efficiently) */
 				if (visual || drawn) {
@@ -3112,8 +3112,8 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 
 			/* Flush the explosion */
 			Term_fresh();
-			if (player->redraw)
-				redraw_stuff(player);
+			if (player->upkeep->redraw)
+				redraw_stuff(player->upkeep);
 		}
 	}
 
@@ -3223,8 +3223,8 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 	}
 #endif
 	/* Update stuff if needed */
-	if (player->update)
-		update_stuff(player);
+	if (player->upkeep->update)
+		update_stuff(player->upkeep);
 
 	free(dam_at_dist);
 

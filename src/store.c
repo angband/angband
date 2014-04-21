@@ -1763,7 +1763,7 @@ void do_cmd_buy(struct command *cmd)
 	object_notice_everything(i_ptr);
 
 	/* Combine / Reorder the pack (later) */
-	player->notice |= (PN_COMBINE | PN_REORDER | PN_SORT_QUIVER | PN_SQUELCH);
+	player->upkeep->notice |= (PN_COMBINE | PN_REORDER | PN_SORT_QUIVER | PN_SQUELCH);
 
 	/* The object no longer belongs to the store */
 	i_ptr->ident &= ~(IDENT_STORE);
@@ -1790,7 +1790,7 @@ void do_cmd_buy(struct command *cmd)
 	}
 
 	/* Handle stuff */
-	handle_stuff(player);
+	handle_stuff(player->upkeep);
 
 	/* Remove the bought objects from the store if it's not a staple */
 	if (!store_is_staple(store, store->stock[item].kind)) {
@@ -1883,7 +1883,7 @@ void do_cmd_retrieve(struct command *cmd)
 	msg("You have %s (%c).", o_name, index_to_label(item_new));
 	
 	/* Handle stuff */
-	handle_stuff(player);
+	handle_stuff(player->upkeep);
 	
 	/* Remove the items from the home */
 	store_item_increase(store, item, -amt);
@@ -1977,10 +1977,10 @@ void do_cmd_sell(struct command *cmd)
 		history_add_artifact(o_ptr->artifact, TRUE, TRUE);
 
 	/* Combine / Reorder the pack (later) */
-	player->notice |= (PN_COMBINE | PN_REORDER | PN_SORT_QUIVER);
+	player->upkeep->notice |= (PN_COMBINE | PN_REORDER | PN_SORT_QUIVER);
 
 	/* Redraw stuff */
-	player->redraw |= (PR_INVEN | PR_EQUIP);
+	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
 
 	/* Get the "apparent" value */
 	dummy = object_value(&sold_item, amt, FALSE);
@@ -2017,17 +2017,17 @@ void do_cmd_sell(struct command *cmd)
 	}
 
 	/* Set squelch flag */
-	player->notice |= PN_SQUELCH;
+	player->upkeep->notice |= PN_SQUELCH;
 
 	/* Take the object from the player */
 	inven_item_increase(item, -amt);
 	inven_item_optimize(item);
 
 	/* Notice if pack items need to be combined or reordered */
-	notice_stuff(player);
+	notice_stuff(player->upkeep);
 
 	/* Handle stuff */
-	handle_stuff(player);
+	handle_stuff(player->upkeep);
 
 	/* The store gets that (known) object */
 	store_carry(store, &sold_item);
@@ -2094,7 +2094,7 @@ void do_cmd_stash(struct command *cmd)
 	inven_item_optimize(item);
 	
 	/* Handle stuff */
-	handle_stuff(player);
+	handle_stuff(player->upkeep);
 	
 	/* Let the home carry it */
 	home_carry(&dropped_item);

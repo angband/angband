@@ -219,8 +219,8 @@ void do_cmd_uninscribe(struct command *cmd)
 	o_ptr->note = 0;
 	msg("Inscription removed.");
 
-	player->notice |= (PN_COMBINE | PN_SQUELCH | PN_SORT_QUIVER);
-	player->redraw |= (PR_INVEN | PR_EQUIP);
+	player->upkeep->notice |= (PN_COMBINE | PN_SQUELCH | PN_SORT_QUIVER);
+	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
 }
 
 /* Add inscription */
@@ -256,8 +256,8 @@ void do_cmd_inscribe(struct command *cmd)
 	o_ptr->note = quark_add(str);
 	string_free((char *)str);
 
-	player->notice |= (PN_COMBINE | PN_SQUELCH | PN_SORT_QUIVER);
-	player->redraw |= (PR_INVEN | PR_EQUIP);
+	player->upkeep->notice |= (PN_COMBINE | PN_SQUELCH | PN_SORT_QUIVER);
+	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
 }
 
 
@@ -410,9 +410,9 @@ void wield_item(object_type *o_ptr, int item, int slot)
 	pack_overflow();
 
 	/* Recalculate bonuses, torch, mana */
-	player->notice |= PN_SORT_QUIVER;
-	player->update |= (PU_BONUS | PU_TORCH | PU_MANA);
-	player->redraw |= (PR_INVEN | PR_EQUIP);
+	player->upkeep->notice |= PN_SORT_QUIVER;
+	player->upkeep->update |= (PU_BONUS | PU_TORCH | PU_MANA);
+	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
 }
 
 
@@ -554,7 +554,7 @@ void do_cmd_destroy(struct command *cmd)
 		msgt(MSG_DESTROY, "Ignoring %s.", o_name);
 
 		o_ptr->ignore = TRUE;
-		player->notice |= PN_SQUELCH;
+		player->upkeep->notice |= PN_SQUELCH;
 	}
 }
 
@@ -684,8 +684,8 @@ static void use_aux(struct command *cmd, int item, enum use use, int snd)
 	player->energy_use = 100;
 
 	/* Mark as tried and redisplay */
-	player->notice |= (PN_COMBINE | PN_REORDER);
-	player->redraw |= (PR_INVEN | PR_EQUIP | PR_OBJECT);
+	player->upkeep->notice |= (PN_COMBINE | PN_REORDER);
+	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP | PR_OBJECT);
 
 	/*
 	 * If the player becomes aware of the item's function, then mark it as
@@ -700,7 +700,7 @@ static void use_aux(struct command *cmd, int item, enum use use, int snd)
 		object_flavor_aware(o_ptr);
 		if (tval_is_rod(o_ptr)) object_notice_everything(o_ptr);
 		player_exp_gain(player, (lev + (player->lev / 2)) / player->lev);
-		player->notice |= PN_SQUELCH;
+		player->upkeep->notice |= PN_SQUELCH;
 	}
 	else if (used)
 	{
@@ -973,10 +973,10 @@ static void refill_lamp(object_type *j_ptr, object_type *o_ptr, int item)
 		}
 
 		/* Combine / Reorder the pack (later) */
-		player->notice |= (PN_COMBINE | PN_REORDER);
+		player->upkeep->notice |= (PN_COMBINE | PN_REORDER);
 
 		/* Redraw stuff */
-		player->redraw |= (PR_INVEN);
+		player->upkeep->redraw |= (PR_INVEN);
 	}
 
 	/* Refilled from a flask */
@@ -1000,10 +1000,10 @@ static void refill_lamp(object_type *j_ptr, object_type *o_ptr, int item)
 	}
 
 	/* Recalculate torch */
-	player->update |= (PU_TORCH);
+	player->upkeep->update |= (PU_TORCH);
 
 	/* Redraw stuff */
-	player->redraw |= (PR_EQUIP);
+	player->upkeep->redraw |= (PR_EQUIP);
 }
 
 
@@ -1140,7 +1140,7 @@ void do_cmd_study_book(struct command *cmd)
 
 	o_ptr = object_from_item_idx(book);
 	track_object(book);
-	handle_stuff(player);
+	handle_stuff(player->upkeep);
 
 	/* Check the player can study at all atm */
 	if (!player_can_study(player, TRUE))
@@ -1279,7 +1279,7 @@ void textui_cmd_destroy_menu(int item)
 		squelch_level[type] = value;
 	}
 
-	player->notice |= PN_SQUELCH;
+	player->upkeep->notice |= PN_SQUELCH;
 
 	menu_dynamic_free(m);
 }
@@ -1300,7 +1300,7 @@ void textui_cmd_destroy(void)
 void textui_cmd_toggle_ignore(void)
 {
 	player->unignoring = !player->unignoring;
-	player->notice |= PN_SQUELCH;
+	player->upkeep->notice |= PN_SQUELCH;
 	do_cmd_redraw();
 }
 

@@ -63,7 +63,7 @@ bool hp_player(int num)
 		}
 
 		/* Redraw */
-		player->redraw |= (PR_HP);
+		player->upkeep->redraw |= (PR_HP);
 
 		/* Print a nice message */
 		if (num < 5)
@@ -195,7 +195,7 @@ bool res_stat(int stat)
 		player->stat_cur[stat] = player->stat_max[stat];
 
 		/* Recalculate bonuses */
-		player->update |= (PU_BONUS);
+		player->upkeep->update |= (PU_BONUS);
 
 		/* Success */
 		return (TRUE);
@@ -393,8 +393,8 @@ static int remove_curse_aux(bool heavy)
 		/* Uncurse, and update things */
 		uncurse_object(o_ptr);
 
-		player->update |= (PU_BONUS);
-		player->redraw |= (PR_EQUIP);
+		player->upkeep->update |= (PU_BONUS);
+		player->upkeep->redraw |= (PR_EQUIP);
 
 		/* Count the uncursings */
 		cnt++;
@@ -497,8 +497,8 @@ bool set_recall(void)
 	}
 
 	/* Redraw status line */
-	player->redraw = PR_STATUS;
-	handle_stuff(player);
+	player->upkeep->redraw = PR_STATUS;
+	handle_stuff(player->upkeep);
 
 	return TRUE;
 }
@@ -676,7 +676,7 @@ bool detect_traps(bool aware)
 		msg("You sense no traps.");
 
 	/* Mark the redraw flag */
-	player->redraw |= (PR_DTRAP);
+	player->upkeep->redraw |= (PR_DTRAP);
 
 	/* Result */
 	return (TRUE);
@@ -1000,7 +1000,7 @@ bool detect_monsters_invis(bool aware)
 			if (player->monster_race == m_ptr->race)
 			{
 				/* Redraw stuff */
-				player->redraw |= (PR_MONSTER);
+				player->upkeep->redraw |= (PR_MONSTER);
 			}
 			
 			/* Detect the monster */
@@ -1072,7 +1072,7 @@ bool detect_monsters_evil(bool aware)
 			if (player->monster_race == m_ptr->race)
 			{
 				/* Redraw stuff */
-				player->redraw |= (PR_MONSTER);
+				player->upkeep->redraw |= (PR_MONSTER);
 			}
 
 			/* Detect the monster */
@@ -1260,10 +1260,10 @@ bool apply_disenchant(int mode)
 	           ((o_ptr->number != 1) ? "were" : "was"));
 
 	/* Recalculate bonuses */
-	player->update |= (PU_BONUS);
+	player->upkeep->update |= (PU_BONUS);
 
 	/* Window stuff */
-	player->redraw |= (PR_EQUIP);
+	player->upkeep->redraw |= (PR_EQUIP);
 
 	/* Notice */
 	return (TRUE);
@@ -1417,13 +1417,13 @@ bool enchant(object_type *o_ptr, int n, int eflag)
 	if (!res) return (FALSE);
 
 	/* Recalculate bonuses */
-	player->update |= (PU_BONUS);
+	player->upkeep->update |= (PU_BONUS);
 
 	/* Combine / Reorder the pack (later) */
-	player->notice |= (PN_COMBINE | PN_REORDER | PN_SORT_QUIVER);
+	player->upkeep->notice |= (PN_COMBINE | PN_REORDER | PN_SORT_QUIVER);
 
 	/* Redraw stuff */
-	player->redraw |= (PR_INVEN | PR_EQUIP );
+	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP );
 
 	/* Success */
 	return (TRUE);
@@ -1626,10 +1626,10 @@ bool recharge(int spell_strength)
 	}
 
 	/* Combine / Reorder the pack (later) */
-	player->notice |= (PN_COMBINE | PN_REORDER);
+	player->upkeep->notice |= (PN_COMBINE | PN_REORDER);
 
 	/* Redraw stuff */
-	player->redraw |= (PR_INVEN);
+	player->upkeep->redraw |= (PR_INVEN);
 
 	/* Something was done */
 	return (TRUE);
@@ -1833,7 +1833,7 @@ bool banishment(void)
 	take_hit(player, dam, "the strain of casting Banishment");
 
 	/* Update monster list window */
-	player->redraw |= PR_MONLIST;
+	player->upkeep->redraw |= PR_MONLIST;
 
 	/* Success */
 	return TRUE;
@@ -1879,7 +1879,7 @@ bool mass_banishment(void)
 	result = (dam > 0) ? TRUE : FALSE;
 
 	/* Update monster list window */
-	if (result) player->redraw |= PR_MONLIST;
+	if (result) player->upkeep->redraw |= PR_MONLIST;
 
 	return (result);
 }
@@ -2093,7 +2093,7 @@ void teleport_player(int dis)
 	monster_swap(py, px, y, x);
 
 	/* Handle stuff XXX XXX XXX */
-	handle_stuff(player);
+	handle_stuff(player->upkeep);
 }
 
 /*
@@ -2144,7 +2144,7 @@ void teleport_player_to(int ny, int nx)
 	monster_swap(py, px, y, x);
 
 	/* Handle stuff XXX XXX XXX */
-	handle_stuff(player);
+	handle_stuff(player->upkeep);
 }
 
 /*
@@ -2288,13 +2288,13 @@ void destroy_area(int y1, int x1, int r, bool full)
 
 
 	/* Fully update the visuals */
-	player->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
+	player->upkeep->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
 
 	/* Fully update the flow */
-	player->update |= (PU_FORGET_FLOW | PU_UPDATE_FLOW);
+	player->upkeep->update |= (PU_FORGET_FLOW | PU_UPDATE_FLOW);
 
 	/* Redraw monster list */
-	player->redraw |= (PR_MONLIST | PR_ITEMLIST);
+	player->upkeep->redraw |= (PR_MONLIST | PR_ITEMLIST);
 }
 
 
@@ -2608,16 +2608,16 @@ void earthquake(int cy, int cx, int r)
 
 
 	/* Fully update the visuals */
-	player->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
+	player->upkeep->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
 
 	/* Fully update the flow */
-	player->update |= (PU_FORGET_FLOW | PU_UPDATE_FLOW);
+	player->upkeep->update |= (PU_FORGET_FLOW | PU_UPDATE_FLOW);
 
 	/* Update the health bar */
-	player->redraw |= (PR_HEALTH);
+	player->upkeep->redraw |= (PR_HEALTH);
 
 	/* Window stuff */
-	player->redraw |= (PR_MONLIST | PR_ITEMLIST);
+	player->upkeep->redraw |= (PR_MONLIST | PR_ITEMLIST);
 }
 
 /*
@@ -2648,10 +2648,10 @@ static void cave_light(struct point_set *ps)
 	}
 
 	/* Fully update the visuals */
-	player->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
+	player->upkeep->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
 
 	/* Update stuff */
-	update_stuff(player);
+	update_stuff(player->upkeep);
 
 	/* Process the grids */
 	for (i = 0; i < ps->n; i++)
@@ -2715,10 +2715,10 @@ static void cave_unlight(struct point_set *ps)
 	}
 
 	/* Fully update the visuals */
-	player->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
+	player->upkeep->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
 
 	/* Update stuff */
-	update_stuff(player);
+	update_stuff(player->upkeep);
 
 	/* Process the grids */
 	for (i = 0; i < ps->n; i++)
@@ -3159,13 +3159,13 @@ bool curse_armor(void)
 		flags_set(o_ptr->flags, OF_SIZE, OF_LIGHT_CURSE, OF_HEAVY_CURSE, FLAG_END);
 
 		/* Recalculate bonuses */
-		player->update |= (PU_BONUS);
+		player->upkeep->update |= (PU_BONUS);
 
 		/* Recalculate mana */
-		player->update |= (PU_MANA);
+		player->upkeep->update |= (PU_MANA);
 
 		/* Window stuff */
-		player->redraw |= (PR_INVEN | PR_EQUIP);
+		player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
 	}
 
 	return (TRUE);
@@ -3214,13 +3214,13 @@ bool curse_weapon(void)
 		flags_set(o_ptr->flags, OF_SIZE, OF_LIGHT_CURSE, OF_HEAVY_CURSE, FLAG_END);
 
 		/* Recalculate bonuses */
-		player->update |= (PU_BONUS);
+		player->upkeep->update |= (PU_BONUS);
 
 		/* Recalculate mana */
-		player->update |= (PU_MANA);
+		player->upkeep->update |= (PU_MANA);
 
 		/* Window stuff */
-		player->redraw |= (PR_INVEN | PR_EQUIP);
+		player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
 	}
 
 	/* Notice */
@@ -3276,10 +3276,10 @@ void brand_object(object_type *o_ptr, const char *name)
 		object_notice_ego(o_ptr);
 
 		/* Combine / Reorder the pack (later) */
-		player->notice |= (PN_COMBINE | PN_REORDER | PN_SORT_QUIVER);
+		player->upkeep->notice |= (PN_COMBINE | PN_REORDER | PN_SORT_QUIVER);
 
 		/* Window stuff */
-		player->redraw |= (PR_INVEN | PR_EQUIP);
+		player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
 
 		/* Enchant */
 		enchant(o_ptr, randint0(3) + 4, ENCH_TOHIT | ENCH_TODAM);
@@ -3452,13 +3452,13 @@ void do_ident_item(object_type *o_ptr)
 	apply_autoinscription(o_ptr);
 
 	/* Set squelch flag */
-	player->notice |= PN_SQUELCH;
+	player->upkeep->notice |= PN_SQUELCH;
 
 	/* Recalculate bonuses */
-	player->update |= (PU_BONUS);
+	player->upkeep->update |= (PU_BONUS);
 
 	/* Window stuff */
-	player->redraw |= (PR_INVEN | PR_EQUIP);
+	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
 
     /* Create a copy of the object for later reference, since o_ptr will remain the same after
      * combinging and reordering. */

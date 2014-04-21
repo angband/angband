@@ -205,11 +205,11 @@ bool player_set_timed(struct player *p, int idx, int v, bool notify)
 	disturb(p, 0);
 
 	/* Update the visuals, as appropriate. */
-	p->update |= effect->flag_update;
-	p->redraw |= (PR_STATUS | effect->flag_redraw);
+	p->upkeep->update |= effect->flag_update;
+	p->upkeep->redraw |= (PR_STATUS | effect->flag_redraw);
 
 	/* Handle stuff */
-	handle_stuff(p);
+	handle_stuff(p->upkeep);
 
 	/* Result */
 	return TRUE;
@@ -393,13 +393,13 @@ static bool set_stun(struct player *p, int v)
 	disturb(player, 0);
 
 	/* Recalculate bonuses */
-	p->update |= (PU_BONUS);
+	p->upkeep->update |= (PU_BONUS);
 
 	/* Redraw the "stun" */
-	p->redraw |= (PR_STATUS);
+	p->upkeep->redraw |= (PR_STATUS);
 
 	/* Handle stuff */
-	handle_stuff(player);
+	handle_stuff(player->upkeep);
 
 	/* Result */
 	return (TRUE);
@@ -605,13 +605,13 @@ static bool set_cut(struct player *p, int v)
 	disturb(player, 0);
 
 	/* Recalculate bonuses */
-	p->update |= (PU_BONUS);
+	p->upkeep->update |= (PU_BONUS);
 
 	/* Redraw the "cut" */
-	p->redraw |= (PR_STATUS);
+	p->upkeep->redraw |= (PR_STATUS);
 
 	/* Handle stuff */
-	handle_stuff(player);
+	handle_stuff(player->upkeep);
 
 	/* Result */
 	return (TRUE);
@@ -708,13 +708,13 @@ bool player_set_food(struct player *p, int v)
 	disturb(player, 0);
 
 	/* Recalculate bonuses */
-	p->update |= (PU_BONUS);
+	p->upkeep->update |= (PU_BONUS);
 
 	/* Redraw hunger */
-	p->redraw |= (PR_STATUS);
+	p->upkeep->redraw |= (PR_STATUS);
 
 	/* Handle stuff */
-	handle_stuff(player);
+	handle_stuff(player->upkeep);
 
 	/* Result */
 	return (TRUE);

@@ -840,7 +840,7 @@ void run_step(int dir)
 		player->running = 1000;
 
 		/* Calculate torch radius */
-		player->update |= (PU_TORCH);
+		player->upkeep->update |= (PU_TORCH);
 	}
 
 	/* Continue run */

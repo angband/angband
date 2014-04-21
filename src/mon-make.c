@@ -997,7 +997,7 @@ static bool place_new_monster_one(struct chunk *c, int y, int x, monster_race *r
 
 	/* Radiate light? */
 	if (rf_has(race->flags, RF_HAS_LIGHT))
-		player->update |= PU_UPDATE_VIEW;
+		player->upkeep->update |= PU_UPDATE_VIEW;
 	
 	/* Is this obviously a monster? (Mimics etc. aren't) */
 	if (rf_has(race->flags, RF_UNAWARE)) 
@@ -1406,7 +1406,7 @@ void monster_death(struct monster *m_ptr, bool stats)
 		lore_treasure(m_ptr, dump_item, dump_gold);
 
 	/* Update monster list window */
-	player->redraw |= PR_MONLIST;
+	player->upkeep->redraw |= PR_MONLIST;
 
 	/* Check if we finished a quest */
 	quest_check(m_ptr);
@@ -1436,7 +1436,7 @@ bool mon_take_hit(struct monster *m_ptr, int dam, bool *fear, const char *note)
 
 
 	/* Redraw (later) if needed */
-	if (player->health_who == m_ptr) player->redraw |= (PR_HEALTH);
+	if (player->health_who == m_ptr) player->upkeep->redraw |= (PR_HEALTH);
 
 	/* Wake it up */
 	mon_clear_timed(m_ptr, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, FALSE);

@@ -119,7 +119,7 @@ const s32b player_exp[PY_MAX_LEVEL] =
 void health_track(struct player *p, struct monster *m_ptr)
 {
 	p->health_who = m_ptr;
-	p->redraw |= PR_HEALTH;
+	p->upkeep->redraw |= PR_HEALTH;
 }
 
 /*
@@ -131,7 +131,7 @@ void monster_race_track(monster_race *race)
 	player->monster_race = race;
 
 	/* Window stuff */
-	player->redraw |= (PR_MONSTER);
+	player->upkeep->redraw |= (PR_MONSTER);
 }
 
 
@@ -143,14 +143,14 @@ void track_object(int item)
 {
 	player->object_idx = item;
 	player->object_kind = NULL;
-	player->redraw |= (PR_OBJECT);
+	player->upkeep->redraw |= (PR_OBJECT);
 }
 
 void track_object_kind(struct object_kind *kind)
 {
 	player->object_idx = NO_OBJECT;
 	player->object_kind = kind;
-	player->redraw |= (PR_OBJECT);
+	player->upkeep->redraw |= (PR_OBJECT);
 }
 
 bool tracked_object_is(int item)
@@ -182,7 +182,7 @@ bool player_stat_inc(struct player *p, int stat)
 	if (p->stat_cur[stat] > p->stat_max[stat])
 		p->stat_max[stat] = p->stat_cur[stat];
 	
-	p->update |= PU_BONUS;
+	p->upkeep->update |= PU_BONUS;
 	return TRUE;
 }
 
@@ -216,8 +216,8 @@ bool player_stat_dec(struct player *p, int stat, bool permanent)
 	if (res) {
 		p->stat_cur[stat] = cur;
 		p->stat_max[stat] = max;
-		p->update |= (PU_BONUS);
-		p->redraw |= (PR_STATS);
+		p->upkeep->update |= (PU_BONUS);
+		p->upkeep->redraw |= (PR_STATS);
 	}
 
 	return res;
@@ -240,9 +240,9 @@ static void adjust_level(struct player *p, bool verbose)
 	if (p->exp > p->max_exp)
 		p->max_exp = p->exp;
 
-	p->redraw |= PR_EXP;
+	p->upkeep->redraw |= PR_EXP;
 
-	handle_stuff(p);
+	handle_stuff(p->upkeep);
 
 	while ((p->lev > 1) &&
 	       (p->exp < (player_exp[p->lev-2] *
@@ -284,9 +284,9 @@ static void adjust_level(struct player *p, bool verbose)
 	                           p->expfact / 100L)))
 		p->max_lev++;
 
-	p->update |= (PU_BONUS | PU_HP | PU_MANA | PU_SPELLS);
-	p->redraw |= (PR_LEV | PR_TITLE | PR_EXP | PR_STATS);
-	handle_stuff(p);
+	p->upkeep->update |= (PU_BONUS | PU_HP | PU_MANA | PU_SPELLS);
+	p->upkeep->redraw |= (PR_LEV | PR_TITLE | PR_EXP | PR_STATS);
+	handle_stuff(p->upkeep);
 }
 
 void player_exp_gain(struct player *p, s32b amount)
@@ -342,7 +342,7 @@ bool player_restore_mana(struct player *p, int amt) {
 	if (p->csp > p->msp) {
 		p->csp = p->msp;
 	}
-	p->redraw |= PR_MANA;
+	p->upkeep->redraw |= PR_MANA;
 
 	msg("You feel some of your energies returning.");
 

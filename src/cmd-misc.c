@@ -65,10 +65,10 @@ void do_cmd_wizard(void)
 	}
 
 	/* Update monsters */
-	player->update |= (PU_MONSTERS);
+	player->upkeep->update |= (PU_MONSTERS);
 
 	/* Redraw "title" */
-	player->redraw |= (PR_TITLE);
+	player->upkeep->redraw |= (PR_TITLE);
 }
 
 
