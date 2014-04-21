@@ -231,21 +231,22 @@ static void context_menu_player_display_floor(void)
 	int diff = weight_remaining();
 
 	/* Hack -- Start in "inventory" mode */
-	player->command_wrk = (USE_FLOOR);
+	player->upkeep->command_wrk = (USE_FLOOR);
 
 	/* Save screen */
 	screen_save();
 
 	/* Prompt for a command */
 	prt(format("(Inventory) Burden %d.%d lb (%d.%d lb %s). Item for command: ",
-			   player->total_weight / 10, player->total_weight % 10,
+			   player->upkeep->total_weight / 10,
+			   player->upkeep->total_weight % 10,
 			   abs(diff) / 10, abs(diff) % 10,
-			   (diff < 0 ? "overweight" : "remaining")),
-		0, 0);
+			   (diff < 0 ? "overweight" : "remaining")), 0, 0);
 
 
 	/* Get an item to use a context command on */
-	if (get_item(&diff, NULL, NULL, CMD_NULL, NULL, USE_EQUIP|USE_INVEN|USE_FLOOR|SHOW_EMPTY|IS_HARMLESS)) {
+	if (get_item(&diff, NULL, NULL, CMD_NULL, NULL, 
+				 USE_EQUIP|USE_INVEN|USE_FLOOR|SHOW_EMPTY|IS_HARMLESS)) {
 		object_type *o_ptr;
 
 		/* Track the object kind */

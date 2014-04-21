@@ -993,10 +993,10 @@ static void wiz_quantity_item(object_type *o_ptr, bool carried)
 		if (carried)
 		{
 			/* Remove the weight of the old number of objects */
-			player->total_weight -= (o_ptr->number * o_ptr->weight);
+			player->upkeep->total_weight -= (o_ptr->number * o_ptr->weight);
 
 			/* Add the weight of the new number of objects */
-			player->total_weight += (tmp_int * o_ptr->weight);
+			player->upkeep->total_weight += (tmp_int * o_ptr->weight);
 		}
 
 		/* Adjust charges/timeouts for devices */
@@ -1285,7 +1285,7 @@ static void do_cmd_wiz_jump(void)
 	player->depth = depth;
 
 	/* Leaving */
-	player->leaving = TRUE;
+	player->upkeep->leaving = TRUE;
 }
 
 

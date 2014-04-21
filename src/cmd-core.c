@@ -603,7 +603,7 @@ void process_command(cmd_context ctx, bool no_request)
 	struct command *cmd;
 
 	/* Reset so that when selecting items, we look in the default location */
-	player->command_wrk = 0;
+	player->upkeep->command_wrk = 0;
 
 	/* If we've got a command to process, do it. */
 	if (cmdq_pop(ctx, &cmd, !no_request) == 0)

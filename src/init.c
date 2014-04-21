@@ -3193,11 +3193,9 @@ static errr init_other(void)
 	quest_init();
 
 
-	/*** Prepare the inventory ***/
-
-	/* Allocate it */
+	/* Allocate player sub-structs */
 	player->inventory = C_ZNEW(ALL_INVEN_TOTAL, object_type);
-
+	player->upkeep = mem_zalloc(sizeof(player_upkeep));
 
 
 	/*** Prepare the options ***/
@@ -3455,6 +3453,7 @@ void cleanup_angband(void)
 
 	quest_free();
 
+	mem_free(player->upkeep);
 	FREE(player->inventory);
 
 	/* Free the lore list */

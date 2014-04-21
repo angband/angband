@@ -278,7 +278,7 @@ void do_cmd_takeoff(struct command *cmd)
 
 	(void)inven_takeoff(item, 255);
 	pack_overflow();
-	player->energy_use = 50;
+	player->upkeep->energy_use = 50;
 }
 
 
@@ -306,7 +306,7 @@ void wield_item(object_type *o_ptr, int item, int slot)
 	}
 
 	/* Take a turn */
-	player->energy_use = 100;
+	player->upkeep->energy_use = 100;
 
 	/* Obtain local object */
 	object_copy(i_ptr, o_ptr);
@@ -358,11 +358,11 @@ void wield_item(object_type *o_ptr, int item, int slot)
 		object_copy(o_ptr, i_ptr);
 
 		/* Increment the equip counter by hand */
-		player->equip_cnt++;
+		player->upkeep->equip_cnt++;
 	}
 
 	/* Increase the weight */
-	player->total_weight += i_ptr->weight * num;
+	player->upkeep->total_weight += i_ptr->weight * num;
 
 	/* Track object if necessary */
 	if (track_wielded_item)
@@ -524,7 +524,7 @@ void do_cmd_drop(struct command *cmd)
 	}
 
 	inven_drop(item, amt);
-	player->energy_use = 50;
+	player->upkeep->energy_use = 50;
 }
 
 /* Destroy an item */
@@ -681,7 +681,7 @@ static void use_aux(struct command *cmd, int item, enum use use, int snd)
 		player_set_food(player, player->food + o_ptr->pval);
 
 	/* Use the turn */
-	player->energy_use = 100;
+	player->upkeep->energy_use = 100;
 
 	/* Mark as tried and redisplay */
 	player->upkeep->notice |= (PN_COMBINE | PN_REORDER);
@@ -956,7 +956,7 @@ static void refill_lamp(object_type *j_ptr, object_type *o_ptr, int item)
 
 			/* Unstack the used item */
 			o_ptr->number--;
-			player->total_weight -= i_ptr->weight;
+			player->upkeep->total_weight -= i_ptr->weight;
 
 			/* Carry or drop */
 			if (item >= 0)
@@ -1037,7 +1037,7 @@ void do_cmd_refill(struct command *cmd)
 		return;
 	}
 
-	player->energy_use = 50;
+	player->upkeep->energy_use = 50;
 }
 
 
@@ -1095,7 +1095,7 @@ void do_cmd_cast(struct command *cmd)
 
 	/* Cast a spell */
 	if (spell_cast(spell, dir))
-		player->energy_use = 100;
+		player->upkeep->energy_use = 100;
 }
 
 
@@ -1116,7 +1116,7 @@ void do_cmd_study_spell(struct command *cmd)
 		return;
 
 	spell_learn(spell);
-	player->energy_use = 100;
+	player->upkeep->energy_use = 100;
 }
 
 /* Gain a random spell from the given book (for priests) */
@@ -1162,7 +1162,7 @@ void do_cmd_study_book(struct command *cmd)
 	else
 	{
 		spell_learn(spell);
-		player->energy_use = 100;	
+		player->upkeep->energy_use = 100;	
 	}
 }
 

@@ -870,7 +870,7 @@ static bool spell_handler_prayer_ALTER_REALITY(spell_handler_context_t *context)
 	msg("The world changes!");
 
 	/* Leaving */
-	player->leaving = TRUE;
+	player->upkeep->leaving = TRUE;
 
 	return TRUE;
 }

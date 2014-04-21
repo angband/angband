@@ -73,7 +73,7 @@ enum
 /*
  * Like the previous but takes into account the (variably full quiver).
  */
-#define INVEN_MAX_PACK  (INVEN_PACK - player->quiver_slots)
+#define INVEN_MAX_PACK  (INVEN_PACK - player->upkeep->quiver_slots)
 
 /*
  * Indexes used for various "equipment" slots (hard-coded by savefiles, etc).
@@ -254,6 +254,8 @@ typedef struct player {
 	s16b deep_descent;	/* Deep Descent counter */
 
 	s16b energy;		/* Current energy */
+	u32b total_energy;	/* Total energy used (including resting) */
+	u32b resting_turn;	/* Number of player turns spent resting */
 
 	s16b food;			/* Current nutrition */
 
@@ -271,52 +273,12 @@ typedef struct player {
 	char *history;
 
 	u16b total_winner;		/* Total winner */
-	u16b panic_save;		/* Panic save */
 
 	u16b noscore;			/* Cheating flags */
 
 	bool is_dead;			/* Player is dead */
 
 	bool wizard;			/* Player is in wizard mode */
-
-
-	/*** Temporary fields ***/
-
-	bool playing;			/* True if player is playing */
-	bool leaving;			/* True if player is leaving */
-	bool autosave;          /* True if autosave is pending */
-
-	bool create_up_stair;	/* Create up stair on next level */
-	bool create_down_stair;	/* Create down stair on next level */
-
-	s32b total_weight;		/* Total weight being carried */
-
-	s16b inven_cnt;			/* Number of items in inventory */
-	s16b equip_cnt;			/* Number of items in equipment */
-
-	struct monster *health_who;		/* Health bar trackee */
-
-	struct monster_race *monster_race;	/* Monster race trackee */
-
-	s16b object_idx;    /* Object trackee */
-	struct object_kind *object_kind;	/* Object kind trackee */
-
-	s16b energy_use;		/* Energy use this turn */
-
-	s16b resting;			/* Resting counter */
-	s16b running;			/* Running counter */
-	bool running_withpathfind;      /* Are we using the pathfinder ? */
-	bool running_firststep;  /* Is this our first step running? */
-
-	s16b command_wrk;		/* Used by the UI to decide whether
-					   to start off showing equipment or
-					   inventory listings when offering
-					   a choice.  See obj/obj-ui.c*/
-
-	s16b new_spells;		/* Number of spells available */
-
-	u32b total_energy;	/* Total energy used (including resting) */
-	u32b resting_turn;	/* Number of player turns spent resting */
 
 	/* Generation fields (for quick start) */
 	s32b au_birth;          /* Birth gold when option birth_money is false */
@@ -327,13 +289,8 @@ typedef struct player {
 	/* Variable and calculatable player state */
 	player_state state;
 
-	/* Tracking of various housekeeping things that need to be done */
+	/* Tracking of various temporary player-related values */
 	player_upkeep *upkeep;
-
-	/* "cached" quiver statistics*/
-	u16b quiver_size;
-	u16b quiver_slots;
-	u16b quiver_remainder;
 
 	struct object *inventory;
 } player_type;

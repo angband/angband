@@ -344,12 +344,12 @@ void new_player_spot(struct chunk *c, struct player *p)
 
     /* Create stairs the player came down if allowed and necessary */
     if (OPT(birth_no_stairs)) {
-    } else if (p->create_down_stair) {
+    } else if (p->upkeep->create_down_stair) {
 		square_set_feat(c, y, x, FEAT_MORE);
-		p->create_down_stair = FALSE;
-    } else if (p->create_up_stair) {
+		p->upkeep->create_down_stair = FALSE;
+    } else if (p->upkeep->create_up_stair) {
 		square_set_feat(c, y, x, FEAT_LESS);
-		p->create_up_stair = FALSE;
+		p->upkeep->create_up_stair = FALSE;
     }
 
     player_place(c, p, y, x);

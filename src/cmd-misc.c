@@ -106,10 +106,10 @@ void do_cmd_try_debug(void)
 void do_cmd_quit(struct command *cmd)
 {
 	/* Stop playing */
-	player->playing = FALSE;
+	player->upkeep->playing = FALSE;
 
 	/* Leaving */
-	player->leaving = TRUE;
+	player->upkeep->leaving = TRUE;
 }
 
 
@@ -141,10 +141,10 @@ void do_cmd_suicide(struct command *cmd)
 	player->is_dead = TRUE;
 
 	/* Stop playing */
-	player->playing = FALSE;
+	player->upkeep->playing = FALSE;
 
 	/* Leaving */
-	player->leaving = TRUE;
+	player->upkeep->leaving = TRUE;
 
 	/* Cause of death */
 	my_strcpy(player->died_from, "Quitting", sizeof(player->died_from));

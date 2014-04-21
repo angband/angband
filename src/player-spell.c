@@ -323,14 +323,15 @@ void spell_learn(int spell)
 	           p, get_spell_name(player->class->spell_book, spell));
 
 	/* One less spell available */
-	player->new_spells--;
+	player->upkeep->new_spells--;
 
 	/* Message if needed */
-	if (player->new_spells)
+	if (player->upkeep->new_spells)
 	{
 		/* Message */
 		msg("You can learn %d more %s%s.",
-		           player->new_spells, p, PLURAL(player->new_spells));
+		           player->upkeep->new_spells, p, 
+			PLURAL(player->upkeep->new_spells));
 	}
 
 	/* Redraw Study Status */

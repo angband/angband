@@ -121,10 +121,10 @@ void dungeon_change_level(int dlev)
 	}
 
 	/* Leaving */
-	player->leaving = TRUE;
+	player->upkeep->leaving = TRUE;
 
 	/* Save the game when we arrive on the new level. */
-	player->autosave = TRUE;
+	player->upkeep->autosave = TRUE;
 }
 
 
@@ -260,7 +260,8 @@ static void regen_monsters(void)
 			if (m_ptr->hp > m_ptr->maxhp) m_ptr->hp = m_ptr->maxhp;
 
 			/* Redraw (later) if needed */
-			if (player->health_who == m_ptr) player->upkeep->redraw |= (PR_HEALTH);
+			if (player->upkeep->health_who == m_ptr) 
+				player->upkeep->redraw |= (PR_HEALTH);
 		}
 	}
 }
@@ -897,10 +898,10 @@ static void process_player_aux(void)
 	static byte	old_cast_spell = 0;
 
 	/* Tracking a monster */
-	if (player->monster_race)
+	if (player->upkeep->monster_race)
 	{
 		/* Get the monster lore */
-		monster_lore *l_ptr = get_lore(player->monster_race);
+		monster_lore *l_ptr = get_lore(player->upkeep->monster_race);
 
 		for (i = 0; i < MONSTER_BLOW_MAX; i++)
 		{
@@ -913,14 +914,14 @@ static void process_player_aux(void)
 
 		/* Check for change of any kind */
 		if (changed ||
-		    (old_monster_race != player->monster_race) ||
+		    (old_monster_race != player->upkeep->monster_race) ||
 		    !rf_is_equal(old_flags, l_ptr->flags) ||
 		    !rsf_is_equal(old_spell_flags, l_ptr->spell_flags) ||
 		    (old_cast_innate != l_ptr->cast_innate) ||
 		    (old_cast_spell != l_ptr->cast_spell))
 		{
 			/* Memorize old race */
-			old_monster_race = player->monster_race;
+			old_monster_race = player->upkeep->monster_race;
 
 			/* Memorize flags */
 			rf_copy(old_flags, l_ptr->flags);
@@ -980,7 +981,7 @@ static void process_player(void)
 	player_resting_complete_special(player);
 
 	/* Check for "player abort" */
-	if (player->running ||
+	if (player->upkeep->running ||
 	    cmd_get_nrepeats() > 0 ||
 	    (player_is_resting(player) && !(turn & 0x7F)))
 	{
@@ -1026,7 +1027,7 @@ static void process_player(void)
 		pack_overflow();
 
 		/* Assume free turn */
-		player->energy_use = 0;
+		player->upkeep->energy_use = 0;
 
 		/* Dwarves detect treasure */
 		if (player_has(PF_SEE_ORE))
@@ -1046,15 +1047,15 @@ static void process_player(void)
 		if ((player->timed[TMD_PARALYZED]) || (player->timed[TMD_STUN] >= 100))
 		{
 			/* Take a turn */
-			player->energy_use = 100;
+			player->upkeep->energy_use = 100;
 		}
 
 		/* Picking up objects */
 		else if (player->upkeep->notice & PN_PICKUP)
 		{
-			player->energy_use = do_autopickup() * 10;
-			if (player->energy_use > 100)
-				player->energy_use = 100;
+			player->upkeep->energy_use = do_autopickup() * 10;
+			if (player->upkeep->energy_use > 100)
+				player->upkeep->energy_use = 100;
 			player->upkeep->notice &= ~(PN_PICKUP);
 			
 			/* Appropriate time for the player to see objects */
@@ -1068,7 +1069,7 @@ static void process_player(void)
 		}
 
 		/* Running */
-		else if (player->running)
+		else if (player->upkeep->running)
 		{
 			/* Take a step */
 			run_step(0);
@@ -1108,13 +1109,13 @@ static void process_player(void)
 		/*** Clean up ***/
 
 		/* Significant */
-		if (player->energy_use)
+		if (player->upkeep->energy_use)
 		{
 			/* Use some energy */
-			player->energy -= player->energy_use;
+			player->energy -= player->upkeep->energy_use;
 
 			/* Increment the total energy counter */
-			player->total_energy += player->energy_use;
+			player->total_energy += player->upkeep->energy_use;
 
 			/* Hack -- constant hallucination */
 			if (player->timed[TMD_IMAGE])
@@ -1159,7 +1160,7 @@ static void process_player(void)
 		player->upkeep->redraw |= PR_ITEMLIST;
 	}
 
-	while (!player->energy_use && !player->leaving);
+	while (!player->upkeep->energy_use && !player->upkeep->leaving);
 
 	/* Notice stuff (if needed) */
 	if (player->upkeep->notice) notice_stuff(player->upkeep);
@@ -1275,7 +1276,7 @@ static void dungeon(struct chunk *c)
 
 
 	/* Not leaving */
-	player->leaving = FALSE;
+	player->upkeep->leaving = FALSE;
 
 
 	/* Cancel the target */
@@ -1307,10 +1308,10 @@ static void dungeon(struct chunk *c)
 	}
 
 	/* If autosave is pending, do it now. */
-	if (player->autosave)
+	if (player->upkeep->autosave)
 	{
 		save_game();
-		player->autosave = FALSE;
+		player->upkeep->autosave = FALSE;
 	}
 
 	/* Choose panel */
@@ -1413,7 +1414,7 @@ static void dungeon(struct chunk *c)
 			compact_objects(0);
 
 		/* Can the player move? */
-		while ((player->energy >= 100) && !player->leaving)
+		while ((player->energy >= 100) && !player->upkeep->leaving)
 		{
     		/* Do any necessary animations */
     		do_animation(); 
@@ -1422,7 +1423,7 @@ static void dungeon(struct chunk *c)
 			process_monsters(c, (byte)(player->energy + 1));
 
 			/* if still alive */
-			if (!player->leaving)
+			if (!player->upkeep->leaving)
 			{
 			        /* Mega hack -redraw big graphics - sorry NRM */
 			        if ((tile_width > 1) || (tile_height > 1)) 
@@ -1446,7 +1447,7 @@ static void dungeon(struct chunk *c)
 		place_cursor();
 
 		/* Handle "leaving" */
-		if (player->leaving) break;
+		if (player->upkeep->leaving) break;
 
 
 		/* Process all of the monsters */
@@ -1465,7 +1466,7 @@ static void dungeon(struct chunk *c)
 		place_cursor();
 
 		/* Handle "leaving" */
-		if (player->leaving) break;
+		if (player->upkeep->leaving) break;
 
 
 		/* Process the world */
@@ -1484,7 +1485,7 @@ static void dungeon(struct chunk *c)
 		place_cursor();
 
 		/* Handle "leaving" */
-		if (player->leaving) break;
+		if (player->upkeep->leaving) break;
 
 		/*** Apply energy ***/
 
@@ -1685,9 +1686,9 @@ void play_game(void)
 		do_randart(seed_randart, TRUE);
 
 	/* Initialize temporary fields sensibly */
-	player->object_idx = NO_OBJECT;
-	player->object_kind = NULL;
-	player->monster_race = NULL;
+	player->upkeep->object_idx = NO_OBJECT;
+	player->upkeep->object_kind = NULL;
+	player->upkeep->monster_race = NULL;
 
 	/* Set the savefile name if it's not already set */
 	if (!savefile[0])
@@ -1741,10 +1742,10 @@ void play_game(void)
 
 
 	/* Start playing */
-	player->playing = TRUE;
+	player->upkeep->playing = TRUE;
 
 	/* Save not required yet. */
-	player->autosave = FALSE;
+	player->upkeep->autosave = FALSE;
 
 	/* Hack -- Enforce "delayed death" */
 	if (player->chp < 0) player->is_dead = TRUE;
@@ -1780,14 +1781,14 @@ void play_game(void)
 
 
 		/* Handle "quit and save" */
-		if (!player->playing && !player->is_dead) break;
+		if (!player->upkeep->playing && !player->is_dead) break;
 
 
 		/* XXX XXX XXX */
 		message_flush();
 
 		/* Accidental Death */
-		if (player->playing && player->is_dead) {
+		if (player->upkeep->playing && player->is_dead) {
 			/* XXX-elly: this does not belong here. Refactor or
 			 * remove. Very similar to do_cmd_wiz_cure_all(). */
 			if ((player->wizard || OPT(cheat_live)) && !get_check("Die? ")) {
@@ -1846,7 +1847,7 @@ void play_game(void)
 				player->depth = 0;
 
 				/* Leaving */
-				player->leaving = TRUE;
+				player->upkeep->leaving = TRUE;
 			}
 		}
 

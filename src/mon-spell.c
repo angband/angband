@@ -150,7 +150,7 @@ static void drain_mana(struct monster *m_ptr, int rlev, bool seen)
 			m_ptr->hp = m_ptr->maxhp;
 
 		/* Redraw (later) if needed */
-		if (player->health_who == m_ptr)
+		if (player->upkeep->health_who == m_ptr)
 			player->upkeep->redraw |= (PR_HEALTH);
 
 		/* Special message */
@@ -195,7 +195,8 @@ static void heal_self(struct monster *m_ptr, int rlev, bool seen)
 	}
 
 	/* Redraw (later) if needed */
-	if (player->health_who == m_ptr) player->upkeep->redraw |= (PR_HEALTH);
+	if (player->upkeep->health_who == m_ptr)
+		player->upkeep->redraw |= (PR_HEALTH);
 
 	/* Cancel fear */
 	if (m_ptr->m_timed[MON_TMD_FEAR]) {

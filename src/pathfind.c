@@ -459,7 +459,7 @@ static void run_init(int dir)
 	bool shortleft, shortright;
 
 	/* Mark that we're starting a run */
-	player->running_firststep = TRUE;
+	player->upkeep->running_firststep = TRUE;
 
 	/* Save the direction */
 	run_cur_dir = dir;
@@ -837,7 +837,7 @@ void run_step(int dir)
 		run_init(dir);
 
 		/* Hack -- Set the run counter */
-		player->running = 1000;
+		player->upkeep->running = 1000;
 
 		/* Calculate torch radius */
 		player->upkeep->update |= (PU_TORCH);
@@ -846,7 +846,7 @@ void run_step(int dir)
 	/* Continue run */
 	else
 	{
-		if (!player->running_withpathfind)
+		if (!player->upkeep->running_withpathfind)
 		{
 			/* Update run */
 			if (run_test())
@@ -864,7 +864,7 @@ void run_step(int dir)
 			if (pf_result_index < 0)
 			{
 				disturb(player, 0);
-				player->running_withpathfind = FALSE;
+				player->upkeep->running_withpathfind = FALSE;
 				return;
 			}
 
@@ -879,7 +879,7 @@ void run_step(int dir)
 				if (sqinfo_has(cave->info[y][x], SQUARE_MARK) && !square_ispassable(cave, y, x))
 				{
 					disturb(player, 0);
-					player->running_withpathfind = FALSE;
+					player->upkeep->running_withpathfind = FALSE;
 					return;
 				}
 			}
@@ -904,7 +904,7 @@ void run_step(int dir)
 				if (sqinfo_has(cave->info[y][x], SQUARE_MARK) && !square_ispassable(cave, y, x))
 				{
 					disturb(player, 0);
-					player->running_withpathfind = FALSE;
+					player->upkeep->running_withpathfind = FALSE;
 					return;
 				}
 
@@ -915,7 +915,7 @@ void run_step(int dir)
 				/* Known wall */
 				if (sqinfo_has(cave->info[y][x], SQUARE_MARK) && !square_ispassable(cave, y, x))
 				{
-					player->running_withpathfind = FALSE;
+					player->upkeep->running_withpathfind = FALSE;
 
 					run_init(pf_result[pf_result_index] - '0');
 				}
@@ -927,10 +927,10 @@ void run_step(int dir)
 
 
 	/* Decrease counter */
-	player->running--;
+	player->upkeep->running--;
 
 	/* Take time */
-	player->energy_use = 100;
+	player->upkeep->energy_use = 100;
 
 	/* Move the player */
 	move_player(run_cur_dir, TRUE);

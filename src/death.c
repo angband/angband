@@ -244,7 +244,7 @@ static void death_info(const char *title, int row)
 	/* Show equipment and inventory */
 
 	/* Equipment -- if any */
-	if (player->equip_cnt)
+	if (player->upkeep->equip_cnt)
 	{
 		Term_clear();
 		show_equip(OLIST_WEIGHT | OLIST_SEMPTY, NULL);
@@ -253,7 +253,7 @@ static void death_info(const char *title, int row)
 	}
 
 	/* Inventory -- if any */
-	if (player->inven_cnt)
+	if (player->upkeep->inven_cnt)
 	{
 		Term_clear();
 		show_inven(OLIST_WEIGHT, NULL);

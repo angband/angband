@@ -118,7 +118,7 @@ const s32b player_exp[PY_MAX_LEVEL] =
 
 void health_track(struct player *p, struct monster *m_ptr)
 {
-	p->health_who = m_ptr;
+	p->upkeep->health_who = m_ptr;
 	p->upkeep->redraw |= PR_HEALTH;
 }
 
@@ -128,7 +128,7 @@ void health_track(struct player *p, struct monster *m_ptr)
 void monster_race_track(monster_race *race)
 {
 	/* Save this monster ID */
-	player->monster_race = race;
+	player->upkeep->monster_race = race;
 
 	/* Window stuff */
 	player->upkeep->redraw |= (PR_MONSTER);
@@ -141,21 +141,21 @@ void monster_race_track(monster_race *race)
  */
 void track_object(int item)
 {
-	player->object_idx = item;
-	player->object_kind = NULL;
+	player->upkeep->object_idx = item;
+	player->upkeep->object_kind = NULL;
 	player->upkeep->redraw |= (PR_OBJECT);
 }
 
 void track_object_kind(struct object_kind *kind)
 {
-	player->object_idx = NO_OBJECT;
-	player->object_kind = kind;
+	player->upkeep->object_idx = NO_OBJECT;
+	player->upkeep->object_kind = kind;
 	player->upkeep->redraw |= (PR_OBJECT);
 }
 
 bool tracked_object_is(int item)
 {
-	return (player->object_idx == item);
+	return (player->upkeep->object_idx == item);
 }
 
 

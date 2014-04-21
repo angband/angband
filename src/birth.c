@@ -365,6 +365,8 @@ void player_init(struct player *p)
 
 	if (p->inventory)
 		mem_free(p->inventory);
+	if (p->upkeep)
+		mem_free(p->upkeep);
 
 	/* Wipe the player */
 	(void)WIPE(p, struct player);
@@ -412,6 +414,7 @@ void player_init(struct player *p)
 		p->spell_order[i] = 99;
 
 	p->inventory = C_ZNEW(ALL_INVEN_TOTAL, struct object);
+	p->upkeep = mem_zalloc(sizeof(player_upkeep));
 
 	/* First turn. */
 	turn = 1;
@@ -475,10 +478,10 @@ void wield_all(struct player *p)
 		object_copy(o_ptr, i_ptr);
 
 		/* Increase the weight */
-		p->total_weight += i_ptr->weight * i_ptr->number;
+		p->upkeep->total_weight += i_ptr->weight * i_ptr->number;
 
 		/* Increment the equip counter by hand */
-		p->equip_cnt++;
+		p->upkeep->equip_cnt++;
 	}
 
 	save_quiver_size(p);
@@ -496,6 +499,9 @@ static void player_outfit(struct player *p)
 {
 	const struct start_item *si;
 	object_type object_type_body;
+
+	/* Currently carrying nothing */
+	player->upkeep->total_weight = 0;
 
 	/* Give the player starting equipment */
 	for (si = player->class->start_items; si; si = si->next)

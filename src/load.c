@@ -866,7 +866,6 @@ int rd_misc(void)
 
 
 	/* Special stuff */
-	rd_u16b(&player->panic_save);
 	rd_u16b(&player->total_winner);
 	rd_u16b(&player->noscore);
 
@@ -952,6 +951,8 @@ static int rd_inventory_aux(rd_item_t rd_item_version)
 	object_type *i_ptr;
 	object_type object_type_body;
 
+	player->upkeep->total_weight = 0;
+
 	/* Read until done */
 	while (1)
 	{
@@ -989,14 +990,14 @@ static int rd_inventory_aux(rd_item_t rd_item_version)
 			object_copy(&player->inventory[n], i_ptr);
 
 			/* Add the weight */
-			player->total_weight += (i_ptr->number * i_ptr->weight);
+			player->upkeep->total_weight += (i_ptr->number * i_ptr->weight);
 
 			/* One more item */
-			player->equip_cnt++;
+			player->upkeep->equip_cnt++;
 		}
 
 		/* Warning -- backpack is full */
-		else if (player->inven_cnt == INVEN_PACK)
+		else if (player->upkeep->inven_cnt == INVEN_PACK)
 		{
 			/* Oops */
 			note("Too many items in the inventory!");
@@ -1015,10 +1016,10 @@ static int rd_inventory_aux(rd_item_t rd_item_version)
 			object_copy(&player->inventory[n], i_ptr);
 
 			/* Add the weight */
-			player->total_weight += (i_ptr->number * i_ptr->weight);
+			player->upkeep->total_weight += (i_ptr->number * i_ptr->weight);
 
 			/* One more item */
-			player->inven_cnt++;
+			player->upkeep->inven_cnt++;
 		}
 	}
 

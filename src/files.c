@@ -723,7 +723,7 @@ static struct panel *get_panel_midleft(void) {
 	panel_space(p);
 	panel_line(p, TERM_L_GREEN, "Gold", "%d", player->au);
 	panel_line(p, TERM_L_GREEN, "Burden", "%.1f lbs",
-			player->total_weight / 10.0F);
+			player->upkeep->total_weight / 10.0F);
 	panel_line(p, TERM_L_GREEN, "Speed", "%s", show_speed());
 	panel_line(p, TERM_L_GREEN, "Max Depth", "%s", show_depth());
 
@@ -887,7 +887,7 @@ void display_player(int mode)
 	clear_from(0);
 
 	/* When not playing, do not display in subwindows */
-	if (Term != angband_term[0] && !player->playing) return;
+	if (Term != angband_term[0] && !player->upkeep->playing) return;
 
 	/* Stat info */
 	display_player_stat_info();

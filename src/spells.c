@@ -997,7 +997,7 @@ bool detect_monsters_invis(bool aware)
 			rf_on(l_ptr->flags, RF_INVISIBLE);
 
 			/* Update monster recall window */
-			if (player->monster_race == m_ptr->race)
+			if (player->upkeep->monster_race == m_ptr->race)
 			{
 				/* Redraw stuff */
 				player->upkeep->redraw |= (PR_MONSTER);
@@ -1069,7 +1069,7 @@ bool detect_monsters_evil(bool aware)
 			rf_on(l_ptr->flags, RF_EVIL);
 
 			/* Update monster recall window */
-			if (player->monster_race == m_ptr->race)
+			if (player->upkeep->monster_race == m_ptr->race)
 			{
 				/* Redraw stuff */
 				player->upkeep->redraw |= (PR_MONSTER);

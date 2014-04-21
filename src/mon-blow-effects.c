@@ -280,7 +280,7 @@ static void melee_effect_handler_drain_charges(melee_effect_handler_context_t *c
 			monster->hp += heal;
 
 			/* Redraw (later) if needed */
-			if (player->health_who == monster)
+			if (player->upkeep->health_who == monster)
 				player->upkeep->redraw |= (PR_HEALTH);
 
 			/* Combine / Reorder the pack */

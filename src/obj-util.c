@@ -2273,7 +2273,7 @@ void inven_item_increase(int item, int num)
 		o_ptr->number += num;
 
 		/* Add the weight */
-		player->total_weight += (num * o_ptr->weight);
+		player->upkeep->total_weight += (num * o_ptr->weight);
 
 		/* Recalculate bonuses */
 		player->upkeep->update |= (PU_BONUS);
@@ -2302,9 +2302,9 @@ void save_quiver_size(struct player *p)
 		if (p->inventory[i].kind)
 			count += p->inventory[i].number;
 
-	p->quiver_size = count;
-	p->quiver_slots = (count + maxsize - 1) / maxsize;
-	p->quiver_remainder = count % maxsize;
+	p->upkeep->quiver_size = count;
+	p->upkeep->quiver_slots = (count + maxsize - 1) / maxsize;
+	p->upkeep->quiver_remainder = count % maxsize;
 }
 
 
@@ -2484,7 +2484,7 @@ void inven_item_optimize(int item)
 	/* Items in the pack are treated differently from other items */
 	if (item < INVEN_WIELD)
 	{
-		player->inven_cnt--;
+		player->upkeep->inven_cnt--;
 		player->upkeep->redraw |= PR_INVEN;
 		limit = INVEN_MAX_PACK;
 	}
@@ -2492,7 +2492,7 @@ void inven_item_optimize(int item)
 	/* Items in the quiver and equipped items are (mostly) treated similarly */
 	else
 	{
-		player->equip_cnt--;
+		player->upkeep->equip_cnt--;
 		player->upkeep->redraw |= PR_EQUIP;
 		limit = item >= QUIVER_START ? QUIVER_END : 0;
 	}
@@ -2630,7 +2630,7 @@ void floor_item_optimize(int item)
 bool inven_carry_okay(const object_type *o_ptr)
 {
 	/* Empty slot? */
-	if (player->inven_cnt < INVEN_MAX_PACK) return TRUE;
+	if (player->upkeep->inven_cnt < INVEN_MAX_PACK) return TRUE;
 
 	/* Check if it can stack */
 	if (inven_stack_okay(o_ptr)) return TRUE;
@@ -2654,10 +2654,10 @@ bool inven_stack_okay(const object_type *o_ptr)
 	if (!pack_is_full())
 		/* The pack has more room */
 		limit = ALL_INVEN_TOTAL;
-	else if (player->quiver_remainder == 0)
+	else if (player->upkeep->quiver_remainder == 0)
 		/* Quiver already maxed out */
 		limit = INVEN_PACK;
-	else if (player->quiver_remainder + o_ptr->number >= MAX_STACK_SIZE)
+	else if (player->upkeep->quiver_remainder + o_ptr->number >= MAX_STACK_SIZE)
 		/* Too much new ammo */
 		limit = INVEN_PACK;
 	else
@@ -2786,7 +2786,7 @@ extern s16b inven_carry(struct player *p, struct object *o)
 			object_absorb(j_ptr, o);
 
 			/* Increase the weight */
-			p->total_weight += (o->number * o->weight);
+			p->upkeep->total_weight += (o->number * o->weight);
 
 			/* Recalculate bonuses */
 			p->upkeep->update |= (PU_BONUS);
@@ -2804,7 +2804,7 @@ extern s16b inven_carry(struct player *p, struct object *o)
 
 
 	/* Paranoia */
-	if (p->inven_cnt > INVEN_MAX_PACK) return (-1);
+	if (p->upkeep->inven_cnt > INVEN_MAX_PACK) return (-1);
 
 
 	/* Find an empty slot */
@@ -2850,8 +2850,8 @@ extern s16b inven_carry(struct player *p, struct object *o)
 	j_ptr->iy = j_ptr->ix = 0;
 	j_ptr->marked = FALSE;
 
-	p->total_weight += (j_ptr->number * j_ptr->weight);
-	p->inven_cnt++;
+	p->upkeep->total_weight += (j_ptr->number * j_ptr->weight);
+	p->upkeep->inven_cnt++;
 	p->upkeep->update |= (PU_BONUS);
 	p->upkeep->notice |= (PN_COMBINE | PN_REORDER);
 	p->upkeep->redraw |= (PR_INVEN);
@@ -3107,7 +3107,7 @@ void combine_pack(void)
 		if (slide)
 		{
 			/* One object is gone */
-			player->inven_cnt--;
+			player->upkeep->inven_cnt--;
 
 			/* Slide everything down */
 			for (k = i; k < INVEN_PACK; k++)

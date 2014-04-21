@@ -55,14 +55,14 @@ void do_cmd_go_up(struct command *cmd)
 	}
 
 	/* Hack -- take a turn */
-	player->energy_use = 100;
+	player->upkeep->energy_use = 100;
 
 	/* Success */
 	msgt(MSG_STAIRS_UP, "You enter a maze of up staircases.");
 
 	/* Create a way back */
-	player->create_up_stair = FALSE;
-	player->create_down_stair = TRUE;
+	player->upkeep->create_up_stair = FALSE;
+	player->upkeep->create_down_stair = TRUE;
 
 	/* Change level */
 	dungeon_change_level(player->depth - 1);
@@ -98,14 +98,14 @@ void do_cmd_go_down(struct command *cmd)
 	}
 
 	/* Hack -- take a turn */
-	player->energy_use = 100;
+	player->upkeep->energy_use = 100;
 
 	/* Success */
 	msgt(MSG_STAIRS_DOWN, "You enter a maze of down staircases.");
 
 	/* Create a way back */
-	player->create_up_stair = TRUE;
-	player->create_down_stair = FALSE;
+	player->upkeep->create_up_stair = TRUE;
+	player->upkeep->create_down_stair = FALSE;
 
 	/* Change level */
 	dungeon_change_level(descend_to);
@@ -232,7 +232,7 @@ void do_cmd_search(struct command *cmd)
 {
 	/* Only take a turn if attempted */
 	if (search(TRUE))
-		player->energy_use = 100;
+		player->upkeep->energy_use = 100;
 }
 
 
@@ -421,7 +421,7 @@ void do_cmd_open(struct command *cmd)
 	}
 
 	/* Take a turn */
-	player->energy_use = 100;
+	player->upkeep->energy_use = 100;
 
 	/* Apply confusion */
 	if (player_confuse_dir(player, &dir, FALSE)) {
@@ -569,7 +569,7 @@ void do_cmd_close(struct command *cmd)
 	}
 
 	/* Take a turn */
-	player->energy_use = 100;
+	player->upkeep->energy_use = 100;
 
 	/* Apply confusion */
 	if (player_confuse_dir(player, &dir, FALSE)) {
@@ -869,7 +869,7 @@ void do_cmd_tunnel(struct command *cmd)
 	}
 
 	/* Take a turn */
-	player->energy_use = 100;
+	player->upkeep->energy_use = 100;
 
 	/* Apply confusion */
 	if (player_confuse_dir(player, &dir, FALSE))
@@ -1117,7 +1117,7 @@ void do_cmd_disarm(struct command *cmd)
 	}
 
 	/* Take a turn */
-	player->energy_use = 100;
+	player->upkeep->energy_use = 100;
 
 	/* Apply confusion */
 	if (player_confuse_dir(player, &dir, FALSE))
@@ -1175,7 +1175,7 @@ void do_cmd_alter_aux(int dir)
 	x = player->px + ddx[dir];
 
 	/* Take a turn */
-	player->energy_use = 100;
+	player->upkeep->energy_use = 100;
 
 	/* Apply confusion */
 	if (player_confuse_dir(player, &dir, FALSE)) {
@@ -1292,7 +1292,7 @@ void do_cmd_walk(struct command *cmd)
 	/* Apply confusion if necessary */
 	/* Confused movements use energy no matter what */
 	if (player_confuse_dir(player, &dir, FALSE))
-		player->energy_use = 100;
+		player->upkeep->energy_use = 100;
 	
 	/* Verify walkability */
 	y = player->py + ddy[dir];
@@ -1300,7 +1300,7 @@ void do_cmd_walk(struct command *cmd)
 	if (!do_cmd_walk_test(y, x))
 		return;
 
-	player->energy_use = 100;
+	player->upkeep->energy_use = 100;
 
 	move_player(dir, TRUE);
 }
@@ -1319,7 +1319,7 @@ void do_cmd_jump(struct command *cmd)
 
 	/* Apply confusion if necessary */
 	if (player_confuse_dir(player, &dir, FALSE))
-		player->energy_use = 100;
+		player->upkeep->energy_use = 100;
 
 	/* Verify walkability */
 	y = player->py + ddy[dir];
@@ -1327,7 +1327,7 @@ void do_cmd_jump(struct command *cmd)
 	if (!do_cmd_walk_test(y, x))
 		return;
 
-	player->energy_use = 100;
+	player->upkeep->energy_use = 100;
 
 	move_player(dir, FALSE);
 }
@@ -1376,10 +1376,10 @@ void do_cmd_pathfind(struct command *cmd)
 		return;
 
 	if (findpath(x, y)) {
-		player->running = 1000;
+		player->upkeep->running = 1000;
 		/* Calculate torch radius */
 		player->upkeep->update |= (PU_TORCH);
-		player->running_withpathfind = TRUE;
+		player->upkeep->running_withpathfind = TRUE;
 		run_step(0);
 	}
 }
@@ -1393,7 +1393,7 @@ void do_cmd_pathfind(struct command *cmd)
 void do_cmd_hold(struct command *cmd)
 {
 	/* Take a turn */
-	player->energy_use = 100;
+	player->upkeep->energy_use = 100;
 
 	/* Spontaneous Searching */
 	if ((player->state.skills[SKILL_SEARCH_FREQUENCY] >= 50) ||
@@ -1419,7 +1419,7 @@ void do_cmd_hold(struct command *cmd)
 		cmdq_push(CMD_ENTER_STORE);
 
 		/* Free turn XXX XXX XXX */
-		player->energy_use = 0;
+		player->upkeep->energy_use = 0;
 	}
 	else
 	{
@@ -1449,7 +1449,7 @@ void do_cmd_rest(struct command *cmd)
 	player_resting_set_count(player, n);
 
 	/* Take a turn XXX XXX XXX (?) */
-	player->energy_use = 100;
+	player->upkeep->energy_use = 100;
 
 	/* Cancel searching */
 	player->searching = FALSE;

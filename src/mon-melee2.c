@@ -248,7 +248,7 @@ bool make_attack_spell(struct monster *m_ptr)
 	bool normal = TRUE;
 
 	/* Handle "leaving" */
-	if (player->leaving) return FALSE;
+	if (player->upkeep->leaving) return FALSE;
 
 	/* Cannot cast spells when confused */
 	if (m_ptr->m_timed[MON_TMD_CONF]) return (FALSE);
@@ -1394,7 +1394,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 		if (!method) break;
 
 		/* Handle "leaving" */
-		if (p->leaving) break;
+		if (p->upkeep->leaving) break;
 
 		/* Extract visibility (before blink) */
 		if (m_ptr->ml) visible = TRUE;
@@ -1642,7 +1642,8 @@ static void process_monster(struct chunk *c, struct monster *m_ptr)
 			if (m_ptr->ml && !m_ptr->unaware) {
 				
 				/* Hack -- Update the health bar */
-				if (player->health_who == m_ptr) player->upkeep->redraw |= (PR_HEALTH);
+				if (player->upkeep->health_who == m_ptr)
+					player->upkeep->redraw |= (PR_HEALTH);
 			}
 
 			/* Efficiency XXX XXX */
@@ -1682,7 +1683,7 @@ static void process_monster(struct chunk *c, struct monster *m_ptr)
 					msg("%s wakes up.", m_name);
 
 					/* Hack -- Update the health bar */
-					if (player->health_who == m_ptr)
+					if (player->upkeep->health_who == m_ptr)
 						player->upkeep->redraw |= (PR_HEALTH);
 
 					/* Hack -- Count the wakings */
@@ -2239,7 +2240,7 @@ void process_monsters(struct chunk *c, byte minimum_energy)
 		monster_type *m_ptr;
 
 		/* Handle "leaving" */
-		if (player->leaving) break;
+		if (player->upkeep->leaving) break;
 
 		/* Get the monster */
 		m_ptr = cave_monster(cave, i);

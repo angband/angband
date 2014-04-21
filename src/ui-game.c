@@ -348,7 +348,7 @@ static void prt_sp(int row, int col)
  */
 byte monster_health_attr(void)
 {
-	struct monster *mon = player->health_who;
+	struct monster *mon = player->upkeep->health_who;
 	byte attr;
 
 	if (!mon) {
@@ -409,7 +409,7 @@ byte monster_health_attr(void)
 static void prt_health(int row, int col)
 {
 	byte attr = monster_health_attr();
-	struct monster *mon = player->health_who;
+	struct monster *mon = player->upkeep->health_who;
 
 	/* Not tracking */
 	if (!mon)
@@ -905,7 +905,7 @@ static size_t prt_study(int row, int col)
 	int attr = TERM_WHITE;
 
 	/* Can the player learn new spells? */
-	if (player->new_spells)
+	if (player->upkeep->new_spells)
 	{
 		/* If the player does not carry a book with spells they can study,
 		   the message is displayed in a darker colour */
@@ -913,7 +913,7 @@ static size_t prt_study(int row, int col)
 			attr = TERM_L_DARK;
 
 		/* Print study message */
-		text = format("Study (%d)", player->new_spells);
+		text = format("Study (%d)", player->upkeep->new_spells);
 		c_put_str(attr, text, row, col);
 		return strlen(text) + 1;
 	}
@@ -1210,8 +1210,9 @@ static void update_monster_subwindow(game_event_type type, game_event_data *data
 	Term_activate(inv_term);
 
 	/* Display monster race info */
-	if (player->monster_race)
-		lore_show_subwindow(player->monster_race, get_lore(player->monster_race));
+	if (player->upkeep->monster_race)
+		lore_show_subwindow(player->upkeep->monster_race, 
+							get_lore(player->upkeep->monster_race));
 
 	Term_fresh();
 	
@@ -1228,10 +1229,10 @@ static void update_object_subwindow(game_event_type type, game_event_data *data,
 	/* Activate */
 	Term_activate(inv_term);
 	
-	if (player->object_idx != NO_OBJECT)
-		display_object_idx_recall(player->object_idx);
-	else if (player->object_kind)
-		display_object_kind_recall(player->object_kind);
+	if (player->upkeep->object_idx != NO_OBJECT)
+		display_object_idx_recall(player->upkeep->object_idx);
+	else if (player->upkeep->object_kind)
+		display_object_kind_recall(player->upkeep->object_kind);
 	Term_fresh();
 	
 	/* Restore */

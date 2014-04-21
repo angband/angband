@@ -60,7 +60,7 @@ void take_hit(struct player *p, int dam, const char *kb_str)
 		p->is_dead = TRUE;
 
 		/* Leaving */
-		p->leaving = TRUE;
+		p->upkeep->leaving = TRUE;
 
 		/* Dead */
 		return;
@@ -173,7 +173,7 @@ bool player_can_study(struct player *p, bool show_msg)
 	if (!player_can_cast(p, show_msg))
 		return FALSE;
 
-	if (!p->new_spells)
+	if (!p->upkeep->new_spells)
 	{
 		if (show_msg) {
 			const char *name = ((p->class->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
@@ -319,11 +319,12 @@ bool player_book_has_unlearned_spells(struct player *p)
 	struct spell *sp;
 
 	/* Check if the player can learn new spells */
-	if (!p->new_spells)
+	if (!p->upkeep->new_spells)
 		return FALSE;
 
 	/* Get the number of books in inventory */
-	item_num = scan_items(item_list, N_ELEMENTS(item_list), (USE_INVEN), obj_can_browse);
+	item_num = scan_items(item_list, N_ELEMENTS(item_list), (USE_INVEN), 
+						  obj_can_browse);
 
 	/* Check through all available books */
 	for (i = 0; i < item_num; i++) {
@@ -367,6 +368,9 @@ bool player_confuse_dir(struct player *p, int *dp, bool too)
 	return FALSE;
 }
 
+/* Resting counter */
+int resting;
+
 /**
  * Return TRUE if the provided count is one of the conditional REST_ flags.
  */
@@ -387,7 +391,7 @@ bool player_resting_is_special(s16b count)
  */
 bool player_is_resting(struct player *p)
 {
-	return p->resting > 0 || player_resting_is_special(p->resting);
+	return resting > 0 || player_resting_is_special(resting);
 }
 
 /**
@@ -395,7 +399,7 @@ bool player_is_resting(struct player *p)
  */
 s16b player_resting_count(struct player *p)
 {
-	return p->resting;
+	return resting;
 }
 
 /*
@@ -414,21 +418,21 @@ void player_resting_set_count(struct player *p, s16b count)
 {
 	if (count < 0 && !player_resting_is_special(count)) {
 		/* Ignore if the rest count is negative. */
-		p->resting = 0;
+		resting = 0;
 		return;
 	}
 
 	/* Save the rest code */
-	p->resting = count;
+	resting = count;
 
 	/* Truncate overlarge values */
-	if (p->resting > 9999) p->resting = 9999;
+	if (resting > 9999) resting = 9999;
 
 	/* The first turn is always used, so we need to adjust the count. */
-	if (p->resting > 0)
-		p->resting--;
+	if (resting > 0)
+		resting--;
 
-	player_resting_start_count = p->resting;
+	player_resting_start_count = resting;
 }
 
 /**
@@ -444,7 +448,7 @@ void player_resting_cancel(struct player *p)
  */
 bool player_resting_can_regenerate(struct player *p)
 {
-	return (player_resting_start_count - p->resting) >= REST_REQUIRED_FOR_REGEN || player_resting_is_special(p->resting);
+	return (player_resting_start_count - resting) >= REST_REQUIRED_FOR_REGEN || player_resting_is_special(resting);
 }
 
 /**
@@ -455,17 +459,17 @@ bool player_resting_can_regenerate(struct player *p)
 void player_resting_step_turn(struct player *p)
 {
 	/* Timed rest */
-	if (p->resting > 0)
+	if (resting > 0)
 	{
 		/* Reduce rest count */
-		p->resting--;
+		resting--;
 
 		/* Redraw the state */
 		p->upkeep->redraw |= (PR_STATE);
 	}
 
 	/* Take a turn */
-	p->energy_use = 100;
+	p->upkeep->energy_use = 100;
 
 	/* Increment the resting counter */
 	p->resting_turn++;
@@ -477,10 +481,10 @@ void player_resting_step_turn(struct player *p)
 void player_resting_complete_special(struct player *p)
 {
 	/* Complete resting */
-	if (player_resting_is_special(p->resting))
+	if (player_resting_is_special(resting))
 	{
 		/* Basic resting */
-		if (p->resting == REST_ALL_POINTS)
+		if (resting == REST_ALL_POINTS)
 		{
 			/* Stop resting */
 			if ((p->chp == p->mhp) &&
@@ -491,7 +495,7 @@ void player_resting_complete_special(struct player *p)
 		}
 
 		/* Complete resting */
-		else if (p->resting == REST_COMPLETE)
+		else if (resting == REST_COMPLETE)
 		{
 			/* Stop resting */
 			if ((p->chp == p->mhp) &&
@@ -508,7 +512,7 @@ void player_resting_complete_special(struct player *p)
 		}
 
 		/* Rest until HP or SP are filled */
-		else if (p->resting == REST_SOME_POINTS)
+		else if (resting == REST_SOME_POINTS)
 		{
 			/* Stop resting */
 			if ((p->chp == p->mhp) ||
@@ -565,8 +569,8 @@ void disturb(struct player *p, int stop_search)
 	}
 
 	/* Cancel running */
-	if (p->running) {
-		p->running = 0;
+	if (p->upkeep->running) {
+		p->upkeep->running = 0;
 
 		/* Check for new panel if appropriate */
 		if (OPT(center_player)) verify_panel();

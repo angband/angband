@@ -137,7 +137,7 @@ enum
 
 /*** Structures ***/
 
-/*
+/**
  * All the variable state that changes when you put on/take off equipment.
  */
 typedef struct player_state {
@@ -184,16 +184,50 @@ typedef struct player_state {
 	bitflag flags[OF_SIZE];	/* Status flags from race and items */
 } player_state;
 
+/**
+ * Temporary, derived, player-related variables used during play but not saved
+ *
+ * Some of these probably should go to the UI
+ */
 typedef struct player_upkeep {
-	u32b notice;		/* Bit flags for pending "special" actions to 
-				   carry out after the current "action", 
-				   such as reordering inventory, squelching, 
-				   etc. */
-	u32b update;		/* Bit flags for recalculations needed after
-				   this "action", such as HP, or visible area */
-	u32b redraw;	        /* Bit flags for things that /have/ changed,
-				   and just need to be redrawn by the UI,
-				   such as HP, Speed, etc.*/
+	bool playing;			/* True if player is playing */
+	bool leaving;			/* True if player is leaving */
+	bool autosave;			/* True if autosave is pending */
+
+	int energy_use;			/* Energy use this turn */
+	int new_spells;			/* Number of spells available */
+
+	struct monster *health_who;			/* Health bar trackee */
+	struct monster_race *monster_race;	/* Monster race trackee */
+	int object_idx;						/* Object trackee */
+	struct object_kind *object_kind;	/* Object kind trackee */
+
+	u32b notice;		/* Bit flags for pending actions such as 
+						 * reordering inventory, squelching, etc. */
+	u32b update;		/* Bit flags for recalculations needed 
+						 * such as HP, or visible area */
+	u32b redraw;	    /* Bit flags for things that /have/ changed,
+						 * and just need to be redrawn by the UI,
+						 * such as HP, Speed, etc.*/
+
+	int command_wrk;		/* Used by the UI to decide whether
+							 * to start off showing equipment or
+							 * inventory listings when offering
+							 * a choice.  See obj-ui.c */
+
+	bool create_up_stair;		/* Create up stair on next level */
+	bool create_down_stair;		/* Create down stair on next level */
+
+	int running;				/* Running counter */
+	bool running_withpathfind;	/* Are we using the pathfinder ? */
+	bool running_firststep;		/* Is this our first step running? */
+
+	int total_weight;			/* Total weight being carried */
+	int inven_cnt;				/* Number of items in inventory */
+	int equip_cnt;				/* Number of items in equipment */
+	int quiver_size;			/* Number of items in the quiver */
+	int quiver_slots;			/* Number of inventory slots for the quiver */
+	int quiver_remainder;		/* Number of quiver items modulo slot size */
 } player_upkeep;
 
 

@@ -530,7 +530,7 @@ static void verify_panel_int(bool centered)
 
 
 		/* Scroll screen vertically when off-center */
-		if (centered && !player->running && (py != wy + panel_hgt))
+		if (centered && !player->upkeep->running && (py != wy + panel_hgt))
 			wy = py - panel_hgt;
 
 		/* Scroll screen vertically when 3 grids from top/bottom edge */
@@ -539,7 +539,7 @@ static void verify_panel_int(bool centered)
 
 
 		/* Scroll screen horizontally when off-center */
-		if (centered && !player->running && (px != wx + panel_wid))
+		if (centered && !player->upkeep->running && (px != wx + panel_wid))
 			wx = px - panel_wid;
 
 		/* Scroll screen horizontally when 3 grids from left/right edge */

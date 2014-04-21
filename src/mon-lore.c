@@ -515,7 +515,7 @@ void lore_do_probe(struct monster *m)
 		l_ptr->blows[i] = MAX_UCHAR;
 
 	/* Update monster recall window */
-	if (player->monster_race == m->race)
+	if (player->upkeep->monster_race == m->race)
 		player->upkeep->redraw |= (PR_MONSTER);
 }
 
@@ -550,7 +550,7 @@ void lore_treasure(struct monster *m_ptr, int num_item, int num_gold)
 	rf_on(l_ptr->flags, RF_DROP_GREAT);
 
 	/* Update monster recall window */
-	if (player->monster_race == m_ptr->race)
+	if (player->upkeep->monster_race == m_ptr->race)
 		player->upkeep->redraw |= (PR_MONSTER);
 }
 

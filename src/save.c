@@ -573,7 +573,6 @@ void wr_misc(void)
 
 
 	/* Special stuff */
-	wr_u16b(player->panic_save);
 	wr_u16b(player->total_winner);
 	wr_u16b(player->noscore);
 

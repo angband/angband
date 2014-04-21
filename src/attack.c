@@ -331,14 +331,14 @@ void py_attack(int y, int x) {
 	disturb(player, 0);
 
 	/* Initialize the energy used */
-	player->energy_use = 0;
+	player->upkeep->energy_use = 0;
 
 	/* Attack until energy runs out or enemy dies. We limit energy use to 100
 	 * to avoid giving monsters a possible double move. */
 	while (player->energy >= blow_energy * (blows + 1)) {
 		bool stop = py_attack_real(y, x, &fear);
-		player->energy_use += blow_energy;
-		if (stop || player->energy_use + blow_energy > 100) break;
+		player->upkeep->energy_use += blow_energy;
+		if (stop || player->upkeep->energy_use + blow_energy > 100) break;
 		blows++;
 	}
 	
@@ -423,7 +423,7 @@ static void ranged_helper(int item, int dir, int range, int shots, ranged_attack
 	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_FULL | ODESC_SINGULAR);
 
 	/* Actually "fire" the object -- Take a partial turn */
-	player->energy_use = (100 / shots);
+	player->upkeep->energy_use = (100 / shots);
 
 	/* Calculate the path */
 	path_n = project_path(path_g, range, y, x, ty, tx, 0);

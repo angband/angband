@@ -56,7 +56,7 @@ void do_cmd_pickup(struct command *cmd)
 	if (energy_cost > 100) energy_cost = 100;
 
 	/* Charge this amount of energy. */
-	player->energy_use = energy_cost;
+	player->upkeep->energy_use = energy_cost;
 }
 
 /*
@@ -64,7 +64,7 @@ void do_cmd_pickup(struct command *cmd)
  */
 void do_cmd_autopickup(struct command *cmd)
 {
-	player->energy_use = do_autopickup() * 10;
+	player->upkeep->energy_use = do_autopickup() * 10;
 }
 
 
@@ -565,7 +565,8 @@ void move_player(int dir, bool disarm)
 			player->upkeep->redraw |= (PR_DTRAP);
 
 		/* Disturb player if the player is about to leave the area */
-		if (player->running && !player->running_firststep && old_dtrap && !new_dtrap)
+		if (player->upkeep->running && !player->upkeep->running_firststep && 
+			old_dtrap && !new_dtrap)
 		{
 			disturb(player, 0);
 			return;
@@ -620,5 +621,5 @@ void move_player(int dir, bool disarm)
 		}
 	}
 
-	player->running_firststep = FALSE;
+	player->upkeep->running_firststep = FALSE;
 }

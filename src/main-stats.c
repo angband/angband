@@ -229,8 +229,8 @@ static void initialize_character(void)
 
 	store_reset();
 	flavor_init();
-	player->playing = TRUE;
-	player->autosave = FALSE;
+	player->upkeep->playing = TRUE;
+	player->upkeep->autosave = FALSE;
 	cave_generate(cave, player);
 }
 

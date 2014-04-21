@@ -927,7 +927,8 @@ static void project_monster_handler_OLD_CLONE(project_monster_handler_context_t 
 	context->m_ptr->hp = context->m_ptr->maxhp;
 
 	/* Speed up */
-	mon_inc_timed(context->m_ptr, MON_TMD_FAST, 50, MON_TMD_FLG_NOTIFY, context->id);
+	mon_inc_timed(context->m_ptr, MON_TMD_FAST, 50, MON_TMD_FLG_NOTIFY, 
+				  context->id);
 
 	/* Attempt to clone. */
 	if (multiply_monster(context->m_ptr))
@@ -942,16 +943,19 @@ static void project_monster_handler_OLD_CLONE(project_monster_handler_context_t 
 static void project_monster_handler_OLD_HEAL(project_monster_handler_context_t *context)
 {
 	/* Wake up */
-	mon_clear_timed(context->m_ptr, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, context->id);
+	mon_clear_timed(context->m_ptr, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, 
+					context->id);
 
 	/* Heal */
 	context->m_ptr->hp += context->dam;
 
 	/* No overflow */
-	if (context->m_ptr->hp > context->m_ptr->maxhp) context->m_ptr->hp = context->m_ptr->maxhp;
+	if (context->m_ptr->hp > context->m_ptr->maxhp)
+		context->m_ptr->hp = context->m_ptr->maxhp;
 
 	/* Redraw (later) if needed */
-	if (player->health_who == context->m_ptr) player->upkeep->redraw |= (PR_HEALTH);
+	if (player->upkeep->health_who == context->m_ptr)
+		player->upkeep->redraw |= (PR_HEALTH);
 
 	/* Message */
 	else context->hurt_msg = MON_MSG_HEALTHIER;
@@ -2047,7 +2051,8 @@ static bool project_m_monster_attack(project_monster_handler_context_t *context,
 	}
 
 	/* Redraw (later) if needed */
-	if (player->health_who == m_ptr) player->upkeep->redraw |= (PR_HEALTH);
+	if (player->upkeep->health_who == m_ptr)
+		player->upkeep->redraw |= (PR_HEALTH);
 
 	/* Wake the monster up */
 	mon_clear_timed(m_ptr, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, FALSE);
@@ -2407,7 +2412,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, int flg)
 		square_light_spot(cave, y, x);
 
 		/* Update monster recall window */
-		if (player->monster_race == m_ptr->race) {
+		if (player->upkeep->monster_race == m_ptr->race) {
 			/* Window stuff */
 			player->upkeep->redraw |= (PR_MONSTER);
 		}

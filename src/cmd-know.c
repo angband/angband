@@ -439,7 +439,7 @@ void do_cmd_inven(void)
 	}
 
 	/* Hack -- Start in "inventory" mode */
-	player->command_wrk = (USE_INVEN);
+	player->upkeep->command_wrk = (USE_INVEN);
 
 	/* Loop this menu until an object context menu says differently */
 	while (ret == 3) {
@@ -448,10 +448,10 @@ void do_cmd_inven(void)
 
 		/* Prompt for a command */
 		prt(format("(Inventory) Burden %d.%d lb (%d.%d lb %s). Select Item: ",
-			        player->total_weight / 10, player->total_weight % 10,
+			        player->upkeep->total_weight / 10,
+				   player->upkeep->total_weight % 10,
 			        abs(diff) / 10, abs(diff) % 10,
-			        (diff < 0 ? "overweight" : "remaining")),
-				0, 0);
+			        (diff < 0 ? "overweight" : "remaining")), 0, 0);
 
 		/* Get an item to use a context command on (Display the inventory) */
 		if (get_item(&item, NULL, NULL, CMD_NULL, NULL, GET_ITEM_PARAMS)) {
@@ -493,7 +493,7 @@ void do_cmd_equip(void)
 	}
 
 	/* Hack -- Start in "inventory" mode */
-	player->command_wrk = (USE_EQUIP);
+	player->upkeep->command_wrk = (USE_EQUIP);
 
 	/* Loop this menu until an object context menu says differently */
 	while (ret == 3) {

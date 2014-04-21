@@ -505,7 +505,7 @@ static bool store_sell(struct store *store)
 	}
 
 	/* Get an item */
-	player->command_wrk = USE_INVEN;
+	player->upkeep->command_wrk = USE_INVEN;
 
 	if (!get_item(&item, prompt, reject, CMD_DROP, tester, get_mode))
 		return FALSE;
@@ -1105,7 +1105,7 @@ void do_cmd_store(struct command *cmd)
 	store_in_store = FALSE;
 
 	/* Take a turn */
-	player->energy_use = 100;
+	player->upkeep->energy_use = 100;
 
 	/* Flush messages XXX XXX XXX */
 	message_flush();

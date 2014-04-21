@@ -548,7 +548,7 @@ void update_mon(struct monster *m_ptr, bool full)
 			square_light_spot(cave, fy, fx);
 
 			/* Update health bar as needed */
-			if (player->health_who == m_ptr)
+			if (player->upkeep->health_who == m_ptr)
 				player->upkeep->redraw |= (PR_HEALTH);
 
 			/* Hack -- Count "fresh" sightings */
@@ -575,7 +575,8 @@ void update_mon(struct monster *m_ptr, bool full)
 				square_light_spot(cave, fy, fx);
 
 				/* Update health bar as needed */
-				if (player->health_who == m_ptr) player->upkeep->redraw |= (PR_HEALTH);
+				if (player->upkeep->health_who == m_ptr)
+					player->upkeep->redraw |= (PR_HEALTH);
 
 				/* Window stuff */
 				player->upkeep->redraw |= PR_MONLIST;

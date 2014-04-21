@@ -143,10 +143,10 @@ static void handle_signal_simple(int sig)
 		player->is_dead = TRUE;
 
 		/* Stop playing */
-		player->playing = FALSE;
+		player->upkeep->playing = FALSE;
 
 		/* Leaving */
-		player->leaving = TRUE;
+		player->upkeep->leaving = TRUE;
 
 		/* Close stuff */
 		close_game();
@@ -211,9 +211,6 @@ static void handle_signal_abort(int sig)
 
 	/* Flush output */
 	Term_fresh();
-
-	/* Panic Save */
-	player->panic_save = 1;
 
 	/* Panic save */
 	my_strcpy(player->died_from, "(panic save)", sizeof(player->died_from));

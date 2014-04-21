@@ -952,7 +952,7 @@ static void calc_spells(void)
 	if (character_xtra) return;
 
 	/* Save the new_spells value */
-	old_spells = player->new_spells;
+	old_spells = player->upkeep->new_spells;
 
 	/* Determine the number of spells allowed */
 	levels = player->lev - player->class->spell_first + 1;
@@ -980,7 +980,7 @@ static void calc_spells(void)
 	}
 
 	/* See how many spells we must forget or may learn */
-	player->new_spells = num_allowed - num_known;
+	player->upkeep->new_spells = num_allowed - num_known;
 
 	/* Forget spells which are too hard */
 	for (i = PY_MAX_SPELLS - 1; i >= 0; i--)
@@ -1011,7 +1011,7 @@ static void calc_spells(void)
 			           get_spell_name(player->class->spell_book, j));
 
 			/* One more can be learned */
-			player->new_spells++;
+			player->upkeep->new_spells++;
 		}
 	}
 
@@ -1019,7 +1019,7 @@ static void calc_spells(void)
 	for (i = PY_MAX_SPELLS - 1; i >= 0; i--)
 	{
 		/* Stop when possible */
-		if (player->new_spells >= 0) break;
+		if (player->upkeep->new_spells >= 0) break;
 
 		/* Get the (i+1)th spell learned */
 		j = player->spell_order[i];
@@ -1041,7 +1041,7 @@ static void calc_spells(void)
 			           get_spell_name(player->class->spell_book, j));
 
 			/* One more can be learned */
-			player->new_spells++;
+			player->upkeep->new_spells++;
 		}
 	}
 
@@ -1049,7 +1049,7 @@ static void calc_spells(void)
 	for (i = 0; i < PY_MAX_SPELLS; i++)
 	{
 		/* None left to remember */
-		if (player->new_spells <= 0) break;
+		if (player->upkeep->new_spells <= 0) break;
 
 		/* Get the next spell we learned */
 		j = player->spell_order[i];
@@ -1077,7 +1077,7 @@ static void calc_spells(void)
 			           p, get_spell_name(player->class->spell_book, j));
 
 			/* One less can be learned */
-			player->new_spells--;
+			player->upkeep->new_spells--;
 		}
 	}
 
@@ -1104,18 +1104,18 @@ static void calc_spells(void)
 	}
 
 	/* Cannot learn more spells than exist */
-	if (player->new_spells > k) player->new_spells = k;
+	if (player->upkeep->new_spells > k) player->upkeep->new_spells = k;
 
 	/* Spell count changed */
-	if (old_spells != player->new_spells)
+	if (old_spells != player->upkeep->new_spells)
 	{
 		/* Message if needed */
-		if (player->new_spells)
+		if (player->upkeep->new_spells)
 		{
 			/* Message */
 			msg("You can learn %d more %s%s.",
-			           player->new_spells, p,
-			           (player->new_spells != 1) ? "s" : "");
+			           player->upkeep->new_spells, p,
+			           (player->upkeep->new_spells != 1) ? "s" : "");
 		}
 
 		/* Redraw Study Status */
@@ -1447,7 +1447,8 @@ int weight_remaining(void)
 	int i;
 
 	/* Weight limit based only on strength */
-	i = 60 * adj_str_wgt[player->state.stat_ind[A_STR]] - player->total_weight - 1;
+	i = 60 * adj_str_wgt[player->state.stat_ind[A_STR]]
+		- player->upkeep->total_weight - 1;
 
 	/* Return the result */
 	return (i);
@@ -1790,7 +1791,7 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 	/*** Analyze weight ***/
 
 	/* Extract the current weight (in tenth pounds) */
-	j = player->total_weight;
+	j = player->upkeep->total_weight;
 
 	/* Extract the "weight limit" (in tenth pounds) */
 	i = weight_limit(state);
