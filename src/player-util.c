@@ -5,6 +5,7 @@
 #include "angband.h"
 #include "cave.h"
 #include "obj-tvalsval.h"
+#include "obj-ui.h"
 #include "obj-util.h"
 #include "tables.h"
 #include "target.h"

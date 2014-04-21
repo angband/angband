@@ -25,10 +25,10 @@ enum
 /*
  * Refueling constants
  */
-#define FUEL_TORCH                5000  /* Maximum amount of fuel in a torch */
-#define FUEL_LAMP                15000  /* Maximum amount of fuel in a lantern */
-#define DEFAULT_TORCH       FUEL_TORCH  /* Default amount of fuel in a torch */
-#define DEFAULT_LAMP   (FUEL_LAMP / 2)  /* Default amount of fuel in a lantern */
+#define FUEL_TORCH    5000  /* Maximum amount of fuel in a torch */
+#define FUEL_LAMP     15000  /* Maximum amount of fuel in a lantern */
+#define DEFAULT_TORCH FUEL_TORCH  /* Default amount of fuel in a torch */
+#define DEFAULT_LAMP  (FUEL_LAMP / 2)  /* Default amount of fuel in a lantern */
 
 /* A "stack" of items is limited to 40 items (hard-coded). */
 #define MAX_STACK_SIZE 41
@@ -83,127 +83,8 @@ enum {
 #define ORIGIN_BYTES 4 /* savefile bytes - room for 32 origin types */
 
 
-/* ID flags */
-#define IDENT_SENSE     0x0001  /* Has been "sensed" */
-#define IDENT_WORN      0x0002  /* Has been tried on */
-#define IDENT_EMPTY     0x0004  /* Is known to be empty */
-#define IDENT_KNOWN     0x0008  /* Fully known */
-#define IDENT_STORE     0x0010  /* Item is in the inventory of a store */
-#define IDENT_ATTACK    0x0020  /* Know combat dice/ac/bonuses */
-#define IDENT_DEFENCE   0x0040  /* Know AC/etc bonuses */
-#define IDENT_EFFECT    0x0080  /* Know item activation/effect */
-/* xxx */
-#define IDENT_INDESTRUCT 0x0200 /* Tried to destroy it and failed */
-#define IDENT_NAME      0x0400  /* Know the name of ego or artifact if there is one */
-#define IDENT_FIRED     0x0800  /* Has been used as a missile */
-#define IDENT_NOTART    0x1000  /* Item is known not to be an artifact */
-#define IDENT_FAKE      0x2000  /* Item is a fake, for displaying knowledge */
-#define IDENT_SENSED_THIS_TURN 0x4000 /* Item has had a chance to be sensed on this turn (see sense_inventory()) */
-
 /* Maximum number of scroll titles generated */
 #define MAX_TITLES     50
-
-/**
- * Modes for object_desc().
- */
-enum {
-	ODESC_BASE   = 0x00,   /*!< Only describe the base name */
-	ODESC_COMBAT = 0x01,   /*!< Also show combat bonuses */
-	ODESC_EXTRA  = 0x02,   /*!< Show charges/inscriptions/pvals */
-
-	ODESC_FULL   = ODESC_COMBAT | ODESC_EXTRA,
-	                       /*!< Show entire description */
-
-	ODESC_STORE  = 0x04,   /*!< This is an in-store description */
-	ODESC_PLURAL = 0x08,   /*!< Always pluralise */
-	ODESC_SINGULAR    = 0x10,    /*!< Always singular */
-	ODESC_SPOIL  = 0x20,    /*!< Display regardless of player knowledge */
-	ODESC_PREFIX = 0x40,   /* */
-
-	ODESC_CAPITAL = 0x80,	/*!< Capitalise object name */
-	ODESC_TERSE = 0x100  	/*!< Make terse names */
-};
-
-
-/**
- * Modes for item lists in "show_inven()"  "show_equip()" and "show_floor()"
- */
-typedef enum {
-	OLIST_NONE   = 0x00,   /* No options */
-   	OLIST_WINDOW = 0x01,   /* Display list in a sub-term (left-align) */
-   	OLIST_QUIVER = 0x02,   /* Display quiver lines */
-   	OLIST_GOLD   = 0x04,   /* Include gold in the list */
-	OLIST_WEIGHT = 0x08,   /* Show item weight */
-	OLIST_PRICE  = 0x10,   /* Show item price */
-	OLIST_FAIL   = 0x20,    /* Show device failure */
-	OLIST_SEMPTY = 0x40
-} olist_detail_t;
-
-
-/**
- * Modes for object_info()
- */
-typedef enum {
-	OINFO_NONE   = 0x00, /* No options */
-	OINFO_TERSE  = 0x01, /* Keep descriptions brief, e.g. for dumps */
-	OINFO_SUBJ   = 0x02, /* Describe object from the character's POV */
-} oinfo_detail_t;
-
-
-/**
- * Modes for stacking by object_similar()
- */
-typedef enum
-{
-	OSTACK_NONE    = 0x00, /* No options (this does NOT mean no stacking) */
-	OSTACK_STORE   = 0x01, /* Store stacking */
-	OSTACK_PACK    = 0x02, /* Inventory and home */
-	OSTACK_LIST    = 0x04, /* Object list */
-	OSTACK_MONSTER = 0x08, /* Monster carrying objects */
-	OSTACK_FLOOR   = 0x10, /* Floor stacking */
-	OSTACK_QUIVER  = 0x20  /* Quiver */
-} object_stack_t;
-
-
-/**
- * Pseudo-ID markers.
- */
-typedef enum
-{
-	INSCRIP_NULL = 0,            /*!< No pseudo-ID status */
-	INSCRIP_STRANGE = 1,         /*!< Item that has mixed combat bonuses */
-	INSCRIP_AVERAGE = 2,         /*!< Item with no interesting features */
-	INSCRIP_MAGICAL = 3,         /*!< Item with combat bonuses */
-	INSCRIP_SPLENDID = 4,        /*!< Obviously good item */
-	INSCRIP_EXCELLENT = 5,       /*!< Ego-item */
-	INSCRIP_SPECIAL = 6,         /*!< Artifact */
-	INSCRIP_UNKNOWN = 7,
-
-	INSCRIP_MAX                  /*!< Maximum number of pseudo-ID markers */
-} obj_pseudo_t;
-
-/*
- * Chest check types
- */
-enum chest_query {
-	CHEST_ANY,
-	CHEST_OPENABLE,
-	CHEST_TRAPPED
-};
-
-/*
- * Bit flags for get_item() function
- */
-#define USE_EQUIP     0x0001	/* Allow equip items */
-#define USE_INVEN     0x0002	/* Allow inven items */
-#define USE_FLOOR     0x0004	/* Allow floor items */
-#define IS_HARMLESS   0x0008	/* Ignore generic warning inscriptions */
-#define SHOW_PRICES   0x0010	/* Show item prices in item lists */
-#define SHOW_FAIL     0x0020 	/* Show device failure in item lists */
-#define SHOW_QUIVER   0x0040	/* Show quiver summary when looking at inventory */
-#define SHOW_EMPTY    0x0080	/* Show empty slots in equipment display */
-#define QUIVER_TAGS   0x0100	/* 0-9 are quiver slots when selecting */
-
 
 /*
  * Some constants used in randart generation and power calculation

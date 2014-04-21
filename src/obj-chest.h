@@ -31,6 +31,15 @@
 #define CHEST_SUMMON	0x20
 
 
+/*
+ * Chest check types
+ */
+enum chest_query {
+	CHEST_ANY,
+	CHEST_OPENABLE,
+	CHEST_TRAPPED
+};
+
 byte chest_trap_type(const object_type *o_ptr);
 bool is_trapped_chest(const object_type *o_ptr);
 bool is_locked_chest(const object_type *o_ptr);

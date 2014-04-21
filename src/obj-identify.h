@@ -20,6 +20,40 @@
 #ifndef OBJECT_IDENTIFY_H
 #define OBJECT_IDENTIFY_H
 
+/* ID flags */
+#define IDENT_SENSE     0x0001  /* Has been "sensed" */
+#define IDENT_WORN      0x0002  /* Has been tried on */
+#define IDENT_EMPTY     0x0004  /* Is known to be empty */
+#define IDENT_KNOWN     0x0008  /* Fully known */
+#define IDENT_STORE     0x0010  /* Item is in the inventory of a store */
+#define IDENT_ATTACK    0x0020  /* Know combat dice/ac/bonuses */
+#define IDENT_DEFENCE   0x0040  /* Know AC/etc bonuses */
+#define IDENT_EFFECT    0x0080  /* Know item activation/effect */
+/* xxx */
+#define IDENT_INDESTRUCT 0x0200 /* Tried to destroy it and failed */
+#define IDENT_NAME      0x0400  /* Know the name of ego or artifact if there is one */
+#define IDENT_FIRED     0x0800  /* Has been used as a missile */
+#define IDENT_NOTART    0x1000  /* Item is known not to be an artifact */
+#define IDENT_FAKE      0x2000  /* Item is a fake, for displaying knowledge */
+#define IDENT_SENSED_THIS_TURN 0x4000 /* Item has had a chance to be sensed on this turn (see sense_inventory()) */
+
+/**
+ * Pseudo-ID markers.
+ */
+typedef enum
+{
+	INSCRIP_NULL = 0,            /*!< No pseudo-ID status */
+	INSCRIP_STRANGE = 1,         /*!< Item that has mixed combat bonuses */
+	INSCRIP_AVERAGE = 2,         /*!< Item with no interesting features */
+	INSCRIP_MAGICAL = 3,         /*!< Item with combat bonuses */
+	INSCRIP_SPLENDID = 4,        /*!< Obviously good item */
+	INSCRIP_EXCELLENT = 5,       /*!< Ego-item */
+	INSCRIP_SPECIAL = 6,         /*!< Artifact */
+	INSCRIP_UNKNOWN = 7,
+
+	INSCRIP_MAX                  /*!< Maximum number of pseudo-ID markers */
+} obj_pseudo_t;
+
 extern s32b object_last_wield;
 
 bool object_is_known(const object_type *o_ptr);

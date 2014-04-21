@@ -25,6 +25,7 @@
 #include "mon-make.h"
 #include "mon-spell.h"
 #include "monster.h"
+#include "obj-identify.h"
 #include "obj-make.h"
 #include "obj-util.h"
 #include "object.h"

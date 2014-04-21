@@ -22,6 +22,16 @@
 
 #include "z-textblock.h"
 
+/**
+ * Modes for object_info()
+ */
+typedef enum {
+	OINFO_NONE   = 0x00, /* No options */
+	OINFO_TERSE  = 0x01, /* Keep descriptions brief, e.g. for dumps */
+	OINFO_SUBJ   = 0x02, /* Describe object from the character's POV */
+} oinfo_detail_t;
+
+
 textblock *object_info(const object_type *o_ptr, oinfo_detail_t mode);
 textblock *object_info_ego(struct ego_item *ego);
 void object_info_spoil(ang_file *f, const object_type *o_ptr, int wrap);

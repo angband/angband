@@ -22,6 +22,21 @@
 #include "cave.h"
 #include "player.h"
 
+/**
+ * Modes for stacking by object_similar()
+ */
+typedef enum
+{
+	OSTACK_NONE    = 0x00, /* No options (this does NOT mean no stacking) */
+	OSTACK_STORE   = 0x01, /* Store stacking */
+	OSTACK_PACK    = 0x02, /* Inventory and home */
+	OSTACK_LIST    = 0x04, /* Object list */
+	OSTACK_MONSTER = 0x08, /* Monster carrying objects */
+	OSTACK_FLOOR   = 0x10, /* Floor stacking */
+	OSTACK_QUIVER  = 0x20  /* Quiver */
+} object_stack_t;
+
+
 struct object_kind *objkind_get(int tval, int sval);
 struct object_kind *objkind_byid(int kidx);
 void flavor_init(void);

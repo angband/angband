@@ -33,6 +33,7 @@
 #include "obj-make.h"
 #include "obj-tval.h"
 #include "obj-tvalsval.h"
+#include "obj-ui.h"
 #include "obj-util.h"
 #include "prefs.h"
 #include "randname.h"
