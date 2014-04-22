@@ -140,7 +140,8 @@ static void wr_item(const object_type *o_ptr)
 	}
 
 	for (i = 0; i < ELEM_MAX; i++) {
-		wr_s16b(o_ptr->res_level[i]);
+		wr_s16b(o_ptr->el_info[i].res_level);
+		wr_byte(o_ptr->el_info[i].flags);
 	}
 
 	/* Held by monster index */

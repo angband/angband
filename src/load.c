@@ -180,7 +180,8 @@ static int rd_item(object_type *o_ptr)
 	}
 
 	for (i = 0; i < elem_max; i++) {
-		rd_s16b(&o_ptr->res_level[i]);
+		rd_s16b(&o_ptr->el_info[i].res_level);
+		rd_byte(&o_ptr->el_info[i].flags);
 	}
 
 	/* Monster holding object */

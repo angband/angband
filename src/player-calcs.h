@@ -185,6 +185,7 @@ typedef struct player_state {
 	bool cumber_glove;	/* Mana draining gloves */
 
 	bitflag flags[OF_SIZE];	/* Status flags from race and items */
+	struct element_info el_info[ELEM_MAX]; /* Resists from race and items */
 } player_state;
 
 /**

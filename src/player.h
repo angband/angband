@@ -273,7 +273,7 @@ struct player_race {
 	bitflag flags[OF_SIZE];   /* Racial (object) flags */
 	bitflag pflags[PF_SIZE];  /* Racial (player) flags */
 
-	s16b res_level[ELEM_MAX]; /* Racial resists */
+	struct element_info el_info[ELEM_MAX]; /* Racial resists */
 };
 
 extern struct player_race *races;

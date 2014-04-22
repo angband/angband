@@ -172,6 +172,12 @@ struct slay {
 	struct slay *next;
 };
 
+/* Element info type */
+struct element_info {
+	s16b res_level;
+	bitflag flags;
+};
+
 /**
  * Information about object types, like rods, wands, etc.
  */
@@ -228,7 +234,7 @@ typedef struct object_kind
 	bitflag kind_flags[KF_SIZE];			/**< Kind flags */
 
 	random_value modifiers[OBJ_MOD_MAX];
-	s16b res_level[ELEM_MAX];
+	struct element_info el_info[ELEM_MAX];
 
 	struct brand *brands;
 	struct slay *slays;
@@ -320,7 +326,7 @@ typedef struct artifact
 	bitflag kind_flags[KF_SIZE];			/**< Kind flags */
 
 	int modifiers[OBJ_MOD_MAX];
-	int res_level[ELEM_MAX];
+	struct element_info el_info[ELEM_MAX];
 
 	struct brand *brands;
 	struct slay *slays;
@@ -371,7 +377,7 @@ typedef struct ego_item
 
 	random_value modifiers[OBJ_MOD_MAX];
 	int min_modifiers[OBJ_MOD_MAX];
-	s16b res_level[ELEM_MAX];
+	struct element_info el_info[ELEM_MAX];
 
 	struct brand *brands;
 	struct slay *slays;
@@ -452,7 +458,7 @@ typedef struct object
 	u16b ident;			/* Special flags */
 
 	s16b modifiers[OBJ_MOD_MAX];
-	s16b res_level[ELEM_MAX];
+	struct element_info el_info[ELEM_MAX];
 
 	struct brand *brands;
 	struct slay *slays;

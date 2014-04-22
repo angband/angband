@@ -738,7 +738,7 @@ static enum parser_error parse_k_v(struct parser *p) {
 		}
 		if (!grab_index_and_int(&value, &index, elements, "RES_", t)) {
 			found = TRUE;
-			k->res_level[index] = value;
+			k->el_info[index].res_level = value;
 		}
 		if (!found)
 			break;
@@ -996,7 +996,7 @@ static enum parser_error parse_a_v(struct parser *p) {
 		}
 		if (!grab_index_and_int(&value, &index, elements, "RES_", t)) {
 			found = TRUE;
-			a->res_level[index] = value;
+			a->el_info[index].res_level = value;
 		}
 		if (!found)
 			break;
@@ -1682,7 +1682,7 @@ static enum parser_error parse_e_v(struct parser *p) {
 		}
 		if (!grab_index_and_int(&value, &index, elements, "RES_", t)) {
 			found = TRUE;
-			e->res_level[index] = value;
+			e->el_info[index].res_level = value;
 		}
 		if (!found)
 			break;
@@ -1966,7 +1966,7 @@ static enum parser_error parse_p_v(struct parser *p) {
 		bool found = FALSE;
 		if (!grab_index_and_int(&value, &index, elements, "RES_", t)) {
 			found = TRUE;
-			r->res_level[index] = value;
+			r->el_info[index].res_level = value;
 		}
 		if (!found)
 			break;
