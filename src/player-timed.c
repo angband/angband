@@ -20,6 +20,7 @@
 #include "angband.h"
 #include "cave.h"
 #include "obj-identify.h"
+#include "player-util.h"
 
 
 /*

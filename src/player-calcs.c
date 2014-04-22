@@ -1,9 +1,9 @@
-/**
-   \file player/calcs.c
-   \brief Player status calculation, signalling ui events based on 
-   status changes.
+/** \file player-calcs.c
+	\brief Player status calculation, signalling ui events based on 
+	status changes.
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
+ * Copyright (c) 2014 Nick McConnell
  *
  * This work is free software; you can redistribute it and/or modify it
  * under the terms of either:
@@ -28,6 +28,7 @@
 #include "obj-tval.h"
 #include "obj-tvalsval.h"
 #include "obj-util.h"
+#include "player-util.h"
 #include "spells.h"
 #include "squelch.h"
 #include "ui.h"

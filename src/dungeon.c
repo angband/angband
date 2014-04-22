@@ -38,6 +38,7 @@
 #include "obj-util.h"
 #include "object.h"
 #include "pathfind.h"
+#include "player-util.h"
 #include "prefs.h"
 #include "savefile.h"
 #include "spells.h"

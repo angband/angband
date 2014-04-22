@@ -19,13 +19,14 @@
 
 #include "angband.h"
 #include "cave.h"
+#include "mon-util.h" /* for summon_specific() */
 #include "obj-chest.h"
 #include "obj-identify.h"
 #include "obj-make.h"
 #include "obj-tval.h"
 #include "obj-tvalsval.h"
 #include "obj-util.h"
-#include "mon-util.h" /* for summon_specific() */
+#include "player-util.h"
 #include "spells.h"
 #include "tables.h"
 

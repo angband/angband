@@ -30,6 +30,7 @@
 #include "obj-slays.h"
 #include "obj-ui.h"
 #include "obj-util.h"
+#include "player-util.h"
 #include "project.h"
 #include "spells.h"
 #include "tables.h"

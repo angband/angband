@@ -18,10 +18,11 @@
 
 #include "angband.h"
 #include "cave.h"
+#include "cmd-core.h"
 #include "obj-tvalsval.h"
 #include "obj-util.h"
 #include "object.h"
-#include "cmd-core.h"
+#include "player-util.h"
 #include "spells.h"
 
 /*

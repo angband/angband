@@ -1,7 +1,7 @@
 /* player.h - player interface */
 
-#ifndef PLAYER_PLAYER_H
-#define PLAYER_PLAYER_H
+#ifndef PLAYER_H
+#define PLAYER_H
 
 #include "guid.h"
 #include "obj-properties.h"
@@ -24,13 +24,6 @@
 #define PY_FOOD_FAINT	500		/* Food value (Fainting) */
 #define PY_FOOD_STARVE	100		/* Food value (Starving) */
 
-/* Player regeneration constants */
-#define PY_REGEN_NORMAL		197		/* Regen factor*2^16 when full */
-#define PY_REGEN_WEAK		98		/* Regen factor*2^16 when weak */
-#define PY_REGEN_FAINT		33		/* Regen factor*2^16 when fainting */
-#define PY_REGEN_HPBASE		1442	/* Min amount hp regen*2^16 */
-#define PY_REGEN_MNBASE		524		/* Min amount mana regen*2^16 */
-
 /* Maximum number of player spells */
 #define PY_MAX_SPELLS 64
 
@@ -40,23 +33,6 @@
 #define PY_SPELL_FORGOTTEN  0x04 	/* Spell has been forgotten */
 
 #define BTH_PLUS_ADJ    	3 		/* Adjust BTH per plus-to-hit */
-
-/* 
- * Special values for the number of turns to rest, these need to be
- * negative numbers, as postive numbers are taken to be a turncount,
- * and zero means "not resting". 
- */
-enum 
-{
-	REST_COMPLETE = -2,
-	REST_ALL_POINTS = -1,
-	REST_SOME_POINTS = -3
-};
-
-/**
- * Minimum number of turns required for regeneration to kick in during resting.
- */
-#define REST_REQUIRED_FOR_REGEN 5
 
 /** Inventory **/
 
@@ -531,31 +507,4 @@ bool player_dec_timed(struct player *p, int idx, int v, bool notify);
 bool player_clear_timed(struct player *p, int idx, bool notify);
 bool player_set_food(struct player *p, int v);
 
-/* util.c */
-void take_hit(struct player *p, int dam, const char *kb_str);
-s16b modify_stat_value(int value, int amount);
-bool player_can_cast(struct player *p, bool show_msg);
-bool player_can_study(struct player *p, bool show_msg);
-bool player_can_read(struct player *p, bool show_msg);
-bool player_can_fire(struct player *p, bool show_msg);
-bool player_can_refuel(struct player *p, bool show_msg);
-bool player_can_cast_prereq(void);
-bool player_can_study_prereq(void);
-bool player_can_read_prereq(void);
-bool player_can_fire_prereq(void);
-bool player_can_refuel_prereq(void);
-bool player_book_has_unlearned_spells(struct player *p);
-bool player_confuse_dir(struct player *p, int *dir, bool too);
-bool player_resting_is_special(s16b count);
-bool player_is_resting(struct player *p);
-s16b player_resting_count(struct player *p);
-void player_resting_set_count(struct player *p, s16b count);
-void player_resting_cancel(struct player *p);
-bool player_resting_can_regenerate(struct player *p);
-void player_resting_step_turn(struct player *p);
-void player_resting_complete_special(struct player *p);
-bool player_of_has(struct player *p, int flag);
-int coords_to_dir(int y, int x);
-void disturb(struct player *p, int stop_search);
-
-#endif /* !PLAYER_PLAYER_H */
+#endif /* !PLAYER_H */

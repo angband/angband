@@ -24,10 +24,11 @@
 #include "mon-timed.h"
 #include "mon-list.h"
 #include "mon-util.h"
-#include "squelch.h"
 #include "obj-desc.h"
 #include "obj-identify.h"
 #include "obj-util.h"
+#include "player-util.h"
+#include "squelch.h"
 
 
 /**

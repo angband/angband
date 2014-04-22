@@ -22,6 +22,7 @@
 #include "dungeon.h"
 #include "effects.h"
 #include "init.h"
+#include "player-util.h"
 #include "spells.h"
 #include "trap.h"
 

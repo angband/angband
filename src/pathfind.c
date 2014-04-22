@@ -24,6 +24,7 @@
 #include "squelch.h"
 #include "mon-util.h"
 #include "obj-util.h"
+#include "player-util.h"
 #include "tables.h"
 
 /****** Pathfinding code ******/

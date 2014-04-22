@@ -29,6 +29,7 @@
 #include "mon-util.h"
 #include "monster.h"
 #include "pathfind.h"
+#include "player-util.h"
 #include "spells.h"
 #include "squelch.h"
 #include "trap.h"

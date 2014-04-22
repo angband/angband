@@ -32,6 +32,7 @@
 #include "obj-util.h"
 #include "object.h"
 #include "player.h"
+#include "player-util.h"
 #include "squelch.h"
 #include "store.h"
 #include "quest.h"

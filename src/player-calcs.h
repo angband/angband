@@ -1,8 +1,8 @@
-/**
-   \file player/calcs.h
-   \brief Player temporary status structures.
+/** \file player-calcs.h
+	\brief Player temporary status structures.
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
+ * Copyright (c) 2014 Nick McConnell
  *
  * This work is free software; you can redistribute it and/or modify it
  * under the terms of either:
@@ -15,6 +15,9 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
+
+#ifndef PLAYER_CALCS_H
+#define PLAYER_CALCS_H
 
 /*
  * Indexes of the various "stats" (hard-coded by savefiles, etc).
@@ -245,3 +248,4 @@ void redraw_stuff(struct player_upkeep *upkeep);
 void handle_stuff(struct player_upkeep *upkeep);
 int weight_remaining(void);
 
+#endif /* !PLAYER_CALCS_H */
