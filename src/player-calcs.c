@@ -1492,6 +1492,7 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 
 	bitflag f[OF_SIZE];
 	bitflag collect_f[OF_SIZE];
+	bool vuln[ELEM_MAX];
 
 	/*** Reset ***/
 
@@ -1509,8 +1510,16 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 
 	/* Base skills */
 	for (i = 0; i < SKILL_MAX; i++)
-		state->skills[i] = player->race->r_skills[i] + player->class->c_skills[i];
-
+		state->skills[i] = player->race->r_skills[i]
+			+ player->class->c_skills[i];
+	/* Base resists */
+	for (i = 0; i < ELEM_MAX; i++) {
+		vuln[i] = FALSE;
+		if (player->race->el_info[i].res_level == -1)
+			vuln[i] = TRUE;
+		else
+			state->el_info[i].res_level = player->race->el_info[i].res_level;
+	}
 
 	/*** Analyze player ***/
 
@@ -1570,6 +1579,14 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 
 		/* Affect Might */
 		extra_might += o_ptr->modifiers[OBJ_MOD_MIGHT];
+
+		/* Affect resists */
+		for (j = 0; j < ELEM_MAX; j++) {
+			if (o_ptr->el_info[j].res_level == -1)
+				vuln[i] = TRUE;
+			if (o_ptr->el_info[j].res_level > state->el_info[j].res_level)
+				state->el_info[j].res_level = o_ptr->el_info[j].res_level;
+		}
 
 		/* Modify the base armor class */
 		state->ac += o_ptr->ac;
@@ -1654,6 +1671,11 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 		state->stat_ind[i] = ind;
 	}
 
+	/* Handle resists */
+	for (i = 0; i < ELEM_MAX; i++) {
+		if (vuln[i] && (state->el_info[i].res_level < 3))
+			state->el_info[i].res_level--;
+	}
 
 	/*** Temporary flags ***/
 
@@ -1759,6 +1781,31 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 		of_on(state->flags, OF_AFRAID);
 	if (player->timed[TMD_TERROR])
 		state->speed += 10;
+
+	/* Resist acid */
+	if (player->timed[TMD_OPP_ACID])
+		if (state->el_info[ELEM_ACID].res_level < 2)
+			state->el_info[ELEM_ACID].res_level++;
+
+	/* Resist electricity */
+	if (player->timed[TMD_OPP_ELEC])
+		if (state->el_info[ELEM_ELEC].res_level < 2)
+			state->el_info[ELEM_ELEC].res_level++;
+
+	/* Resist fire */
+	if (player->timed[TMD_OPP_FIRE])
+		if (state->el_info[ELEM_FIRE].res_level < 2)
+			state->el_info[ELEM_FIRE].res_level++;
+
+	/* Resist cold */
+	if (player->timed[TMD_OPP_COLD])
+		if (state->el_info[ELEM_COLD].res_level < 2)
+			state->el_info[ELEM_COLD].res_level++;
+
+	/* Resist poison */
+	if (player->timed[TMD_OPP_POIS])
+		if (state->el_info[ELEM_POIS].res_level < 2)
+			state->el_info[ELEM_POIS].res_level++;
 
 	/* Resist confusion */
 	if (player->timed[TMD_OPP_CONF])
