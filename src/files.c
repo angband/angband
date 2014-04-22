@@ -32,6 +32,7 @@
 #include "obj-util.h"
 #include "option.h"
 #include "player.h"
+#include "player-timed.h"
 #include "player-util.h"
 #include "savefile.h"
 #include "score.h"

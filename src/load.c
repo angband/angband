@@ -30,6 +30,7 @@
 #include "obj-util.h"
 #include "object.h"
 #include "player.h"
+#include "player-timed.h"
 #include "savefile.h"
 #include "squelch.h"
 #include "store.h"

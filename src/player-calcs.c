@@ -28,6 +28,7 @@
 #include "obj-tval.h"
 #include "obj-tvalsval.h"
 #include "obj-util.h"
+#include "player-timed.h"
 #include "player-util.h"
 #include "spells.h"
 #include "squelch.h"

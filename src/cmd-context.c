@@ -32,6 +32,7 @@
 #include "obj-tval.h"
 #include "obj-ui.h"
 #include "obj-util.h"
+#include "player-timed.h"
 #include "player-util.h"
 #include "squelch.h"
 #include "store.h"

@@ -32,6 +32,7 @@
 #include "obj-util.h"
 #include "object.h"
 #include "player.h"
+#include "player-timed.h"
 #include "player-util.h"
 #include "squelch.h"
 #include "store.h"
@@ -368,6 +369,8 @@ void player_init(struct player *p)
 		mem_free(p->inventory);
 	if (p->upkeep)
 		mem_free(p->upkeep);
+	if (p->timed)
+		mem_free(p->timed);
 
 	/* Wipe the player */
 	(void)WIPE(p, struct player);
@@ -416,6 +419,7 @@ void player_init(struct player *p)
 
 	p->inventory = C_ZNEW(ALL_INVEN_TOTAL, struct object);
 	p->upkeep = mem_zalloc(sizeof(player_upkeep));
+	p->timed = mem_zalloc(TMD_MAX * sizeof(s16b));
 
 	/* First turn. */
 	turn = 1;

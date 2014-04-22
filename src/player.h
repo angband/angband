@@ -16,14 +16,6 @@
 #define PY_MAX_GOLD	999999999L	/* Maximum gold */
 #define PY_MAX_LEVEL	50		/* Maximum level */
 
-/* Player "food" values */
-#define PY_FOOD_MAX 	17000	/* Food value (Bloated) */
-#define PY_FOOD_FULL	10000	/* Food value (Normal) */
-#define PY_FOOD_ALERT	2000	/* Food value (Hungry) */
-#define PY_FOOD_WEAK	1000	/* Food value (Weak) */
-#define PY_FOOD_FAINT	500		/* Food value (Fainting) */
-#define PY_FOOD_STARVE	100		/* Food value (Starving) */
-
 /* Maximum number of player spells */
 #define PY_MAX_SPELLS 64
 
@@ -93,45 +85,6 @@
 #define SEX_FEMALE		0
 #define SEX_MALE		1
 #define SEX_NEUTER		2
-
-/*
- * Timed effects
- */
-enum
-{
-	TMD_FAST = 0,
-	TMD_SLOW,
-	TMD_BLIND, 
-	TMD_PARALYZED,
-	TMD_CONFUSED,
-	TMD_AFRAID,
-	TMD_IMAGE,
-	TMD_POISONED,
-	TMD_CUT,
-	TMD_STUN,
-	TMD_PROTEVIL,
-	TMD_INVULN,
-	TMD_HERO,
-	TMD_SHERO,
-	TMD_SHIELD,
-	TMD_BLESSED,
-	TMD_SINVIS,
-	TMD_SINFRA,
-	TMD_OPP_ACID,
-	TMD_OPP_ELEC,
-	TMD_OPP_FIRE,
-	TMD_OPP_COLD,
-	TMD_OPP_POIS,
-	TMD_OPP_CONF,
-	TMD_AMNESIA,
-	TMD_TELEPATHY,
-	TMD_STONESKIN,
-	TMD_TERROR,
-	TMD_SPRINT,
-	TMD_BOLD,
-
-	TMD_MAX
-};
 
 /*
  * Player race and class flags
@@ -224,7 +177,7 @@ typedef struct player {
 	s16b stat_max[A_MAX];	/* Current "maximal" stat values */
 	s16b stat_cur[A_MAX];	/* Current "natural" stat values */
 
-	s16b timed[TMD_MAX];	/* Timed effects */
+	s16b *timed;		/* Timed effects */
 
 	s16b word_recall;	/* Word of recall counter */
 	s16b deep_descent;	/* Deep Descent counter */
@@ -499,12 +452,5 @@ bool spell_in_book(int spell, int book);
 s16b spell_chance(int spell);
 void spell_learn(int spell);
 bool spell_cast(int spell, int dir);
-
-/* timed.c */
-bool player_set_timed(struct player *p, int idx, int v, bool notify);
-bool player_inc_timed(struct player *p, int idx, int v, bool notify, bool check);
-bool player_dec_timed(struct player *p, int idx, int v, bool notify);
-bool player_clear_timed(struct player *p, int idx, bool notify);
-bool player_set_food(struct player *p, int v);
 
 #endif /* !PLAYER_H */

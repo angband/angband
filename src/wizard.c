@@ -34,6 +34,7 @@
 #include "obj-ui.h"
 #include "obj-util.h"
 #include "object.h"
+#include "player-timed.h"
 #include "project.h"
 #include "spells.h"
 #include "target.h"

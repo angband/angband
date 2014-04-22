@@ -21,6 +21,7 @@
 #include "effects.h"
 #include "obj-tvalsval.h"
 #include "object.h"
+#include "player-timed.h"
 #include "project.h"
 #include "spells.h"
 

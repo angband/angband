@@ -26,6 +26,7 @@
 #include "obj-desc.h"
 #include "obj-ui.h"
 #include "obj-util.h"
+#include "player-timed.h"
 #include "project.h"
 #include "squelch.h"
 #include "tables.h"

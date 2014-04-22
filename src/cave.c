@@ -30,6 +30,7 @@
 #include "obj-ui.h"
 #include "obj-util.h"
 #include "object.h"
+#include "player-timed.h"
 #include "prefs.h"
 #include "project.h"
 #include "squelch.h"

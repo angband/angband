@@ -48,6 +48,7 @@
 #include "option.h"
 #include "parser.h"
 #include "player.h"
+#include "player-timed.h"
 #include "prefs.h"
 #include "project.h"
 #include "quest.h"
@@ -3196,6 +3197,7 @@ static errr init_other(void)
 	/* Allocate player sub-structs */
 	player->inventory = C_ZNEW(ALL_INVEN_TOTAL, object_type);
 	player->upkeep = mem_zalloc(sizeof(player_upkeep));
+	player->timed = mem_zalloc(TMD_MAX * sizeof(s16b));
 
 
 	/*** Prepare the options ***/
@@ -3453,6 +3455,7 @@ void cleanup_angband(void)
 
 	quest_free();
 
+	mem_free(player->timed);
 	mem_free(player->upkeep);
 	FREE(player->inventory);
 

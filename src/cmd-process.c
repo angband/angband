@@ -25,6 +25,7 @@
 #include "keymap.h"
 #include "monster.h"
 #include "obj-util.h"
+#include "player-timed.h"
 #include "player-util.h"
 #include "target.h"
 #include "textui.h"

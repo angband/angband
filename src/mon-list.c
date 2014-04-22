@@ -20,6 +20,7 @@
 #include "dungeon.h"
 #include "mon-util.h"
 #include "mon-list.h"
+#include "player-timed.h"
 #include "project.h"
 
 typedef enum monster_list_section_e {

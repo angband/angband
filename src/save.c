@@ -30,6 +30,7 @@
 #include "squelch.h"
 #include "store.h"
 #include "obj-util.h"
+#include "player-timed.h"
 #include "trap.h"
 #include "ui-game.h"
 #include "ui-input.h"

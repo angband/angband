@@ -17,6 +17,7 @@
  */
 
 #include "angband.h"
+#include "attack.h"
 #include "mon-lore.h"
 #include "mon-make.h"
 #include "mon-spell.h"
@@ -25,7 +26,7 @@
 #include "obj-identify.h"
 #include "obj-tval.h"
 #include "obj-util.h"
-#include "attack.h"
+#include "player-timed.h"
 
 /*
  * Monster genders

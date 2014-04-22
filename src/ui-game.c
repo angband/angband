@@ -36,6 +36,7 @@
 #include "obj-ui.h"
 #include "obj-util.h"
 #include "player.h"
+#include "player-timed.h"
 #include "player-util.h"
 #include "prefs.h"
 #include "textui.h"
