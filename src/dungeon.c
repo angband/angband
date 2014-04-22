@@ -1285,7 +1285,7 @@ static void dungeon(struct chunk *c)
 	target_set_monster(0);
 
 	/* Cancel the health bar */
-	health_track(player, NULL);
+	health_track(player->upkeep, NULL);
 
 	/* Disturb */
 	disturb(player, 1);
@@ -1775,7 +1775,7 @@ void play_game(void)
 		target_set_monster(0);
 
 		/* Cancel the health bar */
-		health_track(player, NULL);
+		health_track(player->upkeep, NULL);
 
 
 		/* Forget the view */

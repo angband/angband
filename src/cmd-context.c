@@ -252,7 +252,7 @@ static void context_menu_player_display_floor(void)
 		object_type *o_ptr;
 
 		/* Track the object kind */
-		track_object(diff);
+		track_object(player->upkeep, diff);
 
 		o_ptr = object_from_item_idx(diff);
 

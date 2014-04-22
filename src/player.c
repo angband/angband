@@ -116,50 +116,6 @@ const s32b player_exp[PY_MAX_LEVEL] =
 };
 
 
-void health_track(struct player *p, struct monster *m_ptr)
-{
-	p->upkeep->health_who = m_ptr;
-	p->upkeep->redraw |= PR_HEALTH;
-}
-
-/*
- * Hack -- track the given monster race
- */
-void monster_race_track(monster_race *race)
-{
-	/* Save this monster ID */
-	player->upkeep->monster_race = race;
-
-	/* Window stuff */
-	player->upkeep->redraw |= (PR_MONSTER);
-}
-
-
-
-/*
- * Hack -- track the given object kind
- */
-void track_object(int item)
-{
-	player->upkeep->object_idx = item;
-	player->upkeep->object_kind = NULL;
-	player->upkeep->redraw |= (PR_OBJECT);
-}
-
-void track_object_kind(struct object_kind *kind)
-{
-	player->upkeep->object_idx = NO_OBJECT;
-	player->upkeep->object_kind = kind;
-	player->upkeep->redraw |= (PR_OBJECT);
-}
-
-bool tracked_object_is(int item)
-{
-	return (player->upkeep->object_idx == item);
-}
-
-
-
 bool player_stat_inc(struct player *p, int stat)
 {
 	int v = p->stat_cur[stat];

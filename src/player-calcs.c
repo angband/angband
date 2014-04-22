@@ -2143,10 +2143,63 @@ static void update_bonuses(void)
 
 
 
+/*** Monster and object tracking functions ***/
+
+/*
+ * Track the given monster
+ */
+void health_track(struct player_upkeep *upkeep, struct monster *m_ptr)
+{
+	upkeep->health_who = m_ptr;
+	upkeep->redraw |= PR_HEALTH;
+}
+
+/*
+ * Track the given monster race
+ */
+void monster_race_track(struct player_upkeep *upkeep, monster_race *race)
+{
+	/* Save this monster ID */
+	upkeep->monster_race = race;
+
+	/* Window stuff */
+	upkeep->redraw |= (PR_MONSTER);
+}
+
+/*
+ * Track the given object
+ */
+void track_object(struct player_upkeep *upkeep, int item)
+{
+	upkeep->object_idx = item;
+	upkeep->object_kind = NULL;
+	upkeep->redraw |= (PR_OBJECT);
+}
+
+/*
+ * Track the given object kind
+ */
+void track_object_kind(struct player_upkeep *upkeep, struct object_kind *kind)
+{
+	upkeep->object_idx = NO_OBJECT;
+	upkeep->object_kind = kind;
+	upkeep->redraw |= (PR_OBJECT);
+}
+
+/*
+ * Is the given item tracked?
+ */
+bool tracked_object_is(struct player_upkeep *upkeep, int item)
+{
+	return (upkeep->object_idx == item);
+}
+
+
+
 /*** Generic "deal with" functions ***/
 
 /*
- * Handle "player->notice"
+ * Handle "player->upkeep->notice"
  */
 void notice_stuff(struct player_upkeep *upkeep)
 {

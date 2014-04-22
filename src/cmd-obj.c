@@ -317,7 +317,7 @@ void wield_item(object_type *o_ptr, int item, int slot)
 	i_ptr->number = num;
 
 	/* Update object_idx if necessary, once object is in slot */
-	if (tracked_object_is(item))
+	if (tracked_object_is(player->upkeep, item))
 	{
 		track_wielded_item = TRUE;
 	}
@@ -369,7 +369,7 @@ void wield_item(object_type *o_ptr, int item, int slot)
 	/* Track object if necessary */
 	if (track_wielded_item)
 	{
-		track_object(slot);
+		track_object(player->upkeep, slot);
 	}
 
 	/* Do any ID-on-wield */
@@ -612,7 +612,7 @@ static void use_aux(struct command *cmd, int item, enum use use, int snd)
 	was_aware = object_flavor_is_aware(o_ptr);
 
 	/* track the object used */
-	track_object(item);
+	track_object(player->upkeep, item);
 
 	/* Figure out effect to use */
 	effect = object_effect(o_ptr);
@@ -1141,7 +1141,7 @@ void do_cmd_study_book(struct command *cmd)
 		return;
 
 	o_ptr = object_from_item_idx(book);
-	track_object(book);
+	track_object(player->upkeep, book);
 	handle_stuff(player->upkeep);
 
 	/* Check the player can study at all atm */
@@ -1323,7 +1323,7 @@ void textui_obj_examine(void)
 		return;
 
 	/* Track object for object recall */
-	track_object(item);
+	track_object(player->upkeep, item);
 
 	/* Display info */
 	o_ptr = object_from_item_idx(item);

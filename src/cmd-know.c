@@ -464,7 +464,7 @@ void do_cmd_inven(void)
 
 			if (o_ptr && o_ptr->kind) {
 				/* Track the object kind */
-				track_object(item);
+				track_object(player->upkeep, item);
 
 				while ((ret = context_menu_object(o_ptr, item)) == 2);
 			}
@@ -511,7 +511,7 @@ void do_cmd_equip(void)
 
 			if (o_ptr && o_ptr->kind) {
 				/* Track the object kind */
-				track_object(item);
+				track_object(player->upkeep, item);
 
 				while ((ret = context_menu_object(o_ptr, item)) == 2);
 			}
@@ -868,7 +868,7 @@ void do_cmd_query_symbol(void)
 		monster_lore *l_ptr = &l_list[r_idx];
 
 		/* Hack -- Auto-recall */
-		monster_race_track(r_ptr);
+		monster_race_track(player->upkeep, r_ptr);
 
 		/* Hack -- Handle stuff */
 		handle_stuff(player->upkeep);

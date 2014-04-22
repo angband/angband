@@ -774,10 +774,10 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 				monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_IND_VIS);
 
 				/* Hack -- track this monster race */
-				monster_race_track(m_ptr->race);
+				monster_race_track(player->upkeep, m_ptr->race);
 
 				/* Hack -- health bar for this monster */
-				health_track(player, m_ptr);
+				health_track(player->upkeep, m_ptr);
 
 				/* Hack -- handle stuff */
 				handle_stuff(player->upkeep);
@@ -991,7 +991,7 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 			/* Not boring */
 			boring = FALSE;
 
-			track_object(-floor_list[0]);
+			track_object(player->upkeep, -floor_list[0]);
 			handle_stuff(player->upkeep);
 
 			/* If there is more than one item... */
@@ -1043,7 +1043,7 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 						}
 						if (0 <= pos && pos < floor_num)
 						{
-							track_object(-floor_list[pos]);
+							track_object(player->upkeep, -floor_list[pos]);
 							handle_stuff(player->upkeep);
 							continue;
 						}
@@ -1187,8 +1187,8 @@ bool target_set_closest(int mode)
 	Term_fresh();
 
 	/* Set up target information */
-	monster_race_track(m_ptr->race);
-	health_track(player, m_ptr);
+	monster_race_track(player->upkeep, m_ptr->race);
+	health_track(player->upkeep, m_ptr);
 	target_set_monster(m_ptr);
 
 	/* Visual cue */
@@ -1378,7 +1378,6 @@ bool target_set_interactive(int mode, int x, int y)
 	bool flag = TRUE;
 	bool help = FALSE;
 
-	//struct keypress query;
 	ui_event press;
 
 	/* These are used for displaying the path to the target */
@@ -1402,9 +1401,6 @@ bool target_set_interactive(int mode, int x, int y)
 
 	/* Cancel target */
 	target_set_monster(0);
-
-	/* Cancel tracking */
-	/* health_track(NULL); */
 
 	/* Calculate the window location for the help prompt */
 	Term_get_size(&wid, &hgt);
@@ -1451,9 +1447,6 @@ bool target_set_interactive(int mode, int x, int y)
 			/* Remove the path */
 			if (path_drawn) load_path(path_n, path_g, path_char, path_attr);
 
-			/* Cancel tracking */
-			/* health_track(NULL); */
-
 			/* Assume no "direction" */
 			d = 0;
 
@@ -1474,8 +1467,8 @@ bool target_set_interactive(int mode, int x, int y)
 
 						if (target_able(m)) {
 							/* Set up target information */
-							monster_race_track(m->race);
-							health_track(player, m);
+							monster_race_track(player->upkeep, m->race);
+							health_track(player->upkeep, m);
 							target_set_monster(m);
 							done = TRUE;
 						} else {
@@ -1574,7 +1567,7 @@ bool target_set_interactive(int mode, int x, int y)
 
 					if (target_able(m))
 					{
-						health_track(player, m);
+						health_track(player->upkeep, m);
 						target_set_monster(m);
 						done = TRUE;
 					}
@@ -1684,9 +1677,6 @@ bool target_set_interactive(int mode, int x, int y)
 
 			/* Remove the path */
 			if (path_drawn)  load_path(path_n, path_g, path_char, path_attr);
-
-			/* Cancel tracking */
-			/* health_track(0); */
 
 			/* Assume no direction */
 			d = 0;

@@ -807,9 +807,9 @@ void delete_object_idx(int o_idx)
 	cave->obj_cnt--;
 
 	/* Stop tracking deleted objects if necessary */
-	if (tracked_object_is(0 - o_idx))
+	if (tracked_object_is(player->upkeep, 0 - o_idx))
 	{
-		track_object(NO_OBJECT);
+		track_object(player->upkeep, NO_OBJECT);
 	}
 }
 
@@ -2334,14 +2334,14 @@ static void swap_quiver_slots(int slot1, int slot2)
 	object_copy(&player->inventory[j], &o);
 
 	/* Update object_idx if necessary */
-	if (tracked_object_is(i))
+	if (tracked_object_is(player->upkeep, i))
 	{
-		track_object(j);
+		track_object(player->upkeep, j);
 	}
 
-	if (tracked_object_is(j))
+	if (tracked_object_is(player->upkeep, j))
 	{
-		track_object(i);
+		track_object(player->upkeep, i);
 	}
 }
 
@@ -2447,9 +2447,9 @@ void open_quiver_slot(int slot)
 		if (i != slot && pref && pref == i) continue;
 
 		/* Update object_idx if necessary */
-		if (tracked_object_is(i))
+		if (tracked_object_is(player->upkeep, i))
 		{
-			track_object(dest);
+			track_object(player->upkeep, dest);
 		}
 
 		/* Copy the item up and wipe the old slot */
@@ -2477,9 +2477,9 @@ void inven_item_optimize(int item)
 	if (!o_ptr->kind || o_ptr->number) return;
 
 	/* Stop tracking erased item if necessary */
-	if (tracked_object_is(item))
+	if (tracked_object_is(player->upkeep, item))
 	{
-		track_object(NO_OBJECT);
+		track_object(player->upkeep, NO_OBJECT);
 	}
 
 	/* Items in the pack are treated differently from other items */
@@ -2527,9 +2527,9 @@ void inven_item_optimize(int item)
 		COPY(&player->inventory[j], &player->inventory[i], object_type);
 
 		/* Update object_idx if necessary */
-		if (tracked_object_is(i))
+		if (tracked_object_is(player->upkeep, i))
 		{
-			track_object(j);
+			track_object(player->upkeep, j);
 		}
 
 		j = i;
@@ -2833,9 +2833,9 @@ extern s16b inven_carry(struct player *p, struct object *o)
 			object_copy(&p->inventory[k+1], &p->inventory[k]);
 
 			/* Update object_idx if necessary */
-			if (tracked_object_is(k))
+			if (tracked_object_is(player->upkeep, k))
 			{
-				track_object(k+1);
+				track_object(player->upkeep, k+1);
 			}
 		}
 
@@ -2951,7 +2951,7 @@ s16b inven_takeoff(int item, int amt)
 	}
 
 	/* Update object_idx if necessary, after optimization */
-	if (tracked_object_is(item))
+	if (tracked_object_is(player->upkeep, item))
 	{
 		track_removed_item = TRUE;
 	}
@@ -2966,7 +2966,7 @@ s16b inven_takeoff(int item, int amt)
 	/* Track removed item if necessary */
 	if (track_removed_item)
 	{
-		track_object(slot);
+		track_object(player->upkeep, slot);
 	}
 
 	/* Message */
@@ -3018,9 +3018,9 @@ void inven_drop(int item, int amt)
 	}
 
 	/* Stop tracking items no longer in the inventory */
-	if (tracked_object_is(item) && amt == o_ptr->number)
+	if (tracked_object_is(player->upkeep, item) && amt == o_ptr->number)
 	{
-		track_object(NO_OBJECT);
+		track_object(player->upkeep, NO_OBJECT);
 	}
 
 	i_ptr = &object_type_body;
@@ -3117,9 +3117,9 @@ void combine_pack(void)
 				COPY(&player->inventory[k], &player->inventory[k+1], object_type);
 
 				/* Update object_idx if necessary */
-				if (tracked_object_is(k+1))
+				if (tracked_object_is(player->upkeep, k+1))
 				{
-					track_object(k);
+					track_object(player->upkeep, k);
 				}
 			}
 
@@ -3184,12 +3184,12 @@ void reorder_pack(void)
 		for (k = i; k > j; k--)
 		{
 			/* Slide the item */
-			object_copy(&player->inventory[k], &player->inventory[k-1]);
+			object_copy(&player->inventory[k], &player->inventory[k - 1]);
 
 			/* Update object_idx if necessary */
-			if (tracked_object_is(k-1))
+			if (tracked_object_is(player->upkeep, k - 1))
 			{
-				track_object(k);
+				track_object(player->upkeep, k);
 			}
 		}
 
@@ -3197,9 +3197,9 @@ void reorder_pack(void)
 		object_copy(&player->inventory[j], i_ptr);
 
 		/* Update object_idx if necessary */
-		if (tracked_object_is(i))
+		if (tracked_object_is(player->upkeep, i))
 		{
-			track_object(j);
+			track_object(player->upkeep, j);
 		}
 
 		/* Redraw stuff */

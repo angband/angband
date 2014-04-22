@@ -1274,7 +1274,7 @@ static void mon_lore(int oid)
 	l_ptr = get_lore(r_ptr);
 
 	/* Update the monster recall window */
-	monster_race_track(r_ptr);
+	monster_race_track(player->upkeep, r_ptr);
 	handle_stuff(player->upkeep);
 
 	tb = textblock_new();
@@ -1776,7 +1776,7 @@ static void desc_obj_fake(int k_idx)
 	}
 
 	/* Update the object recall window */
-	track_object_kind(kind);
+	track_object_kind(player->upkeep, kind);
 	handle_stuff(player->upkeep);
 
 	/* Wipe the object */

@@ -200,10 +200,10 @@ static bool py_attack_real(int y, int x, bool *fear) {
 				 MDESC_OBJE | MDESC_IND_HID | MDESC_PRO_HID);
 
 	/* Auto-Recall if possible and visible */
-	if (m_ptr->ml) monster_race_track(m_ptr->race);
+	if (m_ptr->ml) monster_race_track(player->upkeep, m_ptr->race);
 
 	/* Track a new monster */
-	if (m_ptr->ml) health_track(player, m_ptr);
+	if (m_ptr->ml) health_track(player->upkeep, m_ptr);
 
 	/* Handle player fear (only for invisible monsters) */
 	if (player_of_has(player, OF_AFRAID)) {
@@ -527,8 +527,9 @@ static void ranged_helper(int item, int dir, int range, int shots, ranged_attack
 					}
 					
 					/* Track this monster */
-					if (m_ptr->ml) monster_race_track(m_ptr->race);
-					if (m_ptr->ml) health_track(player, m_ptr);
+					if (m_ptr->ml) 
+						monster_race_track(player->upkeep, m_ptr->race);
+					if (m_ptr->ml) health_track(player->upkeep, m_ptr);
 				}
 
 				/* Hit the monster, check for death */

@@ -793,8 +793,8 @@ static void textui_process_click(ui_event e)
 		struct monster *m = square_monster(cave, y, x);
 		if (m && target_able(m)) {
 			/* Set up target information */
-			monster_race_track(m->race);
-			health_track(player, m);
+			monster_race_track(player->upkeep, m->race);
+			health_track(player->upkeep, m);
 			target_set_monster(m);
 		} else {
 			target_set_location(y,x);

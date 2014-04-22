@@ -3186,11 +3186,11 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 
 				/* Hack -- auto-recall */
 				if (m_ptr->ml)
-					monster_race_track(m_ptr->race);
+					monster_race_track(player->upkeep, m_ptr->race);
 
 				/* Hack - auto-track */
 				if (m_ptr->ml)
-					health_track(player, m_ptr);
+					health_track(player->upkeep, m_ptr);
 			}
 		}
 	}

@@ -257,9 +257,9 @@ static void py_pickup_aux(int o_idx, bool domsg)
 	}
 
 	/* Update object_idx if necessary */
-	if (tracked_object_is(0 - o_idx))
+	if (tracked_object_is(player->upkeep, 0 - o_idx))
 	{
-		track_object(slot);
+		track_object(player->upkeep, slot);
 	}
 
 	/* Delete the object */

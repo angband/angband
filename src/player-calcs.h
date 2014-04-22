@@ -242,6 +242,14 @@ extern const byte adj_str_hold[STAT_RANGE];
 void calc_bonuses(object_type inventory[], player_state *state, bool id_only);
 void calc_digging_chances(player_state *state, int chances[DIGGING_MAX]);
 int calc_blows(const object_type *o_ptr, player_state *state, int extra_blows);
+
+void health_track(struct player_upkeep *upkeep, struct monster *m_ptr);
+void monster_race_track(struct player_upkeep *upkeep, 
+						struct monster_race *race);
+void track_object(struct player_upkeep *upkeep, int item);
+void track_object_kind(struct player_upkeep *upkeep, struct object_kind *kind);
+bool tracked_object_is(struct player_upkeep *upkeep, int item);
+
 void notice_stuff(struct player_upkeep *upkeep);
 void update_stuff(struct player_upkeep *upkeep);
 void redraw_stuff(struct player_upkeep *upkeep);

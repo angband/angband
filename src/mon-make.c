@@ -161,7 +161,7 @@ void delete_monster_idx(int m_idx)
 	if (target_get_monster() == m_ptr) target_set_monster(NULL);
 
 	/* Hack -- remove tracked monster */
-	if (player->upkeep->health_who == m_ptr) health_track(player, NULL);
+	if (player->upkeep->health_who == m_ptr) health_track(player->upkeep, NULL);
 
 	/* Monster is gone */
 	cave->m_idx[y][x] = 0;
@@ -413,7 +413,7 @@ void wipe_mon_list(struct chunk *c, struct player *p)
 	target_set_monster(0);
 
 	/* Hack -- no more tracking */
-	health_track(p, 0);
+	health_track(p->upkeep, 0);
 }
 
 /**
@@ -1541,7 +1541,7 @@ bool mon_take_hit(struct monster *m_ptr, int dam, bool *fear, const char *note)
 			if (l_ptr->tkills < MAX_SHORT) l_ptr->tkills++;
 
 			/* Hack -- Auto-recall */
-			monster_race_track(m_ptr->race);
+			monster_race_track(player->upkeep, m_ptr->race);
 		}
 
 		/* Delete the monster */
