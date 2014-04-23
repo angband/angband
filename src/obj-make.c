@@ -242,6 +242,7 @@ void ego_apply_magic(object_type *o_ptr, int level)
 	/* Extra powers */
 	if (kf_has(o_ptr->ego->kind_flags, KF_RAND_SUSTAIN))
 		create_mask(newf, FALSE, OFT_SUST, OFT_MAX);
+	/** TODO - NRM **/
 	else if (kf_has(o_ptr->ego->kind_flags, KF_RAND_HI_RES))
 		create_mask(newf, FALSE, OFT_HRES, OFT_MAX);
 	else if (kf_has(o_ptr->ego->kind_flags, KF_RAND_POWER))
@@ -269,6 +270,16 @@ void ego_apply_magic(object_type *o_ptr, int level)
 	/* Add slays and brands */
 	copy_slay(&o_ptr->slays, o_ptr->ego->slays);
 	copy_brand(&o_ptr->brands, o_ptr->ego->brands);
+
+	/* Add resists */
+	for (i = 0; i < ELEM_MAX; i++) {
+		/* Take the larger of ego and base object resist levels */
+		o_ptr->el_info[i].res_level =
+			MAX(o_ptr->ego->el_info[i].res_level, o_ptr->el_info[i].res_level);
+
+		/* Union of flags so as to know when ignoring is notable */
+		o_ptr->el_info[i].flags |= o_ptr->ego->el_info[i].flags;
+	}
 
 	return;
 }
@@ -346,6 +357,14 @@ void copy_artifact_data(object_type *o_ptr, const artifact_type *a_ptr)
 	of_union(o_ptr->flags, a_ptr->flags);
 	copy_slay(&o_ptr->slays, a_ptr->slays);
 	copy_brand(&o_ptr->brands, a_ptr->brands);
+	for (i = 0; i < ELEM_MAX; i++) {
+		/* Take the larger of artifact and base object resist levels */
+		o_ptr->el_info[i].res_level =
+			MAX(a_ptr->el_info[i].res_level, o_ptr->el_info[i].res_level);
+
+		/* Union of flags so as to know when ignoring is notable */
+		o_ptr->el_info[i].flags |= a_ptr->el_info[i].flags;
+	}
 }
 
 
@@ -612,6 +631,12 @@ void object_prep(object_type *o_ptr, struct object_kind *k, int lev,
 	/* Default slays and brands */
 	copy_slay(&o_ptr->slays, k->slays);
 	copy_brand(&o_ptr->brands, k->brands);
+
+	/* Default resists */
+	for (i = 0; i < ELEM_MAX; i++) {
+		o_ptr->el_info[i].res_level = k->el_info[i].res_level;
+		o_ptr->el_info[i].flags = k->el_info[i].flags;
+	}
 }
 
 
