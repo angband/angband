@@ -650,6 +650,28 @@ void object_notice_attack_plusses(object_type *o_ptr)
 
 
 /*
+ * Notice elemental resistance properties for an element on an object
+ */
+bool object_notice_element(object_type *o_ptr, int element)
+{
+	/* Check something - NRM */
+	//if (!of_has(o_ptr->known_flags, flag))
+	{
+		//of_on(o_ptr->known_flags, flag);
+		/* Know more about something */
+
+		object_check_for_ident(o_ptr);
+		event_signal(EVENT_INVENTORY);
+		event_signal(EVENT_EQUIPMENT);
+
+		return TRUE;
+	}
+
+	return FALSE;
+}
+
+
+/*
  * Notice a single flag - returns TRUE if anything new was learned
  */
 bool object_notice_flag(object_type *o_ptr, int flag)
@@ -1000,6 +1022,26 @@ void wieldeds_notice_flag(struct player *p, int flag)
 	return;
 }
 
+/**
+ * Notice the elemental resistance properties on wielded items.
+ *
+ * \param element is the element to notice
+ */
+void wieldeds_notice_element(struct player *p, int element)
+{
+	int i;
+
+	for (i = INVEN_WIELD; i < ALL_INVEN_TOTAL; i++)
+	{
+		object_type *o_ptr = &p->inventory[i];
+
+		if (!o_ptr->kind) continue;
+
+		/* Notice something here - NRM */
+		//object_notice_element(o_ptr, element);
+		// etc etc
+	}
+}
 
 /**
  * Notice to-hit bonus on attacking.

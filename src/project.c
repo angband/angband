@@ -1832,9 +1832,14 @@ static void bolt_pict(int y, int x, int ny, int nx, int typ, byte *a, wchar_t *c
  * \param resist is the degree of resistance (-1 = vuln, 3 = immune).
  */
 int adjust_dam(struct player *p, int type, int dam, aspect dam_aspect, int resist)
+//int adjust_dam(struct player *p, int type, int dam, aspect dam_aspect)
 {
 	const struct gf_type *gf_ptr = &gf_table[type];
 	int i, denom;
+	//int resist = p->state->el_info[type].res_level;
+
+	/* Notice element stuff */
+	//wieldeds_notice_element(p, type);
 
 	if (resist == 3) /* immune */
 		return 0;
@@ -2498,6 +2503,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ)
 
 	/* Adjust damage for resistance, immunity or vulnerability, and apply it */
 	dam = adjust_dam(player, typ, dam, RANDOMISE, check_for_resist(player, typ, NULL, TRUE));
+	//dam = adjust_dam(player, typ, dam, RANDOMISE);
 	if (dam)
 		take_hit(player, dam, killer);
 

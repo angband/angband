@@ -1512,6 +1512,7 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 	for (i = 0; i < SKILL_MAX; i++)
 		state->skills[i] = player->race->r_skills[i]
 			+ player->class->c_skills[i];
+
 	/* Base resists */
 	for (i = 0; i < ELEM_MAX; i++) {
 		vuln[i] = FALSE;

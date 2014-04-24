@@ -66,6 +66,7 @@ static void melee_effect_elemental(melee_effect_handler_context_t *context, int 
 	if (!monster_blow_method_physical(context->method))
 		physical_dam = 0;
 
+	//elemental_dam = adjust_dam(context->p, type, context->damage, RANDOMISE);
 	elemental_dam = adjust_dam(context->p, type, context->damage, RANDOMISE,
 							   check_for_resist(context->p, type, NULL, TRUE));
 

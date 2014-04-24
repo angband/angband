@@ -94,6 +94,7 @@ const char *gf_idx_to_name(int type);
 int check_for_resist(struct player *p, int type, bitflag *flags, bool real);
 int inven_damage(struct player *p, int type, int cperc);
 int adjust_dam(struct player *p, int type, int dam, aspect dam_aspect, int resist);
+//int adjust_dam(struct player *p, int type, int dam, aspect dam_aspect);
 void monster_learn_resists(struct monster *m, struct player *p, int type);
 void dedup_hates_flags(bitflag *f);
 bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
