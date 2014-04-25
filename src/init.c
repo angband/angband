@@ -170,6 +170,31 @@ static u32b grab_one_effect(const char *what) {
 	return 0;
 }
 
+static bool grab_element_flag(struct element_info *info, const char *flag_name)
+{
+	char prefix[20];
+	char suffix[20];
+	size_t i;
+
+	if (2 != sscanf(flag_name, "%[^_]_%s", prefix, suffix))
+		return FALSE;
+
+	/* Ignore or hate */
+	for (i = 0; i < ELEM_MAX; i++)
+		if (streq(suffix, elements[i])) {
+			if (streq(prefix, "IGNORE")) {
+				info[i].flags |= EL_INFO_IGNORE;
+				return TRUE;
+			}
+			if (streq(prefix, "HATES")) {
+				info[i].flags |= EL_INFO_HATES;
+				return TRUE;
+			}
+		}
+
+	return FALSE;
+}
+
 static struct history_chart *findchart(struct history_chart *hs, unsigned int idx) {
 	for (; hs; hs = hs->next)
 		if (hs->idx == idx)
@@ -471,6 +496,8 @@ static enum parser_error parse_kb_f(struct parser *p) {
 			found = TRUE;
 		if (!grab_flag(kb->kind_flags, KF_SIZE, kind_flags, t))
 			found = TRUE;
+		if (grab_element_flag(kb->el_info, t))
+			found = TRUE;
 		if (!found)
 			break;
 		t = strtok(NULL, " |");
@@ -657,6 +684,8 @@ static enum parser_error parse_k_f(struct parser *p) {
 			found = TRUE;
 		if (!grab_flag(k->kind_flags, KF_SIZE, kind_flags, t))
 			found = TRUE;
+		if (grab_element_flag(k->el_info, t))
+			found = TRUE;
 		if (!found)
 			break;
 		t = strtok(NULL, " |");
@@ -828,6 +857,7 @@ static struct file_parser k_parser = {
 /* Parsing functions for artifact.txt */
 static enum parser_error parse_a_n(struct parser *p) {
 	bitflag f[OF_SIZE];
+	size_t i;
 	int idx = parser_getint(p, "index");
 	const char *name = parser_getstr(p, "name");
 	struct artifact *h = parser_priv(p);
@@ -841,6 +871,8 @@ static enum parser_error parse_a_n(struct parser *p) {
 	/* Ignore all elements */
 	create_mask(f, FALSE, OFT_IGNORE, OFT_MAX);
 	of_union(a->flags, f);
+	for (i = ELEM_ACID; i <= ELEM_COLD; i++)
+		a->el_info[i].flags |= EL_INFO_IGNORE;
 
 	return PARSE_ERROR_NONE;
 }
@@ -922,6 +954,8 @@ static enum parser_error parse_a_f(struct parser *p) {
 		if (!grab_flag(a->flags, OF_SIZE, obj_flags, t))
 			found = TRUE;
 		if (!grab_flag(a->kind_flags, KF_SIZE, kind_flags, t))
+			found = TRUE;
+		if (grab_element_flag(a->el_info, t))
 			found = TRUE;
 		if (!found)
 			break;
@@ -1623,6 +1657,8 @@ static enum parser_error parse_e_f(struct parser *p) {
 		if (!grab_flag(e->flags, OF_SIZE, obj_flags, t))
 			found = TRUE;
 		if (!grab_flag(e->kind_flags, KF_SIZE, kind_flags, t))
+			found = TRUE;
+		if (grab_element_flag(e->el_info, t))
 			found = TRUE;
 		if (!found)
 			break;

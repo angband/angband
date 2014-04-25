@@ -98,6 +98,16 @@ static size_t info_collect(textblock *tb, const flag_type list[], size_t max,
 
 /*** Big fat data tables ***/
 
+// Note b is not currently a proper description, this needs fixing when 
+// all this changes over - NRM
+static const flag_type elements[] =
+{
+	#define ELEM(a, b, c, d, e, col, f, g, h, i, j, fh, oh, mh, ph)	\
+	{ELEM_##a, b},
+    #include "list-elements.h"
+    #undef ELEM
+};
+
 static const flag_type mod_flags[] =
 {
 	{ OBJ_MOD_STR,     "strength" },
@@ -320,6 +330,29 @@ static bool describe_immune(textblock *tb, const bitflag flags[OF_SIZE])
 
 
 /*
+ * Describe elemental destruction properties of an object.
+ */
+static bool describe_destroy(textblock *tb, const bitflag element_flags[ELEM_MAX])
+{
+	const char *descs[ELEM_MAX];
+	size_t i, count = 0;
+
+	for (i = 0; i < ELEM_MAX; i++)
+	{
+		if (element_flags[i] & EL_INFO_NOTABLE)
+			descs[count++] = elements[i].name;
+	}
+
+	if (!count)
+		return FALSE;
+
+	textblock_append(tb, "Cannot be harmed by ");
+	info_out_list(tb, descs, count);
+
+	return TRUE;
+}
+
+/*
  * Describe IGNORE_ flags of an object.
  */
 static bool describe_ignores(textblock *tb, const bitflag flags[OF_SIZE])
@@ -536,6 +569,34 @@ static void get_known_flags(const object_type *o_ptr, const oinfo_detail_t mode,
 		/* Don't include base flags when terse */
 		if (flags && mode & OINFO_TERSE)
 			of_diff(flags, o_ptr->kind->base->flags);
+	}
+}
+
+/*
+ * Get the object element flags the player should know about for the given
+ * object/viewing mode combination.
+ */
+static void get_known_element_flags(const object_type *o_ptr, const oinfo_detail_t mode, bitflag element_flags[ELEM_MAX])
+{
+	int i;
+
+	/* Grab the object flags */
+	for (i = 0; i < ELEM_MAX; i++) {
+		/* Looking at fake egos needs less info */
+		if (obj_is_ego_template(o_ptr))
+			element_flags[i] = o_ptr->el_info[i].flags;
+		/* Otherwise only copy if that element info is known */
+		else if (o_ptr->el_info[i].flags && EL_INFO_KNOWN)
+			element_flags[i] = o_ptr->el_info[i].flags;
+
+		/* Make sure to mention ignoring if it usually doesn't */
+		if ((element_flags[i] & EL_INFO_IGNORE) &&
+			(element_flags[i] & EL_INFO_HATES))
+			element_flags[i] |= EL_INFO_NOTABLE;
+
+		/* Don't include hates flag when terse */
+		if (mode & OINFO_TERSE)
+			element_flags[i] &= ~(EL_INFO_HATES);
 	}
 }
 
@@ -1627,6 +1688,7 @@ static bool describe_ego(textblock *tb, const struct ego_item *ego)
 static textblock *object_info_out(const object_type *o_ptr, int mode)
 {
 	bitflag flags[OF_SIZE];
+	bitflag element_flags[OF_SIZE];
 	bool something = FALSE;
 	bool known = object_is_known(o_ptr);
 
@@ -1644,6 +1706,9 @@ static textblock *object_info_out(const object_type *o_ptr, int mode)
 	/* Grab the object flags */
 	get_known_flags(o_ptr, mode, flags);
 
+	/* Grab the element flags */
+	get_known_element_flags(o_ptr, mode, element_flags);
+
 	if (subjective) describe_origin(tb, o_ptr, terse);
 	if (!terse) describe_flavor_text(tb, o_ptr, ego);
 
@@ -1658,6 +1723,7 @@ static textblock *object_info_out(const object_type *o_ptr, int mode)
 	if (describe_new_slays(tb, o_ptr)) something = TRUE;
 	if (describe_brands(tb, o_ptr)) something = TRUE;
 	if (describe_immune(tb, flags)) something = TRUE;
+	//if (describe_destroy(tb, element_flags)) something = TRUE;
 	if (describe_ignores(tb, flags)) something = TRUE;
 	dedup_hates_flags(flags);
 	if (describe_hates(tb, flags)) something = TRUE;

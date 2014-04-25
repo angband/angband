@@ -2182,6 +2182,7 @@ int minus_ac(struct player *p)
 
 	/* Object resists */
 	if (of_has(f, OF_IGNORE_ACID))
+	//if (o_ptr->el_info[ELEM_ACID].flags & EL_INFO_IGNORE)
 	{
 		msg("Your %s is unaffected!", o_name);
 

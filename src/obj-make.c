@@ -636,6 +636,7 @@ void object_prep(object_type *o_ptr, struct object_kind *k, int lev,
 	for (i = 0; i < ELEM_MAX; i++) {
 		o_ptr->el_info[i].res_level = k->el_info[i].res_level;
 		o_ptr->el_info[i].flags = k->el_info[i].flags;
+		o_ptr->el_info[i].flags |= k->base->el_info[i].flags;
 	}
 }
 

@@ -379,36 +379,46 @@ typedef void (*project_object_handler_f)(project_object_handler_context_t *);
  * \param plural_verb is the verb that is displayed in multiple objects are destroyed.
  */
 static void project_object_elemental(project_object_handler_context_t *context, int hate_flag, int ignore_flag, const char *singular_verb, const char *plural_verb)
+//static void project_object_elemental(project_object_handler_context_t *context, int element, const char *singular_verb, const char *plural_verb)
 {
 	if (of_has(context->flags, hate_flag)) {
 		context->do_kill = TRUE;
 		context->note_kill = VERB_AGREEMENT(context->o_ptr->number, singular_verb, plural_verb);
 		context->ignore = of_has(context->flags, ignore_flag);
 	}
+	//if (o_ptr->el_info[element].flags & EL_INFO_HATES) {
+	//	context->do_kill = TRUE;
+	//	context->note_kill = VERB_AGREEMENT(context->o_ptr->number, singular_verb, plural_verb);
+	//	context->ignore = (o_ptr->el_info[element].flags & EL_INFO_IGNORE)	? TRUE : FALSE;
+	//}
 }
 
 /* Acid -- Lots of things */
 static void project_object_handler_ACID(project_object_handler_context_t *context)
 {
 	project_object_elemental(context, OF_HATES_ACID, OF_IGNORE_ACID, "melts", "melt");
+	//project_object_elemental(context, ELEM_ACID, "melts", "melt");
 }
 
 /* Elec -- Rings and Wands */
 static void project_object_handler_ELEC(project_object_handler_context_t *context)
 {
 	project_object_elemental(context, OF_HATES_ELEC, OF_IGNORE_ELEC, "is destroyed", "are destroyed");
+	//project_object_elemental(context, ELEM_ELEC, "is destroyed", "are destroyed");
 }
 
 /* Fire -- Flammable objects */
 static void project_object_handler_FIRE(project_object_handler_context_t *context)
 {
 	project_object_elemental(context, OF_HATES_FIRE, OF_IGNORE_FIRE, "burns up", "burn up");
+	//project_object_elemental(context, ELEM_FIRE, "burns up", "burn up");
 }
 
 /* Cold -- potions and flasks */
 static void project_object_handler_COLD(project_object_handler_context_t *context)
 {
 	project_object_elemental(context, OF_HATES_COLD, OF_IGNORE_COLD, "shatters", "shatter");
+	//project_object_elemental(context, ELEM_COLD, "shatters", "shatter");
 }
 
 /* Fire + Elec */
@@ -416,6 +426,8 @@ static void project_object_handler_PLASMA(project_object_handler_context_t *cont
 {
 	project_object_elemental(context, OF_HATES_FIRE, OF_IGNORE_FIRE, "burns up", "burn up");
 	project_object_elemental(context, OF_HATES_ELEC, OF_IGNORE_ELEC, "is destroyed", "are destroyed");
+	//project_object_elemental(context, ELEM_FIRE, "burns up", "burn up");
+	//project_object_elemental(context, ELEM_ELEC, "is destroyed", "are destroyed");
 }
 
 /* Fire + Cold */
@@ -423,6 +435,8 @@ static void project_object_handler_METEOR(project_object_handler_context_t *cont
 {
 	project_object_elemental(context, OF_HATES_FIRE, OF_IGNORE_FIRE, "burns up", "burn up");
 	project_object_elemental(context, OF_HATES_COLD, OF_IGNORE_COLD, "shatters", "shatter");
+	//project_object_elemental(context, ELEM_FIRE, "burns up", "burn up");
+	//project_object_elemental(context, ELEM_COLD, "shatters", "shatter");
 }
 
 /* Hack -- break potions and such */
@@ -430,6 +444,8 @@ static void project_object_handler_shatter(project_object_handler_context_t *con
 {
 	/* We don't care if the object ignores anything. */
 	project_object_elemental(context, OF_HATES_COLD, OF_NONE, "shatters", "shatter");
+	//project_object_elemental(context, ELEM_COLD, "shatters", "shatter");
+	// This needs better handling - the ignore is currently irrelevant - NRM
 }
 
 /* Mana -- destroys everything */
