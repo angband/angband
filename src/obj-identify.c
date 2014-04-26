@@ -237,6 +237,19 @@ bool object_flag_is_known(const object_type *o_ptr, int flag)
 	return FALSE;
 }
 
+/*
+ * \returns whether the player knows the given element properties of an object
+ */
+bool object_element_is_known(const object_type *o_ptr, int element)
+{
+	if (easy_know(o_ptr) ||
+	    (o_ptr->ident & IDENT_STORE) ||
+	    (o_ptr->el_info[element].flags & EL_INFO_KNOWN))
+		return TRUE;
+
+	return FALSE;
+}
+
 
 /**
  * \returns whether a specific modifier is known to the player
@@ -268,6 +281,22 @@ bool object_this_mod_is_visible(const object_type *o_ptr, int mod)
 bool object_high_resist_is_possible(const object_type *o_ptr)
 {
 	bitflag flags[OF_SIZE], f2[OF_SIZE];
+	//size_t i;
+
+	/* Look at all the high resists */
+	//for (i = ELEM_POIS; i <= ELEM_DISEN; i++) {
+		/* Object doesn't have it - not interesting */
+	//	if (o_ptr->el_info[i].res_level <= 0) continue;
+
+		/* Element properties known */
+	//	if (o_ptr->el_info[i].flags & EL_INFO_KNOWN) continue;
+
+		/* Has a resist, or doubt remains */
+	//	return TRUE;
+	//}
+
+	/* No doubt left */
+	//return FALSE;
 
 	/* Actual object flags */
 	object_flags(o_ptr, flags);
@@ -315,11 +344,13 @@ static bool object_add_ident_flags(object_type *o_ptr, u32b flags)
 bool object_check_for_ident(object_type *o_ptr)
 {
 	bitflag flags[OF_SIZE], known_flags[OF_SIZE], f2[OF_SIZE];
+	//size_t i;
 	
 	object_flags(o_ptr, flags);
 	object_flags_known(o_ptr, known_flags);
 
 	/* Some flags are irrelevant or never learned or too hard to learn */
+	//f2 can go at the apocalypse - NRM
 	create_mask(f2, FALSE, OFT_IGNORE, OFT_HATES, OFT_MAX);
 
 	of_diff(flags, f2);
@@ -327,10 +358,18 @@ bool object_check_for_ident(object_type *o_ptr)
 
 	if (!of_is_equal(flags, known_flags)) return FALSE;
 
+	/* Check for unknown resists, immunities and vulnerabilities */
+	//for (i = 0; i < ELEM_MAX; i++) {
+	//	if (o_ptr->el_info[i].flags & EL_INFO_KNOWN) continue;
+	//	if (o_ptr->el_info[i].res_level) return FALSE;
+	//}
+
 	/* If we know attack bonuses, and defence bonuses, and effect, then
 	 * we effectively know everything, so mark as such */
-	if ((object_attack_plusses_are_visible(o_ptr) || (object_was_sensed(o_ptr) && o_ptr->to_h == 0 && o_ptr->to_d == 0)) &&
-	    (object_defence_plusses_are_visible(o_ptr) || (object_was_sensed(o_ptr) && o_ptr->to_a == 0)) &&
+	if ((object_attack_plusses_are_visible(o_ptr) ||
+		 (object_was_sensed(o_ptr) && o_ptr->to_h == 0 && o_ptr->to_d == 0)) &&
+	    (object_defence_plusses_are_visible(o_ptr) ||
+		 (object_was_sensed(o_ptr) && o_ptr->to_a == 0)) &&
 	    (object_effect_is_known(o_ptr) || !object_effect(o_ptr)))
 	{
 		/* In addition to knowing the pval flags, it is necessary to know 
@@ -414,6 +453,20 @@ void object_know_all_flags(object_type *o_ptr)
 }
 
 
+/**
+ * Make the player aware of all of an object's flags.
+ *
+ * \param o_ptr is the object to mark
+ */
+void object_know_all_elements(object_type *o_ptr)
+{
+	size_t i;
+
+	for (i = 0; i < ELEM_MAX; i++)
+		o_ptr->el_info[i].flags |= EL_INFO_KNOWN;
+}
+
+
 void object_know_brands_and_slays(object_type *o_ptr)
 {
 	struct brand *b;
@@ -478,6 +531,9 @@ void object_notice_everything(object_type *o_ptr)
 	/* Know all flags there are to be known */
 	object_know_all_flags(o_ptr);
 
+	/* Know all elemental properties */
+	object_know_all_elements(o_ptr);
+
 	/* Know all brands and slays */
 	object_know_brands_and_slays(o_ptr);
 }
@@ -501,6 +557,7 @@ void object_notice_ego(object_type *o_ptr)
 {
 	bitflag learned_flags[OF_SIZE];
 	bitflag xtra_flags[OF_SIZE];
+	size_t i;
 
 	if (!o_ptr->ego)
 		return;
@@ -512,6 +569,11 @@ void object_notice_ego(object_type *o_ptr)
 	/* Learn ego flags */
 	of_union(o_ptr->known_flags, o_ptr->ego->flags);
 
+	/* Learn ego element properties */
+	for (i = 0; i < ELEM_MAX; i++)
+		if (o_ptr->ego->el_info[i].res_level != 0)
+			o_ptr->el_info[i].flags |= EL_INFO_KNOWN;
+
 	/* Learn all flags except random abilities */
 	of_setall(learned_flags);
 
@@ -522,6 +584,7 @@ void object_notice_ego(object_type *o_ptr)
 	} else if (kf_has(o_ptr->ego->kind_flags, KF_RAND_HI_RES)) {
 		create_mask(xtra_flags, FALSE, OFT_HRES, OFT_MAX);
 		of_diff(learned_flags, xtra_flags);
+		//this will be messy - NRM
 	} else if (kf_has(o_ptr->ego->kind_flags, KF_RAND_POWER)) {
 		create_mask(xtra_flags, FALSE, OFT_MISC, OFT_PROT, OFT_MAX);
 		of_diff(learned_flags, xtra_flags);
@@ -654,20 +717,18 @@ void object_notice_attack_plusses(object_type *o_ptr)
  */
 bool object_notice_element(object_type *o_ptr, int element)
 {
-	/* Check something - NRM */
-	//if (!of_has(o_ptr->known_flags, flag))
-	{
-		//of_on(o_ptr->known_flags, flag);
-		/* Know more about something */
+	/* Already known */
+	if (o_ptr->el_info[element].flags & EL_INFO_KNOWN)
+		return FALSE;
 
-		object_check_for_ident(o_ptr);
-		event_signal(EVENT_INVENTORY);
-		event_signal(EVENT_EQUIPMENT);
+	/* Learn about this element */
+	o_ptr->el_info[element].flags |= EL_INFO_KNOWN;
 
-		return TRUE;
-	}
+	object_check_for_ident(o_ptr);
+	event_signal(EVENT_INVENTORY);
+	event_signal(EVENT_EQUIPMENT);
 
-	return FALSE;
+	return TRUE;
 }
 
 
@@ -848,9 +909,11 @@ void object_notice_on_wield(object_type *o_ptr)
 		if (obvious)
 			object_flavor_aware(o_ptr);
 
-		/* Learn all flags on any aware non-artifact jewelry */
-		if (object_flavor_is_aware(o_ptr) && !o_ptr->artifact)
+		/* Learn all flags and elements on any aware non-artifact jewelry */
+		if (object_flavor_is_aware(o_ptr) && !o_ptr->artifact) {
 			object_know_all_flags(o_ptr);
+			object_know_all_elements(o_ptr);
+		}
 	}
 
 	object_check_for_ident(o_ptr);
@@ -1037,9 +1100,26 @@ void wieldeds_notice_element(struct player *p, int element)
 
 		if (!o_ptr->kind) continue;
 
-		/* Notice something here - NRM */
-		//object_notice_element(o_ptr, element);
-		// etc etc
+		/* Already known */
+		if (o_ptr->el_info[element].flags & EL_INFO_KNOWN) continue;
+
+		/* Notice the element properties */
+		object_notice_element(o_ptr, element);
+
+		/* Comment if it actually does something */
+		if (o_ptr->el_info[element].res_level) {
+			char o_name[80];
+			object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
+
+			msg("Your %s glows", o_name);
+		}
+
+		/* I hope this will be done elsewhere - NRM */
+		if (tval_is_jewelry(o_ptr))
+		{
+			object_flavor_aware(o_ptr);
+			object_check_for_ident(o_ptr);
+		}
 	}
 }
 
@@ -1198,14 +1278,15 @@ void sense_inventory(void)
 	if (player->lev < 20 && !one_in_(rate)) return;
 
 	/*
-	 * Give each object one opportunity to have a chance at being sensed. Because the inventory
-	 * can be reordered in do_ident_item(), we want to prevent objects from having more than
-	 * one opportunity each turn. This state is stored in object_type->ident using the
-	 * IDENT_SENSED_THIS_TURN flag. If the pack is reordered, we start the loop over and skip
-	 * objects that have had their opportunity.
+	 * Give each object one opportunity to have a chance at being sensed.
+	 * Because the inventory can be reordered in do_ident_item(),
+	 * we want to prevent objects from having more than one opportunity each
+	 * turn. This state is stored in object_type->ident using the
+	 * IDENT_SENSED_THIS_TURN flag. If the pack is reordered, we start the
+	 * loop over and skip objects that have had their opportunity.
 	 *
-	 * Also, i is incremented at the top of the loop so that the conditions can properly use
-	 * "continue"; hence why we start at -1.
+	 * Also, i is incremented at the top of the loop so that the conditions
+	 * can properly use "continue"; hence why we start at -1.
 	 */
 	i = -1;
 	while (i < ALL_INVEN_TOTAL - 1)
@@ -1232,7 +1313,8 @@ void sense_inventory(void)
 		/* It is known, no information needed */
 		if (object_is_known(o_ptr)) continue;
 
-		/* Do not allow an object to have more than one opportunity to have a chance of being fully ID'd or sensed again. */
+		/* Do not allow an object to have more than one opportunity to have
+		 * a chance of being fully ID'd or sensed again. */
 		if (o_ptr->ident & IDENT_SENSED_THIS_TURN)
 			continue;
 
@@ -1241,7 +1323,8 @@ void sense_inventory(void)
 		{
 			/* Small chance of wielded, sensed items getting complete ID */
 			if (!o_ptr->artifact && (i >= INVEN_WIELD) && one_in_(1000)) {
-				/* Reset the loop to finish sensing. This item is now known, and will be skipped on the next pass. */
+				/* Reset the loop to finish sensing. This item is now known,
+				 * and will be skipped on the next pass. */
 				do_ident_item(o_ptr);
 				i = -1;
 			}
@@ -1249,7 +1332,8 @@ void sense_inventory(void)
 			continue;
 		}
 
-		/* Prevent objects, which pass or fail the sense check for this turn, from getting another opportunity. */
+		/* Prevent objects, which pass or fail the sense check for this turn,
+		 * from getting another opportunity. */
 		o_ptr->ident |= IDENT_SENSED_THIS_TURN;
 
 		/* Occasional failure on inventory items */
