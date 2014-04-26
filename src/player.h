@@ -217,6 +217,7 @@ typedef struct player {
 
 	/* Variable and calculatable player state */
 	player_state state;
+	player_state known_state;
 
 	/* Tracking of various temporary player-related values */
 	player_upkeep *upkeep;

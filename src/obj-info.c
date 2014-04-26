@@ -822,7 +822,7 @@ static int obj_known_damage(const object_type *o_ptr, int *normal_damage,
 	dam = ((sides + 1) * dice * 5);
 
 	if (weapon)	{
-		xtra_postcrit = state.dis_to_d * 10;
+		xtra_postcrit = state.to_d * 10;
 		if (object_attack_plusses_are_visible(o_ptr)) {
 			xtra_precrit += o_ptr->to_d * 10;
 			plus += o_ptr->to_h;

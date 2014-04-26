@@ -301,7 +301,8 @@ static void prt_ac(int row, int col)
 	char tmp[32];
 
 	put_str("Cur AC ", row, col);
-	strnfmt(tmp, sizeof(tmp), "%5d", player->state.dis_ac + player->state.dis_to_a);
+	strnfmt(tmp, sizeof(tmp), "%5d", 
+			player->known_state.ac + player->known_state.to_a);
 	c_put_str(TERM_L_GREEN, tmp, row, col + 7);
 }
 

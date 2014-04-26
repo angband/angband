@@ -741,13 +741,13 @@ static struct panel *get_panel_combat(void) {
 
 	/* AC */
 	panel_line(p, TERM_L_BLUE, "Armor", "[%d,%+d]",
-			player->state.dis_ac, player->state.dis_to_a);
+			player->known_state.ac, player->known_state.to_a);
 
 	/* Melee */
 	obj = &player->inventory[INVEN_WIELD];
 	bth = (player->state.skills[SKILL_TO_HIT_MELEE] * 10) / BTH_PLUS_ADJ;
-	dam = player->state.dis_to_d + (object_attack_plusses_are_visible(obj) ? obj->to_d : 0);
-	hit = player->state.dis_to_h + (object_attack_plusses_are_visible(obj) ? obj->to_h : 0);
+	dam = player->known_state.to_d + (object_attack_plusses_are_visible(obj) ? obj->to_d : 0);
+	hit = player->known_state.to_h + (object_attack_plusses_are_visible(obj) ? obj->to_h : 0);
 
 	panel_space(p);
 
@@ -764,7 +764,7 @@ static struct panel *get_panel_combat(void) {
 	/* Ranged */
 	obj = &player->inventory[INVEN_BOW];
 	bth = (player->state.skills[SKILL_TO_HIT_BOW] * 10) / BTH_PLUS_ADJ;
-	hit = player->state.dis_to_h + (object_attack_plusses_are_visible(obj) ? obj->to_h : 0);
+	hit = player->known_state.to_h + (object_attack_plusses_are_visible(obj) ? obj->to_h : 0);
 	dam = object_attack_plusses_are_visible(obj) ? obj->to_d : 0;
 
 	panel_space(p);

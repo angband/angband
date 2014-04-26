@@ -1480,7 +1480,7 @@ int weight_remaining(void)
  * information of objects; thus it returns what the player _knows_
  * the character state to be.
  */
-void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
+void calc_bonuses(object_type inventory[], player_state *state, bool known_only)
 {
 	int i, j, hold;
 
@@ -1539,7 +1539,7 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 		if (!o_ptr->kind) continue;
 
 		/* Extract the item flags */
-		if (id_only)
+		if (known_only)
 			object_flags_known(o_ptr, f);
 		else
 			object_flags(o_ptr, f);
@@ -1592,16 +1592,10 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 		/* Modify the base armor class */
 		state->ac += o_ptr->ac;
 
-		/* The base armor class is always known */
-		state->dis_ac += o_ptr->ac;
-
 		/* Apply the bonuses to armor class */
-		if (!id_only || object_is_known(o_ptr))
+		if (!known_only || object_is_known(o_ptr) ||
+			object_defence_plusses_are_visible(o_ptr))
 			state->to_a += o_ptr->to_a;
-
-		/* Apply the mental bonuses to armor class, if known */
-		if (object_defence_plusses_are_visible(o_ptr))
-			state->dis_to_a += o_ptr->to_a;
 
 		/* Hack -- do not apply "weapon" bonuses */
 		if (i == INVEN_WIELD) continue;
@@ -1610,17 +1604,11 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 		if (i == INVEN_BOW) continue;
 
 		/* Apply the bonuses to hit/damage */
-		if (!id_only || object_is_known(o_ptr))
+		if (!known_only || object_is_known(o_ptr) ||
+			object_attack_plusses_are_visible(o_ptr))
 		{
 			state->to_h += o_ptr->to_h;
 			state->to_d += o_ptr->to_d;
-		}
-
-		/* Apply the mental bonuses tp hit/damage, if known */
-		if (object_attack_plusses_are_visible(o_ptr))
-		{
-			state->dis_to_h += o_ptr->to_h;
-			state->dis_to_d += o_ptr->to_d;
 		}
 	}
 
@@ -1684,36 +1672,27 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 	if (player->timed[TMD_STUN] > 50)
 	{
 		state->to_h -= 20;
-		state->dis_to_h -= 20;
 		state->to_d -= 20;
-		state->dis_to_d -= 20;
 		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE]
 			* 8 / 10;
 	}
 	else if (player->timed[TMD_STUN])
 	{
 		state->to_h -= 5;
-		state->dis_to_h -= 5;
 		state->to_d -= 5;
-		state->dis_to_d -= 5;
 		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE]
 			* 9 / 10;
 	}
 
 	/* Invulnerability */
 	if (player->timed[TMD_INVULN])
-	{
 		state->to_a += 100;
-		state->dis_to_a += 100;
-	}
 
 	/* Temporary blessing */
 	if (player->timed[TMD_BLESSED])
 	{
 		state->to_a += 5;
-		state->dis_to_a += 5;
 		state->to_h += 10;
-		state->dis_to_h += 10;
 		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE]
 			* 105 / 100;
 	}
@@ -1722,14 +1701,12 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 	if (player->timed[TMD_SHIELD])
 	{
 		state->to_a += 50;
-		state->dis_to_a += 50;
 	}
 
 	/* Temporary stoneskin */
 	if (player->timed[TMD_STONESKIN])
 	{
 		state->to_a += 40;
-		state->dis_to_a += 40;
 		state->speed -= 5;
 	}
 
@@ -1741,7 +1718,6 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 	if (player->timed[TMD_HERO])
 	{
 		state->to_h += 12;
-		state->dis_to_h += 12;
 		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE]
 			* 105 / 100;
 	}
@@ -1750,9 +1726,7 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 	if (player->timed[TMD_SHERO])
 	{
 		state->to_h += 24;
-		state->dis_to_h += 24;
 		state->to_a -= 10;
-		state->dis_to_a -= 10;
 		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE]
 			* 9 / 10;
 	}
@@ -1833,9 +1807,7 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 	/* Check for fear */
 	if (of_has(state->flags, OF_AFRAID)) {
 		state->to_h -= 20;
-		state->dis_to_h -= 20;
 		state->to_a += 8;
-		state->dis_to_a += 8;
 		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE] * 95 / 100;
 	}
 
@@ -1859,17 +1831,11 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 
 	/*** Apply modifier bonuses ***/
 
-	/* Actual Modifier Bonuses (Un-inflate stat bonuses) */
+	/* Modifier Bonuses (Un-inflate stat bonuses) */
 	state->to_a += ((int)(adj_dex_ta[state->stat_ind[A_DEX]]) - 128);
 	state->to_d += ((int)(adj_str_td[state->stat_ind[A_STR]]) - 128);
 	state->to_h += ((int)(adj_dex_th[state->stat_ind[A_DEX]]) - 128);
 	state->to_h += ((int)(adj_str_th[state->stat_ind[A_STR]]) - 128);
-
-	/* Displayed Modifier Bonuses (Un-inflate stat bonuses) */
-	state->dis_to_a += ((int)(adj_dex_ta[state->stat_ind[A_DEX]]) - 128);
-	state->dis_to_d += ((int)(adj_str_td[state->stat_ind[A_STR]]) - 128);
-	state->dis_to_h += ((int)(adj_dex_th[state->stat_ind[A_DEX]]) - 128);
-	state->dis_to_h += ((int)(adj_str_th[state->stat_ind[A_STR]]) - 128);
 
 
 	/*** Modify skills ***/
@@ -1918,7 +1884,6 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 	{
 		/* Hard to wield a heavy bow */
 		state->to_h += 2 * (hold - o_ptr->weight / 10);
-		state->dis_to_h += 2 * (hold - o_ptr->weight / 10);
 
 		/* Heavy Bow */
 		state->heavy_shoot = TRUE;
@@ -2013,7 +1978,6 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 	{
 		/* Hard to wield a heavy weapon */
 		state->to_h += 2 * (hold - o_ptr->weight / 10);
-		state->dis_to_h += 2 * (hold - o_ptr->weight / 10);
 
 		/* Heavy weapon */
 		state->heavy_wield = TRUE;
@@ -2044,10 +2008,6 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 		state->to_h -= 2;
 		state->to_d -= 2;
 
-		/* Reduce the mental bonuses */
-		state->dis_to_h -= 2;
-		state->dis_to_d -= 2;
-
 		/* Icky weapon */
 		state->icky_wield = TRUE;
 	}
@@ -2064,11 +2024,14 @@ static void update_bonuses(void)
 
 	player_state *state = &player->state;
 	player_state old = player->state;
+	player_state *known_state = &player->known_state;
+	player_state known_old = player->known_state;
 
 
 	/*** Calculate bonuses ***/
 
 	calc_bonuses(player->inventory, &player->state, FALSE);
+	calc_bonuses(player->inventory, &player->known_state, TRUE);
 
 
 	/*** Notice changes ***/
@@ -2142,7 +2105,8 @@ static void update_bonuses(void)
 	}
 
 	/* Redraw armor (if needed) */
-	if ((state->dis_ac != old.dis_ac) || (state->dis_to_a != old.dis_to_a))
+	if ((known_state->ac != known_old.ac) || 
+		(known_state->to_a != known_old.to_a))
 	{
 		/* Redraw */
 		player->upkeep->redraw |= (PR_ARMOR);

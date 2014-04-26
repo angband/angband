@@ -157,17 +157,10 @@ typedef struct player_state {
 	s16b stat_use[A_MAX];	/* Current modified stats */
 	s16b stat_top[A_MAX];	/* Maximal modified stats */
 
-	s16b dis_ac;		/* Known base ac */
 	s16b ac;			/* Base ac */
-
-	s16b dis_to_a;		/* Known bonus to ac */
 	s16b to_a;			/* Bonus to ac */
-
 	s16b to_h;			/* Bonus to hit */
-	s16b dis_to_h;		/* Known bonus to hit */
-
 	s16b to_d;			/* Bonus to dam */
-	s16b dis_to_d;		/* Known bonus to dam */
 
 	s16b see_infra;		/* Infravision range */
 
@@ -240,7 +233,7 @@ extern const byte adj_dex_safe[STAT_RANGE];
 extern const byte adj_con_fix[STAT_RANGE];
 extern const byte adj_str_hold[STAT_RANGE];
 
-void calc_bonuses(object_type inventory[], player_state *state, bool id_only);
+void calc_bonuses(object_type inventory[], player_state *state, bool known_only);
 void calc_digging_chances(player_state *state, int chances[DIGGING_MAX]);
 int calc_blows(const object_type *o_ptr, player_state *state, int extra_blows);
 
