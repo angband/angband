@@ -1179,24 +1179,28 @@ typedef void (*project_player_handler_f)(project_player_handler_context_t *);
 
 static void project_player_handler_ACID(project_player_handler_context_t *context)
 {
+	//if (player_is_immune(player, ELEM_ACID)) return;
 	if (player_of_has(player, OF_IM_ACID)) return;
 	inven_damage(player, GF_ACID, MIN(context->dam * 5, 300));
 }
 
 static void project_player_handler_ELEC(project_player_handler_context_t *context)
 {
+	//if (player_is_immune(player, ELEM_ELEC)) return;
 	if (player_of_has(player, OF_IM_ELEC)) return;
 	inven_damage(player, GF_ELEC, MIN(context->dam * 5, 300));
 }
 
 static void project_player_handler_FIRE(project_player_handler_context_t *context)
 {
+	//if (player_is_immune(player, ELEM_FIRE)) return;
 	if (player_of_has(player, OF_IM_FIRE)) return;
 	inven_damage(player, GF_FIRE, MIN(context->dam * 5, 300));
 }
 
 static void project_player_handler_COLD(project_player_handler_context_t *context)
 {
+	//if (player_is_immune(player, ELEM_COLD)) return;
 	if (player_of_has(player, OF_IM_COLD)) return;
 	inven_damage(player, GF_COLD, MIN(context->dam * 5, 300));
 }
@@ -1209,6 +1213,7 @@ static void project_player_handler_POIS(project_player_handler_context_t *contex
 
 static void project_player_handler_LIGHT(project_player_handler_context_t *context)
 {
+	//if (player_resists(player, ELEM_LIGHT)) {
 	if (player_of_has(player, OF_RES_LIGHT)) {
 		msg("You resist the effect!");
 		return;
@@ -1219,6 +1224,7 @@ static void project_player_handler_LIGHT(project_player_handler_context_t *conte
 
 static void project_player_handler_DARK(project_player_handler_context_t *context)
 {
+	//if (player_resists(player, ELEM_DARK)) {
 	if (player_of_has(player, OF_RES_DARK)) {
 		msg("You resist the effect!");
 		return;
@@ -1240,6 +1246,7 @@ static void project_player_handler_SOUND(project_player_handler_context_t *conte
 static void project_player_handler_SHARD(project_player_handler_context_t *context)
 {
 	/* Cuts */
+	//if (!player_resists(player, ELEM_SHARD)) {
 	if (!player_of_has(player, OF_RES_SHARD))
 		(void)player_inc_timed(player, TMD_CUT, context->dam, TRUE, FALSE);
 }
@@ -1248,6 +1255,7 @@ static void project_player_handler_NEXUS(project_player_handler_context_t *conte
 {
 	struct monster *mon = cave_monster(cave, context->who);
 
+	//if (player_resists(player, ELEM_NEXUS)) {
 	if (player_of_has(player, OF_RES_NEXUS)) {
 		msg("You resist the effect!");
 		return;
@@ -1282,6 +1290,7 @@ static void project_player_handler_NEXUS(project_player_handler_context_t *conte
 
 static void project_player_handler_NETHER(project_player_handler_context_t *context)
 {
+	//if (player_resists(player, ELEM_NETHER)) ||
 	if (player_of_has(player, OF_RES_NETHER) || 
 		player_of_has(player, OF_HOLD_LIFE)) {
 		msg("You resist the effect!");
@@ -1295,6 +1304,7 @@ static void project_player_handler_NETHER(project_player_handler_context_t *cont
 
 static void project_player_handler_CHAOS(project_player_handler_context_t *context)
 {
+	//if (player_resists(player, ELEM_CHAOS)) {
 	if (player_of_has(player, OF_RES_CHAOS)) {
 		msg("You resist the effect!");
 		return;
@@ -1316,6 +1326,7 @@ static void project_player_handler_CHAOS(project_player_handler_context_t *conte
 
 static void project_player_handler_DISEN(project_player_handler_context_t *context)
 {
+	//if (player_resists(player, ELEM_DISEN)) {
 	if (player_of_has(player, OF_RES_DISEN)) {
 		msg("You resist the effect!");
 		return;
@@ -1339,6 +1350,7 @@ static void project_player_handler_ICE(project_player_handler_context_t *context
 	inven_damage(player, GF_COLD, MIN(context->dam * 5, 300));
 
 	/* Cuts */
+	//if (!player_resists(player, ELEM_SHARD))
 	if (!player_of_has(player, OF_RES_SHARD))
 		(void)player_inc_timed(player, TMD_CUT, damroll(5, 8), TRUE, FALSE);
 

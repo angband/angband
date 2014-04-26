@@ -215,6 +215,7 @@ static void melee_effect_handler_disenchant(melee_effect_handler_context_t *cont
 	take_hit(context->p, context->damage, context->ddesc);
 
 	/* Allow complete resist */
+	//if (!player_resists(player, ELEM_DISEN))
 	if (!player_of_has(context->p, OF_RES_DISEN))
 	{
 		/* Apply disenchantment */

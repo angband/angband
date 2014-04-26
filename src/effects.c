@@ -145,8 +145,10 @@ int effect_calculate_value(effect_handler_context_t *context, bool use_boost)
 {
 	int final = 0;
 
-	if (context->value.base > 0 || (context->value.dice > 0 && context->value.sides > 0))
-		final = context->value.base + damroll(context->value.dice, context->value.sides);
+	if (context->value.base > 0 || 
+		(context->value.dice > 0 && context->value.sides > 0))
+		final = context->value.base + 
+			damroll(context->value.dice, context->value.sides);
 
 	if (use_boost)
 		final *= (100 + context->boost) / 100;
@@ -859,12 +861,14 @@ bool effect_handler_BANISHMENT(effect_handler_context_t *context)
 bool effect_handler_DARKNESS(effect_handler_context_t *context)
 {
 	if (!player_of_has(player, OF_RES_DARK)) {
+	//if (!player_resists(player, ELEM_DARK)) {
 		int amount = effect_calculate_value(context, FALSE);
 		(void)player_inc_timed(player, TMD_BLIND, amount, TRUE, TRUE);
 	}
 
 	unlight_area(10, 3);
 	wieldeds_notice_flag(player, OF_RES_DARK);
+	//wieldeds_notice_element(player, ELEM_DARK);
 	context->ident = TRUE;
 	return TRUE;
 }

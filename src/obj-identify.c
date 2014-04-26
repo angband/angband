@@ -1107,7 +1107,7 @@ void wieldeds_notice_element(struct player *p, int element)
 		object_notice_element(o_ptr, element);
 
 		/* Comment if it actually does something */
-		if (o_ptr->el_info[element].res_level) {
+		if (o_ptr->el_info[element].res_level != 0) {
 			char o_name[80];
 			object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
 

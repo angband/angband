@@ -58,12 +58,16 @@ bool player_set_timed(struct player *p, int idx, int v, bool notify)
 	else if (idx == TMD_CUT) return set_cut(p, v);
 
 	/* Don't mention effects which already match the player state. */
+	//if (idx == TMD_OPP_ACID && player_is_immune(p, ELEM_ACID))
 	if (idx == TMD_OPP_ACID && player_of_has(p, OF_IM_ACID))
 		notify = FALSE;
+	//else if (idx == TMD_OPP_ELEC && player_is_immune(p, ELEM_ELEC))
 	else if (idx == TMD_OPP_ELEC && player_of_has(p, OF_IM_ELEC))
 		notify = FALSE;
+	//else if (idx == TMD_OPP_FIRE && player_is_immune(p, ELEM_FIRE))
 	else if (idx == TMD_OPP_FIRE && player_of_has(p, OF_IM_FIRE))
 		notify = FALSE;
+	//else if (idx == TMD_OPP_COLD && player_is_immune(p, ELEM_COLD))
 	else if (idx == TMD_OPP_COLD && player_of_has(p, OF_IM_COLD))
 		notify = FALSE;
 	else if (idx == TMD_OPP_CONF && player_of_has(p, OF_PROT_CONF))
@@ -137,6 +141,7 @@ bool player_inc_timed(struct player *p, int idx, int v, bool notify, bool check)
 
 	/* Check that @ can be affected by this effect */
 	if (check) {
+		//Needs to change come the apocalypse
 		wieldeds_notice_flag(p, effect->resist);
 		if (player_of_has(p, effect->resist)) return FALSE;
 		if (idx == TMD_POISONED && p->timed[TMD_OPP_POIS]) return FALSE;

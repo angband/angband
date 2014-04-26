@@ -235,6 +235,7 @@ static void display_player_equippy(int y, int x)
 
 /*
  * List of resistances and abilities to display
+ * This will all have to change at the Object Flag Apocalypse
  */
 #define RES_ROWS 9
 struct player_flag_record

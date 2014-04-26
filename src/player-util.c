@@ -548,6 +548,21 @@ bool player_of_has(struct player *p, int flag)
 	return of_has(p->state.flags, flag);
 }
 
+/**
+ * Check if the player resists (or better) an element
+ */
+bool player_resists(struct player *p, int element)
+{
+	return (p->state.el_info[element].res_level > 0);
+}
+
+/**
+ * Check if the player resists (or better) an element
+ */
+bool player_is_immune(struct player *p, int element)
+{
+	return (p->state.el_info[element].res_level == 3);
+}
 
 /*
  * Extract a "direction" which will move one step from the player location
