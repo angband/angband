@@ -1476,7 +1476,7 @@ int weight_remaining(void)
  * damage, since that would affect non-combat things.  These values
  * are actually added in later, at the appropriate place.
  *
- * If id_only is true, calc_bonuses() will only use the known
+ * If known_only is true, calc_bonuses() will only use the known
  * information of objects; thus it returns what the player _knows_
  * the character state to be.
  */
@@ -1582,12 +1582,18 @@ void calc_bonuses(object_type inventory[], player_state *state, bool known_only)
 		extra_might += o_ptr->modifiers[OBJ_MOD_MIGHT];
 
 		/* Affect resists */
-		for (j = 0; j < ELEM_MAX; j++) {
-			if (o_ptr->el_info[j].res_level == -1)
-				vuln[i] = TRUE;
-			if (o_ptr->el_info[j].res_level > state->el_info[j].res_level)
-				state->el_info[j].res_level = o_ptr->el_info[j].res_level;
-		}
+		for (j = 0; j < ELEM_MAX; j++)
+			if (!known_only || object_is_known(o_ptr) ||
+				object_element_is_known(o_ptr, j)) {
+
+				/* Note vulnerability for later processing */
+				if (o_ptr->el_info[j].res_level == -1)
+					vuln[i] = TRUE;
+
+				/* OK because res_level has not included vulnerability yet */
+				if (o_ptr->el_info[j].res_level > state->el_info[j].res_level)
+					state->el_info[j].res_level = o_ptr->el_info[j].res_level;
+			}
 
 		/* Modify the base armor class */
 		state->ac += o_ptr->ac;
@@ -1597,10 +1603,8 @@ void calc_bonuses(object_type inventory[], player_state *state, bool known_only)
 			object_defence_plusses_are_visible(o_ptr))
 			state->to_a += o_ptr->to_a;
 
-		/* Hack -- do not apply "weapon" bonuses */
+		/* Do not apply weapon and bow bonuses until combat calculations */
 		if (i == INVEN_WIELD) continue;
-
-		/* Hack -- do not apply "bow" bonuses */
 		if (i == INVEN_BOW) continue;
 
 		/* Apply the bonuses to hit/damage */
@@ -1660,7 +1664,7 @@ void calc_bonuses(object_type inventory[], player_state *state, bool known_only)
 		state->stat_ind[i] = ind;
 	}
 
-	/* Handle resists */
+	/* Now deal with vulnerabilities */
 	for (i = 0; i < ELEM_MAX; i++) {
 		if (vuln[i] && (state->el_info[i].res_level < 3))
 			state->el_info[i].res_level--;
