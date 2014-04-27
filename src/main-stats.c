@@ -450,7 +450,7 @@ static int stats_dump_artifacts(void)
 		err = stats_dump_oflags(flags_stmt, idx, a_ptr->flags);
 		if (err) return err;
 
-		for (i = 1; i < OBJ_MOD_MAX; i++)
+		for (i = 0; i < OBJ_MOD_MAX; i++)
 		{
 			err = stats_db_bind_ints(mods_stmt, 3, 0, idx, i, 
 									 a_ptr->modifiers[i]);
@@ -515,7 +515,7 @@ static int stats_dump_egos(void)
 		err = stats_dump_oflags(flags_stmt, idx, e_ptr->flags);
 		if (err) return err;
 
-		for (i = 1; i < OBJ_MOD_MAX; i++)
+		for (i = 0; i < OBJ_MOD_MAX; i++)
 		{
 			err = stats_db_bind_ints(mods_stmt, 3, 0, idx, i, 
 									 e_ptr->min_modifiers[i]);
@@ -593,7 +593,7 @@ static int stats_dump_objects(void)
 		err = stats_dump_oflags(flags_stmt, idx, k_ptr->flags);
 		if (err) return err;
 
-		for (i = 1; i < OBJ_MOD_MAX; i++)
+		for (i = 0; i < OBJ_MOD_MAX; i++)
 		{
 			err = stats_db_bind_ints(mods_stmt, 2, 0, idx, i);
 				if (err) return err;
@@ -886,7 +886,7 @@ static int stats_dump_lists(void)
 		"INSERT INTO object_mods_list VALUES(?,?,?,?);");
 	if (err) return err;
 
-	for (idx = 1; idx < OBJ_MOD_MAX; idx++)
+	for (idx = 0; idx < OBJ_MOD_MAX; idx++)
 	{
 		struct object_mod *om = &object_mod_table[idx];
 		if (!om->message) continue;

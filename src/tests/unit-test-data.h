@@ -82,7 +82,6 @@ static struct object_kind TEST_DATA test_longsword = {
 				.m_bonus = 0,
 	},
 	.modifiers = { 
-		[OBJ_MOD_NONE] = { 0, 0, 0, 0 }, 
 		[OBJ_MOD_STR] = { 0, 0, 0, 0 }, 
 		[OBJ_MOD_INT] = { 0, 0, 0, 0 }, 
 		[OBJ_MOD_WIS] = { 0, 0, 0, 0 }, 
@@ -151,7 +150,6 @@ static struct object_kind TEST_DATA test_torch = {
 	},
 
 	.modifiers = { 
-		[OBJ_MOD_NONE] = { 0, 0, 0, 0 }, 
 		[OBJ_MOD_STR] = { 0, 0, 0, 0 }, 
 		[OBJ_MOD_INT] = { 0, 0, 0, 0 }, 
 		[OBJ_MOD_WIS] = { 0, 0, 0, 0 }, 
@@ -220,7 +218,6 @@ static struct object_kind TEST_DATA test_lantern = {
 	},
 
 	.modifiers = { 
-		[OBJ_MOD_NONE] = { 0, 0, 0, 0 }, 
 		[OBJ_MOD_STR] = { 0, 0, 0, 0 }, 
 		[OBJ_MOD_INT] = { 0, 0, 0, 0 }, 
 		[OBJ_MOD_WIS] = { 0, 0, 0, 0 }, 
@@ -289,7 +286,6 @@ static struct object_kind TEST_DATA test_flask = {
 	},
 
 	.modifiers = { 
-		[OBJ_MOD_NONE] = { 0, 0, 0, 0 }, 
 		[OBJ_MOD_STR] = { 0, 0, 0, 0 }, 
 		[OBJ_MOD_INT] = { 0, 0, 0, 0 }, 
 		[OBJ_MOD_WIS] = { 0, 0, 0, 0 }, 
@@ -358,7 +354,6 @@ static struct object_kind TEST_DATA test_rod_treasure_location = {
 	},
 
 	.modifiers = { 
-		[OBJ_MOD_NONE] = { 0, 0, 0, 0 }, 
 		[OBJ_MOD_STR] = { 0, 0, 0, 0 }, 
 		[OBJ_MOD_INT] = { 0, 0, 0, 0 }, 
 		[OBJ_MOD_WIS] = { 0, 0, 0, 0 }, 
@@ -426,7 +421,6 @@ static struct object_kind TEST_DATA test_gold = {
 	},
 
 	.modifiers = { 
-		[OBJ_MOD_NONE] = { 0, 0, 0, 0 }, 
 		[OBJ_MOD_STR] = { 0, 0, 0, 0 }, 
 		[OBJ_MOD_INT] = { 0, 0, 0, 0 }, 
 		[OBJ_MOD_WIS] = { 0, 0, 0, 0 }, 

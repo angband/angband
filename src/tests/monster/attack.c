@@ -4,6 +4,7 @@
 #include "unit-test-data.h"
 
 #include "monster.h"
+#include "player-timed.h"
 
 int setup_tests(void **state) {
 	struct monster_race *r = &test_r_human;

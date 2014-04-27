@@ -14,7 +14,6 @@
  * and list-slays.h)
  */
 /* index       		power	p_m		message */
-OBJ_MOD(NONE,       0,      0,  	"")
 OBJ_MOD(STR,        9,		13,		"")
 OBJ_MOD(INT,        5,		10,		"")
 OBJ_MOD(WIS,        5,		10,		"")
@@ -29,4 +28,3 @@ OBJ_MOD(BLOWS,      0,		50,		"")
 OBJ_MOD(SHOTS,      0,		50,		"")
 OBJ_MOD(MIGHT,      0,		30,		"")
 OBJ_MOD(LIGHT,      3,		6,		"")
-OBJ_MOD(MAX,        0,		0,		"")

@@ -42,6 +42,7 @@ enum {
     #define OBJ_MOD(a, b, c, d) OBJ_MOD_##a,
     #include "list-object-modifiers.h"
     #undef OBJ_MOD
+	OBJ_MOD_MAX
 };
 
 /* The object flag types */

@@ -341,7 +341,7 @@ static void display_resistance_panel(const struct player_flag_record *resists,
 
 			if (resists[i].mod) {
 				if (j != INVEN_TOTAL)
-					res = (o_ptr->modifiers[j] != 0);
+					res = (o_ptr->modifiers[resists[i].res_flag] != 0);
 				else {
 					/* Messy special cases NRM */
 					if (resists[i].res_flag == OBJ_MOD_INFRA)
