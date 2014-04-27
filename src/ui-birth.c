@@ -223,6 +223,7 @@ static const char *get_flag_desc(bitflag flag)
 		case OF_SUST_STR: return "Sustains strength";
 		case OF_SUST_DEX: return "Sustains dexterity";
 		case OF_SUST_CON: return "Sustains constitution";
+		//Remove next three at the apocalypse - NRM
 		case OF_RES_POIS: return "Resists poison";
 		case OF_RES_LIGHT: return "Resists light damage";
 		case OF_RES_DARK: return "Resists darkness damage";
@@ -233,6 +234,18 @@ static const char *get_flag_desc(bitflag flag)
 		case OF_SEE_INVIS: return "Sees invisible creatures";
 
 		default: return "Undocumented flag";
+	}
+}
+
+static const char *get_resist_desc(int element)
+{
+	switch (element)
+	{
+		case ELEM_POIS: return "Resists poison";
+		case ELEM_LIGHT: return "Resists light damage";
+		case ELEM_DARK: return "Resists darkness damage";
+
+		default: return "Undocumented element";
 	}
 }
 
@@ -299,6 +312,14 @@ static void race_help(int i, void *db, const region *l)
 		if (n_flags >= flag_space) break;
 		if (!of_has(r->flags, k)) continue;
 		text_out_e("\n%s", get_flag_desc(k));
+		n_flags++;
+	}
+
+	for (k = 0; k < ELEM_MAX; k++)
+	{
+		if (n_flags >= flag_space) break;
+		if (r->el_info[k].res_level != 1) continue;
+		text_out_e("\n%s", get_element_desc(k));
 		n_flags++;
 	}
 
