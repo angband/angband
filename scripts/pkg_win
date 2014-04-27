@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Abort script at first error, so that the script doesn't exit with
+# status 0 for missing files 
+set -o errexit
+
 if [ $# -ne 1 ] && [ $# -ne 2 ]; then
 	echo "Simple packaging file for the Windows port.  Only really useful when"
 	echo "cross-compiling, or using Cygwin.  Originally by Robert Ruehlmann."
