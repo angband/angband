@@ -43,6 +43,7 @@
 /* Object constants */
 byte obj_mod_max = 0;
 byte of_size = 0;
+byte id_size = 0;
 byte elem_max = 0;
 
 /* Monster constants */
@@ -138,6 +139,9 @@ static int rd_item(object_type *o_ptr)
 
 	for (i = 0; i < of_size; i++)
 		rd_byte(&o_ptr->known_flags[i]);
+
+	for (i = 0; i < id_size; i++)
+		rd_byte(&o_ptr->id_flags[i]);
 
 	for (i = 0; i < obj_mod_max; i++) {
 		rd_s16b(&o_ptr->modifiers[i]);
@@ -532,6 +536,16 @@ int rd_object_memory(void)
 	if (of_size > OF_SIZE)
 	{
 	        note(format("Too many (%u) object flags!", of_size));
+		return (-1);
+	}
+
+	/* Identify flags */
+	rd_byte(&id_size);
+
+	/* Incompatible save files */
+	if (id_size > ID_SIZE)
+	{
+	        note(format("Too many (%u) identify flags!", id_size));
 		return (-1);
 	}
 

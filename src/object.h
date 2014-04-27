@@ -16,11 +16,45 @@
 enum
 {
 	#define ELEM(a, b, c, d, e, col, f, g, h, i, j, fh, oh, mh, ph) ELEM_##a,
-    #include "list-elements.h"
-    #undef ELEM
+	#include "list-elements.h"
+	#undef ELEM
 
 	ELEM_MAX
 };
+
+/*
+ * Identify flags
+ */
+enum
+{
+	#define ID(a) ID_##a,
+	#include "list-identify-flags.h"
+	#undef ID
+	#define OBJ_MOD(a, b, c, d) ID_##a,
+	#include "list-object-modifiers.h"
+	#undef OBJ_MOD
+	ID_MAX
+};
+
+#define ID_SIZE                	FLAG_SIZE(ID_MAX)
+
+#define id_has(f, flag)        	flag_has_dbg(f, ID_SIZE, flag, #f, #flag)
+#define id_next(f, flag)       	flag_next(f, ID_SIZE, flag)
+#define id_is_empty(f)         	flag_is_empty(f, ID_SIZE)
+#define id_is_full(f)          	flag_is_full(f, ID_SIZE)
+#define id_is_inter(f1, f2)    	flag_is_inter(f1, f2, ID_SIZE)
+#define id_is_subset(f1, f2)   	flag_is_subset(f1, f2, ID_SIZE)
+#define id_is_equal(f1, f2)    	flag_is_equal(f1, f2, ID_SIZE)
+#define id_on(f, flag)         	flag_on_dbg(f, ID_SIZE, flag, #f, #flag)
+#define id_off(f, flag)        	flag_off(f, ID_SIZE, flag)
+#define id_wipe(f)             	flag_wipe(f, ID_SIZE)
+#define id_setall(f)           	flag_setall(f, ID_SIZE)
+#define id_negate(f)           	flag_negate(f, ID_SIZE)
+#define id_copy(f1, f2)        	flag_copy(f1, f2, ID_SIZE)
+#define id_union(f1, f2)       	flag_union(f1, f2, ID_SIZE)
+#define id_comp_union(f1, f2)  	flag_comp_union(f1, f2, ID_SIZE)
+#define id_inter(f1, f2)       	flag_inter(f1, f2, ID_SIZE)
+#define id_diff(f1, f2)        	flag_diff(f1, f2, ID_SIZE)
 
 /*
  * Refueling constants
@@ -50,10 +84,10 @@ enum
 /* Object origin kinds */
 
 enum {
-    ORIGIN_NONE = 0,
-    ORIGIN_FLOOR,			/* found on the dungeon floor */
-    ORIGIN_DROP,			/* normal monster drops */
-    ORIGIN_CHEST,
+	ORIGIN_NONE = 0,
+	ORIGIN_FLOOR,			/* found on the dungeon floor */
+	ORIGIN_DROP,			/* normal monster drops */
+	ORIGIN_CHEST,
 	ORIGIN_DROP_SPECIAL,	/* from monsters in special rooms */
 	ORIGIN_DROP_PIT,		/* from monsters in pits/nests */
 	ORIGIN_DROP_VAULT,		/* from monsters in vaults */
@@ -63,16 +97,16 @@ enum {
 	ORIGIN_LABYRINTH,		/* on the floor of a labyrinth */
 	ORIGIN_CAVERN,			/* on the floor of a cavern */
 	ORIGIN_RUBBLE,			/* found under rubble */
-    ORIGIN_MIXED,			/* stack with mixed origins */
+	ORIGIN_MIXED,			/* stack with mixed origins */
 	ORIGIN_STATS,			/* ^ only the above are considered by main-stats */
-    ORIGIN_ACQUIRE,			/* called forth by scroll */
+	ORIGIN_ACQUIRE,			/* called forth by scroll */
 	ORIGIN_DROP_BREED,		/* from breeders */
 	ORIGIN_DROP_SUMMON,		/* from combat summons */
-    ORIGIN_STORE,			/* something you bought */
+	ORIGIN_STORE,			/* something you bought */
 	ORIGIN_STOLEN,			/* stolen by monster (used only for gold) */
-    ORIGIN_BIRTH,			/* objects created at character birth */
-    ORIGIN_DROP_UNKNOWN,	/* drops from unseen foes */
-    ORIGIN_CHEAT,			/* created by wizard mode */
+	ORIGIN_BIRTH,			/* objects created at character birth */
+	ORIGIN_DROP_UNKNOWN,	/* drops from unseen foes */
+	ORIGIN_CHEAT,			/* created by wizard mode */
 	ORIGIN_DROP_POLY,		/* from polymorphees */
 	ORIGIN_DROP_WIZARD,		/* from wizard mode summons */
 
@@ -84,7 +118,7 @@ enum {
 
 
 /* Maximum number of scroll titles generated */
-#define MAX_TITLES     50
+#define MAX_TITLES	 50
 
 /*
  * Some constants used in randart generation and power calculation
@@ -92,18 +126,18 @@ enum {
  * - fudge factor for rescaling ammo cost
  * (a stack of this many equals a weapon of the same damage output)
  */
-#define INHIBIT_POWER       20000
-#define INHIBIT_BLOWS           3
-#define INHIBIT_MIGHT           4
-#define INHIBIT_SHOTS           3
-#define HIGH_TO_AC             26
-#define VERYHIGH_TO_AC         36
-#define INHIBIT_AC             56
-#define HIGH_TO_HIT            16
-#define VERYHIGH_TO_HIT        26
-#define HIGH_TO_DAM            16
-#define VERYHIGH_TO_DAM        26
-#define AMMO_RESCALER          20 /* this value is also used for torches */
+#define INHIBIT_POWER		20000
+#define INHIBIT_BLOWS		3
+#define INHIBIT_MIGHT		4
+#define INHIBIT_SHOTS		3
+#define HIGH_TO_AC			26
+#define VERYHIGH_TO_AC		36
+#define INHIBIT_AC			56
+#define HIGH_TO_HIT			16
+#define VERYHIGH_TO_HIT		26
+#define HIGH_TO_DAM			16
+#define VERYHIGH_TO_DAM		26
+#define AMMO_RESCALER		20 /* this value is also used for torches */
 
 #define sign(x) ((x) > 0 ? 1 : ((x) < 0 ? -1 : 0))
 
@@ -222,23 +256,23 @@ typedef struct object_kind
 	struct object_kind *next;
 	u32b kidx;
 
-	byte tval;         /**< General object type (see TV_ macros) */
-	byte sval;         /**< Object sub-type (see SV_ macros) */
+	byte tval;					/**< General object type (see TV_ macros) */
+	byte sval;					/**< Object sub-type (see SV_ macros) */
 
-	random_value pval;	/* Item extra-parameter */
+	random_value pval;			/* Item extra-parameter */
 
-	random_value to_h; /**< Bonus to hit */
-	random_value to_d; /**< Bonus to damage */
-	random_value to_a; /**< Bonus to armor */
-	s16b ac;           /**< Base armor */
+	random_value to_h;			/**< Bonus to hit */
+	random_value to_d;			/**< Bonus to damage */
+	random_value to_a;			/**< Bonus to armor */
+	s16b ac;					/**< Base armor */
 
-	byte dd;           /**< Damage dice */
-	byte ds;           /**< Damage sides */
-	s16b weight;       /**< Weight, in 1/10lbs */
+	byte dd;					/**< Damage dice */
+	byte ds;					/**< Damage sides */
+	s16b weight;				/**< Weight, in 1/10lbs */
 
-	s32b cost;         /**< Object base cost */
+	s32b cost;					/**< Object base cost */
 
-	bitflag flags[OF_SIZE];			/**< Flags */
+	bitflag flags[OF_SIZE];					/**< Flags */
 	bitflag kind_flags[KF_SIZE];			/**< Kind flags */
 
 	random_value modifiers[OBJ_MOD_MAX];
@@ -247,38 +281,38 @@ typedef struct object_kind
 	struct brand *brands;
 	struct slay *slays;
 
-	byte d_attr;       /**< Default object attribute */
-	wchar_t d_char;       /**< Default object character */
+	byte d_attr;			/**< Default object attribute */
+	wchar_t d_char;			/**< Default object character */
 
-	int alloc_prob;   /**< Allocation: commonness */
-	byte alloc_min;    /**< Highest normal dungeon level */
-	byte alloc_max;    /**< Lowest normal dungeon level */
-	byte level;        /**< Level (difficulty of activation) */
+	int alloc_prob;			/**< Allocation: commonness */
+	byte alloc_min;			/**< Highest normal dungeon level */
+	byte alloc_max;			/**< Lowest normal dungeon level */
+	byte level;				/**< Level (difficulty of activation) */
 
-	u16b effect;         /**< Effect this item produces (effects.c) */
-	random_value time;   /**< Recharge time (rods/activation) */
-	random_value charge; /**< Number of charges (staves/wands) */
+	u16b effect;			/**< Effect this item produces (effects.c) */
+	random_value time;		/**< Recharge time (rods/activation) */
+	random_value charge;	/**< Number of charges (staves/wands) */
 
-	byte gen_mult_prob;      /**< Probability of generating more than one */
-	random_value stack_size; /**< Number to generate */
+	byte gen_mult_prob;		/**< Probability of generating more than one */
+	random_value stack_size;/**< Number to generate */
 
-	struct flavor *flavor;         /**< Special object flavor (or zero) */
+	struct flavor *flavor;	/**< Special object flavor (or zero) */
 
 
 	/** Game-dependent **/
 
-	byte x_attr;   /**< Desired object attribute (set by user/pref file) */
-	wchar_t x_char;   /**< Desired object character (set by user/pref file) */
+	byte x_attr;	/**< Desired object attribute (set by user/pref file) */
+	wchar_t x_char;	/**< Desired object character (set by user/pref file) */
 
 	/** Also saved in savefile **/
 
-	quark_t note; /**< Autoinscription quark number */
+	quark_t note; 	/**< Autoinscription quark number */
 
-	bool aware;    /**< Set if player is aware of the kind's effects */
-	bool tried;    /**< Set if kind has been tried */
+	bool aware;		/**< Set if player is aware of the kind's effects */
+	bool tried;		/**< Set if kind has been tried */
 
-	byte squelch;  /**< Squelch settings */
-	bool everseen; /**< Set if kind has ever been seen (to despoilify squelch menus) */
+	byte squelch;  	/**< Squelch settings */
+	bool everseen; 	/**< Set if kind has ever been seen (to despoilify squelch menus) */
 
 	struct spell *spells;
 } object_kind;
@@ -315,23 +349,23 @@ typedef struct artifact
 
 	struct artifact *next;
 
-	byte tval;    /**< General artifact type (see TV_ macros) */
-	byte sval;    /**< Artifact sub-type (see SV_ macros) */
+	byte tval;		/**< General artifact type (see TV_ macros) */
+	byte sval;		/**< Artifact sub-type (see SV_ macros) */
 
-	s16b to_h;    /**< Bonus to hit */
-	s16b to_d;    /**< Bonus to damage */
-	s16b to_a;    /**< Bonus to armor */
-	s16b ac;      /**< Base armor */
+	s16b to_h;		/**< Bonus to hit */
+	s16b to_d;		/**< Bonus to damage */
+	s16b to_a;		/**< Bonus to armor */
+	s16b ac;		/**< Base armor */
 
-	byte dd;      /**< Base damage dice */
-	byte ds;      /**< Base damage sides */
+	byte dd;		/**< Base damage dice */
+	byte ds;		/**< Base damage sides */
 
-	s16b weight;  /**< Weight in 1/10lbs */
+	s16b weight;	/**< Weight in 1/10lbs */
 
-	s32b cost;    /**< Artifact (pseudo-)worth */
+	s32b cost;		/**< Artifact (pseudo-)worth */
 
-	bitflag flags[OF_SIZE];		/**< Flags */
-	bitflag kind_flags[KF_SIZE];			/**< Kind flags */
+	bitflag flags[OF_SIZE];			/**< Flags */
+	bitflag kind_flags[KF_SIZE];	/**< Kind flags */
 
 	int modifiers[OBJ_MOD_MAX];
 	struct element_info el_info[ELEM_MAX];
@@ -339,20 +373,20 @@ typedef struct artifact
 	struct brand *brands;
 	struct slay *slays;
 
-	byte level;   /** Difficulty level for activation */
+	byte level;			/** Difficulty level for activation */
 
-	int alloc_prob; /** Chance of being generated (i.e. rarity) */
-	byte alloc_min;  /** Minimum depth (can appear earlier) */
-	byte alloc_max;  /** Maximum depth (will NEVER appear deeper) */
+	int alloc_prob;		/** Chance of being generated (i.e. rarity) */
+	byte alloc_min;		/** Minimum depth (can appear earlier) */
+	byte alloc_max;		/** Maximum depth (will NEVER appear deeper) */
 
-	bool created;	/**< Whether this artifact has been created */
-	bool seen;	/**< Whether this artifact has been seen this game */
-	bool everseen;	/**< Whether this artifact has ever been seen  */
+	bool created;		/**< Whether this artifact has been created */
+	bool seen;			/**< Whether this artifact has been seen this game */
+	bool everseen;		/**< Whether this artifact has ever been seen  */
 
-	u16b effect;     /**< Artifact activation (see effects.c) */
+	u16b effect;		/**< Artifact activation (see effects.c) */
 	char *effect_msg;
 
-	random_value time;  /**< Recharge time (if appropriate) */
+	random_value time;	/**< Recharge time (if appropriate) */
 } artifact_type;
 
 /*
@@ -378,10 +412,10 @@ typedef struct ego_item
 
 	u32b eidx;
 
-	s32b cost;			/* Ego-item "cost" */
+	s32b cost;						/* Ego-item "cost" */
 
-	bitflag flags[OF_SIZE];		/**< Flags */
-	bitflag kind_flags[KF_SIZE];			/**< Kind flags */
+	bitflag flags[OF_SIZE];			/**< Flags */
+	bitflag kind_flags[KF_SIZE];	/**< Kind flags */
 
 	random_value modifiers[OBJ_MOD_MAX];
 	int min_modifiers[OBJ_MOD_MAX];
@@ -390,20 +424,20 @@ typedef struct ego_item
 	struct brand *brands;
 	struct slay *slays;
 
-	byte level;		/* Minimum level */
-	byte rarity;		/* Object rarity */
-	byte rating;		/* Level rating boost */
-	int alloc_prob; 	/** Chance of being generated (i.e. rarity) */
-	byte alloc_min;  	/** Minimum depth (can appear earlier) */
-	byte alloc_max;  	/** Maximum depth (will NEVER appear deeper) */
+	byte level;				/* Minimum level */
+	byte rarity;			/* Object rarity */
+	byte rating;			/* Level rating boost */
+	int alloc_prob; 		/** Chance of being generated (i.e. rarity) */
+	byte alloc_min;			/** Minimum depth (can appear earlier) */
+	byte alloc_max;			/** Maximum depth (will NEVER appear deeper) */
 
-	byte tval[EGO_TVALS_MAX]; 	/* Legal tval */
+	byte tval[EGO_TVALS_MAX];		/* Legal tval */
 	byte min_sval[EGO_TVALS_MAX];	/* Minimum legal sval */
 	byte max_sval[EGO_TVALS_MAX];	/* Maximum legal sval */
 
-	random_value to_h;     		/* Extra to-hit bonus */
-	random_value to_d; 		/* Extra to-dam bonus */
-	random_value to_a; 		/* Extra to-ac bonus */
+	random_value to_h;		/* Extra to-hit bonus */
+	random_value to_d;		/* Extra to-dam bonus */
+	random_value to_a;		/* Extra to-ac bonus */
 
 	byte min_to_h;			/* Minimum to-hit value */
 	byte min_to_d;			/* Minimum to-dam value */
@@ -459,11 +493,12 @@ typedef struct object
 
 	s16b pval;			/* Item extra-parameter */
 
-	s16b weight;			/* Item weight */
+	s16b weight;		/* Item weight */
 
-	bitflag flags[OF_SIZE];		/**< Flags */
+	bitflag flags[OF_SIZE];			/**< Flags */
 	bitflag known_flags[OF_SIZE];	/**< Player-known flags */
-	u16b ident;			/* Special flags */
+	u16b ident;						/* Special flags */
+	bitflag id_flags[ID_SIZE];		/**< Object property ID flags */
 
 	s16b modifiers[OBJ_MOD_MAX];
 	struct element_info el_info[ELEM_MAX];
@@ -488,11 +523,11 @@ typedef struct object
 	s16b held_m_idx;	/* Monster holding us (if any) */
 	s16b mimicking_m_idx; /* Monster mimicking us (if any) */
 
-	byte origin;        /* How this item was found */
+	byte origin;		/* How this item was found */
 	byte origin_depth;  /* What depth the item was found at */
 	u16b origin_xtra;   /* Extra information about origin */
 
-	quark_t note; /* Inscription index */
+	quark_t note; 		/* Inscription index */
 } object_type;
 
 struct flavor
@@ -501,14 +536,14 @@ struct flavor
 	struct flavor *next;
 	unsigned int fidx;
 
-	byte tval;      /* Associated object type */
-	byte sval;      /* Associated object sub-type */
+	byte tval;	  /* Associated object type */
+	byte sval;	  /* Associated object sub-type */
 
-	byte d_attr;    /* Default flavor attribute */
-	wchar_t d_char;    /* Default flavor character */
+	byte d_attr;	/* Default flavor attribute */
+	wchar_t d_char;	/* Default flavor character */
 
-	byte x_attr;    /* Desired flavor attribute */
-	wchar_t x_char;    /* Desired flavor character */
+	byte x_attr;	/* Desired flavor attribute */
+	wchar_t x_char;	/* Desired flavor character */
 };
 
 extern struct flavor *flavors;

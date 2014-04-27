@@ -115,6 +115,9 @@ static void wr_item(const object_type *o_ptr)
 	for (i = 0; i < OF_SIZE; i++)
 		wr_byte(o_ptr->known_flags[i]);
 
+	for (i = 0; i < ID_SIZE; i++)
+		wr_byte(o_ptr->id_flags[i]);
+
 	for (i = 0; i < OBJ_MOD_MAX; i++) {
 		wr_s16b(o_ptr->modifiers[i]);
 	}
@@ -371,6 +374,7 @@ void wr_object_memory(void)
 
 	wr_u16b(z_info->k_max);
 	wr_byte(OF_SIZE);
+	wr_byte(ID_SIZE);
 	wr_byte(OBJ_MOD_MAX);
 	wr_byte(ELEM_MAX);
 	for (k_idx = 0; k_idx < z_info->k_max; k_idx++)
