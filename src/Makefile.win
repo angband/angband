@@ -32,7 +32,7 @@ include Makefile.inc
 MAINFILES="$(WINMAINFILES)"
 
 # Executable name and default target
-EXE = $(PROGNAME).exe
+EXE = angband.exe
 all: ../$(EXE)
 
 ifdef CONSOLE

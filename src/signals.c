@@ -22,6 +22,8 @@
 #include "savefile.h"
 #include "signals.h"
 
+s16b signal_count;		/* Hack -- Count interrupts */
+
 #ifndef WINDOWS
 
 #include <signal.h>
@@ -30,7 +32,6 @@
 # include <sys/types.h>
 #endif
 
-s16b signal_count;		/* Hack -- Count interrupts */
 
 typedef void (*Signal_Handler_t)(int);
 
