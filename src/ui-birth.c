@@ -319,7 +319,7 @@ static void race_help(int i, void *db, const region *l)
 	{
 		if (n_flags >= flag_space) break;
 		if (r->el_info[k].res_level != 1) continue;
-		text_out_e("\n%s", get_element_desc(k));
+		text_out_e("\n%s", get_resist_desc(k));
 		n_flags++;
 	}
 
