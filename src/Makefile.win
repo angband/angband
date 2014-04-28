@@ -12,6 +12,10 @@
 #   MINGW=yes will use the mingw compiler
 #
 
+# Executable name and default target
+EXE = angband.exe
+all: ../$(EXE)
+
 ifneq (,$(findstring \system32,$(PATH)))
   CP = copy
   RM = del
@@ -30,10 +34,6 @@ endif
 # Include list of object files and add system-specific ones
 include Makefile.inc
 MAINFILES="$(WINMAINFILES)"
-
-# Executable name and default target
-EXE = angband.exe
-all: ../$(EXE)
 
 ifdef CONSOLE
   CFLAGS = -DUSE_GCU -DWIN32_CONSOLE_MODE -I$(PDCURSES_INC)
