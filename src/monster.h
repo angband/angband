@@ -295,7 +295,7 @@ typedef struct monster
 
 	u32b smart;			/* Field for "adult_ai_learn" */
 
-	bitflag known_pflags[OF_SIZE]; /* Known player flags */
+	player_state known_pstate; /* Known player state */
 } monster_type;
 
 /*** Functions ***/

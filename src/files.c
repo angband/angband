@@ -235,60 +235,58 @@ static void display_player_equippy(int y, int x)
 
 /*
  * List of resistances and abilities to display
- * This will all have to change at the Object Flag Apocalypse
  */
 #define RES_ROWS 9
 struct player_flag_record
 {
-	const char name[7];		/* Name of resistance/ability */
-	bool mod;				/* True if it's a modifier not a flag */
-	int res_flag;			/* resistance flag bit */
-	int im_flag;			/* corresponding immunity bit, if any */
-	int vuln_flag;			/* corresponding vulnerability flag, if any */
-	int tmd_flag;			/* corresponding timed flag */
+	const char name[7];	/* Name of resistance/ability */
+	int mod;			/* Modifier */
+	int flag;			/* Flag bit */
+	int element;		/* Element */
+	int tmd_flag;		/* corresponding timed flag */
 };
 
 static const struct player_flag_record player_flag_table[RES_ROWS*4] =
 {
-	{ "rAcid",	0, OF_RES_ACID,    OF_IM_ACID, OF_VULN_ACID, TMD_OPP_ACID },
-	{ "rElec",	0, OF_RES_ELEC,    OF_IM_ELEC, OF_VULN_ELEC, TMD_OPP_ELEC },
-	{ "rFire",	0, OF_RES_FIRE,    OF_IM_FIRE, OF_VULN_FIRE, TMD_OPP_FIRE },
-	{ "rCold",	0, OF_RES_COLD,    OF_IM_COLD, OF_VULN_COLD, TMD_OPP_COLD },
-	{ "rPois",	0, OF_RES_POIS,    FLAG_END,   FLAG_END,     TMD_OPP_POIS },
-	{ "rLite",	0, OF_RES_LIGHT,   FLAG_END,   FLAG_END,     -1 },
-	{ "rDark",	0, OF_RES_DARK,    FLAG_END,   FLAG_END,     -1 },
-	{ "Sound",	0, OF_RES_SOUND,   FLAG_END,   FLAG_END,     -1 },
-	{ "Shard",	0, OF_RES_SHARD,   FLAG_END,   FLAG_END,     -1 },
+	{ "rAcid",	-1,					-1,				ELEM_ACID,	TMD_OPP_ACID },
+	{ "rElec",	-1,					-1,				ELEM_ELEC,	TMD_OPP_ELEC },
+	{ "rFire",	-1,					-1,				ELEM_FIRE,	TMD_OPP_FIRE },
+	{ "rCold",	-1,					-1,				ELEM_COLD,	TMD_OPP_COLD },
+	{ "rPois",	-1,					-1,				ELEM_POIS,	TMD_OPP_POIS },
+	{ "rLite",	-1,					-1,				ELEM_LIGHT,	-1 },
+	{ "rDark",	-1,					-1,				ELEM_DARK,	-1 },	
+	{ "Sound",	-1,					-1,				ELEM_SOUND,	-1 },
+	{ "Shard",	-1,					-1,				ELEM_SHARD,	-1 },
 
-	{ "Nexus",	0, OF_RES_NEXUS,   FLAG_END,   FLAG_END,     -1 },
-	{ "Nethr",	0, OF_RES_NETHER,  FLAG_END,   FLAG_END,     -1 },
-	{ "Chaos",	0, OF_RES_CHAOS,   FLAG_END,   FLAG_END,     -1 },
-	{ "Disen",	0, OF_RES_DISEN,   FLAG_END,   FLAG_END,     -1 },
-	{ "Feath",	0, OF_FEATHER,     FLAG_END,   FLAG_END,     -1 },
-	{ "pFear",	0, OF_PROT_FEAR,   FLAG_END,   FLAG_END,     -1 },
-	{ "pBlnd",	0, OF_PROT_BLIND,  FLAG_END,   FLAG_END,     -1 },
-	{ "pConf",	0, OF_PROT_CONF,   FLAG_END,   FLAG_END,     TMD_OPP_CONF },
-	{ "pStun",	0, OF_PROT_STUN,   FLAG_END,   FLAG_END,     -1 },
+	{ "Nexus",	-1,					-1,				ELEM_NEXUS,	-1 },
+	{ "Nethr",	-1,					-1,				ELEM_NETHER,-1 },
+	{ "Chaos",	-1,					-1,				ELEM_CHAOS,	-1 },
+	{ "Disen",	-1,					-1,				ELEM_DISEN,	-1 },
+	{ "pFear",	-1,					OF_PROT_FEAR,	-1,			-1 },
+	{ "pBlnd",	-1,					OF_PROT_BLIND,	-1,			-1 },
+	{ "pConf",	-1,					OF_PROT_CONF,	-1,			TMD_OPP_CONF },
+	{ "pStun",	-1,					OF_PROT_STUN,	-1,			-1 },
+	{ "HLife",	-1,					OF_HOLD_LIFE,	-1, 		-1 },
 
-	{ "Light",	0, OBJ_MOD_LIGHT,  FLAG_END,   FLAG_END,     -1 },
-	{ "Regen",	0, OF_REGEN,       FLAG_END,   FLAG_END,     -1 },
-	{ "  ESP",	0, OF_TELEPATHY,   FLAG_END,   FLAG_END,     TMD_TELEPATHY },
-	{ "Invis",	0, OF_SEE_INVIS,   FLAG_END,   FLAG_END,     TMD_SINVIS },
-	{ "FrAct",	0, OF_FREE_ACT,    FLAG_END,   FLAG_END,     -1 },
-	{ "HLife",	0, OF_HOLD_LIFE,   FLAG_END,   FLAG_END,     -1 },
-	{ "Stea.",	1, OBJ_MOD_STEALTH,FLAG_END,   FLAG_END,     -1 },
-	{ "Sear.",	1, OBJ_MOD_SEARCH, FLAG_END,   FLAG_END,     -1 },
-	{ "Infra",	1, OBJ_MOD_INFRA,  FLAG_END,   FLAG_END,     TMD_SINFRA },
+	{ "Regen",	-1,					OF_REGEN,		-1, 		-1 },
+	{ "  ESP",	-1,					OF_TELEPATHY,	-1,			TMD_TELEPATHY },
+	{ "Invis",	-1,					OF_SEE_INVIS,	-1,			TMD_SINVIS },
+	{ "FrAct",	-1,					OF_FREE_ACT,	-1, 		-1 },
+	{ "Feath",	-1,					OF_FEATHER,		-1,			-1 },
+	{ "S.Dig",	-1,					OF_SLOW_DIGEST,	-1, 		-1 },
+	{ "ImpHP",	-1,					OF_IMPAIR_HP,	-1, 		-1 },
+	{ " Fear",	-1,					OF_AFRAID,		-1,			TMD_AFRAID },
+	{ "Aggrv",	-1,					OF_AGGRAVATE,	-1, 		-1 },
 
-	{ "Tunn.",	1, OBJ_MOD_TUNNEL, FLAG_END,   FLAG_END,     -1 },
-	{ "Speed",	1, OBJ_MOD_SPEED,  FLAG_END,   FLAG_END,     TMD_FAST },
-	{ "Blows",	1, OBJ_MOD_BLOWS,  FLAG_END,   FLAG_END,     -1 },
-	{ "Shots",	1, OBJ_MOD_SHOTS,  FLAG_END,   FLAG_END,     -1 },
-	{ "Might",	1, OBJ_MOD_MIGHT,  FLAG_END,   FLAG_END,     -1 },
-	{ "S.Dig",	0, OF_SLOW_DIGEST, FLAG_END,   FLAG_END,     -1 },
-	{ "ImpHP",	0, OF_IMPAIR_HP,   FLAG_END,   FLAG_END,     -1 },
-	{ " Fear",	0, OF_AFRAID,      FLAG_END,   FLAG_END,     TMD_AFRAID },
-	{ "Aggrv",	0, OF_AGGRAVATE,   FLAG_END,   FLAG_END,     -1 },
+	{ "Stea.",	OBJ_MOD_STEALTH,	-1,				-1, 		-1 },
+	{ "Sear.",	OBJ_MOD_SEARCH,		-1,				-1, 		-1 },
+	{ "Infra",	OBJ_MOD_INFRA,		-1,				-1,			TMD_SINFRA },
+	{ "Tunn.",	OBJ_MOD_TUNNEL,		-1,				-1, 		-1 },
+	{ "Speed",	OBJ_MOD_SPEED,		-1,				-1,			 TMD_FAST },
+	{ "Blows",	OBJ_MOD_BLOWS,		-1,				-1, 		-1 },
+	{ "Shots",	OBJ_MOD_SHOTS,		-1,				-1, 		-1 },
+	{ "Might",	OBJ_MOD_MIGHT,		-1,				-1, 		-1 },
+	{ "Light",	OBJ_MOD_LIGHT,		-1,				-1, 		-1 },
 };
 
 #define RES_COLS (5 + 2 + INVEN_TOTAL - INVEN_WIELD)
@@ -300,7 +298,7 @@ static const region resist_region[] =
 	{  3*(RES_COLS+1), 10, RES_COLS, RES_ROWS+2 },
 };
 
-static void display_resistance_panel(const struct player_flag_record *resists,
+static void display_resistance_panel(const struct player_flag_record *rec,
 									size_t size, const region *bounds) 
 {
 	size_t i, j;
@@ -320,54 +318,67 @@ static void display_resistance_panel(const struct player_flag_record *resists,
 			byte attr = TERM_WHITE | (j % 2) * 8; /* alternating columns */
 			char sym = '.';
 
-			bool res, imm, vuln;
+			bool res = FALSE, imm = FALSE, vul = FALSE;
 			bool timed = FALSE;
+			bool known;
 
 			/* Wipe flagset */
 			of_wipe(f);
 
+			/* Get the object or player info */
 			if (j < INVEN_TOTAL && o_ptr->kind)
 			{
+				/* Get known properties */
 				object_flags_known(o_ptr, f);
+				if (rec[i].element != -1)
+					known = object_element_is_known(o_ptr, rec[i].element);
+				else if (rec[i].flag != -1)
+					known = object_flag_is_known(o_ptr, rec[i].flag);
+				else
+					known = TRUE;
 			}
 			else if (j == INVEN_TOTAL)
 			{
 				player_flags(f);
+				known = TRUE;
 
 				/* Timed flags only in the player column */
-				if (resists[i].tmd_flag >= 0)
-	 				timed = player->timed[resists[i].tmd_flag] ? TRUE : FALSE;
+				if (rec[i].tmd_flag >= 0)
+	 				timed = player->timed[rec[i].tmd_flag] ? TRUE : FALSE;
 			}
 
-			if (resists[i].mod) {
+			/* Set which (if any) symbol and color are used */
+			if (rec[i].mod != -1) {
 				if (j != INVEN_TOTAL)
-					res = (o_ptr->modifiers[resists[i].res_flag] != 0);
+					res = (o_ptr->modifiers[rec[i].mod] != 0);
 				else {
-					/* Messy special cases NRM */
-					if (resists[i].res_flag == OBJ_MOD_INFRA)
+					/* Messy special cases */
+					if (rec[i].mod == OBJ_MOD_INFRA)
 						res = (player->race->infra > 0);
-					if (resists[i].res_flag == OBJ_MOD_TUNNEL)
+					if (rec[i].mod == OBJ_MOD_TUNNEL)
 						res = (player->race->r_skills[SKILL_DIGGING] > 0);
 				}
+			} else if (rec[i].flag != -1) {
+				res = of_has(f, rec[i].flag);
+			} else if (rec[i].element != -1) {
+				imm = known && (o_ptr->el_info[rec[i].element].res_level == 3);
+				imm = known && (o_ptr->el_info[rec[i].element].res_level == 1);
+				vul = known && (o_ptr->el_info[rec[i].element].res_level == -1);
 			}
-			else
-				res = of_has(f, resists[i].res_flag);
-			imm = of_has(f, resists[i].im_flag);
-			vuln = of_has(f, resists[i].vuln_flag);
 
+			/* Set the symbols and print them */
 			if (imm) name_attr = TERM_GREEN;
 			else if (res) name_attr = TERM_L_BLUE;
 
-			if (vuln) sym = '-';
+			if (vul) sym = '-';
 			else if (imm) sym = '*';
 			else if (res) sym = '+';
 			else if (timed) { sym = '!'; attr = TERM_L_GREEN; }
-			else if ((j < INVEN_TOTAL) && o_ptr->kind && 
-				!object_flag_is_known(o_ptr, resists[i].res_flag)) sym = '?';
+			else if ((j < INVEN_TOTAL) && o_ptr->kind && !known) sym = '?';
 
 			Term_addch(attr, sym);
 		}
-		Term_putstr(col, row, 6, name_attr, format("%5s:", resists[i].name));
+		Term_putstr(col, row, 6, name_attr, format("%5s:", rec[i].name));
 	}
 	Term_putstr(col, row++, RES_COLS, TERM_WHITE, "      abcdefghijkl@");
 	/* Equippy */

@@ -242,6 +242,8 @@ bool object_flag_is_known(const object_type *o_ptr, int flag)
  */
 bool object_element_is_known(const object_type *o_ptr, int element)
 {
+	if (element < 0 || element >= ELEM_MAX) return FALSE;
+
 	if (easy_know(o_ptr) ||
 	    (o_ptr->ident & IDENT_STORE) ||
 	    (o_ptr->el_info[element].flags & EL_INFO_KNOWN))
@@ -280,36 +282,22 @@ bool object_this_mod_is_visible(const object_type *o_ptr, int mod)
  */
 bool object_high_resist_is_possible(const object_type *o_ptr)
 {
-	bitflag flags[OF_SIZE], f2[OF_SIZE];
-	//size_t i;
+	size_t i;
 
 	/* Look at all the high resists */
-	//for (i = ELEM_POIS; i <= ELEM_DISEN; i++) {
+	for (i = ELEM_POIS; i <= ELEM_DISEN; i++) {
 		/* Object doesn't have it - not interesting */
-	//	if (o_ptr->el_info[i].res_level <= 0) continue;
+		if (o_ptr->el_info[i].res_level <= 0) continue;
 
 		/* Element properties known */
-	//	if (o_ptr->el_info[i].flags & EL_INFO_KNOWN) continue;
+		if (o_ptr->el_info[i].flags & EL_INFO_KNOWN) continue;
 
 		/* Has a resist, or doubt remains */
-	//	return TRUE;
-	//}
+		return TRUE;
+	}
 
 	/* No doubt left */
-	//return FALSE;
-
-	/* Actual object flags */
-	object_flags(o_ptr, flags);
-
-	/* Add player's uncertainty */
-	of_comp_union(flags, o_ptr->known_flags);
-
-	/* Check for possible high resist */
-	create_mask(f2, FALSE, OFT_HRES, OFT_MAX);
-	if (of_is_inter(flags, f2))
-		return TRUE;
-	else
-		return FALSE;
+	return FALSE;
 }
 
 
@@ -343,26 +331,19 @@ static bool object_add_ident_flags(object_type *o_ptr, u32b flags)
  */
 bool object_check_for_ident(object_type *o_ptr)
 {
-	bitflag flags[OF_SIZE], known_flags[OF_SIZE], f2[OF_SIZE];
-	//size_t i;
+	bitflag flags[OF_SIZE], known_flags[OF_SIZE];
+	size_t i;
 	
 	object_flags(o_ptr, flags);
 	object_flags_known(o_ptr, known_flags);
 
-	/* Some flags are irrelevant or never learned or too hard to learn */
-	//f2 can go at the apocalypse - NRM
-	create_mask(f2, FALSE, OFT_IGNORE, OFT_HATES, OFT_MAX);
-
-	of_diff(flags, f2);
-	of_diff(known_flags, f2);
-
 	if (!of_is_equal(flags, known_flags)) return FALSE;
 
 	/* Check for unknown resists, immunities and vulnerabilities */
-	//for (i = 0; i < ELEM_MAX; i++) {
-	//	if (o_ptr->el_info[i].flags & EL_INFO_KNOWN) continue;
-	//	if (o_ptr->el_info[i].res_level) return FALSE;
-	//}
+	for (i = 0; i < ELEM_MAX; i++) {
+		if (o_ptr->el_info[i].flags & EL_INFO_KNOWN) continue;
+		if (o_ptr->el_info[i].res_level != 0) return FALSE;
+	}
 
 	/* If we know attack bonuses, and defence bonuses, and effect, then
 	 * we effectively know everything, so mark as such */
@@ -717,6 +698,8 @@ void object_notice_attack_plusses(object_type *o_ptr)
  */
 bool object_notice_element(object_type *o_ptr, int element)
 {
+	if (element < 0 || element >= ELEM_MAX) return FALSE;
+
 	/* Already known */
 	if (o_ptr->el_info[element].flags & EL_INFO_KNOWN)
 		return FALSE;
@@ -1093,6 +1076,8 @@ void wieldeds_notice_flag(struct player *p, int flag)
 void wieldeds_notice_element(struct player *p, int element)
 {
 	int i;
+
+	if (element < 0 || element >= ELEM_MAX) return;
 
 	for (i = INVEN_WIELD; i < ALL_INVEN_TOTAL; i++)
 	{

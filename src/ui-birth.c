@@ -223,10 +223,6 @@ static const char *get_flag_desc(bitflag flag)
 		case OF_SUST_STR: return "Sustains strength";
 		case OF_SUST_DEX: return "Sustains dexterity";
 		case OF_SUST_CON: return "Sustains constitution";
-		//Remove next three at the apocalypse - NRM
-		case OF_RES_POIS: return "Resists poison";
-		case OF_RES_LIGHT: return "Resists light damage";
-		case OF_RES_DARK: return "Resists darkness damage";
 		case OF_PROT_BLIND: return "Resists blindness";
 		case OF_HOLD_LIFE: return "Sustains experience";
 		case OF_FREE_ACT: return "Resists paralysis";

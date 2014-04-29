@@ -66,9 +66,7 @@ static void melee_effect_elemental(melee_effect_handler_context_t *context, int 
 	if (!monster_blow_method_physical(context->method))
 		physical_dam = 0;
 
-	//elemental_dam = adjust_dam(context->p, type, context->damage, RANDOMISE);
-	elemental_dam = adjust_dam(context->p, type, context->damage, RANDOMISE,
-							   check_for_resist(context->p, type, NULL, TRUE));
+	elemental_dam = adjust_dam(type, context->damage, RANDOMISE, 0);
 
 	/* Take the larger of physical or elemental damage */
 	context->damage = (physical_dam > elemental_dam) ? physical_dam : elemental_dam;
@@ -78,7 +76,7 @@ static void melee_effect_elemental(melee_effect_handler_context_t *context, int 
 
 	if (pure_element) {
 		/* Learn about the player */
-		monster_learn_resists(context->m_ptr, context->p, type);
+		update_smart_learn(context->m_ptr, context->p, 0, type);
 	}
 }
 
@@ -111,7 +109,7 @@ static void melee_effect_timed(melee_effect_handler_context_t *context, int type
 	}
 
 	/* Learn about the player */
-	update_smart_learn(context->m_ptr, context->p, of_flag);
+	update_smart_learn(context->m_ptr, context->p, of_flag, -1);
 }
 
 /**
@@ -143,7 +141,7 @@ static void melee_effect_experience(melee_effect_handler_context_t *context, int
 
 	/* Take damage */
 	take_hit(context->p, context->damage, context->ddesc);
-	update_smart_learn(context->m_ptr, context->p, OF_HOLD_LIFE);
+	update_smart_learn(context->m_ptr, context->p, OF_HOLD_LIFE, -1);
 
 	if (player_of_has(context->p, OF_HOLD_LIFE) && (randint0(100) < chance)) {
 		msg("You keep hold of your life force!");
@@ -191,19 +189,21 @@ static void melee_effect_handler_hurt(melee_effect_handler_context_t *context)
 /**
  * Melee effect handler: Poison the player.
  *
- * We can't use melee_effect_timed(), because this is both and elemental attack and a
- * status attack. Note the FALSE value for pure_element for melee_effect_elemental().
+ * We can't use melee_effect_timed(), because this is both and elemental attack
+ * and a status attack. Note the FALSE value for pure_element for
+ * melee_effect_elemental().
  */
 static void melee_effect_handler_poison(melee_effect_handler_context_t *context)
 {
 	melee_effect_elemental(context, GF_POIS, FALSE);
 
 	/* Take "poison" effect */
-	if (player_inc_timed(context->p, TMD_POISONED, 5 + randint1(context->rlev), TRUE, TRUE))
+	if (player_inc_timed(context->p, TMD_POISONED, 5 + randint1(context->rlev),
+						 TRUE, TRUE))
 		context->obvious = TRUE;
 
 	/* Learn about the player */
-	monster_learn_resists(context->m_ptr, context->p, GF_POIS);
+	update_smart_learn(context->m_ptr, context->p, 0, ELEM_POIS);
 }
 
 /**
@@ -215,15 +215,14 @@ static void melee_effect_handler_disenchant(melee_effect_handler_context_t *cont
 	take_hit(context->p, context->damage, context->ddesc);
 
 	/* Allow complete resist */
-	//if (!player_resists(player, ELEM_DISEN))
-	if (!player_of_has(context->p, OF_RES_DISEN))
+	if (!player_resists(context->p, ELEM_DISEN))
 	{
 		/* Apply disenchantment */
 		if (apply_disenchant(0)) context->obvious = TRUE;
 	}
 
 	/* Learn about the player */
-	monster_learn_resists(context->m_ptr, context->p, GF_DISEN);
+	update_smart_learn(context->m_ptr, context->p, 0, ELEM_DISEN);
 }
 
 /**
@@ -314,7 +313,8 @@ static void melee_effect_handler_eat_gold(melee_effect_handler_context_t *contex
 
     /* Saving throw (unless paralyzed) based on dex and level */
     if (!player->timed[TMD_PARALYZED] &&
-        (randint0(100) < (adj_dex_safe[player->state.stat_ind[A_DEX]] + player->lev)))
+        (randint0(100) < (adj_dex_safe[player->state.stat_ind[A_DEX]]
+						  + player->lev)))
     {
         /* Saving throw message */
         msg("You quickly protect your money pouch!");
@@ -489,7 +489,8 @@ static void melee_effect_handler_eat_food(melee_effect_handler_context_t *contex
 			object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
 			msg("Your %s (%c) was eaten!", o_name, index_to_label(item));
 		} else {
-			object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_BASE);
+			object_desc(o_name, sizeof(o_name), o_ptr,
+						ODESC_PREFIX | ODESC_BASE);
 			msg("One of your %s (%c) was eaten!", o_name, index_to_label(item));
 		}
 
@@ -734,7 +735,7 @@ static void melee_effect_handler_hallucination(melee_effect_handler_context_t *c
 		context->obvious = TRUE;
 
 	/* Learn about the player */
-	monster_learn_resists(context->m_ptr, context->p, GF_CHAOS);
+	update_smart_learn(context->m_ptr, context->p, 0, ELEM_CHAOS);
 }
 
 /**

@@ -492,7 +492,7 @@ static void msg_print_aux(u16b type, const char *msg)
 		message_add(msg, type);
 
 	/* Window stuff */
-	player->upkeep->redraw |= (PR_MESSAGE);
+	if (player->upkeep) player->upkeep->redraw |= (PR_MESSAGE);
 
 	/* Copy it */
 	my_strcpy(buf, msg, sizeof(buf));

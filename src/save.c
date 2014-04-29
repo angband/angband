@@ -188,7 +188,10 @@ static void wr_monster(const monster_type *m_ptr)
 	wr_byte(unaware);
 
 	for (j = 0; j < OF_SIZE; j++)
-		wr_byte(m_ptr->known_pflags[j]);
+		wr_byte(m_ptr->known_pstate.flags[j]);
+
+	for (j = 0; j < ELEM_MAX; j++)
+		wr_s16b(m_ptr->known_pstate.el_info[j].res_level);
 
 	wr_byte(0);
 }

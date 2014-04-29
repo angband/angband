@@ -273,7 +273,7 @@ static void do_spell_effects(int spell, int dam, struct monster *m_ptr, bool see
 			 * to replace the generic ones below. (See #1376)
 			 */
 			if (re_ptr->res_flag)
-				update_smart_learn(m_ptr, player, re_ptr->res_flag);
+				update_smart_learn(m_ptr, player, re_ptr->res_flag, -1);
 
 			if (player_of_has(player, re_ptr->res_flag)) {
 				msg("You resist the effect!");
@@ -311,7 +311,10 @@ static void do_spell_effects(int spell, int dam, struct monster *m_ptr, bool see
 						break;
 
 					case S_TELE_LEV:
-						teleport_player_level();
+						if (player_resists(player, ELEM_NEXUS))
+							msg("You resist the effect!");
+						else
+							teleport_player_level();
 						break;
 
 					case S_TELE_SELF:
@@ -457,7 +460,7 @@ void do_mon_spell(int spell, struct monster *m_ptr, bool seen)
 
 	if (rs_ptr->gf) {
 		(void)project(m_ptr->midx, rad, player->py, player->px, dam, rs_ptr->gf, flag, 0, 0);
-		monster_learn_resists(m_ptr, player, rs_ptr->gf);
+		update_smart_learn(m_ptr, player, 0, rs_ptr->gf);
 	}
 	else {
 		/* Note that non-projectable attacks are unresistable */
@@ -511,16 +514,21 @@ void set_spells(bitflag *f, int types)
  * \param flags is the set of flags we're testing
  * \param r_ptr is the monster type we're operating on
  */
-void unset_spells(bitflag *spells, bitflag *flags, const monster_race *r_ptr)
+void unset_spells(bitflag *spells, bitflag *flags, struct element_info *el,
+				  const monster_race *r_ptr)
 {
 	const struct mon_spell *rs_ptr;
 	const struct spell_effect *re_ptr;
 
 	/* First we test the gf (projectable) spells */
-	for (rs_ptr = mon_spell_table; rs_ptr->index < RSF_MAX; rs_ptr++)
-		if (rs_ptr->gf && randint0(100) < check_for_resist(player, rs_ptr->gf, flags,
-				FALSE) * (rf_has(r_ptr->flags, RF_SMART) ? 2 : 1) * 25)
+	for (rs_ptr = mon_spell_table; rs_ptr->index < RSF_MAX; rs_ptr++) {
+		/* Hack - DARK_WEAK is not an element - needs fix - NRM */
+		if (rs_ptr->gf == GF_DARK_WEAK) return;
+
+		if (rs_ptr->gf && randint0(100) < el[rs_ptr->gf].res_level * 
+			(rf_has(r_ptr->flags, RF_SMART) ? 2 : 1) * 25)
 			rsf_off(spells, rs_ptr->index);
+	}
 
 	/* ... then we test the non-gf side effects */
 	for (re_ptr = spell_effect_table; re_ptr->index < RSE_MAX; re_ptr++)
@@ -560,7 +568,7 @@ int best_spell_power(const monster_race *r_ptr, int resist)
 			/* Adjust the real damage by the assumed resistance (if it is a
 			 * resistable type) */
 			if (rs_ptr->gf)
-				dam = adjust_dam(player, rs_ptr->gf, dam, MAXIMISE, resist);
+				dam = adjust_dam(rs_ptr->gf, dam, MAXIMISE, 1);
 
 			/* Add the power ratings assigned to the various possible spell
 			 * effects (which is crucial for non-damaging spells) */

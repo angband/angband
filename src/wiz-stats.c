@@ -566,29 +566,29 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 		first_find(si_it);
 	}
 	/* has at least one basic resist */
- 	if ((of_has(f,OF_RES_ACID)) ||
-		(of_has(f,OF_RES_ELEC)) ||
-		(of_has(f,OF_RES_COLD)) ||
-		(of_has(f,OF_RES_FIRE))){
+ 	if ((o_ptr->el_info[ELEM_ACID].res_level == 1) ||
+		(o_ptr->el_info[ELEM_ELEC].res_level == 1) ||
+		(o_ptr->el_info[ELEM_COLD].res_level == 1) ||
+		(o_ptr->el_info[ELEM_FIRE].res_level == 1)){
 
 			add_stats( reeq_total,  reeq_mon,  reeq_vault,vault,mon,number);
 	}
 
 	/* has rbase */
-	if ((of_has(f,OF_RES_ACID)) &&
-		(of_has(f,OF_RES_ELEC)) &&
-		(of_has(f,OF_RES_COLD)) &&
-		(of_has(f,OF_RES_FIRE)))
+	if ((o_ptr->el_info[ELEM_ACID].res_level == 1) &&
+		(o_ptr->el_info[ELEM_ELEC].res_level == 1) &&
+		(o_ptr->el_info[ELEM_COLD].res_level == 1) &&
+		(o_ptr->el_info[ELEM_FIRE].res_level == 1))
 		add_stats( rbeq_total,  rbeq_mon,  rbeq_vault,vault,mon,number);
 
 	/* has resist poison */
-	if (of_has(f,OF_RES_POIS)){
+	if (o_ptr->el_info[ELEM_POIS].res_level == 1){
 
 		add_stats( poeq_total,  poeq_mon,  poeq_vault,vault,mon,number);
 		first_find(po_it);
 	}
 	/* has resist nexus */
-	if (of_has(f,OF_RES_NEXUS)){
+	if (o_ptr->el_info[ELEM_NEXUS].res_level == 1){
 
 		add_stats( nxeq_total,  nxeq_mon,  nxeq_vault,vault,mon,number);
 		first_find(nx_it);

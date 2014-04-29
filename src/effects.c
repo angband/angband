@@ -860,15 +860,13 @@ bool effect_handler_BANISHMENT(effect_handler_context_t *context)
 
 bool effect_handler_DARKNESS(effect_handler_context_t *context)
 {
-	if (!player_of_has(player, OF_RES_DARK)) {
-	//if (!player_resists(player, ELEM_DARK)) {
+	if (!player_resists(player, ELEM_DARK)) {
 		int amount = effect_calculate_value(context, FALSE);
 		(void)player_inc_timed(player, TMD_BLIND, amount, TRUE, TRUE);
 	}
 
 	unlight_area(10, 3);
-	wieldeds_notice_flag(player, OF_RES_DARK);
-	//wieldeds_notice_element(player, ELEM_DARK);
+	wieldeds_notice_element(player, ELEM_DARK);
 	context->ident = TRUE;
 	return TRUE;
 }
@@ -1710,9 +1708,7 @@ bool effect_handler_TRAP_SPOT_FIRE(effect_handler_context_t *context)
 {
 	int dam = damroll(4, 6);
 	msg("You are enveloped in flames!");
-	dam = adjust_dam(player, GF_FIRE, dam, RANDOMISE,
-					 check_for_resist(player, GF_FIRE, NULL, TRUE));
-	//dam = adjust_dam(player, GF_FIRE, dam, RANDOMISE);
+	dam = adjust_dam(GF_FIRE, dam, RANDOMISE, 0);
 	if (dam) {
 		take_hit(player, dam, "a fire trap");
 		inven_damage(player, GF_FIRE, MIN(dam * 5, 300));
@@ -1724,9 +1720,7 @@ bool effect_handler_TRAP_SPOT_ACID(effect_handler_context_t *context)
 {
 	int dam = damroll(4, 6);
 	msg("You are splashed with acid!");
-	//dam = adjust_dam(player, GF_ACID, dam, RANDOMISE);
-	dam = adjust_dam(player, GF_ACID, dam, RANDOMISE,
-					 check_for_resist(player, GF_ACID, NULL, TRUE));
+	dam = adjust_dam(GF_ACID, dam, RANDOMISE, 0);
 	if (dam) {
 		take_hit(player, dam, "an acid trap");
 		inven_damage(player, GF_ACID, MIN(dam * 5, 300));

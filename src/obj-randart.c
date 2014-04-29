@@ -278,6 +278,26 @@ static int verbose = 1;
 /* Fake pvals array for maintaining current behaviour NRM */
 int fake_pval[3] = {0, 0, 0};
 
+/*
+ * Describes an element-name pair.
+ */
+typedef struct
+{
+	int index;
+	const char *name;
+} element_type;
+
+/*
+ * Include the elements and names
+ */
+static const element_type elements[] =
+{
+	#define ELEM(a, b, c, d, e, col, f, fh, oh, mh, ph)	\
+	{ELEM_##a, b},
+    #include "list-elements.h"
+    #undef ELEM
+};
+
 void fake_pvals_to_mods(struct artifact *a)
 {
 	int i;
@@ -649,10 +669,6 @@ static void remove_contradictory(artifact_type *a_ptr)
 {
 	if (of_has(a_ptr->flags, OF_AGGRAVATE))
 		a_ptr->modifiers[OBJ_MOD_STEALTH] = 0;
-	if (of_has(a_ptr->flags, OF_IM_ACID)) of_off(a_ptr->flags, OF_RES_ACID);
-	if (of_has(a_ptr->flags, OF_IM_ELEC)) of_off(a_ptr->flags, OF_RES_ELEC);
-	if (of_has(a_ptr->flags, OF_IM_FIRE)) of_off(a_ptr->flags, OF_RES_FIRE);
-	if (of_has(a_ptr->flags, OF_IM_COLD)) of_off(a_ptr->flags, OF_RES_COLD);
 
 	if (fake_pval[0] < 0)
 	{
@@ -1276,20 +1292,6 @@ static void parse_frequencies(void)
 			/* Done with speed */
 		}
 
-		if (flags_test(a_ptr->flags, OF_SIZE, OF_IM_ACID, OF_IM_ELEC,
-		                     OF_IM_FIRE, OF_IM_COLD, FLAG_END))
-		{
-			/* Count up immunities for this item, if any */
-			temp = 0;
-			if (of_has(a_ptr->flags, OF_IM_ACID)) temp++;
-			if (of_has(a_ptr->flags, OF_IM_ELEC)) temp++;
-			if (of_has(a_ptr->flags, OF_IM_FIRE)) temp++;
-			if (of_has(a_ptr->flags, OF_IM_COLD)) temp++;
-			file_putf(log_file, "Adding %d for immunities.\n", temp);
-
-			(artprobs[ART_IDX_GEN_IMMUNE]) += temp;
-		}
-
 		if (of_has(a_ptr->flags, OF_FREE_ACT))
 		{
 			/* Free action - handle gloves separately */
@@ -1407,16 +1409,24 @@ static void parse_frequencies(void)
 			(artprobs[ART_IDX_GEN_REGEN])++;
 		}
 
-		if (flags_test(a_ptr->flags, OF_SIZE, OF_RES_ACID, OF_RES_ELEC,
-		                     OF_RES_FIRE, OF_RES_COLD, FLAG_END))
-		{
-			/* Count up low resists (not the type, just the number) */
-			temp = 0;
-			if (of_has(a_ptr->flags, OF_RES_ACID)) temp++;
-			if (of_has(a_ptr->flags, OF_RES_ELEC)) temp++;
-			if (of_has(a_ptr->flags, OF_RES_FIRE)) temp++;
-			if (of_has(a_ptr->flags, OF_RES_COLD)) temp++;
+		/* Count up immunities for this item, if any */
+		temp = 0;
+		if (a_ptr->el_info[ELEM_ACID].res_level == 3) temp++;
+		if (a_ptr->el_info[ELEM_ELEC].res_level == 3) temp++;
+		if (a_ptr->el_info[ELEM_FIRE].res_level == 3) temp++;
+		if (a_ptr->el_info[ELEM_COLD].res_level == 3) temp++;
+		file_putf(log_file, "Adding %d for immunities.\n", temp);
 
+		(artprobs[ART_IDX_GEN_IMMUNE]) += temp;
+
+		/* Count up low resists (not the type, just the number) */
+		temp = 0;
+		if (a_ptr->el_info[ELEM_ACID].res_level == 1) temp++;
+		if (a_ptr->el_info[ELEM_ELEC].res_level == 1) temp++;
+		if (a_ptr->el_info[ELEM_FIRE].res_level == 1) temp++;
+		if (a_ptr->el_info[ELEM_COLD].res_level == 1) temp++;
+
+		if (temp) {
 			/* Shields treated separately */
 			if (a_ptr->tval == TV_SHIELD)
 			{
@@ -1424,19 +1434,17 @@ static void parse_frequencies(void)
 
 				(artprobs[ART_IDX_SHIELD_LRES]) += temp;
 			}
+			/* Armor also treated separately */
 			else if (a_ptr->tval == TV_SOFT_ARMOR ||
-				a_ptr->tval == TV_HARD_ARMOR || a_ptr->tval == TV_DRAG_ARMOR)
-			{
-				/* Armor also treated separately */
-				if (temp == 4)
-				{
+					 a_ptr->tval == TV_HARD_ARMOR ||
+					 a_ptr->tval == TV_DRAG_ARMOR) {
+				if (temp == 4) {
 					/* Special case: armor has all four low resists */
-					file_putf(log_file, "Adding 1 for ALL LOW RESISTS on body armor.\n");
+					file_putf(log_file,
+							  "Adding 1 for ALL LOW RESISTS on body armor.\n");
 
 					(artprobs[ART_IDX_ARMOR_ALLRES])++;
-				}
-				else
-				{
+				} else {
 					/* Just tally up the resists as usual */
 					file_putf(log_file, "Adding %d for low resists on body armor.\n", temp);
 
@@ -1446,7 +1454,8 @@ static void parse_frequencies(void)
 			else
 			{
 				/* General case */
-				file_putf(log_file, "Adding %d for low resists - general.\n", temp);
+				file_putf(log_file, "Adding %d for low resists - general.\n",
+						  temp);
 
 				(artprobs[ART_IDX_GEN_LRES]) += temp;
 			}
@@ -1465,18 +1474,18 @@ static void parse_frequencies(void)
 			a_ptr->tval == TV_HARD_ARMOR || a_ptr->tval == TV_DRAG_ARMOR)
 		{
 			temp = 0;
-			if (of_has(a_ptr->flags, OF_RES_POIS)) temp++;
+			if (a_ptr->el_info[ELEM_POIS].res_level == 1) temp++;
 			if (of_has(a_ptr->flags, OF_PROT_FEAR)) temp++;
-			if (of_has(a_ptr->flags, OF_RES_LIGHT)) temp++;
-			if (of_has(a_ptr->flags, OF_RES_DARK)) temp++;
+			if (a_ptr->el_info[ELEM_LIGHT].res_level == 1) temp++;
+			if (a_ptr->el_info[ELEM_DARK].res_level == 1) temp++;
 			if (of_has(a_ptr->flags, OF_PROT_BLIND)) temp++;
 			if (of_has(a_ptr->flags, OF_PROT_CONF)) temp++;
-			if (of_has(a_ptr->flags, OF_RES_SOUND)) temp++;
-			if (of_has(a_ptr->flags, OF_RES_SHARD)) temp++;
-			if (of_has(a_ptr->flags, OF_RES_NEXUS)) temp++;
-			if (of_has(a_ptr->flags, OF_RES_NETHER)) temp++;
-			if (of_has(a_ptr->flags, OF_RES_CHAOS)) temp++;
-			if (of_has(a_ptr->flags, OF_RES_DISEN)) temp++;
+			if (a_ptr->el_info[ELEM_SOUND].res_level == 1) temp++;
+			if (a_ptr->el_info[ELEM_SHARD].res_level == 1) temp++;
+			if (a_ptr->el_info[ELEM_NEXUS].res_level == 1) temp++;
+			if (a_ptr->el_info[ELEM_NETHER].res_level == 1) temp++;
+			if (a_ptr->el_info[ELEM_CHAOS].res_level == 1) temp++;
+			if (a_ptr->el_info[ELEM_DISEN].res_level == 1) temp++;
 			if (of_has(a_ptr->flags, OF_PROT_STUN)) temp++;
 			file_putf(log_file, "Adding %d for high resists on body armor.\n", temp);
 
@@ -1484,7 +1493,7 @@ static void parse_frequencies(void)
 		}
 
 		/* Now do the high resists individually */
-		if (of_has(a_ptr->flags, OF_RES_POIS))
+		if (a_ptr->el_info[ELEM_POIS].res_level == 1)
 		{
 			/* Resist poison ability */
 			file_putf(log_file, "Adding 1 for resist poison - general.\n");
@@ -1500,7 +1509,7 @@ static void parse_frequencies(void)
 			(artprobs[ART_IDX_GEN_RFEAR])++;
 		}
 
-		if (of_has(a_ptr->flags, OF_RES_LIGHT))
+		if (a_ptr->el_info[ELEM_LIGHT].res_level == 1)
 		{
 			/* Resist light ability */
 			file_putf(log_file, "Adding 1 for resist light - general.\n");
@@ -1508,7 +1517,7 @@ static void parse_frequencies(void)
 			(artprobs[ART_IDX_GEN_RLIGHT])++;
 		}
 
-		if (of_has(a_ptr->flags, OF_RES_DARK))
+		if (a_ptr->el_info[ELEM_DARK].res_level == 1)
 		{
 			/* Resist dark ability */
 			file_putf(log_file, "Adding 1 for resist dark - general.\n");
@@ -1542,7 +1551,7 @@ static void parse_frequencies(void)
 			(artprobs[ART_IDX_GEN_RCONF])++;
 		}
 
-		if (of_has(a_ptr->flags, OF_RES_SOUND))
+		if (a_ptr->el_info[ELEM_SOUND].res_level == 1)
 		{
 			/* Resist sound ability */
 			file_putf(log_file, "Adding 1 for resist sound - general.\n");
@@ -1550,7 +1559,7 @@ static void parse_frequencies(void)
 			(artprobs[ART_IDX_GEN_RSOUND])++;
 		}
 
-		if (of_has(a_ptr->flags, OF_RES_SHARD))
+		if (a_ptr->el_info[ELEM_SHARD].res_level == 1)
 		{
 			/* Resist shards ability */
 			file_putf(log_file, "Adding 1 for resist shards - general.\n");
@@ -1558,7 +1567,7 @@ static void parse_frequencies(void)
 			(artprobs[ART_IDX_GEN_RSHARD])++;
 		}
 
-		if (of_has(a_ptr->flags, OF_RES_NEXUS))
+		if (a_ptr->el_info[ELEM_NEXUS].res_level == 1)
 		{
 			/* Resist nexus ability */
 			file_putf(log_file, "Adding 1 for resist nexus - general.\n");
@@ -1566,7 +1575,7 @@ static void parse_frequencies(void)
 			(artprobs[ART_IDX_GEN_RNEXUS])++;
 		}
 
-		if (of_has(a_ptr->flags, OF_RES_NETHER))
+		if (a_ptr->el_info[ELEM_NETHER].res_level == 1)
 		{
 			/* Resist nether ability */
 			file_putf(log_file, "Adding 1 for resist nether - general.\n");
@@ -1574,7 +1583,7 @@ static void parse_frequencies(void)
 			(artprobs[ART_IDX_GEN_RNETHER])++;
 		}
 
-		if (of_has(a_ptr->flags, OF_RES_CHAOS))
+		if (a_ptr->el_info[ELEM_CHAOS].res_level == 1)
 		{
 			/* Resist chaos ability */
 			file_putf(log_file, "Adding 1 for resist chaos - general.\n");
@@ -1582,7 +1591,7 @@ static void parse_frequencies(void)
 			(artprobs[ART_IDX_GEN_RCHAOS])++;
 		}
 
-		if (of_has(a_ptr->flags, OF_RES_DISEN))
+		if (a_ptr->el_info[ELEM_DISEN].res_level == 1)
 		{
 			/* Resist disenchantment ability */
 			file_putf(log_file, "Adding 1 for resist disenchantment - general.\n");
@@ -1755,7 +1764,7 @@ static void parse_frequencies(void)
 }
 
 /*
- * Adds a flag to an artifact. Returns true when canges were made.
+ * Adds a flag to an artifact. Returns true when changes were made.
  */
 static bool add_flag(artifact_type *a_ptr, int flag)
 {
@@ -1766,6 +1775,30 @@ static bool add_flag(artifact_type *a_ptr, int flag)
 	file_putf(log_file, "Adding ability: %s\n", flag_name(flag));
 
 	return TRUE;
+}
+
+/*
+ * Adds a resist to an artifact. Returns true when changes were made.
+ */
+static bool add_resist(artifact_type *a_ptr, int element)
+{
+	if (a_ptr->el_info[element].res_level > 0)
+		return FALSE;
+
+	a_ptr->el_info[element].res_level = 1;
+	file_putf(log_file, "Adding resistance to %s\n", elements[element].name);
+
+	return TRUE;
+}
+
+/*
+ * Adds an immunity to an artifact. Returns true when changes were made.
+ */
+static void add_immunity(artifact_type *a_ptr)
+{
+	int r = randint0(4);
+	a_ptr->el_info[r].res_level = 3;
+	file_putf(log_file, "Adding immunity to %s\n", elements[r].name);
 }
 
 /*
@@ -1869,21 +1902,23 @@ static void add_sustain(artifact_type *a_ptr)
 
 static void add_low_resist(artifact_type *a_ptr)
 {
-	int r;
-	bool success = FALSE;
+	size_t r, i, count = 0;
 
-	/* Hack - if all low resists added already, exit to avoid infinite loop */
-	if(flags_test_all(a_ptr->flags, OF_SIZE, OF_RES_ACID, OF_RES_ELEC,
-	                        OF_RES_FIRE, OF_RES_COLD, FLAG_END))
+	for (i = ELEM_ACID; i <= ELEM_COLD; i++)
+		if (a_ptr->el_info[i].res_level <= 0)
+			count++;
+
+	if (!count) return;
+
+	r = randint0(count);
+	count = 0;
+
+	for (i = ELEM_ACID; i <= ELEM_COLD; i++) {
+		if (a_ptr->el_info[i].res_level > 0) continue;
+		if (r == count++) {
+			add_resist(a_ptr, i);
 			return;
-
-	while (!success)
-	{
-		r = randint0(4);
-		if (r == 0) success = add_flag(a_ptr, OF_RES_ACID);
-		else if (r == 1) success = add_flag(a_ptr, OF_RES_ELEC);
-		else if (r == 2) success = add_flag(a_ptr, OF_RES_FIRE);
-		else if (r == 3) success = add_flag(a_ptr, OF_RES_COLD);
+		}
 	}
 }
 
@@ -1918,18 +1953,18 @@ static void add_high_resist(artifact_type *a_ptr)
 		}
 
 		/* Now i should give us the index of the correct high resist */
-		if (i == 0) success = add_flag(a_ptr, OF_RES_POIS);
+		if (i == 0) success = add_resist(a_ptr, ELEM_POIS);
 		else if (i == 1) success = add_flag(a_ptr, OF_PROT_FEAR);
-		else if (i == 2) success = add_flag(a_ptr, OF_RES_LIGHT);
-		else if (i == 3) success = add_flag(a_ptr, OF_RES_DARK);
+		else if (i == 2) success = add_resist(a_ptr, ELEM_LIGHT);
+		else if (i == 3) success = add_resist(a_ptr, ELEM_DARK);
 		else if (i == 4) success = add_flag(a_ptr, OF_PROT_BLIND);
 		else if (i == 5) success = add_flag(a_ptr, OF_PROT_CONF);
-		else if (i == 6) success = add_flag(a_ptr, OF_RES_SOUND);
-		else if (i == 7) success = add_flag(a_ptr, OF_RES_SHARD);
-		else if (i == 8) success = add_flag(a_ptr, OF_RES_NEXUS);
-		else if (i == 9) success = add_flag(a_ptr, OF_RES_NETHER);
-		else if (i == 10) success = add_flag(a_ptr, OF_RES_CHAOS);
-		else if (i == 11) success = add_flag(a_ptr, OF_RES_DISEN);
+		else if (i == 6) success = add_resist(a_ptr, ELEM_SOUND);
+		else if (i == 7) success = add_resist(a_ptr, ELEM_SHARD);
+		else if (i == 8) success = add_resist(a_ptr, ELEM_NEXUS);
+		else if (i == 9) success = add_resist(a_ptr, ELEM_NETHER);
+		else if (i == 10) success = add_resist(a_ptr, ELEM_CHAOS);
+		else if (i == 11) success = add_resist(a_ptr, ELEM_DISEN);
 		else if (i == 12) success = add_flag(a_ptr, OF_PROT_STUN);
 
 		count++;
@@ -2042,44 +2077,6 @@ static void add_weight_mod(artifact_type *a_ptr)
 {
 	a_ptr->weight = (a_ptr->weight * 9) / 10;
 	file_putf(log_file, "Adding ability: lower weight (new weight is %d)\n", a_ptr->weight);
-}
-
-/*
- * Add a random immunity to this artifact
- * ASSUMPTION: All immunities are equally likely.
- * ToDo: replace with lookup once immunities are abstracted
- */
-static void add_immunity(artifact_type *a_ptr)
-{
-	int imm_type = randint0(4);
-
-	switch(imm_type)
-	{
-		case 0:
-		{
-			of_on(a_ptr->flags, OF_IM_ACID);
-			file_putf(log_file, "Adding ability: immunity to acid\n");
-			break;
-		}
-		case 1:
-		{
-			of_on(a_ptr->flags, OF_IM_ELEC);
-			file_putf(log_file, "Adding ability: immunity to lightning\n");
-			break;
-		}
-		case 2:
-		{
-			of_on(a_ptr->flags, OF_IM_FIRE);
-			file_putf(log_file, "Adding ability: immunity to fire\n");
-			break;
-		}
-		case 3:
-		{
-			of_on(a_ptr->flags, OF_IM_COLD);
-			file_putf(log_file, "Adding ability: immunity to cold\n");
-			break;
-		}
-	}
 }
 
 /* Add an activation (called only if artifact does not yet have one) */
@@ -2464,10 +2461,10 @@ static void add_ability_aux(artifact_type *a_ptr, int r, s32b target_power)
 			break;
 
 		case ART_IDX_ARMOR_ALLRES:
-			add_flag(a_ptr, OF_RES_ACID);
-			add_flag(a_ptr, OF_RES_ELEC);
-			add_flag(a_ptr, OF_RES_FIRE);
-			add_flag(a_ptr, OF_RES_COLD);
+			add_resist(a_ptr, ELEM_ACID);
+			add_resist(a_ptr, ELEM_ELEC);
+			add_resist(a_ptr, ELEM_FIRE);
+			add_resist(a_ptr, ELEM_COLD);
 			break;
 
 		case ART_IDX_ARMOR_HRES:
@@ -2512,7 +2509,7 @@ static void add_ability_aux(artifact_type *a_ptr, int r, s32b target_power)
 			break;
 
 		case ART_IDX_GEN_RPOIS:
-			add_flag(a_ptr, OF_RES_POIS);
+			add_resist(a_ptr, ELEM_POIS);
 			break;
 
 		case ART_IDX_GEN_RFEAR:
@@ -2520,11 +2517,11 @@ static void add_ability_aux(artifact_type *a_ptr, int r, s32b target_power)
 			break;
 
 		case ART_IDX_GEN_RLIGHT:
-			add_flag(a_ptr, OF_RES_LIGHT);
+			add_resist(a_ptr, ELEM_LIGHT);
 			break;
 
 		case ART_IDX_GEN_RDARK:
-			add_flag(a_ptr, OF_RES_DARK);
+			add_resist(a_ptr, ELEM_DARK);
 			break;
 
 		case ART_IDX_GEN_RCONF:
@@ -2532,27 +2529,27 @@ static void add_ability_aux(artifact_type *a_ptr, int r, s32b target_power)
 			break;
 
 		case ART_IDX_GEN_RSOUND:
-			add_flag(a_ptr, OF_RES_SOUND);
+			add_resist(a_ptr, ELEM_SOUND);
 			break;
 
 		case ART_IDX_GEN_RSHARD:
-			add_flag(a_ptr, OF_RES_SHARD);
+			add_resist(a_ptr, ELEM_SHARD);
 			break;
 
 		case ART_IDX_GEN_RNEXUS:
-			add_flag(a_ptr, OF_RES_NEXUS);
+			add_resist(a_ptr, ELEM_NEXUS);
 			break;
 
 		case ART_IDX_GEN_RNETHER:
-			add_flag(a_ptr, OF_RES_NETHER);
+			add_resist(a_ptr, ELEM_NETHER);
 			break;
 
 		case ART_IDX_GEN_RCHAOS:
-			add_flag(a_ptr, OF_RES_CHAOS);
+			add_resist(a_ptr, ELEM_CHAOS);
 			break;
 
 		case ART_IDX_GEN_RDISEN:
-			add_flag(a_ptr, OF_RES_DISEN);
+			add_resist(a_ptr, ELEM_DISEN);
 			break;
 
 		case ART_IDX_GEN_PSTUN:

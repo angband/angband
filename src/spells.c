@@ -2280,10 +2280,8 @@ void destroy_area(int y1, int x1, int r, bool full)
 		msg("There is a searing blast of light!");
 
 		/* Blind the player */
-		//wieldeds_notice_element(player, ELEM_LIGHT);
-		wieldeds_notice_flag(player, OF_RES_LIGHT);
-		//if (!player_resists(player, ELEM_LIGHT)) {
-		if (!player_of_has(player, OF_RES_LIGHT)) {
+		wieldeds_notice_element(player, ELEM_LIGHT);
+		if (!player_resists(player, ELEM_LIGHT)) {
 			/* Become blind */
 			(void)player_inc_timed(player, TMD_BLIND, 10 + randint1(10),
 								   TRUE, TRUE);

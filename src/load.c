@@ -245,7 +245,10 @@ static void rd_monster(monster_type * m_ptr)
 	m_ptr->unaware = (flags & 0x01) ? TRUE : FALSE;
 
 	for (j = 0; j < of_size; j++)
-		rd_byte(&m_ptr->known_pflags[j]);
+		rd_byte(&m_ptr->known_pstate.flags[j]);
+
+	for (j = 0; j < elem_max; j++)
+		rd_s16b(&m_ptr->known_pstate.el_info[j].res_level);
 
 	strip_bytes(1);
 

@@ -1137,14 +1137,21 @@ bool is_mimicking(struct monster *m_ptr)
 /**
  * The given monster learns about an "observed" resistance or other player
  * state property, or lack of it.
+ *
+ * Note that this function is robust to being called with `element` as an
+ * arbitrary GF_ type
  */
-void update_smart_learn(struct monster *m, struct player *p, int flag)
+void update_smart_learn(struct monster *m, struct player *p, int flag,
+						int element)
 {
+	bool element_ok = ((element >= 0) && (element < ELEM_MAX));
+
 	/* Sanity check */
-	if (!flag) return;
+	if (!flag && !element_ok) return;
 
 	/* anything a monster might learn, the player should learn */
-	wieldeds_notice_flag(p, flag);
+	if (flag) wieldeds_notice_flag(p, flag);
+	if (element_ok) wieldeds_notice_element(p, element);
 
 	/* Not allowed to learn */
 	if (!OPT(birth_ai_learn)) return;
@@ -1159,13 +1166,16 @@ void update_smart_learn(struct monster *m, struct player *p, int flag)
 	if (one_in_(100))
 		return;
 
-	/* The inclusion of poison here is a nasty heck, that comes from the 
-	 * previous attempt to lump in the 'base 5' timed and permanent resists
-	 * onto the same flags (OF_RES_POIS et al), which doesn't really work
-	 * because of the fact they are not binary, resulting in this hack here. */
-	if (player_of_has(p, flag) || (flag == OF_RES_POIS && p->timed[TMD_OPP_POIS]))
-		of_on(m->known_pflags, flag);
-	else
-		of_off(m->known_pflags, flag);
-}
+	/* Learn the flag */
+	if (flag) {
+		if (player_of_has(p, flag))
+			of_on(m->known_pstate.flags, flag);
+		else
+			of_off(m->known_pstate.flags, flag);
+	}
 
+	/* Learn the element */
+	if (element_ok)
+		m->known_pstate.el_info[element].res_level
+			= player->state.el_info[element].res_level;
+}

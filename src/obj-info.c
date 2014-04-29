@@ -56,53 +56,11 @@ struct blow_info {
 #define OBJ_KNOWN_PRESENT -1
 
 
-/*** Utility code ***/
-
-/*
- * Given an array of strings, as so:
- *  { "intelligence", "fish", "lens", "prime", "number" },
- *
- * ... output a list like "intelligence, fish, lens, prime, number.\n".
- */
-static void info_out_list(textblock *tb, const char *list[], size_t count)
-{
-	size_t i;
-
-	for (i = 0; i < count; i++)
-	{
-		textblock_append(tb, list[i]);
-		if (i != (count - 1)) textblock_append(tb, ", ");
-	}
-
-	textblock_append(tb, ".\n");
-}
-
-
-/**
- * Fills recepticle with all the flags in `flags` that are in the given `list`.
- */
-static size_t info_collect(textblock *tb, const flag_type list[], size_t max,
-		const bitflag flags[OF_SIZE], const char *recepticle[])
-{
-	size_t i, count = 0;
-
-	for (i = 0; i < max; i++)
-	{
-		if (of_has(flags, list[i].flag))
-			recepticle[count++] = list[i].name;
-	}
-
-	return count;
-}
-
-
 /*** Big fat data tables ***/
 
-// Note b is not currently a proper description, this needs fixing when 
-// all this changes over - NRM
 static const flag_type elements[] =
 {
-	#define ELEM(a, b, c, d, e, col, f, g, h, i, j, fh, oh, mh, ph)	\
+	#define ELEM(a, b, c, d, e, col, f, fh, oh, mh, ph)	\
 	{ELEM_##a, b},
     #include "list-elements.h"
     #undef ELEM
@@ -125,61 +83,12 @@ static const flag_type mod_flags[] =
 	{ OBJ_MOD_MIGHT,   "shooting power" },
 };
 
-static const flag_type immunity_flags[] =
-{
-	{ OF_IM_ACID, "acid" },
-	{ OF_IM_ELEC, "lightning" },
-	{ OF_IM_FIRE, "fire" },
-	{ OF_IM_COLD, "cold" },
-};
-
-static const flag_type vuln_flags[] =
-{
-	{ OF_VULN_ACID, "acid" },
-	{ OF_VULN_ELEC, "electricity" },
-	{ OF_VULN_FIRE, "fire" },
-	{ OF_VULN_COLD, "cold" },
-};
-
-static const flag_type resist_flags[] =
-{
-	{ OF_RES_ACID,  "acid" },
-	{ OF_RES_ELEC,  "lightning" },
-	{ OF_RES_FIRE,  "fire" },
-	{ OF_RES_COLD,  "cold" },
-	{ OF_RES_POIS,  "poison" },
-	{ OF_RES_LIGHT, "light" },
-	{ OF_RES_DARK,  "dark" },
-	{ OF_RES_SOUND, "sound" },
-	{ OF_RES_SHARD, "shards" },
-	{ OF_RES_NEXUS, "nexus"  },
-	{ OF_RES_NETHER, "nether" },
-	{ OF_RES_CHAOS, "chaos" },
-	{ OF_RES_DISEN, "disenchantment" },
-};
-
 static const flag_type protect_flags[] =
 {
 	{ OF_PROT_FEAR, "fear" },
 	{ OF_PROT_BLIND, "blindness" },
 	{ OF_PROT_CONF, "confusion" },
 	{ OF_PROT_STUN,  "stunning" },
-};
-
-static const flag_type ignore_flags[] =
-{
-	{ OF_IGNORE_ACID, "acid" },
-	{ OF_IGNORE_ELEC, "electricity" },
-	{ OF_IGNORE_FIRE, "fire" },
-	{ OF_IGNORE_COLD, "cold" },
-};
-
-static const flag_type hates_flags[] =
-{
-	{ OF_HATES_ACID, "acid" },
-	{ OF_HATES_ELEC, "electricity" },
-	{ OF_HATES_FIRE, "fire" },
-	{ OF_HATES_COLD, "cold" },
 };
 
 static const flag_type sustain_flags[] =
@@ -208,6 +117,63 @@ static const flag_type misc_flags[] =
 	{ OF_DRAIN_EXP, "Drains experience" },
 	{ OF_TELEPORT, "Induces random teleportation" },
 };
+
+
+/*** Utility code ***/
+
+/*
+ * Given an array of strings, as so:
+ *  { "intelligence", "fish", "lens", "prime", "number" },
+ *
+ * ... output a list like "intelligence, fish, lens, prime, number.\n".
+ */
+static void info_out_list(textblock *tb, const char *list[], size_t count)
+{
+	size_t i;
+
+	for (i = 0; i < count; i++)
+	{
+		textblock_append(tb, list[i]);
+		if (i != (count - 1)) textblock_append(tb, ", ");
+	}
+
+	textblock_append(tb, ".\n");
+}
+
+
+/**
+ * Fills recepticle with all the flags in `flags` that are in the given `list`.
+ */
+static size_t flag_info_collect(const flag_type list[], size_t max,
+								const bitflag flags[OF_SIZE],
+								const char *recepticle[])
+{
+	size_t i, count = 0;
+
+	for (i = 0; i < max; i++)
+	{
+		if (of_has(flags, list[i].flag))
+			recepticle[count++] = list[i].name;
+	}
+
+	return count;
+}
+
+/**
+ * Fills recepticle with all the elements that correspond to the given `list`.
+ */
+static size_t element_info_collect(const bool list[], const char *recepticle[])
+{
+	size_t i, count = 0;
+
+	for (i = 0; i < N_ELEMENTS(elements); i++)
+	{
+		if (list[i])
+			recepticle[count++] = elements[i].name;
+	}
+	
+	return count;
+}
 
 
 /*** Code that makes use of the data tables ***/
@@ -273,21 +239,22 @@ static bool describe_stats(textblock *tb, const object_type *o_ptr,
 
 
 /*
- * Describe immunities granted by an object.
+ * Describe immunities, resistances and vulnerabilities granted by an object.
  */
-static bool describe_immune(textblock *tb, const bitflag flags[OF_SIZE])
+static bool describe_elements(textblock *tb,
+							  const struct element_info el_info[])
 {
-	const char *i_descs[N_ELEMENTS(immunity_flags)];
-	const char *r_descs[N_ELEMENTS(resist_flags)];
-	const char *p_descs[N_ELEMENTS(protect_flags)];
-	const char *v_descs[N_ELEMENTS(vuln_flags)];
-	size_t count;
+	const char *i_descs[N_ELEMENTS(elements)];
+	const char *r_descs[N_ELEMENTS(elements)];
+	const char *v_descs[N_ELEMENTS(elements)];
+	size_t i, count;
 
-	bool prev = FALSE;
+	bool list[N_ELEMENTS(elements)], prev = FALSE;
 
 	/* Immunities */
-	count = info_collect(tb, immunity_flags, N_ELEMENTS(immunity_flags),
-			flags, i_descs);
+	for (i = 0; i < N_ELEMENTS(elements); i++)
+		list[i] = (el_info[i].res_level == 3);
+	count = element_info_collect(list, i_descs);
 	if (count)
 	{
 		textblock_append(tb, "Provides immunity to ");
@@ -296,8 +263,9 @@ static bool describe_immune(textblock *tb, const bitflag flags[OF_SIZE])
 	}
 
 	/* Resistances */
-	count = info_collect(tb, resist_flags, N_ELEMENTS(resist_flags),
-			flags, r_descs);
+	for (i = 0; i < N_ELEMENTS(elements); i++)
+		list[i] = (el_info[i].res_level == 1);
+	count = element_info_collect(list, r_descs);
 	if (count)
 	{
 		textblock_append(tb, "Provides resistance to ");
@@ -305,19 +273,10 @@ static bool describe_immune(textblock *tb, const bitflag flags[OF_SIZE])
 		prev = TRUE;
 	}
 
-	/* Protections */
-	count = info_collect(tb, protect_flags, N_ELEMENTS(protect_flags),
-			flags, p_descs);
-	if (count)
-	{
-		textblock_append(tb, "Provides protection from ");
-		info_out_list(tb, p_descs, count);
-		prev = TRUE;
-	}
-
 	/* Vulnerabilities */
-	count = info_collect(tb, vuln_flags, N_ELEMENTS(vuln_flags),
-			flags, v_descs);
+	for (i = 0; i < N_ELEMENTS(elements); i++)
+		list[i] = (el_info[i].res_level == -1);
+	count = element_info_collect(list, v_descs);
 	if (count)
 	{
 		textblock_append(tb, "Makes you vulnerable to ");
@@ -330,54 +289,60 @@ static bool describe_immune(textblock *tb, const bitflag flags[OF_SIZE])
 
 
 /*
- * Describe elemental destruction properties of an object.
+ * Describe protections granted by an object.
  */
-static bool describe_destroy(textblock *tb, const bitflag element_flags[ELEM_MAX])
+static bool describe_protects(textblock *tb, const bitflag flags[OF_SIZE])
 {
-	const char *descs[ELEM_MAX];
+	const char *p_descs[N_ELEMENTS(protect_flags)];
+	size_t count;
+
+	/* Protections */
+	count = flag_info_collect(protect_flags, N_ELEMENTS(protect_flags),
+			flags, p_descs);
+
+	if (!count)
+		return FALSE;
+
+	textblock_append(tb, "Provides protection from ");
+	info_out_list(tb, p_descs, count);
+
+	return  TRUE;
+}
+
+/**
+ * Describe elements an object ignores.
+ */
+static bool describe_ignores(textblock *tb, const struct element_info el_info[])
+{
+	const char *descs[N_ELEMENTS(elements)];
+	size_t i, count;
+	bool list[N_ELEMENTS(elements)];
+
+	for (i = 0; i < N_ELEMENTS(elements); i++)
+		list[i] = (el_info[i].flags & EL_INFO_IGNORE);
+	count = element_info_collect(list, descs);
+
+	if (!count)
+		return FALSE;
+
+	textblock_append(tb, "Cannot be harmed by ");
+	info_out_list(tb, descs, count);
+
+	return TRUE;
+}
+
+/**
+ * Describe elements that damage or destroy an object.
+ */
+static bool describe_hates(textblock *tb, const struct element_info el_info[])
+{
+	const char *descs[N_ELEMENTS(elements)];
 	size_t i, count = 0;
+	bool list[N_ELEMENTS(elements)];
 
-	for (i = 0; i < ELEM_MAX; i++)
-	{
-		if (element_flags[i] & EL_INFO_NOTABLE)
-			descs[count++] = elements[i].name;
-	}
-
-	if (!count)
-		return FALSE;
-
-	textblock_append(tb, "Cannot be harmed by ");
-	info_out_list(tb, descs, count);
-
-	return TRUE;
-}
-
-/*
- * Describe IGNORE_ flags of an object.
- */
-static bool describe_ignores(textblock *tb, const bitflag flags[OF_SIZE])
-{
-	const char *descs[N_ELEMENTS(ignore_flags)];
-	size_t count = info_collect(tb, ignore_flags, N_ELEMENTS(ignore_flags),
-			flags, descs);
-
-	if (!count)
-		return FALSE;
-
-	textblock_append(tb, "Cannot be harmed by ");
-	info_out_list(tb, descs, count);
-
-	return TRUE;
-}
-
-/*
- * Describe HATES_ flags of an object.
- */
-static bool describe_hates(textblock *tb, const bitflag flags[OF_SIZE])
-{
-	const char *descs[N_ELEMENTS(hates_flags)];
-	size_t count = info_collect(tb, hates_flags, N_ELEMENTS(hates_flags),
-			flags, descs);
+	for (i = 0; i < N_ELEMENTS(elements); i++)
+		list[i] = (el_info[i].flags & EL_INFO_HATES);
+	count = element_info_collect(list, descs);
 
 	if (!count)
 		return FALSE;
@@ -395,8 +360,8 @@ static bool describe_hates(textblock *tb, const bitflag flags[OF_SIZE])
 static bool describe_sustains(textblock *tb, const bitflag flags[OF_SIZE])
 {
 	const char *descs[N_ELEMENTS(sustain_flags)];
-	size_t count = info_collect(tb, sustain_flags, N_ELEMENTS(sustain_flags),
-			flags, descs);
+	size_t count = flag_info_collect(sustain_flags, N_ELEMENTS(sustain_flags),
+									 flags, descs);
 
 	if (!count)
 		return FALSE;
@@ -435,7 +400,7 @@ static bool describe_misc_magic(textblock *tb, const bitflag flags[OF_SIZE])
 /*
  * Describe slays and brands on weapons
  */
-static bool describe_new_slays(textblock *tb, const struct object *o_ptr)
+static bool describe_slays(textblock *tb, const struct object *o_ptr)
 {
 	struct slay *s = o_ptr->slays;
 
@@ -573,30 +538,38 @@ static void get_known_flags(const object_type *o_ptr, const oinfo_detail_t mode,
 }
 
 /*
- * Get the object element flags the player should know about for the given
+ * Get the object element info the player should know about for the given
  * object/viewing mode combination.
  */
-static void get_known_element_flags(const object_type *o_ptr, const oinfo_detail_t mode, bitflag element_flags[ELEM_MAX])
+static void get_known_elements(const object_type *o_ptr, const oinfo_detail_t mode, struct element_info el_info[])
 {
-	int i;
+	size_t i;
 
 	/* Grab the object flags */
-	for (i = 0; i < ELEM_MAX; i++) {
-		/* Looking at fake egos needs less info */
-		if (obj_is_ego_template(o_ptr))
-			element_flags[i] = o_ptr->el_info[i].flags;
-		/* Otherwise only copy if that element info is known */
-		else if (o_ptr->el_info[i].flags && EL_INFO_KNOWN)
-			element_flags[i] = o_ptr->el_info[i].flags;
+	for (i = 0; i < N_ELEMENTS(elements); i++) {
+		/* Report fake egos or known element info */
+		if (obj_is_ego_template(o_ptr) ||
+			(o_ptr->el_info[i].flags & EL_INFO_KNOWN)) {
+			el_info[i].res_level = o_ptr->el_info[i].res_level;
+			el_info[i].flags = o_ptr->el_info[i].flags;
+		} else {
+			el_info[i].res_level = 0;
+			el_info[i].flags = 0;
+		}
 
-		/* Make sure to mention ignoring if it usually doesn't */
-		if ((element_flags[i] & EL_INFO_IGNORE) &&
-			(element_flags[i] & EL_INFO_HATES))
-			element_flags[i] |= EL_INFO_NOTABLE;
+		/* Ignoring an element: */
+		if (o_ptr->el_info[i].flags & EL_INFO_IGNORE) {
+			/* If the object is usually destroyed, mention the ignoring; */
+			if (o_ptr->el_info[i].flags & EL_INFO_HATES)
+				el_info[i].flags &= ~(EL_INFO_HATES);
+			/* Otherwise, don't say anything */
+			else
+				el_info[i].flags &= ~(EL_INFO_IGNORE);
+		}
 
 		/* Don't include hates flag when terse */
 		if (mode & OINFO_TERSE)
-			element_flags[i] &= ~(EL_INFO_HATES);
+			el_info[i].flags &= ~(EL_INFO_HATES);
 	}
 }
 
@@ -1136,14 +1109,10 @@ static bool obj_known_digging(const object_type *o_ptr, int deciturns[])
 	int sl = wield_slot(o_ptr);
 	int i;
 
-	bitflag f[OF_SIZE];
-
 	int chances[DIGGING_MAX];
 
 	/* abort if we are not a real object */
 	if (obj_is_ego_template(o_ptr)) return FALSE;
-
-	object_flags_known(o_ptr, f);
 
 	if (!tval_is_wearable(o_ptr) || 
 		(!tval_is_melee_weapon(o_ptr) && 
@@ -1688,7 +1657,7 @@ static bool describe_ego(textblock *tb, const struct ego_item *ego)
 static textblock *object_info_out(const object_type *o_ptr, int mode)
 {
 	bitflag flags[OF_SIZE];
-	bitflag element_flags[OF_SIZE];
+	struct element_info el_info[N_ELEMENTS(elements)];
 	bool something = FALSE;
 	bool known = object_is_known(o_ptr);
 
@@ -1706,8 +1675,8 @@ static textblock *object_info_out(const object_type *o_ptr, int mode)
 	/* Grab the object flags */
 	get_known_flags(o_ptr, mode, flags);
 
-	/* Grab the element flags */
-	get_known_element_flags(o_ptr, mode, element_flags);
+	/* Grab the element info */
+	get_known_elements(o_ptr, mode, el_info);
 
 	if (subjective) describe_origin(tb, o_ptr, terse);
 	if (!terse) describe_flavor_text(tb, o_ptr, ego);
@@ -1720,13 +1689,12 @@ static textblock *object_info_out(const object_type *o_ptr, int mode)
 
 	if (describe_curses(tb, o_ptr, flags)) something = TRUE;
 	if (describe_stats(tb, o_ptr, mode)) something = TRUE;
-	if (describe_new_slays(tb, o_ptr)) something = TRUE;
+	if (describe_slays(tb, o_ptr)) something = TRUE;
 	if (describe_brands(tb, o_ptr)) something = TRUE;
-	if (describe_immune(tb, flags)) something = TRUE;
-	//if (describe_destroy(tb, element_flags)) something = TRUE;
-	if (describe_ignores(tb, flags)) something = TRUE;
-	dedup_hates_flags(flags);
-	if (describe_hates(tb, flags)) something = TRUE;
+	if (describe_elements(tb, el_info)) something = TRUE;
+	if (describe_protects(tb, flags)) something = TRUE;
+	if (describe_ignores(tb, el_info)) something = TRUE;
+	if (describe_hates(tb, el_info)) something = TRUE;
 	if (describe_sustains(tb, flags)) something = TRUE;
 	if (describe_misc_magic(tb, flags)) something = TRUE;
 	if (describe_light(tb, o_ptr, mode)) something = TRUE;

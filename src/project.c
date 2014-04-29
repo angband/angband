@@ -375,76 +375,66 @@ typedef void (*project_object_handler_f)(project_object_handler_context_t *);
  * \param context is the project_o context.
  * \param hate_flag is the OF_ flag for elements that will destroy and object.
  * \param ignore_flag is the OF_flag for elements that the object is immunte to.
- * \param singular_verb is the verb that is displayed when one object is destroyed.
- * \param plural_verb is the verb that is displayed in multiple objects are destroyed.
+ * \param singular_verb is the verb that is displayed when one object is
+ * destroyed.
+ * \param plural_verb is the verb that is displayed in multiple objects are
+ * destroyed.
  */
-static void project_object_elemental(project_object_handler_context_t *context, int hate_flag, int ignore_flag, const char *singular_verb, const char *plural_verb)
-//static void project_object_elemental(project_object_handler_context_t *context, int element, const char *singular_verb, const char *plural_verb)
+static void project_object_elemental(project_object_handler_context_t *context,
+									 int element, const char *singular_verb,
+									 const char *plural_verb)
 {
-	if (of_has(context->flags, hate_flag)) {
+	if (context->o_ptr->el_info[element].flags & EL_INFO_HATES) {
 		context->do_kill = TRUE;
-		context->note_kill = VERB_AGREEMENT(context->o_ptr->number, singular_verb, plural_verb);
-		context->ignore = of_has(context->flags, ignore_flag);
+		context->note_kill = VERB_AGREEMENT(context->o_ptr->number,
+											singular_verb, plural_verb);
+		context->ignore = (context->o_ptr->el_info[element].flags &
+						   EL_INFO_IGNORE) ? TRUE : FALSE;
 	}
-	//if (o_ptr->el_info[element].flags & EL_INFO_HATES) {
-	//	context->do_kill = TRUE;
-	//	context->note_kill = VERB_AGREEMENT(context->o_ptr->number, singular_verb, plural_verb);
-	//	context->ignore = (o_ptr->el_info[element].flags & EL_INFO_IGNORE)	? TRUE : FALSE;
-	//}
 }
 
 /* Acid -- Lots of things */
 static void project_object_handler_ACID(project_object_handler_context_t *context)
 {
-	project_object_elemental(context, OF_HATES_ACID, OF_IGNORE_ACID, "melts", "melt");
-	//project_object_elemental(context, ELEM_ACID, "melts", "melt");
+	project_object_elemental(context, ELEM_ACID, "melts", "melt");
 }
 
 /* Elec -- Rings and Wands */
 static void project_object_handler_ELEC(project_object_handler_context_t *context)
 {
-	project_object_elemental(context, OF_HATES_ELEC, OF_IGNORE_ELEC, "is destroyed", "are destroyed");
-	//project_object_elemental(context, ELEM_ELEC, "is destroyed", "are destroyed");
+	project_object_elemental(context, ELEM_ELEC, "is destroyed", "are destroyed");
 }
 
 /* Fire -- Flammable objects */
 static void project_object_handler_FIRE(project_object_handler_context_t *context)
 {
-	project_object_elemental(context, OF_HATES_FIRE, OF_IGNORE_FIRE, "burns up", "burn up");
-	//project_object_elemental(context, ELEM_FIRE, "burns up", "burn up");
+	project_object_elemental(context, ELEM_FIRE, "burns up", "burn up");
 }
 
 /* Cold -- potions and flasks */
 static void project_object_handler_COLD(project_object_handler_context_t *context)
 {
-	project_object_elemental(context, OF_HATES_COLD, OF_IGNORE_COLD, "shatters", "shatter");
-	//project_object_elemental(context, ELEM_COLD, "shatters", "shatter");
+	project_object_elemental(context, ELEM_COLD, "shatters", "shatter");
 }
 
 /* Fire + Elec */
 static void project_object_handler_PLASMA(project_object_handler_context_t *context)
 {
-	project_object_elemental(context, OF_HATES_FIRE, OF_IGNORE_FIRE, "burns up", "burn up");
-	project_object_elemental(context, OF_HATES_ELEC, OF_IGNORE_ELEC, "is destroyed", "are destroyed");
-	//project_object_elemental(context, ELEM_FIRE, "burns up", "burn up");
-	//project_object_elemental(context, ELEM_ELEC, "is destroyed", "are destroyed");
+	project_object_elemental(context, ELEM_FIRE, "burns up", "burn up");
+	project_object_elemental(context, ELEM_ELEC, "is destroyed", "are destroyed");
 }
 
 /* Fire + Cold */
 static void project_object_handler_METEOR(project_object_handler_context_t *context)
 {
-	project_object_elemental(context, OF_HATES_FIRE, OF_IGNORE_FIRE, "burns up", "burn up");
-	project_object_elemental(context, OF_HATES_COLD, OF_IGNORE_COLD, "shatters", "shatter");
-	//project_object_elemental(context, ELEM_FIRE, "burns up", "burn up");
-	//project_object_elemental(context, ELEM_COLD, "shatters", "shatter");
+	project_object_elemental(context, ELEM_FIRE, "burns up", "burn up");
+	project_object_elemental(context, ELEM_COLD, "shatters", "shatter");
 }
 
 /* Hack -- break potions and such */
 static void project_object_handler_shatter(project_object_handler_context_t *context)
 {
-	/* We don't care if the object ignores anything. */
-	project_object_elemental(context, OF_HATES_COLD, OF_NONE, "shatters", "shatter");
-	//project_object_elemental(context, ELEM_COLD, "shatters", "shatter");
+	project_object_elemental(context, ELEM_COLD, "shatters", "shatter");
 	// This needs better handling - the ignore is currently irrelevant - NRM
 }
 
@@ -1179,42 +1169,38 @@ typedef void (*project_player_handler_f)(project_player_handler_context_t *);
 
 static void project_player_handler_ACID(project_player_handler_context_t *context)
 {
-	//if (player_is_immune(player, ELEM_ACID)) return;
-	if (player_of_has(player, OF_IM_ACID)) return;
+	if (player_is_immune(player, ELEM_ACID)) return;
 	inven_damage(player, GF_ACID, MIN(context->dam * 5, 300));
 }
 
 static void project_player_handler_ELEC(project_player_handler_context_t *context)
 {
-	//if (player_is_immune(player, ELEM_ELEC)) return;
-	if (player_of_has(player, OF_IM_ELEC)) return;
+	if (player_is_immune(player, ELEM_ELEC)) return;
 	inven_damage(player, GF_ELEC, MIN(context->dam * 5, 300));
 }
 
 static void project_player_handler_FIRE(project_player_handler_context_t *context)
 {
-	//if (player_is_immune(player, ELEM_FIRE)) return;
-	if (player_of_has(player, OF_IM_FIRE)) return;
+	if (player_is_immune(player, ELEM_FIRE)) return;
 	inven_damage(player, GF_FIRE, MIN(context->dam * 5, 300));
 }
 
 static void project_player_handler_COLD(project_player_handler_context_t *context)
 {
-	//if (player_is_immune(player, ELEM_COLD)) return;
-	if (player_of_has(player, OF_IM_COLD)) return;
+	if (player_is_immune(player, ELEM_COLD)) return;
 	inven_damage(player, GF_COLD, MIN(context->dam * 5, 300));
 }
 
 static void project_player_handler_POIS(project_player_handler_context_t *context)
 {
-	(void)player_inc_timed(player, TMD_POISONED, 10 + randint0(context->dam),
-						   TRUE, TRUE);
+	if (!player_inc_timed(player, TMD_POISONED, 10 + randint0(context->dam),
+						  TRUE, TRUE))
+		msg("You resist the effect!");
 }
 
 static void project_player_handler_LIGHT(project_player_handler_context_t *context)
 {
-	//if (player_resists(player, ELEM_LIGHT)) {
-	if (player_of_has(player, OF_RES_LIGHT)) {
+	if (player_resists(player, ELEM_LIGHT)) {
 		msg("You resist the effect!");
 		return;
 	}
@@ -1224,8 +1210,7 @@ static void project_player_handler_LIGHT(project_player_handler_context_t *conte
 
 static void project_player_handler_DARK(project_player_handler_context_t *context)
 {
-	//if (player_resists(player, ELEM_DARK)) {
-	if (player_of_has(player, OF_RES_DARK)) {
+	if (player_resists(player, ELEM_DARK)) {
 		msg("You resist the effect!");
 		return;
 	}
@@ -1246,8 +1231,7 @@ static void project_player_handler_SOUND(project_player_handler_context_t *conte
 static void project_player_handler_SHARD(project_player_handler_context_t *context)
 {
 	/* Cuts */
-	//if (!player_resists(player, ELEM_SHARD)) {
-	if (!player_of_has(player, OF_RES_SHARD))
+	if (!player_resists(player, ELEM_SHARD))
 		(void)player_inc_timed(player, TMD_CUT, context->dam, TRUE, FALSE);
 }
 
@@ -1255,8 +1239,7 @@ static void project_player_handler_NEXUS(project_player_handler_context_t *conte
 {
 	struct monster *mon = cave_monster(cave, context->who);
 
-	//if (player_resists(player, ELEM_NEXUS)) {
-	if (player_of_has(player, OF_RES_NEXUS)) {
+	if (player_resists(player, ELEM_NEXUS)) {
 		msg("You resist the effect!");
 		return;
 	}
@@ -1290,8 +1273,7 @@ static void project_player_handler_NEXUS(project_player_handler_context_t *conte
 
 static void project_player_handler_NETHER(project_player_handler_context_t *context)
 {
-	//if (player_resists(player, ELEM_NETHER)) ||
-	if (player_of_has(player, OF_RES_NETHER) || 
+	if (player_resists(player, ELEM_NETHER) ||
 		player_of_has(player, OF_HOLD_LIFE)) {
 		msg("You resist the effect!");
 		return;
@@ -1304,8 +1286,7 @@ static void project_player_handler_NETHER(project_player_handler_context_t *cont
 
 static void project_player_handler_CHAOS(project_player_handler_context_t *context)
 {
-	//if (player_resists(player, ELEM_CHAOS)) {
-	if (player_of_has(player, OF_RES_CHAOS)) {
+	if (player_resists(player, ELEM_CHAOS)) {
 		msg("You resist the effect!");
 		return;
 	}
@@ -1326,8 +1307,7 @@ static void project_player_handler_CHAOS(project_player_handler_context_t *conte
 
 static void project_player_handler_DISEN(project_player_handler_context_t *context)
 {
-	//if (player_resists(player, ELEM_DISEN)) {
-	if (player_of_has(player, OF_RES_DISEN)) {
+	if (player_resists(player, ELEM_DISEN)) {
 		msg("You resist the effect!");
 		return;
 	}
@@ -1347,12 +1327,14 @@ static void project_player_handler_WATER(project_player_handler_context_t *conte
 
 static void project_player_handler_ICE(project_player_handler_context_t *context)
 {
-	inven_damage(player, GF_COLD, MIN(context->dam * 5, 300));
+	if (!player_is_immune(player, ELEM_COLD))
+		inven_damage(player, GF_COLD, MIN(context->dam * 5, 300));
 
 	/* Cuts */
-	//if (!player_resists(player, ELEM_SHARD))
-	if (!player_of_has(player, OF_RES_SHARD))
+	if (!player_resists(player, ELEM_SHARD))
 		(void)player_inc_timed(player, TMD_CUT, damroll(5, 8), TRUE, FALSE);
+	else
+		msg("You resist the effect!");
 
 	/* Stun */
 	(void)player_inc_timed(player, TMD_STUN, randint0(15), TRUE, TRUE);
@@ -1425,28 +1407,26 @@ static void project_player_handler_PLASMA(project_player_handler_context_t *cont
 #pragma mark other functions
 
 /**
- * Structure for GF types and their resistances/immunities/vulnerabilities
+ * Structure for GF types and their handler functions
+ *
+ * Note that elements come first, so GF_ACID == ELEM_ACID, etc
  */
 static const struct gf_type {
-	u16b name;			/* numerical index (GF_#) */
+	u16b index;			/* numerical index (GF_#) */
+	const char *name;	/* text name */
 	const char *desc;	/* text description (if blind) */
-	int resist;			/* object flag for resistance */
 	int num;			/* numerator for resistance */
 	random_value denom;	/* denominator for resistance */
-	bool force_obvious;	/* */
-	byte color;			/* */
+	bool force_obvious; /* */
+ 	byte color;			/* */
 	int opp;			/* timed flag for temporary resistance ("opposition") */
-	int immunity;		/* object flag for total immunity */
-	int vuln;			/* object flag for vulnerability */
-	int obj_hates;		/* object flag for object vulnerability */
-	int obj_imm;		/* object flag for object immunity */
 	project_feature_handler_f feature_handler;
 	project_object_handler_f object_handler;
 	project_monster_handler_f monster_handler;
 	project_player_handler_f player_handler;
 } gf_table[] = {
-	{GF_NONE, NULL, 0, 0, {0, 0, 0, 0}, FALSE, TERM_WHITE, 0, 0, FALSE, 0, 0, NULL, NULL, NULL, NULL},
-	#define ELEM(a, b, c, d, e, col, f, g, h, i, j, fh, oh, mh, ph) { GF_##a, b, c, d, e, TRUE, col, f, g, h, i, j, fh, oh, mh, ph },
+	#define ELEM(a, b, c, d, e, col, f, fh, oh, mh, ph)	\
+		{ GF_##a, b, c, d, e, FALSE, col, f, fh, oh, mh, ph },
 	#define RV(b, x, y, m) {b, x, y, m}
 	#define FH(x) project_feature_handler_##x
 	#define OH(x) project_object_handler_##x
@@ -1456,22 +1436,23 @@ static const struct gf_type {
 	#undef ELEM
 	#undef RV
 	#undef PH
-#define PROJ_ENV(a, col, fh, oh, mh) { GF_##a, NULL, 0, 0, {0, 0, 0, 0}, FALSE, col, 0, 0, TRUE, 0, 0, fh, oh, mh, NULL },
+	#define PROJ_ENV(a, col, fh, oh, mh) \
+		{ GF_##a, NULL, NULL, 0, {0, 0, 0, 0}, FALSE, col, 0, fh, oh, mh, NULL},
 	#include "list-project-environs.h"
 	#undef PROJ_ENV
 	#undef FH
 	#undef OH
-	#define PROJ_MON(a, obv, mh) { GF_##a, NULL, 0, 0, {0, 0, 0, 0}, obv, TERM_WHITE, 0, 0, TRUE, 0, 0, NULL, NULL, mh, NULL }, 
+	#define PROJ_MON(a, obv, mh) \
+		{ GF_##a, NULL, NULL, 0, {0, 0, 0, 0}, obv, TERM_WHITE, 0, NULL, NULL, mh, NULL }, 
 	#include "list-project-monsters.h"
 	#undef PROJ_MON
 	#undef MH
-	{GF_MAX, NULL, 0, 0, {0, 0, 0, 0}, FALSE, TERM_WHITE, 0, 0, FALSE, 0, 0, NULL, NULL, NULL, NULL}
+		{ GF_MAX, NULL, NULL, 0, {0, 0, 0, 0}, FALSE, TERM_WHITE, 0, NULL, NULL, NULL, NULL }
 };
 
 static const char *gf_name_list[] =
 {
-	"NONE",
-	#define ELEM(a, b, c, d, e, col, f, g, h, i, j, fh, oh, mh, ph) #a,
+	#define ELEM(a, b, c, d, e, col, f, fh, oh, mh, ph) #a,
 	#include "list-elements.h"
 	#undef ELEM
 	#define PROJ_ENV(a, col, fh, oh, mh) #a,
@@ -1533,85 +1514,6 @@ static byte gf_color(int type)
 }
 
 
-/**
- * Check for resistance to a GF_ attack type. Return codes:
- * -1 = vulnerability
- * 0 = no resistance (or resistance plus vulnerability)
- * 1 = single resistance or opposition (or double resist plus vulnerability)
- * 2 = double resistance (including opposition)
- * 3 = total immunity
- *
- * \param type is the attack type we are trying to resist
- * \param flags is the set of flags we're checking
- * \param real is whether this is a real attack
- */
-int check_for_resist(struct player *p, int type, bitflag *flags, bool real)
-{
-	const struct gf_type *gf_ptr = &gf_table[type];
-	int result = 0;
-
-	if (!flags)
-		flags = p->state.flags;
-
-	if (gf_ptr->vuln && of_has(flags, gf_ptr->vuln))
-		result--;
-
-	/* If it's not a real attack, we don't check timed status explicitly */
-	if (real && gf_ptr->opp && p->timed[gf_ptr->opp])
-		result++;
-
-	if (gf_ptr->resist && of_has(flags, gf_ptr->resist))
-		result++;
-
-	if (gf_ptr->immunity && of_has(flags, gf_ptr->immunity))
-		result = 3;
-
-	/* Notice flags, if it's a real attack */
-	if (real && gf_ptr->immunity)
-		wieldeds_notice_flag(p, gf_ptr->immunity);
-	if (real && gf_ptr->resist)
-		wieldeds_notice_flag(p, gf_ptr->resist);
-	if (real && gf_ptr->vuln)
-		wieldeds_notice_flag(p, gf_ptr->vuln);
-
-	return result;
-}
-
-/**
- * Update monster knowledge of player resists.
- *
- * \param m is the monster who is learning
- * \param p is the player being learnt about
- * \param type is the GF_ type to which it's learning about the player's
- *    resistance (or lack of)
- */
-void monster_learn_resists(struct monster *m, struct player *p, int type)
-{
-	const struct gf_type *gf_ptr = &gf_table[type];
-
-	update_smart_learn(m, p, gf_ptr->resist);
-	update_smart_learn(m, p, gf_ptr->immunity);
-	update_smart_learn(m, p, gf_ptr->vuln);
-
-	return;
-}
-
-/**
- * Strip the HATES_ flags out of a flagset for any IGNORE_ flags that are
- * present
- */
-void dedup_hates_flags(bitflag *f)
-{
-	size_t i;
-
-	for (i = 0; i < GF_MAX; i++) {
-		const struct gf_type *gf_ptr = &gf_table[i];
-		if (gf_ptr->obj_imm && of_has(f, gf_ptr->obj_imm) &&
-				gf_ptr->obj_hates && of_has(f, gf_ptr->obj_hates))
-			of_off(f, gf_ptr->obj_hates);
-	}
-}
-
 /*
  * Destroys a type of item on a given percent chance.
  * The chance 'cperc' is in hundredths of a percent (1-in-10000)
@@ -1621,8 +1523,6 @@ void dedup_hates_flags(bitflag *f)
  */
 int inven_damage(struct player *p, int type, int cperc)
 {
-	const struct gf_type *gf_ptr = &gf_table[type];
-
 	int i, j, k, amt;
 
 	object_type *o_ptr;
@@ -1651,8 +1551,8 @@ int inven_damage(struct player *p, int type, int cperc)
 		if (o_ptr->artifact) continue;
 
 		/* Give this item slot a shot at death if it is vulnerable */
-		if (of_has(o_ptr->flags, gf_ptr->obj_hates) &&
-			!of_has(o_ptr->flags, gf_ptr->obj_imm))
+		if ((o_ptr->el_info[type].flags & EL_INFO_HATES) &&
+			!(o_ptr->el_info[type].flags & EL_INFO_IGNORE))
 		{
 			/* Chance to destroy this item */
 			int chance = cperc;
@@ -1859,21 +1759,24 @@ static void bolt_pict(int y, int x, int ny, int nx, int typ, byte *a, wchar_t *c
  * \param dam_aspect is the calc we want (min, avg, max, random).
  * \param resist is the degree of resistance (-1 = vuln, 3 = immune).
  */
-int adjust_dam(struct player *p, int type, int dam, aspect dam_aspect, int resist)
-//int adjust_dam(struct player *p, int type, int dam, aspect dam_aspect)
+int adjust_dam(int type, int dam, aspect dam_aspect, int resist)
 {
 	const struct gf_type *gf_ptr = &gf_table[type];
 	int i, denom;
-	//int resist = p->state->el_info[type].res_level;
 
-	/* Notice element stuff */
-	//wieldeds_notice_element(p, type);
+	/* If an actual player exists, get their actual resist */
+	if (player->race) {
+		resist = player->state.el_info[type].res_level;
+
+		/* Notice element stuff */
+		wieldeds_notice_element(player, type);
+	}
 
 	if (resist == 3) /* immune */
 		return 0;
 
 	/* Hack - acid damage is halved by armour, holy orb is halved */
-	if ((type == GF_ACID && minus_ac(p)) || type == GF_HOLY_ORB)
+	if ((type == GF_ACID && minus_ac(player)) || type == GF_HOLY_ORB)
 		dam = (dam + 1) / 2;
 
 	if (resist == -1) /* vulnerable */
@@ -2530,8 +2433,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ)
 		msg("You are hit by %s!", gf_ptr->desc);
 
 	/* Adjust damage for resistance, immunity or vulnerability, and apply it */
-	dam = adjust_dam(player, typ, dam, RANDOMISE, check_for_resist(player, typ, NULL, TRUE));
-	//dam = adjust_dam(player, typ, dam, RANDOMISE);
+	dam = adjust_dam(typ, dam, RANDOMISE, 1);
 	if (dam)
 		take_hit(player, dam, killer);
 

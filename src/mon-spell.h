@@ -161,7 +161,8 @@ void do_mon_spell(int spell, struct monster *m_ptr, bool seen);
 bool test_spells(bitflag *f, int types);
 void set_spells(bitflag *f, int types);
 int best_spell_power(const monster_race *r_ptr, int resist);
-void unset_spells(bitflag *spells, bitflag *flags, const monster_race *r_ptr);
+void unset_spells(bitflag *spells, bitflag *flags, struct element_info *el,
+				  const monster_race *r_ptr);
 const char *mon_spell_lore_description(int spell);
 int mon_spell_lore_damage(int spell, const monster_race *race, bool know_hp);
 

@@ -31,7 +31,7 @@
  */
 enum
 {
-	#define TMD(a, b, c, d, e, f, g, h, i) TMD_##a,
+	#define TMD(a, b, c, d, e, f, g, h, i, j) TMD_##a,
 	#include "list-player-timed.h"
 	#undef TMD
 	TMD_MAX
@@ -39,13 +39,14 @@ enum
 
 typedef struct
 {
-  const char *on_begin;
-  const char *on_end;
-  const char *on_increase;
-  const char *on_decrease;
-  u32b flag_redraw, flag_update;
-  int msg;
-  int resist;
+	const char *on_begin;
+	const char *on_end;
+	const char *on_increase;
+	const char *on_decrease;
+	u32b flag_redraw, flag_update;
+	int msg;
+	int fail_code;
+	int fail;
 } timed_effect;
 
 bool player_set_timed(struct player *p, int idx, int v, bool notify);

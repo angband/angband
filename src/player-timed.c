@@ -34,7 +34,7 @@ static bool set_cut(struct player *p, int v);
 
 static timed_effect effects[] =
 {
-	#define TMD(a, b, c, d, e, f, g, h, i) { b, c, d, e, f, g, h, i },
+	#define TMD(a, b, c, d, e, f, g, h, i, j) { b, c, d, e, f, g, h, i, j },
 	#include "list-player-timed.h"
 	#undef TMD
 };
@@ -58,17 +58,13 @@ bool player_set_timed(struct player *p, int idx, int v, bool notify)
 	else if (idx == TMD_CUT) return set_cut(p, v);
 
 	/* Don't mention effects which already match the player state. */
-	//if (idx == TMD_OPP_ACID && player_is_immune(p, ELEM_ACID))
-	if (idx == TMD_OPP_ACID && player_of_has(p, OF_IM_ACID))
+	if (idx == TMD_OPP_ACID && player_is_immune(p, ELEM_ACID))
 		notify = FALSE;
-	//else if (idx == TMD_OPP_ELEC && player_is_immune(p, ELEM_ELEC))
-	else if (idx == TMD_OPP_ELEC && player_of_has(p, OF_IM_ELEC))
+	else if (idx == TMD_OPP_ELEC && player_is_immune(p, ELEM_ELEC))
 		notify = FALSE;
-	//else if (idx == TMD_OPP_FIRE && player_is_immune(p, ELEM_FIRE))
-	else if (idx == TMD_OPP_FIRE && player_of_has(p, OF_IM_FIRE))
+	else if (idx == TMD_OPP_FIRE && player_is_immune(p, ELEM_FIRE))
 		notify = FALSE;
-	//else if (idx == TMD_OPP_COLD && player_is_immune(p, ELEM_COLD))
-	else if (idx == TMD_OPP_COLD && player_of_has(p, OF_IM_COLD))
+	else if (idx == TMD_OPP_COLD && player_is_immune(p, ELEM_COLD))
 		notify = FALSE;
 	else if (idx == TMD_OPP_CONF && player_of_has(p, OF_PROT_CONF))
 		notify = FALSE;
@@ -140,11 +136,28 @@ bool player_inc_timed(struct player *p, int idx, int v, bool notify, bool check)
 	if ((idx < 0) || (idx > TMD_MAX)) return FALSE;
 
 	/* Check that @ can be affected by this effect */
-	if (check) {
-		//Needs to change come the apocalypse
-		wieldeds_notice_flag(p, effect->resist);
-		if (player_of_has(p, effect->resist)) return FALSE;
-		if (idx == TMD_POISONED && p->timed[TMD_OPP_POIS]) return FALSE;
+	if (check && effects->fail_code) {
+		/* This is all a bit gross - NRM */
+		if (effects->fail_code == 1) {
+			/* Code 1 is an object flag */
+			wieldeds_notice_flag(p, effect->fail);
+			if (player_of_has(p, effect->fail))
+				return FALSE;
+		} else if (effects->fail_code == 2) {
+			/* Code 2 is a resist */
+			wieldeds_notice_element(p, effect->fail);
+			if (p->state.el_info[effect->fail].res_level > 0)
+				return FALSE;
+		} else if (effects->fail_code == 2) {
+			/* Code 3 is a vulnerability */
+			wieldeds_notice_element(p, effect->fail);
+			if (p->state.el_info[effect->fail].res_level < 0)
+				return FALSE;
+		}
+		
+		/* Special case */
+		if (idx == TMD_POISONED && p->timed[TMD_OPP_POIS])
+			return FALSE;
 	}
 
 	/* Paralysis should be non-cumulative */

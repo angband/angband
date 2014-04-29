@@ -75,8 +75,10 @@
 static void remove_bad_spells(struct monster *m_ptr, bitflag f[RSF_SIZE])
 {
 	bitflag f2[RSF_SIZE], ai_flags[OF_SIZE];
+	struct element_info el[ELEM_MAX];
 
 	u32b smart = 0L;
+	bool know_something = FALSE;
 
 	/* Stupid monsters act randomly */
 	if (rf_has(m_ptr->race->flags, RF_STUPID)) return;
@@ -97,18 +99,31 @@ static void remove_bad_spells(struct monster *m_ptr, bitflag f[RSF_SIZE])
 	of_wipe(ai_flags);
 	if (OPT(birth_ai_learn))
 	{
-		/* Occasionally forget player status */
-		if (one_in_(100))
-			of_wipe(m_ptr->known_pflags);
+		size_t i;
 
-		/* Use the memorized flags */
+		/* Occasionally forget player status */
+		if (one_in_(100)) {
+			of_wipe(m_ptr->known_pstate.flags);
+			for (i = 0; i < ELEM_MAX; i++)
+				m_ptr->known_pstate.el_info[i].res_level = 0;
+		}
+
+		/* Use the memorized info */
 		smart = m_ptr->smart;
-		of_copy(ai_flags, m_ptr->known_pflags);
+		of_copy(ai_flags, m_ptr->known_pstate.flags);
+		if (!of_is_empty(ai_flags))
+			know_something = TRUE;
+
+		for (i = 0; i < ELEM_MAX; i++) {
+			el[i].res_level = m_ptr->known_pstate.el_info[i].res_level;
+			if (el[i].res_level != 0)
+				know_something = TRUE;
+		}
 	}
 
 	/* Cancel out certain flags based on knowledge */
-	if (!of_is_empty(ai_flags))
-		unset_spells(f2, ai_flags, m_ptr->race);
+	if (know_something)
+		unset_spells(f2, ai_flags, el, m_ptr->race);
 
 	if (smart & SM_IMM_MANA && randint0(100) <
 			50 * (rf_has(m_ptr->race->flags, RF_SMART) ? 2 : 1))
