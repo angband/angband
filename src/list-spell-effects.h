@@ -21,7 +21,7 @@
  *		m_bonus: +ve means power is proportional to rlev, negative means inverse
  */
 
-/* index method			gf			timed	effect			base			dam		 		res_flag 		power */
+/* index method			gf			timed	effect			base			dam		 		prot_flag 		power */
 RSE(0,	0,				0,			FALSE,	0,				RV(0,0,0,0),	RV(0,0,0,0),	0,				RV(0,0,0,0))
 RSE(1,	0,				GF_POIS,	TRUE,	TMD_POISONED,	RV(10,0,0,0),	RV(0,1,100,0),	0,				RV(0,125,100,1))
 RSE(2,	0,				GF_LIGHT,	TRUE,	TMD_BLIND,		RV(2,1,5,0),	RV(0,0,0,0),	OF_PROT_BLIND,	RV(10,0,0,0))

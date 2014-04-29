@@ -115,44 +115,44 @@ enum mon_spell_type {
  * Breath attacks.
  */
 #define RSF_BREATH_MASK \
-        RSF_BR_ACID, RSF_BR_ELEC, RSF_BR_FIRE, RSF_BR_COLD, \
-        RSF_BR_POIS, RSF_BR_PLAS, RSF_BR_LIGHT, RSF_BR_DARK, \
-        RSF_BR_SOUN, RSF_BR_SHAR, RSF_BR_INER, RSF_BR_GRAV, \
-        RSF_BR_WALL, RSF_BR_NEXU, RSF_BR_NETH, RSF_BR_CHAO, \
-        RSF_BR_DISE, RSF_BR_TIME, RSF_BR_MANA
+		RSF_BR_ACID, RSF_BR_ELEC, RSF_BR_FIRE, RSF_BR_COLD, \
+		RSF_BR_POIS, RSF_BR_PLAS, RSF_BR_LIGHT, RSF_BR_DARK, \
+		RSF_BR_SOUN, RSF_BR_SHAR, RSF_BR_INER, RSF_BR_GRAV, \
+		RSF_BR_WALL, RSF_BR_NEXU, RSF_BR_NETH, RSF_BR_CHAO, \
+		RSF_BR_DISE, RSF_BR_TIME, RSF_BR_MANA
 
 
 /** Structures **/
 
 /* Structure for monster spell types */
 struct mon_spell {
-    u16b index;             /* Numerical index (RSF_FOO) */
-    int type;               /* Type bitflag */
-    const char *desc;       /* Verbal description */
-    int cap;                /* Damage cap */
-    int div;                /* Damage divisor (monhp / this) */
-    int gf;                 /* Flag for projection type (GF_FOO) */
-    int msgt;               /* Flag for message colouring */
-    bool save;              /* Does this attack allow a saving throw? */
-    int hit;                /* To-hit level for the attack */
-    const char *verb;       /* Description of the attack */
-    random_value base_dam;  /* Base damage for the attack */
-    random_value rlev_dam;  /* Monster-level-dependent damage */
-    const char *blind_verb; /* Description of the attack if unseen */
+	u16b index;				/* Numerical index (RSF_FOO) */
+	int type;				/* Type bitflag */
+	const char *desc;		/* Verbal description */
+	int cap;				/* Damage cap */
+	int div;				/* Damage divisor (monhp / this) */
+	int gf;					/* Flag for projection type (GF_FOO) */
+	int msgt;				/* Flag for message colouring */
+	bool save;				/* Does this attack allow a saving throw? */
+	int hit;				/* To-hit level for the attack */
+	const char *verb;		/* Description of the attack */
+	random_value base_dam;	/* Base damage for the attack */
+	random_value rlev_dam;	/* Monster-level-dependent damage */
+	const char *blind_verb;	/* Description of the attack if unseen */
 	const char *lore_desc;	/* Description of the attack used in lore text */
 };
 
 /* Structure for side effects of spell attacks */
 struct spell_effect {
-    u16b index;             /* Numerical index (RAE_#) */
-    u16b method;            /* What RSF_ attack has this effect */
-    int gf;                 /* What GF_ type has this effect */
-    bool timed;             /* TRUE if timed, FALSE if permanent */
-    int flag;               /* Effect flag */
-    random_value base;      /* The base duration or impact */
-    random_value dam;       /* Damage-dependent duration or impact */
-    int res_flag;           /* Resistance to this specific effect */
-	random_value power;		/* Power rating of effect */
+	u16b index;			/* Numerical index (RAE_#) */
+	u16b method;		/* What RSF_ attack has this effect */
+	int gf;				/* What GF_ type has this effect */
+	bool timed;			/* TRUE if timed, FALSE if permanent */
+	int flag;			/* Effect flag */
+	random_value base;	/* The base duration or impact */
+	random_value dam;	/* Damage-dependent duration or impact */
+	int prot_flag;		/* Protection from this specific effect */
+	random_value power;	/* Power rating of effect */
 };
 
 
@@ -162,7 +162,7 @@ bool test_spells(bitflag *f, int types);
 void set_spells(bitflag *f, int types);
 int best_spell_power(const monster_race *r_ptr, int resist);
 void unset_spells(bitflag *spells, bitflag *flags, struct element_info *el,
-				  const monster_race *r_ptr);
+				const monster_race *r_ptr);
 const char *mon_spell_lore_description(int spell);
 int mon_spell_lore_damage(int spell, const monster_race *race, bool know_hp);
 

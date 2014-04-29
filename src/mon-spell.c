@@ -263,19 +263,11 @@ static void do_spell_effects(int spell, int dam, struct monster *m_ptr, bool see
 	/* Now we cycle through again to activate the chosen effects */
 	for (re_ptr = spell_effect_table; re_ptr->index < RSE_MAX; re_ptr++) {
 		if (chosen[re_ptr->index]) {
+			/* Check for protection from the effect */
+			if (re_ptr->prot_flag)
+				update_smart_learn(m_ptr, player, re_ptr->prot_flag, -1);
 
-			/*
-			 * Check for resistance - there are three possibilities:
-			 * 2. Resistance to the attack type if it affords no immunity
-			 * 3. Resistance to the specific side-effect
-			 *
-			 * TODO - add interesting messages to the RSE_ and GF_ tables
-			 * to replace the generic ones below. (See #1376)
-			 */
-			if (re_ptr->res_flag)
-				update_smart_learn(m_ptr, player, re_ptr->res_flag, -1);
-
-			if (player_of_has(player, re_ptr->res_flag)) {
+			if (player_of_has(player, re_ptr->prot_flag)) {
 				msg("You resist the effect!");
 				continue;
 			}
@@ -532,8 +524,8 @@ void unset_spells(bitflag *spells, bitflag *flags, struct element_info *el,
 
 	/* ... then we test the non-gf side effects */
 	for (re_ptr = spell_effect_table; re_ptr->index < RSE_MAX; re_ptr++)
-		if (re_ptr->method && re_ptr->res_flag && (rf_has(r_ptr->flags,
-				RF_SMART) || !one_in_(3)) && of_has(flags, re_ptr->res_flag))
+		if (re_ptr->method && re_ptr->prot_flag && (rf_has(r_ptr->flags,
+				RF_SMART) || !one_in_(3)) && of_has(flags, re_ptr->prot_flag))
 			rsf_off(spells, re_ptr->method);
 }
 
