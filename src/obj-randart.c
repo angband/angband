@@ -577,7 +577,7 @@ static object_kind *choose_item(int a_idx)
 	a_ptr->effect = 0;
 
 	/* Artifacts ignore everything */
-	for (i = ELEM_ACID; i <= ELEM_COLD; i++)
+	for (i = ELEM_BASE_MIN; i < ELEM_HIGH_MIN; i++)
 		a_ptr->el_info[i].flags |= EL_INFO_IGNORE;
 
 	/* Assign basic stats to the artifact based on its artifact level. */
@@ -1905,7 +1905,7 @@ static void add_low_resist(artifact_type *a_ptr)
 {
 	size_t r, i, count = 0;
 
-	for (i = ELEM_ACID; i <= ELEM_COLD; i++)
+	for (i = ELEM_BASE_MIN; i < ELEM_HIGH_MIN; i++)
 		if (a_ptr->el_info[i].res_level <= 0)
 			count++;
 
@@ -1914,7 +1914,7 @@ static void add_low_resist(artifact_type *a_ptr)
 	r = randint0(count);
 	count = 0;
 
-	for (i = ELEM_ACID; i <= ELEM_COLD; i++) {
+	for (i = ELEM_BASE_MIN; i < ELEM_HIGH_MIN; i++) {
 		if (a_ptr->el_info[i].res_level > 0) continue;
 		if (r == count++) {
 			add_resist(a_ptr, i);
@@ -2845,7 +2845,7 @@ static void scramble_artifact(int a_idx)
 			fake_pval[0] = 3;
 		}
 		/* Artifacts ignore everything */
-		for (i = ELEM_ACID; i <= ELEM_COLD; i++)
+		for (i = ELEM_BASE_MIN; i < ELEM_HIGH_MIN; i++)
 			a_ptr->el_info[i].flags |= EL_INFO_IGNORE;
 
 		file_putf(log_file, "Alloc prob is %d\n", a_ptr->alloc_prob);

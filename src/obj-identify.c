@@ -285,7 +285,7 @@ bool object_high_resist_is_possible(const object_type *o_ptr)
 	size_t i;
 
 	/* Look at all the high resists */
-	for (i = ELEM_POIS; i <= ELEM_DISEN; i++) {
+	for (i = ELEM_HIGH_MIN; i <= ELEM_HIGH_MAX; i++) {
 		/* Object doesn't have it - not interesting */
 		if (o_ptr->el_info[i].res_level <= 0) continue;
 
@@ -541,7 +541,7 @@ void object_notice_ego(object_type *o_ptr)
 		create_mask(xtra_flags, FALSE, OFT_MISC, OFT_PROT, OFT_MAX);
 		of_diff(learned_flags, xtra_flags);
 	} else if (kf_has(o_ptr->ego->kind_flags, KF_RAND_HI_RES)) {
-		for (i = ELEM_POIS; i <= ELEM_DISEN; i++)
+		for (i = ELEM_HIGH_MIN; i <= ELEM_HIGH_MAX; i++)
 			if ((o_ptr->ego->el_info[i].res_level == 1) &&
 				(o_ptr->el_info[i].flags & EL_INFO_RANDOM))
 				o_ptr->el_info[i].flags |= EL_INFO_KNOWN;

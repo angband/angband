@@ -22,19 +22,26 @@ enum
 	ELEM_MAX
 };
 
+#define ELEM_BASE_MIN  ELEM_ACID
+#define ELEM_HIGH_MIN  ELEM_POIS
+#define ELEM_HIGH_MAX  ELEM_DISEN
+
 /*
  * Identify flags
  */
 enum
 {
-	#define ID(a) ID_##a,
-	#include "list-identify-flags.h"
-	#undef ID
 	#define OBJ_MOD(a, b, c, d) ID_##a,
 	#include "list-object-modifiers.h"
 	#undef OBJ_MOD
+	#define ID(a) ID_##a,
+	#include "list-identify-flags.h"
+	#undef ID
 	ID_MAX
 };
+
+#define ID_MOD_MIN ID_STR
+#define ID_MISC_MIN ID_ARTIFACT
 
 #define ID_SIZE                	FLAG_SIZE(ID_MAX)
 

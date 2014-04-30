@@ -168,7 +168,7 @@ static int random_high_resist(object_type *o_ptr, int *resist)
 	int i, r, count = 0;
 
 	/* Count the available high resists */
-	for (i = ELEM_POIS; i <= ELEM_DISEN; i++)
+	for (i = ELEM_HIGH_MIN; i <= ELEM_HIGH_MAX; i++)
 		if (o_ptr->el_info[i].res_level == 0) count++;
 
 	if (count == 0) return FALSE;
@@ -177,7 +177,7 @@ static int random_high_resist(object_type *o_ptr, int *resist)
 	r = randint0(count);
 
 	/* Find the one we picked */
-	for (i = ELEM_POIS; i <= ELEM_DISEN; i++) {
+	for (i = ELEM_HIGH_MIN; i <= ELEM_HIGH_MAX; i++) {
 		if (o_ptr->el_info[i].res_level != 0) continue;
 		if (r == 0) {
 			*resist = i;

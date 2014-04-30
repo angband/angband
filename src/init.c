@@ -867,8 +867,8 @@ static enum parser_error parse_a_n(struct parser *p) {
 	a->aidx = idx;
 	a->name = string_make(name);
 
-	/* Ignore all elements */
-	for (i = ELEM_ACID; i <= ELEM_COLD; i++)
+	/* Ignore all base elements */
+	for (i = ELEM_BASE_MIN; i < ELEM_HIGH_MIN; i++)
 		a->el_info[i].flags |= EL_INFO_IGNORE;
 
 	return PARSE_ERROR_NONE;
