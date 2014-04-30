@@ -562,13 +562,14 @@ void object_notice_ego(object_type *o_ptr)
 	if (kf_has(o_ptr->ego->kind_flags, KF_RAND_SUSTAIN)) {
 		create_mask(xtra_flags, FALSE, OFT_SUST, OFT_MAX);
 		of_diff(learned_flags, xtra_flags);
-	} else if (kf_has(o_ptr->ego->kind_flags, KF_RAND_HI_RES)) {
-		create_mask(xtra_flags, FALSE, OFT_HRES, OFT_MAX);
-		of_diff(learned_flags, xtra_flags);
-		//this will be messy - NRM
 	} else if (kf_has(o_ptr->ego->kind_flags, KF_RAND_POWER)) {
 		create_mask(xtra_flags, FALSE, OFT_MISC, OFT_PROT, OFT_MAX);
 		of_diff(learned_flags, xtra_flags);
+	} else if (kf_has(o_ptr->ego->kind_flags, KF_RAND_HI_RES)) {
+		for (i = ELEM_POIS; i <= ELEM_DISEN; i++)
+			if ((o_ptr->ego->el_info[i].res_level == 1) &&
+				(o_ptr->el_info[i].flags & EL_INFO_RANDOM))
+				o_ptr->el_info[i].flags |= EL_INFO_KNOWN;
 	}
 
 

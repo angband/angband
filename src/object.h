@@ -210,7 +210,7 @@ enum {
 	EL_INFO_KNOWN = 0x01,
 	EL_INFO_HATES = 0x02,
 	EL_INFO_IGNORE = 0x04,
-	EL_INFO_NOTABLE = 0x08,
+	EL_INFO_RANDOM = 0x08,
 };
 
 /* Element info type */

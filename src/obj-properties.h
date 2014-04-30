@@ -48,12 +48,6 @@ enum {
 /* The object flag types */
 enum object_flag_type {
 	OFT_SUST = 1,	/* sustains a stat */
-	OFT_VULN,		/* lowers resistance to an element */
-	OFT_IMM,		/* offers immunity to an element */
-	OFT_LRES,		/* a "base" elemental resistance */
-	OFT_HRES,		/* a "high" elemental resistance */
-	OFT_IGNORE,		/* object ignores an element */
-	OFT_HATES,		/* object can be destroyed by element */
 	OFT_PROT,		/* protection from an effect */
 	OFT_MISC,		/* a good property, suitable for ego items */
 	OFT_LIGHT,		/* applicable only to light sources */

@@ -526,7 +526,6 @@ static object_kind *choose_item(int a_idx)
 	int tval = 0, sval = 0, i = 0;
 	object_kind *k_ptr;
 	s16b r;
-	bitflag f[OF_SIZE];
 
 	/*
 	 * Pick a base item from the cumulative frequency table.
@@ -573,11 +572,13 @@ static object_kind *choose_item(int a_idx)
 	for (i = 0; i < OBJ_MOD_MAX; i++) {
 		a_ptr->modifiers[i] = randcalc(k_ptr->modifiers[i], 0, MINIMISE);
 	}
+	for (i = 0; i < ELEM_MAX; i++)
+		a_ptr->el_info[i] = k_ptr->el_info[i];
 	a_ptr->effect = 0;
 
 	/* Artifacts ignore everything */
-	create_mask(f, FALSE, OFT_IGNORE, OFT_MAX);
-	of_union(a_ptr->flags, f);
+	for (i = ELEM_ACID; i <= ELEM_COLD; i++)
+		a_ptr->el_info[i].flags |= EL_INFO_IGNORE;
 
 	/* Assign basic stats to the artifact based on its artifact level. */
 	/*
@@ -2720,7 +2721,6 @@ static void scramble_artifact(int a_idx)
 	bool curse_me = FALSE;
 	bool success = FALSE;
 	int i;
-	bitflag f[OF_SIZE];
 
 	/* Special cases -- don't randomize these! */
 	if ((a_idx == ART_POWER) ||
@@ -2824,6 +2824,10 @@ static void scramble_artifact(int a_idx)
 		/* Clear the following fields; leave the rest alone */
 		a_ptr->to_h = a_ptr->to_d = a_ptr->to_a = 0;
 		of_wipe(a_ptr->flags);
+		for (i = 0; i < ELEM_MAX; i++) {
+			a_ptr->el_info[i].res_level = 0;
+			a_ptr->el_info[i].flags = 0;
+		}
 		for (i = 0; i < OBJ_MOD_MAX; i++)
 		{
 			a_ptr->modifiers[i] = 0;
@@ -2841,8 +2845,8 @@ static void scramble_artifact(int a_idx)
 			fake_pval[0] = 3;
 		}
 		/* Artifacts ignore everything */
-		create_mask(f, FALSE, OFT_IGNORE, OFT_MAX);
-		of_union(a_ptr->flags, f);
+		for (i = ELEM_ACID; i <= ELEM_COLD; i++)
+			a_ptr->el_info[i].flags |= EL_INFO_IGNORE;
 
 		file_putf(log_file, "Alloc prob is %d\n", a_ptr->alloc_prob);
 	}

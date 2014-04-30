@@ -160,6 +160,35 @@ static int get_new_attr(bitflag flags[OF_SIZE], bitflag newf[OF_SIZE])
 	return flag;
 }
 
+/**
+ * Get a random new high resist on an item
+ */
+static int random_high_resist(object_type *o_ptr, int *resist)
+{
+	int i, r, count = 0;
+
+	/* Count the available high resists */
+	for (i = ELEM_POIS; i <= ELEM_DISEN; i++)
+		if (o_ptr->el_info[i].res_level == 0) count++;
+
+	if (count == 0) return FALSE;
+
+	/* Pick one */
+	r = randint0(count);
+
+	/* Find the one we picked */
+	for (i = ELEM_POIS; i <= ELEM_DISEN; i++) {
+		if (o_ptr->el_info[i].res_level != 0) continue;
+		if (r == 0) {
+			*resist = i;
+			return TRUE;
+		}
+		r--;
+	}
+
+	return FALSE;
+}
+
 
 /**
  * Select an ego-item that fits the object's tval and sval.
@@ -233,25 +262,26 @@ static struct ego_item *ego_find_random(object_type *o_ptr, int level)
  */
 void ego_apply_magic(object_type *o_ptr, int level)
 {
-	int i, x;
-	bool extras = TRUE;
+	int i, x, resist = 0;
 	bitflag flags[OF_SIZE], newf[OF_SIZE];
 
 	object_flags(o_ptr, flags);
 
 	/* Extra powers */
-	if (kf_has(o_ptr->ego->kind_flags, KF_RAND_SUSTAIN))
+	if (kf_has(o_ptr->ego->kind_flags, KF_RAND_SUSTAIN)) {
 		create_mask(newf, FALSE, OFT_SUST, OFT_MAX);
-	/** TODO - NRM **/
-	else if (kf_has(o_ptr->ego->kind_flags, KF_RAND_HI_RES))
-		create_mask(newf, FALSE, OFT_HRES, OFT_MAX);
-	else if (kf_has(o_ptr->ego->kind_flags, KF_RAND_POWER))
-		create_mask(newf, FALSE, OFT_PROT, OFT_MISC, OFT_MAX);
-	else
-		extras = FALSE;
-
-	if (extras)
 		of_on(o_ptr->flags, get_new_attr(flags, newf));
+	}
+	else if (kf_has(o_ptr->ego->kind_flags, KF_RAND_POWER)) {
+		create_mask(newf, FALSE, OFT_PROT, OFT_MISC, OFT_MAX);
+		of_on(o_ptr->flags, get_new_attr(flags, newf));
+	}
+	else if (kf_has(o_ptr->ego->kind_flags, KF_RAND_HI_RES))
+		/* Get a high resist if available, mark it as random */
+		if (random_high_resist(o_ptr, &resist)) {
+			o_ptr->el_info[resist].res_level = 1;
+			o_ptr->el_info[resist].flags |= EL_INFO_RANDOM;
+		}
 
 	/* Apply extra o_ptr->ego bonuses */
 	o_ptr->to_h += randcalc(o_ptr->ego->to_h, level, RANDOMISE);

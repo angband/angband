@@ -142,16 +142,9 @@ s16b flag_slot_mult(int flag, int slot)
 	switch (f->type) {
 		/* Many flags are equally good (or bad) in any slot */
 	case OFT_SUST:
-	case OFT_VULN:
-	case OFT_LRES:
-	case OFT_HRES:
-	case OFT_IMM:
 	case OFT_PROT:
-	case OFT_IGNORE:
 	case OFT_BAD:
 	case OFT_CURSE: return 1;
-		/* Some flags have no effect */
-	case OFT_HATES: return 0;
 		/* Light-specific */
 	case OFT_LIGHT: return (slot == INVEN_LIGHT) ? 1 : 0;
 		/* Melee weapon specific */
