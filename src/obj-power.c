@@ -67,9 +67,9 @@ static struct archery {
 	int launch_dam;
 	int launch_mult;
 } archery[] = {
-	 {TV_SHOT, 10, 9, 4},
+	{TV_SHOT, 10, 9, 4},
 	{TV_ARROW, 12, 9, 5},
-	 {TV_BOLT, 14, 9, 7}
+	{TV_BOLT, 14, 9, 7}
 };
 
 /**
@@ -77,22 +77,66 @@ static struct archery {
  * - factor for power increment for multiple flags
  * - additional power bonus for a "full set" of these flags
  * - number of these flags which constitute a "full set"
- * - whether value is damage-dependent
  */
-static struct set {
+static struct flag_set {
 	int type;
 	int factor;
 	int bonus;
 	int size;
 	int count;
 	const char *desc;
-} sets[] = {
+} flag_sets[] = {
 	{ OFT_SUST, 1, 10, 5, 0, "sustains" },
-	{ OFT_IMM,  6, INHIBIT_POWER, 4, 0, "immunities" },
-	{ OFT_LRES, 1, 10, 4, 0, "low resists" },
-	{ OFT_HRES, 2, 10, 9, 0, "high resists" },
 	{ OFT_PROT, 3, 15, 4, 0, "protections" },
 	{ OFT_MISC, 1, 25, 8, 0, "misc abilities" }
+};
+
+
+enum {
+	T_LRES,
+	T_HRES
+};
+
+/**
+ * Similar data for elements
+ */
+static struct element_set {
+	int type;
+	int res_level;
+	int factor;
+	int bonus;
+	int size;
+	int count;
+	const char *desc;
+} element_sets[] = {
+	{ T_LRES, 3, 6, INHIBIT_POWER, 4,    0,     "immunities" },
+	{ T_LRES, 1, 1, 10,            4,    0,     "low resists" },
+	{ T_HRES, 1, 2, 10,            9,    0,     "high resists" },
+};
+
+/**
+ * Power data for elements
+ */
+static struct element_powers {
+	const char *name;
+	int type;
+	int vuln_power;
+	int res_power;
+	int im_power;
+} el_powers[] = {
+	{ "acid",			T_LRES,	-6,	5,	38 },
+	{ "electricity",	T_LRES,	-6,	6,	35 },
+	{ "fire",			T_LRES,	-6,	6,	40 },
+	{ "cold",			T_LRES,	-6,	6,	37 },
+	{ "poison",			T_HRES,	0,	28,	0 },
+	{ "light",			T_HRES,	0,	6,	0 },
+	{ "dark",			T_HRES,	0,	16,	0 },
+	{ "sound",			T_HRES,	0,	14,	0 },
+	{ "shards",			T_HRES,	0,	8,	0 },
+	{ "nexus",			T_HRES,	0,	15,	0 },
+	{ "nether",			T_HRES,	0,	20,	0 },
+	{ "chaos",			T_HRES,	0,	20,	0 },
+	{ "disenchantment",	T_HRES,	0,	20,	0 }
 };
 
 /**
@@ -285,7 +329,7 @@ static int extra_might_power(const object_type *o_ptr, int p, int mult,
  * Calculate the rating for a given slay combination
  */
 static s32b slay_power(const object_type *o_ptr, int p, int verbose, 
-					   int dice_pwr, ang_file* log_file, bool known)
+					   int dice_pwr, bool known)
 {
 	u32b sv = 0;
 	int i, q, num_brands = 0, num_slays = 0, num_kills = 0;
@@ -562,8 +606,8 @@ static int flags_power(const object_type *o_ptr, int p, int verbose,
 		log_flags(flags, log_file);
 
 	/* Zero the flag counts */
-	for (i = 0; i < N_ELEMENTS(sets); i++)
-		sets[i].count = 0;
+	for (i = 0; i < N_ELEMENTS(flag_sets); i++)
+		flag_sets[i].count = 0;
 
 	for (i = of_next(flags, FLAG_START); i != FLAG_END; 
 		 i = of_next(flags, i + 1)) {
@@ -575,26 +619,89 @@ static int flags_power(const object_type *o_ptr, int p, int verbose,
 		}
 
 		/* Track combinations of flag types */
-		for (j = 0; j < N_ELEMENTS(sets); j++)
-			if (sets[j].type == obj_flag_type(i))
-				sets[j].count++;
+		for (j = 0; j < N_ELEMENTS(flag_sets); j++)
+			if (flag_sets[j].type == obj_flag_type(i))
+				flag_sets[j].count++;
 	}
 
 	/* Add extra power for multiple flags of the same type */
-	for (i = 0; i < N_ELEMENTS(sets); i++) {
-		if (sets[i].count > 1) {
-			q = (sets[i].factor * sets[i].count * sets[i].count);
+	for (i = 0; i < N_ELEMENTS(flag_sets); i++) {
+		if (flag_sets[i].count > 1) {
+			q = (flag_sets[i].factor * flag_sets[i].count * flag_sets[i].count);
 			p += q;
 			log_obj(format("Add %d power for multiple %s, total is %d\n",
-						   q, sets[i].desc, p));
+						   q, flag_sets[i].desc, p));
 		}
 
 		/* Add bonus if item has a full set of these flags */
-		if (sets[i].count == sets[i].size) {
-			q = sets[i].bonus;
+		if (flag_sets[i].count == flag_sets[i].size) {
+			q = flag_sets[i].bonus;
 			p += q;
 			log_obj(format("Add %d power for full set of %s, total is %d\n", 
-						   q, sets[i].desc, p));
+						   q, flag_sets[i].desc, p));
+		}
+	}
+
+	return p;
+}
+
+/* Add power for elemental properties */
+static int element_power(const object_type *o_ptr, int p, bool known)
+{
+	size_t i, j;
+	int q;
+
+	/* Zero the set counts */
+	for (i = 0; i < N_ELEMENTS(element_sets); i++)
+		element_sets[i].count = 0;
+
+	/* Analyse each element for vulnerability, resistance or immunity */
+	for (i = 0; i < N_ELEMENTS(el_powers); i++) {
+		if (!known && !(o_ptr->el_info[i].flags & EL_INFO_KNOWN)) continue;
+
+		if (o_ptr->el_info[i].res_level == -1) {
+			if (el_powers[i].vuln_power != 0) {
+				q = (el_powers[i].vuln_power);
+				p += q;
+				log_obj(format("Add %d power for vulnerability to %s, total is %d\n", q, el_powers[i].name, p));
+			}
+		} else if (o_ptr->el_info[i].res_level == 1) {
+			if (el_powers[i].res_power != 0) {
+				q = (el_powers[i].res_power);
+				p += q;
+				log_obj(format("Add %d power for resistance to %s, total is %d\n", q, el_powers[i].name, p));
+			}
+		} else if (o_ptr->el_info[i].res_level == 3) {
+			if (el_powers[i].im_power != 0) {
+				q = (el_powers[i].im_power);
+				p += q;
+				log_obj(format("Add %d power for immunity to %s, total is %d\n",
+							   q, el_powers[i].name, p));
+			}
+		}
+
+		/* Track combinations of element properties */
+		for (j = 0; j < N_ELEMENTS(element_sets); j++)
+			if ((element_sets[j].type == el_powers[i].type) &&
+				(element_sets[j].res_level == o_ptr->el_info[i].res_level))
+				element_sets[j].count++;
+	}
+
+	/* Add extra power for multiple flags of the same type */
+	for (i = 0; i < N_ELEMENTS(element_sets); i++) {
+		if (element_sets[i].count > 1) {
+			q = (element_sets[i].factor * element_sets[i].count * element_sets[i].count);
+			p += q;
+			log_obj(format("Add %d power for multiple %s, total is %d\n",
+						   q, element_sets[i].desc, p));
+		}
+
+		/* Add bonus if item has a full set of these flags */
+		if (element_sets[i].count == element_sets[i].size) {
+			q = element_sets[i].bonus;
+			p += q;
+			log_obj(format("Add %d power for full set of %s, total is %d\n", 
+						   q, element_sets[i].desc, p));
 		}
 	}
 
@@ -653,7 +760,7 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 	if (p > INHIBIT_POWER) return p;
 	p = extra_might_power(o_ptr, p, mult, known);
 	if (p > INHIBIT_POWER) return p;
-	p = slay_power(o_ptr, p, verbose, dice_pwr, object_log, known);
+	p = slay_power(o_ptr, p, verbose, dice_pwr, known);
 	p = rescale_bow_power(o_ptr, p);
 	p = to_hit_power(o_ptr, p);
 
@@ -667,6 +774,7 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 	/* Other object properties */
 	p = modifier_power(o_ptr, p, known);
 	p = flags_power(o_ptr, p, verbose, object_log, known);
+	p = element_power(o_ptr, p, known);
 	p = effects_power(o_ptr, p, known);
 
 	log_obj(format("FINAL POWER IS %d\n", p));
