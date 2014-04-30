@@ -33,7 +33,6 @@
 #define IDENT_INDESTRUCT 0x0200 /* Tried to destroy it and failed */
 #define IDENT_NAME      0x0400  /* Know the name of ego or artifact if there is one */
 #define IDENT_FIRED     0x0800  /* Has been used as a missile */
-#define IDENT_NOTART    0x1000  /* Item is known not to be an artifact */
 #define IDENT_FAKE      0x2000  /* Item is a fake, for displaying knowledge */
 
 /**
@@ -60,7 +59,6 @@ bool object_is_known_artifact(const object_type *o_ptr);
 bool object_is_known_cursed(const object_type *o_ptr);
 bool object_is_known_blessed(const object_type *o_ptr);
 bool object_is_known_not_artifact(const object_type *o_ptr);
-bool object_is_not_known_consistently(const object_type *o_ptr);
 bool object_was_worn(const object_type *o_ptr);
 bool object_was_fired(const object_type *o_ptr);
 bool object_was_sensed(const object_type *o_ptr);

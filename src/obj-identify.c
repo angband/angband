@@ -101,7 +101,7 @@ bool object_is_known_blessed(const object_type *o_ptr)
  */
 bool object_is_known_not_artifact(const object_type *o_ptr)
 {
-	if (o_ptr->ident & IDENT_NOTART)
+	if (id_has(o_ptr->id_flags, ID_ARTIFACT) && !(o_ptr->artifact))
 		return TRUE;
 
 	return FALSE;
@@ -464,31 +464,6 @@ void object_know_brands_and_slays(object_type *o_ptr)
 #define IDENTS_SET_BY_IDENTIFY ( IDENT_KNOWN | IDENT_ATTACK | IDENT_DEFENCE | IDENT_SENSE | IDENT_EFFECT | IDENT_WORN | IDENT_FIRED | IDENT_NAME )
 
 /**
- * Check whether an object has IDENT_KNOWN but should not
- */
-bool object_is_not_known_consistently(const object_type *o_ptr)
-{
-	if (easy_know(o_ptr))
-		return FALSE;
-	if (!(o_ptr->ident & IDENT_KNOWN))
-		return TRUE;
-	if ((o_ptr->ident & IDENTS_SET_BY_IDENTIFY) != IDENTS_SET_BY_IDENTIFY)
-		return TRUE;
-	if (o_ptr->ident & IDENT_EMPTY)
-		return TRUE;
-	else if (o_ptr->artifact &&
-			!(o_ptr->artifact->seen || o_ptr->artifact->everseen))
-		return TRUE;
-
-	if (!of_is_full(o_ptr->known_flags))
-		return TRUE;
-
-	return FALSE;
-}
-
-
-
-/**
  * Mark as object as fully known, a.k.a identified. 
  *
  * \param o_ptr is the object to mark as identified
@@ -609,10 +584,9 @@ void object_notice_sensing(object_type *o_ptr)
  */
 void object_sense_artifact(object_type *o_ptr)
 {
+	id_on(o_ptr->id_flags, ID_ARTIFACT);
 	if (o_ptr->artifact)
 		object_notice_sensing(o_ptr);
-	else
-		o_ptr->ident |= IDENT_NOTART;
 }
 
 
