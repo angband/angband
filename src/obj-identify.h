@@ -35,7 +35,6 @@
 #define IDENT_FIRED     0x0800  /* Has been used as a missile */
 #define IDENT_NOTART    0x1000  /* Item is known not to be an artifact */
 #define IDENT_FAKE      0x2000  /* Item is a fake, for displaying knowledge */
-#define IDENT_SENSED_THIS_TURN 0x4000 /* Item has had a chance to be sensed on this turn (see sense_inventory()) */
 
 /**
  * Pseudo-ID markers.

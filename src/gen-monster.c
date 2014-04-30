@@ -153,7 +153,7 @@ bool mon_restrict(const char *monster_type, int depth, bool unique_ok)
 		/* We've found a monster. */
 		if (i < 2499) {
 			/* Use that monster's base type for all monsters. */
-			sprintf(base_d_char, "%c", r_info[j].base->d_char);
+			snprintf(base_d_char, 2, "%c", r_info[j].base->d_char);
 
 			/* Prepare allocation table */
 			get_mon_num_prep(mon_select);

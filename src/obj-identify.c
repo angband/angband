@@ -1240,8 +1240,12 @@ void sense_inventory(void)
 	char o_name[80];
 	
 	unsigned int rate;
+	bool sensed_this_turn[ALL_INVEN_TOTAL];
 	
-	
+	/* Nothing sensed yet */
+	for (i = 0; i < ALL_INVEN_TOTAL; i++)
+		sensed_this_turn[i] = FALSE;
+
 	/* No ID when confused in a bad state */
 	if (player->timed[TMD_CONFUSED]) return;
 
@@ -1267,9 +1271,9 @@ void sense_inventory(void)
 	 * Give each object one opportunity to have a chance at being sensed.
 	 * Because the inventory can be reordered in do_ident_item(),
 	 * we want to prevent objects from having more than one opportunity each
-	 * turn. This state is stored in object_type->ident using the
-	 * IDENT_SENSED_THIS_TURN flag. If the pack is reordered, we start the
-	 * loop over and skip objects that have had their opportunity.
+	 * turn. This state is stored in the sensed_this_turn array. If the pack
+	 * is reordered, we start the loop over and skip objects that have had
+	 * their opportunity.
 	 *
 	 * Also, i is incremented at the top of the loop so that the conditions
 	 * can properly use "continue"; hence why we start at -1.
@@ -1301,7 +1305,7 @@ void sense_inventory(void)
 
 		/* Do not allow an object to have more than one opportunity to have
 		 * a chance of being fully ID'd or sensed again. */
-		if (o_ptr->ident & IDENT_SENSED_THIS_TURN)
+		if (sensed_this_turn[i])
 			continue;
 
 		/* It has already been sensed, do not sense it again */
@@ -1320,7 +1324,7 @@ void sense_inventory(void)
 
 		/* Prevent objects, which pass or fail the sense check for this turn,
 		 * from getting another opportunity. */
-		o_ptr->ident |= IDENT_SENSED_THIS_TURN;
+		sensed_this_turn[i] = TRUE;
 
 		/* Occasional failure on inventory items */
 		if ((i < INVEN_WIELD) && one_in_(5)) continue;
@@ -1387,10 +1391,6 @@ void sense_inventory(void)
 		/* Redraw stuff */
 		player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
 	}
-
-	/* Reset state so objects failing the check can be sensed later. */
-	for (i = 0; i < ALL_INVEN_TOTAL; i++)
-		player->inventory[i].ident &= ~IDENT_SENSED_THIS_TURN;
 }
 
 
