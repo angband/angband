@@ -101,41 +101,44 @@ F:HATES_ELEC
 
 N:staff:Staff~
 G:light umber
-F:HATES_ACID | HATES_FIRE
+F:HATES_ACID | HATES_FIRE | EASY_KNOW
 
 N:wand:Wand~
 G:green
-F:HATES_ELEC
+F:HATES_ELEC | EASY_KNOW
 
 N:rod:Rod~
 G:light purple
-F:HATES_ELEC
+F:HATES_ELEC | EASY_KNOW
 
 N:scroll:Scroll~
 G:white
-F:HATES_ACID | HATES_FIRE
+F:HATES_ACID | HATES_FIRE | EASY_KNOW
 
 N:potion:Potion~
 G:light blue
 B:100
-F:HATES_COLD
+F:HATES_COLD | EASY_KNOW
 
 N:flask:Flask~
 G:yellow
 B:100
-F:HATES_COLD
+F:HATES_COLD | EASY_KNOW
 
 N:food:Food
 G:light umber
 B:100
+F:EASY_KNOW
 
 N:mushroom:Mushroom~
 G:light umber
 B:100
+F:EASY_KNOW
 
 N:magic book:Magic Book~
 G:light red
-F:HATES_FIRE
+F:HATES_FIRE | EASY_KNOW
 
 N:prayer book:Prayer Book~
 G:light green
+F:HATES_FIRE | EASY_KNOW

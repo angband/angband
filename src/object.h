@@ -40,7 +40,7 @@ enum
 	ID_MAX
 };
 
-#define ID_MOD_MIN ID_STR
+#define ID_MOD_MIN  ID_STR
 #define ID_MISC_MIN ID_ARTIFACT
 
 #define ID_SIZE                	FLAG_SIZE(ID_MAX)
