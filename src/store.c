@@ -1355,6 +1355,8 @@ static bool store_create_random(struct store *store)
 		i_ptr->ident |= IDENT_STORE;
 		i_ptr->origin = ORIGIN_STORE;
 		object_know_all_flags(i_ptr);
+		object_know_all_elements(i_ptr);
+		object_know_brands_and_slays(i_ptr);
 
 		/*** Post-generation filters ***/
 
@@ -1394,6 +1396,8 @@ static int store_create_item(struct store *store, object_kind *kind)
 	object.ident |= IDENT_STORE;
 	object.origin = ORIGIN_STORE;
 	object_know_all_flags(&object);
+	object_know_all_elements(&object);
+	object_know_brands_and_slays(&object);
 
 	/* Attempt to carry the object */
 	return store_carry(store, &object);

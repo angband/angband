@@ -70,21 +70,6 @@ bool object_is_known_artifact(const object_type *o_ptr)
 }
 
 /**
- * \returns whether the object is known to be cursed
- */
-bool object_is_known_cursed(const object_type *o_ptr)
-{
-	bitflag f[OF_SIZE], f2[OF_SIZE];
-
-	object_flags_known(o_ptr, f);
-
-	/* Gather whatever curse flags there are to know */
-	create_mask(f2, FALSE, OFT_CURSE, OFT_MAX);
-
-	return of_is_inter(f, f2);
-}
-
-/**
  * \returns whether the object is known to be blessed
  */
 bool object_is_known_blessed(const object_type *o_ptr)
@@ -494,16 +479,6 @@ void object_notice_everything(object_type *o_ptr)
 	object_know_brands_and_slays(o_ptr);
 }
 
-
-
-/**
- * Notice that an object is indestructible.
- */
-void object_notice_indestructible(object_type *o_ptr)
-{
-	if (object_add_ident_flags(o_ptr, IDENT_INDESTRUCT))
-		object_check_for_ident(o_ptr);
-}
 
 
 /*

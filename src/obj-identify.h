@@ -56,7 +56,6 @@ extern s32b object_last_wield;
 
 bool object_is_known(const object_type *o_ptr);
 bool object_is_known_artifact(const object_type *o_ptr);
-bool object_is_known_cursed(const object_type *o_ptr);
 bool object_is_known_blessed(const object_type *o_ptr);
 bool object_is_known_not_artifact(const object_type *o_ptr);
 bool object_was_worn(const object_type *o_ptr);
@@ -75,7 +74,6 @@ bool object_high_resist_is_possible(const object_type *o_ptr);
 void object_flavor_aware(object_type *o_ptr);
 void object_flavor_tried(object_type *o_ptr);
 void object_notice_everything(object_type *o_ptr);
-void object_notice_indestructible(object_type *o_ptr);
 void object_notice_ego(object_type *o_ptr);
 void object_notice_sensing(object_type *o_ptr);
 void object_sense_artifact(object_type *o_ptr);
@@ -92,7 +90,6 @@ void wieldeds_notice_flag(struct player *p, int flag);
 void wieldeds_notice_element(struct player *p, int element);
 void wieldeds_notice_to_hit_on_attack(void);
 void wieldeds_notice_on_attack(void);
-void object_repair_knowledge(object_type *o_ptr);
 bool object_FA_would_be_obvious(const object_type *o_ptr);
 obj_pseudo_t object_pseudo(const object_type *o_ptr);
 void sense_inventory(void);
@@ -100,5 +97,7 @@ bool easy_know(const object_type *o_ptr);
 bool object_check_for_ident(object_type *o_ptr);
 bool object_name_is_visible(const object_type *o_ptr);
 void object_know_all_flags(object_type *o_ptr);
+void object_know_all_elements(object_type *o_ptr);
+void object_know_brands_and_slays(object_type *o_ptr);
 
 #endif /* OBJECT_IDENTIFY_H */

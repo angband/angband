@@ -454,6 +454,8 @@ static void spoil_artifact(const char *fname)
 
 			/* Cheat extra knowledge */
 			object_know_all_flags(i_ptr); 
+			object_know_all_elements(i_ptr);
+			object_know_brands_and_slays(i_ptr);
 			i_ptr->ident |=  IDENT_KNOWN | IDENT_WORN | IDENT_EFFECT;
 
 			/* Temporarily blank the artifact flavour text - spoilers

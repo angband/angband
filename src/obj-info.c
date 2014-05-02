@@ -1763,6 +1763,8 @@ textblock *object_info_ego(struct ego_item *ego)
 
 	obj.ident |= IDENT_KNOWN | IDENT_FAKE;
 	object_know_all_flags(&obj);
+	object_know_all_elements(&obj);
+	object_know_brands_and_slays(&obj);
 
 	return object_info_out(&obj, OINFO_NONE);
 }
