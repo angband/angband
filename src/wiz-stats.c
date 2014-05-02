@@ -96,108 +96,108 @@ static double gold_total[MAX_LVL], gold_floor[MAX_LVL], gold_mon[MAX_LVL], gold_
 typedef enum stat_code
 {
 	ST_BEGIN,
-	ST_EQUI,
-	ST_FAEQ,
-	ST_SIEQ,
-	ST_REEQ,
-	ST_RBEQ,
-	ST_POEQ,
-	ST_NXEQ,
-	ST_BLEQ,
-	ST_CFEQ,
-	ST_SPEQ,
-	ST_TEEQ,
-	ST_ARM,
-	ST_BDAR,
-	ST_AVAR,
-	ST_GDAR,	
-	ST_STRAR,
-	ST_INTAR,
-	ST_WISAR,
-	ST_DEXAR,
-	ST_CONAR,
-	ST_CUAR,
-	ST_WEAP,
-	ST_BDWE,
-	ST_AVWE,
-	ST_GDWE,
-	ST_SLWE,
-	ST_EVWE,
-	ST_KIWE,
-	ST_BRWE,
-	ST_WEWE,
-	ST_DEWE,
-	ST_GOWE,
-	ST_HAWE,
-	ST_XBWE,
-	ST_TEWE,
-	ST_HUWE,
-	ST_EGWE,
-	ST_MOWE,
+	ST_EQUIPMENT,
+	ST_FA_EQUIPMENT,
+	ST_SI_EQUIPMENT,
+	ST_RESIST_EQUIPMENT,
+	ST_RBASE_EQUIPMENT,
+	ST_RPOIS_EQUIPMENT,
+	ST_RNEXUS_EQUIPMENT,
+	ST_RBLIND_EQUIPMENT,
+	ST_RCONF_EQUIPMENT,
+	ST_SPEED_EQUIPMENT,
+	ST_TELEP_EQUIPMENT,
+	ST_ARMORS,
+	ST_BAD_ARMOR,
+	ST_AVERAGE_ARMOR,
+	ST_GOOD_ARMOR,	
+	ST_STR_ARMOR,
+	ST_INT_ARMOR,
+	ST_WIS_ARMOR,
+	ST_DEX_ARMOR,
+	ST_CON_ARMOR,
+	ST_CURSED_ARMOR,
+	ST_WEAPONS,
+	ST_BAD_WEAPONS,
+	ST_AVERAGE_WEAPONS,
+	ST_GOOD_WEAPONS,
+	ST_SLAY_WEAPONS,
+	ST_SLAYEVIL_WEAPONS,
+	ST_KILL_WEAPONS,
+	ST_BRAND_WEAPONS,
+	ST_WESTERNESSE_WEAPONS,
+	ST_DEFENDER_WEAPONS,
+	ST_GONDOLIN_WEAPONS,
+	ST_HOLY_WEAPONS,
+	ST_XTRABLOWS_WEAPONS,
+	ST_TELEP_WEAPONS,
+	ST_HUGE_WEAPONS,
+	ST_ENDGAME_WEAPONS,
+	ST_MORGUL_WEAPONS,
 	ST_BOWS,
-	ST_BDBW,
-	ST_AVBW,
-	ST_GDBW,
-	ST_VGBW,
-	ST_XMBW,
-	ST_XSBW,
-	ST_BUBW,
-	ST_TEBW,
-	ST_CUBW,
-	ST_POTS,
-	ST_GAPO,
-	ST_HEPO,
-	ST_BHPO,
-	ST_RMPO,
-	ST_SCRO,
-	ST_EGSC,
-	ST_AQSC,
+	ST_BAD_BOWS,
+	ST_AVERAGE_BOWS,
+	ST_GOOD_BOWS,
+	ST_VERYGOOD_BOWS,
+	ST_XTRAMIGHT_BOWS,
+	ST_XTRASHOTS_BOWS,
+	ST_BUCKLAND_BOWS,
+	ST_TELEP_BOWS,
+	ST_CURSED_BOWS,
+	ST_POTIONS,
+	ST_GAINSTAT_POTIONS,
+	ST_HEALING_POTIONS,
+	ST_BIGHEAL_POTIONS,
+	ST_RESTOREMANA_POTIONS,
+	ST_SCROLLS,
+	ST_ENDGAME_SCROLLS,
+	ST_ACQUIRE_SCROLLS,
 	ST_RODS,
-	ST_UTRO,
-	ST_TORO,
-	ST_DARO,
-	ST_EGRO,
-	ST_STAV,
-	ST_SPST,
-	ST_DEST,
-	ST_KIST,
-	ST_EGST,
-	ST_WAND,
-	ST_TOWA,
-	ST_RING,
-	ST_SPRI,
-	ST_STRI,
-	ST_PORI,
-	ST_FARI,
-	ST_SIRI,
-	ST_BRRI,
-	ST_ELRI,
-	ST_ONRI,
-	ST_CURI,
-	ST_AMUL,
-	ST_WIAM,
-	ST_TEAM,
-	ST_EGAM,
-	ST_CUAM,
+	ST_UTILITY_RODS,
+	ST_TELEPOTHER_RODS,
+	ST_DETECTALL_RODS,
+	ST_ENDGAME_RODS,
+	ST_STAVES,
+	ST_SPEED_STAVES,
+	ST_DESTRUCTION_STAVES,
+	ST_KILL_STAVES,
+	ST_ENDGAME_STAVES,
+	ST_WANDS,
+	ST_TELEPOTHER_WANDS,
+	ST_RINGS,
+	ST_SPEEDS_RINGS,
+	ST_STAT_RINGS,
+	ST_RPOIS_RINGS,
+	ST_FA_RINGS,
+	ST_SI_RINGS,
+	ST_BRAND_RINGS,
+	ST_ELVEN_RINGS,
+	ST_ONE_RINGS,
+	ST_CURSED_RINGS,
+	ST_AMULETS,
+	ST_WIS_AMULETS,
+	ST_TELEP_AMULETS,
+	ST_ENDGAME_AMULETS,
+	ST_CURSED_AMULETS,
 	ST_AMMO,
-	ST_BDMO,
-	ST_AVMO,
-	ST_GDMO,
-	ST_BRMO,
-	ST_VGMO,
-	ST_AWMO,
-	ST_EVMO,
-	ST_HMMO,
-	ST_BOOK,
-	ST_B1BK,
-	ST_B2BK,
-	ST_B3BK,
-	ST_B4BK,
-	ST_B5BK,
-	ST_B6BK,
-	ST_B7BK,
-	ST_B8BK,
-	ST_B9BK,
+	ST_BAD_AMMO,
+	ST_AVERAGE_AMMO,
+	ST_GOOD_AMMO,
+	ST_BRANDSLAY_AMMO,
+	ST_VERYGOOD_AMMO,
+	ST_AWESOME_AMMO,
+	ST_SLAYEVIL_AMMO,
+	ST_HOLY_AMMO,
+	ST_BOOKS,
+	ST_1ST_BOOKS,
+	ST_2ND_BOOKS,
+	ST_3RD_BOOKS,
+	ST_4TH_BOOKS,
+	ST_5TH_BOOKS,
+	ST_6TH_BOOKS,
+	ST_7TH_BOOKS,
+	ST_8TH_BOOKS,
+	ST_9TH_BOOKS,
 	ST_END
 }	
 stat_code;
@@ -212,108 +212,108 @@ struct stat_data
 static const struct stat_data stat_message[] =
 {
 	{ST_BEGIN, ""},
-	{ST_EQUI, "\n ***EQUIPMENT*** \n All:       "},
-	{ST_FAEQ, " Free Action "},
-	{ST_SIEQ, " See Invis   "},
-	{ST_REEQ, " Low Resist  "},
-	{ST_RBEQ, " Resist Base "},
-	{ST_POEQ, " Resist Pois "},
-	{ST_NXEQ, " Res. Nexus  "},
-	{ST_BLEQ, " Res. Blind  "},	
-	{ST_CFEQ, " Res. Conf.  "},
-	{ST_SPEQ, " Speed       "},
-	{ST_TEEQ, " Telepathy   "},
-	{ST_ARM,  "\n ***ARMOR***      \n All:      "},
-	{ST_BDAR, " Bad         "},
-	{ST_AVAR, " Average     "},
-	{ST_GDAR, " Good        "},	
-	{ST_STRAR, " +Strength   "},
-	{ST_INTAR, " +Intel.     "},
-	{ST_WISAR, " +Wisdom     "},
-	{ST_DEXAR, " +Dexterity  "},
-	{ST_CONAR, " +Const.     "},
-	{ST_CUAR, " Cursed       "},
-	{ST_WEAP, "\n ***WEAPONS***   \n All:       "},
-	{ST_BDWE, " Bad         "},
-	{ST_AVWE, " Average     "},
-	{ST_GDWE, " Good        "},
-	{ST_SLWE, " Weak Slay   "},
-	{ST_EVWE, " Slay evil   "},
-	{ST_KIWE, " *Slay*      "},
-	{ST_BRWE, " Brand       "},
-	{ST_WEWE, " Westernesse "},
-	{ST_DEWE, " Defender    "},
-	{ST_GOWE, " Gondolin    "},
-	{ST_HAWE, " Holy Avengr "},
-	{ST_XBWE, " Extra Blows "},
-	{ST_TEWE, " Telepathy   "},
-	{ST_HUWE, " Huge        "},//MoD, SoS and BoC
-	{ST_EGWE, " Endgame     "},//MoD, SoS and BoC with slay evil or x2B
-	{ST_MOWE, " Morgul      "},
+	{ST_EQUIPMENT, "\n ***EQUIPMENT*** \n All:       "},
+	{ST_FA_EQUIPMENT, " Free Action "},
+	{ST_SI_EQUIPMENT, " See Invis   "},
+	{ST_RESIST_EQUIPMENT, " Low Resist  "},
+	{ST_RBASE_EQUIPMENT, " Resist Base "},
+	{ST_RPOIS_EQUIPMENT, " Resist Pois "},
+	{ST_RNEXUS_EQUIPMENT, " Res. Nexus  "},
+	{ST_RBLIND_EQUIPMENT, " Res. Blind  "},	
+	{ST_RCONF_EQUIPMENT, " Res. Conf.  "},
+	{ST_SPEED_EQUIPMENT, " Speed       "},
+	{ST_TELEP_EQUIPMENT, " Telepathy   "},
+	{ST_ARMORS,  "\n ***ARMOR***      \n All:      "},
+	{ST_BAD_ARMOR, " Bad         "},
+	{ST_AVERAGE_ARMOR, " Average     "},
+	{ST_GOOD_ARMOR, " Good        "},	
+	{ST_STR_ARMOR, " +Strength   "},
+	{ST_INT_ARMOR, " +Intel.     "},
+	{ST_WIS_ARMOR, " +Wisdom     "},
+	{ST_DEX_ARMOR, " +Dexterity  "},
+	{ST_CON_ARMOR, " +Const.     "},
+	{ST_CURSED_ARMOR, " Cursed       "},
+	{ST_WEAPONS, "\n ***WEAPONS***   \n All:       "},
+	{ST_BAD_WEAPONS, " Bad         "},
+	{ST_AVERAGE_WEAPONS, " Average     "},
+	{ST_GOOD_WEAPONS, " Good        "},
+	{ST_SLAY_WEAPONS, " Weak Slay   "},
+	{ST_SLAYEVIL_WEAPONS, " Slay evil   "},
+	{ST_KILL_WEAPONS, " *Slay*      "},
+	{ST_BRAND_WEAPONS, " Brand       "},
+	{ST_WESTERNESSE_WEAPONS, " Westernesse "},
+	{ST_DEFENDER_WEAPONS, " Defender    "},
+	{ST_GONDOLIN_WEAPONS, " Gondolin    "},
+	{ST_HOLY_WEAPONS, " Holy Avengr "},
+	{ST_XTRABLOWS_WEAPONS, " Extra Blows "},
+	{ST_TELEP_WEAPONS, " Telepathy   "},
+	{ST_HUGE_WEAPONS, " Huge        "},//MoD, SoS and BoC
+	{ST_ENDGAME_WEAPONS, " Endgame     "},//MoD, SoS and BoC with slay evil or x2B
+	{ST_MORGUL_WEAPONS, " Morgul      "},
 	{ST_BOWS, "\n ***LAUNCHERS*** \n All:        "},
-	{ST_BDBW, " Bad         "},
-	{ST_AVBW, " Average     "},
-	{ST_GDBW, " Good        "},
-	{ST_VGBW, " Very Good   "},//Power > 15
-	{ST_XMBW, " Extra might "},
-	{ST_XSBW, " Extra shots "},
-	{ST_BUBW, " Buckland    "},
-	{ST_TEBW, " Telepathy   "},
-	{ST_CUBW, " Cursed      "},
-	{ST_POTS, "\n ***POTIONS***   \n All:        "},
-	{ST_GAPO, " Gain stat   "},//includes *enlight*
-	{ST_HEPO, " Healing     "},
-	{ST_BHPO, " Big heal    "},//*heal* and life
-	{ST_RMPO, " Rest. Mana  "},
-	{ST_SCRO, "\n ***SCROLLS***   \n All:        "},
-	{ST_EGSC, " Endgame     "},// destruction, banish, mass banish, rune
-	{ST_AQSC, " Acquire.    "},
+	{ST_BAD_BOWS, " Bad         "},
+	{ST_AVERAGE_BOWS, " Average     "},
+	{ST_GOOD_BOWS, " Good        "},
+	{ST_VERYGOOD_BOWS, " Very Good   "},//Power > 15
+	{ST_XTRAMIGHT_BOWS, " Extra might "},
+	{ST_XTRASHOTS_BOWS, " Extra shots "},
+	{ST_BUCKLAND_BOWS, " Buckland    "},
+	{ST_TELEP_BOWS, " Telepathy   "},
+	{ST_CURSED_BOWS, " Cursed      "},
+	{ST_POTIONS, "\n ***POTIONS***   \n All:        "},
+	{ST_GAINSTAT_POTIONS, " Gain stat   "},//includes *enlight*
+	{ST_HEALING_POTIONS, " Healing     "},
+	{ST_BIGHEAL_POTIONS, " Big heal    "},//*heal* and life
+	{ST_RESTOREMANA_POTIONS, " Rest. Mana  "},
+	{ST_SCROLLS, "\n ***SCROLLS***   \n All:        "},
+	{ST_ENDGAME_SCROLLS, " Endgame     "},// destruction, banish, mass banish, rune
+	{ST_ACQUIRE_SCROLLS, " Acquire.    "},
 	{ST_RODS, "\n ***RODS***      \n All:        "},
-	{ST_UTRO, " Utility     "},//dtrap, dstairs, dobj, light, illum
-	{ST_TORO, " Tele Other  "},
-	{ST_DARO, " Detect all  "},
-	{ST_EGRO, " Endgame     "},//speed, healing
-	{ST_STAV, "\n ***STAVES***    \n All:        "},
-	{ST_SPST, " Speed       "},
-	{ST_DEST, " Destruction "},
-	{ST_KIST, " Kill        "},//dispel evil, power, holiness
-	{ST_EGST, " Endgame     "},//healing, magi, banishment
-	{ST_WAND, "\n ***WANDS***     \n All:        "},
-	{ST_TOWA, " Tele Other  "},
-	{ST_RING, "\n ***RINGS***     \n All:        "},
-	{ST_SPRI, " Speed       "},
-	{ST_STRI, " Stat        "},//str, dex, con, int
-	{ST_PORI, " Res. Pois.  "},
-	{ST_FARI, " Free Action "},
-	{ST_SIRI, " See Invis.  "},
-	{ST_BRRI, " Brand       "},
-	{ST_ELRI, " Elven       "},
-	{ST_ONRI, " The One     "},
-	{ST_CURI, " Cursed      "},
-	{ST_RING, "\n ***AMULETS***   \n All:        "},
-	{ST_WIAM, " Wisdom      "},
-	{ST_TEAM, " Telepathy   "},
-	{ST_EGAM, " Endgame     "},//Trickery, weaponmastery, magi
-	{ST_CUAM, " Cursed      "},
+	{ST_UTILITY_RODS, " Utility     "},//dtrap, dstairs, dobj, light, illum
+	{ST_TELEPOTHER_RODS, " Tele Other  "},
+	{ST_DETECTALL_RODS, " Detect all  "},
+	{ST_ENDGAME_RODS, " Endgame     "},//speed, healing
+	{ST_STAVES, "\n ***STAVES***    \n All:        "},
+	{ST_SPEED_STAVES, " Speed       "},
+	{ST_DESTRUCTION_STAVES, " Destruction "},
+	{ST_KILL_STAVES, " Kill        "},//dispel evil, power, holiness
+	{ST_ENDGAME_STAVES, " Endgame     "},//healing, magi, banishment
+	{ST_WANDS, "\n ***WANDS***     \n All:        "},
+	{ST_TELEPOTHER_WANDS, " Tele Other  "},
+	{ST_RINGS, "\n ***RINGS***     \n All:        "},
+	{ST_SPEEDS_RINGS, " Speed       "},
+	{ST_STAT_RINGS, " Stat        "},//str, dex, con, int
+	{ST_RPOIS_RINGS, " Res. Pois.  "},
+	{ST_FA_RINGS, " Free Action "},
+	{ST_SI_RINGS, " See Invis.  "},
+	{ST_BRAND_RINGS, " Brand       "},
+	{ST_ELVEN_RINGS, " Elven       "},
+	{ST_ONE_RINGS, " The One     "},
+	{ST_CURSED_RINGS, " Cursed      "},
+	{ST_RINGS, "\n ***AMULETS***   \n All:        "},
+	{ST_WIS_AMULETS, " Wisdom      "},
+	{ST_TELEP_AMULETS, " Telepathy   "},
+	{ST_ENDGAME_AMULETS, " Endgame     "},//Trickery, weaponmastery, magi
+	{ST_CURSED_AMULETS, " Cursed      "},
 	{ST_AMMO, "\n ***AMMO***      \n All:        "},
-	{ST_BDMO, " Bad         "},
-	{ST_AVMO, " Average     "},
-	{ST_GDMO, " Good        "},
-	{ST_BDMO, " Brand       "},
-	{ST_VGMO, " Very Good   "},//seeker or mithril
-	{ST_AWMO, " Awesome     "},//seeker, mithril + brand
-	{ST_EVMO, " Slay evil   "},
-	{ST_HMMO, " Holy might  "},
-	{ST_BOOK, "\n ***BOOKS***     \n All:        "},
-	{ST_B1BK, " Book 1      "},
-	{ST_B2BK, " Book 2      "},
-	{ST_B3BK, " Book 3      "},
-	{ST_B4BK, " Book 4      "},
-	{ST_B5BK, " Book 5      "},
-	{ST_B6BK, " Book 6      "},
-	{ST_B7BK, " Book 7      "},
-	{ST_B8BK, " Book 8      "},
-	{ST_B9BK, " Book 9      "},	
+	{ST_BAD_AMMO, " Bad         "},
+	{ST_AVERAGE_AMMO, " Average     "},
+	{ST_GOOD_AMMO, " Good        "},
+	{ST_BAD_AMMO, " Brand       "},
+	{ST_VERYGOOD_AMMO, " Very Good   "},//seeker or mithril
+	{ST_AWESOME_AMMO, " Awesome     "},//seeker, mithril + brand
+	{ST_SLAYEVIL_AMMO, " Slay evil   "},
+	{ST_HOLY_AMMO, " Holy might  "},
+	{ST_BOOKS, "\n ***BOOKS***     \n All:        "},
+	{ST_1ST_BOOKS, " Book 1      "},
+	{ST_2ND_BOOKS, " Book 2      "},
+	{ST_3RD_BOOKS, " Book 3      "},
+	{ST_4TH_BOOKS, " Book 4      "},
+	{ST_5TH_BOOKS, " Book 5      "},
+	{ST_6TH_BOOKS, " Book 6      "},
+	{ST_7TH_BOOKS, " Book 7      "},
+	{ST_8TH_BOOKS, " Book 8      "},
+	{ST_9TH_BOOKS, " Book 9      "},	
 };	
 
 double stat_all[ST_END][3][MAX_LVL];
@@ -439,7 +439,7 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 		!((o_ptr->tval == TV_AMULET) && (o_ptr->sval==SV_AMULET_INERTIA))){
 
 			/* add the stats */
-			add_stats(ST_FAEQ, vault, mon, number);
+			add_stats(ST_FA_EQUIPMENT, vault, mon, number);
 
 			/* record first level */
 			first_find(fa_it);
@@ -449,7 +449,7 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 	/* has see invis */
 	if (of_has(f,OF_SEE_INVIS)){
 
-		add_stats(ST_SIEQ, vault, mon, number);
+		add_stats(ST_SI_EQUIPMENT, vault, mon, number);
 		first_find(si_it);
 	}
 	/* has at least one basic resist */
@@ -458,7 +458,7 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 		(o_ptr->el_info[ELEM_COLD].res_level == 1) ||
 		(o_ptr->el_info[ELEM_FIRE].res_level == 1)){
 
-			add_stats(ST_REEQ, vault, mon, number);
+			add_stats(ST_RESIST_EQUIPMENT, vault, mon, number);
 	}
 
 	/* has rbase */
@@ -466,43 +466,43 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 		(o_ptr->el_info[ELEM_ELEC].res_level == 1) &&
 		(o_ptr->el_info[ELEM_COLD].res_level == 1) &&
 		(o_ptr->el_info[ELEM_FIRE].res_level == 1))
-		add_stats(ST_RBEQ, vault, mon, number);
+		add_stats(ST_RBASE_EQUIPMENT, vault, mon, number);
 
 	/* has resist poison */
 	if (o_ptr->el_info[ELEM_POIS].res_level == 1){
 
-		add_stats(ST_POEQ, vault, mon, number);
+		add_stats(ST_RPOIS_EQUIPMENT, vault, mon, number);
 		first_find(po_it);
 		
 	}
 	/* has resist nexus */
 	if (o_ptr->el_info[ELEM_NEXUS].res_level == 1){
 
-		add_stats(ST_NXEQ, vault, mon, number);
+		add_stats(ST_RNEXUS_EQUIPMENT, vault, mon, number);
 		first_find(nx_it);
 	}
 	/* has resist blind */
 	if (of_has(f,OF_PROT_BLIND)){
 
-		add_stats(ST_BLEQ, vault, mon, number);
+		add_stats(ST_RBLIND_EQUIPMENT, vault, mon, number);
 		first_find(bl_it);
 	}
 
 	/* has resist conf */
 	if (of_has(f,OF_PROT_CONF)){
 
-		add_stats(ST_CFEQ, vault, mon, number);
+		add_stats(ST_RCONF_EQUIPMENT, vault, mon, number);
 		first_find(cf_it);
 	}
 
 	/* has speed */
 	if (o_ptr->modifiers[OBJ_MOD_SPEED] != 0)
-		add_stats(ST_SPEQ, vault, mon, number);
+		add_stats(ST_SPEED_EQUIPMENT, vault, mon, number);
 
 	/* has telepathy */
 	if (of_has(f,OF_TELEPATHY)){
 
-		add_stats(ST_TEEQ, vault, mon, number);
+		add_stats(ST_TELEP_EQUIPMENT, vault, mon, number);
 		first_find(te_it);
 	}
 
@@ -523,36 +523,36 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 			if (o_ptr->artifact) break;
 
 			/* add to armor total */
-			add_stats(ST_ARM, vault, mon, number);
+			add_stats(ST_ARMORS, vault, mon, number);
 
 			/* check if bad, good, or average */
 			if (o_ptr->to_a < 0)
-				add_stats(ST_BDAR, vault, mon, number);
+				add_stats(ST_BAD_ARMOR, vault, mon, number);
 			if (o_ptr->to_h == 0)
-				add_stats(ST_AVAR, vault, mon, number);
+				add_stats(ST_AVERAGE_ARMOR, vault, mon, number);
 			if (o_ptr->to_h > 0)
-				add_stats(ST_GDAR, vault, mon, number);
+				add_stats(ST_GOOD_ARMOR, vault, mon, number);
 
 			/* has str boost */
 			if (o_ptr->modifiers[OBJ_MOD_STR] != 0)
-				add_stats(ST_STRAR, vault, mon, number);
+				add_stats(ST_STR_ARMOR, vault, mon, number);
 
 			/* has dex boost */
 			if (o_ptr->modifiers[OBJ_MOD_DEX] != 0)
-				add_stats(ST_DEXAR, vault, mon, number);
+				add_stats(ST_DEX_ARMOR, vault, mon, number);
 
 			/* has int boost */
 			if (o_ptr->modifiers[OBJ_MOD_INT] != 0)
-				add_stats(ST_INTAR, vault, mon, number);
+				add_stats(ST_INT_ARMOR, vault, mon, number);
 
 			if (o_ptr->modifiers[OBJ_MOD_WIS] != 0)
-				add_stats(ST_WISAR, vault, mon, number);
+				add_stats(ST_WIS_ARMOR, vault, mon, number);
 
 			if (o_ptr->modifiers[OBJ_MOD_CON] != 0)
-				add_stats(ST_CONAR, vault, mon, number);
+				add_stats(ST_CON_ARMOR, vault, mon, number);
 
 			if (of_has(f,OF_LIGHT_CURSE))
-				add_stats(ST_CUAR, vault, mon, number);
+				add_stats(ST_CURSED_ARMOR, vault, mon, number);
 
 			break;
 		}
@@ -567,71 +567,71 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 			if (o_ptr->artifact) break;
 
 			/* add to weapon total */
-			add_stats(ST_WEAP, vault, mon, number);
+			add_stats(ST_WEAPONS, vault, mon, number);
 
 			/* extract flags */
 			object_flags(o_ptr,f);
 
 			/* check if bad, good, or average */
 			if ((o_ptr->to_h < 0)  && (o_ptr->to_d < 0))
-				add_stats(ST_BDWE, vault, mon, number);
+				add_stats(ST_BAD_WEAPONS, vault, mon, number);
 			if ((o_ptr->to_h == 0) && (o_ptr->to_d == 0))
-				add_stats(ST_AVWE, vault, mon, number);
+				add_stats(ST_AVERAGE_WEAPONS, vault, mon, number);
 			if ((o_ptr->to_h > 0) && (o_ptr->to_d > 0))
-				add_stats(ST_GDWE, vault, mon, number);
+				add_stats(ST_GOOD_WEAPONS, vault, mon, number);
 
 			/* Egos by name - changes results a little */
 			if (o_ptr->ego) {
 				/* slay evil */
 				if (strstr(o_ptr->ego->name, "of Slay Evil"))
-					add_stats(ST_EVWE, vault, mon, number);
+					add_stats(ST_SLAYEVIL_WEAPONS, vault, mon, number);
 
 				/* slay weapons */
 				else if (strstr(o_ptr->ego->name, "of Slay"))
-					add_stats(ST_SLWE, vault, mon, number);
+					add_stats(ST_SLAY_WEAPONS, vault, mon, number);
 				/* kill flag */
 				if (strstr(o_ptr->ego->name, "of *Slay"))
-					add_stats(ST_KIWE, vault, mon, number);
+					add_stats(ST_KILL_WEAPONS, vault, mon, number);
 
 				/* determine westernesse by flags */
 				if (strstr(o_ptr->ego->name, "Westernesse"))
-					add_stats(ST_WEWE, vault, mon, number);
+					add_stats(ST_WESTERNESSE_WEAPONS, vault, mon, number);
 
 				/* determine defender by flags */
 				if (strstr(o_ptr->ego->name, "Defender"))
-					add_stats(ST_DEWE, vault, mon, number);
+					add_stats(ST_DEFENDER_WEAPONS, vault, mon, number);
 
 				/* determine gondolin by flags */
 				if (strstr(o_ptr->ego->name, "Gondolin"))
-					add_stats(ST_GOWE, vault, mon, number);
+					add_stats(ST_GONDOLIN_WEAPONS, vault, mon, number);
 
 				/* determine holy avenger by flags */
 				if (strstr(o_ptr->ego->name, "Avenger"))
-					add_stats(ST_HAWE, vault, mon, number);
+					add_stats(ST_HOLY_WEAPONS, vault, mon, number);
 
 				/* is morgul */
 				if (strstr(o_ptr->ego->name, "Morgul"))
-					add_stats(ST_MOWE, vault, mon, number);
+					add_stats(ST_MORGUL_WEAPONS, vault, mon, number);
 			}
 
 			/* branded weapons */
 			if (o_ptr->brands)
-				add_stats(ST_BRWE, vault, mon, number);
+				add_stats(ST_BRAND_WEAPONS, vault, mon, number);
 
 			/* extra blows */
 			if (o_ptr->modifiers[OBJ_MOD_BLOWS] > 0)
-				add_stats(ST_XBWE, vault, mon, number);
+				add_stats(ST_XTRABLOWS_WEAPONS, vault, mon, number);
 
 			/* telepathy */
 			if (of_has(f,OF_TELEPATHY))
-				add_stats(ST_TEWE, vault, mon, number);
+				add_stats(ST_TELEP_WEAPONS, vault, mon, number);
 
 			/* is a top of the line weapon */
 			if (((o_ptr->tval == TV_HAFTED) && (o_ptr->sval == SV_MACE_OF_DISRUPTION)) ||
 				((o_ptr->tval == TV_POLEARM) && (o_ptr->sval == SV_SCYTHE_OF_SLICING)) ||
 				((o_ptr->tval == TV_SWORD) && (o_ptr->sval == SV_BLADE_OF_CHAOS)))
 			{
-				add_stats(ST_HUWE, vault, mon, number);
+				add_stats(ST_HUGE_WEAPONS, vault, mon, number);
 
 				/* is uber need to fix ACB
 				if ((of_has(f,OF_SLAY_EVIL)) || (o_ptr->modifiers[OBJ_MOD_BLOWS] > 0))
@@ -656,13 +656,13 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 
 			/* check if bad, average, good, or very good */
 			if ((o_ptr->to_h < 0) && (o_ptr->to_d < 0))
-				add_stats(ST_BDBW, vault, mon, number);
+				add_stats(ST_BAD_BOWS, vault, mon, number);
 			if ((o_ptr->to_h == 0) && (o_ptr->to_d == 0))
-				add_stats(ST_AVBW, vault, mon, number);
+				add_stats(ST_AVERAGE_BOWS, vault, mon, number);
 			if ((o_ptr->to_h > 0) && (o_ptr->to_d > 0))
-				add_stats(ST_GDBW, vault, mon, number);
+				add_stats(ST_GOOD_BOWS, vault, mon, number);
 			if ((o_ptr->to_h > 15) || (o_ptr->to_d > 15))
-				add_stats(ST_VGBW, vault, mon, number);
+				add_stats(ST_VERYGOOD_BOWS, vault, mon, number);
 
 			/* check long bows and xbows for xtra might and/or shots */
 			if ((o_ptr->sval == SV_LONG_BOW) ||
@@ -670,25 +670,25 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 				(o_ptr->sval == SV_HEAVY_XBOW))
 			{
 				if (o_ptr->modifiers[OBJ_MOD_SHOTS] > 0)
-					add_stats(ST_XSBW, vault, mon, number);
+					add_stats(ST_XTRASHOTS_BOWS, vault, mon, number);
 
 				if (o_ptr->modifiers[OBJ_MOD_MIGHT] > 0)
-					add_stats(ST_XMBW, vault, mon, number);
+					add_stats(ST_XTRAMIGHT_BOWS, vault, mon, number);
 			}
 
 			/* check for buckland */
 			if ((o_ptr->sval == SV_SLING) &&
 				(o_ptr->modifiers[OBJ_MOD_MIGHT] > 0) &&
 				(o_ptr->modifiers[OBJ_MOD_SHOTS] > 0))
-					add_stats(ST_BUBW, vault, mon, number);
+					add_stats(ST_BUCKLAND_BOWS, vault, mon, number);
 
 			/* has telep */
 			if (of_has(f,OF_TELEPATHY))
-				add_stats(ST_TEBW, vault, mon, number);
+				add_stats(ST_TELEP_BOWS, vault, mon, number);
 
 			/* is cursed */
 			if (of_has(f,OF_LIGHT_CURSE))
-				add_stats(ST_CUBW, vault, mon, number);
+				add_stats(ST_CURSED_BOWS, vault, mon, number);
 			break;
 		}
 
@@ -696,7 +696,7 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 		case TV_POTION:{
 
 			/* add total amounts */
-			add_stats(ST_POTS, vault, mon, number);
+			add_stats(ST_POTIONS, vault, mon, number);
 
 			/* get effects */
 			effect=object_effect(o_ptr);
@@ -710,7 +710,7 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 				case EF_GAIN_DEX:
 				case EF_GAIN_CON:{
 
-					add_stats(ST_GAPO, vault, mon, number);
+					add_stats(ST_GAINSTAT_POTIONS, vault, mon, number);
 					break;
 				}
 
@@ -718,7 +718,7 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 				case EF_GAIN_ALL:{
 
 					/*Augmentation counts as 5 stat gain pots */
-					add_stats(ST_GAPO, vault, mon, number*5);
+					add_stats(ST_GAINSTAT_POTIONS, vault, mon, number*5);
 					
 				}
 
@@ -726,25 +726,25 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 
 					/* *Enlight* counts as 2 stat pots */
 					
-					add_stats(ST_GAPO, vault, mon, number*2);
+					add_stats(ST_GAINSTAT_POTIONS, vault, mon, number*2);
 					
 				}
 
 				case EF_RESTORE_MANA:{
 
-					add_stats(ST_RMPO, vault, mon, number);
+					add_stats(ST_RESTOREMANA_POTIONS, vault, mon, number);
 					break;
 				}
 
 				case EF_CURE_FULL:{
-					add_stats(ST_HEPO, vault, mon, number);
+					add_stats(ST_HEALING_POTIONS, vault, mon, number);
 					break;
 				}
 				
 				case EF_CURE_NONORLYBIG:
 				case EF_CURE_FULL2:{
 
-					add_stats(ST_BHPO, vault, mon, number);
+					add_stats(ST_BIGHEAL_POTIONS, vault, mon, number);
 					break;
 				}
 
@@ -756,7 +756,7 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 		case TV_SCROLL:{
 
 			/* add total amounts */
-			add_stats(ST_SCRO, vault, mon, number);
+			add_stats(ST_SCROLLS, vault, mon, number);
 
 			/* get effects */
 			effect=object_effect(o_ptr);
@@ -770,21 +770,21 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 				case EF_DESTRUCTION2:{
 
 					/* add to total */
-					add_stats(ST_EGSC, vault, mon, number);
+					add_stats(ST_ENDGAME_SCROLLS, vault, mon, number);
 					break;
 				}
 
 				case EF_ACQUIRE:{
 
 					/* add to total */
-					add_stats(ST_AQSC, vault, mon, number);
+					add_stats(ST_ACQUIRE_SCROLLS, vault, mon, number);
 					break;
 				}
 
 				case EF_ACQUIRE2:{
 
 					/* do the effect of 2 acquires */
-					add_stats(ST_AQSC, vault, mon, number*2);
+					add_stats(ST_ACQUIRE_SCROLLS, vault, mon, number*2);
 					break;
 				}
 			}
@@ -808,21 +808,21 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 				case EF_LIGHT_LINE:
 				case EF_ILLUMINATION:{
 
-					add_stats(ST_UTRO, vault, mon, number);
+					add_stats(ST_UTILITY_RODS, vault, mon, number);
 					break;
 				}
 
 				/* teleport other */
 				case EF_TELE_OTHER:{
 
-					add_stats(ST_TORO, vault, mon, number);
+					add_stats(ST_TELEPOTHER_RODS, vault, mon, number);
 					break;
 				}
 
 				/* detect all */
 				case EF_DETECT_ALL:{
 
-					add_stats(ST_DARO, vault, mon, number);
+					add_stats(ST_DETECTALL_RODS, vault, mon, number);
 					break;
 				}
 
@@ -830,7 +830,7 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 				case EF_HASTE:
 				case EF_HEAL3:{
 
-					add_stats(ST_EGRO, vault, mon, number);
+					add_stats(ST_ENDGAME_RODS, vault, mon, number);
 					break;
 				}
 			}
@@ -841,7 +841,7 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 		/* staves */
 		case TV_STAFF:{
 
-			add_stats(ST_STAV, vault, mon, number);
+			add_stats(ST_STAVES, vault, mon, number);
 
 			effect=object_effect(o_ptr);
 
@@ -849,13 +849,13 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 
 				case EF_HASTE:{
 
-					add_stats(ST_SPST, vault, mon, number);
+					add_stats(ST_SPEED_STAVES, vault, mon, number);
 					break;
 				}
 
 				case EF_DESTRUCTION2:{
 
-					add_stats(ST_DEST, vault, mon, number);
+					add_stats(ST_DESTRUCTION_STAVES, vault, mon, number);
 					break;
 				}
 
@@ -863,7 +863,7 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 				case EF_DISPEL_ALL:
 				case EF_STAFF_HOLY:{
 
-					add_stats(ST_KIST, vault, mon, number);
+					add_stats(ST_KILL_STAVES, vault, mon, number);
 					break;
 				}
 
@@ -871,7 +871,7 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 				case EF_BANISHMENT:
 				case EF_STAFF_MAGI:{
 
-					add_stats(ST_EGST, vault, mon, number);
+					add_stats(ST_ENDGAME_STAVES, vault, mon, number);
 					break;
 				}
 			}
@@ -880,7 +880,7 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 
 		case TV_WAND:{
 
-			add_stats(ST_WAND, vault, mon, number);
+			add_stats(ST_WANDS, vault, mon, number);
 
 			effect=object_effect(o_ptr);
 
@@ -888,7 +888,7 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 
 				case EF_TELE_OTHER:{
 
-					add_stats(ST_TOWA, vault, mon, number);
+					add_stats(ST_TELEPOTHER_WANDS, vault, mon, number);
 					break;
 				}
 			}
@@ -897,17 +897,17 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 
 		case TV_RING:{
 
-			add_stats(ST_RING, vault, mon, number);
+			add_stats(ST_RINGS, vault, mon, number);
 
 			/* is it cursed */
 			if (of_has(o_ptr->flags,OF_LIGHT_CURSE))
-				add_stats(ST_CURI, vault, mon, number);
+				add_stats(ST_CURSED_RINGS, vault, mon, number);
 
 			switch(o_ptr->sval){
 
 				case SV_RING_SPEED:{
 
-					add_stats(ST_SPRI, vault, mon, number);
+					add_stats(ST_SPEEDS_RINGS, vault, mon, number);
 					break;
 				}
 
@@ -916,25 +916,25 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 				case SV_RING_DEXTERITY:
 				case SV_RING_CONSTITUTION:{
 
-					add_stats(ST_STRI, vault, mon, number);
+					add_stats(ST_STAT_RINGS, vault, mon, number);
 					break;
 				}
 
 				case SV_RING_RESIST_POISON:{
 
-					add_stats(ST_PORI, vault, mon, number);
+					add_stats(ST_RPOIS_RINGS, vault, mon, number);
 					break;
 				}
 
 				case SV_RING_FREE_ACTION:{
 
-					add_stats(ST_FARI, vault, mon, number);
+					add_stats(ST_FA_RINGS, vault, mon, number);
 					break;
 				}
 
 				case SV_RING_SEE_INVISIBLE:{
 
-					add_stats(ST_SIRI, vault, mon, number);
+					add_stats(ST_SI_RINGS, vault, mon, number);
 					break;
 				}
 
@@ -943,7 +943,7 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 				case SV_RING_ICE:
 				case SV_RING_LIGHTNING:{
 
-					add_stats(ST_BRRI, vault, mon, number);
+					add_stats(ST_BRAND_RINGS, vault, mon, number);
 					break;
 				}
 
@@ -951,13 +951,13 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 				case SV_RING_NENYA:
 				case SV_RING_VILYA:{
 
-					add_stats(ST_ELRI, vault, mon, number);
+					add_stats(ST_ELVEN_RINGS, vault, mon, number);
 					break;
 				}
 
 				case SV_RING_POWER:{
 
-					add_stats(ST_ONRI, vault, mon, number);
+					add_stats(ST_ONE_RINGS, vault, mon, number);
 					break;
 				}
 
@@ -969,7 +969,7 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 
 		case TV_AMULET:{
 
-			add_stats(ST_AMUL, vault, mon, number);
+			add_stats(ST_AMULETS, vault, mon, number);
 
 			/* extract flags */
 			object_flags(o_ptr,f);
@@ -979,7 +979,7 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 				/* wisdom */
 				case SV_AMULET_WISDOM:{
 
-					add_stats(ST_WIAM, vault, mon, number);
+					add_stats(ST_WIS_AMULETS, vault, mon, number);
 					break;
 				}
 
@@ -987,20 +987,20 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 				case SV_AMULET_TRICKERY:
 				case SV_AMULET_WEAPONMASTERY:{
 
-					add_stats(ST_EGAM, vault, mon, number);
+					add_stats(ST_ENDGAME_AMULETS, vault, mon, number);
 					break;
 				}
 
 				case SV_AMULET_ESP:{
 
-					add_stats(ST_TEAM, vault, mon, number);
+					add_stats(ST_TELEP_AMULETS, vault, mon, number);
 					break;
 				}
 
 			}
 			/* is cursed */
 			if (of_has(f,OF_LIGHT_CURSE))
-				add_stats(ST_CUAM, vault, mon, number);
+				add_stats(ST_CURSED_AMULETS, vault, mon, number);
 
 			break;
 		}
@@ -1016,29 +1016,29 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 
 			/* check if bad, average, good */
 			if ((o_ptr->to_h < 0) && (o_ptr->to_d < 0))
-				add_stats(ST_BDMO, vault, mon, number);
+				add_stats(ST_BAD_AMMO, vault, mon, number);
 			if ((o_ptr->to_h == 0) && (o_ptr->to_d == 0))
-				add_stats(ST_AVMO, vault, mon, number);
+				add_stats(ST_AVERAGE_AMMO, vault, mon, number);
 			if ((o_ptr->to_h > 0) && (o_ptr->to_d > 0))
-				add_stats(ST_GDMO, vault, mon, number);
+				add_stats(ST_GOOD_AMMO, vault, mon, number);
 
 			if (o_ptr->ego)
-				add_stats(ST_BRMO, vault, mon, number);
+				add_stats(ST_BRANDSLAY_AMMO, vault, mon, number);
 
 			if ((o_ptr->sval == SV_AMMO_HEAVY) || (o_ptr->sval == SV_AMMO_SILVER)){
 
 				/* Mithril and seeker ammo */
-				add_stats(ST_VGMO, vault, mon, number);
+				add_stats(ST_VERYGOOD_AMMO, vault, mon, number);
 
 				/* Ego mithril and seeker ammo */
 				if (o_ptr->ego) {
-					add_stats(ST_AWMO, vault, mon, number);
+					add_stats(ST_AWESOME_AMMO, vault, mon, number);
 
 					if (strstr(o_ptr->ego->name, "of Slay Evil"))
-						add_stats(ST_EVMO, vault, mon, number);
+						add_stats(ST_SLAYEVIL_AMMO, vault, mon, number);
 
 					if (strstr(o_ptr->ego->name, "of Holy Might"))
-						add_stats(ST_HMMO, vault, mon, number);
+						add_stats(ST_HOLY_AMMO, vault, mon, number);
 				}
 			}
 			break;
@@ -1053,63 +1053,63 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 				/* svals begin at 0 and end at 8 */
 				case 0:{
 
-					add_stats(ST_B1BK, vault, mon, number);
+					add_stats(ST_1ST_BOOKS, vault, mon, number);
 					first_find(mb1_it);
 					break;
 				}
 
 				case 1:{
 
-					add_stats(ST_B2BK, vault, mon, number);
+					add_stats(ST_2ND_BOOKS, vault, mon, number);
 					first_find(mb2_it);
 					break;
 				}
 
 				case 2:{
 
-					add_stats(ST_B3BK, vault, mon, number);
+					add_stats(ST_3RD_BOOKS, vault, mon, number);
 					first_find(mb3_it);
 					break;
 				}
 
 				case 3:{
 
-					add_stats(ST_B4BK, vault, mon, number);
+					add_stats(ST_4TH_BOOKS, vault, mon, number);
 					first_find(mb4_it);
 					break;
 				}
 
 				case 4:{
 
-					add_stats(ST_B5BK, vault, mon, number);
+					add_stats(ST_5TH_BOOKS, vault, mon, number);
 					first_find(mb5_it);
 					break;
 				}
 
 				case 5:{
 
-					add_stats(ST_B6BK, vault, mon, number);
+					add_stats(ST_6TH_BOOKS, vault, mon, number);
 					first_find(mb6_it);
 					break;
 				}
 
 				case 6:{
 
-					add_stats(ST_B7BK, vault, mon, number);
+					add_stats(ST_7TH_BOOKS, vault, mon, number);
 					first_find(mb7_it);
 					break;
 				}
 
 				case 7:{
 
-					add_stats(ST_B8BK, vault, mon, number);
+					add_stats(ST_8TH_BOOKS, vault, mon, number);
 					first_find(mb8_it);
 					break;
 				}
 
 				case 8:{
 
-					add_stats(ST_B9BK, vault, mon, number);
+					add_stats(ST_9TH_BOOKS, vault, mon, number);
 					first_find(mb9_it);
 					break;
 				}
@@ -1509,53 +1509,53 @@ static void post_process_stats(void)
 	file_putf(stats_log,"80\t\t\t85\t\t\t90\t\t\t95\t\t\t100\n");
 
 	file_putf(stats_log,"FA   \t");
-	prob_of_find(stat_all[ST_FAEQ][0]);
+	prob_of_find(stat_all[ST_FA_EQUIPMENT][0]);
 	mean_and_stdv(fa_it);
 	file_putf(stats_log,"SinV \t");
-	prob_of_find(stat_all[ST_SIEQ][0]);
+	prob_of_find(stat_all[ST_SI_EQUIPMENT][0]);
 	mean_and_stdv(si_it);
 	file_putf(stats_log,"RBl  \t");
-	prob_of_find(stat_all[ST_BLEQ][0]);
+	prob_of_find(stat_all[ST_RBLIND_EQUIPMENT][0]);
 	mean_and_stdv(bl_it);
 	file_putf(stats_log,"RCf  \t");
-	prob_of_find(stat_all[ST_CFEQ][0]);
+	prob_of_find(stat_all[ST_RCONF_EQUIPMENT][0]);
 	mean_and_stdv(cf_it);
 	file_putf(stats_log,"Nexus \t");
-	prob_of_find(stat_all[ST_NXEQ][0]);
+	prob_of_find(stat_all[ST_RNEXUS_EQUIPMENT][0]);
 	mean_and_stdv(nx_it);
 	file_putf(stats_log,"Pois \t");
-	prob_of_find(stat_all[ST_POEQ][0]);
+	prob_of_find(stat_all[ST_RPOIS_EQUIPMENT][0]);
 	mean_and_stdv(po_it);
 	file_putf(stats_log,"Tel  \t");
-	prob_of_find(stat_all[ST_TEEQ][0]);
+	prob_of_find(stat_all[ST_TELEP_EQUIPMENT][0]);
 	mean_and_stdv(te_it);
 	file_putf(stats_log,"\n");
 	file_putf(stats_log,"mb1  \t");
-	prob_of_find(stat_all[ST_B1BK][0]);
+	prob_of_find(stat_all[ST_1ST_BOOKS][0]);
 	mean_and_stdv(mb1_it);
 	file_putf(stats_log,"mb2  \t");
-	prob_of_find(stat_all[ST_B2BK][0]);
+	prob_of_find(stat_all[ST_2ND_BOOKS][0]);
 	mean_and_stdv(mb2_it);
 	file_putf(stats_log,"mb3  \t");
-	prob_of_find(stat_all[ST_B3BK][0]);
+	prob_of_find(stat_all[ST_3RD_BOOKS][0]);
 	mean_and_stdv(mb3_it);
 	file_putf(stats_log,"mb4  \t");
-	prob_of_find(stat_all[ST_B4BK][0]);
+	prob_of_find(stat_all[ST_4TH_BOOKS][0]);
 	mean_and_stdv(mb4_it);
 	file_putf(stats_log,"mb5  \t");
-	prob_of_find(stat_all[ST_B5BK][0]);
+	prob_of_find(stat_all[ST_5TH_BOOKS][0]);
 	mean_and_stdv(mb5_it);
 	file_putf(stats_log,"mb6  \t");
-	prob_of_find(stat_all[ST_B6BK][0]);
+	prob_of_find(stat_all[ST_6TH_BOOKS][0]);
 	mean_and_stdv(mb6_it);
 	file_putf(stats_log,"mb7  \t");
-	prob_of_find(stat_all[ST_B7BK][0]);
+	prob_of_find(stat_all[ST_7TH_BOOKS][0]);
 	mean_and_stdv(mb7_it);
 	file_putf(stats_log,"mb8  \t");
-	prob_of_find(stat_all[ST_B8BK][0]);
+	prob_of_find(stat_all[ST_8TH_BOOKS][0]);
 	mean_and_stdv(mb8_it);
 	file_putf(stats_log,"mb9  \t");
-	prob_of_find(stat_all[ST_B9BK][0]);
+	prob_of_find(stat_all[ST_9TH_BOOKS][0]);
 	mean_and_stdv(mb9_it);
 
 	/* print artifact total */
