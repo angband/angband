@@ -371,8 +371,8 @@ static s32b slay_power(const object_type *o_ptr, int p, int verbose,
 			monster_type monster_type_body;
 			const struct brand *b = NULL;
 			const struct slay *s = NULL;
-			char **verb;
-			verb = mem_zalloc(20 * sizeof(char));
+			char verb[20];
+			//verb = mem_zalloc(20 * sizeof(char));
 
 			mult = 1;
 			m_ptr = &monster_type_body;
@@ -380,7 +380,7 @@ static s32b slay_power(const object_type *o_ptr, int p, int verbose,
 
 			/* Find the best multiplier against this monster */
 			improve_attack_modifier((object_type *)o_ptr, m_ptr, &b, &s, 
-									(char **) &verb, FALSE, !known);
+									verb, FALSE, !known);
 			if (s)
 				mult = s->multiplier;
 			else if (b)
@@ -388,7 +388,7 @@ static s32b slay_power(const object_type *o_ptr, int p, int verbose,
 
 			/* Add the multiple to sv */
 			sv += mult * m_ptr->race->scaled_power;
-			mem_free(verb);
+			//mem_free(verb);
 		}
 
 		/*

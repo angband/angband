@@ -20,7 +20,7 @@ struct attack_result {
     bool success;
     int dmg;
     u32b msg_type;
-    const char *hit_verb;
+    char *hit_verb;
 };
 
 /**

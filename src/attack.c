@@ -235,11 +235,11 @@ static bool py_attack_real(int y, int x, bool *fear) {
 		for (i = INVEN_LEFT; i < INVEN_TOTAL; i++) {
 			struct object *obj = &player->inventory[i];
 			if (obj->kind)
-				improve_attack_modifier(obj, m_ptr, &b, &s, (char **) &hit_verb,
+				improve_attack_modifier(obj, m_ptr, &b, &s, hit_verb,
 										TRUE, FALSE);
 		}
 
-		improve_attack_modifier(o_ptr, m_ptr, &b, &s, (char **) &hit_verb, 
+		improve_attack_modifier(o_ptr, m_ptr, &b, &s, hit_verb, 
 								TRUE, FALSE);
 
 		dmg = damroll(o_ptr->dd, o_ptr->ds);
@@ -597,9 +597,9 @@ static struct attack_result make_ranged_shot(object_type *o_ptr, int y, int x) {
 
 	result.success = TRUE;
 
-	improve_attack_modifier(o_ptr, m_ptr, &b, &s, (char **) &result.hit_verb,
+	improve_attack_modifier(o_ptr, m_ptr, &b, &s, result.hit_verb,
 							TRUE, FALSE);
-	improve_attack_modifier(j_ptr, m_ptr, &b, &s, (char **) &result.hit_verb,
+	improve_attack_modifier(j_ptr, m_ptr, &b, &s, result.hit_verb,
 							TRUE, FALSE);
 
 	/* If we have a slay, modify the multiplier appropriately */
@@ -641,7 +641,7 @@ static struct attack_result make_ranged_throw(object_type *o_ptr, int y, int x) 
 
 	result.success = TRUE;
 
-	improve_attack_modifier(o_ptr, m_ptr, &b, &s, (char **) &result.hit_verb,
+	improve_attack_modifier(o_ptr, m_ptr, &b, &s, result.hit_verb,
 							TRUE, FALSE);
 
 	/* If we have a slay, modify the multiplier appropriately */
