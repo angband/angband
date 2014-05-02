@@ -388,6 +388,7 @@ static s32b slay_power(const object_type *o_ptr, int p, int verbose,
 
 			/* Add the multiple to sv */
 			sv += mult * m_ptr->race->scaled_power;
+			mem_free(verb);
 		}
 
 		/*
