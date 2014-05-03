@@ -81,17 +81,10 @@ bool regen = FALSE;
 /* total number of artifacts found */
 static int art_it[TRIES_SIZE];
 
-/* first level we find items with various abilities */
-static int fa_it[TRIES_SIZE], si_it[TRIES_SIZE], po_it[TRIES_SIZE], nx_it[TRIES_SIZE];
-static int cf_it[TRIES_SIZE], bl_it[TRIES_SIZE], te_it[TRIES_SIZE];
-
-static int mb1_it[TRIES_SIZE], mb2_it[TRIES_SIZE], mb3_it[TRIES_SIZE];
-static int mb4_it[TRIES_SIZE], mb5_it[TRIES_SIZE], mb6_it[TRIES_SIZE];
-static int mb7_it[TRIES_SIZE], mb8_it[TRIES_SIZE], mb9_it[TRIES_SIZE];
-
-/*** these are variables for all the things we want to collect ***/
+/*** handle gold separately ***/
 /* gold */
 static double gold_total[MAX_LVL], gold_floor[MAX_LVL], gold_mon[MAX_LVL], gold_wall[MAX_LVL];
+
 
 typedef enum stat_code
 {
@@ -201,13 +194,13 @@ typedef enum stat_code
 	ST_END
 }	
 stat_code;
-	
+
+
 struct stat_data
 {
 	stat_code st;
 	char *name;
 };
-
 
 static const struct stat_data stat_message[] =
 {
@@ -318,7 +311,60 @@ static const struct stat_data stat_message[] =
 
 double stat_all[ST_END][3][MAX_LVL];
 	
+/* Values for things we want to find the level where it's
+ * most likely to be first found */
+typedef enum stat_first_find
+{
+	ST_FF_BEGIN,
+	ST_FF_FA,
+	ST_FF_SI,
+	ST_FF_RPOIS,
+	ST_FF_RNEXUS,
+	ST_FF_RCONF,
+	ST_FF_RBLIND,
+	ST_FF_TELEP,
+	ST_FF_BOOK1,
+	ST_FF_BOOK2,
+	ST_FF_BOOK3,
+	ST_FF_BOOK4,
+	ST_FF_BOOK5,
+	ST_FF_BOOK6,
+	ST_FF_BOOK7,
+	ST_FF_BOOK8,
+	ST_FF_BOOK9,
+	ST_FF_END
+}	
+stat_first_find;
 
+struct stat_ff_data
+{
+	stat_first_find st_ff;
+	stat_code st;
+	char *name;
+};
+
+static const struct stat_ff_data stat_ff_message[] =
+{
+	{ST_FF_BEGIN,ST_BEGIN,""},
+	{ST_FF_FA,	ST_FA_EQUIPMENT,		"FA     \t"},
+	{ST_FF_SI,	ST_SI_EQUIPMENT,		"SI     \t"},
+	{ST_FF_RPOIS,	ST_RPOIS_EQUIPMENT,	"Rpois  \t"},
+	{ST_FF_RNEXUS,	ST_RNEXUS_EQUIPMENT,  "Rnexus \t"},
+	{ST_FF_RCONF,	ST_RCONF_EQUIPMENT,	"Rconf  \t"},
+	{ST_FF_RBLIND,	ST_RBLIND_EQUIPMENT,	"Rblind \t"},
+	{ST_FF_TELEP,	ST_TELEP_EQUIPMENT,	"Telep  \t"},
+	{ST_FF_BOOK1,	ST_1ST_BOOKS,	"Book1  \t"},
+	{ST_FF_BOOK2,	ST_2ND_BOOKS, 	"Book2  \t"},
+	{ST_FF_BOOK3,	ST_3RD_BOOKS,	"Book3  \t"},
+	{ST_FF_BOOK4,	ST_4TH_BOOKS,	"Book4  \t"},
+	{ST_FF_BOOK5,	ST_5TH_BOOKS,	"Book5  \t"},
+	{ST_FF_BOOK6,	ST_6TH_BOOKS,	"Book6  \t"},
+	{ST_FF_BOOK7,	ST_7TH_BOOKS,	"Book7  \t"},
+	{ST_FF_BOOK8,	ST_8TH_BOOKS,	"Book8	\t"},
+	{ST_FF_BOOK9,	ST_9TH_BOOKS,	"Book9  \t"},
+};
+
+int stat_ff_all[ST_FF_END][TRIES_SIZE];
 
 
 
@@ -339,16 +385,6 @@ static double mon_total[MAX_LVL], mon_ood[MAX_LVL], mon_deadly[MAX_LVL];
 /* unique info */
 static double uniq_total[MAX_LVL], uniq_ood[MAX_LVL], uniq_deadly[MAX_LVL];
 
-static void init_iter_vals(int k)
-{
-	art_it[k]=0;
-	fa_it[k]=0, si_it[k]=0, po_it[k]=0, nx_it[k]=0;
-	cf_it[k]=0, bl_it[k]=0, te_it[k]=0;
-
-	mb1_it[k]=0, mb2_it[k]=0, mb3_it[k]=0;
-	mb4_it[k]=0, mb5_it[k]=0, mb6_it[k]=0;
-	mb7_it[k]=0, mb8_it[k]=0, mb9_it[k]=0;
-}
 
 /* set everything to 0.0 to begin */
 static void init_stat_vals()
@@ -360,21 +396,27 @@ static void init_stat_vals()
 			for (k=0;k<MAX_LVL;k++)
 				stat_all[i][j][k] = 0.0;
 				
+	for (i = 1; i<TRIES_SIZE; i++)
+		art_it[i] = 0;
+	
+	for (i = 0; i<ST_FF_END; i++)
+		for (j=0; j<TRIES_SIZE; j++)
+			stat_ff_all[i][j] = 0.0;
 }
 
 /*
  *	Record the first level we find something
  */
-static bool first_find(int fl[TRIES_SIZE])
+static bool first_find(stat_first_find st)
 {
 	/* make sure we're not on an iteration above our array limit */
 	if (iter >= TRIES_SIZE) return FALSE;
 
 	/* make sure we haven't found it earlier on this iteration */
-	if (fl[iter] > 0) return FALSE;
+	if (stat_ff_all[st][iter] > 0) return FALSE;
 
 	/* assign the depth to this value */
-	fl[iter] = player->depth;
+	stat_ff_all[st][iter] = player->depth;
 
 	/* success */
 	return TRUE;
@@ -442,7 +484,7 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 			add_stats(ST_FA_EQUIPMENT, vault, mon, number);
 
 			/* record first level */
-			first_find(fa_it);
+			first_find(ST_FF_FA);
 		}
 
 
@@ -450,7 +492,7 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 	if (of_has(f,OF_SEE_INVIS)){
 
 		add_stats(ST_SI_EQUIPMENT, vault, mon, number);
-		first_find(si_it);
+		first_find(ST_FF_SI);
 	}
 	/* has at least one basic resist */
  	if ((o_ptr->el_info[ELEM_ACID].res_level == 1) ||
@@ -472,27 +514,27 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 	if (o_ptr->el_info[ELEM_POIS].res_level == 1){
 
 		add_stats(ST_RPOIS_EQUIPMENT, vault, mon, number);
-		first_find(po_it);
+		first_find(ST_FF_RPOIS);
 		
 	}
 	/* has resist nexus */
 	if (o_ptr->el_info[ELEM_NEXUS].res_level == 1){
 
 		add_stats(ST_RNEXUS_EQUIPMENT, vault, mon, number);
-		first_find(nx_it);
+		first_find(ST_FF_RNEXUS);
 	}
 	/* has resist blind */
 	if (of_has(f,OF_PROT_BLIND)){
 
 		add_stats(ST_RBLIND_EQUIPMENT, vault, mon, number);
-		first_find(bl_it);
+		first_find(ST_FF_RBLIND);
 	}
 
 	/* has resist conf */
 	if (of_has(f,OF_PROT_CONF)){
 
 		add_stats(ST_RCONF_EQUIPMENT, vault, mon, number);
-		first_find(cf_it);
+		first_find(ST_FF_RCONF);
 	}
 
 	/* has speed */
@@ -503,7 +545,7 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 	if (of_has(f,OF_TELEPATHY)){
 
 		add_stats(ST_TELEP_EQUIPMENT, vault, mon, number);
-		first_find(te_it);
+		first_find(ST_FF_TELEP);
 	}
 
 	switch(o_ptr->tval){
@@ -1054,63 +1096,63 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 				case 0:{
 
 					add_stats(ST_1ST_BOOKS, vault, mon, number);
-					first_find(mb1_it);
+					first_find(ST_FF_BOOK1);
 					break;
 				}
 
 				case 1:{
 
 					add_stats(ST_2ND_BOOKS, vault, mon, number);
-					first_find(mb2_it);
+					first_find(ST_FF_BOOK2);
 					break;
 				}
 
 				case 2:{
 
 					add_stats(ST_3RD_BOOKS, vault, mon, number);
-					first_find(mb3_it);
+					first_find(ST_FF_BOOK3);
 					break;
 				}
 
 				case 3:{
 
 					add_stats(ST_4TH_BOOKS, vault, mon, number);
-					first_find(mb4_it);
+					first_find(ST_FF_BOOK4);
 					break;
 				}
 
 				case 4:{
 
 					add_stats(ST_5TH_BOOKS, vault, mon, number);
-					first_find(mb5_it);
+					first_find(ST_FF_BOOK5);
 					break;
 				}
 
 				case 5:{
 
 					add_stats(ST_6TH_BOOKS, vault, mon, number);
-					first_find(mb6_it);
+					first_find(ST_FF_BOOK6);
 					break;
 				}
 
 				case 6:{
 
 					add_stats(ST_7TH_BOOKS, vault, mon, number);
-					first_find(mb7_it);
+					first_find(ST_FF_BOOK7);
 					break;
 				}
 
 				case 7:{
 
 					add_stats(ST_8TH_BOOKS, vault, mon, number);
-					first_find(mb8_it);
+					first_find(ST_FF_BOOK8);
 					break;
 				}
 
 				case 8:{
 
 					add_stats(ST_9TH_BOOKS, vault, mon, number);
-					first_find(mb9_it);
+					first_find(ST_FF_BOOK9);
 					break;
 				}
 
@@ -1497,7 +1539,7 @@ static double total(double stat[MAX_LVL])
 static void post_process_stats(void)
 {
 	double arttot;
-	int k;
+	int i,k;
 
 	/* output a title */
 	file_putf(stats_log,"\n");
@@ -1507,56 +1549,13 @@ static void post_process_stats(void)
 	file_putf(stats_log,"30\t\t\t35\t\t\t40\t\t\t45\t\t\t50\t\t\t");
 	file_putf(stats_log,"55\t\t\t60\t\t\t65\t\t\t70\t\t\t75\t\t\t");
 	file_putf(stats_log,"80\t\t\t85\t\t\t90\t\t\t95\t\t\t100\n");
-
-	file_putf(stats_log,"FA   \t");
-	prob_of_find(stat_all[ST_FA_EQUIPMENT][0]);
-	mean_and_stdv(fa_it);
-	file_putf(stats_log,"SinV \t");
-	prob_of_find(stat_all[ST_SI_EQUIPMENT][0]);
-	mean_and_stdv(si_it);
-	file_putf(stats_log,"RBl  \t");
-	prob_of_find(stat_all[ST_RBLIND_EQUIPMENT][0]);
-	mean_and_stdv(bl_it);
-	file_putf(stats_log,"RCf  \t");
-	prob_of_find(stat_all[ST_RCONF_EQUIPMENT][0]);
-	mean_and_stdv(cf_it);
-	file_putf(stats_log,"Nexus \t");
-	prob_of_find(stat_all[ST_RNEXUS_EQUIPMENT][0]);
-	mean_and_stdv(nx_it);
-	file_putf(stats_log,"Pois \t");
-	prob_of_find(stat_all[ST_RPOIS_EQUIPMENT][0]);
-	mean_and_stdv(po_it);
-	file_putf(stats_log,"Tel  \t");
-	prob_of_find(stat_all[ST_TELEP_EQUIPMENT][0]);
-	mean_and_stdv(te_it);
-	file_putf(stats_log,"\n");
-	file_putf(stats_log,"mb1  \t");
-	prob_of_find(stat_all[ST_1ST_BOOKS][0]);
-	mean_and_stdv(mb1_it);
-	file_putf(stats_log,"mb2  \t");
-	prob_of_find(stat_all[ST_2ND_BOOKS][0]);
-	mean_and_stdv(mb2_it);
-	file_putf(stats_log,"mb3  \t");
-	prob_of_find(stat_all[ST_3RD_BOOKS][0]);
-	mean_and_stdv(mb3_it);
-	file_putf(stats_log,"mb4  \t");
-	prob_of_find(stat_all[ST_4TH_BOOKS][0]);
-	mean_and_stdv(mb4_it);
-	file_putf(stats_log,"mb5  \t");
-	prob_of_find(stat_all[ST_5TH_BOOKS][0]);
-	mean_and_stdv(mb5_it);
-	file_putf(stats_log,"mb6  \t");
-	prob_of_find(stat_all[ST_6TH_BOOKS][0]);
-	mean_and_stdv(mb6_it);
-	file_putf(stats_log,"mb7  \t");
-	prob_of_find(stat_all[ST_7TH_BOOKS][0]);
-	mean_and_stdv(mb7_it);
-	file_putf(stats_log,"mb8  \t");
-	prob_of_find(stat_all[ST_8TH_BOOKS][0]);
-	mean_and_stdv(mb8_it);
-	file_putf(stats_log,"mb9  \t");
-	prob_of_find(stat_all[ST_9TH_BOOKS][0]);
-	mean_and_stdv(mb9_it);
+	
+	for (i = 1; i < ST_FF_END; i++){
+	
+			file_putf(stats_log, stat_ff_message[i].name);
+			prob_of_find(stat_all[stat_ff_message[i].st][0]);
+			mean_and_stdv(stat_ff_all[i]);
+	}
 
 	/* print artifact total */
 	arttot=0;
@@ -1836,7 +1835,6 @@ void stats_collect(void)
 	static int simtype;
 	static bool auto_flag;
 	char buf[1024];
-	int i;
 
 	/* prompt the user for sim params */
 	simtype=stats_prompt();
@@ -1882,9 +1880,6 @@ void stats_collect(void)
 
 	/* make sure all stats are 0 */
 	init_stat_vals();
-
-	/* make sure all iter vals are 0 */
-	for (i = 0; i < TRIES_SIZE; i++) init_iter_vals(i);
 
 	/* select diving option */
 	if (!clearing) diving_stats();
