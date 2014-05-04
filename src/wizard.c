@@ -432,34 +432,14 @@ static void wiz_display_item(const object_type *o_ptr, bool all)
 			o_ptr->ego ? o_ptr->ego->eidx : 0,
 			(long)object_value(o_ptr, 1, FALSE)), 6, j);
 
-	prt("+------------FLAGS0------------+", 8, j);
-	prt("AFFECT..........SLAY.......BRAND", 9, j);
-	prt("                ae      xxxpaefc", 10, j);
-	prt("siwdcc  ssidsasmnvudotgddduoclio", 11, j);
-	prt("tnieoh  trnipthgiinmrrnrrmniierl", 12, j);
-	prt("rtsxna..lcfgdkttmldncltggndsdced", 13, j);
-	prt_binary(f, 0, 14, j, '*', 32);
-	prt_binary(o_ptr->known_flags, 0, 15, j, '+', 32);
-
-	prt("+------------FLAGS1------------+", 16, j);
-	prt("SUST........IMM.RESIST.........", 17, j);
-	prt("            afecaefcpfldbc s n  ", 18, j);
-	prt("siwdcc      cilocliooeialoshnecd", 19, j);
-	prt("tnieoh      irelierliatrnnnrethi", 20, j);
-	prt("rtsxna......decddcedsrekdfddxhss", 21, j);
-	prt_binary(f, 32, 22, j, '*', 32);
-	prt_binary(o_ptr->known_flags, 32, 23, j, '+', 32);
-
-	prt("+------------FLAGS2------------+", 8, j+34);
-	prt("s   ts hn    tadiiii   aiehs  hp", 9, j+34);
-	prt("lf  eefoo    egrgggg  bcnaih  vr", 10, j+34);
-	prt("we  lerlf   ilgannnn  ltssdo  ym", 11, j+34);	prt("da reiedu   merirrrr  eityew ccc", 12, j+34);
-	prt("itlepnele   ppanaefc  svaktm uuu", 13, j+34);
-	prt("ghigavail   aoveclio  saanyo rrr", 14, j+34);
-	prt("seteticf    craxierl  etropd sss", 15, j+34);
-	prt("trenhste    tttpdced  detwes eee", 16, j+34);
-	prt_binary(f, 64, 17, j + 34, '*', 32);
-	prt_binary(o_ptr->known_flags, 64, 18, j + 34, '+', 32);
+	prt("+------------FLAGS-------------+", 16, j);
+	prt("SUST.PROT<-OTHER--><BAD->CUR....", 17, j);
+	prt("     fbcssf  s  ibniiatadlhp....", 18, j);
+	prt("siwdcelotdfrei  plommfegrccc....", 19, j);
+	prt("tnieoannuiaesnfhcefhsrlgxuuu....", 20, j);
+	prt("rtsxnrdfnglgpvaltsuppderprrr....", 21, j);
+	prt_binary(f, 0, 22, j, '*', 28);
+	prt_binary(o_ptr->known_flags, 0, 23, j, '+', 28);
 
 	prt("o_ptr->ident:", 20, j+34);
 	prt(format("sense  %c  worn   %c  empty   %c  known   %c",
@@ -472,9 +452,8 @@ static void wiz_display_item(const object_type *o_ptr, bool all)
 		(o_ptr->ident & IDENT_ATTACK) ? '+' : ' ',
 		(o_ptr->ident & IDENT_DEFENCE) ? '+' : ' ',
 		(o_ptr->ident & IDENT_EFFECT) ? '+' : ' '), 22, j+34);
-	prt(format("indest %c  ego    %c",
-		(o_ptr->ident & IDENT_INDESTRUCT) ? '+' : ' ',
-		(id_has(o_ptr->id_flags, ID_EGO_ITEM)) ? '+' : ' '), 23, j+34);
+	prt(format("indest %c",
+		(o_ptr->ident & IDENT_INDESTRUCT) ? '+' : ' '), 23, j+34);
 }
 
 
