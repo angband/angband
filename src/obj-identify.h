@@ -30,7 +30,6 @@
 #define IDENT_DEFENCE   0x0040  /* Know AC/etc bonuses */
 #define IDENT_EFFECT    0x0080  /* Know item activation/effect */
 /* xxx */
-#define IDENT_INDESTRUCT 0x0200 /* Tried to destroy it and failed */
 #define IDENT_FIRED     0x0800  /* Has been used as a missile */
 #define IDENT_FAKE      0x2000  /* Item is a fake, for displaying knowledge */
 

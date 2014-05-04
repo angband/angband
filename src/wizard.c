@@ -452,8 +452,6 @@ static void wiz_display_item(const object_type *o_ptr, bool all)
 		(o_ptr->ident & IDENT_ATTACK) ? '+' : ' ',
 		(o_ptr->ident & IDENT_DEFENCE) ? '+' : ' ',
 		(o_ptr->ident & IDENT_EFFECT) ? '+' : ' '), 22, j+34);
-	prt(format("indest %c",
-		(o_ptr->ident & IDENT_INDESTRUCT) ? '+' : ' '), 23, j+34);
 }
 
 

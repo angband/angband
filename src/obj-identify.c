@@ -65,8 +65,7 @@ bool object_is_known(const object_type *o_ptr)
  */
 bool object_is_known_artifact(const object_type *o_ptr)
 {
-	return (o_ptr->ident & IDENT_INDESTRUCT) ||
-			(o_ptr->artifact && object_was_sensed(o_ptr));
+	return (o_ptr->artifact && id_has(o_ptr->id_flags, ID_ARTIFACT));
 }
 
 /**
@@ -86,10 +85,7 @@ bool object_is_known_blessed(const object_type *o_ptr)
  */
 bool object_is_known_not_artifact(const object_type *o_ptr)
 {
-	if (id_has(o_ptr->id_flags, ID_ARTIFACT) && !(o_ptr->artifact))
-		return TRUE;
-
-	return FALSE;
+	return (!(o_ptr->artifact) && id_has(o_ptr->id_flags, ID_ARTIFACT));
 }
 
 /**
@@ -1167,8 +1163,6 @@ obj_pseudo_t object_pseudo(const object_type *o_ptr)
 	of_diff(flags, f2);
 	of_diff(flags, o_ptr->kind->flags);
 
-	if (o_ptr->ident & IDENT_INDESTRUCT)
-		return INSCRIP_SPECIAL;
 	if ((object_was_sensed(o_ptr) || object_was_worn(o_ptr)) && o_ptr->artifact)
 		return INSCRIP_SPECIAL;
 
