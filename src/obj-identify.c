@@ -193,7 +193,7 @@ bool object_attack_plusses_are_visible(const object_type *o_ptr)
 bool object_defence_plusses_are_visible(const object_type *o_ptr)
 {
 	/* Bonuses have been revealed or for sale */
-	if ((o_ptr->ident & IDENT_DEFENCE) || (o_ptr->ident & IDENT_STORE))
+	if (id_has(o_ptr->id_flags, ID_TO_A) || (o_ptr->ident & IDENT_STORE))
 		return TRUE;
 
 	/* Aware jewelry with non-variable bonuses */
@@ -473,7 +473,7 @@ void object_know_all_miscellaneous(object_type *o_ptr)
 
 
 
-#define IDENTS_SET_BY_IDENTIFY ( IDENT_KNOWN | IDENT_ATTACK | IDENT_DEFENCE | IDENT_SENSE | IDENT_EFFECT | IDENT_WORN | IDENT_FIRED )
+#define IDENTS_SET_BY_IDENTIFY ( IDENT_KNOWN | IDENT_ATTACK | IDENT_SENSE | IDENT_EFFECT | IDENT_WORN | IDENT_FIRED )
 
 /**
  * Mark as object as fully known, a.k.a identified. 
@@ -618,7 +618,7 @@ static void object_notice_defence_plusses(struct player *p, object_type *o_ptr)
 	if (object_defence_plusses_are_visible(o_ptr))
 		return;
 
-	if (object_add_ident_flags(o_ptr, IDENT_DEFENCE))
+	if (object_add_id_flag(o_ptr, ID_TO_A)) 
 		object_check_for_ident(o_ptr);
 
 	if (o_ptr->ac || o_ptr->to_a)
@@ -820,6 +820,11 @@ void object_notice_on_wield(object_type *o_ptr)
 
 	/* Wear it */
 	object_flavor_tried(o_ptr);
+
+	/* AC is obvious - other tuff to go here too - NRM */
+	(void) object_add_id_flag(o_ptr, ID_AC);
+
+	/* To change later - NRM */
 	if (object_add_ident_flags(o_ptr, IDENT_WORN))
 		object_check_for_ident(o_ptr);
 

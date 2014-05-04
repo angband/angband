@@ -447,10 +447,9 @@ static void wiz_display_item(const object_type *o_ptr, bool all)
 		(o_ptr->ident & IDENT_WORN) ? '+' : ' ',
 		(o_ptr->ident & IDENT_EMPTY) ? '+' : ' ',
 		(o_ptr->ident & IDENT_KNOWN) ? '+' : ' '), 21, j+34);
-	prt(format("store  %c  attack %c  defence %c  effect  %c",
+	prt(format("store  %c  attack %c  effect  %c",
 		(o_ptr->ident & IDENT_STORE) ? '+' : ' ',
 		(o_ptr->ident & IDENT_ATTACK) ? '+' : ' ',
-		(o_ptr->ident & IDENT_DEFENCE) ? '+' : ' ',
 		(o_ptr->ident & IDENT_EFFECT) ? '+' : ' '), 22, j+34);
 }
 
