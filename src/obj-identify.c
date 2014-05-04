@@ -150,7 +150,9 @@ bool object_effect_is_known(const object_type *o_ptr)
  */
 bool object_name_is_visible(const object_type *o_ptr)
 {
-	return o_ptr->ident & IDENT_NAME ? TRUE : FALSE;
+	bool ego = o_ptr->ego && id_has(o_ptr->id_flags, ID_EGO_ITEM);
+	bool art = o_ptr->artifact && id_has(o_ptr->id_flags, ID_ARTIFACT);
+	return (ego || art) ? TRUE : FALSE;
 }
 
 /**
@@ -161,10 +163,10 @@ bool object_ego_is_visible(const object_type *o_ptr)
 	if (!o_ptr->ego)
 		return FALSE;
 
-	if (tval_is_light(o_ptr))
+	if (id_has(o_ptr->id_flags, ID_EGO_ITEM))
 		return TRUE;
 
-	if ((o_ptr->ident & IDENT_NAME) || (o_ptr->ident & IDENT_STORE))
+	if (o_ptr->ident & IDENT_STORE)
 		return TRUE;
 	else
 		return FALSE;
@@ -308,6 +310,25 @@ static bool object_add_ident_flags(object_type *o_ptr, u32b flags)
 
 
 /*
+ * Sets an ID_ flag on an object.
+ *
+ * \param o_ptr is the object to check
+ * \param flag is the id flag to be added
+ *
+ * \returns whether o_ptr->id_flag changed
+ */
+static bool object_add_id_flag(object_type *o_ptr, int flag)
+{
+	if (id_has(o_ptr->id_flags, flag))
+		return FALSE;
+
+	id_on(o_ptr->id_flags, flag);
+
+	return TRUE;
+}
+
+
+/*
  * Checks for additional knowledge implied by what the player already knows.
  *
  * \param o_ptr is the object to check
@@ -444,9 +465,19 @@ void object_know_brands_and_slays(object_type *o_ptr)
 		s->known = TRUE;
 }
 
+/**
+ * Make the player aware of all of an object's miscellaneous proerties.
+ *
+ * \param o_ptr is the object to mark
+ */
+void object_know_all_miscellaneous(object_type *o_ptr)
+{
+	id_setall(o_ptr->id_flags);
+}
 
 
-#define IDENTS_SET_BY_IDENTIFY ( IDENT_KNOWN | IDENT_ATTACK | IDENT_DEFENCE | IDENT_SENSE | IDENT_EFFECT | IDENT_WORN | IDENT_FIRED | IDENT_NAME )
+
+#define IDENTS_SET_BY_IDENTIFY ( IDENT_KNOWN | IDENT_ATTACK | IDENT_DEFENCE | IDENT_SENSE | IDENT_EFFECT | IDENT_WORN | IDENT_FIRED )
 
 /**
  * Mark as object as fully known, a.k.a identified. 
@@ -477,6 +508,9 @@ void object_notice_everything(object_type *o_ptr)
 
 	/* Know all brands and slays */
 	object_know_brands_and_slays(o_ptr);
+
+	/* Know everything else */
+	object_know_all_miscellaneous(o_ptr);
 }
 
 
@@ -525,7 +559,7 @@ void object_notice_ego(object_type *o_ptr)
 
 	of_union(o_ptr->known_flags, learned_flags);
 
-	if (object_add_ident_flags(o_ptr, IDENT_NAME))
+	if (object_add_id_flag(o_ptr, ID_EGO_ITEM))
 	{
 		/* if you know the ego, you know which it is of excellent or splendid */
 		object_notice_sensing(o_ptr);
@@ -545,7 +579,7 @@ void object_notice_sensing(object_type *o_ptr)
 
 	if (o_ptr->artifact) {
 		o_ptr->artifact->seen = o_ptr->artifact->everseen = TRUE;
-		o_ptr->ident |= IDENT_NAME;
+		id_on(o_ptr->id_flags, ID_ARTIFACT);
 	}
 
 	object_notice_curses(o_ptr);

@@ -474,7 +474,7 @@ static void wiz_display_item(const object_type *o_ptr, bool all)
 		(o_ptr->ident & IDENT_EFFECT) ? '+' : ' '), 22, j+34);
 	prt(format("indest %c  ego    %c",
 		(o_ptr->ident & IDENT_INDESTRUCT) ? '+' : ' ',
-		(o_ptr->ident & IDENT_NAME) ? '+' : ' '), 23, j+34);
+		(id_has(o_ptr->id_flags, ID_EGO_ITEM)) ? '+' : ' '), 23, j+34);
 }
 
 

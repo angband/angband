@@ -1469,7 +1469,7 @@ static void desc_art_fake(int a_idx)
 		o_ptr = &object_type_body;
 
 		make_fake_artifact(o_ptr, &a_info[a_idx]);
-		o_ptr->ident |= IDENT_NAME;
+		id_on(o_ptr->id_flags, ID_ARTIFACT);
 
 		/* Check the history entry, to see if it was fully known before it
 		 * was lost */

@@ -31,6 +31,7 @@ enum
  */
 enum
 {
+	ID_NONE,
 	#define OBJ_MOD(a, b, c, d) ID_##a,
 	#include "list-object-modifiers.h"
 	#undef OBJ_MOD

@@ -360,6 +360,10 @@ static void make_ego_item(object_type *o_ptr, int level)
 	if (o_ptr->ego)
 		ego_apply_magic(o_ptr, level);
 
+	/* Ego lights are always known as such (why? - NRM) */
+	if (tval_is_light(o_ptr))
+		id_on(o_ptr->id_flags, ID_EGO_ITEM);
+
 	return;
 }
 

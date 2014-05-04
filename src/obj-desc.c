@@ -88,7 +88,7 @@ static const char *obj_desc_get_basename(const object_type *o_ptr, bool aware, b
 	if (aware && !OPT(show_flavors)) show_flavor = FALSE;
 
 	/* Artifacts are special */
-	if (o_ptr->artifact && (aware || (o_ptr->ident & IDENT_NAME) || terse || !o_ptr->kind->flavor))
+	if (o_ptr->artifact && (aware || id_has(o_ptr->id_flags, ID_ARTIFACT) || terse || !o_ptr->kind->flavor))
 		return o_ptr->kind->name;
 
 	/* Analyze the object */

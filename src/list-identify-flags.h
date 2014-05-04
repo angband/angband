@@ -8,7 +8,6 @@
  * form of identification (like, for example, slays) or a convenient way of
  * representing knowledge by flags (like object flags)
  */
-ID(NONE)
 ID(ARTIFACT)
 ID(EGO_ITEM)
 ID(WEIGHT)
