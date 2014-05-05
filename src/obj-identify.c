@@ -852,7 +852,9 @@ void object_notice_on_wield(object_type *o_ptr)
 		history_add_artifact(o_ptr->artifact, object_is_known(o_ptr), TRUE);
 
 	/* special case FA, needed at least for mages wielding gloves */
-	if (object_FA_would_be_obvious(o_ptr))
+	if (player_has(PF_CUMBER_GLOVE) && wield_slot(o_ptr) == INVEN_HANDS &&
+		(o_ptr->modifiers[OBJ_MOD_DEX] <= 0) && 
+		!kf_has(o_ptr->kind->kind_flags, KF_SPELLS_OK))
 		of_on(obvious_mask, OF_FREE_ACT);
 
 	/* Extract the flags */
@@ -1135,18 +1137,6 @@ void wieldeds_notice_on_attack(void)
 }
 
 
-bool object_FA_would_be_obvious(const object_type *o_ptr)
-{
-	if (player_has(PF_CUMBER_GLOVE) && wield_slot(o_ptr) == INVEN_HANDS) {
-
-		if ((o_ptr->modifiers[OBJ_MOD_DEX] <= 0) && 
-			!kf_has(o_ptr->kind->kind_flags, KF_SPELLS_OK))
-			return TRUE;
-	}
-
-	return FALSE;
-}
-
 /*
  * Given an object, return a short identifier which gives some idea of what
  * the item is.
@@ -1162,7 +1152,9 @@ obj_pseudo_t object_pseudo(const object_type *o_ptr)
 	create_mask(f2, TRUE, OFID_WIELD, OFT_MAX);
 
 	/* FA on gloves is obvious to mage casters */
-	if (object_FA_would_be_obvious(o_ptr))
+	if (player_has(PF_CUMBER_GLOVE) && wield_slot(o_ptr) == INVEN_HANDS &&
+		(o_ptr->modifiers[OBJ_MOD_DEX] <= 0) && 
+		!kf_has(o_ptr->kind->kind_flags, KF_SPELLS_OK))
 		of_on(f2, OF_FREE_ACT);
 
 	/* Now we remove the non-obvious known flags */
