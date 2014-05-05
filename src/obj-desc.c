@@ -56,7 +56,8 @@ void object_base_name(char *buf, size_t max, int tval, bool plural)
  *
  * Just truncates if the buffer isn't big enough.
  */
-void object_kind_name(char *buf, size_t max, const object_kind *kind, bool easy_know)
+void object_kind_name(char *buf, size_t max, const object_kind *kind,
+					  bool easy_know)
 {
 	/* If not aware, the plain flavour (e.g. Copper) will do. */
 	if (!easy_know && !kind->aware && kind->flavor)
@@ -80,7 +81,8 @@ static const char *obj_desc_get_modstr(const object_kind *kind)
 	return "";
 }
 
-static const char *obj_desc_get_basename(const object_type *o_ptr, bool aware, bool terse)
+static const char *obj_desc_get_basename(const object_type *o_ptr, bool aware,
+										 bool terse)
 {
 	bool show_flavor = !terse && o_ptr->kind->flavor;
 
@@ -88,7 +90,8 @@ static const char *obj_desc_get_basename(const object_type *o_ptr, bool aware, b
 	if (aware && !OPT(show_flavors)) show_flavor = FALSE;
 
 	/* Artifacts are special */
-	if (o_ptr->artifact && (aware || id_has(o_ptr->id_flags, ID_ARTIFACT) || terse || !o_ptr->kind->flavor))
+	if (o_ptr->artifact && (aware || id_has(o_ptr->id_flags, ID_ARTIFACT) ||
+							terse || !o_ptr->kind->flavor))
 		return o_ptr->kind->name;
 
 	/* Analyze the object */
@@ -262,7 +265,8 @@ size_t obj_desc_name_format(char *buf, size_t max, size_t end,
 			if (!singular || !plural || !endmark) return end;
 
 			if (!pluralise)
-				strnfcat(buf, max, &end, "%.*s", plural - singular - 1, singular);
+				strnfcat(buf, max, &end, "%.*s", plural - singular - 1,
+						 singular);
 			else
 				strnfcat(buf, max, &end, "%.*s", endmark - plural, plural);
 
@@ -295,7 +299,8 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end,
 		const object_type *o_ptr, bool prefix, int mode, bool spoil, bool terse)
 {
 	bool known = object_is_known(o_ptr) || spoil;
-	bool aware = object_flavor_is_aware(o_ptr) || (o_ptr->ident & IDENT_STORE) || spoil;
+	bool aware = object_flavor_is_aware(o_ptr) || (o_ptr->ident & IDENT_STORE)
+		|| spoil;
 	const char *basename = obj_desc_get_basename(o_ptr, aware, terse);
 	const char *modstr = obj_desc_get_modstr(o_ptr->kind);
 
@@ -344,7 +349,8 @@ static bool obj_desc_show_armor(const object_type *o_ptr)
 	return FALSE;
 }
 
-static size_t obj_desc_chest(const object_type *o_ptr, char *buf, size_t max, size_t end)
+static size_t obj_desc_chest(const object_type *o_ptr, char *buf, size_t max,
+							 size_t end)
 {
 	bool known = object_is_known(o_ptr);
 
@@ -419,14 +425,16 @@ static size_t obj_desc_combat(const object_type *o_ptr, char *buf, size_t max,
 		if (spoil || object_attack_plusses_are_visible(o_ptr))
 			strnfcat(buf, max, &end, " (%dd%d)", o_ptr->dd, o_ptr->ds);
 		else
-			strnfcat(buf, max, &end, " (%dd%d)", o_ptr->kind->dd, o_ptr->kind->ds);
+			strnfcat(buf, max, &end, " (%dd%d)", o_ptr->kind->dd,
+					 o_ptr->kind->ds);
 	}
 
 	if (kf_has(o_ptr->kind->kind_flags, KF_SHOW_MULT)) {
 		/* Display shooting power as part of the multiplier */
 		if ((o_ptr->modifiers[OBJ_MOD_MIGHT] > 0) &&
 		    (spoil || object_this_mod_is_visible(o_ptr, OBJ_MOD_MIGHT)))
-			strnfcat(buf, max, &end, " (x%d)", (o_ptr->sval % 10) + o_ptr->modifiers[OBJ_MOD_MIGHT]);
+			strnfcat(buf, max, &end, " (x%d)",
+					 (o_ptr->sval % 10) + o_ptr->modifiers[OBJ_MOD_MIGHT]);
 		else
 			strnfcat(buf, max, &end, " (x%d)", o_ptr->sval % 10);
 	}
@@ -435,12 +443,14 @@ static size_t obj_desc_combat(const object_type *o_ptr, char *buf, size_t max,
 	if (spoil || object_attack_plusses_are_visible(o_ptr)) {
 		if (tval_is_weapon(o_ptr) || o_ptr->to_d || o_ptr->to_h) {
 			/* Make an exception for body armor with only a to-hit penalty */
-			if (o_ptr->to_h < 0 && o_ptr->to_d == 0 && tval_is_body_armor(o_ptr))
+			if (o_ptr->to_h < 0 && o_ptr->to_d == 0 &&
+				tval_is_body_armor(o_ptr))
 				strnfcat(buf, max, &end, " (%+d)", o_ptr->to_h);
 
 			/* Otherwise, always use the full tuple */
 			else
-				strnfcat(buf, max, &end, " (%+d,%+d)", o_ptr->to_h, o_ptr->to_d);
+				strnfcat(buf, max, &end, " (%+d,%+d)", o_ptr->to_h,
+						 o_ptr->to_d);
 		}
 	}
 
@@ -453,12 +463,14 @@ static size_t obj_desc_combat(const object_type *o_ptr, char *buf, size_t max,
 			strnfcat(buf, max, &end, " [%+d]", o_ptr->to_a);
 	}
 	else if (obj_desc_show_armor(o_ptr))
-		strnfcat(buf, max, &end, " [%d]", object_was_sensed(o_ptr) ? o_ptr->ac : o_ptr->kind->ac);
+		strnfcat(buf, max, &end, " [%d]",
+				 object_was_sensed(o_ptr) ? o_ptr->ac : o_ptr->kind->ac);
 
 	return end;
 }
 
-static size_t obj_desc_light(const object_type *o_ptr, char *buf, size_t max, size_t end)
+static size_t obj_desc_light(const object_type *o_ptr, char *buf, size_t max,
+							 size_t end)
 {
 	/* Fuelled light sources get number of remaining turns appended */
 	if (tval_is_light(o_ptr) && !of_has(o_ptr->flags, OF_NO_FUEL))
@@ -512,13 +524,15 @@ static size_t obj_desc_mods(const object_type *o_ptr, char *buf, size_t max,
 	return end;
 }
 
-static size_t obj_desc_charges(const object_type *o_ptr, char *buf, size_t max, size_t end)
+static size_t obj_desc_charges(const object_type *o_ptr, char *buf, size_t max,
+							   size_t end)
 {
 	bool aware = object_flavor_is_aware(o_ptr) || (o_ptr->ident & IDENT_STORE);
 
 	/* Wands and Staffs have charges */
 	if (aware && tval_can_have_charges(o_ptr))
-		strnfcat(buf, max, &end, " (%d charge%s)", o_ptr->pval, PLURAL(o_ptr->pval));
+		strnfcat(buf, max, &end, " (%d charge%s)", o_ptr->pval,
+				 PLURAL(o_ptr->pval));
 
 	/* Charging things */
 	else if (o_ptr->timeout > 0)
@@ -537,7 +551,8 @@ static size_t obj_desc_charges(const object_type *o_ptr, char *buf, size_t max, 
 	return end;
 }
 
-static size_t obj_desc_inscrip(const object_type *o_ptr, char *buf, size_t max, size_t end)
+static size_t obj_desc_inscrip(const object_type *o_ptr, char *buf, size_t max,
+							   size_t end)
 {
 	const char *u[4] = { 0, 0, 0, 0 };
 	int n = 0;
@@ -565,7 +580,8 @@ static size_t obj_desc_inscrip(const object_type *o_ptr, char *buf, size_t max, 
 			u[n++] = (tval_is_weapon(o_ptr)) ? "wielded" : "worn";
 		else if (object_was_fired(o_ptr))
 			u[n++] = "fired";
-		else if (!object_flavor_is_aware(o_ptr) && object_flavor_was_tried(o_ptr))
+		else if (!object_flavor_is_aware(o_ptr) &&
+				 object_flavor_was_tried(o_ptr))
 			u[n++] = "tried";
 	}
 
