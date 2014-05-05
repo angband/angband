@@ -174,7 +174,8 @@ bool object_ego_is_visible(const object_type *o_ptr)
 bool object_attack_plusses_are_visible(const object_type *o_ptr)
 {
 	/* Bonuses have been revealed or for sale */
-	if ((o_ptr->ident & IDENT_ATTACK) || (o_ptr->ident & IDENT_STORE))
+	if ((id_has(o_ptr->id_flags, ID_TO_H) && id_has(o_ptr->id_flags, ID_TO_D))
+		|| (o_ptr->ident & IDENT_STORE))
 		return TRUE;
 
 	/* Aware jewelry with non-variable bonuses */
@@ -473,7 +474,7 @@ void object_know_all_miscellaneous(object_type *o_ptr)
 
 
 
-#define IDENTS_SET_BY_IDENTIFY ( IDENT_KNOWN | IDENT_ATTACK | IDENT_SENSE | IDENT_EFFECT | IDENT_WORN | IDENT_FIRED )
+#define IDENTS_SET_BY_IDENTIFY ( IDENT_KNOWN | IDENT_SENSE | IDENT_EFFECT | IDENT_WORN | IDENT_FIRED )
 
 /**
  * Mark as object as fully known, a.k.a identified. 
@@ -639,12 +640,16 @@ static void object_notice_defence_plusses(struct player *p, object_type *o_ptr)
 
 void object_notice_attack_plusses(object_type *o_ptr)
 {
+	bool to_hit = FALSE;
+
 	assert(o_ptr && o_ptr->kind);
 
 	if (object_attack_plusses_are_visible(o_ptr))
 		return;
 
-	if (object_add_ident_flags(o_ptr, IDENT_ATTACK))
+	/* This looks silly while these only ever appear together */
+	to_hit = object_add_id_flag(o_ptr, ID_TO_H);
+	if (object_add_id_flag(o_ptr, ID_TO_D) || to_hit)
 		object_check_for_ident(o_ptr);
 
 

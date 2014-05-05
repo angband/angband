@@ -26,7 +26,6 @@
 #define IDENT_EMPTY     0x0004  /* Is known to be empty */
 #define IDENT_KNOWN     0x0008  /* Fully known */
 #define IDENT_STORE     0x0010  /* Item is in the inventory of a store */
-#define IDENT_ATTACK    0x0020  /* Know combat dice/ac/bonuses */
 #define IDENT_EFFECT    0x0080  /* Know item activation/effect */
 /* xxx */
 #define IDENT_FIRED     0x0800  /* Has been used as a missile */
