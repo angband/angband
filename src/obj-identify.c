@@ -181,7 +181,8 @@ bool object_attack_plusses_are_visible(const object_type *o_ptr)
 	/* Aware jewelry with non-variable bonuses */
 	if (tval_is_jewelry(o_ptr) && object_flavor_is_aware(o_ptr))
 	{
-		if (!randcalc_varies(o_ptr->kind->to_h) && !randcalc_varies(o_ptr->kind->to_d))
+		if (!randcalc_varies(o_ptr->kind->to_h) && 
+			!randcalc_varies(o_ptr->kind->to_d))
 			return TRUE;
 	}
 
@@ -393,6 +394,9 @@ void object_flavor_aware(object_type *o_ptr)
 	if (o_ptr->kind->aware) return;
 	o_ptr->kind->aware = TRUE;
 
+	/* Charges or food value (pval) now known */
+	id_on(o_ptr->id_flags, ID_PVAL);
+
 	/* Fix squelch/autoinscribe */
 	if (kind_is_squelched_unaware(o_ptr->kind)) {
 		kind_squelch_when_aware(o_ptr->kind);
@@ -579,6 +583,7 @@ void object_notice_sensing(object_type *o_ptr)
 		id_on(o_ptr->id_flags, ID_ARTIFACT);
 	}
 
+	id_on(o_ptr->id_flags, ID_AC);
 	object_notice_curses(o_ptr);
 	if (object_add_ident_flags(o_ptr, IDENT_SENSE))
 		object_check_for_ident(o_ptr);
@@ -640,7 +645,7 @@ static void object_notice_defence_plusses(struct player *p, object_type *o_ptr)
 
 void object_notice_attack_plusses(object_type *o_ptr)
 {
-	bool to_hit = FALSE;
+	bool to_hit = FALSE, to_dam = FALSE;
 
 	assert(o_ptr && o_ptr->kind);
 
@@ -649,7 +654,8 @@ void object_notice_attack_plusses(object_type *o_ptr)
 
 	/* This looks silly while these only ever appear together */
 	to_hit = object_add_id_flag(o_ptr, ID_TO_H);
-	if (object_add_id_flag(o_ptr, ID_TO_D) || to_hit)
+	to_dam = object_add_id_flag(o_ptr, ID_TO_D);
+	if (object_add_id_flag(o_ptr, ID_DICE) || to_hit || to_dam)
 		object_check_for_ident(o_ptr);
 
 
@@ -705,20 +711,15 @@ bool object_notice_element(object_type *o_ptr, int element)
  */
 bool object_notice_flag(object_type *o_ptr, int flag)
 {
-	if (!of_has(o_ptr->known_flags, flag))
-	{
-		of_on(o_ptr->known_flags, flag);
-		/* XXX Eddie don't want infinite recursion if object_check_for_ident sets more flags,
-		 * but maybe this will interfere with savefile repair
-		 */
-		object_check_for_ident(o_ptr);
-		event_signal(EVENT_INVENTORY);
-		event_signal(EVENT_EQUIPMENT);
+	if (of_has(o_ptr->known_flags, flag))
+		return FALSE;
 
-		return TRUE;
-	}
+	of_on(o_ptr->known_flags, flag);
+	object_check_for_ident(o_ptr);
+	event_signal(EVENT_INVENTORY);
+	event_signal(EVENT_EQUIPMENT);
 
-	return FALSE;
+	return TRUE;
 }
 
 
@@ -727,20 +728,15 @@ bool object_notice_flag(object_type *o_ptr, int flag)
  */
 bool object_notice_flags(object_type *o_ptr, bitflag flags[OF_SIZE])
 {
-	if (!of_is_subset(o_ptr->known_flags, flags))
-	{
-		of_union(o_ptr->known_flags, flags);
-		/* XXX Eddie don't want infinite recursion if object_check_for_ident sets more flags,
-		 * but maybe this will interfere with savefile repair
-		 */
-		object_check_for_ident(o_ptr);
-		event_signal(EVENT_INVENTORY);
-		event_signal(EVENT_EQUIPMENT);
+	if (of_is_subset(o_ptr->known_flags, flags))
+		return FALSE;
 
-		return TRUE;
-	}
+	of_union(o_ptr->known_flags, flags);
+	object_check_for_ident(o_ptr);
+	event_signal(EVENT_INVENTORY);
+	event_signal(EVENT_EQUIPMENT);
 
-	return FALSE;
+	return TRUE;
 }
 
 
@@ -801,13 +797,8 @@ void object_notice_on_firing(object_type *o_ptr)
 
 
 
-/*
- * Determine whether a weapon or missile weapon is obviously {excellent} when
- * worn.
- *
- * XXX Eddie should messages be adhoc all over the place?  perhaps the main
- * loop should check for change in inventory/wieldeds and all messages be
- * printed from one place
+/**
+ * Notice object properties that become obvious on wielding or wearing
  */
 void object_notice_on_wield(object_type *o_ptr)
 {
@@ -815,43 +806,26 @@ void object_notice_on_wield(object_type *o_ptr)
 	bool obvious = FALSE;
 	int i;
 
-	create_mask(obvious_mask, TRUE, OFID_WIELD, OFT_MAX);
-
-	/* Save time of wield for later */
-	object_last_wield = turn;
-
 	/* Only deal with un-ID'd items */
 	if (object_is_known(o_ptr)) return;
 
-	/* Wear it */
-	object_flavor_tried(o_ptr);
-
-	/* AC is obvious - other tuff to go here too - NRM */
-	(void) object_add_id_flag(o_ptr, ID_AC);
-
-	/* To change later - NRM */
-	if (object_add_ident_flags(o_ptr, IDENT_WORN))
-		object_check_for_ident(o_ptr);
-
-	/* CC: may wish to be more subtle about this once we have ego lights
-	 * with multiple pvals */
-	if (tval_is_light(o_ptr) && o_ptr->ego)
-		object_notice_ego(o_ptr);
-
+	/* EASY_KNOW jewelry is now known */
 	if (object_flavor_is_aware(o_ptr) && easy_know(o_ptr))
 	{
 		object_notice_everything(o_ptr);
 		return;
 	}
 
-	/* Automatically sense artifacts upon wield */
-	object_sense_artifact(o_ptr);
+	/* Worn means tried (for flavored wearables) */
+	object_flavor_tried(o_ptr);
 
-	/* Note artifacts when found */
-	if (o_ptr->artifact)
-		history_add_artifact(o_ptr->artifact, object_is_known(o_ptr), TRUE);
+	/* Save time of wield for later */
+	object_last_wield = turn;
 
-	/* special case FA, needed at least for mages wielding gloves */
+	/* Get the obvious object flags */
+	create_mask(obvious_mask, TRUE, OFID_WIELD, OFT_MAX);
+
+	/* special case FA, needed for mages wielding gloves */
 	if (player_has(PF_CUMBER_GLOVE) && wield_slot(o_ptr) == INVEN_HANDS &&
 		(o_ptr->modifiers[OBJ_MOD_DEX] <= 0) && 
 		!kf_has(o_ptr->kind->kind_flags, KF_SPELLS_OK))
@@ -860,24 +834,35 @@ void object_notice_on_wield(object_type *o_ptr)
 	/* Extract the flags */
 	object_flags(o_ptr, f);
 
-	/* Find obvious things (disregarding curses) - why do we remove the curses?? */
+	/* Find obvious flags - curses left for special message later */
 	create_mask(f2, FALSE, OFT_CURSE, OFT_MAX);
 	of_diff(obvious_mask, f2);
+
+	/* Learn about obvious flags */
 	if (of_is_inter(f, obvious_mask)) obvious = TRUE;
-	create_mask(obvious_mask, TRUE, OFID_WIELD, OFT_MAX);
-	for (i = 0; i < OBJ_MOD_MAX; i++)
+	of_union(o_ptr->known_flags, obvious_mask);
+
+	/* Notice all modifiers */
+	for (i = 0; i < OBJ_MOD_MAX; i++) {
 		if (o_ptr->modifiers[i]) obvious = TRUE;
+		id_on(o_ptr->id_flags, i + ID_MOD_MIN);
+	}
 
 	/* Notice any brands */
 	object_notice_brands(o_ptr, NULL);
 
-	/* Learn about obvious flags */
-	of_union(o_ptr->known_flags, obvious_mask);
+	/* To change later - NRM */
+	if (object_add_ident_flags(o_ptr, IDENT_WORN))
+		object_check_for_ident(o_ptr);
 
-	/* XXX Eddie should these next NOT call object_check_for_ident due to worries about repairing? */
+	/* Automatically sense artifacts upon wield */
+	object_sense_artifact(o_ptr);
 
-	/* XXX Eddie this is a small hack, but jewelry with anything noticeable really is obvious */
-	/* XXX Eddie learn =soulkeeping vs =bodykeeping when notice sustain_str */
+	/* Note artifacts when found */
+	if (o_ptr->artifact)
+		history_add_artifact(o_ptr->artifact, object_is_known(o_ptr), TRUE);
+
+	/* Special cases for jewellery (because the flavor isn't the whole story) */
 	if (tval_is_jewelry(o_ptr))
 	{
 		/* Learn the flavor of jewelry with obvious flags */
@@ -895,7 +880,7 @@ void object_notice_on_wield(object_type *o_ptr)
 
 	if (!obvious) return;
 
-	/* XXX Eddie need to add stealth here, also need to assert/double-check everything is covered */
+	/* Special messages for individual properties */
 	/* CC: also need to add FA! */
 	if (o_ptr->modifiers[OBJ_MOD_STR] > 0)
 		msg("You feel stronger!");
@@ -917,6 +902,10 @@ void object_notice_on_wield(object_type *o_ptr)
 		msg("You feel healthier!");
 	else if (o_ptr->modifiers[OBJ_MOD_CON] < 0)
 		msg("You feel sicklier!");
+	if (o_ptr->modifiers[OBJ_MOD_STEALTH] > 0)
+		msg("You feel stealthier.");
+	else if (o_ptr->modifiers[OBJ_MOD_SPEED] < 0)
+		msg("You feel noisier.");
 	if (o_ptr->modifiers[OBJ_MOD_SPEED] > 0)
 		msg("You feel strangely quick.");
 	else if (o_ptr->modifiers[OBJ_MOD_SPEED] < 0)
@@ -935,10 +924,6 @@ void object_notice_on_wield(object_type *o_ptr)
 		msg("It glows!");
 	if (of_has(f, OF_TELEPATHY))
 		msg("Your mind feels strangely sharper!");
-
-	/* WARNING -- masking f by obvious mask -- this should be at the end of this function */
-	/* CC: I think this can safely go, but just in case ... */
-/*	flags_mask(f, OF_SIZE, OF_OBVIOUS_MASK, FLAG_END); */
 
 	/* Remember the flags */
 	object_notice_sensing(o_ptr);

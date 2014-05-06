@@ -629,6 +629,9 @@ void object_prep(object_type *o_ptr, struct object_kind *k, int lev,
 	o_ptr->ds = k->ds;
 	o_ptr->weight = k->weight;
 
+	/* Weight is always known */
+	id_on(o_ptr->id_flags, ID_WEIGHT);
+
 	/* Default number */
 	o_ptr->number = 1;
 
@@ -671,6 +674,10 @@ void object_prep(object_type *o_ptr, struct object_kind *k, int lev,
 		o_ptr->el_info[i].res_level = k->el_info[i].res_level;
 		o_ptr->el_info[i].flags = k->el_info[i].flags;
 		o_ptr->el_info[i].flags |= k->base->el_info[i].flags;
+
+		/* Unresistables have no hidden properties */
+		if (i > ELEM_HIGH_MAX)
+			o_ptr->el_info[i].flags |= EL_INFO_KNOWN;
 	}
 }
 
