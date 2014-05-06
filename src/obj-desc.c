@@ -574,7 +574,7 @@ static size_t obj_desc_inscrip(const object_type *o_ptr, char *buf, size_t max,
 			else
 				u[n++] = inscrip_text[feel];
 		} 
-		else if (o_ptr->ident & IDENT_EMPTY)
+		else if (tval_can_have_charges(o_ptr) && (o_ptr->pval == 0))
 			u[n++] = "empty";
 		else if (object_was_worn(o_ptr))
 			u[n++] = (tval_is_weapon(o_ptr)) ? "wielded" : "worn";

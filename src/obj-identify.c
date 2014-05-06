@@ -487,9 +487,6 @@ void object_know_all_miscellaneous(object_type *o_ptr)
  */
 void object_notice_everything(object_type *o_ptr)
 {
-	/* The object is "empty" */
-	o_ptr->ident &= ~(IDENT_EMPTY);
-
 	/* Mark as known */
 	object_flavor_aware(o_ptr);
 	object_add_ident_flags(o_ptr, IDENTS_SET_BY_IDENTIFY);

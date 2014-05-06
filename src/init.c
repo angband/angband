@@ -822,6 +822,10 @@ static errr finish_parse_k(struct parser *p) {
 	k_info = mem_zalloc((z_info->k_max+1) * sizeof(*k));
 	for (k = parser_priv(p); k; k = next) {
 		memcpy(&k_info[k->kidx], k, sizeof(*k));
+
+		/* Add base kind flags to kind kind flags */
+		kf_union(k_info[k->kidx].kind_flags, kb_info[k->tval].kind_flags);
+
 		next = k->next;
 		if (next)
 			k_info[k->kidx].next = &k_info[next->kidx];

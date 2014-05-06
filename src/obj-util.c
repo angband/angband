@@ -1597,7 +1597,6 @@ static void object_absorb_merge(object_type *o_ptr, const object_type *j_ptr)
 	int total;
 
 	/* Blend all knowledge */
-	o_ptr->ident |= (j_ptr->ident & ~IDENT_EMPTY);
 	of_union(o_ptr->known_flags, j_ptr->known_flags);
 
 	/* Merge inscriptions */

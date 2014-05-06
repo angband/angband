@@ -1622,9 +1622,6 @@ bool recharge(int spell_strength)
 
 		/* Recharge based on the power */
 		if (t > 0) o_ptr->pval += 2 + randint1(t);
-
-		/* We no longer think the item is empty */
-		o_ptr->ident &= ~(IDENT_EMPTY);
 	}
 
 	/* Combine / Reorder the pack (later) */

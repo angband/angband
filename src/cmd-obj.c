@@ -82,7 +82,6 @@ static int check_devices(object_type *o_ptr)
 	{
 		flush();
 		msg("The %s has no charges left.", what);
-		o_ptr->ident |= (IDENT_EMPTY);
 		return FALSE;
 	}
 
@@ -812,7 +811,7 @@ void do_cmd_aim_wand(struct command *cmd)
 			USE_INVEN | USE_FLOOR | SHOW_FAIL) != CMD_OK) return;
 
 	if (!obj_has_charges(object_from_item_idx(item))) {
-		msg("That staff has no charges.");
+		msg("That wand has no charges.");
 		return;
 	}
 
