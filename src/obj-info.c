@@ -1654,7 +1654,7 @@ static textblock *object_info_out(const object_type *o_ptr, int mode)
 	bitflag flags[OF_SIZE];
 	struct element_info el_info[N_ELEMENTS(elements)];
 	bool something = FALSE;
-	bool known = object_is_known(o_ptr);
+	bool known = object_all_but_flavor_is_known(o_ptr);
 
 	bool terse = mode & OINFO_TERSE;
 	bool subjective = mode & OINFO_SUBJ;

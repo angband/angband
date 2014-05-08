@@ -1276,7 +1276,7 @@ bool is_blessed(const object_type *o_ptr)
 static s32b object_value_base(const object_type *o_ptr)
 {
 	/* Use template cost for aware objects */
-	if (object_flavor_is_aware(o_ptr) || o_ptr->ident & IDENT_STORE)
+	if (object_flavor_is_aware(o_ptr) || object_all_but_flavor_is_known(o_ptr))
 		return o_ptr->kind->cost;
 
 	/* Analyze the type */
@@ -3592,7 +3592,7 @@ void display_object_kind_recall(struct object_kind *kind)
 	object_type object = { 0 };
 	object_prep(&object, kind, 0, EXTREMIFY);
 	if (kind->aware)
-		object.ident |= IDENT_STORE;
+		object_notice_everything(&object);
 
 	display_object_recall(&object);
 }

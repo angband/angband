@@ -1352,11 +1352,8 @@ static bool store_create_random(struct store *store)
 		}
 
 		/* The object is "known" and belongs to a store */
-		i_ptr->ident |= IDENT_STORE;
+		object_know_all_but_flavor(i_ptr);
 		i_ptr->origin = ORIGIN_STORE;
-		object_know_all_flags(i_ptr);
-		object_know_all_elements(i_ptr);
-		object_know_brands_and_slays(i_ptr);
 
 		/*** Post-generation filters ***/
 
@@ -1393,11 +1390,8 @@ static int store_create_item(struct store *store, object_kind *kind)
 	object_prep(&object, kind, 0, RANDOMISE);
 
 	/* Item belongs to a store */
-	object.ident |= IDENT_STORE;
+	object_know_all_but_flavor(&object);
 	object.origin = ORIGIN_STORE;
-	object_know_all_flags(&object);
-	object_know_all_elements(&object);
-	object_know_brands_and_slays(&object);
 
 	/* Attempt to carry the object */
 	return store_carry(store, &object);
@@ -1763,14 +1757,11 @@ void do_cmd_buy(struct command *cmd)
 	/* Spend the money */
 	player->au -= price;
 
-	/* ID objects on buy */
-	object_notice_everything(i_ptr);
+	/* Completely ID objects on buy */
+	object_flavor_aware(i_ptr);
 
 	/* Combine / Reorder the pack (later) */
 	player->upkeep->notice |= (PN_COMBINE | PN_REORDER | PN_SORT_QUIVER | PN_SQUELCH);
-
-	/* The object no longer belongs to the store */
-	i_ptr->ident &= ~(IDENT_STORE);
 
 	/* Message */
 	if (one_in_(3)) msgt(MSG_STORE5, "%s", ONE_OF(comment_accept));
@@ -1994,9 +1985,6 @@ void do_cmd_sell(struct command *cmd)
 
 	/* Take a new copy of the now known-about object. */
 	object_copy_amt(&sold_item, o_ptr, amt);
-
-	/* The item belongs to the store now */
-	sold_item.ident |= IDENT_STORE;
 
 	/*
 	* Hack -- Allocate charges between those wands, staves, or rods

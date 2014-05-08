@@ -107,17 +107,26 @@ bool object_all_miscellaneous_are_known(const object_type *o_ptr)
 }
 
 /**
- * \returns whether an object should be treated as fully known (e.g. ID'd)
+ * Is the player aware of all of an object's miscellaneous proerties?
+ *
+ * \param o_ptr is the object
  */
-bool object_is_known(const object_type *o_ptr)
+bool object_all_but_flavor_is_known(const object_type *o_ptr)
 {
-	if (easy_know(o_ptr)) return TRUE;
-	if (o_ptr->ident & IDENT_STORE) return TRUE;
 	if (!object_all_flags_are_known(o_ptr)) return FALSE;
 	if (!object_all_elements_are_known(o_ptr)) return FALSE;
 	if (!object_all_brands_and_slays_are_known(o_ptr)) return FALSE;
 	if (!object_all_miscellaneous_are_known(o_ptr)) return FALSE;
 	return TRUE;
+}
+
+/**
+ * \returns whether an object should be treated as fully known (e.g. ID'd)
+ */
+bool object_is_known(const object_type *o_ptr)
+{
+	if (!object_flavor_is_aware(o_ptr)) return FALSE;
+	return object_all_but_flavor_is_known(o_ptr) ? TRUE : FALSE;
 }
 
 /**
@@ -190,8 +199,10 @@ bool object_flavor_was_tried(const object_type *o_ptr)
 bool object_effect_is_known(const object_type *o_ptr)
 {
 	assert(o_ptr->kind);
-	return (easy_know(o_ptr) || id_has(o_ptr->id_flags, ID_EFFECT)
-			|| (o_ptr->ident & IDENT_STORE)) ? TRUE : FALSE;
+	if (easy_know(o_ptr) || id_has(o_ptr->id_flags, ID_EFFECT))
+		return TRUE;
+
+	return FALSE;
 }
 
 /**
@@ -209,16 +220,10 @@ bool object_name_is_visible(const object_type *o_ptr)
  */
 bool object_ego_is_visible(const object_type *o_ptr)
 {
-	if (!o_ptr->ego)
-		return FALSE;
-
-	if (id_has(o_ptr->id_flags, ID_EGO_ITEM))
+	if (o_ptr->ego && id_has(o_ptr->id_flags, ID_EGO_ITEM))
 		return TRUE;
 
-	if (o_ptr->ident & IDENT_STORE)
-		return TRUE;
-	else
-		return FALSE;
+	return FALSE;
 }
 
 /**
@@ -227,8 +232,7 @@ bool object_ego_is_visible(const object_type *o_ptr)
 bool object_attack_plusses_are_visible(const object_type *o_ptr)
 {
 	/* Bonuses have been revealed or for sale */
-	if ((id_has(o_ptr->id_flags, ID_TO_H) && id_has(o_ptr->id_flags, ID_TO_D))
-		|| (o_ptr->ident & IDENT_STORE))
+	if (id_has(o_ptr->id_flags, ID_TO_H) && id_has(o_ptr->id_flags, ID_TO_D))
 		return TRUE;
 
 	/* Aware jewelry with non-variable bonuses */
@@ -248,7 +252,7 @@ bool object_attack_plusses_are_visible(const object_type *o_ptr)
 bool object_defence_plusses_are_visible(const object_type *o_ptr)
 {
 	/* Bonuses have been revealed or for sale */
-	if (id_has(o_ptr->id_flags, ID_TO_A) || (o_ptr->ident & IDENT_STORE))
+	if (id_has(o_ptr->id_flags, ID_TO_A))
 		return TRUE;
 
 	/* Aware jewelry with non-variable bonuses */
@@ -267,9 +271,7 @@ bool object_defence_plusses_are_visible(const object_type *o_ptr)
  */
 bool object_flag_is_known(const object_type *o_ptr, int flag)
 {
-	if (easy_know(o_ptr) ||
-	    (o_ptr->ident & IDENT_STORE) ||
-	    of_has(o_ptr->known_flags, flag))
+	if (easy_know(o_ptr) || of_has(o_ptr->known_flags, flag))
 		return TRUE;
 
 	return FALSE;
@@ -282,9 +284,7 @@ bool object_element_is_known(const object_type *o_ptr, int element)
 {
 	if (element < 0 || element >= ELEM_MAX) return FALSE;
 
-	if (easy_know(o_ptr) ||
-	    (o_ptr->ident & IDENT_STORE) ||
-	    (o_ptr->el_info[element].flags & EL_INFO_KNOWN))
+	if (easy_know(o_ptr) || (o_ptr->el_info[element].flags & EL_INFO_KNOWN))
 		return TRUE;
 
 	return FALSE;
@@ -297,10 +297,6 @@ bool object_element_is_known(const object_type *o_ptr, int element)
 bool object_this_mod_is_visible(const object_type *o_ptr, int mod)
 {
 	assert(o_ptr->kind);
-
-	/* Store objects */
-	if (o_ptr->ident & IDENT_STORE)
-		return TRUE;
 
 	/* Aware jewelry with a fixed modifier (usually light) */
 	if (tval_is_jewelry(o_ptr) && object_flavor_is_aware(o_ptr)
@@ -497,13 +493,33 @@ void object_know_brands_and_slays(object_type *o_ptr)
 }
 
 /**
- * Make the player aware of all of an object's miscellaneous proerties.
+ * Make the player aware of all of an object's miscellaneous properties.
  *
  * \param o_ptr is the object to mark
  */
 void object_know_all_miscellaneous(object_type *o_ptr)
 {
 	id_setall(o_ptr->id_flags);
+}
+
+/**
+ * Make the player aware of all of an object' properties except flavor.
+ *
+ * \param o_ptr is the object to mark
+ */
+void object_know_all_but_flavor(object_type *o_ptr)
+{
+	/* Know all flags there are to be known */
+	object_know_all_flags(o_ptr);
+
+	/* Know all elemental properties */
+	object_know_all_elements(o_ptr);
+
+	/* Know all brands and slays */
+	object_know_brands_and_slays(o_ptr);
+
+	/* Know everything else */
+	object_know_all_miscellaneous(o_ptr);
 }
 
 
@@ -528,17 +544,8 @@ void object_notice_everything(object_type *o_ptr)
 		history_add_artifact(o_ptr->artifact, TRUE, TRUE);
 	}
 
-	/* Know all flags there are to be known */
-	object_know_all_flags(o_ptr);
-
-	/* Know all elemental properties */
-	object_know_all_elements(o_ptr);
-
-	/* Know all brands and slays */
-	object_know_brands_and_slays(o_ptr);
-
 	/* Know everything else */
-	object_know_all_miscellaneous(o_ptr);
+	object_know_all_but_flavor(o_ptr);
 }
 
 

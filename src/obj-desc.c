@@ -82,11 +82,11 @@ static const char *obj_desc_get_modstr(const object_kind *kind)
 }
 
 static const char *obj_desc_get_basename(const object_type *o_ptr, bool aware,
-										 bool terse)
+										 bool terse, int mode)
 {
 	bool show_flavor = !terse && o_ptr->kind->flavor;
 
-	if (o_ptr->ident & IDENT_STORE) show_flavor = FALSE;
+	if (mode & ODESC_STORE) show_flavor = FALSE;
 	if (aware && !OPT(show_flavors)) show_flavor = FALSE;
 
 	/* Artifacts are special */
@@ -299,9 +299,8 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end,
 		const object_type *o_ptr, bool prefix, int mode, bool spoil, bool terse)
 {
 	bool known = object_is_known(o_ptr) || spoil;
-	bool aware = object_flavor_is_aware(o_ptr) || (o_ptr->ident & IDENT_STORE)
-		|| spoil;
-	const char *basename = obj_desc_get_basename(o_ptr, aware, terse);
+	bool aware = object_flavor_is_aware(o_ptr) || (mode & ODESC_STORE) || spoil;
+	const char *basename = obj_desc_get_basename(o_ptr, aware, terse, mode);
 	const char *modstr = obj_desc_get_modstr(o_ptr->kind);
 
 	if (aware && !o_ptr->kind->everseen && !spoil)
@@ -525,9 +524,9 @@ static size_t obj_desc_mods(const object_type *o_ptr, char *buf, size_t max,
 }
 
 static size_t obj_desc_charges(const object_type *o_ptr, char *buf, size_t max,
-							   size_t end)
+							   size_t end, int mode)
 {
-	bool aware = object_flavor_is_aware(o_ptr) || (o_ptr->ident & IDENT_STORE);
+	bool aware = object_flavor_is_aware(o_ptr) || (mode & ODESC_STORE);
 
 	/* Wands and Staffs have charges */
 	if (aware && tval_can_have_charges(o_ptr))
@@ -691,7 +690,7 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr, int mode)
 	{
 		end = obj_desc_mods(o_ptr, buf, max, end, spoil);
 
-		end = obj_desc_charges(o_ptr, buf, max, end);
+		end = obj_desc_charges(o_ptr, buf, max, end, mode);
 
 		if (mode & ODESC_STORE)
 			end = obj_desc_aware(o_ptr, buf, max, end);

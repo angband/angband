@@ -22,7 +22,6 @@
 
 /* ID flags */
 #define IDENT_SENSE     0x0001  /* Has been "sensed" */
-#define IDENT_STORE     0x0010  /* Item is in the inventory of a store */
 /* xxx */
 #define IDENT_FAKE      0x2000  /* Item is a fake, for displaying knowledge */
 
@@ -46,6 +45,7 @@ typedef enum
 extern s32b object_last_wield;
 
 bool easy_know(const object_type *o_ptr);
+bool object_all_but_flavor_is_known(const object_type *o_ptr);
 bool object_is_known(const object_type *o_ptr);
 bool object_is_known_artifact(const object_type *o_ptr);
 bool object_is_known_blessed(const object_type *o_ptr);
@@ -69,6 +69,7 @@ void object_know_all_flags(object_type *o_ptr);
 void object_know_all_elements(object_type *o_ptr);
 void object_know_brands_and_slays(object_type *o_ptr);
 void object_know_all_miscellaneous(object_type *o_ptr);
+void object_know_all_but_flavor(object_type *o_ptr);
 void object_notice_everything(object_type *o_ptr);
 void object_notice_ego(object_type *o_ptr);
 void object_notice_effect(object_type *o_ptr);

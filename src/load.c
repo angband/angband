@@ -1110,9 +1110,6 @@ static int rd_stores_aux(rd_item_t rd_item_version)
 				return (-1);
 			}
 
-			if (i != STORE_HOME)
-				i_ptr->ident |= IDENT_STORE;
-			
 			/* Accept any valid items */
 			if (st_ptr->stock_num < STORE_INVEN_MAX && i_ptr->kind)
 			{
