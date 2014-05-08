@@ -793,7 +793,7 @@ s16b apply_magic(object_type *o_ptr, int lev, bool allow_artifacts,
  */
 static bool kind_is_good(const object_kind *kind)
 {
-	/* Analyze the item type */
+	/* Some item types are (almost) always good */
 	switch (kind->tval)
 	{
 		/* Armor -- Good unless damaged */
@@ -808,7 +808,7 @@ static bool kind_is_good(const object_kind *kind)
 		case TV_CROWN:
 		{
 			if (randcalc(kind->to_a, 0, MINIMISE) < 0) return (FALSE);
-			return (TRUE);
+			return TRUE;
 		}
 
 		/* Weapons -- Good unless damaged */
@@ -820,41 +820,20 @@ static bool kind_is_good(const object_kind *kind)
 		{
 			if (randcalc(kind->to_h, 0, MINIMISE) < 0) return (FALSE);
 			if (randcalc(kind->to_d, 0, MINIMISE) < 0) return (FALSE);
-			return (TRUE);
+			return TRUE;
 		}
 
 		/* Ammo -- Arrows/Bolts are good */
 		case TV_BOLT:
 		case TV_ARROW:
 		{
-			return (TRUE);
-		}
-
-		/* Books -- High level books are good */
-		case TV_MAGIC_BOOK:
-		case TV_PRAYER_BOOK:
-		{
-			if (kind->sval >= SV_BOOK_MIN_GOOD) return (TRUE);
-			return (FALSE);
-		}
-
-		/* Rings -- Rings of Speed are good */
-		case TV_RING:
-		{
-			if (kind->sval == SV_RING_SPEED) return (TRUE);
-			return (FALSE);
-		}
-
-		/* Amulets -- Amulets of the Magi are good */
-		case TV_AMULET:
-		{
-			if (kind->sval == SV_AMULET_THE_MAGI) return (TRUE);
-			if (kind->sval == SV_AMULET_DEVOTION) return (TRUE);
-			if (kind->sval == SV_AMULET_WEAPONMASTERY) return (TRUE);
-			if (kind->sval == SV_AMULET_TRICKERY) return (TRUE);
-			return (FALSE);
+			return TRUE;
 		}
 	}
+
+	/* Anything with the GOOD flag */
+	if (kf_has(kind->kind_flags, KF_GOOD))
+		return TRUE;
 
 	/* Assume not good */
 	return (FALSE);
