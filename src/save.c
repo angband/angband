@@ -152,6 +152,12 @@ static void wr_item(const object_type *o_ptr)
 	
 	wr_s16b(o_ptr->mimicking_m_idx);
 
+	/* Activation */
+	wr_u16b(o_ptr->effect);
+	wr_u16b(o_ptr->time.base);
+	wr_u16b(o_ptr->time.dice);
+	wr_u16b(o_ptr->time.sides);
+
 	/* Save the inscription (if any) */
 	if (o_ptr->note)
 	{
@@ -537,8 +543,11 @@ void wr_squelch(void)
 	{
 		byte flags = 0;
 
-		/* Figure out and write the everseen flag */
-		if (e_info[i].everseen) flags |= 0x02;
+		/* Figure out and write the squelch and everseen flags */
+		if (e_info[i].squelch)
+			flags |= 0x01;
+		if (e_info[i].everseen)
+			flags |= 0x02;
 		wr_byte(flags);
 	}
 

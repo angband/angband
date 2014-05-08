@@ -451,7 +451,12 @@ typedef struct ego_item
 	byte min_to_d;			/* Minimum to-dam value */
 	byte min_to_a;			/* Minimum to-ac value */
 
+	u16b effect;			/**< Effect this item produces (effects.c) */
+	random_value time;		/**< Recharge time (rods/activation) */
+	s16b timeout;			/* Timeout Counter */
+
 	bool everseen;			/* Do not spoil squelch menus */
+	bool squelch;			/**< Squelch this ego-item */
 } ego_item_type;
 
 /*
@@ -521,6 +526,8 @@ typedef struct object
 
 	byte dd, ds;		/* Damage dice/sides */
 
+	u16b effect;		/**< Activation indicator */
+	random_value time;	/**< Recharge time (rods/activation) */
 	s16b timeout;		/* Timeout Counter */
 
 	byte number;		/* Number of items */

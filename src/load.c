@@ -193,6 +193,15 @@ static int rd_item(object_type *o_ptr)
 
 	rd_s16b(&o_ptr->mimicking_m_idx);
 
+	/* Activation */
+	rd_u16b(&o_ptr->effect);
+	rd_u16b(&tmp16u);
+	o_ptr->time.base = tmp16u;
+	rd_u16b(&tmp16u);
+	o_ptr->time.dice = tmp16u;
+	rd_u16b(&tmp16u);
+	o_ptr->time.sides = tmp16u;
+
 	/* Save the inscription */
 	rd_string(buf, sizeof(buf));
 	if (buf[0]) o_ptr->note = quark_add(buf);
@@ -836,9 +845,10 @@ int rd_squelch(void)
 		{
 			byte flags;
 			
-			/* Read and extract the flag */
+			/* Read and extract the flags */
 			rd_byte(&flags);
-			e_info[i].everseen |= (flags & 0x02);
+			e_info[i].squelch = (flags & 0x01) ? TRUE : FALSE;
+			e_info[i].everseen = (flags & 0x02) ? TRUE : FALSE;
 		}
 	}
 	
