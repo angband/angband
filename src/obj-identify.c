@@ -93,7 +93,8 @@ bool object_is_known_not_artifact(const object_type *o_ptr)
  */
 bool object_was_worn(const object_type *o_ptr)
 {
-	return o_ptr->ident & IDENT_WORN ? TRUE : FALSE;
+	/* A hack, OK for now as ID_STR is only gained on wield or identify - NRM */
+	return id_has(o_ptr->id_flags, ID_STR) ? TRUE : FALSE;
 }
 
 /**
@@ -447,7 +448,7 @@ void object_know_all_miscellaneous(object_type *o_ptr)
 
 
 
-#define IDENTS_SET_BY_IDENTIFY ( IDENT_KNOWN | IDENT_SENSE | IDENT_WORN )
+#define IDENTS_SET_BY_IDENTIFY ( IDENT_KNOWN | IDENT_SENSE )
 
 /**
  * Mark as object as fully known, a.k.a identified. 
@@ -780,10 +781,6 @@ void object_notice_on_wield(object_type *o_ptr)
 
 	/* Notice any brands */
 	object_notice_brands(o_ptr, NULL);
-
-	/* To change later - NRM */
-	if (object_add_ident_flags(o_ptr, IDENT_WORN))
-		object_check_for_ident(o_ptr);
 
 	/* Automatically sense artifacts upon wield */
 	object_sense_artifact(o_ptr);

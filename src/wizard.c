@@ -442,9 +442,8 @@ static void wiz_display_item(const object_type *o_ptr, bool all)
 	prt_binary(o_ptr->known_flags, 0, 23, j, '+', 28);
 
 	prt("o_ptr->ident:", 20, j+34);
-	prt(format("sense  %c  worn   %c  store  %c  known   %c",
+	prt(format("sense  %c  store  %c  known   %c",
 		(o_ptr->ident & IDENT_SENSE) ? '+' : ' ',
-		(o_ptr->ident & IDENT_WORN) ? '+' : ' ',
 		(o_ptr->ident & IDENT_STORE) ? '+' : ' ',
 		(o_ptr->ident & IDENT_KNOWN) ? '+' : ' '), 21, j+34);
 }
