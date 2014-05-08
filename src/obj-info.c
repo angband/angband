@@ -1337,18 +1337,13 @@ static bool obj_known_effect(const object_type *o_ptr, int *effect, bool *aimed,
 	*aimed = FALSE;
 
 	if (object_effect_is_known(o_ptr)) {
-		if (o_ptr->artifact) {
-			*effect = o_ptr->artifact->effect;
-			timeout = o_ptr->artifact->time;
-		} else {
-			*effect = o_ptr->kind->effect;
-			timeout = o_ptr->kind->time;
-		}
+		*effect = o_ptr->effect;
+		timeout = o_ptr->time;
 	} else if (object_effect(o_ptr)) {
 		/* Don't know much - be vague */
 		*effect = OBJ_KNOWN_PRESENT;
 
-		if (!o_ptr->artifact && effect_aim(o_ptr->kind->effect))
+		if (!o_ptr->artifact && effect_aim(o_ptr->effect))
 			*aimed = TRUE;
 					
 		return TRUE;

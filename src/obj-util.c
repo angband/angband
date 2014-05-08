@@ -1705,7 +1705,7 @@ void object_copy(object_type *o_ptr, const object_type *j_ptr)
  */
 void object_copy_amt(object_type *dst, object_type *src, int amt)
 {
-	int charge_time = randcalc(src->kind->time, 0, AVERAGE), max_time;
+	int charge_time = randcalc(src->time, 0, AVERAGE), max_time;
 
 	/* Get a copy of the object */
 	object_copy(dst, src);
@@ -3262,7 +3262,7 @@ int get_use_device_chance(const object_type *o_ptr)
  */
 void distribute_charges(object_type *o_ptr, object_type *q_ptr, int amt)
 {
-	int charge_time = randcalc(o_ptr->kind->time, 0, AVERAGE), max_time;
+	int charge_time = randcalc(o_ptr->time, 0, AVERAGE), max_time;
 
 	/*
 	 * Hack -- If rods, staves, or wands are dropped, the total maximum
@@ -3317,15 +3317,8 @@ void reduce_charges(object_type *o_ptr, int amt)
 int number_charging(const object_type *o_ptr)
 {
 	int charge_time, num_charging;
-	random_value timeout;
 
-	/* Artifacts have a special timeout */	
-	if (o_ptr->artifact)
-		timeout = o_ptr->artifact->time;
-	else
-		timeout = o_ptr->kind->time;
-
-	charge_time = randcalc(timeout, 0, AVERAGE);
+	charge_time = randcalc(o_ptr->time, 0, AVERAGE);
 
 	/* Item has no timeout */
 	if (charge_time <= 0) return 0;
@@ -3800,10 +3793,7 @@ bool obj_is_ego_template(const object_type *o_ptr)
  */
 u16b object_effect(const object_type *o_ptr)
 {
-	if (o_ptr->artifact)
-		return o_ptr->artifact->effect;
-	else
-		return o_ptr->kind->effect;
+	return o_ptr->effect;
 }
 
 /* Get an o_ptr from an item number */

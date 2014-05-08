@@ -725,11 +725,7 @@ static void use_aux(struct command *cmd, int item, enum use use, int snd)
 	}
 	else if (used && use == USE_TIMEOUT)
 	{
-		/* Artifacts use their own special field */
-		if (o_ptr->artifact)
-			o_ptr->timeout = randcalc(o_ptr->artifact->time, 0, RANDOMISE);
-		else
-			o_ptr->timeout += randcalc(o_ptr->kind->time, 0, RANDOMISE);
+		o_ptr->timeout += randcalc(o_ptr->time, 0, RANDOMISE);
 	}
 	else if (used && use == USE_SINGLE)
 	{
