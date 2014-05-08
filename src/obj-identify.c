@@ -101,7 +101,8 @@ bool object_was_worn(const object_type *o_ptr)
  */
 bool object_was_fired(const object_type *o_ptr)
 {
-	return o_ptr->ident & IDENT_FIRED ? TRUE : FALSE;
+	/* Ridiculous temporary hack - NRM */
+	return id_has(o_ptr->id_flags, ID_AC) ? TRUE : FALSE;
 }
 
 /**
@@ -446,7 +447,7 @@ void object_know_all_miscellaneous(object_type *o_ptr)
 
 
 
-#define IDENTS_SET_BY_IDENTIFY ( IDENT_KNOWN | IDENT_SENSE | IDENT_WORN | IDENT_FIRED )
+#define IDENTS_SET_BY_IDENTIFY ( IDENT_KNOWN | IDENT_SENSE | IDENT_WORN )
 
 /**
  * Mark as object as fully known, a.k.a identified. 
@@ -492,10 +493,6 @@ void object_notice_ego(object_type *o_ptr)
 
 	if (!o_ptr->ego)
 		return;
-
-
-	/* XXX Eddie print a message on notice ego if not already noticed? */
-	/* XXX Eddie should we do something about everseen of egos here? */
 
 	/* Learn ego flags */
 	of_union(o_ptr->known_flags, o_ptr->ego->flags);
@@ -720,12 +717,11 @@ void object_notice_on_defend(struct player *p)
 
 /*
  * Notice stuff when firing or throwing objects.
- *
  */
-/* XXX Eddie perhaps some stuff from do_cmd_fire and do_cmd_throw should be moved here */
 void object_notice_on_firing(object_type *o_ptr)
 {
-	if (object_add_ident_flags(o_ptr, IDENT_FIRED))
+	/* Ridiculous temporary hack - NRM */
+	if (object_add_id_flag(o_ptr, ID_AC))
 		object_check_for_ident(o_ptr);
 }
 
