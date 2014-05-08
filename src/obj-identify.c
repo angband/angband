@@ -105,14 +105,6 @@ bool object_was_fired(const object_type *o_ptr)
 }
 
 /**
- * \returns whether the object has been sensed with pseudo-ID
- */
-bool object_was_sensed(const object_type *o_ptr)
-{
-	return o_ptr->ident & IDENT_SENSE ? TRUE : FALSE;
-}
-
-/**
  * \returns whether the player is aware of the object's flavour
  */
 bool object_flavor_is_aware(const object_type *o_ptr)
@@ -136,9 +128,8 @@ bool object_flavor_was_tried(const object_type *o_ptr)
 bool object_effect_is_known(const object_type *o_ptr)
 {
 	assert(o_ptr->kind);
-	return (easy_know(o_ptr) || (o_ptr->ident & IDENT_EFFECT)
-		|| (object_flavor_is_aware(o_ptr) && o_ptr->kind->effect)
-		|| (o_ptr->ident & IDENT_STORE)) ? TRUE : FALSE;
+	return (easy_know(o_ptr) || id_has(o_ptr->id_flags, ID_EFFECT)
+			|| (o_ptr->ident & IDENT_STORE)) ? TRUE : FALSE;
 }
 
 /**
@@ -261,30 +252,6 @@ bool object_this_mod_is_visible(const object_type *o_ptr, int mod)
 	return FALSE;
 }
 
-/*
- * \returns whether it is possible an object has a high resist given the
- *          player's current knowledge
- */
-bool object_high_resist_is_possible(const object_type *o_ptr)
-{
-	size_t i;
-
-	/* Look at all the high resists */
-	for (i = ELEM_HIGH_MIN; i <= ELEM_HIGH_MAX; i++) {
-		/* Object doesn't have it - not interesting */
-		if (o_ptr->el_info[i].res_level <= 0) continue;
-
-		/* Element properties known */
-		if (o_ptr->el_info[i].flags & EL_INFO_KNOWN) continue;
-
-		/* Has a resist, or doubt remains */
-		return TRUE;
-	}
-
-	/* No doubt left */
-	return FALSE;
-}
-
 
 
 /*
@@ -394,8 +361,9 @@ void object_flavor_aware(object_type *o_ptr)
 	if (o_ptr->kind->aware) return;
 	o_ptr->kind->aware = TRUE;
 
-	/* Charges or food value (pval) now known */
+	/* Charges or food value (pval) and effect now known */
 	id_on(o_ptr->id_flags, ID_PVAL);
+	id_on(o_ptr->id_flags, ID_EFFECT);
 
 	/* Fix squelch/autoinscribe */
 	if (kind_is_squelched_unaware(o_ptr->kind)) {
@@ -478,7 +446,7 @@ void object_know_all_miscellaneous(object_type *o_ptr)
 
 
 
-#define IDENTS_SET_BY_IDENTIFY ( IDENT_KNOWN | IDENT_SENSE | IDENT_EFFECT | IDENT_WORN | IDENT_FIRED )
+#define IDENTS_SET_BY_IDENTIFY ( IDENT_KNOWN | IDENT_SENSE | IDENT_WORN | IDENT_FIRED )
 
 /**
  * Mark as object as fully known, a.k.a identified. 
@@ -567,37 +535,6 @@ void object_notice_ego(object_type *o_ptr)
 }
 
 
-/*
- * Mark an object as sensed.
- */
-void object_notice_sensing(object_type *o_ptr)
-{
-	if (object_was_sensed(o_ptr))
-		return;
-
-	if (o_ptr->artifact) {
-		o_ptr->artifact->seen = o_ptr->artifact->everseen = TRUE;
-		id_on(o_ptr->id_flags, ID_ARTIFACT);
-	}
-
-	id_on(o_ptr->id_flags, ID_AC);
-	object_notice_curses(o_ptr);
-	if (object_add_ident_flags(o_ptr, IDENT_SENSE))
-		object_check_for_ident(o_ptr);
-}
-
-
-/*
- * Sense artifacts
- */
-void object_sense_artifact(object_type *o_ptr)
-{
-	id_on(o_ptr->id_flags, ID_ARTIFACT);
-	if (o_ptr->artifact)
-		object_notice_sensing(o_ptr);
-}
-
-
 /**
  * Notice the "effect" from activating an object.
  *
@@ -605,7 +542,7 @@ void object_sense_artifact(object_type *o_ptr)
  */
 void object_notice_effect(object_type *o_ptr)
 {
-	if (object_add_ident_flags(o_ptr, IDENT_EFFECT))
+	if (object_add_id_flag(o_ptr, ID_EFFECT))
 		object_check_for_ident(o_ptr);
 
 	/* noticing an effect gains awareness */
@@ -1116,6 +1053,72 @@ void wieldeds_notice_on_attack(void)
 	/* XXX Eddie do we need to do more about ammo? */
 
 	return;
+}
+
+
+/* Ostracism line */
+
+/*
+ * \returns whether it is possible an object has a high resist given the
+ *          player's current knowledge
+ */
+bool object_high_resist_is_possible(const object_type *o_ptr)
+{
+	size_t i;
+
+	/* Look at all the high resists */
+	for (i = ELEM_HIGH_MIN; i <= ELEM_HIGH_MAX; i++) {
+		/* Object doesn't have it - not interesting */
+		if (o_ptr->el_info[i].res_level <= 0) continue;
+
+		/* Element properties known */
+		if (o_ptr->el_info[i].flags & EL_INFO_KNOWN) continue;
+
+		/* Has a resist, or doubt remains */
+		return TRUE;
+	}
+
+	/* No doubt left */
+	return FALSE;
+}
+
+
+/**
+ * \returns whether the object has been sensed with pseudo-ID
+ */
+bool object_was_sensed(const object_type *o_ptr)
+{
+	return o_ptr->ident & IDENT_SENSE ? TRUE : FALSE;
+}
+
+/*
+ * Mark an object as sensed.
+ */
+void object_notice_sensing(object_type *o_ptr)
+{
+	if (object_was_sensed(o_ptr))
+		return;
+
+	if (o_ptr->artifact) {
+		o_ptr->artifact->seen = o_ptr->artifact->everseen = TRUE;
+		id_on(o_ptr->id_flags, ID_ARTIFACT);
+	}
+
+	id_on(o_ptr->id_flags, ID_AC);
+	object_notice_curses(o_ptr);
+	if (object_add_ident_flags(o_ptr, IDENT_SENSE))
+		object_check_for_ident(o_ptr);
+}
+
+
+/*
+ * Sense artifacts
+ */
+void object_sense_artifact(object_type *o_ptr)
+{
+	id_on(o_ptr->id_flags, ID_ARTIFACT);
+	if (o_ptr->artifact)
+		object_notice_sensing(o_ptr);
 }
 
 

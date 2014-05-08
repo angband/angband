@@ -25,7 +25,6 @@
 #define IDENT_WORN      0x0002  /* Has been tried on */
 #define IDENT_KNOWN     0x0008  /* Fully known */
 #define IDENT_STORE     0x0010  /* Item is in the inventory of a store */
-#define IDENT_EFFECT    0x0080  /* Know item activation/effect */
 /* xxx */
 #define IDENT_FIRED     0x0800  /* Has been used as a missile */
 #define IDENT_FAKE      0x2000  /* Item is a fake, for displaying knowledge */
@@ -56,7 +55,6 @@ bool object_is_known_blessed(const object_type *o_ptr);
 bool object_is_known_not_artifact(const object_type *o_ptr);
 bool object_was_worn(const object_type *o_ptr);
 bool object_was_fired(const object_type *o_ptr);
-bool object_was_sensed(const object_type *o_ptr);
 bool object_flavor_is_aware(const object_type *o_ptr);
 bool object_flavor_was_tried(const object_type *o_ptr);
 bool object_effect_is_known(const object_type *o_ptr);
@@ -67,17 +65,15 @@ bool object_defence_plusses_are_visible(const object_type *o_ptr);
 bool object_flag_is_known(const object_type *o_ptr, int flag);
 bool object_element_is_known(const object_type *o_ptr, int element);
 bool object_this_mod_is_visible(const object_type *o_ptr, int mod);
-bool object_high_resist_is_possible(const object_type *o_ptr);
 bool object_check_for_ident(object_type *o_ptr);
 void object_flavor_aware(object_type *o_ptr);
 void object_flavor_tried(object_type *o_ptr);
 void object_know_all_flags(object_type *o_ptr);
 void object_know_all_elements(object_type *o_ptr);
 void object_know_brands_and_slays(object_type *o_ptr);
+void object_know_all_miscellaneous(object_type *o_ptr);
 void object_notice_everything(object_type *o_ptr);
 void object_notice_ego(object_type *o_ptr);
-void object_notice_sensing(object_type *o_ptr);
-void object_sense_artifact(object_type *o_ptr);
 void object_notice_effect(object_type *o_ptr);
 void object_notice_attack_plusses(object_type *o_ptr);
 bool object_notice_element(object_type *o_ptr, int element);
@@ -93,6 +89,10 @@ void wieldeds_notice_to_hit_on_attack(void);
 void wieldeds_notice_on_attack(void);
 
 /* Ostracism line */
+bool object_high_resist_is_possible(const object_type *o_ptr);
+bool object_was_sensed(const object_type *o_ptr);
+void object_notice_sensing(object_type *o_ptr);
+void object_sense_artifact(object_type *o_ptr);
 obj_pseudo_t object_pseudo(const object_type *o_ptr);
 void sense_inventory(void);
 
