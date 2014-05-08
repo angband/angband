@@ -1505,6 +1505,9 @@ static bool inventory_object_stackable(const object_type *o_ptr, const object_ty
 	}
 	else if (tval_is_weapon(o_ptr) || tval_is_armor(o_ptr) ||
 		tval_is_jewelry(o_ptr) || tval_is_light(o_ptr)) {
+		bool o_is_known = object_is_known(o_ptr);
+		bool j_is_known = object_is_known(j_ptr);
+
 		/* Require identical values */
 		if (o_ptr->ac != j_ptr->ac) return FALSE;
 		if (o_ptr->dd != j_ptr->dd) return FALSE;
@@ -1531,9 +1534,8 @@ static bool inventory_object_stackable(const object_type *o_ptr, const object_ty
 		else if ((o_ptr->timeout != j_ptr->timeout) &&
 				 tval_is_light(o_ptr)) return FALSE;
 
-		/* Prevent unIDd items stacking in the object list */
-		if (mode & OSTACK_LIST &&
-			!(o_ptr->ident & j_ptr->ident & IDENT_KNOWN)) return FALSE;
+		/* Prevent unIDd items stacking with IDd items in the object list */
+		if (mode & OSTACK_LIST && (o_is_known != j_is_known)) return FALSE;
 	}
 	else {
 		/* Anything else probably okay */

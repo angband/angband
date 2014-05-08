@@ -52,12 +52,72 @@ bool easy_know(const object_type *o_ptr)
 }
 
 /**
+ * Is the player aware of all of an object's flags?
+ *
+ * \param o_ptr is the object
+ */
+bool object_all_flags_are_known(const object_type *o_ptr)
+{
+	return of_is_full(o_ptr->known_flags) ? TRUE : FALSE;
+}
+
+
+/**
+ * Is the player aware of all of an object's elemental properties?
+ *
+ * \param o_ptr is the object
+ */
+bool object_all_elements_are_known(const object_type *o_ptr)
+{
+	size_t i;
+
+	for (i = 0; i < ELEM_MAX; i++)
+		if (!(o_ptr->el_info[i].flags & EL_INFO_KNOWN)) return FALSE;
+
+	return TRUE;
+}
+
+
+/**
+ * Is the player aware of all of an object's brands and slays?
+ *
+ * \param o_ptr is the object
+ */
+bool object_all_brands_and_slays_are_known(const object_type *o_ptr)
+{
+	struct brand *b;
+	struct slay *s;
+
+	for (b = o_ptr->brands; b; b = b->next)
+		if (!b->known) return FALSE;
+	for (s = o_ptr->slays; s; s = s->next)
+		if (!s->known) return FALSE;
+
+	return TRUE;
+}
+
+/**
+ * Is the player aware of all of an object's miscellaneous proerties?
+ *
+ * \param o_ptr is the object
+ */
+bool object_all_miscellaneous_are_known(const object_type *o_ptr)
+{
+	return id_is_full(o_ptr->id_flags) ? TRUE : FALSE;
+}
+
+/**
  * \returns whether an object should be treated as fully known (e.g. ID'd)
  */
 bool object_is_known(const object_type *o_ptr)
 {
-	return (o_ptr->ident & IDENT_KNOWN) || easy_know(o_ptr) ||
-			(o_ptr->ident & IDENT_STORE);
+	if (easy_know(o_ptr)) return TRUE;
+	if (o_ptr->ident & IDENT_STORE) return TRUE;
+	if (!object_all_flags_are_known(o_ptr)) return FALSE;
+	if (!object_all_elements_are_known(o_ptr)) return FALSE;
+	if (!object_all_brands_and_slays_are_known(o_ptr)) return FALSE;
+	if (!object_all_miscellaneous_are_known(o_ptr)) return FALSE;
+	return TRUE;
 }
 
 /**
@@ -448,7 +508,7 @@ void object_know_all_miscellaneous(object_type *o_ptr)
 
 
 
-#define IDENTS_SET_BY_IDENTIFY ( IDENT_KNOWN | IDENT_SENSE )
+#define IDENTS_SET_BY_IDENTIFY ( IDENT_SENSE )
 
 /**
  * Mark as object as fully known, a.k.a identified. 

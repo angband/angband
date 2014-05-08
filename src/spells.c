@@ -1288,12 +1288,8 @@ static bool item_tester_hook_armour(const object_type *o_ptr)
 	return tval_is_armor(o_ptr);
 }
 
-
 /*
- * Now that object flags are changing so much, it is likely that there
- * will be buggy objects that are marked with IDENT_KNOWN but do not
- * have all flags correctly marked.  This function needs to allow for
- * reidentifying buggy objects.
+ * Hopefully this is OK now
  */
 static bool item_tester_unknown(const object_type *o_ptr)
 {

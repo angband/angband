@@ -22,7 +22,6 @@
 
 /* ID flags */
 #define IDENT_SENSE     0x0001  /* Has been "sensed" */
-#define IDENT_KNOWN     0x0008  /* Fully known */
 #define IDENT_STORE     0x0010  /* Item is in the inventory of a store */
 /* xxx */
 #define IDENT_FAKE      0x2000  /* Item is a fake, for displaying knowledge */
