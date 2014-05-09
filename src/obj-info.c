@@ -1757,10 +1757,7 @@ textblock *object_info_ego(struct ego_item *ego)
 	ego_apply_magic(&obj, 0);
 
 	obj.ident |= IDENT_FAKE;
-	object_know_all_flags(&obj);
-	object_know_all_elements(&obj);
-	object_know_brands_and_slays(&obj);
-	object_know_all_miscellaneous(&obj);
+	object_know_all_but_flavor(&obj);
 
 	return object_info_out(&obj, OINFO_NONE);
 }

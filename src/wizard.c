@@ -440,9 +440,6 @@ static void wiz_display_item(const object_type *o_ptr, bool all)
 	prt("rtsxnrdfnglgpvaltsuppderprrr....", 21, j);
 	prt_binary(f, 0, 22, j, '*', 28);
 	prt_binary(o_ptr->known_flags, 0, 23, j, '+', 28);
-
-	prt("o_ptr->ident:", 20, j+34);
-	prt(format("sense %c", (o_ptr->ident & IDENT_SENSE) ? '+' : ' '), 21, j+34);
 }
 
 

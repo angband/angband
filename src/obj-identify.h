@@ -21,8 +21,6 @@
 #define OBJECT_IDENTIFY_H
 
 /* ID flags */
-#define IDENT_SENSE     0x0001  /* Has been "sensed" */
-/* xxx */
 #define IDENT_FAKE      0x2000  /* Item is a fake, for displaying knowledge */
 
 /**
@@ -51,7 +49,6 @@ bool object_is_known_artifact(const object_type *o_ptr);
 bool object_is_known_blessed(const object_type *o_ptr);
 bool object_is_known_not_artifact(const object_type *o_ptr);
 bool object_was_worn(const object_type *o_ptr);
-bool object_was_fired(const object_type *o_ptr);
 bool object_flavor_is_aware(const object_type *o_ptr);
 bool object_flavor_was_tried(const object_type *o_ptr);
 bool object_effect_is_known(const object_type *o_ptr);
@@ -65,10 +62,6 @@ bool object_this_mod_is_visible(const object_type *o_ptr, int mod);
 bool object_check_for_ident(object_type *o_ptr);
 void object_flavor_aware(object_type *o_ptr);
 void object_flavor_tried(object_type *o_ptr);
-void object_know_all_flags(object_type *o_ptr);
-void object_know_all_elements(object_type *o_ptr);
-void object_know_brands_and_slays(object_type *o_ptr);
-void object_know_all_miscellaneous(object_type *o_ptr);
 void object_know_all_but_flavor(object_type *o_ptr);
 void object_notice_everything(object_type *o_ptr);
 void object_notice_ego(object_type *o_ptr);

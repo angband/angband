@@ -304,26 +304,6 @@ bool object_this_mod_is_visible(const object_type *o_ptr, int mod)
 
 
 /*
- * Sets a some IDENT_ flags on an object.
- *
- * \param o_ptr is the object to check
- * \param flags are the ident flags to be added
- *
- * \returns whether o_ptr->ident changed
- */
-static bool object_add_ident_flags(object_type *o_ptr, u32b flags)
-{
-	if ((o_ptr->ident & flags) != flags)
-	{
-		o_ptr->ident |= flags;
-		return TRUE;
-	}
-
-	return FALSE;
-}
-
-
-/*
  * Sets an ID_ flag on an object.
  *
  * \param o_ptr is the object to check
@@ -515,8 +495,6 @@ void object_know_all_but_flavor(object_type *o_ptr)
 
 
 
-#define IDENTS_SET_BY_IDENTIFY ( IDENT_SENSE )
-
 /**
  * Mark as object as fully known, a.k.a identified. 
  *
@@ -526,7 +504,6 @@ void object_notice_everything(object_type *o_ptr)
 {
 	/* Mark as known */
 	object_flavor_aware(o_ptr);
-	object_add_ident_flags(o_ptr, IDENTS_SET_BY_IDENTIFY);
 
 	/* Artifact has now been seen */
 	if (o_ptr->artifact && !(o_ptr->ident & IDENT_FAKE))
@@ -1127,11 +1104,12 @@ bool object_high_resist_is_possible(const object_type *o_ptr)
  */
 bool object_was_sensed(const object_type *o_ptr)
 {
-	return o_ptr->ident & IDENT_SENSE ? TRUE : FALSE;
+	/* Hackish - NRM */
+	return id_has(o_ptr->id_flags, ID_AC) ? TRUE : FALSE;
 }
 
 /*
- * Mark an object as sensed.
+ * Mark an object as sensed (kind of).
  */
 void object_notice_sensing(object_type *o_ptr)
 {
@@ -1143,9 +1121,9 @@ void object_notice_sensing(object_type *o_ptr)
 		id_on(o_ptr->id_flags, ID_ARTIFACT);
 	}
 
-	id_on(o_ptr->id_flags, ID_AC);
 	object_notice_curses(o_ptr);
-	if (object_add_ident_flags(o_ptr, IDENT_SENSE))
+	/* Hackish - NRM */
+	if (object_add_id_flag(o_ptr, ID_AC))
 		object_check_for_ident(o_ptr);
 }
 
