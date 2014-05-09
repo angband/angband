@@ -1474,7 +1474,8 @@ static void desc_art_fake(int a_idx)
 		/* Check the history entry, to see if it was fully known before it
 		 * was lost */
 		if (history_is_artifact_known(o_ptr->artifact))
-			object_notice_everything(o_ptr);
+			/* Be very careful not to influence anything but this object */
+			object_know_all_but_flavor(o_ptr);
 	}
 
 	/* Hack -- Handle stuff */

@@ -100,8 +100,6 @@ static void wr_item(const object_type *o_ptr)
 	wr_byte(o_ptr->dd);
 	wr_byte(o_ptr->ds);
 
-	wr_u16b(o_ptr->ident);
-
 	wr_byte(o_ptr->marked);
 
 	wr_byte(o_ptr->origin);

@@ -29,6 +29,7 @@ typedef enum {
 	OINFO_NONE   = 0x00, /* No options */
 	OINFO_TERSE  = 0x01, /* Keep descriptions brief, e.g. for dumps */
 	OINFO_SUBJ   = 0x02, /* Describe object from the character's POV */
+	OINFO_EGO    = 0x04, /* Describe an ego template */
 } oinfo_detail_t;
 
 

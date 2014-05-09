@@ -506,7 +506,7 @@ void object_notice_everything(object_type *o_ptr)
 	object_flavor_aware(o_ptr);
 
 	/* Artifact has now been seen */
-	if (o_ptr->artifact && !(o_ptr->ident & IDENT_FAKE))
+	if (o_ptr->artifact)
 	{
 		o_ptr->artifact->seen = o_ptr->artifact->everseen = TRUE;
 		history_add_artifact(o_ptr->artifact, TRUE, TRUE);

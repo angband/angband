@@ -208,7 +208,7 @@ static bool describe_stats(textblock *tb, const object_type *o_ptr,
 
 	/* Don't give exact pluses for faked ego items as each real one 
 	   will be different */
-	bool suppress_details = obj_is_ego_template(o_ptr);
+	bool suppress_details = mode & OINFO_EGO ? TRUE : FALSE;
 
 	/* See what we've got */
 	for (i = 0; i < N_ELEMENTS(mod_flags); i++)
@@ -523,7 +523,7 @@ static void calculate_missile_crits(player_state *state, int weight,
 static void get_known_flags(const object_type *o_ptr, const oinfo_detail_t mode, bitflag flags[OF_SIZE])
 {
 	/* Grab the object flags */
-	if (obj_is_ego_template(o_ptr)) {
+	if (mode & OINFO_EGO) {
 		/* Looking at fake egos needs less info than object_flags_known() */
 		if (flags)
 			object_flags(o_ptr, flags);
@@ -548,8 +548,7 @@ static void get_known_elements(const object_type *o_ptr, const oinfo_detail_t mo
 	/* Grab the object flags */
 	for (i = 0; i < N_ELEMENTS(elements); i++) {
 		/* Report fake egos or known element info */
-		if (obj_is_ego_template(o_ptr) ||
-			(o_ptr->el_info[i].flags & EL_INFO_KNOWN)) {
+		if ((mode & OINFO_EGO) || (o_ptr->el_info[i].flags & EL_INFO_KNOWN)) {
 			el_info[i].res_level = o_ptr->el_info[i].res_level;
 			el_info[i].flags = o_ptr->el_info[i].flags;
 		} else {
@@ -1111,9 +1110,6 @@ static bool obj_known_digging(const object_type *o_ptr, int deciturns[])
 
 	int chances[DIGGING_MAX];
 
-	/* abort if we are not a real object */
-	if (obj_is_ego_template(o_ptr)) return FALSE;
-
 	if (!tval_is_wearable(o_ptr) || 
 		(!tval_is_melee_weapon(o_ptr) && 
 		 (o_ptr->modifiers[OBJ_MOD_TUNNEL] <= 0)))
@@ -1658,7 +1654,7 @@ static textblock *object_info_out(const object_type *o_ptr, int mode)
 
 	bool terse = mode & OINFO_TERSE;
 	bool subjective = mode & OINFO_SUBJ;
-	bool ego = obj_is_ego_template(o_ptr);
+	bool ego = mode & OINFO_EGO;
 	textblock *tb = textblock_new();
 
 	/* Unaware objects get simple descriptions */
@@ -1713,7 +1709,7 @@ static textblock *object_info_out(const object_type *o_ptr, int mode)
 		if (!terse && subjective && describe_digger(tb, o_ptr)) something = TRUE;
 	}
 
-	/* Hack? Don't append anything in terse (for chararacter dump), since that seems to cause extra linebreaks */
+	/* Don't append anything in terse (for chararacter dump) */
 	if (!something && !terse)
 		textblock_append(tb, "\n\nThis item does not seem to possess any special abilities.");
 
@@ -1756,10 +1752,9 @@ textblock *object_info_ego(struct ego_item *ego)
 	obj.ego = ego;
 	ego_apply_magic(&obj, 0);
 
-	obj.ident |= IDENT_FAKE;
 	object_know_all_but_flavor(&obj);
 
-	return object_info_out(&obj, OINFO_NONE);
+	return object_info_out(&obj, OINFO_NONE | OINFO_EGO);
 }
 
 

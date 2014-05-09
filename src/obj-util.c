@@ -3779,15 +3779,6 @@ bool obj_is_used_unaimed(const object_type *o_ptr)
 	return FALSE;
 }
 
-/* Isn't a real item - is an ego item skeleton from e.g. knowledge menus */
-bool obj_is_ego_template(const object_type *o_ptr)
-{
-	if ((o_ptr->ident & IDENT_FAKE) && !o_ptr->artifact)
-		return TRUE;
-
-	return FALSE;
-}
-
 /*** Generic utility functions ***/
 
 /*
@@ -3830,7 +3821,6 @@ bool object_equals_object(const object_type *a, const object_type *b)
 	MUST_EQUAL(sval);
 
 	MUST_EQUAL(weight);
-	MUST_EQUAL(ident);
 
 	MUST_EQUAL(ac);
 	MUST_EQUAL(to_a);
@@ -3841,6 +3831,7 @@ bool object_equals_object(const object_type *a, const object_type *b)
 	MUST_EQUAL(ds);
 
 	MUST_EQUAL(timeout);
+	MUST_EQUAL(effect);
 
 	MUST_EQUAL(number);
 	MUST_EQUAL(marked);

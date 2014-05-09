@@ -123,8 +123,6 @@ static int rd_item(object_type *o_ptr)
 	rd_byte(&o_ptr->dd);
 	rd_byte(&o_ptr->ds);
 
-	rd_u16b(&o_ptr->ident);
-
 	rd_byte(&o_ptr->marked);
 
 	rd_byte(&o_ptr->origin);

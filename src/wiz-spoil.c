@@ -353,8 +353,11 @@ static const grouper group_artifact[] =
 };
 
 
-/*
+/**
  * Create a fake artifact
+ *
+ * Since this is now in no way marked as fake, we must make sure this function
+ * is never used to create an actual game object
  */
 bool make_fake_artifact(object_type *o_ptr, struct artifact *artifact)
 {
@@ -377,7 +380,6 @@ bool make_fake_artifact(object_type *o_ptr, struct artifact *artifact)
 	copy_artifact_data(o_ptr, artifact);
 
 	/* Success */
-	o_ptr->ident |= IDENT_FAKE;
 	return (TRUE);
 }
 

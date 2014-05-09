@@ -510,7 +510,6 @@ typedef struct object
 
 	bitflag flags[OF_SIZE];			/**< Flags */
 	bitflag known_flags[OF_SIZE];	/**< Player-known flags */
-	u16b ident;						/* Special flags */
 	bitflag id_flags[ID_SIZE];		/**< Object property ID flags */
 
 	s16b modifiers[OBJ_MOD_MAX];

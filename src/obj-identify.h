@@ -20,9 +20,6 @@
 #ifndef OBJECT_IDENTIFY_H
 #define OBJECT_IDENTIFY_H
 
-/* ID flags */
-#define IDENT_FAKE      0x2000  /* Item is a fake, for displaying knowledge */
-
 /**
  * Pseudo-ID markers.
  */
