@@ -226,14 +226,6 @@ bool object_attack_plusses_are_visible(const object_type *o_ptr)
 	if (id_has(o_ptr->id_flags, ID_TO_H) && id_has(o_ptr->id_flags, ID_TO_D))
 		return TRUE;
 
-	/* Aware jewelry with non-variable bonuses */
-	if (tval_is_jewelry(o_ptr) && object_flavor_is_aware(o_ptr))
-	{
-		if (!randcalc_varies(o_ptr->kind->to_h) && 
-			!randcalc_varies(o_ptr->kind->to_d))
-			return TRUE;
-	}
-
 	return FALSE;
 }
 
@@ -245,13 +237,6 @@ bool object_defence_plusses_are_visible(const object_type *o_ptr)
 	/* Bonuses have been revealed or for sale */
 	if (id_has(o_ptr->id_flags, ID_TO_A))
 		return TRUE;
-
-	/* Aware jewelry with non-variable bonuses */
-	if (tval_is_jewelry(o_ptr) && object_flavor_is_aware(o_ptr))
-	{
-		if (!randcalc_varies(o_ptr->kind->to_a))
-			return TRUE;
-	}
 
 	return FALSE;
 }
@@ -289,13 +274,7 @@ bool object_this_mod_is_visible(const object_type *o_ptr, int mod)
 {
 	assert(o_ptr->kind);
 
-	/* Aware jewelry with a fixed modifier (usually light) */
-	if (tval_is_jewelry(o_ptr) && object_flavor_is_aware(o_ptr)
-		&& !randcalc_varies(o_ptr->kind->modifiers[mod]))
-		return TRUE;
-
-	/* Wearing shows all modifiers */
-	if (object_was_worn(o_ptr))
+	if (id_has(o_ptr->id_flags, mod))
 		return TRUE;
 
 	return FALSE;
@@ -331,19 +310,10 @@ static bool object_add_id_flag(object_type *o_ptr, int flag)
  */
 bool object_check_for_ident(object_type *o_ptr)
 {
-	bitflag flags[OF_SIZE], known_flags[OF_SIZE];
-	size_t i;
-	
-	object_flags(o_ptr, flags);
-	object_flags_known(o_ptr, known_flags);
-
-	if (!of_is_equal(flags, known_flags)) return FALSE;
-
-	/* Check for unknown resists, immunities and vulnerabilities */
-	for (i = 0; i < ELEM_MAX; i++) {
-		if (o_ptr->el_info[i].flags & EL_INFO_KNOWN) continue;
-		if (o_ptr->el_info[i].res_level != 0) return FALSE;
-	}
+	/* Check things which need to be learned */
+	if (!object_all_flags_are_known(o_ptr)) return FALSE;
+	if (!object_all_elements_are_known(o_ptr)) return FALSE;
+	if (!object_all_brands_and_slays_are_known(o_ptr)) return FALSE;
 
 	/* If we know attack bonuses, and defence bonuses, and effect, then
 	 * we effectively know everything, so mark as such */
@@ -367,12 +337,7 @@ bool object_check_for_ident(object_type *o_ptr)
 
 	/* We still know all the flags, so we still know if it's an ego */
 	if (o_ptr->ego)
-	{
-		/* require worn status so you don't learn launcher of accuracy or 
-		 * gloves of slaying before wield */
-		if (object_was_worn(o_ptr))
-			object_notice_ego(o_ptr);
-	}
+		object_notice_ego(o_ptr);
 
 	return FALSE;
 }
@@ -393,6 +358,19 @@ void object_flavor_aware(object_type *o_ptr)
 	/* Charges or food value (pval) and effect now known */
 	id_on(o_ptr->id_flags, ID_PVAL);
 	id_on(o_ptr->id_flags, ID_EFFECT);
+
+	/* Jewelry with fixed bonuses gets more info now */
+	if (tval_is_jewelry(o_ptr)) {
+		if (!randcalc_varies(o_ptr->kind->to_h)) 
+			id_on(o_ptr->id_flags, ID_TO_H);
+		if (!randcalc_varies(o_ptr->kind->to_d))
+			id_on(o_ptr->id_flags, ID_TO_D);
+		if (!randcalc_varies(o_ptr->kind->to_a))
+			id_on(o_ptr->id_flags, ID_TO_A);
+		for (i = 0; i < OBJ_MOD_MAX; i++)
+			if (!randcalc_varies(o_ptr->kind->modifiers[i]))
+				id_on(o_ptr->id_flags, ID_MOD_MIN + i);
+	}
 
 	/* Fix squelch/autoinscribe */
 	if (kind_is_squelched_unaware(o_ptr->kind)) {
@@ -874,11 +852,11 @@ void object_notice_on_wield(object_type *o_ptr)
 		msg("It glows!");
 	if (of_has(f, OF_TELEPATHY))
 		msg("Your mind feels strangely sharper!");
+	if (of_has(f, OF_FREE_ACT))
+		msg("You feel mobile!");
 
 	/* Remember the flags */
 	object_notice_sensing(o_ptr);
-
-	/* XXX Eddie should we check_for_ident here? */
 }
 
 
@@ -922,8 +900,7 @@ static void object_notice_after_time(void)
 				if (tval_is_jewelry(o_ptr) &&
 					 (!object_effect(o_ptr) || object_effect_is_known(o_ptr)))
 				{
-					/* XXX this is a small hack, but jewelry with anything noticeable really is obvious */
-					/* XXX except, wait until learn activation if that is only clue */
+					/* Jewelry with a noticeable flag is obvious */
 					object_flavor_aware(o_ptr);
 					object_check_for_ident(o_ptr);
 				}
@@ -934,9 +911,6 @@ static void object_notice_after_time(void)
 				object_notice_flag(o_ptr, flag);
 			}
 		}
-
-		/* XXX Is this necessary? */
-		object_check_for_ident(o_ptr);
 	}
 }
 
@@ -953,7 +927,7 @@ void wieldeds_notice_flag(struct player *p, int flag)
 	/* Sanity check */
 	if (!flag) return;
 
-	/* XXX Eddie need different naming conventions for starting wieldeds at INVEN_WIELD vs INVEN_WIELD+2 */
+	/* All wielded items eligible */
 	for (i = INVEN_WIELD; i < ALL_INVEN_TOTAL; i++)
 	{
 		object_type *o_ptr = &p->inventory[i];
@@ -971,7 +945,7 @@ void wieldeds_notice_flag(struct player *p, int flag)
 			/* Notice the flag */
 			object_notice_flag(o_ptr, flag);
 
-			/* XXX Eddie should this go before noticing the flag to avoid learning twice? */
+			/* Jewelry with a noticeable flag is obvious */
 			if (tval_is_jewelry(o_ptr))
 			{
 				object_flavor_aware(o_ptr);
@@ -986,10 +960,6 @@ void wieldeds_notice_flag(struct player *p, int flag)
 			/* Notice that flag is absent */
 			object_notice_flag(o_ptr, flag);
 		}
-
-		/* XXX Eddie should not need this, should be done in noticing, but will remove later */
-		object_check_for_ident(o_ptr);
-
 	}
 
 	return;
@@ -1026,7 +996,7 @@ void wieldeds_notice_element(struct player *p, int element)
 			msg("Your %s glows", o_name);
 		}
 
-		/* I hope this will be done elsewhere - NRM */
+		/* Jewelry with a noticeable element is obvious */
 		if (tval_is_jewelry(o_ptr))
 		{
 			object_flavor_aware(o_ptr);
@@ -1037,10 +1007,11 @@ void wieldeds_notice_element(struct player *p, int element)
 
 /**
  * Notice to-hit bonus on attacking.
+ *
+ * Used e.g. for ranged attacks where the item's to_d is not involved.
+ * Does not apply to weapon or bow which should be done separately
  */
 void wieldeds_notice_to_hit_on_attack(void)
-/* Used e.g. for ranged attacks where the item's to_d is not involved. */
-/* Does not apply to weapon or bow which should be done separately */
 {
 	int i;
 
@@ -1055,18 +1026,15 @@ void wieldeds_notice_to_hit_on_attack(void)
 
 /**
  * Notice things which happen on attacking.
+ * Does not apply to weapon or bow which should be done separately
  */
 void wieldeds_notice_on_attack(void)
-/* Does not apply to weapon or bow which should be done separately */
 {
 	int i;
 
 	for (i = INVEN_WIELD + 2; i < INVEN_TOTAL; i++)
 		if (player->inventory[i].kind)
 			object_notice_attack_plusses(&player->inventory[i]);
-
-	/* XXX Eddie print message? */
-	/* XXX Eddie do we need to do more about ammo? */
 
 	return;
 }
