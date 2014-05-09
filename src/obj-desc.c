@@ -577,8 +577,6 @@ static size_t obj_desc_inscrip(const object_type *o_ptr, char *buf, size_t max,
 			u[n++] = "empty";
 		else if (object_was_worn(o_ptr))
 			u[n++] = (tval_is_weapon(o_ptr)) ? "wielded" : "worn";
-		else if (object_was_fired(o_ptr))
-			u[n++] = "fired";
 		else if (!object_flavor_is_aware(o_ptr) &&
 				 object_flavor_was_tried(o_ptr))
 			u[n++] = "tried";

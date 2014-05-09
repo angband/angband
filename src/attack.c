@@ -409,7 +409,8 @@ static void ranged_helper(int item, int dir, int range, int shots, ranged_attack
 		taim = distance(y, x, ty, tx);
 		if (taim > range) {
 			char msg[80];
-			strnfmt(msg, sizeof(msg), "Target out of range by %d squares. Fire anyway? ",
+			strnfmt(msg, sizeof(msg),
+					"Target out of range by %d squares. Fire anyway? ",
 				taim - range);
 			if (!get_check(msg)) return;
 		}
@@ -417,8 +418,6 @@ static void ranged_helper(int item, int dir, int range, int shots, ranged_attack
 
 	/* Sound */
 	sound(MSG_SHOOT);
-
-	object_notice_on_firing(o_ptr);
 
 	/* Describe the object */
 	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_FULL | ODESC_SINGULAR);

@@ -167,15 +167,6 @@ bool object_was_worn(const object_type *o_ptr)
 }
 
 /**
- * \returns whether the object has been fired/thrown
- */
-bool object_was_fired(const object_type *o_ptr)
-{
-	/* Ridiculous temporary hack - NRM */
-	return id_has(o_ptr->id_flags, ID_AC) ? TRUE : FALSE;
-}
-
-/**
  * \returns whether the player is aware of the object's flavour
  */
 bool object_flavor_is_aware(const object_type *o_ptr)
@@ -781,18 +772,6 @@ void object_notice_on_defend(struct player *p)
 	event_signal(EVENT_INVENTORY);
 	event_signal(EVENT_EQUIPMENT);
 }
-
-
-/*
- * Notice stuff when firing or throwing objects.
- */
-void object_notice_on_firing(object_type *o_ptr)
-{
-	/* Ridiculous temporary hack - NRM */
-	if (object_add_id_flag(o_ptr, ID_AC))
-		object_check_for_ident(o_ptr);
-}
-
 
 
 /**
