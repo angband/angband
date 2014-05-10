@@ -931,13 +931,10 @@ void wieldeds_notice_flag(struct player *p, int flag)
 	for (i = INVEN_WIELD; i < ALL_INVEN_TOTAL; i++)
 	{
 		object_type *o_ptr = &p->inventory[i];
-		bitflag f[OF_SIZE];
 
 		if (!o_ptr->kind) continue;
 
-		object_flags(o_ptr, f);
-
-		if (of_has(f, flag) && !of_has(o_ptr->known_flags, flag))
+		if (of_has(o_ptr->flags, flag) && !of_has(o_ptr->known_flags, flag))
 		{
 			char o_name[80];
 			object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);

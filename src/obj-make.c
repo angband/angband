@@ -263,18 +263,16 @@ static struct ego_item *ego_find_random(object_type *o_ptr, int level)
 void ego_apply_magic(object_type *o_ptr, int level)
 {
 	int i, x, resist = 0;
-	bitflag flags[OF_SIZE], newf[OF_SIZE];
-
-	object_flags(o_ptr, flags);
+	bitflag newf[OF_SIZE];
 
 	/* Extra powers */
 	if (kf_has(o_ptr->ego->kind_flags, KF_RAND_SUSTAIN)) {
 		create_mask(newf, FALSE, OFT_SUST, OFT_MAX);
-		of_on(o_ptr->flags, get_new_attr(flags, newf));
+		of_on(o_ptr->flags, get_new_attr(o_ptr->flags, newf));
 	}
 	else if (kf_has(o_ptr->ego->kind_flags, KF_RAND_POWER)) {
 		create_mask(newf, FALSE, OFT_PROT, OFT_MISC, OFT_MAX);
-		of_on(o_ptr->flags, get_new_attr(flags, newf));
+		of_on(o_ptr->flags, get_new_attr(o_ptr->flags, newf));
 	}
 	else if (kf_has(o_ptr->ego->kind_flags, KF_RAND_HI_RES))
 		/* Get a high resist if available, mark it as random */

@@ -457,7 +457,6 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 {
 
 	bool vault = square_isvault(cave, y, x);
-	bitflag f[OF_SIZE];
 	int effect;
 	int number = o_ptr->number;
 	static int lvl;
@@ -470,14 +469,11 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 	/* get player depth */
 	lvl=player->depth;
 
-	/* extract flags */
-	object_flags(o_ptr,f);
-
 	/* check for some stuff that we will use regardless of type */
 	/* originally this was armor, but I decided to generalize it */
 
 	/* has free action (hack: don't include Inertia)*/
-	if (of_has(f,OF_FREE_ACT) && 
+	if (of_has(o_ptr->flags, OF_FREE_ACT) && 
 		!((o_ptr->tval == TV_AMULET) && (o_ptr->sval==SV_AMULET_INERTIA))){
 
 			/* add the stats */
@@ -489,7 +485,7 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 
 
 	/* has see invis */
-	if (of_has(f,OF_SEE_INVIS)){
+	if (of_has(o_ptr->flags, OF_SEE_INVIS)){
 
 		add_stats(ST_SI_EQUIPMENT, vault, mon, number);
 		first_find(ST_FF_SI);
@@ -524,14 +520,14 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 		first_find(ST_FF_RNEXUS);
 	}
 	/* has resist blind */
-	if (of_has(f,OF_PROT_BLIND)){
+	if (of_has(o_ptr->flags, OF_PROT_BLIND)){
 
 		add_stats(ST_RBLIND_EQUIPMENT, vault, mon, number);
 		first_find(ST_FF_RBLIND);
 	}
 
 	/* has resist conf */
-	if (of_has(f,OF_PROT_CONF)){
+	if (of_has(o_ptr->flags, OF_PROT_CONF)){
 
 		add_stats(ST_RCONF_EQUIPMENT, vault, mon, number);
 		first_find(ST_FF_RCONF);
@@ -542,7 +538,7 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 		add_stats(ST_SPEED_EQUIPMENT, vault, mon, number);
 
 	/* has telepathy */
-	if (of_has(f,OF_TELEPATHY)){
+	if (of_has(o_ptr->flags, OF_TELEPATHY)){
 
 		add_stats(ST_TELEP_EQUIPMENT, vault, mon, number);
 		first_find(ST_FF_TELEP);
@@ -593,7 +589,7 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 			if (o_ptr->modifiers[OBJ_MOD_CON] != 0)
 				add_stats(ST_CON_ARMOR, vault, mon, number);
 
-			if (of_has(f,OF_LIGHT_CURSE))
+			if (of_has(o_ptr->flags, OF_LIGHT_CURSE))
 				add_stats(ST_CURSED_ARMOR, vault, mon, number);
 
 			break;
@@ -610,9 +606,6 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 
 			/* add to weapon total */
 			add_stats(ST_WEAPONS, vault, mon, number);
-
-			/* extract flags */
-			object_flags(o_ptr,f);
 
 			/* check if bad, good, or average */
 			if ((o_ptr->to_h < 0)  && (o_ptr->to_d < 0))
@@ -665,7 +658,7 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 				add_stats(ST_XTRABLOWS_WEAPONS, vault, mon, number);
 
 			/* telepathy */
-			if (of_has(f,OF_TELEPATHY))
+			if (of_has(o_ptr->flags, OF_TELEPATHY))
 				add_stats(ST_TELEP_WEAPONS, vault, mon, number);
 
 			/* is a top of the line weapon */
@@ -676,7 +669,7 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 				add_stats(ST_HUGE_WEAPONS, vault, mon, number);
 
 				/* is uber need to fix ACB
-				if ((of_has(f,OF_SLAY_EVIL)) || (o_ptr->modifiers[OBJ_MOD_BLOWS] > 0))
+				if ((of_has(o_ptr->flags, OF_SLAY_EVIL)) || (o_ptr->modifiers[OBJ_MOD_BLOWS] > 0))
 				add_stats(ST_UBWE, vault, mon, number); */
 
 			}
@@ -692,9 +685,6 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 
 			/* add to launcher total */
 			add_stats(ST_BOWS, vault, mon, number);
-
-			/* extract flags */
-			object_flags(o_ptr,f);
 
 			/* check if bad, average, good, or very good */
 			if ((o_ptr->to_h < 0) && (o_ptr->to_d < 0))
@@ -725,11 +715,11 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 					add_stats(ST_BUCKLAND_BOWS, vault, mon, number);
 
 			/* has telep */
-			if (of_has(f,OF_TELEPATHY))
+			if (of_has(o_ptr->flags, OF_TELEPATHY))
 				add_stats(ST_TELEP_BOWS, vault, mon, number);
 
 			/* is cursed */
-			if (of_has(f,OF_LIGHT_CURSE))
+			if (of_has(o_ptr->flags, OF_LIGHT_CURSE))
 				add_stats(ST_CURSED_BOWS, vault, mon, number);
 			break;
 		}
@@ -741,7 +731,7 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 			add_stats(ST_POTIONS, vault, mon, number);
 
 			/* get effects */
-			effect=object_effect(o_ptr);
+			effect = object_effect(o_ptr);
 			 
 			/*stat gain*/
 			switch(effect){
@@ -1013,9 +1003,6 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 
 			add_stats(ST_AMULETS, vault, mon, number);
 
-			/* extract flags */
-			object_flags(o_ptr,f);
-
 			switch(o_ptr->sval){
 
 				/* wisdom */
@@ -1041,7 +1028,7 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 
 			}
 			/* is cursed */
-			if (of_has(f,OF_LIGHT_CURSE))
+			if (of_has(o_ptr->flags, OF_LIGHT_CURSE))
 				add_stats(ST_CURSED_AMULETS, vault, mon, number);
 
 			break;
@@ -1052,9 +1039,6 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 		case TV_BOLT:{
 
 			add_stats(ST_AMMO, vault, mon, number);
-
-			/* extract flags */
-			object_flags(o_ptr,f);
 
 			/* check if bad, average, good */
 			if ((o_ptr->to_h < 0) && (o_ptr->to_d < 0))

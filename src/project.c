@@ -360,7 +360,6 @@ typedef struct project_object_handler_context_s {
 	const int x;
 	const int dam;
 	const int type;
-	bitflag const * const flags;
 	object_type *o_ptr; /* Ideally, this would be const, but we can't with C89 initialization. */
 	bool obvious;
 	bool do_kill;
@@ -1872,7 +1871,6 @@ static bool project_f(int who, int r, int y, int x, int dam, int typ)
 static bool project_o(int who, int r, int y, int x, int dam, int typ)
 {
 	s16b this_o_idx, next_o_idx = 0;
-	bitflag f[OF_SIZE];
 	bool obvious = FALSE;
 
 	/* Scan all objects in the grid */
@@ -1889,7 +1887,6 @@ static bool project_o(int who, int r, int y, int x, int dam, int typ)
 			x,
 			dam,
 			typ,
-			f,
 			NULL,
 			obvious,
 			do_kill,
@@ -1904,9 +1901,6 @@ static bool project_o(int who, int r, int y, int x, int dam, int typ)
 
 		/* Get the next object */
 		next_o_idx = o_ptr->next_o_idx;
-
-		/* Extract the flags */
-		object_flags(o_ptr, f);
 
 		if (object_handler != NULL)
 			object_handler(&context);

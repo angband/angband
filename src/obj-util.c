@@ -1258,13 +1258,8 @@ object_type *get_next_object(const object_type *o_ptr)
  */
 bool is_blessed(const object_type *o_ptr)
 {
-	bitflag f[OF_SIZE];
-
-	/* Get the flags */
-	object_flags(o_ptr, f);
-
 	/* Is the object blessed? */
-	return (of_has(f, OF_BLESSED) ? TRUE : FALSE);
+	return of_has(o_ptr->flags, OF_BLESSED) ? TRUE : FALSE;
 }
 
 
@@ -2150,8 +2145,6 @@ int minus_ac(struct player *p)
 {
 	object_type *o_ptr = NULL;
 
-	bitflag f[OF_SIZE];
-
 	char o_name[80];
 
 	/* Avoid crash during monster power calculations */
@@ -2177,9 +2170,6 @@ int minus_ac(struct player *p)
 
 	/* Describe */
 	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
-
-	/* Extract the flags */
-	object_flags(o_ptr, f);
 
 	/* Object resists */
 	if (o_ptr->el_info[ELEM_ACID].flags & EL_INFO_IGNORE)
@@ -3661,12 +3651,10 @@ bool obj_can_activate(const object_type *o_ptr)
 bool obj_can_refill(const object_type *obj)
 {
 	const object_type *light = &player->inventory[INVEN_LIGHT];
-	bitflag flags[OF_SIZE];
 	bool no_fuel;
 
-	/* Get flags */
-	object_flags(obj, flags);
-	no_fuel = of_has(flags, OF_NO_FUEL) ? TRUE : FALSE;
+	/* Need fuel? */
+	no_fuel = of_has(obj->flags, OF_NO_FUEL) ? TRUE : FALSE;
 
 	/* A lantern can be refueled from a flask or another lantern */
 	if (light->sval == SV_LIGHT_LANTERN) {
