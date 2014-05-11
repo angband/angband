@@ -23,6 +23,7 @@
 #include "cmds.h"
 #include "init.h"
 #include "monster.h"
+#include "obj-gear.h"
 #include "obj-identify.h"
 #include "obj-info.h"
 #include "obj-make.h"

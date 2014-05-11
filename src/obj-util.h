@@ -42,14 +42,6 @@ struct object_kind *objkind_byid(int kidx);
 void flavor_init(void);
 void object_flags(const object_type *o_ptr, bitflag flags[OF_SIZE]);
 void object_flags_known(const object_type *o_ptr, bitflag flags[OF_SIZE]);
-char index_to_label(int i);
-s16b label_to_inven(int c);
-s16b label_to_equip(int c);
-bool wearable_p(const object_type *o_ptr);
-s16b wield_slot(const object_type *o_ptr);
-bool slot_can_wield_item(int slot, const object_type *o_ptr);
-const char *mention_use(int slot);
-const char *describe_use(int i);
 bool item_tester_okay(const object_type *o_ptr);
 int scan_floor(int *items, int max_size, int y, int x, int mode, item_tester tester);
 void excise_object_idx(int o_idx);
@@ -64,8 +56,11 @@ bool is_blessed(const object_type *o_ptr);
 s32b object_value(const object_type *o_ptr, int qty, int verbose);
 s32b object_value_real(const object_type *o_ptr, int qty, int verbose,
 					   bool known);
+bool object_stackable(const object_type *o_ptr, const object_type *j_ptr,
+					  object_stack_t mode);
 bool object_similar(const object_type *o_ptr, const object_type *j_ptr,
 					object_stack_t mode);
+void object_absorb_partial(object_type *o_ptr, object_type *j_ptr);
 void object_absorb(object_type *o_ptr, const object_type *j_ptr);
 void object_wipe(object_type *o_ptr);
 void object_copy(object_type *o_ptr, const object_type *j_ptr);
@@ -76,30 +71,10 @@ void drop_near(struct chunk *c, object_type *j_ptr, int chance, int y, int x,
 			   bool verbose);
 void push_object(int y, int x);
 void acquirement(int y1, int x1, int level, int num, bool great);
-int minus_ac(struct player *p);
-void inven_item_charges(int item);
-void inven_item_describe(int item);
-void inven_item_increase(int item, int num);
-void save_quiver_size(struct player *p);
-void inven_item_optimize(int item);
 void floor_item_charges(int item);
 void floor_item_describe(int item);
 void floor_item_increase(int item, int num);
 void floor_item_optimize(int item);
-bool inven_carry_okay(const object_type *o_ptr);
-bool inven_stack_okay(const object_type *o_ptr);
-s16b inven_takeoff(int item, int amt);
-void inven_drop(int item, int amt);
-s16b inven_carry(struct player *p, struct object *o);
-void combine_pack(void);
-void reorder_pack(void);
-void open_quiver_slot(int slot);
-void sort_quiver(void);
-int get_use_device_chance(const object_type *o_ptr);
-void distribute_charges(object_type *o_ptr, object_type *q_ptr, int amt);
-void reduce_charges(object_type *o_ptr, int amt);
-int number_charging(const object_type *o_ptr);
-bool recharge_timeout(object_type *o_ptr);
 unsigned check_for_inscrip(const object_type *o_ptr, const char *inscrip);
 object_kind *lookup_kind(int tval, int sval);
 int lookup_name(int tval, const char *name);
@@ -137,8 +112,5 @@ void display_object_recall_interactive(object_type *o_ptr);
 bool is_unknown(const object_type *o_ptr);
 int compare_items(const object_type *o1, const object_type *o2);
 
-bool pack_is_full(void);
-bool pack_is_overfull(void);
-void pack_overflow(void);
 
 #endif /* OBJECT_UTIL_H */

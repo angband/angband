@@ -26,6 +26,7 @@
 #include "init.h"
 #include "monster.h"
 #include "obj-desc.h"
+#include "obj-gear.h"
 #include "obj-identify.h"
 #include "obj-info.h"
 #include "obj-make.h"

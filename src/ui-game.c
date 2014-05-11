@@ -32,6 +32,7 @@
 #include "mon-util.h"
 #include "monster.h"
 #include "obj-desc.h"
+#include "obj-gear.h"
 #include "obj-list.h"
 #include "obj-ui.h"
 #include "obj-util.h"

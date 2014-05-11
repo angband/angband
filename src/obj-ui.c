@@ -21,6 +21,7 @@
 #include "cmd-core.h"
 #include "keymap.h"
 #include "obj-desc.h"
+#include "obj-gear.h"
 #include "obj-identify.h"
 #include "obj-tval.h"
 #include "obj-tvalsval.h" /* Only for use_flavor_glyph() */

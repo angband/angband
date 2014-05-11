@@ -26,6 +26,7 @@
 #include "init.h"
 #include "mon-make.h"
 #include "monster.h"
+#include "obj-gear.h"
 #include "obj-identify.h"
 #include "obj-tval.h"
 #include "obj-tvalsval.h"

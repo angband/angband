@@ -129,6 +129,7 @@ ANGFILES = \
 	mon-init.o \
 	obj-chest.o \
 	obj-desc.o \
+	obj-gear.o \
 	obj-identify.o \
 	obj-info.o \
 	obj-list.o \

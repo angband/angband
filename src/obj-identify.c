@@ -23,6 +23,7 @@
 #include "game-event.h"
 #include "history.h"
 #include "obj-desc.h"
+#include "obj-gear.h"
 #include "obj-identify.h"
 #include "obj-slays.h"
 #include "obj-tval.h"

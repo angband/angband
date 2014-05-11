@@ -23,6 +23,7 @@
 #include "mon-blow-methods.h"
 #include "mon-util.h"
 #include "obj-desc.h"
+#include "obj-gear.h"
 #include "obj-make.h"
 #include "obj-tval.h"
 #include "obj-tvalsval.h"
