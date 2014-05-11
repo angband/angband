@@ -1061,6 +1061,72 @@ static int rd_inventory_aux(rd_item_t rd_item_version)
 int rd_inventory(void) { return rd_inventory_aux(rd_item); }
 
 
+/**
+ * Read the player quiver
+ */
+static int rd_quiver_aux(rd_item_t rd_item_version)
+{
+	int slot = 0;
+
+	object_type *i_ptr;
+	object_type object_type_body;
+
+	u16b quiver_size;
+
+	rd_u16b(&quiver_size);
+
+	/* Read until done */
+	while (1)
+	{
+		u16b n;
+
+		/* Get the next item index */
+		rd_u16b(&n);
+
+		/* Nope, we reached the end */
+		if (n == 0xFFFF) break;
+
+		/* Get local object */
+		i_ptr = &object_type_body;
+
+		/* Wipe the object */
+		object_wipe(i_ptr);
+
+		/* Read the item */
+		if ((*rd_item_version)(i_ptr))
+		{
+			note("Error reading item");
+			return (-1);
+		}
+
+		/* Hack -- verify item */
+		if (!i_ptr->kind) continue;
+
+		/* Verify slot */
+		if (n >= quiver_size) return (-1);
+
+		/* Get a slot */
+		n = slot++;
+
+		/* Copy object */
+		object_copy(&player->quiver[n], i_ptr);
+
+		/* Add the weight */
+		player->upkeep->total_weight += (i_ptr->number * i_ptr->weight);
+	}
+
+	//save_quiver_size(player);
+
+	/* Success */
+	return (0);
+}
+
+/*
+ * Read the player quiver - wrapper functions
+ */
+int rd_quiver(void) { return rd_quiver_aux(rd_item); }
+
+
 /* Read store contents */
 static int rd_stores_aux(rd_item_t rd_item_version)
 {

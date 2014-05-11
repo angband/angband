@@ -223,6 +223,7 @@ typedef struct player {
 	player_upkeep *upkeep;
 
 	struct object *inventory;
+	struct object *quiver;
 } player_type;
 
 

@@ -652,6 +652,31 @@ void wr_inventory(void)
 	wr_u16b(0xFFFF);
 }
 
+void wr_quiver(void)
+{
+	int i;
+
+	wr_u16b(QUIVER_SIZE);
+
+	/* Write the inventory */
+	for (i = 0; i < QUIVER_SIZE; i++)
+	{
+		object_type *o_ptr = &player->quiver[i];
+
+		/* Skip non-objects */
+		if (!o_ptr->kind) continue;
+
+		/* Dump index */
+		wr_u16b((u16b)i);
+
+		/* Dump object */
+		wr_item(o_ptr);
+	}
+
+	/* Add a sentinel */
+	wr_u16b(0xFFFF);
+}
+
 
 void wr_stores(void)
 {
