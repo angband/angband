@@ -50,7 +50,7 @@ Objects
  - save flavors to the savefile and remove seed_flavor
 
 Inventory, quiver, equipment
- - separate these into three different structures
+ - make ordering of the inventory and quiver a UI construct only
  - make separate reality/player copies as for the cave
  - use a Poschengband-style equipment template to specify equipment slots 
  (so there is a standard player body, but more could be added)
@@ -72,6 +72,7 @@ Terrain/traps
  - make traps separate entities, not terrain (done)
  - make locked/jammed doors just closed doors with a trap
  - remove code reliance on the numerical value of terrain types (done)
+ - add facility for player-set, monster-affecting traps
 
 Artifacts
  - save randarts to the savefile (or maybe a separate file) as for flavors
@@ -115,7 +116,7 @@ Stats, power, etc
 
 General code stuff
  - rename files to be more sensible, or create new ones where needed (ongoing)
- - update debig commands to reflect the current game (ongoing)
+ - update debug commands to reflect the current game (ongoing)
  - move data into list-*.h files or edit files where appropriate (ongoing)
  - remove archaic stuff (ongoing)
  - document! (ongoing)
