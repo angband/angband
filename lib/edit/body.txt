@@ -5,17 +5,29 @@
 # Body types  - currently only the standard body is used, and there
 # is no facility for different bodies in p_race.txt.
 
-N:0:Standard
-S:WEAPON:weapon
-S:BOW:shooting
-S:RING:right hand
-S:RING:left hand
-S:AMULET:neck
-S:LIGHT:light
-S:BODY_ARMOR:body
-S:CLOAK:back
-S:SHIELD:arm
-S:HAT:head
-S:GLOVES:hands
-S:BOOTS:feet
+N:Standard
+slot-type:WEAPON
+slot-name:weapon
+slot-type:BOW
+slot-name:shooting
+slot-type:RING
+slot-name:right hand
+slot-type:RING
+slot-name:left hand
+slot-type:AMULET
+slot-name:neck
+slot-type:LIGHT
+slot-name:light
+slot-type:BODY_ARMOR
+slot-name:body
+slot-type:CLOAK
+slot-name:back
+slot-type:SHIELD
+slot-name:arm
+slot-type:HAT
+slot-name:head
+slot-type:GLOVES
+slot-name:hands
+slot-type:BOOTS
+slot-name:feet
 

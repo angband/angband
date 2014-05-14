@@ -31,6 +31,7 @@ static player_type player_type_body;
  */
 player_type *player = &player_type_body;
 
+struct player_body *bodies;
 struct player_race *races;
 struct player_class *classes;
 

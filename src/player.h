@@ -75,6 +75,18 @@
  * "no object", so that 0 can be a valid index. */
 #define NO_OBJECT		(ALL_INVEN_TOTAL+1)
 
+/*
+ * Player equipment slot types
+ */
+enum
+{
+	#define EQUIP(a,b,c,d) EQUIP_##a,
+	#include "list-equip-slots.h"
+	#undef EQUIP
+	EQUIP_MAX
+};
+
+#define EQUIP_MAX_SLOTS	12
 #define MAX_GEAR		100
 
 
@@ -134,10 +146,13 @@ struct equip_slot {
 };
 
 struct player_body {
-	int count;
+	struct player_body *next;
 	char *name;
-	struct equip_slot *slots;
+	int count;
+	struct equip_slot slots[EQUIP_MAX_SLOTS];
 };
+
+extern struct player_body *bodies;
 
 
 /*

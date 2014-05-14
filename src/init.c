@@ -98,6 +98,13 @@ char *ANGBAND_DIR_XTRA_ICON;
 
 static struct history_chart *histories;
 
+static const char *slots[] = {
+	#define EQUIP(a, b, c, d) #a,
+	#include "list-equip-slots.h"
+	#undef EQUIP
+	NULL
+};
+
 static const char *obj_flags[] = {
 	#define OF(a, b, c, d, e) #a,
 	#include "list-object-flags.h"
@@ -1837,6 +1844,90 @@ static struct file_parser e_parser = {
 	cleanup_e
 };
 
+/* Parsing functions for body.txt */
+static enum parser_error parse_body_n(struct parser *p) {
+	struct player_body *h = parser_priv(p);
+	struct player_body *b = mem_zalloc(sizeof *b);
+
+	b->next = h;
+	b->name = string_make(parser_getstr(p, "name"));
+	parser_setpriv(p, b);
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_body_st(struct parser *p) {
+	struct player_body *b = parser_priv(p);
+	char *slot;
+	int n;
+
+	if (!b)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	slot = string_make(parser_getstr(p, "slot"));
+	n = lookup_flag(slots, slot);
+	if (!n)
+		return PARSE_ERROR_GENERIC;
+	b->slots[b->count].type = n;
+	mem_free(slot);
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_body_sn(struct parser *p) {
+	struct player_body *b = parser_priv(p);
+
+	if (!b)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	if (!b->slots[b->count].type)
+		return PARSE_ERROR_NON_SEQUENTIAL_RECORDS;
+	if (b->count < EQUIP_MAX_SLOTS - 1) 
+		if (b->slots[b->count + 1].type)
+			return PARSE_ERROR_NON_SEQUENTIAL_RECORDS;
+	b->slots[b->count++].name = string_make(parser_getstr(p, "name"));
+	return PARSE_ERROR_NONE;
+}
+
+struct parser *init_parse_body(void) {
+	struct parser *p = parser_new();
+	parser_setpriv(p, NULL);
+	parser_reg(p, "N str name", parse_body_n);
+	parser_reg(p, "slot-type str slot", parse_body_st);
+	parser_reg(p, "slot-name str name", parse_body_sn);
+	return p;
+}
+
+static errr run_parse_body(struct parser *p) {
+	return parse_file(p, "body");
+}
+
+static errr finish_parse_body(struct parser *p) {
+	bodies = parser_priv(p);
+	parser_destroy(p);
+	return 0;
+}
+
+static void cleanup_body(void)
+{
+	struct player_body *b = bodies;
+	struct player_body *next;
+	int i;
+
+	while (b) {
+		next = b->next;
+		string_free((char *)b->name);
+		for (i = 0; i < b->count; i++)
+			string_free(b->slots[i].name);
+		mem_free(b);
+		b = next;
+	}
+}
+
+static struct file_parser body_parser = {
+	"body",
+	init_parse_body,
+	run_parse_body,
+	finish_parse_body,
+	cleanup_body
+};
+
 /* Parsing functions for prace.txt */
 static enum parser_error parse_p_n(struct parser *p) {
 	struct player_race *h = parser_priv(p);
@@ -3328,6 +3419,10 @@ void init_arrays(void)
 	/* Initialize history info */
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (histories)");
 	if (run_parser(&h_parser)) quit("Cannot initialize histories");
+
+	/* Initialize body info */
+	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (bodies)");
+	if (run_parser(&body_parser)) quit("Cannot initialize bodies");
 
 	/* Initialize race info */
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (races)");
