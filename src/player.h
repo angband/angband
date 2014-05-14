@@ -75,6 +75,8 @@
  * "no object", so that 0 can be a valid index. */
 #define NO_OBJECT		(ALL_INVEN_TOTAL+1)
 
+#define MAX_GEAR		100
+
 
 /** Sexes **/
 
@@ -236,7 +238,7 @@ typedef struct player {
 	player_upkeep *upkeep;
 
 	struct object *inventory;
-	struct object *quiver;
+	struct object *gear;
 	struct player_body body;
 } player_type;
 

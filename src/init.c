@@ -3233,7 +3233,7 @@ static errr init_other(void)
 
 	/* Allocate player sub-structs */
 	player->inventory = mem_zalloc(ALL_INVEN_TOTAL * sizeof(object_type));
-	player->quiver = mem_zalloc(QUIVER_SIZE * sizeof(object_type));
+	player->gear = mem_zalloc(MAX_GEAR * sizeof(object_type));
 	player->upkeep = mem_zalloc(sizeof(player_upkeep));
 	player->timed = mem_zalloc(TMD_MAX * sizeof(s16b));
 
@@ -3495,7 +3495,7 @@ void cleanup_angband(void)
 
 	mem_free(player->timed);
 	mem_free(player->upkeep);
-	mem_free(player->quiver);
+	mem_free(player->gear);
 	mem_free(player->inventory);
 
 	/* Free the lore list */

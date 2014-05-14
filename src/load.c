@@ -1065,16 +1065,16 @@ int rd_inventory(void) { return rd_inventory_aux(rd_item); }
 /**
  * Read the player quiver
  */
-static int rd_quiver_aux(rd_item_t rd_item_version)
+static int rd_gear_aux(rd_item_t rd_item_version)
 {
 	int slot = 0;
 
 	object_type *i_ptr;
 	object_type object_type_body;
 
-	u16b quiver_size;
+	u16b max_gear;
 
-	rd_u16b(&quiver_size);
+	rd_u16b(&max_gear);
 
 	/* Read until done */
 	while (1)
@@ -1104,13 +1104,13 @@ static int rd_quiver_aux(rd_item_t rd_item_version)
 		if (!i_ptr->kind) continue;
 
 		/* Verify slot */
-		if (n >= quiver_size) return (-1);
+		if (n >= max_gear) return (-1);
 
 		/* Get a slot */
 		n = slot++;
 
 		/* Copy object */
-		object_copy(&player->quiver[n], i_ptr);
+		object_copy(&player->gear[n], i_ptr);
 
 		/* Add the weight */
 		player->upkeep->total_weight += (i_ptr->number * i_ptr->weight);
@@ -1125,7 +1125,7 @@ static int rd_quiver_aux(rd_item_t rd_item_version)
 /*
  * Read the player quiver - wrapper functions
  */
-int rd_quiver(void) { return rd_quiver_aux(rd_item); }
+int rd_gear(void) { return rd_gear_aux(rd_item); }
 
 
 /* Read store contents */
