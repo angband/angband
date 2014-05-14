@@ -1,0 +1,21 @@
+# File: body.txt
+
+# Shamelessly stolen from PosChengband
+
+# Body types  - currently only the standard body is used, and there
+# is no facility for different bodies in p_race.txt.
+
+N:0:Standard
+S:WEAPON:weapon
+S:BOW:shooting
+S:RING:right hand
+S:RING:left hand
+S:AMULET:neck
+S:LIGHT:light
+S:BODY_ARMOR:body
+S:CLOAK:back
+S:SHIELD:arm
+S:HAT:head
+S:GLOVES:hands
+S:BOOTS:feet
+

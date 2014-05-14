@@ -125,6 +125,19 @@ enum
 #define NOSCORE_DEBUG		0x0008
 #define NOSCORE_JUMPING     0x0010
 
+struct equip_slot {
+	int type;
+	char *name;
+	int index;
+};
+
+struct player_body {
+	int count;
+	char *name;
+	struct equip_slot *slots;
+};
+
+
 /*
  * Most of the "player" information goes here.
  *
@@ -224,6 +237,7 @@ typedef struct player {
 
 	struct object *inventory;
 	struct object *quiver;
+	struct player_body body;
 } player_type;
 
 
