@@ -1888,7 +1888,7 @@ static enum parser_error parse_body_sn(struct parser *p) {
 struct parser *init_parse_body(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
-	parser_reg(p, "N str name", parse_body_n);
+	parser_reg(p, "body-name str name", parse_body_n);
 	parser_reg(p, "slot-type str slot", parse_body_st);
 	parser_reg(p, "slot-name str name", parse_body_sn);
 	return p;

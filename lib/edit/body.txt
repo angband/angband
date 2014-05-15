@@ -5,7 +5,12 @@
 # Body types  - currently only the standard body is used, and there
 # is no facility for different bodies in p_race.txt.
 
-N:Standard
+# Note that each body record must take the form of a body-name line,
+# followed by a sequence of alternating slot-type and slot-name lines.
+
+# The maximum number of slots, EQUIP_MAX_SLOTS, is currently set to 20.
+
+body-name:Humanoid
 slot-type:WEAPON
 slot-name:weapon
 slot-type:BOW
