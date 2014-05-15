@@ -1936,6 +1936,8 @@ static enum parser_error parse_p_n(struct parser *p) {
 	r->next = h;
 	r->ridx = parser_getuint(p, "index");
 	r->name = string_make(parser_getstr(p, "name"));
+	/* Default body is humanoid */
+	r->body = 0;
 	parser_setpriv(p, r);
 	return PARSE_ERROR_NONE;
 }
@@ -2059,25 +2061,6 @@ static enum parser_error parse_p_y(struct parser *p) {
 	return s ? PARSE_ERROR_INVALID_FLAG : PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_p_c(struct parser *p) {
-	struct player_race *r = parser_priv(p);
-	char *classstr;
-	char *s;
-
-	if (!r)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	if (!parser_hasval(p, "classes"))
-		return PARSE_ERROR_NONE;
-	classstr = string_make(parser_getstr(p, "classes"));
-	s = strtok(classstr, " |");
-	while (s) {
-		r->choice |= 1 << atoi(s);
-		s = strtok(NULL, " |");
-	}
-	mem_free(classstr);
-	return PARSE_ERROR_NONE;
-}
-
 static enum parser_error parse_p_v(struct parser *p) {
 	struct player_race *r = parser_priv(p);
 	char *s;
@@ -2118,7 +2101,6 @@ struct parser *init_parse_p(void) {
 	parser_reg(p, "W int mbwt int mmwt int fbwt int fmwt", parse_p_w);
 	parser_reg(p, "F ?str flags", parse_p_f);
 	parser_reg(p, "Y ?str flags", parse_p_y);
-	parser_reg(p, "C ?str classes", parse_p_c);
 	parser_reg(p, "V str values", parse_p_v);
 	return p;
 }

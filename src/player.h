@@ -300,7 +300,7 @@ struct player_race {
 	
 	byte infra;			/* Infra-vision	range */
 	
-	byte choice;		/* Legal class choices */
+	byte body;			/* Race body */
 	struct history_chart *history;
 	
 	bitflag flags[OF_SIZE];   /* Racial (object) flags */

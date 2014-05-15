@@ -506,6 +506,9 @@ static void player_outfit(struct player *p)
 	const struct start_item *si;
 	object_type object_type_body;
 
+	/* Player needs a body */
+	p->body = bodies[p->race->body];
+
 	/* Currently carrying nothing */
 	player->upkeep->total_weight = 0;
 
