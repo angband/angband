@@ -27,7 +27,7 @@
  */
 enum
 {
-	#define EQUIP(a, b, c, d, e) EQUIP_##a,
+	#define EQUIP(a, b, c, d, e, f) EQUIP_##a,
 	#include "list-equip-slots.h"
 	#undef EQUIP
 	EQUIP_MAX

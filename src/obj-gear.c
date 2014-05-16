@@ -31,14 +31,15 @@
 static const struct slot_info {
 	int index;
 	bool acid_vuln;
+	bool name_in_desc;
 	const char *mention;
 	const char *heavy_mention;
 	const char *describe;
 } slot_table[] = {
-	#define EQUIP(a, b, c, d, e) { EQUIP_##a, b, c, d, e },
+	#define EQUIP(a, b, c, d, e, f) { EQUIP_##a, b, c, d, e, f },
 	#include "list-equip-slots.h"
 	#undef EQUIP
-	{ EQUIP_MAX, FALSE, NULL, NULL, NULL }
+	{ EQUIP_MAX, FALSE, FALSE, NULL, NULL, NULL }
 };
 
 /*
@@ -1547,6 +1548,30 @@ void embody_player(struct player *p, int body)
 		p->body.slots[i].index = MAX_GEAR;
 }
 
+int slot_by_name(const char *name)
+{
+	int i;
+
+	/* Look for the correctly named slot */
+	for (i = 0; i < player->body.count; i++)
+		if (streq(name, player->body.slots[i].name)) break;
+
+	/* Index for that slot */
+	return i;
+}
+
+int slot_by_type(int type)
+{
+	int i;
+
+	/* Look for a correct slot type */
+	for (i = 0; i < player->body.count; i++)
+		if (type == player->body.slots[i].type) break;
+
+	/* Index for that slot */
+	return i;
+}
+
 struct object *equipped_item_by_slot(int slot)
 {
 	int gear_index;
@@ -1563,26 +1588,12 @@ struct object *equipped_item_by_slot(int slot)
 
 struct object *equipped_item_by_slot_name(const char *name)
 {
-	int i;
-
-	/* Look for the correctly named slot */
-	for (i = 0; i < player->body.count; i++)
-		if (streq(name, player->body.slots[i].name)) break;
-
-	/* Gear item for that slot */
-	return equipped_item_by_slot(i);
+	return equipped_item_by_slot(slot_by_name(name));
 }
 
 struct object *equipped_item_by_slot_type(int type)
 {
-	int i;
-
-	/* Look for a correct slot type */
-	for (i = 0; i < player->body.count; i++)
-		if (type == player->body.slots[i].type) break;
-
-	/* Gear item for that slot */
-	return equipped_item_by_slot(i);
+	return equipped_item_by_slot(slot_by_type(type));
 }
 
 int equipped_item_slot(int item)
@@ -1635,4 +1646,44 @@ int pack_slots_used(struct player *p)
 	if (quiver_ammo % maxsize) pack_slots++;
 
 	return pack_slots;
+}
+
+/*
+ * Return a string mentioning how a given item is carried
+ *
+ * Need to deal with heavy weapon/bow - NRM
+ */
+const char *equip_mention(int slot)
+{
+	int type;
+
+	//if (!item_is_equipped(item)) return "In pack";
+
+	type = player->body.slots[slot].type;
+
+	if (slot_table[type].name_in_desc)
+		return format(slot_table[type].mention, player->body.slots[slot].name);
+	else
+		return slot_table[type].mention;
+}
+
+
+/*
+ * Return a string describing how a given item is being worn.
+ * Currently, only used for items in the equipment, not inventory.
+ *
+ * Need to deal with heavy weapon/bow - NRM
+ */
+const char *equip_describe(int slot)
+{
+	int type;
+
+	//if (!item_is_equipped(item)) return NULL;
+
+	type = player->body.slots[slot].type;
+
+	if (slot_table[type].name_in_desc)
+		return format(slot_table[type].describe, player->body.slots[slot].name);
+	else
+		return slot_table[type].describe;
 }
