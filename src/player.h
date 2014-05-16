@@ -141,13 +141,13 @@ enum
 
 struct equip_slot {
 	int type;
-	char *name;
+	const char *name;
 	int index;
 };
 
 struct player_body {
 	struct player_body *next;
-	char *name;
+	const char *name;
 	int count;
 	struct equip_slot slots[EQUIP_MAX_SLOTS];
 };

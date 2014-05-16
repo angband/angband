@@ -53,6 +53,7 @@ bool recharge_timeout(object_type *o_ptr);
 bool pack_is_full(void);
 bool pack_is_overfull(void);
 void pack_overflow(void);
+void embody_player(struct player *p, int body);
 
 
 #endif /* OBJECT_GEAR_H */

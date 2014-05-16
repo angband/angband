@@ -507,7 +507,7 @@ static void player_outfit(struct player *p)
 	object_type object_type_body;
 
 	/* Player needs a body */
-	p->body = bodies[p->race->body];
+	embody_player(p, p->race->body);
 
 	/* Currently carrying nothing */
 	player->upkeep->total_weight = 0;

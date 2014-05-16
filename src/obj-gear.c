@@ -1522,3 +1522,52 @@ void pack_overflow(void)
 	if (player->upkeep->redraw) redraw_stuff(player->upkeep);
 }
 
+void embody_player(struct player *p, int body)
+{
+	int i;
+
+	/* Copy the body */
+	p->body = bodies[body];
+
+	/* Set it to be carrying nothing */
+	for (i = 0; i < p->body.count; i++)
+		p->body.slots[i].index = MAX_GEAR;
+}
+
+struct object *equipped_item_by_slot(int slot)
+{
+	int gear_index;
+
+	/* Check for valid slot */
+	if (slot < 0 || slot >= player->body.count) return NULL;
+
+	/* Get the index into the gear array */
+	gear_index = player->body.slots[slot].index;
+
+	/* Index is set to MAX_GEAR (NO_OBJECT - NRM) if no object in that slot */
+	return (gear_index < MAX_GEAR) ? &player->gear[gear_index] : NULL;
+}
+
+struct object *equipped_item_by_slot_name(const char *name)
+{
+	int i;
+
+	/* Look for the correctly named slot */
+	for (i = 0; i < player->body.count; i++)
+		if (streq(name, player->body.slots[i].name)) break;
+
+	/* Gear item for that slot */
+	return equipped_item_by_slot(i);
+}
+
+struct object *equipped_item_by_slot_type(int type)
+{
+	int i;
+
+	/* Look for a correct slot type */
+	for (i = 0; i < player->body.count; i++)
+		if (type == player->body.slots[i].type) break;
+
+	/* Gear item for that slot */
+	return equipped_item_by_slot(i);
+}

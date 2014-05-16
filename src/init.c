@@ -1914,7 +1914,7 @@ static void cleanup_body(void)
 		next = b->next;
 		string_free((char *)b->name);
 		for (i = 0; i < b->count; i++)
-			string_free(b->slots[i].name);
+			string_free((char *)b->slots[i].name);
 		mem_free(b);
 		b = next;
 	}
