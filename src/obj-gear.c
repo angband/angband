@@ -1571,3 +1571,55 @@ struct object *equipped_item_by_slot_type(int type)
 	/* Gear item for that slot */
 	return equipped_item_by_slot(i);
 }
+
+int equipped_item_slot(int item)
+{
+	int i;
+
+	/* Look for an equipment slot with this item */
+	for (i = 0; i < player->body.count; i++)
+		if (item == player->body.slots[i].index) break;
+
+	/* Correct slot, or player->body.count if not equipped */
+	return i;
+}
+
+bool item_is_equipped(int item)
+{
+	return (equipped_item_slot(item) < player->body.count) ? TRUE : FALSE;
+}
+
+int pack_slots_used(struct player *p)
+{
+	int i, quiver_slots = 0, pack_slots = 0, quiver_ammo = 0;
+	int maxsize = MAX_STACK_SIZE - 1;
+
+	for (i = 0; i < MAX_GEAR; i++) {
+		struct object *obj = &p->gear[i];
+
+		/* No actual object */
+		if (!obj->kind) continue;
+
+		/* Equipment doesn't count */
+		if (item_is_equipped(i)) continue;
+
+		/* Check if it could be in the quiver */
+		if (tval_is_ammo(obj))
+			if (quiver_slots < QUIVER_SIZE) {
+				quiver_slots++;
+				quiver_ammo += obj->number;
+				continue;
+			}
+
+		/* Count regular slots */
+		pack_slots++;
+	}
+
+	/* Full slots */
+	pack_slots += quiver_ammo / maxsize;
+
+	/* Plus one for any remainder */
+	if (quiver_ammo % maxsize) pack_slots++;
+
+	return pack_slots;
+}
