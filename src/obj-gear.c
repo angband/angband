@@ -28,6 +28,19 @@
 #include "spells.h"
 #include "squelch.h"
 
+static const struct slot_info {
+	int index;
+	bool acid_vuln;
+	const char *mention;
+	const char *heavy_mention;
+	const char *describe;
+} slot_table[] = {
+	#define EQUIP(a, b, c, d, e) { EQUIP_##a, b, c, d, e },
+	#include "list-equip-slots.h"
+	#undef EQUIP
+	{ EQUIP_MAX, FALSE, NULL, NULL, NULL }
+};
+
 /*
  * Convert an inventory index into a one character label.
  *

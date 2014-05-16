@@ -99,7 +99,7 @@ char *ANGBAND_DIR_XTRA_ICON;
 static struct history_chart *histories;
 
 static const char *slots[] = {
-	#define EQUIP(a, b, c, d) #a,
+	#define EQUIP(a, b, c, d, e) #a,
 	#include "list-equip-slots.h"
 	#undef EQUIP
 	NULL

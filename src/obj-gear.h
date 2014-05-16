@@ -22,6 +22,17 @@
 
 #include "player.h"
 
+/*
+ * Player equipment slot types
+ */
+enum
+{
+	#define EQUIP(a, b, c, d, e) EQUIP_##a,
+	#include "list-equip-slots.h"
+	#undef EQUIP
+	EQUIP_MAX
+};
+
 char index_to_label(int i);
 s16b label_to_inven(int c);
 s16b label_to_equip(int c);
