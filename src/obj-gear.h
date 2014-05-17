@@ -38,7 +38,6 @@ s16b label_to_inven(int c);
 s16b label_to_equip(int c);
 bool wearable_p(const object_type *o_ptr);
 s16b wield_slot(const object_type *o_ptr);
-bool slot_can_wield_item(int slot, const object_type *o_ptr);
 const char *mention_use(int slot);
 const char *describe_use(int i);
 int minus_ac(struct player *p);
@@ -65,6 +64,7 @@ bool pack_is_full(void);
 bool pack_is_overfull(void);
 void pack_overflow(void);
 void embody_player(struct player *p, int body);
+bool item_is_equipped(int item);
 
 
 #endif /* OBJECT_GEAR_H */

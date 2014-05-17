@@ -196,20 +196,6 @@ s16b wield_slot(const object_type *o_ptr)
 
 
 /*
- * \returns whether item o_ptr will fit in slot 'slot'
- */
-bool slot_can_wield_item(int slot, const object_type *o_ptr)
-{
-	if (tval_is_ring(o_ptr))
-		return (slot == INVEN_LEFT || slot == INVEN_RIGHT) ? TRUE : FALSE;
-	else if (tval_is_ammo(o_ptr))
-		return (slot >= QUIVER_START && slot < QUIVER_END) ? TRUE : FALSE;
-	else
-		return (wield_slot(o_ptr) == slot) ? TRUE : FALSE;
-}
-
-
-/*
  * Return a string mentioning how a given item is carried
  */
 const char *mention_use(int slot)
@@ -1686,4 +1672,21 @@ const char *equip_describe(int slot)
 		return format(slot_table[type].describe, player->body.slots[slot].name);
 	else
 		return slot_table[type].describe;
+}
+
+
+/**
+ *
+ */
+struct object *inven_item(int index)
+{
+	return &player->gear[player->upkeep->inven[index]];
+}
+
+/**
+ *
+ */
+struct object *quiver_item(int index)
+{
+	return &player->gear[player->upkeep->quiver[index]];
 }

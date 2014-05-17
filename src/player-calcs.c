@@ -926,6 +926,108 @@ const byte blows_table[12][12] =
    /* DEX: 3,   10,  17,  /20, /40, /60, /80, /100,/120,/150,/180,/200 */
 };
 
+/**
+ * Decide which object comes earlier in the standard inventory listing,
+ * defaulting to the first if nothing separates them.
+ *
+ * \return whether to replace the original object with the new one
+ */
+static bool earlier_object(struct object *orig, struct object *new)
+{
+	/* Check we have actual objects */
+	if (!new) return FALSE;
+	if (!orig) return TRUE;
+
+	/* Readable books always come first */
+	if ((orig->tval == player->class->spell_book) &&
+		(new->tval != player->class->spell_book)) return FALSE;
+	if ((new->tval == player->class->spell_book) &&
+		(orig->tval != player->class->spell_book)) return TRUE;
+
+	/* Objects sort by decreasing type */
+	if (orig->tval > new->tval) return FALSE;
+	if (orig->tval < new->tval) return TRUE;
+
+	/* Non-aware (flavored) items always come last (default to orig) */
+	if (!object_flavor_is_aware(new)) return FALSE;
+	if (!object_flavor_is_aware(orig)) return TRUE;
+
+	/* Objects sort by increasing sval */
+	if (orig->sval < new->sval) return FALSE;
+	if (orig->sval > new->sval) return TRUE;
+
+	/* Unidentified objects always come last (default to orig) */
+	if (!object_is_known(new)) return FALSE;
+	if (!object_is_known(orig)) return TRUE;
+
+	/* Lights sort by decreasing fuel */
+	if (tval_is_light(orig))
+	{
+		if (orig->pval > new->pval) return FALSE;
+		if (orig->pval < new->pval) return TRUE;
+	}
+
+	/* Objects sort by decreasing value */
+	if (orig->kind->cost > new->kind->cost) return FALSE;
+	if (orig->kind->cost < new->kind->cost) return TRUE;
+
+	/* No preference */
+	return FALSE;
+}
+
+/**
+ * Put the player's inventory and quiver into easily accessible arrays.  We
+ * assume (for now - NRM) the pack is not overfull
+ */
+static void calc_inventory(struct player *p)
+{
+	int i, gear_index, quiver_slots = 0, num_left = 0, index = 0;
+	bool possible[MAX_GEAR];
+
+	/* Pass through, eliminate equipped objects and non-objects */
+	for (i = 0; i < MAX_GEAR; i++) {
+		possible[i] = (!p->gear[i].kind || item_is_equipped(i)) ? FALSE : TRUE;
+		if (possible[i]) num_left++;
+	}
+
+	/* Fill the quiver */
+	while (quiver_slots < 10) {
+		struct object *first = NULL;
+
+		/* Find the first quiver object not yet allocated */
+		for (i = 0; i < MAX_GEAR; i++) {
+			struct object *current = &p->gear[i];
+			if (!possible[i]) continue;
+			if (!tval_is_ammo(current)) continue;
+			if (earlier_object(first, current))
+				gear_index = i;
+		}
+
+		/* If there is one allocate it, otherwise we're done with the quiver */
+		if (first) {
+			p->upkeep->quiver[quiver_slots++] = gear_index;
+			num_left--;
+		}
+		else
+			break;
+	}
+
+	/* Fill the inventory */
+	while (num_left) {
+		struct object *first = NULL;
+
+		/* Find the first quiver object not yet allocated */
+		for (i = 0; i < MAX_GEAR; i++) {
+			struct object *current = &p->gear[i];
+			if (!possible[i]) continue;
+			if (earlier_object(first, current))
+				gear_index = i;
+		}
+		/* Allocate */
+		p->upkeep->inven[index++] = gear_index;
+		num_left--;
+	}
+}
 
 /*
  * Calculate number of spells player should have, and forget,

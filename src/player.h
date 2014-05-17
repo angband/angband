@@ -36,7 +36,6 @@
  * Note that "INVEN_PACK" is probably hard-coded by its use in savefiles, and
  * by the fact that the screen can only show 23 items plus a one-line prompt.
  */
-#define INVEN_PACK        23
 
 /*
  * Like the previous but takes into account the (variably full quiver).
@@ -67,7 +66,6 @@
 
 /* Quiver */
 #define QUIVER_START 	37
-#define QUIVER_SIZE  	10
 #define QUIVER_END   	47
 
 #define ALL_INVEN_TOTAL 47
@@ -76,7 +74,6 @@
 #define NO_OBJECT		(ALL_INVEN_TOTAL+1)
 
 #define EQUIP_MAX_SLOTS	12
-#define MAX_GEAR		100
 
 
 /** Sexes **/

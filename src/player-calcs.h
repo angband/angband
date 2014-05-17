@@ -138,6 +138,10 @@ enum
  */
 #define STAT_RANGE 38
 
+#define QUIVER_SIZE		10
+#define INVEN_PACK		23
+#define MAX_GEAR		100
+
 /*** Structures ***/
 
 /**
@@ -219,6 +223,8 @@ typedef struct player_upkeep {
 	bool running_withpathfind;	/* Are we using the pathfinder ? */
 	bool running_firststep;		/* Is this our first step running? */
 
+	int quiver[QUIVER_SIZE];	/* Quiver indices into the gear array */
+	int inven[INVEN_PACK];		/* Inventory indices into the gear array */
 	int total_weight;			/* Total weight being carried */
 	int inven_cnt;				/* Number of items in inventory */
 	int equip_cnt;				/* Number of items in equipment */
