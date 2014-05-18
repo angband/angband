@@ -782,7 +782,8 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd,
 
 
 	/* Scan all non-gold objects in the grid */
-	floor_num = scan_floor(floor_list, N_ELEMENTS(floor_list), py, px, 0x0B, tester);
+	floor_num = scan_floor(floor_list, N_ELEMENTS(floor_list), py, px, 0x0B,
+						   tester);
 
 	/* Full floor */
 	f1 = 0;
@@ -973,7 +974,8 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd,
 		else
 		{
 			/* Redraw if needed */
-			if (show_list) show_floor(floor_list, floor_num, olist_mode, tester);
+			if (show_list)
+				show_floor(floor_list, floor_num, olist_mode, tester);
 
 			/* Begin the prompt */
 			strnfmt(out_val, sizeof(out_val), "Floor:");
@@ -1020,28 +1022,22 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd,
 		}
 
 		/* Get a key */
-		//which = inkey();
 		press = inkey_m();
 
 		/* Parse it */
 		if (press.type == EVT_MOUSE) {
 			if (press.mouse.button == 2) {
 				done = TRUE;
-			} else
-			if (press.mouse.button == 1) {
+			} else if (press.mouse.button == 1) {
 				k = -1;
 				if (player->upkeep->command_wrk == USE_INVEN) {
 					if (press.mouse.y == 0) {
 						if (use_equip) {
 							player->upkeep->command_wrk = USE_EQUIP;
-						} else
-						if (allow_floor) {
+						} else if (allow_floor) {
 							player->upkeep->command_wrk = USE_FLOOR;
 						}
-					} else
-					if ((press.mouse.y <= i2-i1+1) ){
-					//&& (press.mouse.x > Term->wid - 1 - max_len - ex_width)) {
-						//k = label_to_inven(index_to_label(i1+press.mouse.y-1));
+					} else if ((press.mouse.y <= i2-i1+1) ) {
 						/* get the item index, allowing for skipped indices */
 						for (j = i1; j <= i2; j++) {
 							if (item_test(tester, j)) {
@@ -1053,49 +1049,44 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd,
 							}
 						}
 					}
-				} else
-				if (player->upkeep->command_wrk == USE_EQUIP) {
+				} else if (player->upkeep->command_wrk == USE_EQUIP) {
 					if (press.mouse.y == 0) {
 						if (allow_floor) {
 							player->upkeep->command_wrk = USE_FLOOR;
-						} else
-						if (use_inven) {
+						} else if (use_inven) {
 							player->upkeep->command_wrk = USE_INVEN;
 						}
-					} else
-					if (press.mouse.y <= e2-e1+1) {
+					} else if (press.mouse.y <= e2 - e1 + 1) {
 						if (olist_mode & OLIST_SEMPTY) {
-							/* If we are showing empties, just set the object (empty objects will just keep the loop going) */
-							k = label_to_equip(index_to_label(e1+press.mouse.y-1));
-						}
-						else {
-							/* get the item index, allowing for skipped indices */
+							/* If we are showing empties, just set the object
+							 * (empty objects will just keep the loop going) */
+							k = label_to_equip(index_to_label(e1 + press.mouse.y - 1));
+						} else {
+							/* get the item index, allow for skipped indices */
 							for (j = e1; j <= e2; j++) {
-								/* skip the quiver slot which is a blank line in the list */
+								/* skip the quiver slot which is a blank line
+								 * in the list */
 								if (j == 36) {
 									press.mouse.y--;
-								} else
-									if (item_test(tester, j)) {
-										if (press.mouse.y == 1) {
-											k = j;
-											break;
-										}
-										press.mouse.y--;
+								} else if (item_test(tester, j)) {
+									if (press.mouse.y == 1) {
+										k = j;
+										break;
 									}
+									press.mouse.y--;
+								}
 							}
 						}
 					}
-				} else
-				if (player->upkeep->command_wrk == USE_FLOOR) {
+				} else if (player->upkeep->command_wrk == USE_FLOOR) {
 					if (press.mouse.y == 0) {
 						if (use_inven) {
 							player->upkeep->command_wrk = USE_INVEN;
-						} else
-						if (use_equip) {
+						} else if (use_equip) {
 							player->upkeep->command_wrk = USE_EQUIP;
 						}
-					} else
-					if ((press.mouse.y <= floor_num) && (press.mouse.y >= 1)) {
+					} else if ((press.mouse.y <= floor_num)
+							   && (press.mouse.y >= 1)) {
 						/* Special index */
 						k = 0 - floor_list[press.mouse.y-1];
 						/* get the item index, allowing for skipped indices */
@@ -1133,16 +1124,14 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd,
 					}
 
 					/* Allow player to "refuse" certain actions */
-					if (!get_item_allow(k, cmdkey, cmd, is_harmless)) {
+					if (!get_item_allow(k, cmdkey, cmd, is_harmless))
 						done = TRUE;
-					}
 
 					/* Accept that choice */
 					(*cp) = k;
 					item = TRUE;
 					done = TRUE;
-				} else
-				if (press.mouse.y == 0) {
+				} else if (press.mouse.y == 0) {
 					/* Hack -- Fix screen */
 					if (show_list) {
 						/* Load screen */
@@ -1154,7 +1143,6 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd,
 				}
 			}
 		} else
-		//switch (which.code)
 		switch (press.key.code)
 		{
 			case ESCAPE:
@@ -1168,16 +1156,12 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd,
 			{
 				/* Toggle to inventory */
 				if (use_inven && (player->upkeep->command_wrk != USE_INVEN))
-				{
 					player->upkeep->command_wrk = USE_INVEN;
-				}
 
 				/* Toggle to equipment */
-				else if (use_equip && 
+				else if (use_equip &&
 						 (player->upkeep->command_wrk != USE_EQUIP))
-				{
 					player->upkeep->command_wrk = USE_EQUIP;
-				}
 
 				/* No toggle allowed */
 				else
@@ -1247,27 +1231,6 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd,
 
 				player->upkeep->command_wrk = (USE_FLOOR);
 
-#if 0
-				/* Check each legal object */
-				for (i = 0; i < floor_num; ++i)
-				{
-					/* Special index */
-					k = 0 - floor_list[i];
-
-					/* Skip non-okay objects */
-					if (!item_test(tester, k)) continue;
-
-					/* Allow player to "refuse" certain actions */
-					if (!get_item_allow(k, cmdkey, cmd, is_harmless)) continue;
-
-					/* Accept that choice */
-					(*cp) = k;
-					item = TRUE;
-					done = TRUE;
-					break;
-				}
-#endif
-
 				break;
 			}
 
@@ -1277,7 +1240,6 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd,
 			case '7': case '8': case '9':
 			{
 				/* Look up the tag */
-				//if (!get_tag(&k, which.code, cmd, quiver_tags))
 				if (!get_tag(&k, press.key.code, cmd, quiver_tags))
 				{
 					bell("Illegal object choice (tag)!");
@@ -1380,17 +1342,14 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd,
 				bool verify;
 
 				/* Note verify */
-				//verify = (isupper((unsigned char)which.code) ? TRUE : FALSE);
 				verify = (isupper((unsigned char)press.key.code) ? TRUE : FALSE);
 
 				/* Lowercase */
-				//which.code = tolower((unsigned char)which.code);
 				press.key.code = tolower((unsigned char)press.key.code);
 
 				/* Convert letter to inventory index */
 				if (player->upkeep->command_wrk == USE_INVEN)
 				{
-					//k = label_to_inven(which.code);
 					k = label_to_inven(press.key.code);
 
 					if (k < 0)
@@ -1403,7 +1362,6 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd,
 				/* Convert letter to equipment index */
 				else if (player->upkeep->command_wrk == USE_EQUIP)
 				{
-					//k = label_to_equip(which.code);
 					k = label_to_equip(press.key.code);
 
 					if (k < 0)
@@ -1416,7 +1374,6 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd,
 				/* Convert letter to floor index */
 				else
 				{
-					//k = (islower((unsigned char)which.code) ? A2I((unsigned char)which.code) : -1);
 					k = (islower((unsigned char)press.key.code) ? A2I((unsigned char)press.key.code) : -1);
 
 					if (k < 0 || k >= floor_num)

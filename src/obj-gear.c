@@ -1678,15 +1678,23 @@ const char *equip_describe(int slot)
 /**
  *
  */
-struct object *inven_item(int index)
+struct object *inven_item(int item)
 {
-	return &player->gear[player->upkeep->inven[index]];
+	return &player->gear[player->upkeep->inven[item]];
 }
 
 /**
  *
  */
-struct object *quiver_item(int index)
+struct object *equip_item(int item)
 {
-	return &player->gear[player->upkeep->quiver[index]];
+	return equipped_item_by_slot(item - INVEN_WIELD);
+}
+
+/**
+ *
+ */
+struct object *quiver_item(int item)
+{
+	return &player->gear[player->upkeep->quiver[item - QUIVER_START]];
 }
