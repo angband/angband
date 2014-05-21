@@ -276,9 +276,9 @@ static void prt_equippy(int row, int col)
 	if (tile_width > 1 || tile_height > 1) return;
 
 	/* Dump equippy chars */
-	for (i = INVEN_WIELD; i < INVEN_TOTAL; i++) {
+	for (i = 0; i < player->body.count; i++) {
 		/* Object */
-		o_ptr = &player->inventory[i];
+		o_ptr = equipped_item_by_slot(player, i);
 
 		if (o_ptr->kind) {
 			c = object_char(o_ptr);
@@ -289,7 +289,7 @@ static void prt_equippy(int row, int col)
 		}
 
 		/* Dump */
-		Term_putch(col + i - INVEN_WIELD, row, a, c);
+		Term_putch(col + i, row, a, c);
 	}
 }
 

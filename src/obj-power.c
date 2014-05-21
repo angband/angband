@@ -188,8 +188,8 @@ static int to_damage_power(const object_type *o_ptr)
 	if (p) log_obj(format("%d power from to_dam\n", p));
 
 	/* Add second lot of damage power for non-weapons */
-	if ((wield_slot(o_ptr) != INVEN_BOW) &&
-		(wield_slot(o_ptr) != INVEN_WIELD) &&
+	if ((wield_slot(o_ptr) != slot_by_name(player, "bow")) &&
+		!tval_is_melee_weapon(o_ptr) &&
 		!tval_is_ammo(o_ptr)) {
 		int q = (o_ptr->to_d * DAMAGE_POWER);
 		p += q;
@@ -205,10 +205,10 @@ static int damage_dice_power(const object_type *o_ptr)
 	int dice = 0;
 
 	/* Add damage from dice for any wieldable weapon or ammo */
-	if (wield_slot(o_ptr) == INVEN_WIELD || tval_is_ammo(o_ptr)) {
+	if (tval_is_melee_weapon(o_ptr) || tval_is_ammo(o_ptr)) {
 		dice = (o_ptr->dd * (o_ptr->ds + 1) * DAMAGE_POWER / 4);
 		log_obj(format("Add %d power for damage dice, ", dice));
-	} else if (wield_slot(o_ptr) != INVEN_BOW) {
+	} else if (wield_slot(o_ptr) != slot_by_name(player, "bow")) {
 		/* Add power boost for nonweapons with combat flags */
 		if (o_ptr->brands || o_ptr->slays || 
 			(o_ptr->modifiers[OBJ_MOD_BLOWS] > 0) ||
@@ -228,7 +228,7 @@ static int ammo_damage_power(const object_type *o_ptr, int p)
 	int q = 0;
 	int launcher;
 
-	if (wield_slot(o_ptr) == INVEN_BOW) {
+	if (wield_slot(o_ptr) == slot_by_name(player, "bow")) {
 		if (o_ptr->sval == SV_SLING) launcher = 0;
 		else if ((o_ptr->sval == SV_SHORT_BOW) ||
 				 (o_ptr->sval == SV_LONG_BOW)) launcher = 1; 
@@ -467,7 +467,7 @@ static s32b slay_power(const object_type *o_ptr, int p, int verbose,
  * to get equal ratings for launchers. */
 static int rescale_bow_power(const object_type *o_ptr, int p)
 {
-	if (wield_slot(o_ptr) == INVEN_BOW) {
+	if (wield_slot(o_ptr) == slot_by_name(player, "bow")) {
 		p /= MAX_BLOWS;
 		log_obj(format("Rescaling bow power, total is %d\n", p));
 	}

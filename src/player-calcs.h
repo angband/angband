@@ -69,12 +69,10 @@ enum
  * Bit flags for the "player->notice" variable
  */
 #define PN_COMBINE      0x00000001L    /* Combine the pack */
-#define PN_REORDER      0x00000002L    /* Reorder the pack */
-#define PN_AUTOINSCRIBE 0x00000004L    /* Autoinscribe items */
-#define PN_PICKUP       0x00000008L    /* Pick stuff up */
-#define PN_SQUELCH      0x00000010L    /* Squelch stuff */
-#define PN_SORT_QUIVER  0x00000020L    /* Sort the quiver */
-#define PN_MON_MESSAGE	0x00000040L	   /* flush monster pain messages */
+#define PN_AUTOINSCRIBE 0x00000002L    /* Autoinscribe items */
+#define PN_PICKUP       0x00000004L    /* Pick stuff up */
+#define PN_SQUELCH      0x00000008L    /* Squelch stuff */
+#define PN_MON_MESSAGE	0x00000010L	   /* flush monster pain messages */
 
 
 /*
@@ -92,6 +90,7 @@ enum
 #define PU_MONSTERS		0x00000200L	/* Update monsters */
 #define PU_DISTANCE		0x00000400L	/* Update distances */
 #define PU_PANEL		0x00000800L	/* Update panel */
+#define PU_INVEN		0x00001000L	/* Update inventory */
 
 
 /*
@@ -138,9 +137,14 @@ enum
  */
 #define STAT_RANGE 38
 
+/** Inventory **/
+
 #define QUIVER_SIZE		10
 #define INVEN_PACK		23
 #define MAX_GEAR		100
+#define EQUIP_MAX_SLOTS	12
+#define NO_OBJECT		0
+
 
 /*** Structures ***/
 
@@ -224,13 +228,11 @@ typedef struct player_upkeep {
 	bool running_firststep;		/* Is this our first step running? */
 
 	int quiver[QUIVER_SIZE];	/* Quiver indices into the gear array */
-	int inven[INVEN_PACK];		/* Inventory indices into the gear array */
+	int inven[INVEN_PACK + 1];	/* Inventory indices into the gear array */
 	int total_weight;			/* Total weight being carried */
 	int inven_cnt;				/* Number of items in inventory */
 	int equip_cnt;				/* Number of items in equipment */
-	int quiver_size;			/* Number of items in the quiver */
-	int quiver_slots;			/* Number of inventory slots for the quiver */
-	int quiver_remainder;		/* Number of quiver items modulo slot size */
+	int quiver_cnt;				/* Number of items in the quiver */
 } player_upkeep;
 
 

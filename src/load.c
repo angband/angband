@@ -729,6 +729,22 @@ int rd_player(void)
 	strip_bytes(2);
 	rd_s32b(&player->au_birth);
 
+	/* Player body */
+	rd_string(player->body.name, 80);
+	rd_u16b(&player->body.count);
+
+	/* Incompatible save files */
+	if (player->body.count > EQUIP_MAX_SLOTS)
+	{
+		note(format("Too many (%u) body parts!", player->body.count));
+		return (-1);
+	}
+
+	for (i = 0; i < player->body.count; i++) {
+		rd_u16b(&player->body.slots[i].type);
+		rd_string(player->body.slots[i].name, 80);
+	}
+
 	strip_bytes(4);
 
 	rd_s32b(&player->au);
@@ -966,104 +982,10 @@ int rd_player_spells(void)
 }
 
 
-/**
- * Read the player inventory
- *
- * Note that the inventory is re-sorted later by dungeon().
- */
-static int rd_inventory_aux(rd_item_t rd_item_version)
-{
-	int slot = 0;
-
-	object_type *i_ptr;
-	object_type object_type_body;
-
-	player->upkeep->total_weight = 0;
-
-	/* Read until done */
-	while (1)
-	{
-		u16b n;
-
-		/* Get the next item index */
-		rd_u16b(&n);
-
-		/* Nope, we reached the end */
-		if (n == 0xFFFF) break;
-
-		/* Get local object */
-		i_ptr = &object_type_body;
-
-		/* Wipe the object */
-		object_wipe(i_ptr);
-
-		/* Read the item */
-		if ((*rd_item_version)(i_ptr))
-		{
-			note("Error reading item");
-			return (-1);
-		}
-
-		/* Hack -- verify item */
-		if (!i_ptr->kind) continue;
-
-		/* Verify slot */
-		if (n >= ALL_INVEN_TOTAL) return (-1);
-
-		/* Wield equipment */
-		if (n >= INVEN_WIELD)
-		{
-			/* Copy object */
-			object_copy(&player->inventory[n], i_ptr);
-
-			/* Add the weight */
-			player->upkeep->total_weight += (i_ptr->number * i_ptr->weight);
-
-			/* One more item */
-			player->upkeep->equip_cnt++;
-		}
-
-		/* Warning -- backpack is full */
-		else if (player->upkeep->inven_cnt == INVEN_PACK)
-		{
-			/* Oops */
-			note("Too many items in the inventory!");
-
-			/* Fail */
-			return (-1);
-		}
-
-		/* Carry inventory */
-		else
-		{
-			/* Get a slot */
-			n = slot++;
-
-			/* Copy object */
-			object_copy(&player->inventory[n], i_ptr);
-
-			/* Add the weight */
-			player->upkeep->total_weight += (i_ptr->number * i_ptr->weight);
-
-			/* One more item */
-			player->upkeep->inven_cnt++;
-		}
-	}
-
-	save_quiver_size(player);
-
-	/* Success */
-	return (0);
-}
-
-/*
- * Read the player inventory - wrapper functions
- */
-int rd_inventory(void) { return rd_inventory_aux(rd_item); }
 
 
 /**
- * Read the player quiver
+ * Read the player gear
  */
 static int rd_gear_aux(rd_item_t rd_item_version)
 {
@@ -1080,6 +1002,7 @@ static int rd_gear_aux(rd_item_t rd_item_version)
 	while (1)
 	{
 		u16b n;
+		byte equip;
 
 		/* Get the next item index */
 		rd_u16b(&n);
@@ -1114,16 +1037,19 @@ static int rd_gear_aux(rd_item_t rd_item_version)
 
 		/* Add the weight */
 		player->upkeep->total_weight += (i_ptr->number * i_ptr->weight);
-	}
 
-	//save_quiver_size(player);
+		/* Is it equipment? */
+		rd_byte(&equip);
+		if (equip)
+			player->body.slots[wield_slot(i_ptr)].index = n;
+	}
 
 	/* Success */
 	return (0);
 }
 
 /*
- * Read the player quiver - wrapper functions
+ * Read the player gear - wrapper functions
  */
 int rd_gear(void) { return rd_gear_aux(rd_item); }
 

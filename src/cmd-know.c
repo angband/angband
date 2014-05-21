@@ -80,12 +80,11 @@ void do_cmd_redraw(void)
 	Term_xtra(TERM_XTRA_REACT, 0);
 
 
-	/* Combine and Reorder the pack (later) */
-	player->upkeep->notice |= (PN_COMBINE | PN_REORDER);
+	/* Combine the pack (later) */
+	player->upkeep->notice |= (PN_COMBINE);
 
-
-	/* Update torch */
-	player->upkeep->update |= (PU_TORCH);
+	/* Update torch, gear */
+	player->upkeep->update |= (PU_TORCH | PU_INVEN);
 
 	/* Update stuff */
 	player->upkeep->update |= (PU_BONUS | PU_HP | PU_MANA | PU_SPELLS);
@@ -433,7 +432,7 @@ void do_cmd_inven(void)
 	int ret = 3;
 	int diff = weight_remaining();
 
-	if (!player->inventory[0].kind) {
+	if (player->upkeep->inven[0] == NO_OBJECT) {
 		msg("You have nothing in your inventory.");
 		return;
 	}
@@ -486,8 +485,7 @@ void do_cmd_equip(void)
 	int item;
 	int ret = 3;
 
-	/* Check inventory, since get_item() will default to inventory list when equipment is empty. */
-	if (!player->inventory[0].kind) {
+	if (!player->upkeep->equip_cnt) {
 		msg("You are not wielding or wearing anything.");
 		return;
 	}

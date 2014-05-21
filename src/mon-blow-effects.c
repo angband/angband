@@ -244,13 +244,13 @@ static void melee_effect_handler_drain_charges(melee_effect_handler_context_t *c
 	for (tries = 0; tries < 10; tries++)
 	{
 		/* Pick an item */
-		item = randint0(INVEN_PACK);
-
-		/* Obtain the item */
-		o_ptr = &player->inventory[item];
+		item = context->p->upkeep->inven[randint0(INVEN_PACK)];
 
 		/* Skip non-objects */
-		if (!o_ptr->kind) continue;
+		if (item == NO_OBJECT) continue;
+
+		/* Obtain the item */
+		o_ptr = &context->p->gear[item];
 
 		/* Drain charged wands/staves */
 		if (tval_can_have_charges(o_ptr))
@@ -287,8 +287,8 @@ static void melee_effect_handler_drain_charges(melee_effect_handler_context_t *c
 			if (player->upkeep->health_who == monster)
 				player->upkeep->redraw |= (PR_HEALTH);
 
-			/* Combine / Reorder the pack */
-			player->upkeep->notice |= (PN_COMBINE | PN_REORDER);
+			/* Combine the pack */
+			player->upkeep->notice |= (PN_COMBINE);
 
 			/* Redraw stuff */
 			player->upkeep->redraw |= (PR_INVEN);
@@ -408,13 +408,13 @@ static void melee_effect_handler_eat_item(melee_effect_handler_context_t *contex
         object_type object_type_body;
 
         /* Pick an item */
-        item = randint0(INVEN_PACK);
+        item = context->p->upkeep->inven[randint0(INVEN_PACK)];
+
+		/* Skip non-objects */
+		if (item == NO_OBJECT) continue;
 
         /* Obtain the item */
-        o_ptr = &context->p->inventory[item];
-
-        /* Skip non-objects */
-        if (!o_ptr->kind) continue;
+        o_ptr = &context->p->gear[item];
 
         /* Skip artifacts */
         if (o_ptr->artifact) continue;
@@ -475,13 +475,13 @@ static void melee_effect_handler_eat_food(melee_effect_handler_context_t *contex
 
 	for (tries = 0; tries < 10; tries++) {
 		/* Pick an item from the pack */
-		item = randint0(INVEN_PACK);
-
-		/* Get the item */
-		o_ptr = &context->p->inventory[item];
+		item = context->p->upkeep->inven[randint0(INVEN_PACK)];
 
 		/* Skip non-objects */
-		if (!o_ptr->kind) continue;
+		if (item == NO_OBJECT) continue;
+
+		/* Get the item */
+		o_ptr = &context->p->gear[item];
 
 		/* Skip non-food objects */
 		if (!tval_is_food(o_ptr)) continue;
@@ -513,12 +513,15 @@ static void melee_effect_handler_eat_food(melee_effect_handler_context_t *contex
 static void melee_effect_handler_eat_light(melee_effect_handler_context_t *context)
 {
 	object_type *o_ptr;
+	int i;
 
 	/* Take damage */
 	take_hit(context->p, context->damage, context->ddesc);
 
-	/* Get the light */
-	o_ptr = &context->p->inventory[INVEN_LIGHT];
+	/* Get the light - needs streamlining NRM */
+	for (i = 0; i < context->p->body.count; i++)
+		if (streq("light", context->p->body.slots[i].name)) break;
+	o_ptr = &context->p->gear[context->p->body.slots[i].index];
 
 	/* Drain fuel where applicable */
 	if (!of_has(o_ptr->flags, OF_NO_FUEL) && (o_ptr->timeout > 0)) {

@@ -181,7 +181,7 @@ static bool py_attack_real(int y, int x, bool *fear) {
 	bool stop = FALSE;
 
 	/* The weapon used */
-	object_type *o_ptr = &player->inventory[INVEN_WIELD];
+	object_type *o_ptr = equipped_item_by_slot_name(player, "weapon");
 
 	/* Information about the attack */
 	int chance = py_attack_hit_chance(o_ptr);
@@ -226,6 +226,7 @@ static bool py_attack_real(int y, int x, bool *fear) {
 
 	/* Handle normal weapon */
 	if (o_ptr->kind) {
+		int j;
 		const struct brand *b = NULL;
 		const struct slay *s = NULL;
 
@@ -233,8 +234,8 @@ static bool py_attack_real(int y, int x, bool *fear) {
 
 		/* Get the best attack from all slays or
 		 * brands on all non-launcher equipment */
-		for (i = INVEN_LEFT; i < INVEN_TOTAL; i++) {
-			struct object *obj = &player->inventory[i];
+		for (j = 2; j < player->body.count; j++) { //Equip iteration - NRM
+			struct object *obj = equipped_item_by_slot(player, j);
 			if (obj->kind)
 				improve_attack_modifier(obj, m_ptr, &b, &s, hit_verb,
 										TRUE, FALSE);
@@ -580,7 +581,7 @@ static void ranged_helper(int item, int dir, int range, int shots, ranged_attack
 static struct attack_result make_ranged_shot(object_type *o_ptr, int y, int x) {
 	struct attack_result result = {FALSE, 0, 0, "hits"};
 
-	object_type *j_ptr = &player->inventory[INVEN_BOW];
+	object_type *j_ptr = equipped_item_by_slot_name(player, "shooting");
 
 	monster_type *m_ptr = square_monster(cave, y, x);
 	
@@ -614,7 +615,7 @@ static struct attack_result make_ranged_shot(object_type *o_ptr, int y, int x) {
 	result.dmg *= multiplier;
 	result.dmg = critical_shot(o_ptr->weight, o_ptr->to_h, result.dmg, &result.msg_type);
 
-	object_notice_attack_plusses(&player->inventory[INVEN_BOW]);
+	object_notice_attack_plusses(j_ptr);
 
 	return result;
 }
@@ -670,7 +671,7 @@ void do_cmd_fire(struct command *cmd) {
 
 	ranged_attack attack = make_ranged_shot;
 
-	object_type *j_ptr = &player->inventory[INVEN_BOW];
+	object_type *j_ptr = equipped_item_by_slot_name(player, "shooting");
 	object_type *o_ptr;
 
 	/* Get arguments */
@@ -745,7 +746,7 @@ void do_cmd_throw(struct command *cmd) {
 	range = MIN(((str + 20) * 10) / weight, 10);
 
 	/* Make sure the player isn't throwing wielded items */
-	if (item >= INVEN_WIELD && item < QUIVER_START) {
+	if (item_is_equipped(player, item)) {
 		msg("You have cannot throw wielded items.");
 		return;
 	}
@@ -758,17 +759,20 @@ void do_cmd_throw(struct command *cmd) {
  */
 void do_cmd_fire_at_nearest(void) {
 	int i, dir = DIR_TARGET, item = -1;
+	object_type *bow = equipped_item_by_slot_name(player, "shooting");
 
 	/* Require a usable launcher */
-	if (!player->inventory[INVEN_BOW].tval || !player->state.ammo_tval) {
+	if (!bow->tval || !player->state.ammo_tval) {
 		msg("You have nothing to fire with.");
 		return;
 	}
 
 	/* Find first eligible ammo in the quiver */
-	for (i = QUIVER_START; i < QUIVER_END; i++) {
-		if (player->inventory[i].tval != player->state.ammo_tval) continue;
-		item = i;
+	for (i = 0; i < QUIVER_SIZE; i++) {
+		if (player->gear[player->upkeep->quiver[i]].tval !=
+			player->state.ammo_tval)
+			continue;
+		item = player->upkeep->quiver[i];
 		break;
 	}
 

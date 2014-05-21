@@ -738,11 +738,11 @@ static void wiz_reroll_item(object_type *o_ptr)
 		/* Apply changes */
 		object_copy(o_ptr, i_ptr);
 
-		/* Recalculate bonuses */
-		player->upkeep->update |= (PU_BONUS);
+		/* Recalculate bonuses, gear */
+		player->upkeep->update |= (PU_BONUS | PU_INVEN);
 
-		/* Combine / Reorder the pack (later) */
-		player->upkeep->notice |= (PN_COMBINE | PN_REORDER | PN_SORT_QUIVER);
+		/* Combine the pack (later) */
+		player->upkeep->notice |= (PN_COMBINE);
 
 		/* Window stuff */
 		player->upkeep->redraw |= (PR_INVEN | PR_EQUIP );
@@ -1090,11 +1090,11 @@ static void do_cmd_wiz_play(void)
 		/* Change */
 		object_copy(o_ptr, i_ptr);
 
-		/* Recalculate bonuses */
-		player->upkeep->update |= (PU_BONUS);
+		/* Recalculate gear, bonuses */
+		player->upkeep->update |= (PU_INVEN | PU_BONUS);
 
-		/* Combine / Reorder the pack (later) */
-		player->upkeep->notice |= (PN_COMBINE | PN_REORDER);
+		/* Combine the pack (later) */
+		player->upkeep->notice |= (PN_COMBINE);
 
 		/* Window stuff */
 		player->upkeep->redraw |= (PR_INVEN | PR_EQUIP );

@@ -589,7 +589,7 @@ static void apply_magic_weapon(object_type *o_ptr, int level, int power)
 		o_ptr->to_h += m_bonus(10, level);
 		o_ptr->to_d += m_bonus(10, level);
 
-		if (wield_slot(o_ptr) == INVEN_WIELD || tval_is_ammo(o_ptr)) {
+		if (tval_is_melee_weapon(o_ptr) || tval_is_ammo(o_ptr)) {
 			/* Super-charge the damage dice */
 			while ((o_ptr->dd * o_ptr->ds > 0) &&
 					one_in_(10L * o_ptr->dd * o_ptr->ds))

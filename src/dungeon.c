@@ -343,74 +343,54 @@ static void recharge_objects(void)
 {
 	int i;
 
-	bool charged = FALSE, discharged_stack;
+	bool discharged_stack;
 
 	object_type *o_ptr;
 
-	/*** Recharge equipment ***/
-	for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
+	/* Recharge carried gear */
+	for (i = 0; i < MAX_GEAR; i++)
 	{
-		/* Get the object */
-		o_ptr = &player->inventory[i];
+		o_ptr = &player->gear[i];
 
 		/* Skip non-objects */
 		if (!o_ptr->kind) continue;
 
-		/* Recharge activatable objects */
-		if (recharge_timeout(o_ptr))
-		{
-			charged = TRUE;
-
-			/* Message if an item recharged */
-			recharged_notice(o_ptr, TRUE);
-		}
-	}
-
-	/* Notice changes */
-	if (charged)
-	{
-		/* Window stuff */
-		player->upkeep->redraw |= (PR_EQUIP);
-	}
-
-	charged = FALSE;
-
-	/*** Recharge the inventory ***/
-	for (i = 0; i < INVEN_PACK; i++)
-	{
-		o_ptr = &player->inventory[i];
-
-		/* Skip non-objects */
-		if (!o_ptr->kind) continue;
-
-		discharged_stack = (number_charging(o_ptr) == o_ptr->number) ? TRUE : FALSE;
-
-		/* Recharge rods, and update if any rods are recharged */
-		if (tval_can_have_timeout(o_ptr) && recharge_timeout(o_ptr))
-		{
-			charged = TRUE;
-
-			/* Entire stack is recharged */
-			if (o_ptr->timeout == 0)
+		/* Recharge equipment */
+		if (item_is_equipped(player, i)) {
+			/* Recharge activatable objects */
+			if (recharge_timeout(o_ptr)) {
+				/* Message if an item recharged */
 				recharged_notice(o_ptr, TRUE);
 
-			/* Previously exhausted stack has acquired a charge */
-			else if (discharged_stack)
-				recharged_notice(o_ptr, FALSE);
+				/* Window stuff */
+				player->upkeep->redraw |= (PR_EQUIP);
+			}
+		}
+		/* Recharge the inventory */
+		else {
+			discharged_stack =
+				(number_charging(o_ptr) == o_ptr->number) ? TRUE : FALSE;
+
+			/* Recharge rods, and update if any rods are recharged */
+			if (tval_can_have_timeout(o_ptr) && recharge_timeout(o_ptr)) {
+				/* Entire stack is recharged */
+				if (o_ptr->timeout == 0)
+					recharged_notice(o_ptr, TRUE);
+
+				/* Previously exhausted stack has acquired a charge */
+				else if (discharged_stack)
+					recharged_notice(o_ptr, FALSE);
+
+				/* Combine pack */
+				player->upkeep->notice |= (PN_COMBINE);
+
+				/* Redraw stuff */
+				player->upkeep->redraw |= (PR_INVEN);
+			}
 		}
 	}
 
-	/* Notice changes */
-	if (charged)
-	{
-		/* Combine pack */
-		player->upkeep->notice |= (PN_COMBINE);
-
-		/* Redraw stuff */
-		player->upkeep->redraw |= (PR_INVEN);
-	}
-
-	/*** Recharge the ground ***/
+	/* Recharge the ground */
 	for (i = 1; i < cave_object_max(cave); i++)
 	{
 		/* Get the object */
@@ -727,7 +707,7 @@ static void process_world(struct chunk *c)
 	/*** Process Light ***/
 
 	/* Check for light being wielded */
-	o_ptr = &player->inventory[INVEN_LIGHT];
+	o_ptr = equipped_item_by_slot_name(player, "light");;
 
 	/* Burn some fuel in the current light */
 	if (tval_is_light(o_ptr)) {
@@ -763,8 +743,8 @@ static void process_world(struct chunk *c)
 
 				/* If it's a torch, now is the time to delete it */
 				if (o_ptr->sval == SV_LIGHT_TORCH) {
-					inven_item_increase(INVEN_LIGHT, -1);
-					inven_item_optimize(INVEN_LIGHT);
+					inven_item_increase(object_gear_index(player, o_ptr), -1);
+					inven_item_optimize(object_gear_index(player, o_ptr));
 				}
 			}
 
@@ -1367,10 +1347,10 @@ static void dungeon(struct chunk *c)
 
 
 	/* Update stuff */
-	player->upkeep->update |= (PU_BONUS | PU_HP | PU_MANA | PU_SPELLS);
+	player->upkeep->update |= (PU_BONUS | PU_HP | PU_MANA | PU_SPELLS | PU_INVEN);
 
-	/* Combine / Reorder the pack */
-	player->upkeep->notice |= (PN_COMBINE | PN_REORDER | PN_SORT_QUIVER);
+	/* Combine the pack */
+	player->upkeep->notice |= (PN_COMBINE);
 
 	/* Notice stuff */
 	notice_stuff(player->upkeep);

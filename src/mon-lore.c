@@ -23,6 +23,7 @@
 #include "mon-spell.h"
 #include "mon-util.h"
 #include "mon-blow-effects.h"
+#include "obj-gear.h"
 #include "obj-identify.h"
 #include "obj-tval.h"
 #include "obj-util.h"
@@ -67,9 +68,9 @@ static void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MA
 	for (i = 0; i < RSF_MAX; i++)
 		spell_colors[i] = TERM_L_GREEN;
 
-	/* Scan the inventory for potentially vulnerable items */
-	for (i = 0; i < INVEN_TOTAL; i++) {
-		object_type *o_ptr = &player->inventory[i];
+	/* Scan for potentially vulnerable items */
+	for (i = 0; i < MAX_GEAR; i++) {
+		object_type *o_ptr = &player->gear[i];
 
 		/* Only occupied slots */
 		if (!o_ptr->kind) continue;
@@ -82,26 +83,25 @@ static void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MA
 		known = object_is_known(o_ptr);
 
 		/* Drain charges - requires a charged item */
-		if (i < INVEN_PACK && (!known || o_ptr->pval > 0) &&
-				tval_can_have_charges(o_ptr))
+		if ((!known || o_ptr->pval > 0) && tval_can_have_charges(o_ptr))
 			melee_colors[RBE_UN_POWER] = TERM_L_RED;
 
 		/* Steal item - requires non-artifacts */
-		if (i < INVEN_PACK && (!known || !o_ptr->artifact) &&
+		if (!item_is_equipped(player, i) && (!known || !o_ptr->artifact) &&
 				player->lev + adj_dex_safe[st.stat_ind[A_DEX]] < 100)
 			melee_colors[RBE_EAT_ITEM] = TERM_L_RED;
 
 		/* Eat food - requries food */
-		if (i < INVEN_PACK && tval_is_food(o_ptr))
+		if (tval_is_food(o_ptr))
 			melee_colors[RBE_EAT_FOOD] = TERM_YELLOW;
 
 		/* Eat light - requires a fuelled light */
-		if (i == INVEN_LIGHT && !of_has(f, OF_NO_FUEL) &&
-				o_ptr->timeout > 0)
+		if (item_is_equipped(player, i) && tval_is_light(o_ptr) &&
+			!of_has(f, OF_NO_FUEL) && o_ptr->timeout > 0)
 			melee_colors[RBE_EAT_LIGHT] = TERM_YELLOW;
 
 		/* Disenchantment - requires an enchanted item */
-		if (i >= INVEN_WIELD && (!known || o_ptr->to_a > 0 ||
+		if (item_is_equipped(player, i) && (!known || o_ptr->to_a > 0 ||
 				o_ptr->to_h > 0 || o_ptr->to_d > 0) &&
 				(st.el_info[ELEM_DISEN].res_level <= 0))
 		{
@@ -1103,7 +1103,7 @@ static void lore_append_toughness(textblock *tb, const monster_race *race, const
 {
 	monster_sex_t msex = MON_SEX_NEUTER;
 	long chance = 0, chance2 = 0;
-	object_type *weapon = &player->inventory[INVEN_WIELD];
+	object_type *weapon = equipped_item_by_slot_name(player, "weapon");
 
 	assert(tb && race && lore);
 

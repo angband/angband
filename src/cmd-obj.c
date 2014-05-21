@@ -221,7 +221,7 @@ void do_cmd_uninscribe(struct command *cmd)
 	o_ptr->note = 0;
 	msg("Inscription removed.");
 
-	player->upkeep->notice |= (PN_COMBINE | PN_SQUELCH | PN_SORT_QUIVER);
+	player->upkeep->notice |= (PN_COMBINE | PN_SQUELCH);
 	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
 }
 
@@ -258,7 +258,7 @@ void do_cmd_inscribe(struct command *cmd)
 	o_ptr->note = quark_add(str);
 	string_free((char *)str);
 
-	player->upkeep->notice |= (PN_COMBINE | PN_SQUELCH | PN_SORT_QUIVER);
+	player->upkeep->notice |= (PN_COMBINE | PN_SQUELCH);
 	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
 }
 
@@ -278,7 +278,7 @@ void do_cmd_takeoff(struct command *cmd)
 			/* Choice */ USE_EQUIP) != CMD_OK)
 		return;
 
-	(void)inven_takeoff(item, 255);
+	inven_takeoff(item);
 	pack_overflow();
 	player->upkeep->energy_use = 50;
 }
@@ -295,26 +295,23 @@ void wield_item(object_type *o_ptr, int item, int slot)
 	const char *fmt;
 	char o_name[80];
 
-	bool combined_ammo = FALSE;
 	bool track_wielded_item = FALSE;
-	int num = 1;
 
-	/* If we are stacking ammo in the quiver */
-	if (tval_is_ammo(o_ptr))
-	{
-		num = o_ptr->number;
-		combined_ammo = object_similar(o_ptr, &player->inventory[slot],
-			OSTACK_QUIVER);
-	}
+	/* Increase equipment counter if empty slot */
+	if (player->body.slots[slot].index != NO_OBJECT)
+		player->upkeep->equip_cnt++;
 
 	/* Take a turn */
 	player->upkeep->energy_use = 100;
 
-	/* Obtain local object */
-	object_copy(i_ptr, o_ptr);
+	/* Obtain local object if needed */
+	if (item < 0 || o_ptr->number > 1) {
+		object_copy(i_ptr, o_ptr);
 
-	/* Modify quantity */
-	i_ptr->number = num;
+		/* Modify quantity */
+		i_ptr->number = 1;
+	} else
+		i_ptr = NULL;
 
 	/* Update object_idx if necessary, once object is in slot */
 	if (tracked_object_is(player->upkeep, item))
@@ -322,49 +319,27 @@ void wield_item(object_type *o_ptr, int item, int slot)
 		track_wielded_item = TRUE;
 	}
 
-	/* Decrease the item (from the pack) */
-	if (item >= 0)
+	/* Decrease the item (from the floor or inventory) */
+	if (item < 0)
 	{
-		inven_item_increase(item, -num);
-		inven_item_optimize(item);
-	}
-
-	/* Decrease the item (from the floor) */
-	else
-	{
-		floor_item_increase(0 - item, -num);
+		floor_item_increase(0 - item, -1);
 		floor_item_optimize(0 - item);
+	} else if (o_ptr->number > 1) {
+		inven_item_increase(item, -1);
 	}
 
-	/* Get the wield slot */
-	o_ptr = &player->inventory[slot];
+	/* Wear the new stuff */
+	if (i_ptr)
+		player->body.slots[slot].index = inven_carry(player, i_ptr);
+	else
+		player->body.slots[slot].index = item;
 
-	if (combined_ammo)
-	{
-		/* Add the new ammo to the already-quiver-ed ammo */
-		object_absorb(o_ptr, i_ptr);
-	}
-	else 
-	{
-		/* Take off existing item */
-		if (o_ptr->kind)
-			(void)inven_takeoff(slot, 255);
-
-		/* If we are wielding ammo we may need to "open" the slot by shifting
-		 * later ammo up the quiver; this is because we already called the
-		 * inven_item_optimize() function. */
-		if (slot >= QUIVER_START)
-			open_quiver_slot(slot);
+	/* Point at the newly equipped item */
+	o_ptr = equipped_item_by_slot(player, slot);
 	
-		/* Wear the new stuff */
-		object_copy(o_ptr, i_ptr);
-
-		/* Increment the equip counter by hand */
-		player->upkeep->equip_cnt++;
-	}
-
-	/* Increase the weight */
-	player->upkeep->total_weight += i_ptr->weight * num;
+	/* Increase the weight - needs checking NRM*/
+	if (item < 0)
+		player->upkeep->total_weight += i_ptr->weight * i_ptr->number;
 
 	/* Track object if necessary */
 	if (track_wielded_item)
@@ -376,16 +351,12 @@ void wield_item(object_type *o_ptr, int item, int slot)
 	object_notice_on_wield(o_ptr);
 
 	/* Where is the item now */
-	if (slot == INVEN_WIELD)
+	if (tval_is_melee_weapon(o_ptr))
 		fmt = "You are wielding %s (%c).";
-	else if (slot == INVEN_BOW)
+	else if (o_ptr->tval == TV_BOW)
 		fmt = "You are shooting with %s (%c).";
-	else if (slot == INVEN_LIGHT)
+	else if (tval_is_light(o_ptr))
 		fmt = "Your light source is %s (%c).";
-	else if (combined_ammo)
-		fmt = "You combine %s in your quiver (%c).";
-	else if (slot >= QUIVER_START && slot < QUIVER_END)
-		fmt = "You add %s to your quiver (%c).";
 	else
 		fmt = "You are wearing %s (%c).";
 
@@ -405,15 +376,11 @@ void wield_item(object_type *o_ptr, int item, int slot)
 		object_notice_curses(o_ptr);
 	}
 
-	/* Save quiver size */
-	save_quiver_size(player);
-
 	/* See if we have to overflow the pack */
 	pack_overflow();
 
-	/* Recalculate bonuses, torch, mana */
-	player->upkeep->notice |= PN_SORT_QUIVER;
-	player->upkeep->update |= (PU_BONUS | PU_TORCH | PU_MANA);
+	/* Recalculate bonuses, torch, mana, gear */
+	player->upkeep->update |= (PU_BONUS | PU_TORCH | PU_MANA | PU_INVEN);
 	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
 }
 
@@ -444,35 +411,19 @@ void do_cmd_wield(struct command *cmd)
 	 * but in some cases we need to ask the user which slot they actually
 	 * want to replace */
 	slot = wield_slot(o_ptr);
-	if (player->inventory[slot].kind) {
+	if (equipped_item_by_slot(player, slot)) {
 		if (tval_is_ring(o_ptr) && cmd_get_item(cmd, "replace", &slot,
 					/* Prompt */ "Replace which ring? ",
 					/* Error  */ "Error in do_cmd_wield(), please report.",
 					/* Filter */ tval_is_ring,
 					/* Choice */ USE_EQUIP) != CMD_OK)
 				return;
-
-		if (tval_is_ammo(o_ptr) &&
-				!object_similar(&player->inventory[slot], o_ptr, OSTACK_QUIVER) &&
-				cmd_get_item(cmd, "replace", &slot,
-					/* Prompt */ "Replace which ammunition? ",
-					/* Error  */ "Error in do_cmd_wield(), please report.",
-					/* Filter */ tval_is_ammo,
-					/* Choice */ USE_EQUIP) != CMD_OK)
-				return;
 	}
 
-	equip_o_ptr = &player->inventory[slot];
+	equip_o_ptr = equipped_item_by_slot(player, slot);
 
 	/* If the slot is open, wield and be done */
-	if (!equip_o_ptr->kind) {
-		wield_item(o_ptr, item, slot);
-		return;
-	}
-
-	/* If the slot is in the quiver and objects can be combined */
-	if (tval_is_ammo(equip_o_ptr) &&
-			object_similar(equip_o_ptr, o_ptr, OSTACK_QUIVER)) {
+	if (equip_o_ptr) {
 		wield_item(o_ptr, item, slot);
 		return;
 	}
@@ -481,7 +432,7 @@ void do_cmd_wield(struct command *cmd)
 	if (cursed_p(equip_o_ptr->flags)) {
 		object_desc(o_name, sizeof(o_name), equip_o_ptr, ODESC_BASE);
 		msg("The %s you are %s appears to be cursed.", o_name,
-				   describe_use(slot));
+			equip_describe(player, slot));
 		return;
 	}
 
@@ -520,7 +471,7 @@ void do_cmd_drop(struct command *cmd)
 		return;
 
 	/* Hack -- Cannot remove cursed items */
-	if ((item >= INVEN_WIELD) && cursed_p(o_ptr->flags)) {
+	if (item_is_equipped(player, item) && cursed_p(o_ptr->flags)) {
 		msg("Hmmm, it seems to be cursed.");
 		return;
 	}
@@ -547,8 +498,8 @@ void do_cmd_destroy(struct command *cmd)
 
 	o_ptr = object_from_item_idx(item);
 
-	if ((item >= INVEN_WIELD) && cursed_p(o_ptr->flags)) {
-		msg("You cannot ignore cursed items.");
+	if (item_is_equipped(player, item) && cursed_p(o_ptr->flags)) {
+		msg("You cannot ignore cursed equipment.");
 	} else {	
 		char o_name[80];
 
@@ -623,9 +574,9 @@ static void use_aux(struct command *cmd, int item, enum use use, int snd)
 		return;
 	}
 
-	if (item >= 0 && item < INVEN_PACK) {
-		/* Create a copy so that we can remember what we are working with, in case the
-		 * inventory is changed. */
+	if (!item_is_equipped(player, item)) {
+		/* Create a copy so that we can remember what we are working with,
+		 * in case the inventory is changed. */
 		original = ZNEW(object_type);
 		object_copy(original, o_ptr);
 	}
@@ -665,10 +616,10 @@ static void use_aux(struct command *cmd, int item, enum use use, int snd)
 	}
 
 	if (original != NULL) {
-		/* Restore o_ptr to the new inventory slot that contains the original object. We
-		 * have to do this because object mutating functions follow; "original" is a dummy
-		 * just so that we know what we are working with. */
-		item = inventory_index_matching_object(original);
+		/* Restore o_ptr to the new inventory slot that contains the original
+		 * object. We have to do this because object mutating functions follow;
+		 * "original" is a dummy so that we know what we are working with. */
+		item = gear_index_matching_object(original);
 		o_ptr = object_from_item_idx(item);
 		FREE(original);
 	}
@@ -686,7 +637,7 @@ static void use_aux(struct command *cmd, int item, enum use use, int snd)
 	player->upkeep->energy_use = 100;
 
 	/* Mark as tried and redisplay */
-	player->upkeep->notice |= (PN_COMBINE | PN_REORDER);
+	player->upkeep->notice |= (PN_COMBINE);
 	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP | PR_OBJECT);
 
 	/*
@@ -746,6 +697,9 @@ static void use_aux(struct command *cmd, int item, enum use use, int snd)
 			floor_item_optimize(0 - item);
 		}
 	}
+
+	/* Update the gear */
+	player->upkeep->update |= PU_INVEN;
 	
 	/* Hack to make Glyph of Warding work properly */
 	if (square_trap_specific(cave, py, px, RUNE_PROTECT))
@@ -970,8 +924,11 @@ static void refill_lamp(object_type *j_ptr, object_type *o_ptr, int item)
 			o_ptr->timeout = 0;
 		}
 
-		/* Combine / Reorder the pack (later) */
-		player->upkeep->notice |= (PN_COMBINE | PN_REORDER);
+		/* Update the gear */
+		player->upkeep->update |= (PU_INVEN);
+
+		/* Combine the pack (later) */
+		player->upkeep->notice |= (PN_COMBINE);
 
 		/* Redraw stuff */
 		player->upkeep->redraw |= (PR_INVEN);
@@ -1007,7 +964,7 @@ static void refill_lamp(object_type *j_ptr, object_type *o_ptr, int item)
 
 void do_cmd_refill(struct command *cmd)
 {
-	object_type *j_ptr = &player->inventory[INVEN_LIGHT];
+	object_type *j_ptr = equipped_item_by_slot_name(player, "light");
 
 	int item;
 	object_type *o_ptr;

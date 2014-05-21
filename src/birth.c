@@ -366,8 +366,8 @@ void player_init(struct player *p)
 {
 	int i;
 
-	if (p->inventory)
-		mem_free(p->inventory);
+	if (p->gear)
+		mem_free(p->gear);
 	if (p->upkeep)
 		mem_free(p->upkeep);
 	if (p->timed)
@@ -418,7 +418,7 @@ void player_init(struct player *p)
 	for (i = 0; i < PY_MAX_SPELLS; i++)
 		p->spell_order[i] = 99;
 
-	p->inventory = C_ZNEW(ALL_INVEN_TOTAL, struct object);
+	p->gear = mem_zalloc(MAX_GEAR * sizeof(object_type));
 	p->upkeep = mem_zalloc(sizeof(player_upkeep));
 	p->timed = mem_zalloc(TMD_MAX * sizeof(s16b));
 
@@ -438,59 +438,32 @@ void wield_all(struct player *p)
 {
 	object_type *o_ptr;
 	object_type *i_ptr;
-	object_type object_type_body;
 
 	int slot;
 	int item;
-	int num;
-	bool is_ammo;
 
 	/* Scan through the slots backwards */
-	for (item = INVEN_PACK - 1; item >= 0; item--)
+	for (item = MAX_GEAR - 1; item >= 0; item--)
 	{
-		o_ptr = &p->inventory[item];
-		is_ammo = tval_is_ammo(o_ptr);
+		o_ptr = &p->gear[item];
 
 		/* Skip non-objects */
 		if (!o_ptr->kind) continue;
 
 		/* Make sure we can wield it */
 		slot = wield_slot(o_ptr);
-		if (slot < INVEN_WIELD) continue;
+		if (slot < 0 || slot >= p->body.count) continue;
 
-		i_ptr = &p->inventory[slot];
-		if (i_ptr->kind && (!is_ammo ||
-				(is_ammo && !object_similar(o_ptr, i_ptr, OSTACK_PACK))))
+		i_ptr = equipped_item_by_slot(p, slot);
+		if (i_ptr->kind)
 			continue;
 
-		/* Figure out how much of the item we'll be wielding */
-		num = is_ammo ? o_ptr->number : 1;
-
-		/* Get local object */
-		i_ptr = &object_type_body;
-		object_copy(i_ptr, o_ptr);
-
-		/* Modify quantity */
-		i_ptr->number = num;
-
-		/* Decrease the item (from the pack) */
-		inven_item_increase(item, -num);
-		inven_item_optimize(item);
-
-		/* Get the wield slot */
-		o_ptr = &p->inventory[slot];
-
 		/* Wear the new stuff */
-		object_copy(o_ptr, i_ptr);
-
-		/* Increase the weight */
-		p->upkeep->total_weight += i_ptr->weight * i_ptr->number;
+		p->body.slots[slot].index = item;
 
 		/* Increment the equip counter by hand */
 		p->upkeep->equip_cnt++;
 	}
-
-	save_quiver_size(p);
 
 	return;
 }
@@ -507,13 +480,13 @@ static void player_outfit(struct player *p)
 	object_type object_type_body;
 
 	/* Player needs a body */
-	embody_player(p, p->race->body);
+	p->body = bodies[p->race->body];
 
 	/* Currently carrying nothing */
-	player->upkeep->total_weight = 0;
+	p->upkeep->total_weight = 0;
 
 	/* Give the player starting equipment */
-	for (si = player->class->start_items; si; si = si->next)
+	for (si = p->class->start_items; si; si = si->next)
 	{
 		/* Get local object */
 		struct object *i_ptr = &object_type_body;

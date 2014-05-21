@@ -675,7 +675,7 @@ static struct maxima TEST_DATA test_z_info = {
 	.m_max   = 2,
 };
 
-static struct object TEST_DATA test_inven[ALL_INVEN_TOTAL];
+static struct object TEST_DATA test_inven[MAX_GEAR];
 
 static struct player TEST_DATA test_player = {
 	.py = 1,

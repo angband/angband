@@ -1563,12 +1563,12 @@ int find_inven(const object_type *o_ptr)
 	int num = 0;
 
 	/* Similar slot? */
-	for (j = 0; j < QUIVER_END; j++)
+	for (j = 0; j < MAX_GEAR; j++)
 	{
-		object_type *j_ptr = &player->inventory[j];
+		object_type *j_ptr = &player->gear[j];
 
 		/* Check only the inventory and the quiver */
-		if (j >= INVEN_WIELD && j < QUIVER_START) continue;
+		if (item_is_equipped(player, j)) continue;
 
 		/* Require identical object types */
 		if (o_ptr->kind != j_ptr->kind) continue;
@@ -1761,8 +1761,11 @@ void do_cmd_buy(struct command *cmd)
 	/* Completely ID objects on buy */
 	object_flavor_aware(i_ptr);
 
-	/* Combine / Reorder the pack (later) */
-	player->upkeep->notice |= (PN_COMBINE | PN_REORDER | PN_SORT_QUIVER | PN_SQUELCH);
+	/* Update the gear */
+	player->upkeep->update |= (PU_INVEN);
+
+	/* Combine the pack (later) */
+	player->upkeep->notice |= (PN_COMBINE | PN_SQUELCH);
 
 	/* Message */
 	if (one_in_(3)) msgt(MSG_STORE5, "%s", ONE_OF(comment_accept));
@@ -1775,7 +1778,7 @@ void do_cmd_buy(struct command *cmd)
 	item_new = inven_carry(player, i_ptr);
 
 	/* Message */
-	object_desc(o_name, sizeof(o_name), &player->inventory[item_new],
+	object_desc(o_name, sizeof(o_name), &player->gear[item_new],
 				ODESC_PREFIX | ODESC_FULL);
 	msg("You have %s (%c).", o_name, index_to_label(item_new));
 
@@ -1872,7 +1875,7 @@ void do_cmd_retrieve(struct command *cmd)
 	item_new = inven_carry(player, &picked_item);
 
 	/* Describe just the result */
-	object_desc(o_name, sizeof(o_name), &player->inventory[item_new],
+	object_desc(o_name, sizeof(o_name), &player->gear[item_new],
 				ODESC_PREFIX | ODESC_FULL);
 	
 	/* Message */
@@ -1936,7 +1939,7 @@ void do_cmd_sell(struct command *cmd)
 	o_ptr = object_from_item_idx(item);
 
 	/* Cannot remove cursed objects */
-	if ((item >= INVEN_WIELD) && cursed_p(o_ptr->flags)) {
+	if (item_is_equipped(player, item) && cursed_p(o_ptr->flags)) {
 		msg("Hmmm, it seems to be cursed.");
 		return;
 	}
@@ -1972,8 +1975,11 @@ void do_cmd_sell(struct command *cmd)
 	if (o_ptr->artifact)
 		history_add_artifact(o_ptr->artifact, TRUE, TRUE);
 
-	/* Combine / Reorder the pack (later) */
-	player->upkeep->notice |= (PN_COMBINE | PN_REORDER | PN_SORT_QUIVER);
+	/* Update the gear */
+	player->upkeep->update |= (PU_INVEN);
+
+	/* Combine the pack (later) */
+	player->upkeep->notice |= (PN_COMBINE);
 
 	/* Redraw stuff */
 	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
@@ -2058,7 +2064,7 @@ void do_cmd_stash(struct command *cmd)
 	}
 
 	/* Cannot remove cursed objects */
-	if ((item >= INVEN_WIELD) && cursed_p(o_ptr->flags))
+	if (item_is_equipped(player, item) && cursed_p(o_ptr->flags))
 	{
 		msg("Hmmm, it seems to be cursed.");
 		return;

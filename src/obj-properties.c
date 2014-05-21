@@ -15,6 +15,7 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
+#include "obj-gear.h"
 
 /**
  * Details of the different object flags in the game.
@@ -146,17 +147,17 @@ s16b flag_slot_mult(int flag, int slot)
 	case OFT_BAD:
 	case OFT_CURSE: return 1;
 		/* Light-specific */
-	case OFT_LIGHT: return (slot == INVEN_LIGHT) ? 1 : 0;
+	case OFT_LIGHT: return (slot == EQUIP_LIGHT) ? 1 : 0;
 		/* Melee weapon specific */
-	case OFT_MELEE: return (slot == INVEN_WIELD) ? 1 : 0;
+	case OFT_MELEE: return (slot == EQUIP_WEAPON) ? 1 : 0;
 		/* Miscellaneous flags are a mixed bag */
 	case OFT_MISC: {
 		/* Weapon and bow slot are more useful for other purposes */
-		if ((slot == INVEN_WIELD) || (slot == INVEN_BOW)) return 1;
+		if ((slot == EQUIP_WEAPON) || (slot == EQUIP_BOW)) return 1;
 		/* SD and FF are a bit lame */
 		if ((flag == OF_FEATHER) || (flag == OF_SLOW_DIGEST)) return 1;
 		/* FA on gloves is really nice */
-		if ((flag == OF_FREE_ACT) && (slot == INVEN_HANDS)) return 5;
+		if ((flag == OF_FREE_ACT) && (slot == EQUIP_GLOVES)) return 5;
 		/* All the major powers are good */
 		return 2;
 	}
@@ -238,31 +239,31 @@ int mod_mult(int mod)
 s16b mod_slot_mult(int mod, int slot)
 {
 	/* Gloves with DEX are good */
-	if ((mod == OBJ_MOD_DEX) && (slot == INVEN_HANDS)) return 2;
+	if ((mod == OBJ_MOD_DEX) && (slot == EQUIP_GLOVES)) return 2;
 
 	/* Extra blows are silly on a bow, powerful off-weapon */
 	if (mod == OBJ_MOD_BLOWS) {
-		if (slot == INVEN_BOW) return 0;
-		if (slot == INVEN_WIELD) return 1;
+		if (slot == EQUIP_BOW) return 0;
+		if (slot == EQUIP_WEAPON) return 1;
 		return 3;
 	}
 
 	/* Extra shots are silly on a melee weapon, powerful off-weapon */
 	if (mod == OBJ_MOD_SHOTS) {
-		if (slot == INVEN_WIELD) return 0;
-		if (slot == INVEN_BOW) return 1;
+		if (slot == EQUIP_WEAPON) return 0;
+		if (slot == EQUIP_BOW) return 1;
 		return 3;
 	}
 
 	/* Extra might only works on bows */
 	if (mod == OBJ_MOD_MIGHT) {
-		if (slot == INVEN_BOW) return 1;
+		if (slot == EQUIP_BOW) return 1;
 		return 0;
 	}
 
 	/* Light is best on, well, lights */
 	if (mod == OBJ_MOD_LIGHT) {
-		if (slot == INVEN_LIGHT) return 3;
+		if (slot == EQUIP_LIGHT) return 3;
 		return 1;
 	}
 

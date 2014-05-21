@@ -1537,12 +1537,12 @@ int inven_damage(struct player *p, int type, int cperc)
 	/* Count the casualties */
 	k = 0;
 
-	/* Scan through the slots backwards */
-	for (i = 0; i < QUIVER_END; i++)
+	/* Scan through the gear */
+	for (i = 0; i < MAX_GEAR; i++)
 	{
-		if (i >= INVEN_PACK && i < QUIVER_START) continue;
+		if (item_is_equipped(player, i)) continue;
 
-		o_ptr = &p->inventory[i];
+		o_ptr = &p->gear[i];
 
 		/* Skip non-objects */
 		if (!o_ptr->kind) continue;

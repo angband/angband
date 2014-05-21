@@ -97,7 +97,7 @@ bool obj_is_used_aimed(const object_type *o_ptr);
 bool obj_is_used_unaimed(const object_type *o_ptr);
 u16b object_effect(const object_type *o_ptr);
 object_type *object_from_item_idx(int item);
-int inventory_index_matching_object(const object_type *o_ptr);
+int gear_index_matching_object(const object_type *o_ptr);
 bool obj_needs_aim(object_type *o_ptr);
 bool obj_can_fail(const struct object *o);
 bool object_test(item_tester tester, const struct object *o);

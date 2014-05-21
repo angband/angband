@@ -86,7 +86,8 @@ wchar_t object_char(const struct object *o_ptr)
  * documented in object.h
  */
 static void show_obj_list(int num_obj, int num_head, char labels[50][80],
-	object_type *objects[50], olist_detail_t mode)
+						  object_type *objects[50], olist_detail_t mode,
+						  int quiver_start)
 {
 	int i, row = 0, col = 0;
 	int attr;
@@ -127,7 +128,7 @@ static void show_obj_list(int num_obj, int num_head, char labels[50][80],
 	}
 
 	/* Take the quiver message into consideration */
-	if (mode & OLIST_QUIVER && player->upkeep->quiver_slots > 0)
+	if (mode & OLIST_QUIVER && player->upkeep->quiver[0] != NO_OBJECT)
 		max_len = MAX(max_len, 24);
 
 	/* Width of extra fields */
@@ -139,13 +140,13 @@ static void show_obj_list(int num_obj, int num_head, char labels[50][80],
 	if (in_term)
 	{
 		/* Term window */
-		row = 0;
+		row = quiver_start;
 		col = 0;
 	}
 	else
 	{
 		/* Main window */
-		row = 1;
+		row = quiver_start + 1;
 		col = Term->wid - 1 - max_len - ex_width;
 
 		if (col < 3) col = 0;
@@ -230,17 +231,17 @@ static void show_obj_list(int num_obj, int num_head, char labels[50][80],
 	if (mode & OLIST_QUIVER)
 	{
 		int count, j;
+		int quiver_slots = player->upkeep->quiver_cnt / (MAX_STACK_SIZE - 1);
 
 		/* Quiver may take multiple lines */
-		for(j = 0; j < player->upkeep->quiver_slots; j++, i++)
+		for (j = 0; j < quiver_slots; j++, i++)
 		{
 			const char *fmt = "in Quiver: %d missile%s";
 			char letter = index_to_label(in_term ? i - 1 : i);
 
 			/* Number of missiles in this "slot" */
-			if (j == player->upkeep->quiver_slots - 1 && 
-				player->upkeep->quiver_remainder > 0)
-				count = player->upkeep->quiver_remainder;
+			if (j == quiver_slots - 1)
+				count = player->upkeep->quiver_cnt % (MAX_STACK_SIZE - 1);
 			else
 				count = MAX_STACK_SIZE-1;
 
@@ -307,15 +308,12 @@ void show_inven(int mode, item_tester tester)
 
 	/* Find the last occupied inventory slot */
 	for (i = 0; i < INVEN_PACK; i++)
-	{
-		o_ptr = &player->inventory[i];
-		if (o_ptr->kind) last_slot = i;
-	}
+		if (player->upkeep->inven[i] != NO_OBJECT) last_slot = i;
 
 	/* Build the object list */
 	for (i = 0; i <= last_slot; i++)
 	{
-		o_ptr = &player->inventory[i];
+		o_ptr = &player->gear[player->upkeep->inven[i]];
 
 		/* Acceptable items get a label */
 		if (object_test(tester, o_ptr))
@@ -336,9 +334,57 @@ void show_inven(int mode, item_tester tester)
 	/* Display the object list */
 	if (in_term)
 		/* Term window starts with a burden header */
-		show_obj_list(num_obj, 1, labels, objects, mode);
+		show_obj_list(num_obj, 1, labels, objects, mode, 0);
 	else
-		show_obj_list(num_obj, 0, labels, objects, mode);
+		show_obj_list(num_obj, 0, labels, objects, mode, 0);
+}
+
+
+/*
+ * Display the quiver.  Builds a list of objects and passes them
+ * off to show_obj_list() for display.  Mode flags documented in
+ * object.h
+ */
+void show_quiver(int mode, int start, item_tester tester)
+{
+	int i, last_slot = -1;
+
+	object_type *o_ptr;
+
+	int num_obj = 0;
+	char labels[50][80];
+	object_type *objects[50];
+
+	bool in_term = (mode & OLIST_WINDOW) ? TRUE : FALSE;
+
+	/* Find the last occupied quiver slot */
+	for (i = 0; i < QUIVER_SIZE; i++)
+		if (player->upkeep->quiver[i] != NO_OBJECT) last_slot = i;
+
+	/* Build the object list */
+	for (i = 0; i <= last_slot; i++)
+	{
+		o_ptr = &player->gear[player->upkeep->quiver[i]];
+
+		/* Acceptable items get a label */
+		if (object_test(tester, o_ptr))
+			strnfmt(labels[num_obj], sizeof(labels[num_obj]), "%c) ",
+					index_to_label(i));
+
+		/* Unacceptable items are still sometimes shown */
+		else if (in_term)
+			my_strcpy(labels[num_obj], "   ", sizeof(labels[num_obj]));
+
+		/* Unacceptable items are skipped in the main window */
+		else continue;
+
+		/* Save the object */
+		objects[num_obj] = o_ptr;
+		num_obj++;
+	}
+
+	/* Display the object list */
+	show_obj_list(num_obj, 0, labels, objects, mode, start);
 }
 
 
@@ -349,7 +395,7 @@ void show_inven(int mode, item_tester tester)
  */
 void show_equip(int mode, item_tester tester)
 {
-	int i, last_slot = 0;
+	int i;
 
 	object_type *o_ptr;
 
@@ -362,41 +408,10 @@ void show_equip(int mode, item_tester tester)
 	bool in_term = (mode & OLIST_WINDOW) ? TRUE : FALSE;
 	bool show_empty = (mode & OLIST_SEMPTY) ? TRUE : FALSE;
 
-	/* Find the last equipment slot to display */
-	for (i = INVEN_WIELD; i < ALL_INVEN_TOTAL; i++)
-	{
-		o_ptr = &player->inventory[i];
-		if (i < INVEN_TOTAL || o_ptr->kind) last_slot = i;
-	}
-
 	/* Build the object list */
-	for (i = INVEN_WIELD; i <= last_slot; i++)
+	for (i = 0; i < player->body.count; i++)
 	{
-		o_ptr = &player->inventory[i];
-
-		/* May need a blank line to separate the quiver */
-		if (i == INVEN_TOTAL)
-		{
-			int j;
-			bool need_spacer = FALSE;
-			
-			/* Scan the rest of the items for acceptable entries */
-			for (j = i; j < last_slot; j++)
-			{
-				o_ptr = &player->inventory[j];
-				if (object_test(tester, o_ptr)) need_spacer = TRUE;
-			}
-
-			/* Add a spacer between equipment and quiver */
-			if (num_obj > 0 && need_spacer)
-			{
-				my_strcpy(labels[num_obj], "", sizeof(labels[num_obj]));
-				objects[num_obj] = NULL;
-				num_obj++;
-			}
-
-			continue;
-		}
+		o_ptr = equipped_item_by_slot(player, i);
 
 		/* Acceptable items get a label */
 		if (object_test(tester, o_ptr))
@@ -410,7 +425,7 @@ void show_equip(int mode, item_tester tester)
 		else continue;
 
 		/* Show full slot labels */
-		strnfmt(tmp_val, sizeof(tmp_val), "%-14s: ", mention_use(i));
+		strnfmt(tmp_val, sizeof(tmp_val), "%-14s: ", equip_mention(player, i));
 		my_strcat(labels[num_obj], tmp_val, sizeof(labels[num_obj]));
 
 		/* Save the object */
@@ -419,7 +434,10 @@ void show_equip(int mode, item_tester tester)
 	}
 
 	/* Display the object list */
-	show_obj_list(num_obj, 0, labels, objects, mode);
+	show_obj_list(num_obj, 0, labels, objects, mode, 0);
+
+	/* Display the quiver */
+	show_quiver(mode, num_obj + 1, tester);
 }
 
 
@@ -461,7 +479,7 @@ void show_floor(const int *floor_list, int floor_num, int mode, item_tester test
 	}
 
 	/* Display the object list */
-	show_obj_list(num_obj, 0, labels, objects, mode);
+	show_obj_list(num_obj, 0, labels, objects, mode, 0);
 }
 
 
@@ -481,7 +499,7 @@ bool verify_item(const char *prompt, int item)
 	/* Inventory */
 	if (item >= 0)
 	{
-		o_ptr = &player->inventory[item];
+		o_ptr = &player->gear[item];
 	}
 
 	/* Floor */
@@ -515,7 +533,7 @@ bool get_item_allow(int item, unsigned char ch, cmd_code cmd, bool is_harmless)
 
 	/* Inventory or floor */
 	if (item >= 0)
-		o_ptr = &player->inventory[item];
+		o_ptr = &player->gear[item];
 	else
 		o_ptr = cave_object(cave, 0 - item);
 
@@ -556,8 +574,9 @@ bool get_item_allow(int item, unsigned char ch, cmd_code cmd, bool is_harmless)
 
 
 
-/*
- * Find the "first" inventory object with the given "tag".
+/**
+ * Find the "first" inventory object with the given "tag" - now first in the
+ * gear array, which is really arbitrary - NRM.
  *
  * A "tag" is a char "n" appearing as "@n" anywhere in the
  * inscription of an object.
@@ -574,19 +593,19 @@ static int get_tag(int *cp, char tag, cmd_code cmd, bool quiver_tags)
 	/* (f)ire is handled differently from all others, due to the quiver */
 	if (quiver_tags)
 	{
-		i = QUIVER_START + tag - '0';
-		if (player->inventory[i].kind)
+		i = tag - '0';
+		if (player->upkeep->quiver[i] != NO_OBJECT)
 		{
-			*cp = i;
+			*cp = player->upkeep->quiver[i];
 			return (TRUE);
 		}
 		return (FALSE);
 	}
 
 	/* Check every object */
-	for (i = 0; i < ALL_INVEN_TOTAL; ++i)
+	for (i = 0; i < MAX_GEAR; ++i)
 	{
-		object_type *o_ptr = &player->inventory[i];
+		object_type *o_ptr = &player->gear[i];
 
 		/* Skip non-objects */
 		if (!o_ptr->kind) continue;
@@ -697,6 +716,7 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd,
 	int i1, i2;
 	int e1, e2;
 	int f1, f2;
+	int q1, q2;
 
 	bool done, item;
 
@@ -759,27 +779,40 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd,
 	if (!use_inven) i2 = -1;
 
 	/* Restrict inventory indexes */
-	while ((i1 <= i2) && (!item_test(tester, i1))) i1++;
-	while ((i1 <= i2) && (!item_test(tester, i2))) i2--;
+	while ((i1 <= i2) && (!item_test(tester, player->upkeep->inven[i1]))) i1++;
+	while ((i1 <= i2) && (!item_test(tester, player->upkeep->inven[i2]))) i2--;
 
 	/* Accept inventory */
 	if (i1 <= i2) allow_inven = TRUE;
 
 
 	/* Full equipment */
-	e1 = INVEN_WIELD;
-	e2 = ALL_INVEN_TOTAL - 1;
+	e1 = 0;
+	e2 = player->body.count;
 
 	/* Forbid equipment */
 	if (!use_equip) e2 = -1;
 
 	/* Restrict equipment indexes */
-	while ((e1 <= e2) && (!item_test(tester, e1))) e1++;
-	while ((e1 <= e2) && (!item_test(tester, e2))) e2--;
+	while ((e1 <= e2) && (!item_test(tester, slot_index(player, e1)))) e1++;
+	while ((e1 <= e2) && (!item_test(tester, slot_index(player, e2)))) e2--;
 
 	/* Accept equipment */
 	if (e1 <= e2) allow_equip = TRUE;
 
+	/* Hack - add quiver to equipment - NRM */
+	q1 = 0;
+	q2 = QUIVER_SIZE - 1;
+
+	/* Forbid quiver */
+	if (!use_equip) q2 = -1;
+
+	/* Restrict quiver indexes */
+	while ((q1 <= q2) && (!item_test(tester, player->upkeep->quiver[q1]))) q1++;
+	while ((q1 <= q2) && (!item_test(tester, player->upkeep->quiver[q2]))) q2--;
+
+	/* Accept equipment */
+	if (q1 <= q2) allow_equip = TRUE;
 
 	/* Scan all non-gold objects in the grid */
 	floor_num = scan_floor(floor_list, N_ELEMENTS(floor_list), py, px, 0x0B,
@@ -798,7 +831,6 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd,
 
 	/* Accept floor */
 	if (f1 <= f2) allow_floor = TRUE;
-
 
 	/* Require at least one legal choice */
 	if (!allow_inven && !allow_equip && !allow_floor)
@@ -941,11 +973,12 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd,
 			strnfmt(out_val, sizeof(out_val), "Equip:");
 
 			/* List choices */
-			if (e1 <= e2)
+			if ((e1 <= e2) || (q1 <= q2))
 			{
 				/* Build the prompt */
 				strnfmt(tmp_val, sizeof(tmp_val), " %c-%c,",
-				        index_to_label(e1), index_to_label(e2));
+				        index_to_label(e1 > 0 ? e1 : q1),
+						index_to_label(q2 > 0 ? q2 : e2));
 
 				/* Append */
 				my_strcat(out_val, tmp_val, sizeof(out_val));
@@ -1026,6 +1059,9 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd,
 
 		/* Parse it */
 		if (press.type == EVT_MOUSE) {
+
+#if 0 // Postponing mouse support - NRM
+
 			if (press.mouse.button == 2) {
 				done = TRUE;
 			} else if (press.mouse.button == 1) {
@@ -1037,7 +1073,7 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd,
 						} else if (allow_floor) {
 							player->upkeep->command_wrk = USE_FLOOR;
 						}
-					} else if ((press.mouse.y <= i2-i1+1) ) {
+					} else if ((press.mouse.y <= i2 - i1 + 1) ) {
 						/* get the item index, allowing for skipped indices */
 						for (j = i1; j <= i2; j++) {
 							if (item_test(tester, j)) {
@@ -1142,6 +1178,7 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd,
 					}
 				}
 			}
+#endif
 		} else
 		switch (press.key.code)
 		{
@@ -1247,7 +1284,7 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd,
 				}
 
 				/* Hack -- Validate the item */
-				if ((k < INVEN_WIELD) ? !allow_inven : !allow_equip)
+				if (item_is_equipped(player, k) ? !allow_equip : !allow_inven)
 				{
 					bell("Illegal object choice (tag)!");
 					break;
@@ -1285,23 +1322,24 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd,
 						break;
 					}
 
-					k = i1;
+					k = player->upkeep->inven[i1];
 				}
 
 				/* Choose the "default" slot (0) of the quiver */
 				else if (quiver_tags)
-					k = e1;
+					k = q1;
 
 				/* Choose "default" equipment item */
 				else if (player->upkeep->command_wrk == USE_EQUIP)
 				{
-					if (e1 != e2)
+					if ((e1 != e2) || ((e2 <= 0) && (q1 != q2)))
 					{
 						bell("Illegal object choice (default)!");
 						break;
 					}
 
-					k = e1;
+					k = e1 > 0 ? slot_index(player, e1) :
+						player->upkeep->quiver[q1];
 				}
 
 				/* Choose "default" floor item */

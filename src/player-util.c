@@ -17,6 +17,7 @@
 
 #include "angband.h"
 #include "cave.h"
+#include "obj-gear.h"
 #include "obj-tvalsval.h"
 #include "obj-ui.h"
 #include "obj-util.h"
@@ -250,7 +251,7 @@ bool player_can_read(struct player *p, bool show_msg)
  */
 bool player_can_fire(struct player *p, bool show_msg)
 {
-	object_type *o_ptr = &p->inventory[INVEN_BOW];
+	object_type *o_ptr = equipped_item_by_slot_name(player, "shooting");
 
 	/* Require a usable launcher */
 	if (!o_ptr->tval || !p->state.ammo_tval)
@@ -271,7 +272,7 @@ bool player_can_fire(struct player *p, bool show_msg)
  */
 bool player_can_refuel(struct player *p, bool show_msg)
 {
-	object_type *obj = &p->inventory[INVEN_LIGHT];
+	object_type *obj = equipped_item_by_slot_name(player, "light");
 
 	if (obj->kind && obj->sval == SV_LIGHT_LANTERN)
 		return TRUE;
@@ -328,7 +329,7 @@ bool player_can_refuel_prereq(void)
 bool player_book_has_unlearned_spells(struct player *p)
 {
 	int i;
-	int item_list[INVEN_TOTAL];
+	int item_list[INVEN_PACK];
 	int item_num;
 	object_type *o_ptr;
 	struct spell *sp;
@@ -343,7 +344,7 @@ bool player_book_has_unlearned_spells(struct player *p)
 
 	/* Check through all available books */
 	for (i = 0; i < item_num; i++) {
-		o_ptr = object_from_item_idx(i);
+		o_ptr = object_from_item_idx(player->upkeep->inven[i]);
 
 		/* Extract spells */
 		for (sp = o_ptr->kind->spells; sp; sp = sp->next)

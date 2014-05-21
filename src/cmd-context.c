@@ -720,7 +720,7 @@ int context_menu_cave(struct chunk *c, int y, int x, int adjacent, int mx, int m
 }
 
 /* pick the context menu options appropiate for the item */
-int context_menu_object(const object_type *o_ptr, const int slot)
+int context_menu_object(const object_type *o_ptr, const int item)
 {
 	menu_type *m;
 	region r;
@@ -781,7 +781,7 @@ int context_menu_object(const object_type *o_ptr, const int slot)
 			ADD_LABEL("Eat", CMD_EAT, MN_ROW_VALID);
 		}
 		else if (obj_is_activatable(o_ptr)) {
-			menu_row_validity_t valid = (slot >= INVEN_WIELD && obj_can_activate(o_ptr)) ? MN_ROW_VALID : MN_ROW_INVALID;
+			menu_row_validity_t valid = (item_is_equipped(player, item) && obj_can_activate(o_ptr)) ? MN_ROW_VALID : MN_ROW_INVALID;
 			ADD_LABEL("Activate", CMD_ACTIVATE, valid);
 		}
 		else if (obj_can_fire(o_ptr)) {
@@ -796,10 +796,10 @@ int context_menu_object(const object_type *o_ptr, const int slot)
 		ADD_LABEL("Refill", CMD_REFILL, MN_ROW_VALID);
 	}
 
-	if (slot >= INVEN_WIELD && obj_can_takeoff(o_ptr)) {
+	if (item_is_equipped(player, item) && obj_can_takeoff(o_ptr)) {
 		ADD_LABEL("Take off", CMD_TAKEOFF, MN_ROW_VALID);
 	}
-	else if (slot < INVEN_WIELD && obj_can_wear(o_ptr)) {
+	else if (!item_is_equipped(player, item) && obj_can_wear(o_ptr)) {
 		//if (obj_is_armor(o_ptr)) {
 		//	menu_dynamic_add(m, "Wear", 2);
 		//} else {
@@ -808,7 +808,7 @@ int context_menu_object(const object_type *o_ptr, const int slot)
 		ADD_LABEL("Equip", CMD_WIELD, MN_ROW_VALID);
 	}
 
-	if (slot >= 0) {
+	if (item >= 0) {
 		if (!store_in_store || square_shopnum(cave, player->py, player->px) == STORE_HOME) {
 			ADD_LABEL("Drop", CMD_DROP, MN_ROW_VALID);
 
@@ -884,7 +884,7 @@ int context_menu_object(const object_type *o_ptr, const int slot)
 			/* Drop entire stack with confirmation. */
 			if (get_check(format("Drop %s? ", header))) {
 				cmdq_push(store_in_store ? CMD_STASH : CMD_DROP);
-				cmd_set_arg_item(cmdq_peek(), "item", slot);
+				cmd_set_arg_item(cmdq_peek(), "item", item);
 				cmd_set_arg_number(cmdq_peek(), "quantity", o_ptr->number);
 			}
 			return 1;
@@ -911,7 +911,7 @@ int context_menu_object(const object_type *o_ptr, const int slot)
 		case CMD_FIRE:
 		case CMD_USE:
 			/* Check for inscriptions that trigger confirmation. */
-			allowed = key_confirm_command(cmdkey) && get_item_allow(slot, cmdkey, selected, FALSE);
+			allowed = key_confirm_command(cmdkey) && get_item_allow(item, cmdkey, selected, FALSE);
 			break;
 		default:
 			/* Invalid command; prevent anything from happening. */
@@ -925,7 +925,7 @@ int context_menu_object(const object_type *o_ptr, const int slot)
 
 	if (selected == CMD_DESTROY) {
 		/* squelch or unsquelch the item */
-		textui_cmd_destroy_menu(slot);
+		textui_cmd_destroy_menu(item);
 	} else if (selected == CMD_BROWSE_SPELL) {
 		/* browse a spellbook */
 		/* copied from textui_spell_browse */
@@ -933,15 +933,15 @@ int context_menu_object(const object_type *o_ptr, const int slot)
 		return 2;
 	} else if (selected == CMD_STUDY) {
 		cmdq_push(CMD_STUDY);
-		cmd_set_arg_item(cmdq_peek(), "item", slot);
+		cmd_set_arg_item(cmdq_peek(), "item", item);
 	} else if (selected == CMD_CAST) {
 		if (obj_can_cast_from(o_ptr)) {
 			cmdq_push(CMD_CAST);
-			cmd_set_arg_item(cmdq_peek(), "book", slot);
+			cmd_set_arg_item(cmdq_peek(), "book", item);
 		}
 	} else {
 		cmdq_push(selected);
-		cmd_set_arg_item(cmdq_peek(), "item", slot);
+		cmd_set_arg_item(cmdq_peek(), "item", item);
 
 		/* If we're in a store, we need to change the "drop" command to "stash". */
 		if (selected == CMD_DROP && store_in_store) {

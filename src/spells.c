@@ -332,9 +332,9 @@ void identify_pack(void)
 	int i;
 
 	/* Simply identify and know every item */
-	for (i = 0; i < ALL_INVEN_TOTAL; i++)
+	for (i = 0; i < MAX_GEAR; i++)
 	{
-		object_type *o_ptr = &player->inventory[i];
+		object_type *o_ptr = &player->gear[i];
 
 		/* Skip non-objects */
 		if (!o_ptr->kind) continue;
@@ -344,9 +344,6 @@ void identify_pack(void)
 
 		/* Identify it */
 		do_ident_item(o_ptr);
-
-		/* Reset loop in case the pack reordered. */
-		i = 0;
 	}
 }
 
@@ -380,9 +377,9 @@ static int remove_curse_aux(bool heavy)
 	int i, cnt = 0;
 
 	/* Attempt to uncurse items being worn */
-	for (i = INVEN_WIELD; i < ALL_INVEN_TOTAL; i++)
+	for (i = 0; i < player->body.count; i++)
 	{
-		object_type *o_ptr = &player->inventory[i];
+		object_type *o_ptr = equipped_item_by_slot(player, i);
 
 		if (!o_ptr->kind) continue;
 		if (!cursed_p(o_ptr->flags)) continue;
@@ -1185,7 +1182,7 @@ void stair_creation(void)
  */
 bool apply_disenchant(int mode)
 {
-	int t = 0;
+	int i, count = 0;
 
 	object_type *o_ptr;
 
@@ -1195,21 +1192,29 @@ bool apply_disenchant(int mode)
 	/* Unused parameter */
 	(void)mode;
 
-	/* Pick a random slot */
-	switch (randint1(8))
-	{
-		case 1: t = INVEN_WIELD; break;
-		case 2: t = INVEN_BOW; break;
-		case 3: t = INVEN_BODY; break;
-		case 4: t = INVEN_OUTER; break;
-		case 5: t = INVEN_ARM; break;
-		case 6: t = INVEN_HEAD; break;
-		case 7: t = INVEN_HANDS; break;
-		case 8: t = INVEN_FEET; break;
+	/* Count slots */
+	for (i = 0; i < player->body.count; i++) {
+		/* Ignore rings, amulets and lights */
+		if (slot_type_is(i, EQUIP_RING)) continue;
+		if (slot_type_is(i, EQUIP_AMULET)) continue;
+		if (slot_type_is(i, EQUIP_LIGHT)) continue;
+
+		/* Count disenchantable slots */
+		count++;
+	}
+
+	/* Pick one at random */
+	for (i = player->body.count - 1; i >= 0; i--) {
+		/* Ignore rings, amulets and lights */
+		if (slot_type_is(i, EQUIP_RING)) continue;
+		if (slot_type_is(i, EQUIP_AMULET)) continue;
+		if (slot_type_is(i, EQUIP_LIGHT)) continue;
+
+		if (one_in_(count--)) break;
 	}
 
 	/* Get the item */
-	o_ptr = &player->inventory[t];
+	o_ptr = equipped_item_by_slot(player, i);
 
 	/* No item, nothing happens */
 	if (!o_ptr->kind) return (FALSE);
@@ -1222,7 +1227,6 @@ bool apply_disenchant(int mode)
 		return (FALSE);
 	}
 
-
 	/* Describe the object */
 	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
 
@@ -1232,7 +1236,7 @@ bool apply_disenchant(int mode)
 	{
 		/* Message */
 		msg("Your %s (%c) resist%s disenchantment!",
-		           o_name, index_to_label(t),
+		           o_name, index_to_label(i),
 		           ((o_ptr->number != 1) ? "" : "s"));
 
 		/* Notice */
@@ -1240,7 +1244,7 @@ bool apply_disenchant(int mode)
 	}
 
 	/* Apply disenchantment, depending on which kind of equipment */
-	if (t == INVEN_WIELD || t == INVEN_BOW)
+	if (slot_type_is(i, EQUIP_WEAPON) || slot_type_is(i, EQUIP_BOW))
 	{
 		/* Disenchant to-hit */
 		if (o_ptr->to_h > 0) o_ptr->to_h--;
@@ -1259,7 +1263,7 @@ bool apply_disenchant(int mode)
 
 	/* Message */
 	msg("Your %s (%c) %s disenchanted!",
-	           o_name, index_to_label(t),
+	           o_name, index_to_label(i),
 	           ((o_ptr->number != 1) ? "were" : "was"));
 
 	/* Recalculate bonuses */
@@ -1415,11 +1419,11 @@ bool enchant(object_type *o_ptr, int n, int eflag)
 	/* Failure */
 	if (!res) return (FALSE);
 
-	/* Recalculate bonuses */
-	player->upkeep->update |= (PU_BONUS);
+	/* Recalculate bonuses, gear */
+	player->upkeep->update |= (PU_BONUS | PU_INVEN);
 
-	/* Combine / Reorder the pack (later) */
-	player->upkeep->notice |= (PN_COMBINE | PN_REORDER | PN_SORT_QUIVER);
+	/* Combine the pack (later) */
+	player->upkeep->notice |= (PN_COMBINE);
 
 	/* Redraw stuff */
 	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP );
@@ -1513,25 +1517,27 @@ bool ident_spell(void)
 }
 
 /**
- * Return TRUE if there are any objects available to identify (whether on floor or in inventory/equip.
+ * Return TRUE if there are any objects available to identify (whether on
+ * floor or in gear)
  */
 bool spell_identify_unknown_available(void)
 {
 	int floor_list[MAX_FLOOR_STACK];
 	int floor_num;
 	int i;
-	bool unidentified_inventory = FALSE;
+	bool unidentified_gear = FALSE;
 
-	floor_num = scan_floor(floor_list, N_ELEMENTS(floor_list), player->py, player->px, 0x0B, item_tester_unknown);
+	floor_num = scan_floor(floor_list, N_ELEMENTS(floor_list), player->py,
+						   player->px, 0x0B, item_tester_unknown);
 
-	for (i = 0; i < ALL_INVEN_TOTAL; i++) {
+	for (i = 0; i < MAX_GEAR; i++) {
 		if (item_test(item_tester_unknown, i)) {
-			unidentified_inventory = TRUE;
+			unidentified_gear = TRUE;
 			break;
 		}
 	}
 
-	return unidentified_inventory || floor_num > 0;
+	return unidentified_gear || floor_num > 0;
 }
 
 /*
@@ -1621,8 +1627,11 @@ bool recharge(int spell_strength)
 		if (t > 0) o_ptr->pval += 2 + randint1(t);
 	}
 
-	/* Combine / Reorder the pack (later) */
-	player->upkeep->notice |= (PN_COMBINE | PN_REORDER);
+	/* Update the gear */
+	player->upkeep->update |= (PU_INVEN);
+
+	/* Combine the pack (later) */
+	player->upkeep->notice |= (PN_COMBINE);
 
 	/* Redraw stuff */
 	player->upkeep->redraw |= (PR_INVEN);
@@ -3125,11 +3134,10 @@ bool curse_armor(void)
 
 
 	/* Curse the body armor */
-	o_ptr = &player->inventory[INVEN_BODY];
+	o_ptr = equipped_item_by_slot_name(player, "body");
 
 	/* Nothing to curse */
 	if (!o_ptr->kind) return (FALSE);
-
 
 	/* Describe */
 	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_FULL);
@@ -3179,11 +3187,10 @@ bool curse_weapon(void)
 
 
 	/* Curse the weapon */
-	o_ptr = &player->inventory[INVEN_WIELD];
+	o_ptr = equipped_item_by_slot_name(player, "weapon");
 
 	/* Nothing to curse */
 	if (!o_ptr->kind) return (FALSE);
-
 
 	/* Describe */
 	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_FULL);
@@ -3271,8 +3278,11 @@ void brand_object(object_type *o_ptr, const char *name)
 		ego_apply_magic(o_ptr, 0);
 		object_notice_ego(o_ptr);
 
-		/* Combine / Reorder the pack (later) */
-		player->upkeep->notice |= (PN_COMBINE | PN_REORDER | PN_SORT_QUIVER);
+		/* Update the gear */
+		player->upkeep->update |= (PU_INVEN);
+
+		/* Combine the pack (later) */
+		player->upkeep->notice |= (PN_COMBINE);
 
 		/* Window stuff */
 		player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
@@ -3293,7 +3303,7 @@ void brand_object(object_type *o_ptr, const char *name)
  */
 void brand_weapon(void)
 {
-	object_type *o_ptr = &player->inventory[INVEN_WIELD];
+	object_type *o_ptr = equipped_item_by_slot_name(player, "weapon");
 
 	/* Select the brand */
 	const char *brand = one_in_(2) ? "Flame" : "Frost";
@@ -3437,12 +3447,10 @@ void do_ident_item(object_type *o_ptr)
 	char o_name[80];
 
 	u32b msg_type = 0;
-	int i, index;
+	int i, index, slot;
 	bool bad = TRUE;
-	object_type *original = ZNEW(object_type);
 
-    /* Identify and apply autoinscriptions. We use o_ptr here since it points to the inventory
-     * slot that the real object is in. o_ptr does NOT point to the object data itself. */
+    /* Identify and apply autoinscriptions. */
 	object_flavor_aware(o_ptr);
 	object_notice_everything(o_ptr);
 	apply_autoinscription(o_ptr);
@@ -3456,59 +3464,41 @@ void do_ident_item(object_type *o_ptr)
 	/* Window stuff */
 	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
 
-    /* Create a copy of the object for later reference, since o_ptr will remain the same after
-     * combinging and reordering. */
-    object_copy(original, o_ptr);
-
-    /* Force inventory cleanup so that we can display updated slot information in the message. */
-	combine_pack();
-	reorder_pack();
-	sort_quiver();
-
 	/* Description */
-	object_desc(o_name, sizeof(o_name), original, ODESC_PREFIX | ODESC_FULL);
+	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
 
 	/* Determine the message type. */
 	/* CC: we need to think more carefully about how we define "bad" with
 	 * multiple modifiers - currently using "all nonzero modifiers < 0" */
 	for (i = 0; i < OBJ_MOD_MAX; i++)
-		if (original->modifiers[i] > 0)
+		if (o_ptr->modifiers[i] > 0)
 			bad = FALSE;
 
 	if (bad)
 		msg_type = MSG_IDENT_BAD;
-	else if (original->artifact)
+	else if (o_ptr->artifact)
 		msg_type = MSG_IDENT_ART;
-	else if (original->ego)
+	else if (o_ptr->ego)
 		msg_type = MSG_IDENT_EGO;
 	else
 		msg_type = MSG_GENERIC;
 
 	/* Log artifacts to the history list. */
-	if (original->artifact)
-		history_add_artifact(original->artifact, TRUE, TRUE);
-
-	/* Get the index of the inventory slot that our real original object is in. */
-	index = inventory_index_matching_object(original);
-	FREE(original);
+	if (o_ptr->artifact)
+		history_add_artifact(o_ptr->artifact, TRUE, TRUE);
 
 	/* Describe */
-	if (index >= INVEN_WIELD)
-	{
+	index = object_gear_index(player, o_ptr);
+	slot = equipped_item_slot(player, index);
+	if (item_is_equipped(player, index)) {
 		/* Format and capitalise */
-		char *msg = format("%s: %s (%c).",
-			  describe_use(index), o_name, index_to_label(index));
+		char *msg = format("%s: %s (%c).", equip_describe(player, slot),
+						   o_name, index_to_label(index));
 		my_strcap(msg);
 
 		msgt(msg_type, msg);
-	}
-	else if (index >= 0)
-	{
-		msgt(msg_type, "In your pack: %s (%c).",
-			  o_name, index_to_label(index));
-	}
+	} else if (index != NO_OBJECT)
+		msgt(msg_type, "In your pack: %s (%c).", o_name, index_to_label(index));
 	else
-	{
 		msgt(msg_type, "On the ground: %s.", o_name);
-	}
 }

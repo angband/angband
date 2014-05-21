@@ -121,9 +121,9 @@ static void death_knowledge(void)
 
 	int i;
 
-	for (i = 0; i < ALL_INVEN_TOTAL; i++)
+	for (i = 0; i < MAX_GEAR; i++)
 	{
-		o_ptr = &player->inventory[i];
+		o_ptr = &player->gear[i];
 		if (!o_ptr->kind) continue;
 
 		object_flavor_aware(o_ptr);
@@ -348,7 +348,7 @@ static void death_examine(const char *title, int row)
 		textblock *tb;
 		region area = { 0, 0, 0, 0 };
 
-		object_type *o_ptr = &player->inventory[item];
+		object_type *o_ptr = &player->gear[item];
 
 		tb = object_info(o_ptr, OINFO_NONE);
 		object_desc(header, sizeof(header), o_ptr,

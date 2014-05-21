@@ -515,7 +515,7 @@ static bool store_sell(struct store *store)
 	o_ptr = object_from_item_idx(item);
 
 	/* Hack -- Cannot remove cursed objects */
-	if ((item >= INVEN_WIELD) && cursed_p(o_ptr->flags))
+	if (item_is_equipped(player, item) && cursed_p(o_ptr->flags))
 	{
 		/* Oops */
 		msg("Hmmm, it seems to be cursed.");

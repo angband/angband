@@ -2226,7 +2226,7 @@ bool obj_can_activate(const object_type *o_ptr)
  */
 bool obj_can_refill(const object_type *obj)
 {
-	const object_type *light = &player->inventory[INVEN_LIGHT];
+	const object_type *light = equipped_item_by_slot_name(player, "light");
 	bool no_fuel;
 
 	/* Need fuel? */
@@ -2274,7 +2274,7 @@ bool obj_can_takeoff(const object_type *o_ptr)
 /* Can only put on wieldable items */
 bool obj_can_wear(const object_type *o_ptr)
 {
-	return (wield_slot(o_ptr) >= INVEN_WIELD);
+	return (wield_slot(o_ptr) >= 0);
 }
 
 /* Can only fire an item with the right tval */
@@ -2357,7 +2357,7 @@ u16b object_effect(const object_type *o_ptr)
 object_type *object_from_item_idx(int item)
 {
 	if (item >= 0)
-		return &player->inventory[item];
+		return &player->gear[item];
 	else
 		return cave_object(cave, 0 - item);
 }
@@ -2427,16 +2427,16 @@ bool object_equals_object(const object_type *a, const object_type *b)
 }
 
 /**
- * Return the inventory index of an object that matches the given object.
+ * Return the gear index of an object that matches the given object.
  *
- * \returns A valid inventory index or -1 if the object cannot be found.
+ * \returns A valid gear index or -1 if the object cannot be found.
  */
-int inventory_index_matching_object(const object_type *o_ptr)
+int gear_index_matching_object(const object_type *o_ptr)
 {
 	int i;
 
-	for (i = 0; i < INVEN_TOTAL; i++) {
-		if (object_equals_object(o_ptr, &player->inventory[i]))
+	for (i = 0; i < MAX_GEAR; i++) {
+		if (object_equals_object(o_ptr, &player->gear[i]))
 			return i;
 	}
 
@@ -2469,7 +2469,7 @@ bool obj_can_fail(const struct object *o)
 }
 
 
-/*
+/**
  * Get a list of "valid" item indexes.
  *
  * Fills item_list[] with items that are "okay" as defined by the
@@ -2479,7 +2479,8 @@ bool obj_can_fail(const struct object *o)
  *
  * Returns the number of items placed into the list.
  *
- * Maximum space that can be used is [INVEN_TOTAL + MAX_FLOOR_STACK],
+ * Maximum space that can be used is
+ * [INVEN_PACK + QUIVER_SIZE + EQUIP_MAX_SLOTS + MAX_FLOOR_STACK],
  * though practically speaking much smaller numbers are likely.
  */
 int scan_items(int *item_list, size_t item_list_max, int mode, item_tester tester)
@@ -2498,17 +2499,23 @@ int scan_items(int *item_list, size_t item_list_max, int mode, item_tester teste
 	{
 		for (i = 0; i < INVEN_PACK && item_list_num < item_list_max; i++)
 		{
-			if (item_test(tester, i))
-				item_list[item_list_num++] = i;
+			if (item_test(tester, player->upkeep->inven[i]))
+				item_list[item_list_num++] = player->upkeep->inven[i];
 		}
 	}
 
 	if (use_equip)
 	{
-		for (i = INVEN_WIELD; i < ALL_INVEN_TOTAL && item_list_num < item_list_max; i++)
+		for (i = 0; i < player->body.count && item_list_num < item_list_max;i++)
 		{
-			if (item_test(tester, i))
-				item_list[item_list_num++] = i;
+			if (item_test(tester, slot_index(player, i)))
+				item_list[item_list_num++] = slot_index(player, i);
+		}
+
+		for (i = 0; i < QUIVER_SIZE && item_list_num < item_list_max; i++)
+		{
+			if (item_test(tester, player->upkeep->quiver[i]))
+				item_list[item_list_num++] = player->upkeep->quiver[i];
 		}
 	}
 
@@ -2532,7 +2539,7 @@ int scan_items(int *item_list, size_t item_list_max, int mode, item_tester teste
  */
 bool item_is_available(int item, bool (*tester)(const object_type *), int mode)
 {
-	int item_list[ALL_INVEN_TOTAL + MAX_FLOOR_STACK];
+	int item_list[INVEN_PACK + QUIVER_SIZE + EQUIP_MAX_SLOTS + MAX_FLOOR_STACK];
 	int item_num;
 	int i;
 

@@ -602,17 +602,18 @@ static int obj_known_blows(const object_type *o_ptr, int max_num, struct blow_in
 
 	player_state state;
 
-	object_type inven[INVEN_TOTAL];
+	object_type gear[MAX_GEAR];
+	int weapon_index = slot_index(player, slot_by_name(player, "weapon"));
 	int num = 0;
 
 	/* Not a weapon - no blows! */
 	if (!tval_is_melee_weapon(o_ptr)) return 0;
 
-	memcpy(inven, player->inventory, INVEN_TOTAL * sizeof(object_type));
-	inven[INVEN_WIELD] = *o_ptr;
+	memcpy(gear, player->gear, MAX_GEAR * sizeof(object_type));
+	gear[weapon_index] = *o_ptr;
 
 	/* Calculate the player's hypothetical state */
-	calc_bonuses(inven, &state, TRUE);
+	calc_bonuses(gear, &state, TRUE);
 
 	/* First entry is always the current num of blows. */
 	possible_blows[num].str_plus = 0;
@@ -630,11 +631,11 @@ static int obj_known_blows(const object_type *o_ptr, int max_num, struct blow_in
 
 	/* Then we need to look for extra blows on other items, as
 	 * state does not track these */
-	for (i = INVEN_BOW; i < INVEN_TOTAL; i++)
+	for (i = 0; i < player->body.count; i++)
 	{
-		object_type *helper = &player->inventory[i];
+		object_type *helper = equipped_item_by_slot(player, i);
 
-		if (!helper->kind)
+		if ((i == slot_by_name(player, "weapon")) || !helper->kind)
 			continue;
 
 		if (object_this_mod_is_visible(helper, OBJ_MOD_BLOWS))
@@ -764,23 +765,24 @@ static int obj_known_damage(const object_type *o_ptr, int *normal_damage,
 	int crit_mult, crit_div, crit_add;
 	int old_blows = 0;
 
-	object_type *bow = &player->inventory[INVEN_BOW];
+	object_type *bow = equipped_item_by_slot_name(player, "shooting");
 	bool weapon = tval_is_melee_weapon(o_ptr);
 	bool ammo   = (player->state.ammo_tval == o_ptr->tval) &&
 	              (bow->kind);
 	int multiplier = 1;
 
 	player_state state;
-	object_type inven[INVEN_TOTAL];
+	object_type gear[MAX_GEAR];
 	struct slay *s;
 	struct brand *b;
 	int num_slays;
 	int num_brands;
+	int weapon_index = slot_index(player, slot_by_name(player, "weapon"));
 
 	/* Calculate the player's hypothetical state */
-	memcpy(inven, player->inventory, INVEN_TOTAL * sizeof(object_type));
-	inven[INVEN_WIELD] = *o_ptr;
-	calc_bonuses(inven, &state, TRUE);
+	memcpy(gear, player->gear, MAX_GEAR * sizeof(object_type));
+	gear[weapon_index] = *o_ptr;
+	calc_bonuses(gear, &state, TRUE);
 
 	/* Use displayed dice if real dice not known */
 	if (object_attack_plusses_are_visible(o_ptr)) {
@@ -821,17 +823,18 @@ static int obj_known_damage(const object_type *o_ptr, int *normal_damage,
 	/* Melee weapons may get slays and brands from other items */
 	*nonweap_slay = FALSE;
 	if (weapon)	{
-		for (i = INVEN_LEFT; i < INVEN_TOTAL; i++) {
-			if (!player->inventory[i].kind)
+		for (i = 2; i < player->body.count; i++) {
+			struct object *obj = equipped_item_by_slot(player, i);
+			if (!obj->kind)
 				continue;
 
-			for (s = player->inventory[i].slays; s; s = s->next) {
+			for (s = obj->slays; s; s = s->next) {
 				if (s->known) {
 					*nonweap_slay = TRUE;
 					break;
 				}
 			}
-			for (b = player->inventory[i].brands; b; b = b->next) {
+			for (b = obj->brands; b; b = b->next) {
 				if (b->known) {
 					*nonweap_slay = TRUE;
 					break;
@@ -994,7 +997,7 @@ static bool describe_damage(textblock *tb, const object_type *o_ptr)
  */
 static void obj_known_misc_combat(const object_type *o_ptr, bool *thrown_effect, int *range, bool *impactful, int *break_chance, bool *too_heavy)
 {
-	object_type *bow = &player->inventory[INVEN_BOW];
+	object_type *bow = equipped_item_by_slot_name(player, "shooting");
 	bool weapon = tval_is_melee_weapon(o_ptr);
 	bool ammo   = (player->state.ammo_tval == o_ptr->tval) &&
 	              (bow->kind);
@@ -1025,13 +1028,14 @@ static void obj_known_misc_combat(const object_type *o_ptr, bool *thrown_effect,
 	/* Is the weapon too heavy? */
 	if (weapon) {
 		player_state state;
-		object_type inven[INVEN_TOTAL];
+		object_type gear[MAX_GEAR];
+		int weapon_index = slot_index(player, slot_by_name(player, "weapon"));
 
-		memcpy(inven, player->inventory, INVEN_TOTAL * sizeof(object_type));
-		inven[INVEN_WIELD] = *o_ptr;
+		memcpy(gear, player->gear, MAX_GEAR * sizeof(object_type));
+		gear[weapon_index] = *o_ptr;
 
 		/* Calculate the player's hypothetical state */
-		calc_bonuses(inven, &state, TRUE);
+		calc_bonuses(gear, &state, TRUE);
 
 		/* Warn about heavy weapons */
 		*too_heavy = state.heavy_wield;
@@ -1044,7 +1048,7 @@ static void obj_known_misc_combat(const object_type *o_ptr, bool *thrown_effect,
  */
 static bool describe_combat(textblock *tb, const object_type *o_ptr)
 {
-	object_type *bow = &player->inventory[INVEN_BOW];
+	object_type *bow = equipped_item_by_slot_name(player, "shooting");
 	bool weapon = tval_is_melee_weapon(o_ptr);
 	bool ammo   = (player->state.ammo_tval == o_ptr->tval) &&
 	              (bow->kind);
@@ -1100,13 +1104,13 @@ static bool describe_combat(textblock *tb, const object_type *o_ptr)
  * Returns FALSE if the object has no effect on digging, or if the specifics
  * are meaningless (i.e. the object is an ego template, not a real item).
  */
-static bool obj_known_digging(const object_type *o_ptr, int deciturns[])
+static bool obj_known_digging(object_type *o_ptr, int deciturns[])
 {
 	player_state st;
 
-	object_type inven[INVEN_TOTAL];
+	object_type gear[MAX_GEAR];
 
-	int sl = wield_slot(o_ptr);
+	int index = slot_index(player, wield_slot(o_ptr));
 	int i;
 
 	int chances[DIGGING_MAX];
@@ -1116,17 +1120,13 @@ static bool obj_known_digging(const object_type *o_ptr, int deciturns[])
 		 (o_ptr->modifiers[OBJ_MOD_TUNNEL] <= 0)))
 		return FALSE;
 
-	memcpy(inven, player->inventory, INVEN_TOTAL * sizeof(object_type));
+	memcpy(gear, player->gear, MAX_GEAR * sizeof(object_type));
 
-	/*
-	 * Hack -- if we examine a ring that is worn on the right finger,
-	 * we shouldn't put a copy of it on the left finger before calculating
-	 * digging skills.
-	 */
-	if (o_ptr != &player->inventory[INVEN_RIGHT])
-		inven[sl] = *o_ptr;
+	/* Simulate wearing, unless it's already worn */
+	if (!item_is_equipped(player, object_gear_index(player, o_ptr)))
+		gear[index] = *o_ptr;
 
-	calc_bonuses(inven, &st, TRUE);
+	calc_bonuses(gear, &st, TRUE);
 	calc_digging_chances(&st, chances); /* Out of 1600 */
 
 	for (i = DIGGING_RUBBLE; i < DIGGING_MAX; i++)
@@ -1148,7 +1148,7 @@ static bool describe_digger(textblock *tb, const object_type *o_ptr)
 	static const char *names[4] = { "rubble", "magma veins", "quartz veins", "granite" };
 
 	/* Get useful info or print nothing */
-	if (!obj_known_digging(o_ptr, deciturns)) return FALSE;
+	if (!obj_known_digging((object_type *)o_ptr, deciturns)) return FALSE;
 
 	for (i = DIGGING_RUBBLE; i < DIGGING_DOORS; i++)
 	{

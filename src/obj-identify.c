@@ -605,7 +605,7 @@ void object_notice_attack_plusses(object_type *o_ptr)
 		object_check_for_ident(o_ptr);
 
 
-	if (wield_slot(o_ptr) == INVEN_WIELD)
+	if (equipped_item_by_slot_name(player, "weapon") == o_ptr)
 	{
 		char o_name[80];
 
@@ -721,9 +721,11 @@ void object_notice_on_defend(struct player *p)
 {
 	int i;
 
-	for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
-		if (p->inventory[i].kind)
-			object_notice_defence_plusses(p, &p->inventory[i]);
+	for (i = 0; i < p->body.count; i++) {
+		struct object *obj = equipped_item_by_slot(p, i);
+		if (obj)
+			object_notice_defence_plusses(p, obj);
+	}
 
 	event_signal(EVENT_INVENTORY);
 	event_signal(EVENT_EQUIPMENT);
@@ -759,7 +761,7 @@ void object_notice_on_wield(object_type *o_ptr)
 	create_mask(obvious_mask, TRUE, OFID_WIELD, OFT_MAX);
 
 	/* special case FA, needed for mages wielding gloves */
-	if (player_has(PF_CUMBER_GLOVE) && wield_slot(o_ptr) == INVEN_HANDS &&
+	if (player_has(PF_CUMBER_GLOVE) && o_ptr->tval == TV_GLOVES &&
 		(o_ptr->modifiers[OBJ_MOD_DEX] <= 0) && 
 		!kf_has(o_ptr->kind->kind_flags, KF_SPELLS_OK))
 		of_on(obvious_mask, OF_FREE_ACT);
@@ -877,11 +879,11 @@ static void object_notice_after_time(void)
 	create_mask(timed_mask, TRUE, OFID_TIMED, OFT_MAX);
 
 	/* Check every item the player is wearing */
-	for (i = INVEN_WIELD; i < ALL_INVEN_TOTAL; i++)
+	for (i = 0; i < player->body.count; i++)
 	{
-		o_ptr = &player->inventory[i];
+		o_ptr = equipped_item_by_slot(player, i);
 
-		if (!o_ptr->kind || object_is_known(o_ptr)) continue;
+		if (object_is_known(o_ptr)) continue;
 
 		/* Check for timed notice flags */
 		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
@@ -929,11 +931,9 @@ void wieldeds_notice_flag(struct player *p, int flag)
 	if (!flag) return;
 
 	/* All wielded items eligible */
-	for (i = INVEN_WIELD; i < ALL_INVEN_TOTAL; i++)
+	for (i = 0; i < p->body.count; i++)
 	{
-		object_type *o_ptr = &p->inventory[i];
-
-		if (!o_ptr->kind) continue;
+		object_type *o_ptr = equipped_item_by_slot(p, i);
 
 		if (of_has(o_ptr->flags, flag) && !of_has(o_ptr->known_flags, flag))
 		{
@@ -974,11 +974,9 @@ void wieldeds_notice_element(struct player *p, int element)
 
 	if (element < 0 || element >= ELEM_MAX) return;
 
-	for (i = INVEN_WIELD; i < ALL_INVEN_TOTAL; i++)
+	for (i = 0; i < p->body.count; i++)
 	{
-		object_type *o_ptr = &p->inventory[i];
-
-		if (!o_ptr->kind) continue;
+		object_type *o_ptr = equipped_item_by_slot(p, i);
 
 		/* Already known */
 		if (o_ptr->el_info[element].flags & EL_INFO_KNOWN) continue;
@@ -1013,10 +1011,11 @@ void wieldeds_notice_to_hit_on_attack(void)
 {
 	int i;
 
-	for (i = INVEN_WIELD + 2; i < INVEN_TOTAL; i++)
-		if (player->inventory[i].kind &&
-		    player->inventory[i].to_h)
-			object_notice_attack_plusses(&player->inventory[i]);
+	for (i = 2; i < player->body.count; i++) {
+		struct object *obj = equipped_item_by_slot(player, i);
+		if (obj && obj->to_h)
+			object_notice_attack_plusses(obj);
+	}
 
 	return;
 }
@@ -1030,9 +1029,11 @@ void wieldeds_notice_on_attack(void)
 {
 	int i;
 
-	for (i = INVEN_WIELD + 2; i < INVEN_TOTAL; i++)
-		if (player->inventory[i].kind)
-			object_notice_attack_plusses(&player->inventory[i]);
+	for (i = 2; i < player->body.count; i++) {
+		struct object *obj = equipped_item_by_slot(player, i);
+		if (obj)
+			object_notice_attack_plusses(obj);
+	}
 
 	return;
 }
@@ -1120,7 +1121,7 @@ obj_pseudo_t object_pseudo(const object_type *o_ptr)
 	create_mask(f2, TRUE, OFID_WIELD, OFT_MAX);
 
 	/* FA on gloves is obvious to mage casters */
-	if (player_has(PF_CUMBER_GLOVE) && wield_slot(o_ptr) == INVEN_HANDS &&
+	if (player_has(PF_CUMBER_GLOVE) && o_ptr->tval == TV_GLOVES &&
 		(o_ptr->modifiers[OBJ_MOD_DEX] <= 0) && 
 		!kf_has(o_ptr->kind->kind_flags, KF_SPELLS_OK))
 		of_on(f2, OF_FREE_ACT);
@@ -1187,15 +1188,9 @@ void sense_inventory(void)
 	char o_name[80];
 	
 	unsigned int rate;
-	bool sensed_this_turn[ALL_INVEN_TOTAL];
 	
-	/* Nothing sensed yet */
-	for (i = 0; i < ALL_INVEN_TOTAL; i++)
-		sensed_this_turn[i] = FALSE;
-
 	/* No ID when confused in a bad state */
 	if (player->timed[TMD_CONFUSED]) return;
-
 
 	/* Notice some things after a while */
 	if (turn >= (object_last_wield + 3000))
@@ -1203,7 +1198,6 @@ void sense_inventory(void)
 		object_notice_after_time();
 		object_last_wield = 0;
 	}
-
 
 	/* Get improvement rate */
 	if (player_has(PF_PSEUDO_ID_IMPROV))
@@ -1214,68 +1208,38 @@ void sense_inventory(void)
 	/* Check if player may sense anything this time */
 	if (player->lev < 20 && !one_in_(rate)) return;
 
-	/*
-	 * Give each object one opportunity to have a chance at being sensed.
-	 * Because the inventory can be reordered in do_ident_item(),
-	 * we want to prevent objects from having more than one opportunity each
-	 * turn. This state is stored in the sensed_this_turn array. If the pack
-	 * is reordered, we start the loop over and skip objects that have had
-	 * their opportunity.
-	 *
-	 * Also, i is incremented at the top of the loop so that the conditions
-	 * can properly use "continue"; hence why we start at -1.
-	 */
-	i = -1;
-	while (i < ALL_INVEN_TOTAL - 1)
+	/* Give each object one opportunity to have a chance at being sensed. */
+	for (i = 0; i < MAX_GEAR; i++)
 	{
 		const char *text = NULL;
 		object_type *o_ptr;
 		obj_pseudo_t feel;
 		bool cursed;
-		bool okay = FALSE;
+		bool equipped = item_is_equipped(player, i);
 
-		i++;
-		o_ptr = &player->inventory[i];
+		o_ptr = &player->gear[i];
 
 		/* Skip empty slots */
 		if (!o_ptr->kind) continue;
 
-		/* Valid "tval" codes */
-		if (tval_is_weapon(o_ptr) || tval_is_armor(o_ptr))
-			okay = TRUE;
-
-		/* Skip non-sense machines */
-		if (!okay) continue;
+		/* Valid tval codes only */
+		if (!tval_is_weapon(o_ptr) && !tval_is_armor(o_ptr)) continue;
 		
 		/* It is known, no information needed */
 		if (object_is_known(o_ptr)) continue;
-
-		/* Do not allow an object to have more than one opportunity to have
-		 * a chance of being fully ID'd or sensed again. */
-		if (sensed_this_turn[i])
-			continue;
 
 		/* It has already been sensed, do not sense it again */
 		if (object_was_sensed(o_ptr))
 		{
 			/* Small chance of wielded, sensed items getting complete ID */
-			if (!o_ptr->artifact && (i >= INVEN_WIELD) && one_in_(1000)) {
-				/* Reset the loop to finish sensing. This item is now known,
-				 * and will be skipped on the next pass. */
+			if (!o_ptr->artifact && equipped && one_in_(1000))
 				do_ident_item(o_ptr);
-				i = -1;
-			}
 
 			continue;
 		}
 
-		/* Prevent objects, which pass or fail the sense check for this turn,
-		 * from getting another opportunity. */
-		sensed_this_turn[i] = TRUE;
-
 		/* Occasional failure on inventory items */
-		if ((i < INVEN_WIELD) && one_in_(5)) continue;
-
+		if (!equipped && one_in_(5)) continue;
 
 		/* Sense the object */
 		object_notice_sensing(o_ptr);
@@ -1302,17 +1266,17 @@ void sense_inventory(void)
 			msgt(MSG_PSEUDOID, "You feel the %s (%c) %s %s average...",
 				 o_name,
 				 index_to_label(i),
-				 ((i >= INVEN_WIELD) ? "you are using" : "in your pack"),
+				 equipped ? "you are using" : "in your pack",
 				 VERB_AGREEMENT(o_ptr->number, "is", "are"));
 		}
 		else
 		{
-			if (i >= INVEN_WIELD)
+			if (equipped)
 			{
 				msgt(MSG_PSEUDOID, "You feel the %s (%c) you are %s %s %s...",
 					 o_name,
 					 index_to_label(i),
-					 describe_use(i),
+					 equip_describe(player, equipped_item_slot(player, i)),
 					 VERB_AGREEMENT(o_ptr->number, "is", "are"),
 					 text);
 			}
@@ -1328,12 +1292,14 @@ void sense_inventory(void)
 
 
 		/* Set squelch flag as appropriate */
-		if (i < INVEN_WIELD)
+		if (!item_is_equipped(player, i))
 			player->upkeep->notice |= PN_SQUELCH;
 		
-		
-		/* Combine / Reorder the pack (later) */
-		player->upkeep->notice |= (PN_COMBINE | PN_REORDER | PN_SORT_QUIVER);
+		/* Update the gear */
+		player->upkeep->update |= (PU_INVEN);
+
+		/* Combine the pack (later) */
+		player->upkeep->notice |= (PN_COMBINE);
 		
 		/* Redraw stuff */
 		player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);

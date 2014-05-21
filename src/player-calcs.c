@@ -976,56 +976,73 @@ static bool earlier_object(struct object *orig, struct object *new)
 }
 
 /**
- * Put the player's inventory and quiver into easily accessible arrays.  We
- * assume (for now - NRM) the pack is not overfull
+ * Put the player's inventory and quiver into easily accessible arrays.  The
+ * pack may be overfull by one item
  */
-static void calc_inventory(struct player *p)
+static void calc_inventory(void)
 {
 	int i, gear_index, quiver_slots = 0, num_left = 0, index = 0;
 	bool possible[MAX_GEAR];
 
 	/* Pass through, eliminate equipped objects and non-objects */
 	for (i = 0; i < MAX_GEAR; i++) {
-		possible[i] = (!p->gear[i].kind || item_is_equipped(i)) ? FALSE : TRUE;
+		possible[i] = (!player->gear[i].kind || item_is_equipped(player, i))
+			? FALSE : TRUE;
 		if (possible[i]) num_left++;
 	}
 
 	/* Fill the quiver */
-	while (quiver_slots < 10) {
+	player->upkeep->quiver_cnt = 0;
+	while (quiver_slots < QUIVER_SIZE) {
 		struct object *first = NULL;
 
 		/* Find the first quiver object not yet allocated */
 		for (i = 0; i < MAX_GEAR; i++) {
-			struct object *current = &p->gear[i];
+			struct object *current = &player->gear[i];
 			if (!possible[i]) continue;
 			if (!tval_is_ammo(current)) continue;
-			if (earlier_object(first, current))
+			if (earlier_object(first, current)) {
+				first = current;
 				gear_index = i;
+			}
 		}
 
-		/* If there is one allocate it, otherwise we're done with the quiver */
+		/* If there is one allocate it, otherwise fill with MAX_GEAR */
 		if (first) {
-			p->upkeep->quiver[quiver_slots++] = gear_index;
+			player->upkeep->quiver[quiver_slots++] = gear_index;
+			player->upkeep->quiver_cnt += player->gear[gear_index].number;
 			num_left--;
+			possible[gear_index] = FALSE;
 		}
 		else
-			break;
+			player->upkeep->quiver[quiver_slots++] = NO_OBJECT;
 	}
 
 	/* Fill the inventory */
-	while (num_left) {
+	player->upkeep->inven_cnt = 0;
+	while ((num_left > 0) || (index <= INVEN_PACK)) {
 		struct object *first = NULL;
+
+		/* Set to default for empty slots */
+		gear_index = NO_OBJECT;
 
 		/* Find the first quiver object not yet allocated */
 		for (i = 0; i < MAX_GEAR; i++) {
-			struct object *current = &p->gear[i];
+			struct object *current = &player->gear[i];
 			if (!possible[i]) continue;
-			if (earlier_object(first, current))
+			if (earlier_object(first, current)) {
+				first = current;
 				gear_index = i;
+			}
 		}
 		/* Allocate */
-		p->upkeep->inven[index++] = gear_index;
+		player->upkeep->inven[index++] = gear_index;
+		player->upkeep->inven_cnt++;
 		num_left--;
+		possible[gear_index] = FALSE;
+
+		/* Ensure legality */
+		assert((index <= INVEN_PACK) || (num_left <= 0));
 	}
 }
 
@@ -1238,7 +1255,7 @@ static void calc_spells(void)
  */
 static void calc_mana(void)
 {
-	int msp, levels, cur_wgt, max_wgt;
+	int i, msp, levels, cur_wgt, max_wgt;
 
 	object_type *o_ptr;
 
@@ -1259,7 +1276,8 @@ static void calc_mana(void)
 	if (levels > 0)
 	{
 		msp = 1;
-		msp += adj_mag_mana[player->state.stat_ind[player->class->spell_stat]] * levels / 100;
+		msp += adj_mag_mana[player->state.stat_ind[player->class->spell_stat]]
+			* levels / 100;
 	}
 	else
 	{
@@ -1274,7 +1292,7 @@ static void calc_mana(void)
 		player->state.cumber_glove = FALSE;
 
 		/* Get the gloves */
-		o_ptr = &player->inventory[INVEN_HANDS];
+		o_ptr = equipped_item_by_slot_name(player, "hands");
 
 		/* Normal gloves hurt mage-type spells */
 		if (o_ptr->kind &&
@@ -1295,12 +1313,17 @@ static void calc_mana(void)
 
 	/* Weigh the armor */
 	cur_wgt = 0;
-	cur_wgt += player->inventory[INVEN_BODY].weight;
-	cur_wgt += player->inventory[INVEN_HEAD].weight;
-	cur_wgt += player->inventory[INVEN_ARM].weight;
-	cur_wgt += player->inventory[INVEN_OUTER].weight;
-	cur_wgt += player->inventory[INVEN_HANDS].weight;
-	cur_wgt += player->inventory[INVEN_FEET].weight;
+	for (i = 0; i < player->body.count; i++) {
+		/* Ignore non-armor */
+		if (slot_type_is(i, EQUIP_WEAPON)) continue;
+		if (slot_type_is(i, EQUIP_BOW)) continue;
+		if (slot_type_is(i, EQUIP_RING)) continue;
+		if (slot_type_is(i, EQUIP_AMULET)) continue;
+		if (slot_type_is(i, EQUIP_LIGHT)) continue;
+
+		/* Add weight */
+		cur_wgt += equipped_item_by_slot(player, i)->weight;
+	}
 
 	/* Determine the weight allowance */
 	max_wgt = player->class->spell_weight;
@@ -1433,9 +1456,9 @@ static void calc_torch(void)
 	}
 
 	/* Examine all wielded objects, use the brightest */
-	for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)	{
+	for (i = 0; i < player->body.count; i++)	{
 		int amt = 0;
-		object_type *o_ptr = &player->inventory[i];
+		object_type *o_ptr = equipped_item_by_slot(player, i);
 
 		/* Skip empty slots */
 		if (!o_ptr->kind) continue;
@@ -1583,7 +1606,7 @@ int weight_remaining(void)
  * information of objects; thus it returns what the player _knows_
  * the character state to be.
  */
-void calc_bonuses(object_type inventory[], player_state *state, bool known_only)
+void calc_bonuses(object_type gear[], player_state *state, bool known_only)
 {
 	int i, j, hold;
 
@@ -1634,9 +1657,9 @@ void calc_bonuses(object_type inventory[], player_state *state, bool known_only)
 	/*** Analyze equipment ***/
 
 	/* Scan the equipment */
-	for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
+	for (i = 0; i < player->body.count; i++)
 	{
-		o_ptr = &inventory[i];
+		o_ptr = equipped_item_by_slot(player, i);
 
 		/* Skip non-objects */
 		if (!o_ptr->kind) continue;
@@ -1707,8 +1730,8 @@ void calc_bonuses(object_type inventory[], player_state *state, bool known_only)
 			state->to_a += o_ptr->to_a;
 
 		/* Do not apply weapon and bow bonuses until combat calculations */
-		if (i == INVEN_WIELD) continue;
-		if (i == INVEN_BOW) continue;
+		if (slot_type_is(i, EQUIP_WEAPON)) continue;
+		if (slot_type_is(i, EQUIP_BOW)) continue;
 
 		/* Apply the bonuses to hit/damage */
 		if (!known_only || object_is_known(o_ptr) ||
@@ -1981,7 +2004,7 @@ void calc_bonuses(object_type inventory[], player_state *state, bool known_only)
 	/*** Analyze current bow ***/
 
 	/* Examine the "current bow" */
-	o_ptr = &inventory[INVEN_BOW];
+	o_ptr = equipped_item_by_slot_name(player, "shooting");
 
 	/* Assume not heavy */
 	state->heavy_shoot = FALSE;
@@ -2075,7 +2098,7 @@ void calc_bonuses(object_type inventory[], player_state *state, bool known_only)
 	/*** Analyze weapon ***/
 
 	/* Examine the "current weapon" */
-	o_ptr = &inventory[INVEN_WIELD];
+	o_ptr = equipped_item_by_slot_name(player, "weapon");
 
 	/* Assume not heavy */
 	state->heavy_wield = FALSE;
@@ -2137,8 +2160,8 @@ static void update_bonuses(void)
 
 	/*** Calculate bonuses ***/
 
-	calc_bonuses(player->inventory, &player->state, FALSE);
-	calc_bonuses(player->inventory, &player->known_state, TRUE);
+	calc_bonuses(player->gear, &player->state, FALSE);
+	calc_bonuses(player->gear, &player->known_state, TRUE);
 
 
 	/*** Notice changes ***/
@@ -2228,7 +2251,7 @@ static void update_bonuses(void)
 		/* Message */
 		if (state->heavy_shoot)
 			msg("You have trouble wielding such a heavy bow.");
-		else if (player->inventory[INVEN_BOW].kind)
+		else if (equipped_item_by_slot_name(player, "shooting")->kind)
 			msg("You have no trouble wielding your bow.");
 		else
 			msg("You feel relieved to put down your heavy bow.");
@@ -2240,7 +2263,7 @@ static void update_bonuses(void)
 		/* Message */
 		if (state->heavy_wield)
 			msg("You have trouble wielding such a heavy weapon.");
-		else if (player->inventory[INVEN_WIELD].kind)
+		else if (equipped_item_by_slot_name(player, "weapon")->kind)
 			msg("You have no trouble wielding your weapon.");
 		else
 			msg("You feel relieved to put down your heavy weapon.");	
@@ -2252,7 +2275,7 @@ static void update_bonuses(void)
 		/* Message */
 		if (state->icky_wield)
 			msg("You do not feel comfortable with your weapon.");
-		else if (player->inventory[INVEN_WIELD].kind)
+		else if (equipped_item_by_slot_name(player, "weapon")->kind)
 			msg("You feel comfortable with your weapon.");
 		else
 			msg("You feel more comfortable after removing your weapon.");
@@ -2348,20 +2371,6 @@ void notice_stuff(struct player_upkeep *upkeep)
 		combine_pack();
 	}
 
-	/* Reorder the pack */
-	if (upkeep->notice & PN_REORDER)
-	{
-		upkeep->notice &= ~(PN_REORDER);
-		reorder_pack();
-	}
-
-	/* Sort the quiver */
-	if (upkeep->notice & PN_SORT_QUIVER)
-	{
-		upkeep->notice &= ~(PN_SORT_QUIVER);
-		sort_quiver();
-	}
-
 	/* Dump the monster messages */
 	if (upkeep->notice & PN_MON_MESSAGE)
 	{
@@ -2380,6 +2389,12 @@ void update_stuff(struct player_upkeep *upkeep)
 	/* Update stuff */
 	if (!upkeep->update) return;
 
+
+	if (upkeep->update & (PU_INVEN))
+	{
+		upkeep->update &= ~(PU_INVEN);
+		calc_inventory();
+	}
 
 	if (upkeep->update & (PU_BONUS))
 	{

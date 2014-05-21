@@ -24,6 +24,7 @@
 #include "mon-make.h"
 #include "monster.h"
 #include "object.h"
+#include "obj-gear.h"
 #include "option.h"
 #include "quest.h"
 #include "savefile.h"
@@ -471,6 +472,14 @@ void wr_player(void)
 	wr_s16b(0);
 	wr_u32b(player->au_birth);
 
+	/* Player body */
+	wr_string(player->body.name);
+	wr_u16b(player->body.count);
+	for (i = 0; i < player->body.count; i++) {
+		wr_u16b(player->body.slots[i].type);
+		wr_string(player->body.slots[i].name);
+	}
+
 	/* Padding */
 	wr_u32b(0);
 
@@ -629,29 +638,6 @@ void wr_player_spells(void)
 }
 
 
-void wr_inventory(void)
-{
-	int i;
-
-	/* Write the inventory */
-	for (i = 0; i < ALL_INVEN_TOTAL; i++)
-	{
-		object_type *o_ptr = &player->inventory[i];
-
-		/* Skip non-objects */
-		if (!o_ptr->kind) continue;
-
-		/* Dump index */
-		wr_u16b((u16b)i);
-
-		/* Dump object */
-		wr_item(o_ptr);
-	}
-
-	/* Add a sentinel */
-	wr_u16b(0xFFFF);
-}
-
 void wr_gear(void)
 {
 	int i;
@@ -671,6 +657,12 @@ void wr_gear(void)
 
 		/* Dump object */
 		wr_item(o_ptr);
+
+		/* Marker for equipment */
+		if (item_is_equipped(player, i))
+			wr_byte(1);
+		else
+			wr_byte(0);
 	}
 
 	/* Add a sentinel */

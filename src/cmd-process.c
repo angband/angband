@@ -24,6 +24,7 @@
 #include "files.h"
 #include "keymap.h"
 #include "monster.h"
+#include "obj-gear.h"
 #include "obj-util.h"
 #include "player-timed.h"
 #include "player-util.h"
@@ -834,12 +835,12 @@ bool key_confirm_command(unsigned char c)
 	int i;
 
 	/* Hack -- Scan equipment */
-	for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
+	for (i = 0; i < player->body.count; i++)
 	{
 		char verify_inscrip[] = "^*";
 		unsigned n;
 
-		object_type *o_ptr = &player->inventory[i];
+		object_type *o_ptr = equipped_item_by_slot(player, i);
 		if (!o_ptr->kind) continue;
 
 		/* Set up string to look for, e.g. "^d" */

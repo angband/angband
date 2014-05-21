@@ -26,56 +26,6 @@
 
 #define BTH_PLUS_ADJ    	3 		/* Adjust BTH per plus-to-hit */
 
-/** Inventory **/
-
-/*
- * Maximum number of "normal" pack slots, and the index of the "overflow"
- * slot, which can hold an item, but only temporarily, since it causes the
- * pack to "overflow", dropping the "last" item onto the ground.  Since this
- * value is used as an actual slot, it must be less than "INVEN_WIELD" (below).
- * Note that "INVEN_PACK" is probably hard-coded by its use in savefiles, and
- * by the fact that the screen can only show 23 items plus a one-line prompt.
- */
-
-/*
- * Like the previous but takes into account the (variably full quiver).
- */
-#define INVEN_MAX_PACK  (INVEN_PACK - player->upkeep->quiver_slots)
-
-/*
- * Indexes used for various "equipment" slots (hard-coded by savefiles, etc).
- */
-#define INVEN_WIELD	24
-#define INVEN_BOW       25
-#define INVEN_LEFT      26
-#define INVEN_RIGHT     27
-#define INVEN_NECK      28
-#define INVEN_LIGHT     29
-#define INVEN_BODY      30
-#define INVEN_OUTER     31
-#define INVEN_ARM       32
-#define INVEN_HEAD      33
-#define INVEN_HANDS     34
-#define INVEN_FEET      35
-
-/*
- * Total number of inventory slots (hard-coded).
- */
-#define INVEN_TOTAL	36
-
-
-/* Quiver */
-#define QUIVER_START 	37
-#define QUIVER_END   	47
-
-#define ALL_INVEN_TOTAL 47
-/* Since no item index can have this value, use it to mean
- * "no object", so that 0 can be a valid index. */
-#define NO_OBJECT		(ALL_INVEN_TOTAL+1)
-
-#define EQUIP_MAX_SLOTS	12
-
-
 /** Sexes **/
 
 /* Maximum number of player "sex" types (see "table.c", etc) */
@@ -126,15 +76,15 @@ enum
 #define NOSCORE_JUMPING     0x0010
 
 struct equip_slot {
-	int type;
-	const char *name;
+	u16b type;
+	char *name;
 	int index;
 };
 
 struct player_body {
 	struct player_body *next;
-	const char *name;
-	int count;
+	char *name;
+	u16b count;
 	struct equip_slot slots[EQUIP_MAX_SLOTS];
 };
 

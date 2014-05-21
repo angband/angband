@@ -8,7 +8,7 @@
 #include "obj-util.h"
 
 int setup_tests(void **state) {
-    player->inventory = &test_inven[0];
+    player->gear = &test_inven[0];
     return 0;
 }
 
@@ -17,7 +17,7 @@ NOTEARDOWN
 /* Regression test for #1661 */
 int test_obj_can_refill(void *state) {
     struct object obj_torch, obj_lantern, obj_candidate;
-    object_type *light_ptr = &player->inventory[INVEN_LIGHT];
+    object_type *light_ptr = equipped_item_by_slot_name(player, "light");
 
     /* Torches cannot be refilled */
     object_prep(&obj_torch, &test_torch, 1, AVERAGE);

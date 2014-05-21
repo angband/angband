@@ -208,34 +208,19 @@ static bool auto_pickup_okay(const object_type *o_ptr)
  */
 static void py_pickup_aux(int o_idx, bool domsg)
 {
-	int slot, quiver_slot = 0;
+	int index;
 
 	char o_name[80];
 	object_type *o_ptr = cave_object(cave, o_idx);
 
 	/* Carry the object */
-	slot = inven_carry(player, o_ptr);
+	index = inven_carry(player, o_ptr);
 
 	/* Handle errors (paranoia) */
-	if (slot < 0) return;
-
-	/* If we have picked up ammo which matches something in the quiver, note
-	 * that it so that we can wield it later (and suppress pick up message) */
-	if (tval_is_ammo(o_ptr))
-	{
-		int i;
-		for (i = QUIVER_START; i < QUIVER_END; i++) 
-		{
-			if (!player->inventory[i].kind) continue;
-			if (!object_similar(&player->inventory[i], o_ptr,
-				OSTACK_QUIVER)) continue;
-			quiver_slot = i;
-			break;
-		}
-	}
+	if (index < 0) return;
 
 	/* Get the new object */
-	o_ptr = &player->inventory[slot];
+	o_ptr = &player->gear[index];
 
 	/* Set squelch status */
 	player->upkeep->notice |= PN_SQUELCH;
@@ -248,26 +233,23 @@ static void py_pickup_aux(int o_idx, bool domsg)
 		history_add_artifact(o_ptr->artifact, object_is_known(o_ptr), TRUE);
 
 	/* Optionally, display a message */
-	if (domsg && !quiver_slot)
+	if (domsg)
 	{
 		/* Describe the object */
 		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
 
 		/* Message */
-		msg("You have %s (%c).", o_name, index_to_label(slot));
+		msg("You have %s (%c).", o_name, index_to_label(index));
 	}
 
 	/* Update object_idx if necessary */
 	if (tracked_object_is(player->upkeep, 0 - o_idx))
 	{
-		track_object(player->upkeep, slot);
+		track_object(player->upkeep, index);
 	}
 
 	/* Delete the object */
 	delete_object_idx(o_idx);
-
-	/* If we have a quiver slot that this ammo matches, use it */
-	if (quiver_slot) wield_item(o_ptr, slot, quiver_slot);
 }
 
 int do_autopickup(void)
