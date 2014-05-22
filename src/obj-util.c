@@ -1193,6 +1193,12 @@ bool object_stackable(const object_type *o_ptr, const object_type *j_ptr,
 {
 	int i;
 
+	/* Equipment items don't stack */
+	if (item_is_equipped(player, object_gear_index(player, o_ptr)))
+		return FALSE;
+	if (item_is_equipped(player, object_gear_index(player, j_ptr)))
+		return FALSE;
+
 	/* If either item is unknown, do not stack */
 	if (mode & OSTACK_LIST && o_ptr->marked == MARK_AWARE) return FALSE;
 	if (mode & OSTACK_LIST && j_ptr->marked == MARK_AWARE) return FALSE;
@@ -1380,7 +1386,7 @@ void object_absorb_partial(object_type *o_ptr, object_type *j_ptr)
 /**
  * Merge two stacks into one stack.
  */
-void object_absorb(object_type *o_ptr, const object_type *j_ptr)
+void object_absorb(object_type *o_ptr, object_type *j_ptr)
 {
 	int total = o_ptr->number + j_ptr->number;
 
@@ -1388,6 +1394,7 @@ void object_absorb(object_type *o_ptr, const object_type *j_ptr)
 	o_ptr->number = ((total < MAX_STACK_SIZE) ? total : (MAX_STACK_SIZE - 1));
 
 	object_absorb_merge(o_ptr, j_ptr);
+	object_wipe(j_ptr);
 }
 
 /*

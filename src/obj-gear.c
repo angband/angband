@@ -331,6 +331,8 @@ int equipped_item_slot(struct player *p, int item)
 {
 	int i;
 
+	if (item == NO_OBJECT) return p->body.count;
+
 	/* Look for an equipment slot with this item */
 	for (i = 0; i < p->body.count; i++)
 		if (item == p->body.slots[i].index) break;
@@ -344,14 +346,14 @@ bool item_is_equipped(struct player *p, int item)
 	return (equipped_item_slot(p, item) < p->body.count) ? TRUE : FALSE;
 }
 
-int object_gear_index(struct player *p, struct object *obj)
+int object_gear_index(struct player *p, const struct object *obj)
 {
 	int i;
 
 	for (i = 0; i < MAX_GEAR; i++)
 		if (obj == &p->gear[i]) break;
 
-	return i;
+	return i < MAX_GEAR ? i : 0;
 }
 
 int pack_slots_used(struct player *p)
@@ -716,6 +718,27 @@ bool inven_stack_okay(const object_type *o_ptr)
 	return TRUE;
 }
 
+int gear_find_slot(struct player *p)
+{
+	int j;
+
+	object_type *j_ptr;
+
+	/* Find an empty slot */
+	for (j = 0; j < MAX_GEAR; j++)
+	{
+		/* 0 is the NO_OBJECT slot.
+		 * This line and comment are to emphasise that */
+		if (j == NO_OBJECT) continue;
+
+		j_ptr = &p->gear[j];
+		if (!j_ptr->kind) break;
+	}
+
+	/* Use that slot */
+	return j;
+}
+
 /**
  * Add an item to the players inventory, and return the gear index used.
  *
@@ -733,7 +756,7 @@ bool inven_stack_okay(const object_type *o_ptr)
  * Note that this code must remove any location/stack information
  * from the object once it is placed into the inventory.
  */
-extern s16b inven_carry(struct player *p, struct object *o)
+s16b inven_carry(struct player *p, struct object *o)
 {
 	int i, j;
 
@@ -773,21 +796,10 @@ extern s16b inven_carry(struct player *p, struct object *o)
 	if (pack_slots_used(p) > INVEN_PACK) return (-1);
 
 	/* Find an empty slot */
-	for (j = 0; j < MAX_GEAR; j++)
-	{
-		/* 0 is the NO_OBJECT slot.
-		 * This line and comment are to emphasise that */
-		if (j == NO_OBJECT) continue;
+	i = gear_find_slot(p);
 
-		j_ptr = &p->gear[j];
-		if (!j_ptr->kind) break;
-	}
-
-	/* Use that slot */
-	i = j;
-
+	/* Copy and point to the new slot */
 	object_copy(&p->gear[i], o);
-
 	j_ptr = &p->gear[i];
 
 	/* Remove cave object details */

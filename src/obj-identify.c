@@ -723,7 +723,7 @@ void object_notice_on_defend(struct player *p)
 
 	for (i = 0; i < p->body.count; i++) {
 		struct object *obj = equipped_item_by_slot(p, i);
-		if (obj)
+		if (obj && obj->kind)
 			object_notice_defence_plusses(p, obj);
 	}
 
@@ -882,6 +882,7 @@ static void object_notice_after_time(void)
 	for (i = 0; i < player->body.count; i++)
 	{
 		o_ptr = equipped_item_by_slot(player, i);
+		if (!o_ptr->kind) continue;
 
 		if (object_is_known(o_ptr)) continue;
 

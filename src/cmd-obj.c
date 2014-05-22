@@ -290,10 +290,12 @@ void do_cmd_takeoff(struct command *cmd)
 void wield_item(object_type *o_ptr, int item, int slot)
 {
 	object_type object_type_body;
-	object_type *i_ptr = &object_type_body;
+	object_type *i_ptr = NULL;
 
 	const char *fmt;
 	char o_name[80];
+
+	int new_item = 0;
 
 	bool track_wielded_item = FALSE;
 
@@ -304,14 +306,22 @@ void wield_item(object_type *o_ptr, int item, int slot)
 	/* Take a turn */
 	player->upkeep->energy_use = 100;
 
-	/* Obtain local object if needed */
-	if (item < 0 || o_ptr->number > 1) {
+	/* Obtain local object if it's a floor item */
+	if (item < 0) {
+		i_ptr = &object_type_body;
 		object_copy(i_ptr, o_ptr);
 
 		/* Modify quantity */
 		i_ptr->number = 1;
-	} else
-		i_ptr = NULL;
+	} else if (o_ptr->number > 1) {
+		/* Inventory objects need to be split */
+		new_item = gear_find_slot(player);
+
+		object_copy(&player->gear[new_item], o_ptr);
+
+		/* Modify quantity */
+		player->gear[new_item].number = 1;
+	}
 
 	/* Update object_idx if necessary, once object is in slot */
 	if (tracked_object_is(player->upkeep, item))
@@ -319,25 +329,32 @@ void wield_item(object_type *o_ptr, int item, int slot)
 		track_wielded_item = TRUE;
 	}
 
-	/* Decrease the item (from the floor or inventory) */
+	/* Decrease the old item quantity */
 	if (item < 0)
 	{
+		/* Floor... */
 		floor_item_increase(0 - item, -1);
 		floor_item_optimize(0 - item);
 	} else if (o_ptr->number > 1) {
+		/* ...or if we had to split the object */
 		inven_item_increase(item, -1);
 	}
 
 	/* Wear the new stuff */
 	if (i_ptr)
+		/* Floor item */
 		player->body.slots[slot].index = inven_carry(player, i_ptr);
+	else if (new_item)
+		/* Newly split item */
+		player->body.slots[slot].index = new_item;
 	else
+		/* Just label the original item */
 		player->body.slots[slot].index = item;
 
 	/* Point at the newly equipped item */
 	o_ptr = equipped_item_by_slot(player, slot);
 	
-	/* Increase the weight - needs checking NRM*/
+	/* Increase the weight */
 	if (item < 0)
 		player->upkeep->total_weight += i_ptr->weight * i_ptr->number;
 
@@ -411,7 +428,8 @@ void do_cmd_wield(struct command *cmd)
 	 * but in some cases we need to ask the user which slot they actually
 	 * want to replace */
 	slot = wield_slot(o_ptr);
-	if (equipped_item_by_slot(player, slot)) {
+	equip_o_ptr = equipped_item_by_slot(player, slot);
+	if (equip_o_ptr->kind) {
 		if (tval_is_ring(o_ptr) && cmd_get_item(cmd, "replace", &slot,
 					/* Prompt */ "Replace which ring? ",
 					/* Error  */ "Error in do_cmd_wield(), please report.",
@@ -420,10 +438,8 @@ void do_cmd_wield(struct command *cmd)
 				return;
 	}
 
-	equip_o_ptr = equipped_item_by_slot(player, slot);
-
 	/* If the slot is open, wield and be done */
-	if (equip_o_ptr) {
+	if (!equip_o_ptr->kind) {
 		wield_item(o_ptr, item, slot);
 		return;
 	}

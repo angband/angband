@@ -61,7 +61,7 @@ bool object_stackable(const object_type *o_ptr, const object_type *j_ptr,
 bool object_similar(const object_type *o_ptr, const object_type *j_ptr,
 					object_stack_t mode);
 void object_absorb_partial(object_type *o_ptr, object_type *j_ptr);
-void object_absorb(object_type *o_ptr, const object_type *j_ptr);
+void object_absorb(object_type *o_ptr, object_type *j_ptr);
 void object_wipe(object_type *o_ptr);
 void object_copy(object_type *o_ptr, const object_type *j_ptr);
 void object_copy_amt(object_type *dst, object_type *src, int amt);
