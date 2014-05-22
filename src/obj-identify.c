@@ -1011,8 +1011,10 @@ void wieldeds_notice_to_hit_on_attack(void)
 {
 	int i;
 
-	for (i = 2; i < player->body.count; i++) {
+	for (i = 0; i < player->body.count; i++) {
 		struct object *obj = equipped_item_by_slot(player, i);
+		if (i == slot_by_name(player, "weapon")) continue;
+		if (i == slot_by_name(player, "bow")) continue;
 		if (obj && obj->to_h)
 			object_notice_attack_plusses(obj);
 	}
@@ -1029,9 +1031,11 @@ void wieldeds_notice_on_attack(void)
 {
 	int i;
 
-	for (i = 2; i < player->body.count; i++) {
+	for (i = 0; i < player->body.count; i++) {
 		struct object *obj = equipped_item_by_slot(player, i);
-		if (obj)
+		if (i == slot_by_name(player, "weapon")) continue;
+		if (i == slot_by_name(player, "bow")) continue;
+		if (obj->kind)
 			object_notice_attack_plusses(obj);
 	}
 

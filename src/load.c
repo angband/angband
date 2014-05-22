@@ -676,6 +676,7 @@ int rd_player(void)
 	int i;
 	byte num;
 	byte a_max = 0;
+	char buf[80];
 
 	rd_string(op_ptr->full_name, sizeof(op_ptr->full_name));
 	rd_string(player->died_from, 80);
@@ -730,7 +731,8 @@ int rd_player(void)
 	rd_s32b(&player->au_birth);
 
 	/* Player body */
-	rd_string(player->body.name, 80);
+	rd_string(buf, sizeof(buf));
+	player->body.name = string_make(buf);
 	rd_u16b(&player->body.count);
 
 	/* Incompatible save files */
@@ -742,7 +744,8 @@ int rd_player(void)
 
 	for (i = 0; i < player->body.count; i++) {
 		rd_u16b(&player->body.slots[i].type);
-		rd_string(player->body.slots[i].name, 80);
+		rd_string(buf, sizeof(buf));
+		player->body.slots[i].name = string_make(buf);
 	}
 
 	strip_bytes(4);
