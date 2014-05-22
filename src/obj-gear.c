@@ -283,7 +283,7 @@ int slot_by_type(struct player *p, int type, bool full)
 	int i, fallback = p->body.count;
 
 	/* Look for a correct slot type */
-	for (i = 0; i < p->body.count; i++)
+	for (i = 0; i < p->body.count; i++) {
 		if (type == p->body.slots[i].type) {
 			if (full) {
 				/* Found a full slot */
@@ -296,6 +296,7 @@ int slot_by_type(struct player *p, int type, bool full)
 			if (fallback == p->body.count)
 				fallback = i;
 		}
+	}
 
 	/* Index for the best slot we found, or p->body.count if none found  */
 	return (i != p->body.count) ? i : fallback;

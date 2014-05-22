@@ -992,7 +992,7 @@ int rd_player_spells(void)
  */
 static int rd_gear_aux(rd_item_t rd_item_version)
 {
-	int slot = 0;
+	int slot = 1;
 
 	object_type *i_ptr;
 	object_type object_type_body;
@@ -1043,8 +1043,10 @@ static int rd_gear_aux(rd_item_t rd_item_version)
 
 		/* Is it equipment? */
 		rd_byte(&equip);
-		if (equip)
+		if (equip) {
 			player->body.slots[wield_slot(i_ptr)].index = n;
+			player->upkeep->equip_cnt++;
+		}
 	}
 
 	/* Success */
