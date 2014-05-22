@@ -537,7 +537,7 @@ static size_t obj_desc_charges(const object_type *o_ptr, char *buf, size_t max,
 	/* Charging things */
 	else if (o_ptr->timeout > 0)
 	{
-		if (o_ptr->number > 1)
+		if (tval_is_rod(o_ptr) && o_ptr->number > 1)
 		{
 			strnfcat(buf, max, &end, " (%d charging)", number_charging(o_ptr));
 		}
