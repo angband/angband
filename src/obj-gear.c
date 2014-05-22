@@ -98,7 +98,7 @@ s16b label_to_equip(int c)
 		return object_gear_index(player, equipped_item_by_slot(player, i));
 
 	/* Quiver */
-	i -= QUIVER_SIZE;
+	i -= player->body.count;
 
 	/* Empty slots can never be chosen */
 	if (!player->gear[player->upkeep->quiver[i]].kind) return (-1);

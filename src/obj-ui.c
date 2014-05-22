@@ -369,7 +369,7 @@ void show_quiver(int mode, int start, item_tester tester)
 		/* Acceptable items get a label */
 		if (object_test(tester, o_ptr))
 			strnfmt(labels[num_obj], sizeof(labels[num_obj]), "%c) ",
-					index_to_label(i));
+					index_to_label(i + 1 + player->body.count));
 
 		/* Unacceptable items are still sometimes shown */
 		else if (in_term)
@@ -973,12 +973,31 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd,
 			strnfmt(out_val, sizeof(out_val), "Equip:");
 
 			/* List choices */
-			if ((e1 <= e2) || (q1 <= q2))
+			if ((e1 <= e2) && (q1 <= q2))
 			{
 				/* Build the prompt */
 				strnfmt(tmp_val, sizeof(tmp_val), " %c-%c,",
-				        index_to_label(e1 > 0 ? e1 : q1),
-						index_to_label(q2 > 0 ? q2 : e2));
+				        index_to_label(e1),
+				        index_to_label(q2 + 1 + player->body.count));
+
+				/* Append */
+				my_strcat(out_val, tmp_val, sizeof(out_val));
+			}
+			else if (e1 <= e2)
+			{
+				/* Build the prompt */
+				strnfmt(tmp_val, sizeof(tmp_val), " %c-%c,",
+				        index_to_label(e1),	index_to_label(e2));
+
+				/* Append */
+				my_strcat(out_val, tmp_val, sizeof(out_val));
+			}
+			else if (q1 <= q2)
+			{
+				/* Build the prompt */
+				strnfmt(tmp_val, sizeof(tmp_val), " %c-%c,",
+				        index_to_label(q1 + 1 + player->body.count),
+				        index_to_label(q2 + 1 + player->body.count));
 
 				/* Append */
 				my_strcat(out_val, tmp_val, sizeof(out_val));
@@ -1327,7 +1346,7 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd,
 
 				/* Choose the "default" slot (0) of the quiver */
 				else if (quiver_tags)
-					k = q1;
+					k = player->upkeep->quiver[q1];
 
 				/* Choose "default" equipment item */
 				else if (player->upkeep->command_wrk == USE_EQUIP)
