@@ -1394,7 +1394,7 @@ void object_absorb(object_type *o_ptr, object_type *j_ptr)
 	o_ptr->number = ((total < MAX_STACK_SIZE) ? total : (MAX_STACK_SIZE - 1));
 
 	object_absorb_merge(o_ptr, j_ptr);
-	object_wipe(j_ptr);
+	//object_wipe(j_ptr);
 }
 
 /*

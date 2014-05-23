@@ -18,6 +18,7 @@
  */
 
 #include "angband.h"
+#include "game-event.h"
 #include "obj-desc.h"
 #include "obj-gear.h"
 #include "obj-identify.h"
@@ -890,7 +891,7 @@ void inven_takeoff(int item)
 	msgt(MSG_WIELD, "%s %s (%c).", act, o_name, index_to_label(slot));
 
 	player->upkeep->update |= (PU_BONUS | PU_INVEN);
-	player->upkeep->notice |= PN_SQUELCH;
+	player->upkeep->notice |= (PN_SQUELCH | PN_COMBINE);
 
 	return;
 }
@@ -950,6 +951,7 @@ void inven_drop(int item, int amt)
 	inven_item_increase(item, -amt);
 	inven_item_describe(item);
 	inven_item_optimize(item);
+	event_signal(EVENT_INVENTORY);
 }
 
 
@@ -1015,6 +1017,7 @@ void combine_pack(void)
 				display_message = TRUE;
 				redraw = TRUE;
 				object_absorb(j_ptr, o_ptr);
+				object_wipe(o_ptr);
 				break;
 			}
 			else if (inventory_can_stack_partial(j_ptr, o_ptr, OSTACK_PACK)) {
