@@ -1454,7 +1454,7 @@ void object_copy_amt(object_type *dst, object_type *src, int amt)
 }
 
 /**
- * Split off 'at' items from 'src' into 'dest'.
+ * Split off 'amt' items from 'src' into 'dest'.
  */
 void object_split(struct object *dest, struct object *src, int amt)
 {

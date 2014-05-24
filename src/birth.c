@@ -459,6 +459,14 @@ void wield_all(struct player *p)
 		if (i_ptr->kind)
 			continue;
 
+		/* Split if necessary */
+		if (o_ptr->number > 1) {
+			int new_item = gear_find_slot(p);
+			object_copy(&player->gear[new_item], o_ptr);
+			player->gear[new_item].number = o_ptr->number - 1;
+			o_ptr->number = 1;
+		}
+
 		/* Wear the new stuff */
 		p->body.slots[slot].index = item;
 
