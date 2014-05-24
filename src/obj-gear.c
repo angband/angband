@@ -197,10 +197,10 @@ int object_gear_index(struct player *p, const struct object *obj)
 {
 	int i;
 
-	for (i = 0; i < MAX_GEAR; i++)
+	for (i = 0; i < p->max_gear; i++)
 		if (obj == &p->gear[i]) break;
 
-	return i < MAX_GEAR ? i : 0;
+	return i < p->max_gear ? i : 0;
 }
 
 int pack_slots_used(struct player *p)
@@ -208,7 +208,7 @@ int pack_slots_used(struct player *p)
 	int i, quiver_slots = 0, pack_slots = 0, quiver_ammo = 0;
 	int maxsize = MAX_STACK_SIZE - 1;
 
-	for (i = 0; i < MAX_GEAR; i++) {
+	for (i = 0; i < p->max_gear; i++) {
 		struct object *obj = &p->gear[i];
 
 		/* No actual object */
@@ -382,7 +382,7 @@ int minus_ac(struct player *p)
 	/* Damage the item */
 	o_ptr->to_a--;
 
-	p->upkeep->update |= PU_BONUS;
+	p->upkeep->update |= (PU_BONUS);
 	p->upkeep->redraw |= (PR_EQUIP);
 
 	/* Item was damaged */
@@ -464,14 +464,8 @@ void inven_item_increase(int item, int num)
 		/* Add the weight */
 		player->upkeep->total_weight += (num * o_ptr->weight);
 
-		/* Recalculate bonuses */
-		player->upkeep->update |= (PU_BONUS);
-
-		/* Recalculate mana XXX */
-		player->upkeep->update |= (PU_MANA);
-
-		/* Recalculate gear */
-		player->upkeep->update |= (PU_INVEN);
+		/* Recalculate relevant stuff */
+		player->upkeep->update |= (PU_BONUS | PU_MANA | PU_INVEN);
 
 		/* Combine the pack */
 		player->upkeep->notice |= (PN_COMBINE);
@@ -504,10 +498,7 @@ void inven_item_optimize(int item)
 	object_wipe(&player->gear[item]);
 		
 	/* Recalculate stuff */
-	player->upkeep->update |= (PU_INVEN);
-	player->upkeep->update |= (PU_BONUS);
-	player->upkeep->update |= (PU_TORCH);
-	player->upkeep->update |= (PU_MANA);
+	player->upkeep->update |= (PU_BONUS | PU_MANA | PU_INVEN | PU_TORCH);
 
 	/* Inventory has changed, so disable repeat command */ 
 	cmd_disable_repeat();
@@ -538,7 +529,7 @@ bool inven_stack_okay(const object_type *o_ptr)
 	bool extra_slot;
 
 	/* Check for similarity */
-	for (j = 0; j < MAX_GEAR; j++)
+	for (j = 0; j < player->max_gear; j++)
 	{
 		object_type *j_ptr = &player->gear[j];
 
@@ -551,7 +542,7 @@ bool inven_stack_okay(const object_type *o_ptr)
 	}
 
 	/* Definite no */
-	if (j == MAX_GEAR) return FALSE;
+	if (j == player->max_gear) return FALSE;
 
 	/* Add it and see what happens */
 	player->gear[j].number += o_ptr->number;
@@ -572,7 +563,7 @@ int gear_find_slot(struct player *p)
 	object_type *j_ptr;
 
 	/* Find an empty slot */
-	for (j = 0; j < MAX_GEAR; j++)
+	for (j = 0; j < player->max_gear; j++)
 	{
 		/* 0 is the NO_OBJECT slot.
 		 * This line and comment are to emphasise that */
@@ -582,7 +573,14 @@ int gear_find_slot(struct player *p)
 		if (!j_ptr->kind) break;
 	}
 
-	/* Use that slot */
+	/* If no vacant slots, extend the array */
+	if (j == player->max_gear) {
+		int newsize = player->max_gear + MAX_GEAR_INCR;
+		player->gear = (struct object *) mem_realloc(player->gear, newsize);
+		player->max_gear += MAX_GEAR_INCR;
+	}
+
+	/* Use the empty slot */
 	return j;
 }
 
@@ -613,7 +611,7 @@ s16b inven_carry(struct player *p, struct object *o)
 	apply_autoinscription(o);
 
 	/* Check for combining */
-	for (j = 0; j < MAX_GEAR; j++)
+	for (j = 0; j < p->max_gear; j++)
 	{
 		j_ptr = &p->gear[j];
 
@@ -833,7 +831,7 @@ void combine_pack(void)
 	bool redraw = FALSE;
 
 	/* Combine the pack (backwards) */
-	for (i = MAX_GEAR - 1; i >= 0; i--)
+	for (i = player->max_gear - 1; i >= 0; i--)
 	{
 		/* Get the item */
 		o_ptr = &player->gear[i];

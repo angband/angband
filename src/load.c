@@ -997,9 +997,8 @@ static int rd_gear_aux(rd_item_t rd_item_version)
 	object_type *i_ptr;
 	object_type object_type_body;
 
-	u16b max_gear;
-
-	rd_u16b(&max_gear);
+	/* Initialise the size of the gear array */
+	player->max_gear = MAX_GEAR;
 
 	/* Read until done */
 	while (1)
@@ -1029,8 +1028,12 @@ static int rd_gear_aux(rd_item_t rd_item_version)
 		/* Hack -- verify item */
 		if (!i_ptr->kind) continue;
 
-		/* Verify slot */
-		if (n >= max_gear) return (-1);
+		/* Increase array size if necessary */
+		if (n >= player->max_gear) {
+			int newsize = player->max_gear + MAX_GEAR_INCR;
+			player->gear = (struct object *) mem_realloc(player->gear, newsize);
+			player->max_gear += MAX_GEAR_INCR;
+		}
 
 		/* Get a slot */
 		n = slot++;

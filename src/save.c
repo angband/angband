@@ -642,10 +642,8 @@ void wr_gear(void)
 {
 	int i;
 
-	wr_u16b(MAX_GEAR);
-
 	/* Write the inventory */
-	for (i = 0; i < MAX_GEAR; i++)
+	for (i = 0; i < player->max_gear; i++)
 	{
 		object_type *o_ptr = &player->gear[i];
 

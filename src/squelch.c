@@ -220,7 +220,7 @@ void autoinscribe_pack(void)
 	int i;
 
 	/* Cycle through the inventory */
-	for (i = MAX_GEAR - 1; i >= 0; i--)
+	for (i = player->max_gear - 1; i >= 0; i--)
 	{
 		/* Skip empty items */
 		if (!player->gear[i].kind) continue;
@@ -546,7 +546,7 @@ void squelch_drop(void)
 	int n;
 
 	/* Scan through the slots backwards */
-	for (n = MAX_GEAR - 1; n >= 0; n--)
+	for (n = player->max_gear - 1; n >= 0; n--)
 	{
 		object_type *o_ptr = &player->gear[n];
 

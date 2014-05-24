@@ -418,6 +418,7 @@ void player_init(struct player *p)
 	for (i = 0; i < PY_MAX_SPELLS; i++)
 		p->spell_order[i] = 99;
 
+	p->max_gear = MAX_GEAR;
 	p->gear = mem_zalloc(MAX_GEAR * sizeof(object_type));
 	p->upkeep = mem_zalloc(sizeof(player_upkeep));
 	p->timed = mem_zalloc(TMD_MAX * sizeof(s16b));
@@ -443,7 +444,7 @@ void wield_all(struct player *p)
 	int item;
 
 	/* Scan through the slots backwards */
-	for (item = MAX_GEAR - 1; item >= 0; item--)
+	for (item = p->max_gear - 1; item >= 0; item--)
 	{
 		o_ptr = &p->gear[item];
 

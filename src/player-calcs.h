@@ -141,7 +141,8 @@ enum
 
 #define QUIVER_SIZE		10
 #define INVEN_PACK		23
-#define MAX_GEAR		100
+#define MAX_GEAR		60
+#define MAX_GEAR_INCR	10
 #define EQUIP_MAX_SLOTS	12
 #define NO_OBJECT		0
 

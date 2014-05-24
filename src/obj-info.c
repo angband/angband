@@ -602,14 +602,15 @@ static int obj_known_blows(const object_type *o_ptr, int max_num, struct blow_in
 
 	player_state state;
 
-	object_type gear[MAX_GEAR];
+	object_type *gear;
 	int weapon_index = slot_index(player, slot_by_name(player, "weapon"));
 	int num = 0;
 
 	/* Not a weapon - no blows! */
 	if (!tval_is_melee_weapon(o_ptr)) return 0;
 
-	memcpy(gear, player->gear, MAX_GEAR * sizeof(object_type));
+	gear = (object_type *) mem_zalloc(player->max_gear * sizeof(object_type));
+	memcpy(gear, player->gear, player->max_gear * sizeof(object_type));
 	gear[weapon_index] = *o_ptr;
 
 	/* Calculate the player's hypothetical state */
@@ -650,7 +651,10 @@ static int obj_known_blows(const object_type *o_ptr, int max_num, struct blow_in
 	{
 		for (str_plus = 0; str_plus < str_plus_bound; str_plus++)
         {
-			if (num == max_num) return num;
+			if (num == max_num) {
+				mem_free(gear);
+				return num;
+			}
 
 			state.stat_ind[A_STR] += str_plus;
 			state.stat_ind[A_DEX] += dex_plus;
@@ -695,6 +699,7 @@ static int obj_known_blows(const object_type *o_ptr, int max_num, struct blow_in
 		}
 	}
 
+	mem_free(gear);
 	return num;
 }
 
@@ -772,7 +777,7 @@ static int obj_known_damage(const object_type *o_ptr, int *normal_damage,
 	int multiplier = 1;
 
 	player_state state;
-	object_type gear[MAX_GEAR];
+	object_type *gear;
 	struct slay *s;
 	struct brand *b;
 	int num_slays;
@@ -780,7 +785,8 @@ static int obj_known_damage(const object_type *o_ptr, int *normal_damage,
 	int weapon_index = slot_index(player, slot_by_name(player, "weapon"));
 
 	/* Calculate the player's hypothetical state */
-	memcpy(gear, player->gear, MAX_GEAR * sizeof(object_type));
+	gear = (object_type *) mem_zalloc(player->max_gear * sizeof(object_type));
+	memcpy(gear, player->gear, player->max_gear * sizeof(object_type));
 	gear[weapon_index] = *o_ptr;
 	calc_bonuses(gear, &state, TRUE);
 
@@ -906,6 +912,7 @@ static int obj_known_damage(const object_type *o_ptr, int *normal_damage,
 
 	*normal_damage = total_dam;
 
+	mem_free(gear);
 	return num_brands + num_slays;
 }
 
@@ -1028,10 +1035,11 @@ static void obj_known_misc_combat(const object_type *o_ptr, bool *thrown_effect,
 	/* Is the weapon too heavy? */
 	if (weapon) {
 		player_state state;
-		object_type gear[MAX_GEAR];
+		object_type *gear;
 		int weapon_index = slot_index(player, slot_by_name(player, "weapon"));
 
-		memcpy(gear, player->gear, MAX_GEAR * sizeof(object_type));
+		gear = (object_type *) mem_zalloc(player->max_gear * sizeof(object_type));
+		memcpy(gear, player->gear, player->max_gear * sizeof(object_type));
 		gear[weapon_index] = *o_ptr;
 
 		/* Calculate the player's hypothetical state */
@@ -1039,6 +1047,7 @@ static void obj_known_misc_combat(const object_type *o_ptr, bool *thrown_effect,
 
 		/* Warn about heavy weapons */
 		*too_heavy = state.heavy_wield;
+		mem_free(gear);
 	}
 }
 
@@ -1108,7 +1117,7 @@ static bool obj_known_digging(object_type *o_ptr, int deciturns[])
 {
 	player_state st;
 
-	object_type gear[MAX_GEAR];
+	object_type *gear;
 
 	int index = slot_index(player, wield_slot(o_ptr));
 	int i;
@@ -1120,7 +1129,8 @@ static bool obj_known_digging(object_type *o_ptr, int deciturns[])
 		 (o_ptr->modifiers[OBJ_MOD_TUNNEL] <= 0)))
 		return FALSE;
 
-	memcpy(gear, player->gear, MAX_GEAR * sizeof(object_type));
+	gear = (object_type *) mem_zalloc(player->max_gear * sizeof(object_type));
+	memcpy(gear, player->gear, player->max_gear * sizeof(object_type));
 
 	/* Simulate wearing, unless it's already worn */
 	if (!item_is_equipped(player, object_gear_index(player, o_ptr)))
@@ -1135,6 +1145,7 @@ static bool obj_known_digging(object_type *o_ptr, int deciturns[])
 		deciturns[i] = chance ? (16000 / chance) : 0;
 	}
 
+	mem_free(gear);
 	return TRUE;
 }
 

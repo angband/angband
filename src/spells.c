@@ -332,7 +332,7 @@ void identify_pack(void)
 	int i;
 
 	/* Simply identify and know every item */
-	for (i = 0; i < MAX_GEAR; i++)
+	for (i = 0; i < player->max_gear; i++)
 	{
 		object_type *o_ptr = &player->gear[i];
 
@@ -1530,7 +1530,7 @@ bool spell_identify_unknown_available(void)
 	floor_num = scan_floor(floor_list, N_ELEMENTS(floor_list), player->py,
 						   player->px, 0x0B, item_tester_unknown);
 
-	for (i = 0; i < MAX_GEAR; i++) {
+	for (i = 0; i < player->max_gear; i++) {
 		if (item_test(item_tester_unknown, i)) {
 			unidentified_gear = TRUE;
 			break;

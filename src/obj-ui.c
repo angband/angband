@@ -603,7 +603,7 @@ static int get_tag(int *cp, char tag, cmd_code cmd, bool quiver_tags)
 	}
 
 	/* Check every object */
-	for (i = 0; i < MAX_GEAR; ++i)
+	for (i = 0; i < player->max_gear; ++i)
 	{
 		object_type *o_ptr = &player->gear[i];
 

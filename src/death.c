@@ -121,7 +121,7 @@ static void death_knowledge(void)
 
 	int i;
 
-	for (i = 0; i < MAX_GEAR; i++)
+	for (i = 0; i < player->max_gear; i++)
 	{
 		o_ptr = &player->gear[i];
 		if (!o_ptr->kind) continue;

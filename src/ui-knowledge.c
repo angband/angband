@@ -1434,7 +1434,7 @@ static object_type *find_artifact(struct artifact *artifact)
 			return cave_object(cave, i);
 	}
 
-	for (i = 0; i < MAX_GEAR; i++)
+	for (i = 0; i < player->max_gear; i++)
 	{
 		if (player->gear[i].artifact == artifact)
 			return &player->gear[i];

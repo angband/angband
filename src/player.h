@@ -188,8 +188,8 @@ typedef struct player {
 	/* Tracking of various temporary player-related values */
 	player_upkeep *upkeep;
 
-	struct object *inventory;
 	struct object *gear;
+	int max_gear;
 	struct player_body body;
 } player_type;
 

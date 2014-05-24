@@ -1214,7 +1214,7 @@ void sense_inventory(void)
 	if (player->lev < 20 && !one_in_(rate)) return;
 
 	/* Give each object one opportunity to have a chance at being sensed. */
-	for (i = 0; i < MAX_GEAR; i++)
+	for (i = 0; i < player->max_gear; i++)
 	{
 		const char *text = NULL;
 		object_type *o_ptr;

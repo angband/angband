@@ -1538,7 +1538,7 @@ int inven_damage(struct player *p, int type, int cperc)
 	k = 0;
 
 	/* Scan through the gear */
-	for (i = 0; i < MAX_GEAR; i++)
+	for (i = 0; i < player->max_gear; i++)
 	{
 		if (item_is_equipped(player, i)) continue;
 

@@ -348,7 +348,7 @@ static void recharge_objects(void)
 	object_type *o_ptr;
 
 	/* Recharge carried gear */
-	for (i = 0; i < MAX_GEAR; i++)
+	for (i = 0; i < player->max_gear; i++)
 	{
 		o_ptr = &player->gear[i];
 

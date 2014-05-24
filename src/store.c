@@ -1563,7 +1563,7 @@ int find_inven(const object_type *o_ptr)
 	int num = 0;
 
 	/* Similar slot? */
-	for (j = 0; j < MAX_GEAR; j++)
+	for (j = 0; j < player->max_gear; j++)
 	{
 		object_type *j_ptr = &player->gear[j];
 

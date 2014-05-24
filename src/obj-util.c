@@ -2441,7 +2441,7 @@ int gear_index_matching_object(const object_type *o_ptr)
 {
 	int i;
 
-	for (i = 0; i < MAX_GEAR; i++) {
+	for (i = 0; i < player->max_gear; i++) {
 		if (object_equals_object(o_ptr, &player->gear[i]))
 			return i;
 	}

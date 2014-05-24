@@ -69,7 +69,7 @@ static void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MA
 		spell_colors[i] = TERM_L_GREEN;
 
 	/* Scan for potentially vulnerable items */
-	for (i = 0; i < MAX_GEAR; i++) {
+	for (i = 0; i < player->max_gear; i++) {
 		object_type *o_ptr = &player->gear[i];
 
 		/* Only occupied slots */
