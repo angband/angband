@@ -212,7 +212,7 @@ void do_cmd_uninscribe(struct command *cmd)
 			/* Prompt */ "Uninscribe which item?",
 			/* Error  */ "You have nothing you can uninscribe.",
 			/* Filter */ obj_has_inscrip,
-			/* Choice */ USE_EQUIP | USE_INVEN | USE_FLOOR) == CMD_OK) {
+			/* Choice */ USE_EQUIP | USE_INVEN | USE_QUIVER | USE_FLOOR) == CMD_OK) {
 		o_ptr = object_from_item_idx(item);
 	} else {
 		return;
@@ -240,7 +240,7 @@ void do_cmd_inscribe(struct command *cmd)
 			/* Prompt */ "Inscribe which item?",
 			/* Error  */ "You have nothing to inscribe.",
 			/* Filter */ NULL,
-			/* Choice */ USE_EQUIP | USE_INVEN | USE_FLOOR | IS_HARMLESS) == CMD_OK) {
+			/* Choice */ USE_EQUIP | USE_INVEN | USE_QUIVER | USE_FLOOR | IS_HARMLESS) == CMD_OK) {
 		o_ptr = object_from_item_idx(item);
 	} else {
 		return;
@@ -477,7 +477,7 @@ void do_cmd_drop(struct command *cmd)
 			/* Prompt */ "Drop which item?",
 			/* Error  */ "You have nothing to drop.",
 			/* Filter */ NULL,
-			/* Choice */ USE_EQUIP | USE_INVEN) == CMD_OK) {
+			/* Choice */ USE_EQUIP | USE_INVEN | USE_QUIVER) == CMD_OK) {
 		o_ptr = object_from_item_idx(item);
 	} else {
 		return;
@@ -506,7 +506,7 @@ void do_cmd_destroy(struct command *cmd)
 	if (cmd_get_arg_item(cmd, "item", &item))
 		return;
 
-	if (!item_is_available(item, NULL, USE_INVEN | USE_EQUIP | USE_FLOOR))
+	if (!item_is_available(item, NULL, USE_INVEN | USE_QUIVER | USE_EQUIP | USE_FLOOR))
 	{
 		msg("You do not have that item to ignore it.");
 		return;
@@ -866,7 +866,7 @@ void do_cmd_use(struct command *cmd)
 			"Use which item? ",
 			"You have no items to use.",
 			obj_is_useable,
-			USE_EQUIP | USE_INVEN | USE_FLOOR | SHOW_FAIL | QUIVER_TAGS | SHOW_FAIL) != CMD_OK)
+			USE_EQUIP | USE_INVEN | USE_QUIVER | USE_FLOOR | SHOW_FAIL | QUIVER_TAGS | SHOW_FAIL) != CMD_OK)
 		return;
 	o_ptr = object_from_item_idx(item);
 
@@ -1262,7 +1262,7 @@ void textui_cmd_destroy(void)
 	/* Get an item */
 	const char *q = "Ignore which item? ";
 	const char *s = "You have nothing to ignore.";
-	if (!get_item(&item, q, s, CMD_DESTROY, NULL, USE_INVEN | USE_EQUIP | USE_FLOOR))
+	if (!get_item(&item, q, s, CMD_DESTROY, NULL, USE_INVEN | USE_QUIVER | USE_EQUIP | USE_FLOOR))
 		return;
 
 	textui_cmd_destroy_menu(item);
@@ -1288,7 +1288,7 @@ void textui_obj_examine(void)
 
 	/* Select item */
 	if (!get_item(&item, "Examine which item?", "You have nothing to examine.",
-			CMD_NULL, NULL, (USE_EQUIP | USE_INVEN | USE_FLOOR | IS_HARMLESS)))
+			CMD_NULL, NULL, (USE_EQUIP | USE_INVEN | USE_QUIVER | USE_FLOOR | IS_HARMLESS)))
 		return;
 
 	/* Track object for object recall */

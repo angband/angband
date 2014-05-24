@@ -2493,6 +2493,7 @@ int scan_items(int *item_list, size_t item_list_max, int mode, item_tester teste
 {
 	bool use_inven = ((mode & USE_INVEN) ? TRUE : FALSE);
 	bool use_equip = ((mode & USE_EQUIP) ? TRUE : FALSE);
+	bool use_quiver = ((mode & USE_QUIVER) ? TRUE : FALSE);
 	bool use_floor = ((mode & USE_FLOOR) ? TRUE : FALSE);
 
 	int floor_list[MAX_FLOOR_STACK];
@@ -2518,6 +2519,10 @@ int scan_items(int *item_list, size_t item_list_max, int mode, item_tester teste
 				item_list[item_list_num++] = slot_index(player, i);
 		}
 
+	}
+
+	if (use_quiver)
+	{
 		for (i = 0; i < QUIVER_SIZE && item_list_num < item_list_max; i++)
 		{
 			if (item_test(tester, player->upkeep->quiver[i]))

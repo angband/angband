@@ -341,7 +341,7 @@ static void death_examine(const char *title, int row)
 	q = "Examine which item? ";
 	s = "You have nothing to examine.";
 
-	while (get_item(&item, q, s, 0, NULL, (USE_INVEN | USE_EQUIP | IS_HARMLESS)))
+	while (get_item(&item, q, s, 0, NULL, (USE_INVEN | USE_QUIVER | USE_EQUIP | IS_HARMLESS)))
 	{
 		char header[120];
 

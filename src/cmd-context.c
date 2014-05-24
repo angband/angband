@@ -248,8 +248,7 @@ static void context_menu_player_display_floor(void)
 
 
 	/* Get an item to use a context command on */
-	if (get_item(&diff, NULL, NULL, CMD_NULL, NULL, 
-				 USE_EQUIP|USE_INVEN|USE_FLOOR|SHOW_EMPTY|IS_HARMLESS)) {
+	if (get_item(&diff, NULL, NULL, CMD_NULL, NULL, USE_EQUIP | USE_INVEN | USE_QUIVER | USE_FLOOR | SHOW_EMPTY | IS_HARMLESS)) {
 		object_type *o_ptr;
 
 		/* Track the object kind */

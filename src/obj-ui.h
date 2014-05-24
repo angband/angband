@@ -41,13 +41,14 @@ typedef enum {
  */
 #define USE_EQUIP     0x0001	/* Allow equip items */
 #define USE_INVEN     0x0002	/* Allow inven items */
-#define USE_FLOOR     0x0004	/* Allow floor items */
-#define IS_HARMLESS   0x0008	/* Ignore generic warning inscriptions */
-#define SHOW_PRICES   0x0010	/* Show item prices in item lists */
-#define SHOW_FAIL     0x0020 	/* Show device failure in item lists */
-#define SHOW_QUIVER   0x0040	/* Show quiver summary when in inventory */
-#define SHOW_EMPTY    0x0080	/* Show empty slots in equipment display */
-#define QUIVER_TAGS   0x0100	/* 0-9 are quiver slots when selecting */
+#define USE_FLOOR     0x0004	/* Allow quiver items */
+#define USE_QUIVER    0x0008	/* Allow floor items */
+#define IS_HARMLESS   0x0010	/* Ignore generic warning inscriptions */
+#define SHOW_PRICES   0x0020	/* Show item prices in item lists */
+#define SHOW_FAIL     0x0040 	/* Show device failure in item lists */
+#define SHOW_QUIVER   0x0080	/* Show quiver summary when in inventory */
+#define SHOW_EMPTY    0x0100	/* Show empty slots in equipment display */
+#define QUIVER_TAGS   0x0200	/* 0-9 are quiver slots when selecting */
 
 
 byte object_kind_attr(const struct object_kind *kind);

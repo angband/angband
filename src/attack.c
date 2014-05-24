@@ -679,7 +679,7 @@ void do_cmd_fire(struct command *cmd) {
 			/* Prompt */ "Fire which ammunition?",
 			/* Error  */ "You have no ammunition to fire.",
 			/* Filter */ obj_can_fire,
-			/* Choice */ USE_INVEN | USE_EQUIP | USE_FLOOR | QUIVER_TAGS) == CMD_OK) {
+			/* Choice */ USE_INVEN | USE_QUIVER | USE_FLOOR | QUIVER_TAGS) == CMD_OK) {
 		o_ptr = object_from_item_idx(item);
 	} else {
 		return;
@@ -697,7 +697,7 @@ void do_cmd_fire(struct command *cmd) {
 	}
 
 	/* Check the item being fired is usable by the player. */
-	if (!item_is_available(item, NULL, USE_EQUIP | USE_INVEN | USE_FLOOR)) {
+	if (!item_is_available(item, NULL, USE_QUIVER | USE_INVEN | USE_FLOOR)) {
 		msg("That item is not within your reach.");
 		return;
 	}
@@ -730,7 +730,7 @@ void do_cmd_throw(struct command *cmd) {
 			/* Prompt */ "Throw which item?",
 			/* Error  */ "You have nothing to throw.",
 			/* Filter */ NULL,
-			/* Choice */ USE_EQUIP | USE_INVEN | USE_FLOOR) == CMD_OK) {
+			/* Choice */ USE_QUIVER | USE_INVEN | USE_FLOOR) == CMD_OK) {
 		o_ptr = object_from_item_idx(item);
 	} else {
 		return;

@@ -421,7 +421,7 @@ void do_cmd_messages(void)
 
 
 #define GET_ITEM_PARAMS \
- 	(USE_EQUIP | USE_INVEN | USE_FLOOR | SHOW_QUIVER | SHOW_EMPTY | IS_HARMLESS)
+ 	(USE_EQUIP | USE_INVEN | USE_QUIVER | USE_FLOOR | SHOW_QUIVER | SHOW_EMPTY | IS_HARMLESS)
  
 /*
  * Display inventory
