@@ -1051,6 +1051,8 @@ static int rd_gear_aux(rd_item_t rd_item_version)
 			player->upkeep->equip_cnt++;
 		}
 	}
+	calc_inventory(player->upkeep, player->gear, player->body,
+				   player->max_gear);
 
 	/* Success */
 	return (0);

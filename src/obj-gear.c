@@ -54,7 +54,7 @@ char gear_to_label(int item)
 
 	/* Equipment is easy */
 	if (item_is_equipped(player, item))
-		return I2A(equipped_item_slot(player, item));
+		return I2A(equipped_item_slot(player->body, item));
 
 	/* Check the quiver */
 	for (i = 0; i < QUIVER_SIZE; i++)
@@ -153,23 +153,9 @@ struct object *equipped_item_by_slot_name(struct player *p, const char *name)
 	return equipped_item_by_slot(p, slot_by_name(p, name));
 }
 
-int equipped_item_slot(struct player *p, int item)
-{
-	int i;
-
-	if (item == NO_OBJECT) return p->body.count;
-
-	/* Look for an equipment slot with this item */
-	for (i = 0; i < p->body.count; i++)
-		if (item == p->body.slots[i].index) break;
-
-	/* Correct slot, or p->body.count if not equipped */
-	return i;
-}
-
 bool item_is_equipped(struct player *p, int item)
 {
-	return (equipped_item_slot(p, item) < p->body.count) ? TRUE : FALSE;
+	return (equipped_item_slot(p->body, item) < p->body.count) ? TRUE : FALSE;
 }
 
 int object_gear_index(struct player *p, const struct object *obj)
@@ -669,7 +655,7 @@ s16b inven_carry(struct player *p, struct object *o)
  */
 void inven_takeoff(int item)
 {
-	int slot = equipped_item_slot(player, item);
+	int slot = equipped_item_slot(player->body, item);
 	object_type *o_ptr;
 	const char *act;
 	char o_name[80];
@@ -708,7 +694,7 @@ void inven_takeoff(int item)
 	}
 
 	/* De-equip the object */
-	player->body.slots[equipped_item_slot(player, item)].index = NO_OBJECT;
+	player->body.slots[slot].index = NO_OBJECT;
 
 	/* Message */
 	msgt(MSG_WIELD, "%s %s (%c).", act, o_name, equip_to_label(slot));

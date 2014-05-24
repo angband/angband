@@ -975,30 +975,46 @@ static bool earlier_object(struct object *orig, struct object *new)
 	return FALSE;
 }
 
+int equipped_item_slot(struct player_body body, int item)
+{
+	int i;
+
+	if (item == NO_OBJECT) return body.count;
+
+	/* Look for an equipment slot with this item */
+	for (i = 0; i < body.count; i++)
+		if (item == body.slots[i].index) break;
+
+	/* Correct slot, or body.count if not equipped */
+	return i;
+}
+
 /**
  * Put the player's inventory and quiver into easily accessible arrays.  The
  * pack may be overfull by one item
  */
-static void calc_inventory(void)
+void calc_inventory(struct player_upkeep *upkeep, object_type gear[],
+					struct player_body body, int max_gear)
 {
 	int i, gear_index, quiver_slots = 0, num_left = 0, index = 0;
-	bool *possible = mem_zalloc(player->max_gear * sizeof(bool));
+	bool *possible = mem_zalloc(max_gear * sizeof(bool));
 
 	/* Pass through, eliminate equipped objects and non-objects */
-	for (i = 0; i < player->max_gear; i++) {
-		possible[i] = (!player->gear[i].kind || item_is_equipped(player, i))
+	for (i = 0; i < max_gear; i++) {
+		possible[i] = (!gear[i].kind ||
+					   equipped_item_slot(body, i) < body.count)
 			? FALSE : TRUE;
 		if (possible[i]) num_left++;
 	}
 
 	/* Fill the quiver */
-	player->upkeep->quiver_cnt = 0;
+	upkeep->quiver_cnt = 0;
 	while (quiver_slots < QUIVER_SIZE) {
 		struct object *first = NULL;
 
 		/* Find the first quiver object not yet allocated */
-		for (i = 0; i < player->max_gear; i++) {
-			struct object *current = &player->gear[i];
+		for (i = 0; i < max_gear; i++) {
+			struct object *current = &gear[i];
 			if (!possible[i]) continue;
 			if (!tval_is_ammo(current)) continue;
 			if (earlier_object(first, current)) {
@@ -1009,17 +1025,17 @@ static void calc_inventory(void)
 
 		/* If there is one allocate it, otherwise fill with NO_OBJECT */
 		if (first) {
-			player->upkeep->quiver[quiver_slots++] = gear_index;
-			player->upkeep->quiver_cnt += player->gear[gear_index].number;
+			upkeep->quiver[quiver_slots++] = gear_index;
+			upkeep->quiver_cnt += gear[gear_index].number;
 			num_left--;
 			possible[gear_index] = FALSE;
 		}
 		else
-			player->upkeep->quiver[quiver_slots++] = NO_OBJECT;
+			upkeep->quiver[quiver_slots++] = NO_OBJECT;
 	}
 
 	/* Fill the inventory */
-	player->upkeep->inven_cnt = 0;
+	upkeep->inven_cnt = 0;
 	while ((num_left > 0) || (index <= INVEN_PACK)) {
 		struct object *first = NULL;
 
@@ -1027,8 +1043,8 @@ static void calc_inventory(void)
 		gear_index = NO_OBJECT;
 
 		/* Find the first quiver object not yet allocated */
-		for (i = 0; i < player->max_gear; i++) {
-			struct object *current = &player->gear[i];
+		for (i = 0; i < max_gear; i++) {
+			struct object *current = &gear[i];
 			if (!possible[i]) continue;
 			if (earlier_object(first, current)) {
 				first = current;
@@ -1036,8 +1052,8 @@ static void calc_inventory(void)
 			}
 		}
 		/* Allocate */
-		player->upkeep->inven[index++] = gear_index;
-		player->upkeep->inven_cnt++;
+		upkeep->inven[index++] = gear_index;
+		upkeep->inven_cnt++;
 		num_left--;
 		possible[gear_index] = FALSE;
 
@@ -1045,6 +1061,12 @@ static void calc_inventory(void)
 		assert((index <= INVEN_PACK) || (num_left <= 0));
 	}
 	mem_free(possible);
+}
+
+static void update_inventory(void)
+{
+	calc_inventory(player->upkeep, player->gear, player->body,
+				   player->max_gear);
 }
 
 /*
@@ -2394,7 +2416,7 @@ void update_stuff(struct player_upkeep *upkeep)
 	if (upkeep->update & (PU_INVEN))
 	{
 		upkeep->update &= ~(PU_INVEN);
-		calc_inventory();
+		update_inventory();
 	}
 
 	if (upkeep->update & (PU_BONUS))

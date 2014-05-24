@@ -3489,7 +3489,7 @@ void do_ident_item(object_type *o_ptr)
 
 	/* Describe */
 	index = object_gear_index(player, o_ptr);
-	slot = equipped_item_slot(player, index);
+	slot = equipped_item_slot(player->body, index);
 	if (item_is_equipped(player, index)) {
 		/* Format and capitalise */
 		char *msg = format("%s: %s (%c).", equip_describe(player, slot),

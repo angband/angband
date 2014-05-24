@@ -1281,7 +1281,7 @@ void sense_inventory(void)
 				msgt(MSG_PSEUDOID, "You feel the %s (%c) you are %s %s %s...",
 					 o_name,
 					 gear_to_label(i),
-					 equip_describe(player, equipped_item_slot(player, i)),
+					 equip_describe(player, equipped_item_slot(player->body, i)),
 					 VERB_AGREEMENT(o_ptr->number, "is", "are"),
 					 text);
 			}

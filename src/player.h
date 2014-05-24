@@ -75,19 +75,6 @@ enum
 #define NOSCORE_DEBUG		0x0008
 #define NOSCORE_JUMPING     0x0010
 
-struct equip_slot {
-	u16b type;
-	char *name;
-	int index;
-};
-
-struct player_body {
-	struct player_body *next;
-	char *name;
-	u16b count;
-	struct equip_slot slots[EQUIP_MAX_SLOTS];
-};
-
 extern struct player_body *bodies;
 
 

@@ -43,7 +43,6 @@ bool slot_type_is(int slot, int type);
 int slot_index(struct player *p, int slot);
 struct object *equipped_item_by_slot(struct player *p, int slot);
 struct object *equipped_item_by_slot_name(struct player *p, const char *name);
-int equipped_item_slot(struct player *p, int item);
 bool item_is_equipped(struct player *p, int item);
 int object_gear_index(struct player *p, const struct object *obj);
 const char *equip_mention(struct player *p, int slot);

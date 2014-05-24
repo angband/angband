@@ -149,6 +149,19 @@ enum
 
 /*** Structures ***/
 
+struct equip_slot {
+	u16b type;
+	char *name;
+	int index;
+};
+
+struct player_body {
+	struct player_body *next;
+	char *name;
+	u16b count;
+	struct equip_slot slots[EQUIP_MAX_SLOTS];
+};
+
 /**
  * All the variable state that changes when you put on/take off equipment.
  */
@@ -242,6 +255,9 @@ extern const byte adj_dex_safe[STAT_RANGE];
 extern const byte adj_con_fix[STAT_RANGE];
 extern const byte adj_str_hold[STAT_RANGE];
 
+int equipped_item_slot(struct player_body body, int item);
+void calc_inventory(struct player_upkeep *upkeep, object_type gear[],
+					struct player_body body, int max_gear);
 void calc_bonuses(object_type inventory[], player_state *state, bool known_only);
 void calc_digging_chances(player_state *state, int chances[DIGGING_MAX]);
 int calc_blows(const object_type *o_ptr, player_state *state, int extra_blows);
