@@ -37,13 +37,14 @@ typedef enum
 } object_stack_t;
 
 
-struct object_kind *objkind_get(int tval, int sval);
-struct object_kind *objkind_byid(int kidx);
 void flavor_init(void);
 void object_flags(const object_type *o_ptr, bitflag flags[OF_SIZE]);
 void object_flags_known(const object_type *o_ptr, bitflag flags[OF_SIZE]);
-bool item_tester_okay(const object_type *o_ptr);
-int scan_floor(int *items, int max_size, int y, int x, int mode, item_tester tester);
+bool object_test(item_tester tester, const struct object *o);
+bool item_test(item_tester tester, int item);
+bool is_unknown(const object_type *o_ptr);
+int scan_floor(int *items, int max_size, int y, int x, int mode,
+			   item_tester tester);
 void excise_object_idx(int o_idx);
 void delete_object_idx(int o_idx);
 void delete_object(int y, int x);
@@ -53,9 +54,9 @@ s16b o_pop(struct chunk *c);
 object_type *get_first_object(int y, int x);
 object_type *get_next_object(const object_type *o_ptr);
 bool is_blessed(const object_type *o_ptr);
-s32b object_value(const object_type *o_ptr, int qty, int verbose);
 s32b object_value_real(const object_type *o_ptr, int qty, int verbose,
 					   bool known);
+s32b object_value(const object_type *o_ptr, int qty, int verbose);
 bool object_stackable(const object_type *o_ptr, const object_type *j_ptr,
 					  object_stack_t mode);
 bool object_similar(const object_type *o_ptr, const object_type *j_ptr,
@@ -77,9 +78,15 @@ void floor_item_increase(int item, int num);
 void floor_item_optimize(int item);
 unsigned check_for_inscrip(const object_type *o_ptr, const char *inscrip);
 object_kind *lookup_kind(int tval, int sval);
+struct object_kind *objkind_get(int tval, int sval);
+struct object_kind *objkind_byid(int kidx);
 int lookup_name(int tval, const char *name);
 int lookup_artifact_name(const char *name);
 int lookup_sval(int tval, const char *name);
+int compare_items(const object_type *o1, const object_type *o2);
+void display_object_idx_recall(s16b o_idx);
+void display_object_kind_recall(struct object_kind *kind);
+void display_object_recall_interactive(object_type *o_ptr);
 bool obj_has_charges(const object_type *o_ptr);
 bool obj_can_zap(const object_type *o_ptr);
 bool obj_is_activatable(const object_type *o_ptr);
@@ -100,17 +107,16 @@ object_type *object_from_item_idx(int item);
 int gear_index_matching_object(const object_type *o_ptr);
 bool obj_needs_aim(object_type *o_ptr);
 bool obj_can_fail(const struct object *o);
-bool object_test(item_tester tester, const struct object *o);
-bool item_test(item_tester tester, int item);
 
-int scan_items(int *item_list, size_t item_list_max, int mode, item_tester tester);
+int scan_items(int *item_list, size_t item_list_max, int mode,
+			   item_tester tester);
 bool item_is_available(int item, bool (*tester)(const object_type *), int mode);
-extern void display_itemlist(void);
-extern void display_object_idx_recall(s16b o_idx);
-extern void display_object_kind_recall(struct object_kind *kind);
-void display_object_recall_interactive(object_type *o_ptr);
-bool is_unknown(const object_type *o_ptr);
-int compare_items(const object_type *o1, const object_type *o2);
+bool wearable_p(const object_type *o_ptr);
+int get_use_device_chance(const object_type *o_ptr);
+void distribute_charges(object_type *o_ptr, object_type *q_ptr, int amt);
+void reduce_charges(object_type *o_ptr, int amt);
+int number_charging(const object_type *o_ptr);
+bool recharge_timeout(object_type *o_ptr);
 
 
 #endif /* OBJECT_UTIL_H */

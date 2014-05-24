@@ -36,12 +36,6 @@ enum
 char index_to_label(int i);
 s16b label_to_inven(int c);
 s16b label_to_equip(int c);
-bool wearable_p(const object_type *o_ptr);
-int get_use_device_chance(const object_type *o_ptr);
-void distribute_charges(object_type *o_ptr, object_type *q_ptr, int amt);
-void reduce_charges(object_type *o_ptr, int amt);
-int number_charging(const object_type *o_ptr);
-bool recharge_timeout(object_type *o_ptr);
 int slot_by_name(struct player *p, const char *name);
 bool slot_type_is(int slot, int type);
 int slot_index(struct player *p, int slot);

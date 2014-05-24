@@ -1394,7 +1394,6 @@ void object_absorb(object_type *o_ptr, object_type *j_ptr)
 	o_ptr->number = ((total < MAX_STACK_SIZE) ? total : (MAX_STACK_SIZE - 1));
 
 	object_absorb_merge(o_ptr, j_ptr);
-	//object_wipe(j_ptr);
 }
 
 /*
@@ -2559,5 +2558,159 @@ bool item_is_available(int item, bool (*tester)(const object_type *), int mode)
 	}
 
 	return FALSE;
+}
+
+/*
+ * Hack -- determine if an item is "wearable" (or a missile)
+ */
+bool wearable_p(const object_type *o_ptr)
+{
+	return tval_is_wearable(o_ptr);
+}
+
+
+/**
+ * Returns the number of times in 1000 that @ will FAIL
+ * - thanks to Ed Graham for the formula
+ */
+int get_use_device_chance(const object_type *o_ptr)
+{
+	int lev, fail, numerator, denominator;
+
+	int skill = player->state.skills[SKILL_DEVICE];
+
+	int skill_min = 10;
+	int skill_max = 141;
+	int diff_min  = 1;
+	int diff_max  = 100;
+
+	/* Extract the item level, which is the difficulty rating */
+	if (o_ptr->artifact)
+		lev = o_ptr->artifact->level;
+	else
+		lev = o_ptr->kind->level;
+
+	/* TODO: maybe use something a little less convoluted? */
+	numerator   = (skill - lev) - (skill_max - diff_min);
+	denominator = (lev - skill) - (diff_max - skill_min);
+
+	/* Make sure that we don't divide by zero */
+	if (denominator == 0) denominator = numerator > 0 ? 1 : -1;
+
+	fail = (100 * numerator) / denominator;
+
+	/* Ensure failure rate is between 1% and 75% */
+	if (fail > 750) fail = 750;
+	if (fail < 10) fail = 10;
+
+	return fail;
+}
+
+
+/**
+ * Distribute charges of rods, staves, or wands.
+ *
+ * \param o_ptr is the source item
+ * \param q_ptr is the target item, must be of the same type as o_ptr
+ * \param amt is the number of items that are transfered
+ */
+void distribute_charges(object_type *o_ptr, object_type *q_ptr, int amt)
+{
+	int charge_time = randcalc(o_ptr->time, 0, AVERAGE), max_time;
+
+	/*
+	 * Hack -- If rods, staves, or wands are dropped, the total maximum
+	 * timeout or charges need to be allocated between the two stacks.
+	 * If all the items are being dropped, it makes for a neater message
+	 * to leave the original stack's pval alone. -LM-
+	 */
+	if (tval_can_have_charges(o_ptr))
+	{
+		q_ptr->pval = o_ptr->pval * amt / o_ptr->number;
+
+		if (amt < o_ptr->number)
+			o_ptr->pval -= q_ptr->pval;
+	}
+
+	/*
+	 * Hack -- Rods also need to have their timeouts distributed.
+	 *
+	 * The dropped stack will accept all time remaining to charge up to
+	 * its maximum.
+	 */
+	if (tval_can_have_timeout(o_ptr))
+	{
+		max_time = charge_time * amt;
+
+		if (o_ptr->timeout > max_time)
+			q_ptr->timeout = max_time;
+		else
+			q_ptr->timeout = o_ptr->timeout;
+
+		if (amt < o_ptr->number)
+			o_ptr->timeout -= q_ptr->timeout;
+	}
+}
+
+
+void reduce_charges(object_type *o_ptr, int amt)
+{
+	/*
+	 * Hack -- If rods or wand are destroyed, the total maximum timeout or
+	 * charges of the stack needs to be reduced, unless all the items are
+	 * being destroyed. -LM-
+	 */
+	if (tval_can_have_charges(o_ptr) && amt < o_ptr->number)
+		o_ptr->pval -= o_ptr->pval * amt / o_ptr->number;
+
+	if (tval_can_have_timeout(o_ptr) && amt < o_ptr->number)
+		o_ptr->timeout -= o_ptr->timeout * amt / o_ptr->number;
+}
+
+
+int number_charging(const object_type *o_ptr)
+{
+	int charge_time, num_charging;
+
+	charge_time = randcalc(o_ptr->time, 0, AVERAGE);
+
+	/* Item has no timeout */
+	if (charge_time <= 0) return 0;
+
+	/* No items are charging */
+	if (o_ptr->timeout <= 0) return 0;
+
+	/* Calculate number charging based on timeout */
+	num_charging = (o_ptr->timeout + charge_time - 1) / charge_time;
+
+	/* Number charging cannot exceed stack size */
+	if (num_charging > o_ptr->number) num_charging = o_ptr->number;
+
+	return num_charging;
+}
+
+
+bool recharge_timeout(object_type *o_ptr)
+{
+	int charging_before, charging_after;
+
+	/* Find the number of charging items */
+	charging_before = number_charging(o_ptr);
+
+	/* Nothing to charge */	
+	if (charging_before == 0)
+		return FALSE;
+
+	/* Decrease the timeout */
+	o_ptr->timeout -= MIN(charging_before, o_ptr->timeout);
+
+	/* Find the new number of charging items */
+	charging_after = number_charging(o_ptr);
+
+	/* Return true if at least 1 item obtained a charge */
+	if (charging_after < charging_before)
+		return TRUE;
+	else
+		return FALSE;
 }
 
