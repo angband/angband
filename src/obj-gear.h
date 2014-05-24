@@ -33,9 +33,11 @@ enum
 	EQUIP_MAX
 };
 
-char index_to_label(int i);
-s16b label_to_inven(int c);
-s16b label_to_equip(int c);
+char gear_to_label(int i);
+char inven_to_label(int i);
+char equip_to_label(int i);
+char quiver_to_label(int i);
+char floor_to_label(int i);
 int slot_by_name(struct player *p, const char *name);
 bool slot_type_is(int slot, int type);
 int slot_index(struct player *p, int slot);

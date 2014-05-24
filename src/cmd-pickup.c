@@ -239,7 +239,7 @@ static void py_pickup_aux(int o_idx, bool domsg)
 		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
 
 		/* Message */
-		msg("You have %s (%c).", o_name, index_to_label(index));
+		msg("You have %s (%c).", o_name, gear_to_label(index));
 	}
 
 	/* Update object_idx if necessary */

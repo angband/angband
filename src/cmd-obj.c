@@ -381,7 +381,7 @@ void wield_item(object_type *o_ptr, int item, int slot)
 	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
 
 	/* Message */
-	msgt(MSG_WIELD, fmt, o_name, index_to_label(slot));
+	msgt(MSG_WIELD, fmt, o_name, equip_to_label(slot));
 
 	/* Cursed! */
 	if (cursed_p(o_ptr->flags))

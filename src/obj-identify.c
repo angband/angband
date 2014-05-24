@@ -1270,7 +1270,7 @@ void sense_inventory(void)
 
 			msgt(MSG_PSEUDOID, "You feel the %s (%c) %s %s average...",
 				 o_name,
-				 index_to_label(i),
+				 gear_to_label(i),
 				 equipped ? "you are using" : "in your pack",
 				 VERB_AGREEMENT(o_ptr->number, "is", "are"));
 		}
@@ -1280,7 +1280,7 @@ void sense_inventory(void)
 			{
 				msgt(MSG_PSEUDOID, "You feel the %s (%c) you are %s %s %s...",
 					 o_name,
-					 index_to_label(i),
+					 gear_to_label(i),
 					 equip_describe(player, equipped_item_slot(player, i)),
 					 VERB_AGREEMENT(o_ptr->number, "is", "are"),
 					 text);
@@ -1289,7 +1289,7 @@ void sense_inventory(void)
 			{
 				msgt(MSG_PSEUDOID, "You feel the %s (%c) in your pack %s %s...",
 					 o_name,
-					 index_to_label(i),
+					 gear_to_label(i),
 					 VERB_AGREEMENT(o_ptr->number, "is", "are"),
 					 text);
 			}

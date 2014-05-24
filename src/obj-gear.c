@@ -46,68 +46,47 @@ static const struct slot_info {
 /**
  * Convert a gear index into a one character label.
  *
- * Note that the label does NOT distinguish inven/equip.
+ * Unlike the next four functions, this one has to work out where the item is.
  */
-char index_to_label(int i)
+char gear_to_label(int item)
+{
+	int i;
+
+	/* Equipment is easy */
+	if (item_is_equipped(player, item))
+		return I2A(equipped_item_slot(player, item));
+
+	/* Check the quiver */
+	for (i = 0; i < QUIVER_SIZE; i++)
+		if (player->upkeep->quiver[i] == item) return I2A(i);
+
+	/* Check the inventory */
+	for (i = 0; i < INVEN_PACK; i++)
+		if (player->upkeep->inven[i] == item) return I2A(i);
+
+	/* Assume it's floor */
+	return I2A(-item);
+}
+
+char inven_to_label(int i)
 {
 	return I2A(i);
 }
 
-
-/**
- * Convert a label into the gear index of an item in the inventory.
- *
- * Return "-1" if the label does not indicate a real item.
- */
-s16b label_to_inven(int c)
+char equip_to_label(int i)
 {
-	int i;
-
-	/* Convert */
-	i = (islower((unsigned char)c) ? A2I(c) : -1);
-
-	/* Verify the index */
-	if ((i < 0) || (i > INVEN_PACK)) return (-1);
-
-	/* Empty slots can never be chosen */
-	if (!player->gear[player->upkeep->inven[i]].kind) return (-1);
-
-	/* Return the index */
-	return (player->upkeep->inven[i]);
+	return I2A(i);
 }
 
-
-/**
- * Convert a label into the gear index of an item in the equipment or quiver.
- *
- * Return "-1" if the label does not indicate a real item.
- */
-s16b label_to_equip(int c)
+char quiver_to_label(int i)
 {
-	int i;
-
-	/* Convert */
-	i = (islower((unsigned char)c) ? A2I(c) : -1);
-
-	/* Verify the index */
-	if ((i < 0) || (i > player->body.count + QUIVER_SIZE)
-		|| (i == player->body.count))
-		return (-1);
-
-	/* Equipment? */
-	if (i < player->body.count && equipped_item_by_slot(player, i)->kind)
-		return object_gear_index(player, equipped_item_by_slot(player, i));
-
-	/* Quiver */
-	i -= player->body.count;
-
-	/* Empty slots can never be chosen */
-	if (!player->gear[player->upkeep->quiver[i]].kind) return (-1);
-
-	/* Return the index */
-	return player->upkeep->quiver[i];
+	return I2A(i);
 }
 
+char floor_to_label(int i)
+{
+	return I2A(i);
+}
 
 
 int slot_by_name(struct player *p, const char *name)
@@ -425,7 +404,7 @@ void inven_item_describe(int item)
 		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_FULL | ODESC_SINGULAR);
 
 		/* Print a message */
-		msg("You no longer have the %s (%c).", o_name, index_to_label(item));
+		msg("You no longer have the %s (%c).", o_name, gear_to_label(item));
 	}
 	else
 	{
@@ -433,7 +412,7 @@ void inven_item_describe(int item)
 		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
 
 		/* Print a message */
-		msg("You have %s (%c).", o_name, index_to_label(item));
+		msg("You have %s (%c).", o_name, gear_to_label(item));
 	}
 }
 
@@ -732,7 +711,7 @@ void inven_takeoff(int item)
 	player->body.slots[equipped_item_slot(player, item)].index = NO_OBJECT;
 
 	/* Message */
-	msgt(MSG_WIELD, "%s %s (%c).", act, o_name, index_to_label(slot));
+	msgt(MSG_WIELD, "%s %s (%c).", act, o_name, equip_to_label(slot));
 
 	player->upkeep->update |= (PU_BONUS | PU_INVEN);
 	player->upkeep->notice |= (PN_SQUELCH | PN_COMBINE);
@@ -786,7 +765,7 @@ void inven_drop(int item, int amt)
 	object_desc(o_name, sizeof(o_name), i_ptr, ODESC_PREFIX | ODESC_FULL);
 
 	/* Message */
-	msg("You drop %s (%c).", o_name, index_to_label(item));
+	msg("You drop %s (%c).", o_name, gear_to_label(item));
 
 	/* Drop it near the player */
 	drop_near(cave, i_ptr, 0, py, px, FALSE);
@@ -931,7 +910,7 @@ void pack_overflow(void)
 	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
 
 	/* Message */
-	msg("You drop %s (%c).", o_name, index_to_label(item));
+	msg("You drop %s (%c).", o_name, inven_to_label(INVEN_PACK));
 
 	/* Drop it (carefully) near the player */
 	drop_near(cave, o_ptr, 0, player->py, player->px, FALSE);

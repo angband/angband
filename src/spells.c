@@ -1236,7 +1236,7 @@ bool apply_disenchant(int mode)
 	{
 		/* Message */
 		msg("Your %s (%c) resist%s disenchantment!",
-		           o_name, index_to_label(i),
+		           o_name, equip_to_label(i),
 		           ((o_ptr->number != 1) ? "" : "s"));
 
 		/* Notice */
@@ -1263,7 +1263,7 @@ bool apply_disenchant(int mode)
 
 	/* Message */
 	msg("Your %s (%c) %s disenchanted!",
-	           o_name, index_to_label(i),
+	           o_name, equip_to_label(i),
 	           ((o_ptr->number != 1) ? "were" : "was"));
 
 	/* Recalculate bonuses */
@@ -3493,12 +3493,12 @@ void do_ident_item(object_type *o_ptr)
 	if (item_is_equipped(player, index)) {
 		/* Format and capitalise */
 		char *msg = format("%s: %s (%c).", equip_describe(player, slot),
-						   o_name, index_to_label(index));
+						   o_name, equip_to_label(slot));
 		my_strcap(msg);
 
 		msgt(msg_type, msg);
 	} else if (index != NO_OBJECT)
-		msgt(msg_type, "In your pack: %s (%c).", o_name, index_to_label(index));
+		msgt(msg_type, "In your pack: %s (%c).", o_name, gear_to_label(index));
 	else
 		msgt(msg_type, "On the ground: %s.", o_name);
 }

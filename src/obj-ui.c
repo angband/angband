@@ -80,6 +80,62 @@ wchar_t object_char(const struct object *o_ptr)
 	return object_kind_char(o_ptr->kind);
 }
 
+/**
+ * Convert a label into the gear index of an item in the inventory.
+ *
+ * Return "-1" if the label does not indicate a real item.
+ */
+s16b label_to_inven(int c)
+{
+	int i;
+
+	/* Convert */
+	i = (islower((unsigned char)c) ? A2I(c) : -1);
+
+	/* Verify the index */
+	if ((i < 0) || (i > INVEN_PACK)) return (-1);
+
+	/* Empty slots can never be chosen */
+	if (!player->gear[player->upkeep->inven[i]].kind) return (-1);
+
+	/* Return the index */
+	return (player->upkeep->inven[i]);
+}
+
+
+/**
+ * Convert a label into the gear index of an item in the equipment or quiver.
+ *
+ * Return "-1" if the label does not indicate a real item.
+ */
+s16b label_to_equip(int c)
+{
+	int i;
+
+	/* Convert */
+	i = (islower((unsigned char)c) ? A2I(c) : -1);
+
+	/* Verify the index */
+	if ((i < 0) || (i > player->body.count + QUIVER_SIZE)
+		|| (i == player->body.count))
+		return (-1);
+
+	/* Equipment? */
+	if (i < player->body.count && equipped_item_by_slot(player, i)->kind)
+		return object_gear_index(player, equipped_item_by_slot(player, i));
+
+	/* Quiver */
+	i -= player->body.count;
+
+	/* Empty slots can never be chosen */
+	if (!player->gear[player->upkeep->quiver[i]].kind) return (-1);
+
+	/* Return the index */
+	return player->upkeep->quiver[i];
+}
+
+
+
 /*
  * Display a list of objects.  Each object may be prefixed with a label.
  * Used by show_inven(), show_equip(), and show_floor().  Mode flags are
@@ -237,7 +293,7 @@ static void show_obj_list(int num_obj, int num_head, char labels[50][80],
 		for (j = 0; j < quiver_slots; j++, i++)
 		{
 			const char *fmt = "in Quiver: %d missile%s";
-			char letter = index_to_label(in_term ? i - 1 : i);
+			char letter = inven_to_label(in_term ? i - 1 : i);
 
 			/* Number of missiles in this "slot" */
 			if (j == quiver_slots - 1)
@@ -317,7 +373,8 @@ void show_inven(int mode, item_tester tester)
 
 		/* Acceptable items get a label */
 		if (object_test(tester, o_ptr))
-			strnfmt(labels[num_obj], sizeof(labels[num_obj]), "%c) ", index_to_label(i));
+			strnfmt(labels[num_obj], sizeof(labels[num_obj]), "%c) ",
+					inven_to_label(i));
 
 		/* Unacceptable items are still sometimes shown */
 		else if (in_term)
@@ -369,7 +426,7 @@ void show_quiver(int mode, int start, item_tester tester)
 		/* Acceptable items get a label */
 		if (object_test(tester, o_ptr))
 			strnfmt(labels[num_obj], sizeof(labels[num_obj]), "%c) ",
-					index_to_label(i + 1 + player->body.count));
+					quiver_to_label(i + 1 + player->body.count));
 
 		/* Unacceptable items are still sometimes shown */
 		else if (in_term)
@@ -415,7 +472,8 @@ void show_equip(int mode, item_tester tester)
 
 		/* Acceptable items get a label */
 		if (object_test(tester, o_ptr))
-			strnfmt(labels[num_obj], sizeof(labels[num_obj]), "%c) ", index_to_label(i));
+			strnfmt(labels[num_obj], sizeof(labels[num_obj]), "%c) ",
+					equip_to_label(i));
 
 		/* Unacceptable items are still sometimes shown */
 		else if ((!o_ptr->kind && show_empty) || in_term)
@@ -471,7 +529,7 @@ void show_floor(const int *floor_list, int floor_num, int mode, item_tester test
 			continue;
 
 		strnfmt(labels[num_obj], sizeof(labels[num_obj]),
-		        "%c) ", index_to_label(i));
+		        "%c) ", floor_to_label(i));
 
 		/* Save the object */
 		objects[num_obj] = o_ptr;
@@ -938,7 +996,7 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd,
 			{
 				/* Build the prompt */
 				strnfmt(tmp_val, sizeof(tmp_val), " %c-%c,",
-				        index_to_label(i1), index_to_label(i2));
+				        inven_to_label(i1), inven_to_label(i2));
 
 				/* Append */
 				my_strcat(out_val, tmp_val, sizeof(out_val));
@@ -977,8 +1035,8 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd,
 			{
 				/* Build the prompt */
 				strnfmt(tmp_val, sizeof(tmp_val), " %c-%c,",
-				        index_to_label(e1),
-				        index_to_label(q2 + 1 + player->body.count));
+				        equip_to_label(e1),
+				        quiver_to_label(q2));
 
 				/* Append */
 				my_strcat(out_val, tmp_val, sizeof(out_val));
@@ -987,7 +1045,7 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd,
 			{
 				/* Build the prompt */
 				strnfmt(tmp_val, sizeof(tmp_val), " %c-%c,",
-				        index_to_label(e1),	index_to_label(e2));
+				        equip_to_label(e1),	equip_to_label(e2));
 
 				/* Append */
 				my_strcat(out_val, tmp_val, sizeof(out_val));
@@ -996,8 +1054,8 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd,
 			{
 				/* Build the prompt */
 				strnfmt(tmp_val, sizeof(tmp_val), " %c-%c,",
-				        index_to_label(q1 + 1 + player->body.count),
-				        index_to_label(q2 + 1 + player->body.count));
+				        quiver_to_label(q1),
+				        quiver_to_label(q2));
 
 				/* Append */
 				my_strcat(out_val, tmp_val, sizeof(out_val));

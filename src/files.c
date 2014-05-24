@@ -1075,7 +1075,7 @@ errr file_character(const char *path, bool full)
 		if (!obj->kind) continue;
 
 		object_desc(o_name, sizeof(o_name), obj, ODESC_PREFIX | ODESC_FULL);
-		file_putf(fp, "%c) %s\n", index_to_label(i), o_name);
+		file_putf(fp, "%c) %s\n", equip_to_label(i), o_name);
 		object_info_chardump(fp, obj, 5, 72);
 	}
 	file_putf(fp, "\n\n");
@@ -1088,7 +1088,7 @@ errr file_character(const char *path, bool full)
 		if (!obj->kind) break;
 
 		object_desc(o_name, sizeof(o_name), obj, ODESC_PREFIX | ODESC_FULL);
-		file_putf(fp, "%c) %s\n", index_to_label(i), o_name);
+		file_putf(fp, "%c) %s\n", inven_to_label(i), o_name);
 		object_info_chardump(fp, obj, 5, 72);
 	}
 	file_putf(fp, "\n\n");
@@ -1101,7 +1101,7 @@ errr file_character(const char *path, bool full)
 		if (!obj->kind) break;
 
 		object_desc(o_name, sizeof(o_name), obj, ODESC_PREFIX | ODESC_FULL);
-		file_putf(fp, "%c) %s\n", index_to_label(i), o_name);
+		file_putf(fp, "%c) %s\n", quiver_to_label(i), o_name);
 		object_info_chardump(fp, obj, 5, 72);
 	}
 	file_putf(fp, "\n\n");

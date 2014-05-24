@@ -1622,7 +1622,7 @@ int inven_damage(struct player *p, int type, int cperc)
 				           ((o_ptr->number > 1) ?
 				            ((amt == o_ptr->number) ? "All of y" :
 				             (amt > 1 ? "Some of y" : "One of y")) : "Y"),
-				           o_name, index_to_label(i),
+				           o_name, gear_to_label(i),
 				           ((amt > 1) ? "were" : "was"),
 					   (damage ? "damaged" : "destroyed"));
 

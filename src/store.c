@@ -1780,7 +1780,7 @@ void do_cmd_buy(struct command *cmd)
 	/* Message */
 	object_desc(o_name, sizeof(o_name), &player->gear[item_new],
 				ODESC_PREFIX | ODESC_FULL);
-	msg("You have %s (%c).", o_name, index_to_label(item_new));
+	msg("You have %s (%c).", o_name, gear_to_label(item_new));
 
 	/* Hack - Reduce the number of charges in the original stack */
 	if (tval_can_have_charges(o_ptr))
@@ -1879,7 +1879,7 @@ void do_cmd_retrieve(struct command *cmd)
 				ODESC_PREFIX | ODESC_FULL);
 	
 	/* Message */
-	msg("You have %s (%c).", o_name, index_to_label(item_new));
+	msg("You have %s (%c).", o_name, gear_to_label(item_new));
 	
 	/* Handle stuff */
 	handle_stuff(player->upkeep);
@@ -2007,9 +2007,9 @@ void do_cmd_sell(struct command *cmd)
 
 	/* Describe the result (in message buffer) */
 	if (OPT(birth_no_selling)) {
-		msg("You had %s (%c).", o_name, index_to_label(item));
+		msg("You had %s (%c).", o_name, gear_to_label(item));
 	} else {
-		msg("You sold %s (%c) for %ld gold.", o_name, index_to_label(item), (long)price);
+		msg("You sold %s (%c) for %ld gold.", o_name, gear_to_label(item), (long)price);
 
 		/* Analyze the prices (and comment verbally) */
 		purchase_analyze(price, value, dummy);
@@ -2086,7 +2086,7 @@ void do_cmd_stash(struct command *cmd)
 	object_desc(o_name, sizeof(o_name), &dropped_item, ODESC_PREFIX | ODESC_FULL);
 
 	/* Message */
-	msg("You drop %s (%c).", o_name, index_to_label(item));
+	msg("You drop %s (%c).", o_name, gear_to_label(item));
 	
 	/* Take it from the players inventory */
 	inven_item_increase(item, -amt);

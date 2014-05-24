@@ -406,9 +406,10 @@ static void melee_effect_handler_eat_item(melee_effect_handler_context_t *contex
 		object_type *o_ptr, *i_ptr;
 		char o_name[80];
         object_type object_type_body;
+		int index = randint0(INVEN_PACK);
 
         /* Pick an item */
-        item = context->p->upkeep->inven[randint0(INVEN_PACK)];
+        item = context->p->upkeep->inven[index];
 
 		/* Skip non-objects */
 		if (item == NO_OBJECT) continue;
@@ -425,7 +426,7 @@ static void melee_effect_handler_eat_item(melee_effect_handler_context_t *contex
         /* Message */
         msg("%s %s (%c) was stolen!",
             ((o_ptr->number > 1) ? "One of your" : "Your"),
-            o_name, index_to_label(item));
+            o_name, inven_to_label(index));
 
         /* Get local object */
         i_ptr = &object_type_body;
@@ -475,7 +476,8 @@ static void melee_effect_handler_eat_food(melee_effect_handler_context_t *contex
 
 	for (tries = 0; tries < 10; tries++) {
 		/* Pick an item from the pack */
-		item = context->p->upkeep->inven[randint0(INVEN_PACK)];
+		int index = randint0(INVEN_PACK);
+		item = context->p->upkeep->inven[index];
 
 		/* Skip non-objects */
 		if (item == NO_OBJECT) continue;
@@ -488,11 +490,12 @@ static void melee_effect_handler_eat_food(melee_effect_handler_context_t *contex
 
 		if (o_ptr->number == 1) {
 			object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
-			msg("Your %s (%c) was eaten!", o_name, index_to_label(item));
+			msg("Your %s (%c) was eaten!", o_name, inven_to_label(index));
 		} else {
 			object_desc(o_name, sizeof(o_name), o_ptr,
 						ODESC_PREFIX | ODESC_BASE);
-			msg("One of your %s (%c) was eaten!", o_name, index_to_label(item));
+			msg("One of your %s (%c) was eaten!", o_name,
+				inven_to_label(index));
 		}
 
 		/* Steal the items */
