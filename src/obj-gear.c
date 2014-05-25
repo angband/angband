@@ -599,6 +599,9 @@ s16b inven_carry(struct player *p, struct object *o)
 			/* Redraw stuff */
 			p->upkeep->redraw |= (PR_INVEN);
 
+			/* Inventory will need updating */
+			update_stuff(player->upkeep);
+
 			/* Success */
 			return (j);
 		}
@@ -625,6 +628,9 @@ s16b inven_carry(struct player *p, struct object *o)
 	p->upkeep->update |= (PU_BONUS | PU_INVEN);
 	p->upkeep->notice |= (PN_COMBINE);
 	p->upkeep->redraw |= (PR_INVEN);
+
+	/* Inventory will need updating */
+	update_stuff(player->upkeep);
 
 	/* Hobbits ID mushrooms on pickup, gnomes ID wands and staffs on pickup */
 	if (!object_is_known(j_ptr))
