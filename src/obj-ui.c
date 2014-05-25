@@ -185,7 +185,7 @@ static void show_obj_list(int num_obj, int num_head, char labels[50][80],
 		/* Null objects are used to skip lines, or display only a label */		
 		if (!o_ptr || !o_ptr->kind)
 		{
-			if (i < num_head)
+			if ((i < num_head) || !strcmp(labels[i], "In quiver"))
 				strnfmt(o_name[i], sizeof(o_name[i]), "");
 			else
 				strnfmt(o_name[i], sizeof(o_name[i]), "(nothing)");
@@ -504,6 +504,45 @@ void show_equip(int mode, item_tester tester)
 		/* Save the object */
 		objects[num_obj] = o_ptr;
 		num_obj++;
+	}
+
+	/* Show the quiver in subwindows */
+	if (in_term) {
+		int last_slot = -1;
+
+		strnfmt(labels[num_obj], sizeof(labels[num_obj]), "In quiver");
+		objects[num_obj] = NULL;
+		num_obj++;
+
+		/* Find the last occupied quiver slot */
+		for (i = 0; i < QUIVER_SIZE; i++)
+			if (player->upkeep->quiver[i] != NO_OBJECT) last_slot = i;
+
+		/* Extend the object list */
+		for (i = 0; i <= last_slot; i++)
+		{
+			o_ptr = &player->gear[player->upkeep->quiver[i]];
+
+			/* Acceptable items get a label */
+			if (object_test(tester, o_ptr))
+				strnfmt(labels[num_obj], sizeof(labels[num_obj]), "%c) ",
+						quiver_to_label(i));
+
+			/* Unacceptable items are still sometimes shown */
+			else if (in_term)
+				my_strcpy(labels[num_obj], "   ", sizeof(labels[num_obj]));
+
+			/* Unacceptable items are skipped in the main window */
+			else continue;
+
+			/* Show full slot labels */
+			strnfmt(tmp_val, sizeof(tmp_val), "Slot %-9d: ", i);
+			my_strcat(labels[num_obj], tmp_val, sizeof(labels[num_obj]));
+
+			/* Save the object */
+			objects[num_obj] = o_ptr;
+			num_obj++;
+		}
 	}
 
 	/* Display the object list */
