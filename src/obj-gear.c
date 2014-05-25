@@ -34,7 +34,7 @@ static const struct slot_info {
 	bool acid_vuln;
 	bool name_in_desc;
 	const char *mention;
-	const char *heavy_mention;
+	const char *heavy_describe;
 	const char *describe;
 } slot_table[] = {
 	#define EQUIP(a, b, c, d, e, f) { EQUIP_##a, b, c, d, e, f },
@@ -205,16 +205,17 @@ int pack_slots_used(struct player *p)
 
 /*
  * Return a string mentioning how a given item is carried
- *
- * Need to deal with heavy weapon/bow - NRM
  */
 const char *equip_mention(struct player *p, int slot)
 {
 	int type;
 
-	//if (!item_is_equipped(item)) return "In pack";
-
 	type = p->body.slots[slot].type;
+
+	/* Heavy */
+	if ((type == EQUIP_WEAPON && p->state.heavy_wield) ||
+		(type == EQUIP_WEAPON && p->state.heavy_shoot))
+		return slot_table[type].heavy_describe;
 
 	if (slot_table[type].name_in_desc)
 		return format(slot_table[type].mention, p->body.slots[slot].name);
@@ -226,16 +227,17 @@ const char *equip_mention(struct player *p, int slot)
 /*
  * Return a string describing how a given item is being worn.
  * Currently, only used for items in the equipment, not inventory.
- *
- * Need to deal with heavy weapon/bow - NRM
  */
 const char *equip_describe(struct player *p, int slot)
 {
 	int type;
 
-	//if (!item_is_equipped(item)) return NULL;
-
 	type = p->body.slots[slot].type;
+
+	/* Heavy */
+	if ((type == EQUIP_WEAPON && p->state.heavy_wield) ||
+		(type == EQUIP_WEAPON && p->state.heavy_shoot))
+		return slot_table[type].heavy_describe;
 
 	if (slot_table[type].name_in_desc)
 		return format(slot_table[type].describe, p->body.slots[slot].name);

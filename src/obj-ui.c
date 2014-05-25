@@ -499,6 +499,7 @@ void show_equip(int mode, item_tester tester)
 
 		/* Show full slot labels */
 		strnfmt(tmp_val, sizeof(tmp_val), "%-14s: ", equip_mention(player, i));
+		my_strcap(tmp_val);
 		my_strcat(labels[num_obj], tmp_val, sizeof(labels[num_obj]));
 
 		/* Save the object */

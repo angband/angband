@@ -1,8 +1,8 @@
 /* list-equip-slots.h - types of slot for equipment */
-/* slot				acid_v	name	mention			heavy mention	describe */
+/* slot				acid_v	name	mention			heavy decribe	describe */
 EQUIP(NONE,			FALSE,	FALSE,	"",				"",				"")
-EQUIP(WEAPON,		FALSE,	FALSE,	"Wielding",		"Just lifting",	"attacking monsters with")
-EQUIP(BOW,			FALSE,	FALSE,	"Shooting",		"Just holding",	"shooting missiles with")
+EQUIP(WEAPON,		FALSE,	FALSE,	"Wielding",		"just lifting",	"attacking monsters with")
+EQUIP(BOW,			FALSE,	FALSE,	"Shooting",		"just holding",	"shooting missiles with")
 EQUIP(RING,			FALSE,	TRUE,	"On %s",		"",				"wearing on your %s")
 EQUIP(AMULET,		FALSE,	TRUE,	"Around %s",	"",				"wearing around your %s")
 EQUIP(LIGHT,		FALSE,	FALSE,	"Light source",	"",				"using to light your way")
