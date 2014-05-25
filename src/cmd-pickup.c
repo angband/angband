@@ -232,6 +232,10 @@ static void py_pickup_aux(int o_idx, bool domsg)
 	if (o_ptr->artifact)
 		history_add_artifact(o_ptr->artifact, object_is_known(o_ptr), TRUE);
 
+	/* Recalculate the inventory */
+	calc_inventory(player->upkeep, player->gear, player->body,
+				   player->max_gear);
+
 	/* Optionally, display a message */
 	if (domsg)
 	{
