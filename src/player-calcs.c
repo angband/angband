@@ -1014,9 +1014,22 @@ void calc_inventory(struct player_upkeep *upkeep, object_type gear[],
 
 		/* Find the first quiver object not yet allocated */
 		for (i = 0; i < max_gear; i++) {
+			const char *s;
 			struct object *current = &gear[i];
 			if (!possible[i]) continue;
 			if (!tval_is_ammo(current)) continue;
+
+			/* Allocate inscribed objects if it's the right slot */
+			if (current->note) {
+				s = strchr(quark_str(current->note), '@');
+				if ((s[1] == 'f') && (s[2] - '0' == quiver_slots)) {
+					first = current;
+					gear_index = i;
+					break;
+				}
+			}
+
+			/* Otherwise choose the first in order */
 			if (earlier_object(first, current)) {
 				first = current;
 				gear_index = i;
