@@ -661,11 +661,11 @@ void object_prep(object_type *o_ptr, struct object_kind *k, int lev,
 		o_ptr->pval
 			= randcalc(k->pval, lev, rand_aspect);
 
-	/* Default fuel for lamps */
+	/* Default fuel */
 	if (tval_is_light(o_ptr)) {
-		if (o_ptr->sval == SV_LIGHT_TORCH)
+		if (of_has(o_ptr->flags, OF_BURNS_OUT))
 			o_ptr->timeout = DEFAULT_TORCH;
-		else if (o_ptr->sval == SV_LIGHT_LANTERN)
+		else if (of_has(o_ptr->flags, OF_TAKES_FUEL))
 			o_ptr->timeout = DEFAULT_LAMP;
 	}
 

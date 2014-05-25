@@ -274,7 +274,7 @@ bool player_can_refuel(struct player *p, bool show_msg)
 {
 	object_type *obj = equipped_item_by_slot_name(player, "light");
 
-	if (obj->kind && obj->sval == SV_LIGHT_LANTERN)
+	if (obj->kind && of_has(obj->flags, OF_TAKES_FUEL))
 		return TRUE;
 
 	if (show_msg)

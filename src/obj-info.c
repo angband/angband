@@ -1278,7 +1278,7 @@ static bool obj_known_light(const object_type *o_ptr, oinfo_detail_t mode, int *
 		*uses_fuel = TRUE;
 	}
 
-	if (is_light && !no_fuel && o_ptr->sval != SV_LIGHT_TORCH) {
+	if (is_light && of_has(flags, OF_TAKES_FUEL)) {
 		*refuel_turns = FUEL_LAMP;
 	} else {
 		*refuel_turns = 0;
@@ -1309,10 +1309,11 @@ static bool describe_light(textblock *tb, const object_type *o_ptr,
 	if (!o_ptr->artifact && !uses_fuel)
 		textblock_append(tb, "  No fuel required.");
 
-	if (!terse && refuel_turns)
-	{
-		const char *name = (o_ptr->sval == SV_LIGHT_TORCH) ? "torches" : "lanterns";
-		textblock_append(tb, "  Refills other %s up to %d turns of fuel.", name, refuel_turns);
+	if (!terse) {
+		if (refuel_turns)
+			textblock_append(tb, "  Refills other lanterns up to %d turns of fuel.", refuel_turns);
+		else
+			textblock_append(tb, "  Cannot be refueled.");
 	}
 
 	textblock_append(tb, "\n");

@@ -742,7 +742,7 @@ static void process_world(struct chunk *c)
 				msg("Your light has gone out!");
 
 				/* If it's a torch, now is the time to delete it */
-				if (o_ptr->sval == SV_LIGHT_TORCH) {
+				if (of_has(o_ptr->flags, OF_BURNS_OUT)) {
 					inven_item_increase(object_gear_index(player, o_ptr), -1);
 					inven_item_optimize(object_gear_index(player, o_ptr));
 				}

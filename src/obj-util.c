@@ -1067,8 +1067,8 @@ s32b object_value_real(const object_type *o_ptr, int qty, int verbose,
 		power = object_power(o_ptr, verbose, log_file, known);
 		value = sign(power) * ((a * power * power) + (b * power));
 
-		if (tval_is_ammo(o_ptr) || (tval_is_light(o_ptr)
-			&& (o_ptr->sval == SV_LIGHT_TORCH) && !o_ptr->ego) )
+		if ((tval_is_light(o_ptr) && of_has(o_ptr->flags, OF_BURNS_OUT)
+			 && !o_ptr->ego) || tval_is_ammo(o_ptr))
 		{
 			value = value / AMMO_RESCALER;
 			if (value < 1) value = 1;
@@ -2233,19 +2233,16 @@ bool obj_can_activate(const object_type *o_ptr)
 bool obj_can_refill(const object_type *obj)
 {
 	const object_type *light = equipped_item_by_slot_name(player, "light");
-	bool no_fuel;
 
 	/* Need fuel? */
-	no_fuel = of_has(obj->flags, OF_NO_FUEL) ? TRUE : FALSE;
+	if (of_has(obj->flags, OF_NO_FUEL)) return FALSE;
 
 	/* A lantern can be refueled from a flask or another lantern */
-	if (light->sval == SV_LIGHT_LANTERN) {
+	if (of_has(light->flags, OF_TAKES_FUEL)) {
 		if (tval_is_fuel(obj))
 			return TRUE;
-		else if (tval_is_light(obj) &&
-			obj->sval == SV_LIGHT_LANTERN &&
-			obj->timeout > 0 &&
-			!no_fuel) 
+		else if (tval_is_light(obj) && of_has(obj->flags, OF_TAKES_FUEL) &&
+				 obj->timeout > 0) 
 			return TRUE;
 	}
 

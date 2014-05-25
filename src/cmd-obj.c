@@ -902,7 +902,7 @@ static void refill_lamp(object_type *j_ptr, object_type *o_ptr, int item)
 	}
 
 	/* Refilled from a lantern */
-	if (o_ptr->sval == SV_LIGHT_LANTERN)
+	if (of_has(o_ptr->flags, OF_TAKES_FUEL))
 	{
 		/* Unstack if necessary */
 		if (o_ptr->number > 1)
@@ -1001,7 +1001,7 @@ void do_cmd_refill(struct command *cmd)
 	} else if (of_has(j_ptr->flags, OF_NO_FUEL)) {
 		msg("Your light cannot be refilled.");
 		return;
-	} else if (j_ptr->sval == SV_LIGHT_LANTERN) {
+	} else if (of_has(j_ptr->flags, OF_TAKES_FUEL)) {
 		refill_lamp(j_ptr, o_ptr, item);
 	} else {
 		msg("Your light cannot be refilled.");
