@@ -944,7 +944,7 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd,
 	if (f1 <= f2) allow_floor = TRUE;
 
 	/* Require at least one legal choice */
-	if (!allow_inven && !allow_equip && !allow_floor)
+	if (!allow_inven && !allow_equip && !allow_quiver && !allow_floor)
 	{
 		/* Oops */
 		oops = TRUE;
@@ -959,6 +959,8 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd,
 			player->upkeep->command_wrk = USE_EQUIP;
 		else if ((player->upkeep->command_wrk == USE_INVEN) && allow_inven)
 			player->upkeep->command_wrk = USE_INVEN;
+		else if ((player->upkeep->command_wrk == USE_QUIVER) && allow_quiver)
+			player->upkeep->command_wrk = USE_QUIVER;
 		else if ((player->upkeep->command_wrk == USE_FLOOR) && allow_floor)
 			player->upkeep->command_wrk = USE_FLOOR;
 
@@ -1481,7 +1483,7 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd,
 				}
 
 				/* Hack -- Validate the item */
-				if (item_is_equipped(player, k) ? !allow_equip : !allow_inven)
+				if (!allow_quiver)
 				{
 					bell("Illegal object choice (tag)!");
 					break;
