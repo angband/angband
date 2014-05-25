@@ -372,7 +372,8 @@ int cmd_get_string(struct command *cmd, const char *arg, const char **str,
 
 	if (get_string(prompt, tmp, sizeof tmp)) {
 		cmd_set_arg_string(cmd, arg, tmp);
-		return CMD_OK;
+		if (cmd_get_arg_string(cmd, arg, str) == CMD_OK)
+			return CMD_OK;
 	}
 
 	return CMD_ARG_ABORTED;
