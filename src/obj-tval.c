@@ -16,6 +16,7 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
+#include "init.h"
 #include "obj-tval.h"
 #include "obj-tvalsval.h"
 #include "z-type.h"
@@ -386,4 +387,26 @@ const char *tval_find_name(int tval)
 	}
 
 	return "unknown";
+}
+
+/**
+ * Lists all the svals (from object.txt) of a given tval
+ * Assumes list can fit all the svals - dangerous, needs check NRM
+ */
+int tval_sval_list(const char *name, int *list)
+{
+	size_t i, num = 0;
+	int tval = tval_find_idx(name);
+
+	if (tval < 0) return 0;
+
+	for (i = 0; i < z_info->k_max; i++) {
+		object_kind *kind = &k_info[i];
+
+		if (!kind->tval) continue;
+		if (kind->tval != tval) continue;
+		list[num++] = kind->sval;
+	}
+
+	return num;
 }
