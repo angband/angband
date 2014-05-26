@@ -766,7 +766,7 @@ s16b apply_magic(object_type *o_ptr, int lev, bool allow_artifacts,
 		apply_magic_armour(o_ptr, lev, power);
 	}
 	else if (tval_is_ring(o_ptr)) {
-		if (o_ptr->sval == SV_RING_SPEED) {
+		if (o_ptr->sval == lookup_sval(o_ptr->tval, "Speed")) {
 			/* Super-charge the ring */
 			while (one_in_(2))
 				o_ptr->modifiers[OBJ_MOD_SPEED]++;

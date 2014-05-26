@@ -339,18 +339,21 @@ static byte object_list_entry_line_attribute(const object_list_entry_t *entry)
 }
 
 /**
- * Format the object name so that the prefix is right aligned to a common column.
+ * Format the object name so that the prefix is right aligned to a common
+ * column.
  *
- * This uses the default logic of object_desc() in order to handle flavors, artifacts,
- * vowels and so on. It was easier to do this and then use strtok() to break it up than
- * to do anything else.
+ * This uses the default logic of object_desc() in order to handle flavors,
+ * artifacts, vowels and so on. It was easier to do this and then use strtok()
+ * to break it up than to do anything else.
  *
  * \param entry is the object list entry that has a name to be formatted.
  * \param line_buffer is the buffer to format into.
  * \param size is the size of line_buffer.
  * \param full_width is the maximum formatted width allowed.
  */
-static void object_list_format_name(const object_list_entry_t *entry, char *line_buffer, size_t size, size_t full_width)
+static void object_list_format_name(const object_list_entry_t *entry,
+									char *line_buffer, size_t size,
+									size_t full_width)
 {
 	char name[80];
 	const char *chunk;
@@ -362,10 +365,11 @@ static void object_list_format_name(const object_list_entry_t *entry, char *line
 	if (entry == NULL || entry->object == NULL || entry->object->kind == NULL)
 		return;
 
-	/* Hack - these don't have a prefix when there is only one, so just pad with a space. */
+	/* Hack - these don't have a prefix when there is only one, so just pad
+	 * with a space. */
 	switch (entry->object->kind->tval) {
 		case TV_SOFT_ARMOR:
-			has_singular_prefix = (entry->object->kind->sval == SV_ROBE);
+			has_singular_prefix = (entry->object->kind->sval == lookup_sval(TV_SOFT_ARMOR, "Robe"));
 			break;
 		case TV_HARD_ARMOR:
 		case TV_DRAG_ARMOR:
@@ -383,16 +387,18 @@ static void object_list_format_name(const object_list_entry_t *entry, char *line
 		has_singular_prefix = TRUE;
 
 	/*
-	 * Because each entry points to a specific object and not something more general, the
-	 * number of similar objects we counted has to be swapped in. This isn't an ideal way
-	 * to do this, but it's the easiest way until object_desc is more flexible.
+	 * Because each entry points to a specific object and not something more
+	 * general, the number of similar objects we counted has to be swapped in.
+	 * This isn't an ideal way to do this, but it's the easiest way until
+	 * object_desc is more flexible.
 	 */
 	old_number = entry->object->number;
 	entry->object->number = entry->count;
 	object_desc(name, sizeof(name), entry->object, ODESC_PREFIX | ODESC_FULL);
 	entry->object->number = old_number;
 
-	/* The source string for strtok() needs to be set properly, depending on when we use it. */
+	/* The source string for strtok() needs to be set properly, depending on
+	 * when we use it. */
 	if (!has_singular_prefix && entry->count == 1) {
 		chunk = " ";
 		source = name;
@@ -411,14 +417,16 @@ static void object_list_format_name(const object_list_entry_t *entry, char *line
 }
 
 /**
- * Format a section of the object list: a header followed by object list entry rows.
+ * Format a section of the object list: a header followed by object list entry
+ * rows.
  *
  * This function will process each entry for the given section. It will display:
  * - object char;
  * - number of objects;
  * - object name (truncated, if needed to fit the line);
  * - object distance from the player (aligned to the right side of the list).
- * By passing in a NULL textblock, the maximum line width of the section can be found.
+ * By passing in a NULL textblock, the maximum line width of the section can
+ * be found.
  *
  * \param list is the object list to format.
  * \param tb is the textblock to produce or NULL if only the dimensions need to be calculated.
@@ -455,7 +463,9 @@ static void object_list_format_section(const object_list_t *list, textblock *tb,
 		return;
 	}
 
-	max_line_length = strnfmt(line_buffer, sizeof(line_buffer), "%s %d object%s%s\n", prefix, list->total_entries, PLURAL(list->total_entries), punctuation);
+	max_line_length = strnfmt(line_buffer, sizeof(line_buffer),
+							  "%s %d object%s%s\n", prefix, list->total_entries,
+							  PLURAL(list->total_entries), punctuation);
 
 	if (tb != NULL)
 		textblock_append(tb, "%s", line_buffer);
@@ -475,21 +485,26 @@ static void object_list_format_section(const object_list_t *list, textblock *tb,
 		/* Build the location string. */
 		strnfmt(location, sizeof(location), " %d %s %d %s", abs(list->entries[entry_index].dy), direction_y, abs(list->entries[entry_index].dx), direction_x);
 
-		/* Get width available for object name: 2 for char and space; location includes padding; last -1 for some reason? */
+		/* Get width available for object name: 2 for char and space; location
+		 * includes padding; last -1 for some reason? */
 		full_width = max_width - 2 - strlen(location) - 1;
 
 		/* Add the object count and clip the object name to fit. */
-		object_list_format_name(&list->entries[entry_index], line_buffer, sizeof(line_buffer), full_width);
+		object_list_format_name(&list->entries[entry_index], line_buffer,
+								sizeof(line_buffer), full_width);
 
-		/* Calculate the width of the line for dynamic sizing; use a fixed max width for location and object char. */
+		/* Calculate the width of the line for dynamic sizing; use a fixed max
+		 * width for location and object char. */
 		max_line_length = MAX(max_line_length, strlen(line_buffer) + 12 + 2);
 
-		/* textblock_append_pict will safely add the object symbol, regardless of ASCII/graphics mode. */
+		/* textblock_append_pict will safely add the object symbol, regardless
+		 * of ASCII/graphics mode. */
 		if (tb != NULL && tile_width == 1 && tile_height == 1) {
 			byte a = TERM_RED;
 			wchar_t c = L'*';
 
-			if (!is_unknown(list->entries[entry_index].object) && list->entries[entry_index].object->kind != NULL) {
+			if (!is_unknown(list->entries[entry_index].object) &&
+				list->entries[entry_index].object->kind != NULL) {
 				a = object_kind_attr(list->entries[entry_index].object->kind);
 				c = object_kind_char(list->entries[entry_index].object->kind);
 			}
@@ -498,29 +513,36 @@ static void object_list_format_section(const object_list_t *list, textblock *tb,
 			textblock_append(tb, " ");
 		}
 
-		/* Add the left-aligned and padded object name which will align the location to the right. */
+		/* Add the left-aligned and padded object name which will align the
+		 * location to the right. */
 		if (tb != NULL) {
 			/*
-			 * Hack - Because object name strings are UTF8, we have to add additional padding for
-			 * any raw bytes that might be consolidated into one displayed character.
+			 * Hack - Because object name strings are UTF8, we have to add
+			 * additional padding for any raw bytes that might be consolidated
+			 * into one displayed character.
 			 */
-			full_width += strlen(line_buffer) - text_mbstowcs(NULL, line_buffer, 0);
+			full_width += strlen(line_buffer) -
+				text_mbstowcs(NULL, line_buffer, 0);
 			line_attr = object_list_entry_line_attribute(&list->entries[entry_index]);
-			textblock_append_c(tb, line_attr, "%-*s%s\n", full_width, line_buffer, location);
+			textblock_append_c(tb, line_attr, "%-*s%s\n", full_width,
+							   line_buffer, location);
 		}
 
 		line_count++;
 	}
 
-	/* Don't worry about the "...others" line, since it's probably shorter than what's already printed. */
+	/* Don't worry about the "...others" line, since it's probably shorter than
+	 * what's already printed. */
 	if (max_width_result != NULL)
 		*max_width_result = max_line_length;
 
-	/* Bail since we don't have enough room to display the remaining count or since we've displayed them all. */
+	/* Bail since we don't have enough room to display the remaining count or
+	 * since we've displayed them all. */
 	if (lines_to_display <= 0 || lines_to_display >= list->total_entries)
 		return;
 
-	/* Count the remaining objects, starting where we left off in the above loop. */
+	/* Count the remaining objects, starting where we left off in the above
+	 * loop. */
 	remaining_object_total = total - entry_index;
 
 	if (tb != NULL)
@@ -648,13 +670,15 @@ void object_list_show_interactive(int height, int width)
 	object_list_sort(list, object_list_standard_compare);
 
 	/*
-	 * Figure out optimal display rect. Large numbers are passed as the height and
-	 * width limit so that we can calculate the maximum number of rows and columns
-	 * to display the list nicely. We then adjust those values as needed to fit in
-	 * the main term. Height is adjusted to account for the texblock prompt. The
-	 * list is positioned on the right side of the term underneath the status line.
+	 * Figure out optimal display rect. Large numbers are passed as the height
+	 * and width limit so that we can calculate the maximum number of rows and
+	 * columns to display the list nicely. We then adjust those values as
+	 * needed to fit in the main term. Height is adjusted to account for the
+	 * texblock prompt. The list is positioned on the right side of the term
+	 * underneath the status line.
 	 */
-	object_list_format_textblock(list, NULL, 1000, 1000, &max_height, &max_width);
+	object_list_format_textblock(list, NULL, 1000, 1000, &max_height,
+								 &max_width);
 	safe_height = MIN(height - 2, (int)max_height + 2);
 	safe_width = MIN(width - 13, (int)max_width);
 	r.col = -safe_width;
@@ -663,13 +687,14 @@ void object_list_show_interactive(int height, int width)
 	r.page_rows = safe_height;
 
 	/*
-	 * Actually draw the list. We pass in max_height to the format function so that
-	 * all lines will be appended to the textblock. The textblock itself will handle
-	 * fitting it into the region. However, we have to pass safe_width so that the
-	 * format function will pad the lines properly so that the location string is
-	 * aligned to the right edge of the list.
+	 * Actually draw the list. We pass in max_height to the format function so
+	 * that all lines will be appended to the textblock. The textblock itself
+	 * will handle fitting it into the region. However, we have to pass
+	 * safe_width so that the format function will pad the lines properly so
+	 * that the location string is aligned to the right edge of the list.
 	 */
-	object_list_format_textblock(list, tb, (int)max_height, safe_width, NULL, NULL);
+	object_list_format_textblock(list, tb, (int)max_height, safe_width, NULL,
+								 NULL);
 	region_erase_bordered(&r);
 	textui_textblock_show(tb, r, NULL);
 

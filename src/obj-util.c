@@ -115,8 +115,8 @@ static void flavor_assign_random(byte tval)
 /**
  * Reset svals on flavors, effectively removing any fixed flavors.
  *
- * Mainly useful for randarts so that fixed flavors for standards aren't predictable. The One Ring
- * is kept as fixed, since it lives through randarts.
+ * Mainly useful for randarts so that fixed flavors for standards aren't
+ * predictable. The One Ring is kept as fixed, since it lives through randarts.
  */
 void flavor_reset_fixed(void)
 {
