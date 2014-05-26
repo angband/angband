@@ -434,9 +434,9 @@ static size_t obj_desc_combat(const object_type *o_ptr, char *buf, size_t max,
 		if ((o_ptr->modifiers[OBJ_MOD_MIGHT] > 0) &&
 		    (spoil || object_this_mod_is_visible(o_ptr, OBJ_MOD_MIGHT)))
 			strnfcat(buf, max, &end, " (x%d)",
-					 (o_ptr->sval % 10) + o_ptr->modifiers[OBJ_MOD_MIGHT]);
+					 o_ptr->pval + o_ptr->modifiers[OBJ_MOD_MIGHT]);
 		else
-			strnfcat(buf, max, &end, " (x%d)", o_ptr->sval % 10);
+			strnfcat(buf, max, &end, " (x%d)", o_ptr->pval);
 	}
 
 	/* Show weapon bonuses */

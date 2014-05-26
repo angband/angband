@@ -656,8 +656,9 @@ void object_prep(object_type *o_ptr, struct object_kind *k, int lev,
 	if (tval_can_have_charges(o_ptr))
 		o_ptr->pval = randcalc(k->charge, lev, rand_aspect);
 
-	/* Assign flagless pval for food or oil */
-	if (tval_is_food(o_ptr) || tval_is_potion(o_ptr) || tval_is_fuel(o_ptr))
+	/* Assign pval for food, oil and launchers */
+	if (tval_is_food(o_ptr) || tval_is_potion(o_ptr) || tval_is_fuel(o_ptr) ||
+		tval_is_launcher(o_ptr))
 		o_ptr->pval
 			= randcalc(k->pval, lev, rand_aspect);
 

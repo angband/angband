@@ -151,6 +151,11 @@ bool tval_is_ammo(const struct object *o_ptr)
 	}
 }
 
+bool tval_is_launcher(const struct object *o_ptr)
+{
+	return o_ptr->tval == TV_BOW;
+}
+
 bool tval_is_useable(const struct object *o_ptr)
 {
 	switch (o_ptr->tval) {

@@ -2061,49 +2061,16 @@ void calc_bonuses(object_type gear[], player_state *state, bool known_only)
 		/* Get to shoot */
 		state->num_shots = 1;
 
-		/* Analyze the launcher */
-		switch (o_ptr->sval)
-		{
-			/* Sling and ammo */
-			case SV_SLING:
-			{
-				state->ammo_tval = TV_SHOT;
-				state->ammo_mult = 2;
-				break;
-			}
+		/* Type of ammo */
+		if (kf_has(o_ptr->kind->kind_flags, KF_SHOOTS_SHOTS))
+			state->ammo_tval = TV_SHOT;
+		else if (kf_has(o_ptr->kind->kind_flags, KF_SHOOTS_ARROWS))
+			state->ammo_tval = TV_ARROW;
+		else if (kf_has(o_ptr->kind->kind_flags, KF_SHOOTS_BOLTS))
+			state->ammo_tval = TV_BOLT;
 
-			/* Short Bow and Arrow */
-			case SV_SHORT_BOW:
-			{
-				state->ammo_tval = TV_ARROW;
-				state->ammo_mult = 2;
-				break;
-			}
-
-			/* Long Bow and Arrow */
-			case SV_LONG_BOW:
-			{
-				state->ammo_tval = TV_ARROW;
-				state->ammo_mult = 3;
-				break;
-			}
-
-			/* Light Crossbow and Bolt */
-			case SV_LIGHT_XBOW:
-			{
-				state->ammo_tval = TV_BOLT;
-				state->ammo_mult = 3;
-				break;
-			}
-
-			/* Heavy Crossbow and Bolt */
-			case SV_HEAVY_XBOW:
-			{
-				state->ammo_tval = TV_BOLT;
-				state->ammo_mult = 4;
-				break;
-			}
-		}
+		/* Multiplier */
+		state->ammo_mult = o_ptr->pval;
 
 		/* Apply special flags */
 		if (o_ptr->kind && !state->heavy_shoot)

@@ -697,9 +697,7 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 				add_stats(ST_VERYGOOD_BOWS, vault, mon, number);
 
 			/* check long bows and xbows for xtra might and/or shots */
-			if ((o_ptr->sval == SV_LONG_BOW) ||
-				(o_ptr->sval == SV_LIGHT_XBOW) ||
-				(o_ptr->sval == SV_HEAVY_XBOW))
+			if (o_ptr->pval > 2)
 			{
 				if (o_ptr->modifiers[OBJ_MOD_SHOTS] > 0)
 					add_stats(ST_XTRASHOTS_BOWS, vault, mon, number);
@@ -709,7 +707,8 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 			}
 
 			/* check for buckland */
-			if ((o_ptr->sval == SV_SLING) &&
+			if ((o_ptr->pval == 2) &&
+				kf_has(o_ptr->kind->kind_flags, KF_SHOOTS_SHOTS) &&
 				(o_ptr->modifiers[OBJ_MOD_MIGHT] > 0) &&
 				(o_ptr->modifiers[OBJ_MOD_SHOTS] > 0))
 					add_stats(ST_BUCKLAND_BOWS, vault, mon, number);

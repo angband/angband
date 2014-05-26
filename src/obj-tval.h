@@ -40,6 +40,7 @@ bool tval_is_mushroom_k(const struct object_kind *k_ptr);
 bool tval_is_fuel(const struct object *o_ptr);
 bool tval_is_head_armor(const struct object *o_ptr);
 bool tval_is_jewelry(const struct object *o_ptr);
+bool tval_is_launcher(const struct object *o_ptr);
 bool tval_is_light(const struct object *o_ptr);
 bool tval_is_light_k(const struct object_kind *k_ptr);
 bool tval_is_melee_weapon(const struct object *o_ptr);

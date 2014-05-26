@@ -166,15 +166,11 @@ static int bow_multiplier(const object_type *o_ptr)
 {
 	int mult = 1;
 
-	if (o_ptr->tval != TV_BOW) return mult;
+	if (o_ptr->tval != TV_BOW)
+		return mult;
+	else
+		mult = o_ptr->pval;
 
-	switch (o_ptr->sval) {
-	case SV_SLING:
-	case SV_SHORT_BOW:  mult = 2; break;
-	case SV_LONG_BOW:
-	case SV_LIGHT_XBOW: mult = 3; break;
-	case SV_HEAVY_XBOW: mult = 4; break;
-	}
 	log_obj(format("Base mult for this weapon is %d\n", mult));
 	return mult;
 }
@@ -229,11 +225,12 @@ static int ammo_damage_power(const object_type *o_ptr, int p)
 	int launcher;
 
 	if (wield_slot(o_ptr) == slot_by_name(player, "bow")) {
-		if (o_ptr->sval == SV_SLING) launcher = 0;
-		else if ((o_ptr->sval == SV_SHORT_BOW) ||
-				 (o_ptr->sval == SV_LONG_BOW)) launcher = 1; 
-		else if ((o_ptr->sval == SV_LIGHT_XBOW) ||
-				 (o_ptr->sval == SV_HEAVY_XBOW)) launcher = 2;
+		if (kf_has(o_ptr->kind->kind_flags, KF_SHOOTS_SHOTS))
+			launcher = 0;
+		else if (kf_has(o_ptr->kind->kind_flags, KF_SHOOTS_ARROWS))
+			launcher = 1; 
+		else if (kf_has(o_ptr->kind->kind_flags, KF_SHOOTS_BOLTS))
+			launcher = 2; 
 
 		q = (archery[launcher].ammo_dam * DAMAGE_POWER / 2);
 		log_obj(format("Adding %d power from ammo, total is %d\n", q, p + q));
