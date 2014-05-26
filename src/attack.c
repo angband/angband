@@ -469,9 +469,6 @@ static void ranged_helper(int item, int dir, int range, int shots, ranged_attack
 			Term_xtra(TERM_XTRA_DELAY, msec);
 		}
 
-		/* Handle monster */
-		if (cave->m_idx[y][x] > 0) break;
-
 		/* Try the attack on the monster at (x, y) if any */
 		if (cave->m_idx[y][x] > 0) {
 			monster_type *m_ptr = square_monster(cave, y, x);
