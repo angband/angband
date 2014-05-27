@@ -43,15 +43,29 @@
 /* Define a value for minima which will be ignored. */
 #define NO_MINIMUM 	255
 
+/* The largest possible average gold drop at max depth with biggest spread */
+#define MAX_GOLD_DROP     (3 * MAX_DEPTH + 30)
+
 static s16b alloc_ego_size;
 static alloc_entry *alloc_ego_table;
 
-static void init_ego_allocs(void) {
+struct money {
+	char *name;
+	int type;
+};
+
+static struct money *money_type;
+static int num_money_types;
+
+static void init_obj_make(void) {
 	struct alloc_entry *table;
 	int i;
 	ego_item_type *e_ptr;
 	s16b num[MAX_DEPTH];
 	s16b aux[MAX_DEPTH];
+	int *money_svals;
+
+	/*** Initialize ego-item allocation info ***/
 
 	/* Clear the "aux" array */
 	(void)C_WIPE(aux, MAX_DEPTH, s16b);
@@ -86,10 +100,8 @@ static void init_ego_allocs(void) {
 		num[i] += num[i-1];
 	}
 
-	/*** Initialize ego-item allocation info ***/
-
 	/* Allocate the alloc_ego_table */
-	alloc_ego_table = C_ZNEW(alloc_ego_size, alloc_entry);
+	alloc_ego_table = mem_zalloc(alloc_ego_size * sizeof(alloc_entry));
 
 	/* Get the table entry */
 	table = alloc_ego_table;
@@ -129,10 +141,25 @@ static void init_ego_allocs(void) {
 		}
 	}
 
+	/*** Initialize money info ***/
+
+	/* Count the money types and make a list */
+	num_money_types = tval_sval_count("gold");
+	money_type = mem_zalloc(num_money_types * sizeof(struct money));
+	money_svals = mem_zalloc(num_money_types * sizeof(struct money));
+	tval_sval_list("gold", money_svals, num_money_types);
+
+	/* List the money types */
+	for (i = 0; i < num_money_types; i++) {
+		money_type[i].name = string_make(objkind_get(TV_GOLD, money_svals[i])->name);
+		money_type[i].type = money_svals[i];
+	}
+	mem_free(money_svals);
 }
 
-static void cleanup_ego_allocs(void) {
-	FREE(alloc_ego_table);
+static void cleanup_obj_make(void) {
+	mem_free(alloc_ego_table);
+	mem_free(money_type);
 }
 
 /*** Make an ego item ***/
@@ -1083,9 +1110,6 @@ bool make_object(struct chunk *c, object_type *j_ptr, int lev, bool good,
 
 /*** Make a gold item ***/
 
-/* The largest possible average gold drop at max depth with biggest spread */
-#define MAX_GOLD_DROP     (3 * MAX_DEPTH + 30)
-
 /*
  * Make a money object
  */
@@ -1127,6 +1151,6 @@ void make_gold(object_type *j_ptr, int lev, int coin_type)
 
 struct init_module obj_make_module = {
 	.name = "object/obj-make",
-	.init = init_ego_allocs,
-	.cleanup = cleanup_ego_allocs
+	.init = init_obj_make,
+	.cleanup = cleanup_obj_make
 };

@@ -80,7 +80,7 @@ static void py_pickup_gold(void)
 	int px = player->px;
 
 	s32b total_gold = 0L;
-	int *treasure;
+	int *treasure, *money_types;
 	int num_money_types;
 
 	s16b this_o_idx = 0;
@@ -93,9 +93,11 @@ static void py_pickup_gold(void)
 
 	/* Count the money types, and list them */
 	num_money_types = tval_sval_count("gold");
+	money_types = mem_zalloc(num_money_types * sizeof(int));
+	tval_sval_list("gold", money_types, num_money_types);
 
 	/* Allocate an array of ordinary gold objects */
-	treasure = mem_zalloc(num_treasures * sizeof(int));
+	treasure = mem_zalloc(num_money_types * sizeof(int));
 
 	/* Pick up all the ordinary gold objects */
 	for (this_o_idx = cave->o_idx[py][px]; this_o_idx; this_o_idx = next_o_idx)
@@ -110,7 +112,7 @@ static void py_pickup_gold(void)
 		if (!tval_is_money(o_ptr) || (o_ptr->sval >= num_money_types)) continue;
 
 		/* Note that we have this kind of treasure */
-		treasure[o_ptr->sval]++;
+		treasure[money_types[o_ptr->sval]]++;
 
 		/* Remember whether feedback message is in order */
 		if (!squelch_item_ok(o_ptr))
@@ -149,7 +151,7 @@ static void py_pickup_gold(void)
 			if (!treasure[i]) continue;
 
 			/* Get this object index */
-			kind = lookup_kind(TV_GOLD, i);
+			kind = lookup_kind(TV_GOLD, money_types[i]);
 			if (!kind) continue;
 
 			/* Get the object name */
@@ -190,7 +192,8 @@ static void py_pickup_gold(void)
 		player->upkeep->redraw |= (PR_GOLD);
 	}
 
-	/* Free the gold array */
+	/* Free the gold arrays */
+	mem_free(money_types);
 	mem_free(treasure);
 }
 
