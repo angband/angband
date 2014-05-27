@@ -80,7 +80,8 @@ static void py_pickup_gold(void)
 	int px = player->px;
 
 	s32b total_gold = 0L;
-	byte *treasure;
+	int *treasure;
+	int num_money_types;
 
 	s16b this_o_idx = 0;
 	s16b next_o_idx = 0;
@@ -90,9 +91,11 @@ static void py_pickup_gold(void)
 	int sound_msg;
 	bool verbal = FALSE;
 
-	/* Allocate an array of ordinary gold objects */
-	treasure = C_ZNEW(SV_GOLD_MAX, byte);
+	/* Count the money types, and list them */
+	num_money_types = tval_sval_count("gold");
 
+	/* Allocate an array of ordinary gold objects */
+	treasure = mem_zalloc(num_treasures * sizeof(int));
 
 	/* Pick up all the ordinary gold objects */
 	for (this_o_idx = cave->o_idx[py][px]; this_o_idx; this_o_idx = next_o_idx)
@@ -104,8 +107,7 @@ static void py_pickup_gold(void)
 		next_o_idx = o_ptr->next_o_idx;
 
 		/* Ignore if not legal treasure */
-		if (!tval_is_money(o_ptr) ||
-		    (o_ptr->sval >= SV_GOLD_MAX)) continue;
+		if (!tval_is_money(o_ptr) || (o_ptr->sval >= num_money_types)) continue;
 
 		/* Note that we have this kind of treasure */
 		treasure[o_ptr->sval]++;
@@ -130,16 +132,18 @@ static void py_pickup_gold(void)
 		object_kind *kind;
 
 		/* Build a message */
-		(void)strnfmt(buf, sizeof(buf), "You have found %ld gold pieces worth of ", (long)total_gold);
+		(void)strnfmt(buf, sizeof(buf),
+					  "You have found %ld gold pieces worth of ",
+					  (long)total_gold);
 
 		/* Count the types of treasure present */
-		for (total = 0, i = 0; i < SV_GOLD_MAX; i++)
+		for (total = 0, i = 0; i < num_money_types; i++)
 		{
 			if (treasure[i]) total++;
 		}
 
 		/* List the treasure types */
-		for (count = 0, i = 0; i < SV_GOLD_MAX; i++)
+		for (count = 0, i = 0; i < num_money_types; i++)
 		{
 			/* Skip if no treasure of this type */
 			if (!treasure[i]) continue;
@@ -158,10 +162,12 @@ static void py_pickup_gold(void)
 			count++;
 
 			/* Add a comma if necessary */
-			if ((total > 2) && (count < total)) my_strcat(buf, ",", sizeof(buf));
+			if ((total > 2) && (count < total))
+				my_strcat(buf, ",", sizeof(buf));
 
 			/* Add an "and" if necessary */
-			if ((total >= 2) && (count == total-1)) my_strcat(buf, " and", sizeof(buf));
+			if ((total >= 2) && (count == total-1))
+				my_strcat(buf, " and", sizeof(buf));
 
 			/* Add a space or period if necessary */
 			if (count < total) my_strcat(buf, " ", sizeof(buf));
@@ -185,7 +191,7 @@ static void py_pickup_gold(void)
 	}
 
 	/* Free the gold array */
-	FREE(treasure);
+	mem_free(treasure);
 }
 
 

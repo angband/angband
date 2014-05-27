@@ -3444,6 +3444,9 @@ E:DRAGON_POWER:50
 
 ##### Gold/gems #####
 
+# The svals of these objects need to be in ascending order of value, starting
+# at 0.
+
 N:520:copper
 G:$:u
 I:100:0
