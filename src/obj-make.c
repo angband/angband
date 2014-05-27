@@ -1113,9 +1113,9 @@ bool make_object(struct chunk *c, object_type *j_ptr, int lev, bool good,
 /*
  * Make a money object
  */
-void make_gold(object_type *j_ptr, int lev, int coin_type)
+void make_gold(object_type *j_ptr, int lev, char *coin_type)
 {
-	int sval;
+	int i, sval;
 
 	/* This average is 20 at dlev0, 100 at dlev40, 220 at dlev100. */
 	s32b avg = (18 * lev)/10 + 18;
@@ -1126,14 +1126,19 @@ void make_gold(object_type *j_ptr, int lev, int coin_type)
 	while (one_in_(100) && value * 10 <= MAX_SHORT)
 		value *= 10;
 
-	/* Pick a treasure variety scaled by level, or force a type */
-	if (coin_type != SV_GOLD_ANY)
-		sval = coin_type;
-	else
+	/* Check for specified treasure variety */
+	for (i = 0; i < num_money_types; i++)
+		if (streq(coin_type, money_type[i].name)) {
+			sval = money_type[i].type;
+			break;
+		}
+
+	/* Pick a treasure variety scaled by level */
+	if (i == num_money_types)
 		sval = (((value * 100) / MAX_GOLD_DROP) * SV_GOLD_MAX) / 100;
 
 	/* Do not create illegal treasure types */
-	if (sval >= SV_GOLD_MAX) sval = SV_GOLD_MAX - 1;
+	if (sval >= num_money_types) sval = num_money_types - 1;
 
 	/* Prepare a gold object */
 	object_prep(j_ptr, lookup_kind(TV_GOLD, sval), lev, RANDOMISE);

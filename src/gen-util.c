@@ -483,7 +483,7 @@ void place_gold(struct chunk *c, int y, int x, int level, byte origin)
 
     i_ptr = &object_type_body;
     object_wipe(i_ptr);
-    make_gold(i_ptr, level, SV_GOLD_ANY);
+    make_gold(i_ptr, level, "any");
 
     i_ptr->origin = origin;
     i_ptr->origin_depth = level;

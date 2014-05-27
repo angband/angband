@@ -749,7 +749,7 @@ static bool mon_create_drop(struct chunk *c, struct monster *m_ptr, byte origin)
 		object_wipe(i_ptr);
 
 		if (gold_ok && (!item_ok || (randint0(100) < 50))) {
-			make_gold(i_ptr, level, SV_GOLD_ANY);
+			make_gold(i_ptr, level, "any");
 		} else {
 			if (!make_object(c, i_ptr, level, good,
                 great, extra_roll, NULL, 0)) continue;
@@ -835,7 +835,8 @@ s16b place_monster(struct chunk *c, int y, int x, monster_type *mon, byte origin
 		i_ptr = &object_type_body;
 
 		if (tval_is_money_k(kind)) {
-			make_gold(i_ptr, player->depth, kind->sval);
+			make_gold(i_ptr, player->depth,
+					  objkind_get(TV_GOLD, kind->sval)->name);
 		} else {
 			object_prep(i_ptr, kind, m_ptr->race->level, RANDOMISE);
 			apply_magic(i_ptr, m_ptr->race->level, TRUE, FALSE, FALSE, FALSE);
