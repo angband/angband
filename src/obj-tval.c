@@ -390,10 +390,9 @@ const char *tval_find_name(int tval)
 }
 
 /**
- * Lists all the svals (from object.txt) of a given tval
- * Assumes list can fit all the svals - dangerous, needs check NRM
+ * Counts the svals (from object.txt) of a given non-null tval
  */
-int tval_sval_list(const char *name, int *list)
+int tval_sval_count(const char *name)
 {
 	size_t i, num = 0;
 	int tval = tval_find_idx(name);
@@ -405,6 +404,30 @@ int tval_sval_list(const char *name, int *list)
 
 		if (!kind->tval) continue;
 		if (kind->tval != tval) continue;
+		num++;
+	}
+
+	return num;
+}
+
+/**
+ * Lists up to max_size svals (from object.txt) of a given non-null tval
+ * Assumes list has allocated space for at least max_size elements
+ */
+int tval_sval_list(const char *name, int *list, int max_size)
+{
+	size_t i;
+	int num = 0;
+	int tval = tval_find_idx(name);
+
+	if (tval < 0) return 0;
+
+	for (i = 0; i < z_info->k_max; i++) {
+		object_kind *kind = &k_info[i];
+
+		if (!kind->tval) continue;
+		if (kind->tval != tval) continue;
+		if (num >= max_size) break;
 		list[num++] = kind->sval;
 	}
 

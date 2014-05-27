@@ -58,6 +58,7 @@ bool tval_is_weapon(const struct object *o_ptr);
 bool tval_is_wearable(const struct object *o_ptr);
 bool tval_is_edible(const struct object *o_ptr);
 bool tval_is_zapper(const struct object *o_ptr);
-int tval_sval_list(const char *name, int *list);
+int tval_sval_count(const char *name);
+int tval_sval_list(const char *name, int *list, int max_size);
 
 #endif /* OBJECT_TVAL_H */
