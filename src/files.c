@@ -364,7 +364,7 @@ static void display_resistance_panel(const struct player_flag_record *rec,
 				res = of_has(f, rec[i].flag);
 			} else if (rec[i].element != -1) {
 				imm = known && (o_ptr->el_info[rec[i].element].res_level == 3);
-				imm = known && (o_ptr->el_info[rec[i].element].res_level == 1);
+				res = known && (o_ptr->el_info[rec[i].element].res_level == 1);
 				vul = known && (o_ptr->el_info[rec[i].element].res_level == -1);
 			}
 
