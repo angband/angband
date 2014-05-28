@@ -398,8 +398,52 @@ bool chunk_copy(struct chunk *dest, struct chunk *source, int y0, int x0,
 				dest_mon->midx = idx;
 				dest_mon->fy = dest_y;
 				dest_mon->fx = dest_x;
-				dest_mon->hold_o_idx = held;
-				cave_object(dest, held)->held_m_idx = idx;
+
+				/* Objects take some work */
+				if (source_mon->hold_o_idx) {
+					first_obj = TRUE;
+					for (this_o_idx = source_mon->hold_o_idx; this_o_idx;
+						 this_o_idx = next_o_idx) {
+						object_type *held_obj = cave_object(source, this_o_idx);
+						object_type *dest_obj = NULL;
+						int o_idx;
+
+						/* Is this the first object on this square? */
+						if (first_obj) {
+							/* Make an object */
+							o_idx = o_pop(dest);
+
+							/* Hope this never happens */
+							if (!o_idx)
+								break;
+
+							/* Mark this monster as holding this object */
+							dest_mon->hold_o_idx = o_idx;
+
+							first_obj = FALSE;
+						}
+
+						/* Copy over */
+						dest_obj = cave_object(dest, o_idx);
+						object_copy(dest_obj, held_obj);
+
+						/* No position, held by this monster */
+						dest_obj->iy = 0;
+						dest_obj->ix = 0;
+						dest_obj->held_m_idx = dest_mon->midx;
+
+						/* Look at the next object, if there is one */
+						next_o_idx = held_obj->next_o_idx;
+
+						/* Make a slot for it if there is, and point to it */
+						if (next_o_idx) {
+							o_idx = o_pop(dest);
+							if (!o_idx)
+								break;
+							dest_obj->next_o_idx = o_idx;
+						}
+					}
+				}
 			}
 
 			/* Player */
