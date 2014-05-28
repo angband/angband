@@ -1135,7 +1135,7 @@ void make_gold(object_type *j_ptr, int lev, char *coin_type)
 
 	/* Pick a treasure variety scaled by level */
 	if (i == num_money_types)
-		sval = (((value * 100) / MAX_GOLD_DROP) * SV_GOLD_MAX) / 100;
+		sval = (((value * 100) / MAX_GOLD_DROP) * num_money_types) / 100;
 
 	/* Do not create illegal treasure types */
 	if (sval >= num_money_types) sval = num_money_types - 1;

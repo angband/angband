@@ -80,8 +80,7 @@ static void py_pickup_gold(void)
 	int px = player->px;
 
 	s32b total_gold = 0L;
-	int *treasure, *money_types;
-	int num_money_types;
+	char name[30] = "";
 
 	s16b this_o_idx = 0;
 	s16b next_o_idx = 0;
@@ -90,18 +89,13 @@ static void py_pickup_gold(void)
 
 	int sound_msg;
 	bool verbal = FALSE;
-
-	/* Count the money types, and list them */
-	num_money_types = tval_sval_count("gold");
-	money_types = mem_zalloc(num_money_types * sizeof(int));
-	tval_sval_list("gold", money_types, num_money_types);
-
-	/* Allocate an array of ordinary gold objects */
-	treasure = mem_zalloc(num_money_types * sizeof(int));
+	bool at_most_one = TRUE;
 
 	/* Pick up all the ordinary gold objects */
 	for (this_o_idx = cave->o_idx[py][px]; this_o_idx; this_o_idx = next_o_idx)
 	{
+		object_kind *kind = NULL;
+
 		/* Get the object */
 		o_ptr = cave_object(cave, this_o_idx);
 
@@ -109,10 +103,14 @@ static void py_pickup_gold(void)
 		next_o_idx = o_ptr->next_o_idx;
 
 		/* Ignore if not legal treasure */
-		if (!tval_is_money(o_ptr) || (o_ptr->sval >= num_money_types)) continue;
+		kind = lookup_kind(o_ptr->tval, o_ptr->sval);
+		if (!tval_is_money(o_ptr) || !kind)	continue;
 
-		/* Note that we have this kind of treasure */
-		treasure[money_types[o_ptr->sval]]++;
+		/* Multiple types if we have a second name, otherwise record the name */
+		if (total_gold && !streq(kind->name, name))
+			at_most_one = FALSE;
+		else
+			my_strcpy(name, kind->name, sizeof(name));
 
 		/* Remember whether feedback message is in order */
 		if (!squelch_item_ok(o_ptr))
@@ -128,53 +126,20 @@ static void py_pickup_gold(void)
 	/* Pick up the gold, if present */
 	if (total_gold)
 	{
-		char buf[1024];
-		char tmp[80];
-		int i, count, total;
-		object_kind *kind;
+		char buf[100];
 
 		/* Build a message */
 		(void)strnfmt(buf, sizeof(buf),
 					  "You have found %ld gold pieces worth of ",
 					  (long)total_gold);
 
-		/* Count the types of treasure present */
-		for (total = 0, i = 0; i < num_money_types; i++)
-		{
-			if (treasure[i]) total++;
-		}
-
-		/* List the treasure types */
-		for (count = 0, i = 0; i < num_money_types; i++)
-		{
-			/* Skip if no treasure of this type */
-			if (!treasure[i]) continue;
-
-			/* Get this object index */
-			kind = lookup_kind(TV_GOLD, money_types[i]);
-			if (!kind) continue;
-
-			/* Get the object name */
-			object_kind_name(tmp, sizeof tmp, kind, TRUE);
-
-			/* Build up the pickup string */
-			my_strcat(buf, tmp, sizeof(buf));
-
-			/* Added another kind of treasure */
-			count++;
-
-			/* Add a comma if necessary */
-			if ((total > 2) && (count < total))
-				my_strcat(buf, ",", sizeof(buf));
-
-			/* Add an "and" if necessary */
-			if ((total >= 2) && (count == total-1))
-				my_strcat(buf, " and", sizeof(buf));
-
-			/* Add a space or period if necessary */
-			if (count < total) my_strcat(buf, " ", sizeof(buf));
-			else               my_strcat(buf, ".", sizeof(buf));
-		}
+		/* One treasure type.. */
+		if (at_most_one)
+			my_strcat(buf, name, sizeof(buf));
+		/* ... or more */
+		else
+			my_strcat(buf, "treasures", sizeof(buf));
+		my_strcat(buf, ".", sizeof(buf));
 
 		/* Determine which sound to play */
 		if      (total_gold < 200) sound_msg = MSG_MONEY1;
@@ -191,10 +156,6 @@ static void py_pickup_gold(void)
 		/* Redraw gold */
 		player->upkeep->redraw |= (PR_GOLD);
 	}
-
-	/* Free the gold arrays */
-	mem_free(money_types);
-	mem_free(treasure);
 }
 
 
