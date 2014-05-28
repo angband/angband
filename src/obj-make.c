@@ -151,7 +151,7 @@ static void init_obj_make(void) {
 
 	/* List the money types */
 	for (i = 0; i < num_money_types; i++) {
-		money_type[i].name = string_make(objkind_get(TV_GOLD, money_svals[i])->name);
+		money_type[i].name = string_make(lookup_kind(TV_GOLD, money_svals[i])->name);
 		money_type[i].type = money_svals[i];
 	}
 	mem_free(money_svals);

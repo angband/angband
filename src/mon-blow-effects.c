@@ -349,7 +349,7 @@ static void melee_effect_handler_eat_gold(melee_effect_handler_context_t *contex
             /* Create a new temporary object */
             object_type o;
             object_wipe(&o);
-            object_prep(&o, objkind_get(TV_GOLD, SV_GOLD), 0, MINIMISE);
+            object_prep(&o, lookup_kind(TV_GOLD, SV_GOLD), 0, MINIMISE);
 
             /* Amount of gold to put in this object */
             amt = gold > MAX_PVAL ? MAX_PVAL : gold;

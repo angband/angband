@@ -1962,7 +1962,7 @@ unsigned check_for_inscrip(const object_type *o_ptr, const char *inscrip)
 /**
  * Return the object kind with the given `tval` and `sval`, or NULL.
  */
-object_kind *lookup_kind(int tval, int sval)
+struct object_kind *lookup_kind(int tval, int sval)
 {
 	int k;
 
@@ -1977,10 +1977,6 @@ object_kind *lookup_kind(int tval, int sval)
 	/* Failure */
 	msg("No object: %d:%d (%s)", tval, sval, tval_find_name(tval));
 	return NULL;
-}
-
-struct object_kind *objkind_get(int tval, int sval) {
-	return lookup_kind(tval, sval);
 }
 
 struct object_kind *objkind_byid(int kidx) {

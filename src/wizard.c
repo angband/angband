@@ -484,7 +484,7 @@ static bool wiz_create_item_subaction(menu_type *m, const ui_event *e, int oid)
 	i_ptr->origin_depth = player->depth;
 
 	if (tval_is_money_k(kind))
-		make_gold(i_ptr, player->depth, objkind_get(TV_GOLD, kind->sval)->name);
+		make_gold(i_ptr, player->depth, lookup_kind(TV_GOLD, kind->sval)->name);
 
 	/* Drop the object from heaven */
 	drop_near(cave, i_ptr, 0, player->py, player->px, TRUE);
@@ -1624,7 +1624,7 @@ static void wiz_test_kind(int tval)
 		i_ptr->origin_depth = player->depth;
 
 		if (tval == TV_GOLD)
-			make_gold(i_ptr, player->depth, objkind_get(TV_GOLD, sval)->name);
+			make_gold(i_ptr, player->depth, lookup_kind(TV_GOLD, sval)->name);
 
 		/* Drop the object from heaven */
 		drop_near(cave, i_ptr, 0, py, px, TRUE);

@@ -2283,7 +2283,7 @@ static enum parser_error parse_c_e(struct parser *p) {
 		return PARSE_ERROR_UNRECOGNISED_SVAL;
 
 	si = mem_zalloc(sizeof *si);
-	si->kind = objkind_get(tval, sval);
+	si->kind = lookup_kind(tval, sval);
 	si->min = parser_getuint(p, "min");
 	si->max = parser_getuint(p, "max");
 
@@ -2811,7 +2811,7 @@ static errr finish_parse_s(struct parser *p) {
 
 		ss = &s_info[s->sidx];
 		memcpy(ss, s, sizeof(*s));
-		k = objkind_get(s->tval, s->sval);
+		k = lookup_kind(s->tval, s->sval);
 		if (k) {
 			ss->next = k->spells;
 			k->spells = ss;

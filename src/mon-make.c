@@ -725,7 +725,7 @@ static bool mon_create_drop(struct chunk *c, struct monster *m_ptr, byte origin)
 
 		i_ptr = &object_type_body;
 		if (drop->artifact) {
-			object_prep(i_ptr, objkind_get(drop->artifact->tval,
+			object_prep(i_ptr, lookup_kind(drop->artifact->tval,
 				drop->artifact->sval), level, RANDOMISE);
 			i_ptr->artifact = drop->artifact;
 			copy_artifact_data(i_ptr, i_ptr->artifact);
@@ -836,7 +836,7 @@ s16b place_monster(struct chunk *c, int y, int x, monster_type *mon, byte origin
 
 		if (tval_is_money_k(kind)) {
 			make_gold(i_ptr, player->depth,
-					  objkind_get(TV_GOLD, kind->sval)->name);
+					  lookup_kind(TV_GOLD, kind->sval)->name);
 		} else {
 			object_prep(i_ptr, kind, m_ptr->race->level, RANDOMISE);
 			apply_magic(i_ptr, m_ptr->race->level, TRUE, FALSE, FALSE, FALSE);

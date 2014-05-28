@@ -418,7 +418,7 @@ static enum parser_error parse_r_drop(struct parser *p) {
 	if (parser_getuint(p, "min") > 99 || parser_getuint(p, "max") > 99)
 		return PARSE_ERROR_INVALID_ITEM_NUMBER;
 
-	k = objkind_get(tval, sval);
+	k = lookup_kind(tval, sval);
 	if (!k)
 		return PARSE_ERROR_UNRECOGNISED_SVAL;
 		
@@ -510,7 +510,7 @@ static enum parser_error parse_r_mimic(struct parser *p) {
 	if (sval < 0)
 		return PARSE_ERROR_UNRECOGNISED_SVAL;
 
-	kind = objkind_get(tval, sval);
+	kind = lookup_kind(tval, sval);
 	if (!kind)
 		return PARSE_ERROR_GENERIC;
 	m = mem_zalloc(sizeof *m);
