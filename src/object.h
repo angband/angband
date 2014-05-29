@@ -408,6 +408,11 @@ extern artifact_type *a_info;
  */
 #define EGO_TVALS_MAX 3
 
+struct ego_poss_item {
+	object_kind *kind;
+	struct ego_poss_item *next;
+};
+
 /*
  * Information about "ego-items".
  */
@@ -439,6 +444,7 @@ typedef struct ego_item
 	byte alloc_min;			/** Minimum depth (can appear earlier) */
 	byte alloc_max;			/** Maximum depth (will NEVER appear deeper) */
 
+	struct ego_poss_item *poss_items;
 	byte tval[EGO_TVALS_MAX];		/* Legal tval */
 	byte min_sval[EGO_TVALS_MAX];	/* Minimum legal sval */
 	byte max_sval[EGO_TVALS_MAX];	/* Maximum legal sval */

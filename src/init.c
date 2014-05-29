@@ -1617,6 +1617,54 @@ static enum parser_error parse_e_t(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_e_type(struct parser *p) {
+	struct ego_poss_item *poss;
+	int i;
+	int tval = tval_find_idx(parser_getsym(p, "tval"));
+	bool found_one_kind = FALSE;
+
+	struct ego_item *e = parser_priv(p);
+	if (!e)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	if (tval < 0)
+		return PARSE_ERROR_UNRECOGNISED_TVAL;
+
+	/* Find all the right object kinds */
+	for (i = 0; i < z_info->k_max; i++) {
+		if (k_info[i].tval != tval) continue;
+		poss = mem_zalloc(sizeof(struct ego_poss_item));
+		poss->kind = &k_info[i];
+		poss->next = e->poss_items;
+		e->poss_items = poss;
+		found_one_kind = TRUE;
+	}
+
+	if (!found_one_kind)
+		return PARSE_ERROR_GENERIC;
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_e_item(struct parser *p) {
+	struct ego_poss_item *poss;
+	int tval = tval_find_idx(parser_getsym(p, "tval"));
+	int sval = lookup_sval(tval, parser_getsym(p, "sval"));
+
+	struct ego_item *e = parser_priv(p);
+	if (!e)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	if (tval < 0)
+		return PARSE_ERROR_UNRECOGNISED_TVAL;
+
+	poss = mem_zalloc(sizeof(struct ego_poss_item));
+	poss->kind = lookup_kind(tval, sval);
+	poss->next = e->poss_items;
+	e->poss_items = poss;
+
+	if (!poss->kind)
+		return PARSE_ERROR_GENERIC;
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_e_c(struct parser *p) {
 	struct random th = parser_getrand(p, "th");
 	struct random td = parser_getrand(p, "td");
@@ -1781,6 +1829,8 @@ struct parser *init_parse_e(void) {
 	parser_reg(p, "X int level int rarity int cost int rating", parse_e_x);
 	parser_reg(p, "A int common str minmax", parse_e_a);
 	parser_reg(p, "T sym tval int min-sval int max-sval", parse_e_t);
+	parser_reg(p, "type sym tval", parse_e_type);
+	parser_reg(p, "item sym tval sym sval", parse_e_item);
 	parser_reg(p, "C rand th rand td rand ta", parse_e_c);
 	parser_reg(p, "M int th int td int ta", parse_e_m);
 	parser_reg(p, "F ?str flags", parse_e_f);
