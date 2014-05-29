@@ -11,29 +11,17 @@
 # The maximum number of slots, EQUIP_MAX_SLOTS, is currently set to 12; this
 # should be changed if a body is added with more than 12 slots.
 
-body-name:Humanoid
-slot-type:WEAPON
-slot-name:weapon
-slot-type:BOW
-slot-name:shooting
-slot-type:RING
-slot-name:right hand
-slot-type:RING
-slot-name:left hand
-slot-type:AMULET
-slot-name:neck
-slot-type:LIGHT
-slot-name:light
-slot-type:BODY_ARMOR
-slot-name:body
-slot-type:CLOAK
-slot-name:back
-slot-type:SHIELD
-slot-name:arm
-slot-type:HAT
-slot-name:head
-slot-type:GLOVES
-slot-name:hands
-slot-type:BOOTS
-slot-name:feet
+body:Humanoid
+slot:WEAPON:weapon
+slot:BOW:shooting
+slot:RING:right hand
+slot:RING:left hand
+slot:AMULET:neck
+slot:LIGHT:light
+slot:BODY_ARMOR:body
+slot:CLOAK:back
+slot:SHIELD:arm
+slot:HAT:head
+slot:GLOVES:hands
+slot:BOOTS:feet
 

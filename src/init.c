@@ -1845,7 +1845,7 @@ static struct file_parser e_parser = {
 };
 
 /* Parsing functions for body.txt */
-static enum parser_error parse_body_n(struct parser *p) {
+static enum parser_error parse_body_body(struct parser *p) {
 	struct player_body *h = parser_priv(p);
 	struct player_body *b = mem_zalloc(sizeof *b);
 
@@ -1855,42 +1855,28 @@ static enum parser_error parse_body_n(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_body_st(struct parser *p) {
+static enum parser_error parse_body_slot(struct parser *p) {
 	struct player_body *b = parser_priv(p);
 	char *slot;
 	int n;
 
 	if (!b)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	slot = string_make(parser_getstr(p, "slot"));
+	slot = string_make(parser_getsym(p, "slot"));
 	n = lookup_flag(slots, slot);
 	if (!n)
 		return PARSE_ERROR_GENERIC;
 	b->slots[b->count].type = n;
+	b->slots[b->count++].name = string_make(parser_getsym(p, "name"));
 	mem_free(slot);
-	return PARSE_ERROR_NONE;
-}
-
-static enum parser_error parse_body_sn(struct parser *p) {
-	struct player_body *b = parser_priv(p);
-
-	if (!b)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	if (!b->slots[b->count].type)
-		return PARSE_ERROR_NON_SEQUENTIAL_RECORDS;
-	if (b->count < EQUIP_MAX_SLOTS - 1) 
-		if (b->slots[b->count + 1].type)
-			return PARSE_ERROR_NON_SEQUENTIAL_RECORDS;
-	b->slots[b->count++].name = string_make(parser_getstr(p, "name"));
 	return PARSE_ERROR_NONE;
 }
 
 struct parser *init_parse_body(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
-	parser_reg(p, "body-name str name", parse_body_n);
-	parser_reg(p, "slot-type str slot", parse_body_st);
-	parser_reg(p, "slot-name str name", parse_body_sn);
+	parser_reg(p, "body str name", parse_body_body);
+	parser_reg(p, "slot sym slot sym name", parse_body_slot);
 	return p;
 }
 
