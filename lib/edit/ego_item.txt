@@ -83,6 +83,13 @@ A:100:1 to 30
 M:255:0:0
 T:36:0:99
 T:37:0:6
+type:soft armor
+item:hard armor:Metal Scale Mail
+item:hard armor:Chain Mail
+item:hard armor:Augmented Chain Mail
+item:hard armor:Bar Chain Mail
+item:hard armor:Metal Brigandine Armour
+item:hard armor:Partial Plate Armour
 F:IGNORE_ACID
 V:RES_ACID[1]
 
@@ -92,6 +99,13 @@ A:100:1 to 30
 M:255:0:0
 T:36:0:99
 T:37:0:6
+type:soft armor
+item:hard armor:Metal Scale Mail
+item:hard armor:Chain Mail
+item:hard armor:Augmented Chain Mail
+item:hard armor:Bar Chain Mail
+item:hard armor:Metal Brigandine Armour
+item:hard armor:Partial Plate Armour
 F:IGNORE_ELEC
 V:RES_ELEC[1]
 
@@ -101,6 +115,13 @@ A:100:1 to 30
 M:255:0:0
 T:36:0:99
 T:37:0:6
+type:soft armor
+item:hard armor:Metal Scale Mail
+item:hard armor:Chain Mail
+item:hard armor:Augmented Chain Mail
+item:hard armor:Bar Chain Mail
+item:hard armor:Metal Brigandine Armour
+item:hard armor:Partial Plate Armour
 F:IGNORE_FIRE
 V:RES_FIRE[1]
 
@@ -110,6 +131,13 @@ A:100:1 to 30
 M:255:0:0
 T:36:0:99
 T:37:0:6
+type:soft armor
+item:hard armor:Metal Scale Mail
+item:hard armor:Chain Mail
+item:hard armor:Augmented Chain Mail
+item:hard armor:Bar Chain Mail
+item:hard armor:Metal Brigandine Armour
+item:hard armor:Partial Plate Armour
 F:IGNORE_COLD
 V:RES_COLD[1]
 
@@ -120,6 +148,8 @@ C:0:0:d10
 M:255:0:0
 T:36:0:99
 T:37:0:99
+type:soft armor
+type:hard armor
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 V:RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1]
 
@@ -130,6 +160,8 @@ C:0:0:d10
 M:255:0:0
 T:36:0:99
 T:37:0:99
+type:soft armor
+type:hard armor
 F:RAND_HI_RES
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 V:STEALTH[d2] | RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1]
@@ -140,6 +172,8 @@ X:0:2:0:0
 A:10:10 to 80
 C:0:0:d50
 M:255:0:0
+type:soft armor
+type:hard armor
 T:36:0:99
 T:37:0:99
 F:AGGRAVATE | LIGHT_CURSE
@@ -151,6 +185,7 @@ X:0:4:30000:30
 A:10:30 to 127
 C:0:0:d20
 T:36:2:2
+item:soft armor:Robe
 F:SUST_STR | SUST_DEX | SUST_CON | SUST_INT | SUST_WIS
 F:HOLD_LIFE
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
@@ -165,6 +200,7 @@ A:20:20 to 127
 C:0:0:d15
 M:255:0:0
 T:37:0:99
+type:hard armor
 F:IGNORE_ACID | IGNORE_FIRE
 F:FREE_ACT | 
 V:STR[d2] | CON[d2] | INFRA[d2M3]
@@ -181,6 +217,7 @@ X:0:4:5000:20
 A:20:40 to 127
 C:1+M3:1+M3:d5
 T:34:3:3
+item:shield:Small Metal Shield
 F:IGNORE_ACID | IGNORE_FIRE
 F:FREE_ACT | 
 V:STR[d2] | CON[d2]
@@ -190,6 +227,7 @@ N:16:of Resist Acid
 X:0:1:1000:16
 A:100:1 to 30
 T:34:0:99
+type:shield
 F:IGNORE_ACID
 V:RES_ACID[1]
 
@@ -211,6 +249,7 @@ N:19:of Resist Cold
 X:0:1:600:12
 A:100:1 to 30
 T:34:0:99
+type:shield
 F:IGNORE_COLD
 V:RES_COLD[1]
 
@@ -219,6 +258,7 @@ X:0:2:12500:20
 A:50:10 to 100
 C:0:0:d10
 T:34:0:99
+type:shield
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 V:RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1]
 
@@ -227,6 +267,7 @@ X:0:4:18000:25
 A:10:30 to 127
 C:0:0:d10
 T:34:0:99
+type:shield
 V:STEALTH[d2]
 L:STEALTH[0]
 F:RAND_HI_RES
@@ -248,6 +289,7 @@ X:0:2:0:0
 A:10:10 to 80
 C:0:0:d50
 T:34:0:99
+type:shield
 F:AGGRAVATE | LIGHT_CURSE
 
 
@@ -257,6 +299,7 @@ N:24:of Intelligence
 X:0:2:500:13
 A:100:1 to 40
 T:32:0:99
+type:helm
 F:SUST_INT
 V:INT[d2]
 L:INT[0]
@@ -265,6 +308,7 @@ N:25:of Wisdom
 X:0:2:500:13
 A:100:1 to 40
 T:32:0:99
+type:helm
 F:SUST_WIS
 V:WIS[d2]
 L:WIS[0]
@@ -278,6 +322,7 @@ N:27:of the Magi
 X:0:4:7500:15
 A:20:20 to 127
 T:33:0:99
+type:crown
 F:SUST_INT | RAND_POWER
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 V:INT[d3] | RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1]
@@ -287,6 +332,7 @@ N:28:of Might
 X:0:4:7500:19
 A:10:40 to 127
 T:33:0:99
+type:crown
 F:SUST_STR | SUST_DEX | SUST_CON | FREE_ACT
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 V:STR[d3] | DEX[d3] | CON[d3]
@@ -297,6 +343,7 @@ N:29:of Lordliness
 X:0:2:7500:17
 A:20:40 to 127
 T:33:0:99
+type:crown
 F:SUST_WIS | PROT_FEAR | RAND_POWER
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 V:WIS[d3]
@@ -306,6 +353,7 @@ N:30:of Seeing
 X:0:2:2000:8
 A:50:10 to 60
 T:32:0:99
+type:helm
 F:PROT_BLIND | SEE_INVIS
 V:SEARCH[d5]
 L:SEARCH[0]
@@ -314,6 +362,7 @@ N:31:of Infravision
 X:0:2:500:11
 A:100:1 to 20
 T:32:0:99
+type:helm
 V:INFRA[d5]
 L:INFRA[0]
 
@@ -321,6 +370,7 @@ N:32:of Light
 X:0:2:1000:6
 A:50:5 to 30
 T:33:0:99
+type:crown
 V:LIGHT[1] | RES_LIGHT[1]
 L:LIGHT[1]
 
@@ -328,24 +378,28 @@ N:33:of Telepathy
 X:0:6:50000:20
 A:10:40 to 127
 T:32:0:99
+type:helm
 F:TELEPATHY
 
 N:34:of Regeneration
 X:0:4:1500:10
 A:20:1 to 60
 T:32:0:99
+type:helm
 F:REGEN
 
 N:35:of Teleportation
 X:0:2:0:0
 A:10:10 to 80
 T:32:0:99
+type:helm
 F:TELEPORT | LIGHT_CURSE
 
 N:36:of Serenity
 X:0:6:4000:20
 A:15:20 to 127
 T:33:0:99
+type:crown
 F:PROT_CONF | PROT_FEAR | PROT_STUN
 V:RES_SOUND[1]
 
@@ -353,6 +407,7 @@ N:37:of Night and Day
 X:35:6:4000:18
 A:15:10 to 80
 T:33:0:99
+type:crown
 F:SEE_INVIS | PROT_BLIND | IGNORE_ACID
 V:LIGHT[1] | RES_LIGHT[1] | RES_DARK[1]
 L:LIGHT[1]
@@ -361,6 +416,7 @@ N:38:of Dullness
 X:0:2:0:0
 A:10:45 to 80
 T:33:0:99
+type:crown
 F:LIGHT_CURSE
 V:INT[d5] | WIS[d5]
 L:INT[0] | WIS[0]
@@ -369,6 +425,7 @@ N:39:of Sickliness
 X:0:2:0:0
 A:10:45 to 80
 T:33:0:99
+type:crown
 F:LIGHT_CURSE
 V:STR[d5] | DEX[d5] | CON[d5]
 L:STR[0] | DEX[0] | CON[0]
@@ -381,6 +438,7 @@ X:0:2:1500:10
 A:30:1 to 40
 C:0:0:d10
 T:35:0:99
+type:cloak
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 V:RES_SHARD[1]
 
@@ -388,6 +446,7 @@ N:41:of Stealth
 X:0:1:500:10
 A:60:1 to 70
 T:35:0:99
+type:cloak
 V:STEALTH[d3]
 L:STEALTH[0]
 
@@ -396,6 +455,7 @@ X:0:6:4000:20
 A:10:20 to 127
 C:0:0:d20
 T:35:0:99
+type:cloak
 V:STEALTH[d3]
 L:STEALTH[0]
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
@@ -406,6 +466,7 @@ X:30:3:2000:15
 A:10:30 to 127
 C:0:0:d4
 T:35:0:99
+type:cloak
 F:SUST_INT | IGNORE_ACID | RAND_HI_RES
 V:INT[d2] | STEALTH[d3]
 L:INT[1] | STEALTH[1]
@@ -414,6 +475,7 @@ N:44:of Enveloping
 X:0:1:0:0
 A:10:10 to 80
 C:d10:d10:0
+type:cloak
 T:35:0:99
 F:LIGHT_CURSE
 
@@ -422,6 +484,7 @@ X:0:1:0:0
 A:10:10 to 80
 C:0:0:d50
 T:35:0:99
+type:cloak
 F:AGGRAVATE | LIGHT_CURSE
 
 N:46:of Irritation
@@ -429,6 +492,7 @@ X:0:1:0:0
 A:10:10 to 80
 C:d15:d15:0
 T:35:0:99
+type:cloak
 F:AGGRAVATE | LIGHT_CURSE
 
 # 47 (unused)
@@ -446,12 +510,14 @@ X:0:4:1500:17
 A:20:10 to 75
 C:d5:d5:0
 T:31:0:99
+type:gloves
 D:They boost your to-hit and to-dam values.
 
 N:50:of Agility
 X:0:6:1000:14
 A:10:20 to 50
 T:31:0:99
+type:gloves
 V:DEX[d5]
 L:DEX[0]
 
@@ -460,6 +526,7 @@ X:0:6:2500:22
 A:5:30 to 127
 C:d5:d5:0
 T:31:0:99
+type:gloves
 V:STR[d5]
 L:STR[0]
 
@@ -469,6 +536,8 @@ A:5:40 to 127
 C:d8:d3:0
 T:31:1:1
 T:31:5:5
+item:gloves:Set of Leather Gloves
+item:gloves:Set of Alchemist's Gloves
 F:FEATHER | FREE_ACT
 V:DEX[1+M4] | SEARCH[1+d2M3]
 L:DEX[1] | SEARCH[2]
@@ -478,6 +547,9 @@ X:50:12:7000:22
 A:5:50 to 127
 C:d5:d8:0
 T:31:2:4
+item:gloves:Set of Gauntlets
+item:gloves:Set of Mithril Gauntlets
+item:gloves:Set of Caestus
 F:AGGRAVATE
 V:STR[d2] | CON[d2]
 L:STR[1] | CON[1]
@@ -486,6 +558,7 @@ N:54:of Weakness
 X:0:2:0:0
 A:10:10 to 80
 T:31:0:99
+type:gloves
 F:LIGHT_CURSE | 
 V:STR[d10]
 L:STR[0]
@@ -494,6 +567,7 @@ N:55:of Clumsiness
 X:0:2:0:0
 A:10:10 to 80
 T:31:0:99
+type:gloves
 F:LIGHT_CURSE | 
 V:DEX[d10]
 L:DEX[0]
@@ -504,6 +578,7 @@ N:56:of Slow Descent
 X:0:5:250:7
 A:100:1 to 15
 T:30:0:99
+type:boots
 F:FEATHER
 
 N:57:of Stealth
@@ -511,12 +586,16 @@ X:0:6:500:16
 A:20:15 to 100
 T:30:1:2
 T:30:6:6
+item:boots:Pair of Leather Sandals
+item:boots:Pair of Leather Boots
+item:boots:Pair of Ethereal Slippers
 V:STEALTH[d3]
 L:STEALTH[0]
 
 N:58:of Free Action
 X:0:8:1000:15
 A:20:1 to 40
+type:boots
 F:FREE_ACT
 T:30:0:99
 
@@ -524,6 +603,7 @@ N:59:of Speed
 X:0:24:100000:25
 A:3:20 to 127
 T:30:0:99
+type:boots
 V:SPEED[2+M8]
 L:SPEED[0]
 
@@ -531,6 +611,7 @@ N:60:of Stability
 X:0:10:5000:20
 A:10:15 to 100
 T:30:0:99
+type:boots
 F:FEATHER
 V:RES_NEXUS[1]
 
@@ -538,6 +619,8 @@ N:61:of Elvenkind
 X:60:30:200000:30
 A:3:60 to 127
 T:30:2:3
+item:boots:Pair of Leather Boots
+item:boots:Pair of Iron Shod Boots
 F:FEATHER | IGNORE_ACID | IGNORE_FIRE
 V:STEALTH[d4] | SPEED[4+M5]
 L:STEALTH[1] | SPEED[1]
@@ -546,6 +629,7 @@ N:62:of Slowness
 X:0:5:0:0
 A:10:10 to 80
 T:30:0:99
+type:boots
 V:SPEED[d5]
 L:SPEED[0]
 F:LIGHT_CURSE | 
@@ -554,6 +638,7 @@ N:63:of Annoyance
 X:0:10:0:0
 A:10:10 to 80
 T:30:0:99
+type:boots
 V:SPEED[d10] | STEALTH[d10]
 L:SPEED[0] | STEALTH[0]
 F:AGGRAVATE | LIGHT_CURSE | 
@@ -568,6 +653,9 @@ C:d6:d6:d4
 T:21:0:99
 T:22:0:99
 T:23:0:99
+type:sword
+type:polearm
+type:hafted
 V:WIS[d4]
 L:WIS[0]
 F:SEE_INVIS | BLESSED | PROT_FEAR | RAND_SUSTAIN
@@ -580,6 +668,9 @@ C:d4:d4:d8
 T:21:0:99
 T:22:0:99
 T:23:0:99
+type:sword
+type:polearm
+type:hafted
 F:FREE_ACT | SEE_INVIS | FEATHER | REGEN | RAND_SUSTAIN
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 V:STEALTH[d4] | RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1]
@@ -591,6 +682,9 @@ A:20:1 to 60
 T:21:0:99
 T:22:0:99
 T:23:0:99
+type:sword
+type:polearm
+type:hafted
 F:BLESSED | RAND_POWER
 V:WIS[d3]
 L:WIS[0]
@@ -602,6 +696,9 @@ C:d7:d7:0
 T:21:0:99
 T:22:0:99
 T:23:0:99
+type:sword
+type:polearm
+type:hafted
 F:SEE_INVIS | FREE_ACT | RAND_POWER
 F:IGNORE_ACID | IGNORE_FIRE
 V:LIGHT[1] | SLAY_DEMON[3] | SLAY_ORC[3] | SLAY_TROLL[3] | SLAY_DRAGON[3]
@@ -615,6 +712,9 @@ C:d5:d5:0
 T:21:0:99
 T:22:0:99
 T:23:0:99
+type:sword
+type:polearm
+type:hafted
 V:STR[d2] | DEX[d2] | CON[d2] | SLAY_ORC[3] | SLAY_TROLL[3] | SLAY_GIANT[3]
 L:STR[1] | DEX[1] | CON[1]
 F:FREE_ACT | SEE_INVIS
@@ -625,6 +725,9 @@ A:10:10 to 127
 T:21:0:99
 T:22:0:99
 T:23:0:99
+type:sword
+type:polearm
+type:hafted
 V:BLOWS[d2]
 L:BLOWS[0]
 
@@ -635,6 +738,9 @@ A:2:50 to 127
 #T:21:12:99
 #T:22:10:99
 #T:23:16:99
+#type:sword
+#type:polearm
+#type:hafted
 C:d10:d10:0
 F:AGGRAVATE | PROT_FEAR
 F:IGNORE_ACID | IGNORE_FIRE
@@ -651,6 +757,9 @@ A:30:1 to 60
 T:21:0:99
 T:22:0:99
 T:23:0:99
+type:sword
+type:polearm
+type:hafted
 F:IGNORE_ACID
 V:BRAND_ACID[3] | RES_ACID[1]
 
@@ -660,6 +769,9 @@ A:30:1 to 60
 T:21:0:99
 T:22:0:99
 T:23:0:99
+type:sword
+type:polearm
+type:hafted
 F:IGNORE_ELEC
 V:BRAND_ELEC[3] | RES_ELEC[1]
 
@@ -669,6 +781,9 @@ A:40:1 to 50
 T:21:0:99
 T:22:0:99
 T:23:0:99
+type:sword
+type:polearm
+type:hafted
 F:IGNORE_FIRE
 V:BRAND_FIRE[3] | RES_FIRE[1]
 
@@ -678,6 +793,9 @@ A:40:1 to 50
 T:21:0:99
 T:22:0:99
 T:23:0:99
+type:sword
+type:polearm
+type:hafted
 F:IGNORE_COLD
 V:BRAND_COLD[3] | RES_COLD[1]
 
@@ -687,6 +805,9 @@ A:60:1 to 40
 T:21:0:99
 T:22:0:99
 T:23:0:99
+type:sword
+type:polearm
+type:hafted
 V:BRAND_POIS[3]
 
 # 77 (unused)
@@ -703,6 +824,9 @@ A:100:1 to 30
 T:21:0:99
 T:22:0:99
 T:23:0:99
+type:sword
+type:polearm
+type:hafted
 V:SLAY_ANIMAL[2]
 
 N:81:of Slay Evil
@@ -711,6 +835,9 @@ A:60:1 to 40
 T:21:0:99
 T:22:0:99
 T:23:0:99
+type:sword
+type:polearm
+type:hafted
 V:SLAY_EVIL[2]
 
 N:82:of Slay Undead
@@ -719,6 +846,9 @@ A:100:1 to 30
 T:21:0:18
 T:22:0:99
 T:23:0:99
+type:sword
+type:polearm
+type:hafted
 V:SLAY_UNDEAD[3]
 
 N:83:of Slay Demon
@@ -727,6 +857,9 @@ A:100:1 to 30
 T:21:0:99
 T:22:0:99
 T:23:0:99
+type:sword
+type:polearm
+type:hafted
 V:SLAY_DEMON[3]
 
 N:84:of Slay Orc
@@ -735,6 +868,9 @@ A:150:1 to 20
 T:21:0:99
 T:22:0:99
 T:23:0:99
+type:sword
+type:polearm
+type:hafted
 V:SLAY_ORC[3]
 
 N:85:of Slay Troll
@@ -743,6 +879,9 @@ A:150:1 to 25
 T:21:0:99
 T:22:0:99
 T:23:0:99
+type:sword
+type:polearm
+type:hafted
 V:SLAY_TROLL[3]
 
 N:86:of Slay Giant
@@ -751,6 +890,9 @@ A:60:1 to 30
 T:21:0:99
 T:22:0:99
 T:23:0:99
+type:sword
+type:polearm
+type:hafted
 V:SLAY_GIANT[3]
 
 N:87:of Slay Dragon
@@ -759,6 +901,9 @@ A:100:1 to 30
 T:21:0:99
 T:22:0:99
 T:23:0:99
+type:sword
+type:polearm
+type:hafted
 V:SLAY_DRAGON[3]
 
 # The *Slay* weapons (8)
@@ -769,6 +914,9 @@ A:40:1 to 45
 T:21:0:99
 T:22:0:99
 T:23:0:99
+type:sword
+type:polearm
+type:hafted
 F:SLOW_DIGEST
 V:INT[d2] | SLAY_ANIMAL[2]
 L:INT[0]
@@ -779,6 +927,9 @@ A:15:10 to 127
 T:21:0:99
 T:22:0:99
 T:23:0:99
+type:sword
+type:polearm
+type:hafted
 F:BLESSED | RAND_POWER
 V:WIS[d2] | SLAY_EVIL[2]
 L:WIS[0]
@@ -789,6 +940,9 @@ A:30:10 to 60
 T:21:0:18
 T:22:0:99
 T:23:0:99
+type:sword
+type:polearm
+type:hafted
 F:SEE_INVIS
 V:WIS[d2] | SLAY_UNDEAD[5]
 L:WIS[0]
@@ -799,6 +953,9 @@ A:30:10 to 60
 T:21:0:99
 T:22:0:99
 T:23:0:99
+type:sword
+type:polearm
+type:hafted
 V:INT[d2] | SLAY_DEMON[5] | RES_FIRE[1]
 L:INT[0]
 
@@ -808,6 +965,9 @@ A:60:1 to 40
 T:21:0:99
 T:22:0:99
 T:23:0:99
+type:sword
+type:polearm
+type:hafted
 F:SUST_DEX
 V:DEX[d2] | SLAY_ORC[3]
 L:DEX[0]
@@ -818,6 +978,9 @@ A:60:1 to 45
 T:21:0:99
 T:22:0:99
 T:23:0:99
+type:sword
+type:polearm
+type:hafted
 F:REGEN
 V:STR[d2] | SLAY_TROLL[3]
 L:STR[0]
@@ -828,6 +991,9 @@ A:20:1 to 45
 T:21:0:99
 T:22:0:99
 T:23:0:99
+type:sword
+type:polearm
+type:hafted
 F:SUST_STR
 V:STR[d2] | SLAY_GIANT[3]
 L:STR[0]
@@ -838,6 +1004,9 @@ A:30:10 to 60
 T:21:0:99
 T:22:0:99
 T:23:0:99
+type:sword
+type:polearm
+type:hafted
 F:PROT_FEAR
 V:CON[d2] | SLAY_DRAGON[5]
 L:CON[0]
@@ -850,6 +1019,8 @@ L:CON[0]
 #W:5:4:0:1000:10 (imported from NPP)
 #A:8:10 to 100
 #T:39:0:1
+#item:light:Wooden Torch
+#item:light:Brass Lantern
 #V:STEALTH[d2] | RES_LIGHT[1]
 #L:STEALTH[0]
 
@@ -857,6 +1028,8 @@ N:97:of Brightness
 X:0:2:2000:10
 A:50:1 to 30
 T:39:0:1
+item:light:Wooden Torch
+item:light:Lantern
 V:LIGHT[1]
 L:LIGHT[1]
 
@@ -864,6 +1037,7 @@ N:98:(Everburning)
 X:0:3:2500:10
 A:100:1 to 30
 T:39:1:1 (lanterns only)
+item:light:Lantern
 F:NO_FUEL
 
 #imported from S
@@ -871,6 +1045,7 @@ N:99:of True Sight
 X:20:8:6000:10
 A:10:20 to 127
 T:39:1:1
+item:light:Lantern
 F:PROT_BLIND | SEE_INVIS
 
 
@@ -880,6 +1055,7 @@ N:100:of Digging
 X:0:1:500:4
 A:100:1 to 40
 T:20:0:99
+type:digger
 V:TUNNEL[d4] | BRAND_ACID[3]
 L:TUNNEL[1]
 
@@ -888,6 +1064,7 @@ X:20:4:3000:8
 A:10:10 to 127
 C:d10:d10:0
 T:20:0:99
+type:digger
 V:STR[d4] | TUNNEL[d6] | BRAND_ACID[3]
 L:STR[1] | TUNNEL[1]
 F:IMPACT 
@@ -900,6 +1077,9 @@ A:10:10 to 80
 T:21:0:99
 T:22:0:99
 T:23:0:99
+type:sword
+type:polearm
+type:hafted
 F:SEE_INVIS | AGGRAVATE | HEAVY_CURSE | LIGHT_CURSE
 F:HOLD_LIFE | DRAIN_EXP
 V:BRAND_POIS[3] | SLAY_UNDEAD[3]
@@ -915,6 +1095,7 @@ A:100:5 to 70
 C:d15:d5:0
 M:15:255:0
 T:19:0:99
+type:bow
 D:It has no special abilities, but its to-hit value may be unusually
 D: high.
 
@@ -924,6 +1105,7 @@ A:100:5 to 70
 C:d5:d15:0
 M:255:15:0
 T:19:0:99
+type:bow
 D:It has no special abilities, but its to-dam value may be unusually
 D: high.
 
@@ -932,6 +1114,8 @@ X:50:4:20000:30
 A:5:20 to 127
 C:d10:d10:0
 T:19:12:13
+item:bow:Short Bow
+item:bow:Long Bow
 V:DEX[1+d2M2] | MIGHT[d2]
 L:DEX[2] | MIGHT[1]
 F:FREE_ACT | IGNORE_ACID | IGNORE_FIRE | RAND_POWER
@@ -941,6 +1125,7 @@ X:50:4:20000:30
 A:5:20 to 127
 C:d5:d5:0
 T:19:23:23
+item:bow:Light Crossbow
 V:MIGHT[1] | SHOTS[1]
 L:MIGHT[1] | SHOTS[1]
 F:IGNORE_ACID | IGNORE_FIRE | 
@@ -950,6 +1135,7 @@ X:0:2:10000:20
 A:20:15 to 100
 C:d5:d10:0
 T:19:0:99
+type:bow
 V:MIGHT[1]
 L:MIGHT[0]
 
@@ -958,6 +1144,7 @@ X:0:2:10000:20
 A:10:15 to 100
 C:d10:d5:0
 T:19:0:99
+type:bow
 V:SHOTS[1]
 L:SHOTS[0]
 
@@ -966,6 +1153,7 @@ X:40:4:20000:25
 A:5:20 to 127
 C:d8:d8:0
 T:19:2:2
+item:bow:Sling
 V:DEX[1+d2M2] | SHOTS[d2] | MIGHT[d2]
 L:DEX[2] | SHOTS[1] | MIGHT[1]
 F:IGNORE_ACID | IGNORE_FIRE | 
@@ -975,6 +1163,7 @@ X:0:2:0:0
 A:10:10 to 80
 C:d10:d10:0
 T:19:0:99
+type:bow
 F:LIGHT_CURSE | DRAIN_EXP | SEE_INVIS
 
 
@@ -986,6 +1175,9 @@ A:80:1 to 40
 T:16:0:99
 T:17:0:99
 T:18:0:99
+type:shot
+type:arrow
+type:bolt
 V:SLAY_ANIMAL[2]
 
 N:113:of Slay Evil
@@ -994,6 +1186,9 @@ A:10:10 to 100
 T:16:0:99
 T:17:0:99
 T:18:0:99
+type:shot
+type:arrow
+type:bolt
 V:SLAY_EVIL[2]
 
 N:114:of Slay Undead
@@ -1002,6 +1197,9 @@ A:15:5 to 100
 T:16:0:99
 T:17:0:99
 T:18:0:99
+type:shot
+type:arrow
+type:bolt
 V:SLAY_UNDEAD[3]
 
 N:115:of Slay Demon
@@ -1010,6 +1208,9 @@ A:15:5 to 100
 T:16:0:99
 T:17:0:99
 T:18:0:99
+type:shot
+type:arrow
+type:bolt
 V:SLAY_DEMON[3]
 
 N:116:of Acid
@@ -1018,6 +1219,9 @@ A:5:10 to 100
 T:16:0:99
 T:17:0:99
 T:18:0:99
+type:shot
+type:arrow
+type:bolt
 F:IGNORE_ACID
 V:BRAND_ACID[3]
 
@@ -1027,6 +1231,9 @@ A:5:10 to 100
 T:16:0:99
 T:17:0:99
 T:18:0:99
+type:shot
+type:arrow
+type:bolt
 F:IGNORE_ELEC
 V:BRAND_ELEC[3]
 
@@ -1036,6 +1243,9 @@ A:5:5 to 60
 T:16:0:99
 T:17:0:99
 T:18:0:99
+type:shot
+type:arrow
+type:bolt
 V:SLAY_GIANT[3]
 
 N:119:of Slay Dragon
@@ -1044,6 +1254,9 @@ A:10:10 to 100
 T:16:0:99
 T:17:0:99
 T:18:0:99
+type:shot
+type:arrow
+type:bolt
 V:SLAY_DRAGON[3]
 
 N:120:of Holy Might
@@ -1053,6 +1266,11 @@ C:d10:d10:0
 T:16:2:99
 T:17:2:99
 T:18:2:99
+item:shot:Mithril Shot
+item:arrow:Seeker Arrow
+item:arrow:Mithril Arrow
+item:bolt:Seeker Bolt
+item:bolt:Mithril Bolt
 F:IGNORE_FIRE | IGNORE_ACID
 V:SLAY_EVIL[2] | SLAY_DEMON[3] | SLAY_UNDEAD[3]
 
@@ -1062,6 +1280,9 @@ A:20:10 to 60
 T:16:0:99
 T:17:0:99
 T:18:0:99
+type:shot
+type:arrow
+type:bolt
 V:BRAND_POIS[3]
 
 N:122:of Flame
@@ -1070,6 +1291,9 @@ A:10:10 to 100
 T:16:0:99
 T:17:0:99
 T:18:0:99
+type:shot
+type:arrow
+type:bolt
 F:IGNORE_FIRE
 V:BRAND_FIRE[3]
 
@@ -1079,6 +1303,9 @@ A:10:10 to 100
 T:16:0:99
 T:17:0:99
 T:18:0:99
+type:shot
+type:arrow
+type:bolt
 F:IGNORE_COLD
 V:BRAND_COLD[3]
 
@@ -1089,6 +1316,9 @@ C:3+d5:3+d5:0
 T:16:0:99
 T:17:0:99
 T:18:0:99
+type:shot
+type:arrow
+type:bolt
 D:Ammunition of Wounding often has unusually high to-hit and to-dam values.
 
 N:125:of Backbiting
@@ -1098,6 +1328,9 @@ C:-d25:-d25:0
 T:16:0:99
 T:17:0:99
 T:18:0:99
+type:shot
+type:arrow
+type:bolt
 
 ### Special Broken Items ###
 
@@ -1126,6 +1359,7 @@ A:60:20 to 95
 C:0:0:1d6M4
 M:0:0:4
 T:38:0:99
+type:dragon armor
 D:This armour is finely wrought, tough yet unencumbering.
 
 N:129:of Stealth
@@ -1133,6 +1367,7 @@ X:0:10:500:16
 A:10:20 to 100
 M:255:0:0
 T:38:0:99
+type:dragon armor
 V:STEALTH[d2]
 L:STEALTH[0]
 
@@ -1142,6 +1377,12 @@ A:5:40 to 100
 C:0:0:d10
 M:255:0:0
 T:38:7:29
+item:dragon armor:Pseudo-Dragon Scale Mail
+item:dragon armor:Law Dragon Scale Mail
+item:dragon armor:Gold Dragon Scale Mail
+item:dragon armor:Chaos Dragon Scale Mail
+item:dragon armor:Balance Dragon Scale Mail
+item:dragon armor:Power Dragon Scale Mail
 V:RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1]
 
 N:131:of Elvenkind
@@ -1149,6 +1390,12 @@ X:0:33:15000:25
 A:3:50 to 127
 C:0:0:d10
 T:38:7:29
+item:dragon armor:Pseudo-Dragon Scale Mail
+item:dragon armor:Law Dragon Scale Mail
+item:dragon armor:Gold Dragon Scale Mail
+item:dragon armor:Chaos Dragon Scale Mail
+item:dragon armor:Balance Dragon Scale Mail
+item:dragon armor:Power Dragon Scale Mail
 V:STEALTH[d2] | RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1]
 L:STEALTH[0]
 F:RAND_HI_RES
@@ -1159,6 +1406,7 @@ A:5:40 to 127
 C:0:0:d15
 M:255:0:5
 T:38:0:99
+type:dragon armor
 F:FREE_ACT
 V:STR[d2] | CON[d2] | INFRA[d2M3]
 L:STR[1] | CON[1] | INFRA[1]
@@ -1168,5 +1416,6 @@ X:0:100:100000:25
 A:2:40 to 127
 M:255:0:0
 T:38:0:99
+type:dragon armor
 V:SPEED[d5]
 L:SPEED[0]
