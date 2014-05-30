@@ -142,3 +142,5 @@ F:HATES_FIRE | EASY_KNOW
 N:prayer book:Prayer Book~
 G:light green
 F:HATES_FIRE | EASY_KNOW
+
+N:gold

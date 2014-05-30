@@ -46,7 +46,8 @@ void object_base_name(char *buf, size_t max, int tval, bool plural)
 	object_base *kb = &kb_info[tval];
 	size_t end = 0;
 
-	end = obj_desc_name_format(buf, max, end, kb->name, NULL, plural);
+	if (kb->name && kb->name[0]) 
+		end = obj_desc_name_format(buf, max, end, kb->name, NULL, plural);
 }
 
 

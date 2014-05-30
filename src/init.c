@@ -447,7 +447,8 @@ static enum parser_error parse_kb_n(struct parser *p) {
 	if (kb->tval == -1)
 		return PARSE_ERROR_UNRECOGNISED_TVAL;
 
-	kb->name = string_make(parser_getstr(p, "name"));
+	if (parser_hasval(p, "name"))
+		kb->name = string_make(parser_getstr(p, "name"));
 
 	return PARSE_ERROR_NONE;
 }
@@ -521,7 +522,7 @@ struct parser *init_parse_kb(void) {
 	parser_setpriv(p, d);
 
 	parser_reg(p, "D sym label int value", parse_kb_d);
-	parser_reg(p, "N sym tval str name", parse_kb_n);
+	parser_reg(p, "N sym tval ?str name", parse_kb_n);
 	parser_reg(p, "G sym color", parse_kb_g);
 	parser_reg(p, "B int breakage", parse_kb_b);
 	parser_reg(p, "F str flags", parse_kb_f);
