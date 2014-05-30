@@ -1587,36 +1587,6 @@ static enum parser_error parse_e_a(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_e_t(struct parser *p) {
-	int i;
-	int tval;
-	int min_sval, max_sval;
-
-	struct ego_item *e = parser_priv(p);
-	if (!e)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
-
-	tval = tval_find_idx(parser_getsym(p, "tval"));
-	if (tval < 0)
-		return PARSE_ERROR_UNRECOGNISED_TVAL;
-
-	min_sval = parser_getint(p, "min-sval");
-	max_sval = parser_getint(p, "max-sval");
-
-	for (i = 0; i < EGO_TVALS_MAX; i++) {
-		if (!e->tval[i]) {
-			e->tval[i] = tval;
-			e->min_sval[i] = min_sval;
-			e->max_sval[i] = max_sval;
-			break;
-		}
-	}
-
-	if (i == EGO_TVALS_MAX)
-		return PARSE_ERROR_GENERIC;
-	return PARSE_ERROR_NONE;
-}
-
 static enum parser_error parse_e_type(struct parser *p) {
 	struct ego_poss_item *poss;
 	int i;
@@ -1828,7 +1798,6 @@ struct parser *init_parse_e(void) {
 	parser_reg(p, "N int index str name", parse_e_n);
 	parser_reg(p, "X int level int rarity int cost int rating", parse_e_x);
 	parser_reg(p, "A int common str minmax", parse_e_a);
-	parser_reg(p, "T sym tval int min-sval int max-sval", parse_e_t);
 	parser_reg(p, "type sym tval", parse_e_type);
 	parser_reg(p, "item sym tval sym sval", parse_e_item);
 	parser_reg(p, "C rand th rand td rand ta", parse_e_c);

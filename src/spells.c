@@ -3238,7 +3238,7 @@ bool curse_weapon(void)
  */
 void brand_object(object_type *o_ptr, const char *name)
 {
-	int i, j;
+	int i;
 	ego_item_type *e_ptr;
 	bool ok = FALSE;
 
@@ -3264,10 +3264,9 @@ void brand_object(object_type *o_ptr, const char *name)
 			/* Match the name */
 			if (!e_ptr->name) continue;
 			if (streq(e_ptr->name, brand)) {
-				for (j = 0; j < EGO_TVALS_MAX; j++)
-					if ((o_ptr->tval == e_ptr->tval[j]) &&
-						(o_ptr->sval >= e_ptr->min_sval[j]) &&
-						(o_ptr->sval <= e_ptr->max_sval[j]))
+				struct ego_poss_item *poss;
+				for (poss = e_ptr->poss_items; poss; poss = poss->next)
+					if (poss->kind == o_ptr->kind)
 						ok = TRUE;
 			}
 			if (ok) break;

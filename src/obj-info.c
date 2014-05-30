@@ -1755,7 +1755,7 @@ textblock *object_info_ego(struct ego_item *ego)
 		kind = &k_info[i];
 		if (!kind->name)
 			continue;
-		if (kind->tval == ego->tval[0])
+		if (kind == ego->poss_items->kind)
 			break;
 	}
 

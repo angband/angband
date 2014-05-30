@@ -223,12 +223,12 @@ static int random_high_resist(object_type *o_ptr, int *resist)
  */
 static struct ego_item *ego_find_random(object_type *o_ptr, int level)
 {
-	int i, j, ood_chance;
+	int i, ood_chance;
 	long total = 0L;
 
-	/* XXX alloc_ego_table &c should be static to this file */
 	alloc_entry *table = alloc_ego_table;
 	ego_item_type *ego;
+	struct ego_poss_item *poss;
 
 	/* Go through all possible ego items and find ones which fit this item */
 	for (i = 0; i < alloc_ego_size; i++) {
@@ -253,16 +253,11 @@ static struct ego_item *ego_find_random(object_type *o_ptr, int level)
 		/* XXX Ignore cursed items for now */
 		if (cursed_p(ego->flags)) continue;
 
-		/* Test if this is a legal ego-item type for this object */
-		for (j = 0; j < EGO_TVALS_MAX; j++) {
-			/* Require identical base type */
-			if (o_ptr->tval == ego->tval[j] &&
-					o_ptr->sval >= ego->min_sval[j] &&
-					o_ptr->sval <= ego->max_sval[j]) {
+		for (poss = ego->poss_items; poss; poss = poss->next)
+			if (poss->kind == o_ptr->kind) {
 				table[i].prob3 = table[i].prob2;
 				break;
 			}
-		}
 
 		/* Total */
 		total += table[i].prob3;

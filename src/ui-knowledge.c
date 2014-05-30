@@ -1643,38 +1643,47 @@ static void do_cmd_knowledge_ego_items(const char *name, int row)
 	group_funcs obj_f =
 		{TV_GOLD, FALSE, ego_grp_name, e_cmp_tval, default_group, 0};
 
-	member_funcs ego_f = {display_ego_item, desc_ego_fake, 0, 0, recall_prompt, 0, 0};
+	member_funcs ego_f =
+		{display_ego_item, desc_ego_fake, 0, 0, recall_prompt, 0, 0};
 
 	int *egoitems;
 	int e_count = 0;
-	int i, j;
+	int i;
 
-	/* HACK: currently no more than 3 tvals for one ego type */
-	egoitems = C_ZNEW(z_info->e_max * EGO_TVALS_MAX, int);
-	default_join = C_ZNEW(z_info->e_max * EGO_TVALS_MAX, join_t);
+	/* Overkill - NRM */
+	int max_pairs = z_info->e_max * N_ELEMENTS(object_text_order);
+	egoitems = mem_zalloc(max_pairs * sizeof(int));
+	default_join = mem_zalloc(max_pairs * sizeof(join_t));
 
-	for (i = 0; i < z_info->e_max; i++)
-	{
-		if (e_info[i].everseen || OPT(cheat_xtra))
-		{
-			for (j = 0; j < EGO_TVALS_MAX && e_info[i].tval[j]; j++)
-			{
-				int gid = obj_group_order[e_info[i].tval[j]];
+	/* Look at all the ego items */
+	for (i = 0; i < z_info->e_max; i++)	{
+		ego_item_type *ego = &e_info[i];
+		if (ego->everseen || OPT(cheat_xtra)) {
+			size_t j;
+			int *tval = mem_zalloc(N_ELEMENTS(object_text_order) * sizeof(int));
+			struct ego_poss_item *poss;
 
-				/* Ignore duplicate gids */
-				if (j > 0 && gid == default_join[e_count - 1].gid) continue;
+			/* Note the tvals which are possible for this ego */
+			for (poss = ego->poss_items; poss; poss = poss->next)
+				tval[obj_group_order[poss->kind->tval]]++;
 
-				egoitems[e_count] = e_count;
-				default_join[e_count].oid = i;
-				default_join[e_count++].gid = gid;
+			/* Count and put into the list */
+			for (j = 0; j < N_ELEMENTS(object_text_order); j++) {
+				int gid = obj_group_order[j];
+				if (tval[obj_group_order[j]]) {
+					egoitems[e_count] = e_count;
+					default_join[e_count].oid = i;
+					default_join[e_count++].gid = gid;
+				}
 			}
+			mem_free(tval);
 		}
 	}
 
 	display_knowledge("ego items", egoitems, e_count, obj_f, ego_f, NULL);
 
-	FREE(default_join);
-	FREE(egoitems);
+	mem_free(default_join);
+	mem_free(egoitems);
 }
 
 /* =================== ORDINARY OBJECTS  ==================================== */

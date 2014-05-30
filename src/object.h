@@ -397,24 +397,22 @@ typedef struct artifact
 	random_value time;	/**< Recharge time (if appropriate) */
 } artifact_type;
 
-/*
+/**
  * The artifact arrays
  */
 extern artifact_type *a_info;
 
 
-/*
- * Number of tval/min-sval/max-sval slots per ego item
+/**
+ * Stricture for possible object kinds for an ego item
  */
-#define EGO_TVALS_MAX 3
-
 struct ego_poss_item {
 	object_kind *kind;
 	struct ego_poss_item *next;
 };
 
-/*
- * Information about "ego-items".
+/**
+ * Information about ego-items.
  */
 typedef struct ego_item
 {
@@ -445,9 +443,6 @@ typedef struct ego_item
 	byte alloc_max;			/** Maximum depth (will NEVER appear deeper) */
 
 	struct ego_poss_item *poss_items;
-	byte tval[EGO_TVALS_MAX];		/* Legal tval */
-	byte min_sval[EGO_TVALS_MAX];	/* Minimum legal sval */
-	byte max_sval[EGO_TVALS_MAX];	/* Maximum legal sval */
 
 	random_value to_h;		/* Extra to-hit bonus */
 	random_value to_d;		/* Extra to-dam bonus */

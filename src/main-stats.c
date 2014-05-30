@@ -471,7 +471,7 @@ static int stats_dump_egos(void)
 {
 	int err, idx, i;
 	char sql_buf[256];
-	sqlite3_stmt *info_stmt, *flags_stmt, *mods_stmt, *type_stmt;
+	sqlite3_stmt *info_stmt, *flags_stmt, *mods_stmt; //*type_stmt;
 
 	strnfmt(sql_buf, 256, "INSERT INTO ego_info VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?);");
 	err = stats_db_stmt_prep(&info_stmt, sql_buf);
@@ -485,9 +485,9 @@ static int stats_dump_egos(void)
 	err = stats_db_stmt_prep(&mods_stmt, sql_buf);
 	if (err) return err;
 
-	strnfmt(sql_buf, 256, "INSERT INTO ego_type_map VALUES (?,?,?,?);");
-	err = stats_db_stmt_prep(&type_stmt, sql_buf);
-	if (err) return err;
+	//strnfmt(sql_buf, 256, "INSERT INTO ego_type_map VALUES (?,?,?,?);");
+	//err = stats_db_stmt_prep(&type_stmt, sql_buf);
+	//if (err) return err;
 
 	for (idx = 0; idx < z_info->e_max; idx++)
 	{
@@ -524,21 +524,21 @@ static int stats_dump_egos(void)
 				STATS_DB_STEP_RESET(mods_stmt)
 		}
 
-		for (i = 0; i < EGO_TVALS_MAX; i++)
-		{
-			err = stats_db_bind_ints(type_stmt, 4, 0,
-				idx, e_ptr->tval[i], e_ptr->min_sval[i], 
-				e_ptr->max_sval[i]);
-			if (err) return err;
-			STATS_DB_STEP_RESET(type_stmt)
-		}
+		//for (i = 0; i < EGO_TVALS_MAX; i++)
+		//{
+		//	err = stats_db_bind_ints(type_stmt, 4, 0,
+		//		idx, e_ptr->tval[i], e_ptr->min_sval[i], 
+		//		e_ptr->max_sval[i]);
+		//	if (err) return err;
+		//	STATS_DB_STEP_RESET(type_stmt)
+		//}
 
 	}
 
 	STATS_DB_FINALIZE(info_stmt)
 	STATS_DB_FINALIZE(flags_stmt)
 	STATS_DB_FINALIZE(mods_stmt)
-	STATS_DB_FINALIZE(type_stmt)
+		//STATS_DB_FINALIZE(type_stmt)
 
 	return SQLITE_OK;
 }
