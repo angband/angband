@@ -3606,25 +3606,25 @@ I:45:51
 W:70:0:2:150000
 F:INSTA_ART
 
-# The Ring of Power 'Narya' -- see artifact list
+# The Ring of Fire 'Narya' -- see artifact list
 
-N:558:& Ring of Power~
+N:558:& Ring of Fire~
 G:=:d
 I:45:52
 W:70:0:2:100000
 F:INSTA_ART
 
-# The Ring of Power 'Nenya' -- see artifact list
+# The Ring of Adamant 'Nenya' -- see artifact list
 
-N:559:& Ring of Power~
+N:559:& Ring of Adamant~
 G:=:d
 I:45:53
 W:80:0:2:200000
 F:INSTA_ART
 
-# The Ring of Power 'Vilya' -- see artifact list
+# The Ring of Firmament 'Vilya' -- see artifact list
 
-N:560:& Ring of Power~
+N:560:& Ring of Firmament~
 G:=:d
 I:45:54
 W:90:0:2:300000

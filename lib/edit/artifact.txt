@@ -220,7 +220,7 @@ V:STR[4] | DEX[4] | CON[4]
 D:The treasure of Tulkas, most fleet and wrathful of the Valar.
 
 
-# The Ring of Power 'Narya'
+# The Ring of Fire 'Narya'
 
 N:10:'Narya'
 I:ring:52
@@ -239,7 +239,7 @@ D:Narya is one of the three Rings of Power created by Celebrimbor and hidden
 D:by the Elves from Sauron.
 
 
-# The Ring of Power 'Nenya'
+# The Ring of Adamant 'Nenya'
 
 N:11:'Nenya'
 I:ring:53
@@ -259,7 +259,7 @@ D:centerpiece.  Nenya is one of the three Rings of Power created by
 D:Celebrimbor and hidden by the Elves from Sauron.
 
 
-# The Ring of Power 'Vilya'
+# The Ring of Firmament 'Vilya'
 
 N:12:'Vilya'
 I:ring:54

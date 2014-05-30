@@ -26,13 +26,13 @@ fixed:1:55:Yellow:Plain Gold
 # The Ring of Barahir 50
 # The Ring of Tulkas 51
 
-# The Ring of Power 'Narya'
+# The Ring of Fire 'Narya'
 fixed:28:52:Red:Ruby
 
-# The Ring of Power 'Nenya'
+# The Ring of Adamant 'Nenya'
 fixed:40:53:Light Blue:Mithril
 
-# The Ring of Power 'Vilya'
+# The Ring of Firmament 'Vilya'
 fixed:29:54:Blue:Sapphire
 
 flavor:2:Green:Alexandrite
