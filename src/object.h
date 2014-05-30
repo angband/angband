@@ -244,6 +244,7 @@ typedef struct object_base
 	struct element_info el_info[ELEM_MAX];
 
 	int break_perc;
+	int num_svals;
 } object_base;
 
 extern object_base *kb_info;

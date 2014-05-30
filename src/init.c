@@ -449,6 +449,7 @@ static enum parser_error parse_kb_n(struct parser *p) {
 
 	if (parser_hasval(p, "name"))
 		kb->name = string_make(parser_getstr(p, "name"));
+	kb->num_svals = 0;
 
 	return PARSE_ERROR_NONE;
 }
@@ -619,6 +620,7 @@ static enum parser_error parse_k_i(struct parser *p) {
 	k->sval = parser_getint(p, "sval");
 
 	k->base = &kb_info[k->tval];
+	k->base->num_svals++;
 
 	return PARSE_ERROR_NONE;
 }
