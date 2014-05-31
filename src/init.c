@@ -236,10 +236,11 @@ static enum parser_error write_dummy_object_record(struct artifact *art, const c
 	my_strcpy(mod_name, format("& %s~", name), sizeof(mod_name));
 	dummy->name = string_make(mod_name);
 
-	/* Increase the sval count for this tval */
+	/* Increase the sval count for this tval, set the new one to the max */
 	for (i = 0; i < TV_MAX; i++)
 		if (kb_info[i].tval == dummy->tval) {
-			dummy->sval = kb_info[i].num_svals++;
+			kb_info[i].num_svals++;
+			dummy->sval = kb_info[i].num_svals;
 			break;
 		}
 	if (i == TV_MAX) return PARSE_ERROR_INTERNAL;
