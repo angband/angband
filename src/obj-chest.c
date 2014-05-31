@@ -232,7 +232,7 @@ int count_chests(int *y, int *x, enum chest_query check_type)
 }
 
 
-/*
+/**
  * Allocate objects upon opening a chest
  *
  * Disperse treasures from the given chest, centered at (x,y).
@@ -241,6 +241,8 @@ int count_chests(int *y, int *x, enum chest_query check_type)
  * items.  Wooden chests contain 2 items, Iron chests contain 4 items,
  * and Steel chests contain 6 items.  The "value" of the items in a
  * chest is based on the level on which the chest is generated.
+ *
+ * Judgment of size and construction of chests is currently made from the name.
  */
 static void chest_death(int y, int x, s16b o_idx)
 {
@@ -258,10 +260,17 @@ static void chest_death(int y, int x, s16b o_idx)
 	o_ptr = cave_object(cave, o_idx);
 
 	/* Small chests often hold "gold" */
-	tiny = (o_ptr->sval < SV_CHEST_MIN_LARGE);
+	tiny = strstr(o_ptr->kind->name, "Small") ? TRUE : FALSE;
 
 	/* Determine how much to drop (see above) */
-	number = (o_ptr->sval % SV_CHEST_MIN_LARGE) * 2;
+	if (strstr(o_ptr->kind->name, "wooden"))
+		number = 2;
+	else if (strstr(o_ptr->kind->name, "iron"))
+		number = 4;
+	else if (strstr(o_ptr->kind->name, "steel"))
+		number = 6;
+	else
+		number = 2 * (randint1(3));
 
 	/* Zero pval means empty chest */
 	if (!o_ptr->pval) number = 0;
