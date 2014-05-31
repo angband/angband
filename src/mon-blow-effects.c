@@ -26,7 +26,6 @@
 #include "obj-gear.h"
 #include "obj-make.h"
 #include "obj-tval.h"
-#include "obj-tvalsval.h"
 #include "obj-util.h"
 #include "player-timed.h"
 #include "player-util.h"

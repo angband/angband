@@ -16,7 +16,7 @@
 #include "angband.h"
 #include "init.h"
 #include "monster.h"
-#include "obj-tvalsval.h"
+#include "obj-tval.h"
 #include "player.h"
 
 static struct player_sex TEST_DATA test_sex = {
@@ -57,7 +57,7 @@ static struct artifact TEST_DATA test_artifact_sword = {
 	.aidx = 0,
 	.next = NULL,
 	.tval = TV_SWORD,
-	.sval = SV_LONG_SWORD,
+	.sval = 8, //Hack - depends on edit file order - Long Sword (NRM)
 	.to_a = 1,
 	.to_h = 2,
 	.to_d = 3,
@@ -74,7 +74,7 @@ static struct object_kind TEST_DATA test_longsword = {
 	.base = &sword_base,
 	.kidx = 0,
 	.tval = TV_SWORD,
-	.sval = SV_LONG_SWORD,
+	.sval = 8, //Hack - depends on edit file order - Long Sword (NRM)
 	.pval = {
 				.base = 0,
 				.dice = 0,
@@ -141,7 +141,7 @@ static struct object_kind TEST_DATA test_torch = {
 	.base = &light_base,
 	.kidx = 1,
 	.tval = TV_LIGHT,
-	.sval = SV_LIGHT_TORCH,
+	.sval = 1, //Hack - depends on edit file order - Wooden Torch (NRM)
 	.pval = {
 				.base = 5000,
 				.dice = 0,
@@ -209,7 +209,7 @@ static struct object_kind TEST_DATA test_lantern = {
 	.base = &light_base,
 	.kidx = 1,
 	.tval = TV_LIGHT,
-	.sval = SV_LIGHT_LANTERN,
+	.sval = 2, //Hack - depends on edit file order -  Lantern (NRM)
 	.pval = {
 				.base = 5000,
 				.dice = 0,

@@ -20,7 +20,7 @@
 #include "cave.h"
 #include "cmds.h"
 #include "cmd-core.h"
-#include "obj-tvalsval.h"
+#include "obj-tval.h"
 #include "obj-ui.h"
 #include "obj-util.h"
 #include "object.h"

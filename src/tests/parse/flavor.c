@@ -3,7 +3,7 @@
 #include "unit-test.h"
 
 #include "init.h"
-#include "obj-tvalsval.h"
+#include "obj-tval.h"
 #include "obj-properties.h"
 #include "object.h"
 #include "z-color.h"

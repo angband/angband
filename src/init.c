@@ -42,7 +42,6 @@
 #include "obj-make.h"
 #include "obj-slays.h"
 #include "obj-tval.h"
-#include "obj-tvalsval.h"
 #include "obj-util.h"
 #include "object.h"
 #include "option.h"

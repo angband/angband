@@ -23,7 +23,6 @@
 #include "obj-identify.h"
 #include "obj-list.h"
 #include "obj-tval.h"
-#include "obj-tvalsval.h"
 #include "obj-ui.h"
 #include "obj-util.h"
 #include "squelch.h"

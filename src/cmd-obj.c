@@ -28,7 +28,6 @@
 #include "obj-identify.h"
 #include "obj-info.h"
 #include "obj-tval.h"
-#include "obj-tvalsval.h"
 #include "obj-ui.h"
 #include "obj-util.h"
 #include "player-timed.h"

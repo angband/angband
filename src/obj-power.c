@@ -21,7 +21,6 @@
 #include "obj-identify.h"
 #include "obj-slays.h"
 #include "obj-tval.h"
-#include "obj-tvalsval.h"
 #include "obj-util.h"
 #include "init.h"
 #include "effects.h"

@@ -266,7 +266,7 @@ typedef struct object_kind
 	u32b kidx;
 
 	byte tval;					/**< General object type (see TV_ macros) */
-	byte sval;					/**< Object sub-type (see SV_ macros) */
+	byte sval;					/**< Object sub-type  */
 
 	random_value pval;			/* Item extra-parameter */
 
@@ -359,7 +359,7 @@ typedef struct artifact
 	struct artifact *next;
 
 	byte tval;		/**< General artifact type (see TV_ macros) */
-	byte sval;		/**< Artifact sub-type (see SV_ macros) */
+	byte sval;		/**< Artifact sub-type  */
 
 	s16b to_h;		/**< Bonus to hit */
 	s16b to_d;		/**< Bonus to damage */

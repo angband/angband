@@ -18,7 +18,6 @@
 
 #include "init.h"
 #include "obj-tval.h"
-#include "obj-tvalsval.h"
 #include "z-type.h"
 #include "z-util.h"
 

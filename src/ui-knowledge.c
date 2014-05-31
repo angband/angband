@@ -29,7 +29,7 @@
 #include "obj-identify.h"
 #include "obj-info.h"
 #include "obj-make.h"
-#include "obj-tvalsval.h"
+#include "obj-tval.h"
 #include "obj-util.h"
 #include "object.h"
 #include "squelch.h"

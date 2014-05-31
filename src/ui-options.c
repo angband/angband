@@ -24,7 +24,6 @@
 #include "squelch.h"
 #include "prefs.h"
 #include "obj-desc.h"
-#include "obj-tvalsval.h"
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "object.h"

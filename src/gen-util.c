@@ -29,7 +29,7 @@
 #include "mon-make.h"
 #include "mon-spell.h"
 #include "obj-make.h"
-#include "obj-tvalsval.h"
+#include "obj-tval.h"
 #include "obj-util.h"
 #include "parser.h"
 #include "tables.h"

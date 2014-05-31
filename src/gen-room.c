@@ -36,7 +36,7 @@
 #include "init.h"
 #include "mon-make.h"
 #include "mon-spell.h"
-#include "obj-tvalsval.h"
+#include "obj-tval.h"
 #include "parser.h"
 #include "tables.h"
 #include "trap.h"

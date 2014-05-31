@@ -2,7 +2,7 @@
 
 #include "unit-test.h"
 #include "unit-test-data.h"
-#include "obj-tvalsval.h"
+#include "obj-tval.h"
 #include "object.h"
 #include "init.h"
 	

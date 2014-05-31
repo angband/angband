@@ -21,7 +21,7 @@
 #include "init.h"
 #include "obj-desc.h"
 #include "obj-slays.h"
-#include "obj-tvalsval.h"
+#include "obj-tval.h"
 #include "obj-util.h"
 #include "randname.h"
 #include "wizard.h" /* make_fake_artifact() */

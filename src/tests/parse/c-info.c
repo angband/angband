@@ -5,7 +5,7 @@
 #include "init.h"
 #include "obj-properties.h"
 #include "object.h"
-#include "obj-tvalsval.h"
+#include "obj-tval.h"
 #include "obj-util.h"
 #include "player.h"
 

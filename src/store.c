@@ -31,7 +31,6 @@
 #include "obj-info.h"
 #include "obj-make.h"
 #include "obj-tval.h"
-#include "obj-tvalsval.h"
 #include "obj-util.h"
 #include "spells.h"
 #include "squelch.h"

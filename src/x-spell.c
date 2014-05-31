@@ -19,7 +19,7 @@
 #include "angband.h"
 #include "cave.h"
 #include "effects.h"
-#include "obj-tvalsval.h"
+#include "obj-tval.h"
 #include "object.h"
 #include "player-timed.h"
 #include "project.h"
