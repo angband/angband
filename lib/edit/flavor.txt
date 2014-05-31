@@ -21,19 +21,19 @@
 kind:ring:=
 
 # Fixed: the One Ring
-fixed:1:55:Yellow:Plain Gold
+fixed:1:Ring of Power:Yellow:Plain Gold
 
 # The Ring of Barahir 50
 # The Ring of Tulkas 51
 
 # The Ring of Fire 'Narya'
-fixed:28:52:Red:Ruby
+fixed:28:Ring of Fire:Red:Ruby
 
 # The Ring of Adamant 'Nenya'
-fixed:40:53:Light Blue:Mithril
+fixed:40:Ring of Adamant:Light Blue:Mithril
 
 # The Ring of Firmament 'Vilya'
-fixed:29:54:Blue:Sapphire
+fixed:29:Ring of Firmament:Blue:Sapphire
 
 flavor:2:Green:Alexandrite
 flavor:3:Violet:Amethyst
@@ -83,18 +83,18 @@ flavor:43:Light Green:Adamantite
 kind:amulet:"
 
 # The Amulet of Carlammas
-fixed:52:50:Light Umber:Bronze
+fixed:52:Amulet:Light Umber:Bronze
 
 # The Amulet of Ingwe 51
 
 # The Necklace of the Dwarves
-fixed:55:52:Yellow:Golden
+fixed:55:Necklace:Yellow:Golden
 
 # New Artifact (14): The Elfstone 'Elessar'
-fixed:44:53:Green:Green
+fixed:44:Elfstone:Green:Green
 
 # New Artifact (15): The Jewel 'Evenstar'
-fixed:46:54:White:White
+fixed:46:Jewel:White:White
 
 #flavor:44:Yellow:Amber
 flavor:45:Light Umber:Driftwood
