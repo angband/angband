@@ -35,39 +35,40 @@ typedef struct
 {
 	squelch_type_t squelch_type;
 	int tval;
-	int min_sval;
-	int max_sval;
+	const char *identifier;
 } quality_squelch_struct;
 
+/**
+ * Any entry here with an identifier should appear above the entry with the
+ * same tval and no identifier
+ */
 static quality_squelch_struct quality_mapping[] =
 {
-	{ TYPE_WEAPON_GREAT,		TV_SWORD,		SV_BLADE_OF_CHAOS,	SV_BLADE_OF_CHAOS },
-	{ TYPE_WEAPON_GREAT,		TV_POLEARM,		SV_SCYTHE_OF_SLICING,	SV_SCYTHE_OF_SLICING },
-	{ TYPE_WEAPON_GREAT,		TV_HAFTED,		SV_MACE_OF_DISRUPTION,	SV_MACE_OF_DISRUPTION },
-	{ TYPE_WEAPON_POINTY,	TV_SWORD,		0,		SV_UNKNOWN },
-	{ TYPE_WEAPON_POINTY,	TV_POLEARM,		0,		SV_UNKNOWN },
-	{ TYPE_WEAPON_BLUNT,	TV_HAFTED,		0,		SV_UNKNOWN },
-	{ TYPE_SHOOTER,			TV_BOW,			0,		SV_UNKNOWN },
-	{ TYPE_MISSILE_SLING,	TV_SHOT,		0,		SV_UNKNOWN },
-	{ TYPE_MISSILE_BOW,		TV_ARROW,		0,		SV_UNKNOWN },
-	{ TYPE_MISSILE_XBOW,	TV_BOLT,		0,		SV_UNKNOWN },
-	{ TYPE_ARMOR_ROBE,		TV_SOFT_ARMOR,	SV_ROBE,SV_ROBE },
-	{ TYPE_ARMOR_DRAGON,	TV_DRAG_ARMOR,	0,		SV_UNKNOWN },
-	{ TYPE_ARMOR_BODY,		TV_HARD_ARMOR,	0,		SV_UNKNOWN },
-	{ TYPE_ARMOR_BODY,		TV_SOFT_ARMOR,	0,		SV_UNKNOWN },
-	{ TYPE_ARMOR_CLOAK,		TV_CLOAK,		SV_CLOAK, SV_FUR_CLOAK },
-	{ TYPE_ARMOR_CLOAK,		TV_CLOAK,		SV_ETHEREAL_CLOAK, SV_ETHEREAL_CLOAK },
-/* XXX Eddie need to assert SV_CLOAK < SV_FUR_CLOAK < SV_ELVEN_CLOAK */
-	{ TYPE_ARMOR_ELVEN_CLOAK, TV_CLOAK,		SV_ELVEN_CLOAK,	SV_ELVEN_CLOAK },
-	{ TYPE_ARMOR_SHIELD,	TV_SHIELD,		0,		SV_UNKNOWN },
-	{ TYPE_ARMOR_HEAD,		TV_HELM,		0,		SV_UNKNOWN },
-	{ TYPE_ARMOR_HEAD,		TV_CROWN,		0,		SV_UNKNOWN },
-	{ TYPE_ARMOR_HANDS,		TV_GLOVES,		0,		SV_UNKNOWN },
-	{ TYPE_ARMOR_FEET,		TV_BOOTS,		0,		SV_UNKNOWN },
-	{ TYPE_DIGGER,			TV_DIGGING,		0,		SV_UNKNOWN },
-	{ TYPE_RING,			TV_RING,		0,		SV_UNKNOWN },
-	{ TYPE_AMULET,			TV_AMULET,		0,		SV_UNKNOWN },
-	{ TYPE_LIGHT, 			TV_LIGHT, 		0,		SV_UNKNOWN },
+	{ TYPE_WEAPON_GREAT,	TV_SWORD,		"Chaos" },
+	{ TYPE_WEAPON_GREAT,	TV_POLEARM,		"Slicing" },
+	{ TYPE_WEAPON_GREAT,	TV_HAFTED,		"Disruption" },
+	{ TYPE_WEAPON_POINTY,	TV_SWORD,		"" },
+	{ TYPE_WEAPON_POINTY,	TV_POLEARM,		"" },
+	{ TYPE_WEAPON_BLUNT,	TV_HAFTED,		"" },
+	{ TYPE_SHOOTER,			TV_BOW,			"" },
+	{ TYPE_MISSILE_SLING,	TV_SHOT,		"" },
+	{ TYPE_MISSILE_BOW,		TV_ARROW,		"" },
+	{ TYPE_MISSILE_XBOW,	TV_BOLT,		"" },
+	{ TYPE_ARMOR_ROBE,		TV_SOFT_ARMOR,	"Robe" },
+	{ TYPE_ARMOR_DRAGON,	TV_DRAG_ARMOR,	"" },
+	{ TYPE_ARMOR_BODY,		TV_HARD_ARMOR,	"" },
+	{ TYPE_ARMOR_BODY,		TV_SOFT_ARMOR,	"" },
+	{ TYPE_ARMOR_ELVEN_CLOAK, TV_CLOAK,		"Elven" },
+	{ TYPE_ARMOR_CLOAK,		TV_CLOAK,		"" },
+	{ TYPE_ARMOR_SHIELD,	TV_SHIELD,		"" },
+	{ TYPE_ARMOR_HEAD,		TV_HELM,		"" },
+	{ TYPE_ARMOR_HEAD,		TV_CROWN,		"" },
+	{ TYPE_ARMOR_HANDS,		TV_GLOVES,		"" },
+	{ TYPE_ARMOR_FEET,		TV_BOOTS,		"" },
+	{ TYPE_DIGGER,			TV_DIGGING,		"" },
+	{ TYPE_RING,			TV_RING,		"" },
+	{ TYPE_AMULET,			TV_AMULET,		"" },
+	{ TYPE_LIGHT, 			TV_LIGHT, 		"" },
 };
 
 
@@ -76,7 +77,7 @@ quality_name_struct quality_choices[TYPE_MAX] =
 {
 	{ TYPE_WEAPON_POINTY,		"Pointy Melee Weapons" },
 	{ TYPE_WEAPON_BLUNT,		"Blunt Melee Weapons" },
-	{ TYPE_WEAPON_GREAT,			"Great Weapons" },
+	{ TYPE_WEAPON_GREAT,		"Great Weapons" },
 	{ TYPE_SHOOTER,				"Missile weapons" },
 	{ TYPE_MISSILE_SLING,		"Shots and Pebbles" },
 	{ TYPE_MISSILE_BOW,			"Arrows" },
@@ -257,12 +258,16 @@ squelch_type_t squelch_type_of(const object_type *o_ptr)
 	size_t i;
 
 	/* Find the appropriate squelch group */
-	for (i = 0; i < N_ELEMENTS(quality_mapping); i++)
-	{
-		if ((quality_mapping[i].tval == o_ptr->tval) &&
-			(quality_mapping[i].min_sval <= o_ptr->sval) &&
-			(quality_mapping[i].max_sval >= o_ptr->sval))
+	for (i = 0; i < N_ELEMENTS(quality_mapping); i++) {
+		if (quality_mapping[i].tval == o_ptr->tval) {
+			/* If there's an identifier, it must match */
+			if (quality_mapping[i].identifier[0]) {
+				if (!strstr(quality_mapping[i].identifier, o_ptr->kind->name))
+					continue;
+			}
+			/* Otherwise we're fine */
 			return quality_mapping[i].squelch_type;
+		}
 	}
 
 	return TYPE_MAX;
