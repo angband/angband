@@ -2721,6 +2721,8 @@ static void scramble_artifact(int a_idx)
 	bool success = FALSE;
 	int i;
 
+	bool special_artifact = kf_has(a_ptr->kind_flags, KF_INSTA_ART);
+
 	/* Special cases -- don't randomize these! */
 	if ((a_idx == ART_POWER) ||
 	    (a_idx == ART_GROND) ||
@@ -2753,7 +2755,7 @@ static void scramble_artifact(int a_idx)
 	 */
 	if (power < 0) power = -power;
 
-	if (a_idx >= ART_MIN_NORMAL)
+	if (!special_artifact)
 	{
 		/*
 		 * Normal artifact - choose a random base item type.  Not too
@@ -2959,7 +2961,7 @@ static void scramble_artifact(int a_idx)
 	/* flip cursed items to avoid overflows */
 	if (ap < 0) ap = -ap;
 
-	if (a_idx < ART_MIN_NORMAL)
+	if (special_artifact)
 	{
 		a_ptr->alloc_max = 127;
 		if (ap > avg_power)
@@ -2999,8 +3001,8 @@ static void scramble_artifact(int a_idx)
 	file_putf(log_file, "New depths are min %d, max %d\n", a_ptr->alloc_min, a_ptr->alloc_max);
 	file_putf(log_file, "Power-based alloc_prob is %d\n", a_ptr->alloc_prob);
 
-	/* This will go */
-	if (a_idx < ART_MIN_NORMAL)
+	/* Unnecessary? */
+	if (special_artifact)
 		kf_on(a_ptr->kind_flags, KF_INSTA_ART);
 
 	/* Success */
@@ -3020,7 +3022,7 @@ static bool artifacts_acceptable(void)
 	int gloves = 4, boots = 4;
 	int i;
 
-	for (i = ART_MIN_NORMAL; i < z_info->a_max; i++)
+	for (i = 0; i < z_info->a_max; i++)
 	{
 		switch (a_info[i].tval)
 		{

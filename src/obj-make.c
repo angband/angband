@@ -452,11 +452,14 @@ static bool make_artifact_special(object_type *o_ptr, int level)
 	if (!player->depth) return FALSE;
 
 	/* Check the special artifacts */
-	for (i = 0; i < ART_MIN_NORMAL; ++i) {
+	for (i = 0; i < z_info->a_max; ++i) {
 		artifact_type *a_ptr = &a_info[i];
 
 		/* Skip "empty" artifacts */
 		if (!a_ptr->name) continue;
+
+		/* Skip non-special artifacts */
+		if (!kf_has(a_ptr->kind_flags, KF_INSTA_ART)) continue;
 
 		/* Cannot make an artifact twice */
 		if (a_ptr->created) continue;
@@ -550,11 +553,14 @@ static bool make_artifact(object_type *o_ptr)
 	if (o_ptr->number != 1) return (FALSE);
 
 	/* Check the artifact list (skip the "specials") */
-	for (i = ART_MIN_NORMAL; !o_ptr->artifact && i < z_info->a_max; i++) {
+	for (i = 0; !o_ptr->artifact && i < z_info->a_max; i++) {
 		a_ptr = &a_info[i];
 
 		/* Skip "empty" items */
 		if (!a_ptr->name) continue;
+
+		/* Skip special artifacts */
+		if (kf_has(a_ptr->kind_flags, KF_INSTA_ART)) continue;
 
 		/* Cannot make an artifact twice */
 		if (a_ptr->created) continue;

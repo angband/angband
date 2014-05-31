@@ -334,13 +334,6 @@ extern object_kind *k_info;
 #define ART_MORGOTH			34
 #define ART_GROND			111
 
-/*
- * Hack -- first "normal" artifact in the artifact list.  All of
- * the artifacts with indexes from 1 to 15 are "special" (lights,
- * rings, amulets), and the ones from 16 to 127 are "normal".
- */
-#define ART_MIN_NORMAL		16
-
 /**
  * Information about artifacts.
  *
