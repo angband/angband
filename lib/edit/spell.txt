@@ -37,7 +37,7 @@
 # Mage spells 0 through 63
 
 N:0:Magic Missile
-I:90:0:0
+I:magic book:[Magic for Beginners]:0
 id:SPELL_MAGIC_MISSILE
 dice:$Dd4
 expr:D:PLAYER_LEVEL:- 1 / 5 + 3
@@ -49,20 +49,20 @@ D: in its path.
 D:  The chance to get a beam goes up with your character level.
 
 N:1:Detect Monsters
-I:90:0:1
+I:magic book:[Magic for Beginners]:1
 id:SPELL_DETECT_MONSTERS
 D:Detects all non-invisible monsters in the immediate area,
 D: for one turn only.
 
 N:2:Phase Door
-I:90:0:2
+I:magic book:[Magic for Beginners]:2
 id:SPELL_PHASE_DOOR
 dice:10
 D:Teleports you randomly up to 10 squares away.
 
 # Damage should probably be displayed on screen
 N:3:Light Area
-I:90:0:3
+I:magic book:[Magic for Beginners]:3
 id:SPELL_LIGHT_AREA
 dice:2d$S
 expr:S:PLAYER_LEVEL:/ 2
@@ -71,38 +71,38 @@ D: all light-sensitive monsters in the area of effect.
 D:  If you are in a room, the entire room will be lit up as well.
 
 N:4:Find Traps, Doors & Stairs
-I:90:0:7
+I:magic book:[Magic for Beginners]:7
 id:SPELL_FIND_TRAPS_DOORS
 D:Detects all traps, doors, and stairs in the immediate area.
 
 N:5:Cure Light Wounds
-I:90:0:5
+I:magic book:[Magic for Beginners]:5
 id:SPELL_CURE_LIGHT_WOUNDS
 dice:15+m15
 D:Cures 15% of your wounds (min 15hp) and heals 20 points worth of cuts.
 
 N:6:Detect Objects
-I:90:0:4
+I:magic book:[Magic for Beginners]:4
 id:SPELL_OBJECT_DETECTION
 D:Detects all objects in the immediate area.
 
 N:8:Identify
-I:90:2:5
+I:magic book:[Incantations and Illusions]:5
 id:SPELL_IDENTIFY
 D:Reveals the powers of an object.
 
 N:9:Reveal Monsters
-I:90:2:6
+I:magic book:[Incantations and Illusions]:6
 id:SPELL_DETECT_INVISIBLE
 D:Detects all monsters in the immediate area, for one turn only.
 
 N:10:Detect Treasure
-I:90:3:5
+I:magic book:[Sorcery and Evocations]:5
 id:SPELL_TREASURE_DETECTION
 D:Detects all treasure in the immediate area.
 
 N:11:Stinking Cloud
-I:90:0:8
+I:magic book:[Magic for Beginners]:8
 id:SPELL_STINKING_CLOUD
 dice:$B
 expr:B:PLAYER_LEVEL:/ 2 + 10
@@ -110,7 +110,7 @@ ball:POIS:2
 D:Shoots a radius-2 poison ball.
 
 N:12:Lightning Bolt
-I:90:1:1
+I:magic book:[Conjurings and Tricks]:1
 id:SPELL_LIGHTNING_BOLT
 dice:$Dd6
 expr:D:PLAYER_LEVEL:- 5 / 6 + 3
@@ -118,24 +118,24 @@ beam:ELEC
 D:Fires a lightning beam that hurts each monster in its path.
 
 N:13:Confuse Monster
-I:90:1:0
+I:magic book:[Conjurings and Tricks]:0
 id:SPELL_CONFUSE_MONSTER
 D:Attempts to confuse a single monster for a level-dependant duration.
 D:  Uniques and monsters that resist confusion are not affected.
 
 N:14:Sleep Monster
-I:90:1:4
+I:magic book:[Conjurings and Tricks]:4
 id:SPELL_SLEEP_MONSTER
 D:Attempts to put to sleep a single monster.
 D:  Uniques and monsters that resist confusion are not affected.
 
 N:15:Wonder
-I:90:1:8
+I:magic book:[Conjurings and Tricks]:8
 id:SPELL_WONDER
 D:Invokes a random spell effect.
 
 N:16:Frost Bolt
-I:90:1:7
+I:magic book:[Conjurings and Tricks]:7
 id:SPELL_FROST_BOLT
 dice:$Dd8
 expr:D:PLAYER_LEVEL:- 5 / 4 + 5
@@ -146,7 +146,7 @@ D: in its path.
 D:  The chance to get a beam goes up with your character level.
 
 N:17:Acid Bolt
-I:90:2:7
+I:magic book:[Incantations and Illusions]:7
 id:SPELL_ACID_BOLT
 dice:$Dd8
 expr:D:PLAYER_LEVEL:- 5 / 4 + 8
@@ -157,7 +157,7 @@ D: in its path.
 D:  The chance to get a beam goes up with your character level.
 
 N:18:Fire Bolt
-I:90:2:3
+I:magic book:[Incantations and Illusions]:3
 id:SPELL_FIRE_BOLT
 dice:$Dd8
 expr:D:PLAYER_LEVEL:- 5 / 4 + 6
@@ -168,32 +168,32 @@ D: in its path.
 D:  The chance to get a beam goes up with your character level.
 
 N:19:Trap/Door Destruction
-I:90:1:2
+I:magic book:[Conjurings and Tricks]:2
 id:SPELL_TRAP_DOOR_DESTRUCTION
 D:Destroys all traps and doors within a 1-square radius of you.
 
 N:20:Spear of Light
-I:90:1:6
+I:magic book:[Conjurings and Tricks]:6
 id:SPELL_SPEAR_OF_LIGHT
 dice:6d8
 D:Fires a beam that lights up each square and hurts each
 D: light-sensitive monster in its path.
 
 N:21:Turn Stone to Mud
-I:90:2:2
+I:magic book:[Incantations and Illusions]:2
 id:SPELL_TURN_STONE_TO_MUD
 D:Produces a beam that destroys the first section of wall it hits,
 D: unless it is a permanent wall.  Each monster caught in the beam that
 D: is susceptible to rock remover takes 20+1d30 points of damage.
 
 N:22:Door Creation
-I:90:6:0
+I:magic book:[Mordenkainen's Escapes]:0
 id:SPELL_DOOR_CREATION
 D:A door is created on each empty floor space that is directly
 D: adjacent to you.  These doors are closed, but not locked
 
 N:23:Earthquake
-I:90:8:0
+I:magic book:[Kelek's Grimoire of Power]:0
 id:SPELL_EARTHQUAKE
 D:Causes a 10-square radius earthquake around you.
 D:  Earthquakes may damage monsters and destroy items in some
@@ -202,7 +202,7 @@ D:  Artifacts will not be destroyed by this spell.
 D:  This spell has no effect when used in the town.
 
 N:24:Stair Creation
-I:90:6:1
+I:magic book:[Mordenkainen's Escapes]:1
 id:SPELL_STAIR_CREATION
 D:A stair (going up or down, chosen at random) is created on the space
 D: where you are standing.  This will destroy any terrain feature that
@@ -210,25 +210,25 @@ D: was there before.  It will also destroy all items currently on the
 D: floor where the spell is cast.
 
 N:25:Cure Poison
-I:90:1:3
+I:magic book:[Conjurings and Tricks]:3
 id:SPELL_CURE_POISON
 D:Neutralizes poison.
 
 N:26:Satisfy Hunger
-I:90:2:0
+I:magic book:[Incantations and Illusions]:0
 id:SPELL_SATISFY_HUNGER
 D:Magically renders you well-fed (but not satiated).
 D:  This will also cure a bloated stomach.
 
 N:27:Heroism
-I:90:7:0
+I:magic book:[Tenser's Transformations]:0
 id:SPELL_HEROISM
 dice:25+d25
 D:Cures 10 points of damage, removes fear and grants you heroism
 D: (resistance to fear, and a bonus of +12 to-hit) for 25+1d25 turns.
 
 N:28:Berserker
-I:90:7:1
+I:magic book:[Tenser's Transformations]:1
 id:SPELL_BERSERKER
 dice:25+d25
 D:Cures 30 points of damage, removes fear, and grants you berserk
@@ -236,40 +236,40 @@ D: strength (resistance to fear, a bonus of +24 to-hit, and a penalty
 D: of -10 to AC) for 25+1d25 turns.
 
 N:29:Haste Self
-I:90:3:2
+I:magic book:[Sorcery and Evocations]:2
 id:SPELL_HASTE_SELF
 dice:$B+d20
 expr:B:PLAYER_LEVEL:+ 0
 D:Hastes you (+10 to speed) for a level-dependant duration.
 
 N:30:Teleport Self
-I:90:1:5
+I:magic book:[Conjurings and Tricks]:5
 id:SPELL_TELEPORT_SELF
 dice:$B
 expr:B:PLAYER_LEVEL:* 5
 D:Teleports you randomly within the current level.
 
 N:31:Slow Monster
-I:90:2:8
+I:magic book:[Incantations and Illusions]:8
 id:SPELL_SLOW_MONSTER
 D:Attempts to slow a single monster.
 D:  Uniques are not affected.
 
 N:32:Teleport Other
-I:90:3:1
+I:magic book:[Sorcery and Evocations]:1
 id:SPELL_TELEPORT_OTHER
 D:Produces a bolt that teleports the first monster in its path
 D: up to 100 squares away.
 
 N:33:Teleport Level
-I:90:6:2
+I:magic book:[Mordenkainen's Escapes]:2
 id:SPELL_TELEPORT_LEVEL
 D:Teleports you 1 level up or 1 level down (chosen at random).
 D:  This spell has no effect when the option to restrict the use of
 D: stairs and recall is set.
 
 N:34:Word of Recall
-I:90:6:3
+I:magic book:[Mordenkainen's Escapes]:3
 id:SPELL_WORD_OF_RECALL
 D:Teleports you from the dungeon to the town or from the town to the
 D: deepest level you have visited in the dungeon.
@@ -281,13 +281,13 @@ D:  This spell has no effect when the option to restrict the use of
 D: stairs and recall is set, unless Morgoth is dead.
 
 N:35:Polymorph Other
-I:90:2:4
+I:magic book:[Incantations and Illusions]:4
 id:SPELL_POLYMORPH_OTHER
 D:Attempts to polymorph a single monster.
 D:  Uniques are not affected.
 
 N:36:Shock Wave
-I:90:5:0
+I:magic book:[Raal's Tome of Destruction]:0
 id:SPELL_SHOCK_WAVE
 dice:$B
 expr:B:PLAYER_LEVEL:+ 10
@@ -297,7 +297,7 @@ D:  Apart from doing sound damage, this also has a chance to stun
 D: each monster in the area of effect.
 
 N:37:Explosion
-I:90:5:1
+I:magic book:[Raal's Tome of Destruction]:1
 id:SPELL_EXPLOSION
 dice:$B
 expr:B:PLAYER_LEVEL:* 2 + 20
@@ -305,7 +305,7 @@ ball:SHARD:2
 D:Shoots a radius-2 shards ball.
 
 N:38:Cloudkill
-I:90:5:2
+I:magic book:[Raal's Tome of Destruction]:2
 id:SPELL_CLOUD_KILL
 dice:$B
 expr:B:PLAYER_LEVEL:/ 2 + 40
@@ -313,13 +313,13 @@ ball:POIS:3
 D:Shoots a radius-3 poison ball.
 
 N:39:Mass Sleep
-I:90:3:3
+I:magic book:[Sorcery and Evocations]:3
 id:SPELL_MASS_SLEEP
 D:Attempts to put to sleep each monster within line of sight.
 D:  Uniques and monsters that resist confusion are not affected.
 
 N:40:Bedlam
-I:90:8:1
+I:magic book:[Kelek's Grimoire of Power]:1
 id:SPELL_BEDLAM
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
@@ -329,7 +329,7 @@ D: damage but has a chance to confuse each monster in the area of effect.
 D:  Uniques or monsters that resist confusion are not affected.
 
 N:41:Rend Soul
-I:90:8:2
+I:magic book:[Kelek's Grimoire of Power]:2
 id:SPELL_REND_SOUL
 dice:11d$S
 expr:S:PLAYER_LEVEL:+ 0
@@ -340,7 +340,7 @@ D: in its path.
 D:  The chance to get a beam goes up with your character level.
 
 N:42:Word of Destruction
-I:90:8:4
+I:magic book:[Kelek's Grimoire of Power]:4
 id:SPELL_WORD_OF_DESTRUCTION
 D:Destroys everything in a 15-square radius circle around you.
 D:  All monsters, objects, and terrain features in the area of
@@ -350,7 +350,7 @@ D: have resistance to blindness or light.
 D:  This spell has no effect when used in the town.
 
 N:43:Chaos Strike
-I:90:8:6
+I:magic book:[Kelek's Grimoire of Power]:6
 id:SPELL_CHAOS_STRIKE
 dice:13d$S
 expr:S:PLAYER_LEVEL:+ 0
@@ -361,38 +361,38 @@ D: in its path.
 D:  The chance to get a beam goes up with your character level.
 
 N:44:Resist Cold
-I:90:4:0
+I:magic book:[Resistances of Scarabtarices]:0
 id:SPELL_RESIST_COLD
 dice:20+d20
 D:Grants you resistance to cold for 20+1d20 turns.
 
 N:45:Resist Fire
-I:90:4:1
+I:magic book:[Resistances of Scarabtarices]:1
 id:SPELL_RESIST_FIRE
 dice:20+d20
 D:Grants you resistance to fire for 20+1d20 turns.
 
 N:46:Resist Poison
-I:90:4:2
+I:magic book:[Resistances of Scarabtarices]:2
 id:SPELL_RESIST_POISON
 dice:20+d20
 D:Grants you resistance to poison for 20+1d20 turns.
 
 N:47:Resistance
-I:90:4:3
+I:magic book:[Resistances of Scarabtarices]:3
 id:SPELL_RESISTANCE
 dice:20+d20
 D:Grants you resistance to acid, cold, fire, lightning, and poison for
 D: 20+1d20 turns.  
 
 N:48:Shield
-I:90:4:4
+I:magic book:[Resistances of Scarabtarices]:4
 id:SPELL_SHIELD
 dice:30+d20
 D:Grants you +50 to AC for 30+1d20 turns.
 
 N:49:Rune of Protection
-I:90:6:4
+I:magic book:[Mordenkainen's Escapes]:4
 id:SPELL_RUNE_OF_PROTECTION
 D:Inscribes a glyph of warding beneath you.
 D:  Summoned monsters can't appear on the glyph.
@@ -403,7 +403,7 @@ D:  The glyph will remain where it is, until a monster succeeds in
 D: breaking it, or until you leave the level.
 
 N:50:Lesser Recharging
-I:90:2:1
+I:magic book:[Incantations and Illusions]:1
 id:SPELL_RECHARGE_ITEM_I
 dice:$B
 expr:B:PLAYER_LEVEL:/ 5 + 2
@@ -413,21 +413,21 @@ D: level and decrease with level of wand or staff and number of charges.
 D:  A failed attempt to recharge destroys one wand or staff from the stack.
 
 N:51:Enchant Armor
-I:90:7:2
+I:magic book:[Tenser's Transformations]:2
 id:SPELL_ENCHANT_ARMOR
 dice:$B+1d3
 expr:B:PLAYER_LEVEL:/ 20
 D:Attempts to improve the armour class bonus of a piece of armour.
 
 N:52:Enchant Weapon
-I:90:7:3
+I:magic book:[Tenser's Transformations]:3
 id:SPELL_ENCHANT_WEAPON
 dice:$B+1d4
 expr:B:PLAYER_LEVEL:/ 20
 D:Attempts to improve the to-hit bonus and the to-dam bonus of a weapon.
 
 N:53:Greater Recharging
-I:90:7:4
+I:magic book:[Tenser's Transformations]:4
 id:SPELL_RECHARGE_ITEM_II
 dice:$B
 expr:B:PLAYER_LEVEL:+ 50
@@ -438,7 +438,7 @@ D: but are overall much better than for the spell Lesser Recharging.
 D:  A failed attempt to recharge destroys one wand or staff from the stack.
 
 N:54:Elemental Brand
-I:90:7:5
+I:magic book:[Tenser's Transformations]:5
 id:SPELL_ELEMENTAL_BRAND
 D:Brands one stack of ammunition with fire, cold, or poison
 D: (selected at random) and at the same time attempts to improve
@@ -447,7 +447,7 @@ D:  The spell has no effect if the ammunition is already branded, has a
 D: slay, is broken, or is cursed.
 
 N:55:Frost Ball
-I:90:3:0
+I:magic book:[Sorcery and Evocations]:0
 id:SPELL_FROST_BALL
 dice:$B
 expr:B:PLAYER_LEVEL:+ 30
@@ -455,7 +455,7 @@ ball:COLD:2
 D:Shoots a radius-2 frost ball.
 
 N:56:Acid Ball
-I:90:5:3
+I:magic book:[Raal's Tome of Destruction]:3
 id:SPELL_ACID_BALL
 dice:$B
 expr:B:PLAYER_LEVEL:+ 40
@@ -463,7 +463,7 @@ ball:ACID:2
 D:Shoots a radius-2 acid ball.
 
 N:57:Fire Ball
-I:90:3:4
+I:magic book:[Sorcery and Evocations]:4
 id:SPELL_FIRE_BALL
 dice:$B
 expr:B:PLAYER_LEVEL:+ 55
@@ -471,7 +471,7 @@ ball:FIRE:2
 D:Shoots a radius-2 fire ball.
 
 N:58:Ice Storm
-I:90:5:4
+I:magic book:[Raal's Tome of Destruction]:4
 id:SPELL_ICE_STORM
 dice:$B
 expr:B:PLAYER_LEVEL:* 2 + 50
@@ -479,14 +479,14 @@ ball:ICE:3
 D:Shoots a radius-3 cold ball.
 
 N:59:Banishment
-I:90:8:3
+I:magic book:[Kelek's Grimoire of Power]:3
 id:SPELL_BANISHMENT
 D:Removes all monsters represented by a chosen symbol from the level.
 D:  Uniques are not affected.
 D:  You take 1d4 points of damage for every monster removed.
 
 N:60:Meteor Swarm
-I:90:5:5
+I:magic book:[Raal's Tome of Destruction]:5
 id:SPELL_METEOR_SWARM
 dice:$B+m$M
 expr:B:PLAYER_LEVEL:/ 2 + 30
@@ -500,14 +500,14 @@ D:  If this kills the monster that blocked the path to the target
 D: location, the next meteor may continue to find another target.
 
 N:61:Mass Banishment
-I:90:8:5
+I:magic book:[Kelek's Grimoire of Power]:5
 id:SPELL_MASS_BANISHMENT
 D:Removes all monsters within 20 squares of you.
 D:  Uniques are not affected.
 D:  You take 1d3 points of damage for every monster removed.
 
 N:62:Rift
-I:90:5:6
+I:magic book:[Raal's Tome of Destruction]:6
 id:SPELL_RIFT
 dice:40+$Dd7
 expr:D:PLAYER_LEVEL:+ 0
@@ -516,7 +516,7 @@ D:Fires a gravity beam that hurts each monster in its path
 D: and has a chance of teleporting it away.
 
 N:63:Mana Storm
-I:90:8:7
+I:magic book:[Kelek's Grimoire of Power]:7
 id:SPELL_MANA_STORM
 dice:$B
 expr:B:PLAYER_LEVEL:* 2 + 300
@@ -528,31 +528,31 @@ D: damage to each monster in its area of effect.
 # Priest prayers 0 through 57 - numbered 64 through 121 here
 
 N:64:Detect Evil
-I:91:0:0
+I:prayer book:[Beginners Handbook]:0
 id:PRAYER_DETECT_EVIL
 D:Detects all evil monsters in the immediate area,
 D: for one turn only.
 
 N:65:Cure Light Wounds
-I:91:0:1
+I:prayer book:[Beginners Handbook]:1
 id:PRAYER_CURE_LIGHT_WOUNDS
 dice:15+m15
 D:Cures 15% of your wounds (min 15hp) and heals 20 points worth of cuts.
 
 N:66:Bless
-I:91:0:2
+I:prayer book:[Beginners Handbook]:2
 id:PRAYER_BLESS
 dice:12+d12
 D:Blesses you, giving a bonus of +5 to AC and +10 to-hit, for 12+1d12 turns.
 
 N:67:Remove Fear
-I:91:0:3
+I:prayer book:[Beginners Handbook]:3
 id:PRAYER_REMOVE_FEAR
 D:Removes fear.
 
 # Damage should probably be displayed on screen
 N:68:Call Light
-I:91:0:4
+I:prayer book:[Beginners Handbook]:4
 id:PRAYER_CALL_LIGHT
 dice:2d$S
 expr:S:PLAYER_LEVEL:/ 2
@@ -561,73 +561,73 @@ D: all light-sensitive monsters in the area of effect.
 D:  If you are in a room, the entire room will be lit up as well.
 
 N:69:Find Traps, Doors & Stairs
-I:91:0:5
+I:prayer book:[Beginners Handbook]:5
 id:PRAYER_FIND_TRAPS_DOORS
 D:Detects all traps, doors, and stairs in the immediate area.
 
 N:71:Slow Poison
-I:91:0:7
+I:prayer book:[Beginners Handbook]:7
 id:PRAYER_SLOW_POISON
 D:Halves the remaining duration of any current poisoning.
 
 N:72:Scare Monster
-I:91:1:0
+I:prayer book:[Words of Wisdom]:0
 id:PRAYER_SCARE_MONSTER
 D:Attempts to scare a single monster for a level-dependant duration.
 D:  Uniques and monsters that resist fear are not affected.
 
 N:73:Portal
-I:91:1:1
+I:prayer book:[Words of Wisdom]:1
 id:PRAYER_PORTAL
 dice:$B
 expr:B:PLAYER_LEVEL:* 3
 D:Teleports you randomly over a short distance.
 
 N:74:Cure Serious Wounds
-I:91:1:2
+I:prayer book:[Words of Wisdom]:2
 id:PRAYER_CURE_SERIOUS_WOUNDS
 dice:25+m20
 D:Cures 20% of your wounds (min 25hp) and heals all cut damage.
 
 N:75:Chant
-I:91:1:3
+I:prayer book:[Words of Wisdom]:3
 id:PRAYER_CHANT
 dice:24+d24
 D:Blesses you, giving a bonus of +5 to AC and +10 to-hit, for 24+1d24
 D: turns.
 
 N:76:Sanctuary
-I:91:1:4
+I:prayer book:[Words of Wisdom]:4
 id:PRAYER_SANCTUARY
 D:Attempts to put to sleep each monster directly adjacent to you.
 D:  Uniques and monsters that resist sleep are not affected.
 
 N:77:Satisfy Hunger
-I:91:1:5
+I:prayer book:[Words of Wisdom]:5
 id:PRAYER_SATISFY_HUNGER
 D:Magically renders you well-fed (but not satiated).
 D:  This will also cure a bloated stomach.
 
 ## Remove in 3.4 until curses are redone
 #N:78:Remove Curse
-#I:91:1:6
+#I:prayer book:[Words of Wisdom]:6
 #id:PRAYER_REMOVE_CURSE
 #D:Removes all ordinary curses from all equipped items.
 #D:  Heavy or permanent curses are not affected.
 
 N:79:Resist Heat and Cold
-I:91:1:7
+I:prayer book:[Words of Wisdom]:7
 id:PRAYER_RESIST_HEAT_COLD
 dice:10+d10
 D:Gives you temporary resistance to cold and fire, for 10+1d10 turns each.
 
 N:80:Neutralize Poison
-I:91:2:0
+I:prayer book:[Chants and Blessings]:0
 id:PRAYER_NEUTRALIZE_POISON
 D:Neutralizes poison.
 
 N:81:Orb of Draining
-I:91:2:1
+I:prayer book:[Chants and Blessings]:1
 id:PRAYER_ORB_OF_DRAINING
 dice:$B+3d6
 expr:B:ORB_OF_DRAINING:+ 0
@@ -638,20 +638,20 @@ D:  All cursed items in the area of effect are destroyed.
 D:  The bigger area of effect is attained at character level 30.
 
 N:82:Cure Critical Wounds
-I:91:2:2
+I:prayer book:[Chants and Blessings]:2
 id:PRAYER_CURE_CRITICAL_WOUNDS
 dice:30+m25
 D:Cures 25% of your wounds (min 30hp) and heals all cut damage, poison,
 D: amnesia and stunning.
 
 N:83:Sense Invisible
-I:91:2:3
+I:prayer book:[Chants and Blessings]:3
 id:PRAYER_SENSE_INVISIBLE
 dice:24+d24
 D:Enables you to see invisible monsters for 24+1d24 turns.
 
 N:84:Protection from Evil
-I:91:2:4
+I:prayer book:[Chants and Blessings]:4
 id:PRAYER_PROTECTION_FROM_EVIL
 dice:$B+d25
 expr:B:PLAYER_LEVEL:* 3
@@ -660,7 +660,7 @@ D: all melee attacks by evil monsters have a chance to be repelled,
 D: unless the monster's level is higher than your character level.
 
 N:85:Earthquake
-I:91:2:5
+I:prayer book:[Chants and Blessings]:5
 id:PRAYER_EARTHQUAKE
 D:Causes a 10-square radius earthquake around you.
 D:  Earthquakes may damage monsters and destroy items in some
@@ -669,52 +669,52 @@ D:  Artifacts will not be destroyed by this prayer.
 D:  This prayer has no effect when used in the town.
 
 N:86:Sense Surroundings
-I:91:2:6
+I:prayer book:[Chants and Blessings]:6
 id:PRAYER_SENSE_SURROUNDINGS
 D:Maps out a portion of the level around you.
 
 N:87:Cure Mortal Wounds
-I:91:2:7
+I:prayer book:[Chants and Blessings]:7
 id:PRAYER_CURE_MORTAL_WOUNDS
 dice:50+m30
 D:Cures 30% of your wounds (min 50hp), cures all stunning and heals all
 D: cut damage, poison and amnesia.
 
 N:88:Turn Undead
-I:91:2:8
+I:prayer book:[Chants and Blessings]:8
 id:PRAYER_TURN_UNDEAD
 D:Attempts to scare each undead monster within line of sight,
 D: causing it to flee in terror for a level-dependant duration.
 
 N:89:Prayer
-I:91:3:0
+I:prayer book:[Exorcism and Dispelling]:0
 id:PRAYER_PRAYER
 dice:48+d48
 D:Blesses you, giving a bonus of +5 to AC and +10 to-hit, for 48+1d48 turns.
 
 N:90:Dispel Undead
-I:91:3:1
+I:prayer book:[Exorcism and Dispelling]:1
 id:PRAYER_DISPEL_UNDEAD
 dice:d$S
 expr:S:PLAYER_LEVEL:* 3
 D:Inflicts unresistable damage on each undead monster within line of sight.
 
 N:91:Heal
-I:91:3:2
+I:prayer book:[Exorcism and Dispelling]:2
 id:PRAYER_HEAL
 dice:300+m35
 D:Cures 35% of your max hp (min 300), cures all stunning and heals all cut
 D: damage, poison and amnesia.
 
 N:92:Dispel Evil
-I:91:3:3
+I:prayer book:[Exorcism and Dispelling]:3
 id:PRAYER_DISPEL_EVIL
 dice:d$S
 expr:S:PLAYER_LEVEL:* 3
 D:Inflicts unresistable damage on each evil monster within line of sight.
 
 N:93:Glyph of Warding
-I:91:3:4
+I:prayer book:[Exorcism and Dispelling]:4
 id:PRAYER_GLYPH_OF_WARDING
 D:Inscribes a glyph of warding beneath you.
 D:  Summoned monsters can't appear on the glyph.
@@ -725,7 +725,7 @@ D:  The glyph will remain where it is, until a monster succeeds in
 D: breaking it, or until you leave the level.
 
 N:94:Holy Word
-I:91:3:5
+I:prayer book:[Exorcism and Dispelling]:5
 id:PRAYER_HOLY_WORD
 dice:1000
 D:Inflicts unresistable damage on each evil monster within line of sight,
@@ -733,85 +733,85 @@ D: cures 1000 points of damage, cures all stunning, heals all cut damage,
 D: neutralizes poison, and removes fear.
 
 N:95:Detect Monsters
-I:91:5:0
+I:prayer book:[Godly Insights]:0
 id:PRAYER_DETECT_MONSTERS
 D:Detects all non-invisible monsters in the immediate area,
 D: for one turn only.
 
 N:96:Detection
-I:91:5:1
+I:prayer book:[Godly Insights]:1
 id:PRAYER_DETECTION
 D:Detects all treasure, objects, doors, stairs, traps, and monsters
 D: in the immediate area.
 
 N:97:Identify
-I:91:5:2
+I:prayer book:[Godly Insights]:2
 id:PRAYER_PERCEPTION
 D:Reveals the powers of an object.
 
 N:98:Probing
-I:91:5:3
+I:prayer book:[Godly Insights]:3
 id:PRAYER_PROBING
 D:Probes each monster within line of sight, giving information on the
 D: current hit points of the monster and many of its characteristics
 D: and abilities (excluding its melee, spellcasting, and breath attacks).
 
 N:99:Clairvoyance
-I:91:5:4
+I:prayer book:[Godly Insights]:4
 id:PRAYER_CLAIRVOYANCE
 D:Lights up, maps out, and detects all objects on the complete current
 D: dungeon level.
 
 N:100:Cure Serious Wounds
-I:91:6:0
+I:prayer book:[Purifications and Healing]:0
 id:PRAYER_CURE_SERIOUS_WOUNDS2
 dice:25+m20
 D:Cures 20% of your wounds (min 25hp) and heals all cut damage.
 
 N:101:Cure Mortal Wounds
-I:91:6:1
+I:prayer book:[Purifications and Healing]:1
 id:PRAYER_CURE_MORTAL_WOUNDS2
 dice:50+m30
 D:Cures 30% of your wounds (min 50hp), cures all stunning and heals all cut
 D: damage, poison and amnesia.
 
 N:102:Healing
-I:91:6:2
+I:prayer book:[Purifications and Healing]:2
 id:PRAYER_HEALING
 dice:2000
 D:Cures 2000 points of damage, cures all stunning and heals all cut damage.
 
 N:103:Restoration
-I:91:6:3
+I:prayer book:[Purifications and Healing]:3
 id:PRAYER_RESTORATION
 D:Restores to maximum all stats that are currently below maximum.
 
 N:104:Remembrance
-I:91:6:4
+I:prayer book:[Purifications and Healing]:4
 id:PRAYER_REMEMBRANCE
 D:Restores experience points to maximum if it is currently below maximum.
 
 N:105:Dispel Undead
-I:91:8:0
+I:prayer book:[Wrath of God]:0
 id:PRAYER_DISPEL_UNDEAD2
 dice:d$S
 expr:S:PLAYER_LEVEL:* 4
 D:Inflicts unresistable damage on each undead monster within line of sight.
 
 N:106:Dispel Evil
-I:91:8:1
+I:prayer book:[Wrath of God]:1
 id:PRAYER_DISPEL_EVIL2
 dice:d$S
 expr:S:PLAYER_LEVEL:* 4
 D:Inflicts unresistable damage on each evil monster within line of sight.
 
 N:107:Banish Evil
-I:91:8:2
+I:prayer book:[Wrath of God]:2
 id:PRAYER_BANISH_EVIL
 D:Teleports away each evil monster within line of sight.
 
 N:108:Word of Destruction
-I:91:8:3
+I:prayer book:[Wrath of God]:3
 id:PRAYER_WORD_OF_DESTRUCTION
 D:Destroys everything in a 15-square radius circle around you.
 D:  All monsters, objects, and terrain features in the area of
@@ -821,19 +821,19 @@ D: have resistance to blindness or light.
 D:  This prayer has no effect when used in the town.
 
 N:109:Annihilation
-I:91:8:4
+I:prayer book:[Wrath of God]:4
 id:PRAYER_ANNIHILATION
 dice:200
 D:Inflicts 200 points of damage on a single monster that is not
 D: undead, a demon, an elemental, a golem, or a vortex.
 
 N:110:Unbarring Ways
-I:91:7:0
+I:prayer book:[Holy Infusions]:0
 id:PRAYER_UNBARRING_WAYS
 D:Destroys all traps and doors within a 1-square radius of you.
 
 N:111:Recharging
-I:91:7:1
+I:prayer book:[Holy Infusions]:1
 id:PRAYER_RECHARGING
 dice:$B
 expr:B:PLAYER_LEVEL:+ 20
@@ -844,27 +844,27 @@ D:  A failed attempt to recharge destroys one wand or staff from the stack.
 
 ## Remove in 3.4 until curses are redone
 #N:112:Dispel Curse
-#I:91:7:2
+#I:prayer book:[Holy Infusions]:2
 #id:PRAYER_DISPEL_CURSE
 #D:Removes all ordinary and heavy curses from all equipped objects.
 #D:  Permanent curses are not affected.
 
 N:113:Enchant Weapon
-I:91:7:3
+I:prayer book:[Holy Infusions]:3
 id:PRAYER_ENCHANT_WEAPON
 dice:1+1d4
 D:Attempts to improve the to-hit bonus and the to-dam bonus of a weapon.
 D: Also gives a chance to break a curse.
 
 N:114:Enchant Armour
-I:91:7:4
+I:prayer book:[Holy Infusions]:4
 id:PRAYER_ENCHANT_ARMOUR
 dice:2+1d3
 D:Attempts to improve the armour class bonus of a piece of armour.
 D: Also gives a chance to break a curse.
 
 N:115:Elemental Brand
-I:91:7:5
+I:prayer book:[Holy Infusions]:5
 id:PRAYER_ELEMENTAL_BRAND
 D:Brands the currently wielded melee weapon with fire (50%) or cold (50%),
 D: and at the same time attempts to improve the to-hit bonus and the
@@ -873,33 +873,33 @@ D:  The prayer has no effect if the weapon is an artifact or ego item,
 D: is already branded, has a slay, is broken, or is cursed.
 
 N:116:Blink
-I:91:4:0
+I:prayer book:[Ethereal Openings]:0
 id:PRAYER_BLINK
 dice:10
 D:Teleports you randomly up to 10 squares away.
 
 N:117:Teleport Self
-I:91:4:1
+I:prayer book:[Ethereal Openings]:1
 id:PRAYER_TELEPORT_SELF
 dice:$B
 expr:B:PLAYER_LEVEL:* 8
 D:Teleports you randomly within the current level.
 
 N:118:Teleport Other
-I:91:4:2
+I:prayer book:[Ethereal Openings]:2
 id:PRAYER_TELEPORT_OTHER
 D:Produces a bolt that teleports the first monster in its path
 D: up to 100 squares away.
 
 N:119:Teleport Level
-I:91:4:3
+I:prayer book:[Ethereal Openings]:3
 id:PRAYER_TELEPORT_LEVEL
 D:Teleports you 1 level up or 1 level down (chosen at random).
 D:  This prayer has no effect when the option to restrict the use of
 D: stairs and recall is set.
 
 N:120:Word of Recall
-I:91:4:4
+I:prayer book:[Ethereal Openings]:4
 id:PRAYER_WORD_OF_RECALL
 D:Teleports you from the dungeon to the town or from the town to the
 D: deepest level you have visited in the dungeon.
@@ -910,7 +910,7 @@ D:  This prayer has no effect when the option to restrict the use of
 D: stairs and recall is set, unless Morgoth is dead.
 
 N:121:Alter Reality
-I:91:4:5
+I:prayer book:[Ethereal Openings]:5
 id:PRAYER_ALTER_REALITY
 D:The current level will be discarded and a new dungeon level (on the
 D: same dungeon depth) will be generated.  This has exactly the same

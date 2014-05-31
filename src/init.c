@@ -2664,12 +2664,19 @@ static enum parser_error parse_s_n(struct parser *p) {
 
 static enum parser_error parse_s_i(struct parser *p) {
 	struct spell *s = parser_priv(p);
+	int tval, sval;
 
 	if (!s)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 
-	s->tval = parser_getuint(p, "tval");
-	s->sval = parser_getuint(p, "sval");
+	tval = tval_find_idx(parser_getsym(p, "tval"));
+	if (tval == -1)
+		return PARSE_ERROR_UNRECOGNISED_TVAL;
+	s->tval = tval;
+	sval = lookup_sval(tval, parser_getsym(p, "sval"));
+	if (sval < 0)
+		return PARSE_ERROR_UNRECOGNISED_SVAL;
+	s->sval = sval;
 	s->snum = parser_getuint(p, "snum");
 
 	/* XXX elly: postprocess instead? */
@@ -2850,7 +2857,7 @@ struct parser *init_parse_s(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
 	parser_reg(p, "N uint index str name", parse_s_n);
-	parser_reg(p, "I uint tval uint sval uint snum", parse_s_i);
+	parser_reg(p, "I sym tval sym sval uint snum", parse_s_i);
 	parser_reg(p, "id sym id", parse_s_id);
 	parser_reg(p, "dice str dice", parse_s_dice);
 	parser_reg(p, "expr sym name sym base str expr", parse_s_expr);
