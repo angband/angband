@@ -474,7 +474,8 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 
 	/* has free action (hack: don't include Inertia)*/
 	if (of_has(o_ptr->flags, OF_FREE_ACT) && 
-		!((o_ptr->tval == TV_AMULET) && (o_ptr->sval==SV_AMULET_INERTIA))){
+		!((o_ptr->tval == TV_AMULET) &&
+		  (!strstr(o_ptr->kind->name, "Inertia")))) {
 
 			/* add the stats */
 			add_stats(ST_FA_EQUIPMENT, vault, mon, number);
@@ -662,10 +663,12 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 				add_stats(ST_TELEP_WEAPONS, vault, mon, number);
 
 			/* is a top of the line weapon */
-			if (((o_ptr->tval == TV_HAFTED) && (o_ptr->sval == SV_MACE_OF_DISRUPTION)) ||
-				((o_ptr->tval == TV_POLEARM) && (o_ptr->sval == SV_SCYTHE_OF_SLICING)) ||
-				((o_ptr->tval == TV_SWORD) && (o_ptr->sval == SV_BLADE_OF_CHAOS)))
-			{
+			if (((o_ptr->tval == TV_HAFTED) &&
+				 (!strstr(o_ptr->kind->name, "Disruption"))) ||
+				((o_ptr->tval == TV_POLEARM) &&
+				 (!strstr(o_ptr->kind->name, "Slicing"))) ||
+				((o_ptr->tval == TV_SWORD) &&
+				 (!strstr(o_ptr->kind->name, "Chaos")))) {
 				add_stats(ST_HUGE_WEAPONS, vault, mon, number);
 
 				/* is uber need to fix ACB
@@ -934,98 +937,50 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 			if (of_has(o_ptr->flags,OF_LIGHT_CURSE))
 				add_stats(ST_CURSED_RINGS, vault, mon, number);
 
-			switch(o_ptr->sval){
-
-				case SV_RING_SPEED:{
-
-					add_stats(ST_SPEEDS_RINGS, vault, mon, number);
-					break;
-				}
-
-				case SV_RING_STRENGTH:
-				case SV_RING_INTELLIGENCE:
-				case SV_RING_DEXTERITY:
-				case SV_RING_CONSTITUTION:{
-
-					add_stats(ST_STAT_RINGS, vault, mon, number);
-					break;
-				}
-
-				case SV_RING_RESIST_POISON:{
-
-					add_stats(ST_RPOIS_RINGS, vault, mon, number);
-					break;
-				}
-
-				case SV_RING_FREE_ACTION:{
-
-					add_stats(ST_FA_RINGS, vault, mon, number);
-					break;
-				}
-
-				case SV_RING_SEE_INVISIBLE:{
-
-					add_stats(ST_SI_RINGS, vault, mon, number);
-					break;
-				}
-
-				case SV_RING_FLAMES:
-				case SV_RING_ACID:
-				case SV_RING_ICE:
-				case SV_RING_LIGHTNING:{
-
-					add_stats(ST_BRAND_RINGS, vault, mon, number);
-					break;
-				}
-
-				case SV_RING_NARYA:
-				case SV_RING_NENYA:
-				case SV_RING_VILYA:{
-
-					add_stats(ST_ELVEN_RINGS, vault, mon, number);
-					break;
-				}
-
-				case SV_RING_POWER:{
-
-					add_stats(ST_ONE_RINGS, vault, mon, number);
-					break;
-				}
-
-
+			if (strstr(o_ptr->kind->name, "Speed")) {
+				add_stats(ST_SPEEDS_RINGS, vault, mon, number);
+			} else if ((strstr(o_ptr->kind->name, "Strength")) ||
+					   (strstr(o_ptr->kind->name, "Intelligence")) ||
+					   (strstr(o_ptr->kind->name, "Dexterity")) ||
+					   (strstr(o_ptr->kind->name, "Constitution"))) {
+				add_stats(ST_STAT_RINGS, vault, mon, number);
+			} else if (strstr(o_ptr->kind->name, "Resist Poison")) {
+				add_stats(ST_RPOIS_RINGS, vault, mon, number);
+			} else if (strstr(o_ptr->kind->name, "Free Action")) {
+				add_stats(ST_FA_RINGS, vault, mon, number);
+			} else if (strstr(o_ptr->kind->name, "See invisible")) {
+				add_stats(ST_SI_RINGS, vault, mon, number);
+			} else if ((strstr(o_ptr->kind->name, "Flames")) ||
+					   (strstr(o_ptr->kind->name, "Ice")) ||
+					   (strstr(o_ptr->kind->name, "Acid")) ||
+					   (strstr(o_ptr->kind->name, "Lightning"))) {
+				add_stats(ST_BRAND_RINGS, vault, mon, number);
+			} else if ((strstr(o_ptr->kind->name, "Fire")) ||
+					   (strstr(o_ptr->kind->name, "Adamant")) ||
+					   (strstr(o_ptr->kind->name, "Firmament"))) {
+				add_stats(ST_ELVEN_RINGS, vault, mon, number);
+			} else if (strstr(o_ptr->kind->name, "Power")) {
+				add_stats(ST_ONE_RINGS, vault, mon, number);
 			}
 
-		break;
+
+			break;
 		}
 
 		case TV_AMULET:{
 
 			add_stats(ST_AMULETS, vault, mon, number);
 
-			switch(o_ptr->sval){
-
-				/* wisdom */
-				case SV_AMULET_WISDOM:{
-
-					add_stats(ST_WIS_AMULETS, vault, mon, number);
-					break;
-				}
-
-				case SV_AMULET_THE_MAGI:
-				case SV_AMULET_TRICKERY:
-				case SV_AMULET_WEAPONMASTERY:{
-
-					add_stats(ST_ENDGAME_AMULETS, vault, mon, number);
-					break;
-				}
-
-				case SV_AMULET_ESP:{
-
-					add_stats(ST_TELEP_AMULETS, vault, mon, number);
-					break;
-				}
-
+			if (strstr(o_ptr->kind->name, "Wisdom")) {
+				add_stats(ST_WIS_AMULETS, vault, mon, number);
+			} else if ((strstr(o_ptr->kind->name, "Magi")) || 
+					   (strstr(o_ptr->kind->name, "Trickery")) ||
+					   (strstr(o_ptr->kind->name, "Weaponmastery"))) {
+				add_stats(ST_ENDGAME_AMULETS, vault, mon, number);
+			} else if (strstr(o_ptr->kind->name, "ESP")) {
+				add_stats(ST_TELEP_AMULETS, vault, mon, number);
 			}
+
 			/* is cursed */
 			if (of_has(o_ptr->flags, OF_LIGHT_CURSE))
 				add_stats(ST_CURSED_AMULETS, vault, mon, number);
@@ -1050,7 +1005,8 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 			if (o_ptr->ego)
 				add_stats(ST_BRANDSLAY_AMMO, vault, mon, number);
 
-			if ((o_ptr->sval == SV_AMMO_HEAVY) || (o_ptr->sval == SV_AMMO_SILVER)){
+			if (strstr(o_ptr->kind->name, "Seeker") ||
+				strstr(o_ptr->kind->name, "Mithril")) {
 
 				/* Mithril and seeker ammo */
 				add_stats(ST_VERYGOOD_AMMO, vault, mon, number);
