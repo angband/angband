@@ -123,7 +123,7 @@ void flavor_reset_fixed(void)
 	struct flavor *f;
 
 	for (f = flavors; f; f = f->next) {
-		if (f->tval == TV_RING && f->sval == SV_RING_POWER)
+		if (f->tval == TV_RING && strstr(f->text, "Plain Gold"))
 			continue;
 
 		f->sval = SV_UNKNOWN;
