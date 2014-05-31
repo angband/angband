@@ -209,6 +209,50 @@ static struct history_chart *findchart(struct history_chart *hs, unsigned int id
 	return hs;
 }
 
+static enum parser_error write_dummy_object_record(struct artifact *art, const char *name)
+{
+	struct object_kind *temp, *dummy;
+	int i;
+	char mod_name[100];
+
+	/* Extend by 1 and realloc */
+	z_info->k_max += 1;
+	temp = mem_realloc(k_info, (z_info->k_max+1) * sizeof(*temp));
+
+	/* Copy if no errors */
+	if (!temp)
+		return PARSE_ERROR_INTERNAL;
+	else
+		k_info = temp;
+
+	/* Use the (second) last entry for the dummy */
+	dummy = &k_info[z_info->k_max - 1];
+	memset(dummy, 0, sizeof(*dummy));
+
+	/* Copy the tval */
+	dummy->tval = art->tval;
+
+	/* Make the name */
+	my_strcpy(mod_name, format("& %s~", name), sizeof(mod_name));
+	dummy->name = string_make(mod_name);
+
+	/* Increase the sval count for this tval */
+	for (i = 0; i < TV_MAX; i++)
+		if (kb_info[i].tval == dummy->tval) {
+			dummy->sval = kb_info[i].num_svals++;
+			break;
+		}
+	if (i == TV_MAX) return PARSE_ERROR_INTERNAL;
+
+	/* Copy the sval to the artifact info */
+	art->sval = dummy->sval;
+
+	/* Register this as an INSTA_ART object */
+	kf_on(dummy->kind_flags, KF_INSTA_ART);
+
+	return PARSE_ERROR_NONE;
+}
+
 /**
  * Find the default paths to all of our important sub-directories.
  *
@@ -891,6 +935,7 @@ static enum parser_error parse_a_n(struct parser *p) {
 static enum parser_error parse_a_i(struct parser *p) {
 	struct artifact *a = parser_priv(p);
 	int tval, sval;
+	const char *sval_name;
 
 	assert(a);
 
@@ -899,10 +944,31 @@ static enum parser_error parse_a_i(struct parser *p) {
 		return PARSE_ERROR_UNRECOGNISED_TVAL;
 	a->tval = tval;
 
-	sval = lookup_sval(a->tval, parser_getsym(p, "sval"));
+	sval_name = parser_getsym(p, "sval");
+	sval = lookup_sval(a->tval, sval_name);
 	if (sval < 0)
-		return PARSE_ERROR_UNRECOGNISED_SVAL;
+		return write_dummy_object_record(a, sval_name);
 	a->sval = sval;
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_a_g(struct parser *p) {
+	wchar_t glyph = parser_getchar(p, "glyph");
+	const char *color = parser_getsym(p, "color");
+	struct artifact *a = parser_priv(p);
+	struct object_kind *k = lookup_kind(a->tval, a->sval);
+	assert(a);
+	assert(k);
+
+	if (!kf_has(k->kind_flags, KF_INSTA_ART))
+		return PARSE_ERROR_GENERIC;
+
+	k->d_char = glyph;
+	if (strlen(color) > 1)
+		k->d_attr = color_text_to_attr(color);
+	else
+		k->d_attr = color_char_to_attr(color[0]);
 
 	return PARSE_ERROR_NONE;
 }
@@ -1066,6 +1132,7 @@ struct parser *init_parse_a(void) {
 	parser_setpriv(p, NULL);
 	parser_reg(p, "N int index str name", parse_a_n);
 	parser_reg(p, "I sym tval sym sval", parse_a_i);
+	parser_reg(p, "G char glyph sym color", parse_a_g);
 	parser_reg(p, "W int level int rarity int weight int cost", parse_a_w);
 	parser_reg(p, "A int common str minmax", parse_a_a);
 	parser_reg(p, "P int ac rand hd int to-h int to-d int to-a", parse_a_p);
