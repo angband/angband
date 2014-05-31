@@ -228,8 +228,9 @@ static enum parser_error write_dummy_object_record(struct artifact *art, const c
 	dummy = &k_info[z_info->k_max - 1];
 	memset(dummy, 0, sizeof(*dummy));
 
-	/* Copy the tval */
+	/* Copy the tval and base */
 	dummy->tval = art->tval;
+	dummy->base = &kb_info[dummy->tval];
 
 	/* Make the name */
 	my_strcpy(mod_name, format("& %s~", name), sizeof(mod_name));
@@ -661,10 +662,9 @@ static enum parser_error parse_k_i(struct parser *p) {
 		return PARSE_ERROR_UNRECOGNISED_TVAL;
 
 	k->tval = tval;
-	k->sval = parser_getint(p, "sval");
-
 	k->base = &kb_info[k->tval];
 	k->base->num_svals++;
+	k->sval = k->base->num_svals;
 
 	return PARSE_ERROR_NONE;
 }
@@ -839,7 +839,7 @@ struct parser *init_parse_k(void) {
 	parser_setpriv(p, NULL);
 	parser_reg(p, "N int index str name", parse_k_n);
 	parser_reg(p, "G char glyph sym color", parse_k_g);
-	parser_reg(p, "I sym tval int sval", parse_k_i);
+	parser_reg(p, "I sym tval", parse_k_i);
 	parser_reg(p, "W int level int extra int weight int cost", parse_k_w);
 	parser_reg(p, "A int common str minmax", parse_k_a);
 	parser_reg(p, "P int ac rand hd rand to-h rand to-d rand to-a", parse_k_p);

@@ -85,7 +85,8 @@
 # The Phial of Galadriel
 
 N:1:of Galadriel
-I:light:4:0
+I:light:Phial
+G:~:y
 W:5:3:10:10000
 A:40:5 to 100
 P:0:1d1:0:0:0
@@ -101,7 +102,8 @@ D:Its light is imperishable, and near it darkness cannot endure.
 # The Star of Elendil
 
 N:2:of Elendil
-I:light:5:0
+I:light:Star
+G:~:y
 W:30:25:5:30000
 A:4:30 to 100
 P:0:1d1:0:0:0
@@ -115,7 +117,8 @@ D:The shining Star of the North, a treasured heirloom of Elendil's house.
 # The Arkenstone of Thrain
 
 N:3:of Thráin
-I:light:6:0
+I:light:Arkenstone
+G:~:y
 W:50:50:5:50000
 A:2:50 to 127
 P:0:1d1:0:0:0
@@ -133,7 +136,8 @@ D:sparks of white radiance shot with glints of the rainbow.
 # The Amulet of Carlammas
 
 N:4:of Carlammas
-I:amulet:50
+I:amulet:Amulet
+G:":d
 W:50:10:3:60000
 A:10:50 to 100
 F:INSTA_ART
@@ -146,7 +150,8 @@ D:A fiery circle of bronze, with mighty spells to ward off and banish evil.
 # The Amulet of Ingwe
 
 N:5:of Ingwë
-I:amulet:51
+I:amulet:Pendant
+G:":d
 W:65:30:3:90000
 A:3:65 to 127
 F:SEE_INVIS | FREE_ACT | PROT_CONF
@@ -161,7 +166,8 @@ D:nothing of evil could stand.
 # The Necklace of the Dwarves
 
 N:6:of the Dwarves
-I:amulet:52
+I:amulet:Necklace
+G:":y
 W:50:50:3:75000
 A:2:50 to 127
 F:SEE_INVIS | FREE_ACT | REGEN | PROT_FEAR | 
@@ -177,7 +183,8 @@ D:it rests upon the bearer.
 # New Artifact (7): The Palantir of Westernesse
 
 #N:7:of Westernesse
-#I:light:7
+#I:light:Palantir
+#G:~:y
 #W:75:60:200:100000
 #A:2:75 to 127
 #P:0:10d10:0:0:0
@@ -196,7 +203,8 @@ D:it rests upon the bearer.
 # The Ring of Barahir
 
 N:8:of Barahir
-I:ring:50
+I:ring:Serpent Ring
+G:=:d
 W:50:25:2:65000
 A:4:50 to 100
 F:INSTA_ART
@@ -209,7 +217,8 @@ D:form this ring, an ancient treasure of Isildur's house.
 # The Ring of Tulkas
 
 N:9:of Tulkas
-I:ring:51
+I:ring:Ring
+G:=:d
 W:70:50:2:150000
 A:2:70 to 127
 F:PROT_FEAR | 
@@ -223,7 +232,8 @@ D:The treasure of Tulkas, most fleet and wrathful of the Valar.
 # The Ring of Fire 'Narya'
 
 N:10:'Narya'
-I:ring:52
+I:ring:Ring of Fire
+G:=:d
 W:70:50:2:100000
 A:2:70 to 127
 P:0:0d0:2:2:0
@@ -242,7 +252,8 @@ D:by the Elves from Sauron.
 # The Ring of Adamant 'Nenya'
 
 N:11:'Nenya'
-I:ring:53
+I:ring:Ring of Adamant
+G:=:d
 W:80:50:2:200000
 A:2:80 to 127
 P:0:0d0:3:3:0
@@ -262,7 +273,8 @@ D:Celebrimbor and hidden by the Elves from Sauron.
 # The Ring of Firmament 'Vilya'
 
 N:12:'Vilya'
-I:ring:54
+I:ring:Ring of Firmament
+G:=:d
 W:90:80:2:300000
 A:1:90 to 127
 P:0:0d0:5:5:0
@@ -283,7 +295,8 @@ D:hidden by the Elves from Sauron.
 # The Ring of Power 'The One Ring'
 
 N:13:'The One Ring'
-I:ring:55
+I:ring:Ring of Power
+G:=:y
 W:100:100:2:5000000
 A:1:100 to 127
 P:0:0d0:15:15:0
@@ -308,7 +321,8 @@ D:being who wears it.
 # New Artifact (14): The Elfstone 'Elessar'
 
 N:14:'Elessar'
-I:amulet:53
+I:amulet:Elfstone
+G:":g
 W:60:60:3:40000
 A:2:60 to 127
 P:0:0d0:0:0:10
@@ -325,7 +339,8 @@ D:wearer brings healing after victory in battle.
 # New Artifact (15): The Jewel 'Evenstar'
 
 N:15:'Evenstar'
-I:amulet:54
+I:amulet:Jewel
+G:":w
 W:40:40:3:25000
 A:2:30 to 70
 F:HOLD_LIFE | SUST_CON | SUST_WIS | REGEN

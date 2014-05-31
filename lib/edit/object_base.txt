@@ -1,6 +1,6 @@
 # D: lines are default values
 
-# N: tvalname
+# N: tval:name
 # G: default attr for inventory display
 # B: breakage chance when thrown
 # F: default flags

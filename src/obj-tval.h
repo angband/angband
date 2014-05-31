@@ -73,7 +73,7 @@
 /*
  * Special "sval" value -- unknown "sval"
  */
-#define SV_UNKNOWN			255
+#define SV_UNKNOWN			0
 
 bool tval_can_have_charges(const struct object *o_ptr);
 bool tval_can_have_failure(const struct object *o_ptr);
