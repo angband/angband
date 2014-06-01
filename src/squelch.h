@@ -57,6 +57,15 @@ enum
 };
 
 
+/**
+ * Structure to describe ego item short name. 
+ */
+typedef struct ego_desc
+{
+  s16b e_idx;
+  const char *short_name;
+} ego_desc;
+
 /*
  * Squelch flags
  */
@@ -86,7 +95,6 @@ void kind_squelch_when_unaware(object_kind *k_ptr);
 bool squelch_item_ok(const object_type *o_ptr);
 bool object_is_squelched(const object_type *o_ptr);
 void squelch_drop(void);
-
 byte squelch_level_of(const object_type *o_ptr);
 squelch_type_t squelch_type_of(const object_type *o_ptr);
 void object_squelch_flavor_of(const object_type *o_ptr);
@@ -94,5 +102,8 @@ const char *squelch_name_for_type(squelch_type_t type);
 
 extern byte squelch_level[];
 extern const size_t squelch_size;
+
+/* ui-options.c */
+int ego_item_name(char *buf, size_t buf_size, ego_desc *desc);
 
 #endif /* !SQUELCH_H */

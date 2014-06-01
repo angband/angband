@@ -1039,6 +1039,254 @@ static void options_load_pref_file(const char *n, int row)
 
 
 
+/*** Ego item squelch menu ***/
+#define EGO_MENU_HELPTEXT \
+"{light green}Movement keys{/} scroll the list\n{light red}ESC{/} returns to the previous menu\n{light blue}Enter{/} toggles the current setting."
+
+/**
+ * Skip common prefixes in ego-item names.
+ */
+static const char *strip_ego_name(const char *name)
+{
+	if (prefix(name, "of the "))
+		return name + 7;
+	if (prefix(name, "of "))
+		return name + 3;
+	return name;
+}
+
+/**
+ * Utility function used to find/sort tval names.
+ */
+//static int tval_comp_func(const void *a_ptr, const void *b_ptr)
+//{
+//	int a = ((tval_desc *) a_ptr)->tval;
+//	int b = ((tval_desc *) b_ptr)->tval;
+//	return a - b;
+//}
+
+/**
+ * Display an ego-item type on the screen.
+ */
+int ego_item_name(char *buf, size_t buf_size, ego_desc *desc)
+{
+	int tval_table[TV_MAX] = { 0 };
+	int i, n = 0;
+	int end;
+	size_t prefix_size;
+	const char *long_name;
+	struct ego_poss_item *poss;
+
+	ego_item_type *ego = &e_info[desc->e_idx];
+
+	/* Note the tvals which are possible for this ego */
+	for (poss = ego->poss_items; poss; poss = poss->next) {
+		object_kind *kind = &k_info[poss->kidx];
+		tval_table[kind->tval]++;
+	}
+
+	/* Initialize the buffer */
+	end = my_strcat(buf, "[ ] ", buf_size);
+
+	/* Concatenate the tval' names */
+	for (i = 0; i < TV_MAX; i++) {
+		const char *tval_name;
+
+		/* Ignore those not present */
+		if (!tval_table[i]) continue;
+
+		//for (j = 0; j < TYPE_MAX; j++)
+		//	if (quality_choices[j].tval == tval_table[i])
+		//		break;
+
+		//tval_name = j < TYPE_MAX ? quality_choices[j].desc : "????";
+
+		tval_name = tval_find_name(i);
+
+		/* Append the proper separator first, if any */
+		if (i > 0) {
+			end += my_strcat(buf, (i < n - 1) ? ", " : " and ", buf_size);
+		}
+
+		/* Append the name */
+		end += my_strcat(buf, tval_name, buf_size);
+		end += my_strcat(buf, "s", buf_size);
+	}
+
+	/* Append an extra space */
+	end += my_strcat(buf, " ", buf_size);
+
+	/* Get the full ego-item name */
+	long_name = ego->name;
+
+	/* Get the length of the common prefix, if any */
+	prefix_size = (desc->short_name - long_name);
+
+	/* Found a prefix? */
+	if (prefix_size > 0) {
+		char prefix[100];
+
+		/* Get a copy of the prefix */
+		my_strcpy(prefix, long_name, prefix_size + 1);
+
+		/* Append the prefix */
+		end += my_strcat(buf, prefix, buf_size);
+	}
+	/* Set the name to the right length */
+	return end;
+}
+
+/**
+ * Utility function used for sorting an array of ego-item indices by
+ * ego-item name.
+ */
+static int ego_comp_func(const void *a_ptr, const void *b_ptr)
+{
+	const ego_desc *a = a_ptr;
+	const ego_desc *b = b_ptr;
+
+	/* Note the removal of common prefixes */
+	return (strcmp(a->short_name, b->short_name));
+}
+
+/**
+ * Display an entry on the sval menu
+ */
+static void ego_display(menu_type * menu, int oid, bool cursor, int row,
+						int col, int width)
+{
+	char buf[80] = "";
+	ego_desc *choice = (ego_desc *) menu->menu_data;
+	ego_item_type *e_ptr = &e_info[choice[oid].e_idx];
+
+	byte attr = (cursor ? TERM_L_BLUE : TERM_WHITE);
+	byte sq_attr = (e_ptr->squelch ? TERM_L_RED : TERM_L_GREEN);
+
+	/* Acquire the "name" of object "i" */
+	(void) ego_item_name(buf, sizeof(buf), &choice[oid]);
+
+	/* Print it */
+	c_put_str(attr, format("%s", buf), row, col);
+
+	/* Show squelch mark, if any */
+	if (e_ptr->squelch)
+		c_put_str(TERM_L_RED, "*", row, col + 1);
+
+	/* Show the stripped ego-item name using another colour */
+	c_put_str(sq_attr, choice[oid].short_name, row, col + strlen(buf));
+}
+
+/**
+ * Deal with events on the sval menu
+ */
+static bool ego_action(menu_type * menu, const ui_event * event, int oid)
+{
+	ego_desc *choice = menu->menu_data;
+
+	/* Toggle */
+	if (event->type == EVT_SELECT) {
+		ego_item_type *e_ptr = &e_info[choice[oid].e_idx];
+		e_ptr->squelch = !e_ptr->squelch;
+
+		return TRUE;
+	}
+
+	return FALSE;
+}
+
+/**
+ * Display list of ego items to be squelched.
+ */
+static void ego_menu(const char *unused, int also_unused)
+{
+	int max_num = 0;
+	ego_item_type *e_ptr;
+	ego_desc *choice;
+
+	menu_type menu;
+	menu_iter menu_f = { 0, 0, ego_display, ego_action, 0 };
+	region area = { 1, 5, -1, -1 };
+	int cursor = 0;
+
+	int i;
+
+	/* Hack - Used to sort the tval table for the first time */
+	//static bool sort_tvals = TRUE;
+
+	/* Sort the tval table if needed */
+	//if (sort_tvals) {
+	//	sort_tvals = FALSE;
+
+	//	qsort(quality_choices, TYPE_MAX, sizeof(quality_choices[0]),
+	//		  tval_comp_func);
+	//}
+
+	/* Create the array */
+	choice = C_ZNEW(z_info->e_max, ego_desc);
+
+	/* Get the valid ego-items */
+	for (i = 0; i < z_info->e_max; i++) {
+		e_ptr = &e_info[i];
+
+		/* Only valid known ego-items allowed */
+		if (!e_ptr->name || !e_ptr->everseen)
+			continue;
+
+		/* Append the index */
+		choice[max_num].e_idx = i;
+		choice[max_num].short_name = strip_ego_name(e_ptr->name);
+
+		++max_num;
+	}
+
+	/* Quickly sort the array by ego-item name */
+	qsort(choice, max_num, sizeof(choice[0]), ego_comp_func);
+
+	/* Return here if there are no objects */
+	if (!max_num) {
+		FREE(choice);
+		return;
+	}
+
+
+	/* Save the screen and clear it */
+	screen_save();
+	clear_from(0);
+
+	/* Help text */
+	prt("Ego item squelch menu", 0, 0);
+
+	/* Output to the screen */
+	text_out_hook = text_out_to_screen;
+
+	/* Indent output */
+	text_out_indent = 1;
+	text_out_wrap = 79;
+	Term_gotoxy(1, 1);
+
+	/* Display some helpful information */
+	text_out_e(EGO_MENU_HELPTEXT);
+
+	text_out_indent = 0;
+
+	/* Set up the menu */
+	WIPE(&menu, menu);
+	menu_init(&menu, MN_SKIN_SCROLL, &menu_f);
+	menu_setpriv(&menu, max_num, choice);
+	menu_layout(&menu, &area);
+
+	/* Select an entry */
+	(void) menu_select(&menu, cursor, FALSE);
+
+	/* Free memory */
+	FREE(choice);
+
+	/* Load screen */
+	screen_load();
+
+	return;
+}
+
 
 /*** Quality-squelch menu ***/
 
@@ -1419,6 +1667,7 @@ static struct
 	void (*action)(); /* this is a nasty hack */
 } extra_item_options[] = {
 	{ 'Q', "Quality squelching options", quality_menu },
+	{ 'E', "Ego squelching options", ego_menu},
 	{ '{', "Autoinscription setup", textui_browse_object_knowledge },
 };
 
