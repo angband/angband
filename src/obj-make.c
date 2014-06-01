@@ -253,7 +253,7 @@ static struct ego_item *ego_find_random(object_type *o_ptr, int level)
 		if (cursed_p(ego->flags)) continue;
 
 		for (poss = ego->poss_items; poss; poss = poss->next)
-			if (poss->kind == o_ptr->kind) {
+			if (poss->kidx == o_ptr->kind->kidx) {
 				table[i].prob3 = table[i].prob2;
 				break;
 			}

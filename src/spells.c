@@ -3265,7 +3265,7 @@ void brand_object(object_type *o_ptr, const char *name)
 			if (streq(e_ptr->name, brand)) {
 				struct ego_poss_item *poss;
 				for (poss = e_ptr->poss_items; poss; poss = poss->next)
-					if (poss->kind == o_ptr->kind)
+					if (poss->kidx == o_ptr->kind->kidx)
 						ok = TRUE;
 			}
 			if (ok) break;

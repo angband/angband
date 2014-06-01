@@ -1673,7 +1673,7 @@ static enum parser_error parse_e_type(struct parser *p) {
 	for (i = 0; i < z_info->k_max; i++) {
 		if (k_info[i].tval != tval) continue;
 		poss = mem_zalloc(sizeof(struct ego_poss_item));
-		poss->kind = &k_info[i];
+		poss->kidx = i;
 		poss->next = e->poss_items;
 		e->poss_items = poss;
 		found_one_kind = TRUE;
@@ -1696,11 +1696,11 @@ static enum parser_error parse_e_item(struct parser *p) {
 		return PARSE_ERROR_UNRECOGNISED_TVAL;
 
 	poss = mem_zalloc(sizeof(struct ego_poss_item));
-	poss->kind = lookup_kind(tval, sval);
+	poss->kidx = lookup_kind(tval, sval)->kidx;
 	poss->next = e->poss_items;
 	e->poss_items = poss;
 
-	if (!poss->kind)
+	if (poss->kidx <= 0)
 		return PARSE_ERROR_GENERIC;
 	return PARSE_ERROR_NONE;
 }

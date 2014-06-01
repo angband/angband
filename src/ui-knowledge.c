@@ -1664,8 +1664,10 @@ static void do_cmd_knowledge_ego_items(const char *name, int row)
 			struct ego_poss_item *poss;
 
 			/* Note the tvals which are possible for this ego */
-			for (poss = ego->poss_items; poss; poss = poss->next)
-				tval[obj_group_order[poss->kind->tval]]++;
+			for (poss = ego->poss_items; poss; poss = poss->next) {
+				object_kind *kind = &k_info[poss->kidx];
+				tval[obj_group_order[kind->tval]]++;
+			}
 
 			/* Count and put into the list */
 			for (j = 0; j < N_ELEMENTS(object_text_order); j++) {

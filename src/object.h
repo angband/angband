@@ -401,7 +401,7 @@ extern artifact_type *a_info;
  * Stricture for possible object kinds for an ego item
  */
 struct ego_poss_item {
-	object_kind *kind;
+	u32b kidx;
 	struct ego_poss_item *next;
 };
 

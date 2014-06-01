@@ -1748,13 +1748,13 @@ textblock *object_info_ego(struct ego_item *ego)
 {
 	object_kind *kind = NULL;
 	object_type obj = { 0 };
-	int i;
+	size_t i;
 
 	for (i = 0; i < z_info->k_max; i++) {
 		kind = &k_info[i];
 		if (!kind->name)
 			continue;
-		if (kind == ego->poss_items->kind)
+		if (i == ego->poss_items->kidx)
 			break;
 	}
 
