@@ -3358,7 +3358,6 @@ static errr init_other(void)
 	(void)quarks_init();
 
 	/* Initialize squelch things */
-	squelch_init();
 	textui_knowledge_init();
 
 	/* Initialize the "message" package */
@@ -3526,11 +3525,13 @@ void init_arrays(void)
 
 extern struct init_module generate_module;
 extern struct init_module obj_make_module;
+extern struct init_module ignore_module;
 extern struct init_module mon_make_module;
 
 static struct init_module* modules[] = {
 	&generate_module,
 	&obj_make_module,
+	&ignore_module,
 	&mon_make_module,
 	NULL
 };

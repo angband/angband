@@ -115,10 +115,18 @@ const size_t squelch_size = TYPE_MAX;
 
 
 
-/*
- * Initialise the squelch package (currently just asserts).
+/**
+ * Initialise the ignore package 
  */
-void squelch_init(void)
+void init_ignore(void)
+{
+}
+
+
+/**
+ * Clean up the ignore package
+ */
+void cleanup_ignore(void)
 {
 }
 
@@ -588,3 +596,9 @@ const char *squelch_name_for_type(squelch_type_t type)
 
 	return "unknown";
 }
+
+struct init_module ignore_module = {
+	.name = "ignore",
+	.init = init_ignore,
+	.cleanup = cleanup_ignore
+};

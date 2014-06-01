@@ -79,7 +79,6 @@ extern quality_name_struct quality_choices[TYPE_MAX];
 
 
 /* squelch.c */
-void squelch_init(void);
 void squelch_birth_init(void);
 const char *get_autoinscription(object_kind *kind);
 int apply_autoinscription(object_type *o_ptr);
