@@ -1157,6 +1157,8 @@ enum
 	UNIGNORE_THIS_ITEM,
 	IGNORE_THIS_FLAVOR,
 	UNIGNORE_THIS_FLAVOR,
+	IGNORE_THIS_EGO,
+	UNIGNORE_THIS_EGO,
 	IGNORE_THIS_QUALITY
 };
 
@@ -1197,6 +1199,24 @@ void textui_cmd_destroy_menu(int item)
 		} else {
 			strnfmt(out_val, sizeof out_val, "Unignore all %s", tmp);
 			menu_dynamic_add(m, out_val, UNIGNORE_THIS_FLAVOR);
+		}
+	}
+
+	/* Ego squelching */
+	if (object_ego_is_visible(o_ptr)) {
+		ego_desc choice;
+		struct ego_item *ego = o_ptr->ego;
+		char tmp[80] = "";
+
+		choice.e_idx = ego->eidx;
+		choice.short_name = "";
+		(void) ego_item_name(tmp, sizeof(tmp), &choice);
+		if (!ego->squelch) {
+			strnfmt(out_val, sizeof out_val, "All %s", tmp + 4);
+			menu_dynamic_add(m, out_val, IGNORE_THIS_EGO);
+		} else {
+			strnfmt(out_val, sizeof out_val, "Unignore all %s", tmp + 4);
+			menu_dynamic_add(m, out_val, UNIGNORE_THIS_EGO);
 		}
 	}
 
@@ -1242,6 +1262,10 @@ void textui_cmd_destroy_menu(int item)
 		object_squelch_flavor_of(o_ptr);
 	} else if (selected == UNIGNORE_THIS_FLAVOR) {
 		kind_squelch_clear(o_ptr->kind);
+	} else if (selected == IGNORE_THIS_EGO) {
+		o_ptr->ego->squelch = TRUE;
+	} else if (selected == UNIGNORE_THIS_EGO) {
+		o_ptr->ego->squelch = FALSE;
 	} else if (selected == IGNORE_THIS_QUALITY) {
 		byte value = squelch_level_of(o_ptr);
 		int type = squelch_type_of(o_ptr);

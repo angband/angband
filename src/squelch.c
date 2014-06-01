@@ -441,6 +441,12 @@ void kind_squelch_clear(object_kind *k_ptr)
 	player->upkeep->notice |= PN_SQUELCH;
 }
 
+void ego_squelch_clear(struct ego_item *ego)
+{
+	ego->squelch = FALSE;
+	player->upkeep->notice |= PN_SQUELCH;
+}
+
 bool kind_is_squelched_aware(const object_kind *k_ptr)
 {
 	return (k_ptr->squelch & SQUELCH_IF_AWARE) ? TRUE : FALSE;
@@ -464,49 +470,8 @@ void kind_squelch_when_unaware(object_kind *k_ptr)
 }
 
 
-/*
- * Determines if an object is eligible for squelching.
- */
-bool squelch_item_ok(const object_type *o_ptr)
-{
-	byte type;
-
-	if (player->unignoring)
-		return FALSE;
-
-	/* Don't squelch artifacts unless marked to be squelched */
-	if (o_ptr->artifact ||
-			check_for_inscrip(o_ptr, "!k") || check_for_inscrip(o_ptr, "!*"))
-		return FALSE;
-
-	/* Do squelch individual objects that marked ignore */
-	if (o_ptr->ignore)
-		return TRUE;
-
-	/* Do squelching by kind */
-	if (object_flavor_is_aware(o_ptr) ?
-		 kind_is_squelched_aware(o_ptr->kind) :
-		 kind_is_squelched_unaware(o_ptr->kind))
-		return TRUE;
-
-	type = squelch_type_of(o_ptr);
-	if (type == TYPE_MAX)
-		return FALSE;
-
-	/* Squelch items known not to be special */
-	if (object_is_known_not_artifact(o_ptr) && squelch_level[type] == SQUELCH_ALL)
-		return TRUE;
-
-	/* Get result based on the feeling and the squelch_level */
-	if (squelch_level_of(o_ptr) <= squelch_level[type])
-		return TRUE;
-	else
-		return FALSE;
-}
-
-/*
- * Determines if an object is already squelched. Same as squelch_item_ok above,
- * without the first (player->unignoring) test.
+/**
+ * Determines if an object is already squelched.
  */
 bool object_is_squelched(const object_type *o_ptr)
 {
@@ -518,7 +483,7 @@ bool object_is_squelched(const object_type *o_ptr)
 
 	/* Don't squelch artifacts unless marked to be squelched */
 	if (o_ptr->artifact ||
-			check_for_inscrip(o_ptr, "!k") || check_for_inscrip(o_ptr, "!*"))
+		check_for_inscrip(o_ptr, "!k") || check_for_inscrip(o_ptr, "!*"))
 		return FALSE;
 
 	/* Do squelching by kind */
@@ -527,12 +492,17 @@ bool object_is_squelched(const object_type *o_ptr)
 		 kind_is_squelched_unaware(o_ptr->kind))
 		return TRUE;
 
+	/* Squelch ego items if known */
+	if (object_ego_is_visible(o_ptr) && (o_ptr->ego->squelch))
+		return TRUE;
+
 	type = squelch_type_of(o_ptr);
 	if (type == TYPE_MAX)
 		return FALSE;
 
 	/* Squelch items known not to be special */
-	if (object_is_known_not_artifact(o_ptr) && squelch_level[type] == SQUELCH_ALL)
+	if (object_is_known_not_artifact(o_ptr) &&
+		squelch_level[type] == SQUELCH_ALL)
 		return TRUE;
 
 	/* Get result based on the feeling and the squelch_level */
@@ -540,6 +510,17 @@ bool object_is_squelched(const object_type *o_ptr)
 		return TRUE;
 	else
 		return FALSE;
+}
+
+/**
+ * Determines if an object is eligible for squelching.
+ */
+bool squelch_item_ok(const object_type *o_ptr)
+{
+	if (player->unignoring)
+		return FALSE;
+
+	return object_is_squelched(o_ptr);
 }
 
 /*
