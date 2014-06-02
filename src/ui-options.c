@@ -1070,48 +1070,24 @@ static const char *strip_ego_name(const char *name)
  */
 int ego_item_name(char *buf, size_t buf_size, ego_desc *desc)
 {
-	int tval_table[TV_MAX] = { 0 };
-	int i, n = 0;
+	size_t i;
 	int end;
 	size_t prefix_size;
 	const char *long_name;
-	struct ego_poss_item *poss;
 
 	ego_item_type *ego = &e_info[desc->e_idx];
 
-	/* Note the tvals which are possible for this ego */
-	for (poss = ego->poss_items; poss; poss = poss->next) {
-		object_kind *kind = &k_info[poss->kidx];
-		tval_table[kind->tval]++;
-	}
+	/* Find the ignore type */
+	for (i = 0; i < N_ELEMENTS(quality_choices); i++)
+		if (desc->itype == i) break;
+
+	if (i == N_ELEMENTS(quality_choices)) return 0;
 
 	/* Initialize the buffer */
 	end = my_strcat(buf, "[ ] ", buf_size);
 
-	/* Concatenate the tval' names */
-	for (i = 0; i < TV_MAX; i++) {
-		const char *tval_name;
-
-		/* Ignore those not present */
-		if (!tval_table[i]) continue;
-
-		//for (j = 0; j < ITYPE_MAX; j++)
-		//	if (quality_choices[j].tval == tval_table[i])
-		//		break;
-
-		//tval_name = j < ITYPE_MAX ? quality_choices[j].desc : "????";
-
-		tval_name = tval_find_name(i);
-
-		/* Append the proper separator first, if any */
-		if (i > 0) {
-			end += my_strcat(buf, (i < n - 1) ? ", " : " and ", buf_size);
-		}
-
-		/* Append the name */
-		end += my_strcat(buf, tval_name, buf_size);
-		end += my_strcat(buf, "s", buf_size);
-	}
+	/* Append the name */
+	end += my_strcat(buf, quality_choices[i].name, buf_size);
 
 	/* Append an extra space */
 	end += my_strcat(buf, " ", buf_size);

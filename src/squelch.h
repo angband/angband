@@ -46,6 +46,7 @@ enum
 typedef struct ego_desc
 {
   s16b e_idx;
+  u16b itype;
   const char *short_name;
 } ego_desc;
 

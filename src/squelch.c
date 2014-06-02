@@ -242,7 +242,7 @@ void object_squelch_flavor_of(const object_type *o_ptr)
 }
 
 
-/*
+/**
  * Find the squelch type of the object, or ITYPE_MAX if none
  */
 squelch_type_t squelch_type_of(const object_type *o_ptr)

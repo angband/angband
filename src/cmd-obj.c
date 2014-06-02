@@ -1209,6 +1209,7 @@ void textui_cmd_destroy_menu(int item)
 		char tmp[80] = "";
 
 		choice.e_idx = ego->eidx;
+		choice.itype = squelch_type_of(o_ptr);
 		choice.short_name = "";
 		(void) ego_item_name(tmp, sizeof(tmp), &choice);
 		if (!ego->squelch) {
