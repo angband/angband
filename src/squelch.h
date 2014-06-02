@@ -59,6 +59,7 @@ typedef struct ego_desc
 
 extern quality_name_struct quality_values[SQUELCH_MAX];
 extern quality_name_struct quality_choices[ITYPE_MAX];
+bool **ego_ignore_types;
 
 
 /* squelch.c */

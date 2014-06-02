@@ -95,7 +95,7 @@ quality_name_struct quality_values[SQUELCH_MAX] =
 
 byte squelch_level[ITYPE_MAX];
 const size_t squelch_size = ITYPE_MAX;
-
+bool **ego_ignore_types;
 
 
 /**
@@ -103,6 +103,7 @@ const size_t squelch_size = ITYPE_MAX;
  */
 void init_ignore(void)
 {
+	ego_ignore_types = mem_zalloc(z_info->e_max * ITYPE_MAX * sizeof(bool));
 }
 
 
@@ -111,6 +112,7 @@ void init_ignore(void)
  */
 void cleanup_ignore(void)
 {
+	mem_free(ego_ignore_types);
 }
 
 
