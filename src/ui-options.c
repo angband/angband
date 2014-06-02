@@ -1095,11 +1095,11 @@ int ego_item_name(char *buf, size_t buf_size, ego_desc *desc)
 		/* Ignore those not present */
 		if (!tval_table[i]) continue;
 
-		//for (j = 0; j < TYPE_MAX; j++)
+		//for (j = 0; j < ITYPE_MAX; j++)
 		//	if (quality_choices[j].tval == tval_table[i])
 		//		break;
 
-		//tval_name = j < TYPE_MAX ? quality_choices[j].desc : "????";
+		//tval_name = j < ITYPE_MAX ? quality_choices[j].desc : "????";
 
 		tval_name = tval_find_name(i);
 
@@ -1217,7 +1217,7 @@ static void ego_menu(const char *unused, int also_unused)
 	//if (sort_tvals) {
 	//	sort_tvals = FALSE;
 
-	//	qsort(quality_choices, TYPE_MAX, sizeof(quality_choices[0]),
+	//	qsort(quality_choices, ITYPE_MAX, sizeof(quality_choices[0]),
 	//		  tval_comp_func);
 	//}
 
@@ -1416,7 +1416,7 @@ static bool quality_action(menu_type *m, const ui_event *event, int oid)
 
 	/* Work out how many options we have */
 	count = SQUELCH_MAX;
-	if ((oid == TYPE_RING) || (oid == TYPE_AMULET))
+	if ((oid == ITYPE_RING) || (oid == ITYPE_AMULET))
 		count = area.page_rows = SQUELCH_BAD + 1;
 
 	/* Run menu */
@@ -1458,7 +1458,7 @@ static void quality_menu(void *unused, const char *also_unused)
 	/* Set up the menu */
 	menu_init(&menu, MN_SKIN_SCROLL, &menu_f);
 	menu.title = "Quality squelch menu";
-	menu_setpriv(&menu, TYPE_MAX, quality_values);
+	menu_setpriv(&menu, ITYPE_MAX, quality_values);
 	menu_layout(&menu, &area);
 
 	/* Select an entry */

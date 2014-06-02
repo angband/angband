@@ -15,28 +15,11 @@ typedef struct
  */
 typedef enum
 {
-	TYPE_WEAPON_POINTY,
-	TYPE_WEAPON_BLUNT,
-	TYPE_WEAPON_GREAT,
-	TYPE_SHOOTER,
-	TYPE_MISSILE_SLING,
-	TYPE_MISSILE_BOW,
-	TYPE_MISSILE_XBOW,
-	TYPE_ARMOR_ROBE,
-	TYPE_ARMOR_BODY,
-	TYPE_ARMOR_DRAGON,
-	TYPE_ARMOR_CLOAK,
-	TYPE_ARMOR_ELVEN_CLOAK,
-	TYPE_ARMOR_SHIELD,
-	TYPE_ARMOR_HEAD,
-	TYPE_ARMOR_HANDS,
-	TYPE_ARMOR_FEET,
-	TYPE_DIGGER,
-	TYPE_RING,
-	TYPE_AMULET,
-	TYPE_LIGHT,
+	#define ITYPE(a, b) ITYPE_##a,
+	#include "list-ignore-types.h"
+	#undef ITYPE
 
-	TYPE_MAX
+	ITYPE_MAX
 } squelch_type_t;
 
 
@@ -75,7 +58,7 @@ typedef struct ego_desc
 
 
 extern quality_name_struct quality_values[SQUELCH_MAX];
-extern quality_name_struct quality_choices[TYPE_MAX];
+extern quality_name_struct quality_choices[ITYPE_MAX];
 
 
 /* squelch.c */

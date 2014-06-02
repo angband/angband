@@ -43,57 +43,40 @@ typedef struct
  */
 static quality_squelch_struct quality_mapping[] =
 {
-	{ TYPE_WEAPON_GREAT,	TV_SWORD,		"Chaos" },
-	{ TYPE_WEAPON_GREAT,	TV_POLEARM,		"Slicing" },
-	{ TYPE_WEAPON_GREAT,	TV_HAFTED,		"Disruption" },
-	{ TYPE_WEAPON_POINTY,	TV_SWORD,		"" },
-	{ TYPE_WEAPON_POINTY,	TV_POLEARM,		"" },
-	{ TYPE_WEAPON_BLUNT,	TV_HAFTED,		"" },
-	{ TYPE_SHOOTER,			TV_BOW,			"" },
-	{ TYPE_MISSILE_SLING,	TV_SHOT,		"" },
-	{ TYPE_MISSILE_BOW,		TV_ARROW,		"" },
-	{ TYPE_MISSILE_XBOW,	TV_BOLT,		"" },
-	{ TYPE_ARMOR_ROBE,		TV_SOFT_ARMOR,	"Robe" },
-	{ TYPE_ARMOR_DRAGON,	TV_DRAG_ARMOR,	"" },
-	{ TYPE_ARMOR_BODY,		TV_HARD_ARMOR,	"" },
-	{ TYPE_ARMOR_BODY,		TV_SOFT_ARMOR,	"" },
-	{ TYPE_ARMOR_ELVEN_CLOAK, TV_CLOAK,		"Elven" },
-	{ TYPE_ARMOR_CLOAK,		TV_CLOAK,		"" },
-	{ TYPE_ARMOR_SHIELD,	TV_SHIELD,		"" },
-	{ TYPE_ARMOR_HEAD,		TV_HELM,		"" },
-	{ TYPE_ARMOR_HEAD,		TV_CROWN,		"" },
-	{ TYPE_ARMOR_HANDS,		TV_GLOVES,		"" },
-	{ TYPE_ARMOR_FEET,		TV_BOOTS,		"" },
-	{ TYPE_DIGGER,			TV_DIGGING,		"" },
-	{ TYPE_RING,			TV_RING,		"" },
-	{ TYPE_AMULET,			TV_AMULET,		"" },
-	{ TYPE_LIGHT, 			TV_LIGHT, 		"" },
+	{ ITYPE_GREAT,			TV_SWORD,		"Chaos" },
+	{ ITYPE_GREAT,			TV_POLEARM,		"Slicing" },
+	{ ITYPE_GREAT,			TV_HAFTED,		"Disruption" },
+	{ ITYPE_SHARP,			TV_SWORD,		"" },
+	{ ITYPE_SHARP,			TV_POLEARM,		"" },
+	{ ITYPE_BLUNT,			TV_HAFTED,		"" },
+	{ ITYPE_SHOOTER,		TV_BOW,			"" },
+	{ ITYPE_SHOT,			TV_SHOT,		"" },
+	{ ITYPE_ARROW,			TV_ARROW,		"" },
+	{ ITYPE_BOLT,			TV_BOLT,		"" },
+	{ ITYPE_ROBE,			TV_SOFT_ARMOR,	"Robe" },
+	{ ITYPE_DRAGON_ARMOR,	TV_DRAG_ARMOR,	"" },
+	{ ITYPE_BODY_ARMOR,		TV_HARD_ARMOR,	"" },
+	{ ITYPE_BODY_ARMOR,		TV_SOFT_ARMOR,	"" },
+	{ ITYPE_ELVEN_CLOAK,	TV_CLOAK,		"Elven" },
+	{ ITYPE_CLOAK,			TV_CLOAK,		"" },
+	{ ITYPE_SHIELD,			TV_SHIELD,		"" },
+	{ ITYPE_HEADGEAR,		TV_HELM,		"" },
+	{ ITYPE_HEADGEAR,		TV_CROWN,		"" },
+	{ ITYPE_HANDGEAR,		TV_GLOVES,		"" },
+	{ ITYPE_FEET,			TV_BOOTS,		"" },
+	{ ITYPE_DIGGER,			TV_DIGGING,		"" },
+	{ ITYPE_RING,			TV_RING,		"" },
+	{ ITYPE_AMULET,			TV_AMULET,		"" },
+	{ ITYPE_LIGHT, 			TV_LIGHT, 		"" },
 };
 
 
 
-quality_name_struct quality_choices[TYPE_MAX] =
+quality_name_struct quality_choices[] =
 {
-	{ TYPE_WEAPON_POINTY,		"Pointy Melee Weapons" },
-	{ TYPE_WEAPON_BLUNT,		"Blunt Melee Weapons" },
-	{ TYPE_WEAPON_GREAT,		"Great Weapons" },
-	{ TYPE_SHOOTER,				"Missile weapons" },
-	{ TYPE_MISSILE_SLING,		"Shots and Pebbles" },
-	{ TYPE_MISSILE_BOW,			"Arrows" },
-	{ TYPE_MISSILE_XBOW,		"Bolts" },
-	{ TYPE_ARMOR_ROBE,			"Robes" },
-	{ TYPE_ARMOR_BODY,			"Body Armor" },
-	{ TYPE_ARMOR_DRAGON,		"Dragon Scale Mail" },
-	{ TYPE_ARMOR_CLOAK,			"Cloaks" },
-	{ TYPE_ARMOR_ELVEN_CLOAK,	"Elven Cloaks" },
-	{ TYPE_ARMOR_SHIELD,		"Shields" },
-	{ TYPE_ARMOR_HEAD,			"Headgear" },
-	{ TYPE_ARMOR_HANDS,			"Handgear" },
-	{ TYPE_ARMOR_FEET,			"Footgear" },
-	{ TYPE_DIGGER,				"Diggers" },
-	{ TYPE_RING,				"Rings" },
-	{ TYPE_AMULET,				"Amulets" },
-	{ TYPE_LIGHT, 				"Lights" },
+	#define ITYPE(a, b) { ITYPE_##a, b },
+	#include "list-ignore-types.h"
+	#undef ITYPE
 };
 
 /*
@@ -110,8 +93,8 @@ quality_name_struct quality_values[SQUELCH_MAX] =
 	{ SQUELCH_ALL,				"non-artifact" },
 };
 
-byte squelch_level[TYPE_MAX];
-const size_t squelch_size = TYPE_MAX;
+byte squelch_level[ITYPE_MAX];
+const size_t squelch_size = ITYPE_MAX;
 
 
 
@@ -143,7 +126,7 @@ void squelch_birth_init(void)
 		k_info[i].squelch = FALSE;
 
 	/* Clear the squelch bytes */
-	for (i = 0; i < TYPE_MAX; i++)
+	for (i = 0; i < ITYPE_MAX; i++)
 		squelch_level[i] = SQUELCH_NONE;
 }
 
@@ -258,7 +241,7 @@ void object_squelch_flavor_of(const object_type *o_ptr)
 
 
 /*
- * Find the squelch type of the object, or TYPE_MAX if none
+ * Find the squelch type of the object, or ITYPE_MAX if none
  */
 squelch_type_t squelch_type_of(const object_type *o_ptr)
 {
@@ -277,7 +260,7 @@ squelch_type_t squelch_type_of(const object_type *o_ptr)
 		}
 	}
 
-	return TYPE_MAX;
+	return ITYPE_MAX;
 }
 
 /**
@@ -505,7 +488,7 @@ bool object_is_squelched(const object_type *o_ptr)
 		return TRUE;
 
 	type = squelch_type_of(o_ptr);
-	if (type == TYPE_MAX)
+	if (type == ITYPE_MAX)
 		return FALSE;
 
 	/* Squelch items known not to be special */
@@ -589,7 +572,7 @@ const char *squelch_name_for_type(squelch_type_t type)
 {
 	size_t i;
 
-	for (i = 0; i < TYPE_MAX; i++) {
+	for (i = 0; i < ITYPE_MAX; i++) {
 		if (quality_choices[i].enum_val == type)
 			return quality_choices[i].name;
 	}

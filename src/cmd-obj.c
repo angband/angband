@@ -1230,7 +1230,7 @@ void textui_cmd_destroy_menu(int item)
 					squelch_level_of(o_ptr) != SQUELCH_BAD)
 			value = SQUELCH_MAX;
 
-		if (value != SQUELCH_MAX && type != TYPE_MAX) {
+		if (value != SQUELCH_MAX && type != ITYPE_MAX) {
 			strnfmt(out_val, sizeof out_val, "All %s %s",
 					quality_values[value].name, squelch_name_for_type(type));
 
