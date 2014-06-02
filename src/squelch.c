@@ -434,9 +434,15 @@ void kind_squelch_clear(object_kind *k_ptr)
 	player->upkeep->notice |= PN_SQUELCH;
 }
 
-void ego_squelch_clear(struct ego_item *ego)
+void ego_squelch(struct object *obj)
 {
-	ego->squelch = FALSE;
+	obj->ego->squelch = TRUE;
+	player->upkeep->notice |= PN_SQUELCH;
+}
+
+void ego_squelch_clear(struct object *obj)
+{
+	obj->ego->squelch = FALSE;
 	player->upkeep->notice |= PN_SQUELCH;
 }
 

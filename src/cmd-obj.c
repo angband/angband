@@ -1263,9 +1263,9 @@ void textui_cmd_destroy_menu(int item)
 	} else if (selected == UNIGNORE_THIS_FLAVOR) {
 		kind_squelch_clear(o_ptr->kind);
 	} else if (selected == IGNORE_THIS_EGO) {
-		o_ptr->ego->squelch = TRUE;
+		ego_squelch(o_ptr);
 	} else if (selected == UNIGNORE_THIS_EGO) {
-		o_ptr->ego->squelch = FALSE;
+		ego_squelch_clear(o_ptr);
 	} else if (selected == IGNORE_THIS_QUALITY) {
 		byte value = squelch_level_of(o_ptr);
 		int type = squelch_type_of(o_ptr);
