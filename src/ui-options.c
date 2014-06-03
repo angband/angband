@@ -1176,8 +1176,9 @@ static bool ego_action(menu_type * menu, const ui_event * event, int oid)
 static void ego_menu(const char *unused, int also_unused)
 {
 	int max_num = 0;
-	ego_item_type *e_ptr;
+	ego_item_type *ego;
 	ego_desc *choice;
+	struct ego_poss_item *poss;
 
 	menu_type menu;
 	menu_iter menu_f = { 0, 0, ego_display, ego_action, 0 };
@@ -1186,33 +1187,43 @@ static void ego_menu(const char *unused, int also_unused)
 
 	int i;
 
-	/* Hack - Used to sort the tval table for the first time */
-	//static bool sort_tvals = TRUE;
-
-	/* Sort the tval table if needed */
-	//if (sort_tvals) {
-	//	sort_tvals = FALSE;
-
-	//	qsort(quality_choices, ITYPE_MAX, sizeof(quality_choices[0]),
-	//		  tval_comp_func);
-	//}
-
 	/* Create the array */
 	choice = C_ZNEW(z_info->e_max, ego_desc);
 
 	/* Get the valid ego-items */
 	for (i = 0; i < z_info->e_max; i++) {
-		e_ptr = &e_info[i];
+		int itype, tval;
+		int tval_table[TV_MAX] = { 0 };
+		ego = &e_info[i];
 
 		/* Only valid known ego-items allowed */
-		if (!e_ptr->name || !e_ptr->everseen)
+		if (!ego->name || !ego->everseen)
 			continue;
 
-		/* Append the index */
-		choice[max_num].e_idx = i;
-		choice[max_num].short_name = strip_ego_name(e_ptr->name);
+		/* Note the tvals which are possible for this ego */
+		for (poss = ego->poss_items; poss; poss = poss->next) {
+			object_kind *kind = &k_info[poss->kidx];
+			tval_table[kind->tval]++;
+		}
 
-		++max_num;
+		/* Find appropriate ignore types */
+		for (itype = ITYPE_NONE; itype < ITYPE_MAX; itype++)
+			for (tval = 1; tval < TV_MAX; tval++) {
+				/* Skip invalid types */
+				if (!tval_table[tval]) continue;
+				if (tval_has_ignore_type(tval, itype)) {
+
+					/* Fill in the details */
+					choice[max_num].e_idx = i;
+					choice[max_num].itype = itype;
+					choice[max_num].short_name = strip_ego_name(ego->name);
+
+					++max_num;
+
+					/* Done with this tval */
+					break;
+				}
+			}
 	}
 
 	/* Quickly sort the array by ego-item name */

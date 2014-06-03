@@ -266,6 +266,23 @@ squelch_type_t squelch_type_of(const object_type *o_ptr)
 }
 
 /**
+ * Find whether an ignore type is valid for a given tval
+ */
+bool tval_has_ignore_type(int tval, squelch_type_t itype)
+{
+	size_t i;
+
+	/* Find the appropriate ignore group */
+	for (i = 0; i < N_ELEMENTS(quality_mapping); i++)
+		if ((quality_mapping[i].tval == tval) &&
+			(quality_mapping[i].squelch_type == itype))
+			return TRUE;
+
+	return FALSE;
+}
+
+
+/**
  * Small helper function to see how an object trait compares to the one
  * in its base type.
  *

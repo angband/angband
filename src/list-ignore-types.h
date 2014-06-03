@@ -1,5 +1,5 @@
 /* list-ignore-types - types of object used for ignoring by quality or ego
- */
+*/
 ITYPE(NONE,			"")
 ITYPE(SHARP,		"Sharp Melee Weapons")
 ITYPE(BLUNT,		"Blunt Melee Weapons")

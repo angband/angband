@@ -74,6 +74,7 @@ void autoinscribe_pack(void);
 void object_squelch_flavor_of(const object_type *o_ptr);
 squelch_type_t squelch_type_of(const object_type *o_ptr);
 byte squelch_level_of(const object_type *o_ptr);
+bool tval_has_ignore_type(int tval, squelch_type_t itype);
 void kind_squelch_clear(object_kind *k_ptr);
 void ego_squelch(struct object *obj);
 void ego_squelch_clear(struct object *obj);
