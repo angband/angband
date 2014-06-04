@@ -1,6 +1,6 @@
-/*
- * File: obj-desc.c
- * Purpose: Create object name descriptions
+/**
+   \file obj-desc.c
+   \brief Create object name descriptions
  *
  * Copyright (c) 1997 - 2007 Angband contributors
  *
@@ -50,7 +50,7 @@ void object_base_name(char *buf, size_t max, int tval, bool plural)
 }
 
 
-/*
+/**
  * Puts a very stripped-down version of an object's name into buf.
  * If easy_know is TRUE, then the IDed names are used, otherwise
  * flavours, scroll names, etc will be used.
@@ -70,7 +70,11 @@ void object_kind_name(char *buf, size_t max, const object_kind *kind,
 }
 
 
-
+/**
+ * A modifier string, put where '#' goes in the basename below.  The weird
+ * games played with book names are to allow the non-essential part of the
+ * name to be abbreviated when there is not much room to display.
+ */
 static const char *obj_desc_get_modstr(const object_kind *kind)
 {
 	if (tval_can_have_flavor_k(kind))
@@ -82,6 +86,11 @@ static const char *obj_desc_get_modstr(const object_kind *kind)
 	return "";
 }
 
+/**
+ * An object's basic name - a generic name for flavored objects (with the
+ * actual name added later depending on awareness, the name from object.txt
+ * for almost everything else, and a bit extra for books. 
+ */
 static const char *obj_desc_get_basename(const object_type *o_ptr, bool aware,
 										 bool terse, int mode)
 {
@@ -118,6 +127,7 @@ static const char *obj_desc_get_basename(const object_type *o_ptr, bool aware,
 		case TV_HARD_ARMOR:
 		case TV_DRAG_ARMOR:
 		case TV_LIGHT:
+		case TV_FOOD:
 			return o_ptr->kind->name;
 
 		case TV_AMULET:
@@ -155,15 +165,15 @@ static const char *obj_desc_get_basename(const object_type *o_ptr, bool aware,
 
 		case TV_MUSHROOM:
 			return (show_flavor ? "& # Mushroom~" : "& Mushroom~");
-
-		case TV_FOOD:
-			return o_ptr->kind->name;
 	}
 
 	return "(nothing)";
 }
 
 
+/**
+ * Start to description, indicating number/uniqueness (a, the, no more, 7, etc)
+ */
 static size_t obj_desc_name_prefix(char *buf, size_t max, size_t end,
 		const object_type *o_ptr, bool known, const char *basename,
 		const char *modstr, bool terse)
@@ -293,7 +303,7 @@ size_t obj_desc_name_format(char *buf, size_t max, size_t end,
 }
 
 
-/*
+/**
  * Format object o_ptr's name into 'buf'.
  */
 static size_t obj_desc_name(char *buf, size_t max, size_t end,
@@ -339,7 +349,7 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end,
 	return end;
 }
 
-/*
+/**
  * Is o_ptr armor?
  */
 static bool obj_desc_show_armor(const object_type *o_ptr)
@@ -349,6 +359,9 @@ static bool obj_desc_show_armor(const object_type *o_ptr)
 	return FALSE;
 }
 
+/**
+ * Special descriptions for types of chest traps
+ */
 static size_t obj_desc_chest(const object_type *o_ptr, char *buf, size_t max,
 							 size_t end)
 {
@@ -413,6 +426,10 @@ static size_t obj_desc_chest(const object_type *o_ptr, char *buf, size_t max,
 	return end;
 }
 
+/**
+ * Describe combat properties of an item - damage dice, to-hit, to-dam, armor
+ * class, missile multipler
+ */
 static size_t obj_desc_combat(const object_type *o_ptr, char *buf, size_t max, 
 		size_t end, bool spoil)
 {
@@ -469,6 +486,9 @@ static size_t obj_desc_combat(const object_type *o_ptr, char *buf, size_t max,
 	return end;
 }
 
+/**
+ * Describe remaining light for refuellable lights
+ */
 static size_t obj_desc_light(const object_type *o_ptr, char *buf, size_t max,
 							 size_t end)
 {
@@ -479,6 +499,10 @@ static size_t obj_desc_light(const object_type *o_ptr, char *buf, size_t max,
 	return end;
 }
 
+/**
+ * Describe numerical modifiers to stats and other player qualities which
+ * allow numerical bonuses - speed, stealth, etc
+ */
 static size_t obj_desc_mods(const object_type *o_ptr, char *buf, size_t max,
 	size_t end, bool spoil)
 {
@@ -524,6 +548,9 @@ static size_t obj_desc_mods(const object_type *o_ptr, char *buf, size_t max,
 	return end;
 }
 
+/**
+ * Describe charges or charging status for re-usable items with magic effects
+ */
 static size_t obj_desc_charges(const object_type *o_ptr, char *buf, size_t max,
 							   size_t end, int mode)
 {
@@ -551,6 +578,9 @@ static size_t obj_desc_charges(const object_type *o_ptr, char *buf, size_t max,
 	return end;
 }
 
+/**
+ * Add player-defined inscriptions or game-defined descriptions
+ */
 static size_t obj_desc_inscrip(const object_type *o_ptr, char *buf, size_t max,
 							   size_t end)
 {
@@ -611,7 +641,9 @@ static size_t obj_desc_inscrip(const object_type *o_ptr, char *buf, size_t max,
 }
 
 
-/* Add "unseen" to the end of unaware items in stores */
+/**
+ * Add "unseen" to the end of unaware items in stores
+ */
 static size_t obj_desc_aware(const object_type *o_ptr, char *buf, size_t max,
 	size_t end)
 {

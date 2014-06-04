@@ -1,6 +1,6 @@
-/*
- * File: obj-chest.h
- * Purpose: Encapsulation of chest-related functions
+/**
+   \file chest.c
+   \brief Encapsulation of chest-related functions
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  * Copyright (c) 2012 Peter Denison
@@ -20,7 +20,7 @@
 #ifndef OBJECT_CHEST_H
 #define OBJECT_CHEST_H
 
-/*
+/**
  * Chest trap flags (see "obj-chest.c")
  */
 #define CHEST_LOSE_STR	0x01
@@ -31,7 +31,7 @@
 #define CHEST_SUMMON	0x20
 
 
-/*
+/**
  * Chest check types
  */
 enum chest_query {

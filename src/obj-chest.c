@@ -1,6 +1,6 @@
-/*
- * File: chest.c
- * Purpose: Encapsulation of chest-related functions
+/**
+   \file chest.c
+   \brief Encapsulation of chest-related functions
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  * Copyright (c) 2012 Peter Denison
@@ -30,7 +30,7 @@
 #include "spells.h"
 #include "tables.h"
 
-/*
+/**
  * Each chest has a certain set of traps, determined by pval
  * Each chest has a "pval" from 1 to the chest level (max 55)
  * If the "pval" is negative then the trap has been disarmed
@@ -105,6 +105,9 @@ static const byte chest_traps[64] =
 	(CHEST_EXPLODE | CHEST_SUMMON),
 };
 
+/**
+ * The type of trap a chest has
+ */
 byte chest_trap_type(const object_type *o_ptr)
 {
 	s16b trap_value = o_ptr->pval;
@@ -115,7 +118,7 @@ byte chest_trap_type(const object_type *o_ptr)
 		return chest_traps[-trap_value];
 }
 
-/*
+/**
  * Determine if a chest is trapped
  */
 bool is_trapped_chest(const object_type *o_ptr)
@@ -132,7 +135,7 @@ bool is_trapped_chest(const object_type *o_ptr)
 }
 
 
-/*
+/**
  * Determine if a chest is locked or trapped
  */
 bool is_locked_chest(const object_type *o_ptr)
@@ -144,7 +147,7 @@ bool is_locked_chest(const object_type *o_ptr)
 	return (o_ptr->pval > 0);
 }
 
-/*
+/**
  * Unlock a chest
  */
 void unlock_chest(object_type *o_ptr)
@@ -152,7 +155,7 @@ void unlock_chest(object_type *o_ptr)
 	o_ptr->pval = (0 - o_ptr->pval);
 }
 
-/*
+/**
  * Determine if a grid contains a chest matching the query type
  */
 s16b chest_check(int y, int x, enum chest_query check_type)
@@ -197,7 +200,7 @@ s16b chest_check(int y, int x, enum chest_query check_type)
 }
 
 
-/*
+/**
  * Return the number of chests around (or under) the character.
  * If requested, count only trapped chests.
  */
@@ -294,7 +297,8 @@ static void chest_death(int y, int x, s16b o_idx)
 
 		/* Otherwise drop an item, as long as it isn't a chest */
 		else {
-			if (!make_object(cave, i_ptr, value, FALSE, FALSE, FALSE, NULL, 0)) continue;
+			if (!make_object(cave, i_ptr, value, FALSE, FALSE, FALSE, NULL, 0))
+				continue;
 			if (tval_is_chest(i_ptr)) continue;
 		}
 
@@ -314,7 +318,7 @@ static void chest_death(int y, int x, s16b o_idx)
 }
 
 
-/*
+/**
  * Chests have traps too.
  *
  * Exploding chest destroys contents (and traps).
@@ -386,7 +390,7 @@ static void chest_trap(int y, int x, s16b o_idx)
 }
 
 
-/*
+/**
  * Attempt to open the given chest at the given location
  *
  * Assume there is no monster blocking the destination
@@ -474,7 +478,7 @@ bool do_cmd_open_chest(int y, int x, s16b o_idx)
 }
 
 
-/*
+/**
  * Attempt to disarm the chest at the given location
  *
  * Assume there is no monster blocking the destination

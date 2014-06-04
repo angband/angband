@@ -1,6 +1,6 @@
-/*
- * File: obj-info.c
- * Purpose: Object description code.
+/**
+   \file obj-info.c
+   \brief Object description code.
  *
  * Copyright (c) 2010 Andi Sidwell
  * Copyright (c) 2004 Robert Ruehlmann
@@ -34,7 +34,7 @@
 #include "tables.h"
 #include "z-textblock.h"
 
-/*
+/**
  * Describes a flag-name pair.
  */
 typedef struct
@@ -43,7 +43,7 @@ typedef struct
 	const char *name;
 } flag_type;
 
-/*
+/**
  * Describes the number of blows possible for given stat bonuses
  */
 struct blow_info {
@@ -111,7 +111,7 @@ static const flag_type misc_flags[] =
 
 /*** Utility code ***/
 
-/*
+/**
  * Given an array of strings, as so:
  *  { "intelligence", "fish", "lens", "prime", "number" },
  *
@@ -168,7 +168,7 @@ static size_t element_info_collect(const bool list[], const char *recepticle[])
 
 /*** Code that makes use of the data tables ***/
 
-/*
+/**
  * Describe an item's curses.
  */
 static bool describe_curses(textblock *tb, const object_type *o_ptr,
@@ -187,7 +187,7 @@ static bool describe_curses(textblock *tb, const object_type *o_ptr,
 }
 
 
-/*
+/**
  * Describe stat modifications.
  */
 static bool describe_stats(textblock *tb, const object_type *o_ptr,
@@ -229,7 +229,7 @@ static bool describe_stats(textblock *tb, const object_type *o_ptr,
 }
 
 
-/*
+/**
  * Describe immunities, resistances and vulnerabilities granted by an object.
  */
 static bool describe_elements(textblock *tb,
@@ -279,7 +279,7 @@ static bool describe_elements(textblock *tb,
 }
 
 
-/*
+/**
  * Describe protections granted by an object.
  */
 static bool describe_protects(textblock *tb, const bitflag flags[OF_SIZE])
@@ -345,7 +345,7 @@ static bool describe_hates(textblock *tb, const struct element_info el_info[])
 }
 
 
-/*
+/**
  * Describe stat sustains.
  */
 static bool describe_sustains(textblock *tb, const bitflag flags[OF_SIZE])
@@ -364,7 +364,7 @@ static bool describe_sustains(textblock *tb, const bitflag flags[OF_SIZE])
 }
 
 
-/*
+/**
  * Describe miscellaneous powers.
  */
 static bool describe_misc_magic(textblock *tb, const bitflag flags[OF_SIZE])
@@ -388,7 +388,7 @@ static bool describe_misc_magic(textblock *tb, const bitflag flags[OF_SIZE])
 }
 
 
-/*
+/**
  * Describe slays and brands on weapons
  */
 static bool describe_slays(textblock *tb, const struct object *o_ptr)
@@ -416,7 +416,7 @@ static bool describe_slays(textblock *tb, const struct object *o_ptr)
 	return TRUE;
 }
 
-/*
+/**
  * Describe slays and brands on weapons
  */
 static bool describe_brands(textblock *tb, const struct object *o_ptr)
@@ -444,7 +444,7 @@ static bool describe_brands(textblock *tb, const struct object *o_ptr)
 	return TRUE;
 }
 
-/*
+/**
  * Account for criticals in the calculation of melee prowess
  *
  * Note -- This relies on the criticals being an affine function
@@ -484,7 +484,7 @@ static void calculate_melee_crits(player_state *state, int weight,
 	*div  = 100;
 }
 
-/*
+/**
  * Missile crits follow the same approach as melee crits.
  */
 static void calculate_missile_crits(player_state *state, int weight,
@@ -507,7 +507,7 @@ static void calculate_missile_crits(player_state *state, int weight,
 	*div  = 100;
 }
 
-/*
+/**
  * Get the object flags the player should know about for the given object/
  * viewing mode combination.
  */
@@ -528,7 +528,7 @@ static void get_known_flags(const object_type *o_ptr, const oinfo_detail_t mode,
 	}
 }
 
-/*
+/**
  * Get the object element info the player should know about for the given
  * object/viewing mode combination.
  */
@@ -694,7 +694,7 @@ static int obj_known_blows(const object_type *o_ptr, int max_num, struct blow_in
 }
 
 
-/*
+/**
  * Describe blows.
  */
 static bool describe_blows(textblock *tb, const object_type *o_ptr)
@@ -907,7 +907,7 @@ static int obj_known_damage(const object_type *o_ptr, int *normal_damage,
 }
 
 
-/*
+/**
  * Describe damage.
  */
 static bool describe_damage(textblock *tb, const object_type *o_ptr)
@@ -1042,7 +1042,7 @@ static void obj_known_misc_combat(const object_type *o_ptr, bool *thrown_effect,
 }
 
 
-/*
+/**
  * Describe combat advantages.
  */
 static bool describe_combat(textblock *tb, const object_type *o_ptr)
@@ -1139,7 +1139,7 @@ static bool obj_known_digging(object_type *o_ptr, int deciturns[])
 	return TRUE;
 }
 
-/*
+/**
  * Describe objects that can be used for digging.
  */
 static bool describe_digger(textblock *tb, const object_type *o_ptr)
@@ -1206,6 +1206,9 @@ static int obj_known_food(const object_type *o_ptr)
 	return 0;
 }
 
+/**
+ * Describes a food item
+ */
 static bool describe_food(textblock *tb, const object_type *o_ptr,
 		bool subjective)
 {
@@ -1277,7 +1280,7 @@ static bool obj_known_light(const object_type *o_ptr, oinfo_detail_t mode, int *
 	return TRUE;
 }
 
-/*
+/**
  * Describe things that look like lights.
  */
 static bool describe_light(textblock *tb, const object_type *o_ptr,
@@ -1365,7 +1368,7 @@ static bool obj_known_effect(const object_type *o_ptr, int *effect, bool *aimed,
 	return TRUE;
 }
 
-/*
+/**
  * Describe an object's effect, if any.
  */
 static bool describe_effect(textblock *tb, const object_type *o_ptr,
@@ -1459,7 +1462,9 @@ static bool describe_effect(textblock *tb, const object_type *o_ptr,
 	return TRUE;
 }
 
-
+/**
+ * Describe an item's origin
+ */
 static bool describe_origin(textblock *tb, const object_type *o_ptr, bool terse)
 {
 	char origin_text[80];
@@ -1582,7 +1587,7 @@ static bool describe_origin(textblock *tb, const object_type *o_ptr, bool terse)
 	return TRUE;
 }
 
-/*
+/**
  * Print an item's flavour text.
  *
  * \param tb is the textblock to which we are adding.
@@ -1622,7 +1627,9 @@ static void describe_flavor_text(textblock *tb, const object_type *o_ptr,
 	}
 }
 
-
+/**
+ * Describe random properties that an ego item may have
+ */
 static bool describe_ego(textblock *tb, const struct ego_item *ego)
 {
 	int i, num = 3;
@@ -1645,7 +1652,7 @@ static bool describe_ego(textblock *tb, const struct ego_item *ego)
 }
 
 
-/*
+/**
  * Output object information
  */
 static textblock *object_info_out(const object_type *o_ptr, int mode)
@@ -1763,7 +1770,8 @@ textblock *object_info_ego(struct ego_item *ego)
 
 
 /**
- * Provide information on an item suitable for writing to the character dump - keep it brief.
+ * Provide information on an item suitable for writing to the character dump
+ * - keep it brief.
  */
 void object_info_chardump(ang_file *f, const object_type *o_ptr, int indent, int wrap)
 {

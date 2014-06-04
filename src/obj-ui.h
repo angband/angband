@@ -1,6 +1,6 @@
-/*
- * File: obj-ui.h
- * Purpose: Mainly object descriptions and generic UI functions
+/**
+   \file obj-ui.c
+   \brief lists of objects and object pictures
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  *
@@ -36,7 +36,7 @@ typedef enum {
 } olist_detail_t;
 
 
-/*
+/**
  * Bit flags for get_item() function
  */
 #define USE_EQUIP     0x0001	/* Allow equip items */

@@ -1,6 +1,6 @@
-/*
- * File: obj-ui.c
- * Purpose: Mainly object descriptions and generic UI functions
+/**
+   \file obj-ui.c
+   \brief lists of objects and object pictures
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  *
@@ -29,7 +29,7 @@
 #include "store.h"
 #include "ui-game.h"
 
-/*
+/**
  * Determine if the attr and char should consider the item's flavor
  *
  * Identified scrolls should use their own tile.
@@ -39,7 +39,7 @@ static bool use_flavor_glyph(const struct object_kind *kind)
 	return kind->flavor && !(kind->tval == TV_SCROLL && kind->aware);
 }
 
-/*
+/**
  * Return the "attr" for a given item kind.
  * Use "flavor" if available.
  * Default to user definitions.
@@ -49,7 +49,7 @@ byte object_kind_attr(const struct object_kind *kind)
 	return use_flavor_glyph(kind) ? kind->flavor->x_attr : kind->x_attr;
 }
 
-/*
+/**
  * Return the "char" for a given item kind.
  * Use "flavor" if available.
  * Default to user definitions.
@@ -59,7 +59,7 @@ wchar_t object_kind_char(const struct object_kind *kind)
 	return use_flavor_glyph(kind) ? kind->flavor->x_char : kind->x_char;
 }
 
-/*
+/**
  * Return the "attr" for a given item.
  * Use "flavor" if available.
  * Default to user definitions.
@@ -69,7 +69,7 @@ byte object_attr(const struct object *o_ptr)
 	return object_kind_attr(o_ptr->kind);
 }
 
-/*
+/**
  * Return the "char" for a given item.
  * Use "flavor" if available.
  * Default to user definitions.
@@ -151,7 +151,7 @@ s16b label_to_quiver(int c)
 
 
 
-/*
+/**
  * Display a list of objects.  Each object may be prefixed with a label.
  * Used by show_inven(), show_equip(), and show_floor().  Mode flags are
  * documented in object.h
@@ -344,7 +344,7 @@ static void show_obj_list(int num_obj, int num_head, char labels[50][80],
 	}
 }
 
-/*
+/**
  * Display the inventory.  Builds a list of objects and passes them
  * off to show_obj_list() for display.  Mode flags documented in
  * object.h
@@ -411,7 +411,7 @@ void show_inven(int mode, item_tester tester)
 }
 
 
-/*
+/**
  * Display the quiver.  Builds a list of objects and passes them
  * off to show_obj_list() for display.  Mode flags documented in
  * object.h
@@ -459,7 +459,7 @@ void show_quiver(int mode, item_tester tester)
 }
 
 
-/*
+/**
  * Display the equipment.  Builds a list of objects and passes them
  * off to show_obj_list() for display.  Mode flags documented in
  * object.h
@@ -550,7 +550,7 @@ void show_equip(int mode, item_tester tester)
 }
 
 
-/*
+/**
  * Display the floor.  Builds a list of objects and passes them
  * off to show_obj_list() for display.  Mode flags documented in
  * object.h
@@ -592,7 +592,7 @@ void show_floor(const int *floor_list, int floor_num, int mode, item_tester test
 }
 
 
-/*
+/**
  * Verify the choice of an item.
  *
  * The item can be negative to mean "item on floor".
@@ -628,8 +628,8 @@ bool verify_item(const char *prompt, int item)
 }
 
 
-/*
- * Hack -- prevent certain choices depending on the inscriptions on the item.
+/**
+ * Prevent certain choices depending on the inscriptions on the item.
  *
  * The item can be negative to mean "item on floor".
  */
@@ -767,16 +767,16 @@ static int get_tag(int *cp, char tag, cmd_code cmd, bool quiver_tags)
 
 
 
-/*
- * Let the user select an item, save its "index"
+/**
+ * Let the user select an item, save its gear array index
  *
  * Return TRUE only if an acceptable item was chosen by the user.
  *
  * The user is allowed to choose acceptable items from the equipment,
- * inventory, or floor, respectively, if the proper flag was given,
+ * inventory, quiver, or floor, respectively, if the proper flag was given,
  * and there are any acceptable items in that location.
  *
- * The equipment or inventory are displayed (even if no acceptable
+ * The equipment, inventory or quiver are displayed (even if no acceptable
  * items are in that location) if the proper flag was given.
  *
  * If there are no acceptable items available anywhere, and "str" is
@@ -788,8 +788,8 @@ static int get_tag(int *cp, char tag, cmd_code cmd, bool quiver_tags)
  * use of "capital" letters will "examine" an inventory/equipment item,
  * and prompt for its use.
  *
- * If a legal item is selected from the inventory, we save it in "cp"
- * directly (0 to 35), and return TRUE.
+ * If a legal item index is selected from the gear, we save it in "cp"
+ * directly and return TRUE.
  *
  * If a legal item is selected from the floor, we save it in "cp" as
  * a negative (-1 to -511), and return TRUE.
@@ -801,8 +801,8 @@ static int get_tag(int *cp, char tag, cmd_code cmd, bool quiver_tags)
  *
  * Global "player->upkeep->command_wrk" is used to choose between
  * equip/inven/floor listings.  It is equal to USE_INVEN or USE_EQUIP or
- * USE_FLOOR, except when this function is first called, when it is equal to
- * zero, which will cause it to be set to USE_INVEN.
+ * USE_QUIVER or USE_FLOOR, except when this function is first called, when it
+ * is equal to zero, which will cause it to be set to USE_INVEN.
  *
  * We always erase the prompt when we are done, leaving a blank line,
  * or a warning message, if appropriate, if no items are available.
