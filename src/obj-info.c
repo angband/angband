@@ -68,19 +68,9 @@ static const flag_type elements[] =
 
 static const flag_type mod_flags[] =
 {
-	{ OBJ_MOD_STR,     "strength" },
-	{ OBJ_MOD_INT,     "intelligence" },
-	{ OBJ_MOD_WIS,     "wisdom" },
-	{ OBJ_MOD_DEX,     "dexterity" },
-	{ OBJ_MOD_CON,     "constitution" },
-	{ OBJ_MOD_STEALTH, "stealth" },
-	{ OBJ_MOD_SEARCH,  "searching skill" },
-	{ OBJ_MOD_INFRA,   "infravision" },
-	{ OBJ_MOD_TUNNEL,  "tunneling" },
-	{ OBJ_MOD_SPEED,   "speed" },
-	{ OBJ_MOD_BLOWS,   "attack speed" },
-	{ OBJ_MOD_SHOTS,   "shooting speed" },
-	{ OBJ_MOD_MIGHT,   "shooting power" },
+	#define OBJ_MOD(a, b, c, d)	{OBJ_MOD_##a, d},
+    #include "list-object-modifiers.h"
+    #undef OBJ_MOD
 };
 
 static const flag_type protect_flags[] =
@@ -212,7 +202,7 @@ static bool describe_stats(textblock *tb, const object_type *o_ptr,
 
 	/* See what we've got */
 	for (i = 0; i < N_ELEMENTS(mod_flags); i++)
-		if (o_ptr->modifiers[mod_flags[i].flag] != 0) {
+		if (o_ptr->modifiers[mod_flags[i].flag] != 0 &&	mod_flags[i].name[0]) {
 			count++;
 			/* Either all mods are visible, or none are */
 			if (object_this_mod_is_visible(o_ptr, i))
@@ -226,6 +216,7 @@ static bool describe_stats(textblock *tb, const object_type *o_ptr,
 		const char *desc = mod_flags[i].name;
 		int val = o_ptr->modifiers[mod_flags[i].flag];
 		if (!val) continue;
+		if (!mod_flags[i].name[0]) continue;
 		if (detail && !suppress_details) {
 			int attr = (val > 0) ? TERM_L_GREEN : TERM_RED;
 			textblock_append_c(tb, attr, "%+i %s.\n", val, desc);

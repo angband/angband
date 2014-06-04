@@ -1,6 +1,6 @@
-/*
- * File: src/obj-properties.h
- * Purpose: definitions and functions for object flags
+/**
+   \file obj-properties.h
+   \brief definitions and functions for object flags and modifiers
  *
  * Copyright (c) 2014 Chris Carr, Nick McConnell
  *
@@ -127,7 +127,7 @@ struct object_mod {
 	u16b index;				/* the OBJ_MOD_ index */
 	s16b power;				/* base power rating */
 	s16b mod_mult;			/* modifier weight rating */
-	const char *message;	/* id message */
+	const char *name;		/* id message */
 };
 
 
@@ -144,6 +144,5 @@ const char *mod_name(int mod);
 s32b mod_power(int mod);
 int mod_mult(int mod);
 s16b mod_slot_mult(int mod, int slot);
-void mod_message(int mod, char *name);
 
 #endif /* !INCLUDED_OBJPROPERTIES_H */

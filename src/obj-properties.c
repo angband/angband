@@ -271,18 +271,3 @@ s16b mod_slot_mult(int mod, int slot)
 	return 1;
 }
 
-/**
- * Print a message when an object mod is identified by use.
- *
- * \param flag is the flag being noticed
- * \param name is the object name 
- */
-void mod_message(int mod, char *name)
-{
-	const struct object_mod *om = &object_mod_table[mod];
-
-	if (!streq(om->message, ""))
-		msg(om->message, name);
-
-	return;
-}

@@ -889,12 +889,12 @@ static int stats_dump_lists(void)
 	for (idx = 0; idx < OBJ_MOD_MAX; idx++)
 	{
 		struct object_mod *om = &object_mod_table[idx];
-		if (!om->message) continue;
+		if (!om->name) continue;
 
 		err = stats_db_bind_ints(sql_stmt, 3, 0, idx, om->power, om->mod_mult);
 		if (err) return err;
-		err = sqlite3_bind_text(sql_stmt, 4, om->message,
-			strlen(om->message), SQLITE_STATIC);
+		err = sqlite3_bind_text(sql_stmt, 4, om->name,
+			strlen(om->name), SQLITE_STATIC);
 		if (err) return err;
 		STATS_DB_STEP_RESET(sql_stmt)
 	}
