@@ -274,7 +274,7 @@ bool object_this_mod_is_visible(const object_type *o_ptr, int mod)
 {
 	assert(o_ptr->kind);
 
-	if (id_has(o_ptr->id_flags, mod))
+	if (id_has(o_ptr->id_flags, ID_MOD_MIN + mod))
 		return TRUE;
 
 	return FALSE;
