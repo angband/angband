@@ -1,6 +1,6 @@
-/*
- * File: obj-make.h
- * Purpose: Object generation functions.
+/**
+   \file obj-make.h
+   \brief Object generation functions.
  *
  * Copyright (c) 1987-2007 Angband contributors
  *
@@ -21,9 +21,32 @@
 
 #include "cave.h"
 
+/* Don't worry about probabilities for anything past dlev100 */
+#define MAX_O_DEPTH		100
+
+/**
+ * The chance of inflating the requested object level (1/x).
+ * Lower values yield better objects more often.
+ */
+#define GREAT_OBJ   20
+
+/**
+ * There is a 1/20 (5%) chance that ego-items with an inflated base-level are
+ * generated when an object is turned into an ego-item (see make_ego_item()).
+ * As above, lower values yield better ego-items more often.
+ */
+#define GREAT_EGO   20
+
+/* Define a value for minima which will be ignored. */
+#define NO_MINIMUM 	255
+
+/* The largest possible average gold drop at max depth with biggest spread */
+#define MAX_GOLD_DROP     (3 * MAX_DEPTH + 30)
+
 void free_obj_alloc(void);
 bool init_obj_alloc(void);
 object_kind *get_obj_num(int level, bool good, int tval);
+bool kind_is_good(const object_kind *kind);
 void object_prep(object_type *o_ptr, struct object_kind *kind, int lev, aspect rand_aspect);
 s16b apply_magic(object_type *o_ptr, int lev, bool okay, bool good, bool great, bool extra_roll);
 bool make_object(struct chunk *c, object_type *j_ptr, int lev, bool good, bool great, bool extra_roll, s32b *value, int tval);

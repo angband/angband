@@ -3414,18 +3414,6 @@ static errr init_other(void)
 
 
 /**
- * Initialize some object allocation
- */
-static errr init_alloc(void)
-{
-	/*** Initialize object allocation info ***/
-	init_obj_alloc();
-
-	/* Success */
-	return (0);
-}
-
-/**
  * Initialise just the internal arrays.
  * This should be callable by the test suite, without relying on input, or
  * anything to do with a user or savefiles.
@@ -3517,10 +3505,6 @@ void init_arrays(void)
 	/* Initialize some other arrays */
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (other)");
 	if (init_other()) quit("Cannot initialize other stuff");
-
-	/* Initialize some other arrays */
-	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (alloc)");
-	if (init_alloc()) quit("Cannot initialize alloc stuff");
 }
 
 extern struct init_module generate_module;
@@ -3641,9 +3625,6 @@ void cleanup_angband(void)
 
 	/* Free the macros */
 	keymap_free();
-
-	/* Free the allocation tables */
-	free_obj_alloc();
 
 	event_remove_all_handlers();
 

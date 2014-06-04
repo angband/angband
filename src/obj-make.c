@@ -1,6 +1,6 @@
-/*
- * File: obj-make.c
- * Purpose: Object generation functions.
+/**
+   \file obj-make.c
+   \brief Object generation functions.
  *
  * Copyright (c) 1987-2007 Angband contributors
  *
@@ -26,26 +26,14 @@
 #include "obj-tval.h"
 #include "obj-util.h"
 
-/*
- * The chance of inflating the requested object level (1/x).
- * Lower values yield better objects more often.
- */
-#define GREAT_OBJ   20
+/** Arrays holding an index of objects to generate for a given level */
+static u32b obj_total[MAX_DEPTH] = { 0 };
+static byte *obj_alloc;
 
-/*
- * There is a 1/20 (5%) chance that ego-items with an inflated base-level are
- * generated when an object is turned into an ego-item (see make_ego_item()
- * in object2.c). As above, lower values yield better ego-items more often.
- */
-#define GREAT_EGO   20
+static u32b obj_total_great[MAX_DEPTH] = { 0 };
+static byte *obj_alloc_great;
 
-/* Define a value for minima which will be ignored. */
-#define NO_MINIMUM 	255
-
-/* The largest possible average gold drop at max depth with biggest spread */
-#define MAX_GOLD_DROP     (3 * MAX_DEPTH + 30)
-
-static s16b alloc_ego_size;
+static s16b alloc_ego_size = 0;
 static alloc_entry *alloc_ego_table;
 
 struct money {
@@ -57,23 +45,49 @@ static struct money *money_type;
 static int num_money_types;
 
 static void init_obj_make(void) {
+	int i, item, lev;
+	int k_max = z_info->k_max;
 	struct alloc_entry *table;
-	int i;
 	ego_item_type *e_ptr;
-	s16b num[MAX_DEPTH];
-	s16b aux[MAX_DEPTH];
+	s16b num[MAX_DEPTH] = { 0 };
+	s16b aux[MAX_DEPTH] = { 0 };
 	int *money_svals;
 
+	/*** Initialize object allocation info ***/
+
+	/* Allocate and wipe */
+	obj_alloc = mem_zalloc((MAX_O_DEPTH + 1) * k_max * sizeof(byte));
+	obj_alloc_great = mem_zalloc((MAX_O_DEPTH + 1) * k_max * sizeof(byte));
+
+	/* Init allocation data */
+	for (item = 1; item < k_max; item++)
+	{
+		const object_kind *kind = &k_info[item];
+
+		int min = kind->alloc_min;
+		int max = kind->alloc_max;
+
+		/* If an item doesn't have a rarity, move on */
+		if (!kind->alloc_prob) continue;
+
+		/* Go through all the dungeon levels */
+		for (lev = 0; lev <= MAX_O_DEPTH; lev++)
+		{
+			int rarity = kind->alloc_prob;
+
+			/* Save the probability in the standard table */
+			if ((lev < min) || (lev > max)) rarity = 0;
+			obj_total[lev] += rarity;
+			obj_alloc[(lev * k_max) + item] = rarity;
+
+			/* Save the probability in the "great" table if relevant */
+			if (!kind_is_good(kind)) rarity = 0;
+			obj_total_great[lev] += rarity;
+			obj_alloc_great[(lev * k_max) + item] = rarity;
+		}
+	}
+
 	/*** Initialize ego-item allocation info ***/
-
-	/* Clear the "aux" array */
-	(void)C_WIPE(aux, MAX_DEPTH, s16b);
-
-	/* Clear the "num" array */
-	(void)C_WIPE(num, MAX_DEPTH, s16b);
-
-	/* Size of "alloc_ego_table" */
-	alloc_ego_size = 0;
 
 	/* Scan the ego items */
 	for (i = 1; i < z_info->e_max; i++)
@@ -96,7 +110,7 @@ static void init_obj_make(void) {
 	for (i = 1; i < MAX_DEPTH; i++)
 	{
 		/* Group by level */
-		num[i] += num[i-1];
+		num[i] += num[i - 1];
 	}
 
 	/* Allocate the alloc_ego_table */
@@ -123,7 +137,7 @@ static void init_obj_make(void) {
 			p = (100 / e_ptr->rarity);
 
 			/* Skip entries preceding our locale */
-			y = (x > 0) ? num[x-1] : 0;
+			y = (x > 0) ? num[x - 1] : 0;
 
 			/* Skip previous entries at this locale */
 			z = y + aux[x];
@@ -150,15 +164,18 @@ static void init_obj_make(void) {
 
 	/* List the money types */
 	for (i = 0; i < num_money_types; i++) {
-		money_type[i].name = string_make(lookup_kind(TV_GOLD, money_svals[i])->name);
+		struct object_kind *kind = lookup_kind(TV_GOLD, money_svals[i]);
+		money_type[i].name = string_make(kind->name);
 		money_type[i].type = money_svals[i];
 	}
 	mem_free(money_svals);
 }
 
 static void cleanup_obj_make(void) {
-	mem_free(alloc_ego_table);
 	mem_free(money_type);
+	mem_free(alloc_ego_table);
+	mem_free(obj_alloc_great);
+	mem_free(obj_alloc);
 }
 
 /*** Make an ego item ***/
@@ -430,7 +447,7 @@ void copy_artifact_data(object_type *o_ptr, const artifact_type *a_ptr)
 }
 
 
-/*
+/**
  * Mega-Hack -- Attempt to create one of the "Special Objects".
  *
  * We are only called from "make_object()"
@@ -515,7 +532,7 @@ static bool make_artifact_special(object_type *o_ptr, int level)
 }
 
 
-/*
+/**
  * Attempt to change an object into an artifact.  If the object is already
  * set to be an artifact, use that, or otherwise use a suitable randomly-
  * selected artifact.
@@ -601,7 +618,7 @@ static bool make_artifact(object_type *o_ptr)
 
 /*** Apply magic to an item ***/
 
-/*
+/**
  * Apply magic to a weapon.
  */
 static void apply_magic_weapon(object_type *o_ptr, int level, int power)
@@ -629,7 +646,7 @@ static void apply_magic_weapon(object_type *o_ptr, int level, int power)
 }
 
 
-/*
+/**
  * Apply magic to armour
  */
 static void apply_magic_armour(object_type *o_ptr, int level, int power)
@@ -820,7 +837,7 @@ s16b apply_magic(object_type *o_ptr, int lev, bool allow_artifacts,
 
 /*** Generate a random object ***/
 
-/*
+/**
  * Hack -- determine if a template is "good".
  *
  * Note that this test only applies to the object *kind*, so it is
@@ -828,7 +845,7 @@ s16b apply_magic(object_type *o_ptr, int lev, bool allow_artifacts,
  * the actual object to be cursed.  We do explicitly forbid objects
  * which are known to be boring or which start out somewhat damaged.
  */
-static bool kind_is_good(const object_kind *kind)
+bool kind_is_good(const object_kind *kind)
 {
 	/* Some item types are (almost) always good */
 	switch (kind->tval)
@@ -877,80 +894,7 @@ static bool kind_is_good(const object_kind *kind)
 }
 
 
-/** Arrays holding an index of objects to generate for a given level */
-static u32b obj_total[MAX_DEPTH];
-static byte *obj_alloc;
-
-static u32b obj_total_great[MAX_DEPTH];
-static byte *obj_alloc_great;
-
-/* Don't worry about probabilities for anything past dlev100 */
-#define MAX_O_DEPTH		100
-
-/*
- * Using k_info[], init rarity data for the entire dungeon.
- */
-bool init_obj_alloc(void)
-{
-	int k_max = z_info->k_max;
-	int item, lev;
-
-
-	/* Free obj_allocs if allocated */
-	FREE(obj_alloc);
-
-	/* Allocate and wipe */
-	obj_alloc = C_ZNEW((MAX_O_DEPTH + 1) * k_max, byte);
-	obj_alloc_great = C_ZNEW((MAX_O_DEPTH + 1) * k_max, byte);
-
-	/* Wipe the totals */
-	C_WIPE(obj_total, MAX_O_DEPTH + 1, u32b);
-	C_WIPE(obj_total_great, MAX_O_DEPTH + 1, u32b);
-
-
-	/* Init allocation data */
-	for (item = 1; item < k_max; item++)
-	{
-		const object_kind *kind = &k_info[item];
-
-		int min = kind->alloc_min;
-		int max = kind->alloc_max;
-
-		/* If an item doesn't have a rarity, move on */
-		if (!kind->alloc_prob) continue;
-
-		/* Go through all the dungeon levels */
-		for (lev = 0; lev <= MAX_O_DEPTH; lev++)
-		{
-			int rarity = kind->alloc_prob;
-
-			/* Save the probability in the standard table */
-			if ((lev < min) || (lev > max)) rarity = 0;
-			obj_total[lev] += rarity;
-			obj_alloc[(lev * k_max) + item] = rarity;
-
-			/* Save the probability in the "great" table if relevant */
-			if (!kind_is_good(kind)) rarity = 0;
-			obj_total_great[lev] += rarity;
-			obj_alloc_great[(lev * k_max) + item] = rarity;
-		}
-	}
-
-	return TRUE;
-}
-
-
-/*
- * Free object allocation info.
- */
-void free_obj_alloc(void)
-{
-	FREE(obj_alloc);
-	FREE(obj_alloc_great);
-}
-
-
-/*
+/**
  * Choose an object kind of a given tval given a dungeon level.
  */
 static object_kind *get_obj_num_by_kind(int level, bool good, int tval)
@@ -965,30 +909,27 @@ static object_kind *get_obj_num_by_kind(int level, bool good, int tval)
 	ind = level * z_info->k_max;
 
 	/* Get new total */
-	for (item = 1; item < z_info->k_max; item++) {
-		if (objkind_byid(item)->tval == tval) {
+	for (item = 1; item < z_info->k_max; item++)
+		if (objkind_byid(item)->tval == tval)
 			total += objects[ind + item];
-		}
-	}
 
 	/* No appropriate items of that tval */
 	if (!total) return NULL;
 	
 	value = randint0(total);
 	
-	for (item = 1; item < z_info->k_max; item++) {
+	for (item = 1; item < z_info->k_max; item++)
 		if (objkind_byid(item)->tval == tval) {
 			if (value < objects[ind + item]) break;
 
 			value -= objects[ind + item];
 		}
-	}
 
 	/* Return the item index */
 	return objkind_byid(item);
 }
 
-/*
+/**
  * Choose an object kind given a dungeon level to choose it for.
  * If tval = 0, we can choose an object of any type.
  * Otherwise we can only choose one of the given tval.
@@ -1001,10 +942,8 @@ object_kind *get_obj_num(int level, bool good, int tval)
 
 	/* Occasional level boost */
 	if ((level > 0) && one_in_(GREAT_OBJ))
-	{
 		/* What a bizarre calculation */
 		level = 1 + (level * MAX_O_DEPTH / randint1(MAX_O_DEPTH));
-	}
 
 	/* Paranoia */
 	level = MIN(level, MAX_O_DEPTH);
@@ -1013,29 +952,21 @@ object_kind *get_obj_num(int level, bool good, int tval)
 	/* Pick an object */
 	ind = level * z_info->k_max;
 	
-	if(tval)
+	if (tval)
 		return get_obj_num_by_kind(level, good, tval);
 	
-
-	if (!good)
-	{
+	if (!good) {
 		value = randint0(obj_total[level]);
-		for (item = 1; item < z_info->k_max; item++)
-		{
-			  
+		for (item = 1; item < z_info->k_max; item++) {
 			/* Found it */
 			if (value < obj_alloc[ind + item]) break;
 
 			/* Decrement */
 			value -= obj_alloc[ind + item];
-			
 		}
-	}
-	else
-	{
+	} else {
 		value = randint0(obj_total_great[level]);
-		for (item = 1; item < z_info->k_max; item++)
-		{	
+		for (item = 1; item < z_info->k_max; item++) {
 			/* Found it */
 			if (value < obj_alloc_great[ind + item]) break;
 
@@ -1043,7 +974,6 @@ object_kind *get_obj_num(int level, bool good, int tval)
 			value -= obj_alloc_great[ind + item];
 		}
 	}
-
 
 	/* Return the item index */
 	return objkind_byid(item);
@@ -1100,6 +1030,8 @@ bool make_object(struct chunk *c, object_type *j_ptr, int lev, bool good,
 	if (value)
 		*value = object_value_real(j_ptr, j_ptr->number, FALSE, TRUE);
 
+	/* This seems to imply objects get less value from being > 1 but < 5
+	 * levels out of depth - should it be *value +=... - NRM */
 	if (!cursed_p(j_ptr->flags) && (kind->alloc_min > c->depth)) {
 		if (value) *value = (kind->alloc_min - c->depth) * (*value / 5);
 	}
