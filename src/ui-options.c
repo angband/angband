@@ -21,9 +21,9 @@
 #include "cmds.h"
 #include "init.h"
 #include "keymap.h"
-#include "squelch.h"
 #include "prefs.h"
 #include "obj-desc.h"
+#include "obj-ignore.h"
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "object.h"
@@ -1039,7 +1039,7 @@ static void options_load_pref_file(const char *n, int row)
 
 
 
-/*** Ego item squelch menu ***/
+/*** Ego item ignore menu ***/
 #define EGO_MENU_HELPTEXT \
 "{light green}Movement keys{/} scroll the list\n{light red}ESC{/} returns to the previous menu\n{light blue}Enter{/} toggles the current setting."
 
@@ -1144,7 +1144,7 @@ static void ego_display(menu_type * menu, int oid, bool cursor, int row,
 	/* Print it */
 	c_put_str(attr, format("%s", buf), row, col);
 
-	/* Show squelch mark, if any */
+	/* Show ignore mark, if any */
 	if (ignored)
 		c_put_str(TERM_L_RED, "*", row, col + 1);
 
@@ -1161,7 +1161,7 @@ static bool ego_action(menu_type * menu, const ui_event * event, int oid)
 
 	/* Toggle */
 	if (event->type == EVT_SELECT) {
-		ego_squelch_toggle(choice[oid].e_idx, choice[oid].itype);
+		ego_ignore_toggle(choice[oid].e_idx, choice[oid].itype);
 
 		return TRUE;
 	}
@@ -1170,7 +1170,7 @@ static bool ego_action(menu_type * menu, const ui_event * event, int oid)
 }
 
 /**
- * Display list of ego items to be squelched.
+ * Display list of ego items to be ignored.
  */
 static void ego_menu(const char *unused, int also_unused)
 {
@@ -1240,7 +1240,7 @@ static void ego_menu(const char *unused, int also_unused)
 	clear_from(0);
 
 	/* Help text */
-	prt("Ego item squelch menu", 0, 0);
+	prt("Ego item ignore menu", 0, 0);
 
 	/* Output to the screen */
 	text_out_hook = text_out_to_screen;
@@ -1274,7 +1274,7 @@ static void ego_menu(const char *unused, int also_unused)
 }
 
 
-/*** Quality-squelch menu ***/
+/*** Quality-ignore menu ***/
 
 /* Structure to describe tval/description pairings. */
 typedef struct
@@ -1283,7 +1283,7 @@ typedef struct
 	const char *desc;
 } tval_desc;
 
-/* Categories for sval-dependent squelch. */
+/* Categories for sval-dependent ignore. */
 static tval_desc sval_dependent[] =
 {
 	{ TV_STAFF,			"Staffs" },
@@ -1305,13 +1305,13 @@ static tval_desc sval_dependent[] =
 
 
 /*
- * Determines whether a tval is eligible for sval-squelch.
+ * Determines whether a tval is eligible for sval-ignore.
  */
-bool squelch_tval(int tval)
+bool ignore_tval(int tval)
 {
 	size_t i;
 
-	/* Only squelch if the tval's allowed */
+	/* Only ignore if the tval's allowed */
 	for (i = 0; i < N_ELEMENTS(sval_dependent); i++)
 	{
 		if (tval == sval_dependent[i].tval)
@@ -1323,24 +1323,24 @@ bool squelch_tval(int tval)
 
 
 /*
- * menu struct for differentiating aware from unaware squelch
+ * menu struct for differentiating aware from unaware ignore
  */
 typedef struct
 {
 	object_kind *kind;
 	bool aware;
-} squelch_choice;
+} ignore_choice;
 
 /*
- * Ordering function for squelch choices.
+ * Ordering function for ignore choices.
  * Aware comes before unaware, and then sort alphabetically.
  */
-static int cmp_squelch(const void *a, const void *b)
+static int cmp_ignore(const void *a, const void *b)
 {
 	char bufa[80];
 	char bufb[80];
-	const squelch_choice *x = a;
-	const squelch_choice *y = b;
+	const ignore_choice *x = a;
+	const ignore_choice *y = b;
 
 	if (!x->aware && y->aware)
 		return 1;
@@ -1358,10 +1358,10 @@ static int cmp_squelch(const void *a, const void *b)
  */
 static void quality_display(menu_type *menu, int oid, bool cursor, int row, int col, int width)
 {
-	/* Note: the order of the values in quality_choices do not align with the squelch_type_t enum order. */
+	/* Note: the order of the values in quality_choices do not align with the ignore_type_t enum order. */
 	const char *name = quality_choices[oid].name;
 
-	byte level = squelch_level[oid];
+	byte level = ignore_level[oid];
 	const char *level_name = quality_values[level].name;
 
 	byte attr = (cursor ? TERM_L_BLUE : TERM_WHITE);
@@ -1372,7 +1372,7 @@ static void quality_display(menu_type *menu, int oid, bool cursor, int row, int 
 
 
 /*
- * Display the quality squelch subtypes.
+ * Display the quality ignore subtypes.
  */
 static void quality_subdisplay(menu_type *menu, int oid, bool cursor, int row, int col, int width)
 {
@@ -1390,7 +1390,7 @@ static bool quality_action(menu_type *m, const ui_event *event, int oid)
 {
 	menu_type menu;
 	menu_iter menu_f = { NULL, NULL, quality_subdisplay, NULL, NULL };
-	region area = { 27, 2, 29, SQUELCH_MAX };
+	region area = { 27, 2, 29, IGNORE_MAX };
 	ui_event evt;
 	int count;
 
@@ -1401,9 +1401,9 @@ static bool quality_action(menu_type *m, const ui_event *event, int oid)
 	screen_save();
 
 	/* Work out how many options we have */
-	count = SQUELCH_MAX;
+	count = IGNORE_MAX;
 	if ((oid == ITYPE_RING) || (oid == ITYPE_AMULET))
-		count = area.page_rows = SQUELCH_BAD + 1;
+		count = area.page_rows = IGNORE_BAD + 1;
 
 	/* Run menu */
 	menu_init(&menu, MN_SKIN_SCROLL, &menu_f);
@@ -1421,7 +1421,7 @@ static bool quality_action(menu_type *m, const ui_event *event, int oid)
 
 	/* Set the new value appropriately */
 	if (evt.type == EVT_SELECT)
-		squelch_level[oid] = menu.cursor;
+		ignore_level[oid] = menu.cursor;
 
 	/* Load and finish */
 	screen_load();
@@ -1429,7 +1429,7 @@ static bool quality_action(menu_type *m, const ui_event *event, int oid)
 }
 
 /*
- * Display quality squelch menu.
+ * Display quality ignore menu.
  */
 static void quality_menu(void *unused, const char *also_unused)
 {
@@ -1443,7 +1443,7 @@ static void quality_menu(void *unused, const char *also_unused)
 
 	/* Set up the menu */
 	menu_init(&menu, MN_SKIN_SCROLL, &menu_f);
-	menu.title = "Quality squelch menu";
+	menu.title = "Quality ignore menu";
 	menu_setpriv(&menu, ITYPE_MAX, quality_values);
 	menu_layout(&menu, &area);
 
@@ -1462,11 +1462,11 @@ static void quality_menu(void *unused, const char *also_unused)
 /*
  * Display an entry on the sval menu
  */
-static void squelch_sval_menu_display(menu_type *menu, int oid, bool cursor,
+static void ignore_sval_menu_display(menu_type *menu, int oid, bool cursor,
 		int row, int col, int width)
 {
 	char buf[80];
-	const squelch_choice *choice = menu_priv(menu);
+	const ignore_choice *choice = menu_priv(menu);
 
 	object_kind *kind = choice[oid].kind;
 	bool aware = choice[oid].aware;
@@ -1478,8 +1478,8 @@ static void squelch_sval_menu_display(menu_type *menu, int oid, bool cursor,
 
 	/* Print it */
 	c_put_str(attr, format("[ ] %s", buf), row, col);
-	if ((aware && (kind->squelch & SQUELCH_IF_AWARE)) ||
-			(!aware && (kind->squelch & SQUELCH_IF_UNAWARE)))
+	if ((aware && (kind->ignore & IGNORE_IF_AWARE)) ||
+			(!aware && (kind->ignore & IGNORE_IF_UNAWARE)))
 		c_put_str(TERM_L_RED, "*", row, col + 1);
 }
 
@@ -1487,10 +1487,10 @@ static void squelch_sval_menu_display(menu_type *menu, int oid, bool cursor,
 /*
  * Deal with events on the sval menu
  */
-static bool squelch_sval_menu_action(menu_type *m, const ui_event *event,
+static bool ignore_sval_menu_action(menu_type *m, const ui_event *event,
 		int oid)
 {
-	const squelch_choice *choice = menu_priv(m);
+	const ignore_choice *choice = menu_priv(m);
 
 	if (event->type == EVT_SELECT ||
 			(event->type == EVT_KBRD && tolower(event->key.code) == 't'))
@@ -1499,38 +1499,38 @@ static bool squelch_sval_menu_action(menu_type *m, const ui_event *event,
 
 		/* Toggle the appropriate flag */
 		if (choice[oid].aware)
-			kind->squelch ^= SQUELCH_IF_AWARE;
+			kind->ignore ^= IGNORE_IF_AWARE;
 		else
-			kind->squelch ^= SQUELCH_IF_UNAWARE;
+			kind->ignore ^= IGNORE_IF_UNAWARE;
 
-		player->upkeep->notice |= PN_SQUELCH;
+		player->upkeep->notice |= PN_IGNORE;
 		return TRUE;
 	}
 
 	return FALSE;
 }
 
-static const menu_iter squelch_sval_menu =
+static const menu_iter ignore_sval_menu =
 {
 	NULL,
 	NULL,
-	squelch_sval_menu_display,
-	squelch_sval_menu_action,
+	ignore_sval_menu_display,
+	ignore_sval_menu_action,
 	NULL,
 };
 
 
 /**
- * Collect all tvals in the big squelch_choice array
+ * Collect all tvals in the big ignore_choice array
  */
-static int squelch_collect_kind(int tval, squelch_choice **ch)
+static int ignore_collect_kind(int tval, ignore_choice **ch)
 {
-	squelch_choice *choice;
+	ignore_choice *choice;
 	int num = 0;
 
 	int i;
 
-	/* Create the array, with entries both for aware and unaware squelch */
+	/* Create the array, with entries both for aware and unaware ignore */
 	choice = mem_alloc(2 * z_info->k_max * sizeof *choice);
 
 	for (i = 1; i < z_info->k_max; i++)
@@ -1543,7 +1543,7 @@ static int squelch_collect_kind(int tval, squelch_choice **ch)
 
 		if (!k_ptr->aware)
 		{
-			/* can unaware squelch anything */
+			/* can unaware ignore anything */
 			choice[num].kind = k_ptr;
 			choice[num++].aware = FALSE;
 		}
@@ -1552,8 +1552,8 @@ static int squelch_collect_kind(int tval, squelch_choice **ch)
 			tval_is_money_k(k_ptr))
 		{
 			/* Do not display the artifact base kinds in this list 
-			 * aware squelch requires everseen 
-			 * do not require awareness for aware squelch, so people can set 
+			 * aware ignore requires everseen 
+			 * do not require awareness for aware ignore, so people can set 
 			 * at game start */
 			choice[num].kind = k_ptr;
 			choice[num++].aware = TRUE;
@@ -1569,20 +1569,20 @@ static int squelch_collect_kind(int tval, squelch_choice **ch)
 }
 
 /*
- * Display list of svals to be squelched.
+ * Display list of svals to be ignored.
  */
 static bool sval_menu(int tval, const char *desc)
 {
 	menu_type *menu;
 	region area = { 1, 2, -1, -1 };
 
-	squelch_choice *choices;
+	ignore_choice *choices;
 
-	int n_choices = squelch_collect_kind(tval, &choices);
+	int n_choices = ignore_collect_kind(tval, &choices);
 	if (!n_choices)
 		return FALSE;
 
-	/* sort by name in squelch menus except for categories of items that are aware from the start */
+	/* sort by name in ignore menus except for categories of items that are aware from the start */
 	switch (tval)
 	{
 		case TV_LIGHT:
@@ -1595,7 +1595,7 @@ static bool sval_menu(int tval, const char *desc)
 
 		default:
 			/* sort by name */
-			sort(choices, n_choices, sizeof(*choices), cmp_squelch);
+			sort(choices, n_choices, sizeof(*choices), cmp_ignore);
 	}
 
 
@@ -1604,10 +1604,10 @@ static bool sval_menu(int tval, const char *desc)
 	clear_from(0);
 
 	/* Help text */
-	prt(format("Squelch the following %s:", desc), 0, 0);
+	prt(format("Ignore the following %s:", desc), 0, 0);
 
 	/* Run menu */
-	menu = menu_new(MN_SKIN_COLUMNS, &squelch_sval_menu);
+	menu = menu_new(MN_SKIN_COLUMNS, &ignore_sval_menu);
 	menu_setpriv(menu, n_choices, choices);
 	menu->cmd_keys = "Tt";
 	menu_layout(menu, &area);
@@ -1652,8 +1652,8 @@ static struct
 	const char *name;
 	void (*action)(); /* this is a nasty hack */
 } extra_item_options[] = {
-	{ 'Q', "Quality squelching options", quality_menu },
-	{ 'E', "Ego squelching options", ego_menu},
+	{ 'Q', "Quality ignoring options", quality_menu },
+	{ 'E', "Ego ignoring options", ego_menu},
 	{ '{', "Autoinscription setup", textui_browse_object_knowledge },
 };
 
@@ -1752,7 +1752,7 @@ static const menu_iter options_item_iter =
 
 
 /*
- * Display and handle the main squelching menu.
+ * Display and handle the main ignoring menu.
  */
 void do_cmd_options_item(const char *title, int row)
 {
@@ -1769,7 +1769,7 @@ void do_cmd_options_item(const char *title, int row)
 	menu_select(&menu, 0, FALSE);
 	screen_load();
 
-	player->upkeep->notice |= PN_SQUELCH;
+	player->upkeep->notice |= PN_IGNORE;
 
 	return;
 }

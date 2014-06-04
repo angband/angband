@@ -54,9 +54,6 @@
 # 'W' is for extra information. Depth defines what "level" the object is,
 # when determining how easy it is to use a wand, staff or rod; rarity
 # is unused; weight is in tenth-pounds and cost is the item's base value.
-# N.B. Even where the cost field is not used to determine price (e.g. for
-# rings and amulets), it is still used to determine whether it is squelched
-# by the squelch_worthless option.
 
 # 'P' is for power information. The items base armor class, its base
 # damage and pluses to-hit, to-dam and to-ac.  The latter three numbers

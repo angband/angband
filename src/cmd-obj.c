@@ -26,6 +26,7 @@
 #include "obj-desc.h"
 #include "obj-gear.h"
 #include "obj-identify.h"
+#include "obj-ignore.h"
 #include "obj-info.h"
 #include "obj-tval.h"
 #include "obj-ui.h"
@@ -33,7 +34,6 @@
 #include "player-timed.h"
 #include "player-util.h"
 #include "spells.h"
-#include "squelch.h"
 #include "target.h"
 #include "trap.h"
 #include "ui-menu.h"
@@ -220,7 +220,7 @@ void do_cmd_uninscribe(struct command *cmd)
 	o_ptr->note = 0;
 	msg("Inscription removed.");
 
-	player->upkeep->notice |= (PN_COMBINE | PN_SQUELCH);
+	player->upkeep->notice |= (PN_COMBINE | PN_IGNORE);
 	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
 }
 
@@ -257,7 +257,7 @@ void do_cmd_inscribe(struct command *cmd)
 	o_ptr->note = quark_add(str);
 	string_free((char *)str);
 
-	player->upkeep->notice |= (PN_COMBINE | PN_SQUELCH);
+	player->upkeep->notice |= (PN_COMBINE | PN_IGNORE);
 	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
 }
 
@@ -522,7 +522,7 @@ void do_cmd_destroy(struct command *cmd)
 		msgt(MSG_DESTROY, "Ignoring %s.", o_name);
 
 		o_ptr->ignore = TRUE;
-		player->upkeep->notice |= PN_SQUELCH;
+		player->upkeep->notice |= PN_IGNORE;
 	}
 }
 
@@ -668,7 +668,7 @@ static void use_aux(struct command *cmd, int item, enum use use, int snd)
 		object_flavor_aware(o_ptr);
 		if (tval_is_rod(o_ptr)) object_notice_everything(o_ptr);
 		player_exp_gain(player, (lev + (player->lev / 2)) / player->lev);
-		player->upkeep->notice |= PN_SQUELCH;
+		player->upkeep->notice |= PN_IGNORE;
 	}
 	else if (used)
 	{
@@ -1185,15 +1185,15 @@ void textui_cmd_destroy_menu(int item)
 		menu_dynamic_add(m, "Unignore this item", UNIGNORE_THIS_ITEM);
 	}
 
-	/* Flavour-aware squelch */
-	if (squelch_tval(o_ptr->tval) &&
+	/* Flavour-aware ignore */
+	if (ignore_tval(o_ptr->tval) &&
 			(!o_ptr->artifact || !object_flavor_is_aware(o_ptr))) {
-		bool squelched = kind_is_squelched_aware(o_ptr->kind) ||
-				kind_is_squelched_unaware(o_ptr->kind);
+		bool ignored = kind_is_ignored_aware(o_ptr->kind) ||
+				kind_is_ignored_unaware(o_ptr->kind);
 
 		char tmp[70];
 		object_desc(tmp, sizeof(tmp), o_ptr, ODESC_BASE | ODESC_PLURAL);
-		if (!squelched) {
+		if (!ignored) {
 			strnfmt(out_val, sizeof out_val, "All %s", tmp);
 			menu_dynamic_add(m, out_val, IGNORE_THIS_FLAVOR);
 		} else {
@@ -1202,14 +1202,14 @@ void textui_cmd_destroy_menu(int item)
 		}
 	}
 
-	/* Ego squelching */
+	/* Ego ignoring */
 	if (object_ego_is_visible(o_ptr)) {
 		ego_desc choice;
 		struct ego_item *ego = o_ptr->ego;
 		char tmp[80] = "";
 
 		choice.e_idx = ego->eidx;
-		choice.itype = squelch_type_of(o_ptr);
+		choice.itype = ignore_type_of(o_ptr);
 		choice.short_name = "";
 		(void) ego_item_name(tmp, sizeof(tmp), &choice);
 		if (!ego_is_ignored(choice.e_idx, choice.itype)) {
@@ -1221,19 +1221,19 @@ void textui_cmd_destroy_menu(int item)
 		}
 	}
 
-	/* Quality squelching */
+	/* Quality ignoring */
 	if (object_was_sensed(o_ptr) || object_was_worn(o_ptr) ||
 			object_is_known_not_artifact(o_ptr)) {
-		byte value = squelch_level_of(o_ptr);
-		int type = squelch_type_of(o_ptr);
+		byte value = ignore_level_of(o_ptr);
+		int type = ignore_type_of(o_ptr);
 
 		if (tval_is_jewelry(o_ptr) &&
-					squelch_level_of(o_ptr) != SQUELCH_BAD)
-			value = SQUELCH_MAX;
+					ignore_level_of(o_ptr) != IGNORE_BAD)
+			value = IGNORE_MAX;
 
-		if (value != SQUELCH_MAX && type != ITYPE_MAX) {
+		if (value != IGNORE_MAX && type != ITYPE_MAX) {
 			strnfmt(out_val, sizeof out_val, "All %s %s",
-					quality_values[value].name, squelch_name_for_type(type));
+					quality_values[value].name, ignore_name_for_type(type));
 
 			menu_dynamic_add(m, out_val, IGNORE_THIS_QUALITY);
 		}
@@ -1260,21 +1260,21 @@ void textui_cmd_destroy_menu(int item)
 	} else if (selected == UNIGNORE_THIS_ITEM) {
 		o_ptr->ignore = FALSE;
 	} else if (selected == IGNORE_THIS_FLAVOR) {
-		object_squelch_flavor_of(o_ptr);
+		object_ignore_flavor_of(o_ptr);
 	} else if (selected == UNIGNORE_THIS_FLAVOR) {
-		kind_squelch_clear(o_ptr->kind);
+		kind_ignore_clear(o_ptr->kind);
 	} else if (selected == IGNORE_THIS_EGO) {
-		ego_squelch(o_ptr);
+		ego_ignore(o_ptr);
 	} else if (selected == UNIGNORE_THIS_EGO) {
-		ego_squelch_clear(o_ptr);
+		ego_ignore_clear(o_ptr);
 	} else if (selected == IGNORE_THIS_QUALITY) {
-		byte value = squelch_level_of(o_ptr);
-		int type = squelch_type_of(o_ptr);
+		byte value = ignore_level_of(o_ptr);
+		int type = ignore_type_of(o_ptr);
 
-		squelch_level[type] = value;
+		ignore_level[type] = value;
 	}
 
-	player->upkeep->notice |= PN_SQUELCH;
+	player->upkeep->notice |= PN_IGNORE;
 
 	menu_dynamic_free(m);
 }
@@ -1295,7 +1295,7 @@ void textui_cmd_destroy(void)
 void textui_cmd_toggle_ignore(void)
 {
 	player->unignoring = !player->unignoring;
-	player->upkeep->notice |= PN_SQUELCH;
+	player->upkeep->notice |= PN_IGNORE;
 	do_cmd_redraw();
 }
 

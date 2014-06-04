@@ -1,6 +1,6 @@
-/*
- * File: squelch.c
- * Purpose: Item destruction
+/**
+   \file obj-ignore.c
+   \brief Item ignoring
  *
  * Copyright (c) 2007 David T. Blackston, Iain McFall, DarkGod, Jeff Greene,
  * David Vestal, Pete Mack, Andi Sidwell.
@@ -23,25 +23,25 @@
 #include "obj-desc.h"
 #include "obj-gear.h"
 #include "obj-identify.h"
+#include "obj-ignore.h"
 #include "obj-tval.h"
 #include "obj-ui.h"
 #include "obj-util.h"
 #include "object.h"
-#include "squelch.h"
 
 
 typedef struct
 {
-	squelch_type_t squelch_type;
+	ignore_type_t ignore_type;
 	int tval;
 	const char *identifier;
-} quality_squelch_struct;
+} quality_ignore_struct;
 
 /**
  * Any entry here with an identifier should appear above the entry with the
  * same tval and no identifier
  */
-static quality_squelch_struct quality_mapping[] =
+static quality_ignore_struct quality_mapping[] =
 {
 	{ ITYPE_GREAT,			TV_SWORD,		"Chaos" },
 	{ ITYPE_GREAT,			TV_POLEARM,		"Slicing" },
@@ -79,22 +79,22 @@ quality_name_struct quality_choices[] =
 	#undef ITYPE
 };
 
-/*
+/**
  * The names for the various kinds of quality
  */
-quality_name_struct quality_values[SQUELCH_MAX] =
+quality_name_struct quality_values[IGNORE_MAX] =
 {
-	{ SQUELCH_NONE,				"no squelch" },
-	{ SQUELCH_BAD,				"bad" },
-	{ SQUELCH_AVERAGE,			"average" },
-	{ SQUELCH_GOOD,				"good" },
-	{ SQUELCH_EXCELLENT_NO_HI,	"excellent with no high resists" },
-	{ SQUELCH_EXCELLENT_NO_SPL,	"excellent but not splendid" },
-	{ SQUELCH_ALL,				"non-artifact" },
+	{ IGNORE_NONE,				"no ignore" },
+	{ IGNORE_BAD,				"bad" },
+	{ IGNORE_AVERAGE,			"average" },
+	{ IGNORE_GOOD,				"good" },
+	{ IGNORE_EXCELLENT_NO_HI,	"excellent with no high resists" },
+	{ IGNORE_EXCELLENT_NO_SPL,	"excellent but not splendid" },
+	{ IGNORE_ALL,				"non-artifact" },
 };
 
-byte squelch_level[ITYPE_MAX];
-const size_t squelch_size = ITYPE_MAX;
+byte ignore_level[ITYPE_MAX];
+const size_t ignore_size = ITYPE_MAX;
 bool **ego_ignore_types;
 
 
@@ -121,19 +121,19 @@ void cleanup_ignore(void)
 
 
 /*
- * Reset the player's squelch choices for a new game.
+ * Reset the player's ignore choices for a new game.
  */
-void squelch_birth_init(void)
+void ignore_birth_init(void)
 {
 	int i;
 
-	/* Reset squelch bits */
+	/* Reset ignore bits */
 	for (i = 0; i < z_info->k_max; i++)
-		k_info[i].squelch = FALSE;
+		k_info[i].ignore = FALSE;
 
-	/* Clear the squelch bytes */
+	/* Clear the ignore bytes */
 	for (i = 0; i < ITYPE_MAX; i++)
-		squelch_level[i] = SQUELCH_NONE;
+		ignore_level[i] = IGNORE_NONE;
 }
 
 
@@ -232,28 +232,28 @@ void autoinscribe_pack(void)
 
 
 
-/*** Squelch code ***/
+/*** Ignore code ***/
 
 /*
- * Squelch the flavor of an object
+ * Ignore the flavor of an object
  */
-void object_squelch_flavor_of(const object_type *o_ptr)
+void object_ignore_flavor_of(const object_type *o_ptr)
 {
 	if (object_flavor_is_aware(o_ptr))
-		o_ptr->kind->squelch |= SQUELCH_IF_AWARE;
+		o_ptr->kind->ignore |= IGNORE_IF_AWARE;
 	else
-		o_ptr->kind->squelch |= SQUELCH_IF_UNAWARE;
+		o_ptr->kind->ignore |= IGNORE_IF_UNAWARE;
 }
 
 
 /**
- * Find the squelch type of the object, or ITYPE_MAX if none
+ * Find the ignore type of the object, or ITYPE_MAX if none
  */
-squelch_type_t squelch_type_of(const object_type *o_ptr)
+ignore_type_t ignore_type_of(const object_type *o_ptr)
 {
 	size_t i;
 
-	/* Find the appropriate squelch group */
+	/* Find the appropriate ignore group */
 	for (i = 0; i < N_ELEMENTS(quality_mapping); i++) {
 		if (quality_mapping[i].tval == o_ptr->tval) {
 			/* If there's an identifier, it must match */
@@ -262,7 +262,7 @@ squelch_type_t squelch_type_of(const object_type *o_ptr)
 					continue;
 			}
 			/* Otherwise we're fine */
-			return quality_mapping[i].squelch_type;
+			return quality_mapping[i].ignore_type;
 		}
 	}
 
@@ -272,14 +272,14 @@ squelch_type_t squelch_type_of(const object_type *o_ptr)
 /**
  * Find whether an ignore type is valid for a given tval
  */
-bool tval_has_ignore_type(int tval, squelch_type_t itype)
+bool tval_has_ignore_type(int tval, ignore_type_t itype)
 {
 	size_t i;
 
 	/* Find the appropriate ignore group */
 	for (i = 0; i < N_ELEMENTS(quality_mapping); i++)
 		if ((quality_mapping[i].tval == tval) &&
-			(quality_mapping[i].squelch_type == itype))
+			(quality_mapping[i].ignore_type == itype))
 			return TRUE;
 
 	return FALSE;
@@ -319,12 +319,12 @@ static int is_object_good(const object_type *o_ptr)
 
 
 /*
- * Determine the squelch level of an object, which is similar to its pseudo.
+ * Determine the ignore level of an object, which is similar to its pseudo.
  *
  * The main point is when the value is undetermined given current info,
  * return the maximum possible value.
  */
-byte squelch_level_of(const object_type *o_ptr)
+byte ignore_level_of(const object_type *o_ptr)
 {
 	byte value = 0;
 	bitflag f[OF_SIZE], f2[OF_SIZE];
@@ -339,16 +339,16 @@ byte squelch_level_of(const object_type *o_ptr)
 		for (i = 0; i < OBJ_MOD_MAX; i++)
 			if ((object_this_mod_is_visible(o_ptr, i)) && 
 				(o_ptr->modifiers[i] > 0))
-				return SQUELCH_AVERAGE;
+				return IGNORE_AVERAGE;
 
 		if ((o_ptr->to_h > 0) || (o_ptr->to_d > 0) || (o_ptr->to_a > 0))
-			return SQUELCH_AVERAGE;
+			return IGNORE_AVERAGE;
 		if ((object_attack_plusses_are_visible(o_ptr) &&
 				((o_ptr->to_h < 0) || (o_ptr->to_d < 0))) ||
 		    	(object_defence_plusses_are_visible(o_ptr) && o_ptr->to_a < 0))
-			return SQUELCH_BAD;
+			return IGNORE_BAD;
 
-		return SQUELCH_AVERAGE;
+		return IGNORE_AVERAGE;
 	}
 
 	/* And lights */
@@ -356,13 +356,13 @@ byte squelch_level_of(const object_type *o_ptr)
 	{
 		create_mask(f2, TRUE, OFID_WIELD, OFT_MAX);
 		if (of_is_inter(f, f2))
-			return SQUELCH_ALL;
+			return IGNORE_ALL;
 		if ((o_ptr->to_h > 0) || (o_ptr->to_d > 0) || (o_ptr->to_a > 0))
-			return SQUELCH_GOOD;
+			return IGNORE_GOOD;
 		if ((o_ptr->to_h < 0) || (o_ptr->to_d < 0) || (o_ptr->to_a < 0))
-			return SQUELCH_BAD;
+			return IGNORE_BAD;
 
-		return SQUELCH_AVERAGE;
+		return IGNORE_AVERAGE;
 	}
 
 	/* We need to redefine "bad" 
@@ -374,14 +374,14 @@ byte squelch_level_of(const object_type *o_ptr)
 	}
 
 	if (i == OBJ_MOD_MAX)
-		return SQUELCH_BAD;
+		return IGNORE_BAD;
 
 	if (object_was_sensed(o_ptr)) {
 		obj_pseudo_t pseudo = object_pseudo(o_ptr);
 
 		switch (pseudo) {
 			case INSCRIP_AVERAGE: {
-				value = SQUELCH_AVERAGE;
+				value = IGNORE_AVERAGE;
 				break;
 			}
 
@@ -389,27 +389,27 @@ byte squelch_level_of(const object_type *o_ptr)
 				/* have to assume splendid until you have tested it */
 				if (object_was_worn(o_ptr)) {
 					if (object_high_resist_is_possible(o_ptr))
-						value = SQUELCH_EXCELLENT_NO_SPL;
+						value = IGNORE_EXCELLENT_NO_SPL;
 					else
-						value = SQUELCH_EXCELLENT_NO_HI;
+						value = IGNORE_EXCELLENT_NO_HI;
 				} else {
-					value = SQUELCH_ALL;
+					value = IGNORE_ALL;
 				}
 				break;
 			}
 
 			case INSCRIP_SPLENDID:
-				value = SQUELCH_ALL;
+				value = IGNORE_ALL;
 				break;
 			case INSCRIP_NULL:
 			case INSCRIP_SPECIAL:
-				value = SQUELCH_MAX;
+				value = IGNORE_MAX;
 				break;
 
 			/* This is the interesting case */
 			case INSCRIP_STRANGE:
 			case INSCRIP_MAGICAL: {
-				value = SQUELCH_GOOD;
+				value = IGNORE_GOOD;
 
 				if ((object_attack_plusses_are_visible(o_ptr) ||
 						randcalc_valid(o_ptr->kind->to_h, o_ptr->to_h) ||
@@ -418,11 +418,11 @@ byte squelch_level_of(const object_type *o_ptr)
 						randcalc_valid(o_ptr->kind->to_a, o_ptr->to_a))) {
 					int isgood = is_object_good(o_ptr);
 					if (isgood > 0) {
-						value = SQUELCH_GOOD;
+						value = IGNORE_GOOD;
 					} else if (isgood < 0) {
-						value = SQUELCH_BAD;
+						value = IGNORE_BAD;
 					} else {
-						value = SQUELCH_AVERAGE;
+						value = IGNORE_AVERAGE;
 					}
 				}
 				break;
@@ -436,43 +436,43 @@ byte squelch_level_of(const object_type *o_ptr)
 	else
 	{
 		if (object_was_worn(o_ptr))
-			value = SQUELCH_EXCELLENT_NO_SPL; /* object would be sensed if it were splendid */
+			value = IGNORE_EXCELLENT_NO_SPL; /* object would be sensed if it were splendid */
 		else if (object_is_known_not_artifact(o_ptr))
-			value = SQUELCH_ALL;
+			value = IGNORE_ALL;
 		else
-			value = SQUELCH_MAX;
+			value = IGNORE_MAX;
 	}
 
 	return value;
 }
 
 /*
- * Remove any squelching of a particular flavor
+ * Remove any ignoring of a particular flavor
  */
-void kind_squelch_clear(object_kind *k_ptr)
+void kind_ignore_clear(object_kind *k_ptr)
 {
-	k_ptr->squelch = 0;
-	player->upkeep->notice |= PN_SQUELCH;
+	k_ptr->ignore = 0;
+	player->upkeep->notice |= PN_IGNORE;
 }
 
-void ego_squelch(struct object *obj)
-{
-	assert(obj->ego);
-	ego_ignore_types[obj->ego->eidx][squelch_type_of(obj)] = TRUE;
-	player->upkeep->notice |= PN_SQUELCH;
-}
-
-void ego_squelch_clear(struct object *obj)
+void ego_ignore(struct object *obj)
 {
 	assert(obj->ego);
-	ego_ignore_types[obj->ego->eidx][squelch_type_of(obj)] = FALSE;
-	player->upkeep->notice |= PN_SQUELCH;
+	ego_ignore_types[obj->ego->eidx][ignore_type_of(obj)] = TRUE;
+	player->upkeep->notice |= PN_IGNORE;
 }
 
-void ego_squelch_toggle(int e_idx, int itype)
+void ego_ignore_clear(struct object *obj)
+{
+	assert(obj->ego);
+	ego_ignore_types[obj->ego->eidx][ignore_type_of(obj)] = FALSE;
+	player->upkeep->notice |= PN_IGNORE;
+}
+
+void ego_ignore_toggle(int e_idx, int itype)
 {
 	ego_ignore_types[e_idx][itype] = !ego_ignore_types[e_idx][itype];
-	player->upkeep->notice |= PN_SQUELCH;
+	player->upkeep->notice |= PN_IGNORE;
 }
 
 bool ego_is_ignored(int e_idx, int itype)
@@ -480,87 +480,87 @@ bool ego_is_ignored(int e_idx, int itype)
 	return ego_ignore_types[e_idx][itype];
 }
 
-bool kind_is_squelched_aware(const object_kind *k_ptr)
+bool kind_is_ignored_aware(const object_kind *k_ptr)
 {
-	return (k_ptr->squelch & SQUELCH_IF_AWARE) ? TRUE : FALSE;
+	return (k_ptr->ignore & IGNORE_IF_AWARE) ? TRUE : FALSE;
 }
 
-bool kind_is_squelched_unaware(const object_kind *k_ptr)
+bool kind_is_ignored_unaware(const object_kind *k_ptr)
 {
-	return (k_ptr->squelch & SQUELCH_IF_UNAWARE) ? TRUE : FALSE;
+	return (k_ptr->ignore & IGNORE_IF_UNAWARE) ? TRUE : FALSE;
 }
 
-void kind_squelch_when_aware(object_kind *k_ptr)
+void kind_ignore_when_aware(object_kind *k_ptr)
 {
-	k_ptr->squelch |= SQUELCH_IF_AWARE;
-	player->upkeep->notice |= PN_SQUELCH;
+	k_ptr->ignore |= IGNORE_IF_AWARE;
+	player->upkeep->notice |= PN_IGNORE;
 }
 
-void kind_squelch_when_unaware(object_kind *k_ptr)
+void kind_ignore_when_unaware(object_kind *k_ptr)
 {
-	k_ptr->squelch |= SQUELCH_IF_UNAWARE;
-	player->upkeep->notice |= PN_SQUELCH;
+	k_ptr->ignore |= IGNORE_IF_UNAWARE;
+	player->upkeep->notice |= PN_IGNORE;
 }
 
 
 /**
- * Determines if an object is already squelched.
+ * Determines if an object is already ignored.
  */
-bool object_is_squelched(const object_type *o_ptr)
+bool object_is_ignored(const object_type *o_ptr)
 {
 	byte type;
 
-	/* Do squelch individual objects that marked ignore */
+	/* Do ignore individual objects that marked ignore */
 	if (o_ptr->ignore)
 		return TRUE;
 
-	/* Don't squelch artifacts unless marked to be squelched */
+	/* Don't ignore artifacts unless marked to be ignored */
 	if (o_ptr->artifact ||
 		check_for_inscrip(o_ptr, "!k") || check_for_inscrip(o_ptr, "!*"))
 		return FALSE;
 
-	/* Do squelching by kind */
+	/* Do ignoring by kind */
 	if (object_flavor_is_aware(o_ptr) ?
-		 kind_is_squelched_aware(o_ptr->kind) :
-		 kind_is_squelched_unaware(o_ptr->kind))
+		 kind_is_ignored_aware(o_ptr->kind) :
+		 kind_is_ignored_unaware(o_ptr->kind))
 		return TRUE;
 
-	/* Squelch ego items if known */
+	/* Ignore ego items if known */
 	if (object_ego_is_visible(o_ptr) &&
-		ego_is_ignored(o_ptr->ego->eidx, squelch_type_of(o_ptr)))
+		ego_is_ignored(o_ptr->ego->eidx, ignore_type_of(o_ptr)))
 		return TRUE;
 
-	type = squelch_type_of(o_ptr);
+	type = ignore_type_of(o_ptr);
 	if (type == ITYPE_MAX)
 		return FALSE;
 
-	/* Squelch items known not to be special */
+	/* Ignore items known not to be special */
 	if (object_is_known_not_artifact(o_ptr) &&
-		squelch_level[type] == SQUELCH_ALL)
+		ignore_level[type] == IGNORE_ALL)
 		return TRUE;
 
-	/* Get result based on the feeling and the squelch_level */
-	if (squelch_level_of(o_ptr) <= squelch_level[type])
+	/* Get result based on the feeling and the ignore_level */
+	if (ignore_level_of(o_ptr) <= ignore_level[type])
 		return TRUE;
 	else
 		return FALSE;
 }
 
 /**
- * Determines if an object is eligible for squelching.
+ * Determines if an object is eligible for ignoring.
  */
-bool squelch_item_ok(const object_type *o_ptr)
+bool ignore_item_ok(const object_type *o_ptr)
 {
 	if (player->unignoring)
 		return FALSE;
 
-	return object_is_squelched(o_ptr);
+	return object_is_ignored(o_ptr);
 }
 
 /*
- * Drop all {squelch}able items.
+ * Drop all {ignore}able items.
  */
-void squelch_drop(void)
+void ignore_drop(void)
 {
 	int n;
 
@@ -569,9 +569,9 @@ void squelch_drop(void)
 	{
 		object_type *o_ptr = &player->gear[n];
 
-		/* Skip non-objects and unsquelchable objects */
+		/* Skip non-objects and unignoreable objects */
 		if (!o_ptr->kind) continue;
-		if (!squelch_item_ok(o_ptr)) continue;
+		if (!ignore_item_ok(o_ptr)) continue;
 
 		/* Check for !d (no drop) inscription */
 		if (!check_for_inscrip(o_ptr, "!d") && !check_for_inscrip(o_ptr, "!*"))
@@ -609,9 +609,9 @@ void squelch_drop(void)
 }
 
 /**
- * Return the name of a squelch type.
+ * Return the name of an ignore type.
  */
-const char *squelch_name_for_type(squelch_type_t type)
+const char *ignore_name_for_type(ignore_type_t type)
 {
 	size_t i;
 

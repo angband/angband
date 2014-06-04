@@ -21,8 +21,8 @@
 #include "cmds.h"
 #include "cave.h"
 #include "pathfind.h"
-#include "squelch.h"
 #include "mon-util.h"
+#include "obj-ignore.h"
 #include "obj-util.h"
 #include "player-util.h"
 #include "tables.h"
@@ -606,7 +606,7 @@ static bool run_test(void)
 		for (o_ptr = get_first_object(row, col); o_ptr; o_ptr = get_next_object(o_ptr))
 		{
 			/* Visible object */
-			if (o_ptr->marked && !squelch_item_ok(o_ptr)) return (TRUE);
+			if (o_ptr->marked && !ignore_item_ok(o_ptr)) return (TRUE);
 		}
 
 

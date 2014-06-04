@@ -23,12 +23,12 @@
 #include "init.h"
 #include "keymap.h"
 #include "monster.h"
+#include "obj-ignore.h"
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "object.h"
 #include "prefs.h"
 #include "project.h"
-#include "squelch.h"
 #include "spells.h"
 #include "ui-game.h"
 
@@ -800,14 +800,14 @@ static enum parser_error parse_prefs_q(struct parser *p)
 		if (!kind)
 			return PARSE_ERROR_UNRECOGNISED_SVAL;
 
-		kind->squelch = parser_getint(p, "flag");
+		kind->ignore = parser_getint(p, "flag");
 	}
 	else
 	{
 		int idx = parser_getint(p, "idx");
 		int level = parser_getint(p, "n");
 
-		squelch_level[idx] = level;
+		ignore_level[idx] = level;
 	}
 
 	return PARSE_ERROR_NONE;

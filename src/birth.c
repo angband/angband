@@ -28,6 +28,7 @@
 #include "monster.h"
 #include "obj-gear.h"
 #include "obj-identify.h"
+#include "obj-ignore.h"
 #include "obj-make.h"
 #include "obj-tval.h"
 #include "obj-util.h"
@@ -35,7 +36,6 @@
 #include "player.h"
 #include "player-timed.h"
 #include "player-util.h"
-#include "squelch.h"
 #include "store.h"
 #include "quest.h"
 #include "ui-menu.h"
@@ -1099,7 +1099,7 @@ void player_birth(bool quickstart_allowed)
 
 	roll_hp();
 
-	squelch_birth_init();
+	ignore_birth_init();
 
 	/* Clear old messages, add new starting message */
 	history_clear();

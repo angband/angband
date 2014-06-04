@@ -26,6 +26,7 @@
 #include "init.h"
 #include "mon-util.h"
 #include "monster.h"
+#include "obj-ignore.h"
 #include "obj-tval.h"
 #include "obj-ui.h"
 #include "obj-util.h"
@@ -33,7 +34,6 @@
 #include "player-timed.h"
 #include "prefs.h"
 #include "project.h"
-#include "squelch.h"
 #include "tables.h"
 #include "trap.h"
 
@@ -875,7 +875,7 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 				g->unseen_object = TRUE;
 			}
 			
-		} else if (o_ptr->marked == MARK_SEEN && !squelch_item_ok(o_ptr)) {
+		} else if (o_ptr->marked == MARK_SEEN && !ignore_item_ok(o_ptr)) {
 			if (!g->first_kind) {
 				g->first_kind = o_ptr->kind;
 			} else {

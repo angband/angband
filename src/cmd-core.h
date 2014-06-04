@@ -66,7 +66,7 @@ typedef enum cmd_code
 	CMD_PICKUP,
 	CMD_AUTOPICKUP,
 	CMD_DESTROY,
-/*	CMD_SQUELCH_TYPE, -- might be a command, might have another interface */
+/*	CMD_IGNORE_TYPE, -- might be a command, might have another interface */
 	CMD_DISARM,
 	CMD_REST,
 /*	CMD_TARGET, -- possibly should be a UI-level thing */

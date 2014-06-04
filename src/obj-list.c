@@ -21,11 +21,11 @@
 #include "init.h"
 #include "obj-desc.h"
 #include "obj-identify.h"
+#include "obj-ignore.h"
 #include "obj-list.h"
 #include "obj-tval.h"
 #include "obj-ui.h"
 #include "obj-util.h"
-#include "squelch.h"
 
 #define MAX_ITEMLIST 2560
 
@@ -157,7 +157,7 @@ static bool object_list_should_ignore_object(const object_type *object)
 	if (!object->marked)
 		return TRUE;
 
-	if (!is_unknown(object) && squelch_item_ok(object))
+	if (!is_unknown(object) && ignore_item_ok(object))
 		return TRUE;
 
 	if (tval_is_money(object))

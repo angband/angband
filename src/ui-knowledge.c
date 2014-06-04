@@ -27,12 +27,12 @@
 #include "monster.h"
 #include "obj-desc.h"
 #include "obj-identify.h"
+#include "obj-ignore.h"
 #include "obj-info.h"
 #include "obj-make.h"
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "object.h"
-#include "squelch.h"
 #include "score.h"
 #include "store.h"
 #include "tables.h"
@@ -1751,9 +1751,9 @@ static void display_object(int col, int row, bool cursor, int oid)
 	/* Display the name */
 	c_prt(attr, o_name, row, col);
 
-	/* Show squelch status */
-	if ((aware && kind_is_squelched_aware(kind)) ||
-		(!aware && kind_is_squelched_unaware(kind)))
+	/* Show ignore status */
+	if ((aware && kind_is_ignored_aware(kind)) ||
+		(!aware && kind_is_ignored_unaware(kind)))
 		c_put_str(attr, "Yes", row, 46);
 
 
@@ -1881,8 +1881,8 @@ static const char *o_xtra_prompt(int oid)
 {
 	object_kind *k = objkind_byid(oid);
 
-	const char *no_insc = ", 's' to toggle squelch, 'r'ecall, '{'";
-	const char *with_insc = ", 's' to toggle squelch, 'r'ecall, '{', '}'";
+	const char *no_insc = ", 's' to toggle ignore, 'r'ecall, '{'";
+	const char *with_insc = ", 's' to toggle ignore, 'r'ecall, '{', '}'";
 
 	/* Forget it if we've never seen the thing */
 	if (k->flavor && !k->aware)
@@ -1898,22 +1898,22 @@ static void o_xtra_act(struct keypress ch, int oid)
 {
 	object_kind *k = objkind_byid(oid);
 
-	/* Toggle squelch */
-	if (squelch_tval(k->tval) && (ch.code == 's' || ch.code == 'S'))
+	/* Toggle ignore */
+	if (ignore_tval(k->tval) && (ch.code == 's' || ch.code == 'S'))
 	{
 		if (k->aware)
 		{
-			if (kind_is_squelched_aware(k))
-				kind_squelch_clear(k);
+			if (kind_is_ignored_aware(k))
+				kind_ignore_clear(k);
 			else
-				kind_squelch_when_aware(k);
+				kind_ignore_when_aware(k);
 		}
 		else
 		{
-			if (kind_is_squelched_unaware(k))
-				kind_squelch_clear(k);
+			if (kind_is_ignored_unaware(k))
+				kind_ignore_clear(k);
 			else
-				kind_squelch_when_unaware(k);
+				kind_ignore_when_unaware(k);
 		}
 
 		return;
@@ -1995,7 +1995,7 @@ void textui_browse_object_knowledge(const char *name, int row)
 		}
 	}
 
-	display_knowledge("known objects", objects, o_count, kind_f, obj_f, "Squelch  Inscribed          Sym");
+	display_knowledge("known objects", objects, o_count, kind_f, obj_f, "Ignore  Inscribed          Sym");
 
 	FREE(objects);
 }

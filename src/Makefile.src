@@ -131,6 +131,7 @@ ANGFILES = \
 	obj-desc.o \
 	obj-gear.o \
 	obj-identify.o \
+	obj-ignore.o \
 	obj-info.o \
 	obj-list.o \
 	obj-make.o \
@@ -160,7 +161,6 @@ ANGFILES = \
 	save.o \
 	savefile.o \
 	spells.o \
-	squelch.o \
 	store.o \
 	tables.o \
 	target.o \

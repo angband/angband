@@ -450,20 +450,20 @@ bool do_cmd_open_chest(int y, int x, s16b o_idx)
 		/* Let the Chest drop items */
 		chest_death(y, x, o_idx);
 
-		/* Squelch chest if autosquelch calls for it */
-		player->upkeep->notice |= PN_SQUELCH;
+		/* Ignore chest if autoignore calls for it */
+		player->upkeep->notice |= PN_IGNORE;
 
 	}
 
 	/*
-	 * empty chests were always squelched in squelch_item_okay so we
-	 * might as well squelch it here
+	 * empty chests were always ignored in ignore_item_okay so we
+	 * might as well ignore it here
 	 */
 	if (o_ptr->pval == 0) {
 		o_ptr->ignore = TRUE;
 	}
 
-	/* Redraw chest, to be on the safe side (it may have been squelched) */
+	/* Redraw chest, to be on the safe side (it may have been ignored) */
 	square_light_spot(cave, y, x);
 
 	/* Refresh */

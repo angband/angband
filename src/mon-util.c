@@ -26,10 +26,10 @@
 #include "mon-util.h"
 #include "obj-desc.h"
 #include "obj-identify.h"
+#include "obj-ignore.h"
 #include "obj-util.h"
 #include "player-timed.h"
 #include "player-util.h"
-#include "squelch.h"
 
 
 /**
@@ -527,10 +527,10 @@ void update_mon(struct monster *m_ptr, bool full)
 		}
 	}
 
-	/* If a mimic looks like a squelched item, it's not seen */
+	/* If a mimic looks like an ignored item, it's not seen */
 	if (is_mimicking(m_ptr)) {
 		object_type *o_ptr = cave_object(cave, m_ptr->mimicked_o_idx);
-		if (squelch_item_ok(o_ptr))
+		if (ignore_item_ok(o_ptr))
 			easy = flag = FALSE;
 	}
 	
@@ -568,7 +568,7 @@ void update_mon(struct monster *m_ptr, bool full)
 		if (m_ptr->ml) {
 			/* Treat mimics differently */
 			if (!m_ptr->mimicked_o_idx || 
-				squelch_item_ok(cave_object(cave, m_ptr->mimicked_o_idx)))
+				ignore_item_ok(cave_object(cave, m_ptr->mimicked_o_idx)))
 			{
 				/* Mark as not visible */
 				m_ptr->ml = FALSE;

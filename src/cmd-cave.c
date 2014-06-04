@@ -30,12 +30,12 @@
 #include "monster.h"
 #include "obj-chest.h"
 #include "obj-identify.h"
+#include "obj-ignore.h"
 #include "obj-util.h"
 #include "pathfind.h"
 #include "player-timed.h"
 #include "player-util.h"
 #include "spells.h"
-#include "squelch.h"
 #include "trap.h"
 #include "tables.h"
 
@@ -784,7 +784,7 @@ static bool do_cmd_tunnel_aux(int y, int x)
 					ORIGIN_RUBBLE, 0);
 
 				/* Observe the new object */
-				if (!squelch_item_ok(square_object(cave, y, x)) &&
+				if (!ignore_item_ok(square_object(cave, y, x)) &&
 					    player_can_see_bold(y, x))
 					msg("You have found something!");
 			}

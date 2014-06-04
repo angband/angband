@@ -26,12 +26,12 @@
 #include "mon-util.h"
 #include "obj-gear.h"
 #include "obj-identify.h"
+#include "obj-ignore.h"
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "player-timed.h"
 #include "player-util.h"
 #include "spells.h"
-#include "squelch.h"
 #include "ui.h"
 
 /*
@@ -2359,11 +2359,11 @@ void notice_stuff(struct player_upkeep *upkeep)
 		autoinscribe_ground();
 	}
 
-	/* Deal with squelch stuff */
-	if (upkeep->notice & PN_SQUELCH)
+	/* Deal with ignore stuff */
+	if (upkeep->notice & PN_IGNORE)
 	{
-		upkeep->notice &= ~(PN_SQUELCH);
-		squelch_drop();
+		upkeep->notice &= ~(PN_IGNORE);
+		ignore_drop();
 	}
 
 	/* Combine the pack */

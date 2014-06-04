@@ -71,7 +71,7 @@ enum
 #define PN_COMBINE      0x00000001L    /* Combine the pack */
 #define PN_AUTOINSCRIBE 0x00000002L    /* Autoinscribe items */
 #define PN_PICKUP       0x00000004L    /* Pick stuff up */
-#define PN_SQUELCH      0x00000008L    /* Squelch stuff */
+#define PN_IGNORE       0x00000008L    /* Ignore stuff */
 #define PN_MON_MESSAGE	0x00000010L	   /* flush monster pain messages */
 
 
@@ -222,7 +222,7 @@ typedef struct player_upkeep {
 	struct object_kind *object_kind;	/* Object kind trackee */
 
 	u32b notice;		/* Bit flags for pending actions such as 
-						 * reordering inventory, squelching, etc. */
+						 * reordering inventory, ignoring, etc. */
 	u32b update;		/* Bit flags for recalculations needed 
 						 * such as HP, or visible area */
 	u32b redraw;	    /* Bit flags for things that /have/ changed,

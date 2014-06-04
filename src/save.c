@@ -25,10 +25,10 @@
 #include "monster.h"
 #include "object.h"
 #include "obj-gear.h"
+#include "obj-ignore.h"
 #include "option.h"
 #include "quest.h"
 #include "savefile.h"
-#include "squelch.h"
 #include "store.h"
 #include "obj-util.h"
 #include "player-timed.h"
@@ -392,9 +392,9 @@ void wr_object_memory(void)
 
 		if (k_ptr->aware) tmp8u |= 0x01;
 		if (k_ptr->tried) tmp8u |= 0x02;
-		if (kind_is_squelched_aware(k_ptr)) tmp8u |= 0x04;
+		if (kind_is_ignored_aware(k_ptr)) tmp8u |= 0x04;
 		if (k_ptr->everseen) tmp8u |= 0x08;
-		if (kind_is_squelched_unaware(k_ptr)) tmp8u |= 0x10;
+		if (kind_is_ignored_unaware(k_ptr)) tmp8u |= 0x10;
 
 		wr_byte(tmp8u);
 	}
@@ -535,16 +535,16 @@ void wr_player(void)
 }
 
 
-void wr_squelch(void)
+void wr_ignore(void)
 {
 	size_t i, j, n;
 
-	/* Write number of squelch bytes */
-	wr_byte(squelch_size);
-	for (i = 0; i < squelch_size; i++)
-		wr_byte(squelch_level[i]);
+	/* Write number of ignore bytes */
+	wr_byte(ignore_size);
+	for (i = 0; i < ignore_size; i++)
+		wr_byte(ignore_level[i]);
 
-	/* Write ego-item squelch bits */
+	/* Write ego-item ignore bits */
 	wr_u16b(z_info->e_max);
 	wr_u16b(ITYPE_SIZE);
 	for (i = 0; i < z_info->e_max; i++)

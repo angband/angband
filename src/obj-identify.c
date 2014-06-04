@@ -25,6 +25,7 @@
 #include "obj-desc.h"
 #include "obj-gear.h"
 #include "obj-identify.h"
+#include "obj-ignore.h"
 #include "obj-slays.h"
 #include "obj-tval.h"
 #include "obj-util.h"
@@ -32,7 +33,6 @@
 #include "player-timed.h"
 #include "player-util.h"
 #include "spells.h"
-#include "squelch.h"
 
 /** Time last item was wielded */
 s32b object_last_wield;
@@ -372,11 +372,11 @@ void object_flavor_aware(object_type *o_ptr)
 				id_on(o_ptr->id_flags, ID_MOD_MIN + i);
 	}
 
-	/* Fix squelch/autoinscribe */
-	if (kind_is_squelched_unaware(o_ptr->kind)) {
-		kind_squelch_when_aware(o_ptr->kind);
+	/* Fix ignore/autoinscribe */
+	if (kind_is_ignored_unaware(o_ptr->kind)) {
+		kind_ignore_when_aware(o_ptr->kind);
 	}
-	player->upkeep->notice |= PN_SQUELCH;
+	player->upkeep->notice |= PN_IGNORE;
 	apply_autoinscription(o_ptr);
 
 	for (i = 1; i < cave_object_max(cave); i++)
@@ -707,7 +707,7 @@ bool object_notice_curses(object_type *o_ptr)
 
 	object_check_for_ident(o_ptr);
 
-	player->upkeep->notice |= PN_SQUELCH;
+	player->upkeep->notice |= PN_IGNORE;
 
 	return !of_is_empty(f);
 }
@@ -1295,9 +1295,9 @@ void sense_inventory(void)
 		}
 
 
-		/* Set squelch flag as appropriate */
+		/* Set ignore flag as appropriate */
 		if (!item_is_equipped(player, i))
-			player->upkeep->notice |= PN_SQUELCH;
+			player->upkeep->notice |= PN_IGNORE;
 		
 		/* Update the gear */
 		player->upkeep->update |= (PU_INVEN);

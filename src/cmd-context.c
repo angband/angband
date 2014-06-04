@@ -28,13 +28,13 @@
 #include "obj-desc.h"
 #include "obj-gear.h"
 #include "obj-identify.h"
+#include "obj-ignore.h"
 #include "obj-info.h"
 #include "obj-tval.h"
 #include "obj-ui.h"
 #include "obj-util.h"
 #include "player-timed.h"
 #include "player-util.h"
-#include "squelch.h"
 #include "store.h"
 #include "target.h"
 #include "textui.h"
@@ -67,7 +67,7 @@ enum context_menu_value_e {
 	MENU_VALUE_MESSAGES,
 	MENU_VALUE_OBJECTS,
 	MENU_VALUE_MONSTERS,
-	MENU_VALUE_TOGGLE_SQUELCHED,
+	MENU_VALUE_TOGGLE_IGNORED,
 	MENU_VALUE_OPTIONS,
 	MENU_VALUE_HELP,
 };
@@ -99,11 +99,11 @@ static int context_menu_player_2(int mx, int my)
 
 	ADD_LABEL("Toggle Searching", CMD_TOGGLE_SEARCH, MN_ROW_VALID);
 
-	/* Squelch toggle has different keys, but we don't have a way to look them up (see cmd-process.c). */
+	/* Ignore toggle has different keys, but we don't have a way to look them up (see cmd-process.c). */
 	cmdkey = (mode == KEYMAP_MODE_ORIG) ? 'K' : 'O';
-	menu_dynamic_add_label(m, "Toggle Squelched", cmdkey, MENU_VALUE_TOGGLE_SQUELCHED, labels);
+	menu_dynamic_add_label(m, "Toggle Ignored", cmdkey, MENU_VALUE_TOGGLE_IGNORED, labels);
 
-	ADD_LABEL("Squelch an item", CMD_DESTROY, MN_ROW_VALID);
+	ADD_LABEL("Ignore an item", CMD_DESTROY, MN_ROW_VALID);
 
 	menu_dynamic_add_label(m, "Options", '=', MENU_VALUE_OPTIONS, labels);
 	menu_dynamic_add_label(m, "Commands", '?', MENU_VALUE_HELP, labels);
@@ -152,7 +152,7 @@ static int context_menu_player_2(int mx, int my)
 		case MENU_VALUE_KNOWLEDGE:
 		case MENU_VALUE_MAP:
 		case MENU_VALUE_MESSAGES:
-		case MENU_VALUE_TOGGLE_SQUELCHED:
+		case MENU_VALUE_TOGGLE_IGNORED:
 		case MENU_VALUE_HELP:
 		case MENU_VALUE_MONSTERS:
 		case MENU_VALUE_OBJECTS:
@@ -196,8 +196,8 @@ static int context_menu_player_2(int mx, int my)
 			Term_keypress(cmdkey, 0);
 			break;
 
-		case MENU_VALUE_TOGGLE_SQUELCHED:
-			/* Squelch toggle has different keys, but we don't have a way to look them up (see cmd-process.c). */
+		case MENU_VALUE_TOGGLE_IGNORED:
+			/* Ignore toggle has different keys, but we don't have a way to look them up (see cmd-process.c). */
 			cmdkey = (mode == KEYMAP_MODE_ORIG) ? 'K' : 'O';
 			Term_keypress(cmdkey, 0);
 			break;
@@ -310,7 +310,7 @@ int context_menu_player(int mx, int my)
 	/* if object under player add pickup option */
 	if (cave->o_idx[player->py][player->px]) {
 		object_type *o_ptr = square_object(cave, player->py, player->px);
-		if (!squelch_item_ok(o_ptr)) {
+		if (!ignore_item_ok(o_ptr)) {
 			menu_row_validity_t valid;
 
 			/* 'f' isn't in rogue keymap, so we can use it here. */
@@ -501,7 +501,7 @@ int context_menu_cave(struct chunk *c, int y, int x, int adjacent, int mx, int m
 			s16b o_idx = chest_check(y,x, CHEST_ANY);
 			if (o_idx) {
 				object_type *o_ptr = cave_object(cave, o_idx);
-				if (!squelch_item_ok(o_ptr)) {
+				if (!ignore_item_ok(o_ptr)) {
 					if (object_is_known(o_ptr)) {
 						if (is_locked_chest(o_ptr)) {
 							ADD_LABEL("Disarm Chest", CMD_DISARM, MN_ROW_VALID);
@@ -538,7 +538,7 @@ int context_menu_cave(struct chunk *c, int y, int x, int adjacent, int mx, int m
 		ADD_LABEL("Walk Towards", CMD_WALK, MN_ROW_VALID);
 	}
 	else {
-		/* ',' is used for squelch in rogue keymap, so we'll just swap letters. */
+		/* ',' is used for ignore in rogue keymap, so we'll just swap letters. */
 		cmdkey = (mode == KEYMAP_MODE_ORIG) ? ',' : '.';
 		menu_dynamic_add_label(m, "Pathfind To", cmdkey, CMD_PATHFIND, labels);
 
@@ -590,7 +590,7 @@ int context_menu_cave(struct chunk *c, int y, int x, int adjacent, int mx, int m
 
 		prt(format("(Enter to select command, ESC to cancel) You see %s:", m_name), 0, 0);
 	} else
-		if (c->o_idx[y][x] && !squelch_item_ok(square_object(c, y, x))) {
+		if (c->o_idx[y][x] && !ignore_item_ok(square_object(c, y, x))) {
 		char o_name[80];
 
 		/* Get the single object in the list */
@@ -811,7 +811,7 @@ int context_menu_object(const object_type *o_ptr, const int item)
 			ADD_LABEL("Drop", CMD_DROP, MN_ROW_VALID);
 
 			if (o_ptr->number > 1) {
-				/* 'D' is used for squelch in rogue keymap, so we'll just swap letters. */
+				/* 'D' is used for ignore in rogue keymap, so we'll just swap letters. */
 				cmdkey = (mode == KEYMAP_MODE_ORIG) ? 'D' : 'k';
 				menu_dynamic_add_label(m, "Drop All", cmdkey, MENU_VALUE_DROP_ALL, labels);
 			}
@@ -829,7 +829,7 @@ int context_menu_object(const object_type *o_ptr, const int item)
 		ADD_LABEL("Uninscribe", CMD_UNINSCRIBE, MN_ROW_VALID);
 	}
 
-	ADD_LABEL( (object_is_squelched(o_ptr) ? "Unignore" : "Ignore"), CMD_DESTROY, MN_ROW_VALID);
+	ADD_LABEL( (object_is_ignored(o_ptr) ? "Unignore" : "Ignore"), CMD_DESTROY, MN_ROW_VALID);
 
 	/* work out display region */
 	r.width = (int)menu_dynamic_longest_entry(m) + 3 + 2; /* +3 for tag, 2 for pad */
@@ -922,7 +922,7 @@ int context_menu_object(const object_type *o_ptr, const int item)
 		return 1;
 
 	if (selected == CMD_DESTROY) {
-		/* squelch or unsquelch the item */
+		/* ignore or unignore the item */
 		textui_cmd_destroy_menu(item);
 	} else if (selected == CMD_BROWSE_SPELL) {
 		/* browse a spellbook */

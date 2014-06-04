@@ -27,13 +27,13 @@
 #include "monster.h"
 #include "obj-gear.h"
 #include "obj-identify.h"
+#include "obj-ignore.h"
 #include "obj-make.h"
 #include "obj-util.h"
 #include "object.h"
 #include "player.h"
 #include "player-timed.h"
 #include "savefile.h"
-#include "squelch.h"
 #include "store.h"
 #include "quest.h"
 #include "trap.h"
@@ -594,8 +594,8 @@ int rd_object_memory(void)
 		k_ptr->tried = (tmp8u & 0x02) ? TRUE : FALSE;
 		k_ptr->everseen = (tmp8u & 0x08) ? TRUE : FALSE;
 
-		if (tmp8u & 0x04) kind_squelch_when_aware(k_ptr);
-		if (tmp8u & 0x10) kind_squelch_when_unaware(k_ptr);
+		if (tmp8u & 0x04) kind_ignore_when_aware(k_ptr);
+		if (tmp8u & 0x10) kind_ignore_when_unaware(k_ptr);
 	}
 
 	return 0;
@@ -831,9 +831,9 @@ int rd_player(void)
 
 
 /*
- * Read squelch and autoinscription submenu for all known objects
+ * Read ignore and autoinscription submenu for all known objects
  */
-int rd_squelch(void)
+int rd_ignore(void)
 {
 	size_t i, j;
 	byte tmp8u = 24;
@@ -841,18 +841,18 @@ int rd_squelch(void)
 	u16b itype_size;
 	u16b inscriptions;
 	
-	/* Read how many squelch bytes we have */
+	/* Read how many ignore bytes we have */
 	rd_byte(&tmp8u);
 	
 	/* Check against current number */
-	if (tmp8u != squelch_size)
+	if (tmp8u != ignore_size)
 	{
 		strip_bytes(tmp8u);
 	}
 	else
 	{
-		for (i = 0; i < squelch_size; i++)
-			rd_byte(&squelch_level[i]);
+		for (i = 0; i < ignore_size; i++)
+			rd_byte(&ignore_level[i]);
 	}
 		
 	/* Read the number of saved ego-item */
@@ -882,7 +882,7 @@ int rd_squelch(void)
 
 			for (j = ITYPE_NONE; j < ITYPE_MAX; j++)
 				if (itype_has(itypes, j))
-					ego_squelch_toggle(i, j);
+					ego_ignore_toggle(i, j);
 		}
 	}
 	

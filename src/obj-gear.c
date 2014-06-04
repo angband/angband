@@ -22,11 +22,11 @@
 #include "obj-desc.h"
 #include "obj-gear.h"
 #include "obj-identify.h"
+#include "obj-ignore.h"
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "player-util.h"
 #include "spells.h"
-#include "squelch.h"
 
 static const struct slot_info {
 	int index;
@@ -707,7 +707,7 @@ void inven_takeoff(int item)
 	msgt(MSG_WIELD, "%s %s (%c).", act, o_name, equip_to_label(slot));
 
 	player->upkeep->update |= (PU_BONUS | PU_INVEN);
-	player->upkeep->notice |= (PN_SQUELCH | PN_COMBINE);
+	player->upkeep->notice |= (PN_IGNORE | PN_COMBINE);
 
 	return;
 }

@@ -29,11 +29,11 @@
 #include "obj-desc.h"
 #include "obj-gear.h"
 #include "obj-identify.h"
+#include "obj-ignore.h"
 #include "obj-tval.h"
 #include "obj-ui.h"
 #include "obj-util.h"
 #include "player-util.h"
-#include "squelch.h"
 #include "tables.h"
 #include "trap.h"
 
@@ -112,7 +112,7 @@ static void py_pickup_gold(void)
 			my_strcpy(name, kind->name, sizeof(name));
 
 		/* Remember whether feedback message is in order */
-		if (!squelch_item_ok(o_ptr))
+		if (!ignore_item_ok(o_ptr))
 			verbal = TRUE;
 
 		/* Increment total value */
@@ -191,8 +191,8 @@ static void py_pickup_aux(int o_idx, bool domsg)
 	/* Get the new object */
 	o_ptr = &player->gear[index];
 
-	/* Set squelch status */
-	player->upkeep->notice |= PN_SQUELCH;
+	/* Set ignore status */
+	player->upkeep->notice |= PN_IGNORE;
 
 	/* Automatically sense artifacts */
 	object_sense_artifact(o_ptr);
@@ -251,7 +251,7 @@ int do_autopickup(void)
 		next_o_idx = o_ptr->next_o_idx;
 
 		/* Ignore all hidden objects and non-objects */
-		if (squelch_item_ok(o_ptr) || !o_ptr->kind) continue;
+		if (ignore_item_ok(o_ptr) || !o_ptr->kind) continue;
 
 		/* XXX Hack -- Enforce limit */
 		if (floor_num >= N_ELEMENTS(floor_list)) break;

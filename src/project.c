@@ -30,6 +30,7 @@
 #include "obj-desc.h"
 #include "obj-gear.h"
 #include "obj-identify.h"
+#include "obj-ignore.h"
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "player-timed.h"
@@ -37,7 +38,6 @@
 #include "prefs.h"
 #include "project.h"
 #include "spells.h"
-#include "squelch.h"
 #include "tables.h"
 #include "trap.h"
 
@@ -466,7 +466,7 @@ static void project_object_handler_chest(project_object_handler_context_t *conte
 		object_notice_everything((object_type * const)context->o_ptr);
 
 		/* Notice */
-		if (context->o_ptr->marked > MARK_UNAWARE && !squelch_item_ok(context->o_ptr)) {
+		if (context->o_ptr->marked > MARK_UNAWARE && !ignore_item_ok(context->o_ptr)) {
 			msg("Click!");
 			context->obvious = TRUE;
 		}
@@ -1917,7 +1917,7 @@ static bool project_o(int who, int r, int y, int x, int dam, int typ)
 			char o_name[80];
 
 			/* Effect "observed" */
-			if (o_ptr->marked && !squelch_item_ok(o_ptr))
+			if (o_ptr->marked && !ignore_item_ok(o_ptr))
 			{
 				obvious = TRUE;
 				object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
@@ -1927,7 +1927,7 @@ static bool project_o(int who, int r, int y, int x, int dam, int typ)
 			if (o_ptr->artifact || ignore)
 			{
 				/* Observe the resist */
-				if (o_ptr->marked && !squelch_item_ok(o_ptr))
+				if (o_ptr->marked && !ignore_item_ok(o_ptr))
 					msg("The %s %s unaffected!", o_name, VERB_AGREEMENT(o_ptr->number, "is", "are"));
 			}
 
@@ -1940,7 +1940,7 @@ static bool project_o(int who, int r, int y, int x, int dam, int typ)
 			else
 			{
 				/* Describe if needed */
-				if (o_ptr->marked && note_kill && !squelch_item_ok(o_ptr))
+				if (o_ptr->marked && note_kill && !ignore_item_ok(o_ptr))
 					msgt(MSG_DESTROY, "The %s %s!", o_name, note_kill);
 
 				/* Delete the object */

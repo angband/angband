@@ -139,7 +139,7 @@ NOT DONE:
 
 4. Reimplement the following in terms of a core-UI split:
 
-  - squelch / destroy
+  - ignore / destroy
 
     This is currently almost entirely done in UI.
 

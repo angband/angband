@@ -28,6 +28,7 @@
 #include "mon-blow-effects.h"
 #include "obj-desc.h"
 #include "obj-identify.h"
+#include "obj-ignore.h"
 #include "obj-slays.h"
 #include "obj-tval.h"
 #include "obj-util.h"
@@ -35,7 +36,6 @@
 #include "player-util.h"
 #include "project.h"
 #include "spells.h"
-#include "squelch.h"
 #include "tables.h"
 
 /*
@@ -2138,7 +2138,7 @@ static void process_monster(struct chunk *c, struct monster *m_ptr)
 						if (rf_has(m_ptr->race->flags, RF_TAKE_ITEM)) {
 							/* Describe observable situations */
 							if (m_ptr->ml && player_has_los_bold(ny, nx) &&
-									!squelch_item_ok(o_ptr))
+									!ignore_item_ok(o_ptr))
 								/* Dump a message */
 								msg("%s tries to pick up %s, but fails.",
 									m1_name, o_name);
@@ -2151,7 +2151,7 @@ static void process_monster(struct chunk *c, struct monster *m_ptr)
 
 						/* Describe observable situations */
 						if (player_has_los_bold(ny, nx) &&
-								!squelch_item_ok(o_ptr))
+								!ignore_item_ok(o_ptr))
 							/* Dump a message */
 							msg("%s picks up %s.", m1_name, o_name);
 
@@ -2171,7 +2171,7 @@ static void process_monster(struct chunk *c, struct monster *m_ptr)
 					} else {
 						/* Describe observable situations */
 						if (player_has_los_bold(ny, nx) &&
-								!squelch_item_ok(o_ptr))
+								!ignore_item_ok(o_ptr))
 							/* Dump a message */
 							msgt(MSG_DESTROY, "%s crushes %s.", m_name, o_name);
 

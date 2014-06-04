@@ -38,6 +38,7 @@
 #include "mon-msg.h"
 #include "mon-util.h"
 #include "monster.h"
+#include "obj-ignore.h"
 #include "obj-list.h"
 #include "obj-make.h"
 #include "obj-slays.h"
@@ -53,7 +54,6 @@
 #include "quest.h"
 #include "randname.h"
 #include "spells.h"
-#include "squelch.h"
 #include "store.h"
 #include "trap.h"
 
@@ -3357,7 +3357,7 @@ static errr init_other(void)
 	/* Initialize the "quark" package */
 	(void)quarks_init();
 
-	/* Initialize squelch things */
+	/* Initialize knowledge things */
 	textui_knowledge_init();
 
 	/* Initialize the "message" package */

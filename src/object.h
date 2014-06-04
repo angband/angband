@@ -320,8 +320,8 @@ typedef struct object_kind
 	bool aware;		/**< Set if player is aware of the kind's effects */
 	bool tried;		/**< Set if kind has been tried */
 
-	byte squelch;  	/**< Squelch settings */
-	bool everseen; 	/**< Set if kind has ever been seen (to despoilify squelch menus) */
+	byte ignore;  	/**< Ignore settings */
+	bool everseen; 	/**< Set if kind has ever been seen (to despoilify ignore menus) */
 
 	struct spell *spells;
 } object_kind;
@@ -450,7 +450,7 @@ typedef struct ego_item
 	random_value time;		/**< Recharge time (rods/activation) */
 	s16b timeout;			/* Timeout Counter */
 
-	bool everseen;			/* Do not spoil squelch menus */
+	bool everseen;			/* Do not spoil ignore menus */
 } ego_item_type;
 
 /*

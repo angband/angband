@@ -30,6 +30,7 @@
 #include "obj-desc.h"
 #include "obj-gear.h"
 #include "obj-identify.h"
+#include "obj-ignore.h"
 #include "obj-info.h"
 #include "obj-make.h"
 #include "obj-tval.h"
@@ -39,7 +40,6 @@
 #include "prefs.h"
 #include "randname.h"
 #include "spells.h"
-#include "squelch.h"
 #include "z-queue.h"
 
 spell_type *s_info;
@@ -349,7 +349,7 @@ int scan_floor(int *items, int max_size, int y, int x, int mode, item_tester tes
 		
 		/* Visible */
 		if (mode & 0x08) {
-			if (!is_unknown(o_ptr) && squelch_item_ok(o_ptr)) continue;
+			if (!is_unknown(o_ptr) && ignore_item_ok(o_ptr)) continue;
 		}
 
 		/* Accept this item */
@@ -695,7 +695,7 @@ static void compact_objects_aux(int i1, int i2)
  *
  * When compacting objects, we first destroy gold, on the basis that by the
  * time item compaction becomes an issue, the player really won't care.
- * We also nuke items marked as squelch.
+ * We also nuke items marked as ignore.
  *
  * When compacting other objects, we base the saving throw on a combination of
  * object level, distance from player, and current "desperation".
@@ -743,8 +743,8 @@ void compact_objects(int size)
 	{
 		object_type *o_ptr = cave_object(cave, i);
 
-		/* Nuke gold or squelched items */
-		if (tval_is_money(o_ptr) || squelch_item_ok(o_ptr))
+		/* Nuke gold or ignored items */
+		if (tval_is_money(o_ptr) || ignore_item_ok(o_ptr))
 		{
 			delete_object_idx(i);
 			size--;
@@ -768,7 +768,7 @@ void compact_objects(int size)
 			if (!o_ptr->kind) continue;
 
 			/* Hack -- High level objects start out "immune" */
-			if (o_ptr->kind->level > cur_lev && !o_ptr->kind->squelch)
+			if (o_ptr->kind->level > cur_lev && !o_ptr->kind->ignore)
 				continue;
 
 			/* Monster */
@@ -784,7 +784,7 @@ void compact_objects(int size)
 				x = m_ptr->fx;
 
 				/* Monsters protect their objects */
-				if ((randint0(100) < 90) && !o_ptr->kind->squelch)
+				if ((randint0(100) < 90) && !o_ptr->kind->ignore)
 					continue;
 			}
 
@@ -809,7 +809,7 @@ void compact_objects(int size)
 			}
 
 			/* Nearby objects start out "immune" */
-			if ((cur_dis > 0) && (distance(py, px, y, x) < cur_dis) && !o_ptr->kind->squelch)
+			if ((cur_dis > 0) && (distance(py, px, y, x) < cur_dis) && !o_ptr->kind->ignore)
 				continue;
 
 			/* Saving throw */
@@ -1468,11 +1468,11 @@ void object_split(struct object *dest, struct object *src, int amt)
 
 /**
  * Find and return the index to the oldest object on the given grid marked as
- * "squelch".
+ * "ignore".
  */
-static s16b floor_get_idx_oldest_squelched(int y, int x)
+static s16b floor_get_idx_oldest_ignored(int y, int x)
 {
-	s16b squelch_idx = 0;
+	s16b ignore_idx = 0;
 	s16b this_o_idx;
 
 	object_type *o_ptr = NULL;
@@ -1481,17 +1481,17 @@ static s16b floor_get_idx_oldest_squelched(int y, int x)
 	{
 		o_ptr = cave_object(cave, this_o_idx);
 
-		if (squelch_item_ok(o_ptr))
-			squelch_idx = this_o_idx;
+		if (ignore_item_ok(o_ptr))
+			ignore_idx = this_o_idx;
 	}
 
-	return squelch_idx;
+	return ignore_idx;
 }
 
 
 
 /*
- * Let the floor carry an object, deleting old squelched items if necessary
+ * Let the floor carry an object, deleting old ignored items if necessary
  */
 s16b floor_carry(struct chunk *c, int y, int x, object_type *j_ptr)
 {
@@ -1530,11 +1530,11 @@ s16b floor_carry(struct chunk *c, int y, int x, object_type *j_ptr)
 	/* The stack is already too large */
 	if (n >= MAX_FLOOR_STACK)
 	{
-		/* Squelch the oldest squelched object */
-		s16b squelch_idx = floor_get_idx_oldest_squelched(y, x);
+		/* Ignore the oldest ignored object */
+		s16b ignore_idx = floor_get_idx_oldest_ignored(y, x);
 
-		if (squelch_idx)
-			delete_object_idx(squelch_idx);
+		if (ignore_idx)
+			delete_object_idx(ignore_idx);
 		else
 			return 0;
 	}
@@ -1672,7 +1672,7 @@ void drop_near(struct chunk *c, object_type *j_ptr, int chance, int y, int x, bo
 					comb = TRUE;
 
 				/* Count objects */
-				if (!squelch_item_ok(o_ptr))
+				if (!ignore_item_ok(o_ptr))
 					k++;
 				else
 					n++;
@@ -1686,7 +1686,7 @@ void drop_near(struct chunk *c, object_type *j_ptr, int chance, int y, int x, bo
 			
 			/* Paranoia? */
 			if ((k + n) > MAX_FLOOR_STACK &&
-					!floor_get_idx_oldest_squelched(ty, tx)) continue;
+					!floor_get_idx_oldest_ignored(ty, tx)) continue;
 
 			/* Calculate score */
 			s = 1000 - (d + k * 5);
@@ -1776,7 +1776,7 @@ void drop_near(struct chunk *c, object_type *j_ptr, int chance, int y, int x, bo
 	sound(MSG_DROP);
 
 	/* Message when an object falls under the player */
-	if (verbose && (cave->m_idx[by][bx] < 0) && !squelch_item_ok(j_ptr))
+	if (verbose && (cave->m_idx[by][bx] < 0) && !ignore_item_ok(j_ptr))
 	{
 		msg("You feel something roll beneath your feet.");
 	}

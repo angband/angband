@@ -28,12 +28,12 @@
 #include "obj-desc.h"
 #include "obj-gear.h"
 #include "obj-identify.h"
+#include "obj-ignore.h"
 #include "obj-info.h"
 #include "obj-make.h"
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "spells.h"
-#include "squelch.h"
 #include "store.h"
 #include "target.h"
 #include "z-debug.h"
@@ -1764,7 +1764,7 @@ void do_cmd_buy(struct command *cmd)
 	player->upkeep->update |= (PU_INVEN);
 
 	/* Combine the pack (later) */
-	player->upkeep->notice |= (PN_COMBINE | PN_SQUELCH);
+	player->upkeep->notice |= (PN_COMBINE | PN_IGNORE);
 
 	/* Message */
 	if (one_in_(3)) msgt(MSG_STORE5, "%s", ONE_OF(comment_accept));
@@ -2014,8 +2014,8 @@ void do_cmd_sell(struct command *cmd)
 		purchase_analyze(price, value, dummy);
 	}
 
-	/* Set squelch flag */
-	player->upkeep->notice |= PN_SQUELCH;
+	/* Set ignore flag */
+	player->upkeep->notice |= PN_IGNORE;
 
 	/* Take the object from the player */
 	inven_item_increase(item, -amt);

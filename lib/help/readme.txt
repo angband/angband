@@ -25,7 +25,7 @@ Item detection has gotten a major overhaul.  All item detection, excepting
 potions of enlightenment and the rogue spell "detect object" no longer 
 indicate exactly what object is there.  Instead, detected objects are 
 replaced by a red asterisk, that changes to the item type when your player
-can see it.  Squelched items will still be detected as asterisks, but will
+can see it.  Ignored items will still be detected as asterisks, but will
 disappear when you get them in your line of sight.
 
 There has been a huge flavor upgrade with the change to UTF-8.  Now many
@@ -80,8 +80,8 @@ time.
 Macros no longer exist. Everything you could do with macros you can now do
 with keymaps - and more.
 
-You can no longer destroy items - they are squelched instead. You can
-toggle the visibility of squelched items by using the 'K' command.
+You can no longer destroy items - they are ignored instead. You can
+toggle the visibility of ignored items by using the 'K' command.
 
 Certain things, like enchantment scrolls and restore stat potions, are no
 longer available in town. Restore stat potions don't exist any more - but

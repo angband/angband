@@ -31,6 +31,7 @@
 #include "obj-desc.h"
 #include "obj-gear.h"
 #include "obj-identify.h"
+#include "obj-ignore.h"
 #include "obj-make.h"
 #include "obj-slays.h"
 #include "obj-tval.h"
@@ -41,7 +42,6 @@
 #include "player-util.h"
 #include "project.h"
 #include "spells.h"
-#include "squelch.h"
 #include "tables.h"
 #include "target.h"
 #include "trap.h"
@@ -824,7 +824,7 @@ bool detect_treasure(bool aware, bool full)
 		square_light_spot(cave, y, x);
 
 		/* Detect */
-		if (!squelch_item_ok(o_ptr) || !full)
+		if (!ignore_item_ok(o_ptr) || !full)
 			objects = TRUE;
 	}
 
@@ -3453,8 +3453,8 @@ void do_ident_item(object_type *o_ptr)
 	object_notice_everything(o_ptr);
 	apply_autoinscription(o_ptr);
 
-	/* Set squelch flag */
-	player->upkeep->notice |= PN_SQUELCH;
+	/* Set ignore flag */
+	player->upkeep->notice |= PN_IGNORE;
 
 	/* Recalculate bonuses */
 	player->upkeep->update |= (PU_BONUS);

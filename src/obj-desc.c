@@ -17,11 +17,11 @@
  */
 
 #include "angband.h"
-#include "squelch.h"
 #include "obj-chest.h"
 #include "obj-desc.h"
 #include "obj-gear.h"
 #include "obj-identify.h"
+#include "obj-ignore.h"
 #include "obj-tval.h"
 #include "obj-util.h"
 
@@ -588,9 +588,9 @@ static size_t obj_desc_inscrip(const object_type *o_ptr, char *buf, size_t max,
 	if (of_is_inter(flags_known, f2))
 		u[n++] = "cursed";
 
-	/* Note squelch */
-	if (squelch_item_ok(o_ptr))
-		u[n++] = "squelch";
+	/* Note ignore */
+	if (ignore_item_ok(o_ptr))
+		u[n++] = "ignore";
 
 	if (n)
 	{
@@ -628,9 +628,9 @@ static size_t obj_desc_aware(const object_type *o_ptr, char *buf, size_t max,
  * ODESC_PREFIX prepends a 'the', 'a' or number
  * ODESC_BASE results in a base description.
  * ODESC_COMBAT will add to-hit, to-dam and AC info.
- * ODESC_EXTRA will add pval/charge/inscription/squelch info.
+ * ODESC_EXTRA will add pval/charge/inscription/ignore info.
  * ODESC_PLURAL will pluralise regardless of the number in the stack.
- * ODESC_STORE turns off squelch markers, for in-store display.
+ * ODESC_STORE turns off ignore markers, for in-store display.
  * ODESC_SPOIL treats the object as fully identified.
  *
  * Setting 'prefix' to TRUE prepends a 'the', 'a' or the number in the stack,
@@ -668,7 +668,7 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr, int mode)
 	if (tval_is_money(o_ptr))
 		return strnfmt(buf, max, "%d gold pieces worth of %s%s",
 				o_ptr->pval, o_ptr->kind->name,
-				squelch_item_ok(o_ptr) ? " {squelch}" : "");
+				ignore_item_ok(o_ptr) ? " {ignore}" : "");
 
 	/** Construct the name **/
 
