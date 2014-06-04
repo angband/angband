@@ -78,6 +78,8 @@ bool tval_has_ignore_type(int tval, squelch_type_t itype);
 void kind_squelch_clear(object_kind *k_ptr);
 void ego_squelch(struct object *obj);
 void ego_squelch_clear(struct object *obj);
+void ego_squelch_toggle(int e_idx, int itype);
+bool ego_is_ignored(int e_idx, int itype);
 bool kind_is_squelched_aware(const object_kind *k_ptr);
 bool kind_is_squelched_unaware(const object_kind *k_ptr);
 void kind_squelch_when_aware(object_kind *k_ptr);

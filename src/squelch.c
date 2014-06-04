@@ -103,7 +103,11 @@ bool **ego_ignore_types;
  */
 void init_ignore(void)
 {
-	ego_ignore_types = mem_zalloc(z_info->e_max * ITYPE_MAX * sizeof(bool));
+	size_t i;
+
+	ego_ignore_types = mem_zalloc(z_info->e_max * sizeof(bool*));
+	for (i = 0; i < z_info->e_max; i++)
+		ego_ignore_types[i] = mem_zalloc(ITYPE_MAX * sizeof(bool));
 }
 
 
@@ -453,14 +457,27 @@ void kind_squelch_clear(object_kind *k_ptr)
 
 void ego_squelch(struct object *obj)
 {
-	obj->ego->squelch = TRUE;
+	assert(obj->ego);
+	ego_ignore_types[obj->ego->eidx][squelch_type_of(obj)] = TRUE;
 	player->upkeep->notice |= PN_SQUELCH;
 }
 
 void ego_squelch_clear(struct object *obj)
 {
-	obj->ego->squelch = FALSE;
+	assert(obj->ego);
+	ego_ignore_types[obj->ego->eidx][squelch_type_of(obj)] = FALSE;
 	player->upkeep->notice |= PN_SQUELCH;
+}
+
+void ego_squelch_toggle(int e_idx, int itype)
+{
+	ego_ignore_types[e_idx][itype] = !ego_ignore_types[e_idx][itype];
+	player->upkeep->notice |= PN_SQUELCH;
+}
+
+bool ego_is_ignored(int e_idx, int itype)
+{
+	return ego_ignore_types[e_idx][itype];
 }
 
 bool kind_is_squelched_aware(const object_kind *k_ptr)
@@ -509,7 +526,8 @@ bool object_is_squelched(const object_type *o_ptr)
 		return TRUE;
 
 	/* Squelch ego items if known */
-	if (object_ego_is_visible(o_ptr) && (o_ptr->ego->squelch))
+	if (object_ego_is_visible(o_ptr) &&
+		ego_is_ignored(o_ptr->ego->eidx, squelch_type_of(o_ptr)))
 		return TRUE;
 
 	type = squelch_type_of(o_ptr);

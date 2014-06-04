@@ -1212,7 +1212,7 @@ void textui_cmd_destroy_menu(int item)
 		choice.itype = squelch_type_of(o_ptr);
 		choice.short_name = "";
 		(void) ego_item_name(tmp, sizeof(tmp), &choice);
-		if (!ego->squelch) {
+		if (!ego_is_ignored(choice.e_idx, choice.itype)) {
 			strnfmt(out_val, sizeof out_val, "All %s", tmp + 4);
 			menu_dynamic_add(m, out_val, IGNORE_THIS_EGO);
 		} else {

@@ -1133,10 +1133,10 @@ static void ego_display(menu_type * menu, int oid, bool cursor, int row,
 {
 	char buf[80] = "";
 	ego_desc *choice = (ego_desc *) menu->menu_data;
-	ego_item_type *e_ptr = &e_info[choice[oid].e_idx];
+	bool ignored = ego_is_ignored(choice[oid].e_idx, choice[oid].itype);
 
 	byte attr = (cursor ? TERM_L_BLUE : TERM_WHITE);
-	byte sq_attr = (e_ptr->squelch ? TERM_L_RED : TERM_L_GREEN);
+	byte sq_attr = (ignored ? TERM_L_RED : TERM_L_GREEN);
 
 	/* Acquire the "name" of object "i" */
 	(void) ego_item_name(buf, sizeof(buf), &choice[oid]);
@@ -1145,7 +1145,7 @@ static void ego_display(menu_type * menu, int oid, bool cursor, int row,
 	c_put_str(attr, format("%s", buf), row, col);
 
 	/* Show squelch mark, if any */
-	if (e_ptr->squelch)
+	if (ignored)
 		c_put_str(TERM_L_RED, "*", row, col + 1);
 
 	/* Show the stripped ego-item name using another colour */
@@ -1161,8 +1161,7 @@ static bool ego_action(menu_type * menu, const ui_event * event, int oid)
 
 	/* Toggle */
 	if (event->type == EVT_SELECT) {
-		ego_item_type *e_ptr = &e_info[choice[oid].e_idx];
-		e_ptr->squelch = !e_ptr->squelch;
+		ego_squelch_toggle(choice[oid].e_idx, choice[oid].itype);
 
 		return TRUE;
 	}
