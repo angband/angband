@@ -451,7 +451,6 @@ typedef struct ego_item
 	s16b timeout;			/* Timeout Counter */
 
 	bool everseen;			/* Do not spoil squelch menus */
-	bool squelch;			/**< Squelch this ego-item */
 } ego_item_type;
 
 /*

@@ -537,7 +537,7 @@ void wr_player(void)
 
 void wr_squelch(void)
 {
-	size_t i, n;
+	size_t i, j, n;
 
 	/* Write number of squelch bytes */
 	wr_byte(squelch_size);
@@ -546,16 +546,24 @@ void wr_squelch(void)
 
 	/* Write ego-item squelch bits */
 	wr_u16b(z_info->e_max);
+	wr_u16b(ITYPE_SIZE);
 	for (i = 0; i < z_info->e_max; i++)
 	{
-		byte flags = 0;
+		bitflag everseen = 0, itypes[ITYPE_SIZE];
 
-		/* Figure out and write the squelch and everseen flags */
-		if (e_info[i].squelch)
-			flags |= 0x01;
+		/* Figure out and write the everseen flag */
 		if (e_info[i].everseen)
-			flags |= 0x02;
-		wr_byte(flags);
+			everseen |= 0x02;
+		wr_byte(everseen);
+
+		/* Figure out and write the ignore flags */
+		itype_wipe(itypes);
+		for (j = ITYPE_NONE; j < ITYPE_MAX; j++)
+			if (ego_is_ignored(i, j))
+				itype_on(itypes, j);
+
+		for (j = 0; j < ITYPE_SIZE; j++)
+			wr_byte(itypes[j]);
 	}
 
 	n = 0;

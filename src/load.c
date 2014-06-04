@@ -835,9 +835,10 @@ int rd_player(void)
  */
 int rd_squelch(void)
 {
-	size_t i;
+	size_t i, j;
 	byte tmp8u = 24;
 	u16b file_e_max;
+	u16b itype_size;
 	u16b inscriptions;
 	
 	/* Read how many squelch bytes we have */
@@ -856,17 +857,32 @@ int rd_squelch(void)
 		
 	/* Read the number of saved ego-item */
 	rd_u16b(&file_e_max);
+	rd_u16b(&itype_size);
+
+	/* Incompatible save files */
+	if (itype_size > ITYPE_SIZE)
+	{
+		note(format("Too many (%u) ignore bytes!", itype_size));
+		return (-1);
+	}
 		
 	for (i = 0; i < file_e_max; i++)
 	{
 		if (i < z_info->e_max)
 		{
-			byte flags;
+			bitflag flags, itypes[itype_size];
 			
-			/* Read and extract the flags */
+			/* Read and extract the everseen flag */
 			rd_byte(&flags);
-			e_info[i].squelch = (flags & 0x01) ? TRUE : FALSE;
 			e_info[i].everseen = (flags & 0x02) ? TRUE : FALSE;
+
+			/* Read and extract the ignore flags */
+			for (j = 0; j < ITYPE_SIZE; j++)
+				rd_byte(&itypes[j]);
+
+			for (j = ITYPE_NONE; j < ITYPE_MAX; j++)
+				if (itype_has(itypes, j))
+					ego_squelch_toggle(i, j);
 		}
 	}
 	

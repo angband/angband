@@ -11,7 +11,7 @@ typedef struct
 } quality_name_struct;
 
 /*
- * List of kinds of item, for pseudo-id squelch.
+ * List of kinds of item, for pseudo-id and ego squelch.
  */
 typedef enum
 {
@@ -22,6 +22,12 @@ typedef enum
 	ITYPE_MAX
 } squelch_type_t;
 
+
+#define ITYPE_SIZE              FLAG_SIZE(ITYPE_MAX)
+
+#define itype_has(f, flag)        	flag_has_dbg(f, ITYPE_SIZE, flag, #f, #flag)
+#define itype_on(f, flag)         	flag_on_dbg(f, ITYPE_SIZE, flag, #f, #flag)
+#define itype_wipe(f)             	flag_wipe(f, ITYPE_SIZE)
 
 /*
  * The different kinds of quality squelch
