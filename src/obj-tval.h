@@ -1,6 +1,6 @@
-/*
- * File: obj-tval.h
- * Purpose: Wrapper functions for tvals.
+/**
+   \file obj-tval.h
+   \brief Wrapper functions for tvals.
  *
  * Copyright (c) 2014 Ben Semmler
  *
@@ -21,7 +21,7 @@
 
 #include "object.h"
 
-/*
+/**
  * The values for the "tval" field of various objects.
  *
  * This value is the primary means by which items are sorted in the
@@ -70,7 +70,7 @@
 #define TV_GOLD         100	/* Gold can only be picked up by players */
 #define TV_MAX			101
 
-/*
+/**
  * Special "sval" value -- unknown "sval"
  */
 #define SV_UNKNOWN			0

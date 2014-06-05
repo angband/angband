@@ -1,6 +1,6 @@
-/*
- * File: obj-identify.h
- * Purpose: Object identification and knowledge routines
+/**
+   \file obj-identify.h
+   \brief Object identification and knowledge routines
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  * Copyright (c) 2009 Brian Bull

@@ -1,6 +1,6 @@
-/*
- * File: obj-tval.c
- * Purpose: Wrapper functions for tvals.
+/**
+   \file obj-tval.c
+   \brief Wrapper functions for tvals.
  *
  * Copyright (c) 2014 Ben Semmler
  *

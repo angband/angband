@@ -1,4 +1,4 @@
-/*
+/**
   \file obj-slays.h
   \brief Structures and functions for dealing with slays and brands
  *
@@ -15,12 +15,12 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
-#ifndef INCLUDED_SLAYS_H
-#define INCLUDED_SLAYS_H
+#ifndef OBJECT_SLAYS_H
+#define OBJECT_SLAYS_H
 
 #include "monster.h"
 
-/*
+/**
  * Slay cache. Used for looking up slay values in obj-power.c
  */
 struct slay_cache {
@@ -55,4 +55,4 @@ s32b check_slay_cache(const object_type *obj);
 bool fill_slay_cache(const object_type *obj, s32b value);
 void free_slay_cache(void);
 
-#endif /* INCLUDED_SLAYS_H */
+#endif /* OBJECT_SLAYS_H */

@@ -1,6 +1,6 @@
-/*
- * File: obj-list.h
- * Purpose: Object list UI.
+/**
+   \file obj-list.h
+   \brief Object list UI.
  *
  * Copyright (c) 2013 Ben Semmler
  *

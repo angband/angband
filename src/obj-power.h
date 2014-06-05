@@ -17,8 +17,8 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
-#ifndef INCLUDED_OBJPOWER_H
-#define INCLUDED_OBJPOWER_H
+#ifndef OBJECT_POWER_H
+#define OBJECT_POWER_H
 
 /**
  * Constants for the power algorithm:
@@ -72,4 +72,4 @@ s32b object_value_real(const object_type *o_ptr, int qty, int verbose,
 s32b object_value(const object_type *o_ptr, int qty, int verbose);
 
 
-#endif /* INCLUDED_OBJPOWER_H */
+#endif /* OBJECT_POWER_H */

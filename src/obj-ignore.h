@@ -1,3 +1,21 @@
+/**
+   \file obj-ignore.h
+   \brief Item ignoring
+ *
+ * Copyright (c) 2007 David T. Blackston, Iain McFall, DarkGod, Jeff Greene,
+ * David Vestal, Pete Mack, Andi Sidwell.
+ *
+ * This work is free software; you can redistribute it and/or modify it
+ * under the terms of either:
+ *
+ * a) the GNU General Public License as published by the Free Software
+ *    Foundation, version 2, or
+ *
+ * b) the "Angband licence":
+ *    This software may be copied and distributed for educational, research,
+ *    and not for profit purposes provided that this copyright and statement
+ *    are included in all such copies.  Other copyrights may also apply.
+ */
 #ifndef OBJ_IGNORE_H
 #define OBJ_IGNORE_H
 
@@ -69,7 +87,7 @@ extern quality_name_struct quality_choices[ITYPE_MAX];
 bool **ego_ignore_types;
 
 
-/* ignore.c */
+/* obj-ignore.c */
 void ignore_birth_init(void);
 const char *get_autoinscription(object_kind *kind);
 int apply_autoinscription(object_type *o_ptr);

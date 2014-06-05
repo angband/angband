@@ -1,5 +1,5 @@
 /**
-   \file chest.c
+   \file obj-chest.c
    \brief Encapsulation of chest-related functions
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke

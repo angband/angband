@@ -21,7 +21,9 @@
 
 #include "cave.h"
 
-/* Don't worry about probabilities for anything past dlev100 */
+/**
+ * Don't worry about probabilities for anything past dlev100
+ */
 #define MAX_O_DEPTH		100
 
 /**
@@ -37,10 +39,14 @@
  */
 #define GREAT_EGO   20
 
-/* Define a value for minima which will be ignored. */
+/**
+ * Define a value for minima which will be ignored.
+ */
 #define NO_MINIMUM 	255
 
-/* The largest possible average gold drop at max depth with biggest spread */
+/**
+ * The largest possible average gold drop at max depth with biggest spread
+ */
 #define MAX_GOLD_DROP     (3 * MAX_DEPTH + 30)
 
 /**

@@ -1,6 +1,6 @@
-/*
- * File: obj-info.h
- * Purpose: Object description code.
+/**
+   \file obj-info.h
+   \brief Object description code.
  *
  * Copyright (c) 2010 Andi Sidwell
  * Copyright (c) 2004 Robert Ruehlmann

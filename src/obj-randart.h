@@ -20,8 +20,8 @@
  * Updated by Chris Carr / Chris Robertson 2001-2010.
  */
 
-#ifndef INCLUDED_OBJRANDART_H
-#define INCLUDED_OBJRANDART_H
+#ifndef OBJECT_RANDART_H
+#define OBJECT_RANDART_H
 
 #define MAX_TRIES 200
 #define BUFLEN 1024
@@ -29,7 +29,7 @@
 #define MIN_NAME_LEN 5
 #define MAX_NAME_LEN 9
 
-/*
+/**
  * Inhibiting factors for large bonus values
  * "HIGH" values use INHIBIT_WEAK
  * "VERYHIGH" values use INHIBIT_STRONG
@@ -37,17 +37,16 @@
 #define INHIBIT_STRONG  (one_in_(6))
 #define INHIBIT_WEAK    (one_in_(2))
 
-/*
+/**
  * Power rating below which uncursed randarts cannot aggravate
  * (so that aggravate is found only on endgame-quality items or
  * cursed items)
  */
 #define AGGR_POWER 300
 
-/*
+/**
  * Numerical index values for the different learned probabilities
  * These are to make the code more readable.
- * ToDo: turn these into an enum
  */
 
 enum {
@@ -162,4 +161,4 @@ enum {
 char *artifact_gen_name(struct artifact *a, const char ***wordlist);
 errr do_randart(u32b randart_seed, bool full);
 
-#endif /* INCLUDED_OBJRANDART_H */
+#endif /* OBJECT_RANDART_H */

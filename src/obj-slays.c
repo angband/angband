@@ -1,4 +1,4 @@
-/*
+/**
   \file obj-slays.c
   \brief Functions for manipulating slays/brands
  *

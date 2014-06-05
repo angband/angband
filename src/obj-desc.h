@@ -1,6 +1,6 @@
-/*
- * File: obj-desc.h
- * Purpose: Create object name descriptions
+/**
+   \file obj-desc.h
+   \brief Create object name descriptions
  *
  * Copyright (c) 1997 - 2007 Angband contributors
  *

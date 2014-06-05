@@ -1,6 +1,6 @@
-/*
- * File: obj-list.c
- * Purpose: Object list UI.
+/**
+   \file obj-list.c
+   \brief Object list UI.
  *
  * Copyright (c) 1997-2007 Ben Harrison, James E. Wilson, Robert A. Koeneke
  * Copyright (c) 2013 Ben Semmler

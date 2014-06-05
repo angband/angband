@@ -1,3 +1,7 @@
+/**
+   \file object.h
+   \brief basic object structs and enums
+ */
 #ifndef INCLUDED_OBJECT_H
 #define INCLUDED_OBJECT_H
 
