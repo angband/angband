@@ -791,7 +791,7 @@ static s32b object_value_base(const object_type *o_ptr)
 
 
 /**
- * Return the "real" price of a "known" item, not including discounts.
+ * Return the real price of a known (or partly known) item.
  *
  * Wand and staffs get cost for each charge.
  *
@@ -809,17 +809,16 @@ s32b object_value_real(const object_type *o_ptr, int qty, int verbose,
 	int b = 5;
 	static file_mode pricing_mode = MODE_WRITE;
 
-	if (wearable_p(o_ptr))
-	{
+	/* Wearables and ammo have prices that vary by individual item properties */
+	if (tval_has_variable_power(o_ptr))	{
 		char buf[1024];
 		ang_file *log_file = NULL;
 
-		if (verbose)
-		{
+		/* Logging */
+		if (verbose) {
 			path_build(buf, sizeof(buf), ANGBAND_DIR_USER, "pricing.log");
 			log_file = file_open(buf, pricing_mode, FTYPE_TEXT);
-			if (!log_file)
-			{
+			if (!log_file) {
 				msg("Error - can't open pricing.log for writing.");
 				exit(1);
 			}
@@ -827,60 +826,59 @@ s32b object_value_real(const object_type *o_ptr, int qty, int verbose,
 		}
 
 		file_putf(log_file, "object is %s\n", o_ptr->kind->name);
+
+		/* Calculate power and value */
 		power = object_power(o_ptr, verbose, log_file, known);
 		value = SGN(power) * ((a * power * power) + (b * power));
 
+		/* Rescale for expendables */
 		if ((tval_is_light(o_ptr) && of_has(o_ptr->flags, OF_BURNS_OUT)
-			 && !o_ptr->ego) || tval_is_ammo(o_ptr))
-		{
+			 && !o_ptr->ego) || tval_is_ammo(o_ptr)) {
 			value = value / AMMO_RESCALER;
 			if (value < 1) value = 1;
 		}
 
+		/* More logging */
 		file_putf(log_file, "a is %d and b is %d\n", a, b);
 		file_putf(log_file, "value is %d\n", value);
-		total_value = value * qty;
 
-		if (verbose)
-		{
-			if (!file_close(log_file))
-			{
+		if (verbose) {
+			if (!file_close(log_file)) {
 				msg("Error - can't close pricing.log file.");
 				exit(1);
 			}
 		}
+
+		/* Get the total value */
+		total_value = value * qty;
 		if (total_value < 0) total_value = 0;
+	} else {
 
-		return (total_value);
+		/* Worthless items */
+		if (!o_ptr->kind->cost) return (0L);
+
+		/* Base cost */
+		value = o_ptr->kind->cost;
+
+		/* Analyze the item type and quantity */
+		if (tval_can_have_charges(o_ptr)) {
+			int charges;
+
+			total_value = value * qty;
+
+			/* Calculate number of charges, rounded up */
+			charges = o_ptr->pval * qty / o_ptr->number;
+			if ((o_ptr->pval * qty) % o_ptr->number != 0)
+				charges++;
+
+			/* Pay extra for charges, depending on standard number of charges */
+			total_value += value * charges / 20;
+		} else
+			total_value = value * qty;
+
+		/* No negative value */
+		if (total_value < 0) total_value = 0;
 	}
-
-	/* Hack -- "worthless" items */
-	if (!o_ptr->kind->cost) return (0L);
-
-	/* Base cost */
-	value = o_ptr->kind->cost;
-
-	/* Analyze the item type and quantity*/
-	if (tval_can_have_charges(o_ptr)) {
-		int charges;
-
-		total_value = value * qty;
-
-		/* Calculate number of charges, rounded up */
-		charges = o_ptr->pval
-		* qty / o_ptr->number;
-		if ((o_ptr->pval * qty) % o_ptr->number != 0)
-			charges++;
-
-		/* Pay extra for charges, depending on standard number of charges */
-		total_value += value * charges / 20;
-	}
-	else {
-		total_value = value * qty;
-	}
-
-	/* No negative value */
-	if (total_value < 0) total_value = 0;
 
 	/* Return the value */
 	return (total_value);
@@ -892,24 +890,20 @@ s32b object_value_real(const object_type *o_ptr, int qty, int verbose,
  *
  * This function returns the "value" of the given item (qty one).
  *
- * Never notice "unknown" bonuses or properties, including "curses",
- * since that would give the player information he did not have.
- *
- * Note that discounted items stay discounted forever.
+ * Never notice unknown bonuses or properties, including curses,
+ * since that would give the player information they did not have.
  */
 s32b object_value(const object_type *o_ptr, int qty, int verbose)
 {
 	s32b value;
 
-
-	if (object_is_known(o_ptr))
-	{
+	/* Known items use the actual value */
+	if (object_is_known(o_ptr))	{
 		if (cursed_p((bitflag *)o_ptr->flags)) return (0L);
 
 		value = object_value_real(o_ptr, qty, verbose, TRUE);
-	}
-	else if (wearable_p(o_ptr))
-	{
+	} else if (tval_has_variable_power(o_ptr)) {
+		/* Variable power items are assessed by what is known about them */
 		object_type object_type_body;
 		object_type *j_ptr = &object_type_body;
 
@@ -928,8 +922,9 @@ s32b object_value(const object_type *o_ptr, int qty, int verbose)
 			j_ptr->to_a = 0;
 
 		value = object_value_real(j_ptr, qty, verbose, FALSE);
-	}
-	else value = object_value_base(o_ptr) * qty;
+	} else
+		/* Unknown constant-price items just get a base value */
+		value = object_value_base(o_ptr) * qty;
 
 
 	/* Return the final value */

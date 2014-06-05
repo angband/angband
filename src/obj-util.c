@@ -2377,15 +2377,6 @@ bool item_is_available(int item, bool (*tester)(const object_type *), int mode)
 	return FALSE;
 }
 
-/*
- * Hack -- determine if an item is "wearable" (or a missile)
- */
-bool wearable_p(const object_type *o_ptr)
-{
-	return tval_is_wearable(o_ptr);
-}
-
-
 /**
  * Returns the number of times in 1000 that @ will FAIL
  * - thanks to Ed Graham for the formula

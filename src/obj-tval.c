@@ -237,12 +237,38 @@ bool tval_is_melee_weapon(const struct object *o_ptr)
 	}
 }
 
-bool tval_is_wearable(const struct object *o_ptr)
+bool tval_has_variable_power(const struct object *o_ptr)
 {
 	switch (o_ptr->tval) {
 		case TV_SHOT:
 		case TV_ARROW:
 		case TV_BOLT:
+		case TV_BOW:
+		case TV_DIGGING:
+		case TV_HAFTED:
+		case TV_POLEARM:
+		case TV_SWORD:
+		case TV_BOOTS:
+		case TV_GLOVES:
+		case TV_HELM:
+		case TV_CROWN:
+		case TV_SHIELD:
+		case TV_CLOAK:
+		case TV_SOFT_ARMOR:
+		case TV_HARD_ARMOR:
+		case TV_DRAG_ARMOR:
+		case TV_LIGHT:
+		case TV_AMULET:
+		case TV_RING:
+			return TRUE;
+		default:
+			return FALSE;
+	}
+}
+
+bool tval_is_wearable(const struct object *o_ptr)
+{
+	switch (o_ptr->tval) {
 		case TV_BOW:
 		case TV_DIGGING:
 		case TV_HAFTED:

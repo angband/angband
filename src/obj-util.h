@@ -121,7 +121,6 @@ bool obj_can_fail(const struct object *o);
 int scan_items(int *item_list, size_t item_list_max, int mode,
 			   item_tester tester);
 bool item_is_available(int item, bool (*tester)(const object_type *), int mode);
-bool wearable_p(const object_type *o_ptr);
 int get_use_device_chance(const object_type *o_ptr);
 void distribute_charges(object_type *o_ptr, object_type *q_ptr, int amt);
 void reduce_charges(object_type *o_ptr, int amt);

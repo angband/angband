@@ -109,6 +109,7 @@ bool tval_is_staff(const struct object *o_ptr);
 bool tval_is_useable(const struct object *o_ptr);
 bool tval_is_wand(const struct object *o_ptr);
 bool tval_is_weapon(const struct object *o_ptr);
+bool tval_has_variable_power(const struct object *o_ptr);
 bool tval_is_wearable(const struct object *o_ptr);
 bool tval_is_edible(const struct object *o_ptr);
 bool tval_is_zapper(const struct object *o_ptr);

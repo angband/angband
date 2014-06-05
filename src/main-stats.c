@@ -55,7 +55,11 @@
 /* For ref, e_max is 128, a_max is 136, r_max is ~650,
 	ORIGIN_STATS is 14, OF_MAX is ~120 */
 
-/* There are 416 kinds, of which about 150-200 are wearable */
+/**
+ * There are (at last count) 416 kinds, of which about 150-200 are wearable
+ * - here wearable includes ammo, which behaves similarly in having
+ * variable power between individual items
+ */
 
 static int randarts = 0;
 static int no_selling = 0;
@@ -110,7 +114,7 @@ static void create_indices()
 
 		if (! kind->name) continue;
 
-		if (wearable_p(o_ptr))
+		if (tval_has_variable_power(o_ptr))
 			wearables_index[i] = ++wearable_count;
 		else
 			consumables_index[i] = ++consumable_count;
@@ -308,7 +312,7 @@ static void log_all_objects(int level)
 					level_data[level].artifacts[o_ptr->origin][o_ptr->artifact->aidx]++;
 
 				/* Capture kind details */
-				if (wearable_p(o_ptr)) {
+				if (tval_has_variable_power(o_ptr)) {
 					struct wearables_data *w
 						= &level_data[level].wearables[o_ptr->origin][wearables_index[o_ptr->kind->kidx]];
 
