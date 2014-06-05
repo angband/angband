@@ -1,6 +1,6 @@
-/*
- * File: randart.c
- * Purpose: Random artifact generation
+/**
+   \file obj-randart.c
+   \brief Random artifact generation
  *
  * Copyright (c) 1998 Greg Wooledge, Ben Harrison, Robert Ruhlmann
  * Copyright (c) 2001 Chris Carr, Chris Robertson
@@ -15,153 +15,21 @@
  *    This software may be copied and distributed for educational, research,
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
+ *
+ * Original random artifact generator (randart) by Greg Wooledge.
+ * Updated by Chris Carr / Chris Robertson 2001-2010.
  */
 #include "angband.h"
 #include "effects.h"
 #include "init.h"
 #include "obj-desc.h"
+#include "obj-power.h"
+#include "obj-randart.h"
 #include "obj-slays.h"
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "randname.h"
 #include "wizard.h" /* make_fake_artifact() */
-
-/*
- * Original random artifact generator (randart) by Greg Wooledge.
- * Updated by Chris Carr / Chris Robertson 2001-2010.
- */
-
-#define MAX_TRIES 200
-#define BUFLEN 1024
-
-#define MIN_NAME_LEN 5
-#define MAX_NAME_LEN 9
-
-/*
- * Inhibiting factors for large bonus values
- * "HIGH" values use INHIBIT_WEAK
- * "VERYHIGH" values use INHIBIT_STRONG
- */
-#define INHIBIT_STRONG  (one_in_(6))
-#define INHIBIT_WEAK    (one_in_(2))
-
-/*
- * Power rating below which uncursed randarts cannot aggravate
- * (so that aggravate is found only on endgame-quality items or
- * cursed items)
- */
-#define AGGR_POWER 300
-
-/*
- * Numerical index values for the different learned probabilities
- * These are to make the code more readable.
- * ToDo: turn these into an enum
- */
-
-#define ART_IDX_BOW_SHOTS 0
-#define ART_IDX_BOW_MIGHT 1
-#define ART_IDX_BOW_BRAND 80
-#define ART_IDX_BOW_SLAY 81
-#define ART_IDX_WEAPON_HIT 2
-#define ART_IDX_WEAPON_DAM 3
-#define ART_IDX_NONWEAPON_HIT 4
-#define ART_IDX_NONWEAPON_DAM 5
-#define ART_IDX_NONWEAPON_HIT_DAM 6
-#define ART_IDX_NONWEAPON_BRAND 78
-#define ART_IDX_NONWEAPON_SLAY 79
-#define ART_IDX_NONWEAPON_BLOWS 83
-#define ART_IDX_NONWEAPON_SHOTS 84
-
-#define ART_IDX_MELEE_BLESS 7
-#define ART_IDX_MELEE_BRAND 8
-#define ART_IDX_MELEE_SLAY 76
-#define ART_IDX_MELEE_SINV 9
-#define ART_IDX_MELEE_BLOWS 10
-#define ART_IDX_MELEE_AC 11
-#define ART_IDX_MELEE_DICE 12
-#define ART_IDX_MELEE_WEIGHT 13
-#define ART_IDX_MELEE_TUNN 14
-
-#define ART_IDX_ALLARMOR_WEIGHT 15
-
-#define ART_IDX_BOOT_AC 16
-#define ART_IDX_BOOT_FEATHER 17
-#define ART_IDX_BOOT_STEALTH 18
-#define ART_IDX_BOOT_SPEED 19
-
-#define ART_IDX_GLOVE_AC 20
-#define ART_IDX_GLOVE_FA 21
-#define ART_IDX_GLOVE_DEX 22
-
-#define ART_IDX_HELM_AC 23
-#define ART_IDX_HELM_RBLIND 24
-#define ART_IDX_HELM_ESP 25
-#define ART_IDX_HELM_SINV 26
-#define ART_IDX_HELM_WIS 27
-#define ART_IDX_HELM_INT 28
-
-#define ART_IDX_SHIELD_AC 29
-#define ART_IDX_SHIELD_LRES 30
-
-#define ART_IDX_CLOAK_AC 31
-#define ART_IDX_CLOAK_STEALTH 32
-
-#define ART_IDX_ARMOR_AC 33
-#define ART_IDX_ARMOR_STEALTH 34
-#define ART_IDX_ARMOR_HLIFE 35
-#define ART_IDX_ARMOR_CON 36
-#define ART_IDX_ARMOR_LRES 37
-#define ART_IDX_ARMOR_ALLRES 38
-#define ART_IDX_ARMOR_HRES 39
-
-#define ART_IDX_GEN_STAT 40
-#define ART_IDX_GEN_SUST 41
-#define ART_IDX_GEN_STEALTH 42
-#define ART_IDX_GEN_SEARCH 43
-#define ART_IDX_GEN_INFRA 44
-#define ART_IDX_GEN_SPEED 45
-#define ART_IDX_GEN_IMMUNE 46
-#define ART_IDX_GEN_FA 47
-#define ART_IDX_GEN_HLIFE 48
-#define ART_IDX_GEN_FEATHER 49
-#define ART_IDX_GEN_LIGHT 50
-#define ART_IDX_GEN_SINV 51
-#define ART_IDX_GEN_ESP 52
-#define ART_IDX_GEN_SDIG 53
-#define ART_IDX_GEN_REGEN 54
-#define ART_IDX_GEN_LRES 55
-#define ART_IDX_GEN_RPOIS 56
-#define ART_IDX_GEN_RFEAR 57
-#define ART_IDX_GEN_RLIGHT 58
-#define ART_IDX_GEN_RDARK 59
-#define ART_IDX_GEN_RBLIND 60
-#define ART_IDX_GEN_RCONF 61
-#define ART_IDX_GEN_RSOUND 62
-#define ART_IDX_GEN_RSHARD 63
-#define ART_IDX_GEN_RNEXUS 64
-#define ART_IDX_GEN_RNETHER 65
-#define ART_IDX_GEN_RCHAOS 66
-#define ART_IDX_GEN_RDISEN 67
-#define ART_IDX_GEN_AC 68
-#define ART_IDX_GEN_TUNN 69
-#define ART_IDX_GEN_ACTIV 82
-#define ART_IDX_GEN_PSTUN 86
-
-/* Supercharged abilities - treated differently in algorithm */
-
-#define ART_IDX_MELEE_DICE_SUPER 70
-#define ART_IDX_BOW_SHOTS_SUPER 71
-#define ART_IDX_BOW_MIGHT_SUPER 72
-#define ART_IDX_GEN_SPEED_SUPER 73
-#define ART_IDX_MELEE_BLOWS_SUPER 77
-#define ART_IDX_GEN_AC_SUPER 85
-
-/* Aggravation - weapon and nonweapon */
-#define ART_IDX_WEAPON_AGGR 74
-#define ART_IDX_NONWEAPON_AGGR 75
-
-/* Total of abilities */
-#define ART_IDX_TOTAL 87
 
 /* Arrays of indices by item type, used in frequency generation */
 static s16b art_idx_bow[] =

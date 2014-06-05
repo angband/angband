@@ -23,6 +23,7 @@
 #include "mon-spell.h"
 #include "mon-util.h"
 #include "obj-identify.h"
+#include "obj-power.h"
 #include "obj-util.h"
 #include "player-timed.h"
 #include "player-util.h"

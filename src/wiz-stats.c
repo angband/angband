@@ -24,6 +24,7 @@
 #include "mon-make.h"
 #include "monster.h"
 #include "mon-constants.h"
+#include "obj-randart.h"
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "object.h"

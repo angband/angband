@@ -54,9 +54,6 @@ s16b o_pop(struct chunk *c);
 object_type *get_first_object(int y, int x);
 object_type *get_next_object(const object_type *o_ptr);
 bool is_blessed(const object_type *o_ptr);
-s32b object_value_real(const object_type *o_ptr, int qty, int verbose,
-					   bool known);
-s32b object_value(const object_type *o_ptr, int qty, int verbose);
 bool object_stackable(const object_type *o_ptr, const object_type *j_ptr,
 					  object_stack_t mode);
 bool object_similar(const object_type *o_ptr, const object_type *j_ptr,

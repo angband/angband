@@ -27,6 +27,7 @@
 #include "obj-identify.h"
 #include "obj-info.h"
 #include "obj-make.h"
+#include "obj-power.h"
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "object.h"

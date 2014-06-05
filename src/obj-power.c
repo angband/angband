@@ -1,6 +1,6 @@
-/*
- * File: obj-power.c
- * Purpose: calculation of object power
+/**
+   \file obj-power.c
+   \brief calculation of object power and value
  *
  * Copyright (c) 2001 Chris Carr, Chris Robertson
  * Revised in 2009-11 by Chris Carr, Peter Denison
@@ -19,6 +19,7 @@
 #include "angband.h"
 #include "obj-gear.h"
 #include "obj-identify.h"
+#include "obj-power.h"
 #include "obj-slays.h"
 #include "obj-tval.h"
 #include "obj-util.h"
@@ -26,30 +27,6 @@
 #include "effects.h"
 #include "mon-power.h"
 #include "monster.h"
-
-/**
- * Constants for the power algorithm:
- * - fudge factor for extra damage from rings etc. (used if extra blows)
- * - assumed damage for off-weapon brands
- * - base power for jewelry
- * - base power for armour items (for halving acid damage)
- * - power per point of damage
- * - power per point of +to_hit
- * - power per point of base AC
- * - power per point of +to_ac
- * (these four are all halved in the algorithm)
- * - assumed max blows
- * - inhibiting values for +blows/might/shots/immunities (max is one less)
- */
-#define NONWEAP_DAMAGE   		15 /* fudge to boost extra blows */
-#define WEAP_DAMAGE				12 /* and for off-weapon combat flags */
-#define BASE_JEWELRY_POWER		 4
-#define BASE_ARMOUR_POWER		 1
-#define DAMAGE_POWER             5 /* i.e. 2.5 */
-#define TO_HIT_POWER             3 /* i.e. 1.5 */
-#define BASE_AC_POWER            2 /* i.e. 1 */
-#define TO_AC_POWER              2 /* i.e. 1 */
-#define MAX_BLOWS                5
 
 /**
  * Define a set of constants for dealing with launchers and ammo:
@@ -776,4 +753,185 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 	log_obj(format("FINAL POWER IS %d\n", p));
 
 	return p;
+}
+
+
+/**
+ * Return the "value" of an "unknown" item
+ * Make a guess at the value of non-aware items
+ */
+static s32b object_value_base(const object_type *o_ptr)
+{
+	/* Use template cost for aware objects */
+	if (object_flavor_is_aware(o_ptr) || object_all_but_flavor_is_known(o_ptr))
+		return o_ptr->kind->cost;
+
+	/* Analyze the type */
+	switch (o_ptr->tval)
+	{
+		case TV_FOOD:
+		case TV_MUSHROOM:
+			return 5;
+		case TV_POTION:
+		case TV_SCROLL:
+			return 20;
+		case TV_RING:
+		case TV_AMULET:
+			return 45;
+		case TV_WAND:
+			return 50;
+		case TV_STAFF:
+			return 70;
+		case TV_ROD:
+			return 90;
+	}
+
+	return 0;
+}
+
+
+/**
+ * Return the "real" price of a "known" item, not including discounts.
+ *
+ * Wand and staffs get cost for each charge.
+ *
+ * Wearable items (weapons, launchers, jewelry, lights, armour) and ammo
+ * are priced according to their power rating. All ammo, and normal (non-ego)
+ * torches are scaled down by AMMO_RESCALER to reflect their impermanence.
+ */
+s32b object_value_real(const object_type *o_ptr, int qty, int verbose,
+					   bool known)
+{
+	s32b value, total_value;
+
+	s32b power;
+	int a = 1;
+	int b = 5;
+	static file_mode pricing_mode = MODE_WRITE;
+
+	if (wearable_p(o_ptr))
+	{
+		char buf[1024];
+		ang_file *log_file = NULL;
+
+		if (verbose)
+		{
+			path_build(buf, sizeof(buf), ANGBAND_DIR_USER, "pricing.log");
+			log_file = file_open(buf, pricing_mode, FTYPE_TEXT);
+			if (!log_file)
+			{
+				msg("Error - can't open pricing.log for writing.");
+				exit(1);
+			}
+			pricing_mode = MODE_APPEND;
+		}
+
+		file_putf(log_file, "object is %s\n", o_ptr->kind->name);
+		power = object_power(o_ptr, verbose, log_file, known);
+		value = sign(power) * ((a * power * power) + (b * power));
+
+		if ((tval_is_light(o_ptr) && of_has(o_ptr->flags, OF_BURNS_OUT)
+			 && !o_ptr->ego) || tval_is_ammo(o_ptr))
+		{
+			value = value / AMMO_RESCALER;
+			if (value < 1) value = 1;
+		}
+
+		file_putf(log_file, "a is %d and b is %d\n", a, b);
+		file_putf(log_file, "value is %d\n", value);
+		total_value = value * qty;
+
+		if (verbose)
+		{
+			if (!file_close(log_file))
+			{
+				msg("Error - can't close pricing.log file.");
+				exit(1);
+			}
+		}
+		if (total_value < 0) total_value = 0;
+
+		return (total_value);
+	}
+
+	/* Hack -- "worthless" items */
+	if (!o_ptr->kind->cost) return (0L);
+
+	/* Base cost */
+	value = o_ptr->kind->cost;
+
+	/* Analyze the item type and quantity*/
+	if (tval_can_have_charges(o_ptr)) {
+		int charges;
+
+		total_value = value * qty;
+
+		/* Calculate number of charges, rounded up */
+		charges = o_ptr->pval
+		* qty / o_ptr->number;
+		if ((o_ptr->pval * qty) % o_ptr->number != 0)
+			charges++;
+
+		/* Pay extra for charges, depending on standard number of charges */
+		total_value += value * charges / 20;
+	}
+	else {
+		total_value = value * qty;
+	}
+
+	/* No negative value */
+	if (total_value < 0) total_value = 0;
+
+	/* Return the value */
+	return (total_value);
+}
+
+
+/**
+ * Return the price of an item including plusses (and charges).
+ *
+ * This function returns the "value" of the given item (qty one).
+ *
+ * Never notice "unknown" bonuses or properties, including "curses",
+ * since that would give the player information he did not have.
+ *
+ * Note that discounted items stay discounted forever.
+ */
+s32b object_value(const object_type *o_ptr, int qty, int verbose)
+{
+	s32b value;
+
+
+	if (object_is_known(o_ptr))
+	{
+		if (cursed_p((bitflag *)o_ptr->flags)) return (0L);
+
+		value = object_value_real(o_ptr, qty, verbose, TRUE);
+	}
+	else if (wearable_p(o_ptr))
+	{
+		object_type object_type_body;
+		object_type *j_ptr = &object_type_body;
+
+		/* Hack -- Felt cursed items */
+		if (object_was_sensed(o_ptr) && cursed_p((bitflag *)o_ptr->flags))
+			return (0L);
+
+		memcpy(j_ptr, o_ptr, sizeof(object_type));
+
+		/* give j_ptr only the flags known to be in o_ptr */
+		object_flags_known(o_ptr, j_ptr->flags);
+
+		if (!object_attack_plusses_are_visible(o_ptr))
+			j_ptr->to_h = j_ptr->to_d = 0;
+		if (!object_defence_plusses_are_visible(o_ptr))
+			j_ptr->to_a = 0;
+
+		value = object_value_real(j_ptr, qty, verbose, FALSE);
+	}
+	else value = object_value_base(o_ptr) * qty;
+
+
+	/* Return the final value */
+	return (value);
 }

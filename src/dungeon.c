@@ -34,6 +34,7 @@
 #include "obj-desc.h"
 #include "obj-gear.h"
 #include "obj-identify.h"
+#include "obj-randart.h"
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "object.h"

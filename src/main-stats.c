@@ -28,6 +28,8 @@
 #include "monster.h"
 #include "obj-gear.h"
 #include "obj-identify.h"
+#include "obj-power.h"
+#include "obj-randart.h"
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "object.h"

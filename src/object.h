@@ -128,25 +128,6 @@ enum {
 /* Maximum number of scroll titles generated */
 #define MAX_TITLES	 50
 
-/*
- * Some constants used in randart generation and power calculation
- * - thresholds for limiting to_hit, to_dam and to_ac
- * - fudge factor for rescaling ammo cost
- * (a stack of this many equals a weapon of the same damage output)
- */
-#define INHIBIT_POWER		20000
-#define INHIBIT_BLOWS		3
-#define INHIBIT_MIGHT		4
-#define INHIBIT_SHOTS		3
-#define HIGH_TO_AC			26
-#define VERYHIGH_TO_AC		36
-#define INHIBIT_AC			56
-#define HIGH_TO_HIT			16
-#define VERYHIGH_TO_HIT		26
-#define HIGH_TO_DAM			16
-#define VERYHIGH_TO_DAM		26
-#define AMMO_RESCALER		20 /* this value is also used for torches */
-
 #define sign(x) ((x) > 0 ? 1 : ((x) < 0 ? -1 : 0))
 
 /* Values for struct object->marked */
@@ -559,12 +540,5 @@ extern struct flavor *flavors;
 
 typedef bool (*item_tester)(const struct object *);
 
-
-/*** Functions ***/
-
-/* obj-power.c and randart.c */
-s32b object_power(const object_type *o_ptr, int verbose, ang_file *log_file, bool known);
-char *artifact_gen_name(struct artifact *a, const char ***wordlist);
-errr do_randart(u32b randart_seed, bool full);
 
 #endif /* !INCLUDED_OBJECT_H */
