@@ -551,16 +551,9 @@ static bool make_artifact(object_type *o_ptr)
 	/* Make sure birth no artifacts isn't set */
 	if (OPT(birth_no_artifacts)) art_ok = FALSE;
 
-	/* Special handling of Grond/Morgoth */
-	if (o_ptr->artifact)
-	{
-		switch (o_ptr->artifact->aidx)
-		{
-			case ART_GROND:
-			case ART_MORGOTH:
-				art_ok = TRUE;
-		}
-	}
+	/* Special handling of quest artifacts */
+	if (kf_has(o_ptr->kind->kind_flags, KF_QUEST_ART))
+		art_ok = TRUE;
 
 	if (!art_ok) return (FALSE);
 

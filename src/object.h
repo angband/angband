@@ -64,28 +64,6 @@ enum
 #define id_inter(f1, f2)       	flag_inter(f1, f2, ID_SIZE)
 #define id_diff(f1, f2)        	flag_diff(f1, f2, ID_SIZE)
 
-/*
- * Refueling constants
- */
-#define FUEL_TORCH    5000  /* Maximum amount of fuel in a torch */
-#define FUEL_LAMP     15000  /* Maximum amount of fuel in a lantern */
-#define DEFAULT_TORCH FUEL_TORCH  /* Default amount of fuel in a torch */
-#define DEFAULT_LAMP  (FUEL_LAMP / 2)  /* Default amount of fuel in a lantern */
-
-/* A "stack" of items is limited to 40 items (hard-coded). */
-#define MAX_STACK_SIZE 41
-
-/* An item's pval (for charges, amount of gold, etc) is limited to s16b */
-#define MAX_PVAL  32767
-
-/*
- * Maximum number of objects allowed in a single dungeon grid.
- *
- * The main-screen has a minimum size of 24 rows, so we can always
- * display 23 objects + 1 header line.
- */
-#define MAX_FLOOR_STACK			23
-
 
 /*** API constants ***/
 
@@ -125,11 +103,6 @@ enum {
 #define ORIGIN_BYTES 4 /* savefile bytes - room for 32 origin types */
 
 
-/* Maximum number of scroll titles generated */
-#define MAX_TITLES	 50
-
-#define sign(x) ((x) > 0 ? 1 : ((x) < 0 ? -1 : 0))
-
 /* Values for struct object->marked */
 enum {
 	MARK_UNAWARE = 0,
@@ -139,12 +112,10 @@ enum {
 
 
 
-/*** Macros ***/
-
 /*** Structures ***/
 
 /*
- * And here's the structure for the "fixed" spell information
+ * The structure for the "fixed" spell information
  */
 typedef struct spell {
 	struct spell *next;
@@ -302,18 +273,12 @@ typedef struct object_kind
 	bool tried;		/**< Set if kind has been tried */
 
 	byte ignore;  	/**< Ignore settings */
-	bool everseen; 	/**< Set if kind has ever been seen (to despoilify ignore menus) */
+	bool everseen; 	/**< Kind has been seen (to despoilify ignore menus) */
 
 	struct spell *spells;
 } object_kind;
 
 extern object_kind *k_info;
-
-/*** Important artifact indexes (see "lib/edit/artifact.txt") ***/
-
-#define ART_POWER			13
-#define ART_MORGOTH			34
-#define ART_GROND			111
 
 /**
  * Information about artifacts.

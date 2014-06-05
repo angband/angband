@@ -43,6 +43,14 @@
 /* The largest possible average gold drop at max depth with biggest spread */
 #define MAX_GOLD_DROP     (3 * MAX_DEPTH + 30)
 
+/**
+ * Refueling constants
+ */
+#define FUEL_TORCH    5000  /* Maximum amount of fuel in a torch */
+#define FUEL_LAMP     15000  /* Maximum amount of fuel in a lantern */
+#define DEFAULT_TORCH FUEL_TORCH  /* Default amount of fuel in a torch */
+#define DEFAULT_LAMP  (FUEL_LAMP / 2)  /* Default amount of fuel in a lantern */
+
 void free_obj_alloc(void);
 bool init_obj_alloc(void);
 object_kind *get_obj_num(int level, bool good, int tval);

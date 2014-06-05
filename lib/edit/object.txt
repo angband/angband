@@ -3487,23 +3487,22 @@ I:gold
 
 ##### "Morgoth Artifacts" #####
 
-# These objects, like other INSTA_ARTs are never created without being
-# turned into artifacts.  This simplifies the code for "killing the
-# winner monster".
+# These objects are never created without being turned into artifacts.
+# This simplifies the code for "killing the winner monster".
 
 N:540:& Mighty Hammer~
 G:\:D
 I:hafted
 W:15:0:200:1000
 P:0:3d9:0:0:0
-F:INSTA_ART
+F:INSTA_ART | QUEST_ART
 
 N:542:& Massive Iron Crown~
 G:]:D
 I:crown
 W:44:0:20:1000
 P:0:1d1:0:0:0
-F:INSTA_ART
+F:INSTA_ART | QUEST_ART
 
 
 #The "Special Artifacts" are now automatically generated from artifact.txt

@@ -828,7 +828,7 @@ s32b object_value_real(const object_type *o_ptr, int qty, int verbose,
 
 		file_putf(log_file, "object is %s\n", o_ptr->kind->name);
 		power = object_power(o_ptr, verbose, log_file, known);
-		value = sign(power) * ((a * power * power) + (b * power));
+		value = SGN(power) * ((a * power * power) + (b * power));
 
 		if ((tval_is_light(o_ptr) && of_has(o_ptr->flags, OF_BURNS_OUT)
 			 && !o_ptr->ego) || tval_is_ammo(o_ptr))

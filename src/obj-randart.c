@@ -32,52 +32,125 @@
 #include "wizard.h" /* make_fake_artifact() */
 
 /* Arrays of indices by item type, used in frequency generation */
-static s16b art_idx_bow[] =
-	{ART_IDX_BOW_SHOTS, ART_IDX_BOW_MIGHT, ART_IDX_BOW_BRAND, ART_IDX_BOW_SLAY};
-static s16b art_idx_weapon[] =
-	{ART_IDX_WEAPON_HIT, ART_IDX_WEAPON_DAM, ART_IDX_WEAPON_AGGR};
-static s16b art_idx_nonweapon[] =
-	{ART_IDX_NONWEAPON_HIT, ART_IDX_NONWEAPON_DAM, ART_IDX_NONWEAPON_HIT_DAM,
-	ART_IDX_NONWEAPON_AGGR, ART_IDX_NONWEAPON_BRAND, ART_IDX_NONWEAPON_SLAY,
-	ART_IDX_NONWEAPON_BLOWS, ART_IDX_NONWEAPON_SHOTS};
-static s16b art_idx_melee[] =
-	{ART_IDX_MELEE_BLESS, ART_IDX_MELEE_SINV, ART_IDX_MELEE_BRAND, ART_IDX_MELEE_SLAY,
-	ART_IDX_MELEE_BLOWS, ART_IDX_MELEE_AC, ART_IDX_MELEE_DICE,
-	ART_IDX_MELEE_WEIGHT, ART_IDX_MELEE_TUNN};
-static s16b art_idx_allarmor[] =
-	{ART_IDX_ALLARMOR_WEIGHT};
-static s16b art_idx_boot[] =
-	{ART_IDX_BOOT_AC, ART_IDX_BOOT_FEATHER, ART_IDX_BOOT_STEALTH, ART_IDX_BOOT_SPEED};
-static s16b art_idx_glove[] =
-	{ART_IDX_GLOVE_AC, ART_IDX_GLOVE_FA, ART_IDX_GLOVE_DEX};
-static s16b art_idx_headgear[] =
-	{ART_IDX_HELM_AC, ART_IDX_HELM_RBLIND, ART_IDX_HELM_ESP, ART_IDX_HELM_SINV,
-	ART_IDX_HELM_WIS, ART_IDX_HELM_INT};
-static s16b art_idx_shield[] =
-	{ART_IDX_SHIELD_AC, ART_IDX_SHIELD_LRES};
-static s16b art_idx_cloak[] =
-	{ART_IDX_CLOAK_AC, ART_IDX_CLOAK_STEALTH};
-static s16b art_idx_armor[] =
-	{ART_IDX_ARMOR_AC, ART_IDX_ARMOR_STEALTH, ART_IDX_ARMOR_HLIFE, ART_IDX_ARMOR_CON,
-	ART_IDX_ARMOR_LRES, ART_IDX_ARMOR_ALLRES, ART_IDX_ARMOR_HRES};
-static s16b art_idx_gen[] =
-	{ART_IDX_GEN_STAT, ART_IDX_GEN_SUST, ART_IDX_GEN_STEALTH,
-	ART_IDX_GEN_SEARCH, ART_IDX_GEN_INFRA, ART_IDX_GEN_SPEED,
-	ART_IDX_GEN_IMMUNE, ART_IDX_GEN_FA, ART_IDX_GEN_HLIFE,
-	ART_IDX_GEN_FEATHER, ART_IDX_GEN_LIGHT, ART_IDX_GEN_SINV,
-	ART_IDX_GEN_ESP, ART_IDX_GEN_SDIG, ART_IDX_GEN_REGEN,
-	ART_IDX_GEN_LRES, ART_IDX_GEN_RPOIS, ART_IDX_GEN_RFEAR,
-	ART_IDX_GEN_RLIGHT, ART_IDX_GEN_RDARK, ART_IDX_GEN_RBLIND,
-	ART_IDX_GEN_RCONF, ART_IDX_GEN_RSOUND, ART_IDX_GEN_RSHARD,
-	ART_IDX_GEN_RNEXUS, ART_IDX_GEN_RNETHER, ART_IDX_GEN_RCHAOS,
-	ART_IDX_GEN_RDISEN, ART_IDX_GEN_AC, ART_IDX_GEN_TUNN,
-	ART_IDX_GEN_ACTIV, ART_IDX_GEN_PSTUN};
-static s16b art_idx_high_resist[] =
-	{ART_IDX_GEN_RPOIS, ART_IDX_GEN_RFEAR,
-	ART_IDX_GEN_RLIGHT, ART_IDX_GEN_RDARK, ART_IDX_GEN_RBLIND,
-	ART_IDX_GEN_RCONF, ART_IDX_GEN_RSOUND, ART_IDX_GEN_RSHARD,
-	ART_IDX_GEN_RNEXUS, ART_IDX_GEN_RNETHER, ART_IDX_GEN_RCHAOS,
-	ART_IDX_GEN_RDISEN, ART_IDX_GEN_PSTUN};
+static s16b art_idx_bow[] = {
+	ART_IDX_BOW_SHOTS,
+	ART_IDX_BOW_MIGHT,
+	ART_IDX_BOW_BRAND,
+	ART_IDX_BOW_SLAY
+};
+static s16b art_idx_weapon[] = {
+	ART_IDX_WEAPON_HIT,
+	ART_IDX_WEAPON_DAM,
+	ART_IDX_WEAPON_AGGR
+};
+static s16b art_idx_nonweapon[] = {
+	ART_IDX_NONWEAPON_HIT,
+	ART_IDX_NONWEAPON_DAM,
+	ART_IDX_NONWEAPON_HIT_DAM,
+	ART_IDX_NONWEAPON_AGGR,
+	ART_IDX_NONWEAPON_BRAND,
+	ART_IDX_NONWEAPON_SLAY,
+	ART_IDX_NONWEAPON_BLOWS,
+	ART_IDX_NONWEAPON_SHOTS
+};
+static s16b art_idx_melee[] = {
+	ART_IDX_MELEE_BLESS,
+	ART_IDX_MELEE_SINV,
+	ART_IDX_MELEE_BRAND,
+	ART_IDX_MELEE_SLAY,
+	ART_IDX_MELEE_BLOWS,
+	ART_IDX_MELEE_AC,
+	ART_IDX_MELEE_DICE,
+	ART_IDX_MELEE_WEIGHT,
+	ART_IDX_MELEE_TUNN
+};
+static s16b art_idx_allarmor[] = {
+	ART_IDX_ALLARMOR_WEIGHT
+};
+static s16b art_idx_boot[] = {
+	ART_IDX_BOOT_AC,
+	ART_IDX_BOOT_FEATHER,
+	ART_IDX_BOOT_STEALTH,
+	ART_IDX_BOOT_SPEED
+};
+static s16b art_idx_glove[] = {
+	ART_IDX_GLOVE_AC,
+	ART_IDX_GLOVE_FA,
+	ART_IDX_GLOVE_DEX
+};
+static s16b art_idx_headgear[] = {
+	ART_IDX_HELM_AC,
+	ART_IDX_HELM_RBLIND,
+	ART_IDX_HELM_ESP,
+	ART_IDX_HELM_SINV,
+	ART_IDX_HELM_WIS,
+	ART_IDX_HELM_INT
+};
+static s16b art_idx_shield[] = {
+	ART_IDX_SHIELD_AC,
+	ART_IDX_SHIELD_LRES
+};
+static s16b art_idx_cloak[] = {
+	ART_IDX_CLOAK_AC,
+	ART_IDX_CLOAK_STEALTH
+};
+static s16b art_idx_armor[] = {
+	ART_IDX_ARMOR_AC,
+	ART_IDX_ARMOR_STEALTH,
+	ART_IDX_ARMOR_HLIFE,
+	ART_IDX_ARMOR_CON,
+	ART_IDX_ARMOR_LRES,
+	ART_IDX_ARMOR_ALLRES,
+	ART_IDX_ARMOR_HRES};
+static s16b art_idx_gen[] = {
+	ART_IDX_GEN_STAT,
+	ART_IDX_GEN_SUST,
+	ART_IDX_GEN_STEALTH,
+	ART_IDX_GEN_SEARCH,
+	ART_IDX_GEN_INFRA,
+	ART_IDX_GEN_SPEED,
+	ART_IDX_GEN_IMMUNE,
+	ART_IDX_GEN_FA,
+	ART_IDX_GEN_HLIFE,
+	ART_IDX_GEN_FEATHER,
+	ART_IDX_GEN_LIGHT,
+	ART_IDX_GEN_SINV,
+	ART_IDX_GEN_ESP,
+	ART_IDX_GEN_SDIG,
+	ART_IDX_GEN_REGEN,
+	ART_IDX_GEN_LRES,
+	ART_IDX_GEN_RPOIS,
+	ART_IDX_GEN_RFEAR,
+	ART_IDX_GEN_RLIGHT,
+	ART_IDX_GEN_RDARK,
+	ART_IDX_GEN_RBLIND,
+	ART_IDX_GEN_RCONF,
+	ART_IDX_GEN_RSOUND,
+	ART_IDX_GEN_RSHARD,
+	ART_IDX_GEN_RNEXUS,
+	ART_IDX_GEN_RNETHER,
+	ART_IDX_GEN_RCHAOS,
+	ART_IDX_GEN_RDISEN,
+	ART_IDX_GEN_AC,
+	ART_IDX_GEN_TUNN,
+	ART_IDX_GEN_ACTIV,
+	ART_IDX_GEN_PSTUN
+};
+static s16b art_idx_high_resist[] =	{
+	ART_IDX_GEN_RPOIS,
+	ART_IDX_GEN_RFEAR,
+	ART_IDX_GEN_RLIGHT,
+	ART_IDX_GEN_RDARK,
+	ART_IDX_GEN_RBLIND,
+	ART_IDX_GEN_RCONF,
+	ART_IDX_GEN_RSOUND,
+	ART_IDX_GEN_RSHARD,
+	ART_IDX_GEN_RNEXUS,
+	ART_IDX_GEN_RNETHER,
+	ART_IDX_GEN_RCHAOS,
+	ART_IDX_GEN_RDISEN,
+	ART_IDX_GEN_PSTUN
+};
 
 /* Initialize the data structures for learned probabilities */
 static s16b artprobs[ART_IDX_TOTAL];
@@ -217,16 +290,14 @@ char *artifact_gen_name(struct artifact *a, const char ***words) {
 	randname_make(RANDNAME_TOLKIEN, MIN_NAME_LEN, MAX_NAME_LEN, word, sizeof(word), words);
 	my_strcap(word);
 
-	if (one_in_(3))
+	if (strstr(a->name, "The One Ring"))
+		strnfmt(buf, sizeof(buf), "of Power (The One Ring)");
+	else if (kf_has(a->kind_flags, KF_QUEST_ART))
+		strnfmt(buf, sizeof(buf), a->name);
+	else if (one_in_(3))
 		strnfmt(buf, sizeof(buf), "'%s'", word);
 	else
 		strnfmt(buf, sizeof(buf), "of %s", word);
-	if (a->aidx == ART_POWER)
-		strnfmt(buf, sizeof(buf), "of Power (The One Ring)");
-	if (a->aidx == ART_GROND)
-		strnfmt(buf, sizeof(buf), "'Grond'");
-	if (a->aidx == ART_MORGOTH)
-		strnfmt(buf, sizeof(buf), "of Morgoth");
 	return string_make(buf);
 }
 
@@ -658,9 +729,8 @@ static void parse_frequencies(void)
 		a_ptr = &a_info[i];
 
 		/* Special cases -- don't parse these! */
-		if ((i == ART_POWER) ||
-			(i == ART_GROND) ||
-			(i == ART_MORGOTH))
+		if (strstr(a_ptr->name, "The One Ring") ||
+			kf_has(a_ptr->kind_flags, KF_QUEST_ART))
 			continue;
 
 		/* Also don't parse cursed or null items */
@@ -2592,9 +2662,8 @@ static void scramble_artifact(int a_idx)
 	bool special_artifact = kf_has(a_ptr->kind_flags, KF_INSTA_ART);
 
 	/* Special cases -- don't randomize these! */
-	if ((a_idx == ART_POWER) ||
-	    (a_idx == ART_GROND) ||
-	    (a_idx == ART_MORGOTH))
+	if (strstr(a_ptr->name, "The One Ring") ||
+		kf_has(a_ptr->kind_flags, KF_QUEST_ART))
 		return;
 
 	/* Skip unused artifacts, too! */

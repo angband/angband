@@ -22,6 +22,20 @@
 #include "cave.h"
 #include "player.h"
 
+/* Maximum number of scroll titles generated */
+#define MAX_TITLES	 50
+
+/* An item's pval (for charges, amount of gold, etc) is limited to s16b */
+#define MAX_PVAL  32767
+
+/**
+ * Maximum number of objects allowed in a single dungeon grid.
+ *
+ * The main screen originally had a minimum size of 24 rows, so it could always
+ * display 23 objects + 1 header line.
+ */
+#define MAX_FLOOR_STACK			23
+
 /**
  * Modes for stacking by object_similar()
  */
