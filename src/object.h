@@ -10,7 +10,7 @@
 
 /*** Game constants ***/
 
-/*
+/**
  * Elements
  */
 enum
@@ -26,7 +26,7 @@ enum
 #define ELEM_HIGH_MIN  ELEM_POIS
 #define ELEM_HIGH_MAX  ELEM_DISEN
 
-/*
+/**
  * Identify flags
  */
 enum
@@ -65,42 +65,17 @@ enum
 #define id_diff(f1, f2)        	flag_diff(f1, f2, ID_SIZE)
 
 
-/*** API constants ***/
-
-/* Object origin kinds */
+/**
+ * Object origin kinds
+ */
 
 enum {
-	ORIGIN_NONE = 0,
-	ORIGIN_FLOOR,			/* found on the dungeon floor */
-	ORIGIN_DROP,			/* normal monster drops */
-	ORIGIN_CHEST,
-	ORIGIN_DROP_SPECIAL,	/* from monsters in special rooms */
-	ORIGIN_DROP_PIT,		/* from monsters in pits/nests */
-	ORIGIN_DROP_VAULT,		/* from monsters in vaults */
-	ORIGIN_SPECIAL,			/* on the floor of a special room */
-	ORIGIN_PIT,				/* on the floor of a pit/nest */
-	ORIGIN_VAULT,			/* on the floor of a vault */
-	ORIGIN_LABYRINTH,		/* on the floor of a labyrinth */
-	ORIGIN_CAVERN,			/* on the floor of a cavern */
-	ORIGIN_RUBBLE,			/* found under rubble */
-	ORIGIN_MIXED,			/* stack with mixed origins */
-	ORIGIN_STATS,			/* ^ only the above are considered by main-stats */
-	ORIGIN_ACQUIRE,			/* called forth by scroll */
-	ORIGIN_DROP_BREED,		/* from breeders */
-	ORIGIN_DROP_SUMMON,		/* from combat summons */
-	ORIGIN_STORE,			/* something you bought */
-	ORIGIN_STOLEN,			/* stolen by monster (used only for gold) */
-	ORIGIN_BIRTH,			/* objects created at character birth */
-	ORIGIN_DROP_UNKNOWN,	/* drops from unseen foes */
-	ORIGIN_CHEAT,			/* created by wizard mode */
-	ORIGIN_DROP_POLY,		/* from polymorphees */
-	ORIGIN_DROP_WIZARD,		/* from wizard mode summons */
+	#define ORIGIN(a, b, c) ORIGIN_##a,
+	#include "list-origins.h"
+	#undef ORIGIN
 
 	ORIGIN_MAX
 };
-
-#define ORIGIN_SIZE FLAG_SIZE(ORIGIN_MAX)
-#define ORIGIN_BYTES 4 /* savefile bytes - room for 32 origin types */
 
 
 /* Values for struct object->marked */

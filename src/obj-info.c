@@ -108,6 +108,16 @@ static const flag_type misc_flags[] =
 	{ OF_TELEPORT, "Induces random teleportation" },
 };
 
+static const struct origin_type {
+	int type;
+	int args;
+	const char *desc;
+} origins[] = {
+	#define ORIGIN(a, b, c) { ORIGIN_##a, b, c },
+	#include "list-origins.h"
+	#undef ORIGIN
+};
+
 
 /*** Utility code ***/
 
@@ -1467,122 +1477,48 @@ static bool describe_effect(textblock *tb, const object_type *o_ptr,
  */
 static bool describe_origin(textblock *tb, const object_type *o_ptr, bool terse)
 {
-	char origin_text[80];
+	char loot_spot[80];
+	char name[80];
+	const char *droppee;
+	const char *article;
 
 	/* Only give this info in chardumps if wieldable */
 	if (terse && !obj_can_wear(o_ptr))
 		return FALSE;
 
+	/* Name the place of origin */
 	if (o_ptr->origin_depth)
-		strnfmt(origin_text, sizeof(origin_text), "%d feet (level %d)",
+		strnfmt(loot_spot, sizeof(loot_spot), "at %d feet (level %d)",
 		        o_ptr->origin_depth * 50, o_ptr->origin_depth);
 	else
-		my_strcpy(origin_text, "town", sizeof(origin_text));
+		my_strcpy(loot_spot, "in town", sizeof(loot_spot));
 
-	switch (o_ptr->origin)
+	/* Name the monster of origin */
+	if (r_info[o_ptr->origin_xtra].ridx)
+		droppee = r_info[o_ptr->origin_xtra].name;
+	else
+		droppee = "monster lost to history";
+	article = is_a_vowel(name[0]) ? "an " : "a ";
+	if (rf_has(r_info[o_ptr->origin_xtra].flags, RF_UNIQUE))
+		my_strcpy(name, droppee, sizeof(name));
+	else {
+		my_strcpy(name, article, sizeof(name));
+		my_strcat(name, droppee, sizeof(name));
+	}
+
+	/* Print an appropriate description */
+	switch (origins[o_ptr->origin].args)
 	{
-		case ORIGIN_NONE:
-		case ORIGIN_MIXED:
-		case ORIGIN_STOLEN:
-			return FALSE;
-
-		case ORIGIN_BIRTH:
-			textblock_append(tb, "An inheritance from your family.\n");
-			break;
-
-		case ORIGIN_STORE:
-			textblock_append(tb, "Bought from a store.\n");
-			break;
-
-		case ORIGIN_FLOOR:
-			textblock_append(tb, "Found lying on the floor %s %s.\n",
-			         (o_ptr->origin_depth ? "at" : "in"),
-			         origin_text);
- 			break;
-
-		case ORIGIN_PIT:
-			textblock_append(tb, "Found lying on the floor in a pit at %s.\n",
-			         origin_text);
- 			break;
-
-		case ORIGIN_VAULT:
-			textblock_append(tb, "Found lying on the floor in a vault at %s.\n",
-			         origin_text);
- 			break;
-
-		case ORIGIN_SPECIAL:
-			textblock_append(tb, "Found lying on the floor of a special room at %s.\n",
-			         origin_text);
- 			break;
-
-		case ORIGIN_LABYRINTH:
-			textblock_append(tb, "Found lying on the floor of a labyrinth at %s.\n",
-			         origin_text);
- 			break;
-
-		case ORIGIN_CAVERN:
-			textblock_append(tb, "Found lying on the floor of a cavern at %s.\n",
-			         origin_text);
- 			break;
-
-		case ORIGIN_RUBBLE:
-			textblock_append(tb, "Found under some rubble at %s.\n",
-			         origin_text);
- 			break;
-
-		case ORIGIN_DROP:
-		case ORIGIN_DROP_SPECIAL:
-		case ORIGIN_DROP_PIT:
-		case ORIGIN_DROP_VAULT:
-		case ORIGIN_DROP_SUMMON:
-		case ORIGIN_DROP_BREED:
-		case ORIGIN_DROP_POLY:
-		case ORIGIN_DROP_WIZARD:
-		{
-			const char *name;
-
-			if (r_info[o_ptr->origin_xtra].ridx)
-				name = r_info[o_ptr->origin_xtra].name;
-			else
-				name = "monster lost to history";
-
-			textblock_append(tb, "Dropped by ");
-
-			if (rf_has(r_info[o_ptr->origin_xtra].flags, RF_UNIQUE))
-				textblock_append(tb, "%s", name);
-			else
-				textblock_append(tb, "%s%s",
-						is_a_vowel(name[0]) ? "an " : "a ", name);
-
-			textblock_append(tb, " %s %s.\n",
-					(o_ptr->origin_depth ? "at" : "in"),
-					origin_text);
- 			break;
-		}
-
-		case ORIGIN_DROP_UNKNOWN:
-			textblock_append(tb, "Dropped by an unknown monster %s %s.\n",
-					(o_ptr->origin_depth ? "at" : "in"),
-					origin_text);
-			break;
-
-		case ORIGIN_ACQUIRE:
-			textblock_append(tb, "Conjured forth by magic %s %s.\n",
-					(o_ptr->origin_depth ? "at" : "in"),
-					origin_text);
- 			break;
-
-		case ORIGIN_CHEAT:
-			textblock_append(tb, "Created by debug option.\n");
- 			break;
-
-		case ORIGIN_CHEST:
-			textblock_append(tb, "Found in a chest from %s.\n",
-			         origin_text);
+		case -1: return FALSE;
+		case 0: textblock_append(tb, origins[o_ptr->origin].desc); break;
+		case 1: textblock_append(tb, origins[o_ptr->origin].desc, loot_spot);
+				break;
+		case 2:
+			textblock_append(tb, origins[o_ptr->origin].desc, name, loot_spot);
 			break;
 	}
 
-	textblock_append(tb, "\n");
+	textblock_append(tb, "\n\n");
 
 	return TRUE;
 }
