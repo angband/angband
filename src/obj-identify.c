@@ -1,6 +1,6 @@
-/*
- * File: identify.c
- * Purpose: Object identification and knowledge routines
+/**
+   \file obj-identify.c
+   \brief Object identification and knowledge routines
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  * Copyright (c) 2009 Brian Bull
@@ -242,7 +242,7 @@ bool object_defence_plusses_are_visible(const object_type *o_ptr)
 }
 
 
-/*
+/**
  * \returns whether the player knows whether an object has a given flag
  */
 bool object_flag_is_known(const object_type *o_ptr, int flag)
@@ -253,7 +253,7 @@ bool object_flag_is_known(const object_type *o_ptr, int flag)
 	return FALSE;
 }
 
-/*
+/**
  * \returns whether the player knows the given element properties of an object
  */
 bool object_element_is_known(const object_type *o_ptr, int element)
@@ -282,7 +282,7 @@ bool object_this_mod_is_visible(const object_type *o_ptr, int mod)
 
 
 
-/*
+/**
  * Sets an ID_ flag on an object.
  *
  * \param o_ptr is the object to check
@@ -301,7 +301,7 @@ static bool object_add_id_flag(object_type *o_ptr, int flag)
 }
 
 
-/*
+/**
  * Checks for additional knowledge implied by what the player already knows.
  *
  * \param o_ptr is the object to check
@@ -379,14 +379,13 @@ void object_flavor_aware(object_type *o_ptr)
 	player->upkeep->notice |= PN_IGNORE;
 	apply_autoinscription(o_ptr);
 
+	/* Some objects change tile on awareness */
+	/* So update display for all floor objects of this kind */
 	for (i = 1; i < cave_object_max(cave); i++)
 	{
 		const object_type *floor_o_ptr = cave_object(cave, i);
 
-		/* Some objects change tile on awareness */
-		/* So update display for all floor objects of this kind */
-		if (!floor_o_ptr->held_m_idx &&
-				floor_o_ptr->kind == o_ptr->kind)
+		if (!floor_o_ptr->held_m_idx &&	floor_o_ptr->kind == o_ptr->kind)
 			square_light_spot(cave, floor_o_ptr->iy, floor_o_ptr->ix);
 	}
 }
@@ -417,7 +416,7 @@ void object_know_all_flags(object_type *o_ptr)
 
 
 /**
- * Make the player aware of all of an object's flags.
+ * Make the player aware of all of an object's elemental properties.
  *
  * \param o_ptr is the object to mark
  */
@@ -430,6 +429,11 @@ void object_know_all_elements(object_type *o_ptr)
 }
 
 
+/**
+ * Make the player aware of all of an object's brands and slays.
+ *
+ * \param o_ptr is the object to mark
+ */
 void object_know_brands_and_slays(object_type *o_ptr)
 {
 	struct brand *b;
@@ -484,8 +488,7 @@ void object_notice_everything(object_type *o_ptr)
 	object_flavor_aware(o_ptr);
 
 	/* Artifact has now been seen */
-	if (o_ptr->artifact)
-	{
+	if (o_ptr->artifact) {
 		o_ptr->artifact->seen = o_ptr->artifact->everseen = TRUE;
 		history_add_artifact(o_ptr->artifact, TRUE, TRUE);
 	}
@@ -496,7 +499,7 @@ void object_notice_everything(object_type *o_ptr)
 
 
 
-/*
+/**
  * Notice the ego on an ego item.
  */
 void object_notice_ego(object_type *o_ptr)
@@ -529,10 +532,9 @@ void object_notice_ego(object_type *o_ptr)
 	} else if (kf_has(o_ptr->ego->kind_flags, KF_RAND_HI_RES)) {
 		for (i = ELEM_HIGH_MIN; i <= ELEM_HIGH_MAX; i++)
 			if ((o_ptr->ego->el_info[i].res_level == 1) &&
-				(o_ptr->el_info[i].flags & EL_INFO_RANDOM))
+				!(o_ptr->el_info[i].flags & EL_INFO_RANDOM))
 				o_ptr->el_info[i].flags |= EL_INFO_KNOWN;
 	}
-
 
 	of_union(o_ptr->known_flags, learned_flags);
 
@@ -540,7 +542,6 @@ void object_notice_ego(object_type *o_ptr)
 	{
 		/* if you know the ego, you know which it is of excellent or splendid */
 		object_notice_sensing(o_ptr);
-
 		object_check_for_ident(o_ptr);
 	}
 }
@@ -572,14 +573,12 @@ static void object_notice_defence_plusses(struct player *p, object_type *o_ptr)
 	if (object_add_id_flag(o_ptr, ID_TO_A)) 
 		object_check_for_ident(o_ptr);
 
-	if (o_ptr->ac || o_ptr->to_a)
-	{
+	if (o_ptr->ac || o_ptr->to_a) {
 		char o_name[80];
 
 		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
-		msgt(MSG_PSEUDOID,
-				"You know more about the %s you are wearing.",
-				o_name);
+		msgt(MSG_PSEUDOID, "You know more about the %s you are wearing.",
+			 o_name);
 	}
 
 	p->upkeep->update |= (PU_BONUS);
@@ -591,11 +590,11 @@ static void object_notice_defence_plusses(struct player *p, object_type *o_ptr)
 void object_notice_attack_plusses(object_type *o_ptr)
 {
 	bool to_hit = FALSE, to_dam = FALSE;
+	char o_name[80];
 
 	assert(o_ptr && o_ptr->kind);
 
-	if (object_attack_plusses_are_visible(o_ptr))
-		return;
+	if (object_attack_plusses_are_visible(o_ptr)) return;
 
 	/* This looks silly while these only ever appear together */
 	to_hit = object_add_id_flag(o_ptr, ID_TO_H);
@@ -603,25 +602,15 @@ void object_notice_attack_plusses(object_type *o_ptr)
 	if (object_add_id_flag(o_ptr, ID_DICE) || to_hit || to_dam)
 		object_check_for_ident(o_ptr);
 
+	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
 
 	if (equipped_item_by_slot_name(player, "weapon") == o_ptr)
-	{
-		char o_name[80];
-
-		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
 		msgt(MSG_PSEUDOID,
-				"You know more about the %s you are using.",
-				o_name);
-	}
+			 "You know more about the %s you are using.", o_name);
 	else if ((o_ptr->to_d || o_ptr->to_h) &&
-			!((o_ptr->tval == TV_HARD_ARMOR || o_ptr->tval == TV_SOFT_ARMOR) && (o_ptr->to_h < 0)))
-	{
-		char o_name[80];
-
-		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
-		msgt(MSG_PSEUDOID, "Your %s glow%s.",
-				o_name, ((o_ptr->number > 1) ? "" : "s"));
-	}
+			 !(tval_is_body_armor(o_ptr) && (o_ptr->to_h < 0)))
+		msgt(MSG_PSEUDOID, "Your %s glow%s.", o_name,
+			 ((o_ptr->number > 1) ? "" : "s"));
 
 	player->upkeep->update |= (PU_BONUS);
 	event_signal(EVENT_INVENTORY);
@@ -629,7 +618,7 @@ void object_notice_attack_plusses(object_type *o_ptr)
 }
 
 
-/*
+/**
  * Notice elemental resistance properties for an element on an object
  */
 bool object_notice_element(object_type *o_ptr, int element)
@@ -651,7 +640,7 @@ bool object_notice_element(object_type *o_ptr, int element)
 }
 
 
-/*
+/**
  * Notice a single flag - returns TRUE if anything new was learned
  */
 bool object_notice_flag(object_type *o_ptr, int flag)
@@ -668,7 +657,7 @@ bool object_notice_flag(object_type *o_ptr, int flag)
 }
 
 
-/*
+/**
  * Notice a set of flags - returns TRUE if anything new was learned
  */
 bool object_notice_flags(object_type *o_ptr, bitflag flags[OF_SIZE])
@@ -811,7 +800,6 @@ void object_notice_on_wield(object_type *o_ptr)
 	if (!obvious) return;
 
 	/* Special messages for individual properties */
-	/* CC: also need to add FA! */
 	if (o_ptr->modifiers[OBJ_MOD_STR] > 0)
 		msg("You feel stronger!");
 	else if (o_ptr->modifiers[OBJ_MOD_STR] < 0)
@@ -890,10 +878,9 @@ static void object_notice_after_time(void)
 		object_flags(o_ptr, f);
 		of_inter(f, timed_mask);
 
-		for (flag = of_next(f, FLAG_START); flag != FLAG_END; flag = of_next(f, flag + 1))
-		{
-			if (!of_has(o_ptr->known_flags, flag))
-			{
+		for (flag = of_next(f, FLAG_START); flag != FLAG_END;
+			 flag = of_next(f, flag + 1)) {
+			if (!of_has(o_ptr->known_flags, flag)) {
 				/* Message */
 				flag_message(flag, o_name);
 
@@ -901,15 +888,12 @@ static void object_notice_after_time(void)
 				object_notice_flag(o_ptr, flag);
 
 				if (tval_is_jewelry(o_ptr) &&
-					 (!object_effect(o_ptr) || object_effect_is_known(o_ptr)))
-				{
+					 (!object_effect(o_ptr) || object_effect_is_known(o_ptr))) {
 					/* Jewelry with a noticeable flag is obvious */
 					object_flavor_aware(o_ptr);
 					object_check_for_ident(o_ptr);
 				}
-			}
-			else
-			{
+			} else {
 				/* Notice the flag is absent */
 				object_notice_flag(o_ptr, flag);
 			}
@@ -931,12 +915,10 @@ void wieldeds_notice_flag(struct player *p, int flag)
 	if (!flag) return;
 
 	/* All wielded items eligible */
-	for (i = 0; i < p->body.count; i++)
-	{
+	for (i = 0; i < p->body.count; i++) {
 		object_type *o_ptr = equipped_item_by_slot(p, i);
 
-		if (of_has(o_ptr->flags, flag) && !of_has(o_ptr->known_flags, flag))
-		{
+		if (of_has(o_ptr->flags, flag) && !of_has(o_ptr->known_flags, flag)) {
 			char o_name[80];
 			object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
 
@@ -944,17 +926,14 @@ void wieldeds_notice_flag(struct player *p, int flag)
 			object_notice_flag(o_ptr, flag);
 
 			/* Jewelry with a noticeable flag is obvious */
-			if (tval_is_jewelry(o_ptr))
-			{
+			if (tval_is_jewelry(o_ptr)) {
 				object_flavor_aware(o_ptr);
 				object_check_for_ident(o_ptr);
 			}
 
 			/* Message */
 			flag_message(flag, o_name);
-		}
-		else
-		{
+		} else {
 			/* Notice that flag is absent */
 			object_notice_flag(o_ptr, flag);
 		}
@@ -974,8 +953,7 @@ void wieldeds_notice_element(struct player *p, int element)
 
 	if (element < 0 || element >= ELEM_MAX) return;
 
-	for (i = 0; i < p->body.count; i++)
-	{
+	for (i = 0; i < p->body.count; i++) {
 		object_type *o_ptr = equipped_item_by_slot(p, i);
 
 		/* Already known */
@@ -993,8 +971,7 @@ void wieldeds_notice_element(struct player *p, int element)
 		}
 
 		/* Jewelry with a noticeable element is obvious */
-		if (tval_is_jewelry(o_ptr))
-		{
+		if (tval_is_jewelry(o_ptr)) {
 			object_flavor_aware(o_ptr);
 			object_check_for_ident(o_ptr);
 		}
@@ -1045,7 +1022,7 @@ void wieldeds_notice_on_attack(void)
 
 /* Ostracism line */
 
-/*
+/**
  * \returns whether it is possible an object has a high resist given the
  *          player's current knowledge
  */
@@ -1079,7 +1056,7 @@ bool object_was_sensed(const object_type *o_ptr)
 	return id_has(o_ptr->id_flags, ID_AC) ? TRUE : FALSE;
 }
 
-/*
+/**
  * Mark an object as sensed (kind of).
  */
 void object_notice_sensing(object_type *o_ptr)
@@ -1099,7 +1076,7 @@ void object_notice_sensing(object_type *o_ptr)
 }
 
 
-/*
+/**
  * Sense artifacts
  */
 void object_sense_artifact(object_type *o_ptr)
@@ -1110,7 +1087,7 @@ void object_sense_artifact(object_type *o_ptr)
 }
 
 
-/*
+/**
  * Given an object, return a short identifier which gives some idea of what
  * the item is.
  */
@@ -1182,7 +1159,7 @@ obj_pseudo_t object_pseudo(const object_type *o_ptr)
 }
 
 
-/*
+/**
  * Sense the inventory
  */
 void sense_inventory(void)
