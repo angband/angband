@@ -78,6 +78,7 @@ static const grouper object_text_order[] =
 	{TV_HARD_ARMOR,		"Hard Armor"	},
 	{TV_SOFT_ARMOR,		"Soft Armor"	},
 	{TV_DIGGING,		"Digger"		},
+	{TV_GOLD,			"Money"			},
 	{0,					NULL			}
 };
 
@@ -1570,7 +1571,7 @@ static int collect_known_artifacts(int *artifacts, size_t artifacts_len)
 static void do_cmd_knowledge_artifacts(const char *name, int row)
 {
 	/* HACK -- should be TV_MAX */
-	group_funcs obj_f = {TV_GOLD, FALSE, kind_name, a_cmp_tval, art2gid, 0};
+	group_funcs obj_f = {TV_MAX, FALSE, kind_name, a_cmp_tval, art2gid, 0};
 	member_funcs art_f = {display_artifact, desc_art_fake, 0, 0, recall_prompt, 0, 0};
 
 	int *artifacts;
@@ -1641,7 +1642,7 @@ static int e_cmp_tval(const void *a, const void *b)
 static void do_cmd_knowledge_ego_items(const char *name, int row)
 {
 	group_funcs obj_f =
-		{TV_GOLD, FALSE, ego_grp_name, e_cmp_tval, default_group, 0};
+		{TV_MAX, FALSE, ego_grp_name, e_cmp_tval, default_group, 0};
 
 	member_funcs ego_f =
 		{display_ego_item, desc_ego_fake, 0, 0, recall_prompt, 0, 0};
@@ -1968,7 +1969,7 @@ static void o_xtra_act(struct keypress ch, int oid)
  */
 void textui_browse_object_knowledge(const char *name, int row)
 {
-	group_funcs kind_f = {TV_GOLD, FALSE, kind_name, o_cmp_tval, obj2gid, 0};
+	group_funcs kind_f = {TV_MAX, FALSE, kind_name, o_cmp_tval, obj2gid, 0};
 	member_funcs obj_f = {display_object, desc_obj_fake, o_xchar, o_xattr, o_xtra_prompt, o_xtra_act, 0};
 
 	int *objects;
@@ -2180,11 +2181,11 @@ void textui_knowledge_init(void)
 		int i;
 		int gid = -1;
 
-		obj_group_order = C_ZNEW(TV_GOLD + 1, int);
+		obj_group_order = C_ZNEW(TV_MAX + 1, int);
 		atexit(cleanup_cmds);
 
 		/* Allow for missing values */
-		for (i = 0; i <= TV_GOLD; i++)
+		for (i = 0; i < TV_MAX; i++)
 			obj_group_order[i] = -1;
 
 		for (i = 0; 0 != object_text_order[i].tval; i++)
