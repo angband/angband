@@ -556,7 +556,6 @@ enum use {
 static void use_aux(struct command *cmd, int item, enum use use, int snd)
 {
 	object_type *o_ptr;
-	object_type *original = NULL;
 	int effect;
 	bool ident = FALSE, used = FALSE;
 	bool was_aware;
@@ -588,13 +587,6 @@ static void use_aux(struct command *cmd, int item, enum use use, int snd)
 	if (effect == EF_IDENTIFY && !spell_identify_unknown_available()) {
 		msg("You have nothing to identify.");
 		return;
-	}
-
-	if (!item_is_equipped(player, item)) {
-		/* Create a copy so that we can remember what we are working with,
-		 * in case the inventory is changed. */
-		original = ZNEW(object_type);
-		object_copy(original, o_ptr);
 	}
 
 	/* Check for use if necessary, and execute the effect */
@@ -629,15 +621,6 @@ static void use_aux(struct command *cmd, int item, enum use use, int snd)
 
 		/* Quit if the item wasn't used and no knowledge was gained */
 		if (!used && (was_aware || !ident)) return;
-	}
-
-	if (original != NULL) {
-		/* Restore o_ptr to the new inventory slot that contains the original
-		 * object. We have to do this because object mutating functions follow;
-		 * "original" is a dummy so that we know what we are working with. */
-		item = gear_index_matching_object(original);
-		o_ptr = object_from_item_idx(item);
-		FREE(original);
 	}
 
 	/* If the item is a null pointer or has been wiped, be done now */

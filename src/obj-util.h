@@ -1,6 +1,6 @@
-/*
- * File: obj-util.h
- * Purpose: Object list maintenance and other object utilities
+/**
+   \file obj-util.h
+   \brief Object list maintenance and other object utilities
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  *
@@ -67,7 +67,6 @@ void wipe_o_list(struct chunk *c);
 s16b o_pop(struct chunk *c);
 object_type *get_first_object(int y, int x);
 object_type *get_next_object(const object_type *o_ptr);
-bool is_blessed(const object_type *o_ptr);
 bool object_stackable(const object_type *o_ptr, const object_type *j_ptr,
 					  object_stack_t mode);
 bool object_similar(const object_type *o_ptr, const object_type *j_ptr,
@@ -90,7 +89,6 @@ void floor_item_optimize(int item);
 unsigned check_for_inscrip(const object_type *o_ptr, const char *inscrip);
 struct object_kind *lookup_kind(int tval, int sval);
 struct object_kind *objkind_byid(int kidx);
-int lookup_name(int tval, const char *name);
 int lookup_artifact_name(const char *name);
 int lookup_sval(int tval, const char *name);
 int compare_items(const object_type *o1, const object_type *o2);
@@ -110,11 +108,8 @@ bool obj_can_wear(const object_type *o_ptr);
 bool obj_can_fire(const object_type *o_ptr);
 bool obj_has_inscrip(const object_type *o_ptr);
 bool obj_is_useable(const object_type *o_ptr);
-bool obj_is_used_aimed(const object_type *o_ptr);
-bool obj_is_used_unaimed(const object_type *o_ptr);
 u16b object_effect(const object_type *o_ptr);
 object_type *object_from_item_idx(int item);
-int gear_index_matching_object(const object_type *o_ptr);
 bool obj_needs_aim(object_type *o_ptr);
 bool obj_can_fail(const struct object *o);
 
