@@ -2679,8 +2679,8 @@ static enum parser_error parse_s_i(struct parser *p) {
 	s->sval = sval;
 	s->snum = parser_getuint(p, "snum");
 
-	/* XXX elly: postprocess instead? */
-	s->realm = s->tval - TV_MAGIC_BOOK;
+	/* Needs fix to magic - NRM */
+	s->realm = (s->tval == TV_MAGIC_BOOK) ? 0 : 1;
 	s->spell_index = s->sidx - (s->realm * PY_MAX_SPELLS);
 	return PARSE_ERROR_NONE;
 }
