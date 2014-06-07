@@ -497,6 +497,10 @@ static object_kind *choose_item(int a_idx)
 	a_ptr->ds = k_ptr->ds;
 	a_ptr->weight = k_ptr->weight;
 	of_copy(a_ptr->flags, k_ptr->flags);
+	a_ptr->slays = NULL;
+	copy_slay(&a_ptr->slays, k_ptr->slays);
+	a_ptr->brands = NULL;
+	copy_brand(&a_ptr->brands, k_ptr->brands);
 	for (i = 0; i < OBJ_MOD_MAX; i++) {
 		a_ptr->modifiers[i] = randcalc(k_ptr->modifiers[i], 0, MINIMISE);
 	}

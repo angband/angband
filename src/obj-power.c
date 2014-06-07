@@ -97,23 +97,24 @@ static struct element_set {
 static struct element_powers {
 	const char *name;
 	int type;
+	int ignore_power;
 	int vuln_power;
 	int res_power;
 	int im_power;
 } el_powers[] = {
-	{ "acid",			T_LRES,	-6,	5,	38 },
-	{ "electricity",	T_LRES,	-6,	6,	35 },
-	{ "fire",			T_LRES,	-6,	6,	40 },
-	{ "cold",			T_LRES,	-6,	6,	37 },
-	{ "poison",			T_HRES,	0,	28,	0 },
-	{ "light",			T_HRES,	0,	6,	0 },
-	{ "dark",			T_HRES,	0,	16,	0 },
-	{ "sound",			T_HRES,	0,	14,	0 },
-	{ "shards",			T_HRES,	0,	8,	0 },
-	{ "nexus",			T_HRES,	0,	15,	0 },
-	{ "nether",			T_HRES,	0,	20,	0 },
-	{ "chaos",			T_HRES,	0,	20,	0 },
-	{ "disenchantment",	T_HRES,	0,	20,	0 }
+	{ "acid",			T_LRES,	3,	-6,	5,	38 },
+	{ "electricity",	T_LRES,	1,	-6,	6,	35 },
+	{ "fire",			T_LRES,	3,	-6,	6,	40 },
+	{ "cold",			T_LRES,	1,	-6,	6,	37 },
+	{ "poison",			T_HRES,	0,	0,	28,	0 },
+	{ "light",			T_HRES,	0,	0,	6,	0 },
+	{ "dark",			T_HRES,	0,	0,	16,	0 },
+	{ "sound",			T_HRES,	0,	0,	14,	0 },
+	{ "shards",			T_HRES,	0,	0,	8,	0 },
+	{ "nexus",			T_HRES,	0,	0,	15,	0 },
+	{ "nether",			T_HRES,	0,	0,	20,	0 },
+	{ "chaos",			T_HRES,	0,	0,	20,	0 },
+	{ "disenchantment",	T_HRES,	0,	0,	20,	0 }
 };
 
 /**
@@ -630,9 +631,17 @@ static int element_power(const object_type *o_ptr, int p, bool known)
 	for (i = 0; i < N_ELEMENTS(element_sets); i++)
 		element_sets[i].count = 0;
 
-	/* Analyse each element for vulnerability, resistance or immunity */
+	/* Analyse each element for ignore, vulnerability, resistance or immunity */
 	for (i = 0; i < N_ELEMENTS(el_powers); i++) {
 		if (!known && !(o_ptr->el_info[i].flags & EL_INFO_KNOWN)) continue;
+
+		if (o_ptr->el_info[i].flags & EL_INFO_IGNORE) {
+			if (el_powers[i].ignore_power != 0) {
+				q = (el_powers[i].ignore_power);
+				p += q;
+				log_obj(format("Add %d power for ignoring %s, total is %d\n", q, el_powers[i].name, p));
+			}
+		}
 
 		if (o_ptr->el_info[i].res_level == -1) {
 			if (el_powers[i].vuln_power != 0) {
