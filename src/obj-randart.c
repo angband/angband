@@ -284,55 +284,6 @@ void mods_to_fake_pvals(struct artifact *a)
 	}
 }
 
-char *artifact_gen_name(struct artifact *a, const char ***words) {
-	char buf[BUFLEN];
-	char word[MAX_NAME_LEN + 1];
-	randname_make(RANDNAME_TOLKIEN, MIN_NAME_LEN, MAX_NAME_LEN, word, sizeof(word), words);
-	my_strcap(word);
-
-	if (strstr(a->name, "The One Ring"))
-		strnfmt(buf, sizeof(buf), "of Power (The One Ring)");
-	else if (kf_has(a->kind_flags, KF_QUEST_ART))
-		strnfmt(buf, sizeof(buf), a->name);
-	else if (one_in_(3))
-		strnfmt(buf, sizeof(buf), "'%s'", word);
-	else
-		strnfmt(buf, sizeof(buf), "of %s", word);
-	return string_make(buf);
-}
-
-/**
- * Use W. Sheldon Simms' random name generator.
- */
-static errr init_names(void)
-{
-	int i;
-	struct artifact *a;
-
-	for (i = 0; i < z_info->a_max; i++) {
-		char desc[128] = "Based on ";
-
-		a = &a_info[i];
-		if (!a->tval || !a->sval || !a->name) continue;
-
-		if (prefix(a->name, "of Power")) {
-			my_strcat(desc, a->name + 10, 
-				strlen(a->name) - 1);
-		} else if (prefix(a->name, "of ")) {
-			my_strcat(desc, a->name + 3, 
-				strlen(a->name) + 7);
-		} else {
-			my_strcat(desc, a->name + 1, 
-				strlen(a->name) + 8);
-		}
-
-		a->text = string_make(desc);
-		a->name = artifact_gen_name(a, name_sections);
-	}
-
-	return 0;
-}
-
 /**
  * Return the artifact power, by generating a "fake" object based on the
  * artifact, and calling the common object_power function
@@ -2797,6 +2748,55 @@ static errr scramble(void)
 
 	/* Success */
 	return (0);
+}
+
+/**
+ * Use W. Sheldon Simms' random name generator.
+ */
+char *artifact_gen_name(struct artifact *a, const char ***words) {
+	char buf[BUFLEN];
+	char word[MAX_NAME_LEN + 1];
+	randname_make(RANDNAME_TOLKIEN, MIN_NAME_LEN, MAX_NAME_LEN, word,
+				  sizeof(word), words);
+	my_strcap(word);
+
+	if (strstr(a->name, "The One Ring"))
+		strnfmt(buf, sizeof(buf), "of Power (The One Ring)");
+	else if (kf_has(a->kind_flags, KF_QUEST_ART))
+		strnfmt(buf, sizeof(buf), a->name);
+	else if (one_in_(3))
+		strnfmt(buf, sizeof(buf), "'%s'", word);
+	else
+		strnfmt(buf, sizeof(buf), "of %s", word);
+	return string_make(buf);
+}
+
+/**
+ * Initialise all the artifact names.
+ */
+static errr init_names(void)
+{
+	int i;
+	struct artifact *a;
+
+	for (i = 0; i < z_info->a_max; i++) {
+		char desc[128] = "Based on ";
+
+		a = &a_info[i];
+		if (!a->tval || !a->sval || !a->name) continue;
+
+		if (prefix(a->name, "of Power"))
+			my_strcat(desc, a->name + 10, strlen(a->name) - 1);
+		else if (prefix(a->name, "of "))
+			my_strcat(desc, a->name + 3, strlen(a->name) + 7);
+		else
+			my_strcat(desc, a->name + 1, strlen(a->name) + 8);
+
+		a->text = string_make(desc);
+		a->name = artifact_gen_name(a, name_sections);
+	}
+
+	return 0;
 }
 
 /**
