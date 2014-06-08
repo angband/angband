@@ -19,7 +19,8 @@
 # A: commonness : min " to " max
 # C: to-hit : to-dam : to-ac
 # M: min to-hit : min to-dam : min to-ac
-# T: tval : min_sval : max_sval
+# type: tval
+# item: tval : sval
 # F: flag | flag | etc.
 # L: pval : min pval : flag | flag | etc.
 
@@ -53,10 +54,12 @@
 # The value of 255 is special, meaning "there is no minimum". This
 # allows zero to be a valid minimum (e.g. for mixed-blessing items).
 
-# 'T' is for possible 'tval' and 'sval' values of the base-item.
-# Up to three 'T' entries are possible for a single object. The
-# ego-item can only be generated from items of this tval, with sval
-# in the specified range.
+# 'type' is for possible tvals (object bases).  A 'type' line indicates
+# that any object kind of that type can be used to generate this ego-item.
+
+# 'item' is for possible tval-sval pairs, which correspond to object kinds.
+# One or more 'item' lines are used when we don't want all object kinds of
+# this tval to be possible for this ego-item.
 
 # 'F' is for flags not associated with any pval. These are fairly 
 # self-explanatory. As many F: lines may be used as are needed to 

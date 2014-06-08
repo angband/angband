@@ -248,6 +248,10 @@ static enum parser_error write_dummy_object_record(struct artifact *art, const c
 	/* Copy the sval to the artifact info */
 	art->sval = dummy->sval;
 
+	/* Give the object default colours (these should be overwritten) */
+	dummy->d_char = '*';
+	dummy->d_attr = TERM_RED;
+
 	/* Register this as an INSTA_ART object */
 	kf_on(dummy->kind_flags, KF_INSTA_ART);
 
@@ -1029,8 +1033,6 @@ static enum parser_error parse_a_f(struct parser *p) {
 	while (t) {
 		bool found = FALSE;
 		if (!grab_flag(a->flags, OF_SIZE, obj_flags, t))
-			found = TRUE;
-		if (!grab_flag(a->kind_flags, KF_SIZE, kind_flags, t))
 			found = TRUE;
 		if (grab_element_flag(a->el_info, t))
 			found = TRUE;

@@ -292,7 +292,6 @@ typedef struct artifact
 	s32b cost;		/**< Artifact (pseudo-)worth */
 
 	bitflag flags[OF_SIZE];			/**< Flags */
-	bitflag kind_flags[KF_SIZE];	/**< Kind flags */
 
 	int modifiers[OBJ_MOD_MAX];
 	struct element_info el_info[ELEM_MAX];

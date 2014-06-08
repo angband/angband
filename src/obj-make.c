@@ -461,7 +461,6 @@ void copy_artifact_data(object_type *o_ptr, const artifact_type *a_ptr)
 static bool make_artifact_special(object_type *o_ptr, int level)
 {
 	int i;
-	object_kind *kind;
 
 	/* No artifacts, do nothing */
 	if (OPT(birth_no_artifacts)) return FALSE;
@@ -472,12 +471,16 @@ static bool make_artifact_special(object_type *o_ptr, int level)
 	/* Check the special artifacts */
 	for (i = 0; i < z_info->a_max; ++i) {
 		artifact_type *a_ptr = &a_info[i];
+		object_kind *kind = lookup_kind(a_ptr->tval, a_ptr->sval);
 
 		/* Skip "empty" artifacts */
 		if (!a_ptr->name) continue;
 
+		/* Make sure the kind was found */
+		if (!kind) continue;
+
 		/* Skip non-special artifacts */
-		if (!kf_has(a_ptr->kind_flags, KF_INSTA_ART)) continue;
+		if (!kf_has(kind->kind_flags, KF_INSTA_ART)) continue;
 
 		/* Cannot make an artifact twice */
 		if (a_ptr->created) continue;
@@ -496,12 +499,6 @@ static bool make_artifact_special(object_type *o_ptr, int level)
 
 		/* Artifact "rarity roll" */
 		if (randint1(100) > a_ptr->alloc_prob) continue;
-
-		/* Find the base object */
-		kind = lookup_kind(a_ptr->tval, a_ptr->sval);
-
-		/* Make sure the kind was found */
-		if (!kind) continue;
 
 		/* Enforce minimum "object" level (loosely) */
 		if (kind->level > level) {
@@ -544,7 +541,6 @@ static bool make_artifact_special(object_type *o_ptr, int level)
  */
 static bool make_artifact(object_type *o_ptr)
 {
-	artifact_type *a_ptr;
 	int i;
 	bool art_ok = TRUE;
 
@@ -565,13 +561,17 @@ static bool make_artifact(object_type *o_ptr)
 
 	/* Check the artifact list (skip the "specials") */
 	for (i = 0; !o_ptr->artifact && i < z_info->a_max; i++) {
-		a_ptr = &a_info[i];
+		artifact_type *a_ptr = &a_info[i];
+		object_kind *kind = lookup_kind(a_ptr->tval, a_ptr->sval);
 
 		/* Skip "empty" items */
 		if (!a_ptr->name) continue;
 
+		/* Make sure the kind was found */
+		if (!kind) continue;
+
 		/* Skip special artifacts */
-		if (kf_has(a_ptr->kind_flags, KF_INSTA_ART)) continue;
+		if (kf_has(kind->kind_flags, KF_INSTA_ART)) continue;
 
 		/* Cannot make an artifact twice */
 		if (a_ptr->created) continue;

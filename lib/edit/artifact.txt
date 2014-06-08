@@ -6,8 +6,6 @@
 # Do not modify this file unless you know exactly what you are doing,
 # unless you wish to risk possible system crashes and broken savefiles.
 
-# The artifact indexes are defined in "defines.h", and must not be changed.
-
 # Hack -- "Grond" and "Morgoth" MUST have a rarity of one, or they might
 # not be dropped when Morgoth is killed.  Note that they, like the "special"
 # artifacts, are never created "accidentally".
@@ -16,6 +14,7 @@
 
 # N: serial number : item name
 # I: tval : sval
+# G: symbol : color
 # W: depth : rarity : weight : cost
 # A: allocation probability : min depth : max depth
 # P: base armor class : base damage : plus to-hit : plus to-dam : plus to-ac
@@ -29,7 +28,11 @@
 # increase for each new item.
 
 # 'I' is for basic information. The tval is for the type of item, the
-# sval identifies the subtype.
+# sval identifies the subtype.  If the sval is not a standard object kind
+# as defined in object.txt, the game will generate a special object kind,
+# and these are known as 'special artifacts'.
+
+# 'G' is for graphics - symbol and color. It is needed for special artifacts.
 
 # 'W' is for extra information. Depth and rarity are not currently used,
 # weight is in tenth-pounds and cost is the item's value.
@@ -78,9 +81,7 @@
 
 
 
-# Here is the list of "Special" artifacts - Amulets, Light Sources, Rings.
-# Only the FIRST 15 artifacts may be of these types currently: artifacts
-# from index number 16 onwards must be Armor or Weapons.
+# Here is the list of special artifacts - Amulets, Light Sources, Rings.
 
 # The Phial of Galadriel
 
@@ -91,7 +92,6 @@ W:5:3:10:10000
 A:40:5 to 100
 P:0:1d1:0:0:0
 F:NO_FUEL
-F:INSTA_ART
 V:LIGHT[3]
 E:ILLUMINATION:10+d10
 M:The {kind} well{s} with clear light...
@@ -108,7 +108,6 @@ W:30:25:5:30000
 A:4:30 to 100
 P:0:1d1:0:0:0
 F:SEE_INVIS | NO_FUEL
-F:INSTA_ART
 V:LIGHT[3]
 E:MAPPING:50+d50
 M:The {kind} shine{s} brightly...
@@ -123,7 +122,6 @@ W:50:50:5:50000
 A:2:50 to 127
 P:0:1d1:0:0:0
 F:SEE_INVIS | HOLD_LIFE | NO_FUEL
-F:INSTA_ART
 V:LIGHT[3] | RES_LIGHT[1] | RES_DARK[1]
 #E:DETECT_ALL:30+d30
 E:CLAIRVOYANCE:50+d50
@@ -140,7 +138,6 @@ I:amulet:Amulet
 G:":d
 W:50:10:3:60000
 A:10:50 to 100
-F:INSTA_ART
 E:PROTEVIL:225+d225
 M:The {kind} let{s} out a shrill wail...
 V:CON[3] | STR[1] | RES_FIRE[1]
@@ -155,7 +152,6 @@ G:":d
 W:65:30:3:90000
 A:3:65 to 127
 F:SEE_INVIS | FREE_ACT | PROT_CONF
-F:INSTA_ART
 E:DISPEL_EVIL:50+d50
 M:The {kind} flood{s} the area with goodness...
 V:INT[3] | WIS[3] | INFRA[4] | RES_ACID[1] | RES_COLD[1] | RES_ELEC[1]
@@ -171,7 +167,6 @@ G:":y
 W:50:50:3:75000
 A:2:50 to 127
 F:SEE_INVIS | FREE_ACT | REGEN | PROT_FEAR | 
-F:INSTA_ART
 V:STR[3] | CON[3] | INFRA[5] | LIGHT[1]
 D:The Nauglamír, a carcanet of gold set with a multitude of shining 
 D:gems of Valinor.  The radiant Silmaril of Fëanor hangs in its midst 
@@ -192,7 +187,7 @@ D:it rests upon the bearer.
 #F:NO_FUEL
 #F:SEE_INVIS | TELEPATHY | 
 #F:PROT_BLIND | AGGRAVATE | DRAIN_EXP | 
-#F:INSTA_ART | LIGHT
+#F:LIGHT
 #E:CLAIRVOYANCE:50+d50
 #M:The {kind} glow{s} a deep green...
 #V:INT[2] | WIS[2] | SEARCH[3] | INFRA[3] | LIGHT[3] | RES_CHAOS[1]
@@ -207,7 +202,6 @@ I:ring:Serpent Ring
 G:=:d
 W:50:25:2:65000
 A:4:50 to 100
-F:INSTA_ART
 V:STR[1] | INT[1] | WIS[1] | DEX[1] | CON[1] | STEALTH[1]
 V:RES_POIS[1] | RES_DARK[1]
 D:Twinned serpents with eyes of emerald meet beneath a crown of flowers to 
@@ -222,7 +216,6 @@ G:=:d
 W:70:50:2:150000
 A:2:70 to 127
 F:PROT_FEAR | 
-F:INSTA_ART
 E:HASTE2:150+d150
 M:The {kind} glow{s} brightly...
 V:STR[4] | DEX[4] | CON[4]
@@ -240,7 +233,6 @@ P:0:0d0:2:2:0
 F:FREE_ACT | SEE_INVIS | 
 F:SLOW_DIGEST | REGEN | TELEPATHY
 F:SUST_STR | SUST_CON | PROT_FEAR
-F:INSTA_ART
 E:PROTEVIL:200+4d50
 M:{name} glows deep red...
 V:STR[1] | INT[1] | WIS[1] | DEX[1] | CON[1] | SPEED[5] | RES_FIRE[3]
@@ -261,7 +253,6 @@ F:HOLD_LIFE | FREE_ACT | SEE_INVIS |
 F:FEATHER | REGEN
 F:SUST_INT | SUST_WIS | SUST_CON
 F:PROT_BLIND | TELEPATHY | 
-F:INSTA_ART
 E:RESTORE_LIFE:200+2d50
 M:{name} glows bright white...
 V:STR[2] | INT[2] | WIS[2] | DEX[2] | CON[2] | SPEED[5] | RES_COLD[3]
@@ -281,7 +272,6 @@ P:0:0d0:5:5:0
 F:HOLD_LIFE | FREE_ACT | SEE_INVIS
 F:FEATHER | SLOW_DIGEST | REGEN | TELEPATHY
 F:SUST_DEX | SUST_INT | SUST_CON
-F:INSTA_ART
 E:HEAL2:200+2d50
 M:{name} glows deep blue...
 V:STR[3] | INT[3] | WIS[3] | DEX[3] | CON[3] | SPEED[5]
@@ -305,7 +295,6 @@ F:LIGHT_CURSE | HEAVY_CURSE | PERMA_CURSE
 F:AGGRAVATE | DRAIN_EXP | SEE_INVIS | REGEN | TELEPATHY
 F:SUST_STR | SUST_DEX | SUST_CON | 
 F:SUST_INT | SUST_WIS |
-F:INSTA_ART
 E:BIZARRE:200+9d50
 M:{name} glows intensely black...
 V:STR[5] | INT[5] | WIS[5] | DEX[5] | CON[5] | SPEED[5]
@@ -327,7 +316,6 @@ W:60:60:3:40000
 A:2:60 to 127
 P:0:0d0:0:0:10
 F:PROT_FEAR
-F:INSTA_ART
 E:HEAL1:200
 M:You feel a warm tingling inside...
 V:STR[2] | WIS[2] | SPEED[2] | RES_FIRE[1] | RES_POIS[1]
@@ -344,7 +332,6 @@ G:":w
 W:40:40:3:25000
 A:2:30 to 70
 F:HOLD_LIFE | SUST_CON | SUST_WIS | REGEN
-F:INSTA_ART
 E:RESTORE_LIFE:150
 M:Your {kind} glow{s} a deep red...
 V:WIS[2] | RES_DARK[1] | RES_COLD[1] | RES_NETHER[1]
@@ -604,7 +591,6 @@ A:0:100 to 100
 P:0:1d1:0:0:0
 F:PROT_CONF | SEE_INVIS | TELEPATHY | PROT_FEAR | 
 F:LIGHT_CURSE | HEAVY_CURSE | PERMA_CURSE | 
-F:INSTA_ART | QUEST_ART
 V:STR[125] | INT[125] | WIS[125] | DEX[125] | CON[125] | INFRA[125] | LIGHT[1]
 V:RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1] | RES_POIS[1]
 V:RES_LIGHT[1] | RES_DARK[1] | RES_NEXUS[1] | RES_NETHER[1]
@@ -1609,7 +1595,7 @@ I:hafted:Mighty Hammer
 W:100:1:1000:500000
 A:0:100 to 100
 P:0:9d9:5:25:10
-F:IMPACT | SEE_INVIS | TELEPATHY | AGGRAVATE | INSTA_ART | QUEST_ART
+F:IMPACT | SEE_INVIS | TELEPATHY | AGGRAVATE
 V:SLAY_DRAGON[5] | SLAY_ANIMAL[2] | SLAY_EVIL[2] | SLAY_UNDEAD[5] | 
 V:SLAY_DEMON[5] | SLAY_TROLL[3] | SLAY_ORC[3] | 
 D:The mighty Hammer of the Underworld, blackened by doomspells of shattering.  
@@ -1978,7 +1964,6 @@ D: the main host.
 #I:amulet:55
 #W:65:30:3:90000
 #A:3:60 to 127
-#F:INSTA_ART
 #F:PROT_FEAR | PROT_BLIND | PROT_STUN | PROT_CONF
 #V:SEARCH[4] | SPEED[2] | RES_ELEC[1] | RES_COLD[1]
 #D:The pendant of Amandil, the last Lord of Andúnië, and mighty

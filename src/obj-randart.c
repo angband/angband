@@ -670,13 +670,13 @@ static void parse_frequencies(void)
 		/* Don't parse cursed or null items */
 		if (base_power[i] < 0 || a_ptr->tval == 0) continue;
 
-		/* Special cases -- don't parse these! */
-		if (strstr(a_ptr->name, "The One Ring") ||
-			kf_has(a_ptr->kind_flags, KF_QUEST_ART))
-			continue;
-
 		/* Get a pointer to the base item for this artifact */
 		k_ptr = lookup_kind(a_ptr->tval, a_ptr->sval);
+
+		/* Special cases -- don't parse these! */
+		if (strstr(a_ptr->name, "The One Ring") ||
+			kf_has(k_ptr->kind_flags, KF_QUEST_ART))
+			continue;
 
 		/* Add the base item to the baseprobs array */
 		baseprobs[k_ptr->kidx]++;
@@ -2392,6 +2392,7 @@ static void do_curse(artifact_type *a_ptr)
 static void scramble_artifact(int a_idx)
 {
 	artifact_type *a_ptr = &a_info[a_idx];
+	object_kind *kind = lookup_kind(a_ptr->tval, a_ptr->sval);
 	artifact_type a_old;
 	object_kind *k_ptr;
 	s32b power;
@@ -2402,14 +2403,14 @@ static void scramble_artifact(int a_idx)
 	bool success = FALSE;
 	int i;
 
-	bool special_artifact = kf_has(a_ptr->kind_flags, KF_INSTA_ART);
+	bool special_artifact = kf_has(kind->kind_flags, KF_INSTA_ART);
 
 	/* Skip unused artifacts */
 	if (a_ptr->tval == 0) return;
 
 	/* Special cases -- don't randomize these! */
 	if (strstr(a_ptr->name, "The One Ring") ||
-		kf_has(a_ptr->kind_flags, KF_QUEST_ART))
+		kf_has(kind->kind_flags, KF_QUEST_ART))
 		return;
 
 	/* Evaluate the original artifact to determine the power level. */
@@ -2645,10 +2646,6 @@ static void scramble_artifact(int a_idx)
 			  a_ptr->alloc_max);
 	file_putf(log_file, "Power-based alloc_prob is %d\n", a_ptr->alloc_prob);
 
-	/* Unnecessary? */
-	if (special_artifact)
-		kf_on(a_ptr->kind_flags, KF_INSTA_ART);
-
 	/* Success */
 	file_putf(log_file, ">>>>>>>>>>>>>>>>>>>>>>>>>> ARTIFACT COMPLETED <<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n");
 	file_putf(log_file, "Number of tries for artifact %d was: %d\n", a_idx, tries);
@@ -2756,13 +2753,15 @@ static errr scramble(void)
 char *artifact_gen_name(struct artifact *a, const char ***words) {
 	char buf[BUFLEN];
 	char word[MAX_NAME_LEN + 1];
+	object_kind *kind = lookup_kind(a->tval, a->sval);
+
 	randname_make(RANDNAME_TOLKIEN, MIN_NAME_LEN, MAX_NAME_LEN, word,
 				  sizeof(word), words);
 	my_strcap(word);
 
 	if (strstr(a->name, "The One Ring"))
 		strnfmt(buf, sizeof(buf), "of Power (The One Ring)");
-	else if (kf_has(a->kind_flags, KF_QUEST_ART))
+	else if (kf_has(kind->kind_flags, KF_QUEST_ART))
 		strnfmt(buf, sizeof(buf), a->name);
 	else if (one_in_(3))
 		strnfmt(buf, sizeof(buf), "'%s'", word);
