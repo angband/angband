@@ -2302,7 +2302,7 @@ static enum parser_error parse_c_m(struct parser *p) {
 
 	if (!c)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	c->spell_book = parser_getuint(p, "book");
+	c->spell_book = tval_find_idx(parser_getsym(p, "book"));
 	c->spell_stat = parser_getuint(p, "stat");
 	c->spell_first = parser_getuint(p, "first");
 	c->spell_weight = parser_getuint(p, "weight");
@@ -2405,7 +2405,7 @@ struct parser *init_parse_c(void) {
 	parser_reg(p, "X int dis int dev int sav int stl int srh int fos int thm int thb int throw int dig", parse_c_x);
 	parser_reg(p, "I int mhp int exp int sense-base int sense-div", parse_c_i);
 	parser_reg(p, "A int max-attacks int min-weight int att-multiply", parse_c_a);
-	parser_reg(p, "M uint book uint stat uint first uint weight", parse_c_m);
+	parser_reg(p, "M sym book uint stat uint first uint weight", parse_c_m);
 	parser_reg(p, "B sym spell int level int mana int fail int exp", parse_c_b);
 	parser_reg(p, "T str title", parse_c_t);
 	parser_reg(p, "E sym tval sym sval uint min uint max", parse_c_e);
