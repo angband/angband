@@ -48,6 +48,7 @@
 #include "option.h"
 #include "parser.h"
 #include "player.h"
+#include "player-spell.h"
 #include "player-timed.h"
 #include "prefs.h"
 #include "project.h"

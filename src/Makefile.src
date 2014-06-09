@@ -178,7 +178,6 @@ ANGFILES = \
 	wiz-spoil.o \
 	wiz-stats.o \
 	wizard.o \
-	x-spell.o \
 
 STATSMAINFILES = main-stats.o \
         stats/db.o

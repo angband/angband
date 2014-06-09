@@ -16,7 +16,6 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
-
 #include "cave.h"
 #include "cmds.h"
 #include "cmd-core.h"
@@ -24,9 +23,7 @@
 #include "obj-ui.h"
 #include "obj-util.h"
 #include "object.h"
-#include "cmd-core.h"
-#include "spells.h"
-
+#include "player-spell.h"
 #include "ui.h"
 #include "ui-menu.h"
 
