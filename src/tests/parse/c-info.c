@@ -134,10 +134,10 @@ int test_b0(void *state) {
 	eq(r, PARSE_ERROR_NONE);
 	c = parser_priv(state);
 	require(c);
-	eq(c->spells.info[8].slevel, 23);
-	eq(c->spells.info[8].smana, 25);
-	eq(c->spells.info[8].sfail, 90);
-	eq(c->spells.info[8].sexp, 3);
+	eq(c->magic.spells[8].slevel, 23);
+	eq(c->magic.spells[8].smana, 25);
+	eq(c->magic.spells[8].sfail, 90);
+	eq(c->magic.spells[8].sexp, 3);
 	ok;
 }
 

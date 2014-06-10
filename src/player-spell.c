@@ -202,7 +202,7 @@ bool spell_okay_to_cast(int spell)
  */
 bool spell_okay_to_study(int spell)
 {
-	const magic_type *s_ptr = &player->class->spells.info[spell];
+	const class_spell *s_ptr = &player->class->magic.spells[spell];
 	return (s_ptr->slevel <= player->lev) &&
 			!(player->spell_flags[spell] & PY_SPELL_LEARNED);
 }
@@ -212,7 +212,7 @@ bool spell_okay_to_study(int spell)
  */
 bool spell_okay_to_browse(int spell)
 {
-	const magic_type *s_ptr = &player->class->spells.info[spell];
+	const class_spell *s_ptr = &player->class->magic.spells[spell];
 	return (s_ptr->slevel < 99);
 }
 
@@ -224,14 +224,14 @@ s16b spell_chance(int spell)
 {
 	int chance, minfail;
 
-	const magic_type *s_ptr;
+	const class_spell *s_ptr;
 
 
 	/* Paranoia -- must be literate */
 	if (!player->class->spell_book) return (100);
 
 	/* Get the spell */
-	s_ptr = &player->class->spells.info[spell];
+	s_ptr = &player->class->magic.spells[spell];
 
 	/* Extract the base spell failure rate */
 	chance = s_ptr->sfail;
@@ -354,7 +354,7 @@ bool spell_cast(int spell, int dir)
 	int chance;
 
 	/* Get the spell */
-	const magic_type *s_ptr = &player->class->spells.info[spell];
+	const class_spell *s_ptr = &player->class->magic.spells[spell];
 
 	/* Spell failure chance */
 	chance = spell_chance(spell);

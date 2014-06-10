@@ -12,12 +12,12 @@
 
 /*** Game constants ***/
 
-#define PY_MAX_EXP	99999999L	/* Maximum exp */
-#define PY_MAX_GOLD	999999999L	/* Maximum gold */
-#define PY_MAX_LEVEL	50		/* Maximum level */
-
-/* Maximum number of player spells */
-#define PY_MAX_SPELLS 64
+#define PY_MAX_EXP		99999999L	/* Maximum exp */
+#define PY_MAX_GOLD		999999999L	/* Maximum gold */
+#define PY_MAX_LEVEL	50			/* Maximum level */
+#define PY_MAX_SPELLS	64			/* Maximum number of player spells */
+#define PY_MAX_BOOKS	10			/* Maximum number of spellbooks */
+#define PY_MAX_SPELL	10			/* Maximum number of spells per book */
 
 /* Flags for player.spell_flags[] */
 #define PY_SPELL_LEARNED    0x01 	/* Spell has been learned */
@@ -35,6 +35,15 @@
 #define SEX_FEMALE		0
 #define SEX_MALE		1
 #define SEX_NEUTER		2
+
+/* Player magic realms */
+enum
+{
+	REALM_ARCANE = 0,
+	REALM_PIOUS,
+
+	REALM_MAX
+};
 
 /*
  * Player race and class flags
@@ -247,26 +256,41 @@ struct start_item {
 };
 
 
-/*
+/**
  * A structure to hold class-dependent information on spells.
  */
 typedef struct {
-	byte slevel;		/* Required level (to learn) */
-	byte smana;			/* Required mana (to cast) */
-	byte sfail;			/* Minimum chance of failure */
-	byte sexp;			/* Encoded experience bonus */
-} magic_type;
+	byte sidx;		/**< The index into the s_info array */
+	byte bidx;		/**< The index into the player's books array */
+	byte slevel;	/**< Required level (to learn) */
+	byte smana;		/**< Required mana (to cast) */
+	byte sfail;		/**< Base chance of failure */
+	byte sexp;		/**< Encoded experience bonus */
+} class_spell;
 
 
-/*
+/**
+ * A structure to hold class-dependent information on spell books.
+ */
+typedef struct {
+	byte realm;		/**< Realm of magic for the book this spell is in */
+	byte sval;		/**< Item sub-type for book (= realm book number) */
+	class_spell spells[PY_MAX_SPELL];	/**< The available spells */
+} class_book;
+
+
+/**
  * Information about the player's magic knowledge
  */
 typedef struct {
-	magic_type info[PY_MAX_SPELLS];	/* The available spells */
-} player_magic;
+	byte spell_first;		/**< Level of first spell */
+	s16b spell_weight;		/**< Max armour weight to avoid mana penalties */
+	class_book books[PY_MAX_BOOKS];		/**< Usable spellbooks */
+	class_spell spells[PY_MAX_SPELLS];	/**< The available spells */
+} class_magic;
 
 
-/*
+/**
  * Player class info
  */
 typedef struct player_class {
@@ -300,7 +324,7 @@ typedef struct player_class {
 	
 	struct start_item *start_items; /* Starting inventory */
 	
-	player_magic spells; /* Magic spells */
+	class_magic magic; /* Magic spells */
 } player_class;
 
 extern struct player_class *classes;

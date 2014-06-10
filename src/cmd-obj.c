@@ -1027,7 +1027,7 @@ void do_cmd_cast(struct command *cmd)
 	}
 
 	/* Get the spell */
-	const magic_type *s_ptr = &player->class->spells.info[spell];
+	const class_spell *s_ptr = &player->class->magic.spells[spell];
 
 	/* Check for unknown objects to prevent wasted player turns. */
 	if (spell_is_identify(player->class->spell_book, spell) && !spell_identify_unknown_available()) {

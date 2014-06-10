@@ -2319,10 +2319,10 @@ static enum parser_error parse_c_b(struct parser *p) {
 	spell = spell_lookup_by_name(c->spell_book, parser_getsym(p, "spell"));
 	if (spell >= PY_MAX_SPELLS || spell < 0)
 		return PARSE_ERROR_OUT_OF_BOUNDS;
-	c->spells.info[spell].slevel = parser_getint(p, "level");
-	c->spells.info[spell].smana = parser_getint(p, "mana");
-	c->spells.info[spell].sfail = parser_getint(p, "fail");
-	c->spells.info[spell].sexp = parser_getint(p, "exp");
+	c->magic.spells[spell].slevel = parser_getint(p, "level");
+	c->magic.spells[spell].smana = parser_getint(p, "mana");
+	c->magic.spells[spell].sfail = parser_getint(p, "fail");
+	c->magic.spells[spell].sexp = parser_getint(p, "exp");
 	return PARSE_ERROR_NONE;
 }
 
@@ -2773,7 +2773,7 @@ static enum parser_error parse_s_expr(struct parser *p) {
 	if (dice_bind_expression(s->dice, name, expression) < 0)
 		return PARSE_ERROR_GENERIC;
 
-	/* The dice object makes a deep copy of the expression, so we don't need it anymore. */
+	/* The dice object makes a deep copy of the expression, so we can free it */
 	expression_free(expression);
 
 	return PARSE_ERROR_NONE;

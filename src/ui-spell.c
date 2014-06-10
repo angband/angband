@@ -65,7 +65,7 @@ static void spell_menu_display(menu_type *m, int oid, bool cursor,
 {
 	struct spell_menu_data *d = menu_priv(m);
 	int spell = d->spells[oid];
-	const magic_type *s_ptr = &player->class->spells.info[spell];
+	const class_spell *s_ptr = &player->class->magic.spells[spell];
 
 	char help[30];
 	char out[80];

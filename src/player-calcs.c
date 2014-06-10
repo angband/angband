@@ -1095,7 +1095,7 @@ static void calc_spells(void)
 	int num_allowed, num_known;
 	int percent_spells;
 
-	const magic_type *s_ptr;
+	const class_spell *s_ptr;
 
 	s16b old_spells;
 
@@ -1151,7 +1151,7 @@ static void calc_spells(void)
 		if (j >= 99) continue;
 
 		/* Get the spell */
-		s_ptr = &player->class->spells.info[j];
+		s_ptr = &player->class->magic.spells[j];
 
 		/* Skip spells we are allowed to know */
 		if (s_ptr->slevel <= player->lev) continue;
@@ -1217,7 +1217,7 @@ static void calc_spells(void)
 		if (j >= 99) break;
 
 		/* Get the spell */
-		s_ptr = &player->class->spells.info[j];
+		s_ptr = &player->class->magic.spells[j];
 
 		/* Skip spells we cannot remember */
 		if (s_ptr->slevel > player->lev) continue;
@@ -1247,7 +1247,7 @@ static void calc_spells(void)
 	for (j = 0; j < PY_MAX_SPELLS; j++)
 	{
 		/* Get the spell */
-		s_ptr = &player->class->spells.info[j];
+		s_ptr = &player->class->magic.spells[j];
 
 		/* Skip spells we cannot remember or don't exist */
 		if (s_ptr->slevel > player->lev || s_ptr->slevel == 0) continue;
