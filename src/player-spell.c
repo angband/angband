@@ -29,7 +29,7 @@
 #include "project.h"
 #include "spells.h"
 
-/*
+/**
  * Stat Table (INT/WIS) -- Minimum failure rate (percentage)
  */
 const byte adj_mag_fail[STAT_RANGE] =
@@ -74,7 +74,7 @@ const byte adj_mag_fail[STAT_RANGE] =
 	0	/* 18/220+ */
 };
 
-/*
+/**
  * Stat Table (INT/WIS) -- failure rate adjustment
  */
 const int adj_mag_stat[STAT_RANGE] =
@@ -217,7 +217,7 @@ bool spell_okay_to_browse(int spell)
 }
 
 
-/*
+/**
  * Returns chance of failure for a spell
  */
 s16b spell_chance(int spell)
@@ -288,7 +288,9 @@ s16b spell_chance(int spell)
 
 
 
-/* Check if the given spell is in the given book. */
+/**
+ * Check if the given spell is in the given book.
+ */
 bool spell_in_book(int spell, int book)
 {
 	struct spell *sp;
@@ -302,7 +304,7 @@ bool spell_in_book(int spell, int book)
 }
 
 
-/*
+/**
  * Learn the specified spell.
  */
 void spell_learn(int spell)
@@ -344,7 +346,9 @@ void spell_learn(int spell)
 }
 
 
-/* Cas the specified spell */
+/**
+ * Cast the specified spell
+ */
 bool spell_cast(int spell, int dir)
 {
 	int chance;
@@ -447,24 +451,6 @@ const char *get_spell_name(int tval, int spell)
 	else
 		return s_info[spell + PY_MAX_SPELLS].name;
 }
-
-typedef struct spell_handler_context_s {
-	const int spell;
-	const int dir;
-	const int beam;
-	const random_value value;
-	const int p1, p2, p3;
-} spell_handler_context_t;
-
-typedef bool (*spell_handler_f)(spell_handler_context_t *);
-
-typedef struct spell_info_s {
-	u16b spell;
-	bool aim;
-	const char *info;
-	spell_handler_f handler;
-} spell_info_t;
-
 
 static size_t append_random_value_string(char *buffer, size_t size, random_value *rv)
 {
@@ -1176,9 +1162,12 @@ static bool cast_mage_spell(int spell, int dir)
 	if (s_info[spell].dice != NULL)
 		dice_roll(s_info[spell].dice, &value);
 
-	p1 = s_info[spell].params[0]; /* Usually GF_ type. */
-	p2 = s_info[spell].params[1]; /* Usually radius for ball spells, or some other modifier. */
-	p3 = s_info[spell].params[2]; /* SPELL_PROJECT_ type if from the parser. */
+	/* Usually GF_ type. */
+	p1 = s_info[spell].params[0];
+	/* Usually radius for ball spells, or some other modifier. */
+	p2 = s_info[spell].params[1];
+	/* SPELL_PROJECT_ type if from the parser. */
+	p3 = s_info[spell].params[2];
 
 	spell_handler_context_t context = {
 		spell,
@@ -1328,10 +1317,10 @@ static void spell_append_value_info_arcane(int spell, char *p, size_t len)
 	if (s_info[spell].dice != NULL)
 		dice_roll(s_info[spell].dice, &rv);
 
-	/* Handle some special cases where we want to append some additional info. */
+	/* Handle some special cases where we want to append some additional info */
 	switch (spell) {
 		case SPELL_CURE_LIGHT_WOUNDS:
-			/* Append the percentage only, since the fixed value is always displayed. */
+			/* Append percentage only, as the fixed value is always displayed */
 			special = format("/%d%%", rv.m_bonus);
 			break;
 		case SPELL_METEOR_SWARM:
@@ -1367,7 +1356,7 @@ static void spell_append_value_info_prayer(int spell, char *p, size_t len)
 	if (s_info[spell + 64].dice != NULL)
 		dice_roll(s_info[spell + 64].dice, &rv);
 
-	/* Handle some special cases where we want to append some additional info. */
+	/* Handle some special cases where we want to append some additional info */
 	switch (spell) {
 		case PRAYER_CURE_LIGHT_WOUNDS:
 		case PRAYER_CURE_SERIOUS_WOUNDS:
@@ -1376,7 +1365,7 @@ static void spell_append_value_info_prayer(int spell, char *p, size_t len)
 		case PRAYER_HEAL:
 		case PRAYER_CURE_SERIOUS_WOUNDS2:
 		case PRAYER_CURE_MORTAL_WOUNDS2:
-			/* Append the percentage only, since the fixed value is always displayed. */
+			/* Append percentage only, as the fixed value is always displayed */
 			special = format("/%d%%", rv.m_bonus);
 			break;
 	}

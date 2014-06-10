@@ -171,6 +171,24 @@ enum spell_index_prayer_e {
 	PRAYER_MAX,
 };
 
+typedef struct spell_handler_context_s {
+	const int spell;
+	const int dir;
+	const int beam;
+	const random_value value;
+	const int p1, p2, p3;
+} spell_handler_context_t;
+
+typedef bool (*spell_handler_f)(spell_handler_context_t *);
+
+typedef struct spell_info_s {
+	u16b spell;
+	bool aim;
+	const char *info;
+	spell_handler_f handler;
+} spell_info_t;
+
+
 extern int get_spell_index(const object_type *o_ptr, int index);
 extern const char *get_spell_name(int tval, int index);
 extern void get_spell_info(int tval, int index, char *buf, size_t len);
