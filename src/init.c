@@ -2397,6 +2397,28 @@ static enum parser_error parse_c_f(struct parser *p) {
 	return s ? PARSE_ERROR_INVALID_FLAG : PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_c_book(struct parser *p) {
+	struct player_class *c = parser_priv(p);
+	int tval, sval;
+
+	if (!c)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	tval = tval_find_idx(parser_getsym(p, "tval"));
+	if (tval < 0)
+		return PARSE_ERROR_UNRECOGNISED_TVAL;
+
+	sval = lookup_sval(tval, parser_getsym(p, "sval"));
+	if (sval < 0)
+		return PARSE_ERROR_UNRECOGNISED_SVAL;
+
+	c->magic.books[c->magic.num_books].tval = tval;
+	c->magic.books[c->magic.num_books].sval = sval;
+	c->magic.books[c->magic.num_books++].stat = parser_getuint(p, "stat");
+
+	return PARSE_ERROR_NONE;
+}
+
 struct parser *init_parse_c(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
@@ -2411,6 +2433,7 @@ struct parser *init_parse_c(void) {
 	parser_reg(p, "T str title", parse_c_t);
 	parser_reg(p, "E sym tval sym sval uint min uint max", parse_c_e);
 	parser_reg(p, "F ?str flags", parse_c_f);
+	parser_reg(p, "book sym tval sym sval uint stat", parse_c_book);
 	return p;
 }
 

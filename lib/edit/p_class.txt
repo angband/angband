@@ -168,6 +168,15 @@ B:METEOR_SWARM:30:14:85:34
 B:MASS_BANISHMENT:35:75:90:100
 B:RIFT:35:20:60:25
 B:MANA_STORM:42:16:95:200
+book:magic book:[Magic for Beginners]:1
+book:magic book:[Conjurings and Tricks]:1
+book:magic book:[Incantations and Illusions]:1
+book:magic book:[Sorcery and Evocations]:1
+book:magic book:[Resistances of Scarabtarices]:1
+book:magic book:[Raal's Tome of Destruction]:1
+book:magic book:[Mordenkainen's Escapes]:1
+book:magic book:[Tenser's Transformations]:1
+book:magic book:[Kelek's Grimoire of Power]:1
 
 N:2:Priest
 S:-1:-3:3:-1:1
@@ -258,6 +267,15 @@ B:60:99:0:0:0
 B:61:99:0:0:0
 B:62:99:0:0:0
 B:63:99:0:0:0
+book:prayer book:[Beginners Handbook]:2
+book:prayer book:[Words of Wisdom]:2
+book:prayer book:[Chants and Blessings]:2
+book:prayer book:[Exorcism and Dispelling]:2
+book:prayer book:[Ethereal Openings]:2
+book:prayer book:[Godly Insights]:2
+book:prayer book:[Purifications and Healing]:2
+book:prayer book:[Holy Infusions]:2
+book:prayer book:[Wrath of God]:2
 
 N:3:Rogue
 S:0:1:-3:3:-1
@@ -346,6 +364,15 @@ B:METEOR_SWARM:99:0:0:0
 B:MASS_BANISHMENT:99:0:0:0
 B:RIFT:99:0:0:0
 B:MANA_STORM:99:0:0:0
+book:magic book:[Magic for Beginners]:1
+book:magic book:[Conjurings and Tricks]:1
+book:magic book:[Incantations and Illusions]:1
+book:magic book:[Sorcery and Evocations]:1
+book:magic book:[Resistances of Scarabtarices]:1
+book:magic book:[Raal's Tome of Destruction]:1
+book:magic book:[Mordenkainen's Escapes]:1
+book:magic book:[Tenser's Transformations]:1
+book:magic book:[Kelek's Grimoire of Power]:1
 
 N:4:Ranger
 S:0:2:-2:1:-1
@@ -435,6 +462,15 @@ B:METEOR_SWARM:36:45:80:35
 B:MASS_BANISHMENT:99:0:0:0
 B:RIFT:99:0:0:0
 B:MANA_STORM:99:0:0:0
+book:magic book:[Magic for Beginners]:1
+book:magic book:[Conjurings and Tricks]:1
+book:magic book:[Incantations and Illusions]:1
+book:magic book:[Sorcery and Evocations]:1
+book:magic book:[Resistances of Scarabtarices]:1
+book:magic book:[Raal's Tome of Destruction]:1
+book:magic book:[Mordenkainen's Escapes]:1
+book:magic book:[Tenser's Transformations]:1
+book:magic book:[Kelek's Grimoire of Power]:1
 
 N:5:Paladin
 S:1:-3:1:-1:2
@@ -525,3 +561,12 @@ B:60:99:0:0:0
 B:61:99:0:0:0
 B:62:99:0:0:0
 B:63:99:0:0:0
+book:prayer book:[Beginners Handbook]:2
+book:prayer book:[Words of Wisdom]:2
+book:prayer book:[Chants and Blessings]:2
+book:prayer book:[Exorcism and Dispelling]:2
+book:prayer book:[Ethereal Openings]:2
+book:prayer book:[Godly Insights]:2
+book:prayer book:[Purifications and Healing]:2
+book:prayer book:[Holy Infusions]:2
+book:prayer book:[Wrath of God]:2

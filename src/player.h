@@ -273,19 +273,21 @@ typedef struct {
  * A structure to hold class-dependent information on spell books.
  */
 typedef struct {
-	byte realm;		/**< Realm of magic for the book this spell is in */
-	byte sval;		/**< Item sub-type for book (= realm book number) */
-	class_spell spells[PY_MAX_SPELL];	/**< The available spells */
+	byte tval;		/**< Item type of the book */
+	byte sval;		/**< Item sub-type for book (book number) */
+	byte stat;		/**< Stat for spells cast from this book */
+	class_spell spells[PY_MAX_SPELL];	/**< Spells in the book*/
 } class_book;
 
 
 /**
- * Information about the player's magic knowledge
+ * Information about class magic knowledge
  */
 typedef struct {
 	byte spell_first;		/**< Level of first spell */
 	s16b spell_weight;		/**< Max armour weight to avoid mana penalties */
-	class_book books[PY_MAX_BOOKS];		/**< Usable spellbooks */
+	byte num_books;			/**< Number of spellbooks */
+	class_book books[PY_MAX_BOOKS];		/**< Details of spellbooks */
 	class_spell spells[PY_MAX_SPELLS];	/**< The available spells */
 } class_magic;
 
