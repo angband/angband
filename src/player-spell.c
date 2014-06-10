@@ -1112,7 +1112,7 @@ static bool spell_handler_prayer_ALTER_REALITY(spell_handler_context_t *context)
 static const spell_info_t arcane_spells[] = {
 	#define F(x) spell_handler_arcane_##x
 	#define H(x) spell_handler_##x
-	#define SPELL(x, a, s, f) {x, a, s, f},
+	#define SPELL(x, a, s, f) {SPELL_##x, a, s, f},
 	#include "list-spells-arcane.h"
 	#undef SPELL
 	#undef H
@@ -1122,9 +1122,9 @@ static const spell_info_t arcane_spells[] = {
 static const spell_info_t prayer_spells[] = {
 	#define F(x) spell_handler_prayer_##x
 	#define H(x) spell_handler_##x
-	#define SPELL(x, a, s, f) {x, a, s, f},
+	#define PRAYER(x, a, s, f) {PRAYER_##x, a, s, f},
 	#include "list-spells-prayer.h"
-	#undef SPELL
+	#undef PRAYER
 	#undef H
 	#undef F
 };
@@ -1270,9 +1270,9 @@ static int spell_lookup_by_name_arcane(const char *name)
 static int spell_lookup_by_name_prayer(const char *name)
 {
 	static const char *spell_names[] = {
-		#define SPELL(x, a, s, f) #x,
+		#define PRAYER(x, a, s, f) #x,
 		#include "list-spells-prayer.h"
-		#undef SPELL
+		#undef PRAYER
 	};
 	size_t i;
 	unsigned int number;
