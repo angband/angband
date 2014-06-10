@@ -2419,6 +2419,29 @@ static enum parser_error parse_c_book(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_c_spell(struct parser *p) {
+	struct player_class *c = parser_priv(p);
+	class_book *book = &c->magic.books[c->magic.num_books - 1];
+	int sidx;
+
+	if (!c)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	sidx = spell_lookup_by_name(book->tval, parser_getsym(p, "sidx"));
+	if (sidx >= PY_MAX_SPELLS || sidx < 0)
+		return PARSE_ERROR_OUT_OF_BOUNDS;
+
+	/* Fix this temporary hack - NRM */
+	if (book->tval == TV_PRAYER_BOOK) sidx += PY_MAX_SPELLS;
+
+	book->spells[book->num_spells].sidx = sidx;
+	book->spells[book->num_spells].bidx = c->magic.num_books - 1;
+	book->spells[book->num_spells].slevel = parser_getint(p, "level");
+	book->spells[book->num_spells].smana = parser_getint(p, "mana");
+	book->spells[book->num_spells].sfail = parser_getint(p, "fail");
+	book->spells[book->num_spells++].sexp = parser_getint(p, "exp");
+	return PARSE_ERROR_NONE;
+}
+
 struct parser *init_parse_c(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
@@ -2434,6 +2457,7 @@ struct parser *init_parse_c(void) {
 	parser_reg(p, "E sym tval sym sval uint min uint max", parse_c_e);
 	parser_reg(p, "F ?str flags", parse_c_f);
 	parser_reg(p, "book sym tval sym sval uint stat", parse_c_book);
+	parser_reg(p, "spell sym sidx int level int mana int fail int exp", parse_c_spell);
 	return p;
 }
 

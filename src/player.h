@@ -273,9 +273,10 @@ typedef struct {
  * A structure to hold class-dependent information on spell books.
  */
 typedef struct {
-	byte tval;		/**< Item type of the book */
-	byte sval;		/**< Item sub-type for book (book number) */
-	byte stat;		/**< Stat for spells cast from this book */
+	byte tval;			/**< Item type of the book */
+	byte sval;			/**< Item sub-type for book (book number) */
+	byte stat;			/**< Stat for spells cast from this book */
+	byte num_spells;	/**< Number of spells in this book */
 	class_spell spells[PY_MAX_SPELL];	/**< Spells in the book*/
 } class_book;
 
