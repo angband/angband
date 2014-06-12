@@ -120,6 +120,22 @@ const int adj_mag_stat[STAT_RANGE] =
 };
 
 /**
+ * Get the spellbook structure from an object which is a book the player can
+ * cast from
+ */
+const class_book *object_to_book(const struct object *obj)
+{
+	size_t i;
+
+	for (i = 0; i < PY_MAX_BOOKS; i++)
+		if ((obj->tval == player->class->magic.books[i].tval) &&
+			(obj->sval == player->class->magic.books[i].sval))
+			return &player->class->magic.books[i];
+
+	return NULL;
+}
+
+/**
  * Compare function for sorting spells into book order
  */
 static int cmp_spell(const void *s1, const void *s2)
@@ -139,6 +155,21 @@ static int cmp_spell(const void *s1, const void *s2)
 /**
  * Collect spells from a book into the spells[] array.
  */
+int spell_collect_from_book_NRM(const object_type *o_ptr, int *spells)
+{
+	size_t i;
+	const class_book *book = object_to_book(o_ptr);
+
+	for (i = 0; i < book->num_spells; i++)
+		spells[i] = i;
+
+	return book->num_spells;
+}
+
+
+/**
+ * Collect spells from a book into the spells[] array.
+ */
 int spell_collect_from_book(const object_type *o_ptr, int *spells)
 {
 	struct spell *sp;
@@ -149,6 +180,23 @@ int spell_collect_from_book(const object_type *o_ptr, int *spells)
 	}
 
 	sort(spells, n_spells, sizeof(int), cmp_spell);
+
+	return n_spells;
+}
+
+
+/**
+ * Return the number of castable spells in the spellbook 'o_ptr'.
+ */
+int spell_book_count_spells_NRM(const object_type *o_ptr,
+		bool (*tester)(int spell))
+{
+	int i, n_spells = 0;
+	const class_book *book = object_to_book(o_ptr);
+
+	for (i = 0; i < book->num_spells;i++)
+		if (tester(book->spells[i].sidx))
+			n_spells++;
 
 	return n_spells;
 }
@@ -286,22 +334,6 @@ s16b spell_chance(int spell)
 	return (chance);
 }
 
-
-
-/**
- * Check if the given spell is in the given book.
- */
-bool spell_in_book(int spell, int book)
-{
-	struct spell *sp;
-	object_type *o_ptr = object_from_item_idx(book);
-
-	for (sp = o_ptr->kind->spells; sp; sp = sp->next)
-		if (spell == sp->spell_index)
-			return TRUE;
-
-	return FALSE;
-}
 
 
 /**

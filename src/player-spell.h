@@ -52,6 +52,21 @@ typedef struct spell_info_s {
 } spell_info_t;
 
 
+/* spell.c */
+int spell_collect_from_book_NRM(const object_type *o_ptr, int *spells);
+int spell_collect_from_book(const object_type *o_ptr, int *spells);
+int spell_book_count_spells_NRM(const object_type *o_ptr,
+								bool (*tester)(int spell));
+int spell_book_count_spells(const object_type *o_ptr, bool (*tester)(int spell));
+bool spell_okay_list(bool (*spell_test)(int spell), const int spells[], int n_spells);
+bool spell_okay_to_cast(int spell);
+bool spell_okay_to_study(int spell);
+bool spell_okay_to_browse(int spell);
+s16b spell_chance(int spell);
+void spell_learn(int spell);
+bool spell_cast(int spell, int dir);
+
+/* Start of old x-spell.c */
 extern int get_spell_index(const object_type *o_ptr, int index);
 extern const char *get_spell_name(int tval, int index);
 extern void get_spell_info(int tval, int index, char *buf, size_t len);

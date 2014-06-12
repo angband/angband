@@ -260,7 +260,7 @@ struct start_item {
  * A structure to hold class-dependent information on spells.
  */
 typedef struct {
-	byte sidx;		/**< The index into the s_info array */
+	byte sidx;		/**< The index into the s_info array ?? or enum value */
 	byte bidx;		/**< The index into the player's books array */
 	byte slevel;	/**< Required level (to learn) */
 	byte smana;		/**< Required mana (to cast) */
@@ -413,17 +413,5 @@ extern const char *player_safe_name(struct player *p, bool strip_suffix);
 
 /* race.c */
 extern struct player_race *player_id2race(guid id);
-
-/* spell.c */
-int spell_collect_from_book(const object_type *o_ptr, int *spells);
-int spell_book_count_spells(const object_type *o_ptr, bool (*tester)(int spell));
-bool spell_okay_list(bool (*spell_test)(int spell), const int spells[], int n_spells);
-bool spell_okay_to_cast(int spell);
-bool spell_okay_to_study(int spell);
-bool spell_okay_to_browse(int spell);
-bool spell_in_book(int spell, int book);
-s16b spell_chance(int spell);
-void spell_learn(int spell);
-bool spell_cast(int spell, int dir);
 
 #endif /* !PLAYER_H */
