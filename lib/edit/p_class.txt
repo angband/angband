@@ -168,14 +168,15 @@ B:METEOR_SWARM:30:14:85:34
 B:MASS_BANISHMENT:35:75:90:100
 B:RIFT:35:20:60:25
 B:MANA_STORM:42:16:95:200
-book:magic book:[Magic for Beginners]:1
+magic:1:300:9
+book:magic book:[Magic for Beginners]:6:1
 spell:MAGIC_MISSILE:1:1:22:4
 spell:DETECT_MONSTERS:1:1:23:4
 spell:PHASE_DOOR:1:2:24:4
 spell:LIGHT_AREA:1:2:26:4
 spell:FIND_TRAPS_DOORS:3:3:25:2
 spell:STINKING_CLOUD:3:2:27:3
-book:magic book:[Conjurings and Tricks]:1
+book:magic book:[Conjurings and Tricks]:9:1
 spell:CONFUSE_MONSTER:5:4:30:4
 spell:LIGHTNING_BOLT:5:4:30:4
 spell:TRAP_DOOR_DESTRUCTION:5:5:30:6
@@ -185,7 +186,7 @@ spell:TELEPORT_SELF:7:6:35:5
 spell:SPEAR_OF_LIGHT:7:6:30:5
 spell:FROST_BOLT:7:3:40:6
 spell:WONDER:7:10:50:5
-book:magic book:[Incantations and Illusions]:1
+book:magic book:[Incantations and Illusions]:9:1
 spell:SATISFY_HUNGER:9:7:45:8
 spell:RECHARGE_ITEM_I:9:7:75:10
 spell:TURN_STONE_TO_MUD:9:7:44:8
@@ -195,20 +196,20 @@ spell:IDENTIFY:11:7:25:6
 spell:DETECT_INVISIBLE:15:6:40:6
 spell:ACID_BOLT:15:4:50:8
 spell:SLOW_MONSTER:17:9:50:7
-book:magic book:[Sorcery and Evocations]:1
+book:magic book:[Sorcery and Evocations]:6:1
 spell:FROST_BALL:19:6:55:8
 spell:TELEPORT_OTHER:23:12:60:8
 spell:HASTE_SELF:25:12:65:10
 spell:MASS_SLEEP:25:7:50:6
 spell:FIRE_BALL:26:9:65:12
 spell:TREASURE_DETECTION:30:10:70:10
-book:magic book:[Resistances of Scarabtarices]:1
+book:magic book:[Resistances of Scarabtarices]:5:1
 spell:RESIST_COLD:10:5:50:10
 spell:RESIST_FIRE:10:5:50:10
 spell:RESIST_POISON:25:10:45:20
 spell:RESISTANCE:28:20:65:30
 spell:SHIELD:32:24:75:30
-book:magic book:[Raal's Tome of Destruction]:1
+book:magic book:[Raal's Tome of Destruction]:7:1
 spell:SHOCK_WAVE:16:5:40:6
 spell:EXPLOSION:20:10:50:10
 spell:CLOUD_KILL:20:5:50:8
@@ -216,16 +217,16 @@ spell:ACID_BALL:20:7:70:20
 spell:ICE_STORM:27:11:75:24
 spell:METEOR_SWARM:30:14:85:34
 spell:RIFT:35:20:60:25
-book:magic book:[Mordenkainen's Escapes]:1
+book:magic book:[Mordenkainen's Escapes]:5:1
 spell:DOOR_CREATION:13:9:40:12
 spell:STAIR_CREATION:24:20:50:20
 spell:TELEPORT_LEVEL:28:17:65:20
 spell:WORD_OF_RECALL:30:25:75:15
 spell:RUNE_OF_PROTECTION:36:60:70:40
-book:magic book:[Tenser's Transformations]:1
+book:magic book:[Tenser's Transformations]:2:1
 spell:RECHARGE_ITEM_II:30:30:95:100
 spell:ELEMENTAL_BRAND:32:60:95:120
-book:magic book:[Kelek's Grimoire of Power]:1
+book:magic book:[Kelek's Grimoire of Power]:8:1
 spell:EARTHQUAKE:20:18:60:20
 spell:BEDLAM:25:15:60:24
 spell:REND_SOUL:25:15:80:30
@@ -324,7 +325,8 @@ B:60:99:0:0:0
 B:61:99:0:0:0
 B:62:99:0:0:0
 B:63:99:0:0:0
-book:prayer book:[Beginners Handbook]:2
+magic:1:350:9
+book:prayer book:[Beginners Handbook]:7:2
 spell:DETECT_EVIL:1:1:10:4
 spell:CURE_LIGHT_WOUNDS:1:2:15:4
 spell:BLESS:1:2:20:4
@@ -332,7 +334,7 @@ spell:REMOVE_FEAR:1:2:5:4
 spell:CALL_LIGHT:3:2:25:1
 spell:FIND_TRAPS_DOORS:3:3:27:2
 spell:SLOW_POISON:3:3:28:4
-book:prayer book:[Words of Wisdom]:2
+book:prayer book:[Words of Wisdom]:7:2
 spell:SCARE_MONSTER:5:4:29:3
 spell:PORTAL:5:4:30:4
 spell:CURE_SERIOUS_WOUNDS:5:4:32:4
@@ -342,7 +344,7 @@ spell:SATISFY_HUNGER:7:5:38:4
 ## get rid of remove_curse in 3.4 until curses are redone
 #spell:REMOVE_CURSE:7:6:38:5
 spell:RESIST_HEAT_COLD:7:7:38:5
-book:prayer book:[Chants and Blessings]:2
+book:prayer book:[Chants and Blessings]:9:2
 spell:NEUTRALIZE_POISON:9:6:38:4
 spell:ORB_OF_DRAINING:9:7:40:4
 spell:CURE_CRITICAL_WOUNDS:9:7:38:4
@@ -352,33 +354,33 @@ spell:EARTHQUAKE:11:9:55:5
 spell:SENSE_SURROUNDINGS:13:10:45:4
 spell:CURE_MORTAL_WOUNDS:13:11:45:4
 spell:TURN_UNDEAD:15:12:50:5
-book:prayer book:[Exorcism and Dispelling]:2
+book:prayer book:[Exorcism and Dispelling]:6:2
 spell:PRAYER:15:14:50:5
 spell:DISPEL_UNDEAD:17:14:55:7
 spell:HEAL:21:16:60:7
 spell:DISPEL_EVIL:25:20:70:12
 spell:GLYPH_OF_WARDING:33:55:90:15
 spell:HOLY_WORD:39:32:95:20
-book:prayer book:[Ethereal Openings]:2
+book:prayer book:[Ethereal Openings]:6:2
 spell:BLINK:3:3:50:6
 spell:TELEPORT_SELF:10:10:50:8
 spell:TELEPORT_OTHER:20:20:80:16
 spell:TELEPORT_LEVEL:30:40:75:133
 spell:WORD_OF_RECALL:35:50:75:11
 spell:ALTER_REALITY:40:60:75:250
-book:prayer book:[Godly Insights]:2
+book:prayer book:[Godly Insights]:5:2
 spell:DETECT_MONSTERS:3:3:50:2
 spell:DETECTION:10:10:80:20
 spell:PERCEPTION:20:20:80:20
 spell:PROBING:25:40:80:150
 spell:CLAIRVOYANCE:35:50:80:230
-book:prayer book:[Purifications and Healing]:2
+book:prayer book:[Purifications and Healing]:5:2
 spell:CURE_SERIOUS_WOUNDS2:15:5:50:25
 spell:CURE_MORTAL_WOUNDS2:17:7:60:45
 spell:HEALING:30:50:80:130
 spell:RESTORATION:35:70:90:230
 spell:REMEMBRANCE:35:70:90:250
-book:prayer book:[Holy Infusions]:2
+book:prayer book:[Holy Infusions]:5:2
 spell:UNBARRING_WAYS:5:6:50:40
 spell:RECHARGING:15:20:80:25
 ## get rid of dispel_curse in 3.4 until curses are redone
@@ -386,7 +388,7 @@ spell:RECHARGING:15:20:80:25
 spell:ENCHANT_WEAPON:35:50:80:230
 spell:ENCHANT_ARMOUR:37:60:85:250
 spell:ELEMENTAL_BRAND:45:95:85:250
-book:prayer book:[Wrath of God]:2
+book:prayer book:[Wrath of God]:5:2
 spell:DISPEL_UNDEAD2:15:7:70:25
 spell:DISPEL_EVIL2:20:10:75:60
 spell:BANISH_EVIL:25:25:80:250
@@ -480,14 +482,15 @@ B:METEOR_SWARM:99:0:0:0
 B:MASS_BANISHMENT:99:0:0:0
 B:RIFT:99:0:0:0
 B:MANA_STORM:99:0:0:0
-book:magic book:[Magic for Beginners]:1
+magic:1:350:9
+book:magic book:[Magic for Beginners]:6:1
 spell:DETECT_MONSTERS:5:1:50:1
 spell:PHASE_DOOR:7:2:55:1
 spell:LIGHT_AREA:9:3:60:1
 spell:OBJECT_DETECTION:10:3:60:1
 spell:FIND_TRAPS_DOORS:8:3:50:1
 spell:STINKING_CLOUD:21:12:50:10
-book:magic book:[Conjurings and Tricks]:1
+book:magic book:[Conjurings and Tricks]:7:1
 spell:CONFUSE_MONSTER:15:6:75:1
 spell:TRAP_DOOR_DESTRUCTION:14:7:60:2
 spell:CURE_POISON:21:9:90:1
@@ -495,39 +498,39 @@ spell:SLEEP_MONSTER:19:8:85:1
 spell:TELEPORT_SELF:22:9:50:1
 spell:SPEAR_OF_LIGHT:23:10:95:1
 spell:WONDER:20:10:70:20
-book:magic book:[Incantations and Illusions]:1
+book:magic book:[Incantations and Illusions]:6:1
 spell:SATISFY_HUNGER:25:12:95:1
 spell:RECHARGE_ITEM_I:27:15:99:1
 spell:TURN_STONE_TO_MUD:24:11:70:1
 spell:IDENTIFY:18:18:60:2
 spell:DETECT_INVISIBLE:20:11:50:4
 spell:SLOW_MONSTER:28:20:70:2
-book:magic book:[Sorcery and Evocations]:1
+book:magic book:[Sorcery and Evocations]:3:1
 spell:TELEPORT_OTHER:31:25:70:3
 spell:HASTE_SELF:32:25:70:6
 spell:MASS_SLEEP:24:15:80:10
-book:magic book:[Resistances of Scarabtarices]:1
+book:magic book:[Resistances of Scarabtarices]:5:1
 spell:RESIST_COLD:16:12:50:40
 spell:RESIST_FIRE:19:12:50:40
 spell:RESIST_POISON:30:25:75:60
 spell:RESISTANCE:31:30:85:80
 spell:SHIELD:34:20:75:80
-book:magic book:[Raal's Tome of Destruction]:1
+book:magic book:[Raal's Tome of Destruction]:2:1
 spell:SHOCK_WAVE:35:25:80:50
 spell:CLOUD_KILL:25:20:60:15
-book:magic book:[Mordenkainen's Escapes]:1
+book:magic book:[Mordenkainen's Escapes]:4:1
 spell:DOOR_CREATION:17:7:30:15
 spell:STAIR_CREATION:25:12:40:25
 spell:TELEPORT_LEVEL:25:20:60:20
 spell:WORD_OF_RECALL:36:40:80:18
-book:magic book:[Tenser's Transformations]:1
+book:magic book:[Tenser's Transformations]:6:1
 spell:HEROISM:26:15:30:40
 spell:BERSERKER:28:20:60:60
 spell:ENCHANT_ARMOR:31:50:95:90
 spell:ENCHANT_WEAPON:33:55:90:90
 spell:RECHARGE_ITEM_II:35:40:95:100
 spell:ELEMENTAL_BRAND:37:60:80:120
-book:magic book:[Kelek's Grimoire of Power]:1
+book:magic book:[Kelek's Grimoire of Power]:1:1
 spell:BEDLAM:29:20:70:20
 
 N:4:Ranger
@@ -618,7 +621,8 @@ B:METEOR_SWARM:36:45:80:35
 B:MASS_BANISHMENT:99:0:0:0
 B:RIFT:99:0:0:0
 B:MANA_STORM:99:0:0:0
-book:magic book:[Magic for Beginners]:1
+magic:1:400:9
+book:magic book:[Magic for Beginners]:7:1
 spell:MAGIC_MISSILE:3:1:30:1
 spell:DETECT_MONSTERS:3:2:35:2
 spell:PHASE_DOOR:3:2:35:2
@@ -626,7 +630,7 @@ spell:LIGHT_AREA:5:3:35:1
 spell:CURE_LIGHT_WOUNDS:5:3:40:1
 spell:FIND_TRAPS_DOORS:5:4:45:2
 spell:STINKING_CLOUD:7:5:40:3
-book:magic book:[Conjurings and Tricks]:1
+book:magic book:[Conjurings and Tricks]:9:1
 spell:CONFUSE_MONSTER:7:6:40:2
 spell:LIGHTNING_BOLT:9:7:40:3
 spell:TRAP_DOOR_DESTRUCTION:9:8:45:3
@@ -636,7 +640,7 @@ spell:TELEPORT_SELF:13:10:45:3
 spell:SPEAR_OF_LIGHT:13:11:55:4
 spell:FROST_BOLT:15:12:50:4
 spell:WONDER:15:18:80:10
-book:magic book:[Incantations and Illusions]:1
+book:magic book:[Incantations and Illusions]:9:1
 spell:SATISFY_HUNGER:17:17:55:3
 spell:RECHARGE_ITEM_I:29:17:90:4
 spell:TURN_STONE_TO_MUD:15:13:50:4
@@ -646,38 +650,38 @@ spell:IDENTIFY:23:25:90:3
 spell:DETECT_INVISIBLE:25:17:50:4
 spell:ACID_BOLT:20:16:50:6
 spell:SLOW_MONSTER:25:21:65:3
-book:magic book:[Sorcery and Evocations]:1
+book:magic book:[Sorcery and Evocations]:6:1
 spell:FROST_BALL:27:21:65:6
 spell:TELEPORT_OTHER:31:25:70:3
 spell:HASTE_SELF:33:25:75:4
 spell:MASS_SLEEP:23:20:60:4
 spell:FIRE_BALL:34:28:80:9
 spell:TREASURE_DETECTION:35:20:70:10
-book:magic book:[Resistances of Scarabtarices]:1
+book:magic book:[Resistances of Scarabtarices]:5:1
 spell:RESIST_COLD:8:15:50:30
 spell:RESIST_FIRE:8:15:50:30
 spell:RESIST_POISON:26:25:75:50
 spell:RESISTANCE:31:40:85:70
 spell:SHIELD:35:30:75:80
-book:magic book:[Raal's Tome of Destruction]:1
+book:magic book:[Raal's Tome of Destruction]:4:1
 spell:CLOUD_KILL:22:19:60:6
 spell:ACID_BALL:30:24:70:6
 spell:ICE_STORM:35:35:70:10
 spell:METEOR_SWARM:36:45:80:35
-book:magic book:[Mordenkainen's Escapes]:1
+book:magic book:[Mordenkainen's Escapes]:5:1
 spell:DOOR_CREATION:20:17:20:25
 spell:STAIR_CREATION:32:32:50:40
 spell:TELEPORT_LEVEL:34:27:60:15
 spell:WORD_OF_RECALL:35:35:75:16
 spell:RUNE_OF_PROTECTION:40:75:80:80
-book:magic book:[Tenser's Transformations]:1
+book:magic book:[Tenser's Transformations]:6:1
 spell:HEROISM:18:15:30:40
 spell:BERSERKER:23:30:80:35
 spell:ENCHANT_ARMOR:33:45:90:50
 spell:ENCHANT_WEAPON:34:50:90:60
 spell:RECHARGE_ITEM_II:35:50:95:115
 spell:ELEMENTAL_BRAND:31:60:95:180
-book:magic book:[Kelek's Grimoire of Power]:1
+book:magic book:[Kelek's Grimoire of Power]:3:1
 spell:EARTHQUAKE:30:28:60:16
 spell:BEDLAM:32:30:70:12
 spell:WORD_OF_DESTRUCTION:37:30:95:30
@@ -771,7 +775,8 @@ B:60:99:0:0:0
 B:61:99:0:0:0
 B:62:99:0:0:0
 B:63:99:0:0:0
-book:prayer book:[Beginners Handbook]:2
+magic:1:400:9
+book:prayer book:[Beginners Handbook]:7:2
 spell:DETECT_EVIL:1:1:30:4
 spell:CURE_LIGHT_WOUNDS:2:2:35:4
 spell:BLESS:3:3:35:4
@@ -779,7 +784,7 @@ spell:REMOVE_FEAR:5:3:15:4
 spell:CALL_LIGHT:5:4:35:4
 spell:FIND_TRAPS_DOORS:7:5:40:3
 spell:SLOW_POISON:9:7:40:3
-book:prayer book:[Words of Wisdom]:2
+book:prayer book:[Words of Wisdom]:7:2
 spell:SCARE_MONSTER:9:7:40:3
 spell:PORTAL:9:8:40:3
 spell:CURE_SERIOUS_WOUNDS:11:9:40:3
@@ -789,7 +794,7 @@ spell:SATISFY_HUNGER:13:10:45:3
 ## get rid of remove_curse in 3.4 until curses are redone
 #spell:REMOVE_CURSE:13:11:45:4
 spell:RESIST_HEAT_COLD:15:13:45:4
-book:prayer book:[Chants and Blessings]:2
+book:prayer book:[Chants and Blessings]:9:2
 spell:NEUTRALIZE_POISON:15:15:50:4
 spell:ORB_OF_DRAINING:17:15:50:4
 spell:CURE_CRITICAL_WOUNDS:17:15:50:4
@@ -799,33 +804,33 @@ spell:EARTHQUAKE:21:17:50:3
 spell:SENSE_SURROUNDINGS:23:17:50:3
 spell:CURE_MORTAL_WOUNDS:25:20:50:3
 spell:TURN_UNDEAD:27:21:50:3
-book:prayer book:[Exorcism and Dispelling]:2
+book:prayer book:[Exorcism and Dispelling]:4:2
 spell:PRAYER:29:22:50:3
 spell:DISPEL_UNDEAD:31:24:60:3
 spell:HEAL:33:28:60:3
 spell:DISPEL_EVIL:35:32:70:4
-book:prayer book:[Ethereal Openings]:2
+book:prayer book:[Ethereal Openings]:5:2
 spell:BLINK:7:7:50:2
 spell:TELEPORT_SELF:20:20:50:4
 spell:TELEPORT_OTHER:25:25:80:12
 spell:TELEPORT_LEVEL:35:50:75:115
 spell:WORD_OF_RECALL:40:60:75:10
-book:prayer book:[Godly Insights]:2
+book:prayer book:[Godly Insights]:4:2
 spell:DETECT_MONSTERS:5:5:50:1
 spell:DETECTION:15:15:80:12
 spell:PERCEPTION:25:25:80:16
 spell:PROBING:30:15:80:135
-book:prayer book:[Purifications and Healing]:2
+book:prayer book:[Purifications and Healing]:3:2
 spell:CURE_SERIOUS_WOUNDS2:9:4:50:25
 spell:CURE_MORTAL_WOUNDS2:20:10:60:35
 spell:RESTORATION:45:80:90:250
-book:prayer book:[Holy Infusions]:2
+book:prayer book:[Holy Infusions]:5:2
 spell:UNBARRING_WAYS:10:16:50:20
 spell:RECHARGING:25:30:80:15
 spell:ENCHANT_WEAPON:40:70:80:200
 spell:ENCHANT_ARMOUR:42:80:85:250
 spell:ELEMENTAL_BRAND:47:95:85:250
-book:prayer book:[Wrath of God]:2
+book:prayer book:[Wrath of God]:3:2
 spell:DISPEL_UNDEAD2:20:13:70:20
 spell:BANISH_EVIL:30:35:80:200
 spell:WORD_OF_DESTRUCTION:40:40:80:100

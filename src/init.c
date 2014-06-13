@@ -2397,9 +2397,22 @@ static enum parser_error parse_c_f(struct parser *p) {
 	return s ? PARSE_ERROR_INVALID_FLAG : PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_c_magic(struct parser *p) {
+	struct player_class *c = parser_priv(p);
+	int num_books;
+
+	if (!c)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	c->magic.spell_first = parser_getuint(p, "first");
+	c->magic.spell_weight = parser_getuint(p, "weight");
+	num_books = parser_getuint(p, "books");
+	c->magic.books = mem_zalloc(num_books * sizeof(class_book));
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_c_book(struct parser *p) {
 	struct player_class *c = parser_priv(p);
-	int tval, sval;
+	int tval, sval, spells;
 
 	if (!c)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
@@ -2414,6 +2427,9 @@ static enum parser_error parse_c_book(struct parser *p) {
 
 	c->magic.books[c->magic.num_books].tval = tval;
 	c->magic.books[c->magic.num_books].sval = sval;
+	spells = parser_getuint(p, "spells");
+	c->magic.books[c->magic.num_books].spells =
+		mem_zalloc(spells * sizeof(class_spell));
 	c->magic.books[c->magic.num_books++].stat = parser_getuint(p, "stat");
 
 	return PARSE_ERROR_NONE;
@@ -2456,7 +2472,8 @@ struct parser *init_parse_c(void) {
 	parser_reg(p, "T str title", parse_c_t);
 	parser_reg(p, "E sym tval sym sval uint min uint max", parse_c_e);
 	parser_reg(p, "F ?str flags", parse_c_f);
-	parser_reg(p, "book sym tval sym sval uint stat", parse_c_book);
+	parser_reg(p, "magic uint first uint weight uint books", parse_c_magic);
+	parser_reg(p, "book sym tval sym sval uint spells uint stat", parse_c_book);
 	parser_reg(p, "spell sym sidx int level int mana int fail int exp", parse_c_spell);
 	return p;
 }

@@ -277,7 +277,7 @@ typedef struct {
 	byte sval;			/**< Item sub-type for book (book number) */
 	byte stat;			/**< Stat for spells cast from this book */
 	byte num_spells;	/**< Number of spells in this book */
-	class_spell spells[PY_MAX_SPELL];	/**< Spells in the book*/
+	class_spell *spells;	/**< Spells in the book*/
 } class_book;
 
 
@@ -288,7 +288,7 @@ typedef struct {
 	byte spell_first;		/**< Level of first spell */
 	s16b spell_weight;		/**< Max armour weight to avoid mana penalties */
 	byte num_books;			/**< Number of spellbooks */
-	class_book books[PY_MAX_BOOKS];		/**< Details of spellbooks */
+	class_book *books;		/**< Details of spellbooks */
 	class_spell spells[PY_MAX_SPELLS];	/**< The available spells */
 } class_magic;
 
