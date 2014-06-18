@@ -22,6 +22,9 @@
  * It would be nice if we could get rid of this dependency.
  */
 
+/* Temp! NRM */
+#define NEW_SPELLS 0
+
 enum spell_index_arcane_e {
 	#define SPELL(x, a, s, f) SPELL_##x,
 	#include "list-spells-arcane.h"
@@ -51,12 +54,21 @@ typedef struct spell_info_s {
 	spell_handler_f handler;
 } spell_info_t;
 
-
+#if NEW_SPELLS
+int spell_collect_from_book(const object_type *o_ptr, struct player_spell **spells);
+int spell_book_count_spells(const object_type *o_ptr,
+							bool (*tester)(struct player_spell *spell));
+bool spell_okay_list(bool (*spell_test)(struct player_spell *spell),
+		const struct player_spell **spells, int n_spells);
+bool spell_okay_to_cast(struct player_spell *spell);
+bool spell_okay_to_study(struct player_spell *spell);
+bool spell_okay_to_browse(struct player_spell *spell);
+s16b spell_chance(struct player_spell *spell);
+void spell_learn(class_spell cspell, int tval);
+bool spell_cast(struct player_spell *spell, int dir);
+#else
 /* spell.c */
-int spell_collect_from_book_NRM(const object_type *o_ptr, int *spells);
 int spell_collect_from_book(const object_type *o_ptr, int *spells);
-int spell_book_count_spells_NRM(const object_type *o_ptr,
-								bool (*tester)(int spell));
 int spell_book_count_spells(const object_type *o_ptr, bool (*tester)(int spell));
 bool spell_okay_list(bool (*spell_test)(int spell), const int spells[], int n_spells);
 bool spell_okay_to_cast(int spell);
@@ -65,7 +77,7 @@ bool spell_okay_to_browse(int spell);
 s16b spell_chance(int spell);
 void spell_learn(int spell);
 bool spell_cast(int spell, int dir);
-
+#endif
 /* Start of old x-spell.c */
 extern int get_spell_index(const object_type *o_ptr, int index);
 extern const char *get_spell_name(int tval, int index);

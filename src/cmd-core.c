@@ -302,7 +302,35 @@ int cmd_get_arg_choice(struct command *cmd, const char *arg, int *choice)
 
 	return err;
 }
+#if NEW_SPELLS
+/* Get a spell from the user, trying the command first but then prompting */
+int cmd_get_spell(struct command *cmd, const char *arg, int *spell,
+	const char *verb, item_tester book_filter, const char *error,
+	bool (*spell_filter)(struct player_spell *spell))
+{
+	int book;
 
+	/* See if we've been provided with this one */
+	if (cmd_get_arg_choice(cmd, arg, spell) == CMD_OK) {
+		/* Ensure it passes the filter */
+		if (!spell_filter || spell_filter(*spell) == TRUE)
+			return CMD_OK;
+	}
+
+	/* See if we've been given a book to look at */
+	if (cmd_get_arg_item(cmd, "book", &book) == CMD_OK)
+		*spell = get_spell_from_book(verb, book, error, spell_filter);
+	else
+		*spell = get_spell(verb, book_filter, cmd->command, error, spell_filter);
+
+	if (*spell >= 0) {
+		cmd_set_arg_choice(cmd, arg, *spell);
+		return CMD_OK;
+	}
+
+	return CMD_ARG_ABORTED;
+}
+#else
 /* Get a spell from the user, trying the command first but then prompting */
 int cmd_get_spell(struct command *cmd, const char *arg, int *spell,
 	const char *verb, item_tester book_filter, const char *error,
@@ -330,7 +358,7 @@ int cmd_get_spell(struct command *cmd, const char *arg, int *spell,
 
 	return CMD_ARG_ABORTED;
 }
-
+#endif
 /** Strings **/
 
 /* Set arg 'n' to given string */
