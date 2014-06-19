@@ -22,9 +22,6 @@
  * It would be nice if we could get rid of this dependency.
  */
 
-/* Temp! NRM */
-#define NEW_SPELLS 0
-
 enum spell_index_arcane_e {
 	#define SPELL(x, a, s, f) SPELL_##x,
 	#include "list-spells-arcane.h"
@@ -55,6 +52,7 @@ typedef struct spell_info_s {
 } spell_info_t;
 
 #if NEW_SPELLS
+struct player_spell *player_spell_from_index(int index);
 int spell_collect_from_book(const object_type *o_ptr, struct player_spell **spells);
 int spell_book_count_spells(const object_type *o_ptr,
 							bool (*tester)(struct player_spell *spell));

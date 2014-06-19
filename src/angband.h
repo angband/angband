@@ -27,6 +27,9 @@
 #include "z-rand.h"
 #include "z-term.h"
 
+/* Temp! NRM */
+#define NEW_SPELLS 0
+
 /*
  * Include the high-level includes.
  */

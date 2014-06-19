@@ -26,6 +26,7 @@
 #include "obj-tval.h"
 #include "obj-ui.h"
 #include "obj-util.h"
+#include "player-spell.h"
 #include "spells.h"
 #include "target.h"
 
@@ -304,16 +305,17 @@ int cmd_get_arg_choice(struct command *cmd, const char *arg, int *choice)
 }
 #if NEW_SPELLS
 /* Get a spell from the user, trying the command first but then prompting */
-int cmd_get_spell(struct command *cmd, const char *arg, int *spell,
-	const char *verb, item_tester book_filter, const char *error,
-	bool (*spell_filter)(struct player_spell *spell))
+int cmd_get_spell(struct command *cmd, const char *arg, int *spell_idx,
+				  const char *verb, item_tester book_filter, const char *error,
+				  bool (*spell_filter)(struct player_spell *spell))
 {
 	int book;
+	struct player_spell *spell = player_spell_from_index(*spell_idx);
 
 	/* See if we've been provided with this one */
-	if (cmd_get_arg_choice(cmd, arg, spell) == CMD_OK) {
+	if (cmd_get_arg_choice(cmd, arg, spell_idx) == CMD_OK) {
 		/* Ensure it passes the filter */
-		if (!spell_filter || spell_filter(*spell) == TRUE)
+		if (!spell_filter || spell_filter(spell) == TRUE)
 			return CMD_OK;
 	}
 
@@ -323,8 +325,8 @@ int cmd_get_spell(struct command *cmd, const char *arg, int *spell,
 	else
 		*spell = get_spell(verb, book_filter, cmd->command, error, spell_filter);
 
-	if (*spell >= 0) {
-		cmd_set_arg_choice(cmd, arg, *spell);
+	if (*spell_idx >= 0) {
+		cmd_set_arg_choice(cmd, arg, *spell_idx);
 		return CMD_OK;
 	}
 
@@ -333,8 +335,8 @@ int cmd_get_spell(struct command *cmd, const char *arg, int *spell,
 #else
 /* Get a spell from the user, trying the command first but then prompting */
 int cmd_get_spell(struct command *cmd, const char *arg, int *spell,
-	const char *verb, item_tester book_filter, const char *error,
-	bool (*spell_filter)(int spell))
+				  const char *verb, item_tester book_filter, const char *error,
+				  bool (*spell_filter)(int spell))
 {
 	int book;
 

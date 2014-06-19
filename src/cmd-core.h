@@ -294,11 +294,13 @@ int cmd_get_quantity(struct command *cmd, const char *arg, int *amt, int max);
 int cmd_get_string(struct command *cmd, const char *arg, const char **str,
 		const char *initial, const char *title, const char *prompt);
 #if NEW_SPELLS
-int cmd_get_spell(struct command *cmd, const char *arg, int *spell,
-	const char *verb, item_tester book_filter, const char *error, bool (*spell_filter)(struct player_spell *spell));
+int cmd_get_spell(struct command *cmd, const char *arg, int *spell_idx,
+				  const char *verb, item_tester book_filter, const char *error,
+				  bool (*spell_filter)(struct player_spell *spell));
 #else
 int cmd_get_spell(struct command *cmd, const char *arg, int *spell,
-	const char *verb, item_tester book_filter, const char *error, bool (*spell_filter)(int spell));
+				  const char *verb, item_tester book_filter, const char *error,
+				  bool (*spell_filter)(int spell));
 #endif
 
 #endif

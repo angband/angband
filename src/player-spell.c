@@ -134,6 +134,28 @@ const int object_to_book_index(const struct object *obj)
 
 	return -1;
 }
+
+/**
+ * Get spell 'index' from the player spell list
+ */
+struct player_spell *player_spell_from_index(int index)
+{
+	int current = 0;
+	struct player_spell *spell = player->spells;
+
+	/* No spells */
+	if (!spell) return NULL;
+
+	/* Count through the spell list, return when we get there */
+	while (spell) {
+		if (index == current++) return spell;
+		spell = spell->next;
+	}
+
+	/* Not enough spells */
+	return NULL;
+
+}
 #else
 /**
  * Get the spellbook structure from an object which is a book the player can

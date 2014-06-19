@@ -40,11 +40,17 @@ extern bool get_com_ex(const char *prompt, ui_event *command);
 extern void pause_line(struct term *term);
 
 /* ui-spell.c -- just for now */
-
+#if NEW_SPELLS
 int get_spell_from_book(const char *verb, int book,
 		const char *error, bool (*spell_filter)(int spell));
 int get_spell(const char *verb, item_tester book_filter,
 		cmd_code cmd, const char *error, bool (*spell_filter)(int spell));
+#else
+int get_spell_from_book(const char *verb, int book,
+		const char *error, bool (*spell_filter)(int spell));
+int get_spell(const char *verb, item_tester book_filter,
+		cmd_code cmd, const char *error, bool (*spell_filter)(int spell));
+#endif
 void textui_book_browse(const object_type *o_ptr);
 void textui_spell_browse(void);
 

@@ -30,7 +30,172 @@
 
 
 
+#if NEW_SPELLS
+/**
+ * Spell menu data struct
+ */
+struct spell_menu_data {
+	struct player_spell *spells[PY_MAX_SPELLS];
+	int n_spells;
 
+	bool browse;
+	bool (*is_valid)(struct player_spell *spell);
+	bool show_description;
+
+	int selected_spell;
+};
+
+
+/**
+ * Is item oid valid?
+ */
+static int spell_menu_valid(menu_type *m, int oid)
+{
+	struct spell_menu_data *d = menu_priv(m);
+	struct player_spell **spells = d->spells;
+
+	return d->is_valid(spells[oid]);
+}
+
+/**
+ * Display a row of the spell menu
+ */
+static void spell_menu_display(menu_type *m, int oid, bool cursor,
+		int row, int col, int wid)
+{
+	struct spell_menu_data *d = menu_priv(m);
+	struct player_spell *spell = d->spells[oid];
+	//const class_spell *s_ptr = &player->class->magic.spells[spell];
+
+	char help[30];
+	char out[80];
+
+	int attr;
+	const char *illegible = NULL;
+	const char *comment = NULL;
+
+	if (spell->level >= 99) {
+		illegible = "(illegible)";
+		attr = TERM_L_DARK;
+	} else if (spell->flags & PY_SPELL_FORGOTTEN) {
+		comment = " forgotten";
+		attr = TERM_YELLOW;
+	} else if (spell->flags & PY_SPELL_LEARNED) {
+		if (spell->flags & PY_SPELL_WORKED) {
+			/* Get extra info - wrong NRM*/
+			get_spell_info(player->class->magic.books[spell->bidx].tval, spell, help, sizeof(help));
+			comment = help;
+			attr = TERM_WHITE;
+		} else {
+			comment = " untried";
+			attr = TERM_L_GREEN;
+		}
+	} else if (spell->level <= player->lev) {
+		comment = " unknown";
+		attr = TERM_L_BLUE;
+	} else {
+		comment = " difficult";
+		attr = TERM_RED;
+	}
+
+	/* Dump the spell --(-- */
+	strnfmt(out, sizeof(out), "%-30s%2d %4d %3d%%%s", spell->name, spell->level,
+			spell->mana, spell_chance(spell), comment);
+	c_prt(attr, illegible ? illegible : out, row, col);
+}
+
+/**
+ * Handle an event on a menu row.
+ */
+static bool spell_menu_handler(menu_type *m, const ui_event *e, int oid)
+{
+	struct spell_menu_data *d = menu_priv(m);
+
+	if (e->type == EVT_SELECT) {
+		d->selected_spell = oid;
+		return d->browse ? TRUE : FALSE;
+	}
+	else if (e->type == EVT_KBRD) {
+		if (e->key.code == '?') {
+			d->show_description = !d->show_description;
+		}
+	}
+
+	return FALSE;
+}
+
+/**
+ * Show spell long description when browsing
+ */
+static void spell_menu_browser(int oid, void *data, const region *loc)
+{
+	struct spell_menu_data *d = data;
+	atruct player_spell *spell = d->spells[oid];
+
+	if (d->show_description) {
+		/* Redirect output to the screen */
+		text_out_hook = text_out_to_screen;
+		text_out_wrap = 0;
+		text_out_indent = loc->col - 1;
+		text_out_pad = 1;
+
+		Term_gotoxy(loc->col, loc->row + loc->page_rows);
+		text_out("\n%s\n", spell->text);
+
+		/* XXX */
+		text_out_pad = 0;
+		text_out_indent = 0;
+	}
+}
+
+static const menu_iter spell_menu_iter = {
+	NULL,	/* get_tag = NULL, just use lowercase selections */
+	spell_menu_valid,
+	spell_menu_display,
+	spell_menu_handler,
+	NULL	/* no resize hook */
+};
+
+/** Create and initialise a spell menu, given an object and a validity hook */
+static menu_type *spell_menu_new(const object_type *o_ptr,
+		bool (*is_valid)(struct player_spell *spell))
+{
+	menu_type *m = menu_new(MN_SKIN_SCROLL, &spell_menu_iter);
+	struct spell_menu_data *d = mem_alloc(sizeof *d);
+
+	region loc = { -60, 1, 60, -99 };
+
+	/* collect spells from object */
+	d->n_spells = spell_collect_from_book(o_ptr, d->spells);
+	if (d->n_spells == 0 || !spell_okay_list(is_valid, d->spells, d->n_spells))
+	{
+		mem_free(m);
+		mem_free(d);
+		return NULL;
+	}
+
+	/* copy across private data */
+	d->is_valid = is_valid;
+	d->selected_spell = -1;
+	d->browse = FALSE;
+	d->show_description = FALSE;
+
+	menu_setpriv(m, d->n_spells, d);
+
+	/* set flags */
+	m->header = "Name                             Lv Mana Fail Info";
+	m->flags = MN_CASELESS_TAGS;
+	m->selections = lower_case;
+	m->browse_hook = spell_menu_browser;
+	m->cmd_keys = "?";
+
+	/* set size */
+	loc.page_rows = d->n_spells + 1;
+	menu_layout(m, &loc);
+
+	return m;
+}
+#else
 /**
  * Spell menu data struct
  */
@@ -196,7 +361,7 @@ static menu_type *spell_menu_new(const object_type *o_ptr,
 
 	return m;
 }
-
+#endif
 /** Clean up a spell menu instance */
 static void spell_menu_destroy(menu_type *m)
 {
@@ -282,7 +447,52 @@ void textui_spell_browse(void)
 	textui_book_browse(object_from_item_idx(item));
 }
 
+#if NEW_SPELLS
+/**
+ * Get a spell from specified book.
+ */
+int get_spell_from_book(const char *verb, int book,
+		const char *error, bool (*spell_filter)(struct player_spell *spell))
+{
+	const char *noun =
+			(player->class->spell_book == TV_MAGIC_BOOK ? "spell" : "prayer");
 
+	menu_type *m;
+	struct object *o_ptr = object_from_item_idx(book);
+
+	track_object(player->upkeep, book);
+	handle_stuff(player->upkeep);
+
+	m = spell_menu_new(o_ptr, spell_filter);
+	if (m) {
+		int spell_idx = spell_menu_select(m, noun, verb);
+		spell_menu_destroy(m);
+		return spell_idx;
+	}
+
+	return -1;
+}
+
+/**
+ * Get a spell from the player.
+ */
+int get_spell(const char *verb, item_tester book_filter,
+		cmd_code cmd, const char *error, bool (*spell_filter)(struct player_spell *spell))
+{
+	char prompt[1024];
+	int book;
+
+	/* Create prompt */
+	strnfmt(prompt, sizeof prompt, "%s which book?", verb);
+	my_strcap(prompt);
+
+	if (!get_item(&book, prompt, error,
+			cmd, book_filter, (USE_INVEN | USE_FLOOR)))
+		return -1;
+
+	return get_spell_from_book(verb, book, error, spell_filter);
+}
+#else
 /**
  * Get a spell from specified book.
  */
@@ -327,3 +537,4 @@ int get_spell(const char *verb, item_tester book_filter,
 
 	return get_spell_from_book(verb, book, error, spell_filter);
 }
+#endif

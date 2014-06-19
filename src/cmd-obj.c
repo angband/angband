@@ -1002,7 +1002,8 @@ void do_cmd_refill(struct command *cmd)
 /* Cast a spell from a book */
 void do_cmd_cast(struct command *cmd)
 {
-	int spell, dir;
+	int dir;
+	struct player_spell *spell;
 
 	const char *verb = ((player->class->spell_book == TV_MAGIC_BOOK) ? "cast" : "recite");
 	const char *noun = ((player->class->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
