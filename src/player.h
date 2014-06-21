@@ -289,6 +289,7 @@ typedef struct {
 	int params[3];		/**< Extra parameters to be passed to the handler */
 
 	byte sidx;		/**< The index into the s_info array */
+	byte effect;		/**< The index into the s_info array */
 	byte bidx;		/**< The index into the player's books array */
 	byte slevel;	/**< Required level (to learn) */
 	byte smana;		/**< Required mana (to cast) */

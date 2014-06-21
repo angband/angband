@@ -34,6 +34,12 @@ enum spell_index_prayer_e {
 	#undef PRAYER
 };
 
+enum spell_effect_e {
+	#define SPELL(x, a, s, f) SPELL_EFFECT_##x,
+	#include "list-player-spells.h"
+	#undef SPELL
+};
+
 typedef struct spell_handler_context_s {
 	const int spell;
 	const int dir;
