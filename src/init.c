@@ -2459,6 +2459,171 @@ static enum parser_error parse_c_spell(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_c_dice(struct parser *p) {
+	struct player_class *c = parser_priv(p);
+	class_book *book = &c->magic.books[c->magic.num_books - 1];
+	class_spell *spell = &book->spells[book->num_spells - 1];
+	dice_t *dice = NULL;
+	const char *string = NULL;
+
+	if (!c)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	dice = dice_new();
+
+	if (dice == NULL)
+		return PARSE_ERROR_INTERNAL;
+
+	string = parser_getstr(p, "dice");
+
+	if (dice_parse_string(dice, string)) {
+		spell->dice = dice;
+	}
+	else {
+		dice_free(dice);
+		return PARSE_ERROR_GENERIC;
+	}
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_c_expr(struct parser *p) {
+	struct player_class *c = parser_priv(p);
+	class_book *book = &c->magic.books[c->magic.num_books - 1];
+	class_spell *spell = &book->spells[book->num_spells - 1];
+	expression_t *expression = NULL;
+	expression_base_value_f function = NULL;
+	const char *name;
+	const char *base;
+	const char *expr;
+
+	if (!c)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	/* If there are no dice, assume that this is human and not parser error. */
+	if (spell->dice == NULL)
+		return PARSE_ERROR_NONE;
+
+	name = parser_getsym(p, "name");
+	base = parser_getsym(p, "base");
+	expr = parser_getstr(p, "expr");
+	expression = expression_new();
+
+	if (expression == NULL)
+		return PARSE_ERROR_INTERNAL;
+
+	function = spell_value_base_by_name(base);
+	expression_set_base_value(expression, function);
+
+	if (expression_add_operations_string(expression, expr) < 0)
+		return PARSE_ERROR_GENERIC;
+
+	if (dice_bind_expression(spell->dice, name, expression) < 0)
+		return PARSE_ERROR_GENERIC;
+
+	/* The dice object makes a deep copy of the expression, so we can free it */
+	expression_free(expression);
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_c_bolt(struct parser *p) {
+	struct player_class *c = parser_priv(p);
+	class_book *book = &c->magic.books[c->magic.num_books - 1];
+	class_spell *spell = &book->spells[book->num_spells - 1];
+	const char *type;
+
+	if (!c)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	type = parser_getsym(p, "type");
+
+	if (type == NULL)
+		return PARSE_ERROR_INVALID_VALUE;
+
+	spell->params[0] = gf_name_to_idx(type);
+	spell->params[2] = SPELL_PROJECT_BOLT;
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_c_beam(struct parser *p) {
+	struct player_class *c = parser_priv(p);
+	class_book *book = &c->magic.books[c->magic.num_books - 1];
+	class_spell *spell = &book->spells[book->num_spells - 1];
+	const char *type;
+
+	if (!c)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	type = parser_getsym(p, "type");
+
+	if (type == NULL)
+		return PARSE_ERROR_INVALID_VALUE;
+
+	spell->params[0] = gf_name_to_idx(type);
+	spell->params[2] = SPELL_PROJECT_BEAM;
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_c_borb(struct parser *p) {
+	struct player_class *c = parser_priv(p);
+	class_book *book = &c->magic.books[c->magic.num_books - 1];
+	class_spell *spell = &book->spells[book->num_spells - 1];
+	const char *type;
+
+	if (!c)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	type = parser_getsym(p, "type");
+
+	if (type == NULL)
+		return PARSE_ERROR_INVALID_VALUE;
+
+	spell->params[0] = gf_name_to_idx(type);
+
+	if (parser_hasval(p, "adj"))
+		spell->params[1] = parser_getint(p, "adj");
+
+	spell->params[2] = SPELL_PROJECT_BOLT_OR_BEAM;
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_c_ball(struct parser *p) {
+	struct player_class *c = parser_priv(p);
+	class_book *book = &c->magic.books[c->magic.num_books - 1];
+	class_spell *spell = &book->spells[book->num_spells - 1];
+	const char *type;
+
+	if (!c)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	type = parser_getsym(p, "type");
+
+	if (type == NULL)
+		return PARSE_ERROR_INVALID_VALUE;
+
+	spell->params[0] = gf_name_to_idx(type);
+	spell->params[1] = parser_getuint(p, "radius");
+	spell->params[2] = SPELL_PROJECT_BALL;
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_c_desc(struct parser *p) {
+	struct player_class *c = parser_priv(p);
+	class_book *book = &c->magic.books[c->magic.num_books - 1];
+	class_spell *spell = &book->spells[book->num_spells - 1];
+
+	if (!c)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	spell->text = string_append(spell->text, parser_getstr(p, "desc"));
+	return PARSE_ERROR_NONE;
+}
+
 struct parser *init_parse_c(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
@@ -2476,6 +2641,13 @@ struct parser *init_parse_c(void) {
 	parser_reg(p, "magic uint first uint weight uint books", parse_c_magic);
 	parser_reg(p, "book sym tval sym sval uint spells uint stat", parse_c_book);
 	parser_reg(p, "spell sym name sym sidx int level int mana int fail int exp", parse_c_spell);
+	parser_reg(p, "dice str dice", parse_c_dice);
+	parser_reg(p, "expr sym name sym base str expr", parse_c_expr);
+	parser_reg(p, "bolt sym type", parse_c_bolt);
+	parser_reg(p, "beam sym type", parse_c_beam);
+	parser_reg(p, "borb sym type ?int adj", parse_c_borb);
+	parser_reg(p, "ball sym type uint radius", parse_c_ball);
+	parser_reg(p, "desc str desc", parse_c_desc);
 	return p;
 }
 

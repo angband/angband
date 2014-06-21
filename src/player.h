@@ -283,6 +283,11 @@ struct start_item {
  */
 typedef struct {
 	char *name;
+	char *text;
+
+	dice_t *dice;		/**< Value information from spell file */
+	int params[3];		/**< Extra parameters to be passed to the handler */
+
 	byte sidx;		/**< The index into the s_info array */
 	byte bidx;		/**< The index into the player's books array */
 	byte slevel;	/**< Required level (to learn) */
