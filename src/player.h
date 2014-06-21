@@ -91,7 +91,6 @@ extern struct player_body *bodies;
  * A structure to hold information on spells the player has learned.
  */
 struct player_spell {
-	struct player_spell *next;
 	char *name;
 	char *text;
 
@@ -179,6 +178,7 @@ typedef struct player {
 
 	byte spell_order[PY_MAX_SPELLS];	/* Spell order */
 	struct player_spell *spells;	/* Learned spells */
+	byte max_spells;	/* Maximum number of spells */
 
 	s16b player_hp[PY_MAX_LEVEL];	/* HP Array */
 
@@ -282,6 +282,7 @@ struct start_item {
  * A structure to hold class-dependent information on spells.
  */
 typedef struct {
+	char *name;
 	byte sidx;		/**< The index into the s_info array */
 	byte bidx;		/**< The index into the player's books array */
 	byte slevel;	/**< Required level (to learn) */

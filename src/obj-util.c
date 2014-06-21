@@ -1910,26 +1910,11 @@ bool obj_can_refill(const object_type *obj)
 	return FALSE;
 }
 
-#if NEW_SPELLS
-bool obj_can_browse(const object_type *o_ptr)
-{
-	struct player_spell *spell = player->spells;
-	int i, tval, sval;
-	for (i = 0; i < player->class->magic->num_books; i++) {
-		tval = player->class->magic->books[i].tval;
-		sval = player->class->magic->books[i].tval;
-		if ((tval == o_ptr-tval) && (sval == o_ptr->sval))
-			return TRUE;
-	}
-
-	return FALSE;
-}
-#else
 bool obj_can_browse(const object_type *o_ptr)
 {
 	return o_ptr->tval == player->class->spell_book;
 }
-#endif
+
 bool obj_can_cast_from(const object_type *o_ptr)
 {
 	return obj_can_browse(o_ptr) &&

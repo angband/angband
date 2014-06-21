@@ -118,45 +118,6 @@ const int adj_mag_stat[STAT_RANGE] =
 	54	/* 18/210-18/219 */,
 	57	/* 18/220+ */
 };
-#if NEW_SPELLS
-/**
- * Get the spellbook structure from an object which is a book the player can
- * cast from
- */
-const int object_to_book_index(const struct object *obj)
-{
-	size_t i;
-
-	for (i = 0; i < PY_MAX_BOOKS; i++)
-		if ((obj->tval == player->class->magic.books[i].tval) &&
-			(obj->sval == player->class->magic.books[i].sval))
-			return i;
-
-	return -1;
-}
-
-/**
- * Get spell 'index' from the player spell list
- */
-struct player_spell *player_spell_from_index(int index)
-{
-	int current = 0;
-	struct player_spell *spell = player->spells;
-
-	/* No spells */
-	if (!spell) return NULL;
-
-	/* Count through the spell list, return when we get there */
-	while (spell) {
-		if (index == current++) return spell;
-		spell = spell->next;
-	}
-
-	/* Not enough spells */
-	return NULL;
-
-}
-#else
 /**
  * Get the spellbook structure from an object which is a book the player can
  * cast from
@@ -172,7 +133,7 @@ const class_book *object_to_book(const struct object *obj)
 
 	return NULL;
 }
-#endif
+
 /**
  * Compare function for sorting spells into book order
  */
@@ -189,27 +150,6 @@ static int cmp_spell(const void *s1, const void *s2)
 		return 1;
 	return 0;
 }
-#if NEW_SPELLS
-/**
- * Collect spells from a book into the spells[] array.
- */
-int spell_collect_from_book(const object_type *o_ptr, struct player_spell **spells)
-{
-	size_t i = 0;
-	int book = object_to_book_index(o_ptr);
-	struct player_spell *sp;
-
-	/* Check validity of book */
-	if (book < 0) return 0;
-
-	/* Store the spells from this book */
-	for (sp = player->spells; sp; sp = sp->next)
-		if (sp->bidx == book)
-			spells[i++] = sp;
-
-	return i;
-}
-#else
 
 /**
  * Collect spells from a book into the spells[] array.
@@ -227,28 +167,7 @@ int spell_collect_from_book(const object_type *o_ptr, int *spells)
 
 	return n_spells;
 }
-#endif
-#if NEW_SPELLS
-/**
- * Return the number of castable spells in the spellbook 'o_ptr'.
- */
-int spell_book_count_spells(const object_type *o_ptr,
-		bool (*tester)(struct player_spell *spell))
-{
-	int i, n_spells = 0;
-	const class_book *book;
 
-	/* Get the book */
-	book = player->class->magic.books[object_to_book_index(o_ptr)];
-
-	/* Test each spell */
-	for (i = 0; i < book->num_spells; i++)
-		if (tester(book->spells[i].sidx))
-			n_spells++;
-
-	return n_spells;
-}
-#else
 
 /**
  * Return the number of castable spells in the spellbook 'o_ptr'.
@@ -265,26 +184,8 @@ int spell_book_count_spells(const object_type *o_ptr,
 
 	return n_spells;
 }
-#endif
-#if NEW_SPELLS
-/**
- * True if at least one spell in spells[] is OK according to spell_test.
- */
-bool spell_okay_list(bool (*spell_test)(struct player_spell *spell),
-		const struct player_spell **spells, int n_spells)
-{
-	int i;
-	bool okay = FALSE;
 
-	for (i = 0; i < n_spells; i++)
-	{
-		if (spell_test(spells[i]))
-			okay = TRUE;
-	}
 
-	return okay;
-}
-#else
 /**
  * True if at least one spell in spells[] is OK according to spell_test.
  */
@@ -302,32 +203,6 @@ bool spell_okay_list(bool (*spell_test)(int spell),
 
 	return okay;
 }
-#endif
-#if NEW_SPELLS
-/**
- * True if the spell is castable.
- */
-bool spell_okay_to_cast(struct player_spell spell)
-{
-	return (spell->flags & PY_SPELL_LEARNED);
-}
-
-/**
- * True if the spell can be studied.
- */
-bool spell_okay_to_study(struct player_spell spell)
-{
-	return (spell->slevel <= player->lev) && !(spell->flags & PY_SPELL_LEARNED);
-}
-
-/**
- * True if the spell is browsable - don't use this
- */
-bool spell_okay_to_browse(struct player_spell spell)
-{
-	return (spell->level < 99);
-}
-#else
 
 /**
  * True if the spell is castable.
@@ -355,72 +230,7 @@ bool spell_okay_to_browse(int spell)
 	const class_spell *s_ptr = &player->class->magic.spells[spell];
 	return (s_ptr->slevel < 99);
 }
-#endif
-#if NEW_SPELLS
-/**
- * Returns chance of failure for a spell
- */
-s16b spell_chance(struct player_spell spell)
-{
-	int chance, minfail;
 
-	/* Must be an actual spell */
-	if (!spell) return (100);
-
-	/* Extract the base spell failure rate */
-	chance = spell->fail;
-
-	/* Reduce failure rate by "effective" level adjustment */
-	chance -= 3 * (player->lev - spell->level);
-
-	/* Reduce failure rate by INT/WIS adjustment */
-	chance -= adj_mag_stat[player->state.stat_ind[player->class->spell_stat]];
-
-	/* Not enough mana to cast */
-	if (spell->mana > player->csp)
-	{
-		chance += 5 * (spell->mana - player->csp);
-	}
-
-	/* Extract the minimum failure rate */
-	minfail = adj_mag_fail[player->state.stat_ind[player->class->spell_stat]];
-
-	/* Non mage/priest characters never get better than 5 percent */
-	if (!player_has(PF_ZERO_FAIL) && minfail < 5)
-	{
-		minfail = 5;
-	}
-
-	/* Priest prayer penalty for "edged" weapons (before minfail) */
-	if (player->state.icky_wield)
-	{
-		chance += 25;
-	}
-
-	/* Fear makes spells harder (before minfail) */
-	/* Note that spells that remove fear have a much lower fail rate than
-	 * surrounding spells, to make sure this doesn't cause mega fail */
-	if (player_of_has(player, OF_AFRAID)) chance += 20;
-
-	/* Minimal and maximal failure rate */
-	if (chance < minfail) chance = minfail;
-	if (chance > 50) chance = 50;
-
-	/* Stunning makes spells harder (after minfail) */
-	if (player->timed[TMD_STUN] > 50) chance += 25;
-	else if (player->timed[TMD_STUN]) chance += 15;
-
-	/* Amnesia doubles failure change */
-	if (player->timed[TMD_AMNESIA]) chance = 50 + chance / 2;
-
-	/* Always a 5 percent chance of working */
-	if (chance > 95) chance = 95;
-
-	/* Return the chance */
-	return (chance);
-}
-
-#else
 
 /**
  * Returns chance of failure for a spell
@@ -491,66 +301,6 @@ s16b spell_chance(int spell)
 	return (chance);
 }
 
-#endif
-#if NEW_SPELLS
-/**
- * Learn the specified spell.
- */
-void spell_learn(class_spell cspell, int tval)
-{
-	int i;
-	const char *p = ((tval == TV_MAGIC_BOOK) ? "spell" : "prayer");
-	struct spell *spell_info = &s_info[cspell.sidx];
-	class_book book = player->class->magic->books[cspell.bidx];
-	struct player_spell *new_spell = mem_zalloc(sizeof(*new_spell));
-	struct player_spell *sp;
-
-	/* Append the new spell to the end of the list */
-	if (!player->spells)
-		player->spells = new_spell;
-	else {
-		for (sp = player->spells; sp->next; sp = sp->next) ;
-		sp->next = new_spell;
-	}
-
-	/* Copy the spell.txt info */
-	new_spell->name = spell_info->name;
-	new_spell->text = spell_info->text;
-	new_spell->dice = spell_info->dice;
-	for (i = 0; i < 3; i++)
-		new_spell->params[i] = spell_info.params[i];
-
-	/* Copy the class spell info */
-	new_spell->bidx = cspell.bidx;
-	new_spell->level = cspell.slevel;
-	new_spell->mana = cspell.smana;
-	new_spell->fail = cspell.sfail;
-	new_spell->exp = cspell.sexp;
-
-	/* Determine what number spell in the book this is */
-	for (i = 0; i < book.num_spells; i++)
-		if (streq(new_spell->name, s_info[book.spells[i].sidx])) break;
-
-	new_spell->spell_num = i;
-
-	/* Mention the result */
-	msgt(MSG_STUDY, "You have learned the %s of %s.", p, new_spell->name);
-
-	/* One less spell available */
-	player->upkeep->new_spells--;
-
-	/* Message if needed */
-	if (player->upkeep->new_spells)
-	{
-		/* Message */
-		msg("You can learn %d more %s%s.", player->upkeep->new_spells, p, 
-			PLURAL(player->upkeep->new_spells));
-	}
-
-	/* Redraw Study Status */
-	player->upkeep->redraw |= (PR_STUDY | PR_OBJECT);
-}
-#else
 
 /**
  * Learn the specified spell.
@@ -592,90 +342,7 @@ void spell_learn(int spell)
 	/* Redraw Study Status */
 	player->upkeep->redraw |= (PR_STUDY | PR_OBJECT);
 }
-#endif
-#if NEW_SPELLS
-/**
- * Cast the specified spell
- */
-bool spell_cast(struct player_spell *spell, int dir)
-{
-	int chance;
 
-	/* Spell failure chance */
-	chance = spell_chance(spell);
-
-	/* Failed spell */
-	if (randint0(100) < chance)
-	{
-		flush();
-		msg("You failed to concentrate hard enough!");
-	}
-
-	/* Process spell */
-	else
-	{
-		/* Cast the spell */
-		if (!cast_spell(player->class->spell_book, spell, dir)) return FALSE;
-
-		/* A spell was cast */
-		sound(MSG_SPELL);
-
-		if (!(spell->flags & PY_SPELL_WORKED))
-		{
-			int e = spell->exp;
-
-			/* The spell worked */
-			spell->flags |= PY_SPELL_WORKED;
-
-			/* Gain experience */
-			player_exp_gain(player, e * spell->level);
-
-			/* Redraw object recall */
-			player->upkeep->redraw |= (PR_OBJECT);
-		}
-	}
-
-	/* Sufficient mana */
-	if (spell->mana <= player->csp)
-	{
-		/* Use some mana */
-		player->csp -= spell->mana;
-	}
-
-	/* Over-exert the player */
-	else
-	{
-		int oops = spell->mana - player->csp;
-
-		/* No mana left */
-		player->csp = 0;
-		player->csp_frac = 0;
-
-		/* Message */
-		msg("You faint from the effort!");
-
-		/* Bypass free action */
-		(void)player_inc_timed(player, TMD_PARALYZED, randint1(5 * oops + 1), TRUE, FALSE);
-
-		/* Damage CON (possibly permanently) */
-		if (randint0(100) < 50)
-		{
-			bool perm = (randint0(100) < 25);
-
-			/* Message */
-			msg("You have damaged your health!");
-
-			/* Reduce constitution */
-			player_stat_dec(player, A_CON, perm);
-		}
-	}
-
-	/* Redraw mana */
-	player->upkeep->redraw |= (PR_MANA);
-
-	return TRUE;
-}
-#else
 /**
  * Cast the specified spell
  */
@@ -760,7 +427,7 @@ bool spell_cast(int spell, int dir)
 
 	return TRUE;
 }
-#endif
+
 /* Start of old x-spell.c */
 
 int get_spell_index(const struct object *object, int index)
@@ -773,15 +440,6 @@ int get_spell_index(const struct object *object, int index)
 	return -1;
 }
 
-#if NEW_SPELLS
-const char *get_spell_name_NRM(int tval, int spell)
-{
-	if (tval == TV_MAGIC_BOOK)
-		return s_info[spell].name;
-	else
-		return s_info[spell + PY_MAX_SPELLS].name;
-}
-#else
 const char *get_spell_name(int tval, int spell)
 {
 	if (tval == TV_MAGIC_BOOK)
@@ -789,7 +447,7 @@ const char *get_spell_name(int tval, int spell)
 	else
 		return s_info[spell + PY_MAX_SPELLS].name;
 }
-#endif
+
 static size_t append_random_value_string(char *buffer, size_t size, random_value *rv)
 {
 	size_t offset = 0;

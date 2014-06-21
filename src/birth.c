@@ -35,6 +35,7 @@
 #include "obj-util.h"
 #include "object.h"
 #include "player.h"
+#include "player-spell.h"
 #include "player-timed.h"
 #include "player-util.h"
 #include "store.h"

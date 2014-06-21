@@ -998,130 +998,6 @@ void do_cmd_refill(struct command *cmd)
 
 
 /*** Spell casting ***/
-#if NEW_SPELLS
-/* Cast a spell from a book */
-void do_cmd_cast(struct command *cmd)
-{
-	int dir;
-	struct player_spell *spell;
-
-	const char *verb = ((player->class->spell_book == TV_MAGIC_BOOK) ? "cast" : "recite");
-	const char *noun = ((player->class->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
-
-	/* Check the player can cast spells at all */
-	if (!player_can_cast(player, TRUE))
-		return;
-
-	/* Get arguments */
-	if (cmd_get_spell(cmd, "spell", &spell,
-			/* Verb */   "cast",
-			/* Book */   obj_can_cast_from,
-			/* Error */  "There are no spells you can cast.",
-			/* Filter */ spell_okay_to_cast) != CMD_OK)
-		return;
-
-	if (spell_needs_aim(player->class->spell_book, spell)) {
-		if (cmd_get_target(cmd, "target", &dir) == CMD_OK)
-			player_confuse_dir(player, &dir, FALSE);
-		else
-			return;
-	}
-
-	/* Get the spell */
-	const class_spell *s_ptr = &player->class->magic.spells[spell];
-
-	/* Check for unknown objects to prevent wasted player turns. */
-	if (spell_is_identify(player->class->spell_book, spell) && !spell_identify_unknown_available()) {
-		msg("You have nothing to identify.");
-		return;
-	}
-
-	/* Verify "dangerous" spells */
-	if (s_ptr->smana > player->csp)
-	{
-		/* Warning */
-		msg("You do not have enough mana to %s this %s.", verb, noun);
-
-		/* Flush input */
-		flush();
-
-		/* Verify */
-		if (!get_check("Attempt it anyway? ")) return;
-	}
-
-	/* Cast a spell */
-	if (spell_cast(spell, dir))
-		player->upkeep->energy_use = 100;
-}
-
-
-/* Gain a specific spell, specified by spell number (for mages). */
-void do_cmd_study_spell(struct command *cmd)
-{
-	int spell;
-
-	/* Check the player can study at all atm */
-	if (!player_can_study(player, TRUE))
-		return;
-
-	if (cmd_get_spell(cmd, "spell", &spell,
-			/* Verb */   "study",
-			/* Book */   obj_can_study,
-			/* Error  */ "You cannot learn any new spells from the books you have.",
-			/* Filter */ spell_okay_to_study) != CMD_OK)
-		return;
-
-	spell_learn(spell);
-	player->upkeep->energy_use = 100;
-}
-
-/* Gain a random spell from the given book (for priests) */
-void do_cmd_study_book(struct command *cmd)
-{
-	int book;
-	object_type *o_ptr;
-
-	int spell = -1;
-	struct spell *sp;
-	int k = 0;
-
-	const char *p = ((player->class->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
-
-	if (cmd_get_item(cmd, "item", &book,
-			/* Prompt */ "Study which book? ",
-			/* Error  */ "You cannot learn any new spells from the books you have.",
-			/* Filter */ obj_can_study,
-			/* Choice */ USE_INVEN | USE_FLOOR) != CMD_OK)
-		return;
-
-	o_ptr = object_from_item_idx(book);
-	track_object(player->upkeep, book);
-	handle_stuff(player->upkeep);
-
-	/* Check the player can study at all atm */
-	if (!player_can_study(player, TRUE))
-		return;
-
-	/* Extract spells */
-	for (sp = o_ptr->kind->spells; sp; sp = sp->next) {
-		if (!spell_okay_to_study(sp->spell_index))
-			continue;
-		if ((++k > 1) && (randint0(k) != 0))
-			continue;
-		spell = sp->spell_index;
-	}
-
-	if (spell < 0)
-	{
-		msg("You cannot learn any %ss in that book.", p);
-	}
-	else
-	{
-		spell_learn(spell);
-		player->upkeep->energy_use = 100;
-	}
-}
-#else
 /* Cast a spell from a book */
 void do_cmd_cast(struct command *cmd)
 {
@@ -1243,7 +1119,7 @@ void do_cmd_study_book(struct command *cmd)
 		player->upkeep->energy_use = 100;
 	}
 }
-#endif
+
 /**
  * Choose the way to study.  Choose life.  Choose a career.  Choose faily.
  * Choose a fucking big monster, choose orc shamans, kobolds, dark elven

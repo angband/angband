@@ -2442,6 +2442,7 @@ static enum parser_error parse_c_spell(struct parser *p) {
 
 	if (!c)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	book->spells[book->num_spells].name = string_make(parser_getsym(p, "name"));
 	sidx = spell_lookup_by_name(book->tval, parser_getsym(p, "sidx"));
 	if (sidx >= PY_MAX_SPELLS || sidx < 0)
 		return PARSE_ERROR_OUT_OF_BOUNDS;
@@ -2474,7 +2475,7 @@ struct parser *init_parse_c(void) {
 	parser_reg(p, "F ?str flags", parse_c_f);
 	parser_reg(p, "magic uint first uint weight uint books", parse_c_magic);
 	parser_reg(p, "book sym tval sym sval uint spells uint stat", parse_c_book);
-	parser_reg(p, "spell sym sidx int level int mana int fail int exp", parse_c_spell);
+	parser_reg(p, "spell sym name sym sidx int level int mana int fail int exp", parse_c_spell);
 	return p;
 }
 
