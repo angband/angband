@@ -166,11 +166,12 @@ static const char *spell_effect_list[] = {
 	#undef SPELL
 };
 
-static u32b grab_one_effect(const char *what, const char *list[]) {
-	size_t i;
+static u32b grab_one_effect(const char *what, const char *list[], int num)
+{
+	int i;
 
 	/* Scan activations */
-	for (i = 0; i < N_ELEMENTS(list); i++)
+	for (i = 0; i < num; i++)
 	{
 		if (streq(what, list[i]))
 			return i;
@@ -763,7 +764,7 @@ static enum parser_error parse_k_e(struct parser *p) {
 	struct object_kind *k = parser_priv(p);
 	assert(k);
 
-	k->effect = grab_one_effect(parser_getsym(p, "name"), effect_list);
+	k->effect = grab_one_effect(parser_getsym(p, "name"), effect_list, N_ELEMENTS(effect_list));
 	if (parser_hasval(p, "time"))
 		k->time = parser_getrand(p, "time");
 	if (!k->effect)
@@ -1055,7 +1056,7 @@ static enum parser_error parse_a_e(struct parser *p) {
 	struct artifact *a = parser_priv(p);
 	assert(a);
 
-	a->effect = grab_one_effect(parser_getsym(p, "name"), effect_list);
+	a->effect = grab_one_effect(parser_getsym(p, "name"), effect_list, N_ELEMENTS(effect_list));
 	a->time = parser_getrand(p, "time");
 	if (!a->effect)
 		return PARSE_ERROR_GENERIC;
@@ -1379,7 +1380,7 @@ static enum parser_error parse_trap_e(struct parser *p) {
 
 	if (!t)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	t->effect = grab_one_effect(parser_getstr(p, "effect"), effect_list);
+	t->effect = grab_one_effect(parser_getstr(p, "effect"), effect_list, N_ELEMENTS(effect_list));
 	if (!t->effect)
 		return PARSE_ERROR_INVALID_EFFECT;
 	return PARSE_ERROR_NONE;
@@ -2449,8 +2450,8 @@ static enum parser_error parse_c_spell(struct parser *p) {
 	if (!c)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 	book->spells[book->num_spells].name = string_make(parser_getsym(p, "name"));
-	book->spells[book->num_spells].effect
-		= grab_one_effect(parser_getsym(p, "effect"), spell_effect_list);
+	//book->spells[book->num_spells].effect
+	//	= grab_one_effect(parser_getsym(p, "effect"), spell_effect_list);
 	//sidx = spell_lookup_by_name(book->tval, parser_getsym(p, "effect"));
 	//if (sidx >= PY_MAX_SPELLS || sidx < 0)
 	//	return PARSE_ERROR_OUT_OF_BOUNDS;
@@ -2464,6 +2465,17 @@ static enum parser_error parse_c_spell(struct parser *p) {
 	book->spells[book->num_spells].smana = parser_getint(p, "mana");
 	book->spells[book->num_spells].sfail = parser_getint(p, "fail");
 	book->spells[book->num_spells++].sexp = parser_getint(p, "exp");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_c_effect(struct parser *p) {
+	struct player_class *c = parser_priv(p);
+	class_book *book = &c->magic.books[c->magic.num_books - 1];
+	class_spell *spell = &book->spells[book->num_spells - 1];
+
+	if (!c)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	spell->effect = grab_one_effect(parser_getsym(p, "eff"), spell_effect_list, N_ELEMENTS(spell_effect_list));
 	return PARSE_ERROR_NONE;
 }
 
@@ -2648,7 +2660,8 @@ struct parser *init_parse_c(void) {
 	parser_reg(p, "F ?str flags", parse_c_f);
 	parser_reg(p, "magic uint first uint weight uint books", parse_c_magic);
 	parser_reg(p, "book sym tval sym sval uint spells uint stat", parse_c_book);
-	parser_reg(p, "spell sym name sym effect int level int mana int fail int exp", parse_c_spell);
+	parser_reg(p, "spell sym name int level int mana int fail int exp", parse_c_spell);
+	parser_reg(p, "effect sym eff", parse_c_effect);
 	parser_reg(p, "dice str dice", parse_c_dice);
 	parser_reg(p, "expr sym name sym base str expr", parse_c_expr);
 	parser_reg(p, "bolt sym type", parse_c_bolt);
