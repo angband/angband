@@ -35,9 +35,9 @@ enum spell_index_prayer_e {
 };
 
 enum spell_effect_e {
-	#define SPELL(x, a, s, f) SPELL_EFFECT_##x,
+	#define S_EF(x, a, s) SPELL_EFFECT_##x,
 	#include "list-player-spells.h"
-	#undef SPELL
+	#undef S_EF
 };
 
 typedef struct spell_handler_context_s {

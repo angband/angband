@@ -458,7 +458,7 @@ desc: squares in the area of effect.
 desc:  Artifacts will not be destroyed by this spell.
 desc:  This spell has no effect when used in the town.
 spell:Bedlam:25:15:60:24
-effect:BEDLAM
+effect:PROJECT
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 ball:OLD_CONF:4
@@ -1170,7 +1170,7 @@ desc:  The spell has no effect if the ammunition is already branded, has a
 desc: slay, is broken, or is cursed.
 book:magic book:[Kelek's Grimoire of Power]:1:0
 spell:Bedlam:29:20:70:20
-effect:BEDLAM
+effect:PROJECT
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 ball:OLD_CONF:4
@@ -1562,7 +1562,7 @@ desc: squares in the area of effect.
 desc:  Artifacts will not be destroyed by this spell.
 desc:  This spell has no effect when used in the town.
 spell:Bedlam:32:30:70:12
-effect:BEDLAM
+effect:PROJECT
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 ball:OLD_CONF:4
