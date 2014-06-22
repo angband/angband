@@ -169,7 +169,7 @@ B:MASS_BANISHMENT:35:75:90:100
 B:RIFT:35:20:60:25
 B:MANA_STORM:42:16:95:200
 magic:1:300:9
-book:magic book:[Magic for Beginners]:6:1
+book:magic book:[Magic for Beginners]:6:0
 spell:Magic Missile:1:1:22:4
 effect:PROJECT
 dice:$Dd4
@@ -204,7 +204,7 @@ dice:$B
 expr:B:PLAYER_LEVEL:/ 2 + 10
 ball:POIS:2
 desc:Shoots a radius-2 poison ball.
-book:magic book:[Conjurings and Tricks]:9:1
+book:magic book:[Conjurings and Tricks]:9:0
 spell:Confuse Monster:5:4:30:4
 effect:CONFUSE_MONSTER
 desc:Attempts to confuse a single monster for a level-dependant duration.
@@ -247,7 +247,7 @@ desc:  The chance to get a beam goes up with your character level.
 spell:Wonder:7:10:50:5
 effect:WONDER
 desc:Invokes a random spell effect.
-book:magic book:[Incantations and Illusions]:9:1
+book:magic book:[Incantations and Illusions]:9:0
 spell:Satisfy Hunger:9:7:45:8
 effect:SATISFY_HUNGER
 desc:Magically renders you well-fed (but not satiated).
@@ -297,7 +297,7 @@ spell:Slow Monster:17:9:50:7
 effect:SLOW_MONSTER
 desc:Attempts to slow a single monster.
 desc:  Uniques are not affected.
-book:magic book:[Sorcery and Evocations]:6:1
+book:magic book:[Sorcery and Evocations]:6:0
 spell:Frost Ball:19:6:55:8
 effect:PROJECT
 dice:$B
@@ -326,7 +326,7 @@ desc:Shoots a radius-2 fire ball.
 spell:Treasure Detection:30:10:70:10
 effect:TREASURE_DETECTION
 desc:Detects all treasure in the immediate area.
-book:magic book:[Resistances of Scarabtarices]:5:1
+book:magic book:[Resistances of Scarabtarices]:5:0
 spell:Resist Cold:10:5:50:10
 effect:RESIST_COLD
 dice:20+d20
@@ -348,7 +348,7 @@ spell:Shield:32:24:75:30
 effect:SHIELD
 dice:30+d20
 desc:Grants you +50 to AC for 30+1d20 turns.
-book:magic book:[Raal's Tome of Destruction]:7:1
+book:magic book:[Raal's Tome of Destruction]:7:0
 spell:Shock Wave:16:5:40:6
 effect:PROJECT
 dice:$B
@@ -400,7 +400,7 @@ expr:D:PLAYER_LEVEL:+ 0
 beam:GRAVITY
 desc:Fires a gravity beam that hurts each monster in its path
 desc: and has a chance of teleporting it away.
-book:magic book:[Mordenkainen's Escapes]:5:1
+book:magic book:[Mordenkainen's Escapes]:5:0
 spell:Door Creation:13:9:40:12
 effect:DOOR_CREATION
 spell:Stair Creation:24:20:50:20
@@ -432,7 +432,7 @@ desc: are standing on the glyph, it must first succeed in breaking the glyph.
 desc:  Higher level monsters are more likely to break the glyph.
 desc:  The glyph will remain where it is, until a monster succeeds in
 desc: breaking it, or until you leave the level.
-book:magic book:[Tenser's Transformations]:2:1
+book:magic book:[Tenser's Transformations]:2:0
 spell:Greater Recharging:30:30:95:100
 effect:RECHARGE
 dice:$B
@@ -449,7 +449,7 @@ desc: (selected at random) and at the same time attempts to improve
 desc: the to-hit bonus and the to-dam bonus of the same ammunition.
 desc:  The spell has no effect if the ammunition is already branded, has a
 desc: slay, is broken, or is cursed.
-book:magic book:[Kelek's Grimoire of Power]:8:1
+book:magic book:[Kelek's Grimoire of Power]:8:0
 spell:Earthquake:20:18:60:20
 effect:EARTHQUAKE
 desc:Causes a 10-square radius earthquake around you.
@@ -599,7 +599,7 @@ B:61:99:0:0:0
 B:62:99:0:0:0
 B:63:99:0:0:0
 magic:1:350:9
-book:prayer book:[Beginners Handbook]:7:2
+book:prayer book:[Beginners Handbook]:7:1
 spell:Detect Evil:1:1:10:4
 effect:DETECT_EVIL
 desc:Detects all evil monsters in the immediate area,
@@ -628,7 +628,7 @@ desc:Detects all traps, doors, and stairs in the immediate area.
 spell:Slow Poison:3:3:28:4
 effect:SLOW_POISON
 desc:Halves the remaining duration of any current poisoning.
-book:prayer book:[Words of Wisdom]:7:2
+book:prayer book:[Words of Wisdom]:7:1
 spell:Scare Monster:5:4:29:3
 effect:SCARE_MONSTER
 desc:Attempts to scare a single monster for a level-dependant duration.
@@ -664,7 +664,7 @@ spell:Resist Heat and Cold:7:7:38:5
 effect:RESIST_HEAT_COLD
 dice:10+d10
 desc:Gives you temporary resistance to cold and fire, for 10+1d10 turns each.
-book:prayer book:[Chants and Blessings]:9:2
+book:prayer book:[Chants and Blessings]:9:1
 spell:Neutralize Poison:9:6:38:4
 effect:CURE_POISON
 desc:Neutralizes poison.
@@ -712,7 +712,7 @@ spell:Turn Undead:15:12:50:5
 effect:TURN_UNDEAD
 desc:Attempts to scare each undead monster within line of sight,
 desc: causing it to flee in terror for a level-dependant duration.
-book:prayer book:[Exorcism and Dispelling]:6:2
+book:prayer book:[Exorcism and Dispelling]:6:1
 spell:Prayer:15:14:50:5
 effect:BLESS
 dice:48+d48
@@ -747,7 +747,7 @@ dice:1000
 desc:Inflicts unresistable damage on each evil monster within line of sight,
 desc: cures 1000 points of damage, cures all stunning, heals all cut damage,
 desc: neutralizes poison, and removes fear.
-book:prayer book:[Ethereal Openings]:6:2
+book:prayer book:[Ethereal Openings]:6:1
 spell:Blink:3:3:50:6
 effect:TELEPORT_SELF
 dice:10
@@ -781,7 +781,7 @@ desc:The current level will be discarded and a new dungeon level (on the
 desc: same dungeon depth) will be generated.  This has exactly the same
 desc: side effects as leaving and re-entering the level through a stair,
 desc: except that you won't start on a square with a stair.
-book:prayer book:[Godly Insights]:5:2
+book:prayer book:[Godly Insights]:5:1
 spell:Detect Monsters:3:3:50:2
 effect:DETECT_MONSTERS
 desc:Detects all non-invisible monsters in the immediate area,
@@ -802,7 +802,7 @@ spell:Clairvoyance:35:50:80:230
 effect:CLAIRVOYANCE
 desc:Lights up, maps out, and detects all objects on the complete current
 desc: dungeon level.
-book:prayer book:[Purifications and Healing]:5:2
+book:prayer book:[Purifications and Healing]:5:1
 spell:Cure Serious Wounds:15:5:50:25
 effect:CURE_SERIOUS_WOUNDS
 dice:25+m20
@@ -822,7 +822,7 @@ desc:Restores to maximum all stats that are currently below maximum.
 spell:Remembrance:35:70:90:250
 effect:REMEMBRANCE
 desc:Restores experience points to maximum if it is currently below maximum.
-book:prayer book:[Holy Infusions]:5:2
+book:prayer book:[Holy Infusions]:5:1
 spell:Unbarring Ways:5:6:50:40
 effect:TRAP_DOOR_DESTRUCTION
 desc:Destroys all traps and doors within a 1-square radius of you.
@@ -856,7 +856,7 @@ desc: and at the same time attempts to improve the to-hit bonus and the
 desc: to-dam bonus of the same weapon.
 desc:  The prayer has no effect if the weapon is an artifact or ego item,
 desc: is already branded, has a slay, is broken, or is cursed.
-book:prayer book:[Wrath of God]:5:2
+book:prayer book:[Wrath of God]:5:1
 spell:Dispel Undead:15:7:70:25
 effect:DISPEL_UNDEAD
 dice:d$S
@@ -972,7 +972,7 @@ B:MASS_BANISHMENT:99:0:0:0
 B:RIFT:99:0:0:0
 B:MANA_STORM:99:0:0:0
 magic:1:350:9
-book:magic book:[Magic for Beginners]:6:1
+book:magic book:[Magic for Beginners]:6:0
 spell:Detect Monsters:5:1:50:1
 effect:DETECT_MONSTERS
 desc:Detects all non-invisible monsters in the immediate area,
@@ -1000,7 +1000,7 @@ dice:$B
 expr:B:PLAYER_LEVEL:/ 2 + 10
 ball:POIS:2
 desc:Shoots a radius-2 poison ball.
-book:magic book:[Conjurings and Tricks]:7:1
+book:magic book:[Conjurings and Tricks]:7:0
 spell:Confuse Monster:15:6:75:1
 effect:CONFUSE_MONSTER
 desc:Attempts to confuse a single monster for a level-dependant duration.
@@ -1028,7 +1028,7 @@ desc: light-sensitive monster in its path.
 spell:Wonder:20:10:70:20
 effect:WONDER
 desc:Invokes a random spell effect.
-book:magic book:[Incantations and Illusions]:6:1
+book:magic book:[Incantations and Illusions]:6:0
 spell:Satisfy Hunger:25:12:95:1
 effect:SATISFY_HUNGER
 desc:Magically renders you well-fed (but not satiated).
@@ -1056,7 +1056,7 @@ spell:Slow Monster:28:20:70:2
 effect:SLOW_MONSTER
 desc:Attempts to slow a single monster.
 desc:  Uniques are not affected.
-book:magic book:[Sorcery and Evocations]:3:1
+book:magic book:[Sorcery and Evocations]:3:0
 spell:Teleport Other:31:25:70:3
 effect:TELEPORT_OTHER
 desc:Produces a bolt that teleports the first monster in its path
@@ -1070,7 +1070,7 @@ spell:Mass Sleep:24:15:80:10
 effect:MASS_SLEEP
 desc:Attempts to put to sleep each monster within line of sight.
 desc:  Uniques and monsters that resist confusion are not affected.
-book:magic book:[Resistances of Scarabtarices]:5:1
+book:magic book:[Resistances of Scarabtarices]:5:0
 spell:Resist Cold:16:12:50:40
 effect:RESIST_COLD
 dice:20+d20
@@ -1092,7 +1092,7 @@ spell:Shield:34:20:75:80
 effect:SHIELD
 dice:30+d20
 desc:Grants you +50 to AC for 30+1d20 turns.
-book:magic book:[Raal's Tome of Destruction]:2:1
+book:magic book:[Raal's Tome of Destruction]:2:0
 spell:Shock Wave:35:25:80:50
 effect:PROJECT
 dice:$B
@@ -1107,7 +1107,7 @@ dice:$B
 expr:B:PLAYER_LEVEL:/ 2 + 40
 ball:POIS:3
 desc:Shoots a radius-3 poison ball.
-book:magic book:[Mordenkainen's Escapes]:4:1
+book:magic book:[Mordenkainen's Escapes]:4:0
 spell:Door Creation:17:7:30:15
 effect:DOOR_CREATION
 spell:Stair Creation:25:12:40:25
@@ -1130,7 +1130,7 @@ desc:  During that delay, the spell can be canceled by invoking the spell
 desc: of recall again.
 desc:  This spell has no effect when the option to restrict the use of
 desc: stairs and recall is set, unless Morgoth is dead.
-book:magic book:[Tenser's Transformations]:6:1
+book:magic book:[Tenser's Transformations]:6:0
 spell:Heroism:26:15:30:40
 effect:HEROISM
 dice:25+d25
@@ -1168,7 +1168,7 @@ desc: (selected at random) and at the same time attempts to improve
 desc: the to-hit bonus and the to-dam bonus of the same ammunition.
 desc:  The spell has no effect if the ammunition is already branded, has a
 desc: slay, is broken, or is cursed.
-book:magic book:[Kelek's Grimoire of Power]:1:1
+book:magic book:[Kelek's Grimoire of Power]:1:0
 spell:Bedlam:29:20:70:20
 effect:BEDLAM
 dice:$B
@@ -1267,7 +1267,7 @@ B:MASS_BANISHMENT:99:0:0:0
 B:RIFT:99:0:0:0
 B:MANA_STORM:99:0:0:0
 magic:1:400:9
-book:magic book:[Magic for Beginners]:7:1
+book:magic book:[Magic for Beginners]:7:0
 spell:Magic Missile:3:1:30:1
 effect:PROJECT
 dice:$Dd4
@@ -1306,7 +1306,7 @@ dice:$B
 expr:B:PLAYER_LEVEL:/ 2 + 10
 ball:POIS:2
 desc:Shoots a radius-2 poison ball.
-book:magic book:[Conjurings and Tricks]:9:1
+book:magic book:[Conjurings and Tricks]:9:0
 spell:Confuse Monster:7:6:40:2
 effect:CONFUSE_MONSTER
 desc:Attempts to confuse a single monster for a level-dependant duration.
@@ -1349,7 +1349,7 @@ desc:  The chance to get a beam goes up with your character level.
 spell:Wonder:15:18:80:10
 effect:WONDER
 desc:Invokes a random spell effect.
-book:magic book:[Incantations and Illusions]:9:1
+book:magic book:[Incantations and Illusions]:9:0
 spell:Satisfy Hunger:17:17:55:3
 effect:SATISFY_HUNGER
 desc:Magically renders you well-fed (but not satiated).
@@ -1399,7 +1399,7 @@ spell:Slow Monster:25:21:65:3
 effect:SLOW_MONSTER
 desc:Attempts to slow a single monster.
 desc:  Uniques are not affected.
-book:magic book:[Sorcery and Evocations]:6:1
+book:magic book:[Sorcery and Evocations]:6:0
 spell:Frost Ball:27:21:65:6
 effect:PROJECT
 dice:$B
@@ -1428,7 +1428,7 @@ desc:Shoots a radius-2 fire ball.
 spell:Treasure Detection:35:20:70:10
 effect:TREASURE_DETECTION
 desc:Detects all treasure in the immediate area.
-book:magic book:[Resistances of Scarabtarices]:5:1
+book:magic book:[Resistances of Scarabtarices]:5:0
 spell:Resist Cold:8:15:50:30
 effect:RESIST_COLD
 dice:20+d20
@@ -1452,7 +1452,7 @@ dice:30+d20
 desc:Grants you +50 to AC for 30+1d20 turns.
 dice:30+d20
 desc:Grants you +50 to AC for 30+1d20 turns.
-book:magic book:[Raal's Tome of Destruction]:4:1
+book:magic book:[Raal's Tome of Destruction]:4:0
 spell:Cloud Kill:22:19:60:6
 effect:PROJECT
 dice:$B
@@ -1483,7 +1483,7 @@ desc:  Meteors will explode as a radius-1 ball that does unresistable
 desc: damage to each monster in its area of effect.
 desc:  If this kills the monster that blocked the path to the target
 desc: location, the next meteor may continue to find another target.
-book:magic book:[Mordenkainen's Escapes]:5:1
+book:magic book:[Mordenkainen's Escapes]:5:0
 spell:Door Creation:20:17:20:25
 effect:DOOR_CREATION
 spell:Stair Creation:32:32:50:40
@@ -1515,7 +1515,7 @@ desc: are standing on the glyph, it must first succeed in breaking the glyph.
 desc:  Higher level monsters are more likely to break the glyph.
 desc:  The glyph will remain where it is, until a monster succeeds in
 desc: breaking it, or until you leave the level.
-book:magic book:[Tenser's Transformations]:6:1
+book:magic book:[Tenser's Transformations]:6:0
 spell:Heroism:18:15:30:40
 effect:HEROISM
 dice:25+d25
@@ -1553,7 +1553,7 @@ desc: (selected at random) and at the same time attempts to improve
 desc: the to-hit bonus and the to-dam bonus of the same ammunition.
 desc:  The spell has no effect if the ammunition is already branded, has a
 desc: slay, is broken, or is cursed.
-book:magic book:[Kelek's Grimoire of Power]:3:1
+book:magic book:[Kelek's Grimoire of Power]:3:0
 spell:Earthquake:30:28:60:16
 effect:EARTHQUAKE
 desc:Causes a 10-square radius earthquake around you.
@@ -1668,7 +1668,7 @@ B:61:99:0:0:0
 B:62:99:0:0:0
 B:63:99:0:0:0
 magic:1:400:9
-book:prayer book:[Beginners Handbook]:7:2
+book:prayer book:[Beginners Handbook]:7:1
 spell:Detect Evil:1:1:30:4
 effect:DETECT_EVIL
 desc:Detects all evil monsters in the immediate area,
@@ -1697,7 +1697,7 @@ desc:Detects all traps, doors, and stairs in the immediate area.
 spell:Slow Poison:9:7:40:3
 effect:SLOW_POISON
 desc:Halves the remaining duration of any current poisoning.
-book:prayer book:[Words of Wisdom]:7:2
+book:prayer book:[Words of Wisdom]:7:1
 spell:Scare Monster:9:7:40:3
 effect:SCARE_MONSTER
 desc:Attempts to scare a single monster for a level-dependant duration.
@@ -1735,7 +1735,7 @@ dice:10+d10
 desc:Gives you temporary resistance to cold and fire, for 10+1d10 turns each.
 dice:10+d10
 desc:Gives you temporary resistance to cold and fire, for 10+1d10 turns each.
-book:prayer book:[Chants and Blessings]:9:2
+book:prayer book:[Chants and Blessings]:9:1
 spell:Neutralize Poison:15:15:50:4
 effect:CURE_POISON
 desc:Neutralizes poison.
@@ -1781,7 +1781,7 @@ spell:Turn Undead:27:21:50:3
 effect:TURN_UNDEAD
 desc:Attempts to scare each undead monster within line of sight,
 desc: causing it to flee in terror for a level-dependant duration.
-book:prayer book:[Exorcism and Dispelling]:4:2
+book:prayer book:[Exorcism and Dispelling]:4:1
 spell:Prayer:29:22:50:3
 effect:BLESS
 dice:48+d48
@@ -1801,7 +1801,7 @@ effect:DISPEL_EVIL
 dice:d$S
 expr:S:PLAYER_LEVEL:* 3
 desc:Inflicts unresistable damage on each evil monster within line of sight.
-book:prayer book:[Ethereal Openings]:5:2
+book:prayer book:[Ethereal Openings]:5:1
 spell:Blink:7:7:50:2
 effect:TELEPORT_SELF
 dice:10
@@ -1829,7 +1829,7 @@ desc:  During that delay, the prayer can be canceled by invoking the prayer
 desc: of recall again.
 desc:  This prayer has no effect when the option to restrict the use of
 desc: stairs and recall is set, unless Morgoth is dead.
-book:prayer book:[Godly Insights]:4:2
+book:prayer book:[Godly Insights]:4:1
 spell:Detect Monsters:5:5:50:1
 effect:DETECT_MONSTERS
 desc:Detects all non-invisible monsters in the immediate area,
@@ -1846,7 +1846,7 @@ effect:PROBING
 desc:Probes each monster within line of sight, giving information on the
 desc: current hit points of the monster and many of its characteristics
 desc: and abilities (excluding its melee, spellcasting, and breath attacks).
-book:prayer book:[Purifications and Healing]:3:2
+book:prayer book:[Purifications and Healing]:3:1
 spell:Cure Serious Wounds:9:4:50:25
 effect:CURE_SERIOUS_WOUNDS
 dice:25+m20
@@ -1859,7 +1859,7 @@ desc: cut damage, poison and amnesia.
 spell:Restoration:45:80:90:250
 effect:RESTORATION
 desc:Restores to maximum all stats that are currently below maximum.
-book:prayer book:[Holy Infusions]:5:2
+book:prayer book:[Holy Infusions]:5:1
 spell:Unbarring Ways:10:16:50:20
 effect:TRAP_DOOR_DESTRUCTION
 desc:Destroys all traps and doors within a 1-square radius of you.
@@ -1888,7 +1888,7 @@ desc: and at the same time attempts to improve the to-hit bonus and the
 desc: to-dam bonus of the same weapon.
 desc:  The prayer has no effect if the weapon is an artifact or ego item,
 desc: is already branded, has a slay, is broken, or is cursed.
-book:prayer book:[Wrath of God]:3:2
+book:prayer book:[Wrath of God]:3:1
 spell:Dispel Undead:20:13:70:20
 effect:DISPEL_UNDEAD
 dice:d$S
