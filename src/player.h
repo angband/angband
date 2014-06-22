@@ -318,6 +318,7 @@ typedef struct {
 	s16b spell_weight;		/**< Max armour weight to avoid mana penalties */
 	byte num_books;			/**< Number of spellbooks */
 	class_book *books;		/**< Details of spellbooks */
+	byte total_spells;		/**< Number of spells for this class */
 	class_spell spells[PY_MAX_SPELLS];	/**< The available spells */
 } class_magic;
 
