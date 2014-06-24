@@ -2317,21 +2317,21 @@ static enum parser_error parse_c_m(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_c_b(struct parser *p) {
-	struct player_class *c = parser_priv(p);
-	int spell;
-
-	if (!c)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	spell = spell_lookup_by_name(c->spell_book, parser_getsym(p, "spell"));
-	if (spell >= PY_MAX_SPELLS || spell < 0)
-		return PARSE_ERROR_OUT_OF_BOUNDS;
-	c->magic.spells[spell].slevel = parser_getint(p, "level");
-	c->magic.spells[spell].smana = parser_getint(p, "mana");
-	c->magic.spells[spell].sfail = parser_getint(p, "fail");
-	c->magic.spells[spell].sexp = parser_getint(p, "exp");
-	return PARSE_ERROR_NONE;
-}
+//static enum parser_error parse_c_b(struct parser *p) {
+//	struct player_class *c = parser_priv(p);
+//	int spell;
+//
+//	if (!c)
+//		return PARSE_ERROR_MISSING_RECORD_HEADER;
+//	spell = spell_lookup_by_name(c->spell_book, parser_getsym(p, "spell"));
+//	if (spell >= PY_MAX_SPELLS || spell < 0)
+//		return PARSE_ERROR_OUT_OF_BOUNDS;
+//	c->magic.spells[spell].slevel = parser_getint(p, "level");
+//	c->magic.spells[spell].smana = parser_getint(p, "mana");
+//	c->magic.spells[spell].sfail = parser_getint(p, "fail");
+//	c->magic.spells[spell].sexp = parser_getint(p, "exp");
+//	return PARSE_ERROR_NONE;
+//}
 
 static enum parser_error parse_c_t(struct parser *p) {
 	struct player_class *c = parser_priv(p);
@@ -2412,6 +2412,7 @@ static enum parser_error parse_c_magic(struct parser *p) {
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 	c->magic.spell_first = parser_getuint(p, "first");
 	c->magic.spell_weight = parser_getuint(p, "weight");
+	c->magic.spell_realm = parser_getuint(p, "realm");
 	num_books = parser_getuint(p, "books");
 	c->magic.books = mem_zalloc(num_books * sizeof(class_book));
 	return PARSE_ERROR_NONE;
@@ -2646,11 +2647,11 @@ struct parser *init_parse_c(void) {
 	parser_reg(p, "I int mhp int exp int sense-base int sense-div", parse_c_i);
 	parser_reg(p, "A int max-attacks int min-weight int att-multiply", parse_c_a);
 	parser_reg(p, "M sym book uint stat uint first uint weight", parse_c_m);
-	parser_reg(p, "B sym spell int level int mana int fail int exp", parse_c_b);
+	//parser_reg(p, "B sym spell int level int mana int fail int exp", parse_c_b);
 	parser_reg(p, "T str title", parse_c_t);
 	parser_reg(p, "E sym tval sym sval uint min uint max", parse_c_e);
 	parser_reg(p, "F ?str flags", parse_c_f);
-	parser_reg(p, "magic uint first uint weight uint books", parse_c_magic);
+	parser_reg(p, "magic uint first uint weight uint realm uint books", parse_c_magic);
 	parser_reg(p, "book sym tval sym sval uint spells uint realm", parse_c_book);
 	parser_reg(p, "spell sym name int level int mana int fail int exp", parse_c_spell);
 	parser_reg(p, "effect sym eff", parse_c_effect);
@@ -2904,7 +2905,7 @@ static struct file_parser flavor_parser = {
 	finish_parse_flavor,
 	cleanup_flavor
 };
-
+#if 0
 /* Parsing functions for spell.txt */
 static enum parser_error parse_s_n(struct parser *p) {
 	struct spell *s = mem_zalloc(sizeof *s);
@@ -3178,7 +3179,7 @@ static struct file_parser s_parser = {
 	finish_parse_s,
 	cleanup_s
 };
-
+#endif
 /* Initialise hints */
 static enum parser_error parse_hint(struct parser *p) {
 	struct hint *h = parser_priv(p);
@@ -3740,8 +3741,8 @@ void init_arrays(void)
 	if (run_parser(&flavor_parser)) quit("Cannot initialize flavors");
 
 	/* Initialize spell info */
-	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (spells)");
-	if (run_parser(&s_parser)) quit("Cannot initialize spells");
+	//event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (spells)");
+	//if (run_parser(&s_parser)) quit("Cannot initialize spells");
 
 	/* Initialize hint text */
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (hints)");
@@ -3923,7 +3924,7 @@ void cleanup_angband(void)
 	cleanup_parser(&c_parser);
 	cleanup_parser(&h_parser);
 	cleanup_parser(&flavor_parser);
-	cleanup_parser(&s_parser);
+	//cleanup_parser(&s_parser);
 	cleanup_parser(&hints_parser);
 	cleanup_parser(&mp_parser);
 	cleanup_parser(&pit_parser);

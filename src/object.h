@@ -254,7 +254,7 @@ typedef struct object_kind
 	byte ignore;  	/**< Ignore settings */
 	bool everseen; 	/**< Kind has been seen (to despoilify ignore menus) */
 
-	struct spell *spells;
+	//struct spell *spells;
 } object_kind;
 
 extern object_kind *k_info;

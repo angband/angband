@@ -142,7 +142,8 @@ static void spell_menu_browser(int oid, void *data, const region *loc)
 		text_out_pad = 1;
 
 		Term_gotoxy(loc->col, loc->row + loc->page_rows);
-		text_out("\n%s\n", s_info[(player->class->spell_book == TV_MAGIC_BOOK) ? spell : spell + PY_MAX_SPELLS].text);
+		//text_out("\n%s\n", s_info[(player->class->spell_book == TV_MAGIC_BOOK) ? spell : spell + PY_MAX_SPELLS].text);
+		text_out("\n%s\n", spell_by_index(spell)->text);
 
 		/* XXX */
 		text_out_pad = 0;

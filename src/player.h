@@ -316,6 +316,7 @@ typedef struct {
 typedef struct {
 	byte spell_first;		/**< Level of first spell */
 	s16b spell_weight;		/**< Max armour weight to avoid mana penalties */
+	u16b spell_realm;  		/**< Primary spellcasting realm */
 	byte num_books;			/**< Number of spellbooks */
 	class_book *books;		/**< Details of spellbooks */
 	byte total_spells;		/**< Number of spells for this class */

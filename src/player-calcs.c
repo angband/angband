@@ -1258,6 +1258,7 @@ static void calc_spells(void)
 		s_ptr = spell_by_index(j);
 
 		/* Skip spells we cannot remember or don't exist */
+		if (!s_ptr) continue;
 		if (s_ptr->slevel > player->lev || s_ptr->slevel == 0) continue;
 
 		/* Skip spells we already know */
