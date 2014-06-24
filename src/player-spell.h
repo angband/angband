@@ -58,9 +58,11 @@ typedef struct spell_info_s {
 } spell_info_t;
 
 /* spell.c */
+void player_spells_init(struct player *p);
+void player_spells_free(struct player *p);
 const class_book *object_to_book(const struct object *obj);
 const class_spell *spell_by_index(int index);
-int spell_collect_from_book(const object_type *o_ptr, int *spells);
+int spell_collect_from_book(const object_type *o_ptr, int **spells);
 int spell_book_count_spells(const object_type *o_ptr, bool (*tester)(int spell));
 bool spell_okay_list(bool (*spell_test)(int spell), const int spells[], int n_spells);
 bool spell_okay_to_cast(int spell);

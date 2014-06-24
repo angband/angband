@@ -118,6 +118,35 @@ const int adj_mag_stat[STAT_RANGE] =
 	54	/* 18/210-18/219 */,
 	57	/* 18/220+ */
 };
+
+/**
+ * Initialise player spells
+ */
+void player_spells_init(struct player *p)
+{
+	int i, num_spells = p->class->magic.total_spells;
+
+	/* None */
+	if (!num_spells) return;
+
+	/* Allocate */
+	p->spell_flags = mem_zalloc(num_spells * sizeof(byte));
+	p->spell_order = mem_zalloc(num_spells * sizeof(byte));
+
+	/* None of the spells have been learned yet */
+	for (i = 0; i < num_spells; i++)
+		p->spell_order[i] = 99;
+}
+
+/**
+ * Free player spells
+ */
+void player_spells_free(struct player *p)
+{
+	mem_free(p->spell_flags);
+	mem_free(p->spell_order);
+}
+
 /**
  * Get the spellbook structure from an object which is a book the player can
  * cast from
@@ -169,9 +198,10 @@ const class_spell *spell_by_index(int index)
 //}
 
 /**
- * Collect spells from a book into the spells[] array.
+ * Collect spells from a book into the spells[] array, allocating
+ * appropriate memory.
  */
-int spell_collect_from_book(const object_type *o_ptr, int *spells)
+int spell_collect_from_book(const object_type *o_ptr, int **spells)
 {
 	const class_book *book = object_to_book(o_ptr);
 	//struct spell *sp;
@@ -183,8 +213,16 @@ int spell_collect_from_book(const object_type *o_ptr, int *spells)
 
 	//sort(spells, n_spells, sizeof(int), cmp_spell);
 
+	/* Count the spells */
 	for (i = 0; i < book->num_spells; i++)
-		spells[n_spells++] = book->spells[i].sidx;
+		n_spells++;
+
+	/* Allocate the array */
+	*spells = mem_zalloc(n_spells * sizeof(*spells));
+
+	/* Write the spells */
+	for (i = 0; i < book->num_spells; i++)
+		(*spells)[i] = book->spells[i].sidx;
 
 	return n_spells;
 }
@@ -344,7 +382,8 @@ void spell_learn(int spell)
 	player->spell_flags[spell] |= PY_SPELL_LEARNED;
 
 	/* Find the next open entry in "spell_order[]" */
-	for (i = 0; i < PY_MAX_SPELLS; i++)
+	//for (i = 0; i < PY_MAX_SPELLS; i++)
+	for (i = 0; i < player->class->magic.total_spells; i++)
 	{
 		/* Stop at the first empty space */
 		if (player->spell_order[i] == 99) break;

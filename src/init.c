@@ -3877,6 +3877,8 @@ void cleanup_angband(void)
 		if (modules[i]->cleanup)
 			modules[i]->cleanup();
 
+	player_spells_free(player);
+
 	/* Free the macros */
 	keymap_free();
 

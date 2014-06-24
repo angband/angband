@@ -417,8 +417,8 @@ void player_init(struct player *p)
 
 
 	/* None of the spells have been learned yet */
-	for (i = 0; i < PY_MAX_SPELLS; i++)
-		p->spell_order[i] = 99;
+	//for (i = 0; i < PY_MAX_SPELLS; i++)
+	//	p->spell_order[i] = 99;
 
 	p->max_gear = MAX_GEAR;
 	p->gear = mem_zalloc(MAX_GEAR * sizeof(object_type));
@@ -1122,6 +1122,9 @@ void player_birth(bool quickstart_allowed)
 
 	/* Outfit the player, if they can sell the stuff */
 	player_outfit(player);
+
+	/* Initialise the spells */
+	player_spells_init(player);
 
 	/* Initialise the stores */
 	store_reset();

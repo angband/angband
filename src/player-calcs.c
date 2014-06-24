@@ -1092,7 +1092,7 @@ static void update_inventory(void)
 static void calc_spells(void)
 {
 	int i, j, k, levels;
-	int num_allowed, num_known;
+	int num_allowed, num_known, num_total = player->class->magic.total_spells;
 	int percent_spells;
 
 	const class_spell *s_ptr;
@@ -1131,7 +1131,8 @@ static void calc_spells(void)
 	num_known = 0;
 
 	/* Count the number of spells we know */
-	for (j = 0; j < PY_MAX_SPELLS; j++)
+	//for (j = 0; j < PY_MAX_SPELLS; j++)
+	for (j = 0; j < num_total; j++)
 	{
 		/* Count known spells */
 		if (player->spell_flags[j] & PY_SPELL_LEARNED)
@@ -1144,7 +1145,8 @@ static void calc_spells(void)
 	player->upkeep->new_spells = num_allowed - num_known;
 
 	/* Forget spells which are too hard */
-	for (i = PY_MAX_SPELLS - 1; i >= 0; i--)
+	//for (i = PY_MAX_SPELLS - 1; i >= 0; i--)
+	for (i = num_total - 1; i >= 0; i--)
 	{
 		/* Get the spell */
 		j = player->spell_order[i];
@@ -1178,7 +1180,8 @@ static void calc_spells(void)
 	}
 
 	/* Forget spells if we know too many spells */
-	for (i = PY_MAX_SPELLS - 1; i >= 0; i--)
+	//for (i = PY_MAX_SPELLS - 1; i >= 0; i--)
+	for (i = num_total - 1; i >= 0; i--)
 	{
 		/* Stop when possible */
 		if (player->upkeep->new_spells >= 0) break;
@@ -1211,7 +1214,8 @@ static void calc_spells(void)
 	}
 
 	/* Check for spells to remember */
-	for (i = 0; i < PY_MAX_SPELLS; i++)
+	//for (i = 0; i < PY_MAX_SPELLS; i++)
+	for (i = 0; i < num_total; i++)
 	{
 		/* None left to remember */
 		if (player->upkeep->new_spells <= 0) break;
@@ -1251,7 +1255,8 @@ static void calc_spells(void)
 	k = 0;
 
 	/* Count spells that can be learned */
-	for (j = 0; j < PY_MAX_SPELLS; j++)
+	//for (j = 0; j < PY_MAX_SPELLS; j++)
+	for (j = 0; j < num_total; j++)
 	{
 		/* Get the spell */
 		//s_ptr = &player->class->magic.spells[j];

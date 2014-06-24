@@ -15,7 +15,7 @@
 #define PY_MAX_EXP		99999999L	/* Maximum exp */
 #define PY_MAX_GOLD		999999999L	/* Maximum gold */
 #define PY_MAX_LEVEL	50			/* Maximum level */
-#define PY_MAX_SPELLS	64			/* Maximum number of player spells */
+//#define PY_MAX_SPELLS	64			/* Maximum number of player spells */
 #define PY_MAX_BOOKS	10			/* Maximum number of spellbooks */
 #define PY_MAX_SPELL	10			/* Maximum number of spells per book */
 
@@ -174,9 +174,12 @@ typedef struct player {
 	byte searching;		/* Currently searching */
 	byte unignoring;	/* Unignoring */
 
-	byte spell_flags[PY_MAX_SPELLS]; /* Spell flags */
+	byte *spell_flags; /* Spell flags */
 
-	byte spell_order[PY_MAX_SPELLS];	/* Spell order */
+	byte *spell_order;	/* Spell order */
+	//byte spell_flags[PY_MAX_SPELLS]; /* Spell flags */
+
+	//byte spell_order[PY_MAX_SPELLS];	/* Spell order */
 	//struct player_spell *spells;	/* Learned spells */
 	//byte max_spells;	/* Maximum number of spells */
 

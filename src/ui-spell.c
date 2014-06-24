@@ -34,7 +34,8 @@
  * Spell menu data struct
  */
 struct spell_menu_data {
-	int spells[PY_MAX_SPELLS];
+	//int spells[PY_MAX_SPELLS];
+	int *spells;
 	int n_spells;
 
 	bool browse;
@@ -169,7 +170,7 @@ static menu_type *spell_menu_new(const object_type *o_ptr,
 	region loc = { -60, 1, 60, -99 };
 
 	/* collect spells from object */
-	d->n_spells = spell_collect_from_book(o_ptr, d->spells);
+	d->n_spells = spell_collect_from_book(o_ptr, &d->spells);
 	if (d->n_spells == 0 || !spell_okay_list(is_valid, d->spells, d->n_spells))
 	{
 		mem_free(m);

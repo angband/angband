@@ -32,6 +32,7 @@
 #include "obj-util.h"
 #include "object.h"
 #include "player.h"
+#include "player-spell.h"
 #include "player-timed.h"
 #include "savefile.h"
 #include "store.h"
@@ -982,11 +983,15 @@ int rd_player_spells(void)
 	
 	/* Read the number of spells */
 	rd_u16b(&tmp16u);
-	if (tmp16u > PY_MAX_SPELLS)
+	//if (tmp16u > PY_MAX_SPELLS)
+	if (tmp16u > player->class->magic.total_spells)
 	{
 		note(format("Too many player spells (%d).", tmp16u));
 		return (-1);
 	}
+
+	/* Initialise */
+	player_spells_init(player);
 	
 	/* Read the spell flags */
 	for (i = 0; i < tmp16u; i++)
