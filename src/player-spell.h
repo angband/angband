@@ -73,7 +73,8 @@ bool spell_cast(int spell, int dir);
 /* Start of old x-spell.c */
 extern int get_spell_index(const object_type *o_ptr, int index);
 extern const char *get_spell_name(int tval, int index);
-extern void get_spell_info(int tval, int index, char *buf, size_t len);
+//extern void get_spell_info(int tval, int index, char *buf, size_t len);
+extern void get_spell_info(int index, char *buf, size_t len);
 extern bool cast_spell(int tval, int index, int dir);
 //extern bool spell_needs_aim(int tval, int spell);
 extern bool spell_needs_aim(int spell);

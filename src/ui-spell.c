@@ -83,7 +83,7 @@ static void spell_menu_display(menu_type *m, int oid, bool cursor,
 	} else if (player->spell_flags[spell] & PY_SPELL_LEARNED) {
 		if (player->spell_flags[spell] & PY_SPELL_WORKED) {
 			/* Get extra info */
-			get_spell_info(player->class->spell_book, spell, help, sizeof(help));
+			get_spell_info(spell, help, sizeof(help));
 			comment = help;
 			attr = TERM_WHITE;
 		} else {

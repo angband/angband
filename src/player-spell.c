@@ -508,7 +508,8 @@ static size_t append_random_value_string(char *buffer, size_t size, random_value
 //static void spell_append_value_info_prayer(int spell, char *p, size_t len);
 static void spell_append_value_info(int spell, char *p, size_t len);
 
-void get_spell_info(int tval, int spell, char *p, size_t len)
+//void get_spell_info(int tval, int spell, char *p, size_t len)
+void get_spell_info(int spell, char *p, size_t len)
 {
 	/* Blank 'p' first */
 	p[0] = '\0';
