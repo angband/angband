@@ -90,22 +90,22 @@ extern struct player_body *bodies;
 /**
  * A structure to hold information on spells the player has learned.
  */
-struct player_spell {
-	char *name;
-	char *text;
-
-	byte realm;			/**< 0 = mage; 1 = priest */
-	dice_t *dice;		/**< Value information from spell file */
-	int params[3];		/**< Extra parameters to be passed to the handler */
-
-	byte bidx;			/**< The index into the player's books array */
-	byte spell_num;		/**< Position of spell within book */
-	byte level;			/**< Required level (to learn) */
-	byte mana;			/**< Required mana (to cast) */
-	byte fail;			/**< Base chance of failure */
-	byte exp;			/**< Encoded experience bonus */
-	byte flags;			/**< Spell flags */
-};
+//struct player_spell {
+//	char *name;
+//	char *text;
+//
+//	byte realm;			/**< 0 = mage; 1 = priest */
+//	dice_t *dice;		/**< Value information from spell file */
+//	int params[3];		/**< Extra parameters to be passed to the handler */
+//
+//	byte bidx;			/**< The index into the player's books array */
+//	byte spell_num;		/**< Position of spell within book */
+//	byte level;			/**< Required level (to learn) */
+//	byte mana;			/**< Required mana (to cast) */
+//	byte fail;			/**< Base chance of failure */
+//	byte exp;			/**< Encoded experience bonus */
+//	byte flags;			/**< Spell flags */
+//};
 
 /*
  * Most of the "player" information goes here.
@@ -177,8 +177,8 @@ typedef struct player {
 	byte spell_flags[PY_MAX_SPELLS]; /* Spell flags */
 
 	byte spell_order[PY_MAX_SPELLS];	/* Spell order */
-	struct player_spell *spells;	/* Learned spells */
-	byte max_spells;	/* Maximum number of spells */
+	//struct player_spell *spells;	/* Learned spells */
+	//byte max_spells;	/* Maximum number of spells */
 
 	s16b player_hp[PY_MAX_LEVEL];	/* HP Array */
 
