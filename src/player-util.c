@@ -329,11 +329,12 @@ bool player_can_refuel_prereq(void)
  */
 bool player_book_has_unlearned_spells(struct player *p)
 {
-	int i;
+	int i, j;
 	int item_list[INVEN_PACK];
 	int item_num;
-	object_type *o_ptr;
-	struct spell *sp;
+	//object_type *o_ptr;
+	//struct spell *sp;
+	const class_book *book;
 
 	/* Check if the player can learn new spells */
 	if (!p->upkeep->new_spells)
@@ -345,14 +346,19 @@ bool player_book_has_unlearned_spells(struct player *p)
 
 	/* Check through all available books */
 	for (i = 0; i < item_num; i++) {
-		o_ptr = object_from_item_idx(player->upkeep->inven[i]);
+		book = object_to_book(object_from_item_idx(player->upkeep->inven[i]));
+		if (!book) continue;
 
 		/* Extract spells */
-		for (sp = o_ptr->kind->spells; sp; sp = sp->next)
-			/* Check if the player can study it */
-			if (spell_okay_to_study(sp->spell_index))
+		for (j = 0; j < book->num_spells; j++)
+			if (spell_okay_to_study(book->spells[j].sidx))
 				/* There is a spell the player can study */
 				return TRUE;
+		//for (sp = o_ptr->kind->spells; sp; sp = sp->next)
+			/* Check if the player can study it */
+		//	if (spell_okay_to_study(sp->spell_index))
+				/* There is a spell the player can study */
+		//		return TRUE;
 	}
 
 	return FALSE;

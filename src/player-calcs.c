@@ -1102,7 +1102,8 @@ static void calc_spells(void)
 	const char *p = ((player->class->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
 
 	/* Hack -- must be literate */
-	if (!player->class->spell_book) return;
+	//if (!player->class->spell_book) return;
+	if (!player->class->magic.total_spells) return;
 
 	/* Hack -- wait for creation */
 	if (!character_generated) return;
@@ -1114,12 +1115,13 @@ static void calc_spells(void)
 	old_spells = player->upkeep->new_spells;
 
 	/* Determine the number of spells allowed */
-	levels = player->lev - player->class->spell_first + 1;
+	levels = player->lev - player->class->magic.spell_first + 1;
+	//levels = player->lev - player->class->spell_first + 1;
 
 	/* Hack -- no negative spells */
 	if (levels < 0) levels = 0;
 
-	/* Number of 1/100 spells per level */
+	/* Number of 1/100 spells per level - needs realm NRM */
 	percent_spells = adj_mag_study[player->state.stat_ind[player->class->spell_stat]];
 
 	/* Extract total allowed spells (rounded up) */
@@ -1151,7 +1153,8 @@ static void calc_spells(void)
 		if (j >= 99) continue;
 
 		/* Get the spell */
-		s_ptr = &player->class->magic.spells[j];
+		//s_ptr = &player->class->magic.spells[j];
+		s_ptr = spell_by_index(j);
 
 		/* Skip spells we are allowed to know */
 		if (s_ptr->slevel <= player->lev) continue;
@@ -1166,8 +1169,8 @@ static void calc_spells(void)
 			player->spell_flags[j] &= ~PY_SPELL_LEARNED;
 
 			/* Message */
-			msg("You have forgotten the %s of %s.", p,
-			           get_spell_name(player->class->spell_book, j));
+			msg("You have forgotten the %s of %s.", p, s_ptr->name);
+				//get_spell_name(player->class->spell_book, j));
 
 			/* One more can be learned */
 			player->upkeep->new_spells++;
@@ -1186,6 +1189,9 @@ static void calc_spells(void)
 		/* Skip unknown spells */
 		if (j >= 99) continue;
 
+		/* Get the spell */
+		s_ptr = spell_by_index(j);
+
 		/* Forget it (if learned) */
 		if (player->spell_flags[j] & PY_SPELL_LEARNED)
 		{
@@ -1196,8 +1202,8 @@ static void calc_spells(void)
 			player->spell_flags[j] &= ~PY_SPELL_LEARNED;
 
 			/* Message */
-			msg("You have forgotten the %s of %s.", p,
-			           get_spell_name(player->class->spell_book, j));
+			msg("You have forgotten the %s of %s.", p, s_ptr->name);
+			//          get_spell_name(player->class->spell_book, j));
 
 			/* One more can be learned */
 			player->upkeep->new_spells++;
@@ -1217,7 +1223,8 @@ static void calc_spells(void)
 		if (j >= 99) break;
 
 		/* Get the spell */
-		s_ptr = &player->class->magic.spells[j];
+		//s_ptr = &player->class->magic.spells[j];
+		s_ptr = spell_by_index(j);
 
 		/* Skip spells we cannot remember */
 		if (s_ptr->slevel > player->lev) continue;
@@ -1232,8 +1239,8 @@ static void calc_spells(void)
 			player->spell_flags[j] |= PY_SPELL_LEARNED;
 
 			/* Message */
-			msg("You have remembered the %s of %s.",
-			           p, get_spell_name(player->class->spell_book, j));
+			msg("You have remembered the %s of %s.", p, s_ptr->name);
+				//p, get_spell_name(player->class->spell_book, j));
 
 			/* One less can be learned */
 			player->upkeep->new_spells--;
@@ -1247,7 +1254,8 @@ static void calc_spells(void)
 	for (j = 0; j < PY_MAX_SPELLS; j++)
 	{
 		/* Get the spell */
-		s_ptr = &player->class->magic.spells[j];
+		//s_ptr = &player->class->magic.spells[j];
+		s_ptr = spell_by_index(j);
 
 		/* Skip spells we cannot remember or don't exist */
 		if (s_ptr->slevel > player->lev || s_ptr->slevel == 0) continue;
@@ -1299,7 +1307,8 @@ static void calc_mana(void)
 	bool old_cumber_armor = player->state.cumber_armor;
 
 	/* Hack -- Must be literate */
-	if (!player->class->spell_book)
+	//if (!player->class->spell_book)
+	if (!player->class->magic.total_spells)
 	{
 		player->msp = 0;
 		player->csp = 0;
@@ -1308,12 +1317,13 @@ static void calc_mana(void)
 	}
 
 	/* Extract "effective" player level */
-	levels = (player->lev - player->class->spell_first) + 1;
+	//levels = (player->lev - player->class->spell_first) + 1;
+	levels = (player->lev - player->class->magic.spell_first) + 1;
 	if (levels > 0)
 	{
 		msp = 1;
 		msp += adj_mag_mana[player->state.stat_ind[player->class->spell_stat]]
-			* levels / 100;
+			* levels / 100; //realm - NRM
 	}
 	else
 	{

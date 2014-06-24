@@ -41,7 +41,7 @@ enum spell_effect_e {
 };
 
 typedef struct spell_handler_context_s {
-	const int spell;
+//const int spell;
 	const int dir;
 	const int beam;
 	const random_value value;
@@ -58,6 +58,8 @@ typedef struct spell_info_s {
 } spell_info_t;
 
 /* spell.c */
+const class_book *object_to_book(const struct object *obj);
+const class_spell *spell_by_index(int index);
 int spell_collect_from_book(const object_type *o_ptr, int *spells);
 int spell_book_count_spells(const object_type *o_ptr, bool (*tester)(int spell));
 bool spell_okay_list(bool (*spell_test)(int spell), const int spells[], int n_spells);
@@ -73,8 +75,10 @@ extern int get_spell_index(const object_type *o_ptr, int index);
 extern const char *get_spell_name(int tval, int index);
 extern void get_spell_info(int tval, int index, char *buf, size_t len);
 extern bool cast_spell(int tval, int index, int dir);
-extern bool spell_needs_aim(int tval, int spell);
-extern bool spell_is_identify(int book, int spell);
+//extern bool spell_needs_aim(int tval, int spell);
+extern bool spell_needs_aim(int spell);
+//extern bool spell_is_identify(int book, int spell);
+extern bool spell_is_identify(int spell);
 extern int spell_lookup_by_name(int tval, const char *name);
 extern expression_base_value_f spell_value_base_by_name(const char *name);
 

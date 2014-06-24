@@ -64,7 +64,8 @@ static void spell_menu_display(menu_type *m, int oid, bool cursor,
 {
 	struct spell_menu_data *d = menu_priv(m);
 	int spell = d->spells[oid];
-	const class_spell *s_ptr = &player->class->magic.spells[spell];
+	//const class_spell *s_ptr = &player->class->magic.spells[spell];
+	const class_spell *s_ptr = spell_by_index(spell);
 
 	char help[30];
 	char out[80];
@@ -99,7 +100,8 @@ static void spell_menu_display(menu_type *m, int oid, bool cursor,
 
 	/* Dump the spell --(-- */
 	strnfmt(out, sizeof(out), "%-30s%2d %4d %3d%%%s",
-			get_spell_name(player->class->spell_book, spell),
+			//get_spell_name(player->class->spell_book, spell),
+			s_ptr->name,
 			s_ptr->slevel, s_ptr->smana, spell_chance(spell), comment);
 	c_prt(attr, illegible ? illegible : out, row, col);
 }

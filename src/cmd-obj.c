@@ -1005,6 +1005,7 @@ void do_cmd_cast(struct command *cmd)
 
 	const char *verb = ((player->class->spell_book == TV_MAGIC_BOOK) ? "cast" : "recite");
 	const char *noun = ((player->class->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
+	const class_spell *s_ptr;
 
 	/* Check the player can cast spells at all */
 	if (!player_can_cast(player, TRUE))
@@ -1018,7 +1019,8 @@ void do_cmd_cast(struct command *cmd)
 			/* Filter */ spell_okay_to_cast) != CMD_OK)
 		return;
 
-	if (spell_needs_aim(player->class->spell_book, spell)) {
+	//if (spell_needs_aim(player->class->spell_book, spell)) {
+	if (spell_needs_aim(spell)) {
 		if (cmd_get_target(cmd, "target", &dir) == CMD_OK)
 			player_confuse_dir(player, &dir, FALSE);
 		else
@@ -1026,10 +1028,12 @@ void do_cmd_cast(struct command *cmd)
 	}
 
 	/* Get the spell */
-	const class_spell *s_ptr = &player->class->magic.spells[spell];
+	//const class_spell *s_ptr = &player->class->magic.spells[spell];
+	s_ptr = spell_by_index(spell);
 
 	/* Check for unknown objects to prevent wasted player turns. */
-	if (spell_is_identify(player->class->spell_book, spell) && !spell_identify_unknown_available()) {
+//	if (spell_is_identify(player->class->spell_book, spell) && !spell_identify_unknown_available()) {
+	if (spell_is_identify(spell) && !spell_identify_unknown_available()) {
 		msg("You have nothing to identify.");
 		return;
 	}
@@ -1076,24 +1080,26 @@ void do_cmd_study_spell(struct command *cmd)
 /* Gain a random spell from the given book (for priests) */
 void do_cmd_study_book(struct command *cmd)
 {
-	int book;
-	object_type *o_ptr;
-
+	int book_index;
+	//object_type *o_ptr;
+	const class_book *book;
 	int spell = -1;
-	struct spell *sp;
-	int k = 0;
+	//struct spell *sp;
+	class_spell *sp;
+	int i, k = 0;
 
 	const char *p = ((player->class->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
 
-	if (cmd_get_item(cmd, "item", &book,
+	if (cmd_get_item(cmd, "item", &book_index,
 			/* Prompt */ "Study which book? ",
 			/* Error  */ "You cannot learn any new spells from the books you have.",
 			/* Filter */ obj_can_study,
 			/* Choice */ USE_INVEN | USE_FLOOR) != CMD_OK)
 		return;
 
-	o_ptr = object_from_item_idx(book);
-	track_object(player->upkeep, book);
+	//o_ptr = object_from_item_idx(book_index);
+	book = object_to_book(object_from_item_idx(book_index));
+	track_object(player->upkeep, book_index);
 	handle_stuff(player->upkeep);
 
 	/* Check the player can study at all atm */
@@ -1101,12 +1107,20 @@ void do_cmd_study_book(struct command *cmd)
 		return;
 
 	/* Extract spells */
-	for (sp = o_ptr->kind->spells; sp; sp = sp->next) {
-		if (!spell_okay_to_study(sp->spell_index))
+	//for (sp = o_ptr->kind->spells; sp; sp = sp->next) {
+	//	if (!spell_okay_to_study(sp->spell_index))
+	//		continue;
+	//	if ((++k > 1) && (randint0(k) != 0))
+	//		continue;
+	//	spell = sp->spell_index;
+	//}
+	for (i = 0; i < book->num_spells; i++) {
+		sp = &book->spells[i];
+		if (!spell_okay_to_study(sp->sidx))
 			continue;
 		if ((++k > 1) && (randint0(k) != 0))
 			continue;
-		spell = sp->spell_index;
+		spell = sp->sidx;
 	}
 
 	if (spell < 0)

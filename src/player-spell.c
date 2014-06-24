@@ -134,36 +134,57 @@ const class_book *object_to_book(const struct object *obj)
 	return NULL;
 }
 
+const class_spell *spell_by_index(int index)
+{
+	int book = 0, count = 0;
+	const class_magic *m = &player->class->magic;
+
+	/* Check index validity */
+	if (index < 0 || index >= m->total_spells)
+		return NULL;
+
+	/* Find the book, count the spells in previous books */
+	while (count + m->books[book].num_spells < index)
+		count += m->books[book++].num_spells;
+
+	/* Find the spell */
+	return &m->books[book].spells[index - count];
+}
+
 /**
  * Compare function for sorting spells into book order
  */
-static int cmp_spell(const void *s1, const void *s2)
-{
-	int spell1 = *(int*)s1 + (player->class->spell_book == TV_MAGIC_BOOK ? 0 : PY_MAX_SPELLS);
-	int spell2 = *(int*)s2 + (player->class->spell_book == TV_MAGIC_BOOK ? 0 : PY_MAX_SPELLS);
-	int pos1 = s_info[spell1].snum;
-	int pos2 = s_info[spell2].snum;
+//static int cmp_spell(const void *s1, const void *s2)
+//{
+//	int spell1 = *(int*)s1 + (player->class->spell_book == TV_MAGIC_BOOK ? 0 : PY_MAX_SPELLS);
+//	int spell2 = *(int*)s2 + (player->class->spell_book == TV_MAGIC_BOOK ? 0 : PY_MAX_SPELLS);
+//	int pos1 = s_info[spell1].snum;
+//	int pos2 = s_info[spell2].snum;
 
-	if (pos1 < pos2)
-		return -1;
-	if (pos1 > pos2)
-		return 1;
-	return 0;
-}
+//	if (pos1 < pos2)
+//		return -1;
+//	if (pos1 > pos2)
+//		return 1;
+//	return 0;
+//}
 
 /**
  * Collect spells from a book into the spells[] array.
  */
 int spell_collect_from_book(const object_type *o_ptr, int *spells)
 {
-	struct spell *sp;
-	int n_spells = 0;
+	const class_book *book = object_to_book(o_ptr);
+	//struct spell *sp;
+	int i, n_spells = 0;
 
-	for (sp = o_ptr->kind->spells; sp; sp = sp->next) {
-		spells[n_spells++] = sp->spell_index;
-	}
+	//for (sp = o_ptr->kind->spells; sp; sp = sp->next) {
+	//	spells[n_spells++] = sp->spell_index;
+	//}
 
-	sort(spells, n_spells, sizeof(int), cmp_spell);
+	//sort(spells, n_spells, sizeof(int), cmp_spell);
+
+	for (i = 0; i < book->num_spells; i++)
+		spells[n_spells++] = book->spells[i].sidx;
 
 	return n_spells;
 }
@@ -175,11 +196,16 @@ int spell_collect_from_book(const object_type *o_ptr, int *spells)
 int spell_book_count_spells(const object_type *o_ptr,
 		bool (*tester)(int spell))
 {
-	struct spell *sp;
-	int n_spells = 0;
+	const class_book *book = object_to_book(o_ptr);
+	//struct spell *sp;
+	int i, n_spells = 0;
 
-	for (sp = o_ptr->kind->spells; sp; sp = sp->next)
-		if (tester(sp->spell_index))
+	//for (sp = o_ptr->kind->spells; sp; sp = sp->next)
+	//	if (tester(sp->spell_index))
+	//		n_spells++;
+
+	for (i = 0; i < book->num_spells; i++)
+		if (tester(book->spells[i].sidx))
 			n_spells++;
 
 	return n_spells;
@@ -217,7 +243,8 @@ bool spell_okay_to_cast(int spell)
  */
 bool spell_okay_to_study(int spell)
 {
-	const class_spell *s_ptr = &player->class->magic.spells[spell];
+	//const class_spell *s_ptr = &player->class->magic.spells[spell];
+	const class_spell *s_ptr = spell_by_index(spell);
 	return (s_ptr->slevel <= player->lev) &&
 			!(player->spell_flags[spell] & PY_SPELL_LEARNED);
 }
@@ -227,7 +254,8 @@ bool spell_okay_to_study(int spell)
  */
 bool spell_okay_to_browse(int spell)
 {
-	const class_spell *s_ptr = &player->class->magic.spells[spell];
+	//const class_spell *s_ptr = &player->class->magic.spells[spell];
+	const class_spell *s_ptr = spell_by_index(spell);
 	return (s_ptr->slevel < 99);
 }
 
@@ -243,10 +271,12 @@ s16b spell_chance(int spell)
 
 
 	/* Paranoia -- must be literate */
-	if (!player->class->spell_book) return (100);
+	//if (!player->class->spell_book) return (100);
+	if (player->class->magic.total_spells == 0) return (100);
 
 	/* Get the spell */
-	s_ptr = &player->class->magic.spells[spell];
+	//s_ptr = &player->class->magic.spells[spell];
+	s_ptr = spell_by_index(spell);
 
 	/* Extract the base spell failure rate */
 	chance = s_ptr->sfail;
@@ -254,7 +284,7 @@ s16b spell_chance(int spell)
 	/* Reduce failure rate by "effective" level adjustment */
 	chance -= 3 * (player->lev - s_ptr->slevel);
 
-	/* Reduce failure rate by INT/WIS adjustment */
+	/* Reduce failure rate by INT/WIS adjustment - should use book realm NRM */
 	chance -= adj_mag_stat[player->state.stat_ind[player->class->spell_stat]];
 
 	/* Not enough mana to cast */
@@ -263,7 +293,7 @@ s16b spell_chance(int spell)
 		chance += 5 * (s_ptr->smana - player->csp);
 	}
 
-	/* Extract the minimum failure rate */
+	/* Extract the minimum failure rate - should use book realm NRM */
 	minfail = adj_mag_fail[player->state.stat_ind[player->class->spell_stat]];
 
 	/* Non mage/priest characters never get better than 5 percent */
@@ -325,7 +355,8 @@ void spell_learn(int spell)
 
 	/* Mention the result */
 	msgt(MSG_STUDY, "You have learned the %s of %s.",
-	           p, get_spell_name(player->class->spell_book, spell));
+		 //p, get_spell_name(player->class->spell_book, spell));
+		 p, spell_by_index(spell)->name);
 
 	/* One less spell available */
 	player->upkeep->new_spells--;
@@ -343,6 +374,8 @@ void spell_learn(int spell)
 	player->upkeep->redraw |= (PR_STUDY | PR_OBJECT);
 }
 
+static bool player_spell_effect(int spell, int dir);
+
 /**
  * Cast the specified spell
  */
@@ -351,7 +384,8 @@ bool spell_cast(int spell, int dir)
 	int chance;
 
 	/* Get the spell */
-	const class_spell *s_ptr = &player->class->magic.spells[spell];
+	const class_spell *s_ptr = spell_by_index(spell);
+	//const class_spell *s_ptr = &player->class->magic.spells[spell];
 
 	/* Spell failure chance */
 	chance = spell_chance(spell);
@@ -367,7 +401,8 @@ bool spell_cast(int spell, int dir)
 	else
 	{
 		/* Cast the spell */
-		if (!cast_spell(player->class->spell_book, spell, dir)) return FALSE;
+		//if (!cast_spell(player->class->spell_book, spell, dir)) return FALSE;
+		if (!player_spell_effect(spell, dir)) return FALSE;
 
 		/* A spell was cast */
 		sound(MSG_SPELL);
@@ -430,23 +465,23 @@ bool spell_cast(int spell, int dir)
 
 /* Start of old x-spell.c */
 
-int get_spell_index(const struct object *object, int index)
-{
-	struct spell *sp;
+//int get_spell_index(const struct object *object, int index)
+//{
+//	struct spell *sp;
 
-	for (sp = object->kind->spells; sp; sp = sp->next)
-		if (sp->snum == index)
-			return sp->spell_index;
-	return -1;
-}
+//	for (sp = object->kind->spells; sp; sp = sp->next)
+//		if (sp->snum == index)
+//			return sp->spell_index;
+//	return -1;
+//}
 
-const char *get_spell_name(int tval, int spell)
-{
-	if (tval == TV_MAGIC_BOOK)
-		return s_info[spell].name;
-	else
-		return s_info[spell + PY_MAX_SPELLS].name;
-}
+//const char *get_spell_name(int tval, int spell)
+//{
+//	if (tval == TV_MAGIC_BOOK)
+//		return s_info[spell].name;
+//	else
+//		return s_info[spell + PY_MAX_SPELLS].name;
+//}
 
 static size_t append_random_value_string(char *buffer, size_t size, random_value *rv)
 {
@@ -469,21 +504,23 @@ static size_t append_random_value_string(char *buffer, size_t size, random_value
 	return offset;
 }
 
-static void spell_append_value_info_arcane(int spell, char *p, size_t len);
-static void spell_append_value_info_prayer(int spell, char *p, size_t len);
+//static void spell_append_value_info_arcane(int spell, char *p, size_t len);
+//static void spell_append_value_info_prayer(int spell, char *p, size_t len);
+static void spell_append_value_info(int spell, char *p, size_t len);
 
 void get_spell_info(int tval, int spell, char *p, size_t len)
 {
 	/* Blank 'p' first */
 	p[0] = '\0';
 
+	spell_append_value_info(spell, p, len);
 	/* Mage spells */
-	if (tval == TV_MAGIC_BOOK)
-		spell_append_value_info_arcane(spell, p, len);
+	//if (tval == TV_MAGIC_BOOK)
+	//	spell_append_value_info_arcane(spell, p, len);
 
 	/* Priest spells */
-	if (tval == TV_PRAYER_BOOK)
-		spell_append_value_info_prayer(spell, p, len);
+	//if (tval == TV_PRAYER_BOOK)
+	//	spell_append_value_info_prayer(spell, p, len);
 }
 
 
@@ -1630,10 +1667,11 @@ static const spell_info_t *spell_info_for_index(const spell_info_t *list, size_t
 	return NULL;
 }
 
-static bool cast_any_spell(int spell, int dir)
+static bool player_spell_effect(int spell, int dir)
 {
 	spell_handler_f spell_handler = NULL;
-	const spell_info_t *spell_info = spell_info_for_index(spell_effects, N_ELEMENTS(spell_effects), SPELL_EFFECT_MAX, spell);
+	const class_spell *sp = spell_by_index(spell);
+	const spell_info_t *spell_info = spell_info_for_index(spell_effects, N_ELEMENTS(spell_effects), SPELL_EFFECT_MAX, sp->effect);
 	random_value value;
 	int p1, p2, p3;
 
@@ -1645,18 +1683,18 @@ static bool cast_any_spell(int spell, int dir)
 	if (spell_handler == NULL)
 		return FALSE;
 
-	if (s_info[spell].dice != NULL)
-		dice_roll(s_info[spell].dice, &value);
+	if (sp->dice != NULL)
+		dice_roll(sp->dice, &value);
 
 	/* Usually GF_ type. */
-	p1 = s_info[spell].params[0];
+	p1 = sp->params[0];
 	/* Usually radius for ball spells, or some other modifier. */
-	p2 = s_info[spell].params[1];
+	p2 = sp->params[1];
 	/* SPELL_PROJECT_ type if from the parser. */
-	p3 = s_info[spell].params[2];
+	p3 = sp->params[2];
 
 	spell_handler_context_t context = {
-		spell,
+		//spell,
 		dir,
 		beam_chance(),
 		value,
@@ -1692,7 +1730,7 @@ static bool cast_mage_spell(int spell, int dir)
 	p3 = s_info[spell].params[2];
 
 	spell_handler_context_t context = {
-		spell,
+		//spell,
 		dir,
 		beam_chance(),
 		value,
@@ -1721,7 +1759,7 @@ static bool cast_priest_spell(int spell, int dir)
 		dice_roll(s_info[spell + 64].dice, &value);
 
 	spell_handler_context_t context = {
-		spell,
+		//spell,
 		dir,
 		0,
 		value,
@@ -1742,25 +1780,34 @@ bool cast_spell(int tval, int index, int dir)
 	}
 }
 
-bool spell_is_identify(int book, int spell)
+//bool spell_is_identify(int book, int spell)
+//{
+//	return (book == TV_MAGIC_BOOK && spell == SPELL_IDENTIFY) || (book == TV_PRAYER_BOOK && spell == PRAYER_PERCEPTION);
+//}
+
+bool spell_is_identify(int spell)
 {
-	return (book == TV_MAGIC_BOOK && spell == SPELL_IDENTIFY) || (book == TV_PRAYER_BOOK && spell == PRAYER_PERCEPTION);
+	const class_spell *sp = spell_by_index(spell);
+	return (sp->effect == SPELL_EFFECT_IDENTIFY);
 }
 
-bool spell_needs_aim(int tval, int spell)
+//bool spell_needs_aim(int tval, int spell)
+bool spell_needs_aim(int spell)
 {
-	const spell_info_t *spell_info = NULL;
+	const class_spell *sp = spell_by_index(spell);
+	const spell_info_t *spell_info = spell_info_for_index(spell_effects, N_ELEMENTS(spell_effects), SPELL_EFFECT_MAX, sp->effect);
+	//const spell_info_t *spell_info = NULL;
 
-	if (tval == TV_MAGIC_BOOK) {
-		spell_info = spell_info_for_index(arcane_spells, N_ELEMENTS(arcane_spells), SPELL_MAX, spell);
-	}
-	else if (tval == TV_PRAYER_BOOK) {
-		spell_info = spell_info_for_index(prayer_spells, N_ELEMENTS(prayer_spells), PRAYER_MAX, spell);
-	}
-	else {
+//	if (tval == TV_MAGIC_BOOK) {
+//		spell_info = spell_info_for_index(arcane_spells, N_ELEMENTS(arcane_spells), SPELL_MAX, spell);
+//	}
+//	else if (tval == TV_PRAYER_BOOK) {
+//		spell_info = spell_info_for_index(prayer_spells, N_ELEMENTS(prayer_spells), PRAYER_MAX, spell);
+//	}
+//	else {
 		/* Unknown book */
-		return FALSE;
-	}
+//		return FALSE;
+//	}
 
 	if (spell_info == NULL)
 		return FALSE;
@@ -1823,9 +1870,10 @@ int spell_lookup_by_name(int tval, const char *name)
 		return -1;
 }
 
-static void spell_append_value_info_arcane(int spell, char *p, size_t len)
+static void spell_append_value_info(int spell, char *p, size_t len)
 {
-	const spell_info_t *info = spell_info_for_index(arcane_spells, N_ELEMENTS(arcane_spells), SPELL_MAX, spell);
+	const class_spell *sp = spell_by_index(spell);
+	const spell_info_t *info = spell_info_for_index(spell_effects, N_ELEMENTS(spell_effects), SPELL_EFFECT_MAX, sp->effect);
 	random_value rv;
 	const char *type = NULL;
 	const char *special = NULL;
@@ -1836,16 +1884,19 @@ static void spell_append_value_info_arcane(int spell, char *p, size_t len)
 
 	type = info->info;
 
-	if (s_info[spell].dice != NULL)
-		dice_roll(s_info[spell].dice, &rv);
+	if (sp->dice != NULL)
+		dice_roll(sp->dice, &rv);
 
 	/* Handle some special cases where we want to append some additional info */
-	switch (spell) {
-		case SPELL_CURE_LIGHT_WOUNDS:
+	switch (sp->effect) {
+		case SPELL_EFFECT_CURE_LIGHT_WOUNDS:
+		case SPELL_EFFECT_CURE_SERIOUS_WOUNDS:
+		case SPELL_EFFECT_CURE_CRITICAL_WOUNDS:
+		case SPELL_EFFECT_HEAL:
 			/* Append percentage only, as the fixed value is always displayed */
 			special = format("/%d%%", rv.m_bonus);
 			break;
-		case SPELL_METEOR_SWARM:
+		case SPELL_EFFECT_METEOR_SWARM:
 			/* Append number of projectiles. */
 			special = format("x%d", rv.m_bonus);
 			break;
@@ -1861,46 +1912,84 @@ static void spell_append_value_info_arcane(int spell, char *p, size_t len)
 		strnfmt(p + offset, len - offset, "%s", special);
 }
 
-static void spell_append_value_info_prayer(int spell, char *p, size_t len)
-{
-	const spell_info_t *info = spell_info_for_index(prayer_spells, N_ELEMENTS(prayer_spells), PRAYER_MAX, spell);
-	random_value rv;
-	const char *type = NULL;
-	const char *special = NULL;
-	size_t offset = 0;
+//static void spell_append_value_info_arcane(int spell, char *p, size_t len)
+//{
+//	const spell_info_t *info = spell_info_for_index(arcane_spells, N_ELEMENTS(arcane_spells), SPELL_MAX, spell);
+//	random_value rv;
+//	const char *type = NULL;
+//	const char *special = NULL;
+//	size_t offset = 0;
 
-	if (info == NULL)
-		return;
+//	if (info == NULL)
+//		return;
 
-	type = info->info;
+//	type = info->info;
 
-	// !!!: note offsetting until unified
-	if (s_info[spell + 64].dice != NULL)
-		dice_roll(s_info[spell + 64].dice, &rv);
+//	if (s_info[spell].dice != NULL)
+//		dice_roll(s_info[spell].dice, &rv);
 
 	/* Handle some special cases where we want to append some additional info */
-	switch (spell) {
-		case PRAYER_CURE_LIGHT_WOUNDS:
-		case PRAYER_CURE_SERIOUS_WOUNDS:
-		case PRAYER_CURE_CRITICAL_WOUNDS:
-		case PRAYER_CURE_MORTAL_WOUNDS:
-		case PRAYER_HEAL:
-		case PRAYER_CURE_SERIOUS_WOUNDS2:
-		case PRAYER_CURE_MORTAL_WOUNDS2:
+//	switch (spell) {
+//		case SPELL_CURE_LIGHT_WOUNDS:
 			/* Append percentage only, as the fixed value is always displayed */
-			special = format("/%d%%", rv.m_bonus);
-			break;
-	}
+//			special = format("/%d%%", rv.m_bonus);
+//			break;
+//		case SPELL_METEOR_SWARM:
+			/* Append number of projectiles. */
+//			special = format("x%d", rv.m_bonus);
+//			break;
+//	}
 
-	if (type == NULL)
-		return;
+//	if (type == NULL)
+//		return;
 
-	offset += strnfmt(p, len, " %s ", type);
-	offset += append_random_value_string(p + offset, len - offset, &rv);
+//	offset += strnfmt(p, len, " %s ", type);
+//	offset += append_random_value_string(p + offset, len - offset, &rv);
 
-	if (special != NULL)
-		strnfmt(p + offset, len - offset, "%s", special);
-}
+//	if (special != NULL)
+//		strnfmt(p + offset, len - offset, "%s", special);
+//}
+
+//static void spell_append_value_info_prayer(int spell, char *p, size_t len)
+//{
+//	const spell_info_t *info = spell_info_for_index(prayer_spells, N_ELEMENTS(prayer_spells), PRAYER_MAX, spell);
+//	random_value rv;
+//	const char *type = NULL;
+//	const char *special = NULL;
+//	size_t offset = 0;
+
+//	if (info == NULL)
+//		return;
+
+//	type = info->info;
+
+	// !!!: note offsetting until unified
+//	if (s_info[spell + 64].dice != NULL)
+//		dice_roll(s_info[spell + 64].dice, &rv);
+
+	/* Handle some special cases where we want to append some additional info */
+//	switch (spell) {
+//		case PRAYER_CURE_LIGHT_WOUNDS:
+//		case PRAYER_CURE_SERIOUS_WOUNDS:
+//		case PRAYER_CURE_CRITICAL_WOUNDS:
+//		case PRAYER_CURE_MORTAL_WOUNDS:
+//		case PRAYER_HEAL:
+//		case PRAYER_CURE_SERIOUS_WOUNDS2:
+//		case PRAYER_CURE_MORTAL_WOUNDS2:
+			/* Append percentage only, as the fixed value is always displayed */
+//			special = format("/%d%%", rv.m_bonus);
+//			break;
+//	}
+
+//	if (type == NULL)
+//		return;
+
+//	offset += strnfmt(p, len, " %s ", type);
+//	offset += append_random_value_string(p + offset, len - offset, &rv);
+
+//	if (special != NULL)
+//		strnfmt(p + offset, len - offset, "%s", special);
+//}
 
 
 static int spell_value_base_player_level(void)
