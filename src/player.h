@@ -39,7 +39,8 @@
 /* Player magic realms */
 enum
 {
-	REALM_ARCANE = 0,
+	REALM_NONE = 0,
+	REALM_ARCANE,
 	REALM_PIOUS,
 
 	REALM_MAX
@@ -280,6 +281,19 @@ struct start_item {
 	struct start_item *next;
 };
 
+
+/**
+ * Structure for magic realms
+ */
+struct magic_realm {
+	byte index;
+	byte stat;
+	const char *verb;
+	const char *spell_noun;
+	const char *book_noun;
+};
+
+extern const struct magic_realm realms[REALM_MAX];
 
 /**
  * A structure to hold class-dependent information on spells.
