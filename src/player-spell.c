@@ -395,7 +395,8 @@ s16b spell_chance(int spell)
 void spell_learn(int spell)
 {
 	int i;
-	const char *p = ((player->class->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
+	//const char *p = ((player->class->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
+	const char *p = player->class->magic.spell_realm->spell_noun;
 
 	/* Learn the spell */
 	player->spell_flags[spell] |= PY_SPELL_LEARNED;

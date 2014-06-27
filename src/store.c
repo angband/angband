@@ -910,10 +910,12 @@ static int home_carry(object_type *o_ptr)
 		j_ptr = &store->stock[slot];
 
 		/* Hack -- readable books always come first */
-		if ((o_ptr->tval == player->class->spell_book) &&
-		    (j_ptr->tval != player->class->spell_book)) break;
-		if ((j_ptr->tval == player->class->spell_book) &&
-		    (o_ptr->tval != player->class->spell_book)) continue;
+		//if ((o_ptr->tval == player->class->spell_book) &&
+		//    (j_ptr->tval != player->class->spell_book)) break;
+		//if ((j_ptr->tval == player->class->spell_book) &&
+		//    (o_ptr->tval != player->class->spell_book)) continue;
+		if (obj_can_browse(o_ptr) && !obj_can_browse(j_ptr)) break;
+		if (!obj_can_browse(o_ptr) && obj_can_browse(j_ptr)) continue;
 
 		/* Objects sort by decreasing type */
 		if (o_ptr->tval > j_ptr->tval) break;

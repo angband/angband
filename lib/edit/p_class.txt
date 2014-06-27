@@ -63,7 +63,7 @@ C:25:18:18:0:14:2:70:55:55:0
 X:10:7:10:0:0:0:45:45:45:0
 I:9:0:7000:40
 A:6:30:5
-M:0:0:0:0
+#M:0:0:0:0
 E:food:Ration of Food:1:3
 E:light:Wooden Torch:1:3
 E:potion:Berserk Strength:1:1
@@ -88,7 +88,7 @@ C:30:36:30:2:16:20:34:20:20:0
 X:7:13:9:0:0:0:15:15:15:0
 I:0:30:170000:5
 A:4:40:2
-M:magic book:1:1:300
+#M:magic book:1:1:300
 E:food:Ration of Food:1:3
 E:light:Wooden Torch:1:3
 E:magic book:[Magic for Beginners]:1:1
@@ -515,7 +515,7 @@ C:25:30:32:2:16:8:48:35:35:0
 X:7:10:12:0:0:0:20:20:20:0
 I:2:20:15000:40
 A:4:35:3
-M:prayer book:2:1:350
+#M:prayer book:2:1:350
 E:food:Ration of Food:1:3
 E:light:Wooden Torch:1:3
 E:prayer book:[Beginners Handbook]:1:1
@@ -890,7 +890,7 @@ C:45:32:28:3:32:24:60:66:66:0
 X:15:10:10:1:0:0:40:30:30:0
 I:6:25:10000:40
 A:5:30:4
-M:magic book:1:5:350
+#M:magic book:1:5:350
 E:food:Ration of Food:1:3
 E:light:Wooden Torch:1:3
 E:magic book:[Magic for Beginners]:1:1
@@ -1184,7 +1184,7 @@ C:30:32:28:3:24:16:56:72:72:0
 X:8:10:10:0:0:0:30:45:45:0
 I:4:30:20000:40
 A:5:35:4
-M:magic book:1:3:400
+#M:magic book:1:3:400
 E:food:Ration of Food:1:3
 E:light:Wooden Torch:1:3
 E:magic book:[Magic for Beginners]:1:1
@@ -1584,7 +1584,7 @@ C:20:24:25:0:12:2:68:40:40:0
 X:7:10:11:0:0:0:35:30:30:0
 I:6:35:60000:40
 A:5:30:5
-M:prayer book:2:1:400
+#M:prayer book:2:1:400
 E:food:Ration of Food:1:3
 E:light:Wooden Torch:1:3
 E:prayer book:[Beginners Handbook]:1:1

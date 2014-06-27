@@ -153,7 +153,8 @@ s16b modify_stat_value(int value, int amount)
  */
 bool player_can_cast(struct player *p, bool show_msg)
 {
-	if (!p->class->spell_book)
+	//if (!p->class->spell_book)
+	if (p->class->magic.spell_realm->index == REALM_NONE)
 	{
 		if (show_msg)
 			msg("You cannot pray or produce magics.");
@@ -193,7 +194,8 @@ bool player_can_study(struct player *p, bool show_msg)
 	if (!p->upkeep->new_spells)
 	{
 		if (show_msg) {
-			const char *name = ((p->class->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
+			//const char *name = ((p->class->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
+			const char *name = p->class->magic.spell_realm->spell_noun;
 			msg("You cannot learn any new %ss!", name);
 		}
 

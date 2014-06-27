@@ -1912,7 +1912,16 @@ bool obj_can_refill(const object_type *obj)
 
 bool obj_can_browse(const object_type *o_ptr)
 {
-	return o_ptr->tval == player->class->spell_book;
+	int i;
+
+	for (i = 0; i < player->class->magic.num_books; i++) {
+		class_book book = player->class->magic.books[i];
+		if (o_ptr->kind == lookup_kind(book.tval, book.sval))
+			return TRUE;
+	}
+
+	return FALSE;
+	//return o_ptr->tval == player->class->spell_book;
 }
 
 bool obj_can_cast_from(const object_type *o_ptr)

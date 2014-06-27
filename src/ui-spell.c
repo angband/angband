@@ -254,8 +254,9 @@ static void spell_menu_browse(menu_type *m, const char *noun)
 void textui_book_browse(const object_type *o_ptr)
 {
 	menu_type *m;
-	const char *noun = (player->class->spell_book == TV_MAGIC_BOOK ?
-			"spell" : "prayer");
+	//const char *noun = (player->class->spell_book == TV_MAGIC_BOOK ?
+	//		"spell" : "prayer");
+	const char *noun = player->class->magic.spell_realm->spell_noun;
 
 	m = spell_menu_new(o_ptr, spell_okay_to_browse);
 	if (m) {
@@ -291,8 +292,9 @@ void textui_spell_browse(void)
 int get_spell_from_book(const char *verb, int book,
 		const char *error, bool (*spell_filter)(int spell))
 {
-	const char *noun =
-			(player->class->spell_book == TV_MAGIC_BOOK ? "spell" : "prayer");
+	//const char *noun =
+	//		(player->class->spell_book == TV_MAGIC_BOOK ? "spell" : "prayer");
+	const char *noun = player->class->magic.spell_realm->spell_noun;
 
 	menu_type *m;
 	struct object *o_ptr = object_from_item_idx(book);

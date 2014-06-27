@@ -939,10 +939,12 @@ static bool earlier_object(struct object *orig, struct object *new)
 	if (!orig) return TRUE;
 
 	/* Readable books always come first */
-	if ((orig->tval == player->class->spell_book) &&
-		(new->tval != player->class->spell_book)) return FALSE;
-	if ((new->tval == player->class->spell_book) &&
-		(orig->tval != player->class->spell_book)) return TRUE;
+	//if ((orig->tval == player->class->spell_book) &&
+	//	(new->tval != player->class->spell_book)) return FALSE;
+	//if ((new->tval == player->class->spell_book) &&
+	//	(orig->tval != player->class->spell_book)) return TRUE;
+	if (obj_can_browse(orig) && !obj_can_browse(new)) return FALSE;
+	if (!obj_can_browse(orig) && obj_can_browse(new)) return TRUE;
 
 	/* Objects sort by decreasing type */
 	if (orig->tval > new->tval) return FALSE;
@@ -1109,7 +1111,8 @@ static void calc_spells(void)
 
 	s16b old_spells;
 
-	const char *p = ((player->class->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
+	//const char *p = ((player->class->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
+	const char *p = player->class->magic.spell_realm->spell_noun;
 
 	/* Hack -- must be literate */
 	//if (!player->class->spell_book) return;
@@ -1397,7 +1400,7 @@ static void calc_mana(void)
 	}
 
 	/* Determine the weight allowance */
-	max_wgt = player->class->spell_weight;
+	max_wgt = player->class->magic.spell_weight;
 
 	/* Heavy armor penalizes mana */
 	if (((cur_wgt - max_wgt) / 10) > 0)

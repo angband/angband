@@ -291,6 +291,7 @@ struct magic_realm {
 	const char *verb;
 	const char *spell_noun;
 	const char *book_noun;
+	const char *adjective;
 };
 
 extern struct magic_realm realms[REALM_MAX];
@@ -365,10 +366,10 @@ typedef struct player_class {
 	u16b min_weight;   /* Minimum weapon weight for calculations */
 	u16b att_multiply; /* Multiplier for attack calculations */
 	
-	byte spell_book;   /* Tval of spell books (if any) */
+	//byte spell_book;   /* Tval of spell books (if any) */
 	//u16b spell_stat;   /* Stat for spells (if any) */
-	u16b spell_first;  /* Level of first spell */
-	u16b spell_weight; /* Weight that hurts spells */
+	//u16b spell_first;  /* Level of first spell */
+	//u16b spell_weight; /* Weight that hurts spells */
 	
 	u32b sense_base;   /* Base pseudo-id value */
 	u16b sense_div;    /* Pseudo-id divisor */

@@ -65,9 +65,9 @@ const player_sex sex_info[MAX_SEXES] =
  */
 struct magic_realm realms[REALM_MAX] =
 {
-	{ REALM_NONE, A_STR, "", "", "" },
-	{ REALM_ARCANE, A_INT, "cast", "spell", "magic book" },
-	{ REALM_PIOUS, A_WIS, "pray", "prayer", "prayer book" }
+	{ REALM_NONE, A_STR, "", "", "", "" },
+	{ REALM_ARCANE, A_INT, "cast", "spell", "magic book", "arcane" },
+	{ REALM_PIOUS, A_WIS, "recite", "prayer", "prayer book", "divine" }
 };
 
 

@@ -1003,8 +1003,10 @@ void do_cmd_cast(struct command *cmd)
 {
 	int spell, dir;
 
-	const char *verb = ((player->class->spell_book == TV_MAGIC_BOOK) ? "cast" : "recite");
-	const char *noun = ((player->class->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
+	//const char *verb = ((player->class->spell_book == TV_MAGIC_BOOK) ? "cast" : "recite");
+	//const char *noun = ((player->class->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
+	const char *verb = player->class->magic.spell_realm->verb;
+	const char *noun = player->class->magic.spell_realm->spell_noun;
 	const class_spell *s_ptr;
 
 	/* Check the player can cast spells at all */
@@ -1088,7 +1090,8 @@ void do_cmd_study_book(struct command *cmd)
 	class_spell *sp;
 	int i, k = 0;
 
-	const char *p = ((player->class->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
+	//const char *p = ((player->class->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
+	const char *p = player->class->magic.spell_realm->spell_noun;
 
 	if (cmd_get_item(cmd, "item", &book_index,
 			/* Prompt */ "Study which book? ",

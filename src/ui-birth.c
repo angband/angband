@@ -377,11 +377,13 @@ static void class_help(int i, void *db, const region *l)
 	
 	skill_help(r->r_skills, c->c_skills, r->r_mhp + c->c_mhp, r->r_exp + c->c_exp, -1);
 
-	if (c->spell_book == TV_MAGIC_BOOK) {
-		text_out_e("\nLearns arcane magic");
-	} else if (c->spell_book == TV_PRAYER_BOOK) {
-		text_out_e("\nLearns divine magic");
-	}
+	//if (c->spell_book == TV_MAGIC_BOOK) {
+	//	text_out_e("\nLearns arcane magic");
+	//} else if (c->spell_book == TV_PRAYER_BOOK) {
+	//	text_out_e("\nLearns divine magic");
+	//}
+	if (c->magic.spell_realm != REALM_NONE)
+		text_out_e("\nLearns %s magic", c->magic.spell_realm->adjective);
 
 	for (k = 0; k < PF_MAX; k++)
 	{
