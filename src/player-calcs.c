@@ -1088,7 +1088,7 @@ static void update_inventory(void)
  */
 int level_spells(struct player *p)
 {
-	int stat = player->class->spell_stat;
+	int stat = player->class->magic.spell_realm->stat;
 	return adj_mag_study[player->state.stat_ind[stat]];
 }
 
@@ -1313,7 +1313,7 @@ static void calc_spells(void)
  */
 int mana_per_level(struct player *p)
 {
-	int stat = player->class->spell_stat;
+	int stat = player->class->magic.spell_realm->stat;
 	return adj_mag_mana[player->state.stat_ind[stat]];
 }
 

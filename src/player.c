@@ -63,7 +63,7 @@ const player_sex sex_info[MAX_SEXES] =
  * Magic realms:
  * index, spell stat, verb, spell noun, book noun
  */
-const struct magic_realm realms[REALM_MAX] =
+struct magic_realm realms[REALM_MAX] =
 {
 	{ REALM_NONE, A_STR, "", "", "" },
 	{ REALM_ARCANE, A_INT, "cast", "spell", "magic book" },

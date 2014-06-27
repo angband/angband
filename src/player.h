@@ -293,7 +293,7 @@ struct magic_realm {
 	const char *book_noun;
 };
 
-extern const struct magic_realm realms[REALM_MAX];
+extern struct magic_realm realms[REALM_MAX];
 
 /**
  * A structure to hold class-dependent information on spells.
@@ -333,7 +333,7 @@ typedef struct {
 typedef struct {
 	byte spell_first;		/**< Level of first spell */
 	s16b spell_weight;		/**< Max armour weight to avoid mana penalties */
-	u16b spell_realm;  		/**< Primary spellcasting realm */
+	struct magic_realm *spell_realm;  		/**< Primary spellcasting realm */
 	byte num_books;			/**< Number of spellbooks */
 	class_book *books;		/**< Details of spellbooks */
 	byte total_spells;		/**< Number of spells for this class */
@@ -366,7 +366,7 @@ typedef struct player_class {
 	u16b att_multiply; /* Multiplier for attack calculations */
 	
 	byte spell_book;   /* Tval of spell books (if any) */
-	u16b spell_stat;   /* Stat for spells (if any) */
+	//u16b spell_stat;   /* Stat for spells (if any) */
 	u16b spell_first;  /* Level of first spell */
 	u16b spell_weight; /* Weight that hurts spells */
 	

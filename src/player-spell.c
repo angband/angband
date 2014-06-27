@@ -303,7 +303,7 @@ bool spell_okay_to_browse(int spell)
  */
 int fail_adjust(struct player *p)
 {
-	int stat = player->class->spell_stat;
+	int stat = player->class->magic.spell_realm->stat;
 	return adj_mag_stat[player->state.stat_ind[stat]];
 }
 
@@ -313,7 +313,7 @@ int fail_adjust(struct player *p)
  */
 int min_fail(struct player *p)
 {
-	int stat = player->class->spell_stat;
+	int stat = player->class->magic.spell_realm->stat;
 	return adj_mag_fail[player->state.stat_ind[stat]];
 }
 

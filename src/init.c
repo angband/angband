@@ -2311,7 +2311,8 @@ static enum parser_error parse_c_m(struct parser *p) {
 	if (!c)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 	c->spell_book = tval_find_idx(parser_getsym(p, "book"));
-	c->spell_stat = parser_getuint(p, "stat");
+	//c->spell_stat = parser_getuint(p, "stat");
+	(void) parser_getuint(p, "stat");
 	c->spell_first = parser_getuint(p, "first");
 	c->spell_weight = parser_getuint(p, "weight");
 	return PARSE_ERROR_NONE;
@@ -2412,7 +2413,7 @@ static enum parser_error parse_c_magic(struct parser *p) {
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 	c->magic.spell_first = parser_getuint(p, "first");
 	c->magic.spell_weight = parser_getuint(p, "weight");
-	c->magic.spell_realm = parser_getuint(p, "realm");
+	c->magic.spell_realm = &realms[parser_getuint(p, "realm")];
 	num_books = parser_getuint(p, "books");
 	c->magic.books = mem_zalloc(num_books * sizeof(class_book));
 	return PARSE_ERROR_NONE;

@@ -672,7 +672,7 @@ static void generate_stats(int stats[A_MAX], int points_spent[A_MAX],
 {
 	int step = 0;
 	int maxed[A_MAX] = { 0 };
-	int spell_stat = player->class->spell_stat;
+	int spell_stat = player->class->magic.spell_realm->stat;
 	bool caster = FALSE, warrior = FALSE;
 
 	/* Determine whether the class is warrior */
