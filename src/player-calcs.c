@@ -1082,6 +1082,16 @@ static void update_inventory(void)
 				   player->max_gear);
 }
 
+/**
+ * "Percentage" (actually some complicated hack that needs redoing) of
+ * player's spells they can learn per level (-> realms - NRM)
+ */
+int level_spells(struct player *p)
+{
+	int stat = player->class->spell_stat;
+	return adj_mag_study[player->state.stat_ind[stat]];
+}
+
 /*
  * Calculate number of spells player should have, and forget,
  * or remember, spells until that number is properly reflected.
@@ -1121,8 +1131,8 @@ static void calc_spells(void)
 	/* Hack -- no negative spells */
 	if (levels < 0) levels = 0;
 
-	/* Number of 1/100 spells per level - needs realm NRM */
-	percent_spells = adj_mag_study[player->state.stat_ind[player->class->spell_stat]];
+	/* Number of 1/100 spells per level (or something - needs clarifying) */
+	percent_spells = level_spells(player);
 
 	/* Extract total allowed spells (rounded up) */
 	num_allowed = (((percent_spells * levels) + 50) / 100);
@@ -1297,6 +1307,16 @@ static void calc_spells(void)
 }
 
 
+/**
+ * Get the player's max spell points per effective level
+ * (will become realm based - NRM)
+ */
+int mana_per_level(struct player *p)
+{
+	int stat = player->class->spell_stat;
+	return adj_mag_mana[player->state.stat_ind[stat]];
+}
+
 /*
  * Calculate maximum mana.  You do not need to know any spells.
  * Note that mana is lowered by heavy (or inappropriate) armor.
@@ -1328,8 +1348,7 @@ static void calc_mana(void)
 	if (levels > 0)
 	{
 		msp = 1;
-		msp += adj_mag_mana[player->state.stat_ind[player->class->spell_stat]]
-			* levels / 100; //realm - NRM
+		msp += mana_per_level(player) * levels / 100;
 	}
 	else
 	{
@@ -2186,48 +2205,25 @@ static void update_bonuses(void)
 	/*** Notice changes ***/
 
 	/* Analyze stats */
-	for (i = 0; i < A_MAX; i++)
-	{
+	for (i = 0; i < A_MAX; i++) {
 		/* Notice changes */
 		if (state->stat_top[i] != old.stat_top[i])
-		{
 			/* Redisplay the stats later */
 			player->upkeep->redraw |= (PR_STATS);
-		}
 
 		/* Notice changes */
 		if (state->stat_use[i] != old.stat_use[i])
-		{
 			/* Redisplay the stats later */
 			player->upkeep->redraw |= (PR_STATS);
-		}
 
 		/* Notice changes */
-		if (state->stat_ind[i] != old.stat_ind[i])
-		{
+		if (state->stat_ind[i] != old.stat_ind[i]) {
 			/* Change in CON affects Hitpoints */
 			if (i == A_CON)
-			{
 				player->upkeep->update |= (PU_HP);
-			}
 
-			/* Change in INT may affect Mana/Spells */
-			else if (i == A_INT)
-			{
-				if (player->class->spell_stat == A_INT)
-				{
-					player->upkeep->update |= (PU_MANA | PU_SPELLS);
-				}
-			}
-
-			/* Change in WIS may affect Mana/Spells */
-			else if (i == A_WIS)
-			{
-				if (player->class->spell_stat == A_WIS)
-				{
-					player->upkeep->update |= (PU_MANA | PU_SPELLS);
-				}
-			}
+			/* Change in stats may affect Mana/Spells */
+			player->upkeep->update |= (PU_MANA | PU_SPELLS);
 		}
 	}
 

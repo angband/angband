@@ -672,6 +672,7 @@ static void generate_stats(int stats[A_MAX], int points_spent[A_MAX],
 {
 	int step = 0;
 	int maxed[A_MAX] = { 0 };
+	int spell_stat = player->class->spell_stat;
 	bool caster = FALSE, warrior = FALSE;
 
 	/* Determine whether the class is warrior */
@@ -754,21 +755,21 @@ static void generate_stats(int stats[A_MAX], int points_spent[A_MAX],
 
 				if (!warrior) {
 				
-					while (!maxed[player->class->spell_stat] &&
-						   (caster || stats[player->class->spell_stat] < 16) &&
-						   points_spent[player->class->spell_stat] < points_trigger) {
+					while (!maxed[spell_stat] &&
+						   (caster || stats[spell_stat] < 16) &&
+						   points_spent[spell_stat] < points_trigger) {
 						   
-						if (!buy_stat(player->class->spell_stat, stats, points_spent,
+						if (!buy_stat(spell_stat, stats, points_spent,
 									  points_left, FALSE)) {
 									  
-							maxed[player->class->spell_stat] = TRUE;
+							maxed[spell_stat] = TRUE;
 						}
 
-						if (points_spent[player->class->spell_stat] > points_trigger) {
+						if (points_spent[spell_stat] > points_trigger) {
 						
-							sell_stat(player->class->spell_stat, stats, points_spent, 
+							sell_stat(spell_stat, stats, points_spent, 
 									  points_left, FALSE);
-							maxed[player->class->spell_stat] = TRUE;
+							maxed[spell_stat] = TRUE;
 						}
 					}
 				}
@@ -802,9 +803,9 @@ static void generate_stats(int stats[A_MAX], int points_spent[A_MAX],
 
 				if (!maxed[A_DEX]) {
 					next_stat = A_DEX;
-				} else if (!maxed[A_INT] && player->class->spell_stat != A_INT) {
+				} else if (!maxed[A_INT] && spell_stat != A_INT) {
 					next_stat = A_INT;
-				} else if (!maxed[A_WIS] && player->class->spell_stat != A_WIS) {
+				} else if (!maxed[A_WIS] && spell_stat != A_WIS) {
 					next_stat = A_WIS;
 				} else {
 					step++;

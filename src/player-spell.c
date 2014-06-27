@@ -297,6 +297,25 @@ bool spell_okay_to_browse(int spell)
 	return (s_ptr->slevel < 99);
 }
 
+/**
+ * Spell failure adjustment by casting stat level
+ * (or whatever realm whatever - NRM)
+ */
+int fail_adjust(struct player *p)
+{
+	int stat = player->class->spell_stat;
+	return adj_mag_stat[player->state.stat_ind[stat]];
+}
+
+/**
+ * Spell minimum failure casting stat level
+ * (or whatever realm whatever - NRM)
+ */
+int min_fail(struct player *p)
+{
+	int stat = player->class->spell_stat;
+	return adj_mag_fail[player->state.stat_ind[stat]];
+}
 
 /**
  * Returns chance of failure for a spell
@@ -322,8 +341,8 @@ s16b spell_chance(int spell)
 	/* Reduce failure rate by "effective" level adjustment */
 	chance -= 3 * (player->lev - s_ptr->slevel);
 
-	/* Reduce failure rate by INT/WIS adjustment - should use book realm NRM */
-	chance -= adj_mag_stat[player->state.stat_ind[player->class->spell_stat]];
+	/* Reduce failure rate by realm adjustment */
+	chance -= fail_adjust(player);
 
 	/* Not enough mana to cast */
 	if (s_ptr->smana > player->csp)
@@ -331,8 +350,8 @@ s16b spell_chance(int spell)
 		chance += 5 * (s_ptr->smana - player->csp);
 	}
 
-	/* Extract the minimum failure rate - should use book realm NRM */
-	minfail = adj_mag_fail[player->state.stat_ind[player->class->spell_stat]];
+	/* Extract the minimum failure rate due to realm */
+	minfail = min_fail(player);
 
 	/* Non mage/priest characters never get better than 5 percent */
 	if (!player_has(PF_ZERO_FAIL) && minfail < 5)
