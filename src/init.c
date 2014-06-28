@@ -2305,35 +2305,6 @@ static enum parser_error parse_c_a(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-//static enum parser_error parse_c_m(struct parser *p) {
-//	struct player_class *c = parser_priv(p);
-
-//	if (!c)
-//		return PARSE_ERROR_MISSING_RECORD_HEADER;
-//	c->spell_book = tval_find_idx(parser_getsym(p, "book"));
-	//c->spell_stat = parser_getuint(p, "stat");
-//	(void) parser_getuint(p, "stat");
-//	c->spell_first = parser_getuint(p, "first");
-//	c->spell_weight = parser_getuint(p, "weight");
-//	return PARSE_ERROR_NONE;
-//}
-
-//static enum parser_error parse_c_b(struct parser *p) {
-//	struct player_class *c = parser_priv(p);
-//	int spell;
-//
-//	if (!c)
-//		return PARSE_ERROR_MISSING_RECORD_HEADER;
-//	spell = spell_lookup_by_name(c->spell_book, parser_getsym(p, "spell"));
-//	if (spell >= PY_MAX_SPELLS || spell < 0)
-//		return PARSE_ERROR_OUT_OF_BOUNDS;
-//	c->magic.spells[spell].slevel = parser_getint(p, "level");
-//	c->magic.spells[spell].smana = parser_getint(p, "mana");
-//	c->magic.spells[spell].sfail = parser_getint(p, "fail");
-//	c->magic.spells[spell].sexp = parser_getint(p, "exp");
-//	return PARSE_ERROR_NONE;
-//}
-
 static enum parser_error parse_c_t(struct parser *p) {
 	struct player_class *c = parser_priv(p);
 	int i;
@@ -2647,8 +2618,6 @@ struct parser *init_parse_c(void) {
 	parser_reg(p, "X int dis int dev int sav int stl int srh int fos int thm int thb int throw int dig", parse_c_x);
 	parser_reg(p, "I int mhp int exp int sense-base int sense-div", parse_c_i);
 	parser_reg(p, "A int max-attacks int min-weight int att-multiply", parse_c_a);
-	//parser_reg(p, "M sym book uint stat uint first uint weight", parse_c_m);
-	//parser_reg(p, "B sym spell int level int mana int fail int exp", parse_c_b);
 	parser_reg(p, "T str title", parse_c_t);
 	parser_reg(p, "E sym tval sym sval uint min uint max", parse_c_e);
 	parser_reg(p, "F ?str flags", parse_c_f);
@@ -2906,281 +2875,8 @@ static struct file_parser flavor_parser = {
 	finish_parse_flavor,
 	cleanup_flavor
 };
-#if 0
-/* Parsing functions for spell.txt */
-static enum parser_error parse_s_n(struct parser *p) {
-	struct spell *s = mem_zalloc(sizeof *s);
-	s->next = parser_priv(p);
-	s->sidx = parser_getuint(p, "index");
-	s->name = string_make(parser_getstr(p, "name"));
-	parser_setpriv(p, s);
-	return PARSE_ERROR_NONE;
-}
 
-static enum parser_error parse_s_i(struct parser *p) {
-	struct spell *s = parser_priv(p);
-	int tval, sval;
 
-	if (!s)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
-
-	tval = tval_find_idx(parser_getsym(p, "tval"));
-	if (tval == -1)
-		return PARSE_ERROR_UNRECOGNISED_TVAL;
-	s->tval = tval;
-	sval = lookup_sval(tval, parser_getsym(p, "sval"));
-	if (sval < 0)
-		return PARSE_ERROR_UNRECOGNISED_SVAL;
-	s->sval = sval;
-	s->snum = parser_getuint(p, "snum");
-
-	/* Needs fix to magic - NRM */
-	s->realm = (s->tval == TV_MAGIC_BOOK) ? 0 : 1;
-	s->spell_index = s->sidx - (s->realm * PY_MAX_SPELLS);
-	return PARSE_ERROR_NONE;
-}
-
-static enum parser_error parse_s_d(struct parser *p) {
-	struct spell *s = parser_priv(p);
-
-	if (!s)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
-
-	s->text = string_append(s->text, parser_getstr(p, "desc"));
-	return PARSE_ERROR_NONE;
-}
-
-static enum parser_error parse_s_id(struct parser *p) {
-	struct spell *s = parser_priv(p);
-	int spell;
-
-	if (!s)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
-
-	spell = spell_lookup_by_name(s->tval, parser_getsym(p, "id"));
-
-	if (spell < 0 || spell >= PY_MAX_SPELLS)
-		return PARSE_ERROR_OUT_OF_BOUNDS;
-
-	s->spell_index = spell;
-
-	return PARSE_ERROR_NONE;
-}
-
-static enum parser_error parse_s_dice(struct parser *p) {
-	struct spell *s = parser_priv(p);
-	dice_t *dice = NULL;
-	const char *string = NULL;
-
-	if (!s)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
-
-	dice = dice_new();
-
-	if (dice == NULL)
-		return PARSE_ERROR_INTERNAL;
-
-	string = parser_getstr(p, "dice");
-
-	if (dice_parse_string(dice, string)) {
-		s->dice = dice;
-	}
-	else {
-		dice_free(dice);
-		return PARSE_ERROR_GENERIC;
-	}
-
-	return PARSE_ERROR_NONE;
-}
-
-static enum parser_error parse_s_expr(struct parser *p) {
-	struct spell *s = parser_priv(p);
-	expression_t *expression = NULL;
-	expression_base_value_f function = NULL;
-	const char *name;
-	const char *base;
-	const char *expr;
-
-	if (!s)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
-
-	/* If there are no dice, assume that this is human and not parser error. */
-	if (s->dice == NULL)
-		return PARSE_ERROR_NONE;
-
-	name = parser_getsym(p, "name");
-	base = parser_getsym(p, "base");
-	expr = parser_getstr(p, "expr");
-	expression = expression_new();
-
-	if (expression == NULL)
-		return PARSE_ERROR_INTERNAL;
-
-	function = spell_value_base_by_name(base);
-	expression_set_base_value(expression, function);
-
-	if (expression_add_operations_string(expression, expr) < 0)
-		return PARSE_ERROR_GENERIC;
-
-	if (dice_bind_expression(s->dice, name, expression) < 0)
-		return PARSE_ERROR_GENERIC;
-
-	/* The dice object makes a deep copy of the expression, so we can free it */
-	expression_free(expression);
-
-	return PARSE_ERROR_NONE;
-}
-
-static enum parser_error parse_s_bolt(struct parser *p) {
-	struct spell *s = parser_priv(p);
-	const char *type;
-
-	if (!s)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
-
-	type = parser_getsym(p, "type");
-
-	if (type == NULL)
-		return PARSE_ERROR_INVALID_VALUE;
-
-	s->params[0] = gf_name_to_idx(type);
-	s->params[2] = SPELL_PROJECT_BOLT;
-
-	return PARSE_ERROR_NONE;
-}
-
-static enum parser_error parse_s_beam(struct parser *p) {
-	struct spell *s = parser_priv(p);
-	const char *type;
-
-	if (!s)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
-
-	type = parser_getsym(p, "type");
-
-	if (type == NULL)
-		return PARSE_ERROR_INVALID_VALUE;
-
-	s->params[0] = gf_name_to_idx(type);
-	s->params[2] = SPELL_PROJECT_BEAM;
-
-	return PARSE_ERROR_NONE;
-}
-
-static enum parser_error parse_s_borb(struct parser *p) {
-	struct spell *s = parser_priv(p);
-	const char *type;
-
-	if (!s)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
-
-	type = parser_getsym(p, "type");
-
-	if (type == NULL)
-		return PARSE_ERROR_INVALID_VALUE;
-
-	s->params[0] = gf_name_to_idx(type);
-
-	if (parser_hasval(p, "adj"))
-		s->params[1] = parser_getint(p, "adj");
-
-	s->params[2] = SPELL_PROJECT_BOLT_OR_BEAM;
-
-	return PARSE_ERROR_NONE;
-}
-
-static enum parser_error parse_s_ball(struct parser *p) {
-	struct spell *s = parser_priv(p);
-	const char *type;
-
-	if (!s)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
-
-	type = parser_getsym(p, "type");
-
-	if (type == NULL)
-		return PARSE_ERROR_INVALID_VALUE;
-
-	s->params[0] = gf_name_to_idx(type);
-	s->params[1] = parser_getuint(p, "radius");
-	s->params[2] = SPELL_PROJECT_BALL;
-
-	return PARSE_ERROR_NONE;
-}
-
-struct parser *init_parse_s(void) {
-	struct parser *p = parser_new();
-	parser_setpriv(p, NULL);
-	parser_reg(p, "N uint index str name", parse_s_n);
-	parser_reg(p, "I sym tval sym sval uint snum", parse_s_i);
-	parser_reg(p, "id sym id", parse_s_id);
-	parser_reg(p, "dice str dice", parse_s_dice);
-	parser_reg(p, "expr sym name sym base str expr", parse_s_expr);
-	parser_reg(p, "bolt sym type", parse_s_bolt);
-	parser_reg(p, "beam sym type", parse_s_beam);
-	parser_reg(p, "borb sym type ?int adj", parse_s_borb);
-	parser_reg(p, "ball sym type uint radius", parse_s_ball);
-	parser_reg(p, "D str desc", parse_s_d);
-	return p;
-}
-
-static errr run_parse_s(struct parser *p) {
-	return parse_file(p, "spell");
-}
-
-static errr finish_parse_s(struct parser *p) {
-	struct spell *s, *n, *ss;
-	struct object_kind *k;
-
-	/* scan the list for the max id */
-	z_info->s_max = 0;
-	s = parser_priv(p);
-	while (s) {
-		if (s->sidx > z_info->s_max)
-			z_info->s_max = s->sidx;
-		s = s->next;
-	}
-
-	/* allocate the direct access list and copy the data to it */
-	s_info = mem_zalloc((z_info->s_max+1) * sizeof(*s));
-	for (s = parser_priv(p); s; s = n) {
-		n = s->next;
-
-		ss = &s_info[s->sidx];
-		memcpy(ss, s, sizeof(*s));
-		k = lookup_kind(s->tval, s->sval);
-		if (k) {
-			ss->next = k->spells;
-			k->spells = ss;
-		} else {
-			ss->next = NULL;
-		}
-		mem_free(s);
-	}
-	z_info->s_max += 1;
-
-	parser_destroy(p);
-	return 0;
-}
-
-static void cleanup_s(void)
-{
-	int idx;
-	for (idx = 0; idx < z_info->s_max; idx++) {
-		string_free(s_info[idx].name);
-		mem_free(s_info[idx].text);
-	}
-	mem_free(s_info);
-}
-
-static struct file_parser s_parser = {
-	"spell",
-	init_parse_s,
-	run_parse_s,
-	finish_parse_s,
-	cleanup_s
-};
-#endif
 /* Initialise hints */
 static enum parser_error parse_hint(struct parser *p) {
 	struct hint *h = parser_priv(p);
@@ -3741,10 +3437,6 @@ void init_arrays(void)
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (flavors)");
 	if (run_parser(&flavor_parser)) quit("Cannot initialize flavors");
 
-	/* Initialize spell info */
-	//event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (spells)");
-	//if (run_parser(&s_parser)) quit("Cannot initialize spells");
-
 	/* Initialize hint text */
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (hints)");
 	if (run_parser(&hints_parser)) quit("Cannot initialize hints");
@@ -3927,7 +3619,6 @@ void cleanup_angband(void)
 	cleanup_parser(&c_parser);
 	cleanup_parser(&h_parser);
 	cleanup_parser(&flavor_parser);
-	//cleanup_parser(&s_parser);
 	cleanup_parser(&hints_parser);
 	cleanup_parser(&mp_parser);
 	cleanup_parser(&pit_parser);

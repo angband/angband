@@ -744,7 +744,6 @@ static void store_examine(struct store *store, int item)
 	textblock_free(tb);
 
 	/* Hack -- Browse book, then prompt for a command */
-	//if (o_ptr->tval == player->class->spell_book)
 	if (obj_can_browse(o_ptr))
 		textui_book_browse(o_ptr);
 }

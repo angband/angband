@@ -15,7 +15,6 @@
 #define PY_MAX_EXP		99999999L	/* Maximum exp */
 #define PY_MAX_GOLD		999999999L	/* Maximum gold */
 #define PY_MAX_LEVEL	50			/* Maximum level */
-//#define PY_MAX_SPELLS	64			/* Maximum number of player spells */
 #define PY_MAX_BOOKS	10			/* Maximum number of spellbooks */
 #define PY_MAX_SPELL	10			/* Maximum number of spells per book */
 
@@ -88,26 +87,6 @@ enum
 extern struct player_body *bodies;
 
 
-/**
- * A structure to hold information on spells the player has learned.
- */
-//struct player_spell {
-//	char *name;
-//	char *text;
-//
-//	byte realm;			/**< 0 = mage; 1 = priest */
-//	dice_t *dice;		/**< Value information from spell file */
-//	int params[3];		/**< Extra parameters to be passed to the handler */
-//
-//	byte bidx;			/**< The index into the player's books array */
-//	byte spell_num;		/**< Position of spell within book */
-//	byte level;			/**< Required level (to learn) */
-//	byte mana;			/**< Required mana (to cast) */
-//	byte fail;			/**< Base chance of failure */
-//	byte exp;			/**< Encoded experience bonus */
-//	byte flags;			/**< Spell flags */
-//};
-
 /*
  * Most of the "player" information goes here.
  *
@@ -176,13 +155,7 @@ typedef struct player {
 	byte unignoring;	/* Unignoring */
 
 	byte *spell_flags; /* Spell flags */
-
 	byte *spell_order;	/* Spell order */
-	//byte spell_flags[PY_MAX_SPELLS]; /* Spell flags */
-
-	//byte spell_order[PY_MAX_SPELLS];	/* Spell order */
-	//struct player_spell *spells;	/* Learned spells */
-	//byte max_spells;	/* Maximum number of spells */
 
 	s16b player_hp[PY_MAX_LEVEL];	/* HP Array */
 
@@ -338,7 +311,6 @@ typedef struct {
 	byte num_books;			/**< Number of spellbooks */
 	class_book *books;		/**< Details of spellbooks */
 	byte total_spells;		/**< Number of spells for this class */
-	//class_spell spells[PY_MAX_SPELLS];	/**< The available spells */
 } class_magic;
 
 
@@ -365,11 +337,6 @@ typedef struct player_class {
 	u16b max_attacks;  /* Maximum possible attacks */
 	u16b min_weight;   /* Minimum weapon weight for calculations */
 	u16b att_multiply; /* Multiplier for attack calculations */
-	
-	//byte spell_book;   /* Tval of spell books (if any) */
-	//u16b spell_stat;   /* Stat for spells (if any) */
-	//u16b spell_first;  /* Level of first spell */
-	//u16b spell_weight; /* Weight that hurts spells */
 	
 	u32b sense_base;   /* Base pseudo-id value */
 	u16b sense_div;    /* Pseudo-id divisor */

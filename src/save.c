@@ -636,14 +636,11 @@ void wr_player_spells(void)
 {
 	int i;
 
-	//wr_u16b(PY_MAX_SPELLS);
 	wr_u16b(player->class->magic.total_spells);
 
-	//for (i = 0; i < PY_MAX_SPELLS; i++)
 	for (i = 0; i < player->class->magic.total_spells; i++)
 		wr_byte(player->spell_flags[i]);
 
-	//for (i = 0; i < PY_MAX_SPELLS; i++)
 	for (i = 0; i < player->class->magic.total_spells; i++)
 		wr_byte(player->spell_order[i]);
 }

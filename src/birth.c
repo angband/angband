@@ -416,10 +416,6 @@ void player_init(struct player *p)
 	p->food = PY_FOOD_FULL - 1;
 
 
-	/* None of the spells have been learned yet */
-	//for (i = 0; i < PY_MAX_SPELLS; i++)
-	//	p->spell_order[i] = 99;
-
 	p->max_gear = MAX_GEAR;
 	p->gear = mem_zalloc(MAX_GEAR * sizeof(object_type));
 	p->upkeep = mem_zalloc(sizeof(player_upkeep));

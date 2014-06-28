@@ -153,7 +153,6 @@ s16b modify_stat_value(int value, int amount)
  */
 bool player_can_cast(struct player *p, bool show_msg)
 {
-	//if (!p->class->spell_book)
 	if (p->class->magic.spell_realm->index == REALM_NONE)
 	{
 		if (show_msg)
@@ -194,7 +193,6 @@ bool player_can_study(struct player *p, bool show_msg)
 	if (!p->upkeep->new_spells)
 	{
 		if (show_msg) {
-			//const char *name = ((p->class->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
 			const char *name = p->class->magic.spell_realm->spell_noun;
 			msg("You cannot learn any new %ss!", name);
 		}
@@ -334,8 +332,6 @@ bool player_book_has_unlearned_spells(struct player *p)
 	int i, j;
 	int item_list[INVEN_PACK];
 	int item_num;
-	//object_type *o_ptr;
-	//struct spell *sp;
 	const class_book *book;
 
 	/* Check if the player can learn new spells */
@@ -356,11 +352,6 @@ bool player_book_has_unlearned_spells(struct player *p)
 			if (spell_okay_to_study(book->spells[j].sidx))
 				/* There is a spell the player can study */
 				return TRUE;
-		//for (sp = o_ptr->kind->spells; sp; sp = sp->next)
-			/* Check if the player can study it */
-		//	if (spell_okay_to_study(sp->spell_index))
-				/* There is a spell the player can study */
-		//		return TRUE;
 	}
 
 	return FALSE;

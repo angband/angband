@@ -93,31 +93,6 @@ enum {
 
 /*** Structures ***/
 
-/*
- * The structure for the "fixed" spell information
- */
-typedef struct spell {
-	struct spell *next;
-	unsigned int sidx;
-	char *name;
-	char *text;
-
-	byte realm;			/* 0 = mage; 1 = priest */
-	byte tval;			/* Item type for book this spell is in */
-	byte sval;			/* Item sub-type for book (= book number) */
-	byte snum;			/* Position of spell within book */
-
-	byte spell_index;	/* Index into player_magic array */
-	dice_t *dice;		/* Value information from spell file */
-	int params[3];		/* Extra parameters to be passed to the handler */
-} spell_type;
-
-/*
- * The spell arrays
- */
-extern spell_type *s_info;
-
-
 enum spell_param_project_type_e {
 	SPELL_PROJECT_NONE = 0,
 	SPELL_PROJECT_BOLT,
@@ -253,8 +228,6 @@ typedef struct object_kind
 
 	byte ignore;  	/**< Ignore settings */
 	bool everseen; 	/**< Kind has been seen (to despoilify ignore menus) */
-
-	//struct spell *spells;
 } object_kind;
 
 extern object_kind *k_info;

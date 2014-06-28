@@ -43,7 +43,6 @@
 #include "spells.h"
 #include "z-queue.h"
 
-spell_type *s_info;
 object_base *kb_info;
 object_kind *k_info;
 artifact_type *a_info;
@@ -1921,7 +1920,6 @@ bool obj_can_browse(const object_type *o_ptr)
 	}
 
 	return FALSE;
-	//return o_ptr->tval == player->class->spell_book;
 }
 
 bool obj_can_cast_from(const object_type *o_ptr)

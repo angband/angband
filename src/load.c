@@ -983,7 +983,6 @@ int rd_player_spells(void)
 	
 	/* Read the number of spells */
 	rd_u16b(&tmp16u);
-	//if (tmp16u > PY_MAX_SPELLS)
 	if (tmp16u > player->class->magic.total_spells)
 	{
 		note(format("Too many player spells (%d).", tmp16u));

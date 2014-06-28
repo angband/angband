@@ -939,10 +939,6 @@ static bool earlier_object(struct object *orig, struct object *new)
 	if (!orig) return TRUE;
 
 	/* Readable books always come first */
-	//if ((orig->tval == player->class->spell_book) &&
-	//	(new->tval != player->class->spell_book)) return FALSE;
-	//if ((new->tval == player->class->spell_book) &&
-	//	(orig->tval != player->class->spell_book)) return TRUE;
 	if (obj_can_browse(orig) && !obj_can_browse(new)) return FALSE;
 	if (!obj_can_browse(orig) && obj_can_browse(new)) return TRUE;
 
@@ -1111,11 +1107,9 @@ static void calc_spells(void)
 
 	s16b old_spells;
 
-	//const char *p = ((player->class->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
 	const char *p = player->class->magic.spell_realm->spell_noun;
 
 	/* Hack -- must be literate */
-	//if (!player->class->spell_book) return;
 	if (!player->class->magic.total_spells) return;
 
 	/* Hack -- wait for creation */
@@ -1129,7 +1123,6 @@ static void calc_spells(void)
 
 	/* Determine the number of spells allowed */
 	levels = player->lev - player->class->magic.spell_first + 1;
-	//levels = player->lev - player->class->spell_first + 1;
 
 	/* Hack -- no negative spells */
 	if (levels < 0) levels = 0;
@@ -1144,7 +1137,6 @@ static void calc_spells(void)
 	num_known = 0;
 
 	/* Count the number of spells we know */
-	//for (j = 0; j < PY_MAX_SPELLS; j++)
 	for (j = 0; j < num_total; j++)
 	{
 		/* Count known spells */
@@ -1158,7 +1150,6 @@ static void calc_spells(void)
 	player->upkeep->new_spells = num_allowed - num_known;
 
 	/* Forget spells which are too hard */
-	//for (i = PY_MAX_SPELLS - 1; i >= 0; i--)
 	for (i = num_total - 1; i >= 0; i--)
 	{
 		/* Get the spell */
@@ -1168,7 +1159,6 @@ static void calc_spells(void)
 		if (j >= 99) continue;
 
 		/* Get the spell */
-		//s_ptr = &player->class->magic.spells[j];
 		s_ptr = spell_by_index(j);
 
 		/* Skip spells we are allowed to know */
@@ -1185,7 +1175,6 @@ static void calc_spells(void)
 
 			/* Message */
 			msg("You have forgotten the %s of %s.", p, s_ptr->name);
-				//get_spell_name(player->class->spell_book, j));
 
 			/* One more can be learned */
 			player->upkeep->new_spells++;
@@ -1193,7 +1182,6 @@ static void calc_spells(void)
 	}
 
 	/* Forget spells if we know too many spells */
-	//for (i = PY_MAX_SPELLS - 1; i >= 0; i--)
 	for (i = num_total - 1; i >= 0; i--)
 	{
 		/* Stop when possible */
@@ -1219,7 +1207,6 @@ static void calc_spells(void)
 
 			/* Message */
 			msg("You have forgotten the %s of %s.", p, s_ptr->name);
-			//          get_spell_name(player->class->spell_book, j));
 
 			/* One more can be learned */
 			player->upkeep->new_spells++;
@@ -1227,7 +1214,6 @@ static void calc_spells(void)
 	}
 
 	/* Check for spells to remember */
-	//for (i = 0; i < PY_MAX_SPELLS; i++)
 	for (i = 0; i < num_total; i++)
 	{
 		/* None left to remember */
@@ -1240,7 +1226,6 @@ static void calc_spells(void)
 		if (j >= 99) break;
 
 		/* Get the spell */
-		//s_ptr = &player->class->magic.spells[j];
 		s_ptr = spell_by_index(j);
 
 		/* Skip spells we cannot remember */
@@ -1257,7 +1242,6 @@ static void calc_spells(void)
 
 			/* Message */
 			msg("You have remembered the %s of %s.", p, s_ptr->name);
-				//p, get_spell_name(player->class->spell_book, j));
 
 			/* One less can be learned */
 			player->upkeep->new_spells--;
@@ -1268,11 +1252,9 @@ static void calc_spells(void)
 	k = 0;
 
 	/* Count spells that can be learned */
-	//for (j = 0; j < PY_MAX_SPELLS; j++)
 	for (j = 0; j < num_total; j++)
 	{
 		/* Get the spell */
-		//s_ptr = &player->class->magic.spells[j];
 		s_ptr = spell_by_index(j);
 
 		/* Skip spells we cannot remember or don't exist */
@@ -1336,7 +1318,6 @@ static void calc_mana(void)
 	bool old_cumber_armor = player->state.cumber_armor;
 
 	/* Hack -- Must be literate */
-	//if (!player->class->spell_book)
 	if (!player->class->magic.total_spells)
 	{
 		player->msp = 0;
@@ -1346,7 +1327,6 @@ static void calc_mana(void)
 	}
 
 	/* Extract "effective" player level */
-	//levels = (player->lev - player->class->spell_first) + 1;
 	levels = (player->lev - player->class->magic.spell_first) + 1;
 	if (levels > 0)
 	{

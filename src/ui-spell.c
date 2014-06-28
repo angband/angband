@@ -34,7 +34,6 @@
  * Spell menu data struct
  */
 struct spell_menu_data {
-	//int spells[PY_MAX_SPELLS];
 	int *spells;
 	int n_spells;
 
@@ -65,7 +64,6 @@ static void spell_menu_display(menu_type *m, int oid, bool cursor,
 {
 	struct spell_menu_data *d = menu_priv(m);
 	int spell = d->spells[oid];
-	//const class_spell *s_ptr = &player->class->magic.spells[spell];
 	const class_spell *s_ptr = spell_by_index(spell);
 
 	char help[30];
@@ -100,9 +98,7 @@ static void spell_menu_display(menu_type *m, int oid, bool cursor,
 	}
 
 	/* Dump the spell --(-- */
-	strnfmt(out, sizeof(out), "%-30s%2d %4d %3d%%%s",
-			//get_spell_name(player->class->spell_book, spell),
-			s_ptr->name,
+	strnfmt(out, sizeof(out), "%-30s%2d %4d %3d%%%s", s_ptr->name,
 			s_ptr->slevel, s_ptr->smana, spell_chance(spell), comment);
 	c_prt(attr, illegible ? illegible : out, row, col);
 }
@@ -143,7 +139,6 @@ static void spell_menu_browser(int oid, void *data, const region *loc)
 		text_out_pad = 1;
 
 		Term_gotoxy(loc->col, loc->row + loc->page_rows);
-		//text_out("\n%s\n", s_info[(player->class->spell_book == TV_MAGIC_BOOK) ? spell : spell + PY_MAX_SPELLS].text);
 		text_out("\n%s\n", spell_by_index(spell)->text);
 
 		/* XXX */
@@ -254,8 +249,6 @@ static void spell_menu_browse(menu_type *m, const char *noun)
 void textui_book_browse(const object_type *o_ptr)
 {
 	menu_type *m;
-	//const char *noun = (player->class->spell_book == TV_MAGIC_BOOK ?
-	//		"spell" : "prayer");
 	const char *noun = player->class->magic.spell_realm->spell_noun;
 
 	m = spell_menu_new(o_ptr, spell_okay_to_browse);
@@ -292,8 +285,6 @@ void textui_spell_browse(void)
 int get_spell_from_book(const char *verb, int book,
 		const char *error, bool (*spell_filter)(int spell))
 {
-	//const char *noun =
-	//		(player->class->spell_book == TV_MAGIC_BOOK ? "spell" : "prayer");
 	const char *noun = player->class->magic.spell_realm->spell_noun;
 
 	menu_type *m;
