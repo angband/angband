@@ -485,38 +485,6 @@ bool spell_cast(int spell, int dir)
 
 /* Start of old x-spell.c */
 
-static size_t append_random_value_string(char *buffer, size_t size, random_value *rv)
-{
-	size_t offset = 0;
-
-	if (rv->base > 0) {
-		offset += strnfmt(buffer + offset, size - offset, "%d", rv->base);
-
-		if (rv->dice > 0 || rv->sides > 0)
-			offset += strnfmt(buffer + offset, size - offset, "+");
-	}
-
-	if (rv->dice == 1) {
-		offset += strnfmt(buffer + offset, size - offset, "d%d", rv->sides);
-	}
-	else if (rv->dice > 1) {
-		offset += strnfmt(buffer + offset, size - offset, "%dd%d", rv->dice, rv->sides);
-	}
-
-	return offset;
-}
-
-static void spell_append_value_info(int spell, char *p, size_t len);
-
-void get_spell_info(int spell, char *p, size_t len)
-{
-	/* Blank 'p' first */
-	p[0] = '\0';
-
-	spell_append_value_info(spell, p, len);
-}
-
-
 static int beam_chance(void)
 {
 	int plev = player->lev;
@@ -1185,6 +1153,27 @@ bool spell_needs_aim(int spell)
 	return spell_info->aim;
 }
 
+static size_t append_random_value_string(char *buffer, size_t size, random_value *rv)
+{
+	size_t offset = 0;
+
+	if (rv->base > 0) {
+		offset += strnfmt(buffer + offset, size - offset, "%d", rv->base);
+
+		if (rv->dice > 0 || rv->sides > 0)
+			offset += strnfmt(buffer + offset, size - offset, "+");
+	}
+
+	if (rv->dice == 1) {
+		offset += strnfmt(buffer + offset, size - offset, "d%d", rv->sides);
+	}
+	else if (rv->dice > 1) {
+		offset += strnfmt(buffer + offset, size - offset, "%dd%d", rv->dice, rv->sides);
+	}
+
+	return offset;
+}
+
 static void spell_append_value_info(int spell, char *p, size_t len)
 {
 	const class_spell *sp = spell_by_index(spell);
@@ -1225,6 +1214,14 @@ static void spell_append_value_info(int spell, char *p, size_t len)
 
 	if (special != NULL)
 		strnfmt(p + offset, len - offset, "%s", special);
+}
+
+void get_spell_info(int spell, char *p, size_t len)
+{
+	/* Blank 'p' first */
+	p[0] = '\0';
+
+	spell_append_value_info(spell, p, len);
 }
 
 static int spell_value_base_player_level(void)
