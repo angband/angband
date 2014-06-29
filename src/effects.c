@@ -40,7 +40,7 @@ typedef struct effect_handler_context_s {
 	const int beam;
 	const int boost;
 	const random_value value;
-	const int p1, p2, p3;
+	const int p1, p2;
 	bool ident;
 } effect_handler_context_t;
 
@@ -56,7 +56,7 @@ typedef struct
 	u16b power;	     /* Power rating for obj-power.c */
 	effect_handler_f handler;
 	random_value value;
-	int params[3];
+	int params[2];
 	const char *desc;    /* Effect description */
 } info_entry;
 
@@ -1812,7 +1812,7 @@ bool effect_handler_TRAP_GAS_SLEEP(effect_handler_context_t *context)
 static const info_entry effects[] =
 {
 	#define RV(b, x, y, m) {b, x, y, m}
-	#define EP(p1, p2, p3) {p1, p2, p3}
+	#define EP(p1, p2) {p1, p2}
 	#define F(x) effect_handler_##x
 	#define EFFECT(x, a, r, h, v, c, d)    { EF_##x, a, r, h, v, c, d },
 	#include "list-effects.h"
@@ -1938,7 +1938,6 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam, i
 		random_value value = effect_value(effect);
 		int p1 = effect_param(effect, 0);
 		int p2 = effect_param(effect, 1);
-		int p3 = effect_param(effect, 2);
 		effect_handler_context_t context = {
 			effect,
 			aware,
@@ -1948,7 +1947,6 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam, i
 			value,
 			p1,
 			p2,
-			p3,
 			*ident,
 		};
 

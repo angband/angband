@@ -772,7 +772,7 @@ static int stats_dump_lists(void)
 	info_entry effects[] =
 	{
 		#define RV(b, x, y, m) {b, x, y, m}
-		#define EP(p1, p2, p3) {p1, p2, p3}
+		#define EP(p1, p2) {p1, p2}
 		#define F(x) effect_handler_##x
 		#define EFFECT(x, a, r, h, v, c, d)	{ EF_##x, a, r, #x },
 		#include "list-effects.h"
