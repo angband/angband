@@ -2437,10 +2437,25 @@ static enum parser_error parse_c_effect(struct parser *p) {
 	struct player_class *c = parser_priv(p);
 	class_book *book = &c->magic.books[c->magic.num_books - 1];
 	class_spell *spell = &book->spells[book->num_spells - 1];
+	const char *type;
 
 	if (!c)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	spell->effect = grab_one_effect(parser_getsym(p, "eff"), spell_effect_list, N_ELEMENTS(spell_effect_list));
+	spell->effect = grab_one_effect(parser_getsym(p, "eff"), spell_effect_list,
+									N_ELEMENTS(spell_effect_list));
+
+	if (parser_hasval(p, "type")) {
+		type = parser_getsym(p, "type");
+
+		if (type == NULL)
+			return PARSE_ERROR_INVALID_VALUE;
+
+		spell->params[0] = gf_name_to_idx(type);
+	}
+
+	if (parser_hasval(p, "xtra"))
+		spell->params[1] = parser_getint(p, "xtra");
+
 	return PARSE_ERROR_NONE;
 }
 
@@ -2512,91 +2527,6 @@ static enum parser_error parse_c_expr(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_c_bolt(struct parser *p) {
-	struct player_class *c = parser_priv(p);
-	class_book *book = &c->magic.books[c->magic.num_books - 1];
-	class_spell *spell = &book->spells[book->num_spells - 1];
-	const char *type;
-
-	if (!c)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
-
-	type = parser_getsym(p, "type");
-
-	if (type == NULL)
-		return PARSE_ERROR_INVALID_VALUE;
-
-	spell->params[0] = gf_name_to_idx(type);
-	spell->params[2] = SPELL_PROJECT_BOLT;
-
-	return PARSE_ERROR_NONE;
-}
-
-static enum parser_error parse_c_beam(struct parser *p) {
-	struct player_class *c = parser_priv(p);
-	class_book *book = &c->magic.books[c->magic.num_books - 1];
-	class_spell *spell = &book->spells[book->num_spells - 1];
-	const char *type;
-
-	if (!c)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
-
-	type = parser_getsym(p, "type");
-
-	if (type == NULL)
-		return PARSE_ERROR_INVALID_VALUE;
-
-	spell->params[0] = gf_name_to_idx(type);
-	spell->params[2] = SPELL_PROJECT_BEAM;
-
-	return PARSE_ERROR_NONE;
-}
-
-static enum parser_error parse_c_borb(struct parser *p) {
-	struct player_class *c = parser_priv(p);
-	class_book *book = &c->magic.books[c->magic.num_books - 1];
-	class_spell *spell = &book->spells[book->num_spells - 1];
-	const char *type;
-
-	if (!c)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
-
-	type = parser_getsym(p, "type");
-
-	if (type == NULL)
-		return PARSE_ERROR_INVALID_VALUE;
-
-	spell->params[0] = gf_name_to_idx(type);
-
-	if (parser_hasval(p, "adj"))
-		spell->params[1] = parser_getint(p, "adj");
-
-	spell->params[2] = SPELL_PROJECT_BOLT_OR_BEAM;
-
-	return PARSE_ERROR_NONE;
-}
-
-static enum parser_error parse_c_ball(struct parser *p) {
-	struct player_class *c = parser_priv(p);
-	class_book *book = &c->magic.books[c->magic.num_books - 1];
-	class_spell *spell = &book->spells[book->num_spells - 1];
-	const char *type;
-
-	if (!c)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
-
-	type = parser_getsym(p, "type");
-
-	if (type == NULL)
-		return PARSE_ERROR_INVALID_VALUE;
-
-	spell->params[0] = gf_name_to_idx(type);
-	spell->params[1] = parser_getuint(p, "radius");
-	spell->params[2] = SPELL_PROJECT_BALL;
-
-	return PARSE_ERROR_NONE;
-}
-
 static enum parser_error parse_c_desc(struct parser *p) {
 	struct player_class *c = parser_priv(p);
 	class_book *book = &c->magic.books[c->magic.num_books - 1];
@@ -2624,13 +2554,9 @@ struct parser *init_parse_c(void) {
 	parser_reg(p, "magic uint first uint weight uint realm uint books", parse_c_magic);
 	parser_reg(p, "book sym tval sym sval uint spells uint realm", parse_c_book);
 	parser_reg(p, "spell sym name int level int mana int fail int exp", parse_c_spell);
-	parser_reg(p, "effect sym eff", parse_c_effect);
+	parser_reg(p, "effect sym eff ?sym type ?int xtra", parse_c_effect);
 	parser_reg(p, "dice str dice", parse_c_dice);
 	parser_reg(p, "expr sym name sym base str expr", parse_c_expr);
-	parser_reg(p, "bolt sym type", parse_c_bolt);
-	parser_reg(p, "beam sym type", parse_c_beam);
-	parser_reg(p, "borb sym type ?int adj", parse_c_borb);
-	parser_reg(p, "ball sym type uint radius", parse_c_ball);
 	parser_reg(p, "desc str desc", parse_c_desc);
 	return p;
 }

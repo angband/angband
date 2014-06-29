@@ -4,7 +4,10 @@
  */
 
 /* id						aim		info */
-S_EF(PROJECT,				TRUE,	"dam")
+S_EF(BOLT,					TRUE,	"dam")
+S_EF(BEAM,					TRUE,	"dam")
+S_EF(BOLT_OR_BEAM,			TRUE,	"dam")
+S_EF(BALL,					TRUE,	"dam")
 S_EF(REND_SOUL,				TRUE,	"dam")
 S_EF(SPEAR_OF_LIGHT,		TRUE,	"dam")
 S_EF(ANNIHILATION,			TRUE,	"dam")

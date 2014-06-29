@@ -117,10 +117,9 @@ T:Arch-Mage
 magic:1:300:1:9
 book:magic book:[Magic for Beginners]:6:1
 spell:Magic Missile:1:1:22:4
-effect:PROJECT
+effect:BOLT_OR_BEAM:MISSILE:-10
 dice:$Dd4
 expr:D:PLAYER_LEVEL:- 1 / 5 + 3
-borb:MISSILE:-10
 desc:Fires a magic missile that always hits its target and does
 desc: unresistable damage.
 desc:  Sometimes a beam is fired instead that hurts each monster
@@ -145,10 +144,9 @@ spell:Find Traps, Doors & Stairs:3:3:25:2
 effect:FIND_TRAPS_DOORS
 desc:Detects all traps, doors, and stairs in the immediate area.
 spell:Stinking Cloud:3:2:27:3
-effect:PROJECT
+effect:BALL:POIS:2
 dice:$B
 expr:B:PLAYER_LEVEL:/ 2 + 10
-ball:POIS:2
 desc:Shoots a radius-2 poison ball.
 book:magic book:[Conjurings and Tricks]:9:1
 spell:Confuse Monster:5:4:30:4
@@ -156,10 +154,9 @@ effect:CONFUSE_MONSTER
 desc:Attempts to confuse a single monster for a level-dependant duration.
 desc:  Uniques and monsters that resist confusion are not affected.
 spell:Lightning Bolt:5:4:30:4
-effect:PROJECT
+effect:BEAM:ELEC
 dice:$Dd6
 expr:D:PLAYER_LEVEL:- 5 / 6 + 3
-beam:ELEC
 desc:Fires a lightning beam that hurts each monster in its path.
 spell:Trap/Door Destruction:5:5:30:6
 effect:TRAP_DOOR_DESTRUCTION
@@ -182,10 +179,9 @@ dice:6d8
 desc:Fires a beam that lights up each square and hurts each
 desc: light-sensitive monster in its path.
 spell:Frost Bolt:7:3:40:6
-effect:PROJECT
+effect:BOLT_OR_BEAM:COLD:-10
 dice:$Dd8
 expr:D:PLAYER_LEVEL:- 5 / 4 + 5
-borb:COLD:-10
 desc:Fires a frost bolt that always hits its target.
 desc:  Sometimes a beam is fired instead that hurts each monster
 desc: in its path.
@@ -212,10 +208,9 @@ desc:Produces a beam that destroys the first section of wall it hits,
 desc: unless it is a permanent wall.  Each monster caught in the beam that
 desc: is susceptible to rock remover takes 20+1d30 points of damage.
 spell:Fire Bolt:10:3:50:7
-effect:PROJECT
+effect:BOLT_OR_BEAM:FIRE
 dice:$Dd8
 expr:D:PLAYER_LEVEL:- 5 / 4 + 6
-borb:FIRE
 desc:Fires a fire bolt that always hits its target.
 desc:  Sometimes a beam is fired instead that hurts each monster
 desc: in its path.
@@ -231,10 +226,9 @@ spell:Reveal Monsters:15:6:40:6
 effect:DETECT_INVISIBLE
 desc:Detects all monsters in the immediate area, for one turn only.
 spell:Acid Bolt:15:4:50:8
-effect:PROJECT
+effect:BOLT_OR_BEAM:ACID
 dice:$Dd8
 expr:D:PLAYER_LEVEL:- 5 / 4 + 8
-borb:ACID
 desc:Fires an acid bolt that always hits its target.
 desc:  Sometimes a beam is fired instead that hurts each monster
 desc: in its path.
@@ -245,10 +239,9 @@ desc:Attempts to slow a single monster.
 desc:  Uniques are not affected.
 book:magic book:[Sorcery and Evocations]:6:1
 spell:Frost Ball:19:6:55:8
-effect:PROJECT
+effect:BALL:COLD:2
 dice:$B
 expr:B:PLAYER_LEVEL:+ 30
-ball:COLD:2
 desc:Shoots a radius-2 frost ball.
 spell:Teleport Other:23:12:60:8
 effect:TELEPORT_OTHER
@@ -264,10 +257,9 @@ effect:MASS_SLEEP
 desc:Attempts to put to sleep each monster within line of sight.
 desc:  Uniques and monsters that resist confusion are not affected.
 spell:Fire Ball:26:9:65:12
-effect:PROJECT
+effect:BALL:FIRE:2
 dice:$B
 expr:B:PLAYER_LEVEL:+ 55
-ball:FIRE:2
 desc:Shoots a radius-2 fire ball.
 spell:Treasure Detection:30:10:70:10
 effect:TREASURE_DETECTION
@@ -296,36 +288,31 @@ dice:30+d20
 desc:Grants you +50 to AC for 30+1d20 turns.
 book:magic book:[Raal's Tome of Destruction]:7:1
 spell:Shock Wave:16:5:40:6
-effect:PROJECT
+effect:BALL:SOUND:2
 dice:$B
 expr:B:PLAYER_LEVEL:+ 10
-ball:SOUND:2
 desc:Shoots a radius-2 sound ball.
 desc:  Apart from doing sound damage, this also has a chance to stun
 desc: each monster in the area of effect.
 spell:Explosion:20:10:50:10
-effect:PROJECT
+effect:BALL:SHARD:2
 dice:$B
 expr:B:PLAYER_LEVEL:* 2 + 20
-ball:SHARD:2
 desc:Shoots a radius-2 shards ball.
 spell:Cloud Kill:20:5:50:8
-effect:PROJECT
+effect:BALL:POIS:3
 dice:$B
 expr:B:PLAYER_LEVEL:/ 2 + 40
-ball:POIS:3
 desc:Shoots a radius-3 poison ball.
 spell:Acid Ball:20:7:70:20
-effect:PROJECT
+effect:BALL:ACID:2
 dice:$B
 expr:B:PLAYER_LEVEL:+ 40
-ball:ACID:2
 desc:Shoots a radius-2 acid ball.
 spell:Ice Storm:27:11:75:24
-effect:PROJECT
+effect:BALL:ICE:3
 dice:$B
 expr:B:PLAYER_LEVEL:* 2 + 50
-ball:ICE:3
 desc:Shoots a radius-3 cold ball.
 spell:Meteor Swarm:30:14:85:34
 effect:METEOR_SWARM
@@ -340,10 +327,9 @@ desc: damage to each monster in its area of effect.
 desc:  If this kills the monster that blocked the path to the target
 desc: location, the next meteor may continue to find another target.
 spell:Rift:35:20:60:25
-effect:PROJECT
+effect:BEAM:GRAVITY
 dice:40+$Dd7
 expr:D:PLAYER_LEVEL:+ 0
-beam:GRAVITY
 desc:Fires a gravity beam that hurts each monster in its path
 desc: and has a chance of teleporting it away.
 book:magic book:[Mordenkainen's Escapes]:5:1
@@ -404,10 +390,9 @@ desc: squares in the area of effect.
 desc:  Artifacts will not be destroyed by this spell.
 desc:  This spell has no effect when used in the town.
 spell:Bedlam:25:15:60:24
-effect:PROJECT
+effect:BALL:OLD_CONF:4
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
-ball:OLD_CONF:4
 desc:Shoots a radius-4 confusion ball that doesn't cause physical
 desc: damage but has a chance to confuse each monster in the area of effect.
 desc:  Uniques or monsters that resist confusion are not affected.
@@ -439,19 +424,17 @@ desc:Removes all monsters within 20 squares of you.
 desc:  Uniques are not affected.
 desc:  You take 1d3 points of damage for every monster removed.
 spell:Chaos Strike:38:15:90:40
-effect:PROJECT
+effect:BOLT_OR_BEAM:CHAOS
 dice:13d$S
 expr:S:PLAYER_LEVEL:+ 0
-borb:CHAOS
 desc:Fires a chaos bolt that always hits its target.
 desc:  Sometimes a beam is fired instead that hurts each monster
 desc: in its path.
 desc:  The chance to get a beam goes up with your character level.
 spell:Mana Storm:42:16:95:200
-effect:PROJECT
+effect:BALL:MANA:3
 dice:$B
 expr:B:PLAYER_LEVEL:* 2 + 300
-ball:MANA:3
 desc:Shoots a radius-3 mana ball that does unresistable
 desc: damage to each monster in its area of effect.
 
@@ -811,10 +794,9 @@ spell:Find Traps, Doors & Stairs:8:3:50:1
 effect:FIND_TRAPS_DOORS
 desc:Detects all traps, doors, and stairs in the immediate area.
 spell:Stinking Cloud:21:12:50:10
-effect:PROJECT
+effect:BALL:POIS:2
 dice:$B
 expr:B:PLAYER_LEVEL:/ 2 + 10
-ball:POIS:2
 desc:Shoots a radius-2 poison ball.
 book:magic book:[Conjurings and Tricks]:7:1
 spell:Confuse Monster:15:6:75:1
@@ -910,18 +892,16 @@ dice:30+d20
 desc:Grants you +50 to AC for 30+1d20 turns.
 book:magic book:[Raal's Tome of Destruction]:2:1
 spell:Shock Wave:35:25:80:50
-effect:PROJECT
+effect:BALL:SOUND:2
 dice:$B
 expr:B:PLAYER_LEVEL:+ 10
-ball:SOUND:2
 desc:Shoots a radius-2 sound ball.
 desc:  Apart from doing sound damage, this also has a chance to stun
 desc: each monster in the area of effect.
 spell:Cloud Kill:25:20:60:15
-effect:PROJECT
+effect:BALL:POIS:3
 dice:$B
 expr:B:PLAYER_LEVEL:/ 2 + 40
-ball:POIS:3
 desc:Shoots a radius-3 poison ball.
 book:magic book:[Mordenkainen's Escapes]:4:1
 spell:Door Creation:17:7:30:15
@@ -986,10 +966,9 @@ desc:  The spell has no effect if the ammunition is already branded, has a
 desc: slay, is broken, or is cursed.
 book:magic book:[Kelek's Grimoire of Power]:1:1
 spell:Bedlam:29:20:70:20
-effect:PROJECT
+effect:BALL:OLD_CONF:4
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
-ball:OLD_CONF:4
 desc:Shoots a radius-4 confusion ball that doesn't cause physical
 desc: damage but has a chance to confuse each monster in the area of effect.
 desc:  Uniques or monsters that resist confusion are not affected.
@@ -1021,10 +1000,9 @@ T:Ranger Lord
 magic:1:400:1:9
 book:magic book:[Magic for Beginners]:7:1
 spell:Magic Missile:3:1:30:1
-effect:PROJECT
+effect:BOLT_OR_BEAM:MISSILE:-10
 dice:$Dd4
 expr:D:PLAYER_LEVEL:- 1 / 5 + 3
-borb:MISSILE:-10
 desc:Fires a magic missile that always hits its target and does
 desc: unresistable damage.
 desc:  Sometimes a beam is fired instead that hurts each monster
@@ -1053,10 +1031,9 @@ spell:Find Traps, Doors & Stairs:5:4:45:2
 effect:FIND_TRAPS_DOORS
 desc:Detects all traps, doors, and stairs in the immediate area.
 spell:Stinking Cloud:7:5:40:3
-effect:PROJECT
+effect:BALL:POIS:2
 dice:$B
 expr:B:PLAYER_LEVEL:/ 2 + 10
-ball:POIS:2
 desc:Shoots a radius-2 poison ball.
 book:magic book:[Conjurings and Tricks]:9:1
 spell:Confuse Monster:7:6:40:2
@@ -1064,10 +1041,9 @@ effect:CONFUSE_MONSTER
 desc:Attempts to confuse a single monster for a level-dependant duration.
 desc:  Uniques and monsters that resist confusion are not affected.
 spell:Lightning Bolt:9:7:40:3
-effect:PROJECT
+effect:BEAM:ELEC
 dice:$Dd6
 expr:D:PLAYER_LEVEL:- 5 / 6 + 3
-beam:ELEC
 desc:Fires a lightning beam that hurts each monster in its path.
 spell:Trap/Door Destruction:9:8:45:3
 effect:TRAP_DOOR_DESTRUCTION
@@ -1090,10 +1066,9 @@ dice:6d8
 desc:Fires a beam that lights up each square and hurts each
 desc: light-sensitive monster in its path.
 spell:Frost Bolt:15:12:50:4
-effect:PROJECT
+effect:BOLT_OR_BEAM:COLD:-10
 dice:$Dd8
 expr:D:PLAYER_LEVEL:- 5 / 4 + 5
-borb:COLD:-10
 desc:Fires a frost bolt that always hits its target.
 desc:  Sometimes a beam is fired instead that hurts each monster
 desc: in its path.
@@ -1120,10 +1095,9 @@ desc:Produces a beam that destroys the first section of wall it hits,
 desc: unless it is a permanent wall.  Each monster caught in the beam that
 desc: is susceptible to rock remover takes 20+1d30 points of damage.
 spell:Fire Bolt:25:20:60:3
-effect:PROJECT
+effect:BOLT_OR_BEAM:FIRE
 dice:$Dd8
 expr:D:PLAYER_LEVEL:- 5 / 4 + 6
-borb:FIRE
 desc:Fires a fire bolt that always hits its target.
 desc:  Sometimes a beam is fired instead that hurts each monster
 desc: in its path.
@@ -1139,10 +1113,9 @@ spell:Reveal Monsters:25:17:50:4
 effect:DETECT_INVISIBLE
 desc:Detects all monsters in the immediate area, for one turn only.
 spell:Acid Bolt:20:16:50:6
-effect:PROJECT
+effect:BOLT_OR_BEAM:ACID
 dice:$Dd8
 expr:D:PLAYER_LEVEL:- 5 / 4 + 8
-borb:ACID
 desc:Fires an acid bolt that always hits its target.
 desc:  Sometimes a beam is fired instead that hurts each monster
 desc: in its path.
@@ -1153,10 +1126,9 @@ desc:Attempts to slow a single monster.
 desc:  Uniques are not affected.
 book:magic book:[Sorcery and Evocations]:6:1
 spell:Frost Ball:27:21:65:6
-effect:PROJECT
+effect:BALL:COLD:2
 dice:$B
 expr:B:PLAYER_LEVEL:+ 30
-ball:COLD:2
 desc:Shoots a radius-2 frost ball.
 spell:Teleport Other:31:25:70:3
 effect:TELEPORT_OTHER
@@ -1172,10 +1144,9 @@ effect:MASS_SLEEP
 desc:Attempts to put to sleep each monster within line of sight.
 desc:  Uniques and monsters that resist confusion are not affected.
 spell:Fire Ball:34:28:80:9
-effect:PROJECT
+effect:BALL:FIRE:2
 dice:$B
 expr:B:PLAYER_LEVEL:+ 55
-ball:FIRE:2
 desc:Shoots a radius-2 fire ball.
 spell:Treasure Detection:35:20:70:10
 effect:TREASURE_DETECTION
@@ -1206,22 +1177,19 @@ dice:30+d20
 desc:Grants you +50 to AC for 30+1d20 turns.
 book:magic book:[Raal's Tome of Destruction]:4:1
 spell:Cloud Kill:22:19:60:6
-effect:PROJECT
+effect:BALL:POIS:3
 dice:$B
 expr:B:PLAYER_LEVEL:/ 2 + 40
-ball:POIS:3
 desc:Shoots a radius-3 poison ball.
 spell:Acid Ball:30:24:70:6
-effect:PROJECT
+effect:BALL:ACID:2
 dice:$B
 expr:B:PLAYER_LEVEL:+ 40
-ball:ACID:2
 desc:Shoots a radius-2 acid ball.
 spell:Ice Storm:35:35:70:10
-effect:PROJECT
+effect:BALL:ICE:3
 dice:$B
 expr:B:PLAYER_LEVEL:* 2 + 50
-ball:ICE:3
 desc:Shoots a radius-3 cold ball.
 spell:Meteor Swarm:36:45:80:35
 effect:METEOR_SWARM
@@ -1314,10 +1282,9 @@ desc: squares in the area of effect.
 desc:  Artifacts will not be destroyed by this spell.
 desc:  This spell has no effect when used in the town.
 spell:Bedlam:32:30:70:12
-effect:PROJECT
+effect:BALL:OLD_CONF:4
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
-ball:OLD_CONF:4
 desc:Shoots a radius-4 confusion ball that doesn't cause physical
 desc: damage but has a chance to confuse each monster in the area of effect.
 desc:  Uniques or monsters that resist confusion are not affected.

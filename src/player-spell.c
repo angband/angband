@@ -515,28 +515,33 @@ static int spell_calculate_value(spell_handler_context_t *context)
 }
 
 
-static bool spell_handler_PROJECT(spell_handler_context_t *context)
+static bool spell_handler_BOLT(spell_handler_context_t *context)
 {
 	int dam = spell_calculate_value(context);
-	switch (context->p3) {
-	case SPELL_PROJECT_BOLT_OR_BEAM:
-		fire_bolt_or_beam(context->beam + context->p2, context->p1, context->dir, dam);
-		return TRUE;
-	case SPELL_PROJECT_BOLT:
-		fire_bolt(context->p1, context->dir, dam);
-		return TRUE;
-	case SPELL_PROJECT_BEAM:
-		fire_beam(context->p1, context->dir, dam);
-		return TRUE;
-	case SPELL_PROJECT_BALL:
-		fire_ball(context->p1, context->dir, dam, context->p2);
-		return TRUE;
-	default:
-		break;
-	}
+	fire_bolt(context->p1, context->dir, dam);
+	return TRUE;
+}
 
-	bell("Unknown spell projection type.");
-	return FALSE;
+static bool spell_handler_BEAM(spell_handler_context_t *context)
+{
+	int dam = spell_calculate_value(context);
+	fire_beam(context->p1, context->dir, dam);
+	return TRUE;
+}
+
+static bool spell_handler_BOLT_OR_BEAM(spell_handler_context_t *context)
+{
+	int dam = spell_calculate_value(context);
+	fire_bolt_or_beam(context->beam + context->p2, context->p1, context->dir,
+					  dam);
+	return TRUE;
+}
+
+static bool spell_handler_BALL(spell_handler_context_t *context)
+{
+	int dam = spell_calculate_value(context);
+	fire_ball(context->p1, context->dir, dam, context->p2);
+	return TRUE;
 }
 
 static bool spell_handler_REND_SOUL(spell_handler_context_t *context)
@@ -1106,7 +1111,7 @@ static bool player_spell_effect(int spell, int dir)
 	const class_spell *sp = spell_by_index(spell);
 	const spell_info_t *spell_info = spell_info_for_index(spell_effects, N_ELEMENTS(spell_effects), SPELL_EFFECT_MAX, sp->effect);
 	random_value value;
-	int p1, p2, p3;
+	int p1, p2;
 
 	if (spell_info == NULL)
 		return FALSE;
@@ -1123,14 +1128,12 @@ static bool player_spell_effect(int spell, int dir)
 	p1 = sp->params[0];
 	/* Usually radius for ball spells, or some other modifier. */
 	p2 = sp->params[1];
-	/* SPELL_PROJECT_ type if from the parser. */
-	p3 = sp->params[2];
 
 	spell_handler_context_t context = {
 		dir,
 		beam_chance(),
 		value,
-		p1, p2, p3,
+		p1, p2
 	};
 
 	return spell_handler(&context);

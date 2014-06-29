@@ -15,12 +15,6 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
-/*
- * The defines below must match the spell numbers in spell.txt
- * if they don't, "interesting" things will probably happen.
- *
- * It would be nice if we could get rid of this dependency.
- */
 
 enum spell_effect_e {
 	#define S_EF(x, a, s) SPELL_EFFECT_##x,
@@ -32,7 +26,7 @@ typedef struct spell_handler_context_s {
 	const int dir;
 	const int beam;
 	const random_value value;
-	const int p1, p2, p3;
+	const int p1, p2;
 } spell_handler_context_t;
 
 typedef bool (*spell_handler_f)(spell_handler_context_t *);
