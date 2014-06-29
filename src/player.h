@@ -276,11 +276,11 @@ typedef struct {
 	char *name;
 	char *text;
 
-	dice_t *dice;	/**< Value information from spell file */
-	int params[3];	/**< Extra parameters to be passed to the handler */
+	byte effect;	/**< The spell's effect index */
+	dice_t *dice;	/**< Dice expression used in the spell */
+	int params[2];	/**< Extra parameters to be passed to the handler */
 
 	byte sidx;		/**< The index of this spell for this class */
-	byte effect;	/**< The spell's effect */
 	byte bidx;		/**< The index into the player's books array */
 	byte slevel;	/**< Required level (to learn) */
 	byte smana;		/**< Required mana (to cast) */

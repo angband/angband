@@ -10,6 +10,7 @@
 #include "z-bitflag.h"
 #include "z-dice.h"
 #include "obj-properties.h"
+#include "effects.h"
 
 
 /*** Game constants ***/
@@ -196,6 +197,7 @@ typedef struct object_kind
 	byte level;				/**< Level (difficulty of activation) */
 
 	u16b effect;			/**< Effect this item produces (effects.c) */
+	//effect_type effect;		/**< Effect this item produces (effects.c) */
 	random_value time;		/**< Recharge time (rods/activation) */
 	random_value charge;	/**< Number of charges (staves/wands) */
 
@@ -274,6 +276,7 @@ typedef struct artifact
 	bool everseen;		/**< Whether this artifact has ever been seen  */
 
 	u16b effect;		/**< Artifact activation (see effects.c) */
+	//effect_type effect;	/**< Effect this item produces (effects.c) */
 	char *effect_msg;
 
 	random_value time;	/**< Recharge time (if appropriate) */
@@ -335,6 +338,7 @@ typedef struct ego_item
 	byte min_to_a;			/* Minimum to-ac value */
 
 	u16b effect;			/**< Effect this item produces (effects.c) */
+	//effect_type effect;		/**< Effect this item produces (effects.c) */
 	random_value time;		/**< Recharge time (rods/activation) */
 	s16b timeout;			/* Timeout Counter */
 
@@ -407,6 +411,7 @@ typedef struct object
 
 	byte dd, ds;		/* Damage dice/sides */
 
+	//effect_type effect;	/**< Effect this item produces (effects.c) */
 	u16b effect;		/**< Activation indicator */
 	random_value time;	/**< Recharge time (rods/activation) */
 	s16b timeout;		/* Timeout Counter */

@@ -26,6 +26,12 @@ typedef enum
 	#undef EFFECT
 } effect_index;
 
+typedef struct {
+	byte effect;	/**< The effect index */
+	dice_t *dice;	/**< Dice expression used in the effect */
+	int params[2];	/**< Extra parameters to be passed to the handler */
+} effect_type;
+
 /*** Functions ***/
 
 bool effect_do(effect_index effect, bool *ident, bool aware, int dir, int beam,
