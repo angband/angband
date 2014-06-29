@@ -34,7 +34,7 @@
 
 
 typedef struct effect_handler_context_s {
-	const effect_type effect;
+	const effect_index effect;
 	const bool aware;
 	const int dir;
 	const int beam;
@@ -1827,12 +1827,12 @@ static const info_entry effects[] =
  * Utility functions
  */
 
-bool effect_valid(effect_type effect)
+bool effect_valid(effect_index effect)
 {
 	return effect > EF_XXX && effect < EF_MAX;
 }
 
-bool effect_aim(effect_type effect)
+bool effect_aim(effect_index effect)
 {
 	if (!effect_valid(effect))
 		return FALSE;
@@ -1840,7 +1840,7 @@ bool effect_aim(effect_type effect)
 	return effects[effect].aim;
 }
 
-int effect_power(effect_type effect)
+int effect_power(effect_index effect)
 {
 	if (!effect_valid(effect))
 		return 0;
@@ -1848,7 +1848,7 @@ int effect_power(effect_type effect)
 	return effects[effect].power;
 }
 
-random_value effect_value(effect_type effect)
+random_value effect_value(effect_index effect)
 {
 	if (!effect_valid(effect)) {
 		random_value rv = {0, 0, 0, 0};
@@ -1858,7 +1858,7 @@ random_value effect_value(effect_type effect)
 	return effects[effect].value;
 }
 
-const char *effect_desc(effect_type effect)
+const char *effect_desc(effect_index effect)
 {
 	if (!effect_valid(effect))
 		return NULL;
@@ -1866,7 +1866,7 @@ const char *effect_desc(effect_type effect)
 	return effects[effect].desc;
 }
 
-bool effect_obvious(effect_type effect)
+bool effect_obvious(effect_index effect)
 {
 	if (effect == EF_IDENTIFY)
 		return TRUE;
@@ -1874,7 +1874,7 @@ bool effect_obvious(effect_type effect)
 	return FALSE;
 }
 
-effect_handler_f effect_handler(effect_type effect)
+effect_handler_f effect_handler(effect_index effect)
 {
 	if (!effect_valid(effect))
 		return NULL;
@@ -1882,7 +1882,7 @@ effect_handler_f effect_handler(effect_type effect)
 	return effects[effect].handler;
 }
 
-static int effect_param(effect_type effect, size_t param_num)
+static int effect_param(effect_index effect, size_t param_num)
 {
 	if (!effect_valid(effect))
 		return 0;
@@ -1890,7 +1890,7 @@ static int effect_param(effect_type effect, size_t param_num)
 	return effects[effect].params[param_num];
 }
 
-effect_type effect_lookup(const char *name)
+effect_index effect_lookup(const char *name)
 {
 	static const char *effect_names[] = {
 		#define EFFECT(x, a, r, h, v, c, d)	#x,
@@ -1922,7 +1922,7 @@ effect_type effect_lookup(const char *name)
  * Boost is the extent to which skill surpasses difficulty, used as % boost. It
  * ranges from 0 to 138.
  */
-bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam, int boost)
+bool effect_do(effect_index effect, bool *ident, bool aware, int dir, int beam, int boost)
 {
 	bool handled = FALSE;
 	effect_handler_f handler;

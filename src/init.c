@@ -765,10 +765,16 @@ static enum parser_error parse_k_e(struct parser *p) {
 	assert(k);
 
 	k->effect = grab_one_effect(parser_getsym(p, "name"), effect_list, N_ELEMENTS(effect_list));
-	if (parser_hasval(p, "time"))
-		k->time = parser_getrand(p, "time");
 	if (!k->effect)
 		return PARSE_ERROR_GENERIC;
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_k_time(struct parser *p) {
+	struct object_kind *k = parser_priv(p);
+	assert(k);
+
+	k->time = parser_getrand(p, "time");
 	return PARSE_ERROR_NONE;
 }
 
@@ -858,7 +864,8 @@ struct parser *init_parse_k(void) {
 	parser_reg(p, "C rand charges", parse_k_c);
 	parser_reg(p, "M int prob rand stack", parse_k_m);
 	parser_reg(p, "F str flags", parse_k_f);
-	parser_reg(p, "E sym name ?rand time", parse_k_e);
+	parser_reg(p, "E sym name", parse_k_e);
+	parser_reg(p, "time rand time", parse_k_time);
 	parser_reg(p, "L rand pval", parse_k_l);
 	parser_reg(p, "V str values", parse_k_v);
 	parser_reg(p, "D str text", parse_k_d);

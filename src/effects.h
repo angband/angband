@@ -24,18 +24,18 @@ typedef enum
 	#define EFFECT(x, a, r, h, v, c, d)	EF_##x,
 	#include "list-effects.h"
 	#undef EFFECT
-} effect_type;
+} effect_index;
 
 /*** Functions ***/
 
-bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
+bool effect_do(effect_index effect, bool *ident, bool aware, int dir, int beam,
 	int boost);
-bool effect_aim(effect_type effect);
-const char *effect_desc(effect_type effect);
-int effect_power(effect_type effect);
-bool effect_obvious(effect_type effect);
+bool effect_aim(effect_index effect);
+const char *effect_desc(effect_index effect);
+int effect_power(effect_index effect);
+bool effect_obvious(effect_index effect);
 bool effect_wonder(int dir, int die, int beam);
-bool effect_valid(effect_type effect);
-effect_type effect_lookup(const char *name);
+bool effect_valid(effect_index effect);
+effect_index effect_lookup(const char *name);
 
 #endif /* INCLUDED_EFFECTS_H */

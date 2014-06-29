@@ -93,15 +93,6 @@ enum {
 
 /*** Structures ***/
 
-enum spell_param_project_type_e {
-	SPELL_PROJECT_NONE = 0,
-	SPELL_PROJECT_BOLT,
-	SPELL_PROJECT_BEAM,
-	SPELL_PROJECT_BOLT_OR_BEAM,
-	SPELL_PROJECT_BALL,
-};
-
-
 /* Brand type */
 struct brand {
 	char *name;
