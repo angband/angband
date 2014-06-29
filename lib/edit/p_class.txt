@@ -534,7 +534,7 @@ desc:Neutralizes poison.
 spell:Orb of Draining:9:7:40:4
 effect:ORB_OF_DRAINING
 dice:$B+3d6
-expr:B:ORB_OF_DRAINING:+ 0
+expr:B:PLAYER_LEVEL:* 3 / 2
 desc:Shoots a radius-2 or radius-3 ball that does unresistable
 desc: damage to each monster in its area of effect.
 desc:  Evil monsters take double damage.
@@ -1395,7 +1395,7 @@ desc:Neutralizes poison.
 spell:Orb of Draining:17:15:50:4
 effect:ORB_OF_DRAINING
 dice:$B+3d6
-expr:B:ORB_OF_DRAINING:+ 0
+expr:B:PLAYER_LEVEL:* 5 / 4
 desc:Shoots a radius-2 or radius-3 ball that does unresistable
 desc: damage to each monster in its area of effect.
 desc:  Evil monsters take double damage.

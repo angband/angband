@@ -1232,13 +1232,6 @@ static int spell_value_base_player_level(void)
 	return player->lev;
 }
 
-static int spell_value_base_orb_of_draining(void)
-{
-	int base = player_has(PF_ZERO_FAIL) ? (player->lev / 2) : (player->lev / 4);
-	base += player->lev;
-	return base;
-}
-
 expression_base_value_f spell_value_base_by_name(const char *name)
 {
 	static const struct value_base_s {
@@ -1246,7 +1239,6 @@ expression_base_value_f spell_value_base_by_name(const char *name)
 		expression_base_value_f function;
 	} value_bases[] = {
 		{ "PLAYER_LEVEL", spell_value_base_player_level },
-		{ "ORB_OF_DRAINING", spell_value_base_orb_of_draining },
 		{ NULL, NULL },
 	};
 	const struct value_base_s *current = value_bases;
