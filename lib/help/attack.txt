@@ -542,9 +542,8 @@ Ego Helms:
 ----------
 Stat Boosting Helms
   There are magical helms found in the dungeon that have the ability to
-  boost the wearer's intelligence, wisdom, or charisma. Helms of Beauty are
-  the ones that boost charisma. In addition to boosting the relevant stat
-  these helms will also prevent that stat from being drained.
+  boost the wearer's intelligence or wisdom. In addition to boosting the
+  relevant stat these helms will also prevent that stat from being drained.
 
 Crown of the Magi
   This is the great crown of the wizards. The wearer will have an increased
@@ -559,7 +558,7 @@ Crown of Might
 
 Crown of Lordliness
   This is the great crown of the priests. The wearer will have an increased
-  and sustained wisdom and charisma.
+  and sustained wisdom.
 
 Helm/Crown of Seeing
   This is the great helmet or crown of the rogues. The wearer will be able
