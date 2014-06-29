@@ -31,8 +31,8 @@ background history affects social class, which affects the starting money.
 (Not a lot, in the case of some races: for instance, Half-Trolls are always
 going to be the scum of society, even if their father was the Clan Chief.)
 
-Each character also has six primary "stats": strength, intelligence,
-wisdom, dexterity, constitution, and charisma, which modify the abilities
+Each character also has five primary "stats": strength, intelligence,
+wisdom, dexterity, and constitution; they modify the abilities
 of the character in a variety of ways. Every stat has a numerical value,
 ranging from a minimum of 3, up to a normal maximum of 18, and even higher,
 into the "percentile" range, represented as '18/01' through '18/100':
@@ -63,14 +63,13 @@ Each character has some gold, which can be used to buy items from the shops
 in the town, and which can be obtained not only from selling items to the
 shops, but also by taking it from dead monsters and by finding it in the
 dungeon. Each character starts out with some gold, the amount of which is
-based on the character's social class (higher is better), charisma (higher
-is better), and stats (less powerful characters start with more gold). Each
-character also starts out with a few useful items, which may be kept, or
-sold to a shop-keeper for more gold. However, especially valuable items
-will never sell for the full price, as each shopkeeper has a maximum that
-he is prepared to pay for any item. The more generous shopkeepers may buy
-your items for up to 30,000 gold pieces: but some are really stingy, and
-will pay no more than 5,000.
+based on the character's social class (higher is better) and stats (less
+powerful characters start with more gold). Each character also starts out
+with a few useful items, which may be kept, or sold to a shop-keeper for
+more gold.  However, especially valuable items will never sell for the full
+price, as each shopkeeper has a maximum that he is prepared to pay for any
+item. The more generous shopkeepers may buy your items for up to 30,000
+gold pieces: but some are really stingy, and will pay no more than 5,000.
 
 Each character has an "armour class", abbreviated to AC, representing how
 well the character can avoid damage. The armour class is affected by
@@ -391,11 +390,6 @@ Constitution
   while resting. Constitution is less important in the beginning of the
   game, but will be the most important stat at the end.
  
-Charisma
-  Charisma represents a character's personality and physical appearance. A
-  character with a high charisma will receive better prices from store
-  owners, whereas a character with a very low charisma may be robbed blind.
- 
 Skills
 ======
 
@@ -482,32 +476,32 @@ a Dwarf Priest has a hit die of 11+2=13 (i.e. he will get 1d13 hit
 points per level, adjusted for constitution) and an XP modifier of 
 20+20=40%.
 
-================ ===  ===  ===  ===  ===  ===  =========  ========  ====== 
-      Race       STR  INT  WIS  DEX  CON  CHR  HD (base)  XP/level  Infra
-================ ===  ===  ===  ===  ===  ===  =========  ========  ======
-      Human        0    0    0    0    0    0      10         +0%   None
-      Half-Elf     0   +1   -1   +1   -1   +1      10        +10%   20'
-      Elf         -1   +2   -1   +1   -1   +1       9        +20%   30'
-      Hobbit      -2   +2   +1   +3   +2   +1       7        +10%   40'
-      Gnome       -1   +2    0   +2   +1   -2       8        +25%   40'
-      Dwarf       +2   -3   +2   -2   +2   -3      11        +20%   50'
-      Half-Orc    +2   -1    0    0   +1   -4      10        +10%   30'
-      Half-Troll  +4   -4   -2   -4   +3   -6      12        +20%   30'
-      Dunadan     +1   +2   +2   +2   +3   +2      10        +80%   None
-      High-Elf    +1   +3   -1   +3   +1   +5      10       +100%   40'
-      Kobold      -1   -1    0   +2   +2   -2       8        +15%   50'
-================ ===  ===  ===  ===  ===  ===  =========  ========  ======
+================ ===  ===  ===  ===  ===  =========  ========  ====== 
+      Race       STR  INT  WIS  DEX  CON  HD (base)  XP/level  Infra
+================ ===  ===  ===  ===  ===  =========  ========  ======
+      Human        0    0    0    0    0      10         +0%   None
+      Half-Elf     0   +1   -1   +1   -1      10        +10%   20'
+      Elf         -1   +2   -1   +1   -1       9        +20%   30'
+      Hobbit      -2   +2   +1   +3   +2       7        +10%   40'
+      Gnome       -1   +2    0   +2   +1       8        +25%   40'
+      Dwarf       +2   -3   +2   -2   +2      11        +20%   50'
+      Half-Orc    +2   -1    0    0   +1      10        +10%   30'
+      Half-Troll  +4   -4   -2   -4   +3      12        +20%   30'
+      Dunadan     +1   +2   +2   +2   +3      10        +80%   None
+      High-Elf    +1   +3   -1   +3   +1      10       +100%   40'
+      Kobold      -1   -1    0   +2   +2       8        +15%   50'
+================ ===  ===  ===  ===  ===  =========  ========  ======
 
-================ ===  ===  ===  ===  ===  ===  ========== ========
-      Class      STR  INT  WIS  DEX  CON  CHR  HD (bonus) XP/level
-================ ===  ===  ===  ===  ===  ===  ========== ========
-      Warrior     +3   -2   -2   +2   +2   -1       9         +0%
-      Mage        -3   +3    0   +0   -2   +1       0        +30%
-      Priest      -1   -3   +3   -1   +1   +2       2        +20%
-      Rogue        0   +1   -3   +3   -1   -1       6        +25%
-      Ranger       0   +2   -2   +1   -1   +1       4        +30%
-      Paladin     +1   -3   +1   -1   +2   +2       6        +35%
-================ ===  ===  ===  ===  ===  ===  ========== ========
+================ ===  ===  ===  ===  ===  ========== ========
+      Class      STR  INT  WIS  DEX  CON  HD (bonus) XP/level
+================ ===  ===  ===  ===  ===  ========== ========
+      Warrior     +3   -2   -2   +2   +2       9         +0%
+      Mage        -3   +3    0   +0   -2       0        +30%
+      Priest      -1   -3   +3   -1   +1       2        +20%
+      Rogue        0   +1   -3   +3   -1       6        +25%
+      Ranger       0   +2   -2   +1   -1       4        +30%
+      Paladin     +1   -3   +1   -1   +2       6        +35%
+================ ===  ===  ===  ===  ===  ========== ========
  
 Ability Tables
 ==============
