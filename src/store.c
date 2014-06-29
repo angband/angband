@@ -548,6 +548,8 @@ static bool store_will_buy(struct store *store, const struct object *obj)
  *  store_buying == TRUE  means the shop is buying, player selling
  *               == FALSE means the shop is selling, player buying
  *
+ * This function never lets a shop-keeper lose money in a transaction.
+ *
  * The "greed" value should exceed 100 when the player is "buying" the
  * object, and should be less than 100 when the player is "selling" it.
  *
@@ -573,7 +575,7 @@ int price_item(struct store *store, const struct object *obj,
 	/* Worthless items */
 	if (price <= 0) return (0L);
 
-	/* Adjustments */
+	/* The black market is always a worse deal */
 	if (store->sidx == STORE_B_MARKET)
 		adjust = 150;
 	else
