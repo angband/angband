@@ -1,6 +1,6 @@
-/*
- * File: z-expression.c
- * Purpose: Creating, storing, and deserializing simple math expressions
+/**
+   \file z-expression.c
+   \brief Creating, storing, and deserializing simple math expressions
  *
  * Copyright (c) 2013 Ben Semmler
  *
@@ -124,8 +124,8 @@ static expression_input_t expression_input_for_operator(expression_operator_t op
 }
 
 /**
- * Allocate and initialize a new expression object. Returns NULL if it was unable to
- * be created.
+ * Allocate and initialize a new expression object. Returns NULL if it was
+ * unable to be created.
  */
 expression_t *expression_new(void)
 {
@@ -201,14 +201,15 @@ expression_t *expression_copy(const expression_t *source)
 /**
  * Set the base value function that the operations operate on.
  */
-void expression_set_base_value(expression_t *expression, expression_base_value_f function)
+void expression_set_base_value(expression_t *expression,
+							   expression_base_value_f function)
 {
 	expression->base_value = function;
 }
 
 /**
- * Evaluate the given expression. If the base value function is NULL, expression is
- * evaluated from zero.
+ * Evaluate the given expression. If the base value function is NULL,
+ * expression is evaluated from zero.
  */
 s32b expression_evaluate(expression_t const * const expression)
 {
@@ -246,7 +247,8 @@ s32b expression_evaluate(expression_t const * const expression)
 /**
  * Add an operation to an expression, allocating more memory as needed.
  */
-static void expression_add_operation(expression_t *expression, const expression_operation_t operation)
+static void expression_add_operation(expression_t *expression,
+									 const expression_operation_t operation)
 {
 	size_t count = 0;
 
@@ -263,16 +265,18 @@ static void expression_add_operation(expression_t *expression, const expression_
 /**
  * Parse a string and add operations and operands to an expression.
  *
- * The string must be in prefix notation and must start with an operator. Basic operators (add,
- * subtract, multiply, and divide) can have multiple operands after the operator. Unary
- * operators (negation) must be followed by another operator. Parsing is done using a state
- * table which is contained in the function.
+ * The string must be in prefix notation and must start with an operator.
+ * Basic operators (add, subtract, multiply, and divide) can have multiple
+ * operands after the operator. Unary operators (negation) must be followed
+ * by another operator. Parsing is done using a state table which is
+ * contained in the function.
  *
  * \param expression is an initialized expression object.
  * \param string is the string to be parsed.
  * \return The number of operations added to the expression or an error (expression_err_e).
  */
-s16b expression_add_operations_string(expression_t *expression, const char *string)
+s16b expression_add_operations_string(expression_t *expression,
+									  const char *string)
 {
 	char *parse_string;
 	expression_operation_t operations[EXPRESSION_MAX_OPERATIONS];
@@ -283,7 +287,8 @@ s16b expression_add_operations_string(expression_t *expression, const char *stri
 	expression_input_t current_input = EXPRESSION_INPUT_INVALID;
 	int state = EXPRESSION_STATE_START;
 
-	/* The named initializers are left commented out for when this all goes to C99. */
+	/* The named initializers are left commented out for when this all goes
+	 * to C99. */
 	static int state_table[EXPRESSION_STATE_MAX][EXPRESSION_INPUT_MAX] = {
 		/*[EXPRESSION_STATE_START] = */{
 			/*[EXPRESSION_INPUT_INVALID] = */			EXPRESSION_ERR_INVALID_OPERATOR,
@@ -339,13 +344,15 @@ s16b expression_add_operations_string(expression_t *expression, const char *stri
 			return state;
 		}
 		else if (state == EXPRESSION_STATE_START) {
-			/* Flush the operation, since we are restarting or using a unary operator. */
+			/* Flush the operation, since we are restarting or using a
+			 * unary operator. */
 			operations[count].operator = parsed_operator;
 			operations[count].operand = 0;
 			count++;
 		}
 		else if (state == EXPRESSION_STATE_OPERATOR) {
-			/* Remember the operator, since we found an operator which needs operands. */
+			/* Remember the operator, since we found an operator which needs
+			 * operands. */
 			current_operator = parsed_operator;
 		}
 		else if (state == EXPRESSION_STATE_OPERAND) {
@@ -377,7 +384,7 @@ s16b expression_add_operations_string(expression_t *expression, const char *stri
 }
 
 /**
- * Test to make sure that the deep copy from expression_copy() is equal in value.
+ * Test to make sure that the deep copy from expression_copy() is equal in value
  */
 bool expression_test_copy(const expression_t *a, const expression_t *b)
 {

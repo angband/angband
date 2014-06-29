@@ -1,6 +1,6 @@
-/*
- * File: z-expression.h
- * Purpose: Creating, storing, and deserializing simple math expressions
+/**
+   \file z-expression.h
+   \brief Creating, storing, and deserializing simple math expressions
  *
  * Copyright (c) 2013 Ben Semmler
  *
@@ -36,9 +36,11 @@ typedef s32b (*expression_base_value_f)(void);
 expression_t *expression_new(void);
 void expression_free(expression_t *expression);
 expression_t *expression_copy(const expression_t *source);
-void expression_set_base_value(expression_t *expression, expression_base_value_f function);
+void expression_set_base_value(expression_t *expression,
+							   expression_base_value_f function);
 s32b expression_evaluate(expression_t const * const expression);
-s16b expression_add_operations_string(expression_t *expression, const char *string);
+s16b expression_add_operations_string(expression_t *expression,
+									  const char *string);
 bool expression_test_copy(const expression_t *a, const expression_t *b);
 
 #endif /* INCLUDED_Z_EXPRESSION_H */

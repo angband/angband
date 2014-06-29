@@ -1,6 +1,6 @@
-/*
- * File: z-dice.c
- * Purpose: Represent more complex dice than random_value
+/**
+   \file z-dice.c
+   \brief Represent more complex dice than random_value
  *
  * Copyright (c) 2013 Ben Semmler
  *
@@ -69,8 +69,8 @@ typedef enum dice_input_e {
 } dice_input_t;
 
 /**
- * Hard limit on the number of variables/expressions. Shouldn't need more than the possible
- * values.
+ * Hard limit on the number of variables/expressions. Shouldn't need more than
+ * the possible values.
  */
 #define DICE_MAX_EXPRESSIONS 4
 
@@ -115,13 +115,15 @@ static dice_input_t dice_input_for_char(char c)
 /**
  * Perform a state transition for the given state and input.
  *
- * The state table is contained within this function, using a compact char-based format.
+ * The state table is contained within this function, using a compact
+ * char-based format.
  *
  * \param state is the current state.
  * \param input is the input type to transition with.
  * \return The next state for the input, Or DICE_STATE_MAX for an invalid transition.
  */
-static dice_state_t dice_parse_state_transition(dice_state_t state, dice_input_t input)
+static dice_state_t dice_parse_state_transition(dice_state_t state,
+												dice_input_t input)
 {
 	static unsigned char state_table[DICE_STATE_MAX][DICE_INPUT_MAX] = {
 		/* Input:    -+dm$DU0 */
@@ -150,8 +152,8 @@ static dice_state_t dice_parse_state_transition(dice_state_t state, dice_input_t
 }
 
 /**
- * Zero out the internal state of the dice object. This will only deallocate entries in
- * the expressions table; it will not deallocate the table itself.
+ * Zero out the internal state of the dice object. This will only deallocate
+ * entries in the expressions table; it will not deallocate the table itself.
  */
 static void dice_reset(dice_t *dice)
 {
@@ -252,14 +254,15 @@ static int dice_add_variable(dice_t *dice, const char *name)
 /**
  * Bind an expression to a variable name.
  *
- * This function creates a deep copy of the expression that the dice object owns.
+ * This function creates a deep copy of the expression that the dice object owns
  *
  * \param dice is the object that will use the expression..
  * \param name is the variable that the expression should be bound to.
  * \param expression is the expression to bind.
  * \return The index of the expression or -1 for error.
  */
-int dice_bind_expression(dice_t *dice, const char *name, const expression_t *expression)
+int dice_bind_expression(dice_t *dice, const char *name,
+						 const expression_t *expression)
 {
 	int i;
 
@@ -288,11 +291,12 @@ int dice_bind_expression(dice_t *dice, const char *name, const expression_t *exp
  * Parse a formatted string for values and variables to represent a dice roll.
  *
  * This function can parse a number of formats in the general style of "1+2d3M4"
- * (base, dice, sides, and bonus). Varibles (to which expressions can be bound) can
- * be subsitituted for numeric values by using an all-uppercase name starting with $.
+ * (base, dice, sides, and bonus). Varibles (to which expressions can be bound)
+ * can be subsitituted for numeric values by using an all-uppercase name
+ * starting with $.
  * Spaces are ignored, concatenating the strings on either side of the space
- * character. Tokens (numbers and variable names) longer than the maximum will be
- * truncated. The unit test demonstrates the variety of valid strings.
+ * character. Tokens (numbers and variable names) longer than the maximum will
+ * be truncated. The unit test demonstrates the variety of valid strings.
  *
  * \param dice is the dice object to parse the string into.
  * \param string is the string to be parsed.
@@ -320,7 +324,7 @@ bool dice_parse_string(dice_t *dice, const char *string)
 	/* Reset all internal state, since this object might be reused. */
 	dice_reset(dice);
 
-	/* Note that we are including the string terminator as a part of the parse. */
+	/* Note that we are including the string terminator as part of the parse. */
 	for (current = 0; current <= strlen(string); current++) {
 		bool flush;
 		dice_input_t input_type = DICE_INPUT_MAX;
@@ -332,8 +336,9 @@ bool dice_parse_string(dice_t *dice, const char *string)
 		input_type = dice_input_for_char(string[current]);
 
 		/*
-		 * Get the next state, based on the type of input char. If it's a possible
-		 * number or varible name, we'll store the character in the token buffer.
+		 * Get the next state, based on the type of input char. If it's a
+		 * possible number or varible name, we'll store the character in the
+		 * token buffer.
 		 */
 		switch (input_type) {
 			case DICE_INPUT_BASE:
@@ -360,9 +365,11 @@ bool dice_parse_string(dice_t *dice, const char *string)
 		}
 
 		/*
-		 * Allow 'M' to be used as the bonus marker and to be used in variable names.
-		 * Ideally, 'm' should be the only marker and this could go away by adding a
-		 * case to the switch above for DICE_INPUT_BONUS (underneath DICE_INPUT_NULL).
+		 * Allow 'M' to be used as the bonus marker and to be used in variable
+		 * names.
+		 * Ideally, 'm' should be the only marker and this could go away by
+		 * adding a case to the switch above for DICE_INPUT_BONUS
+		 * (underneath DICE_INPUT_NULL).
 		 */
 		if (string[current] == 'M') {
 			if (state == DICE_STATE_VAR || state == DICE_STATE_VAR_CHAR) {
@@ -385,10 +392,10 @@ bool dice_parse_string(dice_t *dice, const char *string)
 			return FALSE;
 
 		/*
-		 * Default flushing to true, since there are more states that don't need to be
-		 * flushed. For some states, we need to do a bit of extra work, since the parser
-		 * isn't that complex. A more complex parser would have more explicit states
-		 * for variable names.
+		 * Default flushing to true, since there are more states that don't
+		 * need to be flushed. For some states, we need to do a bit of extra
+		 * work, since the parser isn't that complex. A more complex parser
+		 * would have more explicit states for variable names.
 		 */
 		flush = TRUE;
 
@@ -399,7 +406,8 @@ bool dice_parse_string(dice_t *dice, const char *string)
 
 			case DICE_STATE_FLUSH_DICE:
 				last_seen = DICE_SEEN_DICE;
-				/* If we see a 'd' without a number before it, we assume it to be one die. */
+				/* If we see a 'd' without a number before it, we assume it
+				 * to be one die. */
 				if (strlen(token) == 0) {
 					token[0] = '1';
 					token[1] = '\0';
@@ -415,13 +423,15 @@ bool dice_parse_string(dice_t *dice, const char *string)
 				break;
 
 			case DICE_STATE_FLUSH_ALL:
-				/* Flushing all means that we are flushing whatever comes after it was that we last saw. */
+				/* Flushing all means that we are flushing whatever comes after
+				 * it was that we last saw. */
 				if (last_seen < DICE_SEEN_BONUS)
 					last_seen++;
 				break;
 
 			case DICE_STATE_BONUS:
-				/* The bonus state is weird, so if we last saw dice, we're now seeing sides. */
+				/* The bonus state is weird, so if we last saw dice, we're now
+				 * seeing sides. */
 				if (last_seen == DICE_SEEN_DICE)
 					last_seen = DICE_SEEN_SIDE;
 				else
@@ -435,10 +445,10 @@ bool dice_parse_string(dice_t *dice, const char *string)
 		}
 
 		/*
-		 * If we have a token that we need to flush, put it where it needs to go in the
-		 * dice object. If the token is an uppercase letter, it's a variable and needs to
-		 * go in the expression table. Otherwise, we try to parse it as a number, where
-		 * it is set directly as a value.
+		 * If we have a token that we need to flush, put it where it needs to
+		 * go in the dice object. If the token is an uppercase letter, it's
+		 * a variable and needs to go in the expression table. Otherwise, we
+		 * try to parse it as a number, where it is set directly as a value.
 		 */
 		if (flush && strlen(token) > 0) {
 			int value = 0;
@@ -531,8 +541,8 @@ void dice_random_value(dice_t *dice, random_value *v)
 }
 
 /**
- * Fully evaluates the dice object, using randcalc(). The random_value used is returned
- * if desired.
+ * Fully evaluates the dice object, using randcalc(). The random_value used is
+ * returned if desired.
  *
  * \param dice is the dice object to evaluate.
  * \param level is the level value that is passed to randcalc().
@@ -555,8 +565,8 @@ int dice_evaluate(dice_t *dice, int level, aspect aspect, random_value *v)
 }
 
 /**
- * Evaluates the dice object, using damroll() (base + XdY). The random_value used is
- * returned if desired.
+ * Evaluates the dice object, using damroll() (base + XdY). The random_value
+ * used is returned if desired.
  *
  * \param dice is the dice object to evaluate.
  * \param v is a pointer used to return the random_value used.
@@ -579,7 +589,8 @@ int dice_roll(dice_t *dice, random_value *v)
 /**
  * Test the dice object against the given values.
  */
-bool dice_test_values(dice_t *dice, int base, int dice_count, int sides, int bonus)
+bool dice_test_values(dice_t *dice, int base, int dice_count, int sides,
+					  int bonus)
 {
 	bool success = TRUE;
 	success &= dice->b == base;
@@ -592,7 +603,8 @@ bool dice_test_values(dice_t *dice, int base, int dice_count, int sides, int bon
 /**
  * Check that the dice object has the given variables for the component.
  */
-bool dice_test_variables(dice_t *dice, const char *base, const char *dice_name, const char *sides, const char *bonus)
+bool dice_test_variables(dice_t *dice, const char *base, const char *dice_name,
+						 const char *sides, const char *bonus)
 {
 	bool success = TRUE;
 
