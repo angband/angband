@@ -776,10 +776,12 @@ static enum parser_error parse_k_e(struct parser *p) {
 static enum parser_error parse_k_effect(struct parser *p) {
 	struct object_kind *k = parser_priv(p);
 	const char *type;
+	int val;
 
 	if (!k)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	k->effect_new.index = grab_one_effect(parser_getsym(p, "eff"), effect_list,
+	k->effect_new = mem_zalloc(sizeof(*k->effect_new));
+	k->effect_new->index = grab_one_effect(parser_getsym(p, "eff"), effect_list,
 									N_ELEMENTS(effect_list));
 
 	if (parser_hasval(p, "type")) {
@@ -788,11 +790,21 @@ static enum parser_error parse_k_effect(struct parser *p) {
 		if (type == NULL)
 			return PARSE_ERROR_INVALID_VALUE;
 
-		k->effect_new.params[0] = gf_name_to_idx(type);
+		/* Run through the possibilities */
+		val = gf_name_to_idx(type);
+		if (val < 0) {
+			val = timed_name_to_idx(type);
+			if (val < 0)
+				val = stat_name_to_idx(type);
+		}
+		if (val < 0)
+			return PARSE_ERROR_INVALID_EFFECT;
+		else
+			k->effect_new->params[0] = val;
 	}
 
 	if (parser_hasval(p, "xtra"))
-		k->effect_new.params[1] = parser_getint(p, "xtra");
+		k->effect_new->params[1] = parser_getint(p, "xtra");
 
 	return PARSE_ERROR_NONE;
 }
@@ -892,6 +904,7 @@ struct parser *init_parse_k(void) {
 	parser_reg(p, "M int prob rand stack", parse_k_m);
 	parser_reg(p, "F str flags", parse_k_f);
 	parser_reg(p, "E sym name", parse_k_e);
+	parser_reg(p, "effect sym eff ?sym type ?int xtra", parse_k_effect);
 	parser_reg(p, "time rand time", parse_k_time);
 	parser_reg(p, "L rand pval", parse_k_l);
 	parser_reg(p, "V str values", parse_k_v);

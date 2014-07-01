@@ -289,6 +289,7 @@ W:0:0:1:100
 A:1:15 to 100
 M:70:1d4
 E:SHROOM_SPRINTING
+effect:SHROOM_SPRINTING:SPRINT
 L:500
 
 N:26:Purging
@@ -1855,6 +1856,7 @@ W:1:0:5:15
 A:50:1 to 50
 M:70:1d3
 E:BLESSING
+effect:BLESSING:BLESSED
 
 N:295:Holy Chant
 G:?:w
@@ -1863,6 +1865,7 @@ W:10:0:5:40
 A:40:10 to 70
 M:25:2
 E:BLESSING2
+effect:BLESSING2:BLESSED
 
 N:296:Holy Prayer
 G:?:w
@@ -1871,6 +1874,7 @@ W:25:0:5:80
 A:40:50 to 100
 M:25:2
 E:BLESSING3
+effect:BLESSING3:BLESSED
 
 N:297:Protection from Evil
 G:?:w
@@ -1962,6 +1966,7 @@ W:30:0:4:8000
 A:30:30 to 100
 M:10:2
 E:GAIN_STR
+effect:GAIN_STR:STR
 
 N:311:Intelligence
 G:!:d
@@ -1970,6 +1975,7 @@ W:30:0:4:8000
 A:30:30 to 100
 M:10:2
 E:GAIN_INT
+effect:GAIN_INT:INT
 
 N:312:Wisdom
 G:!:d
@@ -1978,6 +1984,7 @@ W:30:0:4:8000
 A:30:30 to 100
 M:10:2
 E:GAIN_WIS
+effect:GAIN_WIS:WIS
 
 N:313:Dexterity
 G:!:d
@@ -1986,6 +1993,7 @@ W:30:0:4:8000
 A:30:30 to 100
 M:10:2
 E:GAIN_DEX
+effect:GAIN_DEX:DEX
 
 N:314:Constitution
 G:!:d
@@ -1994,6 +2002,7 @@ W:30:0:4:8000
 A:30:30 to 100
 M:10:2
 E:GAIN_CON
+effect:GAIN_CON:CON
 
 ### 315, sval 6
 
@@ -2075,6 +2084,7 @@ W:5:0:4:75
 A:40:1 to 35
 M:25:2
 E:CURE_POISON
+effect:POISON:POISONED
 
 N:325:Restore Mana
 G:!:d
@@ -2193,6 +2203,7 @@ W:1:0:4:8
 A:40:1 to 90
 M:25:2
 E:CURE_PARANOIA
+effect:CURE_PARANOIA:AFRAID
 
 N:347:Resist Heat
 G:!:d
@@ -2201,6 +2212,7 @@ W:1:0:4:30
 A:40:1 to 100
 M:25:2
 E:RESIST_FIRE
+effect:RESIST_FIRE:OPP_FIRE
 
 N:348:Resist Cold
 G:!:d
@@ -2209,6 +2221,7 @@ W:1:0:4:30
 A:40:1 to 100
 M:25:2
 E:RESIST_COLD
+effect:RESIST_COLD:OPP_COLD
 
 N:349:Resist Poison
 G:!:d
@@ -2217,6 +2230,7 @@ W:1:0:4:30
 A:40:8 to 100
 M:25:2
 E:RESIST_POIS
+effect:RESIST_POIS:OPP_POIS
 
 N:350:True Seeing
 G:!:d
@@ -2254,6 +2268,7 @@ A:10:0 to 10
 M:70:2d3
 P:0:3d4:0:0:0
 E:PARALYZE
+effect:PARALYZE:PARALYZED
 L:100
 
 N:357:Blindness
@@ -2264,6 +2279,7 @@ A:10:0 to 10
 M:70:2d3
 P:0:3d4:0:0:0
 E:BLIND
+effect:BLIND:BLIND
 
 N:358:Confusion
 G:!:d
@@ -2273,6 +2289,7 @@ A:10:0 to 10
 M:70:2d3
 P:0:3d4:0:0:0
 E:CONFUSE
+effect:CONFUSE:CONFUSED
 L:50
 
 N:359:Poison
@@ -2283,6 +2300,7 @@ A:10:0 to 10
 M:70:2d3
 P:0:3d4:0:0:0
 E:POISON
+effect:POISON:POISONED
 
 N:360:Slowness
 G:!:d
@@ -2292,6 +2310,7 @@ A:10:0 to 10
 M:70:2d3
 P:0:3d4:0:0:0
 E:SLOW
+effect:SLOW:SLOW
 L:50
 
 N:361:Lose Memories
@@ -2336,6 +2355,7 @@ A:20:3 to 60
 P:0:1d1:0:0:0
 C:6+d10
 E:MISSILE
+effect:MISSILE:MISSILE
 
 N:371:Lightning Bolts
 G:-:d
@@ -2345,6 +2365,7 @@ A:20:15 to 60
 P:0:1d1:0:0:0
 C:6+d8
 E:ELEC_BOLT
+effect:ELEC_BOLT:ELEC
 
 N:372:Frost Bolts
 G:-:d
@@ -2354,6 +2375,7 @@ A:20:20 to 60
 P:0:1d1:0:0:0
 C:6+d5
 E:COLD_BOLT
+effect:COLD_BOLT:COLD
 
 N:373:Fire Bolts
 G:-:d
@@ -2363,6 +2385,7 @@ A:20:30 to 60
 P:0:1d1:0:0:0
 C:6+d8
 E:FIRE_BOLT2
+effect:FIRE_BOLT2:FIRE
 
 N:374:Acid Bolts
 G:-:d
@@ -2372,6 +2395,7 @@ A:20:30 to 60
 P:0:1d1:0:0:0
 C:6+d8
 E:ACID_BOLT2
+effect:ACID_BOLT2:ACID
 
 
 ### Balls ###
@@ -2384,6 +2408,7 @@ A:20:5 to 60
 P:0:1d1:0:0:0
 C:6+d8
 E:STINKING_CLOUD
+effect:STINKING_CLOUD:POIS:3
 
 N:376:Lightning Balls
 G:-:d
@@ -2394,6 +2419,7 @@ P:0:1d1:0:0:0
 C:4+d8
 F:IGNORE_ELEC
 E:ELEC_BALL
+effect:ELEC_BALL:ELEC:2
 
 N:377:Cold Balls
 G:-:d
@@ -2404,6 +2430,7 @@ P:0:1d1:0:0:0
 C:2+d6
 F:IGNORE_COLD
 E:COLD_BALL100
+effect:COLD_BALL100:COLD:2
 
 N:378:Fire Balls
 G:-:d
@@ -2414,6 +2441,7 @@ P:0:1d1:0:0:0
 C:2+d4
 F:IGNORE_FIRE
 E:FIRE_BALL
+effect:FIRE_BALL:FIRE:2
 
 N:379:Acid Balls
 G:-:d
@@ -2424,6 +2452,7 @@ P:0:1d1:0:0:0
 C:2+d5
 F:IGNORE_ACID
 E:ACID_BALL
+effect:ACID_BALL:ACID:2
 
 
 ### Monster status changing ###
@@ -2553,6 +2582,7 @@ P:0:1d1:0:0:0
 C:1+d3
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 E:FIRE_BALL200
+effect:FIRE_BALL200:FIRE:3
 
 N:393:Dragon's Frost
 G:-:d
@@ -2563,6 +2593,7 @@ P:0:1d1:0:0:0
 C:1+d3
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 E:COLD_BALL160
+effect:COLD_BALL160:COLD:3
 
 N:394:Dragon's Breath
 G:-:d
@@ -2938,6 +2969,7 @@ W:30:0:15:3000
 A:20:30 to 80
 P:0:1d1:0:0:0
 E:FIRE_BOLT2
+effect:FIRE_BOLT2:FIRE
 time:15
 
 N:437:Frost Bolts
@@ -2947,6 +2979,7 @@ W:25:0:15:2500
 A:20:25 to 80
 P:0:1d1:0:0:0
 E:COLD_BOLT2
+effect:COLD_BOLT2:COLD
 time:13
 
 N:438:Lightning Bolts
@@ -2956,6 +2989,7 @@ W:20:0:15:2000
 A:20:20 to 80
 P:0:1d1:0:0:0
 E:ELEC_BOLT
+effect:ELEC_BOLT:ELEC
 time:11
 
 N:439:Acid Bolts
@@ -2965,6 +2999,7 @@ W:40:0:15:3500
 A:20:40 to 80
 P:0:1d1:0:0:0
 E:ACID_BOLT3
+effect:ACID_BOLT3:ACID
 time:12
 
 
@@ -2977,6 +3012,7 @@ W:75:0:15:5000
 A:20:75 to 100
 P:0:1d1:0:0:0
 E:FIRE_BALL
+effect:FIRE_BALL:FIRE:2
 time:30
 
 N:441:Cold Balls
@@ -2986,6 +3022,7 @@ W:60:0:15:4500
 A:20:60 to 100
 P:0:1d1:0:0:0
 E:COLD_BALL100
+effect:COLD_BALL100:COLD:2
 time:25
 
 N:442:Lightning Balls
@@ -2996,6 +3033,7 @@ A:20:55 to 100
 P:0:1d1:0:0:0
 F:IGNORE_ELEC
 E:ELEC_BALL
+effect:ELEC_BALL:ELEC:2
 time:23
 
 N:443:Acid Balls
@@ -3005,6 +3043,7 @@ W:70:0:15:5500
 A:20:70 to 100
 P:0:1d1:0:0:0
 E:ACID_BALL
+effect:ACID_BALL:ACID:2
 time:27
 
 
@@ -3356,6 +3395,7 @@ P:16:2d4:-2:0:10
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 V:RES_ACID[1]
 E:ACID_BALL
+effect:ACID_BALL:ACID:2
 time:50
 
 N:501:Blue Dragon Scale Mail~
@@ -3378,6 +3418,7 @@ P:14:2d4:-2:0:10
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 V:RES_COLD[1]
 E:COLD_BALL100
+effect:COLD_BALL100:COLD:2
 time:50
 
 N:503:Red Dragon Scale Mail~
