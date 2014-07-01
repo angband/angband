@@ -39,6 +39,33 @@ static timed_effect effects[] =
 	#undef TMD
 };
 
+static const char *timed_name_list[] = {
+	#define TMD(a, b, c, d, e, f, g, h, i, j) #a,
+	#include "list-player-timed.h"
+	#undef TMD
+	"MAX",
+    NULL
+};
+
+int timed_name_to_idx(const char *name)
+{
+    int i;
+    for (i = 0; timed_name_list[i]; i++) {
+        if (!my_stricmp(name, timed_name_list[i]))
+            return i;
+    }
+
+    return -1;
+}
+
+const char *timed_idx_to_name(int type)
+{
+    assert(type >= 0);
+    assert(type < TMD_MAX);
+
+    return timed_name_list[type];
+}
+
 /*
  * Set a timed event (except timed resists, cutting and stunning).
  */
