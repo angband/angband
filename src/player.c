@@ -129,6 +129,33 @@ const s32b player_exp[PY_MAX_LEVEL] =
 };
 
 
+static const char *stat_name_list[] = {
+	#define STAT(a, b, c, d) #a,
+	#include "list-stats.h"
+	#undef STAT
+	"MAX",
+    NULL
+};
+
+int stat_name_to_idx(const char *name)
+{
+    int i;
+    for (i = 0; stat_name_list[i]; i++) {
+        if (!my_stricmp(name, stat_name_list[i]))
+            return i;
+    }
+
+    return -1;
+}
+
+const char *stat_idx_to_name(int type)
+{
+    assert(type >= 0);
+    assert(type < STAT_MAX);
+
+    return stat_name_list[type];
+}
+
 bool player_stat_inc(struct player *p, int stat)
 {
 	int v = p->stat_cur[stat];

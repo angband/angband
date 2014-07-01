@@ -415,6 +415,8 @@ extern player_type *player;
 extern struct player_class *player_id2class(guid id);
 
 /* player.c */
+int stat_name_to_idx(const char *name);
+const char *stat_idx_to_name(int type);
 extern bool player_stat_inc(struct player *p, int stat);
 extern bool player_stat_dec(struct player *p, int stat, bool permanent);
 extern void player_exp_gain(struct player *p, s32b amount);
