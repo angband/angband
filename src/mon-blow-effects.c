@@ -116,7 +116,7 @@ static void melee_effect_timed(melee_effect_handler_context_t *context, int type
  * Do damage as the result of a melee attack that drains a stat.
  *
  * \param context is the information for the current attack.
- * \param stat is the A_ constant for the desired stat.
+ * \param stat is the STAT_ constant for the desired stat.
  */
 static void melee_effect_stat(melee_effect_handler_context_t *context, int stat)
 {
@@ -313,7 +313,7 @@ static void melee_effect_handler_eat_gold(melee_effect_handler_context_t *contex
 
     /* Saving throw (unless paralyzed) based on dex and level */
     if (!player->timed[TMD_PARALYZED] &&
-        (randint0(100) < (adj_dex_safe[player->state.stat_ind[A_DEX]]
+        (randint0(100) < (adj_dex_safe[player->state.stat_ind[STAT_DEX]]
 						  + player->lev)))
     {
         /* Saving throw message */
@@ -383,7 +383,7 @@ static void melee_effect_handler_eat_item(melee_effect_handler_context_t *contex
 
     /* Saving throw (unless paralyzed) based on dex and level */
     if (!context->p->timed[TMD_PARALYZED] &&
-        (randint0(100) < (adj_dex_safe[context->p->state.stat_ind[A_DEX]] +
+        (randint0(100) < (adj_dex_safe[context->p->state.stat_ind[STAT_DEX]] +
                           context->p->lev)))
     {
         /* Saving throw message */
@@ -614,7 +614,7 @@ static void melee_effect_handler_paralyze(melee_effect_handler_context_t *contex
  */
 static void melee_effect_handler_lose_str(melee_effect_handler_context_t *context)
 {
-	melee_effect_stat(context, A_STR);
+	melee_effect_stat(context, STAT_STR);
 }
 
 /**
@@ -622,7 +622,7 @@ static void melee_effect_handler_lose_str(melee_effect_handler_context_t *contex
  */
 static void melee_effect_handler_lose_int(melee_effect_handler_context_t *context)
 {
-	melee_effect_stat(context, A_INT);
+	melee_effect_stat(context, STAT_INT);
 }
 
 /**
@@ -630,7 +630,7 @@ static void melee_effect_handler_lose_int(melee_effect_handler_context_t *contex
  */
 static void melee_effect_handler_lose_wis(melee_effect_handler_context_t *context)
 {
-	melee_effect_stat(context, A_WIS);
+	melee_effect_stat(context, STAT_WIS);
 }
 
 /**
@@ -638,7 +638,7 @@ static void melee_effect_handler_lose_wis(melee_effect_handler_context_t *contex
  */
 static void melee_effect_handler_lose_dex(melee_effect_handler_context_t *context)
 {
-	melee_effect_stat(context, A_DEX);
+	melee_effect_stat(context, STAT_DEX);
 }
 
 /**
@@ -646,7 +646,7 @@ static void melee_effect_handler_lose_dex(melee_effect_handler_context_t *contex
  */
 static void melee_effect_handler_lose_con(melee_effect_handler_context_t *context)
 {
-	melee_effect_stat(context, A_CON);
+	melee_effect_stat(context, STAT_CON);
 }
 
 /**
@@ -658,11 +658,11 @@ static void melee_effect_handler_lose_all(melee_effect_handler_context_t *contex
 	take_hit(context->p, context->damage, context->ddesc);
 
 	/* Damage (stats) */
-	if (do_dec_stat(A_STR, FALSE)) context->obvious = TRUE;
-	if (do_dec_stat(A_DEX, FALSE)) context->obvious = TRUE;
-	if (do_dec_stat(A_CON, FALSE)) context->obvious = TRUE;
-	if (do_dec_stat(A_INT, FALSE)) context->obvious = TRUE;
-	if (do_dec_stat(A_WIS, FALSE)) context->obvious = TRUE;
+	if (do_dec_stat(STAT_STR, FALSE)) context->obvious = TRUE;
+	if (do_dec_stat(STAT_DEX, FALSE)) context->obvious = TRUE;
+	if (do_dec_stat(STAT_CON, FALSE)) context->obvious = TRUE;
+	if (do_dec_stat(STAT_INT, FALSE)) context->obvious = TRUE;
+	if (do_dec_stat(STAT_WIS, FALSE)) context->obvious = TRUE;
 }
 
 /**

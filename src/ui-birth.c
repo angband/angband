@@ -269,7 +269,7 @@ static void race_help(int i, void *db, const region *l)
 	int j;
 	size_t k;
 	struct player_race *r = player_id2race(i);
-	int len = (A_MAX + 1) / 2;
+	int len = (STAT_MAX + 1) / 2;
 
 	int n_flags = 0;
 	int flag_space = 3;
@@ -290,7 +290,7 @@ static void race_help(int i, void *db, const region *l)
 
 		text_out_e("%s%+3d", name, adj);
 
-		if (j*2 + 1 < A_MAX) {
+		if (j*2 + 1 < STAT_MAX) {
 			name = stat_names_reduced[j + len];
 			adj = r->r_adj[j + len];
 			text_out_e("  %s%+3d", name, adj);
@@ -343,7 +343,7 @@ static void class_help(int i, void *db, const region *l)
 	size_t k;
 	struct player_class *c = player_id2class(i);
 	const struct player_race *r = player->race;
-	int len = (A_MAX + 1) / 2;
+	int len = (STAT_MAX + 1) / 2;
 
 	int n_flags = 0;
 	int flag_space = 5;
@@ -364,7 +364,7 @@ static void class_help(int i, void *db, const region *l)
 
 		text_out_e("%s%+3d", name, adj);
 
-		if (j*2 + 1 < A_MAX) {
+		if (j*2 + 1 < STAT_MAX) {
 			name = stat_names_reduced[j + len];
 			adj = c->c_adj[j + len] + r->r_adj[j + len];
 			text_out_e("  %s%+3d", name, adj);
@@ -764,14 +764,14 @@ static void point_based_points(game_event_type type, game_event_data *data, void
 	put_str("Cost", COSTS_ROW - 1, COSTS_COL);
 	
 	/* Display the costs */
-	for (i = 0; i < A_MAX; i++)
+	for (i = 0; i < STAT_MAX; i++)
 	{
 		/* Display cost */
 		put_str(format("%4d", stats[i]), COSTS_ROW + i, COSTS_COL);
 		sum += stats[i];
 	}
 	
-	put_str(format("Total Cost: %2d/%2d", sum, data->birthstats.remaining + sum), COSTS_ROW + A_MAX, TOTAL_COL);
+	put_str(format("Total Cost: %2d/%2d", sum, data->birthstats.remaining + sum), COSTS_ROW + STAT_MAX, TOTAL_COL);
 }
 
 static void point_based_start(void)
@@ -844,11 +844,11 @@ static enum birth_stage point_based_command(void)
 
 		/* Prev stat, looping round to the bottom when going off the top */
 		if (dir == 8)
-			stat = (stat + A_MAX - 1) % A_MAX;
+			stat = (stat + STAT_MAX - 1) % STAT_MAX;
 		
 		/* Next stat, looping round to the top when going off the bottom */
 		if (dir == 2)
-			stat = (stat + 1) % A_MAX;
+			stat = (stat + 1) % STAT_MAX;
 		
 		/* Decrease stat (if possible) */
 		if (dir == 4)

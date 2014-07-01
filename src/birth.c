@@ -105,7 +105,7 @@ struct birther
 
 	s32b au;
 
-	s16b stat[A_MAX];
+	s16b stat[STAT_MAX];
 
 	char *history;
 };
@@ -129,7 +129,7 @@ static void save_roller_data(birther *tosave)
 	tosave->au = player->au_birth;
 
 	/* Save the stats */
-	for (i = 0; i < A_MAX; i++)
+	for (i = 0; i < STAT_MAX; i++)
 		tosave->stat[i] = player->stat_birth[i];
 
 	tosave->history = player->history;
@@ -170,7 +170,7 @@ static void load_roller_data(birther *saved, birther *prev_player)
 	player->au       = STARTING_GOLD;
 
 	/* Load the stats */
-	for (i = 0; i < A_MAX; i++)
+	for (i = 0; i < STAT_MAX; i++)
 	{
 		player->stat_max[i] = player->stat_cur[i] = player->stat_birth[i] = saved->stat[i];
 	}
@@ -188,7 +188,7 @@ static void load_roller_data(birther *saved, birther *prev_player)
  *
  * For efficiency, we include a chunk of "calc_bonuses()".
  */
-static void get_stats(int stat_use[A_MAX])
+static void get_stats(int stat_use[STAT_MAX])
 {
 	int i, j;
 
@@ -213,7 +213,7 @@ static void get_stats(int stat_use[A_MAX])
 	}
 
 	/* Roll the stats */
-	for (i = 0; i < A_MAX; i++)
+	for (i = 0; i < STAT_MAX; i++)
 	{
 		int bonus;
 
@@ -544,7 +544,7 @@ static void recalculate_stats(int *stats, int points_left)
 	int i;
 
 	/* Variable stat maxes */
-	for (i = 0; i < A_MAX; i++)
+	for (i = 0; i < STAT_MAX; i++)
 		player->stat_cur[i] = player->stat_max[i] =
 				player->stat_birth[i] = stats[i];
 
@@ -561,14 +561,14 @@ static void recalculate_stats(int *stats, int points_left)
 	event_signal(EVENT_STATS);
 }
 
-static void reset_stats(int stats[A_MAX], int points_spent[A_MAX], int *points_left, bool update_display)
+static void reset_stats(int stats[STAT_MAX], int points_spent[STAT_MAX], int *points_left, bool update_display)
 {
 	int i;
 
 	/* Calculate and signal initial stats and points totals. */
 	*points_left = MAX_BIRTH_POINTS;
 
-	for (i = 0; i < A_MAX; i++)
+	for (i = 0; i < STAT_MAX; i++)
 	{
 		/* Initial stats are all 10 and costs are zero */
 		stats[i] = 10;
@@ -585,10 +585,10 @@ static void reset_stats(int stats[A_MAX], int points_spent[A_MAX], int *points_l
 	}
 }
 
-static bool buy_stat(int choice, int stats[A_MAX], int points_spent[A_MAX], int *points_left, bool update_display)
+static bool buy_stat(int choice, int stats[STAT_MAX], int points_spent[STAT_MAX], int *points_left, bool update_display)
 {
 	/* Must be a valid stat, and have a "base" of below 18 to be adjusted */
-	if (!(choice >= A_MAX || choice < 0) &&	(stats[choice] < 18))
+	if (!(choice >= STAT_MAX || choice < 0) &&	(stats[choice] < 18))
 	{
 		/* Get the cost of buying the extra point (beyond what
 		   it has already cost to get this far). */
@@ -619,11 +619,11 @@ static bool buy_stat(int choice, int stats[A_MAX], int points_spent[A_MAX], int 
 }
 
 
-static bool sell_stat(int choice, int stats[A_MAX], int points_spent[A_MAX],
+static bool sell_stat(int choice, int stats[STAT_MAX], int points_spent[STAT_MAX],
 	int *points_left, bool update_display)
 {
 	/* Must be a valid stat, and we can't "sell" stats below the base of 10. */
-	if (!(choice >= A_MAX || choice < 0) && (stats[choice] > 10))
+	if (!(choice >= STAT_MAX || choice < 0) && (stats[choice] > 10))
 	{
 		int stat_cost = birth_stat_costs[stats[choice]];
 
@@ -663,11 +663,11 @@ static bool sell_stat(int choice, int stats[A_MAX], int points_spent[A_MAX],
  * 3. If there are any points left, spend as much as possible in order 
  *    on DEX and then the non-spell-stat.
  */
-static void generate_stats(int stats[A_MAX], int points_spent[A_MAX], 
+static void generate_stats(int stats[STAT_MAX], int points_spent[STAT_MAX], 
 						   int *points_left)
 {
 	int step = 0;
-	int maxed[A_MAX] = { 0 };
+	int maxed[STAT_MAX] = { 0 };
 	int spell_stat = player->class->magic.spell_realm->stat;
 	bool caster = FALSE, warrior = FALSE;
 
@@ -688,10 +688,10 @@ static void generate_stats(int stats[A_MAX], int points_spent[A_MAX],
 			/* Buy base STR 17 */
 			case 0: {
 			
-				if (!maxed[A_STR] && stats[A_STR] < 17) {
+				if (!maxed[STAT_STR] && stats[STAT_STR] < 17) {
 				
-					if (!buy_stat(A_STR, stats, points_spent, points_left, FALSE))
-						maxed[A_STR] = TRUE;
+					if (!buy_stat(STAT_STR, stats, points_spent, points_left, FALSE))
+						maxed[STAT_STR] = TRUE;
 						
 				} else {
 				
@@ -709,10 +709,10 @@ static void generate_stats(int stats[A_MAX], int points_spent[A_MAX],
 			/* Try and buy adj DEX of 18/10 */
 			case 1: {
 							
-				if (!maxed[A_DEX] && player->state.stat_top[A_DEX] < 18+10){
+				if (!maxed[STAT_DEX] && player->state.stat_top[STAT_DEX] < 18+10){
 				
-					if (!buy_stat(A_DEX, stats, points_spent, points_left, FALSE))
-						maxed[A_DEX] = TRUE;
+					if (!buy_stat(STAT_DEX, stats, points_spent, points_left, FALSE))
+						maxed[STAT_DEX] = TRUE;
 						
 				} else {
 				
@@ -725,12 +725,12 @@ static void generate_stats(int stats[A_MAX], int points_spent[A_MAX],
 			/* If we can't get 18/10 dex, sell it back. */
 			case 2: {
 			
-				if (player->state.stat_top[A_DEX] < 18+10){
+				if (player->state.stat_top[STAT_DEX] < 18+10){
 				
-					while (stats[A_DEX] > 10)
-						sell_stat(A_DEX, stats, points_spent, points_left, FALSE);
+					while (stats[STAT_DEX] > 10)
+						sell_stat(STAT_DEX, stats, points_spent, points_left, FALSE);
 
-					maxed[A_DEX] = FALSE;
+					maxed[STAT_DEX] = FALSE;
 				}
 				
 				step++;
@@ -771,17 +771,17 @@ static void generate_stats(int stats[A_MAX], int points_spent[A_MAX],
 				}
 
 				/* Skip CON for casters because DEX is more important early and is handled in 4 */
-				while (!maxed[A_CON] &&
-					   !(caster) && stats[A_CON] < 16 &&
-					   points_spent[A_CON] < points_trigger) {
+				while (!maxed[STAT_CON] &&
+					   !(caster) && stats[STAT_CON] < 16 &&
+					   points_spent[STAT_CON] < points_trigger) {
 					   
-					if (!buy_stat(A_CON, stats, points_spent,points_left, FALSE)) {
-						maxed[A_CON] = TRUE;
+					if (!buy_stat(STAT_CON, stats, points_spent,points_left, FALSE)) {
+						maxed[STAT_CON] = TRUE;
 					}
 					
-					if (points_spent[A_CON] > points_trigger) {
-						sell_stat(A_CON, stats, points_spent, points_left, FALSE);
-						maxed[A_CON] = TRUE;
+					if (points_spent[STAT_CON] > points_trigger) {
+						sell_stat(STAT_CON, stats, points_spent, points_left, FALSE);
+						maxed[STAT_CON] = TRUE;
 					}
 				}
 				
@@ -797,12 +797,12 @@ static void generate_stats(int stats[A_MAX], int points_spent[A_MAX],
 			
 				int next_stat;
 
-				if (!maxed[A_DEX]) {
-					next_stat = A_DEX;
-				} else if (!maxed[A_INT] && spell_stat != A_INT) {
-					next_stat = A_INT;
-				} else if (!maxed[A_WIS] && spell_stat != A_WIS) {
-					next_stat = A_WIS;
+				if (!maxed[STAT_DEX]) {
+					next_stat = STAT_DEX;
+				} else if (!maxed[STAT_INT] && spell_stat != STAT_INT) {
+					next_stat = STAT_INT;
+				} else if (!maxed[STAT_WIS] && spell_stat != STAT_WIS) {
+					next_stat = STAT_WIS;
 				} else {
 					step++;
 					break;
@@ -897,8 +897,8 @@ void player_birth(bool quickstart_allowed)
 	struct command blank = { CMD_NULL, 0, {{0}} };
 	struct command *cmd = &blank;
 
-	int stats[A_MAX];
-	int points_spent[A_MAX];
+	int stats[STAT_MAX];
+	int points_spent[STAT_MAX];
 	int points_left;
 	char *buf;
 	int success;
@@ -1045,7 +1045,7 @@ void player_birth(bool quickstart_allowed)
 
 			/* Give the UI some dummy info about the points situation. */
 			points_left = 0;
-			for (i = 0; i < A_MAX; i++)
+			for (i = 0; i < STAT_MAX; i++)
 			{
 				points_spent[i] = 0;
 			}

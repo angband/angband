@@ -715,7 +715,7 @@ void do_cmd_fire(struct command *cmd) {
 void do_cmd_throw(struct command *cmd) {
 	int item, dir;
 	int shots = 1;
-	int str = adj_str_blow[player->state.stat_ind[A_STR]];
+	int str = adj_str_blow[player->state.stat_ind[STAT_STR]];
 	ranged_attack attack = make_ranged_throw;
 
 	int weight;

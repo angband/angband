@@ -88,7 +88,7 @@ static void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MA
 
 		/* Steal item - requires non-artifacts */
 		if (!item_is_equipped(player, i) && (!known || !o_ptr->artifact) &&
-				player->lev + adj_dex_safe[st.stat_ind[A_DEX]] < 100)
+				player->lev + adj_dex_safe[st.stat_ind[STAT_DEX]] < 100)
 			melee_colors[RBE_EAT_ITEM] = TERM_L_RED;
 
 		/* Eat food - requries food */
@@ -308,7 +308,7 @@ static void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MA
 	}
 
 	/* Gold theft */
-	if (player->lev + adj_dex_safe[st.stat_ind[A_DEX]] < 100 && player->au)
+	if (player->lev + adj_dex_safe[st.stat_ind[STAT_DEX]] < 100 && player->au)
 		melee_colors[RBE_EAT_GOLD] = TERM_YELLOW;
 
 	/* Melee blindness and hallucinations */

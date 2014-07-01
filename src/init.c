@@ -2065,11 +2065,11 @@ static enum parser_error parse_p_s(struct parser *p) {
 	struct player_race *r = parser_priv(p);
 	if (!r)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	r->r_adj[A_STR] = parser_getint(p, "str");
-	r->r_adj[A_DEX] = parser_getint(p, "dex");
-	r->r_adj[A_CON] = parser_getint(p, "con");
-	r->r_adj[A_INT] = parser_getint(p, "int");
-	r->r_adj[A_WIS] = parser_getint(p, "wis");
+	r->r_adj[STAT_STR] = parser_getint(p, "str");
+	r->r_adj[STAT_DEX] = parser_getint(p, "dex");
+	r->r_adj[STAT_CON] = parser_getint(p, "con");
+	r->r_adj[STAT_INT] = parser_getint(p, "int");
+	r->r_adj[STAT_WIS] = parser_getint(p, "wis");
 	return PARSE_ERROR_NONE;
 }
 
@@ -2272,11 +2272,11 @@ static enum parser_error parse_c_s(struct parser *p) {
 	if (!c)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 
-	c->c_adj[A_STR] = parser_getint(p, "str");
-	c->c_adj[A_INT] = parser_getint(p, "int");
-	c->c_adj[A_WIS] = parser_getint(p, "wis");
-	c->c_adj[A_DEX] = parser_getint(p, "dex");
-	c->c_adj[A_CON] = parser_getint(p, "con");
+	c->c_adj[STAT_STR] = parser_getint(p, "str");
+	c->c_adj[STAT_INT] = parser_getint(p, "int");
+	c->c_adj[STAT_WIS] = parser_getint(p, "wis");
+	c->c_adj[STAT_DEX] = parser_getint(p, "dex");
+	c->c_adj[STAT_CON] = parser_getint(p, "con");
 	return PARSE_ERROR_NONE;
 }
 

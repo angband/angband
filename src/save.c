@@ -462,10 +462,10 @@ void wr_player(void)
 	wr_s16b(player->wt);
 
 	/* Dump the stats (maximum and current and birth) */
-	wr_byte(A_MAX);
-	for (i = 0; i < A_MAX; ++i) wr_s16b(player->stat_max[i]);
-	for (i = 0; i < A_MAX; ++i) wr_s16b(player->stat_cur[i]);
-	for (i = 0; i < A_MAX; ++i) wr_s16b(player->stat_birth[i]);
+	wr_byte(STAT_MAX);
+	for (i = 0; i < STAT_MAX; ++i) wr_s16b(player->stat_max[i]);
+	for (i = 0; i < STAT_MAX; ++i) wr_s16b(player->stat_cur[i]);
+	for (i = 0; i < STAT_MAX; ++i) wr_s16b(player->stat_birth[i]);
 
 	wr_s16b(player->ht_birth);
 	wr_s16b(player->wt_birth);

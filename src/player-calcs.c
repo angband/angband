@@ -1456,7 +1456,7 @@ static void calc_hitpoints(void)
 	int mhp;
 
 	/* Get "1/100th hitpoint bonus per level" value */
-	bonus = adj_con_mhp[player->state.stat_ind[A_CON]];
+	bonus = adj_con_mhp[player->state.stat_ind[STAT_CON]];
 
 	/* Calculate hitpoints */
 	mhp = player->player_hp[player->lev-1] + (bonus * player->lev / 100);
@@ -1588,14 +1588,14 @@ int calc_blows(const object_type *o_ptr, player_state *state, int extra_blows)
 		o_ptr->weight);
 
 	/* Get the strength vs weight */
-	str_index = adj_str_blow[state->stat_ind[A_STR]] *
+	str_index = adj_str_blow[state->stat_ind[STAT_STR]] *
 			player->class->att_multiply / div;
 
 	/* Maximal value */
 	if (str_index > 11) str_index = 11;
 
 	/* Index by dexterity */
-	dex_index = MIN(adj_dex_blow[state->stat_ind[A_DEX]], 11);
+	dex_index = MIN(adj_dex_blow[state->stat_ind[STAT_DEX]], 11);
 
 	/* Use the blows table to get energy per blow */
 	blow_energy = blows_table[str_index][dex_index];
@@ -1615,7 +1615,7 @@ static int weight_limit(player_state *state)
 	int i;
 
 	/* Weight limit based only on strength */
-	i = adj_str_wgt[state->stat_ind[A_STR]] * 100;
+	i = adj_str_wgt[state->stat_ind[STAT_STR]] * 100;
 
 	/* Return the result */
 	return (i);
@@ -1630,7 +1630,7 @@ int weight_remaining(void)
 	int i;
 
 	/* Weight limit based only on strength */
-	i = 60 * adj_str_wgt[player->state.stat_ind[A_STR]]
+	i = 60 * adj_str_wgt[player->state.stat_ind[STAT_STR]]
 		- player->upkeep->total_weight - 1;
 
 	/* Return the result */
@@ -1727,11 +1727,11 @@ void calc_bonuses(object_type gear[], player_state *state, bool known_only)
 		of_union(collect_f, f);
 
 		/* Affect stats */
-		state->stat_add[A_STR] += o_ptr->modifiers[OBJ_MOD_STR];
-		state->stat_add[A_INT] += o_ptr->modifiers[OBJ_MOD_INT];
-		state->stat_add[A_WIS] += o_ptr->modifiers[OBJ_MOD_WIS];
-		state->stat_add[A_DEX] += o_ptr->modifiers[OBJ_MOD_DEX];
-		state->stat_add[A_CON] += o_ptr->modifiers[OBJ_MOD_CON];
+		state->stat_add[STAT_STR] += o_ptr->modifiers[OBJ_MOD_STR];
+		state->stat_add[STAT_INT] += o_ptr->modifiers[OBJ_MOD_INT];
+		state->stat_add[STAT_WIS] += o_ptr->modifiers[OBJ_MOD_WIS];
+		state->stat_add[STAT_DEX] += o_ptr->modifiers[OBJ_MOD_DEX];
+		state->stat_add[STAT_CON] += o_ptr->modifiers[OBJ_MOD_CON];
 
 		/* Affect stealth */
 		state->skills[SKILL_STEALTH] += o_ptr->modifiers[OBJ_MOD_STEALTH];
@@ -1804,7 +1804,7 @@ void calc_bonuses(object_type gear[], player_state *state, bool known_only)
 	/*** Handle stats ***/
 
 	/* Calculate stats */
-	for (i = 0; i < A_MAX; i++)
+	for (i = 0; i < STAT_MAX; i++)
 	{
 		int add, top, use, ind;
 
@@ -2016,26 +2016,26 @@ void calc_bonuses(object_type gear[], player_state *state, bool known_only)
 	/*** Apply modifier bonuses ***/
 
 	/* Modifier Bonuses (Un-inflate stat bonuses) */
-	state->to_a += ((int)(adj_dex_ta[state->stat_ind[A_DEX]]) - 128);
-	state->to_d += ((int)(adj_str_td[state->stat_ind[A_STR]]) - 128);
-	state->to_h += ((int)(adj_dex_th[state->stat_ind[A_DEX]]) - 128);
-	state->to_h += ((int)(adj_str_th[state->stat_ind[A_STR]]) - 128);
+	state->to_a += ((int)(adj_dex_ta[state->stat_ind[STAT_DEX]]) - 128);
+	state->to_d += ((int)(adj_str_td[state->stat_ind[STAT_STR]]) - 128);
+	state->to_h += ((int)(adj_dex_th[state->stat_ind[STAT_DEX]]) - 128);
+	state->to_h += ((int)(adj_str_th[state->stat_ind[STAT_STR]]) - 128);
 
 
 	/*** Modify skills ***/
 
 	/* Affect Skill -- disarming (DEX and INT) */
-	state->skills[SKILL_DISARM] += adj_dex_dis[state->stat_ind[A_DEX]];
-	state->skills[SKILL_DISARM] += adj_int_dis[state->stat_ind[A_INT]];
+	state->skills[SKILL_DISARM] += adj_dex_dis[state->stat_ind[STAT_DEX]];
+	state->skills[SKILL_DISARM] += adj_int_dis[state->stat_ind[STAT_INT]];
 
 	/* Affect Skill -- magic devices (INT) */
-	state->skills[SKILL_DEVICE] += adj_int_dev[state->stat_ind[A_INT]];
+	state->skills[SKILL_DEVICE] += adj_int_dev[state->stat_ind[STAT_INT]];
 
 	/* Affect Skill -- saving throw (WIS) */
-	state->skills[SKILL_SAVE] += adj_wis_sav[state->stat_ind[A_WIS]];
+	state->skills[SKILL_SAVE] += adj_wis_sav[state->stat_ind[STAT_WIS]];
 
 	/* Affect Skill -- digging (STR) */
-	state->skills[SKILL_DIGGING] += adj_str_dig[state->stat_ind[A_STR]];
+	state->skills[SKILL_DIGGING] += adj_str_dig[state->stat_ind[STAT_STR]];
 
 	/* Affect Skills (Level, by Class) */
 	for (i = 0; i < SKILL_MAX; i++)
@@ -2052,7 +2052,7 @@ void calc_bonuses(object_type gear[], player_state *state, bool known_only)
 	state->noise = (1L << (30 - state->skills[SKILL_STEALTH]));
 
 	/* Obtain the "hold" value */
-	hold = adj_str_hold[state->stat_ind[A_STR]];
+	hold = adj_str_hold[state->stat_ind[STAT_STR]];
 
 
 	/*** Analyze current bow ***/
@@ -2188,7 +2188,7 @@ static void update_bonuses(void)
 	/*** Notice changes ***/
 
 	/* Analyze stats */
-	for (i = 0; i < A_MAX; i++) {
+	for (i = 0; i < STAT_MAX; i++) {
 		/* Notice changes */
 		if (state->stat_top[i] != old.stat_top[i])
 			/* Redisplay the stats later */
@@ -2202,7 +2202,7 @@ static void update_bonuses(void)
 		/* Notice changes */
 		if (state->stat_ind[i] != old.stat_ind[i]) {
 			/* Change in CON affects Hitpoints */
-			if (i == A_CON)
+			if (i == STAT_CON)
 				player->upkeep->update |= (PU_HP);
 
 			/* Change in stats may affect Mana/Spells */

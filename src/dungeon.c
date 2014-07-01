@@ -461,7 +461,7 @@ static void play_ambient_sound(void)
  */
 static void decrease_timeouts(void)
 {
-	int adjust = (adj_con_fix[player->state.stat_ind[A_CON]] + 1);
+	int adjust = (adj_con_fix[player->state.stat_ind[STAT_CON]] + 1);
 	int i;
 
 	/* Decrement all effects that can be done simply */

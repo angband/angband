@@ -473,7 +473,7 @@ bool spell_cast(int spell, int dir)
 			msg("You have damaged your health!");
 
 			/* Reduce constitution */
-			player_stat_dec(player, A_CON, perm);
+			player_stat_dec(player, STAT_CON, perm);
 		}
 	}
 
@@ -974,11 +974,11 @@ static bool spell_handler_PROTECTION_FROM_EVIL(spell_handler_context_t *context)
 
 static bool spell_handler_RESTORATION(spell_handler_context_t *context)
 {
-	(void)do_res_stat(A_STR);
-	(void)do_res_stat(A_INT);
-	(void)do_res_stat(A_WIS);
-	(void)do_res_stat(A_DEX);
-	(void)do_res_stat(A_CON);
+	(void)do_res_stat(STAT_STR);
+	(void)do_res_stat(STAT_INT);
+	(void)do_res_stat(STAT_WIS);
+	(void)do_res_stat(STAT_DEX);
+	(void)do_res_stat(STAT_CON);
 	return TRUE;
 }
 

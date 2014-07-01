@@ -676,7 +676,7 @@ int rd_player(void)
 {
 	int i;
 	byte num;
-	byte a_max = 0;
+	byte stat_max = 0;
 	char buf[80];
 
 	rd_string(op_ptr->full_name, sizeof(op_ptr->full_name));
@@ -720,11 +720,11 @@ int rd_player(void)
 	rd_s16b(&player->wt);
 
 	/* Read the stat info */
-	rd_byte(&a_max);
-	assert(a_max <= A_MAX);
-	for (i = 0; i < a_max; i++) rd_s16b(&player->stat_max[i]);
-	for (i = 0; i < a_max; i++) rd_s16b(&player->stat_cur[i]);
-	for (i = 0; i < a_max; i++) rd_s16b(&player->stat_birth[i]);
+	rd_byte(&stat_max);
+	assert(stat_max <= STAT_MAX);
+	for (i = 0; i < stat_max; i++) rd_s16b(&player->stat_max[i]);
+	for (i = 0; i < stat_max; i++) rd_s16b(&player->stat_cur[i]);
+	for (i = 0; i < stat_max; i++) rd_s16b(&player->stat_birth[i]);
 
 	rd_s16b(&player->ht_birth);
 	rd_s16b(&player->wt_birth);

@@ -272,7 +272,7 @@ static void do_cmd_wiz_change_aux(void)
 
 
 	/* Query the stats */
-	for (i = 0; i < A_MAX; i++)
+	for (i = 0; i < STAT_MAX; i++)
 	{
 		/* Prompt */
 		strnfmt(ppp, sizeof(ppp), "%s (3-118): ", stat_names[i]);
@@ -1168,11 +1168,11 @@ static void do_cmd_wiz_cure_all(void)
 	(void)remove_all_curse();
 
 	/* Restore stats */
-	(void)res_stat(A_STR);
-	(void)res_stat(A_INT);
-	(void)res_stat(A_WIS);
-	(void)res_stat(A_CON);
-	(void)res_stat(A_DEX);
+	(void)res_stat(STAT_STR);
+	(void)res_stat(STAT_INT);
+	(void)res_stat(STAT_WIS);
+	(void)res_stat(STAT_CON);
+	(void)res_stat(STAT_DEX);
 
 	/* Restore the level */
 	(void)restore_level();
@@ -1653,7 +1653,7 @@ static void do_cmd_wiz_advance(void)
 	int i;
 
 	/* Max stats */
-	for (i = 0; i < A_MAX; i++)
+	for (i = 0; i < STAT_MAX; i++)
 		player->stat_cur[i] = player->stat_max[i] = 118;
 
 	/* Lots of money */

@@ -224,11 +224,11 @@ bool effect_stat_restore_one(effect_handler_context_t *context, int stat)
 
 bool effect_stat_restore_all(effect_handler_context_t *context)
 {
-	effect_stat_restore_one(context, A_STR);
-	effect_stat_restore_one(context, A_INT);
-	effect_stat_restore_one(context, A_WIS);
-	effect_stat_restore_one(context, A_DEX);
-	effect_stat_restore_one(context, A_CON);
+	effect_stat_restore_one(context, STAT_STR);
+	effect_stat_restore_one(context, STAT_INT);
+	effect_stat_restore_one(context, STAT_WIS);
+	effect_stat_restore_one(context, STAT_DEX);
+	effect_stat_restore_one(context, STAT_CON);
 	return TRUE;
 }
 
@@ -436,22 +436,22 @@ bool effect_handler_RESTORE_MANA(effect_handler_context_t *context)
 
 bool effect_handler_GAIN_ALL(effect_handler_context_t *context)
 {
-	effect_stat_gain(context, A_STR);
-	effect_stat_gain(context, A_INT);
-	effect_stat_gain(context, A_WIS);
-	effect_stat_gain(context, A_DEX);
-	effect_stat_gain(context, A_CON);
+	effect_stat_gain(context, STAT_STR);
+	effect_stat_gain(context, STAT_INT);
+	effect_stat_gain(context, STAT_WIS);
+	effect_stat_gain(context, STAT_DEX);
+	effect_stat_gain(context, STAT_CON);
 	return TRUE;
 }
 
 bool effect_handler_BRAWN(effect_handler_context_t *context)
 {
 	/* Pick a random stat to decrease other than strength */
-	int stat = randint0(A_MAX-1) + 1;
+	int stat = randint0(STAT_MAX-1) + 1;
 
 	if (do_dec_stat(stat, TRUE))
 	{
-		do_inc_stat(A_STR);
+		do_inc_stat(STAT_STR);
 		context->ident = TRUE;
 	}
 
@@ -461,12 +461,12 @@ bool effect_handler_BRAWN(effect_handler_context_t *context)
 bool effect_handler_INTELLECT(effect_handler_context_t *context)
 {
 	/* Pick a random stat to decrease other than intelligence */
-	int stat = randint0(A_MAX-1);
-	if (stat >= A_INT) stat++;
+	int stat = randint0(STAT_MAX-1);
+	if (stat >= STAT_INT) stat++;
 
 	if (do_dec_stat(stat, TRUE))
 	{
-		do_inc_stat(A_INT);
+		do_inc_stat(STAT_INT);
 		context->ident = TRUE;
 	}
 
@@ -476,12 +476,12 @@ bool effect_handler_INTELLECT(effect_handler_context_t *context)
 bool effect_handler_CONTEMPLATION(effect_handler_context_t *context)
 {
 	/* Pick a random stat to decrease other than wisdom */
-	int stat = randint0(A_MAX-1);
-	if (stat >= A_WIS) stat++;
+	int stat = randint0(STAT_MAX-1);
+	if (stat >= STAT_WIS) stat++;
 
 	if (do_dec_stat(stat, TRUE))
 	{
-		do_inc_stat(A_WIS);
+		do_inc_stat(STAT_WIS);
 		context->ident = TRUE;
 	}
 
@@ -491,12 +491,12 @@ bool effect_handler_CONTEMPLATION(effect_handler_context_t *context)
 bool effect_handler_TOUGHNESS(effect_handler_context_t *context)
 {
 	/* Pick a random stat to decrease other than constitution */
-	int stat = randint0(A_MAX-1);
-	if (stat >= A_CON) stat++;
+	int stat = randint0(STAT_MAX-1);
+	if (stat >= STAT_CON) stat++;
 
 	if (do_dec_stat(stat, TRUE))
 	{
-		do_inc_stat(A_CON);
+		do_inc_stat(STAT_CON);
 		context->ident = TRUE;
 	}
 
@@ -506,12 +506,12 @@ bool effect_handler_TOUGHNESS(effect_handler_context_t *context)
 bool effect_handler_NIMBLENESS(effect_handler_context_t *context)
 {
 	/* Pick a random stat to decrease other than dexterity */
-	int stat = randint0(A_MAX-1);
-	if (stat >= A_DEX) stat++;
+	int stat = randint0(STAT_MAX-1);
+	if (stat >= STAT_DEX) stat++;
 
 	if (do_dec_stat(stat, TRUE))
 	{
-		do_inc_stat(A_DEX);
+		do_inc_stat(STAT_DEX);
 		context->ident = TRUE;
 	}
 
@@ -522,7 +522,7 @@ bool effect_handler_LOSE_CON2(effect_handler_context_t *context)
 {
 	int dam = effect_calculate_value(context, FALSE);
 	take_hit(player, dam, "poisonous food");
-	(void)do_dec_stat(A_CON, FALSE);
+	(void)do_dec_stat(STAT_CON, FALSE);
 	context->ident = TRUE;
 
 	return TRUE;
@@ -593,8 +593,8 @@ bool effect_handler_ENLIGHTENMENT2(effect_handler_context_t *context)
 	msg("You begin to feel more enlightened...");
 	message_flush();
 	wiz_light(cave, TRUE);
-	(void)do_inc_stat(A_INT);
-	(void)do_inc_stat(A_WIS);
+	(void)do_inc_stat(STAT_INT);
+	(void)do_inc_stat(STAT_WIS);
 	(void)detect_traps(TRUE);
 	(void)detect_doorstairs(TRUE);
 	(void)detect_treasure(TRUE, TRUE);
@@ -1299,7 +1299,7 @@ bool effect_handler_WAND_BREATH(effect_handler_context_t *context)
 
 bool effect_handler_STAFF_MAGI(effect_handler_context_t *context)
 {
-	if (do_res_stat(A_INT)) context->ident = TRUE;
+	if (do_res_stat(STAT_INT)) context->ident = TRUE;
 	if (player->csp < player->msp)
 	{
 		player->csp = player->msp;
@@ -1358,11 +1358,11 @@ bool effect_handler_DRINK_RUIN(effect_handler_context_t *context)
 	int dam = effect_calculate_value(context, FALSE);
 	msg("Your nerves and muscles feel weak and lifeless!");
 	take_hit(player, dam, "a potion of Ruination");
-	player_stat_dec(player, A_DEX, TRUE);
-	player_stat_dec(player, A_WIS, TRUE);
-	player_stat_dec(player, A_CON, TRUE);
-	player_stat_dec(player, A_STR, TRUE);
-	player_stat_dec(player, A_INT, TRUE);
+	player_stat_dec(player, STAT_DEX, TRUE);
+	player_stat_dec(player, STAT_WIS, TRUE);
+	player_stat_dec(player, STAT_CON, TRUE);
+	player_stat_dec(player, STAT_STR, TRUE);
+	player_stat_dec(player, STAT_INT, TRUE);
 	context->ident = TRUE;
 	return TRUE;
 }
@@ -1457,7 +1457,7 @@ bool effect_handler_SHROOM_STONE(effect_handler_context_t *context)
 
 bool effect_handler_SHROOM_DEBILITY(effect_handler_context_t *context)
 {
-	int stat = one_in_(2) ? A_STR : A_CON;
+	int stat = one_in_(2) ? STAT_STR : STAT_CON;
 
 	if (player->csp < player->msp)
 	{
@@ -1477,8 +1477,8 @@ bool effect_handler_SHROOM_DEBILITY(effect_handler_context_t *context)
 bool effect_handler_SHROOM_PURGING(effect_handler_context_t *context)
 {
 	player_set_food(player, PY_FOOD_FAINT - 1);
-	if (do_res_stat(A_STR)) context->ident = TRUE;
-	if (do_res_stat(A_CON)) context->ident = TRUE;
+	if (do_res_stat(STAT_STR)) context->ident = TRUE;
+	if (do_res_stat(STAT_CON)) context->ident = TRUE;
 	if (player_clear_timed(player, TMD_POISONED, TRUE)) context->ident = TRUE;
 	return TRUE;
 }
@@ -1746,7 +1746,7 @@ bool effect_handler_TRAP_DART_LOSE_STR(effect_handler_context_t *context)
 	if (trap_check_hit(125)) {
 		msg("A small dart hits you!");
 		take_hit(player, damroll(1, 4), "a trap");
-		(void)do_dec_stat(A_STR, FALSE);
+		(void)do_dec_stat(STAT_STR, FALSE);
 	} else {
 		msg("A small dart barely misses you.");
 	}
@@ -1758,7 +1758,7 @@ bool effect_handler_TRAP_DART_LOSE_DEX(effect_handler_context_t *context)
 	if (trap_check_hit(125)) {
 		msg("A small dart hits you!");
 		take_hit(player, damroll(1, 4), "a trap");
-		(void)do_dec_stat(A_DEX, FALSE);
+		(void)do_dec_stat(STAT_DEX, FALSE);
 	} else {
 		msg("A small dart barely misses you.");
 	}
@@ -1770,7 +1770,7 @@ bool effect_handler_TRAP_DART_LOSE_CON(effect_handler_context_t *context)
 	if (trap_check_hit(125)) {
 		msg("A small dart hits you!");
 		take_hit(player, damroll(1, 4), "a trap");
-		(void)do_dec_stat(A_CON, FALSE);
+		(void)do_dec_stat(STAT_CON, FALSE);
 	} else {
 		msg("A small dart barely misses you.");
 	}

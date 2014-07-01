@@ -1,5 +1,6 @@
-/** \file player-calcs.h
-	\brief Player temporary status structures.
+/**
+   \file player-calcs.h
+   \brief Player temporary status structures.
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  * Copyright (c) 2014 Nick McConnell
@@ -24,13 +25,11 @@
  */
 enum
 {
-	A_STR = 0,
-	A_INT,
-	A_WIS,
-	A_DEX,
-	A_CON,
+	#define STAT(a, b, c, d) STAT_##a,
+	#include "list-stats.h"
+	#undef STAT
 
-	A_MAX
+	STAT_MAX
 };
 
 
@@ -174,10 +173,10 @@ typedef struct player_state {
 	byte ammo_mult;		/* Ammo multiplier */
 	byte ammo_tval;		/* Ammo variety */
 
-	s16b stat_add[A_MAX];	/* Equipment stat bonuses */
-	s16b stat_ind[A_MAX];	/* Indexes into stat tables */
-	s16b stat_use[A_MAX];	/* Current modified stats */
-	s16b stat_top[A_MAX];	/* Maximal modified stats */
+	s16b stat_add[STAT_MAX];	/* Equipment stat bonuses */
+	s16b stat_ind[STAT_MAX];	/* Indexes into stat tables */
+	s16b stat_use[STAT_MAX];	/* Current modified stats */
+	s16b stat_top[STAT_MAX];	/* Maximal modified stats */
 
 	s16b ac;			/* Base ac */
 	s16b to_a;			/* Bonus to ac */

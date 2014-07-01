@@ -65,9 +65,9 @@ const player_sex sex_info[MAX_SEXES] =
  */
 struct magic_realm realms[REALM_MAX] =
 {
-	{ REALM_NONE, A_STR, "", "", "", "" },
-	{ REALM_ARCANE, A_INT, "cast", "spell", "magic book", "arcane" },
-	{ REALM_PIOUS, A_WIS, "recite", "prayer", "prayer book", "divine" }
+	{ REALM_NONE, STAT_STR, "", "", "", "" },
+	{ REALM_ARCANE, STAT_INT, "cast", "spell", "magic book", "arcane" },
+	{ REALM_PIOUS, STAT_WIS, "recite", "prayer", "prayer book", "divine" }
 };
 
 
@@ -241,11 +241,11 @@ static void adjust_level(struct player *p, bool verbose)
 			msgt(MSG_LEVEL, "Welcome to level %d.",	p->lev);
 		}
 
-		do_res_stat(A_STR);
-		do_res_stat(A_INT);
-		do_res_stat(A_WIS);
-		do_res_stat(A_DEX);
-		do_res_stat(A_CON);
+		do_res_stat(STAT_STR);
+		do_res_stat(STAT_INT);
+		do_res_stat(STAT_WIS);
+		do_res_stat(STAT_DEX);
+		do_res_stat(STAT_CON);
 	}
 
 	while ((p->max_lev < PY_MAX_LEVEL) &&

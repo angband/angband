@@ -34,11 +34,11 @@ int test_s0(void *state) {
 	eq(r, PARSE_ERROR_NONE);
 	pr = parser_priv(state);
 	require(pr);
-	eq(pr->r_adj[A_STR], 1);
-	eq(pr->r_adj[A_INT], -1);
-	eq(pr->r_adj[A_WIS], 2);
-	eq(pr->r_adj[A_DEX], -2);
-	eq(pr->r_adj[A_CON], 3);
+	eq(pr->r_adj[STAT_STR], 1);
+	eq(pr->r_adj[STAT_INT], -1);
+	eq(pr->r_adj[STAT_WIS], 2);
+	eq(pr->r_adj[STAT_DEX], -2);
+	eq(pr->r_adj[STAT_CON], 3);
 	ok;
 }
 

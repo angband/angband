@@ -217,23 +217,23 @@ bool do_dec_stat(int stat, bool perma)
 	/* Get the "sustain" */
 	switch (stat)
 	{
-		case A_STR:
+		case STAT_STR:
 			if (player_of_has(player, OF_SUST_STR)) sust = TRUE;
 			wieldeds_notice_flag(player, OF_SUST_STR);
 			break;
-		case A_INT:
+		case STAT_INT:
 			if (player_of_has(player, OF_SUST_INT)) sust = TRUE;
 			wieldeds_notice_flag(player, OF_SUST_INT);
 			break;
-		case A_WIS:
+		case STAT_WIS:
 			if (player_of_has(player, OF_SUST_WIS)) sust = TRUE;
 			wieldeds_notice_flag(player, OF_SUST_WIS);
 			break;
-		case A_DEX:
+		case STAT_DEX:
 			if (player_of_has(player, OF_SUST_DEX)) sust = TRUE;
 			wieldeds_notice_flag(player, OF_SUST_DEX);
 			break;
-		case A_CON:
+		case STAT_CON:
 			if (player_of_has(player, OF_SUST_CON)) sust = TRUE;
 			wieldeds_notice_flag(player, OF_SUST_CON);
 			break;
@@ -3390,11 +3390,11 @@ void ring_of_power(int dir)
 			msg("You are surrounded by a malignant aura.");
 
 			/* Decrease all stats (permanently) */
-			player_stat_dec(player, A_STR, TRUE);
-			player_stat_dec(player, A_INT, TRUE);
-			player_stat_dec(player, A_WIS, TRUE);
-			player_stat_dec(player, A_DEX, TRUE);
-			player_stat_dec(player, A_CON, TRUE);
+			player_stat_dec(player, STAT_STR, TRUE);
+			player_stat_dec(player, STAT_INT, TRUE);
+			player_stat_dec(player, STAT_WIS, TRUE);
+			player_stat_dec(player, STAT_DEX, TRUE);
+			player_stat_dec(player, STAT_CON, TRUE);
 
 			/* Lose some experience (permanently) */
 			player_exp_lose(player, player->exp / 4, TRUE);

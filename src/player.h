@@ -136,8 +136,8 @@ typedef struct player {
 	s16b csp;			/* Cur mana pts */
 	u16b csp_frac;		/* Cur mana frac (times 2^16) */
 
-	s16b stat_max[A_MAX];	/* Current "maximal" stat values */
-	s16b stat_cur[A_MAX];	/* Current "natural" stat values */
+	s16b stat_max[STAT_MAX];	/* Current "maximal" stat values */
+	s16b stat_cur[STAT_MAX];	/* Current "natural" stat values */
 
 	s16b *timed;		/* Timed effects */
 
@@ -172,7 +172,7 @@ typedef struct player {
 
 	/* Generation fields (for quick start) */
 	s32b au_birth;          /* Birth gold when option birth_money is false */
-	s16b stat_birth[A_MAX]; /* Birth "natural" stat values */
+	s16b stat_birth[STAT_MAX]; /* Birth "natural" stat values */
 	s16b ht_birth;          /* Birth Height */
 	s16b wt_birth;          /* Birth Weight */
 
@@ -209,7 +209,7 @@ struct player_race {
 	
 	unsigned int ridx;
 
-	s16b r_adj[A_MAX];	/* Racial stat bonuses */
+	s16b r_adj[STAT_MAX];	/* Racial stat bonuses */
 	
 	s16b r_skills[SKILL_MAX];	/* racial skills */
 	
@@ -324,7 +324,7 @@ typedef struct player_class {
 	
 	const char *title[10];    /* Titles */
 	
-	s16b c_adj[A_MAX]; /* Class stat modifier */
+	s16b c_adj[STAT_MAX]; /* Class stat modifier */
 	
 	s16b c_skills[SKILL_MAX];	/* class skills */
 	s16b x_skills[SKILL_MAX];	/* extra skills */

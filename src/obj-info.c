@@ -646,8 +646,8 @@ static int obj_known_blows(const object_type *o_ptr, int max_num, struct blow_in
 			extra_blows += helper->modifiers[OBJ_MOD_BLOWS];
 	}
 
-	dex_plus_bound = STAT_RANGE - state.stat_ind[A_DEX];
-	str_plus_bound = STAT_RANGE - state.stat_ind[A_STR];
+	dex_plus_bound = STAT_RANGE - state.stat_ind[STAT_DEX];
+	str_plus_bound = STAT_RANGE - state.stat_ind[STAT_STR];
 
 	/* Then we check for extra "real" blows */
 	for (dex_plus = 0; dex_plus < dex_plus_bound; dex_plus++)
@@ -659,11 +659,11 @@ static int obj_known_blows(const object_type *o_ptr, int max_num, struct blow_in
 				return num;
 			}
 
-			state.stat_ind[A_STR] += str_plus;
-			state.stat_ind[A_DEX] += dex_plus;
+			state.stat_ind[STAT_STR] += str_plus;
+			state.stat_ind[STAT_DEX] += dex_plus;
 			new_blows = calc_blows(o_ptr, &state, extra_blows);
-			state.stat_ind[A_STR] -= str_plus;
-			state.stat_ind[A_DEX] -= dex_plus;
+			state.stat_ind[STAT_STR] -= str_plus;
+			state.stat_ind[STAT_DEX] -= dex_plus;
 
 			/* Test to make sure that this extra blow is a
 			 * new str/dex combination, not a repeat

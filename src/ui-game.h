@@ -3,8 +3,8 @@
 
 #include "angband.h"
 
-extern const char *stat_names[A_MAX];
-extern const char *stat_names_reduced[A_MAX];
+extern const char *stat_names[STAT_MAX];
+extern const char *stat_names_reduced[STAT_MAX];
 extern const char *window_flag_desc[32];
 
 byte monster_health_attr(void);

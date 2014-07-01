@@ -477,11 +477,11 @@ static struct object_kind TEST_DATA test_gold = {
 static struct player_race TEST_DATA test_race = {
 	.name = "TestRace",
 	.r_adj = {
-		[A_STR] = +2,
-		[A_DEX] = +1,
-		[A_CON] = +3,
-		[A_INT] = -1,
-		[A_WIS] = -2,
+		[STAT_STR] = +2,
+		[STAT_DEX] = +1,
+		[STAT_CON] = +3,
+		[STAT_INT] = -1,
+		[STAT_WIS] = -2,
 	},
 	.r_skills = {
 		[SKILL_DISARM] = 0,
@@ -549,11 +549,11 @@ static struct player_class TEST_DATA test_class = {
 	},
 
 	.c_adj = {
-		[A_STR] = +1,
-		[A_DEX] = +2,
-		[A_CON] = -1,
-		[A_INT] = -2,
-		[A_WIS] = +3,
+		[STAT_STR] = +1,
+		[STAT_DEX] = +2,
+		[STAT_CON] = -1,
+		[STAT_INT] = -2,
+		[STAT_WIS] = +3,
 	},
 
 	.c_skills = {
@@ -701,18 +701,18 @@ static struct player TEST_DATA test_player = {
 	.msp = 12,
 	.csp = 11,
 	.stat_max = {
-		[A_STR] = 14,
-		[A_DEX] = 12,
-		[A_CON] = 14,
-		[A_WIS] = 10,
-		[A_INT] = 8,
+		[STAT_STR] = 14,
+		[STAT_DEX] = 12,
+		[STAT_CON] = 14,
+		[STAT_WIS] = 10,
+		[STAT_INT] = 8,
 	},
 	.stat_cur = {
-		[A_STR] = 14,
-		[A_DEX] = 11,
-		[A_CON] = 14,
-		[A_WIS] = 10,
-		[A_INT] = 8,
+		[STAT_STR] = 14,
+		[STAT_DEX] = 11,
+		[STAT_CON] = 14,
+		[STAT_WIS] = 10,
+		[STAT_INT] = 8,
 	},
 	.word_recall = 0,
 	.energy = 100,

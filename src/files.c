@@ -423,7 +423,7 @@ void display_player_stat_info(void)
 	c_put_str(TERM_WHITE, "  Best", row-1, col+24);
 
 	/* Display the stats */
-	for (i = 0; i < A_MAX; i++)
+	for (i = 0; i < STAT_MAX; i++)
 	{
 		/* Reduced */
 		if (player->stat_cur[i] < player->stat_max[i])
@@ -493,7 +493,7 @@ static void display_player_sust_info(void)
 	object_type *o_ptr;
 	bitflag f[OF_SIZE];
 
-	int sustain_flags[A_MAX];
+	int sustain_flags[STAT_MAX];
 
 	byte a;
 	char c;
@@ -506,11 +506,11 @@ static void display_player_sust_info(void)
 	col = 26;
 
 	/* Build the stat flags tables */
-	sustain_flags[A_STR] = OF_SUST_STR;
-	sustain_flags[A_INT] = OF_SUST_INT;
-	sustain_flags[A_WIS] = OF_SUST_WIS;
-	sustain_flags[A_DEX] = OF_SUST_DEX;
-	sustain_flags[A_CON] = OF_SUST_CON;
+	sustain_flags[STAT_STR] = OF_SUST_STR;
+	sustain_flags[STAT_INT] = OF_SUST_INT;
+	sustain_flags[STAT_WIS] = OF_SUST_WIS;
+	sustain_flags[STAT_DEX] = OF_SUST_DEX;
+	sustain_flags[STAT_CON] = OF_SUST_CON;
 
 	/* Header */
 	c_put_str(TERM_WHITE, "abcdefghijkl@", row-1, col);
@@ -530,7 +530,7 @@ static void display_player_sust_info(void)
 		object_flags_known(o_ptr, f);
 
 		/* Initialize color based on sign of modifier. */
-		for (stat = 0; stat < A_MAX; stat++)
+		for (stat = 0; stat < STAT_MAX; stat++)
 		{
 			int mod = stat + 1;
 
@@ -583,7 +583,7 @@ static void display_player_sust_info(void)
 	player_flags(f);
 
 	/* Check stats */
-	for (stat = 0; stat < A_MAX; ++stat)
+	for (stat = 0; stat < STAT_MAX; ++stat)
 	{
 		/* Default */
 		a = TERM_SLATE;

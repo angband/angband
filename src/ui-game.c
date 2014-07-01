@@ -78,7 +78,7 @@ static game_event_type statusline_events[] =
 /*
  * Abbreviations of healthy stats
  */
-const char *stat_names[A_MAX] =
+const char *stat_names[STAT_MAX] =
 {
 	"STR: ", "INT: ", "WIS: ", "DEX: ", "CON: "
 };
@@ -86,7 +86,7 @@ const char *stat_names[A_MAX] =
 /*
  * Abbreviations of damaged stats
  */
-const char *stat_names_reduced[A_MAX] =
+const char *stat_names_reduced[STAT_MAX] =
 {
 	"Str: ", "Int: ", "Wis: ", "Dex: ", "Con: "
 };
@@ -511,11 +511,11 @@ static void prt_depth(int row, int col)
 
 
 /* Some simple wrapper functions */
-static void prt_str(int row, int col) { prt_stat(A_STR, row, col); }
-static void prt_dex(int row, int col) { prt_stat(A_DEX, row, col); }
-static void prt_wis(int row, int col) { prt_stat(A_WIS, row, col); }
-static void prt_int(int row, int col) { prt_stat(A_INT, row, col); }
-static void prt_con(int row, int col) { prt_stat(A_CON, row, col); }
+static void prt_str(int row, int col) { prt_stat(STAT_STR, row, col); }
+static void prt_dex(int row, int col) { prt_stat(STAT_DEX, row, col); }
+static void prt_wis(int row, int col) { prt_stat(STAT_WIS, row, col); }
+static void prt_int(int row, int col) { prt_stat(STAT_INT, row, col); }
+static void prt_con(int row, int col) { prt_stat(STAT_CON, row, col); }
 static void prt_race(int row, int col) { prt_field(player->race->name, row, col); }
 static void prt_class(int row, int col) { prt_field(player->class->name, row, col); }
 
@@ -1410,7 +1410,7 @@ static void update_player_compact_subwindow(game_event_type type, game_event_dat
 	prt_equippy(row++, col);
 
 	/* All Stats */
-	for (i = 0; i < A_MAX; i++) prt_stat(i, row++, col);
+	for (i = 0; i < STAT_MAX; i++) prt_stat(i, row++, col);
 
 	/* Empty row */
 	row++;

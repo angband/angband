@@ -1110,11 +1110,11 @@ static void project_player_drain_stats(int num, bool sustain, bool perma)
 
 	for (i = 0; i < num; i++) {
 		switch (randint1(5)) {
-			case 1: k = A_STR; act = "strong"; break;
-			case 2: k = A_INT; act = "bright"; break;
-			case 3: k = A_WIS; act = "wise"; break;
-			case 4: k = A_DEX; act = "agile"; break;
-			case 5: k = A_CON; act = "hale"; break;
+			case 1: k = STAT_STR; act = "strong"; break;
+			case 2: k = STAT_INT; act = "bright"; break;
+			case 3: k = STAT_WIS; act = "wise"; break;
+			case 4: k = STAT_DEX; act = "agile"; break;
+			case 5: k = STAT_CON; act = "hale"; break;
 		}
 
 		if (sustain)
@@ -1138,8 +1138,8 @@ static void project_player_swap_stats(void)
     msg("Your body starts to scramble...");
 
     /* Pick a pair of stats */
-    ii = randint0(A_MAX);
-    for (jj = ii; jj == ii; jj = randint0(A_MAX)) /* loop */;
+    ii = randint0(STAT_MAX);
+    for (jj = ii; jj == ii; jj = randint0(STAT_MAX)) /* loop */;
 
     max1 = player->stat_max[ii];
     cur1 = player->stat_cur[ii];
@@ -1389,7 +1389,7 @@ static void project_player_handler_TIME(project_player_handler_context_t *contex
 		int i;
 		msg("You're not as powerful as you used to be...");
 
-		for (i = 0; i < A_MAX; i++)
+		for (i = 0; i < STAT_MAX; i++)
 			player_stat_dec(player, i, FALSE);
 	}
 }
