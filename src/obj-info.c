@@ -68,6 +68,9 @@ static const flag_type elements[] =
 
 static const flag_type mod_flags[] =
 {
+	#define STAT(a, b, c, d)	{OBJ_MOD_##a, d},
+    #include "list-stats.h"
+    #undef STAT
 	#define OBJ_MOD(a, b, c, d)	{OBJ_MOD_##a, d},
     #include "list-object-modifiers.h"
     #undef OBJ_MOD

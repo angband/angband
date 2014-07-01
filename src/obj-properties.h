@@ -39,6 +39,9 @@ enum {
 
 /* The object modifiers */
 enum {
+    #define STAT(a, b, c, d) OBJ_MOD_##a,
+    #include "list-stats.h"
+    #undef STAT
     #define OBJ_MOD(a, b, c, d) OBJ_MOD_##a,
     #include "list-object-modifiers.h"
     #undef OBJ_MOD

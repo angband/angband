@@ -1,5 +1,6 @@
-/** \file src/obj-properties.c
-    \brief functions to deal with object flags and modifiers
+/**
+   \file src/obj-properties.c
+   \brief functions to deal with object flags and modifiers
  *
  * Copyright (c) 2014 Chris Carr, Nick McConnell
  *
@@ -45,16 +46,23 @@ static const char *flag_names[] =
  */
 static const struct object_mod object_mod_table[] =
 {
+    #define STAT(a, b, c, d) { OBJ_MOD_##a, b, c, d },
+    #include "list-stats.h"
+    #undef STAT
     #define OBJ_MOD(a, b, c, d) { OBJ_MOD_##a, b, c, d },
     #include "list-object-modifiers.h"
     #undef OBJ_MOD
 };
 
 /**
- * Object flag names
+ * Object modifier names
  */
 static const char *mod_names[] =
 {
+    #define STAT(a, b, c, d) #a,
+    #include "list-stats.h"
+    #undef STAT
+    ""
     #define OBJ_MOD(a, b, c, d) #a,
     #include "list-object-modifiers.h"
     #undef OBJ_MOD
