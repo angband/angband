@@ -770,6 +770,30 @@ static enum parser_error parse_k_e(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_k_effect(struct parser *p) {
+	struct object_kind *k = parser_priv(p);
+	const char *type;
+
+	if (!k)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	k->effect_new.index = grab_one_effect(parser_getsym(p, "eff"), effect_list,
+									N_ELEMENTS(effect_list));
+
+	if (parser_hasval(p, "type")) {
+		type = parser_getsym(p, "type");
+
+		if (type == NULL)
+			return PARSE_ERROR_INVALID_VALUE;
+
+		k->effect_new.params[0] = gf_name_to_idx(type);
+	}
+
+	if (parser_hasval(p, "xtra"))
+		k->effect_new.params[1] = parser_getint(p, "xtra");
+
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_k_time(struct parser *p) {
 	struct object_kind *k = parser_priv(p);
 	assert(k);

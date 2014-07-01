@@ -27,7 +27,7 @@ typedef enum
 } effect_index;
 
 typedef struct {
-	byte effect;	/**< The effect index */
+	byte index;		/**< The effect index */
 	dice_t *dice;	/**< Dice expression used in the effect */
 	int params[2];	/**< Extra parameters to be passed to the handler */
 } effect_type;
