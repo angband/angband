@@ -809,6 +809,32 @@ static enum parser_error parse_k_effect(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_k_dice(struct parser *p) {
+	struct object_kind *k = parser_priv(p);
+	dice_t *dice = NULL;
+	const char *string = NULL;
+
+	if (!k)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	dice = dice_new();
+
+	if (dice == NULL)
+		return PARSE_ERROR_INTERNAL;
+
+	string = parser_getstr(p, "dice");
+
+	if (dice_parse_string(dice, string)) {
+		k->effect_new->dice = dice;
+	}
+	else {
+		dice_free(dice);
+		return PARSE_ERROR_GENERIC;
+	}
+
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_k_time(struct parser *p) {
 	struct object_kind *k = parser_priv(p);
 	assert(k);
@@ -905,6 +931,7 @@ struct parser *init_parse_k(void) {
 	parser_reg(p, "F str flags", parse_k_f);
 	parser_reg(p, "E sym name", parse_k_e);
 	parser_reg(p, "effect sym eff ?sym type ?int xtra", parse_k_effect);
+	parser_reg(p, "dice str dice", parse_k_dice);
 	parser_reg(p, "time rand time", parse_k_time);
 	parser_reg(p, "L rand pval", parse_k_l);
 	parser_reg(p, "V str values", parse_k_v);
@@ -1110,6 +1137,68 @@ static enum parser_error parse_a_e(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_a_effect(struct parser *p) {
+	struct artifact *a = parser_priv(p);
+	const char *type;
+	int val;
+
+	if (!a)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	a->effect_new = mem_zalloc(sizeof(*a->effect_new));
+	a->effect_new->index = grab_one_effect(parser_getsym(p, "eff"), effect_list,
+									N_ELEMENTS(effect_list));
+
+	if (parser_hasval(p, "type")) {
+		type = parser_getsym(p, "type");
+
+		if (type == NULL)
+			return PARSE_ERROR_INVALID_VALUE;
+
+		/* Run through the possibilities */
+		val = gf_name_to_idx(type);
+		if (val < 0) {
+			val = timed_name_to_idx(type);
+			if (val < 0)
+				val = stat_name_to_idx(type);
+		}
+		if (val < 0)
+			return PARSE_ERROR_INVALID_EFFECT;
+		else
+			a->effect_new->params[0] = val;
+	}
+
+	if (parser_hasval(p, "xtra"))
+		a->effect_new->params[1] = parser_getint(p, "xtra");
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_a_dice(struct parser *p) {
+	struct artifact *a = parser_priv(p);
+	dice_t *dice = NULL;
+	const char *string = NULL;
+
+	if (!a)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	dice = dice_new();
+
+	if (dice == NULL)
+		return PARSE_ERROR_INTERNAL;
+
+	string = parser_getstr(p, "dice");
+
+	if (dice_parse_string(dice, string)) {
+		a->effect_new->dice = dice;
+	}
+	else {
+		dice_free(dice);
+		return PARSE_ERROR_GENERIC;
+	}
+
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_a_m(struct parser *p) {
 	struct artifact *a = parser_priv(p);
 	assert(a);
@@ -1195,6 +1284,8 @@ struct parser *init_parse_a(void) {
 	parser_reg(p, "P int ac rand hd int to-h int to-d int to-a", parse_a_p);
 	parser_reg(p, "F ?str flags", parse_a_f);
 	parser_reg(p, "E sym name rand time", parse_a_e);
+	parser_reg(p, "effect sym eff ?sym type ?int xtra", parse_a_effect);
+	parser_reg(p, "dice str dice", parse_a_dice);
 	parser_reg(p, "M str text", parse_a_m);
 	parser_reg(p, "V str values", parse_a_v);
 	parser_reg(p, "D str text", parse_a_d);
@@ -1794,6 +1885,68 @@ static enum parser_error parse_e_m(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_e_effect(struct parser *p) {
+	struct ego_item *e = parser_priv(p);
+	const char *type;
+	int val;
+
+	if (!e)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	e->effect_new = mem_zalloc(sizeof(*e->effect_new));
+	e->effect_new->index = grab_one_effect(parser_getsym(p, "eff"), effect_list,
+									N_ELEMENTS(effect_list));
+
+	if (parser_hasval(p, "type")) {
+		type = parser_getsym(p, "type");
+
+		if (type == NULL)
+			return PARSE_ERROR_INVALID_VALUE;
+
+		/* Run through the possibilities */
+		val = gf_name_to_idx(type);
+		if (val < 0) {
+			val = timed_name_to_idx(type);
+			if (val < 0)
+				val = stat_name_to_idx(type);
+		}
+		if (val < 0)
+			return PARSE_ERROR_INVALID_EFFECT;
+		else
+			e->effect_new->params[0] = val;
+	}
+
+	if (parser_hasval(p, "xtra"))
+		e->effect_new->params[1] = parser_getint(p, "xtra");
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_e_dice(struct parser *p) {
+	struct ego_item *e = parser_priv(p);
+	dice_t *dice = NULL;
+	const char *string = NULL;
+
+	if (!e)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	dice = dice_new();
+
+	if (dice == NULL)
+		return PARSE_ERROR_INTERNAL;
+
+	string = parser_getstr(p, "dice");
+
+	if (dice_parse_string(dice, string)) {
+		e->effect_new->dice = dice;
+	}
+	else {
+		dice_free(dice);
+		return PARSE_ERROR_GENERIC;
+	}
+
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_e_f(struct parser *p) {
 	struct ego_item *e = parser_priv(p);
 	char *s;
@@ -1929,6 +2082,8 @@ struct parser *init_parse_e(void) {
 	parser_reg(p, "item sym tval sym sval", parse_e_item);
 	parser_reg(p, "C rand th rand td rand ta", parse_e_c);
 	parser_reg(p, "M int th int td int ta", parse_e_m);
+	parser_reg(p, "effect sym eff ?sym type ?int xtra", parse_e_effect);
+	parser_reg(p, "dice str dice", parse_e_dice);
 	parser_reg(p, "F ?str flags", parse_e_f);
 	parser_reg(p, "V str values", parse_e_v);
 	parser_reg(p, "L str min_values", parse_e_l);
