@@ -1199,6 +1199,14 @@ static enum parser_error parse_a_dice(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_a_time(struct parser *p) {
+	struct artifact *a = parser_priv(p);
+	assert(a);
+
+	a->time = parser_getrand(p, "time");
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_a_m(struct parser *p) {
 	struct artifact *a = parser_priv(p);
 	assert(a);
@@ -1286,6 +1294,7 @@ struct parser *init_parse_a(void) {
 	parser_reg(p, "E sym name rand time", parse_a_e);
 	parser_reg(p, "effect sym eff ?sym type ?int xtra", parse_a_effect);
 	parser_reg(p, "dice str dice", parse_a_dice);
+	parser_reg(p, "time rand time", parse_a_time);
 	parser_reg(p, "M str text", parse_a_m);
 	parser_reg(p, "V str values", parse_a_v);
 	parser_reg(p, "D str text", parse_a_d);
@@ -1947,6 +1956,14 @@ static enum parser_error parse_e_dice(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_e_time(struct parser *p) {
+	struct ego_item *e = parser_priv(p);
+	assert(e);
+
+	e->time = parser_getrand(p, "time");
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_e_f(struct parser *p) {
 	struct ego_item *e = parser_priv(p);
 	char *s;
@@ -2084,6 +2101,7 @@ struct parser *init_parse_e(void) {
 	parser_reg(p, "M int th int td int ta", parse_e_m);
 	parser_reg(p, "effect sym eff ?sym type ?int xtra", parse_e_effect);
 	parser_reg(p, "dice str dice", parse_e_dice);
+	parser_reg(p, "time rand time", parse_e_time);
 	parser_reg(p, "F ?str flags", parse_e_f);
 	parser_reg(p, "V str values", parse_e_v);
 	parser_reg(p, "L str min_values", parse_e_l);

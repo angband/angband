@@ -1352,13 +1352,13 @@ static bool obj_known_effect(const object_type *o_ptr, int *effect, bool *aimed,
 	*aimed = FALSE;
 
 	if (object_effect_is_known(o_ptr)) {
-		*effect = o_ptr->effect;
+		*effect = object_effect(o_ptr);
 		timeout = o_ptr->time;
 	} else if (object_effect(o_ptr)) {
 		/* Don't know much - be vague */
 		*effect = OBJ_KNOWN_PRESENT;
 
-		if (!o_ptr->artifact && effect_aim(o_ptr->effect))
+		if (!o_ptr->artifact && effect_aim(object_effect(o_ptr)))
 			*aimed = TRUE;
 					
 		return TRUE;

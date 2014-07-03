@@ -1980,7 +1980,7 @@ bool obj_is_useable(const object_type *o_ptr)
  */
 u16b object_effect(const object_type *o_ptr)
 {
-	return o_ptr->effect;
+	return o_ptr->effect_new->index;
 }
 
 /**
