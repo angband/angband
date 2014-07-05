@@ -87,6 +87,7 @@ typedef struct trap
     bitflag flags[TRF_SIZE]; /**< Trap flags (all traps of this kind) */
 
 	u32b effect;   /**< Effect on entry to grid */
+	struct effect *effect_new;		/**< Effect this item produces (effects.c) */
 } trap_kind;
 
 extern trap_kind *trap_info;

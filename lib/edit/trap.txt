@@ -6,7 +6,7 @@
 #G: ASCII char used to represent the feature: color symbol
 #M: rarity: minimum depth: maximum number on level
 #F: trap flags
-#E: trap effect
+#effect: trap effect
 #D: description
 
 N:0:no trap
@@ -26,7 +26,7 @@ N:16:trap door
 G:^:w
 M:0:2:0
 F:TRAP | FLOOR 
-E:TRAP_DOOR
+effect:TRAP_DOOR
 D:It looks like floor, but step incautiously and you will fall through.
 
 # 0x11 --> visible trap -- open pit
@@ -35,7 +35,7 @@ N:17:pit
 G:^:s
 M:0:2:0
 F:TRAP | FLOOR 
-E:TRAP_PIT
+effect:TRAP_PIT
 D:A hole dug to snare the unwary.
 
 # 0x12 --> visible trap -- spiked pit
@@ -44,7 +44,7 @@ N:18:pit
 G:^:s
 M:0:2:0
 F:TRAP | FLOOR 
-E:TRAP_PIT_SPIKES
+effect:TRAP_PIT_SPIKES
 D:A hole dug to snare the unwary, with spikes.
 
 # 0x13 --> visible trap -- poison pit
@@ -53,7 +53,7 @@ N:19:pit
 G:^:s
 M:0:2:0
 F:TRAP | FLOOR 
-E:TRAP_PIT_POISON
+effect:TRAP_PIT_POISON
 D:A hole dug to snare the unwary, with poisoned spikes.
 
 # 0x14 --> visible trap -- rune -- summon
@@ -62,7 +62,7 @@ N:20:strange rune
 G:^:B
 M:0:3:0
 F:TRAP | FLOOR 
-E:TRAP_RUNE_SUMMON
+effect:TRAP_RUNE_SUMMON
 D:A magical rune which calls up monsters to attack you.
 
 # 0x15 --> visible trap -- rune -- teleport
@@ -71,7 +71,7 @@ N:21:strange rune
 G:^:o
 M:0:1:0
 F:TRAP | FLOOR 
-E:TRAP_RUNE_TELEPORT
+effect:TRAP_RUNE_TELEPORT
 D:A portal to another area.
 
 # 0x16 --> visible trap -- spot -- fire
@@ -80,7 +80,7 @@ N:22:discolored spot
 G:^:u
 M:0:2:0
 F:TRAP | FLOOR 
-E:TRAP_SPOT_FIRE
+effect:TRAP_SPOT_FIRE
 D:A strange coloured spot on the ground - beware its fiery attack.
 
 # 0x17 --> visible trap -- spot -- acid
@@ -89,7 +89,7 @@ N:23:discolored spot
 G:^:u
 M:0:2:0
 F:TRAP | FLOOR 
-E:TRAP_SPOT_ACID
+effect:TRAP_SPOT_ACID
 D:A strange coloured spot on the ground - beware its acidic attack.
 
 # 0x18 --> visible trap -- dart -- slow
@@ -98,7 +98,7 @@ N:24:dart trap
 G:^:r
 M:0:2:0
 F:TRAP | FLOOR 
-E:TRAP_DART_SLOW
+effect:TRAP_DART_SLOW
 D:A trap which shoots slowing darts.
 
 # 0x19 --> visible trap -- dart -- lose str
@@ -107,7 +107,7 @@ N:25:dart trap
 G:^:r
 M:0:2:0
 F:TRAP | FLOOR 
-E:TRAP_DART_LOSE_STR
+effect:TRAP_DART_LOSE_STR
 D:A trap which shoots damaging darts.
 
 # 0x1A --> visible trap -- dart -- lose dex
@@ -116,7 +116,7 @@ N:26:dart trap
 G:^:r
 M:0:2:0
 F:TRAP | FLOOR 
-E:TRAP_DART_LOSE_DEX
+effect:TRAP_DART_LOSE_DEX
 D:A trap which shoots damaging darts.
 
 # 0x1B --> visible trap -- dart -- lose con
@@ -125,7 +125,7 @@ N:27:dart trap
 G:^:r
 M:0:2:0
 F:TRAP | FLOOR 
-E:TRAP_DART_LOSE_CON
+effect:TRAP_DART_LOSE_CON
 D:A trap which shoots damaging darts.
 
 # 0x1C --> visible trap -- gas -- blind
@@ -134,7 +134,7 @@ N:28:gas trap
 G:^:g
 M:0:2:0
 F:TRAP | FLOOR 
-E:TRAP_GAS_BLIND
+effect:TRAP_GAS_BLIND
 D:A trap that releases gas to blind you.
 
 # 0x1D --> visible trap -- gas -- confuse
@@ -143,7 +143,7 @@ N:29:gas trap
 G:^:g
 M:0:2:0
 F:TRAP | FLOOR 
-E:TRAP_GAS_CONFUSE
+effect:TRAP_GAS_CONFUSE
 D:A trap that releases gas to confuse you.
 
 # 0x1E --> visible trap -- gas -- poison
@@ -152,7 +152,7 @@ N:30:gas trap
 G:^:g
 M:0:2:0
 F:TRAP | FLOOR 
-E:TRAP_GAS_POISON
+effect:TRAP_GAS_POISON
 D:A trap that releases gas to poison you.
 
 # 0x1F --> visible trap -- gas -- sleep
@@ -161,6 +161,6 @@ N:31:gas trap
 G:^:g
 M:0:2:0
 F:TRAP | FLOOR 
-E:TRAP_GAS_SLEEP
+effect:TRAP_GAS_SLEEP
 D:A trap that releases gas to put you to sleep.
 

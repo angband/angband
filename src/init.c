@@ -1533,6 +1533,42 @@ static enum parser_error parse_trap_e(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_trap_effect(struct parser *p) {
+    struct trap *t = parser_priv(p);
+	const char *type;
+	int val;
+
+	if (!t)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	t->effect_new = mem_zalloc(sizeof(*t->effect_new));
+	t->effect_new->index = grab_one_effect(parser_getsym(p, "eff"), effect_list,
+									N_ELEMENTS(effect_list));
+
+	if (parser_hasval(p, "type")) {
+		type = parser_getsym(p, "type");
+
+		if (type == NULL)
+			return PARSE_ERROR_INVALID_VALUE;
+
+		/* Run through the possibilities */
+		val = gf_name_to_idx(type);
+		if (val < 0) {
+			val = timed_name_to_idx(type);
+			if (val < 0)
+				val = stat_name_to_idx(type);
+		}
+		if (val < 0)
+			return PARSE_ERROR_INVALID_EFFECT;
+		else
+			t->effect_new->params[0] = val;
+	}
+
+	if (parser_hasval(p, "xtra"))
+		t->effect_new->params[1] = parser_getint(p, "xtra");
+
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_trap_d(struct parser *p) {
     struct trap *t = parser_priv(p);
     assert(t);
@@ -1549,6 +1585,7 @@ struct parser *init_parse_trap(void) {
     parser_reg(p, "G char glyph sym color", parse_trap_g);
     parser_reg(p, "M uint rarity uint mindepth uint maxnum", parse_trap_m);
     parser_reg(p, "F ?str flags", parse_trap_f);
+	parser_reg(p, "effect sym eff ?sym type ?int xtra", parse_trap_effect);
 	parser_reg(p, "E str effect", parse_trap_e);
     parser_reg(p, "D str text", parse_trap_d);
     return p;

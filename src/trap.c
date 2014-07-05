@@ -477,7 +477,7 @@ void place_trap(struct chunk *c, int y, int x, int t_idx, int trap_level)
 extern void hit_trap(int y, int x)
 {
 	bool ident;
-    int i;
+    int i, effect;
     
     /* Count the hidden traps here */
     int num = num_traps(cave, y, x, -1);
@@ -500,7 +500,8 @@ extern void hit_trap(int y, int x)
 			disturb(player, 0);
 
 			/* Fire off the trap */
-			effect_do(t_ptr->kind->effect, &ident, FALSE, 0, 0, 0);
+			effect = t_ptr->kind->effect_new->index;
+			effect_do(effect, &ident, FALSE, 0, 0, 0);
 	    
 			/* Trap becomes visible (always XXX) */
 			trf_on(t_ptr->flags, TRF_VISIBLE);
