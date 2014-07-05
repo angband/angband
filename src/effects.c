@@ -1827,6 +1827,29 @@ static const info_entry effects[] =
  * Utility functions
  */
 
+/**
+ * Copy all the effects from one structure to another
+ *
+ * \param dest the address the slays are going to
+ * \param the slays being copied
+ */
+void copy_effect(struct effect **dest, struct effect *source)
+{
+	struct effect *e = source;
+
+	while (e) {
+		struct effect *oe = mem_zalloc(sizeof *oe);
+		oe->index = e->index;
+		oe->dice = e->dice;
+		oe->params[0] = e->params[0];
+		oe->params[1] = e->params[1];
+		oe->next = *dest;
+		*dest = oe;
+		e = e->next;
+	}
+}
+
+
 bool effect_valid(effect_index effect)
 {
 	return effect > EF_XXX && effect < EF_MAX;
@@ -1882,7 +1905,7 @@ effect_handler_f effect_handler(effect_index effect)
 	return effects[effect].handler;
 }
 
-static int effect_param(effect_index effect, size_t param_num)
+int effect_param(effect_index effect, size_t param_num)
 {
 	if (!effect_valid(effect))
 		return 0;

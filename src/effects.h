@@ -35,6 +35,7 @@ struct effect {
 
 /*** Functions ***/
 
+void copy_effect(struct effect **dest, struct effect *source);
 bool effect_do(effect_index effect, bool *ident, bool aware, int dir, int beam,
 	int boost);
 bool effect_aim(effect_index effect);
@@ -43,6 +44,7 @@ int effect_power(effect_index effect);
 bool effect_obvious(effect_index effect);
 bool effect_wonder(int dir, int die, int beam);
 bool effect_valid(effect_index effect);
+int effect_param(effect_index effect, size_t param_num);
 effect_index effect_lookup(const char *name);
 
 #endif /* INCLUDED_EFFECTS_H */

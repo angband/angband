@@ -450,7 +450,7 @@ static int stats_dump_artifacts(void)
 			a_ptr->cost, a_ptr->alloc_prob, a_ptr->alloc_min,
 			a_ptr->alloc_max, a_ptr->ac, a_ptr->dd,
 			a_ptr->ds, a_ptr->to_h, a_ptr->to_d,
-			a_ptr->to_a, a_ptr->effect);
+			a_ptr->to_a, a_ptr->effect_new->index);
 		STATS_DB_STEP_RESET(info_stmt)
 
 		err = stats_dump_oflags(flags_stmt, idx, a_ptr->flags);
@@ -581,7 +581,7 @@ static int stats_dump_objects(void)
 			k_ptr->tval, k_ptr->sval, k_ptr->level, k_ptr->weight,
 			k_ptr->cost, k_ptr->ac, k_ptr->dd, k_ptr->ds,
 			k_ptr->alloc_prob, k_ptr->alloc_min,
-			k_ptr->alloc_max, k_ptr->effect,
+			k_ptr->alloc_max, k_ptr->effect_new->index,
 			k_ptr->gen_mult_prob, k_ptr->stack_size);
 		if (err) return err;
 		err = stats_db_bind_rv(info_stmt, 17, k_ptr->to_h);

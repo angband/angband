@@ -183,7 +183,7 @@ int test_e0(void *state) {
 	eq(r, 0);
 	k = parser_priv(state);
 	require(k);
-	require(k->effect);
+	require(k->effect_new);
 	eq(k->time.dice, 4);
 	eq(k->time.sides, 5);
 	ok;

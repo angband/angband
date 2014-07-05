@@ -148,7 +148,7 @@ int test_e0(void *state) {
 	eq(r, PARSE_ERROR_NONE);
 	a = parser_priv(state);
 	require(a);
-	require(a->effect);
+	require(a->effect_new);
 	eq(a->time.base, 20);
 	eq(a->time.sides, 30);
 	ok;

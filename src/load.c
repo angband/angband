@@ -19,6 +19,7 @@
 #include "angband.h"
 #include "cave.h"
 #include "dungeon.h"
+#include "effects.h"
 #include "generate.h"
 #include "history.h"
 #include "init.h"
@@ -194,7 +195,13 @@ static int rd_item(object_type *o_ptr)
 	rd_s16b(&o_ptr->mimicking_m_idx);
 
 	/* Activation */
-	rd_u16b(&o_ptr->effect);
+	rd_u16b(&tmp16u);
+	if (tmp16u) {
+		o_ptr->effect_new = mem_zalloc(sizeof(*o_ptr->effect_new));
+		o_ptr->effect_new->index = tmp16u;
+		o_ptr->effect_new->params[0] = effect_param(tmp16u, 0);
+		o_ptr->effect_new->params[1] = effect_param(tmp16u, 1);
+	}
 	rd_u16b(&tmp16u);
 	o_ptr->time.base = tmp16u;
 	rd_u16b(&tmp16u);

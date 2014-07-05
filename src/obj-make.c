@@ -19,6 +19,7 @@
 #include "angband.h"
 #include "alloc.h"
 #include "cave.h"
+#include "effects.h"
 #include "init.h"
 #include "obj-gear.h"
 #include "obj-make.h"
@@ -351,7 +352,7 @@ void ego_apply_magic(object_type *o_ptr, int level)
 
 	/* Add effect (ego effect will trump object effect, when there are any) */
 	if (o_ptr->ego->effect_new) {
-		o_ptr->effect_new = o_ptr->ego->effect_new;
+		copy_effect(&o_ptr->effect_new, o_ptr->ego->effect_new);
 		o_ptr->time = o_ptr->ego->time;
 	}
 
@@ -432,7 +433,7 @@ void copy_artifact_data(object_type *o_ptr, const artifact_type *a_ptr)
 	o_ptr->to_h = a_ptr->to_h;
 	o_ptr->to_d = a_ptr->to_d;
 	o_ptr->weight = a_ptr->weight;
-	o_ptr->effect_new = a_ptr->effect_new;
+	copy_effect(&o_ptr->effect_new, a_ptr->effect_new);
 	o_ptr->time = a_ptr->time;
 	of_union(o_ptr->flags, a_ptr->flags);
 	copy_slay(&o_ptr->slays, a_ptr->slays);
@@ -673,7 +674,7 @@ void object_prep(object_type *o_ptr, struct object_kind *k, int lev,
 	o_ptr->dd = k->dd;
 	o_ptr->ds = k->ds;
 	o_ptr->weight = k->weight;
-	o_ptr->effect_new = k->effect_new;
+	copy_effect(&o_ptr->effect_new, k->effect_new);
 	o_ptr->time = k->time;
 
 	/* Weight is always known */
