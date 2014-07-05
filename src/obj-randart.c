@@ -457,9 +457,9 @@ static object_kind *choose_item(int a_idx)
 	}
 	for (i = 0; i < ELEM_MAX; i++)
 		a_ptr->el_info[i] = k_ptr->el_info[i];
-	if (a_ptr->effect_new) {
-		mem_free(a_ptr->effect_new);
-		a_ptr->effect_new = NULL;
+	if (a_ptr->effect) {
+		mem_free(a_ptr->effect);
+		a_ptr->effect = NULL;
 	}
 
 	/* Artifacts ignore everything */
@@ -1347,7 +1347,7 @@ static void parse_frequencies(void)
 			(artprobs[ART_IDX_GEN_PSTUN])++;
 		}
 
-		if (a_ptr->effect_new) {
+		if (a_ptr->effect) {
 			/* Activation */
 			file_putf(log_file, "Adding 1 for activation.\n");
 			(artprobs[ART_IDX_GEN_ACTIV])++;
@@ -1831,10 +1831,10 @@ static void add_activation(artifact_type *a_ptr, s32b target_power)
 			target_power / max_power && 100 * p / max_effect < 200
 			* target_power / max_power) {
 			file_putf(log_file, "Adding activation effect %d\n", x);
-			a_ptr->effect_new = mem_zalloc(sizeof(*a_ptr->effect_new));
-			a_ptr->effect_new->index = x;
-			a_ptr->effect_new->params[0] = effect_param(x, 0);
-			a_ptr->effect_new->params[1] = effect_param(x, 1);
+			a_ptr->effect = mem_zalloc(sizeof(*a_ptr->effect));
+			a_ptr->effect->index = x;
+			a_ptr->effect->params[0] = effect_param(x, 0);
+			a_ptr->effect->params[1] = effect_param(x, 1);
 			a_ptr->time.base = (p * 8);
 			a_ptr->time.dice = (p > 5 ? p / 5 : 1);
 			a_ptr->time.sides = p;
@@ -2253,7 +2253,7 @@ static void add_ability_aux(artifact_type *a_ptr, int r, s32b target_power)
 			break;
 
 		case ART_IDX_GEN_ACTIV:
-			if (!a_ptr->effect_new) add_activation(a_ptr, target_power);
+			if (!a_ptr->effect) add_activation(a_ptr, target_power);
 			break;
 	}
 }
@@ -2518,9 +2518,9 @@ static void scramble_artifact(int a_idx)
 		wipe_slays(a_ptr->slays);
 
 		/* Clear the activations for rings and amulets but not lights */
-		if ((a_ptr->tval != TV_LIGHT) && a_ptr->effect_new) {
-			mem_free(a_ptr->effect_new);
-			a_ptr->effect_new = NULL;
+		if ((a_ptr->tval != TV_LIGHT) && a_ptr->effect) {
+			mem_free(a_ptr->effect);
+			a_ptr->effect = NULL;
 		}
 
 		/* Restore lights */

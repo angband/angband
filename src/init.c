@@ -763,16 +763,6 @@ static enum parser_error parse_k_f(struct parser *p) {
 	return t ? PARSE_ERROR_INVALID_FLAG : PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_k_e(struct parser *p) {
-	struct object_kind *k = parser_priv(p);
-	assert(k);
-
-	k->effect = grab_one_effect(parser_getsym(p, "name"), effect_list, N_ELEMENTS(effect_list));
-	if (!k->effect)
-		return PARSE_ERROR_GENERIC;
-	return PARSE_ERROR_NONE;
-}
-
 static enum parser_error parse_k_effect(struct parser *p) {
 	struct object_kind *k = parser_priv(p);
 	const char *type;
@@ -780,8 +770,8 @@ static enum parser_error parse_k_effect(struct parser *p) {
 
 	if (!k)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	k->effect_new = mem_zalloc(sizeof(*k->effect_new));
-	k->effect_new->index = grab_one_effect(parser_getsym(p, "eff"), effect_list,
+	k->effect = mem_zalloc(sizeof(*k->effect));
+	k->effect->index = grab_one_effect(parser_getsym(p, "eff"), effect_list,
 									N_ELEMENTS(effect_list));
 
 	if (parser_hasval(p, "type")) {
@@ -800,11 +790,11 @@ static enum parser_error parse_k_effect(struct parser *p) {
 		if (val < 0)
 			return PARSE_ERROR_INVALID_EFFECT;
 		else
-			k->effect_new->params[0] = val;
+			k->effect->params[0] = val;
 	}
 
 	if (parser_hasval(p, "xtra"))
-		k->effect_new->params[1] = parser_getint(p, "xtra");
+		k->effect->params[1] = parser_getint(p, "xtra");
 
 	return PARSE_ERROR_NONE;
 }
@@ -825,7 +815,7 @@ static enum parser_error parse_k_dice(struct parser *p) {
 	string = parser_getstr(p, "dice");
 
 	if (dice_parse_string(dice, string)) {
-		k->effect_new->dice = dice;
+		k->effect->dice = dice;
 	}
 	else {
 		dice_free(dice);
@@ -929,7 +919,6 @@ struct parser *init_parse_k(void) {
 	parser_reg(p, "C rand charges", parse_k_c);
 	parser_reg(p, "M int prob rand stack", parse_k_m);
 	parser_reg(p, "F str flags", parse_k_f);
-	parser_reg(p, "E sym name", parse_k_e);
 	parser_reg(p, "effect sym eff ?sym type ?int xtra", parse_k_effect);
 	parser_reg(p, "dice str dice", parse_k_dice);
 	parser_reg(p, "time rand time", parse_k_time);
@@ -1126,17 +1115,6 @@ static enum parser_error parse_a_f(struct parser *p) {
 	return t ? PARSE_ERROR_INVALID_FLAG : PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_a_e(struct parser *p) {
-	struct artifact *a = parser_priv(p);
-	assert(a);
-
-	a->effect = grab_one_effect(parser_getsym(p, "name"), effect_list, N_ELEMENTS(effect_list));
-	a->time = parser_getrand(p, "time");
-	if (!a->effect)
-		return PARSE_ERROR_GENERIC;
-	return PARSE_ERROR_NONE;
-}
-
 static enum parser_error parse_a_effect(struct parser *p) {
 	struct artifact *a = parser_priv(p);
 	const char *type;
@@ -1144,8 +1122,8 @@ static enum parser_error parse_a_effect(struct parser *p) {
 
 	if (!a)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	a->effect_new = mem_zalloc(sizeof(*a->effect_new));
-	a->effect_new->index = grab_one_effect(parser_getsym(p, "eff"), effect_list,
+	a->effect = mem_zalloc(sizeof(*a->effect));
+	a->effect->index = grab_one_effect(parser_getsym(p, "eff"), effect_list,
 									N_ELEMENTS(effect_list));
 
 	if (parser_hasval(p, "type")) {
@@ -1164,11 +1142,11 @@ static enum parser_error parse_a_effect(struct parser *p) {
 		if (val < 0)
 			return PARSE_ERROR_INVALID_EFFECT;
 		else
-			a->effect_new->params[0] = val;
+			a->effect->params[0] = val;
 	}
 
 	if (parser_hasval(p, "xtra"))
-		a->effect_new->params[1] = parser_getint(p, "xtra");
+		a->effect->params[1] = parser_getint(p, "xtra");
 
 	return PARSE_ERROR_NONE;
 }
@@ -1189,7 +1167,7 @@ static enum parser_error parse_a_dice(struct parser *p) {
 	string = parser_getstr(p, "dice");
 
 	if (dice_parse_string(dice, string)) {
-		a->effect_new->dice = dice;
+		a->effect->dice = dice;
 	}
 	else {
 		dice_free(dice);
@@ -1291,7 +1269,6 @@ struct parser *init_parse_a(void) {
 	parser_reg(p, "A int common str minmax", parse_a_a);
 	parser_reg(p, "P int ac rand hd int to-h int to-d int to-a", parse_a_p);
 	parser_reg(p, "F ?str flags", parse_a_f);
-	parser_reg(p, "E sym name rand time", parse_a_e);
 	parser_reg(p, "effect sym eff ?sym type ?int xtra", parse_a_effect);
 	parser_reg(p, "dice str dice", parse_a_dice);
 	parser_reg(p, "time rand time", parse_a_time);
@@ -1522,17 +1499,6 @@ static enum parser_error parse_trap_f(struct parser *p) {
     return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_trap_e(struct parser *p) {
-	struct trap *t = parser_priv(p);
-
-	if (!t)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	t->effect = grab_one_effect(parser_getstr(p, "effect"), effect_list, N_ELEMENTS(effect_list));
-	if (!t->effect)
-		return PARSE_ERROR_INVALID_EFFECT;
-	return PARSE_ERROR_NONE;
-}
-
 static enum parser_error parse_trap_effect(struct parser *p) {
     struct trap *t = parser_priv(p);
 	const char *type;
@@ -1540,8 +1506,8 @@ static enum parser_error parse_trap_effect(struct parser *p) {
 
 	if (!t)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	t->effect_new = mem_zalloc(sizeof(*t->effect_new));
-	t->effect_new->index = grab_one_effect(parser_getsym(p, "eff"), effect_list,
+	t->effect = mem_zalloc(sizeof(*t->effect));
+	t->effect->index = grab_one_effect(parser_getsym(p, "eff"), effect_list,
 									N_ELEMENTS(effect_list));
 
 	if (parser_hasval(p, "type")) {
@@ -1560,11 +1526,11 @@ static enum parser_error parse_trap_effect(struct parser *p) {
 		if (val < 0)
 			return PARSE_ERROR_INVALID_EFFECT;
 		else
-			t->effect_new->params[0] = val;
+			t->effect->params[0] = val;
 	}
 
 	if (parser_hasval(p, "xtra"))
-		t->effect_new->params[1] = parser_getint(p, "xtra");
+		t->effect->params[1] = parser_getint(p, "xtra");
 
 	return PARSE_ERROR_NONE;
 }
@@ -1586,7 +1552,6 @@ struct parser *init_parse_trap(void) {
     parser_reg(p, "M uint rarity uint mindepth uint maxnum", parse_trap_m);
     parser_reg(p, "F ?str flags", parse_trap_f);
 	parser_reg(p, "effect sym eff ?sym type ?int xtra", parse_trap_effect);
-	parser_reg(p, "E str effect", parse_trap_e);
     parser_reg(p, "D str text", parse_trap_d);
     return p;
 }
@@ -1938,8 +1903,8 @@ static enum parser_error parse_e_effect(struct parser *p) {
 
 	if (!e)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	e->effect_new = mem_zalloc(sizeof(*e->effect_new));
-	e->effect_new->index = grab_one_effect(parser_getsym(p, "eff"), effect_list,
+	e->effect = mem_zalloc(sizeof(*e->effect));
+	e->effect->index = grab_one_effect(parser_getsym(p, "eff"), effect_list,
 									N_ELEMENTS(effect_list));
 
 	if (parser_hasval(p, "type")) {
@@ -1958,11 +1923,11 @@ static enum parser_error parse_e_effect(struct parser *p) {
 		if (val < 0)
 			return PARSE_ERROR_INVALID_EFFECT;
 		else
-			e->effect_new->params[0] = val;
+			e->effect->params[0] = val;
 	}
 
 	if (parser_hasval(p, "xtra"))
-		e->effect_new->params[1] = parser_getint(p, "xtra");
+		e->effect->params[1] = parser_getint(p, "xtra");
 
 	return PARSE_ERROR_NONE;
 }
@@ -1983,7 +1948,7 @@ static enum parser_error parse_e_dice(struct parser *p) {
 	string = parser_getstr(p, "dice");
 
 	if (dice_parse_string(dice, string)) {
-		e->effect_new->dice = dice;
+		e->effect->dice = dice;
 	}
 	else {
 		dice_free(dice);

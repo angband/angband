@@ -130,7 +130,13 @@ static struct object_kind TEST_DATA test_longsword = {
 	.alloc_max = 10,
 	.level = 0,
 
-	.effect = 0,
+	.effect = {
+			.next = NULL,
+			.index = 0,
+			.dice = NULL,
+			.params = { 0, 0 },
+	},
+
 	.gen_mult_prob = 0,
 	.flavor = NULL,
 };
@@ -198,7 +204,13 @@ static struct object_kind TEST_DATA test_torch = {
 	.alloc_max = 10,
 	.level = 0,
 
-	.effect = 0,
+	.effect = {
+			.next = NULL,
+			.index = 0,
+			.dice = NULL,
+			.params = { 0, 0 },
+	},
+
 	.gen_mult_prob = 0,
 	.flavor = NULL,
 };
@@ -266,7 +278,13 @@ static struct object_kind TEST_DATA test_lantern = {
 	.alloc_max = 10,
 	.level = 0,
 
-	.effect = 0,
+	.effect = {
+			.next = NULL,
+			.index = 0,
+			.dice = NULL,
+			.params = { 0, 0 },
+	},
+
 	.gen_mult_prob = 0,
 	.flavor = NULL,
 };
@@ -334,7 +352,13 @@ static struct object_kind TEST_DATA test_flask = {
 	.alloc_max = 100,
 	.level = 1,
 
-	.effect = 0,
+	.effect = {
+			.next = NULL,
+			.index = 0,
+			.dice = NULL,
+			.params = { 0, 0 },
+	},
+
 	.gen_mult_prob = 0,
 	.flavor = NULL,
 };
@@ -402,7 +426,13 @@ static struct object_kind TEST_DATA test_rod_treasure_location = {
 	.alloc_max = 75,
 	.level = 5,
 
-	.effect = 0,
+	.effect = {
+			.next = NULL,
+			.index = 0,
+			.dice = NULL,
+			.params = { 0, 0 },
+	},
+
 	.gen_mult_prob = 0,
 	.flavor = NULL,
 };
@@ -469,7 +499,13 @@ static struct object_kind TEST_DATA test_gold = {
 	.alloc_max = 0,
 	.level = 0,
 
-	.effect = 0,
+	.effect = {
+			.next = NULL,
+			.index = 0,
+			.dice = NULL,
+			.params = { 0, 0 },
+	},
+
 	.gen_mult_prob = 0,
 	.flavor = NULL,
 };

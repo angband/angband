@@ -199,8 +199,7 @@ typedef struct object_kind
 	byte alloc_max;			/**< Lowest normal dungeon level */
 	byte level;				/**< Level (difficulty of activation) */
 
-	u16b effect;			/**< Effect this item produces (effects.c) */
-	struct effect *effect_new;		/**< Effect this item produces (effects.c) */
+	struct effect *effect;	/**< Effect this item produces (effects.c) */
 	random_value time;		/**< Recharge time (rods/activation) */
 	random_value charge;	/**< Number of charges (staves/wands) */
 
@@ -278,8 +277,7 @@ typedef struct artifact
 	bool seen;			/**< Whether this artifact has been seen this game */
 	bool everseen;		/**< Whether this artifact has ever been seen  */
 
-	u16b effect;		/**< Artifact activation (see effects.c) */
-	struct effect *effect_new;	/**< Effect this item produces (effects.c) */
+	struct effect *effect;	/**< Effect this item produces (effects.c) */
 	char *effect_msg;
 
 	random_value time;	/**< Recharge time (if appropriate) */
@@ -340,8 +338,7 @@ typedef struct ego_item
 	byte min_to_d;			/* Minimum to-dam value */
 	byte min_to_a;			/* Minimum to-ac value */
 
-	u16b effect;			/**< Effect this item produces (effects.c) */
-	struct effect *effect_new;		/**< Effect this item produces (effects.c) */
+	struct effect *effect;	/**< Effect this item produces (effects.c) */
 	random_value time;		/**< Recharge time (rods/activation) */
 	s16b timeout;			/* Timeout Counter */
 
@@ -414,8 +411,7 @@ typedef struct object
 
 	byte dd, ds;		/* Damage dice/sides */
 
-	struct effect *effect_new;	/**< Effect this item produces (effects.c) */
-	u16b effect;		/**< Activation indicator */
+	struct effect *effect;	/**< Effect this item produces (effects.c) */
 	random_value time;	/**< Recharge time (rods/activation) */
 	s16b timeout;		/* Timeout Counter */
 

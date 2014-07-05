@@ -152,9 +152,9 @@ static void wr_item(const object_type *o_ptr)
 	wr_s16b(o_ptr->mimicking_m_idx);
 
 	/* Activation */
-	if (o_ptr->effect_new) {
-		wr_u16b(o_ptr->effect_new->index);
-		mem_free(o_ptr->effect_new);
+	if (o_ptr->effect) {
+		wr_u16b(o_ptr->effect->index);
+		mem_free(o_ptr->effect);
 	} else
 		wr_u16b(0);
 	wr_u16b(o_ptr->time.base);

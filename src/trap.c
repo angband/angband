@@ -500,7 +500,7 @@ extern void hit_trap(int y, int x)
 			disturb(player, 0);
 
 			/* Fire off the trap */
-			effect = t_ptr->kind->effect_new->index;
+			effect = t_ptr->kind->effect->index;
 			effect_do(effect, &ident, FALSE, 0, 0, 0);
 	    
 			/* Trap becomes visible (always XXX) */
