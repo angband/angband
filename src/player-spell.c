@@ -173,7 +173,7 @@ const class_spell *spell_by_index(int index)
 		return NULL;
 
 	/* Find the book, count the spells in previous books */
-	while (count + m->books[book].num_spells < index)
+	while (count + m->books[book].num_spells - 1 < index)
 		count += m->books[book++].num_spells;
 
 	/* Find the spell */

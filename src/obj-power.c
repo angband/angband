@@ -695,7 +695,7 @@ static int element_power(const object_type *o_ptr, int p, bool known)
 /* add power for effect */
 static int effects_power(const object_type *o_ptr, int p, bool known)
 {
-	int q;
+	int q = 0;
 
 	if (known || object_effect_is_known(o_ptr))	{
 		if (object_effect(o_ptr))
