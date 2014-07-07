@@ -809,7 +809,7 @@ static int stats_dump_lists(void)
 
 	struct object_mod object_mod_table[] =
 	{
-        #define STAT(a, b, c, d)  { OBJ_MOD_##a, b, c, #a },
+        #define STAT(a, b, c, d, e, f)  { OBJ_MOD_##a, b, c, #a },
         #include "list-stats.h"
         #undef STAT
         #define OBJ_MOD(a, b, c, d)  { OBJ_MOD_##a, b, c, #a },

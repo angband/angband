@@ -61,7 +61,135 @@ typedef struct
 } info_entry;
 
 
+/*
+ * Array of stat "descriptions"
+ */
+static const char *desc_stat_pos[] =
+{
+	#define STAT(a, b, c, d, e, f) #d,
+	#include "list-stats.h"
+	#undef STAT
+};
 
+
+/*
+ * Array of stat "descriptions"
+ */
+static const char *desc_stat_neg[] =
+{
+	#define STAT(a, b, c, d, e, f) #e,
+	#include "list-stats.h"
+	#undef STAT
+};
+
+
+/**
+ * Heal the player by a given percentage of their wounds, or a minimum
+ * amount, whichever is larger.
+ *
+ * Copied wholesale from EyAngband.
+ */
+bool effect_handler_atomic_HEAL_HP(effect_handler_context_t *context)
+{
+	int num;
+
+	/* Paranoia */
+	if ((context->value.m_bonus <= 0) && (context->value.base <= 0))
+		return (TRUE);
+
+	/* No healing needed */
+	if (player->chp >= player->mhp) return (TRUE);
+
+	/* Figure percentage healing level */
+	num = ((player->mhp - player->chp) * context->value.m_bonus) / 100;
+
+	/* Enforce minimum */
+	if (num < context->value.base) num = context->value.base;
+
+	/* Gain hitpoints */
+	player->chp += num;
+
+	/* Enforce maximum */
+	if (player->chp >= player->mhp) {
+		player->chp = player->mhp;
+		player->chp_frac = 0;
+	}
+
+	/* Redraw */
+	player->upkeep->redraw |= (PR_HP);
+
+	/* Print a nice message */
+	if (num < 5)
+		msg("You feel a little better.");
+	else if (num < 15)
+		msg("You feel better.");
+	else if (num < 35)
+		msg("You feel much better.");
+	else
+		msg("You feel very good.");
+
+	/* Notice */
+	context->ident = TRUE;
+
+	return (TRUE);
+}
+
+
+/**
+ * Create a "glyph of warding".
+ */
+bool effect_handler_atomic_RUNE(effect_handler_context_t *context)
+{
+	int py = player->py;
+	int px = player->px;
+
+	/* Always notice */
+	context->ident = TRUE;
+
+	/* See if the effect works */
+	if (!square_canward(cave, py, px)) {
+		msg("There is no clear floor on which to cast the spell.");
+		return TRUE;
+	}
+
+	/* Create a glyph */
+	square_add_ward(cave, py, px);
+
+	/* Push objects off the grid */
+	if (square_object(cave, py, px))
+		push_object(py, px);
+
+	return (TRUE);
+}
+
+/**
+ * Restore a stat.
+ */
+bool effect_handler_atomic_RES_STAT(effect_handler_context_t *context)
+{
+	int stat = context->p1;
+
+	/* Check bounds */
+	if (stat < 0 || stat >= STAT_MAX) return FALSE;
+
+	/* Not needed */
+	if (player->stat_cur[stat] == player->stat_max[stat])
+		return TRUE;
+
+	/* Restore */
+	player->stat_cur[stat] = player->stat_max[stat];
+
+	/* Recalculate bonuses */
+	player->upkeep->update |= (PU_BONUS);
+
+	/* Message */
+	msg("You feel less %s.", desc_stat_neg[stat]);
+
+	/* Success */
+	context->ident = TRUE;
+
+	return (TRUE);
+}
 
 /*
  * The "wonder" effect.

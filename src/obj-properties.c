@@ -46,7 +46,7 @@ static const char *flag_names[] =
  */
 static const struct object_mod object_mod_table[] =
 {
-    #define STAT(a, b, c, d) { OBJ_MOD_##a, b, c, d },
+    #define STAT(a, b, c, d, e, f) { OBJ_MOD_##a, b, c, f },
     #include "list-stats.h"
     #undef STAT
     #define OBJ_MOD(a, b, c, d) { OBJ_MOD_##a, b, c, d },
@@ -59,7 +59,7 @@ static const struct object_mod object_mod_table[] =
  */
 static const char *mod_names[] =
 {
-    #define STAT(a, b, c, d) #a,
+    #define STAT(a, b, c, d, e, f) #a,
     #include "list-stats.h"
     #undef STAT
     ""

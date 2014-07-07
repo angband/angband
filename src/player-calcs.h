@@ -25,7 +25,7 @@
  */
 enum
 {
-	#define STAT(a, b, c, d) STAT_##a,
+	#define STAT(a, b, c, d, e, f) STAT_##a,
 	#include "list-stats.h"
 	#undef STAT
 
