@@ -816,7 +816,7 @@ bool effect_handler_RECALL(effect_handler_context_t *context)
 	}
 
 	/* Redraw status line */
-	player->upkeep->redraw = PR_STATUS;
+	player->upkeep->redraw |= PR_STATUS;
 	handle_stuff(player->upkeep);
 
 	return TRUE;
