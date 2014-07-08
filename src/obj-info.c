@@ -60,18 +60,17 @@ struct blow_info {
 
 static const flag_type elements[] =
 {
-	#define ELEM(a, b, c, d, e, col, f, fh, oh, mh, ph)	\
-	{ELEM_##a, b},
+	#define ELEM(a, b, c, d, e, col, f, fh, oh, mh, ph)	{ ELEM_##a, b },
     #include "list-elements.h"
     #undef ELEM
 };
 
 static const flag_type mod_flags[] =
 {
-	#define STAT(a, b, c, d, e, f)	{OBJ_MOD_##a, f},
+	#define STAT(a, b, c, d, e, f, g, h) { OBJ_MOD_##a, h },
 	#include "list-stats.h"
 	#undef STAT
-	#define OBJ_MOD(a, b, c, d)	{OBJ_MOD_##a, d},
+	#define OBJ_MOD(a, b, c, d) { OBJ_MOD_##a, d },
 	#include "list-object-modifiers.h"
 	#undef OBJ_MOD
 };
@@ -86,11 +85,9 @@ static const flag_type protect_flags[] =
 
 static const flag_type sustain_flags[] =
 {
-	{ OF_SUST_STR, "strength" },
-	{ OF_SUST_INT, "intelligence" },
-	{ OF_SUST_WIS, "wisdom" },
-	{ OF_SUST_DEX, "dexterity" },
-	{ OF_SUST_CON, "constitution" },
+	#define STAT(a, b, c, d, e, f, g, h) { OF_##c, h },
+	#include "list-stats.h"
+	#undef STAT
 };
 
 static const flag_type misc_flags[] =

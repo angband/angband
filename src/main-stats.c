@@ -802,6 +802,11 @@ static int stats_dump_lists(void)
 
 	struct object_flag object_flag_table[] =
 	{
+		{ OF_NONE, OFID_NONE, OFT_NONE, 0, "NONE" },
+        #define STAT(a, b, c, d, e, f, g, h)  \
+			{ OF_##c, OFID_NORMAL, OFT_SUST, d, #c },
+        #include "list-stats.h"
+        #undef STAT
 		#define OF(a, b, c, d, e) { OF_##a, b, c, d, #a },
 		#include "list-object-flags.h"
 		#undef OF
@@ -809,7 +814,7 @@ static int stats_dump_lists(void)
 
 	struct object_mod object_mod_table[] =
 	{
-        #define STAT(a, b, c, d, e, f)  { OBJ_MOD_##a, b, c, #a },
+        #define STAT(a, b, c, d, e, f, g, h)  { OBJ_MOD_##a, b, e, #a },
         #include "list-stats.h"
         #undef STAT
         #define OBJ_MOD(a, b, c, d)  { OBJ_MOD_##a, b, c, #a },

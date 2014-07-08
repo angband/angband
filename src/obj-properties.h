@@ -25,6 +25,10 @@
 
 /* The object flags */
 enum {
+	OF_NONE,
+    #define STAT(a, b, c, d, e, f, g, h) OF_##c,
+    #include "list-stats.h"
+    #undef STAT
     #define OF(a, b, c, d, e) OF_##a,
     #include "list-object-flags.h"
     #undef OF
@@ -39,7 +43,7 @@ enum {
 
 /* The object modifiers */
 enum {
-    #define STAT(a, b, c, d, e, f) OBJ_MOD_##a,
+    #define STAT(a, b, c, d, e, f, g, h) OBJ_MOD_##a,
     #include "list-stats.h"
     #undef STAT
     #define OBJ_MOD(a, b, c, d) OBJ_MOD_##a,
@@ -50,7 +54,8 @@ enum {
 
 /* The object flag types */
 enum object_flag_type {
-	OFT_SUST = 1,	/* sustains a stat */
+	OFT_NONE = 0,	/* placeholder flag */
+	OFT_SUST,		/* sustains a stat */
 	OFT_PROT,		/* protection from an effect */
 	OFT_MISC,		/* a good property, suitable for ego items */
 	OFT_LIGHT,		/* applicable only to light sources */

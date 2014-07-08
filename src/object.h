@@ -37,7 +37,7 @@ enum
 enum
 {
 	ID_NONE,
-	#define STAT(a, b, c, d, e, f) ID_##a,
+	#define STAT(a, b, c, d, e, f, g, h) ID_##a,
 	#include "list-stats.h"
 	#undef STAT
 	#define OBJ_MOD(a, b, c, d) ID_##a,

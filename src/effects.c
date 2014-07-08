@@ -61,23 +61,23 @@ typedef struct
 } info_entry;
 
 
-/*
- * Array of stat "descriptions"
+/**
+ * Array of stat adjectives
  */
 static const char *desc_stat_pos[] =
 {
-	#define STAT(a, b, c, d, e, f) #d,
+	#define STAT(a, b, c, d, e, f, g, h) #f,
 	#include "list-stats.h"
 	#undef STAT
 };
 
 
-/*
- * Array of stat "descriptions"
+/**
+ * Array of stat opposite adjectives
  */
 static const char *desc_stat_neg[] =
 {
-	#define STAT(a, b, c, d, e, f) #e,
+	#define STAT(a, b, c, d, e, f, g, h) #g,
 	#include "list-stats.h"
 	#undef STAT
 };

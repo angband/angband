@@ -493,7 +493,12 @@ static void display_player_sust_info(void)
 	object_type *o_ptr;
 	bitflag f[OF_SIZE];
 
-	int sustain_flags[STAT_MAX];
+	int sustain_flags[] = 
+	{
+		#define STAT(a, b, c, d, e, f, g, h) OF_##c,
+		#include "list-stats.h"
+		#undef STAT
+	};
 
 	byte a;
 	char c;
@@ -504,13 +509,6 @@ static void display_player_sust_info(void)
 
 	/* Column */
 	col = 26;
-
-	/* Build the stat flags tables */
-	sustain_flags[STAT_STR] = OF_SUST_STR;
-	sustain_flags[STAT_INT] = OF_SUST_INT;
-	sustain_flags[STAT_WIS] = OF_SUST_WIS;
-	sustain_flags[STAT_DEX] = OF_SUST_DEX;
-	sustain_flags[STAT_CON] = OF_SUST_CON;
 
 	/* Header */
 	c_put_str(TERM_WHITE, "abcdefghijkl@", row-1, col);
@@ -532,8 +530,6 @@ static void display_player_sust_info(void)
 		/* Initialize color based on sign of modifier. */
 		for (stat = 0; stat < STAT_MAX; stat++)
 		{
-			int mod = stat + 1;
-
 			/* Default */
 			a = TERM_SLATE;
 			c = '.';
@@ -541,24 +537,24 @@ static void display_player_sust_info(void)
 			/* Boost */
 			/* Assumption is that stats appear first in list-object-modifiers.h
 			 * This assumption should be removed asap NRM */
-			if (o_ptr->modifiers[mod] > 0) {
+			if (o_ptr->modifiers[stat] > 0) {
 				/* Good */
 				a = TERM_L_GREEN;
 
 				/* Label boost */
-				if (o_ptr->modifiers[mod] < 10)
-						c = I2D(o_ptr->modifiers[mod]);
-			} else if (o_ptr->modifiers[mod] > 0) {
+				if (o_ptr->modifiers[stat] < 10)
+						c = I2D(o_ptr->modifiers[stat]);
+			} else if (o_ptr->modifiers[stat] > 0) {
 				/* Bad */
 				a = TERM_RED;
 
 				/* Label boost */
-				if (o_ptr->modifiers[mod] > -10)
-					c = I2D(-(o_ptr->modifiers[mod]));
+				if (o_ptr->modifiers[stat] > -10)
+					c = I2D(-(o_ptr->modifiers[stat]));
 			}
 
 			/* Sustain */
-			if (of_has(f, sustain_flags[mod]))
+			if (of_has(f, sustain_flags[stat]))
 			{
 				/* Dark green */
 				a = TERM_GREEN;

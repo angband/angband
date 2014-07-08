@@ -14,12 +14,6 @@
  * list-slays.h)
  */
 /* index       	id				type		power	message */
-OF(NONE,        0,			 	0,			0,		"")
-OF(SUST_STR,    OFID_NORMAL,	OFT_SUST,	9,		"Your %s glows.")
-OF(SUST_INT,    OFID_NORMAL,	OFT_SUST,	4,		"Your %s glows.")
-OF(SUST_WIS,    OFID_NORMAL,	OFT_SUST,	4,		"Your %s glows.")
-OF(SUST_DEX,    OFID_NORMAL,	OFT_SUST,	7,		"Your %s glows.")
-OF(SUST_CON,    OFID_NORMAL,	OFT_SUST,	8,		"Your %s glows.")
 OF(PROT_FEAR,   OFID_NORMAL,	OFT_PROT,	6,		"Your %s glows.")
 OF(PROT_BLIND,  OFID_NORMAL,	OFT_PROT,	16,		"Your %s glows.")
 OF(PROT_CONF,   OFID_NORMAL,	OFT_PROT,	24,		"Your %s glows.")
@@ -45,4 +39,4 @@ OF(DRAIN_EXP,   OFID_TIMED,		OFT_BAD,	-5,		"You feel your %s drain your life.")
 OF(LIGHT_CURSE, OFID_WIELD,		OFT_CURSE,	-5,     "")
 OF(HEAVY_CURSE, OFID_WIELD,		OFT_CURSE,	-15,    "")
 OF(PERMA_CURSE, OFID_WIELD,		OFT_CURSE,	-25,    "")
-OF(MAX,			0,				0,			0,      "")
+OF(MAX,			OFID_NONE,		OFT_NONE,	0,      "")
