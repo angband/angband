@@ -191,6 +191,87 @@ bool effect_handler_atomic_RES_STAT(effect_handler_context_t *context)
 	return (TRUE);
 }
 
+/**
+ * Drain a stat temporarily
+ */
+bool effect_handler_atomic_DRAIN_STAT(effect_handler_context_t *context)
+{
+	int stat = context->p1;
+	int flag = sustain_flag(stat);
+
+	/* Bounds check */
+	if (flag < 0) return FALSE;
+
+	/* Sustain */
+	if (player_of_has(player, flag)) {
+		/* Notice effect */
+		wieldeds_notice_flag(player, flag);
+
+		/* Message */
+		msg("You feel very %s for a moment, but the feeling passes.",
+		           desc_stat_neg[stat]);
+
+		/* Notice */
+		context->ident = TRUE;
+
+		return (TRUE);
+	}
+
+	/* Attempt to reduce the stat */
+	if (player_stat_dec(player, stat, FALSE)){
+		/* Message */
+		msgt(MSG_DRAIN_STAT, "You feel very %s.", desc_stat_neg[stat]);
+
+		/* Notice */
+		context->ident = TRUE;
+	}
+
+	return (TRUE);
+}
+
+/**
+ * Lose a stat point permanently, in a stat other than the one specified
+ */
+bool effect_handler_atomic_LOSE_RANDOM_STAT(effect_handler_context_t *context)
+{
+	int safe_stat = context->p1;
+	int loss_stat = randint0(STAT_MAX - 1);
+
+	/* Skip the safe stat */
+	if (loss_stat == safe_stat) loss_stat++;
+
+	/* Attempt to reduce the stat */
+	if (player_stat_dec(player, loss_stat, TRUE)) {
+		/* Notice */
+		context->ident = TRUE;
+
+		/* Message */
+		msgt(MSG_DRAIN_STAT, "You feel very %s.", desc_stat_neg[loss_stat]);
+	}
+
+	return (TRUE);
+}
+
+
+/**
+ * Gain a stat point
+ */
+bool effect_handler_atomic_GAIN_STAT(effect_handler_context_t *context)
+{
+	int stat = context->p1;
+
+	/* Attempt to increase */
+	if (player_stat_inc(player, stat)) {
+		/* Message */
+		msg("You feel very %s!", desc_stat_pos[stat]);
+
+		/* Notice */
+		context->ident = TRUE;
+	}
+
+	return (TRUE);
+}
+
 /*
  * The "wonder" effect.
  *
