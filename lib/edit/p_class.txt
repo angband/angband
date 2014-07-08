@@ -608,7 +608,7 @@ desc:Magically renders you well-fed (but not satiated).
 desc:  This will also cure a bloated stomach.
 ## get rid of remove_curse in 3.4 until curses are redone
 #spell:Remove Curse:7:6:38:5
-effect:REMOVE_CURSE
+#effect:REMOVE_CURSE
 #D:Removes all ordinary curses from all equipped items.
 #D:  Heavy or permanent curses are not affected.
 
@@ -1652,7 +1652,7 @@ desc:Magically renders you well-fed (but not satiated).
 desc:  This will also cure a bloated stomach.
 ## get rid of remove_curse in 3.4 until curses are redone
 #spell:Remove Curse:13:11:45:4
-effect:REMOVE_CURSE
+#effect:REMOVE_CURSE
 #D:Removes all ordinary curses from all equipped items.
 #D:  Heavy or permanent curses are not affected.
 

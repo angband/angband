@@ -87,7 +87,8 @@ static const char *desc_stat_neg[] =
  * Heal the player by a given percentage of their wounds, or a minimum
  * amount, whichever is larger.
  *
- * Copied wholesale from EyAngband.
+ * context->value.base should be the minimum, and
+ * context->value.m_bonus the prcentage
  */
 bool effect_handler_atomic_HEAL_HP(effect_handler_context_t *context)
 {
@@ -163,7 +164,7 @@ bool effect_handler_atomic_RUNE(effect_handler_context_t *context)
 }
 
 /**
- * Restore a stat.
+ * Restore a stat.  The stat index is context->p1.
  */
 bool effect_handler_atomic_RES_STAT(effect_handler_context_t *context)
 {
@@ -192,7 +193,7 @@ bool effect_handler_atomic_RES_STAT(effect_handler_context_t *context)
 }
 
 /**
- * Drain a stat temporarily
+ * Drain a stat temporarily.  The stat index is context->p1.
  */
 bool effect_handler_atomic_DRAIN_STAT(effect_handler_context_t *context)
 {
@@ -231,6 +232,7 @@ bool effect_handler_atomic_DRAIN_STAT(effect_handler_context_t *context)
 
 /**
  * Lose a stat point permanently, in a stat other than the one specified
+ * in context->p1.
  */
 bool effect_handler_atomic_LOSE_RANDOM_STAT(effect_handler_context_t *context)
 {
@@ -254,7 +256,7 @@ bool effect_handler_atomic_LOSE_RANDOM_STAT(effect_handler_context_t *context)
 
 
 /**
- * Gain a stat point
+ * Gain a stat point.  The stat index is context->p1.
  */
 bool effect_handler_atomic_GAIN_STAT(effect_handler_context_t *context)
 {
@@ -271,6 +273,132 @@ bool effect_handler_atomic_GAIN_STAT(effect_handler_context_t *context)
 
 	return (TRUE);
 }
+
+/**
+ * Restores any drained experience
+ */
+bool effect_handler_atomic_RES_EXP(effect_handler_context_t *context)
+{
+	/* Restore experience */
+	if (player->exp < player->max_exp) {
+		/* Message */
+		msg("You feel your life energies returning.");
+		player_exp_gain(player, player->max_exp - player->exp);
+
+		/* Did something */
+		context->ident = TRUE;
+	}
+
+	return (TRUE);
+}
+
+/**
+ * Will need revamping with curses - NRM
+ */
+bool effect_handler_atomic_REMOVE_CURSE(effect_handler_context_t *context)
+{
+	if (remove_curse())
+	{
+		if (!player->timed[TMD_BLIND])
+			msg("The air around your body glows blue for a moment...");
+		else
+			msg("You feel as if someone is watching over you.");
+
+		context->ident = TRUE;
+	}
+	return TRUE;
+}
+
+/**
+ * Will need revamping with curses - NRM
+ */
+bool effect_handler_atomic_REMOVE_ALL_CURSE(effect_handler_context_t *context)
+{
+	remove_all_curse();
+	context->ident = TRUE;
+	return TRUE;
+}
+
+/**
+ * Set word of recall as appropriate - set_recall() probably needs work NRM
+ */
+bool effect_handler_atomic_RECALL(effect_handler_context_t *context)
+{
+	context->ident = TRUE;
+	(void) set_recall();
+	return TRUE;
+}
+
+/**
+ * Map an area around the player.  The height to map above and below the player
+ * is context->p1, the width either side of the player context->p2.
+ *
+ * We must never attempt to map the outer dungeon walls, or we
+ * might induce illegal cave grid references.
+ */
+bool effect_handler_atomic_MAP_AREA(effect_handler_context_t *context)
+{
+	int i, x, y;
+	int x1, x2, y1, y2;
+	int y_dist = context->p1;
+	int x_dist = context->p2;
+
+	/* Pick an area to map */
+	y1 = player->py - y_dist;
+	y2 = player->py + y_dist;
+	x1 = player->px - x_dist;
+	x2 = player->px + x_dist;
+
+	/* Drag the co-ordinates into the dungeon */
+	if (y1 < 0) y1 = 0;
+	if (x1 < 0) x1 = 0;
+	if (y2 > cave->height - 1) y2 = cave->height - 1;
+	if (x2 > cave->width - 1) x2 = cave->width - 1;
+
+	/* Scan the dungeon */
+	for (y = y1; y < y2; y++)
+	{
+		for (x = x1; x < x2; x++)
+		{
+			/* Some squares can't be mapped */
+			if (square_is_no_map(cave, y, x)) continue;
+
+			/* All non-walls are "checked" */
+			if (!square_seemslikewall(cave, y, x))
+			{
+				if (!square_in_bounds_fully(cave, y, x)) continue;
+
+				/* Memorize normal features */
+				if (square_isinteresting(cave, y, x))
+				{
+					/* Memorize the object */
+					sqinfo_on(cave->info[y][x], SQUARE_MARK);
+					square_light_spot(cave, y, x);
+				}
+
+				/* Memorize known walls */
+				for (i = 0; i < 8; i++)
+				{
+					int yy = y + ddy_ddd[i];
+					int xx = x + ddx_ddd[i];
+
+					/* Memorize walls (etc) */
+					if (square_seemslikewall(cave, yy, xx))
+					{
+						/* Memorize the walls */
+						sqinfo_on(cave->info[yy][xx], SQUARE_MARK);
+						square_light_spot(cave, yy, xx);
+					}
+				}
+			}
+		}
+	}
+	/* Notice */
+	context->ident = TRUE;
+
+	return TRUE;
+}
+
 
 /*
  * The "wonder" effect.
