@@ -20,9 +20,12 @@
 #include "cave.h"
 #include "effects.h"
 #include "dungeon.h"
+#include "generate.h"
 #include "mon-spell.h"
 #include "mon-util.h"
+#include "obj-chest.h"
 #include "obj-identify.h"
+#include "obj-ignore.h"
 #include "obj-power.h"
 #include "obj-util.h"
 #include "player-timed.h"
@@ -333,8 +336,6 @@ bool effect_handler_atomic_RECALL(effect_handler_context_t *context)
  * Map an area around the player.  The height to map above and below the player
  * is context->p1, the width either side of the player context->p2.
  *
- * We must never attempt to map the outer dungeon walls, or we
- * might induce illegal cave grid references.
  */
 bool effect_handler_atomic_MAP_AREA(effect_handler_context_t *context)
 {
@@ -356,35 +357,29 @@ bool effect_handler_atomic_MAP_AREA(effect_handler_context_t *context)
 	if (x2 > cave->width - 1) x2 = cave->width - 1;
 
 	/* Scan the dungeon */
-	for (y = y1; y < y2; y++)
-	{
-		for (x = x1; x < x2; x++)
-		{
+	for (y = y1; y < y2; y++) {
+		for (x = x1; x < x2; x++) {
 			/* Some squares can't be mapped */
 			if (square_is_no_map(cave, y, x)) continue;
 
 			/* All non-walls are "checked" */
-			if (!square_seemslikewall(cave, y, x))
-			{
+			if (!square_seemslikewall(cave, y, x)) {
 				if (!square_in_bounds_fully(cave, y, x)) continue;
 
 				/* Memorize normal features */
-				if (square_isinteresting(cave, y, x))
-				{
+				if (square_isinteresting(cave, y, x)) {
 					/* Memorize the object */
 					sqinfo_on(cave->info[y][x], SQUARE_MARK);
 					square_light_spot(cave, y, x);
 				}
 
 				/* Memorize known walls */
-				for (i = 0; i < 8; i++)
-				{
+				for (i = 0; i < 8; i++) {
 					int yy = y + ddy_ddd[i];
 					int xx = x + ddx_ddd[i];
 
 					/* Memorize walls (etc) */
-					if (square_seemslikewall(cave, yy, xx))
-					{
+					if (square_seemslikewall(cave, yy, xx)) {
 						/* Memorize the walls */
 						sqinfo_on(cave->info[yy][xx], SQUARE_MARK);
 						square_light_spot(cave, yy, xx);
@@ -395,6 +390,549 @@ bool effect_handler_atomic_MAP_AREA(effect_handler_context_t *context)
 	}
 	/* Notice */
 	context->ident = TRUE;
+
+	return TRUE;
+}
+
+/**
+ * Detect traps around the player.  The height to detect above and below the
+ * player is context->p1, the width either side of the player context->p2.
+ */
+bool effect_handler_atomic_DETECT_TRAP(effect_handler_context_t *context)
+{
+	int x, y;
+	int x1, x2, y1, y2;
+	int y_dist = context->p1;
+	int x_dist = context->p2;
+
+	bool detect = FALSE;
+
+	object_type *o_ptr;
+
+	/* Pick an area to detect */
+	y1 = player->py - y_dist;
+	y2 = player->py + y_dist;
+	x1 = player->px - x_dist;
+	x2 = player->px + x_dist;
+
+	if (y1 < 0) y1 = 0;
+	if (x1 < 0) x1 = 0;
+	if (y2 > cave->height - 1) y2 = cave->height - 1;
+	if (x2 > cave->width - 1) x2 = cave->width - 1;
+
+
+	/* Scan the dungeon */
+	for (y = y1; y < y2; y++) {
+		for (x = x1; x < x2; x++) {
+			if (!square_in_bounds_fully(cave, y, x)) continue;
+
+			/* Detect traps */
+			if (square_player_trap(cave, y, x))
+				/* Reveal trap */
+				if (square_reveal_trap(cave, y, x, 100, FALSE))
+					detect = TRUE;
+
+			/* Scan all objects in the grid to look for traps on chests */
+			for (o_ptr = get_first_object(y, x); o_ptr;
+				 o_ptr = get_next_object(o_ptr)) {
+				/* Skip anything not a trapped chest */
+				if (!is_trapped_chest(o_ptr)) continue;
+
+				/* Identify once */
+				if (!object_is_known(o_ptr)) {
+					/* Know the trap */
+					object_notice_everything(o_ptr);
+
+					/* Notice it */
+					disturb(player, 0);
+
+					/* We found something to detect */
+					detect = TRUE;
+				}
+			}
+
+			/* Mark as trap-detected */
+			sqinfo_on(cave->info[y][x], SQUARE_DTRAP);
+		}
+	}
+
+	/* Rescan the map for the new dtrap edge */
+	for (y = y1 - 1; y < y2 + 1; y++) {
+		for (x = x1 - 1; x < x2 + 1; x++) {
+			if (!square_in_bounds_fully(cave, y, x)) continue;
+
+			/* See if this grid is on the edge */
+			if (dtrap_edge(y, x)) {
+				sqinfo_on(cave->info[y][x], SQUARE_DEDGE);
+			} else {
+				sqinfo_off(cave->info[y][x], SQUARE_DEDGE);
+			}
+
+			/* Redraw */
+			square_light_spot(cave, y, x);
+		}
+	}
+
+	/* Describe */
+	if (detect)
+		msg("You sense the presence of traps!");
+
+	/* Trap detection always makes you aware, even if no traps are present */
+	else
+		msg("You sense no traps.");
+
+	/* Mark the redraw flag */
+	player->upkeep->redraw |= (PR_DTRAP);
+
+	/* Notice */
+	context->ident = TRUE;
+
+	return TRUE;
+}
+
+/**
+ * Detect doors around the player.  The height to detect above and below the
+ * player is context->p1, the width either side of the player context->p2.
+ */
+bool effect_handler_atomic_DETECT_DOORS(effect_handler_context_t *context)
+{
+	int x, y;
+	int x1, x2, y1, y2;
+	int y_dist = context->p1;
+	int x_dist = context->p2;
+
+	bool doors = FALSE;
+
+	/* Pick an area to detect */
+	y1 = player->py - y_dist;
+	y2 = player->py + y_dist;
+	x1 = player->px - x_dist;
+	x2 = player->px + x_dist;
+
+	if (y1 < 0) y1 = 0;
+	if (x1 < 0) x1 = 0;
+	if (y2 > cave->height - 1) y2 = cave->height - 1;
+	if (x2 > cave->width - 1) x2 = cave->width - 1;
+
+	/* Scan the dungeon */
+	for (y = y1; y < y2; y++) {
+		for (x = x1; x < x2; x++) {
+			if (!square_in_bounds_fully(cave, y, x)) continue;
+
+			/* Detect secret doors - improve later NRM */
+			if (square_issecretdoor(cave, y, x))
+				place_closed_door(cave, y, x);
+
+			/* Detect doors */
+			if (square_isdoor(cave, y, x)) {
+				/* Hack -- Memorize */
+				sqinfo_on(cave->info[y][x], SQUARE_MARK);
+
+				/* Redraw */
+				square_light_spot(cave, y, x);
+
+				/* Obvious */
+				doors = TRUE;
+				context->ident = TRUE;
+			}
+		}
+	}
+
+	/* Describe */
+	if (doors)
+		msg("You sense the presence of doors!");
+	else if (context->aware)
+		msg("You sense no doors.");
+
+	return TRUE;
+}
+
+/**
+ * Detect stairs around the player.  The height to detect above and below the
+ * player is context->p1, the width either side of the player context->p2.
+ */
+bool effect_handler_atomic_DETECT_STAIRS(effect_handler_context_t *context)
+{
+	int x, y;
+	int x1, x2, y1, y2;
+	int y_dist = context->p1;
+	int x_dist = context->p2;
+
+	bool stairs = FALSE;
+
+	/* Pick an area to detect */
+	y1 = player->py - y_dist;
+	y2 = player->py + y_dist;
+	x1 = player->px - x_dist;
+	x2 = player->px + x_dist;
+
+	if (y1 < 0) y1 = 0;
+	if (x1 < 0) x1 = 0;
+	if (y2 > cave->height - 1) y2 = cave->height - 1;
+	if (x2 > cave->width - 1) x2 = cave->width - 1;
+
+	/* Scan the dungeon */
+	for (y = y1; y < y2; y++) {
+		for (x = x1; x < x2; x++) {
+			if (!square_in_bounds_fully(cave, y, x)) continue;
+
+			/* Detect stairs */
+			if (square_isstairs(cave, y, x)) {
+				/* Hack -- Memorize */
+				sqinfo_on(cave->info[y][x], SQUARE_MARK);
+
+				/* Redraw */
+				square_light_spot(cave, y, x);
+
+				/* Obvious */
+				stairs = TRUE;
+				context->ident = TRUE;
+			}
+		}
+	}
+
+	/* Describe */
+	if (stairs)
+		msg("You sense the presence of stairs!");
+	else if (context->aware)
+		msg("You sense no stairs.");
+
+	return TRUE;
+}
+
+
+/**
+ * Detect buried gold around the player.  The height to detect above and below
+ * the player is context->p1, the width either side of the player context->p2, 
+ * and setting context->boost to -1 suppresses messages.
+ */
+bool effect_handler_atomic_DETECT_GOLD(effect_handler_context_t *context)
+{
+	int x, y;
+	int x1, x2, y1, y2;
+	int y_dist = context->p1;
+	int x_dist = context->p2;
+
+	bool gold_buried = FALSE;
+
+	/* Pick an area to detect */
+	y1 = player->py - y_dist;
+	y2 = player->py + y_dist;
+	x1 = player->px - x_dist;
+	x2 = player->px + x_dist;
+
+	if (y1 < 0) y1 = 0;
+	if (x1 < 0) x1 = 0;
+	if (y2 > cave->height - 1) y2 = cave->height - 1;
+	if (x2 > cave->width - 1) x2 = cave->width - 1;
+
+	/* Scan the dungeon */
+	for (y = y1; y < y2; y++) {
+		for (x = x1; x < x2; x++) {
+			if (!square_in_bounds_fully(cave, y, x)) continue;
+
+			square_show_vein(cave, y, x);
+
+			/* Magma/Quartz + Known Gold */
+			if (square_hasgoldvein(cave, y, x)) {
+				/* Hack -- Memorize */
+				sqinfo_on(cave->info[y][x], SQUARE_MARK);
+
+				/* Redraw */
+				square_light_spot(cave, y, x);
+
+				/* Detect */
+				gold_buried = TRUE;
+				context->ident = TRUE;
+			}
+		}
+	}
+
+	/* A bit of a hack to allow use in silent gold detection - NRM */
+	if (context->boost != -1) {
+		if (gold_buried)
+			msg("You sense the presence of buried treasure!");
+		else if (context->aware)
+			msg("You sense no treasure.");
+	}
+
+	return TRUE;
+}
+
+/**
+ * Detect objects around the player.  The height to detect above and below the
+ * player is context->p1, the width either side of the player context->p2,
+ * and setting context->boost to -1 prevents knowledge of an object (aside from
+ * its existence) outside los.
+ */
+bool effect_handler_atomic_DETECT_OBJECTS(effect_handler_context_t *context)
+{
+	int i, x, y;
+	int x1, x2, y1, y2;
+	int y_dist = context->p1;
+	int x_dist = context->p2;
+
+	bool objects = FALSE;
+	/* Hack - NRM */
+	bool full = (context->boost != -1);
+
+	/* Pick an area to detect */
+	y1 = player->py - y_dist;
+	y2 = player->py + y_dist;
+	x1 = player->px - x_dist;
+	x2 = player->px + x_dist;
+
+	if (y1 < 0) y1 = 0;
+	if (x1 < 0) x1 = 0;
+	if (y2 > cave->height - 1) y2 = cave->height - 1;
+	if (x2 > cave->width - 1) x2 = cave->width - 1;
+
+	/* Scan objects */
+	for (i = 1; i < cave_object_max(cave); i++)	{
+		object_type *o_ptr = cave_object(cave, i);
+
+		/* Skip dead objects */
+		if (!o_ptr->kind) continue;
+
+		/* Skip held objects */
+		if (o_ptr->held_m_idx) continue;
+
+		/* Location */
+		y = o_ptr->iy;
+		x = o_ptr->ix;
+
+		/* Only detect nearby objects */
+		if (x < x1 || y < y1 || x > x2 || y > y2) continue;
+
+		/* Memorize it */
+		if (o_ptr->marked < MARK_SEEN)
+			o_ptr->marked = full ? MARK_SEEN : MARK_AWARE;
+
+		/* Redraw */
+		square_light_spot(cave, y, x);
+
+		/* Detect */
+		if (!ignore_item_ok(o_ptr) || !full) {
+			objects = TRUE;
+			context->ident = TRUE;
+		}
+	}
+
+	if (objects)
+		msg("You sense the presence of objects!");
+	else if (context->aware)
+		msg("You sense no objects.");
+
+	return TRUE;
+}
+
+/**
+ * Detect visible monsters around the player.  The height to detect above and
+ * below the player is context->p1, the width either side of the player
+ * context->p2.
+ */
+bool effect_handler_atomic_DETECT_VISIBLE_MONSTERS(effect_handler_context_t *context)
+{
+	int i, x, y;
+	int x1, x2, y1, y2;
+	int y_dist = context->p1;
+	int x_dist = context->p2;
+
+	bool monsters = FALSE;
+
+	/* Pick an area to detect */
+	y1 = player->py - y_dist;
+	y2 = player->py + y_dist;
+	x1 = player->px - x_dist;
+	x2 = player->px + x_dist;
+
+	if (y1 < 0) y1 = 0;
+	if (x1 < 0) x1 = 0;
+	if (y2 > cave->height - 1) y2 = cave->height - 1;
+	if (x2 > cave->width - 1) x2 = cave->width - 1;
+
+	/* Scan monsters */
+	for (i = 1; i < cave_monster_max(cave); i++) {
+		monster_type *m_ptr = cave_monster(cave, i);
+
+		/* Skip dead monsters */
+		if (!m_ptr->race) continue;
+
+		/* Location */
+		y = m_ptr->fy;
+		x = m_ptr->fx;
+
+		/* Only detect nearby monsters */
+		if (x < x1 || y < y1 || x > x2 || y > y2) continue;
+
+		/* Detect all non-invisible, obvious monsters */
+		if (!rf_has(m_ptr->race->flags, RF_INVISIBLE) && !m_ptr->unaware) {
+			/* Hack -- Detect the monster */
+			m_ptr->mflag |= (MFLAG_MARK | MFLAG_SHOW);
+
+			/* Update monster recall window */
+			if (player->upkeep->monster_race == m_ptr->race)
+				/* Redraw stuff */
+				player->upkeep->redraw |= (PR_MONSTER);
+
+			/* Update the monster */
+			update_mon(m_ptr, FALSE);
+
+			/* Detect */
+			monsters = TRUE;
+			context->ident = TRUE;
+		}
+	}
+
+	if (monsters)
+		msg("You sense the presence of monsters!");
+	else if (context->aware)
+		msg("You sense no monsters.");
+
+	return TRUE;
+}
+
+
+/**
+ * Detect invisible monsters around the player.  The height to detect above and
+ * below the player is context->p1, the width either side of the player
+ * context->p2.
+ */
+bool effect_handler_atomic_DETECT_INVISIBLE_MONSTERS(effect_handler_context_t *context)
+{
+	int i, x, y;
+	int x1, x2, y1, y2;
+	int y_dist = context->p1;
+	int x_dist = context->p2;
+
+	bool monsters = FALSE;
+
+	/* Pick an area to detect */
+	y1 = player->py - y_dist;
+	y2 = player->py + y_dist;
+	x1 = player->px - x_dist;
+	x2 = player->px + x_dist;
+
+	if (y1 < 0) y1 = 0;
+	if (x1 < 0) x1 = 0;
+	if (y2 > cave->height - 1) y2 = cave->height - 1;
+	if (x2 > cave->width - 1) x2 = cave->width - 1;
+
+	/* Scan monsters */
+	for (i = 1; i < cave_monster_max(cave); i++) {
+		monster_type *m_ptr = cave_monster(cave, i);
+		monster_lore *l_ptr;
+
+		/* Skip dead monsters */
+		if (!m_ptr->race) continue;
+
+		l_ptr = get_lore(m_ptr->race);
+
+		/* Location */
+		y = m_ptr->fy;
+		x = m_ptr->fx;
+
+		/* Only detect nearby monsters */
+		if (x < x1 || y < y1 || x > x2 || y > y2) continue;
+
+		/* Detect invisible monsters */
+		if (rf_has(m_ptr->race->flags, RF_INVISIBLE)) {
+			/* Take note that they are invisible */
+			rf_on(l_ptr->flags, RF_INVISIBLE);
+
+			/* Update monster recall window */
+			if (player->upkeep->monster_race == m_ptr->race)
+				player->upkeep->redraw |= (PR_MONSTER);
+
+			/* Detect the monster */
+			m_ptr->mflag |= (MFLAG_MARK | MFLAG_SHOW);
+
+			/* Update the monster */
+			update_mon(m_ptr, FALSE);
+
+			/* Detect */
+			monsters = TRUE;
+			context->ident = TRUE;
+		}
+	}
+
+	if (monsters)
+		msg("You sense the presence of invisible creatures!");
+	else if (context->aware)
+		msg("You sense no invisible creatures.");
+
+	return TRUE;
+}
+
+
+
+/**
+ * Detect evil monsters around the player.  The height to detect above and
+ * below the player is context->p1, the width either side of the player
+ * context->p2.
+ */
+bool effect_handler_atomic_DETECT_EVIL(effect_handler_context_t *context)
+{
+	int i, x, y;
+	int x1, x2, y1, y2;
+	int y_dist = context->p1;
+	int x_dist = context->p2;
+
+	bool monsters = FALSE;
+
+	/* Pick an area to detect */
+	y1 = player->py - y_dist;
+	y2 = player->py + y_dist;
+	x1 = player->px - x_dist;
+	x2 = player->px + x_dist;
+
+	if (y1 < 0) y1 = 0;
+	if (x1 < 0) x1 = 0;
+	if (y2 > cave->height - 1) y2 = cave->height - 1;
+	if (x2 > cave->width - 1) x2 = cave->width - 1;
+
+	/* Scan monsters */
+	for (i = 1; i < cave_monster_max(cave); i++) {
+		monster_type *m_ptr = cave_monster(cave, i);
+		monster_lore *l_ptr;
+
+		/* Skip dead monsters */
+		if (!m_ptr->race) continue;
+
+		l_ptr = get_lore(m_ptr->race);
+
+		/* Location */
+		y = m_ptr->fy;
+		x = m_ptr->fx;
+
+		/* Only detect nearby monsters */
+		if (x < x1 || y < y1 || x > x2 || y > y2) continue;
+
+		/* Detect evil monsters */
+		if (rf_has(m_ptr->race->flags, RF_EVIL)) {
+			/* Take note that they are evil */
+			rf_on(l_ptr->flags, RF_EVIL);
+
+			/* Update monster recall window */
+			if (player->upkeep->monster_race == m_ptr->race)
+				player->upkeep->redraw |= (PR_MONSTER);
+
+			/* Detect the monster */
+			m_ptr->mflag |= (MFLAG_MARK | MFLAG_SHOW);
+
+			/* Update the monster */
+			update_mon(m_ptr, FALSE);
+
+			/* Detect */
+			monsters = TRUE;
+			context->ident = TRUE;
+		}
+	}
+
+	if (monsters)
+		msg("You sense the presence of evil creatures!");
+	else if (context->aware)
+		msg("You sense no evil creatures.");
 
 	return TRUE;
 }
