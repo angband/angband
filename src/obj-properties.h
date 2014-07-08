@@ -148,6 +148,7 @@ const char *flag_name(int flag);
 s16b flag_slot_mult(int flag, int slot);
 int obj_flag_type(int flag);
 void flag_message(int flag, char *name);
+int sustain_flag(int stat);
 const char *mod_name(int mod);
 s32b mod_power(int mod);
 int mod_mult(int mod);

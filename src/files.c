@@ -493,13 +493,6 @@ static void display_player_sust_info(void)
 	object_type *o_ptr;
 	bitflag f[OF_SIZE];
 
-	int sustain_flags[] = 
-	{
-		#define STAT(a, b, c, d, e, f, g, h) OF_##c,
-		#include "list-stats.h"
-		#undef STAT
-	};
-
 	byte a;
 	char c;
 
@@ -554,7 +547,7 @@ static void display_player_sust_info(void)
 			}
 
 			/* Sustain */
-			if (of_has(f, sustain_flags[stat]))
+			if (of_has(f, sustain_flag(stat)))
 			{
 				/* Dark green */
 				a = TERM_GREEN;
@@ -564,7 +557,7 @@ static void display_player_sust_info(void)
 			}
 
 			if ((c == '.') && o_ptr->kind && 
-				!object_flag_is_known(o_ptr, sustain_flags[stat]))
+				!object_flag_is_known(o_ptr, sustain_flag(stat)))
 				c = '?';
 
 			/* Dump proper character */
@@ -586,7 +579,7 @@ static void display_player_sust_info(void)
 		c = '.';
 
 		/* Sustain */
-		if (of_has(f, sustain_flags[stat]))
+		if (of_has(f, sustain_flag(stat)))
 		{
 			/* Dark green "s" */
 			a = TERM_GREEN;

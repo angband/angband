@@ -21,6 +21,9 @@
 /**
  * Details of the different object flags in the game.
  * See src/obj-properties.h for structure
+ *
+ * Note that sustain stat flags are included first, so that the index into 
+ * the flag table for a sustain is the stat index + 1
  */
 static const struct object_flag object_flag_table[] =
 {
@@ -216,6 +219,16 @@ void flag_message(int flag, char *name)
 		msg(of->message, name);
 
 	return;
+}
+
+/**
+ * Return the sustain flag of a given stat.
+ */
+int sustain_flag(int stat)
+{
+	if (stat < 0 || stat >= STAT_MAX) return -1;
+
+	return object_flag_table[stat + 1].index;
 }
 
 /**
