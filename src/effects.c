@@ -21,12 +21,18 @@
 #include "effects.h"
 #include "dungeon.h"
 #include "generate.h"
+#include "mon-lore.h"
+#include "mon-make.h"
 #include "mon-spell.h"
 #include "mon-util.h"
 #include "obj-chest.h"
+#include "obj-desc.h"
+#include "obj-gear.h"
 #include "obj-identify.h"
 #include "obj-ignore.h"
 #include "obj-power.h"
+#include "obj-tval.h"
+#include "obj-ui.h"
 #include "obj-util.h"
 #include "player-timed.h"
 #include "player-util.h"
@@ -84,6 +90,22 @@ static const char *desc_stat_neg[] =
 	#include "list-stats.h"
 	#undef STAT
 };
+
+
+int effect_calculate_value(effect_handler_context_t *context, bool use_boost)
+{
+	int final = 0;
+
+	if (context->value.base > 0 ||
+		(context->value.dice > 0 && context->value.sides > 0))
+		final = context->value.base +
+			damroll(context->value.dice, context->value.sides);
+
+	if (use_boost)
+		final *= (100 + context->boost) / 100;
+
+	return final;
+}
 
 
 /**
@@ -937,6 +959,459 @@ bool effect_handler_atomic_DETECT_EVIL(effect_handler_context_t *context)
 	return TRUE;
 }
 
+/**
+ * Create stairs at the player location
+ */
+bool effect_handler_atomic_CREATE_STAIRS(effect_handler_context_t *context)
+{
+	int py = player->py;
+	int px = player->px;
+
+	context->ident = TRUE;
+
+	/* Only allow stairs to be created on empty floor */
+	if (!square_isfloor(cave, py, px))
+	{
+		msg("There is no empty floor here.");
+		return TRUE;
+	}
+
+	/* Push objects off the grid */
+	if (cave->o_idx[py][px]) push_object(py, px);
+
+	square_add_stairs(cave, py, px, player->depth);
+
+	return TRUE;
+}
+
+/**
+ * Apply disenchantment to the player's stuff.
+ */
+bool effect_handler_atomic_DISENCHANT(effect_handler_context_t *context)
+{
+	int i, count = 0;
+	object_type *o_ptr;
+	char o_name[80];
+
+	/* Count slots */
+	for (i = 0; i < player->body.count; i++) {
+		/* Ignore rings, amulets and lights */
+		if (slot_type_is(i, EQUIP_RING)) continue;
+		if (slot_type_is(i, EQUIP_AMULET)) continue;
+		if (slot_type_is(i, EQUIP_LIGHT)) continue;
+
+		/* Count disenchantable slots */
+		count++;
+	}
+
+	/* Pick one at random */
+	for (i = player->body.count - 1; i >= 0; i--) {
+		/* Ignore rings, amulets and lights */
+		if (slot_type_is(i, EQUIP_RING)) continue;
+		if (slot_type_is(i, EQUIP_AMULET)) continue;
+		if (slot_type_is(i, EQUIP_LIGHT)) continue;
+
+		if (one_in_(count--)) break;
+	}
+
+	/* Get the item */
+	o_ptr = equipped_item_by_slot(player, i);
+
+	/* No item, nothing happens */
+	if (!o_ptr->kind) return TRUE;
+
+	/* Nothing to disenchant */
+	if ((o_ptr->to_h <= 0) && (o_ptr->to_d <= 0) && (o_ptr->to_a <= 0))
+		return TRUE;
+
+	/* Describe the object */
+	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
+
+	/* Artifacts have a 60% chance to resist */
+	if (o_ptr->artifact && (randint0(100) < 60)) {
+		/* Message */
+		msg("Your %s (%c) resist%s disenchantment!", o_name, equip_to_label(i),
+			((o_ptr->number != 1) ? "" : "s"));
+
+		/* Notice */
+		context->ident = TRUE;
+
+		return TRUE;
+	}
+
+	/* Apply disenchantment, depending on which kind of equipment */
+	if (slot_type_is(i, EQUIP_WEAPON) || slot_type_is(i, EQUIP_BOW)) {
+		/* Disenchant to-hit */
+		if (o_ptr->to_h > 0) o_ptr->to_h--;
+		if ((o_ptr->to_h > 5) && (randint0(100) < 20)) o_ptr->to_h--;
+
+		/* Disenchant to-dam */
+		if (o_ptr->to_d > 0) o_ptr->to_d--;
+		if ((o_ptr->to_d > 5) && (randint0(100) < 20)) o_ptr->to_d--;
+	} else {
+		/* Disenchant to-ac */
+		if (o_ptr->to_a > 0) o_ptr->to_a--;
+		if ((o_ptr->to_a > 5) && (randint0(100) < 20)) o_ptr->to_a--;
+	}
+
+	/* Message */
+	msg("Your %s (%c) %s disenchanted!", o_name, equip_to_label(i),
+		((o_ptr->number != 1) ? "were" : "was"));
+
+	/* Recalculate bonuses */
+	player->upkeep->update |= (PU_BONUS);
+
+	/* Window stuff */
+	player->upkeep->redraw |= (PR_EQUIP);
+
+	/* Notice */
+	context->ident = TRUE;
+
+	return TRUE;
+}
+
+
+/**
+ * Enchant an item (in the inventory or on the floor)
+ * Note that armour, to hit or to dam is controlled by context->p1
+ *
+ * Work on incorporating enchant_spell() has been postponed...NRM
+ */
+bool effect_handler_atomic_ENCHANT(effect_handler_context_t *context)
+{
+	int value = randcalc(context->value, player->depth, RANDOMISE);
+	context->ident = TRUE;
+
+	if (context->p1 & ENCH_TOHIT)
+		enchant_spell(value, 0, 0);
+	if (context->p1 & ENCH_TODAM)
+		enchant_spell(0, value, 0);
+	if (context->p1 & ENCH_TOAC)
+		enchant_spell(0, 0, value);
+
+	return TRUE;
+}
+
+/**
+ * Slack - NRM
+ */
+bool effect_handler_atomic_IDENTIFY(effect_handler_context_t *context)
+{
+	context->ident = TRUE;
+	ident_spell();
+	return TRUE;
+}
+
+/*
+ * Hook for "get_item()".  Determine if something is rechargable.
+ */
+static bool item_tester_hook_recharge(const object_type *o_ptr)
+{
+	/* Recharge staves and wands */
+	if (tval_can_have_charges(o_ptr)) return TRUE;
+
+	return FALSE;
+}
+
+
+/**
+ * Recharge a wand or staff from the pack or on the floor.  Recharge strength
+ * is context->p2.
+ *
+ * It is harder to recharge high level, and highly charged wands.
+ */
+bool effect_handler_atomic_RECHARGE(effect_handler_context_t *context)
+{
+	int i, t, item, lev;
+	int strength = context->p2;
+	object_type *o_ptr;
+	const char *q, *s;
+
+	/* Immediately obvious */
+	context->ident = TRUE;
+
+	/* Get an item */
+	q = "Recharge which item? ";
+	s = "You have nothing to recharge.";
+	if (!get_item(&item, q, s, 0, item_tester_hook_recharge,
+				  (USE_INVEN | USE_FLOOR)))
+		return TRUE;
+
+	o_ptr = object_from_item_idx(item);
+
+	/* Extract the object "level" */
+	lev = o_ptr->kind->level;
+
+	/*
+	 * Chance of failure = 1 time in
+	 * [Spell_strength + 100 - item_level - 10 * charge_per_item]/15
+	 */
+	i = (strength + 100 - lev - (10 * (o_ptr->pval / o_ptr->number))) / 15;
+
+	/* Back-fire */
+	if ((i <= 1) || one_in_(i)) {
+		msg("The recharge backfires!");
+		msg("There is a bright flash of light.");
+
+		/* Reduce the charges of rods/wands/staves */
+		reduce_charges(o_ptr, 1);
+
+		/* Reduce and describe inventory */
+		if (item >= 0) {
+			inven_item_increase(item, -1);
+			inven_item_describe(item);
+			inven_item_optimize(item);
+		} else {
+			/* Reduce and describe floor item */
+			floor_item_increase(0 - item, -1);
+			floor_item_describe(0 - item);
+			floor_item_optimize(0 - item);
+		}
+	} else {
+		/* Extract a "power" */
+		t = (strength / (lev + 2)) + 1;
+
+		/* Recharge based on the power */
+		if (t > 0) o_ptr->pval += 2 + randint1(t);
+	}
+
+	/* Update the gear */
+	player->upkeep->update |= (PU_INVEN);
+
+	/* Combine the pack (later) */
+	player->upkeep->notice |= (PN_COMBINE);
+
+	/* Redraw stuff */
+	player->upkeep->redraw |= (PR_INVEN);
+
+	/* Something was done */
+	return TRUE;
+}
+
+/**
+ * Apply a "project()" directly to all viewable monsters.  If context->p2 is
+ * set, the effect damage boost is applied.  This is a hack - NRM
+ *
+ * Note that affected monsters are NOT auto-tracked by this usage.
+ */
+bool effect_handler_atomic_PROJECT_LOS(effect_handler_context_t *context)
+{
+	int i, x, y;
+	int dam = effect_calculate_value(context, context->p2 ? TRUE : FALSE);
+	int typ = context->p1;
+
+	int flg = PROJECT_JUMP | PROJECT_KILL | PROJECT_HIDE;
+
+	if (context->aware) flg |= PROJECT_AWARE;
+
+	/* Affect all (nearby) monsters */
+	for (i = 1; i < cave_monster_max(cave); i++) {
+		monster_type *m_ptr = cave_monster(cave, i);
+
+		/* Paranoia -- Skip dead monsters */
+		if (!m_ptr->race) continue;
+
+		/* Location */
+		y = m_ptr->fy;
+		x = m_ptr->fx;
+
+		/* Require line of sight */
+		if (!player_has_los_bold(y, x)) continue;
+
+		/* Jump directly to the target monster */
+		if (project(-1, 0, y, x, dam, typ, flg, 0, 0)) context->ident = TRUE;
+	}
+
+	/* Result */
+	return TRUE;
+}
+
+/**
+ * Wake up all monsters, and speed up "los" monsters.  The index of the monster
+ * doing the aggravating (or 0 for the player) is context->p2.
+ *
+ * Possibly the los test should be from the aggravating monster, rather than
+ * automatically the player - NRM
+ */
+bool effect_handler_atomic_AGGRAVATE(effect_handler_context_t *context)
+{
+	int i;
+	bool sleep = FALSE;
+	monster_type *who = context->p2 ? cave_monster(cave, context->p2) : NULL;
+
+	/* Immediately obvious if the player did it */
+	if (!who) {
+		msg("There is a high pitched humming noise.");
+		context->ident = TRUE;
+	}
+
+	/* Aggravate everyone nearby */
+	for (i = 1; i < cave_monster_max(cave); i++) {
+		monster_type *m_ptr = cave_monster(cave, i);
+
+		/* Paranoia -- Skip dead monsters */
+		if (!m_ptr->race) continue;
+
+		/* Skip aggravating monster (or player) */
+		if (m_ptr == who) continue;
+
+		/* Wake up nearby sleeping monsters */
+		if ((m_ptr->cdis < MAX_SIGHT * 2) && m_ptr->m_timed[MON_TMD_SLEEP]) {
+			mon_clear_timed(m_ptr, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, FALSE);
+			sleep = TRUE;
+			context->ident = TRUE;
+		}
+
+		/* Speed up monsters in line of sight */
+		if (player_has_los_bold(m_ptr->fy, m_ptr->fx)) {
+			mon_inc_timed(m_ptr, MON_TMD_FAST, 25, MON_TMD_FLG_NOTIFY, FALSE);
+			context->ident = TRUE;
+		}
+	}
+
+	/* Messages */
+	if (sleep) msg("You hear a sudden stirring in the distance!");
+
+	return TRUE;
+}
+
+
+/**
+ * Delete all non-unique monsters of a given "type" from the level
+ */
+bool effect_handler_atomic_BANISH(effect_handler_context_t *context)
+{
+	int i;
+	unsigned dam = 0;
+
+	struct keypress typ;
+
+	context->ident = TRUE;
+
+	if (!get_com("Choose a monster race (by symbol) to banish: ", &typ))
+		return TRUE;
+
+	/* Delete the monsters of that "type" */
+	for (i = 1; i < cave_monster_max(cave); i++) {
+		monster_type *m_ptr = cave_monster(cave, i);
+
+		/* Paranoia -- Skip dead monsters */
+		if (!m_ptr->race) continue;
+
+		/* Hack -- Skip Unique Monsters */
+		if (rf_has(m_ptr->race->flags, RF_UNIQUE)) continue;
+
+		/* Skip "wrong" monsters */
+		if (!char_matches_key(m_ptr->race->d_char, typ.code)) continue;
+
+		/* Delete the monster */
+		delete_monster_idx(i);
+
+		/* Take some damage */
+		dam += randint1(4);
+	}
+
+	/* Hurt the player */
+	take_hit(player, dam, "the strain of casting Banishment");
+
+	/* Update monster list window */
+	player->upkeep->redraw |= PR_MONLIST;
+
+	/* Success */
+	return TRUE;
+}
+
+/**
+ * Delete all nearby (non-unique) monsters.  The radius of effect is
+ * context->p2 if passed, otherwise the player view radius.
+ */
+bool effect_handler_atomic_MASS_BANISH(effect_handler_context_t *context)
+{
+	int i;
+	int radius = context->p2 ? context->p2 : MAX_SIGHT;
+	unsigned dam = 0;
+
+	context->ident = TRUE;
+
+	/* Delete the (nearby) monsters */
+	for (i = 1; i < cave_monster_max(cave); i++) {
+		monster_type *m_ptr = cave_monster(cave, i);
+
+		/* Paranoia -- Skip dead monsters */
+		if (!m_ptr->race) continue;
+
+		/* Hack -- Skip unique monsters */
+		if (rf_has(m_ptr->race->flags, RF_UNIQUE)) continue;
+
+		/* Skip distant monsters */
+		if (m_ptr->cdis > radius) continue;
+
+		/* Delete the monster */
+		delete_monster_idx(i);
+
+		/* Take some damage */
+		dam += randint1(3);
+	}
+
+	/* Hurt the player */
+	take_hit(player, dam, "the strain of casting Mass Banishment");
+
+	/* Update monster list window */
+	player->upkeep->redraw |= PR_MONLIST;
+
+	return TRUE;
+}
+
+/*
+ * Probe nearby monsters
+ */
+bool effect_handler_atomic_PROBE(effect_handler_context_t *context)
+{
+	int i;
+
+	bool probe = FALSE;
+
+	/* Probe all (nearby) monsters */
+	for (i = 1; i < cave_monster_max(cave); i++) {
+		monster_type *m_ptr = cave_monster(cave, i);
+
+		/* Paranoia -- Skip dead monsters */
+		if (!m_ptr->race) continue;
+
+		/* Require line of sight */
+		if (!player_has_los_bold(m_ptr->fy, m_ptr->fx)) continue;
+
+		/* Probe visible monsters */
+		if (m_ptr->ml)
+		{
+			char m_name[80];
+
+			/* Start the message */
+			if (!probe) msg("Probing...");
+
+			/* Get "the monster" or "something" */
+			monster_desc(m_name, sizeof(m_name), m_ptr,
+					MDESC_IND_HID | MDESC_CAPITAL);
+
+			/* Describe the monster */
+			msg("%s has %d hit points.", m_name, m_ptr->hp);
+
+			/* Learn all of the non-spell, non-treasure flags */
+			lore_do_probe(m_ptr);
+
+			/* Probe worked */
+			probe = TRUE;
+		}
+	}
+
+	/* Done */
+	if (probe) {
+		msg("That's all.");
+		context->ident = TRUE;
+	}
+
+	return TRUE;
+}
 
 /*
  * The "wonder" effect.
@@ -1015,22 +1490,6 @@ typedef struct effect_breath_info_s {
 	int type;
 	const char *msg;
 } effect_breath_info_t;
-
-
-int effect_calculate_value(effect_handler_context_t *context, bool use_boost)
-{
-	int final = 0;
-
-	if (context->value.base > 0 || 
-		(context->value.dice > 0 && context->value.sides > 0))
-		final = context->value.base + 
-			damroll(context->value.dice, context->value.sides);
-
-	if (use_boost)
-		final *= (100 + context->boost) / 100;
-
-	return final;
-}
 
 
 #define EFFECT_STOP -1
