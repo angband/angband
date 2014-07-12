@@ -39,6 +39,7 @@
 #include "project.h"
 #include "spells.h"
 #include "tables.h"
+#include "target.h"
 #include "trap.h"
 
 
@@ -107,6 +108,31 @@ int effect_calculate_value(effect_handler_context_t *context, bool use_boost)
 	return final;
 }
 
+
+/**
+ * Apply the project() function in a direction, or at a target
+ */
+static bool project_aimed(int typ, int dir, int dam, int flg)
+{
+	int py = player->py;
+	int px = player->px;
+
+	s16b ty, tx;
+
+	/* Pass through the target if needed */
+	flg |= (PROJECT_THRU);
+
+	/* Use the adjacent grid in the given direction as target */
+	ty = py + ddy[dir];
+	tx = px + ddx[dir];
+
+	/* Ask for a target if no direction given */
+	if ((dir == 5) && target_okay())
+		target_get(&tx, &ty);
+
+	/* Aim at the target, do NOT explode */
+	return (project(-1, 0, ty, tx, dam, typ, flg, 0, 0));
+}
 
 /**
  * Heal the player by a given percentage of their wounds, or a minimum
@@ -1743,6 +1769,116 @@ bool effect_handler_atomic_DARKEN_AREA(effect_handler_context_t *context)
 	context->ident = TRUE;
 	return (TRUE);
 }
+
+/**
+ * Cast a ball spell
+ * Stop if we hit a monster, act as a ball
+ * Allow target mode to pass over monsters
+ * Affect grids, objects, and monsters
+ */
+bool effect_handler_atomic_BALL(effect_handler_context_t *context)
+{
+	int py = player->py;
+	int px = player->px;
+	int dam = effect_calculate_value(context, TRUE);
+
+	s16b ty, tx;
+
+	int flg = PROJECT_STOP | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
+
+	/* Use the given direction */
+	ty = py + 99 * ddy[context->dir];
+	tx = px + 99 * ddx[context->dir];
+
+	/* Ask for a target if no direction given */
+	if ((context->dir == 5) && target_okay()) {
+		flg &= ~(PROJECT_STOP);
+
+		target_get(&tx, &ty);
+	}
+
+	/* Aim at the target, explode */
+	if (project(-1, context->p2, ty, tx, dam, context->p1, flg, 0, 0))
+		context->ident = TRUE;
+
+	return TRUE;
+}
+
+
+/**
+ * Cast multiple non-jumping ball spells at the same target.
+ *
+ * Targets absolute coordinates instead of a specific monster, so that
+ * the death of the monster doesn't change the target's location.
+ */
+bool effect_handler_atomic_SWARM(effect_handler_context_t *context)
+{
+	int py = player->py;
+	int px = player->px;
+	int dam = effect_calculate_value(context, TRUE);
+	int num = context->value.m_bonus;
+
+	s16b ty, tx;
+
+	int flg = PROJECT_THRU | PROJECT_STOP | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
+
+	/* Use the given direction */
+	ty = py + 99 * ddy[context->dir];
+	tx = px + 99 * ddx[context->dir];
+
+	/* Ask for a target if no direction given (early detonation) */
+	if ((context->dir == 5) && target_okay())
+		target_get(&tx, &ty);
+
+	while (num--)
+	{
+		/* Aim at the target.  Hurt items on floor. */
+		if (project(-1, context->p2, ty, tx, dam, context->p1, flg, 0, 0))
+			context->ident = TRUE;
+	}
+
+	return TRUE;
+}
+
+/**
+ * Cast a bolt spell
+ * Stop if we hit a monster, as a bolt
+ * Affect monsters (not grids or objects)
+ */
+bool effect_handler_atomic_BOLT(effect_handler_context_t *context)
+{
+	int dam = effect_calculate_value(context, TRUE);
+	int flg = PROJECT_STOP | PROJECT_KILL;
+	if (project_aimed(context->p1, context->dir, dam, flg))
+		context->ident = TRUE;
+	return TRUE;
+}
+
+/**
+ * Cast a beam spell
+ * Pass through monsters, as a "beam"
+ * Affect monsters (not grids or objects)
+ */
+bool effect_handler_atomic_BEAM(effect_handler_context_t *context)
+{
+	int dam = effect_calculate_value(context, TRUE);
+	int flg = PROJECT_BEAM | PROJECT_KILL;
+	if (project_aimed(context->p1, context->dir, dam, flg))
+		context->ident = TRUE;
+	return TRUE;
+}
+
+/**
+ * Cast a bolt spell, or rarely, a beam spell
+ */
+bool effect_handler_atomic_BOLT_OR_BEAM(effect_handler_context_t *context)
+{
+	if (randint0(100) < context->beam)
+		return effect_handler_atomic_BEAM(context);
+	else
+		return effect_handler_atomic_BOLT(context);
+}
+
 
 
 
