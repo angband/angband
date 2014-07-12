@@ -201,6 +201,29 @@ bool effect_handler_atomic_HEAL_HP(effect_handler_context_t *context)
 
 
 /**
+ * Cure a player status condition.
+ */
+bool effect_handler_atomic_CURE(effect_handler_context_t *context)
+{
+	int type = context->p1;
+	if (player_clear_timed(player, type, TRUE))
+		context->ident = TRUE;
+	return TRUE;
+}
+
+/**
+ * Extend a (positive or negative) player status condition.
+ */
+bool effect_handler_atomic_TIMED(effect_handler_context_t *context)
+{
+	int amount = effect_calculate_value(context, FALSE);
+	player_inc_timed(player, context->p1, amount, TRUE, TRUE);
+	context->ident = TRUE;
+	return TRUE;
+
+}
+
+/**
  * Create a "glyph of warding".
  */
 bool effect_handler_atomic_RUNE(effect_handler_context_t *context)
@@ -1957,7 +1980,228 @@ bool effect_handler_atomic_TOUCH_AWARE(effect_handler_context_t *context)
 	return TRUE;
 }
 
+bool effect_handler_atomic_GAIN_EXP(effect_handler_context_t *context)
+{
+	if (player->exp < PY_MAX_EXP) {
+		msg("You feel more experienced.");
+		player_exp_gain(player, 100000L);
+		context->ident = TRUE;
+	}
+	return TRUE;
+}
 
+bool effect_handler_atomic_LOSE_EXP(effect_handler_context_t *context)
+{
+	if (!player_of_has(player, OF_HOLD_LIFE) && (player->exp > 0)) {
+		msg("You feel your memories fade.");
+		player_exp_lose(player, player->exp / 4, FALSE);
+	}
+	context->ident = TRUE;
+	wieldeds_notice_flag(player, OF_HOLD_LIFE);
+	return TRUE;
+}
+
+bool effect_handler_atomic_RESTORE_MANA(effect_handler_context_t *context)
+{
+	if (player->csp < player->msp)
+	{
+		player->csp = player->msp;
+		player->csp_frac = 0;
+		msg("You feel your head clear.");
+		player->upkeep->redraw |= (PR_MANA);
+		context->ident = TRUE;
+	}
+	return TRUE;
+}
+
+/**
+ * Curse the player's armor
+ */
+bool effect_handler_atomic_CURSE_ARMOR(effect_handler_context_t *context)
+{
+	object_type *o_ptr;
+
+	char o_name[80];
+
+	context->ident = TRUE;
+
+	/* Curse the body armor */
+	o_ptr = equipped_item_by_slot_name(player, "body");
+
+	/* Nothing to curse */
+	if (!o_ptr->kind) return (FALSE);
+
+	/* Describe */
+	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_FULL);
+
+	/* Attempt a saving throw for artifacts */
+	if (o_ptr->artifact && (randint0(100) < 50))
+		/* Cool */
+		msg("A %s tries to %s, but your %s resists the effects!",
+		           "terrible black aura", "surround your armor", o_name);
+
+	/* not artifact or failed save... */
+	else {
+		/* Oops */
+		msg("A terrible black aura blasts your %s!", o_name);
+
+		/* Take down bonus a wee bit */
+		o_ptr->to_a -= randint1(3);
+
+		/* Curse it */
+		flags_set(o_ptr->flags, OF_SIZE, OF_LIGHT_CURSE, OF_HEAVY_CURSE, FLAG_END);
+
+		/* Recalculate bonuses */
+		player->upkeep->update |= (PU_BONUS);
+
+		/* Recalculate mana */
+		player->upkeep->update |= (PU_MANA);
+
+		/* Window stuff */
+		player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
+	}
+
+	return (TRUE);
+}
+
+
+/**
+ * Curse the player's weapon
+ */
+bool effect_handler_atomic_CURSE_WEAPON(effect_handler_context_t *context)
+{
+	object_type *o_ptr;
+
+	char o_name[80];
+
+	context->ident = TRUE;
+
+	/* Curse the weapon */
+	o_ptr = equipped_item_by_slot_name(player, "weapon");
+
+	/* Nothing to curse */
+	if (!o_ptr->kind) return (FALSE);
+
+	/* Describe */
+	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_FULL);
+
+	/* Attempt a saving throw */
+	if (o_ptr->artifact && (randint0(100) < 50))
+		/* Cool */
+		msg("A %s tries to %s, but your %s resists the effects!",
+		           "terrible black aura", "surround your weapon", o_name);
+
+	/* not artifact or failed save... */
+	else {
+		/* Oops */
+		msg("A terrible black aura blasts your %s!", o_name);
+
+		/* Hurt it a bit */
+		o_ptr->to_h = 0 - randint1(3);
+		o_ptr->to_d = 0 - randint1(3);
+
+		/* Curse it */
+		flags_set(o_ptr->flags, OF_SIZE, OF_LIGHT_CURSE, OF_HEAVY_CURSE, FLAG_END);
+
+		/* Recalculate bonuses */
+		player->upkeep->update |= (PU_BONUS);
+
+		/* Recalculate mana */
+		player->upkeep->update |= (PU_MANA);
+
+		/* Window stuff */
+		player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
+	}
+
+	/* Notice */
+	return (TRUE);
+}
+
+
+/**
+ * Brand the current weapon
+ */
+bool effect_handler_atomic_BRAND_WEAPON(effect_handler_context_t *context)
+{
+	object_type *o_ptr = equipped_item_by_slot_name(player, "weapon");
+
+	/* Select the brand */
+	const char *brand = one_in_(2) ? "Flame" : "Frost";
+
+	/* Brand the weapon */
+	brand_object(o_ptr, brand);
+
+	context->ident = TRUE;
+	return TRUE;
+}
+
+
+/*
+ * Hook to specify "ammo"
+ */
+static bool item_tester_hook_ammo(const object_type *o_ptr)
+{
+	return tval_is_ammo(o_ptr);
+}
+
+
+/**
+ * Brand some (non-magical) ammo
+ */
+bool effect_handler_atomic_BRAND_AMMO(effect_handler_context_t *context)
+{
+	int item;
+	object_type *o_ptr;
+	const char *q, *s;
+
+	/* Select the brand */
+	const char *brand = one_in_(3) ? "Flame" : (one_in_(2) ? "Frost" : "Venom");
+
+	context->ident = TRUE;
+
+	/* Get an item */
+	q = "Brand which kind of ammunition? ";
+	s = "You have nothing to brand.";
+	if (!get_item(&item, q, s, 0, item_tester_hook_ammo, (USE_INVEN | USE_QUIVER | USE_FLOOR))) return TRUE;
+
+	o_ptr = object_from_item_idx(item);
+
+	/* Brand the ammo */
+	brand_object(o_ptr, brand);
+
+	/* Done */
+	return (TRUE);
+}
+
+static bool item_tester_hook_bolt(const struct object *o)
+{
+	return o->tval == TV_BOLT;
+}
+
+/**
+ * Enchant some (non-magical) bolts
+ */
+bool effect_handler_atomic_BRAND_BOLTS(effect_handler_context_t *context)
+{
+	int item;
+	object_type *o_ptr;
+	const char *q, *s;
+
+	context->ident = TRUE;
+
+	/* Get an item */
+	q = "Brand which bolts? ";
+	s = "You have no bolts to brand.";
+	if (!get_item(&item, q, s, 0, item_tester_hook_bolt, (USE_INVEN | USE_QUIVER | USE_FLOOR))) return TRUE;
+
+	o_ptr = object_from_item_idx(item);
+
+	/* Brand the bolts */
+	brand_object(o_ptr, "Flame");
+
+	/* Done */
+	return (TRUE);
+}
 
 
 /*
