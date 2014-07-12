@@ -135,6 +135,19 @@ static bool project_aimed(int typ, int dir, int dam, int flg)
 }
 
 /**
+ * Apply the project() function to grids the player is touching
+ */
+static bool project_touch(int dam, int typ, bool aware)
+{
+	int py = player->py;
+	int px = player->px;
+
+	int flg = PROJECT_KILL | PROJECT_HIDE;
+	if (aware) flg |= PROJECT_AWARE;
+	return (project(-1, 1, py, px, dam, typ, flg, 0, 0));
+}
+
+/**
  * Heal the player by a given percentage of their wounds, or a minimum
  * amount, whichever is larger.
  *
@@ -1856,7 +1869,7 @@ bool effect_handler_atomic_BOLT(effect_handler_context_t *context)
 
 /**
  * Cast a beam spell
- * Pass through monsters, as a "beam"
+ * Pass through monsters, as a beam
  * Affect monsters (not grids or objects)
  */
 bool effect_handler_atomic_BEAM(effect_handler_context_t *context)
@@ -1879,6 +1892,70 @@ bool effect_handler_atomic_BOLT_OR_BEAM(effect_handler_context_t *context)
 		return effect_handler_atomic_BOLT(context);
 }
 
+/**
+ * Cast a line spell
+ * Pass through monsters, as a beam
+ * Affect monsters and grids (not objects)
+ */
+bool effect_handler_atomic_LINE(effect_handler_context_t *context)
+{
+	int dam = effect_calculate_value(context, TRUE);
+	int flg = PROJECT_BEAM | PROJECT_GRID | PROJECT_KILL;
+	if (project_aimed(context->p1, context->dir, dam, flg))
+		context->ident = TRUE;
+	return TRUE;
+}
+
+/**
+ * Cast an alter spell
+ * Affect objects and grids (not monsters)
+ */
+bool effect_handler_atomic_ALTER(effect_handler_context_t *context)
+{
+	int flg = PROJECT_BEAM | PROJECT_GRID | PROJECT_ITEM;
+	if (project_aimed(context->p1, context->dir, 0, flg))
+		context->ident = TRUE;
+	return TRUE;
+}
+
+/**
+ * Cast a bolt spell
+ * Stop if we hit a monster, as a bolt
+ * Affect monsters (not grids or objects)
+ * Notice stuff based on awareness of the effect
+ */
+bool effect_handler_atomic_BOLT_AWARE(effect_handler_context_t *context)
+{
+	int dam = effect_calculate_value(context, TRUE);
+	int flg = PROJECT_STOP | PROJECT_KILL;
+	if (context->aware) flg |= PROJECT_AWARE;
+	if (project_aimed(context->p1, context->dir, dam, flg))
+		context->ident = TRUE;
+	return TRUE;
+}
+
+/**
+ * Affect adjacent grids (radius 1 ball attack)
+ */
+bool effect_handler_atomic_TOUCH(effect_handler_context_t *context)
+{
+	int dam = effect_calculate_value(context, TRUE);
+	if (project_touch(dam, context->p1, FALSE))
+		context->ident = TRUE;
+	return TRUE;
+}
+
+/**
+ * Affect adjacent grids (radius 1 ball attack)
+ * Notice stuff based on awareness of the effect
+ */
+bool effect_handler_atomic_TOUCH_AWARE(effect_handler_context_t *context)
+{
+	int dam = effect_calculate_value(context, TRUE);
+	if (project_touch(dam, context->p1, context->aware))
+		context->ident = TRUE;
+	return TRUE;
+}
 
 
 
