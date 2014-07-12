@@ -2755,7 +2755,7 @@ static void cave_room_aux(struct point_set *seen, int y, int x)
 /*
  * Illuminate or darken any room containing the given location.
  */
-static void light_room(int y1, int x1, bool light)
+void light_room(int y1, int x1, bool light)
 {
 	int i, x, y;
 	struct point_set *ps;

@@ -1413,6 +1413,340 @@ bool effect_handler_atomic_PROBE(effect_handler_context_t *context)
 	return TRUE;
 }
 
+/**
+ * Teleport the player to a location up to context->value.base grids away.
+ *
+ * If no such spaces are readily available, the distance may increase.
+ * Try very hard to move the player at least a quarter that distance.
+ */
+bool effect_handler_atomic_TELEPORT(effect_handler_context_t *context)
+{
+	int py = player->py;
+	int px = player->px;
+	int dis = context->value.base;
+	int d, i, min, y, x;
+
+	bool look = TRUE;
+
+	context->ident = TRUE;
+
+	/* Check for a no teleport grid */
+	if (square_is_no_teleport(cave, py, px) && (dis > 10)) {
+		msg("Teleportation forbidden!");
+		return TRUE;
+	}
+
+	/* Initialize */
+	y = py;
+	x = px;
+
+	/* Minimum distance */
+	min = dis / 2;
+
+	/* Look until done */
+	while (look) {
+		/* Verify max distance */
+		if (dis > 200) dis = 200;
+
+		/* Try several locations */
+		for (i = 0; i < 500; i++) {
+			/* Pick a (possibly illegal) location */
+			while (1) {
+				y = rand_spread(py, dis);
+				x = rand_spread(px, dis);
+				d = distance(py, px, y, x);
+				if ((d >= min) && (d <= dis)) break;
+			}
+
+			/* Ignore illegal locations */
+			if (!square_in_bounds_fully(cave, y, x)) continue;
+
+			/* Require "naked" floor space */
+			if (!square_isempty(cave, y, x)) continue;
+
+			/* No teleporting into vaults and such */
+			if (square_isvault(cave, y, x)) continue;
+
+			/* This grid looks good */
+			look = FALSE;
+
+			/* Stop looking */
+			break;
+		}
+
+		/* Increase the maximum distance */
+		dis = dis * 2;
+
+		/* Decrease the minimum distance */
+		min = min / 2;
+	}
+
+	/* Sound */
+	sound(MSG_TELEPORT);
+
+	/* Move player */
+	monster_swap(py, px, y, x);
+
+	/* Lots of updates after monster_swap */
+	handle_stuff(player->upkeep);
+
+	return TRUE;
+}
+
+/**
+ * Teleport player to a grid near the given location
+ *
+ * This function is slightly obsessive about correctness.
+ * This function allows teleporting into vaults (!)
+ */
+bool effect_handler_atomic_TELEPORT_TO(effect_handler_context_t *context)
+{
+	int py = player->py;
+	int px = player->px;
+
+	int ny = GRID_Y(context->p2);
+	int nx = GRID_X(context->p2);
+
+	int y, x, dis = 0, ctr = 0;
+
+	/* Initialize */
+	y = py;
+	x = px;
+
+	context->ident = TRUE;
+
+	/* Find a usable location */
+	while (1) {
+		/* Pick a nearby legal location */
+		while (1) {
+			y = rand_spread(ny, dis);
+			x = rand_spread(nx, dis);
+			if (square_in_bounds_fully(cave, y, x)) break;
+		}
+
+		/* Accept "naked" floor grids */
+		if (square_isempty(cave, y, x)) break;
+
+		/* Occasionally advance the distance */
+		if (++ctr > (4 * dis * dis + 4 * dis + 1)) {
+			ctr = 0;
+			dis++;
+		}
+	}
+
+	/* Sound */
+	sound(MSG_TELEPORT);
+
+	/* Move player */
+	monster_swap(py, px, y, x);
+
+	/* Lots of updates after monster_swap */
+	handle_stuff(player->upkeep);
+
+	return TRUE;
+}
+
+/**
+ * Teleport the player one level up or down (random when legal)
+ */
+bool effect_handler_atomic_TELEPORT_LEVEL(effect_handler_context_t *context)
+{
+	bool up = TRUE, down = TRUE;
+
+	context->ident = TRUE;
+
+	/* No going up with force_descend or in the town */
+	if (OPT(birth_force_descend) || !player->depth)
+		up = FALSE;
+
+	/* No forcing player down to quest levels if they can't leave */
+	if (!up && is_quest(player->max_depth + 1))
+		down = FALSE;
+
+	/* Can't leave quest levels or go down deeper than the dungeon */
+	if (is_quest(player->depth) || (player->depth >= MAX_DEPTH - 1))
+		down = FALSE;
+
+	/* Determine up/down if not already done */
+	if (up && down) {
+		if (randint0(100) < 50)
+			up = FALSE;
+		else
+			down = FALSE;
+	}
+
+	/* Now actually do the level change */
+	if (up) {
+		msgt(MSG_TPLEVEL, "You rise up through the ceiling.");
+		dungeon_change_level(player->depth - 1);
+	} else if (down) {
+		msgt(MSG_TPLEVEL, "You sink through the floor.");
+
+		if (OPT(birth_force_descend))
+			dungeon_change_level(player->max_depth + 1);
+		else
+			dungeon_change_level(player->depth + 1);
+	} else {
+		msg("Nothing happens.");
+	}
+
+	return TRUE;
+}
+
+/**
+ * The spell of destruction
+ *
+ * This spell "deletes" monsters (instead of "killing" them).
+ *
+ * This is always an effect centred on the player; it is similar to the
+ * "earthquake" effect.
+ */
+bool effect_handler_atomic_DESTRUCTION(effect_handler_context_t *context)
+{
+	int y, x, k, r = context->p2;
+	int y1 = player->py;
+	int x1 = player->px;
+
+	context->ident = TRUE;
+
+	/* No effect in town */
+	if (!player->depth) {
+		msg("The ground shakes for a moment.");
+		return TRUE;
+	}
+
+	/* Big area of affect */
+	for (y = (y1 - r); y <= (y1 + r); y++) {
+		for (x = (x1 - r); x <= (x1 + r); x++) {
+			/* Skip illegal grids */
+			if (!square_in_bounds_fully(cave, y, x)) continue;
+
+			/* Extract the distance */
+			k = distance(y1, x1, y, x);
+
+			/* Stay in the circle of death */
+			if (k > r) continue;
+
+			/* Lose room and vault */
+			sqinfo_off(cave->info[y][x], SQUARE_ROOM);
+			sqinfo_off(cave->info[y][x], SQUARE_VAULT);
+
+			/* Lose light */
+			sqinfo_off(cave->info[y][x], SQUARE_GLOW);
+			square_light_spot(cave, y, x);
+
+			/* Deal with player later */
+			if ((y == y1) && (x == x1)) continue;
+
+			/* Delete the monster (if any) */
+			delete_monster(y, x);
+
+			/* Don't remove stairs */
+			if (square_isstairs(cave, y, x)) continue;
+
+			/* Lose knowledge (keeping knowledge of stairs) */
+			sqinfo_off(cave->info[y][x], SQUARE_MARK);
+
+			/* Destroy any grid that isn't a permament wall */
+			if (!square_isperm(cave, y, x)) {
+				/* Delete objects */
+				delete_object(y, x);
+				square_destroy(cave, y, x);
+			}
+		}
+	}
+
+	/* Message */
+	msg("There is a searing blast of light!");
+
+	/* Blind the player */
+	wieldeds_notice_element(player, ELEM_LIGHT);
+	if (!player_resists(player, ELEM_LIGHT))
+		(void)player_inc_timed(player, TMD_BLIND, 10 + randint1(10),TRUE, TRUE);
+
+	/* Fully update the visuals */
+	player->upkeep->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
+
+	/* Fully update the flow */
+	player->upkeep->update |= (PU_FORGET_FLOW | PU_UPDATE_FLOW);
+
+	/* Redraw monster list */
+	player->upkeep->redraw |= (PR_MONLIST | PR_ITEMLIST);
+
+	return TRUE;
+}
+
+/**
+ * This effect, the destruction effect, and the earthquake funtion should be
+ * rationalised
+ */
+bool effect_handler_atomic_EARTHQUAKE(effect_handler_context_t *context)
+{
+	earthquake(player->py, player->px, context->p2);
+	context->ident = TRUE;
+	return TRUE;
+}
+
+/**
+ * Call light around the player
+ * Affect all monsters in the projection radius (context->p2)
+ */
+bool effect_handler_atomic_LIGHT_AREA(effect_handler_context_t *context)
+{
+	int py = player->py;
+	int px = player->px;
+	int dam = effect_calculate_value(context, FALSE);
+	int rad = context->p2;
+
+	int flg = PROJECT_GRID | PROJECT_KILL;
+
+	/* Message */
+	if (!player->timed[TMD_BLIND])
+		msg("You are surrounded by a white light.");
+
+	/* Hook into the "project()" function */
+	(void)project(-1, rad, py, px, dam, GF_LIGHT_WEAK, flg, 0, 0);
+
+	/* Light up the room */
+	light_room(py, px, TRUE);
+
+	/* Assume seen */
+	context->ident = TRUE;
+	return (TRUE);
+}
+
+
+/**
+ * Call darkness around the player
+ * Affect all monsters in the projection radius (context->p2)
+ */
+bool effect_handler_atomic_DARKEN_AREA(effect_handler_context_t *context)
+{
+	int py = player->py;
+	int px = player->px;
+	int dam = effect_calculate_value(context, FALSE);
+	int rad = context->p2;
+
+	int flg = PROJECT_GRID | PROJECT_KILL;
+
+	/* Message */
+	if (!player->timed[TMD_BLIND])
+		msg("Darkness surrounds you.");
+
+	/* Hook into the "project()" function */
+	(void)project(-1, rad, py, px, dam, GF_DARK_WEAK, flg, 0, 0);
+
+	/* Darken the room */
+	light_room(py, px, FALSE);
+
+	/* Assume seen */
+	context->ident = TRUE;
+	return (TRUE);
+}
+
+
+
+
 /*
  * The "wonder" effect.
  *

@@ -68,6 +68,7 @@ void teleport_player_to(int ny, int nx);
 void teleport_player_level(void);
 extern void destroy_area(int y1, int x1, int r, bool full);
 extern void earthquake(int cy, int cx, int r);
+void light_room(int y1, int x1, bool light);
 extern bool light_area(int dam, int rad);
 extern bool unlight_area(int dam, int rad);
 extern bool fire_ball(int typ, int dir, int dam, int rad);
