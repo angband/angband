@@ -82,7 +82,7 @@ const struct slay_info slay_names[] = {
  * Copy all the slays from one structure to another
  *
  * \param dest the address the slays are going to
- * \param the slays being copied
+ * \param source the slays being copied
  */
 void copy_slay(struct slay **dest, struct slay *source)
 {
@@ -103,7 +103,7 @@ void copy_slay(struct slay **dest, struct slay *source)
  * Copy all the brands from one structure to another
  *
  * \param dest the address the brands are going to
- * \param the brands being copied
+ * \param source the brands being copied
  */
 void copy_brand(struct brand **dest, struct brand *source)
 {
@@ -117,6 +117,38 @@ void copy_brand(struct brand **dest, struct brand *source)
 		ob->next = *dest;
 		*dest = ob;
 		b = b->next;
+	}
+}
+
+/**
+ * Free all the slays in a structure
+ *
+ * \param source the slays being freed
+ */
+void free_slay(struct slay *source)
+{
+	struct slay *s = source, *s_next;
+	while (s) {
+		s_next = s->next;
+		mem_free(s->name);
+		mem_free(s);
+		s = s_next;
+	}
+}
+
+/**
+ * Free all the brands in a structure
+ *
+ * \param source the brands being freed
+ */
+void free_brand(struct brand *source)
+{
+	struct brand *b = source, *b_next;
+	while (b) {
+		b_next = b->next;
+		mem_free(b->name);
+		mem_free(b);
+		b = b_next;
 	}
 }
 
@@ -634,6 +666,7 @@ s32b check_slay_cache(const object_type *obj)
 		if (brands_are_equal(obj->brands, slay_cache[i].brands) &&
 			slays_are_equal(obj->slays, slay_cache[i].slays)) 
 			break;
+		i++;
 	}
 
 	return slay_cache[i].value;
@@ -716,6 +749,8 @@ errr create_slay_cache(struct ego_item *items)
 
 		copy_brand(&slay_cache[count].brands, dupcheck[i].brands);
 		copy_slay(&slay_cache[count].slays, dupcheck[i].slays);
+		free_brand(dupcheck[i].brands);
+		free_slay(dupcheck[i].slays);
 		slay_cache[count].value = 0;
 		count++;
 		/*msg("Cached a slay combination");*/
@@ -732,5 +767,11 @@ errr create_slay_cache(struct ego_item *items)
  */
 void free_slay_cache(void)
 {
+	int i = 0;
+	while (slay_cache[i].slays || slay_cache[i].brands) {
+		free_slay(slay_cache[i].slays);
+		free_brand(slay_cache[i].brands);
+		i++;
+	}
 	mem_free(slay_cache);
 }

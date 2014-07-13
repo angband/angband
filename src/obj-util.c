@@ -33,6 +33,7 @@
 #include "obj-ignore.h"
 #include "obj-info.h"
 #include "obj-make.h"
+#include "obj-slays.h"
 #include "obj-tval.h"
 #include "obj-ui.h"
 #include "obj-util.h"
@@ -756,6 +757,17 @@ void compact_objects(int size)
 	compact_objects(0);
 }
 
+/**
+ * Free an object
+ */
+void object_free(struct object *obj)
+{
+	free_brand(obj->brands);
+	free_slay(obj->slays);
+	mem_free(obj->effect);
+	object_wipe(obj);
+}
+
 
 /**
  * Delete all the items when player leaves the level
@@ -809,7 +821,7 @@ void wipe_o_list(struct chunk *c)
 		}
 
 		/* Wipe the object */
-		(void)WIPE(o_ptr, object_type);
+		object_free(o_ptr);
 	}
 
 	/* Reset obj_max */

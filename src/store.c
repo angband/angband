@@ -84,7 +84,7 @@ void free_stores(void)
 {
 	struct owner *o;
 	struct owner *next;
-	int i;
+	int i, j;
 
 	/* Free the store inventories */
 	for (i = 0; i < MAX_STORES; i++)
@@ -93,6 +93,8 @@ void free_stores(void)
 		struct store *store = &stores[i];
 
 		/* Free the store inventory */
+		for (j = 0; j < store->stock_size; j++)
+			object_free(&store->stock[j]);
 		mem_free(store->stock);
 		mem_free(store->always_table);
 		mem_free(store->normal_table);

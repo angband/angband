@@ -891,7 +891,7 @@ static enum parser_error parse_k_v(struct parser *p) {
 			struct slay *s;
 			found = TRUE;
 			s = mem_zalloc(sizeof *s);
-			s->name = name;
+			s->name = string_make(name);
 			s->multiplier = value;
 			s->next = k->slays;
 			k->slays = s;
@@ -979,6 +979,9 @@ static void cleanup_k(void)
 	for (idx = 0; idx < z_info->k_max; idx++) {
 		string_free(k_info[idx].name);
 		mem_free(k_info[idx].text);
+		mem_free(k_info[idx].effect);
+		free_brand(k_info[idx].brands);
+		free_slay(k_info[idx].slays);
 	}
 	mem_free(k_info);
 }
@@ -1236,7 +1239,7 @@ static enum parser_error parse_a_v(struct parser *p) {
 			struct slay *s;
 			found = TRUE;
 			s = mem_zalloc(sizeof *s);
-			s->name = name;
+			s->name = string_make(name);
 			s->multiplier = value;
 			s->next = a->slays;
 			a->slays = s;
@@ -1322,7 +1325,10 @@ static void cleanup_a(void)
 	for (idx = 0; idx < z_info->a_max; idx++) {
 		string_free(a_info[idx].name);
 		mem_free(a_info[idx].effect_msg);
+		mem_free(a_info[idx].effect);
 		mem_free(a_info[idx].text);
+		free_brand(a_info[idx].brands);
+		free_slay(a_info[idx].slays);
 	}
 	mem_free(a_info);
 }
@@ -1587,6 +1593,9 @@ static errr finish_parse_trap(struct parser *p) {
     t = parser_priv(p);
     while (t) {
 		n = t->next;
+		string_free(t->name);
+		mem_free(t->text);
+		mem_free(t->effect);
 		mem_free(t);
 		t = n;
     }
@@ -1601,6 +1610,7 @@ static void cleanup_trap(void)
 	for (i = 0; i < z_info->trap_max; i++) {
 		string_free(trap_info[i].name);
 		mem_free(trap_info[i].text);
+		mem_free(trap_info[i].effect);
 	}
 	mem_free(trap_info);
 }
@@ -2040,7 +2050,7 @@ static enum parser_error parse_e_v(struct parser *p) {
 			struct slay *s;
 			found = TRUE;
 			s = mem_zalloc(sizeof *s);
-			s->name = name;
+			s->name = string_make(name);
 			s->multiplier = value;
 			s->next = e->slays;
 			e->slays = s;
@@ -2153,9 +2163,19 @@ static errr finish_parse_e(struct parser *p) {
 static void cleanup_e(void)
 {
 	int idx;
+	struct ego_poss_item *poss, *pn;
 	for (idx = 0; idx < z_info->e_max; idx++) {
 		string_free(e_info[idx].name);
 		mem_free(e_info[idx].text);
+		mem_free(e_info[idx].effect);
+		free_brand(e_info[idx].brands);
+		free_slay(e_info[idx].slays);
+		poss = e_info[idx].poss_items;
+		while (poss) {
+			pn = poss->next;
+			mem_free(poss);
+			poss = pn;
+		}
 	}
 	mem_free(e_info);
 	free_slay_cache();
@@ -2804,7 +2824,6 @@ static void cleanup_c(void)
 	struct player_class *c = classes;
 	struct player_class *next;
 	struct start_item *item, *item_next;
-	struct effect *effect;
 	class_spell *spell;
 	class_book *book;
 	int i, j;
@@ -2821,8 +2840,10 @@ static void cleanup_c(void)
 			book = &c->magic.books[i];
 			for (j = 0; j < book->num_spells; j++) {
 				spell = &book->spells[j];
-				effect = spell->effect;
-				mem_free(effect);
+				string_free(spell->name);
+				string_free(spell->text);
+				dice_free(spell->effect->dice);
+				mem_free(spell->effect);
 			}
 			mem_free(book->spells);
 		}
@@ -3433,6 +3454,7 @@ static void cleanup_pits(void)
 		struct pit_profile *pit = &pit_info[idx];
 		struct pit_color_profile *c, *cn;
 		struct pit_forbidden_monster *m, *mn;
+		struct pit_monster_profile *b, *bn;
 		
 		c = pit->colors;
 		while (c) {
@@ -3445,6 +3467,12 @@ static void cleanup_pits(void)
 			mn = m->next;
 			mem_free(m);
 			m = mn;
+		}
+		b = pit->bases;
+		while (b) {
+			bn = b->next;
+			mem_free(b);
+			b = bn;
 		}
 		string_free((char *)pit_info[idx].name);
 		
@@ -3751,6 +3779,8 @@ void cleanup_angband(void)
 
 	mem_free(player->timed);
 	mem_free(player->upkeep);
+	for (i = 0; i < player->max_gear; i++)
+		object_wipe(&player->gear[i]);
 	mem_free(player->gear);
 
 	/* Free the lore list */

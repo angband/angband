@@ -349,7 +349,7 @@ static const grouper tval_names[] =
 /**
  * Small hack to allow both spellings of armer
  */
-const char *de_armour(const char *name)
+char *de_armour(const char *name)
 {
 	char newname[40];
 	char *armour;
@@ -369,19 +369,21 @@ int tval_find_idx(const char *name)
 {
 	size_t i = 0;
 	unsigned int r;
-	const char *mod_name;
+	char *mod_name;
 
 	if (sscanf(name, "%u", &r) == 1)
 		return r;
 
 	mod_name = de_armour(name);
 
-	for (i = 0; i < N_ELEMENTS(tval_names); i++)
-	{
-		if (!my_stricmp(mod_name, tval_names[i].name))
+	for (i = 0; i < N_ELEMENTS(tval_names); i++) {
+		if (!my_stricmp(mod_name, tval_names[i].name)) {
+			string_free(mod_name);
 			return tval_names[i].tval;
+		}
 	}
 
+	string_free(mod_name);
 	return -1;
 }
 

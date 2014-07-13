@@ -63,6 +63,7 @@ void excise_object_idx(int o_idx);
 void delete_object_idx(int o_idx);
 void delete_object(int y, int x);
 void compact_objects(int size);
+void object_free(struct object *obj);
 void wipe_o_list(struct chunk *c);
 s16b o_pop(struct chunk *c);
 object_type *get_first_object(int y, int x);

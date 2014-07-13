@@ -1077,6 +1077,9 @@ static int rd_gear_aux(rd_item_t rd_item_version)
 			player->body.slots[wield_slot(i_ptr)].index = n;
 			player->upkeep->equip_cnt++;
 		}
+
+		/* Free object */
+		object_free(i_ptr);
 	}
 	calc_inventory(player->upkeep, player->gear, player->body,
 				   player->max_gear);

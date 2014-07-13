@@ -116,6 +116,9 @@ void init_ignore(void)
  */
 void cleanup_ignore(void)
 {
+	size_t i;
+	for (i = 0; i < z_info->e_max; i++)
+		mem_free(ego_ignore_types[i]);
 	mem_free(ego_ignore_types);
 }
 

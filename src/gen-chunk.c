@@ -1,4 +1,5 @@
-/** \file gen-chunk.c 
+/**
+	\file gen-chunk.c 
     \brief Handling of chunks of cave
  
  *
