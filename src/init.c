@@ -2667,8 +2667,10 @@ static enum parser_error parse_c_effect(struct parser *p) {
 
 	if (!c)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	spell->effect = grab_one_effect(parser_getsym(p, "eff"), spell_effect_list,
-									N_ELEMENTS(spell_effect_list));
+	spell->effect = mem_zalloc(sizeof(*spell->effect));
+	spell->effect->index = grab_one_effect(parser_getsym(p, "eff"),
+										   spell_effect_list,
+										   N_ELEMENTS(spell_effect_list));
 
 	if (parser_hasval(p, "type")) {
 		type = parser_getsym(p, "type");
@@ -2676,11 +2678,11 @@ static enum parser_error parse_c_effect(struct parser *p) {
 		if (type == NULL)
 			return PARSE_ERROR_INVALID_VALUE;
 
-		spell->params[0] = gf_name_to_idx(type);
+		spell->effect->params[0] = gf_name_to_idx(type);
 	}
 
 	if (parser_hasval(p, "xtra"))
-		spell->params[1] = parser_getint(p, "xtra");
+		spell->effect->params[1] = parser_getint(p, "xtra");
 
 	return PARSE_ERROR_NONE;
 }
@@ -2703,7 +2705,7 @@ static enum parser_error parse_c_dice(struct parser *p) {
 	string = parser_getstr(p, "dice");
 
 	if (dice_parse_string(dice, string)) {
-		spell->dice = dice;
+		spell->effect->dice = dice;
 	}
 	else {
 		dice_free(dice);
@@ -2727,7 +2729,7 @@ static enum parser_error parse_c_expr(struct parser *p) {
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 
 	/* If there are no dice, assume that this is human and not parser error. */
-	if (spell->dice == NULL)
+	if (spell->effect->dice == NULL)
 		return PARSE_ERROR_NONE;
 
 	name = parser_getsym(p, "name");
@@ -2744,7 +2746,7 @@ static enum parser_error parse_c_expr(struct parser *p) {
 	if (expression_add_operations_string(expression, expr) < 0)
 		return PARSE_ERROR_GENERIC;
 
-	if (dice_bind_expression(spell->dice, name, expression) < 0)
+	if (dice_bind_expression(spell->effect->dice, name, expression) < 0)
 		return PARSE_ERROR_GENERIC;
 
 	/* The dice object makes a deep copy of the expression, so we can free it */
@@ -2802,7 +2804,10 @@ static void cleanup_c(void)
 	struct player_class *c = classes;
 	struct player_class *next;
 	struct start_item *item, *item_next;
-	int i;
+	struct effect *effect;
+	class_spell *spell;
+	class_book *book;
+	int i, j;
 
 	while (c) {
 		next = c->next;
@@ -2812,6 +2817,16 @@ static void cleanup_c(void)
 			mem_free(item);
 			item = item_next;
 		}
+		for (i = 0; i < c->magic.num_books; i++) {
+			book = &c->magic.books[i];
+			for (j = 0; j < book->num_spells; j++) {
+				spell = &book->spells[j];
+				effect = spell->effect;
+				mem_free(effect);
+			}
+			mem_free(book->spells);
+		}
+		mem_free(c->magic.books);
 		for (i = 0; i < PY_MAX_LEVEL / 5; i++) {
 			string_free((char *)c->title[i]);
 		}

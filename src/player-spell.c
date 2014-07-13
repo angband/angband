@@ -1109,24 +1109,24 @@ static bool player_spell_effect(int spell, int dir)
 {
 	spell_handler_f spell_handler = NULL;
 	const class_spell *sp = spell_by_index(spell);
-	const spell_info_t *spell_info = spell_info_for_index(spell_effects, N_ELEMENTS(spell_effects), SPELL_EFFECT_MAX, sp->effect);
+	const spell_info_t *spell_info = spell_info_for_index(spell_effects, N_ELEMENTS(spell_effects), SPELL_EFFECT_MAX, sp->effect->index);
 	random_value value;
 
 	/* Usually GF_ type. */
-	int p1 = sp->params[0];
+	int p1 = sp->effect->params[0];
 
 	/* Usually radius for ball spells, or some other modifier. */
-	int p2 = sp->params[1];
+	int p2 = sp->effect->params[1];
 
-	if (sp->dice != NULL)
-		dice_roll(sp->dice, &value);
+	if (sp->effect->dice != NULL)
+		dice_roll(sp->effect->dice, &value);
 
 	if (spell_info == NULL)
 		return FALSE;
 
 	spell_handler = spell_info->handler;
 
-	if (spell_handler == NULL) {
+	if (spell_handler != NULL) {
 		spell_handler_context_t context = {
 			dir,
 			beam_chance(),
@@ -1143,13 +1143,13 @@ static bool player_spell_effect(int spell, int dir)
 bool spell_is_identify(int spell)
 {
 	const class_spell *sp = spell_by_index(spell);
-	return (sp->effect == SPELL_EFFECT_IDENTIFY);
+	return (sp->effect->index == SPELL_EFFECT_IDENTIFY);
 }
 
 bool spell_needs_aim(int spell)
 {
 	const class_spell *sp = spell_by_index(spell);
-	const spell_info_t *spell_info = spell_info_for_index(spell_effects, N_ELEMENTS(spell_effects), SPELL_EFFECT_MAX, sp->effect);
+	const spell_info_t *spell_info = spell_info_for_index(spell_effects, N_ELEMENTS(spell_effects), SPELL_EFFECT_MAX, sp->effect->index);
 
 	if (spell_info == NULL)
 		return FALSE;
@@ -1181,7 +1181,7 @@ static size_t append_random_value_string(char *buffer, size_t size, random_value
 static void spell_append_value_info(int spell, char *p, size_t len)
 {
 	const class_spell *sp = spell_by_index(spell);
-	const spell_info_t *info = spell_info_for_index(spell_effects, N_ELEMENTS(spell_effects), SPELL_EFFECT_MAX, sp->effect);
+	const spell_info_t *info = spell_info_for_index(spell_effects, N_ELEMENTS(spell_effects), SPELL_EFFECT_MAX, sp->effect->index);
 	random_value rv;
 	const char *type = NULL;
 	const char *special = NULL;
@@ -1192,11 +1192,11 @@ static void spell_append_value_info(int spell, char *p, size_t len)
 
 	type = info->info;
 
-	if (sp->dice != NULL)
-		dice_roll(sp->dice, &rv);
+	if (sp->effect->dice != NULL)
+		dice_roll(sp->effect->dice, &rv);
 
 	/* Handle some special cases where we want to append some additional info */
-	switch (sp->effect) {
+	switch (sp->effect->index) {
 		case SPELL_EFFECT_CURE_LIGHT_WOUNDS:
 		case SPELL_EFFECT_CURE_SERIOUS_WOUNDS:
 		case SPELL_EFFECT_CURE_CRITICAL_WOUNDS:
