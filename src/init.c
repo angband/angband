@@ -3786,6 +3786,9 @@ void cleanup_angband(void)
 	/* Free the lore list */
 	FREE(l_list);
 
+	/* The main cave is always allocated with max height and width */
+	cave->height = DUNGEON_HGT;
+	cave->width = DUNGEON_WID;
 	cave_free(cave);
 
 	/* Free the stacked monster messages */
