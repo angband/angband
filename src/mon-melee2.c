@@ -1424,22 +1424,19 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 
 		/* Monster hits player */
 		if (!effect || check_hit(p, power, rlev)) {
+			melee_effect_handler_f effect_handler;
+
 			/* Always disturbing */
 			disturb(p, 1);
 
 			/* Hack -- Apply "protection from evil" */
-			if (p->timed[TMD_PROTEVIL] > 0)
-			{
+			if (p->timed[TMD_PROTEVIL] > 0) {
 				/* Learn about the evil flag */
 				if (m_ptr->ml)
-				{
 					rf_on(l_ptr->flags, RF_EVIL);
-				}
 
-				if (rf_has(m_ptr->race->flags, RF_EVIL) &&
-				    p->lev >= rlev &&
-				    randint0(100) + p->lev > 50)
-				{
+				if (rf_has(m_ptr->race->flags, RF_EVIL) && p->lev >= rlev &&
+				    randint0(100) + p->lev > 50) {
 					/* Message */
 					msg("%s is repelled.", m_name);
 
@@ -1467,58 +1464,51 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 			else
 				damage = 0;
 
-			/* Initialize this way so that some values can be const. */
-			melee_effect_handler_context_t context = {
-				p,
-				m_ptr,
-				rlev,
-				method,
-				ac,
-				ddesc,
-				obvious,
-				blinked,
-				do_break,
-				damage,
-			};
-
 			/* Perform the actual effect. */
-			melee_effect_handler_f effect_handler = melee_handler_for_blow_effect(effect);
+			effect_handler = melee_handler_for_blow_effect(effect);
 
-			if (effect_handler != NULL)
+			if (effect_handler != NULL) {
+				melee_effect_handler_context_t context = {
+					p,
+					m_ptr,
+					rlev,
+					method,
+					ac,
+					ddesc,
+					obvious,
+					blinked,
+					do_break,
+					damage,
+				};
+
 				effect_handler(&context);
-			else
-				bell(format("Effect handler not found for %d.", effect));
 
-			/* Save any changes made in the handler for later use. */
-			obvious = context.obvious;
-			blinked = context.blinked;
-			damage = context.damage;
+				/* Save any changes made in the handler for later use. */
+				obvious = context.obvious;
+				blinked = context.blinked;
+				damage = context.damage;
+			} else
+				bell(format("Effect handler not found for %d.", effect));
 
 
 			/* Hack -- only one of cut or stun */
-			if (do_cut && do_stun)
-			{
-				/* Cancel cut */				if (randint0(100) < 50)
-				{
+			if (do_cut && do_stun) {
+				/* Cancel cut */
+				if (randint0(100) < 50)
 					do_cut = 0;
-				}
 
 				/* Cancel stun */
 				else
-				{
 					do_stun = 0;
-				}
 			}
 
 			/* Handle cut */
-			if (do_cut)
-			{
+			if (do_cut) {
 				/* Critical hit (zero if non-critical) */
 				tmp = monster_critical(d_dice, d_side, damage);
 
 				/* Roll for damage */
-				switch (tmp)
-				{
+				switch (tmp) {
 					case 0: k = 0; break;
 					case 1: k = randint1(5); break;
 					case 2: k = randint1(5) + 5; break;
@@ -1534,14 +1524,12 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 			}
 
 			/* Handle stun */
-			if (do_stun)
-			{
+			if (do_stun) {
 				/* Critical hit (zero if non-critical) */
 				tmp = monster_critical(d_dice, d_side, damage);
 
 				/* Roll for damage */
-				switch (tmp)
-				{
+				switch (tmp) {
 					case 0: k = 0; break;
 					case 1: k = randint1(5); break;
 					case 2: k = randint1(10) + 10; break;
@@ -1553,10 +1541,10 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 				}
 
 				/* Apply the stun */
-				if (k) (void)player_inc_timed(p, TMD_STUN, k, TRUE, TRUE);
+				if (k)
+					(void)player_inc_timed(p, TMD_STUN, k, TRUE, TRUE);
 			}
-		}
-		else {
+		} else {
 			/* Visible monster missed player, so notify if appropriate. */
 			if (m_ptr->ml && monster_blow_method_miss(method)) {
 				/* Disturbing */
@@ -1565,18 +1553,13 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 			}
 		}
 
-
 		/* Analyze "visible" monsters only */
-		if (visible)
-		{
+		if (visible) {
 			/* Count "obvious" attacks (and ones that cause damage) */
-			if (obvious || damage || (l_ptr->blows[ap_cnt] > 10))
-			{
+			if (obvious || damage || (l_ptr->blows[ap_cnt] > 10)) {
 				/* Count attacks of this type */
 				if (l_ptr->blows[ap_cnt] < MAX_UCHAR)
-				{
 					l_ptr->blows[ap_cnt]++;
-				}
 			}
 		}
 
@@ -1584,21 +1567,15 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 		if (do_break) break;
 	}
 
-
 	/* Blink away */
-	if (blinked)
-	{
+	if (blinked) {
 		msg("There is a puff of smoke!");
 		teleport_away(m_ptr, MAX_SIGHT * 2 + 5);
 	}
 
-
 	/* Always notice cause of death */
 	if (p->is_dead && (l_ptr->deaths < MAX_SHORT))
-	{
 		l_ptr->deaths++;
-	}
-
 
 	/* Assume we attacked */
 	return (TRUE);

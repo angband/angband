@@ -1015,9 +1015,10 @@ void player_birth(bool quickstart_allowed)
 		else if (cmd->command == CMD_RESET_STATS)
 		{
 			/* .choice is whether to regen stats */
+			int choice;
+
 			reset_stats(stats, points_spent, &points_left, TRUE);
 
-			int choice;
 			cmd_get_arg_choice(cmd, "choice", &choice);
 			if (choice)
 				generate_stats(stats, points_spent, &points_left);

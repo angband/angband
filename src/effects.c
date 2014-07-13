@@ -70,6 +70,15 @@ typedef struct
 	const char *desc;    /* Effect description */
 } info_entry;
 
+/**
+ * Structure for atomic effects
+ */
+struct effect_kind {
+	u16b index;          /* Effect index */
+	bool aim;            /* Whether the effect requires aiming */
+	const char *desc;    /* Effect description */
+};
+
 
 /**
  * Array of stat adjectives
@@ -2357,7 +2366,7 @@ bool effect_stat_restore_all(effect_handler_context_t *context)
 	return TRUE;
 }
 
-#pragma mark generic handlers
+// generic handlers
 
 bool effect_handler_increment_timed(effect_handler_context_t *context)
 {
@@ -2430,7 +2439,7 @@ bool effect_handler_project_ball(effect_handler_context_t *context)
 	return TRUE;
 }
 
-#pragma mark specific handlers
+// specific handlers
 
 bool effect_handler_CURE_MIND(effect_handler_context_t *context)
 {

@@ -1111,32 +1111,33 @@ static bool player_spell_effect(int spell, int dir)
 	const class_spell *sp = spell_by_index(spell);
 	const spell_info_t *spell_info = spell_info_for_index(spell_effects, N_ELEMENTS(spell_effects), SPELL_EFFECT_MAX, sp->effect);
 	random_value value;
-	int p1, p2;
+
+	/* Usually GF_ type. */
+	int p1 = sp->params[0];
+
+	/* Usually radius for ball spells, or some other modifier. */
+	int p2 = sp->params[1];
+
+	if (sp->dice != NULL)
+		dice_roll(sp->dice, &value);
 
 	if (spell_info == NULL)
 		return FALSE;
 
 	spell_handler = spell_info->handler;
 
-	if (spell_handler == NULL)
-		return FALSE;
+	if (spell_handler == NULL) {
+		spell_handler_context_t context = {
+			dir,
+			beam_chance(),
+			value,
+			p1, p2
+		};
 
-	if (sp->dice != NULL)
-		dice_roll(sp->dice, &value);
+		return spell_handler(&context);
+	}
 
-	/* Usually GF_ type. */
-	p1 = sp->params[0];
-	/* Usually radius for ball spells, or some other modifier. */
-	p2 = sp->params[1];
-
-	spell_handler_context_t context = {
-		dir,
-		beam_chance(),
-		value,
-		p1, p2
-	};
-
-	return spell_handler(&context);
+	return FALSE;
 }
 
 bool spell_is_identify(int spell)

@@ -84,7 +84,7 @@ static int art_it[TRIES_SIZE];
 
 /*** handle gold separately ***/
 /* gold */
-static double gold_total[MAX_LVL], gold_floor[MAX_LVL], gold_mon[MAX_LVL], gold_wall[MAX_LVL];
+static double gold_total[MAX_LVL], gold_floor[MAX_LVL], gold_mon[MAX_LVL];
 
 
 typedef enum stat_code

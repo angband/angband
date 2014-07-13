@@ -47,7 +47,7 @@
 byte gf_to_attr[GF_MAX][BOLT_MAX];
 wchar_t gf_to_char[GF_MAX][BOLT_MAX];
 
-#pragma mark feature handlers
+// feature handlers
 
 typedef struct project_feature_handler_context_s {
 	const int who;
@@ -352,7 +352,7 @@ static void project_feature_handler_DARK(project_feature_handler_context_t *cont
 	}
 }
 
-#pragma mark object handlers
+// object handlers
 
 typedef struct project_object_handler_context_s {
 	const int who;
@@ -473,7 +473,7 @@ static void project_object_handler_chest(project_object_handler_context_t *conte
 	}
 }
 
-#pragma mark monster handlers
+// monster handlers
 
 typedef struct project_monster_handler_context_s {
 	const int who;
@@ -1094,7 +1094,7 @@ static void project_monster_handler_DISP_ALL(project_monster_handler_context_t *
 	context->die_msg = MON_MSG_DISSOLVE;
 }
 
-#pragma mark player handlers
+// player handlers
 
 /**
  * Drain stats at random
@@ -1404,7 +1404,7 @@ static void project_player_handler_PLASMA(project_player_handler_context_t *cont
 	}
 }
 
-#pragma mark other functions
+// other functions
 
 /**
  * Structure for GF types and their handler functions

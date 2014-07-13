@@ -279,6 +279,7 @@ typedef struct {
 	byte effect;	/**< The spell's effect index */
 	dice_t *dice;	/**< Dice expression used in the spell */
 	int params[2];	/**< Extra parameters to be passed to the handler */
+	//struct effect *effect;	/**< The spell's effect */
 
 	byte sidx;		/**< The index of this spell for this class */
 	byte bidx;		/**< The index into the player's books array */
