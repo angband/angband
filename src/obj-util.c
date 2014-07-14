@@ -764,7 +764,7 @@ void object_free(struct object *obj)
 {
 	free_brand(obj->brands);
 	free_slay(obj->slays);
-	mem_free(obj->effect);
+	free_effect(obj->effect);
 	object_wipe(obj);
 }
 

@@ -3984,6 +3984,22 @@ void copy_effect(struct effect **dest, struct effect *source)
 }
 
 
+/**
+ * Free all the effects in a structure
+ *
+ * \param source the effects being freed
+ */
+void free_effect(struct effect *source)
+{
+	struct effect *e = source, *e_next;
+	while (e) {
+		e_next = e->next;
+		dice_free(e->dice);
+		mem_free(e);
+		e = e_next;
+	}
+}
+
 bool effect_valid(effect_index effect)
 {
 	return effect > EF_XXX && effect < EF_MAX;

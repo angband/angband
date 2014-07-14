@@ -36,6 +36,7 @@ struct effect {
 /*** Functions ***/
 
 void copy_effect(struct effect **dest, struct effect *source);
+void free_effect(struct effect *source);
 bool effect_do(effect_index effect, bool *ident, bool aware, int dir, int beam,
 	int boost);
 bool effect_aim(effect_index effect);

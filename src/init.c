@@ -769,14 +769,25 @@ static enum parser_error parse_k_f(struct parser *p) {
 
 static enum parser_error parse_k_effect(struct parser *p) {
 	struct object_kind *k = parser_priv(p);
+	struct effect *effect;
+	struct effect *new_effect = mem_zalloc(sizeof(*new_effect));
 	const char *type;
 	int val;
 
 	if (!k)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	k->effect = mem_zalloc(sizeof(*k->effect));
-	k->effect->index = grab_one_effect(parser_getsym(p, "eff"), effect_list,
-									N_ELEMENTS(effect_list));
+
+	/* Go to the next vacant effect and set it to the new one  */
+	if (k->effect) {
+		effect = k->effect;
+		while (effect->next)
+			effect = effect->next;
+		effect->next = new_effect;
+	} else
+		k->effect = new_effect;
+
+	new_effect->index = grab_one_effect(parser_getsym(p, "eff"), effect_list,
+										N_ELEMENTS(effect_list));
 
 	if (parser_hasval(p, "type")) {
 		type = parser_getsym(p, "type");
@@ -794,11 +805,11 @@ static enum parser_error parse_k_effect(struct parser *p) {
 		if (val < 0)
 			return PARSE_ERROR_INVALID_EFFECT;
 		else
-			k->effect->params[0] = val;
+			new_effect->params[0] = val;
 	}
 
 	if (parser_hasval(p, "xtra"))
-		k->effect->params[1] = parser_getint(p, "xtra");
+		new_effect->params[1] = parser_getint(p, "xtra");
 
 	return PARSE_ERROR_NONE;
 }
@@ -979,9 +990,9 @@ static void cleanup_k(void)
 	for (idx = 0; idx < z_info->k_max; idx++) {
 		string_free(k_info[idx].name);
 		mem_free(k_info[idx].text);
-		mem_free(k_info[idx].effect);
 		free_brand(k_info[idx].brands);
 		free_slay(k_info[idx].slays);
+		free_effect(k_info[idx].effect);
 	}
 	mem_free(k_info);
 }
@@ -1124,14 +1135,26 @@ static enum parser_error parse_a_f(struct parser *p) {
 
 static enum parser_error parse_a_effect(struct parser *p) {
 	struct artifact *a = parser_priv(p);
+	struct effect *effect;
+	struct effect *new_effect = mem_zalloc(sizeof(*new_effect));
 	const char *type;
 	int val;
 
 	if (!a)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	a->effect = mem_zalloc(sizeof(*a->effect));
-	a->effect->index = grab_one_effect(parser_getsym(p, "eff"), effect_list,
-									N_ELEMENTS(effect_list));
+
+	/* Go to the next vacant effect and set it to the new one  */
+	if (a->effect) {
+		effect = a->effect;
+		while (effect->next)
+			effect = effect->next;
+		effect->next = new_effect;
+	} else
+		a->effect = new_effect;
+
+	/* Fill in the detail */
+	new_effect->index = grab_one_effect(parser_getsym(p, "eff"), effect_list,
+									   N_ELEMENTS(effect_list));
 
 	if (parser_hasval(p, "type")) {
 		type = parser_getsym(p, "type");
@@ -1149,11 +1172,11 @@ static enum parser_error parse_a_effect(struct parser *p) {
 		if (val < 0)
 			return PARSE_ERROR_INVALID_EFFECT;
 		else
-			a->effect->params[0] = val;
+			new_effect->params[0] = val;
 	}
 
 	if (parser_hasval(p, "xtra"))
-		a->effect->params[1] = parser_getint(p, "xtra");
+		new_effect->params[1] = parser_getint(p, "xtra");
 
 	return PARSE_ERROR_NONE;
 }
@@ -1325,10 +1348,10 @@ static void cleanup_a(void)
 	for (idx = 0; idx < z_info->a_max; idx++) {
 		string_free(a_info[idx].name);
 		mem_free(a_info[idx].effect_msg);
-		mem_free(a_info[idx].effect);
 		mem_free(a_info[idx].text);
 		free_brand(a_info[idx].brands);
 		free_slay(a_info[idx].slays);
+		free_effect(a_info[idx].effect);
 	}
 	mem_free(a_info);
 }
@@ -1511,14 +1534,26 @@ static enum parser_error parse_trap_f(struct parser *p) {
 
 static enum parser_error parse_trap_effect(struct parser *p) {
     struct trap *t = parser_priv(p);
+	struct effect *effect;
+	struct effect *new_effect = mem_zalloc(sizeof(*new_effect));
 	const char *type;
 	int val;
 
 	if (!t)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	t->effect = mem_zalloc(sizeof(*t->effect));
-	t->effect->index = grab_one_effect(parser_getsym(p, "eff"), effect_list,
-									N_ELEMENTS(effect_list));
+
+	/* Go to the next vacant effect and set it to the new one  */
+	if (t->effect) {
+		effect = t->effect;
+		while (effect->next)
+			effect = effect->next;
+		effect->next = new_effect;
+	} else
+		t->effect = new_effect;
+
+	/* Fill in the detail */
+	new_effect->index = grab_one_effect(parser_getsym(p, "eff"), effect_list,
+										N_ELEMENTS(effect_list));
 
 	if (parser_hasval(p, "type")) {
 		type = parser_getsym(p, "type");
@@ -1536,11 +1571,11 @@ static enum parser_error parse_trap_effect(struct parser *p) {
 		if (val < 0)
 			return PARSE_ERROR_INVALID_EFFECT;
 		else
-			t->effect->params[0] = val;
+			new_effect->params[0] = val;
 	}
 
 	if (parser_hasval(p, "xtra"))
-		t->effect->params[1] = parser_getint(p, "xtra");
+		new_effect->params[1] = parser_getint(p, "xtra");
 
 	return PARSE_ERROR_NONE;
 }
@@ -1610,7 +1645,7 @@ static void cleanup_trap(void)
 	for (i = 0; i < z_info->trap_max; i++) {
 		string_free(trap_info[i].name);
 		mem_free(trap_info[i].text);
-		mem_free(trap_info[i].effect);
+		free_effect(trap_info[i].effect);
 	}
 	mem_free(trap_info);
 }
@@ -1912,14 +1947,26 @@ static enum parser_error parse_e_m(struct parser *p) {
 
 static enum parser_error parse_e_effect(struct parser *p) {
 	struct ego_item *e = parser_priv(p);
+	struct effect *effect;
+	struct effect *new_effect = mem_zalloc(sizeof(*new_effect));
 	const char *type;
 	int val;
 
 	if (!e)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	e->effect = mem_zalloc(sizeof(*e->effect));
-	e->effect->index = grab_one_effect(parser_getsym(p, "eff"), effect_list,
-									N_ELEMENTS(effect_list));
+
+	/* Go to the next vacant effect and set it to the new one  */
+	if (e->effect) {
+		effect = e->effect;
+		while (effect->next)
+			effect = effect->next;
+		effect->next = new_effect;
+	} else
+		e->effect = new_effect;
+
+	/* Fill in the detail */
+	new_effect->index = grab_one_effect(parser_getsym(p, "eff"), effect_list,
+										N_ELEMENTS(effect_list));
 
 	if (parser_hasval(p, "type")) {
 		type = parser_getsym(p, "type");
@@ -1937,11 +1984,11 @@ static enum parser_error parse_e_effect(struct parser *p) {
 		if (val < 0)
 			return PARSE_ERROR_INVALID_EFFECT;
 		else
-			e->effect->params[0] = val;
+			new_effect->params[0] = val;
 	}
 
 	if (parser_hasval(p, "xtra"))
-		e->effect->params[1] = parser_getint(p, "xtra");
+		new_effect->params[1] = parser_getint(p, "xtra");
 
 	return PARSE_ERROR_NONE;
 }
@@ -2167,9 +2214,9 @@ static void cleanup_e(void)
 	for (idx = 0; idx < z_info->e_max; idx++) {
 		string_free(e_info[idx].name);
 		mem_free(e_info[idx].text);
-		mem_free(e_info[idx].effect);
 		free_brand(e_info[idx].brands);
 		free_slay(e_info[idx].slays);
+		free_effect(e_info[idx].effect);
 		poss = e_info[idx].poss_items;
 		while (poss) {
 			pn = poss->next;
@@ -2683,14 +2730,26 @@ static enum parser_error parse_c_effect(struct parser *p) {
 	struct player_class *c = parser_priv(p);
 	class_book *book = &c->magic.books[c->magic.num_books - 1];
 	class_spell *spell = &book->spells[book->num_spells - 1];
+	struct effect *effect;
+	struct effect *new_effect = mem_zalloc(sizeof(*effect));
 	const char *type;
 
 	if (!c)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	spell->effect = mem_zalloc(sizeof(*spell->effect));
-	spell->effect->index = grab_one_effect(parser_getsym(p, "eff"),
-										   spell_effect_list,
-										   N_ELEMENTS(spell_effect_list));
+
+	/* Go to the next vacant effect and set it to the new one  */
+	if (spell->effect) {
+		effect = spell->effect;
+		while (effect->next)
+			effect = effect->next;
+		effect->next = new_effect;
+	} else
+		spell->effect = new_effect;
+
+	/* Fill in the detail */
+	new_effect->index = grab_one_effect(parser_getsym(p, "eff"),
+										spell_effect_list,
+										N_ELEMENTS(spell_effect_list));
 
 	if (parser_hasval(p, "type")) {
 		type = parser_getsym(p, "type");
@@ -2698,11 +2757,11 @@ static enum parser_error parse_c_effect(struct parser *p) {
 		if (type == NULL)
 			return PARSE_ERROR_INVALID_VALUE;
 
-		spell->effect->params[0] = gf_name_to_idx(type);
+		new_effect->params[0] = gf_name_to_idx(type);
 	}
 
 	if (parser_hasval(p, "xtra"))
-		spell->effect->params[1] = parser_getint(p, "xtra");
+		new_effect->params[1] = parser_getint(p, "xtra");
 
 	return PARSE_ERROR_NONE;
 }
@@ -2842,8 +2901,7 @@ static void cleanup_c(void)
 				spell = &book->spells[j];
 				string_free(spell->name);
 				string_free(spell->text);
-				dice_free(spell->effect->dice);
-				mem_free(spell->effect);
+				free_effect(spell->effect);
 			}
 			mem_free(book->spells);
 		}

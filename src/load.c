@@ -30,6 +30,7 @@
 #include "obj-identify.h"
 #include "obj-ignore.h"
 #include "obj-make.h"
+#include "obj-slays.h"
 #include "obj-util.h"
 #include "object.h"
 #include "player.h"
@@ -1079,7 +1080,9 @@ static int rd_gear_aux(rd_item_t rd_item_version)
 		}
 
 		/* Free object */
-		object_free(i_ptr);
+		free_brand(i_ptr->brands);
+		free_slay(i_ptr->slays);
+		object_wipe(i_ptr);
 	}
 	calc_inventory(player->upkeep, player->gear, player->body,
 				   player->max_gear);
