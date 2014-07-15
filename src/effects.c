@@ -161,7 +161,7 @@ static bool project_touch(int dam, int typ, bool aware)
  * amount, whichever is larger.
  *
  * context->value.base should be the minimum, and
- * context->value.m_bonus the prcentage
+ * context->value.m_bonus the percentage
  */
 bool effect_handler_ATOMIC_HEAL_HP(effect_handler_context_t *context)
 {
@@ -223,10 +223,22 @@ bool effect_handler_ATOMIC_CURE(effect_handler_context_t *context)
 /**
  * Extend a (positive or negative) player status condition.
  */
-bool effect_handler_ATOMIC_TIMED(effect_handler_context_t *context)
+bool effect_handler_ATOMIC_TIMED_INC(effect_handler_context_t *context)
 {
 	int amount = effect_calculate_value(context, FALSE);
 	player_inc_timed(player, context->p1, amount, TRUE, TRUE);
+	context->ident = TRUE;
+	return TRUE;
+
+}
+
+/**
+ * Reduce a (positive or negative) player status condition.
+ */
+bool effect_handler_ATOMIC_TIMED_DEC(effect_handler_context_t *context)
+{
+	int amount = effect_calculate_value(context, FALSE);
+	player_dec_timed(player, context->p1, amount, TRUE);
 	context->ident = TRUE;
 	return TRUE;
 
@@ -262,7 +274,7 @@ bool effect_handler_ATOMIC_RUNE(effect_handler_context_t *context)
 /**
  * Restore a stat.  The stat index is context->p1.
  */
-bool effect_handler_ATOMIC_RES_STAT(effect_handler_context_t *context)
+bool effect_handler_ATOMIC_RESTORE_STAT(effect_handler_context_t *context)
 {
 	int stat = context->p1;
 
@@ -278,6 +290,7 @@ bool effect_handler_ATOMIC_RES_STAT(effect_handler_context_t *context)
 
 	/* Recalculate bonuses */
 	player->upkeep->update |= (PU_BONUS);
+	update_stuff(player->upkeep);
 
 	/* Message */
 	msg("You feel less %s.", desc_stat_neg[stat]);
@@ -316,8 +329,11 @@ bool effect_handler_ATOMIC_DRAIN_STAT(effect_handler_context_t *context)
 
 	/* Attempt to reduce the stat */
 	if (player_stat_dec(player, stat, FALSE)){
+		int dam = effect_calculate_value(context, FALSE);
+
 		/* Message */
 		msgt(MSG_DRAIN_STAT, "You feel very %s.", desc_stat_neg[stat]);
+		take_hit(player, dam, "stat drain");
 
 		/* Notice */
 		context->ident = TRUE;
@@ -373,7 +389,7 @@ bool effect_handler_ATOMIC_GAIN_STAT(effect_handler_context_t *context)
 /**
  * Restores any drained experience
  */
-bool effect_handler_ATOMIC_RES_EXP(effect_handler_context_t *context)
+bool effect_handler_ATOMIC_RESTORE_EXP(effect_handler_context_t *context)
 {
 	/* Restore experience */
 	if (player->exp < player->max_exp) {
@@ -381,11 +397,52 @@ bool effect_handler_ATOMIC_RES_EXP(effect_handler_context_t *context)
 		msg("You feel your life energies returning.");
 		player_exp_gain(player, player->max_exp - player->exp);
 
+        /* Recalculate max. hitpoints */
+        update_stuff(player->upkeep);
+
 		/* Did something */
 		context->ident = TRUE;
 	}
 
 	return (TRUE);
+}
+
+bool effect_handler_ATOMIC_GAIN_EXP(effect_handler_context_t *context)
+{
+	if (player->exp < PY_MAX_EXP) {
+		msg("You feel more experienced.");
+		player_exp_gain(player, 100000L);
+		context->ident = TRUE;
+	}
+	return TRUE;
+}
+
+bool effect_handler_ATOMIC_LOSE_EXP(effect_handler_context_t *context)
+{
+	if (!player_of_has(player, OF_HOLD_LIFE) && (player->exp > 0)) {
+		msg("You feel your memories fade.");
+		player_exp_lose(player, player->exp / 4, FALSE);
+	}
+	context->ident = TRUE;
+	wieldeds_notice_flag(player, OF_HOLD_LIFE);
+	return TRUE;
+}
+
+bool effect_handler_ATOMIC_RESTORE_MANA(effect_handler_context_t *context)
+{
+	int amt = context->value.base ? context->value.base : player->msp;
+	if (player->csp < player->msp) {
+		player->csp += amt;
+		if (player->csp > player->msp) {
+			player->csp = player->msp;
+			player->csp_frac = 0;
+			msg("You feel your head clear.");
+		} else
+			msg("You feel your head clear somewhat.");
+		player->upkeep->redraw |= (PR_MANA);
+		context->ident = TRUE;
+	}
+	return TRUE;
 }
 
 /**
@@ -427,15 +484,15 @@ bool effect_handler_ATOMIC_RECALL(effect_handler_context_t *context)
 
 /**
  * Map an area around the player.  The height to map above and below the player
- * is context->p1, the width either side of the player context->p2.
+ * is context->value.dice, the width either side of the player context->value.sides.
  *
  */
 bool effect_handler_ATOMIC_MAP_AREA(effect_handler_context_t *context)
 {
 	int i, x, y;
 	int x1, x2, y1, y2;
-	int y_dist = context->p1;
-	int x_dist = context->p2;
+	int y_dist = context->value.dice;
+	int x_dist = context->value.sides;
 
 	/* Pick an area to map */
 	y1 = player->py - y_dist;
@@ -489,14 +546,14 @@ bool effect_handler_ATOMIC_MAP_AREA(effect_handler_context_t *context)
 
 /**
  * Detect traps around the player.  The height to detect above and below the
- * player is context->p1, the width either side of the player context->p2.
+ * player is context->value.dice, the width either side of the player context->value.sides.
  */
 bool effect_handler_ATOMIC_DETECT_TRAP(effect_handler_context_t *context)
 {
 	int x, y;
 	int x1, x2, y1, y2;
-	int y_dist = context->p1;
-	int x_dist = context->p2;
+	int y_dist = context->value.dice;
+	int x_dist = context->value.sides;
 
 	bool detect = FALSE;
 
@@ -585,14 +642,14 @@ bool effect_handler_ATOMIC_DETECT_TRAP(effect_handler_context_t *context)
 
 /**
  * Detect doors around the player.  The height to detect above and below the
- * player is context->p1, the width either side of the player context->p2.
+ * player is context->value.dice, the width either side of the player context->value.sides.
  */
 bool effect_handler_ATOMIC_DETECT_DOORS(effect_handler_context_t *context)
 {
 	int x, y;
 	int x1, x2, y1, y2;
-	int y_dist = context->p1;
-	int x_dist = context->p2;
+	int y_dist = context->value.dice;
+	int x_dist = context->value.sides;
 
 	bool doors = FALSE;
 
@@ -642,14 +699,14 @@ bool effect_handler_ATOMIC_DETECT_DOORS(effect_handler_context_t *context)
 
 /**
  * Detect stairs around the player.  The height to detect above and below the
- * player is context->p1, the width either side of the player context->p2.
+ * player is context->value.dice, the width either side of the player context->value.sides.
  */
 bool effect_handler_ATOMIC_DETECT_STAIRS(effect_handler_context_t *context)
 {
 	int x, y;
 	int x1, x2, y1, y2;
-	int y_dist = context->p1;
-	int x_dist = context->p2;
+	int y_dist = context->value.dice;
+	int x_dist = context->value.sides;
 
 	bool stairs = FALSE;
 
@@ -696,15 +753,15 @@ bool effect_handler_ATOMIC_DETECT_STAIRS(effect_handler_context_t *context)
 
 /**
  * Detect buried gold around the player.  The height to detect above and below
- * the player is context->p1, the width either side of the player context->p2, 
+ * the player is context->value.dice, the width either side of the player context->value.sides, 
  * and setting context->boost to -1 suppresses messages.
  */
 bool effect_handler_ATOMIC_DETECT_GOLD(effect_handler_context_t *context)
 {
 	int x, y;
 	int x1, x2, y1, y2;
-	int y_dist = context->p1;
-	int x_dist = context->p2;
+	int y_dist = context->value.dice;
+	int x_dist = context->value.sides;
 
 	bool gold_buried = FALSE;
 
@@ -753,21 +810,80 @@ bool effect_handler_ATOMIC_DETECT_GOLD(effect_handler_context_t *context)
 }
 
 /**
+ * Sense objects around the player.  The height to sense above and below the
+ * player is context->value.dice, the width either side of the player
+ * context->value.sides
+ */
+bool effect_handler_ATOMIC_SENSE_OBJECTS(effect_handler_context_t *context)
+{
+	int i, x, y;
+	int x1, x2, y1, y2;
+	int y_dist = context->value.dice;
+	int x_dist = context->value.sides;
+
+	bool objects = FALSE;
+
+	/* Pick an area to sense */
+	y1 = player->py - y_dist;
+	y2 = player->py + y_dist;
+	x1 = player->px - x_dist;
+	x2 = player->px + x_dist;
+
+	if (y1 < 0) y1 = 0;
+	if (x1 < 0) x1 = 0;
+	if (y2 > cave->height - 1) y2 = cave->height - 1;
+	if (x2 > cave->width - 1) x2 = cave->width - 1;
+
+	/* Scan objects */
+	for (i = 1; i < cave_object_max(cave); i++)	{
+		object_type *o_ptr = cave_object(cave, i);
+
+		/* Skip dead objects */
+		if (!o_ptr->kind) continue;
+
+		/* Skip held objects */
+		if (o_ptr->held_m_idx) continue;
+
+		/* Location */
+		y = o_ptr->iy;
+		x = o_ptr->ix;
+
+		/* Only sense nearby objects */
+		if (x < x1 || y < y1 || x > x2 || y > y2) continue;
+
+		/* Memorize it */
+		if (o_ptr->marked == MARK_UNAWARE)
+			o_ptr->marked = MARK_AWARE;
+
+		/* Redraw */
+		square_light_spot(cave, y, x);
+
+		/* Detected */
+		objects = TRUE;
+		context->ident = TRUE;
+	}
+
+	if (objects)
+		msg("You sense the presence of objects!");
+	else if (context->aware)
+		msg("You sense no objects.");
+
+	return TRUE;
+}
+
+/**
  * Detect objects around the player.  The height to detect above and below the
- * player is context->p1, the width either side of the player context->p2,
- * and setting context->boost to -1 prevents knowledge of an object (aside from
- * its existence) outside los.
+ * player is context->value.dice, the width either side of the player
+ * context->value.sides
  */
 bool effect_handler_ATOMIC_DETECT_OBJECTS(effect_handler_context_t *context)
 {
 	int i, x, y;
 	int x1, x2, y1, y2;
-	int y_dist = context->p1;
-	int x_dist = context->p2;
+	int y_dist = context->value.dice;
+	int x_dist = context->value.sides;
 
 	bool objects = FALSE;
-	/* Hack - NRM */
-	bool full = (context->boost != -1);
 
 	/* Pick an area to detect */
 	y1 = player->py - y_dist;
@@ -798,38 +914,37 @@ bool effect_handler_ATOMIC_DETECT_OBJECTS(effect_handler_context_t *context)
 		if (x < x1 || y < y1 || x > x2 || y > y2) continue;
 
 		/* Memorize it */
-		if (o_ptr->marked < MARK_SEEN)
-			o_ptr->marked = full ? MARK_SEEN : MARK_AWARE;
+		o_ptr->marked = MARK_SEEN;
 
 		/* Redraw */
 		square_light_spot(cave, y, x);
 
 		/* Detect */
-		if (!ignore_item_ok(o_ptr) || !full) {
+		if (!ignore_item_ok(o_ptr)) {
 			objects = TRUE;
 			context->ident = TRUE;
 		}
 	}
 
 	if (objects)
-		msg("You sense the presence of objects!");
+		msg("You detect the presence of objects!");
 	else if (context->aware)
-		msg("You sense no objects.");
+		msg("You detect no objects.");
 
 	return TRUE;
 }
 
 /**
  * Detect visible monsters around the player.  The height to detect above and
- * below the player is context->p1, the width either side of the player
- * context->p2.
+ * below the player is context->value.dice, the width either side of the player
+ * context->value.sides.
  */
 bool effect_handler_ATOMIC_DETECT_VISIBLE_MONSTERS(effect_handler_context_t *context)
 {
 	int i, x, y;
 	int x1, x2, y1, y2;
-	int y_dist = context->p1;
-	int x_dist = context->p2;
+	int y_dist = context->value.dice;
+	int x_dist = context->value.sides;
 
 	bool monsters = FALSE;
 
@@ -888,15 +1003,15 @@ bool effect_handler_ATOMIC_DETECT_VISIBLE_MONSTERS(effect_handler_context_t *con
 
 /**
  * Detect invisible monsters around the player.  The height to detect above and
- * below the player is context->p1, the width either side of the player
- * context->p2.
+ * below the player is context->value.dice, the width either side of the player
+ * context->value.sides.
  */
 bool effect_handler_ATOMIC_DETECT_INVISIBLE_MONSTERS(effect_handler_context_t *context)
 {
 	int i, x, y;
 	int x1, x2, y1, y2;
-	int y_dist = context->p1;
-	int x_dist = context->p2;
+	int y_dist = context->value.dice;
+	int x_dist = context->value.sides;
 
 	bool monsters = FALSE;
 
@@ -961,15 +1076,15 @@ bool effect_handler_ATOMIC_DETECT_INVISIBLE_MONSTERS(effect_handler_context_t *c
 
 /**
  * Detect evil monsters around the player.  The height to detect above and
- * below the player is context->p1, the width either side of the player
- * context->p2.
+ * below the player is context->value.dice, the width either side of the player
+ * context->value.sides.
  */
 bool effect_handler_ATOMIC_DETECT_EVIL(effect_handler_context_t *context)
 {
 	int i, x, y;
 	int x1, x2, y1, y2;
-	int y_dist = context->p1;
-	int x_dist = context->p2;
+	int y_dist = context->value.dice;
+	int x_dist = context->value.sides;
 
 	bool monsters = FALSE;
 
@@ -1758,6 +1873,16 @@ bool effect_handler_ATOMIC_EARTHQUAKE(effect_handler_context_t *context)
 	return TRUE;
 }
 
+bool effect_handler_ATOMIC_ENLIGHTENMENT(effect_handler_context_t *context)
+{
+	bool full = context->value.base ? TRUE : FALSE;
+	if (full)
+		msg("An image of your surroundings forms in your mind...");
+	wiz_light(cave, full);
+	context->ident = TRUE;
+	return TRUE;
+}
+
 /**
  * Call light around the player
  * Affect all monsters in the projection radius (context->p2)
@@ -1986,40 +2111,6 @@ bool effect_handler_ATOMIC_TOUCH_AWARE(effect_handler_context_t *context)
 	int dam = effect_calculate_value(context, TRUE);
 	if (project_touch(dam, context->p1, context->aware))
 		context->ident = TRUE;
-	return TRUE;
-}
-
-bool effect_handler_ATOMIC_GAIN_EXP(effect_handler_context_t *context)
-{
-	if (player->exp < PY_MAX_EXP) {
-		msg("You feel more experienced.");
-		player_exp_gain(player, 100000L);
-		context->ident = TRUE;
-	}
-	return TRUE;
-}
-
-bool effect_handler_ATOMIC_LOSE_EXP(effect_handler_context_t *context)
-{
-	if (!player_of_has(player, OF_HOLD_LIFE) && (player->exp > 0)) {
-		msg("You feel your memories fade.");
-		player_exp_lose(player, player->exp / 4, FALSE);
-	}
-	context->ident = TRUE;
-	wieldeds_notice_flag(player, OF_HOLD_LIFE);
-	return TRUE;
-}
-
-bool effect_handler_ATOMIC_RESTORE_MANA(effect_handler_context_t *context)
-{
-	if (player->csp < player->msp)
-	{
-		player->csp = player->msp;
-		player->csp_frac = 0;
-		msg("You feel your head clear.");
-		player->upkeep->redraw |= (PR_MANA);
-		context->ident = TRUE;
-	}
 	return TRUE;
 }
 

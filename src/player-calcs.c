@@ -1901,6 +1901,7 @@ void calc_bonuses(object_type gear[], player_state *state, bool known_only)
 	/* Temporary "Hero" */
 	if (player->timed[TMD_HERO])
 	{
+		of_on(state->flags, OF_PROT_FEAR);
 		state->to_h += 12;
 		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE]
 			* 105 / 100;
@@ -1909,6 +1910,7 @@ void calc_bonuses(object_type gear[], player_state *state, bool known_only)
 	/* Temporary "Berserk" */
 	if (player->timed[TMD_SHERO])
 	{
+		of_on(state->flags, OF_PROT_FEAR);
 		state->to_h += 24;
 		state->to_a -= 10;
 		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE]
