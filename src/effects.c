@@ -101,7 +101,6 @@ static const char *desc_stat_neg[] =
 	#undef STAT
 };
 
-
 int effect_calculate_value(effect_handler_context_t *context, bool use_boost)
 {
 	int final = 0;
@@ -1461,6 +1460,39 @@ bool effect_handler_ATOMIC_AGGRAVATE(effect_handler_context_t *context)
 	return TRUE;
 }
 
+/**
+ * Summon context->value monsters of context->p1 type.
+ * Better handling of context->p1 is sorely needed
+ */
+bool effect_handler_ATOMIC_SUMMON(effect_handler_context_t *context)
+{
+	int i;
+	int num = effect_calculate_value(context, FALSE);
+	int type = context->p1 ? context->p1 : 0;
+	int msgt = MSG_SUM_MONSTER;
+
+	if (type == S_ANIMAL) msgt = MSG_SUM_ANIMAL;
+	else if (type == S_SPIDER) msgt = MSG_SUM_SPIDER;
+	else if (type == S_HOUND) msgt = MSG_SUM_HOUND;
+	else if (type == S_HYDRA) msgt = MSG_SUM_HYDRA;
+	else if (type == S_AINU) msgt = MSG_SUM_AINU;
+	else if (type == S_DEMON) msgt = MSG_SUM_DEMON;
+	else if (type == S_UNDEAD) msgt = MSG_SUM_UNDEAD;
+	else if (type == S_DRAGON) msgt = MSG_SUM_DRAGON;
+	else if (type == S_HI_DEMON) msgt = MSG_SUM_HI_DEMON;
+	else if (type == S_HI_UNDEAD) msgt = MSG_SUM_HI_UNDEAD;
+	else if (type == S_HI_DRAGON) msgt = MSG_SUM_HI_DRAGON;
+	else if (type == S_WRAITH) msgt = MSG_SUM_WRAITH;
+	else if (type == S_UNIQUE) msgt = MSG_SUM_UNIQUE;
+
+	sound(msgt);
+
+	for (i = 0; i < num; i++) {
+		if (summon_specific(player->py, player->px, player->depth, type, 1))
+			context->ident = TRUE;
+	}
+	return TRUE;
+}
 
 /**
  * Delete all non-unique monsters of a given "type" from the level

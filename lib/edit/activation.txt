@@ -542,68 +542,78 @@ desc:detects treasure, traps, doors, stairs, and all creatures nearby
 name:ENCHANT_TOHIT
 aim:0
 power:15
-function:ENCHANT_TOHIT
+effect:ATOMIC_ENCHANT:TOHIT
+dice:1
 desc:attempts to magically enhance a weapon's to-hit bonus.  Also gives a chance to break a curse
 
 name:ENCHANT_TODAM
 aim:0
 power:20
-function:ENCHANT_TODAM
+effect:ATOMIC_ENCHANT:TODAM
+dice:1
 desc:attempts to magically enhance a weapon's to-dam bonus.  Also gives a chance to break a curse
 
 name:ENCHANT_WEAPON
 aim:0
 power:22
-function:ENCHANT_WEAPON
+effect:ATOMIC_ENCHANT:TOHIT
+dice:1d3
+effect:ATOMIC_ENCHANT:TODAM
+dice:1d3
 desc:attempts to magically enhance a weapon both to-hit and to-dam.  Also gives a chance to break a curse
 
 name:ENCHANT_ARMOR
 aim:0
 power:12
-function:ENCHANT_ARMOR
+effect:ATOMIC_ENCHANT:TOAC
+dice:1
 desc:attempts to magically enhance a piece of armour.  Also gives a chance to break a curse
 
 name:ENCHANT_ARMOR2
 aim:0
 power:15
-function:ENCHANT_ARMOR2
+effect:ATOMIC_ENCHANT:TOAC
+dice:2+1d3
 desc:attempts to magically enhance a piece of armour with high chance of success.  Also gives a chance to break a curse
 
 name:IDENTIFY
 aim:0
 power:9
-function:IDENTIFY
+effect:ATOMIC_IDENTIFY
 desc:reveals to you the extent of an item's magical powers
 
 name:REMOVE_CURSE
 aim:0
 power:8
-function:REMOVE_CURSE
+effect:ATOMIC_REMOVE_CURSE
 desc:removes all ordinary curses from all equipped items
 
 name:REMOVE_CURSE2
 aim:0
 power:20
-function:REMOVE_CURSE2
+effect:ATOMIC_REMOVE_ALL_CURSE
 desc:removes all curses from all equipped items
 
 name:LIGHT
 aim:0
 power:4
-function:LIGHT
+effect:ATOMIC_LIGHT_AREA:LIGHT_WEAK:2
 dice:2d8
 desc:lights up an area and inflicts 2d8 damage on light-sensitive creatures
 
 name:SUMMON_MON
 aim:0
 power:0
-function:SUMMON_MON
+effect:ATOMIC_SUMMON
+dice:1d3
 desc:summons monsters at the current dungeon level
 
 name:SUMMON_UNDEAD
 aim:0
 power:0
-function:SUMMON_UNDEAD
+# 17 is S_UNDEAD- aaarrgh NRM
+effect:ATOMIC_SUMMON:17
+dice:1d3
 desc:summons undead monsters at the current dungeon level
 
 name:TELE_PHASE

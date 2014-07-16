@@ -772,7 +772,7 @@ static enum parser_error parse_k_effect(struct parser *p) {
 	struct effect *effect;
 	struct effect *new_effect = mem_zalloc(sizeof(*new_effect));
 	const char *type;
-	int val;
+	int val, r;
 
 	if (!k)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
@@ -795,12 +795,23 @@ static enum parser_error parse_k_effect(struct parser *p) {
 		if (type == NULL)
 			return PARSE_ERROR_INVALID_VALUE;
 
-		/* Run through the possibilities */
-		val = gf_name_to_idx(type);
-		if (val < 0) {
-			val = timed_name_to_idx(type);
-			if (val < 0)
-				val = stat_name_to_idx(type);
+		/* Check for a value */
+		if (sscanf(type, "%u", &r) == 1)
+			val = r;
+		else {
+			/* Run through the possibilities */
+			val = gf_name_to_idx(type);
+			if (val < 0) {
+				val = timed_name_to_idx(type);
+				if (val < 0) {
+					val = stat_name_to_idx(type);
+					if (val < 0) { //Hack - NRM
+						if (streq(type, "TOHIT")) val = ENCH_TOHIT;
+						else if (streq(type, "TODAM")) val = ENCH_TODAM;
+						else if (streq(type, "TOAC")) val = ENCH_TOAC;
+					}
+				}
+			}
 		}
 		if (val < 0)
 			return PARSE_ERROR_INVALID_EFFECT;
