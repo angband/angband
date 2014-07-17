@@ -110,7 +110,6 @@ effect:ATOMIC_CURE:STUN
 effect:ATOMIC_CURE:CUT
 effect:ATOMIC_CURE:POISONED
 effect:ATOMIC_CURE:BLIND
-function:CURE_BODY
 desc:heals 30 hitpoints, cut damage, and cures stunning, poison and blindness
 
 name:CURE_LIGHT
@@ -323,7 +322,7 @@ desc:reduces your constitution with damage 5d5
 name:LOSE_CON2
 aim:0
 power:0
-function:LOSE_CON2
+effect:ATOMIC_DRAIN_STAT:CON
 dice:10d10
 desc:reduces your constitution with damage 10d10
 
@@ -472,9 +471,13 @@ name:RESIST_ALL
 aim:0
 power:10
 effect:ATOMIC_TIMED_INC:OPP_ACID
+dice:20+1d20
 effect:ATOMIC_TIMED_INC:OPP_ELEC
+dice:20+1d20
 effect:ATOMIC_TIMED_INC:OPP_FIRE
+dice:20+1d20
 effect:ATOMIC_TIMED_INC:OPP_COLD
+dice:20+1d20
 effect:ATOMIC_TIMED_INC:OPP_POIS
 dice:20+1d20
 desc:grants temporary resistance to acid, electricity, fire, cold and poison for 1d20+20 turns
@@ -619,100 +622,106 @@ desc:summons undead monsters at the current dungeon level
 name:TELE_PHASE
 aim:0
 power:5
-function:TELE_PHASE
+effect:ATOMIC_TELEPORT
+dice:10
 desc:teleports you randomly up to 10 squares away
 
 name:TELE_LONG
 aim:0
 power:6
-function:TELE_LONG
+effect:ATOMIC_TELEPORT
+dice:100
 desc:teleports you randomly up to 100 squares away
 
 name:TELE_LEVEL
 aim:0
 power:15
-function:TELE_LEVEL
+effect:ATOMIC_TELEPORT_LEVEL
 desc:teleports you one level up or down
 
 name:CONFUSING
 aim:0
 power:8
-function:CONFUSING
+effect:ATOMIC_CONFUSING
 desc:causes your next attack upon a monster to confuse it
 
 name:MAPPING
 aim:0
 power:10
-function:MAPPING
+effect:ATOMIC_MAP_AREA
+dice:22d40
 desc:maps the area around you
 
 name:RUNE
 aim:0
 power:20
-function:RUNE
+effect:ATOMIC_RUNE
 desc:inscribes a glyph of warding beneath you, which monsters cannot move onto
 
 
 name:ANNOY_MON
 aim:0
 power:0
-function:ANNOY_MON
+effect:ATOMIC_AGGRAVATE
 desc:awakens all nearby sleeping monsters and hastens all monsters within line of sight
 
 name:CREATE_TRAP
 aim:0
 power:0
-function:CREATE_TRAP
+effect:ATOMIC_TOUCH:MAKE_TRAP
 desc:creates traps surrounding you
 
 name:DESTROY_TDOORS
 aim:0
 power:6
-function:DESTROY_TDOORS
+effect:ATOMIC_TOUCH:KILL_DOOR
 desc:destroys all traps and doors surrounding you
 
 name:RECHARGE
 aim:0
 power:11
-function:RECHARGE
+effect:ATOMIC_RECHARGE
+dice:60
 desc:tries to recharge a wand or staff, destroying the wand or staff on failure
 
 name:BANISHMENT
 aim:0
 power:20
-function:BANISHMENT
+effect:ATOMIC_BANISH
 desc:removes all non-unique monsters represented by a chosen symbol from the level, dealing you damage in the process
 
 name:DARKNESS
 aim:0
 power:0
-function:DARKNESS
+effect:ATOMIC_DARKEN_AREA:DARK_WEAK:2
+effect:ATOMIC_TIMED_INC:BLIND
 dice:3+1d5
 desc:darkens the nearby area and blinds you for 1d5+3 turns
 
 name:PROTEVIL
 aim:0
 power:6
-function:PROTEVIL
-dice:1d25
+effect:ATOMIC_TIMED_INC:PROTEVIL
+dice:$B+1d25
+expr:B:PLAYER_LEVEL:* 3
 desc:grants you protection from evil for 1d25 plus 3 times your character level turns
 
 name:SATISFY
 aim:0
 power:7
-function:SATISFY
+effect:ATOMIC_SATISFY_HUNGER
 desc:magically renders you well-fed, curing any gastrointestinal problems
 
 name:CURSE_WEAPON
 aim:0
 power:0
-function:CURSE_WEAPON
+effect:ATOMIC_CURSE_WEAPON
 desc:curses your currently wielded melee weapon
 
 name:CURSE_ARMOR
 aim:0
 power:0
-function:CURSE_ARMOR
+effect:ATOMIC_CURSE_ARMOR
 desc:curses your currently worn body armor
 
 name:BLESSING
@@ -739,97 +748,109 @@ desc:increases your AC and to-hit bonus for 1d48+24 turns
 name:RECALL
 aim:0
 power:15
-function:RECALL
+effect:ATOMIC_RECALL
 desc:returns you from the dungeon or takes you to the dungeon after a short delay
 
 name:DEEP_DESCENT
 aim:0
 power:19
-function:DEEP_DESCENT
+effect:ATOMIC_DEEP_DESCENT
 desc:teleports you five levels down
 
 
 name:EARTHQUAKES
 aim:0
 power:5
-function:EARTHQUAKES
+effect:ATOMIC_EARTHQUAKE
 desc:causes an earthquake around you
 
 name:DESTRUCTION2
 aim:0
 power:12
-function:DESTRUCTION2
+effect:ATOMIC_DESTRUCTION
 desc:destroys an area around you in the shape of a circle radius 15, and blinds you for 1d10+10 turns
 
 
 name:LOSHASTE
 aim:0
 power:0
-function:LOSHASTE
+effect:ATOMIC_PROJECT_LOS:OLD_SPEED
+dice:50
 desc:hastes all monsters within line of sight
 
 name:LOSSLOW
 aim:0
 power:7
-function:LOSSLOW
+effect:ATOMIC_PROJECT_LOS:OLD_SLOW
+dice:20
 desc:slows all non-unique monsters within line of sight
 
 name:LOSSLEEP
 aim:0
 power:8
-function:LOSSLEEP
+effect:ATOMIC_PROJECT_LOS:OLD_SLEEP
+dice:$B
+expr:B:PLAYER_LEVEL
 desc:sleeps all non-unique creatures within line of sight
 
 name:LOSCONF
 aim:0
 power:10
-function:LOSCONF
+effect:ATOMIC_PROJECT_LOS:OLD_CONF
+dice:$B
+expr:B:PLAYER_LEVEL
 desc:confuses all non-unique creatures within line of sight
 
 name:LOSKILL
 aim:0
 power:25
-function:LOSKILL
+effect:ATOMIC_MASS_BANISH
 desc:removes all non-unique monsters within 20 squares, dealing you damage in the process
 
 name:ILLUMINATION
 aim:0
 power:4
-function:ILLUMINATION
+effect:ATOMIC_LIGHT_AREA:LIGHT_WEAK:3
 dice:2d15
 desc:lights up the surrounding area, hurting light-sensitive creatures
 
 name:CLAIRVOYANCE
 aim:0
 power:23
-function:CLAIRVOYANCE
+effect:ATOMIC_ENLIGHTENMENT
+effect:ATOMIC_DETECT_TRAPS
+dice:22d40
+effect:ATOMIC_DETECT_DOORS
+dice:22d40
+effect:ATOMIC_DETECT_STAIRS
+dice:22d40
 desc:maps the entire level and detects nearby objects, traps, doors, and stairs
 
 name:PROBING
 aim:0
 power:8
-function:PROBING
+effect:ATOMIC_PROBE
 desc:gives you information on the health and abilities of monsters you can see
 
 
 name:HASTE
 aim:0
 power:10
-function:HASTE
+effect:ATOMIC_TIMED_INC:FAST:5
 dice:20+2d10
 desc:hastens you for 2d10+20 turns
 
 name:HASTE1
 aim:0
 power:10
-function:HASTE1
+effect:ATOMIC_TIMED_INC:FAST:5
 dice:20+1d20
 desc:hastens you for d20+20 turns
 
 name:HASTE2
 aim:0
 power:13
-function:HASTE2
+effect:ATOMIC_TIMED_INC:FAST:5
 dice:75+1d75
 desc:hastens you for d75+75 turns
 
@@ -837,27 +858,29 @@ desc:hastens you for d75+75 turns
 name:DISPEL_EVIL
 aim:0
 power:12
-function:DISPEL_EVIL
+effect:ATOMIC_PROJECT_LOS:DISP_EVIL:1
+dice:$B
+expr:B:PLAYER_LEVEL:* 5
 desc:deals five times your level's damage to all evil creatures that you can see
 
 name:DISPEL_EVIL60
 aim:0
 power:9
-function:DISPEL_EVIL60
+effect:ATOMIC_PROJECT_LOS:DISP_EVIL
 dice:60
 desc:deals 60 damage to all evil creatures that you can see
 
 name:DISPEL_UNDEAD
 aim:0
 power:9
-function:DISPEL_UNDEAD
+effect:ATOMIC_PROJECT_LOS:DISP_UNDEAD
 dice:60
 desc:deals 60 damage to all undead creatures that you can see
 
 name:DISPEL_ALL
 aim:0
 power:11
-function:DISPEL_ALL
+effect:ATOMIC_PROJECT_LOS:DISP_ALL
 dice:120
 desc:deals 120 damage to all creatures that you can see
 
@@ -865,38 +888,57 @@ desc:deals 120 damage to all creatures that you can see
 name:SLEEPII
 aim:0
 power:8
-function:SLEEPII
+effect:ATOMIC_PROJECT_TOUCH_AWARE:OLD_SLEEP
+dice:$B
+expr:B:PLAYER_LEVEL
 desc:puts to sleep the monsters around you
 
 name:STAR_BALL
 aim:0
 power:18
-function:STAR_BALL
+effect:ATOMIC_STAR_BALL:ELEC:3
 dice:150
 desc:fires a ball of electricity in all directions, each one causing 150 damage
 
 name:RAGE_BLESS_RESIST
 aim:0
 power:21
-function:RAGE_BLESS_RESIST
+effect:ATOMIC_HEAL_HP
+dice:30
+effect:ATOMIC_CURE:AFRAID
+effect:ATOMIC_TIMED_INC:SHERO
+dice:50+1d50
+effect:ATOMIC_TIMED_INC:BLESS
+dice:50+1d50
+effect:ATOMIC_TIMED_INC:OPP_ACID
+dice:50+1d50
+effect:ATOMIC_TIMED_INC:OPP_ELEC
+dice:50+1d50
+effect:ATOMIC_TIMED_INC:OPP_FIRE
+dice:50+1d50
+effect:ATOMIC_TIMED_INC:OPP_COLD
+dice:50+1d50
+effect:ATOMIC_TIMED_INC:OPP_POIS
+dice:50+1d50
 desc:bestows upon you berserk rage, bless, and resistance
 
 name:RESTORE_LIFE
 aim:0
 power:8
-function:RESTORE_LIFE
+effect:ATOMIC_RESTORE_EXP
 desc:restores your experience to full
 
 name:REM_FEAR_POIS
 aim:0
 power:3
-function:REM_FEAR_POIS
+effect:ATOMIC_CURE:AFRAID
+effect:ATOMIC_CURE:POISONED
 desc:cures you of fear and poison
 
 name:FIREBRAND
 aim:0
 power:25
-function:FIREBRAND
+effect:ATOMIC_BRAND_BOLTS
 desc:brands bolts with fire, in an unbalanced fashion
 
 
@@ -1044,28 +1086,28 @@ desc:creates a large lightning ball with damage 250
 name:DRAIN_LIFE1
 aim:1
 power:9
-function:DRAIN_LIFE1
+effect:ATOMIC_BOLT:OLD_DRAIN
 dice:90
 desc:drains up to 90 hit points of life from a target creature.  Does not affect undead, demons, golems, elementals or vortices
 
 name:DRAIN_LIFE2
 aim:1
 power:10
-function:DRAIN_LIFE2
+effect:ATOMIC_BOLT:OLD_DRAIN
 dice:120
 desc:drains up to 120 hit points of life from a target creature.  Does not affect undead, demons, golems, elementals or vortices
 
 name:DRAIN_LIFE3
 aim:1
 power:11
-function:DRAIN_LIFE3
+effect:ATOMIC_BOLT:OLD_DRAIN
 dice:150
 desc:drains up to 150 hit points of life from a target creature.  Does not affect undead, demons, golems, elementals or vortices
 
 name:DRAIN_LIFE4
 aim:1
 power:12
-function:DRAIN_LIFE4
+effect:ATOMIC_BOLT:OLD_DRAIN
 dice:250
 desc:drains up to 250 hit points of life from a target creature.  Does not affect undead, demons, golems, elementals or vortices
 
@@ -1086,7 +1128,7 @@ desc:fires a mana bolt with damage 12d8
 name:BIZARRE
 aim:1
 power:20
-function:BIZARRE
+effect:ATOMIC_BIZARRE
 desc:does bizarre things
 
 name:ARROW
@@ -1106,106 +1148,122 @@ desc:fires a stinking cloud with damage 12
 name:STONE_TO_MUD
 aim:1
 power:6
-function:STONE_TO_MUD
+effect:ATOMIC_LINE:KILL_WALL
+dice:20+1d30
 desc:turns rock into mud
 
 name:TELE_OTHER
 aim:1
 power:11
-function:TELE_OTHER
+effect:ATOMIC_BOLT:AWAY_ALL
+dice:$B
+expr:B:MAX_SIGHT:* 5
 desc:teleports a target monster away
 
 name:CONFUSE2
 aim:1
 power:3
-function:CONFUSE2
+effect:ATOMIC_BOLT_AWARE:OLD_CONF
+dice:20
 desc:confuses a target monster
-
 
 name:MON_HEAL
 aim:1
 power:0
-function:MON_HEAL
+effect:ATOMIC_BOLT:OLD_HEAL
+dice:4d6
 desc:heals a single monster 4d6 hit points
 
 name:MON_HASTE
 aim:1
 power:0
-function:MON_HASTE
+effect:ATOMIC_BOLT:OLD_SPEED
+dice:100
 desc:hastes a single monster
 
 name:MON_SLOW
 aim:1
 power:3
-function:MON_SLOW
+effect:ATOMIC_BOLT:OLD_SLOW
+dice:20
 desc:attempts to magically slow a single monster
 
 name:MON_CONFUSE
 aim:1
 power:3
-function:MON_CONFUSE
+effect:ATOMIC_BOLT_AWARE:OLD_CONF
+dice:10
 desc:attempts to magically confuse a single monster
 
 name:MON_SLEEP
 aim:1
 power:3
-function:MON_SLEEP
+effect:ATOMIC_BOLT_AWARE:OLD_SLEEP
+dice:$B
+expr:B:PLAYER_LEVEL
 desc:attempts to induce magical sleep in a single monster
 
 name:MON_CLONE
 aim:1
 power:0
-function:MON_CLONE
+effect:ATOMIC_BOLT:OLD_CLONE
 desc:hastes, heals, and magically duplicates a single monster
 
 name:MON_SCARE
 aim:1
 power:3
-function:MON_SCARE
+effect:ATOMIC_BOLT_AWARE:TURN_ALL
+dice:10
 desc:attempts to induce magical fear in a single monster
 
 
 name:LIGHT_LINE
 aim:1
 power:6
-function:LIGHT_LINE
+msg:A line of shimmering blue light appears.
+effect:ATOMIC_LINE:LIGHT_WEAK
+dice:6d8
 desc:lights up part of the dungeon in a straight line
 
 name:DISARMING
 aim:1
 power:7
-function:DISARMING
+effect:ATOMIC_ALTER:KILL_TRAP
 desc:destroys traps, unlocks doors and reveals all secret doors in a given direction
 
 name:TDOOR_DEST
 aim:1
 power:5
-function:TDOOR_DEST
+effect:ATOMIC_ALTER:KILL_DOOR
 desc:destroys traps and doors
 
 name:POLYMORPH
 aim:1
 power:7
-function:POLYMORPH
+effect:ATOMIC_BOLT:OLD_POLY
+dice:$B
+expr:B:PLAYER_LEVEL
 desc:polymorphs a monster into another kind of creature
 
 
 name:STARLIGHT
 aim:0
 power:5
-function:STARLIGHT
+effect:ATOMIC_STAR:LIGHT_WEAK
+dice:6d8
 desc:fires a line of light in all directions, each one causing light-sensitive creatures 6d8 damage
 
 name:STARLIGHT2
 aim:0
 power:7
-function:STARLIGHT2
+effect:ATOMIC_STAR:LIGHT
+dice:10d8
 desc:fires a line of light in all directions, each one causing 10d8 damage
 
 name:BERSERKER
 aim:0
 power:10
-function:BERSERKER
+effect:ATOMIC_TIMED_INC:SHERO
 dice:50+1d50
 desc:puts you in a berserker rage for d50+50 turns
 
@@ -1213,14 +1271,25 @@ desc:puts you in a berserker rage for d50+50 turns
 name:WONDER
 aim:1
 power:9
-function:WONDER
+effect:ATOMIC_WONDER
+dice:$B+1d100
+expr:B:PLAYER_LEVEL:/ 5
 desc:creates random and unpredictable effects
 
 
 name:WAND_BREATH
 aim:1
 power:12
-function:WAND_BREATH
+reffect:ATOMIC_BALL:ACID:3
+dice:200
+reffect:ATOMIC_BALL:ELEC:3
+dice:160
+reffect:ATOMIC_BALL:FIRE:3
+dice:200
+reffect:ATOMIC_BALL:COLD:3
+dice:160
+reffect:ATOMIC_BALL:POIS:3
+dice:120
 desc:shoots a large ball of one of the base elements for 120-200 damage
 
 name:STAFF_MAGI

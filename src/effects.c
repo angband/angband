@@ -221,11 +221,15 @@ bool effect_handler_ATOMIC_CURE(effect_handler_context_t *context)
 
 /**
  * Extend a (positive or negative) player status condition.
+ * If context->p2 is set, increase by that amount if the status exists already
  */
 bool effect_handler_ATOMIC_TIMED_INC(effect_handler_context_t *context)
 {
 	int amount = effect_calculate_value(context, FALSE);
-	player_inc_timed(player, context->p1, amount, TRUE, TRUE);
+	if (!player->timed[context->p1] || !context->p2)
+		player_inc_timed(player, context->p1, amount, TRUE, TRUE);
+	else
+		player_inc_timed(player, context->p1, context->p2, TRUE, TRUE);
 	context->ident = TRUE;
 	return TRUE;
 
@@ -241,6 +245,16 @@ bool effect_handler_ATOMIC_TIMED_DEC(effect_handler_context_t *context)
 	context->ident = TRUE;
 	return TRUE;
 
+}
+
+bool effect_handler_ATOMIC_CONFUSING(effect_handler_context_t *context)
+{
+        if (player->confusing == 0) {
+                msg("Your hands begin to glow.");
+                player->confusing = TRUE;
+                context->ident = TRUE;
+        }
+        return TRUE;
 }
 
 /**
@@ -479,6 +493,30 @@ bool effect_handler_ATOMIC_RECALL(effect_handler_context_t *context)
 	context->ident = TRUE;
 	(void) set_recall();
 	return TRUE;
+}
+
+bool effect_handler_ATOMIC_DEEP_DESCENT(effect_handler_context_t *context)
+{
+	int i, target_depth = player->max_depth;
+
+	/* Calculate target depth */
+	for (i = 5; i > 0; i--) {
+		if (is_quest(target_depth)) break;
+		if (target_depth >= MAX_DEPTH - 1) break;
+
+		target_depth++;
+	}
+
+	if (target_depth > player->depth) {
+		msgt(MSG_TPLEVEL, "The air around you starts to swirl...");
+		player->deep_descent = 3 + randint1(4);
+		context->ident = TRUE;
+		return TRUE;
+	} else {
+		msgt(MSG_TPLEVEL, "You sense a malevolent presence blocking passage to the levels below.");
+		context->ident = TRUE;
+		return FALSE;
+	}
 }
 
 /**
@@ -1301,14 +1339,14 @@ static bool item_tester_hook_recharge(const object_type *o_ptr)
 
 /**
  * Recharge a wand or staff from the pack or on the floor.  Recharge strength
- * is context->p2.
+ * is context->value.base.
  *
  * It is harder to recharge high level, and highly charged wands.
  */
 bool effect_handler_ATOMIC_RECHARGE(effect_handler_context_t *context)
 {
 	int i, t, item, lev;
-	int strength = context->p2;
+	int strength = context->value.base;
 	object_type *o_ptr;
 	const char *q, *s;
 
@@ -1984,13 +2022,10 @@ bool effect_handler_ATOMIC_BALL(effect_handler_context_t *context)
 	int px = player->px;
 	int dam = effect_calculate_value(context, TRUE);
 
-	s16b ty, tx;
+	s16b ty = py + 99 * ddy[context->dir];
+	s16b tx = px + 99 * ddx[context->dir];
 
 	int flg = PROJECT_STOP | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
-
-	/* Use the given direction */
-	ty = py + 99 * ddy[context->dir];
-	tx = px + 99 * ddx[context->dir];
 
 	/* Ask for a target if no direction given */
 	if ((context->dir == 5) && target_okay()) {
@@ -2020,13 +2055,10 @@ bool effect_handler_ATOMIC_SWARM(effect_handler_context_t *context)
 	int dam = effect_calculate_value(context, TRUE);
 	int num = context->value.m_bonus;
 
-	s16b ty, tx;
+	s16b ty = py + 99 * ddy[context->dir];
+	s16b tx = px + 99 * ddx[context->dir];
 
 	int flg = PROJECT_THRU | PROJECT_STOP | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
-
-	/* Use the given direction */
-	ty = py + 99 * ddy[context->dir];
-	tx = px + 99 * ddx[context->dir];
 
 	/* Ask for a target if no direction given (early detonation) */
 	if ((context->dir == 5) && target_okay())
@@ -2042,6 +2074,102 @@ bool effect_handler_ATOMIC_SWARM(effect_handler_context_t *context)
 	return TRUE;
 }
 
+/**
+ * Cast a line spell in every direction
+ * Stop if we hit a monster, act as a ball
+ * Affect grids, objects, and monsters
+ */
+bool effect_handler_ATOMIC_STAR(effect_handler_context_t *context)
+{
+	int py = player->py;
+	int px = player->px;
+	int dam = effect_calculate_value(context, TRUE);
+	int i;
+
+	s16b ty, tx;
+
+	int flg = PROJECT_BEAM | PROJECT_GRID | PROJECT_KILL;
+
+	for (i = 0; i < 8; i++) {
+		/* Use the current direction */
+		ty = py + 99 * ddy[i];
+		tx = px + 99 * ddx[i];
+
+		/* Aim at the target */
+		if (project(-1, 0, ty, tx, dam, context->p1, flg, 0, 0))
+			context->ident = TRUE;
+	}
+	return TRUE;
+}
+
+
+/**
+ * Cast a ball spell in every direction
+ * Stop if we hit a monster, act as a ball
+ * Affect grids, objects, and monsters
+ */
+bool effect_handler_ATOMIC_STAR_BALL(effect_handler_context_t *context)
+{
+	int py = player->py;
+	int px = player->px;
+	int dam = effect_calculate_value(context, TRUE);
+	int i;
+
+	s16b ty, tx;
+
+	int flg = PROJECT_STOP | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
+
+	for (i = 0; i < 8; i++) {
+		/* Use the current direction */
+		ty = py + 99 * ddy[i];
+		tx = px + 99 * ddx[i];
+
+		/* Aim at the target, explode */
+		if (project(-1, context->p2, ty, tx, dam, context->p1, flg, 0, 0))
+			context->ident = TRUE;
+	}
+	return TRUE;
+}
+
+/**
+ * Messy, will change if breaths do - NRM
+ */
+bool effect_handler_ATOMIC_RAND_BREATH(effect_handler_context_t *context)
+{
+	int py = player->py;
+	int px = player->px;
+
+	s16b ty = py + 99 * ddy[context->dir];
+	s16b tx = px + 99 * ddx[context->dir];
+
+	int flg = PROJECT_STOP | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
+
+	/* Table of random ball effects and their damages */
+	const int breath_types[] = {
+		GF_ACID, 200,
+		GF_ELEC, 160,
+		GF_FIRE, 200,
+		GF_COLD, 160,
+		GF_POIS, 120
+	};
+
+	/* Pick a random (type, damage) tuple in the table */
+	int which = 2 * randint0(sizeof(breath_types) / (2 * sizeof(int)));
+
+	/* Ask for a target if no direction given */
+	if ((context->dir == 5) && target_okay()) {
+		flg &= ~(PROJECT_STOP);
+
+		target_get(&tx, &ty);
+	}
+
+	/* Aim at the target, explode */
+	(void) project(-1, breath_types[which], ty, tx, breath_types[which + 1], 3, flg, 0, 0);
+
+	context->ident = TRUE;
+	return TRUE;
+}
+ 
 /**
  * Cast a bolt spell
  * Stop if we hit a monster, as a bolt
@@ -2335,6 +2463,27 @@ bool effect_handler_ATOMIC_BRAND_BOLTS(effect_handler_context_t *context)
 	return (TRUE);
 }
 
+
+/**
+ * Slack - NRM
+ */
+bool effect_handler_ATOMIC_BIZARRE(effect_handler_context_t *context)
+{
+	context->ident = TRUE;
+	ring_of_power(context->dir);
+	return TRUE;
+}
+
+/**
+ * Super slack - NRM
+ */
+bool effect_handler_ATOMIC_WONDER(effect_handler_context_t *context)
+{
+	int amount = effect_calculate_value(context, FALSE);
+	context->ident = TRUE;
+	effect_wonder(context->dir, amount, context->beam);
+	return TRUE;
+}
 
 /*
  * The "wonder" effect.

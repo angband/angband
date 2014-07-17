@@ -1233,6 +1233,11 @@ static int spell_value_base_player_level(void)
 	return player->lev;
 }
 
+static int spell_value_base_max_sight(void)
+{
+	return MAX_SIGHT;
+}
+
 expression_base_value_f spell_value_base_by_name(const char *name)
 {
 	static const struct value_base_s {
@@ -1240,6 +1245,7 @@ expression_base_value_f spell_value_base_by_name(const char *name)
 		expression_base_value_f function;
 	} value_bases[] = {
 		{ "PLAYER_LEVEL", spell_value_base_player_level },
+		{ "MAX_SIGHT", spell_value_base_max_sight },
 		{ NULL, NULL },
 	};
 	const struct value_base_s *current = value_bases;
