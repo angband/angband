@@ -1280,122 +1280,149 @@ desc:creates random and unpredictable effects
 name:WAND_BREATH
 aim:1
 power:12
-reffect:ATOMIC_BALL:ACID:3
+random:5
+effect:ATOMIC_BREATH:ACID:3
 dice:200
-reffect:ATOMIC_BALL:ELEC:3
+effect:ATOMIC_BREATH:ELEC:3
 dice:160
-reffect:ATOMIC_BALL:FIRE:3
+effect:ATOMIC_BREATH:FIRE:3
 dice:200
-reffect:ATOMIC_BALL:COLD:3
+effect:ATOMIC_BREATH:COLD:3
 dice:160
-reffect:ATOMIC_BALL:POIS:3
+effect:ATOMIC_BREATH:POIS:3
 dice:120
 desc:shoots a large ball of one of the base elements for 120-200 damage
 
 name:STAFF_MAGI
 aim:0
 power:20
-function:STAFF_MAGI
+effect:ATOMIC_RESTORE_STAT:INT
+effect:ATOMIC_RESTORE_MANA
 desc:restores both intelligence and manapoints to maximum
 
 name:STAFF_HOLY
 aim:0
 power:12
-function:STAFF_HOLY
+effect:ATOMIC_LOS:DISP_EVIL:1
+dice:120
+effect:ATOMIC_HEAL_HP
+dice:50
+effect:ATOMIC_TIMED_INC:PROTEVIL
+dice:$B+1d25
+expr:B:PLAYER_LEVEL:* 3
+effect:ATOMIC_CURE:POISONED
+effect:ATOMIC_CURE:TERROR
+effect:ATOMIC_CURE:AFRAID
+effect:ATOMIC_CURE:STUN
+effect:ATOMIC_CURE:CUT
+effect:ATOMIC_CURE:SLOW
+effect:ATOMIC_CURE:BLIND
+effect:ATOMIC_CURE:CONFUSED
+effect:ATOMIC_CURE:IMAGE
+effect:ATOMIC_CURE:AMNESIA
 desc:inflicts damage on evil creatures you can see, heals 50 hit points, cures all temporary negative effects and grants you protection from evil
 
 name:DRINK_GOOD
+msg:You feel less thirsty.
 aim:0
 power:0
-function:DRINK_GOOD
-NULL)
 
 name:DRINK_BREATH
 aim:1
 power:8
-function:DRINK_BREATH
+random:2
+effect:ATOMIC_BREATH:FIRE
+dice:80
+effect:ATOMIC_BREATH:COLD
+dice:80
 desc:causes you to breathe either cold or flames for 80 damage
 
 name:DRINK_SALT
 aim:0
 power:0
-function:DRINK_SALT
+effect:ATOMIC_SET_NOURISH
+#PY_FOOD_STARVE - 1
+dice:99
+effect:ATOMIC_CURE:POISON
+effect:ATOMIC_TIMED_INC:PARALYZED
+dice:4
 desc:induces vomiting and paralysis for 4 turns, resulting in severe hunger but also curing poison
-
-name:DRINK_DEATH
-aim:0
-power:0
-function:DRINK_DEATH
-desc:inflicts 5000 points of damage
-
-name:DRINK_RUIN
-aim:0
-power:0
-function:DRINK_RUIN
-dice:10d10
-desc:inflicts 10d10 points of damage and decreases all your stats
-
-name:DRINK_DETONATE
-aim:0
-power:0
-function:DRINK_DETONATE
-dice:50d20
-desc:inflicts 50d20 points of damage, severe cuts, and stunning
 
 name:FOOD_GOOD
 aim:0
 power:0
-function:FOOD_GOOD
-NULL)
+effect:ATOMIC_NOURISH
+dice:6000
 
 name:FOOD_WAYBREAD
 aim:0
 power:4
-function:FOOD_WAYBREAD
+effect:ATOMIC_NOURISH
+dice:7500
+effect:ATOMIC_CURE:POISONED
+effect:ATOMIC_HEAL_HP
 dice:4d8
 desc:restores 4d8 hit points and neutralizes poison
 
 name:FOOD_CRUNCH
 aim:0
 power:0
-function:FOOD_CRUNCH
-NULL)
+effect:ATOMIC_NOURISH
+dice:500
+effect:ATOMIC_CRUNCH
 
 name:FOOD_WHISKY
 aim:0
 power:0
-function:FOOD_WHISKY
-NULL)
+effect:ATOMIC_NOURISH
+dice:250
+effect:ATOMIC_TIMED_INC:CONFUSED
+dice:-1+1d5
 
 name:FOOD_WINE
 aim:0
 power:0
-function:FOOD_WINE
+effect:ATOMIC_NOURISH
+dice:250
+effect:ATOMIC_TIMED_INC:BOLD
+dice:79+1d41
 desc:makes you fearless and foolhardy, but less co-ordinated
 
 
 name:SHROOM_EMERGENCY
 aim:0
 power:7
-function:SHROOM_EMERGENCY
+effect:ATOMIC_TIMED_INC:IMAGE
+dice:249+1d101
+effect:ATOMIC_TIMED_INC:OPP_FIRE
+dice:19+1d21
+effect:ATOMIC_TIMED_INC:OPP_COLD
+dice:19+1d21
+effect:ATOMIC_HEAL_HP
+dice:200
 desc:grants temporary resistance to fire and cold, cures 200HP, but also makes you hallucinate wildly
 
 name:SHROOM_TERROR
 aim:0
 power:5
-function:SHROOM_TERROR
+effect:ATOMIC_TIMED_SET:TERROR
+dice:79+1d41
 desc:speeds up you temporarily but also makes you mortally afraid
 
 name:SHROOM_STONE
 aim:0
 power:5
-function:SHROOM_STONE
+effect:ATOMIC_TIMED_SET:STONESKIN
+dice:79+1d41
 desc:turns your skin to stone briefly, which grants an extra 40AC but slows you down
 
 name:SHROOM_DEBILITY
 aim:0
 power:5
-function:SHROOM_DEBILITY
+effect:ATOMIC_RESTORE_MANA
+random:2
+effect:ATOMIC_DRAIN_STAT:STR
+effect:ATOMIC_DRAIN_STAT:CON
 desc:restores some mana but also drains either your strength or constitution
 
 name:SHROOM_SPRINTING
@@ -1408,197 +1435,140 @@ desc:hastes you for a while, but then makes you slower for a while afterward
 name:SHROOM_PURGING
 aim:0
 power:5
+effect:ATOMIC_SET_NOURISH
+#PY_FOOD_FAINT - 1
+dice:499
 function:SHROOM_PURGING
 desc:makes you very hungry but restores constitution and strength
 
 name:RING_ACID
 aim:1
 power:11
-function:RING_ACID
+effect:ATOMIC_BALL:ACID:2
+dice:70
+effect:ATOMIC_TIMED_INC:OPP_ACID
+dice:20+1d20
 desc:grants acid resistance for d20+20 turns and creates an acid ball of damage 70
 
 name:RING_FLAMES
 aim:1
 power:11
-function:RING_FLAMES
+effect:ATOMIC_BALL:FIRE:2
+dice:80
+effect:ATOMIC_TIMED_INC:OPP_FIRE
+dice:20+1d20
 desc:grants fire resistance for d20+20 turns and creates a fire ball of damage 80
 
 name:RING_ICE
 aim:1
 power:11
-function:RING_ICE
+effect:ATOMIC_BALL:COLD:2
+dice:75
+effect:ATOMIC_TIMED_INC:OPP_COLD
+dice:20+1d20
 desc:grants cold resistance for d20+20 turns and creates a cold ball of damage 75
 
 name:RING_LIGHTNING
 aim:1
 power:11
-function:RING_LIGHTNING
+effect:ATOMIC_BALL:ELEC:2
+dice:85
+effect:ATOMIC_TIMED_INC:OPP_ELEC
+dice:20+1d20
 desc:grants electricity resistance for d20+20 turns and creates a lightning ball of damage 85
 
 
 name:DRAGON_BLUE
 aim:1
 power:18
-function:DRAGON_BLUE
+effect:ATOMIC_BREATH:ELEC
 dice:150
 desc:allows you to breathe lightning for 150 damage
 
 name:DRAGON_GREEN
 aim:1
 power:19
-function:DRAGON_GREEN
+effect:ATOMIC_BREATH:POIS
 dice:150
 desc:allows you to breathe poison gas for 150 damage
 
 name:DRAGON_RED
 aim:1
 power:20
-function:DRAGON_RED
+effect:ATOMIC_BREATH:FIRE
 dice:200
 desc:allows you to breathe fire for 200 damage
 
 name:DRAGON_MULTIHUED
 aim:1
 power:20
-function:DRAGON_MULTIHUED
+random:5
+effect:ATOMIC_BREATH:ACID
+dice:250
+effect:ATOMIC_BREATH:ELEC
+dice:250
+effect:ATOMIC_BREATH:FIRE
+dice:250
+effect:ATOMIC_BREATH:COLD
+dice:250
+effect:ATOMIC_BREATH:POIS
 dice:250
 desc:allows you to breathe the elements for 250 damage
 
 name:DRAGON_GOLD
 aim:1
 power:19
-function:DRAGON_GOLD
+effect:ATOMIC_BREATH:SOUND
 dice:150
 desc:allows you to breathe sound for 150 damage
 
 name:DRAGON_CHAOS
 aim:1
 power:23
-function:DRAGON_CHAOS
+random:2
+effect:ATOMIC_BREATH:CHAOS
+dice:220
+effect:ATOMIC_BREATH:DISEN
 dice:220
 desc:allows you to breathe chaos or disenchantment for 220 damage
 
 name:DRAGON_LAW
 aim:1
 power:23
-function:DRAGON_LAW
+random:2
+effect:ATOMIC_BREATH:SOUND
+dice:230
+effect:ATOMIC_BREATH:SHARD
 dice:230
 desc:allows you to breathe sound/shards for 230 damage
 
 name:DRAGON_BALANCE
 aim:1
 power:24
-function:DRAGON_BALANCE
+random:4
+effect:ATOMIC_BREATH:SOUND
+dice:250
+effect:ATOMIC_BREATH:SHARDS
+dice:250
+effect:ATOMIC_BREATH:CHAOS
+dice:250
+effect:ATOMIC_BREATH:DISEN
 dice:250
 desc:allows you to breathe balance for 250 damage
 
 name:DRAGON_SHINING
 aim:1
 power:21
-function:DRAGON_SHINING
+random:2
+effect:ATOMIC_BREATH:LIGHT
+dice:200
+effect:ATOMIC_BREATH:DARK
 dice:200
 desc:allows you to breathe light or darkness for 200 damage
 
 name:DRAGON_POWER
 aim:1
 power:25
-function:DRAGON_POWER
+effect:ATOMIC_BREATH:MISSILE
 dice:300
 desc:allows you to breathe for 300 damage
-
-
-name:TRAP_DOOR
-aim:0
-power:0
-function:TRAP_DOOR
-desc:a trap door which drops you down a level
-
-name:TRAP_PIT
-aim:0
-power:0
-function:TRAP_PIT
-desc:a pit trap - the fall might hurt
-
-name:TRAP_PIT_SPIKES
-aim:0
-power:0
-function:TRAP_PIT_SPIKES
-desc:a pit trap, with nasty spikes
-
-name:TRAP_PIT_POISON
-aim:0
-power:0
-function:TRAP_PIT_POISON
-desc:a pit trap, with poisoned spikes
-
-name:TRAP_RUNE_SUMMON
-aim:0
-power:0
-function:TRAP_RUNE_SUMMON
-desc:a rune which summons monsters
-
-name:TRAP_RUNE_TELEPORT
-aim:0
-power:0
-function:TRAP_RUNE_TELEPORT
-desc:a rune which teleports
-
-name:TRAP_SPOT_FIRE
-aim:0
-power:0
-function:TRAP_SPOT_FIRE
-desc:a magical fire trap
-
-name:TRAP_SPOT_ACID
-aim:0
-power:0
-function:TRAP_SPOT_ACID
-desc:a magical acid trap
-
-name:TRAP_DART_SLOW
-aim:0
-power:0
-function:TRAP_DART_SLOW
-desc:a dart which slows movements
-
-name:TRAP_DART_LOSE_STR
-aim:0
-power:0
-function:TRAP_DART_LOSE_STR
-desc:a dart which drains strength
-
-name:TRAP_DART_LOSE_DEX
-aim:0
-power:0
-function:TRAP_DART_LOSE_DEX
-desc:a dart which drains dexterity
-
-name:TRAP_DART_LOSE_CON
-aim:0
-power:0
-function:TRAP_DART_LOSE_CON
-desc:a dart which drains constitution
-
-name:TRAP_GAS_BLIND
-aim:0
-power:0
-function:TRAP_GAS_BLIND
-desc:blinding gas
-
-name:TRAP_GAS_CONFUSE
-aim:0
-power:0
-function:TRAP_GAS_CONFUSE
-desc:confusing gas
-
-name:TRAP_GAS_POISON
-aim:0
-power:0
-function:TRAP_GAS_POISON
-desc:poison gas
-
-name:TRAP_GAS_SLEEP
-aim:0
-power:0
-function:TRAP_GAS_SLEEP
-desc:soporific gas

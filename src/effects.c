@@ -81,6 +81,38 @@ struct effect_kind {
 
 
 /**
+ * Element info - can be improved NRM
+ */
+static struct breath_info {
+	int msgt;            /* Element message type */
+	const char *desc;    /* Element description */
+} elements[] = {
+	{ MSG_BR_ACID, "acid" },
+	{ MSG_BR_ELEC, "lightning" },
+	{ MSG_BR_FIRE, "fire" },
+	{ MSG_BR_FROST, "frost" },
+	{ MSG_BR_GAS, "poison gas" },
+	{ MSG_BR_LIGHT, "light" },
+	{ MSG_BR_DARK, "dark" },
+	{ MSG_BR_SOUND, "sound" },
+	{ MSG_BR_SHARDS, "shards" },
+	{ MSG_BR_NEXUS, "nexus" },
+	{ MSG_BR_NETHER, "nether" },
+	{ MSG_BR_CHAOS, "chaos" },
+	{ 0, "" },
+	{ 0, "" },
+	{ MSG_BR_DISEN, "disenchantment" },
+	{ MSG_BR_GRAVITY, "gravity" },
+	{ MSG_BR_INERTIA, "inertia" },
+	{ MSG_BR_FORCE, "force" },
+	{ MSG_BR_TIME, "time" },
+	{ MSG_BR_PLASMA, "plasma" },
+	{ 0, "" },
+	{ MSG_BR_ELEMENTS, "the elements" },
+};
+
+
+/**
  * Array of stat adjectives
  */
 static const char *desc_stat_pos[] =
@@ -209,6 +241,28 @@ bool effect_handler_ATOMIC_HEAL_HP(effect_handler_context_t *context)
 
 
 /**
+ * Feed the player.
+ */
+bool effect_handler_ATOMIC_NOURISH(effect_handler_context_t *context)
+{
+	int amount = effect_calculate_value(context, FALSE);
+	player_set_food(player, player->food + amount);
+
+	context->ident = TRUE;
+	return TRUE;
+}
+
+bool effect_handler_ATOMIC_CRUNCH(effect_handler_context_t *context)
+{
+	if (one_in_(2))
+		msg("It's crunchy.");
+	else
+		msg("It nearly breaks your tooth!");
+	context->ident = TRUE;
+	return TRUE;
+}
+
+/**
  * Cure a player status condition.
  */
 bool effect_handler_ATOMIC_CURE(effect_handler_context_t *context)
@@ -217,6 +271,18 @@ bool effect_handler_ATOMIC_CURE(effect_handler_context_t *context)
 	if (player_clear_timed(player, type, TRUE))
 		context->ident = TRUE;
 	return TRUE;
+}
+
+/**
+ * Set a (positive or negative) player status condition.
+ */
+bool effect_handler_ATOMIC_TIMED_SET(effect_handler_context_t *context)
+{
+	int amount = effect_calculate_value(context, FALSE);
+	player_set_timed(player, context->p1, amount, TRUE);
+	context->ident = TRUE;
+	return TRUE;
+
 }
 
 /**
@@ -247,14 +313,25 @@ bool effect_handler_ATOMIC_TIMED_DEC(effect_handler_context_t *context)
 
 }
 
+/**
+ * Make the player, um, lose food.
+ */
+bool effect_handler_ATOMIC_DENOURISH(effect_handler_context_t *context)
+{
+	//msg("The potion makes you vomit!");
+	player_set_food(player, context->p1 - 1);
+	context->ident = TRUE;
+	return TRUE;
+}
+
 bool effect_handler_ATOMIC_CONFUSING(effect_handler_context_t *context)
 {
-        if (player->confusing == 0) {
-                msg("Your hands begin to glow.");
-                player->confusing = TRUE;
-                context->ident = TRUE;
-        }
-        return TRUE;
+	if (player->confusing == 0) {
+		msg("Your hands begin to glow.");
+		player->confusing = TRUE;
+		context->ident = TRUE;
+	}
+	return TRUE;
 }
 
 /**
@@ -2036,6 +2113,41 @@ bool effect_handler_ATOMIC_BALL(effect_handler_context_t *context)
 
 	/* Aim at the target, explode */
 	if (project(-1, context->p2, ty, tx, dam, context->p1, flg, 0, 0))
+		context->ident = TRUE;
+
+	return TRUE;
+}
+
+
+/**
+ * Breathe an element
+ * Stop if we hit a monster, act as a ball (for now)
+ * Allow target mode to pass over monsters
+ * Affect grids, objects, and monsters
+ */
+bool effect_handler_ATOMIC_BREATH(effect_handler_context_t *context)
+{
+	int py = player->py;
+	int px = player->px;
+	int dam = effect_calculate_value(context, TRUE);
+	int type = context->p1;
+
+	s16b ty = py + 99 * ddy[context->dir];
+	s16b tx = px + 99 * ddx[context->dir];
+
+	int flg = PROJECT_STOP | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
+
+	msgt(elements[type].msgt, "You breathe %s.", elements[type].desc);
+
+	/* Ask for a target if no direction given */
+	if ((context->dir == 5) && target_okay()) {
+		flg &= ~(PROJECT_STOP);
+
+		target_get(&tx, &ty);
+	}
+
+	/* Aim at the target, explode */
+	if (project(-1, context->p2, ty, tx, dam, type, flg, 0, 0))
 		context->ident = TRUE;
 
 	return TRUE;

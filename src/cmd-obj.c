@@ -629,10 +629,6 @@ static void use_aux(struct command *cmd, int item, enum use use, int snd)
 
 	if (ident) object_notice_effect(o_ptr);
 
-	/* Food feeds the player */
-	if (tval_can_have_nourishment(o_ptr))
-		player_set_food(player, player->food + o_ptr->pval);
-
 	/* Use the turn */
 	player->upkeep->energy_use = 100;
 

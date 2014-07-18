@@ -163,6 +163,7 @@ enum {
  */
 struct activation {
 	struct effect *effect;
+	int random;
 	int power;
 	const char *message;
 	const char *desc;
