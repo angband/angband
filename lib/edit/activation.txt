@@ -15,56 +15,6 @@
 
 # desc: effect description
 
-name:POISON
-aim:0
-power:0
-effect:ATOMIC_TIMED_INC:POISONED
-dice:10+2d7
-desc:poisons you for 2d7+10 turns
-
-name:BLIND
-aim:0
-power:0
-effect:ATOMIC_TIMED_INC:BLIND
-dice:75+4d25
-desc:blinds you for 4d25+75 turns
-
-name:SCARE
-aim:0
-power:0
-effect:ATOMIC_TIMED_INC:AFRAID
-dice:10+1d10
-desc:induces fear in you for 1d10+10 turns
-
-name:CONFUSE
-aim:0
-power:0
-effect:ATOMIC_TIMED_INC:CONFUSED
-dice:10+4d5
-desc:confuses you for 4d5+10 turns
-
-name:HALLUC
-aim:0
-power:0
-effect:ATOMIC_TIMED_INC:IMAGE
-dice:250+1d250
-desc:causes you to hallucinate
-
-name:PARALYZE
-aim:0
-power:0
-effect:ATOMIC_TIMED_INC:PARALYZED
-dice:5+1d5
-desc:induces paralysis for 1d5+5 turns
-
-name:SLOW
-aim:0
-power:0
-effect:ATOMIC_TIMED_INC:SLOW
-dice:15+1d25
-desc:slows you for 1d25+15 turns
-
-
 name:CURE_POISON
 aim:0
 power:1
@@ -229,12 +179,6 @@ effect:ATOMIC_CURE:STUN
 desc:heals 500 hit points, heals cut damage, and cures stunning
 
 
-name:LOSE_EXP
-aim:0
-power:0
-effect:ATOMIC_LOSE_EXP
-desc:drains a quarter of your experience
-
 name:RESTORE_EXP
 aim:0
 power:8
@@ -283,48 +227,6 @@ power:25
 effect:ATOMIC_GAIN_STAT:DEX
 effect:ATOMIC_LOSE_RANDOM_STAT:DEX
 desc:raises your dexterity at the expense of a random attribute
-
-name:LOSE_STR
-aim:0
-power:0
-effect:ATOMIC_DRAIN_STAT:STR
-dice:5d5
-desc:reduces your strength with damage 5d5
-
-name:LOSE_INT
-aim:0
-power:0
-effect:ATOMIC_DRAIN_STAT:INT
-dice:5d5
-desc:reduces your intelligence with damage 5d5
-
-name:LOSE_WIS
-aim:0
-power:0
-effect:ATOMIC_DRAIN_STAT:WIS
-dice:5d5
-desc:reduces your wisdom with damage 5d5
-
-name:LOSE_DEX
-aim:0
-power:0
-effect:ATOMIC_DRAIN_STAT:DEX
-dice:5d5
-desc:reduces your dexterity with damage 5d5
-
-name:LOSE_CON
-aim:0
-power:0
-effect:ATOMIC_DRAIN_STAT:CON
-dice:5d5
-desc:reduces your constitution with damage 5d5
-
-name:LOSE_CON2
-aim:0
-power:0
-effect:ATOMIC_DRAIN_STAT:CON
-dice:10d10
-desc:reduces your constitution with damage 10d10
 
 name:RESTORE_STR
 aim:0
@@ -604,21 +506,6 @@ effect:ATOMIC_LIGHT_AREA:LIGHT_WEAK:2
 dice:2d8
 desc:lights up an area and inflicts 2d8 damage on light-sensitive creatures
 
-name:SUMMON_MON
-aim:0
-power:0
-effect:ATOMIC_SUMMON
-dice:1d3
-desc:summons monsters at the current dungeon level
-
-name:SUMMON_UNDEAD
-aim:0
-power:0
-# 17 is S_UNDEAD- aaarrgh NRM
-effect:ATOMIC_SUMMON:17
-dice:1d3
-desc:summons undead monsters at the current dungeon level
-
 name:TELE_PHASE
 aim:0
 power:5
@@ -659,18 +546,6 @@ effect:ATOMIC_RUNE
 desc:inscribes a glyph of warding beneath you, which monsters cannot move onto
 
 
-name:ANNOY_MON
-aim:0
-power:0
-effect:ATOMIC_AGGRAVATE
-desc:awakens all nearby sleeping monsters and hastens all monsters within line of sight
-
-name:CREATE_TRAP
-aim:0
-power:0
-effect:ATOMIC_TOUCH:MAKE_TRAP
-desc:creates traps surrounding you
-
 name:DESTROY_TDOORS
 aim:0
 power:6
@@ -690,14 +565,6 @@ power:20
 effect:ATOMIC_BANISH
 desc:removes all non-unique monsters represented by a chosen symbol from the level, dealing you damage in the process
 
-name:DARKNESS
-aim:0
-power:0
-effect:ATOMIC_DARKEN_AREA:DARK_WEAK:2
-effect:ATOMIC_TIMED_INC:BLIND
-dice:3+1d5
-desc:darkens the nearby area and blinds you for 1d5+3 turns
-
 name:PROTEVIL
 aim:0
 power:6
@@ -711,18 +578,6 @@ aim:0
 power:7
 effect:ATOMIC_SATISFY_HUNGER
 desc:magically renders you well-fed, curing any gastrointestinal problems
-
-name:CURSE_WEAPON
-aim:0
-power:0
-effect:ATOMIC_CURSE_WEAPON
-desc:curses your currently wielded melee weapon
-
-name:CURSE_ARMOR
-aim:0
-power:0
-effect:ATOMIC_CURSE_ARMOR
-desc:curses your currently worn body armor
 
 name:BLESSING
 aim:0
@@ -770,13 +625,6 @@ power:12
 effect:ATOMIC_DESTRUCTION
 desc:destroys an area around you in the shape of a circle radius 15, and blinds you for 1d10+10 turns
 
-
-name:LOSHASTE
-aim:0
-power:0
-effect:ATOMIC_PROJECT_LOS:OLD_SPEED
-dice:50
-desc:hastes all monsters within line of sight
 
 name:LOSSLOW
 aim:0
@@ -1167,20 +1015,6 @@ effect:ATOMIC_BOLT_AWARE:OLD_CONF
 dice:20
 desc:confuses a target monster
 
-name:MON_HEAL
-aim:1
-power:0
-effect:ATOMIC_BOLT:OLD_HEAL
-dice:4d6
-desc:heals a single monster 4d6 hit points
-
-name:MON_HASTE
-aim:1
-power:0
-effect:ATOMIC_BOLT:OLD_SPEED
-dice:100
-desc:hastes a single monster
-
 name:MON_SLOW
 aim:1
 power:3
@@ -1202,12 +1036,6 @@ effect:ATOMIC_BOLT_AWARE:OLD_SLEEP
 dice:$B
 expr:B:PLAYER_LEVEL
 desc:attempts to induce magical sleep in a single monster
-
-name:MON_CLONE
-aim:1
-power:0
-effect:ATOMIC_BOLT:OLD_CLONE
-desc:hastes, heals, and magically duplicates a single monster
 
 name:MON_SCARE
 aim:1
@@ -1322,11 +1150,6 @@ effect:ATOMIC_CURE:IMAGE
 effect:ATOMIC_CURE:AMNESIA
 desc:inflicts damage on evil creatures you can see, heals 50 hit points, cures all temporary negative effects and grants you protection from evil
 
-name:DRINK_GOOD
-msg:You feel less thirsty.
-aim:0
-power:0
-
 name:DRINK_BREATH
 aim:1
 power:8
@@ -1337,23 +1160,6 @@ effect:ATOMIC_BREATH:COLD
 dice:80
 desc:causes you to breathe either cold or flames for 80 damage
 
-name:DRINK_SALT
-aim:0
-power:0
-effect:ATOMIC_SET_NOURISH
-#PY_FOOD_STARVE - 1
-dice:99
-effect:ATOMIC_CURE:POISON
-effect:ATOMIC_TIMED_INC:PARALYZED
-dice:4
-desc:induces vomiting and paralysis for 4 turns, resulting in severe hunger but also curing poison
-
-name:FOOD_GOOD
-aim:0
-power:0
-effect:ATOMIC_NOURISH
-dice:6000
-
 name:FOOD_WAYBREAD
 aim:0
 power:4
@@ -1363,31 +1169,6 @@ effect:ATOMIC_CURE:POISONED
 effect:ATOMIC_HEAL_HP
 dice:4d8
 desc:restores 4d8 hit points and neutralizes poison
-
-name:FOOD_CRUNCH
-aim:0
-power:0
-effect:ATOMIC_NOURISH
-dice:500
-effect:ATOMIC_CRUNCH
-
-name:FOOD_WHISKY
-aim:0
-power:0
-effect:ATOMIC_NOURISH
-dice:250
-effect:ATOMIC_TIMED_INC:CONFUSED
-dice:-1+1d5
-
-name:FOOD_WINE
-aim:0
-power:0
-effect:ATOMIC_NOURISH
-dice:250
-effect:ATOMIC_TIMED_INC:BOLD
-dice:79+1d41
-desc:makes you fearless and foolhardy, but less co-ordinated
-
 
 name:SHROOM_EMERGENCY
 aim:0
