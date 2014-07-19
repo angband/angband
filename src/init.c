@@ -796,7 +796,7 @@ static enum parser_error parse_k_effect(struct parser *p) {
 			return PARSE_ERROR_INVALID_VALUE;
 
 		/* Check for a value */
-		if (sscanf(type, "%u", &r) == 1)
+		if (sscanf(type, "%d", &r) == 1)
 			val = r;
 		else {
 			/* Run through the possibilities */
@@ -848,6 +848,51 @@ static enum parser_error parse_k_dice(struct parser *p) {
 		return PARSE_ERROR_GENERIC;
 	}
 
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_k_expr(struct parser *p) {
+	struct object_kind *k = parser_priv(p);
+	expression_t *expression = NULL;
+	expression_base_value_f function = NULL;
+	const char *name;
+	const char *base;
+	const char *expr;
+
+	if (!k)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	/* If there are no dice, assume that this is human and not parser error. */
+	if (k->effect->dice == NULL)
+		return PARSE_ERROR_NONE;
+
+	name = parser_getsym(p, "name");
+	base = parser_getsym(p, "base");
+	expr = parser_getstr(p, "expr");
+	expression = expression_new();
+
+	if (expression == NULL)
+		return PARSE_ERROR_INTERNAL;
+
+	function = spell_value_base_by_name(base);
+	expression_set_base_value(expression, function);
+
+	if (expression_add_operations_string(expression, expr) < 0)
+		return PARSE_ERROR_GENERIC;
+
+	if (dice_bind_expression(k->effect->dice, name, expression) < 0)
+		return PARSE_ERROR_GENERIC;
+
+	/* The dice object makes a deep copy of the expression, so we can free it */
+	expression_free(expression);
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_k_msg(struct parser *p) {
+	struct object_kind *k = parser_priv(p);
+	assert(k);
+	k->effect_msg = string_append(k->effect_msg, parser_getstr(p, "text"));
 	return PARSE_ERROR_NONE;
 }
 
@@ -947,6 +992,8 @@ struct parser *init_parse_k(void) {
 	parser_reg(p, "F str flags", parse_k_f);
 	parser_reg(p, "effect sym eff ?sym type ?int xtra", parse_k_effect);
 	parser_reg(p, "dice str dice", parse_k_dice);
+	parser_reg(p, "expr sym name sym base str expr", parse_k_expr);
+	parser_reg(p, "msg str text", parse_k_msg);
 	parser_reg(p, "time rand time", parse_k_time);
 	parser_reg(p, "L rand pval", parse_k_l);
 	parser_reg(p, "V str values", parse_k_v);
@@ -1001,6 +1048,7 @@ static void cleanup_k(void)
 	for (idx = 0; idx < z_info->k_max; idx++) {
 		string_free(k_info[idx].name);
 		mem_free(k_info[idx].text);
+		mem_free(k_info[idx].effect_msg);
 		free_brand(k_info[idx].brands);
 		free_slay(k_info[idx].slays);
 		free_effect(k_info[idx].effect);

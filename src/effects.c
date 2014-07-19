@@ -188,6 +188,15 @@ static bool project_touch(int dam, int typ, bool aware)
 }
 
 /**
+ * Dummy effect, to tell the effect code to pick one of the next 
+ * context->value.base effects at random.
+ */
+bool effect_handler_ATOMIC_RANDOM(effect_handler_context_t *context)
+{
+	return TRUE;
+}
+
+/**
  * Heal the player by a given percentage of their wounds, or a minimum
  * amount, whichever is larger.
  *
@@ -1402,6 +1411,16 @@ bool effect_handler_ATOMIC_IDENTIFY(effect_handler_context_t *context)
 	return TRUE;
 }
 
+/**
+ * Slack - NRM
+ */
+bool effect_handler_ATOMIC_IDENTIFY_PACK(effect_handler_context_t *context)
+{
+	context->ident = TRUE;
+	identify_pack();
+	return TRUE;
+}
+
 /*
  * Hook for "get_item()".  Determine if something is rechargable.
  */
@@ -1523,6 +1542,14 @@ bool effect_handler_ATOMIC_PROJECT_LOS(effect_handler_context_t *context)
 	}
 
 	/* Result */
+	return TRUE;
+}
+
+bool effect_handler_ATOMIC_ACQUIRE(effect_handler_context_t *context)
+{
+	int num = effect_calculate_value(context, FALSE);
+	acquirement(player->py, player->px, player->depth, num, TRUE);
+	context->ident = TRUE;
 	return TRUE;
 }
 

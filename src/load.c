@@ -1080,8 +1080,6 @@ static int rd_gear_aux(rd_item_t rd_item_version)
 		}
 
 		/* Free object */
-		free_brand(i_ptr->brands);
-		free_slay(i_ptr->slays);
 		object_wipe(i_ptr);
 	}
 	calc_inventory(player->upkeep, player->gear, player->body,

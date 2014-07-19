@@ -177,7 +177,7 @@ name:CURE_NONORLYBIG
 aim:0
 power:21
 msg:You feel life flow through your body!
-effect_ATOMIC_RESTORE_EXP
+effect:ATOMIC_RESTORE_EXP
 effect:ATOMIC_CURE:BLIND
 effect:ATOMIC_CURE:CUT
 effect:ATOMIC_CURE:POISONED
@@ -1438,7 +1438,8 @@ power:5
 effect:ATOMIC_SET_NOURISH
 #PY_FOOD_FAINT - 1
 dice:499
-function:SHROOM_PURGING
+effect:ATOMIC_RESTORE_STAT:STR
+effect:ATOMIC_RESTORE_STAT:CON
 desc:makes you very hungry but restores constitution and strength
 
 name:RING_ACID
@@ -1481,21 +1482,21 @@ desc:grants electricity resistance for d20+20 turns and creates a lightning ball
 name:DRAGON_BLUE
 aim:1
 power:18
-effect:ATOMIC_BREATH:ELEC
+effect:ATOMIC_BREATH:ELEC:2
 dice:150
 desc:allows you to breathe lightning for 150 damage
 
 name:DRAGON_GREEN
 aim:1
 power:19
-effect:ATOMIC_BREATH:POIS
+effect:ATOMIC_BREATH:POIS:2
 dice:150
 desc:allows you to breathe poison gas for 150 damage
 
 name:DRAGON_RED
 aim:1
 power:20
-effect:ATOMIC_BREATH:FIRE
+effect:ATOMIC_BREATH:FIRE:2
 dice:200
 desc:allows you to breathe fire for 200 damage
 
@@ -1503,22 +1504,22 @@ name:DRAGON_MULTIHUED
 aim:1
 power:20
 random:5
-effect:ATOMIC_BREATH:ACID
+effect:ATOMIC_BREATH:ACID:2
 dice:250
-effect:ATOMIC_BREATH:ELEC
+effect:ATOMIC_BREATH:ELEC:2
 dice:250
-effect:ATOMIC_BREATH:FIRE
+effect:ATOMIC_BREATH:FIRE:2
 dice:250
-effect:ATOMIC_BREATH:COLD
+effect:ATOMIC_BREATH:COLD:2
 dice:250
-effect:ATOMIC_BREATH:POIS
+effect:ATOMIC_BREATH:POIS:2
 dice:250
 desc:allows you to breathe the elements for 250 damage
 
 name:DRAGON_GOLD
 aim:1
 power:19
-effect:ATOMIC_BREATH:SOUND
+effect:ATOMIC_BREATH:SOUND:2
 dice:150
 desc:allows you to breathe sound for 150 damage
 
@@ -1526,9 +1527,9 @@ name:DRAGON_CHAOS
 aim:1
 power:23
 random:2
-effect:ATOMIC_BREATH:CHAOS
+effect:ATOMIC_BREATH:CHAOS:2
 dice:220
-effect:ATOMIC_BREATH:DISEN
+effect:ATOMIC_BREATH:DISEN:2
 dice:220
 desc:allows you to breathe chaos or disenchantment for 220 damage
 
@@ -1536,9 +1537,9 @@ name:DRAGON_LAW
 aim:1
 power:23
 random:2
-effect:ATOMIC_BREATH:SOUND
+effect:ATOMIC_BREATH:SOUND:2
 dice:230
-effect:ATOMIC_BREATH:SHARD
+effect:ATOMIC_BREATH:SHARD:2
 dice:230
 desc:allows you to breathe sound/shards for 230 damage
 
@@ -1546,13 +1547,13 @@ name:DRAGON_BALANCE
 aim:1
 power:24
 random:4
-effect:ATOMIC_BREATH:SOUND
+effect:ATOMIC_BREATH:SOUND:2
 dice:250
-effect:ATOMIC_BREATH:SHARDS
+effect:ATOMIC_BREATH:SHARD:2
 dice:250
-effect:ATOMIC_BREATH:CHAOS
+effect:ATOMIC_BREATH:CHAOS:2
 dice:250
-effect:ATOMIC_BREATH:DISEN
+effect:ATOMIC_BREATH:DISEN:2
 dice:250
 desc:allows you to breathe balance for 250 damage
 
@@ -1560,15 +1561,15 @@ name:DRAGON_SHINING
 aim:1
 power:21
 random:2
-effect:ATOMIC_BREATH:LIGHT
+effect:ATOMIC_BREATH:LIGHT:2
 dice:200
-effect:ATOMIC_BREATH:DARK
+effect:ATOMIC_BREATH:DARK:2
 dice:200
 desc:allows you to breathe light or darkness for 200 damage
 
 name:DRAGON_POWER
 aim:1
 power:25
-effect:ATOMIC_BREATH:MISSILE
+effect:ATOMIC_BREATH:MISSILE:2
 dice:300
 desc:allows you to breathe for 300 damage

@@ -200,6 +200,7 @@ typedef struct object_kind
 	byte level;				/**< Level (difficulty of activation) */
 
 	struct effect *effect;	/**< Effect this item produces (effects.c) */
+	char *effect_msg;
 	random_value time;		/**< Recharge time (rods/activation) */
 	random_value charge;	/**< Number of charges (staves/wands) */
 
@@ -339,8 +340,8 @@ typedef struct ego_item
 	byte min_to_a;			/* Minimum to-ac value */
 
 	struct effect *effect;	/**< Effect this item produces (effects.c) */
+	char *effect_msg;
 	random_value time;		/**< Recharge time (rods/activation) */
-	s16b timeout;			/* Timeout Counter */
 
 	bool everseen;			/* Do not spoil ignore menus */
 } ego_item_type;
@@ -412,6 +413,7 @@ typedef struct object
 	byte dd, ds;		/* Damage dice/sides */
 
 	struct effect *effect;	/**< Effect this item produces (effects.c) */
+	char *effect_msg;
 	random_value time;	/**< Recharge time (rods/activation) */
 	s16b timeout;		/* Timeout Counter */
 
