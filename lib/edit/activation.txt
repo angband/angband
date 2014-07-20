@@ -78,6 +78,7 @@ desc:heals 20 hitpoints, some cut damage, makes you a little less confused, and 
 name:CURE_SERIOUS
 aim:0
 power:6
+msg:Your {kind} radiate{s} deep purple...
 effect:ATOMIC_HEAL_HP
 dice:40
 effect:ATOMIC_CURE:BLIND
@@ -157,6 +158,7 @@ desc:heals cut damage, and cures all stunning, poison, blindness and confusion
 name:HEAL1
 aim:0
 power:13
+msg:You feel a warm tingling inside...
 effect:ATOMIC_HEAL_HP
 dice:500
 effect:ATOMIC_CURE:CUT
@@ -165,6 +167,7 @@ desc:heals 500 hit points
 name:HEAL2
 aim:0
 power:16
+msg:{name} glows a bright white...
 effect:ATOMIC_HEAL_HP
 dice:1000
 effect:ATOMIC_CURE:CUT
@@ -373,6 +376,7 @@ desc:grants temporary resistance to poison for 1d10+10 turns
 name:RESIST_ALL
 aim:0
 power:10
+msg:{name} glows many colours...
 effect:ATOMIC_TIMED_INC:OPP_ACID
 dice:20+1d20
 effect:ATOMIC_TIMED_INC:OPP_ELEC
@@ -428,6 +432,7 @@ desc:detects evil creatures nearby
 name:DETECT_ALL
 aim:0
 power:10
+msg:{name} forms an image in your mind...
 effect:ATOMIC_DETECT_TRAPS
 dice:22d40
 effect:ATOMIC_DETECT_DOORS
@@ -510,6 +515,7 @@ desc:lights up an area and inflicts 2d8 damage on light-sensitive creatures
 name:TELE_PHASE
 aim:0
 power:5
+msg:{name} twists space around you...
 effect:ATOMIC_TELEPORT
 dice:10
 desc:teleports you randomly up to 10 squares away
@@ -517,6 +523,7 @@ desc:teleports you randomly up to 10 squares away
 name:TELE_LONG
 aim:0
 power:6
+msg:Your {kind} twist{s} space around you.
 effect:ATOMIC_TELEPORT
 dice:100
 desc:teleports you randomly up to 100 squares away
@@ -536,6 +543,7 @@ desc:causes your next attack upon a monster to confuse it
 name:MAPPING
 aim:0
 power:10
+msg:The {kind} shine{s} brightly...
 effect:ATOMIC_MAP_AREA
 dice:22d40
 desc:maps the area around you
@@ -550,12 +558,14 @@ desc:inscribes a glyph of warding beneath you, which monsters cannot move onto
 name:DESTROY_TDOORS
 aim:0
 power:6
+msg:Your {kind} glow{s} bright red...
 effect:ATOMIC_TOUCH:KILL_DOOR
 desc:destroys all traps and doors surrounding you
 
 name:RECHARGE
 aim:0
 power:11
+msg:Your {kind} glow{s} bright yellow...
 effect:ATOMIC_RECHARGE
 dice:60
 desc:tries to recharge a wand or staff, destroying the wand or staff on failure
@@ -563,12 +573,14 @@ desc:tries to recharge a wand or staff, destroying the wand or staff on failure
 name:BANISHMENT
 aim:0
 power:20
+msg:Your {kind} glow{s} deep blue...
 effect:ATOMIC_BANISH
 desc:removes all non-unique monsters represented by a chosen symbol from the level, dealing you damage in the process
 
 name:PROTEVIL
 aim:0
 power:6
+msg:The {kind} let{s} out a shrill wail...
 effect:ATOMIC_TIMED_INC:PROTEVIL
 dice:$B+1d25
 expr:B:PLAYER_LEVEL:* 3
@@ -604,6 +616,7 @@ desc:increases your AC and to-hit bonus for 1d48+24 turns
 name:RECALL
 aim:0
 power:15
+msg:{name} pulses a soft white.
 effect:ATOMIC_RECALL
 desc:returns you from the dungeon or takes you to the dungeon after a short delay
 
@@ -653,12 +666,14 @@ desc:confuses all non-unique creatures within line of sight
 name:LOSKILL
 aim:0
 power:25
+msg:Your {kind} let{s} out a long, shrill note...
 effect:ATOMIC_MASS_BANISH
 desc:removes all non-unique monsters within 20 squares, dealing you damage in the process
 
 name:ILLUMINATION
 aim:0
 power:4
+msg:The {kind} well{s} with clear light...
 effect:ATOMIC_LIGHT_AREA:LIGHT_WEAK:3
 dice:2d15
 desc:lights up the surrounding area, hurting light-sensitive creatures
@@ -666,6 +681,7 @@ desc:lights up the surrounding area, hurting light-sensitive creatures
 name:CLAIRVOYANCE
 aim:0
 power:23
+msg:The {kind} form{s} an image in your mind...
 effect:ATOMIC_ENLIGHTENMENT
 effect:ATOMIC_DETECT_TRAPS
 dice:22d40
@@ -678,6 +694,7 @@ desc:maps the entire level and detects nearby objects, traps, doors, and stairs
 name:PROBING
 aim:0
 power:8
+msg:{name} glows brightly...
 effect:ATOMIC_PROBE
 desc:gives you information on the health and abilities of monsters you can see
 
@@ -692,6 +709,7 @@ desc:hastens you for 2d10+20 turns
 name:HASTE1
 aim:0
 power:10
+msg:Your {kind} glow{s} bright green...
 effect:ATOMIC_TIMED_INC:FAST:5
 dice:20+1d20
 desc:hastens you for d20+20 turns
@@ -699,6 +717,7 @@ desc:hastens you for d20+20 turns
 name:HASTE2
 aim:0
 power:13
+msg:The {kind} glow{s} brightly...
 effect:ATOMIC_TIMED_INC:FAST:5
 dice:75+1d75
 desc:hastens you for d75+75 turns
@@ -707,6 +726,7 @@ desc:hastens you for d75+75 turns
 name:DISPEL_EVIL
 aim:0
 power:12
+msg:The {kind} flood{s} the area with goodness...
 effect:ATOMIC_PROJECT_LOS:DISP_EVIL:1
 dice:$B
 expr:B:PLAYER_LEVEL:* 5
@@ -737,6 +757,7 @@ desc:deals 120 damage to all creatures that you can see
 name:SLEEPII
 aim:0
 power:8
+msg:{name} glows deep blue...
 effect:ATOMIC_PROJECT_TOUCH_AWARE:OLD_SLEEP
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
@@ -745,13 +766,15 @@ desc:puts to sleep the monsters around you
 name:STAR_BALL
 aim:0
 power:18
+msg:Lightning surrounds your {kind}!
 effect:ATOMIC_STAR_BALL:ELEC:3
 dice:150
-desc:fires a ball of electricity in all directions, each one causing 150 damage
+desc:fires balls of electricity in all directions, each one causing 150 damage
 
 name:RAGE_BLESS_RESIST
 aim:0
 power:21
+msg:{name} glow{s} many colors...
 effect:ATOMIC_HEAL_HP
 dice:30
 effect:ATOMIC_CURE:AFRAID
@@ -774,12 +797,14 @@ desc:bestows upon you berserk rage, bless, and resistance
 name:RESTORE_LIFE
 aim:0
 power:8
+msg:Your {kind} glow{s} a deep red...
 effect:ATOMIC_RESTORE_EXP
 desc:restores your experience to full
 
 name:REM_FEAR_POIS
 aim:0
 power:3
+msg:Your {kind} glow{s} deep blue...
 effect:ATOMIC_CURE:AFRAID
 effect:ATOMIC_CURE:POISONED
 desc:cures you of fear and poison
@@ -794,6 +819,7 @@ desc:brands bolts with fire, in an unbalanced fashion
 name:FIRE_BOLT
 aim:1
 power:5
+msg:Your {kind} {is} covered in fire...
 effect:ATOMIC_BOLT:FIRE
 dice:9d8
 desc:creates a fire bolt with damage 9d8
@@ -815,6 +841,7 @@ desc:creates a fire bolt with damage 16d8
 name:FIRE_BOLT72
 aim:1
 power:9
+msg:{name} rages in fire...
 effect:ATOMIC_BALL:FIRE:2
 dice:72
 desc:creates a fire ball with damage 72
@@ -822,6 +849,7 @@ desc:creates a fire ball with damage 72
 name:FIRE_BALL
 aim:1
 power:11
+msg:The {kind} glow{s} deep red...
 effect:ATOMIC_BALL:FIRE:2
 dice:144
 desc:creates a fire ball with damage 144
@@ -843,6 +871,7 @@ desc:creates a large fire ball with damage 200
 name:COLD_BOLT
 aim:1
 power:4
+msg:Your {kind} {is} covered in frost...
 effect:ATOMIC_BOLT_OR_BEAM:COLD
 dice:6d8
 desc:creates a frost bolt with damage 6d8
@@ -850,6 +879,7 @@ desc:creates a frost bolt with damage 6d8
 name:COLD_BOLT2
 aim:1
 power:7
+msg:{name} glows a pale blue...
 effect:ATOMIC_BOLT:COLD
 dice:12d8
 desc:creates a frost bolt with damage 12d8
@@ -864,6 +894,7 @@ desc:creates a large frost ball with damage 200
 name:COLD_BALL50
 aim:1
 power:8
+msg:Your {kind} {is} covered in frost...
 effect:ATOMIC_BALL:COLD:2
 dice:50
 desc:creates a frost ball with damage 50
@@ -871,6 +902,7 @@ desc:creates a frost ball with damage 50
 name:COLD_BALL100
 aim:1
 power:10
+msg:{name} glows an intense blue...
 effect:ATOMIC_BALL:COLD:2
 dice:100
 desc:creates a frost ball with damage 100
@@ -885,6 +917,7 @@ desc:creates a frost ball with damage 160
 name:ACID_BOLT
 aim:1
 power:4
+msg:Your {kind} {is} covered in acid...
 effect:ATOMIC_BOLT:ACID
 dice:5d8
 desc:creates an acid bolt with damage 5d8
@@ -913,6 +946,7 @@ desc:creates an acid ball with damage 120
 name:ELEC_BOLT
 aim:1
 power:5
+msg:Your {kind} {is} covered in sparks...
 effect:ATOMIC_BEAM:ELEC
 dice:6d6
 desc:creates a lightning bolt (that always beams) with damage 6d6
@@ -935,6 +969,7 @@ desc:creates a large lightning ball with damage 250
 name:DRAIN_LIFE1
 aim:1
 power:9
+msg:{name} glows white...
 effect:ATOMIC_BOLT:OLD_DRAIN
 dice:90
 desc:drains up to 90 hit points of life from a target creature.  Does not affect undead, demons, golems, elementals or vortices
@@ -942,6 +977,7 @@ desc:drains up to 90 hit points of life from a target creature.  Does not affect
 name:DRAIN_LIFE2
 aim:1
 power:10
+msg:Your {kind} glow{s} black...
 effect:ATOMIC_BOLT:OLD_DRAIN
 dice:120
 desc:drains up to 120 hit points of life from a target creature.  Does not affect undead, demons, golems, elementals or vortices
@@ -963,6 +999,7 @@ desc:drains up to 250 hit points of life from a target creature.  Does not affec
 name:MISSILE
 aim:1
 power:3
+msg:{name} glows very brightly...
 effect:ATOMIC_BOLT_OR_BEAM:MISSILE
 dice:3d4
 desc:fires a magic missile with damage 3d4
@@ -970,6 +1007,7 @@ desc:fires a magic missile with damage 3d4
 name:MANA_BOLT
 aim:1
 power:7
+msg:Your {kind} glow{s} white...
 effect:ATOMIC_BOLT:MANA
 dice:12d8
 desc:fires a mana bolt with damage 12d8
@@ -977,12 +1015,14 @@ desc:fires a mana bolt with damage 12d8
 name:BIZARRE
 aim:1
 power:20
+msg:{name} glows intensely black...
 effect:ATOMIC_BIZARRE
 desc:does bizarre things
 
 name:ARROW
 aim:1
 power:11
+msg:Your {kind} form{s} a magical arrow...
 effect:ATOMIC_BOLT:ARROW
 dice:150
 desc:fires a magical arrow with damage 150
@@ -990,6 +1030,7 @@ desc:fires a magical arrow with damage 150
 name:STINKING_CLOUD
 aim:1
 power:3
+msg:{name} throws deep green shadows...
 effect:ATOMIC_BALL:POIS:3
 dice:12
 desc:fires a stinking cloud with damage 12
@@ -997,6 +1038,7 @@ desc:fires a stinking cloud with damage 12
 name:STONE_TO_MUD
 aim:1
 power:6
+msg:Your {kind} pulsate{s}...
 effect:ATOMIC_LINE:KILL_WALL
 dice:20+1d30
 desc:turns rock into mud
@@ -1004,6 +1046,7 @@ desc:turns rock into mud
 name:TELE_OTHER
 aim:1
 power:11
+msg:Your {kind} glow{s} deep red...
 effect:ATOMIC_BOLT:AWAY_ALL
 dice:$B
 expr:B:MAX_SIGHT:* 5
@@ -1012,6 +1055,7 @@ desc:teleports a target monster away
 name:CONFUSE2
 aim:1
 power:3
+msg:{name} glows in scintillating colours...
 effect:ATOMIC_BOLT_AWARE:OLD_CONF
 dice:20
 desc:confuses a target monster
@@ -1085,6 +1129,7 @@ desc:fires a line of light in all directions, each one causing light-sensitive c
 name:STARLIGHT2
 aim:0
 power:7
+msg:Your {kind} glow{s} with the light of a thousand stars...
 effect:ATOMIC_STAR:LIGHT
 dice:10d8
 desc:fires a line of light in all directions, each one causing 10d8 damage
@@ -1092,6 +1137,7 @@ desc:fires a line of light in all directions, each one causing 10d8 damage
 name:BERSERKER
 aim:0
 power:10
+msg:{name} glows in anger!
 effect:ATOMIC_TIMED_INC:SHERO
 dice:50+1d50
 desc:puts you in a berserker rage for d50+50 turns
