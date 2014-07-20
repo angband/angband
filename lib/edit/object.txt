@@ -1890,7 +1890,8 @@ I:scroll
 W:5:0:5:10
 A:60:5 to 100
 M:100:2d3
-effect:ATOMIC_SATISFY_HUNGER
+effect:ATOMIC_SET_NOURISH
+dice:16999
 
 N:286:Identify
 G:?:w
@@ -2511,6 +2512,7 @@ I:potion
 W:0:0:4:0
 A:10:3 to 15
 M:100:1d2
+msg:The potion makes you vomit!
 effect:ATOMIC_SET_NOURISH
 #PY_FOOD_STARVE - 1
 dice:99
@@ -3084,7 +3086,7 @@ W:70:0:50:3500
 A:20:70 to 100
 P:0:1d2:0:0:0
 C:2d2
-effect:ATOMIC_LOS:DISP_EVIL:1
+effect:ATOMIC_PROJECT_LOS:DISP_EVIL:1
 dice:120
 effect:ATOMIC_HEAL_HP
 dice:50

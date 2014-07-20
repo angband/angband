@@ -589,7 +589,8 @@ desc:grants you protection from evil for 1d25 plus 3 times your character level 
 name:SATISFY
 aim:0
 power:7
-effect:ATOMIC_SATISFY_HUNGER
+effect:ATOMIC_SET_NOURISH
+dice:16999
 desc:magically renders you well-fed, curing any gastrointestinal problems
 
 name:BLESSING
@@ -758,7 +759,7 @@ name:SLEEPII
 aim:0
 power:8
 msg:{name} glows deep blue...
-effect:ATOMIC_PROJECT_TOUCH_AWARE:OLD_SLEEP
+effect:ATOMIC_TOUCH_AWARE:OLD_SLEEP
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 desc:puts to sleep the monsters around you
@@ -1179,7 +1180,7 @@ desc:restores both intelligence and manapoints to maximum
 name:STAFF_HOLY
 aim:0
 power:12
-effect:ATOMIC_LOS:DISP_EVIL:1
+effect:ATOMIC_PROJECT_LOS:DISP_EVIL:1
 dice:120
 effect:ATOMIC_HEAL_HP
 dice:50

@@ -325,10 +325,9 @@ bool effect_handler_ATOMIC_TIMED_DEC(effect_handler_context_t *context)
 /**
  * Make the player, um, lose food.
  */
-bool effect_handler_ATOMIC_DENOURISH(effect_handler_context_t *context)
+bool effect_handler_ATOMIC_SET_NOURISH(effect_handler_context_t *context)
 {
-	//msg("The potion makes you vomit!");
-	player_set_food(player, context->p1 - 1);
+	player_set_food(player, context->p1);
 	context->ident = TRUE;
 	return TRUE;
 }
@@ -671,7 +670,7 @@ bool effect_handler_ATOMIC_MAP_AREA(effect_handler_context_t *context)
  * Detect traps around the player.  The height to detect above and below the
  * player is context->value.dice, the width either side of the player context->value.sides.
  */
-bool effect_handler_ATOMIC_DETECT_TRAP(effect_handler_context_t *context)
+bool effect_handler_ATOMIC_DETECT_TRAPS(effect_handler_context_t *context)
 {
 	int x, y;
 	int x1, x2, y1, y2;
@@ -4510,6 +4509,26 @@ effect_index effect_lookup(const char *name)
 	}
 
 	return EF_MAX;
+}
+
+atomic_effect_index atomic_effect_lookup(const char *name)
+{
+	static const char *effect_names[] = {
+		#define EFFECT(x, a, d)	#x,
+		#include "list-atomic-effects.h"
+		#undef EFFECT
+	};
+	int i;
+
+	for (i = 0; i < AEF_ATOMIC_MAX; i++) {
+		const char *effect_name = effect_names[i];
+
+		/* Test for equality */
+		if (effect_name != NULL && streq(name, effect_name))
+			return i;
+	}
+
+	return AEF_ATOMIC_MAX;
 }
 
 /*

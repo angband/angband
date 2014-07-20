@@ -163,8 +163,8 @@ static const char *slay_names[] = {
 };
 
 static const char *effect_list[] = {
-	#define EFFECT(x, a, r, h, v, c, d)	#x,
-	#include "list-effects.h"
+	#define EFFECT(x, a, d)	#x,
+	#include "list-atomic-effects.h"
 	#undef EFFECT
 };
 
