@@ -4368,6 +4368,17 @@ static const info_entry effects[] =
 };
 
 
+/**
+ * Useful things about effects.
+ */
+static const struct effect_kind atomic_effects[] =
+{
+	#define EFFECT(x, a, d)    { AEF_##x, a, d },
+	#include "list-atomic-effects.h"
+	#undef EFFECT
+};
+
+
 /*
  * Utility functions
  */

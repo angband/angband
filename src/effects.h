@@ -26,6 +26,14 @@ typedef enum
 	#undef EFFECT
 } effect_index;
 
+/* Types of effect */
+typedef enum
+{
+	#define EFFECT(x, a, d)	AEF_##x,
+	#include "list-atomic-effects.h"
+	#undef EFFECT
+} atomic_effect_index;
+
 struct effect {
 	struct effect *next;
 	u16b index;		/**< The effect index */
