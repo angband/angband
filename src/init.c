@@ -41,6 +41,7 @@
 #include "obj-ignore.h"
 #include "obj-list.h"
 #include "obj-make.h"
+#include "obj-randart.h"
 #include "obj-slays.h"
 #include "obj-tval.h"
 #include "obj-util.h"
@@ -1062,6 +1063,245 @@ static struct file_parser k_parser = {
 	run_parse_k,
 	finish_parse_k,
 	cleanup_k
+};
+
+/* Parsing functions for activation.txt */
+static enum parser_error parse_act_name(struct parser *p) {
+	const char *name = parser_getstr(p, "name");
+	struct activation *h = parser_priv(p);
+
+	struct activation *act = mem_zalloc(sizeof *act);
+	act->next = h;
+	parser_setpriv(p, act);
+	act->name = string_make(name);
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_act_aim(struct parser *p) {
+	struct activation *act = parser_priv(p);
+	uint val;
+	assert(act);
+
+	val = parser_getuint(p, "aim");
+	act->aim = val ? TRUE : FALSE;
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_act_power(struct parser *p) {
+	struct activation *act = parser_priv(p);
+	assert(act);
+
+	act->power = parser_getuint(p, "power");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_act_effect(struct parser *p) {
+	struct activation *act = parser_priv(p);
+	struct effect *effect;
+	struct effect *new_effect = mem_zalloc(sizeof(*new_effect));
+	const char *type;
+	int val, r;
+
+	if (!act)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	/* Go to the next vacant effect and set it to the new one  */
+	if (act->effect) {
+		effect = act->effect;
+		while (effect->next)
+			effect = effect->next;
+		effect->next = new_effect;
+	} else
+		act->effect = new_effect;
+
+	new_effect->index = grab_one_effect(parser_getsym(p, "eff"), effect_list,
+										N_ELEMENTS(effect_list));
+
+	if (parser_hasval(p, "type")) {
+		type = parser_getsym(p, "type");
+
+		if (type == NULL)
+			return PARSE_ERROR_INVALID_VALUE;
+
+		/* Check for a value */
+		if (sscanf(type, "%d", &r) == 1)
+			val = r;
+		else {
+			/* Run through the possibilities */
+			val = gf_name_to_idx(type);
+			if (val < 0) {
+				val = timed_name_to_idx(type);
+				if (val < 0) {
+					val = stat_name_to_idx(type);
+					if (val < 0) { //Hack - NRM
+						if (streq(type, "TOHIT")) val = ENCH_TOHIT;
+						else if (streq(type, "TODAM")) val = ENCH_TODAM;
+						else if (streq(type, "TOAC")) val = ENCH_TOAC;
+					}
+				}
+			}
+		}
+		if (val < 0)
+			return PARSE_ERROR_INVALID_EFFECT;
+		else
+			new_effect->params[0] = val;
+	}
+
+	if (parser_hasval(p, "xtra"))
+		new_effect->params[1] = parser_getint(p, "xtra");
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_act_dice(struct parser *p) {
+	struct activation *act = parser_priv(p);
+	dice_t *dice = NULL;
+	const char *string = NULL;
+
+	if (!act)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	dice = dice_new();
+
+	if (dice == NULL)
+		return PARSE_ERROR_INTERNAL;
+
+	string = parser_getstr(p, "dice");
+
+	if (dice_parse_string(dice, string)) {
+		act->effect->dice = dice;
+	}
+	else {
+		dice_free(dice);
+		return PARSE_ERROR_GENERIC;
+	}
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_act_expr(struct parser *p) {
+	struct activation *act = parser_priv(p);
+	expression_t *expression = NULL;
+	expression_base_value_f function = NULL;
+	const char *name;
+	const char *base;
+	const char *expr;
+
+	if (!act)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	/* If there are no dice, assume that this is human and not parser error. */
+	if (act->effect->dice == NULL)
+		return PARSE_ERROR_NONE;
+
+	name = parser_getsym(p, "name");
+	base = parser_getsym(p, "base");
+	expr = parser_getstr(p, "expr");
+	expression = expression_new();
+
+	if (expression == NULL)
+		return PARSE_ERROR_INTERNAL;
+
+	function = spell_value_base_by_name(base);
+	expression_set_base_value(expression, function);
+
+	if (expression_add_operations_string(expression, expr) < 0)
+		return PARSE_ERROR_GENERIC;
+
+	if (dice_bind_expression(act->effect->dice, name, expression) < 0)
+		return PARSE_ERROR_GENERIC;
+
+	/* The dice object makes a deep copy of the expression, so we can free it */
+	expression_free(expression);
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_act_msg(struct parser *p) {
+	struct activation *act = parser_priv(p);
+	assert(act);
+	act->message = string_append(act->message, parser_getstr(p, "msg"));
+	return PARSE_ERROR_NONE;
+}
+
+
+static enum parser_error parse_act_desc(struct parser *p) {
+	struct activation *act = parser_priv(p);
+
+	if (!act)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	act->desc = string_append(act->desc, parser_getstr(p, "desc"));
+	return PARSE_ERROR_NONE;
+}
+
+struct parser *init_parse_act(void) {
+	struct parser *p = parser_new();
+	parser_setpriv(p, NULL);
+	parser_reg(p, "name str name", parse_act_name);
+	parser_reg(p, "aim uint aim", parse_act_aim);
+	parser_reg(p, "power uint power", parse_act_power);
+	parser_reg(p, "effect sym eff ?sym type ?int xtra", parse_act_effect);
+	parser_reg(p, "dice str dice", parse_act_dice);
+	parser_reg(p, "expr sym name sym base str expr", parse_act_expr);
+	parser_reg(p, "msg str msg", parse_act_msg);
+	parser_reg(p, "desc str desc", parse_act_desc);
+	return p;
+}
+
+static errr run_parse_act(struct parser *p) {
+	return parse_file(p, "activation");
+}
+
+static errr finish_parse_act(struct parser *p) {
+	struct activation *act, *next = NULL;
+	int count = 0;
+
+	/* Count the entries */
+	z_info->act_max = 0;
+	act = parser_priv(p);
+	while (act) {
+		z_info->act_max++;
+		act = act->next;
+	}
+
+	/* Allocate the direct access list and copy the data to it */
+	activations = mem_zalloc((z_info->act_max + 1) * sizeof(*act));
+	for (act = parser_priv(p); act; act = next, count++) {
+		memcpy(&activations[count], act, sizeof(*act));
+		next = act->next;
+		if (next)
+			activations[count].next = &activations[count + 1];
+		else
+			activations[count].next = NULL;
+
+		mem_free(act);
+	}
+	z_info->act_max += 1;
+
+	parser_destroy(p);
+	return 0;
+}
+
+static void cleanup_act(void)
+{
+	int idx;
+	for (idx = 0; idx < z_info->act_max; idx++) {
+		string_free(activations[idx].name);
+		mem_free(activations[idx].desc);
+		mem_free(activations[idx].message);
+		free_effect(activations[idx].effect);
+	}
+	mem_free(activations);
+}
+
+static struct file_parser act_parser = {
+	"object",
+	init_parse_act,
+	run_parse_act,
+	finish_parse_act,
+	cleanup_act
 };
 
 /* Parsing functions for artifact.txt */
@@ -3705,6 +3945,10 @@ void init_arrays(void)
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (objects)");
 	if (run_parser(&k_parser)) quit("Cannot initialize objects");
 
+	/* Initialize object info */
+	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (activations)");
+	if (run_parser(&act_parser)) quit("Cannot initialize activations");
+
 	/* Initialize ego-item info */
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (ego-items)");
 	if (run_parser(&e_parser)) quit("Cannot initialize ego-items");
@@ -3926,6 +4170,7 @@ void cleanup_angband(void)
 
 	cleanup_parser(&k_parser);
 	cleanup_parser(&kb_parser);
+	cleanup_parser(&act_parser);
 	cleanup_parser(&a_parser);
 	cleanup_parser(&names_parser);
 	cleanup_parser(&r_parser);

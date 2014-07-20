@@ -6,14 +6,15 @@
 
 # power: relative power of the effect for object power calculation
 
-# function: uses the handler function effect_handler_XXX, followed by extra
-# effect parameters if any.  Temporary until this is dealt with properly
+# effect: the effect name, followed by extra effect parameters if any.
 
 # dice: dice for the random value used by the effect
 
-# param: extra effect parameters
+# expr: details of expressions used in dice
 
-# desc: effect description
+# msg: activation message
+
+# desc: activation description
 
 name:CURE_POISON
 aim:0
@@ -284,7 +285,7 @@ desc:restores all your stats and your experience points
 name:TMD_INFRA
 aim:0
 power:5
-effect:ATOMIC_TIMED_INC:INFRA
+effect:ATOMIC_TIMED_INC:SINFRA
 dice:100+4d25
 desc:extends your infravision by 50 feet for 4d25+100 turns
 
@@ -638,7 +639,7 @@ aim:0
 power:8
 effect:ATOMIC_PROJECT_LOS:OLD_SLEEP
 dice:$B
-expr:B:PLAYER_LEVEL
+expr:B:PLAYER_LEVEL:+ 0
 desc:sleeps all non-unique creatures within line of sight
 
 name:LOSCONF
@@ -646,7 +647,7 @@ aim:0
 power:10
 effect:ATOMIC_PROJECT_LOS:OLD_CONF
 dice:$B
-expr:B:PLAYER_LEVEL
+expr:B:PLAYER_LEVEL:+ 0
 desc:confuses all non-unique creatures within line of sight
 
 name:LOSKILL
@@ -738,7 +739,7 @@ aim:0
 power:8
 effect:ATOMIC_PROJECT_TOUCH_AWARE:OLD_SLEEP
 dice:$B
-expr:B:PLAYER_LEVEL
+expr:B:PLAYER_LEVEL:+ 0
 desc:puts to sleep the monsters around you
 
 name:STAR_BALL
@@ -756,7 +757,7 @@ dice:30
 effect:ATOMIC_CURE:AFRAID
 effect:ATOMIC_TIMED_INC:SHERO
 dice:50+1d50
-effect:ATOMIC_TIMED_INC:BLESS
+effect:ATOMIC_TIMED_INC:BLESSED
 dice:50+1d50
 effect:ATOMIC_TIMED_INC:OPP_ACID
 dice:50+1d50
@@ -1034,7 +1035,7 @@ aim:1
 power:3
 effect:ATOMIC_BOLT_AWARE:OLD_SLEEP
 dice:$B
-expr:B:PLAYER_LEVEL
+expr:B:PLAYER_LEVEL:+ 0
 desc:attempts to induce magical sleep in a single monster
 
 name:MON_SCARE
@@ -1070,7 +1071,7 @@ aim:1
 power:7
 effect:ATOMIC_BOLT:OLD_POLY
 dice:$B
-expr:B:PLAYER_LEVEL
+expr:B:PLAYER_LEVEL:+ 0
 desc:polymorphs a monster into another kind of creature
 
 
@@ -1108,7 +1109,8 @@ desc:creates random and unpredictable effects
 name:WAND_BREATH
 aim:1
 power:12
-random:5
+effect:ATOMIC_RANDOM
+dice:5
 effect:ATOMIC_BREATH:ACID:3
 dice:200
 effect:ATOMIC_BREATH:ELEC:3
@@ -1153,7 +1155,8 @@ desc:inflicts damage on evil creatures you can see, heals 50 hit points, cures a
 name:DRINK_BREATH
 aim:1
 power:8
-random:2
+effect:ATOMIC_RANDOM
+dice:2
 effect:ATOMIC_BREATH:FIRE
 dice:80
 effect:ATOMIC_BREATH:COLD
@@ -1201,7 +1204,8 @@ name:SHROOM_DEBILITY
 aim:0
 power:5
 effect:ATOMIC_RESTORE_MANA
-random:2
+effect:ATOMIC_RANDOM
+dice:2
 effect:ATOMIC_DRAIN_STAT:STR
 effect:ATOMIC_DRAIN_STAT:CON
 desc:restores some mana but also drains either your strength or constitution
@@ -1284,7 +1288,8 @@ desc:allows you to breathe fire for 200 damage
 name:DRAGON_MULTIHUED
 aim:1
 power:20
-random:5
+effect:ATOMIC_RANDOM
+dice:5
 effect:ATOMIC_BREATH:ACID:2
 dice:250
 effect:ATOMIC_BREATH:ELEC:2
@@ -1307,7 +1312,8 @@ desc:allows you to breathe sound for 150 damage
 name:DRAGON_CHAOS
 aim:1
 power:23
-random:2
+effect:ATOMIC_RANDOM
+dice:2
 effect:ATOMIC_BREATH:CHAOS:2
 dice:220
 effect:ATOMIC_BREATH:DISEN:2
@@ -1317,7 +1323,8 @@ desc:allows you to breathe chaos or disenchantment for 220 damage
 name:DRAGON_LAW
 aim:1
 power:23
-random:2
+effect:ATOMIC_RANDOM
+dice:2
 effect:ATOMIC_BREATH:SOUND:2
 dice:230
 effect:ATOMIC_BREATH:SHARD:2
@@ -1327,7 +1334,8 @@ desc:allows you to breathe sound/shards for 230 damage
 name:DRAGON_BALANCE
 aim:1
 power:24
-random:4
+effect:ATOMIC_RANDOM
+dice:4
 effect:ATOMIC_BREATH:SOUND:2
 dice:250
 effect:ATOMIC_BREATH:SHARD:2
@@ -1341,7 +1349,8 @@ desc:allows you to breathe balance for 250 damage
 name:DRAGON_SHINING
 aim:1
 power:21
-random:2
+effect:ATOMIC_RANDOM
+dice:2
 effect:ATOMIC_BREATH:LIGHT:2
 dice:200
 effect:ATOMIC_BREATH:DARK:2

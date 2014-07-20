@@ -162,13 +162,16 @@ enum {
  * Activation structure
  */
 struct activation {
-	struct effect *effect;
-	int random;
+	struct activation *next;
+	char *name;
+	bool aim;
 	int power;
-	const char *message;
-	const char *desc;
+	struct effect *effect;
+	char *message;
+	char *desc;
 };
 
+extern struct activation *activations;
 
 char *artifact_gen_name(struct artifact *a, const char ***wordlist);
 errr do_randart(u32b randart_seed, bool full);

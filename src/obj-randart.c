@@ -213,6 +213,9 @@ static byte *base_item_prob;
  */
 static byte *base_art_alloc;
 
+/* Activation list */
+struct activation *activations;
+
 /* Global just for convenience. */
 static int verbose = 1;
 
