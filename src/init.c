@@ -224,6 +224,16 @@ static struct history_chart *findchart(struct history_chart *hs, unsigned int id
 	return hs;
 }
 
+static struct activation *findact(const char *act_name) {
+	struct activation *act = &activations[1];
+	while (act) {
+		if (streq(act->name, act_name))
+			break;
+		act = act->next;
+	}
+	return act;
+}
+
 static enum parser_error write_dummy_object_record(struct artifact *art, const char *name)
 {
 	struct object_kind *temp, *dummy;
@@ -1256,7 +1266,7 @@ static errr run_parse_act(struct parser *p) {
 
 static errr finish_parse_act(struct parser *p) {
 	struct activation *act, *next = NULL;
-	int count = 0;
+	int count = 1;
 
 	/* Count the entries */
 	z_info->act_max = 0;
@@ -1270,6 +1280,7 @@ static errr finish_parse_act(struct parser *p) {
 	activations = mem_zalloc((z_info->act_max + 1) * sizeof(*act));
 	for (act = parser_priv(p); act; act = next, count++) {
 		memcpy(&activations[count], act, sizeof(*act));
+		activations[count].index = count;
 		next = act->next;
 		if (next)
 			activations[count].next = &activations[count + 1];
@@ -1432,76 +1443,13 @@ static enum parser_error parse_a_f(struct parser *p) {
 	return t ? PARSE_ERROR_INVALID_FLAG : PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_a_effect(struct parser *p) {
+static enum parser_error parse_a_act(struct parser *p) {
 	struct artifact *a = parser_priv(p);
-	struct effect *effect;
-	struct effect *new_effect = mem_zalloc(sizeof(*new_effect));
-	const char *type;
-	int val;
+	const char *name = parser_getstr(p, "name");
 
 	if (!a)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-
-	/* Go to the next vacant effect and set it to the new one  */
-	if (a->effect) {
-		effect = a->effect;
-		while (effect->next)
-			effect = effect->next;
-		effect->next = new_effect;
-	} else
-		a->effect = new_effect;
-
-	/* Fill in the detail */
-	new_effect->index = grab_one_effect(parser_getsym(p, "eff"), effect_list,
-									   N_ELEMENTS(effect_list));
-
-	if (parser_hasval(p, "type")) {
-		type = parser_getsym(p, "type");
-
-		if (type == NULL)
-			return PARSE_ERROR_INVALID_VALUE;
-
-		/* Run through the possibilities */
-		val = gf_name_to_idx(type);
-		if (val < 0) {
-			val = timed_name_to_idx(type);
-			if (val < 0)
-				val = stat_name_to_idx(type);
-		}
-		if (val < 0)
-			return PARSE_ERROR_INVALID_EFFECT;
-		else
-			new_effect->params[0] = val;
-	}
-
-	if (parser_hasval(p, "xtra"))
-		new_effect->params[1] = parser_getint(p, "xtra");
-
-	return PARSE_ERROR_NONE;
-}
-
-static enum parser_error parse_a_dice(struct parser *p) {
-	struct artifact *a = parser_priv(p);
-	dice_t *dice = NULL;
-	const char *string = NULL;
-
-	if (!a)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
-
-	dice = dice_new();
-
-	if (dice == NULL)
-		return PARSE_ERROR_INTERNAL;
-
-	string = parser_getstr(p, "dice");
-
-	if (dice_parse_string(dice, string)) {
-		a->effect->dice = dice;
-	}
-	else {
-		dice_free(dice);
-		return PARSE_ERROR_GENERIC;
-	}
+	a->activation = findact(name);
 
 	return PARSE_ERROR_NONE;
 }
@@ -1514,11 +1462,11 @@ static enum parser_error parse_a_time(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_a_m(struct parser *p) {
+static enum parser_error parse_a_msg(struct parser *p) {
 	struct artifact *a = parser_priv(p);
 	assert(a);
 
-	a->effect_msg = string_append(a->effect_msg, parser_getstr(p, "text"));
+	a->alt_msg = string_append(a->alt_msg, parser_getstr(p, "text"));
 	return PARSE_ERROR_NONE;
 }
 
@@ -1598,10 +1546,9 @@ struct parser *init_parse_a(void) {
 	parser_reg(p, "A int common str minmax", parse_a_a);
 	parser_reg(p, "P int ac rand hd int to-h int to-d int to-a", parse_a_p);
 	parser_reg(p, "F ?str flags", parse_a_f);
-	parser_reg(p, "effect sym eff ?sym type ?int xtra", parse_a_effect);
-	parser_reg(p, "dice str dice", parse_a_dice);
+	parser_reg(p, "act str name", parse_a_act);
 	parser_reg(p, "time rand time", parse_a_time);
-	parser_reg(p, "M str text", parse_a_m);
+	parser_reg(p, "msg str text", parse_a_msg);
 	parser_reg(p, "V str values", parse_a_v);
 	parser_reg(p, "D str text", parse_a_d);
 	return p;
@@ -1646,11 +1593,10 @@ static void cleanup_a(void)
 	int idx;
 	for (idx = 0; idx < z_info->a_max; idx++) {
 		string_free(a_info[idx].name);
-		mem_free(a_info[idx].effect_msg);
+		mem_free(a_info[idx].alt_msg);
 		mem_free(a_info[idx].text);
 		free_brand(a_info[idx].brands);
 		free_slay(a_info[idx].slays);
-		free_effect(a_info[idx].effect);
 	}
 	mem_free(a_info);
 }

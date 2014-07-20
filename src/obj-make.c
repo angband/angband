@@ -433,7 +433,7 @@ void copy_artifact_data(object_type *o_ptr, const artifact_type *a_ptr)
 	o_ptr->to_h = a_ptr->to_h;
 	o_ptr->to_d = a_ptr->to_d;
 	o_ptr->weight = a_ptr->weight;
-	copy_effect(&o_ptr->effect, a_ptr->effect);
+	o_ptr->activation = a_ptr->activation;
 	o_ptr->time = a_ptr->time;
 	of_union(o_ptr->flags, a_ptr->flags);
 	copy_slay(&o_ptr->slays, a_ptr->slays);

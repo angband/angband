@@ -445,12 +445,11 @@ static int stats_dump_artifacts(void)
 		err = sqlite3_bind_text(info_stmt, 2, a_ptr->name, 
 			strlen(a_ptr->name), SQLITE_STATIC);
 		if (err) return err;
-		err = stats_db_bind_ints(info_stmt, 14, 2, 
+		err = stats_db_bind_ints(info_stmt, 13, 2, 
 			a_ptr->tval, a_ptr->sval, a_ptr->weight,
 			a_ptr->cost, a_ptr->alloc_prob, a_ptr->alloc_min,
 			a_ptr->alloc_max, a_ptr->ac, a_ptr->dd,
-			a_ptr->ds, a_ptr->to_h, a_ptr->to_d,
-			a_ptr->to_a, a_ptr->effect->index);
+			a_ptr->ds, a_ptr->to_h, a_ptr->to_d, a_ptr->to_a);
 		STATS_DB_STEP_RESET(info_stmt)
 
 		err = stats_dump_oflags(flags_stmt, idx, a_ptr->flags);

@@ -93,9 +93,8 @@ A:40:5 to 100
 P:0:1d1:0:0:0
 F:NO_FUEL
 V:LIGHT[3]
-effect:ILLUMINATION
+act:ILLUMINATION
 time:10+d10
-M:The {kind} well{s} with clear light...
 D:A small crystal phial containing the light of Eärendil's Star.  
 D:Its light is imperishable, and near it darkness cannot endure.
 
@@ -110,9 +109,8 @@ A:4:30 to 100
 P:0:1d1:0:0:0
 F:SEE_INVIS | NO_FUEL
 V:LIGHT[3]
-effect:MAPPING
+act:MAPPING
 time:50+d50
-M:The {kind} shine{s} brightly...
 D:The shining Star of the North, a treasured heirloom of Elendil's house.
 
 # The Arkenstone of Thrain
@@ -126,9 +124,8 @@ P:0:1d1:0:0:0
 F:SEE_INVIS | HOLD_LIFE | NO_FUEL
 V:LIGHT[3] | RES_LIGHT[1] | RES_DARK[1]
 #E:DETECT_ALL:30+d30
-effect:CLAIRVOYANCE
+act:CLAIRVOYANCE
 time:50+d50
-M:The {kind} form{s} an image in your mind...
 D:A great globe seemingly filled with moonlight, the famed Heart of the 
 D:Mountain.  It splinters the light that falls upon it into ten thousand 
 D:sparks of white radiance shot with glints of the rainbow.
@@ -141,9 +138,8 @@ I:amulet:Amulet
 G:":d
 W:50:10:3:60000
 A:10:50 to 100
-effect:PROTEVIL
+act:PROTEVIL
 time:225+d225
-M:The {kind} let{s} out a shrill wail...
 V:CON[3] | STR[1] | RES_FIRE[1]
 D:A fiery circle of bronze, with mighty spells to ward off and banish evil.
 
@@ -156,9 +152,8 @@ G:":d
 W:65:30:3:90000
 A:3:65 to 127
 F:SEE_INVIS | FREE_ACT | PROT_CONF
-effect:DISPEL_EVIL
+act:DISPEL_EVIL
 time:50+d50
-M:The {kind} flood{s} the area with goodness...
 V:INT[3] | WIS[3] | INFRA[4] | RES_ACID[1] | RES_COLD[1] | RES_ELEC[1]
 D:The ancient heirloom of Ingwë, high lord of the Vanyar, against whom 
 D:nothing of evil could stand.
@@ -221,9 +216,8 @@ G:=:d
 W:70:50:2:150000
 A:2:70 to 127
 F:PROT_FEAR | 
-effect:HASTE2
+act:HASTE2
 time:150+d150
-M:The {kind} glow{s} brightly...
 V:STR[4] | DEX[4] | CON[4]
 D:The treasure of Tulkas, most fleet and wrathful of the Valar.
 
@@ -239,9 +233,9 @@ P:0:0d0:2:2:0
 F:FREE_ACT | SEE_INVIS | 
 F:SLOW_DIGEST | REGEN | TELEPATHY
 F:SUST_STR | SUST_CON | PROT_FEAR
-effect:PROTEVIL
+act:PROTEVIL
 time:200+4d50
-M:{name} glows deep red...
+msg:{name} glows deep red...
 V:STR[1] | INT[1] | WIS[1] | DEX[1] | CON[1] | SPEED[5] | RES_FIRE[3]
 D:The Ring of Fire, made of gold and set with a ruby that glows like flame.  
 D:Narya is one of the three Rings of Power created by Celebrimbor and hidden 
@@ -260,9 +254,9 @@ F:HOLD_LIFE | FREE_ACT | SEE_INVIS |
 F:FEATHER | REGEN
 F:SUST_INT | SUST_WIS | SUST_CON
 F:PROT_BLIND | TELEPATHY | 
-effect:RESTORE_LIFE
+act:RESTORE_LIFE
 time:200+2d50
-M:{name} glows bright white...
+msg:{name} glows bright white...
 V:STR[2] | INT[2] | WIS[2] | DEX[2] | CON[2] | SPEED[5] | RES_COLD[3]
 D:The Ring of Adamant, made of mithril with a pure white stone as 
 D:centerpiece.  Nenya is one of the three Rings of Power created by 
@@ -280,9 +274,9 @@ P:0:0d0:5:5:0
 F:HOLD_LIFE | FREE_ACT | SEE_INVIS
 F:FEATHER | SLOW_DIGEST | REGEN | TELEPATHY
 F:SUST_DEX | SUST_INT | SUST_CON
-effect:HEAL2
+act:HEAL2
 time:200+2d50
-M:{name} glows deep blue...
+msg:{name} glows deep blue...
 V:STR[3] | INT[3] | WIS[3] | DEX[3] | CON[3] | SPEED[5]
 V:RES_ELEC[3] | RES_POIS[1] | RES_DARK[1]
 D:The Ring of Sapphire, made of gold with a brilliant blue gem that shines 
@@ -304,9 +298,8 @@ F:LIGHT_CURSE | HEAVY_CURSE | PERMA_CURSE
 F:AGGRAVATE | DRAIN_EXP | SEE_INVIS | REGEN | TELEPATHY
 F:SUST_STR | SUST_DEX | SUST_CON | 
 F:SUST_INT | SUST_WIS |
-effect:BIZARRE
+act:BIZARRE
 time:200+9d50
-M:{name} glows intensely black...
 V:STR[5] | INT[5] | WIS[5] | DEX[5] | CON[5] | SPEED[5]
 V:RES_FIRE[3] | RES_COLD[3] | RES_ELEC[3] | RES_ACID[3] | RES_DARK[1]
 V:RES_DISEN[1] | RES_POIS[1] | RES_NETHER[1]
@@ -326,9 +319,8 @@ W:60:60:3:40000
 A:2:60 to 127
 P:0:0d0:0:0:10
 F:PROT_FEAR
-effect:HEAL1
+act:HEAL1
 time:200
-M:You feel a warm tingling inside...
 V:STR[2] | WIS[2] | SPEED[2] | RES_FIRE[1] | RES_POIS[1]
 D:A green stone, imbued with the power of Elvendom and the light of the Sun.
 D:  Those who gaze through it see the aged and infirm as young again, and its 
@@ -343,9 +335,8 @@ G:":w
 W:40:40:3:25000
 A:2:30 to 70
 F:HOLD_LIFE | SUST_CON | SUST_WIS | REGEN
-effect:RESTORE_LIFE
+act:RESTORE_LIFE
 time:150
-M:Your {kind} glow{s} a deep red...
 V:WIS[2] | RES_DARK[1] | RES_COLD[1] | RES_NETHER[1]
 D:A plain white jewel, given by Queen Arwen to Frodo Baggins before his 
 D:return to the Shire.
@@ -361,11 +352,10 @@ W:90:9:200:400000
 A:11:90 to 127
 P:50:2d4:-4:0:25
 F:FREE_ACT | SEE_INVIS | AGGRAVATE
-effect:STAR_BALL
+act:STAR_BALL
 time:50
 V:LIGHT[1] | RES_ELEC[3] | RES_DISEN[1] | RES_ACID[1] | RES_FIRE[1]
 V:RES_COLD[1] | RES_POIS[1] | RES_LIGHT[1] | RES_DARK[1]
-M:Lightning surrounds your {kind}!
 D:A massive suit of heavy dragon scales deeply saturated with many colors.   
 D:It throbs with angry energies, and you feel the raw elemental might of 
 D:untamed Lightning as you put it on.
@@ -378,12 +368,11 @@ A:6:100 to 127
 P:80:2d4:-8:0:35
 F:HOLD_LIFE | REGEN | 
 F:PROT_FEAR | PROT_BLIND | PROT_CONF 
-effect:RAGE_BLESS_RESIST
+act:RAGE_BLESS_RESIST
 time:50
 V:RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1] | RES_POIS[1]
 V:RES_LIGHT[1] | RES_DARK[1] | RES_SOUND[1] | RES_SHARD[1] | RES_NETHER[1]
 V:RES_NEXUS[1] | RES_CHAOS[1] | RES_DISEN[1]
-M:{name} glow{s} many colors...
 D:An adamant suit with scales of every color.  Untrammelled powers elemental 
 D:and ethereal swirl around it in an inextricably intermingled nimbus.
 
@@ -394,10 +383,9 @@ W:95:12:250:400000
 A:8:95 to 127
 P:60:2d4:-4:0:25
 F:FREE_ACT | SLOW_DIGEST | REGEN | 
-effect:STAR_BALL
+act:STAR_BALL
 time:50
 V:RES_CHAOS[1] | RES_DISEN[1] | RES_SHARD[1] | RES_SOUND[1] | RES_NEXUS[1]
-M:Lightning surrounds your {kind}!
 D:A great suit of dragon hide, set with scales of many hues.  Even the 
 D:mightiest wyrms of Law and Chaos fear the judgement of its wearer.
 
@@ -410,9 +398,8 @@ W:75:9:420:300000
 A:11:75 to 127
 P:90:2d4:-4:0:20
 F:HOLD_LIFE | SUST_CON | PROT_FEAR
-effect:HEAL2
+act:HEAL2
 time:444
-M:{name} glows a bright white...
 V:CON[2] | RES_ACID[1] | RES_COLD[1] | RES_DARK[1] | RES_NETHER[1]
 V:RES_NEXUS[1] | RES_CHAOS[1]
 D:A suit of imperishable adamant with unconquerable strength to endure evil 
@@ -450,9 +437,8 @@ I:hard armour:Mithril Chain Mail
 W:40:3:150:105000
 A:30:55 to 127
 P:35:1d4:-1:0:20
-effect:TELE_PHASE
+act:TELE_PHASE
 time:2
-M:{name} twists space around you...
 V:DEX[4] | STEALTH[2]
 V:RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1] | RES_POIS[1]
 D:This wondrous suit of fine-linked chain shimmers as though of pure silver.  
@@ -465,9 +451,8 @@ I:hard armour:Mithril Plate Mail
 W:40:3:250:150000
 A:30:65 to 127
 P:65:2d4:-3:0:25
-effect:BANISHMENT
+act:BANISHMENT
 time:500
-M:Your {kind} glow{s} deep blue...
 V:STR[3] | RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1]
 V:RES_DARK[1] | RES_DISEN[1]
 D:A shimmering suit of true-silver, forged long ago by dwarven smiths of 
@@ -493,9 +478,8 @@ W:25:9:270:40000
 A:11:35 to 100
 P:45:1d4:-2:0:20
 F:PROT_CONF
-effect:DESTROY_TDOORS
+act:DESTROY_TDOORS
 time:10
-M:Your {kind} glow{s} bright red...
 V:INT[2] | WIS[2] | CON[3] | RES_ACID[1] | RES_POIS[1]
 D:A hauberk, leggings, and sleeves of interlocking steel rings, strategically 
 D:reinforced at vital locations with a second layer of chain.  Magics to 
@@ -509,10 +493,9 @@ I:soft armour:Hard Leather Armour
 W:50:20:100:35000
 A:20:25 to 90
 P:20:0d0:0:0:15
-effect:PROTEVIL
+act:PROTEVIL
 time:100+d100
 V:RES_CHAOS[1] | RES_NETHER[1] | RES_POIS[1]
-M:The {kind} let{s} out a shrill wail...
 D:In this studded cuirass of pliable leather lives the memory of 
 D:unvanquished Himring, defiant fortress surrounded by the legions of Morgoth.
 
@@ -548,9 +531,8 @@ W:70:4:80:65000
 A:25:70 to 127
 P:20:1d3:0:0:20
 F:SUST_WIS | SUST_DEX
-effect:STARLIGHT2
+act:STARLIGHT2
 time:100
-M:Your {kind} glow{s} with the light of a thousand stars...
 V:WIS[5] | LIGHT[1] | RES_ELEC[1] | RES_ACID[1] | RES_DISEN[1] | RES_DARK[1]
 D:The legendary shield of Ereinion Gil-galad, who fought his way to the 
 D:gates of the Dark Tower, and with whom came light even to Gorgoroth.
@@ -689,9 +671,8 @@ W:20:5:50:100000
 A:18:20 to 100
 P:7:1d3:0:0:10
 F:PROT_BLIND | PROT_CONF | SEE_INVIS
-effect:DETECT_ALL
+act:DETECT_ALL
 time:55+d55
-M:{name} forms an image in your mind...
 V:INT[2] | WIS[2] | SEARCH[2]
 D:A famous forged iron helm granting extraordinary powers of mind and 
 D:awareness.
@@ -717,9 +698,8 @@ A:5:45 to 127
 P:0:1d1:0:0:15
 F:PROT_BLIND | PROT_CONF | PROT_STUN
 F:SEE_INVIS | REGEN
-effect:HEAL1
+act:HEAL1
 time:250
-M:You feel a warm tingling inside...
 V:STR[3] | CON[3] | WIS[2] | LIGHT[1] | RES_COLD[1] | RES_FIRE[1] | RES_LIGHT[1]
 D:From dying Númenor, Elendil brought this shining winged circlet, emblem 
 D:of Gondor through an age of the world.
@@ -746,10 +726,9 @@ I:cloak:Cloak
 W:5:45:10:50000
 A:2:5 to 100
 P:1:0d0:0:0:15
-effect:RESIST_ALL
+act:RESIST_ALL
 time:111
 V:RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1] | RES_POIS[1]
-M:{name} glows many colours...
 D:A cape worn by a hero from Valinor, a land utterly beyond the strife 
 D:of Elements.
 
@@ -759,9 +738,8 @@ I:cloak:Cloak
 W:5:35:10:18000
 A:5:5 to 100
 P:1:0d0:0:0:4
-effect:SLEEPII
+act:SLEEPII
 time:55
-M:{name} glows deep blue...
 V:STEALTH[3] | INT[2] | WIS[2] | RES_ACID[1]
 D:This elven-grey mantle possesses great powers of tranquility and 
 D:concealment, and grants the wearer the knowledge and understanding of 
@@ -774,9 +752,8 @@ W:5:20:10:35000
 A:5:5 to 100
 P:1:0d0:0:0:18
 F:FREE_ACT
-effect:RECHARGE
+act:RECHARGE
 time:70
-M:Your {kind} glow{s} bright yellow...
 V:DEX[3] | RES_ACID[1] | RES_FIRE[1] | RES_COLD[1]
 D:A translucent cloak of pearly grey with glowing, energized Elven runes 
 D:showing calm and clear as moonlight on still water.
@@ -799,9 +776,8 @@ I:cloak:Cloak
 W:5:20:10:20000
 A:5:5 to 100
 P:1:0d0:0:0:15
-effect:TELE_LONG
+act:TELE_LONG
 time:45
-M:Your {kind} twist{s} space around you.
 V:STEALTH[2] | SPEED[2] | RES_NEXUS[1]
 D:A crystal-blue cape of fine silk worn by a silent messenger of the forces 
 D:of Law.  Seldom will its wearer be diverted from his mission.
@@ -812,9 +788,8 @@ I:cloak:Elven Cloak
 W:40:40:5:45000
 A:2:40 to 127
 P:6:0d0:0:0:20
-effect:RESTORE_LIFE
+act:RESTORE_LIFE
 time:250
-M:Your {kind} glow{s} a deep red...
 V:INT[4] | WIS[4] | STEALTH[3] | SPEED[2]
 V:RES_ACID[1] | RES_FIRE[1] | RES_COLD[1]
 D:The opaque midnight folds of this cloak, inlaid with a multitude of tiny 
@@ -843,9 +818,8 @@ W:55:35:25:40000
 A:3:55 to 127
 P:3:1d1:0:0:14
 F:FREE_ACT | FEATHER | AGGRAVATE
-effect:MANA_BOLT:MANA
+act:MANA_BOLT:MANA
 time:30+d30
-M:Your {kind} glow{s} white...
 V:INT[3] | RES_ELEC[1] | RES_DARK[1] | RES_POIS[1] | RES_FIRE[3]
 D:The iron-shod gauntlets of the Dark Elven smith Eöl, who imbued them 
 D:with magics he could channel in battle.
@@ -868,9 +842,8 @@ A:18:10 to 80
 P:1:0d0:5:5:10
 F:FREE_ACT | SUST_CON
 V:LIGHT[1] | RES_LIGHT[1]
-effect:MISSILE:MISSILE
+act:MISSILE:MISSILE
 time:2
-M:{name} glows very brightly...
 D:These gloves glow so brightly as to light the way for the wearer and cast 
 D:magical bolts with great frequency.
 
@@ -881,10 +854,9 @@ W:1:2:25:15000
 A:40:10 to 60
 P:3:1d1:0:0:14
 F:REGEN
-effect:FIRE_BOLT:FIRE
+act:FIRE_BOLT:FIRE
 time:8+d8
 V:RES_FIRE[1]
-M:Your {kind} {is} covered in fire...
 D:A set of gauntlets that smoulder with an unnatural heat.
 
 
@@ -895,9 +867,8 @@ A:5:50 to 127
 P:3:1d1:0:0:14
 F:SLOW_DIGEST
 V:BRAND_COLD[2] | RES_COLD[1]
-effect:COLD_BOLT:COLD
+act:COLD_BOLT:COLD
 time:7+d7
-M:Your {kind} {is} covered in frost...
 D:A set of handgear, freezing with unnatural cold.
 
 
@@ -907,9 +878,8 @@ W:1:4:25:11000
 A:23:10 to 75
 P:3:1d1:0:0:14
 V:LIGHT[1] | RES_ELEC[1] | RES_LIGHT[1]
-effect:ELEC_BOLT:ELEC
+act:ELEC_BOLT:ELEC
 time:6+d6
-M:Your {kind} {is} covered in sparks...
 D:A set of handgear with sparks that crackle across its knuckleguards.
 
 
@@ -919,10 +889,9 @@ W:1:3:25:12000
 A:30:10 to 60
 P:3:1d1:3:3:14
 F:FEATHER
-effect:ACID_BOLT:ACID
+act:ACID_BOLT:ACID
 time:5+d5
 V:RES_ACID[1]
-M:Your {kind} {is} covered in acid...
 D:A set of gauntlets that give off a foul, acrid odour yet remain untarnished.
 
 
@@ -944,9 +913,9 @@ W:40:15:40:110000
 A:3:40 to 127
 P:5:1d1:10:10:20
 F:FREE_ACT
-effect:ARROW:ARROW
+act:ARROW:ARROW
 time:30+d30
-M:Your {kind} grow{s} magical spikes...
+msg:Your {kind} grow{s} magical spikes...
 V:DEX[4] | RES_ACID[1]
 D:The hand-sheathing of Fingolfin, the Elven warrior-king, who dealt 
 D:Morgoth seven mighty wounds and pain that will last until the end of Arda.
@@ -959,9 +928,8 @@ I:boots:Pair of Leather Boots
 W:40:120:20:300000
 A:1:40 to 127
 P:2:1d1:0:0:20
-effect:HASTE1
+act:HASTE1
 time:200
-M:Your {kind} glow{s} bright green...
 V:SPEED[15] | RES_NEXUS[1]
 D:This wondrous pair of leather boots once sped Fëanor, creator of the 
 D:Silmarils and the mightiest of the Eldar, to fulfill his hero's challenge 
@@ -977,9 +945,8 @@ A:4:50 to 100
 P:2:1d1:0:0:15
 F:FREE_ACT | 
 F:PROT_CONF | SUST_CON
-effect:REM_FEAR_POIS
+act:REM_FEAR_POIS
 time:5
-M:Your {kind} glow{s} deep blue...
 V:DEX[5] | SPEED[5] | RES_NETHER[1]
 D:A pair of high-laced shoes, bestowing of extraordinary agility and proof 
 D:against the powers of corruption and withering.
@@ -1002,9 +969,8 @@ W:10:15:20:17000
 A:8:15 to 80
 P:2:1d1:-1:-1:0
 F:FEATHER | LIGHT_CURSE | 
-effect:TELE_PHASE
+act:TELE_PHASE
 time:20
-M:Your {kind} twist{s} space around you.
 V:SPEED[3] | INT[2] | DEX[2] | STEALTH[2]
 D:A pair of running shoes once used by the treacherous Gríma son of 
 D:Gálmód, the Wormtongue of Edoras.  They are aptly suited for a 
@@ -1046,9 +1012,8 @@ W:1:2:12:12000
 A:40:1 to 50
 P:0:2d4:9:12:10
 V:BRAND_FIRE[3] | RES_FIRE[1]
-effect:FIRE_BOLT:FIRE
+act:FIRE_BOLT:FIRE
 time:8+d8
-M:{name} is covered in fire...
 D:Instead of a blade, a flame seems to emerge from this dagger's hilt.
 
 
@@ -1058,9 +1023,8 @@ W:1:2:12:11000
 A:40:1 to 50
 P:0:2d4:9:12:10
 V:BRAND_COLD[3] | RES_COLD[1]
-effect:COLD_BOLT:COLD
+act:COLD_BOLT:COLD
 time:7+d8
-M:{name} is covered in frost...
 D:From the hilt of this dagger springs not so much a blade as an icicle.
 
 
@@ -1070,9 +1034,8 @@ W:1:2:12:13000
 A:40:1 to 50
 P:0:2d4:9:12:10
 V:BRAND_ELEC[3] | RES_ELEC[1]
-effect:ELEC_BOLT:ELEC
+act:ELEC_BOLT:ELEC
 time:6+d6
-M:{name} is covered in sparks...
 D:In this dagger is bound the very force of lightning.
 
 
@@ -1082,9 +1045,8 @@ W:5:20:12:15000
 A:5:5 to 75
 P:0:2d4:14:13:0
 V:BRAND_POIS[3] | SLAY_ORC[3] | SLAY_TROLL[3] | RES_POIS[1] | RES_DISEN[1]
-effect:STINKING_CLOUD:POIS:3
+act:STINKING_CLOUD:POIS:3
 time:4+d4
-M:{name} throws deep green shadows...
 D:A large stiletto dagger that glistens with odorless poison, to which the 
 D:wearer seems oddly immune.
 
@@ -1096,9 +1058,8 @@ A:2:10 to 80
 P:0:3d4:16:14:0
 F:SEE_INVIS | SLOW_DIGEST | REGEN
 V:DEX[2] | BRAND_COLD[3] | RES_COLD[1]
-effect:COLD_BALL50:COLD:2
+act:COLD_BALL50:COLD:2
 time:5+d5
-M:Your {kind} {is} covered in frost...
 D:A frosty dagger wreathed in a nimbus of ice with a hilt of elk horn and 
 D:an edge to wound the wind.
 
@@ -1123,9 +1084,8 @@ W:20:45:150:50000
 A:2:20 to 100
 P:0:3d5:20:12:0
 F:FREE_ACT | FEATHER | SLOW_DIGEST
-effect:COLD_BOLT2:COLD
+act:COLD_BOLT2:COLD
 time:50
-M:{name} glows a pale blue...
 V:DEX[4] | SLAY_DEMON[3] | SLAY_ORC[3] | RES_COLD[1]
 D:The beautiful sword of Thingol, justly named "King's Ire".  It glistens 
 D:icy enough to freeze the hearts of demons, and you feel supple and 
@@ -1256,9 +1216,8 @@ A:1:20 to 127
 P:0:4d5:22:25:0
 F:PROT_FEAR | BLESSED
 F:FREE_ACT | SEE_INVIS | SLOW_DIGEST | REGEN | 
-effect:COLD_BALL100:COLD:2
+act:COLD_BALL100:COLD:2
 time:40
-M:{name} glows an intense blue...
 V:SPEED[10] | LIGHT[1] | BRAND_COLD[3] | SLAY_EVIL[2] | SLAY_UNDEAD[3] |
 V:SLAY_TROLL[2] | SLAY_DEMON[5] | RES_COLD[1] | RES_LIGHT[1]
 D:The weapon of Fingolfin, High King of the Noldor; it shines like a column 
@@ -1273,9 +1232,8 @@ A:3:20 to 127
 P:0:3d5:10:15:10
 F:PROT_FEAR | FREE_ACT | BLESSED
 F:SUST_STR | SUST_DEX | SEE_INVIS
-effect:FIRE_BOLT72:FIRE:2
+act:FIRE_BOLT72:FIRE:2
 time:40
-M:{name} rages in fire...
 V:STR[4] | DEX[4] | BRAND_FIRE[3] | SLAY_EVIL[2] | SLAY_TROLL[3] | SLAY_ORC[3]
 V:SLAY_UNDEAD[3] | RES_FIRE[1] | RES_DISEN[1]
 D:The famed "Flame of the West", the Sword that was Broken and is forged 
@@ -1400,9 +1358,8 @@ W:20:15:180:40000
 A:7:20 to 100
 P:0:2d6:8:10:0
 F:TELEPATHY | SLOW_DIGEST | 
-effect:DRAIN_LIFE2
+act:DRAIN_LIFE2
 time:40
-M:Your {kind} glow{s} black...
 V:WIS[3] | CON[3] | SLAY_DRAGON[3]
 D:The narrow axe head of this weapon would pierce the armour of a very 
 D:Dragon, and the designs of your enemies stand naked and revealed.
@@ -1448,9 +1405,8 @@ W:15:45:50:140000
 A:2:15 to 100
 P:0:3d6:15:25:5
 F:PROT_FEAR | FREE_ACT | SLOW_DIGEST | BLESSED
-effect:COLD_BALL100:COLD:2
+act:COLD_BALL100:COLD:2
 time:35
-M:{name} glows an intense blue...
 V:DEX[4] | WIS[2] | BRAND_COLD[3] | SLAY_EVIL[2] | SLAY_TROLL[3] | SLAY_ORC[3] |
 V:SLAY_UNDEAD[5]| RES_COLD[1]
 D:The mighty spear of Gil-galad, famed as "Snow-point" in the songs of Elves.  
@@ -1464,9 +1420,8 @@ A:2:15 to 127
 P:0:4d6:15:15:0
 # F:DRAIN_MANA | 
 F:FEATHER | SEE_INVIS | BLESSED | 
-effect:STONE_TO_MUD
+act:STONE_TO_MUD
 time:5
-M:Your {kind} pulsate{s}...
 V:INT[4] | SPEED[4] | INFRA[4] | LIGHT[1] | BRAND_FIRE[3] | SLAY_GIANT[3] |
 V:SLAY_ANIMAL[2] | RES_FIRE[1] | RES_LIGHT[1]
 D:The thrusting spear of wise Oromë the Vala, strong against giants of 
@@ -1520,9 +1475,8 @@ P:0:5d4:15:18:8
 F:PROT_FEAR | FREE_ACT | SEE_INVIS | BLESSED
 V:STR[2] | INT[2] | WIS[2] | DEX[2] | CON[2] | BRAND_COLD[3] | RES_COLD[3]
 V:SLAY_EVIL[2] | SLAY_UNDEAD[3] | SLAY_DEMON[5] | SLAY_ORC[3] 
-effect:LOSKILL
+act:LOSKILL
 time:1000
-M:Your {kind} let{s} out a long, shrill note...
 D:The axe of Eönwë, leader of the Hosts of the West in the War of 
 D:Wrath, strikes with icy wrath at the undead, disperses hosts of 
 D:evil at a word, and grants Maia-like powers of body and mind.
@@ -1546,9 +1500,8 @@ I:polearm:Battle Axe
 W:30:15:170:21000
 A:7:30 to 100
 P:0:2d8:14:13:0
-effect:CURE_SERIOUS
+act:CURE_SERIOUS
 time:3+d3
-M:Your {kind} radiate{s} deep purple...
 V:STR[3] | DEX[3] | BLOWS[1] | SLAY_TROLL[3] | SLAY_ORC[3] | RES_DISEN[1]
 D:A superbly crafted double-bladed axe once borne by Ceruthain, commander 
 D:of the Rangers of Arnor.
@@ -1598,9 +1551,8 @@ P:0:4d10:15:19:0
 F:FREE_ACT | HOLD_LIFE | 
 F:SEE_INVIS | SLOW_DIGEST | REGEN | 
 F:BLESSED | 
-effect:TELE_OTHER
+act:TELE_OTHER
 time:50
-M:Your {kind} glow{s} deep red...
 V:DEX[4] | SLAY_DRAGON[3] | SLAY_ANIMAL[2] | RES_ACID[3] | RES_NETHER[1]
 D:The awesome weapon of the Vala Ulmo, Lord of Waters.  Mightiest of all the 
 D:powers of good save Manwë himself, Ulmo laughs to scorn the dread powers 
@@ -1613,9 +1565,8 @@ W:40:8:180:18000
 A:12:45 to 100
 P:0:5d3:18:12:30
 F:FREE_ACT | SEE_INVIS
-effect:RECALL
+act:RECALL
 time:200
-M:{name} pulses a soft white.
 V:DEX[3] | SPEED[3] | LIGHT[1] | BRAND_COLD[3] | BRAND_FIRE[3]
 V:RES_FIRE[1] | RES_COLD[1] | RES_LIGHT[1]
 D:Holding elemental powers whose struggles turn this weapon red and purest 
@@ -1629,9 +1580,8 @@ W:20:15:180:90000
 A:7:20 to 100
 P:0:3d6:12:15:0
 # F:DRAIN_MANA | 
-effect:BERSERKER
+act:BERSERKER
 time:80+d80
-M:{name} glows in anger!
 V:STR[2] | CON[2] | LIGHT[1] | BRAND_ACID[3] | SLAY_DRAGON[3] | SLAY_TROLL[3] |
 V:SLAY_DEMON[5] | RES_ACID[1] | RES_DARK[1] | RES_FIRE[1]
 D:Wielded by Húrin Thalion, last lord of Dor-Lómin at the Battle 
@@ -1662,9 +1612,8 @@ W:20:8:150:55000
 A:12:20 to 65
 P:0:3d6:16:12:0
 F:PROT_CONF
-effect:CONFUSE2
+act:CONFUSE2
 time:15
-M:{name} glows in scintillating colours...
 V:STEALTH[2] | SPEED[2] | BRAND_FIRE[3] | SLAY_EVIL[2] | RES_FIRE[1]
 D:A flail whose head befuddles those who stare as you whirl it round and 
 D:becomes a fiery comet as you bring it down.
@@ -1701,9 +1650,8 @@ W:20:15:150:35000
 A:7:20 to 100
 P:0:2d6:15:17:2
 V:BRAND_FIRE[3] | RES_FIRE[3]
-effect:FIRE_BOLT72:FIRE:2
+act:FIRE_BOLT72:FIRE:2
 time:20
-M:{name} rages in fire...
 D:A famed battle-lord of old with a head as ruddy as embers that can yet rise 
 D:up in wrath.
 
@@ -1714,9 +1662,8 @@ W:20:15:200:50000
 A:7:20 to 100
 P:0:3d4:12:12:0
 V:BRAND_ELEC[3] | SLAY_DRAGON[5] | RES_ELEC[3]
-effect:HASTE1
+act:HASTE1
 time:100+d100
-M:{name} glows bright green...
 D:A great ridged mace that surrounds you with a nimbus of living lightning.  
 D:You remain utterly untouched, even as fat sparks crackle around your 
 D:fingers and eyebrows.
@@ -1753,9 +1700,8 @@ W:20:18:150:20000
 A:5:20 to 100
 P:0:1d9:13:15:0
 F:SEE_INVIS
-effect:IDENTIFY
+act:IDENTIFY
 time:10
-M:Your {kind} glow{s} yellow...
 V:INT[4] | WIS[4] | LIGHT[1] | SLAY_EVIL[2] | RES_LIGHT[1]
 D:The radiant golden staff of an Istar of legend; this wizard's companion 
 D:grants keen sight and clear knowledge of many hidden things.
@@ -1767,9 +1713,8 @@ W:30:105:150:130000
 A:1:30 to 100
 P:0:2d9:10:13:0
 F:HOLD_LIFE | SEE_INVIS
-effect:PROBING
+act:PROBING
 time:20
-M:{name} glows brightly...
 V:INT[4] | WIS[4] | BRAND_FIRE[3] | SLAY_DEMON[5] | SLAY_EVIL[2] |
 V:SLAY_TROLL[3] | SLAY_ORC[3] | RES_FIRE[1] | RES_NETHER[1]
 D:A staff tall and sturdy, borne of old by Gandalf.  Rough-hewn runes that 
@@ -1801,9 +1746,8 @@ W:20:15:120:30000
 A:7:20 to 100
 P:0:2d5:10:11:8
 F:BLESSED | REGEN
-effect:DRAIN_LIFE1
+act:DRAIN_LIFE1
 time:40
-M:{name} glows white...
 V:WIS[4] | INFRA[4] | LIGHT[1] | BRAND_COLD[3] | SLAY_ORC[3]
 V:RES_COLD[3] | RES_LIGHT[1]
 D:Once wielded by the High Priest of Meneltarma, this great mace gleams coldly 
@@ -1818,9 +1762,8 @@ A:4:60 to 127
 P:0:6d3:13:15:0
 # F:DRAIN_HP | 
 F:LIGHT_CURSE | HEAVY_CURSE | AGGRAVATE
-effect:FIRE_BALL:FIRE:2
+act:FIRE_BALL:FIRE:2
 time:15
-M:The {kind} glow{s} deep red...
 V:STR[3] | INT[-3] | DEX[-3] | WIS[-3] | LIGHT[1] | BRAND_FIRE[3]
 V:SLAY_ANIMAL[2] | SLAY_DRAGON[5] | SLAY_TROLL[3] | SLAY_GIANT[3] 
 V:RES_FIRE[3] | RES_ELEC[1] | RES_DARK[1]
@@ -1868,9 +1811,8 @@ W:60:20:200:35000
 A:5:60 to 127
 P:0:4d1:18:18:0
 F:AGGRAVATE | PROT_BLIND
-effect:ARROW:ARROW
+act:ARROW:ARROW
 time:20+d20
-M:Your {kind} form{s} a magical arrow...
 V:MIGHT[2] | STR[1] | CON[1] | RES_LIGHT[1] | RES_DARK[1] | RES_ELEC[1]
 D:A great brazen arbalest with arms of gleaming steel.  It shoots quarrels 
 D:with mighty power for those brave enough to risk betrayal.
@@ -1906,9 +1848,8 @@ I:digger:Mattock
 W:60:8:240:30000
 A:12:60 to 100
 P:0:2d8:12:18:0
-effect:STONE_TO_MUD
+act:STONE_TO_MUD
 time:2
-M:Your {kind} pulsate{s}...
 V:TUNNEL[6] | INFRA[4] | SEARCH[4] | STR[4] | SLAY_ORC[3] | SLAY_TROLL[3]
 V:SLAY_GIANT[3] | SLAY_DRAGON[3] | RES_DARK[1] | RES_DISEN[1]
 D:A mighty Dwarven mattock, as good for hewing orc-necks as for hewing 
@@ -1937,9 +1878,8 @@ W:65:100:130:60000
 A:2:65 to 127
 P:0:4d4:13:17:10
 F:HOLD_LIFE
-effect:DISPEL_EVIL
+act:DISPEL_EVIL
 time:100+d100
-M:The {kind} flood{s} the area with goodness...
 V:STR[4] | WIS[4] | LIGHT[1] | SLAY_EVIL[2] | SLAY_UNDEAD[3]
 V:RES_FIRE[1] | RES_ELEC[1] | RES_NETHER[1]
 D:The weapon of a mighty dwarven priest, whose shade is rumoured to 
@@ -1965,9 +1905,8 @@ W:35:12:90:25000
 A:10:35 to 127
 P:9:1d2:5:5:15
 F:SUST_STR | SUST_CON | PROT_FEAR | PROT_BLIND
-effect:BERSERKER
+act:BERSERKER
 time:50
-M:{name} glows in anger!
 V:STR[2] | CON[2] | RES_POIS[1]
 D:The painted shield of a chieftain of Far Harad, gaudy and barbaric.  
 D:Its wielder will fear nothing and fight with unnatural strength, but 
@@ -2015,9 +1954,8 @@ W:30:25:40:40000
 A:3:60 to 127
 P:8:1d1:0:0:24
 V:SPEED[6] | RES_ELEC[3] | RES_SOUND[1]
-effect:BERSERKER
+act:BERSERKER
 time:100
-M:{name} glows in anger!
 D:And they hewed off Gelmir's hands and feet, and his head last, within
 D: sight of the Elves, and left him. By ill chance there stood Gwindor
 D: of Nargothrond, the brother of Gelmir. Now his wrath was kindled to

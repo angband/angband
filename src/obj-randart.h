@@ -158,21 +158,6 @@ enum {
 	ART_IDX_TOTAL
 };
 
-/**
- * Activation structure
- */
-struct activation {
-	struct activation *next;
-	char *name;
-	bool aim;
-	int power;
-	struct effect *effect;
-	char *message;
-	char *desc;
-};
-
-extern struct activation *activations;
-
 char *artifact_gen_name(struct artifact *a, const char ***wordlist);
 errr do_randart(u32b randart_seed, bool full);
 

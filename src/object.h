@@ -129,6 +129,22 @@ struct element_info {
 };
 
 /**
+ * Activation structure
+ */
+struct activation {
+	struct activation *next;
+	char *name;
+	int index;
+	bool aim;
+	int power;
+	struct effect *effect;
+	char *message;
+	char *desc;
+};
+
+extern struct activation *activations;
+
+/**
  * Information about object types, like rods, wands, etc.
  */
 typedef struct object_base
@@ -278,8 +294,8 @@ typedef struct artifact
 	bool seen;			/**< Whether this artifact has been seen this game */
 	bool everseen;		/**< Whether this artifact has ever been seen  */
 
-	struct effect *effect;	/**< Effect this item produces (effects.c) */
-	char *effect_msg;
+	struct activation *activation;	/**< Artifact activation */
+	char *alt_msg;
 
 	random_value time;	/**< Recharge time (if appropriate) */
 } artifact_type;
@@ -414,6 +430,7 @@ typedef struct object
 
 	struct effect *effect;	/**< Effect this item produces (effects.c) */
 	char *effect_msg;
+	struct activation *activation;	/**< Artifact activation, if applicable */
 	random_value time;	/**< Recharge time (rods/activation) */
 	s16b timeout;		/* Timeout Counter */
 

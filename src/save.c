@@ -151,7 +151,11 @@ static void wr_item(const object_type *o_ptr)
 	
 	wr_s16b(o_ptr->mimicking_m_idx);
 
-	/* Activation */
+	/* Activation and effects*/
+	if (o_ptr->activation)
+		wr_u16b(o_ptr->activation->index);
+	else
+		wr_u16b(0);
 	if (o_ptr->effect)
 		wr_u16b(o_ptr->effect->index);
 	else

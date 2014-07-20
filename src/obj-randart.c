@@ -455,15 +455,12 @@ static object_kind *choose_item(int a_idx)
 	copy_slay(&a_ptr->slays, k_ptr->slays);
 	a_ptr->brands = NULL;
 	copy_brand(&a_ptr->brands, k_ptr->brands);
+	a_ptr->activation = NULL;
 	for (i = 0; i < OBJ_MOD_MAX; i++) {
 		a_ptr->modifiers[i] = randcalc(k_ptr->modifiers[i], 0, MINIMISE);
 	}
 	for (i = 0; i < ELEM_MAX; i++)
 		a_ptr->el_info[i] = k_ptr->el_info[i];
-	if (a_ptr->effect) {
-		mem_free(a_ptr->effect);
-		a_ptr->effect = NULL;
-	}
 
 	/* Artifacts ignore everything */
 	for (i = ELEM_BASE_MIN; i < ELEM_HIGH_MIN; i++)
@@ -1350,7 +1347,7 @@ static void parse_frequencies(void)
 			(artprobs[ART_IDX_GEN_PSTUN])++;
 		}
 
-		if (a_ptr->effect) {
+		if (a_ptr->activation) {
 			/* Activation */
 			file_putf(log_file, "Adding 1 for activation.\n");
 			(artprobs[ART_IDX_GEN_ACTIV])++;
@@ -1816,28 +1813,26 @@ static void add_activation(artifact_type *a_ptr, s32b target_power)
 	int i, x, p, max_effect = 0;
 	int count = 0;
 
-	/* Work out the maximum allowed effect power */
-	for (i = 0; i < EF_MAX; i++)
-		if ((effect_power(i) > max_effect) && (effect_power(i) < INHIBIT_POWER))
-			max_effect = effect_power(i);
+	/* Work out the maximum allowed activation power */
+	for (i = 0; i < z_info->act_max; i++) {
+		struct activation *act = &activations[i];
+		if (act->power > max_effect)
+			max_effect = act->power;
+	}
 
-	/* Select an effect at random */
+	/* Select an activation at random */
 	while (count < MAX_TRIES) {
-		x = randint0(EF_MAX);
-		p = effect_power(x);
+		x = randint0(z_info->act_max);
+		p = activations[x].power;
 
 		/*
 		 * Check that activation is useful but not exploitable,
 		 * and roughly proportionate to the overall power
 		 */
-		if (p < INHIBIT_POWER && 100 * p / max_effect > 50 *
-			target_power / max_power && 100 * p / max_effect < 200
-			* target_power / max_power) {
+		if (100 * p / max_effect > 50 *	target_power / max_power &&
+			100 * p / max_effect < 200 * target_power / max_power) {
 			file_putf(log_file, "Adding activation effect %d\n", x);
-			a_ptr->effect = mem_zalloc(sizeof(*a_ptr->effect));
-			a_ptr->effect->index = x;
-			a_ptr->effect->params[0] = effect_param(x, 0);
-			a_ptr->effect->params[1] = effect_param(x, 1);
+			a_ptr->activation = &activations[x];
 			a_ptr->time.base = (p * 8);
 			a_ptr->time.dice = (p > 5 ? p / 5 : 1);
 			a_ptr->time.sides = p;
@@ -2256,7 +2251,7 @@ static void add_ability_aux(artifact_type *a_ptr, int r, s32b target_power)
 			break;
 
 		case ART_IDX_GEN_ACTIV:
-			if (!a_ptr->effect) add_activation(a_ptr, target_power);
+			if (!a_ptr->activation) add_activation(a_ptr, target_power);
 			break;
 	}
 }
@@ -2521,10 +2516,8 @@ static void scramble_artifact(int a_idx)
 		wipe_slays(a_ptr->slays);
 
 		/* Clear the activations for rings and amulets but not lights */
-		if ((a_ptr->tval != TV_LIGHT) && a_ptr->effect) {
-			mem_free(a_ptr->effect);
-			a_ptr->effect = NULL;
-		}
+		if ((a_ptr->tval != TV_LIGHT) && a_ptr->activation)
+			a_ptr->activation = NULL;
 
 		/* Restore lights */
 		else {

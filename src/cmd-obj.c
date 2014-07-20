@@ -140,7 +140,7 @@ static art_tag_t art_tag_lookup(const char *tag)
  * always singular in the current code (gloves are "Set of" and boots
  * are "Pair of")
  */
-static void activation_message(object_type *o_ptr, const char *message)
+static void activation_message(object_type *o_ptr)
 {
 	char buf[1024] = "\0";
 	const char *next;
@@ -149,24 +149,26 @@ static void activation_message(object_type *o_ptr, const char *message)
 	const char *in_cursor;
 	size_t end = 0;
 
-	in_cursor = message;
+	/* See if we have a message */
+	if (!o_ptr->activation) return;
+	if (!o_ptr->activation->message) return;
+	in_cursor = o_ptr->activation->message;
 
 	next = strchr(in_cursor, '{');
-	while (next)
-	{
+	while (next) {
 		/* Copy the text leading up to this { */
 		strnfcat(buf, 1024, &end, "%.*s", next - in_cursor, in_cursor); 
 
 		s = next + 1;
 		while (*s && isalpha((unsigned char) *s)) s++;
 
-		if (*s == '}')		/* Valid tag */
-		{
-			tag = next + 1; /* Start the tag after the { */
+		/* Valid tag */
+		if (*s == '}') {
+			/* Start the tag after the { */
+			tag = next + 1;
 			in_cursor = s + 1;
 
-			switch(art_tag_lookup(tag))
-			{
+			switch(art_tag_lookup(tag)) {
 			case ART_TAG_NAME:
 				end += object_desc(buf, 1024, o_ptr, ODESC_PREFIX | ODESC_BASE); 
 				break;
@@ -185,11 +187,9 @@ static void activation_message(object_type *o_ptr, const char *message)
 			default:
 				break;
 			}
-		}
-		else    /* An invalid tag, skip it */
-		{
+		} else
+			/* An invalid tag, skip it */
 			in_cursor = next + 1;
-		}
 
 		next = strchr(in_cursor, '{');
 	}
@@ -591,20 +591,15 @@ static void use_aux(struct command *cmd, int item, enum use use, int snd)
 	}
 
 	/* Check for use if necessary, and execute the effect */
-	if ((use != USE_CHARGE && use != USE_TIMEOUT) || check_devices(o_ptr))
-	{
+	if ((use != USE_CHARGE && use != USE_TIMEOUT) || check_devices(o_ptr)) {
 		int beam = beam_chance(o_ptr->tval);
 
 		/* Special message for artifacts */
-		if (o_ptr->artifact)
-		{
+		if (o_ptr->artifact) {
 			msgt(snd, "You activate it.");
-			if (o_ptr->artifact->effect_msg)
-				activation_message(o_ptr, o_ptr->artifact->effect_msg);
+			activation_message(o_ptr);
 			level = o_ptr->artifact->level;
-		}
-		else
-		{
+		} else {
 			/* Make a noise! */
 			sound(snd);
 			level = o_ptr->kind->level;

@@ -197,6 +197,9 @@ static int rd_item(object_type *o_ptr)
 
 	/* Activation */
 	rd_u16b(&tmp16u);
+	if (tmp16u)
+		o_ptr->activation = &activations[tmp16u];
+	rd_u16b(&tmp16u);
 	if (tmp16u) {
 		o_ptr->effect = mem_zalloc(sizeof(*o_ptr->effect));
 		o_ptr->effect->index = tmp16u;
