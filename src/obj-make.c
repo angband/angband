@@ -352,7 +352,7 @@ void ego_apply_magic(object_type *o_ptr, int level)
 
 	/* Add effect (ego effect will trump object effect, when there are any) */
 	if (o_ptr->ego->effect) {
-		copy_effect(&o_ptr->effect, o_ptr->ego->effect);
+		o_ptr->effect = o_ptr->ego->effect;
 		o_ptr->time = o_ptr->ego->time;
 	}
 
@@ -674,7 +674,7 @@ void object_prep(object_type *o_ptr, struct object_kind *k, int lev,
 	o_ptr->dd = k->dd;
 	o_ptr->ds = k->ds;
 	o_ptr->weight = k->weight;
-	copy_effect(&o_ptr->effect, k->effect);
+	o_ptr->effect = k->effect;
 	o_ptr->time = k->time;
 
 	/* Weight is always known */

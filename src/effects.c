@@ -76,6 +76,7 @@ typedef struct
 struct effect_kind {
 	u16b index;          /* Effect index */
 	bool aim;            /* Whether the effect requires aiming */
+	effect_handler_f handler;
 	const char *desc;    /* Effect description */
 };
 
@@ -4372,38 +4373,19 @@ static const info_entry effects[] =
  */
 static const struct effect_kind atomic_effects[] =
 {
-	#define EFFECT(x, a, d)    { AEF_##x, a, d },
+	{ AEF_ATOMIC_NONE, FALSE, NULL, NULL },
+	#define F(x) effect_handler_##x
+	#define EFFECT(x, a, d)    { AEF_##x, a, F(x), d },
 	#include "list-atomic-effects.h"
 	#undef EFFECT
+	#undef F
+	{ AEF_ATOMIC_MAX, FALSE, NULL, NULL }
 };
 
 
 /*
  * Utility functions
  */
-
-/**
- * Copy all the effects from one structure to another
- *
- * \param dest the address the slays are going to
- * \param the slays being copied
- */
-void copy_effect(struct effect **dest, struct effect *source)
-{
-	struct effect *e = source;
-
-	while (e) {
-		struct effect *oe = mem_zalloc(sizeof *oe);
-		oe->index = e->index;
-		oe->dice = e->dice;
-		oe->params[0] = e->params[0];
-		oe->params[1] = e->params[1];
-		oe->next = *dest;
-		*dest = oe;
-		e = e->next;
-	}
-}
-
 
 /**
  * Free all the effects in a structure
@@ -4424,6 +4406,11 @@ void free_effect(struct effect *source)
 bool effect_valid(effect_index effect)
 {
 	return effect > EF_XXX && effect < EF_MAX;
+}
+
+bool atomic_effect_valid(struct effect *effect)
+{
+	return effect->index > AEF_ATOMIC_NONE && effect->index < AEF_ATOMIC_MAX;
 }
 
 bool effect_aim(effect_index effect)
@@ -4570,6 +4557,56 @@ bool effect_do(effect_index effect, bool *ident, bool aware, int dir, int beam, 
 
 	if (!handled)
 		msg("Effect not handled.");
+
+	return handled;
+}
+
+/*
+ * Do an effect, given an object.
+ * Boost is the extent to which skill surpasses difficulty, used as % boost. It
+ * ranges from 0 to 138.
+ */
+bool atomic_effect_do(struct effect *effect, bool *ident, bool aware, int dir, int beam, int boost)
+{
+	bool handled = FALSE;
+	effect_handler_f handler;
+	random_value value;
+
+	do {
+		if (!atomic_effect_valid(effect)) {
+			msg("Bad effect passed to atomic_effect_do(). Please report this bug.");
+			return FALSE;
+		}
+
+		if (effect->dice != NULL)
+			dice_roll(effect->dice, &value);
+
+		handler = atomic_effects[effect->index].handler;
+
+		if (handler != NULL) {
+			effect_handler_context_t context = {
+				effect->index,
+				aware,
+				dir,
+				beam,
+				boost,
+				value,
+				effect->params[0],
+				effect->params[1],
+				*ident,
+			};
+
+			handled = handler(&context);
+			*ident = context.ident;
+		}
+
+		if (!handled) {
+			msg("Effect not handled.");
+			break;
+		}
+
+		effect = effect->next;
+	} while (effect);
 
 	return handled;
 }

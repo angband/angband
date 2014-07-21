@@ -29,9 +29,11 @@ typedef enum
 /* Types of effect */
 typedef enum
 {
+	AEF_ATOMIC_NONE,
 	#define EFFECT(x, a, d)	AEF_##x,
 	#include "list-atomic-effects.h"
 	#undef EFFECT
+	AEF_ATOMIC_MAX
 } atomic_effect_index;
 
 struct effect {
@@ -43,10 +45,10 @@ struct effect {
 
 /*** Functions ***/
 
-void copy_effect(struct effect **dest, struct effect *source);
 void free_effect(struct effect *source);
 bool effect_do(effect_index effect, bool *ident, bool aware, int dir, int beam,
 	int boost);
+bool atomic_effect_do(struct effect *effect, bool *ident, bool aware, int dir, int beam, int boost);
 bool effect_aim(effect_index effect);
 const char *effect_desc(effect_index effect);
 int effect_power(effect_index effect);

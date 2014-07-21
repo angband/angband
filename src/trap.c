@@ -477,22 +477,23 @@ void place_trap(struct chunk *c, int y, int x, int t_idx, int trap_level)
 extern void hit_trap(int y, int x)
 {
 	bool ident;
-    int i, effect;
-    
+    int i;
+	struct effect *effect;
+
     /* Count the hidden traps here */
     int num = num_traps(cave, y, x, -1);
-    
+
     /* Oops.  We've walked right into trouble. */
     if      (num == 1) msg("You stumble upon a trap!");
     else if (num >  1) msg("You stumble upon some traps!");
-    
-    
+
+
     /* Scan the current trap list */
     for (i = 0; i < cave_trap_max(cave); i++)
     {
 		/* Point to this trap */
 		trap_type *t_ptr = cave_trap(cave, i);
-	
+
 		/* Find all traps in this position */
 		if ((t_ptr->fy == y) && (t_ptr->fx == x))
 		{
@@ -500,9 +501,9 @@ extern void hit_trap(int y, int x)
 			disturb(player, 0);
 
 			/* Fire off the trap */
-			effect = t_ptr->kind->effect->index;
-			effect_do(effect, &ident, FALSE, 0, 0, 0);
-	    
+			effect = t_ptr->kind->effect;
+			atomic_effect_do(effect, &ident, FALSE, 0, 0, 0);
+
 			/* Trap becomes visible (always XXX) */
 			trf_on(t_ptr->flags, TRF_VISIBLE);
 			sqinfo_on(cave->info[y][x], SQUARE_MARK);

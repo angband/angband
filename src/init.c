@@ -163,9 +163,11 @@ static const char *slay_names[] = {
 };
 
 static const char *effect_list[] = {
+	"ATOMIC_NONE",
 	#define EFFECT(x, a, d)	#x,
 	#include "list-atomic-effects.h"
 	#undef EFFECT
+	"ATOMIC_MAX"
 };
 
 static const char *spell_effect_list[] = {
@@ -839,10 +841,17 @@ static enum parser_error parse_k_effect(struct parser *p) {
 static enum parser_error parse_k_dice(struct parser *p) {
 	struct object_kind *k = parser_priv(p);
 	dice_t *dice = NULL;
+	struct effect *effect = k->effect;
 	const char *string = NULL;
 
 	if (!k)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	/* If there is no effect, assume that this is human and not parser error. */
+	if (effect == NULL)
+		return PARSE_ERROR_NONE;
+
+	while (effect->next) effect = effect->next;
 
 	dice = dice_new();
 
@@ -852,7 +861,7 @@ static enum parser_error parse_k_dice(struct parser *p) {
 	string = parser_getstr(p, "dice");
 
 	if (dice_parse_string(dice, string)) {
-		k->effect->dice = dice;
+		effect->dice = dice;
 	}
 	else {
 		dice_free(dice);
@@ -864,6 +873,7 @@ static enum parser_error parse_k_dice(struct parser *p) {
 
 static enum parser_error parse_k_expr(struct parser *p) {
 	struct object_kind *k = parser_priv(p);
+	struct effect *effect = k->effect;
 	expression_t *expression = NULL;
 	expression_base_value_f function = NULL;
 	const char *name;
@@ -873,8 +883,14 @@ static enum parser_error parse_k_expr(struct parser *p) {
 	if (!k)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 
+	/* If there is no effect, assume that this is human and not parser error. */
+	if (effect == NULL)
+		return PARSE_ERROR_NONE;
+
+	while (effect->next) effect = effect->next;
+
 	/* If there are no dice, assume that this is human and not parser error. */
-	if (k->effect->dice == NULL)
+	if (effect->dice == NULL)
 		return PARSE_ERROR_NONE;
 
 	name = parser_getsym(p, "name");
@@ -891,7 +907,7 @@ static enum parser_error parse_k_expr(struct parser *p) {
 	if (expression_add_operations_string(expression, expr) < 0)
 		return PARSE_ERROR_GENERIC;
 
-	if (dice_bind_expression(k->effect->dice, name, expression) < 0)
+	if (dice_bind_expression(effect->dice, name, expression) < 0)
 		return PARSE_ERROR_GENERIC;
 
 	/* The dice object makes a deep copy of the expression, so we can free it */
@@ -1090,7 +1106,7 @@ static enum parser_error parse_act_name(struct parser *p) {
 
 static enum parser_error parse_act_aim(struct parser *p) {
 	struct activation *act = parser_priv(p);
-	uint val;
+	int val;
 	assert(act);
 
 	val = parser_getuint(p, "aim");
@@ -1825,6 +1841,84 @@ static enum parser_error parse_trap_effect(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_trap_dice(struct parser *p) {
+	struct trap *t = parser_priv(p);
+	dice_t *dice = NULL;
+	struct effect *effect = t->effect;
+	const char *string = NULL;
+
+	if (!t)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	/* If there is no effect, assume that this is human and not parser error. */
+	if (effect == NULL)
+		return PARSE_ERROR_NONE;
+
+	while (effect->next) effect = effect->next;
+
+	dice = dice_new();
+
+	if (dice == NULL)
+		return PARSE_ERROR_INTERNAL;
+
+	string = parser_getstr(p, "dice");
+
+	if (dice_parse_string(dice, string)) {
+		effect->dice = dice;
+	}
+	else {
+		dice_free(dice);
+		return PARSE_ERROR_GENERIC;
+	}
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_trap_expr(struct parser *p) {
+	struct trap *t = parser_priv(p);
+	struct effect *effect = t->effect;
+	expression_t *expression = NULL;
+	expression_base_value_f function = NULL;
+	const char *name;
+	const char *base;
+	const char *expr;
+
+	if (!t)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	/* If there is no effect, assume that this is human and not parser error. */
+	if (effect == NULL)
+		return PARSE_ERROR_NONE;
+
+	while (effect->next) effect = effect->next;
+
+	/* If there are no dice, assume that this is human and not parser error. */
+	if (effect->dice == NULL)
+		return PARSE_ERROR_NONE;
+
+	name = parser_getsym(p, "name");
+	base = parser_getsym(p, "base");
+	expr = parser_getstr(p, "expr");
+	expression = expression_new();
+
+	if (expression == NULL)
+		return PARSE_ERROR_INTERNAL;
+
+	function = spell_value_base_by_name(base);
+	expression_set_base_value(expression, function);
+
+	if (expression_add_operations_string(expression, expr) < 0)
+		return PARSE_ERROR_GENERIC;
+
+	if (dice_bind_expression(effect->dice, name, expression) < 0)
+		return PARSE_ERROR_GENERIC;
+
+	/* The dice object makes a deep copy of the expression, so we can free it */
+	expression_free(expression);
+
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_trap_d(struct parser *p) {
     struct trap *t = parser_priv(p);
     assert(t);
@@ -1873,9 +1967,6 @@ static errr finish_parse_trap(struct parser *p) {
     t = parser_priv(p);
     while (t) {
 		n = t->next;
-		string_free(t->name);
-		mem_free(t->text);
-		mem_free(t->effect);
 		mem_free(t);
 		t = n;
     }

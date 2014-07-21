@@ -1,4 +1,3 @@
-EFFECT(ATOMIC_NONE,							FALSE,	"")
 EFFECT(ATOMIC_RANDOM,						FALSE,	"")
 EFFECT(ATOMIC_HEAL_HP,						FALSE,	"")
 EFFECT(ATOMIC_NOURISH,						FALSE,	"")
@@ -90,5 +89,3 @@ EFFECT(TRAP_GAS_BLIND,						FALSE,	"blinding gas")
 EFFECT(TRAP_GAS_CONFUSE,					FALSE,	"confusing gas")
 EFFECT(TRAP_GAS_POISON,						FALSE,	"poison gas")
 EFFECT(TRAP_GAS_SLEEP,						FALSE,	"soporific gas")
-
-EFFECT(ATOMIC_MAX,							FALSE,	"")

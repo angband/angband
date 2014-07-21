@@ -200,13 +200,6 @@ static int rd_item(object_type *o_ptr)
 	if (tmp16u)
 		o_ptr->activation = &activations[tmp16u];
 	rd_u16b(&tmp16u);
-	if (tmp16u) {
-		o_ptr->effect = mem_zalloc(sizeof(*o_ptr->effect));
-		o_ptr->effect->index = tmp16u;
-		o_ptr->effect->params[0] = effect_param(tmp16u, 0);
-		o_ptr->effect->params[1] = effect_param(tmp16u, 1);
-	}
-	rd_u16b(&tmp16u);
 	o_ptr->time.base = tmp16u;
 	rd_u16b(&tmp16u);
 	o_ptr->time.dice = tmp16u;
@@ -224,6 +217,10 @@ static int rd_item(object_type *o_ptr)
 		return 0;
 
 	o_ptr->ego = lookup_ego(ego_idx);
+	if (o_ptr->ego)
+		o_ptr->effect = o_ptr->ego->effect;
+	else
+		o_ptr->effect = o_ptr->kind ? o_ptr->kind->effect : NULL;
 
 	if (art_idx >= z_info->a_max)
 		return -1;

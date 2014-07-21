@@ -15,6 +15,7 @@
 #define TRAP_HEAD	    0x10
 #define TRAP_TAIL	    0x1F
 #define TRAP_TRAPDOOR	0x10
+#if 0 //Currently unused and annoying - NRM
 #define TRAP_PIT_OPEN   0x11
 #define TRAP_PIT_SPIKED 0x12
 #define TRAP_PIT_POISON 0x13
@@ -30,7 +31,7 @@
 #define TRAP_GAS_CONFU  0x1D
 #define TRAP_GAS_POISON 0x1E
 #define TRAP_GAS_SLEEP  0x1F
-
+#endif
 
 /*** Trap flags ***/
 
