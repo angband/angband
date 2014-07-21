@@ -2984,16 +2984,29 @@ bool atomic_effect_do(struct effect *effect, bool *ident, bool aware, int dir, i
 	random_value value;
 
 	do {
+		int random_choices, leftover = 0;
+
 		if (!effect_valid(effect)) {
-			msg("Bad effect passed to atomic_effect_do(). Please report this bug.");
+			msg("Bad effect passed to effect_do(). Please report this bug.");
 			return FALSE;
 		}
 
 		if (effect->dice != NULL)
-			dice_roll(effect->dice, &value);
+			random_choices = dice_roll(effect->dice, &value);
 
+		/* Deal with special random effect */
+		if (effect->index == AEF_ATOMIC_RANDOM) {
+			int choice = randint0(random_choices);
+			leftover = random_choices - choice;
+
+			/* Skip to the chosen effect */
+			effect = effect->next;
+			while (choice--)
+				effect = effect->next;
+		}
+
+		/* Handle the effect */
 		handler = atomic_effects[effect->index].handler;
-
 		if (handler != NULL) {
 			effect_handler_context_t context = {
 				effect->index,
@@ -3016,7 +3029,13 @@ bool atomic_effect_do(struct effect *effect, bool *ident, bool aware, int dir, i
 			break;
 		}
 
-		effect = effect->next;
+		/* Get the next effect, if there is one */
+		if (leftover) 
+			/* Skip the remaining non-chosen effects */
+			while (leftover--)
+				effect = effect->next;
+		else
+			effect = effect->next;
 	} while (effect);
 
 	return handled;
