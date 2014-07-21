@@ -1936,6 +1936,8 @@ struct parser *init_parse_trap(void) {
     parser_reg(p, "M uint rarity uint mindepth uint maxnum", parse_trap_m);
     parser_reg(p, "F ?str flags", parse_trap_f);
 	parser_reg(p, "effect sym eff ?sym type ?int xtra", parse_trap_effect);
+	parser_reg(p, "dice str dice", parse_trap_dice);
+	parser_reg(p, "expr sym name sym base str expr", parse_trap_expr);
     parser_reg(p, "D str text", parse_trap_d);
     return p;
 }

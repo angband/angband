@@ -1355,7 +1355,7 @@ static bool obj_known_effect(const object_type *o_ptr, int *effect, bool *aimed,
 		/* Don't know much - be vague */
 		*effect = OBJ_KNOWN_PRESENT;
 
-		if (!o_ptr->artifact && effect_aim(object_effect(o_ptr)))
+		if (!o_ptr->artifact && effect_aim(o_ptr->effect))
 			*aimed = TRUE;
 					
 		return TRUE;
@@ -1413,7 +1413,7 @@ static bool describe_effect(textblock *tb, const object_type *o_ptr,
 	}
 
 	/* Obtain the description */
-	desc = effect_desc(effect);
+	desc = effect_desc(o_ptr->effect);
 	if (!desc) return FALSE;
 
 	if (aimed)

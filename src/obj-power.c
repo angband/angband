@@ -698,8 +698,8 @@ static int effects_power(const object_type *o_ptr, int p, bool known)
 	int q = 0;
 
 	if (known || object_effect_is_known(o_ptr))	{
-		if (object_effect(o_ptr))
-			q = effect_power(object_effect(o_ptr));
+		if (o_ptr->effect)
+			q = effect_power(o_ptr->effect);
 
 		if (q) {
 			p += q;

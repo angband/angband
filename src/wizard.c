@@ -1685,7 +1685,7 @@ static void do_cmd_wiz_advance(void)
 	handle_stuff(player->upkeep);
 
 }
-
+#if 0
 /**
  * Prompt for an effect and perform it.
  */
@@ -1722,7 +1722,7 @@ void do_cmd_wiz_effect(void)
 	else
 		msg("No effect found.");
 }
-
+#endif
 /*
  * Ask for and parse a "debug command"
  */
@@ -1845,14 +1845,14 @@ void do_cmd_debug(void)
 			do_cmd_wiz_change();
 			break;
 		}
-
+#if 0
 		/* Perform an effect. */
 		case 'E':
 		{
 			do_cmd_wiz_effect();
 			break;
 		}
-
+#endif
 		case 'f':
 		{
 			stats_collect();
