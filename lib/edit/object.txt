@@ -2120,7 +2120,7 @@ I:potion
 W:65:0:4:25000
 A:50:65 to 100
 effect:ATOMIC_GAIN_EXP
-
+dice:100000
 
 ### Healings ###
 

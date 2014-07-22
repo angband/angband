@@ -494,9 +494,10 @@ bool effect_handler_ATOMIC_RESTORE_EXP(effect_handler_context_t *context)
 
 bool effect_handler_ATOMIC_GAIN_EXP(effect_handler_context_t *context)
 {
+	int amount = effect_calculate_value(context, FALSE);
 	if (player->exp < PY_MAX_EXP) {
 		msg("You feel more experienced.");
-		player_exp_gain(player, 100000L);
+		player_exp_gain(player, amount);
 		context->ident = TRUE;
 	}
 	return TRUE;
@@ -515,9 +516,10 @@ bool effect_handler_ATOMIC_LOSE_EXP(effect_handler_context_t *context)
 
 bool effect_handler_ATOMIC_RESTORE_MANA(effect_handler_context_t *context)
 {
-	int amt = context->value.base ? context->value.base : player->msp;
+	int amount = effect_calculate_value(context, FALSE);
+	if (!amount) amount = player->msp;
 	if (player->csp < player->msp) {
-		player->csp += amt;
+		player->csp += amount;
 		if (player->csp > player->msp) {
 			player->csp = player->msp;
 			player->csp_frac = 0;
