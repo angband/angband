@@ -1437,7 +1437,14 @@ static bool describe_effect(textblock *tb, const object_type *o_ptr,
 			else
 				textblock_append(tb, "%c", *desc);
 		} while (*desc++);
+		if (e->next) {
+			if (e->next->next)
+				textblock_append(tb, ", ", *desc);
+			else
+				textblock_append(tb, " and ", *desc);
+		}
 		e = e->next;
+		desc = effect_desc(e);
 	}
 
 	textblock_append(tb, ".\n");

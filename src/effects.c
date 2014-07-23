@@ -2919,6 +2919,7 @@ void free_effect(struct effect *source)
 
 bool effect_valid(struct effect *effect)
 {
+	if (!effect) return FALSE;
 	return effect->index > AEF_ATOMIC_NONE && effect->index < AEF_ATOMIC_MAX;
 }
 
