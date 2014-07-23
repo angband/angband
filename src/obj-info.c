@@ -1385,6 +1385,7 @@ static bool describe_effect(textblock *tb, const object_type *o_ptr,
 		bool only_artifacts, bool subjective)
 {
 	const char *desc;
+	struct effect *e;
 
 	int effect = 0;
 	bool aimed = FALSE;
@@ -1413,7 +1414,8 @@ static bool describe_effect(textblock *tb, const object_type *o_ptr,
 	}
 
 	/* Obtain the description */
-	desc = effect_desc(o_ptr->effect);
+	e = o_ptr->effect;
+	desc = effect_desc(e);
 	if (!desc) return FALSE;
 
 	if (aimed)
@@ -1428,12 +1430,15 @@ static bool describe_effect(textblock *tb, const object_type *o_ptr,
 	    textblock_append(tb, "When activated, it ");
 
 	/* Print a colourised description */
-	do {
-		if (isdigit((unsigned char) *desc))
-			textblock_append_c(tb, TERM_L_GREEN, "%c", *desc);
-		else
-			textblock_append(tb, "%c", *desc);
-	} while (*desc++);
+	while (e) {
+		do {
+			if (isdigit((unsigned char) *desc))
+				textblock_append_c(tb, TERM_L_GREEN, "%c", *desc);
+			else
+				textblock_append(tb, "%c", *desc);
+		} while (*desc++);
+		e = e->next;
+	}
 
 	textblock_append(tb, ".\n");
 
