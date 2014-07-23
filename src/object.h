@@ -216,6 +216,7 @@ typedef struct object_kind
 	byte level;				/**< Level (difficulty of activation) */
 
 	struct effect *effect;	/**< Effect this item produces (effects.c) */
+	int power;				/**< Power of the item's effect */
 	char *effect_msg;
 	random_value time;		/**< Recharge time (rods/activation) */
 	random_value charge;	/**< Number of charges (staves/wands) */

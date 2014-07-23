@@ -2937,15 +2937,6 @@ bool effect_aim(struct effect *effect)
 	return FALSE;
 }
 
-int effect_power(struct effect *effect)
-{
-	if (!effect_valid(effect))
-		return 0;
-
-	//return effects[effect].power;
-	return 0;
-}
-
 const char *effect_desc(struct effect *effect)
 {
 	if (!effect_valid(effect))

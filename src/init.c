@@ -780,6 +780,14 @@ static enum parser_error parse_k_f(struct parser *p) {
 	return t ? PARSE_ERROR_INVALID_FLAG : PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_k_power(struct parser *p) {
+	struct object_kind *k = parser_priv(p);
+	assert(k);
+
+	k->power = parser_getint(p, "power");
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_k_effect(struct parser *p) {
 	struct object_kind *k = parser_priv(p);
 	struct effect *effect;
@@ -1017,6 +1025,7 @@ struct parser *init_parse_k(void) {
 	parser_reg(p, "C rand charges", parse_k_c);
 	parser_reg(p, "M int prob rand stack", parse_k_m);
 	parser_reg(p, "F str flags", parse_k_f);
+	parser_reg(p, "power int power", parse_k_power);
 	parser_reg(p, "effect sym eff ?sym type ?int xtra", parse_k_effect);
 	parser_reg(p, "dice str dice", parse_k_dice);
 	parser_reg(p, "expr sym name sym base str expr", parse_k_expr);
