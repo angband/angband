@@ -730,59 +730,29 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 		/* potion */
 		case TV_POTION:{
 
-			/* add total amounts */
+			/* Add total amounts */
 			add_stats(ST_POTIONS, vault, mon, number);
 
-			/* get effects */
-			effect = object_effect(o_ptr);
-			 
-			/*stat gain*/
-			switch(effect){
-
-				case EF_GAIN_STR:
-				case EF_GAIN_INT:
-				case EF_GAIN_WIS:
-				case EF_GAIN_DEX:
-				case EF_GAIN_CON:{
-
-					add_stats(ST_GAINSTAT_POTIONS, vault, mon, number);
-					break;
-				}
-
-				/* Aug */
-				case EF_GAIN_ALL:{
-
-					/*Augmentation counts as 5 stat gain pots */
-					add_stats(ST_GAINSTAT_POTIONS, vault, mon, number*5);
-					
-				}
-
-				case EF_ENLIGHTENMENT2:{
-
-					/* *Enlight* counts as 2 stat pots */
-					
-					add_stats(ST_GAINSTAT_POTIONS, vault, mon, number*2);
-					
-				}
-
-				case EF_RESTORE_MANA:{
-
-					add_stats(ST_RESTOREMANA_POTIONS, vault, mon, number);
-					break;
-				}
-
-				case EF_CURE_FULL:{
-					add_stats(ST_HEALING_POTIONS, vault, mon, number);
-					break;
-				}
-				
-				case EF_CURE_NONORLYBIG:
-				case EF_CURE_FULL2:{
-
-					add_stats(ST_BIGHEAL_POTIONS, vault, mon, number);
-					break;
-				}
-
+			/* Stat gain */
+			if (strstr(o_ptr->kind->name, "Strength") ||
+				strstr(o_ptr->kind->name, "Intelligence") ||
+				strstr(o_ptr->kind->name, "Wisdom") ||
+				strstr(o_ptr->kind->name, "Dexterity") ||
+				strstr(o_ptr->kind->name, "Constitution")) {
+				add_stats(ST_GAINSTAT_POTIONS, vault, mon, number);
+			} else if (strstr(o_ptr->kind->name, "Augmentation")) {
+				/* Augmentation counts as 5 stat gain pots */
+				add_stats(ST_GAINSTAT_POTIONS, vault, mon, number * 5);
+			} else if (strstr(o_ptr->kind->name, "*Enlightenment*")) {
+				/* *Enlight* counts as 2 stat pots */
+				add_stats(ST_GAINSTAT_POTIONS, vault, mon, number * 2);
+			} else if (strstr(o_ptr->kind->name, "Restore Mana")) {
+				add_stats(ST_RESTOREMANA_POTIONS, vault, mon, number);
+			} else if ((strstr(o_ptr->kind->name, "Life")) ||
+					   (strstr(o_ptr->kind->name, "*Healing*"))) {
+				add_stats(ST_ELVEN_RINGS, vault, mon, number);
+			} else if (strstr(o_ptr->kind->name, "Healing")) {
+				add_stats(ST_HEALING_POTIONS, vault, mon, number);
 			}
 			break;
 		}
@@ -793,35 +763,16 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 			/* add total amounts */
 			add_stats(ST_SCROLLS, vault, mon, number);
 
-			/* get effects */
-			effect=object_effect(o_ptr);
-
-			/* scroll effects */
-			switch(effect){
-
-				case EF_BANISHMENT:
-				case EF_LOSKILL:
-				case EF_RUNE:
-				case EF_DESTRUCTION2:{
-
-					/* add to total */
-					add_stats(ST_ENDGAME_SCROLLS, vault, mon, number);
-					break;
-				}
-
-				case EF_ACQUIRE:{
-
-					/* add to total */
-					add_stats(ST_ACQUIRE_SCROLLS, vault, mon, number);
-					break;
-				}
-
-				case EF_ACQUIRE2:{
-
-					/* do the effect of 2 acquires */
-					add_stats(ST_ACQUIRE_SCROLLS, vault, mon, number*2);
-					break;
-				}
+			if (strstr(o_ptr->kind->name, "Banishment") ||
+				strstr(o_ptr->kind->name, "Mass Banishment") ||
+				strstr(o_ptr->kind->name, "Rune of Protection") ||
+				strstr(o_ptr->kind->name, "*Destruction*")) {
+				add_stats(ST_ENDGAME_SCROLLS, vault, mon, number);
+			} else if (strstr(o_ptr->kind->name, "Acquirement")) {
+				add_stats(ST_ACQUIRE_SCROLLS, vault, mon, number);
+			} else if (strstr(o_ptr->kind->name, "*Acquirement*")) {
+				/* do the effect of 2 acquires */
+				add_stats(ST_ACQUIRE_SCROLLS, vault, mon, number * 2);
 			}
 			break;
 		}
@@ -832,44 +783,20 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 			/* add to total */
 			add_stats(ST_RODS, vault, mon, number);
 
-			effect=object_effect(o_ptr);
-
-			switch(effect){
-
-				/* utility */
-				case EF_DETECT_TRAP:
-				case EF_DETECT_TREASURE:
-				case EF_DETECT_DOORSTAIR:
-				case EF_LIGHT_LINE:
-				case EF_ILLUMINATION:{
-
-					add_stats(ST_UTILITY_RODS, vault, mon, number);
-					break;
-				}
-
-				/* teleport other */
-				case EF_TELE_OTHER:{
-
-					add_stats(ST_TELEPOTHER_RODS, vault, mon, number);
-					break;
-				}
-
-				/* detect all */
-				case EF_DETECT_ALL:{
-
-					add_stats(ST_DETECTALL_RODS, vault, mon, number);
-					break;
-				}
-
-				/* endgame, speed and healing */
-				case EF_HASTE:
-				case EF_HEAL3:{
-
-					add_stats(ST_ENDGAME_RODS, vault, mon, number);
-					break;
-				}
+			if (strstr(o_ptr->kind->name, "Trap Detection") ||
+				strstr(o_ptr->kind->name, "Treasure Detection") ||
+				strstr(o_ptr->kind->name, "Door/Stair Location") ||
+				strstr(o_ptr->kind->name, "Illumination") ||
+				strstr(o_ptr->kind->name, "Light")) {
+				add_stats(ST_UTILITY_RODS, vault, mon, number);
+			} else if (strstr(o_ptr->kind->name, "Teleport Other")) {
+				add_stats(ST_TELEPOTHER_RODS, vault, mon, number);
+			} else if (strstr(o_ptr->kind->name, "Detection")) {
+				add_stats(ST_DETECTALL_RODS, vault, mon, number);
+			} else if (strstr(o_ptr->kind->name, "Speed") ||
+					   strstr(o_ptr->kind->name, "Healing")) {
+				add_stats(ST_ENDGAME_RODS, vault, mon, number);
 			}
-
 			break;
 		}
 
@@ -878,37 +805,18 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 
 			add_stats(ST_STAVES, vault, mon, number);
 
-			effect=object_effect(o_ptr);
-
-			switch(effect){
-
-				case EF_HASTE:{
-
-					add_stats(ST_SPEED_STAVES, vault, mon, number);
-					break;
-				}
-
-				case EF_DESTRUCTION2:{
-
-					add_stats(ST_DESTRUCTION_STAVES, vault, mon, number);
-					break;
-				}
-
-				case EF_DISPEL_EVIL60:
-				case EF_DISPEL_ALL:
-				case EF_STAFF_HOLY:{
-
-					add_stats(ST_KILL_STAVES, vault, mon, number);
-					break;
-				}
-
-				case EF_CURE_FULL:
-				case EF_BANISHMENT:
-				case EF_STAFF_MAGI:{
-
-					add_stats(ST_ENDGAME_STAVES, vault, mon, number);
-					break;
-				}
+			if (strstr(o_ptr->kind->name, "Speed")) {
+				add_stats(ST_SPEED_STAVES, vault, mon, number);
+			} else if (strstr(o_ptr->kind->name, "*Destruction*")) {
+				add_stats(ST_DESTRUCTION_STAVES, vault, mon, number);
+			} else if (strstr(o_ptr->kind->name, "Dispel Evil") ||
+					   strstr(o_ptr->kind->name, "Power") ||
+					   strstr(o_ptr->kind->name, "Holiness")) {
+				add_stats(ST_KILL_STAVES, vault, mon, number);
+			} else if (strstr(o_ptr->kind->name, "Healing") ||
+					   strstr(o_ptr->kind->name, "Banishment") ||
+					   strstr(o_ptr->kind->name, "the Magi")) {
+				add_stats(ST_ENDGAME_STAVES, vault, mon, number);
 			}
 			break;
 		}
@@ -917,16 +825,8 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 
 			add_stats(ST_WANDS, vault, mon, number);
 
-			effect=object_effect(o_ptr);
-
-			switch(effect){
-
-				case EF_TELE_OTHER:{
-
-					add_stats(ST_TELEPOTHER_WANDS, vault, mon, number);
-					break;
-				}
-			}
+			if (strstr(o_ptr->kind->name, "Teleport Other"))
+				add_stats(ST_TELEPOTHER_WANDS, vault, mon, number);
 			break;
 		}
 
