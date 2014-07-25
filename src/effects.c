@@ -2602,13 +2602,205 @@ bool effect_handler_ATOMIC_BIZARRE(effect_handler_context_t *context)
 }
 
 /**
- * Super slack - NRM
+ * The "wonder" effect.
+ *
+ * This spell should become more useful (more
+ * controlled) as the player gains experience levels.
+ * Thus, add 1/5 of the player's level to the die roll.
+ * This eliminates the worst effects later on, while
+ * keeping the results quite random.  It also allows
+ * some potent effects only at high level
  */
 bool effect_handler_ATOMIC_WONDER(effect_handler_context_t *context)
 {
-	int amount = effect_calculate_value(context, FALSE);
+	int plev = player->lev;
+	int die = effect_calculate_value(context, FALSE);
+	int p1 = 0, p2 = 0;
+	int beam = context->beam;
+	effect_handler_f handler = NULL;
+	random_value value = { 0, 0, 0, 0 };
+	bool *ident = mem_zalloc(sizeof(*ident));
+
 	context->ident = TRUE;
-	effect_wonder(context->dir, amount, context->beam);
+
+	if (die > 100)
+		msg("You feel a surge of power!");
+
+	if (die < 8) {
+		p1 = GF_OLD_CLONE;
+		handler = effect_handler_ATOMIC_BOLT;
+	} else if (die < 14) {
+		p1 = GF_OLD_SPEED;
+		handler = effect_handler_ATOMIC_BOLT;
+	} else if (die < 26) {
+		p1 = GF_OLD_HEAL;
+		handler = effect_handler_ATOMIC_BOLT;
+	} else if (die < 31) {
+		p1 = GF_OLD_POLY;
+		handler = effect_handler_ATOMIC_BOLT;
+	} else if (die < 36) {
+		beam -= 10;
+		p1 = GF_MISSILE;
+		value.dice = 3 + ((plev - 1) / 5);
+		value.sides = 4;
+		handler = effect_handler_ATOMIC_BOLT_OR_BEAM;
+	} else if (die < 41) {
+		p1 = GF_OLD_CONF;
+		handler = effect_handler_ATOMIC_BOLT;
+	} else if (die < 46) {
+		p1 = GF_POIS;
+		value.base = 20 + plev / 2;
+		p2 = 3;
+		handler = effect_handler_ATOMIC_BALL;
+	} else if (die < 51) {
+		p1 = GF_LIGHT_WEAK;
+		value.dice = 6;
+		value.sides = 8;
+		handler = effect_handler_ATOMIC_LINE;
+	} else if (die < 56) {
+		p1 = GF_ELEC;
+		value.dice = 3 + ((plev - 5) / 6);
+		value.sides = 6;
+		handler = effect_handler_ATOMIC_BEAM;
+	} else if (die < 61) {
+		beam -= 10;
+		p1 = GF_COLD;
+		value.dice = 5 + ((plev - 5) / 4);
+		value.sides = 8;
+		handler = effect_handler_ATOMIC_BOLT_OR_BEAM;
+	} else if (die < 66) {
+		p1 = GF_ACID;
+		value.dice = 6 + ((plev - 5) / 4);
+		value.sides = 8;
+		handler = effect_handler_ATOMIC_BOLT_OR_BEAM;
+	} else if (die < 71) {
+		p1 = GF_FIRE;
+		value.dice = 8 + ((plev - 5) / 4);
+		value.sides = 8;
+		handler = effect_handler_ATOMIC_BOLT_OR_BEAM;
+	} else if (die < 76) {
+		p1 = GF_OLD_DRAIN;
+		value.base = 75;
+		handler = effect_handler_ATOMIC_BOLT;
+	} else if (die < 81) {
+		p1 = GF_ELEC;
+		value.base = 30 + plev / 2;
+		p2 = 2;
+		handler = effect_handler_ATOMIC_BALL;
+	} else if (die < 86) {
+		p1 = GF_ACID;
+		value.base = 40 + plev;
+		p2 = 2;
+		handler = effect_handler_ATOMIC_BALL;
+	} else if (die < 91) {
+		p1 = GF_ICE;
+		value.base = 70 + plev;
+		p2 = 3;
+		handler = effect_handler_ATOMIC_BALL;
+	} else if (die < 96) {
+		p1 = GF_FIRE;
+		value.base = 80 + plev;
+		p2 = 3;
+		handler = effect_handler_ATOMIC_BALL;
+	} else if (die < 101) {
+		p1 = GF_OLD_DRAIN;
+		value.base = 100 + plev;
+		handler = effect_handler_ATOMIC_BOLT;
+	} else if (die < 104) {
+		p2 = 12;
+		handler = effect_handler_ATOMIC_EARTHQUAKE;
+	} else if (die < 106) {
+		p2 = 15;
+		handler = effect_handler_ATOMIC_EARTHQUAKE;
+	} else if (die < 108) {
+		handler = effect_handler_ATOMIC_BANISH;
+	} else if (die < 110) {
+		p1 = GF_DISP_ALL;
+		value.base = 120;
+		handler = effect_handler_ATOMIC_PROJECT_LOS;
+	}
+
+	if (handler != NULL) {
+		effect_handler_context_t new_context = {
+			context->effect,
+			context->aware,
+			context->dir,
+			beam,
+			context->boost,
+			value,
+			p1,
+			p2,
+			ident
+		};
+
+		return (handler(&new_context));
+	}
+
+	/* RARE - this is the only code that makes me regret how effects are done */
+	p1 = GF_DISP_ALL;
+	value.base = 150;
+	{
+		effect_handler_context_t new_context = {
+			context->effect,
+			context->aware,
+			context->dir,
+			beam,
+			context->boost,
+			value,
+			p1,
+			p2,
+			ident
+		};
+		(void) effect_handler_ATOMIC_PROJECT_LOS(&new_context);
+	}
+	p1 = GF_OLD_SLOW;
+	value.base = 0;
+	{
+		effect_handler_context_t new_context = {
+			context->effect,
+			context->aware,
+			context->dir,
+			beam,
+			context->boost,
+			value,
+			p1,
+			p2,
+			ident
+		};
+		(void) effect_handler_ATOMIC_PROJECT_LOS(&new_context);
+	}
+	p1 = GF_OLD_SLEEP;
+	{
+		effect_handler_context_t new_context = {
+			context->effect,
+			context->aware,
+			context->dir,
+			beam,
+			context->boost,
+			value,
+			p1,
+			p2,
+			ident
+		};
+		(void) effect_handler_ATOMIC_PROJECT_LOS(&new_context);
+	}
+	value.base = 300;
+	{
+		effect_handler_context_t new_context = {
+			context->effect,
+			context->aware,
+			context->dir,
+			beam,
+			context->boost,
+			value,
+			p1,
+			p2,
+			ident
+		};
+		(void) effect_handler_ATOMIC_HEAL_HP(&new_context);
+	}
+	mem_free(ident);
+
 	return TRUE;
 }
 
