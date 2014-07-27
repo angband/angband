@@ -846,6 +846,27 @@ static enum parser_error parse_k_effect(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_k_param(struct parser *p) {
+	struct object_kind *k = parser_priv(p);
+	struct effect *effect = k->effect;
+
+	if (!k)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	/* If there is no effect, assume that this is human and not parser error. */
+	if (effect == NULL)
+		return PARSE_ERROR_NONE;
+
+	while (effect->next) effect = effect->next;
+	effect->params[1] = parser_getint(p, "p2");
+
+	if (parser_hasval(p, "p3"))
+		effect->params[2] = parser_getint(p, "p3");
+
+	return PARSE_ERROR_NONE;
+}
+
+
 static enum parser_error parse_k_dice(struct parser *p) {
 	struct object_kind *k = parser_priv(p);
 	dice_t *dice = NULL;
@@ -1027,6 +1048,7 @@ struct parser *init_parse_k(void) {
 	parser_reg(p, "F str flags", parse_k_f);
 	parser_reg(p, "power int power", parse_k_power);
 	parser_reg(p, "effect sym eff ?sym type ?int xtra", parse_k_effect);
+	parser_reg(p, "param int p2 ?int p3", parse_k_param);
 	parser_reg(p, "dice str dice", parse_k_dice);
 	parser_reg(p, "expr sym name sym base str expr", parse_k_expr);
 	parser_reg(p, "msg str text", parse_k_msg);
@@ -3113,15 +3135,45 @@ static enum parser_error parse_c_effect(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_c_param(struct parser *p) {
+	struct player_class *c = parser_priv(p);
+	class_book *book = &c->magic.books[c->magic.num_books - 1];
+	class_spell *spell = &book->spells[book->num_spells - 1];
+	struct effect *effect = spell->effect;
+
+	if (!c)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	/* If there is no effect, assume that this is human and not parser error. */
+	if (effect == NULL)
+		return PARSE_ERROR_NONE;
+
+	while (effect->next) effect = effect->next;
+	effect->params[1] = parser_getint(p, "p2");
+
+	if (parser_hasval(p, "p3"))
+		effect->params[2] = parser_getint(p, "p3");
+
+	return PARSE_ERROR_NONE;
+}
+
+
 static enum parser_error parse_c_dice(struct parser *p) {
 	struct player_class *c = parser_priv(p);
 	class_book *book = &c->magic.books[c->magic.num_books - 1];
 	class_spell *spell = &book->spells[book->num_spells - 1];
+	struct effect *effect = spell->effect;
 	dice_t *dice = NULL;
 	const char *string = NULL;
 
 	if (!c)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	/* If there is no effect, assume that this is human and not parser error. */
+	if (effect == NULL)
+		return PARSE_ERROR_NONE;
+
+	while (effect->next) effect = effect->next;
 
 	dice = dice_new();
 
@@ -3131,7 +3183,7 @@ static enum parser_error parse_c_dice(struct parser *p) {
 	string = parser_getstr(p, "dice");
 
 	if (dice_parse_string(dice, string)) {
-		spell->effect->dice = dice;
+		effect->dice = dice;
 	}
 	else {
 		dice_free(dice);
@@ -3145,6 +3197,7 @@ static enum parser_error parse_c_expr(struct parser *p) {
 	struct player_class *c = parser_priv(p);
 	class_book *book = &c->magic.books[c->magic.num_books - 1];
 	class_spell *spell = &book->spells[book->num_spells - 1];
+	struct effect *effect = spell->effect;
 	expression_t *expression = NULL;
 	expression_base_value_f function = NULL;
 	const char *name;
@@ -3154,8 +3207,14 @@ static enum parser_error parse_c_expr(struct parser *p) {
 	if (!c)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 
+	/* If there is no effect, assume that this is human and not parser error. */
+	if (effect == NULL)
+		return PARSE_ERROR_NONE;
+
+	while (effect->next) effect = effect->next;
+
 	/* If there are no dice, assume that this is human and not parser error. */
-	if (spell->effect->dice == NULL)
+	if (effect->dice == NULL)
 		return PARSE_ERROR_NONE;
 
 	name = parser_getsym(p, "name");
@@ -3172,7 +3231,7 @@ static enum parser_error parse_c_expr(struct parser *p) {
 	if (expression_add_operations_string(expression, expr) < 0)
 		return PARSE_ERROR_GENERIC;
 
-	if (dice_bind_expression(spell->effect->dice, name, expression) < 0)
+	if (dice_bind_expression(effect->dice, name, expression) < 0)
 		return PARSE_ERROR_GENERIC;
 
 	/* The dice object makes a deep copy of the expression, so we can free it */
@@ -3209,6 +3268,7 @@ struct parser *init_parse_c(void) {
 	parser_reg(p, "book sym tval sym sval uint spells uint realm", parse_c_book);
 	parser_reg(p, "spell sym name int level int mana int fail int exp", parse_c_spell);
 	parser_reg(p, "effect sym eff ?sym type ?int xtra", parse_c_effect);
+	parser_reg(p, "param int p2 ?int p3", parse_c_param);
 	parser_reg(p, "dice str dice", parse_c_dice);
 	parser_reg(p, "expr sym name sym base str expr", parse_c_expr);
 	parser_reg(p, "desc str desc", parse_c_desc);
