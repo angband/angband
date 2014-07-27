@@ -50,7 +50,7 @@ typedef struct effect_handler_context_s {
 	const int beam;
 	const int boost;
 	const random_value value;
-	const int p1, p2;
+	const int p1, p2, p3;
 	bool ident;
 } effect_handler_context_t;
 
@@ -310,11 +310,12 @@ bool effect_handler_ATOMIC_TIMED_DEC(effect_handler_context_t *context)
 }
 
 /**
- * Make the player, um, lose food.
+ * Make the player, um, lose food.  Or gain it.
  */
 bool effect_handler_ATOMIC_SET_NOURISH(effect_handler_context_t *context)
 {
-	player_set_food(player, context->p1);
+	int amount = effect_calculate_value(context, FALSE);
+	player_set_food(player, amount);
 	context->ident = TRUE;
 	return TRUE;
 }
@@ -2327,10 +2328,11 @@ bool effect_handler_ATOMIC_BEAM(effect_handler_context_t *context)
 
 /**
  * Cast a bolt spell, or rarely, a beam spell
+ * context->p2 is any adjustment to the regular beam chance
  */
 bool effect_handler_ATOMIC_BOLT_OR_BEAM(effect_handler_context_t *context)
 {
-	if (randint0(100) < context->beam)
+	if (randint0(100) < context->beam + context->p2)
 		return effect_handler_ATOMIC_BEAM(context);
 	else
 		return effect_handler_ATOMIC_BOLT(context);
@@ -2615,7 +2617,7 @@ bool effect_handler_ATOMIC_WONDER(effect_handler_context_t *context)
 {
 	int plev = player->lev;
 	int die = effect_calculate_value(context, FALSE);
-	int p1 = 0, p2 = 0;
+	int p1 = 0, p2 = 0, p3 = 0;
 	int beam = context->beam;
 	effect_handler_f handler = NULL;
 	random_value value = { 0, 0, 0, 0 };
@@ -2728,8 +2730,7 @@ bool effect_handler_ATOMIC_WONDER(effect_handler_context_t *context)
 			beam,
 			context->boost,
 			value,
-			p1,
-			p2,
+			p1, p2, p3,
 			ident
 		};
 
@@ -2747,8 +2748,7 @@ bool effect_handler_ATOMIC_WONDER(effect_handler_context_t *context)
 			beam,
 			context->boost,
 			value,
-			p1,
-			p2,
+			p1, p2, p3,
 			ident
 		};
 		(void) effect_handler_ATOMIC_PROJECT_LOS(&new_context);
@@ -2763,8 +2763,7 @@ bool effect_handler_ATOMIC_WONDER(effect_handler_context_t *context)
 			beam,
 			context->boost,
 			value,
-			p1,
-			p2,
+			p1, p2, p3,
 			ident
 		};
 		(void) effect_handler_ATOMIC_PROJECT_LOS(&new_context);
@@ -2778,8 +2777,7 @@ bool effect_handler_ATOMIC_WONDER(effect_handler_context_t *context)
 			beam,
 			context->boost,
 			value,
-			p1,
-			p2,
+			p1, p2, p3,
 			ident
 		};
 		(void) effect_handler_ATOMIC_PROJECT_LOS(&new_context);
@@ -2793,8 +2791,7 @@ bool effect_handler_ATOMIC_WONDER(effect_handler_context_t *context)
 			beam,
 			context->boost,
 			value,
-			p1,
-			p2,
+			p1, p2, p3,
 			ident
 		};
 		(void) effect_handler_ATOMIC_HEAL_HP(&new_context);
@@ -3203,6 +3200,7 @@ bool atomic_effect_do(struct effect *effect, bool *ident, bool aware, int dir, i
 				value,
 				effect->params[0],
 				effect->params[1],
+				effect->params[2],
 				*ident,
 			};
 

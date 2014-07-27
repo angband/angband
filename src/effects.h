@@ -32,7 +32,7 @@ struct effect {
 	struct effect *next;
 	u16b index;		/**< The effect index */
 	dice_t *dice;	/**< Dice expression used in the effect */
-	int params[2];	/**< Extra parameters to be passed to the handler */
+	int params[3];	/**< Extra parameters to be passed to the handler */
 };
 
 /*** Functions ***/

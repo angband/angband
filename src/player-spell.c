@@ -1118,6 +1118,9 @@ static bool player_spell_effect(int spell, int dir)
 	/* Usually radius for ball spells, or some other modifier. */
 	int p2 = sp->effect->params[1];
 
+	/* Usually radius increments for player level. */
+	int p3 = sp->effect->params[2];
+
 	if (sp->effect->dice != NULL)
 		dice_roll(sp->effect->dice, &value);
 
@@ -1131,7 +1134,7 @@ static bool player_spell_effect(int spell, int dir)
 			dir,
 			beam_chance(),
 			value,
-			p1, p2
+			p1, p2, p3
 		};
 
 		return spell_handler(&context);

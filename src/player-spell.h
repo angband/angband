@@ -26,7 +26,7 @@ typedef struct spell_handler_context_s {
 	const int dir;
 	const int beam;
 	const random_value value;
-	const int p1, p2;
+	const int p1, p2, p3;
 } spell_handler_context_t;
 
 typedef bool (*spell_handler_f)(spell_handler_context_t *);

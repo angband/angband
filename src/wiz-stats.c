@@ -458,17 +458,16 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 {
 
 	bool vault = square_isvault(cave, y, x);
-	int effect;
 	int number = o_ptr->number;
 	static int lvl;
 	artifact_type *a_ptr;
 
-	double gold_temp=0;
+	double gold_temp = 0;
 
 	assert(o_ptr->kind);
 
 	/* get player depth */
-	lvl=player->depth;
+	lvl = player->depth;
 
 	/* check for some stuff that we will use regardless of type */
 	/* originally this was armor, but I decided to generalize it */
