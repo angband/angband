@@ -2055,7 +2055,7 @@ bool effect_handler_ATOMIC_LIGHT_AREA(effect_handler_context_t *context)
 	int py = player->py;
 	int px = player->px;
 	int dam = effect_calculate_value(context, FALSE);
-	int rad = context->p2;
+	int rad = context->p2 + context->p3 ? player->level / context->p3 : 0;
 
 	int flg = PROJECT_GRID | PROJECT_KILL;
 
@@ -2114,6 +2114,7 @@ bool effect_handler_ATOMIC_BALL(effect_handler_context_t *context)
 	int py = player->py;
 	int px = player->px;
 	int dam = effect_calculate_value(context, TRUE);
+	int rad = context->p2 + context->p3 ? player->lev / context->p3 : 0;
 
 	s16b ty = py + 99 * ddy[context->dir];
 	s16b tx = px + 99 * ddx[context->dir];
@@ -2128,7 +2129,7 @@ bool effect_handler_ATOMIC_BALL(effect_handler_context_t *context)
 	}
 
 	/* Aim at the target, explode */
-	if (project(-1, context->p2, ty, tx, dam, context->p1, flg, 0, 0))
+	if (project(-1, rad, ty, tx, dam, context->p1, flg, 0, 0))
 		context->ident = TRUE;
 
 	return TRUE;

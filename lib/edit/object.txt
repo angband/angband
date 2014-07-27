@@ -1954,7 +1954,8 @@ W:0:0:5:15
 A:50:0 to 60
 M:35:2d3
 power:4
-effect:ATOMIC_LIGHT_AREA:LIGHT_WEAK:2
+effect:ATOMIC_LIGHT_AREA
+param:2
 dice:2d8
 
 N:290:Word of Recall
@@ -3266,7 +3267,8 @@ A:20:5 to 80
 P:0:1d2:0:0:0
 C:8+d20
 power:4
-effect:ATOMIC_LIGHT_AREA:LIGHT_WEAK:2
+effect:ATOMIC_LIGHT_AREA
+param:2
 dice:2d8
 
 N:419:Starlight
@@ -3656,7 +3658,8 @@ W:20:0:15:1000
 A:20:20 to 100
 P:0:1d1:0:0:0
 power:4
-effect:ATOMIC_LIGHT_AREA:LIGHT_WEAK:2
+effect:ATOMIC_LIGHT_AREA
+param:2
 dice:2d8
 time:30
 
