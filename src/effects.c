@@ -2055,7 +2055,7 @@ bool effect_handler_ATOMIC_LIGHT_AREA(effect_handler_context_t *context)
 	int py = player->py;
 	int px = player->px;
 	int dam = effect_calculate_value(context, FALSE);
-	int rad = context->p2 + context->p3 ? player->level / context->p3 : 0;
+	int rad = context->p2 + context->p3 ? player->lev / context->p3 : 0;
 
 	int flg = PROJECT_GRID | PROJECT_KILL;
 
