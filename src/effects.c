@@ -299,10 +299,13 @@ bool effect_handler_ATOMIC_TIMED_INC(effect_handler_context_t *context)
 
 /**
  * Reduce a (positive or negative) player status condition.
+ * If context->p2 is set, decrease by the current value / context->p2
  */
 bool effect_handler_ATOMIC_TIMED_DEC(effect_handler_context_t *context)
 {
 	int amount = effect_calculate_value(context, FALSE);
+	if (context->p2)
+		amount = player->timed[context->p1] / context->p2;
 	player_dec_timed(player, context->p1, amount, TRUE);
 	context->ident = TRUE;
 	return TRUE;
@@ -592,6 +595,16 @@ bool effect_handler_ATOMIC_DEEP_DESCENT(effect_handler_context_t *context)
 		context->ident = TRUE;
 		return FALSE;
 	}
+}
+
+bool effect_handler_ALTER_REALITY(effect_handler_context_t *context)
+{
+	msg("The world changes!");
+
+	/* Leaving */
+	player->upkeep->leaving = TRUE;
+
+	return TRUE;
 }
 
 /**
@@ -2114,7 +2127,7 @@ bool effect_handler_ATOMIC_BALL(effect_handler_context_t *context)
 	int py = player->py;
 	int px = player->px;
 	int dam = effect_calculate_value(context, TRUE);
-	int rad = context->p2 + context->p3 ? player->lev / context->p3 : 0;
+	int rad = context->p2 + (context->p3 ? player->lev / context->p3 : 0);
 
 	s16b ty = py + 99 * ddy[context->dir];
 	s16b tx = px + 99 * ddx[context->dir];
@@ -2330,10 +2343,18 @@ bool effect_handler_ATOMIC_BEAM(effect_handler_context_t *context)
 /**
  * Cast a bolt spell, or rarely, a beam spell
  * context->p2 is any adjustment to the regular beam chance
+ * context->p3 being set means to divide by the adjustment instead of adding
  */
 bool effect_handler_ATOMIC_BOLT_OR_BEAM(effect_handler_context_t *context)
 {
-	if (randint0(100) < context->beam + context->p2)
+	int beam = context->beam;
+
+	if (context->p3)
+		beam /= context->p2;
+	else
+		beam += context->p2;
+
+	if (randint0(100) < beam)
 		return effect_handler_ATOMIC_BEAM(context);
 	else
 		return effect_handler_ATOMIC_BOLT(context);
