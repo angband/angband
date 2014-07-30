@@ -62,7 +62,8 @@ typedef bool (*effect_handler_f)(effect_handler_context_t *);
 struct effect_kind {
 	u16b index;          /* Effect index */
 	bool aim;            /* Whether the effect requires aiming */
-	effect_handler_f handler;
+	const char *info;    /* Effect info (for spell tips) */
+	effect_handler_f handler;    /* Function to perform the effect */
 	const char *desc;    /* Effect description */
 };
 
@@ -3098,13 +3099,13 @@ bool effect_handler_TRAP_GAS_SLEEP(effect_handler_context_t *context)
  */
 static const struct effect_kind atomic_effects[] =
 {
-	{ AEF_ATOMIC_NONE, FALSE, NULL, NULL },
+	{ AEF_ATOMIC_NONE, FALSE, NULL, NULL, NULL },
 	#define F(x) effect_handler_##x
-	#define EFFECT(x, a, d)    { AEF_##x, a, F(x), d },
+	#define EFFECT(x, a, b, d)    { AEF_##x, a, b, F(x), d },
 	#include "list-atomic-effects.h"
 	#undef EFFECT
 	#undef F
-	{ AEF_ATOMIC_MAX, FALSE, NULL, NULL }
+	{ AEF_ATOMIC_MAX, FALSE, NULL, NULL, NULL }
 };
 
 
@@ -3160,7 +3161,7 @@ const char *effect_desc(struct effect *effect)
 atomic_effect_index atomic_effect_lookup(const char *name)
 {
 	static const char *effect_names[] = {
-		#define EFFECT(x, a, d)	#x,
+		#define EFFECT(x, a, b, d)	#x,
 		#include "list-atomic-effects.h"
 		#undef EFFECT
 	};

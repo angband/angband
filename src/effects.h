@@ -22,7 +22,7 @@
 typedef enum
 {
 	AEF_ATOMIC_NONE,
-	#define EFFECT(x, a, d)	AEF_##x,
+	#define EFFECT(x, a, b, d)	AEF_##x,
 	#include "list-atomic-effects.h"
 	#undef EFFECT
 	AEF_ATOMIC_MAX
