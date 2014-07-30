@@ -397,12 +397,20 @@ void spell_learn(int spell)
 
 static bool player_spell_effect(int spell, int dir);
 
+static int beam_chance(void)
+{
+	int plev = player->lev;
+	return (player_has(PF_BEAM) ? plev : (plev / 2));
+}
+
 /**
  * Cast the specified spell
  */
 bool spell_cast(int spell, int dir)
 {
 	int chance;
+	bool *ident = mem_zalloc(sizeof(*ident));
+	int beam  = beam_chance();
 
 	/* Get the spell */
 	const class_spell *s_ptr = spell_by_index(spell);
@@ -421,7 +429,11 @@ bool spell_cast(int spell, int dir)
 	else
 	{
 		/* Cast the spell */
-		if (!player_spell_effect(spell, dir)) return FALSE;
+		//if (!player_spell_effect(spell, dir)) return FALSE;
+		if (!atomic_effect_do(s_ptr->effect, ident, TRUE, dir, beam, FALSE)) {
+			mem_free(ident);
+			return FALSE;
+		}
 
 		/* A spell was cast */
 		sound(MSG_SPELL);
@@ -480,16 +492,11 @@ bool spell_cast(int spell, int dir)
 	/* Redraw mana */
 	player->upkeep->redraw |= (PR_MANA);
 
+	mem_free(ident);
 	return TRUE;
 }
 
 /* Start of old x-spell.c */
-
-static int beam_chance(void)
-{
-	int plev = player->lev;
-	return (player_has(PF_BEAM) ? plev : (plev / 2));
-}
 
 
 static void spell_wonder(int dir)
@@ -1152,12 +1159,13 @@ bool spell_is_identify(int spell)
 bool spell_needs_aim(int spell)
 {
 	const class_spell *sp = spell_by_index(spell);
-	const spell_info_t *spell_info = spell_info_for_index(spell_effects, N_ELEMENTS(spell_effects), SPELL_EFFECT_MAX, sp->effect->index);
+	//const spell_info_t *spell_info = spell_info_for_index(spell_effects, N_ELEMENTS(spell_effects), SPELL_EFFECT_MAX, sp->effect->index);
 
-	if (spell_info == NULL)
-		return FALSE;
+	//if (spell_info == NULL)
+	//	return FALSE;
 
-	return spell_info->aim;
+	//return spell_info->aim;
+	return effect_aim(sp->effect);
 }
 
 static size_t append_random_value_string(char *buffer, size_t size, random_value *rv)

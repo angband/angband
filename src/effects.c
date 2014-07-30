@@ -598,7 +598,7 @@ bool effect_handler_ATOMIC_DEEP_DESCENT(effect_handler_context_t *context)
 	}
 }
 
-bool effect_handler_ALTER_REALITY(effect_handler_context_t *context)
+bool effect_handler_ATOMIC_ALTER_REALITY(effect_handler_context_t *context)
 {
 	msg("The world changes!");
 

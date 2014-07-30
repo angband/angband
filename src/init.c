@@ -3117,8 +3117,8 @@ static enum parser_error parse_c_effect(struct parser *p) {
 
 	/* Fill in the detail */
 	new_effect->index = grab_one_effect(parser_getsym(p, "eff"),
-										spell_effect_list,
-										N_ELEMENTS(spell_effect_list));
+										effect_list,
+										N_ELEMENTS(effect_list));
 
 	if (parser_hasval(p, "type")) {
 		type = parser_getsym(p, "type");
