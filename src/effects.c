@@ -3150,6 +3150,14 @@ bool effect_aim(struct effect *effect)
 	return FALSE;
 }
 
+const char *effect_info(struct effect *effect)
+{
+	if (!effect_valid(effect))
+		return NULL;
+
+	return atomic_effects[effect->index].info;
+}
+
 const char *effect_desc(struct effect *effect)
 {
 	if (!effect_valid(effect))

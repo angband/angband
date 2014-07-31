@@ -1192,30 +1192,27 @@ static size_t append_random_value_string(char *buffer, size_t size, random_value
 static void spell_append_value_info(int spell, char *p, size_t len)
 {
 	const class_spell *sp = spell_by_index(spell);
-	const spell_info_t *info = spell_info_for_index(spell_effects, N_ELEMENTS(spell_effects), SPELL_EFFECT_MAX, sp->effect->index);
+	//const spell_info_t *info = spell_info_for_index(spell_effects, N_ELEMENTS(spell_effects), SPELL_EFFECT_MAX, sp->effect->index);
 	random_value rv;
 	const char *type = NULL;
 	const char *special = NULL;
 	size_t offset = 0;
 
-	if (info == NULL)
-		return;
+	//if (info == NULL)
+	//	return;
 
-	type = info->info;
+	type = effect_info(sp->effect);
 
 	if (sp->effect->dice != NULL)
 		dice_roll(sp->effect->dice, &rv);
 
 	/* Handle some special cases where we want to append some additional info */
 	switch (sp->effect->index) {
-		case SPELL_EFFECT_CURE_LIGHT_WOUNDS:
-		case SPELL_EFFECT_CURE_SERIOUS_WOUNDS:
-		case SPELL_EFFECT_CURE_CRITICAL_WOUNDS:
-		case SPELL_EFFECT_HEAL:
+		case AEF_ATOMIC_HEAL_HP:
 			/* Append percentage only, as the fixed value is always displayed */
-			special = format("/%d%%", rv.m_bonus);
+			if (rv.m_bonus) special = format("/%d%%", rv.m_bonus);
 			break;
-		case SPELL_EFFECT_METEOR_SWARM:
+		case AEF_ATOMIC_SWARM:
 			/* Append number of projectiles. */
 			special = format("x%d", rv.m_bonus);
 			break;
