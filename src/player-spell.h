@@ -16,29 +16,6 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
-enum spell_effect_e {
-	#define S_EF(x, a, s) SPELL_EFFECT_##x,
-	#include "list-player-spells.h"
-	#undef S_EF
-};
-
-typedef struct spell_handler_context_s {
-	const int dir;
-	const int beam;
-	const random_value value;
-	const int p1, p2, p3;
-} spell_handler_context_t;
-
-typedef bool (*spell_handler_f)(spell_handler_context_t *);
-
-typedef struct spell_info_s {
-	u16b spell;
-	bool aim;
-	const char *info;
-	spell_handler_f handler;
-} spell_info_t;
-
-/* spell.c */
 void player_spells_init(struct player *p);
 void player_spells_free(struct player *p);
 const class_book *object_to_book(const struct object *obj);
@@ -53,7 +30,6 @@ s16b spell_chance(int spell);
 void spell_learn(int spell);
 bool spell_cast(int spell, int dir);
 
-/* Start of old x-spell.c */
 extern void get_spell_info(int index, char *buf, size_t len);
 extern bool cast_spell(int tval, int index, int dir);
 extern bool spell_needs_aim(int spell);

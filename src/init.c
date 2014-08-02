@@ -170,12 +170,6 @@ static const char *effect_list[] = {
 	"ATOMIC_MAX"
 };
 
-static const char *spell_effect_list[] = {
-	#define S_EF(x, a, s) #x,
-	#include "list-player-spells.h"
-	#undef S_EF
-};
-
 static u32b grab_one_effect(const char *what, const char *list[], int num)
 {
 	int i;
