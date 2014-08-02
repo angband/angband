@@ -163,11 +163,11 @@ static const char *slay_names[] = {
 };
 
 static const char *effect_list[] = {
-	"ATOMIC_NONE",
+	"NONE",
 	#define EFFECT(x, a, b, d)	#x,
-	#include "list-atomic-effects.h"
+	#include "list-effects.h"
 	#undef EFFECT
-	"ATOMIC_MAX"
+	"MAX"
 };
 
 static u32b grab_one_effect(const char *what, const char *list[], int num)

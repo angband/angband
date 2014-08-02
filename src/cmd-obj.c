@@ -585,7 +585,7 @@ static void use_aux(struct command *cmd, int item, enum use use, int snd)
 	effect = o_ptr->effect;
 
 	/* Check for unknown objects to prevent wasted player turns. */
-	if (effect->index == AEF_ATOMIC_IDENTIFY &&
+	if (effect->index == EF_IDENTIFY &&
 		!spell_identify_unknown_available()) {
 		msg("You have nothing to identify.");
 		return;
@@ -608,13 +608,13 @@ static void use_aux(struct command *cmd, int item, enum use use, int snd)
 
 		/* A bit of a hack to make ID work better.
 			-- Check for "obvious" effects beforehand. */
-		if (effect->index == AEF_ATOMIC_IDENTIFY) object_flavor_aware(o_ptr);
+		if (effect->index == EF_IDENTIFY) object_flavor_aware(o_ptr);
 
 		/* Boost damage effects if skill > difficulty */
 		boost = MAX(player->state.skills[SKILL_DEVICE] - level, 0);
 
 		/* Do effect */
-		used = atomic_effect_do(effect, &ident, was_aware, dir, beam, boost);
+		used = effect_do(effect, &ident, was_aware, dir, beam, boost);
 
 		/* Quit if the item wasn't used and no knowledge was gained */
 		if (!used && (was_aware || !ident)) return;

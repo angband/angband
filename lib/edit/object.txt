@@ -148,7 +148,7 @@ W:0:0:8:3
 A:40:0 to 50
 M:100:1d5
 power:0
-effect:ATOMIC_NOURISH
+effect:NOURISH
 dice:6000
 D:This nutritious but fairly bland food is familiar to anyone contemplating
 D: long journeys.
@@ -160,7 +160,7 @@ W:1:0:2:2
 A:40:5 to 60
 M:100:2d3
 power:0
-effect:ATOMIC_NOURISH
+effect:NOURISH
 dice:2500
 D:A strange fungal growth, prone to moving if not observed.  Not very tasty
 D: but quite filling.
@@ -172,10 +172,10 @@ W:5:0:3:10
 A:40:30 to 100
 M:10:1d3
 power:4
-effect:ATOMIC_NOURISH
+effect:NOURISH
 dice:7500
-effect:ATOMIC_CURE:POISONED
-effect:ATOMIC_HEAL_HP
+effect:CURE:POISONED
+effect:HEAL_HP
 dice:4d8
 D:Food of the elves is always good; their waybread is no exception.  These
 D: thin cakes are wrapped in leaves and keep their tastiness for months.
@@ -185,9 +185,9 @@ G:,:U
 I:food
 W:0:0:2:1
 power:0
-effect:ATOMIC_NOURISH
+effect:NOURISH
 dice:500
-effect:ATOMIC_CRUNCH
+effect:CRUNCH
 D:A filling if tooth-breaking biscuit made mostly of rye.
 
 N:14:& Flask~ of Whisky
@@ -195,9 +195,9 @@ G:,:y
 I:food
 W:0:0:5:1
 power:0
-effect:ATOMIC_NOURISH
+effect:NOURISH
 dice:250
-effect:ATOMIC_TIMED_INC:CONFUSED
+effect:TIMED_INC:CONFUSED
 dice:-1+1d5
 D:It raises your spirits.
 
@@ -206,9 +206,9 @@ G:,:r
 I:food
 W:0:0:10:2
 power:0
-effect:ATOMIC_NOURISH
+effect:NOURISH
 dice:250
-effect:ATOMIC_TIMED_INC:BOLD
+effect:TIMED_INC:BOLD
 dice:79+1d41
 D:A fine way to wash down some otherwise unappetising rations.
 
@@ -221,10 +221,10 @@ W:0:0:1:200
 A:10:5 to 100
 M:70:1d4
 power:10
-effect:ATOMIC_CURE:BLIND
-effect:ATOMIC_TIMED_INC:TELEPATHY
+effect:CURE:BLIND
+effect:TIMED_INC:TELEPATHY
 dice:24+9d9
-effect:ATOMIC_NOURISH
+effect:NOURISH
 dice:500
 
 N:17:Fast Recovery
@@ -234,13 +234,13 @@ W:0:0:1:200
 A:10:5 to 40
 M:70:1d4
 power:7
-effect:ATOMIC_HEAL_HP
+effect:HEAL_HP
 dice:30
-effect:ATOMIC_CURE:STUN
-effect:ATOMIC_CURE:CUT
-effect:ATOMIC_CURE:POISONED
-effect:ATOMIC_CURE:BLIND
-effect:ATOMIC_NOURISH
+effect:CURE:STUN
+effect:CURE:CUT
+effect:CURE:POISONED
+effect:CURE:BLIND
+effect:NOURISH
 dice:500
 
 N:18:Vigor
@@ -250,12 +250,12 @@ W:0:0:1:200
 A:25:20 to 100
 M:13:1d3
 power:15
-effect:ATOMIC_RESTORE_STAT:STR
-effect:ATOMIC_RESTORE_STAT:INT
-effect:ATOMIC_RESTORE_STAT:WIS
-effect:ATOMIC_RESTORE_STAT:DEX
-effect:ATOMIC_RESTORE_STAT:CON
-effect:ATOMIC_NOURISH
+effect:RESTORE_STAT:STR
+effect:RESTORE_STAT:INT
+effect:RESTORE_STAT:WIS
+effect:RESTORE_STAT:DEX
+effect:RESTORE_STAT:CON
+effect:NOURISH
 dice:500
 
 N:19:Clear Mind
@@ -265,14 +265,14 @@ W:0:0:1:200
 A:10:5 to 40
 M:70:1d4
 power:8
-effect:ATOMIC_RESTORE_MANA
+effect:RESTORE_MANA
 dice:20
-effect:ATOMIC_CURE:CONFUSED
-effect:ATOMIC_CURE:AFRAID
-effect:ATOMIC_CURE:IMAGE
-effect:ATOMIC_TIMED_INC:OPP_CONF
+effect:CURE:CONFUSED
+effect:CURE:AFRAID
+effect:CURE:IMAGE
+effect:TIMED_INC:OPP_CONF
 dice:12+6d10
-effect:ATOMIC_NOURISH
+effect:NOURISH
 dice:500
 
 N:20:Emergency
@@ -282,15 +282,15 @@ W:0:0:1:60
 A:10:5 to 100
 M:70:1d4
 power:7
-effect:ATOMIC_TIMED_INC:IMAGE
+effect:TIMED_INC:IMAGE
 dice:249+1d101
-effect:ATOMIC_TIMED_INC:OPP_FIRE
+effect:TIMED_INC:OPP_FIRE
 dice:19+1d21
-effect:ATOMIC_TIMED_INC:OPP_COLD
+effect:TIMED_INC:OPP_COLD
 dice:19+1d21
-effect:ATOMIC_HEAL_HP
+effect:HEAL_HP
 dice:200
-effect:ATOMIC_NOURISH
+effect:NOURISH
 dice:500
 
 N:21:Terror
@@ -300,9 +300,9 @@ W:0:0:1:60
 A:10:5 to 40
 M:70:1d4
 power:5
-effect:ATOMIC_TIMED_SET:TERROR
+effect:TIMED_SET:TERROR
 dice:79+1d41
-effect:ATOMIC_NOURISH
+effect:NOURISH
 dice:500
 
 N:22:Stoneskin
@@ -312,9 +312,9 @@ W:0:0:1:60
 A:10:10 to 40
 M:70:1d4
 power:5
-effect:ATOMIC_TIMED_SET:STONESKIN
+effect:TIMED_SET:STONESKIN
 dice:79+1d41
-effect:ATOMIC_NOURISH
+effect:NOURISH
 dice:500
 D:Its poison turns your skin to stone, albeit briefly.
 
@@ -334,12 +334,12 @@ W:0:0:1:20
 A:10:10 to 40
 M:70:1d4
 power:5
-effect:ATOMIC_RESTORE_MANA
-effect:ATOMIC_RANDOM
+effect:RESTORE_MANA
+effect:RANDOM
 dice:2
-effect:ATOMIC_DRAIN_STAT:STR
-effect:ATOMIC_DRAIN_STAT:CON
-effect:ATOMIC_NOURISH
+effect:DRAIN_STAT:STR
+effect:DRAIN_STAT:CON
+effect:NOURISH
 dice:500
 
 N:25:Sprinting
@@ -349,9 +349,9 @@ W:0:0:1:100
 A:1:15 to 100
 M:70:1d4
 power:5
-effect:ATOMIC_TIMED_INC:SPRINT
+effect:TIMED_INC:SPRINT
 dice:100
-effect:ATOMIC_NOURISH
+effect:NOURISH
 dice:500
 
 N:26:Purging
@@ -361,12 +361,12 @@ W:0:0:1:60
 A:1:15 to 100
 M:70:1d4
 power:5
-effect:ATOMIC_SET_NOURISH
+effect:SET_NOURISH
 #PY_FOOD_FAINT - 1
 dice:499
-effect:ATOMIC_RESTORE_STAT:STR
-effect:ATOMIC_RESTORE_STAT:CON
-effect:ATOMIC_NOURISH
+effect:RESTORE_STAT:STR
+effect:RESTORE_STAT:CON
+effect:NOURISH
 dice:500
 
 
@@ -1337,9 +1337,9 @@ P:0:0d0:0:0:5+d5M10
 F:IGNORE_FIRE
 V:RES_FIRE[1]
 power:11
-effect:ATOMIC_BALL:FIRE:2
+effect:BALL:FIRE:2
 dice:80
-effect:ATOMIC_TIMED_INC:OPP_FIRE
+effect:TIMED_INC:OPP_FIRE
 dice:20+1d20
 time:50+d50
 
@@ -1352,9 +1352,9 @@ P:0:0d0:0:0:5+d5M10
 F:IGNORE_ACID
 V:RES_ACID[1]
 power:11
-effect:ATOMIC_BALL:ACID:2
+effect:BALL:ACID:2
 dice:70
-effect:ATOMIC_TIMED_INC:OPP_ACID
+effect:TIMED_INC:OPP_ACID
 dice:20+1d20
 time:50+d50
 
@@ -1367,9 +1367,9 @@ P:0:0d0:0:0:5+d5M10
 F:IGNORE_COLD
 V:RES_COLD[1]
 power:11
-effect:ATOMIC_BALL:COLD:2
+effect:BALL:COLD:2
 dice:75
-effect:ATOMIC_TIMED_INC:OPP_COLD
+effect:TIMED_INC:OPP_COLD
 dice:20+1d20
 time:50+d50
 
@@ -1382,9 +1382,9 @@ P:0:0d0:0:0:5+d5M10
 F:IGNORE_ELEC
 V:RES_ELEC[1]
 power:11
-effect:ATOMIC_BALL:ELEC:2
+effect:BALL:ELEC:2
 dice:85
-effect:ATOMIC_TIMED_INC:OPP_ELEC
+effect:TIMED_INC:OPP_ELEC
 dice:20+1d20
 time:50+d50
 
@@ -1449,11 +1449,11 @@ W:0:0:2:700
 A:20:10 to 50
 F:IMPAIR_HP | EASY_KNOW
 power:6
-effect:ATOMIC_HEAL_HP
+effect:HEAL_HP
 dice:40
-effect:ATOMIC_CURE:BLIND
-effect:ATOMIC_CURE:CUT
-effect:ATOMIC_CURE:CONFUSED
+effect:CURE:BLIND
+effect:CURE:CUT
+effect:CURE:CONFUSED
 time:10+5d8
 
 N:219:Escaping
@@ -1519,7 +1519,7 @@ W:0:0:2:800
 A:20:10 to 50
 V:TUNNEL[2+d3]
 power:6
-effect:ATOMIC_LINE:KILL_WALL
+effect:LINE:KILL_WALL
 dice:20+1d30
 time:15+2d10
 
@@ -1697,7 +1697,7 @@ W:1:0:5:15
 A:50:1 to 100
 M:100:1d3
 power:5
-effect:ATOMIC_TELEPORT
+effect:TELEPORT
 dice:10
 
 N:261:Teleportation
@@ -1707,7 +1707,7 @@ W:10:0:5:40
 A:40:10 to 100
 M:25:2
 power:6
-effect:ATOMIC_TELEPORT
+effect:TELEPORT
 dice:100
 
 N:262:Teleport Level
@@ -1717,7 +1717,7 @@ W:20:0:5:800
 A:16:20 to 100
 M:10:2
 power:15
-effect:ATOMIC_TELEPORT_LEVEL
+effect:TELEPORT_LEVEL
 
 
 ### Detection ###
@@ -1729,7 +1729,7 @@ W:5:0:5:65
 A:50:5 to 100
 M:70:1d3
 power:10
-effect:ATOMIC_MAP_AREA
+effect:MAP_AREA
 dice:22d40
 
 N:264:Treasure Detection
@@ -1739,9 +1739,9 @@ W:0:0:5:70
 A:50:0 to 70
 M:40:1d5
 power:6
-effect:ATOMIC_DETECT_GOLD
+effect:DETECT_GOLD
 dice:22d40
-effect:ATOMIC_SENSE_OBJECTS
+effect:SENSE_OBJECTS
 dice:22d40
 
 N:265:Trap Detection
@@ -1751,7 +1751,7 @@ W:5:0:5:35
 A:50:0 to 70
 M:70:1d3
 power:6
-effect:ATOMIC_DETECT_TRAPS
+effect:DETECT_TRAPS
 dice:22d40
 
 N:266:Door/Stair Location
@@ -1761,9 +1761,9 @@ W:5:0:5:50
 A:50:5 to 70
 M:70:1d3
 power:6
-effect:ATOMIC_DETECT_DOORS
+effect:DETECT_DOORS
 dice:22d40
-effect:ATOMIC_DETECT_STAIRS
+effect:DETECT_STAIRS
 dice:22d40
 
 N:267:Detect Invisible
@@ -1773,7 +1773,7 @@ W:1:0:5:15
 A:50:1 to 70
 M:70:1d3
 power:6
-effect:ATOMIC_DETECT_INVISIBLE_MONSTERS
+effect:DETECT_INVISIBLE_MONSTERS
 dice:22d40
 
 ### 268
@@ -1788,7 +1788,7 @@ W:15:0:5:125
 A:40:15 to 70
 M:25:2
 power:15
-effect:ATOMIC_ENCHANT:TOHIT
+effect:ENCHANT:TOHIT
 dice:1
 
 N:271:Enchant Weapon To-Dam
@@ -1798,7 +1798,7 @@ W:15:0:5:125
 A:40:15 to 70
 M:25:2
 power:20
-effect:ATOMIC_ENCHANT:TODAM
+effect:ENCHANT:TODAM
 dice:1
 
 N:272:Enchant Armour
@@ -1808,7 +1808,7 @@ W:15:0:5:125
 A:40:15 to 70
 M:25:2
 power:12
-effect:ATOMIC_ENCHANT:TOAC
+effect:ENCHANT:TOAC
 dice:1
 
 N:273:*Enchant Weapon*
@@ -1818,9 +1818,9 @@ W:50:0:5:500
 A:40:50 to 100
 M:25:2
 power:22
-effect:ATOMIC_ENCHANT:TOHIT
+effect:ENCHANT:TOHIT
 dice:1d3
-effect:ATOMIC_ENCHANT:TODAM
+effect:ENCHANT:TODAM
 dice:1d3
 
 N:274:*Enchant Armour*
@@ -1830,7 +1830,7 @@ W:50:0:5:500
 A:40:50 to 100
 M:25:2
 power:15
-effect:ATOMIC_ENCHANT:TOAC
+effect:ENCHANT:TOAC
 dice:2+1d3
 
 ## Removed in 3.4 until curses are redone
@@ -1841,7 +1841,7 @@ W:10:0:5:100
 #A:16:10 to 100
 M:25:2
 power:8
-effect:ATOMIC_REMOVE_CURSE
+effect:REMOVE_CURSE
 
 ## Removed in 3.4 until curses are redone
 N:276:*Remove Curse*
@@ -1851,7 +1851,7 @@ W:50:0:5:8000
 #A:16:50 to 100
 M:25:2
 power:20
-effect:ATOMIC_REMOVE_ALL_CURSE
+effect:REMOVE_ALL_CURSE
 
 ### 277, sval 18
 
@@ -1864,7 +1864,7 @@ W:1:0:5:0
 A:10:1 to 100
 M:70:1d3
 power:0
-effect:ATOMIC_SUMMON
+effect:SUMMON
 dice:1d3
 
 N:279:Summon Undead
@@ -1875,7 +1875,7 @@ A:10:15 to 100
 M:70:1d3
 # 17 is S_UNDEAD- aaarrgh NRM
 power:0
-effect:ATOMIC_SUMMON:17
+effect:SUMMON:17
 dice:1d3
 
 N:280:Acquirement
@@ -1884,7 +1884,7 @@ I:scroll
 W:20:0:5:5000
 A:10:20 to 100
 power:20000
-effect:ATOMIC_ACQUIRE
+effect:ACQUIRE
 dice:1
 
 N:281:*Acquirement*
@@ -1893,7 +1893,7 @@ I:scroll
 W:60:0:5:10000
 A:5:60 to 100
 power:20000
-effect:ATOMIC_ACQUIRE
+effect:ACQUIRE
 dice:1+1d2
 
 
@@ -1906,7 +1906,7 @@ W:40:0:5:200
 A:40:40 to 100
 M:25:2
 power:9
-effect:ATOMIC_PROJECT_LOS:DISP_UNDEAD
+effect:PROJECT_LOS:DISP_UNDEAD
 dice:60
 
 N:283:Banishment
@@ -1915,7 +1915,7 @@ I:scroll
 W:40:0:5:2500
 A:25:40 to 100
 power:20
-effect:ATOMIC_BANISH
+effect:BANISH
 
 N:284:Mass Banishment
 G:?:w
@@ -1923,7 +1923,7 @@ I:scroll
 W:50:0:5:3000
 A:20:50 to 100
 power:25
-effect:ATOMIC_MASS_BANISH
+effect:MASS_BANISH
 
 
 ### Utility ###
@@ -1935,7 +1935,7 @@ W:5:0:5:10
 A:60:5 to 100
 M:100:2d3
 power:7
-effect:ATOMIC_SET_NOURISH
+effect:SET_NOURISH
 dice:16999
 
 N:286:Identify
@@ -1945,7 +1945,7 @@ W:1:0:5:100
 A:60:5 to 100
 M:100:2d3
 power:9
-effect:ATOMIC_IDENTIFY
+effect:IDENTIFY
 
 N:289:Light
 G:?:w
@@ -1954,7 +1954,7 @@ W:0:0:5:15
 A:50:0 to 60
 M:35:2d3
 power:4
-effect:ATOMIC_LIGHT_AREA
+effect:LIGHT_AREA
 param:2
 dice:2d8
 
@@ -1965,7 +1965,7 @@ W:5:0:5:125
 A:50:5 to 100
 M:35:2d3
 power:15
-effect:ATOMIC_RECALL
+effect:RECALL
 
 N:291:Recharging
 G:?:w
@@ -1974,7 +1974,7 @@ W:40:0:5:200
 A:40:40 to 100
 M:12:2d3
 power:11
-effect:ATOMIC_RECHARGE
+effect:RECHARGE
 dice:60
 
 N:292:Trap/Door Destruction
@@ -1984,7 +1984,7 @@ W:10:0:5:50
 A:40:10 to 60
 M:25:2d3
 power:6
-effect:ATOMIC_TOUCH:KILL_DOOR
+effect:TOUCH:KILL_DOOR
 
 N:293:Deep Descent
 G:?:w
@@ -1993,7 +1993,7 @@ W:10:0:5:250
 A:20:1 to 100
 M:20:2
 power:19
-effect:ATOMIC_DEEP_DESCENT
+effect:DEEP_DESCENT
 
 
 ### "Holy" spells ###
@@ -2005,7 +2005,7 @@ W:1:0:5:15
 A:50:1 to 50
 M:70:1d3
 power:6
-effect:ATOMIC_TIMED_INC:BLESSED
+effect:TIMED_INC:BLESSED
 dice:6+1d12
 
 N:295:Holy Chant
@@ -2015,7 +2015,7 @@ W:10:0:5:40
 A:40:10 to 70
 M:25:2
 power:7
-effect:ATOMIC_TIMED_INC:BLESSED
+effect:TIMED_INC:BLESSED
 dice:12+1d24
 
 N:296:Holy Prayer
@@ -2025,7 +2025,7 @@ W:25:0:5:80
 A:40:50 to 100
 M:25:2
 power:8
-effect:ATOMIC_TIMED_INC:BLESSED
+effect:TIMED_INC:BLESSED
 dice:24+1d48
 
 N:297:Protection from Evil
@@ -2035,7 +2035,7 @@ W:30:0:5:50
 A:40:30 to 100
 M:25:2
 power:6
-effect:ATOMIC_TIMED_INC:PROTEVIL
+effect:TIMED_INC:PROTEVIL
 dice:$B+1d25
 expr:B:PLAYER_LEVEL:* 3
 
@@ -2049,7 +2049,7 @@ W:5:0:5:30
 A:16:5 to 60
 M:25:2
 power:8
-effect:ATOMIC_CONFUSING
+effect:CONFUSING
 
 N:299:Rune of Protection
 G:?:w
@@ -2057,7 +2057,7 @@ I:scroll
 W:60:0:5:500
 A:30:70 to 100
 power:20
-effect:ATOMIC_RUNE
+effect:RUNE
 
 N:300:*Destruction*
 G:?:w
@@ -2065,7 +2065,7 @@ I:scroll
 W:40:0:5:1000
 A:30:40 to 100
 power:12
-effect:ATOMIC_DESTRUCTION
+effect:DESTRUCTION
 
 
 ### Bad scrolls ###
@@ -2077,7 +2077,7 @@ W:5:0:5:0
 A:10:5 to 70
 M:70:1d3
 power:0
-effect:ATOMIC_AGGRAVATE
+effect:AGGRAVATE
 
 N:302:Curse Weapon
 G:?:w
@@ -2086,7 +2086,7 @@ W:50:0:5:0
 #A:10:50 to 100
 M:70:1d3
 power:0
-effect:ATOMIC_CURSE_WEAPON
+effect:CURSE_WEAPON
 
 N:303:Curse Armour
 G:?:w
@@ -2095,7 +2095,7 @@ W:50:0:5:0
 #A:10:50 to 100
 M:70:1d3
 power:0
-effect:ATOMIC_CURSE_ARMOR
+effect:CURSE_ARMOR
 
 N:304:Darkness
 G:?:w
@@ -2104,8 +2104,8 @@ W:1:0:5:0
 A:10:1 to 70
 M:70:1d3
 power:0
-effect:ATOMIC_DARKEN_AREA:DARK_WEAK:2
-effect:ATOMIC_TIMED_INC:BLIND
+effect:DARKEN_AREA:DARK_WEAK:2
+effect:TIMED_INC:BLIND
 dice:3+1d5
 
 N:305:Trap Creation
@@ -2115,7 +2115,7 @@ W:10:0:5:0
 A:10:10 to 70
 M:70:1d3
 power:0
-effect:ATOMIC_TOUCH:MAKE_TRAP
+effect:TOUCH:MAKE_TRAP
 
 
 
@@ -2131,7 +2131,7 @@ W:30:0:4:8000
 A:30:30 to 100
 M:10:2
 power:20000
-effect:ATOMIC_GAIN_STAT:STR
+effect:GAIN_STAT:STR
 
 N:311:Intelligence
 G:!:d
@@ -2140,7 +2140,7 @@ W:30:0:4:8000
 A:30:30 to 100
 M:10:2
 power:20000
-effect:ATOMIC_GAIN_STAT:INT
+effect:GAIN_STAT:INT
 
 N:312:Wisdom
 G:!:d
@@ -2149,7 +2149,7 @@ W:30:0:4:8000
 A:30:30 to 100
 M:10:2
 power:20000
-effect:ATOMIC_GAIN_STAT:WIS
+effect:GAIN_STAT:WIS
 
 N:313:Dexterity
 G:!:d
@@ -2158,7 +2158,7 @@ W:30:0:4:8000
 A:30:30 to 100
 M:10:2
 power:20000
-effect:ATOMIC_GAIN_STAT:DEX
+effect:GAIN_STAT:DEX
 
 N:314:Constitution
 G:!:d
@@ -2167,7 +2167,7 @@ W:30:0:4:8000
 A:30:30 to 100
 M:10:2
 power:20000
-effect:ATOMIC_GAIN_STAT:CON
+effect:GAIN_STAT:CON
 
 ### 315, sval 6
 
@@ -2178,11 +2178,11 @@ W:40:0:4:50000
 A:20:40 to 100
 P:0:1d1:0:0:0
 power:20000
-effect:ATOMIC_GAIN_STAT:STR
-effect:ATOMIC_GAIN_STAT:INT
-effect:ATOMIC_GAIN_STAT:WIS
-effect:ATOMIC_GAIN_STAT:DEX
-effect:ATOMIC_GAIN_STAT:CON
+effect:GAIN_STAT:STR
+effect:GAIN_STAT:INT
+effect:GAIN_STAT:WIS
+effect:GAIN_STAT:DEX
+effect:GAIN_STAT:CON
 
 N:317:Experience
 G:!:d
@@ -2190,7 +2190,7 @@ I:potion
 W:65:0:4:25000
 A:50:65 to 100
 power:20000
-effect:ATOMIC_GAIN_EXP
+effect:GAIN_EXP
 dice:100000
 
 ### Healings ###
@@ -2202,14 +2202,14 @@ W:0:0:4:20
 A:80:1 to 15
 M:90:2d3
 power:3
-effect:ATOMIC_HEAL_HP
+effect:HEAL_HP
 dice:20
-effect:ATOMIC_CURE:BLIND
-effect:ATOMIC_TIMED_DEC:CUT
+effect:CURE:BLIND
+effect:TIMED_DEC:CUT
 dice:20
-effect:ATOMIC_TIMED_DEC:CONFUSED
+effect:TIMED_DEC:CONFUSED
 dice:20
-effect:ATOMIC_NOURISH
+effect:NOURISH
 dice:150
 
 N:319:Cure Serious Wounds
@@ -2219,12 +2219,12 @@ W:3:0:4:70
 A:80:5 to 40
 M:80:2d3
 power:6
-effect:ATOMIC_HEAL_HP
+effect:HEAL_HP
 dice:40
-effect:ATOMIC_CURE:BLIND
-effect:ATOMIC_CURE:CUT
-effect:ATOMIC_CURE:CONFUSED
-effect:ATOMIC_NOURISH
+effect:CURE:BLIND
+effect:CURE:CUT
+effect:CURE:CONFUSED
+effect:NOURISH
 dice:150
 
 N:320:Cure Critical Wounds
@@ -2234,15 +2234,15 @@ W:5:0:4:200
 A:80:12 to 100
 M:70:2d3
 power:9
-effect:ATOMIC_HEAL_HP
+effect:HEAL_HP
 dice:60
-effect:ATOMIC_CURE:BLIND
-effect:ATOMIC_CURE:CUT
-effect:ATOMIC_CURE:POISONED
-effect:ATOMIC_CURE:STUN
-effect:ATOMIC_CURE:AMNESIA
-effect:ATOMIC_CURE:CONFUSED
-effect:ATOMIC_NOURISH
+effect:CURE:BLIND
+effect:CURE:CUT
+effect:CURE:POISONED
+effect:CURE:STUN
+effect:CURE:AMNESIA
+effect:CURE:CONFUSED
+effect:NOURISH
 dice:150
 
 N:321:Healing
@@ -2252,15 +2252,15 @@ W:15:0:4:800
 A:64:30 to 100
 M:25:2
 power:12
-effect:ATOMIC_HEAL_HP
+effect:HEAL_HP
 dice:300+m35
-effect:ATOMIC_CURE:BLIND
-effect:ATOMIC_CURE:CUT
-effect:ATOMIC_CURE:POISONED
-effect:ATOMIC_CURE:STUN
-effect:ATOMIC_CURE:AMNESIA
-effect:ATOMIC_CURE:CONFUSED
-effect:ATOMIC_NOURISH
+effect:CURE:BLIND
+effect:CURE:CUT
+effect:CURE:POISONED
+effect:CURE:STUN
+effect:CURE:AMNESIA
+effect:CURE:CONFUSED
+effect:NOURISH
 dice:200
 
 N:322:*Healing*
@@ -2270,15 +2270,15 @@ W:40:0:4:1500
 A:40:40 to 100
 P:0:1d1:0:0:0
 power:18
-effect:ATOMIC_HEAL_HP
+effect:HEAL_HP
 dice:1200
-effect:ATOMIC_CURE:BLIND
-effect:ATOMIC_CURE:CUT
-effect:ATOMIC_CURE:POISONED
-effect:ATOMIC_CURE:STUN
-effect:ATOMIC_CURE:AMNESIA
-effect:ATOMIC_CURE:CONFUSED
-effect:ATOMIC_NOURISH
+effect:CURE:BLIND
+effect:CURE:CUT
+effect:CURE:POISONED
+effect:CURE:STUN
+effect:CURE:AMNESIA
+effect:CURE:CONFUSED
+effect:NOURISH
 dice:300
 
 N:323:Life
@@ -2289,19 +2289,19 @@ A:20:60 to 100
 P:0:1d1:0:0:0
 msg:You feel life flow through your body!
 power:21
-effect:ATOMIC_RESTORE_EXP
-effect:ATOMIC_CURE:BLIND
-effect:ATOMIC_CURE:CUT
-effect:ATOMIC_CURE:POISONED
-effect:ATOMIC_CURE:STUN
-effect:ATOMIC_CURE:AMNESIA
-effect:ATOMIC_CURE:CONFUSED
-effect:ATOMIC_RESTORE_STAT:STR
-effect:ATOMIC_RESTORE_STAT:INT
-effect:ATOMIC_RESTORE_STAT:WIS
-effect:ATOMIC_RESTORE_STAT:DEX
-effect:ATOMIC_RESTORE_STAT:CON
-effect:ATOMIC_HEAL_HP
+effect:RESTORE_EXP
+effect:CURE:BLIND
+effect:CURE:CUT
+effect:CURE:POISONED
+effect:CURE:STUN
+effect:CURE:AMNESIA
+effect:CURE:CONFUSED
+effect:RESTORE_STAT:STR
+effect:RESTORE_STAT:INT
+effect:RESTORE_STAT:WIS
+effect:RESTORE_STAT:DEX
+effect:RESTORE_STAT:CON
+effect:HEAL_HP
 dice:5000
 
 N:324:Neutralize Poison
@@ -2311,7 +2311,7 @@ W:5:0:4:75
 A:40:1 to 35
 M:25:2
 power:1
-effect:ATOMIC_CURE:POISONED
+effect:CURE:POISONED
 
 N:325:Restore Mana
 G:!:d
@@ -2320,7 +2320,7 @@ W:25:0:4:350
 A:64:15 to 100
 M:25:2
 power:20
-effect:ATOMIC_RESTORE_MANA
+effect:RESTORE_MANA
 
 
 ### Stat restore ###
@@ -2334,7 +2334,7 @@ W:40:0:4:400
 A:40:30 to 100
 M:25:2
 power:8
-effect:ATOMIC_RESTORE_EXP
+effect:RESTORE_EXP
 
 
 ### Gain one/lose one potions ###
@@ -2346,8 +2346,8 @@ W:3:0:4:1000
 A:30:20 to 40
 M:10:2
 power:30
-effect:ATOMIC_GAIN_STAT:STR
-effect:ATOMIC_LOSE_RANDOM_STAT:STR
+effect:GAIN_STAT:STR
+effect:LOSE_RANDOM_STAT:STR
 
 N:334:Intellect
 G:!:d
@@ -2356,8 +2356,8 @@ W:20:0:4:1000
 A:30:20 to 40
 M:10:2
 power:25
-effect:ATOMIC_GAIN_STAT:INT
-effect:ATOMIC_LOSE_RANDOM_STAT:INT
+effect:GAIN_STAT:INT
+effect:LOSE_RANDOM_STAT:INT
 
 N:335:Contemplation
 G:!:d
@@ -2366,8 +2366,8 @@ W:20:0:4:1000
 A:30:20 to 40
 M:10:2
 power:25
-effect:ATOMIC_GAIN_STAT:WIS
-effect:ATOMIC_LOSE_RANDOM_STAT:WIS
+effect:GAIN_STAT:WIS
+effect:LOSE_RANDOM_STAT:WIS
 
 N:336:Nimbleness
 G:!:d
@@ -2376,8 +2376,8 @@ W:5:0:4:1000
 A:30:20 to 40
 M:10:2
 power:25
-effect:ATOMIC_GAIN_STAT:DEX
-effect:ATOMIC_LOSE_RANDOM_STAT:DEX
+effect:GAIN_STAT:DEX
+effect:LOSE_RANDOM_STAT:DEX
 
 N:337:Toughness
 G:!:d
@@ -2386,8 +2386,8 @@ W:10:0:4:1000
 A:30:20 to 40
 M:10:2
 power:30
-effect:ATOMIC_GAIN_STAT:CON
-effect:ATOMIC_LOSE_RANDOM_STAT:CON
+effect:GAIN_STAT:CON
+effect:LOSE_RANDOM_STAT:CON
 
 
 ### Knowledge ###
@@ -2399,7 +2399,7 @@ W:25:0:4:800
 A:40:25 to 100
 M:25:2
 power:22
-effect:ATOMIC_ENLIGHTENMENT
+effect:ENLIGHTENMENT
 
 N:342:*Enlightenment*
 G:!:d
@@ -2408,24 +2408,24 @@ W:70:0:4:12000
 A:8:70 to 100
 P:0:1d1:0:0:0
 power:20000
-effect:ATOMIC_ENLIGHTENMENT
-effect:ATOMIC_GAIN_STAT:INT
-effect:ATOMIC_GAIN_STAT:WIS
-effect:ATOMIC_DETECT_TRAPS
+effect:ENLIGHTENMENT
+effect:GAIN_STAT:INT
+effect:GAIN_STAT:WIS
+effect:DETECT_TRAPS
 dice:22d40
-effect:ATOMIC_DETECT_DOORS
+effect:DETECT_DOORS
 dice:22d40
-effect:ATOMIC_DETECT_STAIRS
+effect:DETECT_STAIRS
 dice:22d40
-effect:ATOMIC_DETECT_GOLD
+effect:DETECT_GOLD
 dice:22d40
-effect:ATOMIC_DETECT_OBJECTS
+effect:DETECT_OBJECTS
 dice:22d40
-effect:ATOMIC_DETECT_INVISIBLE_MONSTERS
+effect:DETECT_INVISIBLE_MONSTERS
 dice:500d500
-effect:ATOMIC_DETECT_VISIBLE_MONSTERS
+effect:DETECT_VISIBLE_MONSTERS
 dice:500d500
-effect:ATOMIC_IDENTIFY_PACK
+effect:IDENTIFY_PACK
 
 
 ### Buffs ###
@@ -2437,7 +2437,7 @@ W:1:0:4:75
 A:40:1 to 100
 M:25:2
 power:10
-effect:ATOMIC_TIMED_INC:FAST:5
+effect:TIMED_INC:FAST:5
 dice:20+2d10
 
 N:344:Heroism
@@ -2447,10 +2447,10 @@ W:1:0:4:25
 A:40:1 to 100
 M:25:2
 power:7
-effect:ATOMIC_HEAL_HP
+effect:HEAL_HP
 dice:10
-effect:ATOMIC_CURE:AFRAID
-effect:ATOMIC_TIMED_INC:HERO
+effect:CURE:AFRAID
+effect:TIMED_INC:HERO
 dice:25+1d25
 
 N:345:Berserk Strength
@@ -2460,10 +2460,10 @@ W:3:0:4:100
 A:40:3 to 100
 M:25:2
 power:9
-effect:ATOMIC_HEAL_HP
+effect:HEAL_HP
 dice:30
-effect:ATOMIC_CURE:AFRAID
-effect:ATOMIC_TIMED_INC:SHERO
+effect:CURE:AFRAID
+effect:TIMED_INC:SHERO
 dice:25+1d25
 
 N:346:Boldness
@@ -2473,7 +2473,7 @@ W:1:0:4:8
 A:40:1 to 90
 M:25:2
 power:2
-effect:ATOMIC_CURE:AFRAID
+effect:CURE:AFRAID
 
 N:347:Resist Heat
 G:!:d
@@ -2482,7 +2482,7 @@ W:1:0:4:30
 A:40:1 to 100
 M:25:2
 power:4
-effect:ATOMIC_TIMED_INC:OPP_FIRE
+effect:TIMED_INC:OPP_FIRE
 dice:10+1d10
 
 N:348:Resist Cold
@@ -2492,7 +2492,7 @@ W:1:0:4:30
 A:40:1 to 100
 M:25:2
 power:4
-effect:ATOMIC_TIMED_INC:OPP_COLD
+effect:TIMED_INC:OPP_COLD
 dice:10+1d10
 
 N:349:Resist Poison
@@ -2502,7 +2502,7 @@ W:1:0:4:30
 A:40:8 to 100
 M:25:2
 power:4
-effect:ATOMIC_TIMED_INC:OPP_POIS
+effect:TIMED_INC:OPP_POIS
 dice:10+1d10
 
 N:350:True Seeing
@@ -2512,8 +2512,8 @@ W:3:0:4:50
 A:40:3 to 40
 M:25:2
 power:7
-effect:ATOMIC_CURE:BLIND
-effect:ATOMIC_TIMED_INC:SINVIS
+effect:CURE:BLIND
+effect:TIMED_INC:SINVIS
 dice:12+2d6
 
 N:351:Infravision
@@ -2523,7 +2523,7 @@ W:3:0:4:20
 A:40:3 to 40
 M:25:2
 power:5
-effect:ATOMIC_TIMED_INC:SINFRA
+effect:TIMED_INC:SINFRA
 dice:100+4d25
 
 
@@ -2536,7 +2536,7 @@ W:0:0:4:2
 A:10:1 to 10
 M:70:2d3
 power:0
-effect:ATOMIC_NOURISH
+effect:NOURISH
 dice:1000
 
 N:356:Sleep
@@ -2547,9 +2547,9 @@ A:10:0 to 10
 M:70:2d3
 P:0:3d4:0:0:0
 power:0
-effect:ATOMIC_TIMED_INC:PARALYZED
+effect:TIMED_INC:PARALYZED
 dice:5+1d5
-effect:ATOMIC_NOURISH
+effect:NOURISH
 dice:100
 
 N:357:Blindness
@@ -2560,7 +2560,7 @@ A:10:0 to 10
 M:70:2d3
 P:0:3d4:0:0:0
 power:0
-effect:ATOMIC_TIMED_INC:BLIND
+effect:TIMED_INC:BLIND
 dice:75+4d25
 
 N:358:Confusion
@@ -2571,9 +2571,9 @@ A:10:0 to 10
 M:70:2d3
 P:0:3d4:0:0:0
 power:0
-effect:ATOMIC_TIMED_INC:CONFUSED
+effect:TIMED_INC:CONFUSED
 dice:10+4d5
-effect:ATOMIC_NOURISH
+effect:NOURISH
 dice:50
 
 N:359:Poison
@@ -2584,7 +2584,7 @@ A:10:0 to 10
 M:70:2d3
 P:0:3d4:0:0:0
 power:0
-effect:ATOMIC_TIMED_INC:POISONED
+effect:TIMED_INC:POISONED
 dice:10+2d7
 
 N:360:Slowness
@@ -2595,9 +2595,9 @@ A:10:0 to 10
 M:70:2d3
 P:0:3d4:0:0:0
 power:0
-effect:ATOMIC_TIMED_INC:SLOW
+effect:TIMED_INC:SLOW
 dice:15+1d25
-effect:ATOMIC_NOURISH
+effect:NOURISH
 dice:50
 
 N:361:Lose Memories
@@ -2607,7 +2607,7 @@ W:10:0:4:0
 A:10:10 to 15
 M:25:2
 power:0
-effect:ATOMIC_LOSE_EXP
+effect:LOSE_EXP
 
 N:362:Salt Water
 G:!:d
@@ -2617,11 +2617,11 @@ A:10:3 to 15
 M:100:1d2
 msg:The potion makes you vomit!
 power:0
-effect:ATOMIC_SET_NOURISH
+effect:SET_NOURISH
 #PY_FOOD_STARVE - 1
 dice:99
-effect:ATOMIC_CURE:POISONED
-effect:ATOMIC_TIMED_INC:PARALYZED
+effect:CURE:POISONED
+effect:TIMED_INC:PARALYZED
 dice:4
 
 
@@ -2635,11 +2635,11 @@ M:100:1d2
 A:20:40 to 100
 M:70:1d3
 power:8
-effect:ATOMIC_RANDOM
+effect:RANDOM
 dice:2
-effect:ATOMIC_BREATH:FIRE:2
+effect:BREATH:FIRE:2
 dice:80
-effect:ATOMIC_BREATH:COLD:2
+effect:BREATH:COLD:2
 dice:80
 
 
@@ -2656,7 +2656,7 @@ A:20:3 to 60
 P:0:1d1:0:0:0
 C:6+d10
 power:3
-effect:ATOMIC_BOLT_OR_BEAM:MISSILE
+effect:BOLT_OR_BEAM:MISSILE
 dice:3d4
 
 N:371:Lightning Bolts
@@ -2667,7 +2667,7 @@ A:20:15 to 60
 P:0:1d1:0:0:0
 C:6+d8
 power:5
-effect:ATOMIC_BEAM:ELEC
+effect:BEAM:ELEC
 dice:6d6
 
 N:372:Frost Bolts
@@ -2678,7 +2678,7 @@ A:20:20 to 60
 P:0:1d1:0:0:0
 C:6+d5
 power:4
-effect:ATOMIC_BOLT:COLD
+effect:BOLT:COLD
 dice:12d8
 
 N:373:Fire Bolts
@@ -2689,7 +2689,7 @@ A:20:30 to 60
 P:0:1d1:0:0:0
 C:6+d8
 power:7
-effect:ATOMIC_BOLT_OR_BEAM:FIRE
+effect:BOLT_OR_BEAM:FIRE
 dice:12d8
 
 N:374:Acid Bolts
@@ -2700,7 +2700,7 @@ A:20:30 to 60
 P:0:1d1:0:0:0
 C:6+d8
 power:6
-effect:ATOMIC_BOLT_OR_BEAM:ACID
+effect:BOLT_OR_BEAM:ACID
 dice:10d8
 
 
@@ -2714,7 +2714,7 @@ A:20:5 to 60
 P:0:1d1:0:0:0
 C:6+d8
 power:3
-effect:ATOMIC_BALL:POIS:3
+effect:BALL:POIS:3
 dice:12
 
 N:376:Lightning Balls
@@ -2726,7 +2726,7 @@ P:0:1d1:0:0:0
 C:4+d8
 F:IGNORE_ELEC
 power:9
-effect:ATOMIC_BALL:ELEC:2
+effect:BALL:ELEC:2
 dice:64
 
 N:377:Cold Balls
@@ -2738,7 +2738,7 @@ P:0:1d1:0:0:0
 C:2+d6
 F:IGNORE_COLD
 power:10
-effect:ATOMIC_BALL:COLD:2
+effect:BALL:COLD:2
 dice:100
 
 N:378:Fire Balls
@@ -2750,7 +2750,7 @@ P:0:1d1:0:0:0
 C:2+d4
 F:IGNORE_FIRE
 power:11
-effect:ATOMIC_BALL:FIRE:2
+effect:BALL:FIRE:2
 dice:144
 
 N:379:Acid Balls
@@ -2762,7 +2762,7 @@ P:0:1d1:0:0:0
 C:2+d5
 F:IGNORE_ACID
 power:11
-effect:ATOMIC_BALL:ACID:2
+effect:BALL:ACID:2
 dice:120
 
 
@@ -2776,7 +2776,7 @@ A:20:5 to 60
 P:0:1d1:0:0:0
 C:6+d10
 power:3
-effect:ATOMIC_BOLT:OLD_SLOW
+effect:BOLT:OLD_SLOW
 dice:20
 
 N:381:Confuse Monster
@@ -2787,7 +2787,7 @@ A:20:5 to 60
 P:0:1d1:0:0:0
 C:6+d12
 power:3
-effect:ATOMIC_BOLT_AWARE:OLD_CONF
+effect:BOLT_AWARE:OLD_CONF
 dice:10
 
 N:382:Sleep Monster
@@ -2798,7 +2798,7 @@ A:20:5 to 60
 P:0:1d1:0:0:0
 C:8+d15
 power:3
-effect:ATOMIC_BOLT_AWARE:OLD_SLEEP
+effect:BOLT_AWARE:OLD_SLEEP
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 
@@ -2810,7 +2810,7 @@ A:20:10 to 60
 P:0:1d1:0:0:0
 C:3+d5
 power:3
-effect:ATOMIC_BOLT_AWARE:TURN_ALL
+effect:BOLT_AWARE:TURN_ALL
 dice:10
 
 
@@ -2825,7 +2825,7 @@ P:0:1d1:0:0:0
 C:6+d10
 msg:A line of shimmering blue light appears.
 power:6
-effect:ATOMIC_LINE:LIGHT_WEAK
+effect:LINE:LIGHT_WEAK
 dice:6d8
 
 N:385:Stone to Mud
@@ -2836,7 +2836,7 @@ A:20:10 to 100
 P:0:1d1:0:0:0
 C:3+d4
 power:6
-effect:ATOMIC_LINE:KILL_WALL
+effect:LINE:KILL_WALL
 dice:20+1d30
 
 N:386:Polymorph
@@ -2847,7 +2847,7 @@ A:20:20 to 60
 P:0:1d1:0:0:0
 C:6+d8
 power:7
-effect:ATOMIC_BOLT:OLD_POLY
+effect:BOLT:OLD_POLY
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 
@@ -2859,7 +2859,7 @@ A:20:10 to 60
 P:0:1d1:0:0:0
 C:6+d8
 power:5
-effect:ATOMIC_ALTER:KILL_DOOR
+effect:ALTER:KILL_DOOR
 
 N:388:Clone Monster
 G:-:d
@@ -2869,7 +2869,7 @@ A:20:15 to 100
 P:0:1d1:0:0:0
 C:3+d5
 power:0
-effect:ATOMIC_BOLT:OLD_CLONE
+effect:BOLT:OLD_CLONE
 
 N:389:Teleport Other
 G:-:d
@@ -2879,7 +2879,7 @@ A:20:20 to 100
 P:0:1d1:0:0:0
 C:6+d5
 power:11
-effect:ATOMIC_BOLT:AWAY_ALL
+effect:BOLT:AWAY_ALL
 dice:$B
 expr:B:MAX_SIGHT:* 5
 
@@ -2891,7 +2891,7 @@ A:20:20 to 60
 P:0:1d1:0:0:0
 C:4+d5
 power:7
-effect:ATOMIC_ALTER:KILL_TRAP
+effect:ALTER:KILL_TRAP
 
 N:391:Wonder
 G:-:d
@@ -2902,7 +2902,7 @@ P:0:1d1:0:0:0
 C:8+d15
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 power:9
-effect:ATOMIC_WONDER
+effect:WONDER
 dice:$B+1d100
 expr:B:PLAYER_LEVEL:/ 5
 
@@ -2919,7 +2919,7 @@ P:0:1d1:0:0:0
 C:1+d3
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 power:13
-effect:ATOMIC_BREATH:FIRE:3
+effect:BREATH:FIRE:3
 dice:200
 
 N:393:Dragon's Frost
@@ -2931,7 +2931,7 @@ P:0:1d1:0:0:0
 C:1+d3
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 power:12
-effect:ATOMIC_BREATH:COLD:3
+effect:BREATH:COLD:3
 dice:160
 
 N:394:Dragon's Breath
@@ -2943,17 +2943,17 @@ P:0:1d1:0:0:0
 C:1+d3
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 power:12
-effect:ATOMIC_RANDOM
+effect:RANDOM
 dice:5
-effect:ATOMIC_BREATH:ACID:3
+effect:BREATH:ACID:3
 dice:200
-effect:ATOMIC_BREATH:ELEC:3
+effect:BREATH:ELEC:3
 dice:160
-effect:ATOMIC_BREATH:FIRE:3
+effect:BREATH:FIRE:3
 dice:200
-effect:ATOMIC_BREATH:COLD:3
+effect:BREATH:COLD:3
 dice:160
-effect:ATOMIC_BREATH:POIS:3
+effect:BREATH:POIS:3
 dice:120
 
 
@@ -2967,7 +2967,7 @@ A:50:50 to 100
 P:0:1d1:0:0:0
 C:3+d3
 power:11
-effect:ATOMIC_BOLT:OLD_DRAIN
+effect:BOLT:OLD_DRAIN
 dice:150
 
 N:396:Annihilation
@@ -2979,7 +2979,7 @@ P:0:1d1:0:0:0
 C:1+d2
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 power:12
-effect:ATOMIC_BOLT:OLD_DRAIN
+effect:BOLT:OLD_DRAIN
 dice:250
 
 
@@ -2993,7 +2993,7 @@ A:10:3 to 40
 P:0:1d1:0:0:0
 C:8+d20
 power:0
-effect:ATOMIC_BOLT:OLD_HEAL
+effect:BOLT:OLD_HEAL
 dice:4d6
 
 N:398:Haste Monster
@@ -3004,7 +3004,7 @@ A:10:3 to 40
 P:0:1d1:0:0:0
 C:8+d20
 power:0
-effect:ATOMIC_BOLT:OLD_SPEED
+effect:BOLT:OLD_SPEED
 dice:100
 
 
@@ -3022,7 +3022,7 @@ A:10:10 to 100
 P:0:1d2:0:0:0
 C:2d3
 power:0
-effect:ATOMIC_SUMMON
+effect:SUMMON
 dice:1d3
 
 N:401:Haste Monsters
@@ -3033,7 +3033,7 @@ A:10:10 to 40
 P:0:1d2:0:0:0
 C:8+d8
 power:0
-effect:ATOMIC_PROJECT_LOS:OLD_SPEED
+effect:PROJECT_LOS:OLD_SPEED
 dice:50
 
 N:402:Darkness
@@ -3044,8 +3044,8 @@ A:10:5 to 40
 P:0:1d2:0:0:0
 C:8+d8
 power:0
-effect:ATOMIC_DARKEN_AREA:DARK_WEAK:2
-effect:ATOMIC_TIMED_INC:BLIND
+effect:DARKEN_AREA:DARK_WEAK:2
+effect:TIMED_INC:BLIND
 dice:3+1d5
 
 
@@ -3059,7 +3059,7 @@ A:20:40 to 100
 P:0:1d2:0:0:0
 C:3+d5
 power:5
-effect:ATOMIC_EARTHQUAKE
+effect:EARTHQUAKE
 
 N:404:*Destruction*
 G:_:d
@@ -3069,7 +3069,7 @@ A:20:50 to 100
 P:0:1d2:0:0:0
 C:1+d3
 power:12
-effect:ATOMIC_DESTRUCTION
+effect:DESTRUCTION
 
 
 ### Monster-affecting ###
@@ -3082,7 +3082,7 @@ A:20:10 to 100
 P:0:1d2:0:0:0
 C:6+d5
 power:10
-effect:ATOMIC_PROJECT_LOS:OLD_CONF
+effect:PROJECT_LOS:OLD_CONF
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 
@@ -3094,7 +3094,7 @@ A:20:10 to 100
 P:0:1d2:0:0:0
 C:6+d5
 power:7
-effect:ATOMIC_PROJECT_LOS:OLD_SLOW
+effect:PROJECT_LOS:OLD_SLOW
 dice:20
 
 N:407:Sleep Monsters
@@ -3105,7 +3105,7 @@ A:20:10 to 100
 P:0:1d2:0:0:0
 C:6+d5
 power:8
-effect:ATOMIC_PROJECT_LOS:OLD_SLEEP
+effect:PROJECT_LOS:OLD_SLEEP
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 
@@ -3120,7 +3120,7 @@ A:30:5 to 100
 P:0:1d2:0:0:0
 C:8+d15
 power:6
-effect:ATOMIC_DETECT_INVISIBLE_MONSTERS
+effect:DETECT_INVISIBLE_MONSTERS
 dice:22d40
 
 N:409:Detect Evil
@@ -3131,7 +3131,7 @@ A:30:20 to 100
 P:0:1d2:0:0:0
 C:8+d15
 power:6
-effect:ATOMIC_DETECT_EVIL
+effect:DETECT_EVIL
 dice:22d40
 
 N:410:Mapping
@@ -3142,7 +3142,7 @@ A:30:20 to 100
 P:0:1d2:0:0:0
 C:5+d5
 power:10
-effect:ATOMIC_MAP_AREA
+effect:MAP_AREA
 dice:22d40
 
 
@@ -3156,11 +3156,11 @@ A:30:10 to 100
 P:0:1d2:0:0:0
 C:4+d3
 power:9
-effect:ATOMIC_CURE:BLIND
-effect:ATOMIC_CURE:CUT
-effect:ATOMIC_CURE:POISONED
-effect:ATOMIC_CURE:STUN
-effect:ATOMIC_CURE:CONFUSED
+effect:CURE:BLIND
+effect:CURE:CUT
+effect:CURE:POISONED
+effect:CURE:STUN
+effect:CURE:CONFUSED
 
 N:412:Cure Light Wounds
 G:_:d
@@ -3170,12 +3170,12 @@ A:30:5 to 100
 P:0:1d2:0:0:0
 C:6+d5
 power:3
-effect:ATOMIC_HEAL_HP
+effect:HEAL_HP
 dice:20
-effect:ATOMIC_CURE:BLIND
-effect:ATOMIC_TIMED_DEC:CUT
+effect:CURE:BLIND
+effect:TIMED_DEC:CUT
 dice:20
-effect:ATOMIC_TIMED_DEC:CONFUSED
+effect:TIMED_DEC:CONFUSED
 dice:20
 
 N:413:Healing
@@ -3186,14 +3186,14 @@ A:10:70 to 100
 P:0:1d2:0:0:0
 C:1+d2
 power:12
-effect:ATOMIC_HEAL_HP
+effect:HEAL_HP
 dice:300+m35
-effect:ATOMIC_CURE:BLIND
-effect:ATOMIC_CURE:CUT
-effect:ATOMIC_CURE:POISONED
-effect:ATOMIC_CURE:STUN
-effect:ATOMIC_CURE:AMNESIA
-effect:ATOMIC_CURE:CONFUSED
+effect:CURE:BLIND
+effect:CURE:CUT
+effect:CURE:POISONED
+effect:CURE:STUN
+effect:CURE:AMNESIA
+effect:CURE:CONFUSED
 
 
 ### Killing staffs ###
@@ -3206,7 +3206,7 @@ A:50:50 to 100
 P:0:1d2:0:0:0
 C:4+d3
 power:9
-effect:ATOMIC_PROJECT_LOS:DISP_EVIL
+effect:PROJECT_LOS:DISP_EVIL
 dice:60
 
 N:415:Banishment
@@ -3217,7 +3217,7 @@ A:10:70 to 100
 P:0:1d2:0:0:0
 C:1+d2
 power:20
-effect:ATOMIC_BANISH
+effect:BANISH
 
 N:416:Power
 G:_:d
@@ -3227,7 +3227,7 @@ A:20:70 to 100
 P:0:1d2:0:0:0
 C:1+d3
 power:11
-effect:ATOMIC_PROJECT_LOS:DISP_ALL
+effect:PROJECT_LOS:DISP_ALL
 dice:120
 
 N:417:Holiness
@@ -3238,23 +3238,23 @@ A:20:70 to 100
 P:0:1d2:0:0:0
 C:2d2
 power:12
-effect:ATOMIC_PROJECT_LOS:DISP_EVIL:1
+effect:PROJECT_LOS:DISP_EVIL:1
 dice:120
-effect:ATOMIC_HEAL_HP
+effect:HEAL_HP
 dice:50
-effect:ATOMIC_TIMED_INC:PROTEVIL
+effect:TIMED_INC:PROTEVIL
 dice:$B+1d25
 expr:B:PLAYER_LEVEL:* 3
-effect:ATOMIC_CURE:POISONED
-effect:ATOMIC_CURE:TERROR
-effect:ATOMIC_CURE:AFRAID
-effect:ATOMIC_CURE:STUN
-effect:ATOMIC_CURE:CUT
-effect:ATOMIC_CURE:SLOW
-effect:ATOMIC_CURE:BLIND
-effect:ATOMIC_CURE:CONFUSED
-effect:ATOMIC_CURE:IMAGE
-effect:ATOMIC_CURE:AMNESIA
+effect:CURE:POISONED
+effect:CURE:TERROR
+effect:CURE:AFRAID
+effect:CURE:STUN
+effect:CURE:CUT
+effect:CURE:SLOW
+effect:CURE:BLIND
+effect:CURE:CONFUSED
+effect:CURE:IMAGE
+effect:CURE:AMNESIA
 
 
 ### Utility ###
@@ -3267,7 +3267,7 @@ A:20:5 to 80
 P:0:1d2:0:0:0
 C:8+d20
 power:4
-effect:ATOMIC_LIGHT_AREA
+effect:LIGHT_AREA
 param:2
 dice:2d8
 
@@ -3279,7 +3279,7 @@ A:20:20 to 80
 P:0:1d2:0:0:0
 C:6+d5
 power:5
-effect:ATOMIC_STAR:LIGHT_WEAK
+effect:STAR:LIGHT_WEAK
 dice:6d8
 
 N:420:Teleportation
@@ -3290,7 +3290,7 @@ A:50:20 to 100
 P:0:1d2:0:0:0
 C:5+d4
 power:6
-effect:ATOMIC_TELEPORT
+effect:TELEPORT
 dice:100
 
 N:421:Speed
@@ -3301,7 +3301,7 @@ A:20:40 to 100
 P:0:1d2:0:0:0
 C:4+d3
 power:10
-effect:ATOMIC_TIMED_INC:FAST:5
+effect:TIMED_INC:FAST:5
 dice:20+2d10
 
 ## Remove in 3.4 until curses are redone
@@ -3313,7 +3313,7 @@ W:40:0:50:500
 P:0:1d2:0:0:0
 C:4+d3
 power:8
-effect:ATOMIC_REMOVE_CURSE
+effect:REMOVE_CURSE
 
 N:423:the Magi
 G:_:d
@@ -3323,8 +3323,8 @@ A:10:70 to 100
 P:0:1d2:0:0:0
 C:2+1d2
 power:20
-effect:ATOMIC_RESTORE_STAT:INT
-effect:ATOMIC_RESTORE_MANA
+effect:RESTORE_STAT:INT
+effect:RESTORE_MANA
 
 N:424:Identify
 G:_:d
@@ -3334,7 +3334,7 @@ A:50:10 to 100
 P:0:1d2:0:0:0
 C:5+d15
 power:9
-effect:ATOMIC_IDENTIFY
+effect:IDENTIFY
 
 
 
@@ -3348,9 +3348,9 @@ I:rod
 W:5:0:15:1000
 A:30:8 to 75
 power:6
-effect:ATOMIC_DETECT_GOLD
+effect:DETECT_GOLD
 dice:22d40
-effect:ATOMIC_SENSE_OBJECTS
+effect:SENSE_OBJECTS
 dice:22d40
 time:50
 
@@ -3361,9 +3361,9 @@ W:15:0:15:1000
 A:30:8 to 75
 P:0:1d1:0:0:0
 power:6
-effect:ATOMIC_DETECT_DOORS
+effect:DETECT_DOORS
 dice:22d40
-effect:ATOMIC_DETECT_STAIRS
+effect:DETECT_STAIRS
 dice:22d40
 time:70
 
@@ -3374,7 +3374,7 @@ W:5:0:15:1000
 A:30:8 to 75
 P:0:1d1:0:0:0
 power:6
-effect:ATOMIC_DETECT_TRAPS
+effect:DETECT_TRAPS
 dice:22d40
 time:50
 
@@ -3386,19 +3386,19 @@ A:30:50 to 100
 P:0:1d1:0:0:0
 F:IGNORE_ELEC
 power:10
-effect:ATOMIC_DETECT_TRAPS
+effect:DETECT_TRAPS
 dice:22d40
-effect:ATOMIC_DETECT_DOORS
+effect:DETECT_DOORS
 dice:22d40
-effect:ATOMIC_DETECT_STAIRS
+effect:DETECT_STAIRS
 dice:22d40
-effect:ATOMIC_DETECT_GOLD
+effect:DETECT_GOLD
 dice:22d40
-effect:ATOMIC_SENSE_OBJECTS
+effect:SENSE_OBJECTS
 dice:22d40
-effect:ATOMIC_DETECT_INVISIBLE_MONSTERS
+effect:DETECT_INVISIBLE_MONSTERS
 dice:22d40
-effect:ATOMIC_DETECT_VISIBLE_MONSTERS
+effect:DETECT_VISIBLE_MONSTERS
 dice:22d40
 time:100
 
@@ -3409,7 +3409,7 @@ W:65:0:15:2000
 A:10:65 to 100
 P:0:1d1:0:0:0
 power:10
-effect:ATOMIC_MAP_AREA
+effect:MAP_AREA
 dice:22d40
 time:100
 
@@ -3420,7 +3420,7 @@ W:35:0:15:1000
 A:20:35 to 100
 P:0:1d1:0:0:0
 power:8
-effect:ATOMIC_PROBE
+effect:PROBE
 time:100
 
 
@@ -3433,7 +3433,7 @@ W:30:0:15:3000
 A:20:30 to 80
 P:0:1d1:0:0:0
 power:7
-effect:ATOMIC_BOLT_OR_BEAM:FIRE
+effect:BOLT_OR_BEAM:FIRE
 dice:12d8
 time:15
 
@@ -3444,7 +3444,7 @@ W:25:0:15:2500
 A:20:25 to 80
 P:0:1d1:0:0:0
 power:7
-effect:ATOMIC_BOLT:COLD
+effect:BOLT:COLD
 dice:12d8
 time:13
 
@@ -3455,7 +3455,7 @@ W:20:0:15:2000
 A:20:20 to 80
 P:0:1d1:0:0:0
 power:5
-effect:ATOMIC_BEAM:ELEC
+effect:BEAM:ELEC
 dice:6d6
 time:11
 
@@ -3466,7 +3466,7 @@ W:40:0:15:3500
 A:20:40 to 80
 P:0:1d1:0:0:0
 power:7
-effect:ATOMIC_BOLT_OR_BEAM:ACID
+effect:BOLT_OR_BEAM:ACID
 dice:12d8
 time:12
 
@@ -3480,7 +3480,7 @@ W:75:0:15:5000
 A:20:75 to 100
 P:0:1d1:0:0:0
 power:11
-effect:ATOMIC_BALL:FIRE:2
+effect:BALL:FIRE:2
 dice:144
 time:30
 
@@ -3491,7 +3491,7 @@ W:60:0:15:4500
 A:20:60 to 100
 P:0:1d1:0:0:0
 power:10
-effect:ATOMIC_BALL:COLD:2
+effect:BALL:COLD:2
 dice:100
 time:25
 
@@ -3503,7 +3503,7 @@ A:20:55 to 100
 P:0:1d1:0:0:0
 F:IGNORE_ELEC
 power:9
-effect:ATOMIC_BALL:ELEC:2
+effect:BALL:ELEC:2
 dice:64
 time:23
 
@@ -3514,7 +3514,7 @@ W:70:0:15:5500
 A:20:70 to 100
 P:0:1d1:0:0:0
 power:11
-effect:ATOMIC_BALL:ACID:2
+effect:BALL:ACID:2
 dice:120
 time:27
 
@@ -3528,7 +3528,7 @@ W:30:0:15:1500
 A:20:30 to 100
 P:0:1d1:0:0:0
 power:3
-effect:ATOMIC_BOLT:OLD_SLOW
+effect:BOLT:OLD_SLOW
 dice:20
 time:20
 
@@ -3539,7 +3539,7 @@ W:30:0:15:1500
 A:20:30 to 100
 P:0:1d1:0:0:0
 power:3
-effect:ATOMIC_BOLT_AWARE:OLD_SLEEP
+effect:BOLT_AWARE:OLD_SLEEP
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 time:18
@@ -3554,11 +3554,11 @@ W:65:0:15:1000
 A:20:10 to 80
 P:0:1d1:0:0:0
 power:9
-effect:ATOMIC_CURE:BLIND
-effect:ATOMIC_CURE:CUT
-effect:ATOMIC_CURE:POISONED
-effect:ATOMIC_CURE:STUN
-effect:ATOMIC_CURE:CONFUSED
+effect:CURE:BLIND
+effect:CURE:CUT
+effect:CURE:POISONED
+effect:CURE:STUN
+effect:CURE:CONFUSED
 time:100
 
 N:447:Healing
@@ -3569,10 +3569,10 @@ A:20:80 to 100
 P:0:1d1:0:0:0
 F:IGNORE_ELEC
 power:14
-effect:ATOMIC_HEAL_HP
+effect:HEAL_HP
 dice:500
-effect:ATOMIC_CURE:CUT
-effect:ATOMIC_CURE:STUN
+effect:CURE:CUT
+effect:CURE:STUN
 time:1000
 
 N:448:Restoration
@@ -3583,12 +3583,12 @@ A:10:80 to 100
 P:0:1d1:0:0:0
 F:IGNORE_ELEC
 power:17
-effect:ATOMIC_RESTORE_STAT:STR
-effect:ATOMIC_RESTORE_STAT:INT
-effect:ATOMIC_RESTORE_STAT:WIS
-effect:ATOMIC_RESTORE_STAT:DEX
-effect:ATOMIC_RESTORE_STAT:CON
-effect:ATOMIC_RESTORE_EXP
+effect:RESTORE_STAT:STR
+effect:RESTORE_STAT:INT
+effect:RESTORE_STAT:WIS
+effect:RESTORE_STAT:DEX
+effect:RESTORE_STAT:CON
+effect:RESTORE_EXP
 time:1000
 
 
@@ -3601,7 +3601,7 @@ W:35:0:15:1200
 A:20:35 to 80
 P:0:1d1:0:0:0
 power:7
-effect:ATOMIC_BOLT:OLD_POLY
+effect:BOLT:OLD_POLY
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 time:25
@@ -3613,7 +3613,7 @@ W:75:0:15:3600
 A:20:75 to 100
 P:0:1d1:0:0:0
 power:11
-effect:ATOMIC_BOLT:OLD_DRAIN
+effect:BOLT:OLD_DRAIN
 dice:150
 time:23
 
@@ -3624,7 +3624,7 @@ W:45:0:15:5000
 A:20:45 to 100
 P:0:1d1:0:0:0
 power:11
-effect:ATOMIC_BOLT:AWAY_ALL
+effect:BOLT:AWAY_ALL
 dice:$B
 expr:B:MAX_SIGHT:* 5
 time:25
@@ -3636,7 +3636,7 @@ W:35:0:15:2100
 A:10:10 to 100
 P:0:1d1:0:0:0
 power:7
-effect:ATOMIC_ALTER:KILL_TRAP
+effect:ALTER:KILL_TRAP
 time:30
 
 N:453:Light
@@ -3647,7 +3647,7 @@ A:20:8 to 100
 P:0:1d1:0:0:0
 msg:A line of shimmering blue light appears.
 power:6
-effect:ATOMIC_LINE:LIGHT_WEAK
+effect:LINE:LIGHT_WEAK
 dice:6d8
 time:9
 
@@ -3658,7 +3658,7 @@ W:20:0:15:1000
 A:20:20 to 100
 P:0:1d1:0:0:0
 power:4
-effect:ATOMIC_LIGHT_AREA
+effect:LIGHT_AREA
 param:2
 dice:2d8
 time:30
@@ -3671,7 +3671,7 @@ A:10:30 to 100
 P:0:1d1:0:0:0
 F:IGNORE_ELEC
 power:15
-effect:ATOMIC_RECALL
+effect:RECALL
 time:60
 
 N:456:Identify
@@ -3682,7 +3682,7 @@ A:15:50 to 100
 P:0:1d1:0:0:0
 F:IGNORE_ELEC
 power:9
-effect:ATOMIC_IDENTIFY
+effect:IDENTIFY
 time:10
 
 N:457:Speed
@@ -3693,7 +3693,7 @@ A:10:80 to 100
 P:0:1d1:0:0:0
 F:IGNORE_ELEC
 power:10
-effect:ATOMIC_TIMED_INC:FAST:5
+effect:TIMED_INC:FAST:5
 dice:20+2d10
 time:100
 
@@ -3906,7 +3906,7 @@ P:16:2d4:-2:0:10
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 V:RES_ACID[1]
 power:11
-effect:ATOMIC_BREATH:ACID:2
+effect:BREATH:ACID:2
 dice:120
 time:50
 
@@ -3919,7 +3919,7 @@ P:12:2d4:-2:0:10
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 V:RES_ELEC[1]
 power:18
-effect:ATOMIC_BREATH:ELEC:2
+effect:BREATH:ELEC:2
 dice:150
 time:50
 
@@ -3932,7 +3932,7 @@ P:14:2d4:-2:0:10
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 V:RES_COLD[1]
 power:10
-effect:ATOMIC_BREATH:COLD:2
+effect:BREATH:COLD:2
 dice:100
 time:50
 
@@ -3945,7 +3945,7 @@ P:24:2d4:-2:0:10
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 V:RES_FIRE[1]
 power:20
-effect:ATOMIC_BREATH:FIRE:2
+effect:BREATH:FIRE:2
 dice:200
 time:50
 
@@ -3958,7 +3958,7 @@ P:20:2d4:-2:0:10
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 V:RES_POIS[1]
 power:19
-effect:ATOMIC_BREATH:POIS:2
+effect:BREATH:POIS:2
 dice:150
 time:50
 
@@ -3971,17 +3971,17 @@ P:45:2d4:-2:0:10
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 V:RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1] | RES_POIS[1]
 power:20
-effect:ATOMIC_RANDOM
+effect:RANDOM
 dice:5
-effect:ATOMIC_BREATH:ACID:2
+effect:BREATH:ACID:2
 dice:250
-effect:ATOMIC_BREATH:ELEC:2
+effect:BREATH:ELEC:2
 dice:250
-effect:ATOMIC_BREATH:FIRE:2
+effect:BREATH:FIRE:2
 dice:250
-effect:ATOMIC_BREATH:COLD:2
+effect:BREATH:COLD:2
 dice:250
-effect:ATOMIC_BREATH:POIS:2
+effect:BREATH:POIS:2
 dice:250
 time:50
 
@@ -3994,11 +3994,11 @@ P:32:2d4:-2:0:10
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 V:RES_LIGHT[1] | RES_DARK[1]
 power:21
-effect:ATOMIC_RANDOM
+effect:RANDOM
 dice:2
-effect:ATOMIC_BREATH:LIGHT:2
+effect:BREATH:LIGHT:2
 dice:200
-effect:ATOMIC_BREATH:DARK:2
+effect:BREATH:DARK:2
 dice:200
 time:50
 
@@ -4011,11 +4011,11 @@ P:36:2d4:-2:0:10
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 V:RES_SOUND[1] | RES_SHARD[1]
 power:23
-effect:ATOMIC_RANDOM
+effect:RANDOM
 dice:2
-effect:ATOMIC_BREATH:SOUND:2
+effect:BREATH:SOUND:2
 dice:230
-effect:ATOMIC_BREATH:SHARD:2
+effect:BREATH:SHARD:2
 dice:230
 time:50
 
@@ -4028,7 +4028,7 @@ P:28:2d4:-2:0:10
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 V:RES_SOUND[1]
 power:19
-effect:ATOMIC_BREATH:SOUND:2
+effect:BREATH:SOUND:2
 dice:150
 time:50
 
@@ -4041,11 +4041,11 @@ P:40:2d4:-2:0:10
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 V:RES_CHAOS[1] | RES_DISEN[1]
 power:23
-effect:ATOMIC_RANDOM
+effect:RANDOM
 dice:2
-effect:ATOMIC_BREATH:CHAOS:2
+effect:BREATH:CHAOS:2
 dice:220
-effect:ATOMIC_BREATH:DISEN:2
+effect:BREATH:DISEN:2
 dice:220
 time:50
 
@@ -4058,15 +4058,15 @@ P:50:2d4:-2:0:10
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 V:RES_SOUND[1] | RES_SHARD[1] | RES_CHAOS[1] | RES_DISEN[1]
 power:24
-effect:ATOMIC_RANDOM
+effect:RANDOM
 dice:4
-effect:ATOMIC_BREATH:SOUND:2
+effect:BREATH:SOUND:2
 dice:250
-effect:ATOMIC_BREATH:SHARD:2
+effect:BREATH:SHARD:2
 dice:250
-effect:ATOMIC_BREATH:CHAOS:2
+effect:BREATH:CHAOS:2
 dice:250
-effect:ATOMIC_BREATH:DISEN:2
+effect:BREATH:DISEN:2
 dice:250
 time:50
 
@@ -4082,7 +4082,7 @@ V:RES_ACID[1] | RES_FIRE[1] | RES_COLD[1] | RES_ELEC[1] | RES_POIS[1]
 V:RES_DISEN[1] | RES_SOUND[1] | RES_SHARD[1]
 V:RES_LIGHT[1] | RES_DARK[1] | RES_CHAOS[1]
 power:25
-effect:ATOMIC_BREATH:MISSILE:2
+effect:BREATH:MISSILE:2
 dice:300
 time:50
 

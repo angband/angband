@@ -502,7 +502,7 @@ extern void hit_trap(int y, int x)
 
 			/* Fire off the trap */
 			effect = t_ptr->kind->effect;
-			atomic_effect_do(effect, &ident, FALSE, 0, 0, 0);
+			effect_do(effect, &ident, FALSE, 0, 0, 0);
 
 			/* Trap becomes visible (always XXX) */
 			trf_on(t_ptr->flags, TRF_VISIBLE);

@@ -770,13 +770,13 @@ static int stats_dump_lists(void)
 	 * description field. */
 	info_entry effects[] =
 	{
-		{ AEF_ATOMIC_NONE, FALSE, NULL },
+		{ EF_NONE, FALSE, NULL },
 		#define F(x) effect_handler_##x
-		#define EFFECT(x, a, b, d)    { AEF_##x, a, #x },
-		#include "list-atomic-effects.h"
+		#define EFFECT(x, a, b, d)    { EF_##x, a, #x },
+		#include "list-effects.h"
 		#undef EFFECT
 		#undef F
-		{ AEF_ATOMIC_MAX, FALSE, NULL }
+		{ EF_MAX, FALSE, NULL }
 	};
 
 	char *r_info_flags[] =
@@ -823,7 +823,7 @@ static int stats_dump_lists(void)
 		"INSERT INTO effects_list VALUES(?,?,?,?);");
 	if (err) return err;
 
-	for (idx = 1; idx < AEF_ATOMIC_MAX; idx++)
+	for (idx = 1; idx < EF_MAX; idx++)
 	{
 		if (! effects[idx].desc) continue;
 

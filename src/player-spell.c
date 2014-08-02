@@ -427,7 +427,7 @@ bool spell_cast(int spell, int dir)
 	else
 	{
 		/* Cast the spell */
-		if (!atomic_effect_do(s_ptr->effect, ident, TRUE, dir, beam, FALSE)) {
+		if (!effect_do(s_ptr->effect, ident, TRUE, dir, beam, FALSE)) {
 			mem_free(ident);
 			return FALSE;
 		}
@@ -497,7 +497,7 @@ bool spell_cast(int spell, int dir)
 bool spell_is_identify(int spell)
 {
 	const class_spell *sp = spell_by_index(spell);
-	return (sp->effect->index == AEF_ATOMIC_IDENTIFY);
+	return (sp->effect->index == EF_IDENTIFY);
 }
 
 bool spell_needs_aim(int spell)
@@ -542,11 +542,11 @@ static void spell_append_value_info(int spell, char *p, size_t len)
 
 	/* Handle some special cases where we want to append some additional info */
 	switch (sp->effect->index) {
-		case AEF_ATOMIC_HEAL_HP:
+		case EF_HEAL_HP:
 			/* Append percentage only, as the fixed value is always displayed */
 			if (rv.m_bonus) special = format("/%d%%", rv.m_bonus);
 			break;
-		case AEF_ATOMIC_SWARM:
+		case EF_SWARM:
 			/* Append number of projectiles. */
 			special = format("x%d", rv.m_bonus);
 			break;
