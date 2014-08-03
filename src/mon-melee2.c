@@ -2248,6 +2248,9 @@ void process_monsters(struct chunk *c, byte minimum_energy)
 		/* Use up "some" energy */
 		m_ptr->energy -= 100;
 
+		/* Set this monster to be the current actor */
+		c->mon_current = i;
+
 		/* Heal monster? XXX XXX XXX */
 
 		/*
@@ -2260,11 +2263,13 @@ void process_monsters(struct chunk *c, byte minimum_energy)
 		if ((m_ptr->cdis <= (OPT(birth_small_range) ? m_ptr->race->aaf / 2 : m_ptr->race->aaf)) ||
 		    (m_ptr->hp < m_ptr->maxhp) ||
 		    player_has_los_bold(m_ptr->fy, m_ptr->fx) ||
-		    monster_can_flow(c, m_ptr))
-		{
+		    monster_can_flow(c, m_ptr)) {
 			/* Process the monster */
 			process_monster(c, m_ptr);
 		}
+
+		/* Monster is no longer current */
+		c->mon_current = -1;
 	}
 }
 

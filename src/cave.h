@@ -232,6 +232,7 @@ struct chunk {
 	struct monster *monsters;
 	u16b mon_max;
 	u16b mon_cnt;
+	int mon_current;
 
 	struct object *objects;
 	u16b obj_max;

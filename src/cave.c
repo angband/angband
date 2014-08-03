@@ -2656,6 +2656,7 @@ struct chunk *cave_new(int height, int width) {
 
 	c->monsters = mem_zalloc(z_info->m_max * sizeof(struct monster));
 	c->mon_max = 1;
+	c->mon_current = -1;
 
 	c->objects = mem_zalloc(z_info->o_max * sizeof(struct object));
 	c->obj_max = 1;
