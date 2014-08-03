@@ -570,6 +570,16 @@ void get_spell_info(int spell, char *p, size_t len)
 	spell_append_value_info(spell, p, len);
 }
 
+static int spell_value_base_monster_level(void)
+{
+	struct monster *mon;
+	if (cave->mon_current > 0)
+		mon = cave_monster(cave, cave->mon_current);
+	else
+		return 0;
+	return mon ? mon->race->level : 0;
+}
+
 static int spell_value_base_player_level(void)
 {
 	return player->lev;
@@ -586,6 +596,7 @@ expression_base_value_f spell_value_base_by_name(const char *name)
 		const char *name;
 		expression_base_value_f function;
 	} value_bases[] = {
+		{ "MONSTER_LEVEL", spell_value_base_monster_level },
 		{ "PLAYER_LEVEL", spell_value_base_player_level },
 		{ "MAX_SIGHT", spell_value_base_max_sight },
 		{ NULL, NULL },
