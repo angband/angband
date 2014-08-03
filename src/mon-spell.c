@@ -46,8 +46,8 @@ static const struct mon_spell mon_spell_table[] =
  */
 static const struct spell_effect spell_effect_table[] =
 {
-    #define RSE(a, b, c, d, e, f, g, h, i) \
-			{ RSE_##a, b, c, d, e, f, g, h, i },
+    #define RSE(a, b, c, d, e, f, g, h) \
+			{ RSE_##a, b, c, d, e, f, g, h },
 	#define RV(b, x, y, m) {b, x, y, m}
     #include "list-spell-effects.h"
     #undef RSE
@@ -282,24 +282,13 @@ static void do_spell_effects(int spell, int dam, struct monster *m_ptr,
 				/* Calculate base duration (m_bonus is not used) */
 				dur = randcalc(re_ptr->base, 0, RANDOMISE);
 
-				/* Calculate the damage-dependent duration (m_bonus is
-				 * used as a cap) */
-				dur += damcalc(re_ptr->dam.dice, re_ptr->dam.sides *
-						dam / 100, RANDOMISE);
-
-				if (re_ptr->dam.m_bonus && (dur > re_ptr->dam.m_bonus))
-					dur = re_ptr->dam.m_bonus;
-
 				/* Apply the effect - we have already checked for resistance */
 				(void)player_inc_timed(player, re_ptr->flag, dur, TRUE, FALSE);
 
 			} else {
 				switch (re_ptr->flag) {
-					case S_TELEPORT: /* m_bonus is used as a clev filter */
-						if (!re_ptr->dam.m_bonus || 
-								randint1(re_ptr->dam.m_bonus) > player->lev)
-							teleport_player(randcalc(re_ptr->base, 0,
-								RANDOMISE));
+					case S_TELEPORT:
+						teleport_player(randcalc(re_ptr->base, 0, RANDOMISE));
 						break;
 
 					case S_TELE_TO:

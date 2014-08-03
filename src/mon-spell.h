@@ -29,7 +29,7 @@
 /* List of spell effects */
 enum
 {
-    #define RSE(a, b, c, d, e, f, g, h, i) \
+    #define RSE(a, b, c, d, e, f, g, h) \
             RSE_##a,
     #include "list-spell-effects.h"
     #undef RSE
@@ -150,7 +150,6 @@ struct spell_effect {
 	bool timed;			/* TRUE if timed, FALSE if permanent */
 	int flag;			/* Effect flag */
 	random_value base;	/* The base duration or impact */
-	random_value dam;	/* Damage-dependent duration or impact */
 	int prot_flag;		/* Protection from this specific effect */
 	random_value power;	/* Power rating of effect */
 };
