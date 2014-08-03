@@ -215,12 +215,10 @@ static int summon_monster_aux(int flag, struct monster *m_ptr, int rlev, int sum
 	int count = 0, val = 0, attempts = 0;
 	int temp;
 
-	/* Continue adding summoned monsters until we reach the current dungeon level */
-	while ((val < player->depth * rlev) && (attempts < summon_max))
-	{
+	/* Continue summoning until we reach the current dungeon level */
+	while ((val < player->depth * rlev) && (attempts < summon_max)) {
 		/* Get a monster */
-		temp = summon_specific(m_ptr->fy, m_ptr->fx,
-			rlev, flag, 0);
+		temp = summon_specific(m_ptr->fy, m_ptr->fx, rlev, flag, 0);
 
 		val += temp * temp;
 
@@ -231,6 +229,11 @@ static int summon_monster_aux(int flag, struct monster *m_ptr, int rlev, int sum
 		if (val > 0)
 			count++;
 	}
+
+	/* In the special case that uniques or wraiths were summoned but all were
+	 * dead S_HI_UNDEAD is used instead (note lack of infinite recursion) */
+	if ((!count) && ((flag == S_WRAITH) || (flag == S_UNIQUE)))
+		count = summon_monster_aux(S_HI_UNDEAD, m_ptr, rlev, summon_max);
 
 	return(count);
 }
@@ -243,7 +246,8 @@ static int summon_monster_aux(int flag, struct monster *m_ptr, int rlev, int sum
  * \param m_ptr is the attacking monster
  * \param seen is whether @ can see it
  */
-static void do_spell_effects(int spell, int dam, struct monster *m_ptr, bool seen)
+static void do_spell_effects(int spell, int dam, struct monster *m_ptr,
+							 bool seen)
 {
 	const struct spell_effect *re_ptr;
 	const struct mon_spell *rs_ptr = &mon_spell_table[spell];
@@ -343,12 +347,8 @@ static void do_spell_effects(int spell, int dam, struct monster *m_ptr, bool see
 					case S_UNDEAD: case S_HI_UNDEAD: 
 					case S_DRAGON: case S_HI_DRAGON:					
 					case S_UNIQUE: case S_WRAITH:
-						count = summon_monster_aux(re_ptr->flag, m_ptr, rlev, re_ptr->base.base);
-
-						/* In the special case that uniques or wraiths were summoned but all were dead
-							S_HI_UNDEAD is used instead */
-						if ((!count) && ((re_ptr->flag == S_WRAITH) || (re_ptr->flag == S_UNIQUE)))
-							count = summon_monster_aux(S_HI_UNDEAD, m_ptr, rlev, re_ptr->base.base);
+						count = summon_monster_aux(re_ptr->flag, m_ptr,
+												   rlev, re_ptr->base.base);
 
 						if (count && player->timed[TMD_BLIND])
 							msgt(rs_ptr->msgt, "You hear %s appear nearby.",
@@ -451,7 +451,8 @@ void do_mon_spell(int spell, struct monster *m_ptr, bool seen)
 	}
 
 	if (rs_ptr->gf) {
-		(void)project(m_ptr->midx, rad, player->py, player->px, dam, rs_ptr->gf, flag, 0, 0);
+		(void)project(m_ptr->midx, rad, player->py, player->px, dam,
+					  rs_ptr->gf, flag, 0, 0);
 		update_smart_learn(m_ptr, player, 0, rs_ptr->gf);
 	}
 	else {
