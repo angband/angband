@@ -4,6 +4,7 @@
 */
 /* name 							aim?	info	short description */
 EFFECT(RANDOM,						FALSE,	NULL,	"at random")
+EFFECT(DAMAGE,						FALSE,	NULL,	"damages the player")
 EFFECT(HEAL_HP,						FALSE,	"heal",	"heals some hitpoints")
 EFFECT(NOURISH,						FALSE,	NULL,	"feeds you")
 EFFECT(CRUNCH,						FALSE,	NULL,	"crunches")

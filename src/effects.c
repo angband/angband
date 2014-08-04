@@ -186,6 +186,28 @@ bool effect_handler_RANDOM(effect_handler_context_t *context)
 }
 
 /**
+ * Deal damage from the current monster to the player
+ */
+bool effect_handler_DAMAGE(effect_handler_context_t *context)
+{
+	int dam = effect_calculate_value(context, FALSE);
+	char ddesc[80];
+	struct monster *mon;
+
+	/* Get the monster */
+	mon = cave_monster(cave, cave->mon_current);
+
+	/* Get the "died from" name in case this attack kills @ */
+	monster_desc(ddesc, sizeof(ddesc), mon, MDESC_DIED_FROM);
+
+	/* Hit the player */
+	take_hit(player, dam, ddesc);
+
+	return TRUE;
+}
+
+
+/**
  * Heal the player by a given percentage of their wounds, or a minimum
  * amount, whichever is larger.
  *
