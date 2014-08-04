@@ -465,7 +465,7 @@ static void setup_menus(void)
 
 	for (i = 0, r = races; r; r = r->next, i++)
 		mdata->items[r->ridx] = r->name;
-	mdata->hint = "Your 'race' determines various intrinsic factors and bonuses.";
+	mdata->hint = "Race affects stats and skills, and may confer resistances and abilities.";
 
 	/* Count the classes */
 	n = 0;
@@ -478,7 +478,7 @@ static void setup_menus(void)
 
 	for (i = 0, c = classes; c; c = c->next, i++)
 		mdata->items[c->cidx] = c->name;
-	mdata->hint = "Your 'class' determines various intrinsic abilities and bonuses";
+	mdata->hint = "Class affects stats, skills, and other character traits.";
 		
 	/* Roller menu straightforward */
 	init_birth_menu(&roller_menu, MAX_BIRTH_ROLLERS, 0, &roller_region, FALSE,
@@ -486,7 +486,7 @@ static void setup_menus(void)
 	mdata = roller_menu.menu_data;
 	for (i = 0; i < MAX_BIRTH_ROLLERS; i++)
 		mdata->items[i] = roller_choices[i];
-	mdata->hint = "Your choice of character generation.  Point-based is recommended.";
+	mdata->hint = "Choose how to generate your intrinsic stats. Point-based is recommended.";
 }
 
 /**
@@ -524,11 +524,11 @@ static void clear_question(void)
 
 
 #define BIRTH_MENU_HELPTEXT \
-	"{light blue}Please select your character from the menu below:{/}\n\n" \
+	"{light blue}Please select your character traits from the menus below:{/}\n\n" \
 	"Use the {light green}movement keys{/} to scroll the menu, " \
 	"{light green}Enter{/} to select the current menu item, '{light green}*{/}' " \
 	"for a random menu item, '{light green}ESC{/}' to step back through the " \
-	"birth process, '{light green}={/}' for the birth options, '{light green}?{/} " \
+	"birth process, '{light green}={/}' for the birth options, '{light green}?{/}' " \
 	"for help, or '{light green}Ctrl-X{/}' to quit."
 
 /**
@@ -655,7 +655,7 @@ static enum birth_stage roller_command(bool first_call)
 	/* Prepare a prompt (must squeeze everything in) */
 	strnfcat(prompt, sizeof (prompt), &promptlen, "['r' to reroll");
 	if (prev_roll) 
-		strnfcat(prompt, sizeof(prompt), &promptlen, ", 'p' for prev");
+		strnfcat(prompt, sizeof(prompt), &promptlen, ", 'p' for previous roll");
 	strnfcat(prompt, sizeof (prompt), &promptlen, " or 'Enter' to accept]");
 
 	/* Prompt for it */
