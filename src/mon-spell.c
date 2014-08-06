@@ -55,6 +55,15 @@ static const struct spell_effect spell_effect_table[] =
 };
 
 
+static const struct breath_dam {
+	int divisor;
+	int cap;
+} breath[] = {
+    #define ELEM(a, b, c, d, e, f, g, col, h, fh, oh, mh, ph) { f, g },
+    #include "list-elements.h"
+    #undef ELEM
+};
+
 /**
  * Determine the damage of a spell attack which ignores monster hp
  * (i.e. bolts and balls, including arrows/boulders/storms/etc.)
@@ -85,22 +94,21 @@ static int nonhp_dam(int spell, int rlev, aspect dam_aspect)
 }
 
 /**
- * Determine the damage of a monster attack which depends on its hp
+ * Determine the damage of a monster breath attack
  *
- * \param spell is the attack type
+ * \param element is the attack element
  * \param hp is the monster's hp
  */
-static int hp_dam(int spell, int hp)
+static int breath_dam(int element, int hp)
 {
-	const struct mon_spell *rs_ptr = &mon_spell_table[spell];
 	int dam;
 
 	/* Damage is based on monster's current hp */
-	dam = hp / rs_ptr->div;
+	dam = hp / breath[element].divisor;
 
 	/* Check for maximum damage */
-	if (dam > rs_ptr->cap)
-		dam = rs_ptr->cap;
+	if (dam > breath[element].cap)
+		dam = breath[element].cap;
 
 	return dam;
 }
@@ -368,7 +376,7 @@ static int mon_spell_dam(int spell, int hp, int rlev, aspect dam_aspect)
 	const struct mon_spell *rs_ptr = &mon_spell_table[spell];
 
 	if (rs_ptr->div)
-		return hp_dam(spell, hp);
+		return breath_dam(rs_ptr->gf, hp);
 	else
 		return nonhp_dam(spell, rlev, dam_aspect);
 }

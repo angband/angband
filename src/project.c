@@ -1425,8 +1425,8 @@ static const struct gf_type {
 	project_monster_handler_f monster_handler;
 	project_player_handler_f player_handler;
 } gf_table[] = {
-	#define ELEM(a, b, c, d, e, col, f, fh, oh, mh, ph)	\
-		{ GF_##a, b, c, d, e, FALSE, col, f, fh, oh, mh, ph },
+	#define ELEM(a, b, c, d, e, f, g, col, h, fh, oh, mh, ph)	\
+		{ GF_##a, b, c, d, e, FALSE, col, h, fh, oh, mh, ph },
 	#define RV(b, x, y, m) {b, x, y, m}
 	#define FH(x) project_feature_handler_##x
 	#define OH(x) project_object_handler_##x
@@ -1452,7 +1452,7 @@ static const struct gf_type {
 
 static const char *gf_name_list[] =
 {
-	#define ELEM(a, b, c, d, e, col, f, fh, oh, mh, ph) #a,
+	#define ELEM(a, b, c, d, e, f, g, col, h, fh, oh, mh, ph) #a,
 	#include "list-elements.h"
 	#undef ELEM
 	#define PROJ_ENV(a, col, fh, oh, mh) #a,

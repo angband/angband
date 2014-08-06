@@ -10,7 +10,7 @@
  */
 enum
 {
-	#define ELEM(a, b, c, d, e, col, f, fh, oh, mh, ph) GF_##a,
+	#define ELEM(a, b, c, d, e, f, g, col, h, fh, oh, mh, ph) GF_##a,
 	#include "list-elements.h"
 	#undef ELEM
 	#define PROJ_ENV(a, col, fh, oh, mh) GF_##a,

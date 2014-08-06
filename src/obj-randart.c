@@ -236,7 +236,7 @@ typedef struct
  */
 static const element_type elements[] =
 {
-	#define ELEM(a, b, c, d, e, col, f, fh, oh, mh, ph)	\
+	#define ELEM(a, b, c, d, e, f, g, col, h, fh, oh, mh, ph)	\
 	{ELEM_##a, b},
     #include "list-elements.h"
     #undef ELEM

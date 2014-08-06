@@ -1580,8 +1580,7 @@ bool effect_handler_ACQUIRE(effect_handler_context_t *context)
 }
 
 /**
- * Wake up all monsters, and speed up "los" monsters.  The index of the monster
- * doing the aggravating (or 0 for the player) is context->p2.
+ * Wake up all monsters, and speed up "los" monsters.
  *
  * Possibly the los test should be from the aggravating monster, rather than
  * automatically the player - NRM
@@ -1590,7 +1589,8 @@ bool effect_handler_AGGRAVATE(effect_handler_context_t *context)
 {
 	int i;
 	bool sleep = FALSE;
-	monster_type *who = context->p2 ? cave_monster(cave, context->p2) : NULL;
+	int midx = cave->mon_current;
+	monster_type *who = midx > 0 ? cave_monster(cave, midx) : NULL;
 
 	/* Immediately obvious if the player did it */
 	if (!who) {
@@ -2142,7 +2142,7 @@ bool effect_handler_DARKEN_AREA(effect_handler_context_t *context)
 
 /**
  * Cast a ball spell
- * Stop if we hit a monster, act as a ball
+ * Stop if we hit a monster or the player, act as a ball
  * Allow target mode to pass over monsters
  * Affect grids, objects, and monsters
  */
@@ -2151,12 +2151,23 @@ bool effect_handler_BALL(effect_handler_context_t *context)
 	int py = player->py;
 	int px = player->px;
 	int dam = effect_calculate_value(context, TRUE);
-	int rad = context->p2 + (context->p3 ? player->lev / context->p3 : 0);
+	int rad = context->p2 ? context->p2 : 2;
+	int source;
 
 	s16b ty = py + 99 * ddy[context->dir];
 	s16b tx = px + 99 * ddx[context->dir];
 
 	int flg = PROJECT_STOP | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
+
+	/* Player or monster? */
+	if (cave->mon_current > 0) {
+		struct monster *mon = cave_monster(cave, cave->mon_current);
+		source = cave->mon_current;
+		if (rf_has(mon->race->flags, RF_POWERFUL)) rad++;
+	} else {
+		if (context->p3) rad += player->lev / context->p3;
+		source = -1;
+	}
 
 	/* Ask for a target if no direction given */
 	if ((context->dir == 5) && target_okay()) {
@@ -2166,7 +2177,7 @@ bool effect_handler_BALL(effect_handler_context_t *context)
 	}
 
 	/* Aim at the target, explode */
-	if (project(-1, rad, ty, tx, dam, context->p1, flg, 0, 0))
+	if (project(source, rad, ty, tx, dam, context->p1, flg, 0, 0))
 		context->ident = TRUE;
 
 	return TRUE;
@@ -2175,9 +2186,10 @@ bool effect_handler_BALL(effect_handler_context_t *context)
 
 /**
  * Breathe an element
- * Stop if we hit a monster, act as a ball (for now)
+ * Stop if we hit a monster or the player, act as a ball (for now)
  * Allow target mode to pass over monsters
  * Affect grids, objects, and monsters
+ * context->p1 is element, context->p2 radius
  */
 bool effect_handler_BREATH(effect_handler_context_t *context)
 {
@@ -2185,13 +2197,23 @@ bool effect_handler_BREATH(effect_handler_context_t *context)
 	int px = player->px;
 	int dam = effect_calculate_value(context, TRUE);
 	int type = context->p1;
+	int rad = context->p2;
+	int source;
 
 	s16b ty = py + 99 * ddy[context->dir];
 	s16b tx = px + 99 * ddx[context->dir];
 
 	int flg = PROJECT_STOP | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
 
-	msgt(elements[type].msgt, "You breathe %s.", elements[type].desc);
+	/* Player or monster? */
+	if (cave->mon_current > 0) {
+		struct monster *mon = cave_monster(cave, cave->mon_current);
+		source = cave->mon_current;
+		if (rf_has(mon->race->flags, RF_POWERFUL)) rad++;
+	} else {
+		msgt(elements[type].msgt, "You breathe %s.", elements[type].desc);
+		source = -1;
+	}
 
 	/* Ask for a target if no direction given */
 	if ((context->dir == 5) && target_okay()) {
@@ -2201,7 +2223,7 @@ bool effect_handler_BREATH(effect_handler_context_t *context)
 	}
 
 	/* Aim at the target, explode */
-	if (project(-1, context->p2, ty, tx, dam, type, flg, 0, 0))
+	if (project(source, rad, ty, tx, dam, type, flg, 0, 0))
 		context->ident = TRUE;
 
 	return TRUE;
