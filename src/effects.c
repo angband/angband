@@ -261,6 +261,57 @@ bool effect_handler_HEAL_HP(effect_handler_context_t *context)
 
 
 /**
+ * Monster self-healing.
+ */
+bool effect_handler_MON_HEAL_HP(effect_handler_context_t *context)
+{
+	int midx = cave->mon_current;
+	int amount = effect_calculate_value(context, FALSE);
+	monster_type *mon = midx > 0 ? cave_monster(cave, midx) : NULL;
+	char m_name[80], m_poss[80];
+	bool seen;
+
+	if (!mon) return TRUE;
+
+	/* Get the monster name (or "it") */
+	monster_desc(m_name, sizeof(m_name), mon, MDESC_STANDARD);
+
+	/* Get the monster possessive ("his"/"her"/"its") */
+	monster_desc(m_poss, sizeof(m_poss), mon, MDESC_PRO_VIS | MDESC_POSS);
+
+	seen = (!player->timed[TMD_BLIND] && mon->ml);
+
+	/* Heal some */
+	mon->hp += amount;
+
+	/* Fully healed */
+	if (mon->hp >= mon->maxhp) {
+		mon->hp = mon->maxhp;
+
+		if (seen)
+			msg("%s looks REALLY healthy!", m_name);
+		else
+			msg("%s sounds REALLY healthy!", m_name);
+	} else if (seen) { /* Partially healed */
+		msg("%s looks healthier.", m_name);
+	} else {
+		msg("%s sounds healthier.", m_name);
+	}
+
+	/* Redraw (later) if needed */
+	if (player->upkeep->health_who == mon)
+		player->upkeep->redraw |= (PR_HEALTH);
+
+	/* Cancel fear */
+	if (mon->m_timed[MON_TMD_FEAR]) {
+		mon_clear_timed(mon, MON_TMD_FEAR, MON_TMD_FLG_NOMESSAGE, FALSE);
+		msg("%s recovers %s courage.", m_name, m_poss);
+	}
+
+	return TRUE;
+}
+
+/**
  * Feed the player.
  */
 bool effect_handler_NOURISH(effect_handler_context_t *context)
@@ -312,11 +363,32 @@ bool effect_handler_TIMED_SET(effect_handler_context_t *context)
 bool effect_handler_TIMED_INC(effect_handler_context_t *context)
 {
 	int amount = effect_calculate_value(context, FALSE);
+	/* Only check for protection with player actions, because the monster 
+	* spell code already checks */
+	bool check_protect = (cave->mon_current < 0);
+
 	if (!player->timed[context->p1] || !context->p2)
-		player_inc_timed(player, context->p1, amount, TRUE, TRUE);
+		player_inc_timed(player, context->p1, amount, TRUE, check_protect);
 	else
-		player_inc_timed(player, context->p1, context->p2, TRUE, TRUE);
+		player_inc_timed(player, context->p1, context->p2, TRUE, check_protect);
 	context->ident = TRUE;
+	return TRUE;
+
+}
+
+/**
+ * Extend a (positive or negative) monster status condition.
+ */
+bool effect_handler_MON_TIMED_INC(effect_handler_context_t *context)
+{
+	int amount = effect_calculate_value(context, FALSE);
+	struct monster *mon  = cave->mon_current > 0 ?
+		cave_monster(cave, cave->mon_current) : NULL;
+
+	if (mon) {
+		mon_inc_timed(mon, context->p1, amount, MON_TMD_FLG_NOTIFY, FALSE);
+		context->ident = TRUE;
+	}
 	return TRUE;
 
 }
@@ -539,6 +611,60 @@ bool effect_handler_LOSE_EXP(effect_handler_context_t *context)
 	}
 	context->ident = TRUE;
 	wieldeds_notice_flag(player, OF_HOLD_LIFE);
+	return TRUE;
+}
+
+/**
+ * Drain mana from the player, healing the caster.
+ */
+bool effect_handler_DRAIN_MANA(effect_handler_context_t *context)
+{
+	int drain = effect_calculate_value(context, FALSE);
+	char m_name[80];
+	struct monster *mon = cave_monster(cave, cave->mon_current);
+
+	if (!mon) return TRUE;
+
+	/* Get the monster name (or "it") */
+	monster_desc(m_name, sizeof(m_name), mon, MDESC_STANDARD);
+
+	if (!player->csp) {
+		msg("The draining fails.");
+		if (OPT(birth_ai_learn) && !(mon->smart & SM_IMM_MANA)) {
+			msg("%s notes that you have no mana!", m_name);
+			mon->smart |= SM_IMM_MANA;
+		}
+		return TRUE;
+	}
+
+	/* Full drain */
+	if (drain >= player->csp) {
+		drain = player->csp;
+		player->csp = 0;
+		player->csp_frac = 0;
+	}
+	/* Partial drain */
+	else
+		player->csp -= drain;
+
+	/* Redraw mana */
+	player->upkeep->redraw |= PR_MANA;
+
+	/* Heal the monster */
+	if (mon->hp < mon->maxhp) {
+		mon->hp += (6 * drain);
+		if (mon->hp > mon->maxhp)
+			mon->hp = mon->maxhp;
+
+		/* Redraw (later) if needed */
+		if (player->upkeep->health_who == mon)
+			player->upkeep->redraw |= (PR_HEALTH);
+
+		/* Special message */
+		if (mon->ml)
+			msg("%s appears healthier.", m_name);
+	}
+
 	return TRUE;
 }
 
@@ -1637,28 +1763,42 @@ bool effect_handler_SUMMON(effect_handler_context_t *context)
 	int i;
 	int num = effect_calculate_value(context, FALSE);
 	int type = context->p1 ? context->p1 : 0;
-	int msgt = MSG_SUM_MONSTER;
+	int msgtyp = MSG_SUM_MONSTER;
+	int cnt = 0;
 
-	if (type == S_ANIMAL) msgt = MSG_SUM_ANIMAL;
-	else if (type == S_SPIDER) msgt = MSG_SUM_SPIDER;
-	else if (type == S_HOUND) msgt = MSG_SUM_HOUND;
-	else if (type == S_HYDRA) msgt = MSG_SUM_HYDRA;
-	else if (type == S_AINU) msgt = MSG_SUM_AINU;
-	else if (type == S_DEMON) msgt = MSG_SUM_DEMON;
-	else if (type == S_UNDEAD) msgt = MSG_SUM_UNDEAD;
-	else if (type == S_DRAGON) msgt = MSG_SUM_DRAGON;
-	else if (type == S_HI_DEMON) msgt = MSG_SUM_HI_DEMON;
-	else if (type == S_HI_UNDEAD) msgt = MSG_SUM_HI_UNDEAD;
-	else if (type == S_HI_DRAGON) msgt = MSG_SUM_HI_DRAGON;
-	else if (type == S_WRAITH) msgt = MSG_SUM_WRAITH;
-	else if (type == S_UNIQUE) msgt = MSG_SUM_UNIQUE;
+	if (type == S_ANIMAL) msgtyp = MSG_SUM_ANIMAL;
+	else if (type == S_SPIDER) msgtyp = MSG_SUM_SPIDER;
+	else if (type == S_HOUND) msgtyp = MSG_SUM_HOUND;
+	else if (type == S_HYDRA) msgtyp = MSG_SUM_HYDRA;
+	else if (type == S_AINU) msgtyp = MSG_SUM_AINU;
+	else if (type == S_DEMON) msgtyp = MSG_SUM_DEMON;
+	else if (type == S_UNDEAD) msgtyp = MSG_SUM_UNDEAD;
+	else if (type == S_DRAGON) msgtyp = MSG_SUM_DRAGON;
+	else if (type == S_HI_DEMON) msgtyp = MSG_SUM_HI_DEMON;
+	else if (type == S_HI_UNDEAD) msgtyp = MSG_SUM_HI_UNDEAD;
+	else if (type == S_HI_DRAGON) msgtyp = MSG_SUM_HI_DRAGON;
+	else if (type == S_WRAITH) msgtyp = MSG_SUM_WRAITH;
+	else if (type == S_UNIQUE) msgtyp = MSG_SUM_UNIQUE;
 
-	sound(msgt);
+	sound(msgtyp);
 
-	for (i = 0; i < num; i++) {
-		if (summon_specific(player->py, player->px, player->depth, type, 1))
-			context->ident = TRUE;
-	}
+	/* Summon them */
+	for (i = 0; i < num; i++)
+		cnt += summon_specific(player->py, player->px, player->depth, type, 1);
+
+	/* Identify if some monsters arrive */
+	if (cnt)
+		context->ident = TRUE;
+
+	/* Message for the blind */
+	if (cnt && player->timed[TMD_BLIND])
+		msgt(msgtyp, "You hear %s appear nearby.", (cnt > 1 ?
+												  "many things" : "something"));
+
+	/* Summoner failed */
+	if (cave->mon_current > 0 && !cnt)
+		msg("But nothing comes.");
+
 	return TRUE;
 }
 
@@ -1800,31 +1940,44 @@ bool effect_handler_PROBE(effect_handler_context_t *context)
 }
 
 /**
- * Teleport the player to a location up to context->value.base grids away.
+ * Teleport player or monster up to context->value.base grids away.
  *
- * If no such spaces are readily available, the distance may increase.
- * Try very hard to move the player at least a quarter that distance.
+ * If no spaces are readily available, the distance may increase.
+ * Try very hard to move the player/monster at least a quarter that distance.
+ * Setting context->p1 allows monsters to teleport the player away
  */
 bool effect_handler_TELEPORT(effect_handler_context_t *context)
 {
-	int py = player->py;
-	int px = player->px;
+	int y_start, x_start;
 	int dis = context->value.base;
 	int d, i, min, y, x;
+	int midx = cave->mon_current;
+	struct monster *mon;
 
 	bool look = TRUE;
+	bool is_player = (midx < 0 || context->p2);
 
 	context->ident = TRUE;
 
-	/* Check for a no teleport grid */
-	if (square_is_no_teleport(cave, py, px) && (dis > 10)) {
-		msg("Teleportation forbidden!");
-		return TRUE;
+	if (is_player) {
+		y_start = player->py;
+		x_start = player->px;
+
+		/* Check for a no teleport grid */
+		if (square_is_no_teleport(cave, y_start, x_start) && (dis > 10)) {
+			msg("Teleportation forbidden!");
+			return TRUE;
+		}
+	} else {
+		mon = cave_monster(cave, midx);
+        if (!mon->race) return TRUE;
+        y_start = mon->fy;
+        x_start = mon->fx;
 	}
 
 	/* Initialize */
-	y = py;
-	x = px;
+	y = y_start;
+	x = x_start;
 
 	/* Minimum distance */
 	min = dis / 2;
@@ -1838,9 +1991,9 @@ bool effect_handler_TELEPORT(effect_handler_context_t *context)
 		for (i = 0; i < 500; i++) {
 			/* Pick a (possibly illegal) location */
 			while (1) {
-				y = rand_spread(py, dis);
-				x = rand_spread(px, dis);
-				d = distance(py, px, y, x);
+				y = rand_spread(y_start, dis);
+				x = rand_spread(x_start, dis);
+				d = distance(y_start, x_start, y, x);
 				if ((d >= min) && (d <= dis)) break;
 			}
 
@@ -1852,6 +2005,9 @@ bool effect_handler_TELEPORT(effect_handler_context_t *context)
 
 			/* No teleporting into vaults and such */
 			if (square_isvault(cave, y, x)) continue;
+
+			/* No monster teleport onto glyph of warding */
+			if (!is_player && square_iswarded(cave, y, x)) continue;
 
 			/* This grid looks good */
 			look = FALSE;
@@ -1868,10 +2024,10 @@ bool effect_handler_TELEPORT(effect_handler_context_t *context)
 	}
 
 	/* Sound */
-	sound(MSG_TELEPORT);
+	sound(is_player ? MSG_TELEPORT : MSG_TPOTHER);
 
 	/* Move player */
-	monster_swap(py, px, y, x);
+	monster_swap(y_start, x_start, y, x);
 
 	/* Lots of updates after monster_swap */
 	handle_stuff(player->upkeep);
@@ -1890,16 +2046,27 @@ bool effect_handler_TELEPORT_TO(effect_handler_context_t *context)
 	int py = player->py;
 	int px = player->px;
 
-	int ny = GRID_Y(context->p2);
-	int nx = GRID_X(context->p2);
-
+	s16b ny, nx;
 	int y, x, dis = 0, ctr = 0;
+	int midx = cave->mon_current;
+	struct monster *mon;
 
 	/* Initialize */
 	y = py;
 	x = px;
 
 	context->ident = TRUE;
+
+	/* Where are we going? */
+	if (midx > 0) {
+		mon = cave_monster(cave, midx);
+		if (!mon) return TRUE;
+		ny = mon->fy;
+		nx = mon->fx;
+	} else {
+		if ((context->dir == 5) && target_okay())
+			target_get(&nx, &ny);
+	}
 
 	/* Find a usable location */
 	while (1) {
@@ -1940,6 +2107,10 @@ bool effect_handler_TELEPORT_LEVEL(effect_handler_context_t *context)
 	bool up = TRUE, down = TRUE;
 
 	context->ident = TRUE;
+
+	/* Resist hostile teleport */
+	if (cave->mon_current && player_resists(player, ELEM_NEXUS))
+		msg("You resist the effect!");
 
 	/* No going up with force_descend or in the town */
 	if (OPT(birth_force_descend) || !player->depth)
@@ -2170,7 +2341,7 @@ bool effect_handler_BALL(effect_handler_context_t *context)
 	}
 
 	/* Ask for a target if no direction given */
-	if ((context->dir == 5) && target_okay()) {
+	if ((context->dir == 5) && target_okay() && source == -1) {
 		flg &= ~(PROJECT_STOP);
 
 		target_get(&tx, &ty);
@@ -2216,7 +2387,7 @@ bool effect_handler_BREATH(effect_handler_context_t *context)
 	}
 
 	/* Ask for a target if no direction given */
-	if ((context->dir == 5) && target_okay()) {
+	if ((context->dir == 5) && target_okay() && source == -1) {
 		flg &= ~(PROJECT_STOP);
 
 		target_get(&tx, &ty);
