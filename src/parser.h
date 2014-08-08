@@ -142,6 +142,7 @@ errr grab_int_value(int *value, const char **value_type, const char *name_and_va
 errr grab_index_and_int(int *value, int *index, const char **value_type,
 						const char *prefix, const char *name_and_value);
 errr grab_base_and_int(int *value, char **base, const char *name_and_value);
+errr grab_name(const char *from, const char *what, const char *list[], int max, int *num);
 errr grab_flag(bitflag *flags, const size_t size, const char **flag_table, const char *flag_name);
 errr remove_flag(bitflag *flags, const size_t size, const char **flag_table, const char *flag_name);
 

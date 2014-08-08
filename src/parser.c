@@ -836,6 +836,25 @@ errr grab_base_and_int(int *value, char **base, const char *name_and_value)
 	return PARSE_ERROR_NONE;
 }
 
+errr grab_name(const char *from, const char *what, const char *list[], int max, int *num)
+{
+	int i;
+
+	/* Scan list */
+	for (i = 0; i < max; i++) {
+		if (streq(what, list[i])) {
+			*num = i;
+			return PARSE_ERROR_NONE;
+		}
+	}
+
+	/* Oops */
+	msg("Unknown %s '%s'.", from, what);
+
+	/* Error */
+	return PARSE_ERROR_GENERIC;
+}
+
 errr grab_flag(bitflag *flags, const size_t size, const char **flag_table, const char *flag_name) {
 	int flag = lookup_flag(flag_table, flag_name);
 

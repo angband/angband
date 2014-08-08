@@ -80,7 +80,6 @@ EFFECT(BRAND_AMMO,					FALSE,	NULL,	"brands a stack of ammunition")
 EFFECT(BRAND_BOLTS,					FALSE,	NULL,	"brands bolts with fire, in an unbalanced fashion")
 EFFECT(BIZARRE,						TRUE,	NULL,	"does bizarre things")
 EFFECT(WONDER,						TRUE,	NULL,	"creates random and unpredictable effects")
-
 EFFECT(TRAP_DOOR,					FALSE,	NULL,	"a trap door which drops you down a level")
 EFFECT(TRAP_PIT,					FALSE,	NULL,	"a pit trap - the fall might hurt")
 EFFECT(TRAP_PIT_SPIKES,				FALSE,	NULL,	"a pit trap, with nasty spikes")
