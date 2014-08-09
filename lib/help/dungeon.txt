@@ -139,9 +139,8 @@ extra gold with which to purchase more supplies at the town stores.
 
 You may enter any open store to buy or sell items of the appropriate type.
 The price that the shopkeeper requests is dependent on the price of the
-item and the player's charisma. Stores also have a maximum value, they will
-not pay more than that for any item, regardless of how much it is actually
-worth.
+item. Stores also have a maximum value, they will not pay more than that
+for any item, regardless of how much it is actually worth.
 
 Once inside a store, you will see the name and race of the store owner, the
 name of the store, the maximum amount of cash that the store owner will pay
