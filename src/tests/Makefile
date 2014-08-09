@@ -13,7 +13,7 @@ include $(patsubst %,%/suite.mk,$(SUITES))
 TESTOBJS  := $(patsubst %,%.o,$(TESTPROGS))
 TESTPROGS := $(patsubst %,bin/%,$(TESTPROGS))
 
-TESTOBJS += test-utils.o unit-test.o
+TESTOBJS += unit-test.o
 
 build : $(TESTPROGS)
 
