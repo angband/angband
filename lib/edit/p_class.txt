@@ -93,6 +93,8 @@ T:Champion
 T:Hero
 T:Lord
 
+magic:0:0:0:0
+
 
 ############### MAGE ###############
 N:1:Mage
