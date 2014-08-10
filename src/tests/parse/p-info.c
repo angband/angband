@@ -138,17 +138,6 @@ int test_y0(void *state) {
 	ok;
 }
 
-int test_c0(void *state) {
-	enum parser_error r = parser_parse(state, "C:1|3|5");
-	struct player_race *pr;
-
-	eq(r, PARSE_ERROR_NONE);
-	pr = parser_priv(state);
-	require(pr);
-	eq(pr->choice, (1 << 5) | (1 << 3) | (1 << 1));
-	ok;
-}
-
 const char *suite_name = "parse/p-info";
 struct test tests[] = {
 	{ "n0", test_n0 },
@@ -160,6 +149,5 @@ struct test tests[] = {
 	{ "w0", test_w0 },
 	{ "f0", test_f0 },
 	{ "y0", test_y0 },
-	{ "c0", test_c0 },
 	{ NULL, NULL }
 };

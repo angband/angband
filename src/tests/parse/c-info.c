@@ -114,30 +114,14 @@ int test_a0(void *state) {
 }
 
 int test_m0(void *state) {
-	enum parser_error r = parser_parse(state, "M:90:1:3:400");
+	enum parser_error r = parser_parse(state, "magic:3:400:1:9");
 	struct player_class *c;
 
 	eq(r, PARSE_ERROR_NONE);
 	c = parser_priv(state);
 	require(c);
-	eq(c->spell_book, 90);
-	eq(c->spell_stat, 1);
-	eq(c->spell_first, 3);
-	eq(c->spell_weight, 400);
-	ok;
-}
-
-int test_b0(void *state) {
-	enum parser_error r = parser_parse(state, "B:8:23:25:90:3");
-	struct player_class *c;
-
-	eq(r, PARSE_ERROR_NONE);
-	c = parser_priv(state);
-	require(c);
-	eq(c->magic.spells[8].slevel, 23);
-	eq(c->magic.spells[8].smana, 25);
-	eq(c->magic.spells[8].sfail, 90);
-	eq(c->magic.spells[8].sexp, 3);
+	eq(c->magic.spell_first, 3);
+	eq(c->magic.spell_weight, 400);
 	ok;
 }
 
@@ -189,7 +173,7 @@ struct test tests[] = {
 	{ "i0", test_i0 },
 	{ "a0", test_a0 },
 	{ "m0", test_m0 },
-	{ "b0", test_b0 },
+	//{ "b0", test_b0 },
 	{ "t0", test_t0 },
 	/* { "e0", test_e0 }, */
 	{ "f0", test_f0 },

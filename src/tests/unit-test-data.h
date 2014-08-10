@@ -130,12 +130,7 @@ static struct object_kind TEST_DATA test_longsword = {
 	.alloc_max = 10,
 	.level = 0,
 
-	.effect = {
-			.next = NULL,
-			.index = 0,
-			.dice = NULL,
-			.params = { 0, 0 },
-	},
+	.effect = NULL,
 
 	.gen_mult_prob = 0,
 	.flavor = NULL,
@@ -204,12 +199,7 @@ static struct object_kind TEST_DATA test_torch = {
 	.alloc_max = 10,
 	.level = 0,
 
-	.effect = {
-			.next = NULL,
-			.index = 0,
-			.dice = NULL,
-			.params = { 0, 0 },
-	},
+	.effect = NULL,
 
 	.gen_mult_prob = 0,
 	.flavor = NULL,
@@ -278,12 +268,7 @@ static struct object_kind TEST_DATA test_lantern = {
 	.alloc_max = 10,
 	.level = 0,
 
-	.effect = {
-			.next = NULL,
-			.index = 0,
-			.dice = NULL,
-			.params = { 0, 0 },
-	},
+	.effect = NULL,
 
 	.gen_mult_prob = 0,
 	.flavor = NULL,
@@ -352,12 +337,7 @@ static struct object_kind TEST_DATA test_flask = {
 	.alloc_max = 100,
 	.level = 1,
 
-	.effect = {
-			.next = NULL,
-			.index = 0,
-			.dice = NULL,
-			.params = { 0, 0 },
-	},
+	.effect = NULL,
 
 	.gen_mult_prob = 0,
 	.flavor = NULL,
@@ -426,12 +406,7 @@ static struct object_kind TEST_DATA test_rod_treasure_location = {
 	.alloc_max = 75,
 	.level = 5,
 
-	.effect = {
-			.next = NULL,
-			.index = 0,
-			.dice = NULL,
-			.params = { 0, 0 },
-	},
+	.effect = NULL,
 
 	.gen_mult_prob = 0,
 	.flavor = NULL,
@@ -499,12 +474,7 @@ static struct object_kind TEST_DATA test_gold = {
 	.alloc_max = 0,
 	.level = 0,
 
-	.effect = {
-			.next = NULL,
-			.index = 0,
-			.dice = NULL,
-			.params = { 0, 0 },
-	},
+	.effect = NULL,
 
 	.gen_mult_prob = 0,
 	.flavor = NULL,
@@ -549,8 +519,6 @@ static struct player_race TEST_DATA test_race = {
 	.f_m_wt = 20,
 
 	.infra = 40,
-
-	.choice = 0xFF,
 
 	.history = NULL,
 };
@@ -624,11 +592,6 @@ static struct player_class TEST_DATA test_class = {
 	.max_attacks = 6,
 	.min_weight = 30,
 	.att_multiply = 5,
-
-	.spell_book = 0,
-	.spell_stat = 0,
-	.spell_first = 0,
-	.spell_weight = 0,
 
 	.sense_base = 7000,
 	.sense_div = 40,
@@ -763,7 +726,7 @@ static struct player TEST_DATA test_player = {
 	.history = "no history",
 	.is_dead = 0,
 	.wizard = 0,
-	.inventory = &test_inven[0],
+	.gear = &test_inven[0],
 };
 
 #endif /* !UNIT_TEST_DATA */

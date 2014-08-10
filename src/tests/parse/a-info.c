@@ -141,6 +141,7 @@ int test_l0(void *state) {
 	ok;
 }
 
+/* Effects have changed, but this is still here as a reminder
 int test_e0(void *state) {
 	enum parser_error r = parser_parse(state, "E:DETECT_ALL:20+d30");
 	struct artifact *a;
@@ -166,6 +167,7 @@ int test_m0(void *state) {
 	require(streq(a->effect_msg, "foobar"));
 	ok;
 }
+*/
 
 int test_d0(void *state) {
 	enum parser_error r = parser_parse(state, "D:baz");
@@ -194,8 +196,8 @@ struct test tests[] = {
 	{ "a2", test_a2 },
 	{ "p0", test_p0 },
 	{ "f0", test_f0 },
-	{ "e0", test_e0 },
-	{ "m0", test_m0 },
+	//{ "e0", test_e0 },
+	//{ "m0", test_m0 },
 	{ "d0", test_d0 },
 	{ "l0", test_l0 },
 	{ NULL, NULL }

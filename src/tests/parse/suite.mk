@@ -9,7 +9,6 @@ TESTPROGS += parse/a-info \
              parse/k-info \
 	     parse/p-info \
 	     parse/r-info \
-	     parse/s-info \
 	     parse/store \
 	     parse/v-info \
 	     parse/z-info
