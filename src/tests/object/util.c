@@ -17,7 +17,7 @@ NOTEARDOWN
 /* Regression test for #1661 */
 int test_obj_can_refill(void *state) {
     struct object obj_torch, obj_lantern, obj_candidate;
-    object_type *light_ptr = equipped_item_by_slot_name(player, "light");
+    object_type *light_ptr = &test_inven[1];
 
     /* Torches cannot be refilled */
     object_prep(&obj_torch, &test_torch, 1, AVERAGE);

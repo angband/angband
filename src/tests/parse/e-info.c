@@ -48,34 +48,7 @@ int test_x0(void *state) {
 	eq(e->rating, 8);
 	ok;
 }
-#if 0 /* Yes, NRM broke this too */
-int test_t0(void *state) {
-	enum parser_error r = parser_parse(state, "T:22:2:13");
-	struct ego_item *e;
 
-	eq(r, PARSE_ERROR_NONE);
-	e = parser_priv(state);
-	require(e);
-	eq(e->tval[0], 22);
-	eq(e->min_sval[0], 2);
-	eq(e->max_sval[0], 13);
-	ok;
-}
-
-/* Broken: lookup_sval() requires k_info, z_info */
-int test_t1(void *state) {
-	enum parser_error r = parser_parse(state, "T:sword:dagger:scimitar");
-	struct ego_item *e;
-
-	eq(r, PARSE_ERROR_NONE);
-	e = parser_priv(state);
-	require(e);
-	eq(e->tval[1], TV_SWORD);
-	//eq(e->min_sval[1], SV_DAGGER); broken by NRM
-	//eq(e->max_sval[1], SV_SCIMITAR); broken by NRM
-	ok;
-}
-#endif
 int test_c0(void *state) {
 	enum parser_error r = parser_parse(state, "C:1d2:3d4:5d6");
 	struct ego_item *e;
@@ -89,21 +62,6 @@ int test_c0(void *state) {
 	eq(e->to_d.sides, 4);
 	eq(e->to_a.dice, 5);
 	eq(e->to_a.sides, 6);
-	ok;
-}
-
-int test_l0(void *state) {
-	enum parser_error r = parser_parse(state, "L:1+2d3M4:5:STR | INT");
-	struct ego_item *e;
-
-	eq(r, PARSE_ERROR_NONE);
-	e = parser_priv(state);
-	require(e);
-	eq(e->modifiers[0].base, 1);
-	eq(e->modifiers[0].dice, 2);
-	eq(e->modifiers[0].sides, 3);
-	eq(e->modifiers[0].m_bonus, 4);
-	eq(e->min_modifiers[0], 5);
 	ok;
 }
 
@@ -149,12 +107,9 @@ struct test tests[] = {
 	{ "order", test_order },
 	{ "n0", test_n0 },
 	{ "x0", test_x0 },
-	//{ "t0", test_t0 },
-	/* { "t1", test_t1 }, */
 	{ "c0", test_c0 },
 	{ "m0", test_m0 },
 	{ "f0", test_f0 },
 	{ "d0", test_d0 },
-	{ "l0", test_l0 },
 	{ NULL, NULL }
 };

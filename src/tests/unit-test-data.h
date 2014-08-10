@@ -19,6 +19,10 @@
 #include "obj-tval.h"
 #include "player.h"
 
+/* 30 = TMD_MAX */
+static s16b TEST_DATA test_timed[30] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 
+};
+
 static struct player_sex TEST_DATA test_sex = {
 	.title = "Test Sex",
 	.winner = "Test Winner",
@@ -713,6 +717,7 @@ static struct player TEST_DATA test_player = {
 		[STAT_WIS] = 10,
 		[STAT_INT] = 8,
 	},
+	.timed = test_timed,
 	.word_recall = 0,
 	.energy = 100,
 	.food = 5000,

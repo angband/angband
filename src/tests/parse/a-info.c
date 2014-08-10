@@ -29,13 +29,13 @@ int test_n0(void *state) {
 }
 
 int test_badtval0(void *state) {
-	enum parser_error r = parser_parse(state, "I:badtval:6:3");
+	enum parser_error r = parser_parse(state, "I:badtval:Junk");
 	eq(r, PARSE_ERROR_UNRECOGNISED_TVAL);
 	ok;
 }
 
 int test_badtval1(void *state) {
-	enum parser_error r = parser_parse(state, "I:-1:6:3");
+	enum parser_error r = parser_parse(state, "I:-1:Junk");
 	eq(r, PARSE_ERROR_UNRECOGNISED_TVAL);
 	ok;
 }
@@ -130,14 +130,14 @@ int test_f0(void *state) {
 	ok;
 }
 
-int test_l0(void *state) {
-	enum parser_error r = parser_parse(state, "L:17:STR | CON");
+int test_v0(void *state) {
+	enum parser_error r = parser_parse(state, "V:STR[1] | CON[1]");
 	struct artifact *a;
 
 	eq(r, PARSE_ERROR_NONE);
 	a = parser_priv(state);
-	eq(a->modifiers[0], 17);
-	eq(a->modifiers[4], 17);
+	eq(a->modifiers[0], 1);
+	eq(a->modifiers[4], 1);
 	ok;
 }
 
@@ -188,7 +188,7 @@ struct test tests[] = {
 	{ "badtval0", test_badtval0 },
 	{ "badtval1", test_badtval1 },
 /*	{ "badsval0", test_badsval0 }, */
-	{ "badsval1", test_badsval1 },
+	//{ "badsval1", test_badsval1 },
 	{ "i0", test_i0 },
 	{ "w0", test_w0 },
 	{ "a0", test_a0 },
@@ -199,6 +199,6 @@ struct test tests[] = {
 	//{ "e0", test_e0 },
 	//{ "m0", test_m0 },
 	{ "d0", test_d0 },
-	{ "l0", test_l0 },
+	{ "v0", test_v0 },
 	{ NULL, NULL }
 };
