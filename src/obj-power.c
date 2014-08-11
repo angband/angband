@@ -199,7 +199,7 @@ static int damage_dice_power(const object_type *o_ptr)
 static int ammo_damage_power(const object_type *o_ptr, int p)
 {
 	int q = 0;
-	int launcher;
+	int launcher = -1;
 
 	if (wield_slot(o_ptr) == slot_by_name(player, "bow")) {
 		if (kf_has(o_ptr->kind->kind_flags, KF_SHOOTS_SHOTS))
@@ -207,10 +207,12 @@ static int ammo_damage_power(const object_type *o_ptr, int p)
 		else if (kf_has(o_ptr->kind->kind_flags, KF_SHOOTS_ARROWS))
 			launcher = 1; 
 		else if (kf_has(o_ptr->kind->kind_flags, KF_SHOOTS_BOLTS))
-			launcher = 2; 
+			launcher = 2;
 
-		q = (archery[launcher].ammo_dam * DAMAGE_POWER / 2);
-		log_obj(format("Adding %d power from ammo, total is %d\n", q, p + q));
+		if (launcher != -1) {
+			q = (archery[launcher].ammo_dam * DAMAGE_POWER / 2);
+			log_obj(format("Adding %d power from ammo, total is %d\n", q, p + q));			
+		}
 	}
 	return q;
 }
