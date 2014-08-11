@@ -43,6 +43,8 @@ static int test_blows(void *state) {
 	struct player *p = &test_player;
 	int delta;
 
+	p->upkeep = &test_player_upkeep;
+
 	flags_set(m->race->flags, RF_SIZE, RF_NEVER_BLOW, FLAG_END);
 	delta = take1(p, m, RBM_HIT, RBE_HURT);
 	flags_clear(m->race->flags, RF_SIZE, RF_NEVER_BLOW, FLAG_END);

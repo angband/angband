@@ -5,7 +5,7 @@
 #include "birth.h"
 
 int setup_tests(void **state) {
-	struct player *p = mem_alloc(sizeof *p);
+	struct player *p = mem_zalloc(sizeof *p);
 	player_init(p);
 	*state = p;
 	return 0;

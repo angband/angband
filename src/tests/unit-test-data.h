@@ -144,7 +144,8 @@ static struct object_kind TEST_DATA test_torch = {
 	.name = "Test Torch",
 	.text = "A test torch [1].",
 	.base = &light_base,
-	.kidx = 1,
+	.next = NULL,
+	.kidx = 2,
 	.tval = TV_LIGHT,
 	.sval = 1, //Hack - depends on edit file order - Wooden Torch (NRM)
 	.pval = {
@@ -154,22 +155,6 @@ static struct object_kind TEST_DATA test_torch = {
 				.m_bonus = 0,
 	},
 
-	.modifiers = { 
-		[OBJ_MOD_STR] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_INT] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_WIS] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_DEX] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_CON] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_STEALTH] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_SEARCH] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_INFRA] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_TUNNEL] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_SPEED] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_BLOWS] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_SHOTS] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_MIGHT] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_LIGHT] = { 0, 0, 0, 0 }, 
-	},
 	.to_h = {
 			.base = 0,
 			.dice = 0,
@@ -188,24 +173,95 @@ static struct object_kind TEST_DATA test_torch = {
 			.sides = 0,
 			.m_bonus = 0,
 	},
+	.ac = 0,
 
 	.dd = 1,
 	.ds = 1,
-	.weight = 10,
+	.weight = 22,
 
 	.cost = 1,
 
-	.d_attr = 0,
+	.flags = { 0, 0, 4, 0 },
+	.kind_flags = { 32, 0 },
+
+	.modifiers = { 
+		[OBJ_MOD_STR] = { 0, 0, 0, 0 }, 
+		[OBJ_MOD_INT] = { 0, 0, 0, 0 }, 
+		[OBJ_MOD_WIS] = { 0, 0, 0, 0 }, 
+		[OBJ_MOD_DEX] = { 0, 0, 0, 0 }, 
+		[OBJ_MOD_CON] = { 0, 0, 0, 0 }, 
+		[OBJ_MOD_STEALTH] = { 0, 0, 0, 0 }, 
+		[OBJ_MOD_SEARCH] = { 0, 0, 0, 0 }, 
+		[OBJ_MOD_INFRA] = { 0, 0, 0, 0 }, 
+		[OBJ_MOD_TUNNEL] = { 0, 0, 0, 0 }, 
+		[OBJ_MOD_SPEED] = { 0, 0, 0, 0 }, 
+		[OBJ_MOD_BLOWS] = { 0, 0, 0, 0 }, 
+		[OBJ_MOD_SHOTS] = { 0, 0, 0, 0 }, 
+		[OBJ_MOD_MIGHT] = { 0, 0, 0, 0 }, 
+		[OBJ_MOD_LIGHT] = { 1, 0, 0, 0 }, 
+	},
+	.el_info = {
+		[ELEM_ACID] = { 0, 0 },
+		[ELEM_ELEC] = { 0, 0 },
+		[ELEM_FIRE] = { 0, 0 },
+		[ELEM_COLD] = { 0, 0 },
+		[ELEM_POIS] = { 0, 0 },
+		[ELEM_LIGHT] = { 0, 0 },
+		[ELEM_DARK] = { 0, 0 },
+		[ELEM_SOUND] = { 0, 0 },
+		[ELEM_SHARD] = { 0, 0 },
+		[ELEM_NEXUS] = { 0, 0 },
+		[ELEM_NETHER] = { 0, 0 },
+		[ELEM_CHAOS] = { 0, 0 },
+		[ELEM_DISEN] = { 0, 0 },
+		[ELEM_WATER] = { 0, 0 },
+		[ELEM_ICE] = { 0, 0 },
+		[ELEM_GRAVITY] = { 0, 0 },
+		[ELEM_INERTIA] = { 0, 0 },
+		[ELEM_FORCE] = { 0, 0 },
+		[ELEM_TIME] = { 0, 0 },
+		[ELEM_PLASMA] = { 0, 0 },
+		[ELEM_METEOR] = { 0, 0 },
+		[ELEM_MISSILE] = { 0, 0 },
+		[ELEM_MANA] = { 0, 0 },
+		[ELEM_HOLY_ORB] = { 0, 0 },
+		[ELEM_ARROW] = { 0, 0 },
+	},
+
+	.brands = NULL,
+	.slays = NULL,
+
+	.d_attr = 7,
 	.d_char = L'~',
 
-	.alloc_prob = 10,
+	.alloc_prob = 70,
 	.alloc_min = 1,
-	.alloc_max = 10,
-	.level = 0,
+	.alloc_max = 40,
+	.level = 1,
 
 	.effect = NULL,
+	.power = 0,
+	.effect_msg = NULL,
+	.time = {
+		.base = 0,
+		.dice = 0,
+		.sides = 0,
+		.m_bonus = 0,
+	},
+	.charge = {
+		.base = 0,
+		.dice = 0,
+		.sides = 0,
+		.m_bonus = 0,
+	},
 
 	.gen_mult_prob = 0,
+	.stack_size = {
+		.base = 0,
+		.dice = 0,
+		.sides = 0,
+		.m_bonus = 0,
+	},
 	.flavor = NULL,
 };
 
@@ -213,15 +269,45 @@ static struct object_kind TEST_DATA test_lantern = {
 	.name = "Test Lantern",
 	.text = "A test lantern.",
 	.base = &light_base,
-	.kidx = 1,
+	.next = NULL,
+ 	.kidx = 3,
 	.tval = TV_LIGHT,
 	.sval = 2, //Hack - depends on edit file order -  Lantern (NRM)
 	.pval = {
-				.base = 5000,
-				.dice = 0,
-				.sides = 0,
-				.m_bonus = 0,
+		.base = 5000,
+		.dice = 0,
+		.sides = 0,
+		.m_bonus = 0,
 	},
+
+	.to_h = {
+		.base = 0,
+		.dice = 0,
+		.sides = 0,
+		.m_bonus = 0,
+	},
+	.to_d = {
+		.base = 0,
+		.dice = 0,
+		.sides = 0,
+		.m_bonus = 0,
+	},
+	.to_a = {
+		.base = 0,
+		.dice = 0,
+		.sides = 0,
+		.m_bonus = 0,
+	},
+	.ac = 0,
+
+	.dd = 1,
+	.ds = 1,
+	.weight = 50,
+
+	.cost = 1,
+
+	.flags = { 0, 0, 8, 0 },
+	.kind_flags = { 32, 0 },
 
 	.modifiers = { 
 		[OBJ_MOD_STR] = { 0, 0, 0, 0 }, 
@@ -237,32 +323,38 @@ static struct object_kind TEST_DATA test_lantern = {
 		[OBJ_MOD_BLOWS] = { 0, 0, 0, 0 }, 
 		[OBJ_MOD_SHOTS] = { 0, 0, 0, 0 }, 
 		[OBJ_MOD_MIGHT] = { 0, 0, 0, 0 }, 
-		[OBJ_MOD_LIGHT] = { 0, 0, 0, 0 }, 
+		[OBJ_MOD_LIGHT] = { 2, 0, 0, 0 }, 
 	},
-	.to_h = {
-			.base = 0,
-			.dice = 0,
-			.sides = 0,
-			.m_bonus = 0,
-	},
-	.to_d = {
-			.base = 0,
-			.dice = 0,
-			.sides = 0,
-			.m_bonus = 0,
-	},
-	.to_a = {
-			.base = 0,
-			.dice = 0,
-			.sides = 0,
-			.m_bonus = 0,
+	.el_info = {
+		[ELEM_ACID] = { 0, 0 },
+		[ELEM_ELEC] = { 0, 0 },
+		[ELEM_FIRE] = { 0, 4 },
+		[ELEM_COLD] = { 0, 0 },
+		[ELEM_POIS] = { 0, 0 },
+		[ELEM_LIGHT] = { 0, 0 },
+		[ELEM_DARK] = { 0, 0 },
+		[ELEM_SOUND] = { 0, 0 },
+		[ELEM_SHARD] = { 0, 0 },
+		[ELEM_NEXUS] = { 0, 0 },
+		[ELEM_NETHER] = { 0, 0 },
+		[ELEM_CHAOS] = { 0, 0 },
+		[ELEM_DISEN] = { 0, 0 },
+		[ELEM_WATER] = { 0, 0 },
+		[ELEM_ICE] = { 0, 0 },
+		[ELEM_GRAVITY] = { 0, 0 },
+		[ELEM_INERTIA] = { 0, 0 },
+		[ELEM_FORCE] = { 0, 0 },
+		[ELEM_TIME] = { 0, 0 },
+		[ELEM_PLASMA] = { 0, 0 },
+		[ELEM_METEOR] = { 0, 0 },
+		[ELEM_MISSILE] = { 0, 0 },
+		[ELEM_MANA] = { 0, 0 },
+		[ELEM_HOLY_ORB] = { 0, 0 },
+		[ELEM_ARROW] = { 0, 0 },
 	},
 
-	.dd = 1,
-	.ds = 1,
-	.weight = 10,
-
-	.cost = 1,
+	.brands = NULL,
+	.slays = NULL,
 
 	.d_attr = 0,
 	.d_char = L'~',
@@ -273,8 +365,28 @@ static struct object_kind TEST_DATA test_lantern = {
 	.level = 0,
 
 	.effect = NULL,
+	.power = 0,
+	.effect_msg = NULL,
+	.time = {
+		.base = 0,
+		.dice = 0,
+		.sides = 0,
+		.m_bonus = 0,
+	},
+	.charge = {
+		.base = 0,
+		.dice = 0,
+		.sides = 0,
+		.m_bonus = 0,
+	},
 
 	.gen_mult_prob = 0,
+	.stack_size = {
+		.base = 0,
+		.dice = 0,
+		.sides = 0,
+		.m_bonus = 0,
+	},
 	.flavor = NULL,
 };
 
@@ -678,7 +790,41 @@ static struct maxima TEST_DATA test_z_info = {
 	.m_max   = 2,
 };
 
-static struct object TEST_DATA test_inven[MAX_GEAR];
+static struct object TEST_DATA test_gear[MAX_GEAR];
+
+static struct player_upkeep TEST_DATA test_player_upkeep = {
+	.playing = 1,
+	.leaving = 0,
+	.autosave = 0,
+	.energy_use = 0,
+	.new_spells = 0,
+
+	.health_who = NULL,
+	.monster_race = NULL,
+	.object_idx = 0,
+	.object_kind = NULL,
+
+	.notice = 0,
+	.update = 0,
+	.redraw = 0,
+
+	.command_wrk = 0,
+
+	.create_up_stair = 0,
+	.create_down_stair = 0,
+
+	.running = 0,
+	.running_withpathfind = 0,
+	.running_firststep = 0,
+
+	.quiver = { 0 },
+	.inven = { 0 },
+
+	.total_weight = 0,
+	.inven_cnt = 0,
+	.equip_cnt = 0,
+	.quiver_cnt = 0,
+};
 
 static struct player TEST_DATA test_player = {
 	.py = 1,
@@ -731,7 +877,8 @@ static struct player TEST_DATA test_player = {
 	.history = "no history",
 	.is_dead = 0,
 	.wizard = 0,
-	.gear = &test_inven[0],
+	.gear = &test_gear[0],
+	.upkeep = &test_player_upkeep,
 };
 
 #endif /* !UNIT_TEST_DATA */
