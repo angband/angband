@@ -3352,7 +3352,7 @@ int effect_param(const char *type)
 		}
 	}
 
-	return val;	
+	return val;
 }
 
 /*

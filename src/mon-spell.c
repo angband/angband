@@ -26,6 +26,25 @@
 #include "spells.h"
 
 /**
+ * Info details of the different monster spells in the game.
+ */
+static const struct mon_spell_info {
+	u16b index;				/* Numerical index (RSF_FOO) */
+	int type;				/* Type bitflag */
+	const char *desc;		/* Verbal description */
+	int msgt;				/* Flag for message colouring */
+	bool save;				/* Does this attack allow a saving throw? */
+	const char *verb;		/* Description of the attack */
+	const char *blind_verb;	/* Description of the attack if unseen */
+	const char *lore_desc;	/* Description of the attack used in lore text */
+} mon_spell_info_table[] = {
+    #define RSF(a, b, c, d, e, f, g, h)	{ RSF_##a, b, c, d, e, f, g, h },
+    #include "list-mon-spells-new.h"
+    #undef RSF
+};
+
+
+/**
  * Details of the different monster spells in the game.
  * See src/monster.h for structure
  */
