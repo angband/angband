@@ -173,9 +173,10 @@ static const char *effect_list[] = {
 errr grab_effect_data(struct parser *p, struct effect *effect)
 {
 	const char *type;
-	int val, r;
+	int val;
 
-	if (grab_name("effect", parser_getsym(p, "eff"), effect_list, N_ELEMENTS(effect_list), &val))
+	if (grab_name("effect", parser_getsym(p, "eff"), effect_list,
+				  N_ELEMENTS(effect_list), &val))
 		return PARSE_ERROR_INVALID_EFFECT;
 	effect->index = val;
 
@@ -186,23 +187,7 @@ errr grab_effect_data(struct parser *p, struct effect *effect)
 			return PARSE_ERROR_INVALID_VALUE;
 
 		/* Check for a value */
-		if (sscanf(type, "%d", &r) == 1)
-			val = r;
-		else {
-			/* Run through the possibilities */
-			val = gf_name_to_idx(type);
-			if (val < 0) {
-				val = timed_name_to_idx(type);
-				if (val < 0) {
-					val = stat_name_to_idx(type);
-					if (val < 0) { //Hack - NRM
-						if (streq(type, "TOHIT")) val = ENCH_TOHIT;
-						else if (streq(type, "TODAM")) val = ENCH_TODAM;
-						else if (streq(type, "TOAC")) val = ENCH_TOAC;
-					}
-				}
-			}
-		}
+		val = effect_param(type);
 		if (val < 0)
 			return PARSE_ERROR_INVALID_EFFECT;
 		else

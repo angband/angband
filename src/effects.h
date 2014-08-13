@@ -39,10 +39,11 @@ struct effect {
 /*** Functions ***/
 
 void free_effect(struct effect *source);
-bool effect_do(struct effect *effect, bool *ident, bool aware, int dir, int beam, int boost);
+bool effect_valid(struct effect *effect);
 bool effect_aim(struct effect *effect);
 const char *effect_info(struct effect *effect);
 const char *effect_desc(struct effect *effect);
-bool effect_valid(struct effect *effect);
+int effect_param(const char *type);
+bool effect_do(struct effect *effect, bool *ident, bool aware, int dir, int beam, int boost);
 
 #endif /* INCLUDED_EFFECTS_H */

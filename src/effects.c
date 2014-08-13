@@ -3253,6 +3253,13 @@ static const struct effect_kind effects[] =
 };
 
 
+static const char *effect_names[] = {
+	NULL,
+	#define EFFECT(x, a, b, d)	#x,
+	#include "list-effects.h"
+	#undef EFFECT
+};
+
 /*
  * Utility functions
  */
@@ -3312,14 +3319,9 @@ const char *effect_desc(struct effect *effect)
 
 effect_index effect_lookup(const char *name)
 {
-	static const char *effect_names[] = {
-		#define EFFECT(x, a, b, d)	#x,
-		#include "list-effects.h"
-		#undef EFFECT
-	};
-	int i;
+	size_t i;
 
-	for (i = 0; i < EF_MAX; i++) {
+	for (i = 0; i < N_ELEMENTS(effect_names); i++) {
 		const char *effect_name = effect_names[i];
 
 		/* Test for equality */
@@ -3328,6 +3330,29 @@ effect_index effect_lookup(const char *name)
 	}
 
 	return EF_MAX;
+}
+
+int effect_param(const char *type)
+{
+	int val;
+
+	/* If not a numerical value, run through the possibilities */
+	if (sscanf(type, "%d", &val) != 1) {
+		val = gf_name_to_idx(type);
+		if (val < 0) {
+			val = timed_name_to_idx(type);
+			if (val < 0) {
+				val = stat_name_to_idx(type);
+				if (val < 0) { //Hack - NRM
+					if (streq(type, "TOHIT")) val = ENCH_TOHIT;
+					else if (streq(type, "TODAM")) val = ENCH_TODAM;
+					else if (streq(type, "TOAC")) val = ENCH_TOAC;
+				}
+			}
+		}
+	}
+
+	return val;	
 }
 
 /*
