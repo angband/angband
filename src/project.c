@@ -2606,7 +2606,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 	int n1y = 0;
 	int n1x = 0;
 
-	int msec = op_ptr->delay_factor * op_ptr->delay_factor;
+	int msec = op_ptr->delay_factor;
 
 	/* Assume the player sees nothing */
 	bool notice = FALSE;
