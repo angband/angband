@@ -3347,6 +3347,14 @@ int effect_param(const char *type)
 					if (streq(type, "TOHIT")) val = ENCH_TOHIT;
 					else if (streq(type, "TODAM")) val = ENCH_TODAM;
 					else if (streq(type, "TOAC")) val = ENCH_TOAC;
+					if (val < 0) { //Hack - this and the summon crap really need fixing NRM
+						if (streq(type, "MON_TMD_SLEEP")) val = MON_TMD_SLEEP;
+						else if (streq(type, "MON_TMD_STUN")) val = MON_TMD_STUN;
+						else if (streq(type, "MON_TMD_CONF")) val = MON_TMD_CONF;
+						else if (streq(type, "MON_TMD_FEAR")) val = MON_TMD_FEAR;
+						else if (streq(type, "MON_TMD_SLOW")) val = MON_TMD_SLOW;
+						else if (streq(type, "MON_TMD_FAST")) val = MON_TMD_FAST;
+					}
 				}
 			}
 		}

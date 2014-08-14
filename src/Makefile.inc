@@ -500,7 +500,7 @@ depgen:
  mon-blow-effects.h list-blow-effects.h list-mon-spells.h \
  list-spell-effects.h mon-util.h player-timed.h list-player-timed.h \
  player-util.h project.h list-project-environs.h list-project-monsters.h \
- spells.h
+ spells.h list-mon-spells-new.h
 ./mon-timed.o: mon-timed.c angband.h h-basic.h z-bitflag.h z-form.h \
  z-virt.h z-color.h z-util.h z-rand.h z-term.h ui-event.h z-msg.h \
  z-msg-list.h config.h option.h z-file.h list-options.h player.h guid.h \
@@ -539,7 +539,7 @@ depgen:
  mon-constants.h list-mon-flags.h mon-timed.h mon-blow-methods.h \
  list-blow-methods.h mon-blow-effects.h list-blow-effects.h \
  list-mon-spells.h mon-power.h mon-spell.h list-spell-effects.h \
- mon-util.h obj-tval.h list-tvals.h obj-util.h
+ mon-util.h obj-tval.h list-tvals.h obj-util.h player-spell.h
 ./obj-chest.o: obj-chest.c angband.h h-basic.h z-bitflag.h z-form.h \
  z-virt.h z-color.h z-util.h z-rand.h z-term.h ui-event.h z-msg.h \
  z-msg-list.h config.h option.h z-file.h list-options.h player.h guid.h \

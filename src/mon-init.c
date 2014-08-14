@@ -30,11 +30,255 @@
 #include "obj-util.h"
 #include "object.h"
 #include "parser.h"
+#include "player-spell.h"
 
 monster_pain *pain_messages;
+struct monster_spell *monster_spells;
 monster_base *rb_info;
 monster_race *r_info;
 monster_lore *l_list;
+
+const char *r_info_flags[] =
+{
+	#define RF(a, b, c) #a,
+	#include "list-mon-flags.h"
+	#undef RF
+	NULL
+};
+
+const char *r_info_spell_flags[] =
+{
+	#define RSF(a, b, c, d, e, f, g, h, i, j, k, l, m, n) #a,
+	#include "list-mon-spells.h"
+	#undef RSF
+	NULL
+};
+
+static const char *effect_list[] = {
+	"NONE",
+	#define EFFECT(x, a, b, d)	#x,
+	#include "list-effects.h"
+	#undef EFFECT
+	"MAX"
+};
+
+/* Parsing functions for monster_spell.txt */
+
+static enum parser_error parse_rs_name(struct parser *p) {
+	struct monster_spell *h = parser_priv(p);
+	struct monster_spell *s = mem_zalloc(sizeof *s);
+	const char *name = parser_getstr(p, "name");
+	int index;
+	s->next = h;
+	if (grab_name("monster spell", name, r_info_spell_flags, N_ELEMENTS(r_info_spell_flags), &index))
+		return PARSE_ERROR_GENERIC;
+	s->index = index;
+	parser_setpriv(p, s);
+	return PARSE_ERROR_NONE;
+}
+
+
+static enum parser_error parse_rs_hit(struct parser *p) {
+	struct monster_spell *s = parser_priv(p);
+	assert(s);
+	s->hit = parser_getuint(p, "hit");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_rs_effect(struct parser *p) {
+	struct monster_spell *s = parser_priv(p);
+	struct effect *effect;
+	struct effect *new_effect = mem_zalloc(sizeof(*new_effect));
+	const char *type;
+	int val;
+
+	if (!s)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	/* Go to the next vacant effect and set it to the new one  */
+	if (s->effect) {
+		effect = s->effect;
+		while (effect->next)
+			effect = effect->next;
+		effect->next = new_effect;
+	} else
+		s->effect = new_effect;
+
+	if (grab_name("effect", parser_getsym(p, "eff"), effect_list,
+				  N_ELEMENTS(effect_list), &val))
+		return PARSE_ERROR_INVALID_EFFECT;
+	effect->index = val;
+
+	if (parser_hasval(p, "type")) {
+		type = parser_getsym(p, "type");
+
+		if (type == NULL)
+			return PARSE_ERROR_INVALID_VALUE;
+
+		/* Check for a value */
+		val = effect_param(type);
+		if (val < 0)
+			return PARSE_ERROR_INVALID_EFFECT;
+		else
+			effect->params[0] = val;
+	}
+
+	if (parser_hasval(p, "xtra"))
+		effect->params[1] = parser_getint(p, "xtra");
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_rs_param(struct parser *p) {
+	struct monster_spell *s = parser_priv(p);
+	struct effect *effect = s->effect;
+
+	if (!s)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	/* If there is no effect, assume that this is human and not parser error. */
+	if (effect == NULL)
+		return PARSE_ERROR_NONE;
+
+	while (effect->next) effect = effect->next;
+	effect->params[1] = parser_getint(p, "p2");
+
+	if (parser_hasval(p, "p3"))
+		effect->params[2] = parser_getint(p, "p3");
+
+	return PARSE_ERROR_NONE;
+}
+
+
+static enum parser_error parse_rs_dice(struct parser *p) {
+	struct monster_spell *s = parser_priv(p);
+	dice_t *dice = NULL;
+	struct effect *effect = s->effect;
+	const char *string = NULL;
+
+	if (!s)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	/* If there is no effect, assume that this is human and not parser error. */
+	if (effect == NULL)
+		return PARSE_ERROR_NONE;
+
+	while (effect->next) effect = effect->next;
+
+	dice = dice_new();
+
+	if (dice == NULL)
+		return PARSE_ERROR_INTERNAL;
+
+	string = parser_getstr(p, "dice");
+
+	if (dice_parse_string(dice, string)) {
+		effect->dice = dice;
+	}
+	else {
+		dice_free(dice);
+		return PARSE_ERROR_GENERIC;
+	}
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_rs_expr(struct parser *p) {
+	struct monster_spell *s = parser_priv(p);
+	struct effect *effect = s->effect;
+	expression_t *expression = NULL;
+	expression_base_value_f function = NULL;
+	const char *name;
+	const char *base;
+	const char *expr;
+
+	if (!s)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	/* If there is no effect, assume that this is human and not parser error. */
+	if (effect == NULL)
+		return PARSE_ERROR_NONE;
+
+	while (effect->next) effect = effect->next;
+
+	/* If there are no dice, assume that this is human and not parser error. */
+	if (effect->dice == NULL)
+		return PARSE_ERROR_NONE;
+
+	name = parser_getsym(p, "name");
+	base = parser_getsym(p, "base");
+	expr = parser_getstr(p, "expr");
+	expression = expression_new();
+
+	if (expression == NULL)
+		return PARSE_ERROR_INTERNAL;
+
+	function = spell_value_base_by_name(base);
+	expression_set_base_value(expression, function);
+
+	if (expression_add_operations_string(expression, expr) < 0)
+		return PARSE_ERROR_GENERIC;
+
+	if (dice_bind_expression(effect->dice, name, expression) < 0)
+		return PARSE_ERROR_GENERIC;
+
+	/* The dice object makes a deep copy of the expression, so we can free it */
+	expression_free(expression);
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_rs_power(struct parser *p) {
+	struct monster_spell *s = parser_priv(p);
+
+	s->power = parser_getrand(p, "power");
+
+	return PARSE_ERROR_NONE;
+}
+
+struct parser *init_parse_rs(void) {
+	struct parser *p = parser_new();
+	parser_setpriv(p, NULL);
+	parser_reg(p, "name str name", parse_rs_name);
+	parser_reg(p, "hit uint hit", parse_rs_hit);
+	parser_reg(p, "effect sym eff ?sym type ?int xtra", parse_rs_effect);
+	parser_reg(p, "param int p2 ?int p3", parse_rs_param);
+	parser_reg(p, "dice str dice", parse_rs_dice);
+	parser_reg(p, "expr sym name sym base str expr", parse_rs_expr);
+	parser_reg(p, "power rand power", parse_rs_power);
+	return p;
+}
+
+static errr run_parse_rs(struct parser *p) {
+	return parse_file(p, "monster_spell");
+}
+
+static errr finish_parse_rs(struct parser *p) {
+	monster_spells = parser_priv(p);
+	parser_destroy(p);
+	return 0;
+}
+
+static void cleanup_rs(void)
+{
+	struct monster_spell *rs = monster_spells;
+	struct monster_spell *next;
+
+	while (rs) {
+		next = rs->next;
+		free_effect(rs->effect);
+		mem_free(rs);
+		rs = next;
+	}
+}
+
+struct file_parser rs_parser = {
+	"monster_spell",
+	init_parse_rs,
+	run_parse_rs,
+	finish_parse_rs,
+	cleanup_rs
+};
 
 /* Parsing functions for monster_base.txt */
 
@@ -74,14 +318,6 @@ static enum parser_error parse_rb_m(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-const char *r_info_flags[] =
-{
-	#define RF(a, b, c) #a,
-	#include "list-mon-flags.h"
-	#undef RF
-	NULL
-};
-
 static enum parser_error parse_rb_f(struct parser *p) {
 	struct monster_base *rb = parser_priv(p);
 	char *flags;
@@ -105,14 +341,6 @@ static enum parser_error parse_rb_f(struct parser *p) {
 	mem_free(flags);
 	return PARSE_ERROR_NONE;
 }
-
-const char *r_info_spell_flags[] =
-{
-	#define RSF(a, b, c, d, e, f, g, h, i, j, k, l, m, n) #a,
-	#include "list-mon-spells.h"
-	#undef RSF
-	NULL
-};
 
 static enum parser_error parse_rb_s(struct parser *p) {
 	struct monster_base *rb = parser_priv(p);

@@ -84,6 +84,18 @@ typedef struct monster_pain
 
 extern monster_pain *pain_messages;
 
+/* Structure for monster spell types */
+struct monster_spell {
+	struct monster_spell *next;
+
+	u16b index;				/* Numerical index (RSF_FOO) */
+	int hit;				/* To-hit level for the attack */
+	struct effect *effect;
+	random_value power;
+};
+
+extern struct monster_spell *monster_spells;
+
 /*
  * Information about "base" monster type.
  */

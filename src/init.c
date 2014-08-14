@@ -3930,6 +3930,10 @@ void init_arrays(void)
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (pain messages)");
 	if (run_parser(&mp_parser)) quit("Cannot initialize monster pain messages");
 
+	/* Initialize monster spell info */
+	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (monster spells)");
+	if (run_parser(&rs_parser)) quit("Cannot initialize monster spells");
+
 	/* Initialize monster-base info */
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (monster bases)");
 	if (run_parser(&rb_parser)) quit("Cannot initialize monster bases");
@@ -4144,6 +4148,7 @@ void cleanup_angband(void)
 	cleanup_parser(&names_parser);
 	cleanup_parser(&r_parser);
 	cleanup_parser(&rb_parser);
+	cleanup_parser(&rs_parser);
 	cleanup_parser(&f_parser);
 	cleanup_parser(&e_parser);
 	cleanup_parser(&p_parser);
