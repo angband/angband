@@ -316,7 +316,7 @@ extern bool square_isstairs(struct chunk *c, int y, int x);
 extern bool square_isupstairs(struct chunk *c, int y, int x);
 extern bool square_isdownstairs(struct chunk *c, int y, int x);
 extern bool square_isshop(struct chunk *c, int y, int x);
-extern bool square_isglyph(struct chunk *c, int y, int x);
+extern bool square_isplayer(struct chunk *c, int y, int x);
 
 /* BEHAVIOR PREDICATES */
 extern bool square_isopen(struct chunk *c, int y, int x);

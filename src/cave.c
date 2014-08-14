@@ -2902,6 +2902,13 @@ int square_shopnum(struct chunk *c, int y, int x) {
 }
 
 /**
+ * True if the square contains the player
+ */
+bool square_isplayer(struct chunk *c, int y, int x) {
+	return c->m_idx[y][x] < 0 ? TRUE : FALSE;
+}
+
+/**
  * SQUARE BEHAVIOR PREDICATES
  *
  * These functions define how a given square behaves, e.g. whether it is
@@ -3104,8 +3111,8 @@ struct monster *cave_monster(struct chunk *c, int idx) {
  */
 struct monster *square_monster(struct chunk *c, int y, int x) {
 	if (c->m_idx[y][x] > 0) {
-	struct monster *mon = cave_monster(c, c->m_idx[y][x]);
-	return mon->race ? mon : NULL;
+		struct monster *mon = cave_monster(c, c->m_idx[y][x]);
+		return mon->race ? mon : NULL;
 	}
 
 	return NULL;
