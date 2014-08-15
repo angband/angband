@@ -107,7 +107,7 @@ static enum parser_error parse_rs_effect(struct parser *p) {
 	if (grab_name("effect", parser_getsym(p, "eff"), effect_list,
 				  N_ELEMENTS(effect_list), &val))
 		return PARSE_ERROR_INVALID_EFFECT;
-	effect->index = val;
+	new_effect->index = val;
 
 	if (parser_hasval(p, "type")) {
 		type = parser_getsym(p, "type");
@@ -120,11 +120,11 @@ static enum parser_error parse_rs_effect(struct parser *p) {
 		if (val < 0)
 			return PARSE_ERROR_INVALID_EFFECT;
 		else
-			effect->params[0] = val;
+			new_effect->params[0] = val;
 	}
 
 	if (parser_hasval(p, "xtra"))
-		effect->params[1] = parser_getint(p, "xtra");
+		new_effect->params[1] = parser_getint(p, "xtra");
 
 	return PARSE_ERROR_NONE;
 }
