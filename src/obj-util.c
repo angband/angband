@@ -183,7 +183,7 @@ void flavor_init(void)
 		int wordlen;
 		bool okay = TRUE;
 
-		strcpy(buf, "\"");
+		my_strcpy(buf, "\"", 1);
 		wordlen = randname_make(RANDNAME_SCROLL, 2, 8, end, 24, name_sections);
 		while (titlelen + wordlen < (int)(sizeof(scroll_adj[0]) - 3))
 		{

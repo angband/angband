@@ -388,7 +388,7 @@ bool dice_parse_string(dice_t *dice, const char *string)
 		}
 
 		/* Illegal transition. */
-		if (state < DICE_STATE_START || state >= DICE_STATE_MAX)
+		if (state >= DICE_STATE_MAX)
 			return FALSE;
 
 		/*

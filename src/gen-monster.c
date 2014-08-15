@@ -276,7 +276,7 @@ void get_vault_monsters(struct chunk *c, char racial_symbol[], byte vault_type, 
     for (i = 0; racial_symbol[i] != '\0'; i++) {
 		/* Require correct race, allow uniques. */
 		allow_unique = TRUE;
-		sprintf(base_d_char, "%c", racial_symbol[i]);
+		snprintf(base_d_char, 2, "%c", racial_symbol[i]);
 
 		/* Determine level of monster */
 		if (vault_type == 6)

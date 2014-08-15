@@ -1509,7 +1509,7 @@ static void town_gen_layout(struct chunk *c, struct player *p) {
  * handles the physical layout.
  */
 struct chunk *town_gen(struct player *p) {
-    int i, y, x;
+    int i, y, x = 0;
     bool daytime = turn % (10 * TOWN_DAWN) < (10 * TOWN_DUSK);
     int residents = daytime ? MIN_M_ALLOC_TD : MIN_M_ALLOC_TN;
 	struct chunk *c;

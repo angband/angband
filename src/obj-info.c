@@ -1156,10 +1156,12 @@ static bool describe_digger(textblock *tb, const object_type *o_ptr)
 {
 	int i;
 	int deciturns[DIGGING_MAX];
+	/* Avoid compliler warning */
+	object_type *obj = (object_type *) o_ptr;
 	static const char *names[4] = { "rubble", "magma veins", "quartz veins", "granite" };
 
 	/* Get useful info or print nothing */
-	if (!obj_known_digging((object_type *)o_ptr, deciturns)) return FALSE;
+	if (!obj_known_digging(obj, deciturns)) return FALSE;
 
 	for (i = DIGGING_RUBBLE; i < DIGGING_DOORS; i++)
 	{

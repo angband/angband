@@ -1504,7 +1504,7 @@ static void do_cmd_wiz_features(void)
 	struct keypress cmd;
 
 	/* OMG hax */
-	int *feat;
+	int *feat = NULL;
 	int featf[] = {FEAT_FLOOR};
 	int feato[] = {FEAT_OPEN};
 	int featb[] = {FEAT_BROKEN};
@@ -1520,7 +1520,7 @@ static void do_cmd_wiz_features(void)
 	int featg[] = {FEAT_GRANITE};
 	int featp[] = {FEAT_PERM};
 	int featr[] = {FEAT_RUBBLE};
-	int length;
+	int length = 0;
 
 
 	/* Get a "debug command" */

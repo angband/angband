@@ -329,7 +329,7 @@ bool chunk_copy(struct chunk *dest, struct chunk *source, int y0, int x0,
 					 this_o_idx = next_o_idx) {
 					object_type *source_obj = cave_object(source, this_o_idx);
 					object_type *dest_obj = NULL;
-					int o_idx;
+					int o_idx = 0;
 
 					/* Is this the first object on this square? */
 					if (first_obj) {
@@ -407,7 +407,7 @@ bool chunk_copy(struct chunk *dest, struct chunk *source, int y0, int x0,
 						 this_o_idx = next_o_idx) {
 						object_type *held_obj = cave_object(source, this_o_idx);
 						object_type *dest_obj = NULL;
-						int o_idx;
+						int o_idx = 0;
 
 						/* Is this the first object on this square? */
 						if (first_obj) {

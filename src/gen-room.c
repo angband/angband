@@ -2151,7 +2151,7 @@ bool build_vault(struct chunk *c, int y0, int x0, struct vault *v)
 				case '$': place_gold(c, y, x, c->depth, ORIGIN_VAULT);break;
 					/* Armour. */
 				case ']': {
-					int	tval, temp = one_in_(3) ? randint1(9) : randint1(8);
+					int	tval = 0, temp = one_in_(3) ? randint1(9) : randint1(8);
 					switch (temp) {
 					case 1: tval = TV_BOOTS; break;
 					case 2: tval = TV_GLOVES; break;
@@ -2169,7 +2169,7 @@ bool build_vault(struct chunk *c, int y0, int x0, struct vault *v)
 				}
 					/* Weapon. */
 				case '|': {
-					int	tval, temp = randint1(4);
+					int	tval = 0, temp = randint1(4);
 					switch (temp) {
 					case 1: tval = TV_SWORD; break;
 					case 2: tval = TV_POLEARM; break;

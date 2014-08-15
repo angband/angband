@@ -994,7 +994,7 @@ int equipped_item_slot(struct player_body body, int item)
 void calc_inventory(struct player_upkeep *upkeep, object_type gear[],
 					struct player_body body, int max_gear)
 {
-	int i, gear_index, quiver_slots = 0, num_left = 0, index = 0;
+	int i, gear_index = 0, quiver_slots = 0, num_left = 0, index = 0;
 	bool *possible = mem_zalloc(max_gear * sizeof(bool));
 
 	/* Pass through, eliminate equipped objects and non-objects */

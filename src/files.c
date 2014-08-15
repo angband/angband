@@ -322,7 +322,7 @@ static void display_resistance_panel(const struct player_flag_record *rec,
 
 			bool res = FALSE, imm = FALSE, vul = FALSE;
 			bool timed = FALSE;
-			bool known;
+			bool known = FALSE;
 
 			/* Wipe flagset */
 			of_wipe(f);

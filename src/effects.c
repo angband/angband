@@ -2046,7 +2046,7 @@ bool effect_handler_TELEPORT_TO(effect_handler_context_t *context)
 	int py = player->py;
 	int px = player->px;
 
-	s16b ny, nx;
+	s16b ny = py, nx = px;
 	int y, x, dis = 0, ctr = 0;
 	int midx = cave->mon_current;
 	struct monster *mon;
@@ -3375,7 +3375,7 @@ bool effect_do(struct effect *effect, bool *ident, bool aware, int dir, int beam
 	random_value value;
 
 	do {
-		int random_choices, leftover = 0;
+		int random_choices = 0, leftover = 0;
 
 		if (!effect_valid(effect)) {
 			msg("Bad effect passed to effect_do(). Please report this bug.");
