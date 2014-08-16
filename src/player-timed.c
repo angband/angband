@@ -18,6 +18,7 @@
 
 #include "angband.h"
 #include "cave.h"
+#include "mon-util.h"
 #include "obj-identify.h"
 #include "player-timed.h"
 #include "player-util.h"
@@ -164,12 +165,21 @@ bool player_inc_timed(struct player *p, int idx, int v, bool notify, bool check)
 
 	/* Check that @ can be affected by this effect */
 	if (check && effects->fail_code) {
+		/* If the effect is from a monster action, extra stuff happens */
+		struct monster *mon = cave->mon_current > 0 ?
+			cave_monster(cave, cave->mon_current) : NULL;
+
 		/* This is all a bit gross - NRM */
 		if (effects->fail_code == 1) {
 			/* Code 1 is an object flag */
 			wieldeds_notice_flag(p, effect->fail);
-			if (player_of_has(p, effect->fail))
+			if (mon) 
+				update_smart_learn(mon, player, effect->fail, -1);
+			if (player_of_has(p, effect->fail)) {
+				if (mon)
+				msg("You resist the effect!");
 				return FALSE;
+			}
 		} else if (effects->fail_code == 2) {
 			/* Code 2 is a resist */
 			wieldeds_notice_element(p, effect->fail);
@@ -181,7 +191,7 @@ bool player_inc_timed(struct player *p, int idx, int v, bool notify, bool check)
 			if (p->state.el_info[effect->fail].res_level < 0)
 				return FALSE;
 		}
-		
+
 		/* Special case */
 		if (idx == TMD_POISONED && p->timed[TMD_OPP_POIS])
 			return FALSE;

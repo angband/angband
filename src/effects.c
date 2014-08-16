@@ -363,14 +363,11 @@ bool effect_handler_TIMED_SET(effect_handler_context_t *context)
 bool effect_handler_TIMED_INC(effect_handler_context_t *context)
 {
 	int amount = effect_calculate_value(context, FALSE);
-	/* Only check for protection with player actions, because the monster 
-	* spell code already checks */
-	bool check_protect = (cave->mon_current < 0);
 
 	if (!player->timed[context->p1] || !context->p2)
-		player_inc_timed(player, context->p1, amount, TRUE, check_protect);
+		player_inc_timed(player, context->p1, amount, TRUE, TRUE);
 	else
-		player_inc_timed(player, context->p1, context->p2, TRUE, check_protect);
+		player_inc_timed(player, context->p1, context->p2, TRUE, TRUE);
 	context->ident = TRUE;
 	return TRUE;
 

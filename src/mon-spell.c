@@ -74,7 +74,7 @@ static const struct spell_effect spell_effect_table[] =
 };
 
 
-static const struct breath_dam {
+static const struct breath_damage {
 	int divisor;
 	int cap;
 } breath[] = {
@@ -294,15 +294,6 @@ static void do_spell_effects(int spell, int dam, struct monster *m_ptr,
 	/* Now we cycle through again to activate the chosen effects */
 	for (re_ptr = spell_effect_table; re_ptr->index < RSE_MAX; re_ptr++) {
 		if (chosen[re_ptr->index]) {
-			/* Check for protection from the effect */
-			if (re_ptr->prot_flag)
-				update_smart_learn(m_ptr, player, re_ptr->prot_flag, -1);
-
-			if (player_of_has(player, re_ptr->prot_flag)) {
-				msg("You resist the effect!");
-				continue;
-			}
-
 			/* Implement the effect */
 			if (re_ptr->timed) {
 
