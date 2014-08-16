@@ -3095,6 +3095,7 @@ bool square_isboring(struct chunk *c, int y, int x) {
  * Get a monster on the current level by its index.
  */
 struct monster *cave_monster(struct chunk *c, int idx) {
+	if (idx <= 0) return NULL;
 	return &c->monsters[idx];
 }
 
