@@ -36,6 +36,7 @@ monster_pain *pain_messages;
 struct monster_spell *monster_spells;
 monster_base *rb_info;
 monster_race *r_info;
+monster_race *ref_race = NULL;
 monster_lore *l_list;
 
 const char *r_info_flags[] =

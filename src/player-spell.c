@@ -20,6 +20,7 @@
 #include "cave.h"
 #include "cmd-core.h"
 #include "effects.h"
+#include "monster.h"
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "object.h"
@@ -572,12 +573,16 @@ void get_spell_info(int spell, char *p, size_t len)
 
 static int spell_value_base_monster_level(void)
 {
-	struct monster *mon;
-	if (cave->mon_current > 0)
-		mon = cave_monster(cave, cave->mon_current);
-	else
-		return 0;
-	return mon ? mon->race->level : 0;
+	int level = 0;
+
+	/* Check the reference race first */
+	if (ref_race)
+		level = ref_race->level;
+	/* Otherwise the current monster if there is one */
+	else if (cave->mon_current > 0)
+		level = cave_monster(cave, cave->mon_current)->race->level;
+
+	return level;
 }
 
 static int spell_value_base_player_level(void)
