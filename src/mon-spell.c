@@ -111,6 +111,26 @@ static int nonhp_dam(int spell, int rlev, aspect dam_aspect)
 
 	return dam;
 }
+static int nonhp_dam_new(struct monster_spell *spell, monster_race *race, aspect dam_aspect)
+{
+	int dam = 0;
+	struct effect *effect = spell->effect;
+
+	/* Set the reference race for calculations */
+	ref_race = race;
+
+	/* Now add the damage for each effect */
+	while (effect) {
+		random_value rand;
+		dice_roll(effect->dice, &rand);
+		dam += randcalc(rand, 0, dam_aspect);
+		effect = effect->next;
+	}
+
+	ref_race = NULL;
+
+	return dam;
+}
 
 /**
  * Determine the damage of a monster breath attack
