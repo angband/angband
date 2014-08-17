@@ -1949,18 +1949,13 @@ static bool process_monster_try_push(struct chunk *c, struct monster *m_ptr, con
 			if (is_mimicking(n_ptr))
 				become_aware(n_ptr);
 
-			/* Monster ate another monster */
-			if (kill_ok) {
-				/* Note if visible */
-				if (m_ptr->ml && (m_ptr->mflag & MFLAG_VIEW))
-					msg("%s tramples over %s.", m_name, n_name);
+			/* Note if visible */
+			if (m_ptr->ml && (m_ptr->mflag & MFLAG_VIEW))
+				msg("%s %s %s.", kill_ok ? "tramples over" : "pushes past", m_name, n_name);
 
+			/* Monster ate another monster */
+			if (kill_ok)
 				delete_monster(ny, nx);
-			} else {
-				/* Note if visible */
-				if (m_ptr->ml && (m_ptr->mflag & MFLAG_VIEW))
-					msg("%s pushes past %s.", m_name, n_name);
-			}
 
 			return TRUE;
 		} 
@@ -1976,13 +1971,25 @@ void process_monster_grab_objects(struct chunk *c, struct monster *m_ptr,
 		const char *m_name, int nx, int ny)
 {
 	monster_lore *l_ptr = get_lore(m_ptr->race);
-
 	s16b this_o_idx, next_o_idx = 0;
-	for (this_o_idx = c->o_idx[ny][nx]; this_o_idx; this_o_idx = next_o_idx) {
-		object_type *o_ptr;
 
-		/* Get the object */
-		o_ptr = cave_object(c, this_o_idx);
+	bool is_item = square_object(c, ny, nx);
+	if (is_item && m_ptr->ml) {
+		rf_on(l_ptr->flags, RF_TAKE_ITEM);
+		rf_on(l_ptr->flags, RF_KILL_ITEM);
+	}
+
+	/* Abort if can't pickup/kill */
+	if (!rf_has(m_ptr->race->flags, RF_TAKE_ITEM) &&
+			!rf_has(m_ptr->race->flags, RF_KILL_ITEM)) {
+		return;
+	}
+
+	/* Take or kill objects on the floor */
+	for (this_o_idx = c->o_idx[ny][nx]; this_o_idx; this_o_idx = next_o_idx) {
+		object_type *o_ptr = cave_object(c, this_o_idx);
+		char o_name[80];
+		bool safe = o_ptr->artifact ? TRUE : FALSE;
 
 		/* Get the next object */
 		next_o_idx = o_ptr->next_o_idx;
@@ -1990,67 +1997,52 @@ void process_monster_grab_objects(struct chunk *c, struct monster *m_ptr,
 		/* Skip gold */
 		if (tval_is_money(o_ptr)) continue;
 
-		/* Learn about item pickup behavior */
-		if (m_ptr->ml) {
-			rf_on(l_ptr->flags, RF_TAKE_ITEM);
-			rf_on(l_ptr->flags, RF_KILL_ITEM);
-		}
+		/* Get the object name */
+		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
 
-		/* Take or Kill objects on the floor */
-		if (rf_has(m_ptr->race->flags, RF_TAKE_ITEM) ||
-				rf_has(m_ptr->race->flags, RF_KILL_ITEM)) {
-			char o_name[80];
+		/* React to objects that hurt the monster */
+		if (react_to_slay(o_ptr, m_ptr))
+			safe = TRUE;
 
-			bool safe = o_ptr->artifact ? TRUE : FALSE;
-
-			/* Get the object name */
-			object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
-
-			/* React to objects that hurt the monster */
-			if (react_to_slay(o_ptr, m_ptr))
-				safe = TRUE;
-
-			/* The object cannot be picked up by the monster */
-			if (safe) {
-				/* Only give a message for "take_item" */
-				if (rf_has(m_ptr->race->flags, RF_TAKE_ITEM) &&
-							m_ptr->ml && player_has_los_bold(ny, nx) &&
-							!ignore_item_ok(o_ptr)) {
-					/* Dump a message */
-					msg("%s tries to pick up %s, but fails.",
-						m_name, o_name);
-				}
-
-			/* Pick up the item */
-			} else if (rf_has(m_ptr->race->flags, RF_TAKE_ITEM)) {
-				object_type *i_ptr;
-				object_type object_type_body;
-
-				/* Describe observable situations */
-				if (player_has_los_bold(ny, nx) && !ignore_item_ok(o_ptr))
-					msg("%s picks up %s.", m_name, o_name);
-
-				/* Get local object */
-				i_ptr = &object_type_body;
-
-				/* Obtain local object */
-				object_copy(i_ptr, o_ptr);
-
-				/* Delete the object */
-				delete_object_idx(this_o_idx);
-
-				/* Carry the object */
-				monster_carry(c, m_ptr, i_ptr);
-
-			/* Destroy the item */
-			} else {
-				/* Describe observable situations */
-				if (player_has_los_bold(ny, nx) && !ignore_item_ok(o_ptr))
-					msgt(MSG_DESTROY, "%s crushes %s.", m_name, o_name);
-
-				/* Delete the object */
-				delete_object_idx(this_o_idx);
+		/* The object cannot be picked up by the monster */
+		if (safe) {
+			/* Only give a message for "take_item" */
+			if (rf_has(m_ptr->race->flags, RF_TAKE_ITEM) &&
+						m_ptr->ml && player_has_los_bold(ny, nx) &&
+						!ignore_item_ok(o_ptr)) {
+				/* Dump a message */
+				msg("%s tries to pick up %s, but fails.", m_name, o_name);
 			}
+
+		/* Pick up the item */
+		} else if (rf_has(m_ptr->race->flags, RF_TAKE_ITEM)) {
+			object_type *i_ptr;
+			object_type object_type_body;
+
+			/* Describe observable situations */
+			if (player_has_los_bold(ny, nx) && !ignore_item_ok(o_ptr))
+				msg("%s picks up %s.", m_name, o_name);
+
+			/* Get local object */
+			i_ptr = &object_type_body;
+
+			/* Obtain local object */
+			object_copy(i_ptr, o_ptr);
+
+			/* Delete the object */
+			delete_object_idx(this_o_idx);
+
+			/* Carry the object */
+			monster_carry(c, m_ptr, i_ptr);
+
+		/* Destroy the item */
+		} else {
+			/* Describe observable situations */
+			if (player_has_los_bold(ny, nx) && !ignore_item_ok(o_ptr))
+				msgt(MSG_DESTROY, "%s crushes %s.", m_name, o_name);
+
+			/* Delete the object */
+			delete_object_idx(this_o_idx);
 		}
 	}
 }
@@ -2096,12 +2088,12 @@ static void process_monster(struct chunk *c, struct monster *m_ptr)
 	if (process_monster_timed(c, m_ptr, m_name))
 		return;
 
+	/* Mimics lie in wait */
+	if (is_mimicking(m_ptr)) return;
+
 	/* Try to multiply - this can use up a turn */
 	if (rf_has(m_ptr->race->flags, RF_MULTIPLY) && process_monster_multiply(c, m_ptr))
 		return;
-
-	/* Mimics lie in wait */
-	if (is_mimicking(m_ptr)) return;
 
 	/* Attempt to cast a spell */
 	if (make_attack_spell(m_ptr)) return;
@@ -2116,8 +2108,6 @@ static void process_monster(struct chunk *c, struct monster *m_ptr)
 
 	/* Process moves */
 	for (i = 0; i < 5 && !do_turn; i++) {
-		int ny, nx;
-
 		int oy = m_ptr->fy;
 		int ox = m_ptr->fx;
 
@@ -2125,14 +2115,15 @@ static void process_monster(struct chunk *c, struct monster *m_ptr)
 		int d = (stagger ? ddd[randint0(8)] : mm[i]);
 
 		/* Get the destination */
-		ny = oy + ddy[d];
-		nx = ox + ddx[d];
+		int ny = oy + ddy[d];
+		int nx = ox + ddx[d];
 
 		/* Check if we can move */
 		if (!process_monster_can_move(c, m_ptr, m_name, nx, ny, &do_view, &do_turn))
 			continue;
 
 		/* Try to break the glyph if there is one */
+		/* This can happen multiple times per turn because failure does not break the loop */
 		if (square_iswarded(c, ny, nx) && !process_monster_glyph(c, m_ptr, nx, ny))
 			continue;
 
@@ -2160,12 +2151,12 @@ static void process_monster(struct chunk *c, struct monster *m_ptr)
 			if (m_ptr->ml)
 				rf_on(l_ptr->flags, RF_NEVER_MOVE);
 
-			continue;
+			break;
 		}
 
 		/* A monster is in the way, try pushing past/killing it */
 		if (square_monster(c, ny, nx) && !process_monster_try_push(c, m_ptr, m_name, nx, ny))
-			continue;
+			break;
 
 		/* If we got this far, then we can move, so do that. */
 		monster_swap(oy, ox, ny, nx);
@@ -2182,7 +2173,6 @@ static void process_monster(struct chunk *c, struct monster *m_ptr)
 
 		/* Take a turn */
 		do_turn = TRUE;
-		break;
 	}
 
 	if (rf_has(m_ptr->race->flags, RF_HAS_LIGHT))
