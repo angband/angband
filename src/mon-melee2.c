@@ -497,7 +497,7 @@ static bool near_permwall(const monster_type *m_ptr, struct chunk *c)
 
 
 /*
- * Choose the "best" direction for "flowing"
+ * Choose the best direction for "flowing"
  *
  * Note that ghosts and rock-eaters are never allowed to "flow",
  * since they should move directly towards the player.
@@ -529,8 +529,7 @@ static bool get_moves_aux(struct chunk *c, struct monster *m_ptr, int *yp, int *
 	int cost = 999;
 
 	/* Monster can go through rocks */
-	if (flags_test(m_ptr->race->flags, RF_SIZE, RF_PASS_WALL, RF_KILL_WALL, FLAG_END)){
-	
+	if (flags_test(m_ptr->race->flags, RF_SIZE, RF_PASS_WALL, RF_KILL_WALL, FLAG_END)) {	
 	    /* If monster is near a permwall, use normal pathfinding */
 	    if (!near_permwall(m_ptr, c)) return (FALSE);
     }
