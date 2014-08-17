@@ -490,6 +490,51 @@ void do_mon_spell(int spell, struct monster *m_ptr, bool seen)
 
 	return;
 }
+void do_mon_spell_new(struct monster_spell *spell, struct monster *m_ptr, bool seen)
+{
+	char m_name[80];
+	bool ident, hits = FALSE;
+
+	/* Extract the monster level */
+	int rlev = ((m_ptr->race->level >= 1) ? m_ptr->race->level : 1);
+
+	const struct mon_spell_info *info = &mon_spell_info_table[spell->index];
+
+	/* Get the monster name (or "it") */
+	monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_STANDARD);
+
+	/* See if it hits */
+	if (spell->hit == 100)
+		hits = TRUE;
+	else if (spell->hit == 0)
+		hits = FALSE;
+	else
+		hits = check_hit(player, spell->hit, rlev);
+
+	/* Tell the player what's going on */
+	disturb(player, 1);
+
+	if (!seen)
+		msg("Something %s.", info->blind_verb);
+	else if (!hits) {
+		msg("%s %s %s, but misses.", m_name, info->verb, info->desc);
+		return;
+	} else if (info->msgt)
+		msgt(info->msgt, "%s %s %s.", m_name, info->verb, info->desc);
+	else
+		msg("%s %s %s.", m_name, info->verb, info->desc);
+
+	/* Try a saving throw if available */
+	if (info->save && randint0(100) < player->state.skills[SKILL_SAVE]) {
+		msg("You avoid the effects!");
+		return;
+	}
+
+	/* Do effects */
+	effect_do(spell->effect, &ident, TRUE, 0, 0, 0);
+
+	return;
+}
 
 /**
  * Test a spell bitflag for a type of spell.
