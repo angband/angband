@@ -1758,10 +1758,11 @@ bool effect_handler_AGGRAVATE(effect_handler_context_t *context)
 bool effect_handler_SUMMON(effect_handler_context_t *context)
 {
 	int i;
-	int num = effect_calculate_value(context, FALSE);
+	int summon_max = effect_calculate_value(context, FALSE);
 	int type = context->p1 ? context->p1 : 0;
+	struct monster *mon = cave_monster(cave, cave->mon_current);
 	int msgtyp = MSG_SUM_MONSTER;
-	int cnt = 0;
+	int count = 0, val = 0, attempts = 0;
 
 	if (type == S_ANIMAL) msgtyp = MSG_SUM_ANIMAL;
 	else if (type == S_SPIDER) msgtyp = MSG_SUM_SPIDER;
@@ -1779,21 +1780,64 @@ bool effect_handler_SUMMON(effect_handler_context_t *context)
 
 	sound(msgtyp);
 
-	/* Summon them */
-	for (i = 0; i < num; i++)
-		cnt += summon_specific(player->py, player->px, player->depth, type, 1);
+	/* Monster summon */
+	if (mon) {
+		int rlev = mon->race->level;
+
+		/* Continue summoning until we reach the current dungeon level */
+		while ((val < player->depth * rlev) && (attempts < summon_max)) {
+			int temp;
+
+			/* Get a monster */
+			temp = summon_specific(mon->fy, mon->fx, rlev, type, 0);
+
+			val += temp * temp;
+
+			/* Increase the attempt in case no monsters were available. */
+			attempts++;
+
+			/* Increase count of summoned monsters */
+			if (val > 0)
+				count++;
+		}
+
+		/* In the special case that uniques or wraiths were summoned but all
+		 * were dead S_HI_UNDEAD is used instead */
+		if ((!count) && ((type == S_WRAITH) || (type == S_UNIQUE))) {
+			type = S_HI_UNDEAD;
+			while ((val < player->depth * rlev) && (attempts < summon_max)) {
+				int temp;
+
+				/* Get a monster */
+				temp = summon_specific(mon->fy, mon->fx, rlev, type, 0);
+
+				val += temp * temp;
+
+				/* Increase the attempt in case no monsters were available. */
+				attempts++;
+
+				/* Increase count of summoned monsters */
+				if (val > 0)
+					count++;
+			}
+		}
+	} else {
+		/* If not a monster summon, it's simple */
+		for (i = 0; i < summon_max; i++)
+			count += summon_specific(player->py, player->px, player->depth, type, 1);
+	}
 
 	/* Identify if some monsters arrive */
-	if (cnt)
+	if (count)
 		context->ident = TRUE;
 
 	/* Message for the blind */
-	if (cnt && player->timed[TMD_BLIND])
-		msgt(msgtyp, "You hear %s appear nearby.", (cnt > 1 ?
+	if (count && player->timed[TMD_BLIND])
+		msgt(msgtyp, "You hear %s appear nearby.", (count > 1 ?
 												  "many things" : "something"));
 
 	/* Summoner failed */
-	if (cave->mon_current > 0 && !cnt)
+	if (mon && !count)
 		msg("But nothing comes.");
 
 	return TRUE;
