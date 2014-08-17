@@ -553,6 +553,16 @@ bool test_spells(bitflag *f, int types)
 
 	return FALSE;
 }
+bool test_spells_new(bitflag *f, int types)
+{
+	const struct mon_spell_info *info;
+
+	for (info = mon_spell_info_table; info->index < RSF_MAX; info++)
+		if (rsf_has(f, info->index) && (info->type & types))
+			return TRUE;
+
+	return FALSE;
+}
 
 /**
  * Set a spell bitflag to allow only a specific set of spell types.
@@ -567,6 +577,16 @@ void set_spells(bitflag *f, int types)
 	for (rs_ptr = mon_spell_table; rs_ptr->index < RSF_MAX; rs_ptr++)
 		if (rsf_has(f, rs_ptr->index) && !(rs_ptr->type & types))
 			rsf_off(f, rs_ptr->index);
+
+	return;
+}
+void set_spells_new(bitflag *f, int types)
+{
+	const struct mon_spell_info *info;
+
+	for (info = mon_spell_info_table; info->index < RSF_MAX; info++)
+		if (rsf_has(f, info->index) && !(info->type & types))
+			rsf_off(f, info->index);
 
 	return;
 }

@@ -3,22 +3,16 @@
  * Purpose: List of monster spell flags 
  *
  * Changing flag order will break savefiles.  Flags
- * below start from 0 on line 26, so a flag's sequence number is its line
- * number minus 26. Up to and including BOULDER are "innate" spells.
+ * below start from 0 on line 20, so a flag's sequence number is its line
+ * number minus 20. Up to and including BOULDER are "innate" spells.
  *
  * Fields:
  * name - spell name
  * type - spell type
  * desc - textual description
- * cap - damage cap
- * div - damage divisor (monster hp / this)
- * gf - projection type for project() functions
  * msgt - flag for message colouring
  * save - does this spell allow a saving throw?
- * hit - to-hit chance (100 = always, 0 = never)
  * verb - description of attack
- * base_dam - raw damage (random_value struct)
- * rlev_dam - monster-level-dependent damage (random_value)
  * blind_verb - description of unseen attacks
  * lore_desc - description used in monster recall
  */
