@@ -1798,7 +1798,7 @@ static bool process_monster_should_stagger(struct monster *m_ptr)
  * Returns TRUE if the monster is able to move through the grid.
  */
 static bool process_monster_can_move(struct chunk *c, struct monster *m_ptr,
-		const char *m_name, int nx, int ny, bool *do_view, bool *do_turn)
+		const char *m_name, int nx, int ny, bool *did_something)
 {
 	monster_lore *l_ptr = get_lore(m_ptr->race);
 
@@ -1832,7 +1832,11 @@ static bool process_monster_can_move(struct chunk *c, struct monster *m_ptr,
 		square_destroy_wall(c, ny, nx);
 
 		/* Note changes to viewable region */
-		if (player_has_los_bold(ny, nx)) *do_view = TRUE;
+		if (player_has_los_bold(ny, nx))
+			player->upkeep->update |= PU_UPDATE_VIEW;
+
+		/* Update the flow, since walls affect flow */
+		player->upkeep->update |= PU_UPDATE_FLOW;
 
 		return TRUE;
 	}
@@ -1842,7 +1846,7 @@ static bool process_monster_can_move(struct chunk *c, struct monster *m_ptr,
 		bool may_bash = rf_has(m_ptr->race->flags, RF_BASH_DOOR) && one_in_(2);
 
 		/* Take a turn */
-		*do_turn = TRUE;
+		*did_something = TRUE;
 
 		/* Learn about door abilities */
 		if (m_ptr->ml) {
@@ -1870,7 +1874,7 @@ static bool process_monster_can_move(struct chunk *c, struct monster *m_ptr,
 		} else {
 			/* Handle viewable doors */
 			if (player_has_los_bold(ny, nx))
-				*do_view = TRUE;
+				player->upkeep->update |= PU_UPDATE_VIEW;
 
 			/* Closed or secret door -- open or bash if allowed */
 			if (may_bash) {
@@ -2072,8 +2076,7 @@ static void process_monster(struct chunk *c, struct monster *m_ptr)
 {
 	monster_lore *l_ptr = get_lore(m_ptr->race);
 
-	bool do_turn = FALSE;
-	bool do_view = FALSE;
+	bool did_something = FALSE;
 
 	int i;
 	int mm[5];
@@ -2097,16 +2100,15 @@ static void process_monster(struct chunk *c, struct monster *m_ptr)
 	/* Attempt to cast a spell */
 	if (make_attack_spell(m_ptr)) return;
 
-	/* Work out what kind of movement to use */
-	if (process_monster_should_stagger(m_ptr)) {
-		stagger = TRUE;
+	/* Work out what kind of movement to use - AI or staggered movement */
+	if (!process_monster_should_stagger(m_ptr)) {
+		if (!get_moves(c, m_ptr, mm)) return;
 	} else {
-		/* Logical moves, may do nothing */
-		if (!get_moves(c, m_ptr, mm)) return;		
+		stagger = TRUE;
 	}
 
 	/* Process moves */
-	for (i = 0; i < 5 && !do_turn; i++) {
+	for (i = 0; i < 5 && !did_something; i++) {
 		int oy = m_ptr->fy;
 		int ox = m_ptr->fx;
 
@@ -2118,7 +2120,7 @@ static void process_monster(struct chunk *c, struct monster *m_ptr)
 		int nx = ox + ddx[d];
 
 		/* Check if we can move */
-		if (!process_monster_can_move(c, m_ptr, m_name, nx, ny, &do_view, &do_turn))
+		if (!process_monster_can_move(c, m_ptr, m_name, nx, ny, &did_something))
 			continue;
 
 		/* Try to break the glyph if there is one */
@@ -2139,7 +2141,8 @@ static void process_monster(struct chunk *c, struct monster *m_ptr)
 			/* Otherwise, attack the player */
 			make_attack_normal(m_ptr, player);
 
-			do_turn = TRUE;
+			did_something = TRUE;
+
 			break;
 		}
 
@@ -2159,6 +2162,7 @@ static void process_monster(struct chunk *c, struct monster *m_ptr)
 
 		/* If we got this far, then we can move, so do that. */
 		monster_swap(oy, ox, ny, nx);
+		did_something = TRUE;
 
 		/* Learn about no lack of movement */
 		if (m_ptr->ml) rf_on(l_ptr->flags, RF_NEVER_MOVE);
@@ -2169,29 +2173,14 @@ static void process_monster(struct chunk *c, struct monster *m_ptr)
 
 		/* Scan all objects in the grid */
 		process_monster_grab_objects(c, m_ptr, m_name, nx, ny);
-
-		/* Take a turn */
-		do_turn = TRUE;
-	}
-
-	if (rf_has(m_ptr->race->flags, RF_HAS_LIGHT))
-		do_view = TRUE;
-
-	/* Notice changes in view */
-	if (do_view) {
-		/* Update the visuals */
-		player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
-
-		/* Fully update the flow XXX XXX XXX */
-		player->upkeep->update |= (PU_FORGET_FLOW | PU_UPDATE_FLOW);
 	}
 
 	/* Hack -- get "bold" if out of options */
-	if (!do_turn && m_ptr->m_timed[MON_TMD_FEAR])
+	if (!did_something && m_ptr->m_timed[MON_TMD_FEAR])
 		mon_clear_timed(m_ptr, MON_TMD_FEAR, MON_TMD_FLG_NOTIFY, FALSE);
 
 	/* If we see an unaware monster do something, become aware of it */
-	if (do_turn && m_ptr->unaware)
+	if (did_something && m_ptr->unaware)
 		become_aware(m_ptr);
 }
 
@@ -2277,6 +2266,10 @@ void process_monsters(struct chunk *c, byte minimum_energy)
 		/* Monster is no longer current */
 		c->mon_current = -1;
 	}
+
+	/* Update monster visibility after this */
+	/* XXX This may not be necessary */
+	player->upkeep->update |= PU_MONSTERS;
 }
 
 /* Test functions */
