@@ -1556,12 +1556,13 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 	return (TRUE);
 }
 
+
 /**
  * Process a monster's timed effects, e.g. decrease them.
  *
  * Returns TRUE if the monster is skipping its turn.
  */
-static bool process_monster_timed(struct chunk *c, struct monster *m_ptr, const char *m_name)
+static bool process_monster_timed(struct chunk *c, struct monster *m_ptr)
 {
 	monster_lore *l_ptr = get_lore(m_ptr->race);
 
@@ -1576,14 +1577,6 @@ static bool process_monster_timed(struct chunk *c, struct monster *m_ptr, const 
 		if (player_of_has(player, OF_AGGRAVATE)) {
 			/* Wake the monster and notify player */
 			mon_clear_timed(m_ptr, MON_TMD_SLEEP, MON_TMD_FLG_NOTIFY, FALSE);
-
-			/* Update the health bar */
-			if (m_ptr->ml && !m_ptr->unaware) {
-				/* Hack -- Update the health bar */
-				if (player->upkeep->health_who == m_ptr)
-					player->upkeep->redraw |= (PR_HEALTH);
-			}
-
 			woke_up = TRUE;
 
 		/* Hack See if monster "notices" player */
@@ -1593,42 +1586,29 @@ static bool process_monster_timed(struct chunk *c, struct monster *m_ptr, const 
 			/* Wake up faster near the player */
 			if (m_ptr->cdis < 50) d = (100 / m_ptr->cdis);
 
-			/* Still asleep */
-			if (m_ptr->m_timed[MON_TMD_SLEEP] > d) {
-				/* Monster wakes up "a little bit" */
-				mon_dec_timed(m_ptr, MON_TMD_SLEEP, d, MON_TMD_FLG_NOMESSAGE,
-					FALSE);
+			/* Note a complete wakeup */
+			if (m_ptr->m_timed[MON_TMD_SLEEP] <= d) woke_up = TRUE;
 
-				/* Notice the "not waking up" */
-				if (m_ptr->ml && !m_ptr->unaware) {
-					/* Hack -- Count the ignores */
-					if (l_ptr->ignore < MAX_UCHAR)
-						l_ptr->ignore++;
-				}
-			} else {
-				/* Reset sleep counter */
-				woke_up = mon_clear_timed(m_ptr, MON_TMD_SLEEP,
-					MON_TMD_FLG_NOMESSAGE, FALSE);
+			/* Monster wakes up a bit */
+			mon_dec_timed(m_ptr, MON_TMD_SLEEP, d, MON_TMD_FLG_NOTIFY, FALSE);
 
-				/* Notice the "waking up" */
-				if (m_ptr->ml && !m_ptr->unaware) {
-					/* Dump a message */
-					msg("%s wakes up.", m_name);
-
-					/* Hack -- Update the health bar */
-					if (player->upkeep->health_who == m_ptr)
-						player->upkeep->redraw |= (PR_HEALTH);
-
-					/* Hack -- Count the wakings */
-					if (l_ptr->wake < MAX_UCHAR)
-						l_ptr->wake++;
-				}
+			/* Update knowledge */
+			if (m_ptr->ml && !m_ptr->unaware) {
+				if (!woke_up && l_ptr->ignore < MAX_UCHAR)
+					l_ptr->ignore++;
+				else if (woke_up && l_ptr->wake < MAX_UCHAR)
+					l_ptr->wake++;
 			}
 		}
 
+		/* Update the health bar */
+		if (woke_up && m_ptr->ml && !m_ptr->unaware &&
+				player->upkeep->health_who == m_ptr)
+			player->upkeep->redraw |= (PR_HEALTH);
+
 		/* Sleeping monsters don't recover in any other ways */
 		/* If the monster just woke up, then it doesn't act */
-		if (m_ptr->m_timed[MON_TMD_SLEEP] || woke_up) return TRUE;
+		return TRUE;
 	}
 
 	if (m_ptr->m_timed[MON_TMD_FAST])
@@ -1646,30 +1626,17 @@ static bool process_monster_timed(struct chunk *c, struct monster *m_ptr, const 
 			d = m_ptr->m_timed[MON_TMD_STUN];
 
 		/* Hack -- Recover from stun */
-		if (m_ptr->m_timed[MON_TMD_STUN] > d)
-			mon_dec_timed(m_ptr, MON_TMD_STUN, 1, MON_TMD_FLG_NOMESSAGE, FALSE);
-		else
-			mon_clear_timed(m_ptr, MON_TMD_STUN, MON_TMD_FLG_NOTIFY, FALSE);
+		mon_dec_timed(m_ptr, MON_TMD_STUN, d, MON_TMD_FLG_NOTIFY, FALSE);
 	}
 
 	if (m_ptr->m_timed[MON_TMD_CONF]) {
 		int d = randint1(m_ptr->race->level / 10 + 1);
-
-		/* Still confused */
-		if (m_ptr->m_timed[MON_TMD_CONF] > d)
-			mon_dec_timed(m_ptr, MON_TMD_CONF, d, MON_TMD_FLG_NOMESSAGE, FALSE);
-		else
-			mon_clear_timed(m_ptr, MON_TMD_CONF, MON_TMD_FLG_NOTIFY, FALSE);
+		mon_dec_timed(m_ptr, MON_TMD_CONF, d, MON_TMD_FLG_NOTIFY, FALSE);
 	}
 
 	if (m_ptr->m_timed[MON_TMD_FEAR]) {
-		/* Amount of "boldness" */
 		int d = randint1(m_ptr->race->level / 10 + 1);
-
-		if (m_ptr->m_timed[MON_TMD_FEAR] > d)
-			mon_dec_timed(m_ptr, MON_TMD_FEAR, d, MON_TMD_FLG_NOMESSAGE, FALSE);
-		else
-			mon_clear_timed(m_ptr, MON_TMD_FEAR, MON_TMD_FLG_NOTIFY, FALSE);
+		mon_dec_timed(m_ptr, MON_TMD_FEAR, d, MON_TMD_FLG_NOTIFY, FALSE);
 	}
 
 	/* Don't do anything if stunned */
@@ -1936,6 +1903,7 @@ static bool process_monster_try_push(struct chunk *c, struct monster *m_ptr, con
 			if (kill_ok)
 				delete_monster(ny, nx);
 
+			monster_swap(m_ptr->fy, m_ptr->fx, ny, nx);
 			return TRUE;
 		} 
 	}
@@ -2062,13 +2030,6 @@ static void process_monster(struct chunk *c, struct monster *m_ptr)
 	/* Get the monster name */
 	monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_CAPITAL | MDESC_IND_HID);
 
-	/* Process timed effects - skip turn if necessary */
-	if (process_monster_timed(c, m_ptr, m_name))
-		return;
-
-	/* Mimics lie in wait */
-	if (is_mimicking(m_ptr)) return;
-
 	/* Try to multiply - this can use up a turn */
 	if (rf_has(m_ptr->race->flags, RF_MULTIPLY) && process_monster_multiply(c, m_ptr))
 		return;
@@ -2118,37 +2079,38 @@ static void process_monster(struct chunk *c, struct monster *m_ptr)
 			make_attack_normal(m_ptr, player);
 
 			did_something = TRUE;
-
 			break;
+		} else {
+			/* Some monsters never move */
+			if (rf_has(m_ptr->race->flags, RF_NEVER_MOVE)) {
+				/* Learn about lack of movement */
+				if (m_ptr->ml)
+					rf_on(l_ptr->flags, RF_NEVER_MOVE);
+
+				return;
+			}
 		}
 
-		/* Some monsters never move */
-		/* XXX-AS Shouldn't this be a lot earlier? */
-		if (rf_has(m_ptr->race->flags, RF_NEVER_MOVE)) {
-			/* Learn about lack of movement */
-			if (m_ptr->ml)
-				rf_on(l_ptr->flags, RF_NEVER_MOVE);
-
-			break;
+		/* A monster is in the way, try to push past/kill */
+		if (square_monster(c, ny, nx)) {
+			did_something = process_monster_try_push(c, m_ptr, m_name, nx, ny);
+		} else {
+			/* Otherwise we can just move */
+			monster_swap(oy, ox, ny, nx);
+			did_something = TRUE;
 		}
 
-		/* A monster is in the way, try pushing past/killing it */
-		if (square_monster(c, ny, nx) && !process_monster_try_push(c, m_ptr, m_name, nx, ny))
-			break;
+		/* Scan all objects in the grid */
+		process_monster_grab_objects(c, m_ptr, m_name, nx, ny);
+	}
 
-		/* If we got this far, then we can move, so do that. */
-		monster_swap(oy, ox, ny, nx);
-		did_something = TRUE;
-
+	if (did_something) {
 		/* Learn about no lack of movement */
 		if (m_ptr->ml) rf_on(l_ptr->flags, RF_NEVER_MOVE);
 
 		/* Possible disturb */
 		if (m_ptr->ml && (m_ptr->mflag & MFLAG_VIEW) && OPT(disturb_near))
-			disturb(player, 0);
-
-		/* Scan all objects in the grid */
-		process_monster_grab_objects(c, m_ptr, m_name, nx, ny);
+			disturb(player, 0);		
 	}
 
 	/* Hack -- get "bold" if out of options */
@@ -2221,6 +2183,9 @@ void process_monsters(struct chunk *c, byte minimum_energy)
 		/* Use up "some" energy */
 		m_ptr->energy -= 100;
 
+		/* Mimics lie in wait */
+		if (is_mimicking(m_ptr)) continue;
+
 		/* Set this monster to be the current actor */
 		c->mon_current = i;
 
@@ -2232,9 +2197,13 @@ void process_monsters(struct chunk *c, byte minimum_energy)
 		 * - can "smell" the player from far away (flow)
 		 */
 		if ((m_ptr->cdis <= (OPT(birth_small_range) ? m_ptr->race->aaf / 2 : m_ptr->race->aaf)) ||
-		    (m_ptr->hp < m_ptr->maxhp) ||
-		    player_has_los_bold(m_ptr->fy, m_ptr->fx) ||
-		    monster_can_flow(c, m_ptr)) {
+				(m_ptr->hp < m_ptr->maxhp) ||
+				player_has_los_bold(m_ptr->fy, m_ptr->fx) ||
+				monster_can_flow(c, m_ptr)) {
+			/* Process timed effects - skip turn if necessary */
+			if (process_monster_timed(c, m_ptr))
+				continue;
+
 			/* Process the monster */
 			process_monster(c, m_ptr);
 		}
