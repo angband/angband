@@ -1131,10 +1131,10 @@ static bool process_monster_can_move(struct chunk *c, struct monster *m_ptr,
 
 		/* Note changes to viewable region */
 		if (player_has_los_bold(ny, nx))
-			player->upkeep->update |= PU_UPDATE_VIEW;
+			player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 
-		/* Update the flow, since walls affect flow */
-		player->upkeep->update |= PU_UPDATE_FLOW;
+		/* Fully update the flow since terrain changed */
+		player->upkeep->update |= (PU_FORGET_FLOW | PU_UPDATE_FLOW);
 
 		return TRUE;
 	}
@@ -1172,7 +1172,7 @@ static bool process_monster_can_move(struct chunk *c, struct monster *m_ptr,
 		} else {
 			/* Handle viewable doors */
 			if (player_has_los_bold(ny, nx))
-				player->upkeep->update |= PU_UPDATE_VIEW;
+				player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 
 			/* Closed or secret door -- open or bash if allowed */
 			if (may_bash) {
