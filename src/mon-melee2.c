@@ -1697,42 +1697,26 @@ static bool process_monster_should_stagger(struct monster *m_ptr)
 {
 	monster_lore *l_ptr = get_lore(m_ptr->race);
 
-	/* Random movement - always attempt for lore purposes */
-	int roll = randint0(100);
+	int chance = 0;
 
 	/* Confused */
 	if (m_ptr->m_timed[MON_TMD_CONF])
 		return TRUE;
 
-	/* Random movement (25%) */
-	if (roll < 25) {
-		/* Learn about small random movement */
-		if (m_ptr->ml)
-			rf_on(l_ptr->flags, RF_RAND_25);
-
-		/* Stagger */
-		if (flags_test(m_ptr->race->flags, RF_SIZE, RF_RAND_25, RF_RAND_50, FLAG_END))
-			return TRUE;
-
-	/* Random movement (50%) */
-	} else if (roll < 50) {
-		/* Learn about medium random movement */
-		if (m_ptr->ml)
-			rf_on(l_ptr->flags, RF_RAND_50);
-
-		/* Stagger */
-		if (rf_has(m_ptr->race->flags, RF_RAND_50))
-			return TRUE;
-
-	/* Random movement (75%) */
-	} else if (roll < 75) {
-		/* Stagger */
-		if (flags_test_all(m_ptr->race->flags, RF_SIZE, RF_RAND_25, RF_RAND_50, FLAG_END))
-			return TRUE;
+	/* RAND_25 and RAND_50 are cumulative */
+	if (rf_has(m_ptr->race->flags, RF_RAND_25)) {
+		chance += 25;
+		if (m_ptr->ml) rf_on(l_ptr->flags, RF_RAND_25);
 	}
 
-	return FALSE;
+	if (rf_has(m_ptr->race->flags, RF_RAND_50)) {
+		chance += 50;
+		if (m_ptr->ml) rf_on(l_ptr->flags, RF_RAND_50);
+	}
+
+	return randint0(100) < chance;
 }
+
 
 /**
  * Work out if a monster can move through the grid, if necessary bashing 
