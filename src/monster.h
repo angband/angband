@@ -229,7 +229,7 @@ typedef struct monster_race
 } monster_race;
 
 extern monster_race *r_info;
-extern monster_race *ref_race;
+extern const monster_race *ref_race;
 
 /*
  * Monster "lore" information

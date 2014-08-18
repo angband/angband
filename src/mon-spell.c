@@ -83,6 +83,23 @@ static const struct breath_damage {
     #undef ELEM
 };
 
+static const struct monster_spell *monster_spell_by_index(int index)
+{
+	const struct monster_spell *spell = monster_spells;
+	while (spell) {
+		if (spell->index == index)
+			break;
+		spell = spell->next;
+	}
+	return spell;
+}
+
+static bool monster_spell_is_projectable(int index)
+{
+	const struct mon_spell_info *info = &mon_spell_info_table[index];
+	return (info->type & (RST_BOLT | RST_BALL | RST_BREATH)) ? TRUE : FALSE;
+}
+
 /**
  * Determine the damage of a spell attack which ignores monster hp
  * (i.e. bolts and balls, including arrows/boulders/storms/etc.)
@@ -111,7 +128,7 @@ static int nonhp_dam(int spell, int rlev, aspect dam_aspect)
 
 	return dam;
 }
-static int nonhp_dam_new(struct monster_spell *spell, monster_race *race, aspect dam_aspect)
+static int nonhp_dam_new(const struct monster_spell *spell, const monster_race *race, aspect dam_aspect)
 {
 	int dam = 0;
 	struct effect *effect = spell->effect;
@@ -410,6 +427,15 @@ static int mon_spell_dam(int spell, int hp, int rlev, aspect dam_aspect)
 	else
 		return nonhp_dam(spell, rlev, dam_aspect);
 }
+static int mon_spell_dam_new(int index, int hp, const monster_race *race, aspect dam_aspect)
+{
+	const struct monster_spell *spell = monster_spell_by_index(index);
+
+	if (monster_spell_is_projectable(index))
+		return breath_dam(spell->effect->params[0], hp);
+	else
+		return nonhp_dam_new(spell, race, dam_aspect);
+}
 
 
 /**
@@ -633,13 +659,9 @@ void unset_spells_new(bitflag *spells, bitflag *flags, struct element_info *el,
 		/* Ignore missing spells */
 		if (!rsf_has(spells, info->index)) continue;
 
-		/* Get the spell */
-		for (spell = monster_spells; spell; spell = spell->next)
-			if (spell->index == info->index)
-				break;
-		if (!spell) continue;
-
 		/* Get the effect */
+		spell = monster_spell_by_index(info->index);
+		if (!spell) continue;
 		effect = spell->effect;
 
 		/* First we test the projectable spells */
@@ -720,6 +742,59 @@ int best_spell_power(const monster_race *r_ptr, int resist)
 			if (dam > best_dam)
 				best_dam = dam;
 		}
+	}
+
+	return best_dam;
+}
+int best_spell_power_new(const monster_race *r_ptr, int resist)
+{
+	const struct mon_spell_info *info;
+	const struct monster_spell *spell;
+	int dam = 0, best_dam = 0; 
+
+	/* Extract the monster level */
+	int rlev = ((r_ptr->level >= 1) ? r_ptr->level : 1);
+
+	for (info = mon_spell_info_table; info->index < RSF_MAX; info++) {
+		if (rsf_has(r_ptr->spell_flags, info->index)) {
+
+			/* Get the maximum basic damage output of the spell (could be 0) */
+			dam = mon_spell_dam_new(info->index, mon_hp(r_ptr, MAXIMISE), r_ptr,
+				MAXIMISE);
+
+			/* For all attack forms the player can save against, damage
+			 * is halved */
+			if (info->save)
+				dam /= 2;
+
+			/* Get the spell */
+			spell = monster_spell_by_index(info->index);
+			if (!spell) continue;
+
+			/* Adjust the real damage by the assumed resistance (if it is a
+			 * resistable type) */
+			if (monster_spell_is_projectable(info->index))
+				dam = adjust_dam(spell->effect->params[0], dam, MAXIMISE, 1);
+
+			/* Add the power rating (crucial for non-damaging spells) */
+
+			/* First we adjust the real damage if necessary */
+			if (spell->power.dice)
+				dam = (dam * spell->power.dice) / 100;
+
+			/* Then we add any flat rating for this effect */
+			dam += spell->power.base;
+
+			/* Then we add any rlev-dependent rating */
+			if (spell->power.m_bonus == 1)
+				dam += (spell->power.sides * rlev) / 100;
+			else if (spell->power.m_bonus == 2)
+				dam += spell->power.sides / (rlev + 1);
+		}
+
+		/* Update the best_dam tracker */
+		if (dam > best_dam)
+			best_dam = dam;
 	}
 
 	return best_dam;
