@@ -463,7 +463,7 @@ bool set_recall(void)
 	}
 
 	/* Redraw status line */
-	p_ptr->redraw = PR_STATUS;
+	p_ptr->redraw |= PR_STATUS;
 	handle_stuff(p_ptr);
 
 	return TRUE;
