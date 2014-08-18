@@ -497,91 +497,80 @@ static bool near_permwall(const monster_type *m_ptr, struct chunk *c)
 
 
 /*
- * Choose the best direction for "flowing"
+ * Choose the best direction for "flowing".
  *
- * Note that ghosts and rock-eaters are never allowed to "flow",
- * since they should move directly towards the player.
+ * Note that ghosts and rock-eaters generally don't flow because they can move
+ * through obstacles.
  *
- * Prefer "non-diagonal" directions, but twiddle them a little
- * to angle slightly towards the player's actual location.
+ * Monsters first try to use up-to-date distance information ('sound') as
+ * saved in cave->cost.  Failing that, they'll try using scent ('when')
+ * which is just old cost information.
  *
- * Allow very perceptive monsters to track old "spoor" left by
- * previous locations occupied by the player.  This will tend
- * to have monsters end up either near the player or on a grid
- * recently occupied by the player (and left via "teleport").
- *
- * Note that if "smell" is turned on, all monsters get vicious.
- *
- * Also note that teleporting away from a location will cause
- * the monsters who were chasing you to converge on that location
- * as long as you are still near enough to "annoy" them without
- * being close enough to chase directly.  I have no idea what will
- * happen if you combine "smell" with low "aaf" values.
+ * Tracking by 'scent' means that monsters end up near enough the player to
+ * switch to 'sound' (cost), or they end up somewhere the player left via 
+ * teleport.  Teleporting away from a location will cause the monsters who
+ * were chasing the player to converge on that location as long as the player
+ * is still near enough to "annoy" them without being close enough to chase
+ * directly.
  */
-static bool get_moves_aux(struct chunk *c, struct monster *m_ptr, int *yp, int *xp)
+static bool get_moves_flow(struct chunk *c, struct monster *m_ptr, int *yp, int *xp)
 {
-	int py = player->py;
-	int px = player->px;
+	int i;
 
-	int i, y, x, y1, x1;
+	int best_when = 0;
+	int best_cost = 999;
+	int best_direction = 0;
 
-	int when = 0;
-	int cost = 999;
+	int py = player->py, px = player->px;
+	int my = m_ptr->fy, mx = m_ptr->fx;
 
-	/* Monster can go through rocks */
-	if (flags_test(m_ptr->race->flags, RF_SIZE, RF_PASS_WALL, RF_KILL_WALL, FLAG_END)) {	
-	    /* If monster is near a permwall, use normal pathfinding */
-	    if (!near_permwall(m_ptr, c)) return (FALSE);
-    }
-		
-	/* Monster location */
-	y1 = m_ptr->fy;
-	x1 = m_ptr->fx;
+	/* Only use this algorithm for passwall monsters if near permanent walls, to avoid getting snagged */
+	if (flags_test(m_ptr->race->flags, RF_SIZE, RF_PASS_WALL, RF_KILL_WALL, FLAG_END) &&
+			!near_permwall(m_ptr, c))
+		return (FALSE);
 
-	/* The player is not currently near the monster grid */
-	if (c->when[y1][x1] < c->when[py][px])
-	{
-		/* The player has never been near the monster grid */
-		if (c->when[y1][x1] == 0) return (FALSE);
-	}
+	/* If the player has never been near this grid, abort */
+	if (c->when[my][mx] == 0) return FALSE;
 
 	/* Monster is too far away to notice the player */
-	if (c->cost[y1][x1] > MONSTER_FLOW_DEPTH) return (FALSE);
-	if (c->cost[y1][x1] > (OPT(birth_small_range) ? m_ptr->race->aaf / 2 : m_ptr->race->aaf)) return (FALSE);
+	if (c->cost[my][mx] > MONSTER_FLOW_DEPTH) return FALSE;
+	if (c->cost[my][mx] > (OPT(birth_small_range) ? m_ptr->race->aaf / 2 : m_ptr->race->aaf)) return FALSE;
 
-	/* Hack -- Player can see us, run towards him */
-	if (player_has_los_bold(y1, x1)) return (FALSE);
+	/* If the player can see monster, run towards them */
+	if (player_has_los_bold(my, mx)) return FALSE;
 
 	/* Check nearby grids, diagonals first */
+	/* This gives preference to the cardinal directions */
 	for (i = 7; i >= 0; i--)
 	{
 		/* Get the location */
-		y = y1 + ddy_ddd[i];
-		x = x1 + ddx_ddd[i];
+		int y = my + ddy_ddd[i];
+		int x = mx + ddx_ddd[i];
 
-		/* Ignore illegal locations */
+		/* Ignore unvisited/unpassable locations */
 		if (c->when[y][x] == 0) continue;
 
-		/* Ignore ancient locations */
-		if (c->when[y][x] < when) continue;
+		/* Ignore locations whose data is more stale */
+		if (c->when[y][x] < best_when) continue;
 
-		/* Ignore distant locations */
-		if (c->cost[y][x] > cost) continue;
+		/* Ignore locations which are farther away */
+		if (c->cost[y][x] > best_cost) continue;
 
 		/* Save the cost and time */
-		when = c->when[y][x];
-		cost = c->cost[y][x];
-
-		/* Hack -- Save the "twiddled" location */
-		(*yp) = py + 16 * ddy_ddd[i];
-		(*xp) = px + 16 * ddx_ddd[i];
+		best_when = c->when[y][x];
+		best_cost = c->cost[y][x];
+		best_direction = i;
 	}
 
-	/* No legal move (?) */
-	if (!when) return (FALSE);
+	/* Save the location to flow toward */
+ 	/* We multiply by 16 to angle slightly toward the player's actual location */
+	if (best_direction) {
+		(*yp) = py + 16 * ddy_ddd[best_direction];
+		(*xp) = px + 16 * ddx_ddd[best_direction];
+		return TRUE;
+	}
 
-	/* Success */
-	return (TRUE);
+	return FALSE;
 }
 
 /*
@@ -991,7 +980,7 @@ static bool get_moves(struct chunk *c, struct monster *m_ptr, int mm[5])
 	bool done = FALSE;
 
 	/* Flow towards the player */
-	get_moves_aux(c, m_ptr, &y2, &x2);
+	get_moves_flow(c, m_ptr, &y2, &x2);
 
 	/* Extract the "pseudo-direction" */
 	y = m_ptr->fy - y2;
