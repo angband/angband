@@ -67,6 +67,11 @@ const char *timed_idx_to_name(int type)
     return timed_name_list[type];
 }
 
+int timed_protect_flag(int type)
+{
+	return effects[type].fail;
+}
+
 /*
  * Set a timed event (except timed resists, cutting and stunning).
  */

@@ -51,6 +51,7 @@ typedef struct
 
 int timed_name_to_idx(const char *name);
 const char *timed_idx_to_name(int type);
+int timed_protect_flag(int type);
 bool player_set_timed(struct player *p, int idx, int v, bool notify);
 bool player_inc_timed(struct player *p, int idx, int v, bool notify,
 					  bool check);

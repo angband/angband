@@ -621,6 +621,46 @@ void unset_spells(bitflag *spells, bitflag *flags, struct element_info *el,
 				RF_SMART) || !one_in_(3)) && of_has(flags, re_ptr->prot_flag))
 			rsf_off(spells, re_ptr->method);
 }
+void unset_spells_new(bitflag *spells, bitflag *flags, struct element_info *el,
+				  const monster_race *r_ptr)
+{
+	const struct mon_spell_info *info;
+	const struct monster_spell *spell;
+	const struct effect *effect;
+	bool smart = rf_has(r_ptr->flags, RF_SMART);
+
+	for (info = mon_spell_info_table; info->index < RSF_MAX; info++) {
+		/* Ignore missing spells */
+		if (!rsf_has(spells, info->index)) continue;
+
+		/* Get the spell */
+		for (spell = monster_spells; spell; spell = spell->next)
+			if (spell->index == info->index)
+				break;
+		if (!spell) continue;
+
+		/* Get the effect */
+		effect = spell->effect;
+
+		/* First we test the projectable spells */
+		if (info->type & (RST_BOLT | RST_BALL | RST_BREATH)) {
+			int element = effect->params[0];
+			int learn_chance = el[element].res_level * (smart ? 50 : 25);
+			if (randint0(100) < learn_chance)
+				rsf_off(spells, info->index);
+		} else {
+			/* Now others with resisted effects - currently all timed effects */
+			while (effect) {
+				if ((smart || !one_in_(3)) && (effect->index == EF_TIMED_INC) &&
+					of_has(flags, timed_protect_flag(effect->params[0])))
+					break;
+				effect = effect->next;
+			}
+			if (effect)
+				rsf_off(spells, info->index);
+		}
+	}
+}
 
 /**
  * Calculate a monster's maximum spell power.
