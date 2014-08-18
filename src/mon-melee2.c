@@ -578,67 +578,58 @@ static bool get_moves_flow(struct chunk *c, struct monster *m_ptr, int *yp, int 
  *
  * A monster may wish to flee to a location that is behind the player,
  * but instead of heading directly for it, the monster should "swerve"
- * around the player so that he has a smaller chance of getting hit.
+ * around the player so that it has a smaller chance of getting hit.
  */
 static bool get_moves_fear(struct chunk *c, struct monster *m_ptr, int *yp, int *xp)
 {
-	int y, x, y1, x1, fy, fx, py, px, gy = 0, gx = 0;
-	int when = 0, score = -1;
 	int i;
+	int gy = 0, gx = 0;
+	int best_when = 0, best_score = -1;
 
-	/* Player location */
-	py = player->py;
-	px = player->px;
+	int py = player->py, px = player->px;
+	int my = m_ptr->fy, mx = m_ptr->fx;
 
-	/* Monster location */
-	fy = m_ptr->fy;
-	fx = m_ptr->fx;
+	/* Desired destination, relative to current position */
+	int dy = my - (*yp);
+	int dx = mx - (*xp);
 
-	/* Desired destination */
-	y1 = fy - (*yp);
-	x1 = fx - (*xp);
-
-	/* The player is not currently near the monster grid */
-	if (c->when[fy][fx] < c->when[py][px])
-	{
-		/* No reason to attempt flowing */
-		return (FALSE);
-	}
+	/* If the player is not currently near the monster, no reason to flow */
+	if (c->when[my][mx] < c->when[py][px])
+		return FALSE;
 
 	/* Monster is too far away to use flow information */
-	if (c->cost[fy][fx] > MONSTER_FLOW_DEPTH) return (FALSE);
-	if (c->cost[fy][fx] > (OPT(birth_small_range) ? m_ptr->race->aaf / 2 : m_ptr->race->aaf)) return (FALSE);
+	if (c->cost[my][mx] > MONSTER_FLOW_DEPTH) return FALSE;
+	if (c->cost[my][mx] > (OPT(birth_small_range) ? m_ptr->race->aaf / 2 : m_ptr->race->aaf)) return FALSE;
 
 	/* Check nearby grids, diagonals first */
 	for (i = 7; i >= 0; i--)
 	{
-		int dis, s;
+		int dis, score;
 
 		/* Get the location */
-		y = fy + ddy_ddd[i];
-		x = fx + ddx_ddd[i];
+		int y = my + ddy_ddd[i];
+		int x = mx + ddx_ddd[i];
 
-		/* Ignore illegal locations */
-		if (c->when[y][x] == 0) continue;
-
-		/* Ignore ancient locations */
-		if (c->when[y][x] < when) continue;
+		/* Ignore illegal & older locations */
+		if (c->when[y][x] == 0 || c->when[y][x] < best_when) continue;
 
 		/* Calculate distance of this grid from our destination */
-		dis = distance(y, x, y1, x1);
+		dis = distance(y, x, dy, dx);
 
 		/* Score this grid */
-		s = 5000 / (dis + 3) - 500 / (c->cost[y][x] + 1);
+		/* First half of calculation is inversely proportional to distance */
+		/* Second half is inversely proportional to grid's distance from player */
+		score = 5000 / (dis + 3) - 500 / (c->cost[y][x] + 1);
 
 		/* No negative scores */
-		if (s < 0) s = 0;
+		if (score < 0) score = 0;
 
 		/* Ignore lower scores */
-		if (s < score) continue;
+		if (score < best_score) continue;
 
 		/* Save the score and time */
-		when = c->when[y][x];
-		score = s;
+		best_when = c->when[y][x];
+		best_score = score;
 
 		/* Save the location */
 		gy = y;
@@ -646,14 +637,14 @@ static bool get_moves_fear(struct chunk *c, struct monster *m_ptr, int *yp, int 
 	}
 
 	/* No legal move (?) */
-	if (!when) return (FALSE);
+	if (!best_when) return FALSE;
 
 	/* Find deltas */
-	(*yp) = fy - gy;
-	(*xp) = fx - gx;
+	(*yp) = my - gy;
+	(*xp) = mx - gx;
 
 	/* Success */
-	return (TRUE);
+	return TRUE;
 }
 
 
