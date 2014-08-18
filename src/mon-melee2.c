@@ -580,7 +580,7 @@ static bool get_moves_flow(struct chunk *c, struct monster *m_ptr, int *yp, int 
  * but instead of heading directly for it, the monster should "swerve"
  * around the player so that he has a smaller chance of getting hit.
  */
-static bool get_fear_moves_aux(struct chunk *c, struct monster *m_ptr, int *yp, int *xp)
+static bool get_moves_fear(struct chunk *c, struct monster *m_ptr, int *yp, int *xp)
 {
 	int y, x, y1, x1, fy, fx, py, px, gy = 0, gx = 0;
 	int when = 0, score = -1;
@@ -675,10 +675,6 @@ static bool get_fear_moves_aux(struct chunk *c, struct monster *m_ptr, int *yp, 
  * able to generate and dump these arrays (ala "los()").  XXX XXX XXX
  *
  * Also, the storage needs could be reduced by using char.  XXX XXX XXX
- *
- * These arrays could be combined into two big arrays, using sub-arrays
- * to hold the offsets and lengths of each portion of the sub-arrays, and
- * this could perhaps also be used somehow in the "look" code.  XXX XXX XXX
  */
 
 
@@ -1031,7 +1027,7 @@ static bool get_moves(struct chunk *c, struct monster *m_ptr, int mm[5])
 		else
 		{
 			/* Adjust movement */
-			get_fear_moves_aux(c, m_ptr, &y, &x);
+			get_moves_fear(c, m_ptr, &y, &x);
 		}
 
 		done = TRUE;
