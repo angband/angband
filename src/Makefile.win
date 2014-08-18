@@ -16,7 +16,14 @@
 EXE = angband.exe
 all: ../$(EXE)
 
+ifneq (,$(findstring \SYSTEM32,$(PATH)))
+  dos = TRUE
+endif
 ifneq (,$(findstring \system32,$(PATH)))
+  dos = TRUE
+endif
+
+ifdef dos
   CP = copy
   RM = del
   BAR = "\"
