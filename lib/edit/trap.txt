@@ -27,6 +27,7 @@ G:^:w
 M:0:2:0
 F:TRAP | FLOOR 
 effect:TRAP_DOOR
+dice:2d8
 D:It looks like floor, but step incautiously and you will fall through.
 
 # 0x11 --> visible trap -- open pit
@@ -36,6 +37,7 @@ G:^:s
 M:0:2:0
 F:TRAP | FLOOR 
 effect:TRAP_PIT
+dice:2d6
 D:A hole dug to snare the unwary.
 
 # 0x12 --> visible trap -- spiked pit
@@ -45,6 +47,7 @@ G:^:s
 M:0:2:0
 F:TRAP | FLOOR 
 effect:TRAP_PIT_SPIKES
+dice:2d6
 D:A hole dug to snare the unwary, with spikes.
 
 # 0x13 --> visible trap -- poison pit
@@ -54,6 +57,7 @@ G:^:s
 M:0:2:0
 F:TRAP | FLOOR 
 effect:TRAP_PIT_POISON
+dice:2d6
 D:A hole dug to snare the unwary, with poisoned spikes.
 
 # 0x14 --> visible trap -- rune -- summon
@@ -63,6 +67,7 @@ G:^:B
 M:0:3:0
 F:TRAP | FLOOR 
 effect:TRAP_RUNE_SUMMON
+dice:2+1d3
 D:A magical rune which calls up monsters to attack you.
 
 # 0x15 --> visible trap -- rune -- teleport
@@ -72,6 +77,7 @@ G:^:o
 M:0:1:0
 F:TRAP | FLOOR 
 effect:TRAP_RUNE_TELEPORT
+dice:100
 D:A portal to another area.
 
 # 0x16 --> visible trap -- spot -- fire
@@ -81,6 +87,7 @@ G:^:u
 M:0:2:0
 F:TRAP | FLOOR 
 effect:TRAP_SPOT_FIRE
+dice:4d6
 D:A strange coloured spot on the ground - beware its fiery attack.
 
 # 0x17 --> visible trap -- spot -- acid
@@ -90,6 +97,7 @@ G:^:u
 M:0:2:0
 F:TRAP | FLOOR 
 effect:TRAP_SPOT_ACID
+dice:4d6
 D:A strange coloured spot on the ground - beware its acidic attack.
 
 # 0x18 --> visible trap -- dart -- slow
@@ -164,3 +172,10 @@ F:TRAP | FLOOR
 effect:TRAP_GAS_SLEEP
 D:A trap that releases gas to put you to sleep.
 
+# ideas from v4:
+#
+# alarm
+# trap spawner
+# earthquake
+# summon2 (dlev26) & 3 (dlev50)
+# phase & teleport-max also
