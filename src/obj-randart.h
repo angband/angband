@@ -23,6 +23,8 @@
 #ifndef OBJECT_RANDART_H
 #define OBJECT_RANDART_H
 
+#include "object.h"
+
 #define MAX_TRIES 200
 #define BUFLEN 1024
 

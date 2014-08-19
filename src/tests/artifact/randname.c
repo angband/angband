@@ -2,6 +2,7 @@
 
 #include "unit-test.h"
 #include "obj-properties.h"
+#include "obj-randart.h"
 #include "object.h"
 
 NOSETUP
