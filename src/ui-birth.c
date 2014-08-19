@@ -196,7 +196,7 @@ static void birthmenu_display(menu_type *menu, int oid, bool cursor,
    only defining the display and handler parts). */
 static const menu_iter birth_iter = { NULL, NULL, birthmenu_display, NULL, NULL };
 
-static void skill_help(const s16b r_skills[], const s16b c_skills[], int mhp, int exp, int infra)
+static void skill_help(const int r_skills[], const int c_skills[], int mhp, int exp, int infra)
 {
 	s16b skills[SKILL_MAX];
 	unsigned i;

@@ -73,7 +73,7 @@ typedef struct trap
     char *text;		      /**< Text  */
 	
     struct trap *next;
-    u32b tidx;
+    int tidx;
 
     byte d_attr;              /**< Default trap attribute */
     wchar_t d_char;              /**< Default trap character */
@@ -81,9 +81,9 @@ typedef struct trap
     byte x_attr;              /**< Desired trap attribute */
     wchar_t x_char;              /**< Desired trap character */
 
-    byte rarity;              /**< Rarity */
-    byte min_depth;           /**< Minimum depth */
-    byte max_num;             /**< Unused */
+    int rarity;              /**< Rarity */
+    int min_depth;           /**< Minimum depth */
+    int max_num;             /**< Unused */
 
     bitflag flags[TRF_SIZE]; /**< Trap flags (all traps of this kind) */
 

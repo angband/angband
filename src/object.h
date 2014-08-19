@@ -182,21 +182,21 @@ typedef struct object_kind
 	struct object_kind *next;
 	u32b kidx;
 
-	byte tval;					/**< General object type (see TV_ macros) */
-	byte sval;					/**< Object sub-type  */
+	int tval;					/**< General object type (see TV_ macros) */
+	int sval;					/**< Object sub-type  */
 
 	random_value pval;			/* Item extra-parameter */
 
 	random_value to_h;			/**< Bonus to hit */
 	random_value to_d;			/**< Bonus to damage */
 	random_value to_a;			/**< Bonus to armor */
-	s16b ac;					/**< Base armor */
+	int ac;					/**< Base armor */
 
-	byte dd;					/**< Damage dice */
-	byte ds;					/**< Damage sides */
-	s16b weight;				/**< Weight, in 1/10lbs */
+	int dd;					/**< Damage dice */
+	int ds;					/**< Damage sides */
+	int weight;				/**< Weight, in 1/10lbs */
 
-	s32b cost;					/**< Object base cost */
+	int cost;					/**< Object base cost */
 
 	bitflag flags[OF_SIZE];					/**< Flags */
 	bitflag kind_flags[KF_SIZE];			/**< Kind flags */
@@ -211,9 +211,9 @@ typedef struct object_kind
 	wchar_t d_char;			/**< Default object character */
 
 	int alloc_prob;			/**< Allocation: commonness */
-	byte alloc_min;			/**< Highest normal dungeon level */
-	byte alloc_max;			/**< Lowest normal dungeon level */
-	byte level;				/**< Level (difficulty of activation) */
+	int alloc_min;			/**< Highest normal dungeon level */
+	int alloc_max;			/**< Lowest normal dungeon level */
+	int level;				/**< Level (difficulty of activation) */
 
 	struct effect *effect;	/**< Effect this item produces (effects.c) */
 	int power;				/**< Power of the item's effect */
@@ -221,7 +221,7 @@ typedef struct object_kind
 	random_value time;		/**< Recharge time (rods/activation) */
 	random_value charge;	/**< Number of charges (staves/wands) */
 
-	byte gen_mult_prob;		/**< Probability of generating more than one */
+	int gen_mult_prob;		/**< Probability of generating more than one */
 	random_value stack_size;/**< Number to generate */
 
 	struct flavor *flavor;	/**< Special object flavor (or zero) */
@@ -262,20 +262,20 @@ typedef struct artifact
 
 	struct artifact *next;
 
-	byte tval;		/**< General artifact type (see TV_ macros) */
-	byte sval;		/**< Artifact sub-type  */
+	int tval;		/**< General artifact type (see TV_ macros) */
+	int sval;		/**< Artifact sub-type  */
 
-	s16b to_h;		/**< Bonus to hit */
-	s16b to_d;		/**< Bonus to damage */
-	s16b to_a;		/**< Bonus to armor */
-	s16b ac;		/**< Base armor */
+	int to_h;		/**< Bonus to hit */
+	int to_d;		/**< Bonus to damage */
+	int to_a;		/**< Bonus to armor */
+	int ac;		/**< Base armor */
 
-	byte dd;		/**< Base damage dice */
-	byte ds;		/**< Base damage sides */
+	int dd;		/**< Base damage dice */
+	int ds;		/**< Base damage sides */
 
-	s16b weight;	/**< Weight in 1/10lbs */
+	int weight;	/**< Weight in 1/10lbs */
 
-	s32b cost;		/**< Artifact (pseudo-)worth */
+	int cost;		/**< Artifact (pseudo-)worth */
 
 	bitflag flags[OF_SIZE];			/**< Flags */
 
@@ -285,11 +285,11 @@ typedef struct artifact
 	struct brand *brands;
 	struct slay *slays;
 
-	byte level;			/** Difficulty level for activation */
+	int level;			/** Difficulty level for activation */
 
 	int alloc_prob;		/** Chance of being generated (i.e. rarity) */
-	byte alloc_min;		/** Minimum depth (can appear earlier) */
-	byte alloc_max;		/** Maximum depth (will NEVER appear deeper) */
+	int alloc_min;		/** Minimum depth (can appear earlier) */
+	int alloc_max;		/** Maximum depth (will NEVER appear deeper) */
 
 	bool created;		/**< Whether this artifact has been created */
 	bool seen;			/**< Whether this artifact has been seen this game */
@@ -327,7 +327,7 @@ typedef struct ego_item
 
 	u32b eidx;
 
-	s32b cost;						/* Ego-item "cost" */
+	int cost;						/* Ego-item "cost" */
 
 	bitflag flags[OF_SIZE];			/**< Flags */
 	bitflag kind_flags[KF_SIZE];	/**< Kind flags */
@@ -339,12 +339,12 @@ typedef struct ego_item
 	struct brand *brands;
 	struct slay *slays;
 
-	byte level;				/* Minimum level */
-	byte rarity;			/* Object rarity */
-	byte rating;			/* Level rating boost */
+	int level;				/* Minimum level */
+	int rarity;			/* Object rarity */
+	int rating;			/* Level rating boost */
 	int alloc_prob; 		/** Chance of being generated (i.e. rarity) */
-	byte alloc_min;			/** Minimum depth (can appear earlier) */
-	byte alloc_max;			/** Maximum depth (will NEVER appear deeper) */
+	int alloc_min;			/** Minimum depth (can appear earlier) */
+	int alloc_max;			/** Maximum depth (will NEVER appear deeper) */
 
 	struct ego_poss_item *poss_items;
 
@@ -352,9 +352,9 @@ typedef struct ego_item
 	random_value to_d;		/* Extra to-dam bonus */
 	random_value to_a;		/* Extra to-ac bonus */
 
-	byte min_to_h;			/* Minimum to-hit value */
-	byte min_to_d;			/* Minimum to-dam value */
-	byte min_to_a;			/* Minimum to-ac value */
+	int min_to_h;			/* Minimum to-hit value */
+	int min_to_d;			/* Minimum to-dam value */
+	int min_to_a;			/* Minimum to-ac value */
 
 	struct effect *effect;	/**< Effect this item produces (effects.c) */
 	char *effect_msg;

@@ -209,29 +209,29 @@ struct player_race {
 	
 	unsigned int ridx;
 
-	s16b r_adj[STAT_MAX];	/* Racial stat bonuses */
+	int r_adj[STAT_MAX];	/* Racial stat bonuses */
 	
-	s16b r_skills[SKILL_MAX];	/* racial skills */
+	int r_skills[SKILL_MAX];	/* racial skills */
 	
-	byte r_mhp;			/* Race hit-dice modifier */
-	byte r_exp;			/* Race experience factor */
+	int r_mhp;			/* Race hit-dice modifier */
+	int r_exp;			/* Race experience factor */
 	
-	byte b_age;			/* base age */
-	byte m_age;			/* mod age */
+	int b_age;			/* base age */
+	int m_age;			/* mod age */
 	
-	byte m_b_ht;		/* base height (males) */
-	byte m_m_ht;		/* mod height (males) */
-	byte m_b_wt;		/* base weight (males) */
-	byte m_m_wt;		/* mod weight (males) */
+	int m_b_ht;		/* base height (males) */
+	int m_m_ht;		/* mod height (males) */
+	int m_b_wt;		/* base weight (males) */
+	int m_m_wt;		/* mod weight (males) */
 	
-	byte f_b_ht;		/* base height (females) */
-	byte f_m_ht;		/* mod height (females) */
-	byte f_b_wt;		/* base weight (females) */
-	byte f_m_wt;		/* mod weight (females) */
+	int f_b_ht;		/* base height (females) */
+	int f_m_ht;		/* mod height (females) */
+	int f_b_wt;		/* base weight (females) */
+	int f_m_wt;		/* mod weight (females) */
 	
-	byte infra;			/* Infra-vision	range */
+	int infra;			/* Infra-vision	range */
 	
-	byte body;			/* Race body */
+	int body;			/* Race body */
 	struct history_chart *history;
 	
 	bitflag flags[OF_SIZE];   /* Racial (object) flags */
@@ -248,8 +248,8 @@ extern struct player_race *races;
  */
 struct start_item {
 	object_kind *kind;
-	byte min;	/* Minimum starting amount */
-	byte max;	/* Maximum starting amount */
+	int min;	/* Minimum starting amount */
+	int max;	/* Maximum starting amount */
 
 	struct start_item *next;
 };
@@ -259,8 +259,8 @@ struct start_item {
  * Structure for magic realms
  */
 struct magic_realm {
-	byte index;
-	byte stat;
+	int index;
+	int stat;
 	const char *verb;
 	const char *spell_noun;
 	const char *book_noun;
@@ -278,12 +278,12 @@ typedef struct {
 
 	struct effect *effect;	/**< The spell's effect */
 
-	byte sidx;		/**< The index of this spell for this class */
-	byte bidx;		/**< The index into the player's books array */
-	byte slevel;	/**< Required level (to learn) */
-	byte smana;		/**< Required mana (to cast) */
-	byte sfail;		/**< Base chance of failure */
-	byte sexp;		/**< Encoded experience bonus */
+	int sidx;		/**< The index of this spell for this class */
+	int bidx;		/**< The index into the player's books array */
+	int slevel;	/**< Required level (to learn) */
+	int smana;		/**< Required mana (to cast) */
+	int sfail;		/**< Base chance of failure */
+	int sexp;		/**< Encoded experience bonus */
 } class_spell;
 
 
@@ -291,10 +291,10 @@ typedef struct {
  * A structure to hold class-dependent information on spell books.
  */
 typedef struct {
-	byte tval;			/**< Item type of the book */
-	byte sval;			/**< Item sub-type for book (book number) */
-	byte realm;			/**< The magic realm of this book */
-	byte num_spells;	/**< Number of spells in this book */
+	int tval;			/**< Item type of the book */
+	int sval;			/**< Item sub-type for book (book number) */
+	int realm;			/**< The magic realm of this book */
+	int num_spells;	/**< Number of spells in this book */
 	class_spell *spells;	/**< Spells in the book*/
 } class_book;
 
@@ -303,12 +303,12 @@ typedef struct {
  * Information about class magic knowledge
  */
 typedef struct {
-	byte spell_first;		/**< Level of first spell */
-	s16b spell_weight;		/**< Max armour weight to avoid mana penalties */
+	int spell_first;		/**< Level of first spell */
+	int spell_weight;		/**< Max armour weight to avoid mana penalties */
 	struct magic_realm *spell_realm;  		/**< Primary spellcasting realm */
-	byte num_books;			/**< Number of spellbooks */
+	int num_books;			/**< Number of spellbooks */
 	class_book *books;		/**< Details of spellbooks */
-	byte total_spells;		/**< Number of spells for this class */
+	int total_spells;		/**< Number of spells for this class */
 } class_magic;
 
 
@@ -322,22 +322,22 @@ typedef struct player_class {
 	
 	const char *title[10];    /* Titles */
 	
-	s16b c_adj[STAT_MAX]; /* Class stat modifier */
+	int c_adj[STAT_MAX]; /* Class stat modifier */
 	
-	s16b c_skills[SKILL_MAX];	/* class skills */
-	s16b x_skills[SKILL_MAX];	/* extra skills */
+	int c_skills[SKILL_MAX];	/* class skills */
+	int x_skills[SKILL_MAX];	/* extra skills */
 	
-	s16b c_mhp;        /* Class hit-dice adjustment */
-	s16b c_exp;        /* Class experience factor */
+	int c_mhp;        /* Class hit-dice adjustment */
+	int c_exp;        /* Class experience factor */
 	
 	bitflag pflags[PF_SIZE]; /* Class (player) flags */
 	
-	u16b max_attacks;  /* Maximum possible attacks */
-	u16b min_weight;   /* Minimum weapon weight for calculations */
-	u16b att_multiply; /* Multiplier for attack calculations */
+	int max_attacks;  /* Maximum possible attacks */
+	int min_weight;   /* Minimum weapon weight for calculations */
+	int att_multiply; /* Multiplier for attack calculations */
 	
-	u32b sense_base;   /* Base pseudo-id value */
-	u16b sense_div;    /* Pseudo-id divisor */
+	int sense_base;   /* Base pseudo-id value */
+	int sense_div;    /* Pseudo-id divisor */
 	
 	struct start_item *start_items; /* Starting inventory */
 	
