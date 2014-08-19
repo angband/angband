@@ -189,7 +189,7 @@ typedef struct player_state {
 
 	s16b skills[SKILL_MAX];	/* Skills */
 
-	u32b noise;			/* Derived from stealth */
+	int noise;			/* Derived from stealth */
 
 	bool heavy_wield;	/* Heavy weapon */
 	bool heavy_shoot;	/* Heavy shooter */

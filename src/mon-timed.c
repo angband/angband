@@ -160,10 +160,12 @@ static bool mon_resist_effect(const struct monster *mon, int ef_idx, int timer, 
 static bool mon_set_timed(monster_type *m_ptr, int ef_idx, int timer,
 	u16b flag, bool id)
 {
+	bool check_resist = FALSE;
+	bool resisted = FALSE;
+
 	mon_timed_effect *effect;
 
 	int m_note = 0;
-	int resisted;
 	int old_timer;
 
 	assert(ef_idx >= 0 && ef_idx < MON_TMD_MAX);
@@ -185,13 +187,16 @@ static bool mon_set_timed(monster_type *m_ptr, int ef_idx, int timer,
 		/* Turning on, usually mention */
 		flag |= MON_TMD_FLG_NOTIFY;
 		m_note = effect->message_begin;
+		check_resist = TRUE;
 	} else if (timer > old_timer) {
 		/* Different message for increases, but don't automatically mention. */
 		m_note = effect->message_increase;
-	}
+		check_resist = TRUE;
+	} /* Decreases don't get a message */
 
-	/* Determine if the monster resisted or not */
-	resisted = mon_resist_effect(m_ptr, ef_idx, timer, flag);
+	/* Determine if the monster resisted or not, if appropriate */
+	if (check_resist)
+		resisted = mon_resist_effect(m_ptr, ef_idx, timer, flag);
 
 	if (resisted)
 		m_note = MON_MSG_UNAFFECTED;
@@ -206,7 +211,9 @@ static bool mon_set_timed(monster_type *m_ptr, int ef_idx, int timer,
 
 	/* Print a message if there is one, if the effect allows for it, and if
 	 * either the monster is visible, or we're trying to ID something */
-	if (m_note && (m_ptr->ml || id) && !(flag & MON_TMD_FLG_NOMESSAGE) &&
+	if (m_note &&
+			((m_ptr->ml && !m_ptr->unaware) || id) &&
+			!(flag & MON_TMD_FLG_NOMESSAGE) &&
 			(flag & MON_TMD_FLG_NOTIFY)) {
 		char m_name[80];
 		monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_IND_HID);

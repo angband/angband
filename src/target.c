@@ -631,8 +631,8 @@ static ui_event target_recall_loop_object(object_type *o_ptr, int y, int x, char
 			if (player->wizard)
 			{
 				strnfmt(out_val, TARGET_OUT_VAL_SIZE,
-						"%s%s%s%s, %s (%d:%d).",
-						s1, s2, s3, o_name, coords, y, x);
+						"%s%s%s%s, %s (%d:%d, cost=%d, when=%d).",
+						s1, s2, s3, o_name, coords, y, x, (int)cave->cost[y][x], (int)cave->when[y][x]);
 			}
 			else
 			{
@@ -735,8 +735,8 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 
 			/* Display a message */
 			if (player->wizard)
-				strnfmt(out_val, sizeof(out_val), "%s%s%s%s, %s (%d:%d).",
-						s1, s2, s3, name, coords, y, x);
+				strnfmt(out_val, sizeof(out_val), "%s%s%s%s, %s (%d:%d, cost=%d, when=%d).",
+						s1, s2, s3, name, coords, y, x, (int)cave->cost[y][x], (int)cave->when[y][x]);
 			else
 				strnfmt(out_val, sizeof(out_val), "%s%s%s%s, %s.",
 						s1, s2, s3, name, coords);
@@ -804,8 +804,8 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 						if (player->wizard)
 						{
 							strnfmt(out_val, sizeof(out_val),
-									"%s%s%s%s (%s), %s (%d:%d).",
-									s1, s2, s3, m_name, buf, coords, y, x);
+									"%s%s%s%s (%s), %s (%d:%d, cost=%d, when=%d).",
+									s1, s2, s3, m_name, buf, coords, y, x, (int)cave->cost[y][x], (int)cave->when[y][x]);
 						}
 						else
 						{
@@ -878,8 +878,8 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 					if (player->wizard)
 					{
 						strnfmt(out_val, sizeof(out_val),
-								"%s%s%s%s, %s (%d:%d).",
-								s1, s2, s3, o_name, coords, y, x);
+								"%s%s%s%s, %s (%d:%d, cost=%d, when=%d).",
+								s1, s2, s3, o_name, coords, y, x, (int)cave->cost[y][x], (int)cave->when[y][x]);
 					}
 					/* Disabled since monsters now carry their drops
 					else
@@ -950,8 +950,8 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 				if (player->wizard) 
 				{
 					strnfmt(out_val, sizeof(out_val),
-							"%s%s%s%s, %s (%d:%d).", s1, s2, s3,
-							t_ptr->kind->name, coords, y, x);
+							"%s%s%s%s, %s (%d:%d, cost=%d, when=%d).", s1, s2, s3,
+							t_ptr->kind->name, coords, y, x, (int)cave->cost[y][x], (int)cave->when[y][x]);
 				} 
 				else 
 				{
@@ -1001,8 +1001,8 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 				if (player->wizard)
 				{
 					strnfmt(out_val, sizeof(out_val),
-							"%s%s%sa pile of %d objects, %s (%d:%d).",
-							s1, s2, s3, floor_num, coords, y, x);
+							"%s%s%sa pile of %d objects, %s (%d:%d, cost=%d, when=%d).",
+							s1, s2, s3, floor_num, coords, y, x, (int)cave->cost[y][x], (int)cave->when[y][x]);
 				}
 				else
 				{
@@ -1108,7 +1108,7 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 			if (player->wizard)
 			{
 				strnfmt(out_val, sizeof(out_val),
-						"%s%s%s%s, %s (%d:%d).", s1, s2, s3, name, coords, y, x);
+						"%s%s%s%s, %s (%d:%d, cost=%d, when=%d).", s1, s2, s3, name, coords, y, x, (int)cave->cost[y][x], (int)cave->when[y][x]);
 			}
 			else
 			{

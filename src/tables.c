@@ -35,6 +35,9 @@ const s16b ddy[10] =
 
 /*
  * Global arrays for optimizing "ddx[ddd[i]]" and "ddy[ddd[i]]".
+ *
+ * This means that each entry in this array corresponds to the direction
+ * with the same array index in ddd[].
  */
 const s16b ddx_ddd[9] =
 { 0, 0, 1, -1, 1, -1, 1, -1, 0 };
