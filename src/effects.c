@@ -3088,7 +3088,8 @@ bool effect_handler_TRAP_DOOR(effect_handler_context_t *context)
 	if (player_of_has(player, OF_FEATHER)) {
 		msg("You float gently down to the next level.");
 	} else {
-		take_hit(player, damroll(2, 8), "a trap");
+		int dam = effect_calculate_value(context, FALSE);
+		take_hit(player, dam, "a trap");
 	}
 	wieldeds_notice_flag(player, OF_FEATHER);
 
@@ -3102,7 +3103,8 @@ bool effect_handler_TRAP_PIT(effect_handler_context_t *context)
 	if (player_of_has(player, OF_FEATHER)) {
 		msg("You float gently to the bottom of the pit.");
 	} else {
-		take_hit(player, damroll(2, 6), "a trap");
+		int dam = effect_calculate_value(context, FALSE);
+		take_hit(player, dam, "a trap");
 	}
 	wieldeds_notice_flag(player, OF_FEATHER);
 	return TRUE;
@@ -3116,7 +3118,7 @@ bool effect_handler_TRAP_PIT_SPIKES(effect_handler_context_t *context)
 		msg("You float gently to the floor of the pit.");
 		msg("You carefully avoid touching the spikes.");
 	} else {
-		int dam = damroll(2, 6);
+		int dam = effect_calculate_value(context, FALSE);
 
 		/* Extra spike damage */
 		if (one_in_(2)) {
@@ -3139,7 +3141,7 @@ bool effect_handler_TRAP_PIT_POISON(effect_handler_context_t *context)
 		msg("You float gently to the floor of the pit.");
 		msg("You carefully avoid touching the spikes.");
 	} else {
-		int dam = damroll(2, 6);
+		int dam = effect_calculate_value(context, FALSE);
 
 		/* Extra spike damage */
 		if (one_in_(2)) {
@@ -3157,7 +3159,7 @@ bool effect_handler_TRAP_PIT_POISON(effect_handler_context_t *context)
 bool effect_handler_TRAP_RUNE_SUMMON(effect_handler_context_t *context)
 {
 	int i;
-	int num = 2 + randint1(3);
+	int num = effect_calculate_value(context, FALSE);
 
 	msgt(MSG_SUM_MONSTER, "You are enveloped in a cloud of smoke!");
 
@@ -3173,14 +3175,15 @@ bool effect_handler_TRAP_RUNE_SUMMON(effect_handler_context_t *context)
 
 bool effect_handler_TRAP_RUNE_TELEPORT(effect_handler_context_t *context)
 {
+	int radius = effect_calculate_value(context, FALSE);
 	msg("You hit a teleport trap!");
-	teleport_player(100);
+	teleport_player(radius);
 	return TRUE;
 }
 
 bool effect_handler_TRAP_SPOT_FIRE(effect_handler_context_t *context)
 {
-	int dam = damroll(4, 6);
+	int dam = effect_calculate_value(context, FALSE);
 	msg("You are enveloped in flames!");
 	dam = adjust_dam(GF_FIRE, dam, RANDOMISE, 0);
 	if (dam) {
@@ -3192,7 +3195,7 @@ bool effect_handler_TRAP_SPOT_FIRE(effect_handler_context_t *context)
 
 bool effect_handler_TRAP_SPOT_ACID(effect_handler_context_t *context)
 {
-	int dam = damroll(4, 6);
+	int dam = effect_calculate_value(context, FALSE);
 	msg("You are splashed with acid!");
 	dam = adjust_dam(GF_ACID, dam, RANDOMISE, 0);
 	if (dam) {
