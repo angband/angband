@@ -3496,6 +3496,7 @@ bool effect_do(struct effect *effect, bool *ident, bool aware, int dir, int beam
 void effect_simple(int index, const char* dice_string, int p1, int p2, int p3)
 {
 	struct effect *effect = mem_zalloc(sizeof(*effect));
+	int dir = DIR_TARGET;
 	bool ident;
 
 	/* Set all the values */
@@ -3507,6 +3508,8 @@ void effect_simple(int index, const char* dice_string, int p1, int p2, int p3)
 	effect->params[2] = p3;
 
 	/* Do the effect */
-	effect_do(effect, &ident, TRUE, 0, 0, 0);
+	if (effect_aim(effect))
+		get_aim_dir(&dir);
+	effect_do(effect, &ident, TRUE, dir, 0, 0);
 	free_effect(effect);
 }
