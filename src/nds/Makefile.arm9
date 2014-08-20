@@ -19,8 +19,6 @@ include $(DEVKITARM)/ds_rules
 TARGET		:=	$(NAME)
 BUILD		:=	$(CURDIR)
 SOURCES		:=	$(CURDIR)
-#NRM OTHERSRC	:=	$(CURDIR)
-#NRM INCLUDES	:=	sys/nds/arm9/include include
 DATA		:=
 
 #------------------------------------------------------------------------------
@@ -41,18 +39,11 @@ LIBDIRS	:=	$(LIBNDS) $(DEVKITPRO)/libfat-nds
  
 export ARM9BIN	:=	$(BUILD)/$(TARGET).arm9
 export ARM9ELF	:=	$(BUILD)/$(TARGET).arm9.elf
-#NRM export DEPSDIR := $(BUILD)
 export DEPSDIR := 
 
 export VPATH	:=	$(foreach dir,$(SOURCES),$(CURDIR)/$(dir)) \
 					$(foreach dir,$(DATA),$(CURDIR)/$(dir))
  
-#NRM CFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.c)))
-#NRM CPPFILES	:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.cpp)))
-#NRM SFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.s)))
-#NRM BINFILES	:=	$(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.*)))
-
-#NRM OTHERC		:=	$(foreach dir,$(OTHERSRC),$(notdir $(wildcard $(dir)/*.c)))
  
 #------------------------------------------------------------------------------
 # use CXX for linking C++ projects, CC for standard C
@@ -105,7 +96,6 @@ CFLAGS	:=	-g -Wall -O2\
 			$(ARCH)
 
 CFLAGS	+=	$(INCLUDE) -DARM9 -DNDS
-#NRM CXXFLAGS	:=	$(CFLAGS) -fno-rtti -fno-exceptions
 
 ASFLAGS	:=	-g $(ARCH)
 LDFLAGS	=	-specs=ds_arm9.specs -g $(ARCH) -mno-fpu -Wl,-Map,$(BUILD)/$(TARGET).arm9.map
@@ -128,7 +118,6 @@ DEPENDS	:=	$(OFILES:.o=.d)
 all	:	$(ARM9BIN)
 
 $(ARM9BIN)	:	$(ARM9ELF)
-#NRM 	@$(OBJCOPY) -O binary $< $@
 	@echo built ... $(notdir $@)
 
  $(ARM9ELF)	:	$(foreach ofile,$(OFILES),$(BUILD)/$(ofile)) $(foreach ofile,$(OTHEROBJ),$(BUILD)/$(ofile))
@@ -142,11 +131,6 @@ $(BUILD)/%.o	:	$(SOURCES)/%.c
 	@echo $(notdir $<)
 	@$(CC) -MMD -MP -MF $(DEPSDIR)/$*.d $(CFLAGS) -c $< -o $@
 	
-#NRM $(BUILD)/%.o	:	$(SOURCES)/%.s
-#NRM 	@echo $(notdir $<)
-#NRM 	@$(CC) -MMD -MP -MF $(DEPSDIR)/$*.d -x assembler-with-cpp \ 
-#NRM 		$(ASFLAGS) -c $< -o $@
-
 
 #------------------------------------------------------------------------------
 # you need a rule like this for each extension you use as binary data 

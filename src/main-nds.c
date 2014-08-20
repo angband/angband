@@ -51,7 +51,7 @@ u16* tiles_bin;// = (u16*)0x06020400;
 //[mappable]*2^[mods] things to map commands to, [cmd_length] chars per command
 byte nds_btn_cmds[NDS_NUM_MAPPABLE << NDS_NUM_MODIFIER][NDS_CMD_LENGTH];
 
-/* make sure there's something there to start with - NRM */
+/* make sure there's something there to start with */
 byte btn_defaults[] = 
   {
     'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l',
@@ -71,8 +71,7 @@ s16 nds_buttons_to_btnid(u16 kd, u16 kh) {
 	return -1;
 }
 
-//extern int total_tiles_used;	//in tile.c, used only here
-#define total_tiles_used 512	//hack, guess NRM
+#define total_tiles_used 512	//hack, guess 
 
 #define DEF_TILE_WIDTH		8
 #define DEF_TILE_HEIGHT		8
@@ -80,9 +79,6 @@ s16 nds_buttons_to_btnid(u16 kd, u16 kh) {
 #define DEF_TILES_PER_ROW       32
 
 // don't change these
-//NRM #define TILE_WIDTH		iflags.wc_tile_width
-//NRM #define TILE_HEIGHT		iflags.wc_tile_height
-//NRM #define TILE_FILE		iflags.wc_tile_file
 u16b TILE_WIDTH;
 u16b TILE_HEIGHT;
 char *TILE_FILE;
@@ -613,23 +609,15 @@ void do_vblank() {
     if (kh & KEY_DOWN) dirs_down++;
     if (dirs_down == 1 && !(kh & (KEY_R | KEY_L))) 
       {
-	/*if (iflags.num_pad) put_key_event(ndir[k2d[(kh >> 4) & 0xF]]);
-	  else put_key_event(sdir[k2d[(kh >> 4) & 0xF]]);*/
-	//NRM put_key_event(k2d[(kh >> 4) & 0xF]);
 	for (i = 0; i < 4; i++)
 	  if (kh & (1 << (i + 4))) 
-	    //Term_keypress(k2d[i]);
 	    put_key_event(k2d[i]);
       } 
     else 
       if (dirs_down == 2 && (kh & (KEY_R | KEY_L))) 
 	{
-	  /*if (iflags.num_pad) put_key_event(ndir[k2d[(kh >> 4) & 0xF]]);
-	    else put_key_event(sdir[k2d[(kh >> 4) & 0xF]]);*/
-	  //NRM put_key_event(k2d[(kh >> 4) & 0xF]);
 	  for (i = 0; i < 4; i++)
 	    if (kh & (1 << (i + 4))) 
-	      //Term_keypress(k2d[i + 4]);
 	      put_key_event(k2d[i + 4]);
 	}
   }
@@ -645,16 +633,6 @@ void do_vblank() {
     put_key_event(keycode & 0xFF);
     //Term_keypress(keycode & 0xFF);
   }
-  
-  // ---------------------------
-  //  Print free RAM
-  //NRM freeprint();
-  
-  // ---------------------------
-  //  If the screen needs to be redrawn, do so now
-  //NRM if (nds_updated) {
-    //NRM render_all_windows();
-    //NRM nds_updated = 0;
 }
 
 //END JUST MOVED
@@ -695,63 +673,6 @@ static errr CheckEvents(bool wait)
   /* Key */
   else
     Term_keypress(EVENT_C(e));
-
-#if 0
-  u32b kd, kh;
-  const byte k2d[] = {'6','4','8','2','3','7','9','1'  };
-
-  /* Check the event queue */
-  swiWaitForVBlank();
-  scanKeys();
-  kd = keysDown();
-  kh = keysHeld();
-  if (!wait && !kd)
-    return (1);
-
-  /* Wait for an event */
-  while (!kd && !kh)
-    {
-      swiWaitForVBlank();
-      scanKeys();
-      kd = keysDown();
-      kh = keysHeld();
-
-      // only do stuff if a key was pressed last frame
-      /* Arrow keys */
-      if (kd & (KEY_RIGHT | KEY_LEFT | KEY_UP | KEY_DOWN)) 
-	{
-	  u16b dirs_down = 0;
-	  int i;
-	  if (kh & KEY_LEFT) dirs_down++;
-	  if (kh & KEY_RIGHT) dirs_down++;
-	  if (kh & KEY_UP) dirs_down++;
-	  if (kh & KEY_DOWN) dirs_down++;
-	  if (dirs_down == 1 && !(kh & (KEY_R | KEY_L))) 
-	    {
-	      for (i = 0; i < 4; i++)
-		if (kh & (1 << (i + 4))) Term_keypress(k2d[i]);
-	    } 
-	  else 
-	    if (dirs_down == 2 && (kh & (KEY_R | KEY_L))) 
-	      {
-		for (i = 0; i < 4; i++)
-		  if (kh & (1 << (i + 4))) Term_keypress(k2d[i + 4]);
-	      }
-	}
-  
-      // ---------------------------
-      //  Check for button macros
-      nds_check_buttons(kd, kh);
-  
-      // ---------------------------
-      //  Check for typing on the touchscreen kbd
-      u8 keycode = kbd_vblank();
-      if ((keycode & 0x7F) != 0) {	// it's an actual keystroke, return it
-	//put_key_event(keycode & 0xFF);
-	Term_keypress(keycode & 0xFF);
-      }
-    }
-#endif
 
   return (0);
 }
@@ -811,11 +732,6 @@ static errr Term_xtra_nds(int n, int v)
 	    for (x = 0; x < 80; x++)
 	      {
 		vram_offset = (y & 0x1F)*8*256+x*3;
-		//if (y&32) 
-		//  {
-		//    fb = &BG_GFX_SUB[16*1024];
-		//    chardata = btm_font_bin;
-		//  }
 	
 		byte xx,yy;
 		for (yy=0;yy<8;yy++)
@@ -967,7 +883,6 @@ static errr Term_xtra_nds(int n, int v)
  */
 static errr Term_curs_nds(int x, int y)
 {
-  //term_data *td = (term_data*)(Term->data);
   u32b vram_offset = (y - 1) * TILE_HEIGHT * 256 + x * TILE_WIDTH + 8 * 256;
   byte xx, yy;
   for (xx = 0; xx < TILE_WIDTH; xx++) 
@@ -1010,25 +925,22 @@ void draw_char(byte x, byte y, char c)
 
 void draw_color_char(byte x, byte y, char c, byte clr) 
 {
-  u32b vram_offset = (y & 0x1F) * 8 * 256 + x * 3, tile_offset = c * 24;
-  u16b* fb = BG_GFX;
-  const u16b* chardata = top_font_bin;
-  if (y & 32) 
-    {
-      fb = &BG_GFX_SUB[16*1024];
-      chardata = btm_font_bin;
+	u32b vram_offset = (y & 0x1F) * 8 * 256 + x * 3, tile_offset = c * 24;
+	u16b* fb = BG_GFX;
+	const u16b* chardata = top_font_bin;
+	if (y & 32) {
+		fb = &BG_GFX_SUB[16*1024];
+		chardata = btm_font_bin;
     }
-  byte xx, yy;
-  u16b val;
-  u16b fgc = color_data[clr & 0xF];//, bgc = color_data[(clr & 0xFF) >> 4];
-  for (yy = 0; yy < 8; yy++) 
-    {
-      for (xx = 0;xx < 3; xx++) 
-	{
-	  val = (chardata[yy * 3 + xx + tile_offset]);
-	  fb[yy * 256 + xx + vram_offset] = (val & fgc) | BIT(15);//(~val&bgc) | 0x8000;
-	}
-    }
+	byte xx, yy;
+	u16b val;
+	u16b fgc = color_data[clr & 0xF]
+		for (yy = 0; yy < 8; yy++) {
+			for (xx = 0;xx < 3; xx++) {
+				val = (chardata[yy * 3 + xx + tile_offset]);
+				fb[yy * 256 + xx + vram_offset] = (val & fgc) | BIT(15);
+			}
+		}
 }
 
 /*
@@ -1087,7 +999,6 @@ static errr Term_wipe_nds(int x, int y, int n)
  */
 static errr Term_text_nds(int x, int y, int n, byte a, const char *cp)
 {
-  //term_data *td = (term_data*)(Term->data);
   int i;
   
   /* Do nothing if the string is null */
@@ -1241,9 +1152,6 @@ static void term_data_link(int i)
   
   /* Activate it */
   Term_activate(t);
-  
-  /* Global pointer  - maybe need for some configurations */
-  //ang_term[i] = t;
 }
 
 
@@ -1266,7 +1174,7 @@ errr init_nds(void)
   td = &data[0];
   WIPE(td, term_data);
   td->rows = 24;
-  td->cols = 37;//80;
+  td->cols = 37;
   td->tile_height = 8;
   td->tile_width = 3;
         
@@ -1305,8 +1213,6 @@ static void init_stuff(void)
 
 	/* Hack */
 	strcpy(savefile, "/angband/lib/save/PLAYER");
-
-	//small_screen = TRUE;
 }
 
 void nds_init_fonts() {
@@ -1346,7 +1252,7 @@ void nds_fatal_err(const char* msg) {
   }
 }
 
-//NRM should be replaced with open and read from z-file.c
+//should be replaced with open and read from z-file.c
 bool nds_load_file(const char* name, u16b* dest, u32b len) {
   FILE* f = fopen(name,"r");
   if (f == NULL) return false;
@@ -1478,8 +1384,6 @@ void nds_raw_print(const char* str)
 
 bool nds_load_tile_bmp(const char *name, u16b *dest, u32b len) 
 {
-  //NRM#define h	iflags.wc_tile_height
-  //NRM#define w	iflags.wc_tile_width
 #define h	TILE_HEIGHT
 #define w	TILE_WIDTH
   // bmpxy2off works ONLY inside nds_load_tile_bmp!
@@ -1504,9 +1408,7 @@ bool nds_load_tile_bmp(const char *name, u16b *dest, u32b len)
   fseek(f, 2, SEEK_CUR);
   fread(&depth,2,1,f);
   strnfmt(buf, 10, "depth = %d", depth);
-  //nds_raw_print(buf);
   if (depth != 24) 
-    //NRM if (depth != 8) 
     {
       fclose(f);
       nds_raw_print(" depth problem");
@@ -1520,7 +1422,6 @@ bool nds_load_tile_bmp(const char *name, u16b *dest, u32b len)
   
   fseek(f,off,SEEK_SET);
   
-  //NRM u8 temp[3];
   byte temp[1];
   while (y >= 0) 
     {
@@ -1529,17 +1430,14 @@ bool nds_load_tile_bmp(const char *name, u16b *dest, u32b len)
 	  writeidx = bmpxy2off(i*w, y);
 	  for (j = 0; j < w; j++) 
 	    {
-	      //NRM fread(temp,1,3,f);
 	      fread(temp, 1, 1, f);
 	      if (writeidx * 2 < len) dest[writeidx++] = c2(temp, 0);
 	    }
 	}
       // x&3 == x%4
-      //NRM if (((iw*w*3) & 3) != 0) fseek(f,4-((iw*w*3)&3),SEEK_CUR);
       fseek(f, 2 - (iw * w), SEEK_CUR);
       y--;
     }
-  //*/
   
   fclose(f); 
   return true;
@@ -1555,7 +1453,6 @@ bool nds_load_tile_file(char* name, u16b* dest, u32b len) {
   nds_raw_print(name + len - 3);
   if (strcmpi(ext, "bmp") == 0) 
     {
-      //    nds_raw_print("=isbmp ");
       return nds_load_tile_bmp(name, dest, len);
     } 
   else 
@@ -1566,10 +1463,6 @@ bool nds_load_tile_file(char* name, u16b* dest, u32b len) {
 
 bool nds_load_tiles() 
 {
-  //char temp[30];
-  //sprintf(temp,"%d,%s ",TILE_FILE == NULL, 
-  //  TILE_FILE==NULL ? DEF_TILE_FILE : TILE_FILE);
-  //nds_raw_print(temp);
   char buf[64];
   int died1 = -1, died2 = -1;;
   if (TILE_FILE != NULL) 
@@ -1621,7 +1514,6 @@ bool nds_load_tiles()
   NDS_SCREEN_ROWS = 168 / TILE_HEIGHT;
   NDS_SCREEN_COLS = 256 / TILE_WIDTH;
   return TRUE;
-  //	nds_raw_print("r/c set");
 }
 
 /*
@@ -1718,8 +1610,6 @@ int main(int argc, char *argv[])
   
   nds_init_fonts();
   
-  //nds_raw_print("testing raw_print...\n");
-  //draw_char(10,10,(byte)'N');
   swiWaitForVBlank();
   swiWaitForVBlank();
   swiWaitForVBlank();
@@ -1735,7 +1625,6 @@ int main(int argc, char *argv[])
       nds_fatal_err("\n\nUnable to access filesystem.\nCannot continue.\n");
       return 1;
     }
-  //nds_raw_print("filesystem loaded\n");
   
   swiWaitForVBlank();
   swiWaitForVBlank();
@@ -1764,9 +1653,7 @@ int main(int argc, char *argv[])
     }
   
   use_graphics = TRUE;
-  //ANGBAND_GRAF = "old";
 
-  //NRM	initoptions();
   if (!nds_load_tiles()) 
     {
       nds_fatal_err("\n\nNo tileset could be loaded.\nCannot continue.\n");
@@ -1780,88 +1667,6 @@ int main(int argc, char *argv[])
     }
 
   
-  //NRM u.uhp = 1;	/* prevent RIP on early quits */
-  //NRM u.ux = 0;	/* prevent flush_screen() */
-  //NRM	init_nhwindows(0,0);
-  //NRM	display_gamewindows();	// need this for askname()
-#if 0
-  
-  nds_curs(WIN_MAP,0,30);		// put cursor offscreen
-  nds_clear_nhwindow(WIN_MAP);	// somehow there is garbage in these 
-  nds_clear_nhwindow(WIN_MESSAGE);// windows even after create_nhwindow
-  nds_clear_nhwindow(WIN_STATUS);	// calls clear_nhwindow
-  //process_options(argc, argv);
-  if (!*plname)
-    askname();
-  if (!stricmp(plname,"wizard")) 
-    wizard = 1;
-  plnamesuffix();
-  set_savefile_name();
-  Strcpy(lock,plname);
-  Strcat(lock,"-99");
-  regularize(lock);
-  fd = create_levelfile(0, (char *)0);
-  if (fd < 0) {
-    raw_print("Cannot create lock file");
-  } else {
-    hackpid = 1;
-    write(fd, (genericonst char *_t) &hackpid, sizeof(hackpid));
-    close(fd);
-  }
-  
-  x_maze_max = COLNO-1;
-  if (x_maze_max % 2)
-    x_maze_max--;
-  y_maze_max = ROWNO-1;
-  if (y_maze_max % 2)
-    y_maze_max--;
-  
-  vision_init();
-  
-  dlb_init();
-  
-  
-  
-  if ((fd = restore_saved_game()) >= 0) {
-    
-    pline("Restoring save file...");
-    //mark_synch();	/* flush output */
-    
-    if(!dorecover(fd))
-      goto not_recovered;
-    check_special_room(FALSE);
-    if (discover)
-      You("are in non-scoring discovery mode.");
-    
-    if (discover || wizard) {
-      if(yn("Do you want to keep the save file?") == 'n'){
-	(void) delete_savefile();
-      }
-    }
-    
-    flags.move = 0;
-  } else {
-  not_recovered:
-    // TODO: add code to load a game
-    player_selection();
-    newgame();
-    if (discover)
-      You("are in non-scoring discovery mode.");
-    
-    flags.move = 0;
-    set_wear();
-    (void) pickup(1);
-    read_engr_at(u.ux,u.uy);
-  }
-  
-  // it's safe to turn on the vblank intr now
-  REG_IME = 1;
-  
-  moveloop();
-  goto top;
-  return 0;
-  //FINISH NETHACK STUFF
-#endif /* 0 */
   
   /* Activate hooks */
   plog_aux = hook_plog;
