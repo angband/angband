@@ -49,7 +49,7 @@ const char *r_info_flags[] =
 
 const char *r_info_spell_flags[] =
 {
-	#define RSF(a, b, c, d, e, f, g, h, i, j, k, l, m, n) #a,
+	#define RSF(a, b, c, d, e, f, g, h) #a,
 	#include "list-mon-spells.h"
 	#undef RSF
 	NULL

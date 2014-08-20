@@ -46,7 +46,7 @@
 /* Monster spell flags */
 enum
 {
-    #define RSF(a, b, c, d, e, f, g, h, i, j, k, l, m, n) RSF_##a,
+    #define RSF(a, b, c, d, e, f, g, h) RSF_##a,
     #include "list-mon-spells.h"
     #undef RSF
 };

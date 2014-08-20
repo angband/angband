@@ -787,15 +787,7 @@ static int stats_dump_lists(void)
 		NULL
 	};
 
-	struct mon_spell mon_spell_table[] =
-	{
-		#define RSF(a, b, c, d, e, f, g, h, i, j, k, l, m, n) \
-			{ RSF_##a, b, #a, d, e, f, g, h, i, j, k, l, m, n },
-		#define RV(b, x, y, m) {b, x, y, m}
-		#include "list-mon-spells.h"
-		#undef RV
-		#undef RSF
-	};
+	/** Really want elements (at least) here - NRM **/
 
 	struct object_flag object_flag_table[] =
 	{
@@ -848,25 +840,6 @@ static int stats_dump_lists(void)
 		if (err) return err;
 		err = sqlite3_bind_text(sql_stmt, 2, r_info_flags[idx],
 			strlen(r_info_flags[idx]), SQLITE_STATIC);
-		if (err) return err;
-		STATS_DB_STEP_RESET(sql_stmt)
-	}
-
-	STATS_DB_FINALIZE(sql_stmt)
-
-	err = stats_db_stmt_prep(&sql_stmt, 
-		"INSERT INTO monster_spell_flags_list VALUES(?,?,?,?);");
-	if (err) return err;
-
-	for (idx = 1; idx < RSF_MAX; idx++)
-	{
-		if (! mon_spell_table[idx].desc) continue;
-
-		err = stats_db_bind_ints(sql_stmt, 3, 0, idx, 
-			mon_spell_table[idx].cap, mon_spell_table[idx].div);
-		if (err) return err;
-		err = sqlite3_bind_text(sql_stmt, 4, mon_spell_table[idx].desc,
-			strlen(mon_spell_table[idx].desc), SQLITE_STATIC);
 		if (err) return err;
 		STATS_DB_STEP_RESET(sql_stmt)
 	}
@@ -1008,7 +981,6 @@ static int stats_dump_info(void)
  *     object_mods_map -- map between objects and modifiers
  *     effects_list -- dump of list-effects.h
  *     monster_flags_list -- dump of list-mon-flags.h
- *     monster_spell_flags_list -- dump of list-mon-spells.h
  *     object_flags_list -- dump of list-object-flags.h
  *     object_mods_list -- dump of list-object-modifiers.h
  *     origin_flags_list -- dump of origin enum

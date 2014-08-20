@@ -145,6 +145,8 @@ static bool project_aimed(int typ, int dir, int dam, int flg)
 {
 	int py = player->py;
 	int px = player->px;
+	/* Player or monster? */
+	int source = (cave->mon_current > 0) ? cave->mon_current : -1;
 
 	s16b ty, tx;
 
@@ -156,11 +158,11 @@ static bool project_aimed(int typ, int dir, int dam, int flg)
 	tx = px + ddx[dir];
 
 	/* Ask for a target if no direction given */
-	if ((dir == 5) && target_okay())
+	if ((dir == 5) && target_okay() && source == -1)
 		target_get(&tx, &ty);
 
 	/* Aim at the target, do NOT explode */
-	return (project(-1, 0, ty, tx, dam, typ, flg, 0, 0));
+	return (project(source, 0, ty, tx, dam, typ, flg, 0, 0));
 }
 
 /**

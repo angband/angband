@@ -26,29 +26,9 @@
 
 /** Constants **/
 
-/* List of spell effects */
-enum
-{
-    #define RSE(a, b, c, d, e, f, g, h) \
-            RSE_##a,
-    #include "list-spell-effects.h"
-    #undef RSE
-};
-
-/* Flags for non-timed spell effects
- * - include legal restrictions for "summon_specific()"
- * (see src/timed.h for timed effect flags) */
-enum spell_effect_flag {
-    S_INV_DAM,
-    S_TELEPORT,
-    S_TELE_TO,
-    S_TELE_LEV,
-	S_TELE_SELF,
-    S_DRAIN_LIFE,
-    S_DRAIN_STAT,
-    S_SWAP_STAT,
-    S_DRAIN_ALL,
-    S_DISEN,
+/* Flags for "summon_specific()"
+ * (need better handling - NRM) */
+enum summon_flag {
     S_ANIMAL = 11,
     S_SPIDER = 12,
     S_HOUND = 13,
@@ -65,14 +45,6 @@ enum spell_effect_flag {
     S_KIN = 33,
     S_MONSTER = 41,
     S_MONSTERS = 42,
-	S_DRAIN_MANA,
-	S_HEAL,
-	S_BLINK,
-	S_DARKEN,
-	S_TRAPS,
-	S_AGGRAVATE,
-
-    S_MAX
 };
 
 /* Spell type bitflags */
@@ -89,7 +61,7 @@ enum mon_spell_type {
     RST_SUMMON  = 0x200
 };
 
-/* Minimum flag which can fail */
+/* Minimum flag which can fail - needs fixing NRM */
 #define MIN_NONINNATE_SPELL    (FLAG_START + 26)
 
 /** Macros **/
@@ -122,47 +94,14 @@ enum mon_spell_type {
 		RSF_BR_DISE, RSF_BR_TIME, RSF_BR_MANA
 
 
-/** Structures **/
-
-/* Structure for monster spell types */
-struct mon_spell {
-	u16b index;				/* Numerical index (RSF_FOO) */
-	int type;				/* Type bitflag */
-	const char *desc;		/* Verbal description */
-	int cap;				/* Damage cap */
-	int div;				/* Damage divisor (monhp / this) */
-	int gf;					/* Flag for projection type (GF_FOO) */
-	int msgt;				/* Flag for message colouring */
-	bool save;				/* Does this attack allow a saving throw? */
-	int hit;				/* To-hit level for the attack */
-	const char *verb;		/* Description of the attack */
-	random_value base_dam;	/* Base damage for the attack */
-	random_value rlev_dam;	/* Monster-level-dependent damage */
-	const char *blind_verb;	/* Description of the attack if unseen */
-	const char *lore_desc;	/* Description of the attack used in lore text */
-};
-
-/* Structure for side effects of spell attacks */
-struct spell_effect {
-	u16b index;			/* Numerical index (RAE_#) */
-	u16b method;		/* What RSF_ attack has this effect */
-	int gf;				/* What GF_ type has this effect */
-	bool timed;			/* TRUE if timed, FALSE if permanent */
-	int flag;			/* Effect flag */
-	random_value base;	/* The base duration or impact */
-	int prot_flag;		/* Protection from this specific effect */
-	random_value power;	/* Power rating of effect */
-};
-
-
 /** Functions **/
-void do_mon_spell(int spell, struct monster *m_ptr, bool seen);
+void do_mon_spell(int index, struct monster *m_ptr, bool seen);
 bool test_spells(bitflag *f, int types);
 void set_spells(bitflag *f, int types);
 int best_spell_power(const monster_race *r_ptr, int resist);
 void unset_spells(bitflag *spells, bitflag *flags, struct element_info *el,
 				const monster_race *r_ptr);
-const char *mon_spell_lore_description(int spell);
-int mon_spell_lore_damage(int spell, const monster_race *race, bool know_hp);
+const char *mon_spell_lore_description(int index);
+int mon_spell_lore_damage(int index, const monster_race *race, bool know_hp);
 
 #endif /* MONSTER_SPELL_H */
