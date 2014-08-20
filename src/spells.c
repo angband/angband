@@ -24,42 +24,23 @@
 #include "init.h"
 #include "mon-lore.h"
 #include "mon-make.h"
-#include "mon-timed.h"
 #include "mon-util.h"
-#include "monster.h"
 #include "obj-chest.h"
 #include "obj-desc.h"
 #include "obj-gear.h"
 #include "obj-identify.h"
 #include "obj-ignore.h"
 #include "obj-make.h"
-#include "obj-slays.h"
 #include "obj-tval.h"
 #include "obj-ui.h"
 #include "obj-util.h"
 #include "object.h"
 #include "player-timed.h"
 #include "player-util.h"
-#include "project.h"
 #include "spells.h"
 #include "tables.h"
-#include "target.h"
 #include "trap.h"
 
-
-
-/*
- * Array of stat "descriptions"
- */
-static const char *desc_stat_pos[] =
-{
-	"strong",
-	"smart",
-	"wise",
-	"dextrous",
-	"healthy",
-	"cute"
-};
 
 
 /*
@@ -1371,54 +1352,6 @@ bool spell_identify_unknown_available(void)
 }
 
 
-/*
- * Apply a "project()" directly to all viewable monsters
- *
- * Note that affected monsters are NOT auto-tracked by this usage.
- */
-bool project_los(int typ, int dam, bool obvious)
-{
-	int i, x, y;
-
-	int flg = PROJECT_JUMP | PROJECT_KILL | PROJECT_HIDE;
-
-	if (obvious) flg |= PROJECT_AWARE;
-
-	/* Affect all (nearby) monsters */
-	for (i = 1; i < cave_monster_max(cave); i++)
-	{
-		monster_type *m_ptr = cave_monster(cave, i);
-
-		/* Paranoia -- Skip dead monsters */
-		if (!m_ptr->race) continue;
-
-		/* Location */
-		y = m_ptr->fy;
-		x = m_ptr->fx;
-
-		/* Require line of sight */
-		if (!player_has_los_bold(y, x)) continue;
-
-		/* Jump directly to the target monster */
-		if (project(-1, 0, y, x, dam, typ, flg, 0, 0)) obvious = TRUE;
-	}
-
-	/* Result */
-	return (obvious);
-}
-
-
-/*
- * Dispel all monsters
- */
-bool dispel_monsters(int dam)
-{
-	return (project_los(GF_DISP_ALL, dam, FALSE));
-}
-
-
-
-
 
 
 /*
@@ -2271,76 +2204,6 @@ void light_room(int y1, int x1, bool light)
 
 
 /*
- * Cast a ball spell
- * Stop if we hit a monster, act as a "ball"
- * Allow "target" mode to pass over monsters
- * Affect grids, objects, and monsters
- */
-bool fire_ball(int typ, int dir, int dam, int rad)
-{
-	int py = player->py;
-	int px = player->px;
-
-	s16b ty, tx;
-
-	int flg = PROJECT_STOP | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
-
-	/* Use the given direction */
-	ty = py + 99 * ddy[dir];
-	tx = px + 99 * ddx[dir];
-
-	/* Hack -- Use an actual "target" */
-	if ((dir == 5) && target_okay())
-	{
-		flg &= ~(PROJECT_STOP);
-
-		target_get(&tx, &ty);
-	}
-
-	/* Analyze the "dir" and the "target".  Hurt items on floor. */
-	return (project(-1, rad, ty, tx, dam, typ, flg, 0, 0));
-}
-
-
-/*
- * Hack -- apply a "projection()" in a direction (or at the target)
- */
-static bool project_hook(int typ, int dir, int dam, int flg)
-{
-	int py = player->py;
-	int px = player->px;
-
-	s16b ty, tx;
-
-	/* Pass through the target if needed */
-	flg |= (PROJECT_THRU);
-
-	/* Use the given direction */
-	ty = py + ddy[dir];
-	tx = px + ddx[dir];
-
-	/* Hack -- Use an actual "target" */
-	if ((dir == 5) && target_okay())
-		target_get(&tx, &ty);
-
-	/* Analyze the "dir" and the "target", do NOT explode */
-	return (project(-1, 0, ty, tx, dam, typ, flg, 0, 0));
-}
-
-
-/*
- * Cast a bolt spell
- * Stop if we hit a monster, as a "bolt"
- * Affect monsters (not grids or objects)
- */
-bool fire_bolt(int typ, int dir, int dam)
-{
-	int flg = PROJECT_STOP | PROJECT_KILL;
-	return (project_hook(typ, dir, dam, flg));
-}
-
-
-/*
  * Brand weapons (or ammo)
  *
  * Turns the (non-magical) object into an ego-item of 'brand_type'.
@@ -2402,68 +2265,6 @@ void brand_object(object_type *o_ptr, const char *name)
 	{
 		flush();
 		msg("The branding failed.");
-	}
-}
-
-
-/*
- * Hack -- activate the ring of power
- */
-void ring_of_power(int dir)
-{
-	/* Pick a random effect */
-	switch (randint1(10))
-	{
-		case 1:
-		case 2:
-		{
-			/* Message */
-			msg("You are surrounded by a malignant aura.");
-
-			/* Decrease all stats (permanently) */
-			player_stat_dec(player, STAT_STR, TRUE);
-			player_stat_dec(player, STAT_INT, TRUE);
-			player_stat_dec(player, STAT_WIS, TRUE);
-			player_stat_dec(player, STAT_DEX, TRUE);
-			player_stat_dec(player, STAT_CON, TRUE);
-
-			/* Lose some experience (permanently) */
-			player_exp_lose(player, player->exp / 4, TRUE);
-
-			break;
-		}
-
-		case 3:
-		{
-			/* Message */
-			msg("You are surrounded by a powerful aura.");
-
-			/* Dispel monsters */
-			dispel_monsters(1000);
-
-			break;
-		}
-
-		case 4:
-		case 5:
-		case 6:
-		{
-			/* Mana Ball */
-			fire_ball(GF_MANA, dir, 300, 3);
-
-			break;
-		}
-
-		case 7:
-		case 8:
-		case 9:
-		case 10:
-		{
-			/* Mana Bolt */
-			fire_bolt(GF_MANA, dir, 250);
-
-			break;
-		}
 	}
 }
 

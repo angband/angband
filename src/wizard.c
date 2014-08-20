@@ -1894,7 +1894,14 @@ void do_cmd_debug(void)
         /* Hit all monsters in LOS */
         case 'H':
         {
-            dispel_monsters(10000);
+			struct effect *effect = mem_zalloc(sizeof(*effect));
+			bool ident;
+			effect->index = EF_PROJECT_LOS;
+			effect->dice = dice_new();
+			dice_parse_string(effect->dice, "10000");
+			effect->params[0] = GF_DISP_ALL;
+			effect_do(effect, &ident, TRUE, 0, 0, 0);
+			free_effect(effect);
             break;
         }
 

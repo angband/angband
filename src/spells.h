@@ -41,7 +41,6 @@ extern bool enchant(object_type *o_ptr, int n, int eflag);
 extern bool enchant_spell(int num_hit, int num_dam, int num_ac);
 extern void do_ident_item(object_type *o_ptr);
 extern bool ident_spell(void);
-extern bool dispel_monsters(int dam);
 void teleport_away(struct monster *m, int dis);
 void teleport_player(int dis);
 void teleport_player_to(int ny, int nx);
@@ -49,11 +48,7 @@ void teleport_player_level(void);
 extern void destroy_area(int y1, int x1, int r, bool full);
 extern void earthquake(int cy, int cx, int r);
 void light_room(int y1, int x1, bool light);
-extern bool fire_ball(int typ, int dir, int dam, int rad);
-extern bool fire_bolt(int typ, int dir, int dam);
-extern bool project_los(int typ, int dam, bool obvious);
 extern void brand_object(object_type *o_ptr, const char *name);
-extern void ring_of_power(int dir);
 extern bool spell_identify_unknown_available(void);
 
 #endif /* !SPELLS_H */

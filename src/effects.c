@@ -1552,13 +1552,37 @@ bool effect_handler_ENCHANT(effect_handler_context_t *context)
 	return TRUE;
 }
 
+/*
+ * Hopefully this is OK now
+ */
+static bool item_tester_unknown(const object_type *o_ptr)
+{
+	return object_is_known(o_ptr) ? FALSE : TRUE;
+}
+
 /**
- * Slack - NRM
+ * Identify an unknown item
  */
 bool effect_handler_IDENTIFY(effect_handler_context_t *context)
 {
+	int item;
+	object_type *o_ptr;
+	const char *q, *s;
+
 	context->ident = TRUE;
-	ident_spell();
+
+	/* Get an item */
+	q = "Identify which item? ";
+	s = "You have nothing to identify.";
+	if (!get_item(&item, q, s, 0, item_tester_unknown,
+				  (USE_EQUIP | USE_INVEN | USE_QUIVER | USE_FLOOR)))
+		return (FALSE);
+
+	o_ptr = object_from_item_idx(item);
+
+	/* Identify the object */
+	do_ident_item(o_ptr);
+
 	return TRUE;
 }
 
@@ -2534,45 +2558,6 @@ bool effect_handler_STAR_BALL(effect_handler_context_t *context)
 }
 
 /**
- * Messy, will change if breaths do - NRM
- */
-bool effect_handler_RAND_BREATH(effect_handler_context_t *context)
-{
-	int py = player->py;
-	int px = player->px;
-
-	s16b ty = py + 99 * ddy[context->dir];
-	s16b tx = px + 99 * ddx[context->dir];
-
-	int flg = PROJECT_STOP | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
-
-	/* Table of random ball effects and their damages */
-	const int breath_types[] = {
-		GF_ACID, 200,
-		GF_ELEC, 160,
-		GF_FIRE, 200,
-		GF_COLD, 160,
-		GF_POIS, 120
-	};
-
-	/* Pick a random (type, damage) tuple in the table */
-	int which = 2 * randint0(sizeof(breath_types) / (2 * sizeof(int)));
-
-	/* Ask for a target if no direction given */
-	if ((context->dir == 5) && target_okay()) {
-		flg &= ~(PROJECT_STOP);
-
-		target_get(&tx, &ty);
-	}
-
-	/* Aim at the target, explode */
-	(void) project(-1, breath_types[which], ty, tx, breath_types[which + 1], 3, flg, 0, 0);
-
-	context->ident = TRUE;
-	return TRUE;
-}
- 
-/**
  * Cast a bolt spell
  * Stop if we hit a monster, as a bolt
  * Affect monsters (not grids or objects)
@@ -2876,13 +2861,95 @@ bool effect_handler_BRAND_BOLTS(effect_handler_context_t *context)
 
 
 /**
- * Slack - NRM
+ * One Ring activation
  */
 bool effect_handler_BIZARRE(effect_handler_context_t *context)
 {
 	context->ident = TRUE;
-	ring_of_power(context->dir);
-	return TRUE;
+	/* Pick a random effect */
+	switch (randint1(10))
+	{
+		case 1:
+		case 2:
+		{
+			/* Message */
+			msg("You are surrounded by a malignant aura.");
+
+			/* Decrease all stats (permanently) */
+			player_stat_dec(player, STAT_STR, TRUE);
+			player_stat_dec(player, STAT_INT, TRUE);
+			player_stat_dec(player, STAT_WIS, TRUE);
+			player_stat_dec(player, STAT_DEX, TRUE);
+			player_stat_dec(player, STAT_CON, TRUE);
+
+			/* Lose some experience (permanently) */
+			player_exp_lose(player, player->exp / 4, TRUE);
+
+			return TRUE;
+		}
+
+		case 3:
+		{
+			struct effect *effect = mem_zalloc(sizeof(*effect));
+			bool ident;
+
+			/* Message */
+			msg("You are surrounded by a powerful aura.");
+
+			/* Dispel monsters */
+			effect->index = EF_PROJECT_LOS;
+			effect->dice = dice_new();
+			dice_parse_string(effect->dice, "1000");
+			effect->params[0] = GF_DISP_ALL;
+			effect_do(effect, &ident, TRUE, 0, 0, 0);
+			free_effect(effect);
+
+			return TRUE;
+		}
+
+		case 4:
+		case 5:
+		case 6:
+		{
+			/* Mana Ball */
+			int flg = PROJECT_STOP | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
+			s16b ty = player->py + 99 * ddy[context->dir];
+			s16b tx = player->px + 99 * ddx[context->dir];
+
+			/* Ask for a target if no direction given */
+			if ((context->dir == 5) && target_okay()) {
+				flg &= ~(PROJECT_STOP);
+
+				target_get(&tx, &ty);
+			}
+
+			/* Aim at the target, explode */
+			if (project(-1, 3, ty, tx, 300, GF_MANA, flg, 0, 0))
+
+			return TRUE;
+		}
+
+		case 7:
+		case 8:
+		case 9:
+		case 10:
+		{
+			/* Mana Bolt */
+			int flg = PROJECT_STOP | PROJECT_KILL | PROJECT_THRU;
+			s16b ty = player->py + ddy[context->dir];
+			s16b tx = player->px + ddx[context->dir];
+
+			/* Use an actual target */
+			if ((context->dir == 5) && target_okay())
+				target_get(&tx, &ty);
+
+			/* Aim at the target, do NOT explode */
+			return (project(-1, 0, ty, tx, 250, GF_MANA, flg, 0, 0));
+
+			return TRUE;
+		}
+	}
+	return FALSE;
 }
 
 /**
