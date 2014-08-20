@@ -1023,7 +1023,7 @@ static void process_player(void)
 					!player->timed[TMD_PARALYZED] &&
 					!player->timed[TMD_TERROR] &&
 					!player->timed[TMD_AFRAID])
-				detect_close_buried_treasure();
+				effect_simple(EF_DETECT_GOLD, "3d3", 1, 0, 0);
 		}
 
 		/* Paralyzed or Knocked Out */

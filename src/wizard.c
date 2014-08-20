@@ -1168,14 +1168,14 @@ static void do_cmd_wiz_cure_all(void)
 	(void)remove_all_curse();
 
 	/* Restore stats */
-	(void)res_stat(STAT_STR);
-	(void)res_stat(STAT_INT);
-	(void)res_stat(STAT_WIS);
-	(void)res_stat(STAT_CON);
-	(void)res_stat(STAT_DEX);
+	effect_simple(EF_RESTORE_STAT, "0", STAT_STR, 0, 0);
+	effect_simple(EF_RESTORE_STAT, "0", STAT_INT, 0, 0);
+	effect_simple(EF_RESTORE_STAT, "0", STAT_WIS, 0, 0);
+	effect_simple(EF_RESTORE_STAT, "0", STAT_DEX, 0, 0);
+	effect_simple(EF_RESTORE_STAT, "0", STAT_CON, 0, 0);
 
 	/* Restore the level */
-	(void)restore_level();
+	effect_simple(EF_RESTORE_EXP, "0", 1, 0, 0);
 
 	/* Heal the player */
 	player->chp = player->mhp;
@@ -1828,7 +1828,13 @@ void do_cmd_debug(void)
 		/* Detect everything */
 		case 'd':
 		{
-			detect_all(TRUE);
+			effect_simple(EF_DETECT_TRAPS, "22d40", 0, 0, 0);
+			effect_simple(EF_DETECT_DOORS, "22d40", 0, 0, 0);
+			effect_simple(EF_DETECT_STAIRS, "22d40", 0, 0, 0);
+			effect_simple(EF_DETECT_GOLD, "22d40", 0, 0, 0);
+			effect_simple(EF_DETECT_OBJECTS, "22d40", 0, 0, 0);
+			effect_simple(EF_DETECT_VISIBLE_MONSTERS, "22d40", 0, 0, 0);
+			effect_simple(EF_DETECT_INVISIBLE_MONSTERS, "22d40", 0, 0, 0);
 			break;
 		}
 		
@@ -1894,21 +1900,14 @@ void do_cmd_debug(void)
         /* Hit all monsters in LOS */
         case 'H':
         {
-			struct effect *effect = mem_zalloc(sizeof(*effect));
-			bool ident;
-			effect->index = EF_PROJECT_LOS;
-			effect->dice = dice_new();
-			dice_parse_string(effect->dice, "10000");
-			effect->params[0] = GF_DISP_ALL;
-			effect_do(effect, &ident, TRUE, 0, 0, 0);
-			free_effect(effect);
+			effect_simple(EF_PROJECT_LOS, "10000", GF_DISP_ALL, 0, 0);
             break;
         }
 
 		/* Identify */
 		case 'i':
 		{
-			(void)ident_spell();
+			effect_simple(EF_IDENTIFY, "0", 0, 0, 0);
 			break;
 		}
 
@@ -1931,7 +1930,7 @@ void do_cmd_debug(void)
 		/* Magic Mapping */
 		case 'm':
 		{
-			map_area();
+			effect_simple(EF_MAP_AREA, "22d40", 0, 0, 0);
 			break;
 		}
 
@@ -2094,7 +2093,8 @@ void do_cmd_debug(void)
 		/* Un-hide all monsters */
 		case 'u':
 		{
-			detect_monsters_entire_level();
+			effect_simple(EF_DETECT_VISIBLE_MONSTERS, "500d500", 0, 0, 0);
+			effect_simple(EF_DETECT_INVISIBLE_MONSTERS, "500d500", 0, 0, 0);
 			break;
 		}
 

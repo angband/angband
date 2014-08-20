@@ -106,7 +106,7 @@ static struct breath_info {
  */
 static const char *desc_stat_pos[] =
 {
-	#define STAT(a, b, c, d, e, f, g, h) #f,
+	#define STAT(a, b, c, d, e, f, g, h) f,
 	#include "list-stats.h"
 	#undef STAT
 };
@@ -117,7 +117,7 @@ static const char *desc_stat_pos[] =
  */
 static const char *desc_stat_neg[] =
 {
-	#define STAT(a, b, c, d, e, f, g, h) #g,
+	#define STAT(a, b, c, d, e, f, g, h) g,
 	#include "list-stats.h"
 	#undef STAT
 };
@@ -456,7 +456,8 @@ bool effect_handler_RUNE(effect_handler_context_t *context)
 }
 
 /**
- * Restore a stat.  The stat index is context->p1.
+ * Restore a stat.  The stat index is context->p1, message printed if
+ * context->p2 is non-zero.
  */
 bool effect_handler_RESTORE_STAT(effect_handler_context_t *context)
 {
@@ -477,7 +478,8 @@ bool effect_handler_RESTORE_STAT(effect_handler_context_t *context)
 	update_stuff(player->upkeep);
 
 	/* Message */
-	msg("You feel less %s.", desc_stat_neg[stat]);
+	if (context->p2)
+		msg("You feel less %s.", desc_stat_neg[stat]);
 
 	/* Success */
 	context->ident = TRUE;
@@ -571,14 +573,15 @@ bool effect_handler_GAIN_STAT(effect_handler_context_t *context)
 }
 
 /**
- * Restores any drained experience
+ * Restores any drained experience; message suppressed if context->p1 is set
  */
 bool effect_handler_RESTORE_EXP(effect_handler_context_t *context)
 {
 	/* Restore experience */
 	if (player->exp < player->max_exp) {
 		/* Message */
-		msg("You feel your life energies returning.");
+		if (context->p1 == 0)
+			msg("You feel your life energies returning.");
 		player_exp_gain(player, player->max_exp - player->exp);
 
         /* Recalculate max. hitpoints */
@@ -1027,8 +1030,8 @@ bool effect_handler_DETECT_STAIRS(effect_handler_context_t *context)
 
 /**
  * Detect buried gold around the player.  The height to detect above and below
- * the player is context->value.dice, the width either side of the player context->value.sides, 
- * and setting context->boost to -1 suppresses messages.
+ * the player is context->value.dice, the width either side of the player
+ * context->value.sides, and setting context->p1 to 1 suppresses messages.
  */
 bool effect_handler_DETECT_GOLD(effect_handler_context_t *context)
 {
@@ -1072,8 +1075,8 @@ bool effect_handler_DETECT_GOLD(effect_handler_context_t *context)
 		}
 	}
 
-	/* A bit of a hack to allow use in silent gold detection - NRM */
-	if (context->boost != -1) {
+	/* Message unless we're silently detecting */
+	if (context->p1 != 1) {
 		if (gold_buried)
 			msg("You sense the presence of buried treasure!");
 		else if (context->aware)
@@ -1576,7 +1579,7 @@ bool effect_handler_IDENTIFY(effect_handler_context_t *context)
 	s = "You have nothing to identify.";
 	if (!get_item(&item, q, s, 0, item_tester_unknown,
 				  (USE_EQUIP | USE_INVEN | USE_QUIVER | USE_FLOOR)))
-		return (FALSE);
+		return TRUE;
 
 	o_ptr = object_from_item_idx(item);
 
@@ -2891,18 +2894,12 @@ bool effect_handler_BIZARRE(effect_handler_context_t *context)
 		case 3:
 		{
 			struct effect *effect = mem_zalloc(sizeof(*effect));
-			bool ident;
 
 			/* Message */
 			msg("You are surrounded by a powerful aura.");
 
 			/* Dispel monsters */
-			effect->index = EF_PROJECT_LOS;
-			effect->dice = dice_new();
-			dice_parse_string(effect->dice, "1000");
-			effect->params[0] = GF_DISP_ALL;
-			effect_do(effect, &ident, TRUE, 0, 0, 0);
-			free_effect(effect);
+			effect_simple(EF_PROJECT_LOS, "1000", GF_DISP_ALL, 0, 0);
 
 			return TRUE;
 		}
@@ -3083,68 +3080,15 @@ bool effect_handler_WONDER(effect_handler_context_t *context)
 			ident
 		};
 
+		mem_free(ident);
 		return (handler(&new_context));
 	}
 
-	/* RARE - this is the only code that makes me regret how effects are done */
-	p1 = GF_DISP_ALL;
-	value.base = 150;
-	{
-		effect_handler_context_t new_context = {
-			context->effect,
-			context->aware,
-			context->dir,
-			beam,
-			context->boost,
-			value,
-			p1, p2, p3,
-			ident
-		};
-		(void) effect_handler_PROJECT_LOS(&new_context);
-	}
-	p1 = GF_OLD_SLOW;
-	value.base = 0;
-	{
-		effect_handler_context_t new_context = {
-			context->effect,
-			context->aware,
-			context->dir,
-			beam,
-			context->boost,
-			value,
-			p1, p2, p3,
-			ident
-		};
-		(void) effect_handler_PROJECT_LOS(&new_context);
-	}
-	p1 = GF_OLD_SLEEP;
-	{
-		effect_handler_context_t new_context = {
-			context->effect,
-			context->aware,
-			context->dir,
-			beam,
-			context->boost,
-			value,
-			p1, p2, p3,
-			ident
-		};
-		(void) effect_handler_PROJECT_LOS(&new_context);
-	}
-	value.base = 300;
-	{
-		effect_handler_context_t new_context = {
-			context->effect,
-			context->aware,
-			context->dir,
-			beam,
-			context->boost,
-			value,
-			p1, p2, p3,
-			ident
-		};
-		(void) effect_handler_HEAL_HP(&new_context);
-	}
+	/* RARE */
+	effect_simple(EF_PROJECT_LOS, "150", GF_DISP_ALL, 0, 0);
+	effect_simple(EF_PROJECT_LOS, "0", GF_OLD_SLOW, 0, 0);
+	effect_simple(EF_PROJECT_LOS, "0", GF_OLD_SLEEP, 0, 0);
+	effect_simple(EF_HEAL_HP, "300", 0, 0, 0);
 	mem_free(ident);
 
 	return TRUE;
@@ -3544,4 +3488,25 @@ bool effect_do(struct effect *effect, bool *ident, bool aware, int dir, int beam
 	} while (effect);
 
 	return handled;
+}
+
+/**
+ * Perform a single effect with a simple dice string and parameters
+ */
+void effect_simple(int index, const char* dice_string, int p1, int p2, int p3)
+{
+	struct effect *effect = mem_zalloc(sizeof(*effect));
+	bool ident;
+
+	/* Set all the values */
+	effect->index = index;
+	effect->dice = dice_new();
+	dice_parse_string(effect->dice, dice_string);
+	effect->params[0] = p1;
+	effect->params[1] = p2;
+	effect->params[2] = p3;
+
+	/* Do the effect */
+	effect_do(effect, &ident, TRUE, 0, 0, 0);
+	free_effect(effect);
 }

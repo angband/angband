@@ -19,28 +19,15 @@
 /** Functions **/
 
 /* spells.c */
-bool res_stat(int stat);
 extern bool do_dec_stat(int stat, bool perma);
-extern bool do_res_stat(int stat);
 extern void identify_pack(void);
 extern bool remove_curse(void);
 extern bool remove_all_curse(void);
-extern bool restore_level(void);
 extern bool set_recall(void);
-extern bool detect_traps(bool aware);
-extern bool detect_doorstairs(bool aware);
-extern bool detect_treasure(bool aware, bool full);
-extern bool detect_close_buried_treasure(void);
-extern bool detect_monsters_normal(bool aware);
-extern bool detect_monsters_invis(bool aware);
-extern bool detect_monsters_evil(bool aware);
-extern bool detect_monsters_entire_level(void);
-extern bool detect_all(bool aware);
 bool apply_disenchant(int mode);
 extern bool enchant(object_type *o_ptr, int n, int eflag);
 extern bool enchant_spell(int num_hit, int num_dam, int num_ac);
 extern void do_ident_item(object_type *o_ptr);
-extern bool ident_spell(void);
 void teleport_away(struct monster *m, int dis);
 void teleport_player(int dis);
 void teleport_player_to(int ny, int nx);

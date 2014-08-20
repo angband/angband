@@ -258,7 +258,6 @@ extern void forget_view(struct chunk *c);
 extern bool player_has_los_bold(int y, int x);
 extern bool player_can_see_bold(int y, int x);
 extern void update_view(struct chunk *c, struct player *p);
-extern void map_area(void);
 extern void wiz_light(struct chunk *c, bool full);
 extern void wiz_dark(void);
 extern int project_path(u16b *gp, int range, int y1, int x1, int y2, int x2, int flg);
