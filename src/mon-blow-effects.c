@@ -162,7 +162,7 @@ static void melee_effect_experience(melee_effect_handler_context_t *context, int
 /**
  * Melee effect handler: Hit the player, but don't do any damage.
  */
-static void melee_effect_handler_none(melee_effect_handler_context_t *context)
+static void melee_effect_handler_NONE(melee_effect_handler_context_t *context)
 {
 	/* Hack -- Assume obvious */
 	context->obvious = TRUE;
@@ -174,7 +174,7 @@ static void melee_effect_handler_none(melee_effect_handler_context_t *context)
 /**
  * Melee effect handler: Hurt the player with no side effects.
  */
-static void melee_effect_handler_hurt(melee_effect_handler_context_t *context)
+static void melee_effect_handler_HURT(melee_effect_handler_context_t *context)
 {
 	/* Obvious */
 	context->obvious = TRUE;
@@ -193,7 +193,7 @@ static void melee_effect_handler_hurt(melee_effect_handler_context_t *context)
  * and a status attack. Note the FALSE value for pure_element for
  * melee_effect_elemental().
  */
-static void melee_effect_handler_poison(melee_effect_handler_context_t *context)
+static void melee_effect_handler_POISON(melee_effect_handler_context_t *context)
 {
 	melee_effect_elemental(context, GF_POIS, FALSE);
 
@@ -209,7 +209,7 @@ static void melee_effect_handler_poison(melee_effect_handler_context_t *context)
 /**
  * Melee effect handler: Disenchant the player.
  */
-static void melee_effect_handler_disenchant(melee_effect_handler_context_t *context)
+static void melee_effect_handler_DISENCHANT(melee_effect_handler_context_t *context)
 {
 	/* Take damage */
 	take_hit(context->p, context->damage, context->ddesc);
@@ -228,7 +228,7 @@ static void melee_effect_handler_disenchant(melee_effect_handler_context_t *cont
 /**
  * Melee effect handler: Drain charges from the player's inventory.
  */
-static void melee_effect_handler_drain_charges(melee_effect_handler_context_t *context)
+static void melee_effect_handler_DRAIN_CHARGES(melee_effect_handler_context_t *context)
 {
 	object_type *o_ptr;
 	struct monster *monster = context->m_ptr;
@@ -301,7 +301,7 @@ static void melee_effect_handler_drain_charges(melee_effect_handler_context_t *c
 /**
  * Melee effect handler: Take the player's gold.
  */
-static void melee_effect_handler_eat_gold(melee_effect_handler_context_t *context)
+static void melee_effect_handler_EAT_GOLD(melee_effect_handler_context_t *context)
 {
 	struct player *player = context->p;
 
@@ -374,7 +374,7 @@ static void melee_effect_handler_eat_gold(melee_effect_handler_context_t *contex
 /**
  * Melee effect handler: Take something from the player's inventory.
  */
-static void melee_effect_handler_eat_item(melee_effect_handler_context_t *context)
+static void melee_effect_handler_EAT_ITEM(melee_effect_handler_context_t *context)
 {
 	int item, tries;
 
@@ -463,7 +463,7 @@ static void melee_effect_handler_eat_item(melee_effect_handler_context_t *contex
 /**
  * Melee effect handler: Eat the player's food.
  */
-static void melee_effect_handler_eat_food(melee_effect_handler_context_t *context)
+static void melee_effect_handler_EAT_FOOD(melee_effect_handler_context_t *context)
 {
 	/* Steal some food */
 	int item, tries;
@@ -512,7 +512,7 @@ static void melee_effect_handler_eat_food(melee_effect_handler_context_t *contex
 /**
  * Melee effect handler: Absorb the player's light.
  */
-static void melee_effect_handler_eat_light(melee_effect_handler_context_t *context)
+static void melee_effect_handler_EAT_LIGHT(melee_effect_handler_context_t *context)
 {
 	object_type *o_ptr;
 	int i;
@@ -545,7 +545,7 @@ static void melee_effect_handler_eat_light(melee_effect_handler_context_t *conte
 /**
  * Melee effect handler: Attack the player with acid.
  */
-static void melee_effect_handler_acid(melee_effect_handler_context_t *context)
+static void melee_effect_handler_ACID(melee_effect_handler_context_t *context)
 {
 	melee_effect_elemental(context, GF_ACID, TRUE);
 }
@@ -553,7 +553,7 @@ static void melee_effect_handler_acid(melee_effect_handler_context_t *context)
 /**
  * Melee effect handler: Attack the player with electricity.
  */
-static void melee_effect_handler_elec(melee_effect_handler_context_t *context)
+static void melee_effect_handler_ELEC(melee_effect_handler_context_t *context)
 {
 	melee_effect_elemental(context, GF_ELEC, TRUE);
 }
@@ -561,7 +561,7 @@ static void melee_effect_handler_elec(melee_effect_handler_context_t *context)
 /**
  * Melee effect handler: Attack the player with fire.
  */
-static void melee_effect_handler_fire(melee_effect_handler_context_t *context)
+static void melee_effect_handler_FIRE(melee_effect_handler_context_t *context)
 {
 	melee_effect_elemental(context, GF_FIRE, TRUE);
 }
@@ -569,7 +569,7 @@ static void melee_effect_handler_fire(melee_effect_handler_context_t *context)
 /**
  * Melee effect handler: Attack the player with cold.
  */
-static void melee_effect_handler_cold(melee_effect_handler_context_t *context)
+static void melee_effect_handler_COLD(melee_effect_handler_context_t *context)
 {
 	melee_effect_elemental(context, GF_COLD, TRUE);
 }
@@ -577,7 +577,7 @@ static void melee_effect_handler_cold(melee_effect_handler_context_t *context)
 /**
  * Melee effect handler: Blind the player.
  */
-static void melee_effect_handler_blind(melee_effect_handler_context_t *context)
+static void melee_effect_handler_BLIND(melee_effect_handler_context_t *context)
 {
 	melee_effect_timed(context, TMD_BLIND, 10 + randint1(context->rlev), OF_PROT_BLIND, FALSE, NULL);
 }
@@ -585,7 +585,7 @@ static void melee_effect_handler_blind(melee_effect_handler_context_t *context)
 /**
  * Melee effect handler: Confuse the player.
  */
-static void melee_effect_handler_confuse(melee_effect_handler_context_t *context)
+static void melee_effect_handler_CONFUSE(melee_effect_handler_context_t *context)
 {
 	melee_effect_timed(context, TMD_CONFUSED, 3 + randint1(context->rlev), OF_PROT_CONF, FALSE, NULL);
 }
@@ -593,7 +593,7 @@ static void melee_effect_handler_confuse(melee_effect_handler_context_t *context
 /**
  * Melee effect handler: Terrify the player.
  */
-static void melee_effect_handler_terrify(melee_effect_handler_context_t *context)
+static void melee_effect_handler_TERRIFY(melee_effect_handler_context_t *context)
 {
 	melee_effect_timed(context, TMD_AFRAID, 3 + randint1(context->rlev), OF_PROT_FEAR, TRUE, "You stand your ground!");
 }
@@ -601,7 +601,7 @@ static void melee_effect_handler_terrify(melee_effect_handler_context_t *context
 /**
  * Melee effect handler: Paralyze the player.
  */
-static void melee_effect_handler_paralyze(melee_effect_handler_context_t *context)
+static void melee_effect_handler_PARALYZE(melee_effect_handler_context_t *context)
 {
 	/* Hack -- Prevent perma-paralysis via damage */
 	if (context->p->timed[TMD_PARALYZED] && (context->damage < 1)) context->damage = 1;
@@ -612,7 +612,7 @@ static void melee_effect_handler_paralyze(melee_effect_handler_context_t *contex
 /**
  * Melee effect handler: Drain the player's strength.
  */
-static void melee_effect_handler_lose_str(melee_effect_handler_context_t *context)
+static void melee_effect_handler_LOSE_STR(melee_effect_handler_context_t *context)
 {
 	melee_effect_stat(context, STAT_STR);
 }
@@ -620,7 +620,7 @@ static void melee_effect_handler_lose_str(melee_effect_handler_context_t *contex
 /**
  * Melee effect handler: Drain the player's intelligence.
  */
-static void melee_effect_handler_lose_int(melee_effect_handler_context_t *context)
+static void melee_effect_handler_LOSE_INT(melee_effect_handler_context_t *context)
 {
 	melee_effect_stat(context, STAT_INT);
 }
@@ -628,7 +628,7 @@ static void melee_effect_handler_lose_int(melee_effect_handler_context_t *contex
 /**
  * Melee effect handler: Drain the player's wisdom.
  */
-static void melee_effect_handler_lose_wis(melee_effect_handler_context_t *context)
+static void melee_effect_handler_LOSE_WIS(melee_effect_handler_context_t *context)
 {
 	melee_effect_stat(context, STAT_WIS);
 }
@@ -636,7 +636,7 @@ static void melee_effect_handler_lose_wis(melee_effect_handler_context_t *contex
 /**
  * Melee effect handler: Drain the player's dexterity.
  */
-static void melee_effect_handler_lose_dex(melee_effect_handler_context_t *context)
+static void melee_effect_handler_LOSE_DEX(melee_effect_handler_context_t *context)
 {
 	melee_effect_stat(context, STAT_DEX);
 }
@@ -644,7 +644,7 @@ static void melee_effect_handler_lose_dex(melee_effect_handler_context_t *contex
 /**
  * Melee effect handler: Drain the player's constitution.
  */
-static void melee_effect_handler_lose_con(melee_effect_handler_context_t *context)
+static void melee_effect_handler_LOSE_CON(melee_effect_handler_context_t *context)
 {
 	melee_effect_stat(context, STAT_CON);
 }
@@ -652,7 +652,7 @@ static void melee_effect_handler_lose_con(melee_effect_handler_context_t *contex
 /**
  * Melee effect handler: Drain all of the player's stats.
  */
-static void melee_effect_handler_lose_all(melee_effect_handler_context_t *context)
+static void melee_effect_handler_LOSE_ALL(melee_effect_handler_context_t *context)
 {
 	/* Take damage */
 	take_hit(context->p, context->damage, context->ddesc);
@@ -668,7 +668,7 @@ static void melee_effect_handler_lose_all(melee_effect_handler_context_t *contex
 /**
  * Melee effect handler: Cause an earthquake around the player.
  */
-static void melee_effect_handler_shatter(melee_effect_handler_context_t *context)
+static void melee_effect_handler_SHATTER(melee_effect_handler_context_t *context)
 {
 	/* Obvious */
 	context->obvious = TRUE;
@@ -696,7 +696,7 @@ static void melee_effect_handler_shatter(melee_effect_handler_context_t *context
 /**
  * Melee effect handler: Drain the player's experience.
  */
-static void melee_effect_handler_exp_10(melee_effect_handler_context_t *context)
+static void melee_effect_handler_EXP_10(melee_effect_handler_context_t *context)
 {
 	melee_effect_experience(context, 95, damroll(10, 6));
 }
@@ -704,7 +704,7 @@ static void melee_effect_handler_exp_10(melee_effect_handler_context_t *context)
 /**
  * Melee effect handler: Drain the player's experience.
  */
-static void melee_effect_handler_exp_20(melee_effect_handler_context_t *context)
+static void melee_effect_handler_EXP_20(melee_effect_handler_context_t *context)
 {
 	melee_effect_experience(context, 90, damroll(20, 6));
 }
@@ -712,7 +712,7 @@ static void melee_effect_handler_exp_20(melee_effect_handler_context_t *context)
 /**
  * Melee effect handler: Drain the player's experience.
  */
-static void melee_effect_handler_exp_40(melee_effect_handler_context_t *context)
+static void melee_effect_handler_EXP_40(melee_effect_handler_context_t *context)
 {
 	melee_effect_experience(context, 75, damroll(40, 6));
 }
@@ -720,7 +720,7 @@ static void melee_effect_handler_exp_40(melee_effect_handler_context_t *context)
 /**
  * Melee effect handler: Drain the player's experience.
  */
-static void melee_effect_handler_exp_80(melee_effect_handler_context_t *context)
+static void melee_effect_handler_EXP_80(melee_effect_handler_context_t *context)
 {
 	melee_effect_experience(context, 50, damroll(80, 6));
 }
@@ -731,7 +731,7 @@ static void melee_effect_handler_exp_80(melee_effect_handler_context_t *context)
  * Note that we don't use melee_effect_timed(), due to the different monster
  * learning function.
  */
-static void melee_effect_handler_hallucination(melee_effect_handler_context_t *context)
+static void melee_effect_handler_HALLU(melee_effect_handler_context_t *context)
 {
 	/* Take damage */
 	take_hit(context->p, context->damage, context->ddesc);
@@ -745,64 +745,33 @@ static void melee_effect_handler_hallucination(melee_effect_handler_context_t *c
 }
 
 /**
+ * Dummy melee effect handler.
+ */
+static void melee_effect_handler_MAX(melee_effect_handler_context_t *context)
+{
+	/* Hack -- Do nothing */
+}
+
+/**
  * Return a handler for the given effect.
  *
- * Handlers are associated in a table within the function.
+ * Handlers are named after RBE_ constants.
  *
  * \param effect is the RBE_ constant for the effect.
  * \returns a function pointer to handle the effect, or NULL if not found.
  */
 melee_effect_handler_f melee_handler_for_blow_effect(monster_blow_effect_t effect)
 {
-	/* Effect handler table for valid effects. Terminator is {RBE_MAX, NULL}. */
-	static const struct blow_handler_s {
-		int effect;
-		melee_effect_handler_f function;
-	} blow_handlers[] = {
-		{ RBE_NONE, melee_effect_handler_none },
-		{ RBE_HURT, melee_effect_handler_hurt },
-		{ RBE_POISON, melee_effect_handler_poison },
-		{ RBE_UN_BONUS, melee_effect_handler_disenchant },
-		{ RBE_UN_POWER, melee_effect_handler_drain_charges },
-		{ RBE_EAT_GOLD, melee_effect_handler_eat_gold },
-		{ RBE_EAT_ITEM, melee_effect_handler_eat_item },
-		{ RBE_EAT_FOOD, melee_effect_handler_eat_food },
-		{ RBE_EAT_LIGHT, melee_effect_handler_eat_light },
-		{ RBE_ACID, melee_effect_handler_acid },
-		{ RBE_ELEC, melee_effect_handler_elec },
-		{ RBE_FIRE, melee_effect_handler_fire },
-		{ RBE_COLD, melee_effect_handler_cold },
-		{ RBE_BLIND, melee_effect_handler_blind },
-		{ RBE_CONFUSE, melee_effect_handler_confuse },
-		{ RBE_TERRIFY, melee_effect_handler_terrify },
-		{ RBE_PARALYZE, melee_effect_handler_paralyze },
-		{ RBE_LOSE_STR, melee_effect_handler_lose_str },
-		{ RBE_LOSE_INT, melee_effect_handler_lose_int },
-		{ RBE_LOSE_WIS, melee_effect_handler_lose_wis },
-		{ RBE_LOSE_DEX, melee_effect_handler_lose_dex },
-		{ RBE_LOSE_CON, melee_effect_handler_lose_con },
-		{ RBE_LOSE_ALL, melee_effect_handler_lose_all },
-		{ RBE_SHATTER, melee_effect_handler_shatter },
-		{ RBE_EXP_10, melee_effect_handler_exp_10 },
-		{ RBE_EXP_20, melee_effect_handler_exp_20 },
-		{ RBE_EXP_40, melee_effect_handler_exp_40 },
-		{ RBE_EXP_80, melee_effect_handler_exp_80 },
-		{ RBE_HALLU, melee_effect_handler_hallucination },
-		{ RBE_MAX, NULL },
+	static const melee_effect_handler_f blow_handlers[] = {
+		#define RBE(x, p, e, d) melee_effect_handler_##x,
+		#include "list-blow-effects.h"
+		#undef RBE
 	};
-	const struct blow_handler_s *current = blow_handlers;
 
 	if (effect >= RBE_MAX)
 		return NULL;
 
-	while (current->effect != RBE_MAX && current->function != NULL) {
-		if (current->effect == effect)
-			return current->function;
-
-		current++;
-	}
-
-	return NULL;
+	return blow_handlers[effect];
 }
 
 /**

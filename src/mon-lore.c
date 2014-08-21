@@ -84,7 +84,7 @@ static void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MA
 
 		/* Drain charges - requires a charged item */
 		if ((!known || o_ptr->pval > 0) && tval_can_have_charges(o_ptr))
-			melee_colors[RBE_UN_POWER] = TERM_L_RED;
+			melee_colors[RBE_DRAIN_CHARGES] = TERM_L_RED;
 
 		/* Steal item - requires non-artifacts */
 		if (!item_is_equipped(player, i) && (!known || !o_ptr->artifact) &&
@@ -105,7 +105,7 @@ static void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MA
 				o_ptr->to_h > 0 || o_ptr->to_d > 0) &&
 				(st.el_info[ELEM_DISEN].res_level <= 0))
 		{
-			melee_colors[RBE_UN_BONUS] = TERM_L_RED;
+			melee_colors[RBE_DISENCHANT] = TERM_L_RED;
 			spell_colors[RSF_BR_DISE] = TERM_L_RED;
 		}
 	}
