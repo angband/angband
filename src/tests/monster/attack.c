@@ -13,7 +13,6 @@ int setup_tests(void **state) {
 	r_info = r;
 	*state = m;
 
-	player = NULL;
 	rand_fix(100);
 	return 0;
 }
@@ -96,6 +95,8 @@ static int test_effects(void *state) {
 	struct monster *m = state;
 	struct player *p = &test_player;
 	int delta;
+
+	p->upkeep = &test_player_upkeep;
 
 	require(!p->timed[TMD_POISONED]);
 	delta = take1(p, m, RBM_HIT, RBE_POISON);

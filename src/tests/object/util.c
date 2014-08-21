@@ -9,6 +9,7 @@
 
 int setup_tests(void **state) {
     player->gear = &test_gear[0];
+    player->body = test_player_body;
     return 0;
 }
 
@@ -17,7 +18,10 @@ NOTEARDOWN
 /* Regression test for #1661 */
 int test_obj_can_refill(void *state) {
     struct object obj_torch, obj_lantern, obj_candidate;
-    object_type *light_ptr = &test_gear[1];
+
+    /* Mimic equipping a light */
+    player->body.slots[5].index = 1; 
+    object_type *light_ptr = &test_gear[1]; 
 
     /* Torches cannot be refilled */
     object_prep(&obj_torch, &test_torch, 1, AVERAGE);
