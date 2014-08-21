@@ -181,7 +181,7 @@ static void object_list_collect(object_list_t *list)
 		return;
 
 	/* Scan each object in the dungeon. */
-	for (item = 0; item < z_info->o_max; item++) {
+	for (item = 1; item < z_info->o_max; item++) {
 		object_type *object = cave_object(cave, item);
 		object_list_entry_t *entry = NULL;
 		int entry_index;

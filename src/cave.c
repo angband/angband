@@ -3136,7 +3136,7 @@ int cave_monster_count(struct chunk *c) {
  * Get an object on the current level by its index.
  */
 struct object *cave_object(struct chunk *c, int idx) {
-	assert(idx >= 0);
+	assert(idx > 0);
 	assert(idx <= z_info->o_max);
 	return &c->objects[idx];
 }
