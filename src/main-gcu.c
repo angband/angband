@@ -669,7 +669,7 @@ static errr Term_xtra_gcu_react(void) {
 	if (ascii_walls) {
 		int i;
 		ascii_walls = FALSE;
-		for (i = 0; i < 3; i++) {
+		for (i = 0; i < 4; i++) {
 			// magma as %:D
 			f_info[50].x_char[i] = f_info[52].x_char[i] = 0x23;
 			f_info[50].x_attr[i] = f_info[52].x_attr[i] = 0x01;
