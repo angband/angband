@@ -46,6 +46,6 @@ const char *effect_desc(struct effect *effect);
 effect_index effect_lookup(const char *name);
 int effect_param(const char *type);
 bool effect_do(struct effect *effect, bool *ident, bool aware, int dir, int beam, int boost);
-void effect_simple(int index, const char* dice_string, int p1, int p2, int p3);
+void effect_simple(int index, const char* dice_string, int p1, int p2, int p3, bool *ident);
 
 #endif /* INCLUDED_EFFECTS_H */

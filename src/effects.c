@@ -2963,7 +2963,7 @@ bool effect_handler_BIZARRE(effect_handler_context_t *context)
 			msg("You are surrounded by a powerful aura.");
 
 			/* Dispel monsters */
-			effect_simple(EF_PROJECT_LOS, "1000", GF_DISP_ALL, 0, 0);
+			effect_simple(EF_PROJECT_LOS, "1000", GF_DISP_ALL, 0, 0, NULL);
 
 			return TRUE;
 		}
@@ -3149,10 +3149,10 @@ bool effect_handler_WONDER(effect_handler_context_t *context)
 	}
 
 	/* RARE */
-	effect_simple(EF_PROJECT_LOS, "150", GF_DISP_ALL, 0, 0);
-	effect_simple(EF_PROJECT_LOS, "0", GF_OLD_SLOW, 0, 0);
-	effect_simple(EF_PROJECT_LOS, "0", GF_OLD_SLEEP, 0, 0);
-	effect_simple(EF_HEAL_HP, "300", 0, 0, 0);
+	effect_simple(EF_PROJECT_LOS, "150", GF_DISP_ALL, 0, 0, ident);
+	effect_simple(EF_PROJECT_LOS, "0", GF_OLD_SLOW, 0, 0, ident);
+	effect_simple(EF_PROJECT_LOS, "0", GF_OLD_SLEEP, 0, 0, ident);
+	effect_simple(EF_HEAL_HP, "300", 0, 0, 0, ident);
 	mem_free(ident);
 
 	return TRUE;
@@ -3556,12 +3556,14 @@ bool effect_do(struct effect *effect, bool *ident, bool aware, int dir, int beam
 
 /**
  * Perform a single effect with a simple dice string and parameters
+ * Calling with ident a valid pointer will (depending on effect) give success
+ * information; ident = NULL will ignore this 
  */
-void effect_simple(int index, const char* dice_string, int p1, int p2, int p3)
+void effect_simple(int index, const char* dice_string, int p1, int p2, int p3, bool *ident)
 {
 	struct effect *effect = mem_zalloc(sizeof(*effect));
 	int dir = DIR_TARGET;
-	bool ident;
+	bool dummy_ident;
 
 	/* Set all the values */
 	effect->index = index;
@@ -3571,9 +3573,15 @@ void effect_simple(int index, const char* dice_string, int p1, int p2, int p3)
 	effect->params[1] = p2;
 	effect->params[2] = p3;
 
-	/* Do the effect */
+	/* Direction if needed */
 	if (effect_aim(effect))
 		get_aim_dir(&dir);
-	effect_do(effect, &ident, TRUE, dir, 0, 0);
+
+	/* Do the effect */
+	if (ident)
+		effect_do(effect, ident, TRUE, dir, 0, 0);
+	else
+		effect_do(effect, &dummy_ident, TRUE, dir, 0, 0);
+
 	free_effect(effect);
 }
