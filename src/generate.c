@@ -758,6 +758,9 @@ void cave_generate(struct chunk *c, struct player *p) {
 
 	c->feeling = calc_obj_feeling(c) + calc_mon_feeling(c);
 
+	/* Validate the dungeon (we could use more checks here) */
+	chunk_validate_objects(c);
+
     /* The dungeon is ready */
     character_dungeon = TRUE;
 

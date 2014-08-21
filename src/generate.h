@@ -258,6 +258,8 @@ bool chunk_find(struct chunk *c);
 bool chunk_copy(struct chunk *dest, struct chunk *source, int y0, int x0,
 				int rotate, bool reflect);
 
+void chunk_validate_objects(struct chunk *c);
+
 
 void fill_rectangle(struct chunk *c, int y1, int x1, int y2, int x2, int feat,
 					int flag);
