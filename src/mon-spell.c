@@ -241,7 +241,7 @@ static int nonhp_dam(const struct monster_spell *spell, const monster_race *race
  * \param element is the attack element
  * \param hp is the monster's hp
  */
-static int breath_dam(int element, int hp)
+int breath_dam(int element, int hp)
 {
 	int dam;
 

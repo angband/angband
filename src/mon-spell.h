@@ -95,6 +95,7 @@ enum mon_spell_type {
 
 
 /** Functions **/
+int breath_dam(int element, int hp);
 void do_mon_spell(int index, struct monster *m_ptr, bool seen);
 bool test_spells(bitflag *f, int types);
 void set_spells(bitflag *f, int types);

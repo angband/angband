@@ -2450,6 +2450,9 @@ bool effect_handler_BREATH(effect_handler_context_t *context)
 	if (cave->mon_current > 0) {
 		struct monster *mon = cave_monster(cave, cave->mon_current);
 		source = cave->mon_current;
+
+		/* Breath parameters for monsters are monster-dependent */
+		dam = breath_dam(type, mon->hp); 
 		if (rf_has(mon->race->flags, RF_POWERFUL)) rad++;
 	} else {
 		msgt(elements[type].msgt, "You breathe %s.", elements[type].desc);
@@ -3429,7 +3432,7 @@ bool effect_do(struct effect *effect, bool *ident, bool aware, int dir, int beam
 {
 	bool handled = FALSE;
 	effect_handler_f handler;
-	random_value value;
+	random_value value = { 0, 0, 0, 0 };
 
 	do {
 		int random_choices = 0, leftover = 0;
