@@ -1,12 +1,25 @@
 /* artifact/randname */
 
 #include "unit-test.h"
+#include "unit-test-data.h"
 #include "obj-properties.h"
 #include "obj-randart.h"
+#include "obj-tval.h"
 #include "object.h"
 
-NOSETUP
-NOTEARDOWN
+int setup_tests(void **state) {
+	k_info = mem_zalloc(2 * sizeof(object_kind));
+	k_info[1] = test_torch;
+	z_info = mem_zalloc(sizeof(maxima));
+	z_info->k_max = 2;
+	return 0;
+}
+
+int teardown_tests(void **state) {
+	mem_free(k_info);
+	mem_free(z_info);
+	return 0;
+}
 
 #define NAMES_TRIES	100
 
@@ -32,6 +45,10 @@ int test_names(void *state) {
 	int i;
 
 	a.aidx = 1;
+	a.tval = TV_LIGHT;
+	a.sval = 1;
+	a.name = "of Prometheus";
+
 	for (i = 0; i < NAMES_TRIES; i++) {
 		n = artifact_gen_name(&a, p);
 		if (strchr(n, '\''))

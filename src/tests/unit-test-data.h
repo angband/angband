@@ -18,6 +18,7 @@
 #include "monster.h"
 #include "obj-tval.h"
 #include "player.h"
+#include "player-calcs.h"
 
 /* 30 = TMD_MAX */
 static s16b TEST_DATA test_timed[30] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 
@@ -306,7 +307,7 @@ static struct object_kind TEST_DATA test_lantern = {
 
 	.cost = 1,
 
-	.flags = { 0, 0, 8, 0 },
+	.flags = { 0, 0, 8, 0 }, /* OF_TAKES_FUEL */
 	.kind_flags = { 32, 0 },
 
 	.modifiers = { 
@@ -791,6 +792,26 @@ static struct maxima TEST_DATA test_z_info = {
 };
 
 static struct object TEST_DATA test_gear[MAX_GEAR];
+
+static struct player_body TEST_DATA test_player_body = {
+	.next    = NULL,
+	.name    = "Humanoid",
+	.count   = 12,
+	.slots   = {
+		{ .type = 1, .name = "weapon", .index = 0 },
+		{ .type = 2, .name = "shooting", .index = 0 },
+		{ .type = 3, .name = "right hand", .index = 0 },
+		{ .type = 3, .name = "left hand", .index = 0 },
+		{ .type = 4, .name = "neck", .index = 0 },
+		{ .type = 5, .name = "light", .index = 0 },
+		{ .type = 6, .name = "body", .index = 0 },
+		{ .type = 7, .name = "back", .index = 0 },
+		{ .type = 8, .name = "arm", .index = 0 },
+		{ .type = 9, .name = "head", .index = 0 },
+		{ .type = 10, .name = "hands", .index = 0 },
+		{ .type = 11, .name = "feet", .index = 0 },
+	},
+};
 
 static struct player_upkeep TEST_DATA test_player_upkeep = {
 	.playing = 1,
