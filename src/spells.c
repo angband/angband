@@ -116,30 +116,6 @@ bool do_dec_stat(int stat, bool perma)
 
 
 /*
- * Identify everything being carried.
- * Done by a potion of "self knowledge".
- */
-void identify_pack(void)
-{
-	int i;
-
-	/* Simply identify and know every item */
-	for (i = 0; i < player->max_gear; i++)
-	{
-		object_type *o_ptr = &player->gear[i];
-
-		/* Skip non-objects */
-		if (!o_ptr->kind) continue;
-
-		/* Aware and Known */
-		if (object_is_known(o_ptr)) continue;
-
-		/* Identify it */
-		do_ident_item(o_ptr);
-	}
-}
-
-/*
  * Hack -- Removes curse from an object.
  */
 static void uncurse_object(object_type *o_ptr)
@@ -208,66 +184,6 @@ bool remove_all_curse(void)
 	return (remove_curse_aux(TRUE));
 }
 
-
-
-/*
- * Set word of recall as appropriate
- */
-bool set_recall(void)
-{
-	/* No recall */
-	if (OPT(birth_no_recall) && !player->total_winner)
-	{
-		msg("Nothing happens.");
-		return FALSE;
-	}
-    
-	/* No recall from quest levels with force_descend */
-	if (OPT(birth_force_descend) && (is_quest(player->depth))) {
-		msg("Nothing happens.");
-		return TRUE;
-	}
-
-    /* Warn the player if they're descending to an unrecallable level */
-	if (OPT(birth_force_descend) && !(player->depth) &&
-			(is_quest(player->max_depth + 1))) {
-		if (!get_check("Are you sure you want to descend? ")) {
-			msg("You prevent the recall from taking place.");
-			return FALSE;
-		}
-	}
-
-	/* Activate recall */
-	if (!player->word_recall)
-	{
-		/* Reset recall depth */
-		if ((player->depth > 0) && (player->depth != player->max_depth))
-		{
-			/* ToDo: Add a new player_type field "recall_depth" */
-			if (get_check("Reset recall depth? "))
-				player->max_depth = player->depth;
-		}
-
-		player->word_recall = randint0(20) + 15;
-		msg("The air about you becomes charged...");
-	}
-
-	/* Deactivate recall */
-	else
-	{
-		if (!get_check("Word of Recall is already active.  Do you want to cancel it? "))
-			return FALSE;
-
-		player->word_recall = 0;
-		msg("A tension leaves the air around you...");
-	}
-
-	/* Redraw status line */
-	player->upkeep->redraw = PR_STATUS;
-	handle_stuff(player->upkeep);
-
-	return TRUE;
-}
 
 
 /*

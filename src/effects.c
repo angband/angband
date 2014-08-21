@@ -721,7 +721,52 @@ bool effect_handler_REMOVE_ALL_CURSE(effect_handler_context_t *context)
 bool effect_handler_RECALL(effect_handler_context_t *context)
 {
 	context->ident = TRUE;
-	(void) set_recall();
+
+	/* No recall */
+	if (OPT(birth_no_recall) && !player->total_winner) {
+		msg("Nothing happens.");
+		return TRUE;
+	}
+    
+	/* No recall from quest levels with force_descend */
+	if (OPT(birth_force_descend) && (is_quest(player->depth))) {
+		msg("Nothing happens.");
+		return TRUE;
+	}
+
+    /* Warn the player if they're descending to an unrecallable level */
+	if (OPT(birth_force_descend) && !(player->depth) &&
+			(is_quest(player->max_depth + 1))) {
+		if (!get_check("Are you sure you want to descend? ")) {
+			msg("You prevent the recall from taking place.");
+			return TRUE;
+		}
+	}
+
+	/* Activate recall */
+	if (!player->word_recall) {
+		/* Reset recall depth */
+		if ((player->depth > 0) && (player->depth != player->max_depth)) {
+			/* ToDo: Add a new player_type field "recall_depth" */
+			if (get_check("Reset recall depth? "))
+				player->max_depth = player->depth;
+		}
+
+		player->word_recall = randint0(20) + 15;
+		msg("The air about you becomes charged...");
+	} else {
+		/* Deactivate recall */
+		if (!get_check("Word of Recall is already active.  Do you want to cancel it? "))
+			return TRUE;
+
+		player->word_recall = 0;
+		msg("A tension leaves the air around you...");
+	}
+
+	/* Redraw status line */
+	player->upkeep->redraw = PR_STATUS;
+	handle_stuff(player->upkeep);
+
 	return TRUE;
 }
 
@@ -1590,12 +1635,28 @@ bool effect_handler_IDENTIFY(effect_handler_context_t *context)
 }
 
 /**
- * Slack - NRM
+ * Identify everything worn or carried by the player
  */
 bool effect_handler_IDENTIFY_PACK(effect_handler_context_t *context)
 {
+	int i;
+
 	context->ident = TRUE;
-	identify_pack();
+
+	/* Simply identify and know every item */
+	for (i = 0; i < player->max_gear; i++) {
+		object_type *o_ptr = &player->gear[i];
+
+		/* Skip non-objects */
+		if (!o_ptr->kind) continue;
+
+		/* Aware and Known */
+		if (object_is_known(o_ptr)) continue;
+
+		/* Identify it */
+		do_ident_item(o_ptr);
+	}
+
 	return TRUE;
 }
 
