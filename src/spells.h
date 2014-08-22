@@ -29,7 +29,6 @@ void teleport_away(struct monster *m, int dis);
 void teleport_player(int dis);
 void teleport_player_to(int ny, int nx);
 void teleport_player_level(void);
-void light_room(int y1, int x1, bool light);
 extern void brand_object(object_type *o_ptr, const char *name);
 extern bool spell_identify_unknown_available(void);
 

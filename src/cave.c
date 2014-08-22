@@ -313,9 +313,6 @@ bool no_light(void)
 	return (!player_can_see_bold(player->py, player->px));
 }
 
-
-
-
 /*
  * Determine if a given location may be "destroyed"
  *
@@ -357,10 +354,6 @@ bool dtrap_edge(int y, int x)
 
 	return FALSE; 
 }
-
-
-
-
 
 
 
@@ -424,6 +417,173 @@ void square_light_spot(struct chunk *c, int y, int x)
 }
 
 
+/*
+ * This routine will Perma-Light all grids in the set passed in.
+ *
+ * This routine is used (only) by "light_room(..., LIGHT)"
+ *
+ * Dark grids are illuminated.
+ *
+ * Also, process all affected monsters.
+ *
+ * SMART monsters always wake up when illuminated
+ * NORMAL monsters wake up 1/4 the time when illuminated
+ * STUPID monsters wake up 1/10 the time when illuminated
+ */
+static void cave_light(struct point_set *ps)
+{
+	int i;
+
+	/* Apply flag changes */
+	for (i = 0; i < ps->n; i++)
+	{
+		int y = ps->pts[i].y;
+		int x = ps->pts[i].x;
+
+		/* Perma-Light */
+		sqinfo_on(cave->info[y][x], SQUARE_GLOW);
+	}
+
+	/* Fully update the visuals */
+	player->upkeep->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
+
+	/* Update stuff */
+	update_stuff(player->upkeep);
+
+	/* Process the grids */
+	for (i = 0; i < ps->n; i++)
+	{
+		int y = ps->pts[i].y;
+		int x = ps->pts[i].x;
+
+		/* Redraw the grid */
+		square_light_spot(cave, y, x);
+
+		/* Process affected monsters */
+		if (cave->m_idx[y][x] > 0)
+		{
+			int chance = 25;
+
+			monster_type *m_ptr = square_monster(cave, y, x);
+
+			/* Stupid monsters rarely wake up */
+			if (rf_has(m_ptr->race->flags, RF_STUPID)) chance = 10;
+
+			/* Smart monsters always wake up */
+			if (rf_has(m_ptr->race->flags, RF_SMART)) chance = 100;
+
+			/* Sometimes monsters wake up */
+			if (m_ptr->m_timed[MON_TMD_SLEEP] && (randint0(100) < chance))
+			{
+				/* Wake up! */
+				mon_clear_timed(m_ptr, MON_TMD_SLEEP,
+					MON_TMD_FLG_NOTIFY, FALSE);
+
+			}
+		}
+	}
+}
+
+
+
+/*
+ * This routine will "darken" all grids in the set passed in.
+ *
+ * In addition, some of these grids will be "unmarked".
+ *
+ * This routine is used (only) by "light_room(..., UNLIGHT)"
+ */
+static void cave_unlight(struct point_set *ps)
+{
+	int i;
+
+	/* Apply flag changes */
+	for (i = 0; i < ps->n; i++)
+	{
+		int y = ps->pts[i].y;
+		int x = ps->pts[i].x;
+
+		/* Darken the grid */
+		sqinfo_off(cave->info[y][x], SQUARE_GLOW);
+
+		/* Hack -- Forget "boring" grids */
+		if (!square_isinteresting(cave, y, x))
+			sqinfo_off(cave->info[y][x], SQUARE_MARK);
+	}
+
+	/* Fully update the visuals */
+	player->upkeep->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
+
+	/* Update stuff */
+	update_stuff(player->upkeep);
+
+	/* Process the grids */
+	for (i = 0; i < ps->n; i++)
+	{
+		int y = ps->pts[i].y;
+		int x = ps->pts[i].x;
+
+		/* Redraw the grid */
+		square_light_spot(cave, y, x);
+	}
+}
+
+/*
+ * Aux function -- see below
+ */
+static void cave_room_aux(struct point_set *seen, int y, int x)
+{
+	if (point_set_contains(seen, y, x))
+		return;
+
+	if (!square_isroom(cave, y, x))
+		return;
+
+	/* Add it to the "seen" set */
+	add_to_point_set(seen, y, x);
+}
+
+/*
+ * Illuminate or darken any room containing the given location.
+ */
+void light_room(int y1, int x1, bool light)
+{
+	int i, x, y;
+	struct point_set *ps;
+
+	ps = point_set_new(200);
+	/* Add the initial grid */
+	cave_room_aux(ps, y1, x1);
+
+	/* While grids are in the queue, add their neighbors */
+	for (i = 0; i < ps->n; i++)
+	{
+		x = ps->pts[i].x, y = ps->pts[i].y;
+
+		/* Walls get lit, but stop light */
+		if (!square_isprojectable(cave, y, x)) continue;
+
+		/* Spread adjacent */
+		cave_room_aux(ps, y + 1, x);
+		cave_room_aux(ps, y - 1, x);
+		cave_room_aux(ps, y, x + 1);
+		cave_room_aux(ps, y, x - 1);
+
+		/* Spread diagonal */
+		cave_room_aux(ps, y + 1, x + 1);
+		cave_room_aux(ps, y - 1, x - 1);
+		cave_room_aux(ps, y - 1, x + 1);
+		cave_room_aux(ps, y + 1, x - 1);
+	}
+
+	/* Now, lighten or darken them all at once */
+	if (light) {
+		cave_light(ps);
+	} else {
+		cave_unlight(ps);
+	}
+	point_set_dispose(ps);
+}
 
 
 /*
