@@ -260,8 +260,6 @@ extern bool player_can_see_bold(int y, int x);
 extern void update_view(struct chunk *c, struct player *p);
 extern void wiz_light(struct chunk *c, bool full);
 extern void wiz_dark(void);
-extern int project_path(u16b *gp, int range, int y1, int x1, int y2, int x2, int flg);
-extern bool projectable(struct chunk *c, int y1, int x1, int y2, int x2, int flg);
 extern void scatter(struct chunk *c, int *yp, int *xp, int y, int x, int d, bool need_los);
 extern bool is_quest(int level);
 extern bool dtrap_edge(int y, int x);
