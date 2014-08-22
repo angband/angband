@@ -20,11 +20,8 @@
 
 /* spells.c */
 extern bool do_dec_stat(int stat, bool perma);
-extern void identify_pack(void);
 extern bool remove_curse(void);
 extern bool remove_all_curse(void);
-extern bool set_recall(void);
-bool apply_disenchant(int mode);
 extern bool enchant(object_type *o_ptr, int n, int eflag);
 extern bool enchant_spell(int num_hit, int num_dam, int num_ac);
 extern void do_ident_item(object_type *o_ptr);
@@ -32,8 +29,6 @@ void teleport_away(struct monster *m, int dis);
 void teleport_player(int dis);
 void teleport_player_to(int ny, int nx);
 void teleport_player_level(void);
-extern void destroy_area(int y1, int x1, int r, bool full);
-extern void earthquake(int cy, int cx, int r);
 void light_room(int y1, int x1, bool light);
 extern void brand_object(object_type *o_ptr, const char *name);
 extern bool spell_identify_unknown_available(void);

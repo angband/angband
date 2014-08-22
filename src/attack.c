@@ -308,7 +308,7 @@ static bool py_attack_real(int y, int x, bool *fear) {
 
 	/* Apply earthquake brand */
 	if (do_quake) {
-		earthquake(player->py, player->px, 10);
+		effect_simple(EF_EARTHQUAKE, "0", 0, 10, 0, NULL);
 		if (cave->m_idx[y][x] == 0) stop = TRUE;
 	}
 

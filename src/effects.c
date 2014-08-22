@@ -716,7 +716,7 @@ bool effect_handler_REMOVE_ALL_CURSE(effect_handler_context_t *context)
 }
 
 /**
- * Set word of recall as appropriate - set_recall() probably needs work NRM
+ * Set word of recall as appropriate
  */
 bool effect_handler_RECALL(effect_handler_context_t *context)
 {
@@ -790,7 +790,7 @@ bool effect_handler_DEEP_DESCENT(effect_handler_context_t *context)
 	} else {
 		msgt(MSG_TPLEVEL, "You sense a malevolent presence blocking passage to the levels below.");
 		context->ident = TRUE;
-		return FALSE;
+		return TRUE;
 	}
 }
 
@@ -2282,12 +2282,12 @@ bool effect_handler_TELEPORT_LEVEL(effect_handler_context_t *context)
 }
 
 /**
- * The spell of destruction
+ * The destruction effect
  *
- * This spell "deletes" monsters (instead of "killing" them).
+ * This effect "deletes" monsters (instead of killing them).
  *
  * This is always an effect centred on the player; it is similar to the
- * "earthquake" effect.
+ * earthquake effect.
  */
 bool effect_handler_DESTRUCTION(effect_handler_context_t *context)
 {
@@ -2365,13 +2365,301 @@ bool effect_handler_DESTRUCTION(effect_handler_context_t *context)
 }
 
 /**
- * This effect, the destruction effect, and the earthquake funtion should be
- * rationalised
+ * Induce an earthquake of the radius context->p2 centred on the instigator.
+ *
+ * This will turn some walls into floors and some floors into walls.
+ *
+ * The player will take damage and jump into a safe grid if possible,
+ * otherwise, he will tunnel through the rubble instantaneously.
+ *
+ * Monsters will take damage, and jump into a safe grid if possible,
+ * otherwise they will be buried in the rubble, disappearing from
+ * the level in the same way that they do when banished.
+ *
+ * Note that players and monsters (except eaters of walls and passers
+ * through walls) will never occupy the same grid as a wall (or door).
  */
 bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 {
-	earthquake(player->py, player->px, context->p2);
+	int py = player->py;
+	int px = player->px;
+	int r = context->p2;
+	int i, y, x, yy, xx, dy, dx, cy, cx;
+	int damage = 0;
+	int safe_grids = 0, safe_y = 0, safe_x = 0;
+
+	bool hurt = FALSE;
+	bool map[32][32];
+
 	context->ident = TRUE;
+
+	/* Determine the epicentre */
+	if (cave->mon_current > 0) {
+		cy = cave_monster(cave, cave->mon_current)->fy;
+		cx = cave_monster(cave, cave->mon_current)->fx;
+	} else {
+		cy = py;
+		cx = px;
+	}
+
+	/* No effect in town */
+	if (!player->depth) {
+		msg("The ground shakes for a moment.");
+		return TRUE;
+	}
+
+	/* Paranoia -- Enforce maximum range */
+	if (r > 12) r = 12;
+
+	/* Clear the "maximal blast" area */
+	for (y = 0; y < 32; y++)
+		for (x = 0; x < 32; x++)
+			map[y][x] = FALSE;
+
+	/* Check around the epicenter */
+	for (dy = -r; dy <= r; dy++) {
+		for (dx = -r; dx <= r; dx++) {
+			/* Extract the location */
+			yy = cy + dy;
+			xx = cx + dx;
+
+			/* Skip illegal grids */
+			if (!square_in_bounds_fully(cave, yy, xx)) continue;
+
+			/* Skip distant grids */
+			if (distance(cy, cx, yy, xx) > r) continue;
+
+			/* Lose room and vault */
+			sqinfo_off(cave->info[yy][xx], SQUARE_ROOM);
+			sqinfo_off(cave->info[yy][xx], SQUARE_VAULT);
+
+			/* Lose light and knowledge */
+			sqinfo_off(cave->info[yy][xx], SQUARE_GLOW);
+			sqinfo_off(cave->info[yy][xx], SQUARE_MARK);
+
+			/* Skip the epicenter */
+			if (!dx && !dy) continue;
+
+			/* Skip most grids */
+			if (randint0(100) < 85) continue;
+
+			/* Damage this grid */
+			map[16 + yy - cy][16 + xx - cx] = TRUE;
+
+			/* Hack -- Take note of player damage */
+			if ((yy == py) && (xx == px)) hurt = TRUE;
+		}
+	}
+
+	/* First, affect the player (if necessary) */
+	if (hurt) {
+		/* Check around the player */
+		for (i = 0; i < 8; i++) {
+			/* Get the location */
+			y = py + ddy_ddd[i];
+			x = px + ddx_ddd[i];
+
+			/* Skip non-empty grids */
+			if (!square_isempty(cave, y, x)) continue;
+
+			/* Important -- Skip "quake" grids */
+			if (map[16 + y - cy][16 + x - cx]) continue;
+
+			/* Count "safe" grids, apply the randomizer */
+			if ((++safe_grids > 1) && (randint0(safe_grids) != 0)) continue;
+
+			/* Save the safe location */
+			safe_y = y; safe_x = x;
+		}
+
+		/* Random message */
+		switch (randint1(3))
+		{
+			case 1:
+			{
+				msg("The cave ceiling collapses!");
+				break;
+			}
+			case 2:
+			{
+				msg("The cave floor twists in an unnatural way!");
+				break;
+			}
+			default:
+			{
+				msg("The cave quakes!");
+				msg("You are pummeled with debris!");
+				break;
+			}
+		}
+
+		/* Hurt the player a lot */
+		if (!safe_grids) {
+			/* Message and damage */
+			msg("You are severely crushed!");
+			damage = 300;
+		} else {
+			/* Destroy the grid, and push the player to (relative) safety */
+			switch (randint1(3)) {
+				case 1: {
+					msg("You nimbly dodge the blast!");
+					damage = 0;
+					break;
+				}
+				case 2: {
+					msg("You are bashed by rubble!");
+					damage = damroll(10, 4);
+					(void)player_inc_timed(player, TMD_STUN, randint1(50), TRUE, TRUE);
+					break;
+				}
+				case 3: {
+					msg("You are crushed between the floor and ceiling!");
+					damage = damroll(10, 4);
+					(void)player_inc_timed(player, TMD_STUN, randint1(50), TRUE, TRUE);
+					break;
+				}
+			}
+
+			/* Move player */
+			monster_swap(py, px, safe_y, safe_x);
+		}
+
+		/* Take some damage */
+		if (damage) take_hit(player, damage, "an earthquake");
+	}
+
+
+	/* Examine the quaked region */
+	for (dy = -r; dy <= r; dy++) {
+		for (dx = -r; dx <= r; dx++) {
+			/* Extract the location */
+			yy = cy + dy;
+			xx = cx + dx;
+
+			/* Skip unaffected grids */
+			if (!map[16 + yy - cy][16 + xx - cx]) continue;
+
+			/* Process monsters */
+			if (cave->m_idx[yy][xx] > 0) {
+				monster_type *m_ptr = square_monster(cave, yy, xx);
+
+				/* Most monsters cannot co-exist with rock */
+				if (!flags_test(m_ptr->race->flags, RF_SIZE, RF_KILL_WALL,
+								RF_PASS_WALL, FLAG_END)) {
+					char m_name[80];
+
+					/* Assume not safe */
+					safe_grids = 0;
+
+					/* Monster can move to escape the wall */
+					if (!rf_has(m_ptr->race->flags, RF_NEVER_MOVE)) {
+						/* Look for safety */
+						for (i = 0; i < 8; i++) {
+							/* Get the grid */
+							y = yy + ddy_ddd[i];
+							x = xx + ddx_ddd[i];
+
+							/* Skip non-empty grids */
+							if (!square_isempty(cave, y, x)) continue;
+
+							/* Hack -- no safety on glyph of warding */
+							if (square_iswarded(cave, y, x))
+								continue;
+
+							/* Important -- Skip quake grids */
+							if (map[16 + y - cy][16 + x - cx]) continue;
+
+							/* Count safe grids, apply the randomizer */
+							if ((++safe_grids > 1) &&
+								(randint0(safe_grids) != 0))
+								continue;
+
+							/* Save the safe grid */
+							safe_y = y;
+							safe_x = x;
+						}
+					}
+
+					/* Describe the monster */
+					monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_STANDARD);
+
+					/* Scream in pain */
+					msg("%s wails out in pain!", m_name);
+
+					/* Take damage from the quake */
+					damage = (safe_grids ? damroll(4, 8) : (m_ptr->hp + 1));
+
+					/* Monster is certainly awake */
+					mon_clear_timed(m_ptr, MON_TMD_SLEEP,
+							MON_TMD_FLG_NOMESSAGE, FALSE);
+
+					/* If the quake finished the monster off, show message */
+					if (m_ptr->hp < damage && m_ptr->hp >= 0)
+						msg("%s is embedded in the rock!", m_name);
+
+					/* Apply damage directly */
+					m_ptr->hp -= damage;
+
+					/* Delete (not kill) "dead" monsters */
+					if (m_ptr->hp < 0) {
+						/* Delete the monster */
+						delete_monster(yy, xx);
+
+						/* No longer safe */
+						safe_grids = 0;
+					}
+
+					/* Escape from the rock */
+					if (safe_grids)
+						/* Move the monster */
+						monster_swap(yy, xx, safe_y, safe_x);
+				}
+			}
+		}
+	}
+
+	/* Player may have moved */
+	py = player->py;
+	px = player->px;
+
+	/* Important -- no wall on player */
+	map[16 + py - cy][16 + px - cx] = FALSE;
+
+
+	/* Examine the quaked region */
+	for (dy = -r; dy <= r; dy++) {
+		for (dx = -r; dx <= r; dx++) {
+			/* Extract the location */
+			yy = cy + dy;
+			xx = cx + dx;
+
+			/* Ignore invalid grids */
+			if (!square_in_bounds_fully(cave, yy, xx)) continue;
+
+			/* Note unaffected grids for light changes, etc. */
+			if (!map[16 + yy - cy][16 + xx - cx])
+				square_light_spot(cave, yy, xx);
+
+			/* Destroy location (if valid) */
+			else if (square_valid_bold(yy, xx)) {
+				delete_object(yy, xx);
+				square_earthquake(cave, yy, xx);
+			}
+		}
+	}
+
+	/* Fully update the visuals */
+	player->upkeep->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
+
+	/* Fully update the flow */
+	player->upkeep->update |= (PU_FORGET_FLOW | PU_UPDATE_FLOW);
+
+	/* Update the health bar */
+	player->upkeep->redraw |= (PR_HEALTH);
+
+	/* Window stuff */
+	player->upkeep->redraw |= (PR_MONLIST | PR_ITEMLIST);
+
 	return TRUE;
 }
 

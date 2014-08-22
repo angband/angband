@@ -1313,7 +1313,7 @@ static void project_player_handler_DISEN(project_player_handler_context_t *conte
 	}
 
 	/* Disenchant gear */
-	(void)apply_disenchant(0);
+	effect_simple(EF_DISENCHANT, "0", 0, 0, 0, NULL);
 }
 
 static void project_player_handler_WATER(project_player_handler_context_t *context)

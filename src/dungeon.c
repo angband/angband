@@ -851,7 +851,7 @@ static void process_world(struct chunk *c)
 			} else {
 				/* Otherwise do something disastrous */
 				msgt(MSG_TPLEVEL, "You are thrown back in an explosion!");
-				destroy_area(player->py, player->px, 5, TRUE);
+				effect_simple(EF_DESTRUCTION, "0", 0, 5, 0, NULL);
 			}		
 		}
 	}

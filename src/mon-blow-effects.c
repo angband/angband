@@ -218,7 +218,7 @@ static void melee_effect_handler_DISENCHANT(melee_effect_handler_context_t *cont
 	if (!player_resists(context->p, ELEM_DISEN))
 	{
 		/* Apply disenchantment */
-		if (apply_disenchant(0)) context->obvious = TRUE;
+		effect_simple(EF_DISENCHANT, "0", 0, 0, 0, &context->obvious);
 	}
 
 	/* Learn about the player */
@@ -684,7 +684,7 @@ static void melee_effect_handler_SHATTER(melee_effect_handler_context_t *context
 		int px_old = context->p->px;
 		int py_old = context->p->py;
 
-		earthquake(context->m_ptr->fy, context->m_ptr->fx, 8);
+		effect_simple(EF_EARTHQUAKE, "0", 0, 8, 0, NULL);
 
 		/* Stop the blows if the player is pushed away */
 		if ((px_old != context->p->px) ||
