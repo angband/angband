@@ -246,7 +246,6 @@ extern int distance(int y1, int x1, int y2, int x2);
 extern bool los(struct chunk *c, int y1, int x1, int y2, int x2);
 extern bool no_light(void);
 extern bool square_valid_bold(int y, int x);
-extern byte get_color(byte a, int attr, int n);
 extern void map_info(unsigned x, unsigned y, grid_data *g);
 extern void grid_data_as_text(grid_data *g, int *ap, wchar_t *cp, int *tap, wchar_t *tcp);
 extern void move_cursor_relative(int y, int x);

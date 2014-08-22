@@ -171,6 +171,7 @@ ANGFILES = \
 	ui-game.o \
 	ui-input.o \
 	ui-knowledge.o \
+	ui-map.o \
 	ui-menu.o \
 	ui-options.o \
 	ui-spell.o \

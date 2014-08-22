@@ -1694,7 +1694,7 @@ void do_cmd_wiz_effect(void)
 	char name[80] = "";
 	char dice[80] = "0";
 	int index = -1;
-	int p1, p2, p3;
+	int p1 = 0, p2 = 0, p3 = 0;
 	bool ident = FALSE;
 
 	/* Avoid the prompt getting in the way */
