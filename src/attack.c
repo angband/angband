@@ -484,6 +484,7 @@ static void ranged_helper(int item, int dir, int range, int shots, ranged_attack
 			u32b msg_type = result.msg_type;
 			char hit_verb[20];
 			my_strcpy(hit_verb, result.hit_verb, sizeof(hit_verb));
+			mem_free(result.hit_verb);
 
 			if (result.success) {
 				hit_target = TRUE;
@@ -577,7 +578,10 @@ static void ranged_helper(int item, int dir, int range, int shots, ranged_attack
  * Helper function used with ranged_helper by do_cmd_fire.
  */
 static struct attack_result make_ranged_shot(object_type *o_ptr, int y, int x) {
-	struct attack_result result = {FALSE, 0, 0, "hits"};
+	char *hit_verb = mem_alloc(20*sizeof(char));
+	struct attack_result result = {FALSE, 0, 0, hit_verb};
+
+	my_strcpy(hit_verb, "hits", sizeof(hit_verb));
 
 	object_type *j_ptr = equipped_item_by_slot_name(player, "shooting");
 
@@ -623,7 +627,10 @@ static struct attack_result make_ranged_shot(object_type *o_ptr, int y, int x) {
  * Helper function used with ranged_helper by do_cmd_throw.
  */
 static struct attack_result make_ranged_throw(object_type *o_ptr, int y, int x) {
-	struct attack_result result = {FALSE, 0, 0, "hits"};
+	char *hit_verb = mem_alloc(20*sizeof(char));
+	struct attack_result result = {FALSE, 0, 0, hit_verb};
+
+	my_strcpy(hit_verb, "hits", sizeof(hit_verb));
 
 	monster_type *m_ptr = square_monster(cave, y, x);
 	
