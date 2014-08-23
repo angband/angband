@@ -180,11 +180,11 @@ extern feature_type *f_info;
 
 enum grid_light_level
 {
-	FEAT_LIGHTING_LOS = 0,   /* line of sight */
-	FEAT_LIGHTING_TORCH,     /* torchlight */
-	FEAT_LIGHTING_LIT,       /* permanently lit (when not in line of sight) */
-	FEAT_LIGHTING_DARK,      /* dark */
-	FEAT_LIGHTING_MAX
+	LIGHTING_LOS = 0,   /* line of sight */
+	LIGHTING_TORCH,     /* torchlight */
+	LIGHTING_LIT,       /* permanently lit (when not in line of sight) */
+	LIGHTING_DARK,      /* dark */
+	LIGHTING_MAX
 };
 
 typedef struct

@@ -2017,14 +2017,14 @@ static void display_feature(int col, int row, bool cursor, int oid )
 	if (tile_height == 1) {
 		/* Display symbols */
 		col = 65;
-		col += big_pad(col, row, f_ptr->x_attr[FEAT_LIGHTING_DARK],
-				f_ptr->x_char[FEAT_LIGHTING_DARK]);
-		col += big_pad(col, row, f_ptr->x_attr[FEAT_LIGHTING_LIT],
-				f_ptr->x_char[FEAT_LIGHTING_LIT]);
-		col += big_pad(col, row, f_ptr->x_attr[FEAT_LIGHTING_TORCH],
-				f_ptr->x_char[FEAT_LIGHTING_TORCH]);
-		col += big_pad(col, row, f_ptr->x_attr[FEAT_LIGHTING_LOS],
-				f_ptr->x_char[FEAT_LIGHTING_LOS]);
+		col += big_pad(col, row, f_ptr->x_attr[LIGHTING_DARK],
+				f_ptr->x_char[LIGHTING_DARK]);
+		col += big_pad(col, row, f_ptr->x_attr[LIGHTING_LIT],
+				f_ptr->x_char[LIGHTING_LIT]);
+		col += big_pad(col, row, f_ptr->x_attr[LIGHTING_TORCH],
+				f_ptr->x_char[LIGHTING_TORCH]);
+		col += big_pad(col, row, f_ptr->x_attr[LIGHTING_LOS],
+				f_ptr->x_char[LIGHTING_LOS]);
 	}
 }
 
@@ -2044,7 +2044,7 @@ static int f_cmp_fkind(const void *a, const void *b)
 
 static const char *fkind_name(int gid) { return feature_group_text[gid]; }
 /* Disgusting hack to allow 4 in 1 editing of terrain visuals */
-static enum grid_light_level f_uik_lighting = FEAT_LIGHTING_LIT;
+static enum grid_light_level f_uik_lighting = LIGHTING_LIT;
 /* XXX needs *better* retooling for multi-light terrain */
 static byte *f_xattr(int oid) { return &f_info[oid].x_attr[f_uik_lighting]; }
 static wchar_t *f_xchar(int oid) { return &f_info[oid].x_char[f_uik_lighting]; }
@@ -2063,17 +2063,17 @@ static void f_xtra_act(struct keypress ch, int oid)
 	/* XXX must be a better way to cycle this */
 	if (ch.code == 'l') {
 		switch (f_uik_lighting) {
-				case FEAT_LIGHTING_LIT:  f_uik_lighting = FEAT_LIGHTING_TORCH; break;
-                case FEAT_LIGHTING_TORCH: f_uik_lighting = FEAT_LIGHTING_LOS; break;
-				case FEAT_LIGHTING_LOS:  f_uik_lighting = FEAT_LIGHTING_DARK; break;
-				default:	f_uik_lighting = FEAT_LIGHTING_LIT; break;
+				case LIGHTING_LIT:  f_uik_lighting = LIGHTING_TORCH; break;
+                case LIGHTING_TORCH: f_uik_lighting = LIGHTING_LOS; break;
+				case LIGHTING_LOS:  f_uik_lighting = LIGHTING_DARK; break;
+				default:	f_uik_lighting = LIGHTING_LIT; break;
 		}		
 	} else if (ch.code == 'L') {
 		switch (f_uik_lighting) {
-				case FEAT_LIGHTING_DARK:  f_uik_lighting = FEAT_LIGHTING_LOS; break;
-                case FEAT_LIGHTING_LOS: f_uik_lighting = FEAT_LIGHTING_TORCH; break;
-				case FEAT_LIGHTING_LIT:  f_uik_lighting = FEAT_LIGHTING_DARK; break;
-				default:	f_uik_lighting = FEAT_LIGHTING_LIT; break;
+				case LIGHTING_DARK:  f_uik_lighting = LIGHTING_LOS; break;
+                case LIGHTING_LOS: f_uik_lighting = LIGHTING_TORCH; break;
+				case LIGHTING_LIT:  f_uik_lighting = LIGHTING_DARK; break;
+				default:	f_uik_lighting = LIGHTING_LIT; break;
 		}
 	}
 	

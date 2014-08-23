@@ -581,8 +581,6 @@ static struct attack_result make_ranged_shot(object_type *o_ptr, int y, int x) {
 	char *hit_verb = mem_alloc(20*sizeof(char));
 	struct attack_result result = {FALSE, 0, 0, hit_verb};
 
-	my_strcpy(hit_verb, "hits", sizeof(hit_verb));
-
 	object_type *j_ptr = equipped_item_by_slot_name(player, "shooting");
 
 	monster_type *m_ptr = square_monster(cave, y, x);
@@ -594,6 +592,8 @@ static struct attack_result make_ranged_shot(object_type *o_ptr, int y, int x) {
 	int multiplier = player->state.ammo_mult;
 	const struct brand *b = NULL;
 	const struct slay *s = NULL;
+
+	my_strcpy(hit_verb, "hits", sizeof(hit_verb));
 
 	/* Did we hit it (penalize distance travelled) */
 	if (!test_hit(chance2, m_ptr->race->ac, m_ptr->ml)) return result;
@@ -630,8 +630,6 @@ static struct attack_result make_ranged_throw(object_type *o_ptr, int y, int x) 
 	char *hit_verb = mem_alloc(20*sizeof(char));
 	struct attack_result result = {FALSE, 0, 0, hit_verb};
 
-	my_strcpy(hit_verb, "hits", sizeof(hit_verb));
-
 	monster_type *m_ptr = square_monster(cave, y, x);
 	
 	int bonus = player->state.to_h + o_ptr->to_h;
@@ -641,6 +639,8 @@ static struct attack_result make_ranged_throw(object_type *o_ptr, int y, int x) 
 	int multiplier = 1;
 	const struct brand *b = NULL;
 	const struct slay *s = NULL;
+
+	my_strcpy(hit_verb, "hits", sizeof(hit_verb));
 
 	/* If we missed then we're done */
 	if (!test_hit(chance2, m_ptr->race->ac, m_ptr->ml)) return result;

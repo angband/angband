@@ -381,10 +381,10 @@ bool dtrap_edge(int y, int x)
  *    be used to indicate field-of-view, such as through the OPT(view_bright_light)
  *    option.
  *  - g->lighting is set to indicate the lighting level for the grid:
- *    FEAT_LIGHTING_DARK for unlit grids, FEAT_LIGHTING_LIT for inherently light
- *    grids (lit rooms, etc), FEAT_LIGHTING_TORCH for grids lit by the player's
- *    light source, and FEAT_LIGHTING_LOS for grids in the player's line of sight.
- *    Note that lighting is always FEAT_LIGHTING_LIT for known "interesting" grids
+ *    LIGHTING_DARK for unlit grids, LIGHTING_LIT for inherently light
+ *    grids (lit rooms, etc), LIGHTING_TORCH for grids lit by the player's
+ *    light source, and LIGHTING_LOS for grids in the player's line of sight.
+ *    Note that lighting is always LIGHTING_LIT for known "interesting" grids
  *    like walls.
  *  - g->is_player is TRUE if the player is on the given grid.
  *  - g->hallucinate is TRUE if the player is hallucinating something "strange"
@@ -416,7 +416,7 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 	g->first_kind = NULL;
     g->trap = cave_trap_max(cave);
 	g->multiple_objects = FALSE;
-	g->lighting = FEAT_LIGHTING_DARK;
+	g->lighting = LIGHTING_DARK;
 	g->unseen_object = FALSE;
 	g->unseen_money = FALSE;
 
@@ -432,10 +432,10 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 
 	if (g->in_view)
 	{
-		g->lighting = FEAT_LIGHTING_LOS;
+		g->lighting = LIGHTING_LOS;
 
 		if (!sqinfo_has(cave->info[y][x], SQUARE_GLOW) && OPT(view_yellow_light))
-			g->lighting = FEAT_LIGHTING_TORCH;
+			g->lighting = LIGHTING_TORCH;
 	}
 	else if (!sqinfo_has(cave->info[y][x], SQUARE_MARK))
 	{
@@ -443,7 +443,7 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 	}
 	else if (sqinfo_has(cave->info[y][x], SQUARE_GLOW))
 	{
-		g->lighting = FEAT_LIGHTING_LIT;
+		g->lighting = LIGHTING_LIT;
 	}
 
 

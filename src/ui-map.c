@@ -106,14 +106,15 @@ static void grid_get_attr(grid_data *g, int *a)
 			/* If it's a floor tile then we'll tint based on lighting. */
 			if (tf_has(f_ptr->flags, TF_TORCH))
 				switch (g->lighting) {
-					case FEAT_LIGHTING_TORCH: *a = TERM_YELLOW; break;
-					case FEAT_LIGHTING_LIT: *a = TERM_L_DARK; break;
-					case FEAT_LIGHTING_DARK: *a = TERM_L_DARK; break;
+					case LIGHTING_TORCH: *a = TERM_YELLOW; break;
+					case LIGHTING_LIT: *a = TERM_L_DARK; break;
+					case LIGHTING_DARK: *a = TERM_L_DARK; break;
 					default: break;
 				}
 
 			/* If it's another kind of tile, only tint when unlit. */
-			else if (g->lighting == FEAT_LIGHTING_DARK || g->lighting == FEAT_LIGHTING_LIT)
+			else if (g->lighting == LIGHTING_DARK ||
+					 g->lighting == LIGHTING_LIT)
 				*a = TERM_L_DARK;
 		}
 		else if (feat_is_magma(g->f_idx) || feat_is_quartz(g->f_idx)) {
@@ -767,7 +768,7 @@ void display_map(int *cy, int *cx)
 			if (mp[row][col] < tp)
 			{
 				/* Hack - make every grid on the map lit */
-				g.lighting = FEAT_LIGHTING_LIT;
+				g.lighting = LIGHTING_LIT;
 				grid_data_as_text(&g, &a, &c, &ta, &tc);
 
 				Term_queue_char(Term, col + 1, row + 1, a, c, ta, tc);

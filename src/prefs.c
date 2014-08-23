@@ -249,19 +249,19 @@ void dump_features(ang_file *fff)
 		if (f_ptr->mimic != i) continue;
 
 		file_putf(fff, "# Terrain: %s\n", f_ptr->name);
-		for (j = 0; j < FEAT_LIGHTING_MAX; j++)
+		for (j = 0; j < LIGHTING_MAX; j++)
 		{
 			byte attr = f_ptr->x_attr[j];
 			wint_t chr = f_ptr->x_char[j];
 
 			const char *light = NULL;
-			if (j == FEAT_LIGHTING_TORCH)
+			if (j == LIGHTING_TORCH)
 				light = "torch";
-			if (j == FEAT_LIGHTING_LOS)
+			if (j == LIGHTING_LOS)
 				light = "los";
-			else if (j == FEAT_LIGHTING_LIT)
+			else if (j == LIGHTING_LIT)
 				light = "lit";
-			else if (j == FEAT_LIGHTING_DARK)
+			else if (j == LIGHTING_DARK)
 				light = "dark";
 
 			assert(light);
@@ -667,19 +667,19 @@ static enum parser_error parse_prefs_f(struct parser *p)
 
 	lighting = parser_getsym(p, "lighting");
 	if (streq(lighting, "torch"))
-		light_idx = FEAT_LIGHTING_TORCH;
+		light_idx = LIGHTING_TORCH;
 	else if (streq(lighting, "los"))
-		light_idx = FEAT_LIGHTING_LOS;
+		light_idx = LIGHTING_LOS;
 	else if (streq(lighting, "lit"))
-		light_idx = FEAT_LIGHTING_LIT;
+		light_idx = LIGHTING_LIT;
 	else if (streq(lighting, "dark"))
-		light_idx = FEAT_LIGHTING_DARK;
+		light_idx = LIGHTING_DARK;
 	else if (streq(lighting, "all"))
-		light_idx = FEAT_LIGHTING_MAX;
+		light_idx = LIGHTING_MAX;
 	else
 		return PARSE_ERROR_GENERIC; /* xxx fixme */
 
-	if (light_idx < FEAT_LIGHTING_MAX)
+	if (light_idx < LIGHTING_MAX)
 	{
 		feature = &f_info[idx];
 		feature->x_attr[light_idx] = (byte)parser_getint(p, "attr");
@@ -687,7 +687,7 @@ static enum parser_error parse_prefs_f(struct parser *p)
 	}
 	else
 	{
-		for (light_idx = 0; light_idx < FEAT_LIGHTING_MAX; light_idx++)
+		for (light_idx = 0; light_idx < LIGHTING_MAX; light_idx++)
 		{
 			feature = &f_info[idx];
 			feature->x_attr[light_idx] = (byte)parser_getint(p, "attr");
@@ -1196,7 +1196,7 @@ void reset_visuals(bool load_prefs)
 		feature_type *f_ptr = &f_info[i];
 
 		/* Assume we will use the underlying values */
-		for (j = 0; j < FEAT_LIGHTING_MAX; j++)
+		for (j = 0; j < LIGHTING_MAX; j++)
 		{
 			f_ptr->x_attr[j] = f_ptr->d_attr;
 			f_ptr->x_char[j] = f_ptr->d_char;
