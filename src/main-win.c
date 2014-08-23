@@ -78,6 +78,7 @@
 #include "win/win-menu.h"
 #include "savefile.h" /* savefile_set_name() */
 #include "ui-input.h"
+#include "ui-map.h"
 
 /* Make sure the winver allows the AlphaBlend function */
 #if (WINVER < 0x0500)

@@ -42,6 +42,7 @@
 #include "prefs.h"
 #include "textui.h"
 #include "ui-birth.h"
+#include "ui-map.h"
 
 /* 
  * There are a few functions installed to be triggered by several 

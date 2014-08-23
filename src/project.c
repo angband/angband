@@ -40,6 +40,7 @@
 #include "spells.h"
 #include "tables.h"
 #include "trap.h"
+#include "ui-map.h"
 
 /*
  * Specify attr/char pairs for visual special effects for project()

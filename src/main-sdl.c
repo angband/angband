@@ -24,6 +24,7 @@
 #include "init.h"
 #include "prefs.h"
 #include "ui-input.h"
+#include "ui-map.h"
 
 /*
  * Comments and suggestions are welcome. The UI probably needs some

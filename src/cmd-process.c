@@ -33,6 +33,7 @@
 #include "ui-event.h"
 #include "ui-game.h"
 #include "ui-input.h"
+#include "ui-map.h"
 #include "ui-menu.h"
 #include "wizard.h"
 

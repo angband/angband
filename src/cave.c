@@ -24,6 +24,8 @@
 #include "game-event.h"
 #include "init.h"
 #include "monster.h"
+#include "obj-ignore.h"
+#include "obj-tval.h"
 #include "obj-util.h"
 #include "object.h"
 #include "player-timed.h"
@@ -354,6 +356,166 @@ bool dtrap_edge(int y, int x)
 	return FALSE; 
 }
 
+
+
+/*
+ * This function takes a grid location (x, y) and extracts information the
+ * player is allowed to know about it, filling in the grid_data structure
+ * passed in 'g'.
+ *
+ * The information filled in is as follows:
+ *  - g->f_idx is filled in with the terrain's feature type, or FEAT_NONE
+ *    if the player doesn't know anything about the grid.  The function
+ *    makes use of the "mimic" field in terrain in order to allow one
+ *    feature to look like another (hiding secret doors, invisible traps,
+ *    etc).  This will return the terrain type the player "Knows" about,
+ *    not necessarily the real terrain.
+ *  - g->m_idx is set to the monster index, or 0 if there is none (or the
+ *    player doesn't know it).
+ *  - g->first_kind is set to the object_kind of the first object in a grid
+ *    that the player knows about, or NULL for no objects.
+ *  - g->muliple_objects is TRUE if there is more than one object in the
+ *    grid that the player knows and cares about (to facilitate any special
+ *    floor stack symbol that might be used).
+ *  - g->in_view is TRUE if the player can currently see the grid - this can
+ *    be used to indicate field-of-view, such as through the OPT(view_bright_light)
+ *    option.
+ *  - g->lighting is set to indicate the lighting level for the grid:
+ *    FEAT_LIGHTING_DARK for unlit grids, FEAT_LIGHTING_LIT for inherently light
+ *    grids (lit rooms, etc), FEAT_LIGHTING_TORCH for grids lit by the player's
+ *    light source, and FEAT_LIGHTING_LOS for grids in the player's line of sight.
+ *    Note that lighting is always FEAT_LIGHTING_LIT for known "interesting" grids
+ *    like walls.
+ *  - g->is_player is TRUE if the player is on the given grid.
+ *  - g->hallucinate is TRUE if the player is hallucinating something "strange"
+ *    for this grid - this should pick a random monster to show if the m_idx
+ *    is non-zero, and a random object if first_kind is non-zero.
+ * 
+ * NOTES:
+ * This is called pretty frequently, whenever a grid on the map display
+ * needs updating, so don't overcomplicate it.
+ *
+ * Terrain is remembered separately from objects and monsters, so can be
+ * shown even when the player can't "see" it.  This leads to things like
+ * doors out of the player's view still change from closed to open and so on.
+ *
+ * TODO:
+ * Hallucination is currently disabled (it was a display-level hack before,
+ * and we need it to be a knowledge-level hack).  The idea is that objects
+ * may turn into different objects, monsters into different monsters, and
+ * terrain may be objects, monsters, or stay the same.
+ */
+void map_info(unsigned y, unsigned x, grid_data *g)
+{
+	object_type *o_ptr;
+
+	assert(x < (unsigned) cave->width);
+	assert(y < (unsigned) cave->height);
+
+	/* Default "clear" values, others will be set later where appropriate. */
+	g->first_kind = NULL;
+    g->trap = cave_trap_max(cave);
+	g->multiple_objects = FALSE;
+	g->lighting = FEAT_LIGHTING_DARK;
+	g->unseen_object = FALSE;
+	g->unseen_money = FALSE;
+
+	g->f_idx = cave->feat[y][x];
+	if (f_info[g->f_idx].mimic)
+		g->f_idx = f_info[g->f_idx].mimic;
+
+	g->in_view = (sqinfo_has(cave->info[y][x], SQUARE_SEEN)) ? TRUE : FALSE;
+	g->is_player = (cave->m_idx[y][x] < 0) ? TRUE : FALSE;
+	g->m_idx = (g->is_player) ? 0 : cave->m_idx[y][x];
+	g->hallucinate = player->timed[TMD_IMAGE] ? TRUE : FALSE;
+	g->trapborder = (sqinfo_has(cave->info[y][x], SQUARE_DEDGE)) ? TRUE : FALSE;
+
+	if (g->in_view)
+	{
+		g->lighting = FEAT_LIGHTING_LOS;
+
+		if (!sqinfo_has(cave->info[y][x], SQUARE_GLOW) && OPT(view_yellow_light))
+			g->lighting = FEAT_LIGHTING_TORCH;
+	}
+	else if (!sqinfo_has(cave->info[y][x], SQUARE_MARK))
+	{
+		g->f_idx = FEAT_NONE;
+	}
+	else if (sqinfo_has(cave->info[y][x], SQUARE_GLOW))
+	{
+		g->lighting = FEAT_LIGHTING_LIT;
+	}
+
+
+    /* There is a trap in this square */
+    if (sqinfo_has(cave->info[y][x], SQUARE_TRAP) &&
+		sqinfo_has(cave->info[y][x], SQUARE_MARK))
+    {
+		int i;
+
+		/* Scan the current trap list */
+		for (i = 0; i < cave_trap_max(cave); i++)
+		{
+			/* Point to this trap */
+			trap_type *t_ptr = cave_trap(cave, i);
+
+			/* Find a trap in this position */
+			if ((t_ptr->fy == y) && (t_ptr->fx == x))
+			{
+				/* Get the trap */
+				g->trap = i;
+				break;
+			}
+		}
+    }
+
+	/* Objects */
+	for (o_ptr = get_first_object(y, x); o_ptr; o_ptr = get_next_object(o_ptr))
+	{
+		if (o_ptr->marked == MARK_AWARE) {
+
+			/* Distinguish between unseen money and objects */
+			if (tval_is_money(o_ptr)) {
+				g->unseen_money = TRUE;
+			} else {
+				g->unseen_object = TRUE;
+			}
+
+		} else if (o_ptr->marked == MARK_SEEN && !ignore_item_ok(o_ptr)) {
+			if (!g->first_kind) {
+				g->first_kind = o_ptr->kind;
+			} else {
+				g->multiple_objects = TRUE;
+				break;
+			}
+		}
+	}
+
+	/* Monsters */
+	if (g->m_idx > 0)
+	{
+		/* If the monster isn't "visible", make sure we don't list it.*/
+		monster_type *m_ptr = cave_monster(cave, g->m_idx);
+		if (!m_ptr->ml) g->m_idx = 0;
+	}
+
+	/* Rare random hallucination on non-outer walls */
+	if (g->hallucinate && g->m_idx == 0 && g->first_kind == 0)
+	{
+		if (one_in_(128) && g->f_idx != FEAT_PERM)
+			g->m_idx = 1;
+		else if (one_in_(128) && g->f_idx != FEAT_PERM)
+			/* if hallucinating, we just need first_kind to not be NULL */
+			g->first_kind = k_info;
+		else
+			g->hallucinate = FALSE;
+	}
+
+	assert(g->f_idx <= FEAT_PERM);
+	if (!g->hallucinate)
+		assert((int)g->m_idx < cave->mon_max);
+	/* All other g fields are 'flags', mostly booleans. */
+}
 
 
 /*

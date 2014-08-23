@@ -49,6 +49,7 @@
 #include "target.h"
 #include "ui-game.h"
 #include "ui-input.h"
+#include "ui-map.h"
 #include "ui.h"
 
 /* The minimum amount of energy a player has at the start of a new level */

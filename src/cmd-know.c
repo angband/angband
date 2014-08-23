@@ -38,6 +38,7 @@
 #include "option.h"
 #include "prefs.h"
 #include "target.h"
+#include "ui-map.h"
 #include "ui-menu.h"
 #include "ui.h"
 

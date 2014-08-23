@@ -32,6 +32,7 @@
 #include "tables.h"
 #include "target.h"
 #include "trap.h"
+#include "ui-map.h"
 
 /*
  * Height of the help screen; any higher than 4 will overlap the health
