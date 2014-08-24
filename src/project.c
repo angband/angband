@@ -1984,7 +1984,7 @@ const char *gf_idx_to_name(int type)
 /*
  * Return a color to use for the bolt/ball spells
  */
-static byte spell_color(int type)
+int spell_color(int type)
 {
 	return gf_color(type);
 }

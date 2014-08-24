@@ -93,6 +93,7 @@ extern bool projectable(struct chunk *c, int y1, int x1, int y2, int x2, int flg
 int gf_name_to_idx(const char *name);
 const char *gf_idx_to_name(int type);
 int inven_damage(struct player *p, int type, int cperc);
+int spell_color(int type);
 int adjust_dam(int type, int dam, aspect dam_aspect, int resist);
 bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 			 int degrees_of_arc, byte diameter_of_source);

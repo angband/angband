@@ -1009,65 +1009,56 @@ static void update_maps(game_event_type type, game_event_data *data, void *user)
 
 	/* This signals a whole-map redraw. */
 	if (data->point.x == -1 && data->point.y == -1)
-	{
 		prt_map();
-	}
+
 	/* Single point to be redrawn */
-	else
-	{
+	else {
 		grid_data g;
 		int a, ta;
 		wchar_t c, tc;
-		
+
 		int ky, kx;
 		int vy, vx;
-		
+
 		/* Location relative to panel */
 		ky = data->point.y - t->offset_y;
 		kx = data->point.x - t->offset_x;
 
-		if (t == angband_term[0])
-		{
+		if (t == angband_term[0]) {
 			/* Verify location */
 			if ((ky < 0) || (ky >= SCREEN_HGT)) return;
-			
+
 			/* Verify location */
 			if ((kx < 0) || (kx >= SCREEN_WID)) return;
-			
+
 			/* Location in window */
 			vy = ky + ROW_MAP;
 			vx = kx + COL_MAP;
 
-		      if (tile_width > 1)
-		      {
-			      vx += (tile_width - 1) * kx;
-		      }
-		      if (tile_height > 1)
-		      {
-			      vy += (tile_height - 1) * ky;
-		      }
-		}
-		else
-		{
 			if (tile_width > 1)
-			{
-			        kx += (tile_width - 1) * kx;
-			}
+				vx += (tile_width - 1) * kx;
+
 			if (tile_height > 1)
-			{
+				vy += (tile_height - 1) * ky;
+
+		} else {
+			if (tile_width > 1)
+			        kx += (tile_width - 1) * kx;
+
+			if (tile_height > 1)
 			        ky += (tile_height - 1) * ky;
-			}
+
 			
 			/* Verify location */
 			if ((ky < 0) || (ky >= t->hgt)) return;
 			if ((kx < 0) || (kx >= t->wid)) return;
-			
+
 			/* Location in window */
 			vy = ky;
 			vx = kx;
 		}
 
-		
+
 		/* Redraw the grid spot */
 		map_info(data->point.y, data->point.x, &g);
 		grid_data_as_text(&g, &a, &c, &ta, &tc);
@@ -1076,11 +1067,9 @@ static void update_maps(game_event_type type, game_event_data *data, void *user)
 		/* Plot 'spot' updates in light green to make them visible */
 		Term_queue_char(t, vx, vy, TERM_L_GREEN, c, ta, tc);
 #endif
-		
+
 		if ((tile_width > 1) || (tile_height > 1))
-		{
 		        Term_big_queue_char(t, vx, vy, a, c, TERM_WHITE, ' ');
-		}
 	}
 }
 

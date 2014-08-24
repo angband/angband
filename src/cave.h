@@ -189,16 +189,19 @@ enum grid_light_level
 
 typedef struct
 {
-	u32b m_idx;		/* Monster index */
-	u32b f_idx;		/* Feature index */
-	struct object_kind *first_kind;	/* The "kind" of the first item on the grid */
-    u32b trap;          /* Trap index */
+	u32b m_idx;				/* Monster index */
+	u32b f_idx;				/* Feature index */
+	struct object_kind *first_kind;	/* The kind of the first item on the grid */
+	struct object_kind *missile;	/* The kind of a missile passing over */
+	int bolt;				/* Picture of spell passing over */
+	int bolt_type;			/* Projection (gf) type of spell passing over */
+	u32b trap;				/* Trap index */
 	bool multiple_objects;	/* Is there more than one item there? */
-	bool unseen_object;	/* Is there an unaware object there? */
-	bool unseen_money; /* Is there some unaware money there? */
+	bool unseen_object;		/* Is there an unaware object there? */
+	bool unseen_money;		/* Is there some unaware money there? */
 
 	enum grid_light_level lighting; /* Light level */
-	bool in_view; /* TRUE when the player can currently see the grid. */
+	bool in_view; 			/* Can the player can currently see the grid? */
 	bool is_player;
 	bool hallucinate;
 	bool trapborder;
