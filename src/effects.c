@@ -832,7 +832,7 @@ bool effect_handler_MAP_AREA(effect_handler_context_t *context)
 	for (y = y1; y < y2; y++) {
 		for (x = x1; x < x2; x++) {
 			/* Some squares can't be mapped */
-			if (square_is_no_map(cave, y, x)) continue;
+			if (square_isno_map(cave, y, x)) continue;
 
 			/* All non-walls are "checked" */
 			if (!square_seemslikewall(cave, y, x)) {
@@ -2095,7 +2095,7 @@ bool effect_handler_TELEPORT(effect_handler_context_t *context)
 		x_start = player->px;
 
 		/* Check for a no teleport grid */
-		if (square_is_no_teleport(cave, y_start, x_start) && (dis > 10)) {
+		if (square_isno_teleport(cave, y_start, x_start) && (dis > 10)) {
 			msg("Teleportation forbidden!");
 			return TRUE;
 		}

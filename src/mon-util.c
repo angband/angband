@@ -447,8 +447,8 @@ void update_mon(struct monster *m_ptr, bool full)
 	if (m_ptr->mflag & (MFLAG_MARK)) flag = TRUE;
 
 	/* Check if telepathy works */
-	if (square_is_no_esp(cave, fy, fx) ||
-		square_is_no_esp(cave, player->py, player->px))
+	if (square_isno_esp(cave, fy, fx) ||
+		square_isno_esp(cave, player->py, player->px))
 		telepathy_ok = FALSE;
 
 	/* Nearby */

@@ -2001,6 +2001,22 @@ bool square_isstrongwall(struct chunk *c, int y, int x) {
 }
 
 /**
+ * True if a square's terrain is memorized by the player
+ */
+bool square_ismark(struct chunk *c, int y, int x) {
+	assert(square_in_bounds(c, y, x));
+	return sqinfo_has(c->info[y][x], SQUARE_MARK);
+}
+
+/**
+ * True if the square is lit
+ */
+bool square_isglow(struct chunk *c, int y, int x) {
+	assert(square_in_bounds(c, y, x));
+	return sqinfo_has(c->info[y][x], SQUARE_GLOW);
+}
+
+/**
  * True if the square is part of a vault.
  *
  * This doesn't say what kind of square it is, just that it is part of a vault.
@@ -2019,6 +2035,38 @@ bool square_isroom(struct chunk *c, int y, int x) {
 }
 
 /**
+ * True if the square has been seen by the player
+ */
+bool square_isseen(struct chunk *c, int y, int x) {
+	assert(square_in_bounds(c, y, x));
+	return sqinfo_has(c->info[y][x], SQUARE_SEEN);
+}
+
+/**
+ * True if the cave square is currently viewable by the player
+ */
+bool square_isview(struct chunk *c, int y, int x) {
+	assert(square_in_bounds(c, y, x));
+	return sqinfo_has(c->info[y][x], SQUARE_VIEW);
+}
+
+/**
+ * True if the cave square was seen before the current update
+ */
+bool square_wasseen(struct chunk *c, int y, int x) {
+	assert(square_in_bounds(c, y, x));
+	return sqinfo_has(c->info[y][x], SQUARE_WASSEEN);
+}
+
+/**
+ * True if the square has been detected for traps
+ */
+bool square_isdtrap(struct chunk *c, int y, int x) {
+	assert(square_in_bounds(c, y, x));
+	return sqinfo_has(c->info[y][x], SQUARE_DTRAP);
+}
+
+/**
  * True if cave square is a feeling trigger square 
  */
 bool square_isfeel(struct chunk *c, int y, int x) {
@@ -2026,38 +2074,82 @@ bool square_isfeel(struct chunk *c, int y, int x) {
 	return sqinfo_has(c->info[y][x], SQUARE_FEEL);
 }
 
-/* True if the cave square is viewable */
-bool square_isview(struct chunk *c, int y, int x) {
+/**
+ * True if the square is on the trap detection edge
+ */
+bool square_isdedge(struct chunk *c, int y, int x) {
 	assert(square_in_bounds(c, y, x));
-	return sqinfo_has(c->info[y][x], SQUARE_VIEW);
+	return sqinfo_has(c->info[y][x], SQUARE_DEDGE);
 }
 
-bool square_isseen(struct chunk *c, int y, int x) {
+/**
+ * True if the square has a known trap - need to check vs square_istrap - NRM 
+ */
+bool square_istrap_new(struct chunk *c, int y, int x) {
 	assert(square_in_bounds(c, y, x));
-	return sqinfo_has(c->info[y][x], SQUARE_SEEN);
+	return sqinfo_has(c->info[y][x], SQUARE_TRAP);
 }
 
-bool square_wasseen(struct chunk *c, int y, int x) {
+/**
+ * True if the square has an unknown trap
+ */
+bool square_isinvis(struct chunk *c, int y, int x) {
 	assert(square_in_bounds(c, y, x));
-	return sqinfo_has(c->info[y][x], SQUARE_WASSEEN);
+	return sqinfo_has(c->info[y][x], SQUARE_INVIS);
 }
 
-bool square_isglow(struct chunk *c, int y, int x) {
+/**
+ * True if cave square is an inner wall (generation)
+ */
+bool square_iswall_inner(struct chunk *c, int y, int x) {
 	assert(square_in_bounds(c, y, x));
-	return sqinfo_has(c->info[y][x], SQUARE_GLOW);
+	return sqinfo_has(c->info[y][x], SQUARE_WALL_INNER);
 }
 
-bool square_is_no_teleport(struct chunk *c, int y, int x) {
+/**
+ * True if cave square is an outer wall (generation)
+ */
+bool square_iswall_outer(struct chunk *c, int y, int x) {
+	assert(square_in_bounds(c, y, x));
+	return sqinfo_has(c->info[y][x], SQUARE_WALL_OUTER);
+}
+
+/**
+ * True if cave square is a solid wall (generation)
+ */
+bool square_iswall_solid(struct chunk *c, int y, int x) {
+	assert(square_in_bounds(c, y, x));
+	return sqinfo_has(c->info[y][x], SQUARE_WALL_SOLID);
+}
+
+/**
+ * True if cave square has monster restrictions (generation)
+ */
+bool square_ismon_restrict(struct chunk *c, int y, int x) {
+	assert(square_in_bounds(c, y, x));
+	return sqinfo_has(c->info[y][x], SQUARE_MON_RESTRICT);
+}
+
+/**
+ * True if cave square can't be teleported from by the player
+ */
+bool square_isno_teleport(struct chunk *c, int y, int x) {
 	assert(square_in_bounds(c, y, x));
 	return sqinfo_has(c->info[y][x], SQUARE_NO_TELEPORT);
 }
 
-bool square_is_no_map(struct chunk *c, int y, int x) {
+/**
+ * True if cave square can't be magically mapped by the player
+ */
+bool square_isno_map(struct chunk *c, int y, int x) {
 	assert(square_in_bounds(c, y, x));
 	return sqinfo_has(c->info[y][x], SQUARE_NO_MAP);
 }
 
-bool square_is_no_esp(struct chunk *c, int y, int x) {
+/**
+ * True if cave square can't be detected by player ESP
+ */
+bool square_isno_esp(struct chunk *c, int y, int x) {
 	assert(square_in_bounds(c, y, x));
 	return sqinfo_has(c->info[y][x], SQUARE_NO_ESP);
 }

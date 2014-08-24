@@ -515,7 +515,7 @@ void teleport_player(int dis)
 	bool look = TRUE;
 
 	/* Check for a no teleport grid */
-	if (square_is_no_teleport(cave, py, px) && (dis > 10)) {
+	if (square_isno_teleport(cave, py, px) && (dis > 10)) {
 		msg("Teleportation forbidden!");
 		return;
 	}
