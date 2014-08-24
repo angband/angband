@@ -36,7 +36,7 @@ bool square_trap_specific(struct chunk *c, int y, int x, int t_idx)
     int i;
 	
     /* First, check the trap marker */
-    if (!square_istrap_new(c, y, x)) return (FALSE);
+    if (!square_istrap(c, y, x)) return (FALSE);
 	
     /* Scan the current trap list */
     for (i = 0; i < cave_trap_max(c); i++)
@@ -64,7 +64,7 @@ bool square_trap_flag(struct chunk *c, int y, int x, int flag)
     int i;
 
     /* First, check the trap marker */
-    if (!square_istrap_new(c, y, x)) return (FALSE);
+    if (!square_istrap(c, y, x)) return (FALSE);
 	
     /* Scan the current trap list */
     for (i = 0; i < cave_trap_max(c); i++)
@@ -159,7 +159,7 @@ bool square_visible_trap(struct chunk *c, int y, int x)
 bool square_invisible_trap(struct chunk *c, int y, int x)
 {
     /* First, check the trap marker */
-    if (!square_istrap_new(c, y, x)) return (FALSE);
+    if (!square_istrap(c, y, x)) return (FALSE);
 
     /* Verify trap, require that it be invisible */
     return (square_verify_trap(c, y, x, -1));
@@ -235,7 +235,7 @@ bool square_reveal_trap(struct chunk *c, int y, int x, int chance, bool domsg)
     int found_trap = 0;
     
     /* Check the trap marker */
-    if (!square_istrap_new(c, y, x)) return (FALSE);
+    if (!square_istrap(c, y, x)) return (FALSE);
 
     /* Scan the current trap list */
     for (i = 0; i < cave_trap_max(c); i++)
@@ -345,7 +345,7 @@ bool square_trap_allowed(struct chunk *c, int y, int x)
      * We currently forbid multiple traps in a grid under normal conditions.
      * If this changes, various bits of code elsewhere will have to change too.
      */
-    if (square_istrap_new(c, y, x)) return (FALSE);
+    if (square_istrap(c, y, x)) return (FALSE);
 
     /* We currently forbid traps in a grid with objects. */
     if (c->o_idx[y][x]) return (FALSE);

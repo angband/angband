@@ -456,7 +456,7 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 
 
     /* There is a trap in this square */
-    if (square_istrap_new(cave, y, x) && square_ismark(cave, y, x))
+    if (square_istrap(cave, y, x) && square_ismark(cave, y, x))
     {
 		int i;
 
@@ -1837,13 +1837,6 @@ bool square_isknowntrap(struct chunk *c, int y, int x) {
 }
 
 /**
- * True if the square contains a trap, known or unknown.
- */
-bool square_istrap(struct chunk *c, int y, int x) {
-	return square_issecrettrap(c, y, x) || square_isknowntrap(c, y, x);
-}
-
-/**
  * True if the feature is a shop entrance.
  */
 bool feature_isshop(int feat) {
@@ -2090,9 +2083,9 @@ bool square_isdedge(struct chunk *c, int y, int x) {
 }
 
 /**
- * True if the square has a known trap - need to check vs square_istrap - NRM 
+ * True if the square has a known trap
  */
-bool square_istrap_new(struct chunk *c, int y, int x) {
+bool square_istrap(struct chunk *c, int y, int x) {
 	assert(square_in_bounds(c, y, x));
 	return sqinfo_has(c->info[y][x], SQUARE_TRAP);
 }
