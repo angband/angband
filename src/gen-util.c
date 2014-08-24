@@ -613,7 +613,6 @@ bool alloc_object(struct chunk *c, int set, int typ, int depth, byte origin)
 {
     int x = 0, y = 0;
     int tries = 0;
-    bool room;
 
     /* Pick a "legal" spot */
     while (tries < 2000) {
@@ -621,14 +620,11 @@ bool alloc_object(struct chunk *c, int set, int typ, int depth, byte origin)
 
 		find_empty(c, &y, &x);
 
-		/* See if our spot is in a room or not */
-		room = (sqinfo_has(c->info[y][x], SQUARE_ROOM)) ? TRUE : FALSE;
-
 		/* If we are ok with a corridor and we're in one, we're done */
-		if (set & SET_CORR && !room) break;
+		if (set & SET_CORR && !square_isroom(c, y, x)) break;
 
 		/* If we are ok with a room and we're in one, we're done */
-		if (set & SET_ROOM && room) break;
+		if (set & SET_ROOM && square_isroom(c, y, x)) break;
     }
 
     if (tries == 2000) return FALSE;

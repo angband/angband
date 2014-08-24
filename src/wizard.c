@@ -1466,7 +1466,7 @@ static void do_cmd_wiz_query(void)
 			if (!sqinfo_has(cave->info[y][x], flag)) continue;
 
 			/* Given no flag, show unknown grids */
-			if (!flag && (!sqinfo_has(cave->info[y][x], SQUARE_MARK))) continue;
+			if (!flag && (!square_ismark(cave, y, x))) continue;
 
 			/* Color */
 			if (square_ispassable(cave, y, x)) a = TERM_YELLOW;

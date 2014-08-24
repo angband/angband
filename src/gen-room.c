@@ -610,7 +610,7 @@ extern bool generate_starburst_room(struct chunk *c, int y1, int x1, int y2,
 	for (y = y1 + 1; y < y2; y++) {
 		for (x = x1 + 1; x < x2; x++) {
 			/* Do not touch vault grids. */
-			if (sqinfo_has(c->info[y][x], SQUARE_VAULT))
+			if (square_isvault(c, y, x))
 				continue;
 
 			/* Do not touch occupied grids. */
@@ -2413,8 +2413,8 @@ static void make_inner_chamber_wall(struct chunk *c, int y, int x)
 {
 	if ((c->feat[y][x] != FEAT_GRANITE) && (c->feat[y][x] != FEAT_MAGMA))
 		return;
-	if (sqinfo_has(c->info[y][x], SQUARE_WALL_OUTER)) return;
-	if (sqinfo_has(c->info[y][x], SQUARE_WALL_SOLID)) return;
+	if (square_iswall_outer(c, y, x)) return;
+	if (square_iswall_solid(c, y, x)) return;
 	set_marked_granite(c, y, x, SQUARE_WALL_INNER);
 }
 
@@ -2467,7 +2467,7 @@ static void make_chamber(struct chunk *c, int y1, int x1, int y2, int x2)
 		}
 
 		/* If not an inner wall square, try again. */
-		if (!sqinfo_has(c->info[y][x], SQUARE_WALL_INNER))
+		if (!square_iswall_inner(c, y, x))
 			continue;
 
 		/* Paranoia */
@@ -2489,7 +2489,7 @@ static void make_chamber(struct chunk *c, int y1, int x1, int y2, int x2)
 				break;
 
 			/* Count the inner walls. */
-			if (sqinfo_has(c->info[yy][xx], SQUARE_WALL_INNER))
+			if (square_iswall_inner(c, yy, xx))
 				count++;
 
 			/* No more than two walls adjacent (plus the one we're on). */
@@ -2653,8 +2653,8 @@ bool build_room_of_chambers(struct chunk *c, int y0, int x0)
 
 				/* Count the walls and dungeon granite. */
 				if ((c->feat[yy][xx] == FEAT_GRANITE) &&
-					(!sqinfo_has(c->info[yy][xx], SQUARE_WALL_OUTER)) &&
-					(!sqinfo_has(c->info[yy][xx], SQUARE_WALL_SOLID)))
+					(!square_iswall_outer(c, yy, xx)) &&
+					(!square_iswall_solid(c, yy, xx)))
 					count++;
 			}
 
@@ -2703,7 +2703,7 @@ bool build_room_of_chambers(struct chunk *c, int y0, int x0)
 					xx1 = x + ddx_ddd[d];
 
 					/* Need inner wall. */
-					if (!sqinfo_has(c->info[yy1][xx1], SQUARE_WALL_INNER)) 
+					if (!square_iswall_inner(c, yy1, xx1)) 
 						continue;
 
 					/* Keep going in the same direction, if in bounds. */
@@ -2726,7 +2726,7 @@ bool build_room_of_chambers(struct chunk *c, int y0, int x0)
 					}
 
 					/* If we find more inner wall... */
-					if (sqinfo_has(c->info[yy2][xx2], SQUARE_WALL_INNER)) {
+					if (square_iswall_inner(c, yy2, xx2)) {
 						/* ...Keep going in the same direction. */
 						yy3 = yy2 + ddy_ddd[d];
 						xx3 = xx2 + ddx_ddd[d];
@@ -2773,7 +2773,7 @@ bool build_room_of_chambers(struct chunk *c, int y0, int x0)
 		 y < (y2 + 2 < c->height ? y2 + 2 : c->height); y++) {
 		for (x = (x1 - 1 > 0 ? x1 - 1 : 0);
 			 x < (x2 + 2 < c->width ? x2 + 2 : c->width); x++) {
-			if (sqinfo_has(c->info[y][x], SQUARE_WALL_INNER)
+			if (square_iswall_inner(c, y, x)
 				|| (c->feat[y][x] == FEAT_MAGMA)) {
 				for (d = 0; d < 9; d++) {
 					/* Extract adjacent location */
@@ -2819,7 +2819,7 @@ bool build_room_of_chambers(struct chunk *c, int y0, int x0)
 			/* Stay legal. */
 			if (!square_in_bounds_fully(c, y, x)) continue;
 
-			if (sqinfo_has(c->info[y][x], SQUARE_WALL_INNER)) {
+			if (square_iswall_inner(c, y, x)) {
 				for (d = 0; d < 9; d++) {
 					/* Extract adjacent location */
 					int yy = y + ddy_ddd[d];
@@ -2827,9 +2827,9 @@ bool build_room_of_chambers(struct chunk *c, int y0, int x0)
 
 					/* Look for dungeon granite */
 					if ((c->feat[yy][xx] == FEAT_GRANITE) && 
-						(!sqinfo_has(c->info[y][x], SQUARE_WALL_INNER)) &&
-						(!sqinfo_has(c->info[y][x], SQUARE_WALL_OUTER)) &&
-						(!sqinfo_has(c->info[y][x], SQUARE_WALL_SOLID)))
+						(!square_iswall_inner(c, y, x)) &&
+						(!square_iswall_outer(c, y, x)) &&
+						(!square_iswall_solid(c, y, x)))
 					{
 						/* Turn me into outer wall. */
 						set_marked_granite(c, y, x, SQUARE_WALL_OUTER);

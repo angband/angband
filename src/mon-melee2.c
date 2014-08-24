@@ -1831,7 +1831,7 @@ static bool process_monster_glyph(struct chunk *c, struct monster *m_ptr, int nx
 	/* Break the ward */
 	if (randint1(BREAK_GLYPH) < m_ptr->race->level) {
 		/* Describe observable breakage */
-		if (sqinfo_has(c->info[ny][nx], SQUARE_MARK))
+		if (square_ismark(c, ny, nx))
 			msg("The rune of protection is broken!");
 
 		/* Forget the rune */

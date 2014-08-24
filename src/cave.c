@@ -345,13 +345,21 @@ bool square_valid_bold(int y, int x)
 bool dtrap_edge(int y, int x) 
 { 
 	/* Check if the square is a dtrap in the first place */ 
- 	if (!sqinfo_has(cave->info[y][x], SQUARE_DTRAP)) return FALSE; 
+	if (!square_isdtrap(cave, y, x)) return FALSE;
 
  	/* Check for non-dtrap adjacent grids */ 
- 	if (square_in_bounds_fully(cave, y + 1, x    ) && (!sqinfo_has(cave->info[y + 1][x    ], SQUARE_DTRAP))) return TRUE; 
- 	if (square_in_bounds_fully(cave, y    , x + 1) && (!sqinfo_has(cave->info[y    ][x + 1], SQUARE_DTRAP))) return TRUE; 
- 	if (square_in_bounds_fully(cave, y - 1, x    ) && (!sqinfo_has(cave->info[y - 1][x    ], SQUARE_DTRAP))) return TRUE; 
- 	if (square_in_bounds_fully(cave, y    , x - 1) && (!sqinfo_has(cave->info[y    ][x - 1], SQUARE_DTRAP))) return TRUE; 
+	if (square_in_bounds_fully(cave, y + 1, x) &&
+		(!square_isdtrap(cave, y + 1, x)))
+		return TRUE;
+	if (square_in_bounds_fully(cave, y, x + 1) &&
+		(!square_isdtrap(cave, y, x + 1)))
+		return TRUE;
+	if (square_in_bounds_fully(cave, y - 1, x) &&
+		(!square_isdtrap(cave, y - 1, x)))
+		return TRUE;
+	if (square_in_bounds_fully(cave, y, x - 1) &&
+		(!square_isdtrap(cave, y, x - 1)))
+		return TRUE;
 
 	return FALSE; 
 }
@@ -424,32 +432,31 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 	if (f_info[g->f_idx].mimic)
 		g->f_idx = f_info[g->f_idx].mimic;
 
-	g->in_view = (sqinfo_has(cave->info[y][x], SQUARE_SEEN)) ? TRUE : FALSE;
+	g->in_view = (square_isseen(cave, y, x)) ? TRUE : FALSE;
 	g->is_player = (cave->m_idx[y][x] < 0) ? TRUE : FALSE;
 	g->m_idx = (g->is_player) ? 0 : cave->m_idx[y][x];
 	g->hallucinate = player->timed[TMD_IMAGE] ? TRUE : FALSE;
-	g->trapborder = (sqinfo_has(cave->info[y][x], SQUARE_DEDGE)) ? TRUE : FALSE;
+	g->trapborder = (square_isdedge(cave, y, x)) ? TRUE : FALSE;
 
 	if (g->in_view)
 	{
 		g->lighting = LIGHTING_LOS;
 
-		if (!sqinfo_has(cave->info[y][x], SQUARE_GLOW) && OPT(view_yellow_light))
+		if (!square_isglow(cave, y, x) && OPT(view_yellow_light))
 			g->lighting = LIGHTING_TORCH;
 	}
-	else if (!sqinfo_has(cave->info[y][x], SQUARE_MARK))
+	else if (!square_ismark(cave, y, x))
 	{
 		g->f_idx = FEAT_NONE;
 	}
-	else if (sqinfo_has(cave->info[y][x], SQUARE_GLOW))
+	else if (square_isglow(cave, y, x))
 	{
 		g->lighting = LIGHTING_LIT;
 	}
 
 
     /* There is a trap in this square */
-    if (sqinfo_has(cave->info[y][x], SQUARE_TRAP) &&
-		sqinfo_has(cave->info[y][x], SQUARE_MARK))
+    if (square_istrap_new(cave, y, x) && square_ismark(cave, y, x))
     {
 		int i;
 
@@ -552,13 +559,13 @@ void square_note_spot(struct chunk *c, int y, int x)
 	object_type *o_ptr;
 
 	/* Require "seen" flag */
-	if (!sqinfo_has(c->info[y][x], SQUARE_SEEN))
+	if (!square_isseen(c, y, x))
 		return;
 
 	for (o_ptr = get_first_object(y, x); o_ptr; o_ptr = get_next_object(o_ptr))
 		o_ptr->marked = MARK_SEEN;
 
-	if (sqinfo_has(c->info[y][x], SQUARE_MARK))
+	if (square_ismark(c, y, x))
 		return;
 
 	/* Memorize this grid */
@@ -966,7 +973,7 @@ static void mark_wasseen(struct chunk *c)
 	/* Save the old "view" grids for later */
 	for (y = 0; y < c->height; y++) {
 		for (x = 0; x < c->width; x++) {
-			if (sqinfo_has(c->info[y][x], SQUARE_SEEN))
+			if (square_isseen(c, y, x))
 				sqinfo_on(c->info[y][x], SQUARE_WASSEEN);
 			sqinfo_off(c->info[y][x], SQUARE_VIEW);
 			sqinfo_off(c->info[y][x], SQUARE_SEEN);
@@ -2395,7 +2402,7 @@ bool square_noticeable(struct chunk *c, int y, int x) {
 const char *square_apparent_name(struct chunk *c, struct player *p, int y, int x) {
 	int f = f_info[c->feat[y][x]].mimic;
 
-	if (!sqinfo_has(c->info[y][x], SQUARE_MARK) && !player_can_see_bold(y, x))
+	if (!square_ismark(c, y, x) && !player_can_see_bold(y, x))
 		f = FEAT_NONE;
 
 	if (f == FEAT_NONE)
@@ -2450,7 +2457,7 @@ int count_feats(int *y, int *x, bool (*test)(struct chunk *c, int y, int x), boo
 		if (!square_in_bounds_fully(cave, yy, xx)) continue;
 
 		/* Must have knowledge */
-		if (!sqinfo_has(cave->info[yy][xx], SQUARE_MARK)) continue;
+		if (!square_ismark(cave, yy, xx)) continue;
 
 		/* Not looking for this feature */
 		if (!((*test)(cave, yy, xx))) continue;

@@ -277,7 +277,7 @@ void do_cmd_toggle_search(struct command *cmd)
 static bool do_cmd_open_test(int y, int x)
 {
 	/* Must have knowledge */
-	if (!sqinfo_has(cave->info[y][x], SQUARE_MARK)) {
+	if (!square_ismark(cave, y, x)) {
 		msg("You see nothing there.");
 		return FALSE;
 	}
@@ -472,7 +472,7 @@ void do_cmd_open(struct command *cmd)
 static bool do_cmd_close_test(int y, int x)
 {
 	/* Must have knowledge */
-	if (!sqinfo_has(cave->info[y][x], SQUARE_MARK))
+	if (!square_ismark(cave, y, x))
 	{
 		/* Message */
 		msg("You see nothing there.");
@@ -602,7 +602,7 @@ void do_cmd_close(struct command *cmd)
 static bool do_cmd_tunnel_test(int y, int x)
 {
 	/* Must have knowledge */
-	if (!sqinfo_has(cave->info[y][x], SQUARE_MARK))
+	if (!square_ismark(cave, y, x))
 	{
 		/* Message */
 		msg("You see nothing there.");
@@ -909,7 +909,7 @@ void do_cmd_tunnel(struct command *cmd)
 static bool do_cmd_disarm_test(int y, int x)
 {
 	/* Must have knowledge */
-	if (!sqinfo_has(cave->info[y][x], SQUARE_MARK)) {
+	if (!square_ismark(cave, y, x)) {
 		msg("You see nothing there.");
 		return FALSE;
 	}
@@ -1250,7 +1250,7 @@ static bool do_cmd_walk_test(int y, int x)
 	}
 
 	/* If we don't know the grid, allow attempts to walk into it */
-	if (!sqinfo_has(cave->info[y][x], SQUARE_MARK))
+	if (!square_ismark(cave, y, x))
 		return TRUE;
 
 	/* Require open space */

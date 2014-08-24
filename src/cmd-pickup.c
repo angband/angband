@@ -449,9 +449,8 @@ void move_player(int dir, bool disarm)
 	}
 
 	/* Optionally alter traps/doors on movement */
-	else if (disarm && sqinfo_has(cave->info[y][x], SQUARE_MARK) &&
-			(square_isknowntrap(cave, y, x) ||
-			square_iscloseddoor(cave, y, x)))
+	else if (disarm && square_ismark(cave, y, x) &&
+			(square_isknowntrap(cave, y, x) || square_iscloseddoor(cave, y, x)))
 	{
 		/* Auto-repeat if not already repeating */
 		if (cmd_get_nrepeats() == 0)
@@ -467,7 +466,7 @@ void move_player(int dir, bool disarm)
 		disturb(player, 0);
 
 		/* Notice unknown obstacles */
-		if (!sqinfo_has(cave->info[y][x], SQUARE_MARK))
+		if (!square_ismark(cave, y, x))
 		{
 			/* Rubble */
 			if (square_isrubble(cave, y, x))
@@ -510,8 +509,8 @@ void move_player(int dir, bool disarm)
 	else
 	{
 		/* See if trap detection status will change */
-		bool old_dtrap = (sqinfo_has(cave->info[py][px], SQUARE_DTRAP));
-		bool new_dtrap = (sqinfo_has(cave->info[y][x], SQUARE_DTRAP));
+		bool old_dtrap = square_isdtrap(cave, py, px);
+		bool new_dtrap = square_isdtrap(cave, y, x);
 
 		/* Note the change in the detect status */
 		if (old_dtrap != new_dtrap)

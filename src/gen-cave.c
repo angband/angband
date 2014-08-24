@@ -267,7 +267,7 @@ static void build_tunnel(struct chunk *c, int row1, int col1, int row2, int col2
 					if (square_is_granite_with_flag(c, y, x, SQUARE_WALL_OUTER))
 						set_marked_granite(c, y, x, SQUARE_WALL_SOLID);
 
-		} else if (sqinfo_has(c->info[tmp_row][tmp_col], SQUARE_ROOM)) {
+		} else if (square_isroom(c, tmp_row, tmp_col)) {
 			/* Travel quickly through rooms */
 			/* Accept the location */
 			row1 = tmp_row;

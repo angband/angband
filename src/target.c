@@ -407,7 +407,7 @@ static bool target_set_interactive_accept(int y, int x)
 	}
 
 	/* Interesting memorized features */
-	if (sqinfo_has(cave->info[y][x], SQUARE_MARK) && !square_isboring(cave, y, x))
+	if (square_ismark(cave, y, x) && !square_isboring(cave, y, x))
 		return (TRUE);
 
 	/* Nope */
@@ -1279,11 +1279,11 @@ static int draw_path(u16b path_n, u16b *path_g, wchar_t *c, int *a, int y1, int 
 			colour = TERM_YELLOW;
 
 		else if ((!square_isprojectable(cave, y,x) &&
-				  sqinfo_has(cave->info[y][x], SQUARE_MARK)) || player_can_see_bold(y,x))
+				  square_ismark(cave, y, x)) || player_can_see_bold(y,x))
 			/* Known walls are blue. */
 			colour = TERM_BLUE;
 
-		else if (!sqinfo_has(cave->info[y][x], SQUARE_MARK) && !player_can_see_bold(y,x))
+		else if (!square_ismark(cave, y, x) && !player_can_see_bold(y,x))
 			/* Unknown squares are grey. */
 			colour = TERM_L_DARK;
 
