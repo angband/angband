@@ -3257,7 +3257,9 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 
 	/* Display the blast area if allowed. */
 	if (!blind && !(flg & (PROJECT_HIDE))) {
-		/* Do the blast from inside out */
+		bool new_radius = FALSE;
+
+		/* Draw the blast from inside out */
 		for (i = 0; i <= num_grids; i++) {
 			/* Extract the location */
 			y = blast_grid[i].y;
@@ -3273,41 +3275,36 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 				/* Obtain the explosion pict */
 				bolt_pict(y, x, y, x, typ, &a, &c);
 
-				/* Visual effects -- Display */
+				/* Just display the pict, ignoring what was under it */
 				print_rel(c, a, y, x);
 			}
 
-			/* Hack -- center the cursor */
+			/* Center the cursor to stop it tracking the blast grids  */
 			move_cursor_relative(centre.y, centre.x);
 
-			/* New radius is about to be drawn */
-			if (i == num_grids) {
-				/* Flush each radius seperately */
+			/* Check for new radius, taking care not to overrun array */
+			if (i == num_grids)
+				new_radius = TRUE;
+			else if (distance_to_grid[i + 1] > distance_to_grid[i])
+				new_radius = TRUE;
+
+			/* We have all the grids at the current radius, so draw it */
+			if (new_radius) {
+				/* Flush all the grids at this radius */
 				Term_fresh();
 				if (player->upkeep->redraw)
 					redraw_stuff(player->upkeep);
 
-				/* Delay (efficiently) */
+				/* Delay to show this radius appearing */
 				if (visual || drawn) {
 					Term_xtra(TERM_XTRA_DELAY, msec);
 				}
-			}
 
-			/* Hack - repeat to avoid using uninitialised array element */
-			else if (distance_to_grid[i + 1] > distance_to_grid[i]) {
-				/* Flush each radius seperately */
-				Term_fresh();
-				if (player->upkeep->redraw)
-					redraw_stuff(player->upkeep);
-
-				/* Delay (efficiently) */
-				if (visual || drawn) {
-					Term_xtra(TERM_XTRA_DELAY, msec);
-				}
+				new_radius = FALSE;
 			}
 		}
 
-		/* Flush the erasing */
+		/* Erase and flush */
 		if (drawn) {
 			/* Erase the explosion drawn above */
 			for (i = 0; i < num_grids; i++) {
@@ -3315,10 +3312,9 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 				y = blast_grid[i].y;
 				x = blast_grid[i].x;
 
-				/* Hack -- Erase if needed */
-				if (panel_contains(y, x) && player_has_los_bold(y, x)) {
+				/* Erase visible, valid grids */
+				if (panel_contains(y, x) && player_has_los_bold(y, x))
 					square_light_spot(cave, y, x);
-				}
 			}
 
 			/* Hack -- center the cursor */
