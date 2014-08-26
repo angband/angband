@@ -166,3 +166,24 @@ void event_signal_birthpoints(int stats[6], int remaining)
 	game_event_dispatch(EVENT_BIRTHPOINTS, &data);
 }
 
+void event_signal_blast(game_event_type type,
+						int msec,
+						int gf_type,
+						int num_grids,
+						int *distance_to_grid,
+						bool *player_sees_grid,
+						struct loc *blast_grid,
+						struct loc centre)
+{
+	game_event_data data;
+	data.explosion.msec = msec;
+	data.explosion.gf_type = gf_type;
+	data.explosion.num_grids = num_grids;
+	data.explosion.distance_to_grid = distance_to_grid;
+	data.explosion.player_sees_grid = player_sees_grid;
+	data.explosion.blast_grid = blast_grid;
+	data.explosion.centre = centre;
+
+	game_event_dispatch(type, &data);
+}
+

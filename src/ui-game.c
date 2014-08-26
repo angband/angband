@@ -40,6 +40,7 @@
 #include "player-timed.h"
 #include "player-util.h"
 #include "prefs.h"
+#include "project.h"
 #include "textui.h"
 #include "ui-birth.h"
 #include "ui-map.h"
@@ -989,6 +990,44 @@ static void update_statusline(game_event_type type, game_event_data *data, void 
 /* ------------------------------------------------------------------------
  * Map redraw.
  * ------------------------------------------------------------------------ */
+/**
+ * Find the attr/char pair to use for a spell effect
+ *
+ * It is moving (or has moved) from (x,y) to (nx,ny).
+ *
+ * If the distance is not "one", we (may) return "*".
+ */
+static void bolt_pict(int y, int x, int ny, int nx, int typ, byte *a, wchar_t *c)
+{
+	int motion;
+
+	/* Convert co-ordinates into motion */
+	if ((ny == y) && (nx == x))
+		motion = BOLT_NO_MOTION;
+	else if (nx == x)
+		motion = BOLT_0;
+	else if ((ny-y) == (x-nx))
+		motion = BOLT_45;
+	else if (ny == y)
+		motion = BOLT_90;
+	else if ((ny-y) == (nx-x))
+		motion = BOLT_135;
+	else
+		motion = BOLT_NO_MOTION;
+
+	/* Decide on output char */
+	if (use_graphics == GRAPHICS_NONE) {
+		/* ASCII is simple */
+		wchar_t chars[] = L"*|/-\\";
+
+		*c = chars[motion];
+		*a = spell_color(typ);
+	} else {
+		*a = gf_to_attr[typ][motion];
+		*c = gf_to_char[typ][motion];
+	}
+}
+
 #if 0
 static void trace_map_updates(game_event_type type, game_event_data *data, void *user)
 {
@@ -1070,6 +1109,87 @@ static void update_maps(game_event_type type, game_event_data *data, void *user)
 
 		if ((tile_width > 1) || (tile_height > 1))
 		        Term_big_queue_char(t, vx, vy, a, c, TERM_WHITE, ' ');
+	}
+}
+
+static void display_explosion(game_event_type type, game_event_data *data, void *user)
+{
+	bool new_radius = FALSE;
+	bool drawn = FALSE;
+	int i, y, x;
+	int msec = data->explosion.msec;
+	int gf_type = data->explosion.gf_type;
+	int num_grids = data->explosion.num_grids;
+	int *distance_to_grid = data->explosion.distance_to_grid;
+	bool *player_sees_grid = data->explosion.player_sees_grid;
+	struct loc *blast_grid = data->explosion.blast_grid;
+	struct loc centre = data->explosion.centre;
+
+	/* Draw the blast from inside out */
+	for (i = 0; i <= num_grids; i++) {
+		/* Extract the location */
+		y = blast_grid[i].y;
+		x = blast_grid[i].x;
+
+		/* Only do visuals if the player can see the blast */
+		if (player_sees_grid[i]) {
+			byte a;
+			wchar_t c;
+
+			drawn = TRUE;
+
+			/* Obtain the explosion pict */
+			bolt_pict(y, x, y, x, gf_type, &a, &c);
+
+			/* Just display the pict, ignoring what was under it */
+			print_rel(c, a, y, x);
+		}
+
+		/* Center the cursor to stop it tracking the blast grids  */
+		move_cursor_relative(centre.y, centre.x);
+
+		/* Check for new radius, taking care not to overrun array */
+		if (i == num_grids)
+			new_radius = TRUE;
+		else if (distance_to_grid[i + 1] > distance_to_grid[i])
+			new_radius = TRUE;
+
+		/* We have all the grids at the current radius, so draw it */
+		if (new_radius) {
+			/* Flush all the grids at this radius */
+			Term_fresh();
+			if (player->upkeep->redraw)
+				redraw_stuff(player->upkeep);
+
+			/* Delay to show this radius appearing */
+			if (drawn) {
+				Term_xtra(TERM_XTRA_DELAY, msec);
+			}
+
+			new_radius = FALSE;
+		}
+	}
+
+	/* Erase and flush */
+	if (drawn) {
+		/* Erase the explosion drawn above */
+		for (i = 0; i < num_grids; i++) {
+			/* Extract the location */
+			y = blast_grid[i].y;
+			x = blast_grid[i].x;
+
+			/* Erase visible, valid grids */
+			if (player_sees_grid[i])
+				event_signal_point(EVENT_MAP, x, y);
+		}
+
+		/* Center the cursor */
+		move_cursor_relative(centre.y, centre.x);
+
+		/* Flush the explosion */
+		Term_fresh();
+		if (player->upkeep->redraw)
+			redraw_stuff(player->upkeep);
 	}
 }
 
@@ -1877,6 +1997,7 @@ static void ui_enter_game(game_event_type type, game_event_data *data, void *use
 	/* Check if the panel should shift when the player's moved */
 	event_add_handler(EVENT_PLAYERMOVED, check_panel, NULL);
 	event_add_handler(EVENT_SEEFLOOR, see_floor_items, NULL);
+	event_add_handler(EVENT_EXPLOSION, display_explosion, NULL);
 }
 
 static void ui_leave_game(game_event_type type, game_event_data *data, void *user)
@@ -1902,6 +2023,7 @@ static void ui_leave_game(game_event_type type, game_event_data *data, void *use
 	/* Check if the panel should shift when the player's moved */
 	event_remove_handler(EVENT_PLAYERMOVED, check_panel, NULL);
 	event_remove_handler(EVENT_SEEFLOOR, see_floor_items, NULL);
+	event_remove_handler(EVENT_EXPLOSION, display_explosion, NULL);
 }
 
 errr textui_get_cmd(cmd_context context, bool wait)

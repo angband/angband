@@ -19,6 +19,7 @@
 #include "angband.h"
 #include "cave.h"
 #include "dungeon.h"
+#include "game-event.h"
 #include "generate.h"
 #include "grafmode.h"
 #include "mon-make.h"
@@ -2890,9 +2891,6 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 	/* Assume the player has seen nothing */
 	bool visual = FALSE;
 
-	/* Assume the player has seen no blast grids */
-	bool drawn = FALSE;
-
 	/* Is the player blind? */
 	bool blind = (player->timed[TMD_BLIND] ? TRUE : FALSE);
 
@@ -2911,6 +2909,9 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 
 	/* Distance to each of the affected grids. */
 	int distance_to_grid[256];
+
+	/* Player visibility of each of the affected grids. */
+	bool player_sees_grid[256];
 
 	/* Precalculated damage values for each distance. */
 	int *dam_at_dist = malloc((MAX_RANGE + 1) * sizeof(*dam_at_dist));
@@ -3255,78 +3256,20 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 		}
 	}
 
-	/* Display the blast area if allowed. */
+	/* Establish which grids are visible - no blast visuals with PROJECT_HIDE */
 	if (!blind && !(flg & (PROJECT_HIDE))) {
-		bool new_radius = FALSE;
-
-		/* Draw the blast from inside out */
 		for (i = 0; i <= num_grids; i++) {
-			/* Extract the location */
-			y = blast_grid[i].y;
-			x = blast_grid[i].x;
-
-			/* Only do visuals if the player can "see" the blast */
-			if (panel_contains(y, x) && player_has_los_bold(y, x)) {
-				byte a;
-				wchar_t c;
-
-				drawn = TRUE;
-
-				/* Obtain the explosion pict */
-				bolt_pict(y, x, y, x, typ, &a, &c);
-
-				/* Just display the pict, ignoring what was under it */
-				print_rel(c, a, y, x);
-			}
-
-			/* Center the cursor to stop it tracking the blast grids  */
-			move_cursor_relative(centre.y, centre.x);
-
-			/* Check for new radius, taking care not to overrun array */
-			if (i == num_grids)
-				new_radius = TRUE;
-			else if (distance_to_grid[i + 1] > distance_to_grid[i])
-				new_radius = TRUE;
-
-			/* We have all the grids at the current radius, so draw it */
-			if (new_radius) {
-				/* Flush all the grids at this radius */
-				Term_fresh();
-				if (player->upkeep->redraw)
-					redraw_stuff(player->upkeep);
-
-				/* Delay to show this radius appearing */
-				if (visual || drawn) {
-					Term_xtra(TERM_XTRA_DELAY, msec);
-				}
-
-				new_radius = FALSE;
-			}
-		}
-
-		/* Erase and flush */
-		if (drawn) {
-			/* Erase the explosion drawn above */
-			for (i = 0; i < num_grids; i++) {
-				/* Extract the location */
-				y = blast_grid[i].y;
-				x = blast_grid[i].x;
-
-				/* Erase visible, valid grids */
-				if (panel_contains(y, x) && player_has_los_bold(y, x))
-					square_light_spot(cave, y, x);
-			}
-
-			/* Hack -- center the cursor */
-			move_cursor_relative(centre.y, centre.x);
-
-			/* Flush the explosion */
-			Term_fresh();
-			if (player->upkeep->redraw)
-				redraw_stuff(player->upkeep);
+			if (panel_contains(blast_grid[i].y, blast_grid[i].x) &&
+				player_has_los_bold(blast_grid[i].y, blast_grid[i].x))
+				player_sees_grid[i] = TRUE;
+			else
+				player_sees_grid[i] = FALSE;
 		}
 	}
 
+	/* Tell the UI to display the blast*/
+	event_signal_blast(EVENT_EXPLOSION, msec, typ, num_grids, distance_to_grid,
+					   player_sees_grid, blast_grid, centre);
 
 	/* Check features */
 	if (flg & (PROJECT_GRID)) {

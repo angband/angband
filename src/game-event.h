@@ -2,6 +2,8 @@
 #ifndef INCLUDED_GAME_EVENT_H
 #define INCLUDED_GAME_EVENT_H
 
+#include "z-type.h"
+
 /* The various events we can send signals about. */
 typedef enum game_event_type
 {
@@ -27,6 +29,7 @@ typedef enum game_event_type
 
 	EVENT_PLAYERMOVED,
 	EVENT_SEEFLOOR,         /* When the player would "see" floor objects */
+	EVENT_EXPLOSION,
 
 	EVENT_INVENTORY,
 	EVENT_EQUIPMENT,
@@ -63,7 +66,7 @@ typedef union
 		int x;
 		int y;
 	} point;
-		
+
 	const char *string;
 
 	bool flag;
@@ -84,6 +87,17 @@ typedef union
 		int *stats;
 		int remaining;
 	} birthstats;
+
+	struct
+	{
+		int msec;
+		int gf_type;
+		int num_grids;
+		int *distance_to_grid;
+		bool *player_sees_grid;
+		struct loc *blast_grid;
+		struct loc centre;
+	} explosion;
 
 } game_event_data;
 
@@ -108,5 +122,13 @@ void event_signal_point(game_event_type, int x, int y);
 void event_signal_string(game_event_type, const char *s);
 void event_signal_flag(game_event_type type, bool flag);
 void event_signal(game_event_type);
+void event_signal_blast(game_event_type type,
+						int msec,
+						int gf_type,
+						int num_grids,
+						int *distance_to_grid,
+						bool *player_sees_grid,
+						struct loc *blast_grid,
+						struct loc centre);
 
 #endif /* INCLUDED_GAME_EVENT_H */
