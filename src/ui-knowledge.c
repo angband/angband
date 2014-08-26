@@ -1429,7 +1429,7 @@ static object_type *find_artifact(struct artifact *artifact)
 	struct store *s;
 
 	/* Look for the artifact, either in inventory, store or the object list */
-	for (i = 0; i < z_info->o_max; i++)
+	for (i = 1; i < cave_object_max(cave); i++)
 	{
 		if (cave_object(cave, i)->artifact == artifact)
 			return cave_object(cave, i);
