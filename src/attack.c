@@ -505,11 +505,11 @@ static void ranged_helper(int item, int dir, int range, int shots, ranged_attack
 					/* Invisible monster */
 					msgt(MSG_SHOOT_HIT, "The %s finds a mark.", o_name);
 				} else {
-					for (i = 0; i < (int)N_ELEMENTS(ranged_hit_types); i++) {
+					for (j = 0; j < (int)N_ELEMENTS(ranged_hit_types); j++) {
 						char m_name[80];
 						const char *dmg_text = "";
 
-						if (msg_type != ranged_hit_types[i].msg)
+						if (msg_type != ranged_hit_types[j].msg)
 							continue;
 
 						if (OPT(show_damage))
@@ -517,10 +517,10 @@ static void ranged_helper(int item, int dir, int range, int shots, ranged_attack
 
 						monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_OBJE);
 
-						if (ranged_hit_types[i].text)
+						if (ranged_hit_types[j].text)
 							msgt(msg_type, "Your %s %s %s%s. %s", o_name, 
 								 hit_verb, m_name, dmg_text, 
-								 ranged_hit_types[i].text);
+								 ranged_hit_types[j].text);
 						else
 							msgt(msg_type, "Your %s %s %s%s.", o_name, hit_verb,
 								 m_name, dmg_text);
@@ -555,11 +555,8 @@ static void ranged_helper(int item, int dir, int range, int shots, ranged_attack
 	object_copy(i_ptr, o_ptr);
 	object_split(i_ptr, o_ptr, 1);
 
-	/* See if the ammunition broke or not */
-	j = breakage_chance(i_ptr, hit_target);
-
 	/* Drop (or break) near that location */
-	drop_near(cave, i_ptr, j, y, x, TRUE);
+	drop_near(cave, i_ptr, breakage_chance(i_ptr, hit_target), y, x, TRUE);
 
 	if (item >= 0) {
 		/* The ammo is from the inventory */
