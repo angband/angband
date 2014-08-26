@@ -45,6 +45,7 @@
 
 /*
  * Specify attr/char pairs for visual special effects for project()
+ * Ideally move these and GF-type colors to the UI - NRM
  */
 byte gf_to_attr[GF_MAX][BOLT_MAX];
 wchar_t gf_to_char[GF_MAX][BOLT_MAX];
@@ -1990,44 +1991,6 @@ int spell_color(int type)
 	return gf_color(type);
 }
 
-/*
- * Find the attr/char pair to use for a spell effect
- *
- * It is moving (or has moved) from (x,y) to (nx,ny).
- *
- * If the distance is not "one", we (may) return "*".
- */
-static void bolt_pict(int y, int x, int ny, int nx, int typ, byte *a, wchar_t *c)
-{
-	int motion;
-
-	/* Convert co-ordinates into motion */
-	if ((ny == y) && (nx == x))
-		motion = BOLT_NO_MOTION;
-	else if (nx == x)
-		motion = BOLT_0;
-	else if ((ny-y) == (x-nx))
-		motion = BOLT_45;
-	else if (ny == y)
-		motion = BOLT_90;
-	else if ((ny-y) == (nx-x))
-		motion = BOLT_135;
-	else
-		motion = BOLT_NO_MOTION;
-
-	/* Decide on output char */
-	if (use_graphics == GRAPHICS_NONE) {
-		/* ASCII is simple */
-		wchar_t chars[] = L"*|/-\\";
-
-		*c = chars[motion];
-		*a = spell_color(typ);
-	} else {
-		*a = gf_to_attr[typ][motion];
-		*c = gf_to_char[typ][motion];
-	}
-}
-
 /**
  * Adjust damage according to resistance or vulnerability.
  *
@@ -2888,9 +2851,6 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 	/* Assume the player sees nothing */
 	bool notice = FALSE;
 
-	/* Assume the player has seen nothing */
-	bool visual = FALSE;
-
 	/* Is the player blind? */
 	bool blind = (player->timed[TMD_BLIND] ? TRUE : FALSE);
 
@@ -3021,46 +2981,11 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 
 				/* Only do visuals if requested and within range limit. */
 				if (!blind && !(flg & (PROJECT_HIDE))) {
+					bool seen = player_has_los_bold(y, x);
+					bool beam = flg & (PROJECT_BEAM);
 
-					/* Only do visuals if the player can "see" the bolt */
-					if (player_has_los_bold(y, x)) {
-						byte a;
-						wchar_t c;
-
-						/* Obtain the bolt pict */
-						bolt_pict(oy, ox, y, x, typ, &a, &c);
-
-						/* Visual effects */
-						print_rel(c, a, y, x);
-						move_cursor_relative(y, x);
-						Term_fresh();
-						if (player->upkeep->redraw)
-							redraw_stuff(player->upkeep);
-						Term_xtra(TERM_XTRA_DELAY, msec);
-						square_light_spot(cave, y, x);
-						Term_fresh();
-						if (player->upkeep->redraw)
-							redraw_stuff(player->upkeep);
-
-						/* Display "beam" grids */
-						if (flg & (PROJECT_BEAM)) {
-
-							/* Obtain the explosion pict */
-							bolt_pict(y, x, y, x, typ, &a, &c);
-
-							/* Visual effects */
-							print_rel(c, a, y, x);
-						}
-
-						/* Hack -- Activate delay */
-						visual = TRUE;
-					}
-
-					/* Hack -- delay anyway for consistency */
-					else if (visual) {
-						/* Delay for consistency */
-						Term_xtra(TERM_XTRA_DELAY, msec);
-					}
+					/* Tell the UI to display the bolt */
+					event_signal_bolt(EVENT_BOLT, msec, typ, seen, beam, oy, ox, y, x);
 				}
 			}
 	}
@@ -3267,7 +3192,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 		}
 	}
 
-	/* Tell the UI to display the blast*/
+	/* Tell the UI to display the blast */
 	event_signal_blast(EVENT_EXPLOSION, msec, typ, num_grids, distance_to_grid,
 					   player_sees_grid, blast_grid, centre);
 

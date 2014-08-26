@@ -29,7 +29,7 @@
 #include "obj-util.h"
 #include "object.h"
 #include "player-timed.h"
-#include "project.h"
+//#include "project.h"
 #include "tables.h"
 #include "trap.h"
 
@@ -428,9 +428,6 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 	g->lighting = LIGHTING_DARK;
 	g->unseen_object = FALSE;
 	g->unseen_money = FALSE;
-	g->missile = NULL;
-	g->bolt = BOLT_MAX;
-	g->bolt_type = GF_MAX;
 
 	g->f_idx = cave->feat[y][x];
 	if (f_info[g->f_idx].mimic)

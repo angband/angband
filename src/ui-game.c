@@ -990,43 +990,6 @@ static void update_statusline(game_event_type type, game_event_data *data, void 
 /* ------------------------------------------------------------------------
  * Map redraw.
  * ------------------------------------------------------------------------ */
-/**
- * Find the attr/char pair to use for a spell effect
- *
- * It is moving (or has moved) from (x,y) to (nx,ny).
- *
- * If the distance is not "one", we (may) return "*".
- */
-static void bolt_pict(int y, int x, int ny, int nx, int typ, byte *a, wchar_t *c)
-{
-	int motion;
-
-	/* Convert co-ordinates into motion */
-	if ((ny == y) && (nx == x))
-		motion = BOLT_NO_MOTION;
-	else if (nx == x)
-		motion = BOLT_0;
-	else if ((ny-y) == (x-nx))
-		motion = BOLT_45;
-	else if (ny == y)
-		motion = BOLT_90;
-	else if ((ny-y) == (nx-x))
-		motion = BOLT_135;
-	else
-		motion = BOLT_NO_MOTION;
-
-	/* Decide on output char */
-	if (use_graphics == GRAPHICS_NONE) {
-		/* ASCII is simple */
-		wchar_t chars[] = L"*|/-\\";
-
-		*c = chars[motion];
-		*a = spell_color(typ);
-	} else {
-		*a = gf_to_attr[typ][motion];
-		*c = gf_to_char[typ][motion];
-	}
-}
 
 #if 0
 static void trace_map_updates(game_event_type type, game_event_data *data, void *user)
@@ -1112,6 +1075,48 @@ static void update_maps(game_event_type type, game_event_data *data, void *user)
 	}
 }
 
+/* ------------------------------------------------------------------------
+ * Animations.
+ * ------------------------------------------------------------------------ */
+
+/**
+ * Find the attr/char pair to use for a spell effect
+ *
+ * It is moving (or has moved) from (x,y) to (nx,ny).
+ *
+ * If the distance is not "one", we (may) return "*".
+ */
+static void bolt_pict(int y, int x, int ny, int nx, int typ, byte *a, wchar_t *c)
+{
+	int motion;
+
+	/* Convert co-ordinates into motion */
+	if ((ny == y) && (nx == x))
+		motion = BOLT_NO_MOTION;
+	else if (nx == x)
+		motion = BOLT_0;
+	else if ((ny-y) == (x-nx))
+		motion = BOLT_45;
+	else if (ny == y)
+		motion = BOLT_90;
+	else if ((ny-y) == (nx-x))
+		motion = BOLT_135;
+	else
+		motion = BOLT_NO_MOTION;
+
+	/* Decide on output char */
+	if (use_graphics == GRAPHICS_NONE) {
+		/* ASCII is simple */
+		wchar_t chars[] = L"*|/-\\";
+
+		*c = chars[motion];
+		*a = spell_color(typ);
+	} else {
+		*a = gf_to_attr[typ][motion];
+		*c = gf_to_char[typ][motion];
+	}
+}
+
 static void display_explosion(game_event_type type, game_event_data *data, void *user)
 {
 	bool new_radius = FALSE;
@@ -1190,6 +1195,61 @@ static void display_explosion(game_event_type type, game_event_data *data, void 
 		Term_fresh();
 		if (player->upkeep->redraw)
 			redraw_stuff(player->upkeep);
+	}
+}
+
+static void display_bolt(game_event_type type, game_event_data *data, void *user)
+{
+	int msec = data->bolt.msec;
+	int gf_type = data->bolt.gf_type;
+	bool seen = data->bolt.seen;
+	bool beam = data->bolt.beam;
+	int oy = data->bolt.oy;
+	int ox = data->bolt.ox;
+	int y = data->bolt.y;
+	int x = data->bolt.x;
+
+	/* Assume the player has seen nothing */
+	bool visual = FALSE;
+
+	/* Only do visuals if the player can "see" the bolt */
+	if (seen) {
+		byte a;
+		wchar_t c;
+
+		/* Obtain the bolt pict */
+		bolt_pict(oy, ox, y, x, gf_type, &a, &c);
+
+		/* Visual effects */
+		print_rel(c, a, y, x);
+		move_cursor_relative(y, x);
+		Term_fresh();
+		if (player->upkeep->redraw)
+			redraw_stuff(player->upkeep);
+		Term_xtra(TERM_XTRA_DELAY, msec);
+		event_signal_point(EVENT_MAP, x, y);
+		Term_fresh();
+		if (player->upkeep->redraw)
+			redraw_stuff(player->upkeep);
+
+		/* Display "beam" grids */
+		if (beam) {
+
+			/* Obtain the explosion pict */
+			bolt_pict(y, x, y, x, gf_type, &a, &c);
+
+			/* Visual effects */
+			print_rel(c, a, y, x);
+		}
+
+		/* Hack -- Activate delay */
+		visual = TRUE;
+	}
+
+	/* Hack -- delay anyway for consistency */
+	else if (visual) {
+		/* Delay for consistency */
+		Term_xtra(TERM_XTRA_DELAY, msec);
 	}
 }
 
@@ -1998,6 +2058,7 @@ static void ui_enter_game(game_event_type type, game_event_data *data, void *use
 	event_add_handler(EVENT_PLAYERMOVED, check_panel, NULL);
 	event_add_handler(EVENT_SEEFLOOR, see_floor_items, NULL);
 	event_add_handler(EVENT_EXPLOSION, display_explosion, NULL);
+	event_add_handler(EVENT_BOLT, display_bolt, NULL);
 }
 
 static void ui_leave_game(game_event_type type, game_event_data *data, void *user)
@@ -2024,6 +2085,7 @@ static void ui_leave_game(game_event_type type, game_event_data *data, void *use
 	event_remove_handler(EVENT_PLAYERMOVED, check_panel, NULL);
 	event_remove_handler(EVENT_SEEFLOOR, see_floor_items, NULL);
 	event_remove_handler(EVENT_EXPLOSION, display_explosion, NULL);
+	event_remove_handler(EVENT_BOLT, display_bolt, NULL);
 }
 
 errr textui_get_cmd(cmd_context context, bool wait)

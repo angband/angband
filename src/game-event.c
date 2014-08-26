@@ -187,3 +187,25 @@ void event_signal_blast(game_event_type type,
 	game_event_dispatch(type, &data);
 }
 
+void event_signal_bolt(game_event_type type,
+					   int msec,
+					   int gf_type,
+					   bool seen,
+					   bool beam,
+					   int oy,
+					   int ox,
+					   int y,
+					   int x)
+{
+	game_event_data data;
+	data.bolt.msec = msec;
+	data.bolt.gf_type = gf_type;
+	data.bolt.seen = seen;
+	data.bolt.beam = beam;
+	data.bolt.oy = oy;
+	data.bolt.ox = ox;
+	data.bolt.y = y;
+	data.bolt.x = x;
+
+	game_event_dispatch(type, &data);
+}

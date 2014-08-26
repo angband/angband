@@ -192,9 +192,6 @@ typedef struct
 	u32b m_idx;				/* Monster index */
 	u32b f_idx;				/* Feature index */
 	struct object_kind *first_kind;	/* The kind of the first item on the grid */
-	struct object_kind *missile;	/* The kind of a missile passing over */
-	int bolt;				/* Picture of spell passing over */
-	int bolt_type;			/* Projection (gf) type of spell passing over */
 	u32b trap;				/* Trap index */
 	bool multiple_objects;	/* Is there more than one item there? */
 	bool unseen_object;		/* Is there an unaware object there? */

@@ -26,7 +26,6 @@
 #include "obj-util.h"
 #include "player-timed.h"
 #include "prefs.h"
-#include "project.h"
 #include "trap.h"
 #include "ui-map.h"
 
@@ -374,17 +373,6 @@ void grid_data_as_text(grid_data *g, int *ap, wchar_t *cp, int *tap, wchar_t *tc
 		/* no overlay is used, so we can use the trap border overlay */
 		a = f_info[FEAT_DTRAP_WALL].x_attr[g->lighting];
 		c = f_info[FEAT_DTRAP_WALL].x_char[g->lighting];
-	}
-
-	/* Handle missiles and spells */
-	if (g->missile) {
-		a = object_kind_attr(g->missile);
-		c = object_kind_char(g->missile);
-	} else if ((g->bolt < BOLT_MAX) && (g->bolt_type < GF_MAX)) {
-		wchar_t chars[] = L"*|/-\\";
-
-		c = chars[g->bolt];
-		a = spell_color(g->bolt_type);
 	}
 
 	/* Result */

@@ -30,6 +30,7 @@ typedef enum game_event_type
 	EVENT_PLAYERMOVED,
 	EVENT_SEEFLOOR,         /* When the player would "see" floor objects */
 	EVENT_EXPLOSION,
+	EVENT_BOLT,
 
 	EVENT_INVENTORY,
 	EVENT_EQUIPMENT,
@@ -99,6 +100,18 @@ typedef union
 		struct loc centre;
 	} explosion;
 
+	struct
+	{
+		int msec;
+		int gf_type;
+		bool seen;
+		bool beam;
+		int oy;
+		int ox;
+		int y;
+		int x;
+	} bolt;
+
 } game_event_data;
 
 
@@ -130,5 +143,14 @@ void event_signal_blast(game_event_type type,
 						bool *player_sees_grid,
 						struct loc *blast_grid,
 						struct loc centre);
+void event_signal_bolt(game_event_type type,
+					   int msec,
+					   int gf_type,
+					   bool seen,
+					   bool beam,
+					   int oy,
+					   int ox,
+					   int y,
+					   int x);
 
 #endif /* INCLUDED_GAME_EVENT_H */
