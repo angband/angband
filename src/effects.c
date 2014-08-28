@@ -153,6 +153,10 @@ static bool project_aimed(int typ, int dir, int dam, int flg)
 	/* Pass through the target if needed */
 	flg |= (PROJECT_THRU);
 
+	/* Can hurt the player */
+	if (source > 0)
+		flg |= (PROJECT_PLAY);
+
 	/* Use the adjacent grid in the given direction as target */
 	ty = py + ddy[dir];
 	tx = px + ddx[dir];
@@ -2754,6 +2758,7 @@ bool effect_handler_BALL(effect_handler_context_t *context)
 		struct monster *mon = cave_monster(cave, cave->mon_current);
 		source = cave->mon_current;
 		if (rf_has(mon->race->flags, RF_POWERFUL)) rad++;
+		flg |= PROJECT_PLAY;
 	} else {
 		if (context->p3) rad += player->lev / context->p3;
 		source = -1;
@@ -2799,6 +2804,7 @@ bool effect_handler_BREATH(effect_handler_context_t *context)
 	if (cave->mon_current > 0) {
 		struct monster *mon = cave_monster(cave, cave->mon_current);
 		source = cave->mon_current;
+		flg |= PROJECT_PLAY;
 
 		/* Breath parameters for monsters are monster-dependent */
 		dam = breath_dam(type, mon->hp); 
