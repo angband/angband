@@ -135,7 +135,7 @@ static const char *kind_flags[] = {
 };
 
 static const char *elements[] = {
-	#define ELEM(a, b, c, d, e, f, g, col, h, fh, oh, mh, ph) #a,
+	#define ELEM(a, b, c, d, e, f, g, col, h, oh, mh, ph) #a,
 	#include "list-elements.h"
 	#undef ELEM
 	NULL
@@ -149,7 +149,7 @@ static const char *slays[] = {
 };
 
 static const char *brand_names[] = {
-	#define ELEM(a, b, c, d, e, f, g, col, h, fh, oh, mh, ph) b,
+	#define ELEM(a, b, c, d, e, f, g, col, h, oh, mh, ph) b,
 	#include "list-elements.h"
 	#undef ELEM
 	NULL

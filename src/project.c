@@ -325,7 +325,9 @@ bool projectable(struct chunk *c, int y1, int x1, int y2, int x2, int flg)
 }
 
 
-// feature handlers
+/* ------------------------------------------------------------------------
+ * Feature handlers
+ * ------------------------------------------------------------------------ */
 
 typedef struct project_feature_handler_context_s {
 	const int who;
@@ -338,88 +340,53 @@ typedef struct project_feature_handler_context_s {
 } project_feature_handler_context_t;
 typedef void (*project_feature_handler_f)(project_feature_handler_context_t *);
 
-/* Destroy Traps (and Locks) */
-static void project_feature_handler_KILL_TRAP(project_feature_handler_context_t *context)
+/* Light up the grid */
+static void project_feature_handler_LIGHT_WEAK(project_feature_handler_context_t *context)
 {
 	const int x = context->x;
 	const int y = context->y;
 
-	/* Reveal secret doors */
-	if (square_issecretdoor(cave, y, x))
-	{
-		place_closed_door(cave, y, x);
+	/* Turn on the light */
+	sqinfo_on(cave->info[y][x], SQUARE_GLOW);
 
-		/* Check line of sight */
-		if (player_has_los_bold(y, x))
-		{
-			context->obvious = TRUE;
-		}
-	}
-
-	/* Destroy traps */
-	if (square_istrap(cave, y, x))
+	/* Grid is in line of sight */
+	if (player_has_los_bold(y, x))
 	{
-		/* Check line of sight */
-		if (player_has_los_bold(y, x))
+		if (!player->timed[TMD_BLIND])
 		{
-			msg("There is a bright flash of light!");
+			/* Observe */
 			context->obvious = TRUE;
 		}
 
-		/* Forget the trap */
-		sqinfo_off(cave->info[y][x], SQUARE_MARK);
-
-		/* Destroy the trap */
-		square_destroy_trap(cave, y, x);
-	}
-
-	/* Locked doors are unlocked */
-	else if (square_islockeddoor(cave, y, x))
-	{
-		/* Unlock the door */
-		square_unlock_door(cave, y, x);
-
-		/* Check line of sound */
-		if (player_has_los_bold(y, x))
-		{
-			msg("Click!");
-			context->obvious = TRUE;
-		}
+		/* Fully update the visuals */
+		player->upkeep->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
 	}
 }
 
-/* Destroy Doors (and traps) */
-static void project_feature_handler_KILL_DOOR(project_feature_handler_context_t *context)
+/* Darken the grid */
+static void project_feature_handler_DARK_WEAK(project_feature_handler_context_t *context)
 {
 	const int x = context->x;
 	const int y = context->y;
 
-	/* Destroy all doors and traps */
-	if (square_istrap(cave, y, x) || square_isdoor(cave, y, x))
+	if (player->depth != 0 || !is_daytime())
 	{
-		/* Check line of sight */
-		if (player_has_los_bold(y, x))
-		{
-			/* Message */
-			msg("There is a bright flash of light!");
-			context->obvious = TRUE;
+		/* Turn off the light */
+		sqinfo_off(cave->info[y][x], SQUARE_GLOW);
 
-			/* Visibility change */
-			if (square_isdoor(cave, y, x))
-			{
-				/* Update the visuals */
-				player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
-			}
-		}
+		/* Hack -- Forget "boring" grids */
+		if (!square_isinteresting(cave, y, x))
+			sqinfo_off(cave->info[y][x], SQUARE_MARK);
+	}
 
-		/* Forget the door */
-		sqinfo_off(cave->info[y][x], SQUARE_MARK);
+	/* Grid is in line of sight */
+	if (player_has_los_bold(y, x))
+	{
+		/* Observe */
+		context->obvious = TRUE;
 
-		/* Destroy the feature */
-		if (square_isdoor(cave, y, x))
-			square_destroy_door(cave, y, x);
-		else
-			square_destroy_trap(cave, y, x);
+		/* Fully update the visuals */
+		player->upkeep->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
 	}
 }
 
@@ -541,6 +508,91 @@ static void project_feature_handler_KILL_WALL(project_feature_handler_context_t 
 	player->upkeep->update |= (PU_FORGET_FLOW | PU_UPDATE_FLOW);
 }
 
+/* Destroy Doors (and traps) */
+static void project_feature_handler_KILL_DOOR(project_feature_handler_context_t *context)
+{
+	const int x = context->x;
+	const int y = context->y;
+
+	/* Destroy all doors and traps */
+	if (square_istrap(cave, y, x) || square_isdoor(cave, y, x))
+	{
+		/* Check line of sight */
+		if (player_has_los_bold(y, x))
+		{
+			/* Message */
+			msg("There is a bright flash of light!");
+			context->obvious = TRUE;
+
+			/* Visibility change */
+			if (square_isdoor(cave, y, x))
+			{
+				/* Update the visuals */
+				player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
+			}
+		}
+
+		/* Forget the door */
+		sqinfo_off(cave->info[y][x], SQUARE_MARK);
+
+		/* Destroy the feature */
+		if (square_isdoor(cave, y, x))
+			square_destroy_door(cave, y, x);
+		else
+			square_destroy_trap(cave, y, x);
+	}
+}
+
+/* Destroy Traps (and Locks) */
+static void project_feature_handler_KILL_TRAP(project_feature_handler_context_t *context)
+{
+	const int x = context->x;
+	const int y = context->y;
+
+	/* Reveal secret doors */
+	if (square_issecretdoor(cave, y, x))
+	{
+		place_closed_door(cave, y, x);
+
+		/* Check line of sight */
+		if (player_has_los_bold(y, x))
+		{
+			context->obvious = TRUE;
+		}
+	}
+
+	/* Destroy traps */
+	if (square_istrap(cave, y, x))
+	{
+		/* Check line of sight */
+		if (player_has_los_bold(y, x))
+		{
+			msg("There is a bright flash of light!");
+			context->obvious = TRUE;
+		}
+
+		/* Forget the trap */
+		sqinfo_off(cave->info[y][x], SQUARE_MARK);
+
+		/* Destroy the trap */
+		square_destroy_trap(cave, y, x);
+	}
+
+	/* Locked doors are unlocked */
+	else if (square_islockeddoor(cave, y, x))
+	{
+		/* Unlock the door */
+		square_unlock_door(cave, y, x);
+
+		/* Check line of sound */
+		if (player_has_los_bold(y, x))
+		{
+			msg("Click!");
+			context->obvious = TRUE;
+		}
+	}
+}
+
 /* Make doors */
 static void project_feature_handler_MAKE_DOOR(project_feature_handler_context_t *context)
 {
@@ -580,57 +632,113 @@ static void project_feature_handler_MAKE_TRAP(project_feature_handler_context_t 
 	place_trap(cave, y, x, -1, cave->depth);
 }
 
+static void project_feature_handler_ACID(project_feature_handler_context_t *context)
+{
+}
+
+static void project_feature_handler_ELEC(project_feature_handler_context_t *context)
+{
+}
+
+static void project_feature_handler_FIRE(project_feature_handler_context_t *context)
+{
+}
+
+static void project_feature_handler_COLD(project_feature_handler_context_t *context)
+{
+}
+
+static void project_feature_handler_POIS(project_feature_handler_context_t *context)
+{
+}
+
 /* Light up the grid */
 static void project_feature_handler_LIGHT(project_feature_handler_context_t *context)
 {
-	const int x = context->x;
-	const int y = context->y;
-
-	/* Turn on the light */
-	sqinfo_on(cave->info[y][x], SQUARE_GLOW);
-
-	/* Grid is in line of sight */
-	if (player_has_los_bold(y, x))
-	{
-		if (!player->timed[TMD_BLIND])
-		{
-			/* Observe */
-			context->obvious = TRUE;
-		}
-
-		/* Fully update the visuals */
-		player->upkeep->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
-	}
+	project_feature_handler_LIGHT_WEAK(context);
 }
 
 /* Darken the grid */
 static void project_feature_handler_DARK(project_feature_handler_context_t *context)
 {
-	const int x = context->x;
-	const int y = context->y;
-
-	if (player->depth != 0 || !is_daytime())
-	{
-		/* Turn off the light */
-		sqinfo_off(cave->info[y][x], SQUARE_GLOW);
-
-		/* Hack -- Forget "boring" grids */
-		if (!square_isinteresting(cave, y, x))
-			sqinfo_off(cave->info[y][x], SQUARE_MARK);
-	}
-
-	/* Grid is in line of sight */
-	if (player_has_los_bold(y, x))
-	{
-		/* Observe */
-		context->obvious = TRUE;
-
-		/* Fully update the visuals */
-		player->upkeep->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
-	}
+	project_feature_handler_DARK_WEAK(context);
 }
 
-// object handlers
+static void project_feature_handler_SOUND(project_feature_handler_context_t *context)
+{
+}
+
+static void project_feature_handler_SHARD(project_feature_handler_context_t *context)
+{
+}
+
+static void project_feature_handler_NEXUS(project_feature_handler_context_t *context)
+{
+}
+
+static void project_feature_handler_NETHER(project_feature_handler_context_t *context)
+{
+}
+
+static void project_feature_handler_CHAOS(project_feature_handler_context_t *context)
+{
+}
+
+static void project_feature_handler_DISEN(project_feature_handler_context_t *context)
+{
+}
+
+static void project_feature_handler_WATER(project_feature_handler_context_t *context)
+{
+}
+
+static void project_feature_handler_ICE(project_feature_handler_context_t *context)
+{
+}
+
+static void project_feature_handler_GRAVITY(project_feature_handler_context_t *context)
+{
+}
+
+static void project_feature_handler_INERTIA(project_feature_handler_context_t *context)
+{
+}
+
+static void project_feature_handler_FORCE(project_feature_handler_context_t *context)
+{
+}
+
+static void project_feature_handler_TIME(project_feature_handler_context_t *context)
+{
+}
+
+static void project_feature_handler_PLASMA(project_feature_handler_context_t *context)
+{
+}
+
+static void project_feature_handler_METEOR(project_feature_handler_context_t *context)
+{
+}
+
+static void project_feature_handler_MISSILE(project_feature_handler_context_t *context)
+{
+}
+
+static void project_feature_handler_MANA(project_feature_handler_context_t *context)
+{
+}
+
+static void project_feature_handler_HOLY_ORB(project_feature_handler_context_t *context)
+{
+}
+
+static void project_feature_handler_ARROW(project_feature_handler_context_t *context)
+{
+}
+
+/* ------------------------------------------------------------------------
+ * Object handlers
+ * ------------------------------------------------------------------------ */
 
 typedef struct project_object_handler_context_s {
 	const int who;
@@ -751,7 +859,9 @@ static void project_object_handler_chest(project_object_handler_context_t *conte
 	}
 }
 
-// monster handlers
+/* ------------------------------------------------------------------------
+ * Monster handlers
+ * ------------------------------------------------------------------------ */
 
 typedef struct project_monster_handler_context_s {
 	const int who;
@@ -1372,7 +1482,9 @@ static void project_monster_handler_DISP_ALL(project_monster_handler_context_t *
 	context->die_msg = MON_MSG_DISSOLVE;
 }
 
-// player handlers
+/* ------------------------------------------------------------------------
+ * Player handlers
+ * ------------------------------------------------------------------------ */
 
 /**
  * Drain stats at random
@@ -1682,7 +1794,9 @@ static void project_player_handler_PLASMA(project_player_handler_context_t *cont
 	}
 }
 
-// other functions
+/* ------------------------------------------------------------------------
+ * Other functions
+ * ------------------------------------------------------------------------ */
 
 /**
  * Structure for GF types and their handler functions
@@ -1703,10 +1817,10 @@ static const struct gf_type {
 	project_monster_handler_f monster_handler;
 	project_player_handler_f player_handler;
 } gf_table[] = {
-	#define ELEM(a, b, c, d, e, f, g, col, h, fh, oh, mh, ph)	\
-		{ GF_##a, b, c, d, e, FALSE, col, h, fh, oh, mh, ph },
+	#define ELEM(a, b, c, d, e, f, g, col, h, oh, mh, ph)	\
+		{ GF_##a, b, c, d, e, FALSE, col, h, project_feature_handler_##a, oh, mh, ph },
 	#define RV(b, x, y, m) {b, x, y, m}
-	#define FH(x) project_feature_handler_##x
+	//#define FH(x) project_feature_handler_##x
 	#define OH(x) project_object_handler_##x
 	#define MH(x) project_monster_handler_##x
 	#define PH(x) project_player_handler_##x
@@ -1715,7 +1829,7 @@ static const struct gf_type {
 	#undef RV
 	#undef PH
 	#define PROJ_ENV(a, col, fh, oh, mh) \
-		{ GF_##a, NULL, NULL, 0, {0, 0, 0, 0}, FALSE, col, 0, fh, oh, mh, NULL},
+		{ GF_##a, NULL, NULL, 0, {0, 0, 0, 0}, FALSE, col, 0, project_feature_handler_##a, oh, mh, NULL},
 	#include "list-project-environs.h"
 	#undef PROJ_ENV
 	#undef FH
@@ -1730,7 +1844,7 @@ static const struct gf_type {
 
 static const char *gf_name_list[] =
 {
-	#define ELEM(a, b, c, d, e, f, g, col, h, fh, oh, mh, ph) #a,
+	#define ELEM(a, b, c, d, e, f, g, col, h, oh, mh, ph) #a,
 	#include "list-elements.h"
 	#undef ELEM
 	#define PROJ_ENV(a, col, fh, oh, mh) #a,
