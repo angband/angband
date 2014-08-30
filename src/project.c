@@ -2079,7 +2079,7 @@ static byte gf_color(int type)
  * Other functions
  * ------------------------------------------------------------------------ */
 
-/*
+/**
  * Destroys a type of item on a given percent chance.
  * The chance 'cperc' is in hundredths of a percent (1-in-10000)
  * Note that missiles are no longer necessarily all destroyed
@@ -2125,7 +2125,7 @@ int inven_damage(struct player *p, int type, int cperc)
 			/* Track if it is damaged instead of destroyed */
 			damage = FALSE;
 
-			/** 
+			/*
 			 * Analyze the type to see if we just damage it
 			 * - we also check for rods to reduce chance
 			 */
@@ -2211,7 +2211,7 @@ int inven_damage(struct player *p, int type, int cperc)
 	return (k);
 }
 
-/*
+/**
  * Helper function -- return a "nearby" race for polymorphing
  *
  * Note that this function is one of the more "dangerous" ones...
@@ -2347,21 +2347,24 @@ static int project_m_n;
 static int project_m_x;
 static int project_m_y;
 
-/*
- * We are called from "project()" to "damage" terrain features
+/**
+ * Called from project() to affect terrain features
  *
- * We are called both for "beam" effects and "ball" effects.
+ * Called for projections with the PROJECT_GRID flag set, which includes
+ * beam, ball and breath effects.
  *
- * The "r" parameter is the "distance from ground zero".
+ * \param who is the monster list index of the caster
+ * \param r is the distance from the centre of the effect
+ * \param y
+ * \param x the coordinates of the grid being handled
+ * \param dam is the "damage" from the effect at distance r from the centre
+ * \param typ is the projection (GF_) type
+ * \return whether the effects were obvious
  *
- * Note that we determine if the player can "see" anything that happens
- * by taking into account: blindness, line-of-sight, and illumination.
+ * Note that this function determines if the player can see anything that
+ * happens by taking into account: blindness, line-of-sight, and illumination.
  *
- * We return "TRUE" if the effect of the projection is "obvious".
- *
- * Hack -- We also "see" grids which are "memorized".
- *
- * Perhaps we should affect doors and/or walls.
+ * Hack -- effects on grids which are memorized but not in view are also seen.
  */
 static bool project_f(int who, int r, int y, int x, int dam, int typ)
 {
@@ -2385,21 +2388,24 @@ static bool project_f(int who, int r, int y, int x, int dam, int typ)
 	return context.obvious;
 }
 
-/*
- * We are called from "project()" to "damage" objects
+/**
+ * Called from project() to affect objects
  *
- * We are called both for "beam" effects and "ball" effects.
+ * Called for projections with the PROJECT_ITEM flag set, which includes
+ * beam, ball and breath effects.
  *
- * Perhaps we should only SOMETIMES damage things on the ground.
+ * \param who is the monster list index of the caster
+ * \param r is the distance from the centre of the effect
+ * \param y
+ * \param x the coordinates of the grid being handled
+ * \param dam is the "damage" from the effect at distance r from the centre
+ * \param typ is the projection (GF_) type
+ * \return whether the effects were obvious
  *
- * The "r" parameter is the "distance from ground zero".
+ * Note that this function determines if the player can see anything that
+ * happens by taking into account: blindness, line-of-sight, and illumination.
  *
- * Note that we determine if the player can "see" anything that happens
- * by taking into account: blindness, line-of-sight, and illumination.
- *
- * Hack -- We also "see" objects which are "memorized".
- *
- * We return "TRUE" if the effect of the projection is "obvious".
+ * Hack -- effects on objects which are memorized but not in view are also seen.
  */
 static bool project_o(int who, int r, int y, int x, int dam, int typ)
 {
@@ -2407,8 +2413,7 @@ static bool project_o(int who, int r, int y, int x, int dam, int typ)
 	bool obvious = FALSE;
 
 	/* Scan all objects in the grid */
-	for (this_o_idx = cave->o_idx[y][x]; this_o_idx; this_o_idx = next_o_idx)
-	{
+	for (this_o_idx = cave->o_idx[y][x]; this_o_idx; this_o_idx = next_o_idx) {
 		object_type *o_ptr;
 		bool ignore = FALSE;
 		bool do_kill = FALSE;
@@ -2444,33 +2449,25 @@ static bool project_o(int who, int r, int y, int x, int dam, int typ)
 		note_kill = context.note_kill;
 
 		/* Attempt to destroy the object */
-		if (do_kill)
-		{
+		if (do_kill) {
 			char o_name[80];
 
 			/* Effect "observed" */
-			if (o_ptr->marked && !ignore_item_ok(o_ptr))
-			{
+			if (o_ptr->marked && !ignore_item_ok(o_ptr)) {
 				obvious = TRUE;
 				object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
 			}
 
 			/* Artifacts, and other objects, get to resist */
-			if (o_ptr->artifact || ignore)
-			{
+			if (o_ptr->artifact || ignore) {
 				/* Observe the resist */
 				if (o_ptr->marked && !ignore_item_ok(o_ptr))
-					msg("The %s %s unaffected!", o_name, VERB_AGREEMENT(o_ptr->number, "is", "are"));
-			}
-
-			/* Reveal mimics */
-			else if (o_ptr->mimicking_m_idx) {
+					msg("The %s %s unaffected!", o_name,
+						VERB_AGREEMENT(o_ptr->number, "is", "are"));
+			} else if (o_ptr->mimicking_m_idx) {
+				/* Reveal mimics */
 				become_aware(cave_monster(cave, o_ptr->mimicking_m_idx));
-			}
-
-			/* Kill it */
-			else
-			{
+			} else {
 				/* Describe if needed */
 				if (o_ptr->marked && note_kill && !ignore_item_ok(o_ptr))
 					msgt(MSG_DESTROY, "The %s %s!", o_name, note_kill);
@@ -2491,9 +2488,9 @@ static bool project_o(int who, int r, int y, int x, int dam, int typ)
 /**
  * Deal damage to a monster from another monster.
  *
- * This is a helper for project_m(). It is very similar to mon_take_hit(), but eliminates the player-oriented
- * stuff of that function. It isn't a type handler, but we take a handler context since that has a lot of
- * what we need.
+ * This is a helper for project_m(). It is very similar to mon_take_hit(),
+ * but eliminates the player-oriented stuff of that function. It isn't a type
+ * handler, but we take a handler context since that has a lot of what we need.
  *
  * \param context is the project_m context.
  * \param m_name is the formatted monster name.
@@ -2526,8 +2523,7 @@ static bool project_m_monster_attack(project_monster_handler_context_t *context,
 	m_ptr->hp -= dam;
 
 	/* Dead monster */
-	if (m_ptr->hp < 0)
-	{
+	if (m_ptr->hp < 0) {
 		/* Give detailed messages if destroyed */
 		if (!seen) die_msg = MON_MSG_MORIA_DEATH;
 
@@ -2541,19 +2537,14 @@ static bool project_m_monster_attack(project_monster_handler_context_t *context,
 		delete_monster_idx(m_idx);
 
 		mon_died = TRUE;
-	}
-
-	/* Damaged monster */
-	else if (!is_mimicking(m_ptr))
-	{
+	} else if (!is_mimicking(m_ptr)) { /* Damaged monster */
 		/* Give detailed messages if visible or destroyed */
 		if ((hurt_msg != MON_MSG_NONE) && seen)
-		{
 			add_monster_message(m_name, m_ptr, hurt_msg, FALSE);
-		}
 
 		/* Hack -- Pain message */
-		else if (dam > 0) message_pain(m_ptr, dam);
+		else if (dam > 0)
+			message_pain(m_ptr, dam);
 	}
 
 	return mon_died;
@@ -2562,8 +2553,8 @@ static bool project_m_monster_attack(project_monster_handler_context_t *context,
 /**
  * Deal damage to a monster from the player
  *
- * This is a helper for project_m(). It isn't a type handler, but we take a handler context since that
- * has a lot of what we need.
+ * This is a helper for project_m(). It isn't a type handler, but we take a
+ * handler context since that has a lot of what we need.
  *
  * \param context is the project_m context.
  * \param m_name is the formatted monster name.
@@ -2580,8 +2571,9 @@ static bool project_m_player_attack(project_monster_handler_context_t *context, 
 	monster_type *m_ptr = context->m_ptr;
 
 	/*
-	 * The monster is going to be killed, so display a specific death message before mon_take_hit() displays
-	 * its own message that the player has killed/destroyed the monster. If the monster is not visible to
+	 * The monster is going to be killed, so display a specific death message
+	 * before mon_take_hit() displays its own message that the player has
+	 * killed/destroyed the monster. If the monster is not visible to
 	 * the player, use a generic message.
 	 */
 	if (dam > m_ptr->hp) {
@@ -2592,8 +2584,9 @@ static bool project_m_player_attack(project_monster_handler_context_t *context, 
 	mon_died = mon_take_hit(m_ptr, dam, &fear, "");
 
 	/*
-	 * If the monster didn't die, provide additional messages about how it was hurt/damaged. If a specific
-	 * message isn't provided, display a message based on the amount of damage dealt. Also display a message
+	 * If the monster didn't die, provide additional messages about how it was
+	 * hurt/damaged. If a specific message isn't provided, display a message
+	 * based on the amount of damage dealt. Also display a message
 	 * if the hit caused the monster to flee.
 	 */
 	if (!mon_died) {
@@ -2612,8 +2605,8 @@ static bool project_m_player_attack(project_monster_handler_context_t *context, 
 /**
  * Apply side effects from an attack onto a monster.
  *
- * This is a helper for project_m(). It isn't a type handler, but we take a handler context since that
- * has a lot of what we need.
+ * This is a helper for project_m(). It isn't a type handler, but we take a
+ * handler context since that has a lot of what we need.
  *
  * \param context is the project_m context.
  * \param m_name is the formatted monster name.
@@ -2625,9 +2618,11 @@ static void project_m_apply_side_effects(project_monster_handler_context_t *cont
 	monster_type *m_ptr = context->m_ptr;
 
 	/*
-	 * Handle side effects of an attack. First we check for polymorphing since it may not make sense to
-	 * apply status effects to a changed monster. Right now, teleporting is also separate, but it could
-	 * make sense in the future to change it so that we can apply other effects AND teleport the monster.
+	 * Handle side effects of an attack. First we check for polymorphing since
+	 * it may not make sense to apply status effects to a changed monster.
+	 * Right now, teleporting is also separate, but it could make sense in the
+	 * future to change it so that we can apply other effects AND teleport the
+	 * monster.
 	 */
 	if (context->do_poly) {
 		enum mon_messages hurt_msg = MON_MSG_UNAFFECTED;
@@ -2665,19 +2660,17 @@ static void project_m_apply_side_effects(project_monster_handler_context_t *cont
 			delete_monster_idx(m_idx);
 			place_new_monster(cave, y, x, new, FALSE, FALSE, ORIGIN_DROP_POLY);
 			context->m_ptr = square_monster(cave, y, x);
-		}
-		else {
+		} else {
 			add_monster_message(m_name, m_ptr, hurt_msg, FALSE);
 		}
-	}
-	else if (context->teleport_distance > 0) {
+	} else if (context->teleport_distance > 0) {
 		teleport_away(m_ptr, context->teleport_distance);
-	}
-	else {
+	} else {
 		int i;
 
 		/* Reduce stun if the monster is already stunned. */
-		if (context->mon_timed[MON_TMD_STUN] > 0 && m_ptr->m_timed[MON_TMD_STUN] > 0) {
+		if (context->mon_timed[MON_TMD_STUN] > 0 &&
+			m_ptr->m_timed[MON_TMD_STUN] > 0) {
 			context->mon_timed[MON_TMD_STUN] /= 2;
 			context->mon_timed[MON_TMD_STUN] += 1;
 		}
@@ -2687,7 +2680,7 @@ static void project_m_apply_side_effects(project_monster_handler_context_t *cont
 			context->mon_timed[MON_TMD_CONF] = damroll(3, (context->mon_timed[MON_TMD_CONF] / 2)) + 1;
 		}
 
-		/* If sleep is caused by the player, base the time on the player's level. */
+		/* If sleep is caused by the player, base time on the player's level. */
 		if (context->who == 0 && context->mon_timed[MON_TMD_SLEEP] > 0) {
 			context->mon_timed[MON_TMD_SLEEP] = 500 + player->lev * 10;
 		}
@@ -2699,39 +2692,41 @@ static void project_m_apply_side_effects(project_monster_handler_context_t *cont
 	}
 }
 
-/*
- * Helper function for "project()" below.
+/**
+ * Called from project() to affect monsters
  *
- * Handle a beam/bolt/ball causing damage to a monster.
+ * Called for projections with the PROJECT_KILL flag set, which includes
+ * bolt, beam, ball and breath effects.
  *
- * This routine takes a "source monster" (by index) which is mostly used to
- * determine if the player is causing the damage, and a "radius" (see below),
- * which is used to decrease the power of explosions with distance, and a
- * location, via integers which are modified by certain types of attacks
- * (polymorph and teleport being the obvious ones), a default damage, which
- * is modified as needed based on various properties, and finally a "damage
- * type" (see below).
+ * \param who is the monster list index of the caster
+ * \param r is the distance from the centre of the effect
+ * \param y
+ * \param x the coordinates of the grid being handled
+ * \param dam is the "damage" from the effect at distance r from the centre
+ * \param typ is the projection (GF_) type
+ * \return whether the effects were obvious
  *
  * Note that this routine can handle "no damage" attacks (like teleport) by
- * taking a "zero" damage, and can even take "parameters" to attacks (like
+ * taking a zero damage, and can even take parameters to attacks (like
  * confuse) by accepting a "damage", using it to calculate the effect, and
- * then setting the damage to zero.  Note that the "damage" parameter is
- * divided by the radius, so monsters not at the "epicenter" will not take
- * as much damage (or whatever)...
+ * then setting the damage to zero.  Note that actual damage should be already 
+ * adjusted for distance from the "epicenter" when passed in, but other effects 
+ * may be influenced by r.
  *
  * Note that "polymorph" is dangerous, since a failure in "place_monster()"'
  * may result in a dereference of an invalid pointer.  XXX XXX XXX
  *
  * Various messages are produced, and damage is applied.
  *
- * Just "casting" a substance (i.e. plasma) does not make you immune, you must
- * actually be "made" of that substance, or "breathe" big balls of it.
+ * Just casting an element (e.g. plasma) does not make you immune, you must
+ * actually be made of that substance, or breathe big balls of it.
  *
  * We assume that "Plasma" monsters, and "Plasma" breathers, are immune
  * to plasma.
  *
  * We assume "Nether" is an evil, necromantic force, so it doesn't hurt undead,
  * and hurts evil less.  If can breath nether, then it resists it as well.
+ * This should actually be coded into monster records rather than aasumed - NRM
  *
  * Damage reductions use the following formulas:
  *   Note that "dam = dam * 6 / (randint1(6) + 6);"
@@ -2747,10 +2742,13 @@ static void project_m_apply_side_effects(project_monster_handler_context_t *cont
  *
  * In this function, "result" messages are postponed until the end, where
  * the "note" string is appended to the monster name, if not NULL.  So,
- * to make a spell have "no effect" just set "note" to NULL.  You should
+ * to make a spell have no effect just set "note" to NULL.  You should
  * also set "notice" to FALSE, or the player will learn what the spell does.
  *
- * We attempt to return "TRUE" if the player saw anything "obvious" happen.
+ * Note that this function determines if the player can see anything that
+ * happens by taking into account: blindness, line-of-sight, and illumination.
+ *
+ * Hack -- effects on grids which are memorized but not in view are also seen.
  */
 static bool project_m(int who, int r, int y, int x, int dam, int typ, int flg)
 {
@@ -2859,7 +2857,8 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, int flg)
 	if (!mon_died)
 		project_m_apply_side_effects(&context, m_name, m_idx);
 
-	/* Update locals again, since the project_m_* functions can change some values. */
+	/* Update locals again, since the project_m_* functions can change
+	 * some values. */
 	m_ptr = context.m_ptr;
 	obvious = context.obvious;
 
@@ -2892,22 +2891,25 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, int flg)
 	return (obvious);
 }
 
-/*
- * Helper function for "project()" below.
+/**
+ * Called from project() to affect the player
  *
- * Handle a beam/bolt/ball causing damage to the player.
+ * Called for projections with the PROJECT_PLAY flag set, which includes
+ * bolt, beam, ball and breath effects.
  *
- * This routine takes a "source monster" (by index), a "distance", a default
- * "damage", and a "damage type".  See "project_m()" above.
+ * \param who is the monster list index of the caster
+ * \param r is the distance from the centre of the effect
+ * \param y
+ * \param x the coordinates of the grid being handled
+ * \param dam is the "damage" from the effect at distance r from the centre
+ * \param typ is the projection (GF_) type
+ * \return whether the effects were obvious
  *
- * If "rad" is non-zero, then the blast was centered elsewhere, and the damage
- * is reduced (see "project_m()" above).  This can happen if a monster breathes
- * at the player and hits a wall instead.
+ * If "r" is non-zero, then the blast was centered elsewhere; the damage
+ * is reduced in project() before being passed in here.  This can happen if a
+ * monster breathes at the player and hits a wall instead.
  *
- * We return "TRUE" if any "obvious" effects were observed.
- *
- * Actually, for historical reasons, we just assume that the effects were
- * obvious.  XXX XXX XXX
+ * We assume the player is aware of some effect, and always return "TRUE".
  */
 static bool project_p(int who, int r, int y, int x, int dam, int typ)
 {
@@ -2981,19 +2983,18 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ)
  * Generic "beam"/"bolt"/"ball" projection routine.  
  *   -BEN-, some changes by -LM-
  *
- * Input:
- *   who: Index of "source" monster (negative for the character)
- *   rad: Radius of explosion (0 = beam/bolt, 1 to 20 = ball), or maximum
+ *   \param who: Index of "source" monster (negative for the character)
+ *   \param rad: Radius of explosion (0 = beam/bolt, 1 to 20 = ball), or maximum
  *	  length of arc from the source.
- *   y,x: Target location (or location to travel towards)
- *   dam: Base damage to apply to monsters, terrain, objects, or player
- *   typ: Type of projection (fire, frost, dispel demons etc.)
- *   flg: Extra bit flags that control projection behavior
- *   degrees_of_arc: How wide an arc spell is (in degrees).
- *   diameter_of_source: how wide the source diameter is.
+ *   \param y
+ *   \param x: Target location (or location to travel towards)
+ *   \param dam: Base damage to apply to monsters, terrain, objects, or player
+ *   \param typ: Type of projection (fire, frost, dispel demons etc.)
+ *   \param flg: Extra bit flags that control projection behavior
+ *   \param degrees_of_arc: How wide an arc spell is (in degrees).
+ *   \param diameter_of_source: how wide the source diameter is.
  *
- * Return:
- *   TRUE if any effects of the projection were observed, else FALSE
+ *   \return TRUE if any effects of the projection were observed, else FALSE
  *
  *
  * At present, there are five major types of projections:
@@ -3038,9 +3039,10 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ)
  *   defined length.
  *
  * Projections that effect all monsters in LOS are handled through the use 
- *   of "project_hack()", which applies a single-grid projection to individual 
- *   monsters.  Projections that light up rooms or effect all monsters on the 
- *   level are more efficiently handled through special functions.
+ *   of the PROJECT_LOS effect, which applies a single-grid projection to
+ *   individual monsters.  Projections that light up rooms or affect all
+ *   monsters on the level are more efficiently handled through special
+ *   functions.
  *
  *
  * Variations:
@@ -3087,7 +3089,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ)
  *   between them.  Bolts stop if they hit anything, beams stop if they hit a 
  *   wall, and balls and arcs may exhibit either bahavior.  When they reach 
  *   the final grid in the path, balls and arcs explode.  We do not allow 
- * beams to be combined with explosions.
+ *   beams to be combined with explosions.
  * Balls affect all floor grids in LOS (optionally, also wall grids adjacent 
  *   to a grid in LOS) within their radius.  Arcs do the same, but only within 
  *   their cone of projection.
@@ -3346,9 +3348,14 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 				/* Ignore "illegal" locations */
 				if (!square_in_bounds(cave, y, x))
 					continue;
-#if 0
-				/* Some explosions are allowed to affect one layer of walls */
-				/* All exposions can affect one layer of rubble or trees -BR- */
+
+				/* Most explosions are immediately stopped by walls. If
+				 * PROJECT_THRU is set, walls can be affected if adjacent to
+				 * a grid visible from the explosion centre - note that as of
+				 * Angband 3.5.0 there are no such explosions - NRM.
+				 * All explosions can affect one layer of terrain which is
+				 * passable but not projectable - note that as of Angband 3.5.0
+				 * there is no such terrain - NRM */
 				if ((flg & (PROJECT_THRU)) ||
 					square_ispassable(cave, y, x)){
 					/* If this is a wall grid, ... */
@@ -3368,12 +3375,9 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 						if (!k)
 							continue;
 					}
-				}
-
-				/* Most explosions are immediately stopped by walls. */
-				else if (!square_isprojectable(cave, y, x))
+				} else if (!square_isprojectable(cave, y, x))
 					continue;
-#endif
+
 				/* Must be within maximum distance. */
 				dist_from_centre  = (distance(centre.y, centre.x, y, x));
 				if (dist_from_centre > rad)
@@ -3559,21 +3563,18 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 	}
 
 	/* Check player */
-	//if (flg & (PROJECT_PLAY)) {
-	if (flg & (PROJECT_KILL)) {
+	if (flg & (PROJECT_PLAY)) {
 		/* Scan for player */
 		for (i = 0; i < num_grids; i++) {
 			/* Get the grid location */
 			y = blast_grid[i].y;
 			x = blast_grid[i].x;
 
-			/* Affect the player */
-			//if (project_p(who, rad, y, x, dam_at_dist[distance_to_grid[i]], typ))
-			if (project_p(who, distance_to_grid[i], y, x, dam, typ))
+			/* Affect the player, or keep scanning */
+			if (project_p(who, distance_to_grid[i], y, x, dam, typ)) {
 				notice = TRUE;
-
-			//remove this later
-			break;
+				break;
+			}
 		}
 	}
 #if 0
