@@ -325,7 +325,8 @@ bool projectable(struct chunk *c, int y1, int x1, int y2, int x2, int flg)
 }
 
 
-/* ------------------------------------------------------------------------
+/**
+ * ------------------------------------------------------------------------
  * Feature handlers
  * ------------------------------------------------------------------------ */
 
@@ -736,7 +737,8 @@ static void project_feature_handler_ARROW(project_feature_handler_context_t *con
 {
 }
 
-/* ------------------------------------------------------------------------
+/**
+ * ------------------------------------------------------------------------
  * Object handlers
  * ------------------------------------------------------------------------ */
 
@@ -803,6 +805,74 @@ static void project_object_handler_COLD(project_object_handler_context_t *contex
 	project_object_elemental(context, ELEM_COLD, "shatters", "shatter");
 }
 
+static void project_object_handler_POIS(project_object_handler_context_t *context)
+{
+}
+
+static void project_object_handler_LIGHT(project_object_handler_context_t *context)
+{
+}
+
+static void project_object_handler_DARK(project_object_handler_context_t *context)
+{
+}
+
+/* Sound -- potions and flasks */
+static void project_object_handler_SOUND(project_object_handler_context_t *context)
+{
+	project_object_elemental(context, ELEM_SOUND, "shatters", "shatter");
+}
+
+/* Shards -- potions and flasks */
+static void project_object_handler_SHARD(project_object_handler_context_t *context)
+{
+	project_object_elemental(context, ELEM_SHARD, "shatters", "shatter");
+}
+
+static void project_object_handler_NEXUS(project_object_handler_context_t *context)
+{
+}
+
+static void project_object_handler_NETHER(project_object_handler_context_t *context)
+{
+}
+
+static void project_object_handler_CHAOS(project_object_handler_context_t *context)
+{
+}
+
+static void project_object_handler_DISEN(project_object_handler_context_t *context)
+{
+}
+
+static void project_object_handler_WATER(project_object_handler_context_t *context)
+{
+}
+
+/* Ice -- potions and flasks */
+static void project_object_handler_ICE(project_object_handler_context_t *context)
+{
+	project_object_elemental(context, ELEM_ICE, "shatters", "shatter");
+}
+
+static void project_object_handler_GRAVITY(project_object_handler_context_t *context)
+{
+}
+
+static void project_object_handler_INERTIA(project_object_handler_context_t *context)
+{
+}
+
+/* Force -- potions and flasks */
+static void project_object_handler_FORCE(project_object_handler_context_t *context)
+{
+	project_object_elemental(context, ELEM_FORCE, "shatters", "shatter");
+}
+
+static void project_object_handler_TIME(project_object_handler_context_t *context)
+{
+}
+
 /* Fire + Elec */
 static void project_object_handler_PLASMA(project_object_handler_context_t *context)
 {
@@ -817,11 +887,8 @@ static void project_object_handler_METEOR(project_object_handler_context_t *cont
 	project_object_elemental(context, ELEM_COLD, "shatters", "shatter");
 }
 
-/* Hack -- break potions and such */
-static void project_object_handler_shatter(project_object_handler_context_t *context)
+static void project_object_handler_MISSILE(project_object_handler_context_t *context)
 {
-	project_object_elemental(context, ELEM_COLD, "shatters", "shatter");
-	// This needs better handling - the ignore is currently irrelevant - NRM
 }
 
 /* Mana -- destroys everything */
@@ -840,8 +907,24 @@ static void project_object_handler_HOLY_ORB(project_object_handler_context_t *co
 	}
 }
 
+static void project_object_handler_ARROW(project_object_handler_context_t *context)
+{
+}
+
+static void project_object_handler_LIGHT_WEAK(project_object_handler_context_t *context)
+{
+}
+
+static void project_object_handler_DARK_WEAK(project_object_handler_context_t *context)
+{
+}
+
+static void project_object_handler_KILL_WALL(project_object_handler_context_t *context)
+{
+}
+
 /* Unlock chests */
-static void project_object_handler_chest(project_object_handler_context_t *context)
+static void project_object_handler_KILL_DOOR(project_object_handler_context_t *context)
 {
 	/* Chests are noticed only if trapped or locked */
 	if (is_locked_chest(context->o_ptr)) {
@@ -859,7 +942,35 @@ static void project_object_handler_chest(project_object_handler_context_t *conte
 	}
 }
 
-/* ------------------------------------------------------------------------
+/* Unlock chests */
+static void project_object_handler_KILL_TRAP(project_object_handler_context_t *context)
+{
+	/* Chests are noticed only if trapped or locked */
+	if (is_locked_chest(context->o_ptr)) {
+		/* Disarm or Unlock */
+		unlock_chest((object_type * const)context->o_ptr);
+
+		/* Identify */
+		object_notice_everything((object_type * const)context->o_ptr);
+
+		/* Notice */
+		if (context->o_ptr->marked > MARK_UNAWARE && !ignore_item_ok(context->o_ptr)) {
+			msg("Click!");
+			context->obvious = TRUE;
+		}
+	}
+}
+
+static void project_object_handler_MAKE_DOOR(project_object_handler_context_t *context)
+{
+}
+
+static void project_object_handler_MAKE_TRAP(project_object_handler_context_t *context)
+{
+}
+
+/**
+ * ------------------------------------------------------------------------
  * Monster handlers
  * ------------------------------------------------------------------------ */
 
@@ -1482,7 +1593,8 @@ static void project_monster_handler_DISP_ALL(project_monster_handler_context_t *
 	context->die_msg = MON_MSG_DISSOLVE;
 }
 
-/* ------------------------------------------------------------------------
+/**
+ * ------------------------------------------------------------------------
  * Player handlers
  * ------------------------------------------------------------------------ */
 
@@ -1794,15 +1906,12 @@ static void project_player_handler_PLASMA(project_player_handler_context_t *cont
 	}
 }
 
-/* ------------------------------------------------------------------------
- * Other functions
- * ------------------------------------------------------------------------ */
-
 /**
+ * ------------------------------------------------------------------------
  * Structure for GF types and their handler functions
  *
  * Note that elements come first, so GF_ACID == ELEM_ACID, etc
- */
+ * ------------------------------------------------------------------------ */
 static const struct gf_type {
 	u16b index;			/* numerical index (GF_#) */
 	const char *name;	/* text name */
@@ -1817,23 +1926,19 @@ static const struct gf_type {
 	project_monster_handler_f monster_handler;
 	project_player_handler_f player_handler;
 } gf_table[] = {
-	#define ELEM(a, b, c, d, e, f, g, col, h, oh, mh, ph)	\
-		{ GF_##a, b, c, d, e, FALSE, col, h, project_feature_handler_##a, oh, mh, ph },
+	#define ELEM(a, b, c, d, e, f, g, col, h, mh, ph)	\
+		{ GF_##a, b, c, d, e, FALSE, col, h, project_feature_handler_##a, project_object_handler_##a, mh, ph },
 	#define RV(b, x, y, m) {b, x, y, m}
-	//#define FH(x) project_feature_handler_##x
-	#define OH(x) project_object_handler_##x
 	#define MH(x) project_monster_handler_##x
 	#define PH(x) project_player_handler_##x
 	#include "list-elements.h"
 	#undef ELEM
 	#undef RV
 	#undef PH
-	#define PROJ_ENV(a, col, fh, oh, mh) \
-		{ GF_##a, NULL, NULL, 0, {0, 0, 0, 0}, FALSE, col, 0, project_feature_handler_##a, oh, mh, NULL},
+	#define PROJ_ENV(a, col, mh) \
+		{ GF_##a, NULL, NULL, 0, {0, 0, 0, 0}, FALSE, col, 0, project_feature_handler_##a, project_object_handler_##a, mh, NULL},
 	#include "list-project-environs.h"
 	#undef PROJ_ENV
-	#undef FH
-	#undef OH
 	#define PROJ_MON(a, obv, mh) \
 		{ GF_##a, NULL, NULL, 0, {0, 0, 0, 0}, obv, TERM_WHITE, 0, NULL, NULL, mh, NULL }, 
 	#include "list-project-monsters.h"
@@ -1844,10 +1949,10 @@ static const struct gf_type {
 
 static const char *gf_name_list[] =
 {
-	#define ELEM(a, b, c, d, e, f, g, col, h, oh, mh, ph) #a,
+	#define ELEM(a, b, c, d, e, f, g, col, h, mh, ph) #a,
 	#include "list-elements.h"
 	#undef ELEM
-	#define PROJ_ENV(a, col, fh, oh, mh) #a,
+	#define PROJ_ENV(a, col, mh) #a,
 	#include "list-project-environs.h"
 	#undef PROJ_ENV
 	#define PROJ_MON(a, obv, mh) #a, 
@@ -1905,6 +2010,11 @@ static byte gf_color(int type)
 	return gf_table[type].color;
 }
 
+
+/**
+ * ------------------------------------------------------------------------
+ * Other functions
+ * ------------------------------------------------------------------------ */
 
 /*
  * Destroys a type of item on a given percent chance.
@@ -2161,6 +2271,11 @@ int adjust_dam(int type, int dam, aspect dam_aspect, int resist)
 	return dam;
 }
 
+
+/**
+ * ------------------------------------------------------------------------
+ * The main project() function and its helpers
+ * ------------------------------------------------------------------------ */
 
 /*
  * Mega-Hack -- track "affected" monsters (see "project()" comments)
