@@ -895,6 +895,7 @@ static size_t prt_level_feeling(int row, int col)
 	char obj_feeling_str[6];
 	char mon_feeling_str[6];
 	int new_col;
+	byte obj_feeling_color_print;
 	
 	/* Don't show feelings for cold-hearted characters */
 	if (OPT(birth_no_feelings)) return 0;
@@ -919,24 +920,29 @@ static size_t prt_level_feeling(int row, int col)
 	 *   Thus (2-10) becomes (1-9 reversed)
 	 *
 	 *   But before that check if the player has explored enough
-	 * to get a feeling.
+	 * to get a feeling. If not display as ?
 	 */
 	if (cave->feeling_squares < FEELING1)
 	{
 		my_strcpy( obj_feeling_str, "?", sizeof(obj_feeling_str) );
-	}
-	else if ( obj_feeling==0 )
-	{
-		my_strcpy( obj_feeling_str, "*", sizeof(obj_feeling_str) );
-	}
-	else if ( obj_feeling==1 )
-	{
-		my_strcpy( obj_feeling_str, "$", sizeof(obj_feeling_str) );
+		obj_feeling_color_print = TERM_WHITE;
 	}
 	else
 	{
-		strnfmt( obj_feeling_str, 5, "%d", 
-			(unsigned int) (11-obj_feeling) );
+		obj_feeling_color_print = obj_feeling_color[obj_feeling];
+		if ( obj_feeling==0 )
+		{
+			my_strcpy( obj_feeling_str, "*", sizeof(obj_feeling_str) );
+		}
+		else if ( obj_feeling==1 )
+		{
+			my_strcpy( obj_feeling_str, "$", sizeof(obj_feeling_str) );
+		}
+		else
+		{
+			strnfmt( obj_feeling_str, 5, "%d", 
+				(unsigned int) (11-obj_feeling) );
+		}
 	}
 	
 	/* 
@@ -965,7 +971,7 @@ static size_t prt_level_feeling(int row, int col)
 	new_col += strlen( mon_feeling_str );
 	c_put_str( TERM_WHITE, "-", row, new_col );
 	++new_col;
-	c_put_str( obj_feeling_color[obj_feeling], obj_feeling_str,
+	c_put_str( obj_feeling_color_print, obj_feeling_str,
 		row, new_col );
 	new_col += strlen( obj_feeling_str ) + 1;
         
