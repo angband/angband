@@ -1948,6 +1948,26 @@ static void project_player_handler_PLASMA(project_player_handler_context_t *cont
 	}
 }
 
+static void project_player_handler_METEOR(project_player_handler_context_t *context)
+{
+}
+
+static void project_player_handler_MISSILE(project_player_handler_context_t *context)
+{
+}
+
+static void project_player_handler_MANA(project_player_handler_context_t *context)
+{
+}
+
+static void project_player_handler_HOLY_ORB(project_player_handler_context_t *context)
+{
+}
+
+static void project_player_handler_ARROW(project_player_handler_context_t *context)
+{
+}
+
 /**
  * ------------------------------------------------------------------------
  * Structure for GF types and their handler functions
@@ -1968,30 +1988,31 @@ static const struct gf_type {
 	project_monster_handler_f monster_handler;
 	project_player_handler_f player_handler;
 } gf_table[] = {
-	#define ELEM(a, b, c, d, e, f, g, col, h, ph)	\
-		{ GF_##a, b, c, d, e, FALSE, col, h, project_feature_handler_##a, project_object_handler_##a, project_monster_handler_##a, ph },
+	/* Elements can affect terrain, objects, monsters and the player */
+	#define ELEM(a, b, c, d, e, f, g, col, h)	\
+		{ GF_##a, b, c, d, e, FALSE, col, h, project_feature_handler_##a, project_object_handler_##a, project_monster_handler_##a, project_player_handler_##a },
 	#define RV(b, x, y, m) {b, x, y, m}
-	#define MH(x) project_monster_handler_##x
-	#define PH(x) project_player_handler_##x
 	#include "list-elements.h"
 	#undef ELEM
 	#undef RV
-	#undef PH
+
+	/* Environment projections can affect terrain, objects and monsters */
 	#define PROJ_ENV(a, col) \
 		{ GF_##a, NULL, NULL, 0, {0, 0, 0, 0}, FALSE, col, 0, project_feature_handler_##a, project_object_handler_##a, project_monster_handler_##a, NULL},
 	#include "list-project-environs.h"
 	#undef PROJ_ENV
+
+	/* Monster projections only affect monsters */
 	#define PROJ_MON(a, obv) \
 		{ GF_##a, NULL, NULL, 0, {0, 0, 0, 0}, obv, TERM_WHITE, 0, NULL, NULL, project_monster_handler_##a, NULL }, 
 	#include "list-project-monsters.h"
 	#undef PROJ_MON
-	#undef MH
 		{ GF_MAX, NULL, NULL, 0, {0, 0, 0, 0}, FALSE, TERM_WHITE, 0, NULL, NULL, NULL, NULL }
 };
 
 static const char *gf_name_list[] =
 {
-	#define ELEM(a, b, c, d, e, f, g, col, h, ph) #a,
+	#define ELEM(a, b, c, d, e, f, g, col, h) #a,
 	#include "list-elements.h"
 	#undef ELEM
 	#define PROJ_ENV(a, col) #a,

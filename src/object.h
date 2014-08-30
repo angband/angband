@@ -20,7 +20,7 @@
  */
 enum
 {
-	#define ELEM(a, b, c, d, e, f, g, col, h, ph) ELEM_##a,
+	#define ELEM(a, b, c, d, e, f, g, col, h) ELEM_##a,
 	#include "list-elements.h"
 	#undef ELEM
 
