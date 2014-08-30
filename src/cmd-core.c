@@ -418,6 +418,7 @@ int cmd_get_direction(struct command *cmd, const char *arg, int *dir, bool allow
 		return CMD_OK;
 	}
 
+	cmd_cancel_repeat();
 	return CMD_ARG_ABORTED;
 }
 
