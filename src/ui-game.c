@@ -1110,7 +1110,7 @@ static void bolt_pict(int y, int x, int ny, int nx, int typ, byte *a, wchar_t *c
 		wchar_t chars[] = L"*|/-\\";
 
 		*c = chars[motion];
-		*a = spell_color(typ);
+		*a = gf_color(typ);
 	} else {
 		*a = gf_to_attr[typ][motion];
 		*c = gf_to_char[typ][motion];

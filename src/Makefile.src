@@ -155,6 +155,10 @@ ANGFILES = \
 	player-util.o \
 	player.o \
 	project.o \
+	project-feat.o \
+	project-mon.o \
+	project-obj.o \
+	project-player.o \
 	quest.o \
 	score.o \
 	signals.o \
