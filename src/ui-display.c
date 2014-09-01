@@ -817,41 +817,41 @@ static size_t prt_state(int row, int col)
 	return strlen(text);
 }
 
-static const byte obj_feeling_color[] =
+static const byte obj_feeling_color[] = 
 {
 	/* Colors used to display each obj feeling 	*/
-	TERM_WHITE,  /* "Looks like any other level." */
-	TERM_L_PURPLE, /* "you sense an item of wondrous power!" */
-	TERM_L_RED, /* "there are superb treasures here." */
-	TERM_ORANGE, /* "there are excellent treasures here." */
-	TERM_YELLOW, /* "there are very good treasures here." */
-	TERM_YELLOW, /* "there are good treasures here." */
-	TERM_L_GREEN, /* "there may be something worthwhile here." */
-	TERM_L_GREEN, /* "there may not be much interesting here." */
-	TERM_L_GREEN, /* "there aren't many treasures here." */
-	TERM_L_BLUE, /* "there are only scraps of junk here." */
-	TERM_L_BLUE  /* "there are naught but cobwebs here. */
+	COLOUR_WHITE,  /* "Looks like any other level." */
+	COLOUR_L_PURPLE, /* "you sense an item of wondrous power!" */
+	COLOUR_L_RED, /* "there are superb treasures here." */
+	COLOUR_ORANGE, /* "there are excellent treasures here." */
+	COLOUR_YELLOW, /* "there are very good treasures here." */
+	COLOUR_YELLOW, /* "there are good treasures here." */
+	COLOUR_L_GREEN, /* "there may be something worthwhile here." */
+	COLOUR_L_GREEN, /* "there may not be much interesting here." */
+	COLOUR_L_GREEN, /* "there aren't many treasures here." */
+	COLOUR_L_BLUE, /* "there are only scraps of junk here." */
+	COLOUR_L_BLUE  /* "there are naught but cobwebs here. */
 };
 
-static const byte mon_feeling_color[] =
+static const byte mon_feeling_color[] = 
 {
 	/* Colors used to display each monster feeling */
-	TERM_WHITE, /* "You are still uncertain about this place" */
-	TERM_RED, /* "Omens of death haunt this place" */
-	TERM_ORANGE, /* "This place seems murderous" */
-	TERM_ORANGE, /* "This place seems terribly dangerous" */
-	TERM_YELLOW, /* "You feel anxious about this place" */
-	TERM_YELLOW, /* "You feel nervous about this place" */
-	TERM_GREEN, /* "This place does not seem too risky" */
-	TERM_GREEN, /* "This place seems reasonably safe" */
-	TERM_BLUE, /* "This seems a tame, sheltered place" */
-	TERM_BLUE, /* "This seems a quiet, peaceful place" */
+	COLOUR_WHITE, /* "You are still uncertain about this place" */
+	COLOUR_RED, /* "Omens of death haunt this place" */
+	COLOUR_ORANGE, /* "This place seems murderous" */
+	COLOUR_ORANGE, /* "This place seems terribly dangerous" */
+	COLOUR_YELLOW, /* "You feel anxious about this place" */
+	COLOUR_YELLOW, /* "You feel nervous about this place" */
+	COLOUR_GREEN, /* "This place does not seem too risky" */
+	COLOUR_GREEN, /* "This place seems reasonably safe" */
+	COLOUR_BLUE, /* "This seems a tame, sheltered place" */
+	COLOUR_BLUE, /* "This seems a quiet, peaceful place" */
 };
 
-/*
+/**
  * Prints level feelings at status if they are enabled.
  */
-static size_t prt_level_feeling(int row, int col)
+static size_t prt_level_feeling(int row, int col) 
 {
 	u16b obj_feeling;
 	u16b mon_feeling;
@@ -859,17 +859,17 @@ static size_t prt_level_feeling(int row, int col)
 	char mon_feeling_str[6];
 	int new_col;
 	byte obj_feeling_color_print;
-	
+
 	/* Don't show feelings for cold-hearted characters */
 	if (OPT(birth_no_feelings)) return 0;
-        
+
 	/* No useful feeling in town */
-	if (!p_ptr->depth) return 0;
+	if (!player->depth) return 0;
 
 	/* Get feelings */
 	obj_feeling = cave->feeling / 10;
 	mon_feeling = cave->feeling - (10 * obj_feeling);
-	
+
 	/* 
 	 *   Convert object feeling to a symbol easier to parse
 	 * for a human.
@@ -885,29 +885,19 @@ static size_t prt_level_feeling(int row, int col)
 	 *   But before that check if the player has explored enough
 	 * to get a feeling. If not display as ?
 	 */
-	if (cave->feeling_squares < FEELING1)
-	{
-		my_strcpy( obj_feeling_str, "?", sizeof(obj_feeling_str) );
-		obj_feeling_color_print = TERM_WHITE;
-	}
-	else
-	{
+	if (cave->feeling_squares < z_info->feeling_need) {
+		my_strcpy(obj_feeling_str, "?", sizeof(obj_feeling_str));
+		obj_feeling_color_print = COLOUR_WHITE;
+	} else {
 		obj_feeling_color_print = obj_feeling_color[obj_feeling];
-		if ( obj_feeling==0 )
-		{
-			my_strcpy( obj_feeling_str, "*", sizeof(obj_feeling_str) );
-		}
-		else if ( obj_feeling==1 )
-		{
-			my_strcpy( obj_feeling_str, "$", sizeof(obj_feeling_str) );
-		}
+		if (obj_feeling == 0)
+			my_strcpy(obj_feeling_str, "*", sizeof(obj_feeling_str));
+		else if (obj_feeling == 1)
+			my_strcpy(obj_feeling_str, "$", sizeof(obj_feeling_str));
 		else
-		{
-			strnfmt( obj_feeling_str, 5, "%d", 
-				(unsigned int) (11-obj_feeling) );
-		}
+			strnfmt(obj_feeling_str, 5, "%d", (unsigned int) (11-obj_feeling));
 	}
-	
+
 	/* 
 	 *   Convert monster feeling to a symbol easier to parse
 	 * for a human.
@@ -916,31 +906,24 @@ static size_t prt_level_feeling(int row, int col)
 	 *   1 to 9 are feelings from omens of death to quiet, paceful.
 	 * We also reverse this so that what we show is a danger feeling.
 	 */
-	if ( mon_feeling==0 )
-	{
+	if (mon_feeling == 0)
 		my_strcpy( mon_feeling_str, "?", sizeof(mon_feeling_str) );
-	}
 	else
-	{
-		strnfmt( mon_feeling_str, 5, "%d", 
-			(unsigned int) ( 10-mon_feeling ) );
-	}
-	
+		strnfmt(mon_feeling_str, 5, "%d", (unsigned int) ( 10-mon_feeling ));
+
 	/* Display it */
-	c_put_str( TERM_WHITE, "LF:", row, col);
+	c_put_str(COLOUR_WHITE, "LF:", row, col);
 	new_col = col + 3;
-	c_put_str( mon_feeling_color[mon_feeling],
-		mon_feeling_str, row, new_col );
+	c_put_str(mon_feeling_color[mon_feeling], mon_feeling_str, row, new_col);
 	new_col += strlen( mon_feeling_str );
-	c_put_str( TERM_WHITE, "-", row, new_col );
+	c_put_str(COLOUR_WHITE, "-", row, new_col);
 	++new_col;
-	c_put_str( obj_feeling_color_print, obj_feeling_str,
-		row, new_col );
+	c_put_str(obj_feeling_color_print, obj_feeling_str,	row, new_col);
 	new_col += strlen( obj_feeling_str ) + 1;
-        
+
 	return new_col - col;
 }
-                                                                                
+
 /**
  * Prints trap detection status
  */
