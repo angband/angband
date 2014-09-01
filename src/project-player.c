@@ -242,24 +242,18 @@ static void project_player_handler_NEXUS(project_player_handler_context_t *conte
 			return;
 		}
 		project_player_swap_stats();
-	}
-
-	/* Teleport to */
-	else if (one_in_(3))
+	} else if (one_in_(3)) { /* Teleport to */
 		teleport_player_to(mon->fy, mon->fx);
-
-	/* Teleport level */
-	else if (one_in_(4)) {
+	} else if (one_in_(4)) { /* Teleport level */
 		if (randint0(100) < player->state.skills[SKILL_SAVE]) {
 			msg("You avoid the effect!");
 			return;
 		}
 		teleport_player_level();
+	} else { /* Teleport */
+		const char *miles = "200";
+		effect_simple(EF_TELEPORT, miles, 0, 1, 0, NULL);
 	}
-
-	/* Teleport */
-	else
-		teleport_player(200);
 }
 
 static void project_player_handler_NETHER(project_player_handler_context_t *context)
@@ -336,8 +330,10 @@ static void project_player_handler_GRAVITY(project_player_handler_context_t *con
 	msg("Gravity warps around you.");
 
 	/* Blink */
-	if (randint1(127) > player->lev)
-		teleport_player(5);
+	if (randint1(127) > player->lev) {
+		const char *five = "5";
+		effect_simple(EF_TELEPORT, five, 0, 1, 0, NULL);
+	}
 
 	/* Slow */
 	(void)player_inc_timed(player, TMD_SLOW, 4 + randint0(4), TRUE, FALSE);

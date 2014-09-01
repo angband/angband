@@ -786,8 +786,9 @@ static void process_world(struct chunk *c)
 	/* Random teleportation */
 	if (player_of_has(player, OF_TELEPORT) && one_in_(50))
 	{
+		const char *forty = "40";
 		wieldeds_notice_flag(player, OF_TELEPORT);
-		teleport_player(40);
+		effect_simple(EF_TELEPORT, forty, 0, 1, 0, NULL);
 		disturb(player, 0);
 	}
 

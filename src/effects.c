@@ -3552,8 +3552,10 @@ bool effect_handler_TRAP_RUNE_SUMMON(effect_handler_context_t *context)
 bool effect_handler_TRAP_RUNE_TELEPORT(effect_handler_context_t *context)
 {
 	int radius = effect_calculate_value(context, FALSE);
+	char dist[5];
+	strnfmt(dist, sizeof(dist), "%d", radius);
 	msg("You hit a teleport trap!");
-	teleport_player(radius);
+	effect_simple(EF_TELEPORT, dist, 0, 1, 0, NULL);
 	return TRUE;
 }
 

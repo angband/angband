@@ -2004,7 +2004,8 @@ void do_cmd_debug(void)
 		/* Phase Door */
 		case 'p':
 		{
-			teleport_player(10);
+			const char *near = "10";
+			effect_simple(EF_TELEPORT, near, 0, 1, 0, NULL);
 			break;
 		}
 
@@ -2097,7 +2098,8 @@ void do_cmd_debug(void)
 		/* Teleport */
 		case 't':
 		{
-			teleport_player(100);
+			const char *far = "100";
+			effect_simple(EF_TELEPORT, far, 0, 1, 0, NULL);
 			break;
 		}
 
