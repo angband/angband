@@ -485,9 +485,6 @@ bool project_p(int who, int r, int y, int x, int dam, int typ)
 	/* Extract the "see-able-ness" */
 	seen = (!blind && m_ptr->ml);
 
-	/* Reduce damage by distance */
-	dam = (dam + r) / (r + 1);
-
 	/* Get the monster's real name */
 	monster_desc(killer, sizeof(killer), m_ptr, MDESC_DIED_FROM);
 

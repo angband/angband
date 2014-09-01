@@ -932,21 +932,6 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 	event_signal_blast(EVENT_EXPLOSION, msec, typ, num_grids, distance_to_grid,
 					   player_sees_grid, blast_grid, centre);
 
-	/* Check features */
-	if (flg & (PROJECT_GRID)) {
-		/* Scan for features */
-		for (i = 0; i < num_grids; i++) {
-			/* Get the grid location */
-			y = blast_grid[i].y;
-			x = blast_grid[i].x;
-
-			/* Affect the feature in that grid */
-			if (project_f(who, distance_to_grid[i], y, x, 
-						  dam_at_dist[distance_to_grid[i]], typ))
-				notice = TRUE;
-		}
-	}
-
 	/* Check objects */
 	if (flg & (PROJECT_ITEM)) {
 		/* Scan for objects */
@@ -956,7 +941,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 			x = blast_grid[i].x;
 
 			/* Affect the object in the grid */
-			if (project_o(who, distance_to_grid[i], y, x, 
+			if (project_o(who, distance_to_grid[i], y, x,
 						  dam_at_dist[distance_to_grid[i]], typ))
 				notice = TRUE;
 		}
@@ -976,7 +961,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 			x = blast_grid[i].x;
 
 			/* Affect the monster in the grid */
-			if (project_m(who, distance_to_grid[i], y, x, 
+			if (project_m(who, distance_to_grid[i], y, x,
 						  dam_at_dist[distance_to_grid[i]], typ, flg))
 				notice = TRUE;
 		}
@@ -1011,12 +996,29 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 			x = blast_grid[i].x;
 
 			/* Affect the player, or keep scanning */
-			if (project_p(who, distance_to_grid[i], y, x, dam, typ)) {
+			if (project_p(who, distance_to_grid[i], y, x,
+						  dam_at_dist[distance_to_grid[i]], typ)) {
 				notice = TRUE;
 				break;
 			}
 		}
 	}
+
+	/* Check features */
+	if (flg & (PROJECT_GRID)) {
+		/* Scan for features */
+		for (i = 0; i < num_grids; i++) {
+			/* Get the grid location */
+			y = blast_grid[i].y;
+			x = blast_grid[i].x;
+
+			/* Affect the feature in that grid */
+			if (project_f(who, distance_to_grid[i], y, x,
+						  dam_at_dist[distance_to_grid[i]], typ))
+				notice = TRUE;
+		}
+	}
+
 #if 0
 	/* Teleport monsters and player around, alter certain features. */
 	for (i = 0; i < num_grids; i++) {
