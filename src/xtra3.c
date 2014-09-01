@@ -854,7 +854,7 @@ static size_t prt_state(int row, int col)
 	return strlen(text);
 }
 
-static const byte obj_feeling_color[] =
+static const byte obj_feeling_color[] = 
 {
 	/* Colors used to display each obj feeling 	*/
 	TERM_WHITE,  /* "Looks like any other level." */
@@ -870,7 +870,7 @@ static const byte obj_feeling_color[] =
 	TERM_L_BLUE  /* "there are naught but cobwebs here. */
 };
 
-static const byte mon_feeling_color[] =
+static const byte mon_feeling_color[] = 
 {
 	/* Colors used to display each monster feeling */
 	TERM_WHITE, /* "You are still uncertain about this place" */
@@ -888,7 +888,7 @@ static const byte mon_feeling_color[] =
 /*
  * Prints level feelings at status if they are enabled.
  */
-static size_t prt_level_feeling(int row, int col)
+static size_t prt_level_feeling(int row, int col) 
 {
 	u16b obj_feeling;
 	u16b mon_feeling;
@@ -922,26 +922,18 @@ static size_t prt_level_feeling(int row, int col)
 	 *   But before that check if the player has explored enough
 	 * to get a feeling. If not display as ?
 	 */
-	if (cave->feeling_squares < FEELING1)
-	{
+	if (cave->feeling_squares < FEELING1) {
 		my_strcpy( obj_feeling_str, "?", sizeof(obj_feeling_str) );
 		obj_feeling_color_print = TERM_WHITE;
-	}
-	else
-	{
+	} else {
 		obj_feeling_color_print = obj_feeling_color[obj_feeling];
-		if ( obj_feeling==0 )
-		{
+		if ( obj_feeling==0 ) {
 			my_strcpy( obj_feeling_str, "*", sizeof(obj_feeling_str) );
-		}
-		else if ( obj_feeling==1 )
-		{
+		} else if ( obj_feeling==1 ) {
 			my_strcpy( obj_feeling_str, "$", sizeof(obj_feeling_str) );
-		}
-		else
-		{
+		} else {
 			strnfmt( obj_feeling_str, 5, "%d", 
-				(unsigned int) (11-obj_feeling) );
+					(unsigned int) (11-obj_feeling) );
 		}
 	}
 	
@@ -953,33 +945,29 @@ static size_t prt_level_feeling(int row, int col)
 	 *   1 to 9 are feelings from omens of death to quiet, paceful.
 	 * We also reverse this so that what we show is a danger feeling.
 	 */
-	if ( mon_feeling==0 )
-	{
+	if ( mon_feeling==0 ) {
 		my_strcpy( mon_feeling_str, "?", sizeof(mon_feeling_str) );
-	}
-	else
-	{
+	} else {
 		strnfmt( mon_feeling_str, 5, "%d", 
-			(unsigned int) ( 10-mon_feeling ) );
+				(unsigned int) ( 10-mon_feeling ) );
 	}
 	
 	/* Display it */
 	c_put_str( TERM_WHITE, "LF:", row, col);
 	new_col = col + 3;
 	c_put_str( mon_feeling_color[mon_feeling],
-		mon_feeling_str, row, new_col );
+			mon_feeling_str, row, new_col );
 	new_col += strlen( mon_feeling_str );
 	c_put_str( TERM_WHITE, "-", row, new_col );
 	++new_col;
 	c_put_str( obj_feeling_color_print, obj_feeling_str,
-		row, new_col );
+			row, new_col );
 	new_col += strlen( obj_feeling_str ) + 1;
-        
+	
 	return new_col - col;
 }
+
                                                                                                                 
-
-
 /*
  * Prints trap detection status
  */
