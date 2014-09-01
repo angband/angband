@@ -932,7 +932,9 @@ static void project_m_apply_side_effects(project_monster_handler_context_t *cont
 			add_monster_message(m_name, m_ptr, hurt_msg, FALSE);
 		}
 	} else if (context->teleport_distance > 0) {
-		teleport_away(m_ptr, context->teleport_distance);
+		char dice[5];
+		strnfmt(dice, sizeof(dice), "%d", context->teleport_distance);
+		effect_simple(EF_TELEPORT, dice, context->y, context->x, 0, NULL);
 	} else {
 		int i;
 

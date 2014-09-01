@@ -1544,8 +1544,10 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 
 	/* Blink away */
 	if (blinked) {
+		char dice[5];
 		msg("There is a puff of smoke!");
-		teleport_away(m_ptr, MAX_SIGHT * 2 + 5);
+		strnfmt(dice, sizeof(dice), "%d", MAX_SIGHT * 2 + 5);
+		effect_simple(EF_TELEPORT, dice, 0, 0, 0, NULL);
 	}
 
 	/* Always notice cause of death */

@@ -2079,11 +2079,13 @@ bool effect_handler_PROBE(effect_handler_context_t *context)
  *
  * If no spaces are readily available, the distance may increase.
  * Try very hard to move the player/monster at least a quarter that distance.
- * Setting context->p1 allows monsters to teleport the player away
+ * Setting context->p2 allows monsters to teleport the player away.
+ * Setting context->p1 and context->p2 treats them as y and x coordinates
+ * and teleports the monster from that grid.
  */
 bool effect_handler_TELEPORT(effect_handler_context_t *context)
 {
-	int y_start, x_start;
+	int y_start = context->p1, x_start = context->p2;
 	int dis = context->value.base;
 	int d, i, min, y, x;
 	int midx = cave->mon_current;
@@ -2094,7 +2096,10 @@ bool effect_handler_TELEPORT(effect_handler_context_t *context)
 
 	context->ident = TRUE;
 
-	if (is_player) {
+	/* Establish the coordinates to teleport from, if we don't know already */
+	if (y_start && x_start) {
+		/* We're good */
+	} else if (is_player) {
 		y_start = player->py;
 		x_start = player->px;
 
