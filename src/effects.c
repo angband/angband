@@ -2177,6 +2177,7 @@ bool effect_handler_TELEPORT(effect_handler_context_t *context)
 
 /**
  * Teleport player to a grid near the given location
+ * Setting context->p1 and context->p2 treats them as y and x coordinates
  *
  * This function is slightly obsessive about correctness.
  * This function allows teleporting into vaults (!)
@@ -2198,7 +2199,10 @@ bool effect_handler_TELEPORT_TO(effect_handler_context_t *context)
 	context->ident = TRUE;
 
 	/* Where are we going? */
-	if (midx > 0) {
+	if (context->p1 && context->p2) {
+		ny = context->p1;
+		nx = context->p2;
+	} else if (midx > 0) {
 		mon = cave_monster(cave, midx);
 		if (!mon) return TRUE;
 		ny = mon->fy;

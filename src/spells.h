@@ -25,8 +25,6 @@ extern bool remove_all_curse(void);
 extern bool enchant(object_type *o_ptr, int n, int eflag);
 extern bool enchant_spell(int num_hit, int num_dam, int num_ac);
 extern void do_ident_item(object_type *o_ptr);
-void teleport_player_to(int ny, int nx);
-void teleport_player_level(void);
 extern void brand_object(object_type *o_ptr, const char *name);
 extern bool spell_identify_unknown_available(void);
 

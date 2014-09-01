@@ -243,13 +243,13 @@ static void project_player_handler_NEXUS(project_player_handler_context_t *conte
 		}
 		project_player_swap_stats();
 	} else if (one_in_(3)) { /* Teleport to */
-		teleport_player_to(mon->fy, mon->fx);
+		effect_simple(EF_TELEPORT_TO, "0", mon->fy, mon->fx, 0, NULL);
 	} else if (one_in_(4)) { /* Teleport level */
 		if (randint0(100) < player->state.skills[SKILL_SAVE]) {
 			msg("You avoid the effect!");
 			return;
 		}
-		teleport_player_level();
+		effect_simple(EF_TELEPORT_LEVEL, "0", 0, 0, 0, NULL);
 	} else { /* Teleport */
 		const char *miles = "200";
 		effect_simple(EF_TELEPORT, miles, 0, 1, 0, NULL);

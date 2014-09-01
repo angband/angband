@@ -251,7 +251,7 @@ static void do_cmd_wiz_bamf(void)
 
 	/* Teleport to the target */
 	else
-		teleport_player_to(y, x);
+		effect_simple(EF_TELEPORT_TO, "0", y, x, 0, NULL);
 }
 
 
