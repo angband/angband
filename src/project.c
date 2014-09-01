@@ -336,7 +336,7 @@ static const struct gf_type {
 	#define PROJ_MON(a, obv) { NULL, 0, {0, 0, 0, 0}, obv, TERM_WHITE }, 
 	#include "list-project-monsters.h"
 	#undef PROJ_MON
-		{ NULL, 0, {0, 0, 0, 0}, FALSE, TERM_WHITE }
+	{ NULL, 0, {0, 0, 0, 0}, FALSE, TERM_WHITE }
 };
 
 static const char *gf_name_list[] =
@@ -634,7 +634,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 		source = loc(x, y);
 
 	/* Default destination */
-	destination = loc(x, y);
+		destination = loc(x, y);
 
 	/* Default center of explosion (if any) */
 	centre = loc(source.x, source.y);
@@ -659,8 +659,9 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 		blast_grid[num_grids].y = y;
 		blast_grid[num_grids].x = x;
 		distance_to_grid[num_grids] = 0;
+		sqinfo_on(cave->info[y][x], SQUARE_PROJECT);
 		num_grids++;
-	}
+		}
 
 	/* Otherwise, travel along the projection path. */
 	else {
@@ -702,6 +703,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 					blast_grid[num_grids].y = y;
 					blast_grid[num_grids].x = x;
 					distance_to_grid[num_grids] = 0;
+					sqinfo_on(cave->info[y][x], SQUARE_PROJECT);
 					num_grids++;
 				}
 
@@ -710,6 +712,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 					blast_grid[num_grids].y = y;
 					blast_grid[num_grids].x = x;
 					distance_to_grid[num_grids] = 0;
+					sqinfo_on(cave->info[y][x], SQUARE_PROJECT);
 					num_grids++;
 				}
 
@@ -759,21 +762,16 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 			n1x = GRID_X(path_grid[i]) - centre.x + 20;
 		}
 
-		/* 
-		 * If the center of the explosion hasn't been 
-		 * saved already, save it now. 
-		 */
+		/* If the explosion centre hasn't been saved already, save it now. */
 		if (num_grids == 0) {
 			blast_grid[num_grids].y = centre.y;
 			blast_grid[num_grids].x = centre.x;
 			distance_to_grid[num_grids] = 0;
+			sqinfo_on(cave->info[centre.y][centre.x], SQUARE_PROJECT);
 			num_grids++;
 		}
 
-		/* 
-		 * Scan every grid that might possibly 
-		 * be in the blast radius. 
-		 */
+		/* Scan every grid that might possibly be in the blast radius. */
 		for (y = centre.y - rad; y <= centre.y + rad; y++) {
 			for (x = centre.x - rad; x <= centre.x + rad; x++) {
 
@@ -830,6 +828,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 						blast_grid[num_grids].y = y;
 						blast_grid[num_grids].x = x;
 						distance_to_grid[num_grids] = dist_from_centre;
+						sqinfo_on(cave->info[y][x], SQUARE_PROJECT);
 						num_grids++;
 					}
 				}
@@ -860,6 +859,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 							blast_grid[num_grids].y = y;
 							blast_grid[num_grids].x = x;
 							distance_to_grid[num_grids] = dist_from_centre;
+							sqinfo_on(cave->info[y][x], SQUARE_PROJECT);
 							num_grids++;
 						}
 					}
@@ -1019,22 +1019,16 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 		}
 	}
 
-#if 0
-	/* Teleport monsters and player around, alter certain features. */
+	/* Clear all the processing marks. */
 	for (i = 0; i < num_grids; i++) {
 		/* Get the grid location */
 		y = blast_grid[i].y;
 		x = blast_grid[i].x;
 
-		/* Grid must be marked. */
-		if (!sqinfo_has(cave_info[y][x], SQUARE_TEMP))
-			continue;
-
-		/* Affect marked grid */
-		if (project_t(who, y, x, dam_at_dist[distance_to_grid[i]], typ, flg))
-			notice = TRUE;
+		/* Clear the mark */
+		sqinfo_off(cave->info[y][x], SQUARE_PROJECT);
 	}
-#endif
+
 	/* Update stuff if needed */
 	if (player->upkeep->update)
 		update_stuff(player->upkeep);
