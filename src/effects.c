@@ -2517,6 +2517,9 @@ bool effect_handler_TELEPORT(effect_handler_context_t *context)
 	/* Move player */
 	monster_swap(y_start, x_start, y, x);
 
+	/* Clear any projection marker to prevent double processing */
+	sqinfo_off(cave->info[y][x], SQUARE_PROJECT);
+
 	/* Lots of updates after monster_swap */
 	handle_stuff(player->upkeep);
 
@@ -2584,6 +2587,9 @@ bool effect_handler_TELEPORT_TO(effect_handler_context_t *context)
 
 	/* Move player */
 	monster_swap(py, px, y, x);
+
+	/* Clear any projection marker to prevent double processing */
+	sqinfo_off(cave->info[y][x], SQUARE_PROJECT);
 
 	/* Lots of updates after monster_swap */
 	handle_stuff(player->upkeep);
