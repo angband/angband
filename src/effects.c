@@ -2423,6 +2423,175 @@ bool effect_handler_PROBE(effect_handler_context_t *context)
 }
 
 /**
+ * Thrust the player or a monster away from the source of a projection.   
+ *
+ * Monsters and players can be pushed past monsters or players weaker than 
+ * they are.
+ * If set, context->p1 and context->p2 act as y and x coordinates
+ */
+bool effect_handler_THRUST_AWAY(effect_handler_context_t *context)
+{
+	int y, x, yy, xx;
+	int i, d, first_d;
+	int angle;
+
+	int c_y, c_x;
+
+	int who = (cave->mon_current > 0) ? cave->mon_current : -1;
+	s16b t_y = context->p1, t_x = context->p2;
+	int grids_away = effect_calculate_value(context, FALSE);
+
+	/*** Find a suitable endpoint for testing. ***/
+
+	/* Get location of caster (assumes index of caster is not zero) */
+	if (who > 0) {
+		c_y = cave_monster(cave, who)->fy;
+		c_x = cave_monster(cave, who)->fx;
+	} else {
+		c_y = player->py;
+		c_x = player->px;
+	}
+
+	/* Ask for a target if none given */
+	if (!(t_y && t_x))
+		target_get(&t_x, &t_y);
+
+	/* Determine where target is in relation to caster. */
+	y = t_y - c_y + 20;
+	x = t_x - c_x + 20;
+
+	/* Find the angle (/2) of the line from caster to target. */
+	angle = get_angle_to_grid[y][x];
+
+	/* Start at the target grid. */
+	y = t_y;
+	x = t_x;
+
+	/* Up to the number of grids requested, force the target away from the
+	 * source of the projection, until it hits something it can't travel
+	 * around. */
+	for (i = 0; i < grids_away; i++) {
+		/* Randomize initial direction. */
+		first_d = randint0(8);
+
+		/* Look around. */
+		for (d = first_d; d < 8 + first_d; d++) {
+			/* Reject angles more than 44 degrees from line. */
+			if (d % 8 == 0) {	/* 135 */
+				if ((angle > 157) || (angle < 114))
+					continue;
+			}
+			if (d % 8 == 1) {	/* 45 */
+				if ((angle > 66) || (angle < 23))
+					continue;
+			}
+			if (d % 8 == 2) {	/* 0 */
+				if ((angle > 21) && (angle < 159))
+					continue;
+			}
+			if (d % 8 == 3) {	/* 90 */
+				if ((angle > 112) || (angle < 68))
+					continue;
+			}
+			if (d % 8 == 4) {	/* 158 */
+				if ((angle > 179) || (angle < 136))
+					continue;
+			}
+			if (d % 8 == 5) {	/* 113 */
+				if ((angle > 134) || (angle < 91))
+					continue;
+			}
+			if (d % 8 == 6) {	/* 22 */
+				if ((angle > 44) || (angle < 1))
+					continue;
+			}
+			if (d % 8 == 7) {	/* 67 */
+				if ((angle > 89) || (angle < 46))
+					continue;
+			}
+
+			/* Extract adjacent location */
+			yy = y + ddy_ddd[d % 8];
+			xx = x + ddx_ddd[d % 8];
+
+			/* Cannot switch places with stronger monsters. */
+			if (cave->m_idx[yy][xx] != 0) {
+				/* A monster is trying to pass. */
+				if (cave->m_idx[y][x] > 0) {
+
+					monster_type *m_ptr = square_monster(cave, y, x);
+
+					if (cave->m_idx[yy][xx] > 0) {
+						monster_type *n_ptr = square_monster(cave, yy, xx);
+
+						/* Monsters cannot pass by stronger monsters. */
+						if (n_ptr->race->mexp > m_ptr->race->mexp)
+							continue;
+					} else {
+						/* Monsters cannot pass by stronger characters. */
+						if (player->lev * 2 > m_ptr->race->level)
+							continue;
+					}
+				}
+
+				/* The player is trying to pass. */
+				if (cave->m_idx[y][x] < 0) {
+					if (cave->m_idx[yy][xx] > 0) {
+						monster_type *n_ptr = square_monster(cave, yy, xx);
+
+						/* Players cannot pass by stronger monsters. */
+						if (n_ptr->race->level > player->lev * 2)
+							continue;
+					}
+				}
+			}
+
+			/* Check for obstruction. */
+			if (!square_isprojectable(cave, yy, xx)) {
+				/* Some features allow entrance, but not exit. */
+				if (square_ispassable(cave, yy, xx)) {
+					/* Travel down the path. */
+					monster_swap(y, x, yy, xx);
+
+					/* Jump to new location. */
+					y = yy;
+					x = xx;
+
+					/* We can't travel any more. */
+					i = grids_away;
+
+					/* Stop looking. */
+					break;
+				}
+
+				/* If there are walls everywhere, stop here. */
+				else if (d == (8 + first_d - 1)) {
+					/* Message for player. */
+					if (cave->m_idx[y][x] < 0)
+						msg("You come to rest next to a wall.");
+					i = grids_away;
+				}
+			} else {
+				/* Travel down the path. */
+				monster_swap(y, x, yy, xx);
+
+				/* Jump to new location. */
+				y = yy;
+				x = xx;
+
+				/* Stop looking at previous location. */
+				break;
+			}
+		}
+	}
+
+	/* Clear the projection mark. */
+	sqinfo_off(cave->info[y][x], SQUARE_PROJECT);
+
+	return TRUE;
+}
+
+/**
  * Teleport player or monster up to context->value.base grids away.
  *
  * If no spaces are readily available, the distance may increase.

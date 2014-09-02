@@ -54,6 +54,7 @@ EFFECT(SUMMON,						FALSE,	NULL,	"summons monsters at the current dungeon level"
 EFFECT(BANISH,						FALSE,	NULL,	"removes all of a given creature type from the level")
 EFFECT(MASS_BANISH,					FALSE,	NULL,	"removes all nearby creatures")
 EFFECT(PROBE,						FALSE,	NULL,	"gives you information on the health and abilities of monsters you can see")
+EFFECT(THRUST_AWAY,					FALSE,	NULL,	"pushes a creature away")
 EFFECT(TELEPORT,					FALSE,	"range",	"teleports you randomly")
 EFFECT(TELEPORT_TO,					FALSE,	NULL,	"teleports you to a monster")
 EFFECT(TELEPORT_LEVEL,				FALSE,	NULL,	"teleports you one level up <or down")
