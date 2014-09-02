@@ -388,7 +388,7 @@ static void ranged_helper(int item, int dir, int range, int shots, ranged_attack
 	char o_name[80];
 
 	int path_n;
-	u16b path_g[256];
+	struct loc path_g[256];
 
 	int msec = op_ptr->delay_factor;
 
@@ -439,8 +439,8 @@ static void ranged_helper(int item, int dir, int range, int shots, ranged_attack
 
 	/* Project along the path */
 	for (i = 0; i < path_n; ++i) {
-		int ny = GRID_Y(path_g[i]);
-		int nx = GRID_X(path_g[i]);
+		int ny = path_g[i].y;
+		int nx = path_g[i].x;
 
 		/* Stop before hitting walls */
 		if (!(square_ispassable(cave, ny, nx)) &&

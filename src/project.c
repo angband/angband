@@ -73,7 +73,7 @@ wchar_t gf_to_char[GF_MAX][BOLT_MAX];
  * This algorithm is similar to, but slightly different from, the one used
  * by "update_view_los()", and very different from the one used by "los()".
  */
-int project_path(u16b *gp, int range, int y1, int x1, int y2, int x2, int flg)
+int project_path(struct loc *gp, int range, int y1, int x1, int y2, int x2, int flg)
 {
 	int y, x;
 
@@ -141,7 +141,7 @@ int project_path(u16b *gp, int range, int y1, int x1, int y2, int x2, int flg)
 		/* Create the projection path */
 		while (1) {
 			/* Save grid */
-			gp[n++] = GRID(y,x);
+			gp[n++] = loc(x, y);
 
 			/* Hack -- Check maximum range */
 			if ((n + (k >> 1)) >= range) break;
@@ -195,7 +195,7 @@ int project_path(u16b *gp, int range, int y1, int x1, int y2, int x2, int flg)
 		/* Create the projection path */
 		while (1) {
 			/* Save grid */
-			gp[n++] = GRID(y,x);
+			gp[n++] = loc(x, y);
 
 			/* Hack -- Check maximum range */
 			if ((n + (k >> 1)) >= range) break;
@@ -243,7 +243,7 @@ int project_path(u16b *gp, int range, int y1, int x1, int y2, int x2, int flg)
 		/* Create the projection path */
 		while (1) {
 			/* Save grid */
-			gp[n++] = GRID(y,x);
+			gp[n++] = loc(x, y);
 
 			/* Hack -- Check maximum range */
 			if ((n + (n >> 1)) >= range) break;
@@ -285,7 +285,7 @@ bool projectable(struct chunk *c, int y1, int x1, int y2, int x2, int flg)
 	int y, x;
 
 	int grid_n = 0;
-	u16b grid_g[512];
+	struct loc grid_g[512];
 
 	/* Check the projection path */
 	grid_n = project_path(grid_g, MAX_RANGE, y1, x1, y2, x2, flg);
@@ -294,8 +294,8 @@ bool projectable(struct chunk *c, int y1, int x1, int y2, int x2, int flg)
 	if (!grid_n) return (FALSE);
 
 	/* Final grid */
-	y = GRID_Y(grid_g[grid_n - 1]);
-	x = GRID_X(grid_g[grid_n - 1]);
+	y = grid_g[grid_n - 1].y;
+	x = grid_g[grid_n - 1].x;
 
 	/* May not end in a wall grid */
 	if (!square_ispassable(c, y, x)) return (FALSE);
@@ -592,8 +592,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 	int num_path_grids = 0;
 
 	/* Actual grids in the "path" */
-	u16b path_grid[512];
-	//struct loc path_grid[512]; TODO
+	struct loc path_grid[512];
 
 	/* Number of grids in the "blast area" (including the "beam" path) */
 	int num_grids = 0;
@@ -687,8 +686,8 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 				int oy = y;
 				int ox = x;
 
-				int ny = GRID_Y(path_grid[i]);
-				int nx = GRID_X(path_grid[i]);
+				int ny = path_grid[i].y;
+				int nx = path_grid[i].x;
 
 				/* Hack -- Balls explode before reaching walls. */
 				if (!square_ispassable(cave, ny, nx) && (rad > 0))
@@ -758,8 +757,8 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 				i = 20;
 
 			/* Reorient the grid forming the end of the arc's centerline. */
-			n1y = GRID_Y(path_grid[i]) - centre.y + 20;
-			n1x = GRID_X(path_grid[i]) - centre.x + 20;
+			n1y = path_grid[i].y - centre.y + 20;
+			n1x = path_grid[i].x - centre.x + 20;
 		}
 
 		/* If the explosion centre hasn't been saved already, save it now. */

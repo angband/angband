@@ -37,25 +37,6 @@ enum
 };
 
 
-/*
- * Convert a "location" (Y,X) into a "grid" (G)
- */
-#define GRID(Y,X) \
-	(256 * (Y) + (X))
-
-/*
- * Convert a "grid" (G) into a "location" (Y)
- */
-#define GRID_Y(G) \
-	((int)((G) / 256U))
-
-/*
- * Convert a "grid" (G) into a "location" (X)
- */
-#define GRID_X(G) \
-	((int)((G) % 256U))
-
-
 /**
  *   NONE: No flags
  *   JUMP: Jump directly to the target location without following a path
@@ -101,7 +82,7 @@ bool project_p(int who, int r, int y, int x, int dam, int typ);
 byte gf_to_attr[GF_MAX][BOLT_MAX];
 wchar_t gf_to_char[GF_MAX][BOLT_MAX];
 
-int project_path(u16b *gp, int range, int y1, int x1, int y2, int x2, int flg);
+int project_path(struct loc *gp, int range, int y1, int x1, int y2, int x2, int flg);
 bool projectable(struct chunk *c, int y1, int x1, int y2, int x2, int flg);
 bool gf_force_obvious(int type);
 int gf_color(int type);

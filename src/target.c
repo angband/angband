@@ -1222,7 +1222,7 @@ bool target_set_closest(int mode)
  * The first two result from information being lost from the dungeon arrays,
  * which requires changes elsewhere
  */
-static int draw_path(u16b path_n, u16b *path_g, wchar_t *c, int *a, int y1, int x1)
+static int draw_path(u16b path_n, struct loc *path_g, wchar_t *c, int *a, int y1, int x1)
 {
 	int i;
 	bool on_screen;
@@ -1240,8 +1240,8 @@ static int draw_path(u16b path_n, u16b *path_g, wchar_t *c, int *a, int y1, int 
 		byte colour;
 
 		/* Find the co-ordinates on the level. */
-		int y = GRID_Y(path_g[i]);
-		int x = GRID_X(path_g[i]);
+		int y = path_g[i].y;
+		int x = path_g[i].x;
 
 		/*
 		 * As path[] is a straight line and the screen is oblong,
@@ -1302,11 +1302,12 @@ static int draw_path(u16b path_n, u16b *path_g, wchar_t *c, int *a, int y1, int 
  * Load the attr/char at each point along "path" which is on screen from
  * "a" and "c". This was saved in draw_path().
  */
-static void load_path(u16b path_n, u16b *path_g, wchar_t *c, int *a) {
+static void load_path(u16b path_n, struct loc *path_g, wchar_t *c, int *a)
+{
 	int i;
 	for (i = 0; i < path_n; i++) {
-		int y = GRID_Y(path_g[i]);
-		int x = GRID_X(path_g[i]);
+		int y = path_g[i].y;
+		int x = path_g[i].x;
 
 		if (!panel_contains(y, x)) continue;
 		move_cursor_relative(y, x);
@@ -1370,7 +1371,7 @@ bool target_set_interactive(int mode, int x, int y)
 	int px = player->px;
 
 	int path_n;
-	u16b path_g[256];
+	struct loc path_g[256];
 
 	int i, d, m, t, bd;
 	int wid, hgt, help_prompt_loc;
