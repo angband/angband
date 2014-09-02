@@ -32,7 +32,6 @@
 #include "object.h"
 #include "player-timed.h"
 #include "player-util.h"
-#include "spells.h"
 
 /** Time last item was wielded */
 s32b object_last_wield;
@@ -1158,6 +1157,70 @@ obj_pseudo_t object_pseudo(const object_type *o_ptr)
 	return INSCRIP_STRANGE;
 }
 
+
+/**
+ * Identify an item.
+ */
+void do_ident_item(object_type *o_ptr)
+{
+	char o_name[80];
+
+	u32b msg_type = 0;
+	int i, index, slot;
+	bool bad = TRUE;
+
+    /* Identify and apply autoinscriptions. */
+	object_flavor_aware(o_ptr);
+	object_notice_everything(o_ptr);
+	apply_autoinscription(o_ptr);
+
+	/* Set ignore flag */
+	player->upkeep->notice |= PN_IGNORE;
+
+	/* Recalculate bonuses */
+	player->upkeep->update |= (PU_BONUS);
+
+	/* Window stuff */
+	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
+
+	/* Description */
+	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
+
+	/* Determine the message type. */
+	/* CC: we need to think more carefully about how we define "bad" with
+	 * multiple modifiers - currently using "all nonzero modifiers < 0" */
+	for (i = 0; i < OBJ_MOD_MAX; i++)
+		if (o_ptr->modifiers[i] > 0)
+			bad = FALSE;
+
+	if (bad)
+		msg_type = MSG_IDENT_BAD;
+	else if (o_ptr->artifact)
+		msg_type = MSG_IDENT_ART;
+	else if (o_ptr->ego)
+		msg_type = MSG_IDENT_EGO;
+	else
+		msg_type = MSG_GENERIC;
+
+	/* Log artifacts to the history list. */
+	if (o_ptr->artifact)
+		history_add_artifact(o_ptr->artifact, TRUE, TRUE);
+
+	/* Describe */
+	index = object_gear_index(player, o_ptr);
+	slot = equipped_item_slot(player->body, index);
+	if (item_is_equipped(player, index)) {
+		/* Format and capitalise */
+		char *msg = format("%s: %s (%c).", equip_describe(player, slot),
+						   o_name, equip_to_label(slot));
+		my_strcap(msg);
+
+		msgt(msg_type, msg);
+	} else if (index != NO_OBJECT)
+		msgt(msg_type, "In your pack: %s (%c).", o_name, gear_to_label(index));
+	else
+		msgt(msg_type, "On the ground: %s.", o_name);
+}
 
 /**
  * Sense the inventory

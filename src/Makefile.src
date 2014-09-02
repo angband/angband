@@ -164,7 +164,6 @@ ANGFILES = \
 	signals.o \
 	save.o \
 	savefile.o \
-	spells.o \
 	store.o \
 	tables.o \
 	target.o \

@@ -24,7 +24,6 @@
 #include "player-timed.h"
 #include "player-util.h"
 #include "project.h"
-#include "spells.h"
 
 /**
  * Adjust damage according to resistance or vulnerability.
@@ -94,7 +93,7 @@ int adjust_dam(int type, int dam, aspect dam_aspect, int resist)
  * \param sustain is whether sustains will prevent draining
  * \param perma is whether the drains are permanent
  */
-static void project_player_drain_stats(int num, bool sustain, bool perma)
+static void project_player_drain_stats(int num)
 {
 	int i, k = 0;
 	const char *act = NULL;
@@ -108,12 +107,8 @@ static void project_player_drain_stats(int num, bool sustain, bool perma)
 			case 5: k = STAT_CON; act = "hale"; break;
 		}
 
-		if (sustain)
-			do_dec_stat(k, perma);
-		else {
-			msg("You're not as %s as you used to be...", act);
-			player_stat_dec(player, k, perma);
-		}
+		msg("You're not as %s as you used to be...", act);
+		player_stat_dec(player, k, FALSE);
 	}
 
 	return;
@@ -369,7 +364,7 @@ static void project_player_handler_TIME(project_player_handler_context_t *contex
 
 	/* Drain some stats */
 	else if (!one_in_(5))
-		project_player_drain_stats(2, FALSE, FALSE);
+		project_player_drain_stats(2);
 
 	/* Drain all stats */
 	else {

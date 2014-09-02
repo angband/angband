@@ -37,7 +37,6 @@
 #include "object.h"
 #include "player-timed.h"
 #include "project.h"
-#include "spells.h"
 #include "target.h"
 #include "ui-event.h"
 #include "ui-game.h"

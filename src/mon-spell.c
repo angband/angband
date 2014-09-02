@@ -23,7 +23,6 @@
 #include "player-timed.h"
 #include "player-util.h"
 #include "project.h"
-#include "spells.h"
 
 /**
  * Info details of the different monster spells in the game.

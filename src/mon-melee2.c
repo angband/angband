@@ -35,7 +35,6 @@
 #include "player-timed.h"
 #include "player-util.h"
 #include "project.h"
-#include "spells.h"
 #include "tables.h"
 
 /*

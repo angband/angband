@@ -27,7 +27,6 @@
 #include "obj-util.h"
 #include "player-timed.h"
 #include "player-util.h"
-#include "spells.h"
 #include "tables.h"
 
 /**
@@ -342,7 +341,7 @@ static void chest_trap(int y, int x, s16b o_idx)
 	{
 		msg("A small needle has pricked you!");
 		take_hit(player, damroll(1, 4), "a poison needle");
-		(void)do_dec_stat(STAT_STR, FALSE);
+		effect_simple(EF_DRAIN_STAT, "0", STAT_STR, 0, 0, NULL);
 	}
 
 	/* Lose constitution */
@@ -350,7 +349,7 @@ static void chest_trap(int y, int x, s16b o_idx)
 	{
 		msg("A small needle has pricked you!");
 		take_hit(player, damroll(1, 4), "a poison needle");
-		(void)do_dec_stat(STAT_CON, FALSE);
+		effect_simple(EF_DRAIN_STAT, "0", STAT_CON, 0, 0, NULL);
 	}
 
 	/* Poison */

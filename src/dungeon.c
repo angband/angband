@@ -43,7 +43,6 @@
 #include "player-util.h"
 #include "prefs.h"
 #include "savefile.h"
-#include "spells.h"
 #include "store.h"
 #include "tables.h"
 #include "target.h"

@@ -27,7 +27,6 @@
 #include "obj-ui.h"
 #include "obj-util.h"
 #include "player-spell.h"
-#include "spells.h"
 #include "target.h"
 
 errr (*cmd_get_hook)(cmd_context c, bool wait);

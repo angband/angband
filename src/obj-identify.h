@@ -82,6 +82,7 @@ bool object_was_sensed(const object_type *o_ptr);
 void object_notice_sensing(object_type *o_ptr);
 void object_sense_artifact(object_type *o_ptr);
 obj_pseudo_t object_pseudo(const object_type *o_ptr);
+void do_ident_item(object_type *o_ptr);
 void sense_inventory(void);
 
 #endif /* OBJECT_IDENTIFY_H */

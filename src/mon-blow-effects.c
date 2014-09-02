@@ -30,7 +30,6 @@
 #include "player-timed.h"
 #include "player-util.h"
 #include "project.h"
-#include "spells.h"
 
 /**
  * Do damage as the result of a melee attack that has an elemental aspect.
@@ -124,7 +123,7 @@ static void melee_effect_stat(melee_effect_handler_context_t *context, int stat)
 	take_hit(context->p, context->damage, context->ddesc);
 
 	/* Damage (stat) */
-	if (do_dec_stat(stat, FALSE)) context->obvious = TRUE;
+	effect_simple(EF_DRAIN_STAT, "0", stat, 0, 0, &context->obvious);
 }
 
 /**
@@ -658,11 +657,11 @@ static void melee_effect_handler_LOSE_ALL(melee_effect_handler_context_t *contex
 	take_hit(context->p, context->damage, context->ddesc);
 
 	/* Damage (stats) */
-	if (do_dec_stat(STAT_STR, FALSE)) context->obvious = TRUE;
-	if (do_dec_stat(STAT_DEX, FALSE)) context->obvious = TRUE;
-	if (do_dec_stat(STAT_CON, FALSE)) context->obvious = TRUE;
-	if (do_dec_stat(STAT_INT, FALSE)) context->obvious = TRUE;
-	if (do_dec_stat(STAT_WIS, FALSE)) context->obvious = TRUE;
+	effect_simple(EF_DRAIN_STAT, "0", STAT_STR, 0, 0, &context->obvious);
+	effect_simple(EF_DRAIN_STAT, "0", STAT_DEX, 0, 0, &context->obvious);
+	effect_simple(EF_DRAIN_STAT, "0", STAT_CON, 0, 0, &context->obvious);
+	effect_simple(EF_DRAIN_STAT, "0", STAT_INT, 0, 0, &context->obvious);
+	effect_simple(EF_DRAIN_STAT, "0", STAT_WIS, 0, 0, &context->obvious);
 }
 
 /**

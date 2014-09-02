@@ -26,7 +26,6 @@
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "player-util.h"
-#include "spells.h"
 
 static const struct slot_info {
 	int index;

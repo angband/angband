@@ -24,7 +24,6 @@
 #include "mon-timed.h"
 #include "mon-util.h"
 #include "project.h"
-#include "spells.h"
 
 /**
  * Helper function -- return a "nearby" race for polymorphing

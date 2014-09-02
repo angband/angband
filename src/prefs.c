@@ -29,7 +29,6 @@
 #include "object.h"
 #include "prefs.h"
 #include "project.h"
-#include "spells.h"
 #include "ui-game.h"
 
 bool arg_wizard;			/* Command arg -- Request wizard mode */

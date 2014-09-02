@@ -35,7 +35,6 @@
 #include "player-spell.h"
 #include "player-timed.h"
 #include "player-util.h"
-#include "spells.h"
 #include "target.h"
 #include "trap.h"
 #include "ui-menu.h"
@@ -196,6 +195,39 @@ static void activation_message(object_type *o_ptr)
 	strnfcat(buf, 1024, &end, in_cursor);
 
 	msg("%s", buf);
+}
+
+
+/*
+ * Hopefully this is OK now
+ */
+static bool item_tester_unknown(const object_type *o_ptr)
+{
+	return object_is_known(o_ptr) ? FALSE : TRUE;
+}
+
+/**
+ * Return TRUE if there are any objects available to identify (whether on
+ * floor or in gear)
+ */
+bool spell_identify_unknown_available(void)
+{
+	int floor_list[MAX_FLOOR_STACK];
+	int floor_num;
+	int i;
+	bool unidentified_gear = FALSE;
+
+	floor_num = scan_floor(floor_list, N_ELEMENTS(floor_list), player->py,
+						   player->px, 0x0B, item_tester_unknown);
+
+	for (i = 0; i < player->max_gear; i++) {
+		if (item_test(item_tester_unknown, i)) {
+			unidentified_gear = TRUE;
+			break;
+		}
+	}
+
+	return unidentified_gear || floor_num > 0;
 }
 
 

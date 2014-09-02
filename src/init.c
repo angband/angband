@@ -55,7 +55,6 @@
 #include "project.h"
 #include "quest.h"
 #include "randname.h"
-#include "spells.h"
 #include "store.h"
 #include "trap.h"
 

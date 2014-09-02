@@ -41,7 +41,6 @@
 #include "player-util.h"
 #include "prefs.h"
 #include "randname.h"
-#include "spells.h"
 #include "z-queue.h"
 
 object_base *kb_info;

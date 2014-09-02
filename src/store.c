@@ -34,7 +34,6 @@
 #include "obj-power.h"
 #include "obj-tval.h"
 #include "obj-util.h"
-#include "spells.h"
 #include "store.h"
 #include "target.h"
 #include "z-debug.h"

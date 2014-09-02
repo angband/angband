@@ -22,6 +22,7 @@
 #include "effects.h"
 #include "dungeon.h"
 #include "generate.h"
+#include "init.h"
 #include "mon-lore.h"
 #include "mon-make.h"
 #include "mon-spell.h"
@@ -31,6 +32,7 @@
 #include "obj-gear.h"
 #include "obj-identify.h"
 #include "obj-ignore.h"
+#include "obj-make.h"
 #include "obj-power.h"
 #include "obj-tval.h"
 #include "obj-ui.h"
@@ -38,7 +40,6 @@
 #include "player-timed.h"
 #include "player-util.h"
 #include "project.h"
-#include "spells.h"
 #include "tables.h"
 #include "target.h"
 #include "trap.h"
@@ -523,7 +524,8 @@ bool effect_handler_DRAIN_STAT(effect_handler_context_t *context)
 
 		/* Message */
 		msgt(MSG_DRAIN_STAT, "You feel very %s.", desc_stat_neg[stat]);
-		take_hit(player, dam, "stat drain");
+		if (dam)
+			take_hit(player, dam, "stat drain");
 
 		/* Notice */
 		context->ident = TRUE;
@@ -690,6 +692,75 @@ bool effect_handler_RESTORE_MANA(effect_handler_context_t *context)
 		context->ident = TRUE;
 	}
 	return TRUE;
+}
+
+/*
+ * Hack -- Removes curse from an object.
+ */
+static void uncurse_object(object_type *o_ptr)
+{
+	bitflag f[OF_SIZE];
+
+	create_mask(f, FALSE, OFT_CURSE, OFT_MAX);
+
+	of_diff(o_ptr->flags, f);
+}
+
+
+/*
+ * Removes curses from items in inventory.
+ *
+ * \param heavy removes heavy curses if true
+ *
+ * \returns number of items uncursed
+ */
+static int remove_curse_aux(bool heavy)
+{
+	int i, cnt = 0;
+
+	/* Attempt to uncurse items being worn */
+	for (i = 0; i < player->body.count; i++)
+	{
+		object_type *o_ptr = equipped_item_by_slot(player, i);
+
+		if (!o_ptr->kind) continue;
+		if (!cursed_p(o_ptr->flags)) continue;
+
+		/* Heavily cursed items need a special spell */
+		if (of_has(o_ptr->flags, OF_HEAVY_CURSE) && !heavy) continue;
+
+		/* Perma-cursed items can never be removed */
+		if (of_has(o_ptr->flags, OF_PERMA_CURSE)) continue;
+
+		/* Uncurse, and update things */
+		uncurse_object(o_ptr);
+
+		player->upkeep->update |= (PU_BONUS);
+		player->upkeep->redraw |= (PR_EQUIP);
+
+		/* Count the uncursings */
+		cnt++;
+	}
+
+	/* Return "something uncursed" */
+	return (cnt);
+}
+
+
+/*
+ * Remove most curses
+ */
+bool remove_curse(void)
+{
+	return (remove_curse_aux(FALSE));
+}
+
+/*
+ * Remove all curses
+ */
+bool remove_all_curse(void)
+{
+	return (remove_curse_aux(TRUE));
 }
 
 /**
@@ -1581,6 +1652,283 @@ bool effect_handler_DISENCHANT(effect_handler_context_t *context)
 
 	return TRUE;
 }
+
+/**
+ * Bit flags for the enchant() function
+ */
+#define ENCH_TOHIT   0x01
+#define ENCH_TODAM   0x02
+#define ENCH_TOAC    0x04
+
+/**
+ * Used by the enchant() function (chance of failure)
+ */
+static const int enchant_table[16] =
+{
+	0, 10,  20, 40, 80,
+	160, 280, 400, 550, 700,
+	800, 900, 950, 970, 990,
+	1000
+};
+
+/*
+ * Hook to specify "weapon"
+ */
+static bool item_tester_hook_weapon(const object_type *o_ptr)
+{
+	return tval_is_weapon(o_ptr);
+}
+
+
+/*
+ * Hook to specify "armour"
+ */
+static bool item_tester_hook_armour(const object_type *o_ptr)
+{
+	return tval_is_armor(o_ptr);
+}
+
+/**
+ * Tries to increase an items bonus score, if possible.
+ *
+ * \returns true if the bonus was increased
+ */
+static bool enchant_score(s16b *score, bool is_artifact)
+{
+	int chance;
+
+	/* Artifacts resist enchantment half the time */
+	if (is_artifact && randint0(100) < 50) return FALSE;
+
+	/* Figure out the chance to enchant */
+	if (*score < 0) chance = 0;
+	else if (*score > 15) chance = 1000;
+	else chance = enchant_table[*score];
+
+	/* If we roll less-than-or-equal to chance, it fails */
+	if (randint1(1000) <= chance) return FALSE;
+
+	/* Increment the score */
+	++*score;
+
+	return TRUE;
+}
+
+/**
+ * Tries to uncurse a cursed item, if possible
+ *
+ * \returns true if a curse was broken
+ */
+static bool enchant_curse(object_type *o_ptr, bool is_artifact)
+{
+	/* If the item isn't cursed (or is perma-cursed) this doesn't work */
+	if (!cursed_p(o_ptr->flags) || of_has(o_ptr->flags, OF_PERMA_CURSE)) 
+		return FALSE;
+
+	/* Artifacts resist enchanting curses away half the time */
+	if (is_artifact && randint0(100) < 50) return FALSE;
+
+	/* Normal items are uncursed 25% of the tiem */
+	if (randint0(100) >= 25) return FALSE;
+
+	/* Uncurse the item */
+	msg("The curse is broken!");
+	uncurse_object(o_ptr);
+	return TRUE;
+}
+
+/**
+ * Helper function for enchant() which tries to do the two things that
+ * enchanting an item does, namely increasing its bonuses and breaking curses
+ *
+ * \returns true if a bonus was increased or a curse was broken
+ */
+static bool enchant2(object_type *o_ptr, s16b *score)
+{
+	bool result = FALSE;
+	bool is_artifact = o_ptr->artifact ? TRUE : FALSE;
+	if (enchant_score(score, is_artifact)) result = TRUE;
+	if (enchant_curse(o_ptr, is_artifact)) result = TRUE;
+	return result;
+}
+
+/**
+ * Enchant an item
+ *
+ * Revamped!  Now takes item pointer, number of times to try enchanting, and a
+ * flag of what to try enchanting.  Artifacts resist enchantment some of the
+ * time. Also, any enchantment attempt (even unsuccessful) kicks off a parallel
+ * attempt to uncurse a cursed item.
+ *
+ * Note that an item can technically be enchanted all the way to +15 if you
+ * wait a very, very, long time.  Going from +9 to +10 only works about 5% of
+ * the time, and from +10 to +11 only about 1% of the time.
+ *
+ * Note that this function can now be used on "piles" of items, and the larger
+ * the pile, the lower the chance of success.
+ *
+ * \returns true if the item was changed in some way
+ */
+bool enchant(object_type *o_ptr, int n, int eflag)
+{
+	int i, prob;
+	bool res = FALSE;
+
+	/* Large piles resist enchantment */
+	prob = o_ptr->number * 100;
+
+	/* Missiles are easy to enchant */
+	if (tval_is_ammo(o_ptr)) prob = prob / 20;
+
+	/* Try "n" times */
+	for (i = 0; i < n; i++)
+	{
+		/* Roll for pile resistance */
+		if (prob > 100 && randint0(prob) >= 100) continue;
+
+		/* Try the three kinds of enchantment we can do */
+		if ((eflag & ENCH_TOHIT) && enchant2(o_ptr, &o_ptr->to_h)) res = TRUE;
+		if ((eflag & ENCH_TODAM) && enchant2(o_ptr, &o_ptr->to_d)) res = TRUE;
+		if ((eflag & ENCH_TOAC)  && enchant2(o_ptr, &o_ptr->to_a)) res = TRUE;
+	}
+
+	/* Failure */
+	if (!res) return (FALSE);
+
+	/* Recalculate bonuses, gear */
+	player->upkeep->update |= (PU_BONUS | PU_INVEN);
+
+	/* Combine the pack (later) */
+	player->upkeep->notice |= (PN_COMBINE);
+
+	/* Redraw stuff */
+	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP );
+
+	/* Success */
+	return (TRUE);
+}
+
+
+
+/*
+ * Enchant an item (in the inventory or on the floor)
+ * Note that "num_ac" requires armour, else weapon
+ * Returns TRUE if attempted, FALSE if cancelled
+ */
+bool enchant_spell(int num_hit, int num_dam, int num_ac)
+{
+	int item;
+	bool okay = FALSE;
+
+	object_type *o_ptr;
+
+	char o_name[80];
+
+	const char *q, *s;
+
+	/* Get an item */
+	q = "Enchant which item? ";
+	s = "You have nothing to enchant.";
+	if (!get_item(&item, q, s, 0, 
+		num_ac ? item_tester_hook_armour : item_tester_hook_weapon,
+		(USE_EQUIP | USE_INVEN | USE_QUIVER | USE_FLOOR))) return (FALSE);
+
+	o_ptr = object_from_item_idx(item);
+
+
+	/* Description */
+	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
+
+	/* Describe */
+	msg("%s %s glow%s brightly!",
+	           ((item >= 0) ? "Your" : "The"), o_name,
+	           ((o_ptr->number > 1) ? "" : "s"));
+
+	/* Enchant */
+	if (enchant(o_ptr, num_hit, ENCH_TOHIT)) okay = TRUE;
+	if (enchant(o_ptr, num_dam, ENCH_TODAM)) okay = TRUE;
+	if (enchant(o_ptr, num_ac, ENCH_TOAC)) okay = TRUE;
+
+	/* Failure */
+	if (!okay)
+	{
+		flush();
+
+		/* Message */
+		msg("The enchantment failed.");
+	}
+
+	/* Something happened */
+	return (TRUE);
+}
+
+
+/*
+ * Brand weapons (or ammo)
+ *
+ * Turns the (non-magical) object into an ego-item of 'brand_type'.
+ */
+void brand_object(object_type *o_ptr, const char *name)
+{
+	int i;
+	ego_item_type *e_ptr;
+	bool ok = FALSE;
+
+	/* you can never modify artifacts / ego-items */
+	/* you can never modify cursed / worthless items */
+	if (o_ptr->kind && !cursed_p(o_ptr->flags) && o_ptr->kind->cost &&
+	    !o_ptr->artifact && !o_ptr->ego)
+	{
+		char o_name[80];
+		char brand[20];
+
+		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
+		strnfmt(brand, sizeof(brand), "of %s", name);
+
+		/* Describe */
+		msg("The %s %s surrounded with an aura of %s.", o_name,
+			(o_ptr->number > 1) ? "are" : "is", name);
+
+		/* Get the right ego type for the object */
+		for (i = 0; i < z_info->e_max; i++) {
+			e_ptr = &e_info[i];
+
+			/* Match the name */
+			if (!e_ptr->name) continue;
+			if (streq(e_ptr->name, brand)) {
+				struct ego_poss_item *poss;
+				for (poss = e_ptr->poss_items; poss; poss = poss->next)
+					if (poss->kidx == o_ptr->kind->kidx)
+						ok = TRUE;
+			}
+			if (ok) break;
+		}
+
+		/* Make it an ego item */
+		o_ptr->ego = &e_info[i];
+		ego_apply_magic(o_ptr, 0);
+		object_notice_ego(o_ptr);
+
+		/* Update the gear */
+		player->upkeep->update |= (PU_INVEN);
+
+		/* Combine the pack (later) */
+		player->upkeep->notice |= (PN_COMBINE);
+
+		/* Window stuff */
+		player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
+
+		/* Enchant */
+		enchant(o_ptr, randint0(3) + 4, ENCH_TOHIT | ENCH_TODAM);
+	}
+	else
+	{
+		flush();
+		msg("The branding failed.");
+	}
+}
+
+
 
 
 /**
@@ -3604,7 +3952,7 @@ bool effect_handler_TRAP_DART_LOSE_STR(effect_handler_context_t *context)
 	if (trap_check_hit(125)) {
 		msg("A small dart hits you!");
 		take_hit(player, damroll(1, 4), "a trap");
-		(void)do_dec_stat(STAT_STR, FALSE);
+		effect_simple(EF_DRAIN_STAT, "0", STAT_STR, 0, 0, NULL);
 	} else {
 		msg("A small dart barely misses you.");
 	}
@@ -3616,7 +3964,7 @@ bool effect_handler_TRAP_DART_LOSE_DEX(effect_handler_context_t *context)
 	if (trap_check_hit(125)) {
 		msg("A small dart hits you!");
 		take_hit(player, damroll(1, 4), "a trap");
-		(void)do_dec_stat(STAT_DEX, FALSE);
+		effect_simple(EF_DRAIN_STAT, "0", STAT_DEX, 0, 0, NULL);
 	} else {
 		msg("A small dart barely misses you.");
 	}
@@ -3628,7 +3976,7 @@ bool effect_handler_TRAP_DART_LOSE_CON(effect_handler_context_t *context)
 	if (trap_check_hit(125)) {
 		msg("A small dart hits you!");
 		take_hit(player, damroll(1, 4), "a trap");
-		(void)do_dec_stat(STAT_CON, FALSE);
+		effect_simple(EF_DRAIN_STAT, "0", STAT_CON, 0, 0, NULL);
 	} else {
 		msg("A small dart barely misses you.");
 	}
@@ -3789,10 +4137,12 @@ int effect_param(const char *type)
 	return val;
 }
 
-/*
+/**
  * Do an effect, given an object.
  * Boost is the extent to which skill surpasses difficulty, used as % boost. It
  * ranges from 0 to 138.
+ *
+ * Note that no effect ever sets `*ident` to FALSE
  */
 bool effect_do(struct effect *effect, bool *ident, bool aware, int dir, int beam, int boost)
 {

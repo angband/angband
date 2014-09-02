@@ -23,7 +23,6 @@
 #include "effects.h"
 #include "init.h"
 #include "player-util.h"
-#include "spells.h"
 #include "trap.h"
 
 trap_kind *trap_info;

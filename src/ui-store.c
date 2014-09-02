@@ -33,7 +33,6 @@
 #include "obj-tval.h"
 #include "obj-ui.h"
 #include "obj-util.h"
-#include "spells.h"
 #include "store.h"
 #include "target.h"
 #include "textui.h"
