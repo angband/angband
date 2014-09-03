@@ -3822,7 +3822,6 @@ static errr init_other(void)
 {
 	int i;
 
-
 	/*** Prepare the various "bizarre" arrays ***/
 
 	/* Initialize knowledge things */
@@ -3835,7 +3834,6 @@ static errr init_other(void)
 	object_list_init();
 
 	/*** Prepare grid arrays ***/
-
 	cave = cave_new(DUNGEON_HGT, DUNGEON_WID);
 
 	/* Array of stacked monster messages */
@@ -3849,14 +3847,6 @@ static errr init_other(void)
 
 	/*** Prepare the options ***/
 	init_options();
-
-	/* Initialize the window flags */
-	for (i = 0; i < ANGBAND_TERM_MAX; i++)
-	{
-		/* Assume no flags */
-		window_flag[i] = 0L;
-	}
-
 
 	/*** Pre-allocate space for the "format()" buffer ***/
 
@@ -3957,10 +3947,6 @@ void init_arrays(void)
 	/* Initialise random name data */
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (random names)");
 	if (run_parser(&names_parser)) quit("Can't parse names");
-
-	/* Initialize some other arrays */
-	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (other)");
-	if (init_other()) quit("Cannot initialize other stuff");
 }
 
 extern struct init_module z_quark_module;
@@ -3985,49 +3971,16 @@ static struct init_module* modules[] = {
 };
 
 /**
- * Hack -- main Angband initialization entry point
+ * Initialise Angband's data stores and allocate memory for structures,
+ * etc, so that the game can get started.
  *
- * Verify some files, display the "news.txt" file, create
- * the high score file, initialize all internal arrays, and
- * load the basic "user pref files".
+ * The only input/output in this file should be via event_signal_string().
+ * We cannot rely on any particular UI as this part should be UI-agnostic.
+ * We also cannot rely on anything else having being initialised into any
+ * particlar state.  Which is why you'd be calling this function in the 
+ * first place.
  *
- * Be very careful to keep track of the order in which things
- * are initialized, in particular, the only thing *known* to
- * be available when this function is called is the "z-term.c"
- * package, and that may not be fully initialized until the
- * end of this function, when the default "user pref files"
- * are loaded and "Term_xtra(TERM_XTRA_REACT,0)" is called.
- *
- * Note that this function attempts to verify the "news" file,
- * and the game aborts (cleanly) on failure, since without the
- * "news" file, it is likely that the "lib" folder has not been
- * correctly located.  Otherwise, the news file is displayed for
- * the user.
- *
- * Note that this function attempts to verify (or create) the
- * "high score" file, and the game aborts (cleanly) on failure,
- * since one of the most common "extraction" failures involves
- * failing to extract all sub-directories (even empty ones), such
- * as by failing to use the "-d" option of "pkunzip", or failing
- * to use the "save empty directories" option with "Compact Pro".
- * This error will often be caught by the "high score" creation
- * code below, since the "lib/apex" directory, being empty in the
- * standard distributions, is most likely to be "lost", making it
- * impossible to create the high score file.
- *
- * Note that various things are initialized by this function,
- * including everything that was once done by "init_some_arrays".
- *
- * This initialization involves the parsing of special files
- * in the "lib/edit" directories.
- *
- * Note that the "template" files are initialized first, since they
- * often contain errors.  This means that macros and message recall
- * and things like that are not available until after they are done.
- *
- * We load the default "user pref files" here in case any "color"
- * changes are needed before character creation.
- *
+ * Old comment, not sure if still accurate:
  * Note that the "graf-xxx.prf" file must be loaded separately,
  * if needed, in the first (?) pass through "TERM_XTRA_REACT".
  */
@@ -4037,15 +3990,19 @@ bool init_angband(void)
 
 	event_signal(EVENT_ENTER_INIT);
 
+	/* Load in basic data */
 	init_arrays();
 
+	/* Initialise other modules */
 	for (i = 0; modules[i]; i++)
 		if (modules[i]->init)
 			modules[i]->init();
 
-	/*** Load default user pref files ***/
+	/* Initialize some other arrays */
+	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (other)");
+	if (init_other()) quit("Cannot initialize other stuff");
 
-	/* Initialize graphics info */
+	/* Initialize graphics info and basic user pref data */
 	event_signal_string(EVENT_INITSTATUS, "Loading basic user pref file...");
 	(void)process_pref_file("pref.prf", FALSE, FALSE);
 
