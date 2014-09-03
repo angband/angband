@@ -1673,11 +1673,6 @@ void play_game(void)
 	if (OPT(birth_randarts))
 		do_randart(seed_randart, TRUE);
 
-	/* Initialize temporary fields sensibly */
-	player->upkeep->object_idx = NO_OBJECT;
-	player->upkeep->object_kind = NULL;
-	player->upkeep->monster_race = NULL;
-
 	/* Set the savefile name if it's not already set */
 	if (!savefile[0])
 		savefile_set_name(player_safe_name(player, TRUE));
