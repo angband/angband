@@ -3825,9 +3825,6 @@ static errr init_other(void)
 
 	/*** Prepare the various "bizarre" arrays ***/
 
-	/* Initialize the "quark" package */
-	(void)quarks_init();
-
 	/* Initialize knowledge things */
 	textui_knowledge_init();
 
@@ -3849,13 +3846,6 @@ static errr init_other(void)
 
 	/* Lore */
 	l_list = C_ZNEW(z_info->r_max, monster_lore);
-
-
-	/*** Prepare quest array ***/
-
-	quest_init();
-
-
 
 	/*** Prepare the options ***/
 	init_options();
@@ -3964,10 +3954,6 @@ void init_arrays(void)
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (hints)");
 	if (run_parser(&hints_parser)) quit("Cannot initialize hints");
 
-	/* Initialise store stocking data */
-	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (store stocks)");
-	store_init();
-
 	/* Initialise random name data */
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (random names)");
 	if (run_parser(&names_parser)) quit("Can't parse names");
@@ -3977,18 +3963,24 @@ void init_arrays(void)
 	if (init_other()) quit("Cannot initialize other stuff");
 }
 
+extern struct init_module z_quark_module;
 extern struct init_module generate_module;
 extern struct init_module obj_make_module;
 extern struct init_module ignore_module;
 extern struct init_module mon_make_module;
 extern struct init_module player_module;
+extern struct init_module store_module;
+extern struct init_module quest_module;
 
 static struct init_module* modules[] = {
+	&z_quark_module,
 	&generate_module,
 	&obj_make_module,
 	&ignore_module,
 	&mon_make_module,
 	&player_module,
+	&store_module,
+	&quest_module,
 	NULL
 };
 
@@ -4078,11 +4070,6 @@ void cleanup_angband(void)
 
 	event_remove_all_handlers();
 
-	/* Free the stores */
-	if (stores) free_stores();
-
-	quest_free();
-
 	/* Free the lore list */
 	FREE(l_list);
 
@@ -4100,9 +4087,6 @@ void cleanup_angband(void)
 
 	/* Free the history */
 	history_clear();
-
-	/* Free the "quarks" */
-	quarks_free();
 
 	monster_list_finalize();
 	object_list_finalize();

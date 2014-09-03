@@ -14,10 +14,10 @@ quark_t quark_add(const char *str);
 const char *quark_str(quark_t q);
 
 /* Initialise the quarks package */
-errr quarks_init(void);
+void quarks_init(void);
 
 /* De-initialise the quarks package */
-errr quarks_free(void);
+void quarks_free(void);
 
 
 #endif /* !INCLUDED_Z_QUARK_H */

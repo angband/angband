@@ -17,6 +17,7 @@
  */
 #include "angband.h"
 #include "monster.h"
+#include "init.h"
 #include "quest.h"
 #include "obj-util.h"
 
@@ -130,9 +131,13 @@ bool quest_check(const struct monster *m) {
  */
 void quest_init(void) {
 	memset(q_list, 0, sizeof q_list);
-	return;
 }
 
 void quest_free(void) {
-	return;
 }
+
+struct init_module quest_module = {
+	.name = "quest",
+	.init = quest_init,
+	.cleanup = quest_free
+};
