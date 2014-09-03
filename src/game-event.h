@@ -92,7 +92,6 @@ typedef union
 
 	struct
 	{
-		int msec;
 		int gf_type;
 		int num_grids;
 		int *distance_to_grid;
@@ -103,7 +102,6 @@ typedef union
 
 	struct
 	{
-		int msec;
 		int gf_type;
 		bool seen;
 		bool beam;
@@ -115,7 +113,6 @@ typedef union
 
 	struct
 	{
-		int msec;
 		byte mattr;
 		wchar_t mchar;
 		bool seen;
@@ -147,7 +144,6 @@ void event_signal_string(game_event_type, const char *s);
 void event_signal_flag(game_event_type type, bool flag);
 void event_signal(game_event_type);
 void event_signal_blast(game_event_type type,
-						int msec,
 						int gf_type,
 						int num_grids,
 						int *distance_to_grid,
@@ -155,7 +151,6 @@ void event_signal_blast(game_event_type type,
 						struct loc *blast_grid,
 						struct loc centre);
 void event_signal_bolt(game_event_type type,
-					   int msec,
 					   int gf_type,
 					   bool seen,
 					   bool beam,
@@ -164,7 +159,6 @@ void event_signal_bolt(game_event_type type,
 					   int y,
 					   int x);
 void event_signal_missile(game_event_type type,
-						  int msec,
 						  byte mattr,
 						  wchar_t mchar,
 						  bool seen,

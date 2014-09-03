@@ -167,7 +167,6 @@ void event_signal_birthpoints(int stats[6], int remaining)
 }
 
 void event_signal_blast(game_event_type type,
-						int msec,
 						int gf_type,
 						int num_grids,
 						int *distance_to_grid,
@@ -176,7 +175,6 @@ void event_signal_blast(game_event_type type,
 						struct loc centre)
 {
 	game_event_data data;
-	data.explosion.msec = msec;
 	data.explosion.gf_type = gf_type;
 	data.explosion.num_grids = num_grids;
 	data.explosion.distance_to_grid = distance_to_grid;
@@ -188,7 +186,6 @@ void event_signal_blast(game_event_type type,
 }
 
 void event_signal_bolt(game_event_type type,
-					   int msec,
 					   int gf_type,
 					   bool seen,
 					   bool beam,
@@ -198,7 +195,6 @@ void event_signal_bolt(game_event_type type,
 					   int x)
 {
 	game_event_data data;
-	data.bolt.msec = msec;
 	data.bolt.gf_type = gf_type;
 	data.bolt.seen = seen;
 	data.bolt.beam = beam;
@@ -211,7 +207,6 @@ void event_signal_bolt(game_event_type type,
 }
 
 void event_signal_missile(game_event_type type,
-						  int msec,
 						  byte mattr,
 						  wchar_t mchar,
 						  bool seen,
@@ -219,7 +214,6 @@ void event_signal_missile(game_event_type type,
 						  int x)
 {
 	game_event_data data;
-	data.missile.msec = msec;
 	data.missile.mattr = mattr;
 	data.missile.mchar = mchar;
 	data.missile.seen = seen;

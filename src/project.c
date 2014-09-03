@@ -580,8 +580,6 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 	int n1y = 0;
 	int n1x = 0;
 
-	int msec = op_ptr->delay_factor;
-
 	/* Assume the player sees nothing */
 	bool notice = FALSE;
 
@@ -721,7 +719,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 					bool beam = flg & (PROJECT_BEAM);
 
 					/* Tell the UI to display the bolt */
-					event_signal_bolt(EVENT_BOLT, msec, typ, seen, beam, oy, ox, y, x);
+					event_signal_bolt(EVENT_BOLT, typ, seen, beam, oy, ox, y, x);
 				}
 			}
 	}
@@ -928,7 +926,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 	}
 
 	/* Tell the UI to display the blast */
-	event_signal_blast(EVENT_EXPLOSION, msec, typ, num_grids, distance_to_grid,
+	event_signal_blast(EVENT_EXPLOSION, typ, num_grids, distance_to_grid,
 					   player_sees_grid, blast_grid, centre);
 
 	/* Check objects */

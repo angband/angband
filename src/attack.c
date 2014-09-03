@@ -448,7 +448,7 @@ static void ranged_helper(int item, int dir, int range, int shots, ranged_attack
 		y = ny;
 
 		/* Tell the UI to display the missile */
-		event_signal_missile(EVENT_MISSILE, op_ptr->delay_factor,
+		event_signal_missile(EVENT_MISSILE, 
 							 object_char(o_ptr), object_attr(o_ptr), see, y, x);
 
 		/* Try the attack on the monster at (x, y) if any */
