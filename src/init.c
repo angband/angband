@@ -3856,11 +3856,6 @@ static errr init_other(void)
 	quest_init();
 
 
-	/* Allocate player sub-structs */
-	player->gear = mem_zalloc(MAX_GEAR * sizeof(object_type));
-	player->upkeep = mem_zalloc(sizeof(player_upkeep));
-	player->timed = mem_zalloc(TMD_MAX * sizeof(s16b));
-
 
 	/*** Prepare the options ***/
 	init_options();
@@ -3986,12 +3981,14 @@ extern struct init_module generate_module;
 extern struct init_module obj_make_module;
 extern struct init_module ignore_module;
 extern struct init_module mon_make_module;
+extern struct init_module player_module;
 
 static struct init_module* modules[] = {
 	&generate_module,
 	&obj_make_module,
 	&ignore_module,
 	&mon_make_module,
+	&player_module,
 	NULL
 };
 
@@ -4076,8 +4073,6 @@ void cleanup_angband(void)
 		if (modules[i]->cleanup)
 			modules[i]->cleanup();
 
-	player_spells_free(player);
-
 	/* Free the macros */
 	keymap_free();
 
@@ -4087,12 +4082,6 @@ void cleanup_angband(void)
 	if (stores) free_stores();
 
 	quest_free();
-
-	mem_free(player->timed);
-	mem_free(player->upkeep);
-	for (i = 0; i < player->max_gear; i++)
-		object_wipe(&player->gear[i]);
-	mem_free(player->gear);
 
 	/* Free the lore list */
 	FREE(l_list);

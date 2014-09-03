@@ -2,12 +2,16 @@
  * Copyright (c) 2011 elly+angband@leptoquark.net. See COPYING.
  */
 
-#include "history.h" /* history_add */
-#include "player.h"
-#include "birth.h" /* find_roman_suffix_start */
-#include "ui-input.h"
 #include "z-color.h" /* TERM_* */
 #include "z-util.h" /* my_strcpy */
+#include "init.h"
+#include "history.h" /* history_add */
+#include "player.h"
+#include "player-timed.h"
+#include "player-spell.h"
+#include "obj-util.h"
+#include "birth.h" /* find_roman_suffix_start */
+#include "ui-input.h"
 
 
 /*
@@ -21,14 +25,9 @@ static player_other player_other_body;
 player_other *op_ptr = &player_other_body;
 
 /*
- * The player info record (static)
- */
-static player_type player_type_body;
-
-/*
  * Pointer to the player info record
  */
-player_type *player = &player_type_body;
+player_type *player;
 
 struct player_body *bodies;
 struct player_race *races;
@@ -381,3 +380,36 @@ const char *player_safe_name(struct player *p, bool strip_suffix)
 
 	return buf;
 }
+
+
+/** Init / cleanup routines **/
+
+static void init_player(void) {
+	/* Create the player array, initialised with 0 */
+	player = mem_zalloc(sizeof *player);
+
+	/* Allocate player sub-structs */
+	player->gear = mem_zalloc(MAX_GEAR * sizeof(object_type));
+	player->upkeep = mem_zalloc(sizeof(player_upkeep));
+	player->timed = mem_zalloc(TMD_MAX * sizeof(s16b));
+}
+
+static void cleanup_player(void) {
+	int i;
+
+	player_spells_free(player);
+
+	mem_free(player->timed);
+	mem_free(player->upkeep);
+	for (i = 0; i < player->max_gear; i++)
+		object_wipe(&player->gear[i]);
+	mem_free(player->gear);
+
+	mem_free(player);
+}
+
+struct init_module player_module = {
+	.name = "player",
+	.init = init_player,
+	.cleanup = cleanup_player
+};
