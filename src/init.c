@@ -3820,8 +3820,6 @@ static struct file_parser pit_parser = {
  */
 static errr init_other(void)
 {
-	int i;
-
 	/*** Prepare the various "bizarre" arrays ***/
 
 	/* Initialize knowledge things */
@@ -3949,6 +3947,35 @@ void init_arrays(void)
 	if (run_parser(&names_parser)) quit("Can't parse names");
 }
 
+static void cleanup_arrays(void)
+{
+	cleanup_parser(&k_parser);
+	cleanup_parser(&kb_parser);
+	cleanup_parser(&act_parser);
+	cleanup_parser(&a_parser);
+	cleanup_parser(&names_parser);
+	cleanup_parser(&r_parser);
+	cleanup_parser(&rb_parser);
+	cleanup_parser(&rs_parser);
+	cleanup_parser(&f_parser);
+	cleanup_parser(&e_parser);
+	cleanup_parser(&p_parser);
+	cleanup_parser(&c_parser);
+	cleanup_parser(&h_parser);
+	cleanup_parser(&flavor_parser);
+	cleanup_parser(&hints_parser);
+	cleanup_parser(&mp_parser);
+	cleanup_parser(&pit_parser);
+	cleanup_parser(&z_parser);
+}
+
+static struct init_module arrays_module = {
+	.name = "arrays",
+	.init = init_arrays,
+	.cleanup = cleanup_arrays
+};
+
+
 extern struct init_module z_quark_module;
 extern struct init_module generate_module;
 extern struct init_module obj_make_module;
@@ -3958,13 +3985,14 @@ extern struct init_module player_module;
 extern struct init_module store_module;
 extern struct init_module quest_module;
 
-static struct init_module* modules[] = {
+static struct init_module *modules[] = {
 	&z_quark_module,
+	&player_module,
+	&arrays_module,
 	&generate_module,
 	&obj_make_module,
 	&ignore_module,
 	&mon_make_module,
-	&player_module,
 	&store_module,
 	&quest_module,
 	NULL
@@ -3990,15 +4018,12 @@ bool init_angband(void)
 
 	event_signal(EVENT_ENTER_INIT);
 
-	/* Load in basic data */
-	init_arrays();
-
-	/* Initialise other modules */
+	/* Initialise modules */
 	for (i = 0; modules[i]; i++)
 		if (modules[i]->init)
 			modules[i]->init();
 
-	/* Initialize some other arrays */
+	/* Initialize some other things */
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (other)");
 	if (init_other()) quit("Cannot initialize other stuff");
 
@@ -4047,25 +4072,6 @@ void cleanup_angband(void)
 
 	monster_list_finalize();
 	object_list_finalize();
-
-	cleanup_parser(&k_parser);
-	cleanup_parser(&kb_parser);
-	cleanup_parser(&act_parser);
-	cleanup_parser(&a_parser);
-	cleanup_parser(&names_parser);
-	cleanup_parser(&r_parser);
-	cleanup_parser(&rb_parser);
-	cleanup_parser(&rs_parser);
-	cleanup_parser(&f_parser);
-	cleanup_parser(&e_parser);
-	cleanup_parser(&p_parser);
-	cleanup_parser(&c_parser);
-	cleanup_parser(&h_parser);
-	cleanup_parser(&flavor_parser);
-	cleanup_parser(&hints_parser);
-	cleanup_parser(&mp_parser);
-	cleanup_parser(&pit_parser);
-	cleanup_parser(&z_parser);
 
 	/* Free the format() buffer */
 	vformat_kill();
