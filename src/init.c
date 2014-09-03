@@ -4056,39 +4056,17 @@ bool init_angband(void)
 
 	/*** Load default user pref files ***/
 
-	/* Initialize feature info */
+	/* Initialize graphics info */
 	event_signal_string(EVENT_INITSTATUS, "Loading basic user pref file...");
-
-	/* Process that file */
 	(void)process_pref_file("pref.prf", FALSE, FALSE);
+
+	/* Initialise RNG */
+	event_signal_string(EVENT_INITSTATUS, "Getting the dice rolling...");
+	Rand_init();
 
 	/* Done */
 	event_signal_string(EVENT_INITSTATUS, "Initialization complete");
-
-	/* Sneakily init command list */
-	cmd_init();
-
-	/* Ask for a "command" until we get one we like. */
-	while (1)
-	{
-		struct command *command_req;
-		int failed = cmdq_pop(CMD_INIT, &command_req, TRUE);
-
-		if (failed)
-			continue;
-		else if (command_req->command == CMD_QUIT)
-			quit(NULL);
-		else if (command_req->command == CMD_NEWGAME)
-		{
-			event_signal(EVENT_LEAVE_INIT);
-			return TRUE;
-		}
-		else if (command_req->command == CMD_LOADFILE)
-		{
-			event_signal(EVENT_LEAVE_INIT);
-			return FALSE;
-		}
-	}
+	return TRUE;
 }
 
 void cleanup_angband(void)

@@ -92,6 +92,11 @@ extern u32b z2;
 void Rand_state_init(u32b seed);
 
 /**
+ * Initialise the RNG
+ */
+void Rand_init(void);
+
+/**
  * Generates a random unsigned long integer X where "0 <= X < M" holds.
  *
  * The integer X falls along a uniform distribution.
