@@ -1253,6 +1253,34 @@ static void display_bolt(game_event_type type, game_event_data *data, void *user
 	}
 }
 
+static void display_missile(game_event_type type, game_event_data *data, void *user)
+{
+	int msec = data->missile.msec;
+	byte mattr = data->missile.mattr;
+	char mchar = data->missile.mchar;
+	bool seen = data->missile.seen;
+	int y = data->missile.y;
+	int x = data->missile.x;
+
+	/* Only do visuals if the player can "see" the missile */
+	if (seen) {
+		print_rel(mchar, mattr, y, x);
+		move_cursor_relative(y, x);
+
+		Term_fresh();
+		if (player->upkeep->redraw) redraw_stuff(player->upkeep);
+
+		Term_xtra(TERM_XTRA_DELAY, msec);
+		event_signal_point(EVENT_MAP, x, y);
+
+		Term_fresh();
+		if (player->upkeep->redraw) redraw_stuff(player->upkeep);
+	} else {
+		/* Delay anyway for consistency */
+		Term_xtra(TERM_XTRA_DELAY, msec);
+	}
+}
+
 /* ------------------------------------------------------------------------
  * Subwindow displays
  * ------------------------------------------------------------------------ */
@@ -2059,6 +2087,7 @@ static void ui_enter_game(game_event_type type, game_event_data *data, void *use
 	event_add_handler(EVENT_SEEFLOOR, see_floor_items, NULL);
 	event_add_handler(EVENT_EXPLOSION, display_explosion, NULL);
 	event_add_handler(EVENT_BOLT, display_bolt, NULL);
+	event_add_handler(EVENT_MISSILE, display_missile, NULL);
 }
 
 static void ui_leave_game(game_event_type type, game_event_data *data, void *user)
@@ -2086,6 +2115,7 @@ static void ui_leave_game(game_event_type type, game_event_data *data, void *use
 	event_remove_handler(EVENT_SEEFLOOR, see_floor_items, NULL);
 	event_remove_handler(EVENT_EXPLOSION, display_explosion, NULL);
 	event_remove_handler(EVENT_BOLT, display_bolt, NULL);
+	event_remove_handler(EVENT_MISSILE, display_missile, NULL);
 }
 
 errr textui_get_cmd(cmd_context context, bool wait)

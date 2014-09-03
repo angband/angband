@@ -209,3 +209,22 @@ void event_signal_bolt(game_event_type type,
 
 	game_event_dispatch(type, &data);
 }
+
+void event_signal_missile(game_event_type type,
+						  int msec,
+						  byte mattr,
+						  wchar_t mchar,
+						  bool seen,
+						  int y,
+						  int x)
+{
+	game_event_data data;
+	data.missile.msec = msec;
+	data.missile.mattr = mattr;
+	data.missile.mchar = mchar;
+	data.missile.seen = seen;
+	data.missile.y = y;
+	data.missile.x = x;
+
+	game_event_dispatch(type, &data);
+}

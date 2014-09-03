@@ -31,6 +31,7 @@ typedef enum game_event_type
 	EVENT_SEEFLOOR,         /* When the player would "see" floor objects */
 	EVENT_EXPLOSION,
 	EVENT_BOLT,
+	EVENT_MISSILE,
 
 	EVENT_INVENTORY,
 	EVENT_EQUIPMENT,
@@ -112,6 +113,16 @@ typedef union
 		int x;
 	} bolt;
 
+	struct
+	{
+		int msec;
+		byte mattr;
+		wchar_t mchar;
+		bool seen;
+		int y;
+		int x;
+	} missile;
+
 } game_event_data;
 
 
@@ -152,5 +163,12 @@ void event_signal_bolt(game_event_type type,
 					   int ox,
 					   int y,
 					   int x);
+void event_signal_missile(game_event_type type,
+						  int msec,
+						  byte mattr,
+						  wchar_t mchar,
+						  bool seen,
+						  int y,
+						  int x);
 
 #endif /* INCLUDED_GAME_EVENT_H */
