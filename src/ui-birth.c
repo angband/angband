@@ -92,7 +92,7 @@ static bool quickstart_allowed = FALSE;
 /* ------------------------------------------------------------------------
  * Quickstart? screen.
  * ------------------------------------------------------------------------ */
-static enum birth_stage get_quickstart_command(void)
+static enum birth_stage textui_birth_quickstart(void)
 {
 	const char *prompt = "['Y' to use this character, 'N' to start afresh, 'C' to change name]";
 
@@ -584,8 +584,6 @@ static enum birth_stage menu_question(enum birth_stage current, menu_type *curre
 		{
 			if (current == BIRTH_ROLLER_CHOICE)
 			{
-				cmdq_push(CMD_FINALIZE_OPTIONS);
-
 				if (current_menu->cursor)
 				{
 					/* Do a first roll of the stats */
@@ -950,140 +948,152 @@ static enum birth_stage get_confirm_command(void)
  * We're imposing a step-based system onto the main game here, so we need
  * to keep track of where we're up to, where each step moves on to, etc.
  */
-errr get_birth_command(bool wait)
+int textui_do_birth(void)
 {
-	static enum birth_stage current_stage = BIRTH_RESET;
-	static enum birth_stage prev;
-	static enum birth_stage roller = BIRTH_RESET;
+	enum birth_stage current_stage = BIRTH_RESET;
+	enum birth_stage prev;
+	enum birth_stage roller = BIRTH_RESET;
 	enum birth_stage next = current_stage;
 
-	switch (current_stage)
-	{
-		case BIRTH_RESET:
+	bool done = FALSE;
+
+	cmdq_push(CMD_BIRTH_INIT);
+	cmdq_execute(CMD_BIRTH);
+
+	while (!done) {
+
+		switch (current_stage)
 		{
-			cmdq_push(CMD_BIRTH_RESET);
-
-			roller = BIRTH_RESET;
-			
-			if (quickstart_allowed)
-				next = BIRTH_QUICKSTART;
-			else
-				next = BIRTH_SEX_CHOICE;
-
-			break;
-		}
-
-		case BIRTH_QUICKSTART:
-		{
-			display_player(0);
-			next = get_quickstart_command();
-			break;
-		}
-
-		case BIRTH_SEX_CHOICE:
-		case BIRTH_CLASS_CHOICE:
-		case BIRTH_RACE_CHOICE:
-		case BIRTH_ROLLER_CHOICE:
-		{
-			menu_type *menu = &sex_menu;
-			cmd_code command = CMD_CHOOSE_SEX;
-
-			Term_clear();
-			print_menu_instructions();
-
-			if (current_stage > BIRTH_SEX_CHOICE)
+			case BIRTH_RESET:
 			{
-				menu_refresh(&sex_menu, FALSE);
-				menu = &race_menu;
-				command = CMD_CHOOSE_RACE;
-			}
-			
-			if (current_stage > BIRTH_RACE_CHOICE)
-			{
-				menu_refresh(&race_menu, FALSE);
-				menu = &class_menu;
-				command = CMD_CHOOSE_CLASS;
+				cmdq_push(CMD_BIRTH_RESET);
+
+				roller = BIRTH_RESET;
+				
+				if (quickstart_allowed)
+					next = BIRTH_QUICKSTART;
+				else
+					next = BIRTH_SEX_CHOICE;
+
+				break;
 			}
 
-			if (current_stage > BIRTH_CLASS_CHOICE)
+			case BIRTH_QUICKSTART:
 			{
-				menu_refresh(&class_menu, FALSE);
-				menu = &roller_menu;
-				command = CMD_NULL;
-			}
-			
-			next = menu_question(current_stage, menu, command);
-
-			if (next == BIRTH_BACK)
-				next = current_stage - 1;
-
-			/* Make sure that the character gets reset before quickstarting */
-			if (next == BIRTH_QUICKSTART) 
-				next = BIRTH_RESET;
-
-			break;
-		}
-
-		case BIRTH_POINTBASED:
-		{
-			roller = BIRTH_POINTBASED;
-	
-			if (prev > BIRTH_POINTBASED)
-				point_based_start();
-
-			next = point_based_command();
-
-			if (next == BIRTH_BACK)
-				next = BIRTH_ROLLER_CHOICE;
-
-			if (next != BIRTH_POINTBASED)
-				point_based_stop();
-
-			break;
-		}
-
-		case BIRTH_ROLLER:
-		{
-			roller = BIRTH_ROLLER;
-			next = roller_command(prev < BIRTH_ROLLER);
-			if (next == BIRTH_BACK)
-				next = BIRTH_ROLLER_CHOICE;
-
-			break;
-		}
-
-		case BIRTH_NAME_CHOICE:
-		{
-			if (prev < BIRTH_NAME_CHOICE)
 				display_player(0);
+				next = textui_birth_quickstart();
+				break;
+			}
 
-			next = get_name_command();
-			if (next == BIRTH_BACK)
-				next = roller;
+			case BIRTH_SEX_CHOICE:
+			{
+				/* Fall through */
+			}
 
-			break;
+			case BIRTH_CLASS_CHOICE:
+			case BIRTH_RACE_CHOICE:
+			case BIRTH_ROLLER_CHOICE:
+			{
+				menu_type *menu = &sex_menu;
+				cmd_code command = CMD_CHOOSE_SEX;
+
+				Term_clear();
+				print_menu_instructions();
+
+				if (current_stage > BIRTH_SEX_CHOICE) {
+					menu_refresh(&sex_menu, FALSE);
+					menu = &race_menu;
+				}
+				
+				if (current_stage > BIRTH_RACE_CHOICE) {
+					menu_refresh(&race_menu, FALSE);
+					menu = &class_menu;
+				}
+
+				if (current_stage > BIRTH_CLASS_CHOICE) {
+					menu_refresh(&class_menu, FALSE);
+					menu = &roller_menu;
+				}
+
+				next = menu_question(current_stage, menu, command);
+
+				if (next == BIRTH_BACK)
+					next = current_stage - 1;
+
+				/* Make sure that the character gets reset before quickstarting */
+				if (next == BIRTH_QUICKSTART) 
+					next = BIRTH_RESET;
+
+				break;
+			}
+
+			case BIRTH_POINTBASED:
+			{
+				roller = BIRTH_POINTBASED;
+		
+				if (prev > BIRTH_POINTBASED)
+					point_based_start();
+
+				next = point_based_command();
+
+				if (next == BIRTH_BACK)
+					next = BIRTH_ROLLER_CHOICE;
+
+				if (next != BIRTH_POINTBASED)
+					point_based_stop();
+
+				break;
+			}
+
+			case BIRTH_ROLLER:
+			{
+				roller = BIRTH_ROLLER;
+				next = roller_command(prev < BIRTH_ROLLER);
+				if (next == BIRTH_BACK)
+					next = BIRTH_ROLLER_CHOICE;
+
+				break;
+			}
+
+			case BIRTH_NAME_CHOICE:
+			{
+				if (prev < BIRTH_NAME_CHOICE)
+					display_player(0);
+
+				next = get_name_command();
+				if (next == BIRTH_BACK)
+					next = roller;
+
+				break;
+			}
+
+			case BIRTH_FINAL_CONFIRM:
+			{
+				if (prev < BIRTH_FINAL_CONFIRM)
+					display_player(0);
+
+				next = get_confirm_command();
+				if (next == BIRTH_BACK)
+					next = BIRTH_NAME_CHOICE;
+
+				if (next == BIRTH_COMPLETE)
+					done = TRUE;
+
+				break;
+			}
+
+			default:
+			{
+				/* Remove dodgy compiler warning, */
+			}
 		}
 
-		case BIRTH_FINAL_CONFIRM:
-		{
-			if (prev < BIRTH_FINAL_CONFIRM)
-				display_player(0);
+		prev = current_stage;
+		current_stage = next;
 
-			next = get_confirm_command();
-			if (next == BIRTH_BACK)
-				next = BIRTH_NAME_CHOICE;
-
-			break;
-		}
-
-		default:
-		{
-			/* Remove dodgy compiler warning, */
-		}
+		/* Execute whatever commands have been sent */
+		cmdq_execute(CMD_BIRTH);
 	}
-
-	prev = current_stage;
-	current_stage = next;
 
 	return 0;
 }
