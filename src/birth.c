@@ -111,6 +111,31 @@ struct birther
 };
 
 
+/*** All of these should be in some kind of 'birth state' struct somewhere else ***/
+
+static int stats[STAT_MAX];
+static int points_spent[STAT_MAX];
+static int points_left;
+
+static bool quickstart_allowed;
+static bool rolled_stats = FALSE;
+
+/*
+ * The last character displayed, to allow the user to flick between two.
+ * We rely on prev.age being zero to determine whether there is a stored
+ * character or not, so initialise it here.
+ */
+static birther prev;
+
+/*
+ * If quickstart is allowed, we store the old character in this,
+ * to allow for it to be reloaded if we step back that far in the
+ * birth process.
+ */
+static birther quickstart_prev;
+
+
+
 
 /*
  * Save the currently rolled data into the supplied 'player'.
@@ -884,217 +909,175 @@ static void do_birth_reset(bool use_quickstart, birther *quickstart_prev)
 	get_bonuses();
 }
 
-
-/*
- * Create a new character.
- *
- * Note that we may be called with "junk" leftover in the various
- * fields, so we must be sure to clear them first.
- */
-void player_birth(bool quickstart_allowed)
+void do_cmd_birth_init(struct command *cmd)
 {
-	int i;
-	struct command blank = { CMD_NULL, 0, {{0}} };
-	struct command *cmd = &blank;
-
-	int stats[STAT_MAX];
-	int points_spent[STAT_MAX];
-	int points_left;
 	char *buf;
-	int success;
-
-	bool rolled_stats = FALSE;
-
-	/*
-	 * The last character displayed, to allow the user to flick between two.
-	 * We rely on prev.age being zero to determine whether there is a stored
-	 * character or not, so initialise it here.
-	 */
-	birther prev = { 0 };
-
-	/*
-	 * If quickstart is allowed, we store the old character in this,
-	 * to allow for it to be reloaded if we step back that far in the
-	 * birth process.
-	 */
-	birther quickstart_prev = { 0 };
 
 	/*
 	 * If there's a quickstart character, store it for later use.
 	 * If not, default to whatever the first of the choices is.
 	 */
-	if (quickstart_allowed)
+	if (player->ht_birth) {
 		save_roller_data(&quickstart_prev);
-	else
+		quickstart_allowed = TRUE;
+	} else {
 		player_generate(player, &sex_info[player->psex], player_id2race(0), player_id2class(0));
+		quickstart_allowed = FALSE;
+	}
 
 	/* Handle incrementing name suffix */
 	buf = find_roman_suffix_start(op_ptr->full_name);
 	if (buf) {
 		/* Try to increment the roman suffix */
-		success = int_to_roman((roman_to_int(buf) + 1), buf,
+		int success = int_to_roman((roman_to_int(buf) + 1), buf,
 			(sizeof(op_ptr->full_name) - (buf -
 			(char *)&op_ptr->full_name)));
 			
 		if (!success) msg("Sorry, could not deal with suffix");
 	}
 	
-
-	/* We're ready to start the interactive birth process. */
+	/* We're ready to start the birth process */
 	event_signal_flag(EVENT_ENTER_BIRTH, quickstart_allowed);
+}
 
-	/* 
-	 * Loop around until the UI tells us we have an acceptable character.
-	 * Note that it is possible to quit from inside this loop.
-	 */
-	while (cmd->command != CMD_ACCEPT_CHARACTER)
-	{
-		/* Grab a command from the queue - we're happy to wait for it. */
-		if (cmdq_pop(CMD_BIRTH, &cmd, TRUE) != 0) continue;
+void do_cmd_birth_reset(struct command *cmd)
+{
+	player_init(player);
+	reset_stats(stats, points_spent, &points_left, FALSE);
+	do_birth_reset(quickstart_allowed, &quickstart_prev);
+	rolled_stats = FALSE;
+}
 
-		if (cmd->command == CMD_BIRTH_RESET)
-		{
-			player_init(player);
-			reset_stats(stats, points_spent, &points_left, FALSE);
-			do_birth_reset(quickstart_allowed, &quickstart_prev);
-			rolled_stats = FALSE;
-		}
-		else if (cmd->command == CMD_CHOOSE_SEX)
-		{
-			int choice;
-			cmd_get_arg_choice(cmd, "choice", &choice);
-			player->psex = choice;
-			player_generate(player, NULL, NULL, NULL);
-		}
-		else if (cmd->command == CMD_CHOOSE_RACE)
-		{
-			int choice;
-			cmd_get_arg_choice(cmd, "choice", &choice);
-			player_generate(player, NULL, player_id2race(choice), NULL);
+void do_cmd_choose_sex(struct command *cmd)
+{
+	int choice;
+	cmd_get_arg_choice(cmd, "choice", &choice);
+	player->psex = choice;
+	player_generate(player, NULL, NULL, NULL);
+}
 
-			reset_stats(stats, points_spent, &points_left, FALSE);
-			generate_stats(stats, points_spent, &points_left);
-			rolled_stats = FALSE;
-		}
-		else if (cmd->command == CMD_CHOOSE_CLASS)
-		{
-			int choice;
-			cmd_get_arg_choice(cmd, "choice", &choice);
-			player_generate(player, NULL, NULL, player_id2class(choice));
+void do_cmd_choose_race(struct command *cmd)
+{
+	int choice;
+	cmd_get_arg_choice(cmd, "choice", &choice);
+	player_generate(player, NULL, player_id2race(choice), NULL);
 
-			reset_stats(stats, points_spent, &points_left, FALSE);
-			generate_stats(stats, points_spent, &points_left);
-			rolled_stats = FALSE;
-		}
-		else if (cmd->command == CMD_FINALIZE_OPTIONS)
-		{
-			/* Reset score options from cheat options */
-			for (i = 0; i < OPT_MAX; i++) {
-				if (option_type(i) == OP_CHEAT)
-					op_ptr->opt[i + 1] = op_ptr->opt[i];
-			}
-		}
-		else if (cmd->command == CMD_BUY_STAT)
-		{
-			/* .choice is the stat to buy */
-			if (!rolled_stats) {
-				int choice;
-				cmd_get_arg_choice(cmd, "choice", &choice);
-				buy_stat(choice, stats, points_spent, &points_left, TRUE);
-			}
-		}
-		else if (cmd->command == CMD_SELL_STAT)
-		{
-			/* .choice is the stat to sell */
-			if (!rolled_stats) {
-				int choice;
-				cmd_get_arg_choice(cmd, "choice", &choice);
-				sell_stat(choice, stats, points_spent, &points_left, TRUE);
-			}
-		}
-		else if (cmd->command == CMD_RESET_STATS)
-		{
-			/* .choice is whether to regen stats */
-			int choice;
+	reset_stats(stats, points_spent, &points_left, FALSE);
+	generate_stats(stats, points_spent, &points_left);
+	rolled_stats = FALSE;
+}
 
-			reset_stats(stats, points_spent, &points_left, TRUE);
+void do_cmd_choose_class(struct command *cmd)
+{
+	int choice;
+	cmd_get_arg_choice(cmd, "choice", &choice);
+	player_generate(player, NULL, NULL, player_id2class(choice));
 
-			cmd_get_arg_choice(cmd, "choice", &choice);
-			if (choice)
-				generate_stats(stats, points_spent, &points_left);
+	reset_stats(stats, points_spent, &points_left, FALSE);
+	generate_stats(stats, points_spent, &points_left);
+	rolled_stats = FALSE;
+}
 
-			rolled_stats = FALSE;
-		}
-		else if (cmd->command == CMD_ROLL_STATS)
-		{
-			save_roller_data(&prev);
+void do_cmd_buy_stat(struct command *cmd)
+{
+	/* .choice is the stat to sell */
+	if (!rolled_stats) {
+		int choice;
+		cmd_get_arg_choice(cmd, "choice", &choice);
+		buy_stat(choice, stats, points_spent, &points_left, TRUE);
+	}
+}
 
-			/* Get a new character */
-			get_stats(stats);
+void do_cmd_sell_stat(struct command *cmd)
+{
+	/* .choice is the stat to sell */
+	if (!rolled_stats) {
+		int choice;
+		cmd_get_arg_choice(cmd, "choice", &choice);
+		sell_stat(choice, stats, points_spent, &points_left, TRUE);
+	}
+}
 
-			/* Update stats with bonuses, etc. */
-			get_bonuses();
+void do_cmd_reset_stats(struct command *cmd)
+{
+	/* .choice is whether to regen stats */
+	int choice;
 
-			/* There's no real need to do this here, but it's tradition. */
-			get_ahw(player);
-			player->history = get_history(player->race->history);
+	reset_stats(stats, points_spent, &points_left, TRUE);
 
-			event_signal(EVENT_GOLD);
-			event_signal(EVENT_AC);
-			event_signal(EVENT_HP);
-			event_signal(EVENT_STATS);
+	cmd_get_arg_choice(cmd, "choice", &choice);
+	if (choice)
+		generate_stats(stats, points_spent, &points_left);
 
-			/* Give the UI some dummy info about the points situation. */
-			points_left = 0;
-			for (i = 0; i < STAT_MAX; i++)
-			{
-				points_spent[i] = 0;
-			}
+	rolled_stats = FALSE;
+}
 
-			event_signal_birthpoints(points_spent, points_left);
+void do_cmd_roll_stats(struct command *cmd)
+{
+	int i;
 
-			/* Lock out buying and selling of stats based on rolled stats. */
-			rolled_stats = TRUE;
-		}
-		else if (cmd->command == CMD_PREV_STATS)
-		{
-			/* Only switch to the stored "previous"
-			   character if we've actually got one to load. */
-			if (prev.age)
-			{
-				load_roller_data(&prev, &prev);
-				get_bonuses();
-			}
+	save_roller_data(&prev);
 
-			event_signal(EVENT_GOLD);
-			event_signal(EVENT_AC);
-			event_signal(EVENT_HP);
-			event_signal(EVENT_STATS);
-		}
-		else if (cmd->command == CMD_NAME_CHOICE)
-		{
-			const char *str;
-			cmd_get_arg_string(cmd, "name", &str);
+	/* Get a new character */
+	get_stats(stats);
 
-			/* Set player name */
-			my_strcpy(op_ptr->full_name, str, sizeof(op_ptr->full_name));
+	/* Update stats with bonuses, etc. */
+	get_bonuses();
 
-			string_free((char *) str);
-		}
-		/* Various not-specific-to-birth commands. */
-		else if (cmd->command == CMD_HELP)
-		{
-			char filename[80];
+	/* There's no real need to do this here, but it's tradition. */
+	get_ahw(player);
+	player->history = get_history(player->race->history);
 
-			strnfmt(filename, sizeof(filename), "birth.txt");
-			screen_save();
-			show_file(filename, NULL, 0, 0);
-			screen_load();
-		}
-		else if (cmd->command == CMD_QUIT)
-		{
-			quit(NULL);
-		}
+	event_signal(EVENT_GOLD);
+	event_signal(EVENT_AC);
+	event_signal(EVENT_HP);
+	event_signal(EVENT_STATS);
+
+	/* Give the UI some dummy info about the points situation. */
+	points_left = 0;
+	for (i = 0; i < STAT_MAX; i++)
+		points_spent[i] = 0;
+
+	event_signal_birthpoints(points_spent, points_left);
+
+	/* Lock out buying and selling of stats based on rolled stats. */
+	rolled_stats = TRUE;
+}
+
+void do_cmd_prev_stats(struct command *cmd)
+{
+	/* Only switch to the stored "previous"
+	   character if we've actually got one to load. */
+	if (prev.age) {
+		load_roller_data(&prev, &prev);
+		get_bonuses();
+	}
+
+	event_signal(EVENT_GOLD);
+	event_signal(EVENT_AC);
+	event_signal(EVENT_HP);
+	event_signal(EVENT_STATS);	
+}
+
+void do_cmd_choose_name(struct command *cmd)
+{
+	const char *str;
+	cmd_get_arg_string(cmd, "name", &str);
+
+	/* Set player name */
+	my_strcpy(op_ptr->full_name, str, sizeof(op_ptr->full_name));
+
+	string_free((char *) str);
+}
+
+void do_cmd_accept_character(struct command *cmd)
+{
+	int i;
+
+	/* Reset score options from cheat options */
+	for (i = 0; i < OPT_MAX; i++) {
+		if (option_type(i) == OP_CHEAT)
+			op_ptr->opt[i + 1] = op_ptr->opt[i];
 	}
 
 	roll_hp();
@@ -1130,8 +1113,6 @@ void player_birth(bool quickstart_allowed)
 	/* Now we're really done.. */
 	event_signal(EVENT_LEAVE_BIRTH);
 }
-
-
 
 
 

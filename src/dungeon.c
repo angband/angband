@@ -46,6 +46,7 @@
 #include "store.h"
 #include "tables.h"
 #include "target.h"
+#include "ui-birth.h"
 #include "ui-game.h"
 #include "ui-input.h"
 #include "ui-map.h"
@@ -1661,8 +1662,8 @@ void play_game(void)
 		/* Seed for flavors */
 		seed_flavor = randint0(0x10000000);
 
-		/* Roll up a new character. Quickstart is allowed if ht_birth is set */
-		player_birth(player->ht_birth ? TRUE : FALSE);
+		/* Roll up a new character */
+		textui_do_birth();
 	}
 
 	/* Seed for random artifacts */

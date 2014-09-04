@@ -1,7 +1,7 @@
 #ifndef INCLUDED_UI_BIRTH_H
 #define INCLUDED_UI_BIRTH_H
 
-extern void ui_init_birthstate_handlers(void);
-extern errr get_birth_command(bool wait);
+void ui_init_birthstate_handlers(void);
+int textui_do_birth(void);
 
 #endif

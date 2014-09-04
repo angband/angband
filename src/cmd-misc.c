@@ -105,6 +105,9 @@ void do_cmd_try_debug(void)
  */
 void do_cmd_quit(struct command *cmd)
 {
+	if (cmd->context == CMD_BIRTH)
+		quit(NULL);
+
 	/* Stop playing */
 	player->upkeep->playing = FALSE;
 

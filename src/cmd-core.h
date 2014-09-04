@@ -20,11 +20,11 @@ typedef enum cmd_code
 	/* 
 	 * Birth commands 
 	 */
+	CMD_BIRTH_INIT,
 	CMD_BIRTH_RESET,
 	CMD_CHOOSE_SEX,
 	CMD_CHOOSE_RACE,
 	CMD_CHOOSE_CLASS,
-	CMD_FINALIZE_OPTIONS,
 	CMD_BUY_STAT,
 	CMD_SELL_STAT,
 	CMD_RESET_STATS,
@@ -167,6 +167,9 @@ struct cmd_arg {
  * NOTE: This is prone to change quite a bit while things are shaken out.
  */
 struct command {
+	/* What context this is happening in */
+	cmd_context context;
+
 	/* A valid command code. */
 	/* XXX-AS rename to 'code' */
 	cmd_code command;
@@ -224,6 +227,12 @@ errr cmdq_pop(cmd_context c, struct command **cmd, bool wait);
 errr cmdq_push_copy(struct command *cmd);
 errr cmdq_push_repeat(cmd_code c, int nrepeats);
 errr cmdq_push(cmd_code c);
+
+
+/**
+ * Process all commands presently in the queue.
+ */
+void cmdq_execute(cmd_context ctx);
 
 
 /**

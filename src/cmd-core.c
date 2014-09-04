@@ -19,6 +19,7 @@
 
 #include "angband.h"
 #include "attack.h"
+#include "birth.h"
 #include "cmds.h"
 #include "cmd-core.h"
 #include "obj-chest.h"
@@ -56,18 +57,18 @@ static const struct command_info game_cmds[] =
 	{ CMD_LOADFILE, "load a savefile", NULL, FALSE, 0 },
 	{ CMD_NEWGAME, "start a new game", NULL, FALSE, 0 },
 
-	{ CMD_BIRTH_RESET, "go back to the beginning", NULL, FALSE, 0 },
-	{ CMD_CHOOSE_SEX, "select sex", NULL, FALSE, 0 },
-	{ CMD_CHOOSE_RACE, "select race", NULL, FALSE, 0 },
-	{ CMD_CHOOSE_CLASS, "select class", NULL, FALSE, 0 },
- 	{ CMD_FINALIZE_OPTIONS, "finalise options", NULL, FALSE },
-	{ CMD_BUY_STAT, "buy points in a stat", NULL, FALSE, 0 },
-	{ CMD_SELL_STAT, "sell points in a stat", NULL, FALSE, 0 },
-	{ CMD_RESET_STATS, "reset stats", NULL, FALSE, 0 },
-	{ CMD_ROLL_STATS, "roll new stats", NULL, FALSE, 0 },
-	{ CMD_PREV_STATS, "use previously rolled stats", NULL, FALSE, 0 },
-	{ CMD_NAME_CHOICE, "choose name", NULL, FALSE, 0 },
-	{ CMD_ACCEPT_CHARACTER, "accept character", NULL, FALSE, 0 },
+	{ CMD_BIRTH_INIT, "start the character birth process", do_cmd_birth_init, FALSE, 0 },
+	{ CMD_BIRTH_RESET, "go back to the beginning", do_cmd_birth_reset, FALSE, 0 },
+	{ CMD_CHOOSE_SEX, "select sex", do_cmd_choose_sex, FALSE, 0 },
+	{ CMD_CHOOSE_RACE, "select race", do_cmd_choose_race, FALSE, 0 },
+	{ CMD_CHOOSE_CLASS, "select class", do_cmd_choose_class, FALSE, 0 },
+	{ CMD_BUY_STAT, "buy points in a stat", do_cmd_buy_stat, FALSE, 0 },
+	{ CMD_SELL_STAT, "sell points in a stat", do_cmd_sell_stat, FALSE, 0 },
+	{ CMD_RESET_STATS, "reset stats", do_cmd_reset_stats, FALSE, 0 },
+	{ CMD_ROLL_STATS, "roll new stats", do_cmd_roll_stats, FALSE, 0 },
+	{ CMD_PREV_STATS, "use previously rolled stats", do_cmd_prev_stats, FALSE, 0 },
+	{ CMD_NAME_CHOICE, "choose name", do_cmd_choose_name, FALSE, 0 },
+	{ CMD_ACCEPT_CHARACTER, "accept character", do_cmd_accept_character, FALSE, 0 },
 
 	{ CMD_GO_UP, "go up stairs", do_cmd_go_up, FALSE, 0 },
 	{ CMD_GO_DOWN, "go down stairs", do_cmd_go_down, FALSE, 0 },
@@ -183,7 +184,7 @@ errr cmdq_pop(cmd_context c, struct command **cmd, bool wait)
 	}
 
 	/* If there are no commands queued, ask the UI for one. */
-	if (cmd_head == cmd_tail) 
+	if (wait && cmd_head == cmd_tail)
 		cmd_get_hook(c, wait);
 
 	/* If we have a command ready, set it and return success. */
@@ -597,6 +598,15 @@ errr cmdq_push(cmd_code c)
 }
 
 
+/**
+ * Shorthand to execute all commands in the queue right now, no waiting
+ * for input.
+ */
+void cmdq_execute(cmd_context ctx)
+{
+	process_command(ctx, TRUE);
+}
+
 /* 
  * Request a game command from the uI and carry out whatever actions
  * go along with it.
@@ -634,6 +644,8 @@ void process_command(cmd_context ctx, bool no_request)
 		 * the user to repeat it.
 		 */
 		repeat_prev_allowed = TRUE;
+
+		cmd->context = ctx;
 
 		if (game_cmds[idx].fn)
 			game_cmds[idx].fn(cmd);
