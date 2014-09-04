@@ -31,6 +31,7 @@
 #include "obj-ignore.h"
 #include "obj-make.h"
 #include "obj-power.h"
+#include "obj-randart.h"	
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "object.h"
@@ -39,6 +40,7 @@
 #include "player-timed.h"
 #include "player-util.h"
 #include "store.h"
+#include "savefile.h"
 #include "quest.h"
 #include "ui-menu.h"
 #include "ui-input.h"
@@ -1109,6 +1111,21 @@ void do_cmd_accept_character(struct command *cmd)
 
 	/* Initialise the stores */
 	store_reset();
+
+	/* Seed for random artifacts */
+	if (!seed_randart || !OPT(birth_keep_randarts))
+		seed_randart = randint0(0x10000000);
+
+	/* Randomize the artifacts if required */
+	if (OPT(birth_randarts))
+		do_randart(seed_randart, TRUE);
+
+	/* Set the savefile name if it's not already set */
+	if (!savefile[0])
+		savefile_set_name(player_safe_name(player, TRUE));
+
+	/* Flavor the objects */
+	flavor_init();
 
 	/* Now we're really done.. */
 	event_signal(EVENT_LEAVE_BIRTH);

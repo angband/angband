@@ -1666,18 +1666,6 @@ void play_game(void)
 		textui_do_birth();
 	}
 
-	/* Seed for random artifacts */
-	if (!seed_randart || (new_game && !OPT(birth_keep_randarts)))
-		seed_randart = randint0(0x10000000);
-
-	/* Randomize the artifacts if required */
-	if (OPT(birth_randarts))
-		do_randart(seed_randart, TRUE);
-
-	/* Set the savefile name if it's not already set */
-	if (!savefile[0])
-		savefile_set_name(player_safe_name(player, TRUE));
-
 	/* Stop the player being quite so dead */
 	player->is_dead = FALSE;
 
@@ -1689,9 +1677,6 @@ void play_game(void)
 
 	/* Flush the message */
 	Term_fresh();
-
-	/* Flavor the objects */
-	flavor_init();
 
 	/* Reset visuals */
 	reset_visuals(TRUE);
