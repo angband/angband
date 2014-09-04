@@ -423,11 +423,11 @@ void player_init(struct player *p)
 
 	/* First turn. */
 	turn = 1;
-	player->total_energy = 0;
-	player->resting_turn = 0;
+	p->total_energy = 0;
+	p->resting_turn = 0;
 	/* XXX default race/class */
-	player->race = races;
-	player->class = classes;
+	p->race = races;
+	p->class = classes;
 }
 
 /**

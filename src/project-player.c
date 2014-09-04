@@ -33,23 +33,23 @@
  * \param dam_aspect is the calc we want (min, avg, max, random).
  * \param resist is the degree of resistance (-1 = vuln, 3 = immune).
  */
-int adjust_dam(int type, int dam, aspect dam_aspect, int resist)
+int adjust_dam(struct player *p, int type, int dam, aspect dam_aspect, int resist)
 {
 	int i, denom;
 
 	/* If an actual player exists, get their actual resist */
-	if (player->race) {
-		resist = player->state.el_info[type].res_level;
+	if (p && p->race) {
+		resist = p->state.el_info[type].res_level;
 
 		/* Notice element stuff */
-		wieldeds_notice_element(player, type);
+		wieldeds_notice_element(p, type);
 	}
 
 	if (resist == 3) /* immune */
 		return 0;
 
 	/* Hack - acid damage is halved by armour, holy orb is halved */
-	if ((type == GF_ACID && minus_ac(player)) || type == GF_HOLY_ORB)
+	if ((type == GF_ACID && p && minus_ac(p)) || type == GF_HOLY_ORB)
 		dam = (dam + 1) / 2;
 
 	if (resist == -1) /* vulnerable */
@@ -484,7 +484,7 @@ bool project_p(int who, int r, int y, int x, int dam, int typ)
 		msg("You are hit by %s!", gf_desc(typ));
 
 	/* Adjust damage for resistance, immunity or vulnerability, and apply it */
-	dam = adjust_dam(typ, dam, RANDOMISE, player->state.el_info[typ].res_level);
+	dam = adjust_dam(player, typ, dam, RANDOMISE, player->state.el_info[typ].res_level);
 	if (dam)
 		take_hit(player, dam, killer);
 

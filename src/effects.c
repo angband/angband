@@ -4090,7 +4090,7 @@ bool effect_handler_TRAP_SPOT_FIRE(effect_handler_context_t *context)
 {
 	int dam = effect_calculate_value(context, FALSE);
 	msg("You are enveloped in flames!");
-	dam = adjust_dam(GF_FIRE, dam, RANDOMISE, 0);
+	dam = adjust_dam(player, GF_FIRE, dam, RANDOMISE, 0);
 	if (dam) {
 		take_hit(player, dam, "a fire trap");
 		inven_damage(player, GF_FIRE, MIN(dam * 5, 300));
@@ -4102,7 +4102,7 @@ bool effect_handler_TRAP_SPOT_ACID(effect_handler_context_t *context)
 {
 	int dam = effect_calculate_value(context, FALSE);
 	msg("You are splashed with acid!");
-	dam = adjust_dam(GF_ACID, dam, RANDOMISE, 0);
+	dam = adjust_dam(player, GF_ACID, dam, RANDOMISE, 0);
 	if (dam) {
 		take_hit(player, dam, "an acid trap");
 		inven_damage(player, GF_ACID, MIN(dam * 5, 300));

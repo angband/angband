@@ -65,7 +65,7 @@ static void melee_effect_elemental(melee_effect_handler_context_t *context, int 
 	if (!monster_blow_method_physical(context->method))
 		physical_dam = 0;
 
-	elemental_dam = adjust_dam(type, context->damage, RANDOMISE, 0);
+	elemental_dam = adjust_dam(player, type, context->damage, RANDOMISE, 0);
 
 	/* Take the larger of physical or elemental damage */
 	context->damage = (physical_dam > elemental_dam) ? physical_dam : elemental_dam;

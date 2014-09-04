@@ -8,6 +8,7 @@
 #include "obj-util.h"
 
 int setup_tests(void **state) {
+	player = &test_player;
     player->gear = &test_gear[0];
     player->body = test_player_body;
     return 0;

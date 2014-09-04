@@ -51,9 +51,9 @@ int inven_damage(struct player *p, int type, int cperc)
 	k = 0;
 
 	/* Scan through the gear */
-	for (i = 0; i < player->max_gear; i++)
+	for (i = 0; i < p->max_gear; i++)
 	{
-		if (item_is_equipped(player, i)) continue;
+		if (item_is_equipped(p, i)) continue;
 
 		o_ptr = &p->gear[i];
 
