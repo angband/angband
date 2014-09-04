@@ -1561,8 +1561,35 @@ static void process_some_user_pref_files(void)
 void play_game(void)
 {
 	u32b default_window_flag[ANGBAND_TERM_MAX];
-	/* Initialize */
-	bool new_game = init_angband();
+
+	bool new_game;
+
+	/* Initialise the basics */
+	init_angband();
+
+	/* Sneakily init command list */
+	cmd_init();
+
+	/* Ask for a "command" until we get one we like. */
+	while (1)
+	{
+		struct command *command_req;
+		int failed = cmdq_pop(CMD_INIT, &command_req, TRUE);
+
+		if (failed)
+			continue;
+		else if (command_req->command == CMD_QUIT)
+			quit(NULL);
+		else if (command_req->command == CMD_NEWGAME) {
+			event_signal(EVENT_LEAVE_INIT);
+			new_game = TRUE;
+			break;
+		} else if (command_req->command == CMD_LOADFILE) {
+			event_signal(EVENT_LEAVE_INIT);
+			new_game = FALSE;
+			break;
+		}
+	}
 
 	/*** Do horrible, hacky things, to start the game off ***/
 
@@ -1622,29 +1649,6 @@ void play_game(void)
 		character_dungeon = FALSE;
 	}
 
-
-	/* Init RNG */
-	if (Rand_quick)
-	{
-		u32b seed;
-
-		/* Basic seed */
-		seed = (u32b)(time(NULL));
-
-#ifdef UNIX
-
-		/* Mutate the seed on Unix machines */
-		seed = ((seed >> 3) * (getpid() << 1));
-
-#endif
-
-		/* Use the complex RNG */
-		Rand_quick = FALSE;
-
-		/* Seed the "complex" RNG */
-		Rand_state_init(seed);
-	}
-
 	/* Roll new character */
 	if (new_game)
 	{
@@ -1668,11 +1672,6 @@ void play_game(void)
 	/* Randomize the artifacts if required */
 	if (OPT(birth_randarts))
 		do_randart(seed_randart, TRUE);
-
-	/* Initialize temporary fields sensibly */
-	player->upkeep->object_idx = NO_OBJECT;
-	player->upkeep->object_kind = NULL;
-	player->upkeep->monster_race = NULL;
 
 	/* Set the savefile name if it's not already set */
 	if (!savefile[0])

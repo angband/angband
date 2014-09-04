@@ -19,6 +19,7 @@
  */
 #include "z-virt.h"
 #include "z-quark.h"
+#include "init.h"
 
 static char **quarks;
 static size_t nr_quarks = 1;
@@ -53,15 +54,13 @@ const char *quark_str(quark_t q)
 	return (q >= nr_quarks ? NULL : quarks[q]);
 }
 
-errr quarks_init(void)
+void quarks_init(void)
 {
 	alloc_quarks = QUARKS_INIT;
 	quarks = C_ZNEW(alloc_quarks, char *);
-
-	return 0;
 }
 
-errr quarks_free(void)
+void quarks_free(void)
 {
 	size_t i;
 
@@ -69,6 +68,11 @@ errr quarks_free(void)
 	for (i = 1; i < nr_quarks; i++)
 		string_free(quarks[i]);
 
-	FREE(quarks);
-	return 0;
+	mem_free(quarks);
 }
+
+struct init_module z_quark_module = {
+	.name = "z-quark",
+	.init = quarks_init,
+	.cleanup = quarks_free
+};

@@ -1,5 +1,5 @@
 /*
- * File: xtra3.c
+ * File: ui-game.c
  * Purpose: Handles the setting up updating, and cleaning up of the various
  *          things that are displayed by the game.
  *
@@ -1122,7 +1122,7 @@ static void display_explosion(game_event_type type, game_event_data *data, void 
 	bool new_radius = FALSE;
 	bool drawn = FALSE;
 	int i, y, x;
-	int msec = data->explosion.msec;
+	int msec = op_ptr->delay_factor;
 	int gf_type = data->explosion.gf_type;
 	int num_grids = data->explosion.num_grids;
 	int *distance_to_grid = data->explosion.distance_to_grid;
@@ -1200,7 +1200,7 @@ static void display_explosion(game_event_type type, game_event_data *data, void 
 
 static void display_bolt(game_event_type type, game_event_data *data, void *user)
 {
-	int msec = data->bolt.msec;
+	int msec = op_ptr->delay_factor;
 	int gf_type = data->bolt.gf_type;
 	bool seen = data->bolt.seen;
 	bool beam = data->bolt.beam;
@@ -1255,7 +1255,7 @@ static void display_bolt(game_event_type type, game_event_data *data, void *user
 
 static void display_missile(game_event_type type, game_event_data *data, void *user)
 {
-	int msec = data->missile.msec;
+	int msec = op_ptr->delay_factor;
 	byte mattr = data->missile.mattr;
 	char mchar = data->missile.mchar;
 	bool seen = data->missile.seen;

@@ -121,6 +121,34 @@ void Rand_state_init(u32b seed) {
 	}
 }
 
+/*
+ * Initialise the RNG
+ */
+void Rand_init(void)
+{
+	/* Init RNG */
+	if (Rand_quick)
+	{
+		u32b seed;
+
+		/* Basic seed */
+		seed = (u32b)(time(NULL));
+
+#ifdef UNIX
+
+		/* Mutate the seed on Unix machines */
+		seed = ((seed >> 3) * (getpid() << 1));
+
+#endif
+
+		/* Use the complex RNG */
+		Rand_quick = FALSE;
+
+		/* Seed the "complex" RNG */
+		Rand_state_init(seed);
+	}
+}
+
 
 /**
  * Extract a "random" number from 0 to m - 1, via division.

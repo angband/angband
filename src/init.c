@@ -3820,13 +3820,7 @@ static struct file_parser pit_parser = {
  */
 static errr init_other(void)
 {
-	int i;
-
-
 	/*** Prepare the various "bizarre" arrays ***/
-
-	/* Initialize the "quark" package */
-	(void)quarks_init();
 
 	/* Initialize knowledge things */
 	textui_knowledge_init();
@@ -3838,7 +3832,6 @@ static errr init_other(void)
 	object_list_init();
 
 	/*** Prepare grid arrays ***/
-
 	cave = cave_new(DUNGEON_HGT, DUNGEON_WID);
 
 	/* Array of stacked monster messages */
@@ -3850,28 +3843,8 @@ static errr init_other(void)
 	/* Lore */
 	l_list = C_ZNEW(z_info->r_max, monster_lore);
 
-
-	/*** Prepare quest array ***/
-
-	quest_init();
-
-
-	/* Allocate player sub-structs */
-	player->gear = mem_zalloc(MAX_GEAR * sizeof(object_type));
-	player->upkeep = mem_zalloc(sizeof(player_upkeep));
-	player->timed = mem_zalloc(TMD_MAX * sizeof(s16b));
-
-
 	/*** Prepare the options ***/
 	init_options();
-
-	/* Initialize the window flags */
-	for (i = 0; i < ANGBAND_TERM_MAX; i++)
-	{
-		/* Assume no flags */
-		window_flag[i] = 0L;
-	}
-
 
 	/*** Pre-allocate space for the "format()" buffer ***/
 
@@ -3969,76 +3942,73 @@ void init_arrays(void)
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (hints)");
 	if (run_parser(&hints_parser)) quit("Cannot initialize hints");
 
-	/* Initialise store stocking data */
-	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (store stocks)");
-	store_init();
-
 	/* Initialise random name data */
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (random names)");
 	if (run_parser(&names_parser)) quit("Can't parse names");
-
-	/* Initialize some other arrays */
-	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (other)");
-	if (init_other()) quit("Cannot initialize other stuff");
 }
 
+static void cleanup_arrays(void)
+{
+	cleanup_parser(&k_parser);
+	cleanup_parser(&kb_parser);
+	cleanup_parser(&act_parser);
+	cleanup_parser(&a_parser);
+	cleanup_parser(&names_parser);
+	cleanup_parser(&r_parser);
+	cleanup_parser(&rb_parser);
+	cleanup_parser(&rs_parser);
+	cleanup_parser(&f_parser);
+	cleanup_parser(&e_parser);
+	cleanup_parser(&p_parser);
+	cleanup_parser(&c_parser);
+	cleanup_parser(&h_parser);
+	cleanup_parser(&flavor_parser);
+	cleanup_parser(&hints_parser);
+	cleanup_parser(&mp_parser);
+	cleanup_parser(&pit_parser);
+	cleanup_parser(&z_parser);
+}
+
+static struct init_module arrays_module = {
+	.name = "arrays",
+	.init = init_arrays,
+	.cleanup = cleanup_arrays
+};
+
+
+extern struct init_module z_quark_module;
 extern struct init_module generate_module;
 extern struct init_module obj_make_module;
 extern struct init_module ignore_module;
 extern struct init_module mon_make_module;
+extern struct init_module player_module;
+extern struct init_module store_module;
+extern struct init_module quest_module;
 
-static struct init_module* modules[] = {
+static struct init_module *modules[] = {
+	&z_quark_module,
+	&player_module,
+	&arrays_module,
 	&generate_module,
 	&obj_make_module,
 	&ignore_module,
 	&mon_make_module,
+	&store_module,
+	&quest_module,
 	NULL
 };
 
 /**
- * Hack -- main Angband initialization entry point
+ * Initialise Angband's data stores and allocate memory for structures,
+ * etc, so that the game can get started.
  *
- * Verify some files, display the "news.txt" file, create
- * the high score file, initialize all internal arrays, and
- * load the basic "user pref files".
+ * The only input/output in this file should be via event_signal_string().
+ * We cannot rely on any particular UI as this part should be UI-agnostic.
+ * We also cannot rely on anything else having being initialised into any
+ * particlar state.  Which is why you'd be calling this function in the 
+ * first place.
  *
- * Be very careful to keep track of the order in which things
- * are initialized, in particular, the only thing *known* to
- * be available when this function is called is the "z-term.c"
- * package, and that may not be fully initialized until the
- * end of this function, when the default "user pref files"
- * are loaded and "Term_xtra(TERM_XTRA_REACT,0)" is called.
- *
- * Note that this function attempts to verify the "news" file,
- * and the game aborts (cleanly) on failure, since without the
- * "news" file, it is likely that the "lib" folder has not been
- * correctly located.  Otherwise, the news file is displayed for
- * the user.
- *
- * Note that this function attempts to verify (or create) the
- * "high score" file, and the game aborts (cleanly) on failure,
- * since one of the most common "extraction" failures involves
- * failing to extract all sub-directories (even empty ones), such
- * as by failing to use the "-d" option of "pkunzip", or failing
- * to use the "save empty directories" option with "Compact Pro".
- * This error will often be caught by the "high score" creation
- * code below, since the "lib/apex" directory, being empty in the
- * standard distributions, is most likely to be "lost", making it
- * impossible to create the high score file.
- *
- * Note that various things are initialized by this function,
- * including everything that was once done by "init_some_arrays".
- *
- * This initialization involves the parsing of special files
- * in the "lib/edit" directories.
- *
- * Note that the "template" files are initialized first, since they
- * often contain errors.  This means that macros and message recall
- * and things like that are not available until after they are done.
- *
- * We load the default "user pref files" here in case any "color"
- * changes are needed before character creation.
- *
+ * Old comment, not sure if still accurate:
  * Note that the "graf-xxx.prf" file must be loaded separately,
  * if needed, in the first (?) pass through "TERM_XTRA_REACT".
  */
@@ -4048,47 +4018,26 @@ bool init_angband(void)
 
 	event_signal(EVENT_ENTER_INIT);
 
-	init_arrays();
-
+	/* Initialise modules */
 	for (i = 0; modules[i]; i++)
 		if (modules[i]->init)
 			modules[i]->init();
 
-	/*** Load default user pref files ***/
+	/* Initialize some other things */
+	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (other)");
+	if (init_other()) quit("Cannot initialize other stuff");
 
-	/* Initialize feature info */
+	/* Initialize graphics info and basic user pref data */
 	event_signal_string(EVENT_INITSTATUS, "Loading basic user pref file...");
-
-	/* Process that file */
 	(void)process_pref_file("pref.prf", FALSE, FALSE);
+
+	/* Initialise RNG */
+	event_signal_string(EVENT_INITSTATUS, "Getting the dice rolling...");
+	Rand_init();
 
 	/* Done */
 	event_signal_string(EVENT_INITSTATUS, "Initialization complete");
-
-	/* Sneakily init command list */
-	cmd_init();
-
-	/* Ask for a "command" until we get one we like. */
-	while (1)
-	{
-		struct command *command_req;
-		int failed = cmdq_pop(CMD_INIT, &command_req, TRUE);
-
-		if (failed)
-			continue;
-		else if (command_req->command == CMD_QUIT)
-			quit(NULL);
-		else if (command_req->command == CMD_NEWGAME)
-		{
-			event_signal(EVENT_LEAVE_INIT);
-			return TRUE;
-		}
-		else if (command_req->command == CMD_LOADFILE)
-		{
-			event_signal(EVENT_LEAVE_INIT);
-			return FALSE;
-		}
-	}
+	return TRUE;
 }
 
 void cleanup_angband(void)
@@ -4098,23 +4047,10 @@ void cleanup_angband(void)
 		if (modules[i]->cleanup)
 			modules[i]->cleanup();
 
-	player_spells_free(player);
-
 	/* Free the macros */
 	keymap_free();
 
 	event_remove_all_handlers();
-
-	/* Free the stores */
-	if (stores) free_stores();
-
-	quest_free();
-
-	mem_free(player->timed);
-	mem_free(player->upkeep);
-	for (i = 0; i < player->max_gear; i++)
-		object_wipe(&player->gear[i]);
-	mem_free(player->gear);
 
 	/* Free the lore list */
 	FREE(l_list);
@@ -4134,30 +4070,8 @@ void cleanup_angband(void)
 	/* Free the history */
 	history_clear();
 
-	/* Free the "quarks" */
-	quarks_free();
-
 	monster_list_finalize();
 	object_list_finalize();
-
-	cleanup_parser(&k_parser);
-	cleanup_parser(&kb_parser);
-	cleanup_parser(&act_parser);
-	cleanup_parser(&a_parser);
-	cleanup_parser(&names_parser);
-	cleanup_parser(&r_parser);
-	cleanup_parser(&rb_parser);
-	cleanup_parser(&rs_parser);
-	cleanup_parser(&f_parser);
-	cleanup_parser(&e_parser);
-	cleanup_parser(&p_parser);
-	cleanup_parser(&c_parser);
-	cleanup_parser(&h_parser);
-	cleanup_parser(&flavor_parser);
-	cleanup_parser(&hints_parser);
-	cleanup_parser(&mp_parser);
-	cleanup_parser(&pit_parser);
-	cleanup_parser(&z_parser);
 
 	/* Free the format() buffer */
 	vformat_kill();
