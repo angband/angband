@@ -14,10 +14,14 @@
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
  */
+
 #include "z-virt.h"
 #include "z-color.h"
 #include "z-util.h"
 #include "z-msg.h"
+#include "game-event.h"
+#include "option.h"
+#include "player.h"
 
 typedef struct _message_t
 {
@@ -258,4 +262,49 @@ const char *message_sound_name(int message)
 		return NULL;
 
 	return sound_names[message];
+}
+
+
+/*
+ * XXX-AS Comment me up
+ * XXX-AS move to message.c
+ * Display a formatted message.
+ */
+void msg(const char *fmt, ...)
+{
+	va_list vp;
+
+	char buf[1024];
+
+	/* Begin the Varargs Stuff */
+	va_start(vp, fmt);
+
+	/* Format the args, save the length */
+	(void)vstrnfmt(buf, sizeof(buf), fmt, vp);
+
+	/* End the Varargs Stuff */
+	va_end(vp);
+
+	/* Add to message log */
+	message_add(buf, MSG_GENERIC);
+
+	/* Send refresh event */
+	event_signal_message(EVENT_MESSAGE, MSG_GENERIC, buf);
+
+}
+
+void msgt(unsigned int type, const char *fmt, ...)
+{
+	va_list vp;
+	char buf[1024];
+	va_start(vp, fmt);
+	vstrnfmt(buf, sizeof(buf), fmt, vp);
+	va_end(vp);
+
+	/* Add to message log */
+	message_add(buf, type);
+
+	/* Send refresh event */
+	sound(type);
+	event_signal_message(EVENT_MESSAGE, type, buf);
 }

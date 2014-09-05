@@ -31,6 +31,7 @@
  * Include the high-level includes.
  */
 #include "config.h"
+#include "game-event.h"
 #include "option.h"
 #include "player.h"
 #include "ui.h"

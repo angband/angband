@@ -124,4 +124,11 @@ int message_lookup_by_sound_name(const char *name);
  */
 const char *message_sound_name(int message);
 
+
+/* XXX-AS comment me up */
+
+void msg(const char *fmt, ...);
+void msgt(unsigned int type, const char *fmt, ...);
+
+
 #endif /* !INCLUDED_Z_MSG_H */
