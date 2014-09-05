@@ -25,7 +25,6 @@
 
 #ifdef USE_GCU
 #include "main.h"
-#include "files.h"
 
 /* Avoid 'struct term' name conflict with <curses.h> (via <term.h>) on AIX */
 #define term System_term

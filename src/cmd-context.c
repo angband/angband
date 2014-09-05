@@ -20,7 +20,6 @@
 #include "cave.h"
 #include "cmds.h"
 #include "cmd-core.h"
-#include "files.h"
 #include "keymap.h"
 #include "mon-lore.h"
 #include "mon-util.h"
@@ -40,6 +39,7 @@
 #include "textui.h"
 #include "ui-input.h"
 #include "ui-menu.h"
+#include "ui-player.h"
 #include "wizard.h"
 
 #define ADD_LABEL(text, cmd, valid) { \

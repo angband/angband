@@ -18,7 +18,6 @@
 
 #include "angband.h"
 #include "cmds.h"
-#include "files.h"
 #include "cmd-core.h"
 #include "game-event.h"
 #include "obj-tval.h"
@@ -26,8 +25,10 @@
 #include "target.h"
 #include "ui-birth.h"
 #include "ui-game.h"
+#include "ui-help.h"
 #include "ui-menu.h"
 #include "ui-options.h"
+#include "ui-player.h"
 
 
 /*

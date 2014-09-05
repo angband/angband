@@ -25,7 +25,6 @@
 #include "angband.h"
 #include "cave.h"
 #include "math.h"
-#include "files.h"
 #include "game-event.h"
 #include "generate.h"
 #include "init.h"

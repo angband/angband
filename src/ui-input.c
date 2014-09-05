@@ -20,12 +20,12 @@
 #include "cmds.h"
 #include "dungeon.h"
 #include "target.h"
-#include "files.h"
 #include "game-event.h"
 #include "init.h"
 #include "pathfind.h"
 #include "randname.h"
 #include "signals.h"
+#include "ui-player.h"
 #include "ui.h"
 
 static bool inkey_xtra;

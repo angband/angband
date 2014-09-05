@@ -30,10 +30,10 @@
 #include "tables.h"
 #include "target.h"
 #include "ui-game.h"
+#include "ui-help.h"
 #include "ui-input.h"
 #include "ui-menu.h"
 #include "ui-options.h"
-#include "files.h"
 
 
 

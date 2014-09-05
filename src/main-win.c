@@ -72,7 +72,6 @@
 #include "cave.h"
 #include "dungeon.h"
 #include "init.h"
-#include "files.h"
 #include "grafmode.h"
 #include "prefs.h"
 #include "win/win-menu.h"

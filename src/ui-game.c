@@ -21,7 +21,6 @@
 #include "angband.h"
 #include "buildid.h"
 #include "cave.h"
-#include "files.h"
 #include "game-event.h"
 #include "cmd-core.h"
 #include "grafmode.h"
@@ -44,6 +43,7 @@
 #include "textui.h"
 #include "ui-birth.h"
 #include "ui-map.h"
+#include "ui-player.h"
 
 /* 
  * There are a few functions installed to be triggered by several 

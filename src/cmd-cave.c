@@ -21,7 +21,6 @@
 #include "cave.h"
 #include "cmds.h"
 #include "dungeon.h"
-#include "files.h"
 #include "cmd-core.h"
 #include "game-event.h"
 #include "generate.h"

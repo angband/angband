@@ -18,7 +18,6 @@
 
 #include "angband.h"
 #include "dungeon.h"
-#include "files.h"
 #include "savefile.h"
 #include "signals.h"
 

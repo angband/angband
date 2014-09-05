@@ -22,7 +22,6 @@
 #include "cave.h"
 #include "cmds.h"
 #include "dungeon.h"
-#include "files.h"
 #include "history.h"
 #include "init.h"
 #include "mon-lore.h"
@@ -40,6 +39,7 @@
 #include "target.h"
 #include "ui-map.h"
 #include "ui-menu.h"
+#include "ui-player.h"
 #include "ui.h"
 
 

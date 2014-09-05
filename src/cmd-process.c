@@ -21,7 +21,6 @@
 #include "cave.h"
 #include "cmds.h"
 #include "cmd-core.h"
-#include "files.h"
 #include "keymap.h"
 #include "monster.h"
 #include "obj-gear.h"
@@ -32,9 +31,11 @@
 #include "textui.h"
 #include "ui-event.h"
 #include "ui-game.h"
+#include "ui-help.h"
 #include "ui-input.h"
 #include "ui-map.h"
 #include "ui-menu.h"
+#include "ui-player.h"
 #include "wizard.h"
 
 /*

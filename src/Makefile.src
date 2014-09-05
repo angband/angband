@@ -101,7 +101,6 @@ ANGFILES = \
 	debug.o \
 	dungeon.o \
 	effects.o \
-	files.o \
 	game-event.o \
 	generate.o \
 	gen-cave.o \
@@ -172,11 +171,13 @@ ANGFILES = \
 	ui-birth.o \
 	ui-event.o \
 	ui-game.o \
+	ui-help.o \
 	ui-input.o \
 	ui-knowledge.o \
 	ui-map.o \
 	ui-menu.o \
 	ui-options.o \
+	ui-player.o \
 	ui-spell.o \
 	ui-store.o \
 	wiz-spoil.o \

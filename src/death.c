@@ -19,12 +19,8 @@
 #include "angband.h"
 #include "cmds.h"
 #include "death.h"
-#include "files.h"
 #include "history.h"
 #include "init.h"
-#include "savefile.h"
-#include "ui-menu.h"
-#include "wizard.h"
 #include "obj-desc.h"
 #include "obj-identify.h"
 #include "obj-info.h"
@@ -32,6 +28,9 @@
 #include "savefile.h"
 #include "score.h"
 #include "store.h"
+#include "ui-menu.h"
+#include "ui-player.h"
+#include "wizard.h"
 
 /*
  * Hack - save the time of death

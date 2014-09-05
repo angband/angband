@@ -301,6 +301,20 @@ void player_exp_lose(struct player *p, s32b amount, bool permanent)
 	adjust_level(p, TRUE);
 }
 
+/**
+ * Obtain object flags for the player
+ */
+void player_flags(struct player *p, bitflag f[OF_SIZE])
+{
+	/* Add racial flags */
+	memcpy(f, p->race->flags, sizeof(p->race->flags));
+
+	/* Some classes become immune to fear at a certain plevel */
+	if (pf_has(p->class->pflags, PF_BRAVERY_30) && p->lev >= 30)
+		of_on(f, OF_PROT_FEAR);
+}
+
+
 byte player_hp_attr(struct player *p)
 {
 	byte attr;

@@ -20,7 +20,6 @@
 #include "angband.h"
 #include "cave.h"
 #include "dungeon.h"
-#include "files.h"
 #include "game-event.h"
 #include "mon-msg.h"
 #include "mon-util.h"
@@ -32,6 +31,7 @@
 #include "player-spell.h"
 #include "player-timed.h"
 #include "player-util.h"
+#include "ui-player.h"
 #include "ui.h"
 
 /*
@@ -1704,7 +1704,7 @@ void calc_bonuses(object_type gear[], player_state *state, bool known_only)
 	/*** Analyze player ***/
 
 	/* Extract the player flags */
-	player_flags(collect_f);
+	player_flags(player, collect_f);
 
 
 	/*** Analyze equipment ***/

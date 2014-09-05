@@ -20,7 +20,6 @@
 #include "birth.h"
 #include "cmds.h"
 #include "dungeon.h"
-#include "files.h"
 #include "game-event.h"
 #include "cmd-core.h"
 #include "history.h"
@@ -42,8 +41,9 @@
 #include "store.h"
 #include "savefile.h"
 #include "quest.h"
-#include "ui-menu.h"
 #include "ui-input.h"
+#include "ui-menu.h"
+#include "ui-player.h"
 
 /*
  * Overview

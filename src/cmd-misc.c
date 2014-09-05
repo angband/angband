@@ -17,18 +17,19 @@
  */
 
 #include "angband.h"
+#include "buildid.h"
 #include "cave.h"
 #include "cmds.h"
 #include "cmd-core.h"
+#include "dungeon.h"
+#include "history.h"
 #include "init.h"
 #include "mon-util.h"
-#include "wizard.h"
-#include "target.h"
 #include "prefs.h"
-#include "files.h"
-#include "buildid.h"
-#include "history.h"
 #include "obj-util.h"
+#include "target.h"
+#include "ui-player.h"
+#include "wizard.h"
 
 
 /*

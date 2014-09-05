@@ -20,8 +20,8 @@
 #include "birth.h"
 #include "cave.h"
 #include "cmds.h"
+#include "death.h"
 #include "dungeon.h"
-#include "files.h"
 #include "game-event.h"
 #include "generate.h"
 #include "grafmode.h"
@@ -43,6 +43,8 @@
 #include "player-util.h"
 #include "prefs.h"
 #include "savefile.h"
+#include "score.h"
+#include "signals.h"
 #include "store.h"
 #include "tables.h"
 #include "target.h"
@@ -50,6 +52,7 @@
 #include "ui-game.h"
 #include "ui-input.h"
 #include "ui-map.h"
+#include "ui-player.h"
 #include "ui.h"
 
 /* The minimum amount of energy a player has at the start of a new level */
@@ -1835,4 +1838,108 @@ void play_game(void)
 
 	/* Close stuff */
 	close_game();
+}
+
+/*
+ * Save the game
+ */
+void save_game(void)
+{
+	/* Disturb the player */
+	disturb(player, 1);
+
+	/* Clear messages */
+	message_flush();
+
+	/* Handle stuff */
+	handle_stuff(player->upkeep);
+
+	/* Message */
+	prt("Saving game...", 0, 0);
+
+	/* Refresh */
+	Term_fresh();
+
+	/* The player is not dead */
+	my_strcpy(player->died_from, "(saved)", sizeof(player->died_from));
+
+	/* Forbid suspend */
+	signals_ignore_tstp();
+
+	/* Save the player */
+	if (savefile_save(savefile))
+		prt("Saving game... done.", 0, 0);
+	else
+		prt("Saving game... failed!", 0, 0);
+
+	/* Allow suspend again */
+	signals_handle_tstp();
+
+	/* Refresh */
+	Term_fresh();
+
+	/* Note that the player is not dead */
+	my_strcpy(player->died_from, "(alive and well)", sizeof(player->died_from));
+}
+
+
+
+/*
+ * Close up the current game (player may or may not be dead)
+ *
+ * Note that the savefile is not saved until the tombstone is
+ * actually displayed and the player has a chance to examine
+ * the inventory and such.  This allows cheating if the game
+ * is equipped with a "quit without save" method.  XXX XXX XXX
+ */
+void close_game(void)
+{
+	/* Handle stuff */
+	handle_stuff(player->upkeep);
+
+	/* Flush the messages */
+	message_flush();
+
+	/* Flush the input */
+	flush();
+
+
+	/* No suspending now */
+	signals_ignore_tstp();
+
+
+	/* Hack -- Increase "icky" depth */
+	character_icky++;
+
+
+	/* Handle death */
+	if (player->is_dead)
+	{
+		death_screen();
+	}
+
+	/* Still alive */
+	else
+	{
+		/* Save the game */
+		save_game();
+
+		if (Term->mapped_flag)
+		{
+			struct keypress ch;
+
+			prt("Press Return (or Escape).", 0, 40);
+			ch = inkey();
+			if (ch.code != ESCAPE)
+				predict_score();
+		}
+	}
+
+
+	/* Hack -- Decrease "icky" depth */
+	character_icky--;
+
+
+	/* Allow suspending now */
+	signals_handle_tstp();
 }

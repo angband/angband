@@ -20,7 +20,6 @@
 #include "buildid.h"
 #include "cmds.h"
 #include "dungeon.h"
-#include "files.h"
 #include "init.h"
 #include "prefs.h"
 #include "ui-input.h"
