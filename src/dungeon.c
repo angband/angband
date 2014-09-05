@@ -1562,38 +1562,15 @@ static void process_some_user_pref_files(void)
  * code marks successful loading of the RNG state using the "Rand_quick"
  * flag, which is a hack, but which optimizes loading of savefiles.
  */
-void play_game(void)
+void play_game(bool new_game)
 {
 	u32b default_window_flag[ANGBAND_TERM_MAX];
-
-	bool new_game;
-
-	/* Initialise the basics */
-	init_angband();
 
 	/* Sneakily init command list */
 	cmd_init();
 
-	/* Ask for a "command" until we get one we like. */
-	while (1)
-	{
-		struct command *command_req;
-		int failed = cmdq_pop(CMD_INIT, &command_req, TRUE);
-
-		if (failed)
-			continue;
-		else if (command_req->command == CMD_QUIT)
-			quit(NULL);
-		else if (command_req->command == CMD_NEWGAME) {
-			event_signal(EVENT_LEAVE_INIT);
-			new_game = TRUE;
-			break;
-		} else if (command_req->command == CMD_LOADFILE) {
-			event_signal(EVENT_LEAVE_INIT);
-			new_game = FALSE;
-			break;
-		}
-	}
+	/* XXX-UI This should be issued after CMD_NEWGAME / CMD_LOADFILE */
+	event_signal(EVENT_LEAVE_INIT);
 
 	/*** Do horrible, hacky things, to start the game off ***/
 

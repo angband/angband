@@ -64,11 +64,6 @@ static NSInteger const AngbandCommandMenuItemTagBase = 2000;
  * Support the improved game command handling
  */
 #include "textui.h"
-static struct command cmd = { CMD_NULL, 0 };
-
-
-/* Our command-fetching function */
-static errr cocoa_get_cmd(cmd_context context, bool wait);
 
 
 /* Application defined event numbers */
@@ -99,6 +94,9 @@ static Boolean game_is_finished = FALSE;
 
 /* Our frames per second (e.g. 60). A value of 0 means unthrottled. */
 static int frames_per_second;
+
+/* Force a new game or not? */
+static bool new_game = FALSE;
 
 /* Function to get the default font */
 static NSFont *default_font;
@@ -987,7 +985,7 @@ static size_t Term_mbcs_cocoa(wchar_t *dest, const char *src, int n)
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     
     //set the command hook
-    cmd_get_hook = cocoa_get_cmd;
+    cmd_get_hook = textui_get_cmd;
     
     /* Hooks in some "z-util.c" hooks */
     plog_aux = hook_plog;
@@ -1017,9 +1015,12 @@ static size_t Term_mbcs_cocoa(wchar_t *dest, const char *src, int n)
     
     /* Set up game event handlers */
     init_display();
+
+    /* Initialise game */
+    init_angband();
     
-	/* Register the sound hook */
-	sound_hook = play_sound;
+    /* Register the sound hook */
+    sound_hook = play_sound;
     
     /* Note the "system" */
     ANGBAND_SYS = "mac";
@@ -1035,7 +1036,11 @@ static size_t Term_mbcs_cocoa(wchar_t *dest, const char *src, int n)
     
     /* Handle pending events (most notably update) and flush input */
     Term_flush();
-    
+
+    /* Prompt the user */
+    prt("[Choose 'New' or 'Open' from the 'File' menu]", 23, 17);
+    Term_fresh();
+
     /*
      * Play a game -- "new_game" is set by "new", "open" or the open document
      * even handler as appropriate
@@ -1043,7 +1048,18 @@ static size_t Term_mbcs_cocoa(wchar_t *dest, const char *src, int n)
         
     [pool drain];
     
-    play_game();
+    while (!game_in_progress) {
+        NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+        NSEvent *event = [NSApp nextEventMatchingMask:NSAnyEventMask untilDate:[NSDate distantFuture] inMode:NSDefaultRunLoopMode dequeue:YES];
+        if (event) [NSApp sendEvent:event];
+        [pool drain];
+    }
+
+    Term_fresh();
+    play_game(new_game);
+    quit(NULL);
+
+    return 0;
 }
 
 + (void)endGame
@@ -2663,40 +2679,6 @@ static void init_windows(void)
 }
 
 
-/*
- *    Run the event loop and return a gameplay status to init_angband
- */
-static errr get_cmd_init(void)
-{     
-    if (cmd.command == CMD_NULL)
-    {
-        /* Prompt the user */ 
-        prt("[Choose 'New' or 'Open' from the 'File' menu]", 23, 17);
-        Term_fresh();
-        
-        while (cmd.command == CMD_NULL) {
-            NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-            NSEvent *event = [NSApp nextEventMatchingMask:NSAnyEventMask untilDate:[NSDate distantFuture] inMode:NSDefaultRunLoopMode dequeue:YES];
-            if (event) [NSApp sendEvent:event];
-            [pool drain];        
-        }
-    }
-    
-    /* Push the command to the game. */
-    cmdq_push_copy(&cmd);
-    
-    return 0; 
-} 
-
-
-/* Return a command */
-static errr cocoa_get_cmd(cmd_context context, bool wait)
-{
-    if (context == CMD_INIT) 
-        return get_cmd_init();
-    else 
-        return textui_get_cmd(context, wait);
-}
 
 /* Return the directory into which we put data (save and config) */
 static NSString *get_data_directory(void)
@@ -3101,7 +3083,7 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
 {
     /* Game is in progress */
     game_in_progress = TRUE;
-    cmd.command = CMD_NEWGAME;
+    new_game = TRUE;
 }
 
 - (IBAction)editFont:sender
@@ -3196,13 +3178,11 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
     
     if (selectedSomething)
     {
-        
         /* Remember this so we can select it by default next time */
         record_current_savefile();
         
         /* Game is in progress */
         game_in_progress = TRUE;
-        cmd.command = CMD_LOADFILE;
     }
     
     [pool drain];
@@ -3476,9 +3456,8 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
     /* Put it in savefile */
     if (! [file getFileSystemRepresentation:savefile maxLength:sizeof savefile]) return NO;
     
-    /* Success, remember to load it */
-    cmd.command = CMD_LOADFILE;
-    
+    game_in_progress = TRUE;
+
     /* Wake us up in case this arrives while we're sitting at the Welcome screen! */
     wakeup_event_loop();
     
