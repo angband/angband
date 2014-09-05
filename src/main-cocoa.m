@@ -419,7 +419,7 @@ static void load_prefs(void);
 static void load_sounds(void);
 static void init_windows(void);
 static void handle_open_when_ready(void);
-static void play_sound(int event);
+static void play_sound(game_event_type unused, game_event_data *data, void *user);
 static BOOL check_events(int wait);
 static void cocoa_file_open_hook(const char *path, file_type ftype);
 static bool cocoa_get_file(const char *suggested_name, char *path, size_t len);
@@ -1020,8 +1020,8 @@ static size_t Term_mbcs_cocoa(wchar_t *dest, const char *src, int n)
     init_angband();
     
     /* Register the sound hook */
-    sound_hook = play_sound;
-    
+    event_add_handler(EVENT_SOUND, play_sound, NULL);
+
     /* Note the "system" */
     ANGBAND_SYS = "mac";
     
@@ -1058,8 +1058,6 @@ static size_t Term_mbcs_cocoa(wchar_t *dest, const char *src, int n)
     Term_fresh();
     play_game(new_game);
     quit(NULL);
-
-    return 0;
 }
 
 + (void)endGame
@@ -2623,18 +2621,19 @@ static void load_sounds(void)
  * Play sound effects asynchronously.  Select a sound from any available
  * for the required event, and bridge to Cocoa to play it.
  */
-static void play_sound(int event)
-{    
+static void play_sound(game_event_type unused, game_event_data *data, void *user)
+{
+    int event = data->message.type;
+
     /* Maybe block it */
-    if (! allow_sounds) return;
+    if (!allow_sounds) return;
     
 	/* Paranoia */
 	if (event < 0 || event >= MSG_MAX) return;
     
     /* Load sounds just-in-time (once) */
     static BOOL loaded = NO;
-    if (! loaded)
-    {
+    if (!loaded) {
         loaded = YES;
         load_sounds();
     }

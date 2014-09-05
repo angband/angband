@@ -64,11 +64,7 @@ typedef enum game_event_type
 
 typedef union
 {
-	struct 
-	{
-		int x;
-		int y;
-	} point;
+	struct loc point;
 
 	const char *string;
 

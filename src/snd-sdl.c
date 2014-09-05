@@ -168,9 +168,9 @@ static bool sound_sdl_init(bool no_cache)
 
 		/* Split the line into two: message name, and the rest */
 		search = strchr(buffer, ' ');
-        sample_list = strchr(search + 1, ' ');
+		sample_list = strchr(search + 1, ' ');
 		if (!search) continue;
-        if (!sample_list) continue;
+		if (!sample_list) continue;
 
 		/* Set the message name, and terminate at first space */
 		msg_name = buffer;
@@ -179,7 +179,7 @@ static bool sound_sdl_init(bool no_cache)
 
 		/* Make sure this is a valid event name */
 		event = message_lookup_by_sound_name(msg_name);
-        if (event < 0) continue;
+		if (event < 0) continue;
 
 		/* Advance the sample list pointer so it's at the beginning of text */
 		sample_list++;
@@ -203,8 +203,8 @@ static bool sound_sdl_init(bool no_cache)
          */
         while (cur_token)
         {
-            int num = samples[event].num;
-	    bool got_file_type = FALSE;
+		int num = samples[event].num;
+		bool got_file_type = FALSE;
 
 			/* Don't allow too many samples */
 			if (num >= MAX_SAMPLES) break;
@@ -289,11 +289,13 @@ static bool sound_sdl_init(bool no_cache)
 /*
  * Play a sound of type "event".
  */
-static void play_sound(int event)
+static void play_sound(game_event_type type, game_event_data *data, void *user)
 {
 	Mix_Chunk *wave = NULL;
 	Mix_Music *mp3 = NULL;
 	int s;
+
+	int event = data->message.type;
 
 	/* Paranoia */
 	if (event < 0 || event >= MSG_MAX) return;
@@ -365,7 +367,7 @@ errr init_sound_sdl(int argc, char **argv)
 	}
 
 	/* Enable sound */
-	sound_hook = play_sound;
+	event_add_handler(EVENT_SOUND, play_sound, NULL);
 	atexit(close_audio);
 
 	/* Success */

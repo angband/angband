@@ -1811,13 +1811,15 @@ static errr Term_xtra_win_noise(void)
 /*
  * Hack -- make a sound
  */
-static void Term_xtra_win_sound(int v)
+static void Term_xtra_win_sound(game_event_type type, game_event_data *data, void *user)
 {
 	int i;
 	char buf[1024];
 	MCI_OPEN_PARMS op;
 	MCI_PLAY_PARMS pp;
 	MCIDEVICEID pDevice;
+
+	int v = data->message.type;
 
 	/* Illegal sound */
 	if ((v < 0) || (v >= MSG_MAX)) return;
@@ -5232,7 +5234,7 @@ int FAR PASCAL WinMain(HINSTANCE hInst, HINSTANCE hPrevInst,
 #endif /* USE_SAVER */
 
 	/* Set the sound hook */
-	sound_hook = Term_xtra_win_sound;
+	event_add_handler(EVENT_SOUND, Term_xtra_win_sound, NULL);
 
 	/* Did the user double click on a save file? */
 	check_for_save_file(lpCmdLine);

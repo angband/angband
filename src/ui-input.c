@@ -379,24 +379,6 @@ void bell(const char *reason)
 
 
 /*
- * Sound hook (for playing FX).
- */
-void (*sound_hook)(int sound);
-
-/*
- * Hack -- Make a (relevant?) sound
- */
-void sound(int val)
-{
-	/* No sound */
-	if (!OPT(use_sound) || !sound_hook) return;
-
-	sound_hook(val);
-}
-
-
-
-/*
  * Hack -- flush
  */
 static void msg_flush(int x)

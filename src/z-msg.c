@@ -266,6 +266,19 @@ const char *message_sound_name(int message)
 
 
 /*
+ * Make a noise.
+ */
+void sound(int val)
+{
+	/* No sound */
+	if (!OPT(use_sound)) return;
+
+	/* Dispatch */
+	event_signal_message(EVENT_SOUND, val, NULL);
+}
+
+
+/*
  * XXX-AS Comment me up
  * XXX-AS move to message.c
  * Display a formatted message.

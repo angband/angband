@@ -13,7 +13,6 @@ extern struct keypress *inkey_next;
 extern u32b inkey_scan;
 extern bool inkey_flag;
 extern u16b lazymove_delay;
-extern void (*sound_hook)(int);
 extern bool msg_flag;
 
 extern void flush(void);
