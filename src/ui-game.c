@@ -1764,7 +1764,6 @@ static void subwindow_flag_changed(int win_idx, u32b flag, bool new_state)
 			break;
 		}
 
-
 		case PW_MESSAGE:
 		{
 			register_or_deregister(EVENT_MESSAGE,
@@ -1827,7 +1826,7 @@ static void subwindow_flag_changed(int win_idx, u32b flag, bool new_state)
 /*
  * Set the flags for one Term, calling "subwindow_flag_changed" with each flag that
  * has changed setting so that it can do any housekeeping to do with 
- * siaplying hte new thing or no longer displaying the old one.
+ * displaying the new thing or no longer displaying the old one.
  */
 static void subwindow_set_flags(int win_idx, u32b new_flags)
 {

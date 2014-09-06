@@ -10,7 +10,7 @@
 
 enum {
 	#define MSG(x, s) MSG_##x,
-	#include "z-msg-list.h"
+	#include "message-list.h"
 	#undef MSG
 	SOUND_MAX = MSG_MAX,
 };

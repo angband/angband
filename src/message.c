@@ -1,5 +1,5 @@
 /*
- * File: z-msg.c
+ * File: message.c
  * Purpose: Message handling
  *
  * Copyright (c) 2007 Elly, Andi Sidwell
@@ -18,7 +18,7 @@
 #include "z-virt.h"
 #include "z-color.h"
 #include "z-util.h"
-#include "z-msg.h"
+#include "message.h"
 #include "game-event.h"
 #include "option.h"
 #include "player.h"
@@ -216,7 +216,7 @@ int message_lookup_by_name(const char *name)
 {
 	static const char *message_names[] = {
 		#define MSG(x, s) #x,
-		#include "z-msg-list.h"
+		#include "message-list.h"
 		#undef MSG
 	};
 	size_t i;
@@ -237,7 +237,7 @@ int message_lookup_by_sound_name(const char *name)
 {
 	static const char *sound_names[] = {
 		#define MSG(x, s) s,
-		#include "z-msg-list.h"
+		#include "message-list.h"
 		#undef MSG
 	};
 	size_t i;
@@ -254,7 +254,7 @@ const char *message_sound_name(int message)
 {
 	static const char *sound_names[] = {
 		#define MSG(x, s) s,
-		#include "z-msg-list.h"
+		#include "message-list.h"
 		#undef MSG
 	};
 
