@@ -13,7 +13,6 @@
 
 #include "h-basic.h"
 #include "ui-event.h"
-#include "z-msg.h"
 
 
 /*

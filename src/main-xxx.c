@@ -685,8 +685,10 @@ static bool CheckEvents(bool wait)
  *
  * This action is optional, and not very important.
  */
-static void xxx_sound(int v)
+static void xxx_sound(game_event_type type, game_event_data *data, void *user)
 {
+	int v = data->message.type;
+
 	return;
 }
 
@@ -710,7 +712,7 @@ static void init_stuff(void)
 	init_file_paths(path, path, path);
 
 	/* Set up sound hook */
-	sound_hook = xxx_sound;
+	event_add_handler(EVENT_SOUND, xxx_sound, NULL);
 }
 
 

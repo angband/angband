@@ -1764,7 +1764,6 @@ static void subwindow_flag_changed(int win_idx, u32b flag, bool new_state)
 			break;
 		}
 
-
 		case PW_MESSAGE:
 		{
 			register_or_deregister(EVENT_MESSAGE,
@@ -1827,7 +1826,7 @@ static void subwindow_flag_changed(int win_idx, u32b flag, bool new_state)
 /*
  * Set the flags for one Term, calling "subwindow_flag_changed" with each flag that
  * has changed setting so that it can do any housekeeping to do with 
- * siaplying hte new thing or no longer displaying the old one.
+ * displaying the new thing or no longer displaying the old one.
  */
 static void subwindow_set_flags(int win_idx, u32b new_flags)
 {
@@ -2082,12 +2081,14 @@ static void ui_enter_game(game_event_type type, game_event_data *data, void *use
 #if 0
 	event_add_handler(EVENT_MAP, trace_map_updates, angband_term[0]);
 #endif
+
 	/* Check if the panel should shift when the player's moved */
 	event_add_handler(EVENT_PLAYERMOVED, check_panel, NULL);
 	event_add_handler(EVENT_SEEFLOOR, see_floor_items, NULL);
 	event_add_handler(EVENT_EXPLOSION, display_explosion, NULL);
 	event_add_handler(EVENT_BOLT, display_bolt, NULL);
 	event_add_handler(EVENT_MISSILE, display_missile, NULL);
+	event_add_handler(EVENT_MESSAGE, display_message, NULL);
 }
 
 static void ui_leave_game(game_event_type type, game_event_data *data, void *user)
@@ -2116,6 +2117,7 @@ static void ui_leave_game(game_event_type type, game_event_data *data, void *use
 	event_remove_handler(EVENT_EXPLOSION, display_explosion, NULL);
 	event_remove_handler(EVENT_BOLT, display_bolt, NULL);
 	event_remove_handler(EVENT_MISSILE, display_missile, NULL);
+	event_remove_handler(EVENT_MESSAGE, display_message, NULL);
 }
 
 errr textui_get_cmd(cmd_context context, bool wait)

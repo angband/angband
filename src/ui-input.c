@@ -361,39 +361,19 @@ ui_event inkey_m(void)
  */
 void bell(const char *reason)
 {
+	assert(reason);
+
 	/* Mega-Hack -- Flush the output */
 	Term_fresh();
 
-	/* Hack -- memorize the reason if possible */
-	if (character_generated && reason)
-	{
-		message_add(reason, MSG_BELL);
+	/* Add the message */
+	message_add(reason, MSG_BELL);
 
-		/* Window stuff */
-		player->upkeep->redraw |= (PR_MESSAGE);
-		redraw_stuff(player->upkeep);
-	}
+	/* Tell the UI */
+	event_signal_message(EVENT_MESSAGE, MSG_BELL, reason);
 
 	/* Flush the input (later!) */
 	flush();
-}
-
-
-
-/*
- * Sound hook (for playing FX).
- */
-void (*sound_hook)(int sound);
-
-/*
- * Hack -- Make a (relevant?) sound
- */
-void sound(int val)
-{
-	/* No sound */
-	if (!OPT(use_sound) || !sound_hook) return;
-
-	sound_hook(val);
 }
 
 
@@ -446,7 +426,7 @@ bool msg_flag;			/* Player has pending message */
  * Hack -- Note that "msg("%s", NULL)" will clear the top line even if no
  * messages are pending.
  */
-static void msg_print_aux(u16b type, const char *msg)
+void display_message(game_event_type unused, game_event_data *data, void *user)
 {
 	int n;
 	char *t;
@@ -454,7 +434,15 @@ static void msg_print_aux(u16b type, const char *msg)
 	byte color;
 	int w, h;
 
-	if (!Term)
+	int type;
+	const char *msg;
+
+	if (!data) return;
+
+	type = data->message.type;
+	msg = data->message.msg;
+
+	if (type == MSG_BELL || !msg || !Term || !character_generated)
 		return;
 
 	/* Obtain the size */
@@ -485,14 +473,6 @@ static void msg_print_aux(u16b type, const char *msg)
 
 	/* Paranoia */
 	if (n > 1000) return;
-
-
-	/* Memorize the message (if legal) */
-	if (character_generated && !(player->is_dead))
-		message_add(msg, type);
-
-	/* Window stuff */
-	if (player->upkeep) player->upkeep->redraw |= (PR_MESSAGE);
 
 	/* Copy it */
 	my_strcpy(buf, msg, sizeof(buf));
@@ -547,43 +527,8 @@ static void msg_print_aux(u16b type, const char *msg)
 
 	/* Remember the position */
 	message_column += n + 1;
-
-	/* Send refresh event */
-	event_signal(EVENT_MESSAGE);
 }
 
-/*
- * Display a formatted message, using "vstrnfmt()" and "msg("%s", )".
- */
-void msg(const char *fmt, ...)
-{
-	va_list vp;
-
-	char buf[1024];
-
-	/* Begin the Varargs Stuff */
-	va_start(vp, fmt);
-
-	/* Format the args, save the length */
-	(void)vstrnfmt(buf, sizeof(buf), fmt, vp);
-
-	/* End the Varargs Stuff */
-	va_end(vp);
-
-	/* Display */
-	msg_print_aux(MSG_GENERIC, buf);
-}
-
-void msgt(unsigned int type, const char *fmt, ...)
-{
-	va_list vp;
-	char buf[1024];
-	va_start(vp, fmt);
-	vstrnfmt(buf, sizeof(buf), fmt, vp);
-	va_end(vp);
-	sound(type);
-	msg_print_aux(type, buf);
-}
 
 /*
  * Print the queued messages.
@@ -607,8 +552,6 @@ void message_flush(void)
 		message_column = 0;
 	}
 }
-
-
 
 
 /*

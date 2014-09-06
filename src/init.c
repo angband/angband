@@ -3814,48 +3814,32 @@ static struct file_parser pit_parser = {
 };
 
 
-
-/**
- * Initialize some other arrays
- */
-static errr init_other(void)
-{
-	/*** Prepare the various "bizarre" arrays ***/
-
-	/* Initialize knowledge things */
-	textui_knowledge_init();
-
-	/* Initialize the "message" package */
-	(void)messages_init();
-
-	monster_list_init();
-	object_list_init();
-
-	/*** Prepare grid arrays ***/
-	cave = cave_new(DUNGEON_HGT, DUNGEON_WID);
-
-	/* Array of stacked monster messages */
-	mon_msg = C_ZNEW(MAX_STORED_MON_MSG, monster_race_message);
-	mon_message_hist = C_ZNEW(MAX_STORED_MON_CODES, monster_message_history);
-
-	/*** Prepare lore array ***/
-
-	/* Lore */
-	l_list = C_ZNEW(z_info->r_max, monster_lore);
-
-	/*** Prepare the options ***/
-	init_options();
-
-	/*** Pre-allocate space for the "format()" buffer ***/
-
-	/* Hack -- Just call the "format()" function */
-	(void)format("I wish you could swim, like dolphins can swim...");
-
-	/* Success */
-	return (0);
-}
-
-
+/* A list of all the above parsers */
+static struct {
+	const char *name;
+	struct file_parser *parser;
+} pl[] = {
+	{ "array sizes", &z_parser },
+	{ "traps", &trap_parser },
+	{ "features", &f_parser },
+	{ "object bases", &kb_parser },
+	{ "objects", &k_parser },
+	{ "activations", &act_parser },
+	{ "ego-items", &e_parser },
+	{ "artifacts", &a_parser },
+	{ "monster pain messages", &mp_parser },
+	{ "monster spells", &rs_parser },
+	{ "monster bases", &rb_parser },
+	{ "monsters", &r_parser },
+	{ "monster pits" , &pit_parser },
+	{ "history charts", &h_parser },
+	{ "bodies", &body_parser },
+	{ "player races", &p_parser },
+	{ "player classes", &c_parser },
+	{ "flavours", &flavor_parser },
+	{ "hints", &hints_parser },
+	{ "random names", &names_parser }
+};
 
 /**
  * Initialise just the internal arrays.
@@ -3866,107 +3850,22 @@ static errr init_other(void)
  */
 void init_arrays(void)
 {
-	/* Initialize size info */
-	event_signal_string(EVENT_INITSTATUS, "Initializing array sizes...");
-	if (run_parser(&z_parser)) quit("Cannot initialize sizes");
+	unsigned int i;
 
-	/* Initialize trap info */
-	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (traps)");
-	if (run_parser(&trap_parser)) quit("Cannot initialize traps");
+	for (i = 0; i < N_ELEMENTS(pl); i++) {
 
-	/* Initialize feature info */
-	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (features)");
-	if (run_parser(&f_parser)) quit("Cannot initialize features");
-
-	/* Initialize object base info */
-	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (object bases)");
-	if (run_parser(&kb_parser)) quit("Cannot initialize object bases");
-
-	/* Initialize object info */
-	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (objects)");
-	if (run_parser(&k_parser)) quit("Cannot initialize objects");
-
-	/* Initialize object info */
-	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (activations)");
-	if (run_parser(&act_parser)) quit("Cannot initialize activations");
-
-	/* Initialize ego-item info */
-	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (ego-items)");
-	if (run_parser(&e_parser)) quit("Cannot initialize ego-items");
-
-	/* Initialize artifact info */
-	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (artifacts)");
-	if (run_parser(&a_parser)) quit("Cannot initialize artifacts");
-
-	/* Initialize monster pain messages */
-	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (pain messages)");
-	if (run_parser(&mp_parser)) quit("Cannot initialize monster pain messages");
-
-	/* Initialize monster spell info */
-	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (monster spells)");
-	if (run_parser(&rs_parser)) quit("Cannot initialize monster spells");
-
-	/* Initialize monster-base info */
-	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (monster bases)");
-	if (run_parser(&rb_parser)) quit("Cannot initialize monster bases");
-	
-	/* Initialize monster info */
-	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (monsters)");
-	if (run_parser(&r_parser)) quit("Cannot initialize monsters");
-
-	/* Initialize monster pits */
-	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (monster pits)");
-	if (run_parser(&pit_parser)) quit("Cannot initialize monster pits");
-	
-	/* Initialize history info */
-	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (histories)");
-	if (run_parser(&h_parser)) quit("Cannot initialize histories");
-
-	/* Initialize body info */
-	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (bodies)");
-	if (run_parser(&body_parser)) quit("Cannot initialize bodies");
-
-	/* Initialize race info */
-	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (races)");
-	if (run_parser(&p_parser)) quit("Cannot initialize races");
-
-	/* Initialize class info */
-	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (classes)");
-	if (run_parser(&c_parser)) quit("Cannot initialize classes");
-
-	/* Initialize flavor info */
-	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (flavors)");
-	if (run_parser(&flavor_parser)) quit("Cannot initialize flavors");
-
-	/* Initialize hint text */
-	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (hints)");
-	if (run_parser(&hints_parser)) quit("Cannot initialize hints");
-
-	/* Initialise random name data */
-	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (random names)");
-	if (run_parser(&names_parser)) quit("Can't parse names");
+		event_signal_string(EVENT_INITSTATUS, format("Initializing %s...", pl[i].name));
+		if (run_parser(pl[i].parser))
+			quit_fmt("Cannot initialise %s.", pl[i].name);
+	}
 }
 
 static void cleanup_arrays(void)
 {
-	cleanup_parser(&k_parser);
-	cleanup_parser(&kb_parser);
-	cleanup_parser(&act_parser);
-	cleanup_parser(&a_parser);
-	cleanup_parser(&names_parser);
-	cleanup_parser(&r_parser);
-	cleanup_parser(&rb_parser);
-	cleanup_parser(&rs_parser);
-	cleanup_parser(&f_parser);
-	cleanup_parser(&e_parser);
-	cleanup_parser(&p_parser);
-	cleanup_parser(&c_parser);
-	cleanup_parser(&h_parser);
-	cleanup_parser(&flavor_parser);
-	cleanup_parser(&hints_parser);
-	cleanup_parser(&mp_parser);
-	cleanup_parser(&pit_parser);
-	cleanup_parser(&z_parser);
+	unsigned int i;
+
+	for (i = 0; i < N_ELEMENTS(pl); i++)
+		cleanup_parser(pl[i].parser);
 }
 
 static struct init_module arrays_module = {
@@ -3984,6 +3883,9 @@ extern struct init_module mon_make_module;
 extern struct init_module player_module;
 extern struct init_module store_module;
 extern struct init_module quest_module;
+extern struct init_module messages_module;
+extern struct init_module options_module;
+extern struct init_module monmsg_module;
 
 static struct init_module *modules[] = {
 	&z_quark_module,
@@ -3995,6 +3897,9 @@ static struct init_module *modules[] = {
 	&mon_make_module,
 	&store_module,
 	&quest_module,
+	&messages_module,
+	&options_module,
+	&monmsg_module,
 	NULL
 };
 
@@ -4024,8 +3929,14 @@ bool init_angband(void)
 			modules[i]->init();
 
 	/* Initialize some other things */
-	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (other)");
-	if (init_other()) quit("Cannot initialize other stuff");
+	event_signal_string(EVENT_INITSTATUS, "Initializing other stuff...");
+
+	/* List display codes */
+	monster_list_init();
+	object_list_init();
+
+	/* We need a cave array */
+	cave = cave_new(DUNGEON_HGT, DUNGEON_WID);
 
 	/* Initialize graphics info and basic user pref data */
 	event_signal_string(EVENT_INITSTATUS, "Loading basic user pref file...");
@@ -4052,20 +3963,10 @@ void cleanup_angband(void)
 
 	event_remove_all_handlers();
 
-	/* Free the lore list */
-	FREE(l_list);
-
 	/* The main cave is always allocated with max height and width */
 	cave->height = DUNGEON_HGT;
 	cave->width = DUNGEON_WID;
 	cave_free(cave);
-
-	/* Free the stacked monster messages */
-	FREE(mon_msg);
-	FREE(mon_message_hist);
-
-	/* Free the messages */
-	messages_free();
 
 	/* Free the history */
 	history_clear();

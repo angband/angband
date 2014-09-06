@@ -1,5 +1,5 @@
 /*
- * File: z-msg.c
+ * File: message.c
  * Purpose: Message handling
  *
  * Copyright (c) 2007 Elly, Andi Sidwell
@@ -14,10 +14,15 @@
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
  */
+
 #include "z-virt.h"
 #include "z-color.h"
 #include "z-util.h"
-#include "z-msg.h"
+#include "message.h"
+#include "game-event.h"
+#include "option.h"
+#include "init.h"
+#include "player.h"
 
 typedef struct _message_t
 {
@@ -47,11 +52,10 @@ typedef struct _msgqueue_t
 static msgqueue_t *messages = NULL;
 
 /* Functions operating on the entire list */
-errr messages_init(void)
+void messages_init(void)
 {
 	messages = ZNEW(msgqueue_t);
 	messages->max = 2048;
-	return 0;
 }
 
 void messages_free(void)
@@ -212,7 +216,7 @@ int message_lookup_by_name(const char *name)
 {
 	static const char *message_names[] = {
 		#define MSG(x, s) #x,
-		#include "z-msg-list.h"
+		#include "message-list.h"
 		#undef MSG
 	};
 	size_t i;
@@ -233,7 +237,7 @@ int message_lookup_by_sound_name(const char *name)
 {
 	static const char *sound_names[] = {
 		#define MSG(x, s) s,
-		#include "z-msg-list.h"
+		#include "message-list.h"
 		#undef MSG
 	};
 	size_t i;
@@ -250,7 +254,7 @@ const char *message_sound_name(int message)
 {
 	static const char *sound_names[] = {
 		#define MSG(x, s) s,
-		#include "z-msg-list.h"
+		#include "message-list.h"
 		#undef MSG
 	};
 
@@ -259,3 +263,58 @@ const char *message_sound_name(int message)
 
 	return sound_names[message];
 }
+
+void sound(int type)
+{
+	/* No sound */
+	if (!OPT(use_sound)) return;
+
+	/* Dispatch */
+	event_signal_message(EVENT_SOUND, type, NULL);
+}
+
+void msg(const char *fmt, ...)
+{
+	va_list vp;
+
+	char buf[1024];
+
+	/* Begin the Varargs Stuff */
+	va_start(vp, fmt);
+
+	/* Format the args, save the length */
+	(void)vstrnfmt(buf, sizeof(buf), fmt, vp);
+
+	/* End the Varargs Stuff */
+	va_end(vp);
+
+	/* Add to message log */
+	message_add(buf, MSG_GENERIC);
+
+	/* Send refresh event */
+	event_signal_message(EVENT_MESSAGE, MSG_GENERIC, buf);
+
+}
+
+void msgt(unsigned int type, const char *fmt, ...)
+{
+	va_list vp;
+	char buf[1024];
+	va_start(vp, fmt);
+	vstrnfmt(buf, sizeof(buf), fmt, vp);
+	va_end(vp);
+
+	/* Add to message log */
+	message_add(buf, type);
+
+	/* Send refresh event */
+	sound(type);
+	event_signal_message(EVENT_MESSAGE, type, buf);
+}
+
+
+struct init_module messages_module = {
+	.name = "messages",
+	.init = messages_init,
+	.cleanup = messages_free
+};

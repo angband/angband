@@ -1,5 +1,5 @@
 /*
- * File: z-msg-list.h
+ * File: message-list.h
  * Purpose: List of message types
  *
  * sound - the name of the entry in sound.cfg

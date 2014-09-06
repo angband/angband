@@ -14,7 +14,7 @@ enum
 	OP_SCORE,
 	OP_SPECIAL,
 
-        OP_MAX
+	OP_MAX
 };
 
 /*** Functions ***/

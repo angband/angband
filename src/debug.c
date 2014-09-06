@@ -36,7 +36,7 @@ static void to_stderr(const char *out)
 /*
  * Output some text.
  *
- * Amongst other things, this should use the z-msg package so that ports can
+ * Amongst other things, this should use the message package so that ports can
  * display e.g. a debugging window, or send the output to file.
  */
 void debug(const char *fmt, ...)

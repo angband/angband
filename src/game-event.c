@@ -156,6 +156,17 @@ void event_signal_string(game_event_type type, const char *s)
 	game_event_dispatch(type, &data);
 }
 
+void event_signal_message(game_event_type type, int t, const char *s)
+{
+	game_event_data data;
+	memset(&data, 0, sizeof data);
+
+	data.message.type = t;
+	data.message.msg = s;
+
+	game_event_dispatch(type, &data);
+}
+
 void event_signal_birthpoints(int stats[6], int remaining)
 {
 	game_event_data data;

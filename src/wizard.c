@@ -1677,9 +1677,9 @@ static void do_cmd_wiz_advance(void)
 	player->upkeep->update |= (PU_BONUS | PU_HP | PU_MANA | PU_SPELLS);
 
 	/* Redraw everything */
-	player->upkeep->redraw |= (PR_BASIC | PR_EXTRA | PR_MAP | PR_INVEN | PR_EQUIP |
-	                  PR_MESSAGE | PR_MONSTER | PR_OBJECT |
-					  PR_MONLIST | PR_ITEMLIST);
+	player->upkeep->redraw |= (PR_BASIC | PR_EXTRA | PR_MAP | PR_INVEN |
+			PR_EQUIP | PR_MESSAGE | PR_MONSTER | PR_OBJECT | PR_MONLIST |
+			PR_ITEMLIST);
 
 	/* Hack -- update */
 	handle_stuff(player->upkeep);

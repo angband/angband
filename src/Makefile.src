@@ -35,7 +35,6 @@ HEADERS = \
 	z-expression.h \
 	z-file.h \
 	z-form.h \
-	z-msg.h \
 	z-quark.h \
 	z-queue.h \
 	z-rand.h \
@@ -52,7 +51,6 @@ ZFILES = \
 	z-expression.o \
 	z-file.o \
 	z-form.o \
-	z-msg.o \
 	z-quark.o \
 	z-queue.o \
 	z-rand.o \
@@ -114,6 +112,7 @@ ANGFILES = \
 	init.o \
 	keymap.o \
 	load.o \
+	message.o \
 	mon-blow-effects.o \
 	mon-blow-methods.o \
 	mon-list.o \

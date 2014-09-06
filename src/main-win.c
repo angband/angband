@@ -441,8 +441,6 @@ static int gamma_correction;
 #include "cmds.h"
 #include "textui.h"
 
-static struct command cmd = { CMD_NULL, 0 };
-
 #if 0
 /*
  * Hack -- given a pathname, point at the filename
@@ -1813,13 +1811,15 @@ static errr Term_xtra_win_noise(void)
 /*
  * Hack -- make a sound
  */
-static void Term_xtra_win_sound(int v)
+static void Term_xtra_win_sound(game_event_type type, game_event_data *data, void *user)
 {
 	int i;
 	char buf[1024];
 	MCI_OPEN_PARMS op;
 	MCI_PLAY_PARMS pp;
 	MCIDEVICEID pDevice;
+
+	int v = data->message.type;
 
 	/* Illegal sound */
 	if ((v < 0) || (v >= MSG_MAX)) return;
@@ -3149,7 +3149,7 @@ static void check_for_save_file(LPSTR cmd_line)
 
 	/* Next arg */
 	p = strchr(s, ' ');
-	
+
 	/* Tokenize */
 	if (p) *p = '\0';
 
@@ -3158,9 +3158,12 @@ static void check_for_save_file(LPSTR cmd_line)
 
 	/* Validate the file */
 	validate_file(savefile);
-
-	/* Set the command now so that we skip the "Open File" prompt. */
-	cmd.command = CMD_LOADFILE;
+	
+	/* Start game */
+	game_in_progress = TRUE;
+	Term_fresh();
+	play_game(FALSE);
+	quit(NULL);
 }
 
 
@@ -3241,8 +3244,11 @@ static void process_menus(WORD wCmd)
 			}
 			else
 			{
-				/* We'll return NEWGAME to the game. */
-				cmd.command = CMD_NEWGAME;
+				/* Start game */
+				game_in_progress = TRUE;
+				Term_fresh();
+				play_game(TRUE);
+				quit(NULL);
 			}
 			break;
 		}
@@ -3275,8 +3281,11 @@ static void process_menus(WORD wCmd)
 					/* Load 'savefile' */
 					validate_file(savefile);
 
-					/* We'll return NEWGAME to the game. */
-					cmd.command = CMD_LOADFILE;
+					/* Start game */
+					game_in_progress = TRUE;
+					Term_fresh();
+					play_game(FALSE);
+					quit(NULL);
 				}
 			}
 			break;
@@ -4973,41 +4982,6 @@ static void hook_quit(const char *str)
 }
 
 
-static errr get_init_cmd()
-{
-	MSG msg;
-
-	/* Prompt the user */
-	prt("[Choose 'New' or 'Open' from the 'File' menu]", 23, 17);
-	Term_fresh();
-
-	/* Process messages forever */
-	while (cmd.command == CMD_NULL && GetMessage(&msg, NULL, 0, 0))
-	{
-		TranslateMessage(&msg);
-		DispatchMessage(&msg);
-	}
-
-	/* Bit of a hack, we'll do this when we leave the INIT context in future. */
-	game_in_progress = TRUE;
-
-	/* Push command into the queue. */
-	cmdq_push_copy(&cmd);
-
-	/* Everything's OK. */
-	return 0;
-}
-
-/* Command dispatcher for windows build */
-static errr win_get_cmd(cmd_context context, bool wait)
-{
-	if (context == CMD_INIT) 
-		return get_init_cmd();
-	else 
-		return textui_get_cmd(context, wait);
-}
-
-
 /*** Initialize ***/
 
 
@@ -5113,6 +5087,7 @@ int FAR PASCAL WinMain(HINSTANCE hInst, HINSTANCE hPrevInst,
 
 	WNDCLASS wc;
 	HDC hdc;
+	MSG msg;
 
 	/* Unused parameter */
 	(void)nCmdShow;
@@ -5259,21 +5234,30 @@ int FAR PASCAL WinMain(HINSTANCE hInst, HINSTANCE hPrevInst,
 #endif /* USE_SAVER */
 
 	/* Set the sound hook */
-	sound_hook = Term_xtra_win_sound;
+	event_add_handler(EVENT_SOUND, Term_xtra_win_sound, NULL);
 
 	/* Did the user double click on a save file? */
 	check_for_save_file(lpCmdLine);
 
 	/* Set command hook */
-	cmd_get_hook = win_get_cmd;
+	cmd_get_hook = textui_get_cmd;
 
 	/* Set up the display handlers and things. */
 	init_display();
+	init_angband();
 
 	initialized = TRUE;
 
-	/* Play the game */
-	play_game();
+	/* Prompt the user */
+	prt("[Choose 'New' or 'Open' from the 'File' menu]", 23, 17);
+	Term_fresh();
+
+	/* Process messages forever */
+	while (GetMessage(&msg, NULL, 0, 0))
+	{
+		TranslateMessage(&msg);
+		DispatchMessage(&msg);
+	}
 
 	/* Paranoia */
 	quit(NULL);
