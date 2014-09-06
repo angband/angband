@@ -238,7 +238,7 @@ struct chunk {
 	u16b obj_max;
 	u16b obj_cnt;
 
-	struct trap_type *traps;
+	struct trap *traps;
 	u16b trap_max;
 };
 
@@ -375,7 +375,7 @@ extern struct object *square_object(struct chunk *c, int y, int x);
 extern int cave_object_max(struct chunk *c);
 extern int cave_object_count(struct chunk *c);
 
-extern struct trap_type *cave_trap(struct chunk *c, int idx);
+extern struct trap *cave_trap(struct chunk *c, int idx);
 extern int cave_trap_max(struct chunk *c);
 
 void upgrade_mineral(struct chunk *c, int y, int x);

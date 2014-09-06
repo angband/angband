@@ -923,8 +923,8 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 		/* A trap */
 		if (square_visible_trap(cave, y, x)) 
 		{
-			trap_type *t_ptr = cave_trap(cave, 
-										 square_visible_trap_idx(cave, y, x));
+			struct trap *trap = cave_trap(cave, 
+										  square_visible_trap_idx(cave, y, x));
 
 			/* Not boring */
 			boring = FALSE;
@@ -945,19 +945,19 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 				}
 
 				/* Pick proper indefinite article */
-				s3 = (is_a_vowel(t_ptr->kind->name[0])) ? "an " : "a ";
+				s3 = (is_a_vowel(trap->kind->name[0])) ? "an " : "a ";
 
 				/* Describe, and prompt for recall */
 				if (player->wizard) 
 				{
 					strnfmt(out_val, sizeof(out_val),
 							"%s%s%s%s, %s (%d:%d, cost=%d, when=%d).", s1, s2, s3,
-							t_ptr->kind->name, coords, y, x, (int)cave->cost[y][x], (int)cave->when[y][x]);
+							trap->kind->name, coords, y, x, (int)cave->cost[y][x], (int)cave->when[y][x]);
 				} 
 				else 
 				{
 					strnfmt(out_val, sizeof(out_val), "%s%s%s%s, %s.", 
-							s1, s2, s3, t_ptr->kind->name, coords);
+							s1, s2, s3, trap->kind->name, coords);
 				}
 
 				prt(out_val, 0, 0);

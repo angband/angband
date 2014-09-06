@@ -143,22 +143,22 @@ struct chunk *chunk_write(int y0, int x0, int height, int width, bool monsters,
 	if (traps){
 		for (i = 0; i < cave_trap_max(cave); i++) {
 			/* Point to this trap */
-			trap_type *t_ptr = cave_trap(cave, i);
-			trap_type *u_ptr = cave_trap(new, cave_trap_max(new) + 1);
-			int ty = t_ptr->fy;
-			int tx = t_ptr->fx;
+			struct trap *trap = cave_trap(cave, i);
+			struct trap *trap1 = cave_trap(new, cave_trap_max(new) + 1);
+			int ty = trap->fy;
+			int tx = trap->fx;
 
 			if ((ty >= y0) && (ty < y0 + height) &&
 				(tx >= x0) && (tx < x0 + width)) {
 				/* Copy over */
-				memcpy(u_ptr, t_ptr, sizeof(*t_ptr));
+				memcpy(trap1, trap, sizeof(*trap));
 
 				/* Adjust stuff */
 				new->trap_max++;
-				u_ptr->fy = ty - y0;
-				u_ptr->fx = tx - x0;
+				trap1->fy = ty - y0;
+				trap1->fx = tx - x0;
 				if (delete_old)
-					square_remove_trap(cave, t_ptr->fy, t_ptr->fx, FALSE, i);
+					square_remove_trap(cave, trap->fy, trap->fx, FALSE, i);
 			}
 		}
 	}
@@ -456,16 +456,16 @@ bool chunk_copy(struct chunk *dest, struct chunk *source, int y0, int x0,
 	/* Traps */
 	for (i = 0; i < cave_trap_max(source); i++) {
 		/* Point to this trap */
-		trap_type *t_ptr = cave_trap(source, cave_trap_max(dest) + 1);
-		trap_type *u_ptr = cave_trap(dest, i);
+		struct trap *trap = cave_trap(source, cave_trap_max(dest) + 1);
+		struct trap *u_ptr = cave_trap(dest, i);
 
 		/* Copy over */
-		memcpy(u_ptr, t_ptr, sizeof(*t_ptr));
+		memcpy(u_ptr, trap, sizeof(*trap));
 
 		/* Adjust stuff */
 		dest->trap_max++;
-		y = t_ptr->fy;
-		x = t_ptr->fx;
+		y = trap->fy;
+		x = trap->fx;
 		symmetry_transform(&y, &x, y0, x0, h, w, rotate, reflect);
 		u_ptr->fy = y;
 		u_ptr->fx = x;

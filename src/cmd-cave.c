@@ -994,8 +994,8 @@ static bool do_cmd_disarm_aux(int y, int x)
 {
 	int i, j, power;
 
-	int trap;
-    trap_type *t_ptr;
+	int t_idx;
+    struct trap *trap;
 
 	bool more = FALSE;
 
@@ -1005,9 +1005,9 @@ static bool do_cmd_disarm_aux(int y, int x)
 
 
     /* Choose trap */
-    trap = square_visible_trap_idx(cave, y, x);
-    if (trap < 0) return (FALSE);
-    t_ptr = cave_trap(cave, trap);
+    t_idx = square_visible_trap_idx(cave, y, x);
+    if (t_idx < 0) return (FALSE);
+    trap = cave_trap(cave, t_idx);
 
 	/* Get the "disarm" factor */
 	i = player->state.skills[SKILL_DISARM];
@@ -1031,7 +1031,7 @@ static bool do_cmd_disarm_aux(int y, int x)
 	if (randint0(100) < j)
 	{
 		/* Message */
-		msgt(MSG_DISARM, "You have disarmed the %s.", t_ptr->kind->name);
+		msgt(MSG_DISARM, "You have disarmed the %s.", trap->kind->name);
 
 		/* Reward */
 		player_exp_gain(player, power);
@@ -1049,7 +1049,7 @@ static bool do_cmd_disarm_aux(int y, int x)
 		flush();
 
 		/* Message */
-		msg("You failed to disarm the %s.", t_ptr->kind->name);
+		msg("You failed to disarm the %s.", trap->kind->name);
 
 		/* We may keep trying */
 		more = TRUE;
@@ -1059,7 +1059,7 @@ static bool do_cmd_disarm_aux(int y, int x)
 	else
 	{
 		/* Message */
-		msg("You set off the %s!", t_ptr->kind->name);
+		msg("You set off the %s!", trap->kind->name);
 
 		/* Hit the trap */
 		hit_trap(y, x);

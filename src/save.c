@@ -207,17 +207,17 @@ static void wr_monster(const monster_type *m_ptr)
 /**
  * Write a trap record
  */
-static void wr_trap(trap_type *t_ptr)
+static void wr_trap(struct trap *trap)
 {
     size_t i;
 
-    wr_byte(t_ptr->t_idx);
-    wr_byte(t_ptr->fy);
-    wr_byte(t_ptr->fx);
-    wr_byte(t_ptr->xtra);
+    wr_byte(trap->t_idx);
+    wr_byte(trap->fy);
+    wr_byte(trap->fx);
+    wr_byte(trap->xtra);
 
     for (i = 0; i < TRF_SIZE; i++)
-		wr_byte(t_ptr->flags[i]);
+		wr_byte(trap->flags[i]);
 }
 
 /*
@@ -966,9 +966,9 @@ void wr_chunks(void)
 		wr_u16b(c->trap_max);
 
 		for (i = 0; i < c->trap_max; i++) {
-			trap_type *t_ptr = &c->traps[i];
+			struct trap *trap = &c->traps[i];
 
-			wr_trap(t_ptr);
+			wr_trap(trap);
 		}
 	}
 }
@@ -1057,9 +1057,9 @@ void wr_traps(void)
 
     for (i = 0; i < cave_trap_max(cave); i++)
     {
-		trap_type *t_ptr = cave_trap(cave, i);
+		struct trap *trap = cave_trap(cave, i);
 
-		wr_trap(t_ptr);
+		wr_trap(trap);
     }
 
     /* Expansion */

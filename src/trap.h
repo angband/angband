@@ -64,7 +64,7 @@ enum
 #define trf_diff(f1, f2)        flag_diff(f1, f2, TRF_SIZE)
 
 
-/*
+/**
  * A trap template.
  */
 struct trap_kind
@@ -92,10 +92,10 @@ struct trap_kind
 
 struct trap_kind *trap_info;
 
-/*
+/**
  * An actual trap.
  */
-typedef struct trap_type
+struct trap
 {
     byte t_idx;               /**< Trap kind index */
     struct trap_kind *kind;
@@ -106,7 +106,7 @@ typedef struct trap_type
     byte xtra;
 	
     bitflag flags[TRF_SIZE]; /**< Trap flags (only this particular trap) */
-} trap_type;
+};
 
 bool square_trap_specific(struct chunk *c, int y, int x, int t_idx);
 bool square_visible_trap(struct chunk *c, int y, int x);
@@ -116,7 +116,7 @@ int square_visible_trap_idx(struct chunk *c, int y, int x);
 bool get_trap_graphics(struct chunk *c, int t_idx, int *a, wchar_t *ch, bool require_visible);
 bool square_reveal_trap(struct chunk *c, int y, int x, int chance, bool domsg);
 bool trap_check_hit(int power);
-extern void hit_trap(int y, int x);
+void hit_trap(int y, int x);
 void place_trap(struct chunk *c, int y, int x, int t_idx, int trap_level);
 void wipe_trap_list(struct chunk *c);
 bool square_remove_trap(struct chunk *c, int y, int x, bool domsg, int t_idx);

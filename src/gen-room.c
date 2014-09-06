@@ -1933,18 +1933,18 @@ static bool build_room_template(struct chunk *c, int y0, int x0, int ymax, int x
  */
 static bool build_room_template_type(struct chunk*c, int y0, int x0, int typ)
 {
-	room_template_type *t_ptr = random_room_template(typ);
+	room_template_type *trap = random_room_template(typ);
 	
-	if (t_ptr == NULL) {
+	if (trap == NULL) {
 		/*quit_fmt("got NULL from random_room_template(%d)", typ);*/
 		return FALSE;
 	}
 
 	/* Build the room */
-	if (!build_room_template(c, y0, x0, t_ptr->hgt, t_ptr->wid, t_ptr->dor, t_ptr->text, t_ptr->tval))
+	if (!build_room_template(c, y0, x0, trap->hgt, trap->wid, trap->dor, trap->text, trap->tval))
 		return FALSE;
 
-	ROOM_LOG("Room template (%s)", t_ptr->name);
+	ROOM_LOG("Room template (%s)", trap->name);
 
 	return TRUE;
 }

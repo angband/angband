@@ -275,18 +275,18 @@ static void rd_monster(monster_type * m_ptr)
 /**
  * Read a trap record
  */
-static void rd_trap(trap_type *t_ptr)
+static void rd_trap(struct trap *trap)
 {
     int i;
 
-    rd_byte(&t_ptr->t_idx);
-    t_ptr->kind = &trap_info[t_ptr->t_idx];
-    rd_byte(&t_ptr->fy);
-    rd_byte(&t_ptr->fx);
-    rd_byte(&t_ptr->xtra);
+    rd_byte(&trap->t_idx);
+    trap->kind = &trap_info[trap->t_idx];
+    rd_byte(&trap->fy);
+    rd_byte(&trap->fx);
+    rd_byte(&trap->xtra);
 
     for (i = 0; i < trf_size; i++)
-	rd_byte(&t_ptr->flags[i]);
+	rd_byte(&trap->flags[i]);
 }
 
 /**
@@ -1425,9 +1425,9 @@ int rd_chunks(void)
 		rd_u16b(&c->trap_max);
 
 		for (i = 0; i < c->trap_max; i++) {
-			trap_type *t_ptr = &c->traps[i];
+			struct trap *trap = &c->traps[i];
 
-			rd_trap(t_ptr);
+			rd_trap(trap);
 		}
 		chunk_list_add(c);
 	}
@@ -1652,9 +1652,9 @@ int rd_traps(void)
 
     for (i = 0; i < cave_trap_max(cave); i++)
     {
-		trap_type *t_ptr = cave_trap(cave, i);
+		struct trap *trap = cave_trap(cave, i);
 
-		rd_trap(t_ptr);
+		rd_trap(trap);
     }
 
     /* Expansion */

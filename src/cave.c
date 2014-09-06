@@ -464,10 +464,10 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 		for (i = 0; i < cave_trap_max(cave); i++)
 		{
 			/* Point to this trap */
-			trap_type *t_ptr = cave_trap(cave, i);
+			struct trap *trap = cave_trap(cave, i);
 
 			/* Find a trap in this position */
-			if ((t_ptr->fy == y) && (t_ptr->fx == x))
+			if ((trap->fy == y) && (trap->fx == x))
 			{
 				/* Get the trap */
 				g->trap = i;
@@ -1647,7 +1647,7 @@ struct chunk *cave_new(int height, int width) {
 	c->objects = mem_zalloc(z_info->o_max * sizeof(struct object));
 	c->obj_max = 1;
 
-	c->traps = mem_zalloc(z_info->l_max * sizeof(struct trap_type));
+	c->traps = mem_zalloc(z_info->l_max * sizeof(struct trap));
 	c->trap_max = 1;
 
 	c->created_at = turn;
@@ -2241,7 +2241,7 @@ int cave_object_count(struct chunk *c) {
 /**
  * Get a trap on the current level by its index.
  */
-struct trap_type *cave_trap(struct chunk *c, int idx) {
+struct trap *cave_trap(struct chunk *c, int idx) {
 	return &c->traps[idx];
 }
 
