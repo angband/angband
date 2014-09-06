@@ -125,9 +125,31 @@ int message_lookup_by_sound_name(const char *name);
 const char *message_sound_name(int message);
 
 
-/* XXX-AS comment me up */
+/**
+ * Make a noise, without a message.  Sound modules hook into this event.
+ * 
+ * \param type MSG_* constant for the sound type
+ */
+void sound(int type);
 
+/**
+ * Display a formatted message.
+ *
+ * NB: Never call this function directly with a string read in from a
+ * file, because it may contain format characters and crash the game.
+ * Always use msg("%s", string) in those situations.
+ *
+ * \param fmt Format string
+ */
 void msg(const char *fmt, ...);
+
+/**
+ * Display a formatted message with a given type, making a sound
+ * relevant to the message tyoe.
+ *
+ * \param type MSG_ constant
+ * \param fmt Format string
+ */
 void msgt(unsigned int type, const char *fmt, ...);
 
 

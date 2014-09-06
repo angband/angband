@@ -264,25 +264,15 @@ const char *message_sound_name(int message)
 	return sound_names[message];
 }
 
-
-/*
- * Make a noise.
- */
-void sound(int val)
+void sound(int type)
 {
 	/* No sound */
 	if (!OPT(use_sound)) return;
 
 	/* Dispatch */
-	event_signal_message(EVENT_SOUND, val, NULL);
+	event_signal_message(EVENT_SOUND, type, NULL);
 }
 
-
-/*
- * XXX-AS Comment me up
- * XXX-AS move to message.c
- * Display a formatted message.
- */
 void msg(const char *fmt, ...)
 {
 	va_list vp;

@@ -22,7 +22,6 @@ extern ui_event inkey_m(void);
 extern ui_event inkey_ex(void);
 extern void anykey(void);
 extern void bell(const char *reason);
-extern void sound(int val);
 extern void message_flush(void);
 extern void display_message(game_event_type type, game_event_data *data, void *user);
 extern void clear_from(int row);
