@@ -67,12 +67,12 @@ enum
 /*
  * A trap template.
  */
-typedef struct trap
+struct trap_kind
 {
     char *name;		      /**< Name  */
     char *text;		      /**< Text  */
 	
-    struct trap *next;
+    struct trap_kind *next;
     int tidx;
 
     byte d_attr;              /**< Default trap attribute */
@@ -88,9 +88,9 @@ typedef struct trap
     bitflag flags[TRF_SIZE]; /**< Trap flags (all traps of this kind) */
 
 	struct effect *effect;   /**< Effect on entry to grid */
-} trap_kind;
+};
 
-extern trap_kind *trap_info;
+struct trap_kind *trap_info;
 
 /*
  * An actual trap.
@@ -98,7 +98,7 @@ extern trap_kind *trap_info;
 typedef struct trap_type
 {
     byte t_idx;               /**< Trap kind index */
-    struct trap *kind;
+    struct trap_kind *kind;
 
     byte fy;                  /**< Location of trap */
     byte fx;

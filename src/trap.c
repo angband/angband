@@ -25,7 +25,7 @@
 #include "player-util.h"
 #include "trap.h"
 
-trap_kind *trap_info;
+struct trap_kind *trap_info;
 
 /**
  * Is there a specific kind of trap in this square?
@@ -361,7 +361,7 @@ static int pick_trap(int feat, int trap_level)
     int trap = 0;
     feature_type *f_ptr = &f_info[feat];
 	
-    trap_kind *traplayer;
+    struct trap_kind *traplayer;
     bool trap_is_okay = FALSE;
 	
     /* Paranoia */

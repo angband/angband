@@ -1688,9 +1688,9 @@ static const char *trap_flags[] =
 static enum parser_error parse_trap_n(struct parser *p) {
     int idx = parser_getuint(p, "index");
     const char *name = parser_getstr(p, "name");
-    struct trap *h = parser_priv(p);
+    struct trap_kind *h = parser_priv(p);
 
-    struct trap *t = mem_zalloc(sizeof *t);
+    struct trap_kind *t = mem_zalloc(sizeof *t);
     t->next = h;
     t->tidx = idx;
     t->name = string_make(name);
@@ -1702,7 +1702,7 @@ static enum parser_error parse_trap_g(struct parser *p) {
     char glyph = parser_getchar(p, "glyph");
     const char *color = parser_getsym(p, "color");
     int attr = 0;
-    struct trap *t = parser_priv(p);
+    struct trap_kind *t = parser_priv(p);
 
     if (!t)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
@@ -1720,7 +1720,7 @@ static enum parser_error parse_trap_g(struct parser *p) {
 }
 
 static enum parser_error parse_trap_m(struct parser *p) {
-    struct trap *t = parser_priv(p);
+    struct trap_kind *t = parser_priv(p);
 
     if (!t)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
@@ -1732,7 +1732,7 @@ static enum parser_error parse_trap_m(struct parser *p) {
 
 static enum parser_error parse_trap_f(struct parser *p) {
     char *flags;
-    struct trap *t = parser_priv(p);
+    struct trap_kind *t = parser_priv(p);
     char *s;
 
     if (!t)
@@ -1756,7 +1756,7 @@ static enum parser_error parse_trap_f(struct parser *p) {
 }
 
 static enum parser_error parse_trap_effect(struct parser *p) {
-    struct trap *t = parser_priv(p);
+    struct trap_kind *t = parser_priv(p);
 	struct effect *effect;
 	struct effect *new_effect = mem_zalloc(sizeof(*new_effect));
 
@@ -1777,7 +1777,7 @@ static enum parser_error parse_trap_effect(struct parser *p) {
 }
 
 static enum parser_error parse_trap_dice(struct parser *p) {
-	struct trap *t = parser_priv(p);
+	struct trap_kind *t = parser_priv(p);
 	dice_t *dice = NULL;
 	struct effect *effect = t->effect;
 	const char *string = NULL;
@@ -1810,7 +1810,7 @@ static enum parser_error parse_trap_dice(struct parser *p) {
 }
 
 static enum parser_error parse_trap_expr(struct parser *p) {
-	struct trap *t = parser_priv(p);
+	struct trap_kind *t = parser_priv(p);
 	struct effect *effect = t->effect;
 	expression_t *expression = NULL;
 	expression_base_value_f function = NULL;
@@ -1855,7 +1855,7 @@ static enum parser_error parse_trap_expr(struct parser *p) {
 }
 
 static enum parser_error parse_trap_d(struct parser *p) {
-    struct trap *t = parser_priv(p);
+    struct trap_kind *t = parser_priv(p);
     assert(t);
 
     t->text = string_append(t->text, parser_getstr(p, "text"));
@@ -1882,7 +1882,7 @@ static errr run_parse_trap(struct parser *p) {
 }
 
 static errr finish_parse_trap(struct parser *p) {
-	struct trap *t, *n;
+	struct trap_kind *t, *n;
 	
 	/* scan the list for the max id */
 	z_info->trap_max = 0;
