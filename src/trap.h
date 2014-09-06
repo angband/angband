@@ -14,24 +14,6 @@
 /* Traps */
 #define TRAP_HEAD	    0x10
 #define TRAP_TAIL	    0x1F
-#define TRAP_TRAPDOOR	0x10
-#if 0 //Currently unused and annoying - NRM
-#define TRAP_PIT_OPEN   0x11
-#define TRAP_PIT_SPIKED 0x12
-#define TRAP_PIT_POISON 0x13
-#define TRAP_SUMMON	    0x14
-#define TRAP_PORTAL	    0x15
-#define TRAP_SPOT_FIRE  0x16
-#define TRAP_SPOT_ACID  0x17
-#define TRAP_DART_SLOW  0x18
-#define TRAP_DART_STR   0x19
-#define TRAP_DART_DEX   0x1A
-#define TRAP_DART_CON   0x1B
-#define TRAP_GAS_BLIND  0x1C
-#define TRAP_GAS_CONFU  0x1D
-#define TRAP_GAS_POISON 0x1E
-#define TRAP_GAS_SLEEP  0x1F
-#endif
 
 /*** Trap flags ***/
 

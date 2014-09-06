@@ -389,7 +389,7 @@ static int pick_trap(int feat, int trap_level)
 			trap_is_okay = FALSE;
 
 		/* Check legality of trapdoors. */
-		if (trap_index == TRAP_TRAPDOOR)
+		if (trf_has(kind->flags, TRF_DOWN))
 	    {
 			/* No trap doors on quest levels */
 			if (is_quest(player->depth)) trap_is_okay = FALSE;

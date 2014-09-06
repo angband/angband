@@ -1865,7 +1865,6 @@ static enum parser_error parse_trap_d(struct parser *p) {
 struct parser *init_parse_trap(void) {
     struct parser *p = parser_new();
     parser_setpriv(p, NULL);
-    parser_reg(p, "V sym version", ignored);
     parser_reg(p, "N uint index str name", parse_trap_n);
     parser_reg(p, "G char glyph sym color", parse_trap_g);
     parser_reg(p, "M uint rarity uint mindepth uint maxnum", parse_trap_m);

@@ -6,9 +6,10 @@
  *
  */
 
-/*  symbol     descr */
-TRF(NONE,        "")
-TRF(RUNE,        "Is a rune")
-TRF(TRAP,        "Is a player trap")
-TRF(VISIBLE,     "Is visible")
-TRF(FLOOR,       "Can be set on a floor")
+/*  symbol		descr */
+TRF(NONE,		"")
+TRF(RUNE,		"Is a rune")
+TRF(TRAP,		"Is a player trap")
+TRF(VISIBLE,	"Is visible")
+TRF(FLOOR,		"Can be set on a floor")
+TRF(DOWN,		"Taked the player down a level")
