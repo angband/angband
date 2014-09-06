@@ -845,6 +845,10 @@ static errr finish_parse_r(struct parser *p) {
 		}
 	}
 
+	/* Allocate an equivalent amount of lore space */
+	l_list = C_ZNEW(z_info->r_max, monster_lore);
+
+
 	eval_r_power(r_info);
 
 	parser_destroy(p);
@@ -892,6 +896,7 @@ static void cleanup_r(void)
 	}
 
 	mem_free(r_info);
+	mem_free(l_list);
 }
 
 struct file_parser r_parser = {

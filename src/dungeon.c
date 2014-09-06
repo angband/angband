@@ -1569,6 +1569,9 @@ void play_game(bool new_game)
 	/* Sneakily init command list */
 	cmd_init();
 
+	/* Initialize knowledge things */
+	textui_knowledge_init();
+
 	/* XXX-UI This should be issued after CMD_NEWGAME / CMD_LOADFILE */
 	event_signal(EVENT_LEAVE_INIT);
 

@@ -24,7 +24,7 @@ enum {
  * Initialise the messages package.  Should be called before using any other
  * functions in the package.
  */
-errr messages_init(void);
+void messages_init(void);
 
 /**
  * Free the message package.

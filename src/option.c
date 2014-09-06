@@ -18,6 +18,7 @@
 #include "angband.h"
 #include "option.h"
 #include "ui-game.h"
+#include "init.h"
 
 typedef struct {
 	const char *name;
@@ -147,3 +148,9 @@ void option_dump(ang_file *f)
 		}
 	}
 }
+
+struct init_module options_module = {
+	.name = "options",
+	.init = init_options,
+	.cleanup = NULL
+};

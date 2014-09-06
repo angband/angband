@@ -21,6 +21,7 @@
 #include "message.h"
 #include "game-event.h"
 #include "option.h"
+#include "init.h"
 #include "player.h"
 
 typedef struct _message_t
@@ -51,11 +52,10 @@ typedef struct _msgqueue_t
 static msgqueue_t *messages = NULL;
 
 /* Functions operating on the entire list */
-errr messages_init(void)
+void messages_init(void)
 {
 	messages = ZNEW(msgqueue_t);
 	messages->max = 2048;
-	return 0;
 }
 
 void messages_free(void)
@@ -311,3 +311,10 @@ void msgt(unsigned int type, const char *fmt, ...)
 	sound(type);
 	event_signal_message(EVENT_MESSAGE, type, buf);
 }
+
+
+struct init_module messages_module = {
+	.name = "messages",
+	.init = messages_init,
+	.cleanup = messages_free
+};

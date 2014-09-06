@@ -3814,46 +3814,6 @@ static struct file_parser pit_parser = {
 };
 
 
-/**
- * Initialize some other arrays
- */
-static errr init_other(void)
-{
-	/*** Prepare the various "bizarre" arrays ***/
-
-	/* Initialize knowledge things */
-	textui_knowledge_init();
-
-	/* Initialize the "message" package */
-	(void)messages_init();
-
-	monster_list_init();
-	object_list_init();
-
-	/*** Prepare grid arrays ***/
-	cave = cave_new(DUNGEON_HGT, DUNGEON_WID);
-
-	/* Array of stacked monster messages */
-	mon_msg = C_ZNEW(MAX_STORED_MON_MSG, monster_race_message);
-	mon_message_hist = C_ZNEW(MAX_STORED_MON_CODES, monster_message_history);
-
-	/*** Prepare lore array ***/
-
-	/* Lore */
-	l_list = C_ZNEW(z_info->r_max, monster_lore);
-
-	/*** Prepare the options ***/
-	init_options();
-
-	/*** Pre-allocate space for the "format()" buffer ***/
-
-	/* Hack -- Just call the "format()" function */
-	(void)format("I wish you could swim, like dolphins can swim...");
-
-	/* Success */
-	return (0);
-}
-
 /* A list of all the above parsers */
 static struct {
 	const char *name;
@@ -3923,6 +3883,9 @@ extern struct init_module mon_make_module;
 extern struct init_module player_module;
 extern struct init_module store_module;
 extern struct init_module quest_module;
+extern struct init_module messages_module;
+extern struct init_module options_module;
+extern struct init_module monmsg_module;
 
 static struct init_module *modules[] = {
 	&z_quark_module,
@@ -3934,6 +3897,9 @@ static struct init_module *modules[] = {
 	&mon_make_module,
 	&store_module,
 	&quest_module,
+	&messages_module,
+	&options_module,
+	&monmsg_module,
 	NULL
 };
 
@@ -3963,8 +3929,14 @@ bool init_angband(void)
 			modules[i]->init();
 
 	/* Initialize some other things */
-	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (other)");
-	if (init_other()) quit("Cannot initialize other stuff");
+	event_signal_string(EVENT_INITSTATUS, "Initializing other stuff...");
+
+	/* List display codes */
+	monster_list_init();
+	object_list_init();
+
+	/* We need a cave array */
+	cave = cave_new(DUNGEON_HGT, DUNGEON_WID);
 
 	/* Initialize graphics info and basic user pref data */
 	event_signal_string(EVENT_INITSTATUS, "Loading basic user pref file...");
@@ -3991,20 +3963,10 @@ void cleanup_angband(void)
 
 	event_remove_all_handlers();
 
-	/* Free the lore list */
-	FREE(l_list);
-
 	/* The main cave is always allocated with max height and width */
 	cave->height = DUNGEON_HGT;
 	cave->width = DUNGEON_WID;
 	cave_free(cave);
-
-	/* Free the stacked monster messages */
-	FREE(mon_msg);
-	FREE(mon_message_hist);
-
-	/* Free the messages */
-	messages_free();
 
 	/* Free the history */
 	history_clear();
