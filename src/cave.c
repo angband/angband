@@ -2338,13 +2338,6 @@ bool square_isinteresting(struct chunk *c, int y, int x) {
 	return tf_has(f_info[f].flags, TF_INTERESTING);
 }
 
-void square_show_vein(struct chunk *c, int y, int x) {
-	if (c->feat[y][x] == FEAT_MAGMA_H)
-		square_set_feat(c, y, x, FEAT_MAGMA_K);
-	else if (c->feat[y][x] == FEAT_QUARTZ_H)
-		square_set_feat(c, y, x, FEAT_QUARTZ_K);
-}
-
 void square_add_stairs(struct chunk *c, int y, int x, int depth) {
 	int down = randint0(100) < 50;
 	if (depth == 0)

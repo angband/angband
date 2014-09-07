@@ -83,8 +83,6 @@ struct monster;
 /* Mineral seams */
 #define FEAT_MAGMA 0x32
 #define FEAT_QUARTZ 0x33
-#define FEAT_MAGMA_H 0x34
-#define FEAT_QUARTZ_H 0x35
 #define FEAT_MAGMA_K 0x36
 #define FEAT_QUARTZ_K 0x37
 
@@ -394,8 +392,6 @@ void square_destroy_trap(struct chunk *c, int y, int x);
 
 void square_tunnel_wall(struct chunk *c, int y, int x);
 void square_destroy_wall(struct chunk *c, int y, int x);
-
-void square_show_vein(struct chunk *c, int y, int x);
 
 /* destroy this cell, as destruction spell */
 void square_destroy(struct chunk *c, int y, int x);

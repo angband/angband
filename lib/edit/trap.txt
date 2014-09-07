@@ -2,7 +2,7 @@
 
 #This file contains rune and trap definitions
 
-#N: index: name
+#N: index: name: short description
 #G: ASCII char used to represent the feature: color symbol
 #M: rarity: minimum depth: maximum number on level
 #F: trap flags

@@ -1178,8 +1178,6 @@ bool effect_handler_DETECT_GOLD(effect_handler_context_t *context)
 		for (x = x1; x < x2; x++) {
 			if (!square_in_bounds_fully(cave, y, x)) continue;
 
-			square_show_vein(cave, y, x);
-
 			/* Magma/Quartz + Known Gold */
 			if (square_hasgoldvein(cave, y, x)) {
 				/* Hack -- Memorize */

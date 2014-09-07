@@ -321,24 +321,6 @@ P:11
 F:WALL | ROCK | NO_SCENT | NO_FLOW | QUARTZ 
 X:0:0:0:3
 
-# 0x34 --> magma vein + treasure
-
-N:52:magma vein
-G:%:s
-P:12
-M:50
-F:WALL | ROCK | NO_SCENT | NO_FLOW | GOLD | MAGMA 
-X:0:0:0:2
-
-# 0x35 --> quartz vein + treasure
-
-N:53:quartz vein
-G:%:W
-P:11
-M:51
-F:WALL | ROCK | NO_SCENT | NO_FLOW | GOLD | QUARTZ 
-X:0:0:0:3
-
 # 0x36 --> magma vein + known treasure
 
 N:54:magma vein with treasure
