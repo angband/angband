@@ -983,6 +983,8 @@ int textui_do_birth(void)
 			{
 				display_player(0);
 				next = textui_birth_quickstart();
+				if (next == BIRTH_COMPLETE)
+					done = TRUE;
 				break;
 			}
 
