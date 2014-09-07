@@ -553,7 +553,7 @@ void move_player(int dir, bool disarm)
 
 
 		/* Discover invisible traps */
-		if (square_invisible_trap(cave, y, x)) 
+		if (square_issecrettrap(cave, y, x))
 		{
 			/* Disturb */
 			disturb(player, 0);
@@ -563,7 +563,7 @@ void move_player(int dir, bool disarm)
 		}
 
 		/* Set off a visible trap */
-		else if (square_visible_trap(cave, y, x))
+		else if (square_isknowntrap(cave, y, x))
 		{
 			/* Disturb */
 			disturb(player, 0);

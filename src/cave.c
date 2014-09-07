@@ -1819,7 +1819,7 @@ bool square_isdoor(struct chunk *c, int y, int x) {
  * True if the square is an unknown trap (it will appear as a floor tile).
  */
 bool square_issecrettrap(struct chunk *c, int y, int x) {
-    return square_invisible_trap(c, y, x);
+    return square_invisible_trap(c, y, x) && square_player_trap(c, y, x);
 }
 
 /**
@@ -1830,10 +1830,10 @@ bool feat_is_wall(int feat) {
 }
 
 /**
- * True if the square is a known trap.
+ * True if the square is a known player trap.
  */
 bool square_isknowntrap(struct chunk *c, int y, int x) {
-	return square_visible_trap(c, y, x);
+	return square_visible_trap(c, y, x) && square_player_trap(c, y, x);
 }
 
 /**

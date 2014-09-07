@@ -160,7 +160,7 @@ bool search(bool verbose)
 			/* Sometimes, notice things */
 			if (randint0(100) < chance)
 			{
-				if (square_invisible_trap(cave, y, x)) 
+				if (square_issecrettrap(cave, y, x))
 				{
 					found = TRUE;
 
