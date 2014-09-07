@@ -288,6 +288,9 @@ void msg(const char *fmt, ...)
 	/* End the Varargs Stuff */
 	va_end(vp);
 
+	/* Fail if messages not loaded */
+	if (!messages) return;
+
 	/* Add to message log */
 	message_add(buf, MSG_GENERIC);
 
@@ -303,6 +306,9 @@ void msgt(unsigned int type, const char *fmt, ...)
 	va_start(vp, fmt);
 	vstrnfmt(buf, sizeof(buf), fmt, vp);
 	va_end(vp);
+
+	/* Fail if messages not loaded */
+	if (!messages) return;
 
 	/* Add to message log */
 	message_add(buf, type);
