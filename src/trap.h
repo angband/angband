@@ -5,23 +5,16 @@
 
 /*** Trap Indexes (see "lib/edit/trap.txt") ***/
 
-/** Nothing */
-#define TRAP_NONE	0x00
-
 /* Runes  */
 #define RUNE_PROTECT    0x03
-
-/* Traps */
-#define TRAP_HEAD	    0x10
-#define TRAP_TAIL	    0x1F
 
 /*** Trap flags ***/
 
 enum
 {
-#define TRF(a,b) TRF_##a,
-#include "list-trap-flags.h"
-#undef TRF
+	#define TRF(a,b) TRF_##a,
+	#include "list-trap-flags.h"
+	#undef TRF
 	TRF_MAX
 };
 
@@ -51,23 +44,23 @@ enum
  */
 struct trap_kind
 {
-    char *name;		      /**< Name  */
-    char *text;		      /**< Text  */
+	char *name;		      /**< Name  */
+	char *text;		      /**< Text  */
 	
-    struct trap_kind *next;
-    int tidx;
+	struct trap_kind *next;
+	int tidx;
 
-    byte d_attr;              /**< Default trap attribute */
-    wchar_t d_char;              /**< Default trap character */
+	byte d_attr;              /**< Default trap attribute */
+	wchar_t d_char;              /**< Default trap character */
 
-    byte x_attr;              /**< Desired trap attribute */
-    wchar_t x_char;              /**< Desired trap character */
+	byte x_attr;              /**< Desired trap attribute */
+	wchar_t x_char;              /**< Desired trap character */
 
-    int rarity;              /**< Rarity */
-    int min_depth;           /**< Minimum depth */
-    int max_num;             /**< Unused */
+	int rarity;              /**< Rarity */
+	int min_depth;           /**< Minimum depth */
+	int max_num;             /**< Unused */
 
-    bitflag flags[TRF_SIZE]; /**< Trap flags (all traps of this kind) */
+	bitflag flags[TRF_SIZE]; /**< Trap flags (all traps of this kind) */
 
 	struct effect *effect;   /**< Effect on entry to grid */
 };
@@ -79,15 +72,15 @@ struct trap_kind *trap_info;
  */
 struct trap
 {
-    byte t_idx;               /**< Trap kind index */
-    struct trap_kind *kind;
+	byte t_idx;               /**< Trap kind index */
+	struct trap_kind *kind;
 
-    byte fy;                  /**< Location of trap */
-    byte fx;
+	byte fy;                  /**< Location of trap */
+	byte fx;
 	
-    byte xtra;
+	byte xtra;
 	
-    bitflag flags[TRF_SIZE]; /**< Trap flags (only this particular trap) */
+	bitflag flags[TRF_SIZE]; /**< Trap flags (only this particular trap) */
 };
 
 bool square_trap_specific(struct chunk *c, int y, int x, int t_idx);

@@ -373,10 +373,14 @@ static int pick_trap(int feat, int trap_level)
     while (!trap_is_okay) 
     {
 		/* Pick at random. */
-		trap_index = TRAP_HEAD + randint0(TRAP_TAIL - TRAP_HEAD + 1);
+		trap_index = randint0(z_info->trap_max);
 
 		/* Get this trap */
 		kind = &trap_info[trap_index];
+
+		/* Ensure that this is a player trap */
+		if (!kind->name) continue;
+		if (!trf_has(kind->flags, TRF_TRAP)) continue;
 	
 		/* Require that trap_level not be too low */
 		if (kind->min_depth > trap_level) continue;
