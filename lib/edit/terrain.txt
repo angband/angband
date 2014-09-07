@@ -52,6 +52,15 @@ G:.:w
 P:5
 F:LOS | PROJECT | PASSABLE | FLOOR | OBJECT | EASY | TRAP | RUNE | TORCH
 
+# 0x03 --> closed door
+
+N:3:closed door
+G:+:U
+P:17
+M:32
+F:DOOR_ANY | DOOR_CLOSED | INTERESTING
+X:0:0:0:0
+
 # 0x04 --> open door
 
 N:4:open door

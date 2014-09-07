@@ -18,6 +18,12 @@ M:0:0:0
 F:RUNE | VISIBLE | FLOOR
 D:A magical rune which monsters cannot pass without difficulty.
 
+N:16:door lock:door lock
+G: :w
+M:0:0:0
+F:LOCK | INVISIBLE
+D:A device which makes a closed door harder to open.
+
 ## Player traps ##
 
 # 0x10 --> visible trap -- trap door
