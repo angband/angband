@@ -3,11 +3,6 @@
 #ifndef TRAP_H
 #define TRAP_H
 
-/*** Trap Indexes (see "lib/edit/trap.txt") ***/
-
-/* Runes  */
-#define RUNE_PROTECT    0x03
-
 /*** Trap flags ***/
 
 enum
@@ -84,6 +79,7 @@ struct trap
 	bitflag flags[TRF_SIZE]; /**< Trap flags (only this particular trap) */
 };
 
+struct trap_kind *lookup_trap(const char *desc);
 bool square_trap_specific(struct chunk *c, int y, int x, int t_idx);
 bool square_visible_trap(struct chunk *c, int y, int x);
 bool square_invisible_trap(struct chunk *c, int y, int x);

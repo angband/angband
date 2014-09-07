@@ -596,6 +596,7 @@ static void use_aux(struct command *cmd, int item, enum use use, int snd)
 	int px = player->px, py = player->py;
 	int boost, level;
 	enum use;
+	struct trap_kind *rune = lookup_trap("glyph of warding");
 
 	/* Get arguments */
 	assert(cmd_get_arg_item(cmd, "item", &item) == CMD_OK);
@@ -726,7 +727,7 @@ static void use_aux(struct command *cmd, int item, enum use use, int snd)
 	player->upkeep->update |= PU_INVEN;
 	
 	/* Hack to make Glyph of Warding work properly */
-	if (square_trap_specific(cave, py, px, RUNE_PROTECT))
+	if (square_trap_specific(cave, py, px, rune->tidx))
 	{
 		/* Push objects off the grid */
 		if (cave->o_idx[py][px]) push_object(py, px);

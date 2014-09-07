@@ -2310,16 +2310,19 @@ void square_add_trap(struct chunk *c, int y, int x) {
 }
 
 bool square_iswarded(struct chunk *c, int y, int x) {
-	return square_trap_specific(c, y, x, RUNE_PROTECT);
+	struct trap_kind *rune = lookup_trap("glyph of warding");
+	return square_trap_specific(c, y, x, rune->tidx);
 }
 
 void square_add_ward(struct chunk *c, int y, int x) {
-	place_trap(c, y, x, RUNE_PROTECT, 0);
+	struct trap_kind *rune = lookup_trap("glyph of warding");
+	place_trap(c, y, x, rune->tidx, 0);
 }
 
 void square_remove_ward(struct chunk *c, int y, int x) {
+	struct trap_kind *rune = lookup_trap("glyph of warding");
 	assert(square_iswarded(c, y, x));
-	square_remove_trap_kind(c, y, x, TRUE, RUNE_PROTECT);
+	square_remove_trap_kind(c, y, x, TRUE, rune->tidx);
 }
 
 bool square_canward(struct chunk *c, int y, int x) {

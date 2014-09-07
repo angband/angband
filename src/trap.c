@@ -28,6 +28,34 @@
 struct trap_kind *trap_info;
 
 /**
+ * Find a trap kind based on its short description
+ */
+struct trap_kind *lookup_trap(const char *desc)
+{
+	int i;
+	struct trap_kind *closest = NULL;
+
+	/* Look for it */
+	for (i = 1; i < z_info->trap_max; i++)
+	{
+		struct trap_kind *kind = &trap_info[i];
+		if (!kind->name)
+			continue;
+
+		/* Test for equality */
+		if (streq(desc, kind->desc))
+			return kind;
+
+		/* Test for close matches */
+		if (!closest && my_stristr(kind->desc, desc))
+			closest = kind;
+	}
+
+	/* Return our best match */
+	return closest;
+}
+
+/**
  * Is there a specific kind of trap in this square?
  */
 bool square_trap_specific(struct chunk *c, int y, int x, int t_idx)
