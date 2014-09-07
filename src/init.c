@@ -3890,6 +3890,7 @@ extern struct init_module monmsg_module;
 
 static struct init_module *modules[] = {
 	&z_quark_module,
+	&messages_module,
 	&player_module,
 	&arrays_module,
 	&generate_module,
@@ -3898,7 +3899,6 @@ static struct init_module *modules[] = {
 	&mon_make_module,
 	&store_module,
 	&quest_module,
-	&messages_module,
 	&options_module,
 	&monmsg_module,
 	NULL
