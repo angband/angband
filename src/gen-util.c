@@ -515,10 +515,8 @@ void place_closed_door(struct chunk *c, int y, int x)
 
     if (tmp < 300)
 		square_set_feat(c, y, x, FEAT_DOOR_HEAD + 0x00);
-    else if (tmp < 399)
-		square_set_feat(c, y, x, FEAT_DOOR_HEAD + randint1(7));
     else
-		square_set_feat(c, y, x, FEAT_DOOR_HEAD + 0x08 + randint0(8));
+		square_set_feat(c, y, x, FEAT_DOOR_HEAD + randint1(7));
 }
 
 

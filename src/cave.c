@@ -2263,7 +2263,7 @@ void upgrade_mineral(struct chunk *c, int y, int x) {
 }
 
 int square_door_power(struct chunk *c, int y, int x) {
-	return (c->feat[y][x] - FEAT_DOOR_HEAD) & 0x07;
+	return (c->feat[y][x] & 0x07);
 }
 
 void square_open_door(struct chunk *c, int y, int x) {

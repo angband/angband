@@ -1512,8 +1512,8 @@ static void do_cmd_wiz_features(void)
 	int featz[] = {FEAT_MORE};
 	int feats[] = { FEAT_SHOP_HEAD, FEAT_SHOP_HEAD + 1, FEAT_SHOP_HEAD + 2, FEAT_SHOP_HEAD + 3, FEAT_SHOP_HEAD + 4, FEAT_SHOP_HEAD + 5, FEAT_SHOP_HEAD + 6, FEAT_SHOP_HEAD + 7 };
 	int featt[] = {FEAT_LESS, FEAT_MORE};
-	int featc[] = {FEAT_DOOR_HEAD, FEAT_DOOR_HEAD + 1, FEAT_DOOR_HEAD + 2, FEAT_DOOR_HEAD + 3, FEAT_DOOR_HEAD + 4, FEAT_DOOR_HEAD + 5, FEAT_DOOR_HEAD + 6, FEAT_DOOR_HEAD + 7, FEAT_DOOR_HEAD + 8, FEAT_DOOR_HEAD + 9, FEAT_DOOR_HEAD + 10, FEAT_DOOR_HEAD + 11, FEAT_DOOR_HEAD + 12, FEAT_DOOR_HEAD + 13, FEAT_DOOR_HEAD + 14, FEAT_DOOR_HEAD + 15};
-	int featd[] = {FEAT_DOOR_HEAD, FEAT_DOOR_HEAD + 1, FEAT_DOOR_HEAD + 2, FEAT_DOOR_HEAD + 3, FEAT_DOOR_HEAD + 4, FEAT_DOOR_HEAD + 5, FEAT_DOOR_HEAD + 6, FEAT_DOOR_HEAD + 7, FEAT_DOOR_HEAD + 8, FEAT_DOOR_HEAD + 9, FEAT_DOOR_HEAD + 10, FEAT_DOOR_HEAD + 11, FEAT_DOOR_HEAD + 12, FEAT_DOOR_HEAD + 13, FEAT_DOOR_HEAD + 14, FEAT_DOOR_HEAD + 15, FEAT_OPEN, FEAT_BROKEN, FEAT_SECRET};
+	int featc[] = {FEAT_DOOR_HEAD, FEAT_DOOR_HEAD + 1, FEAT_DOOR_HEAD + 2, FEAT_DOOR_HEAD + 3, FEAT_DOOR_HEAD + 4, FEAT_DOOR_HEAD + 5, FEAT_DOOR_HEAD + 6, FEAT_DOOR_HEAD + 7};
+	int featd[] = {FEAT_DOOR_HEAD, FEAT_DOOR_HEAD + 1, FEAT_DOOR_HEAD + 2, FEAT_DOOR_HEAD + 3, FEAT_DOOR_HEAD + 4, FEAT_DOOR_HEAD + 5, FEAT_DOOR_HEAD + 6, FEAT_DOOR_HEAD + 7, FEAT_OPEN, FEAT_BROKEN, FEAT_SECRET};
 	int feath[] = {FEAT_SECRET};
 	int featm[] = {FEAT_MAGMA, FEAT_MAGMA_K};
 	int featq[] = {FEAT_QUARTZ, FEAT_QUARTZ_K};
@@ -1544,9 +1544,9 @@ static void do_cmd_wiz_features(void)
 		/* */
 		case 't': feat = featt; length = 2; break;
 		/* */
-		case 'c': feat = featc; length = 16; break;
+		case 'c': feat = featc; length = 8; break;
 		/* */
-		case 'd': feat = featd; length = 19; break;
+		case 'd': feat = featd; length = 11; break;
 		case 'h': feat = feath; length = 1; break;
 		case 'm': feat = featm; length = 3; break;
 		case 'q': feat = featq; length = 3; break;

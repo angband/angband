@@ -72,7 +72,7 @@ struct monster;
 
 /* Doors */
 #define FEAT_DOOR_HEAD 0x20
-#define FEAT_DOOR_TAIL 0x2F
+#define FEAT_DOOR_TAIL 0x27
 
 /* Secret door */
 #define FEAT_SECRET 0x30
