@@ -1892,13 +1892,13 @@ static errr finish_parse_trap(struct parser *p) {
 		t = t->next;
 	}
 	
-	trap_info = mem_zalloc((z_info->trap_max + 1) * sizeof(*t));
+	z_info->trap_max += 1;
+	trap_info = mem_zalloc((z_info->trap_max) * sizeof(*t));
     for (t = parser_priv(p); t; t = t->next) {
 		if (t->tidx >= z_info->trap_max)
 			continue;
 		memcpy(&trap_info[t->tidx], t, sizeof(*t));
     }
-	z_info->trap_max += 1;
 
     t = parser_priv(p);
     while (t) {
