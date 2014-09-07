@@ -25,7 +25,7 @@ D:A magical rune which monsters cannot pass without difficulty.
 N:16:trap door
 G:^:w
 M:0:2:0
-F:TRAP | FLOOR 
+F:TRAP | FLOOR | DOWN
 effect:TRAP_DOOR
 dice:2d8
 D:It looks like floor, but step incautiously and you will fall through.
