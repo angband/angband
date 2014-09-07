@@ -46,7 +46,8 @@ struct trap_kind
 {
 	char *name;		      /**< Name  */
 	char *text;		      /**< Text  */
-	
+	char *desc;		      /**< Short description  */
+
 	struct trap_kind *next;
 	int tidx;
 

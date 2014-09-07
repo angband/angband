@@ -1687,13 +1687,15 @@ static const char *trap_flags[] =
 
 static enum parser_error parse_trap_n(struct parser *p) {
     int idx = parser_getuint(p, "index");
-    const char *name = parser_getstr(p, "name");
+    const char *name = parser_getsym(p, "name");
+    const char *desc = parser_getstr(p, "desc");
     struct trap_kind *h = parser_priv(p);
 
     struct trap_kind *t = mem_zalloc(sizeof *t);
     t->next = h;
     t->tidx = idx;
     t->name = string_make(name);
+	t->desc = string_make(desc);
     parser_setpriv(p, t);
     return PARSE_ERROR_NONE;
 }
@@ -1865,7 +1867,7 @@ static enum parser_error parse_trap_d(struct parser *p) {
 struct parser *init_parse_trap(void) {
     struct parser *p = parser_new();
     parser_setpriv(p, NULL);
-    parser_reg(p, "N uint index str name", parse_trap_n);
+    parser_reg(p, "N uint index sym name str desc", parse_trap_n);
     parser_reg(p, "G char glyph sym color", parse_trap_g);
     parser_reg(p, "M uint rarity uint mindepth uint maxnum", parse_trap_m);
     parser_reg(p, "F ?str flags", parse_trap_f);
