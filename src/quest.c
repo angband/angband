@@ -64,7 +64,8 @@ static void build_quest_stairs(int y, int x)
 	int ny, nx;
 
 	/* Stagger around */
-	while (!square_valid_bold(y, x) && !square_iswall(cave, y, x) && !square_isdoor(cave, y, x)) {
+	while (!square_changeable(cave, y, x) && !square_iswall(cave, y, x) &&
+		   !square_isdoor(cave, y, x)) {
 		/* Pick a location */
 		scatter(cave, &ny, &nx, y, x, 1, FALSE);
 

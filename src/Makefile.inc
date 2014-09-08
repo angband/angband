@@ -75,6 +75,18 @@ depgen:
  list-blow-effects.h list-mon-spells.h obj-ignore.h list-ignore-types.h \
  obj-tval.h list-tvals.h obj-util.h player-timed.h list-player-timed.h \
  tables.h trap.h list-trap-flags.h
+./cave-square.o: cave-square.c angband.h h-basic.h z-bitflag.h z-form.h \
+ z-virt.h z-color.h z-util.h z-rand.h z-term.h ui-event.h config.h \
+ game-event.h z-type.h message.h message-list.h option.h z-file.h \
+ list-options.h player.h guid.h obj-properties.h list-stats.h \
+ list-object-flags.h list-kind-flags.h list-object-modifiers.h object.h \
+ z-quark.h z-dice.h z-expression.h effects.h list-effects.h \
+ list-elements.h list-identify-flags.h list-origins.h player-calcs.h \
+ list-player-flags.h ui.h z-textblock.h ui-input.h cmd-core.h cave.h \
+ list-square-flags.h list-terrain-flags.h dungeon.h monster.h \
+ mon-constants.h list-mon-flags.h mon-timed.h mon-blow-methods.h \
+ list-blow-methods.h mon-blow-effects.h list-blow-effects.h \
+ list-mon-spells.h obj-util.h trap.h list-trap-flags.h
 ./cave-view.o: cave-view.c angband.h h-basic.h z-bitflag.h z-form.h \
  z-virt.h z-color.h z-util.h z-rand.h z-term.h ui-event.h config.h \
  game-event.h z-type.h message.h message-list.h option.h z-file.h \

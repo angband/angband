@@ -127,7 +127,7 @@ static void build_streamer(struct chunk *c, int feat, int chance)
 				square_set_feat(c, ty, tx, feat);
 
 				/* Sometimes add known treasure */
-				if (one_in_(chance)) upgrade_mineral(c, ty, tx);
+				if (one_in_(chance)) square_upgrade_mineral(c, ty, tx);
 			}
 		}
 

@@ -956,6 +956,9 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 			/* Get the grid location */
 			y = blast_grid[i].y;
 			x = blast_grid[i].x;
+			
+			/* Check this monster hasn't been processed already */
+			if (square_isproject(cave, y, x)) continue;
 
 			/* Affect the monster in the grid */
 			if (project_m(who, distance_to_grid[i], y, x,

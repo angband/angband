@@ -1009,7 +1009,7 @@ bool effect_handler_DETECT_TRAPS(effect_handler_context_t *context)
 			if (!square_in_bounds_fully(cave, y, x)) continue;
 
 			/* See if this grid is on the edge */
-			if (dtrap_edge(y, x)) {
+			if (square_dtrap_edge(cave, y, x)) {
 				sqinfo_on(cave->info[y][x], SQUARE_DEDGE);
 			} else {
 				sqinfo_off(cave->info[y][x], SQUARE_DEDGE);
@@ -3175,7 +3175,7 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 				square_light_spot(cave, yy, xx);
 
 			/* Destroy location (if valid) */
-			else if (square_valid_bold(yy, xx)) {
+			else if (square_changeable(cave, yy, xx)) {
 				delete_object(yy, xx);
 				square_earthquake(cave, yy, xx);
 			}
