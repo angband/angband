@@ -87,6 +87,8 @@ ANGFILES = \
 	attack.o \
 	birth.o \
 	cave.o \
+	cave-map.o \
+	cave-view.o \
 	cmd-cave.o \
 	cmd-core.o \
 	cmd-context.o \

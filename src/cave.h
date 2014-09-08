@@ -240,37 +240,41 @@ struct chunk {
 	u16b trap_max;
 };
 
-extern int distance(int y1, int x1, int y2, int x2);
-extern bool los(struct chunk *c, int y1, int x1, int y2, int x2);
-extern bool no_light(void);
-extern bool square_valid_bold(int y, int x);
-extern void map_info(unsigned x, unsigned y, grid_data *g);
-void light_room(int y1, int x1, bool light);
-extern void forget_view(struct chunk *c);
-extern bool player_has_los_bold(int y, int x);
-extern bool player_can_see_bold(int y, int x);
-extern void update_view(struct chunk *c, struct player *p);
-extern void wiz_light(struct chunk *c, bool full);
-extern void wiz_dark(void);
-extern void scatter(struct chunk *c, int *yp, int *xp, int y, int x, int d, bool need_los);
-extern bool is_quest(int level);
-extern bool dtrap_edge(int y, int x);
-
-/* XXX: temporary while I refactor */
 extern struct chunk *cave;
 extern struct chunk **chunk_list;
 extern u16b chunk_list_max;
+
+/* cave-view.c */
+extern int distance(int y1, int x1, int y2, int x2);
+extern bool los(struct chunk *c, int y1, int x1, int y2, int x2);
+extern void forget_view(struct chunk *c);
+extern void update_view(struct chunk *c, struct player *p);
+extern bool player_has_los_bold(int y, int x);
+extern bool player_can_see_bold(int y, int x);
+extern bool no_light(void);
+
+/* cave-map.c */
+extern void map_info(unsigned x, unsigned y, grid_data *g);
+extern void square_note_spot(struct chunk *c, int y, int x);
+extern void square_light_spot(struct chunk *c, int y, int x);
+void light_room(int y1, int x1, bool light);
+extern void wiz_light(struct chunk *c, bool full);
+extern void wiz_dark(void);
+extern void cave_illuminate(struct chunk *c, bool daytime);
+extern void cave_update_flow(struct chunk *c);
+extern void cave_forget_flow(struct chunk *c);
+
+/* cave.c */
+extern bool square_valid_bold(int y, int x);
+extern void scatter(struct chunk *c, int *yp, int *xp, int y, int x, int d, bool need_los);
+extern bool is_quest(int level);
+extern bool dtrap_edge(int y, int x);
 
 extern struct chunk *cave_new(int height, int width);
 extern void cave_free(struct chunk *c);
 
 extern struct feature *square_feat(struct chunk *c, int y, int x);
 extern void square_set_feat(struct chunk *c, int y, int x, int feat);
-extern void square_note_spot(struct chunk *c, int y, int x);
-extern void square_light_spot(struct chunk *c, int y, int x);
-extern void cave_update_flow(struct chunk *c);
-extern void cave_forget_flow(struct chunk *c);
-extern void cave_illuminate(struct chunk *c, bool daytime);
 
 /**
  * square_predicate is a function pointer which tests a given square to
