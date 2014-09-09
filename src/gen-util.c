@@ -511,12 +511,9 @@ void place_secret_door(struct chunk *c, int y, int x)
  */
 void place_closed_door(struct chunk *c, int y, int x)
 {
-    int tmp = randint0(400);
-
-    if (tmp < 300)
-		square_set_feat(c, y, x, FEAT_DOOR_HEAD + 0x00);
-    else
-		square_set_feat(c, y, x, FEAT_DOOR_HEAD + randint1(7));
+	square_set_feat(c, y, x, FEAT_DOOR_HEAD);
+	if (one_in_(4))
+		square_set_door_lock(c, y, x, randint1(7));
 }
 
 

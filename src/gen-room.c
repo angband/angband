@@ -1219,7 +1219,7 @@ bool build_large(struct chunk *c, int y0, int x0)
 		/* An inner room */
 	case 1: {
 		/* Open the inner room with a secret door and place a monster */
-		generate_hole(c, y1-1, x1-1, y2+1, x2+1, FEAT_SECRET);
+		generate_hole(c, y1 - 1, x1 - 1, y2 + 1, x2 + 1, FEAT_SECRET);
 		vault_monsters(c, y0, x0, c->depth + 2, 1);
 		break;
 	}
@@ -1228,14 +1228,18 @@ bool build_large(struct chunk *c, int y0, int x0)
 		/* An inner room with a small inner room */
 	case 2: {
 		/* Open the inner room with a secret door */
-		generate_hole(c, y1-1, x1-1, y2+1, x2+1, FEAT_SECRET);
+		generate_hole(c, y1 - 1, x1 - 1, y2 + 1, x2 + 1, FEAT_SECRET);
 
 		/* Place another inner room */
 		draw_rectangle(c, y0-1, x0-1, y0+1, x0+1, 
 					   FEAT_GRANITE, SQUARE_WALL_INNER);
 
 		/* Open the inner room with a locked door */
-		generate_hole(c, y0-1, x0-1, y0+1, x0+1, FEAT_DOOR_HEAD + randint1(7));
+		generate_hole(c, y0 - 1, x0 - 1, y0 + 1, x0 + 1, FEAT_DOOR_HEAD);
+		for (y = y0 - 1; y <= y0 + 1; y++)
+			for (x = x0 - 1; x <= x0 + 1; x++)
+				if (square_iscloseddoor(c, y, x))
+					square_set_door_lock(c, y, x, randint1(7));
 
 		/* Monsters to guard the treasure */
 		vault_monsters(c, y0, x0, c->depth + 2, randint1(3) + 2);

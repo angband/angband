@@ -39,26 +39,26 @@ enum
  */
 struct trap_kind
 {
-	char *name;		      /**< Name  */
-	char *text;		      /**< Text  */
-	char *desc;		      /**< Short description  */
+	char *name;					/**< Name  */
+	char *text;					/**< Text  */
+	char *desc;					/**< Short description  */
 
 	struct trap_kind *next;
-	int tidx;
+	int tidx;					/**< Trap kind index */
 
-	byte d_attr;              /**< Default trap attribute */
-	wchar_t d_char;              /**< Default trap character */
+	byte d_attr;				/**< Default trap attribute */
+	wchar_t d_char;				/**< Default trap character */
 
-	byte x_attr;              /**< Desired trap attribute */
-	wchar_t x_char;              /**< Desired trap character */
+	byte x_attr;				/**< Desired trap attribute */
+	wchar_t x_char				;/**< Desired trap character */
 
-	int rarity;              /**< Rarity */
-	int min_depth;           /**< Minimum depth */
-	int max_num;             /**< Unused */
+	int rarity;					/**< Rarity */
+	int min_depth;				/**< Minimum depth */
+	int max_num;				/**< Unused */
 
-	bitflag flags[TRF_SIZE]; /**< Trap flags (all traps of this kind) */
+	bitflag flags[TRF_SIZE];	/**< Trap flags (all traps of this kind) */
 
-	struct effect *effect;   /**< Effect on entry to grid */
+	struct effect *effect;		/**< Effect on entry to grid */
 };
 
 struct trap_kind *trap_info;
@@ -68,15 +68,15 @@ struct trap_kind *trap_info;
  */
 struct trap
 {
-	byte t_idx;               /**< Trap kind index */
+	byte t_idx;					/**< Trap kind index */
 	struct trap_kind *kind;
 
-	byte fy;                  /**< Location of trap */
+	byte fy;					/**< Location of trap */
 	byte fx;
-	
-	byte xtra;
-	
-	bitflag flags[TRF_SIZE]; /**< Trap flags (only this particular trap) */
+
+	byte xtra;					/**< Used for door locks, so far */
+
+	bitflag flags[TRF_SIZE];	/**< Trap flags (only this particular trap) */
 };
 
 struct trap_kind *lookup_trap(const char *desc);
@@ -84,7 +84,7 @@ bool square_trap_specific(struct chunk *c, int y, int x, int t_idx);
 bool square_visible_trap(struct chunk *c, int y, int x);
 bool square_invisible_trap(struct chunk *c, int y, int x);
 bool square_player_trap(struct chunk *c, int y, int x);
-int square_visible_trap_idx(struct chunk *c, int y, int x);
+int square_trap_idx(struct chunk *c, int y, int x);
 bool get_trap_graphics(struct chunk *c, int t_idx, int *a, wchar_t *ch, bool require_visible);
 bool square_reveal_trap(struct chunk *c, int y, int x, int chance, bool domsg);
 bool trap_check_hit(int power);
@@ -93,5 +93,7 @@ void place_trap(struct chunk *c, int y, int x, int t_idx, int trap_level);
 void wipe_trap_list(struct chunk *c);
 bool square_remove_trap(struct chunk *c, int y, int x, bool domsg, int t_idx);
 void square_remove_trap_kind(struct chunk *c, int y, int x, bool domsg, int t_idx);
+void square_set_door_lock(struct chunk *c, int y, int x, int power);
+int square_door_power(struct chunk *c, int y, int x);
 
 #endif /* !TRAP_H */

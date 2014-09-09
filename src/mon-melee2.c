@@ -36,6 +36,7 @@
 #include "player-util.h"
 #include "project.h"
 #include "tables.h"
+#include "trap.h"
 
 /*
  * Determine if a bolt will arrive, checking that no monsters are in the way
@@ -1797,7 +1798,7 @@ static bool process_monster_can_move(struct chunk *c, struct monster *m_ptr,
 					msg("%s fiddles with the lock.", m_name);
 
 				/* Reduce the power of the door by one */
-				square_set_feat(c, ny, nx, c->feat[ny][nx] - 1);
+				square_set_door_lock(c, ny, nx, k - 1);
 			}
 		} else {
 			/* Handle viewable doors */

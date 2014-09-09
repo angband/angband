@@ -202,28 +202,23 @@ bool square_player_trap(struct chunk *c, int y, int x)
 }
 
 /**
- * Return the index of any visible trap 
+ * Return the index of any trap on this grid
  */
-int square_visible_trap_idx(struct chunk *c, int y, int x)
+int square_trap_idx(struct chunk *c, int y, int x)
 {
     int i;
 
-    if (!square_visible_trap(c, y, x)) 
-		return -1;
-    
     /* Scan the current trap list */
-    for (i = 0; i < cave_trap_max(c); i++)
-    {
+    for (i = 0; i < cave_trap_max(c); i++) {
 		/* Point to this trap */
 		struct trap *trap = cave_trap(c, i);
 		
-		/* Find a visible trap in this position */
-		if ((trap->fy == y) && (trap->fx == x) && 
-			trf_has(trap->flags, TRF_VISIBLE))
+		/* Find a trap in this position */
+		if ((trap->fy == y) && (trap->fx == x))
 			return (i);
     }
     
-    /* Paranoia */
+    /* No trap */
     return -1;
 }
 
@@ -382,7 +377,7 @@ bool square_trap_allowed(struct chunk *c, int y, int x)
 }
 
 /**
- * Instantiate a trap
+ * Instantiate a player trap
  */
 static int pick_trap(int feat, int trap_level)
 {
@@ -439,7 +434,8 @@ static int pick_trap(int feat, int trap_level)
 /**
  * Make a new trap of the given type.  Return TRUE if successful.
  *
- * We choose a trap at random if the index is not legal.
+ * We choose a player trap at random if the index is not legal. This means that
+ * things which are not player traps must be picked by passing a valid index.
  *
  * This should be the only function that places traps in the dungeon
  * except the savefile loading code.
@@ -447,9 +443,6 @@ static int pick_trap(int feat, int trap_level)
 void place_trap(struct chunk *c, int y, int x, int t_idx, int trap_level)
 {
     int i;
-
-    /* Require the correct terrain */
-    if (!square_trap_allowed(c, y, x)) return;
 
     /* Hack -- don't use up all the trap slots during dungeon generation */
     if (!character_dungeon)
@@ -460,6 +453,9 @@ void place_trap(struct chunk *c, int y, int x, int t_idx, int trap_level)
     /* We've been called with an illegal index; choose a random trap */
     if ((t_idx <= 0) || (t_idx >= z_info->trap_max))
     {
+		/* Require the correct terrain */
+		if (!square_trap_allowed(c, y, x)) return;
+
 		t_idx = pick_trap(c->feat[y][x], trap_level);
     }
 
@@ -665,3 +661,50 @@ void square_remove_trap_kind(struct chunk *c, int y, int x, bool domsg, int t_id
 		}
     }
 }
+
+/**
+ * Lock a closed door to a given power
+ */
+void square_set_door_lock(struct chunk *c, int y, int x, int power)
+{
+	struct trap_kind *lock = lookup_trap("door lock");
+	int trap_index;
+	struct trap *trap;
+
+	/* Verify it's a closed door */
+	if (!square_iscloseddoor(c, y, x))
+		return;
+
+	/* If there's no lock there, add one */
+	if (!square_trap_specific(c, y, x, lock->tidx))
+		place_trap(c, y, x, lock->tidx, 0);
+
+	/* Set the power */
+	trap_index = square_trap_idx(c, y, x);
+	trap = cave_trap(c, trap_index);
+	trap->xtra = power;
+}
+
+/**
+ * Return the power of the lock on a door
+ */
+int square_door_power(struct chunk *c, int y, int x)
+{
+	struct trap_kind *lock = lookup_trap("door lock");
+	int trap_index;
+	struct trap *trap;
+
+	/* Verify it's a closed door */
+	if (!square_iscloseddoor(c, y, x))
+		return 0;
+
+	/* Is there a lock there? */
+	if (!square_trap_specific(c, y, x, lock->tidx))
+		return 0;
+
+	/* Get the power and return it */
+	trap_index = square_trap_idx(c, y, x);
+	trap = cave_trap(c, trap_index);
+	return trap->xtra;
+}
+

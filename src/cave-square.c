@@ -214,16 +214,6 @@ bool square_iscloseddoor(struct chunk *c, int y, int x)
 	return tf_has(f_info[feat].flags, TF_DOOR_CLOSED);
 }
 
-/**
- * True if the square is a closed, locked door.
- */
-bool square_islockeddoor(struct chunk *c, int y, int x)
-{
-	int feat = c->feat[y][x];
-	return (tf_has(f_info[feat].flags, TF_DOOR_LOCKED) ||
-			tf_has(f_info[feat].flags, TF_DOOR_JAMMED));
-}
-
 bool square_isbrokendoor(struct chunk *c, int y, int x)
 {
 	int feat = c->feat[y][x];
@@ -582,6 +572,14 @@ bool square_isinteresting(struct chunk *c, int y, int x) {
 }
 
 /**
+ * True if the square is a closed, locked door.
+ */
+bool square_islockeddoor(struct chunk *c, int y, int x)
+{
+	return square_door_power(c, y, x) > 0;
+}
+
+/**
  * True if the square is an unknown trap (it will appear as a floor tile).
  */
 bool square_issecrettrap(struct chunk *c, int y, int x) {
@@ -746,6 +744,7 @@ void square_add_door(struct chunk *c, int y, int x, bool closed) {
 
 void square_open_door(struct chunk *c, int y, int x)
 {
+	square_remove_trap(c, y, x, FALSE, -1);
 	square_set_feat(c, y, x, FEAT_OPEN);
 }
 
@@ -766,7 +765,7 @@ void square_lock_door(struct chunk *c, int y, int x, int power)
 
 void square_unlock_door(struct chunk *c, int y, int x) {
 	assert(square_islockeddoor(c, y, x));
-	square_set_feat(c, y, x, FEAT_DOOR_HEAD);
+	square_set_door_lock(c, y, x, 0);
 }
 
 void square_destroy_door(struct chunk *c, int y, int x) {
@@ -852,11 +851,6 @@ int square_shopnum(struct chunk *c, int y, int x) {
 	if (square_isshop(c, y, x))
 		return c->feat[y][x] - FEAT_SHOP_HEAD;
 	return -1;
-}
-
-int square_door_power(struct chunk *c, int y, int x)
-{
-	return (c->feat[y][x] & 0x07);
 }
 
 const char *square_apparent_name(struct chunk *c, struct player *p, int y, int x) {

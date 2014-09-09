@@ -963,7 +963,7 @@ static bool do_cmd_lock_door(int y, int x)
 	/* Success */
 	if (randint0(100) < j) {
 		msg("You lock the door.");
-		square_lock_door(cave, y, x, power);
+		square_set_door_lock(cave, y, x, power);
 	}
 
 	/* Failure -- Keep trying */
@@ -1005,7 +1005,7 @@ static bool do_cmd_disarm_aux(int y, int x)
 
 
     /* Choose trap */
-    t_idx = square_visible_trap_idx(cave, y, x);
+    t_idx = square_trap_idx(cave, y, x);
     if (t_idx < 0) return (FALSE);
     trap = cave_trap(cave, t_idx);
 
