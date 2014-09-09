@@ -1235,7 +1235,7 @@ bool build_large(struct chunk *c, int y0, int x0)
 					   FEAT_GRANITE, SQUARE_WALL_INNER);
 
 		/* Open the inner room with a locked door */
-		generate_hole(c, y0 - 1, x0 - 1, y0 + 1, x0 + 1, FEAT_DOOR_HEAD);
+		generate_hole(c, y0 - 1, x0 - 1, y0 + 1, x0 + 1, FEAT_CLOSED);
 		for (y = y0 - 1; y <= y0 + 1; y++)
 			for (x = x0 - 1; x <= x0 + 1; x++)
 				if (square_iscloseddoor(c, y, x))

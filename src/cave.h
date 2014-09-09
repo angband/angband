@@ -60,7 +60,7 @@ struct monster;
 
 /* Various */
 #define FEAT_FLOOR 0x01
-#define FEAT_INVIS 0x02
+#define FEAT_CLOSED 0x03
 #define FEAT_OPEN 0x04
 #define FEAT_BROKEN 0x05
 #define FEAT_LESS 0x06
@@ -69,10 +69,6 @@ struct monster;
 /* Shops */
 #define FEAT_SHOP_HEAD 0x08
 #define FEAT_SHOP_TAIL 0x0F
-
-/* Doors */
-#define FEAT_DOOR_HEAD 0x20
-#define FEAT_DOOR_TAIL 0x27
 
 /* Secret door */
 #define FEAT_SECRET 0x30

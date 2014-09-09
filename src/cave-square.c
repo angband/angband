@@ -739,7 +739,7 @@ void square_add_stairs(struct chunk *c, int y, int x, int depth) {
 }
 
 void square_add_door(struct chunk *c, int y, int x, bool closed) {
-	square_set_feat(c, y, x, closed ? FEAT_DOOR_HEAD : FEAT_OPEN);
+	square_set_feat(c, y, x, closed ? FEAT_CLOSED : FEAT_OPEN);
 }
 
 void square_open_door(struct chunk *c, int y, int x)
@@ -750,17 +750,13 @@ void square_open_door(struct chunk *c, int y, int x)
 
 void square_close_door(struct chunk *c, int y, int x)
 {
-	square_set_feat(c, y, x, FEAT_DOOR_HEAD);
+	square_set_feat(c, y, x, FEAT_CLOSED);
 }
 
 void square_smash_door(struct chunk *c, int y, int x)
 {
+	square_remove_trap(c, y, x, FALSE, -1);
 	square_set_feat(c, y, x, FEAT_BROKEN);
-}
-
-void square_lock_door(struct chunk *c, int y, int x, int power)
-{
-	square_set_feat(c, y, x, FEAT_DOOR_HEAD + power);
 }
 
 void square_unlock_door(struct chunk *c, int y, int x) {
@@ -770,6 +766,7 @@ void square_unlock_door(struct chunk *c, int y, int x) {
 
 void square_destroy_door(struct chunk *c, int y, int x) {
 	assert(square_isdoor(c, y, x));
+	square_remove_trap(c, y, x, FALSE, -1);
 	square_set_feat(c, y, x, FEAT_FLOOR);
 }
 
