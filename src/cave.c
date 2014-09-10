@@ -32,8 +32,35 @@
 #include "tables.h"
 #include "trap.h"
 
-feature_type *f_info;
+struct feature *f_info;
 struct chunk *cave = NULL;
+
+/**
+ * Find a terrain feature index by name
+ */
+int lookup_feat(const char *name)
+{
+	int i;
+	int closest = 0;
+
+	/* Look for it */
+	for (i = 1; i < z_info->f_max; i++) {
+		struct feature *feat = &f_info[i];
+		if (!feat->name)
+			continue;
+
+		/* Test for equality */
+		if (streq(name, feat->name))
+			return i;
+
+		/* Test for close matches */
+		if (!closest && my_stristr(feat->name, name))
+			closest = i;
+	}
+
+	/* Return our best match */
+	return closest;
+}
 
 /**
  * Allocate a new chunk of the world

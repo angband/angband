@@ -351,6 +351,7 @@ struct monster *square_monster(struct chunk *c, int y, int x);
 struct object *square_object(struct chunk *c, int y, int x);
 
 void square_set_feat(struct chunk *c, int y, int x, int feat);
+void square_set_named_feat(struct chunk *c, int y, int x, const char *name);
 
 /* Feature placers */
 void square_add_trap(struct chunk *c, int y, int x);
@@ -381,6 +382,7 @@ int square_shopnum(struct chunk *c, int y, int x);
 const char *square_apparent_name(struct chunk *c, struct player *p, int y, int x);
 
 /* cave.c */
+int lookup_feat(const char *name);
 struct chunk *cave_new(int height, int width);
 void cave_free(struct chunk *c);
 void scatter(struct chunk *c, int *yp, int *xp, int y, int x, int d, bool need_los);

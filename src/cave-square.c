@@ -737,6 +737,14 @@ void square_set_feat(struct chunk *c, int y, int x, int feat)
 	}
 }
 
+void square_set_named_feat(struct chunk *c, int y, int x, const char *name)
+{
+	int feat = lookup_feat(name);
+	assert(feat);
+	assert(f_info[feat].name);
+	square_set_feat(c, y, x, feat);
+}
+
 void square_add_trap(struct chunk *c, int y, int x)
 {
 	place_trap(c, y, x, -1, c->depth);
