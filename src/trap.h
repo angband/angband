@@ -1,4 +1,7 @@
-/* trap.h - trap interface */
+/**
+   \file trap.h 
+   \brief trap predicates, structs and functions
+ */
 
 #ifndef TRAP_H
 #define TRAP_H
@@ -81,9 +84,7 @@ struct trap
 
 struct trap_kind *lookup_trap(const char *desc);
 bool square_trap_specific(struct chunk *c, int y, int x, int t_idx);
-bool square_visible_trap(struct chunk *c, int y, int x);
-bool square_invisible_trap(struct chunk *c, int y, int x);
-bool square_player_trap(struct chunk *c, int y, int x);
+bool square_trap_flag(struct chunk *c, int y, int x, int flag);
 int square_trap_idx(struct chunk *c, int y, int x);
 bool get_trap_graphics(struct chunk *c, int t_idx, int *a, wchar_t *ch, bool require_visible);
 bool square_reveal_trap(struct chunk *c, int y, int x, int chance, bool domsg);

@@ -210,7 +210,7 @@ static void project_feature_handler_KILL_DOOR(project_feature_handler_context_t 
 	const int y = context->y;
 
 	/* Destroy all doors and traps */
-	if (square_istrap(cave, y, x) || square_isdoor(cave, y, x))
+	if (square_isplayertrap(cave, y, x) || square_isdoor(cave, y, x))
 	{
 		/* Check line of sight */
 		if (player_has_los_bold(y, x))

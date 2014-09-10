@@ -337,6 +337,8 @@ bool square_iswarded(struct chunk *c, int y, int x);
 bool square_canward(struct chunk *c, int y, int x);
 bool square_seemslikewall(struct chunk *c, int y, int x);
 bool square_isinteresting(struct chunk *c, int y, int x);
+bool square_isplayertrap(struct chunk *c, int y, int x);
+bool square_isvisibletrap(struct chunk *c, int y, int x);
 bool square_issecrettrap(struct chunk *c, int y, int x);
 bool square_isknowntrap(struct chunk *c, int y, int x);
 bool square_changeable(struct chunk *c, int y, int x);

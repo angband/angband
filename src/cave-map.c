@@ -462,7 +462,7 @@ void wiz_light(struct chunk *c, bool full)
 
 					/* Memorize normal features */
 					if (!square_isfloor(c, yy, xx) || 
-						square_visible_trap(c, yy, xx))
+						square_isvisibletrap(c, yy, xx))
 						sqinfo_on(c->info[yy][xx], SQUARE_MARK);
 				}
 			}

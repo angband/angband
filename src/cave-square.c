@@ -566,7 +566,8 @@ bool square_seemslikewall(struct chunk *c, int y, int x)
 	return tf_has(f_info[c->feat[y][x]].flags, TF_ROCK);
 }
 
-bool square_isinteresting(struct chunk *c, int y, int x) {
+bool square_isinteresting(struct chunk *c, int y, int x)
+{
 	int f = c->feat[y][x];
 	return tf_has(f_info[f].flags, TF_INTERESTING);
 }
@@ -580,17 +581,35 @@ bool square_islockeddoor(struct chunk *c, int y, int x)
 }
 
 /**
- * True if the square is an unknown trap (it will appear as a floor tile).
+ * True if there is a player trap (known or unknown) in this square.
  */
-bool square_issecrettrap(struct chunk *c, int y, int x) {
-    return square_invisible_trap(c, y, x) && square_player_trap(c, y, x);
+bool square_isplayertrap(struct chunk *c, int y, int x)
+{
+    return square_trap_flag(c, y, x, TRF_TRAP);
+}
+
+/**
+ * True if there is a visible trap in this square.
+ */
+bool square_isvisibletrap(struct chunk *c, int y, int x)
+{
+    /* Look for a visible trap */
+    return square_trap_flag(c, y, x, TRF_VISIBLE);
+}
+/**
+ * True if the square is an unknown player trap (it will appear as a floor tile)
+ */
+bool square_issecrettrap(struct chunk *c, int y, int x)
+{
+    return !square_isvisibletrap(c, y, x) && square_isplayertrap(c, y, x);
 }
 
 /**
  * True if the square is a known player trap.
  */
-bool square_isknowntrap(struct chunk *c, int y, int x) {
-	return square_visible_trap(c, y, x) && square_player_trap(c, y, x);
+bool square_isknowntrap(struct chunk *c, int y, int x)
+{
+	return square_isvisibletrap(c, y, x) && square_isplayertrap(c, y, x);
 }
 
 /**

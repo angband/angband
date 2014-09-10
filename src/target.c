@@ -396,7 +396,7 @@ static bool target_set_interactive_accept(int y, int x)
 	}
 
     /* Traps */
-    if (square_visible_trap(cave, y, x))
+    if (square_isvisibletrap(cave, y, x))
 		return(TRUE);
 
 	/* Scan all objects in the grid */
@@ -921,7 +921,7 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 		}
 
 		/* A trap */
-		if (square_visible_trap(cave, y, x)) 
+		if (square_isvisibletrap(cave, y, x)) 
 		{
 			struct trap *trap = cave_trap(cave, square_trap_idx(cave, y, x));
 
@@ -978,7 +978,7 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 		}
 	
 		/* Double break */
-		if (square_visible_trap(cave, y, x))
+		if (square_isvisibletrap(cave, y, x))
 			break;
 	
 		/* Assume not floored */
