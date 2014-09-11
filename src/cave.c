@@ -32,24 +32,6 @@
 #include "tables.h"
 #include "trap.h"
 
-int FEAT_NONE;
-int FEAT_FLOOR;
-int FEAT_CLOSED;
-int FEAT_OPEN;
-int FEAT_BROKEN;
-int FEAT_LESS;
-int FEAT_MORE;
-int FEAT_SECRET;
-int FEAT_RUBBLE;
-int FEAT_MAGMA;
-int FEAT_QUARTZ;
-int FEAT_MAGMA_K;
-int FEAT_QUARTZ_K;
-int FEAT_GRANITE;
-int FEAT_PERM;
-int FEAT_DTRAP_FLOOR;
-int FEAT_DTRAP_WALL;
-
 struct feature *f_info;
 struct chunk *cave = NULL;
 
