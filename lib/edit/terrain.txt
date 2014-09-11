@@ -7,8 +7,17 @@
 # Do not modify this file unless you know exactly what you are doing,
 # unless you wish to risk possible system crashes and broken savefiles.
 
-# Note that the terrain feature are grouped into very regular groups,
-# such that each of the bits in the feature type conveys information.
+# Note that, unlike other edit files, modifying this file casually is likely
+# to be a BAD IDEA for two reasons:
+
+#   1. Terrain features do not appear unless there is specific code in the
+#   level generation algorithms to include them, so adding new terrain
+#   features to this file will by itself have no effect.
+
+#   2. The level generation algorithms use the names of the standard terrain
+#   features ("granite wall", etc) in terrain placement.  Changing the name of
+#   a terrain feature can thus stop the game from running; changing its
+#   properties will change game behaviour.
 
 # Note that terrain feature zero contains the "darkness" picture.
 
@@ -40,7 +49,7 @@
 
 # 0x00 --> <darkness>
 
-N:0:<darkness>
+N:0:unknown grid
 G: :w
 P:2
 
@@ -216,13 +225,13 @@ P:10
 F:WALL | ROCK | PERMANENT | NO_SCENT | NO_FLOW
 
 # holder for trap detected border floor tile
-N:64:open floor
+N:64:dtrap edge - floor
 G:.:G
 P:5
 F:LOS | PROJECT | PASSABLE | FLOOR | OBJECT | EASY | TRAP | RUNE | TORCH
 
 # holder for trap detected border overlay tile
-N:65:granite wall
+N:65:dtrap edge - wall
 G:#:G
 P:10
 F:WALL | ROCK | GRANITE | NO_SCENT | NO_FLOW

@@ -53,45 +53,6 @@ struct monster;
 
 
 
-/*** Feature Indexes (see "lib/edit/terrain.txt") ***/
-
-/* Nothing */
-#define FEAT_NONE 0x00
-
-/* Various */
-#define FEAT_FLOOR 0x01
-#define FEAT_CLOSED 0x03
-#define FEAT_OPEN 0x04
-#define FEAT_BROKEN 0x05
-#define FEAT_LESS 0x06
-#define FEAT_MORE 0x07
-
-/* Shops */
-#define FEAT_SHOP_HEAD 0x08
-#define FEAT_SHOP_TAIL 0x0F
-
-/* Secret door */
-#define FEAT_SECRET 0x30
-
-/* Rubble */
-#define FEAT_RUBBLE 0x31
-
-/* Mineral seams */
-#define FEAT_MAGMA 0x32
-#define FEAT_QUARTZ 0x33
-#define FEAT_MAGMA_K 0x36
-#define FEAT_QUARTZ_K 0x37
-
-/* Walls */
-#define FEAT_GRANITE 0x38
-#define FEAT_PERM 0x39
-
-/* Special trap detect features  - should be replaced with square flags */
-#define FEAT_DTRAP_FLOOR 0x40
-#define FEAT_DTRAP_WALL 0x41
-
-
-
 /*
  * Square flags
  */
@@ -236,6 +197,41 @@ struct chunk {
 	u16b trap_max;
 };
 
+/*** Feature Indexes (see "lib/edit/terrain.txt") ***/
+
+/* Nothing */
+int FEAT_NONE;
+
+/* Various */
+int FEAT_FLOOR;
+int FEAT_CLOSED;
+int FEAT_OPEN;
+int FEAT_BROKEN;
+int FEAT_LESS;
+int FEAT_MORE;
+
+/* Secret door */
+int FEAT_SECRET;
+
+/* Rubble */
+int FEAT_RUBBLE;
+
+/* Mineral seams */
+int FEAT_MAGMA;
+int FEAT_QUARTZ;
+int FEAT_MAGMA_K;
+int FEAT_QUARTZ_K;
+
+/* Walls */
+int FEAT_GRANITE;
+int FEAT_PERM;
+
+/* Special trap detect features  - should be replaced with square flags */
+int FEAT_DTRAP_FLOOR;
+int FEAT_DTRAP_WALL;
+
+
+
 struct chunk *cave;
 struct chunk **chunk_list;
 u16b chunk_list_max;
@@ -351,7 +347,6 @@ struct monster *square_monster(struct chunk *c, int y, int x);
 struct object *square_object(struct chunk *c, int y, int x);
 
 void square_set_feat(struct chunk *c, int y, int x, int feat);
-void square_set_named_feat(struct chunk *c, int y, int x, const char *name);
 
 /* Feature placers */
 void square_add_trap(struct chunk *c, int y, int x);
@@ -382,7 +377,7 @@ int square_shopnum(struct chunk *c, int y, int x);
 const char *square_apparent_name(struct chunk *c, struct player *p, int y, int x);
 
 /* cave.c */
-int lookup_feat(const char *name);
+void set_terrain(void);
 struct chunk *cave_new(int height, int width);
 void cave_free(struct chunk *c);
 void scatter(struct chunk *c, int *yp, int *xp, int y, int x, int d, bool need_los);

@@ -1,5 +1,6 @@
-/** \file gen-cave.c
-	\brief Generation of dungeon levels
+/**
+   \file gen-cave.c
+   \brief Generation of dungeon levels
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  * Copyright (c) 2013 Erik Osheim, Nick McConnell
@@ -1426,7 +1427,10 @@ struct chunk *cavern_gen(struct player *p) {
  * Currently, there is a main street horizontally through the middle of town,
  * and all the shops face it (e.g. the shops on the north side face south).
  */
-static void build_store(struct chunk *c, int n, int yy, int xx) {
+static void build_store(struct chunk *c, int n, int yy, int xx)
+{
+	int feat;
+
     /* Find the "center" of the store */
     int y0 = yy * 9 + 6;
     int x0 = xx * 14 + 12;
@@ -1445,7 +1449,9 @@ static void build_store(struct chunk *c, int n, int yy, int xx) {
     fill_rectangle(c, y1, x1, y2, x2, FEAT_PERM, SQUARE_NONE);
 
     /* Clear previous contents, add a store door */
-    square_set_feat(c, dy, dx, FEAT_SHOP_HEAD + n);
+	for (feat = 0; feat < z_info->f_max; feat++)
+		if (feat_is_shop(feat) && (f_info[feat].shopnum == n + 1))
+			square_set_feat(c, dy, dx, feat);
 }
 
 
@@ -1454,7 +1460,8 @@ static void build_store(struct chunk *c, int n, int yy, int xx) {
  * \param c is the current chunk
  * \param p is the player
  */
-static void town_gen_layout(struct chunk *c, struct player *p) {
+static void town_gen_layout(struct chunk *c, struct player *p)
+{
     int y, x, n, k;
     int rooms[MAX_STORES];
 
@@ -1507,7 +1514,8 @@ static void town_gen_layout(struct chunk *c, struct player *p) {
  * anything about the owners of the stores, nor the contents thereof. It only
  * handles the physical layout.
  */
-struct chunk *town_gen(struct player *p) {
+struct chunk *town_gen(struct player *p)
+{
     int i, y, x = 0;
     bool daytime = turn % (10 * TOWN_DAWN) < (10 * TOWN_DUSK);
     int residents = daytime ? MIN_M_ALLOC_TD : MIN_M_ALLOC_TN;

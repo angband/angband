@@ -169,16 +169,16 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 	/* Rare random hallucination on non-outer walls */
 	if (g->hallucinate && g->m_idx == 0 && g->first_kind == 0)
 	{
-		if (one_in_(128) && g->f_idx != FEAT_PERM)
+		if (one_in_(128) && (int) g->f_idx != FEAT_PERM)
 			g->m_idx = 1;
-		else if (one_in_(128) && g->f_idx != FEAT_PERM)
+		else if (one_in_(128) && (int) g->f_idx != FEAT_PERM)
 			/* if hallucinating, we just need first_kind to not be NULL */
 			g->first_kind = k_info;
 		else
 			g->hallucinate = FALSE;
 	}
 
-	assert(g->f_idx <= FEAT_PERM);
+	assert((int) g->f_idx <= FEAT_PERM);
 	if (!g->hallucinate)
 		assert((int)g->m_idx < cave->mon_max);
 	/* All other g fields are 'flags', mostly booleans. */

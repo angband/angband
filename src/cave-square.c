@@ -737,14 +737,6 @@ void square_set_feat(struct chunk *c, int y, int x, int feat)
 	}
 }
 
-void square_set_named_feat(struct chunk *c, int y, int x, const char *name)
-{
-	int feat = lookup_feat(name);
-	assert(feat);
-	assert(f_info[feat].name);
-	square_set_feat(c, y, x, feat);
-}
-
 void square_add_trap(struct chunk *c, int y, int x)
 {
 	place_trap(c, y, x, -1, c->depth);
@@ -856,10 +848,10 @@ void square_remove_ward(struct chunk *c, int y, int x)
  */
 void square_upgrade_mineral(struct chunk *c, int y, int x)
 {
-	switch (c->feat[y][x]) {
-	case FEAT_MAGMA: square_set_feat(c, y, x, FEAT_MAGMA_K); break;
-	case FEAT_QUARTZ: square_set_feat(c, y, x, FEAT_QUARTZ_K); break;
-	}
+	if (c->feat[y][x] == FEAT_MAGMA)
+		square_set_feat(c, y, x, FEAT_MAGMA_K);
+	if (c->feat[y][x] == FEAT_QUARTZ)
+		square_set_feat(c, y, x, FEAT_QUARTZ_K);
 }
 
 void square_destroy_rubble(struct chunk *c, int y, int x) {
@@ -873,7 +865,7 @@ void square_force_floor(struct chunk *c, int y, int x) {
 
 int square_shopnum(struct chunk *c, int y, int x) {
 	if (square_isshop(c, y, x))
-		return c->feat[y][x] - FEAT_SHOP_HEAD;
+		return f_info[c->feat[y][x]].shopnum;
 	return -1;
 }
 
@@ -881,9 +873,6 @@ const char *square_apparent_name(struct chunk *c, struct player *p, int y, int x
 	int f = f_info[c->feat[y][x]].mimic;
 
 	if (!square_ismark(c, y, x) && !player_can_see_bold(y, x))
-		f = FEAT_NONE;
-
-	if (f == FEAT_NONE)
 		return "unknown_grid";
 
 	return f_info[f].name;

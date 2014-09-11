@@ -1510,7 +1510,6 @@ static void do_cmd_wiz_features(void)
 	int featb[] = {FEAT_BROKEN};
 	int featu[] = {FEAT_LESS};
 	int featz[] = {FEAT_MORE};
-	int feats[] = { FEAT_SHOP_HEAD, FEAT_SHOP_HEAD + 1, FEAT_SHOP_HEAD + 2, FEAT_SHOP_HEAD + 3, FEAT_SHOP_HEAD + 4, FEAT_SHOP_HEAD + 5, FEAT_SHOP_HEAD + 6, FEAT_SHOP_HEAD + 7 };
 	int featt[] = {FEAT_LESS, FEAT_MORE};
 	int featc[] = {FEAT_CLOSED};
 	int featd[] = {FEAT_CLOSED, FEAT_OPEN, FEAT_BROKEN, FEAT_SECRET};
@@ -1529,29 +1528,33 @@ static void do_cmd_wiz_features(void)
 	/* Choose a feature (type) */
 	switch (cmd.code)
 	{
-		/* */
+		/* Floors */
 		case 'f': feat = featf; length = 1; break;
-		/* */
+		/* Open doors */
 		case 'o': feat = feato; length = 1; break;
-		/* */
+		/* Broken doors */
 		case 'b': feat = featb; length = 1; break;
-		/* */
+		/* Upstairs */
 		case 'u': feat = featu; length = 1; break;
-		/* */
+		/* Downstairs */
 		case 'z': feat = featz; length = 1; break;
-		/* */
-		case 's': feat = feats; length = 8; break;
-		/* */
+		/* Stairs */
 		case 't': feat = featt; length = 2; break;
-		/* */
+		/* Closed doors */
 		case 'c': feat = featc; length = 8; break;
-		/* */
+		/* Doors */
 		case 'd': feat = featd; length = 11; break;
+		/* Secret doors */
 		case 'h': feat = feath; length = 1; break;
+		/* Magma */
 		case 'm': feat = featm; length = 3; break;
+		/* Quartz */
 		case 'q': feat = featq; length = 3; break;
+		/* Granite */
 		case 'g': feat = featg; length = 1; break;
+		/* Permanent wall */
 		case 'p': feat = featp; length = 1; break;
+		/* Rubble */
 		case 'r': feat = featr; length = 1; break;
 	}
 

@@ -1,5 +1,6 @@
-/** \file gen-room.c
-	\brief Dungeon room generation.
+/**
+   \file gen-room.c
+   \brief Dungeon room generation.
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  * Copyright (c) 2013 Erik Osheim, Nick McConnell

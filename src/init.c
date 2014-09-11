@@ -2072,6 +2072,9 @@ static errr finish_parse_f(struct parser *p) {
 	}
 	z_info->f_max += 1;
 
+	/* Set the terrain constants */
+	set_terrain();
+
 	parser_destroy(p);
 	return 0;
 }

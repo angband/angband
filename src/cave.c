@@ -32,19 +32,36 @@
 #include "tables.h"
 #include "trap.h"
 
+int FEAT_NONE;
+int FEAT_FLOOR;
+int FEAT_CLOSED;
+int FEAT_OPEN;
+int FEAT_BROKEN;
+int FEAT_LESS;
+int FEAT_MORE;
+int FEAT_SECRET;
+int FEAT_RUBBLE;
+int FEAT_MAGMA;
+int FEAT_QUARTZ;
+int FEAT_MAGMA_K;
+int FEAT_QUARTZ_K;
+int FEAT_GRANITE;
+int FEAT_PERM;
+int FEAT_DTRAP_FLOOR;
+int FEAT_DTRAP_WALL;
+
 struct feature *f_info;
 struct chunk *cave = NULL;
 
 /**
  * Find a terrain feature index by name
  */
-int lookup_feat(const char *name)
+static int lookup_feat(const char *name)
 {
 	int i;
-	int closest = 0;
 
 	/* Look for it */
-	for (i = 1; i < z_info->f_max; i++) {
+	for (i = 0; i < z_info->f_max; i++) {
 		struct feature *feat = &f_info[i];
 		if (!feat->name)
 			continue;
@@ -52,14 +69,35 @@ int lookup_feat(const char *name)
 		/* Test for equality */
 		if (streq(name, feat->name))
 			return i;
-
-		/* Test for close matches */
-		if (!closest && my_stristr(feat->name, name))
-			closest = i;
 	}
 
-	/* Return our best match */
-	return closest;
+	/* Fail horribly */
+	quit_fmt("Failed to find terrain feature %s", name);
+	return -1;
+}
+
+/**
+ * Set terrain constants to the indices from terrain.txt
+ */
+void set_terrain(void)
+{
+	FEAT_NONE = lookup_feat("unknown grid");
+	FEAT_FLOOR = lookup_feat("open floor");
+	FEAT_CLOSED = lookup_feat("closed door");
+	FEAT_OPEN = lookup_feat("open door");
+	FEAT_BROKEN = lookup_feat("broken door");
+	FEAT_LESS = lookup_feat("up staircase");
+	FEAT_MORE = lookup_feat("down staircase");
+	FEAT_SECRET = lookup_feat("secret door");
+	FEAT_RUBBLE = lookup_feat("pile of rubble");
+	FEAT_MAGMA = lookup_feat("magma vein");
+	FEAT_QUARTZ = lookup_feat("quartz vein");
+	FEAT_MAGMA_K = lookup_feat("magma vein with treasure");
+	FEAT_QUARTZ_K = lookup_feat("quartz vein with treasure");
+	FEAT_GRANITE = lookup_feat("granite wall");
+	FEAT_PERM = lookup_feat("permanent wall");
+	FEAT_DTRAP_FLOOR = lookup_feat("dtrap edge - floor");
+	FEAT_DTRAP_WALL = lookup_feat("dtrap edge - wall");
 }
 
 /**
