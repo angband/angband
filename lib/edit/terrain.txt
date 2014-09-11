@@ -8,16 +8,18 @@
 # unless you wish to risk possible system crashes and broken savefiles.
 
 # Note that, unlike other edit files, modifying this file casually is likely
-# to be a BAD IDEA for two reasons:
+# to be a BAD IDEA (unless you intend to make actual programming changes)
+# for two reasons:
 
 #   1. Terrain features do not appear unless there is specific code in the
 #   level generation algorithms to include them, so adding new terrain
 #   features to this file will by itself have no effect.
 
-#   2. The level generation algorithms use the names of the standard terrain
-#   features ("granite wall", etc) in terrain placement.  Changing the name of
-#   a terrain feature can thus stop the game from running; changing its
-#   properties will change game behaviour.
+#   2. The game uses the names of the standard terrain features
+#   ("granite wall", etc) in terrain placement.  Changing the name of a terrain
+#   feature can thus stop the game from running; changing its properties will
+#   change game behaviour; and any changes during the playing of an individual
+#   game are likely to mess it up.
 
 # Note that terrain feature zero contains the "darkness" picture.
 
@@ -28,7 +30,7 @@
 # M : feature to mimic
 # P : display priority on mini-map
 # F : terrain flags
-# X : lockedness : unused : shop number : digging
+# X : shop number : digging
 
 # N' indicates the beginning of an entry. The serial number must
 # increase for each new item.
@@ -47,194 +49,150 @@
 
 
 
-# 0x00 --> <darkness>
-
 N:0:unknown grid
 G: :w
 P:2
 
-
-# 0x01 --> open floor
 
 N:1:open floor
 G:.:w
 P:5
 F:LOS | PROJECT | PASSABLE | FLOOR | OBJECT | EASY | TRAP | RUNE | TORCH
 
-# 0x03 --> closed door
-
-N:3:closed door
+N:2:closed door
 G:+:U
 P:17
 F:DOOR_ANY | DOOR_CLOSED | INTERESTING
-X:0:0:0:0
+X:0:0
 
-# 0x04 --> open door
-
-N:4:open door
+N:3:open door
 G:':U
 P:15
 F:LOS | PROJECT | PASSABLE | DOOR_ANY | INTERESTING | CLOSABLE | EASY  
 
-# 0x05 --> broken door
-
-N:5:broken door
+N:4:broken door
 G:':u
 P:15
 F:LOS | PROJECT | PASSABLE | DOOR_ANY | INTERESTING | EASY 
 
-# 0x06 --> up stairs (perm)
-
-N:6:up staircase
+N:5:up staircase
 G:<:w
 P:25
 F:LOS | PROJECT | PASSABLE | PERMANENT | INTERESTING | STAIR | UPSTAIR | EASY
 
-# 0x07 --> down stairs (perm)
-
-N:7:down staircase
+N:6:down staircase
 G:>:w
 P:25
 F:LOS | PROJECT | PASSABLE | PERMANENT | INTERESTING | STAIR | DOWNSTAIR | EASY
 
-# 0x08 --> shop -- general store (perm)
-
-N:8:General Store
+N:7:General Store
 G:1:U
 P:20
 F:SHOP | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY
-X:0:0:1:0
+X:1:0
 
-# 0x09 --> shop -- armoury (perm)
-
-N:9:Armoury
+N:8:Armoury
 G:2:s
 P:20
 F:SHOP | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY
-X:0:0:2:0
+X:2:0
 
-# 0x0A --> shop -- weapon shop (perm)
-
-N:10:Weapon Smiths
+N:9:Weapon Smiths
 G:3:w
 P:20
 F:SHOP | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY
-X:0:0:3:0
+X:3:0
 
-# 0x0B --> shop -- temple (perm)
-
-N:11:Temple
+N:10:Temple
 G:4:g
 P:20
 F:SHOP | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY
-X:0:0:4:0
+X:4:0
 
-# 0x0C --> shop -- alchemist (perm)
-
-N:12:Alchemy Shop
+N:11:Alchemy Shop
 G:5:b
 P:20
 F:SHOP | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY
-X:0:0:5:0
+X:5:0
 
-# 0x0D --> shop -- magic shop (perm)
-
-N:13:Magic Shop
+N:12:Magic Shop
 G:6:r
 P:20
 F:SHOP | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY
-X:0:0:6:0
+X:6:0
 
-# 0x0E --> shop -- black market (perm)
-
-N:14:Black Market
+N:13:Black Market
 G:7:D
 P:20
 F:SHOP | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY
-X:0:0:7:0
+X:7:0
 
-# 0x0F --> shop -- home (perm)
-
-N:15:Home
+N:14:Home
 G:8:y
 P:20
 F:SHOP | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY
-X:0:0:8:0
+X:8:0
 
-# 0x30 --> secret door
-
-N:48:secret door
+N:15:secret door
 G:#:w
 P:10
 M:56
 F:WALL | ROCK | DOOR_ANY | GRANITE
 
-# 0x31 --> pile of rubble
-
-N:49:pile of rubble
+N:16:pile of rubble
 G:::w
 P:13
 F:ROCK | NO_SCENT | NO_FLOW
-X:0:0:0:1
+X:0:1
 
-# 0x32 --> magma vein
-
-N:50:magma vein
+N:17:magma vein
 G:%:s
 P:12
 F:WALL | ROCK | NO_SCENT | NO_FLOW | MAGMA 
-X:0:0:0:2
+X:0:2
 
-# 0x33 --> quartz vein
-
-N:51:quartz vein
+N:18:quartz vein
 G:%:W
 P:11
 F:WALL | ROCK | NO_SCENT | NO_FLOW | QUARTZ 
-X:0:0:0:3
+X:0:3
 
-# 0x36 --> magma vein + known treasure
-
-N:54:magma vein with treasure
+N:19:magma vein with treasure
 G:*:o
 P:19
 F:WALL | ROCK | INTERESTING | NO_SCENT | NO_FLOW | GOLD | MAGMA 
-X:0:0:0:2
+X:0:2
 
-# 0x37 --> quartz vein + known treasure
-
-N:55:quartz vein with treasure
+N:20:quartz vein with treasure
 G:*:o
 P:19
 F:WALL | ROCK | INTERESTING | NO_SCENT | NO_FLOW | GOLD | QUARTZ
-X:0:0:0:3
+X:0:3
 
-# 0x38 --> granite wall
-
-N:56:granite wall
+N:21:granite wall
 G:#:w
 P:10
 F:WALL | ROCK | GRANITE | NO_SCENT | NO_FLOW
-X:0:0:0:4
+X:0:4
 
-# 0x39 --> permanent wall
-
-N:57:permanent wall
+N:22:permanent wall
 G:#:z
 P:10
 F:WALL | ROCK | PERMANENT | NO_SCENT | NO_FLOW
 
-# holder for trap detected border floor tile
-N:64:dtrap edge - floor
+## holder for trap detected border floor tile
+
+N:23:dtrap edge - floor
 G:.:G
 P:5
 F:LOS | PROJECT | PASSABLE | FLOOR | OBJECT | EASY | TRAP | RUNE | TORCH
 
-# holder for trap detected border overlay tile
-N:65:dtrap edge - wall
+## holder for trap detected border overlay tile
+
+N:24:dtrap edge - wall
 G:#:G
 P:10
 F:WALL | ROCK | GRANITE | NO_SCENT | NO_FLOW
-X:0:0:0:4
+X:0:4
 
 
