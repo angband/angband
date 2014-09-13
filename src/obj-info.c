@@ -18,7 +18,6 @@
  */
 
 #include "angband.h"
-#include "attack.h"
 #include "effects.h"
 #include "cmds.h"
 #include "init.h"
@@ -30,6 +29,7 @@
 #include "obj-slays.h"
 #include "obj-tval.h"
 #include "obj-util.h"
+#include "player-attack.h"
 #include "project.h"
 #include "tables.h"
 #include "z-textblock.h"

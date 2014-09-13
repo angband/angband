@@ -17,11 +17,11 @@
  */
 
 #include "angband.h"
-#include "attack.h"
 #include "cave.h"
 #include "dungeon.h"
 #include "effects.h"
 #include "init.h"
+#include "player-attack.h"
 #include "player-util.h"
 #include "trap.h"
 

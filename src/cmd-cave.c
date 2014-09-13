@@ -17,7 +17,6 @@
  */
 
 #include "angband.h"
-#include "attack.h"
 #include "cave.h"
 #include "cmds.h"
 #include "dungeon.h"
@@ -32,6 +31,7 @@
 #include "obj-identify.h"
 #include "obj-ignore.h"
 #include "obj-util.h"
+#include "player-attack.h"
 #include "player-path.h"
 #include "player-timed.h"
 #include "player-util.h"

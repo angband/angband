@@ -20,7 +20,6 @@
 
 #ifdef USE_STATS
 
-#include "birth.h"
 #include "buildid.h"
 #include "dungeon.h"
 #include "init.h"
@@ -34,6 +33,7 @@
 #include "obj-util.h"
 #include "object.h"
 #include "player.h"
+#include "player-birth.h"
 #include "project.h"
 #include "stats/db.h"
 #include "stats/structs.h"

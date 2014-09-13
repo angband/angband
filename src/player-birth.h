@@ -1,7 +1,9 @@
-/* birth.h */
+/* player-birth.h */
 
-#ifndef BIRTH_H
-#define BIRTH_H
+#ifndef PLAYER_BIRTH_H
+#define PLAYER_BIRTH_H
+
+#include "cmd-core.h"
 
 extern void player_init(struct player *p);
 extern void player_generate(struct player *p, const player_sex *s,
@@ -25,4 +27,4 @@ void do_cmd_accept_character(struct command *cmd);
 
 char *find_roman_suffix_start(const char *buf);
 
-#endif /* !BIRTH_H */
+#endif /* !PLAYER_BIRTH_H */

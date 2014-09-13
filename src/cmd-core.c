@@ -18,8 +18,6 @@
  */
 
 #include "angband.h"
-#include "attack.h"
-#include "birth.h"
 #include "cmds.h"
 #include "cmd-core.h"
 #include "obj-chest.h"
@@ -27,6 +25,8 @@
 #include "obj-tval.h"
 #include "obj-ui.h"
 #include "obj-util.h"
+#include "player-attack.h"
+#include "player-birth.h"
 #include "player-spell.h"
 #include "target.h"
 

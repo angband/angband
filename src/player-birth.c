@@ -1,6 +1,6 @@
-/*
- * File: birth.c
- * Purpose: Character creation
+/**
+   \file player-birth.c
+   \brief Character creation
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  *
@@ -17,7 +17,6 @@
  */
 
 #include "angband.h"
-#include "birth.h"
 #include "cmds.h"
 #include "dungeon.h"
 #include "game-event.h"
@@ -36,6 +35,7 @@
 #include "obj-util.h"
 #include "object.h"
 #include "player.h"
+#include "player-birth.h"
 #include "player-spell.h"
 #include "player-timed.h"
 #include "player-util.h"

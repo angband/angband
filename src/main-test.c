@@ -17,9 +17,9 @@
  */
 
 #include "angband.h"
-#include "birth.h"
 #include "buildid.h"
 #include "player.h"
+#include "player-birth.h"
 
 #ifdef USE_TEST
 

@@ -1,6 +1,6 @@
-/*
- * File: attack.c
- * Purpose: Attacking (both throwing and melee) code
+/**
+   \file player-attack.c
+   \brief Attacks (both throwing and melee) by the player
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  *
@@ -17,7 +17,6 @@
  */
 
 #include "angband.h"
-#include "attack.h"
 #include "cave.h"
 #include "cmds.h"
 #include "game-event.h"
@@ -33,6 +32,7 @@
 #include "obj-slays.h"
 #include "obj-ui.h"
 #include "obj-util.h"
+#include "player-attack.h"
 #include "player-util.h"
 #include "project.h"
 #include "tables.h"

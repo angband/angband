@@ -17,7 +17,6 @@
  */
 
 #include "angband.h"
-#include "attack.h"
 #include "cave.h"
 #include "monster.h"
 #include "mon-blow-methods.h"
@@ -33,6 +32,7 @@
 #include "obj-slays.h"
 #include "obj-tval.h"
 #include "obj-util.h"
+#include "player-attack.h"
 #include "player-timed.h"
 #include "player-util.h"
 #include "project.h"

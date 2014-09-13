@@ -17,7 +17,6 @@
  */
 
 #include "angband.h"
-#include "birth.h"
 #include "cave.h"
 #include "cmds.h"
 #include "death.h"
@@ -39,6 +38,7 @@
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "object.h"
+#include "player-birth.h"
 #include "player-path.h"
 #include "player-timed.h"
 #include "player-util.h"

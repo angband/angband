@@ -2,7 +2,7 @@
 
 #include "unit-test.h"
 #include "unit-test-data.h"
-#include "birth.h"
+#include "player-birth.h"
 
 int setup_tests(void **state) {
 	struct player *p = mem_zalloc(sizeof *p);

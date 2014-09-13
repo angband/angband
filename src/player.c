@@ -7,10 +7,10 @@
 #include "init.h"
 #include "history.h" /* history_add */
 #include "player.h"
+#include "player-birth.h"
 #include "player-timed.h"
 #include "player-spell.h"
 #include "obj-util.h"
-#include "birth.h" /* find_roman_suffix_start */
 #include "ui-input.h"
 
 

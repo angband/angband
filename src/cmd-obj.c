@@ -18,7 +18,6 @@
  */
 
 #include "angband.h"
-#include "attack.h"
 #include "cave.h"
 #include "cmds.h"
 #include "effects.h"
@@ -32,6 +31,7 @@
 #include "obj-tval.h"
 #include "obj-ui.h"
 #include "obj-util.h"
+#include "player-attack.h"
 #include "player-spell.h"
 #include "player-timed.h"
 #include "player-util.h"

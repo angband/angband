@@ -12,7 +12,6 @@ PROGNAME = angband
 
 HEADERS = \
 	angband.h \
-	birth.h \
 	cmds.h \
 	cmd-core.h \
 	config.h \
@@ -84,8 +83,6 @@ WINMAINFILES = \
 X11MAINFILES = main-x11.o
 
 ANGFILES = \
-	attack.o \
-	birth.o \
 	cave.o \
 	cave-map.o \
 	cave-square.o \
@@ -147,6 +144,8 @@ ANGFILES = \
 	parser.o \
 	randname.o \
 	prefs.o \
+	player-attack.o \
+	player-birth.o \
 	player-calcs.o \
 	player-class.o \
 	player-path.o \

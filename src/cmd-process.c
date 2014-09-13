@@ -17,7 +17,6 @@
  */
 
 #include "angband.h"
-#include "attack.h"
 #include "cave.h"
 #include "cmds.h"
 #include "cmd-core.h"
@@ -25,6 +24,7 @@
 #include "monster.h"
 #include "obj-gear.h"
 #include "obj-util.h"
+#include "player-attack.h"
 #include "player-timed.h"
 #include "player-util.h"
 #include "target.h"

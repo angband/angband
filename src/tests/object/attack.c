@@ -3,9 +3,9 @@
 #include "unit-test.h"
 #include "unit-test-data.h"
 
-#include "attack.h"
 #include "object.h"
 #include "obj-make.h"
+#include "player-attack.h"
 
 NOSETUP
 NOTEARDOWN
