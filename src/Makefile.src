@@ -146,10 +146,10 @@ ANGFILES = \
 	option.o \
 	parser.o \
 	randname.o \
-	pathfind.o \
 	prefs.o \
 	player-calcs.o \
 	player-class.o \
+	player-path.o \
 	player-race.o \
 	player-spell.o \
 	player-timed.o \

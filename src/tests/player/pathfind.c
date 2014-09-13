@@ -1,8 +1,8 @@
-/* pathfind/pathfind */
+/* player/pathfind */
 
 #include "unit-test.h"
 #include "cmd-core.h"
-#include "pathfind.h"
+#include "player-path.h"
 
 NOSETUP
 NOTEARDOWN
@@ -24,7 +24,7 @@ int test_dir_to(void *state) {
 	ok;
 }
 
-const char *suite_name = "pathfind/pathfind";
+const char *suite_name = "player/pathfind";
 struct test tests[] = {
 	{ "dir-to", test_dir_to },
 	{ NULL, NULL },

@@ -39,7 +39,7 @@
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "object.h"
-#include "pathfind.h"
+#include "player-path.h"
 #include "player-timed.h"
 #include "player-util.h"
 #include "prefs.h"

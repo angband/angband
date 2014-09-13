@@ -20,10 +20,10 @@
 #include "angband.h"
 #include "cmds.h"
 #include "cave.h"
-#include "pathfind.h"
 #include "mon-util.h"
 #include "obj-ignore.h"
 #include "obj-util.h"
+#include "player-path.h"
 #include "player-util.h"
 #include "tables.h"
 

@@ -32,7 +32,7 @@
 #include "obj-identify.h"
 #include "obj-ignore.h"
 #include "obj-util.h"
-#include "pathfind.h"
+#include "player-path.h"
 #include "player-timed.h"
 #include "player-util.h"
 #include "trap.h"

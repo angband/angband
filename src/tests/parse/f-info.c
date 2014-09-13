@@ -74,15 +74,12 @@ int test_f0(void *state) {
 }
 
 int test_x0(void *state) {
-	enum parser_error r = parser_parse(state, "X:3:5:9:2");
+	enum parser_error r = parser_parse(state, "X:9:2");
 	struct feature *f;
 
 	eq(r, PARSE_ERROR_NONE);
 	f = parser_priv(state);
 	require(f);
-	eq(f->locked, 3);
-	/* eq(f->jammed, 5); 
-	 * as of 85b1ff6, the jammed field is unused */
 	eq(f->shopnum, 9);
 	eq(f->dig, 2);
 	ok;

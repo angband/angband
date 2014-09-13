@@ -22,7 +22,7 @@
 #include "target.h"
 #include "game-event.h"
 #include "init.h"
-#include "pathfind.h"
+#include "player-path.h"
 #include "randname.h"
 #include "signals.h"
 #include "ui-player.h"

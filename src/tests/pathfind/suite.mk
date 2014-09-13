@@ -1,1 +1,0 @@
-TESTPROGS += pathfind/pathfind
