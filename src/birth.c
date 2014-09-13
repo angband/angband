@@ -24,6 +24,7 @@
 #include "cmd-core.h"
 #include "history.h"
 #include "init.h"
+#include "mon-lore.h"
 #include "monster.h"
 #include "obj-gear.h"
 #include "obj-identify.h"

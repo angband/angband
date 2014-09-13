@@ -18,8 +18,9 @@
  */
 
 #include "dungeon.h"
-#include "mon-util.h"
 #include "mon-list.h"
+#include "mon-lore.h"
+#include "mon-util.h"
 #include "player-timed.h"
 #include "project.h"
 

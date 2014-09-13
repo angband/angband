@@ -23,6 +23,7 @@
 #include "generate.h"
 #include "history.h"
 #include "init.h"
+#include "mon-lore.h"
 #include "mon-make.h"
 #include "mon-spell.h"
 #include "monster.h"

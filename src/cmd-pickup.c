@@ -24,6 +24,7 @@
 #include "game-event.h"
 #include "generate.h"
 #include "history.h"
+#include "mon-lore.h"
 #include "mon-timed.h"
 #include "mon-util.h"
 #include "obj-desc.h"

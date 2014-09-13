@@ -18,6 +18,7 @@
 
 #include "angband.h"
 #include "init.h"
+#include "mon-lore.h"
 #include "mon-make.h"
 #include "mon-msg.h"
 #include "mon-spell.h"
@@ -30,16 +31,6 @@
 #include "obj-util.h"
 #include "player-timed.h"
 #include "player-util.h"
-
-
-/**
- * Get the lore record for this monster race.
- */
-monster_lore *get_lore(const monster_race *race)
-{
-	assert(race);
-	return &l_list[race->ridx];
-}
 
 
 /**

@@ -148,7 +148,7 @@ struct monster_mimic {
 	struct object_kind *kind;
 };
 
-/*
+/**
  * Monster "race" information, including racial memories
  *
  * Note that "d_attr" and "d_char" are used for MORE than "visual" stuff.
@@ -230,44 +230,6 @@ typedef struct monster_race
 
 extern monster_race *r_info;
 extern const monster_race *ref_race;
-
-/*
- * Monster "lore" information
- *
- * Note that these fields are related to the "monster recall" and can
- * be scrapped if space becomes an issue, resulting in less "complete"
- * monster recall (no knowledge of spells, etc). XXX XXX XXX
- */
-typedef struct
-{
-	s16b sights;			/* Count sightings of this monster */
-	s16b deaths;			/* Count deaths from this monster */
-
-	s16b pkills;			/* Count monsters killed in this life */
-	s16b tkills;			/* Count monsters killed in all lives */
-
-	byte wake;				/* Number of times woken up (?) */
-	byte ignore;			/* Number of times ignored (?) */
-
-	byte drop_gold;			/* Max number of gold dropped at once */
-	byte drop_item;			/* Max number of item dropped at once */
-
-	byte cast_innate;		/* Max number of innate spells seen */
-	byte cast_spell;		/* Max number of other spells seen */
-
-	byte blows[MONSTER_BLOW_MAX]; /* Number of times each blow type was seen */
-
-	bitflag flags[RF_SIZE]; /* Observed racial flags - a 1 indicates
-	                         * the flag (or lack thereof) is known to
-	                         * the player */
-	bitflag spell_flags[RSF_SIZE];  /* Observed racial spell flags */
-} monster_lore;
-
-/*
- * Array[z_info->r_max] of monster lore
- */
-extern monster_lore *l_list;
-
 
 /*
  * Monster information, for a specific monster.

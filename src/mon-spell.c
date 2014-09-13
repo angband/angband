@@ -17,6 +17,7 @@
  */
 #include "angband.h"
 #include "effects.h"
+#include "mon-lore.h"
 #include "mon-spell.h"
 #include "mon-timed.h"
 #include "mon-util.h"

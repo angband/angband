@@ -24,6 +24,7 @@
 #include "dungeon.h"
 #include "history.h"
 #include "init.h"
+#include "mon-lore.h"
 #include "mon-util.h"
 #include "prefs.h"
 #include "obj-util.h"

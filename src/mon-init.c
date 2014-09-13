@@ -19,6 +19,7 @@
 #include "angband.h"
 #include "init.h"
 #include "mon-init.h"
+#include "mon-lore.h"
 #include "mon-msg.h"
 #include "mon-power.h"
 #include "mon-spell.h"

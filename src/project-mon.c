@@ -18,6 +18,7 @@
 
 #include "angband.h"
 #include "cave.h"
+#include "mon-lore.h"
 #include "mon-make.h"
 #include "mon-msg.h"
 #include "mon-spell.h"

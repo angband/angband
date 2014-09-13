@@ -17,6 +17,7 @@
  */
 
 #include "angband.h"
+#include "mon-lore.h"
 #include "mon-msg.h"
 #include "mon-util.h"
 #include "init.h"

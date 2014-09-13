@@ -19,11 +19,11 @@
 
 #include "angband.h"
 #include "init.h"
+#include "mon-lore.h"
 #include "obj-desc.h"
 #include "obj-identify.h"
 #include "obj-slays.h"
 #include "obj-util.h"
-#include "mon-util.h"
 
 
 /**

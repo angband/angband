@@ -35,6 +35,7 @@
 #include "init.h"
 #include "mon-init.h"
 #include "mon-list.h"
+#include "mon-lore.h"
 #include "mon-msg.h"
 #include "mon-util.h"
 #include "monster.h"
