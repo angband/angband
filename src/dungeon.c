@@ -19,10 +19,10 @@
 #include "angband.h"
 #include "cave.h"
 #include "cmds.h"
-#include "death.h"
 #include "dungeon.h"
 #include "game-event.h"
 #include "generate.h"
+#include "history.h"
 #include "grafmode.h"
 #include "init.h"
 #include "mon-list.h"
@@ -50,6 +50,7 @@
 #include "tables.h"
 #include "target.h"
 #include "ui-birth.h"
+#include "ui-death.h"
 #include "ui-game.h"
 #include "ui-input.h"
 #include "ui-map.h"
@@ -1865,6 +1866,58 @@ void save_game(void)
 
 
 
+/**
+ * Win or not, know inventory, home items and history upon death, enter score
+ */
+static void death_knowledge(void)
+{
+	struct store *st_ptr = &stores[STORE_HOME];
+	object_type *o_ptr;
+	time_t death_time = (time_t)0;
+
+	int i;
+
+	/* Retire in the town in a good state */
+	if (player->total_winner)
+	{
+		player->depth = 0;
+		my_strcpy(player->died_from, "Ripe Old Age", sizeof(player->died_from));
+		player->exp = player->max_exp;
+		player->lev = player->max_lev;
+		player->au += 10000000L;
+	}
+
+	for (i = 0; i < player->max_gear; i++)
+	{
+		o_ptr = &player->gear[i];
+		if (!o_ptr->kind) continue;
+
+		object_flavor_aware(o_ptr);
+		object_notice_everything(o_ptr);
+	}
+
+	for (i = 0; i < st_ptr->stock_num; i++)
+	{
+		o_ptr = &st_ptr->stock[i];
+		if (!o_ptr->kind) continue;
+
+		object_flavor_aware(o_ptr);
+		object_notice_everything(o_ptr);
+	}
+
+	history_unmask_unknown();
+
+	/* Get time of death */
+	(void)time(&death_time);
+	enter_score(&death_time);
+
+	/* Hack -- Recalculate bonuses */
+	player->upkeep->update |= (PU_BONUS);
+	handle_stuff(player->upkeep);
+}
+
+
+
 /*
  * Close up the current game (player may or may not be dead)
  *
@@ -1896,7 +1949,15 @@ void close_game(void)
 	/* Handle death */
 	if (player->is_dead)
 	{
+		death_knowledge();
 		death_screen();
+
+		/* Save dead player */
+		if (!savefile_save(savefile))
+		{
+			msg("death save failed!");
+			message_flush();
+		}
 	}
 
 	/* Still alive */
