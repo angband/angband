@@ -638,8 +638,22 @@ errr parse_file(struct parser *p, const char *filename) {
 	ang_file *fh;
 	errr r = 0;
 
-	path_build(path, sizeof(path), ANGBAND_DIR_EDIT, format("%s.txt", filename));
-	fh = file_open(path, MODE_READ, FTYPE_TEXT);
+	/* Allow parsing of files from user directory */
+	if (strstr(filename, "USER_")) {
+		filename = &filename[5];
+		path_build(path, sizeof(path), ANGBAND_DIR_USER,
+				   format("%s.txt", filename));
+		fh = file_open(path, MODE_READ, FTYPE_TEXT);
+
+		/* Failure is always an option */
+		if (!fh)
+			return r;
+	} else {
+		path_build(path, sizeof(path), ANGBAND_DIR_EDIT,
+				   format("%s.txt", filename));
+		fh = file_open(path, MODE_READ, FTYPE_TEXT);
+	}
+
 	if (!fh)
 		quit(format("Cannot open '%s.txt'", filename));
 	while (file_getl(fh, buf, sizeof(buf))) {
