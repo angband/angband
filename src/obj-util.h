@@ -92,6 +92,7 @@ struct object_kind *lookup_kind(int tval, int sval);
 struct object_kind *objkind_byid(int kidx);
 int lookup_artifact_name(const char *name);
 int lookup_sval(int tval, const char *name);
+void object_short_name(char *buf, size_t max, const char *name);
 int compare_items(const object_type *o1, const object_type *o2);
 void display_object_idx_recall(s16b o_idx);
 void display_object_kind_recall(struct object_kind *kind);

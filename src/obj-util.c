@@ -1737,6 +1737,22 @@ int lookup_sval(int tval, const char *name)
 	return -1;
 }
 
+void object_short_name(char *buf, size_t max, const char *name)
+{
+	size_t j, k;
+	/* Copy across the name, stripping modifiers & and ~) */
+	size_t len = strlen(name);
+	for (j = 0, k = 0; j < len && k < max; j++) {
+		if (j == 0 && name[0] == '&' && name[1] == ' ')
+			j += 2;
+		if (name[j] == '~')
+			continue;
+
+		buf[k++] = name[j];
+	}
+	buf[k] = 0;
+}
+
 /**
  * Sort comparator for objects using only tval and sval.
  * -1 if o1 should be first

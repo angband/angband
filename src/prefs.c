@@ -180,21 +180,6 @@ void dump_monsters(ang_file *fff)
 	}
 }
 
-static void get_pref_name(char *buf, size_t max, const char *name) {
-	size_t j, k;
-	/* Copy across the name, stripping modifiers & and ~) */
-	size_t len = strlen(name);
-	for (j = 0, k = 0; j < len && k < max; j++) {
-		if (j == 0 && name[0] == '&' && name[1] == ' ')
-			j += 2;
-		if (name[j] == '~')
-			continue;
-
-		buf[k++] = name[j];
-	}
-	buf[k] = 0;
-}
-
 /* Dump objects */
 void dump_objects(ang_file *fff)
 {
@@ -209,7 +194,7 @@ void dump_objects(ang_file *fff)
 
 		if (!k_ptr->name || !k_ptr->tval) continue;
 
-		get_pref_name(name, sizeof name, k_ptr->name);
+		object_short_name(name, sizeof name, k_ptr->name);
 		file_putf(fff, "K:%s:%s:%d:%d\n", tval_find_name(k_ptr->tval),
 				name, k_ptr->x_attr, k_ptr->x_char);
 	}
@@ -225,7 +210,7 @@ void dump_autoinscriptions(ang_file *f) {
 		if (!k->name || !k->tval) continue;
 		note = get_autoinscription(k);
 		if (note) {
-			get_pref_name(name, sizeof name, k->name);
+			object_short_name(name, sizeof name, k->name);
 			file_putf(f, "inscribe:%s:%s:%s\n", tval_find_name(k->tval), name, note);
 		}
 	}
