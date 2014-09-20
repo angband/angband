@@ -77,5 +77,6 @@ void lore_description(textblock *tb, const monster_race *race, const monster_lor
 void lore_show_interactive(const monster_race *race, const monster_lore *lore);
 void lore_show_subwindow(const monster_race *race, const monster_lore *lore);
 monster_lore *get_lore(const monster_race *race);
+bool lore_save(const char *path);
 
 #endif /* MONSTER_LORE_H */

@@ -1945,6 +1945,10 @@ void close_game(void)
 	/* Hack -- Increase "icky" depth */
 	character_icky++;
 
+	if (!lore_save("lore.txt")) {
+		msg("lore save failed!");
+		message_flush();
+	}
 
 	/* Handle death */
 	if (player->is_dead)
