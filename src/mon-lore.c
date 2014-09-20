@@ -2260,7 +2260,7 @@ void write_lore_entries(ang_file *fff)
 
 			while (m) {
 				object_short_name(name, sizeof name, kind->name);
-				file_putf(fff, "drop:%s:%s:%d:%d:%d\n",
+				file_putf(fff, "mimic:%s:%s\n",
 						  tval_find_name(kind->tval), name);
 				m = m->next;
 			}
