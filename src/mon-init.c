@@ -593,11 +593,24 @@ static enum parser_error parse_r_d(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_r_spell_freq(struct parser *p) {
+	struct monster_race *r = parser_priv(p);
+	int pct;
+
+	if (!r)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	pct = parser_getint(p, "freq");
+	if (pct < 1 || pct > 100)
+		return PARSE_ERROR_INVALID_SPELL_FREQ;
+	r->freq_spell = 100 / pct;
+	r->freq_innate = r->freq_spell;
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_r_s(struct parser *p) {
 	struct monster_race *r = parser_priv(p);
 	char *flags;
 	char *s;
-	int pct;
 	int ret = PARSE_ERROR_NONE;
 
 	if (!r)
@@ -605,19 +618,10 @@ static enum parser_error parse_r_s(struct parser *p) {
 	flags = string_make(parser_getstr(p, "spells"));
 	s = strtok(flags, " |");
 	while (s) {
-		if (1 == sscanf(s, "1_IN_%d", &pct)) {
-			if (pct < 1 || pct > 100) {
-				ret = PARSE_ERROR_INVALID_SPELL_FREQ;
-				break;
-			}
-			r->freq_spell = 100 / pct;
-			r->freq_innate = r->freq_spell;
-		} else {
-			if (grab_flag(r->spell_flags, RSF_SIZE, r_info_spell_flags, s)) {
-				quit_fmt("bad sf-flag: %s", s);
-				ret = PARSE_ERROR_INVALID_FLAG;
-				break;
-			}
+		if (grab_flag(r->spell_flags, RSF_SIZE, r_info_spell_flags, s)) {
+			quit_fmt("bad spell flag: %s", s);
+			ret = PARSE_ERROR_INVALID_FLAG;
+			break;
 		}
 		s = strtok(NULL, " |");
 	}
@@ -785,6 +789,7 @@ struct parser *init_parse_r(void) {
 	parser_reg(p, "F ?str flags", parse_r_f);
 	parser_reg(p, "-F ?str flags", parse_r_mf);
 	parser_reg(p, "D str desc", parse_r_d);
+	parser_reg(p, "spell-freq int freq", parse_r_spell_freq);
 	parser_reg(p, "S str spells", parse_r_s);
 	parser_reg(p, "drop sym tval sym sval uint chance uint min uint max", parse_r_drop);
 	parser_reg(p, "drop-artifact str name", parse_r_drop_artifact);

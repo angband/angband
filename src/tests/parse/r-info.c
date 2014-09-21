@@ -133,8 +133,8 @@ int test_d0(void *state) {
 	ok;
 }
 
-int test_s0(void *state) {
-	enum parser_error r = parser_parse(state, "S:1_IN_4 | BR_DARK | S_HOUND");
+int test_sf0(void *state) {
+	enum parser_error r = parser_parse(state, "spell-freq:4");
 	struct monster_race *mr;
 
 	eq(r, PARSE_ERROR_NONE);
@@ -142,6 +142,16 @@ int test_s0(void *state) {
 	require(mr);
 	eq(mr->freq_spell, 25);
 	eq(mr->freq_innate, 25);
+	ok;
+}
+
+int test_s0(void *state) {
+	enum parser_error r = parser_parse(state, "S:BR_DARK | S_HOUND");
+	struct monster_race *mr;
+
+	eq(r, PARSE_ERROR_NONE);
+	mr = parser_priv(state);
+	require(mr);
 	require(mr->spell_flags);
 	ok;
 }
@@ -157,6 +167,7 @@ struct test tests[] = {
 	{ "b1", test_b1 },
 	{ "f0", test_f0 },
 	{ "d0", test_d0 },
+	{ "sf0", test_sf0 },
 	{ "s0", test_s0 },
 	{ NULL, NULL }
 };

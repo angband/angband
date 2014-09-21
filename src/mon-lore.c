@@ -2199,14 +2199,9 @@ void write_lore_entries(ang_file *fff)
 		/* Output 'F' for "Flags" */
 		write_flags(fff, "F:", race->flags, RF_SIZE, r_info_flags);
 
-	/* Output 'S' for spell frequency in unwieldy format */
-	/* TODO: use this routine to output M:freq_innate:freq_spell or similar to allow these to be
-	 * specified properly. 'M' is for magic. Could be extended with :spell_power:mana for 4GAI.
-	 *
-	 * XXX Need to check for rounding errors here.
-	 */
+		/* Output 'spell-freq' for spell frequency */
 		if (race->freq_innate)
-			file_putf(fff, "S:1_IN_%d\n", 100/race->freq_innate);
+			file_putf(fff, "spell-freq:%d\n", 100/race->freq_spell);
 
 		/* Output 'S' for "Spell Flags" (multiple lines) */
 		write_flags(fff, "S:", race->spell_flags, RSF_SIZE, r_info_spell_flags);

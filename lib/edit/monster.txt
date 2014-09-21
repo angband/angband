@@ -15,7 +15,7 @@
 # I: speed : hit points : vision : armor class : alertness
 # W: depth : rarity : unused (always 0) : experience for kill
 # B: attack method : attack effect : damage
-# S: spell frequency
+# spell-freq: spell frequency
 # S: spell type | spell type | etc
 # F: flag | flag | etc
 # -F: flag | flag | etc
@@ -83,13 +83,6 @@
 # 'B' is for blows--method of attack, effect of attack, and damage from attack.
 # There may be up to four of these lines; effect and damage are optional.
 
-# 'S' is for spells. The first S: line must be S:1_IN_X with X the number of
-# monster turns, on average, before the monster will cast one of its spells.
-# X must not be zero. If X is 1, the monster will never move while the player
-# is in sight, and will thus never attack in melee, as it will cast spells
-# every turn: if the monster is to use a melee attack, then X must be 2 or
-# greater.
-
 # 'F' is for flags. These are fairly self-explanatory. As many F: lines may be
 # used as are needed to specify all the flags and flags are separated by the
 # '|' symbol.
@@ -97,6 +90,15 @@
 # '-F' is for flags to remove from the template. For example, in 
 # monster_base.txt, molds are given HURT_FIRE. We don't want the red mold 
 # to have that, so we add a '-F:HURT_FIRE' line to subtract that flag.
+
+# 'spell-freq' is for spell frequency - the number of monster turns, on
+# average, before the monster will cast one of its spells.  This must not be
+# zero. If it is 1, the monster will never move while the player
+# is in sight, and will thus never attack in melee, as it will cast spells
+# every turn: if the monster is to use a melee attack, then X must be 2 or
+# greater.
+
+# 'S' is for spell flags, which work just like regular flags.
 
 # 'D' is for description. As many D: lines may be used as are needed to
 # describe the monster. Leading whitespace will be removed, and a single space
@@ -343,7 +345,7 @@ F:HAS_LIGHT | SEASONAL
 F:UNIQUE
 F:DROP_1 | DROP_GOOD | ONLY_ITEM
 F:NO_CONF | NO_SLEEP
-S:1_IN_4
+spell-freq:4
 S:BLINK | HEAL
 D:It's Saint Nick, out delivering presents to the town urchins.
 
@@ -524,7 +526,7 @@ W:2:1:0:1
 F:NEVER_BLOW | NEVER_MOVE
 F:IM_POIS
 F:FORCE_SLEEP
-S:1_IN_4
+spell-freq:4
 S:SHRIEK
 D:Yum!  It looks quite tasty.  It doesn't sound so nice, though...
 
@@ -591,7 +593,7 @@ F:MALE | HAS_LIGHT
 F:DROP_40
 F:OPEN_DOOR
 F:FORCE_SLEEP
-S:1_IN_12
+spell-freq:12
 S:CAUSE_1 | HEAL | SCARE
 drop:prayer book:[Beginners Handbook]:5:1:1
 friends-base:20:1d3:person
@@ -610,7 +612,7 @@ F:MALE | HAS_LIGHT
 F:DROP_40
 F:OPEN_DOOR
 F:FORCE_SLEEP
-S:1_IN_12
+spell-freq:12
 S:BLIND | BLINK | CONF | MISSILE
 drop:magic book:[Magic for Beginners]:5:1:1
 friends-base:20:1d3:person
@@ -801,7 +803,7 @@ B:TOUCH:TERRIFY
 F:DROP_40 | DROP_60
 F:RAND_25 | RAND_50 | TAKE_ITEM
 F:HURT_LIGHT
-S:1_IN_15
+spell-freq:15
 S:BLINK
 D:It is a ghastly, ghostly form.
 
@@ -855,7 +857,7 @@ B:TOUCH:EAT_LIGHT:1d3
 B:TOUCH:EAT_LIGHT:1d3
 F:NEVER_MOVE
 F:HURT_LIGHT | IM_POIS | HURT_COLD | NO_CONF | NO_SLEEP
-S:1_IN_15
+spell-freq:15
 S:DRAIN_MANA
 D:It is a large pile of silver flesh that sucks all light from its surroundings.
 
@@ -868,7 +870,7 @@ W:3:1:0:12
 B:TOUCH:POISON:1d3
 F:NEVER_MOVE
 F:HURT_LIGHT | IM_POIS | HURT_COLD | NO_CONF | NO_SLEEP
-S:1_IN_15
+spell-freq:15
 S:DRAIN_MANA
 D:It's a large pile of yellow flesh.
 
@@ -942,7 +944,7 @@ W:3:1:0:6
 B:GAZE:LOSE_STR:1d6
 F:NEVER_MOVE
 F:HURT_LIGHT | NO_FEAR
-S:1_IN_11
+spell-freq:11
 S:DRAIN_MANA
 D:A disembodied eye, crackling with energy.
 
@@ -953,7 +955,7 @@ I:110:11:20:24:50
 W:3:1:0:15
 B:HIT:HURT:1d8
 F:DROP_40
-S:1_IN_5
+spell-freq:5
 S:CAUSE_1 | CONF | HEAL | MISSILE
 drop:magic book:[Magic for Beginners]:5:1:1
 drop:prayer book:[Beginners Handbook]:5:1:1
@@ -982,7 +984,7 @@ F:MALE | HAS_LIGHT
 F:DROP_60
 F:OPEN_DOOR
 F:FORCE_SLEEP
-S:1_IN_9
+spell-freq:9
 S:ARROW_1 | MISSILE
 drop:magic book:[Magic for Beginners]:3:1:1
 friends-base:20:1d3:person
@@ -1002,7 +1004,7 @@ F:MALE | HAS_LIGHT
 F:DROP_60
 F:OPEN_DOOR
 F:FORCE_SLEEP
-S:1_IN_9
+spell-freq:9
 S:CAUSE_1 | SCARE
 drop:prayer book:[Beginners Handbook]:3:1:1
 friends-base:20:1d3:person
@@ -1072,7 +1074,7 @@ I:110:24:20:24:70
 W:4:1:0:20
 B:HIT:HURT:1d9
 F:DROP_40
-S:1_IN_5
+spell-freq:5
 S:ARROW_2
 friends-base:30:1d2:kobold
 friends-base:70:1d2:kobold
@@ -1199,7 +1201,7 @@ B:GAZE:DISENCHANT
 F:NEVER_MOVE
 F:HURT_LIGHT | IM_DISEN | NO_FEAR
 F:ATTR_MULTI
-S:1_IN_9
+spell-freq:9
 S:DRAIN_MANA
 D:A disembodied eye, crackling with magic.
 
@@ -1232,7 +1234,7 @@ I:110:14:12:30:1
 W:5:2:0:15
 B:BITE:COLD:1d6
 F:IM_COLD
-S:1_IN_10
+spell-freq:10
 S:BR_COLD
 D:It is a large fly that drips frost.
 
@@ -1245,7 +1247,7 @@ W:5:2:0:16
 B:BITE:POISON:1d6
 F:RAND_25
 F:IM_POIS
-S:1_IN_10
+spell-freq:10
 S:BR_POIS
 D:A vast, foul-smelling dragonfly.
 
@@ -1348,7 +1350,7 @@ I:120:14:12:30:1
 W:6:2:0:18
 F:NEVER_BLOW | RAND_25
 F:IM_ACID
-S:1_IN_10
+spell-freq:10
 S:BR_ACID
 D:The size of a large bird, this fly drips caustic acid.
 
@@ -1361,7 +1363,7 @@ W:6:2:0:18
 B:BITE:HURT:1d3
 F:RAND_25
 F:IM_FIRE
-S:1_IN_10
+spell-freq:10
 S:BR_SOUN
 D:Large beating wings support this dazzling insect.  A loud buzzing noise
 D: pervades the air.
@@ -1412,7 +1414,7 @@ W:7:3:0:15
 B:GAZE:BLIND:2d6
 F:NEVER_MOVE
 F:HURT_LIGHT | NO_FEAR
-S:1_IN_7
+spell-freq:7
 S:DRAIN_MANA
 D:A disembodied eye, bloodshot and nasty.
 
@@ -1478,7 +1480,7 @@ B:HIT:HURT:2d2
 B:TOUCH:LOSE_WIS
 F:DROP_40 | DROP_60
 F:RAND_50 | TAKE_ITEM
-S:1_IN_15
+spell-freq:15
 S:DRAIN_MANA | TPORT
 D:It is almost insubstantial.
 
@@ -1494,7 +1496,7 @@ F:MALE | EVIL
 F:DROP_60
 F:HURT_LIGHT
 F:FORCE_SLEEP
-S:1_IN_10
+spell-freq:10
 S:CONF | DARKNESS
 D:An elven figure with jet black skin and white hair, his eyes are large and
 D: twisted with evil.
@@ -1540,7 +1542,7 @@ F:UNIQUE | MALE | EVIL
 F:DROP_1 | DROP_GOOD | DROP_GREAT | ONLY_ITEM
 F:OPEN_DOOR | TAKE_ITEM
 F:FORCE_SLEEP
-S:1_IN_5
+spell-freq:5
 S:HEAL | SLOW | TRAPS
 S:BA_POIS
 S:BO_COLD
@@ -1584,7 +1586,7 @@ B:BITE:FIRE:3d6
 F:RAND_25
 F:IM_FIRE
 F:FORCE_SLEEP
-S:1_IN_9
+spell-freq:9
 S:BR_FIRE
 D:A large black and yellow lizard.  You'd better run away!
 
@@ -1678,7 +1680,7 @@ W:9:3:0:24
 B:TOUCH:HURT:1d4
 B:CRAWL:ACID:2d4
 F:EMPTY_MIND
-S:1_IN_11
+spell-freq:11
 S:DRAIN_MANA
 D:It is a strange, slimy, icky creature.
 
@@ -1717,7 +1719,7 @@ F:HURT_LIGHT
 F:FORCE_SLEEP
 drop:magic book:[Conjurings and Tricks]:5:1:1
 drop:prayer book:[Words of Wisdom]:5:1:1
-S:1_IN_8
+spell-freq:8
 S:BLINK | CAUSE_1 | MISSILE
 D:An orc dressed in skins who gestures wildly.
 
@@ -1732,7 +1734,7 @@ B:BITE:HURT:1d5
 F:DROP_40 | DROP_1 | ONLY_GOLD
 F:OPEN_DOOR | BASH_DOOR
 F:IM_ELEC
-S:1_IN_12
+spell-freq:12
 S:BR_ELEC
 D:This hatchling dragon is still soft, its eyes unaccustomed to light and its
 D: scales a pale blue.
@@ -1748,7 +1750,7 @@ B:BITE:HURT:1d5
 F:DROP_40 | DROP_1 | ONLY_GOLD
 F:OPEN_DOOR | BASH_DOOR
 F:IM_COLD
-S:1_IN_12
+spell-freq:12
 S:BR_COLD
 D:This hatchling dragon is still soft, its eyes unaccustomed to light and its
 D: scales a pale white.
@@ -1764,7 +1766,7 @@ B:BITE:HURT:1d5
 F:DROP_40 | DROP_1 | ONLY_GOLD
 F:OPEN_DOOR | BASH_DOOR
 F:IM_POIS
-S:1_IN_12
+spell-freq:12
 S:BR_POIS
 D:This hatchling dragon is still soft, its eyes unaccustomed to light and its
 D: scales a sickly green.
@@ -1780,7 +1782,7 @@ B:BITE:HURT:1d5
 F:DROP_40 | DROP_1 | ONLY_GOLD
 F:OPEN_DOOR | BASH_DOOR
 F:IM_ACID
-S:1_IN_12
+spell-freq:12
 S:BR_ACID
 D:This hatchling dragon is still soft, its eyes unaccustomed to light and its
 D: scales a dull black.
@@ -1796,7 +1798,7 @@ B:BITE:HURT:1d5
 F:DROP_40 | DROP_1 | ONLY_GOLD
 F:OPEN_DOOR | BASH_DOOR
 F:IM_FIRE
-S:1_IN_12
+spell-freq:12
 S:BR_FIRE
 D:This hatchling dragon is still soft, its eyes unaccustomed to light and its
 D: scales a pale red.
@@ -1845,7 +1847,7 @@ B:CLAW:HURT:1d3
 B:BITE:HURT:1d5
 F:DROP_40 | DROP_1 | ONLY_GOLD
 F:OPEN_DOOR | BASH_DOOR
-S:1_IN_12
+spell-freq:12
 S:BR_SOUN
 D:This hatchling dragon is still soft, its eyes unaccustomed to light and its
 D: scales a pale gold.
@@ -1895,7 +1897,7 @@ F:MALE | EVIL
 F:DROP_60 | ONLY_ITEM
 F:HURT_LIGHT
 F:FORCE_SLEEP
-S:1_IN_5
+spell-freq:5
 S:BLIND | CONF | DARKNESS | MISSILE
 S:BA_POIS
 drop:magic book:[Magic for Beginners]:10:1:1
@@ -1914,7 +1916,7 @@ B:INSULT
 F:UNIQUE | MALE | EVIL | SMART
 F:DROP_1 | DROP_GOOD | ONLY_ITEM
 F:FORCE_SLEEP
-S:1_IN_4
+spell-freq:4
 S:BLINK | CONF | HEAL | SLOW | TELE_TO
 S:S_MONSTER
 friends:100:2d5:Brown yeek
@@ -1991,7 +1993,7 @@ B:SPORE:DISENCHANT:1d6
 F:EMPTY_MIND | STUPID
 F:IM_DISEN
 F:ATTR_MULTI
-S:1_IN_11
+spell-freq:11
 S:DRAIN_MANA
 D:It is a strange glowing growth on the dungeon floor.
 
@@ -2006,7 +2008,7 @@ B:BITE:HURT:1d5
 F:HAS_LIGHT
 F:DROP_40
 F:BASH_DOOR
-S:1_IN_11
+spell-freq:11
 S:CONF | SCARE
 S:BR_DARK | BR_LIGHT
 D:A small relative of the dragon that inhabits dark caves.
@@ -2020,7 +2022,7 @@ W:10:1:0:40
 B:HIT:HURT:1d8
 F:OPEN_DOOR | BASH_DOOR
 F:NO_FEAR
-S:1_IN_3
+spell-freq:3
 S:BLINK | TELE_TO
 D:It is a fast-moving demon that blinks quickly in and out of existence; no
 D: other demon matches its teleporting mastery.
@@ -2099,7 +2101,7 @@ F:DROP_40 | DROP_1 | ONLY_GOLD
 F:OPEN_DOOR | BASH_DOOR
 F:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | IM_POIS
 F:ATTR_MULTI
-S:1_IN_12
+spell-freq:12
 S:BR_ACID | BR_COLD | BR_ELEC | BR_FIRE | BR_POIS
 D:This hatchling dragon is still soft, its eyes unaccustomed to light and its
 D: scales shimmering with hints of many different colours.
@@ -2136,7 +2138,7 @@ B:HIT:HURT:1d5
 F:MALE | EVIL
 F:DROP_60
 F:FORCE_SLEEP
-S:1_IN_4
+spell-freq:4
 S:BLINK | DARKNESS
 S:BO_COLD
 S:S_MONSTER
@@ -2181,7 +2183,7 @@ B:TOUCH:EXP_10
 F:HAS_LIGHT
 F:NEVER_MOVE
 F:HURT_LIGHT | HURT_COLD | IM_POIS | NO_CONF | NO_SLEEP
-S:1_IN_11
+spell-freq:11
 S:DRAIN_MANA
 D:Yum!  It looks quite tasty.  It is a pulsing mound of glowing flesh.
 
@@ -2225,7 +2227,7 @@ B:HIT:HURT:1d8
 F:EVIL
 F:DROP_40
 F:FORCE_SLEEP
-S:1_IN_4
+spell-freq:4
 S:BLIND | BLINK | SLOW | TPORT
 S:BA_POIS
 S:S_MONSTER
@@ -2244,7 +2246,7 @@ F:MALE | EVIL | SMART | HAS_LIGHT
 F:DROP_60
 F:OPEN_DOOR
 F:FORCE_SLEEP
-S:1_IN_3
+spell-freq:3
 S:CAUSE_2 | HEAL | SCARE
 S:S_MONSTER
 drop:prayer book:[Beginners Handbook]:8:1:1
@@ -2266,7 +2268,7 @@ F:MALE | EVIL | SMART
 F:DROP_1 | ONLY_ITEM
 F:HURT_LIGHT
 F:FORCE_SLEEP
-S:1_IN_5
+spell-freq:5
 S:BLIND | CAUSE_2 | CONF | DARKNESS | HEAL
 drop:prayer book:[Beginners Handbook]:8:1:1
 drop:prayer book:[Beginners Handbook]:8:1:1
@@ -2327,7 +2329,7 @@ B:TOUCH:LOSE_DEX:1d8
 F:DROP_40 | DROP_60
 F:RAND_25
 F:FORCE_SLEEP
-S:1_IN_15
+spell-freq:15
 S:SCARE | TPORT
 D:A ghostly apparition that shrieks horribly.
 
@@ -2385,7 +2387,7 @@ B:BITE:POISON:1d6
 F:EVIL
 F:IM_POIS
 F:FORCE_SLEEP
-S:1_IN_8
+spell-freq:8
 S:CAUSE_1 | CONF | DARKNESS
 D:A dark elven torso merged with the bloated form of a giant spider.
 
@@ -2408,7 +2410,7 @@ B:HIT:HURT:1d8
 F:UNIQUE | MALE | EVIL | SMART
 F:DROP_60 | DROP_1 | DROP_GOOD | ONLY_ITEM
 F:FORCE_SLEEP
-S:1_IN_3
+spell-freq:3
 S:BLIND | BLINK | HEAL | SLOW | TPORT
 S:S_KIN | S_MONSTER
 friends:100:2d6:Brown yeek
@@ -2451,7 +2453,7 @@ F:MALE | EVIL | SMART | HAS_LIGHT
 F:DROP_1
 F:OPEN_DOOR
 F:FORCE_SLEEP
-S:1_IN_3
+spell-freq:3
 S:BLIND | BLINK | CONF | DARKNESS | HASTE | HOLD
 S:SLOW | TPORT
 drop:magic book:[Conjurings and Tricks]:8:1:1
@@ -2473,7 +2475,7 @@ F:MALE | EVIL | SMART | HAS_LIGHT
 F:DROP_1
 F:OPEN_DOOR
 F:FORCE_SLEEP
-S:1_IN_3
+spell-freq:3
 S:BLIND | BLINK | HASTE | HOLD | SLOW
 S:BO_ELEC | BO_FIRE
 S:S_ANIMAL
@@ -2490,7 +2492,7 @@ B:HIT:HURT:3d4
 B:HIT:HURT:3d4
 F:DROP_20
 F:HURT_LIGHT
-S:1_IN_9
+spell-freq:9
 S:ARROW_2
 friends:20:1d2:Cave troll
 friends:70:2d4:Snaga
@@ -2553,7 +2555,7 @@ F:EVIL | MULTIPLY
 F:OPEN_DOOR | BASH_DOOR
 F:IM_POIS
 F:FORCE_SLEEP
-S:1_IN_8
+spell-freq:8
 S:BLIND | CONF | SCARE
 D:It is a strange, slimy, icky creature, with rudimentary intelligence, but evil
 D: cunning.  It hungers for food, and you look tasty.
@@ -2612,7 +2614,7 @@ F:EVIL
 F:DROP_40 | ONLY_GOLD
 F:OPEN_DOOR | BASH_DOOR
 F:FORCE_SLEEP
-S:1_IN_9
+spell-freq:9
 S:BLINK | CAUSE_2
 S:BA_POIS
 S:BO_COLD
@@ -2645,7 +2647,7 @@ B:SPORE:HALLU
 F:HAS_LIGHT
 F:NEVER_MOVE
 F:FORCE_SLEEP
-S:1_IN_2
+spell-freq:2
 S:BLINK | DARKNESS | SCARE | SLOW
 D:Yum!  It looks quite tasty.  It seems to glow with an unusual light.
 
@@ -2672,7 +2674,7 @@ B:BITE:HURT:1d6
 F:HAS_LIGHT
 F:BASH_DOOR
 F:FORCE_SLEEP
-S:1_IN_5
+spell-freq:5
 S:BR_LIGHT
 friends:100:2d7:Same
 D:A brilliant canine form whose light hurts your eyes, even at this distance.
@@ -2687,7 +2689,7 @@ B:CLAW:HURT:1d4
 B:BITE:HURT:1d6
 F:BASH_DOOR
 F:FORCE_SLEEP
-S:1_IN_5
+spell-freq:5
 S:BR_DARK
 friends:100:2d7:Same
 D:A hole in the air in the shape of a huge hound.  No light falls upon its form.
@@ -2878,7 +2880,7 @@ F:INVISIBLE | SMART
 F:DROP_1 | ONLY_ITEM
 F:RAND_25 | BASH_DOOR
 F:FORCE_SLEEP
-S:1_IN_10
+spell-freq:10
 S:BLIND | BLINK | CONF | SCARE | TELE_LEVEL | TELE_TO
 S:TPORT
 D:The chaotic evil master's favourite pet.
@@ -2891,7 +2893,7 @@ W:16:1:0:60
 B:HIT:HURT:3d5
 B:HIT:HURT:3d5
 F:DROP_20
-S:1_IN_9
+spell-freq:9
 S:ARROW_2
 friends:40:1d4:Half-orc
 friends:80:2d5:Warg
@@ -2918,7 +2920,7 @@ I:120:9:40:14:0
 W:16:4:0:20
 B:CLAW:HURT:1d4
 B:CLAW:HURT:1d4
-S:1_IN_8
+spell-freq:8
 S:SHRIEK
 F:GROUP_AI
 friends:100:3d3:Same
@@ -2939,7 +2941,7 @@ F:COLD_BLOOD | INVISIBLE | SMART
 F:DROP_1 | ONLY_ITEM
 F:RAND_25 | BASH_DOOR
 F:FORCE_SLEEP
-S:1_IN_10
+spell-freq:10
 S:BLIND | BLINK | CONF | SCARE | TELE_LEVEL | TELE_TO
 S:TPORT
 D:The lawful evil master's favourite pet.
@@ -2971,7 +2973,7 @@ F:UNIQUE | MALE
 F:DROP_1 | DROP_GOOD | ONLY_ITEM
 F:IM_COLD | IM_FIRE | IM_POIS | NO_CONF | NO_SLEEP
 F:FORCE_SLEEP
-S:1_IN_6
+spell-freq:6
 S:BLIND | CAUSE_2 | CONF | HEAL | MIND_BLAST
 D:The friend and companion of the dwarven king Thrór, he went mad with grief
 D: after Thrór's death at the hands of Azog the Orc.  With torn beard and 
@@ -2987,7 +2989,7 @@ B:BITE:HURT:2d6
 B:BITE:HURT:2d6
 F:DROP_2
 F:OPEN_DOOR | MOVE_BODY
-S:1_IN_11
+spell-freq:11
 S:SCARE
 D:A strange reptilian hybrid with two heads, guarding its hoard.
 
@@ -3037,7 +3039,7 @@ B:HIT:HURT:3d5
 B:HIT:HURT:3d5
 B:HIT:HURT:3d5
 F:DROP_60
-S:1_IN_9
+spell-freq:9
 S:ARROW_2
 friends:50:1d5:Wolf
 friends:50:1d5:Warg
@@ -3070,7 +3072,7 @@ F:HAS_LIGHT
 F:BASH_DOOR
 F:IM_FIRE | HURT_COLD
 F:FORCE_SLEEP
-S:1_IN_10
+spell-freq:10
 S:BR_FIRE
 friends:100:2d7:Same
 D:Flames lick at its feet and its tongue is a blade of fire.  You can feel a
@@ -3087,7 +3089,7 @@ B:BITE:COLD:2d6
 F:BASH_DOOR
 F:IM_COLD | HURT_FIRE
 F:FORCE_SLEEP
-S:1_IN_10
+spell-freq:10
 S:BR_COLD
 friends:100:2d7:Same
 D:A hound as tall as a man, this creature appears to be composed of angular
@@ -3105,7 +3107,7 @@ F:HAS_LIGHT
 F:BASH_DOOR
 F:IM_ELEC
 F:FORCE_SLEEP
-S:1_IN_10
+spell-freq:10
 S:BR_ELEC
 friends:100:2d7:Same
 D:Saint Elmo's Fire forms a ghostly halo around this hound, and sparks sting
@@ -3121,7 +3123,7 @@ B:HIT:POISON:3d4
 B:HIT:HURT:2d3
 B:HIT:HURT:2d3
 F:HURT_COLD
-S:1_IN_6
+spell-freq:6
 S:BO_COLD
 D:A strange creature that disguises itself as a discarded potion bottle to lure
 D: unsuspecting adventurers within reach of its venomous claws.
@@ -3139,7 +3141,7 @@ I:120:36:20:24:10
 W:18:2:0:50
 B:BITE:HURT:1d8
 F:RAND_25 | BASH_DOOR | GROUP_AI
-S:1_IN_4
+spell-freq:4
 S:BLINK | TELE_TO
 friends:100:2d7:Same
 D:A strange magical member of the canine race, its form seems to shimmer and
@@ -3155,7 +3157,7 @@ B:HIT:HURT:1d8
 F:EVIL
 F:DROP_60 | ONLY_GOLD
 F:OPEN_DOOR | BASH_DOOR
-S:1_IN_4
+spell-freq:4
 S:SHRIEK
 friends:60:1d1:Giant fruit fly
 D:A pile of rotting vegetation that slides towards you with a disgusting stench,
@@ -3171,7 +3173,7 @@ B:GAZE:EXP_10
 F:EVIL
 F:NEVER_MOVE
 F:HURT_LIGHT | NO_FEAR
-S:1_IN_7
+spell-freq:7
 S:HOLD | TELE_TO
 D:A huge disembodied eye.  As you stare into the black nothingness of its pupil,
 D: you feel your will and vitality draining away, and are unable to do anything
@@ -3241,7 +3243,7 @@ I:120:5:8:21:10
 W:19:4:0:4
 B:BITE:POISON:2d2
 F:EVIL
-S:1_IN_12
+spell-freq:12
 S:SHRIEK
 D:Believed to be an evil relative of the cricket, this creature gets its name
 D: from its incessant squeaking, which can best be described as "neek-breek,
@@ -3281,7 +3283,7 @@ B:BITE:POISON:1d6
 B:BITE:POISON:1d6
 F:ANIMAL | WEIRD_MIND
 F:IM_POIS | GROUP_AI
-S:1_IN_5
+spell-freq:5
 S:BLINK | TELE_TO
 friends:100:2d7:Same
 D:A spider that never seems quite there.  Everywhere you look it is just
@@ -3297,7 +3299,7 @@ B:BITE:HURT:2d6
 B:BITE:HURT:2d6
 F:DROP_3
 F:OPEN_DOOR | MOVE_BODY
-S:1_IN_9
+spell-freq:9
 S:SCARE
 D:A strange reptilian hybrid with three heads, guarding its hoard.
 
@@ -3312,7 +3314,7 @@ B:CLAW:HURT:3d3
 B:CLAW:HURT:3d3
 F:BASH_DOOR
 F:FORCE_SLEEP
-S:1_IN_10
+spell-freq:10
 S:BR_SHAR
 friends:100:2d7:Same
 D:A beautiful crystalline shape does not disguise the danger this hound clearly
@@ -3330,7 +3332,7 @@ B:CLAW:HURT:3d3
 F:BASH_DOOR
 F:IM_POIS
 F:FORCE_SLEEP
-S:1_IN_10
+spell-freq:10
 S:BR_POIS
 friends:100:2d7:Same
 D:Swirling vapours surround this beast as it floats towards you, seemingly
@@ -3361,7 +3363,7 @@ B:CLAW:HURT:3d3
 F:BASH_DOOR
 F:IM_ACID
 F:FORCE_SLEEP
-S:1_IN_10
+spell-freq:10
 S:BR_ACID
 friends:100:2d7:Same
 D:Liquid footprints follow this hound as it pads around the dungeon.  An acrid
@@ -3378,7 +3380,7 @@ B:BITE:FIRE:2d6
 F:BASH_DOOR
 F:IM_FIRE
 F:FORCE_SLEEP
-S:1_IN_10
+spell-freq:10
 S:BR_FIRE
 D:It is a strange concoction of goat, lion and dragon, with the heads of all
 D: three beasts.
@@ -3388,7 +3390,7 @@ T:quylthulg
 C:y
 I:110:27:10:1:2
 W:20:1:0:250
-S:1_IN_4
+spell-freq:4
 S:BLINK
 S:S_MONSTER
 D:It is a strange pulsing mound of flesh.
@@ -3428,7 +3430,7 @@ F:MALE | EVIL
 F:DROP_2 | ONLY_ITEM
 F:HURT_LIGHT
 F:FORCE_SLEEP
-S:1_IN_5
+spell-freq:5
 S:BLIND | CONF | DARKNESS | HASTE
 S:BO_COLD | BO_FIRE
 drop:magic book:[Conjurings and Tricks]:5:1:1
@@ -3449,7 +3451,7 @@ B:HIT:HURT:5d4
 F:MALE | HAS_LIGHT
 F:DROP_1
 F:OPEN_DOOR | TAKE_ITEM
-S:1_IN_4
+spell-freq:4
 S:ARROW_2 | BLINK | MISSILE
 S:BO_COLD | BO_ELEC
 S:S_ANIMAL
@@ -3473,7 +3475,7 @@ B:HIT:HURT:4d5
 F:MALE | HAS_LIGHT
 F:DROP_1
 F:OPEN_DOOR | TAKE_ITEM
-S:1_IN_4
+spell-freq:4
 S:BLIND | CAUSE_2 | HEAL | SCARE | SLOW
 drop:prayer book:[Words of Wisdom]:5:1:1
 drop:prayer book:[Chants and Blessings]:5:1:1
@@ -3513,7 +3515,7 @@ B:BITE:ELEC:1d3
 F:RAND_50 | BASH_DOOR
 F:IM_ELEC
 F:FORCE_SLEEP
-S:1_IN_4
+spell-freq:4
 S:BR_ELEC
 D:It is a glowing blue bat with a sharp tail.
 
@@ -3528,7 +3530,7 @@ B:HIT:POISON:3d4
 B:HIT:HURT:2d3
 B:HIT:HURT:2d3
 F:HURT_FIRE
-S:1_IN_5
+spell-freq:5
 S:BO_FIRE
 S:S_MONSTER
 D:A strange creature that disguises itself as a discarded scroll to lure
@@ -3549,7 +3551,7 @@ W:21:1:0:100
 B:ENGULF:FIRE:3d3
 F:HAS_LIGHT
 F:IM_FIRE | HURT_COLD
-S:1_IN_6
+spell-freq:6
 S:BR_FIRE
 D:A whirling maelstrom of fire.
 
@@ -3561,7 +3563,7 @@ I:110:45:100:36:0
 W:21:1:0:100
 B:ENGULF:ACID:3d3
 F:IM_ACID | IM_WATER
-S:1_IN_6
+spell-freq:6
 S:BR_ACID
 D:A caustic spinning whirlpool of water.
 
@@ -3573,7 +3575,7 @@ I:110:45:100:36:0
 W:21:1:0:100
 B:ENGULF:COLD:3d3
 F:IM_COLD | HURT_FIRE
-S:1_IN_6
+spell-freq:6
 S:BR_COLD
 D:A twisting whirlpool of frost.
 
@@ -3586,7 +3588,7 @@ W:21:1:0:100
 B:ENGULF:ELEC:3d3
 F:HAS_LIGHT
 F:IM_ELEC
-S:1_IN_6
+spell-freq:6
 S:BR_ELEC
 D:A shimmering tornado of air, sparks crackle along its length.
 
@@ -3643,7 +3645,7 @@ F:COLD_BLOOD
 F:BASH_DOOR
 F:IM_COLD | IM_FIRE | IM_POIS
 F:FORCE_SLEEP
-S:1_IN_7
+spell-freq:7
 S:SLOW
 D:It is a massive metal statue that moves steadily towards you.
 
@@ -3684,7 +3686,7 @@ F:MULTIPLY
 F:DROP_40
 F:RAND_50 | OPEN_DOOR | BASH_DOOR | KILL_BODY | TAKE_ITEM
 F:IM_POIS | HURT_COLD
-S:1_IN_11
+spell-freq:11
 S:DRAIN_MANA
 D:It is a strangely moving puddle.
 
@@ -3749,7 +3751,7 @@ F:HAS_LIGHT
 F:RAND_50 | BASH_DOOR
 F:IM_FIRE
 F:FORCE_SLEEP
-S:1_IN_4
+spell-freq:4
 S:BR_FIRE
 D:It is a sharp-tailed bat, wreathed in fire.
 
@@ -3784,7 +3786,7 @@ B:TOUCH:EXP_20
 F:DROP_40 | DROP_60
 F:RAND_25 | OPEN_DOOR | BASH_DOOR
 F:FORCE_SLEEP
-S:1_IN_10
+spell-freq:10
 S:DRAIN_MANA | SCARE
 D:It is a ghostly apparition with a humanoid form.
 
@@ -3801,7 +3803,7 @@ F:UNIQUE | MALE
 F:DROP_1 | DROP_GOOD | ONLY_ITEM
 F:IM_COLD | IM_FIRE | NO_CONF | NO_SLEEP
 F:FORCE_SLEEP
-S:1_IN_8
+spell-freq:8
 S:HEAL | SLOW
 S:BO_FIRE
 D:One of the last of the Petty-Dwarves.  Ibun is a tricky sorcerous little
@@ -3820,7 +3822,7 @@ F:UNIQUE | MALE
 F:DROP_1 | DROP_GOOD | ONLY_ITEM
 F:IM_COLD | IM_FIRE | NO_CONF | NO_SLEEP
 F:FORCE_SLEEP
-S:1_IN_8
+spell-freq:8
 S:HEAL | SLOW
 S:BO_FIRE
 D:One of the last of the Petty-Dwarves.  Khîm is a tricky sorcerous little
@@ -3837,7 +3839,7 @@ B:BITE:HURT:2d6
 B:BITE:HURT:2d6
 F:DROP_3
 F:OPEN_DOOR | MOVE_BODY
-S:1_IN_7
+spell-freq:7
 S:SCARE
 D:A strange reptilian hybrid with four heads, guarding its hoard.
 
@@ -3879,7 +3881,7 @@ F:DROP_60 | DROP_1 | DROP_GOOD | ONLY_ITEM
 F:OPEN_DOOR
 F:IM_ELEC | IM_FIRE | NO_CONF | NO_SLEEP
 F:FORCE_SLEEP
-S:1_IN_4
+spell-freq:4
 S:CONF | SLOW
 friends:100:1d1:Angamaitë of Umbar
 D:A Black Númenorean with a blacker heart.
@@ -3898,7 +3900,7 @@ F:DROP_60 | DROP_1 | DROP_GOOD | ONLY_ITEM
 F:OPEN_DOOR
 F:IM_ELEC | IM_FIRE | NO_CONF | NO_SLEEP
 F:FORCE_SLEEP
-S:1_IN_4
+spell-freq:4
 S:CONF | SLOW
 friends:100:1d1:Sangahyando of Umbar
 D:A Black Númenorean who hates the men of the west.
@@ -3913,7 +3915,7 @@ B:TOUCH:EXP_20
 F:FEMALE
 F:DROP_1
 F:RAND_50 | TAKE_ITEM
-S:1_IN_15
+spell-freq:15
 S:DRAIN_MANA | TPORT
 D:It is a ghostly woman's form that wails mournfully.
 
@@ -3957,7 +3959,7 @@ B:HIT:HURT:4d8
 B:HIT:HURT:4d8
 F:DROP_40
 F:OPEN_DOOR
-S:1_IN_10
+spell-freq:10
 friends:60:1d7:Wolf
 friends:80:1d3:Same
 D:A ten foot tall humanoid with powerful muscles.
@@ -3974,7 +3976,7 @@ F:COLD_BLOOD
 F:BASH_DOOR
 F:HURT_ROCK | IM_COLD | IM_FIRE | IM_POIS
 F:FORCE_SLEEP
-S:1_IN_4
+spell-freq:4
 S:CONF | SLOW
 S:BO_ACID
 D:A stumpy figure carved from stone, with glittering eyes, this sentinel strides
@@ -3992,7 +3994,7 @@ F:MALE | EVIL
 F:DROP_1 | ONLY_ITEM
 F:HURT_LIGHT | IM_POIS | NO_CONF | NO_SLEEP
 F:FORCE_SLEEP
-S:1_IN_6
+spell-freq:6
 S:CONF | DARKNESS | HEAL
 S:S_ANIMAL | S_MONSTER | S_SPIDER
 drop:prayer book:[Words of Wisdom]:8:1:1
@@ -4076,7 +4078,7 @@ F:MALE | REGENERATE
 F:DROP_60
 F:HURT_LIGHT | NO_CONF | NO_SLEEP
 F:FORCE_SLEEP
-S:1_IN_5
+spell-freq:5
 S:BLINK | CAUSE_1 | DARKNESS | MISSILE | SCARE
 drop:prayer book:[Beginners Handbook]:5:1:1
 drop:prayer book:[Words of Wisdom]:5:1:1
@@ -4155,7 +4157,7 @@ B:TOUCH:EXP_20
 F:DROP_1
 F:OPEN_DOOR | BASH_DOOR
 F:FORCE_SLEEP
-S:1_IN_8
+spell-freq:8
 S:CAUSE_2 | DARKNESS | SCARE
 D:It is a tangible but ghostly form made of white fog.
 
@@ -4172,7 +4174,7 @@ B:HIT:HURT:3d4
 B:HIT:HURT:3d4
 F:DROP_2
 F:IM_ACID | HAS_LIGHT
-S:1_IN_3
+spell-freq:3
 S:BLIND | CONF | SCARE
 D:One of the first children of Eru, human-like in form but painfully beautiful
 D: to look upon. You can think of no reason that a servant of Eru might face
@@ -4202,7 +4204,7 @@ B:WAIL:TERRIFY
 F:MALE | EVIL | SMART
 F:OPEN_DOOR | BASH_DOOR
 F:IM_COLD | NO_FEAR
-S:1_IN_8
+spell-freq:8
 S:DARKNESS
 friends:100:2d4:Wolf
 friends:60:2d4:White wolf
@@ -4221,7 +4223,7 @@ B:CLAW:PARALYZE:1d4
 B:BITE:POISON:1d6
 F:DROP_40
 F:HURT_LIGHT
-S:1_IN_9
+spell-freq:9
 S:HOLD | SCARE
 friends:100:4d4:Same
 D:Flesh is falling off in chunks from this decaying abomination.
@@ -4242,7 +4244,7 @@ F:DROP_2 | DROP_GOOD | DROP_GREAT | ONLY_ITEM
 F:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | IM_POIS | NO_CONF
 F:NO_SLEEP
 F:FORCE_SLEEP
-S:1_IN_6
+spell-freq:6
 S:HEAL | SCARE
 S:BA_ACID
 S:BO_ACID
@@ -4305,7 +4307,7 @@ B:CLAW:HURT:3d3
 F:BASH_DOOR
 F:NO_CONF | NO_SLEEP
 F:FORCE_SLEEP
-S:1_IN_5
+spell-freq:5
 S:BR_SOUN
 friends:100:2d7:Same
 D:A blurry canine form which seems to be moving as fast as the eye can follow.
@@ -4323,7 +4325,7 @@ B:CLAW:HURT:3d3
 F:BASH_DOOR
 F:IM_NEXUS | NO_CONF | NO_SLEEP
 F:FORCE_SLEEP
-S:1_IN_5
+spell-freq:5
 S:BR_NEXU
 friends:100:2d7:Same
 D:A locus of conflicting points coalesce to form the vague shape of a huge
@@ -4340,7 +4342,7 @@ B:HIT:HURT:3d8
 B:HIT:HURT:3d8
 F:DROP_1
 F:FORCE_SLEEP
-S:1_IN_4
+spell-freq:4
 S:HEAL | HOLD | TRAPS
 S:BA_COLD
 S:S_MONSTER
@@ -4358,7 +4360,7 @@ B:HIT:HURT:1d6
 B:BITE:EXP_20:2d6
 B:BITE:EXP_20:2d6
 F:DROP_40 | DROP_1
-S:1_IN_9
+spell-freq:9
 S:CAUSE_2 | DARKNESS | MIND_BLAST | TELE_TO
 D:It is a humanoid with an aura of power.  You notice a sharp set of front
 D: teeth.
@@ -4374,7 +4376,7 @@ B:GAZE:PARALYZE:2d6
 F:BASH_DOOR
 F:IM_FIRE
 F:FORCE_SLEEP
-S:1_IN_8
+spell-freq:8
 S:BR_FIRE
 D:The result of evil experiments, this travesty of nature should never be alive.
 D:  It has three heads - goat, dragon and gorgon - all attached to a lion's body.
@@ -4390,7 +4392,7 @@ F:COLD_BLOOD | HAS_LIGHT
 F:BASH_DOOR
 F:IM_POIS
 F:FORCE_SLEEP
-S:1_IN_3
+spell-freq:3
 S:BO_ELEC
 D:A man-shaped form of living lightning, sparks and shocks crackle all over this
 D: madly capering figure, as it leaps and whirls around and about you.
@@ -4405,7 +4407,7 @@ B:HIT:HURT:3d6
 B:HIT:HURT:3d6
 F:DROP_60 | ONLY_ITEM
 F:FORCE_SLEEP
-S:1_IN_5
+spell-freq:5
 S:CAUSE_2 | HOLD | SCARE | TPORT | TRAPS
 S:BO_FIRE
 S:S_MONSTER
@@ -4437,7 +4439,7 @@ B:HIT:COLD:5d8
 F:DROP_40
 F:OPEN_DOOR
 F:IM_COLD
-S:1_IN_10
+spell-freq:10
 friends:60:1d7:Cold Hound
 friends:80:1d3:Same
 D:A twelve foot tall giant covered in furs.
@@ -4456,7 +4458,7 @@ F:DROP_2 | ONLY_ITEM
 F:OPEN_DOOR
 F:NO_CONF | NO_SLEEP | IM_POIS
 F:FORCE_SLEEP
-S:1_IN_4
+spell-freq:4
 S:BLIND | DARKNESS | HEAL | MIND_BLAST
 drop:prayer book:[Chants and Blessings]:8:1:1
 drop:prayer book:[Exorcism and Dispelling]:5:1:1
@@ -4475,7 +4477,7 @@ B:BITE:POISON:4d4
 F:DROP_4
 F:MOVE_BODY
 F:IM_POIS
-S:1_IN_5
+spell-freq:5
 S:SCARE
 S:BA_POIS
 D:A strange reptilian hybrid with five heads dripping venom.
@@ -4492,7 +4494,7 @@ F:MALE | EVIL
 F:DROP_1
 F:OPEN_DOOR
 F:FORCE_SLEEP
-S:1_IN_8
+spell-freq:8
 S:BLIND | CAUSE_3 | DARKNESS | SCARE
 drop:prayer book:[Words of Wisdom]:8:1:1
 drop:prayer book:[Chants and Blessings]:8:1:1
@@ -4515,7 +4517,7 @@ B:HIT:HURT:4d6
 F:UNIQUE | MALE | EVIL | HAS_LIGHT
 F:DROP_1 | DROP_GOOD | ONLY_ITEM
 F:OPEN_DOOR | TAKE_ITEM
-S:1_IN_10
+spell-freq:10
 S:S_KIN
 D:An evil and cunning man from the East.  Having once sworn allegiance to the
 D: sons of Fëanor, it was Uldor's treachery that turned the tide of the 
@@ -4532,7 +4534,7 @@ F:MALE | EVIL | SMART | HAS_LIGHT
 F:DROP_1 | ONLY_ITEM
 F:OPEN_DOOR
 F:FORCE_SLEEP
-S:1_IN_3
+spell-freq:3
 S:BLIND | CONF | HASTE | TELE_TO | TPORT
 S:BO_COLD | BO_ELEC | BO_FIRE
 S:S_MONSTER
@@ -4552,7 +4554,7 @@ F:EVIL
 F:DROP_40 | DROP_1 | ONLY_ITEM
 F:NO_CONF | NO_SLEEP
 F:FORCE_SLEEP
-S:1_IN_8
+spell-freq:8
 S:BLIND | BRAIN_SMASH | FORGET | HOLD | MIND_BLAST | SCARE
 D:A humanoid form with a gruesome head, tentacular mouth, and piercing eyes.
 D:  Claws reach out for you and you feel a presence invade your mind.
@@ -4570,7 +4572,7 @@ F:UNIQUE | INVISIBLE | SMART
 F:DROP_4 | DROP_GOOD | ONLY_ITEM
 F:RAND_25 | BASH_DOOR
 F:FORCE_SLEEP
-S:1_IN_5
+spell-freq:5
 S:BLIND | BLINK | CONF | SCARE | TELE_AWAY | TELE_LEVEL
 S:TELE_TO | TPORT
 S:S_KIN
@@ -4592,7 +4594,7 @@ B:BITE:HURT:2d12
 F:DROP_1 | ONLY_ITEM
 F:OPEN_DOOR | BASH_DOOR
 F:IM_POIS | NO_CONF | NO_SLEEP
-S:1_IN_8
+spell-freq:8
 S:BR_POIS
 D:A vile reptile that preys on unsuspecting travellers.  Its eyes stare deeply
 D: at you and your soul starts to wilt!
@@ -4626,7 +4628,7 @@ F:WEIRD_MIND
 F:DROP_40
 F:RAND_25 | BASH_DOOR | MOVE_BODY
 F:IM_POIS
-S:1_IN_8
+spell-freq:8
 S:SCARE
 S:BR_DARK | BR_POIS
 friends:100:2d7:Same
@@ -4643,7 +4645,7 @@ B:GAZE:CONFUSE:1d4
 B:BITE:HURT:1d8
 F:NO_FEAR | NO_CONF | NO_SLEEP
 F:FORCE_SLEEP
-S:1_IN_6
+spell-freq:6
 S:CAUSE_2 | FORGET | HOLD | SLOW
 D:A lesser relative of the beholder: a globular body with a large toothy mouth,
 D: a large central eye, and four smaller eyes on stalks protruding from the top
@@ -4711,7 +4713,7 @@ B:HIT:POISON:3d4
 B:HIT:POISON:3d4
 B:HIT:POISON:3d4
 B:HIT:POISON:3d4
-S:1_IN_4
+spell-freq:4
 S:BO_ACID | BO_COLD | BO_ELEC | BO_FIRE
 S:S_MONSTER
 D:A strange creature that disguises itself as a discarded ring to lure
@@ -4734,7 +4736,7 @@ B:BITE:HURT:2d6
 F:DROP_2
 F:OPEN_DOOR | BASH_DOOR
 F:IM_ELEC
-S:1_IN_10
+spell-freq:10
 S:SCARE
 S:BR_ELEC
 D:It has a form that legends are made of.  Its still-tender scales are a deep
@@ -4751,7 +4753,7 @@ B:BITE:HURT:2d6
 F:DROP_2
 F:OPEN_DOOR | BASH_DOOR
 F:IM_COLD
-S:1_IN_10
+spell-freq:10
 S:SCARE
 S:BR_COLD
 D:It has a form that legends are made of.  Its still-tender scales are a frosty
@@ -4768,7 +4770,7 @@ B:BITE:HURT:2d6
 F:DROP_2
 F:OPEN_DOOR | BASH_DOOR
 F:IM_POIS
-S:1_IN_10
+spell-freq:10
 S:SCARE
 S:BR_POIS
 D:It has a form that legends are made of.  Its still-tender scales are a deep
@@ -4792,7 +4794,7 @@ F:HAS_LIGHT
 F:DROP_40
 F:OPEN_DOOR
 F:IM_FIRE
-S:1_IN_8
+spell-freq:8
 friends:60:1d7:Fire Hound
 friends:80:1d3:Same
 D:A glowing fourteen foot tall giant.  Flames drip from its red skin.
@@ -4836,7 +4838,7 @@ B:HIT:HURT:3d4
 F:EVIL
 F:BASH_DOOR
 F:FORCE_SLEEP
-S:1_IN_5
+spell-freq:5
 S:ARROW_4
 D:It is a winged lion's body with a human torso and a tail covered in vicious
 D: spikes.
@@ -4875,7 +4877,7 @@ B:TOUCH:EXP_20
 F:DROP_1 | ONLY_ITEM
 F:RAND_25 | OPEN_DOOR | BASH_DOOR
 F:FORCE_SLEEP
-S:1_IN_8
+spell-freq:8
 S:CAUSE_3 | DARKNESS | SCARE
 D:It is a ghostly form with eyes that haunt you.
 
@@ -4919,7 +4921,7 @@ B:CLAW:PARALYZE:2d4
 B:BITE:LOSE_CON:2d4
 F:DROP_40
 F:HURT_LIGHT
-S:1_IN_7
+spell-freq:7
 S:HOLD | SCARE
 friends:20:1d3:Zombified kobold
 friends:20:1d3:Zombified orc
@@ -4945,7 +4947,7 @@ B:CLAW:LOSE_WIS:1d6
 F:DROP_40 | DROP_1
 F:RAND_25 | TAKE_ITEM
 F:FORCE_SLEEP
-S:1_IN_15
+spell-freq:15
 S:BLIND | DRAIN_MANA | HOLD
 D:You don't believe in it.  But it believes in you...
 
@@ -4970,7 +4972,7 @@ B:BITE:HURT:2d8
 F:DROP_3
 F:OPEN_DOOR | BASH_DOOR
 F:IM_ACID
-S:1_IN_10
+spell-freq:10
 S:SCARE
 S:BR_ACID
 D:It has a form that legends are made of.  Its still-tender scales are a darkest
@@ -4986,7 +4988,7 @@ B:CLAW:HURT:2d6
 B:BITE:HURT:2d8
 F:DROP_3
 F:OPEN_DOOR | BASH_DOOR
-S:1_IN_10
+spell-freq:10
 S:SCARE
 S:BR_SOUN
 D:It has a form that legends are made of.  Its still-tender scales are a
@@ -5004,7 +5006,7 @@ F:HAS_LIGHT
 F:DROP_3
 F:OPEN_DOOR | BASH_DOOR
 F:IM_FIRE
-S:1_IN_10
+spell-freq:10
 S:SCARE
 S:BR_FIRE
 D:It has a form that legends are made of.  Its still-tender scales are a deepest
@@ -5037,7 +5039,7 @@ C:P
 I:110:65:10:1:1
 W:32:1:0:300
 F:IM_NEXUS
-S:1_IN_1
+spell-freq:1
 S:BLINK | TELE_AWAY
 D:It is a very unstable, strange pulsing mound of flesh.
 
@@ -5067,7 +5069,7 @@ B:HIT:CONFUSE:1d4
 B:HIT:CONFUSE:1d4
 F:NEVER_MOVE
 F:FORCE_SLEEP
-S:1_IN_6
+spell-freq:6
 S:FORGET
 D:A mass of green vegetation.  You don't remember seeing anything like it
 D: before.
@@ -5084,7 +5086,7 @@ F:DROP_3
 F:OPEN_DOOR | BASH_DOOR
 F:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | IM_POIS
 F:ATTR_MULTI
-S:1_IN_8
+spell-freq:8
 S:SCARE
 S:BR_ACID | BR_COLD | BR_ELEC | BR_FIRE | BR_POIS
 D:It has a form that legends are made of.  Beautiful scales of shimmering and
@@ -5115,7 +5117,7 @@ B:HIT:HURT:7d8
 B:HIT:HURT:7d8
 F:DROP_40
 F:OPEN_DOOR | TAKE_ITEM
-S:1_IN_5
+spell-freq:5
 friends:60:1d7:Earth hound
 friends:80:1d3:Same
 D:It is eighteen feet tall and looking at you.
@@ -5132,7 +5134,7 @@ F:INVISIBLE
 F:DROP_3 | ONLY_ITEM
 F:OPEN_DOOR | BASH_DOOR | PASS_WALL
 F:NO_CONF | NO_SLEEP | IM_NETHER
-S:1_IN_6
+spell-freq:6
 S:CONF | DARKNESS | SCARE | SLOW
 S:BR_NETH
 D:It is a dragon-like form wrapped in shadow.  Glowing red eyes shine out in the
@@ -5170,7 +5172,7 @@ F:DROP_1 | ONLY_ITEM
 F:OPEN_DOOR
 F:IM_ACID | IM_POIS | NO_CONF | NO_SLEEP
 F:FORCE_SLEEP
-S:1_IN_6
+spell-freq:6
 S:HEAL
 S:S_ANIMAL | S_SPIDER
 drop:prayer book:[Chants and Blessings]:10:1:1
@@ -5190,7 +5192,7 @@ B:TOUCH:EXP_40
 F:DROP_40
 F:OPEN_DOOR | BASH_DOOR
 F:FORCE_SLEEP
-S:1_IN_8
+spell-freq:8
 S:CAUSE_2 | DARKNESS | HOLD | SCARE
 friends:100:4d4:Same
 D:It is a ghostly nightmare of an entity.
@@ -5220,7 +5222,7 @@ F:DROP_3 | ONLY_ITEM
 F:OPEN_DOOR | BASH_DOOR
 F:IM_FIRE | IM_DISEN | NO_CONF | NO_SLEEP
 F:ATTR_MULTI
-S:1_IN_6
+spell-freq:6
 S:CONF | SCARE | SLOW
 S:BR_CHAO | BR_DISE
 D:A dragon twisted by the forces of chaos.  It seems first ugly, then fair, as
@@ -5237,7 +5239,7 @@ B:BITE:HURT:3d6
 F:DROP_3 | ONLY_ITEM
 F:OPEN_DOOR | BASH_DOOR
 F:IM_COLD | NO_CONF | NO_SLEEP
-S:1_IN_6
+spell-freq:6
 S:CONF | SCARE | SLOW
 S:BR_SHAR | BR_SOUN
 D:This dragon is clever and cunning.  It laughs at your puny efforts to disturb
@@ -5254,7 +5256,7 @@ B:BITE:HURT:3d6
 F:DROP_3 | ONLY_ITEM
 F:OPEN_DOOR | BASH_DOOR
 F:IM_COLD | IM_FIRE | IM_DISEN | NO_CONF | NO_SLEEP
-S:1_IN_6
+spell-freq:6
 S:CONF | SCARE | SLOW
 S:BR_CHAO | BR_DISE | BR_SHAR | BR_SOUN
 D:A mighty dragon, the balance drake seeks to maintain the Cosmic Balance, and
@@ -5272,7 +5274,7 @@ F:INVISIBLE
 F:DROP_3 | ONLY_ITEM
 F:PASS_WALL
 F:NO_CONF | NO_SLEEP
-S:1_IN_6
+spell-freq:6
 S:CONF | SCARE | SLOW
 S:BR_DARK | BR_LIGHT
 D:A dragon of great power, with control over light and dark, the ethereal
@@ -5289,7 +5291,7 @@ B:CLAW:LOSE_INT:1d10
 F:DROP_2 | ONLY_ITEM
 F:RAND_25 | TAKE_ITEM
 F:FORCE_SLEEP
-S:1_IN_15
+spell-freq:15
 S:BLIND | DRAIN_MANA | HOLD
 D:A shadowy form clutches at you from the darkness.  A powerful undead creature
 D: with a deadly touch.
@@ -5305,7 +5307,7 @@ F:HAS_LIGHT
 F:RAND_25 | BASH_DOOR | KILL_BODY | KILL_ITEM
 F:IM_ACID | IM_ELEC | IM_FIRE | HURT_COLD
 F:FORCE_SLEEP
-S:1_IN_6
+spell-freq:6
 S:BO_FIRE
 D:It is a towering inferno of flames.
 
@@ -5321,7 +5323,7 @@ F:COLD_BLOOD
 F:RAND_25 | BASH_DOOR | KILL_BODY | KILL_ITEM
 F:IM_ACID | IM_COLD | IM_FIRE | IM_WATER
 F:FORCE_SLEEP
-S:1_IN_6
+spell-freq:6
 S:BO_COLD
 D:It is a towering tempest of water.
 
@@ -5337,7 +5339,7 @@ F:HAS_LIGHT
 F:DROP_3 | ONLY_ITEM
 F:OPEN_DOOR | BASH_DOOR
 F:IM_COLD | NO_CONF | NO_SLEEP
-S:1_IN_6
+spell-freq:6
 S:CONF | SCARE | SLOW
 S:BR_SHAR
 D:A dragon of strange crystalline form.  Light shines through it, dazzling your
@@ -5358,7 +5360,7 @@ B:HIT:HURT:3d5
 F:SMART
 F:DROP_2
 F:IM_COLD | IM_FIRE | HAS_LIGHT
-S:1_IN_3
+spell-freq:3
 S:BLIND | CONF | HASTE | HEAL | SCARE
 D:One of the first children of Eru. Its body shines with glorious light, but
 D: its face is stern as it looks down at you.
@@ -5390,7 +5392,7 @@ F:UNIQUE | MALE | REGENERATE
 F:DROP_1 | DROP_GOOD | ONLY_ITEM
 F:MOVE_BODY | TAKE_ITEM
 F:HURT_ROCK | HURT_LIGHT | IM_COLD
-S:1_IN_7
+spell-freq:7
 S:BOULDER
 friends:100:1d1:Tom the Stone Troll
 friends:100:1d1:Bill the Stone Troll
@@ -5409,7 +5411,7 @@ F:UNIQUE | MALE | REGENERATE
 F:DROP_1 | DROP_GOOD | ONLY_ITEM
 F:MOVE_BODY | TAKE_ITEM
 F:HURT_ROCK | HURT_LIGHT | IM_COLD
-S:1_IN_7
+spell-freq:7
 S:BOULDER
 friends:100:1d1:Bert the Stone Troll
 friends:100:1d1:Tom the Stone Troll
@@ -5428,7 +5430,7 @@ F:UNIQUE | MALE | REGENERATE
 F:DROP_1 | DROP_GOOD | ONLY_ITEM
 F:MOVE_BODY | TAKE_ITEM
 F:HURT_ROCK | HURT_LIGHT | IM_COLD
-S:1_IN_7
+spell-freq:7
 S:BOULDER
 friends:100:1d1:Bert the Stone Troll
 friends:100:1d1:Bill the Stone Troll
@@ -5446,7 +5448,7 @@ B:CLAW:LOSE_WIS:5d5
 F:DROP_2 | ONLY_ITEM
 F:RAND_25 | TAKE_ITEM
 F:FORCE_SLEEP
-S:1_IN_15
+spell-freq:15
 S:BLIND | DRAIN_MANA | HOLD
 D:A phantasmal shrieking spirit.  Its wail drives the intense cold of pure evil
 D: deep within your body.
@@ -5469,7 +5471,7 @@ B:HIT:EAT_ITEM:4d5
 F:MALE | EVIL
 F:DROP_2
 F:OPEN_DOOR | TAKE_ITEM
-S:1_IN_6
+spell-freq:6
 S:ARROW_2 | BLINK | TRAPS
 friends:50:1d1:Black knight
 friends:50:1d1:Mage
@@ -5488,7 +5490,7 @@ B:HIT:HURT:5d5
 F:UNIQUE | MALE | EVIL | HAS_LIGHT
 F:DROP_2 | DROP_GOOD | ONLY_ITEM
 F:OPEN_DOOR | TAKE_ITEM
-S:1_IN_10
+spell-freq:10
 S:S_KIN
 friends:60:1d3:Mûmak
 friends:100:3d3:Easterling champion
@@ -5510,7 +5512,7 @@ B:TOUCH:LOSE_DEX:2d8
 B:TOUCH:LOSE_DEX:2d8
 F:DROP_1
 F:HURT_LIGHT
-S:1_IN_4
+spell-freq:4
 S:BLIND | BLINK | CAUSE_3 | DRAIN_MANA | HOLD
 S:SCARE | SLOW | TELE_AWAY | TELE_TO
 friends-base:70:1d3:skeleton
@@ -5539,7 +5541,7 @@ F:COLD_BLOOD
 F:PASS_WALL | KILL_BODY | KILL_ITEM
 F:HURT_ROCK | IM_COLD | IM_ELEC | IM_FIRE
 F:FORCE_SLEEP
-S:1_IN_8
+spell-freq:8
 S:BO_ACID
 D:It is a towering form composed of rock with fists of awesome power.
 
@@ -5555,7 +5557,7 @@ F:COLD_BLOOD
 F:RAND_25 | BASH_DOOR | KILL_BODY | KILL_ITEM
 F:IM_ACID | IM_COLD | IM_ELEC
 F:FORCE_SLEEP
-S:1_IN_8
+spell-freq:8
 S:BO_ELEC
 D:It is a towering tornado of winds.
 
@@ -5587,7 +5589,7 @@ B:BITE:HURT:4d8
 F:DROP_4
 F:OPEN_DOOR | BASH_DOOR
 F:IM_COLD | NO_CONF | NO_SLEEP
-S:1_IN_9
+spell-freq:9
 S:SCARE
 S:BR_COLD
 friends:50:1d4:Baby white dragon
@@ -5605,7 +5607,7 @@ B:BITE:HURT:4d8
 F:DROP_4
 F:BASH_DOOR
 F:IM_ELEC | NO_CONF | NO_SLEEP
-S:1_IN_9
+spell-freq:9
 S:SCARE
 S:BR_ELEC
 friends:50:1d4:Baby blue dragon
@@ -5623,7 +5625,7 @@ B:BITE:HURT:4d8
 F:DROP_4
 F:BASH_DOOR
 F:IM_POIS | NO_CONF | NO_SLEEP
-S:1_IN_9
+spell-freq:9
 S:SCARE
 S:BR_POIS
 friends:50:1d4:Baby green dragon
@@ -5689,7 +5691,7 @@ B:BITE:HURT:2d8
 F:BASH_DOOR
 F:NO_CONF | NO_SLEEP
 F:FORCE_SLEEP
-S:1_IN_5
+spell-freq:5
 S:BR_GRAV
 friends:100:2d7:Same
 D:Unfettered by the usual constraints of gravity, these unnatural creatures are
@@ -5724,7 +5726,7 @@ B:BITE:HURT:2d8
 F:BASH_DOOR
 F:NO_CONF | NO_SLEEP
 F:FORCE_SLEEP
-S:1_IN_5
+spell-freq:5
 S:BR_INER
 friends:100:2d7:Same
 D:Bizarrely, this hound seems to be hardly moving at all, yet it approaches you
@@ -5742,7 +5744,7 @@ B:BITE:HURT:2d8
 F:BASH_DOOR
 F:NO_CONF | NO_SLEEP
 F:FORCE_SLEEP
-S:1_IN_5
+spell-freq:5
 S:BR_WALL
 friends:100:2d7:Same
 D:A deep brown shape is visible before you, its canine form strikes you with an
@@ -5760,7 +5762,7 @@ B:HIT:LOSE_STR:3d4
 F:DROP_2 | ONLY_ITEM
 F:RAND_25 | TAKE_ITEM
 F:FORCE_SLEEP
-S:1_IN_15
+spell-freq:15
 S:BLIND | CONF | DRAIN_MANA | HOLD
 S:BO_NETH
 friends:100:2d5:Same
@@ -5805,7 +5807,7 @@ B:BITE:POISON:4d4
 B:BUTT:CONFUSE:4d4
 B:SPIT:BLIND:4d4
 F:DROP_2
-S:1_IN_5
+spell-freq:5
 S:BA_POIS
 S:S_MONSTER
 D:A strange creature that disguises itself as a chest to lure unsuspecting
@@ -5832,7 +5834,7 @@ B:GAZE:HALLU
 F:EVIL | COLD_BLOOD
 F:NEVER_MOVE
 F:HURT_ROCK | HURT_LIGHT | IM_COLD | IM_FIRE | IM_POIS
-S:1_IN_6
+spell-freq:6
 S:CONF | DRAIN_MANA | HOLD | MIND_BLAST | SHRIEK
 S:S_MONSTER | S_MONSTERS
 D:A figure carved from stone, with three vulture faces whose eyes glow with a
@@ -5864,7 +5866,7 @@ B:HIT:ELEC:8d8
 F:DROP_60
 F:OPEN_DOOR | TAKE_ITEM
 F:IM_ELEC
-S:1_IN_8
+spell-freq:8
 friends:60:1d7:Energy hound
 friends:80:1d3:Same
 D:It is a twenty foot tall giant wreathed in clouds.
@@ -5879,7 +5881,7 @@ B:HIT:HURT:2d6
 B:BITE:EXP_40:3d6
 B:BITE:EXP_40:3d6
 F:DROP_4
-S:1_IN_6
+spell-freq:6
 S:CAUSE_3 | CONF | DARKNESS | MIND_BLAST
 S:TELE_TO
 S:BO_NETH
@@ -5898,7 +5900,7 @@ F:COLD_BLOOD | POWERFUL
 F:BASH_DOOR | KILL_BODY | KILL_ITEM
 F:IM_ACID | IM_COLD | IM_FIRE
 F:FORCE_SLEEP
-S:1_IN_5
+spell-freq:5
 S:BA_ACID
 S:BO_ACID
 D:It is a towering mass of filth, an eyesore of ooze.
@@ -5913,7 +5915,7 @@ B:ENGULF:HURT:2d6
 F:BASH_DOOR | KILL_BODY | KILL_ITEM
 F:IM_COLD | IM_ELEC | IM_FIRE
 F:FORCE_SLEEP
-S:1_IN_5
+spell-freq:5
 S:DARKNESS
 S:BO_FIRE
 D:It is a towering blackened form, crackling with heat.
@@ -5943,7 +5945,7 @@ B:CLAW:LOSE_INT:1d10
 B:CLAW:LOSE_WIS:1d10
 F:DROP_1 | ONLY_ITEM
 F:FORCE_SLEEP
-S:1_IN_8
+spell-freq:8
 S:SLOW | TELE_TO
 S:BO_NETH
 D:A mighty spirit of darkness of vaguely humanoid form.  Razor-edged claws reach
@@ -5961,7 +5963,7 @@ B:CLAW:LOSE_INT:1d10
 B:CLAW:LOSE_WIS:1d10
 F:DROP_1 | ONLY_ITEM
 F:FORCE_SLEEP
-S:1_IN_5
+spell-freq:5
 S:FORGET
 D:An unholy creature of darkness, the aura emanating from this evil being saps
 D: your very soul.
@@ -5977,7 +5979,7 @@ B:TOUCH:EXP_40
 F:DROP_40 | DROP_60
 F:OPEN_DOOR | BASH_DOOR
 F:FORCE_SLEEP
-S:1_IN_7
+spell-freq:7
 S:CAUSE_3 | DARKNESS | HOLD | SCARE
 D:A tangible but ghostly form, made of grey fog.  The air around it feels
 D: deathly cold.
@@ -6023,7 +6025,7 @@ F:HAS_LIGHT
 F:OPEN_DOOR | BASH_DOOR | TAKE_ITEM
 F:IM_POIS | NO_CONF | NO_SLEEP
 F:FORCE_SLEEP
-S:1_IN_4
+spell-freq:4
 S:BA_FIRE
 S:BO_FIRE
 S:S_DEMON
@@ -6040,7 +6042,7 @@ F:MALE | EVIL | SMART | HAS_LIGHT
 F:DROP_1 | ONLY_ITEM
 F:OPEN_DOOR
 F:FORCE_SLEEP
-S:1_IN_3
+spell-freq:3
 S:BLIND | CAUSE_3 | HASTE | HOLD | SCARE | TELE_TO
 S:TPORT
 S:BO_NETH
@@ -6065,7 +6067,7 @@ F:OPEN_DOOR
 F:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | IM_POIS | NO_CONF
 F:NO_SLEEP
 F:FORCE_SLEEP
-S:1_IN_4
+spell-freq:4
 S:TELE_TO
 S:S_MONSTERS
 friends:50:1d3:Mûmak
@@ -6085,7 +6087,7 @@ F:MALE | EVIL | SMART | HAS_LIGHT
 F:DROP_1 | ONLY_ITEM
 F:OPEN_DOOR
 F:FORCE_SLEEP
-S:1_IN_2
+spell-freq:2
 S:HOLD | TPORT
 S:BO_FIRE
 S:S_DEMON
@@ -6107,7 +6109,7 @@ F:HAS_LIGHT
 F:DROP_4
 F:BASH_DOOR
 F:IM_FIRE | NO_CONF | NO_SLEEP
-S:1_IN_9
+spell-freq:9
 S:CONF | SCARE
 S:BR_FIRE
 friends:50:1d4:Baby red dragon
@@ -6125,7 +6127,7 @@ B:BITE:HURT:4d10
 F:DROP_4
 F:BASH_DOOR
 F:NO_CONF | NO_SLEEP
-S:1_IN_9
+spell-freq:9
 S:CONF | SCARE
 S:BR_SOUN
 friends:50:1d4:Baby gold dragon
@@ -6143,7 +6145,7 @@ B:BITE:HURT:4d10
 F:DROP_4
 F:BASH_DOOR
 F:IM_ACID | NO_CONF | NO_SLEEP
-S:1_IN_9
+spell-freq:9
 S:SCARE
 S:BR_ACID
 friends:50:1d4:Baby black dragon
@@ -6165,7 +6167,7 @@ F:DROP_2 | ONLY_ITEM
 F:MOVE_BODY | TAKE_ITEM
 F:IM_ACID | IM_ELEC | NO_FEAR
 F:FORCE_SLEEP
-S:1_IN_3
+spell-freq:3
 S:BLIND | CAUSE_3 | DARKNESS | DRAIN_MANA | FORGET | HASTE
 S:HEAL | MIND_BLAST | SCARE
 S:BA_COLD | BA_POIS
@@ -6188,7 +6190,7 @@ B:GAZE:DRAIN_CHARGES:5d2
 F:EVIL
 F:BASH_DOOR
 F:FORCE_SLEEP
-S:1_IN_5
+spell-freq:5
 S:CAUSE_2 | DRAIN_MANA | HOLD | TELE_AWAY
 S:BA_COLD
 S:BO_ELEC
@@ -6209,7 +6211,7 @@ F:COLD_BLOOD | POWERFUL
 F:BASH_DOOR | KILL_BODY | KILL_ITEM
 F:IM_ACID | IM_COLD | IM_ELEC | HURT_FIRE
 F:FORCE_SLEEP
-S:1_IN_5
+spell-freq:5
 S:BA_COLD
 S:BO_ICEE
 D:It is a towering glacier of ice.
@@ -6241,7 +6243,7 @@ F:DROP_2 | DROP_GOOD | ONLY_ITEM
 F:OPEN_DOOR
 F:NO_CONF | NO_SLEEP
 F:FORCE_SLEEP | GROUP_AI
-S:1_IN_2
+spell-freq:2
 S:S_KIN
 friends:100:2d6:Soldier ant
 friends:60:2d3:Giant silver ant
@@ -6263,7 +6265,7 @@ F:POWERFUL | HAS_LIGHT
 F:PASS_WALL | KILL_BODY | KILL_ITEM
 F:IM_ACID | IM_ELEC | IM_FIRE | HURT_COLD
 F:FORCE_SLEEP
-S:1_IN_7
+spell-freq:7
 S:BA_FIRE
 S:BO_PLAS
 D:It is a towering glowing form of molten hate.
@@ -6306,7 +6308,7 @@ W:37:1:0:800
 B:ENGULF:HURT:5d5
 F:RAND_25
 F:IM_NEXUS
-S:1_IN_6
+spell-freq:6
 S:BR_NEXU
 D:A maelstrom of potent magical energy.
 
@@ -6321,7 +6323,7 @@ B:ENGULF:ELEC:4d8
 F:HAS_LIGHT
 F:RAND_25
 F:IM_ELEC | IM_FIRE | IM_PLASMA
-S:1_IN_6
+spell-freq:6
 S:BR_PLAS
 D:A whirlpool of intense flame, charring the stones at your feet.
 
@@ -6344,7 +6346,7 @@ C:u
 I:120:176:40:14:0
 W:37:1:0:800
 B:ENGULF:HURT:6d6
-S:1_IN_4
+spell-freq:4
 S:BR_SHAR
 D:A howling blast of razor-sharp mountain fragments, kept intact by perilous
 D: magics.
@@ -6363,7 +6365,7 @@ F:INVISIBLE | SMART | HAS_LIGHT
 F:RAND_50 | PASS_WALL
 F:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE
 F:FORCE_SLEEP
-S:1_IN_2
+spell-freq:2
 S:BLINK | CAUSE_2 | CONF | TPORT
 D:A strange ball of glowing light.  It disappears and reappears and seems to
 D: draw you to it.  You seem somehow compelled to stand still and watch its
@@ -6382,7 +6384,7 @@ F:OPEN_DOOR | BASH_DOOR
 F:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | IM_POIS | NO_CONF
 F:NO_SLEEP
 F:ATTR_MULTI
-S:1_IN_7
+spell-freq:7
 S:BLIND | CONF | SCARE
 S:BR_ACID | BR_COLD | BR_ELEC | BR_FIRE | BR_POIS
 friends:50:1d4:Baby multi-hued dragon
@@ -6402,7 +6404,7 @@ F:DROP_2 | ONLY_ITEM
 F:OPEN_DOOR
 F:IM_COLD
 F:FORCE_SLEEP
-S:1_IN_5
+spell-freq:5
 S:BLIND | CAUSE_3 | SCARE
 S:BO_NETH
 S:S_MONSTERS
@@ -6426,7 +6428,7 @@ F:UNIQUE | MALE | EVIL | SMART | HAS_LIGHT
 F:DROP_2 | DROP_GOOD | ONLY_ITEM
 F:OPEN_DOOR | TAKE_ITEM
 F:FORCE_SLEEP
-S:1_IN_2
+spell-freq:2
 S:HEAL | TRAPS
 S:BO_COLD | BO_ELEC | BO_FIRE | BO_ICEE
 D:A Black Númenorean who usurped the throne of Gondor, he is treacherous and
@@ -6440,7 +6442,7 @@ I:130:176:100:48:0
 W:38:4:0:800
 B:ENGULF:EXP_20:5d5
 F:RAND_25
-S:1_IN_6
+spell-freq:6
 S:BR_TIME
 D:You haven't seen it yet.
 
@@ -6454,7 +6456,7 @@ B:ENGULF:BLIND:4d4
 B:ENGULF:BLIND:4d4
 F:HAS_LIGHT
 F:RAND_25
-S:1_IN_4
+spell-freq:4
 S:SHRIEK
 S:BR_LIGHT
 D:A strange pillar of shining light that hurts your eyes.  Its shape changes
@@ -6473,7 +6475,7 @@ B:TOUCH:EXP_80
 F:DROP_3 | ONLY_ITEM
 F:OPEN_DOOR | BASH_DOOR
 F:FORCE_SLEEP
-S:1_IN_6
+spell-freq:6
 S:CAUSE_3 | HOLD | SCARE
 S:BO_NETH
 friends-base:50:1d3:wraith
@@ -6492,7 +6494,7 @@ B:TOUCH:EXP_40
 F:DROP_2 | ONLY_ITEM
 F:OPEN_DOOR | BASH_DOOR
 F:FORCE_SLEEP
-S:1_IN_7
+spell-freq:7
 S:BLIND | CAUSE_3 | HOLD | SCARE
 S:BO_NETH
 D:A figure that seems made of void, its strangely human shape is cloaked in
@@ -6509,7 +6511,7 @@ B:TOUCH:LOSE_STR:1d5
 F:FEMALE
 F:DROP_40
 F:IM_FIRE | IM_POIS
-S:1_IN_7
+spell-freq:7
 S:BLIND | CONF
 S:BO_FIRE
 D:It is a lesser demon of female form; however, she takes little time to show
@@ -6542,7 +6544,7 @@ F:EVIL | ANIMAL | SMART
 F:OPEN_DOOR | GROUP_AI
 F:HURT_LIGHT | IM_POIS
 F:FORCE_SLEEP
-S:1_IN_6
+spell-freq:6
 S:CAUSE_3 | HOLD | MISSILE | SLOW
 S:BO_FIRE
 friends:50:2d3:Mirkwood Spider
@@ -6565,7 +6567,7 @@ F:SMART
 F:DROP_2
 F:MOVE_BODY
 F:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | HAS_LIGHT
-S:1_IN_3
+spell-freq:3
 S:BLIND | HASTE | HEAL | MIND_BLAST | SCARE
 S:BO_FIRE
 S:S_MONSTERS
@@ -6587,7 +6589,7 @@ F:INVISIBLE
 F:DROP_3 | ONLY_ITEM
 F:PASS_WALL
 F:FORCE_SLEEP
-S:1_IN_6
+spell-freq:6
 S:BLIND | CAUSE_3 | DARKNESS | MIND_BLAST | SCARE
 S:BO_NETH
 D:A form that hurts the eye, death permeates the air around it.  As it nears
@@ -6607,7 +6609,7 @@ F:DROP_4 | DROP_GOOD | ONLY_ITEM
 F:OPEN_DOOR | BASH_DOOR
 F:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | IM_NEXUS | NO_CONF
 F:NO_SLEEP
-S:1_IN_4
+spell-freq:4
 S:BR_ACID | BR_COLD | BR_CHAO | BR_ELEC | BR_FIRE | BR_GRAV
 S:BR_NEXU | BR_SHAR | BR_SOUN
 D:A large dragon with a selection of heads, all shouting and arguing as they
@@ -6626,7 +6628,7 @@ F:HAS_LIGHT
 F:DROP_4
 F:MOVE_BODY
 F:IM_POIS
-S:1_IN_5
+spell-freq:5
 S:SCARE
 S:BA_POIS
 S:BR_POIS
@@ -6667,7 +6669,7 @@ F:DROP_1
 F:OPEN_DOOR | TAKE_ITEM
 F:IM_COLD | IM_ELEC
 F:FORCE_SLEEP
-S:1_IN_8
+spell-freq:8
 S:BLINK | CONF | SCARE | TELE_TO
 S:BA_ELEC
 S:BO_ELEC
@@ -6685,7 +6687,7 @@ B:CLAW:HURT:4d8
 B:BITE:ELEC:7d8
 F:BASH_DOOR
 F:IM_ELEC
-S:1_IN_6
+spell-freq:6
 S:BLIND | CONF | SCARE
 S:BR_ELEC
 D:A huge draconic form.  Lightning crackles along its length.
@@ -6703,7 +6705,7 @@ F:EVIL
 F:BASH_DOOR
 F:NO_CONF | NO_SLEEP
 F:FORCE_SLEEP
-S:1_IN_2
+spell-freq:2
 S:BLIND | CONF | DARKNESS | DRAIN_MANA | FORGET | MIND_BLAST
 S:SCARE | SLOW
 S:BO_ACID | BO_COLD | BO_ELEC | BO_FIRE
@@ -6720,7 +6722,7 @@ B:CLAW:HURT:4d8
 B:BITE:COLD:7d8
 F:BASH_DOOR
 F:IM_COLD
-S:1_IN_6
+spell-freq:6
 S:BLIND | CONF | SCARE
 S:BR_COLD
 D:A huge draconic form.  Frost covers it from head to tail.
@@ -6735,7 +6737,7 @@ B:CLAW:HURT:4d8
 B:BITE:POISON:7d8
 F:BASH_DOOR
 F:IM_POIS
-S:1_IN_6
+spell-freq:6
 S:BLIND | CONF | SCARE
 S:BR_POIS
 D:A huge draconic form enveloped in clouds of poisonous vapour.
@@ -6779,7 +6781,7 @@ F:HAS_LIGHT
 F:DROP_4
 F:OPEN_DOOR | MOVE_BODY
 F:IM_FIRE
-S:1_IN_4
+spell-freq:4
 S:SCARE
 S:BO_FIRE
 S:BR_FIRE
@@ -6798,7 +6800,7 @@ F:DROP_2 | ONLY_ITEM
 F:OPEN_DOOR
 F:NO_CONF | NO_SLEEP
 F:FORCE_SLEEP
-S:1_IN_2
+spell-freq:2
 S:BLIND
 S:S_DRAGON
 drop:magic book:[Incantations and Illusions]:8:1:1
@@ -6821,7 +6823,7 @@ F:DROP_3 | ONLY_ITEM
 F:OPEN_DOOR
 F:NO_CONF | NO_SLEEP
 F:FORCE_SLEEP
-S:1_IN_2
+spell-freq:2
 S:BLIND | BLINK | CAUSE_3 | CONF | TELE_TO | TRAPS
 S:BA_COLD | BA_FIRE
 S:BO_ACID
@@ -6906,7 +6908,7 @@ F:OPEN_DOOR
 F:IM_ACID | IM_FIRE | IM_POIS | NO_CONF | NO_SLEEP
 F:FORCE_SLEEP
 -F:HURT_COLD
-S:1_IN_2
+spell-freq:2
 S:CAUSE_3 | HOLD | SCARE
 S:BA_ACID
 S:BO_FIRE | BO_PLAS
@@ -6925,7 +6927,7 @@ B:CRUSH:HURT:8d12
 B:CRUSH:HURT:8d12
 F:DROP_40
 F:IM_FIRE
-S:1_IN_8
+spell-freq:8
 S:BLIND | CONF
 friends:100:4d4:Same
 D:It is a demon with a long neck and raking claws.
@@ -6943,7 +6945,7 @@ F:DROP_3 | ONLY_ITEM
 F:PASS_WALL
 F:IM_POIS | NO_FEAR | NO_CONF | NO_SLEEP
 F:FORCE_SLEEP
-S:1_IN_10
+spell-freq:10
 S:BLIND | CAUSE_3 | CONF | SCARE
 S:S_DEMON
 D:It is a demon of small stature, but its armoured frame moves with lightning
@@ -6962,7 +6964,7 @@ F:DROP_2 | ONLY_ITEM
 F:OPEN_DOOR
 F:NO_CONF | NO_SLEEP
 F:FORCE_SLEEP
-S:1_IN_2
+spell-freq:2
 S:BLIND | CAUSE_3 | CAUSE_4 | HEAL | HOLD
 S:S_MONSTER | S_UNDEAD
 drop:prayer book:[Chants and Blessings]:5:1:1
@@ -7011,7 +7013,7 @@ B:CLAW:HURT:4d9
 B:BITE:ACID:7d9
 F:BASH_DOOR
 F:IM_ACID
-S:1_IN_6
+spell-freq:6
 S:BLIND | CONF | SCARE
 S:BR_ACID
 D:A huge draconic form.  Pools of acid melt the floor around it.
@@ -7027,7 +7029,7 @@ B:BITE:FIRE:7d9
 F:HAS_LIGHT
 F:BASH_DOOR
 F:IM_FIRE
-S:1_IN_6
+spell-freq:6
 S:BLIND | CONF | SCARE
 S:BR_FIRE
 D:A huge draconic form.  Wisps of smoke steam from its nostrils and the extreme
@@ -7042,7 +7044,7 @@ B:CLAW:HURT:4d9
 B:CLAW:HURT:4d9
 B:BITE:HURT:7d9
 F:BASH_DOOR
-S:1_IN_6
+spell-freq:6
 S:BLIND | CONF | SCARE
 S:BR_SOUN
 D:A huge draconic form wreathed in a nimbus of light.  Its roar stuns and
@@ -7060,7 +7062,7 @@ F:MALE | EVIL | SMART
 F:DROP_3 | ONLY_ITEM
 F:HURT_LIGHT | NO_CONF | NO_SLEEP
 F:FORCE_SLEEP
-S:1_IN_2
+spell-freq:2
 S:BLIND | BLINK | CAUSE_3 | CONF | DARKNESS | HEAL
 S:TELE_TO
 S:BA_COLD | BA_FIRE
@@ -7082,7 +7084,7 @@ B:TOUCH:DRAIN_CHARGES
 B:TOUCH:LOSE_DEX:2d12
 B:TOUCH:LOSE_DEX:2d12
 F:DROP_4 | ONLY_ITEM
-S:1_IN_3
+spell-freq:3
 S:BLIND | BLINK | CAUSE_3 | CAUSE_4 | CONF
 S:DRAIN_MANA | HOLD | SCARE | TELE_TO
 S:S_UNDEAD
@@ -7100,7 +7102,7 @@ B:HIT:HURT:3d4
 B:HIT:HURT:3d4
 F:DROP_1
 F:IM_FIRE
-S:1_IN_9
+spell-freq:9
 S:BO_FIRE
 S:S_DEMON
 friends:100:4d4:Same
@@ -7120,7 +7122,7 @@ F:DROP_2 | DROP_GOOD | ONLY_ITEM
 F:OPEN_DOOR
 F:IM_ACID | IM_COLD | IM_ELEC | IM_POIS | NO_CONF | NO_SLEEP
 F:FORCE_SLEEP
-S:1_IN_2
+spell-freq:2
 S:CAUSE_3
 S:BO_MANA | BO_WATE
 D:This sad creature - once a mighty warrior - betrayed his former friends to
@@ -7140,7 +7142,7 @@ F:MALE | INVISIBLE
 F:DROP_2 | ONLY_ITEM
 F:OPEN_DOOR | TAKE_ITEM
 F:IM_COLD | IM_ELEC | IM_FIRE | IM_POIS | NO_CONF | NO_SLEEP
-S:1_IN_4
+spell-freq:4
 S:ARROW_2 | ARROW_3 | ARROW_4 | BLINK | HASTE | MISSILE
 S:BA_COLD
 S:BO_ELEC | BO_FIRE
@@ -7171,7 +7173,7 @@ F:EVIL | HAS_LIGHT
 F:RAND_25 | BASH_DOOR | MOVE_BODY
 F:IM_FIRE | GROUP_AI
 F:FORCE_SLEEP
-S:1_IN_5
+spell-freq:5
 S:BR_FIRE
 friends:100:2d5:Same
 D:It is a giant dog that glows with heat.  Flames pour from its nostrils.
@@ -7189,7 +7191,7 @@ F:UNIQUE | MALE | REGENERATE
 F:DROP_3 | DROP_GOOD | ONLY_ITEM
 F:MOVE_BODY | TAKE_ITEM
 F:IM_COLD
-S:1_IN_7
+spell-freq:7
 S:BOULDER
 friends:60:2d3:Half-troll
 friends:60:2d3:Cave troll
@@ -7209,7 +7211,7 @@ B:HIT:HURT:3d6
 B:BITE:EXP_80:4d6
 B:BITE:EXP_80:4d6
 F:DROP_4
-S:1_IN_7
+spell-freq:7
 S:BLIND | BRAIN_SMASH | CAUSE_3 | CAUSE_4 | DARKNESS | DRAIN_MANA
 S:BO_NETH
 friends:40:1d4:Vampire
@@ -7233,7 +7235,7 @@ F:UNIQUE | POWERFUL | HAS_LIGHT
 F:RAND_25 | BASH_DOOR | KILL_BODY | KILL_ITEM
 F:IM_ACID | IM_ELEC | IM_FIRE | HURT_COLD
 F:FORCE_SLEEP
-S:1_IN_4
+spell-freq:4
 S:BA_FIRE
 S:BO_PLAS
 D:A towering fire elemental, Vargo burns everything beyond recognition.
@@ -7251,7 +7253,7 @@ F:UNIQUE | COLD_BLOOD | POWERFUL
 F:RAND_25 | BASH_DOOR | KILL_BODY | KILL_ITEM
 F:IM_ACID | IM_COLD | IM_FIRE | IM_WATER
 F:FORCE_SLEEP
-S:1_IN_4
+spell-freq:4
 S:BA_COLD | BA_WATE
 S:BO_ICEE | BO_WATE
 D:A towering water elemental, Waldern is master of all things liquid.  Wave
@@ -7270,7 +7272,7 @@ F:UNIQUE | FEMALE | INVISIBLE
 F:DROP_4 | DROP_GOOD | ONLY_ITEM
 F:PASS_WALL | MOVE_BODY
 F:FORCE_SLEEP
-S:1_IN_3
+spell-freq:3
 S:BLIND | CAUSE_3 | FORGET | HOLD | SCARE
 S:BO_ACID | BO_COLD | BO_FIRE | BO_NETH
 S:S_MONSTER
@@ -7287,7 +7289,7 @@ B:HIT:HURT:3d4
 B:HIT:HURT:3d4
 F:DROP_60
 F:IM_FIRE
-S:1_IN_9
+spell-freq:9
 S:BO_FIRE
 S:S_DEMON
 D:It is demon with arms and pincers, its form a true mockery of life.
@@ -7306,7 +7308,7 @@ F:ONLY_ITEM
 F:BASH_DOOR
 F:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | IM_POIS
 F:ATTR_MULTI
-S:1_IN_5
+spell-freq:5
 S:BLIND | CONF | SCARE
 S:BR_ACID | BR_COLD | BR_ELEC | BR_FIRE | BR_POIS
 D:A huge draconic form.  Many colours ripple down its massive frame.  Few live
@@ -7325,7 +7327,7 @@ F:UNIQUE | MALE | COLD_BLOOD | POWERFUL
 F:PASS_WALL | KILL_BODY | KILL_ITEM
 F:HURT_ROCK | IM_COLD | IM_ELEC | IM_FIRE
 F:FORCE_SLEEP
-S:1_IN_6
+spell-freq:6
 S:BA_ACID
 S:BO_ACID
 D:A towering stone elemental stands before you.  The walls and ceiling are
@@ -7344,7 +7346,7 @@ F:UNIQUE | FEMALE | COLD_BLOOD | POWERFUL
 F:RAND_25 | BASH_DOOR | KILL_BODY | KILL_ITEM
 F:IM_ACID | IM_COLD | IM_ELEC
 F:FORCE_SLEEP
-S:1_IN_5
+spell-freq:5
 S:BA_COLD | BA_ELEC
 S:BO_ELEC
 D:A towering air elemental, Ariel, the sorceress, avoids your blows with her
@@ -7363,7 +7365,7 @@ F:BASH_DOOR
 F:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | IM_POIS | NO_CONF
 F:NO_SLEEP
 F:ATTR_MULTI | FORCE_SLEEP
-S:1_IN_5
+spell-freq:5
 S:BR_ACID | BR_COLD | BR_ELEC | BR_FIRE | BR_POIS
 friends:100:2d7:Same
 D:Shimmering in rainbow hues, this hound is beautiful and deadly.
@@ -7382,7 +7384,7 @@ F:MALE | SMART
 F:DROP_2 | ONLY_ITEM
 F:OPEN_DOOR | TAKE_ITEM
 F:NO_FEAR | NO_CONF | NO_SLEEP
-S:1_IN_4
+spell-freq:4
 S:BLIND | CAUSE_3 | CAUSE_4 | HASTE | HEAL | SCARE
 drop:prayer book:[Chants and Blessings]:10:1:1
 drop:prayer book:[Exorcism and Dispelling]:10:1:1
@@ -7411,7 +7413,7 @@ B:BITE:FIRE:3d12
 F:DROP_4
 F:OPEN_DOOR | MOVE_BODY
 F:IM_FIRE
-S:1_IN_4
+spell-freq:4
 S:SCARE
 S:BA_FIRE
 S:BO_FIRE | BO_PLAS
@@ -7431,7 +7433,7 @@ F:SMART
 F:DROP_4 | ONLY_ITEM
 F:RAND_25 | TAKE_ITEM
 F:FORCE_SLEEP
-S:1_IN_9
+spell-freq:9
 S:BLIND | CAUSE_4 | CONF | DRAIN_MANA | HOLD | TELE_LEVEL
 S:BO_NETH
 S:S_UNDEAD
@@ -7452,7 +7454,7 @@ F:DRAGON | COLD_BLOOD
 F:OPEN_DOOR | BASH_DOOR
 F:IM_COLD | IM_FIRE | IM_POIS
 F:FORCE_SLEEP
-S:1_IN_5
+spell-freq:5
 S:ARROW_3 | BLIND | CONF | SLOW
 S:BR_POIS
 D:A constructed dragon, the drolem has massive strength.  Powerful spells weaved
@@ -7474,7 +7476,7 @@ F:SMART
 F:DROP_2
 F:MOVE_BODY
 F:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | NO_FEAR | SMART | HAS_LIGHT
-S:1_IN_6
+spell-freq:6
 S:CONF | HASTE | HEAL | TELE_AWAY
 S:BO_MANA | BO_PLAS
 S:S_AINU | S_MONSTERS
@@ -7486,7 +7488,7 @@ T:quylthulg
 C:u
 I:120:420:20:1:0
 W:45:1:0:3000
-S:1_IN_2
+spell-freq:2
 S:BLINK | TPORT
 S:S_UNDEAD
 D:It is a pulsing flesh mound that reeks of death and putrefaction.
@@ -7503,7 +7505,7 @@ F:INVISIBLE
 F:ONLY_ITEM
 F:PASS_WALL | TAKE_ITEM
 F:IM_COLD | IM_NETHER
-S:1_IN_5
+spell-freq:5
 S:CONF | DARKNESS | SCARE | SLOW
 S:BR_NETH
 D:It is a dragon-like form wrapped in darkness.  You cannot make out its true
@@ -7521,7 +7523,7 @@ F:HAS_LIGHT | ATTR_FLICKER
 F:ONLY_ITEM
 F:BASH_DOOR
 F:IM_COLD
-S:1_IN_5
+spell-freq:5
 S:CONF | SCARE | SLOW
 S:BR_SHAR
 D:A huge crystalline dragon.  Its claws could cut you to shreds and its teeth
@@ -7540,7 +7542,7 @@ F:UNIQUE | MALE
 F:DROP_4 | DROP_GOOD | ONLY_ITEM
 F:OPEN_DOOR | BASH_DOOR | MOVE_BODY
 F:FORCE_SLEEP
-S:1_IN_3
+spell-freq:3
 S:BLIND | CAUSE_3 | DARKNESS | HOLD | SCARE
 S:BO_COLD | BO_FIRE | BO_NETH
 S:S_MONSTERS
@@ -7559,7 +7561,7 @@ B:HIT:HURT:3d4
 F:POWERFUL | HAS_LIGHT
 F:DROP_1
 F:IM_FIRE
-S:1_IN_9
+spell-freq:9
 S:BLIND | CONF
 S:BR_FIRE
 S:S_DEMON
@@ -7580,7 +7582,7 @@ F:BASH_DOOR
 F:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | IM_POIS | NO_CONF
 F:NO_SLEEP | NO_STUN
 F:FORCE_SLEEP
-S:1_IN_2
+spell-freq:2
 S:BRAIN_SMASH | CAUSE_4 | CONF | DRAIN_MANA | FORGET | MIND_BLAST
 S:SLOW
 S:BA_COLD | BA_FIRE
@@ -7602,7 +7604,7 @@ B:BITE:CONFUSE:7d10
 F:INVISIBLE
 F:ONLY_ITEM
 F:PASS_WALL
-S:1_IN_5
+spell-freq:5
 S:BLIND | CONF
 S:BR_DARK | BR_LIGHT
 D:A huge dragon emanating from the ethereal plane, this terrible dragon is a
@@ -7614,7 +7616,7 @@ T:quylthulg
 C:r
 I:120:420:20:1:0
 W:45:1:0:3000
-S:1_IN_2
+spell-freq:2
 S:BLINK | TPORT
 S:S_DEMON
 D:A pile of pulsing flesh that glows with an inner hellish fire.  The world
@@ -7625,7 +7627,7 @@ T:quylthulg
 C:g
 I:120:420:20:1:0
 W:45:1:0:3000
-S:1_IN_2
+spell-freq:2
 S:BLINK | TPORT
 S:S_DRAGON
 D:It looks like it was once a dragon corpse, now deeply infected with magical
@@ -7644,7 +7646,7 @@ F:EVIL | POWERFUL | ATTR_FLICKER
 F:DROP_1 | ONLY_ITEM
 F:OPEN_DOOR | BASH_DOOR
 F:IM_POIS | IM_NEXUS | NO_CONF | NO_SLEEP
-S:1_IN_8
+spell-freq:8
 S:BR_DARK | BR_NEXU | BR_POIS
 D:A large basilisk, whose shape resembles that of a great wyrm.
 
@@ -7660,7 +7662,7 @@ F:MALE | HAS_LIGHT
 F:DROP_2 | ONLY_ITEM
 F:KILL_BODY
 F:NO_FEAR | NO_CONF | NO_SLEEP
-S:1_IN_4
+spell-freq:4
 S:HASTE | SCARE
 friends:30:1d1:Master thief
 friends:30:1d1:Ranger chieftain
@@ -7685,7 +7687,7 @@ F:DROP_1
 F:OPEN_DOOR | MOVE_BODY | TAKE_ITEM
 F:IM_ACID | IM_COLD | IM_FIRE
 F:FORCE_SLEEP
-S:1_IN_8
+spell-freq:8
 D:A gigantic ugly humanoid with but one eye and very thick skin.
 
 ### Dungeon level 46 ###
@@ -7703,7 +7705,7 @@ F:UNIQUE | MALE
 F:DROP_GOOD | ONLY_ITEM
 F:BASH_DOOR
 F:IM_COLD
-S:1_IN_4
+spell-freq:4
 S:CAUSE_3 | CONF
 S:BR_COLD
 D:An ancient and wise Dragon.  Scatha has grown clever over the long years.  His
@@ -7724,7 +7726,7 @@ B:HIT:HURT:4d6
 F:FEMALE
 F:DROP_1
 F:IM_FIRE
-S:1_IN_9
+spell-freq:9
 S:BLIND | CAUSE_2
 S:S_DEMON
 D:She is a demon of female form with many arms, each bearing deadly weapons.
@@ -7759,7 +7761,7 @@ F:UNIQUE | MALE | HAS_LIGHT
 F:DROP_GOOD | ONLY_ITEM
 F:BASH_DOOR
 F:IM_FIRE
-S:1_IN_4
+spell-freq:4
 S:CAUSE_3 | CONF
 S:BR_FIRE
 D:A mighty ancient dragon, Itangast's form scorches your flesh.  Wisps of smoke
@@ -7781,7 +7783,7 @@ F:DROP_4 | DROP_GOOD | ONLY_ITEM
 F:OPEN_DOOR | BASH_DOOR | MOVE_BODY
 F:IM_FIRE
 F:FORCE_SLEEP
-S:1_IN_3
+spell-freq:3
 S:BLIND | CAUSE_3 | HOLD | SCARE
 S:BA_FIRE
 S:BO_FIRE | BO_NETH
@@ -7803,7 +7805,7 @@ F:UNIQUE | MALE | HAS_LIGHT
 F:DROP_GOOD | ONLY_ITEM
 F:BASH_DOOR
 F:IM_FIRE
-S:1_IN_4
+spell-freq:4
 S:CAUSE_3 | CONF
 S:BR_FIRE
 D:Smaug is one of the Urulóki that still survive, a fire-drake of immense
@@ -7824,7 +7826,7 @@ F:EVIL | ANIMAL | SMART
 F:OPEN_DOOR
 F:HURT_LIGHT | IM_FIRE | IM_POIS
 F:FORCE_SLEEP
-S:1_IN_6
+spell-freq:6
 S:CAUSE_3 | DRAIN_MANA | HEAL | HOLD | MIND_BLAST | SLOW
 S:BA_FIRE
 S:BO_FIRE
@@ -7845,7 +7847,7 @@ B:CLAW:HURT:3d8
 B:BITE:EXP_40:4d6
 B:BITE:EXP_40:4d6
 F:IM_COLD | IM_POIS | IM_NETHER
-S:1_IN_6
+spell-freq:6
 S:BR_DARK | BR_NETH | BR_POIS
 D:A terrifying sight: a winged creature greater than any bird you have ever
 D: seen, and with no feathers on its horrid black leathery wings.  Descended
@@ -7867,7 +7869,7 @@ F:POWERFUL | HAS_LIGHT
 F:DROP_2 
 F:MOVE_BODY
 F:IM_FIRE
-S:1_IN_4
+spell-freq:4
 S:BLIND | CONF
 S:BR_FIRE
 S:S_DEMON
@@ -7885,7 +7887,7 @@ F:UNIQUE | MALE | EVIL | SMART
 F:DROP_4 | DROP_GOOD | ONLY_ITEM
 F:HURT_LIGHT | IM_COLD | IM_FIRE | IM_POIS | NO_CONF | NO_SLEEP
 F:FORCE_SLEEP
-S:1_IN_2
+spell-freq:2
 S:BLIND | BLINK | CAUSE_4 | CONF | DARKNESS | HEAL
 S:TELE_TO
 S:BA_ACID | BA_COLD | BA_ELEC | BA_FIRE | BA_NETH
@@ -7918,7 +7920,7 @@ F:OPEN_DOOR
 F:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | IM_POIS | NO_CONF
 F:NO_SLEEP
 F:FORCE_SLEEP
-S:1_IN_3
+spell-freq:3
 S:HEAL
 S:S_ANIMAL
 drop:prayer book:[Chants and Blessings]:8:1:1
@@ -7941,7 +7943,7 @@ F:UNIQUE | MALE | POWERFUL | HAS_LIGHT
 F:DROP_4 | DROP_GOOD
 F:MOVE_BODY
 F:IM_FIRE
-S:1_IN_4
+spell-freq:4
 S:CONF | SCARE
 S:BR_FIRE
 S:S_DEMON | S_UNDEAD
@@ -7965,7 +7967,7 @@ B:BITE:HURT:2d12
 F:OPEN_DOOR | BASH_DOOR
 F:NO_CONF | NO_SLEEP | IM_NETHER
 F:FORCE_SLEEP
-S:1_IN_5
+spell-freq:5
 S:BR_NETH
 friends:100:2d7:Same
 D:You feel a soul-tearing chill upon viewing this beast, a ghostly form of
@@ -7984,7 +7986,7 @@ F:ATTR_FLICKER
 F:OPEN_DOOR | BASH_DOOR
 F:NO_CONF | NO_SLEEP
 F:FORCE_SLEEP
-S:1_IN_5
+spell-freq:5
 S:BR_TIME
 friends:100:2d7:Same
 D:You get a terrible sense of deja vu, or is it a premonition?  All at once you
@@ -8004,7 +8006,7 @@ F:HAS_LIGHT | ATTR_FLICKER
 F:OPEN_DOOR | BASH_DOOR
 F:IM_ELEC | IM_FIRE | IM_PLASMA | NO_CONF | NO_SLEEP
 F:FORCE_SLEEP
-S:1_IN_5
+spell-freq:5
 S:BR_PLAS
 friends:100:2d7:Same
 D:The very air warps as pure elemental energy stalks towards you in the shape of
@@ -8025,7 +8027,7 @@ F:DROP_4 | DROP_GOOD | ONLY_ITEM
 F:OPEN_DOOR | TAKE_ITEM
 F:IM_POIS | NO_CONF | NO_SLEEP
 F:FORCE_SLEEP
-S:1_IN_6
+spell-freq:6
 S:TRAPS
 D:He is a master of disguise, an expert of stealth, a genius at traps, and moves
 D: with blinding speed.  Check your pockets!
@@ -8046,7 +8048,7 @@ F:DROP_4 | DROP_GOOD | ONLY_ITEM
 F:OPEN_DOOR | BASH_DOOR | MOVE_BODY
 F:IM_FIRE
 F:FORCE_SLEEP
-S:1_IN_3
+spell-freq:3
 S:BLIND | CAUSE_3 | HOLD | SCARE
 S:BA_ACID | BA_COLD | BA_ELEC | BA_FIRE | BA_NETH
 S:S_UNDEAD
@@ -8067,7 +8069,7 @@ B:ENGULF:CONFUSE:5d5
 B:ENGULF:HALLU:5d5
 F:RAND_25
 F:ATTR_MULTI
-S:1_IN_6
+spell-freq:6
 S:BR_CHAO
 D:Void, nothingness, spinning destructively.
 
@@ -8082,7 +8084,7 @@ B:ENGULF:DISENCHANT:5d5
 F:RAND_25
 F:IM_DISEN
 F:ATTR_MULTI
-S:1_IN_6
+spell-freq:6
 S:BR_DISE
 D:Howling through the disintegrating dungeon, this whirlpool of Unmagic rips the
 D: enchantments from everything it touches.
@@ -8104,7 +8106,7 @@ F:OPEN_DOOR | BASH_DOOR
 F:IM_ACID | IM_ELEC | IM_FIRE | IM_POIS | IM_PLASMA | NO_CONF
 F:NO_SLEEP
 F:FORCE_SLEEP
-S:1_IN_3
+spell-freq:3
 S:BA_FIRE
 S:BO_FIRE | BO_PLAS
 S:BR_FIRE | BR_LIGHT | BR_PLAS
@@ -8123,7 +8125,7 @@ B:TOUCH:DRAIN_CHARGES
 B:TOUCH:LOSE_DEX:4d12
 B:TOUCH:LOSE_DEX:4d12
 F:DROP_3 | ONLY_ITEM
-S:1_IN_3
+spell-freq:3
 S:BLIND | BLINK | CAUSE_3 | CAUSE_4 | CONF
 S:DRAIN_MANA | FORGET | HEAL | HOLD | SCARE | TELE_TO
 S:TPORT
@@ -8142,7 +8144,7 @@ B:BITE:EXP_80:5d6
 F:INVISIBLE
 F:DROP_4
 F:PASS_WALL
-S:1_IN_5
+spell-freq:5
 S:BRAIN_SMASH | CAUSE_3 | CAUSE_4 | DARKNESS | DRAIN_MANA
 S:BO_NETH
 S:S_UNDEAD
@@ -8166,7 +8168,7 @@ F:UNIQUE | FEMALE | EVIL | ANIMAL | SMART
 F:DROP_2 | DROP_GOOD | ONLY_ITEM
 F:HURT_LIGHT | IM_ACID | IM_POIS | NO_CONF | NO_SLEEP
 F:FORCE_SLEEP
-S:1_IN_4
+spell-freq:4
 S:BLIND | CAUSE_3 | CAUSE_4 | CONF | HEAL | SCARE
 S:SLOW | TRAPS
 S:BR_DARK | BR_POIS
@@ -8192,7 +8194,7 @@ F:SMART | ATTR_FLICKER
 F:DROP_4
 F:MOVE_BODY
 F:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | NO_FEAR | SMART | HAS_LIGHT
-S:1_IN_3
+spell-freq:3
 S:BLIND | CAUSE_2 | CAUSE_4 | SCARE | TELE_TO | HEAL | MISSILE
 S:BO_MANA
 S:S_AINU
@@ -8213,7 +8215,7 @@ F:UNDEAD | COLD_BLOOD
 F:ONLY_ITEM
 F:BASH_DOOR | TAKE_ITEM
 F:IM_COLD | IM_POIS | NO_STUN | NO_SLEEP | IM_NETHER
-S:1_IN_6
+spell-freq:6
 S:CONF | SCARE
 S:BR_COLD | BR_NETH
 D:The skeletal form of a once-great dragon, enchanted by magic most perilous. 
@@ -8233,7 +8235,7 @@ F:ANIMAL
 F:ONLY_ITEM
 F:BASH_DOOR
 F:IM_ACID | IM_FIRE | IM_NEXUS
-S:1_IN_6
+spell-freq:6
 S:HOLD | SCARE
 S:BR_FIRE | BR_NEXU
 D:A mixture of dragon and basilisk, the dracolisk stares at you with deep
@@ -8253,7 +8255,7 @@ F:DROP_3 | DROP_GOOD | DROP_GREAT | ONLY_ITEM
 F:OPEN_DOOR | MOVE_BODY | TAKE_ITEM
 F:IM_ELEC | IM_FIRE | IM_POIS
 F:FORCE_SLEEP
-S:1_IN_6
+spell-freq:6
 S:HEAL | TELE_AWAY
 S:S_KIN | S_MONSTERS
 D:Last and proudest king of ancient Númenor.  Corrupted by power and avarice,
@@ -8272,7 +8274,7 @@ B:HIT:LOSE_CON:10d2
 B:STING:POISON:5d5
 F:DROP_1
 F:IM_POIS
-S:1_IN_10
+spell-freq:10
 S:SCARE
 S:S_DEMON
 friends:100:4d4:Same
@@ -8295,7 +8297,7 @@ F:SMART | ATTR_FLICKER
 F:DROP_4 | ONLY_ITEM
 F:OPEN_DOOR | TAKE_ITEM
 F:FORCE_SLEEP
-S:1_IN_3
+spell-freq:3
 S:HEAL | TELE_TO
 S:S_MONSTERS
 D:It is a humanoid figure thirty feet tall that gives off an aura of power and
@@ -8314,7 +8316,7 @@ F:UNIQUE | MALE | SMART
 F:DROP_4 | DROP_GOOD | ONLY_ITEM
 F:OPEN_DOOR | BASH_DOOR | MOVE_BODY
 F:FORCE_SLEEP
-S:1_IN_3
+spell-freq:3
 S:BLIND | CAUSE_3 | HOLD | SCARE
 S:BA_FIRE | BA_NETH
 S:S_HOUND | S_MONSTERS | S_UNDEAD
@@ -8338,7 +8340,7 @@ F:OPEN_DOOR
 F:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | IM_POIS | NO_CONF
 F:NO_SLEEP
 F:FORCE_SLEEP
-S:1_IN_3
+spell-freq:3
 S:HEAL | MIND_BLAST
 S:S_ANIMAL | S_HOUND | S_SPIDER
 drop:prayer book:[Chants and Blessings]:5:1:1
@@ -8356,7 +8358,7 @@ W:57:2:0:12000
 F:SMART | ATTR_FLICKER
 F:NEVER_BLOW | NEVER_MOVE
 F:FORCE_SLEEP
-S:1_IN_1
+spell-freq:1
 S:BLIND | CAUSE_3 | CONF | DARKNESS | FORGET | SCARE
 S:TELE_AWAY
 S:BO_ACID | BO_COLD | BO_ELEC | BO_FIRE
@@ -8377,7 +8379,7 @@ F:DROP_4
 F:OPEN_DOOR | KILL_BODY
 F:IM_FIRE | IM_POIS | NO_CONF | NO_SLEEP
 -F:HURT_COLD
-S:1_IN_3
+spell-freq:3
 S:SCARE
 S:BA_FIRE | BA_POIS
 S:BO_FIRE | BO_PLAS
@@ -8403,7 +8405,7 @@ F:DROP_4 | DROP_GOOD | ONLY_ITEM
 F:BASH_DOOR
 F:IM_FIRE | NO_CONF | NO_SLEEP
 F:FORCE_SLEEP
-S:1_IN_6
+spell-freq:6
 S:ARROW_4 | SLOW
 S:BA_ELEC
 S:BO_MANA | BO_PLAS
@@ -8420,7 +8422,7 @@ F:SMART | ATTR_FLICKER
 F:NEVER_BLOW | NEVER_MOVE
 F:IM_FIRE
 F:FORCE_SLEEP
-S:1_IN_1
+spell-freq:1
 S:BRAIN_SMASH
 S:BA_NETH
 S:BO_MANA | BO_NETH
@@ -8443,7 +8445,7 @@ F:INVISIBLE
 F:PASS_WALL
 F:NO_CONF | NO_SLEEP | IM_NETHER
 F:FORCE_SLEEP
-S:1_IN_5
+spell-freq:5
 S:BR_NETH
 friends:100:2d7:Same
 D:A pale green hound.  Pulsing red lines and strange fluorescent light hints at
@@ -8458,7 +8460,7 @@ F:SMART | ATTR_FLICKER
 F:NEVER_BLOW | NEVER_MOVE
 F:IM_FIRE
 F:FORCE_SLEEP
-S:1_IN_1
+spell-freq:1
 S:BRAIN_SMASH | CAUSE_4 | MIND_BLAST | SLOW | TRAPS
 S:BA_WATE
 S:BO_NETH | BO_PLAS
@@ -8480,7 +8482,7 @@ F:DROP_4 | DROP_GOOD | ONLY_ITEM
 F:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | IM_POIS | NO_CONF
 F:NO_SLEEP
 F:FORCE_SLEEP
-S:1_IN_4
+spell-freq:4
 S:BLIND | BRAIN_SMASH | CAUSE_3 | CAUSE_4 | CONF | HEAL
 S:SCARE
 S:S_ANIMAL | S_MONSTERS
@@ -8510,7 +8512,7 @@ F:RAND_25
 F:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | IM_POIS | IM_NEXUS | IM_NETHER
 F:IM_PLASMA
 F:ATTR_MULTI
-S:1_IN_6
+spell-freq:6
 S:BR_ACID | BR_CHAO | BR_COLD | BR_DARK | BR_ELEC
 S:BR_FIRE | BR_GRAV | BR_INER | BR_LIGHT | BR_NETH | BR_NEXU
 S:BR_PLAS | BR_POIS | BR_SHAR | BR_SOUN | BR_TIME | BR_WALL
@@ -8530,7 +8532,7 @@ F:DROP_4 | DROP_GOOD | DROP_GREAT | ONLY_ITEM
 F:OPEN_DOOR
 F:IM_COLD | IM_ELEC | IM_FIRE | IM_POIS | NO_CONF | NO_SLEEP
 F:ATTR_MULTI | FORCE_SLEEP
-S:1_IN_2
+spell-freq:2
 S:BLIND | CAUSE_4 | FORGET | HASTE | HEAL | MIND_BLAST
 S:SCARE | TELE_AWAY | TPORT | TRAPS
 S:BA_ACID | BA_COLD | BA_FIRE | BA_WATE
@@ -8556,7 +8558,7 @@ F:SMART | ATTR_FLICKER
 F:DROP_2 | ONLY_ITEM
 F:OPEN_DOOR | BASH_DOOR
 F:FORCE_SLEEP
-S:1_IN_4
+spell-freq:4
 S:BLIND | BRAIN_SMASH | CAUSE_4 | SCARE
 S:BA_NETH
 S:BO_MANA | BO_NETH
@@ -8579,7 +8581,7 @@ F:UNIQUE | FEMALE | SMART
 F:DROP_4 | DROP_GOOD
 F:MOVE_BODY
 F:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | IM_PLASMA | HAS_LIGHT
-S:1_IN_2
+spell-freq:2
 S:BLIND | TELE_TO
 S:BA_FIRE
 S:BO_FIRE | BO_MANA | BO_PLAS
@@ -8601,7 +8603,7 @@ B:CRUSH:ACID:9d9
 F:POWERFUL
 F:DROP_3
 F:IM_ACID | IM_POIS
-S:1_IN_6
+spell-freq:6
 S:ARROW_4 | BLIND | CONF
 S:BR_ACID | BR_POIS
 S:S_DEMON
@@ -8625,7 +8627,7 @@ F:UNIQUE | MALE | SMART
 F:DROP_4 | DROP_GOOD
 F:MOVE_BODY
 F:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | IM_WATER | IM_NETHER
-S:1_IN_2
+spell-freq:2
 S:BLIND | TELE_TO
 S:BA_WATE
 S:BO_MANA | BO_WATE
@@ -8650,7 +8652,7 @@ F:ATTR_FLICKER
 F:DROP_4 | ONLY_ITEM
 F:TAKE_ITEM
 F:FORCE_SLEEP
-S:1_IN_4
+spell-freq:4
 S:BLIND | BLINK | BRAIN_SMASH | CONF | DRAIN_MANA | HOLD
 S:TELE_TO | TPORT
 S:BA_NETH
@@ -8676,7 +8678,7 @@ F:HAS_LIGHT | ATTR_FLICKER
 F:ONLY_ITEM
 F:BASH_DOOR
 F:IM_ELEC
-S:1_IN_4
+spell-freq:4
 S:BLIND | CONF | SCARE
 S:BR_ELEC
 D:A vast dragon of power.  Storms and lightning crash around its titanic form.
@@ -8696,7 +8698,7 @@ F:ATTR_FLICKER
 F:ONLY_ITEM
 F:BASH_DOOR
 F:IM_COLD
-S:1_IN_4
+spell-freq:4
 S:BLIND | CONF | SCARE
 S:BR_COLD
 D:An immense dragon capable of awesome destruction.  You have never felt such
@@ -8716,7 +8718,7 @@ F:ATTR_FLICKER
 F:ONLY_ITEM
 F:BASH_DOOR
 F:IM_POIS
-S:1_IN_4
+spell-freq:4
 S:BLIND | CONF | SCARE
 S:BR_POIS
 D:A truly enormous dragon with great powers.  The foul gases issuing from the
@@ -8738,7 +8740,7 @@ F:UNIQUE | MALE | SMART
 F:DROP_4 | DROP_GOOD | ONLY_ITEM
 F:OPEN_DOOR | BASH_DOOR | MOVE_BODY
 F:FORCE_SLEEP
-S:1_IN_3
+spell-freq:3
 S:BLIND | CAUSE_3 | CAUSE_4 | HOLD | MIND_BLAST | SCARE
 S:BA_COLD | BA_NETH
 S:BO_COLD
@@ -8759,7 +8761,7 @@ F:UNIQUE | MALE | SMART
 F:DROP_4 | DROP_GOOD
 F:MOVE_BODY
 F:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | HAS_LIGHT
-S:1_IN_2
+spell-freq:2
 S:BLIND | TELE_TO
 S:BO_MANA | BO_WATE | BO_FIRE | BO_ICEE
 S:S_AINU | S_ANIMAL | S_SPIDER | S_HOUND
@@ -8785,7 +8787,7 @@ B:BITE:HURT:2d12
 F:BASH_DOOR
 F:NO_CONF | NO_SLEEP
 F:ATTR_MULTI | FORCE_SLEEP
-S:1_IN_5
+spell-freq:5
 S:BR_CHAO
 friends:100:2d7:Same
 D:A constantly changing canine form, this hound rushes towards you as if
@@ -8804,7 +8806,7 @@ B:TOUCH:LOSE_DEX:8d12
 B:TOUCH:LOSE_DEX:8d12
 F:DROP_4 | ONLY_ITEM
 F:PASS_WALL
-S:1_IN_3
+spell-freq:3
 S:BLINK | CAUSE_4 | DRAIN_MANA | FORGET | HEAL
 S:HOLD | SCARE | TELE_TO | TPORT
 S:BA_NETH
@@ -8828,7 +8830,7 @@ F:DROP_4 | DROP_GOOD | ONLY_ITEM
 F:OPEN_DOOR
 F:IM_COLD | IM_ELEC | IM_FIRE | NO_CONF | NO_SLEEP
 F:FORCE_SLEEP
-S:1_IN_2
+spell-freq:2
 S:CAUSE_3 | HOLD | TELE_TO | TRAPS
 S:BA_DARK | BA_FIRE | BA_MANA | BA_NETH | BA_WATE
 S:BO_PLAS
@@ -8850,7 +8852,7 @@ F:INVISIBLE | POWERFUL
 F:DROP_3 
 F:MOVE_BODY
 F:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | IM_POIS
-S:1_IN_6
+spell-freq:6
 S:SCARE
 S:BA_COLD | BA_ELEC
 S:BO_ICEE
@@ -8874,7 +8876,7 @@ F:SMART | ATTR_FLICKER
 F:DROP_4 | ONLY_ITEM
 F:TAKE_ITEM
 F:FORCE_SLEEP
-S:1_IN_3
+spell-freq:3
 S:HEAL | TELE_TO
 S:S_MONSTERS
 D:A forty foot tall humanoid that shakes the ground as it walks.  The power
@@ -8895,7 +8897,7 @@ F:DROP_4 | ONLY_ITEM
 F:OPEN_DOOR | BASH_DOOR
 F:IM_COLD | IM_FIRE | NO_CONF | NO_SLEEP
 F:FORCE_SLEEP
-S:1_IN_3
+spell-freq:3
 S:TELE_TO
 S:S_KIN
 friends:100:2d4:Tiger
@@ -8917,7 +8919,7 @@ B:HIT:CONFUSE:6d6
 F:UNIQUE | FEMALE | SMART
 F:DROP_4 | DROP_GOOD | ONLY_ITEM
 -F:HURT_FIRE
-S:1_IN_3
+spell-freq:3
 S:BLIND | BRAIN_SMASH | CAUSE_3 | CAUSE_4 | DRAIN_MANA
 S:BA_NETH
 S:S_HI_UNDEAD | S_KIN
@@ -8938,7 +8940,7 @@ F:HAS_LIGHT | ATTR_FLICKER
 F:ONLY_ITEM
 F:BASH_DOOR
 F:IM_FIRE
-S:1_IN_4
+spell-freq:4
 S:BLIND | CONF | SCARE
 S:BR_FIRE
 D:A vast dragon of immense power.  Fire leaps continuously from its huge form.
@@ -8958,7 +8960,7 @@ F:FEMALE | EVIL | SMART
 F:BASH_DOOR
 F:NO_CONF | NO_SLEEP
 F:FORCE_SLEEP
-S:1_IN_2
+spell-freq:2
 S:BLIND | BRAIN_SMASH | CONF | DRAIN_MANA | FORGET | SCARE
 S:BA_ACID | BA_COLD | BA_DARK | BA_FIRE
 S:BO_MANA | BO_NETH
@@ -8979,7 +8981,7 @@ F:ATTR_FLICKER
 F:ONLY_ITEM
 F:BASH_DOOR
 F:IM_ACID
-S:1_IN_4
+spell-freq:4
 S:BLIND | CONF | SCARE
 S:BR_ACID
 D:A huge and very powerful dragon.  Great steaming pools of acid drip from its
@@ -8999,7 +9001,7 @@ B:BITE:HURT:6d14
 F:ATTR_FLICKER
 F:ONLY_ITEM
 F:BASH_DOOR
-S:1_IN_4
+spell-freq:4
 S:BLIND | CONF | SCARE
 S:BR_SOUN
 D:A dragon of gigantic proportions, with destructive abilities to match.  The
@@ -9021,7 +9023,7 @@ F:ANIMAL
 F:DROP_40 | DROP_60 | ONLY_ITEM
 F:BASH_DOOR
 F:ATTR_MULTI | FORCE_SLEEP
-S:1_IN_5
+spell-freq:5
 S:CAUSE_4
 S:BR_CHAO
 D:"Beware the Jabberwock, my son!  The jaws that bite, the claws that catch!"
@@ -9039,7 +9041,7 @@ B:HIT:LOSE_STR:4d6
 F:UNIQUE | MALE
 F:DROP_4 | DROP_GOOD | ONLY_ITEM
 F:FORCE_SLEEP
-S:1_IN_3
+spell-freq:3
 S:BLIND | CONF | HOLD
 S:BA_DARK | BA_NETH
 S:S_HI_UNDEAD | S_KIN | S_WRAITH
@@ -9063,7 +9065,7 @@ F:UNDEAD | COLD_BLOOD
 F:OPEN_DOOR | BASH_DOOR
 F:IM_COLD | IM_FIRE | IM_POIS | NO_STUN | NO_SLEEP
 F:FORCE_SLEEP
-S:1_IN_8
+spell-freq:8
 S:BRAIN_SMASH | CAUSE_4 | DRAIN_MANA | TELE_TO
 S:BA_NETH
 S:S_UNDEAD
@@ -9086,7 +9088,7 @@ F:DROP_2 | ONLY_ITEM
 F:OPEN_DOOR | BASH_DOOR
 F:IM_FIRE | IM_NETHER
 F:FORCE_SLEEP
-S:1_IN_4
+spell-freq:4
 S:BLIND | BRAIN_SMASH | SCARE
 S:BA_NETH
 S:BO_MANA | BO_NETH
@@ -9110,7 +9112,7 @@ F:DROP_3 | DROP_GOOD | ONLY_ITEM
 F:RAND_25 | KILL_BODY | KILL_ITEM
 F:IM_ACID | IM_COLD | IM_FIRE
 F:FORCE_SLEEP
-S:1_IN_5
+spell-freq:5
 S:BA_ACID | BA_WATE
 S:BO_ICEE | BO_WATE
 D:No ordinary cyclops, but the son of a sea-god: he wields the powers of
@@ -9132,7 +9134,7 @@ B:HIT:PARALYZE:5d5
 F:POWERFUL | REGENERATE
 F:DROP_4
 F:IM_COLD
-S:1_IN_6
+spell-freq:6
 S:HOLD | SCARE | SLOW
 S:BA_COLD
 S:BO_ICEE
@@ -9162,7 +9164,7 @@ F:UNIQUE | MALE | HAS_LIGHT
 F:DROP_GOOD | DROP_GREAT | ONLY_ITEM
 F:BASH_DOOR
 F:IM_FIRE | IM_POIS
-S:1_IN_3
+spell-freq:3
 S:BLIND | CONF | SCARE
 S:BR_FIRE | BR_POIS
 S:S_HI_DRAGON
@@ -9179,7 +9181,7 @@ C:R
 I:120:1320:20:1:0
 W:71:2:0:10500
 F:ATTR_FLICKER
-S:1_IN_2
+spell-freq:2
 S:BLINK | TELE_TO
 S:S_HI_DEMON
 D:A massive pulsating mound of flesh, glowing with a hellish light.
@@ -9190,7 +9192,7 @@ C:G
 I:120:1320:20:1:0
 W:71:2:0:10500
 F:ATTR_FLICKER
-S:1_IN_2
+spell-freq:2
 S:BLINK | TELE_TO
 S:S_HI_DRAGON
 D:A massive mound of scaled flesh, throbbing and pulsating with multi-hued
@@ -9202,7 +9204,7 @@ C:U
 I:120:1320:20:1:0
 W:71:2:0:10500
 F:ATTR_FLICKER
-S:1_IN_2
+spell-freq:2
 S:BLINK | TELE_TO
 S:S_HI_UNDEAD
 D:A massive pile of rotting flesh.  A disgusting stench fills the air as it
@@ -9224,7 +9226,7 @@ F:DROP_4 | DROP_GOOD | ONLY_ITEM
 F:OPEN_DOOR | BASH_DOOR | MOVE_BODY
 F:IM_ACID | IM_FIRE
 F:FORCE_SLEEP
-S:1_IN_2
+spell-freq:2
 S:BLIND | CAUSE_3 | CAUSE_4 | HOLD | SCARE | TELE_LEVEL
 S:BA_COLD | BA_FIRE | BA_NETH
 S:BO_MANA
@@ -9245,7 +9247,7 @@ F:REGENERATE
 F:DROP_4
 F:KILL_BODY
 F:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | IM_POIS
-S:1_IN_5
+spell-freq:5
 S:HASTE | SCARE | SLOW
 S:S_HI_DEMON
 D:A giant humanoid demon wielding a massive, heavy and sharp scythe.  Feared by
@@ -9269,7 +9271,7 @@ F:DROP_4 | ONLY_ITEM
 F:OPEN_DOOR | BASH_DOOR
 F:IM_ELEC | IM_FIRE
 F:FORCE_SLEEP
-S:1_IN_4
+spell-freq:4
 S:BLIND | BRAIN_SMASH | SCARE
 S:BA_NETH
 S:BO_MANA | BO_NETH
@@ -9293,7 +9295,7 @@ F:UNIQUE | MALE | EVIL | SMART
 F:BASH_DOOR
 F:IM_ACID | IM_COLD | IM_FIRE | IM_POIS | NO_CONF | NO_SLEEP
 F:FORCE_SLEEP
-S:1_IN_2
+spell-freq:2
 S:BLIND | BRAIN_SMASH | CONF | DRAIN_MANA | FORGET | SCARE
 S:BA_ACID | BA_COLD | BA_DARK | BA_FIRE | BA_NETH
 S:BO_MANA
@@ -9316,7 +9318,7 @@ B:HIT:LOSE_STR:4d6
 F:ATTR_FLICKER
 F:DROP_2 | ONLY_ITEM
 F:KILL_WALL
-S:1_IN_3
+spell-freq:3
 S:BLIND | CAUSE_3 | CAUSE_4 | CONF | DRAIN_MANA
 S:HOLD | TELE_TO
 S:BA_MANA | BA_NETH
@@ -9337,7 +9339,7 @@ F:BASH_DOOR
 F:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | IM_POIS | IM_DISEN | IM_NETHER
 F:IM_NEXUS | IM_PLASMA | NO_CONF | NO_SLEEP
 F:ATTR_MULTI | FORCE_SLEEP
-S:1_IN_5
+spell-freq:5
 S:BR_ACID | BR_CHAO | BR_COLD | BR_DARK | BR_DISE
 S:BR_ELEC | BR_FIRE | BR_GRAV | BR_INER | BR_LIGHT | BR_NETH
 S:BR_NEXU | BR_PLAS | BR_POIS | BR_SHAR | BR_SOUN | BR_TIME
@@ -9363,7 +9365,7 @@ F:ONLY_ITEM
 F:BASH_DOOR
 F:IM_FIRE | IM_DISEN
 F:ATTR_MULTI
-S:1_IN_4
+spell-freq:4
 S:BLIND | CONF | SCARE
 S:BR_CHAO | BR_DISE
 S:S_DRAGON | S_HI_DRAGON
@@ -9385,7 +9387,7 @@ F:ATTR_FLICKER
 F:DROP_4 | ONLY_ITEM
 F:BASH_DOOR
 F:IM_COLD
-S:1_IN_4
+spell-freq:4
 S:BLIND | CONF | SCARE
 S:BR_SHAR | BR_SOUN
 S:S_DRAGON | S_HI_DRAGON
@@ -9406,7 +9408,7 @@ F:UNIQUE | FEMALE | EVIL | ANIMAL | SMART
 F:DROP_4 | DROP_GOOD | ONLY_ITEM
 F:HURT_LIGHT | IM_ACID | IM_POIS | NO_CONF | NO_SLEEP
 F:FORCE_SLEEP
-S:1_IN_3
+spell-freq:3
 S:BLIND | CONF | DARKNESS | HEAL | SCARE | SLOW
 S:BA_DARK
 S:BR_DARK | BR_POIS
@@ -9430,7 +9432,7 @@ F:DEMON | COLD_BLOOD | HAS_LIGHT
 F:OPEN_DOOR | BASH_DOOR
 F:IM_ACID | IM_FIRE | IM_POIS
 F:FORCE_SLEEP
-S:1_IN_8
+spell-freq:8
 S:TELE_TO
 S:BA_ELEC | BA_FIRE
 S:BO_PLAS
@@ -9447,7 +9449,7 @@ C:B
 I:120:2640:30:1:0
 W:76:2:0:15000
 F:ATTR_FLICKER
-S:1_IN_1
+spell-freq:1
 S:BLINK | TELE_TO
 S:S_ANIMAL | S_HI_DEMON | S_HI_DRAGON | S_HI_UNDEAD | S_MONSTERS
 D:A giant seething mass of flesh, overwhelming you with monster after monster.
@@ -9466,7 +9468,7 @@ F:DROP_4 | DROP_GOOD | ONLY_ITEM
 F:OPEN_DOOR | KILL_WALL | KILL_BODY | TAKE_ITEM
 F:HURT_ROCK | IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | IM_POIS
 F:FORCE_SLEEP
-S:1_IN_5
+spell-freq:5
 D:The strongest of all the Titans.  Legend has it that he used to hold the sky
 D: on his shoulders; and the mountain range that now does so is named after him.
 
@@ -9483,7 +9485,7 @@ B:TOUCH:LOSE_DEX:6d12
 B:TOUCH:LOSE_DEX:6d12
 F:UNIQUE | MALE
 F:DROP_4 | DROP_GOOD | DROP_GREAT | ONLY_ITEM
-S:1_IN_2
+spell-freq:2
 S:BLIND | BLINK | CAUSE_4 | HOLD | SCARE
 S:TELE_TO | TRAPS
 S:BA_MANA | BA_NETH
@@ -9511,7 +9513,7 @@ F:POWERFUL | REGENERATE
 F:DROP_4
 F:MOVE_BODY
 F:IM_FIRE | IM_POIS
-S:1_IN_5
+spell-freq:5
 S:CAUSE_4 | SCARE
 S:BA_FIRE
 S:BR_CHAO | BR_FIRE | BR_POIS
@@ -9542,7 +9544,7 @@ F:ATTR_FLICKER
 F:ONLY_ITEM
 F:BASH_DOOR
 F:IM_COLD | IM_FIRE | IM_DISEN
-S:1_IN_4
+spell-freq:4
 S:BLIND | CONF | SCARE
 S:BR_CHAO | BR_DISE | BR_SHAR | BR_SOUN
 S:S_DRAGON | S_HI_DRAGON
@@ -9565,7 +9567,7 @@ F:ONLY_ITEM
 F:BASH_DOOR
 F:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | IM_POIS
 F:ATTR_MULTI
-S:1_IN_4
+spell-freq:4
 S:BLIND | CONF | SCARE
 S:BR_ACID | BR_COLD | BR_ELEC | BR_FIRE | BR_POIS
 S:S_DRAGON | S_HI_DRAGON
@@ -9579,7 +9581,7 @@ W:79:3:0:20000
 F:UNIQUE
 F:DROP_4 | DROP_GOOD | ONLY_ITEM
 F:ATTR_MULTI
-S:1_IN_1
+spell-freq:1
 S:S_AINU | S_ANIMAL | S_HI_DEMON | S_HI_DRAGON | S_HI_UNDEAD | S_HOUND
 S:S_HYDRA | S_KIN | S_MONSTERS | S_SPIDER | S_UNIQUE | S_WRAITH
 D:A gigantic seething mass of flesh, Qlzqqlzuup changes colours in front of your
@@ -9599,7 +9601,7 @@ F:POWERFUL | HAS_LIGHT | ATTR_FLICKER
 F:DROP_4
 F:MOVE_BODY
 F:IM_ELEC | IM_FIRE | IM_POIS | IM_PLASMA
-S:1_IN_3
+spell-freq:3
 S:CONF | SCARE
 S:BA_FIRE
 S:BO_PLAS
@@ -9629,7 +9631,7 @@ F:UNIQUE | MALE | SMART
 F:DROP_4 | DROP_GOOD | DROP_GREAT | ONLY_ITEM
 F:OPEN_DOOR | BASH_DOOR | MOVE_BODY
 F:FORCE_SLEEP
-S:1_IN_2
+spell-freq:2
 S:BLIND | BRAIN_SMASH | CAUSE_3 | HOLD | SCARE | TELE_AWAY
 S:BA_NETH
 S:BO_MANA
@@ -9656,7 +9658,7 @@ F:DROP_4 | DROP_GOOD | DROP_GREAT | ONLY_ITEM
 F:KILL_WALL | MOVE_BODY
 F:IM_COLD | IM_FIRE | IM_POIS | NO_CONF | NO_SLEEP
 F:FORCE_SLEEP
-S:1_IN_6
+spell-freq:6
 S:S_ANIMAL | S_HI_DEMON | S_HI_DRAGON | S_HI_UNDEAD | S_MONSTERS | S_UNIQUE
 S:S_WRAITH
 D:The son of Eöl the Dark Elf, Maeglin is every bit as evil as his father and
@@ -9678,7 +9680,7 @@ B:HIT:ELEC:12d12
 F:UNIQUE | MALE | INVISIBLE
 F:DROP_4 | DROP_GOOD
 F:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | IM_POIS
-S:1_IN_3
+spell-freq:3
 S:MIND_BLAST
 S:BA_ELEC
 S:BO_ELEC | BO_MANA
@@ -9703,7 +9705,7 @@ F:DROP_1 | DROP_GOOD | ONLY_ITEM
 F:RAND_25 | OPEN_DOOR | BASH_DOOR | MOVE_BODY | TAKE_ITEM
 F:IM_POIS
 F:FORCE_SLEEP
-S:1_IN_3
+spell-freq:3
 S:SCARE
 S:S_HOUND | S_MONSTERS
 friends:100:3d5:Werewolf
@@ -9727,7 +9729,7 @@ F:DROP_4 | DROP_GOOD | DROP_GREAT | ONLY_ITEM
 F:OPEN_DOOR | BASH_DOOR
 F:IM_FIRE
 F:FORCE_SLEEP
-S:1_IN_2
+spell-freq:2
 S:BRAIN_SMASH | CAUSE_4 | SCARE | SLOW | TELE_TO
 S:BA_NETH | BA_WATE
 S:BO_ICEE | BO_MANA
@@ -9751,7 +9753,7 @@ F:UNIQUE | MALE
 F:DROP_GOOD | DROP_GREAT | ONLY_ITEM
 F:BASH_DOOR
 F:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | IM_POIS
-S:1_IN_3
+spell-freq:3
 S:BR_ACID | BR_COLD | BR_ELEC | BR_FIRE | BR_POIS
 S:S_HI_DRAGON | S_KIN
 friends:100:1d1:Kavlax the Many-Headed
@@ -9779,7 +9781,7 @@ F:OPEN_DOOR | BASH_DOOR | MOVE_BODY
 F:IM_COLD | IM_FIRE | IM_DISEN | NO_CONF | NO_SLEEP
 F:ATTR_MULTI | FORCE_SLEEP
 -F:HURT_COLD
-S:1_IN_2
+spell-freq:2
 S:BR_COLD | BR_DISE | BR_FIRE
 D:The Tarrasque is a massive reptile of legend, rumoured to be unkillable and
 D: immune to magic.  Fear its anger, for its devastation is unmatched!
@@ -9800,7 +9802,7 @@ F:DROP_4 | DROP_GOOD | ONLY_ITEM
 F:MOVE_BODY | TAKE_ITEM
 F:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | IM_POIS
 F:FORCE_SLEEP
-S:1_IN_3
+spell-freq:3
 S:HEAL | TELE_TO
 S:BR_COLD | BR_FIRE | BR_SHAR | BR_SOUN
 S:S_KIN | S_MONSTERS
@@ -9828,7 +9830,7 @@ F:UNIQUE | MALE | POWERFUL | HAS_LIGHT
 F:DROP_4 | DROP_GOOD
 F:MOVE_BODY
 F:IM_FIRE | IM_PLASMA
-S:1_IN_4
+spell-freq:4
 S:BLIND | CONF | SCARE
 S:BR_FIRE | BR_PLAS
 S:S_HI_DEMON | S_UNDEAD
@@ -9859,7 +9861,7 @@ F:DROP_4 | DROP_GOOD | ONLY_ITEM
 F:OPEN_DOOR | BASH_DOOR | KILL_BODY
 F:IM_ACID | IM_COLD | IM_ELEC | NO_FEAR | NO_CONF | NO_SLEEP
 F:FORCE_SLEEP
-S:1_IN_5
+spell-freq:5
 S:BR_COLD | BR_LIGHT | BR_SHAR | BR_SOUN
 D:The wolfhound of the Valar, Huan has served many masters in his time, from
 D: Celegorm son of Fëanor to Beren son of Barahir: but now he runs wild and
@@ -9880,7 +9882,7 @@ F:DROP_4 | DROP_GOOD | ONLY_ITEM
 F:OPEN_DOOR | BASH_DOOR | MOVE_BODY
 F:IM_FIRE | IM_POIS | NO_CONF | NO_SLEEP | IM_NETHER
 F:FORCE_SLEEP
-S:1_IN_3
+spell-freq:3
 S:BR_DARK | BR_FIRE | BR_NETH | BR_POIS
 S:S_HOUND
 D:The first guard of Angband, Carcharoth, also known as 'The Red Maw', is the
@@ -9901,7 +9903,7 @@ B:HIT:DRAIN_CHARGES:7d12
 F:UNIQUE | MALE
 F:DROP_4 | DROP_GOOD | DROP_GREAT | ONLY_ITEM
 F:IM_ELEC | IM_FIRE
-S:1_IN_2
+spell-freq:2
 S:BLIND | CAUSE_4 | SCARE | TPORT
 S:BA_FIRE | BA_MANA | BA_NETH
 S:BO_MANA
@@ -9934,7 +9936,7 @@ F:UNIQUE | MALE | POWERFUL | HAS_LIGHT
 F:DROP_4 | DROP_GOOD | DROP_GREAT
 F:MOVE_BODY
 F:IM_ELEC | IM_FIRE | IM_PLASMA
-S:1_IN_3
+spell-freq:3
 S:BLIND | CONF | SCARE
 S:BR_FIRE | BR_PLAS
 S:S_HI_DEMON | S_HI_UNDEAD
@@ -9967,7 +9969,7 @@ F:OPEN_DOOR | MOVE_BODY
 F:IM_COLD | IM_ELEC | IM_FIRE | IM_POIS | NO_FEAR | NO_CONF
 F:NO_SLEEP
 F:FORCE_DEPTH | FORCE_SLEEP
-S:1_IN_2
+spell-freq:2
 S:BLIND | BRAIN_SMASH | CAUSE_4 | SCARE | TELE_LEVEL | TPORT
 S:BA_DARK | BA_FIRE | BA_MANA | BA_NETH | BA_WATE
 S:BO_ICEE | BO_MANA | BO_PLAS
@@ -9995,7 +9997,7 @@ F:KILL_WALL | MOVE_BODY | ATTR_FLICKER
 F:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | IM_POIS | NO_FEAR
 F:NO_CONF | NO_SLEEP
 F:FORCE_DEPTH | FORCE_SLEEP
-S:1_IN_3
+spell-freq:3
 S:BRAIN_SMASH
 S:BA_MANA | BA_NETH
 S:BO_MANA
