@@ -882,7 +882,7 @@ static void process_player_aux(void)
 	static bitflag old_flags[RF_SIZE];
 	static bitflag old_spell_flags[RSF_SIZE];
 
-	static byte old_blows[MONSTER_BLOW_MAX];
+	static int old_blows[MONSTER_BLOW_MAX];
 
 	static byte	old_cast_innate = 0;
 	static byte	old_cast_spell = 0;
@@ -895,7 +895,7 @@ static void process_player_aux(void)
 
 		for (i = 0; i < MONSTER_BLOW_MAX; i++)
 		{
-			if (old_blows[i] != l_ptr->blows[i])
+			if (old_blows[i] != l_ptr->blows[i].times_seen)
 			{
 				changed = TRUE;
 				break;
@@ -918,7 +918,8 @@ static void process_player_aux(void)
 			rsf_copy(old_spell_flags, l_ptr->spell_flags);
 
 			/* Memorize blows */
-			memmove(old_blows, l_ptr->blows, sizeof(byte)*MONSTER_BLOW_MAX);
+			for (i = 0; i < MONSTER_BLOW_MAX; i++)
+				old_blows[i] = l_ptr->blows[i].times_seen;
 
 			/* Memorize castings */
 			old_cast_innate = l_ptr->cast_innate;

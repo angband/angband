@@ -69,6 +69,7 @@ struct monster_blow {
 	int effect;
 	int d_dice;
 	int d_side;
+	int times_seen;
 };
 
 /*

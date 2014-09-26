@@ -429,7 +429,7 @@ void cheat_monster_lore(const monster_race *r_ptr, monster_lore *l_ptr)
 		/* Examine "actual" blows */
 		if (r_ptr->blow[i].effect || r_ptr->blow[i].method) {
 			/* Hack -- maximal observations */
-			l_ptr->blows[i] = MAX_UCHAR;
+			l_ptr->blows[i].times_seen = MAX_UCHAR;
 		}
 	}
 
@@ -491,7 +491,7 @@ void wipe_monster_lore(const monster_race *r_ptr, monster_lore *l_ptr)
 		/* Examine "actual" blows */
 		if (r_ptr->blow[i].effect || r_ptr->blow[i].method) {
 			/* Hack -- no observations */
-			l_ptr->blows[i] = 0;
+			l_ptr->blows[i].times_seen = 0;
 		}
 	}
 
@@ -519,7 +519,7 @@ void lore_do_probe(struct monster *m)
 	rf_setall(l_ptr->flags);
 	rsf_copy(l_ptr->spell_flags, m->race->spell_flags);
 	for (i = 0; i < MONSTER_BLOW_MAX; i++)
-		l_ptr->blows[i] = MAX_UCHAR;
+		l_ptr->blows[i].times_seen = MAX_UCHAR;
 
 	/* Update monster recall window */
 	if (player->upkeep->monster_race == m->race)
@@ -1830,7 +1830,7 @@ static void lore_append_attack(textblock *tb, const monster_race *race,
 		if (!race->blow[i].method) continue;
 
 		/* Count known attacks */
-		if (lore->blows[i])
+		if (lore->blows[i].times_seen)
 			total_attacks++;
 	}
 
@@ -1850,7 +1850,7 @@ static void lore_append_attack(textblock *tb, const monster_race *race,
 		const char *effect_str = NULL;
 
 		/* Skip unknown and undefined attacks */
-		if (!race->blow[i].method || !lore->blows[i]) continue;
+		if (!race->blow[i].method || !lore->blows[i].times_seen) continue;
 
 		/* Extract the attack info */
 		dice = race->blow[i].d_dice;

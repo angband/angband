@@ -1532,10 +1532,10 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 		/* Analyze "visible" monsters only */
 		if (visible) {
 			/* Count "obvious" attacks (and ones that cause damage) */
-			if (obvious || damage || (l_ptr->blows[ap_cnt] > 10)) {
+			if (obvious || damage || (l_ptr->blows[ap_cnt].times_seen > 10)) {
 				/* Count attacks of this type */
-				if (l_ptr->blows[ap_cnt] < MAX_UCHAR)
-					l_ptr->blows[ap_cnt]++;
+				if (l_ptr->blows[ap_cnt].times_seen < MAX_UCHAR)
+					l_ptr->blows[ap_cnt].times_seen++;
 			}
 		}
 

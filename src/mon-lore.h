@@ -51,12 +51,17 @@ typedef struct
 	byte cast_innate;		/* Max number of innate spells seen */
 	byte cast_spell;		/* Max number of other spells seen */
 
-	byte blows[MONSTER_BLOW_MAX]; /* Number of times each blow type was seen */
+	struct monster_blow blows[MONSTER_BLOW_MAX]; /* Knowledge of blows */
 
 	bitflag flags[RF_SIZE]; /* Observed racial flags - a 1 indicates
 	                         * the flag (or lack thereof) is known to
 	                         * the player */
 	bitflag spell_flags[RSF_SIZE];  /* Observed racial spell flags */
+
+	struct monster_drop *drops;
+    struct monster_friends *friends;
+	struct monster_friends_base *friends_base;
+	struct monster_mimic *mimic_kinds;
 } monster_lore;
 
 /** Variables **/
