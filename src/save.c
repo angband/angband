@@ -326,60 +326,6 @@ void wr_messages(void)
 }
 
 
-void wr_monster_memory(void)
-{
-	size_t i;
-	int r_idx;
-
-	wr_u16b(z_info->r_max);
-	wr_byte(RF_SIZE);
-	wr_byte(RSF_SIZE);
-	wr_byte(MONSTER_BLOW_MAX);
-	for (r_idx = 0; r_idx < z_info->r_max; r_idx++)
-	{
-		monster_race *r_ptr = &r_info[r_idx];
-		monster_lore *l_ptr = &l_list[r_idx];
-
-		/* Count sights/deaths/kills */
-		wr_s16b(l_ptr->sights);
-		wr_s16b(l_ptr->deaths);
-		wr_s16b(l_ptr->pkills);
-		wr_s16b(l_ptr->tkills);
-
-		/* Count wakes and ignores */
-		wr_byte(l_ptr->wake);
-		wr_byte(l_ptr->ignore);
-
-		/* Count drops */
-		wr_byte(l_ptr->drop_gold);
-		wr_byte(l_ptr->drop_item);
-
-		/* Count spells */
-		wr_byte(l_ptr->cast_innate);
-		wr_byte(l_ptr->cast_spell);
-
-		/* Count blows of each type */
-		for (i = 0; i < MONSTER_BLOW_MAX; i++)
-			wr_byte(l_ptr->blows[i]);
-
-		/* Memorize flags */
-		for (i = 0; i < RF_SIZE; i++)
-			wr_byte(l_ptr->flags[i]);
-
-		for (i = 0; i < RSF_SIZE; i++)
-			wr_byte(l_ptr->spell_flags[i]);
-
-		/* Monster limit per level */
-		wr_byte(r_ptr->max_num);
-
-		/* XXX */
-		wr_byte(0);
-		wr_byte(0);
-		wr_byte(0);
-	}
-}
-
-
 void wr_object_memory(void)
 {
 	int k_idx;
