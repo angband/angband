@@ -326,6 +326,24 @@ void wr_messages(void)
 }
 
 
+void wr_monster_memory(void)
+{
+	int r_idx;
+
+	for (r_idx = 0; r_idx < z_info->r_max; r_idx++) {
+		monster_race *r_ptr = &r_info[r_idx];
+		monster_lore *l_ptr = &l_list[r_idx];
+
+		/* Names and kill counts */
+		if (!r_ptr->name || !l_ptr->pkills) continue;
+		wr_string(r_ptr->name);
+		wr_u16b(l_ptr->pkills);
+	}
+	wr_string("No more monsters");
+}
+
+
+
 void wr_object_memory(void)
 {
 	int k_idx;

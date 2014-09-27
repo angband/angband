@@ -26,6 +26,7 @@
 #include "mon-lore.h"
 #include "mon-make.h"
 #include "mon-spell.h"
+#include "mon-util.h"
 #include "monster.h"
 #include "obj-gear.h"
 #include "obj-identify.h"
@@ -413,27 +414,50 @@ int rd_messages(void)
 	int i;
 	char buf[128];
 	u16b tmp16u;
-	
+
 	s16b num;
-	
+
 	/* Total */
 	rd_s16b(&num);
-	
+
 	/* Read the messages */
 	for (i = 0; i < num; i++)
 	{
 		/* Read the message */
 		rd_string(buf, sizeof(buf));
-		
+
 		/* Read the message type */
 		rd_u16b(&tmp16u);
 
 		/* Save the message */
 		message_add(buf, tmp16u);
 	}
-	
+
 	return 0;
 }
+
+/* Read monster memory. */
+int rd_monster_memory(void)
+{
+	u16b tmp16u;
+	char buf[128];
+
+	rd_string(buf, sizeof(buf));
+	while (!streq(buf, "No more monsters")) {
+		monster_race *race = lookup_monster(buf);
+
+		/* Get the kill count, skip if monster invalid */
+		rd_u16b(&tmp16u);
+		if (!race) continue;
+
+		/* Store the kill count, look for the next monster */
+		l_list[race->ridx].pkills = tmp16u;
+		rd_string(buf, sizeof(buf));
+	}
+
+	return 0;
+}
+
 
 int rd_object_memory(void)
 {
