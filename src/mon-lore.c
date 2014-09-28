@@ -402,6 +402,7 @@ void lore_update(monster_race *race, monster_lore *lore)
 	/* Killing a monster reveals some properties */
 	if (lore->tkills > 0) {
 		lore->armour_known = TRUE;
+		lore->drop_known = TRUE;
 		flags_set(lore->flags, RF_SIZE, RF_RACE_MASK, FLAG_END);
 		flags_set(lore->flags, RF_SIZE, RF_DROP_MASK, FLAG_END);
 		rf_on(lore->flags, RF_FORCE_DEPTH);
@@ -1309,6 +1310,7 @@ static void lore_append_drop(textblock *tb, const monster_race *race,
 	monster_sex_t msex = MON_SEX_NEUTER;
 
 	assert(tb && race && lore);
+	if (!lore->drop_known) return;
 
 	/* Extract a gender (if applicable) */
 	msex = lore_monster_sex(race);

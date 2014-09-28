@@ -63,6 +63,7 @@ typedef struct
 
 	/* Derived known fields, put here for simplicity */
 	bool armour_known;
+	bool drop_known;
 	bool sleep_known;
 	bool spell_freq_known;
 } monster_lore;
