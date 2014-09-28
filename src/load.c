@@ -441,6 +441,16 @@ int rd_monster_memory(void)
 {
 	u16b tmp16u;
 	char buf[128];
+	int i;
+
+	/* Reset maximum numbers per level */
+	for (i = 1; z_info && i < z_info->r_max; i++)
+	{
+		monster_race *race = &r_info[i];
+		race->max_num = 100;
+		if (rf_has(race->flags, RF_UNIQUE))
+			race->max_num = 1;
+	}
 
 	rd_string(buf, sizeof(buf));
 	while (!streq(buf, "No more monsters")) {
@@ -450,8 +460,12 @@ int rd_monster_memory(void)
 		rd_u16b(&tmp16u);
 		if (!race) continue;
 
-		/* Store the kill count, look for the next monster */
+		/* Store the kill count, ensure dead uniques stay dead */
 		l_list[race->ridx].pkills = tmp16u;
+		if (rf_has(race->flags, RF_UNIQUE) && tmp16u)
+			race->max_num = 0;
+
+		/* Look for the next monster */
 		rd_string(buf, sizeof(buf));
 	}
 
