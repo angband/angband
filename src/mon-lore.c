@@ -2161,7 +2161,7 @@ void write_lore_entries(ang_file *fff)
 		/* Output 'B' for "Blows" (up to four lines) */
 		for (n = 0; n < 4; n++) {
 			/* End of blows */
-			if (!lore->blows[n].times_seen) break;
+			if (!lore->blows[n].times_seen) continue;
 
 			/* Output blow method */
 			file_putf(fff, "B:%s", r_info_blow_method[lore->blows[n].method]);

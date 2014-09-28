@@ -27,15 +27,13 @@
 
 /** Structures **/
 
-/*
+/**
  * Monster "lore" information
- *
- * Note that these fields are related to the "monster recall" and can
- * be scrapped if space becomes an issue, resulting in less "complete"
- * monster recall (no knowledge of spells, etc). XXX XXX XXX
  */
 typedef struct
 {
+	int ridx;				/* Index of monster race */
+
 	s16b sights;			/* Count sightings of this monster */
 	s16b deaths;			/* Count deaths from this monster */
 

@@ -914,11 +914,11 @@ struct file_parser r_parser = {
 
 /* Parsing functions for lore.txt */
 static enum parser_error parse_lore_n(struct parser *p) {
-	monster_lore *l;
 	int index = parser_getuint(p, "index");
+	monster_lore *l = &l_list[index];
 
-	l = &l_list[index];
 	parser_setpriv(p, l);
+	l->ridx = index;
 	return PARSE_ERROR_NONE;
 }
 
@@ -949,24 +949,28 @@ static enum parser_error parse_lore_t(struct parser *p) {
 
 static enum parser_error parse_lore_b(struct parser *p) {
 	monster_lore *l = parser_priv(p);
+	struct monster_race *race = &r_info[l->ridx];
 	int i;
 	struct random dam;
 
 	if (!l)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 	for (i = 0; i < MONSTER_BLOW_MAX; i++)
-		if (!l->blows[i].method)
+		if (!race->blow[i].method)
 			break;
 	if (i == MONSTER_BLOW_MAX)
 		return PARSE_ERROR_TOO_MANY_ENTRIES;
+
 	l->blows[i].method = monster_blow_method_for_string(parser_getsym(p, "method"));
 	if (!monster_blow_method_is_valid(l->blows[i].method))
 		return PARSE_ERROR_UNRECOGNISED_BLOW;
+
 	if (parser_hasval(p, "effect")) {
 		l->blows[i].effect = monster_blow_effect_for_string(parser_getsym(p, "effect"));
 		if (!monster_blow_effect_is_valid(l->blows[i].effect))
 			return PARSE_ERROR_INVALID_EFFECT;
 	}
+
 	if (parser_hasval(p, "damage")) {
 		dam = parser_getrand(p, "damage");
 		l->blows[i].d_dice = dam.dice;
