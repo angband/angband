@@ -397,10 +397,14 @@ bool make_attack_spell(struct monster *m_ptr)
 				l_ptr->cast_spell++;
 		}
 	}
+
 	/* Always take note of monsters that kill you */
 	if (player->is_dead && (l_ptr->deaths < MAX_SHORT)) {
 		l_ptr->deaths++;
 	}
+
+	/* Record any new info */
+	lore_update(m_ptr->race, l_ptr);
 
 	/* A spell was cast */
 	return TRUE;
@@ -1601,6 +1605,7 @@ static bool process_monster_timed(struct chunk *c, struct monster *m_ptr)
 					l_ptr->ignore++;
 				else if (woke_up && l_ptr->wake < MAX_UCHAR)
 					l_ptr->wake++;
+				lore_update(m_ptr->race, l_ptr);
 			}
 		}
 

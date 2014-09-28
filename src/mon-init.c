@@ -1232,6 +1232,9 @@ static errr finish_parse_lore(struct parser *p) {
 
 			string_free(f->name);
 		}
+
+		/* update any derived values */
+		lore_update(r, l);
 	}
 
 	parser_destroy(p);

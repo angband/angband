@@ -1539,7 +1539,8 @@ bool mon_take_hit(struct monster *m_ptr, int dam, bool *fear, const char *note)
 			/* Count kills in all lives */
 			if (l_ptr->tkills < MAX_SHORT) l_ptr->tkills++;
 
-			/* Hack -- Auto-recall */
+			/* Update lore and tracking */
+			lore_update(m_ptr->race, l_ptr);
 			monster_race_track(player->upkeep, m_ptr->race);
 		}
 

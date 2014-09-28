@@ -60,6 +60,11 @@ typedef struct
     struct monster_friends *friends;
 	struct monster_friends_base *friends_base;
 	struct monster_mimic *mimic_kinds;
+
+	/* Derived known fields, put here for simplicity */
+	bool armour_known;
+	bool sleep_known;
+	bool spell_freq_known;
 } monster_lore;
 
 /** Variables **/
@@ -70,6 +75,7 @@ typedef struct
 extern monster_lore *l_list;
 
 /** Functions **/
+void lore_update(monster_race *race, monster_lore *lore);
 void cheat_monster_lore(const monster_race *r_ptr, monster_lore *l_ptr);
 void wipe_monster_lore(const monster_race *r_ptr, monster_lore *l_ptr);
 void lore_do_probe(struct monster *m);

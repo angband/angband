@@ -392,12 +392,30 @@ static void get_attack_colors(int melee_colors[RBE_MAX],
 }
 
 /**
- * Determine if the player knows the AC of the given monster.
+ * Update which bits of lore are known
  */
-static bool know_armour(const monster_race *r_ptr, const monster_lore *l_ptr)
+void lore_update(monster_race *race, monster_lore *lore)
 {
-	assert(l_ptr);
-	return l_ptr->tkills > 0;
+	/* Assume some "obvious" flags */
+	flags_set(lore->flags, RF_SIZE, RF_OBVIOUS_MASK, FLAG_END);
+
+	/* Killing a monster reveals some properties */
+	if (lore->tkills > 0) {
+		lore->armour_known = TRUE;
+		flags_set(lore->flags, RF_SIZE, RF_RACE_MASK, FLAG_END);
+		flags_set(lore->flags, RF_SIZE, RF_DROP_MASK, FLAG_END);
+		rf_on(lore->flags, RF_FORCE_DEPTH);
+	}
+
+	/* Awareness */
+	if ((((int)lore->wake * (int)lore->wake) > race->sleep) ||
+	    (lore->ignore == MAX_UCHAR) ||
+	    ((race->sleep == 0) && (lore->tkills >= 10)))
+		lore->sleep_known = TRUE;
+
+	/* Spellcasting frequency */
+	if (lore->cast_innate + lore->cast_spell > 100)
+		lore->spell_freq_known = TRUE;
 }
 
 /**
@@ -416,7 +434,7 @@ void cheat_monster_lore(const monster_race *r_ptr, monster_lore *l_ptr)
 
 	assert(r_ptr);
 	assert(l_ptr);
-	
+
 	/* Hack -- Maximal kills */
 	l_ptr->sights = MAX_SHORT;
 	l_ptr->tkills = MAX_SHORT;
@@ -435,7 +453,7 @@ void cheat_monster_lore(const monster_race *r_ptr, monster_lore *l_ptr)
 
 	/* Hack -- maximal drops */
 	l_ptr->drop_item = 0;
-	
+
 	if (rf_has(r_ptr->flags, RF_DROP_4))
 		l_ptr->drop_item += 6;
 	if (rf_has(r_ptr->flags, RF_DROP_3))
@@ -1169,7 +1187,7 @@ static void lore_append_toughness(textblock *tb, const monster_race *race,
 	msex = lore_monster_sex(race);
 
 	/* Describe monster "toughness" */
-	if (know_armour(race, lore)) {
+	if (lore->armour_known) {
 		/* Armor */
 		textblock_append(tb, "%s has an armor rating of ",
 						 lore_pronoun_nominative(msex, TRUE));
@@ -1528,9 +1546,7 @@ static void lore_append_awareness(textblock *tb, const monster_race *race,
 	msex = lore_monster_sex(race);
 
 	/* Do we know how aware it is? */
-	if ((((int)lore->wake * (int)lore->wake) > race->sleep) ||
-	    (lore->ignore == MAX_UCHAR) ||
-	    ((race->sleep == 0) && (lore->tkills >= 10)))
+	if (lore->sleep_known)
 	{
 		const char *aware = lore_describe_awareness(race->sleep);
 		textblock_append(tb, "%s %s intruders, which %s may notice from ",
@@ -1592,7 +1608,7 @@ static void lore_append_spells(textblock *tb, const monster_race *race,
 							   bitflag known_flags[RF_SIZE],
 							   const int spell_colors[RSF_MAX])
 {
-	int i, average_frequency, casting_frequency;
+	int i, average_frequency;
 	monster_sex_t msex = MON_SEX_NEUTER;
 	bool breath = FALSE;
 	bool magic = FALSE;
@@ -1612,7 +1628,7 @@ static void lore_append_spells(textblock *tb, const monster_race *race,
 
 	assert(tb && race && lore);
 
-	know_hp = know_armour(race, lore);
+	know_hp = lore->armour_known;
 
 	/* Extract a gender (if applicable) and get a pronoun for the start of
 	 * sentences */
@@ -1765,17 +1781,15 @@ static void lore_append_spells(textblock *tb, const monster_race *race,
 	/* End the sentence about innate/other spells */
 	if (breath || magic) {
 		/* Calculate total casting and average frequency */
-		casting_frequency = lore->cast_innate + lore->cast_spell;
 		average_frequency = (race->freq_innate + race->freq_spell) / 2;
 
-		if (casting_frequency > 100) {
+		if (lore->spell_freq_known) {
 			/* Describe the spell frequency */
 			textblock_append(tb, "; ");
 			textblock_append_c(tb, TERM_L_GREEN, "1");
 			textblock_append(tb, " time in ");
 			textblock_append_c(tb, TERM_L_GREEN, "%d", 100 / average_frequency);
-		}
-		else if (casting_frequency) {
+		} else if (lore->cast_innate || lore->cast_spell) {
 			/* Guess at the frequency */
 			average_frequency = ((average_frequency + 9) / 10) * 10;
 			textblock_append(tb, "; about ");
@@ -1967,17 +1981,6 @@ void lore_description(textblock *tb, const monster_race *race,
 	/* Hack -- create a copy of the monster-memory that we can modify */
 	COPY(lore, original_lore, monster_lore);
 
-	/* Assume some "obvious" flags */
-	flags_set(lore->flags, RF_SIZE, RF_OBVIOUS_MASK, FLAG_END);
-
-	/* Killing a monster reveals some properties */
-	if (lore->tkills > 0) {
-		/* Know "race", "forced", and "drop" flags */
-		flags_set(lore->flags, RF_SIZE, RF_RACE_MASK, FLAG_END);
-		flags_set(lore->flags, RF_SIZE, RF_DROP_MASK, FLAG_END);
-		rf_on(lore->flags, RF_FORCE_DEPTH);
-	}
-
 	/* Now get the known monster flags */
 	monster_flags_known(race, lore, known_flags);
 
@@ -2160,8 +2163,8 @@ void write_lore_entries(ang_file *fff)
 
 		/* Output counts */
 		file_putf(fff, "counts:%d:%d:%d:%d:%d:%d:%d\n", lore->sights,
-					lore->deaths, lore->tkills, lore->wake, lore->ignore,
-					lore->cast_innate, lore->cast_spell);
+				  lore->deaths, lore->tkills, lore->wake, lore->ignore,
+				  lore->cast_innate, lore->cast_spell);
 
 		/* Output 'B' for "Blows" (up to four lines) */
 		for (n = 0; n < 4; n++) {
@@ -2176,7 +2179,7 @@ void write_lore_entries(ang_file *fff)
 
 			/* Output blow damage (may be 0) */
 			file_putf(fff, ":%dd%d", lore->blows[n].d_dice,
-					lore->blows[n].d_side);
+					  lore->blows[n].d_side);
 
 			/* Output number of times that blow has been seen */
 			file_putf(fff, ":%d", lore->blows[n].times_seen);
