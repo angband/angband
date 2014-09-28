@@ -2072,7 +2072,7 @@ static void write_flags(ang_file *fff, const char *intro_text, bitflag *flags,
 
 
 /**
- * Write the monster lore file
+ * Write the monster lore
  */
 void write_lore_entries(ang_file *fff)
 {
@@ -2204,57 +2204,23 @@ void write_lore_entries(ang_file *fff)
 
 
 /**
- * Save a set of preferences to file, overwriting any old preferences with the
- * same title.
+ * Save the lore to a file in the user directory.
  *
- * \param path is the filename to dump to
- * \param dump is a pointer to the function that does the writing to file
- * \param title is the name of this set of preferences
+ * \param name is the filename
  *
  * \returns TRUE on success, FALSE otherwise.
  */
 bool lore_save(const char *name)
 {
 	char path[1024];
-	char new_fname[1024];
-	char old_fname[1024];
 
-	ang_file *new_file;
-
-	safe_setuid_grab();
-
-	/* Format filenames */
+	/* Write to the user directory */
 	path_build(path, sizeof(path), ANGBAND_DIR_USER, name);
-	strnfmt(new_fname, sizeof(new_fname), "%s.new", path);
-	strnfmt(old_fname, sizeof(old_fname), "%s.old", path);
 
-	/* Write new file */
-	new_file = file_open(new_fname, MODE_WRITE, FTYPE_TEXT);
-	if (!new_file)
-	{
-		msg("Failed to create file %s", new_fname);
-		safe_setuid_drop();
+	if (text_lines_to_file(path, write_lore_entries)) {
+		msg("Failed to create file %s.new", path);
 		return FALSE;
 	}
-
-	text_out_file = new_file;
-	write_lore_entries(new_file);
-	text_out_file = NULL;
-
-	file_close(new_file);
-
-	/* Move files around */
-	strnfmt(old_fname, sizeof(old_fname), "%s.old", path);
-	if (!file_exists(path)) {
-		file_move(new_fname, path);
-	} else if (file_move(path, old_fname)) {
-		file_move(new_fname, path);
-		file_delete(old_fname);
-	} else {
-		file_delete(new_fname);
-	}
-
-	safe_setuid_drop();
 
 	return TRUE;
 }

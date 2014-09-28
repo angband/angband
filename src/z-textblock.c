@@ -667,3 +667,53 @@ void text_out_e(const char *fmt, ...)
 		start = next;
 	}
 }
+
+
+/**
+ * Write a text file from given input.
+ *
+ * \param path the path to write to
+ * \param writer the text-writing function
+ */
+errr text_lines_to_file(const char *path, text_writer writer)
+{
+	char new_fname[1024];
+	char old_fname[1024];
+
+	ang_file *new_file;
+
+	safe_setuid_grab();
+
+	/* Format filenames */
+	strnfmt(new_fname, sizeof(new_fname), "%s.new", path);
+	strnfmt(old_fname, sizeof(old_fname), "%s.old", path);
+
+	/* Write new file */
+	new_file = file_open(new_fname, MODE_WRITE, FTYPE_TEXT);
+	if (!new_file) {
+		safe_setuid_drop();
+		return -1;
+	}
+
+	text_out_file = new_file;
+	writer(new_file);
+	text_out_file = NULL;
+
+	file_close(new_file);
+
+	/* Move files around */
+	strnfmt(old_fname, sizeof(old_fname), "%s.old", path);
+	if (!file_exists(path)) {
+		file_move(new_fname, path);
+	} else if (file_move(path, old_fname)) {
+		file_move(new_fname, path);
+		file_delete(old_fname);
+	} else {
+		file_delete(new_fname);
+	}
+
+	safe_setuid_drop();
+
+	return 0;
+}
+
