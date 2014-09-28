@@ -2107,6 +2107,9 @@ static void write_flags(ang_file *fff, const char *intro_text, bitflag *flags,
 			my_strcat(buf, " | ", sizeof(buf));
 			pointer += 3;
 		}
+
+		/* If no name, we're past the real flags */
+		if (!names[flag]) break;
 		my_strcat(buf, names[flag], sizeof(buf));
 		pointer += strlen(names[flag]);
 
@@ -2124,8 +2127,8 @@ static void write_flags(ang_file *fff, const char *intro_text, bitflag *flags,
 }
 
 
-/*
- * Emit the "r_info" array into an ascii "template" file
+/**
+ * Write the monster lore file
  */
 void write_lore_entries(ang_file *fff)
 {
@@ -2146,69 +2149,47 @@ void write_lore_entries(ang_file *fff)
 	for (i = 0; i < z_info->r_max; i++) {
 		/* Current entry */
 		monster_race *race = &r_info[i];
+		monster_lore *lore = &l_list[i];
+
+		/* Ignore non-existent or unseen monsters */
 		if (!race->name) continue;
+		if (!lore->sights) continue;
 
 		/* Output 'N' for "New/Number/Name" */
 		file_putf(fff, "N:%d:%s\n", i, race->name);
 
-		/* Output 'plural' */
-		if (race->plural)
-			file_putf(fff, "plural:%s\n", race->plural);
-
-		/* Output 'T' for template */
-		file_putf(fff, "T:%s\n", race->base->name);
-
-		/* Output 'C' for colour (one line only) */
-		file_putf(fff, "C:%c\n", color_table[race->d_attr].index_char);
-
-		/* Output 'G' for "Graphics" (one line only) */
-		if (race->d_char != race->base->d_char)
-			file_putf(fff, "G:%c:\n", race->d_char);
-
-		/* Output 'I' for "Info" (one line only) */
-		file_putf(fff, "I:%d:%d:%d:%d:%d\n", race->speed, race->avg_hp,
-				  race->aaf, race->ac, race->sleep);
-
-		/* Output 'W' for "More Info" (one line only) */
-		file_putf(fff,"W:%d:%d:%d:%d\n",race->level, race->rarity, 0,
-				  race->mexp);
-
 		/* Output 'B' for "Blows" (up to four lines) */
 		for (n = 0; n < 4; n++) {
 			/* End of blows */
-			if (!race->blow[n].method) break;
+			if (!lore->blows[n].times_seen) break;
 
 			/* Output blow method */
-			file_putf(fff, "B:%s", r_info_blow_method[race->blow[n].method]);
+			file_putf(fff, "B:%s", r_info_blow_method[lore->blows[n].method]);
 
-			/* Output blow effect */
-			if (race->blow[n].effect) {
-				file_putf(fff, ":%s", r_info_blow_effect[race->blow[n].effect]);
+			/* Output blow effect (may be none) */
+			file_putf(fff, ":%s", r_info_blow_effect[lore->blows[n].effect]);
 
-				/* Output blow damage if required */
-				if ((race->blow[n].d_dice) && (race->blow[n].d_side)) {
-					file_putf(fff, ":%dd%d", race->blow[n].d_dice,
-							  race->blow[n].d_side);
-				}
-			}
+			/* Output blow damage (may be 0) */
+			file_putf(fff, ":%dd%d", lore->blows[n].d_dice,
+					lore->blows[n].d_side);
+
+			/* Output number of times that blow has been seen */
+			file_putf(fff, ":%d", lore->blows[n].times_seen);
 
 			/* End line */
 			file_putf(fff, "\n");
 		}
 
 		/* Output 'F' for "Flags" */
-		write_flags(fff, "F:", race->flags, RF_SIZE, r_info_flags);
-
-		/* Output 'spell-freq' for spell frequency */
-		if (race->freq_innate)
-			file_putf(fff, "spell-freq:%d\n", 100/race->freq_spell);
+		write_flags(fff, "F:", lore->flags, RF_SIZE, r_info_flags);
 
 		/* Output 'S' for "Spell Flags" (multiple lines) */
-		write_flags(fff, "S:", race->spell_flags, RSF_SIZE, r_info_spell_flags);
+		rsf_inter(lore->spell_flags, race->spell_flags);
+		write_flags(fff, "S:", lore->spell_flags, RSF_SIZE, r_info_spell_flags);
 
 		/* Output 'drop', 'drop-artifact' */
-		if (race->drops) {
-			struct monster_drop *drop = race->drops;
+		if (lore->drops) {
+			struct monster_drop *drop = lore->drops;
 			struct object_kind *kind = drop->kind;
 			char name[120] = "";
 
@@ -2226,8 +2207,8 @@ void write_lore_entries(ang_file *fff)
 		}
 
 		/* Output 'friends' */
-		if (race->friends) {
-			struct monster_friends *f = race->friends;
+		if (lore->friends) {
+			struct monster_friends *f = lore->friends;
 
 			while (f) {
 				file_putf(fff, "friends:%d:%dd%d:%s\n", f->percent_chance,
@@ -2237,8 +2218,8 @@ void write_lore_entries(ang_file *fff)
 		}
 
 		/* Output 'friends-base' */
-		if (race->friends_base) {
-			struct monster_friends_base *b = race->friends_base;
+		if (lore->friends_base) {
+			struct monster_friends_base *b = lore->friends_base;
 
 			while (b) {
 				file_putf(fff, "friends-base:%d:%dd%d:%s\n", b->percent_chance,
@@ -2248,8 +2229,8 @@ void write_lore_entries(ang_file *fff)
 		}
 
 		/* Output 'mimic' */
-		if (race->mimic_kinds) {
-			struct monster_mimic *m = race->mimic_kinds;
+		if (lore->mimic_kinds) {
+			struct monster_mimic *m = lore->mimic_kinds;
 			struct object_kind *kind = m->kind;
 			char name[120] = "";
 
