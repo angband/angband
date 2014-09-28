@@ -158,18 +158,18 @@ static void death_file(const char *title, int row)
 
 	if (get_file(ftmp, buf, sizeof buf))
 	{
-		errr err;
+		bool success;
 
 		/* Dump a character file */
 		screen_save();
-		err = file_character(buf, FALSE);
+		success = dump_save(buf);
 		screen_load();
 
 		/* Check result */
-		if (err)
-			msg("Character dump failed!");
-		else
+		if (success)
 			msg("Character dump successful.");
+		else
+			msg("Character dump failed!");
 
 		/* Flush messages */
 		message_flush();

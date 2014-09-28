@@ -897,20 +897,15 @@ void display_player(int mode)
 }
 
 
-/*
- * Hack -- Dump a character description file
- *
- * XXX XXX XXX Allow the "full" flag to dump additional info,
- * and trigger its usage from various places in the code.
+/**
+ * Write a character dump
  */
-errr file_character(const char *path, bool full)
+void write_character_dump(ang_file *fff)
 {
 	int i, x, y;
 
 	int a;
 	wchar_t c;
-
-	ang_file *fp;
 
 	struct store *st_ptr = &stores[STORE_HOME];
 
@@ -919,28 +914,17 @@ errr file_character(const char *path, bool full)
 	char buf[1024];
 	char *p;
 
-	/* Unused parameter */
-	(void)full;
-
-
-	/* Open the file for writing */
-	fp = file_open(path, MODE_WRITE, FTYPE_TEXT);
-	if (!fp) return (-1);
-
 	/* Begin dump */
-	file_putf(fp, "  [%s Character Dump]\n\n", buildid);
-
+	file_putf(fff, "  [%s Character Dump]\n\n", buildid);
 
 	/* Display player */
 	display_player(0);
 
 	/* Dump part of the screen */
-	for (y = 1; y < 23; y++)
-	{
+	for (y = 1; y < 23; y++) {
 		p = buf;
 		/* Dump each row */
-		for (x = 0; x < 79; x++)
-		{
+		for (x = 0; x < 79; x++) {
 			/* Get the attr/char */
 			(void)(Term_what(x, y, &a, &c));
 
@@ -955,22 +939,20 @@ errr file_character(const char *path, bool full)
 		*p = '\0';
 
 		/* End the row */
-		file_putf(fp, "%s\n", buf);
+		file_putf(fff, "%s\n", buf);
 	}
 
 	/* Skip a line */
-	file_putf(fp, "\n");
+	file_putf(fff, "\n");
 
 	/* Display player */
 	display_player(1);
 
 	/* Dump part of the screen */
-	for (y = 11; y < 20; y++)
-	{
+	for (y = 11; y < 20; y++) {
 		p = buf;
 		/* Dump each row */
-		for (x = 0; x < 39; x++)
-		{
+		for (x = 0; x < 39; x++) {
 			/* Get the attr/char */
 			(void)(Term_what(x, y, &a, &c));
 
@@ -985,19 +967,17 @@ errr file_character(const char *path, bool full)
 		*p = '\0';
 
 		/* End the row */
-		file_putf(fp, "%s\n", buf);
+		file_putf(fff, "%s\n", buf);
 	}
 
 	/* Skip a line */
-	file_putf(fp, "\n");
+	file_putf(fff, "\n");
 
 	/* Dump part of the screen */
-	for (y = 11; y < 20; y++)
-	{
+	for (y = 11; y < 20; y++) {
 		p = buf;
 		/* Dump each row */
-		for (x = 0; x < 39; x++)
-		{
+		for (x = 0; x < 39; x++) {
 			/* Get the attr/char */
 			(void)(Term_what(x + 40, y, &a, &c));
 
@@ -1012,92 +992,87 @@ errr file_character(const char *path, bool full)
 		*p = '\0';
 
 		/* End the row */
-		file_putf(fp, "%s\n", buf);
+		file_putf(fff, "%s\n", buf);
 	}
 
 	/* Skip some lines */
-	file_putf(fp, "\n\n");
+	file_putf(fff, "\n\n");
 
 
 	/* If dead, dump last messages -- Prfnoff */
-	if (player->is_dead)
-	{
+	if (player->is_dead) {
 		i = messages_num();
 		if (i > 15) i = 15;
-		file_putf(fp, "  [Last Messages]\n\n");
+		file_putf(fff, "  [Last Messages]\n\n");
 		while (i-- > 0)
 		{
-			file_putf(fp, "> %s\n", message_str((s16b)i));
+			file_putf(fff, "> %s\n", message_str((s16b)i));
 		}
-		file_putf(fp, "\nKilled by %s.\n\n", player->died_from);
+		file_putf(fff, "\nKilled by %s.\n\n", player->died_from);
 	}
 
 
 	/* Dump the equipment */
-	file_putf(fp, "  [Character Equipment]\n\n");
-	for (i = 0; i < player->body.count; i++)
-	{
+	file_putf(fff, "  [Character Equipment]\n\n");
+	for (i = 0; i < player->body.count; i++) {
 		struct object *obj = equipped_item_by_slot(player, i);
 		if (!obj->kind) continue;
 
 		object_desc(o_name, sizeof(o_name), obj, ODESC_PREFIX | ODESC_FULL);
-		file_putf(fp, "%c) %s\n", equip_to_label(i), o_name);
-		object_info_chardump(fp, obj, 5, 72);
+		file_putf(fff, "%c) %s\n", equip_to_label(i), o_name);
+		object_info_chardump(fff, obj, 5, 72);
 	}
-	file_putf(fp, "\n\n");
+	file_putf(fff, "\n\n");
 
 	/* Dump the inventory */
-	file_putf(fp, "\n\n  [Character Inventory]\n\n");
-	for (i = 0; i < INVEN_PACK; i++)
-	{
+	file_putf(fff, "\n\n  [Character Inventory]\n\n");
+	for (i = 0; i < INVEN_PACK; i++) {
 		struct object *obj = &player->gear[player->upkeep->inven[i]];
 		if (!obj->kind) break;
 
 		object_desc(o_name, sizeof(o_name), obj, ODESC_PREFIX | ODESC_FULL);
-		file_putf(fp, "%c) %s\n", inven_to_label(i), o_name);
-		object_info_chardump(fp, obj, 5, 72);
+		file_putf(fff, "%c) %s\n", inven_to_label(i), o_name);
+		object_info_chardump(fff, obj, 5, 72);
 	}
-	file_putf(fp, "\n\n");
+	file_putf(fff, "\n\n");
 
 	/* Dump the quiver */
-	file_putf(fp, "\n\n  [Character Quiver]\n\n");
-	for (i = 0; i < QUIVER_SIZE; i++)
-	{
+	file_putf(fff, "\n\n  [Character Quiver]\n\n");
+	for (i = 0; i < QUIVER_SIZE; i++) {
 		struct object *obj = &player->gear[player->upkeep->quiver[i]];
 		if (!obj->kind) break;
 
 		object_desc(o_name, sizeof(o_name), obj, ODESC_PREFIX | ODESC_FULL);
-		file_putf(fp, "%c) %s\n", quiver_to_label(i), o_name);
-		object_info_chardump(fp, obj, 5, 72);
+		file_putf(fff, "%c) %s\n", quiver_to_label(i), o_name);
+		object_info_chardump(fff, obj, 5, 72);
 	}
-	file_putf(fp, "\n\n");
+	file_putf(fff, "\n\n");
 
 	/* Dump the Home -- if anything there */
-	if (st_ptr->stock_num)
-	{
+	if (st_ptr->stock_num) {
 		/* Header */
-		file_putf(fp, "  [Home Inventory]\n\n");
+		file_putf(fff, "  [Home Inventory]\n\n");
 
 		/* Dump all available items */
 		for (i = 0; i < st_ptr->stock_num; i++)
 		{
 			object_desc(o_name, sizeof(o_name), &st_ptr->stock[i],
 						ODESC_PREFIX | ODESC_FULL);
-			file_putf(fp, "%c) %s\n", I2A(i), o_name);
+			file_putf(fff, "%c) %s\n", I2A(i), o_name);
 
-			object_info_chardump(fp, &st_ptr->stock[i], 5, 72);
+			object_info_chardump(fff, &st_ptr->stock[i], 5, 72);
 		}
 
 		/* Add an empty line */
-		file_putf(fp, "\n\n");
+		file_putf(fff, "\n\n");
 	}
 
 	/* Dump character history */
-	dump_history(fp);
-	file_putf(fp, "\n\n");
+	dump_history(fff);
+	file_putf(fff, "\n\n");
 
 	/* Dump options */
-	file_putf(fp, "  [Options]\n\n");
+	file_putf(fff, "  [Options]\n\n");
 
 	/* Dump options */
 	for (i = 0; i < OP_MAX; i++) {
@@ -1109,25 +1084,35 @@ errr file_character(const char *path, bool full)
 		    default: continue;
 		}
 
-		file_putf(fp, "  [%s]\n\n", title);
+		file_putf(fff, "  [%s]\n\n", title);
 		for (opt = 0; opt < OPT_MAX; opt++) {
 			if (option_type(opt) != i) continue;
 
-			file_putf(fp, "%-45s: %s (%s)\n",
+			file_putf(fff, "%-45s: %s (%s)\n",
 			        option_desc(opt),
 			        op_ptr->opt[opt] ? "yes" : "no ",
 			        option_name(opt));
 		}
 
 		/* Skip some lines */
-		file_putf(fp, "\n");
+		file_putf(fff, "\n");
 	}
-
-	file_close(fp);
-
-
-	/* Success */
-	return (0);
 }
 
+/**
+ * Save the lore to a file in the user directory.
+ *
+ * \param name is the filename
+ *
+ * \returns TRUE on success, FALSE otherwise.
+ */
+bool dump_save(const char *path)
+{
+	if (text_lines_to_file(path, write_character_dump)) {
+		msg("Failed to create file %s.new", path);
+		return FALSE;
+	}
+
+	return TRUE;
+}
 

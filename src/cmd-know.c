@@ -174,10 +174,10 @@ void do_cmd_change_name(void)
 
 					if (get_file(fname, buf, sizeof buf))
 					{
-						if (file_character(buf, FALSE) != 0)
-							msg("Character dump failed!");
-						else
+						if (dump_save(buf))
 							msg("Character dump successful.");
+						else
+							msg("Character dump failed!");
 					}
 					break;
 				}

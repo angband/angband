@@ -9,6 +9,6 @@
 extern void display_player(int mode);
 extern void display_player_stat_info(void);
 extern void display_player_xtra_info(void);
-extern errr file_character(const char *name, bool full);
+bool dump_save(const char *path);
 
 #endif /* !UI_PLAYER_H */
