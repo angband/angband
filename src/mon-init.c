@@ -927,11 +927,14 @@ static enum parser_error parse_lore_t(struct parser *p) {
 	struct monster_base *base = lookup_monster_base(parser_getsym(p, "base"));
 	int i;
 
+	if (!l)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
 	if (base == NULL)
 		/* Todo: make new error for this */
 		return PARSE_ERROR_UNRECOGNISED_TVAL;
 
 	/* We are reading in monster.txt, so set max info */
+	/* This should be done better, with functions like know_armour() - NRM */
 	l->sights = MAX_SHORT;
 	l->tkills = MAX_SHORT;
 	l->wake = l->ignore = MAX_UCHAR;
@@ -947,37 +950,57 @@ static enum parser_error parse_lore_t(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_lore_counts(struct parser *p) {
+	monster_lore *l = parser_priv(p);
+
+	if (!l)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	l->sights = parser_getint(p, "sights");
+	l->deaths = parser_getint(p, "deaths");
+	l->tkills = parser_getint(p, "tkills");
+	l->wake = parser_getint(p, "wake");
+	l->ignore = parser_getint(p, "ignore");
+	l->cast_innate = parser_getint(p, "innate");
+	l->cast_spell = parser_getint(p, "spell");
+
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_lore_b(struct parser *p) {
 	monster_lore *l = parser_priv(p);
-	struct monster_race *race = &r_info[l->ridx];
-	int i;
+	int method, effect, seen, index;
 	struct random dam;
 
 	if (!l)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	for (i = 0; i < MONSTER_BLOW_MAX; i++)
-		if (!race->blow[i].method)
-			break;
-	if (i == MONSTER_BLOW_MAX)
-		return PARSE_ERROR_TOO_MANY_ENTRIES;
 
-	l->blows[i].method = monster_blow_method_for_string(parser_getsym(p, "method"));
-	if (!monster_blow_method_is_valid(l->blows[i].method))
+	/* Read in all the data */
+	method = monster_blow_method_for_string(parser_getsym(p, "method"));
+	if (!monster_blow_method_is_valid(method))
 		return PARSE_ERROR_UNRECOGNISED_BLOW;
-
 	if (parser_hasval(p, "effect")) {
-		l->blows[i].effect = monster_blow_effect_for_string(parser_getsym(p, "effect"));
-		if (!monster_blow_effect_is_valid(l->blows[i].effect))
+		effect = monster_blow_effect_for_string(parser_getsym(p, "effect"));
+		if (!monster_blow_effect_is_valid(effect))
 			return PARSE_ERROR_INVALID_EFFECT;
 	}
-
-	if (parser_hasval(p, "damage")) {
+	if (parser_hasval(p, "damage"))
 		dam = parser_getrand(p, "damage");
-		l->blows[i].d_dice = dam.dice;
-		l->blows[i].d_side = dam.sides;
-	}
 	if (parser_hasval(p, "seen"))
-		l->blows[i].times_seen = parser_getint(p, "seen");
+		seen = parser_getint(p, "seen");
+	if (parser_hasval(p, "index"))
+		index = parser_getint(p, "index");
+	if (index >= MONSTER_BLOW_MAX)
+		return PARSE_ERROR_TOO_MANY_ENTRIES;
+
+	/* Interpret */
+	if (seen) {
+		struct monster_blow *b = &l->blows[index];
+		b->method = method;
+		b->effect = effect;
+		b->d_dice = dam.dice;
+		b->d_side = dam.sides;
+		b->times_seen = seen;
+	}
 
 	return PARSE_ERROR_NONE;
 }
@@ -1160,6 +1183,7 @@ struct parser *init_parse_lore(void) {
 	parser_reg(p, "C sym color", ignored);
 	parser_reg(p, "I int speed int hp int aaf int ac int sleep", ignored);
 	parser_reg(p, "W int level int rarity int power int mexp", ignored);
+	parser_reg(p, "counts int sights int deaths int tkills int wake int ignore int innate int spell", parse_lore_counts);
 	parser_reg(p, "B sym method ?sym effect ?rand damage ?int seen", parse_lore_b);
 	parser_reg(p, "F ?str flags", parse_lore_f);
 	parser_reg(p, "-F ?str flags", ignored);

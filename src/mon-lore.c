@@ -2158,6 +2158,11 @@ void write_lore_entries(ang_file *fff)
 		/* Output 'N' for "New/Number/Name" */
 		file_putf(fff, "N:%d:%s\n", i, race->name);
 
+		/* Output counts */
+		file_putf(fff, "counts:%d:%d:%d:%d:%d:%d:%d\n", lore->sights,
+					lore->deaths, lore->tkills, lore->wake, lore->ignore,
+					lore->cast_innate, lore->cast_spell);
+
 		/* Output 'B' for "Blows" (up to four lines) */
 		for (n = 0; n < 4; n++) {
 			/* End of blows */
