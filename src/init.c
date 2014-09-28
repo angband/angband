@@ -3836,6 +3836,7 @@ static struct {
 	{ "monster bases", &rb_parser },
 	{ "monsters", &r_parser },
 	{ "monster pits" , &pit_parser },
+	{ "monster lore" , &lore_parser },
 	{ "history charts", &h_parser },
 	{ "bodies", &body_parser },
 	{ "player races", &p_parser },

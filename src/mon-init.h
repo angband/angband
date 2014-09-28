@@ -11,6 +11,7 @@
 
 extern const char *r_info_flags[];
 extern const char *r_info_spell_flags[];
+extern struct file_parser lore_parser;
 extern struct file_parser rs_parser;
 extern struct file_parser r_parser;
 extern struct file_parser rb_parser;

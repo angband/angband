@@ -902,7 +902,6 @@ static void cleanup_r(void)
 	}
 
 	mem_free(r_info);
-	mem_free(l_list);
 }
 
 struct file_parser r_parser = {
@@ -911,5 +910,351 @@ struct file_parser r_parser = {
 	run_parse_r,
 	finish_parse_r,
 	cleanup_r
+};
+
+/* Parsing functions for lore.txt */
+static enum parser_error parse_lore_n(struct parser *p) {
+	monster_lore *l;
+	int index = parser_getuint(p, "index");
+
+	l = &l_list[index];
+	parser_setpriv(p, l);
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_lore_t(struct parser *p) {
+	monster_lore *l = parser_priv(p);
+	struct monster_base *base = lookup_monster_base(parser_getsym(p, "base"));
+	int i;
+
+	if (base == NULL)
+		/* Todo: make new error for this */
+		return PARSE_ERROR_UNRECOGNISED_TVAL;
+
+	/* We are reading in monster.txt, so set max info */
+	l->sights = MAX_SHORT;
+	l->tkills = MAX_SHORT;
+	l->wake = l->ignore = MAX_UCHAR;
+
+	for (i = 0; i < MONSTER_BLOW_MAX; i++)
+		/* Maximal observations */
+		l->blows[i].times_seen = MAX_UCHAR;
+
+	l->cast_innate = MAX_UCHAR;
+	l->cast_spell = MAX_UCHAR;
+	rf_setall(l->flags);
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_lore_b(struct parser *p) {
+	monster_lore *l = parser_priv(p);
+	int i;
+	struct random dam;
+
+	if (!l)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	for (i = 0; i < MONSTER_BLOW_MAX; i++)
+		if (!l->blows[i].method)
+			break;
+	if (i == MONSTER_BLOW_MAX)
+		return PARSE_ERROR_TOO_MANY_ENTRIES;
+	l->blows[i].method = monster_blow_method_for_string(parser_getsym(p, "method"));
+	if (!monster_blow_method_is_valid(l->blows[i].method))
+		return PARSE_ERROR_UNRECOGNISED_BLOW;
+	if (parser_hasval(p, "effect")) {
+		l->blows[i].effect = monster_blow_effect_for_string(parser_getsym(p, "effect"));
+		if (!monster_blow_effect_is_valid(l->blows[i].effect))
+			return PARSE_ERROR_INVALID_EFFECT;
+	}
+	if (parser_hasval(p, "damage")) {
+		dam = parser_getrand(p, "damage");
+		l->blows[i].d_dice = dam.dice;
+		l->blows[i].d_side = dam.sides;
+	}
+	if (parser_hasval(p, "seen"))
+		l->blows[i].times_seen = parser_getint(p, "seen");
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_lore_f(struct parser *p) {
+	monster_lore *l = parser_priv(p);
+	char *flags;
+	char *s;
+
+	if (!l)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	if (!parser_hasval(p, "flags"))
+		return PARSE_ERROR_NONE;
+	flags = string_make(parser_getstr(p, "flags"));
+	s = strtok(flags, " |");
+	while (s) {
+		if (grab_flag(l->flags, RF_SIZE, r_info_flags, s)) {
+			mem_free(flags);
+			quit_fmt("bad lore flag: %s", s);
+			return PARSE_ERROR_INVALID_FLAG;
+		}
+		s = strtok(NULL, " |");
+	}
+
+	mem_free(flags);
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_lore_s(struct parser *p) {
+	monster_lore *l = parser_priv(p);
+	char *flags;
+	char *s;
+	int ret = PARSE_ERROR_NONE;
+
+	if (!l)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	flags = string_make(parser_getstr(p, "spells"));
+	s = strtok(flags, " |");
+	while (s) {
+		if (grab_flag(l->spell_flags, RSF_SIZE, r_info_spell_flags, s)) {
+			quit_fmt("bad lore spell flag: %s", s);
+			ret = PARSE_ERROR_INVALID_FLAG;
+			break;
+		}
+		s = strtok(NULL, " |");
+	}
+
+	mem_free(flags);
+	return ret;
+}
+
+static enum parser_error parse_lore_drop(struct parser *p) {
+	monster_lore *l = parser_priv(p);
+	struct monster_drop *d;
+	struct object_kind *k;
+	int tval, sval;
+
+	if (!l)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	tval = tval_find_idx(parser_getsym(p, "tval"));
+	if (tval < 0)
+		return PARSE_ERROR_UNRECOGNISED_TVAL;
+	sval = lookup_sval(tval, parser_getsym(p, "sval"));
+	if (sval < 0)
+		return PARSE_ERROR_UNRECOGNISED_SVAL;
+
+	if (parser_getuint(p, "min") > 99 || parser_getuint(p, "max") > 99)
+		return PARSE_ERROR_INVALID_ITEM_NUMBER;
+
+	k = lookup_kind(tval, sval);
+	if (!k)
+		return PARSE_ERROR_UNRECOGNISED_SVAL;
+
+	d = mem_zalloc(sizeof *d);
+	d->kind = k;
+	d->percent_chance = parser_getuint(p, "chance");
+	d->min = parser_getuint(p, "min");
+	d->max = parser_getuint(p, "max");
+	d->next = l->drops;
+	l->drops = d;
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_lore_drop_artifact(struct parser *p) {
+	monster_lore *l = parser_priv(p);
+	struct monster_drop *d;
+	int art;
+	struct artifact *a;
+
+	if (!l)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	art = lookup_artifact_name(parser_getstr(p, "name"));
+	if (art < 0)
+		return PARSE_ERROR_GENERIC;
+	a = &a_info[art];
+
+	d = mem_zalloc(sizeof *d);
+	d->artifact = a;
+	d->min = 1;
+	d->max = 1;
+	d->percent_chance = 100;
+	d->next = l->drops;
+	l->drops = d;
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_lore_friends(struct parser *p) {
+	monster_lore *l = parser_priv(p);
+	struct monster_friends *f;
+	struct random number;
+
+	if (!l)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	f = mem_zalloc(sizeof *f);
+	number = parser_getrand(p, "number");
+	f->number_dice = number.dice;
+	f->number_side = number.sides;
+	f->percent_chance = parser_getuint(p, "chance");
+	f->name = string_make(parser_getstr(p, "name"));
+	f->next = l->friends;
+	l->friends = f;
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_lore_friends_base(struct parser *p) {
+	monster_lore *l = parser_priv(p);
+	struct monster_friends_base *f;
+	struct random number;
+
+	if (!l)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	f = mem_zalloc(sizeof *f);
+	number = parser_getrand(p, "number");
+	f->number_dice = number.dice;
+	f->number_side = number.sides;
+	f->percent_chance = parser_getuint(p, "chance");
+	f->base = lookup_monster_base(parser_getstr(p, "name"));
+	if (!f->base) return PARSE_ERROR_UNRECOGNISED_TVAL;
+
+	f->next = l->friends_base;
+	l->friends_base = f;
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_lore_mimic(struct parser *p) {
+	monster_lore *l = parser_priv(p);
+	struct monster_mimic *m;
+	int tval, sval;
+	object_kind *kind;
+
+	if (!l)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	tval = tval_find_idx(parser_getsym(p, "tval"));
+	if (tval < 0)
+		return PARSE_ERROR_UNRECOGNISED_TVAL;
+	sval = lookup_sval(tval, parser_getsym(p, "sval"));
+	if (sval < 0)
+		return PARSE_ERROR_UNRECOGNISED_SVAL;
+
+	kind = lookup_kind(tval, sval);
+	if (!kind)
+		return PARSE_ERROR_GENERIC;
+	m = mem_zalloc(sizeof *m);
+	m->kind = kind;
+	m->next = l->mimic_kinds;
+	l->mimic_kinds = m;
+	return PARSE_ERROR_NONE;
+}
+
+struct parser *init_parse_lore(void) {
+	struct parser *p = parser_new();
+	parser_setpriv(p, NULL);
+
+	parser_reg(p, "N uint index str name", parse_lore_n);
+	parser_reg(p, "plural ?str plural", ignored);
+	parser_reg(p, "T sym base", parse_lore_t);
+	parser_reg(p, "G char glyph", ignored);
+	parser_reg(p, "C sym color", ignored);
+	parser_reg(p, "I int speed int hp int aaf int ac int sleep", ignored);
+	parser_reg(p, "W int level int rarity int power int mexp", ignored);
+	parser_reg(p, "B sym method ?sym effect ?rand damage ?int seen", parse_lore_b);
+	parser_reg(p, "F ?str flags", parse_lore_f);
+	parser_reg(p, "-F ?str flags", ignored);
+	parser_reg(p, "D str desc", ignored);
+	parser_reg(p, "spell-freq int freq", ignored);
+	parser_reg(p, "S str spells", parse_lore_s);
+	parser_reg(p, "drop sym tval sym sval uint chance uint min uint max", parse_lore_drop);
+	parser_reg(p, "drop-artifact str name", parse_lore_drop_artifact);
+	parser_reg(p, "friends uint chance rand number str name", parse_lore_friends);
+	parser_reg(p, "friends-base uint chance rand number str name", parse_lore_friends_base);
+	parser_reg(p, "mimic sym tval sym sval", parse_lore_mimic);
+	return p;
+}
+
+static errr run_parse_lore(struct parser *p) {
+	return parse_file(p, "USER_lore");
+}
+
+static errr finish_parse_lore(struct parser *p) {
+	size_t i;
+
+	/* Processing */
+	for (i = 0; i < z_info->r_max; i++) {
+		monster_lore *l = &l_list[i];
+		struct monster_race *r = &r_info[i];
+		struct monster_friends *f;
+		int j;
+
+		if (!l->sights) continue;
+
+		/* Base flag knowledge */
+		rf_union(l->flags, r->base->flags);
+		rsf_union(l->spell_flags, r->base->spell_flags);
+
+		/* Remove blows data for non-blows */
+		for (j = 0; j < MONSTER_BLOW_MAX; j++)
+			if (!(r->blow[j].effect || r->blow[j].method))
+				l->blows[j].times_seen = 0;
+
+	   /* Convert friend names into race pointers - failure leaves NULL race */
+		for (f = l->friends; f; f = f->next) {
+			if (!my_stricmp(f->name, "same"))
+				f->race = r;
+			else
+				f->race = lookup_monster(f->name);
+
+			string_free(f->name);
+		}
+	}
+
+	parser_destroy(p);
+	return 0;
+}
+
+static void cleanup_lore(void)
+{
+	int ridx;
+
+	for (ridx = 0; ridx < z_info->r_max; ridx++) {
+		monster_lore *l = &l_list[ridx];
+		struct monster_drop *d;
+		struct monster_friends *f;
+		struct monster_friends_base *fb;
+		struct monster_mimic *m;
+
+		d = l->drops;
+		while (d) {
+			struct monster_drop *dn = d->next;
+			mem_free(d);
+			d = dn;
+		}
+		f = l->friends;
+		while (f) {
+			struct monster_friends *fn = f->next;
+			mem_free(f);
+			f = fn;
+		}
+		fb = l->friends_base;
+		while (fb) {
+			struct monster_friends_base *fbn = fb->next;
+			mem_free(fb);
+			fb = fbn;
+		}
+		m = l->mimic_kinds;
+		while (m) {
+			struct monster_mimic *mn = m->next;
+			mem_free(m);
+			m = mn;
+		}
+	}
+
+	mem_free(l_list);
+}
+
+struct file_parser lore_parser = {
+	"lore",
+	init_parse_lore,
+	run_parse_lore,
+	finish_parse_lore,
+	cleanup_lore
 };
 

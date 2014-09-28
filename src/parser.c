@@ -646,8 +646,11 @@ errr parse_file(struct parser *p, const char *filename) {
 		fh = file_open(path, MODE_READ, FTYPE_TEXT);
 
 		/* Failure is always an option */
-		if (!fh)
-			return r;
+		if (!fh) {
+			msg("No monster lore file found");
+			message_flush();
+			return PARSE_ERROR_NONE;
+		}
 	} else {
 		path_build(path, sizeof(path), ANGBAND_DIR_EDIT,
 				   format("%s.txt", filename));
