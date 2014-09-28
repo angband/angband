@@ -62,6 +62,8 @@ typedef struct
 	struct monster_mimic *mimic_kinds;
 
 	/* Derived known fields, put here for simplicity */
+	bool all_known;
+	bool blow_known[MONSTER_BLOW_MAX];
 	bool armour_known;
 	bool drop_known;
 	bool sleep_known;
@@ -76,7 +78,7 @@ typedef struct
 extern monster_lore *l_list;
 
 /** Functions **/
-void lore_update(monster_race *race, monster_lore *lore);
+void lore_update(const monster_race *race, monster_lore *lore);
 void cheat_monster_lore(const monster_race *r_ptr, monster_lore *l_ptr);
 void wipe_monster_lore(const monster_race *r_ptr, monster_lore *l_ptr);
 void lore_do_probe(struct monster *m);

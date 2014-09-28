@@ -925,7 +925,6 @@ static enum parser_error parse_lore_n(struct parser *p) {
 static enum parser_error parse_lore_t(struct parser *p) {
 	monster_lore *l = parser_priv(p);
 	struct monster_base *base = lookup_monster_base(parser_getsym(p, "base"));
-	int i;
 
 	if (!l)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
@@ -933,18 +932,8 @@ static enum parser_error parse_lore_t(struct parser *p) {
 		/* Todo: make new error for this */
 		return PARSE_ERROR_UNRECOGNISED_TVAL;
 
-	/* We are reading in monster.txt, so set max info */
-	/* This should be done better, with functions like know_armour() - NRM */
-	l->sights = MAX_SHORT;
-	l->tkills = MAX_SHORT;
-	l->wake = l->ignore = MAX_UCHAR;
-
-	for (i = 0; i < MONSTER_BLOW_MAX; i++)
-		/* Maximal observations */
-		l->blows[i].times_seen = MAX_UCHAR;
-
-	l->cast_innate = MAX_UCHAR;
-	l->cast_spell = MAX_UCHAR;
+	/* Know everything */
+	l->all_known = TRUE;
 	rf_setall(l->flags);
 
 	return PARSE_ERROR_NONE;
@@ -1184,7 +1173,7 @@ struct parser *init_parse_lore(void) {
 	parser_reg(p, "I int speed int hp int aaf int ac int sleep", ignored);
 	parser_reg(p, "W int level int rarity int power int mexp", ignored);
 	parser_reg(p, "counts int sights int deaths int tkills int wake int ignore int innate int spell", parse_lore_counts);
-	parser_reg(p, "B sym method ?sym effect ?rand damage ?int seen", parse_lore_b);
+	parser_reg(p, "B sym method ?sym effect ?rand damage ?int seen ?int index", parse_lore_b);
 	parser_reg(p, "F ?str flags", parse_lore_f);
 	parser_reg(p, "-F ?str flags", ignored);
 	parser_reg(p, "D str desc", ignored);

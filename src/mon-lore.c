@@ -394,13 +394,25 @@ static void get_attack_colors(int melee_colors[RBE_MAX],
 /**
  * Update which bits of lore are known
  */
-void lore_update(monster_race *race, monster_lore *lore)
+void lore_update(const monster_race *race, monster_lore *lore)
 {
+	int i;
+
 	/* Assume some "obvious" flags */
 	flags_set(lore->flags, RF_SIZE, RF_OBVIOUS_MASK, FLAG_END);
 
+	/* Blows */
+	for (i = 0; i < MONSTER_BLOW_MAX; i++)
+		if (lore->blows[i].times_seen || lore->all_known) {
+			lore->blow_known[i] = TRUE;
+			lore->blows[i].method = race->blow[i].method;
+			lore->blows[i].effect = race->blow[i].effect;
+			lore->blows[i].d_dice = race->blow[i].d_dice;
+			lore->blows[i].d_side = race->blow[i].d_side;
+		}
+
 	/* Killing a monster reveals some properties */
-	if (lore->tkills > 0) {
+	if ((lore->tkills > 0) || lore->all_known) {
 		lore->armour_known = TRUE;
 		lore->drop_known = TRUE;
 		flags_set(lore->flags, RF_SIZE, RF_RACE_MASK, FLAG_END);
@@ -410,120 +422,47 @@ void lore_update(monster_race *race, monster_lore *lore)
 
 	/* Awareness */
 	if ((((int)lore->wake * (int)lore->wake) > race->sleep) ||
-	    (lore->ignore == MAX_UCHAR) ||
+	    (lore->ignore == MAX_UCHAR) || lore->all_known ||
 	    ((race->sleep == 0) && (lore->tkills >= 10)))
 		lore->sleep_known = TRUE;
 
 	/* Spellcasting frequency */
-	if (lore->cast_innate + lore->cast_spell > 100)
+	if ((lore->cast_innate + lore->cast_spell > 100) || lore->all_known)
 		lore->spell_freq_known = TRUE;
 }
 
 /**
- * Learn everything about a monster (by cheating).
+ * Learn everything about a monster.
  *
- * Sets the number of total kills of a monster to MAX_SHORT, so that the
- * player knows the armor etc. of the monster. Sets the number of observed
- * blows to MAX_UCHAR for each blow. Sets the number of observed drops
- * to the maximum possible. The player also automatically learns every
- * monster flag.
- * 
+ * Sets the all_known variable, all flags and all relevant spell flags.
  */
 void cheat_monster_lore(const monster_race *r_ptr, monster_lore *l_ptr)
 {
-	int i;
-
 	assert(r_ptr);
 	assert(l_ptr);
 
-	/* Hack -- Maximal kills */
-	l_ptr->sights = MAX_SHORT;
-	l_ptr->tkills = MAX_SHORT;
+	/* Full knowledge */
+	l_ptr->all_known = TRUE;
+	lore_update(r_ptr, l_ptr);
 
-	/* Hack -- Maximal info */
-	l_ptr->wake = l_ptr->ignore = MAX_UCHAR;
-
-	/* Observe "maximal" attacks */
-	for (i = 0; i < MONSTER_BLOW_MAX; i++) {
-		/* Examine "actual" blows */
-		if (r_ptr->blow[i].effect || r_ptr->blow[i].method) {
-			/* Hack -- maximal observations */
-			l_ptr->blows[i].times_seen = MAX_UCHAR;
-		}
-	}
-
-	/* Hack -- maximal drops */
-	l_ptr->drop_item = 0;
-
-	if (rf_has(r_ptr->flags, RF_DROP_4))
-		l_ptr->drop_item += 6;
-	if (rf_has(r_ptr->flags, RF_DROP_3))
-		l_ptr->drop_item += 4;
-	if (rf_has(r_ptr->flags, RF_DROP_2))
-		l_ptr->drop_item += 3;
-	if (rf_has(r_ptr->flags, RF_DROP_1))
-		l_ptr->drop_item++;
-
-	if (rf_has(r_ptr->flags, RF_DROP_40))
-		l_ptr->drop_item++;
-	if (rf_has(r_ptr->flags, RF_DROP_60))
-		l_ptr->drop_item++;
-	if (rf_has(r_ptr->flags, RF_DROP_20))
-		l_ptr->drop_item++;
-
-	l_ptr->drop_gold = l_ptr->drop_item;
-
-	/* Hack -- but only "valid" drops */
-	if (rf_has(r_ptr->flags, RF_ONLY_GOLD)) l_ptr->drop_item = 0;
-	if (rf_has(r_ptr->flags, RF_ONLY_ITEM)) l_ptr->drop_gold = 0;
-
-	/* Hack -- observe many spells */
-	l_ptr->cast_innate = MAX_UCHAR;
-	l_ptr->cast_spell = MAX_UCHAR;
-
-	/* Hack -- know all the flags */
+	/* Know all the flags */
 	rf_setall(l_ptr->flags);
 	rsf_copy(l_ptr->spell_flags, r_ptr->spell_flags);
 }
 
 /**
  * Forget everything about a monster.
- *
- * Sets the number of total kills, observed blows, and observed drops to 0.
- * Also wipes all knowledge of monster flags.
  */
 void wipe_monster_lore(const monster_race *r_ptr, monster_lore *l_ptr)
 {
-	int i;
-
 	assert(r_ptr);
 	assert(l_ptr);
-	
-	/* Hack -- No kills */
-	l_ptr->tkills = 0;
 
-	/* Hack -- No info */
-	l_ptr->wake = l_ptr->ignore = 0;
-
-	/* Observe "maximal" attacks */
-	for (i = 0; i < MONSTER_BLOW_MAX; i++) {
-		/* Examine "actual" blows */
-		if (r_ptr->blow[i].effect || r_ptr->blow[i].method) {
-			/* Hack -- no observations */
-			l_ptr->blows[i].times_seen = 0;
-		}
-	}
-
-	/* Hack -- no drops */
-	l_ptr->drop_item = l_ptr->drop_gold = 0;
-	
-	/* Hack -- forget all spells */
-	l_ptr->cast_innate = 0;
-	l_ptr->cast_spell = 0;
-
-	/* Hack -- wipe all the flags */
-	rf_wipe(l_ptr->flags);
-	rsf_wipe(l_ptr->spell_flags);
+	mem_free(l_ptr->drops);
+	mem_free(l_ptr->friends);
+	mem_free(l_ptr->friends_base);
+	mem_free(l_ptr->mimic_kinds);
+	memset(l_ptr, 0, sizeof(*l_ptr));
 }
 
 /**
@@ -535,10 +474,10 @@ void lore_do_probe(struct monster *m)
 	unsigned i;
 
 	/* Know various things */
+	for (i = 0; i < MONSTER_BLOW_MAX; i++)
+		l_ptr->blow_known[i] = TRUE;
 	rf_setall(l_ptr->flags);
 	rsf_copy(l_ptr->spell_flags, m->race->spell_flags);
-	for (i = 0; i < MONSTER_BLOW_MAX; i++)
-		l_ptr->blows[i].times_seen = MAX_UCHAR;
 
 	/* Update monster recall window */
 	if (player->upkeep->monster_race == m->race)
@@ -1846,7 +1785,7 @@ static void lore_append_attack(textblock *tb, const monster_race *race,
 		if (!race->blow[i].method) continue;
 
 		/* Count known attacks */
-		if (lore->blows[i].times_seen)
+		if (lore->blow_known[i])
 			total_attacks++;
 	}
 
@@ -1866,7 +1805,7 @@ static void lore_append_attack(textblock *tb, const monster_race *race,
 		const char *effect_str = NULL;
 
 		/* Skip unknown and undefined attacks */
-		if (!race->blow[i].method || !lore->blows[i].times_seen) continue;
+		if (!race->blow[i].method || !lore->blow_known[i]) continue;
 
 		/* Extract the attack info */
 		dice = race->blow[i].d_dice;
@@ -2163,6 +2102,10 @@ void write_lore_entries(ang_file *fff)
 		/* Output 'N' for "New/Number/Name" */
 		file_putf(fff, "N:%d:%s\n", i, race->name);
 
+		/* Output 'T' for template if we're remembering everything */
+		if (lore->all_known)
+			file_putf(fff, "T:%s\n", race->base->name);
+
 		/* Output counts */
 		file_putf(fff, "counts:%d:%d:%d:%d:%d:%d:%d\n", lore->sights,
 				  lore->deaths, lore->tkills, lore->wake, lore->ignore,
@@ -2171,7 +2114,7 @@ void write_lore_entries(ang_file *fff)
 		/* Output 'B' for "Blows" (up to four lines) */
 		for (n = 0; n < 4; n++) {
 			/* End of blows */
-			if (!lore->blows[n].times_seen) continue;
+			if (!lore->blow_known[n]) continue;
 
 			/* Output blow method */
 			file_putf(fff, "B:%s", r_info_blow_method[lore->blows[n].method]);
@@ -2185,6 +2128,9 @@ void write_lore_entries(ang_file *fff)
 
 			/* Output number of times that blow has been seen */
 			file_putf(fff, ":%d", lore->blows[n].times_seen);
+
+			/* Output blow index */
+			file_putf(fff, ":%d", n);
 
 			/* End line */
 			file_putf(fff, "\n");
