@@ -864,75 +864,6 @@ static void process_world(struct chunk *c)
 	}
 }
 
-
-
-
-
-/*
- * Hack -- helper function for "process_player()"
- *
- * Check for changes in the "monster memory"
- */
-static void process_player_aux(void)
-{
-	int i;
-	bool changed = FALSE;
-
-	static monster_race *old_monster_race = 0;
-	static bitflag old_flags[RF_SIZE];
-	static bitflag old_spell_flags[RSF_SIZE];
-
-	static int old_blows[MONSTER_BLOW_MAX];
-
-	static byte	old_cast_innate = 0;
-	static byte	old_cast_spell = 0;
-
-	/* Tracking a monster */
-	if (player->upkeep->monster_race)
-	{
-		/* Get the monster lore */
-		monster_lore *l_ptr = get_lore(player->upkeep->monster_race);
-
-		for (i = 0; i < MONSTER_BLOW_MAX; i++)
-		{
-			if (old_blows[i] != l_ptr->blows[i].times_seen)
-			{
-				changed = TRUE;
-				break;
-			}
-		}
-
-		/* Check for change of any kind */
-		if (changed ||
-		    (old_monster_race != player->upkeep->monster_race) ||
-		    !rf_is_equal(old_flags, l_ptr->flags) ||
-		    !rsf_is_equal(old_spell_flags, l_ptr->spell_flags) ||
-		    (old_cast_innate != l_ptr->cast_innate) ||
-		    (old_cast_spell != l_ptr->cast_spell))
-		{
-			/* Memorize old race */
-			old_monster_race = player->upkeep->monster_race;
-
-			/* Memorize flags */
-			rf_copy(old_flags, l_ptr->flags);
-			rsf_copy(old_spell_flags, l_ptr->spell_flags);
-
-			/* Memorize blows */
-			for (i = 0; i < MONSTER_BLOW_MAX; i++)
-				old_blows[i] = l_ptr->blows[i].times_seen;
-
-			/* Memorize castings */
-			old_cast_innate = l_ptr->cast_innate;
-			old_cast_spell = l_ptr->cast_spell;
-
-			/* Redraw stuff */
-			player->upkeep->redraw |= (PR_MONSTER);
-			redraw_stuff(player->upkeep);
-		}
-	}
-}
-
-
 /*
  * Place cursor on a monster or the player.
  */
@@ -1083,7 +1014,8 @@ static void process_player(void)
 		else
 		{
 			/* Check monster recall */
-			process_player_aux();
+			if (player->upkeep->monster_race)
+				player->upkeep->redraw |= (PR_MONSTER);
 
 			/* Place cursor on player/target */
 			place_cursor();
@@ -1149,6 +1081,7 @@ static void process_player(void)
 		/* HACK: This will redraw the itemlist too frequently, but I'm don't
 		   know all the individual places it should go. */
 		player->upkeep->redraw |= PR_ITEMLIST;
+		redraw_stuff(player->upkeep);
 	}
 
 	while (!player->upkeep->energy_use && !player->upkeep->leaving);
