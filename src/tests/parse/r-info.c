@@ -17,7 +17,7 @@ int teardown_tests(void *state) {
 }
 
 int test_n0(void *state) {
-	enum parser_error r = parser_parse(state, "N:544:Carcharoth, the Jaws of Thirst");
+	enum parser_error r = parser_parse(state, "name:544:Carcharoth, the Jaws of Thirst");
 	struct monster_race *mr;
 
 	eq(r, PARSE_ERROR_NONE);
@@ -68,7 +68,7 @@ int test_i0(void *state) {
 }
 
 int test_w0(void *state) {
-	enum parser_error r = parser_parse(state, "W:42:11:27:4");
+	enum parser_error r = parser_parse(state, "power:42:11:27:6:4");
 	struct monster_race *mr;
 
 	eq(r, PARSE_ERROR_NONE);
@@ -77,6 +77,7 @@ int test_w0(void *state) {
 	eq(mr->level, 42);
 	eq(mr->rarity, 11);
 	eq(mr->power, 27);
+	eq(mr->scaled_power, 6);
 	eq(mr->mexp, 4);
 	ok;
 }
