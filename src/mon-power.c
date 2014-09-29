@@ -28,6 +28,7 @@
 #include "prefs.h"
 #include "tables.h"
 
+long *power, *scaled_power;
 s32b tot_mon_power;
 
 static long eval_blow_effect(int effect, int atk_dam, int rlev)
@@ -331,140 +332,30 @@ static long eval_hp_adjust(monster_race *r_ptr)
  */
 void write_monster_entries(ang_file *fff)
 {
-	int i, n;
+	ang_file *old;
+	char buf[1024];
 
-	static const char *r_info_blow_method[] = {
-		#define RBM(x, c, s, miss, p, m, a, d) #x,
-		#include "list-blow-methods.h"
-		#undef RBM
-	};
+	path_build(buf, sizeof(buf), ANGBAND_DIR_EDIT, "monster.txt");
+	old = file_open(buf, MODE_READ, FTYPE_TEXT);
 
-	static const char *r_info_blow_effect[] = {
-		#define RBE(x, p, e, d) #x,
-		#include "list-blow-effects.h"
-		#undef RBE
-	};
+	while (file_getl(old, buf, sizeof(buf))) {
+		monster_race *race;
+		int i, n;
 
-	for (i = 0; i < z_info->r_max; i++) {
-		/* Current entry */
-		monster_race *race = &r_info[i];
-
-		/* Ignore non-existent monsters */
-		if (!race->name) continue;
-
-		/* Output 'N' for "New/Number/Name" */
-		file_putf(fff, "N:%d:%s\n", i, race->name);
-
-		/* Output 'plural' */
-		if (race->plural)
-			file_putf(fff, "plural:%s\n", race->plural);
-
-		/* Output 'T' for template if we're remembering everything */
-		file_putf(fff, "T:%s\n", race->base->name);
-
-		/* Output 'C' for colour (one line only) */
-		file_putf(fff, "C:%c\n", color_table[race->d_attr].index_char);
-
-		/* Output 'G' for "Graphics" (one line only) */
-		if (race->d_char != race->base->d_char)
-			file_putf(fff, "G:%c:\n", race->d_char);
-
-		/* Output 'I' for "Info" (one line only) */
-		file_putf(fff, "I:%d:%d:%d:%d:%d\n", race->speed, race->avg_hp,
-				  race->aaf, race->ac, race->sleep);
-
-		/* Output 'W' for "More Info" (one line only) */
-		file_putf(fff,"W:%d:%d:%d:%d:%d\n",race->level, race->rarity,
-				  race->power, race->scaled_power, race->mexp);
-
-		/* Output 'B' for "Blows" (up to four lines) */
-		for (n = 0; n < 4; n++) {
-			/* End of blows */
-			if (!race->blow[n].method) break;
-
-			/* Output blow method */
-			file_putf(fff, "B:%s", r_info_blow_method[race->blow[n].method]);
-			/* Output blow effect */
-			if (race->blow[n].effect) {
-				file_putf(fff, ":%s", r_info_blow_effect[race->blow[n].effect]);
-
-				/* Output blow damage if required */
-				if ((race->blow[n].d_dice) && (race->blow[n].d_side)) {
-					file_putf(fff, ":%dd%d", race->blow[n].d_dice,
-							  race->blow[n].d_side);
-				}
-			}
-
-			/* End line */
-			file_putf(fff, "\n");
+		/* Change monster record */
+		if (1 == sscanf(buf, "name:%d", &n)) {
+			race = &r_info[n];
+			file_putf(fff, "%s\n", buf);
 		}
 
-		/* Output 'F' for "Flags" */
-		write_flags(fff, "F:", race->flags, RF_SIZE, r_info_flags);
+		/* Rewrite 'power' line */
+		else if (1 == sscanf(buf, "power:%d", &i))
+			file_putf(fff,"power:%d:%d:%d:%d:%d\n", race->level, race->rarity,
+					  power[n], scaled_power[n], race->mexp);
 
-		/* Output 'spell-freq' for spell frequency */
-		if (race->freq_innate)
-			file_putf(fff, "spell-freq:%d\n", 100/race->freq_spell);
-
-		/* Output 'S' for "Spell Flags" (multiple lines) */
-		write_flags(fff, "S:", race->spell_flags, RSF_SIZE, r_info_spell_flags);
-
-		/* Output 'drop', 'drop-artifact' */
-		if (race->drops) {
-			struct monster_drop *drop = race->drops;
-			struct object_kind *kind = drop->kind;
-			char name[120] = "";
-
-			while (drop) {
-				if (drop->artifact)
-					file_putf(fff, "drop-artifact:%s\n", drop->artifact->name);
-				else {
-					object_short_name(name, sizeof name, kind->name);
-					file_putf(fff, "drop:%s:%s:%d:%d:%d\n",
-							  tval_find_name(kind->tval), name,
-							  drop->percent_chance, drop->min, drop->max);
-				}
-				drop = drop->next;
-			}
-		}
-
-		/* Output 'friends' */
-		if (race->friends) {
-			struct monster_friends *f = race->friends;
-
-			while (f) {
-				file_putf(fff, "friends:%d:%dd%d:%s\n", f->percent_chance,
-						  f->number_dice, f->number_side, f->race->name);
-				f = f->next;
-			}
-		}
-
-		/* Output 'friends-base' */
-		if (race->friends_base) {
-			struct monster_friends_base *b = race->friends_base;
-
-			while (b) {
-				file_putf(fff, "friends-base:%d:%dd%d:%s\n", b->percent_chance,
-						  b->number_dice, b->number_side, b->base->name);
-				b = b->next;
-			}
-		}
-
-		/* Output 'mimic' */
-		if (race->mimic_kinds) {
-			struct monster_mimic *m = race->mimic_kinds;
-			struct object_kind *kind = m->kind;
-			char name[120] = "";
-
-			while (m) {
-				object_short_name(name, sizeof name, kind->name);
-				file_putf(fff, "mimic:%s:%s\n",
-						  tval_find_name(kind->tval), name);
-				m = m->next;
-			}
-		}
-
-		file_putf(fff, "\n");
+		/* Just copy */
+		else
+			file_putf(fff, "%s\n", buf);
 	}
 }
 
@@ -472,7 +363,7 @@ errr eval_r_power(struct monster_race *racelist)
 {
 	int i, j, iteration;
 	byte lvl;
-	long hp, av_hp, dam, av_dam, *power;
+	long hp, av_hp, dam, av_dam;
 	long tot_hp[MAX_DEPTH], tot_dam[MAX_DEPTH], mon_count[MAX_DEPTH];
 	monster_race *r_ptr = NULL;
 	ang_file *mon_fp;
@@ -481,251 +372,254 @@ errr eval_r_power(struct monster_race *racelist)
 
 	/* Allocate space for power */
 	power = C_ZNEW(z_info->r_max, long);
+	scaled_power = C_ZNEW(z_info->r_max, long);
 
-for (iteration = 0; iteration < 3; iteration ++) {
+	for (iteration = 0; iteration < 3; iteration ++) {
 
-	/* Reset the sum of all monster power values */
-	tot_mon_power = 0;
+		/* Reset the sum of all monster power values */
+		tot_mon_power = 0;
 
-	/* Make sure all arrays start at zero */
-	for (i = 0; i < MAX_DEPTH; i++)	{
-		tot_hp[i] = 0;
-		tot_dam[i] = 0;
-		mon_count[i] = 0;
-	}
+		/* Make sure all arrays start at zero */
+		for (i = 0; i < MAX_DEPTH; i++)	{
+			tot_hp[i] = 0;
+			tot_dam[i] = 0;
+			mon_count[i] = 0;
+		}
 
-	/* Go through r_info and evaluate power ratings & flows. */
-	for (i = 0; i < z_info->r_max; i++)	{
+		/* Go through r_info and evaluate power ratings & flows. */
+		for (i = 0; i < z_info->r_max; i++)	{
 
-		/* Point at the "info" */
-		r_ptr = &racelist[i];
+			/* Point at the "info" */
+			r_ptr = &racelist[i];
 
-		/* Set the current level */
-		lvl = r_ptr->level;
+			/* Set the current level */
+			lvl = r_ptr->level;
 
-		/* Maximum damage this monster can do in 10 game turns */
-		dam = eval_max_dam(r_ptr);
+			/* Maximum damage this monster can do in 10 game turns */
+			dam = eval_max_dam(r_ptr);
 
-		/* Adjust hit points based on resistances */
-		hp = eval_hp_adjust(r_ptr);
+			/* Adjust hit points based on resistances */
+			hp = eval_hp_adjust(r_ptr);
 
-		/* Hack -- set exp */
-		if (lvl == 0)
-			r_ptr->mexp = 0L;
-		else {
-			/* Compute depths of non-unique monsters */
-			if (!rf_has(r_ptr->flags, RF_UNIQUE)) {
-				long mexp = (hp * dam) / 25;
-				long threat = r_ptr->highest_threat;
+			/* Hack -- set exp */
+			if (lvl == 0)
+				r_ptr->mexp = 0L;
+			else {
+				/* Compute depths of non-unique monsters */
+				if (!rf_has(r_ptr->flags, RF_UNIQUE)) {
+					long mexp = (hp * dam) / 25;
+					long threat = r_ptr->highest_threat;
 
-				/* Compute level algorithmically */
-				for (j = 1; (mexp > j + 4) || (threat > j + 5);
-					mexp -= j * j, threat -= (j + 4), j++);
+					/* Compute level algorithmically */
+					for (j = 1; (mexp > j + 4) || (threat > j + 5);
+						 mexp -= j * j, threat -= (j + 4), j++);
 
-				/* Set level */
-				lvl = MIN(( j > 250 ? 90 + (j - 250) / 20 : /* Level 90+ */
-						(j > 130 ? 70 + (j - 130) / 6 :	/* Level 70+ */
-						(j > 40 ? 40 + (j - 40) / 3 :	/* Level 40+ */
-						j))), 99);
+					/* Set level */
+					lvl = MIN(( j > 250 ? 90 + (j - 250) / 20 : /* Level 90+ */
+								(j > 130 ? 70 + (j - 130) / 6 :	/* Level 70+ */
+								 (j > 40 ? 40 + (j - 40) / 3 :	/* Level 40+ */
+								  j))), 99);
 
-				/* Set level */
-				if (arg_rebalance)
-					r_ptr->level = lvl;
-			}
+					/* Set level */
+					if (arg_rebalance)
+						r_ptr->level = lvl;
+				}
 
-			if (arg_rebalance) {
-				/* Hack -- for Ungoliant */
-				if (hp > 10000)
-					r_ptr->mexp = (hp / 25) * (dam / lvl);
-				else r_ptr->mexp = (hp * dam) / (lvl * 25);
+				if (arg_rebalance) {
+					/* Hack -- for Ungoliant */
+					if (hp > 10000)
+						r_ptr->mexp = (hp / 25) * (dam / lvl);
+					else r_ptr->mexp = (hp * dam) / (lvl * 25);
 
-				/* Round to 2 significant figures */
-				if (r_ptr->mexp > 100) {
-					if (r_ptr->mexp < 1000) {
-						r_ptr->mexp = (r_ptr->mexp + 5) / 10;
-						r_ptr->mexp *= 10;
-					}
-					else if (r_ptr->mexp < 10000) {
-						r_ptr->mexp = (r_ptr->mexp + 50) / 100;
-						r_ptr->mexp *= 100;
-					}
-					else if (r_ptr->mexp < 100000) {
-						r_ptr->mexp = (r_ptr->mexp + 500) / 1000;
-						r_ptr->mexp *= 1000;
-					}
-					else if (r_ptr->mexp < 1000000) {
-						r_ptr->mexp = (r_ptr->mexp + 5000) / 10000;
-						r_ptr->mexp *= 10000;
-					}
-					else if (r_ptr->mexp < 10000000) {
-						r_ptr->mexp = (r_ptr->mexp + 50000) / 100000;
-						r_ptr->mexp *= 100000;
+					/* Round to 2 significant figures */
+					if (r_ptr->mexp > 100) {
+						if (r_ptr->mexp < 1000) {
+							r_ptr->mexp = (r_ptr->mexp + 5) / 10;
+							r_ptr->mexp *= 10;
+						}
+						else if (r_ptr->mexp < 10000) {
+							r_ptr->mexp = (r_ptr->mexp + 50) / 100;
+							r_ptr->mexp *= 100;
+						}
+						else if (r_ptr->mexp < 100000) {
+							r_ptr->mexp = (r_ptr->mexp + 500) / 1000;
+							r_ptr->mexp *= 1000;
+						}
+						else if (r_ptr->mexp < 1000000) {
+							r_ptr->mexp = (r_ptr->mexp + 5000) / 10000;
+							r_ptr->mexp *= 10000;
+						}
+						else if (r_ptr->mexp < 10000000) {
+							r_ptr->mexp = (r_ptr->mexp + 50000) / 100000;
+							r_ptr->mexp *= 100000;
+						}
 					}
 				}
 			}
-		}
 
-		/* If we're rebalancing, this is a nop, if not, we restore the orig value */
-		lvl = r_ptr->level;
-		if ((lvl) && (r_ptr->mexp < 1L))
-			r_ptr->mexp = 1L;
+			/* If we're rebalancing, this is a nop, if not, we restore the orig value */
+			lvl = r_ptr->level;
+			if ((lvl) && (r_ptr->mexp < 1L))
+				r_ptr->mexp = 1L;
 
-		/*
-		 * Hack - We have to use an adjustment factor to prevent overflow.
-		 * Try to scale evenly across all levels instead of scaling by level.
-		 */
-		hp /= 2;
-		if(hp < 1)
-			hp = 1;
-		r_ptr->hp = hp;		/*AMF:DEBUG*/
+			/*
+			 * Hack - We have to use an adjustment factor to prevent overflow.
+			 * Try to scale evenly across all levels instead of scaling by level.
+			 */
+			hp /= 2;
+			if(hp < 1)
+				hp = 1;
+			r_ptr->hp = hp;		/*AMF:DEBUG*/
 
-		/* Define the power rating */
-		power[i] = hp * dam;
+			/* Define the power rating */
+			power[i] = hp * dam;
 
-		/* Adjust for group monsters, using somewhat arbitrary 
-		multipliers for now */
-		if (!rf_has(r_ptr->flags, RF_UNIQUE)) {
-			if (r_ptr->friends)
-				power[i] *= 3;
-		}
-	
-		/* Adjust for escorts */
-		if (r_ptr->friends_base) 
-			power[i] *= 2;
-
-
-		/* Adjust for multiplying monsters. This is modified by the speed,
-		 * as fast multipliers are much worse than slow ones. We also adjust for
-		 * ability to bypass walls or doors.
-		 */
-		if (rf_has(r_ptr->flags, RF_MULTIPLY)) {
-			int adj_power;
-
-			if (flags_test(r_ptr->flags, RF_SIZE, RF_KILL_WALL, RF_PASS_WALL, FLAG_END))
-				adj_power = power[i] * adj_energy(r_ptr);
-			else if (flags_test(r_ptr->flags, RF_SIZE, RF_OPEN_DOOR, RF_BASH_DOOR, FLAG_END))
-				adj_power = power[i] * adj_energy(r_ptr) * 3 / 2;
-			else
-				adj_power = power[i] * adj_energy(r_ptr) / 2;
-
-			power[i] = MAX(power[i], adj_power);
-		}
-
-		/*
-		 * Update the running totals - these will be used as divisors later
-		 * Total HP / dam / count for everything up to the current level
-		 */
-		for (j = lvl; j < (lvl == 0 ? lvl + 1: MAX_DEPTH); j++)	{
-			int count = 10;
-
-			/* Uniques don't count towards monster power on the level. */
-			if (rf_has(r_ptr->flags, RF_UNIQUE)) continue;
-
-			/* Specifically placed monsters don't count towards monster power
-			 * on the level. */
-			if (!(r_ptr->rarity)) continue;
-
-			/* Hack -- provide adjustment factor to prevent overflow */
-			if ((j == 90) && (r_ptr->level < 90)) {
-				hp /= 10;
-				dam /= 10;
+			/* Adjust for group monsters, using somewhat arbitrary 
+			   multipliers for now */
+			if (!rf_has(r_ptr->flags, RF_UNIQUE)) {
+				if (r_ptr->friends)
+					power[i] *= 3;
 			}
 
-			if ((j == 65) && (r_ptr->level < 65)) {
-				hp /= 10;
-				dam /= 10;
-			}
+			/* Adjust for escorts */
+			if (r_ptr->friends_base) 
+				power[i] *= 2;
 
-			if ((j == 40) && (r_ptr->level < 40)) {
-				hp /= 10;
-				dam /= 10;
+
+			/* Adjust for multiplying monsters. This is modified by the speed,
+			 * as fast multipliers are much worse than slow ones. We also adjust for
+			 * ability to bypass walls or doors.
+			 */
+			if (rf_has(r_ptr->flags, RF_MULTIPLY)) {
+				int adj_power;
+
+				if (flags_test(r_ptr->flags, RF_SIZE, RF_KILL_WALL, RF_PASS_WALL, FLAG_END))
+					adj_power = power[i] * adj_energy(r_ptr);
+				else if (flags_test(r_ptr->flags, RF_SIZE, RF_OPEN_DOOR, RF_BASH_DOOR, FLAG_END))
+					adj_power = power[i] * adj_energy(r_ptr) * 3 / 2;
+				else
+					adj_power = power[i] * adj_energy(r_ptr) / 2;
+
+				power[i] = MAX(power[i], adj_power);
 			}
 
 			/*
-			 * Hack - if it's a group monster or multiplying monster, add several to the count
-			 * so that the averages don't get thrown off
+			 * Update the running totals - these will be used as divisors later
+			 * Total HP / dam / count for everything up to the current level
 			 */
+			for (j = lvl; j < (lvl == 0 ? lvl + 1: MAX_DEPTH); j++)	{
+				int count = 10;
 
-			if (r_ptr->friends || r_ptr->friends_base)
-				count = 15;
+				/* Uniques don't count towards monster power on the level. */
+				if (rf_has(r_ptr->flags, RF_UNIQUE)) continue;
 
-			if (rf_has(r_ptr->flags, RF_MULTIPLY)) {
-				int adj_energy_amt;
+				/* Specifically placed monsters don't count towards monster power
+				 * on the level. */
+				if (!(r_ptr->rarity)) continue;
 
-				if (flags_test(r_ptr->flags, RF_SIZE, RF_KILL_WALL, RF_PASS_WALL, FLAG_END))
-					adj_energy_amt = adj_energy(r_ptr);
-				else if (flags_test(r_ptr->flags, RF_SIZE, RF_OPEN_DOOR, RF_BASH_DOOR, FLAG_END))
-					adj_energy_amt = adj_energy(r_ptr) * 3 / 2;
-				else
-					adj_energy_amt = adj_energy(r_ptr) / 2;
+				/* Hack -- provide adjustment factor to prevent overflow */
+				if ((j == 90) && (r_ptr->level < 90)) {
+					hp /= 10;
+					dam /= 10;
+				}
 
-				count = MAX(1, adj_energy_amt) * count;
+				if ((j == 65) && (r_ptr->level < 65)) {
+					hp /= 10;
+					dam /= 10;
+				}
+
+				if ((j == 40) && (r_ptr->level < 40)) {
+					hp /= 10;
+					dam /= 10;
+				}
+
+				/*
+				 * Hack - if it's a group monster or multiplying monster, add several to the count
+				 * so that the averages don't get thrown off
+				 */
+
+				if (r_ptr->friends || r_ptr->friends_base)
+					count = 15;
+
+				if (rf_has(r_ptr->flags, RF_MULTIPLY)) {
+					int adj_energy_amt;
+
+					if (flags_test(r_ptr->flags, RF_SIZE, RF_KILL_WALL, RF_PASS_WALL, FLAG_END))
+						adj_energy_amt = adj_energy(r_ptr);
+					else if (flags_test(r_ptr->flags, RF_SIZE, RF_OPEN_DOOR, RF_BASH_DOOR, FLAG_END))
+						adj_energy_amt = adj_energy(r_ptr) * 3 / 2;
+					else
+						adj_energy_amt = adj_energy(r_ptr) / 2;
+
+					count = MAX(1, adj_energy_amt) * count;
+				}
+
+				/* Very rare monsters count less towards total monster power on the
+				 * level. */
+				if (r_ptr->rarity > count) {
+					hp = hp * count / r_ptr->rarity;
+					dam = dam * count / r_ptr->rarity;
+
+					count = r_ptr->rarity;
+				}
+
+				tot_hp[j] += hp;
+				tot_dam[j] += dam;
+
+				mon_count[j] += count / r_ptr->rarity;
 			}
 
-			/* Very rare monsters count less towards total monster power on the
-			 * level. */
-			if (r_ptr->rarity > count) {
-				hp = hp * count / r_ptr->rarity;
-				dam = dam * count / r_ptr->rarity;
+		}
 
-				count = r_ptr->rarity;
+		/* Apply divisors now */
+		for (i = 0; i < z_info->r_max; i++) {
+			int new_power;
+
+			/* Point at the "info" */
+			r_ptr = &racelist[i];
+
+			/* Extract level */
+			lvl = r_ptr->level;
+
+			/* Paranoia */
+			if (tot_hp[lvl] != 0 && tot_dam[lvl] != 0) {
+				scaled_power[i] = power[i];
+
+				/* Divide by av HP and av damage for all in-level monsters */
+				/* Note we have factored in the above 'adjustment factor' */
+				av_hp = tot_hp[lvl] * 10 / mon_count[lvl];
+				av_dam = tot_dam[lvl] * 10 / mon_count[lvl];
+
+				/* Justifiable paranoia - avoid divide by zero errors */
+				if (av_hp > 0)
+					scaled_power[i] = scaled_power[i] / av_hp;
+				if (av_dam > 0)
+					scaled_power[i] = scaled_power[i] / av_dam;
+
+				/* Never less than 1 */
+				if (power[i] < 1)
+					power[i] = 1;
+
+				/* Set powers */
+				if (arg_rebalance) {
+					r_ptr->power = power[i];
+					r_ptr->scaled_power = scaled_power[i];
+				}
+
+				/* Get power */
+				new_power = power[i];
+
+				/* Compute rarity algorithmically */
+				for (j = 1; new_power > j; new_power -= j * j, j++);
+
+				/* Set rarity */
+				if (arg_rebalance)
+					r_ptr->rarity = j;
 			}
-
-			tot_hp[j] += hp;
-			tot_dam[j] += dam;
-
-			mon_count[j] += count / r_ptr->rarity;
 		}
 
 	}
 
-	/* Apply divisors now */
-	for (i = 0; i < z_info->r_max; i++) {
-		int new_power;
-
-		/* Point at the "info" */
-		r_ptr = &racelist[i];
-
-		/* Extract level */
-		lvl = r_ptr->level;
-
-		/* Paranoia */
-		if (tot_hp[lvl] != 0 && tot_dam[lvl] != 0) {
-
-			/* Divide by average HP and av damage for all in-level monsters */
-			/* Note we have factored in the above 'adjustment factor' */
-			av_hp = tot_hp[lvl] * 10 / mon_count[lvl];
-			av_dam = tot_dam[lvl] * 10 / mon_count[lvl];
-
-			/* Assign monster power */
-			r_ptr->power = power[i];
-
-			/* Justifiable paranoia - avoid divide by zero errors */
-			if (av_hp > 0)
-				power[i] = power[i] / av_hp;
-			if (av_dam > 0)
-				power[i] = power[i] / av_dam;
-
-			/* Assign monster scaled power */
-			r_ptr->scaled_power = power[i];
-
-			/* Never less than 1 */
-			if (r_ptr->power < 1)
-				r_ptr->power = 1;
-
-			/* Get power */
-			new_power = r_ptr->power;
-
-			/* Compute rarity algorithmically */
-			for (j = 1; new_power > j; new_power -= j * j, j++);
-
-			/* Set rarity */
-			if (arg_rebalance)
-				r_ptr->rarity = j;
-		}
-	}
-
-}
 	/* Determine total monster power */
 	for (i = 0; i < z_info->r_max; i++)
 		tot_mon_power += r_info[i].scaled_power;
@@ -741,7 +635,7 @@ for (iteration = 0; iteration < 3; iteration ++) {
 
 		for (i = 0; i < z_info->r_max; i++) {
 			char mbstr[MB_LEN_MAX+1] = {0};
-			r_ptr = &r_info[i];	
+			r_ptr = &r_info[i];
 
 			/* Don't print anything for nonexistent monsters */
 			if (!r_ptr->name) continue;
@@ -756,19 +650,16 @@ for (iteration = 0; iteration < 3; iteration ++) {
 		file_close(mon_fp);
 	}
 
-	if (arg_power) {
-		char path[1024];
+	/* Write to the user directory */
+	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, "new_monster.txt");
 
-		/* Write to the user directory */
-		path_build(path, sizeof(path), ANGBAND_DIR_USER, "new_monster.txt");
-
-		if (text_lines_to_file(path, write_monster_entries)) {
-			msg("Failed to create file %s.new", path);
-			return FALSE;
-		}
+	if (text_lines_to_file(buf, write_monster_entries)) {
+		msg("Failed to create file %s.new", buf);
+		return -1;
 	}
 
-	/* Free power array */
+	/* Free power arrays */
+	FREE(scaled_power);
 	FREE(power);
 
 	/* Success */

@@ -847,7 +847,7 @@ static void load_prefs(void)
 	arg_wizard = (GetPrivateProfileInt("Angband", "Wizard", 0, ini_file) != 0);
 
 	/* Extract the "arg_power" flag */
-	arg_rebalance = (GetPrivateProfileInt("Angband", "Power", FALSE, ini_file) != 0);
+	arg_power = (GetPrivateProfileInt("Angband", "Power", FALSE, ini_file) != 0);
 
 	/* Extract the "arg_rebalance" flag */
 	arg_rebalance = (GetPrivateProfileInt("Angband", "Rebalance", FALSE, ini_file) != 0);

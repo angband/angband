@@ -32,6 +32,7 @@
 #include "object.h"
 #include "parser.h"
 #include "player-spell.h"
+#include "prefs.h"
 
 monster_pain *pain_messages;
 struct monster_spell *monster_spells;
@@ -533,7 +534,7 @@ static enum parser_error parse_r_i(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_r_w(struct parser *p) {
+static enum parser_error parse_r_power(struct parser *p) {
 	struct monster_race *r = parser_priv(p);
 
 	if (!r)
@@ -541,6 +542,7 @@ static enum parser_error parse_r_w(struct parser *p) {
 	r->level = parser_getint(p, "level");
 	r->rarity = parser_getint(p, "rarity");
 	r->power = parser_getint(p, "power");
+	r->scaled_power = parser_getint(p, "scaled");
 	r->mexp = parser_getint(p, "mexp");
 	return PARSE_ERROR_NONE;
 }
@@ -823,7 +825,7 @@ struct parser *init_parse_r(void) {
 	parser_reg(p, "G char glyph", parse_r_g);
 	parser_reg(p, "C sym color", parse_r_c);
 	parser_reg(p, "I int speed int hp int aaf int ac int sleep", parse_r_i);
-	parser_reg(p, "W int level int rarity int power int mexp", parse_r_w);
+	parser_reg(p, "power int level int rarity int power int scaled int mexp", parse_r_power);
 	parser_reg(p, "B sym method ?sym effect ?rand damage", parse_r_b);
 	parser_reg(p, "F ?str flags", parse_r_f);
 	parser_reg(p, "-F ?str flags", parse_r_mf);
@@ -893,8 +895,9 @@ static errr finish_parse_r(struct parser *p) {
 	/* Allocate an equivalent amount of lore space */
 	l_list = C_ZNEW(z_info->r_max, monster_lore);
 
-
-	eval_r_power(r_info);
+	/* Write new monster.txt file if requested */
+	if (arg_power || arg_rebalance)
+		eval_r_power(r_info);
 
 	parser_destroy(p);
 	return 0;
