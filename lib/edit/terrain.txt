@@ -136,7 +136,7 @@ X:8:0
 N:15:secret door
 G:#:w
 P:10
-M:56
+M:21
 F:WALL | ROCK | DOOR_ANY | GRANITE
 
 N:16:pile of rubble
