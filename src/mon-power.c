@@ -339,7 +339,7 @@ void write_monster_entries(ang_file *fff)
 	old = file_open(buf, MODE_READ, FTYPE_TEXT);
 
 	while (file_getl(old, buf, sizeof(buf))) {
-		monster_race *race;
+		static monster_race *race;
 		int i, n;
 
 		/* Change monster record */
