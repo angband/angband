@@ -45,40 +45,6 @@ enum
 	REALM_MAX
 };
 
-/*
- * Player race and class flags
- */
-enum
-{
-	#define PF(a,b) PF_##a,
-	#include "list-player-flags.h"
-	#undef PF
-	PF_MAX
-};
-
-#define PF_SIZE                FLAG_SIZE(PF_MAX)
-
-#define pf_has(f, flag)        flag_has_dbg(f, PF_SIZE, flag, #f, #flag)
-#define pf_next(f, flag)       flag_next(f, PF_SIZE, flag)
-#define pf_is_empty(f)         flag_is_empty(f, PF_SIZE)
-#define pf_is_full(f)          flag_is_full(f, PF_SIZE)
-#define pf_is_inter(f1, f2)    flag_is_inter(f1, f2, PF_SIZE)
-#define pf_is_subset(f1, f2)   flag_is_subset(f1, f2, PF_SIZE)
-#define pf_is_equal(f1, f2)    flag_is_equal(f1, f2, PF_SIZE)
-#define pf_on(f, flag)         flag_on_dbg(f, PF_SIZE, flag, #f, #flag)
-#define pf_off(f, flag)        flag_off(f, PF_SIZE, flag)
-#define pf_wipe(f)             flag_wipe(f, PF_SIZE)
-#define pf_setall(f)           flag_setall(f, PF_SIZE)
-#define pf_negate(f)           flag_negate(f, PF_SIZE)
-#define pf_copy(f1, f2)        flag_copy(f1, f2, PF_SIZE)
-#define pf_union(f1, f2)       flag_union(f1, f2, PF_SIZE)
-#define pf_comp_union(f1, f2)  flag_comp_union(f1, f2, PF_SIZE)
-#define pf_inter(f1, f2)       flag_inter(f1, f2, PF_SIZE)
-#define pf_diff(f1, f2)        flag_diff(f1, f2, PF_SIZE)
-
-#define player_has(flag)       (pf_has(player->race->pflags, (flag)) || pf_has(player->class->pflags, (flag)))
-
-
 /* player_type.noscore flags */
 #define NOSCORE_WIZARD		0x0002
 #define NOSCORE_DEBUG		0x0008
