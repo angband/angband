@@ -323,7 +323,7 @@ struct file_parser rs_parser = {
 
 /* Parsing functions for monster_base.txt */
 
-static enum parser_error parse_rb_n(struct parser *p) {
+static enum parser_error parse_rb_name(struct parser *p) {
 	struct monster_base *h = parser_priv(p);
 	struct monster_base *rb = mem_zalloc(sizeof *rb);
 	rb->next = h;
@@ -423,7 +423,7 @@ static struct parser *init_parse_rb(void) {
 	parser_setpriv(p, NULL);
 
 	parser_reg(p, "V sym version", ignored);
-	parser_reg(p, "N str name", parse_rb_n);
+	parser_reg(p, "name str name", parse_rb_name);
 	parser_reg(p, "G char glyph", parse_rb_g);
 	parser_reg(p, "M uint pain", parse_rb_m);
 	parser_reg(p, "F ?str flags", parse_rb_f);
@@ -466,7 +466,7 @@ struct file_parser rb_parser = {
 
 
 /* Parsing functions for monster.txt */
-static enum parser_error parse_r_n(struct parser *p) {
+static enum parser_error parse_r_name(struct parser *p) {
 	struct monster_race *h = parser_priv(p);
 	struct monster_race *r = mem_zalloc(sizeof *r);
 	r->next = h;
@@ -817,7 +817,7 @@ struct parser *init_parse_r(void) {
 	parser_setpriv(p, NULL);
 
 	parser_reg(p, "V sym version", ignored);
-	parser_reg(p, "N uint index str name", parse_r_n);
+	parser_reg(p, "name uint index str name", parse_r_name);
 	parser_reg(p, "plural ?str plural", parse_r_plural);
 	parser_reg(p, "T sym base", parse_r_t);
 	parser_reg(p, "G char glyph", parse_r_g);
@@ -952,7 +952,7 @@ struct file_parser r_parser = {
 };
 
 /* Parsing functions for lore.txt */
-static enum parser_error parse_lore_n(struct parser *p) {
+static enum parser_error parse_lore_name(struct parser *p) {
 	int index = parser_getuint(p, "index");
 	monster_lore *l = &l_list[index];
 
@@ -1204,7 +1204,7 @@ struct parser *init_parse_lore(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
 
-	parser_reg(p, "N uint index str name", parse_lore_n);
+	parser_reg(p, "name uint index str name", parse_lore_name);
 	parser_reg(p, "plural ?str plural", ignored);
 	parser_reg(p, "T sym base", parse_lore_t);
 	parser_reg(p, "G char glyph", ignored);

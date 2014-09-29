@@ -1,13 +1,13 @@
 # This file provides information for monster "templates".
 # 
-# N : template name
+# name : template name
 # G : default display character
 # M : pain message index
 # F : flag | flag | ...
 # S : spell flag | spell flag | ...
 # D : description
 #
-# 'N' indicates the beginning of an entry. The template name is used in 
+# 'name' indicates the beginning of an entry. The template name is used in 
 # monster.txt.
 #
 # 'G' indicates the default display character. This is used for displaying the
@@ -31,7 +31,7 @@
 
 ##### Normal monster templates #####
 
-N:ancient dragon
+name:ancient dragon
 G:D
 M:1
 F:DRAGON | EVIL | POWERFUL | SMART
@@ -41,7 +41,7 @@ F:NO_CONF | NO_SLEEP
 F:FORCE_SLEEP
 D:Ancient Dragon/Wyrm
 
-N:ainu
+name:ainu
 G:A
 M:1
 F:POWERFUL
@@ -51,38 +51,38 @@ F:IM_POIS | NO_CONF | NO_SLEEP
 F:FORCE_SLEEP
 D:Ainu/maia
 
-N:ant
+name:ant
 G:a
 M:7
 F:ANIMAL | WEIRD_MIND
 F:BASH_DOOR
 D:Ant
 
-N:bat
+name:bat
 G:b
 M:4
 F:ANIMAL
 D:Bat
 
-N:bird
+name:bird
 G:B
 M:8
 F:ANIMAL
 D:Bird
 
-N:canine
+name:canine
 G:C
 M:3
 F:ANIMAL
 D:Canine (Dog)
 
-N:centipede
+name:centipede
 G:c
 M:5
 F:ANIMAL | WEIRD_MIND
 D:Centipede
 
-N:creeping coins
+name:creeping coins
 G:$
 M:1
 F:COLD_BLOOD | METAL | UNAWARE | EMPTY_MIND
@@ -92,14 +92,14 @@ F:IM_ELEC | IM_POIS | NO_CONF | NO_SLEEP
 F:MIMIC_INV
 D:Creeping Coins
 
-N:dragon
+name:dragon
 G:d
 M:1
 F:DRAGON | EVIL
 F:FORCE_SLEEP
 D:Dragon
 
-N:dragon fly
+name:dragon fly
 G:F
 M:7
 F:ANIMAL | WEIRD_MIND
@@ -107,12 +107,12 @@ F:RAND_50 | BASH_DOOR
 F:FORCE_SLEEP
 D:Dragon Fly
 
-N:eye
+name:eye
 G:e
 M:1
 D:Floating Eye
 
-N:elemental
+name:elemental
 G:E
 M:1
 F:EMPTY_MIND
@@ -120,13 +120,13 @@ F:IM_POIS | NO_FEAR | NO_CONF | NO_SLEEP
 F:NONLIVING
 D:Elemental
 
-N:feline
+name:feline
 G:f
 M:6
 F:ANIMAL
 D:Feline (Cat)
 
-N:ghost
+name:ghost
 G:G
 M:1
 F:UNDEAD | EVIL | INVISIBLE | COLD_BLOOD
@@ -134,7 +134,7 @@ F:PASS_WALL
 F:IM_COLD | IM_POIS | NO_CONF | NO_SLEEP | NO_STUN
 D:Ghost
 
-N:giant
+name:giant
 G:P
 M:1
 F:GIANT | EVIL
@@ -142,7 +142,7 @@ F:BASH_DOOR
 S:BOULDER
 D:Giant Humanoid
 
-N:golem
+name:golem
 G:g
 M:1
 F:EMPTY_MIND
@@ -150,18 +150,18 @@ F:IM_ELEC | NO_FEAR | NO_CONF | NO_SLEEP
 F:NONLIVING
 D:Golem
 
-N:humanoid
+name:humanoid
 G:h
 M:1
 F:OPEN_DOOR | BASH_DOOR
 D:Hobbit/Elf/Dwarf
 
-N:hybrid
+name:hybrid
 G:H
 M:1
 D:Hybrid
 
-N:hydra
+name:hydra
 G:M
 M:4
 F:ANIMAL
@@ -170,34 +170,34 @@ F:BASH_DOOR
 F:FORCE_SLEEP | HURT_COLD
 D:Hydra
 
-N:icky thing
+name:icky thing
 G:i
 M:2
 F:RAND_50
 D:Icky Thing
 
-N:insect
+name:insect
 G:I
 M:7
 F:ANIMAL | WEIRD_MIND | MULTIPLY
 F:RAND_25 | RAND_50
 D:Insect
 
-N:jelly
+name:jelly
 G:j
 M:2
 F:EMPTY_MIND | STUPID
 F:NO_FEAR
 D:Jelly
 
-N:killer beetle
+name:killer beetle
 G:K
 M:7
 F:ANIMAL | WEIRD_MIND
 F:BASH_DOOR
 D:Killer Beetle
 
-N:kobold
+name:kobold
 G:k
 M:1
 F:EVIL
@@ -205,7 +205,7 @@ F:OPEN_DOOR | BASH_DOOR
 F:IM_POIS
 D:Kobold
 
-N:lich
+name:lich
 G:L
 M:1
 F:UNDEAD | EVIL | COLD_BLOOD | SMART
@@ -215,14 +215,14 @@ F:FORCE_SLEEP
 S:BRAIN_SMASH
 D:Lich
 
-N:louse
+name:louse
 G:l
 M:7
 F:ANIMAL | WEIRD_MIND | MULTIPLY
 F:RAND_50
 D:Louse
 
-N:lurker
+name:lurker
 G:.
 M:1
 F:COLD_BLOOD | EMPTY_MIND | INVISIBLE | UNAWARE
@@ -231,7 +231,7 @@ F:NO_FEAR | NO_CONF | NO_SLEEP
 F:CHAR_CLEAR | ATTR_CLEAR
 D:Lurker
 
-N:major demon
+name:major demon
 G:U
 M:1
 F:DEMON | EVIL
@@ -241,7 +241,7 @@ F:NO_CONF | NO_SLEEP
 F:FORCE_SLEEP
 D:Major Demon
 
-N:mimic
+name:mimic
 G:?
 M:1
 F:COLD_BLOOD | EMPTY_MIND | UNAWARE
@@ -251,61 +251,61 @@ F:FORCE_SLEEP | ATTR_CLEAR
 S:BLIND | CAUSE_2 | CONF | SCARE
 D:Mimic
 
-N:minor demon
+name:minor demon
 G:u
 M:1
 F:DEMON | EVIL
 F:IM_FIRE
 D:Minor Demon
 
-N:mold
+name:mold
 G:m
 M:2
 F:NEVER_MOVE
 F:IM_POIS | HURT_FIRE | NO_FEAR | NO_CONF | NO_SLEEP
 D:Mold
 
-N:mushroom
+name:mushroom
 G:,
 M:2
 F:EMPTY_MIND | STUPID
 F:HURT_FIRE | NO_FEAR | NO_CONF | NO_SLEEP
 D:Mushroom
 
-N:naga
+name:naga
 G:n
 M:1
 F:FEMALE | EVIL | HURT_COLD
 F:BASH_DOOR
 D:Naga
 
-N:ogre
+name:ogre
 G:O
 M:1
 F:GIANT | EVIL
 F:OPEN_DOOR | BASH_DOOR
 D:Ogre
 
-N:orc
+name:orc
 G:o
 M:1
 F:MALE | ORC | EVIL
 F:OPEN_DOOR | BASH_DOOR
 D:Orc
 
-N:person
+name:person
 G:p
 M:1
 F:BASH_DOOR
 D:Person/Human
 
-N:quadruped
+name:quadruped
 G:q
 M:4
 F:BASH_DOOR
 D:Quadruped
 
-N:quylthulg
+name:quylthulg
 G:Q
 M:2
 F:EMPTY_MIND | INVISIBLE
@@ -314,51 +314,51 @@ F:NO_FEAR | NO_CONF | NO_SLEEP
 F:FORCE_SLEEP
 D:Quylthulg
 
-N:reptile
+name:reptile
 G:R
 M:5
 F:ANIMAL | HURT_COLD
 D:Reptile/Amphibian
 
-N:rodent
+name:rodent
 G:r
 M:4
 F:ANIMAL
 D:Rodent
 
-N:skeleton
+name:skeleton
 G:s
 M:9
 F:UNDEAD | EVIL | COLD_BLOOD
 F:IM_COLD | IM_POIS | NO_FEAR | NO_CONF | NO_SLEEP | NO_STUN
 D:Skeleton
 
-N:snake
+name:snake
 G:J
 M:5
 F:ANIMAL | HURT_COLD
 F:BASH_DOOR
 D:Snake
 
-N:spider
+name:spider
 G:S
 M:7
 F:BASH_DOOR
 D:Spider/Scorpion/Tick
 
-N:townsfolk
+name:townsfolk
 G:t
 M:4
 D:Townsfolk
 
-N:troll
+name:troll
 G:T
 M:1
 F:TROLL | EVIL
 F:OPEN_DOOR | BASH_DOOR
 D:Troll
 
-N:vampire
+name:vampire
 G:V
 M:1
 F:UNDEAD | EVIL | COLD_BLOOD | REGENERATE
@@ -368,7 +368,7 @@ F:FORCE_SLEEP
 S:HOLD | SCARE
 D:Vampire
 
-N:vortex
+name:vortex
 G:v
 M:11
 F:EMPTY_MIND | POWERFUL
@@ -378,27 +378,27 @@ F:FORCE_SLEEP
 F:NONLIVING
 D:Vortex
 
-N:worm
+name:worm
 G:w
 M:1
 F:ANIMAL
 D:Worm/Worm Mass
 
-N:wraith
+name:wraith
 G:W
 M:1
 F:UNDEAD | EVIL | COLD_BLOOD
 F:HURT_LIGHT | IM_COLD | IM_POIS | NO_CONF | NO_SLEEP | NO_STUN
 D:Wight/Wraith
 
-N:xorn
+name:xorn
 G:X
 M:4
 F:COLD_BLOOD | EMPTY_MIND
 F:HURT_ROCK | IM_POIS | NO_CONF | NO_SLEEP
 D:Xorn/Xaren
 
-N:yeek
+name:yeek
 G:y
 M:1
 F:ANIMAL
@@ -406,7 +406,7 @@ F:OPEN_DOOR | BASH_DOOR
 F:IM_ACID
 D:Yeek
 
-N:yeti
+name:yeti
 G:Y
 M:1
 F:ANIMAL
@@ -414,13 +414,13 @@ F:OPEN_DOOR | BASH_DOOR
 F:IM_COLD
 D:Yeti
 
-N:zephyr hound
+name:zephyr hound
 G:Z
 M:3
 F:ANIMAL | GROUP_AI
 D:Zephyr Hound
 
-N:zombie
+name:zombie
 G:z
 M:10
 F:UNDEAD | EVIL | COLD_BLOOD
@@ -430,12 +430,12 @@ D:Zombie/Mummy
 
 ##### Special templates #####
 
-N:player
+name:player
 G:@
 M:1
 D:You
 
-N:Morgoth
+name:Morgoth
 G:P
 M:12
 D:Morgoth

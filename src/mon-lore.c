@@ -2060,8 +2060,8 @@ void write_lore_entries(ang_file *fff)
 		if (!race->name) continue;
 		if (!lore->sights) continue;
 
-		/* Output 'N' for "New/Number/Name" */
-		file_putf(fff, "N:%d:%s\n", i, race->name);
+		/* Output 'name' */
+		file_putf(fff, "name:%d:%s\n", i, race->name);
 
 		/* Output 'T' for template if we're remembering everything */
 		if (lore->all_known)
