@@ -1559,6 +1559,9 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 	if (p->is_dead && (l_ptr->deaths < MAX_SHORT))
 		l_ptr->deaths++;
 
+	/* Learn lore */
+	lore_update(m_ptr->race, l_ptr);
+
 	/* Assume we attacked */
 	return (TRUE);
 }
