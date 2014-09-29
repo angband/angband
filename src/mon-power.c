@@ -18,10 +18,13 @@
 
 #include "angband.h"
 #include "init.h"
+#include "mon-init.h"
 #include "mon-power.h"
 #include "mon-spell.h"
 #include "mon-blow-methods.h"
 #include "mon-blow-effects.h"
+#include "obj-tval.h"
+#include "obj-util.h"
 #include "prefs.h"
 #include "tables.h"
 
@@ -323,6 +326,148 @@ static long eval_hp_adjust(monster_race *r_ptr)
 
 }
 
+/**
+ * Write an amended monster.txt file
+ */
+void write_monster_entries(ang_file *fff)
+{
+	int i, n;
+
+	static const char *r_info_blow_method[] = {
+		#define RBM(x, c, s, miss, p, m, a, d) #x,
+		#include "list-blow-methods.h"
+		#undef RBM
+	};
+
+	static const char *r_info_blow_effect[] = {
+		#define RBE(x, p, e, d) #x,
+		#include "list-blow-effects.h"
+		#undef RBE
+	};
+
+	for (i = 0; i < z_info->r_max; i++) {
+		/* Current entry */
+		monster_race *race = &r_info[i];
+
+		/* Ignore non-existent monsters */
+		if (!race->name) continue;
+
+		/* Output 'N' for "New/Number/Name" */
+		file_putf(fff, "N:%d:%s\n", i, race->name);
+
+		/* Output 'plural' */
+		if (race->plural)
+			file_putf(fff, "plural:%s\n", race->plural);
+
+		/* Output 'T' for template if we're remembering everything */
+		file_putf(fff, "T:%s\n", race->base->name);
+
+		/* Output 'C' for colour (one line only) */
+		file_putf(fff, "C:%c\n", color_table[race->d_attr].index_char);
+
+		/* Output 'G' for "Graphics" (one line only) */
+		if (race->d_char != race->base->d_char)
+			file_putf(fff, "G:%c:\n", race->d_char);
+
+		/* Output 'I' for "Info" (one line only) */
+		file_putf(fff, "I:%d:%d:%d:%d:%d\n", race->speed, race->avg_hp,
+				  race->aaf, race->ac, race->sleep);
+
+		/* Output 'W' for "More Info" (one line only) */
+		file_putf(fff,"W:%d:%d:%d:%d:%d\n",race->level, race->rarity,
+				  race->power, race->scaled_power, race->mexp);
+
+		/* Output 'B' for "Blows" (up to four lines) */
+		for (n = 0; n < 4; n++) {
+			/* End of blows */
+			if (!race->blow[n].method) break;
+
+			/* Output blow method */
+			file_putf(fff, "B:%s", r_info_blow_method[race->blow[n].method]);
+			/* Output blow effect */
+			if (race->blow[n].effect) {
+				file_putf(fff, ":%s", r_info_blow_effect[race->blow[n].effect]);
+
+				/* Output blow damage if required */
+				if ((race->blow[n].d_dice) && (race->blow[n].d_side)) {
+					file_putf(fff, ":%dd%d", race->blow[n].d_dice,
+							  race->blow[n].d_side);
+				}
+			}
+
+			/* End line */
+			file_putf(fff, "\n");
+		}
+
+		/* Output 'F' for "Flags" */
+		write_flags(fff, "F:", race->flags, RF_SIZE, r_info_flags);
+
+		/* Output 'spell-freq' for spell frequency */
+		if (race->freq_innate)
+			file_putf(fff, "spell-freq:%d\n", 100/race->freq_spell);
+
+		/* Output 'S' for "Spell Flags" (multiple lines) */
+		write_flags(fff, "S:", race->spell_flags, RSF_SIZE, r_info_spell_flags);
+
+		/* Output 'drop', 'drop-artifact' */
+		if (race->drops) {
+			struct monster_drop *drop = race->drops;
+			struct object_kind *kind = drop->kind;
+			char name[120] = "";
+
+			while (drop) {
+				if (drop->artifact)
+					file_putf(fff, "drop-artifact:%s\n", drop->artifact->name);
+				else {
+					object_short_name(name, sizeof name, kind->name);
+					file_putf(fff, "drop:%s:%s:%d:%d:%d\n",
+							  tval_find_name(kind->tval), name,
+							  drop->percent_chance, drop->min, drop->max);
+				}
+				drop = drop->next;
+			}
+		}
+
+		/* Output 'friends' */
+		if (race->friends) {
+			struct monster_friends *f = race->friends;
+
+			while (f) {
+				file_putf(fff, "friends:%d:%dd%d:%s\n", f->percent_chance,
+						  f->number_dice, f->number_side, f->race->name);
+				f = f->next;
+			}
+		}
+
+		/* Output 'friends-base' */
+		if (race->friends_base) {
+			struct monster_friends_base *b = race->friends_base;
+
+			while (b) {
+				file_putf(fff, "friends-base:%d:%dd%d:%s\n", b->percent_chance,
+						  b->number_dice, b->number_side, b->base->name);
+				b = b->next;
+			}
+		}
+
+		/* Output 'mimic' */
+		if (race->mimic_kinds) {
+			struct monster_mimic *m = race->mimic_kinds;
+			struct object_kind *kind = m->kind;
+			char name[120] = "";
+
+			while (m) {
+				object_short_name(name, sizeof name, kind->name);
+				file_putf(fff, "mimic:%s:%s\n",
+						  tval_find_name(kind->tval), name);
+				m = m->next;
+			}
+		}
+
+		file_putf(fff, "\n");
+	}
+}
+
 errr eval_r_power(struct monster_race *racelist)
 {
 	int i, j, iteration;
@@ -609,6 +754,18 @@ for (iteration = 0; iteration < 3; iteration ++) {
 		}
 
 		file_close(mon_fp);
+	}
+
+	if (arg_power) {
+		char path[1024];
+
+		/* Write to the user directory */
+		path_build(path, sizeof(path), ANGBAND_DIR_USER, "new_monster.txt");
+
+		if (text_lines_to_file(path, write_monster_entries)) {
+			msg("Failed to create file %s.new", path);
+			return FALSE;
+		}
 	}
 
 	/* Free power array */

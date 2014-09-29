@@ -5,6 +5,7 @@
 
 extern int use_graphics;
 extern bool arg_wizard;
+extern bool arg_power;
 extern bool arg_rebalance;
 extern int arg_graphics;
 extern bool arg_graphics_nice;

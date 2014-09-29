@@ -32,9 +32,10 @@
 #include "ui-game.h"
 
 bool arg_wizard;			/* Command arg -- Request wizard mode */
+bool arg_power;				/* Command arg -- Generate monster power */
 bool arg_rebalance;			/* Command arg -- Rebalance monsters */
 int arg_graphics;			/* Command arg -- Request graphics mode */
-bool arg_graphics_nice;			/* Command arg -- Request nice graphics mode */
+bool arg_graphics_nice;		/* Command arg -- Request nice graphics mode */
 
 /*** Pref file saving code ***/
 

@@ -417,6 +417,10 @@ int main(int argc, char *argv[])
 				arg_wizard = TRUE;
 				break;
 
+			case 'p':
+				arg_power = TRUE;
+				break;
+
 			case 'r':
 				arg_rebalance = TRUE;
 				break;
