@@ -989,10 +989,6 @@ int textui_do_birth(void)
 			}
 
 			case BIRTH_SEX_CHOICE:
-			{
-				/* Fall through */
-			}
-
 			case BIRTH_CLASS_CHOICE:
 			case BIRTH_RACE_CHOICE:
 			case BIRTH_ROLLER_CHOICE:
@@ -1006,11 +1002,13 @@ int textui_do_birth(void)
 				if (current_stage > BIRTH_SEX_CHOICE) {
 					menu_refresh(&sex_menu, FALSE);
 					menu = &race_menu;
+					command = CMD_CHOOSE_RACE;
 				}
 				
 				if (current_stage > BIRTH_RACE_CHOICE) {
 					menu_refresh(&race_menu, FALSE);
 					menu = &class_menu;
+					command = CMD_CHOOSE_CLASS;
 				}
 
 				if (current_stage > BIRTH_CLASS_CHOICE) {
@@ -1023,7 +1021,7 @@ int textui_do_birth(void)
 				if (next == BIRTH_BACK)
 					next = current_stage - 1;
 
-				/* Make sure that the character gets reset before quickstarting */
+				/* Make sure the character gets reset before quickstarting */
 				if (next == BIRTH_QUICKSTART) 
 					next = BIRTH_RESET;
 
