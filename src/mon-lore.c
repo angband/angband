@@ -398,6 +398,8 @@ void lore_update(const monster_race *race, monster_lore *lore)
 {
 	int i;
 
+	if (!race || !lore) return;
+
 	/* Assume some "obvious" flags */
 	flags_set(lore->flags, RF_SIZE, RF_OBVIOUS_MASK, FLAG_END);
 

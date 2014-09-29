@@ -15,6 +15,7 @@
 
 #include "angband.h"
 #include "init.h"
+#include "mon-lore.h"
 #include "monster.h"
 #include "obj-tval.h"
 #include "player.h"
@@ -774,6 +775,51 @@ static struct monster_race TEST_DATA test_r_human = {
 	.cur_num = 0,
 
 	.drops = NULL,
+};
+
+static monster_lore TEST_DATA test_lore = {
+	.ridx = 0,
+	.sights = 1,
+	.deaths = 0,
+	.pkills = 0,
+	.tkills = 5,
+	.wake = 1,
+	.ignore = 4,
+	.drop_gold = 0,
+	.drop_item = 0,
+	.cast_innate = 0,
+	.cast_spell = 0,
+
+	.blows = {
+		{
+			.method = RBM_HIT,
+			.effect = RBE_HURT,
+			.d_dice = 3,
+			.d_side = 1,
+			.times_seen = 1,
+		},
+		_NOBLOW,
+		_NOBLOW,
+		_NOBLOW,
+	},
+
+	.flags = "\0\0\0\0\0\0\0\0\0\0",
+	.spell_flags = "\0\0\0\0\0\0\0\0\0\0\0",
+	.drops = NULL,
+	.friends = NULL,
+	.friends_base = NULL,
+	.mimic_kinds = NULL,
+	.all_known = FALSE,
+	.blow_known = {
+		TRUE,
+		FALSE,
+		FALSE,
+		FALSE,
+	},
+	.armour_known = FALSE,
+	.drop_known = FALSE,
+	.sleep_known = FALSE,
+	.spell_freq_known = FALSE
 };
 
 #undef _NOBLOW
