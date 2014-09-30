@@ -1133,7 +1133,7 @@ bool is_mimicking(struct monster *m_ptr)
  * arbitrary GF_ type
  */
 void update_smart_learn(struct monster *m, struct player *p, int flag,
-						int element)
+						int pflag, int element)
 {
 	bool element_ok = ((element >= 0) && (element < ELEM_MAX));
 
@@ -1163,6 +1163,14 @@ void update_smart_learn(struct monster *m, struct player *p, int flag,
 			of_on(m->known_pstate.flags, flag);
 		else
 			of_off(m->known_pstate.flags, flag);
+	}
+
+	/* Learn the pflag */
+	if (pflag) {
+		if (pf_has(player->state.pflags, pflag))
+			of_on(m->known_pstate.pflags, pflag);
+		else
+			of_off(m->known_pstate.pflags, pflag);
 	}
 
 	/* Learn the element */

@@ -179,7 +179,7 @@ bool player_inc_timed(struct player *p, int idx, int v, bool notify, bool check)
 			/* Code 1 is an object flag */
 			wieldeds_notice_flag(p, effect->fail);
 			if (mon) 
-				update_smart_learn(mon, player, effect->fail, -1);
+				update_smart_learn(mon, player, effect->fail, 0, -1);
 			if (player_of_has(p, effect->fail)) {
 				if (mon)
 				msg("You resist the effect!");

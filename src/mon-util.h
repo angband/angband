@@ -62,7 +62,7 @@ bool multiply_monster(const struct monster *m);
 void become_aware(struct monster *m);
 bool is_mimicking(struct monster *m);
 void update_smart_learn(struct monster *m, struct player *p, int flag,
-						int element);
+						int pflag, int element);
 void get_mon_name(char *output_name, size_t max, const monster_race *r_ptr, int num);
 
 #endif /* MONSTER_UTILITIES_H */

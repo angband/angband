@@ -76,7 +76,7 @@ static void melee_effect_elemental(melee_effect_handler_context_t *context, int 
 
 	if (pure_element) {
 		/* Learn about the player */
-		update_smart_learn(context->m_ptr, context->p, 0, type);
+		update_smart_learn(context->m_ptr, context->p, 0, 0, type);
 	}
 }
 
@@ -109,7 +109,7 @@ static void melee_effect_timed(melee_effect_handler_context_t *context, int type
 	}
 
 	/* Learn about the player */
-	update_smart_learn(context->m_ptr, context->p, of_flag, -1);
+	update_smart_learn(context->m_ptr, context->p, of_flag, 0, -1);
 }
 
 /**
@@ -141,7 +141,7 @@ static void melee_effect_experience(melee_effect_handler_context_t *context, int
 
 	/* Take damage */
 	take_hit(context->p, context->damage, context->ddesc);
-	update_smart_learn(context->m_ptr, context->p, OF_HOLD_LIFE, -1);
+	update_smart_learn(context->m_ptr, context->p, OF_HOLD_LIFE, 0, -1);
 
 	if (player_of_has(context->p, OF_HOLD_LIFE) && (randint0(100) < chance)) {
 		msg("You keep hold of your life force!");
@@ -203,7 +203,7 @@ static void melee_effect_handler_POISON(melee_effect_handler_context_t *context)
 		context->obvious = TRUE;
 
 	/* Learn about the player */
-	update_smart_learn(context->m_ptr, context->p, 0, ELEM_POIS);
+	update_smart_learn(context->m_ptr, context->p, 0, 0, ELEM_POIS);
 }
 
 /**
@@ -222,7 +222,7 @@ static void melee_effect_handler_DISENCHANT(melee_effect_handler_context_t *cont
 	}
 
 	/* Learn about the player */
-	update_smart_learn(context->m_ptr, context->p, 0, ELEM_DISEN);
+	update_smart_learn(context->m_ptr, context->p, 0, 0, ELEM_DISEN);
 }
 
 /**
@@ -741,7 +741,7 @@ static void melee_effect_handler_HALLU(melee_effect_handler_context_t *context)
 		context->obvious = TRUE;
 
 	/* Learn about the player */
-	update_smart_learn(context->m_ptr, context->p, 0, ELEM_CHAOS);
+	update_smart_learn(context->m_ptr, context->p, 0, 0, ELEM_CHAOS);
 }
 
 /**
