@@ -80,7 +80,7 @@ int test_w0(void *state) {
 
 int test_a0(void *state) {
 	enum parser_error r = parser_parse(state, "A:3:5");
-	eq(r, PARSE_ERROR_GENERIC);
+	eq(r, PARSE_ERROR_INVALID_ALLOCATION);
 	ok;
 }
 
