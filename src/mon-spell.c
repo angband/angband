@@ -161,8 +161,8 @@ void set_spells(bitflag *f, int types)
  * \param flags is the set of flags we're testing
  * \param r_ptr is the monster type we're operating on
  */
-void unset_spells(bitflag *spells, bitflag *flags, struct element_info *el,
-				  const monster_race *r_ptr)
+void unset_spells(bitflag *spells, bitflag *flags, bitflag *pflags,
+				  struct element_info *el, const monster_race *r_ptr)
 {
 	const struct mon_spell_info *info;
 	const struct monster_spell *spell;
@@ -185,11 +185,18 @@ void unset_spells(bitflag *spells, bitflag *flags, struct element_info *el,
 			if (randint0(100) < learn_chance)
 				rsf_off(spells, info->index);
 		} else {
-			/* Now others with resisted effects - currently all timed effects */
+			/* Now others with resisted effects */
 			while (effect) {
+				/* Timed effects */
 				if ((smart || !one_in_(3)) && (effect->index == EF_TIMED_INC) &&
 					of_has(flags, timed_protect_flag(effect->params[0])))
 					break;
+
+				/* Mana drain */
+				if ((smart || one_in_(2)) && (effect->index == EF_DRAIN_MANA) &&
+					pf_has(pflags, PF_NO_MANA))
+					break;
+
 				effect = effect->next;
 			}
 			if (effect)

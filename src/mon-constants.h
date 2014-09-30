@@ -52,12 +52,6 @@
 /*** Monster blow constants ***/
 #define MONSTER_BLOW_MAX 4
 
-/*
- * XXX Hack: player immunity to mana draining cannot be represented by 
- * m_ptr->known_pflags, so we need this.
- */
-#define SM_IMM_MANA		0x00000800
-
 /*** Monster flags ***/
 
 /*

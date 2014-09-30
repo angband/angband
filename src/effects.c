@@ -638,10 +638,7 @@ bool effect_handler_DRAIN_MANA(effect_handler_context_t *context)
 
 	if (!player->csp) {
 		msg("The draining fails.");
-		if (OPT(birth_ai_learn) && !(mon->smart & SM_IMM_MANA)) {
-			msg("%s notes that you have no mana!", m_name);
-			mon->smart |= SM_IMM_MANA;
-		}
+		update_smart_learn(mon, player, 0, PF_NO_MANA, -1);
 		return TRUE;
 	}
 

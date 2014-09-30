@@ -270,8 +270,6 @@ typedef struct monster
 
 	byte attr;  		/* attr last used for drawing monster */
 
-	u32b smart;			/* Field for "adult_ai_learn" */
-
 	player_state known_pstate; /* Known player state */
 } monster_type;
 
