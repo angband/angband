@@ -1701,11 +1701,19 @@ void calc_bonuses(object_type gear[], player_state *state, bool known_only)
 			state->el_info[i].res_level = player->race->el_info[i].res_level;
 	}
 
+	/* Base pflags */
+	pf_wipe(state->pflags);
+	pf_copy(state->pflags, player->race->pflags);
+	pf_union(state->pflags, player->class->pflags);
+
 	/*** Analyze player ***/
 
 	/* Extract the player flags */
 	player_flags(player, collect_f);
 
+	/* Add player specific pflags */
+	if (!player->csp)
+		pf_on(state->pflags, PF_NO_MANA);
 
 	/*** Analyze equipment ***/
 

@@ -81,7 +81,7 @@ E:potion:Berserk Strength:1:1
 E:sword:Dagger:1:1
 E:soft armour:Soft Leather Armour:1:1
 E:scroll:Word of Recall:1:1
-F:BRAVERY_30 | PSEUDO_ID_IMPROV
+F:BRAVERY_30 | PSEUDO_ID_IMPROV | NO_MANA
 T:Rookie
 T:Soldier
 T:Swordsman
