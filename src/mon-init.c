@@ -113,7 +113,7 @@ static enum parser_error parse_rs_name(struct parser *p) {
 	int index;
 	s->next = h;
 	if (grab_name("monster spell", name, r_info_spell_flags, N_ELEMENTS(r_info_spell_flags), &index))
-		return PARSE_ERROR_GENERIC;
+		return PARSE_ERROR_INVALID_SPELL_NAME;
 	s->index = index;
 	parser_setpriv(p, s);
 	return PARSE_ERROR_NONE;
@@ -155,12 +155,12 @@ static enum parser_error parse_rs_effect(struct parser *p) {
 		type = parser_getsym(p, "type");
 
 		if (type == NULL)
-			return PARSE_ERROR_INVALID_VALUE;
+			return PARSE_ERROR_UNRECOGNISED_PARAMETER;
 
 		/* Check for a value */
 		val = effect_param(type);
 		if (val < 0)
-			return PARSE_ERROR_INVALID_EFFECT;
+			return PARSE_ERROR_INVALID_VALUE;
 		else
 			new_effect->params[0] = val;
 	}
@@ -210,7 +210,7 @@ static enum parser_error parse_rs_dice(struct parser *p) {
 	dice = dice_new();
 
 	if (dice == NULL)
-		return PARSE_ERROR_INTERNAL;
+		return PARSE_ERROR_INVALID_DICE;
 
 	string = parser_getstr(p, "dice");
 
@@ -219,7 +219,7 @@ static enum parser_error parse_rs_dice(struct parser *p) {
 	}
 	else {
 		dice_free(dice);
-		return PARSE_ERROR_GENERIC;
+		return PARSE_ERROR_INVALID_DICE;
 	}
 
 	return PARSE_ERROR_NONE;
@@ -253,16 +253,16 @@ static enum parser_error parse_rs_expr(struct parser *p) {
 	expression = expression_new();
 
 	if (expression == NULL)
-		return PARSE_ERROR_INTERNAL;
+		return PARSE_ERROR_INVALID_EXPRESSION;
 
 	function = spell_value_base_by_name(base);
 	expression_set_base_value(expression, function);
 
 	if (expression_add_operations_string(expression, expr) < 0)
-		return PARSE_ERROR_GENERIC;
+		return PARSE_ERROR_BAD_EXPRESSION_STRING;
 
 	if (dice_bind_expression(effect->dice, name, expression) < 0)
-		return PARSE_ERROR_GENERIC;
+		return PARSE_ERROR_UNBOUND_EXPRESSION;
 
 	/* The dice object makes a deep copy of the expression, so we can free it */
 	expression_free(expression);
@@ -352,8 +352,7 @@ static enum parser_error parse_rb_m(struct parser *p) {
 
 	pain_idx = parser_getuint(p, "pain");
 	if (pain_idx >= z_info->mp_max)
-		/* XXX need a real error code for this */
-		return PARSE_ERROR_GENERIC;
+		return PARSE_ERROR_OUT_OF_BOUNDS;
 
 	rb->pain = &pain_messages[pain_idx];
 
@@ -717,7 +716,7 @@ static enum parser_error parse_r_drop_artifact(struct parser *p) {
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 	art = lookup_artifact_name(parser_getstr(p, "name"));
 	if (art < 0)
-		return PARSE_ERROR_GENERIC;
+		return PARSE_ERROR_NO_ARTIFACT_NAME;
 	a = &a_info[art];
 
 	d = mem_zalloc(sizeof *d);
@@ -787,7 +786,7 @@ static enum parser_error parse_r_mimic(struct parser *p) {
 
 	kind = lookup_kind(tval, sval);
 	if (!kind)
-		return PARSE_ERROR_GENERIC;
+		return PARSE_ERROR_NO_KIND_FOUND;
 	m = mem_zalloc(sizeof *m);
 	m->kind = kind;
 	m->next = r->mimic_kinds;
@@ -1125,7 +1124,7 @@ static enum parser_error parse_lore_drop_artifact(struct parser *p) {
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 	art = lookup_artifact_name(parser_getstr(p, "name"));
 	if (art < 0)
-		return PARSE_ERROR_GENERIC;
+		return PARSE_ERROR_NO_ARTIFACT_NAME;
 	a = &a_info[art];
 
 	d = mem_zalloc(sizeof *d);
@@ -1195,7 +1194,7 @@ static enum parser_error parse_lore_mimic(struct parser *p) {
 
 	kind = lookup_kind(tval, sval);
 	if (!kind)
-		return PARSE_ERROR_GENERIC;
+		return PARSE_ERROR_NO_KIND_FOUND;
 	m = mem_zalloc(sizeof *m);
 	m->kind = kind;
 	m->next = l->mimic_kinds;

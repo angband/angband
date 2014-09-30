@@ -662,7 +662,7 @@ static enum parser_error parse_prefs_f(struct parser *p)
 	else if (streq(lighting, "all"))
 		light_idx = LIGHTING_MAX;
 	else
-		return PARSE_ERROR_GENERIC; /* xxx fixme */
+		return PARSE_ERROR_INVALID_LIGHTING;
 
 	if (light_idx < LIGHTING_MAX)
 	{
@@ -878,7 +878,7 @@ static enum parser_error parse_prefs_m(struct parser *p)
 	msg_index = message_lookup_by_name(type);
 
 	if (msg_index < 0)
-		return PARSE_ERROR_GENERIC;
+		return PARSE_ERROR_INVALID_MESSAGE;
 
 	if (strlen(attr) > 1)
 		a = color_text_to_attr(attr);

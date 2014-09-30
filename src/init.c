@@ -184,12 +184,12 @@ errr grab_effect_data(struct parser *p, struct effect *effect)
 		type = parser_getsym(p, "type");
 
 		if (type == NULL)
-			return PARSE_ERROR_INVALID_VALUE;
+			return PARSE_ERROR_UNRECOGNISED_PARAMETER;
 
 		/* Check for a value */
 		val = effect_param(type);
 		if (val < 0)
-			return PARSE_ERROR_INVALID_EFFECT;
+			return PARSE_ERROR_INVALID_VALUE;
 		else
 			effect->params[0] = val;
 	}
@@ -725,7 +725,7 @@ static enum parser_error parse_k_a(struct parser *p) {
 
 	k->alloc_prob = parser_getint(p, "common");
 	if (sscanf(tmp, "%d to %d", &amin, &amax) != 2)
-		return PARSE_ERROR_GENERIC;
+		return PARSE_ERROR_INVALID_ALLOCATION;
 
 	k->alloc_min = amin;
 	k->alloc_max = amax;
@@ -854,7 +854,7 @@ static enum parser_error parse_k_dice(struct parser *p) {
 	dice = dice_new();
 
 	if (dice == NULL)
-		return PARSE_ERROR_INTERNAL;
+		return PARSE_ERROR_INVALID_DICE;
 
 	string = parser_getstr(p, "dice");
 
@@ -863,7 +863,7 @@ static enum parser_error parse_k_dice(struct parser *p) {
 	}
 	else {
 		dice_free(dice);
-		return PARSE_ERROR_GENERIC;
+		return PARSE_ERROR_INVALID_DICE;
 	}
 
 	return PARSE_ERROR_NONE;
@@ -897,16 +897,16 @@ static enum parser_error parse_k_expr(struct parser *p) {
 	expression = expression_new();
 
 	if (expression == NULL)
-		return PARSE_ERROR_INTERNAL;
+		return PARSE_ERROR_INVALID_EXPRESSION;
 
 	function = spell_value_base_by_name(base);
 	expression_set_base_value(expression, function);
 
 	if (expression_add_operations_string(expression, expr) < 0)
-		return PARSE_ERROR_GENERIC;
+		return PARSE_ERROR_BAD_EXPRESSION_STRING;
 
 	if (dice_bind_expression(effect->dice, name, expression) < 0)
-		return PARSE_ERROR_GENERIC;
+		return PARSE_ERROR_UNBOUND_EXPRESSION;
 
 	/* The dice object makes a deep copy of the expression, so we can free it */
 	expression_free(expression);
@@ -1154,7 +1154,7 @@ static enum parser_error parse_act_dice(struct parser *p) {
 	dice = dice_new();
 
 	if (dice == NULL)
-		return PARSE_ERROR_INTERNAL;
+		return PARSE_ERROR_INVALID_DICE;
 
 	string = parser_getstr(p, "dice");
 
@@ -1163,7 +1163,7 @@ static enum parser_error parse_act_dice(struct parser *p) {
 	}
 	else {
 		dice_free(dice);
-		return PARSE_ERROR_GENERIC;
+		return PARSE_ERROR_INVALID_DICE;
 	}
 
 	return PARSE_ERROR_NONE;
@@ -1190,16 +1190,16 @@ static enum parser_error parse_act_expr(struct parser *p) {
 	expression = expression_new();
 
 	if (expression == NULL)
-		return PARSE_ERROR_INTERNAL;
+		return PARSE_ERROR_INVALID_EXPRESSION;
 
 	function = spell_value_base_by_name(base);
 	expression_set_base_value(expression, function);
 
 	if (expression_add_operations_string(expression, expr) < 0)
-		return PARSE_ERROR_GENERIC;
+		return PARSE_ERROR_BAD_EXPRESSION_STRING;
 
 	if (dice_bind_expression(act->effect->dice, name, expression) < 0)
-		return PARSE_ERROR_GENERIC;
+		return PARSE_ERROR_UNBOUND_EXPRESSION;
 
 	/* The dice object makes a deep copy of the expression, so we can free it */
 	expression_free(expression);
@@ -1344,7 +1344,7 @@ static enum parser_error parse_a_g(struct parser *p) {
 	assert(k);
 
 	if (!kf_has(k->kind_flags, KF_INSTA_ART))
-		return PARSE_ERROR_GENERIC;
+		return PARSE_ERROR_NOT_SPECIAL_ARTIFACT;
 
 	k->d_char = glyph;
 	if (strlen(color) > 1)
@@ -1373,7 +1373,7 @@ static enum parser_error parse_a_a(struct parser *p) {
 
 	a->alloc_prob = parser_getint(p, "common");
 	if (sscanf(tmp, "%d to %d", &amin, &amax) != 2)
-		return PARSE_ERROR_GENERIC;
+		return PARSE_ERROR_INVALID_ALLOCATION;
 
 	if (amin > 255 || amax > 255 || amin < 0 || amax < 0)
 		return PARSE_ERROR_OUT_OF_BOUNDS;
@@ -1604,7 +1604,7 @@ static enum parser_error parse_names_n(struct parser *p) {
 	unsigned int section = parser_getint(p, "section");
 	struct names_parse *s = parser_priv(p);
 	if (s->section >= RANDNAME_NUM_TYPES)
-		return PARSE_ERROR_GENERIC;
+		return PARSE_ERROR_OUT_OF_BOUNDS;
 	s->section = section;
 	return PARSE_ERROR_NONE;
 }
@@ -1797,7 +1797,7 @@ static enum parser_error parse_trap_dice(struct parser *p) {
 	dice = dice_new();
 
 	if (dice == NULL)
-		return PARSE_ERROR_INTERNAL;
+		return PARSE_ERROR_INVALID_DICE;
 
 	string = parser_getstr(p, "dice");
 
@@ -1806,7 +1806,7 @@ static enum parser_error parse_trap_dice(struct parser *p) {
 	}
 	else {
 		dice_free(dice);
-		return PARSE_ERROR_GENERIC;
+		return PARSE_ERROR_INVALID_DICE;
 	}
 
 	return PARSE_ERROR_NONE;
@@ -1840,16 +1840,16 @@ static enum parser_error parse_trap_expr(struct parser *p) {
 	expression = expression_new();
 
 	if (expression == NULL)
-		return PARSE_ERROR_INTERNAL;
+		return PARSE_ERROR_INVALID_EXPRESSION;
 
 	function = spell_value_base_by_name(base);
 	expression_set_base_value(expression, function);
 
 	if (expression_add_operations_string(expression, expr) < 0)
-		return PARSE_ERROR_GENERIC;
+		return PARSE_ERROR_BAD_EXPRESSION_STRING;
 
 	if (dice_bind_expression(effect->dice, name, expression) < 0)
-		return PARSE_ERROR_GENERIC;
+		return PARSE_ERROR_UNBOUND_EXPRESSION;
 
 	/* The dice object makes a deep copy of the expression, so we can free it */
 	expression_free(expression);
@@ -2132,7 +2132,7 @@ static enum parser_error parse_e_a(struct parser *p) {
 
 	e->alloc_prob = parser_getint(p, "common");
 	if (sscanf(tmp, "%d to %d", &amin, &amax) != 2)
-		return PARSE_ERROR_GENERIC;
+		return PARSE_ERROR_INVALID_ALLOCATION;
 
 	if (amin > 255 || amax > 255 || amin < 0 || amax < 0)
 		return PARSE_ERROR_OUT_OF_BOUNDS;
@@ -2165,7 +2165,7 @@ static enum parser_error parse_e_type(struct parser *p) {
 	}
 
 	if (!found_one_kind)
-		return PARSE_ERROR_GENERIC;
+		return PARSE_ERROR_NO_KIND_FOR_EGO_TYPE;
 	return PARSE_ERROR_NONE;
 }
 
@@ -2186,7 +2186,7 @@ static enum parser_error parse_e_item(struct parser *p) {
 	e->poss_items = poss;
 
 	if (poss->kidx <= 0)
-		return PARSE_ERROR_GENERIC;
+		return PARSE_ERROR_INVALID_ITEM_NUMBER;
 	return PARSE_ERROR_NONE;
 }
 
@@ -2254,7 +2254,7 @@ static enum parser_error parse_e_dice(struct parser *p) {
 	dice = dice_new();
 
 	if (dice == NULL)
-		return PARSE_ERROR_INTERNAL;
+		return PARSE_ERROR_INVALID_DICE;
 
 	string = parser_getstr(p, "dice");
 
@@ -2263,7 +2263,7 @@ static enum parser_error parse_e_dice(struct parser *p) {
 	}
 	else {
 		dice_free(dice);
-		return PARSE_ERROR_GENERIC;
+		return PARSE_ERROR_INVALID_DICE;
 	}
 
 	return PARSE_ERROR_NONE;
@@ -2507,7 +2507,7 @@ static enum parser_error parse_body_slot(struct parser *p) {
 	slot = string_make(parser_getsym(p, "slot"));
 	n = lookup_flag(slots, slot);
 	if (!n)
-		return PARSE_ERROR_GENERIC;
+		return PARSE_ERROR_INVALID_FLAG;
 	b->slots[b->count].type = n;
 	b->slots[b->count++].name = string_make(parser_getsym(p, "name"));
 	mem_free(slot);
@@ -3042,7 +3042,7 @@ static enum parser_error parse_c_dice(struct parser *p) {
 	dice = dice_new();
 
 	if (dice == NULL)
-		return PARSE_ERROR_INTERNAL;
+		return PARSE_ERROR_INVALID_DICE;
 
 	string = parser_getstr(p, "dice");
 
@@ -3051,7 +3051,7 @@ static enum parser_error parse_c_dice(struct parser *p) {
 	}
 	else {
 		dice_free(dice);
-		return PARSE_ERROR_GENERIC;
+		return PARSE_ERROR_INVALID_DICE;
 	}
 
 	return PARSE_ERROR_NONE;
@@ -3087,16 +3087,16 @@ static enum parser_error parse_c_expr(struct parser *p) {
 	expression = expression_new();
 
 	if (expression == NULL)
-		return PARSE_ERROR_INTERNAL;
+		return PARSE_ERROR_INVALID_EXPRESSION;
 
 	function = spell_value_base_by_name(base);
 	expression_set_base_value(expression, function);
 
 	if (expression_add_operations_string(expression, expr) < 0)
-		return PARSE_ERROR_GENERIC;
+		return PARSE_ERROR_BAD_EXPRESSION_STRING;
 
 	if (dice_bind_expression(effect->dice, name, expression) < 0)
-		return PARSE_ERROR_GENERIC;
+		return PARSE_ERROR_UNBOUND_EXPRESSION;
 
 	/* The dice object makes a deep copy of the expression, so we can free it */
 	expression_free(expression);
@@ -3329,7 +3329,7 @@ static enum parser_error parse_flavor_flavor(struct parser *p) {
 		d_attr = color_text_to_attr(attr);
 
 	if (d_attr < 0)
-		return PARSE_ERROR_GENERIC;
+		return PARSE_ERROR_INVALID_COLOR;
 	f->d_attr = d_attr;
 
 	if (parser_hasval(p, "desc"))
@@ -3344,7 +3344,7 @@ static enum parser_error parse_flavor_kind(struct parser *p) {
 	flavor_glyph = parser_getchar(p, "glyph");
 	flavor_tval = tval_find_idx(parser_getsym(p, "tval"));
 	if (!flavor_tval)
-		return PARSE_ERROR_GENERIC;
+		return PARSE_ERROR_UNRECOGNISED_TVAL;
 
 	return PARSE_ERROR_NONE;
 }
