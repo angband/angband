@@ -1,6 +1,6 @@
-/*
- * File: src/mon-power.c
- * Purpose: functions for monster power evaluation
+/**
+   \file mon-power.c
+   \brief functions for monster power evaluation
  *
  * Copyright (c) 2000-11 Chris Carr, Chris Robertson, Andrew Doull
  *
@@ -28,7 +28,8 @@
 #include "prefs.h"
 #include "tables.h"
 
-long *power, *scaled_power;
+long *power, *scaled_power, *final_hp, *final_melee_dam, *final_spell_dam;
+int *highest_threat;
 s32b tot_mon_power;
 
 static long eval_blow_effect(int effect, int atk_dam, int rlev)
@@ -39,8 +40,7 @@ static long eval_blow_effect(int effect, int atk_dam, int rlev)
 		atk_dam *= 5;
 		atk_dam /= 4;
 		atk_dam += rlev;
-	}
-	else {
+	} else {
 		atk_dam += adjustment;
 	}
 
@@ -49,13 +49,13 @@ static long eval_blow_effect(int effect, int atk_dam, int rlev)
 
 static byte adj_energy(monster_race *r_ptr)
 {
-	unsigned i = r_ptr->speed + (rsf_has(r_ptr->spell_flags, RSF_HASTE) ? 5 : 0);
+	unsigned i = r_ptr->speed + (rsf_has(r_ptr->spell_flags,RSF_HASTE) ? 5 : 0);
 
-	/* fastest monster in the game is currently +30, but let's bounds check anyway. */
+	/* Fastest monster in the game is currently +30, but bounds check anyway */
 	return extract_energy[MIN(i, N_ELEMENTS(extract_energy) - 1)];
 }
 
-static long eval_max_dam(monster_race *r_ptr)
+static long eval_max_dam(monster_race *r_ptr, int ridx)
 {
 	int rlev, i;
 	int melee_dam = 0, atk_dam = 0, spell_dam = 0;
@@ -71,20 +71,18 @@ static long eval_max_dam(monster_race *r_ptr)
 	spell_dam *= 10;
 
 	/* Scale for frequency and availability of mana / ammo */
-	if (spell_dam)
-	{
+	if (spell_dam) {
 		int freq = r_ptr->freq_spell;
 
-			/* Hack -- always get 1 shot */
-			if (freq < 10) freq = 10;
+		/* Hack -- always get 1 shot */
+		if (freq < 10) freq = 10;
 
-			/* Adjust for frequency */
-			spell_dam = spell_dam * freq / 100;
+		/* Adjust for frequency */
+		spell_dam = spell_dam * freq / 100;
 	}
 
 	/* Check attacks */
-	for (i = 0; i < 4; i++)
-	{
+	for (i = 0; i < 4; i++) {
 		/* Extract the attack infomation */
 		int effect = r_ptr->blow[i].effect;
 		int method = r_ptr->blow[i].method;
@@ -99,125 +97,119 @@ static long eval_max_dam(monster_race *r_ptr)
 
 		switch (method)
 		{
-				/*stun definitely most dangerous*/
-				case RBM_PUNCH:
-				case RBM_KICK:
-				case RBM_BUTT:
-				case RBM_CRUSH:
-				{
-					atk_dam *= 4;
-					atk_dam /= 3;
-					break;
-				}
-				/*cut*/
-				case RBM_CLAW:
-				case RBM_BITE:
-				{
-					atk_dam *= 7;
-					atk_dam /= 5;
-					break;
-				}
-				default: 
-				{
-					break;
-				}
-			}
-
-			/* Normal melee attack */
-			if (!rf_has(r_ptr->flags, RF_NEVER_BLOW))
-			{
-				/* Keep a running total */
-				melee_dam += atk_dam;
-			}
-	}
-
-		/* 
-		 * Apply damage over 10 rounds. We assume that the monster has to make contact first.
-		 * Hack - speed has more impact on melee as has to stay in contact with player.
-		 * Hack - this is except for pass wall and kill wall monsters which can always get to the player.
-		 * Hack - use different values for huge monsters as they strike out to range 2.
-		 */
-		if (flags_test(r_ptr->flags, RF_SIZE, RF_KILL_WALL, RF_PASS_WALL, FLAG_END))
-				melee_dam *= 10;
-		else
+			/* Stun definitely most dangerous*/
+		case RBM_PUNCH:
+		case RBM_KICK:
+		case RBM_BUTT:
+		case RBM_CRUSH:
 		{
-			melee_dam = melee_dam * 3 + melee_dam * adj_energy(r_ptr) / 7;
+			atk_dam *= 4;
+			atk_dam /= 3;
+			break;
+		}
+		/* Cut */
+		case RBM_CLAW:
+		case RBM_BITE:
+		{
+			atk_dam *= 7;
+			atk_dam /= 5;
+			break;
+		}
+		default: 
+		{
+			break;
+		}
 		}
 
-		/*
-		 * Scale based on attack accuracy. We make a massive number of assumptions here and just use monster level.
-		 */
+		/* Normal melee attack */
+		if (!rf_has(r_ptr->flags, RF_NEVER_BLOW)) {
+			/* Keep a running total */
+			melee_dam += atk_dam;
+		}
+	}
+
+	/* Apply damage over 10 rounds. We assume that the monster has to make
+	 * contact first.
+	 * Hack - speed has more impact on melee as has to stay in contact with
+	 * player.
+	 * Hack - this is except for pass wall and kill wall monsters which can
+	 * always get to the player.
+	 * Hack - use different values for huge monsters as they strike out to
+	 * range 2. */
+		if (flags_test(r_ptr->flags, RF_SIZE, RF_KILL_WALL, RF_PASS_WALL,
+					   FLAG_END))
+			melee_dam *= 10;
+		else
+			melee_dam = melee_dam * 3 + melee_dam * adj_energy(r_ptr) / 7;
+
+		/* Scale based on attack accuracy. We make a massive number of
+		 * assumptions here and just use monster level. */
 		melee_dam = melee_dam * MIN(45 + rlev * 3, 95) / 100;
 
 		/* Hack -- Monsters that multiply ignore the following reductions */
-		if (!rf_has(r_ptr->flags, RF_MULTIPLY))
-		{
+		if (!rf_has(r_ptr->flags, RF_MULTIPLY)) {
 			/*Reduce damamge potential for monsters that move randomly */
-			if (flags_test(r_ptr->flags, RF_SIZE, RF_RAND_25, RF_RAND_50, FLAG_END))
-			{
+			if (flags_test(r_ptr->flags, RF_SIZE, RF_RAND_25, RF_RAND_50,
+						   FLAG_END)) {
 				int reduce = 100;
 
 				if (rf_has(r_ptr->flags, RF_RAND_25)) reduce -= 25;
 				if (rf_has(r_ptr->flags, RF_RAND_50)) reduce -= 50;
 
-				/*even moving randomly one in 8 times will hit the player*/
+				/* Even moving randomly one in 8 times will hit the player */
 				reduce += (100 - reduce) / 8;
 
-				/* adjust the melee damage*/
+				/* Adjust the melee damage */
 				melee_dam = (melee_dam * reduce) / 100;
 			}
 
-			/*monsters who can't move aren't nearly as much of a combat threat*/
-			if (rf_has(r_ptr->flags, RF_NEVER_MOVE))
-			{
+			/* Monsters who can't move are much less of a combat threat */
+			if (rf_has(r_ptr->flags, RF_NEVER_MOVE)) {
 				if (rsf_has(r_ptr->spell_flags, RSF_TELE_TO) ||
-				    rsf_has(r_ptr->spell_flags, RSF_BLINK))
-				{
+				    rsf_has(r_ptr->spell_flags, RSF_BLINK)) {
 					/* Scale for frequency */
-					melee_dam = melee_dam / 5 + 4 * melee_dam * r_ptr->freq_spell / 500;
+					melee_dam = melee_dam / 5 + 4 * melee_dam *
+						r_ptr->freq_spell / 500;
 
 					/* Incorporate spell failure chance */
-					if (!rf_has(r_ptr->flags, RF_STUPID)) melee_dam = melee_dam / 5 + 4 * melee_dam * MIN(75 + (rlev + 3) / 4, 100) / 500;
+					if (!rf_has(r_ptr->flags, RF_STUPID))
+						melee_dam = melee_dam / 5 + 4 * melee_dam *
+							MIN(75 + (rlev + 3) / 4, 100) / 500;
 				}
-				else if (rf_has(r_ptr->flags, RF_INVISIBLE)) melee_dam /= 3;
-				else melee_dam /= 5;
+				else if (rf_has(r_ptr->flags, RF_INVISIBLE))
+					melee_dam /= 3;
+				else
+					melee_dam /= 5;
 			}
 		}
 
 		/* But keep at a minimum */
 		if (melee_dam < 1) melee_dam = 1;
 
-	/*
-	 * Combine spell and melee damage
-	 */
+	/* Combine spell and melee damage */
 	dam = (spell_dam + melee_dam);
-	
-	r_ptr->highest_threat = dam;
-	r_ptr->spell_dam = spell_dam;	/*AMF:DEBUG*/
-	r_ptr->melee_dam = melee_dam;	/*AMF:DEBUG*/
 
-	/*
-	 * Adjust for speed.  Monster at speed 120 will do double damage,
-	 * monster at speed 100 will do half, etc.  Bonus for monsters who can haste self.
-	 */
+	highest_threat[ridx] = dam;
+	final_spell_dam[ridx] = spell_dam;
+	final_melee_dam[ridx] = melee_dam;
+
+	/* Adjust for speed - monster at speed 120 will do double damage, monster
+	 * at speed 100 will do half, etc.  Bonus for monsters who can haste self */
 	dam = (dam * adj_energy(r_ptr)) / 10;
 
-	/*
-	 * Adjust threat for speed -- multipliers are more threatening.
-	 */
+	/* Adjust threat for speed -- multipliers are more threatening. */
 	if (rf_has(r_ptr->flags, RF_MULTIPLY))
-		r_ptr->highest_threat = (r_ptr->highest_threat * adj_energy(r_ptr)) / 5;
+		highest_threat[ridx] = (highest_threat[ridx] * adj_energy(r_ptr)) / 5;
 
-	/*
-	 * Adjust threat for friends, this can be improved, but is probably good enough for now.
-	 */
+	/* Adjust threat for friends, this can be improved, but is probably good
+	 * enough for now. */
 	if (r_ptr->friends)
-		r_ptr->highest_threat *= 2;
+		highest_threat[ridx] *= 2;
 	else if (r_ptr->friends_base)
 		/* Friends base is weaker, because they are <= monster level */
-		r_ptr->highest_threat = r_ptr->highest_threat * 3 / 2;
+		highest_threat[ridx] = highest_threat[ridx] * 3 / 2;
 		
-	/*but deep in a minimum*/
+	/* But keep at a minimum */
 	if (dam < 1) dam  = 1;
 
 	/* We're done */
@@ -234,10 +226,11 @@ static long eval_hp_adjust(monster_race *r_ptr)
 	hp = r_ptr->avg_hp;
 
 	/* Never moves with no ranged attacks - high hit points count for less */
-	if (rf_has(r_ptr->flags, RF_NEVER_MOVE) && !(r_ptr->freq_innate || r_ptr->freq_spell))
-	{
+	if (rf_has(r_ptr->flags, RF_NEVER_MOVE) &&
+		!(r_ptr->freq_innate || r_ptr->freq_spell)) {
 		hp /= 2;
-		if (hp < 1) hp = 1;
+		if (hp < 1)
+			hp = 1;
 	}
 
 	/* Just assume healers have more staying power */
@@ -248,63 +241,77 @@ static long eval_hp_adjust(monster_race *r_ptr)
 	if (rf_has(r_ptr->flags, RF_PASS_WALL)) {hp *= 3; hp /= 2;}
 
 	/* Calculate hide bonus */
-	if (rf_has(r_ptr->flags, RF_EMPTY_MIND)) hide_bonus += 2;
-	else
-	{
+	if (rf_has(r_ptr->flags, RF_EMPTY_MIND))
+		hide_bonus += 2;
+	else {
 		if (rf_has(r_ptr->flags, RF_COLD_BLOOD)) hide_bonus += 1;
 		if (rf_has(r_ptr->flags, RF_WEIRD_MIND)) hide_bonus += 1;
 	}
 
 	/* Invisibility */
 	if (rf_has(r_ptr->flags, RF_INVISIBLE))
-	{
 		hp = (hp * (r_ptr->level + hide_bonus + 1)) / MAX(1, r_ptr->level);
-	}
 
 	/* Monsters that can teleport are a hassle, and can easily run away */
 	if (flags_test(r_ptr->spell_flags, RSF_SIZE, RSF_TPORT, RSF_TELE_AWAY,
-	    RSF_TELE_LEVEL, FLAG_END))
+				   RSF_TELE_LEVEL, FLAG_END))
 		hp = (hp * 6) / 5;
 
-	/*
- 	 * Monsters that multiply are tougher to kill
-	 */
+	/* Monsters that multiply are tougher to kill */
 	if (rf_has(r_ptr->flags, RF_MULTIPLY)) hp *= 2;
 
 	/* Monsters with resistances are harder to kill.
-	   Therefore effective slays / brands against them are worth more. */
-	if (rf_has(r_ptr->flags, RF_IM_ACID)) resists += 2;
-	if (rf_has(r_ptr->flags, RF_IM_FIRE)) resists += 2;
-	if (rf_has(r_ptr->flags, RF_IM_COLD)) resists += 2;
-	if (rf_has(r_ptr->flags, RF_IM_ELEC)) resists += 2;
-	if (rf_has(r_ptr->flags, RF_IM_POIS)) resists += 2;
+	 * Therefore effective slays / brands against them are worth more. */
+	if (rf_has(r_ptr->flags, RF_IM_ACID))
+		resists += 2;
+	if (rf_has(r_ptr->flags, RF_IM_FIRE))
+		resists += 2;
+	if (rf_has(r_ptr->flags, RF_IM_COLD))
+		resists += 2;
+	if (rf_has(r_ptr->flags, RF_IM_ELEC))
+		resists += 2;
+	if (rf_has(r_ptr->flags, RF_IM_POIS))
+		resists += 2;
 
 	/* Bonus for multiple basic resists and weapon resists */
-	if (resists >= 12) resists *= 6;
-	else if (resists >= 10) resists *= 4;
-	else if (resists >= 8) resists *= 3;
-	else if (resists >= 6) resists *= 2;
+	if (resists >= 12)
+		resists *= 6;
+	else if (resists >= 10)
+		resists *= 4;
+	else if (resists >= 8)
+		resists *= 3;
+	else if (resists >= 6)
+		resists *= 2;
 
 	/* If quite resistant, reduce resists by defense holes */
-	if (resists >= 6)
-	{
-		if (rf_has(r_ptr->flags, RF_HURT_ROCK)) resists -= 1;
-		if (rf_has(r_ptr->flags, RF_HURT_LIGHT)) resists -= 1;
-		if (!rf_has(r_ptr->flags, RF_NO_SLEEP)) resists -= 3;
-		if (!rf_has(r_ptr->flags, RF_NO_FEAR)) resists -= 2;
-		if (!rf_has(r_ptr->flags, RF_NO_CONF)) resists -= 2;
-		if (!rf_has(r_ptr->flags, RF_NO_STUN)) resists -= 1;
+	if (resists >= 6) {
+		if (rf_has(r_ptr->flags, RF_HURT_ROCK))
+			resists -= 1;
+		if (rf_has(r_ptr->flags, RF_HURT_LIGHT))
+			resists -= 1;
+		if (!rf_has(r_ptr->flags, RF_NO_SLEEP))
+			resists -= 3;
+		if (!rf_has(r_ptr->flags, RF_NO_FEAR))
+			resists -= 2;
+		if (!rf_has(r_ptr->flags, RF_NO_CONF))
+			resists -= 2;
+		if (!rf_has(r_ptr->flags, RF_NO_STUN))
+			resists -= 1;
 
-		if (resists < 5) resists = 5;
+		if (resists < 5)
+			resists = 5;
 	}
 
 	/* If quite resistant, bonus for high resists */
-	if (resists >= 3)
-	{
-		if (rf_has(r_ptr->flags, RF_IM_WATER)) resists += 1;
-		if (rf_has(r_ptr->flags, RF_IM_NETHER)) resists += 1;
-		if (rf_has(r_ptr->flags, RF_IM_NEXUS)) resists += 1;
-		if (rf_has(r_ptr->flags, RF_IM_DISEN)) resists += 1;
+	if (resists >= 3) {
+		if (rf_has(r_ptr->flags, RF_IM_WATER))
+			resists += 1;
+		if (rf_has(r_ptr->flags, RF_IM_NETHER))
+			resists += 1;
+		if (rf_has(r_ptr->flags, RF_IM_NEXUS))
+			resists += 1;
+		if (rf_has(r_ptr->flags, RF_IM_DISEN))
+			resists += 1;
 	}
 
 	/* Scale resists */
@@ -312,19 +319,15 @@ static long eval_hp_adjust(monster_race *r_ptr)
 
 	/* Monster resistances */
 	if (resists < (r_ptr->ac + resists) / 3)
-	{
 		hp += (hp * resists) / (150 + r_ptr->level); 	
-	}
 	else
-	{
 		hp += (hp * (r_ptr->ac + resists) / 3) / (150 + r_ptr->level); 			
-	}
 
-	/*boundry control*/
-	if (hp < 1) hp = 1;
+	/* Boundary control */
+	if (hp < 1)
+		hp = 1;
 
 	return (hp);
-
 }
 
 /**
@@ -359,6 +362,10 @@ void write_monster_entries(ang_file *fff)
 	}
 }
 
+/**
+ * Evaluate the whole monster list and write a new one.  power and scaled_power
+ * are always adjusted, level, rarity and mexp only if requested.
+ */
 errr eval_r_power(struct monster_race *racelist)
 {
 	int i, j, iteration;
@@ -370,9 +377,13 @@ errr eval_r_power(struct monster_race *racelist)
 	char buf[1024];
 	bool dump = FALSE;
 
-	/* Allocate space for power */
-	power = C_ZNEW(z_info->r_max, long);
-	scaled_power = C_ZNEW(z_info->r_max, long);
+	/* Allocate arrays */
+	power = mem_zalloc(z_info->r_max * sizeof(long));
+	scaled_power = mem_zalloc(z_info->r_max * sizeof(long));
+	final_hp = mem_zalloc(z_info->r_max * sizeof(long));
+	final_melee_dam = mem_zalloc(z_info->r_max * sizeof(long));
+	final_spell_dam = mem_zalloc(z_info->r_max * sizeof(long));
+	highest_threat = mem_zalloc(z_info->r_max * sizeof(int));
 
 	for (iteration = 0; iteration < 3; iteration ++) {
 
@@ -396,7 +407,7 @@ errr eval_r_power(struct monster_race *racelist)
 			lvl = r_ptr->level;
 
 			/* Maximum damage this monster can do in 10 game turns */
-			dam = eval_max_dam(r_ptr);
+			dam = eval_max_dam(r_ptr, i);
 
 			/* Adjust hit points based on resistances */
 			hp = eval_hp_adjust(r_ptr);
@@ -408,7 +419,7 @@ errr eval_r_power(struct monster_race *racelist)
 				/* Compute depths of non-unique monsters */
 				if (!rf_has(r_ptr->flags, RF_UNIQUE)) {
 					long mexp = (hp * dam) / 25;
-					long threat = r_ptr->highest_threat;
+					long threat = highest_threat[i];
 
 					/* Compute level algorithmically */
 					for (j = 1; (mexp > j + 4) || (threat > j + 5);
@@ -457,25 +468,26 @@ errr eval_r_power(struct monster_race *racelist)
 				}
 			}
 
-			/* If we're rebalancing, this is a nop, if not, we restore the orig value */
+			/* If we're rebalancing, this is a nop, if not, we restore the
+			 * orig value */
 			lvl = r_ptr->level;
 			if ((lvl) && (r_ptr->mexp < 1L))
 				r_ptr->mexp = 1L;
 
 			/*
 			 * Hack - We have to use an adjustment factor to prevent overflow.
-			 * Try to scale evenly across all levels instead of scaling by level.
+			 * Try to scale evenly across all levels instead of scaling by level
 			 */
 			hp /= 2;
 			if(hp < 1)
 				hp = 1;
-			r_ptr->hp = hp;		/*AMF:DEBUG*/
+			final_hp[i] = hp;
 
 			/* Define the power rating */
 			power[i] = hp * dam;
 
 			/* Adjust for group monsters, using somewhat arbitrary 
-			   multipliers for now */
+			 * multipliers for now */
 			if (!rf_has(r_ptr->flags, RF_UNIQUE)) {
 				if (r_ptr->friends)
 					power[i] *= 3;
@@ -487,15 +499,16 @@ errr eval_r_power(struct monster_race *racelist)
 
 
 			/* Adjust for multiplying monsters. This is modified by the speed,
-			 * as fast multipliers are much worse than slow ones. We also adjust for
-			 * ability to bypass walls or doors.
-			 */
+			 * as fast multipliers are much worse than slow ones. We also
+			 * adjust for ability to bypass walls or doors. */
 			if (rf_has(r_ptr->flags, RF_MULTIPLY)) {
 				int adj_power;
 
-				if (flags_test(r_ptr->flags, RF_SIZE, RF_KILL_WALL, RF_PASS_WALL, FLAG_END))
+				if (flags_test(r_ptr->flags, RF_SIZE, RF_KILL_WALL,
+							   RF_PASS_WALL, FLAG_END))
 					adj_power = power[i] * adj_energy(r_ptr);
-				else if (flags_test(r_ptr->flags, RF_SIZE, RF_OPEN_DOOR, RF_BASH_DOOR, FLAG_END))
+				else if (flags_test(r_ptr->flags, RF_SIZE, RF_OPEN_DOOR,
+									RF_BASH_DOOR, FLAG_END))
 					adj_power = power[i] * adj_energy(r_ptr) * 3 / 2;
 				else
 					adj_power = power[i] * adj_energy(r_ptr) / 2;
@@ -503,18 +516,16 @@ errr eval_r_power(struct monster_race *racelist)
 				power[i] = MAX(power[i], adj_power);
 			}
 
-			/*
-			 * Update the running totals - these will be used as divisors later
-			 * Total HP / dam / count for everything up to the current level
-			 */
+			/* Update the running totals - these will be used as divisors later
+			 * Total HP / dam / count for everything up to the current level */
 			for (j = lvl; j < (lvl == 0 ? lvl + 1: MAX_DEPTH); j++)	{
 				int count = 10;
 
 				/* Uniques don't count towards monster power on the level. */
 				if (rf_has(r_ptr->flags, RF_UNIQUE)) continue;
 
-				/* Specifically placed monsters don't count towards monster power
-				 * on the level. */
+				/* Specifically placed monsters don't count towards monster
+				 * power on the level. */
 				if (!(r_ptr->rarity)) continue;
 
 				/* Hack -- provide adjustment factor to prevent overflow */
@@ -533,10 +544,8 @@ errr eval_r_power(struct monster_race *racelist)
 					dam /= 10;
 				}
 
-				/*
-				 * Hack - if it's a group monster or multiplying monster, add several to the count
-				 * so that the averages don't get thrown off
-				 */
+				/* Hack - if it's a group monster or multiplying monster, add
+				 * several to the count so the averages don't get thrown off */
 
 				if (r_ptr->friends || r_ptr->friends_base)
 					count = 15;
@@ -544,9 +553,11 @@ errr eval_r_power(struct monster_race *racelist)
 				if (rf_has(r_ptr->flags, RF_MULTIPLY)) {
 					int adj_energy_amt;
 
-					if (flags_test(r_ptr->flags, RF_SIZE, RF_KILL_WALL, RF_PASS_WALL, FLAG_END))
+					if (flags_test(r_ptr->flags, RF_SIZE, RF_KILL_WALL,
+								   RF_PASS_WALL, FLAG_END))
 						adj_energy_amt = adj_energy(r_ptr);
-					else if (flags_test(r_ptr->flags, RF_SIZE, RF_OPEN_DOOR, RF_BASH_DOOR, FLAG_END))
+					else if (flags_test(r_ptr->flags, RF_SIZE, RF_OPEN_DOOR,
+										RF_BASH_DOOR, FLAG_END))
 						adj_energy_amt = adj_energy(r_ptr) * 3 / 2;
 					else
 						adj_energy_amt = adj_energy(r_ptr) / 2;
@@ -554,8 +565,8 @@ errr eval_r_power(struct monster_race *racelist)
 					count = MAX(1, adj_energy_amt) * count;
 				}
 
-				/* Very rare monsters count less towards total monster power on the
-				 * level. */
+				/* Very rare monsters count less towards total monster power
+				 * on the level. */
 				if (r_ptr->rarity > count) {
 					hp = hp * count / r_ptr->rarity;
 					dam = dam * count / r_ptr->rarity;
@@ -624,17 +635,15 @@ errr eval_r_power(struct monster_race *racelist)
 	for (i = 0; i < z_info->r_max; i++)
 		tot_mon_power += r_info[i].scaled_power;
 
-/*	msg("Tot mon power is %d", tot_mon_power); */
-
 	if (dump) {
-		/* dump the power details */
+		/* Dump the power details */
 		path_build(buf, sizeof(buf), ANGBAND_DIR_USER, "mon_power.txt");
 		mon_fp = file_open(buf, MODE_WRITE, FTYPE_TEXT);
 
 		file_putf(mon_fp, "ridx|level|rarity|d_char|name|pwr|scaled|melee|spell|hp\n");
 
 		for (i = 0; i < z_info->r_max; i++) {
-			char mbstr[MB_LEN_MAX+1] = {0};
+			char mbstr[MB_LEN_MAX + 1] = { 0 };
 			r_ptr = &r_info[i];
 
 			/* Don't print anything for nonexistent monsters */
@@ -643,8 +652,8 @@ errr eval_r_power(struct monster_race *racelist)
 			wctomb(mbstr, r_ptr->d_char);
 			file_putf(mon_fp, "%d|%d|%d|%s|%s|%d|%d|%d|%d|%d\n", r_ptr->ridx,
 				r_ptr->level, r_ptr->rarity, mbstr, r_ptr->name,
-				r_ptr->power, r_ptr->scaled_power, r_ptr->melee_dam,
-				r_ptr->spell_dam, r_ptr->hp);
+				power[i], scaled_power[i], final_melee_dam[i],
+				final_spell_dam[i], final_hp[i]);
 		}
 
 		file_close(mon_fp);
@@ -659,8 +668,12 @@ errr eval_r_power(struct monster_race *racelist)
 	}
 
 	/* Free power arrays */
-	FREE(scaled_power);
-	FREE(power);
+	mem_free(highest_threat);
+	mem_free(final_spell_dam);
+	mem_free(final_melee_dam);
+	mem_free(final_hp);
+	mem_free(scaled_power);
+	mem_free(power);
 
 	/* Success */
 	return 0;

@@ -746,7 +746,6 @@ static struct monster_race TEST_DATA test_r_human = {
 	.mexp = 50,
 	.power = 1,
 	.scaled_power = 1,
-	.highest_threat = 5,
 	.freq_innate = 0,
 	.freq_spell = 0,
 

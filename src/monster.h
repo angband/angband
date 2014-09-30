@@ -181,7 +181,7 @@ typedef struct monster_race
 	
 	int avg_hp;				/* Average HP for this creature */
 
-	int ac;				/* Armour Class */
+	int ac;					/* Armour Class */
 
 	int sleep;				/* Inactive counter (base) */
 	int aaf;				/* Area affect radius (1-100) */
@@ -192,16 +192,8 @@ typedef struct monster_race
 	long power;				/* Monster power */
 	long scaled_power;		/* Monster power scaled by level */
 
-	int highest_threat;	/* Monster highest threat */
-	
-	/*AMF:DEBUG*/			/**/
-	long melee_dam;			/**/
-	long spell_dam;			/**/
-	long hp;				/**/
-	/*END AMF:DEBUG*/		/**/
-
 	int freq_innate;		/* Innate spell frequency */
-	int freq_spell;		/* Other spell frequency */
+	int freq_spell;			/* Other spell frequency */
 
 	bitflag flags[RF_SIZE];         /* Flags */
 	bitflag spell_flags[RSF_SIZE];  /* Spell flags */
@@ -209,7 +201,7 @@ typedef struct monster_race
 	struct monster_blow blow[MONSTER_BLOW_MAX]; /* Up to four blows per round */
 
 	int level;				/* Level of creature */
-	int rarity;			/* Rarity of creature */
+	int rarity;				/* Rarity of creature */
 
 	byte d_attr;			/* Default monster attribute */
 	wchar_t d_char;			/* Default monster character */
