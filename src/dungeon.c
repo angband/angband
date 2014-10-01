@@ -564,7 +564,7 @@ static void process_world(struct chunk *c)
 	/*** Process the monsters ***/
 
 	/* Check for creature generation */
-	if (one_in_(MAX_M_ALLOC_CHANCE))
+	if (one_in_(z_info->alloc_monster_chance))
 	{
 		/* Make a new monster */
 		(void)pick_and_place_distant_monster(cave, loc(player->px, player->py), MAX_SIGHT + 5, TRUE, player->depth);

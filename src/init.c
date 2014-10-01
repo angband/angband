@@ -419,7 +419,7 @@ void create_needed_dirs(void)
 }
 
 /* Parsing functions for constants.txt */
-static enum parser_error parse_z(struct parser *p) {
+static enum parser_error parse_z_level_max(struct parser *p) {
 	struct angband_constants *z;
 	const char *label;
 	int value;
@@ -443,12 +443,41 @@ static enum parser_error parse_z(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_z_mon_gen(struct parser *p) {
+	struct angband_constants *z;
+	const char *label;
+	int value;
+
+	z = parser_priv(p);
+	label = parser_getsym(p, "label");
+	value = parser_getint(p, "value");
+
+	if (value < 0)
+		return PARSE_ERROR_INVALID_VALUE;
+
+	if (streq(label, "chance"))
+		z->alloc_monster_chance = value;
+	else if (streq(label, "level-min"))
+		z->level_monster_min = value;
+	else if (streq(label, "town-day"))
+		z->town_monsters_day = value;
+	else if (streq(label, "town-night"))
+		z->town_monsters_night = value;
+	else if (streq(label, "repro-max"))
+		z->repro_monster_max = value;
+	else
+		return PARSE_ERROR_UNDEFINED_DIRECTIVE;
+
+	return PARSE_ERROR_NONE;
+}
+
 struct parser *init_parse_z(void) {
 	struct angband_constants *z = mem_zalloc(sizeof *z);
 	struct parser *p = parser_new();
 
 	parser_setpriv(p, z);
-	parser_reg(p, "level-max sym label int value", parse_z);
+	parser_reg(p, "level-max sym label int value", parse_z_level_max);
+	parser_reg(p, "mon-gen sym label int value", parse_z_mon_gen);
 	return p;
 }
 

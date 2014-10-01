@@ -41,6 +41,13 @@ struct angband_constants
 	u16b level_object_max;	/**< Maximum number of objects on a given level */
 	u16b level_monster_max;	/**< Maximum number of monsters on a given level */
 	u16b level_trap_max;	/**< Maximum number of traps on a given level */
+
+	/* Monster generation constants, read from constants.txt */
+	u16b alloc_monster_chance;	/**< 1/per-turn-chance of generation */
+	u16b level_monster_min;		/**< Minimum number generated */
+	u16b town_monsters_day;		/**< Townsfolk generated - day */
+	u16b town_monsters_night;	/**< Townsfolk generated  - night */
+	u16b repro_monster_max;		/**< Maximum breeders on a level */
 };
 
 struct init_module {

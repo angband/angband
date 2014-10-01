@@ -18,6 +18,7 @@
 
 #include "angband.h"
 #include "cave.h"
+#include "init.h"
 #include "monster.h"
 #include "mon-blow-methods.h"
 #include "mon-blow-effects.h"
@@ -1669,7 +1670,7 @@ static bool process_monster_multiply(struct chunk *c, struct monster *m_ptr)
 
 	/* Attempt to "mutiply" (all monsters are allowed an attempt for lore
 	 * purposes, even non-breeders) */
-	if (num_repro >= MAX_REPRO) return FALSE;
+	if (num_repro >= z_info->repro_monster_max) return FALSE;
 
 	/* Count the adjacent monsters */
 	for (y = oy - 1; y <= m_ptr->fy + 1; y++)

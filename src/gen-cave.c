@@ -621,7 +621,7 @@ struct chunk *classic_gen(struct player *p) {
     new_player_spot(c, p);
 
     /* Pick a base number of monsters */
-    i = MIN_M_ALLOC_LEVEL + randint1(8) + k;
+    i = z_info->level_monster_min + randint1(8) + k;
 
     /* Put some monsters in the dungeon */
     for (; i > 0; i--)
@@ -868,7 +868,7 @@ struct chunk *labyrinth_gen(struct player *p) {
     alloc_objects(c, SET_BOTH, TYP_TRAP, randint1(k), c->depth, 0);
 
     /* Put some monsters in the dungeon */
-    for (i = MIN_M_ALLOC_LEVEL + randint1(8) + k; i > 0; i--)
+    for (i = z_info->level_monster_min + randint1(8) + k; i > 0; i--)
 		pick_and_place_distant_monster(c, loc(p->px, p->py), 0, TRUE, c->depth);
 
     /* Put some objects/gold in the dungeon */
@@ -1518,7 +1518,8 @@ struct chunk *town_gen(struct player *p)
 {
     int i, y, x = 0;
     bool daytime = turn % (10 * TOWN_DAWN) < (10 * TOWN_DUSK);
-    int residents = daytime ? MIN_M_ALLOC_TD : MIN_M_ALLOC_TN;
+    int residents = daytime ? z_info->town_monsters_day :
+		z_info->town_monsters_night;
 	struct chunk *c;
 
 	c = chunk_find_name("Town");
@@ -1797,7 +1798,7 @@ struct chunk *modified_gen(struct player *p) {
     new_player_spot(c, p);
 
     /* Pick a base number of monsters */
-    i = MIN_M_ALLOC_LEVEL + randint1(8) + k;
+    i = z_info->level_monster_min + randint1(8) + k;
 
 	/* Moria levels have a high proportion of cave dwellers. */
 	if (moria_level) {
@@ -2087,7 +2088,7 @@ struct chunk *lair_gen(struct player *p) {
 		build_streamer(normal, FEAT_QUARTZ, dun->profile->str.qc);
 
     /* Pick a larger number of monsters for the lair */
-    i = (MIN_M_ALLOC_LEVEL + randint1(6) + k);
+    i = (z_info->level_monster_min + randint1(6) + k);
 
 	/* Find appropriate monsters */
 	while (TRUE) {
@@ -2230,7 +2231,7 @@ struct chunk *gauntlet_gen(struct player *p) {
 	new_player_spot(arrival, p);
 
 	/* Pick some monsters for the arrival cavern */
-	i = MIN_M_ALLOC_LEVEL + randint1(4) + k;
+	i = z_info->level_monster_min + randint1(4) + k;
 
 	/* Place the monsters */
 	for (; i > 0; i--)
@@ -2238,7 +2239,7 @@ struct chunk *gauntlet_gen(struct player *p) {
 									   arrival->depth);
 
 	/* Pick some of monsters for the departure cavern */
-	i = MIN_M_ALLOC_LEVEL + randint1(4) + k;
+	i = z_info->level_monster_min + randint1(4) + k;
 
 	/* Place the monsters */
 	for (; i > 0; i--)
@@ -2246,7 +2247,7 @@ struct chunk *gauntlet_gen(struct player *p) {
 									   departure->depth);
 
 	/* Pick a larger number of monsters for the gauntlet */
-	i = (MIN_M_ALLOC_LEVEL + randint1(6) + k);
+	i = (z_info->level_monster_min + randint1(6) + k);
 
 	/* Find appropriate monsters */
 	while (TRUE) {
