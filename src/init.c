@@ -60,10 +60,10 @@
 #include "store.h"
 #include "trap.h"
 
-/*
- * Structure (not array) of size limits
+/**
+ * Structure (not array) of game constants
  */
-maxima *z_info;
+struct angband_constants *z_info;
 
 /*
  * Hack -- The special Angband "System Suffix"
@@ -418,9 +418,9 @@ void create_needed_dirs(void)
 	if (!dir_create(dirpath)) quit_fmt("Cannot create '%s'", dirpath);
 }
 
-/* Parsing functions for limits.txt */
+/* Parsing functions for constants.txt */
 static enum parser_error parse_z(struct parser *p) {
-	maxima *z;
+	struct angband_constants *z;
 	const char *label;
 	int value;
 
@@ -431,28 +431,12 @@ static enum parser_error parse_z(struct parser *p) {
 	if (value < 0)
 		return PARSE_ERROR_INVALID_VALUE;
 
-	if (streq(label, "F"))
-		z->f_max = value;
-	else if (streq(label, "K"))
-		z->k_max = value;
-	else if (streq(label, "A"))
-		z->a_max = value;
-	else if (streq(label, "E"))
-		z->e_max = value;
-	else if (streq(label, "R"))
-		z->r_max = value;
-	else if (streq(label, "P"))
-		z->mp_max = value;
-	else if (streq(label, "S"))
-		z->s_max = value;
-	else if (streq(label, "O"))
+	if (streq(label, "O"))
 		z->o_max = value;
 	else if (streq(label, "M"))
 		z->m_max = value;
 	else if (streq(label, "N"))
 		z->l_max = value;
-	else if (streq(label, "I"))
-		z->pit_max = value;
 	else
 		return PARSE_ERROR_UNDEFINED_DIRECTIVE;
 
@@ -460,7 +444,7 @@ static enum parser_error parse_z(struct parser *p) {
 }
 
 struct parser *init_parse_z(void) {
-	struct maxima *z = mem_zalloc(sizeof *z);
+	struct angband_constants *z = mem_zalloc(sizeof *z);
 	struct parser *p = parser_new();
 
 	parser_setpriv(p, z);
@@ -469,7 +453,7 @@ struct parser *init_parse_z(void) {
 }
 
 static errr run_parse_z(struct parser *p) {
-	return parse_file(p, "limits");
+	return parse_file(p, "constants");
 }
 
 static errr finish_parse_z(struct parser *p) {
@@ -484,7 +468,7 @@ static void cleanup_z(void)
 }
 
 static struct file_parser z_parser = {
-	"limits",
+	"constants",
 	init_parse_z,
 	run_parse_z,
 	finish_parse_z,

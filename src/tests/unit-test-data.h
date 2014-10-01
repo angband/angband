@@ -823,7 +823,7 @@ static monster_lore TEST_DATA test_lore = {
 
 #undef _NOBLOW
 
-static struct maxima TEST_DATA test_z_info = {
+static struct angband_constants TEST_DATA test_z_info = {
 	.f_max   = 2,
 	.k_max   = 2,
 	.a_max   = 2,

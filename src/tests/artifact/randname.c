@@ -10,7 +10,7 @@
 int setup_tests(void **state) {
 	k_info = mem_zalloc(2 * sizeof(object_kind));
 	k_info[1] = test_torch;
-	z_info = mem_zalloc(sizeof(maxima));
+	z_info = mem_zalloc(sizeof(struct angband_constants));
 	z_info->k_max = 2;
 	return 0;
 }

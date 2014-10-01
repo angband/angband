@@ -1,0 +1,15 @@
+# File: constants.txt
+
+
+# This file is used to initialize game constants for Angband.
+
+# Maximum number of objects on the level
+M:O:1024
+
+# Maximum number of monsters on the level
+M:M:1024
+
+# Maximum number of traps on the level
+M:N:1024
+
+

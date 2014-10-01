@@ -1,6 +1,7 @@
-/* File: init.h */
+/**
+   \file init.h
+   \brief initialization
 
-/*
  * Copyright (c) 2000 Robert Ruehlmann
  *
  * This software may be copied and distributed for educational, research,
@@ -20,10 +21,9 @@
 /**
  * Information about maximal indices of certain arrays.
  *
- * These are actually not the maxima, but the maxima plus one, because of
- * 0-based indexing issues.
+ * This will become a list of "all" the game constants - NRM
  */
-typedef struct maxima
+struct angband_constants
 {
 	u16b f_max;       /**< Maximum number of terrain features */
     u16b trap_max;	  /**< Maximum number of trap kinds */
@@ -39,7 +39,7 @@ typedef struct maxima
 	u16b o_max;       /**< Maximum number of objects on a given level */
 	u16b m_max;       /**< Maximum number of monsters on a given level */
     u16b l_max;		  /**< Maximum number of traps on a given level */
-} maxima;
+};
 
 struct init_module {
 	const char *name;
@@ -47,7 +47,7 @@ struct init_module {
 	void (*cleanup)(void);
 };
 
-extern maxima *z_info;
+struct angband_constants *z_info;
 
 extern const char *ANGBAND_SYS;
 extern const char *ANGBAND_GRAF;

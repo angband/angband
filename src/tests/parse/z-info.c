@@ -30,7 +30,7 @@ int test_badmax(void *state) {
 
 #define TEST_MAX(l,u) \
 	int test_##l(void *s) { \
-		maxima *m = parser_priv(s); \
+		struct angband_constants *m = parser_priv(s); \
 		char buf[64]; \
 		errr r; \
 		snprintf(buf, sizeof(buf), "M:%c:%d", u, __LINE__); \
@@ -40,26 +40,16 @@ int test_badmax(void *state) {
 		ok; \
 	}
 
-TEST_MAX(f_max, 'F')
-TEST_MAX(k_max, 'K')
-TEST_MAX(a_max, 'A')
-TEST_MAX(e_max, 'E')
-TEST_MAX(r_max, 'R')
-TEST_MAX(s_max, 'S')
 TEST_MAX(o_max, 'O')
 TEST_MAX(m_max, 'M')
+TEST_MAX(l_max, 'N')
 
 const char *suite_name = "parse/z-info";
 struct test tests[] = {
 	{ "negative", test_negative },
 	{ "badmax", test_badmax },
-	{ "fmax", test_f_max },
-	{ "kmax", test_k_max },
-	{ "amax", test_a_max },
-	{ "emax", test_e_max },
-	{ "rmax", test_r_max },
-	{ "smax", test_s_max },
 	{ "omax", test_o_max },
 	{ "mmax", test_m_max },
+	{ "nmax", test_l_max },
 	{ NULL, NULL }
 };
