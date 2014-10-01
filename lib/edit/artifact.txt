@@ -3,63 +3,61 @@
 
 # This file is used to initialize the "artifact" information for Angband.
 
-# Do not modify this file unless you know exactly what you are doing,
-# unless you wish to risk possible system crashes and broken savefiles.
-
-# Hack -- "Grond" and "Morgoth" MUST have a rarity of one, or they might
-# not be dropped when Morgoth is killed.  Note that they, like the "special"
-# artifacts, are never created "accidentally".
-
 # === Understanding artifact.txt ===
 
-# N: serial number : item name
-# I: tval : sval
-# G: symbol : color
-# W: depth : rarity : weight : cost
-# A: allocation probability : min depth : max depth
-# P: base armor class : base damage : plus to-hit : plus to-dam : plus to-ac
-# F: flag | flag | etc
-# E: activation effect : recharge time
-# M: message when activated
-# L: pval : flag | flag | etc.
-# D: description
+# name: serial number : item name
+# base-object: tval : sval
+# graphics: symbol : color
+# info: level : weight : cost
+# alloc: allocation probability : min depth : max depth
+# power: base armor class : base damage : plus to-hit : plus to-dam : plus to-ac
+# flags: flag | flag | etc
+# act: activation
+# time : recharge time
+# msg: message when activated
+# values: label[value] | label[value] | etc.
+# desc: description
 
-# 'N' indicates the beginning of an entry. The serial number must
+# 'name' indicates the beginning of an entry. The serial number must
 # increase for each new item.
 
-# 'I' is for basic information. The tval is for the type of item, the
+# 'base-object' is for base object type. The tval is for the type of item, the
 # sval identifies the subtype.  If the sval is not a standard object kind
 # as defined in object.txt, the game will generate a special object kind,
 # and these are known as 'special artifacts'.
 
-# 'G' is for graphics - symbol and color. It is needed for special artifacts.
+# 'graphics' is for symbol and color. It is needed for special artifacts.
 
-# 'W' is for extra information. Depth and rarity are not currently used,
+# 'info' is for information. Level indicates difficulty of any activation,
 # weight is in tenth-pounds and cost is the item's value.
 
-# 'A' is for allocation details. alloc_prob is the % chance of the artifact
+# 'alloc' is for allocation details. alloc_prob is the % chance of the artifact
 # being generated, min depth is the earliest it is normally found, max
 # depth is the deepest it is ever found.
 
-# 'P' is for power information. The items base armor class, its base
+# 'power' is for power information. The items base armor class, its base
 # damage and pluses to-hit, to-dam and to-ac.
 
-# 'F' is for flags not associated with any pval. These are fairly 
-# self-explanatory. As many F: lines may be used as are needed to 
+# 'flags' is for object flags as listed in list-object-flags.h. These are
+# fairly self-explanatory. As many flags: lines may be used as are needed to 
 # specify all the flags and flags are separated by the '|' symbol.
 
-# 'E' is for effect. The activation is the effect the artifact
-# activates for. The recharge time calculates from the recharge time
-# plus a random value between 1 and the recharge time dice (if not 0).
+# 'act' is for activation. The activation is the effect the artifact
+# activates for.
 
-# 'M' is for the activation message text.
+# 'time' is for recharge time. The recharge time calculates from the recharge
+# time plus a random value between 1 and the recharge time dice (if not 0).
 
-# 'L' is for pval and flags specific to that pval. Each pval and its flags
-# need a line to themselves. MAX_PVALS is defined in src/defines.h - you
-# will need to recompile if you wish to change this value. A pval can
-# take a random value.
+# 'msg' is for activation message text, if different from the regular effect
+# message.
 
-# 'D' is for the artifact description.  These appear when the item is 
+# 'value' is for properties that take a value and a random expression for that
+# value. Valid properties are object modifiers (as found in list-stats.h and
+# list-object-modifiers.h), brands (based on the first 5 entries from
+# list-elements.h), slays (based on racial monster flags in list-mon-flags.h or
+# monster bases in monster_base.txt) and resistances (based on list-elements.h).
+
+# 'desc' is for the artifact description.  These appear when the item is 
 # identified.  Special thanks to J.R.R Tolkien, without whom the words would
 # be unwritten, the images unconceived, the deed undone. -LM-
 # Contributors: Jeff Butler, Neal Hackler, Ethan Sicotte, Pat Tracy,
@@ -71,13 +69,11 @@
 # using random artifacts, finish your existing game before making any
 # changes to the artifact.txt file at all.
 # (2.) Removing any artifact, or changing its "base" type (as defined by
-# the tval and sval entries in the "I:" line), will break savefile
+# the tval and sval entries in the "base-object:" line), will break savefile
 # compatibility for ALL savefiles.
 # (3.) Adding a new artifact, or changing the powers of existing ones, will
 # NOT affect savefile compatibility for games with the standard artifact set:
-# it is perfectly safe to do this. (If your new artifact is a new kind of
-# object, or a new one at the end of the file, you must also amend object.txt
-# or limits.txt.)
+# it is perfectly safe to do this.
 
 
 
@@ -85,104 +81,104 @@
 
 # The Phial of Galadriel
 
-N:1:of Galadriel
-I:light:Phial
-G:~:y
-W:5:3:10:10000
-A:40:5 to 100
-P:0:1d1:0:0:0
-F:NO_FUEL
-V:LIGHT[3]
+name:1:of Galadriel
+base-object:light:Phial
+graphics:~:y
+info:5:10:10000
+alloc:40:5 to 100
+power:0:1d1:0:0:0
+flags:NO_FUEL
+values:LIGHT[3]
 act:ILLUMINATION
 time:10+d10
-D:A small crystal phial containing the light of Eärendil's Star.  
-D:Its light is imperishable, and near it darkness cannot endure.
+desc:A small crystal phial containing the light of Eärendil's Star.  
+desc:Its light is imperishable, and near it darkness cannot endure.
 
 
 # The Star of Elendil
 
-N:2:of Elendil
-I:light:Star
-G:~:y
-W:30:25:5:30000
-A:4:30 to 100
-P:0:1d1:0:0:0
-F:SEE_INVIS | NO_FUEL
-V:LIGHT[3]
+name:2:of Elendil
+base-object:light:Star
+graphics:~:y
+info:30:5:30000
+alloc:4:30 to 100
+power:0:1d1:0:0:0
+flags:SEE_INVIS | NO_FUEL
+values:LIGHT[3]
 act:MAPPING
 time:50+d50
-D:The shining Star of the North, a treasured heirloom of Elendil's house.
+desc:The shining Star of the North, a treasured heirloom of Elendil's house.
 
 # The Arkenstone of Thrain
 
-N:3:of Thráin
-I:light:Arkenstone
-G:~:y
-W:50:50:5:50000
-A:2:50 to 127
-P:0:1d1:0:0:0
-F:SEE_INVIS | HOLD_LIFE | NO_FUEL
-V:LIGHT[3] | RES_LIGHT[1] | RES_DARK[1]
+name:3:of Thráin
+base-object:light:Arkenstone
+graphics:~:y
+info:50:5:50000
+alloc:2:50 to 127
+power:0:1d1:0:0:0
+flags:SEE_INVIS | HOLD_LIFE | NO_FUEL
+values:LIGHT[3] | RES_LIGHT[1] | RES_DARK[1]
 #E:DETECT_ALL:30+d30
 act:CLAIRVOYANCE
 time:50+d50
-D:A great globe seemingly filled with moonlight, the famed Heart of the 
-D:Mountain.  It splinters the light that falls upon it into ten thousand 
-D:sparks of white radiance shot with glints of the rainbow.
+desc:A great globe seemingly filled with moonlight, the famed Heart of the 
+desc:Mountain.  It splinters the light that falls upon it into ten thousand 
+desc:sparks of white radiance shot with glints of the rainbow.
 
 
 # The Amulet of Carlammas
 
-N:4:of Carlammas
-I:amulet:Amulet
-G:":d
-W:50:10:3:60000
-A:10:50 to 100
+name:4:of Carlammas
+base-object:amulet:Amulet
+graphics:":d
+info:50:3:60000
+alloc:10:50 to 100
 act:PROTEVIL
 time:225+d225
-V:CON[3] | STR[1] | RES_FIRE[1]
-D:A fiery circle of bronze, with mighty spells to ward off and banish evil.
+values:CON[3] | STR[1] | RES_FIRE[1]
+desc:A fiery circle of bronze, with mighty spells to ward off and banish evil.
 
 
 # The Amulet of Ingwe
 
-N:5:of Ingwë
-I:amulet:Pendant
-G:":d
-W:65:30:3:90000
-A:3:65 to 127
-F:SEE_INVIS | FREE_ACT | PROT_CONF
+name:5:of Ingwë
+base-object:amulet:Pendant
+graphics:":d
+info:65:3:90000
+alloc:3:65 to 127
+flags:SEE_INVIS | FREE_ACT | PROT_CONF
 act:DISPEL_EVIL
 time:50+d50
-V:INT[3] | WIS[3] | INFRA[4] | RES_ACID[1] | RES_COLD[1] | RES_ELEC[1]
-D:The ancient heirloom of Ingwë, high lord of the Vanyar, against whom 
-D:nothing of evil could stand.
+values:INT[3] | WIS[3] | INFRA[4] | RES_ACID[1] | RES_COLD[1] | RES_ELEC[1]
+desc:The ancient heirloom of Ingwë, high lord of the Vanyar, against whom 
+desc:nothing of evil could stand.
 
 
 # The Necklace of the Dwarves
 
-N:6:of the Dwarves
-I:amulet:Necklace
-G:":y
-W:50:50:3:75000
-A:2:50 to 127
-F:SEE_INVIS | FREE_ACT | REGEN | PROT_FEAR | 
-V:STR[3] | CON[3] | INFRA[5] | LIGHT[1]
-D:The Nauglamír, a carcanet of gold set with a multitude of shining 
-D:gems of Valinor.  The radiant Silmaril of Fëanor hangs in its midst 
-D:as its crowning glory.  The sturdy spirits of Dwarvish craftsmen who 
-D:labored long in mountain smithies lie within it still, and as gossamer 
-D:it rests upon the bearer.
+name:6:of the Dwarves
+base-object:amulet:Necklace
+graphics:":y
+info:50:3:75000
+alloc:2:50 to 127
+flags:SEE_INVIS | FREE_ACT | REGEN | PROT_FEAR | 
+values:STR[3] | CON[3] | INFRA[5] | LIGHT[1]
+desc:The Nauglamír, a carcanet of gold set with a multitude of shining 
+desc:gems of Valinor.  The radiant Silmaril of Fëanor hangs in its midst 
+desc:as its crowning glory.  The sturdy spirits of Dwarvish craftsmen who 
+desc:labored long in mountain smithies lie within it still, and as gossamer 
+desc:it rests upon the bearer.
 
 
 # New Artifact (7): The Palantir of Westernesse
 
-#N:7:of Westernesse
-#I:light:Palantir
-#G:~:y
-#W:75:60:200:100000
-#A:2:75 to 127
-#P:0:10d10:0:0:0
+#name:7:of Westernesse
+#base-object:light:Palantir
+#graphics:~:y
+#info:75:200:100000
+#alloc:2:75 to 127
+#power:0:10d10:0:0:0
 # F:DRAIN_MANA | 
 #F:NO_FUEL
 #F:SEE_INVIS | TELEPATHY | 
@@ -191,1785 +187,1792 @@ D:it rests upon the bearer.
 #E:CLAIRVOYANCE:50+d50
 #M:The {kind} glow{s} a deep green...
 #V:INT[2] | WIS[2] | SEARCH[3] | INFRA[3] | LIGHT[3] | RES_CHAOS[1]
-#D:A great globe with a heart of fire, the Palantír provides the wearer with 
-#D:sight of far places - at a cost, for those espied upon are aware of it.
+#desc:A great globe with a heart of fire, the Palantír provides the wearer with 
+#desc:sight of far places - at a cost, for those espied upon are aware of it.
 
 
 # The Ring of Barahir
 
-N:8:of Barahir
-I:ring:Serpent Ring
-G:=:d
-W:50:25:2:65000
-A:4:50 to 100
-V:STR[1] | INT[1] | WIS[1] | DEX[1] | CON[1] | STEALTH[1]
-V:RES_POIS[1] | RES_DARK[1]
-D:Twinned serpents with eyes of emerald meet beneath a crown of flowers to 
-D:form this ring, an ancient treasure of Isildur's house.
+name:8:of Barahir
+base-object:ring:Serpent Ring
+graphics:=:d
+info:50:2:65000
+alloc:4:50 to 100
+values:STR[1] | INT[1] | WIS[1] | DEX[1] | CON[1] | STEALTH[1]
+values:RES_POIS[1] | RES_DARK[1]
+desc:Twinned serpents with eyes of emerald meet beneath a crown of flowers to 
+desc:form this ring, an ancient treasure of Isildur's house.
 
 
 # The Ring of Tulkas
 
-N:9:of Tulkas
-I:ring:Ring
-G:=:d
-W:70:50:2:150000
-A:2:70 to 127
-F:PROT_FEAR | 
+name:9:of Tulkas
+base-object:ring:Ring
+graphics:=:d
+info:70:2:150000
+alloc:2:70 to 127
+flags:PROT_FEAR | 
 act:HASTE2
 time:150+d150
-V:STR[4] | DEX[4] | CON[4]
-D:The treasure of Tulkas, most fleet and wrathful of the Valar.
+values:STR[4] | DEX[4] | CON[4]
+desc:The treasure of Tulkas, most fleet and wrathful of the Valar.
 
 
 # The Ring of Fire 'Narya'
 
-N:10:'Narya'
-I:ring:Ring of Fire
-G:=:d
-W:70:50:2:100000
-A:2:70 to 127
-P:0:0d0:2:2:0
-F:FREE_ACT | SEE_INVIS | 
-F:SLOW_DIGEST | REGEN | TELEPATHY
-F:SUST_STR | SUST_CON | PROT_FEAR
+name:10:'Narya'
+base-object:ring:Ring of Fire
+graphics:=:d
+info:70:2:100000
+alloc:2:70 to 127
+power:0:0d0:2:2:0
+flags:FREE_ACT | SEE_INVIS | 
+flags:SLOW_DIGEST | REGEN | TELEPATHY
+flags:SUST_STR | SUST_CON | PROT_FEAR
 act:PROTEVIL
 time:200+4d50
 msg:{name} glows deep red...
-V:STR[1] | INT[1] | WIS[1] | DEX[1] | CON[1] | SPEED[5] | RES_FIRE[3]
-D:The Ring of Fire, made of gold and set with a ruby that glows like flame.  
-D:Narya is one of the three Rings of Power created by Celebrimbor and hidden 
-D:by the Elves from Sauron.
+values:STR[1] | INT[1] | WIS[1] | DEX[1] | CON[1] | SPEED[5] | RES_FIRE[3]
+desc:The Ring of Fire, made of gold and set with a ruby that glows like flame.  
+desc:Narya is one of the three Rings of Power created by Celebrimbor and hidden 
+desc:by the Elves from Sauron.
 
 
 # The Ring of Adamant 'Nenya'
 
-N:11:'Nenya'
-I:ring:Ring of Adamant
-G:=:d
-W:80:50:2:200000
-A:2:80 to 127
-P:0:0d0:3:3:0
-F:HOLD_LIFE | FREE_ACT | SEE_INVIS | 
-F:FEATHER | REGEN
-F:SUST_INT | SUST_WIS | SUST_CON
-F:PROT_BLIND | TELEPATHY | 
+name:11:'Nenya'
+base-object:ring:Ring of Adamant
+graphics:=:d
+info:80:2:200000
+alloc:2:80 to 127
+power:0:0d0:3:3:0
+flags:HOLD_LIFE | FREE_ACT | SEE_INVIS | 
+flags:FEATHER | REGEN
+flags:SUST_INT | SUST_WIS | SUST_CON
+flags:PROT_BLIND | TELEPATHY | 
 act:RESTORE_LIFE
 time:200+2d50
 msg:{name} glows bright white...
-V:STR[2] | INT[2] | WIS[2] | DEX[2] | CON[2] | SPEED[5] | RES_COLD[3]
-D:The Ring of Adamant, made of mithril with a pure white stone as 
-D:centerpiece.  Nenya is one of the three Rings of Power created by 
-D:Celebrimbor and hidden by the Elves from Sauron.
+values:STR[2] | INT[2] | WIS[2] | DEX[2] | CON[2] | SPEED[5] | RES_COLD[3]
+desc:The Ring of Adamant, made of mithril with a pure white stone as 
+desc:centerpiece.  Nenya is one of the three Rings of Power created by 
+desc:Celebrimbor and hidden by the Elves from Sauron.
 
 
 # The Ring of Firmament 'Vilya'
 
-N:12:'Vilya'
-I:ring:Ring of Firmament
-G:=:d
-W:90:80:2:300000
-A:1:90 to 127
-P:0:0d0:5:5:0
-F:HOLD_LIFE | FREE_ACT | SEE_INVIS
-F:FEATHER | SLOW_DIGEST | REGEN | TELEPATHY
-F:SUST_DEX | SUST_INT | SUST_CON
+name:12:'Vilya'
+base-object:ring:Ring of Firmament
+graphics:=:d
+info:90:2:300000
+alloc:1:90 to 127
+power:0:0d0:5:5:0
+flags:HOLD_LIFE | FREE_ACT | SEE_INVIS
+flags:FEATHER | SLOW_DIGEST | REGEN | TELEPATHY
+flags:SUST_DEX | SUST_INT | SUST_CON
 act:HEAL2
 time:200+2d50
 msg:{name} glows deep blue...
-V:STR[3] | INT[3] | WIS[3] | DEX[3] | CON[3] | SPEED[5]
-V:RES_ELEC[3] | RES_POIS[1] | RES_DARK[1]
-D:The Ring of Sapphire, made of gold with a brilliant blue gem that shines 
-D:like stars.  It glitters untouchable despite all that Morgoth ever wrought.
-D:  Vilya is one of the three Rings of Power created by Celebrimbor and 
-D:hidden by the Elves from Sauron.
+values:STR[3] | INT[3] | WIS[3] | DEX[3] | CON[3] | SPEED[5]
+values:RES_ELEC[3] | RES_POIS[1] | RES_DARK[1]
+desc:The Ring of Sapphire, made of gold with a brilliant blue gem that shines 
+desc:like stars.  It glitters untouchable despite all that Morgoth ever wrought.
+desc:  Vilya is one of the three Rings of Power created by Celebrimbor and 
+desc:hidden by the Elves from Sauron.
 
 
 # The Ring of Power 'The One Ring'
 
-N:13:'The One Ring'
-I:ring:Ring of Power
-G:=:y
-W:100:100:2:5000000
-A:1:100 to 127
-P:0:0d0:15:15:0
+name:13:'The One Ring'
+base-object:ring:Ring of Power
+graphics:=:y
+info:100:2:5000000
+alloc:1:100 to 127
+power:0:0d0:15:15:0
 # F: DRAIN_MANA | DRAIN_HP | 
-F:LIGHT_CURSE | HEAVY_CURSE | PERMA_CURSE
-F:AGGRAVATE | DRAIN_EXP | SEE_INVIS | REGEN | TELEPATHY
-F:SUST_STR | SUST_DEX | SUST_CON | 
-F:SUST_INT | SUST_WIS |
+flags:LIGHT_CURSE | HEAVY_CURSE | PERMA_CURSE
+flags:AGGRAVATE | DRAIN_EXP | SEE_INVIS | REGEN | TELEPATHY
+flags:SUST_STR | SUST_DEX | SUST_CON | 
+flags:SUST_INT | SUST_WIS |
 act:BIZARRE
 time:200+9d50
-V:STR[5] | INT[5] | WIS[5] | DEX[5] | CON[5] | SPEED[5]
-V:RES_FIRE[3] | RES_COLD[3] | RES_ELEC[3] | RES_ACID[3] | RES_DARK[1]
-V:RES_DISEN[1] | RES_POIS[1] | RES_NETHER[1]
-D:"One Ring to rule them all, One Ring to find them, One Ring to bring 
-D:them all and in the darkness bind them."  Made of massive gold, and 
-D:inscribed with hidden runes in the foul speech of Mordor, Isildur's Bane 
-D:possesses powers so great that it inevitably twists and masters any mortal 
-D:being who wears it.
+values:STR[5] | INT[5] | WIS[5] | DEX[5] | CON[5] | SPEED[5]
+values:RES_FIRE[3] | RES_COLD[3] | RES_ELEC[3] | RES_ACID[3] | RES_DARK[1]
+values:RES_DISEN[1] | RES_POIS[1] | RES_NETHER[1]
+desc:"One Ring to rule them all, One Ring to find them, One Ring to bring 
+desc:them all and in the darkness bind them."  Made of massive gold, and 
+desc:inscribed with hidden runes in the foul speech of Mordor, Isildur's Bane 
+desc:possesses powers so great that it inevitably twists and masters any mortal 
+desc:being who wears it.
 
 
 # New Artifact (14): The Elfstone 'Elessar'
 
-N:14:'Elessar'
-I:amulet:Elfstone
-G:":g
-W:60:60:3:40000
-A:2:60 to 127
-P:0:0d0:0:0:10
-F:PROT_FEAR
+name:14:'Elessar'
+base-object:amulet:Elfstone
+graphics:":g
+info:60:3:40000
+alloc:2:60 to 127
+power:0:0d0:0:0:10
+flags:PROT_FEAR
 act:HEAL1
 time:200
-V:STR[2] | WIS[2] | SPEED[2] | RES_FIRE[1] | RES_POIS[1]
-D:A green stone, imbued with the power of Elvendom and the light of the Sun.
-D:  Those who gaze through it see the aged and infirm as young again, and its 
-D:wearer brings healing after victory in battle.
+values:STR[2] | WIS[2] | SPEED[2] | RES_FIRE[1] | RES_POIS[1]
+desc:A green stone, imbued with the power of Elvendom and the light of the Sun.
+desc:  Those who gaze through it see the aged and infirm as young again, and
+desc: its wearer brings healing after victory in battle.
 
 
 # New Artifact (15): The Jewel 'Evenstar'
 
-N:15:'Evenstar'
-I:amulet:Jewel
-G:":w
-W:40:40:3:25000
-A:2:30 to 70
-F:HOLD_LIFE | SUST_CON | SUST_WIS | REGEN
+name:15:'Evenstar'
+base-object:amulet:Jewel
+graphics:":w
+info:40:3:25000
+alloc:2:30 to 70
+flags:HOLD_LIFE | SUST_CON | SUST_WIS | REGEN
 act:RESTORE_LIFE
 time:150
-V:WIS[2] | RES_DARK[1] | RES_COLD[1] | RES_NETHER[1]
-D:A plain white jewel, given by Queen Arwen to Frodo Baggins before his 
-D:return to the Shire.
+values:WIS[2] | RES_DARK[1] | RES_COLD[1] | RES_NETHER[1]
+desc:A plain white jewel, given by Queen Arwen to Frodo Baggins before his 
+desc:return to the Shire.
 
 
 ### Here follow the Armor artifacts ###
 
 ### Dragon Scale Mails ###
 
-N:16:'Razorback'
-I:dragon armour:Multi-Hued Dragon Scale Mail
-W:90:9:200:400000
-A:11:90 to 127
-P:50:2d4:-4:0:25
-F:FREE_ACT | SEE_INVIS | AGGRAVATE
+name:16:'Razorback'
+base-object:dragon armour:Multi-Hued Dragon Scale Mail
+info:90:200:400000
+alloc:11:90 to 127
+power:50:2d4:-4:0:25
+flags:FREE_ACT | SEE_INVIS | AGGRAVATE
 act:STAR_BALL
 time:50
-V:LIGHT[1] | RES_ELEC[3] | RES_DISEN[1] | RES_ACID[1] | RES_FIRE[1]
-V:RES_COLD[1] | RES_POIS[1] | RES_LIGHT[1] | RES_DARK[1]
-D:A massive suit of heavy dragon scales deeply saturated with many colors.   
-D:It throbs with angry energies, and you feel the raw elemental might of 
-D:untamed Lightning as you put it on.
+values:LIGHT[1] | RES_ELEC[3] | RES_DISEN[1] | RES_ACID[1] | RES_FIRE[1]
+values:RES_COLD[1] | RES_POIS[1] | RES_LIGHT[1] | RES_DARK[1]
+desc:A massive suit of heavy dragon scales deeply saturated with many colors.   
+desc:It throbs with angry energies, and you feel the raw elemental might of 
+desc:untamed Lightning as you put it on.
 
 
-N:17:'Bladeturner'
-I:dragon armour:Power Dragon Scale Mail
-W:100:16:250:500000
-A:6:100 to 127
-P:80:2d4:-8:0:35
-F:HOLD_LIFE | REGEN | 
-F:PROT_FEAR | PROT_BLIND | PROT_CONF 
+name:17:'Bladeturner'
+base-object:dragon armour:Power Dragon Scale Mail
+info:100:250:500000
+alloc:6:100 to 127
+power:80:2d4:-8:0:35
+flags:HOLD_LIFE | REGEN | 
+flags:PROT_FEAR | PROT_BLIND | PROT_CONF 
 act:RAGE_BLESS_RESIST
 time:50
-V:RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1] | RES_POIS[1]
-V:RES_LIGHT[1] | RES_DARK[1] | RES_SOUND[1] | RES_SHARD[1] | RES_NETHER[1]
-V:RES_NEXUS[1] | RES_CHAOS[1] | RES_DISEN[1]
-D:An adamant suit with scales of every color.  Untrammelled powers elemental 
-D:and ethereal swirl around it in an inextricably intermingled nimbus.
+values:RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1] | RES_POIS[1]
+values:RES_LIGHT[1] | RES_DARK[1] | RES_SOUND[1] | RES_SHARD[1] | RES_NETHER[1]
+values:RES_NEXUS[1] | RES_CHAOS[1] | RES_DISEN[1]
+desc:An adamant suit with scales of every color.  Untrammelled powers elemental 
+desc:and ethereal swirl around it in an inextricably intermingled nimbus.
 
 
-N:18:'Mediator'
-I:dragon armour:Balance Dragon Scale Mail
-W:95:12:250:400000
-A:8:95 to 127
-P:60:2d4:-4:0:25
-F:FREE_ACT | SLOW_DIGEST | REGEN | 
+name:18:'Mediator'
+base-object:dragon armour:Balance Dragon Scale Mail
+info:95:250:400000
+alloc:8:95 to 127
+power:60:2d4:-4:0:25
+flags:FREE_ACT | SLOW_DIGEST | REGEN | 
 act:STAR_BALL
 time:50
-V:RES_CHAOS[1] | RES_DISEN[1] | RES_SHARD[1] | RES_SOUND[1] | RES_NEXUS[1]
-D:A great suit of dragon hide, set with scales of many hues.  Even the 
-D:mightiest wyrms of Law and Chaos fear the judgement of its wearer.
+values:RES_CHAOS[1] | RES_DISEN[1] | RES_SHARD[1] | RES_SOUND[1] | RES_NEXUS[1]
+desc:A great suit of dragon hide, set with scales of many hues.  Even the 
+desc:mightiest wyrms of Law and Chaos fear the judgement of its wearer.
 
 
 ### Heavy Armor ###
 
-N:19:'Soulkeeper'
-I:hard armour:Adamantite Plate Mail
-W:75:9:420:300000
-A:11:75 to 127
-P:90:2d4:-4:0:20
-F:HOLD_LIFE | SUST_CON | PROT_FEAR
+name:19:'Soulkeeper'
+base-object:hard armour:Adamantite Plate Mail
+info:75:420:300000
+alloc:11:75 to 127
+power:90:2d4:-4:0:20
+flags:HOLD_LIFE | SUST_CON | PROT_FEAR
 act:HEAL2
 time:444
-V:CON[2] | RES_ACID[1] | RES_COLD[1] | RES_DARK[1] | RES_NETHER[1]
-V:RES_NEXUS[1] | RES_CHAOS[1]
-D:A suit of imperishable adamant with unconquerable strength to endure evil 
-D:and disruptive magics.  It protects the life force of its wearer as 
-D:nothing else can.
+values:CON[2] | RES_ACID[1] | RES_COLD[1] | RES_DARK[1] | RES_NETHER[1]
+values:RES_NEXUS[1] | RES_CHAOS[1]
+desc:A suit of imperishable adamant with unconquerable strength to endure evil 
+desc:and disruptive magics.  It protects the life force of its wearer as 
+desc:nothing else can.
 
 
-N:20:of Isildur
-I:hard armour:Full Plate Armour
-W:30:3:300:50000
-A:30:55 to 127
-P:75:2d4:0:0:25
-F:PROT_CONF
-V:CON[1] | RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1]
-V:RES_SOUND[1] | RES_NEXUS[1]
-D:A gleaming steel suit covering the wearer from neck to foot, with runes of 
-D:warding and stability deeply engraved into its surface.
+name:20:of Isildur
+base-object:hard armour:Full Plate Armour
+info:30:300:50000
+alloc:30:55 to 127
+power:75:2d4:0:0:25
+flags:PROT_CONF
+values:CON[1] | RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1]
+values:RES_SOUND[1] | RES_NEXUS[1]
+desc:A gleaming steel suit covering the wearer from neck to foot, with runes of 
+desc:warding and stability deeply engraved into its surface.
 
 
-N:21:of the Rohirrim
-I:hard armour:Metal Brigandine Armour
-W:30:3:200:30000
-A:30:45 to 100
-P:50:1d4:0:0:15
-F:PROT_FEAR | PROT_CONF
-V:STR[2] | DEX[2]
-V:RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1] | RES_SOUND[1]
-D:Small steel plates cover an inner layer of sturdy canvas, and both metal 
-D:and cloth bear scenes of hunting and war.  As you don the armour of Eorl 
-D:the Young, matchless in combat, you feel his spirit surround you.
+name:21:of the Rohirrim
+base-object:hard armour:Metal Brigandine Armour
+info:30:200:30000
+alloc:30:45 to 100
+power:50:1d4:0:0:15
+flags:PROT_FEAR | PROT_CONF
+values:STR[2] | DEX[2]
+values:RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1] | RES_SOUND[1]
+desc:Small steel plates cover an inner layer of sturdy canvas, and both metal 
+desc:and cloth bear scenes of hunting and war.  As you don the armour of Eorl 
+desc:the Young, matchless in combat, you feel his spirit surround you.
 
 
-N:22:'Belegennon'
-I:hard armour:Mithril Chain Mail
-W:40:3:150:105000
-A:30:55 to 127
-P:35:1d4:-1:0:20
+name:22:'Belegennon'
+base-object:hard armour:Mithril Chain Mail
+info:40:150:105000
+alloc:30:55 to 127
+power:35:1d4:-1:0:20
 act:TELE_PHASE
 time:2
-V:DEX[4] | STEALTH[2]
-V:RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1] | RES_POIS[1]
-D:This wondrous suit of fine-linked chain shimmers as though of pure silver.  
-D:It stands untouched amidst the fury of the elements, and a power of 
-D:concealment rests within.
+values:DEX[4] | STEALTH[2]
+values:RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1] | RES_POIS[1]
+desc:This wondrous suit of fine-linked chain shimmers as though of pure silver. 
+desc: It stands untouched amidst the fury of the elements, and a power of 
+desc:concealment rests within.
 
 
-N:23:of Celeborn
-I:hard armour:Mithril Plate Mail
-W:40:3:250:150000
-A:30:65 to 127
-P:65:2d4:-3:0:25
+name:23:of Celeborn
+base-object:hard armour:Mithril Plate Mail
+info:40:250:150000
+alloc:30:65 to 127
+power:65:2d4:-3:0:25
 act:BANISHMENT
 time:500
-V:STR[3] | RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1]
-V:RES_DARK[1] | RES_DISEN[1]
-D:A shimmering suit of true-silver, forged long ago by dwarven smiths of 
-D:legend. It gleams with purest white as you gaze upon it, and mighty are 
-D:its powers to protect and banish.
+values:STR[3] | RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1]
+values:RES_DARK[1] | RES_DISEN[1]
+desc:A shimmering suit of true-silver, forged long ago by dwarven smiths of 
+desc:legend. It gleams with purest white as you gaze upon it, and mighty are 
+desc:its powers to protect and banish.
 
 
-N:24:of Arvedui
-I:hard armour:Chain Mail
-W:20:3:220:32000
-A:30:20 to 75
-P:40:1d4:-2:0:15
-V:STR[2] | RES_SHARD[1] | RES_NEXUS[1]
-V:RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1]
-D:A hauberk, leggings, and sleeves of interlocking steel rings, well padded 
-D:with leather.  You feel as strong and tall as Arvedui, last king of Arnor, 
-D:as you put it on.
+name:24:of Arvedui
+base-object:hard armour:Chain Mail
+info:20:220:32000
+alloc:30:20 to 75
+power:40:1d4:-2:0:15
+values:STR[2] | RES_SHARD[1] | RES_NEXUS[1]
+values:RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1]
+desc:A hauberk, leggings, and sleeves of interlocking steel rings, well padded 
+desc:with leather.  You feel as strong and tall as Arvedui, last king of Arnor, 
+desc:as you put it on.
 
 
-N:25:of Caspanion
-I:hard armour:Augmented Chain Mail
-W:25:9:270:40000
-A:11:35 to 100
-P:45:1d4:-2:0:20
-F:PROT_CONF
+name:25:of Caspanion
+base-object:hard armour:Augmented Chain Mail
+info:25:270:40000
+alloc:11:35 to 100
+power:45:1d4:-2:0:20
+flags:PROT_CONF
 act:DESTROY_TDOORS
 time:10
-V:INT[2] | WIS[2] | CON[3] | RES_ACID[1] | RES_POIS[1]
-D:A hauberk, leggings, and sleeves of interlocking steel rings, strategically 
-D:reinforced at vital locations with a second layer of chain.  Magics to 
-D:enhance body and mind lie within, and no door can bar the wearer's path.
+values:INT[2] | WIS[2] | CON[3] | RES_ACID[1] | RES_POIS[1]
+desc:A hauberk, leggings, and sleeves of interlocking steel rings,
+desc: strategically reinforced at vital locations with a second layer of chain.
+desc:  Magics to enhance body and mind lie within, and no door can bar the
+desc: wearer's path.
 
 
 ### Light Armor ###
 
-N:26:of Himring
-I:soft armour:Hard Leather Armour
-W:50:20:100:35000
-A:20:25 to 90
-P:20:0d0:0:0:15
+name:26:of Himring
+base-object:soft armour:Hard Leather Armour
+info:50:100:35000
+alloc:20:25 to 90
+power:20:0d0:0:0:15
 act:PROTEVIL
 time:100+d100
-V:RES_CHAOS[1] | RES_NETHER[1] | RES_POIS[1]
-D:In this studded cuirass of pliable leather lives the memory of 
-D:unvanquished Himring, defiant fortress surrounded by the legions of Morgoth.
+values:RES_CHAOS[1] | RES_NETHER[1] | RES_POIS[1]
+desc:In this studded cuirass of pliable leather lives the memory of 
+desc:unvanquished Himring, defiant fortress surrounded by the legions of
+desc: Morgoth.
 
 
-N:27:'Hithlomir'
-I:soft armour:Soft Leather Armour
-W:20:3:80:45000
-A:20:20 to 80
-P:10:0d0:0:0:20
-V:STEALTH[3] | RES_DARK[1] | RES_NETHER[1]
-V:RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1]
-D:Familiar with the secret ways hidden in darkness, this leather cuirass is 
-D:truly more than it appears.
+name:27:'Hithlomir'
+base-object:soft armour:Soft Leather Armour
+info:20:80:45000
+alloc:20:20 to 80
+power:10:0d0:0:0:20
+values:STEALTH[3] | RES_DARK[1] | RES_NETHER[1]
+values:RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1]
+desc:Familiar with the secret ways hidden in darkness, this leather cuirass is 
+desc:truly more than it appears.
 
 
-N:28:'Thalkettoth'
-I:soft armour:Leather Scale Mail
-W:20:3:60:25000
-A:20:30 to 100
-P:20:1d1:-1:0:25
-F:FREE_ACT
-V:DEX[3] | SPEED[3] | RES_ACID[1] | RES_SHARD[1]
-D:An amazingly light tunic and skirt sewn with thick, overlapping scales of 
-D:hardened leather.  Those who wear it move with agility and assurance.
+name:28:'Thalkettoth'
+base-object:soft armour:Leather Scale Mail
+info:20:60:25000
+alloc:20:30 to 100
+power:20:1d1:-1:0:25
+flags:FREE_ACT
+values:DEX[3] | SPEED[3] | RES_ACID[1] | RES_SHARD[1]
+desc:An amazingly light tunic and skirt sewn with thick, overlapping scales of 
+desc:hardened leather.  Those who wear it move with agility and assurance.
 
 
 ### Shields ###
 
 # should be Shield of Deflection
-N:29:of Gil-galad
-I:shield:Mithril Shield
-W:70:4:80:65000
-A:25:70 to 127
-P:20:1d3:0:0:20
-F:SUST_WIS | SUST_DEX
+name:29:of Gil-galad
+base-object:shield:Mithril Shield
+info:70:80:65000
+alloc:25:70 to 127
+power:20:1d3:0:0:20
+flags:SUST_WIS | SUST_DEX
 act:STARLIGHT2
 time:100
-V:WIS[5] | LIGHT[1] | RES_ELEC[1] | RES_ACID[1] | RES_DISEN[1] | RES_DARK[1]
-D:The legendary shield of Ereinion Gil-galad, who fought his way to the 
-D:gates of the Dark Tower, and with whom came light even to Gorgoroth.
+values:WIS[5] | LIGHT[1] | RES_ELEC[1] | RES_ACID[1] | RES_DISEN[1]
+values:RES_DARK[1]
+desc:The legendary shield of Ereinion Gil-galad, who fought his way to the 
+desc:gates of the Dark Tower, and with whom came light even to Gorgoroth.
 
 
-N:30:of Thorin
-I:shield:Small Metal Shield
-W:40:6:65:60000
-A:14:40 to 127
-P:5:1d2:0:0:25
-F:PROT_FEAR | FREE_ACT
-V:CON[4] | STR[3] | STEALTH[-1] | RES_SOUND[1] | RES_ACID[3] | RES_CHAOS[1]
-D:Invoking the strength and endurance of Thorin, King under the Mountain, 
-D:this little metal shield is proof against the Element of Earth.
+name:30:of Thorin
+base-object:shield:Small Metal Shield
+info:40:65:60000
+alloc:14:40 to 127
+power:5:1d2:0:0:25
+flags:PROT_FEAR | FREE_ACT
+values:CON[4] | STR[3] | STEALTH[-1] | RES_SOUND[1] | RES_ACID[3] | RES_CHAOS[1]
+desc:Invoking the strength and endurance of Thorin, King under the Mountain, 
+desc:this little metal shield is proof against the Element of Earth.
 
 
-N:31:of Celegorm
-I:shield:Leather Shield
-W:30:3:60:12000
-A:28:30 to 100
-P:8:1d2:0:0:20
-F:PROT_BLIND
-V:RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1]
-V:RES_LIGHT[1] | RES_DARK[1]
-D:This shield emblazoned with a multitude of creatures unseen for ages 
-D:once protected Celegorm, Lord of Himlad; around it, a mystic balance lies, 
-D:containing the conflicts of the elements.
+name:31:of Celegorm
+base-object:shield:Leather Shield
+info:30:60:12000
+alloc:28:30 to 100
+power:8:1d2:0:0:20
+flags:PROT_BLIND
+values:RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1]
+values:RES_LIGHT[1] | RES_DARK[1]
+desc:This shield emblazoned with a multitude of creatures unseen for ages 
+desc:once protected Celegorm, Lord of Himlad; around it, a mystic balance lies, 
+desc:containing the conflicts of the elements.
 
 
-N:32:of Anárion
-I:shield:Large Metal Shield
-W:40:9:120:160000
-A:11:40 to 100
-P:12:1d3:0:0:20
-F:SUST_STR | SUST_INT | SUST_WIS | SUST_DEX | SUST_CON
-V:RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1]
-D:The great metal-bound shield of Elendil's younger son Anárion, whom 
-D:even Sauron could not corrupt.
+name:32:of Anárion
+base-object:shield:Large Metal Shield
+info:40:120:160000
+alloc:11:40 to 100
+power:12:1d3:0:0:20
+flags:SUST_STR | SUST_INT | SUST_WIS | SUST_DEX | SUST_CON
+values:RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1]
+desc:The great metal-bound shield of Elendil's younger son Anárion, whom 
+desc:even Sauron could not corrupt.
 
 
 ### Helmets and Crowns ###
 
-N:33:of Celebrimbor
-I:helm:Metal Cap
-W:55:12:20:45000
-A:8:55 to 100
-P:3:1d1:0:0:18
-V:SEARCH[3] | INT[2] | DEX[2]
-V:RES_FIRE[1] | RES_ACID[1] | RES_DISEN[1] | RES_SHARD[1]
-D:A metal cap forged by the greatest Noldorin smith of the Second Age, 
-D:this helm serves equally well in battle or at the forge, and its 
-D:enchantment will never be diminished.
+name:33:of Celebrimbor
+base-object:helm:Metal Cap
+info:55:20:45000
+alloc:8:55 to 100
+power:3:1d1:0:0:18
+values:SEARCH[3] | INT[2] | DEX[2]
+values:RES_FIRE[1] | RES_ACID[1] | RES_DISEN[1] | RES_SHARD[1]
+desc:A metal cap forged by the greatest Noldorin smith of the Second Age, 
+desc:this helm serves equally well in battle or at the forge, and its 
+desc:enchantment will never be diminished.
 
 
-N:34:of Morgoth
-I:crown:Massive Iron Crown
-W:100:1:400:10000000
-A:0:100 to 100
-P:0:1d1:0:0:0
-F:PROT_CONF | SEE_INVIS | TELEPATHY | PROT_FEAR | 
-F:LIGHT_CURSE | HEAVY_CURSE | PERMA_CURSE | 
-V:STR[125] | INT[125] | WIS[125] | DEX[125] | CON[125] | INFRA[125] | LIGHT[1]
-V:RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1] | RES_POIS[1]
-V:RES_LIGHT[1] | RES_DARK[1] | RES_NEXUS[1] | RES_NETHER[1]
-D:Containing much of the power of he who once was mightiest among the Ainur, 
-D:this plain iron crown has mounted upon it the two remaining Silmarils, 
-D:greatest treasures of Middle-Earth.
+name:34:of Morgoth
+base-object:crown:Massive Iron Crown
+info:100:400:10000000
+alloc:0:100 to 100
+power:0:1d1:0:0:0
+flags:PROT_CONF | SEE_INVIS | TELEPATHY | PROT_FEAR | 
+flags:LIGHT_CURSE | HEAVY_CURSE | PERMA_CURSE | 
+values:STR[125] | INT[125] | WIS[125] | DEX[125] | CON[125] | INFRA[125]
+values:LIGHT[1]
+values:RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1] | RES_POIS[1]
+values:RES_LIGHT[1] | RES_DARK[1] | RES_NEXUS[1] | RES_NETHER[1]
+desc:Containing much of the power of he who once was mightiest among the Ainur, 
+desc:this plain iron crown has mounted upon it the two remaining Silmarils, 
+desc:greatest treasures of Middle-Earth.
 
 
-N:35:of Berúthiel
-I:crown:Iron Crown
-W:40:12:20:1
-A:8:45 to 100
-P:0:1d1:0:0:20
-F:FREE_ACT | SEE_INVIS | TELEPATHY | LIGHT_CURSE | HEAVY_CURSE
-V:CON[-5] | STR[-3] | DEX[-3]
-D:The midnight-hued steel circlet of the sorceress-queen Berúthiel.  It 
-D:grants extraordinary powers of sight and awareness at a terrible physical 
-D:cost.
+name:35:of Berúthiel
+base-object:crown:Iron Crown
+info:40:20:1
+alloc:8:45 to 100
+power:0:1d1:0:0:20
+flags:FREE_ACT | SEE_INVIS | TELEPATHY | LIGHT_CURSE | HEAVY_CURSE
+values:CON[-5] | STR[-3] | DEX[-3]
+desc:The midnight-hued steel circlet of the sorceress-queen Berúthiel.  It 
+desc:grants extraordinary powers of sight and awareness at a terrible physical 
+desc:cost.
 
 
-N:36:of Thranduil
-I:helm:Hard Leather Cap
-W:50:2:15:50000
-A:14:40 to 100
-P:2:0d0:0:0:10
-F:PROT_BLIND | TELEPATHY
-V:INT[2] | WIS[2]
-D:The hunting cap of King Thranduil, to whose ears come all the secrets of 
-D:his forest domain.
+name:36:of Thranduil
+base-object:helm:Hard Leather Cap
+info:50:15:50000
+alloc:14:40 to 100
+power:2:0d0:0:0:10
+flags:PROT_BLIND | TELEPATHY
+values:INT[2] | WIS[2]
+desc:The hunting cap of King Thranduil, to whose ears come all the secrets of 
+desc:his forest domain.
 
 
-N:37:of Thengel
-I:helm:Metal Cap
-W:10:2:20:22000
-A:18:10 to 100
-P:3:1d1:0:0:12
-F:PROT_CONF
-V:WIS[3]
-D:A ridged helmet made of steel and embossed with scenes of valor in fine-
-D:engraved silver.  It grants the wearer nobility and understanding.
+name:37:of Thengel
+base-object:helm:Metal Cap
+info:10:20:22000
+alloc:18:10 to 100
+power:3:1d1:0:0:12
+flags:PROT_CONF
+values:WIS[3]
+desc:A ridged helmet made of steel and embossed with scenes of valor in fine-
+desc:engraved silver.  It grants the wearer nobility and understanding.
 
 
-N:38:of Hammerhand
-I:helm:Steel Helm
-W:20:8:60:45000
-A:11:40 to 127
-P:9:1d3:0:0:20
-F:FREE_ACT
-V:STR[3] | DEX[3] | CON[3]
-V:RES_ACID[1] | RES_NEXUS[1] | RES_COLD[1] | RES_DARK[1]
-D:A great helm, as steady and as distinctive as the hero of the Westdike.  
-D:Many long months was Helm Hammerhand besieged in the Hornburg, yet he 
-D:strode out time and again among his foes and slew many.  Although they 
-D:knew of his coming, none could stand against him. 
+name:38:of Hammerhand
+base-object:helm:Steel Helm
+info:20:60:45000
+alloc:11:40 to 127
+power:9:1d3:0:0:20
+flags:FREE_ACT
+values:STR[3] | DEX[3] | CON[3]
+values:RES_ACID[1] | RES_NEXUS[1] | RES_COLD[1] | RES_DARK[1]
+desc:A great helm, as steady and as distinctive as the hero of the Westdike.  
+desc:Many long months was Helm Hammerhand besieged in the Hornburg, yet he 
+desc:strode out time and again among his foes and slew many.  Although they 
+desc:knew of his coming, none could stand against him. 
 
 
-N:39:of Dor-Lómin
-I:helm:Iron Helm
-W:40:20:50:300000
-A:5:40 to 127
-P:7:1d3:0:0:20
-F:PROT_FEAR | 
-F:SEE_INVIS | TELEPATHY
-V:STR[4] | CON[4] | DEX[2] | STEALTH[-1]
-V:RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1]
-D:The legendary Dragon-helm, forged by one of the legendary Dwarven smiths 
-D:of the First Age.  The visage of mighty Glaurung forms its crest, and the 
-D:mere sight of the helm, borne by Túrin Turambar, struck dread into the 
-D:hearts of the servants of Morgoth.
+name:39:of Dor-Lómin
+base-object:helm:Iron Helm
+info:40:50:300000
+alloc:5:40 to 127
+power:7:1d3:0:0:20
+flags:PROT_FEAR | 
+flags:SEE_INVIS | TELEPATHY
+values:STR[4] | CON[4] | DEX[2] | STEALTH[-1]
+values:RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1]
+desc:The legendary Dragon-helm, forged by one of the legendary Dwarven smiths 
+desc:of the First Age.  The visage of mighty Glaurung forms its crest, and the 
+desc:mere sight of the helm, borne by Túrin Turambar, struck dread into the 
+desc:hearts of the servants of Morgoth.
 
 
-N:40:'Holhenneth'
-I:helm:Iron Helm
-W:20:5:50:100000
-A:18:20 to 100
-P:7:1d3:0:0:10
-F:PROT_BLIND | PROT_CONF | SEE_INVIS
+name:40:'Holhenneth'
+base-object:helm:Iron Helm
+info:20:50:100000
+alloc:18:20 to 100
+power:7:1d3:0:0:10
+flags:PROT_BLIND | PROT_CONF | SEE_INVIS
 act:DETECT_ALL
 time:55+d55
-V:INT[2] | WIS[2] | SEARCH[2]
-D:A famous forged iron helm granting extraordinary powers of mind and 
-D:awareness.
+values:INT[2] | WIS[2] | SEARCH[2]
+desc:A famous forged iron helm granting extraordinary powers of mind and 
+desc:awareness.
 
 
-N:41:of Gorlim
-I:helm:Iron Helm
-W:20:5:75:1
-A:18:20 to 75
-P:7:1d3:8:8:10
+name:41:of Gorlim
+base-object:helm:Iron Helm
+info:20:75:1
+alloc:18:20 to 75
+power:7:1d3:8:8:10
 # F: DRAIN_HP | 
-F:PROT_FEAR | 
-F:SEE_INVIS | FREE_ACT | AGGRAVATE | LIGHT_CURSE | HEAVY_CURSE
-V:SEARCH[-5] | INT[-3] | WIS[-3]
-D:A headpiece, gaudy and barbaric, that betrayed a warrior when he most 
-D:needed succor.
+flags:PROT_FEAR | 
+flags:SEE_INVIS | FREE_ACT | AGGRAVATE | LIGHT_CURSE | HEAVY_CURSE
+values:SEARCH[-5] | INT[-3] | WIS[-3]
+desc:A headpiece, gaudy and barbaric, that betrayed a warrior when he most 
+desc:needed succor.
 
 
-N:42:of Gondor
-I:crown:Golden Crown
-W:40:40:30:100000
-A:5:45 to 127
-P:0:1d1:0:0:15
-F:PROT_BLIND | PROT_CONF | PROT_STUN
-F:SEE_INVIS | REGEN
+name:42:of Gondor
+base-object:crown:Golden Crown
+info:40:30:100000
+alloc:5:45 to 127
+power:0:1d1:0:0:15
+flags:PROT_BLIND | PROT_CONF | PROT_STUN
+flags:SEE_INVIS | REGEN
 act:HEAL1
 time:250
-V:STR[3] | CON[3] | WIS[2] | LIGHT[1] | RES_COLD[1] | RES_FIRE[1] | RES_LIGHT[1]
-D:From dying Númenor, Elendil brought this shining winged circlet, emblem 
-D:of Gondor through an age of the world.
+values:STR[3] | CON[3] | WIS[2] | LIGHT[1]
+values:RES_COLD[1] | RES_FIRE[1] | RES_LIGHT[1]
+desc:From dying Númenor, Elendil brought this shining winged circlet, emblem 
+desc:of Gondor through an age of the world.
 
 
-N:43:of Númenor
-I:crown:Jewel Encrusted Crown
-W:60:30:40:50000
-A:5:60 to 127
-P:0:1d1:0:0:18
+name:43:of Númenor
+base-object:crown:Jewel Encrusted Crown
+info:60:40:50000
+alloc:5:60 to 127
+power:0:1d1:0:0:18
 # F: DRAIN_MANA
-F:SEE_INVIS | FREE_ACT | PROT_STUN | PROT_BLIND
+flags:SEE_INVIS | FREE_ACT | PROT_STUN | PROT_BLIND
 # A:ANALYZE:50
-V:INT[3] | SEARCH[3] | DEX[2] | LIGHT[1]
-V:RES_SHARD[1] | RES_COLD[1] | RES_LIGHT[1] | RES_DARK[1]
-D:A massive golden crown, set with wondrous jewels of thought and warding, 
-D:once worn by the kings of ancient Númenor.
+values:INT[3] | SEARCH[3] | DEX[2] | LIGHT[1]
+values:RES_SHARD[1] | RES_COLD[1] | RES_LIGHT[1] | RES_DARK[1]
+desc:A massive golden crown, set with wondrous jewels of thought and warding, 
+desc:once worn by the kings of ancient Númenor.
 
 
 ### Cloaks and Shadow Cloaks ###
 
-N:44:'Colluin'
-I:cloak:Cloak
-W:5:45:10:50000
-A:2:5 to 100
-P:1:0d0:0:0:15
+name:44:'Colluin'
+base-object:cloak:Cloak
+info:5:10:50000
+alloc:2:5 to 100
+power:1:0d0:0:0:15
 act:RESIST_ALL
 time:111
-V:RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1] | RES_POIS[1]
-D:A cape worn by a hero from Valinor, a land utterly beyond the strife 
-D:of Elements.
+values:RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1] | RES_POIS[1]
+desc:A cape worn by a hero from Valinor, a land utterly beyond the strife 
+desc:of Elements.
 
 
-N:45:'Holcolleth'
-I:cloak:Cloak
-W:5:35:10:18000
-A:5:5 to 100
-P:1:0d0:0:0:4
+name:45:'Holcolleth'
+base-object:cloak:Cloak
+info:5:10:18000
+alloc:5:5 to 100
+power:1:0d0:0:0:4
 act:SLEEPII
 time:55
-V:STEALTH[3] | INT[2] | WIS[2] | RES_ACID[1]
-D:This elven-grey mantle possesses great powers of tranquility and 
-D:concealment, and grants the wearer the knowledge and understanding of 
-D:the Sindar.
+values:STEALTH[3] | INT[2] | WIS[2] | RES_ACID[1]
+desc:This elven-grey mantle possesses great powers of tranquility and 
+desc:concealment, and grants the wearer the knowledge and understanding of 
+desc:the Sindar.
 
 
-N:46:of Thingol
-I:cloak:Cloak
-W:5:20:10:35000
-A:5:5 to 100
-P:1:0d0:0:0:18
-F:FREE_ACT
+name:46:of Thingol
+base-object:cloak:Cloak
+info:5:10:35000
+alloc:5:5 to 100
+power:1:0d0:0:0:18
+flags:FREE_ACT
 act:RECHARGE
 time:70
-V:DEX[3] | RES_ACID[1] | RES_FIRE[1] | RES_COLD[1]
-D:A translucent cloak of pearly grey with glowing, energized Elven runes 
-D:showing calm and clear as moonlight on still water.
+values:DEX[3] | RES_ACID[1] | RES_FIRE[1] | RES_COLD[1]
+desc:A translucent cloak of pearly grey with glowing, energized Elven runes 
+desc:showing calm and clear as moonlight on still water.
 
 
-N:47:of Thorongil
-I:cloak:Cloak
-W:5:10:10:8000
-A:10:5 to 75
-P:1:0d0:0:0:10
-F:FREE_ACT | PROT_FEAR | SEE_INVIS
-V:RES_ACID[1]
-D:This shimmering cloak of greens and browns was once worn by the young 
-D:Aragorn, a keen-eyed captain of Rohan and Gondor, valiant on both land 
-D:and sea.
+name:47:of Thorongil
+base-object:cloak:Cloak
+info:5:10:8000
+alloc:10:5 to 75
+power:1:0d0:0:0:10
+flags:FREE_ACT | PROT_FEAR | SEE_INVIS
+values:RES_ACID[1]
+desc:This shimmering cloak of greens and browns was once worn by the young 
+desc:Aragorn, a keen-eyed captain of Rohan and Gondor, valiant on both land 
+desc:and sea.
 
 
-N:48:'Colannon'
-I:cloak:Cloak
-W:5:20:10:20000
-A:5:5 to 100
-P:1:0d0:0:0:15
+name:48:'Colannon'
+base-object:cloak:Cloak
+info:5:10:20000
+alloc:5:5 to 100
+power:1:0d0:0:0:15
 act:TELE_LONG
 time:45
-V:STEALTH[2] | SPEED[2] | RES_NEXUS[1]
-D:A crystal-blue cape of fine silk worn by a silent messenger of the forces 
-D:of Law.  Seldom will its wearer be diverted from his mission.
+values:STEALTH[2] | SPEED[2] | RES_NEXUS[1]
+desc:A crystal-blue cape of fine silk worn by a silent messenger of the forces 
+desc:of Law.  Seldom will its wearer be diverted from his mission.
 
 
-N:49:of Lúthien
-I:cloak:Elven Cloak
-W:40:40:5:45000
-A:2:40 to 127
-P:6:0d0:0:0:20
+name:49:of Lúthien
+base-object:cloak:Elven Cloak
+info:40:5:45000
+alloc:2:40 to 127
+power:6:0d0:0:0:20
 act:RESTORE_LIFE
 time:250
-V:INT[4] | WIS[4] | STEALTH[3] | SPEED[2]
-V:RES_ACID[1] | RES_FIRE[1] | RES_COLD[1]
-D:The opaque midnight folds of this cloak, inlaid with a multitude of tiny 
-D:diamonds, swirl around you, and you feel a hint, a fragment of the 
-D:restorative magics of Lúthien, the most beautiful being who ever knew 
-D:death.
+values:INT[4] | WIS[4] | STEALTH[3] | SPEED[2]
+values:RES_ACID[1] | RES_FIRE[1] | RES_COLD[1]
+desc:The opaque midnight folds of this cloak, inlaid with a multitude of tiny 
+desc:diamonds, swirl around you, and you feel a hint, a fragment of the 
+desc:restorative magics of Lúthien, the most beautiful being who ever knew 
+desc:death.
 
 
-N:50:of Tuor
-I:cloak:Ethereal Cloak
-W:40:40:0:35000
-A:2:70 to 127
-P:6:0d0:0:0:12
-F:FREE_ACT | SEE_INVIS
-V:STEALTH[4] | DEX[4] | RES_ACID[3]
-D:From the ruin of Gondolin, through secret ways and travail, did Tuor 
-D:escape, mantled by sea-commanding Ulmo's kingly gift from a multitude 
-D:of hostile eyes.
+name:50:of Tuor
+base-object:cloak:Ethereal Cloak
+info:40:0:35000
+alloc:2:70 to 127
+power:6:0d0:0:0:12
+flags:FREE_ACT | SEE_INVIS
+values:STEALTH[4] | DEX[4] | RES_ACID[3]
+desc:From the ruin of Gondolin, through secret ways and travail, did Tuor 
+desc:escape, mantled by sea-commanding Ulmo's kingly gift from a multitude 
+desc:of hostile eyes.
 
 
 ### Gloves and Gauntlets ###
 
-N:51:of Eöl
-I:gloves:Set of Gauntlets
-W:55:35:25:40000
-A:3:55 to 127
-P:3:1d1:0:0:14
-F:FREE_ACT | FEATHER | AGGRAVATE
+name:51:of Eöl
+base-object:gloves:Set of Gauntlets
+info:55:25:40000
+alloc:3:55 to 127
+power:3:1d1:0:0:14
+flags:FREE_ACT | FEATHER | AGGRAVATE
 act:MANA_BOLT:MANA
 time:30+d30
-V:INT[3] | RES_ELEC[1] | RES_DARK[1] | RES_POIS[1] | RES_FIRE[3]
-D:The iron-shod gauntlets of the Dark Elven smith Eöl, who imbued them 
-D:with magics he could channel in battle.
+values:INT[3] | RES_ELEC[1] | RES_DARK[1] | RES_POIS[1] | RES_FIRE[3]
+desc:The iron-shod gauntlets of the Dark Elven smith Eöl, who imbued them 
+desc:with magics he could channel in battle.
 
 
-N:52:'Cambeleg'
-I:gloves:Set of Leather Gloves
-W:10:6:5:36000
-A:3:10 to 100
-P:1:0d0:8:8:15
-F:FREE_ACT | 
-V:STR[2] | CON[2]
-D:A hero's handgear that lends great prowess in battle.
+name:52:'Cambeleg'
+base-object:gloves:Set of Leather Gloves
+info:10:5:36000
+alloc:3:10 to 100
+power:1:0d0:8:8:15
+flags:FREE_ACT | 
+values:STR[2] | CON[2]
+desc:A hero's handgear that lends great prowess in battle.
 
 
-N:53:'Cammithrim'
-I:gloves:Set of Leather Gloves
-W:10:3:5:30000
-A:18:10 to 80
-P:1:0d0:5:5:10
-F:FREE_ACT | SUST_CON
-V:LIGHT[1] | RES_LIGHT[1]
+name:53:'Cammithrim'
+base-object:gloves:Set of Leather Gloves
+info:10:5:30000
+alloc:18:10 to 80
+power:1:0d0:5:5:10
+flags:FREE_ACT | SUST_CON
+values:LIGHT[1] | RES_LIGHT[1]
 act:MISSILE:MISSILE
 time:2
-D:These gloves glow so brightly as to light the way for the wearer and cast 
-D:magical bolts with great frequency.
+desc:These gloves glow so brightly as to light the way for the wearer and cast 
+desc:magical bolts with great frequency.
 
 
-N:54:'Paurhach'
-I:gloves:Set of Gauntlets
-W:1:2:25:15000
-A:40:10 to 60
-P:3:1d1:0:0:14
-F:REGEN
+name:54:'Paurhach'
+base-object:gloves:Set of Gauntlets
+info:1:25:15000
+alloc:40:10 to 60
+power:3:1d1:0:0:14
+flags:REGEN
 act:FIRE_BOLT:FIRE
 time:8+d8
-V:RES_FIRE[1]
-D:A set of gauntlets that smoulder with an unnatural heat.
+values:RES_FIRE[1]
+desc:A set of gauntlets that smoulder with an unnatural heat.
 
 
-N:55:'Paurnimmen'
-I:gloves:Set of Gauntlets
-W:20:20:25:13000
-A:5:50 to 127
-P:3:1d1:0:0:14
-F:SLOW_DIGEST
-V:BRAND_COLD[2] | RES_COLD[1]
+name:55:'Paurnimmen'
+base-object:gloves:Set of Gauntlets
+info:20:25:13000
+alloc:5:50 to 127
+power:3:1d1:0:0:14
+flags:SLOW_DIGEST
+values:BRAND_COLD[2] | RES_COLD[1]
 act:COLD_BOLT:COLD
 time:7+d7
-D:A set of handgear, freezing with unnatural cold.
+desc:A set of handgear, freezing with unnatural cold.
 
 
-N:56:'Pauraegen'
-I:gloves:Set of Gauntlets
-W:1:4:25:11000
-A:23:10 to 75
-P:3:1d1:0:0:14
-V:LIGHT[1] | RES_ELEC[1] | RES_LIGHT[1]
+name:56:'Pauraegen'
+base-object:gloves:Set of Gauntlets
+info:1:25:11000
+alloc:23:10 to 75
+power:3:1d1:0:0:14
+values:LIGHT[1] | RES_ELEC[1] | RES_LIGHT[1]
 act:ELEC_BOLT:ELEC
 time:6+d6
-D:A set of handgear with sparks that crackle across its knuckleguards.
+desc:A set of handgear with sparks that crackle across its knuckleguards.
 
 
-N:57:'Paurnen'
-I:gloves:Set of Gauntlets
-W:1:3:25:12000
-A:30:10 to 60
-P:3:1d1:3:3:14
-F:FEATHER
+name:57:'Paurnen'
+base-object:gloves:Set of Gauntlets
+info:1:25:12000
+alloc:30:10 to 60
+power:3:1d1:3:3:14
+flags:FEATHER
 act:ACID_BOLT:ACID
 time:5+d5
-V:RES_ACID[1]
-D:A set of gauntlets that give off a foul, acrid odour yet remain untarnished.
+values:RES_ACID[1]
+desc:A set of gauntlets that give off a foul, acrid odour yet remain
+desc: untarnished.
 
 
-N:58:'Camlost'
-I:gloves:Set of Gauntlets
-W:10:20:25:0
-A:5:10 to 100
-P:3:1d1:-12:-12:0
-F:FREE_ACT | DRAIN_EXP | 
-F:AGGRAVATE | LIGHT_CURSE | HEAVY_CURSE | 
-V:STR[-3] | DEX[-3] | RES_FIRE[1] | RES_DISEN[1]
-D:A pair of weakening gauntlets, named after Beren, who returned to Thingol 
-D:having lost to Carcharoth the hand that clasped a Silmaril.
+name:58:'Camlost'
+base-object:gloves:Set of Gauntlets
+info:10:25:0
+alloc:5:10 to 100
+power:3:1d1:-12:-12:0
+flags:FREE_ACT | DRAIN_EXP | 
+flags:AGGRAVATE | LIGHT_CURSE | HEAVY_CURSE | 
+values:STR[-3] | DEX[-3] | RES_FIRE[1] | RES_DISEN[1]
+desc:A pair of weakening gauntlets, named after Beren, who returned to Thingol 
+desc:having lost to Carcharoth the hand that clasped a Silmaril.
 
 
-N:59:of Fingolfin
-I:gloves:Set of Caestus
-W:40:15:40:110000
-A:3:40 to 127
-P:5:1d1:10:10:20
-F:FREE_ACT
+name:59:of Fingolfin
+base-object:gloves:Set of Caestus
+info:40:40:110000
+alloc:3:40 to 127
+power:5:1d1:10:10:20
+flags:FREE_ACT
 act:ARROW:ARROW
 time:30+d30
 msg:Your {kind} grow{s} magical spikes...
-V:DEX[4] | RES_ACID[1]
-D:The hand-sheathing of Fingolfin, the Elven warrior-king, who dealt 
-D:Morgoth seven mighty wounds and pain that will last until the end of Arda.
+values:DEX[4] | RES_ACID[1]
+desc:The hand-sheathing of Fingolfin, the Elven warrior-king, who dealt 
+desc:Morgoth seven mighty wounds and pain that will last until the end of Arda.
 
 
 ### Boots ###
 
-N:60:of Fëanor
-I:boots:Pair of Leather Boots
-W:40:120:20:300000
-A:1:40 to 127
-P:2:1d1:0:0:20
+name:60:of Fëanor
+base-object:boots:Pair of Leather Boots
+info:40:20:300000
+alloc:1:40 to 127
+power:2:1d1:0:0:20
 act:HASTE1
 time:200
-V:SPEED[15] | RES_NEXUS[1]
-D:This wondrous pair of leather boots once sped Fëanor, creator of the 
-D:Silmarils and the mightiest of the Eldar, to fulfill his hero's challenge 
-D:and do battle for a Middle-Earth held in thrall.  "Dear-bought those songs 
-D:shall be accounted, and yet shall be well-bought.  For the price could be 
-D:no other."
+values:SPEED[15] | RES_NEXUS[1]
+desc:This wondrous pair of leather boots once sped Fëanor, creator of the 
+desc:Silmarils and the mightiest of the Eldar, to fulfill his hero's challenge 
+desc:and do battle for a Middle-Earth held in thrall.  "Dear-bought those songs 
+desc:shall be accounted, and yet shall be well-bought.  For the price could be 
+desc:no other."
 
 
-N:61:'Dal-i-thalion'
-I:boots:Pair of Leather Boots
-W:10:25:20:40000
-A:4:50 to 100
-P:2:1d1:0:0:15
-F:FREE_ACT | 
-F:PROT_CONF | SUST_CON
+name:61:'Dal-i-thalion'
+base-object:boots:Pair of Leather Boots
+info:10:20:40000
+alloc:4:50 to 100
+power:2:1d1:0:0:15
+flags:FREE_ACT | 
+flags:PROT_CONF | SUST_CON
 act:REM_FEAR_POIS
 time:5
-V:DEX[5] | SPEED[5] | RES_NETHER[1]
-D:A pair of high-laced shoes, bestowing of extraordinary agility and proof 
-D:against the powers of corruption and withering.
+values:DEX[5] | SPEED[5] | RES_NETHER[1]
+desc:A pair of high-laced shoes, bestowing of extraordinary agility and proof 
+desc:against the powers of corruption and withering.
 
 
-N:62:of Thrór
-I:boots:Pair of Steel Shod Boots
-W:30:25:60:12000
-A:5:30 to 100
-P:7:1d1:0:0:20
-F:PROT_FEAR
-V:STR[3] | CON[3] | SPEED[3] | STEALTH[-1]
-D:Sturdy footwear of leather and steel as enduring as the long-suffering 
-D:Dwarven king-in-exile who wore them.
+name:62:of Thrór
+base-object:boots:Pair of Steel Shod Boots
+info:30:60:12000
+alloc:5:30 to 100
+power:7:1d1:0:0:20
+flags:PROT_FEAR
+values:STR[3] | CON[3] | SPEED[3] | STEALTH[-1]
+desc:Sturdy footwear of leather and steel as enduring as the long-suffering 
+desc:Dwarven king-in-exile who wore them.
 
 
-N:63:of Wormtongue
-I:boots:Pair of Leather Boots
-W:10:15:20:17000
-A:8:15 to 80
-P:2:1d1:-1:-1:0
-F:FEATHER | LIGHT_CURSE | 
+name:63:of Wormtongue
+base-object:boots:Pair of Leather Boots
+info:10:20:17000
+alloc:8:15 to 80
+power:2:1d1:-1:-1:0
+flags:FEATHER | LIGHT_CURSE | 
 act:TELE_PHASE
 time:20
-V:SPEED[3] | INT[2] | DEX[2] | STEALTH[2]
-D:A pair of running shoes once used by the treacherous Gríma son of 
-D:Gálmód, the Wormtongue of Edoras.  They are aptly suited for a 
-D:messenger, a servant, a spy... or a coward.
+values:SPEED[3] | INT[2] | DEX[2] | STEALTH[2]
+desc:A pair of running shoes once used by the treacherous Gríma son of 
+desc:Gálmód, the Wormtongue of Edoras.  They are aptly suited for a 
+desc:messenger, a servant, a spy... or a coward.
 
 
 ### Weapons ###
 
 ### Swords and Daggers ###
 
-N:64:of Maedhros
-I:sword:Main Gauche
-W:15:30:30:20000
-A:3:15 to 65
-P:0:2d5:12:15:0
-F:FREE_ACT | SEE_INVIS
-V:INT[3] | DEX[3] | SLAY_TROLL[3] | SLAY_GIANT[3]
-D:A short thrusting blade with a large guard worn by the eldest son of 
-D:Fëanor, Maedhros the Tall, who lost his right hand while escaping 
-D:from Angband.
+name:64:of Maedhros
+base-object:sword:Main Gauche
+info:15:30:20000
+alloc:3:15 to 65
+power:0:2d5:12:15:0
+flags:FREE_ACT | SEE_INVIS
+values:INT[3] | DEX[3] | SLAY_TROLL[3] | SLAY_GIANT[3]
+desc:A short thrusting blade with a large guard worn by the eldest son of 
+desc:Fëanor, Maedhros the Tall, who lost his right hand while escaping 
+desc:from Angband.
 
 
-N:65:'Angrist'
-I:sword:Dagger
-W:20:80:12:100000
-A:2:20 to 100
-P:0:2d4:10:15:5
-F:FREE_ACT | SUST_DEX | 
-V:DEX[4] | BRAND_ACID[3] | SLAY_EVIL[2] | SLAY_TROLL[3] | SLAY_ORC[3]
-V:RES_ACID[1] | RES_DARK[1] 
-D:Forged by Telchar, greatest of Dwarven smiths, and used by Beren to gouge a 
-D:Silmaril out of Morgoth's crown, this long chopping dagger slices through 
-D:ordinary metal as easily as its name, "Iron Cleaver", suggests.
+name:65:'Angrist'
+base-object:sword:Dagger
+info:20:12:100000
+alloc:2:20 to 100
+power:0:2d4:10:15:5
+flags:FREE_ACT | SUST_DEX | 
+values:DEX[4] | BRAND_ACID[3] | SLAY_EVIL[2] | SLAY_TROLL[3] | SLAY_ORC[3]
+values:RES_ACID[1] | RES_DARK[1] 
+desc:Forged by Telchar, greatest of Dwarven smiths, and used by Beren to gouge
+desc: a Silmaril out of Morgoth's crown, this long chopping dagger slices
+desc: through ordinary metal as easily as its name, "Iron Cleaver", suggests.
 
 
-N:66:'Narthanc'
-I:sword:Dagger
-W:1:2:12:12000
-A:40:1 to 50
-P:0:2d4:9:12:10
-V:BRAND_FIRE[3] | RES_FIRE[1]
+name:66:'Narthanc'
+base-object:sword:Dagger
+info:1:12:12000
+alloc:40:1 to 50
+power:0:2d4:9:12:10
+values:BRAND_FIRE[3] | RES_FIRE[1]
 act:FIRE_BOLT:FIRE
 time:8+d8
-D:Instead of a blade, a flame seems to emerge from this dagger's hilt.
+desc:Instead of a blade, a flame seems to emerge from this dagger's hilt.
 
 
-N:67:'Nimthanc'
-I:sword:Dagger
-W:1:2:12:11000
-A:40:1 to 50
-P:0:2d4:9:12:10
-V:BRAND_COLD[3] | RES_COLD[1]
+name:67:'Nimthanc'
+base-object:sword:Dagger
+info:1:12:11000
+alloc:40:1 to 50
+power:0:2d4:9:12:10
+values:BRAND_COLD[3] | RES_COLD[1]
 act:COLD_BOLT:COLD
 time:7+d8
-D:From the hilt of this dagger springs not so much a blade as an icicle.
+desc:From the hilt of this dagger springs not so much a blade as an icicle.
 
 
-N:68:'Dethanc'
-I:sword:Dagger
-W:1:2:12:13000
-A:40:1 to 50
-P:0:2d4:9:12:10
-V:BRAND_ELEC[3] | RES_ELEC[1]
+name:68:'Dethanc'
+base-object:sword:Dagger
+info:1:12:13000
+alloc:40:1 to 50
+power:0:2d4:9:12:10
+values:BRAND_ELEC[3] | RES_ELEC[1]
 act:ELEC_BOLT:ELEC
 time:6+d6
-D:In this dagger is bound the very force of lightning.
+desc:In this dagger is bound the very force of lightning.
 
 
-N:69:of Rilia
-I:sword:Dagger
-W:5:20:12:15000
-A:5:5 to 75
-P:0:2d4:14:13:0
-V:BRAND_POIS[3] | SLAY_ORC[3] | SLAY_TROLL[3] | RES_POIS[1] | RES_DISEN[1]
+name:69:of Rilia
+base-object:sword:Dagger
+info:5:12:15000
+alloc:5:5 to 75
+power:0:2d4:14:13:0
+values:BRAND_POIS[3] | SLAY_ORC[3] | SLAY_TROLL[3] | RES_POIS[1] | RES_DISEN[1]
 act:STINKING_CLOUD:POIS:3
 time:4+d4
-D:A large stiletto dagger that glistens with odorless poison, to which the 
-D:wearer seems oddly immune.
+desc:A large stiletto dagger that glistens with odorless poison, to which the 
+desc:wearer seems oddly immune.
 
 
-N:70:'Belangil'
-I:sword:Dagger
-W:10:40:12:40000
-A:2:10 to 80
-P:0:3d4:16:14:0
-F:SEE_INVIS | SLOW_DIGEST | REGEN
-V:DEX[2] | BRAND_COLD[3] | RES_COLD[1]
+name:70:'Belangil'
+base-object:sword:Dagger
+info:10:12:40000
+alloc:2:10 to 80
+power:0:3d4:16:14:0
+flags:SEE_INVIS | SLOW_DIGEST | REGEN
+values:DEX[2] | BRAND_COLD[3] | RES_COLD[1]
 act:COLD_BALL50:COLD:2
 time:5+d5
-D:A frosty dagger wreathed in a nimbus of ice with a hilt of elk horn and 
-D:an edge to wound the wind.
+desc:A frosty dagger wreathed in a nimbus of ice with a hilt of elk horn and 
+desc:an edge to wound the wind.
 
 
-N:71:'Calris'
-I:sword:Bastard Sword
-W:30:15:140:100000
-A:7:30 to 127
-P:0:5d4:-20:20:0
+name:71:'Calris'
+base-object:sword:Bastard Sword
+info:30:140:100000
+alloc:7:30 to 127
+power:0:5d4:-20:20:0
 # F:DRAIN_HP | 
-F:AGGRAVATE | LIGHT_CURSE | HEAVY_CURSE
-V:CON[5] | SLAY_DRAGON[5] | SLAY_EVIL[2] | SLAY_DEMON[3] | SLAY_TROLL[3]
-V:RES_DISEN[1]
-D:This sword has runes of power incused on its ornate hilt, and a single 
-D:blood channel that gleams coldly blue as you grasp this mighty weapon of 
-D:peril.
+flags:AGGRAVATE | LIGHT_CURSE | HEAVY_CURSE
+values:CON[5] | SLAY_DRAGON[5] | SLAY_EVIL[2] | SLAY_DEMON[3] | SLAY_TROLL[3]
+values:RES_DISEN[1]
+desc:This sword has runes of power incused on its ornate hilt, and a single 
+desc:blood channel that gleams coldly blue as you grasp this mighty weapon of 
+desc:peril.
 
 
-N:72:'Aranrúth'
-I:sword:Broad Sword
-W:20:45:150:50000
-A:2:20 to 100
-P:0:3d5:20:12:0
-F:FREE_ACT | FEATHER | SLOW_DIGEST
+name:72:'Aranrúth'
+base-object:sword:Broad Sword
+info:20:150:50000
+alloc:2:20 to 100
+power:0:3d5:20:12:0
+flags:FREE_ACT | FEATHER | SLOW_DIGEST
 act:COLD_BOLT2:COLD
 time:50
-V:DEX[4] | SLAY_DEMON[3] | SLAY_ORC[3] | RES_COLD[1]
-D:The beautiful sword of Thingol, justly named "King's Ire".  It glistens 
-D:icy enough to freeze the hearts of demons, and you feel supple and 
-D:lightfooted as you clasp its hilt of gold and silver inlay.
+values:DEX[4] | SLAY_DEMON[3] | SLAY_ORC[3] | RES_COLD[1]
+desc:The beautiful sword of Thingol, justly named "King's Ire".  It glistens 
+desc:icy enough to freeze the hearts of demons, and you feel supple and 
+desc:lightfooted as you clasp its hilt of gold and silver inlay.
 
 
-N:73:'Glamdring'
-I:sword:Broad Sword
-W:20:20:150:40000
-A:5:20 to 80
-P:0:2d5:10:15:0
-F:BLESSED | SLOW_DIGEST
-V:SEARCH[1] | LIGHT[1] | BRAND_FIRE[3] | SLAY_ORC[3] | SLAY_DEMON[3] |
-V:SLAY_EVIL[2] | RES_FIRE[1] | RES_LIGHT[1]
-D:This fiery, shining blade, mate to Orcrist, earned its sobriquet "Beater" 
-D:from dying orcs who dared to behold hidden Gondolin.
+name:73:'Glamdring'
+base-object:sword:Broad Sword
+info:20:150:40000
+alloc:5:20 to 80
+power:0:2d5:10:15:0
+flags:BLESSED | SLOW_DIGEST
+values:SEARCH[1] | LIGHT[1] | BRAND_FIRE[3] | SLAY_ORC[3] | SLAY_DEMON[3] |
+values:SLAY_EVIL[2] | RES_FIRE[1] | RES_LIGHT[1]
+desc:This fiery, shining blade, mate to Orcrist, earned its sobriquet "Beater" 
+desc:from dying orcs who dared to behold hidden Gondolin.
 
 
-N:74:'Aeglin'
-I:sword:Broad Sword
-W:20:30:150:45000
-A:3:20 to 100
-P:0:2d5:12:16:0
-F:BLESSED | PROT_BLIND | SLOW_DIGEST
-V:SEARCH[1] | LIGHT[1] | BRAND_ELEC[3] | SLAY_ORC[3] | SLAY_TROLL[3] | 
-V:SLAY_GIANT[3] | RES_ELEC[1]
-D:Like unto Orcrist and Glamdring, and like them long lost, this sword is 
-D:continually covered in tiny arcs of captive lightning that flash and dance 
-D:eerily in the globes of light they create.
+name:74:'Aeglin'
+base-object:sword:Broad Sword
+info:20:150:45000
+alloc:3:20 to 100
+power:0:2d5:12:16:0
+flags:BLESSED | PROT_BLIND | SLOW_DIGEST
+values:SEARCH[1] | LIGHT[1] | BRAND_ELEC[3] | SLAY_ORC[3] | SLAY_TROLL[3] | 
+values:SLAY_GIANT[3] | RES_ELEC[1]
+desc:Like unto Orcrist and Glamdring, and like them long lost, this sword is 
+desc:continually covered in tiny arcs of captive lightning that flash and dance 
+desc:eerily in the globes of light they create.
 
 
-N:75:'Orcrist'
-I:sword:Broad Sword
-W:20:20:150:40000
-A:5:20 to 80
-P:0:2d5:10:15:0
-F:BLESSED | SLOW_DIGEST
-V:SEARCH[3] | LIGHT[1] | BRAND_COLD[3] | SLAY_EVIL[2] | SLAY_ORC[3] |
-V:SLAY_DRAGON[3] | RES_COLD[1] | RES_DARK[1]
-D:This coldly gleaming blade, mate to Glamdring, is called simply "Biter" 
-D:by orcs who came to know its power all too well.
+name:75:'Orcrist'
+base-object:sword:Broad Sword
+info:20:150:40000
+alloc:5:20 to 80
+power:0:2d5:10:15:0
+flags:BLESSED | SLOW_DIGEST
+values:SEARCH[3] | LIGHT[1] | BRAND_COLD[3] | SLAY_EVIL[2] | SLAY_ORC[3] |
+values:SLAY_DRAGON[3] | RES_COLD[1] | RES_DARK[1]
+desc:This coldly gleaming blade, mate to Glamdring, is called simply "Biter" 
+desc:by orcs who came to know its power all too well.
 
 
-N:76:'Gurthang'
-I:sword:Zweihander
-W:30:30:200:100000
-A:3:30 to 100
-P:0:3d6:13:17:0
-F:FREE_ACT | SLOW_DIGEST | REGEN
-V:STR[2] | BRAND_FIRE[3] | BRAND_POIS[3] | SLAY_DRAGON[5]
-V:RES_FIRE[1] | RES_POIS[1]
-D:A giant sword once wielded by mighty Túrin, and an even greater 
-D:dragonbane; for what wyrm could stand against the blade that bathed in 
-D:Glaurung's blood?
+name:76:'Gurthang'
+base-object:sword:Zweihander
+info:30:200:100000
+alloc:3:30 to 100
+power:0:3d6:13:17:0
+flags:FREE_ACT | SLOW_DIGEST | REGEN
+values:STR[2] | BRAND_FIRE[3] | BRAND_POIS[3] | SLAY_DRAGON[5]
+values:RES_FIRE[1] | RES_POIS[1]
+desc:A giant sword once wielded by mighty Túrin, and an even greater 
+desc:dragonbane; for what wyrm could stand against the blade that bathed in 
+desc:Glaurung's blood?
 
 
-N:77:'Zarcuthra'
-I:sword:Zweihander
-W:30:180:240:200000
-A:1:30 to 127
-P:0:4d6:19:21:0
+name:77:'Zarcuthra'
+base-object:sword:Zweihander
+info:30:240:200000
+alloc:1:30 to 127
+power:0:4d6:19:21:0
 # F:DRAIN_MANA | 
-F:FREE_ACT | SEE_INVIS | AGGRAVATE
-V:STR[4] | INFRA[2] | BRAND_FIRE[3] | SLAY_DRAGON[5] | SLAY_ANIMAL[2]
-V:SLAY_EVIL[2] | SLAY_UNDEAD[3] | SLAY_DEMON[3] | SLAY_TROLL[3] | SLAY_GIANT[3]
-V:SLAY_ORC[3] | RES_FIRE[1] | RES_CHAOS[1]
-D:Runes dark and deadly stand stark against the naked steel of this awesome 
-D:weapon, and you feel a wrathful power of slaying and rending as you 
-D:slowly approach.
+flags:FREE_ACT | SEE_INVIS | AGGRAVATE
+values:STR[4] | INFRA[2] | BRAND_FIRE[3] | SLAY_DRAGON[5] | SLAY_ANIMAL[2]
+values:SLAY_EVIL[2] | SLAY_UNDEAD[3] | SLAY_DEMON[3] | SLAY_TROLL[3]
+values:SLAY_GIANT[3] | SLAY_ORC[3] | RES_FIRE[1] | RES_CHAOS[1]
+desc:Runes dark and deadly stand stark against the naked steel of this awesome 
+desc:weapon, and you feel a wrathful power of slaying and rending as you 
+desc:slowly approach.
 
 
-N:78:'Mormegil'
-I:sword:Zweihander
-W:30:15:250:10000
-A:7:30 to 100
-P:0:3d6:-15:-15:-10
+name:78:'Mormegil'
+base-object:sword:Zweihander
+info:30:250:10000
+alloc:7:30 to 100
+power:0:3d6:-15:-15:-10
 # F:DRAIN_HP | DRAIN_MANA | 
-F: SEE_INVIS | HOLD_LIFE | 
-F:AGGRAVATE | DRAIN_EXP | LIGHT_CURSE | HEAVY_CURSE
-V:SPEED[-10] | BRAND_POIS[3] | SLAY_DRAGON[5] | SLAY_UNDEAD[3]
-D:A foul, twisted sword with blackened spines and knobs, its very name is 
-D:a curse upon the lips of Elves and Men.  It is said that it will drink the 
-D:very lifeblood of its wielder.
+flags: SEE_INVIS | HOLD_LIFE | 
+flags:AGGRAVATE | DRAIN_EXP | LIGHT_CURSE | HEAVY_CURSE
+values:SPEED[-10] | BRAND_POIS[3] | SLAY_DRAGON[5] | SLAY_UNDEAD[3]
+desc:A foul, twisted sword with blackened spines and knobs, its very name is 
+desc:a curse upon the lips of Elves and Men.  It is said that it will drink the 
+desc:very lifeblood of its wielder.
 
 
-N:79:'Gondricam'
-I:sword:Cutlass
-W:20:8:110:28000
-A:12:20 to 65
-P:0:1d8:10:11:50
-F:FEATHER | SEE_INVIS | REGEN | FREE_ACT
-V:DEX[4] | STEALTH[2]
-V:RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1]
-D:Famed sea-defender of Lebennin.  A short, slightly curved chopping blade 
-D:with a perfect edge shining cleanly in the sun, an object of hate to the 
-D:men of Umbar who met it in combat.
+name:79:'Gondricam'
+base-object:sword:Cutlass
+info:20:110:28000
+alloc:12:20 to 65
+power:0:1d8:10:11:50
+flags:FEATHER | SEE_INVIS | REGEN | FREE_ACT
+values:DEX[4] | STEALTH[2]
+values:RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1]
+desc:Famed sea-defender of Lebennin.  A short, slightly curved chopping blade 
+desc:with a perfect edge shining cleanly in the sun, an object of hate to the 
+desc:men of Umbar who met it in combat.
 
 
-N:80:'Crisdurian'
-I:sword:Executioner's Sword
-W:40:25:260:100000
-A:4:40 to 127
-P:0:4d5:18:19:0
-F:SEE_INVIS
-V:SLAY_DRAGON[3] | SLAY_EVIL[2] | SLAY_UNDEAD[3] | SLAY_TROLL[3] |
-V:SLAY_GIANT[3] | SLAY_ORC[3] 
-D:A giant's weapon, with a long blade tall and straight thrusting out from a 
-D:massive double-pronged hilt.  On its blade are written doomspells against 
-D:both the living and undead.
+name:80:'Crisdurian'
+base-object:sword:Executioner's Sword
+info:40:260:100000
+alloc:4:40 to 127
+power:0:4d5:18:19:0
+flags:SEE_INVIS
+values:SLAY_DRAGON[3] | SLAY_EVIL[2] | SLAY_UNDEAD[3] | SLAY_TROLL[3] |
+values:SLAY_GIANT[3] | SLAY_ORC[3] 
+desc:A giant's weapon, with a long blade tall and straight thrusting out from a 
+desc:massive double-pronged hilt.  On its blade are written doomspells against 
+desc:both the living and undead.
 
 
-N:81:'Aglarang'
-I:sword:Katana
-W:30:25:50:40000
-A:4:30 to 100
-P:0:6d5:10:10:0
-F:SUST_DEX | 
-V:SPEED[5] | DEX[5] | BLOWS[1]
-D:An utterly perfect, cleanly chiseled sword, with an edge that effortlessly 
-D:slices rock and bone, and spells to render the wearer lithe and nimble.  It 
-D:is combat incarnate.
+name:81:'Aglarang'
+base-object:sword:Katana
+info:30:50:40000
+alloc:4:30 to 100
+power:0:6d5:10:10:0
+flags:SUST_DEX | 
+values:SPEED[5] | DEX[5] | BLOWS[1]
+desc:An utterly perfect, cleanly chiseled sword, with an edge that effortlessly 
+desc:slices rock and bone, and spells to render the wearer lithe and nimble.  It 
+desc:is combat incarnate.
 
 
-N:82:'Ringil'
-I:sword:Long Sword
-W:20:120:130:300000
-A:1:20 to 127
-P:0:4d5:22:25:0
-F:PROT_FEAR | BLESSED
-F:FREE_ACT | SEE_INVIS | SLOW_DIGEST | REGEN | 
+name:82:'Ringil'
+base-object:sword:Long Sword
+info:20:130:300000
+alloc:1:20 to 127
+power:0:4d5:22:25:0
+flags:PROT_FEAR | BLESSED
+flags:FREE_ACT | SEE_INVIS | SLOW_DIGEST | REGEN | 
 act:COLD_BALL100:COLD:2
 time:40
-V:SPEED[10] | LIGHT[1] | BRAND_COLD[3] | SLAY_EVIL[2] | SLAY_UNDEAD[3] |
-V:SLAY_TROLL[2] | SLAY_DEMON[5] | RES_COLD[1] | RES_LIGHT[1]
-D:The weapon of Fingolfin, High King of the Noldor; it shines like a column 
-D:of ice lit by light unquenchable.  Morgoth came but unwillingly to meet it 
-D:of old; his lame foot will remind him of its might should he face it again.
+values:SPEED[10] | LIGHT[1] | BRAND_COLD[3] | SLAY_EVIL[2] | SLAY_UNDEAD[3] |
+values:SLAY_TROLL[2] | SLAY_DEMON[5] | RES_COLD[1] | RES_LIGHT[1]
+desc:The weapon of Fingolfin, High King of the Noldor; it shines like a column 
+desc:of ice lit by light unquenchable.  Morgoth came but unwillingly to meet it 
+desc:of old; his lame foot will remind him of its might should he face it again.
 
 
-N:83:'Andúril'
-I:sword:Long Sword
-W:20:40:130:80000
-A:3:20 to 127
-P:0:3d5:10:15:10
-F:PROT_FEAR | FREE_ACT | BLESSED
-F:SUST_STR | SUST_DEX | SEE_INVIS
+name:83:'Andúril'
+base-object:sword:Long Sword
+info:20:130:80000
+alloc:3:20 to 127
+power:0:3d5:10:15:10
+flags:PROT_FEAR | FREE_ACT | BLESSED
+flags:SUST_STR | SUST_DEX | SEE_INVIS
 act:FIRE_BOLT72:FIRE:2
 time:40
-V:STR[4] | DEX[4] | BRAND_FIRE[3] | SLAY_EVIL[2] | SLAY_TROLL[3] | SLAY_ORC[3]
-V:SLAY_UNDEAD[3] | RES_FIRE[1] | RES_DISEN[1]
-D:The famed "Flame of the West", the Sword that was Broken and is forged 
-D:again.  It glows with the essence of fire, its wearer is mighty in combat, 
-D:and no creature of Sauron can withstand it.
+values:STR[4] | DEX[4] | BRAND_FIRE[3] | SLAY_EVIL[2] | SLAY_TROLL[3]
+values:SLAY_ORC[3] | SLAY_UNDEAD[3] | RES_FIRE[1] | RES_DISEN[1]
+desc:The famed "Flame of the West", the Sword that was Broken and is forged 
+desc:again.  It glows with the essence of fire, its wearer is mighty in combat, 
+desc:and no creature of Sauron can withstand it.
 
 
-N:84:'Anguirel'
-I:sword:Long Sword
-W:20:30:130:40000
-A:3:20 to 127
-P:0:2d5:10:12:0
-F:AGGRAVATE | FREE_ACT | SEE_INVIS
-V:SPEED[3] | STR[2] | CON[2] | BLOWS[1] | LIGHT[1] | BRAND_POIS[3]
-V:SLAY_EVIL[2] | SLAY_DEMON[3] | RES_ELEC[1] | RES_LIGHT[1] | RES_DARK[1]
-D:Forged of meteoric iron by Eöl the Dark Elf, and as deadly as any 
-D:other blade he forged.
+name:84:'Anguirel'
+base-object:sword:Long Sword
+info:20:130:40000
+alloc:3:20 to 127
+power:0:2d5:10:12:0
+flags:AGGRAVATE | FREE_ACT | SEE_INVIS
+values:SPEED[3] | STR[2] | CON[2] | BLOWS[1] | LIGHT[1] | BRAND_POIS[3]
+values:SLAY_EVIL[2] | SLAY_DEMON[3] | RES_ELEC[1] | RES_LIGHT[1] | RES_DARK[1]
+desc:Forged of meteoric iron by Eöl the Dark Elf, and as deadly as any 
+desc:other blade he forged.
 
 
-N:85:'Elvagil'
-I:sword:Long Sword
-W:1:2:130:30000
-A:50:10 to 50
-P:0:2d5:12:12:0
-F:FEATHER | SEE_INVIS
-V:DEX[2] | STEALTH[2] | SLAY_TROLL[3] | SLAY_ORC[3]
-D:The "Singing Blade", whose wearer can slay Orcs and Trolls in the hidden 
-D:and secret places of the earth.
+name:85:'Elvagil'
+base-object:sword:Long Sword
+info:1:130:30000
+alloc:50:10 to 50
+power:0:2d5:12:12:0
+flags:FEATHER | SEE_INVIS
+values:DEX[2] | STEALTH[2] | SLAY_TROLL[3] | SLAY_ORC[3]
+desc:The "Singing Blade", whose wearer can slay Orcs and Trolls in the hidden 
+desc:and secret places of the earth.
 
 
-N:86:'Forasgil'
-I:sword:Rapier
-W:1:3:40:15000
-A:38:5 to 50
-P:0:1d6:12:19:0
-V:LIGHT[1] | BRAND_COLD[3] | SLAY_ANIMAL[2] | RES_COLD[1] | RES_LIGHT[1]
-D:A slender, tapered needle of ice that coldly grips its impaled prey.
+name:86:'Forasgil'
+base-object:sword:Rapier
+info:1:40:15000
+alloc:38:5 to 50
+power:0:1d6:12:19:0
+values:LIGHT[1] | BRAND_COLD[3] | SLAY_ANIMAL[2] | RES_COLD[1] | RES_LIGHT[1]
+desc:A slender, tapered needle of ice that coldly grips its impaled prey.
 
 
-N:87:'Careth Asdriag'
-I:sword:Rapier
-W:15:8:40:25000
-A:10:15 to 80
-P:0:2d6:16:12:0
-V:BLOWS[1] | STR[2] | DEX[2] | CON[2] | SLAY_DRAGON[3] | SLAY_ANIMAL[2] |
-V:SLAY_TROLL[3] | SLAY_GIANT[3] | SLAY_ORC[3]
-D:An heirloom of the dauntless Lords of Rhûn far to the east, and a name 
-D:of dismay to creatures natural and unnatural.
+name:87:'Careth Asdriag'
+base-object:sword:Rapier
+info:15:40:25000
+alloc:10:15 to 80
+power:0:2d6:16:12:0
+values:BLOWS[1] | STR[2] | DEX[2] | CON[2] | SLAY_DRAGON[3] | SLAY_ANIMAL[2] |
+values:SLAY_TROLL[3] | SLAY_GIANT[3] | SLAY_ORC[3]
+desc:An heirloom of the dauntless Lords of Rhûn far to the east, and a name 
+desc:of dismay to creatures natural and unnatural.
 
 
-N:88:'Sting'
-I:sword:Short Sword
-W:20:15:75:100000
-A:6:20 to 100
-P:0:1d7:7:8:0
-F:PROT_FEAR | FREE_ACT | SEE_INVIS
-V:SPEED[3] | BLOWS[2] | STR[1] | DEX[1] | CON[1] | LIGHT[1] | RES_LIGHT[1]
-V:SLAY_EVIL[2] | SLAY_UNDEAD[3] | SLAY_ORC[3] | SLAY_ANIMAL[2]
-D:"I will give you a name, and I shall call you Sting."  The perfect size 
-D:for Bilbo, and stamped forever by the courage he found in Mirkwood, this 
-D:sturdy little blade grants the wearer combat prowess and survival 
-D:abilities he did not know he had.
+name:88:'Sting'
+base-object:sword:Short Sword
+info:20:75:100000
+alloc:6:20 to 100
+power:0:1d7:7:8:0
+flags:PROT_FEAR | FREE_ACT | SEE_INVIS
+values:SPEED[3] | BLOWS[2] | STR[1] | DEX[1] | CON[1] | LIGHT[1] | RES_LIGHT[1]
+values:SLAY_EVIL[2] | SLAY_UNDEAD[3] | SLAY_ORC[3] | SLAY_ANIMAL[2]
+desc:"I will give you a name, and I shall call you Sting."  The perfect size 
+desc:for Bilbo, and stamped forever by the courage he found in Mirkwood, this 
+desc:sturdy little blade grants the wearer combat prowess and survival 
+desc:abilities he did not know he had.
 
 
-N:89:'Haradekket'
-I:sword:Scimitar
-W:20:15:130:30000
-A:7:20 to 80
-P:0:4d2:9:11:0
-F:SEE_INVIS
-V:DEX[2] | BLOWS[2] | SLAY_ANIMAL[2] | SLAY_EVIL[2] | SLAY_UNDEAD[3]
-D:A damascened scimitar that hefts with wondrous ease.  Famed in song 
-D:as the "Sickle of Harad", and a deadly foe to the undead.
+name:89:'Haradekket'
+base-object:sword:Scimitar
+info:20:130:30000
+alloc:7:20 to 80
+power:0:4d2:9:11:0
+flags:SEE_INVIS
+values:DEX[2] | BLOWS[2] | SLAY_ANIMAL[2] | SLAY_EVIL[2] | SLAY_UNDEAD[3]
+desc:A damascened scimitar that hefts with wondrous ease.  Famed in song 
+desc:as the "Sickle of Harad", and a deadly foe to the undead.
 
 
-N:90:'Dagmor'
-I:sword:Short Sword
-W:20:8:80:15000
-A:12:20 to 80
-P:0:1d7:13:11:0
-F:SLOW_DIGEST | REGEN
-V:BLOWS[2] | BRAND_POIS[3] | SLAY_ANIMAL[2]
-D:A stubby blade worn by Beren, whose horn sounded of old in the glades of 
-D:Brethil.
+name:90:'Dagmor'
+base-object:sword:Short Sword
+info:20:80:15000
+alloc:12:20 to 80
+power:0:1d7:13:11:0
+flags:SLOW_DIGEST | REGEN
+values:BLOWS[2] | BRAND_POIS[3] | SLAY_ANIMAL[2]
+desc:A stubby blade worn by Beren, whose horn sounded of old in the glades of 
+desc:Brethil.
 
 
-N:91:'Doomcaller'
-I:sword:Blade of Chaos
-W:70:25:180:200000
-A:4:70 to 127
-P:0:6d5:18:28:-50
+name:91:'Doomcaller'
+base-object:sword:Blade of Chaos
+info:70:180:200000
+alloc:4:70 to 127
+power:0:6d5:18:28:-50
 # F:DRAIN_HP | 
-F:FREE_ACT | SEE_INVIS | TELEPATHY | AGGRAVATE | 
-V:BRAND_COLD[3] | SLAY_ANIMAL[2] | SLAY_DRAGON[5] | SLAY_EVIL[2] |
-V:SLAY_TROLL[3] | SLAY_DEMON[3] 
-V:RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1] | RES_CHAOS[1]
-D:This weapon of wrath, wrought by a desperate berserker gang, dives hungrily 
-D:into the yielding flesh of your enemies.  You yourself fall under the 
-D:shadow of death even as you inflict wounds that will not heal.
+flags:FREE_ACT | SEE_INVIS | TELEPATHY | AGGRAVATE | 
+values:BRAND_COLD[3] | SLAY_ANIMAL[2] | SLAY_DRAGON[5] | SLAY_EVIL[2] |
+values:SLAY_TROLL[3] | SLAY_DEMON[3] 
+values:RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1] | RES_CHAOS[1]
+desc:This weapon of wrath, wrought by a desperate berserker gang, dives hungrily
+desc: into the yielding flesh of your enemies.  You yourself fall under the 
+desc:shadow of death even as you inflict wounds that will not heal.
 
 
 ### Polearms ###
 
-N:92:of Melkor
-I:polearm:Spear
-W:65:45:200:100000
-A:2:65 to 127
-P:0:4d6:-12:20:0 
+name:92:of Melkor
+base-object:polearm:Spear
+info:65:200:100000
+alloc:2:65 to 127
+power:0:4d6:-12:20:0 
 # F:DRAIN_MANA | DRAIN_HP | 
-F:LIGHT_CURSE | HEAVY_CURSE | DRAIN_EXP | AGGRAVATE | 
-F:PROT_BLIND
-V:STEALTH[-4] | WIS[-4] | BRAND_POIS[3]
-V:RES_DARK[1] | RES_LIGHT[1] | RES_NETHER[1]
-D:A mighty, heavy black spear, once wielded by the Lord of Darkness 
-D:himself as he came to Valinor in wrath.  Its envenomed bite pierced 
-D:the Two Trees with wounds that would not heal.
+flags:LIGHT_CURSE | HEAVY_CURSE | DRAIN_EXP | AGGRAVATE | 
+flags:PROT_BLIND
+values:STEALTH[-4] | WIS[-4] | BRAND_POIS[3]
+values:RES_DARK[1] | RES_LIGHT[1] | RES_NETHER[1]
+desc:A mighty, heavy black spear, once wielded by the Lord of Darkness 
+desc:himself as he came to Valinor in wrath.  Its envenomed bite pierced 
+desc:the Two Trees with wounds that would not heal.
 
 
-N:93:of Théoden
-I:polearm:Beaked Axe
-W:20:15:180:40000
-A:7:20 to 100
-P:0:2d6:8:10:0
-F:TELEPATHY | SLOW_DIGEST | 
+name:93:of Théoden
+base-object:polearm:Beaked Axe
+info:20:180:40000
+alloc:7:20 to 100
+power:0:2d6:8:10:0
+flags:TELEPATHY | SLOW_DIGEST | 
 act:DRAIN_LIFE2
 time:40
-V:WIS[3] | CON[3] | SLAY_DRAGON[3]
-D:The narrow axe head of this weapon would pierce the armour of a very 
-D:Dragon, and the designs of your enemies stand naked and revealed.
+values:WIS[3] | CON[3] | SLAY_DRAGON[3]
+desc:The narrow axe head of this weapon would pierce the armour of a very 
+desc:Dragon, and the designs of your enemies stand naked and revealed.
 
 
-N:94:of Pain
-I:polearm:Glaive
-W:30:25:300:50000
-A:4:30 to 127
-P:0:9d6:0:30:0
-D:The massive cleaver that crowns this glaive glows blood-red and black; 
-D:fell spells of annihilation swirl and dance as you swing death's myrmidon 
-D:down.
+name:94:of Pain
+base-object:polearm:Glaive
+info:30:300:50000
+alloc:4:30 to 127
+power:0:9d6:0:30:0
+desc:The massive cleaver that crowns this glaive glows blood-red and black; 
+desc:fell spells of annihilation swirl and dance as you swing death's myrmidon 
+desc:down.
 
 
-N:95:'Osondir'
-I:polearm:Halberd
-W:20:8:140:22000
-A:12:25 to 80
-P:0:3d5:16:12:0
-F:BLESSED | FEATHER | SEE_INVIS
-V:STR[3] | WIS[3] | BRAND_FIRE[3] | SLAY_UNDEAD[3] | SLAY_GIANT[3]
-V:RES_FIRE[1] | RES_SOUND[1]
-D:Lordly and tall did Osondir stand against the wrath of giants, and 
-D:clear-eyed in barrows fell, wielding a halberd glowing ruby red.
+name:95:'Osondir'
+base-object:polearm:Halberd
+info:20:140:22000
+alloc:12:25 to 80
+power:0:3d5:16:12:0
+flags:BLESSED | FEATHER | SEE_INVIS
+values:STR[3] | WIS[3] | BRAND_FIRE[3] | SLAY_UNDEAD[3] | SLAY_GIANT[3]
+values:RES_FIRE[1] | RES_SOUND[1]
+desc:Lordly and tall did Osondir stand against the wrath of giants, and 
+desc:clear-eyed in barrows fell, wielding a halberd glowing ruby red.
 
 
-N:96:'Til-i-arc'
-I:polearm:Pike
-W:20:15:160:32000
-A:7:20 to 80
-P:0:3d5:10:12:10
-F:SUST_INT | SLOW_DIGEST
-V:STR[3] | INT[3] | SPEED[2] | BRAND_COLD[3] | BRAND_FIRE[3] | SLAY_DEMON[3]
-V:SLAY_TROLL[3] | SLAY_GIANT[3] | RES_FIRE[1] | RES_COLD[1]
-D:Within this long two-handed spear dwell the spirits of frost giants and 
-D:fire demons, who war forever, fettered by sorcerous binds.
+name:96:'Til-i-arc'
+base-object:polearm:Pike
+info:20:160:32000
+alloc:7:20 to 80
+power:0:3d5:10:12:10
+flags:SUST_INT | SLOW_DIGEST
+values:STR[3] | INT[3] | SPEED[2] | BRAND_COLD[3] | BRAND_FIRE[3]
+values:SLAY_DEMON[3] | SLAY_TROLL[3] | SLAY_GIANT[3] | RES_FIRE[1] | RES_COLD[1]
+desc:Within this long two-handed spear dwell the spirits of frost giants and 
+desc:fire demons, who war forever, fettered by sorcerous binds.
 
 
-N:97:'Aiglos'
-I:polearm:Spear
-W:15:45:50:140000
-A:2:15 to 100
-P:0:3d6:15:25:5
-F:PROT_FEAR | FREE_ACT | SLOW_DIGEST | BLESSED
+name:97:'Aiglos'
+base-object:polearm:Spear
+info:15:50:140000
+alloc:2:15 to 100
+power:0:3d6:15:25:5
+flags:PROT_FEAR | FREE_ACT | SLOW_DIGEST | BLESSED
 act:COLD_BALL100:COLD:2
 time:35
-V:DEX[4] | WIS[2] | BRAND_COLD[3] | SLAY_EVIL[2] | SLAY_TROLL[3] | SLAY_ORC[3] |
-V:SLAY_UNDEAD[5]| RES_COLD[1]
-D:The mighty spear of Gil-galad, famed as "Snow-point" in the songs of Elves.  
-D:Against it, all the foul corruptions of Sauron dashed in vain.
+values:DEX[4] | WIS[2] | BRAND_COLD[3] | SLAY_EVIL[2] | SLAY_TROLL[3]
+values:SLAY_ORC[3] | SLAY_UNDEAD[5]| RES_COLD[1]
+desc:The mighty spear of Gil-galad, famed as "Snow-point" in the songs of Elves.
+desc:  Against it, all the foul corruptions of Sauron dashed in vain.
 
 
-N:98:of Oromë
-I:polearm:Spear
-W:15:45:50:60000
-A:2:15 to 127
-P:0:4d6:15:15:0
+name:98:of Oromë
+base-object:polearm:Spear
+info:15:50:60000
+alloc:2:15 to 127
+power:0:4d6:15:15:0
 # F:DRAIN_MANA | 
-F:FEATHER | SEE_INVIS | BLESSED | 
+flags:FEATHER | SEE_INVIS | BLESSED | 
 act:STONE_TO_MUD
 time:5
-V:INT[4] | SPEED[4] | INFRA[4] | LIGHT[1] | BRAND_FIRE[3] | SLAY_GIANT[3] |
-V:SLAY_ANIMAL[2] | RES_FIRE[1] | RES_LIGHT[1]
-D:The thrusting spear of wise Oromë the Vala, strong against giants of 
-D:frost, and able to pierce rock or flesh with ease.
+values:INT[4] | SPEED[4] | INFRA[4] | LIGHT[1] | BRAND_FIRE[3] | SLAY_GIANT[3]
+values:SLAY_ANIMAL[2] | RES_FIRE[1] | RES_LIGHT[1]
+desc:The thrusting spear of wise Oromë the Vala, strong against giants of 
+desc:frost, and able to pierce rock or flesh with ease.
 
 
-N:99:'Nimloth'
-I:polearm:Spear
-W:15:12:50:30000
-A:8:15 to 65
-P:0:1d6:11:13:0
-F:BLESSED | SEE_INVIS | 
-V:STEALTH[3] | SPEED[3] | BRAND_COLD[3] | SLAY_UNDEAD[3] | RES_COLD[1]
-D:A thin spike of thrice-forged steel caps a straight silvan shaft cut from 
-D:a legendary tree, and spells to break the wills of the undead and strike 
-D:cold into the breasts of your enemies lay upon this perfectly balanced 
-D:spear.
+name:99:'Nimloth'
+base-object:polearm:Spear
+info:15:50:30000
+alloc:8:15 to 65
+power:0:1d6:11:13:0
+flags:BLESSED | SEE_INVIS | 
+values:STEALTH[3] | SPEED[3] | BRAND_COLD[3] | SLAY_UNDEAD[3] | RES_COLD[1]
+desc:A thin spike of thrice-forged steel caps a straight silvan shaft cut from 
+desc:a legendary tree, and spells to break the wills of the undead and strike 
+desc:cold into the breasts of your enemies lay upon this perfectly balanced 
+desc:spear.
 
 
-N:100:of the Eorlingas
-I:polearm:Lance
-W:20:23:360:55000
-A:4:20 to 100
-P:0:3d8:13:21:0
-F:PROT_FEAR | SEE_INVIS
-V:STR[2] | DEX[2] | SPEED[2] | SLAY_EVIL[2] | SLAY_TROLL[3] | SLAY_ORC[3]
-D:"Forth Eorlingas!"  To the field of Celebrant, Eorl the Young came beyond 
-D:hope to save beleaguered Gondor, and from his lance fled massive trolls 
-D:and dire wolves.
+name:100:of the Eorlingas
+base-object:polearm:Lance
+info:20:360:55000
+alloc:4:20 to 100
+power:0:3d8:13:21:0
+flags:PROT_FEAR | SEE_INVIS
+values:STR[2] | DEX[2] | SPEED[2] | SLAY_EVIL[2] | SLAY_TROLL[3] | SLAY_ORC[3]
+desc:"Forth Eorlingas!"  To the field of Celebrant, Eorl the Young came beyond 
+desc:hope to save beleaguered Gondor, and from his lance fled massive trolls 
+desc:and dire wolves.
 
 
-N:101:of Durin
-I:polearm:Great Axe
-W:30:90:230:150000
-A:1:40 to 127
-P:0:4d4:10:20:15
-F:FREE_ACT | PROT_FEAR
-V:TUNNEL[5] | STR[3] | CON[3] | STEALTH[-1] | BRAND_ACID[3] | BRAND_FIRE[3]
-V:SLAY_DRAGON[5] | SLAY_DEMON[3] | SLAY_TROLL[3] | SLAY_ORC[3] 
-V:RES_ACID[1] | RES_FIRE[1] | RES_LIGHT[1] | RES_DARK[1] | RES_CHAOS[1]
-D:The twin massive axe heads of this ancient demon's dread gleam with 
-D:mithril inlay telling sagas of endurance.  The powers of 
-D:Khazad-dûm protect its wielder and slay all evils found underground.
+name:101:of Durin
+base-object:polearm:Great Axe
+info:30:230:150000
+alloc:1:40 to 127
+power:0:4d4:10:20:15
+flags:FREE_ACT | PROT_FEAR
+values:TUNNEL[5] | STR[3] | CON[3] | STEALTH[-1] | BRAND_ACID[3] | BRAND_FIRE[3]
+values:SLAY_DRAGON[5] | SLAY_DEMON[3] | SLAY_TROLL[3] | SLAY_ORC[3] 
+values:RES_ACID[1] | RES_FIRE[1] | RES_LIGHT[1] | RES_DARK[1] | RES_CHAOS[1]
+desc:The twin massive axe heads of this ancient demon's dread gleam with 
+desc:mithril inlay telling sagas of endurance.  The powers of 
+desc:Khazad-dûm protect its wielder and slay all evils found underground.
 
 
-N:102:of Eönwë
-I:polearm:Great Axe
-W:30:120:230:200000
-A:1:40 to 127
-P:0:5d4:15:18:8
-F:PROT_FEAR | FREE_ACT | SEE_INVIS | BLESSED
-V:STR[2] | INT[2] | WIS[2] | DEX[2] | CON[2] | BRAND_COLD[3] | RES_COLD[3]
-V:SLAY_EVIL[2] | SLAY_UNDEAD[3] | SLAY_DEMON[5] | SLAY_ORC[3] 
+name:102:of Eönwë
+base-object:polearm:Great Axe
+info:30:230:200000
+alloc:1:40 to 127
+power:0:5d4:15:18:8
+flags:PROT_FEAR | FREE_ACT | SEE_INVIS | BLESSED
+values:STR[2] | INT[2] | WIS[2] | DEX[2] | CON[2] | BRAND_COLD[3] | RES_COLD[3]
+values:SLAY_EVIL[2] | SLAY_UNDEAD[3] | SLAY_DEMON[5] | SLAY_ORC[3] 
 act:LOSKILL
 time:1000
-D:The axe of Eönwë, leader of the Hosts of the West in the War of 
-D:Wrath, strikes with icy wrath at the undead, disperses hosts of 
-D:evil at a word, and grants Maia-like powers of body and mind.
+desc:The axe of Eönwë, leader of the Hosts of the West in the War of 
+desc:Wrath, strikes with icy wrath at the undead, disperses hosts of 
+desc:evil at a word, and grants Maia-like powers of body and mind.
 
 
-N:103:of Balli Stonehand
-I:polearm:Battle Axe
-W:30:15:170:90000
-A:7:30 to 100
-P:0:3d8:8:11:5
-F:FREE_ACT | PROT_BLIND | FEATHER | SEE_INVIS | REGEN
-V:STR[3] | CON[3] | STEALTH[1] | SLAY_DEMON[3] | SLAY_TROLL[3] | SLAY_ORC[3]
-V:RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1]
-D:The twin blades of this weapon were forged in Belegost, and powerful 
-D:forces to resist and endure lie ready for he who shall wield it once 
-D:more.
+name:103:of Balli Stonehand
+base-object:polearm:Battle Axe
+info:30:170:90000
+alloc:7:30 to 100
+power:0:3d8:8:11:5
+flags:FREE_ACT | PROT_BLIND | FEATHER | SEE_INVIS | REGEN
+values:STR[3] | CON[3] | STEALTH[1] | SLAY_DEMON[3] | SLAY_TROLL[3]
+values:SLAY_ORC[3] | RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1]
+desc:The twin blades of this weapon were forged in Belegost, and powerful 
+desc:forces to resist and endure lie ready for he who shall wield it once 
+desc:more.
 
 
-N:104:'Lotharang'
-I:polearm:Battle Axe
-W:30:15:170:21000
-A:7:30 to 100
-P:0:2d8:14:13:0
+name:104:'Lotharang'
+base-object:polearm:Battle Axe
+info:30:170:21000
+alloc:7:30 to 100
+power:0:2d8:14:13:0
 act:CURE_SERIOUS
 time:3+d3
-V:STR[3] | DEX[3] | BLOWS[1] | SLAY_TROLL[3] | SLAY_ORC[3] | RES_DISEN[1]
-D:A superbly crafted double-bladed axe once borne by Ceruthain, commander 
-D:of the Rangers of Arnor.
+values:STR[3] | DEX[3] | BLOWS[1] | SLAY_TROLL[3] | SLAY_ORC[3] | RES_DISEN[1]
+desc:A superbly crafted double-bladed axe once borne by Ceruthain, commander 
+desc:of the Rangers of Arnor.
 
 
-N:105:'Mundwine'
-I:polearm:Lochaber Axe
-W:30:8:240:30000
-A:12:30 to 100
-P:0:3d8:12:17:0
-V:SLAY_EVIL[2] | SLAY_ANIMAL[2] | SLAY_DEMON[3] 
-V:RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1]
-D:A massive axe with twin razor-sharp heads, so large that it usually 
-D:requires two hands to wield, with spells to ward off the elements 
-D:intricately engraved upon its surface in filleted gold.
+name:105:'Mundwine'
+base-object:polearm:Lochaber Axe
+info:30:240:30000
+alloc:12:30 to 100
+power:0:3d8:12:17:0
+values:SLAY_EVIL[2] | SLAY_ANIMAL[2] | SLAY_DEMON[3] 
+values:RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1]
+desc:A massive axe with twin razor-sharp heads, so large that it usually 
+desc:requires two hands to wield, with spells to ward off the elements 
+desc:intricately engraved upon its surface in filleted gold.
 
 
-N:106:'Barukkheled'
-I:polearm:Broad Axe
-W:20:8:160:50000
-A:12:20 to 75
-P:0:2d6:13:19:0
-F:SEE_INVIS | 
-V:CON[3] | SLAY_EVIL[2] | SLAY_TROLL[3] | SLAY_GIANT[3] | SLAY_ORC[3]
-D:A royal heirloom of the southern coast, strong in combat against the evil 
-D:creatures of earth.
+name:106:'Barukkheled'
+base-object:polearm:Broad Axe
+info:20:160:50000
+alloc:12:20 to 75
+power:0:2d6:13:19:0
+flags:SEE_INVIS | 
+values:CON[3] | SLAY_EVIL[2] | SLAY_TROLL[3] | SLAY_GIANT[3] | SLAY_ORC[3]
+desc:A royal heirloom of the southern coast, strong in combat against the evil 
+desc:creatures of earth.
 
 
-N:107:of Wrath
-I:polearm:Trident
-W:15:35:70:90000
-A:3:15 to 100
-P:0:3d10:16:18:0 
-F:SEE_INVIS | BLESSED | 
-V:STR[2] | DEX[2] | BRAND_POIS[3] | SLAY_EVIL[2] | SLAY_UNDEAD[5]
-V:RES_LIGHT[1] | RES_DARK[1]
-D:A massive triple-pronged spear, so great it normally requires two hands 
-D:to wield, evoking the spirit of Osse who with it pierced legions of 
-D:evil and undead.
+name:107:of Wrath
+base-object:polearm:Trident
+info:15:70:90000
+alloc:3:15 to 100
+power:0:3d10:16:18:0 
+flags:SEE_INVIS | BLESSED | 
+values:STR[2] | DEX[2] | BRAND_POIS[3] | SLAY_EVIL[2] | SLAY_UNDEAD[5]
+values:RES_LIGHT[1] | RES_DARK[1]
+desc:A massive triple-pronged spear, so great it normally requires two hands 
+desc:to wield, evoking the spirit of Osse who with it pierced legions of 
+desc:evil and undead.
 
 
-N:108:of Ulmo
-I:polearm:Trident
-W:30:90:70:120000
-A:1:30 to 127
-P:0:4d10:15:19:0
-F:FREE_ACT | HOLD_LIFE | 
-F:SEE_INVIS | SLOW_DIGEST | REGEN | 
-F:BLESSED | 
+name:108:of Ulmo
+base-object:polearm:Trident
+info:30:70:120000
+alloc:1:30 to 127
+power:0:4d10:15:19:0
+flags:FREE_ACT | HOLD_LIFE | 
+flags:SEE_INVIS | SLOW_DIGEST | REGEN | 
+flags:BLESSED | 
 act:TELE_OTHER
 time:50
-V:DEX[4] | SLAY_DRAGON[3] | SLAY_ANIMAL[2] | RES_ACID[3] | RES_NETHER[1]
-D:The awesome weapon of the Vala Ulmo, Lord of Waters.  Mightiest of all the 
-D:powers of good save Manwë himself, Ulmo laughs to scorn the dread powers 
-D:of the undead, and is utterly in command of the Element of water.
+values:DEX[4] | SLAY_DRAGON[3] | SLAY_ANIMAL[2] | RES_ACID[3] | RES_NETHER[1]
+desc:The awesome weapon of the Vala Ulmo, Lord of Waters.  Mightiest of all the 
+desc:powers of good save Manwë himself, Ulmo laughs to scorn the dread powers 
+desc:of the undead, and is utterly in command of the Element of water.
 
 
-N:109:'Avavir'
-I:polearm:Scythe
-W:40:8:180:18000
-A:12:45 to 100
-P:0:5d3:18:12:30
-F:FREE_ACT | SEE_INVIS
+name:109:'Avavir'
+base-object:polearm:Scythe
+info:40:180:18000
+alloc:12:45 to 100
+power:0:5d3:18:12:30
+flags:FREE_ACT | SEE_INVIS
 act:RECALL
 time:200
-V:DEX[3] | SPEED[3] | LIGHT[1] | BRAND_COLD[3] | BRAND_FIRE[3]
-V:RES_FIRE[1] | RES_COLD[1] | RES_LIGHT[1]
-D:Holding elemental powers whose struggles turn this weapon red and purest 
-D:white, this shining reaper bears within it a power of going forth and 
-D:returning.
+values:DEX[3] | SPEED[3] | LIGHT[1] | BRAND_COLD[3] | BRAND_FIRE[3]
+values:RES_FIRE[1] | RES_COLD[1] | RES_LIGHT[1]
+desc:Holding elemental powers whose struggles turn this weapon red and purest 
+desc:white, this shining reaper bears within it a power of going forth and 
+desc:returning.
 
 
-N:110:of Húrin
-I:polearm:Beaked Axe
-W:20:15:180:90000
-A:7:20 to 100
-P:0:3d6:12:15:0
+name:110:of Húrin
+base-object:polearm:Beaked Axe
+info:20:180:90000
+alloc:7:20 to 100
+power:0:3d6:12:15:0
 # F:DRAIN_MANA | 
 act:BERSERKER
 time:80+d80
-V:STR[2] | CON[2] | LIGHT[1] | BRAND_ACID[3] | SLAY_DRAGON[3] | SLAY_TROLL[3] |
-V:SLAY_DEMON[5] | RES_ACID[1] | RES_DARK[1] | RES_FIRE[1]
-D:Wielded by Húrin Thalion, last lord of Dor-Lómin at the Battle 
-D:of Tears Unnumbered.  He stood alone, his friends and kinsmen 
-D:dead about him, his axe smoking in the black blood of Gothmog's 
-D:troll-guard.  No less than seventy times, as he slew his foes, 
-D:did he utter his mighty war-cry: "Aurë entuluva!" - "Day shall 
-D:come again!"
+values:STR[2] | CON[2] | LIGHT[1] | BRAND_ACID[3] | SLAY_DRAGON[3]
+values:SLAY_TROLL[3] | SLAY_DEMON[5] | RES_ACID[1] | RES_DARK[1] | RES_FIRE[1]
+desc:Wielded by Húrin Thalion, last lord of Dor-Lómin at the Battle 
+desc:of Tears Unnumbered.  He stood alone, his friends and kinsmen 
+desc:dead about him, his axe smoking in the black blood of Gothmog's 
+desc:troll-guard.  No less than seventy times, as he slew his foes, 
+desc:did he utter his mighty war-cry: "Aurë entuluva!" - "Day shall 
+desc:come again!"
 
 
 ### Blunt Weapons ###
 
-N:111:'Grond'
-I:hafted:Mighty Hammer
-W:100:1:1000:500000
-A:0:100 to 100
-P:0:9d9:5:25:10
-F:IMPACT | SEE_INVIS | TELEPATHY | AGGRAVATE
-V:SLAY_DRAGON[5] | SLAY_ANIMAL[2] | SLAY_EVIL[2] | SLAY_UNDEAD[5] | 
-V:SLAY_DEMON[5] | SLAY_TROLL[3] | SLAY_ORC[3] | 
-D:The mighty Hammer of the Underworld, blackened by doomspells of shattering.  
-D:Its wielder holds the lives of all Morgoth's servants in his hand.
+name:111:'Grond'
+base-object:hafted:Mighty Hammer
+info:100:1000:500000
+alloc:0:100 to 100
+power:0:9d9:5:25:10
+flags:IMPACT | SEE_INVIS | TELEPATHY | AGGRAVATE
+values:SLAY_DRAGON[5] | SLAY_ANIMAL[2] | SLAY_EVIL[2] | SLAY_UNDEAD[5] | 
+values:SLAY_DEMON[5] | SLAY_TROLL[3] | SLAY_ORC[3] | 
+desc:The mighty Hammer of the Underworld, blackened by doomspells of shattering.
+desc:  Its wielder holds the lives of all Morgoth's servants in his hand.
 
 
-N:112:'Totila'
-I:hafted:Flail
-W:20:8:150:55000
-A:12:20 to 65
-P:0:3d6:16:12:0
-F:PROT_CONF
+name:112:'Totila'
+base-object:hafted:Flail
+info:20:150:55000
+alloc:12:20 to 65
+power:0:3d6:16:12:0
+flags:PROT_CONF
 act:CONFUSE2
 time:15
-V:STEALTH[2] | SPEED[2] | BRAND_FIRE[3] | SLAY_EVIL[2] | RES_FIRE[1]
-D:A flail whose head befuddles those who stare as you whirl it round and 
-D:becomes a fiery comet as you bring it down.
+values:STEALTH[2] | SPEED[2] | BRAND_FIRE[3] | SLAY_EVIL[2] | RES_FIRE[1]
+desc:A flail whose head befuddles those who stare as you whirl it round and 
+desc:becomes a fiery comet as you bring it down.
 
 
-N:113:'Thunderfist'
-I:hafted:Two-Handed Great Flail
-W:45:38:300:160000
-A:3:45 to 127
-P:0:4d6:5:18:0
-F:PROT_FEAR | 
-V:STR[4] | CON[3] | BRAND_FIRE[3] | BRAND_ELEC[3] | SLAY_ANIMAL[2]
-V:SLAY_TROLL[3] | SLAY_ORC[3] | RES_ELEC[1] | RES_FIRE[1] | RES_DARK[1]
-D:The long-lost weapon of Kzurin, Dwarven champion of ancient Belegost 
-D:Runes of strength adorn its handle, and flames and sparks roar and 
-D:crackle around its massive head.
+name:113:'Thunderfist'
+base-object:hafted:Two-Handed Great Flail
+info:45:300:160000
+alloc:3:45 to 127
+power:0:4d6:5:18:0
+flags:PROT_FEAR | 
+values:STR[4] | CON[3] | BRAND_FIRE[3] | BRAND_ELEC[3] | SLAY_ANIMAL[2]
+values:SLAY_TROLL[3] | SLAY_ORC[3] | RES_ELEC[1] | RES_FIRE[1] | RES_DARK[1]
+desc:The long-lost weapon of Kzurin, Dwarven champion of ancient Belegost 
+desc:Runes of strength adorn its handle, and flames and sparks roar and 
+desc:crackle around its massive head.
 
 
-N:114:'Bloodspike'
-I:hafted:Morning Star
-W:20:30:150:30000
-A:3:20 to 75
-P:0:2d6:8:22:0
-F:SEE_INVIS
-V:STR[4] | BRAND_POIS[3] | SLAY_ANIMAL[2] | SLAY_TROLL[3] | SLAY_ORC[3]
-V:RES_NEXUS[1]
-D:You feel strong and firm of foot as you whip its spiked orb around and 
-D:bathe it in the blood of your foes.
+name:114:'Bloodspike'
+base-object:hafted:Morning Star
+info:20:150:30000
+alloc:3:20 to 75
+power:0:2d6:8:22:0
+flags:SEE_INVIS
+values:STR[4] | BRAND_POIS[3] | SLAY_ANIMAL[2] | SLAY_TROLL[3] | SLAY_ORC[3]
+values:RES_NEXUS[1]
+desc:You feel strong and firm of foot as you whip its spiked orb around and 
+desc:bathe it in the blood of your foes.
 
 
-N:115:'Firestar'
-I:hafted:Morning Star
-W:20:15:150:35000
-A:7:20 to 100
-P:0:2d6:15:17:2
-V:BRAND_FIRE[3] | RES_FIRE[3]
+name:115:'Firestar'
+base-object:hafted:Morning Star
+info:20:150:35000
+alloc:7:20 to 100
+power:0:2d6:15:17:2
+values:BRAND_FIRE[3] | RES_FIRE[3]
 act:FIRE_BOLT72:FIRE:2
 time:20
-D:A famed battle-lord of old with a head as ruddy as embers that can yet rise 
-D:up in wrath.
+desc:A famed battle-lord of old with a head as ruddy as embers that can yet rise
+desc: up in wrath.
 
 
-N:116:'Taratol'
-I:hafted:Mace
-W:20:15:200:50000
-A:7:20 to 100
-P:0:3d4:12:12:0
-V:BRAND_ELEC[3] | SLAY_DRAGON[5] | RES_ELEC[3]
+name:116:'Taratol'
+base-object:hafted:Mace
+info:20:200:50000
+alloc:7:20 to 100
+power:0:3d4:12:12:0
+values:BRAND_ELEC[3] | SLAY_DRAGON[5] | RES_ELEC[3]
 act:HASTE1
 time:100+d100
-D:A great ridged mace that surrounds you with a nimbus of living lightning.  
-D:You remain utterly untouched, even as fat sparks crackle around your 
-D:fingers and eyebrows.
+desc:A great ridged mace that surrounds you with a nimbus of living lightning.  
+desc:You remain utterly untouched, even as fat sparks crackle around your 
+desc:fingers and eyebrows.
 
 
-N:117:of Aulë
-I:hafted:Great Hammer
-W:40:75:120:250000
-A:1:40 to 127
-P:0:18d1:19:21:5
+name:117:of Aulë
+base-object:hafted:Great Hammer
+info:40:120:250000
+alloc:1:40 to 127
+power:0:18d1:19:21:5
 # F:DRAIN_MANA | 
-F:PROT_FEAR | FREE_ACT | SEE_INVIS
-V:TUNNEL[8] | WIS[4] | BRAND_ACID[3] | SLAY_DRAGON[5] | SLAY_EVIL[2] |
-V:SLAY_UNDEAD[3] | SLAY_DEMON[3]
-V:RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1] | RES_NEXUS[1]
-D:The wondrous hammer of Aulë, creator of the wise Dwarven lords of old.   
-D:It bears demolishing magics that no serpent or demon can withstand, and 
-D:invokes the strength of mountains to ward off the tumult of the elements.
+flags:PROT_FEAR | FREE_ACT | SEE_INVIS
+values:TUNNEL[8] | WIS[4] | BRAND_ACID[3] | SLAY_DRAGON[5] | SLAY_EVIL[2] |
+values:SLAY_UNDEAD[3] | SLAY_DEMON[3]
+values:RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1] | RES_NEXUS[1]
+desc:The wondrous hammer of Aulë, creator of the wise Dwarven lords of old.   
+desc:It bears demolishing magics that no serpent or demon can withstand, and 
+desc:invokes the strength of mountains to ward off the tumult of the elements.
 
 
-N:118:'Nar-i-vagil'
-I:hafted:Quarterstaff
-W:20:18:150:70000
-A:5:20 to 80
-P:0:1d9:10:20:0
-V:INT[4] | BRAND_FIRE[3] | SLAY_ANIMAL[2] | RES_FIRE[1] | RES_POIS[1]
-D:Named for a fiery star and set with priceless gems bearing mystic 
-D:auras of protection and thought.
+name:118:'Nar-i-vagil'
+base-object:hafted:Quarterstaff
+info:20:150:70000
+alloc:5:20 to 80
+power:0:1d9:10:20:0
+values:INT[4] | BRAND_FIRE[3] | SLAY_ANIMAL[2] | RES_FIRE[1] | RES_POIS[1]
+desc:Named for a fiery star and set with priceless gems bearing mystic 
+desc:auras of protection and thought.
 
 
-N:119:'Eriril'
-I:hafted:Quarterstaff
-W:20:18:150:20000
-A:5:20 to 100
-P:0:1d9:13:15:0
-F:SEE_INVIS
+name:119:'Eriril'
+base-object:hafted:Quarterstaff
+info:20:150:20000
+alloc:5:20 to 100
+power:0:1d9:13:15:0
+flags:SEE_INVIS
 act:IDENTIFY
 time:10
-V:INT[4] | WIS[4] | LIGHT[1] | SLAY_EVIL[2] | RES_LIGHT[1]
-D:The radiant golden staff of an Istar of legend; this wizard's companion 
-D:grants keen sight and clear knowledge of many hidden things.
+values:INT[4] | WIS[4] | LIGHT[1] | SLAY_EVIL[2] | RES_LIGHT[1]
+desc:The radiant golden staff of an Istar of legend; this wizard's companion 
+desc:grants keen sight and clear knowledge of many hidden things.
 
 
-N:120:of Olórin
-I:hafted:Quarterstaff
-W:30:105:150:130000
-A:1:30 to 100
-P:0:2d9:10:13:0
-F:HOLD_LIFE | SEE_INVIS
+name:120:of Olórin
+base-object:hafted:Quarterstaff
+info:30:150:130000
+alloc:1:30 to 100
+power:0:2d9:10:13:0
+flags:HOLD_LIFE | SEE_INVIS
 act:PROBING
 time:20
-V:INT[4] | WIS[4] | BRAND_FIRE[3] | SLAY_DEMON[5] | SLAY_EVIL[2] |
-V:SLAY_TROLL[3] | SLAY_ORC[3] | RES_FIRE[1] | RES_NETHER[1]
-D:A staff tall and sturdy, borne of old by Gandalf.  Rough-hewn runes that 
-D:invoke the element of Earth stand bold upon its gnarled surface, and no 
-D:creature who lives in the shadow of mountains can withstand the blows it 
-D:deals.
+values:INT[4] | WIS[4] | BRAND_FIRE[3] | SLAY_DEMON[5] | SLAY_EVIL[2] |
+values:SLAY_TROLL[3] | SLAY_ORC[3] | RES_FIRE[1] | RES_NETHER[1]
+desc:A staff tall and sturdy, borne of old by Gandalf.  Rough-hewn runes that 
+desc:invoke the element of Earth stand bold upon its gnarled surface, and no 
+desc:creature who lives in the shadow of mountains can withstand the blows it 
+desc:deals.
 
 
-N:121:'Deathwreaker'
-I:hafted:Mace of Disruption
-W:80:38:400:400000
-A:3:80 to 127
-P:0:7d8:18:18:0
+name:121:'Deathwreaker'
+base-object:hafted:Mace of Disruption
+info:80:400:400000
+alloc:3:80 to 127
+power:0:7d8:18:18:0
 # F:DRAIN_MANA | 
-F:AGGRAVATE
-V:STR[6] | TUNNEL[4] | BRAND_FIRE[3] | SLAY_DRAGON[3] | SLAY_ANIMAL[2] |
-V:SLAY_EVIL[2] | SLAY_UNDEAD[5]
-V:RES_FIRE[3] | RES_DARK[1] | RES_CHAOS[1] | RES_DISEN[1]
-D:A weapon so massive it seems beyond the strength of mortals, yet you feel 
-D:the might of giants within you as you heft it.  As you grip the handle 
-D:of ebony and steel, coronas of fire blaze, and mighty spells to preserve 
-D:magic surge around you.  You wield the Fear of Dragons and the Despair 
-D:of the Undead!
+flags:AGGRAVATE
+values:STR[6] | TUNNEL[4] | BRAND_FIRE[3] | SLAY_DRAGON[3] | SLAY_ANIMAL[2] |
+values:SLAY_EVIL[2] | SLAY_UNDEAD[5]
+values:RES_FIRE[3] | RES_DARK[1] | RES_CHAOS[1] | RES_DISEN[1]
+desc:A weapon so massive it seems beyond the strength of mortals, yet you feel 
+desc:the might of giants within you as you heft it.  As you grip the handle 
+desc:of ebony and steel, coronas of fire blaze, and mighty spells to preserve 
+desc:magic surge around you.  You wield the Fear of Dragons and the Despair 
+desc:of the Undead!
 
 
-N:122:'Turmil'
-I:polearm:Lucerne Hammer
-W:20:15:120:30000
-A:7:20 to 100
-P:0:2d5:10:11:8
-F:BLESSED | REGEN
+name:122:'Turmil'
+base-object:polearm:Lucerne Hammer
+info:20:120:30000
+alloc:7:20 to 100
+power:0:2d5:10:11:8
+flags:BLESSED | REGEN
 act:DRAIN_LIFE1
 time:40
-V:WIS[4] | INFRA[4] | LIGHT[1] | BRAND_COLD[3] | SLAY_ORC[3]
-V:RES_COLD[3] | RES_LIGHT[1]
-D:Once wielded by the High Priest of Meneltarma, this great mace gleams coldly 
-D:as though moonlit, and can strike equally mighty spiritual and physical 
-D:blows.
+values:WIS[4] | INFRA[4] | LIGHT[1] | BRAND_COLD[3] | SLAY_ORC[3]
+values:RES_COLD[3] | RES_LIGHT[1]
+desc:Once wielded by the High Priest of Meneltarma, this great mace gleams
+desc: coldly as though moonlit, and can strike equally mighty spiritual and
+desc: physical blows.
 
 
-N:123:of Gothmog
-I:hafted:Whip
-W:60:25:90:25000
-A:4:60 to 127
-P:0:6d3:13:15:0
+name:123:of Gothmog
+base-object:hafted:Whip
+info:60:90:25000
+alloc:4:60 to 127
+power:0:6d3:13:15:0
 # F:DRAIN_HP | 
-F:LIGHT_CURSE | HEAVY_CURSE | AGGRAVATE
+flags:LIGHT_CURSE | HEAVY_CURSE | AGGRAVATE
 act:FIRE_BALL:FIRE:2
 time:15
-V:STR[3] | INT[-3] | DEX[-3] | WIS[-3] | LIGHT[1] | BRAND_FIRE[3]
-V:SLAY_ANIMAL[2] | SLAY_DRAGON[5] | SLAY_TROLL[3] | SLAY_GIANT[3] 
-V:RES_FIRE[3] | RES_ELEC[1] | RES_DARK[1]
-D:A great crackling Balrog's whip of flame, this weapon could bring 
-D:even Ungoliant to heel.
+values:STR[3] | INT[-3] | DEX[-3] | WIS[-3] | LIGHT[1] | BRAND_FIRE[3]
+values:SLAY_ANIMAL[2] | SLAY_DRAGON[5] | SLAY_TROLL[3] | SLAY_GIANT[3] 
+values:RES_FIRE[3] | RES_ELEC[1] | RES_DARK[1]
+desc:A great crackling Balrog's whip of flame, this weapon could bring 
+desc:even Ungoliant to heel.
 
 
 ### Missile Weapons ###
 
-N:124:'Belthronding'
-I:bow:Long Bow
-W:40:20:40:35000
-A:5:40 to 127
-P:0:0d0:20:22:0
-V:DEX[3] | SPEED[1] | STEALTH[1] | SHOTS[1] | RES_DISEN[1]
-D:The great bow of Beleg Cúthalion, the most famous archer of the Elves.  
-D:Its backbone of black yew holds strings of bear sinew, and of old, only 
-D:Beleg himself could draw them.
+name:124:'Belthronding'
+base-object:bow:Long Bow
+info:40:40:35000
+alloc:5:40 to 127
+power:0:0d0:20:22:0
+values:DEX[3] | SPEED[1] | STEALTH[1] | SHOTS[1] | RES_DISEN[1]
+desc:The great bow of Beleg Cúthalion, the most famous archer of the Elves.  
+desc:Its backbone of black yew holds strings of bear sinew, and of old, only 
+desc:Beleg himself could draw them.
 
 
-N:125:of Bard
-I:bow:Long Bow
-W:30:20:40:20000
-A:5:40 to 127
-P:0:0d0:17:19:0
-F:FREE_ACT | 
-V:MIGHT[2] | DEX[1] | SPEED[1]
-D:The great yew bow of grim-faced Bard, who shot the mightiest arrow that 
-D:songs record.
+name:125:of Bard
+base-object:bow:Long Bow
+info:30:40:20000
+alloc:5:40 to 127
+power:0:0d0:17:19:0
+flags:FREE_ACT | 
+values:MIGHT[2] | DEX[1] | SPEED[1]
+desc:The great yew bow of grim-faced Bard, who shot the mightiest arrow that 
+desc:songs record.
 
 
-N:126:'Cubragol'
-I:bow:Light Crossbow
-W:50:25:110:50000
-A:4:50 to 127
-P:0:0d0:10:14:0
-V:SPEED[10] | BRAND_FIRE[3] | RES_FIRE[1]
-D:A crossbow that grants fiery speed to he who finds it, and from which 
-D:shoot bolts that blaze with flame unquenchable.
+name:126:'Cubragol'
+base-object:bow:Light Crossbow
+info:50:110:50000
+alloc:4:50 to 127
+power:0:0d0:10:14:0
+values:SPEED[10] | BRAND_FIRE[3] | RES_FIRE[1]
+desc:A crossbow that grants fiery speed to he who finds it, and from which 
+desc:shoot bolts that blaze with flame unquenchable.
 
 
-N:127:of Umbar
-I:bow:Heavy Crossbow
-W:60:20:200:35000
-A:5:60 to 127
-P:0:4d1:18:18:0
-F:AGGRAVATE | PROT_BLIND
+name:127:of Umbar
+base-object:bow:Heavy Crossbow
+info:60:200:35000
+alloc:5:60 to 127
+power:0:4d1:18:18:0
+flags:AGGRAVATE | PROT_BLIND
 act:ARROW:ARROW
 time:20+d20
-V:MIGHT[2] | STR[1] | CON[1] | RES_LIGHT[1] | RES_DARK[1] | RES_ELEC[1]
-D:A great brazen arbalest with arms of gleaming steel.  It shoots quarrels 
-D:with mighty power for those brave enough to risk betrayal.
+values:MIGHT[2] | STR[1] | CON[1] | RES_LIGHT[1] | RES_DARK[1] | RES_ELEC[1]
+desc:A great brazen arbalest with arms of gleaming steel.  It shoots quarrels 
+desc:with mighty power for those brave enough to risk betrayal.
 
 
-N:128:of Amrod
-I:bow:Short Bow
-W:25:10:30:9000
-A:10:30 to 100
-P:0:0d0:12:15:0
-F:REGEN
-V:STR[2] | CON[2] | MIGHT[2] | RES_FIRE[1] | RES_ELEC[1] | RES_COLD[1]
-D:One of a pair of hunting bows once belonging to Fëanor's two youngest 
-D:sons.  The bows are like and yet unlike, much as the twin brothers were.
+name:128:of Amrod
+base-object:bow:Short Bow
+info:25:30:9000
+alloc:10:30 to 100
+power:0:0d0:12:15:0
+flags:REGEN
+values:STR[2] | CON[2] | MIGHT[2] | RES_FIRE[1] | RES_ELEC[1] | RES_COLD[1]
+desc:One of a pair of hunting bows once belonging to Fëanor's two youngest 
+desc:sons.  The bows are like and yet unlike, much as the twin brothers were.
 
 
-N:129:of Amras
-I:bow:Short Bow
-W:25:10:30:9000
-A:10:30 to 80
-P:0:0d0:12:15:0
-F:SLOW_DIGEST
-V:INT[2] | WIS[2] | DEX[2] | SHOTS[1] | MIGHT[1] | SPEED[1]
-V:RES_FIRE[1] | RES_ELEC[1] | RES_COLD[1]
-D:One of a pair of hunting bows once belonging to Fëanor's two youngest 
-D:sons.  The bows are like and yet unlike, much as the twin brothers were.
+name:129:of Amras
+base-object:bow:Short Bow
+info:25:30:9000
+alloc:10:30 to 80
+power:0:0d0:12:15:0
+flags:SLOW_DIGEST
+values:INT[2] | WIS[2] | DEX[2] | SHOTS[1] | MIGHT[1] | SPEED[1]
+values:RES_FIRE[1] | RES_ELEC[1] | RES_COLD[1]
+desc:One of a pair of hunting bows once belonging to Fëanor's two youngest 
+desc:sons.  The bows are like and yet unlike, much as the twin brothers were.
 
 
 ### Digging Tools ###
 
-N:130:of Náin
-I:digger:Mattock
-W:60:8:240:30000
-A:12:60 to 100
-P:0:2d8:12:18:0
+name:130:of Náin
+base-object:digger:Mattock
+info:60:240:30000
+alloc:12:60 to 100
+power:0:2d8:12:18:0
 act:STONE_TO_MUD
 time:2
-V:TUNNEL[6] | INFRA[4] | SEARCH[4] | STR[4] | SLAY_ORC[3] | SLAY_TROLL[3]
-V:SLAY_GIANT[3] | SLAY_DRAGON[3] | RES_DARK[1] | RES_DISEN[1]
-D:A mighty Dwarven mattock, as good for hewing orc-necks as for hewing 
-D:stone.  Náin, King of the Iron Hills, brought his mattock-wielding 
-D:warriors to the Battle of Azanulbizar, and no Orc could withstand them, 
-D:although Náin himself fell before their lord Azog.
+values:TUNNEL[6] | INFRA[4] | SEARCH[4] | STR[4] | SLAY_ORC[3] | SLAY_TROLL[3]
+values:SLAY_GIANT[3] | SLAY_DRAGON[3] | RES_DARK[1] | RES_DISEN[1]
+desc:A mighty Dwarven mattock, as good for hewing orc-necks as for hewing 
+desc:stone.  Náin, King of the Iron Hills, brought his mattock-wielding 
+desc:warriors to the Battle of Azanulbizar, and no Orc could withstand them, 
+desc:although Náin himself fell before their lord Azog.
 
 
-N:131:of Erebor
-I:digger:Pick
-W:55:5:180:30000
-A:20:55 to 100
-P:0:4d3:5:20:0
-F:SUST_STR | 
-V:TUNNEL[5] | STR[3] | CON[3] | LIGHT[1] | BRAND_ACID[3] | SLAY_ORC[3] |
-V:SLAY_TROLL[3] | SLAY_DEMON[3] | RES_CHAOS[1] | RES_LIGHT[1] | RES_DARK[1]
-D:A fine dwarven pick, good for a miner, and suitable as a weapon 
-D:should the wielder ever tunnel through into a foe's stronghold.
+name:131:of Erebor
+base-object:digger:Pick
+info:55:180:30000
+alloc:20:55 to 100
+power:0:4d3:5:20:0
+flags:SUST_STR | 
+values:TUNNEL[5] | STR[3] | CON[3] | LIGHT[1] | BRAND_ACID[3] | SLAY_ORC[3] |
+values:SLAY_TROLL[3] | SLAY_DEMON[3] | RES_CHAOS[1] | RES_LIGHT[1] | RES_DARK[1]
+desc:A fine dwarven pick, good for a miner, and suitable as a weapon 
+desc:should the wielder ever tunnel through into a foe's stronghold.
 
 
 ### Miscellaneous new stuff ###
 
-N:132:of Fundin Bluecloak
-I:hafted:Ball-and-Chain
-W:65:100:130:60000
-A:2:65 to 127
-P:0:4d4:13:17:10
-F:HOLD_LIFE
+name:132:of Fundin Bluecloak
+base-object:hafted:Ball-and-Chain
+info:65:130:60000
+alloc:2:65 to 127
+power:0:4d4:13:17:10
+flags:HOLD_LIFE
 act:DISPEL_EVIL
 time:100+d100
-V:STR[4] | WIS[4] | LIGHT[1] | SLAY_EVIL[2] | SLAY_UNDEAD[3]
-V:RES_FIRE[1] | RES_ELEC[1] | RES_NETHER[1]
-D:The weapon of a mighty dwarven priest, whose shade is rumoured to 
-D:haunt the halls of Angband still.
+values:STR[4] | WIS[4] | LIGHT[1] | SLAY_EVIL[2] | SLAY_UNDEAD[3]
+values:RES_FIRE[1] | RES_ELEC[1] | RES_NETHER[1]
+desc:The weapon of a mighty dwarven priest, whose shade is rumoured to 
+desc:haunt the halls of Angband still.
 
 
-N:133:of Azaghâl
-I:sword:Main Gauche
-W:18:30:30:50000
-A:3:18 to 100
-P:0:2d5:12:14:0
-F:PROT_FEAR
-V:SLAY_DRAGON[5] | RES_FIRE[3] | RES_ACID[1]
-D:Azaghâl, Dwarf-king of Belegost, fell before Glaurung in the Battle 
-D:of Unnumbered Tears.  With his final breath, Azaghâl plunged this 
-D:blade into Glaurung's belly with such a blow that the Father of Dragons fled 
-D:the field with all his kin, and was at first believed to be mortally wounded.
+name:133:of Azaghâl
+base-object:sword:Main Gauche
+info:18:30:50000
+alloc:3:18 to 100
+power:0:2d5:12:14:0
+flags:PROT_FEAR
+values:SLAY_DRAGON[5] | RES_FIRE[3] | RES_ACID[1]
+desc:Azaghâl, Dwarf-king of Belegost, fell before Glaurung in the Battle 
+desc:of Unnumbered Tears.  With his final breath, Azaghâl plunged this 
+desc:blade into Glaurung's belly with such a blow that the Father of Dragons 
+desc:fled the field with all his kin, and was at first believed to be mortally 
+desc:wounded.
 
 
-N:134:of the Haradrim
-I:shield:Leather Shield
-W:35:12:90:25000
-A:10:35 to 127
-P:9:1d2:5:5:15
-F:SUST_STR | SUST_CON | PROT_FEAR | PROT_BLIND
+name:134:of the Haradrim
+base-object:shield:Leather Shield
+info:35:90:25000
+alloc:10:35 to 127
+power:9:1d2:5:5:15
+flags:SUST_STR | SUST_CON | PROT_FEAR | PROT_BLIND
 act:BERSERKER
 time:50
-V:STR[2] | CON[2] | RES_POIS[1]
-D:The painted shield of a chieftain of Far Harad, gaudy and barbaric.  
-D:Its wielder will fear nothing and fight with unnatural strength, but 
-D:also draw attention to himself.
+values:STR[2] | CON[2] | RES_POIS[1]
+desc:The painted shield of a chieftain of Far Harad, gaudy and barbaric.  
+desc:Its wielder will fear nothing and fight with unnatural strength, but 
+desc:also draw attention to himself.
 
 
-N:135:of Elros
-I:shield:Wicker Shield
-W:40:6:30:60000
-A:10:50 to 127
-P:2:1d1:0:0:20
-F:PROT_CONF | HOLD_LIFE
-V:CON[4] | WIS[1] | INT[1] | RES_ELEC[1] | RES_SHARD[1]
-D:The shield of Elros Tar-Minyatur, founder of Númenor. Granted long
-D: life by the Valar, even his shield became imbued with power.
+name:135:of Elros
+base-object:shield:Wicker Shield
+info:40:30:60000
+alloc:10:50 to 127
+power:2:1d1:0:0:20
+flags:PROT_CONF | HOLD_LIFE
+values:CON[4] | WIS[1] | INT[1] | RES_ELEC[1] | RES_SHARD[1]
+desc:The shield of Elros Tar-Minyatur, founder of Númenor. Granted long
+desc: life by the Valar, even his shield became imbued with power.
 
 
-N:136:of Éowyn
-I:sword:Bastard Sword
-W:30:100:140:120000
-A:3:30 to 127
-P:0:4d4:12:16:0
-F:PROT_FEAR
-V:STR[4] | STEALTH[2] | SLAY_EVIL[2] | SLAY_UNDEAD[5] | SLAY_GIANT[3] |
-V:SLAY_ANIMAL[2] | RES_NETHER[1] | RES_DARK[1] | RES_COLD[1]
-D:The blade of the legendary Shieldmaiden of Rohan, who slew the foul 
-D:steed of the Morgul-lord before striking down the mighty Witch-king 
-D:himself, whom no mortal man could hinder.
+name:136:of Éowyn
+base-object:sword:Bastard Sword
+info:30:140:120000
+alloc:3:30 to 127
+power:0:4d4:12:16:0
+flags:PROT_FEAR
+values:STR[4] | STEALTH[2] | SLAY_EVIL[2] | SLAY_UNDEAD[5] | SLAY_GIANT[3] |
+values:SLAY_ANIMAL[2] | RES_NETHER[1] | RES_DARK[1] | RES_COLD[1]
+desc:The blade of the legendary Shieldmaiden of Rohan, who slew the foul 
+desc:steed of the Morgul-lord before striking down the mighty Witch-king 
+desc:himself, whom no mortal man could hinder.
 
 
-N:137:of Radagast
-I:boots:Pair of Leather Boots
-W:10:25:20:7000
-A:8:15 to 70
-P:2:1d1:0:0:12
-F:FREE_ACT | FEATHER
-V:INFRA[5] | STEALTH[3] | WIS[1] | RES_COLD[1]
-D:Made of brown leather, covered with scuff marks and dust, still these
-D: boots possess the magic of Radagast, friend of birds and nature.
+name:137:of Radagast
+base-object:boots:Pair of Leather Boots
+info:10:20:7000
+alloc:8:15 to 70
+power:2:1d1:0:0:12
+flags:FREE_ACT | FEATHER
+values:INFRA[5] | STEALTH[3] | WIS[1] | RES_COLD[1]
+desc:Made of brown leather, covered with scuff marks and dust, still these
+desc: boots possess the magic of Radagast, friend of birds and nature.
 
 
-N:138:'Stormwalker'
-I:boots:Pair of Mithril Shod Boots
-W:30:25:40:40000
-A:3:60 to 127
-P:8:1d1:0:0:24
-V:SPEED[6] | RES_ELEC[3] | RES_SOUND[1]
+name:138:'Stormwalker'
+base-object:boots:Pair of Mithril Shod Boots
+info:30:40:40000
+alloc:3:60 to 127
+power:8:1d1:0:0:24
+values:SPEED[6] | RES_ELEC[3] | RES_SOUND[1]
 act:BERSERKER
 time:100
-D:And they hewed off Gelmir's hands and feet, and his head last, within
-D: sight of the Elves, and left him. By ill chance there stood Gwindor
-D: of Nargothrond, the brother of Gelmir. Now his wrath was kindled to
-D: madness, and he leapt forth on horseback, and many riders with him;
-D: and they pursued the heralds and slew them, and drove on deep into
-D: the main host.
+desc:And they hewed off Gelmir's hands and feet, and his head last, within
+desc: sight of the Elves, and left him. By ill chance there stood Gwindor
+desc: of Nargothrond, the brother of Gelmir. Now his wrath was kindled to
+desc: madness, and he leapt forth on horseback, and many riders with him;
+desc: and they pursued the heralds and slew them, and drove on deep into
+desc: the main host.
 
 
-#N:139:of Amandil
-#I:amulet:55
-#W:65:30:3:90000
-#A:3:60 to 127
-#F:PROT_FEAR | PROT_BLIND | PROT_STUN | PROT_CONF
-#V:SEARCH[4] | SPEED[2] | RES_ELEC[1] | RES_COLD[1]
-#D:The pendant of Amandil, the last Lord of Andúnië, and mighty
-#D: ship-captain of Númenor. First among Númenóreans to see
-#D: Sauron for what he was.
+#name:139:of Amandil
+#base-object:amulet:55
+#info:65:3:90000
+#alloc:3:60 to 127
+#flags:PROT_FEAR | PROT_BLIND | PROT_STUN | PROT_CONF
+#values:SEARCH[4] | SPEED[2] | RES_ELEC[1] | RES_COLD[1]
+#desc:The pendant of Amandil, the last Lord of Andúnië, and mighty
+#desc: ship-captain of Númenor. First among Númenóreans to see
+#desc: Sauron for what he was.

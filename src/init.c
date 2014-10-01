@@ -251,7 +251,7 @@ static enum parser_error write_dummy_object_record(struct artifact *art, const c
 
 	/* Extend by 1 and realloc */
 	z_info->k_max += 1;
-	temp = mem_realloc(k_info, (z_info->k_max+1) * sizeof(*temp));
+	temp = mem_realloc(k_info, (z_info->k_max + 1) * sizeof(*temp));
 
 	/* Copy if no errors */
 	if (!temp)
@@ -1277,7 +1277,7 @@ static struct file_parser act_parser = {
 };
 
 /* Parsing functions for artifact.txt */
-static enum parser_error parse_a_n(struct parser *p) {
+static enum parser_error parse_artifact_name(struct parser *p) {
 	size_t i;
 	int idx = parser_getint(p, "index");
 	const char *name = parser_getstr(p, "name");
@@ -1296,7 +1296,7 @@ static enum parser_error parse_a_n(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_a_i(struct parser *p) {
+static enum parser_error parse_artifact_base_object(struct parser *p) {
 	struct artifact *a = parser_priv(p);
 	int tval, sval;
 	const char *sval_name;
@@ -1317,7 +1317,7 @@ static enum parser_error parse_a_i(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_a_g(struct parser *p) {
+static enum parser_error parse_artifact_graphics(struct parser *p) {
 	wchar_t glyph = parser_getchar(p, "glyph");
 	const char *color = parser_getsym(p, "color");
 	struct artifact *a = parser_priv(p);
@@ -1337,7 +1337,7 @@ static enum parser_error parse_a_g(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_a_w(struct parser *p) {
+static enum parser_error parse_artifact_info(struct parser *p) {
 	struct artifact *a = parser_priv(p);
 	assert(a);
 
@@ -1347,7 +1347,7 @@ static enum parser_error parse_a_w(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_a_a(struct parser *p) {
+static enum parser_error parse_artifact_alloc(struct parser *p) {
 	struct artifact *a = parser_priv(p);
 	const char *tmp = parser_getstr(p, "minmax");
 	int amin, amax;
@@ -1365,7 +1365,7 @@ static enum parser_error parse_a_a(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_a_p(struct parser *p) {
+static enum parser_error parse_artifact_power(struct parser *p) {
 	struct artifact *a = parser_priv(p);
 	struct random hd = parser_getrand(p, "hd");
 	assert(a);
@@ -1379,7 +1379,7 @@ static enum parser_error parse_a_p(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_a_f(struct parser *p) {
+static enum parser_error parse_artifact_flags(struct parser *p) {
 	struct artifact *a = parser_priv(p);
 	char *s;
 	char *t;
@@ -1404,7 +1404,7 @@ static enum parser_error parse_a_f(struct parser *p) {
 	return t ? PARSE_ERROR_INVALID_FLAG : PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_a_act(struct parser *p) {
+static enum parser_error parse_artifact_act(struct parser *p) {
 	struct artifact *a = parser_priv(p);
 	const char *name = parser_getstr(p, "name");
 
@@ -1415,7 +1415,7 @@ static enum parser_error parse_a_act(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_a_time(struct parser *p) {
+static enum parser_error parse_artifact_time(struct parser *p) {
 	struct artifact *a = parser_priv(p);
 	assert(a);
 
@@ -1423,7 +1423,7 @@ static enum parser_error parse_a_time(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_a_msg(struct parser *p) {
+static enum parser_error parse_artifact_msg(struct parser *p) {
 	struct artifact *a = parser_priv(p);
 	assert(a);
 
@@ -1431,7 +1431,7 @@ static enum parser_error parse_a_msg(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_a_v(struct parser *p) {
+static enum parser_error parse_artifact_values(struct parser *p) {
 	struct artifact *a = parser_priv(p);
 	char *s; 
 	char *t;
@@ -1489,7 +1489,7 @@ static enum parser_error parse_a_v(struct parser *p) {
 	return t ? PARSE_ERROR_INVALID_VALUE : PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_a_d(struct parser *p) {
+static enum parser_error parse_artifact_desc(struct parser *p) {
 	struct artifact *a = parser_priv(p);
 	assert(a);
 
@@ -1497,29 +1497,30 @@ static enum parser_error parse_a_d(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-struct parser *init_parse_a(void) {
+struct parser *init_parse_artifact(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
-	parser_reg(p, "N int index str name", parse_a_n);
-	parser_reg(p, "I sym tval sym sval", parse_a_i);
-	parser_reg(p, "G char glyph sym color", parse_a_g);
-	parser_reg(p, "W int level int rarity int weight int cost", parse_a_w);
-	parser_reg(p, "A int common str minmax", parse_a_a);
-	parser_reg(p, "P int ac rand hd int to-h int to-d int to-a", parse_a_p);
-	parser_reg(p, "F ?str flags", parse_a_f);
-	parser_reg(p, "act str name", parse_a_act);
-	parser_reg(p, "time rand time", parse_a_time);
-	parser_reg(p, "msg str text", parse_a_msg);
-	parser_reg(p, "V str values", parse_a_v);
-	parser_reg(p, "D str text", parse_a_d);
+	parser_reg(p, "name int index str name", parse_artifact_name);
+	parser_reg(p, "base-object sym tval sym sval", parse_artifact_base_object);
+	parser_reg(p, "graphics char glyph sym color", parse_artifact_graphics);
+	parser_reg(p, "info int level int weight int cost", parse_artifact_info);
+	parser_reg(p, "alloc int common str minmax", parse_artifact_alloc);
+	parser_reg(p, "power int ac rand hd int to-h int to-d int to-a",
+			   parse_artifact_power);
+	parser_reg(p, "flags ?str flags", parse_artifact_flags);
+	parser_reg(p, "act str name", parse_artifact_act);
+	parser_reg(p, "time rand time", parse_artifact_time);
+	parser_reg(p, "msg str text", parse_artifact_msg);
+	parser_reg(p, "values str values", parse_artifact_values);
+	parser_reg(p, "desc str text", parse_artifact_desc);
 	return p;
 }
 
-static errr run_parse_a(struct parser *p) {
+static errr run_parse_artifact(struct parser *p) {
 	return parse_file(p, "artifact");
 }
 
-static errr finish_parse_a(struct parser *p) {
+static errr finish_parse_artifact(struct parser *p) {
 	struct artifact *a, *n;
 
 	/* scan the list for the max id */
@@ -1532,7 +1533,7 @@ static errr finish_parse_a(struct parser *p) {
 	}
 
 	/* allocate the direct access list and copy the data to it */
-	a_info = mem_zalloc((z_info->a_max+1) * sizeof(*a));
+	a_info = mem_zalloc((z_info->a_max + 1) * sizeof(*a));
 	for (a = parser_priv(p); a; a = n) {
 		memcpy(&a_info[a->aidx], a, sizeof(*a));
 		n = a->next;
@@ -1549,7 +1550,7 @@ static errr finish_parse_a(struct parser *p) {
 	return 0;
 }
 
-static void cleanup_a(void)
+static void cleanup_artifact(void)
 {
 	int idx;
 	for (idx = 0; idx < z_info->a_max; idx++) {
@@ -1562,12 +1563,12 @@ static void cleanup_a(void)
 	mem_free(a_info);
 }
 
-static struct file_parser a_parser = {
+static struct file_parser artifact_parser = {
 	"artifact",
-	init_parse_a,
-	run_parse_a,
-	finish_parse_a,
-	cleanup_a
+	init_parse_artifact,
+	run_parse_artifact,
+	finish_parse_artifact,
+	cleanup_artifact
 };
 
 /* Parsing functions for names.txt (random name fragments) */
@@ -2042,7 +2043,7 @@ static errr finish_parse_f(struct parser *p) {
 	}
 
 	/* allocate the direct access list and copy the data to it */
-	f_info = mem_zalloc((z_info->f_max+1) * sizeof(*f));
+	f_info = mem_zalloc((z_info->f_max + 1) * sizeof(*f));
 	for (f = parser_priv(p); f; f = n) {
 		memcpy(&f_info[f->fidx], f, sizeof(*f));
 		n = f->next;
@@ -2421,7 +2422,7 @@ static errr finish_parse_e(struct parser *p) {
 	}
 
 	/* allocate the direct access list and copy the data to it */
-	e_info = mem_zalloc((z_info->e_max+1) * sizeof(*e));
+	e_info = mem_zalloc((z_info->e_max + 1) * sizeof(*e));
 	for (e = parser_priv(p); e; e = n) {
 		memcpy(&e_info[e->eidx], e, sizeof(*e));
 		n = e->next;
@@ -3476,7 +3477,7 @@ static errr finish_parse_mp(struct parser *p) {
 	}
 
 	/* allocate the direct access list and copy the data to it */
-	pain_messages = mem_zalloc((z_info->mp_max+1) * sizeof(*mp));
+	pain_messages = mem_zalloc((z_info->mp_max + 1) * sizeof(*mp));
 	for (mp = parser_priv(p); mp; mp = n) {
 		memcpy(&pain_messages[mp->pain_idx], mp, sizeof(*mp));
 		n = mp->next;
@@ -3740,7 +3741,7 @@ static errr finish_parse_pit(struct parser *p) {
 	}
 
 	/* allocate the direct access list and copy the data to it */
-	pit_info = mem_zalloc((z_info->pit_max+1) * sizeof(*pit));
+	pit_info = mem_zalloc((z_info->pit_max + 1) * sizeof(*pit));
 	for (pit = parser_priv(p); pit; pit = n) {
 		memcpy(&pit_info[pit->pit_idx], pit, sizeof(*pit));
 		n = pit->next;
@@ -3812,7 +3813,7 @@ static struct {
 	{ "objects", &k_parser },
 	{ "activations", &act_parser },
 	{ "ego-items", &e_parser },
-	{ "artifacts", &a_parser },
+	{ "artifacts", &artifact_parser },
 	{ "monster pain messages", &mp_parser },
 	{ "monster spells", &rs_parser },
 	{ "monster bases", &rb_parser },
