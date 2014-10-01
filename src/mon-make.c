@@ -426,7 +426,7 @@ s16b mon_pop(struct chunk *c)
 	int m_idx;
 
 	/* Normal allocation */
-	if (cave_monster_max(c) < z_info->m_max) {
+	if (cave_monster_max(c) < z_info->level_monster_max) {
 		/* Get the next hole */
 		m_idx = cave_monster_max(c);
 

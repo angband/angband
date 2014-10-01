@@ -431,16 +431,16 @@ static enum parser_error parse_z(struct parser *p) {
 	if (value < 0)
 		return PARSE_ERROR_INVALID_VALUE;
 
-	if (streq(label, "O"))
-		z->o_max = value;
-	else if (streq(label, "M"))
-		z->m_max = value;
-	else if (streq(label, "N"))
-		z->l_max = value;
+	if (streq(label, "objects"))
+		z->level_object_max = value;
+	else if (streq(label, "monsters"))
+		z->level_monster_max = value;
+	else if (streq(label, "traps"))
+		z->level_trap_max = value;
 	else
 		return PARSE_ERROR_UNDEFINED_DIRECTIVE;
 
-	return 0;
+	return PARSE_ERROR_NONE;
 }
 
 struct parser *init_parse_z(void) {
@@ -448,7 +448,7 @@ struct parser *init_parse_z(void) {
 	struct parser *p = parser_new();
 
 	parser_setpriv(p, z);
-	parser_reg(p, "M sym label int value", parse_z);
+	parser_reg(p, "level-max sym label int value", parse_z);
 	return p;
 }
 

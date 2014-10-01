@@ -25,8 +25,9 @@
  */
 struct angband_constants
 {
+	/* Array bounds, set on parsing edit files */
 	u16b f_max;       /**< Maximum number of terrain features */
-    u16b trap_max;	  /**< Maximum number of trap kinds */
+	u16b trap_max;	  /**< Maximum number of trap kinds */
 	u16b k_max;       /**< Maximum number of object base kinds */
 	u16b a_max;       /**< Maximum number of artifact kinds */
 	u16b e_max;       /**< Maximum number of ego-item kinds */
@@ -34,11 +35,12 @@ struct angband_constants
 	u16b mp_max;	  /**< Maximum number of monster pain message sets */
 	u16b s_max;       /**< Maximum number of magic spells */
 	u16b pit_max;	  /**< Maximum number of monster pit types */
-    u16b act_max;	  /**< Maximum number of activations for randarts */
+	u16b act_max;	  /**< Maximum number of activations for randarts */
 
-	u16b o_max;       /**< Maximum number of objects on a given level */
-	u16b m_max;       /**< Maximum number of monsters on a given level */
-    u16b l_max;		  /**< Maximum number of traps on a given level */
+	/* Maxima of things on a given level, read from constants.txt */
+	u16b level_object_max;	/**< Maximum number of objects on a given level */
+	u16b level_monster_max;	/**< Maximum number of monsters on a given level */
+	u16b level_trap_max;	/**< Maximum number of traps on a given level */
 };
 
 struct init_module {

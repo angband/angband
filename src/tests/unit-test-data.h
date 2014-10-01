@@ -824,16 +824,19 @@ static monster_lore TEST_DATA test_lore = {
 #undef _NOBLOW
 
 static struct angband_constants TEST_DATA test_z_info = {
-	.f_max   = 2,
-	.k_max   = 2,
-	.a_max   = 2,
-	.e_max   = 2,
-	.r_max   = 2,
-	.mp_max  = 2,
-	.s_max   = 2,
-	.pit_max = 2,
-	.o_max   = 2,
-	.m_max   = 2,
+	.f_max    = 2,
+	.trap_max = 2,
+	.k_max    = 2,
+	.a_max    = 2,
+	.e_max    = 2,
+	.r_max    = 2,
+	.mp_max   = 2,
+	.s_max    = 2,
+	.pit_max  = 2,
+	.act_max  = 2,
+	.level_object_max  = 2,
+	.level_monster_max = 2,
+	.level_trap_max    = 2,
 };
 
 static struct object TEST_DATA test_gear[MAX_GEAR];

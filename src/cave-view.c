@@ -483,7 +483,7 @@ static void add_monster_lights(struct chunk *c, struct loc from)
 	int i, j, k;
 
 	/* Scan monster list and add monster lights */
-	for (k = 1; k < z_info->m_max; k++) {
+	for (k = 1; k < cave_monster_max(c); k++) {
 		/* Check the k'th monster */
 		struct monster *m = cave_monster(c, k);
 

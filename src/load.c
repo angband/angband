@@ -1391,7 +1391,7 @@ static int rd_objects_aux(rd_item_t rd_item_version)
 	rd_u16b(&limit);
 
 	/* Verify maximum */
-	if (limit > z_info->o_max)
+	if (limit > z_info->level_object_max)
 	{
 		note(format("Too many (%d) object entries!", limit));
 		return (-1);
@@ -1476,7 +1476,7 @@ int rd_monsters(void)
 	rd_u16b(&limit);
 
 	/* Hack -- verify */
-	if (limit > z_info->m_max)
+	if (limit > z_info->level_monster_max)
 	{
 		note(format("Too many (%d) monster entries!", limit));
 		return (-1);
@@ -1516,7 +1516,7 @@ int rd_monsters(void)
 		if (o_ptr->mimicking_m_idx) {
 
 			/* Verify monster index */
-			if (o_ptr->mimicking_m_idx > z_info->m_max)
+			if (o_ptr->mimicking_m_idx > z_info->level_monster_max)
 			{
 				note("Invalid monster index");
 				return (-1);
@@ -1531,7 +1531,7 @@ int rd_monsters(void)
 		} else if (o_ptr->held_m_idx) {
 
 			/* Verify monster index */
-			if (o_ptr->held_m_idx > z_info->m_max)
+			if (o_ptr->held_m_idx > z_info->level_monster_max)
 			{
 				note("Invalid monster index");
 				return (-1);

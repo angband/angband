@@ -291,7 +291,7 @@ void place_trap(struct chunk *c, int y, int x, int t_idx, int trap_level)
 
     /* Hack -- don't use up all the trap slots during dungeon generation */
     if (!character_dungeon)
-		if (cave_trap_max(c) > z_info->l_max - 50) return;
+		if (cave_trap_max(c) > z_info->level_trap_max - 50) return;
 
     /* We've been called with an illegal index; choose a random trap */
     if ((t_idx <= 0) || (t_idx >= z_info->trap_max)) {
@@ -305,7 +305,7 @@ void place_trap(struct chunk *c, int y, int x, int t_idx, int trap_level)
     if (t_idx < 0) return;
 
     /* Scan the entire trap list */
-    for (i = 1; i < z_info->l_max; i++) {
+    for (i = 1; i < z_info->level_trap_max; i++) {
 		/* Point to this trap */
 		struct trap *trap = cave_trap(c, i);
 

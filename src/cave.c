@@ -109,14 +109,14 @@ struct chunk *cave_new(int height, int width) {
 		c->o_idx[y] = mem_zalloc(c->width * sizeof(s16b));
 	}
 
-	c->monsters = mem_zalloc(z_info->m_max * sizeof(struct monster));
+	c->monsters = mem_zalloc(z_info->level_monster_max *sizeof(struct monster));
 	c->mon_max = 1;
 	c->mon_current = -1;
 
-	c->objects = mem_zalloc(z_info->o_max * sizeof(struct object));
+	c->objects = mem_zalloc(z_info->level_object_max * sizeof(struct object));
 	c->obj_max = 1;
 
-	c->traps = mem_zalloc(z_info->l_max * sizeof(struct trap));
+	c->traps = mem_zalloc(z_info->level_trap_max * sizeof(struct trap));
 	c->trap_max = 1;
 
 	c->created_at = turn;
@@ -220,7 +220,7 @@ int cave_monster_count(struct chunk *c) {
  */
 struct object *cave_object(struct chunk *c, int idx) {
 	assert(idx > 0);
-	assert(idx <= z_info->o_max);
+	assert(idx <= z_info->level_object_max);
 	return &c->objects[idx];
 }
 

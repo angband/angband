@@ -1322,7 +1322,7 @@ static void dungeon(struct chunk *c)
 	while (TRUE)
 	{
 		/* Hack -- Compact the monster list occasionally */
-		if (cave_monster_count(cave) + 32 > z_info->m_max) 
+		if (cave_monster_count(cave) + 32 > z_info->level_monster_max) 
 			compact_monsters(64);
 
 		/* Hack -- Compress the monster list occasionally */
@@ -1330,7 +1330,7 @@ static void dungeon(struct chunk *c)
 			compact_monsters(0);
 
 		/* Hack -- Compact the object list occasionally */
-		if (cave_object_count(cave) + 32 > z_info->o_max) 
+		if (cave_object_count(cave) + 32 > z_info->level_object_max) 
 			compact_objects(64);
 
 		/* Hack -- Compress the object list occasionally */

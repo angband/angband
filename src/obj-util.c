@@ -841,7 +841,7 @@ s16b o_pop(struct chunk *c)
 	int i;
 
 	/* Initial allocation */
-	if (cave_object_max(c) < z_info->o_max) {
+	if (cave_object_max(c) < z_info->level_object_max) {
 		/* Get next space */
 		i = cave_object_max(c);
 

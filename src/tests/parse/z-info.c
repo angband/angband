@@ -17,13 +17,13 @@ int teardown_tests(void *state) {
 }
 
 int test_negative(void *state) {
-	errr r = parser_parse(state, "M:F:-1");
+	errr r = parser_parse(state, "level-max:F:-1");
 	eq(r, PARSE_ERROR_INVALID_VALUE);
 	ok;
 }
 
 int test_badmax(void *state) {
-	errr r = parser_parse(state, "M:D:1");
+	errr r = parser_parse(state, "level-max:D:1");
 	eq(r, PARSE_ERROR_UNDEFINED_DIRECTIVE);
 	ok;
 }
@@ -33,23 +33,23 @@ int test_badmax(void *state) {
 		struct angband_constants *m = parser_priv(s); \
 		char buf[64]; \
 		errr r; \
-		snprintf(buf, sizeof(buf), "M:%c:%d", u, __LINE__); \
+		snprintf(buf, sizeof(buf), "level-max:%s:%d", u, __LINE__); \
 		r = parser_parse(s, buf); \
 		eq(m->l, __LINE__); \
 		eq(r, 0); \
 		ok; \
 	}
 
-TEST_MAX(o_max, 'O')
-TEST_MAX(m_max, 'M')
-TEST_MAX(l_max, 'N')
+TEST_MAX(level_object_max, "objects")
+TEST_MAX(level_monster_max, "monsters")
+TEST_MAX(level_trap_max, "traps")
 
 const char *suite_name = "parse/z-info";
 struct test tests[] = {
 	{ "negative", test_negative },
 	{ "badmax", test_badmax },
-	{ "omax", test_o_max },
-	{ "mmax", test_m_max },
-	{ "nmax", test_l_max },
+	{ "objects_max", test_level_object_max },
+	{ "monsters_max", test_level_monster_max },
+	{ "traps_max", test_level_trap_max },
 	{ NULL, NULL }
 };
