@@ -50,6 +50,8 @@ extern wchar_t summon_kin_type;		/* Hack -- See summon_specific() */
 /** Functions **/
 monster_race *lookup_monster(const char *name);
 monster_base *lookup_monster_base(const char *name);
+bool monster_is_nonliving(struct monster_race *race);
+bool monster_is_unusual(struct monster_race *race);
 bool match_monster_bases(const monster_base *base, ...);
 void plural_aux(char *name, size_t max);
 void monster_desc(char *desc, size_t max, const monster_type *m_ptr, int mode);

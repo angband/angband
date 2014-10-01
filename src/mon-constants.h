@@ -97,13 +97,4 @@ enum
 	RF_DROP_2, \
 	RF_DROP_1
 
-/*
- * Some monster types are different.
- */
-#define monster_is_unusual(R) \
-	flags_test((R)->flags, RF_SIZE, RF_DEMON, RF_UNDEAD, RF_STUPID, RF_NONLIVING, FLAG_END)
-
-#define monster_is_nonliving(R) \
-	flags_test((R)->flags, RF_SIZE, RF_DEMON, RF_UNDEAD, RF_NONLIVING, FLAG_END)
-
 #endif /* INCLUDED_MONSTER_CONSTANTS_H */

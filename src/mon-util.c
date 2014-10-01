@@ -99,6 +99,23 @@ bool match_monster_bases(const monster_base *base, ...)
 }
 
 /**
+ * Nonliving monsters are immune to life drain
+ */
+bool monster_is_nonliving(struct monster_race *race)
+{
+	return flags_test(race->flags, RF_SIZE, RF_DEMON, RF_UNDEAD, RF_NONLIVING,
+					  FLAG_END);
+}
+
+/**
+ * Nonliving and stupid monsters are destroyed rather than dying
+ */
+bool monster_is_unusual(struct monster_race *race)
+{
+	return (monster_is_nonliving(race) || rf_has(race->flags, RF_STUPID));
+}
+
+/**
  * Perform simple English pluralization on a monster name.
  */
 void plural_aux(char *name, size_t max)
