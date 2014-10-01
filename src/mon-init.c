@@ -848,10 +848,7 @@ static errr finish_parse_r(struct parser *p) {
 	size_t i;
 
 	/* scan the list for the max id */
-	z_info->r_max -= 1;
-	/*z_info->r_max = 0; fails to load existing save file because of
-	 * too high value in old limits.txt.  Change to this line when save file 
-	 * compatibility changes and remove line from limits.txt */ 
+	z_info->r_max = 0;
 	r = parser_priv(p);
 	while (r) {
 		if (r->ridx > z_info->r_max)
@@ -860,7 +857,7 @@ static errr finish_parse_r(struct parser *p) {
 	}
 
 	/* allocate the direct access list and copy the data to it */
-	r_info = mem_zalloc((z_info->r_max+1) * sizeof(*r));
+	r_info = mem_zalloc((z_info->r_max + 1) * sizeof(*r));
 	for (r = parser_priv(p); r; r = n) {
 		memcpy(&r_info[r->ridx], r, sizeof(*r));
 		n = r->next;

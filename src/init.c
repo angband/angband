@@ -1,5 +1,6 @@
-/** \file init.c
-	\brief Various game initialistion routines
+/**
+   \file init.c
+   \brief Various game initialistion routines
  *
  * Copyright (c) 1997 Ben Harrison
  *
@@ -1036,10 +1037,7 @@ static errr finish_parse_k(struct parser *p) {
 	struct object_kind *k, *next = NULL;
 
 	/* scan the list for the max id */
-	z_info->k_max -= 1;
-	/*z_info->k_max = 0; fails to load existing save file because of
-	too high value in old limits.txt.  Change to this line when save file 
-	compatibility changes and remove line from limits.txt */ 
+	z_info->k_max = 0;
 	k = parser_priv(p);
 	while (k) {
 		if (k->kidx > z_info->k_max)
@@ -1048,7 +1046,7 @@ static errr finish_parse_k(struct parser *p) {
 	}
 
 	/* allocate the direct access list and copy the data to it */
-	k_info = mem_zalloc((z_info->k_max+1) * sizeof(*k));
+	k_info = mem_zalloc((z_info->k_max + 1) * sizeof(*k));
 	for (k = parser_priv(p); k; k = next) {
 		memcpy(&k_info[k->kidx], k, sizeof(*k));
 
