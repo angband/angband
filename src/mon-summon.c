@@ -46,27 +46,48 @@ static bool summon_specific_okay(monster_race *race)
 
 	/* Check our requirements */
 	switch (summon_specific_type) {
-		case S_ANIMAL: return !unique && rf_has(race->flags, RF_ANIMAL);
-		case S_SPIDER: return !unique && match_monster_bases(race->base, "spider", NULL);
-		case S_HOUND: return !unique && match_monster_bases(race->base, "canine", "zephyr hound", NULL);
-		case S_HYDRA: return !unique && match_monster_bases(race->base, "hydra", NULL);
-		case S_AINU: return !scary && match_monster_bases(race->base, "ainu", NULL);
-		case S_DEMON: return !scary && rf_has(race->flags, RF_DEMON);
-		case S_UNDEAD: return !scary && rf_has(race->flags, RF_UNDEAD);
-		case S_DRAGON: return !scary && rf_has(race->flags, RF_DRAGON);
-		case S_KIN: return !unique && race->d_char == summon_kin_type;
-		case S_HI_UNDEAD: return match_monster_bases(race->base, "lich", "vampire", "wraith", NULL);
-		case S_HI_DRAGON: return match_monster_bases(race->base, "ancient dragon", NULL);
-		case S_HI_DEMON: return match_monster_bases(race->base, "major demon", NULL);
-		case S_WRAITH: return unique && match_monster_bases(race->base, "wraith", NULL);
-		case S_UNIQUE: return unique;
-		case S_MONSTER: return !scary;
-		case S_MONSTERS: return !unique;
+	case S_ANY: return TRUE;
+	case S_ANIMAL: return !unique && rf_has(race->flags, RF_ANIMAL);
+	case S_SPIDER: return !unique && match_monster_bases(race->base, "spider", NULL);
+	case S_HOUND: return !unique && match_monster_bases(race->base, "canine", "zephyr hound", NULL);
+	case S_HYDRA: return !unique && match_monster_bases(race->base, "hydra", NULL);
+	case S_AINU: return !scary && match_monster_bases(race->base, "ainu", NULL);
+	case S_DEMON: return !scary && rf_has(race->flags, RF_DEMON);
+	case S_UNDEAD: return !scary && rf_has(race->flags, RF_UNDEAD);
+	case S_DRAGON: return !scary && rf_has(race->flags, RF_DRAGON);
+	case S_KIN: return !unique && race->d_char == summon_kin_type;
+	case S_HI_UNDEAD: return match_monster_bases(race->base, "lich", "vampire", "wraith", NULL);
+	case S_HI_DRAGON: return match_monster_bases(race->base, "ancient dragon", NULL);
+	case S_HI_DEMON: return match_monster_bases(race->base, "major demon", NULL);
+	case S_WRAITH: return unique && match_monster_bases(race->base, "wraith", NULL);
+	case S_UNIQUE: return unique;
+	case S_MONSTER: return !scary;
+	case S_MONSTERS: return !unique;
 
-		default: return TRUE;
+	default: return TRUE;
 	}
 }
 
+int summon_message_type(int summon_type)
+{
+	switch (summon_type) {
+	case S_ANY: return MSG_SUM_MONSTER;
+	case S_ANIMAL: return MSG_SUM_ANIMAL;
+	case S_SPIDER: return MSG_SUM_SPIDER;
+	case S_HOUND: return MSG_SUM_HOUND;
+	case S_HYDRA: return MSG_SUM_HYDRA;
+	case S_AINU: return MSG_SUM_AINU;
+	case S_DEMON: return MSG_SUM_DEMON;
+	case S_UNDEAD: return MSG_SUM_UNDEAD;
+	case S_DRAGON: return MSG_SUM_DRAGON;
+	case S_HI_DEMON: return MSG_SUM_HI_DEMON;
+	case S_HI_UNDEAD: return MSG_SUM_HI_UNDEAD;
+	case S_HI_DRAGON: return MSG_SUM_HI_DRAGON;
+	case S_WRAITH: return MSG_SUM_WRAITH;
+	case S_UNIQUE: return MSG_SUM_UNIQUE;
+	default: return MSG_SUM_MONSTER;
+	}
+}
 
 /* Check to see if you can call the monster */
 bool can_call_monster(int y, int x, monster_type *m_ptr)

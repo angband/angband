@@ -24,6 +24,7 @@
 /* Flags for "summon_specific()"
  * (need better handling - NRM) */
 enum summon_flag {
+	S_ANY = 0,
     S_ANIMAL = 11,
     S_SPIDER = 12,
     S_HOUND = 13,
@@ -47,6 +48,7 @@ extern wchar_t summon_kin_type;		/* Hack -- See summon_specific() */
 
 
 /** Functions **/
+int summon_message_type(int summon_type);
 int summon_specific(int y1, int x1, int lev, int type, int delay);
 
 #endif /* MONSTER_SUMMON_H */

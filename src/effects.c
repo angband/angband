@@ -2196,35 +2196,20 @@ bool effect_handler_AGGRAVATE(effect_handler_context_t *context)
  */
 bool effect_handler_SUMMON(effect_handler_context_t *context)
 {
-	int i;
 	int summon_max = effect_calculate_value(context, FALSE);
-	int type = context->p1 ? context->p1 : 0;
+	int summon_type = context->p1 ? context->p1 : S_ANY;
 	struct monster *mon = cave_monster(cave, cave->mon_current);
-	int msgtyp = MSG_SUM_MONSTER;
+	int message_type = summon_message_type(summon_type);
 	int count = 0, val = 0, attempts = 0;
 
-	if (type == S_ANIMAL) msgtyp = MSG_SUM_ANIMAL;
-	else if (type == S_SPIDER) msgtyp = MSG_SUM_SPIDER;
-	else if (type == S_HOUND) msgtyp = MSG_SUM_HOUND;
-	else if (type == S_HYDRA) msgtyp = MSG_SUM_HYDRA;
-	else if (type == S_AINU) msgtyp = MSG_SUM_AINU;
-	else if (type == S_DEMON) msgtyp = MSG_SUM_DEMON;
-	else if (type == S_UNDEAD) msgtyp = MSG_SUM_UNDEAD;
-	else if (type == S_DRAGON) msgtyp = MSG_SUM_DRAGON;
-	else if (type == S_HI_DEMON) msgtyp = MSG_SUM_HI_DEMON;
-	else if (type == S_HI_UNDEAD) msgtyp = MSG_SUM_HI_UNDEAD;
-	else if (type == S_HI_DRAGON) msgtyp = MSG_SUM_HI_DRAGON;
-	else if (type == S_WRAITH) msgtyp = MSG_SUM_WRAITH;
-	else if (type == S_UNIQUE) msgtyp = MSG_SUM_UNIQUE;
-
-	sound(msgtyp);
+	sound(message_type);
 
 	/* Monster summon */
 	if (mon) {
 		int rlev = mon->race->level;
 
 		/* Set the summon_kin_type if necessary */
-		if (type == S_KIN)
+		if (summon_type == S_KIN)
 			summon_kin_type = mon->race->d_char;
 
 		/* Continue summoning until we reach the current dungeon level */
@@ -2232,7 +2217,7 @@ bool effect_handler_SUMMON(effect_handler_context_t *context)
 			int temp;
 
 			/* Get a monster */
-			temp = summon_specific(mon->fy, mon->fx, rlev, type, 0);
+			temp = summon_specific(mon->fy, mon->fx, rlev, summon_type, 0);
 
 			val += temp * temp;
 
@@ -2246,13 +2231,14 @@ bool effect_handler_SUMMON(effect_handler_context_t *context)
 
 		/* In the special case that uniques or wraiths were summoned but all
 		 * were dead S_HI_UNDEAD is used instead */
-		if ((!count) && ((type == S_WRAITH) || (type == S_UNIQUE))) {
-			type = S_HI_UNDEAD;
+		if ((!count) &&
+			((summon_type == S_WRAITH) || (summon_type == S_UNIQUE))) {
+			summon_type = S_HI_UNDEAD;
 			while ((val < player->depth * rlev) && (attempts < summon_max)) {
 				int temp;
 
 				/* Get a monster */
-				temp = summon_specific(mon->fy, mon->fx, rlev, type, 0);
+				temp = summon_specific(mon->fy, mon->fx, rlev, summon_type, 0);
 
 				val += temp * temp;
 
@@ -2266,8 +2252,11 @@ bool effect_handler_SUMMON(effect_handler_context_t *context)
 		}
 	} else {
 		/* If not a monster summon, it's simple */
-		for (i = 0; i < summon_max; i++)
-			count += summon_specific(player->py, player->px, player->depth, type, 1);
+		while (summon_max) {
+			count += summon_specific(player->py, player->px, player->depth,
+									 summon_type, 1);
+			summon_max--;
+		}
 	}
 
 	/* Identify if some monsters arrive */
@@ -2276,8 +2265,8 @@ bool effect_handler_SUMMON(effect_handler_context_t *context)
 
 	/* Message for the blind */
 	if (count && player->timed[TMD_BLIND])
-		msgt(msgtyp, "You hear %s appear nearby.", (count > 1 ?
-												  "many things" : "something"));
+		msgt(message_type, "You hear %s appear nearby.",
+			 (count > 1 ? "many things" : "something"));
 
 	/* Summoner failed */
 	if (mon && !count)
