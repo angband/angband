@@ -4291,6 +4291,11 @@ int effect_param(const char *type)
 		if (val >= 0)
 			return val;
 
+		/* Summon name */
+		val = summon_name_to_idx(type);
+		if (val >= 0)
+			return val;
+
 		/* Stat name */
 		val = stat_name_to_idx(type);
 		if (val >= 0)

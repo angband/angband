@@ -21,26 +21,13 @@
 
 #include "monster.h"
 
-/* Flags for "summon_specific()"
- * (need better handling - NRM) */
+/**
+ * Flags for summon_specific()
+ */
 enum summon_flag {
-	S_ANY = 0,
-    S_ANIMAL = 11,
-    S_SPIDER = 12,
-    S_HOUND = 13,
-    S_HYDRA = 14,
-    S_AINU = 15,
-    S_DEMON = 16,
-    S_UNDEAD = 17,
-    S_DRAGON = 18,
-    S_HI_DEMON = 26,
-    S_HI_UNDEAD = 27,
-    S_HI_DRAGON = 28,
-    S_WRAITH = 31,
-    S_UNIQUE = 32,
-    S_KIN = 33,
-    S_MONSTER = 41,
-    S_MONSTERS = 42,
+	#define S(a, b, c, d, e, f, g) S_##a, 
+	#include "list-summon-types.h"
+	#undef S
 };
 
 /** Variables **/
@@ -48,6 +35,7 @@ extern wchar_t summon_kin_type;		/* Hack -- See summon_specific() */
 
 
 /** Functions **/
+int summon_name_to_idx(const char *name);
 int summon_message_type(int summon_type);
 int summon_specific(int y1, int x1, int lev, int type, int delay);
 

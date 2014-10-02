@@ -416,113 +416,97 @@ power:25
 
 name:S_KIN
 hit:100
-#effect:SUMMON:S_KIN
-effect:SUMMON:33
+effect:SUMMON:KIN
 dice:8
 power:d200M1
 
-name:S_HI_DEMON
-hit:100
-#effect:SUMMON:S_HI_DEMON
-effect:SUMMON:26
-dice:8
-power:250
-
 name:S_MONSTER
 hit:100
-#effect:SUMMON:S_MONSTER
-effect:SUMMON:41
+effect:SUMMON:MONSTER
 dice:1
 power:40
 
 name:S_MONSTERS
 hit:100
-#effect:SUMMON:S_MONSTERS
-effect:SUMMON:42
+effect:SUMMON:MONSTERS
 dice:8
 power:80
 
 name:S_ANIMAL
 hit:100
-#effect:SUMMON:S_ANIMAL
-effect:SUMMON:11
+effect:SUMMON:ANIMAL
 dice:12
 power:30
 
 name:S_SPIDER
 hit:100
-#effect:SUMMON:S_SPIDER
-effect:SUMMON:12
+effect:SUMMON:SPIDER
 dice:12
 power:20
 
 name:S_HOUND
 hit:100
-#effect:SUMMON:S_HOUND
-effect:SUMMON:13
+effect:SUMMON:HOUND
 dice:12
 power:100
 
 name:S_HYDRA
 hit:100
-#effect:SUMMON:S_HYDRA
-effect:SUMMON:14
+effect:SUMMON:HYDRA
 dice:6
 power:150
 
 name:S_AINU
 hit:100
-#effect:SUMMON:S_AINU
-effect:SUMMON:15
+effect:SUMMON:AINU
 dice:1
 power:150
 
 name:S_DEMON
 hit:100
-#effect:SUMMON:S_DEMON
-effect:SUMMON:16
+effect:SUMMON:DEMON
 dice:1
 power:d150M1
 
 name:S_UNDEAD
 hit:100
-#effect:SUMMON:S_UNDEAD
-effect:SUMMON:17
+effect:SUMMON:UNDEAD
 dice:1
 power:d150M1
 
 name:S_DRAGON
 hit:100
-#effect:SUMMON:S_DRAGON
-effect:SUMMON:18
+effect:SUMMON:DRAGON
 dice:1
 power:d150M1
 
+name:S_HI_DEMON
+hit:100
+effect:SUMMON:HI_DEMON
+dice:8
+power:250
+
 name:S_HI_UNDEAD
 hit:100
-#effect:SUMMON:S_HI_UNDEAD
-effect:SUMMON:27
+effect:SUMMON:HI_UNDEAD
 dice:8
 power:400
 
 name:S_HI_DRAGON
 hit:100
-#effect:SUMMON:S_HI_DRAGON
-effect:SUMMON:28
+effect:SUMMON:HI_DRAGON
 dice:8
 power:400
 
 name:S_WRAITH
 hit:100
-#effect:SUMMON:S_WRAITH
-effect:SUMMON:31
+effect:SUMMON:WRAITH
 dice:8
 power:450
 
 name:S_UNIQUE
 hit:100
-#effect:SUMMON:S_UNIQUE
-effect:SUMMON:32
+effect:SUMMON:UNIQUE
 dice:8
 power:500
 

@@ -32,8 +32,33 @@ static int summon_specific_type = 0;
 wchar_t summon_kin_type;
 
 
+static struct summon_details {
+	const char *name;
+	int message_type;
+	bool unique_allowed;
+	const char *base1;
+	const char *base2;
+	const char *base3;
+	int race_flag;
+} summon_info[] = {
+	#define S(a, b, c, d, e, f, g) { #a, b, c, d, e, f, g },
+	#include "list-summon-types.h"
+	#undef S
+};
+
+int summon_name_to_idx(const char *name)
+{
+    int i;
+    for (i = 0; !streq(summon_info[i].name, "MAX"); i++) {
+        if (streq(name, summon_info[i].name))
+            return i;
+    }
+
+    return -1;
+}
+
 /**
- * Hack -- help decide if a monster race is "okay" to summon.
+ * Decide if a monster race is "okay" to summon.
  *
  * Compares the given monster to the monster type specified by
  * summon_specific_type. Returns TRUE if the monster is eligible to
@@ -41,52 +66,33 @@ wchar_t summon_kin_type;
  */
 static bool summon_specific_okay(monster_race *race)
 {
+	struct summon_details *info = &summon_info[summon_specific_type];
 	bool unique = rf_has(race->flags, RF_UNIQUE);
-	bool scary = flags_test(race->flags, RF_SIZE, RF_UNIQUE, FLAG_END);
 
-	/* Check our requirements */
-	switch (summon_specific_type) {
-	case S_ANY: return TRUE;
-	case S_ANIMAL: return !unique && rf_has(race->flags, RF_ANIMAL);
-	case S_SPIDER: return !unique && match_monster_bases(race->base, "spider", NULL);
-	case S_HOUND: return !unique && match_monster_bases(race->base, "canine", "zephyr hound", NULL);
-	case S_HYDRA: return !unique && match_monster_bases(race->base, "hydra", NULL);
-	case S_AINU: return !scary && match_monster_bases(race->base, "ainu", NULL);
-	case S_DEMON: return !scary && rf_has(race->flags, RF_DEMON);
-	case S_UNDEAD: return !scary && rf_has(race->flags, RF_UNDEAD);
-	case S_DRAGON: return !scary && rf_has(race->flags, RF_DRAGON);
-	case S_KIN: return !unique && race->d_char == summon_kin_type;
-	case S_HI_UNDEAD: return match_monster_bases(race->base, "lich", "vampire", "wraith", NULL);
-	case S_HI_DRAGON: return match_monster_bases(race->base, "ancient dragon", NULL);
-	case S_HI_DEMON: return match_monster_bases(race->base, "major demon", NULL);
-	case S_WRAITH: return unique && match_monster_bases(race->base, "wraith", NULL);
-	case S_UNIQUE: return unique;
-	case S_MONSTER: return !scary;
-	case S_MONSTERS: return !unique;
+	/* Forbid uniques? */
+	if (!info->unique_allowed && unique)
+		return FALSE;
 
-	default: return TRUE;
-	}
+	/* A valid base and no match means disallowed */
+	if (info->base1 && !match_monster_bases(race->base, info->base1,
+											info->base2, info->base3, NULL))
+		return FALSE;
+
+	/* A valid race flag and no match means disallowed */
+	if (info->race_flag && !rf_has(race->flags, info->race_flag))
+		return FALSE;
+
+	/* Special case - summon kin */
+	if (summon_specific_type == S_KIN)
+		return (!unique && race->d_char == summon_kin_type);
+
+	/* If we made it here, we're fine */
+	return TRUE;
 }
 
 int summon_message_type(int summon_type)
 {
-	switch (summon_type) {
-	case S_ANY: return MSG_SUM_MONSTER;
-	case S_ANIMAL: return MSG_SUM_ANIMAL;
-	case S_SPIDER: return MSG_SUM_SPIDER;
-	case S_HOUND: return MSG_SUM_HOUND;
-	case S_HYDRA: return MSG_SUM_HYDRA;
-	case S_AINU: return MSG_SUM_AINU;
-	case S_DEMON: return MSG_SUM_DEMON;
-	case S_UNDEAD: return MSG_SUM_UNDEAD;
-	case S_DRAGON: return MSG_SUM_DRAGON;
-	case S_HI_DEMON: return MSG_SUM_HI_DEMON;
-	case S_HI_UNDEAD: return MSG_SUM_HI_UNDEAD;
-	case S_HI_DRAGON: return MSG_SUM_HI_DRAGON;
-	case S_WRAITH: return MSG_SUM_WRAITH;
-	case S_UNIQUE: return MSG_SUM_UNIQUE;
-	default: return MSG_SUM_MONSTER;
-	}
+	return summon_info[summon_type].message_type;
 }
 
 /* Check to see if you can call the monster */
@@ -180,8 +186,8 @@ int call_monster(int y, int x)
  *
  * We will attempt to place the monster up to 10 times before giving up.
  *
- * Note: S_UNIQUE and S_WRAITH (XXX) will summon Uniques
- * Note: S_HI_UNDEAD and S_HI_DRAGON may summon Uniques
+ * Note: S_UNIQUE and S_WRAITH will summon Uniques
+ * Note: S_ANY, S_HI_UNDEAD, S_HI_DEMON and S_HI_DRAGON may summon Uniques
  * Note: None of the other summon codes will ever summon Uniques.
  *
  * This function has been changed.  We now take the "monster level"
