@@ -357,7 +357,7 @@ power:25
 
 name:HASTE
 hit:100
-effect:MON_TIMED_INC:MON_TMD_FAST
+effect:MON_TIMED_INC:FAST
 dice:50
 power:70
 

@@ -4293,6 +4293,11 @@ int effect_param(const char *type)
 		if (val >= 0)
 			return val;
 
+		/* Monster timed effect name */
+		val = mon_timed_name_to_idx(type);
+		if (val >= 0)
+			return val;
+
 		/* Summon name */
 		val = summon_name_to_idx(type);
 		if (val >= 0)
@@ -4303,29 +4308,13 @@ int effect_param(const char *type)
 		if (val >= 0)
 			return val;
 
-		/* Enchant type name - needs improvement - NRM */
+		/* Enchant type name - not worth a separate function */
 		if (streq(type, "TOHIT"))
 			val = ENCH_TOHIT;
 		else if (streq(type, "TODAM"))
 			val = ENCH_TODAM;
 		else if (streq(type, "TOAC"))
 			val = ENCH_TOAC;
-		if (val >= 0)
-			return val;
-
-		/* Monster timed effect name - really needs fixing - NRM */
-		if (streq(type, "MON_TMD_SLEEP"))
-			val = MON_TMD_SLEEP;
-		else if (streq(type, "MON_TMD_STUN"))
-			val = MON_TMD_STUN;
-		else if (streq(type, "MON_TMD_CONF"))
-			val = MON_TMD_CONF;
-		else if (streq(type, "MON_TMD_FEAR"))
-			val = MON_TMD_FEAR;
-		else if (streq(type, "MON_TMD_SLOW"))
-			val = MON_TMD_SLOW;
-		else if (streq(type, "MON_TMD_FAST"))
-			val = MON_TMD_FAST;
 	}
 
 	return val;

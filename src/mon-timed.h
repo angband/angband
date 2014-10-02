@@ -24,14 +24,9 @@
 
 /* Monster Timed Effects */
 enum {
-	MON_TMD_SLEEP = 0,
-	MON_TMD_STUN,
-	MON_TMD_CONF,
-	MON_TMD_FEAR,
-	MON_TMD_SLOW,
-	MON_TMD_FAST,
-
-	MON_TMD_MAX
+	#define MON_TMD(a, b, c, d, e, f) MON_TMD_##a,
+	#include "list-mon-timed.h"
+	#undef MON_TMD
 };
 
 /** Macros **/
@@ -48,8 +43,11 @@ enum {
 
 
 /** Functions **/
-bool mon_inc_timed(struct monster *m_ptr, int ef_idx, int timer, u16b flag, bool id);
-bool mon_dec_timed(struct monster *m_ptr, int ef_idx, int timer, u16b flag, bool id);
+int mon_timed_name_to_idx(const char *name);
+bool mon_inc_timed(struct monster *m_ptr, int ef_idx, int timer, u16b flag,
+				   bool id);
+bool mon_dec_timed(struct monster *m_ptr, int ef_idx, int timer, u16b flag,
+				   bool id);
 bool mon_clear_timed(struct monster *m_ptr, int ef_idx, u16b flag, bool id);
 
 

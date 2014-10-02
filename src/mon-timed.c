@@ -1,6 +1,6 @@
-/*
- * File: mon-timed.c
- * Purpose: Monster timed effects.
+/**
+ * \file mon-timed.c
+ * \brief Monster timed effects.
  *
  * Copyright (c) 1997-2007 Ben Harrison, James E. Wilson, Robert A. Koeneke
  *
@@ -24,28 +24,33 @@
 #include "mon-timed.h"
 #include "mon-util.h"
 
-typedef struct {
-  int message_begin;
-  int message_end;
-  int message_increase;
-  u32b flag_resist;
-  int max_timer;
-} mon_timed_effect;
-
-/*
+/**
  * Monster timed effects.
- * '0' means no message.
  */
-static mon_timed_effect effects[] =
-{
-	{ MON_MSG_FALL_ASLEEP, MON_MSG_WAKES_UP, FALSE, RF_NO_SLEEP, 10000 },
-	{ MON_MSG_DAZED, MON_MSG_NOT_DAZED, MON_MSG_MORE_DAZED, RF_NO_STUN, 200 },
-	{ MON_MSG_CONFUSED, MON_MSG_NOT_CONFUSED, MON_MSG_MORE_CONFUSED, RF_NO_CONF, 200 },
-	{ MON_MSG_FLEE_IN_TERROR, MON_MSG_NOT_AFRAID, MON_MSG_MORE_AFRAID, RF_NO_FEAR, 10000 },
-	{ MON_MSG_SLOWED, MON_MSG_NOT_SLOWED, MON_MSG_MORE_SLOWED, 0L, 50 },
-	{ MON_MSG_HASTED, MON_MSG_NOT_HASTED, MON_MSG_MORE_HASTED, 0L, 50 },
+static struct mon_timed_effect {
+	const char *name;
+	int message_begin;
+	int message_end;
+	int message_increase;
+	int flag_resist;
+	int max_timer;
+} effects[] = {
+	#define MON_TMD(a, b, c, d, e, f) { #a, b, c, d, e, f },
+	#include "list-mon-timed.h"
+	#undef MON_TMD
 };
 
+
+int mon_timed_name_to_idx(const char *name)
+{
+    int i;
+    for (i = 0; !streq(effects[i].name, "MAX"); i++) {
+        if (streq(name, effects[i].name))
+            return i;
+    }
+
+    return -1;
+}
 
 /**
  * Determines whether the given monster successfully resists the given effect.
@@ -64,7 +69,7 @@ static mon_timed_effect effects[] =
  */
 static bool mon_resist_effect(const struct monster *mon, int ef_idx, int timer, u16b flag)
 {
-	mon_timed_effect *effect;
+	struct mon_timed_effect *effect;
 	int resist_chance;
 	monster_lore *lore;
 
@@ -91,13 +96,11 @@ static bool mon_resist_effect(const struct monster *mon, int ef_idx, int timer, 
 		return (TRUE);
 	}
 
-	/* Monsters with specific breaths resist stunning*/
+	/* Monsters with specific breaths resist stunning */
 	if (ef_idx == MON_TMD_STUN && (rsf_has(mon->race->spell_flags, RSF_BR_SOUN) ||
-			rsf_has(mon->race->spell_flags, RSF_BR_WALL)))
-	{
+			rsf_has(mon->race->spell_flags, RSF_BR_WALL))) {
 		/* Add the lore */
-		if (mon->ml)
-		{
+		if (mon->ml) {
 			if (rsf_has(mon->race->spell_flags, RSF_BR_SOUN))
 				rsf_on(lore->spell_flags, RSF_BR_SOUN);
 			if (rsf_has(mon->race->spell_flags, RSF_BR_WALL))
@@ -109,14 +112,11 @@ static bool mon_resist_effect(const struct monster *mon, int ef_idx, int timer, 
 
 	/* Monsters with specific breaths resist confusion */
 	if ((ef_idx == MON_TMD_CONF) &&
-		rsf_has(mon->race->spell_flags, RSF_BR_CHAO))
-	{
+		rsf_has(mon->race->spell_flags, RSF_BR_CHAO)) {
 		/* Add the lore */
 		if (mon->ml)
-		{
 			if (rsf_has(mon->race->spell_flags, RSF_BR_CHAO))
 				rsf_on(lore->spell_flags, RSF_BR_CHAO);
-		}
 
 		return (TRUE);
 	}
@@ -160,12 +160,12 @@ static bool mon_resist_effect(const struct monster *mon, int ef_idx, int timer, 
  * Return FALSE if the monster was unaffected.
  */
 static bool mon_set_timed(monster_type *m_ptr, int ef_idx, int timer,
-	u16b flag, bool id)
+						  u16b flag, bool id)
 {
 	bool check_resist = FALSE;
 	bool resisted = FALSE;
 
-	mon_timed_effect *effect;
+	struct mon_timed_effect *effect;
 
 	int m_note = 0;
 	int old_timer;
@@ -179,7 +179,8 @@ static bool mon_set_timed(monster_type *m_ptr, int ef_idx, int timer,
 	old_timer = m_ptr->m_timed[ef_idx];
 
 	/* No change */
-	if (old_timer == timer) return FALSE;
+	if (old_timer == timer)
+		return FALSE;
 
 	if (timer == 0) {
 		/* Turning off, usually mention */
@@ -236,9 +237,10 @@ static bool mon_set_timed(monster_type *m_ptr, int ef_idx, int timer,
  *
  * Returns TRUE if the monster's timer changed.
  */
-bool mon_inc_timed(struct monster *m_ptr, int ef_idx, int timer, u16b flag, bool id)
+bool mon_inc_timed(struct monster *m_ptr, int ef_idx, int timer, u16b flag,
+				   bool id)
 {
-	mon_timed_effect *effect;
+	struct mon_timed_effect *effect;
 
 	assert(ef_idx >= 0 && ef_idx < MON_TMD_MAX);
 	effect = &effects[ef_idx];
@@ -271,7 +273,8 @@ bool mon_inc_timed(struct monster *m_ptr, int ef_idx, int timer, u16b flag, bool
  *
  * Returns TRUE if the monster's timer changed.
  */
-bool mon_dec_timed(struct monster *m_ptr, int ef_idx, int timer, u16b flag, bool id)
+bool mon_dec_timed(struct monster *m_ptr, int ef_idx, int timer, u16b flag,
+				   bool id)
 {
 	assert(ef_idx >= 0 && ef_idx < MON_TMD_MAX);
 	assert(timer > 0);
