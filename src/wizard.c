@@ -23,7 +23,6 @@
 #include "init.h"
 #include "mon-lore.h"
 #include "mon-make.h"
-#include "mon-summon.h"
 #include "mon-util.h"
 #include "monster.h"
 #include "obj-desc.h"
@@ -1349,7 +1348,7 @@ static void do_cmd_wiz_summon(int num)
 
 	for (i = 0; i < num; i++)
 	{
-		(void)summon_specific(py, px, player->depth, 0, 1);
+		effect_simple(EF_SUMMON, "1", 0, 0, 0, NULL);
 	}
 }
 

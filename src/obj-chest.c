@@ -20,7 +20,6 @@
 #include "angband.h"
 #include "cave.h"
 #include "mon-lore.h"
-#include "mon-summon.h"
 #include "obj-chest.h"
 #include "obj-identify.h"
 #include "obj-make.h"
@@ -326,7 +325,7 @@ static void chest_death(int y, int x, s16b o_idx)
  */
 static void chest_trap(int y, int x, s16b o_idx)
 {
-	int i, trap;
+	int trap;
 
 	object_type *o_ptr = cave_object(cave, o_idx);
 
@@ -357,26 +356,21 @@ static void chest_trap(int y, int x, s16b o_idx)
 	if (trap & (CHEST_POISON))
 	{
 		msg("A puff of green gas surrounds you!");
-		(void)player_inc_timed(player, TMD_POISONED, 10 + randint1(20), TRUE, TRUE);
+		effect_simple(EF_TIMED_INC, "10+1d20", TMD_POISONED, 0, 0, NULL);
 	}
 
 	/* Paralyze */
 	if (trap & (CHEST_PARALYZE))
 	{
 		msg("A puff of yellow gas surrounds you!");
-		(void)player_inc_timed(player, TMD_PARALYZED, 10 + randint1(20), TRUE, TRUE);
+		effect_simple(EF_TIMED_INC, "10+1d20", TMD_PARALYZED, 0, 0, NULL);
 	}
 
 	/* Summon monsters */
 	if (trap & (CHEST_SUMMON))
 	{
-		int num = 2 + randint1(3);
 		msg("You are enveloped in a cloud of smoke!");
-		sound(MSG_SUM_MONSTER);
-		for (i = 0; i < num; i++)
-		{
-			(void)summon_specific(y, x, player->depth, 0, 1);
-		}
+		effect_simple(EF_SUMMON, "2+1d3", 0, 0, 0, NULL);
 	}
 
 	/* Explode */
