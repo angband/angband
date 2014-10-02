@@ -4271,32 +4271,54 @@ effect_index effect_lookup(const char *name)
 	return EF_MAX;
 }
 
+/**
+ * Translate a string to an effect parameter index
+ */
 int effect_param(const char *type)
 {
 	int val;
 
 	/* If not a numerical value, run through the possibilities */
 	if (sscanf(type, "%d", &val) != 1) {
+
+		/* Projection name */
 		val = gf_name_to_idx(type);
-		if (val < 0) {
-			val = timed_name_to_idx(type);
-			if (val < 0) {
-				val = stat_name_to_idx(type);
-				if (val < 0) { //Hack - NRM
-					if (streq(type, "TOHIT")) val = ENCH_TOHIT;
-					else if (streq(type, "TODAM")) val = ENCH_TODAM;
-					else if (streq(type, "TOAC")) val = ENCH_TOAC;
-					if (val < 0) { //Hack - this and the summon crap really need fixing NRM
-						if (streq(type, "MON_TMD_SLEEP")) val = MON_TMD_SLEEP;
-						else if (streq(type, "MON_TMD_STUN")) val = MON_TMD_STUN;
-						else if (streq(type, "MON_TMD_CONF")) val = MON_TMD_CONF;
-						else if (streq(type, "MON_TMD_FEAR")) val = MON_TMD_FEAR;
-						else if (streq(type, "MON_TMD_SLOW")) val = MON_TMD_SLOW;
-						else if (streq(type, "MON_TMD_FAST")) val = MON_TMD_FAST;
-					}
-				}
-			}
-		}
+		if (val >= 0)
+			return val;
+
+		/* Timed effect name */
+		val = timed_name_to_idx(type);
+		if (val >= 0)
+			return val;
+
+		/* Stat name */
+		val = stat_name_to_idx(type);
+		if (val >= 0)
+			return val;
+
+		/* Enchant type name - needs improvement - NRM */
+		if (streq(type, "TOHIT"))
+			val = ENCH_TOHIT;
+		else if (streq(type, "TODAM"))
+			val = ENCH_TODAM;
+		else if (streq(type, "TOAC"))
+			val = ENCH_TOAC;
+		if (val >= 0)
+			return val;
+
+		/* Monster timed effect name - really needs fixing - NRM */
+		if (streq(type, "MON_TMD_SLEEP"))
+			val = MON_TMD_SLEEP;
+		else if (streq(type, "MON_TMD_STUN"))
+			val = MON_TMD_STUN;
+		else if (streq(type, "MON_TMD_CONF"))
+			val = MON_TMD_CONF;
+		else if (streq(type, "MON_TMD_FEAR"))
+			val = MON_TMD_FEAR;
+		else if (streq(type, "MON_TMD_SLOW"))
+			val = MON_TMD_SLOW;
+		else if (streq(type, "MON_TMD_FAST"))
+			val = MON_TMD_FAST;
 	}
 
 	return val;
