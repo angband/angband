@@ -17,6 +17,7 @@
  */
 
 #include "angband.h"
+#include "mon-desc.h"
 #include "mon-lore.h"
 #include "mon-msg.h"
 #include "mon-spell.h"

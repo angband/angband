@@ -20,7 +20,7 @@
 #include "angband.h"
 #include "cave.h"
 #include "mon-lore.h"
-#include "mon-util.h" /* for summon_specific() */
+#include "mon-summon.h"
 #include "obj-chest.h"
 #include "obj-identify.h"
 #include "obj-make.h"

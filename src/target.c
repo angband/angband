@@ -20,6 +20,7 @@
 #include "cave.h"
 #include "cmd-core.h"
 #include "keymap.h"
+#include "mon-desc.h"
 #include "mon-lore.h"
 #include "mon-util.h"
 #include "monster.h"

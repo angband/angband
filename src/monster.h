@@ -265,17 +265,6 @@ typedef struct monster
 	player_state known_pstate; /* Known player state */
 } monster_type;
 
-/*** Functions ***/
-
-/* melee2.c */
-extern bool check_hit(struct player *p, int power, int level);
-extern void process_monsters(struct chunk *c, byte min_energy);
-extern int mon_hp(const struct monster_race *r_ptr, aspect hp_aspect);
-extern bool make_attack_spell(struct monster *m);
-extern int adjust_dam_armor(int damage, int ac);
-
 extern s16b num_repro;
-
-extern bool (*testfn_make_attack_normal)(struct monster *m, struct player *p);
 
 #endif /* !MONSTER_MONSTER_H */

@@ -1,6 +1,6 @@
-/*
- * File: src/mon-spell.h
- * Purpose: structures and functions for monster power
+/**
+   \file mon-spell.h
+   \brief structures and functions for monster spells
  *
  * Copyright (c) 2011 Chris Carr
  *
@@ -25,27 +25,6 @@
 /* none so far */
 
 /** Constants **/
-
-/* Flags for "summon_specific()"
- * (need better handling - NRM) */
-enum summon_flag {
-    S_ANIMAL = 11,
-    S_SPIDER = 12,
-    S_HOUND = 13,
-    S_HYDRA = 14,
-    S_AINU = 15,
-    S_DEMON = 16,
-    S_UNDEAD = 17,
-    S_DRAGON = 18,
-    S_HI_DEMON = 26,
-    S_HI_UNDEAD = 27,
-    S_HI_DRAGON = 28,
-    S_WRAITH = 31,
-    S_UNIQUE = 32,
-    S_KIN = 33,
-    S_MONSTER = 41,
-    S_MONSTERS = 42,
-};
 
 /* Spell type bitflags */
 enum mon_spell_type {

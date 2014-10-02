@@ -1,8 +1,8 @@
-/*
- * File: mon-spell.c
- * Purpose: functions to deal with spell attacks and effects
+/**
+   \file mon-spell.c
+   \brief functions to deal with spell attacks and effects
  *
- * Copyright (c) 2010-11 Chris Carr
+ * Copyright (c) 2010-14 Chris Carr and Nick McConnell
  *
  * This work is free software; you can redistribute it and/or modify it
  * under the terms of either:
@@ -17,7 +17,10 @@
  */
 #include "angband.h"
 #include "effects.h"
+#include "mon-attack.h"
+#include "mon-desc.h"
 #include "mon-lore.h"
+#include "mon-make.h"
 #include "mon-spell.h"
 #include "mon-timed.h"
 #include "mon-util.h"

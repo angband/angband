@@ -112,18 +112,21 @@ ANGFILES = \
 	keymap.o \
 	load.o \
 	message.o \
+	mon-attack.o \
 	mon-blow-effects.o \
 	mon-blow-methods.o \
+	mon-desc.o \
+	mon-init.o \
 	mon-list.o \
 	mon-lore.o \
 	mon-make.o \
-	mon-melee2.o \
+	mon-move.o \
 	mon-msg.o \
 	mon-power.o \
 	mon-spell.o \
+	mon-summon.o \
 	mon-timed.o \
 	mon-util.o \
-	mon-init.o \
 	obj-chest.o \
 	obj-desc.o \
 	obj-gear.o \

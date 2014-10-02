@@ -17,10 +17,11 @@
  */
 
 #include "angband.h"
+#include "init.h"
+#include "mon-desc.h"
 #include "mon-lore.h"
 #include "mon-msg.h"
 #include "mon-util.h"
-#include "init.h"
 
 static u16b size_mon_hist = 0;
 static u16b size_mon_msg = 0;

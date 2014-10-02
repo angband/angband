@@ -3,6 +3,7 @@
 #include "unit-test.h"
 #include "unit-test-data.h"
 
+#include "mon-attack.h"
 #include "mon-lore.h"
 #include "monster.h"
 #include "player-timed.h"

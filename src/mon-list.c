@@ -18,6 +18,7 @@
  */
 
 #include "dungeon.h"
+#include "mon-desc.h"
 #include "mon-list.h"
 #include "mon-lore.h"
 #include "mon-util.h"

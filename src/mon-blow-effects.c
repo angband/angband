@@ -19,6 +19,7 @@
 
 #include "angband.h"
 #include "monster.h"
+#include "mon-attack.h"
 #include "mon-blow-effects.h"
 #include "mon-blow-methods.h"
 #include "mon-lore.h"

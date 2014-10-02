@@ -28,6 +28,7 @@
 #include "mon-list.h"
 #include "mon-lore.h"
 #include "mon-make.h"
+#include "mon-move.h"
 #include "mon-spell.h"
 #include "mon-util.h"
 #include "monster.h"

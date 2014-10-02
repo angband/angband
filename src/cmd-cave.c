@@ -23,6 +23,7 @@
 #include "cmd-core.h"
 #include "game-event.h"
 #include "generate.h"
+#include "mon-desc.h"
 #include "mon-lore.h"
 #include "mon-timed.h"
 #include "mon-util.h"

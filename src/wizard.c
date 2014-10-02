@@ -23,6 +23,7 @@
 #include "init.h"
 #include "mon-lore.h"
 #include "mon-make.h"
+#include "mon-summon.h"
 #include "mon-util.h"
 #include "monster.h"
 #include "obj-desc.h"
