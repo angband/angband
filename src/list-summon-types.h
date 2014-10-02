@@ -1,5 +1,4 @@
 /**
-
  * \file list-summon-types.h
  * \brief Summon method details
 

@@ -2192,7 +2192,6 @@ bool effect_handler_AGGRAVATE(effect_handler_context_t *context)
 
 /**
  * Summon context->value monsters of context->p1 type.
- * Better handling of context->p1 is sorely needed
  */
 bool effect_handler_SUMMON(effect_handler_context_t *context)
 {
@@ -2208,16 +2207,17 @@ bool effect_handler_SUMMON(effect_handler_context_t *context)
 	if (mon) {
 		int rlev = mon->race->level;
 
-		/* Set the summon_kin_type if necessary */
+		/* Set the kin_base if necessary */
 		if (summon_type == S_KIN)
-			summon_kin_type = mon->race->d_char;
+			kin_base = mon->race->base;
 
 		/* Continue summoning until we reach the current dungeon level */
 		while ((val < player->depth * rlev) && (attempts < summon_max)) {
 			int temp;
 
 			/* Get a monster */
-			temp = summon_specific(mon->fy, mon->fx, rlev, summon_type, 0);
+			temp = summon_specific(mon->fy, mon->fx, rlev, summon_type, FALSE,
+								   FALSE);
 
 			val += temp * temp;
 
@@ -2238,7 +2238,8 @@ bool effect_handler_SUMMON(effect_handler_context_t *context)
 				int temp;
 
 				/* Get a monster */
-				temp = summon_specific(mon->fy, mon->fx, rlev, summon_type, 0);
+				temp = summon_specific(mon->fy, mon->fx, rlev, summon_type,
+									   FALSE, FALSE);
 
 				val += temp * temp;
 
@@ -2254,7 +2255,7 @@ bool effect_handler_SUMMON(effect_handler_context_t *context)
 		/* If not a monster summon, it's simple */
 		while (summon_max) {
 			count += summon_specific(player->py, player->px, player->depth,
-									 summon_type, 1);
+									 summon_type, TRUE, FALSE);
 			summon_max--;
 		}
 	}
@@ -4061,7 +4062,8 @@ bool effect_handler_TRAP_RUNE_SUMMON(effect_handler_context_t *context)
 	square_destroy_trap(cave, player->py, player->px);
 
 	for (i = 0; i < num; i++)
-		(void)summon_specific(player->py, player->px, player->depth, 0, 1);
+		(void)summon_specific(player->py, player->px, player->depth, 0, TRUE,
+							  FALSE);
 
 	return TRUE;
 }

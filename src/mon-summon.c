@@ -21,16 +21,15 @@
 #include "mon-summon.h"
 #include "mon-util.h"
 
-/*
- * Hack -- the "type" of the current "summon specific"
+/**
+ * The "type" of the current "summon specific"
  */
 static int summon_specific_type = 0;
 
-/*
- * Hack - the kin type for S_KIN
+/**
+ * The kin base for S_KIN
  */
-wchar_t summon_kin_type;
-
+struct monster_base *kin_base;
 
 static struct summon_details {
 	const char *name;
@@ -84,41 +83,47 @@ static bool summon_specific_okay(monster_race *race)
 
 	/* Special case - summon kin */
 	if (summon_specific_type == S_KIN)
-		return (!unique && race->d_char == summon_kin_type);
+		return (!unique && race->base == kin_base);
 
 	/* If we made it here, we're fine */
 	return TRUE;
 }
 
+/**
+ * The message type for a particular summon
+ */
 int summon_message_type(int summon_type)
 {
 	return summon_info[summon_type].message_type;
 }
 
-/* Check to see if you can call the monster */
+/**
+ * Check to see if you can call the monster
+ */
 bool can_call_monster(int y, int x, monster_type *m_ptr)
 {
 	int oy, ox;
 
 	/* Skip dead monsters */
 	if (!m_ptr->race) return (FALSE);
-	
+
 	/* Only consider callable monsters */
 	if (!summon_specific_okay(m_ptr->race)) return (FALSE);
-	
+
 	/* Extract monster location */
 	oy = m_ptr->fy;
 	ox = m_ptr->fx;
-	
+
 	/* Make sure the summoned monster is not in LOS of the summoner */
 	if (los(cave, y, x, oy, ox)) return (FALSE);
-	
+
 	return (TRUE);
 }
 
 
-/** Calls a monster from the level and moves it to the desired spot
-*/
+/**
+ * Calls a monster from the level and moves it to the desired spot
+ */
 int call_monster(int y, int x)
 {
 	int i, mon_count, choice;
@@ -127,27 +132,25 @@ int call_monster(int y, int x)
 	monster_type *m_ptr;
 
 	mon_count = 0;
-	
-	for (i = 1; i < cave_monster_max(cave); i++)
-	{
+
+	for (i = 1; i < cave_monster_max(cave); i++) {
 		m_ptr = cave_monster(cave, i);
-		
-		/* Figure out how many good mosnters there are */
+
+		/* Figure out how many good monsters there are */
 		if (can_call_monster(y, x, m_ptr)) mon_count++;
 	}
-	
+
 	/* There were no good monsters on the level */
 	if (mon_count == 0) return (0);
-  	
+
 	/* Make the array */
-	mon_indices = C_ZNEW(mon_count, int);
-	
-	/* reset mon_count */
+	mon_indices = mem_zalloc(mon_count * sizeof(int));
+
+	/* Reset mon_count */
 	mon_count = 0;
-	
+
 	/* Now go through a second time and store the indices */
-	for (i = 1; i < cave_monster_max(cave); i++)
-	{
+	for (i = 1; i < cave_monster_max(cave); i++) {
 		m_ptr = cave_monster(cave, i);
 		
 		/* Save the values of the good monster */
@@ -156,30 +159,31 @@ int call_monster(int y, int x)
 			mon_count++;
 		}
 	}
-	
+
 	/* Pick one */
 	choice = randint0(mon_count - 1);
-	
+
 	/* Get the lucky monster */
 	m_ptr = cave_monster(cave, mon_indices[choice]);
-	FREE(mon_indices);
-	
+	mem_free(mon_indices);
+
 	/* Extract monster location */
 	oy = m_ptr->fy;
 	ox = m_ptr->fx;
-	
+
 	/* Swap the moster */
 	monster_swap(oy, ox, y, x);
-	
-	/* wake it up */
+
+	/* Wake it up */
 	mon_clear_timed(m_ptr, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, FALSE);
-		
+
 	/* Set it's energy to 0 */
 	m_ptr->energy = 0;
-		
-	return (m_ptr->race->level);
 
+	return (m_ptr->race->level);
 }
+
+
 /**
  * Places a monster (of the specified "type") near the given
  * location.  Return TRUE iff a monster was actually summoned.
@@ -204,7 +208,7 @@ int call_monster(int y, int x)
  *
  * Note that this function may not succeed, though this is very rare.
  */
-int summon_specific(int y1, int x1, int lev, int type, int delay)
+int summon_specific(int y1, int x1, int lev, int type, bool delay, bool call)
 {
 	int i, x = 0, y = 0;
 
@@ -212,8 +216,7 @@ int summon_specific(int y1, int x1, int lev, int type, int delay)
 	monster_race *race;
 
 	/* Look for a location, allow up to 4 squares away */
-	for (i = 0; i < 60; ++i)
-	{
+	for (i = 0; i < 60; ++i) {
 		/* Pick a distance */
 		int d = (i / 15) + 1;
 
@@ -235,13 +238,12 @@ int summon_specific(int y1, int x1, int lev, int type, int delay)
 
 	/* Save the "summon" type */
 	summon_specific_type = type;
-#ifdef FIZZIX_SUMMON	
-	/* Use the new calling scheme 
-	  Hack - use delay to determine if it's a normal summon or a trap summon */
-	if ((type != S_UNIQUE) && (type != S_WRAITH)  && !delay ){
+
+	/* Use the new calling scheme if requested */
+	if (call && (type != S_UNIQUE) && (type != S_WRAITH)) {
 		return (call_monster(y, x));
 	}
-#endif
+
 	/* Prepare allocation table */
 	get_mon_num_prep(summon_specific_okay);
 
@@ -260,7 +262,7 @@ int summon_specific(int y1, int x1, int lev, int type, int delay)
 
 	/* Success, return the level of the monster */
 	m_ptr = square_monster(cave, y, x);
-	
+
 	/* If delay, try to let the player act before the summoned monsters,
 	 * including slowing down faster monsters for one turn */
 	if (delay) {

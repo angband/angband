@@ -31,12 +31,12 @@ enum summon_flag {
 };
 
 /** Variables **/
-extern wchar_t summon_kin_type;		/* Hack -- See summon_specific() */
+struct monster_base *kin_base;
 
 
 /** Functions **/
 int summon_name_to_idx(const char *name);
 int summon_message_type(int summon_type);
-int summon_specific(int y1, int x1, int lev, int type, int delay);
+int summon_specific(int y1, int x1, int lev, int type, bool delay, bool call);
 
 #endif /* MONSTER_SUMMON_H */

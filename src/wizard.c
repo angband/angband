@@ -1341,15 +1341,10 @@ static void do_cmd_rerate(void)
  */
 static void do_cmd_wiz_summon(int num)
 {
-	int py = player->py;
-	int px = player->px;
-
 	int i;
 
 	for (i = 0; i < num; i++)
-	{
 		effect_simple(EF_SUMMON, "1", 0, 0, 0, NULL);
-	}
 }
 
 
