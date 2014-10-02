@@ -2223,6 +2223,10 @@ bool effect_handler_SUMMON(effect_handler_context_t *context)
 	if (mon) {
 		int rlev = mon->race->level;
 
+		/* Set the summon_kin_type if necessary */
+		if (type == S_KIN)
+			summon_kin_type = mon->race->d_char;
+
 		/* Continue summoning until we reach the current dungeon level */
 		while ((val < player->depth * rlev) && (attempts < summon_max)) {
 			int temp;
