@@ -549,7 +549,6 @@ static enum parser_error parse_r_power(struct parser *p) {
 static enum parser_error parse_r_b(struct parser *p) {
 	struct monster_race *r = parser_priv(p);
 	struct monster_blow *b = r->blow;
-	struct random dam;
 
 	if (!r)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
@@ -574,11 +573,8 @@ static enum parser_error parse_r_b(struct parser *p) {
 		if (!monster_blow_effect_is_valid(b->effect))
 			return PARSE_ERROR_INVALID_EFFECT;
 	}
-	if (parser_hasval(p, "damage")) {
-		dam = parser_getrand(p, "damage");
-		b->d_dice = dam.dice;
-		b->d_side = dam.sides;
-	}
+	if (parser_hasval(p, "damage"))
+		b->dice = parser_getrand(p, "damage");
 
 	return PARSE_ERROR_NONE;
 }
@@ -1073,8 +1069,7 @@ static enum parser_error parse_lore_b(struct parser *p) {
 		struct monster_blow *b = &l->blows[index];
 		b->method = method;
 		b->effect = effect;
-		b->d_dice = dam.dice;
-		b->d_side = dam.sides;
+		b->dice = dam;
 		b->times_seen = seen;
 	}
 

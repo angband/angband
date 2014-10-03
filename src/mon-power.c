@@ -32,19 +32,20 @@ long *power, *scaled_power, *final_hp, *final_melee_dam, *final_spell_dam;
 int *highest_threat;
 s32b tot_mon_power;
 
-static long eval_blow_effect(int effect, int atk_dam, int rlev)
+static long eval_blow_effect(int effect, random_value atk_dam, int rlev)
 {
 	int adjustment = monster_blow_effect_eval(effect);
+	int power = randcalc(atk_dam, rlev, MAXIMISE);
 
 	if (effect == RBE_POISON) {
-		atk_dam *= 5;
-		atk_dam /= 4;
-		atk_dam += rlev;
+		power *= 5;
+		power /= 4;
+		power += rlev;
 	} else {
-		atk_dam += adjustment;
+		power += adjustment;
 	}
 
-	return atk_dam;
+	return power;
 }
 
 static byte adj_energy(monster_race *r_ptr)
@@ -86,14 +87,13 @@ static long eval_max_dam(monster_race *r_ptr, int ridx)
 		/* Extract the attack infomation */
 		int effect = r_ptr->blow[i].effect;
 		int method = r_ptr->blow[i].method;
-		int d_dice = r_ptr->blow[i].d_dice;
-		int d_side = r_ptr->blow[i].d_side;
+		random_value dice = r_ptr->blow[i].dice;
 
 		/* Hack -- no more attacks */
 		if (!method) continue;
 
 		/* Assume maximum damage*/
-		atk_dam = eval_blow_effect(effect, d_dice * d_side, r_ptr->level);
+		atk_dam = eval_blow_effect(effect, dice, r_ptr->level);
 
 		switch (method)
 		{

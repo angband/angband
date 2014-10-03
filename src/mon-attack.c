@@ -405,10 +405,10 @@ bool make_attack_spell(struct monster *m_ptr)
  * and which also do at least 20 damage, or, sometimes, N damage.
  * This is used only to determine "cuts" and "stuns".
  */
-static int monster_critical(int dice, int sides, int dam)
+static int monster_critical(random_value dice, int rlev, int dam)
 {
 	int max = 0;
-	int total = dice * sides;
+	int total = randcalc(dice, rlev, MAXIMISE);
 
 	/* Must do at least 95% of perfect */
 	if (dam < total * 19 / 20) return (0);
@@ -513,8 +513,7 @@ bool make_attack_normal(struct monster *m_ptr, struct player *p)
 		/* Extract the attack infomation */
 		int effect = m_ptr->race->blow[ap_cnt].effect;
 		int method = m_ptr->race->blow[ap_cnt].method;
-		int d_dice = m_ptr->race->blow[ap_cnt].d_dice;
-		int d_side = m_ptr->race->blow[ap_cnt].d_side;
+		random_value dice = m_ptr->race->blow[ap_cnt].dice;
 
 		/* Hack -- no more attacks */
 		if (!method) break;
@@ -567,11 +566,8 @@ bool make_attack_normal(struct monster *m_ptr, struct player *p)
 			/* Hack -- assume all attacks are obvious */
 			obvious = TRUE;
 
-			/* Roll out the damage */
-			if (d_dice > 0 && d_side > 0)
-				damage = damroll(d_dice, d_side);
-			else
-				damage = 0;
+			/* Roll dice */
+			damage = randcalc(dice, rlev, RANDOMISE);
 
 			/* Perform the actual effect. */
 			effect_handler = melee_handler_for_blow_effect(effect);
@@ -614,7 +610,7 @@ bool make_attack_normal(struct monster *m_ptr, struct player *p)
 			/* Handle cut */
 			if (do_cut) {
 				/* Critical hit (zero if non-critical) */
-				tmp = monster_critical(d_dice, d_side, damage);
+				tmp = monster_critical(dice, rlev, damage);
 
 				/* Roll for damage */
 				switch (tmp) {
@@ -635,7 +631,7 @@ bool make_attack_normal(struct monster *m_ptr, struct player *p)
 			/* Handle stun */
 			if (do_stun) {
 				/* Critical hit (zero if non-critical) */
-				tmp = monster_critical(d_dice, d_side, damage);
+				tmp = monster_critical(dice, rlev, damage);
 
 				/* Roll for damage */
 				switch (tmp) {

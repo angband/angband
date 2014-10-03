@@ -28,7 +28,7 @@ int teardown_tests(void **state) {
 
 static int mdam(struct monster *m)
 {
-	return m->race->blow[0].d_dice;
+	return m->race->blow[0].dice.dice;
 }
 
 static int take1(struct player *p, struct monster *m, int blow, int eff)

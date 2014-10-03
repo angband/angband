@@ -409,8 +409,7 @@ void lore_update(const monster_race *race, monster_lore *lore)
 			lore->blow_known[i] = TRUE;
 			lore->blows[i].method = race->blow[i].method;
 			lore->blows[i].effect = race->blow[i].effect;
-			lore->blows[i].d_dice = race->blow[i].d_dice;
-			lore->blows[i].d_side = race->blow[i].d_side;
+			lore->blows[i].dice = race->blow[i].dice;
 		}
 
 	/* Killing a monster reveals some properties */
@@ -1802,7 +1801,7 @@ static void lore_append_attack(textblock *tb, const monster_race *race,
 
 	/* Describe each melee attack */
 	for (i = 0; i < z_info->mon_blows_max; i++) {
-		int dice, sides;
+		random_value dice;
 		const char *method_str = NULL;
 		const char *effect_str = NULL;
 
@@ -1810,8 +1809,7 @@ static void lore_append_attack(textblock *tb, const monster_race *race,
 		if (!race->blow[i].method || !lore->blow_known[i]) continue;
 
 		/* Extract the attack info */
-		dice = race->blow[i].d_dice;
-		sides = race->blow[i].d_side;
+		dice = race->blow[i].dice;
 		method_str = lore_describe_blow_method(race->blow[i].method);
 		effect_str = lore_describe_blow_effect(race->blow[i].effect);
 
@@ -1835,10 +1833,19 @@ static void lore_append_attack(textblock *tb, const monster_race *race,
 							   effect_str);
 
 			/* Describe damage (if known) */
-			if (dice && sides) {
+			if (dice.base || dice.dice || dice.sides || dice.m_bonus) {
 				textblock_append(tb, " with damage ");
-				textblock_append_c(tb, TERM_L_GREEN, "%dd%d", dice, sides);
+
+				if (dice.base)
+					textblock_append_c(tb, TERM_L_GREEN, "%d", dice.base);
+
+				if (dice.dice && dice.sides)
+					textblock_append_c(tb, TERM_L_GREEN, "%dd%d", dice.dice, dice.sides);
+
+				if (dice.m_bonus)
+					textblock_append_c(tb, TERM_L_GREEN, "M%d", dice.m_bonus);
 			}
+
 		}
 
 		described_count++;
@@ -2086,8 +2093,10 @@ void write_lore_entries(ang_file *fff)
 			file_putf(fff, ":%s", r_info_blow_effect[lore->blows[n].effect]);
 
 			/* Output blow damage (may be 0) */
-			file_putf(fff, ":%dd%d", lore->blows[n].d_dice,
-					  lore->blows[n].d_side);
+			file_putf(fff, ":%d+%dd%dM%d", lore->blows[n].dice.base,
+					lore->blows[n].dice.dice,
+					lore->blows[n].dice.sides,
+					lore->blows[n].dice.m_bonus);
 
 			/* Output number of times that blow has been seen */
 			file_putf(fff, ":%d", lore->blows[n].times_seen);

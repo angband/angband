@@ -56,8 +56,7 @@ struct monster_blow {
 
 	int method;			/* Method (RBM_*) */
 	int effect;			/* Effect (RBE_*) */
-	int d_dice;			/* Damage Dice */
-	int d_side;			/* Damage Sides */
+	random_value dice;	/* Damage dice */
 	int times_seen;		/* Sightings of the blow (lore only) */
 };
 
