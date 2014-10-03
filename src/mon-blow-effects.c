@@ -848,7 +848,7 @@ int monster_blow_effect_eval(monster_blow_effect_t effect)
  *
  * \param string contains a value to search for.
  */
-monster_blow_effect_t monster_blow_effect_for_string(const char *string)
+monster_blow_effect_t blow_effect_name_to_idx(const char *string)
 {
 	int i;
 	static const char *r_info_blow_effect[] = {

@@ -229,7 +229,7 @@ const char *monster_blow_method_description(monster_blow_method_t method)
  *
  * \param string contains a value to search for.
  */
-monster_blow_method_t monster_blow_method_for_string(const char *string)
+monster_blow_method_t blow_method_name_to_idx(const char *string)
 {
 	int i;
 	static const char *r_info_blow_method[] = {

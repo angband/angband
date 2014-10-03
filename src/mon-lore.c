@@ -404,7 +404,7 @@ void lore_update(const monster_race *race, monster_lore *lore)
 	flags_set(lore->flags, RF_SIZE, RF_OBVIOUS_MASK, FLAG_END);
 
 	/* Blows */
-	for (i = 0; i < MONSTER_BLOW_MAX; i++)
+	for (i = 0; i < z_info->mon_blows_max; i++)
 		if (lore->blows[i].times_seen || lore->all_known) {
 			lore->blow_known[i] = TRUE;
 			lore->blows[i].method = race->blow[i].method;
@@ -476,7 +476,7 @@ void lore_do_probe(struct monster *m)
 	unsigned i;
 
 	/* Know various things */
-	for (i = 0; i < MONSTER_BLOW_MAX; i++)
+	for (i = 0; i < z_info->mon_blows_max; i++)
 		l_ptr->blow_known[i] = TRUE;
 	rf_setall(l_ptr->flags);
 	rsf_copy(l_ptr->spell_flags, m->race->spell_flags);
@@ -1782,7 +1782,7 @@ static void lore_append_attack(textblock *tb, const monster_race *race,
 	}
 
 	/* Count the number of known attacks */
-	for (total_attacks = 0, i = 0; i < MONSTER_BLOW_MAX; i++) {
+	for (total_attacks = 0, i = 0; i < z_info->mon_blows_max; i++) {
 		/* Skip non-attacks */
 		if (!race->blow[i].method) continue;
 
@@ -1801,7 +1801,7 @@ static void lore_append_attack(textblock *tb, const monster_race *race,
 	described_count = 0;
 
 	/* Describe each melee attack */
-	for (i = 0; i < MONSTER_BLOW_MAX; i++) {
+	for (i = 0; i < z_info->mon_blows_max; i++) {
 		int dice, sides;
 		const char *method_str = NULL;
 		const char *effect_str = NULL;

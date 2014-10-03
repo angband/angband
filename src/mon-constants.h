@@ -22,9 +22,6 @@
 
 
 
-/*** Monster blow constants ***/
-#define MONSTER_BLOW_MAX 4
-
 /*** Monster flags ***/
 
 /*

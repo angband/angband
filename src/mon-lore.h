@@ -49,7 +49,7 @@ typedef struct
 	byte cast_innate;		/* Max number of innate spells seen */
 	byte cast_spell;		/* Max number of other spells seen */
 
-	struct monster_blow blows[MONSTER_BLOW_MAX]; /* Knowledge of blows */
+	struct monster_blow *blows; /* Knowledge of blows */
 
 	bitflag flags[RF_SIZE]; /* Observed racial flags - a 1 indicates
 	                         * the flag (or lack thereof) is known to
@@ -63,7 +63,7 @@ typedef struct
 
 	/* Derived known fields, put here for simplicity */
 	bool all_known;
-	bool blow_known[MONSTER_BLOW_MAX];
+	bool *blow_known;
 	bool armour_known;
 	bool drop_known;
 	bool sleep_known;

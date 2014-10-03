@@ -97,16 +97,16 @@ int test_b0(void *state) {
 }
 
 int test_b1(void *state) {
-	enum parser_error r = parser_parse(state, "B:BITE:FIRE:6d8");
+	enum parser_error r = parser_parse(state, "B:BITE:FIRE:6d8:0");
 	struct monster_race *mr;
 
 	eq(r, PARSE_ERROR_NONE);
 	mr = parser_priv(state);
 	require(mr);
-	require(mr->blow[1].method);
-	require(mr->blow[1].effect);
-	eq(mr->blow[1].d_dice, 6);
-	eq(mr->blow[1].d_side, 8);
+	require(mr->blow[0].next->method);
+	require(mr->blow[0].next->effect);
+	eq(mr->blow[0].next->d_dice, 6);
+	eq(mr->blow[0].next->d_side, 8);
 	ok;
 }
 

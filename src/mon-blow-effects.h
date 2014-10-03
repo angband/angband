@@ -74,6 +74,6 @@ extern int monster_blow_effect_eval(monster_blow_effect_t effect);
 extern bool monster_blow_effect_is_valid(monster_blow_effect_t effect);
 extern const char *monster_blow_effect_description(monster_blow_effect_t effect);
 extern melee_effect_handler_f melee_handler_for_blow_effect(monster_blow_effect_t effect);
-extern monster_blow_effect_t monster_blow_effect_for_string(const char *string);
+extern monster_blow_effect_t blow_effect_name_to_idx(const char *string);
 
 #endif /* MON_BLOW_EFFECTS_H */

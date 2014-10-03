@@ -1,7 +1,7 @@
 /**
-   \file mon-attack.c
-   \brief Monster attacks
-
+ * \file mon-attack.c
+ * \brief Monster attacks
+ *
  * Monster ranged attacks - choosing an attack spell or shot and making it.
  * Monster melee attacks - monster critical blows, whether a monster 
  * attack hits, what happens when a monster attacks an adjacent player.
@@ -22,6 +22,7 @@
 
 #include "angband.h"
 #include "cave.h"
+#include "init.h"
 #include "mon-blow-methods.h"
 #include "mon-blow-effects.h"
 #include "mon-desc.h"
@@ -495,7 +496,7 @@ bool make_attack_normal(struct monster *m_ptr, struct player *p)
 	blinked = FALSE;
 
 	/* Scan through all blows */
-	for (ap_cnt = 0; ap_cnt < MONSTER_BLOW_MAX; ap_cnt++)
+	for (ap_cnt = 0; ap_cnt < z_info->mon_blows_max; ap_cnt++)
 	{
 		bool visible = FALSE;
 		bool obvious = FALSE;

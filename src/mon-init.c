@@ -1,6 +1,6 @@
-/*
- * File: mon-init.c
- * Purpose: Monster initialization routines.
+/**
+ * \file mon-init.c
+ * \brief Monster initialization routines.
  *
  * Copyright (c) 1997 Ben Harrison
  *
@@ -548,30 +548,37 @@ static enum parser_error parse_r_power(struct parser *p) {
 
 static enum parser_error parse_r_b(struct parser *p) {
 	struct monster_race *r = parser_priv(p);
-	int i;
+	struct monster_blow *b = r->blow;
 	struct random dam;
 
 	if (!r)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	for (i = 0; i < MONSTER_BLOW_MAX; i++)
-		if (!r->blow[i].method)
-			break;
-	if (i == MONSTER_BLOW_MAX)
-		return PARSE_ERROR_TOO_MANY_ENTRIES;
-	r->blow[i].method = monster_blow_method_for_string(parser_getsym(p, "method"));
-	if (!monster_blow_method_is_valid(r->blow[i].method))
+
+	/* Go to the last valid blow, then allocate a new one */
+	if (!b) {
+		r->blow = mem_zalloc(sizeof(struct monster_blow));
+		b = r->blow;
+	} else {
+		while (b->next)
+			b = b->next;
+		b->next = mem_zalloc(sizeof(struct monster_blow));
+		b = b->next;
+	}
+
+	/* Now read the data */
+	b->method = blow_method_name_to_idx(parser_getsym(p, "method"));
+	if (!monster_blow_method_is_valid(b->method))
 		return PARSE_ERROR_UNRECOGNISED_BLOW;
 	if (parser_hasval(p, "effect")) {
-		r->blow[i].effect = monster_blow_effect_for_string(parser_getsym(p, "effect"));
-		if (!monster_blow_effect_is_valid(r->blow[i].effect))
+		b->effect = blow_effect_name_to_idx(parser_getsym(p, "effect"));
+		if (!monster_blow_effect_is_valid(b->effect))
 			return PARSE_ERROR_INVALID_EFFECT;
 	}
 	if (parser_hasval(p, "damage")) {
 		dam = parser_getrand(p, "damage");
-		r->blow[i].d_dice = dam.dice;
-		r->blow[i].d_side = dam.sides;
+		b->d_dice = dam.dice;
+		b->d_side = dam.sides;
 	}
-
 
 	return PARSE_ERROR_NONE;
 }
@@ -847,18 +854,30 @@ static errr finish_parse_r(struct parser *p) {
 	struct monster_race *r, *n;
 	size_t i;
 
-	/* scan the list for the max id */
+	/* Scan the list for the max id and max blows */
 	z_info->r_max = 0;
+	z_info->mon_blows_max = 0;
 	r = parser_priv(p);
 	while (r) {
+		int max_blows = 0;
+		struct monster_blow *b = r->blow;
 		if (r->ridx > z_info->r_max)
 			z_info->r_max = r->ridx;
+		while (b) {
+			b = b->next;
+			max_blows++;
+		}
+		if (max_blows > z_info->mon_blows_max)
+			z_info->mon_blows_max = max_blows;
 		r = r->next;
 	}
 
-	/* allocate the direct access list and copy the data to it */
+	/* Allocate the direct access list and copy the race records to it */
 	r_info = mem_zalloc((z_info->r_max + 1) * sizeof(*r));
 	for (r = parser_priv(p); r; r = n) {
+		struct monster_blow *b_new;
+
+		/* Main record */
 		memcpy(&r_info[r->ridx], r, sizeof(*r));
 		n = r->next;
 		if (n)
@@ -866,11 +885,39 @@ static errr finish_parse_r(struct parser *p) {
 		else
 			r_info[r->ridx].next = NULL;
 
+		/* Blows */
+		b_new = mem_zalloc(z_info->mon_blows_max * sizeof(*b_new));
+		if (r->blow) {
+			struct monster_blow *b_temp, *b_old = r->blow;
+
+			/* Allocate space and copy */
+			for (i = 0; i < z_info->mon_blows_max; i++) {
+				memcpy(&b_new[i], b_old, sizeof(*b_old));
+				b_old = b_old->next;
+				if (!b_old) break;
+			}
+
+			/* Make next point correctly */
+			for (i = 0; i < z_info->mon_blows_max; i++)
+				if (b_new[i].next)
+					b_new[i].next = &b_new[i + 1];
+
+			/* Tidy up */
+			b_old = r->blow;
+			b_temp = b_old;
+			while (b_temp) {
+				b_temp = b_old->next;
+				mem_free(b_old);
+				b_old = b_temp;
+			}
+		}
+		r_info[r->ridx].blow = b_new;
+
 		mem_free(r);
 	}
 	z_info->r_max += 1;
 
-	/* convert friend names into race pointers */
+	/* Convert friend names into race pointers */
 	for (i = 0; i < z_info->r_max; i++) {
 		struct monster_race *r = &r_info[i];
 		struct monster_friends *f;
@@ -881,8 +928,8 @@ static errr finish_parse_r(struct parser *p) {
 				f->race = lookup_monster(f->name);
 
 			if (!f->race)
-				quit_fmt("Monster '%s' has friend '%s' but I couldn't find any monster of that name",
-						r->name, f->name);
+				quit_fmt("Couldn't find friend named '%s' for Monster '%s'",
+						 r->name, f->name);
 
 			string_free(f->name);
 		}
@@ -957,6 +1004,8 @@ static enum parser_error parse_lore_name(struct parser *p) {
 
 	parser_setpriv(p, l);
 	l->ridx = index;
+	l->blows = mem_zalloc(z_info->mon_blows_max * sizeof(struct monster_blow));
+	l->blow_known = mem_zalloc(z_info->mon_blows_max * sizeof(bool));
 	return PARSE_ERROR_NONE;
 }
 
@@ -1002,11 +1051,11 @@ static enum parser_error parse_lore_b(struct parser *p) {
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 
 	/* Read in all the data */
-	method = monster_blow_method_for_string(parser_getsym(p, "method"));
+	method = blow_method_name_to_idx(parser_getsym(p, "method"));
 	if (!monster_blow_method_is_valid(method))
 		return PARSE_ERROR_UNRECOGNISED_BLOW;
 	if (parser_hasval(p, "effect")) {
-		effect = monster_blow_effect_for_string(parser_getsym(p, "effect"));
+		effect = blow_effect_name_to_idx(parser_getsym(p, "effect"));
 		if (!monster_blow_effect_is_valid(effect))
 			return PARSE_ERROR_INVALID_EFFECT;
 	}
@@ -1016,7 +1065,7 @@ static enum parser_error parse_lore_b(struct parser *p) {
 		seen = parser_getint(p, "seen");
 	if (parser_hasval(p, "index"))
 		index = parser_getint(p, "index");
-	if (index >= MONSTER_BLOW_MAX)
+	if (index >= z_info->mon_blows_max)
 		return PARSE_ERROR_TOO_MANY_ENTRIES;
 
 	/* Interpret */
@@ -1246,7 +1295,7 @@ static errr finish_parse_lore(struct parser *p) {
 		rsf_union(l->spell_flags, r->base->spell_flags);
 
 		/* Remove blows data for non-blows */
-		for (j = 0; j < MONSTER_BLOW_MAX; j++)
+		for (j = 0; j < z_info->mon_blows_max; j++)
 			if (!(r->blow[j].effect || r->blow[j].method))
 				l->blows[j].times_seen = 0;
 

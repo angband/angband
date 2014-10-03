@@ -730,6 +730,44 @@ static struct monster_base TEST_DATA test_rb_info = {
 
 #define _NOBLOW { .method = RBM_NONE, .effect = RBE_NONE, .d_dice = 0, .d_side = 0 }
 
+static struct monster_blow TEST_DATA test_blow[4] = {
+	{
+		.method = RBM_HIT,
+		.effect = RBE_HURT,
+		.d_dice = 3,
+		.d_side = 1,
+		.times_seen = 1,
+	},
+	{
+		.method = RBM_NONE,
+		.effect = RBE_NONE,
+		.d_dice = 0,
+		.d_side = 0,
+		.times_seen = 0,
+	},
+	{
+		.method = RBM_NONE,
+		.effect = RBE_NONE,
+		.d_dice = 0,
+		.d_side = 0,
+		.times_seen = 0,
+	},
+	{
+		.method = RBM_NONE,
+		.effect = RBE_NONE,
+		.d_dice = 0,
+		.d_side = 0,
+		.times_seen = 0,
+	}
+};
+
+static bool TEST_DATA test_blows_known[4] = {
+	TRUE,
+	FALSE,
+	FALSE,
+	FALSE,
+};
+
 static struct monster_race TEST_DATA test_r_human = {
 	.next = NULL,
 	.ridx = 0,
@@ -749,17 +787,7 @@ static struct monster_race TEST_DATA test_r_human = {
 	.freq_innate = 0,
 	.freq_spell = 0,
 
-	.blow = {
-		{
-			.method = RBM_HIT,
-			.effect = RBE_HURT,
-			.d_dice = 3,
-			.d_side = 1,
-		},
-		_NOBLOW,
-		_NOBLOW,
-		_NOBLOW,
-	},
+	.blow = &test_blow[0],
 
 	.level = 1,
 	.rarity = 1,
@@ -789,18 +817,7 @@ static monster_lore TEST_DATA test_lore = {
 	.cast_innate = 0,
 	.cast_spell = 0,
 
-	.blows = {
-		{
-			.method = RBM_HIT,
-			.effect = RBE_HURT,
-			.d_dice = 3,
-			.d_side = 1,
-			.times_seen = 1,
-		},
-		_NOBLOW,
-		_NOBLOW,
-		_NOBLOW,
-	},
+	.blows = &test_blow[0],
 
 	.flags = "\0\0\0\0\0\0\0\0\0\0",
 	.spell_flags = "\0\0\0\0\0\0\0\0\0\0\0",
@@ -809,12 +826,7 @@ static monster_lore TEST_DATA test_lore = {
 	.friends_base = NULL,
 	.mimic_kinds = NULL,
 	.all_known = FALSE,
-	.blow_known = {
-		TRUE,
-		FALSE,
-		FALSE,
-		FALSE,
-	},
+	.blow_known = &test_blows_known[0],
 	.armour_known = FALSE,
 	.drop_known = FALSE,
 	.sleep_known = FALSE,

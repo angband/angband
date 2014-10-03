@@ -1,7 +1,7 @@
 /**
-   \file init.h
-   \brief initialization
-
+ * \file init.h
+ * \brief initialization
+ *
  * Copyright (c) 2000 Robert Ruehlmann
  *
  * This software may be copied and distributed for educational, research,
@@ -26,16 +26,17 @@
 struct angband_constants
 {
 	/* Array bounds, set on parsing edit files */
-	u16b f_max;       /**< Maximum number of terrain features */
-	u16b trap_max;	  /**< Maximum number of trap kinds */
-	u16b k_max;       /**< Maximum number of object base kinds */
-	u16b a_max;       /**< Maximum number of artifact kinds */
-	u16b e_max;       /**< Maximum number of ego-item kinds */
-	u16b r_max;       /**< Maximum number of monster races */
-	u16b mp_max;	  /**< Maximum number of monster pain message sets */
-	u16b s_max;       /**< Maximum number of magic spells */
-	u16b pit_max;	  /**< Maximum number of monster pit types */
-	u16b act_max;	  /**< Maximum number of activations for randarts */
+	u16b f_max;			/**< Maximum number of terrain features */
+	u16b trap_max;		/**< Maximum number of trap kinds */
+	u16b k_max;			/**< Maximum number of object base kinds */
+	u16b a_max;			/**< Maximum number of artifact kinds */
+	u16b e_max;			/**< Maximum number of ego-item kinds */
+	u16b r_max;			/**< Maximum number of monster races */
+	u16b mp_max;		/**< Maximum number of monster pain message sets */
+	u16b s_max;			/**< Maximum number of magic spells */
+	u16b pit_max;		/**< Maximum number of monster pit types */
+	u16b act_max;		/**< Maximum number of activations for randarts */
+	u16b mon_blows_max;	/**< Maximum number of monster blows */
 
 	/* Maxima of things on a given level, read from constants.txt */
 	u16b level_object_max;	/**< Maximum number of objects on a given level */

@@ -48,6 +48,6 @@ extern bool monster_blow_method_is_valid(monster_blow_method_t method);
 extern int monster_blow_method_message(monster_blow_method_t method);
 extern const char *monster_blow_method_action(monster_blow_method_t method);
 extern const char *monster_blow_method_description(monster_blow_method_t method);
-extern monster_blow_method_t monster_blow_method_for_string(const char *string);
+extern monster_blow_method_t blow_method_name_to_idx(const char *string);
 
 #endif /* MON_BLOW_METHODS_H */

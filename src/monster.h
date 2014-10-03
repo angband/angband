@@ -52,6 +52,8 @@ enum
  * Monster blows
  */
 struct monster_blow {
+	struct monster_blow *next;	/* Unused after parsing */
+
 	int method;			/* Method (RBM_*) */
 	int effect;			/* Effect (RBE_*) */
 	int d_dice;			/* Damage Dice */
@@ -195,7 +197,7 @@ typedef struct monster_race
 	bitflag flags[RF_SIZE];         /* Flags */
 	bitflag spell_flags[RSF_SIZE];  /* Spell flags */
 
-	struct monster_blow blow[MONSTER_BLOW_MAX]; /* Up to four blows per round */
+	struct monster_blow *blow; /* Melee blows */
 
 	int level;				/* Level of creature */
 	int rarity;				/* Rarity of creature */

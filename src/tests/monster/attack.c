@@ -11,6 +11,8 @@
 int setup_tests(void **state) {
 	struct monster_race *r = &test_r_human;
 	struct monster *m = mem_zalloc(sizeof *m);
+	z_info = mem_zalloc(sizeof(struct angband_constants));
+	z_info->mon_blows_max = 2;
 	m->race = r;
 	r_info = r;
 	*state = m;
@@ -19,7 +21,10 @@ int setup_tests(void **state) {
 	return 0;
 }
 
-NOTEARDOWN
+int teardown_tests(void **state) {
+	mem_free(z_info);
+	return 0;
+}
 
 static int mdam(struct monster *m)
 {
