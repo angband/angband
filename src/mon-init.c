@@ -928,8 +928,8 @@ static errr finish_parse_r(struct parser *p) {
 				f->race = lookup_monster(f->name);
 
 			if (!f->race)
-				quit_fmt("Couldn't find friend named '%s' for Monster '%s'",
-						 r->name, f->name);
+				quit_fmt("Couldn't find friend named '%s' for monster '%s'",
+						 f->name, r->name);
 
 			string_free(f->name);
 		}
