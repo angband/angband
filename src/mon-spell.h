@@ -1,6 +1,6 @@
 /**
-   \file mon-spell.h
-   \brief structures and functions for monster spells
+ * \file mon-spell.h
+ * \brief structures and functions for monster spells
  *
  * Copyright (c) 2011 Chris Carr
  *

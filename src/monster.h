@@ -1,6 +1,6 @@
-/*
- * File: monster.h
- * Purpose: structures and functions for monsters
+/**
+ * \file monster.h
+ * \brief structures and functions for monsters
  *
  * Copyright (c) 2007 Andi Sidwell
  * Copyright (c) 2010 Chris Carr
@@ -30,20 +30,12 @@
 
 /** Constants **/
 
-/*
- * There is a 1/50 (2%) chance of inflating the requested monster level
- * during the creation of a monsters (see "get_mon_num()" in "monster.c").
- * Lower values yield harder monsters more often.
+
+
+
+/**
+ * Monster spell flag indices
  */
-#define NASTY_MON    25        /* 1/chance of inflated monster level */
-#define MON_OOD_MAX  10        /* maximum out-of-depth amount */
-#define BREAK_GLYPH		550	/* Rune of protection resistance */
-#define MON_MULT_ADJ		8 	/* High value slows multiplication */
-#define MON_DRAIN_LIFE		2	/* Percent of player exp drained per hit */
-
-
-
-/* Monster spell flags */
 enum
 {
     #define RSF(a, b, c, d, e, f, g, h) RSF_##a,
@@ -56,24 +48,19 @@ enum
 
 /** Structures **/
 
-/*
- * Monster blow structure
- *
- *	- Method (RBM_*)
- *	- Effect (RBE_*)
- *	- Damage Dice
- *	- Damage Sides
+/**
+ * Monster blows
  */
 struct monster_blow {
-	int method;
-	int effect;
-	int d_dice;
-	int d_side;
-	int times_seen;
+	int method;			/* Method (RBM_*) */
+	int effect;			/* Effect (RBE_*) */
+	int d_dice;			/* Damage Dice */
+	int d_side;			/* Damage Sides */
+	int times_seen;		/* Sightings of the blow (lore only) */
 };
 
-/*
- * Monster pain messages.
+/**
+ * Monster pain messages
  */
 typedef struct monster_pain
 {
@@ -83,41 +70,42 @@ typedef struct monster_pain
 	struct monster_pain *next;
 } monster_pain;
 
-extern monster_pain *pain_messages;
 
-/* Structure for monster spell types */
+/**
+ * Monster spell types
+ */
 struct monster_spell {
 	struct monster_spell *next;
 
 	u16b index;				/* Numerical index (RSF_FOO) */
 	int hit;				/* To-hit level for the attack */
-	struct effect *effect;
-	random_value power;
+	struct effect *effect;	/* Effect(s) of the spell */
+	random_value power;		/* Relative power of the spell */
 };
 
-extern struct monster_spell *monster_spells;
 
-/*
- * Information about "base" monster type.
+/**
+ * Base monster type
  */
 typedef struct monster_base
 {
 	struct monster_base *next;
 
-	char *name;
-	char *text;
+	char *name;						/* Name for recognition in code */
+	char *text;						/* In-game name */
 
 	bitflag flags[RF_SIZE];         /* Flags */
 	bitflag spell_flags[RSF_SIZE];  /* Spell flags */
 	
-	wchar_t d_char;			/* Default monster character */
+	wchar_t d_char;					/* Default monster character */
 
-	monster_pain *pain;		/* Pain messages */
+	monster_pain *pain;				/* Pain messages */
 } monster_base;
 
-extern monster_base *rb_info;
 
-/* Information about specified monster drops */ 
+/**
+ * Specified monster drops
+ */
 struct monster_drop {
 	struct monster_drop *next;
 	struct object_kind *kind;
@@ -127,6 +115,9 @@ struct monster_drop {
 	unsigned int max;
 };
 
+/**
+ * Monster friends (specific monster)
+ */
 struct monster_friends {
 	struct monster_friends *next;
 	char *name;
@@ -136,6 +127,9 @@ struct monster_friends {
 	unsigned int number_side;
 };
 
+/**
+ * Monster friends (general type)
+ */
 struct monster_friends_base {
 	struct monster_friends_base *next;
 	struct monster_base *base;
@@ -144,6 +138,9 @@ struct monster_friends_base {
 	unsigned int number_side;
 };
 
+/**
+ * How monsters mimic
+ */
 struct monster_mimic {
 	struct monster_mimic *next;
 	struct object_kind *kind;
@@ -175,7 +172,7 @@ typedef struct monster_race
 
 	char *name;
 	char *text;
-	char *plural; /* Optional pluralized name */
+	char *plural;			/* Optional pluralized name */
 
 	struct monster_base *base;
 	
@@ -221,10 +218,8 @@ typedef struct monster_race
 	struct monster_mimic *mimic_kinds;
 } monster_race;
 
-extern monster_race *r_info;
-extern const monster_race *ref_race;
 
-/*
+/**
  * Monster information, for a specific monster.
  *
  * Note: fy, fx constrain dungeon size to 256x256
@@ -265,6 +260,13 @@ typedef struct monster
 	player_state known_pstate; /* Known player state */
 } monster_type;
 
+/** Variables **/
 extern s16b num_repro;
+
+extern monster_pain *pain_messages;
+extern struct monster_spell *monster_spells;
+extern monster_base *rb_info;
+extern monster_race *r_info;
+extern const monster_race *ref_race;
 
 #endif /* !MONSTER_MONSTER_H */

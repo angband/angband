@@ -20,10 +20,6 @@
 #ifndef INCLUDED_MONSTER_CONSTANTS_H
 #define INCLUDED_MONSTER_CONSTANTS_H
 
-/*
- * Maximum flow depth when using "MONSTER_FLOW"
- */
-#define MONSTER_FLOW_DEPTH 32
 
 
 /*** Monster blow constants ***/

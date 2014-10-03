@@ -1,6 +1,6 @@
-/*
- * File: mon-blow-effects.c
- * Purpose: Monster melee effects module.
+/**
+ * \file mon-blow-effects.c
+ * \brief Monster melee effects module.
  *
  * Copyright (c) 1997 Ben Harrison, David Reeve Sward, Keldon Jones.
  *               2013 Ben Semmler
@@ -18,6 +18,7 @@
  */
 
 #include "angband.h"
+#include "init.h"
 #include "monster.h"
 #include "mon-attack.h"
 #include "mon-blow-effects.h"
@@ -148,7 +149,8 @@ static void melee_effect_experience(melee_effect_handler_context_t *context, int
 		msg("You keep hold of your life force!");
 	}
 	else {
-		s32b d = drain_amount + (context->p->exp/100) * MON_DRAIN_LIFE;
+		s32b d = drain_amount +
+			(context->p->exp/100) * z_info->life_drain_percent;
 		if (player_of_has(context->p, OF_HOLD_LIFE)) {
 			msg("You feel your life slipping away!");
 			player_exp_lose(context->p, d / 10, FALSE);

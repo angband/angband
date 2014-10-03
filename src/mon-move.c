@@ -1,7 +1,7 @@
 /**
-   \file mon-move.c 
-   \brief Monster movement
-
+ * \file mon-move.c
+ * \brief Monster movement
+ *
  * Monster AI affecting movement and spells, process a monster 
  * (with spells and actions of all kinds, reproduction, effects of any 
  * terrain on monster movement, picking up and destroying objects), 
@@ -204,7 +204,7 @@ static bool get_moves_flow(struct chunk *c, struct monster *m_ptr, int *yp, int 
 	if (c->when[my][mx] == 0) return FALSE;
 
 	/* Monster is too far away to notice the player */
-	if (c->cost[my][mx] > MONSTER_FLOW_DEPTH) return FALSE;
+	if (c->cost[my][mx] > z_info->max_flow_depth) return FALSE;
 	if (c->cost[my][mx] > (OPT(birth_small_range) ? m_ptr->race->aaf / 2 : m_ptr->race->aaf)) return FALSE;
 
 	/* If the player can see monster, run towards them */
@@ -269,7 +269,7 @@ static bool get_moves_fear(struct chunk *c, struct monster *m_ptr, int *yp, int 
 		return FALSE;
 
 	/* Monster is too far away to use flow information */
-	if (c->cost[my][mx] > MONSTER_FLOW_DEPTH) return FALSE;
+	if (c->cost[my][mx] > z_info->max_flow_depth) return FALSE;
 	if (c->cost[my][mx] > (OPT(birth_small_range) ? m_ptr->race->aaf / 2 : m_ptr->race->aaf)) return FALSE;
 
 	/* Check nearby grids, diagonals first */
@@ -1010,9 +1010,9 @@ static bool process_monster_timed(struct chunk *c, struct monster *m_ptr)
 }
 
 
-/** 
- * Attempt to reproduce, if possible.  Should only be passed monsters who are able
- * to reproduce.
+/**
+ * Attempt to reproduce, if possible.  All monsters are checked here for
+ * lore purposes, the unfit fail.
  */
 static bool process_monster_multiply(struct chunk *c, struct monster *m_ptr)
 {
@@ -1023,23 +1023,23 @@ static bool process_monster_multiply(struct chunk *c, struct monster *m_ptr)
 
 	monster_lore *l_ptr = get_lore(m_ptr->race);
 
-	assert(rf_has(m_ptr->race->flags, RF_MULTIPLY));
-
-	/* Attempt to "mutiply" (all monsters are allowed an attempt for lore
-	 * purposes, even non-breeders) */
+	/* Too many breeders on the level already */
 	if (num_repro >= z_info->repro_monster_max) return FALSE;
 
 	/* Count the adjacent monsters */
 	for (y = oy - 1; y <= m_ptr->fy + 1; y++)
 		for (x = ox - 1; x <= m_ptr->fx + 1; x++)
-			/* Count monsters */
 			if (c->m_idx[y][x] > 0) k++;
 
 	/* Multiply slower in crowded areas */
-	if ((k < 4) && (k == 0 || one_in_(k * MON_MULT_ADJ))) {
+	if ((k < 4) && (k == 0 || one_in_(k * z_info->repro_monster_rate))) {
 		/* Successful breeding attempt, learn about that now */
 		if (m_ptr->ml)
 			rf_on(l_ptr->flags, RF_MULTIPLY);
+
+		/* Leave now if not a breeder */
+		if (!rf_has(m_ptr->race->flags, RF_MULTIPLY))
+			return FALSE;
 
 		/* Try to multiply */
 		if (multiply_monster(m_ptr)) {
@@ -1190,12 +1190,13 @@ static bool process_monster_can_move(struct chunk *c, struct monster *m_ptr,
 /**
  * Try to break a glyph.
  */
-static bool process_monster_glyph(struct chunk *c, struct monster *m_ptr, int nx, int ny)
+static bool process_monster_glyph(struct chunk *c, struct monster *m_ptr,
+								  int nx, int ny)
 {
 	assert(square_iswarded(c, ny, nx));
 
 	/* Break the ward */
-	if (randint1(BREAK_GLYPH) < m_ptr->race->level) {
+	if (randint1(z_info->glyph_hardness) < m_ptr->race->level) {
 		/* Describe observable breakage */
 		if (square_ismark(c, ny, nx))
 			msg("The rune of protection is broken!");
@@ -1216,7 +1217,8 @@ static bool process_monster_glyph(struct chunk *c, struct monster *m_ptr, int nx
 /*
  * Hack -- compare the "strength" of two monsters XXX XXX XXX
  */
-static int compare_monsters(const struct monster *m_ptr, const struct monster *n_ptr)
+static int compare_monsters(const struct monster *m_ptr,
+							const struct monster *n_ptr)
 {
 	u32b mexp1 = m_ptr->race->mexp;
 	u32b mexp2 = n_ptr->race->mexp;
@@ -1397,7 +1399,7 @@ static void process_monster(struct chunk *c, struct monster *m_ptr)
 	monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_CAPITAL | MDESC_IND_HID);
 
 	/* Try to multiply - this can use up a turn */
-	if (rf_has(m_ptr->race->flags, RF_MULTIPLY) && process_monster_multiply(c, m_ptr))
+	if (process_monster_multiply(c, m_ptr))
 		return;
 
 	/* Attempt to cast a spell */
@@ -1498,7 +1500,7 @@ static bool monster_can_flow(struct chunk *c, struct monster *m_ptr)
 
 	/* Check the flow (normal aaf is about 20) */
 	if ((c->when[fy][fx] == c->when[player->py][player->px]) &&
-	    (c->cost[fy][fx] < MONSTER_FLOW_DEPTH) &&
+	    (c->cost[fy][fx] < z_info->max_flow_depth) &&
 	    (c->cost[fy][fx] < (OPT(birth_small_range) ? m_ptr->race->aaf / 2 : m_ptr->race->aaf)))
 		return TRUE;
 	return FALSE;

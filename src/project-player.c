@@ -1,6 +1,6 @@
 /**
-   \file project-player.c
-   \brief projection effects on the player
+ * \file project-player.c
+ * \brief projection effects on the player
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  *
@@ -18,6 +18,7 @@
 
 #include "angband.h"
 #include "cave.h"
+#include "init.h"
 #include "mon-desc.h"
 #include "obj-gear.h"
 #include "obj-identify.h"
@@ -261,7 +262,7 @@ static void project_player_handler_NETHER(project_player_handler_context_t *cont
 
 	/* Life draining */
 	msg("You feel your life force draining away!");
-	player_exp_lose(player, 200 + (player->exp / 100) * MON_DRAIN_LIFE, FALSE);
+	player_exp_lose(player, 200 + (player->exp / 100) * z_info->life_drain_percent, FALSE);
 }
 
 static void project_player_handler_CHAOS(project_player_handler_context_t *context)
@@ -280,8 +281,7 @@ static void project_player_handler_CHAOS(project_player_handler_context_t *conte
 	/* Life draining */
 	if (player_of_has(player, OF_HOLD_LIFE)) {
 		msg("You feel your life force draining away!");
-		player_exp_lose(player, 5000 + (player->exp / 100) * MON_DRAIN_LIFE,
-						FALSE);
+		player_exp_lose(player, 5000 + (player->exp / 100) * z_info->life_drain_percent, FALSE);
 	}
 }
 
@@ -358,8 +358,7 @@ static void project_player_handler_TIME(project_player_handler_context_t *contex
 	/* Life draining */
 	if (one_in_(2)) {
 		msg("You feel your life force draining away!");
-		player_exp_lose(player, 100 + (player->exp / 100) * MON_DRAIN_LIFE, 
-						FALSE);
+		player_exp_lose(player, 100 + (player->exp / 100) * z_info->life_drain_percent, FALSE);
 	}
 
 	/* Drain some stats */

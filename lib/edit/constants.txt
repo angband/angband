@@ -26,3 +26,21 @@ mon-gen:town-night:8
 
 # Maximum number of breeding monsters allowed on a level
 mon-gen:repro-max:100
+
+# Chance of a generated monster's level being inflated is one-in-this
+mon-gen:ood-chance:25
+
+# Maximum out-of-depth amount for monster generation
+mon-gen:ood-amount:10
+
+# Rune of protection resistance to monster breaking
+mon-play:break-glyph:550
+
+# High value slows multiplication
+mon-play:mult-rate:8
+
+# Percent of player exp drained per hit
+mon-play:life-drain:2
+
+# Maximum flow depth when using for monster flow calculation
+mon-play:flow-depth:32

@@ -48,6 +48,14 @@ struct angband_constants
 	u16b town_monsters_day;		/**< Townsfolk generated - day */
 	u16b town_monsters_night;	/**< Townsfolk generated  - night */
 	u16b repro_monster_max;		/**< Maximum breeders on a level */
+	u16b ood_monster_chance;	/**< Chance of OoD monster is 1 in this */
+	u16b ood_monster_amount;	/**< Max number of levels OoD */
+
+	/* Monster gameplay constants, read from constants.txt */
+	u16b glyph_hardness;		/**< How hard for a monster to break a glyph */
+	u16b repro_monster_rate;	/**< Monster reproduction rate-slower */
+	u16b life_drain_percent;	/**< Percent of player life drained */
+	u16b max_flow_depth;		/**< Maximum depth for flow calculation */
 };
 
 struct init_module {

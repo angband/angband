@@ -18,6 +18,7 @@
 
 #include "angband.h"
 #include "cave.h"
+#include "init.h"
 #include "monster.h"
 #include "obj-ignore.h"
 #include "obj-tval.h"
@@ -581,7 +582,7 @@ void cave_illuminate(struct chunk *c, bool daytime)
  * "old" data, and from 128 to 255 are for "new" data.
  *
  * This means that as long as the player does not "teleport",
- * then any monster up to 128 + MONSTER_FLOW_DEPTH will be
+ * then any monster up to 128 + z_info->max_flow_depth will be
  * able to track down the player, and in general, will be
  * able to track down either the player or a position recently
  * occupied by the player.
@@ -705,7 +706,7 @@ void cave_update_flow(struct chunk *c)
 		n = c->cost[ty][tx] + 1;
 
 		/* Hack -- Limit flow depth */
-		if (n == MONSTER_FLOW_DEPTH) continue;
+		if (n == z_info->max_flow_depth) continue;
 
 		/* Add the "children" */
 		for (d = 0; d < 8; d++)

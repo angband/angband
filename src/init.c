@@ -465,6 +465,36 @@ static enum parser_error parse_z_mon_gen(struct parser *p) {
 		z->town_monsters_night = value;
 	else if (streq(label, "repro-max"))
 		z->repro_monster_max = value;
+	else if (streq(label, "ood-chance"))
+		z->ood_monster_chance = value;
+	else if (streq(label, "ood-amount"))
+		z->ood_monster_amount = value;
+	else
+		return PARSE_ERROR_UNDEFINED_DIRECTIVE;
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_z_mon_play(struct parser *p) {
+	struct angband_constants *z;
+	const char *label;
+	int value;
+
+	z = parser_priv(p);
+	label = parser_getsym(p, "label");
+	value = parser_getint(p, "value");
+
+	if (value < 0)
+		return PARSE_ERROR_INVALID_VALUE;
+
+	if (streq(label, "break-glyph"))
+		z->glyph_hardness = value;
+	else if (streq(label, "mult-rate"))
+		z->repro_monster_rate = value;
+	else if (streq(label, "life-drain"))
+		z->life_drain_percent = value;
+	else if (streq(label, "flow-depth"))
+		z->max_flow_depth = value;
 	else
 		return PARSE_ERROR_UNDEFINED_DIRECTIVE;
 
@@ -478,6 +508,7 @@ struct parser *init_parse_z(void) {
 	parser_setpriv(p, z);
 	parser_reg(p, "level-max sym label int value", parse_z_level_max);
 	parser_reg(p, "mon-gen sym label int value", parse_z_mon_gen);
+	parser_reg(p, "mon-play sym label int value", parse_z_mon_play);
 	return p;
 }
 

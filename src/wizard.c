@@ -124,7 +124,7 @@ static void do_cmd_wiz_hack_ben(void)
 	struct keypress kp;
 
 
-	for (i = 0; i < MONSTER_FLOW_DEPTH; ++i)
+	for (i = 0; i < z_info->max_flow_depth; ++i)
 	{
 		/* Update map */
 		for (y = Term->offset_y; y < Term->offset_y + SCREEN_HGT; y++)

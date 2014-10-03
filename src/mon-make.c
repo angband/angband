@@ -548,8 +548,8 @@ monster_race *get_mon_num(int level)
 	alloc_entry *table = alloc_race_table;
 
 	/* Occasionally produce a nastier monster in the dungeon */
-	if (level > 0 && one_in_(NASTY_MON))
-		level += MIN(level / 4 + 2, MON_OOD_MAX);
+	if (level > 0 && one_in_(z_info->ood_monster_chance))
+		level += MIN(level / 4 + 2, z_info->ood_monster_amount);
 
 	total = 0L;
 
