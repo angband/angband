@@ -556,34 +556,18 @@ void wr_ignore(void)
 
 void wr_misc(void)
 {
-	wr_u32b(0L);
-
 	/* Random artifact seed */
 	wr_u32b(seed_randart);
 
-
-	/* XXX Ignore some flags */
-	wr_u32b(0L);
-	wr_u32b(0L);
-	wr_u32b(0L);
-
-
 	/* Write the "object seeds" */
 	wr_u32b(seed_flavor);
-
 
 	/* Special stuff */
 	wr_u16b(player->total_winner);
 	wr_u16b(player->noscore);
 
-
 	/* Write death */
 	wr_byte(player->is_dead);
-
-	/* Write feeling */
-	wr_byte(cave->feeling);
-	wr_u16b(cave->feeling_squares);
-	wr_s32b(cave->created_at);
 
 	/* Current turn */
 	wr_s32b(turn);
@@ -786,6 +770,10 @@ void wr_dungeon(void)
 		wr_byte((byte)prev_char);
 	}
 
+	/* Write feeling */
+	wr_byte(cave->feeling);
+	wr_u16b(cave->feeling_squares);
+	wr_s32b(cave->created_at);
 
 	/*** Compact ***/
 

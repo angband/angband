@@ -860,21 +860,12 @@ int rd_ignore(void)
 int rd_misc(void)
 {
 	byte tmp8u;
-	u16b tmp16u;
 	
-	/* Read the randart version */
-	strip_bytes(4);
-
 	/* Read the randart seed */
 	rd_u32b(&seed_randart);
 
-	/* Skip the flags */
-	strip_bytes(12);
-
-
 	/* Hack -- the two "special seeds" */
 	rd_u32b(&seed_flavor);
-
 
 	/* Special stuff */
 	rd_u16b(&player->total_winner);
@@ -884,14 +875,6 @@ int rd_misc(void)
 	/* Read "death" */
 	rd_byte(&tmp8u);
 	player->is_dead = tmp8u;
-
-	/* Read "feeling" */
-	rd_byte(&tmp8u);
-	cave->feeling = tmp8u;
-	rd_u16b(&tmp16u);
-	cave->feeling_squares = tmp16u;
-
-	rd_s32b(&cave->created_at);
 
 	/* Current turn */
 	rd_s32b(&turn);
@@ -1230,6 +1213,13 @@ int rd_dungeon(void)
 	}
 
 
+	/* Read "feeling" */
+	rd_byte(&tmp8u);
+	cave->feeling = tmp8u;
+	rd_u16b(&tmp16u);
+	cave->feeling_squares = tmp16u;
+	rd_s32b(&cave->created_at);
+
 	/*** Player ***/
 
 	/* Load depth */
@@ -1243,12 +1233,6 @@ int rd_dungeon(void)
 
 	/* The dungeon is ready */
 	character_dungeon = TRUE;
-
-#if 0
-	/* Regenerate town in old versions */
-	if (player->depth == 0)
-		character_dungeon = FALSE;
-#endif
 
 	return 0;
 }
