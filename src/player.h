@@ -13,10 +13,7 @@
 /*** Game constants ***/
 
 #define PY_MAX_EXP		99999999L	/* Maximum exp */
-#define PY_MAX_GOLD		999999999L	/* Maximum gold */
 #define PY_MAX_LEVEL	50			/* Maximum level */
-#define PY_MAX_BOOKS	10			/* Maximum number of spellbooks */
-#define PY_MAX_SPELL	10			/* Maximum number of spells per book */
 
 /* Flags for player.spell_flags[] */
 #define PY_SPELL_LEARNED    0x01 	/* Spell has been learned */

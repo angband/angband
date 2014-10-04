@@ -153,9 +153,9 @@ void player_spells_free(struct player *p)
  */
 const class_book *object_to_book(const struct object *obj)
 {
-	size_t i;
+	int i;
 
-	for (i = 0; i < PY_MAX_BOOKS; i++)
+	for (i = 0; i < player->class->magic.num_books; i++)
 		if ((obj->tval == player->class->magic.books[i].tval) &&
 			(obj->sval == player->class->magic.books[i].sval))
 			return &player->class->magic.books[i];
