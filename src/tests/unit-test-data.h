@@ -734,29 +734,45 @@ static struct monster_blow TEST_DATA test_blow[4] = {
 	{
 		.method = RBM_HIT,
 		.effect = RBE_HURT,
-		.d_dice = 3,
-		.d_side = 1,
+		.dice = {
+			.base = 0,
+			.dice = 3,
+			.sides = 1,
+			.m_bonus = 0,
+		},
 		.times_seen = 1,
 	},
 	{
 		.method = RBM_NONE,
 		.effect = RBE_NONE,
-		.d_dice = 0,
-		.d_side = 0,
+		.dice = {
+			.base = 0,
+			.dice = 0,
+			.sides = 0,
+			.m_bonus = 0,
+		},
 		.times_seen = 0,
 	},
 	{
 		.method = RBM_NONE,
 		.effect = RBE_NONE,
-		.d_dice = 0,
-		.d_side = 0,
+		.dice = {
+			.base = 0,
+			.dice = 0,
+			.sides = 0,
+			.m_bonus = 0,
+		},
 		.times_seen = 0,
 	},
 	{
 		.method = RBM_NONE,
 		.effect = RBE_NONE,
-		.d_dice = 0,
-		.d_side = 0,
+		.dice = {
+			.base = 0,
+			.dice = 0,
+			.sides = 0,
+			.m_bonus = 0,
+		},
 		.times_seen = 0,
 	}
 };

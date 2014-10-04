@@ -931,8 +931,13 @@ static errr finish_parse_r(struct parser *p) {
 		}
 	}
 
-	/* Allocate an equivalent amount of lore space */
-	l_list = C_ZNEW(z_info->r_max, monster_lore);
+	/* Allocate space for the monster lore */
+	l_list = mem_zalloc(z_info->r_max * sizeof(monster_lore));
+	for (i = 0; i < z_info->r_max; i++) {
+		monster_lore *l = &l_list[i];
+		l->blows = mem_zalloc(z_info->mon_blows_max * sizeof(struct monster_blow));
+		l->blow_known = mem_zalloc(z_info->mon_blows_max * sizeof(bool));
+	}
 
 	/* Write new monster.txt file if requested */
 	if (arg_power || arg_rebalance)
@@ -1000,8 +1005,6 @@ static enum parser_error parse_lore_name(struct parser *p) {
 
 	parser_setpriv(p, l);
 	l->ridx = index;
-	l->blows = mem_zalloc(z_info->mon_blows_max * sizeof(struct monster_blow));
-	l->blow_known = mem_zalloc(z_info->mon_blows_max * sizeof(bool));
 	return PARSE_ERROR_NONE;
 }
 

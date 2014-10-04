@@ -92,7 +92,7 @@ int test_b0(void *state) {
 	require(mr->blow[0].method);
 	require(mr->blow[0].effect);
 	eq(mr->blow[0].dice.dice, 9);
-	eq(mr->blow[0].dice.side, 12);
+	eq(mr->blow[0].dice.sides, 12);
 	ok;
 }
 
@@ -106,7 +106,7 @@ int test_b1(void *state) {
 	require(mr->blow[0].next->method);
 	require(mr->blow[0].next->effect);
 	eq(mr->blow[0].next->dice.dice, 6);
-	eq(mr->blow[0].next->dice.side, 8);
+	eq(mr->blow[0].next->dice.sides, 8);
 	ok;
 }
 
