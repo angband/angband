@@ -1,6 +1,6 @@
 /**
-   \file player-calcs.h
-   \brief Player temporary status structures.
+ * \file player-calcs.h
+ * \brief Player temporary status structures.
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  * Copyright (c) 2014 Nick McConnell
@@ -176,13 +176,14 @@ enum
 #define INVEN_PACK		23
 #define MAX_GEAR		60
 #define MAX_GEAR_INCR	10
-#define EQUIP_MAX_SLOTS	12
 #define NO_OBJECT		0
 
 
 /*** Structures ***/
 
 struct equip_slot {
+	struct equip_slot *next;
+
 	u16b type;
 	char *name;
 	int index;
@@ -192,7 +193,7 @@ struct player_body {
 	struct player_body *next;
 	char *name;
 	u16b count;
-	struct equip_slot slots[EQUIP_MAX_SLOTS];
+	struct equip_slot *slots;
 };
 
 /**

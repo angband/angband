@@ -1,6 +1,6 @@
 /**
-   \file ui-player.c
-   \brief character screens and dumps
+ * \file ui-player.c
+ * \brief character screens and dumps
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  *
@@ -224,8 +224,7 @@ struct player_flag_record
 	int tmd_flag;		/* corresponding timed flag */
 };
 
-static const struct player_flag_record player_flag_table[RES_ROWS*4] =
-{
+static const struct player_flag_record player_flag_table[RES_ROWS * 4] = {
 	{ "rAcid",	-1,					-1,				ELEM_ACID,	TMD_OPP_ACID },
 	{ "rElec",	-1,					-1,				ELEM_ELEC,	TMD_OPP_ELEC },
 	{ "rFire",	-1,					-1,				ELEM_FIRE,	TMD_OPP_FIRE },
@@ -267,15 +266,6 @@ static const struct player_flag_record player_flag_table[RES_ROWS*4] =
 	{ "Light",	OBJ_MOD_LIGHT,		-1,				-1, 		-1 },
 };
 
-#define RES_COLS (5 + 2 + EQUIP_MAX_SLOTS)
-static const region resist_region[] =
-{
-	{  0*(RES_COLS+1), 10, RES_COLS, RES_ROWS+2 },
-	{  1*(RES_COLS+1), 10, RES_COLS, RES_ROWS+2 },
-	{  2*(RES_COLS+1), 10, RES_COLS, RES_ROWS+2 },
-	{  3*(RES_COLS+1), 10, RES_COLS, RES_ROWS+2 },
-};
-
 static void display_resistance_panel(const struct player_flag_record *rec,
 									size_t size, const region *bounds) 
 {
@@ -283,14 +273,15 @@ static void display_resistance_panel(const struct player_flag_record *rec,
 	int j;
 	int col = bounds->col;
 	int row = bounds->row;
-	Term_putstr(col, row++, RES_COLS, TERM_WHITE, "      abcdefghijkl@");
-	for (i = 0; i < size-3; i++, row++)
-	{
+	int res_cols = 5 + 2 + player->body.count;
+
+	Term_putstr(col, row++, res_cols, TERM_WHITE, "      abcdefghijkl@");
+	for (i = 0; i < size - 3; i++, row++) {
 		byte name_attr = TERM_WHITE;
-		Term_gotoxy(col+6, row);
-		/* repeated extraction of flags is inefficient but more natural */
-		for (j = 0; j <= player->body.count; j++)
-		{
+		Term_gotoxy(col + 6, row);
+
+		/* Repeated extraction of flags is inefficient but more natural */
+		for (j = 0; j <= player->body.count; j++) {
 			object_type *o_ptr = equipped_item_by_slot(player, j);
 			bitflag f[OF_SIZE];
 
@@ -305,8 +296,7 @@ static void display_resistance_panel(const struct player_flag_record *rec,
 			of_wipe(f);
 
 			/* Get the object or player info */
-			if (j < player->body.count && o_ptr->kind)
-			{
+			if (j < player->body.count && o_ptr->kind) {
 				/* Get known properties */
 				object_flags_known(o_ptr, f);
 				if (rec[i].element != -1)
@@ -315,9 +305,7 @@ static void display_resistance_panel(const struct player_flag_record *rec,
 					known = object_flag_is_known(o_ptr, rec[i].flag);
 				else
 					known = TRUE;
-			}
-			else if (j == player->body.count)
-			{
+			} else if (j == player->body.count) {
 				player_flags(player, f);
 				known = TRUE;
 
@@ -360,19 +348,27 @@ static void display_resistance_panel(const struct player_flag_record *rec,
 		}
 		Term_putstr(col, row, 6, name_attr, format("%5s:", rec[i].name));
 	}
-	Term_putstr(col, row++, RES_COLS, TERM_WHITE, "      abcdefghijkl@");
+	Term_putstr(col, row++, res_cols, TERM_WHITE, "      abcdefghijkl@");
+
 	/* Equippy */
-	display_player_equippy(row++, col+6);
+	display_player_equippy(row++, col + 6);
 }
 
 static void display_player_flag_info(void)
 {
 	int i;
+	int res_cols = 5 + 2 + player->body.count;
+	region resist_region[] = {
+		{  0 * (res_cols + 1), 10, res_cols, RES_ROWS + 2 },
+		{  1 * (res_cols + 1), 10, res_cols, RES_ROWS + 2 },
+		{  2 * (res_cols + 1), 10, res_cols, RES_ROWS + 2 },
+		{  3 * (res_cols + 1), 10, res_cols, RES_ROWS + 2 },
+	};
+
 	for (i = 0; i < 4; i++)
-	{
-		display_resistance_panel(player_flag_table+(i*RES_ROWS), RES_ROWS+3,
-								&resist_region[i]);
-	}
+
+		display_resistance_panel(player_flag_table + (i * RES_ROWS),
+								 RES_ROWS + 3, &resist_region[i]);
 }
 
 

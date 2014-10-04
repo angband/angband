@@ -37,6 +37,7 @@ struct angband_constants
 	u16b pit_max;		/**< Maximum number of monster pit types */
 	u16b act_max;		/**< Maximum number of activations for randarts */
 	u16b mon_blows_max;	/**< Maximum number of monster blows */
+	u16b equip_slots_max;	/**< Maximum number of player equipment slots */
 
 	/* Maxima of things on a given level, read from constants.txt */
 	u16b level_object_max;	/**< Maximum number of objects on a given level */

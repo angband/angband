@@ -11,6 +11,7 @@ int setup_tests(void **state) {
 	player = &test_player;
     player->gear = &test_gear[0];
     player->body = test_player_body;
+	player->body.slots = &test_slot_light;
     return 0;
 }
 
@@ -21,8 +22,8 @@ int test_obj_can_refill(void *state) {
     struct object obj_torch, obj_lantern, obj_candidate;
 
     /* Mimic equipping a light */
-    player->body.slots[5].index = 1; 
     object_type *light_ptr = &test_gear[1]; 
+    player->body.slots->index = 1; 
 
     /* Torches cannot be refilled */
     object_prep(&obj_torch, &test_torch, 1, AVERAGE);

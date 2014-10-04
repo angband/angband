@@ -8,9 +8,6 @@
 # Note that each body record must take the form of a body-name line,
 # followed by a sequence of alternating slot-type and slot-name lines.
 
-# The maximum number of slots, EQUIP_MAX_SLOTS, is currently set to 12; this
-# should be changed if a body is added with more than 12 slots.
-
 body:Humanoid
 slot:WEAPON:weapon
 slot:BOW:shooting

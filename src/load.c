@@ -684,12 +684,13 @@ int rd_player(void)
 	rd_u16b(&player->body.count);
 
 	/* Incompatible save files */
-	if (player->body.count > EQUIP_MAX_SLOTS)
+	if (player->body.count > z_info->equip_slots_max)
 	{
 		note(format("Too many (%u) body parts!", player->body.count));
 		return (-1);
 	}
 
+	player->body.slots = mem_zalloc(player->body.count * sizeof(struct equip_slot));
 	for (i = 0; i < player->body.count; i++) {
 		rd_u16b(&player->body.slots[i].type);
 		rd_string(buf, sizeof(buf));

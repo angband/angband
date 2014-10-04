@@ -1,6 +1,6 @@
 /**
-   \file obj-ignore.c
-   \brief Item ignoring
+ * \file obj-ignore.c
+ * \brief Item ignoring
  *
  * Copyright (c) 2007 David T. Blackston, Iain McFall, DarkGod, Jeff Greene,
  * David Vestal, Pete Mack, Andi Sidwell.
@@ -96,6 +96,8 @@ quality_name_struct quality_values[IGNORE_MAX] =
 byte ignore_level[ITYPE_MAX];
 const size_t ignore_size = ITYPE_MAX;
 bool **ego_ignore_types;
+/* Hackish - ego_ignore_types should be initialised with arrays */
+int num_ego_types;
 
 
 /**
@@ -103,8 +105,9 @@ bool **ego_ignore_types;
  */
 void init_ignore(void)
 {
-	size_t i;
+	int i;
 
+	num_ego_types = z_info->e_max;
 	ego_ignore_types = mem_zalloc(z_info->e_max * sizeof(bool*));
 	for (i = 0; i < z_info->e_max; i++)
 		ego_ignore_types[i] = mem_zalloc(ITYPE_MAX * sizeof(bool));
@@ -116,8 +119,8 @@ void init_ignore(void)
  */
 void cleanup_ignore(void)
 {
-	size_t i;
-	for (i = 0; i < z_info->e_max; i++)
+	int i;
+	for (i = 0; i < num_ego_types; i++)
 		mem_free(ego_ignore_types[i]);
 	mem_free(ego_ignore_types);
 }

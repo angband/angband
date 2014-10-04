@@ -1,6 +1,6 @@
 /**
-   \file obj-util.c
-   \brief Object list maintenance and other object utilities
+ * \file obj-util.c
+ * \brief Object list maintenance and other object utilities
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  *
@@ -2058,7 +2058,7 @@ bool obj_can_fail(const struct object *o)
  * Returns the number of items placed into the list.
  *
  * Maximum space that can be used is
- * [INVEN_PACK + QUIVER_SIZE + EQUIP_MAX_SLOTS + MAX_FLOOR_STACK],
+ * INVEN_PACK + QUIVER_SIZE + player->body.count + MAX_FLOOR_STACK,
  * though practically speaking much smaller numbers are likely.
  */
 int scan_items(int *item_list, size_t item_list_max, int mode,
@@ -2114,16 +2114,21 @@ int scan_items(int *item_list, size_t item_list_max, int mode,
  */
 bool item_is_available(int item, bool (*tester)(const object_type *), int mode)
 {
-	int item_list[INVEN_PACK + QUIVER_SIZE + EQUIP_MAX_SLOTS + MAX_FLOOR_STACK];
+	int item_max = INVEN_PACK + QUIVER_SIZE + player->body.count +
+		MAX_FLOOR_STACK;
+	int *item_list = mem_zalloc(item_max * sizeof(int));
 	int item_num;
 	int i;
 
 	item_num = scan_items(item_list, N_ELEMENTS(item_list), mode, tester);
 
 	for (i = 0; i < item_num; i++)
-		if (item_list[i] == item)
+		if (item_list[i] == item) {
+			mem_free(item_list);
 			return TRUE;
+		}
 
+	mem_free(item_list);
 	return FALSE;
 }
 

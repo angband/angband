@@ -1,6 +1,6 @@
 /**
-   \file init.c
-   \brief Various game initialistion routines
+ * \file init.c
+ * \brief Various game initialistion routines
  *
  * Copyright (c) 1997 Ben Harrison
  *
@@ -2542,18 +2542,32 @@ static enum parser_error parse_body_body(struct parser *p) {
 
 static enum parser_error parse_body_slot(struct parser *p) {
 	struct player_body *b = parser_priv(p);
-	char *slot;
+	struct equip_slot *slot = b->slots;
+	char *slot_type;
 	int n;
 
 	if (!b)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	slot = string_make(parser_getsym(p, "slot"));
-	n = lookup_flag(slots, slot);
+
+	/* Go to the last valid slot, then allocate a new one */
+	if (!slot) {
+		b->slots = mem_zalloc(sizeof(struct equip_slot));
+		slot = b->slots;
+	} else {
+		while (slot->next)
+			slot = slot->next;
+		slot->next = mem_zalloc(sizeof(struct equip_slot));
+		slot = slot->next;
+	}
+
+	slot_type = string_make(parser_getsym(p, "slot"));
+	n = lookup_flag(slots, slot_type);
 	if (!n)
 		return PARSE_ERROR_INVALID_FLAG;
-	b->slots[b->count].type = n;
-	b->slots[b->count++].name = string_make(parser_getsym(p, "name"));
-	mem_free(slot);
+	slot->type = n;
+	slot->name = string_make(parser_getsym(p, "name"));
+	b->count++;
+	mem_free(slot_type);
 	return PARSE_ERROR_NONE;
 }
 
@@ -2570,7 +2584,48 @@ static errr run_parse_body(struct parser *p) {
 }
 
 static errr finish_parse_body(struct parser *p) {
+	struct player_body *b;
+	int i;
 	bodies = parser_priv(p);
+
+	/* Scan the list for the max slots */
+	z_info->equip_slots_max = 0;
+	for (b = bodies; b; b = b->next) {
+		if (b->count > z_info->equip_slots_max)
+			z_info->equip_slots_max = b->count;
+	}
+
+	/* Allocate the slot list and copy */
+	for (b = bodies; b; b = b->next) {
+		struct equip_slot *s_new;
+
+		s_new = mem_zalloc(z_info->equip_slots_max * sizeof(*s_new));
+		if (b->slots) {
+			struct equip_slot *s_temp, *s_old = b->slots;
+
+			/* Allocate space and copy */
+			for (i = 0; i < z_info->equip_slots_max; i++) {
+				memcpy(&s_new[i], s_old, sizeof(*s_old));
+				s_old = s_old->next;
+				if (!s_old) break;
+			}
+
+			/* Make next point correctly */
+			for (i = 0; i < z_info->equip_slots_max; i++)
+				if (s_new[i].next)
+					s_new[i].next = &s_new[i + 1];
+
+			/* Tidy up */
+			s_old = b->slots;
+			s_temp = s_old;
+			while (s_temp) {
+				s_temp = s_old->next;
+				mem_free(s_old);
+				s_old = s_temp;
+			}
+		}
+		b->slots = s_new;
+	}
 	parser_destroy(p);
 	return 0;
 }
@@ -3912,8 +3967,10 @@ static void cleanup_arrays(void)
 {
 	unsigned int i;
 
-	for (i = 0; i < N_ELEMENTS(pl); i++)
+	for (i = 1; i < N_ELEMENTS(pl); i++)
 		cleanup_parser(pl[i].parser);
+
+	cleanup_parser(pl[0].parser);
 }
 
 static struct init_module arrays_module = {

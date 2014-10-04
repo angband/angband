@@ -869,24 +869,16 @@ static struct angband_constants TEST_DATA test_z_info = {
 
 static struct object TEST_DATA test_gear[MAX_GEAR];
 
+static struct equip_slot TEST_DATA test_slot_light = {
+	.type = 5,
+	.name = "light",
+	.index = 0,
+};
+
 static struct player_body TEST_DATA test_player_body = {
 	.next    = NULL,
 	.name    = "Humanoid",
 	.count   = 12,
-	.slots   = {
-		{ .type = 1, .name = "weapon", .index = 0 },
-		{ .type = 2, .name = "shooting", .index = 0 },
-		{ .type = 3, .name = "right hand", .index = 0 },
-		{ .type = 3, .name = "left hand", .index = 0 },
-		{ .type = 4, .name = "neck", .index = 0 },
-		{ .type = 5, .name = "light", .index = 0 },
-		{ .type = 6, .name = "body", .index = 0 },
-		{ .type = 7, .name = "back", .index = 0 },
-		{ .type = 8, .name = "arm", .index = 0 },
-		{ .type = 9, .name = "head", .index = 0 },
-		{ .type = 10, .name = "hands", .index = 0 },
-		{ .type = 11, .name = "feet", .index = 0 },
-	},
 };
 
 static struct player_upkeep TEST_DATA test_player_upkeep = {
