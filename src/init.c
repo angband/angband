@@ -501,6 +501,40 @@ static enum parser_error parse_z_mon_play(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_z_dun_gen(struct parser *p) {
+	struct angband_constants *z;
+	const char *label;
+	int value;
+
+	z = parser_priv(p);
+	label = parser_getsym(p, "label");
+	value = parser_getint(p, "value");
+
+	if (value < 0)
+		return PARSE_ERROR_INVALID_VALUE;
+
+	if (streq(label, "cent-max"))
+		z->level_room_max = value;
+	else if (streq(label, "door-max"))
+		z->level_door_max = value;
+	else if (streq(label, "wall-max"))
+		z->wall_pierce_max = value;
+	else if (streq(label, "tunn-max"))
+		z->tunn_grid_max = value;
+	else if (streq(label, "amt-room"))
+		z->room_item_av = value;
+	else if (streq(label, "amt-item"))
+		z->both_item_av = value;
+	else if (streq(label, "amt-gold"))
+		z->both_gold_av = value;
+	else if (streq(label, "pit-max"))
+		z->level_pit_max = value;
+	else
+		return PARSE_ERROR_UNDEFINED_DIRECTIVE;
+
+	return PARSE_ERROR_NONE;
+}
+
 struct parser *init_parse_z(void) {
 	struct angband_constants *z = mem_zalloc(sizeof *z);
 	struct parser *p = parser_new();
@@ -509,6 +543,7 @@ struct parser *init_parse_z(void) {
 	parser_reg(p, "level-max sym label int value", parse_z_level_max);
 	parser_reg(p, "mon-gen sym label int value", parse_z_mon_gen);
 	parser_reg(p, "mon-play sym label int value", parse_z_mon_play);
+	parser_reg(p, "dun-gen sym label int value", parse_z_dun_gen);
 	return p;
 }
 

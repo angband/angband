@@ -58,6 +58,16 @@ struct angband_constants
 	u16b repro_monster_rate;	/**< Monster reproduction rate-slower */
 	u16b life_drain_percent;	/**< Percent of player life drained */
 	u16b max_flow_depth;		/**< Maximum depth for flow calculation */
+
+	/* Dungeon generation constants, read from constants.txt */
+	u16b level_room_max;	/**< Maximum number of rooms on a level */
+	u16b level_door_max;	/**< Maximum number of potential doors on a level */
+	u16b wall_pierce_max;	/**< Maximum number of potential wall piercings */
+	u16b tunn_grid_max;		/**< Maximum number of tunnel grids */
+	u16b room_item_av;		/**< Average number of items in rooms */
+	u16b both_item_av;		/**< Average number of items in random places */
+	u16b both_gold_av;		/**< Average number of money items */
+	u16b level_pit_max;		/**< Maximum number of pits on a level */
 };
 
 struct init_module {

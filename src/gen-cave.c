@@ -1,6 +1,6 @@
 /**
-   \file gen-cave.c
-   \brief Generation of dungeon levels
+ * \file gen-cave.c
+ * \brief Generation of dungeon levels
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  * Copyright (c) 2013 Erik Osheim, Nick McConnell
@@ -255,7 +255,7 @@ static void build_tunnel(struct chunk *c, int row1, int col1, int row2, int col2
 			col1 = tmp_col;
 
 			/* Save the wall location */
-			if (dun->wall_n < WALL_MAX) {
+			if (dun->wall_n < z_info->wall_pierce_max) {
 				dun->wall[dun->wall_n].y = row1;
 				dun->wall[dun->wall_n].x = col1;
 				dun->wall_n++;
@@ -281,7 +281,7 @@ static void build_tunnel(struct chunk *c, int row1, int col1, int row2, int col2
 			col1 = tmp_col;
 
 			/* Save the tunnel location */
-			if (dun->tunn_n < TUNN_MAX) {
+			if (dun->tunn_n < z_info->tunn_grid_max) {
 				dun->tunn[dun->tunn_n].y = row1;
 				dun->tunn[dun->tunn_n].x = col1;
 				dun->tunn_n++;
@@ -299,7 +299,7 @@ static void build_tunnel(struct chunk *c, int row1, int col1, int row2, int col2
 			/* Collect legal door locations */
 			if (!door_flag) {
 				/* Save the door location */
-				if (dun->door_n < DOOR_MAX) {
+				if (dun->door_n < z_info->level_door_max) {
 					dun->door[dun->door_n].y = row1;
 					dun->door[dun->door_n].x = col1;
 					dun->door_n++;
@@ -628,13 +628,13 @@ struct chunk *classic_gen(struct player *p) {
 		pick_and_place_distant_monster(c, loc(p->px, p->py), 0, TRUE, c->depth);
 
     /* Put some objects in rooms */
-    alloc_objects(c, SET_ROOM, TYP_OBJECT, Rand_normal(AMT_ROOM, 3),
+    alloc_objects(c, SET_ROOM, TYP_OBJECT, Rand_normal(z_info->room_item_av, 3),
 				  c->depth, ORIGIN_FLOOR);
 
     /* Put some objects/gold in the dungeon */
-    alloc_objects(c, SET_BOTH, TYP_OBJECT, Rand_normal(AMT_ITEM, 3),
+    alloc_objects(c, SET_BOTH, TYP_OBJECT, Rand_normal(z_info->both_item_av, 3),
 				  c->depth, ORIGIN_FLOOR);
-    alloc_objects(c, SET_BOTH, TYP_GOLD, Rand_normal(AMT_GOLD, 3),
+    alloc_objects(c, SET_BOTH, TYP_GOLD, Rand_normal(z_info->both_gold_av, 3),
 				  c->depth, ORIGIN_FLOOR);
 
     return c;
@@ -1814,13 +1814,13 @@ struct chunk *modified_gen(struct player *p) {
 		pick_and_place_distant_monster(c, loc(p->px, p->py), 0, TRUE, c->depth);
 
     /* Put some objects in rooms */
-    alloc_objects(c, SET_ROOM, TYP_OBJECT, Rand_normal(AMT_ROOM, 3),
+    alloc_objects(c, SET_ROOM, TYP_OBJECT, Rand_normal(z_info->room_item_av, 3),
 				  c->depth, ORIGIN_FLOOR);
 
     /* Put some objects/gold in the dungeon */
-    alloc_objects(c, SET_BOTH, TYP_OBJECT, Rand_normal(AMT_ITEM, 3),
+    alloc_objects(c, SET_BOTH, TYP_OBJECT, Rand_normal(z_info->both_item_av, 3),
 				  c->depth, ORIGIN_FLOOR);
-    alloc_objects(c, SET_BOTH, TYP_GOLD, Rand_normal(AMT_GOLD, 3),
+    alloc_objects(c, SET_BOTH, TYP_GOLD, Rand_normal(z_info->both_gold_av, 3),
 				  c->depth, ORIGIN_FLOOR);
 
     return c;
@@ -2148,13 +2148,13 @@ struct chunk *lair_gen(struct player *p) {
     alloc_objects(c, SET_BOTH, TYP_TRAP, randint1(k), c->depth, 0);
 
     /* Put some objects in rooms */
-    alloc_objects(c, SET_ROOM, TYP_OBJECT, Rand_normal(AMT_ROOM, 3),
+    alloc_objects(c, SET_ROOM, TYP_OBJECT, Rand_normal(z_info->room_item_av, 3),
 				  c->depth, ORIGIN_FLOOR);
 
     /* Put some objects/gold in the dungeon */
-    alloc_objects(c, SET_BOTH, TYP_OBJECT, Rand_normal(AMT_ITEM, 3),
+    alloc_objects(c, SET_BOTH, TYP_OBJECT, Rand_normal(z_info->both_item_av, 3),
 				  c->depth, ORIGIN_FLOOR);
-    alloc_objects(c, SET_BOTH, TYP_GOLD, Rand_normal(AMT_GOLD, 3),
+    alloc_objects(c, SET_BOTH, TYP_GOLD, Rand_normal(z_info->both_gold_av, 3),
 				  c->depth, ORIGIN_FLOOR);
 
     return c;
@@ -2315,13 +2315,13 @@ struct chunk *gauntlet_gen(struct player *p) {
 	alloc_objects(c, SET_BOTH, TYP_TRAP, randint1(k), c->depth, 0);
 
 	/* Put some objects in rooms */
-	alloc_objects(c, SET_ROOM, TYP_OBJECT, Rand_normal(AMT_ROOM, 3),
+	alloc_objects(c, SET_ROOM, TYP_OBJECT, Rand_normal(z_info->room_item_av, 3),
 				  c->depth, ORIGIN_FLOOR);
 
 	/* Put some objects/gold in the dungeon */
-	alloc_objects(c, SET_BOTH, TYP_OBJECT, Rand_normal(AMT_ITEM, 3),
+	alloc_objects(c, SET_BOTH, TYP_OBJECT, Rand_normal(z_info->both_item_av, 3),
 				  c->depth, ORIGIN_FLOOR);
-	alloc_objects(c, SET_BOTH, TYP_GOLD, Rand_normal(AMT_GOLD, 3),
+	alloc_objects(c, SET_BOTH, TYP_GOLD, Rand_normal(z_info->both_gold_av, 3),
 				  c->depth, ORIGIN_FLOOR);
 
 	return c;

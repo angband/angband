@@ -3,6 +3,8 @@
 
 # This file is used to initialize game constants for Angband.
 
+## Level Maxima ##
+
 # Maximum number of objects on the level
 level-max:objects:1024
 
@@ -11,6 +13,8 @@ level-max:monsters:1024
 
 # Maximum number of traps on the level
 level-max:traps:1024
+
+## Monster Generation ##
 
 # 1/per-turn-chance of new monster generation
 mon-gen:chance:500
@@ -33,6 +37,8 @@ mon-gen:ood-chance:25
 # Maximum out-of-depth amount for monster generation
 mon-gen:ood-amount:10
 
+## Monster Gameplay ##
+
 # Rune of protection resistance to monster breaking
 mon-play:break-glyph:550
 
@@ -44,3 +50,29 @@ mon-play:life-drain:2
 
 # Maximum flow depth when using for monster flow calculation
 mon-play:flow-depth:32
+
+## Dungeon Generation ##
+
+# Number of possible room centres (and hence rooms) on a normal level
+dun-gen:cent-max:100
+
+# Number of possible door locations
+dun-gen:door-max:200
+
+# Number of possible places to pierce room walls with tunnels
+dun-gen:wall-max:500
+
+# Number of tunnel grids
+dun-gen:tunn-max:900
+
+# Average number of objects to place in rooms
+dun-gen:amt-room:9
+
+# Average number of objects to place in rooms/corridors
+dun-gen:amt-item:3
+
+# Average amount of treasure to place in rooms/corridors
+dun-gen:amt-gold:3
+
+# Maximum number of pits or nests allowed per level
+dun-gen:pit-max:2

@@ -1,7 +1,7 @@
 /**
-   \file gen-util.c
-   \brief Dungeon generation utilities
-
+ * \file gen-util.c
+ * \brief Dungeon generation utilities
+ *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  * Copyright (c) 2013 Erik Osheim, Nick McConnell
  *

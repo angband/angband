@@ -1,6 +1,7 @@
-/** \file generate.c
-	\brief Dungeon generation.
-
+/**
+ * \file generate.c
+ *	\brief Dungeon generation.
+ *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  * Copyright (c) 2013 Erik Osheim, Nick McConnell
  *
@@ -683,12 +684,20 @@ void cave_generate(struct chunk *c, struct player *p) {
 
 		/* Allocate global data (will be freed when we leave the loop) */
 		dun = &dun_body;
+		dun->cent = mem_zalloc(z_info->level_room_max * sizeof(struct loc));
+		dun->door = mem_zalloc(z_info->level_door_max * sizeof(struct loc));
+		dun->wall = mem_zalloc(z_info->wall_pierce_max * sizeof(struct loc));
+		dun->tunn = mem_zalloc(z_info->tunn_grid_max * sizeof(struct loc));
 
 		/* Choose a profile and build the level */
 		dun->profile = choose_profile(c);
 		chunk = dun->profile->builder(p);
 		if (!chunk) {
 			error = "Failed to find builder";
+			mem_free(dun->cent);
+			mem_free(dun->door);
+			mem_free(dun->wall);
+			mem_free(dun->tunn);
 			continue;
 		}
 
@@ -727,6 +736,11 @@ void cave_generate(struct chunk *c, struct player *p) {
 			error = "too many monsters";
 
 		if (error) ROOM_LOG("Generation restarted: %s.", error);
+
+		mem_free(dun->cent);
+		mem_free(dun->door);
+		mem_free(dun->wall);
+		mem_free(dun->tunn);
     }
 
     if (error) quit_fmt("cave_generate() failed 100 times!");

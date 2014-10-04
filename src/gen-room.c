@@ -1,6 +1,6 @@
 /**
-   \file gen-room.c
-   \brief Dungeon room generation.
+ * \file gen-room.c
+ * \brief Dungeon room generation.
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  * Copyright (c) 2013 Erik Osheim, Nick McConnell
@@ -792,7 +792,7 @@ static bool find_space(int *y, int *x, int height, int width)
 		*x = ((bx1 + bx2 + 1) * dun->block_wid) / 2;
 
 		/* Save the room location */
-		if (dun->cent_n < CENT_MAX) {
+		if (dun->cent_n < z_info->level_room_max) {
 			dun->cent[dun->cent_n].y = *y;
 			dun->cent[dun->cent_n].x = *x;
 			dun->cent_n++;
@@ -2973,7 +2973,7 @@ bool room_build(struct chunk *c, int by0, int bx0, struct room_profile profile,
 	if (c->depth < profile.level) return FALSE;
 
 	/* Only allow at most two pit/nests room per level */
-	if ((dun->pit_num >= MAX_PIT) && (profile.pit))	return FALSE;
+	if ((dun->pit_num >= z_info->level_pit_max) && (profile.pit)) return FALSE;
 
 	/* Expand the number of blocks if we might overflow */
 	if (profile.height % dun->block_hgt) by2++;
@@ -3005,7 +3005,7 @@ bool room_build(struct chunk *c, int by0, int bx0, struct room_profile profile,
 		if (!profile.builder(c, y, x)) return FALSE;
 
 		/* Save the room location */
-		if (dun->cent_n < CENT_MAX) {
+		if (dun->cent_n < z_info->level_room_max) {
 			dun->cent[dun->cent_n].y = y;
 			dun->cent[dun->cent_n].x = x;
 			dun->cent_n++;
