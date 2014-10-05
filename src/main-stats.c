@@ -576,12 +576,11 @@ static int stats_dump_objects(void)
 		err = sqlite3_bind_text(info_stmt, 2, k_ptr->name, 
 			strlen(k_ptr->name), SQLITE_STATIC);
 		if (err) return err;
-		err = stats_db_bind_ints(info_stmt, 14, 2, 
+		err = stats_db_bind_ints(info_stmt, 13, 2,
 			k_ptr->tval, k_ptr->sval, k_ptr->level, k_ptr->weight,
 			k_ptr->cost, k_ptr->ac, k_ptr->dd, k_ptr->ds,
 			k_ptr->alloc_prob, k_ptr->alloc_min,
-			k_ptr->alloc_max, k_ptr->effect->index,
-			k_ptr->gen_mult_prob, k_ptr->stack_size);
+			k_ptr->alloc_max, k_ptr->gen_mult_prob, k_ptr->stack_size);
 		if (err) return err;
 		err = stats_db_bind_rv(info_stmt, 17, k_ptr->to_h);
 		if (err) return err;
@@ -822,7 +821,7 @@ static int stats_dump_lists(void)
 		err = stats_db_bind_ints(sql_stmt, 2, 0, idx, 
 			effects[idx].aim);
 		if (err) return err;
-		err = sqlite3_bind_text(sql_stmt, 4, effects[idx].desc,
+		err = sqlite3_bind_text(sql_stmt, 2, effects[idx].desc,
 			strlen(effects[idx].desc), SQLITE_STATIC);
 		if (err) return err;
 		STATS_DB_STEP_RESET(sql_stmt)
@@ -867,7 +866,7 @@ static int stats_dump_lists(void)
 	STATS_DB_FINALIZE(sql_stmt)
 
 	err = stats_db_stmt_prep(&sql_stmt, 
-		"INSERT INTO object_mods_list VALUES(?,?,?,?);");
+		"INSERT INTO object_mods_list VALUES(?,?,?,?,?);");
 	if (err) return err;
 
 	for (idx = 0; idx < OBJ_MOD_MAX; idx++)

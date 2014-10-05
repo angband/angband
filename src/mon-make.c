@@ -845,7 +845,7 @@ s16b place_monster(struct chunk *c, int y, int x, monster_type *mon, byte origin
 
 		i_ptr->origin = origin;
 		i_ptr->mimicking_m_idx = m_idx;
-		m_ptr->mimicked_o_idx = floor_carry(cave, y, x, i_ptr);
+		m_ptr->mimicked_o_idx = floor_carry(c, y, x, i_ptr);
 	}
 
 	/* Result */
