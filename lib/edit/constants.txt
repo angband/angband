@@ -76,3 +76,12 @@ dun-gen:amt-gold:3
 
 # Maximum number of pits or nests allowed per level
 dun-gen:pit-max:2
+
+## Dungeon Gameplay ##
+
+# Max number of grids in each dungeon level (vertically)
+dun-play:dungeon-hgt:66
+
+# Max number of grids in each dungeon level (horizontally)
+dun-play:dungeon-wid:198
+

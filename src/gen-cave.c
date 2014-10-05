@@ -451,7 +451,7 @@ struct chunk *classic_gen(struct player *p) {
     num_rooms = (dun->profile->dun_rooms * size_percent) / 100;
 	dun->block_hgt = dun->profile->block_size;
 	dun->block_wid = dun->profile->block_size;
-	c = cave_new(DUNGEON_HGT, DUNGEON_WID);
+	c = cave_new(z_info->dungeon_hgt, z_info->dungeon_wid);
 	c->depth = p->depth;
     ROOM_LOG("height=%d  width=%d  nrooms=%d", c->height, c->width, num_rooms);
 
@@ -859,7 +859,7 @@ struct chunk *labyrinth_gen(struct player *p) {
     k = MAX(MIN(c->depth / 3, 10), 2);
 
     /* Scale number of monsters items by labyrinth size */
-    k = (3 * k * (h * w)) / (DUNGEON_HGT * DUNGEON_WID);
+    k = (3 * k * (h * w)) / (z_info->dungeon_hgt * z_info->dungeon_wid);
 
     /* Put some rubble in corridors */
     alloc_objects(c, SET_BOTH, TYP_RUBBLE, randint1(k), c->depth, 0);
@@ -1360,8 +1360,8 @@ struct chunk *cavern_chunk(int depth, int h, int w)
 struct chunk *cavern_gen(struct player *p) {
     int i, k;
 
-    int h = rand_range(DUNGEON_HGT / 2, (DUNGEON_HGT * 3) / 4);
-    int w = rand_range(DUNGEON_WID / 2, (DUNGEON_WID * 3) / 4);
+    int h = rand_range(z_info->dungeon_hgt / 2, (z_info->dungeon_hgt * 3) / 4);
+    int w = rand_range(z_info->dungeon_wid / 2, (z_info->dungeon_wid * 3) / 4);
 
 	struct chunk *c;
 
@@ -1389,7 +1389,7 @@ struct chunk *cavern_gen(struct player *p) {
 	k = MAX(MIN(c->depth / 3, 10), 2);
 
 	/* Scale number of monsters items by cavern size */
-	k = MAX((4 * k * (h *  w)) / (DUNGEON_HGT * DUNGEON_WID), 6);
+	k = MAX((4 * k * (h * w)) / (z_info->dungeon_hgt * z_info->dungeon_wid), 6);
 
 	/* Put some rubble in corridors */
 	alloc_objects(c, SET_BOTH, TYP_RUBBLE, randint1(k), c->depth, 0);
@@ -1760,15 +1760,15 @@ struct chunk *modified_gen(struct player *p) {
     else if (i < 5) size_percent = 90;
     else if (i < 6) size_percent = 95;
     else size_percent = 100;
-	y_size = DUNGEON_HGT * (size_percent - 5 + randint0(10)) / 100;
-	x_size = DUNGEON_WID * (size_percent - 5 + randint0(10)) / 100;
+	y_size = z_info->dungeon_hgt * (size_percent - 5 + randint0(10)) / 100;
+	x_size = z_info->dungeon_wid * (size_percent - 5 + randint0(10)) / 100;
 
     /* Set the block height and width */
 	dun->block_hgt = dun->profile->block_size;
 	dun->block_wid = dun->profile->block_size;
 
-    c = modified_chunk(p->depth, MIN(DUNGEON_HGT, y_size),
-					   MIN(DUNGEON_WID, x_size));
+    c = modified_chunk(p->depth, MIN(z_info->dungeon_hgt, y_size),
+					   MIN(z_info->dungeon_wid, x_size));
 	c->depth = p->depth;
 
     /* Generate permanent walls around the edge of the generated area */
@@ -1918,11 +1918,11 @@ struct chunk *hard_centre_gen(struct player *p)
 	/* Measure the vault, rotate to make it wider than it is high */
 	if (centre->height > centre->width) {
 		rotate = 1;
-		centre_cavern_hgt = (DUNGEON_HGT - centre->width) / 2;
+		centre_cavern_hgt = (z_info->dungeon_hgt - centre->width) / 2;
 		centre_cavern_wid = centre->height;
 		lower_cavern_ypos = centre_cavern_hgt + centre->width;
 	} else {
-		centre_cavern_hgt = (DUNGEON_HGT - centre->height) / 2;
+		centre_cavern_hgt = (z_info->dungeon_hgt - centre->height) / 2;
 		centre_cavern_wid = centre->width;
 		lower_cavern_ypos = centre_cavern_hgt + centre->height;
 	}
@@ -1930,21 +1930,21 @@ struct chunk *hard_centre_gen(struct player *p)
 	/* Make the caverns */
 	upper_cavern = cavern_chunk(p->depth, centre_cavern_hgt, centre_cavern_wid);
 	lower_cavern = cavern_chunk(p->depth, centre_cavern_hgt, centre_cavern_wid);
-	side_cavern_wid = (DUNGEON_WID - centre_cavern_wid) / 2;
-	left_cavern = cavern_chunk(p->depth, DUNGEON_HGT, side_cavern_wid);
-	right_cavern = cavern_chunk(p->depth, DUNGEON_HGT, side_cavern_wid);
+	side_cavern_wid = (z_info->dungeon_wid - centre_cavern_wid) / 2;
+	left_cavern = cavern_chunk(p->depth, z_info->dungeon_hgt, side_cavern_wid);
+	right_cavern = cavern_chunk(p->depth, z_info->dungeon_hgt, side_cavern_wid);
 
 	/* Return on failure */
 	if (!upper_cavern || !lower_cavern || !left_cavern || !right_cavern)
 		return NULL;
 
 	/* Make a cave to copy them into, and find a floor square in each cavern */
-	c = cave_new(DUNGEON_HGT, DUNGEON_WID);
+	c = cave_new(z_info->dungeon_hgt, z_info->dungeon_wid);
 	c->depth = p->depth;
 
 	/* Left */
 	chunk_copy(c, left_cavern, 0, 0, 0, FALSE);
-	find_empty_range(c, &y, 0, DUNGEON_HGT, &x, 0, side_cavern_wid);
+	find_empty_range(c, &y, 0, z_info->dungeon_hgt, &x, 0, side_cavern_wid);
 	floor[0].y = y;
 	floor[0].x = x;
 
@@ -1960,15 +1960,15 @@ struct chunk *hard_centre_gen(struct player *p)
 
 	/* Lower */
 	chunk_copy(c, lower_cavern, lower_cavern_ypos, side_cavern_wid, 0, FALSE);
-	find_empty_range(c, &y, lower_cavern_ypos, DUNGEON_HGT, &x,
+	find_empty_range(c, &y, lower_cavern_ypos, z_info->dungeon_hgt, &x,
 					 side_cavern_wid, side_cavern_wid + centre_cavern_wid);
 	floor[3].y = y;
 	floor[3].x = x;
 
 	/* Right */
 	chunk_copy(c, right_cavern, 0, side_cavern_wid + centre_cavern_wid, 0, FALSE);
-	find_empty_range(c, &y, 0, DUNGEON_HGT, &x,
-					 side_cavern_wid + centre_cavern_wid, DUNGEON_WID);
+	find_empty_range(c, &y, 0, z_info->dungeon_hgt, &x,
+					 side_cavern_wid + centre_cavern_wid, z_info->dungeon_wid);
 	floor[2].y = y;
 	floor[2].x = x;
 
@@ -2003,7 +2003,7 @@ struct chunk *hard_centre_gen(struct player *p)
 	cave_free(lower_cavern);
 	cave_free(right_cavern);
 
-	cavern_area = 2 * (side_cavern_wid * DUNGEON_HGT +
+	cavern_area = 2 * (side_cavern_wid * z_info->dungeon_hgt +
 					   centre_cavern_wid * centre_cavern_hgt);
 
 	/* Place 2-3 down stairs near some walls */
@@ -2016,7 +2016,7 @@ struct chunk *hard_centre_gen(struct player *p)
 	k = MAX(MIN(c->depth / 3, 10), 2);
 
 	/* Scale number by total cavern size - caverns are fairly sparse */
-	k = (k * cavern_area) / (DUNGEON_HGT * DUNGEON_WID);
+	k = (k * cavern_area) / (z_info->dungeon_hgt * z_info->dungeon_wid);
 
 	/* Put some rubble in corridors */
 	alloc_objects(c, SET_BOTH, TYP_RUBBLE, randint1(k), c->depth, 0);
@@ -2061,11 +2061,12 @@ struct chunk *lair_gen(struct player *p) {
 	dun->block_hgt = dun->profile->block_size;
 	dun->block_wid = dun->profile->block_size;
 
-    normal = modified_chunk(p->depth, DUNGEON_HGT, DUNGEON_WID / 2);
+    normal = modified_chunk(p->depth, z_info->dungeon_hgt,
+							z_info->dungeon_wid / 2);
 	if (!normal) return NULL;
 	normal->depth = p->depth;
 
-	lair = cavern_chunk(p->depth, DUNGEON_HGT, DUNGEON_WID / 2);
+	lair = cavern_chunk(p->depth, z_info->dungeon_hgt, z_info->dungeon_wid / 2);
 	if (!lair) return NULL;
 	lair->depth = p->depth;
 
@@ -2115,17 +2116,17 @@ struct chunk *lair_gen(struct player *p) {
 	(void) mon_restrict(NULL, lair->depth, FALSE);
 
 	/* Make the level */
-	c = cave_new(DUNGEON_HGT, DUNGEON_WID);
+	c = cave_new(z_info->dungeon_hgt, z_info->dungeon_wid);
 	c->depth = p->depth;
 	if (one_in_(2)) {
 		chunk_copy(c, lair, 0, 0, 0, FALSE);
-		chunk_copy(c, normal, 0, DUNGEON_WID / 2, 0, FALSE);
+		chunk_copy(c, normal, 0, z_info->dungeon_wid / 2, 0, FALSE);
 
 		/* The player needs to move */
-		p->px += DUNGEON_WID / 2;
+		p->px += z_info->dungeon_wid / 2;
 	} else {
 		chunk_copy(c, normal, 0, 0, 0, FALSE);
-		chunk_copy(c, lair, 0, DUNGEON_WID / 2, 0, FALSE);
+		chunk_copy(c, lair, 0, z_info->dungeon_wid / 2, 0, FALSE);
 	}
 
 	/* Free the chunks */
@@ -2190,14 +2191,16 @@ struct chunk *gauntlet_gen(struct player *p) {
 	if (!gauntlet) return NULL;
 	gauntlet->depth = p->depth;
 
-	arrival = cavern_chunk(p->depth, DUNGEON_HGT, DUNGEON_WID * 2 / 5);
+	arrival = cavern_chunk(p->depth, z_info->dungeon_hgt,
+						   z_info->dungeon_wid * 2 / 5);
 	if (!arrival) {
 		cave_free(gauntlet);
 		return NULL;
 	}
 	arrival->depth = p->depth;
 
-	departure = cavern_chunk(p->depth, DUNGEON_HGT, DUNGEON_WID * 2 / 5);
+	departure = cavern_chunk(p->depth, z_info->dungeon_hgt,
+							 z_info->dungeon_wid * 2 / 5);
 	if (!departure) {
 		cave_free(gauntlet);
 		cave_free(arrival);
@@ -2275,7 +2278,7 @@ struct chunk *gauntlet_gen(struct player *p) {
 	(void) mon_restrict(NULL, gauntlet->depth, FALSE);
 
 	/* Make the level */
-	c = cave_new(DUNGEON_HGT, DUNGEON_WID);
+	c = cave_new(z_info->dungeon_hgt, z_info->dungeon_wid);
 	c->depth = p->depth;
 
 	/* Fill cave area with basic granite */
@@ -2288,8 +2291,8 @@ struct chunk *gauntlet_gen(struct player *p) {
 
 	/* Copy in the pieces */
 	chunk_copy(c, arrival, 0, 0, 0, FALSE);
-	chunk_copy(c, gauntlet, (DUNGEON_HGT - gauntlet->height) / 2, line1, 0,
-			   FALSE);
+	chunk_copy(c, gauntlet, (z_info->dungeon_hgt - gauntlet->height) / 2,
+			   line1, 0, FALSE);
 	chunk_copy(c, departure, 0, line2, 0, FALSE);
 
 	/* Free the chunks */
@@ -2306,9 +2309,9 @@ struct chunk *gauntlet_gen(struct player *p) {
 
 	/* Temporary until connecting to vault entrances works better */
 	for (y = 0; y < gauntlet_hgt; y++) {
-		square_set_feat(c, y + (DUNGEON_HGT - gauntlet_hgt) / 2, line1 - 1,
-						FEAT_FLOOR);
-		square_set_feat(c, y + (DUNGEON_HGT - gauntlet_hgt) / 2, line2,
+		square_set_feat(c, y + (z_info->dungeon_hgt - gauntlet_hgt) / 2,
+						line1 - 1, FEAT_FLOOR);
+		square_set_feat(c, y + (z_info->dungeon_hgt - gauntlet_hgt) / 2, line2,
 						FEAT_FLOOR);
 	}
 

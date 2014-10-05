@@ -1739,27 +1739,12 @@ void stats_collect(void)
 
 #define DIST_MAX 10000
 
-int cave_dist[DUNGEON_HGT][DUNGEON_WID];
-
-
-void clear_cave_dist(void)
-{
-	int x,y;
-	for (y = 1; y < DUNGEON_HGT - 1; y++){
-
-			for (x = 1; x < DUNGEON_WID - 1; x++){
-
-				cave_dist[y][x] = -1;
-			}
-		}
-}
-
-void calc_cave_distances(void)
+void calc_cave_distances(int **cave_dist)
 {
 	int dist, i;
 	int oy, ox, ty, tx, d;
 
-	/* Squares with distance from player of n-1 */  
+	/* Squares with distance from player of n - 1 */
 	int d_x_old[DIST_MAX];
 	int d_y_old[DIST_MAX];
 	int d_old_max;
@@ -1769,26 +1754,23 @@ void calc_cave_distances(void)
 	int d_y_new[DIST_MAX];
 	int d_new_max;
 
-	/* Set all cave spots to inaccessible */
-	clear_cave_dist();
-
 	/* Get player location */
 	oy = d_y_old[0] = player->py;
 	ox = d_x_old[0] = player->px;
 	d_old_max = 1;
 
-	/* distance from player starts at 0*/
-	dist=0;
+	/* Distance from player starts at 0 */
+	dist = 0;
 
-	/* Assign the distance value to the first square (player)*/
+	/* Assign the distance value to the first square (player) */
 	cave_dist[oy][ox] = dist;
 
-	do{
+	do {
 		d_new_max = 0;
 		dist++;
 
-		/* Loop over all visited squares of the previous iteration*/
-		for(i=0 ;i < d_old_max; i++){
+		/* Loop over all visited squares of the previous iteration */
+		for (i = 0; i < d_old_max; i++){
 
 			/* Get the square we want to look at */
 			oy = d_y_old[i];
@@ -1798,13 +1780,13 @@ void calc_cave_distances(void)
 			//msg("x: %d y: %d dist: %d %d ",ox,oy,dist-1,i);
 
 			/* Get all adjacent squares */
-			for (d = 0; d < 8; d++){
+			for (d = 0; d < 8; d++) {
 
 				/* Adjacent square location */
 				ty = oy + ddy_ddd[d];
 				tx = ox + ddx_ddd[d];
 
-				if (!(square_in_bounds_fully(cave, ty,tx))) continue;
+				if (!(square_in_bounds_fully(cave, ty, tx))) continue;
 
 				/* Have we been here before? */
 				if (cave_dist[ty][tx] >= 0) continue;
@@ -1826,15 +1808,13 @@ void calc_cave_distances(void)
 			}
 		}
 
-		/* copy the new distance list to the old one */
-		for (i=0 ;i<d_new_max; i++){
+		/* Copy the new distance list to the old one */
+		for (i = 0; i < d_new_max; i++) {
 
 			d_y_old[i] = d_y_new[i];
 			d_x_old[i] = d_x_new[i];
 		}
-
 		d_old_max = d_new_max;
-
 
 	} while ((d_old_max > 0) || dist == DIST_MAX);
 }
@@ -1926,8 +1906,9 @@ void pit_stats(void)
  */
 void disconnect_stats(void)
 {
-	int i,y,x;
+	int i, y, x;
 
+	int **cave_dist;
 
 	bool has_dsc, has_dsc_from_stairs;
 
@@ -1935,9 +1916,9 @@ void disconnect_stats(void)
 	static char tmp_val[100];
 	static char prompt[50];
 
-	long dsc_area=0, dsc_from_stairs=0;
+	long dsc_area = 0, dsc_from_stairs = 0;
 
-	/* This is the prompt for no. of tries*/
+	/* This is the prompt for no. of tries */
 	strnfmt(prompt, sizeof(prompt), "Num of simulations: ");
 
 	/* This is the default value (50) */
@@ -1946,39 +1927,48 @@ void disconnect_stats(void)
 	/* Ask for the input */
 	if (!get_string(prompt,tmp_val,7)) return;
 
-	/* get the new value */
+	/* Get the new value */
 	temp = atoi(tmp_val);
 
-	/* convert */
-	if (temp < 1) temp = 1;
+	/* Try at least once */
+	if (temp < 1)
+		temp = 1;
 
-	/* save */
-	tries=temp;
+	/* Save */
+	tries = temp;
 
-	for (i = 1; i <= tries; i++){
+	for (i = 1; i <= tries; i++) {
+		/* Assume no disconnected areas */
+		has_dsc = FALSE;
 
-	/* assume no disconnected areas */
-	has_dsc = FALSE;
-
-	/* assume you can't get to stairs */
-	has_dsc_from_stairs = TRUE;
+		/* Assume you can't get to stairs */
+		has_dsc_from_stairs = TRUE;
 
 		/* Make a new cave */
 		cave_generate(&cave, player);
 
-		/* Fill the distance array */
-		calc_cave_distances();
+		/* Allocate the distance array */
+		cave_dist = mem_zalloc(cave->height * sizeof(int*));
+		for (y = 0; y < cave->height; y++)
+			cave_dist[y] = mem_zalloc(cave->width * sizeof(int));
 
-		/*Cycle through the dungeon */
-		for (y = 1; y < cave->height - 1; y++){
+		/* Set all cave spots to inaccessible */
+		for (y = 0; y < cave->height; y++)
+			for (x = 1; x < cave->width; x++)
+				cave_dist[y][x] = -1;
 
-			for (x = 1; x < cave->width - 1; x++){
+		/* Fill the distance array with the correct distances */
+		calc_cave_distances(cave_dist);
 
-				/* don't care about walls */
+		/* Cycle through the dungeon */
+		for (y = 1; y < cave->height - 1; y++) {
+			for (x = 1; x < cave->width - 1; x++) {
+
+				/* Don't care about walls */
 				if (square_iswall(cave, y, x)) continue;
 
 				/* Can we get there? */
-				if (cave_dist[y][x] >= 0){
+				if (cave_dist[y][x] >= 0) {
 
 					/* Is it a  down stairs? */
 					if (square_isdownstairs(cave, y, x)) {
@@ -1987,9 +1977,7 @@ void disconnect_stats(void)
 
 						//debug
 						//msg("dist to stairs: %d",cave_dist[y][x]);
-
 					}
-
 					continue;
 				}
 
@@ -1998,8 +1986,6 @@ void disconnect_stats(void)
 
 				/* We have a disconnected area */
 				has_dsc = TRUE;
-
-
 			}
 		}
 
@@ -2008,12 +1994,17 @@ void disconnect_stats(void)
 		if (has_dsc) dsc_area++;
 
 		msg("Iteration: %d",i); 
+
+		/* Free arrays */
+		for (y = 0; x < cave->height; x++)
+			mem_free(cave_dist[y]);
+		mem_free(cave_dist);
 	}
 
 	msg("Total levels with disconnected areas: %ld",dsc_area);
 	msg("Total levels isolated from stairs: %ld",dsc_from_stairs);
 
-	/* redraw the level */
+	/* Redraw the level */
 	do_cmd_redraw();
 }
 

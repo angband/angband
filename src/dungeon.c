@@ -1197,8 +1197,8 @@ static void dungeon(struct chunk *c)
 
 
 	/* Hack -- enforce illegal panel */
-	Term->offset_y = DUNGEON_HGT;
-	Term->offset_x = DUNGEON_WID;
+	Term->offset_y = z_info->dungeon_hgt;
+	Term->offset_x = z_info->dungeon_wid;
 
 
 	/* Not leaving */

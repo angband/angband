@@ -535,6 +535,28 @@ static enum parser_error parse_z_dun_gen(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_z_dun_play(struct parser *p) {
+	struct angband_constants *z;
+	const char *label;
+	int value;
+
+	z = parser_priv(p);
+	label = parser_getsym(p, "label");
+	value = parser_getint(p, "value");
+
+	if (value < 0)
+		return PARSE_ERROR_INVALID_VALUE;
+
+	if (streq(label, "dungeon-hgt"))
+		z->dungeon_hgt = value;
+	else if (streq(label, "dungeon-wid"))
+		z->dungeon_wid = value;
+	else
+		return PARSE_ERROR_UNDEFINED_DIRECTIVE;
+
+	return PARSE_ERROR_NONE;
+}
+
 struct parser *init_parse_z(void) {
 	struct angband_constants *z = mem_zalloc(sizeof *z);
 	struct parser *p = parser_new();
@@ -544,6 +566,7 @@ struct parser *init_parse_z(void) {
 	parser_reg(p, "mon-gen sym label int value", parse_z_mon_gen);
 	parser_reg(p, "mon-play sym label int value", parse_z_mon_play);
 	parser_reg(p, "dun-gen sym label int value", parse_z_dun_gen);
+	parser_reg(p, "dun-play sym label int value", parse_z_dun_play);
 	return p;
 }
 
