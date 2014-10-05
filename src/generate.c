@@ -413,55 +413,6 @@ static void run_template_parser(void) {
 
 
 /**
- * Clear the dungeon, ready for generation to begin.
- * \param c is the cave struct being cleared, in practice the global cave
- * \param p is the current player struct, in practice the global player
- */
-static void cave_clear(struct chunk *c, struct player *p) {
-    int i, x, y;
-
-    wipe_o_list(c);
-    wipe_mon_list(c, p);
-	wipe_trap_list(c);
-
-
-    /* Clear flags and flow information. */
-    for (y = 0; y < c->height; y++) {
-		for (x = 0; x < c->width; x++) {
-			/* Erase features */
-			c->feat[y][x] = 0;
-
-			/* Erase flags */
-			sqinfo_wipe(c->info[y][x]);
-
-			/* Erase flow */
-			c->cost[y][x] = 0;
-			c->when[y][x] = 0;
-
-			/* Erase monsters/player */
-			c->m_idx[y][x] = 0;
-
-			/* Erase items */
-			c->o_idx[y][x] = 0;
-		}
-    }
-
-	/* Wipe feature counts */
-	for (i = 0; i < z_info->f_max + 1; i++)
-		c->feat_count[i] = 0;
-
-    /* Unset the player's coordinates */
-    p->px = p->py = 0;
-
-    /* Nothing special here yet */
-    c->good_item = FALSE;
-
-    /* Nothing good here yet */
-    c->mon_rating = 0;
-    c->obj_rating = 0;
-}
-
-/**
  * Place hidden squares that will be used to generate feeling
  * \param c is the cave struct the feeling squares are being placed in
  */
@@ -554,25 +505,25 @@ static int calc_mon_feeling(struct chunk *c)
 
 /**
  * Do d_m's prime check for labyrinths
- * \param c is the cave where we're trying to generate a labyrinth
+ * \param depth is the depth where we're trying to generate a labyrinth
  */
-bool labyrinth_check(struct chunk *c)
+bool labyrinth_check(int depth)
 {
     /* There's a base 2 in 100 to accept the labyrinth */
     int chance = 2;
 
     /* If we're too shallow then don't do it */
-    if (c->depth < 13) return FALSE;
+    if (depth < 13) return FALSE;
 
     /* Don't try this on quest levels, kids... */
-    if (is_quest(c->depth)) return FALSE;
+    if (is_quest(depth)) return FALSE;
 
     /* Certain numbers increase the chance of having a labyrinth */
-    if (c->depth % 3 == 0) chance += 1;
-    if (c->depth % 5 == 0) chance += 1;
-    if (c->depth % 7 == 0) chance += 1;
-    if (c->depth % 11 == 0) chance += 1;
-    if (c->depth % 13 == 0) chance += 1;
+    if (depth % 3 == 0) chance += 1;
+    if (depth % 5 == 0) chance += 1;
+    if (depth % 7 == 0) chance += 1;
+    if (depth % 11 == 0) chance += 1;
+    if (depth % 13 == 0) chance += 1;
 
     /* Only generate the level if we pass a check */
     if (randint0(100) >= chance) return FALSE;
@@ -603,9 +554,9 @@ const struct cave_profile *find_cave_profile(char *name)
 
 /**
  * Choose a cave profile
- * \param c is the cave which we're about to use the profile for
+ * \param depth is the depth of the cave the profile will be used to generate
  */
-const struct cave_profile *choose_profile(struct chunk *c)
+const struct cave_profile *choose_profile(int depth)
 {
 	const struct cave_profile *profile = NULL;
 
@@ -625,12 +576,12 @@ const struct cave_profile *choose_profile(struct chunk *c)
 	}
 
 	/* Make the profile choice */
-	if (c->depth == 0)
+	if (depth == 0)
 		profile = find_cave_profile("town");
-	else if (is_quest(c->depth))
+	else if (is_quest(depth))
 		/* Quest levels must be normal levels */
 		profile = find_cave_profile("classic");
-	else if (labyrinth_check(c))
+	else if (labyrinth_check(depth))
 		profile = find_cave_profile("labyrinth");
 	else {
 		int perc = randint0(100);
@@ -657,21 +608,12 @@ const struct cave_profile *choose_profile(struct chunk *c)
  * \param c is the level we're going to end up with, in practice the global cave
  * \param p is the current player struct, in practice the global player
  */
-void cave_generate(struct chunk *c, struct player *p) {
+void cave_generate(struct chunk **c, struct player *p) {
     const char *error = "no generation";
     int y, x, tries = 0;
 	struct chunk *chunk;
 
     assert(c);
-
-    /* Start with dungeon-wide permanent rock */
-	c->height = DUNGEON_HGT;
-	c->width = DUNGEON_WID;
-	cave_clear(c, p);
-	fill_rectangle(c, 0, 0, DUNGEON_HGT - 1, DUNGEON_WID - 1, FEAT_PERM,
-				   SQUARE_NONE);
-
-	c->depth = p->depth;
 
 	/* Generate */
 	for (tries = 0; tries < 100 && error; tries++) {
@@ -690,7 +632,7 @@ void cave_generate(struct chunk *c, struct player *p) {
 		dun->tunn = mem_zalloc(z_info->tunn_grid_max * sizeof(struct loc));
 
 		/* Choose a profile and build the level */
-		dun->profile = choose_profile(c);
+		dun->profile = choose_profile(p->depth);
 		chunk = dun->profile->builder(p);
 		if (!chunk) {
 			error = "Failed to find builder";
@@ -745,21 +687,14 @@ void cave_generate(struct chunk *c, struct player *p) {
 
     if (error) quit_fmt("cave_generate() failed 100 times!");
 
-	/* Re-adjust cave size */
-	c->height = chunk->height;
-	c->width = chunk->width;
-
-	/* Copy into the cave */
-	if (!chunk_copy(c, chunk, 0, 0, 0, 0))
-		quit_fmt("chunk_copy() level bounds failed!");
-
-	/* Free it TODO make this process more robust */
-	if (chunk_find(chunk)) chunk_list_remove(chunk->name);
-	cave_free(chunk);
+	/* Free the old cave, use the new one */
+	if (*c)
+		cave_free(*c);
+	*c = chunk;
 
 	/* Place dungeon squares to trigger feeling (not in town) */
 	if (player->depth)
-		place_feeling(c);
+		place_feeling(*c);
 
 	/* Save the town */
 	else if (!chunk_find_name("Town")) {
@@ -769,15 +704,15 @@ void cave_generate(struct chunk *c, struct player *p) {
 		chunk_list_add(town);
 	}
 
-	c->feeling = calc_obj_feeling(c) + calc_mon_feeling(c);
+	(*c)->feeling = calc_obj_feeling(*c) + calc_mon_feeling(*c);
 
 	/* Validate the dungeon (we could use more checks here) */
-	chunk_validate_objects(c);
+	chunk_validate_objects(*c);
 
     /* The dungeon is ready */
     character_dungeon = TRUE;
 
-    c->created_at = turn;
+    (*c)->created_at = turn;
 }
 
 /**

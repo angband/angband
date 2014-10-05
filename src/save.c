@@ -693,79 +693,57 @@ void wr_dungeon(void)
 	/*** Simple "Run-Length-Encoding" of cave ***/
 
     /* Loop across bytes of cave->info */
-    for (i = 0; i < SQUARE_SIZE; i++)
-    {
-	/* Note that this will induce two wasted bytes */
-	count = 0;
-	prev_char = 0;
+    for (i = 0; i < SQUARE_SIZE; i++) {
+		count = 0;
+		prev_char = 0;
 
-	/* Dump the cave */
-	for (y = 0; y < cave->height; y++)
-	{
-		for (x = 0; x < cave->width; x++)
-		{
-			/* Extract the important cave->info flags */
-			tmp8u = cave->info[y][x][i];
+		/* Dump for each grid */
+		for (y = 0; y < cave->height; y++) {
+			for (x = 0; x < cave->width; x++) {
+				/* Extract the important cave->info flags */
+				tmp8u = cave->info[y][x][i];
 
-			/* If the run is broken, or too full, flush it */
-			if ((tmp8u != prev_char) || (count == MAX_UCHAR))
-			{
-				wr_byte((byte)count);
-				wr_byte((byte)prev_char);
-				prev_char = tmp8u;
-				count = 1;
+				/* If the run is broken, or too full, flush it */
+				if ((tmp8u != prev_char) || (count == MAX_UCHAR)) {
+					wr_byte((byte)count);
+					wr_byte((byte)prev_char);
+					prev_char = tmp8u;
+					count = 1;
+				} else /* Continue the run */
+					count++;
 			}
+		}
 
-			/* Continue the run */
-			else
-			{
-				count++;
-			}
+		/* Flush the data (if any) */
+		if (count) {
+			wr_byte((byte)count);
+			wr_byte((byte)prev_char);
 		}
 	}
 
-	/* Flush the data (if any) */
-	if (count)
-	{
-		wr_byte((byte)count);
-		wr_byte((byte)prev_char);
-	}
-	}
-
-	/*** Simple "Run-Length-Encoding" of cave ***/
-
-	/* Note that this will induce two wasted bytes */
+	/* Now the terrain */
 	count = 0;
 	prev_char = 0;
 
-	/* Dump the cave */
-	for (y = 0; y < cave->height; y++)
-	{
-		for (x = 0; x < cave->width; x++)
-		{
+	/* Dump for each grid */
+	for (y = 0; y < cave->height; y++) {
+		for (x = 0; x < cave->width; x++) {
 			/* Extract a byte */
 			tmp8u = cave->feat[y][x];
 
 			/* If the run is broken, or too full, flush it */
-			if ((tmp8u != prev_char) || (count == MAX_UCHAR))
-			{
+			if ((tmp8u != prev_char) || (count == MAX_UCHAR)) {
 				wr_byte((byte)count);
 				wr_byte((byte)prev_char);
 				prev_char = tmp8u;
 				count = 1;
-			}
-
-			/* Continue the run */
-			else
-			{
+			} else /* Continue the run */
 				count++;
-			}
 		}
 	}
 
 	/* Flush the data (if any) */
-	if (count)
-	{
+	if (count) {
 		wr_byte((byte)count);
 		wr_byte((byte)prev_char);
 	}

@@ -1130,10 +1130,6 @@ int rd_dungeon(void)
     rd_u16b(&square_size);
 	rd_u16b(&tmp16u);
 
-
-    /* Always at least two bytes of cave_info */
-    square_size = MAX(2, square_size);
-  
 	/* Ignore illegal dungeons */
 	if ((depth < 0) || (depth >= MAX_DEPTH))
 	{
@@ -1141,8 +1137,8 @@ int rd_dungeon(void)
 		return (0);
 	}
 
-	cave->width = xmax;
-	cave->height = ymax;
+	/* We need a cave array */
+	cave = cave_new(ymax, xmax);
 
 	/* Ignore illegal dungeons */
 	if ((px < 0) || (px >= cave->width) ||
@@ -1155,33 +1151,33 @@ int rd_dungeon(void)
 
 	/*** Run length decoding ***/
 
-    /* Loop across bytes of cave_info */
+    /* Loop across bytes of cave->info */
     for (n = 0; n < square_size; n++)
     {
-	/* Load the dungeon data */
-	for (x = y = 0; y < cave->height; )
-	{
-		/* Grab RLE info */
-		rd_byte(&count);
-		rd_byte(&tmp8u);
-
-		/* Apply the RLE info */
-		for (i = count; i > 0; i--)
+		/* Load the dungeon data */
+		for (x = y = 0; y < cave->height; )
 		{
-			/* Extract "info" */
-			cave->info[y][x][n] = tmp8u;
+			/* Grab RLE info */
+			rd_byte(&count);
+			rd_byte(&tmp8u);
 
-			/* Advance/Wrap */
-			if (++x >= cave->width)
+			/* Apply the RLE info */
+			for (i = count; i > 0; i--)
 			{
-				/* Wrap */
-				x = 0;
+				/* Extract "info" */
+				cave->info[y][x][n] = tmp8u;
 
 				/* Advance/Wrap */
-				if (++y >= cave->height) break;
+				if (++x >= cave->width)
+				{
+					/* Wrap */
+					x = 0;
+
+					/* Advance/Wrap */
+					if (++y >= cave->height) break;
+				}
 			}
 		}
-	}
 	}
 
 

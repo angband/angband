@@ -176,7 +176,7 @@ bool monster_is_unusual(struct monster_race *race)
  * "OPT(disturb_near)" (monster which is "easily" viewable moves in some
  * way).  Note that "moves" includes "appears" and "disappears".
  */
-void update_mon(struct monster *m_ptr, bool full)
+void update_mon(struct monster *m_ptr, struct chunk *c, bool full)
 {
 	monster_lore *l_ptr;
 
@@ -230,8 +230,8 @@ void update_mon(struct monster *m_ptr, bool full)
 	if (m_ptr->mflag & (MFLAG_MARK)) flag = TRUE;
 
 	/* Check if telepathy works */
-	if (square_isno_esp(cave, fy, fx) ||
-		square_isno_esp(cave, player->py, player->px))
+	if (square_isno_esp(c, fy, fx) ||
+		square_isno_esp(c, player->py, player->px))
 		telepathy_ok = FALSE;
 
 	/* Nearby */
@@ -267,7 +267,7 @@ void update_mon(struct monster *m_ptr, bool full)
 		}
 
 		/* Normal line of sight and player is not blind */
-		if (player_has_los_bold(fy, fx) && !player->timed[TMD_BLIND]) {
+		if (square_isview(c, fy, fx) && !player->timed[TMD_BLIND]) {
 			/* Use "infravision" */
 			if (d <= player->state.see_infra) {
 				/* Learn about warm/cold blood */
@@ -284,7 +284,7 @@ void update_mon(struct monster *m_ptr, bool full)
 			/*if (rf_has(m_ptr->race->flags, RF_HAS_LIGHT)) easy = flag = TRUE;*/
 
 			/* Use "illumination" */
-			if (player_can_see_bold(fy, fx)) {
+			if (square_isseen(c, fy, fx)) {
 				/* Learn it emits light */
 				rf_on(l_ptr->flags, RF_HAS_LIGHT);
 
@@ -312,7 +312,7 @@ void update_mon(struct monster *m_ptr, bool full)
 
 	/* If a mimic looks like an ignored item, it's not seen */
 	if (is_mimicking(m_ptr)) {
-		object_type *o_ptr = cave_object(cave, m_ptr->mimicked_o_idx);
+		object_type *o_ptr = cave_object(c, m_ptr->mimicked_o_idx);
 		if (ignore_item_ok(o_ptr))
 			easy = flag = FALSE;
 	}
@@ -330,7 +330,7 @@ void update_mon(struct monster *m_ptr, bool full)
 			m_ptr->ml = TRUE;
 
 			/* Draw the monster */
-			square_light_spot(cave, fy, fx);
+			square_light_spot(c, fy, fx);
 
 			/* Update health bar as needed */
 			if (player->upkeep->health_who == m_ptr)
@@ -351,13 +351,13 @@ void update_mon(struct monster *m_ptr, bool full)
 		if (m_ptr->ml) {
 			/* Treat mimics differently */
 			if (!m_ptr->mimicked_o_idx || 
-				ignore_item_ok(cave_object(cave, m_ptr->mimicked_o_idx)))
+				ignore_item_ok(cave_object(c, m_ptr->mimicked_o_idx)))
 			{
 				/* Mark as not visible */
 				m_ptr->ml = FALSE;
 
 				/* Erase the monster */
-				square_light_spot(cave, fy, fx);
+				square_light_spot(c, fy, fx);
 
 				/* Update health bar as needed */
 				if (player->upkeep->health_who == m_ptr)
@@ -417,7 +417,7 @@ void update_monsters(bool full)
 
 		/* Update the monster if alive */
 		if (m_ptr->race)
-			update_mon(m_ptr, full);
+			update_mon(m_ptr, cave, full);
 	}
 }
 
@@ -514,7 +514,7 @@ void monster_swap(int y1, int x1, int y2, int x2)
 		m_ptr->fx = x2;
 
 		/* Update monster */
-		update_mon(m_ptr, TRUE);
+		update_mon(m_ptr, cave, TRUE);
 
 		/* Radiate light? */
 		if (rf_has(m_ptr->race->flags, RF_HAS_LIGHT))
@@ -555,7 +555,7 @@ void monster_swap(int y1, int x1, int y2, int x2)
 		m_ptr->fx = x1;
 
 		/* Update monster */
-		update_mon(m_ptr, TRUE);
+		update_mon(m_ptr, cave, TRUE);
 
 		/* Radiate light? */
 		if (rf_has(m_ptr->race->flags, RF_HAS_LIGHT))

@@ -1067,7 +1067,7 @@ static void process_player(void)
 				if (mon->mflag & MFLAG_MARK) {
 					if (!(mon->mflag & MFLAG_SHOW)) {
 						mon->mflag &= ~MFLAG_MARK;
-						update_mon(mon, FALSE);
+						update_mon(mon, cave, FALSE);
 					}
 				}
 			}
@@ -1620,7 +1620,7 @@ void play_game(bool new_game)
 
 	/* Generate a dungeon level if needed */
 	if (!character_dungeon)
-		cave_generate(cave , player);
+		cave_generate(&cave, player);
 
 
 	/* Character is now "complete" */
@@ -1745,7 +1745,7 @@ void play_game(bool new_game)
 		if (player->is_dead) break;
 
 		/* Make a new level */
-		cave_generate(cave, player);
+		cave_generate(&cave, player);
 	}
 
 	/* Disallow big cursor */

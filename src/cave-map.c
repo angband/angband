@@ -242,7 +242,8 @@ void square_note_spot(struct chunk *c, int y, int x)
  */
 void square_light_spot(struct chunk *c, int y, int x)
 {
-	event_signal_point(EVENT_MAP, x, y);
+	if (c == cave)
+		event_signal_point(EVENT_MAP, x, y);
 }
 
 

@@ -4075,9 +4075,6 @@ bool init_angband(void)
 	monster_list_init();
 	object_list_init();
 
-	/* We need a cave array */
-	cave = cave_new(DUNGEON_HGT, DUNGEON_WID);
-
 	/* Initialize graphics info and basic user pref data */
 	event_signal_string(EVENT_INITSTATUS, "Loading basic user pref file...");
 	(void)process_pref_file("pref.prf", FALSE, FALSE);
@@ -4103,9 +4100,7 @@ void cleanup_angband(void)
 
 	event_remove_all_handlers();
 
-	/* The main cave is always allocated with max height and width */
-	cave->height = DUNGEON_HGT;
-	cave->width = DUNGEON_WID;
+	/* Free the main cave */
 	cave_free(cave);
 
 	/* Free the history */

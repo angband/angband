@@ -1378,7 +1378,7 @@ bool effect_handler_DETECT_VISIBLE_MONSTERS(effect_handler_context_t *context)
 				player->upkeep->redraw |= (PR_MONSTER);
 
 			/* Update the monster */
-			update_mon(m_ptr, FALSE);
+			update_mon(m_ptr, cave, FALSE);
 
 			/* Detect */
 			monsters = TRUE;
@@ -1450,7 +1450,7 @@ bool effect_handler_DETECT_INVISIBLE_MONSTERS(effect_handler_context_t *context)
 			m_ptr->mflag |= (MFLAG_MARK | MFLAG_SHOW);
 
 			/* Update the monster */
-			update_mon(m_ptr, FALSE);
+			update_mon(m_ptr, cave, FALSE);
 
 			/* Detect */
 			monsters = TRUE;
@@ -1523,7 +1523,7 @@ bool effect_handler_DETECT_EVIL(effect_handler_context_t *context)
 			m_ptr->mflag |= (MFLAG_MARK | MFLAG_SHOW);
 
 			/* Update the monster */
-			update_mon(m_ptr, FALSE);
+			update_mon(m_ptr, cave, FALSE);
 
 			/* Detect */
 			monsters = TRUE;

@@ -1,6 +1,6 @@
 /**
-   \file project-mon.c
-   \brief projection effects on monsters
+ *  \file project-mon.c
+ *  \brief projection effects on monsters
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  *
@@ -1138,7 +1138,7 @@ bool project_m(int who, int r, int y, int x, int dam, int typ, int flg)
 	/* Check for NULL, since polymorph can occasionally return NULL. */
 	if (m_ptr != NULL) {
 		/* Update the monster */
-		if (!mon_died) update_mon(m_ptr, FALSE);
+		if (!mon_died) update_mon(m_ptr, cave, FALSE);
 
 		/* Hack -- get new location in case of teleport */
 		y = m_ptr->fy;

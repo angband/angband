@@ -806,7 +806,7 @@ s16b place_monster(struct chunk *c, int y, int x, monster_type *mon, byte origin
 	m_ptr->fx = x;
 	assert(square_monster(c, y, x) == m_ptr);
 
-	update_mon(m_ptr, TRUE);
+	update_mon(m_ptr, c, TRUE);
 
 	/* Hack -- Count the number of "reproducers" */
 	if (rf_has(m_ptr->race->flags, RF_MULTIPLY)) num_repro++;

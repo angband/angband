@@ -395,7 +395,7 @@ int cave_trap_max(struct chunk *c);
 
 int count_feats(int *y, int *x, bool (*test)(struct chunk *cave, int y, int x), bool under);
 
-void cave_generate(struct chunk *c, struct player *p);
+void cave_generate(struct chunk **c, struct player *p);
 bool is_quest(int level);
 
 #endif /* !CAVE_H */

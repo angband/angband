@@ -378,6 +378,9 @@ void object_flavor_aware(object_type *o_ptr)
 	player->upkeep->notice |= PN_IGNORE;
 	apply_autoinscription(o_ptr);
 
+	/* Quit if no dungeon yet */
+	if (!cave) return;
+
 	/* Some objects change tile on awareness */
 	/* So update display for all floor objects of this kind */
 	for (i = 1; i < cave_object_max(cave); i++)

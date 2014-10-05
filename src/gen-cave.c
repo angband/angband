@@ -1520,24 +1520,27 @@ struct chunk *town_gen(struct player *p)
     bool daytime = turn % (10 * TOWN_DAWN) < (10 * TOWN_DUSK);
     int residents = daytime ? z_info->town_monsters_day :
 		z_info->town_monsters_night;
-	struct chunk *c;
+	struct chunk *c_new, *c_old = chunk_find_name("Town");
 
-	c = chunk_find_name("Town");
+	/* Make a new chunk */
+	c_new = cave_new(TOWN_HGT, TOWN_WID);
 
 	/* First time */
-	if (!c) {
-		c = cave_new(TOWN_HGT, TOWN_WID);
-		c->depth = p->depth;
+	if (!c_old) {
+		c_new->depth = p->depth;
 
 		/* Build stuff */
-		town_gen_layout(c, p);
+		town_gen_layout(c_new, p);
 	} else {
+		/* Copy from the chunk list */
+		if (!chunk_copy(c_new, c_old, 0, 0, 0, 0))
+			quit_fmt("chunk_copy() level bounds failed!");
 
 		/* Find the stairs (lame) */
-		for (y = 0; y < c->height; y++) {
+		for (y = 0; y < c_new->height; y++) {
 			bool found = FALSE;
-			for (x = 0; x < c->width; x++) {
-				if (c->feat[y][x] == FEAT_MORE) {
+			for (x = 0; x < c_new->width; x++) {
+				if (c_new->feat[y][x] == FEAT_MORE) {
 					found = TRUE;
 					break;
 				}
@@ -1546,17 +1549,18 @@ struct chunk *town_gen(struct player *p)
 		}
 
 		/* Place the player */
-		player_place(c, p, y, x);
+		player_place(c_new, p, y, x);
 	}
 
     /* Apply illumination */
-    cave_illuminate(c, daytime);
+    cave_illuminate(c_new, daytime);
 
     /* Make some residents */
     for (i = 0; i < residents; i++)
-		pick_and_place_distant_monster(c, loc(p->px, p->py), 3, TRUE, c->depth);
+		pick_and_place_distant_monster(c_new, loc(p->px, p->py), 3, TRUE,
+									   c_new->depth);
 
-    return c;
+    return c_new;
 }
 
 
