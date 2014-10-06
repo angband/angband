@@ -18,9 +18,6 @@ struct monster;
  */
 #define MAX_DEPTH	128
 
-#define TOWN_WID 66
-#define TOWN_HGT 22
-
 
 /*
  * Maximum sight and projection values

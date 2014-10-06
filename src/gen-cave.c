@@ -1431,24 +1431,28 @@ static void build_store(struct chunk *c, int n, int yy, int xx)
 {
 	int feat;
 
-    /* Find the "center" of the store */
-    int y0 = yy * 9 + 6;
-    int x0 = xx * 14 + 12;
+	/* Determine spacing based on town size */
+	int y_space = z_info->town_hgt / 7;
+	int x_space = z_info->town_wid / ((MAX_STORES / 2) + 1);
 
-    /* Determine the store boundaries */
-    int y1 = y0 - randint1((yy == 0) ? 3 : 2);
-    int y2 = y0 + randint1((yy == 1) ? 3 : 2);
-    int x1 = x0 - randint1(5);
-    int x2 = x0 + randint1(5);
+	/* Find the "center" of the store */
+	int y0 = yy * 3 * y_space + 2 * y_space;
+	int x0 = (xx + 1) * (x_space);
 
-    /* Determine door location, based on which side of the street we're on */
-    int dy = (yy == 0) ? y2 : y1;
-    int dx = rand_range(x1, x2);
+	/* Determine the store boundaries */
+	int y1 = y0 - randint1((yy == 0) ? y_space : y_space * 2 / 3);
+	int y2 = y0 + randint1((yy == 1) ? y_space : y_space * 2 / 3);
+	int x1 = x0 - randint1((x_space - 3) / 2);
+	int x2 = x0 + randint1((x_space - 3) / 2);
 
-    /* Build an invulnerable rectangular building */
-    fill_rectangle(c, y1, x1, y2, x2, FEAT_PERM, SQUARE_NONE);
+	/* Determine door location, based on which side of the street we're on */
+	int dy = (yy == 0) ? y2 : y1;
+	int dx = rand_range(x1, x2);
 
-    /* Clear previous contents, add a store door */
+	/* Build an invulnerable rectangular building */
+	fill_rectangle(c, y1, x1, y2, x2, FEAT_PERM, SQUARE_NONE);
+
+	/* Clear previous contents, add a store door */
 	for (feat = 0; feat < z_info->f_max; feat++)
 		if (feat_is_shop(feat) && (f_info[feat].shopnum == n + 1))
 			square_set_feat(c, dy, dx, feat);
@@ -1462,11 +1466,11 @@ static void build_store(struct chunk *c, int n, int yy, int xx)
  */
 static void town_gen_layout(struct chunk *c, struct player *p)
 {
-    int y, x, n, k;
-    int rooms[MAX_STORES];
+	int y, x, n, k;
+	int rooms[MAX_STORES];
 
-    int n_rows = 2;
-    int n_cols = (MAX_STORES + 1) / n_rows;
+	int n_rows = 2;
+	int n_cols = (MAX_STORES + 1) / n_rows;
 
 	/* Create walls */
 	draw_rectangle(c, 0, 0, c->height - 1, c->width - 1, FEAT_PERM,
@@ -1476,11 +1480,11 @@ static void town_gen_layout(struct chunk *c, struct player *p)
 	fill_rectangle(c, 1, 1, c->height - 2, c->width - 2, FEAT_FLOOR,
 				   SQUARE_NONE);
 
-    /* Prepare an Array of "remaining stores", and count them */
-    for (n = 0; n < MAX_STORES; n++) rooms[n] = n;
+	/* Prepare an Array of "remaining stores", and count them */
+	for (n = 0; n < MAX_STORES; n++) rooms[n] = n;
 
-    /* Place rows of stores */
-    for (y = 0; y < n_rows; y++) {
+	/* Place rows of stores */
+	for (y = 0; y < n_rows; y++) {
 		for (x = 0; x < n_cols; x++) {
 			if (n < 1) break;
 
@@ -1493,16 +1497,17 @@ static void town_gen_layout(struct chunk *c, struct player *p)
 			/* Shift the stores down, remove one store */
 			rooms[k] = rooms[--n];
 		}
-    }
+	}
 
-    /* Place the stairs */
-    find_empty_range(c, &y, 3, TOWN_HGT - 3, &x, 3, TOWN_WID - 3);
+	/* Place the stairs */
+	find_empty_range(c, &y, 3, z_info->town_hgt - 3, &x, 3,
+					 z_info->town_wid - 3);
 
-    /* Clear previous contents, add down stairs */
-    square_set_feat(c, y, x, FEAT_MORE);
+	/* Clear previous contents, add down stairs */
+	square_set_feat(c, y, x, FEAT_MORE);
 
-    /* Place the player */
-    player_place(c, p, y, x);
+	/* Place the player */
+	player_place(c, p, y, x);
 }
 
 
@@ -1516,14 +1521,14 @@ static void town_gen_layout(struct chunk *c, struct player *p)
  */
 struct chunk *town_gen(struct player *p)
 {
-    int i, y, x = 0;
-    bool daytime = turn % (10 * TOWN_DAWN) < (10 * TOWN_DUSK);
-    int residents = daytime ? z_info->town_monsters_day :
+	int i, y, x = 0;
+	bool daytime = turn % (10 * TOWN_DAWN) < (10 * TOWN_DUSK);
+	int residents = daytime ? z_info->town_monsters_day :
 		z_info->town_monsters_night;
 	struct chunk *c_new, *c_old = chunk_find_name("Town");
 
 	/* Make a new chunk */
-	c_new = cave_new(TOWN_HGT, TOWN_WID);
+	c_new = cave_new(z_info->town_hgt, z_info->town_wid);
 
 	/* First time */
 	if (!c_old) {
@@ -1552,15 +1557,15 @@ struct chunk *town_gen(struct player *p)
 		player_place(c_new, p, y, x);
 	}
 
-    /* Apply illumination */
-    cave_illuminate(c_new, daytime);
+	/* Apply illumination */
+	cave_illuminate(c_new, daytime);
 
-    /* Make some residents */
-    for (i = 0; i < residents; i++)
+	/* Make some residents */
+	for (i = 0; i < residents; i++)
 		pick_and_place_distant_monster(c_new, loc(p->px, p->py), 3, TRUE,
 									   c_new->depth);
 
-    return c_new;
+	return c_new;
 }
 
 

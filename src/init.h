@@ -69,9 +69,11 @@ struct angband_constants
 	u16b both_gold_av;		/**< Average number of money items */
 	u16b level_pit_max;		/**< Maximum number of pits on a level */
 
-	/* Dungeon gameplay constants, read from constants.txt */
+	/* Dungeon dimensions constants, read from constants.txt */
 	u16b dungeon_hgt;	/**< Maximum number of vertical grids on a level */
 	u16b dungeon_wid;	/**< Maximum number of horizontical grids on a level */
+	u16b town_hgt;	/**< Maximum number of vertical grids in the town */
+	u16b town_wid;	/**< Maximum number of horizontical grids in the town */
 };
 
 struct init_module {
