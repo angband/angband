@@ -1570,7 +1570,7 @@ struct chunk *town_gen(struct player *p)
 
 
 /* ------------------ MODIFIED ---------------- */
-
+#if 0
 /**
  * Room profiles for moria levels - idea stolen from Oangband
  */
@@ -1589,7 +1589,7 @@ struct room_profile moria_rooms[] = {
 	/* normal rooms */
 	{"simple room", build_moria, 11, 33, 1, FALSE, 0, 100}
 };
-
+#endif
 /**
  * The main modified generation algorithm
  * \param depth is the chunk's native depth
@@ -1634,14 +1634,14 @@ struct chunk *modified_chunk(int depth, int height, int width)
     /* No rooms yet, pits or otherwise. */
     dun->pit_num = 0;
     dun->cent_n = 0;
-
+#if 0
 	/* Hack -- It is possible for levels to be moria-style. */
 	if ((c->depth >= 10) && (c->depth < 40) && one_in_(40)) {
 		moria_level = TRUE;
 		num_rooms = N_ELEMENTS(moria_rooms);
 		ROOM_LOG("Moria level");
 	}
-
+#endif
     /* Build rooms until we have enough floor grids */
     while (c->feat_count[FEAT_FLOOR] < num_floors) {
 
@@ -1664,8 +1664,9 @@ struct chunk *modified_chunk(int depth, int height, int width)
 		 * then we are done with this iteration. We keep going until we find
 		 * a room that we can build successfully or we exhaust the profiles. */
 		for (i = 0; i < num_rooms; i++) {
-			struct room_profile profile = moria_level ? moria_rooms[i] :
-				dun->profile->room_profiles[i];
+			struct room_profile profile = dun->profile->room_profiles[i];
+			//struct room_profile profile = moria_level ? moria_rooms[i] :
+			//	dun->profile->room_profiles[i];
 			if (profile.rarity > rarity) continue;
 			if (profile.cutoff <= key) continue;
 			if (room_build(c, by, bx, profile, TRUE)) break;

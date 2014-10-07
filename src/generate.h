@@ -156,6 +156,8 @@ typedef struct chunk * (*cave_builder) (struct player *p);
 
 
 struct cave_profile {
+	struct cave_profile *next;
+
     const char *name;
     cave_builder builder;	/*!< Function used to build the level */
 	int block_size;			/*!< Default height and width of dungeon blocks */
@@ -165,7 +167,7 @@ struct cave_profile {
     int n_room_profiles;	/*!< Number of room profiles */
     struct tunnel_profile tun;		/*!< Used to build tunnels */
     struct streamer_profile str;	/*!< Used to build mineral streamers*/
-    const struct room_profile *room_profiles;	/*!< Used to build rooms */
+    struct room_profile *room_profiles;	/*!< Used to build rooms */
     int cutoff;				/*!< Used to see if we should try this dungeon */
 };
 
@@ -182,6 +184,8 @@ typedef bool (*room_builder) (struct chunk *c, int y0, int x0);
  * name and the function used to build it.
  */
 struct room_profile {
+	struct room_profile *next;
+
     const char *name;
     room_builder builder;	/*!< Function used to build fixed size rooms */
     int height, width;		/*!< Space required in grids */
