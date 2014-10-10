@@ -1567,6 +1567,11 @@ int rd_traps(void)
     int i;
     u32b tmp32u;
 
+    /* Only if the player's alive */
+    if (player->is_dead)
+	return 0;
+
+
     rd_byte(&trf_size);
     rd_u16b(&cave->trap_max);
 

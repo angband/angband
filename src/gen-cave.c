@@ -1604,7 +1604,6 @@ struct chunk *modified_chunk(int depth, int height, int width)
     int num_floors;
 	int num_rooms = dun->profile->n_room_profiles;
     int dun_unusual = dun->profile->dun_unusual;
-	bool moria_level = FALSE;
 
     /* Make the cave */
     struct chunk *c = cave_new(height, width);
