@@ -59,7 +59,7 @@ struct hint *hints;
 struct store *store_at(struct chunk *c, int y, int x)
 {
 	if (square_isshop(c, player->py, player->px))
-		return &stores[square_shopnum(cave, player->py, player->px)];
+		return &stores[square_shopnum(cave, player->py, player->px)-1];
 
 	return NULL;
 }
