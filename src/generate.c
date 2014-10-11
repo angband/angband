@@ -139,7 +139,7 @@ static enum parser_error parse_profile_room(struct parser *p) {
 	if (!c)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 
-	/* Go to the last valid blow, then allocate a new one */
+	/* Go to the last valid room profile, then allocate a new one */
 	if (!r) {
 		c->room_profiles = mem_zalloc(sizeof(struct room_profile));
 		r = c->room_profiles;
@@ -215,7 +215,7 @@ static errr finish_parse_profile(struct parser *p) {
 	cave_profiles = mem_zalloc(z_info->profile_max * sizeof(*c));
 	num = z_info->profile_max - 1;
 	for (c = parser_priv(p); c; c = n) {
-		struct room_profile *r_new;
+		struct room_profile *r_new = NULL;
 
 		/* Main record */
 		memcpy(&cave_profiles[num], c, sizeof(*c));

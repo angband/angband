@@ -1043,7 +1043,7 @@ static enum parser_error parse_lore_counts(struct parser *p) {
 
 static enum parser_error parse_lore_b(struct parser *p) {
 	monster_lore *l = parser_priv(p);
-	int method, effect, seen, index = 0;
+	int method, effect = 0, seen = 0, index = 0;
 	struct random dam;
 
 	if (!l)
