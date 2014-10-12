@@ -30,6 +30,7 @@
 #include "mon-desc.h"
 #include "mon-lore.h"
 #include "mon-make.h"
+#include "mon-spell.h"
 #include "mon-util.h"
 #include "obj-desc.h"
 #include "obj-ignore.h"
@@ -40,6 +41,106 @@
 #include "project.h"
 #include "tables.h"
 #include "trap.h"
+
+
+/**
+ * Monsters will run up to 5 grids out of sight
+ */
+#define FLEE_RANGE      MAX_SIGHT + 5
+
+/**
+ * Terrified monsters will turn to fight if they are slower than the
+ * character, and closer than this distance.
+ */
+#define TURN_RANGE      5
+
+/**
+ * Calculate minimum and desired combat ranges.  -BR-
+ */
+static void find_range(monster_type *m_ptr)
+{
+	u16b p_lev, m_lev;
+	u16b p_chp, p_mhp;
+	u16b m_chp, m_mhp;
+	u32b p_val, m_val;
+
+	/* All "afraid" monsters will run away */
+	if (m_ptr->m_timed[MON_TMD_FEAR])
+		m_ptr->min_range = FLEE_RANGE;
+
+	else {
+
+		/* Minimum distance - stay at least this far if possible */
+		m_ptr->min_range = 1;
+
+		/* Examine player power (level) */
+		p_lev = player->lev;
+
+		/* Hack - increase p_lev based on specialty abilities */
+
+		/* Examine monster power (level plus morale) */
+		m_lev = m_ptr->race->level + (m_ptr->midx & 0x08) + 25;
+
+		/* Simple cases first */
+		if (m_lev + 3 < p_lev)
+			m_ptr->min_range = FLEE_RANGE;
+		else if (m_lev - 5 < p_lev) {
+
+			/* Examine player health */
+			p_chp = player->chp;
+			p_mhp = player->mhp;
+
+			/* Examine monster health */
+			m_chp = m_ptr->hp;
+			m_mhp = m_ptr->maxhp;
+
+			/* Prepare to optimize the calculation */
+			p_val = (p_lev * p_mhp) + (p_chp << 2);	/* div p_mhp */
+			m_val = (m_lev * m_mhp) + (m_chp << 2);	/* div m_mhp */
+
+			/* Strong players scare strong monsters */
+			if (p_val * m_mhp > m_val * p_mhp)
+				m_ptr->min_range = FLEE_RANGE;
+		}
+	}
+
+	if (m_ptr->min_range < FLEE_RANGE) {
+		/* Creatures that don't move never like to get too close */
+		if (rf_has(m_ptr->race->flags, RF_NEVER_MOVE))
+			m_ptr->min_range += 3;
+
+		/* Spellcasters that don't strike never like to get too close */
+		if (rf_has(m_ptr->race->flags, RF_NEVER_BLOW))
+			m_ptr->min_range += 3;
+	}
+
+	/* Maximum range to flee to */
+	if (!(m_ptr->min_range < FLEE_RANGE))
+		m_ptr->min_range = FLEE_RANGE;
+
+	/* Nearby monsters won't run away */
+	else if (m_ptr->cdis < TURN_RANGE)
+		m_ptr->min_range = 1;
+
+	/* Now find preferred range */
+	m_ptr->best_range = m_ptr->min_range;
+
+	/* Archers are quite happy at a good distance */
+	//if (rf_has(m_ptr->race->flags, RF_ARCHER))
+	//	m_ptr->best_range += 3;
+
+	if (m_ptr->race->freq_spell > 24) {
+		/* Breathers like point blank range */
+		if (flags_test(m_ptr->race->spell_flags, RSF_SIZE, RSF_BREATH_MASK,
+					   FLAG_END)
+			&& (m_ptr->best_range < 6) && (m_ptr->hp > m_ptr->maxhp / 2))
+			m_ptr->best_range = 6;
+
+		/* Other spell casters will sit back and cast */
+		else
+			m_ptr->best_range += 3;
+	}
+}
 
 
 /**
@@ -77,64 +178,6 @@ bool multiply_monster(const monster_type *m_ptr)
 	return (result);
 }
 
-
-/*
- * Returns whether a given monster will try to run from the player.
- *
- * Monsters will attempt to avoid very powerful players.  See below.
- *
- * Because this function is called so often, little details are important
- * for efficiency.  Like not using "mod" or "div" when possible.  And
- * attempting to check the conditions in an optimal order.  Note that
- * "(x << 2) == (x * 4)" if "x" has enough bits to hold the result.
- *
- * Note that this function is responsible for about one to five percent
- * of the processor use in normal conditions...
- */
-static int mon_will_run(struct monster *m_ptr)
-{
-	u16b p_lev, m_lev;
-	u16b p_chp, p_mhp;
-	u16b m_chp, m_mhp;
-	u32b p_val, m_val;
-
-	/* Keep monsters from running too far away */
-	if (m_ptr->cdis > MAX_SIGHT + 5) return (FALSE);
-
-	/* All "afraid" monsters will run away */
-	if (m_ptr->m_timed[MON_TMD_FEAR]) return (TRUE);
-
-	/* Nearby monsters will not become terrified */
-	if (m_ptr->cdis <= 5) return (FALSE);
-
-	/* Examine player power (level) */
-	p_lev = player->lev;
-
-	/* Examine monster power (level plus morale) */
-	m_lev = m_ptr->race->level + (m_ptr->midx & 0x08) + 25;
-
-	/* Optimize extreme cases below */
-	if (m_lev > p_lev + 4) return (FALSE);
-	if (m_lev + 4 <= p_lev) return (TRUE);
-
-	/* Examine player health */
-	p_chp = player->chp;
-	p_mhp = player->mhp;
-
-	/* Examine monster health */
-	m_chp = m_ptr->hp;
-	m_mhp = m_ptr->maxhp;
-
-	/* Prepare to optimize the calculation */
-	p_val = (p_lev * p_mhp) + (p_chp << 2);	/* div p_mhp */
-	m_val = (m_lev * m_mhp) + (m_chp << 2);	/* div m_mhp */
-
-	/* Strong players scare strong monsters */
-	if (p_val * m_mhp > m_val * p_mhp) return (TRUE);
-
-	/* Assume no terror */
-	return (FALSE);
-}
 
 /* From Will Asher in DJA:
  * Find whether a monster is near a permanent wall
@@ -638,6 +681,9 @@ static bool get_moves(struct chunk *c, struct monster *m_ptr, int mm[5])
 
 	bool done = FALSE;
 
+	/* Calculate range */
+	find_range(m_ptr);
+
 	/* Flow towards the player */
 	get_moves_flow(c, m_ptr, &y2, &x2);
 
@@ -677,7 +723,7 @@ static bool get_moves(struct chunk *c, struct monster *m_ptr, int mm[5])
 
 
 	/* Apply fear */
-	if (!done && mon_will_run(m_ptr))
+	if (!done && (m_ptr->min_range == FLEE_RANGE))
 	{
 		/* Try to find safe place */
 		if (!find_safety(c, m_ptr, &y, &x))
