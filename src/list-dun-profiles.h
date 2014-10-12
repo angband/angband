@@ -5,6 +5,7 @@
 
 DUN("town", town)
 DUN("modified", modified)
+DUN("moria", moria)
 DUN("lair", lair)
 DUN("gauntlet", gauntlet)
 DUN("hard centre", hard_centre)

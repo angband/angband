@@ -248,6 +248,7 @@ struct chunk *labyrinth_gen(struct player *p);
 void ensure_connectedness(struct chunk *c);
 struct chunk *cavern_gen(struct player *p);
 struct chunk *modified_gen(struct player *p);
+struct chunk *moria_gen(struct player *p);
 struct chunk *hard_centre_gen(struct player *p);
 struct chunk *lair_gen(struct player *p);
 struct chunk *gauntlet_gen(struct player *p);

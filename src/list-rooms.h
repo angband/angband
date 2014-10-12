@@ -4,6 +4,7 @@
  */
 
 ROOM("simple room",		simple)
+ROOM("moria room",		moria)
 ROOM("large room",		large)
 ROOM("crossed room",	crossed)
 ROOM("circular room",	circular)

@@ -120,6 +120,27 @@ room:room template:11:33:5:0:1:100
 # Normal rooms (rarity = 0)
 room:simple room:11:33:1:0:0:100
 
+## Moria
+name:moria
+params:1:50:250:2
+tunnel:10:30:15:25:90
+streamer:5:2:3:90:2:40
+cutoff:-1
+
+# Really big rooms only have rarity 0 but they have other checks
+room:greater vault:44:66:35:0:0:100
+
+# Very rare rooms (rarity = 2)
+room:room of chambers:44:66:10:0:2:4
+room:monster pit:11:33:5:1:2:12
+room:monster nest:11:33:5:1:2:20
+room:medium vault:22:33:30:0:2:40
+room:lesser vault:22:33:20:0:2:60
+room:interesting room:44:55:0:0:2:100
+
+# Normal moria-style rooms (rarity = 0)
+room:moria room:11:33:1:0:0:100
+
 ## Lair
 name:lair
 params:1:50:500:2
