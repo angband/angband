@@ -259,6 +259,12 @@ typedef struct monster
 	byte attr;  		/* attr last used for drawing monster */
 
 	player_state known_pstate; /* Known player state */
+
+    byte ty;		/**< Monster target */
+    byte tx;
+
+    byte min_range;	/**< What is the closest we want to be?  Not saved */
+    byte best_range;	/**< How close do we want to be? Not saved */
 } monster_type;
 
 /** Variables **/
