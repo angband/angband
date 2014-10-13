@@ -89,6 +89,10 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 	g->unseen_object = FALSE;
 	g->unseen_money = FALSE;
 
+	/* Use real feature (remove later) */
+	g->f_idx = cave->feat[y][x];
+	if (f_info[g->f_idx].mimic)
+		g->f_idx = f_info[g->f_idx].mimic;
 
 	g->in_view = (square_isseen(cave, y, x)) ? TRUE : FALSE;
 	g->is_player = (cave->m_idx[y][x] < 0) ? TRUE : FALSE;
@@ -103,10 +107,12 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 		if (!square_isglow(cave, y, x) && OPT(view_yellow_light))
 			g->lighting = LIGHTING_TORCH;
 
+		/* Remember seen feature */
 		cave_k->feat[y][x] = cave->feat[y][x];
 	}
 	else if (!square_ismark(cave, y, x))
 	{
+		g->f_idx = FEAT_NONE;
 		//cave_k->feat[y][x] = FEAT_NONE;
 	}
 	else if (square_isglow(cave, y, x))
@@ -115,9 +121,9 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 	}
 
 	/* Use known feature */
-	g->f_idx = cave_k->feat[y][x];
+/*	g->f_idx = cave_k->feat[y][x];
 	if (f_info[g->f_idx].mimic)
-		g->f_idx = f_info[g->f_idx].mimic;
+		g->f_idx = f_info[g->f_idx].mimic;*/
 
     /* There is a trap in this square */
     if (square_istrap(cave, y, x) && square_ismark(cave, y, x))
