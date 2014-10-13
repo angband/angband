@@ -1559,6 +1559,10 @@ void play_game(bool new_game)
 				player->chp = player->mhp;
 				player->noscore |= NOSCORE_WIZARD;
 		}
+
+		/* Populate flavors and randarts based on saved seeds */
+		flavor_init();
+		if (OPT(birth_randarts)) do_randart(seed_randart, TRUE);
 	}
 
 	/* No living character loaded */
