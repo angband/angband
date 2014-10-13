@@ -1624,7 +1624,14 @@ void play_game(bool new_game)
 
 	/* Generate a dungeon level if needed */
 	if (!character_dungeon)
+	{
 		cave_generate(&cave, player);
+		/* Free old and allocate new known level */
+		if (cave_k)
+			cave_free(cave_k);
+		cave_k = cave_new(cave->height, cave->width);
+	}
+
 
 
 	/* Character is now "complete" */

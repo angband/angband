@@ -597,15 +597,14 @@ void wr_player_spells(void)
 		wr_byte(player->spell_order[i]);
 }
 
-
-void wr_gear(void)
+static void wr_gear_aux(struct object * gear)
 {
 	int i;
 
 	/* Write the inventory */
 	for (i = 0; i < player->max_gear; i++)
 	{
-		object_type *o_ptr = &player->gear[i];
+		object_type *o_ptr = &gear[i];
 
 		/* Skip non-objects */
 		if (!o_ptr->kind) continue;
@@ -625,6 +624,13 @@ void wr_gear(void)
 
 	/* Add a sentinel */
 	wr_u16b(0xFFFF);
+}
+
+
+void wr_gear(void)
+{
+	wr_gear_aux(player->gear);
+	wr_gear_aux(player->gear_k);
 }
 
 
@@ -663,7 +669,7 @@ void wr_stores(void)
 /*
  * Write the current dungeon
  */
-void wr_dungeon(void)
+static void wr_dungeon_aux(struct chunk * cave)
 {
 	int y, x;
 	size_t i;
@@ -673,27 +679,18 @@ void wr_dungeon(void)
 	byte count;
 	byte prev_char;
 
-
-	if (player->is_dead)
-		return;
-
 	/*** Basic info ***/
 
 	/* Dungeon specific info follows */
-	wr_u16b(player->depth);
-	wr_u16b(daycount);
-	wr_u16b(player->py);
-	wr_u16b(player->px);
 	wr_u16b(cave->height);
 	wr_u16b(cave->width);
 	wr_u16b(SQUARE_SIZE);
 	wr_u16b(0);
 
-
 	/*** Simple "Run-Length-Encoding" of cave ***/
 
-    /* Loop across bytes of cave->info */
-    for (i = 0; i < SQUARE_SIZE; i++) {
+	/* Loop across bytes of cave->info */
+	for (i = 0; i < SQUARE_SIZE; i++) {
 		count = 0;
 		prev_char = 0;
 
@@ -752,6 +749,22 @@ void wr_dungeon(void)
 	wr_byte(cave->feeling);
 	wr_u16b(cave->feeling_squares);
 	wr_s32b(cave->created_at);
+}
+
+void wr_dungeon(void)
+{
+	if (player->is_dead)
+		return;
+
+	/* Dungeon specific info follows */
+	wr_u16b(player->depth);
+	wr_u16b(daycount);
+	wr_u16b(player->py);
+	wr_u16b(player->px);
+
+	/* Write caves */
+	wr_dungeon_aux(cave);
+	wr_dungeon_aux(cave_k);
 
 	/*** Compact ***/
 
@@ -905,7 +918,7 @@ void wr_chunks(void)
 }
 
 
-void wr_objects(void)
+static void wr_objects_aux(struct chunk * cave)
 {
 	int i;
 
@@ -925,8 +938,13 @@ void wr_objects(void)
 	}
 }
 
+void wr_objects(void)
+{
+	wr_objects_aux(cave);
+	wr_objects_aux(cave_k);
+}
 
-void wr_monsters(void)
+static void wr_monsters_aux(struct chunk * cave)
 {
 	int i;
 
@@ -944,6 +962,11 @@ void wr_monsters(void)
 	}
 }
 
+void wr_monsters(void)
+{
+	wr_monsters_aux(cave);
+	wr_monsters_aux(cave_k);
+}
 
 void wr_ghost(void)
 {
@@ -979,9 +1002,12 @@ void wr_history(void)
 	}
 }
 
-void wr_traps(void)
+static void wr_traps_aux(struct chunk * cave)
 {
     int i;
+
+    if (player->is_dead)
+	return;
 
     wr_byte(TRF_SIZE);
     wr_s16b(cave_trap_max(cave));
@@ -995,4 +1021,10 @@ void wr_traps(void)
 
     /* Expansion */
     wr_u32b(0);
+}
+
+void wr_traps(void)
+{
+	wr_traps_aux(cave);
+	wr_traps_aux(cave_k);
 }

@@ -941,7 +941,7 @@ int rd_player_spells(void)
 /**
  * Read the player gear
  */
-static int rd_gear_aux(rd_item_t rd_item_version)
+static int rd_gear_aux(rd_item_t rd_item_version, struct object ** gear)
 {
 	int slot = 1;
 
@@ -982,7 +982,7 @@ static int rd_gear_aux(rd_item_t rd_item_version)
 		/* Increase array size if necessary */
 		if (n >= player->max_gear) {
 			int newsize = player->max_gear + MAX_GEAR_INCR;
-			player->gear = (struct object *) mem_realloc(player->gear, newsize);
+			*gear = (struct object *) mem_realloc(*gear, newsize);
 			player->max_gear += MAX_GEAR_INCR;
 		}
 
@@ -990,7 +990,7 @@ static int rd_gear_aux(rd_item_t rd_item_version)
 		n = slot++;
 
 		/* Copy object */
-		object_copy(&player->gear[n], i_ptr);
+		object_copy(&(*gear)[n], i_ptr);
 
 		/* Add the weight */
 		player->upkeep->total_weight += (i_ptr->number * i_ptr->weight);
@@ -1005,8 +1005,6 @@ static int rd_gear_aux(rd_item_t rd_item_version)
 		/* Free object */
 		object_wipe(i_ptr);
 	}
-	calc_inventory(player->upkeep, player->gear, player->body,
-				   player->max_gear);
 
 	/* Success */
 	return (0);
@@ -1015,7 +1013,21 @@ static int rd_gear_aux(rd_item_t rd_item_version)
 /*
  * Read the player gear - wrapper functions
  */
-int rd_gear(void) { return rd_gear_aux(rd_item); }
+int rd_gear(void)
+{
+	/* Get real gear */
+	if (rd_gear_aux(rd_item, &player->gear))
+		return -1;
+	/* Maybe we have to duplicate also upkeep and body */
+	calc_inventory(player->upkeep, player->gear, player->body,
+			player->max_gear);
+
+	/* Get known gear */
+	if (rd_gear_aux(rd_item, &player->gear_k))
+		return -1;
+
+	return 0;
+}
 
 
 /* Read store contents */
@@ -1102,58 +1114,33 @@ int rd_stores(void) { return rd_stores_aux(rd_item); }
  * After loading the monsters, the objects being held by monsters are
  * linked directly into those monsters.
  */
-int rd_dungeon(void)
+static int rd_dungeon_aux(struct chunk ** c)
 {
+	struct chunk * cave = * c;
 	int i, n, y, x;
 
-	s16b depth;
-	s16b py, px;
 	s16b ymax, xmax;
 
 	byte count;
 	byte tmp8u;
 	u16b tmp16u, square_size;
 
-	/* Only if the player's alive */
-	if (player->is_dead)
-		return 0;
-
 	/*** Basic info ***/
 
 	/* Header info */
-	rd_s16b(&depth);
-	rd_u16b(&daycount);
-	rd_s16b(&py);
-	rd_s16b(&px);
 	rd_s16b(&ymax);
 	rd_s16b(&xmax);
-    rd_u16b(&square_size);
+	rd_u16b(&square_size);
 	rd_u16b(&tmp16u);
-
-	/* Ignore illegal dungeons */
-	if ((depth < 0) || (depth >= MAX_DEPTH))
-	{
-		note(format("Ignoring illegal dungeon depth (%d)", depth));
-		return (0);
-	}
 
 	/* We need a cave array */
 	cave = cave_new(ymax, xmax);
 
-	/* Ignore illegal dungeons */
-	if ((px < 0) || (px >= cave->width) ||
-	    (py < 0) || (py >= cave->height))
-	{
-		note(format("Ignoring illegal player location (%d,%d).", py, px));
-		return (1);
-	}
-
-
 	/*** Run length decoding ***/
 
     /* Loop across bytes of cave->info */
-    for (n = 0; n < square_size; n++)
-    {
+	for (n = 0; n < square_size; n++)
+	{
 		/* Load the dungeon data */
 		for (x = y = 0; y < cave->height; )
 		{
@@ -1216,22 +1203,65 @@ int rd_dungeon(void)
 	cave->feeling_squares = tmp16u;
 	rd_s32b(&cave->created_at);
 
+	/* Assign */
+	* c = cave;
+
+	return 0;
+}
+
+int rd_dungeon(void)
+{
+	s16b depth;
+	s16b py, px;
+
+	/* Only if the player's alive */
+	if (player->is_dead)
+		return 0;
+
+	/* Header info */
+	rd_s16b(&depth);
+	rd_u16b(&daycount);
+	rd_s16b(&py);
+	rd_s16b(&px);
+
+	/* Ignore illegal dungeons */
+	if ((depth < 0) || (depth >= MAX_DEPTH))
+	{
+		note(format("Ignoring illegal dungeon depth (%d)", depth));
+		return (0);
+	}
+
+
+	if (rd_dungeon_aux(&cave))
+		return 1;
+
+	/* Ignore illegal dungeons */
+	if ((px < 0) || (px >= cave->width) ||
+	    (py < 0) || (py >= cave->height))
+	{
+		note(format("Ignoring illegal player location (%d,%d).", py, px));
+		return (1);
+	}
+
 	/*** Player ***/
 
 	/* Load depth */
 	player->depth = depth;
 
-
 	/* Place player in dungeon */
 	player_place(cave, player, py, px);
-
-	/*** Success ***/
 
 	/* The dungeon is ready */
 	character_dungeon = TRUE;
 
+	/* Read known cave */
+	if (rd_dungeon_aux(&cave_k))
+		return 1;
+
+	/*** Success ***/
 	return 0;
 }
+
 
 /*
  * Read the chunk list
@@ -1359,7 +1389,7 @@ int rd_chunks(void)
 /**
  * Read the floor object list
  */
-static int rd_objects_aux(rd_item_t rd_item_version)
+static int rd_objects_aux(rd_item_t rd_item_version, struct chunk * cave)
 {
 	int i;
 	u16b limit;
@@ -1439,12 +1469,19 @@ static int rd_objects_aux(rd_item_t rd_item_version)
 /*
  * Read the object list - wrapper functions
  */
-int rd_objects(void) { return rd_objects_aux(rd_item); }
+int rd_objects(void)
+{
+	if (rd_objects_aux(rd_item, cave))
+		return -1;
+	if (rd_objects_aux(rd_item, cave_k))
+		return -1;
+	return 0;
+}
 
 /**
  * Read monsters
  */
-int rd_monsters(void)
+static int rd_monsters_aux (struct chunk * cave)
 {
 	int i;
 	u16b limit;
@@ -1532,6 +1569,14 @@ int rd_monsters(void)
 	return 0;
 }
 
+int rd_monsters (void)
+{
+	if (rd_monsters_aux (cave))
+		return -1;
+	if (rd_monsters_aux (cave_k))
+		return -1;
+	return 0;
+}
 
 int rd_history(void)
 {
@@ -1562,7 +1607,7 @@ int rd_history(void)
 	return 0;
 }
 
-int rd_traps(void)
+static int rd_traps_aux(struct chunk * cave)
 {
     int i;
     u32b tmp32u;
@@ -1586,6 +1631,15 @@ int rd_traps(void)
     rd_u32b(&tmp32u);
 
     return 0;
+}
+
+int rd_traps(void)
+{
+	if (rd_traps_aux(cave))
+		return -1;
+	if (rd_traps_aux(cave_k))
+		return -1;
+	return 0;
 }
 
 /**
