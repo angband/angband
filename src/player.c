@@ -404,6 +404,7 @@ static void init_player(void) {
 
 	/* Allocate player sub-structs */
 	player->gear = mem_zalloc(MAX_GEAR * sizeof(object_type));
+	player->gear_k = mem_zalloc(MAX_GEAR * sizeof(object_type));
 	player->upkeep = mem_zalloc(sizeof(player_upkeep));
 	player->timed = mem_zalloc(TMD_MAX * sizeof(s16b));
 }
@@ -418,6 +419,7 @@ static void cleanup_player(void) {
 	for (i = 0; i < player->max_gear; i++)
 		object_wipe(&player->gear[i]);
 	mem_free(player->gear);
+	mem_free(player->gear_k);
 	mem_free(player->body.slots);
 
 	mem_free(player);

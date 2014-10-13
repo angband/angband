@@ -216,8 +216,10 @@ int FEAT_DTRAP_FLOOR;
 int FEAT_DTRAP_WALL;
 
 
-
+/* Real cave */
 struct chunk *cave;
+/* Known cave */
+struct chunk *cave_k;
 struct chunk **chunk_list;
 u16b chunk_list_max;
 

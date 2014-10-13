@@ -1750,6 +1750,10 @@ void play_game(bool new_game)
 
 		/* Make a new level */
 		cave_generate(&cave, player);
+		/* Free old and allocate new known level */
+		if (cave_k)
+			cave_free(cave_k);
+		cave_k = cave_new(cave->height, cave->width);
 	}
 
 	/* Disallow big cursor */

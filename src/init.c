@@ -4129,6 +4129,7 @@ void cleanup_angband(void)
 
 	/* Free the main cave */
 	cave_free(cave);
+	cave_free(cave_k);
 
 	/* Free the history */
 	history_clear();

@@ -146,7 +146,10 @@ typedef struct player {
 	/* Tracking of various temporary player-related values */
 	player_upkeep *upkeep;
 
+	/* Real gear */
 	struct object *gear;
+	/* Known gear */
+	struct object *gear_k;
 	int max_gear;
 	struct player_body body;
 } player_type;
