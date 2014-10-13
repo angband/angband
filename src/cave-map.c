@@ -83,15 +83,12 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 
 	/* Default "clear" values, others will be set later where appropriate. */
 	g->first_kind = NULL;
-    g->trap = cave_trap_max(cave);
+	g->trap = cave_trap_max(cave);
 	g->multiple_objects = FALSE;
 	g->lighting = LIGHTING_DARK;
 	g->unseen_object = FALSE;
 	g->unseen_money = FALSE;
 
-	g->f_idx = cave->feat[y][x];
-	if (f_info[g->f_idx].mimic)
-		g->f_idx = f_info[g->f_idx].mimic;
 
 	g->in_view = (square_isseen(cave, y, x)) ? TRUE : FALSE;
 	g->is_player = (cave->m_idx[y][x] < 0) ? TRUE : FALSE;
@@ -105,16 +102,22 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 
 		if (!square_isglow(cave, y, x) && OPT(view_yellow_light))
 			g->lighting = LIGHTING_TORCH;
+
+		cave_k->feat[y][x] = cave->feat[y][x];
 	}
 	else if (!square_ismark(cave, y, x))
 	{
-		g->f_idx = FEAT_NONE;
+		//cave_k->feat[y][x] = FEAT_NONE;
 	}
 	else if (square_isglow(cave, y, x))
 	{
 		g->lighting = LIGHTING_LIT;
 	}
 
+	/* Use known feature */
+	g->f_idx = cave_k->feat[y][x];
+	if (f_info[g->f_idx].mimic)
+		g->f_idx = f_info[g->f_idx].mimic;
 
     /* There is a trap in this square */
     if (square_istrap(cave, y, x) && square_ismark(cave, y, x))
@@ -465,7 +468,10 @@ void wiz_light(struct chunk *c, bool full)
 					/* Memorize normal features */
 					if (!square_isfloor(c, yy, xx) || 
 						square_isvisibletrap(c, yy, xx))
+					{
 						sqinfo_on(c->info[yy][xx], SQUARE_MARK);
+						cave_k->feat[yy][xx] = c->feat[yy][xx];
+					}
 				}
 			}
 		}
@@ -742,4 +748,13 @@ void cave_update_flow(struct chunk *c)
 			if (flow_tail == flow_head) flow_tail = old_head;
 		}
 	}
+}
+
+/* Make map features known */
+void cave_known (void)
+{
+	int y,x;
+	for (y = 0; y < cave->height; y++)
+		for (x = 0; x < cave->width; x++)
+			cave_k->feat[y][x] = cave->feat[y][x];
 }

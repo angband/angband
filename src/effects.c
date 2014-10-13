@@ -928,6 +928,7 @@ bool effect_handler_MAP_AREA(effect_handler_context_t *context)
 					if (square_seemslikewall(cave, yy, xx)) {
 						/* Memorize the walls */
 						sqinfo_on(cave->info[yy][xx], SQUARE_MARK);
+						cave_k->feat[yy][xx] = cave->feat[yy][xx];
 						square_light_spot(cave, yy, xx);
 					}
 				}

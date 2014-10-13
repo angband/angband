@@ -1630,6 +1630,8 @@ void play_game(bool new_game)
 		if (cave_k)
 			cave_free(cave_k);
 		cave_k = cave_new(cave->height, cave->width);
+		if (!cave->depth)
+			cave_known();
 	}
 
 
@@ -1761,6 +1763,8 @@ void play_game(bool new_game)
 		if (cave_k)
 			cave_free(cave_k);
 		cave_k = cave_new(cave->height, cave->width);
+		if (!cave->depth)
+			cave_known();
 	}
 
 	/* Disallow big cursor */
