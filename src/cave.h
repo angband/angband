@@ -216,8 +216,10 @@ int FEAT_DTRAP_FLOOR;
 int FEAT_DTRAP_WALL;
 
 
-
+/* Real cave */
 struct chunk *cave;
+/* Known cave */
+struct chunk *cave_k;
 struct chunk **chunk_list;
 u16b chunk_list_max;
 
@@ -382,5 +384,7 @@ int count_feats(int *y, int *x, bool (*test)(struct chunk *cave, int y, int x), 
 
 void cave_generate(struct chunk **c, struct player *p);
 bool is_quest(int level);
+
+void cave_known(void);
 
 #endif /* !CAVE_H */

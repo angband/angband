@@ -928,6 +928,7 @@ bool effect_handler_MAP_AREA(effect_handler_context_t *context)
 					if (square_seemslikewall(cave, yy, xx)) {
 						/* Memorize the walls */
 						sqinfo_on(cave->info[yy][xx], SQUARE_MARK);
+						cave_k->feat[yy][xx] = cave->feat[yy][xx];
 						square_light_spot(cave, yy, xx);
 					}
 				}
@@ -1073,7 +1074,7 @@ bool effect_handler_DETECT_DOORS(effect_handler_context_t *context)
 			if (square_isdoor(cave, y, x)) {
 				/* Hack -- Memorize */
 				sqinfo_on(cave->info[y][x], SQUARE_MARK);
-
+				cave_k->feat[y][x] = cave->feat[y][x];
 				/* Redraw */
 				square_light_spot(cave, y, x);
 
@@ -1126,7 +1127,7 @@ bool effect_handler_DETECT_STAIRS(effect_handler_context_t *context)
 			if (square_isstairs(cave, y, x)) {
 				/* Hack -- Memorize */
 				sqinfo_on(cave->info[y][x], SQUARE_MARK);
-
+				cave_k->feat[y][x] = cave->feat[y][x];
 				/* Redraw */
 				square_light_spot(cave, y, x);
 

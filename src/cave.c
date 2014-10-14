@@ -34,6 +34,7 @@
 
 struct feature *f_info;
 struct chunk *cave = NULL;
+struct chunk *cave_k = NULL;
 
 /**
  * Find a terrain feature index by name

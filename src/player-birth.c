@@ -398,6 +398,8 @@ void player_init(struct player *p)
 
 	if (p->gear)
 		mem_free(p->gear);
+	if (p->gear)
+		mem_free(p->gear_k);
 	if (p->upkeep)
 		mem_free(p->upkeep);
 	if (p->timed)
@@ -446,6 +448,7 @@ void player_init(struct player *p)
 
 	p->max_gear = MAX_GEAR;
 	p->gear = mem_zalloc(MAX_GEAR * sizeof(object_type));
+	p->gear_k = mem_zalloc(MAX_GEAR * sizeof(object_type));
 	p->upkeep = mem_zalloc(sizeof(player_upkeep));
 	p->timed = mem_zalloc(TMD_MAX * sizeof(s16b));
 
