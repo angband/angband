@@ -1600,9 +1600,6 @@ void process_monsters(struct chunk *c, byte minimum_energy)
 		/* Mimics lie in wait */
 		if (is_mimicking(m_ptr)) continue;
 
-		/* Set this monster to be the current actor */
-		c->mon_current = i;
-
 		/*
 		 * Process the monster if the monster either:
 		 * - can "sense" the player
@@ -1618,12 +1615,15 @@ void process_monsters(struct chunk *c, byte minimum_energy)
 			if (process_monster_timed(c, m_ptr))
 				continue;
 
+			/* Set this monster to be the current actor */
+			c->mon_current = i;
+
 			/* Process the monster */
 			process_monster(c, m_ptr);
-		}
 
-		/* Monster is no longer current */
-		c->mon_current = -1;
+			/* Monster is no longer current */
+			c->mon_current = -1;
+		}
 	}
 
 	/* Update monster visibility after this */
