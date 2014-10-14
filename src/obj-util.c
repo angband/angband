@@ -2081,21 +2081,26 @@ int scan_items(int *item_list, size_t item_list_max, int mode,
 				item_list[item_list_num++] = player->upkeep->inven[i];
 		}
 
-	if (use_equip)
+	if (use_equip) {
+		item_list_num = 0;
 		for (i = 0; i < player->body.count && item_list_num < item_list_max;
 			 i++) {
 			if (item_test(tester, slot_index(player, i)))
 				item_list[item_list_num++] = slot_index(player, i);
 		}
+	}
 
-	if (use_quiver)
+	if (use_quiver) {
+		item_list_num = 0;
 		for (i = 0; i < QUIVER_SIZE && item_list_num < item_list_max; i++){
 			if (item_test(tester, player->upkeep->quiver[i]))
 				item_list[item_list_num++] = player->upkeep->quiver[i];
 		}
+	}
 
 	/* Scan all non-gold objects in the grid */
 	if (use_floor) {
+		item_list_num = 0;
 		floor_num = scan_floor(floor_list, N_ELEMENTS(floor_list), player->py,
 							   player->px, 0x0B, tester);
 
