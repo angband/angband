@@ -3042,10 +3042,11 @@ static void cocoa_file_open_hook(const char *path, file_type ftype)
 static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
 {
     NSSavePanel *panel = [NSSavePanel savePanel];
-    NSString *directory = [NSString stringWithCString:ANGBAND_DIR_USER encoding:NSASCIIStringEncoding];
-    NSString *filename = [NSString stringWithCString:suggested_name encoding:NSASCIIStringEncoding];
-
-    if ([panel runModalForDirectory:directory file:filename] == NSOKButton) {
+	NSURL *directoryURL = [NSURL URLWithString:[NSString stringWithCString:ANGBAND_DIR_USER encoding:NSASCIIStringEncoding]];
+	[panel setDirectoryURL:directoryURL];
+	[panel setNameFieldStringValue:[NSString stringWithCString:suggested_name encoding:NSASCIIStringEncoding]];
+	
+    if ([panel runModal] == NSOKButton) {
         const char *p = [[[panel URL] path] UTF8String];
         my_strcpy(path, p, len);
         return TRUE;
@@ -3163,15 +3164,16 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
     [panel setResolvesAliases:YES];
     [panel setAllowsMultipleSelection:YES];
     [panel setTreatsFilePackagesAsDirectories:YES];
+	[panel setDirectoryURL:[NSURL URLWithString:startingDirectory]];
     
     /* Run it */
-    panelResult = [panel runModalForDirectory:startingDirectory file:savefileName types:nil];
+    panelResult = [panel runModal];
     if (panelResult == NSOKButton)
     {
-        NSArray* filenames = [panel filenames];
-        if ([filenames count] > 0)
+        NSArray* fileURLs = [panel URLs];
+        if ([fileURLs count] > 0)
         {
-            selectedSomething = [[filenames objectAtIndex:0] getFileSystemRepresentation:savefile maxLength:sizeof savefile];
+            selectedSomething = [(NSURL *)[fileURLs objectAtIndex:0] getFileSystemRepresentation:savefile maxLength:sizeof savefile];
         }
     }
     
