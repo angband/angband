@@ -966,7 +966,51 @@ static bool get_moves(struct chunk *c, struct monster *m_ptr, int mm[5])
 	return (TRUE);
 }
 
+static bool monster_can_flow(struct chunk *c, struct monster *mon)
+{
+	int fy = mon->fy;
+	int fx = mon->fx;
+	int dist = (OPT(birth_small_range) ? mon->race->aaf / 2 : mon->race->aaf);
 
+	assert(c);
+
+	/* Check the flow (normal aaf is about 20) */
+	if ((c->when[fy][fx] == c->when[player->py][player->px]) &&
+	    (c->cost[fy][fx] < z_info->max_flow_depth) &&
+	    (c->cost[fy][fx] < dist))
+		return TRUE;
+	return FALSE;
+}
+
+/**
+ * Determine whether a monster is active or passive
+ */
+static bool monster_check_active(struct chunk *c, struct monster *mon)
+{
+	int dist = (OPT(birth_small_range) ? mon->race->aaf / 2 : mon->race->aaf);
+
+	/* Character is inside scanning range */
+	if (mon->cdis <= dist)
+		mon->mflag |= (MFLAG_ACTV);
+
+	/* Monster is hurt */
+	else if (mon->hp < mon->maxhp)
+		mon->mflag |= (MFLAG_ACTV);
+
+	/* Monster can "see" the player (checked backwards) */
+	else if (player_has_los_bold(mon->fy, mon->fx))
+		mon->mflag |= (MFLAG_ACTV);
+
+	/* Monster can "smell" the player from far away (flow) */
+	else if (monster_can_flow(c, mon))
+		mon->mflag |= (MFLAG_ACTV);
+
+	/* Otherwise go passive */
+	else
+		mon->mflag &= ~(MFLAG_ACTV);
+
+	return (mon->mflag & MFLAG_ACTV) ? TRUE : FALSE;
+}
 
 /**
  * Process a monster's timed effects, e.g. decrease them.
@@ -1537,21 +1581,6 @@ static void process_monster(struct chunk *c, struct monster *m_ptr)
 }
 
 
-static bool monster_can_flow(struct chunk *c, struct monster *m_ptr)
-{
-	int fy = m_ptr->fy;
-	int fx = m_ptr->fx;
-
-	assert(c);
-
-	/* Check the flow (normal aaf is about 20) */
-	if ((c->when[fy][fx] == c->when[player->py][player->px]) &&
-	    (c->cost[fy][fx] < z_info->max_flow_depth) &&
-	    (c->cost[fy][fx] < (OPT(birth_small_range) ? m_ptr->race->aaf / 2 : m_ptr->race->aaf)))
-		return TRUE;
-	return FALSE;
-}
-
 /**
  * Monster regeneration of HPs.
  */
@@ -1650,17 +1679,8 @@ void process_monsters(struct chunk *c, int turn, int minimum_energy)
 		/* Mimics lie in wait */
 		if (is_mimicking(m_ptr)) continue;
 
-		/*
-		 * Process the monster if the monster either:
-		 * - can "sense" the player
-		 * - is hurt
-		 * - can "see" the player (checked backwards)
-		 * - can "smell" the player from far away (flow)
-		 */
-		if ((m_ptr->cdis <= (OPT(birth_small_range) ? m_ptr->race->aaf / 2 : m_ptr->race->aaf)) ||
-				(m_ptr->hp < m_ptr->maxhp) ||
-				player_has_los_bold(m_ptr->fy, m_ptr->fx) ||
-				monster_can_flow(c, m_ptr)) {
+		/* Check if the monster is active */
+		if (monster_check_active(c, m_ptr)) {
 			/* Process timed effects - skip turn if necessary */
 			if (process_monster_timed(c, m_ptr))
 				continue;
