@@ -265,6 +265,8 @@ typedef struct monster
 
     byte min_range;	/**< What is the closest we want to be?  Not saved */
     byte best_range;	/**< How close do we want to be? Not saved */
+
+    bool moved;		/**< Monster has moved this turn */
 } monster_type;
 
 /** Variables **/

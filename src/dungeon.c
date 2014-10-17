@@ -230,53 +230,6 @@ static void regenmana(int percent)
 
 
 
-
-
-
-/*
- * Regenerate the monsters (once per 100 game turns)
- *
- * XXX XXX XXX Should probably be done during monster turns.
- */
-static void regen_monsters(void)
-{
-	int i, frac;
-
-	/* Regenerate everyone */
-	for (i = 1; i < cave_monster_max(cave); i++)
-	{
-		/* Check the i'th monster */
-		monster_type *m_ptr = cave_monster(cave, i);
-
-		/* Skip dead monsters */
-		if (!m_ptr->race) continue;
-
-		/* Allow regeneration (if needed) */
-		if (m_ptr->hp < m_ptr->maxhp)
-		{
-			/* Hack -- Base regeneration */
-			frac = m_ptr->maxhp / 100;
-
-			/* Hack -- Minimal regeneration rate */
-			if (!frac) frac = 1;
-
-			/* Hack -- Some monsters regenerate quickly */
-			if (rf_has(m_ptr->race->flags, RF_REGENERATE)) frac *= 2;
-
-			/* Hack -- Regenerate */
-			m_ptr->hp += frac;
-
-			/* Do not over-regenerate */
-			if (m_ptr->hp > m_ptr->maxhp) m_ptr->hp = m_ptr->maxhp;
-
-			/* Redraw (later) if needed */
-			if (player->upkeep->health_who == m_ptr) 
-				player->upkeep->redraw |= (PR_HEALTH);
-		}
-	}
-}
-
-
 /*
  * If player has inscribed the object with "!!", let him know when it's
  * recharged. -LM-
@@ -562,18 +515,12 @@ static void process_world(struct chunk *c)
 	}
 
 
-	/*** Process the monsters ***/
-
 	/* Check for creature generation */
 	if (one_in_(z_info->alloc_monster_chance))
 	{
 		/* Make a new monster */
 		(void)pick_and_place_distant_monster(cave, loc(player->px, player->py), MAX_SIGHT + 5, TRUE, player->depth);
 	}
-
-	/* Hack -- Check for creature regeneration */
-	if (!(turn % 100)) regen_monsters();
-
 
 	/*** Damage over Time ***/
 
@@ -1191,10 +1138,6 @@ void idle_update(void)
  */
 static void dungeon(struct chunk *c)
 {
-	monster_type *m_ptr;
-	int i;
-
-
 
 	/* Hack -- enforce illegal panel */
 	Term->offset_y = z_info->dungeon_hgt;
@@ -1346,7 +1289,7 @@ static void dungeon(struct chunk *c)
     		do_animation(); 
 
 			/* process monster with even more energy first */
-			process_monsters(c, (byte)(player->energy + 1));
+			process_monsters(c, turn, player->energy + 1);
 
 			/* if still alive */
 			if (!player->upkeep->leaving)
@@ -1375,9 +1318,11 @@ static void dungeon(struct chunk *c)
 		/* Handle "leaving" */
 		if (player->upkeep->leaving) break;
 
-
 		/* Process all of the monsters */
-		process_monsters(c, 100);
+		process_monsters(c, turn, 0);
+
+		/* Reset Monsters */
+		reset_monsters();
 
 		/* Notice stuff */
 		if (player->upkeep->notice) notice_stuff(player->upkeep);
@@ -1417,26 +1362,6 @@ static void dungeon(struct chunk *c)
 
 		/* Give the player some energy */
 		player->energy += extract_energy[player->state.speed];
-
-		/* Give energy to all monsters */
-		for (i = cave_monster_max(cave) - 1; i >= 1; i--)
-		{
-			int mspeed;
-			
-			/* Access the monster (if alive) */
-			m_ptr = cave_monster(cave, i);
-			if (!m_ptr->race) continue;
-
-			/* Calculate the net speed */
-			mspeed = m_ptr->mspeed;
-			if (m_ptr->m_timed[MON_TMD_FAST])
-				mspeed += 10;
-			if (m_ptr->m_timed[MON_TMD_SLOW])
-				mspeed -= 10;
-
-			/* Give this monster some energy */
-			m_ptr->energy += extract_energy[mspeed];
-		}
 
 		/* Count game turns */
 		turn++;

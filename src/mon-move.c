@@ -1552,32 +1552,57 @@ static bool monster_can_flow(struct chunk *c, struct monster *m_ptr)
 	return FALSE;
 }
 
-/*
+/**
+ * Monster regeneration of HPs.
+ */
+static void regen_monster(monster_type *m_ptr)
+{
+	/* Regenerate (if needed) */
+	if (m_ptr->hp < m_ptr->maxhp) {
+		/* Base regeneration */
+		int frac = m_ptr->maxhp / 100;
+
+		/* Minimal regeneration rate */
+		if (!frac) frac = 1;
+
+		/* Some monsters regenerate quickly */
+		if (rf_has(m_ptr->race->flags, RF_REGENERATE)) frac *= 2;
+
+		/* Regenerate */
+		m_ptr->hp += frac;
+
+		/* Do not over-regenerate */
+		if (m_ptr->hp > m_ptr->maxhp) m_ptr->hp = m_ptr->maxhp;
+
+		/* Redraw (later) if needed */
+		if (player->upkeep->health_who == m_ptr)
+			player->upkeep->redraw |= (PR_HEALTH);
+	}
+}
+
+
+/**
  * Process all the "live" monsters, once per game turn.
  *
  * During each game turn, we scan through the list of all the "live" monsters,
  * (backwards, so we can excise any "freshly dead" monsters), energizing each
  * monster, and allowing fully energized monsters to move, attack, pass, etc.
  *
- * Note that monsters can never move in the monster array (except when the
- * "compact_monsters()" function is called by "dungeon()" or "save_player()").
- *
- * This function is responsible for at least half of the processor time
- * on a normal system with a "normal" amount of monsters and a player doing
- * normal things.
- *
- * When the player is resting, virtually 90% of the processor time is spent
- * in this function, and its children, "process_monster()" and "make_move()".
- *
- * Most of the rest of the time is spent in "update_view()" and "light_spot()",
- * especially when the player is running.
- *
- * Note the special "MFLAG_NICE" flag, which prevents "nasty" monsters from
- * using any of their spell attacks until the player gets a turn.
+ * This function and its children are responsible for a considerable fraction
+ * of the processor time in normal situations, greater if the character is
+ * resting.
  */
-void process_monsters(struct chunk *c, byte minimum_energy)
+void process_monsters(struct chunk *c, int turn, int minimum_energy)
 {
 	int i;
+	int mspeed;
+
+	/* Only process some things every so often */
+	bool regen = FALSE;
+
+	/* Regenerate hitpoints and mana every 100 game turns */
+	if (turn % 100 == 0)
+		regen = TRUE;
 
 	/* Process the monsters (backwards) */
 	for (i = cave_monster_max(c) - 1; i >= 1; i--)
@@ -1591,8 +1616,33 @@ void process_monsters(struct chunk *c, byte minimum_energy)
 		m_ptr = cave_monster(cave, i);
 		if (!m_ptr->race) continue;
 
-		/* Not enough energy to move */
+		/* Ignore monsters that have already been handled */
+		if (m_ptr->moved)
+			continue;
+
+		/* Not enough energy to move yet */
 		if (m_ptr->energy < minimum_energy) continue;
+
+		/* Prevent reprocessing */
+		m_ptr->moved = TRUE;
+
+		/* Handle monster regeneration if requested */
+		if (regen)
+			regen_monster(m_ptr);
+
+		/* Calculate the net speed */
+		mspeed = m_ptr->mspeed;
+		if (m_ptr->m_timed[MON_TMD_FAST])
+			mspeed += 10;
+		if (m_ptr->m_timed[MON_TMD_SLOW])
+			mspeed -= 10;
+
+		/* Give this monster some energy */
+		m_ptr->energy += extract_energy[mspeed];
+
+		/* End the turn of monsters without enough energy to move */
+		if (m_ptr->energy < 100)
+			continue;
 
 		/* Use up "some" energy */
 		m_ptr->energy -= 100;
@@ -1629,4 +1679,24 @@ void process_monsters(struct chunk *c, byte minimum_energy)
 	/* Update monster visibility after this */
 	/* XXX This may not be necessary */
 	player->upkeep->update |= PU_MONSTERS;
+}
+
+/**
+ * Clear 'moved' status from all monsters.
+ *
+ * Clear noise if appropriate.
+ */
+void reset_monsters(void)
+{
+	int i;
+	monster_type *m_ptr;
+
+	/* Process the monsters (backwards) */
+	for (i = cave_monster_max(cave) - 1; i >= 1; i--) {
+		/* Access the monster */
+		m_ptr = cave_monster(cave, i);
+
+		/* Monster is ready to go again */
+		m_ptr->moved = FALSE;
+	}
 }

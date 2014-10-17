@@ -1,7 +1,7 @@
 /**
-   \file mon-move.h 
-   \brief Monster movement
-
+ * \file mon-move.h
+ * \brief Monster movement
+ *
  * Copyright (c) 1997 Ben Harrison, David Reeve Sward, Keldon Jones.
  *
  * This work is free software; you can redistribute it and/or modify it
@@ -20,6 +20,7 @@
 
 
 bool multiply_monster(const struct monster *m);
-void process_monsters(struct chunk *c, byte min_energy);
+void process_monsters(struct chunk *c, int turn, int minimum_energy);
+void reset_monsters(void);
 
 #endif /* !MONSTER_MOVE_H */
