@@ -263,7 +263,7 @@ static bool near_permwall(const monster_type *m_ptr, struct chunk *c)
  * is still near enough to "annoy" them without being close enough to chase
  * directly.
  */
-static bool get_moves_flow(struct chunk *c, struct monster *m_ptr, int *yp, int *xp)
+static bool get_moves_flow(struct chunk *c, struct monster *m_ptr)
 {
 	int i;
 
@@ -274,9 +274,10 @@ static bool get_moves_flow(struct chunk *c, struct monster *m_ptr, int *yp, int 
 	int py = player->py, px = player->px;
 	int my = m_ptr->fy, mx = m_ptr->fx;
 
-	/* Only use this algorithm for passwall monsters if near permanent walls, to avoid getting snagged */
-	if (flags_test(m_ptr->race->flags, RF_SIZE, RF_PASS_WALL, RF_KILL_WALL, FLAG_END) &&
-			!near_permwall(m_ptr, c))
+	/* Only use this algorithm for passwall monsters if near permanent walls,
+	 * to avoid getting snagged */
+	if (flags_test(m_ptr->race->flags, RF_SIZE, RF_PASS_WALL, RF_KILL_WALL,
+				   FLAG_END) && !near_permwall(m_ptr, c))
 		return (FALSE);
 
 	/* If the player has never been near this grid, abort */
@@ -315,8 +316,8 @@ static bool get_moves_flow(struct chunk *c, struct monster *m_ptr, int *yp, int 
 	/* Save the location to flow toward */
  	/* We multiply by 16 to angle slightly toward the player's actual location */
 	if (best_direction) {
-		(*yp) = py + 16 * ddy_ddd[best_direction];
-		(*xp) = px + 16 * ddx_ddd[best_direction];
+		m_ptr->ty = py + 16 * ddy_ddd[best_direction];
+		m_ptr->tx = px + 16 * ddx_ddd[best_direction];
 		return TRUE;
 	}
 
@@ -330,7 +331,7 @@ static bool get_moves_flow(struct chunk *c, struct monster *m_ptr, int *yp, int 
  * but instead of heading directly for it, the monster should "swerve"
  * around the player so that it has a smaller chance of getting hit.
  */
-static bool get_moves_fear(struct chunk *c, struct monster *m_ptr, int *yp, int *xp)
+static bool get_moves_fear(struct chunk *c, struct monster *m_ptr)
 {
 	int i;
 	int gy = 0, gx = 0;
@@ -339,17 +340,14 @@ static bool get_moves_fear(struct chunk *c, struct monster *m_ptr, int *yp, int 
 	int py = player->py, px = player->px;
 	int my = m_ptr->fy, mx = m_ptr->fx;
 
-	/* Desired destination, relative to current position */
-	int dy = my - (*yp);
-	int dx = mx - (*xp);
-
 	/* If the player is not currently near the monster, no reason to flow */
 	if (c->when[my][mx] < c->when[py][px])
 		return FALSE;
 
 	/* Monster is too far away to use flow information */
 	if (c->cost[my][mx] > z_info->max_flow_depth) return FALSE;
-	if (c->cost[my][mx] > (OPT(birth_small_range) ? m_ptr->race->aaf / 2 : m_ptr->race->aaf)) return FALSE;
+	if (c->cost[my][mx] > (OPT(birth_small_range) ? m_ptr->race->aaf / 2 :
+						   m_ptr->race->aaf)) return FALSE;
 
 	/* Check nearby grids, diagonals first */
 	for (i = 7; i >= 0; i--)
@@ -363,12 +361,13 @@ static bool get_moves_fear(struct chunk *c, struct monster *m_ptr, int *yp, int 
 		/* Ignore illegal & older locations */
 		if (c->when[y][x] == 0 || c->when[y][x] < best_when) continue;
 
-		/* Calculate distance of this grid from our destination */
-		dis = distance(y, x, dy, dx);
+		/* Calculate distance of this grid from our target */
+		dis = distance(y, x, m_ptr->ty, m_ptr->tx);
 
-		/* Score this grid */
-		/* First half of calculation is inversely proportional to distance */
-		/* Second half is inversely proportional to grid's distance from player */
+		/* Score this grid 
+		 * First half of calculation is inversely proportional to distance
+		 * Second half is inversely proportional to grid's distance from player
+		 */
 		score = 5000 / (dis + 3) - 500 / (c->cost[y][x] + 1);
 
 		/* No negative scores */
@@ -389,9 +388,9 @@ static bool get_moves_fear(struct chunk *c, struct monster *m_ptr, int *yp, int 
 	/* No legal move (?) */
 	if (!best_when) return FALSE;
 
-	/* Find deltas */
-	(*yp) = my - gy;
-	(*xp) = mx - gx;
+	/* Set the immediate target */
+	m_ptr->ty = gy;
+	m_ptr->tx = gx;
 
 	/* Success */
 	return TRUE;
@@ -543,7 +542,7 @@ static const int *dist_offsets_x[10] =
  *
  * Return TRUE if a safe location is available.
  */
-static bool find_safety(struct chunk *c, struct monster *m_ptr, int *yp, int *xp)
+static bool find_safety(struct chunk *c, struct monster *m_ptr)
 {
 	int fy = m_ptr->fy;
 	int fx = m_ptr->fx;
@@ -604,8 +603,8 @@ static bool find_safety(struct chunk *c, struct monster *m_ptr, int *yp, int *xp
 		if (gdis > 0)
 		{
 			/* Good location */
-			(*yp) = fy - gy;
-			(*xp) = fx - gx;
+			m_ptr->ty = gy;
+			m_ptr->tx = gx;
 
 			/* Found safe place */
 			return (TRUE);
@@ -627,7 +626,7 @@ static bool find_safety(struct chunk *c, struct monster *m_ptr, int *yp, int *xp
  *
  * Return TRUE if a good location is available.
  */
-static bool find_hiding(struct monster *m_ptr, int *yp, int *xp)
+static bool find_hiding(struct monster *m_ptr)
 {
 	int fy = m_ptr->fy;
 	int fx = m_ptr->fx;
@@ -685,8 +684,8 @@ static bool find_hiding(struct monster *m_ptr, int *yp, int *xp)
 		if (gdis < 999)
 		{
 			/* Good location */
-			(*yp) = fy - gy;
-			(*xp) = fx - gx;
+			m_ptr->ty = gy;
+			m_ptr->tx = gx;
 
 			/* Found good place */
 			return (TRUE);
@@ -789,101 +788,93 @@ static bool get_moves(struct chunk *c, struct monster *m_ptr, int *dir)
 
 	int y, x;
 
-	int y2 = py;
-	int x2 = px;
-
 	bool done = FALSE;
 
 	/* Calculate range */
 	find_range(m_ptr);
 
 	/* Flow towards the player */
-	get_moves_flow(c, m_ptr, &y2, &x2);
-
-	/* Extract the "pseudo-direction" */
-	y = m_ptr->fy - y2;
-	x = m_ptr->fx - x2;
-
-
+	if (get_moves_flow(c, m_ptr)) {
+		/* Extract the "pseudo-direction" */
+		y = m_ptr->fy - m_ptr->ty;
+		x = m_ptr->fx - m_ptr->tx;
+	} else {
+		/* Head straight for the player */
+		y = m_ptr->fy - player->py;
+		x = m_ptr->fx - player->px;
+	}
 
 	/* Normal animal packs try to get the player out of corridors. */
 	if (rf_has(m_ptr->race->flags, RF_GROUP_AI) &&
-	    !flags_test(m_ptr->race->flags, RF_SIZE, RF_PASS_WALL, RF_KILL_WALL, FLAG_END))
-	{
+	    !flags_test(m_ptr->race->flags, RF_SIZE, RF_PASS_WALL, RF_KILL_WALL,
+					FLAG_END)) {
 		int i, open = 0;
 
 		/* Count empty grids next to player */
-		for (i = 0; i < 8; i++)
-		{
+		for (i = 0; i < 8; i++) {
 			int ry = py + ddy_ddd[i];
 			int rx = px + ddx_ddd[i];
 			/* Check grid around the player for room interior (room walls count)
-			   or other empty space */
-			if (square_ispassable(cave, ry, rx) || square_isroom(cave, ry, rx))
-			{
+			 * or other empty space */
+			if (square_ispassable(c, ry, rx) || square_isroom(c, ry, rx)) {
 				/* One more open grid */
 				open++;
 			}
 		}
 
 		/* Not in an empty space and strong player */
-		if ((open < 7) && (player->chp > player->mhp / 2))
-		{
+		if ((open < 7) && (player->chp > player->mhp / 2)) {
 			/* Find hiding place */
-			if (find_hiding(m_ptr, &y, &x)) done = TRUE;
+			if (find_hiding(m_ptr)) {
+				done = TRUE;
+				y = m_ptr->fy - m_ptr->ty;
+				x = m_ptr->fx - m_ptr->tx;
+			}
 		}
 	}
 
-
 	/* Apply fear */
-	if (!done && (m_ptr->min_range == FLEE_RANGE))
-	{
+	if (!done && (m_ptr->min_range == FLEE_RANGE)) {
 		/* Try to find safe place */
-		if (!find_safety(c, m_ptr, &y, &x))
-		{
-			/* This is not a very "smart" method XXX XXX */
+		if (!find_safety(c, m_ptr)) {
+			/* Just leg it away from the player */
 			y = (-y);
 			x = (-x);
-		}
-
-		else
-		{
-			/* Adjust movement */
-			get_moves_fear(c, m_ptr, &y, &x);
+		} else {
+			/* Set a course for the safe place */
+			get_moves_fear(c, m_ptr);
+			y = m_ptr->fy - m_ptr->ty;
+			x = m_ptr->fx - m_ptr->tx;
 		}
 
 		done = TRUE;
 	}
 
-
 	/* Monster groups try to surround the player */
-	if (!done && rf_has(m_ptr->race->flags, RF_GROUP_AI))
-	{
-		int i;
+	if (!done && rf_has(m_ptr->race->flags, RF_GROUP_AI)) {
+		int i, yy = m_ptr->ty, xx = m_ptr->tx;
 
 		/* If we are not already adjacent */
-		if (m_ptr->cdis > 1)
-		{
+		if (m_ptr->cdis > 1) {
 			/* Find an empty square near the player to fill */
 			int tmp = randint0(8);
-			for (i = 0; i < 8; i++)
-			{
+			for (i = 0; i < 8; i++) {
 				/* Pick squares near player (pseudo-randomly) */
-				y2 = py + ddy_ddd[(tmp + i) & 7];
-				x2 = px + ddx_ddd[(tmp + i) & 7];
+				yy = py + ddy_ddd[(tmp + i) & 7];
+				xx = px + ddx_ddd[(tmp + i) & 7];
 				
 				/* Ignore filled grids */
-				if (!square_isempty(cave, y2, x2)) continue;
+				if (!square_isempty(cave, yy, xx)) continue;
 				
 				/* Try to fill this hole */
 				break;
 			}
 		}
-		/* Extract the new "pseudo-direction" */
-		y = m_ptr->fy - y2;
-		x = m_ptr->fx - x2;
-	}
 
+		/* Extract the new "pseudo-direction" */
+		y = m_ptr->fy - yy;
+		x = m_ptr->fx - xx;
+	}
 
 	/* Check for no move */
 	if (!x && !y) return (FALSE);
