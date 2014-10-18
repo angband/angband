@@ -1289,7 +1289,7 @@ static void dungeon(struct chunk *c)
     		do_animation(); 
 
 			/* process monster with even more energy first */
-			process_monsters(c, turn, player->energy + 1);
+			process_monsters(c, player->energy + 1);
 
 			/* if still alive */
 			if (!player->upkeep->leaving)
@@ -1319,7 +1319,7 @@ static void dungeon(struct chunk *c)
 		if (player->upkeep->leaving) break;
 
 		/* Process all of the monsters */
-		process_monsters(c, turn, 0);
+		process_monsters(c, 0);
 
 		/* Reset Monsters */
 		reset_monsters();

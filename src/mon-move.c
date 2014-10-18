@@ -24,6 +24,7 @@
 
 #include "angband.h"
 #include "cave.h"
+#include "dungeon.h"
 #include "init.h"
 #include "monster.h"
 #include "mon-attack.h"
@@ -53,6 +54,41 @@
  * character, and closer than this distance.
  */
 #define TURN_RANGE      5
+
+/**
+ * Given a central direction at position [dir #][0], return a series
+ * of directions radiating out on both sides from the central direction
+ * all the way back to its rear.
+ *
+ * Side directions come in pairs; for example, directions '1' and '3'
+ * flank direction '2'.  The code should know which side to consider
+ * first.  If the left, it must add 10 to the central direction to
+ * access the second part of the table.
+ */
+static byte side_dirs[20][8] = {
+	{0, 0, 0, 0, 0, 0, 0, 0},	/* bias right */
+	{1, 4, 2, 7, 3, 8, 6, 9},
+	{2, 1, 3, 4, 6, 7, 9, 8},
+	{3, 2, 6, 1, 9, 4, 8, 7},
+	{4, 7, 1, 8, 2, 9, 3, 6},
+	{5, 5, 5, 5, 5, 5, 5, 5},
+	{6, 3, 9, 2, 8, 1, 7, 4},
+	{7, 8, 4, 9, 1, 6, 2, 3},
+	{8, 9, 7, 6, 4, 3, 1, 2},
+	{9, 6, 8, 3, 7, 2, 4, 1},
+
+	{0, 0, 0, 0, 0, 0, 0, 0},	/* bias left */
+	{1, 2, 4, 3, 7, 6, 8, 9},
+	{2, 3, 1, 6, 4, 9, 7, 8},
+	{3, 6, 2, 9, 1, 8, 4, 7},
+	{4, 1, 7, 2, 8, 3, 9, 6},
+	{5, 5, 5, 5, 5, 5, 5, 5},
+	{6, 9, 3, 8, 2, 7, 1, 4},
+	{7, 4, 8, 1, 9, 2, 6, 3},
+	{8, 7, 9, 4, 6, 1, 3, 2},
+	{9, 8, 6, 7, 3, 4, 2, 1}
+};
+
 
 /**
  * Calculate minimum and desired combat ranges.  -BR-
@@ -661,20 +697,97 @@ static bool find_hiding(struct monster *m_ptr, int *yp, int *xp)
 	return (FALSE);
 }
 
+/**
+ * Choose the basic direction of movement, and whether to bias left or right
+ * if the main direction is blocked.
+ *
+ * Note that this direction is intended as an index into the side_dirs array.
+ */
+static int choose_direction(int dy, int dx)
+{
+	int dir = 0;
+
+	/* Extract the "absolute distances" */
+	int ay = ABS(dy);
+	int ax = ABS(dx);
+
+	/* We mostly want to move vertically */
+	if (ay > (ax * 2)) {
+		/* Choose between directions '8' and '2' */
+		if (dy > 0) {
+			/* We're heading up */
+			dir = 8;
+			if ((dx > 0) || (dx == 0 && turn % 2 == 0))
+				dir += 10;
+		} else {
+			/* We're heading down */
+			dir = 2;
+			if ((dx < 0) || (dx == 0 && turn % 2 == 0))
+				dir += 10;
+		}
+	}
+
+	/* We mostly want to move horizontally */
+	else if (ax > (ay * 2)) {
+		/* Choose between directions '4' and '6' */
+		if (dx > 0) {
+			/* We're heading left */
+			dir = 4;
+			if ((dy < 0) || (dy == 0 && turn % 2 == 0))
+				dir += 10;
+		} else {
+			/* We're heading right */
+			dir = 6;
+			if ((dy > 0) || (dy == 0 && turn % 2 == 0))
+				dir += 10;
+		}
+	}
+
+	/* We want to move up and sideways */
+	else if (dy > 0) {
+		/* Choose between directions '7' and '9' */
+		if (dx > 0) {
+			/* We're heading up and left */
+			dir = 7;
+			if ((ay < ax) || (ay == ax && turn % 2 == 0))
+				dir += 10;
+		} else {
+			/* We're heading up and right */
+			dir = 9;
+			if ((ay > ax) || (ay == ax && turn % 2 == 0))
+				dir += 10;
+		}
+	}
+
+	/* We want to move down and sideways */
+	else {
+		/* Choose between directions '1' and '3' */
+		if (dx > 0) {
+			/* We're heading down and left */
+			dir = 1;
+			if ((ay > ax) || (ay == ax && turn % 2 == 0))
+				dir += 10;
+		} else {
+			/* We're heading down and right */
+			dir = 3;
+			if ((ay < ax) || (ay == ax && turn % 2 == 0))
+				dir += 10;
+		}
+	}
+
+	return dir;
+}
+
 
 /*
  * Choose "logical" directions for monster movement
- *
- * We store the directions in a special "mm" array
  */
-static bool get_moves(struct chunk *c, struct monster *m_ptr, int mm[5])
+static bool get_moves(struct chunk *c, struct monster *m_ptr, int *dir)
 {
 	int py = player->py;
 	int px = player->px;
 
-	int y, ay, x, ax;
-
-	int move_val = 0;
+	int y, x;
 
 	int y2 = py;
 	int x2 = px;
@@ -775,192 +888,8 @@ static bool get_moves(struct chunk *c, struct monster *m_ptr, int mm[5])
 	/* Check for no move */
 	if (!x && !y) return (FALSE);
 
-	/* Extract the "absolute distances" */
-	ax = ABS(x);
-	ay = ABS(y);
-
-	/* Do something weird */
-	if (y < 0) move_val += 8;
-	if (x > 0) move_val += 4;
-
-	/* Prevent the diamond maneuvre */
-	if (ay > (ax << 1))
-	{
-		move_val++;
-		move_val++;
-	}
-	else if (ax > (ay << 1))
-	{
-		move_val++;
-	}
-
-	/* Analyze */
-	switch (move_val)
-	{
-		case 0:
-		{
-			mm[0] = 9;
-			if (ay > ax)
-			{
-				mm[1] = 8;
-				mm[2] = 6;
-				mm[3] = 7;
-				mm[4] = 3;
-			}
-			else
-			{
-				mm[1] = 6;
-				mm[2] = 8;
-				mm[3] = 3;
-				mm[4] = 7;
-			}
-			break;
-		}
-
-		case 1:
-		case 9:
-		{
-			mm[0] = 6;
-			if (y < 0)
-			{
-				mm[1] = 3;
-				mm[2] = 9;
-				mm[3] = 2;
-				mm[4] = 8;
-			}
-			else
-			{
-				mm[1] = 9;
-				mm[2] = 3;
-				mm[3] = 8;
-				mm[4] = 2;
-			}
-			break;
-		}
-
-		case 2:
-		case 6:
-		{
-			mm[0] = 8;
-			if (x < 0)
-			{
-				mm[1] = 9;
-				mm[2] = 7;
-				mm[3] = 6;
-				mm[4] = 4;
-			}
-			else
-			{
-				mm[1] = 7;
-				mm[2] = 9;
-				mm[3] = 4;
-				mm[4] = 6;
-			}
-			break;
-		}
-
-		case 4:
-		{
-			mm[0] = 7;
-			if (ay > ax)
-			{
-				mm[1] = 8;
-				mm[2] = 4;
-				mm[3] = 9;
-				mm[4] = 1;
-			}
-			else
-			{
-				mm[1] = 4;
-				mm[2] = 8;
-				mm[3] = 1;
-				mm[4] = 9;
-			}
-			break;
-		}
-
-		case 5:
-		case 13:
-		{
-			mm[0] = 4;
-			if (y < 0)
-			{
-				mm[1] = 1;
-				mm[2] = 7;
-				mm[3] = 2;
-				mm[4] = 8;
-			}
-			else
-			{
-				mm[1] = 7;
-				mm[2] = 1;
-				mm[3] = 8;
-				mm[4] = 2;
-			}
-			break;
-		}
-
-		case 8:
-		{
-			mm[0] = 3;
-			if (ay > ax)
-			{
-				mm[1] = 2;
-				mm[2] = 6;
-				mm[3] = 1;
-				mm[4] = 9;
-			}
-			else
-			{
-				mm[1] = 6;
-				mm[2] = 2;
-				mm[3] = 9;
-				mm[4] = 1;
-			}
-			break;
-		}
-
-		case 10:
-		case 14:
-		{
-			mm[0] = 2;
-			if (x < 0)
-			{
-				mm[1] = 3;
-				mm[2] = 1;
-				mm[3] = 6;
-				mm[4] = 4;
-			}
-			else
-			{
-				mm[1] = 1;
-				mm[2] = 3;
-				mm[3] = 4;
-				mm[4] = 6;
-			}
-			break;
-		}
-
-		default: /* case 12: */
-		{
-			mm[0] = 1;
-			if (ay > ax)
-			{
-				mm[1] = 2;
-				mm[2] = 4;
-				mm[3] = 3;
-				mm[4] = 7;
-			}
-			else
-			{
-				mm[1] = 4;
-				mm[2] = 2;
-				mm[3] = 7;
-				mm[4] = 3;
-			}
-			break;
-		}
-	}
+	/* Pick the correct direction */
+	*dir = choose_direction(y, x);
 
 	/* Want to move */
 	return (TRUE);
@@ -1481,7 +1410,7 @@ static void process_monster(struct chunk *c, struct monster *m_ptr)
 	bool did_something = FALSE;
 
 	int i;
-	int mm[5];
+	int dir = 0;
 	bool stagger = FALSE;
 	char m_name[80];
 
@@ -1497,7 +1426,7 @@ static void process_monster(struct chunk *c, struct monster *m_ptr)
 
 	/* Work out what kind of movement to use - AI or staggered movement */
 	if (!process_monster_should_stagger(m_ptr)) {
-		if (!get_moves(c, m_ptr, mm)) return;
+		if (!get_moves(c, m_ptr, &dir)) return;
 	} else {
 		stagger = TRUE;
 	}
@@ -1508,7 +1437,7 @@ static void process_monster(struct chunk *c, struct monster *m_ptr)
 		int ox = m_ptr->fx;
 
 		/* Get the direction (or stagger) */
-		int d = (stagger ? ddd[randint0(8)] : mm[i]);
+		int d = (stagger ? ddd[randint0(8)] : side_dirs[dir][i]);
 
 		/* Get the destination */
 		int ny = oy + ddy[d];
@@ -1621,7 +1550,7 @@ static void regen_monster(monster_type *m_ptr)
  * of the processor time in normal situations, greater if the character is
  * resting.
  */
-void process_monsters(struct chunk *c, int turn, int minimum_energy)
+void process_monsters(struct chunk *c, int minimum_energy)
 {
 	int i;
 	int mspeed;

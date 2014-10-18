@@ -20,7 +20,7 @@
 
 
 bool multiply_monster(const struct monster *m);
-void process_monsters(struct chunk *c, int turn, int minimum_energy);
+void process_monsters(struct chunk *c, int minimum_energy);
 void reset_monsters(void);
 
 #endif /* !MONSTER_MOVE_H */
