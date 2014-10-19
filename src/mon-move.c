@@ -968,7 +968,8 @@ static bool process_monster_timed(struct chunk *c, struct monster *m_ptr)
 			mon_dec_timed(m_ptr, MON_TMD_SLEEP, d, MON_TMD_FLG_NOTIFY, FALSE);
 
 			/* Update knowledge */
-			if (m_ptr->ml && !m_ptr->unaware) {
+			if (mflag_has(m_ptr->mflag, MFLAG_VISIBLE) &&
+				!mflag_has(m_ptr->mflag, MFLAG_UNAWARE)) {
 				if (!woke_up && l_ptr->ignore < MAX_UCHAR)
 					l_ptr->ignore++;
 				else if (woke_up && l_ptr->wake < MAX_UCHAR)
@@ -978,8 +979,9 @@ static bool process_monster_timed(struct chunk *c, struct monster *m_ptr)
 		}
 
 		/* Update the health bar */
-		if (woke_up && m_ptr->ml && !m_ptr->unaware &&
-				player->upkeep->health_who == m_ptr)
+		if (woke_up && mflag_has(m_ptr->mflag, MFLAG_VISIBLE) &&
+			!mflag_has(m_ptr->mflag, MFLAG_UNAWARE) &&
+			player->upkeep->health_who == m_ptr)
 			player->upkeep->redraw |= (PR_HEALTH);
 
 		/* Sleeping monsters don't recover in any other ways */
@@ -1044,7 +1046,7 @@ static bool process_monster_multiply(struct chunk *c, struct monster *m_ptr)
 	/* Multiply slower in crowded areas */
 	if ((k < 4) && (k == 0 || one_in_(k * z_info->repro_monster_rate))) {
 		/* Successful breeding attempt, learn about that now */
-		if (m_ptr->ml)
+		if (mflag_has(m_ptr->mflag, MFLAG_VISIBLE))
 			rf_on(l_ptr->flags, RF_MULTIPLY);
 
 		/* Leave now if not a breeder */
@@ -1054,7 +1056,7 @@ static bool process_monster_multiply(struct chunk *c, struct monster *m_ptr)
 		/* Try to multiply */
 		if (multiply_monster(m_ptr)) {
 			/* Make a sound */
-			if (m_ptr->ml)
+			if (mflag_has(m_ptr->mflag, MFLAG_VISIBLE))
 				sound(MSG_MULTIPLY);
 
 			/* Multiplying takes energy */
@@ -1082,12 +1084,14 @@ static bool process_monster_should_stagger(struct monster *m_ptr)
 	/* RAND_25 and RAND_50 are cumulative */
 	if (rf_has(m_ptr->race->flags, RF_RAND_25)) {
 		chance += 25;
-		if (m_ptr->ml) rf_on(l_ptr->flags, RF_RAND_25);
+		if (mflag_has(m_ptr->mflag, MFLAG_VISIBLE))
+			rf_on(l_ptr->flags, RF_RAND_25);
 	}
 
 	if (rf_has(m_ptr->race->flags, RF_RAND_50)) {
 		chance += 50;
-		if (m_ptr->ml) rf_on(l_ptr->flags, RF_RAND_50);
+		if (mflag_has(m_ptr->mflag, MFLAG_VISIBLE))
+			rf_on(l_ptr->flags, RF_RAND_50);
 	}
 
 	return randint0(100) < chance;
@@ -1117,7 +1121,7 @@ static bool process_monster_can_move(struct chunk *c, struct monster *m_ptr,
 
 	/* There's some kind of feature in the way, so learn about
 	 * kill-wall and pass-wall now */
-	if (m_ptr->ml) {
+	if (mflag_has(m_ptr->mflag, MFLAG_VISIBLE)) {
 		rf_on(l_ptr->flags, RF_PASS_WALL);
 		rf_on(l_ptr->flags, RF_KILL_WALL);
 	}
@@ -1152,7 +1156,7 @@ static bool process_monster_can_move(struct chunk *c, struct monster *m_ptr,
 		*did_something = TRUE;
 
 		/* Learn about door abilities */
-		if (m_ptr->ml) {
+		if (mflag_has(m_ptr->mflag, MFLAG_VISIBLE)) {
 			rf_on(l_ptr->flags, RF_OPEN_DOOR);
 			rf_on(l_ptr->flags, RF_BASH_DOOR);
 		}
@@ -1259,7 +1263,7 @@ static bool process_monster_try_push(struct chunk *c, struct monster *m_ptr, con
 
 	if (compare_monsters(m_ptr, n_ptr) > 0) {
 		/* Learn about pushing and shoving */
-		if (m_ptr->ml) {
+		if (mflag_has(m_ptr->mflag, MFLAG_VISIBLE)) {
 			rf_on(l_ptr->flags, RF_KILL_BODY);
 			rf_on(l_ptr->flags, RF_MOVE_BODY);
 		}
@@ -1274,8 +1278,10 @@ static bool process_monster_try_push(struct chunk *c, struct monster *m_ptr, con
 				become_aware(n_ptr);
 
 			/* Note if visible */
-			if (m_ptr->ml && mflag_has(m_ptr->mflag, MFLAG_VIEW))
-				msg("%s %s %s.", kill_ok ? "tramples over" : "pushes past", m_name, n_name);
+			if (mflag_has(m_ptr->mflag, MFLAG_VISIBLE) &&
+				mflag_has(m_ptr->mflag, MFLAG_VIEW))
+				msg("%s %s %s.", kill_ok ? "tramples over" : "pushes past",
+					m_name, n_name);
 
 			/* Monster ate another monster */
 			if (kill_ok)
@@ -1299,7 +1305,7 @@ void process_monster_grab_objects(struct chunk *c, struct monster *m_ptr,
 	s16b this_o_idx, next_o_idx = 0;
 
 	bool is_item = square_object(c, ny, nx);
-	if (is_item && m_ptr->ml) {
+	if (is_item && mflag_has(m_ptr->mflag, MFLAG_VISIBLE)) {
 		rf_on(l_ptr->flags, RF_TAKE_ITEM);
 		rf_on(l_ptr->flags, RF_KILL_ITEM);
 	}
@@ -1333,8 +1339,8 @@ void process_monster_grab_objects(struct chunk *c, struct monster *m_ptr,
 		if (safe) {
 			/* Only give a message for "take_item" */
 			if (rf_has(m_ptr->race->flags, RF_TAKE_ITEM) &&
-						m_ptr->ml && player_has_los_bold(ny, nx) &&
-						!ignore_item_ok(o_ptr)) {
+				mflag_has(m_ptr->mflag, MFLAG_VISIBLE) &&
+				player_has_los_bold(ny, nx) && !ignore_item_ok(o_ptr)) {
 				/* Dump a message */
 				msg("%s tries to pick up %s, but fails.", m_name, o_name);
 			}
@@ -1446,7 +1452,7 @@ static void process_monster(struct chunk *c, struct monster *m_ptr)
 		/* The player is in the way. */
 		if (square_isplayer(c, ny, nx)) {
 			/* Learn about if the monster attacks */
-			if (m_ptr->ml)
+			if (mflag_has(m_ptr->mflag, MFLAG_VISIBLE))
 				rf_on(l_ptr->flags, RF_NEVER_BLOW);
 
 			/* Some monsters never attack */
@@ -1462,7 +1468,7 @@ static void process_monster(struct chunk *c, struct monster *m_ptr)
 			/* Some monsters never move */
 			if (rf_has(m_ptr->race->flags, RF_NEVER_MOVE)) {
 				/* Learn about lack of movement */
-				if (m_ptr->ml)
+				if (mflag_has(m_ptr->mflag, MFLAG_VISIBLE))
 					rf_on(l_ptr->flags, RF_NEVER_MOVE);
 
 				return;
@@ -1484,11 +1490,12 @@ static void process_monster(struct chunk *c, struct monster *m_ptr)
 
 	if (did_something) {
 		/* Learn about no lack of movement */
-		if (m_ptr->ml) rf_on(l_ptr->flags, RF_NEVER_MOVE);
+		if (mflag_has(m_ptr->mflag, MFLAG_VISIBLE))
+			rf_on(l_ptr->flags, RF_NEVER_MOVE);
 
 		/* Possible disturb */
-		if (m_ptr->ml && mflag_has(m_ptr->mflag, MFLAG_VIEW) &&
-			OPT(disturb_near))
+		if (mflag_has(m_ptr->mflag, MFLAG_VISIBLE) &&
+			mflag_has(m_ptr->mflag, MFLAG_VIEW) && OPT(disturb_near))
 			disturb(player, 0);		
 	}
 
@@ -1497,7 +1504,7 @@ static void process_monster(struct chunk *c, struct monster *m_ptr)
 		mon_clear_timed(m_ptr, MON_TMD_FEAR, MON_TMD_FLG_NOTIFY, FALSE);
 
 	/* If we see an unaware monster do something, become aware of it */
-	if (did_something && m_ptr->unaware)
+	if (did_something && mflag_has(m_ptr->mflag, MFLAG_UNAWARE))
 		become_aware(m_ptr);
 }
 
@@ -1567,14 +1574,14 @@ void process_monsters(struct chunk *c, int minimum_energy)
 		if (!m_ptr->race) continue;
 
 		/* Ignore monsters that have already been handled */
-		if (m_ptr->moved)
+		if (mflag_has(m_ptr->mflag, MFLAG_HANDLED))
 			continue;
 
 		/* Not enough energy to move yet */
 		if (m_ptr->energy < minimum_energy) continue;
 
 		/* Prevent reprocessing */
-		m_ptr->moved = TRUE;
+		mflag_on(m_ptr->mflag, MFLAG_HANDLED);
 
 		/* Handle monster regeneration if requested */
 		if (regen)
@@ -1638,6 +1645,6 @@ void reset_monsters(void)
 		m_ptr = cave_monster(cave, i);
 
 		/* Monster is ready to go again */
-		m_ptr->moved = FALSE;
+		mflag_off(m_ptr->mflag, MFLAG_HANDLED);
 	}
 }

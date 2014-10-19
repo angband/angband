@@ -361,7 +361,8 @@ byte monster_health_attr(void)
 		/* Not tracking */
 		attr = TERM_DARK;
 
-	} else if (!mon->ml || mon->hp < 0 || player->timed[TMD_IMAGE]) {
+	} else if (!mflag_has(mon->mflag, MFLAG_VISIBLE) || mon->hp < 0 ||
+			   player->timed[TMD_IMAGE]) {
 		/* The monster health is "unknown" */
 		attr = TERM_WHITE;
 
@@ -426,9 +427,9 @@ static void prt_health(int row, int col)
 	}
 
 	/* Tracking an unseen, hallucinatory, or dead monster */
-	if (!mon->ml || /* Unseen */
-			(player->timed[TMD_IMAGE]) || /* Hallucination */
-			(mon->hp < 0)) /* Dead (?) */
+	if (!mflag_has(mon->mflag, MFLAG_VISIBLE) || /* Unseen */
+		(player->timed[TMD_IMAGE]) || /* Hallucination */
+		(mon->hp < 0)) /* Dead (?) */
 	{
 		/* The monster health is "unknown" */
 		Term_putstr(col, row, 12, attr, "[----------]");

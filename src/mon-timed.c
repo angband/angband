@@ -90,17 +90,18 @@ static bool mon_resist_effect(const struct monster *mon, int ef_idx, int timer, 
 
 	/* If the monster resists innately, learn about it */
 	if (rf_has(mon->race->flags, effect->flag_resist)) {
-		if (mon->ml)
+		if (mflag_has(mon->mflag, MFLAG_VISIBLE))
 			rf_on(lore->flags, effect->flag_resist);
 
 		return (TRUE);
 	}
 
 	/* Monsters with specific breaths resist stunning */
-	if (ef_idx == MON_TMD_STUN && (rsf_has(mon->race->spell_flags, RSF_BR_SOUN) ||
-			rsf_has(mon->race->spell_flags, RSF_BR_WALL))) {
+	if (ef_idx == MON_TMD_STUN &&
+		(rsf_has(mon->race->spell_flags, RSF_BR_SOUN) ||
+		 rsf_has(mon->race->spell_flags, RSF_BR_WALL))) {
 		/* Add the lore */
-		if (mon->ml) {
+		if (mflag_has(mon->mflag, MFLAG_VISIBLE)) {
 			if (rsf_has(mon->race->spell_flags, RSF_BR_SOUN))
 				rsf_on(lore->spell_flags, RSF_BR_SOUN);
 			if (rsf_has(mon->race->spell_flags, RSF_BR_WALL))
@@ -114,7 +115,7 @@ static bool mon_resist_effect(const struct monster *mon, int ef_idx, int timer, 
 	if ((ef_idx == MON_TMD_CONF) &&
 		rsf_has(mon->race->spell_flags, RSF_BR_CHAO)) {
 		/* Add the lore */
-		if (mon->ml)
+		if (mflag_has(mon->mflag, MFLAG_VISIBLE))
 			if (rsf_has(mon->race->spell_flags, RSF_BR_CHAO))
 				rsf_on(lore->spell_flags, RSF_BR_CHAO);
 
@@ -214,10 +215,9 @@ static bool mon_set_timed(monster_type *m_ptr, int ef_idx, int timer,
 
 	/* Print a message if there is one, if the effect allows for it, and if
 	 * either the monster is visible, or we're trying to ID something */
-	if (m_note &&
-			((m_ptr->ml && !m_ptr->unaware) || id) &&
-			!(flag & MON_TMD_FLG_NOMESSAGE) &&
-			(flag & MON_TMD_FLG_NOTIFY)) {
+	if (m_note && !(flag & MON_TMD_FLG_NOMESSAGE) && (flag & MON_TMD_FLG_NOTIFY)
+		&& ((mflag_has(m_ptr->mflag, MFLAG_VISIBLE) &&
+			 !mflag_has(m_ptr->mflag, MFLAG_UNAWARE)) || id)){
 		char m_name[80];
 		monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_IND_HID);
 		add_monster_message(m_name, m_ptr, m_note, TRUE);

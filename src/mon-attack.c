@@ -248,7 +248,7 @@ bool make_attack_spell(struct monster *m_ptr)
 	bool blind = (player->timed[TMD_BLIND] ? TRUE : FALSE);
 
 	/* Extract the "see-able-ness" */
-	bool seen = (!blind && m_ptr->ml);
+	bool seen = (!blind && mflag_has(m_ptr->mflag, MFLAG_VISIBLE));
 
 	/* Assume "normal" target */
 	bool normal = TRUE;
@@ -335,7 +335,7 @@ bool make_attack_spell(struct monster *m_ptr)
 	if (!thrown_spell) return FALSE;
 
 	/* If we see an unaware monster try to cast a spell, become aware of it */
-	if (m_ptr->unaware)
+	if (mflag_has(m_ptr->mflag, MFLAG_UNAWARE))
 		become_aware(m_ptr);
 
 	/* Calculate spell failure rate */
@@ -522,7 +522,7 @@ bool make_attack_normal(struct monster *m_ptr, struct player *p)
 		if (p->upkeep->leaving) break;
 
 		/* Extract visibility (before blink) */
-		if (m_ptr->ml) visible = TRUE;
+		if (mflag_has(m_ptr->mflag, MFLAG_VISIBLE)) visible = TRUE;
 
 		/* Extract visibility from carrying light */
 		if (rf_has(m_ptr->race->flags, RF_HAS_LIGHT)) visible = TRUE;
@@ -540,7 +540,7 @@ bool make_attack_normal(struct monster *m_ptr, struct player *p)
 			/* Hack -- Apply "protection from evil" */
 			if (p->timed[TMD_PROTEVIL] > 0) {
 				/* Learn about the evil flag */
-				if (m_ptr->ml)
+				if (mflag_has(m_ptr->mflag, MFLAG_VISIBLE))
 					rf_on(l_ptr->flags, RF_EVIL);
 
 				if (rf_has(m_ptr->race->flags, RF_EVIL) && p->lev >= rlev &&
@@ -651,7 +651,8 @@ bool make_attack_normal(struct monster *m_ptr, struct player *p)
 			}
 		} else {
 			/* Visible monster missed player, so notify if appropriate. */
-			if (m_ptr->ml && monster_blow_method_miss(method)) {
+			if (mflag_has(m_ptr->mflag, MFLAG_VISIBLE) &&
+				monster_blow_method_miss(method)) {
 				/* Disturbing */
 				disturb(p, 1);
 				msg("%s misses you.", m_name);

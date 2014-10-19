@@ -179,7 +179,7 @@ static void look_mon_desc(char *buf, size_t max, int m_idx)
 
 
 /*
- * Determine is a monster makes a reasonable target
+ * Determine if a monster makes a reasonable target
  *
  * The concept of "targetting" was stolen from "Morgul" (?)
  *
@@ -191,7 +191,8 @@ static void look_mon_desc(char *buf, size_t max, int m_idx)
  */
 bool target_able(struct monster *m)
 {
-	return m && m->race && m->ml && !m->unaware &&
+	return m && m->race && mflag_has(m->mflag, MFLAG_VISIBLE) &&
+		!mflag_has(m->mflag, MFLAG_UNAWARE) &&
 		projectable(cave, player->py, player->px, m->fy, m->fx, PROJECT_NONE) &&
 		!player->timed[TMD_IMAGE];
 }
@@ -388,12 +389,13 @@ static bool target_set_interactive_accept(int y, int x)
 
 
 	/* Visible monsters */
-	if (cave->m_idx[y][x] > 0)
-	{
+	if (cave->m_idx[y][x] > 0) {
 		monster_type *m_ptr = square_monster(cave, y, x);
 
 		/* Visible monsters */
-		if (m_ptr->ml && !m_ptr->unaware) return (TRUE);
+		if (mflag_has(m_ptr->mflag, MFLAG_VISIBLE) &&
+			!mflag_has(m_ptr->mflag, MFLAG_UNAWARE))
+			return (TRUE);
 	}
 
     /* Traps */
@@ -763,8 +765,8 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 			const monster_lore *l_ptr = get_lore(m_ptr->race);
 
 			/* Visible */
-			if (m_ptr->ml && !m_ptr->unaware)
-			{
+			if (mflag_has(m_ptr->mflag, MFLAG_VISIBLE) &&
+				!mflag_has(m_ptr->mflag, MFLAG_UNAWARE)) {
 				bool recall = FALSE;
 
 				char m_name[80];
@@ -1263,7 +1265,8 @@ static int draw_path(u16b path_n, struct loc *path_g, wchar_t *c, int *a, int y1
 		Term_what(Term->scr->cx, Term->scr->cy, a+i, c+i);
 
 		/* Choose a colour. */
-		if (cave->m_idx[y][x] && square_monster(cave, y, x)->ml) {
+		if (cave->m_idx[y][x] &&
+			mflag_has(square_monster(cave, y, x)->mflag, MFLAG_VISIBLE)) {
 			/* Visible monsters are red. */
 			monster_type *m_ptr = square_monster(cave, y, x);
 
@@ -1973,7 +1976,9 @@ bool target_sighted(void)
 {
 	return target_okay() &&
 			panel_contains(target_y, target_x) &&
-			 /* either the target is a grid and is visible, or it is a monster that is visible */
-			((!target_who && player_can_see_bold(target_y, target_x)) || (target_who && target_who->ml));
+			 /* either the target is a grid and is visible, or it is a monster
+			  * that is visible */
+			((!target_who && player_can_see_bold(target_y, target_x)) ||
+			 (target_who && mflag_has(target_who->mflag, MFLAG_VISIBLE)));
 }
 

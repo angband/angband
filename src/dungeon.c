@@ -1094,7 +1094,7 @@ static void do_animation(void)
 		byte attr;
 		monster_type *m_ptr = cave_monster(cave, i);
 
-		if (!m_ptr || !m_ptr->race || !m_ptr->ml)
+		if (!m_ptr || !m_ptr->race || !mflag_has(m_ptr->mflag, MFLAG_VISIBLE))
 			continue;
 		else if (rf_has(m_ptr->race->flags, RF_ATTR_MULTI))
 			attr = randint1(BASIC_COLORS - 1);

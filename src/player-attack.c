@@ -1,6 +1,6 @@
 /**
-   \file player-attack.c
-   \brief Attacks (both throwing and melee) by the player
+ * \file player-attack.c
+ * \brief Attacks (both throwing and melee) by the player
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  *
@@ -204,10 +204,12 @@ static bool py_attack_real(int y, int x, bool *fear) {
 				 MDESC_OBJE | MDESC_IND_HID | MDESC_PRO_HID);
 
 	/* Auto-Recall if possible and visible */
-	if (m_ptr->ml) monster_race_track(player->upkeep, m_ptr->race);
+	if (mflag_has(m_ptr->mflag, MFLAG_VISIBLE))
+		monster_race_track(player->upkeep, m_ptr->race);
 
 	/* Track a new monster */
-	if (m_ptr->ml) health_track(player->upkeep, m_ptr);
+	if (mflag_has(m_ptr->mflag, MFLAG_VISIBLE))
+		health_track(player->upkeep, m_ptr);
 
 	/* Handle player fear (only for invisible monsters) */
 	if (player_of_has(player, OF_AFRAID)) {
@@ -219,7 +221,8 @@ static bool py_attack_real(int y, int x, bool *fear) {
 	mon_clear_timed(m_ptr, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, FALSE);
 
 	/* See if the player hit */
-	success = test_hit(chance, m_ptr->race->ac, m_ptr->ml);
+	success = test_hit(chance, m_ptr->race->ac,
+					   mflag_has(m_ptr->mflag, MFLAG_VISIBLE));
 
 	/* If a miss, skip this hit */
 	if (!success) {
@@ -349,7 +352,7 @@ void py_attack(int y, int x) {
 	}
 	
 	/* Hack - delay fear messages */
-	if (fear && m_ptr->ml) {
+	if (fear && mflag_has(m_ptr->mflag, MFLAG_VISIBLE)) {
 		char m_name[80];
 		/* XXX Don't set monster_desc flags, since add_monster_message does string processing on m_name */
 		monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_DEFAULT);
@@ -456,7 +459,7 @@ static void ranged_helper(int item, int dir, int range, int shots, ranged_attack
 		/* Try the attack on the monster at (x, y) if any */
 		if (cave->m_idx[y][x] > 0) {
 			monster_type *m_ptr = square_monster(cave, y, x);
-			int visible = m_ptr->ml;
+			int visible = mflag_has(m_ptr->mflag, MFLAG_VISIBLE);
 
 			bool fear = FALSE;
 			const char *note_dies = monster_is_unusual(m_ptr->race) ? 
@@ -510,15 +513,16 @@ static void ranged_helper(int item, int dir, int range, int shots, ranged_attack
 					}
 					
 					/* Track this monster */
-					if (m_ptr->ml) 
+					if (mflag_has(m_ptr->mflag, MFLAG_VISIBLE)) {
 						monster_race_track(player->upkeep, m_ptr->race);
-					if (m_ptr->ml) health_track(player->upkeep, m_ptr);
+						health_track(player->upkeep, m_ptr);
+					}
 				}
 
 				/* Hit the monster, check for death */
 				if (!mon_take_hit(m_ptr, dmg, &fear, note_dies)) {
 					message_pain(m_ptr, dmg);
-					if (fear && m_ptr->ml) {
+					if (fear && mflag_has(m_ptr->mflag, MFLAG_VISIBLE)) {
 						char m_name[80];
 						monster_desc(m_name, sizeof(m_name), m_ptr, 
 									 MDESC_DEFAULT);
@@ -558,7 +562,7 @@ static void ranged_helper(int item, int dir, int range, int shots, ranged_attack
  * Helper function used with ranged_helper by do_cmd_fire.
  */
 static struct attack_result make_ranged_shot(object_type *o_ptr, int y, int x) {
-	char *hit_verb = mem_alloc(20*sizeof(char));
+	char *hit_verb = mem_alloc(20 * sizeof(char));
 	struct attack_result result = {FALSE, 0, 0, hit_verb};
 
 	object_type *j_ptr = equipped_item_by_slot_name(player, "shooting");
@@ -576,7 +580,9 @@ static struct attack_result make_ranged_shot(object_type *o_ptr, int y, int x) {
 	my_strcpy(hit_verb, "hits", sizeof(hit_verb));
 
 	/* Did we hit it (penalize distance travelled) */
-	if (!test_hit(chance2, m_ptr->race->ac, m_ptr->ml)) return result;
+	if (!test_hit(chance2, m_ptr->race->ac, mflag_has(m_ptr->mflag,
+													  MFLAG_VISIBLE)))
+		return result;
 
 	result.success = TRUE;
 
@@ -595,7 +601,8 @@ static struct attack_result make_ranged_shot(object_type *o_ptr, int y, int x) {
 	result.dmg = damroll(o_ptr->dd, o_ptr->ds);
 	result.dmg += o_ptr->to_d + j_ptr->to_d;
 	result.dmg *= multiplier;
-	result.dmg = critical_shot(o_ptr->weight, o_ptr->to_h, result.dmg, &result.msg_type);
+	result.dmg = critical_shot(o_ptr->weight, o_ptr->to_h, result.dmg,
+							   &result.msg_type);
 
 	object_notice_attack_plusses(j_ptr);
 
@@ -623,7 +630,7 @@ static struct attack_result make_ranged_throw(object_type *o_ptr, int y, int x) 
 	my_strcpy(hit_verb, "hits", sizeof(hit_verb));
 
 	/* If we missed then we're done */
-	if (!test_hit(chance2, m_ptr->race->ac, m_ptr->ml)) return result;
+	if (!test_hit(chance2, m_ptr->race->ac, mflag_has(m_ptr->mflag, MFLAG_VISIBLE))) return result;
 
 	result.success = TRUE;
 

@@ -1,6 +1,6 @@
 /**
-   \file cave-map.c
-   \brief Lighting and map management functions
+ * \file cave-map.c
+ * \brief Lighting and map management functions
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  *
@@ -173,7 +173,7 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 	{
 		/* If the monster isn't "visible", make sure we don't list it.*/
 		monster_type *m_ptr = cave_monster(cave, g->m_idx);
-		if (!m_ptr->ml) g->m_idx = 0;
+		if (!mflag_has(m_ptr->mflag, MFLAG_VISIBLE)) g->m_idx = 0;
 	}
 
 	/* Rare random hallucination on non-outer walls */

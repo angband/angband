@@ -1,6 +1,6 @@
 /**
-  \file obj-slays.c
-  \brief Functions for manipulating slays/brands
+ * \file obj-slays.c
+ * \brief Functions for manipulating slays/brands
  *
  * Copyright (c) 2010 Chris Carr and Peter Denison
  * Copyright (c) 2014 Nick McConnell
@@ -496,13 +496,13 @@ void improve_attack_modifier(object_type *o_ptr, const monster_type *m_ptr,
 			}
 			if (real) {
 				object_notice_brands(o_ptr, m_ptr);
-				if (m_ptr->ml)
+				if (mflag_has(m_ptr->mflag, MFLAG_VISIBLE))
 					rf_on(l_ptr->flags, brand_names[b->element].resist_flag);
 			}
 		}
 
 		/* Brand is known, attack is real, learn about the monster */
-		if (b->known && m_ptr->ml && real)
+		if (b->known && mflag_has(m_ptr->mflag, MFLAG_VISIBLE) && real)
 			rf_on(l_ptr->flags, brand_names[b->element].resist_flag);
 	}
 
@@ -523,13 +523,13 @@ void improve_attack_modifier(object_type *o_ptr, const monster_type *m_ptr,
 			}
 			if (real) {
 				object_notice_slays(o_ptr, m_ptr);
-				if (m_ptr->ml)
+				if (mflag_has(m_ptr->mflag, MFLAG_VISIBLE))
 					rf_on(l_ptr->flags, s->race_flag);
 			}
 		}
 
 		/* Slay is known, attack is real, learn about the monster */
-		if (s->known && m_ptr->ml && real)
+		if (s->known && mflag_has(m_ptr->mflag, MFLAG_VISIBLE) && real)
 			rf_on(l_ptr->flags, s->race_flag);
 	}
 }

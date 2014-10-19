@@ -1,6 +1,6 @@
 /**
-   \file mon-desc.c
-   \brief Monster description
+ * \file mon-desc.c
+ * \brief Monster description
  *
  * Copyright (c) 1997-2007 Ben Harrison, James E. Wilson, Robert A. Koeneke
  *
@@ -124,7 +124,8 @@ void monster_desc(char *desc, size_t max, const struct monster *mon, int mode)
 
 
 	/* Can we "see" it (forced, or not hidden + visible) */
-	seen = ((mode & (MDESC_SHOW)) || (!(mode & (MDESC_HIDE)) && mon->ml));
+	seen = ((mode & (MDESC_SHOW)) || (!(mode & (MDESC_HIDE)) &&
+									  mflag_has(mon->mflag, MFLAG_VISIBLE)));
 
 	/* Sexed Pronouns (seen and forced, or unseen and allowed) */
 	use_pronoun = ((seen && (mode & (MDESC_PRO_VIS))) || (!seen && (mode & (MDESC_PRO_HID))));

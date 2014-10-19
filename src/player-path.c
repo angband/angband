@@ -87,25 +87,13 @@ bool findpath(int y, int x)
 
 	terrain[player->py - oy][player->px - ox] = 1;
 
-	if ((x >= ox) && (x < ex) && (y >= oy) && (y < ey))
-	{
-		if ((cave->m_idx[y][x] > 0) && (square_monster(cave, y, x)->ml))
-		{
+	if ((x >= ox) && (x < ex) && (y >= oy) && (y < ey)) {
+		if ((cave->m_idx[y][x] > 0) &&
+			mflag_has(square_monster(cave, y, x)->mflag, MFLAG_VISIBLE))
 			terrain[y - oy][x - ox] = MAX_PF_LENGTH;
-		}
-
-#if 0
-		else if (terrain[y-oy][x-ox] != MAX_PF_LENGTH)
-		{
-		   bell("Target blocked");
-		   return (FALSE);
-		}
-#endif
 
 		terrain[y - oy][x - ox] = MAX_PF_LENGTH;
-	}
-	else
-	{
+	} else {
 		bell("Target out of range.");
 		return (FALSE);
 	}
@@ -599,7 +587,7 @@ static bool run_test(void)
 			monster_type *m_ptr = square_monster(cave, row, col);
 
 			/* Visible monster */
-			if (m_ptr->ml) return (TRUE);
+			if (mflag_has(m_ptr->mflag, MFLAG_VISIBLE)) return (TRUE);
 		}
 
 		/* Visible objects abort running */
@@ -708,7 +696,8 @@ static bool run_test(void)
 			monster_type *m_ptr = square_monster(cave, row, col);
 			
 			/* Visible monster */
-			if (m_ptr->ml && !is_mimicking(m_ptr)) return (TRUE);			
+			if (mflag_has(m_ptr->mflag, MFLAG_VISIBLE) && !is_mimicking(m_ptr))
+				return (TRUE);
 		}
 	}
 

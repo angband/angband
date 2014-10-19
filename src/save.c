@@ -178,7 +178,6 @@ static void wr_item(const object_type *o_ptr)
  */
 static void wr_monster(const monster_type *m_ptr)
 {
-	byte unaware = 0;
 	size_t j;
 
 	wr_s16b(m_ptr->race->ridx);
@@ -193,8 +192,8 @@ static void wr_monster(const monster_type *m_ptr)
 	for (j = 0; j < MON_TMD_MAX; j++)
 		wr_s16b(m_ptr->m_timed[j]);
 
-	if (m_ptr->unaware) unaware |= 0x01;
-	wr_byte(unaware);
+	for (j = 0; j < MFLAG_SIZE; j++)
+		wr_byte(m_ptr->mflag[j]);
 
 	for (j = 0; j < OF_SIZE; j++)
 		wr_byte(m_ptr->known_pstate.flags[j]);
@@ -329,6 +328,8 @@ void wr_messages(void)
 void wr_monster_memory(void)
 {
 	int r_idx;
+
+	wr_byte(MFLAG_SIZE);
 
 	for (r_idx = 0; r_idx < z_info->r_max; r_idx++) {
 		monster_race *r_ptr = &r_info[r_idx];

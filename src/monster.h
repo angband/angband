@@ -248,10 +248,6 @@ typedef struct monster
 
 	bitflag mflag[MFLAG_SIZE];	/* Temporary monster flags */
 
-	bool ml;			/* Monster is "visible" */
-	bool unaware;		/* Player doesn't know this is a monster */
-	bool aware;			/* Are we aware of the player? */
-
 	s16b mimicked_o_idx; /* Object this monster is mimicking */
 
 	s16b hold_o_idx;	/* Object being held (if any) */
@@ -265,8 +261,6 @@ typedef struct monster
 
     byte min_range;	/**< What is the closest we want to be?  Not saved */
     byte best_range;	/**< How close do we want to be? Not saved */
-
-    bool moved;		/**< Monster has moved this turn */
 } monster_type;
 
 /** Variables **/

@@ -473,7 +473,7 @@ bool project_p(int who, int r, int y, int x, int dam, int typ)
 	blind = (player->timed[TMD_BLIND] ? TRUE : FALSE);
 
 	/* Extract the "see-able-ness" */
-	seen = (!blind && m_ptr->ml);
+	seen = (!blind && mflag_has(m_ptr->mflag, MFLAG_VISIBLE));
 
 	/* Get the monster's real name */
 	monster_desc(killer, sizeof(killer), m_ptr, MDESC_DIED_FROM);
@@ -483,7 +483,8 @@ bool project_p(int who, int r, int y, int x, int dam, int typ)
 		msg("You are hit by %s!", gf_desc(typ));
 
 	/* Adjust damage for resistance, immunity or vulnerability, and apply it */
-	dam = adjust_dam(player, typ, dam, RANDOMISE, player->state.el_info[typ].res_level);
+	dam = adjust_dam(player, typ, dam, RANDOMISE,
+					 player->state.el_info[typ].res_level);
 	if (dam)
 		take_hit(player, dam, killer);
 

@@ -486,7 +486,7 @@ void delete_object_idx(int o_idx)
 
 		square_light_spot(cave, y, x);
 	}
-	
+
 	/* Delete the mimicking monster if necessary */
 	if (j_ptr->mimicking_m_idx) {
 		monster_type *m_ptr;
@@ -495,7 +495,7 @@ void delete_object_idx(int o_idx)
 		
 		/* Clear the mimicry */
 		m_ptr->mimicked_o_idx = 0;
-		m_ptr->unaware = FALSE;
+		mflag_off(m_ptr->mflag, MFLAG_UNAWARE);
 	}
 
 	/* Wipe the object */

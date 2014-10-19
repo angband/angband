@@ -1,6 +1,6 @@
 /**
-   \file project.c
-   \brief The project() function and helpers
+ * \file project.c
+ * \brief The project() function and helpers
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  *
@@ -976,13 +976,11 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 			if (cave->m_idx[y][x] > 0) {
 				monster_type *m_ptr = square_monster(cave, y, x);
 
-				/* Hack -- auto-recall */
-				if (m_ptr->ml)
+				/* Recall and track */
+				if (mflag_has(m_ptr->mflag, MFLAG_VISIBLE)) {
 					monster_race_track(player->upkeep, m_ptr->race);
-
-				/* Hack - auto-track */
-				if (m_ptr->ml)
 					health_track(player->upkeep, m_ptr);
+				}
 			}
 		}
 	}

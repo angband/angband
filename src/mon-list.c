@@ -177,7 +177,8 @@ static void monster_list_collect(monster_list_t *list)
 		bool los = FALSE;
 
 		/* Only consider visible, known monsters */
-		if (!monster->ml || monster->unaware)
+		if (!mflag_has(monster->mflag, MFLAG_VISIBLE) ||
+			mflag_has(monster->mflag, MFLAG_UNAWARE))
 			continue;
 
 		/* Find or add a list entry. */

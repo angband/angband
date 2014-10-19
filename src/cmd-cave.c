@@ -1230,11 +1230,10 @@ static bool do_cmd_walk_test(int y, int x)
 	struct monster *m_ptr = cave_monster(cave, m_idx);
 
 	/* Allow attack on visible monsters if unafraid */
-	if (m_idx > 0 && m_ptr->ml && !is_mimicking(m_ptr))
-	{
+	if (m_idx > 0 && mflag_has(m_ptr->mflag, MFLAG_VISIBLE) &&
+		!is_mimicking(m_ptr)) {
 		/* Handle player fear */
-		if (player_of_has(player, OF_AFRAID))
-		{
+		if (player_of_has(player, OF_AFRAID)) {
 			/* Extract monster name (or "it") */
 			char m_name[80];
 			monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_DEFAULT);

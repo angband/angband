@@ -1,6 +1,6 @@
 /**
-   \file effects.c
-   \brief Handler and auxiliary functions for every effect in the game
+ * \file effects.c
+ * \brief Handler and auxiliary functions for every effect in the game
  *
  * Copyright (c) 2007 Andi Sidwell
  * Copyright (c) 2014 Ben Semmler, Nick McConnell
@@ -288,7 +288,7 @@ bool effect_handler_MON_HEAL_HP(effect_handler_context_t *context)
 	/* Get the monster possessive ("his"/"her"/"its") */
 	monster_desc(m_poss, sizeof(m_poss), mon, MDESC_PRO_VIS | MDESC_POSS);
 
-	seen = (!player->timed[TMD_BLIND] && mon->ml);
+	seen = (!player->timed[TMD_BLIND] && mflag_has(mon->mflag, MFLAG_VISIBLE));
 
 	/* Heal some */
 	mon->hp += amount;
@@ -668,7 +668,7 @@ bool effect_handler_DRAIN_MANA(effect_handler_context_t *context)
 			player->upkeep->redraw |= (PR_HEALTH);
 
 		/* Special message */
-		if (mon->ml)
+		if (mflag_has(mon->mflag, MFLAG_VISIBLE))
 			msg("%s appears healthier.", m_name);
 	}
 
@@ -1369,7 +1369,8 @@ bool effect_handler_DETECT_VISIBLE_MONSTERS(effect_handler_context_t *context)
 		if (x < x1 || y < y1 || x > x2 || y > y2) continue;
 
 		/* Detect all non-invisible, obvious monsters */
-		if (!rf_has(m_ptr->race->flags, RF_INVISIBLE) && !m_ptr->unaware) {
+		if (!rf_has(m_ptr->race->flags, RF_INVISIBLE) &&
+			!mflag_has(m_ptr->mflag, MFLAG_UNAWARE)) {
 			/* Hack -- Detect the monster */
 			mflag_on(m_ptr->mflag, MFLAG_MARK);
 			mflag_on(m_ptr->mflag, MFLAG_SHOW);
@@ -2386,7 +2387,7 @@ bool effect_handler_PROBE(effect_handler_context_t *context)
 		if (!player_has_los_bold(m_ptr->fy, m_ptr->fx)) continue;
 
 		/* Probe visible monsters */
-		if (m_ptr->ml)
+		if (mflag_has(m_ptr->mflag, MFLAG_VISIBLE))
 		{
 			char m_name[80];
 

@@ -1002,9 +1002,9 @@ static bool place_new_monster_one(struct chunk *c, int y, int x, monster_race *r
 	
 	/* Is this obviously a monster? (Mimics etc. aren't) */
 	if (rf_has(race->flags, RF_UNAWARE)) 
-		mon->unaware = TRUE;
+		mflag_on(mon->mflag, MFLAG_UNAWARE);
 	else
-		mon->unaware = FALSE;
+		mflag_off(mon->mflag, MFLAG_UNAWARE);
 
 	/* Set the color if necessary */
 	if (rf_has(race->flags, RF_ATTR_RAND))
@@ -1349,7 +1349,8 @@ void monster_death(struct monster *m_ptr, bool stats)
 	object_type *i_ptr;
 	object_type object_type_body;
 
-	bool visible = (m_ptr->ml || rf_has(m_ptr->race->flags, RF_UNIQUE));
+	bool visible = (mflag_has(m_ptr->mflag, MFLAG_VISIBLE) ||
+					rf_has(m_ptr->race->flags, RF_UNIQUE));
 
 	int y = m_ptr->fy;
 	int x = m_ptr->fx;
@@ -1443,7 +1444,7 @@ bool mon_take_hit(struct monster *m_ptr, int dam, bool *fear, const char *note)
 	mon_clear_timed(m_ptr, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, FALSE);
 
 	/* Become aware of its presence */
-	if (m_ptr->unaware)
+	if (mflag_has(m_ptr->mflag, MFLAG_UNAWARE))
 		become_aware(m_ptr);
 
 	/* Hurt it */
@@ -1481,7 +1482,7 @@ bool mon_take_hit(struct monster *m_ptr, int dam, bool *fear, const char *note)
 		}
 
 		/* Death by physical attack -- invisible monster */
-		else if (!m_ptr->ml)
+		else if (!mflag_has(m_ptr->mflag, MFLAG_VISIBLE))
 			msgt(soundfx, "You have killed %s.", m_name);
 
 		/* Death by Physical attack -- non-living monster */
@@ -1533,7 +1534,8 @@ bool mon_take_hit(struct monster *m_ptr, int dam, bool *fear, const char *note)
 		monster_death(m_ptr, FALSE);
 
 		/* Recall even invisible uniques or winners */
-		if (m_ptr->ml || rf_has(m_ptr->race->flags, RF_UNIQUE)) {
+		if (mflag_has(m_ptr->mflag, MFLAG_VISIBLE) ||
+			rf_has(m_ptr->race->flags, RF_UNIQUE)) {
 			/* Count kills this life */
 			if (l_ptr->pkills < MAX_SHORT) l_ptr->pkills++;
 

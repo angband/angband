@@ -56,6 +56,7 @@ byte elem_max = 0;
 byte monster_blow_max = 0;
 byte rf_size = 0;
 byte rsf_size = 0;
+byte mflag_size = 0;
 
 /* Trap constants */
 byte trf_size = 0;
@@ -237,9 +238,9 @@ static int rd_item(object_type *o_ptr)
 /**
  * Read a monster
  */
-static void rd_monster(monster_type * m_ptr)
+static void rd_monster(monster_type *m_ptr)
 {
-	byte tmp8u, flags;
+	byte tmp8u;
 	s16b r_idx;
 	size_t j;
 
@@ -260,8 +261,8 @@ static void rd_monster(monster_type * m_ptr)
 		rd_s16b(&m_ptr->m_timed[j]);
 
 	/* Read and extract the flag */
-	rd_byte(&flags);
-	m_ptr->unaware = (flags & 0x01) ? TRUE : FALSE;
+	for (j = 0; j < mflag_size; j++)
+		rd_byte(&m_ptr->mflag[j]);
 
 	for (j = 0; j < of_size; j++)
 		rd_byte(&m_ptr->known_pstate.flags[j]);
@@ -442,6 +443,16 @@ int rd_monster_memory(void)
 	u16b tmp16u;
 	char buf[128];
 	int i;
+
+	/* Monster temporary flags */
+	rd_byte(&mflag_size);
+
+	/* Incompatible save files */
+	if (mflag_size > MFLAG_SIZE)
+	{
+	        note(format("Too many (%u) monster temporary flags!", mflag_size));
+		return (-1);
+	}
 
 	/* Reset maximum numbers per level */
 	for (i = 1; z_info && i < z_info->r_max; i++)
