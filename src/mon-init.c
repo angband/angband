@@ -44,7 +44,7 @@ monster_lore *l_list;
 const char *r_info_flags[] =
 {
 	#define RF(a, b, c) #a,
-	#include "list-mon-flags.h"
+	#include "list-mon-race-flags.h"
 	#undef RF
 	NULL
 };

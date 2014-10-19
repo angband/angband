@@ -41,7 +41,7 @@
 enum
 {
 	#define RF(a,b,c) RF_##a,
-	#include "list-mon-flags.h"
+	#include "list-mon-race-flags.h"
 	#undef RF
 	RF_MAX
 };

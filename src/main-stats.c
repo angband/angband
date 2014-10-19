@@ -781,7 +781,7 @@ static int stats_dump_lists(void)
 	char *r_info_flags[] =
 	{
 		#define RF(a, b, c) #a,
-		#include "list-mon-flags.h"
+		#include "list-mon-race-flags.h"
 		#undef RF
 		NULL
 	};
@@ -979,7 +979,7 @@ static int stats_dump_info(void)
  *     object_flags_map -- map between objects and object flags
  *     object_mods_map -- map between objects and modifiers
  *     effects_list -- dump of list-effects.h
- *     monster_flags_list -- dump of list-mon-flags.h
+ *     monster_flags_list -- dump of list-mon-race-flags.h
  *     object_flags_list -- dump of list-object-flags.h
  *     object_mods_list -- dump of list-object-modifiers.h
  *     origin_flags_list -- dump of origin enum

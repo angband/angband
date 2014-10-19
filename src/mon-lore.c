@@ -546,7 +546,7 @@ static const char *lore_describe_race_flag(int flag)
 {
 	static const char *r_flag_description[] = {
 		#define RF(a, b, c) c,
-		#include "list-mon-flags.h"
+		#include "list-mon-race-flags.h"
 		#undef RF
 		NULL
 	};

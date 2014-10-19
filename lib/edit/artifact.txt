@@ -54,8 +54,9 @@
 # 'value' is for properties that take a value and a random expression for that
 # value. Valid properties are object modifiers (as found in list-stats.h and
 # list-object-modifiers.h), brands (based on the first 5 entries from
-# list-elements.h), slays (based on racial monster flags in list-mon-flags.h or
-# monster bases in monster_base.txt) and resistances (based on list-elements.h).
+# list-elements.h), slays (based on racial monster flags in
+# list-mon-race-flags.h or monster bases in monster_base.txt) and resistances
+# (based on list-elements.h).
 
 # 'desc' is for the artifact description.  These appear when the item is 
 # identified.  Special thanks to J.R.R Tolkien, without whom the words would

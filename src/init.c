@@ -144,7 +144,7 @@ static const char *elements[] = {
 
 static const char *slays[] = {
 	#define RF(a, b, c) #a,
-	#include "list-mon-flags.h"
+	#include "list-mon-race-flags.h"
 	#undef RF
 	NULL
 };
@@ -158,7 +158,7 @@ static const char *brand_names[] = {
 
 static const char *slay_names[] = {
 	#define RF(a, b, c) b,
-	#include "list-mon-flags.h"
+	#include "list-mon-race-flags.h"
 	#undef RF
 	NULL
 };

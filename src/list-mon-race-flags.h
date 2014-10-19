@@ -1,4 +1,4 @@
-/* list-mon-flags.h - monster race flags
+/* list-mon-race-flags.h - monster race flags
  *
  * Changing flag order will break savefiles. There was a hard-coded limit of
  * 96 flags, due to 12 bytes of storage for lore flags in the savefile; this 
