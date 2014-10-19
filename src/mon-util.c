@@ -227,7 +227,7 @@ void update_mon(struct monster *m_ptr, struct chunk *c, bool full)
 	}
 
 	/* Detected */
-	if (m_ptr->mflag & (MFLAG_MARK)) flag = TRUE;
+	if (mflag_has(m_ptr->mflag, MFLAG_MARK)) flag = TRUE;
 
 	/* Check if telepathy works */
 	if (square_isno_esp(c, fy, fx) ||
@@ -373,9 +373,9 @@ void update_mon(struct monster *m_ptr, struct chunk *c, bool full)
 	/* The monster is now easily visible */
 	if (easy) {
 		/* Change */
-		if (!(m_ptr->mflag & (MFLAG_VIEW))) {
+		if (!mflag_has(m_ptr->mflag, MFLAG_VIEW)) {
 			/* Mark as easily visible */
-			m_ptr->mflag |= (MFLAG_VIEW);
+			mflag_on(m_ptr->mflag, MFLAG_VIEW);
 
 			/* Disturb on appearance */
 			if (OPT(disturb_near)) disturb(player, 1);
@@ -388,9 +388,9 @@ void update_mon(struct monster *m_ptr, struct chunk *c, bool full)
 	/* The monster is not easily visible */
 	else {
 		/* Change */
-		if (m_ptr->mflag & (MFLAG_VIEW)) {
+		if (mflag_has(m_ptr->mflag, MFLAG_VIEW)) {
 			/* Mark as not easily visible */
-			m_ptr->mflag &= ~(MFLAG_VIEW);
+			mflag_off(m_ptr->mflag, MFLAG_VIEW);
 
 			/* Disturb on disappearance */
 			if (OPT(disturb_near) && !is_mimicking(m_ptr)) disturb(player, 1);

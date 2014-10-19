@@ -246,7 +246,7 @@ typedef struct monster
 
 	byte cdis;			/* Current dis from player */
 
-	byte mflag;			/* Extra monster flags */
+	bitflag mflag[MFLAG_SIZE];	/* Temporary monster flags */
 
 	bool ml;			/* Monster is "visible" */
 	bool unaware;		/* Player doesn't know this is a monster */

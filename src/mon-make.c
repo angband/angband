@@ -994,7 +994,7 @@ static bool place_new_monster_one(struct chunk *c, int y, int x, monster_race *r
 
 	/* Force monster to wait for player */
 	if (rf_has(race->flags, RF_FORCE_SLEEP))
-		mon->mflag |= (MFLAG_NICE);
+		mflag_on(mon->mflag, MFLAG_NICE);
 
 	/* Radiate light? */
 	if (rf_has(race->flags, RF_HAS_LIGHT))

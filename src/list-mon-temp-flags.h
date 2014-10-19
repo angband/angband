@@ -4,7 +4,7 @@
  */
 
 MFLAG(VIEW,		"Monster is in line of sight")
-MFLAG(ACTV,		"Monster is in active mode")
+MFLAG(ACTIVE,	"Monster is in active mode")
 MFLAG(NICE,		"Monster is still being nice")
 MFLAG(SHOW,		"Monster is recently memorized")
 MFLAG(MARK,		"Monster is currently memorized")

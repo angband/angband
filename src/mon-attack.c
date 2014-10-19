@@ -260,7 +260,7 @@ bool make_attack_spell(struct monster *m_ptr)
 	if (m_ptr->m_timed[MON_TMD_CONF]) return (FALSE);
 
 	/* Cannot cast spells when nice */
-	if (m_ptr->mflag & MFLAG_NICE) return FALSE;
+	if (mflag_has(m_ptr->mflag, MFLAG_NICE)) return FALSE;
 
 	/* Hack -- Extract the spell probability */
 	chance = (m_ptr->race->freq_innate + m_ptr->race->freq_spell) / 2;

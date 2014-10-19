@@ -1010,10 +1010,10 @@ static void process_player(void)
 			for (i = 1; i < cave_monster_max(cave); i++)
 			{
 				struct monster *mon = cave_monster(cave, i);
-				mon->mflag &= ~MFLAG_NICE;
-				if (mon->mflag & MFLAG_MARK) {
-					if (!(mon->mflag & MFLAG_SHOW)) {
-						mon->mflag &= ~MFLAG_MARK;
+				mflag_off(mon->mflag, MFLAG_NICE);
+				if (mflag_has(mon->mflag, MFLAG_MARK)) {
+					if (!mflag_has(mon->mflag, MFLAG_SHOW)) {
+						mflag_off(mon->mflag, MFLAG_MARK);
 						update_mon(mon, cave, FALSE);
 					}
 				}
@@ -1024,7 +1024,7 @@ static void process_player(void)
 		for (i = 1; i < cave_monster_max(cave); i++)
 		{
 			struct monster *mon = cave_monster(cave, i);
-			mon->mflag &= ~MFLAG_SHOW;
+			mflag_off(mon->mflag, MFLAG_SHOW);
 		}
 
 		/* HACK: This will redraw the itemlist too frequently, but I'm don't

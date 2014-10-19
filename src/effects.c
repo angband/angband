@@ -1371,7 +1371,8 @@ bool effect_handler_DETECT_VISIBLE_MONSTERS(effect_handler_context_t *context)
 		/* Detect all non-invisible, obvious monsters */
 		if (!rf_has(m_ptr->race->flags, RF_INVISIBLE) && !m_ptr->unaware) {
 			/* Hack -- Detect the monster */
-			m_ptr->mflag |= (MFLAG_MARK | MFLAG_SHOW);
+			mflag_on(m_ptr->mflag, MFLAG_MARK);
+			mflag_on(m_ptr->mflag, MFLAG_SHOW);
 
 			/* Update monster recall window */
 			if (player->upkeep->monster_race == m_ptr->race)
@@ -1448,7 +1449,8 @@ bool effect_handler_DETECT_INVISIBLE_MONSTERS(effect_handler_context_t *context)
 				player->upkeep->redraw |= (PR_MONSTER);
 
 			/* Detect the monster */
-			m_ptr->mflag |= (MFLAG_MARK | MFLAG_SHOW);
+			mflag_on(m_ptr->mflag, MFLAG_MARK);
+			mflag_on(m_ptr->mflag, MFLAG_SHOW);
 
 			/* Update the monster */
 			update_mon(m_ptr, cave, FALSE);
@@ -1521,7 +1523,8 @@ bool effect_handler_DETECT_EVIL(effect_handler_context_t *context)
 				player->upkeep->redraw |= (PR_MONSTER);
 
 			/* Detect the monster */
-			m_ptr->mflag |= (MFLAG_MARK | MFLAG_SHOW);
+			mflag_on(m_ptr->mflag, MFLAG_MARK);
+			mflag_on(m_ptr->mflag, MFLAG_SHOW);
 
 			/* Update the monster */
 			update_mon(m_ptr, cave, FALSE);

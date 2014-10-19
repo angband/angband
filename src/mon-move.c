@@ -911,25 +911,25 @@ static bool monster_check_active(struct chunk *c, struct monster *mon)
 
 	/* Character is inside scanning range */
 	if (mon->cdis <= dist)
-		mon->mflag |= (MFLAG_ACTV);
+		mflag_on(mon->mflag, MFLAG_ACTIVE);
 
 	/* Monster is hurt */
 	else if (mon->hp < mon->maxhp)
-		mon->mflag |= (MFLAG_ACTV);
+		mflag_on(mon->mflag, MFLAG_ACTIVE);
 
 	/* Monster can "see" the player (checked backwards) */
 	else if (player_has_los_bold(mon->fy, mon->fx))
-		mon->mflag |= (MFLAG_ACTV);
+		mflag_on(mon->mflag, MFLAG_ACTIVE);
 
 	/* Monster can "smell" the player from far away (flow) */
 	else if (monster_can_flow(c, mon))
-		mon->mflag |= (MFLAG_ACTV);
+		mflag_on(mon->mflag, MFLAG_ACTIVE);
 
 	/* Otherwise go passive */
 	else
-		mon->mflag &= ~(MFLAG_ACTV);
+		mflag_off(mon->mflag, MFLAG_ACTIVE);
 
-	return (mon->mflag & MFLAG_ACTV) ? TRUE : FALSE;
+	return mflag_has(mon->mflag, MFLAG_ACTIVE) ? TRUE : FALSE;
 }
 
 /**
@@ -1274,7 +1274,7 @@ static bool process_monster_try_push(struct chunk *c, struct monster *m_ptr, con
 				become_aware(n_ptr);
 
 			/* Note if visible */
-			if (m_ptr->ml && (m_ptr->mflag & MFLAG_VIEW))
+			if (m_ptr->ml && mflag_has(m_ptr->mflag, MFLAG_VIEW))
 				msg("%s %s %s.", kill_ok ? "tramples over" : "pushes past", m_name, n_name);
 
 			/* Monster ate another monster */
@@ -1487,7 +1487,8 @@ static void process_monster(struct chunk *c, struct monster *m_ptr)
 		if (m_ptr->ml) rf_on(l_ptr->flags, RF_NEVER_MOVE);
 
 		/* Possible disturb */
-		if (m_ptr->ml && (m_ptr->mflag & MFLAG_VIEW) && OPT(disturb_near))
+		if (m_ptr->ml && mflag_has(m_ptr->mflag, MFLAG_VIEW) &&
+			OPT(disturb_near))
 			disturb(player, 0);		
 	}
 
