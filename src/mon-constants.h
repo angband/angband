@@ -27,12 +27,12 @@
 /*
  * Special Monster Flags (all temporary)
  */
-#define MFLAG_VIEW	0x01	/* Monster is in line of sight */
-#define MFLAG_ACTV	0x02	/* Monster is in active mode */
-/* xxx */
-#define MFLAG_NICE	0x20	/* Monster is still being nice */
-#define MFLAG_SHOW	0x40	/* Monster is recently memorized */
-#define MFLAG_MARK	0x80	/* Monster is currently memorized */
+enum
+{
+	#define MFLAG(a, b) MFLAG_##a,
+	#include "list-mon-temp-flags.h"
+	#undef MFLAG
+};
 
 
 /*
