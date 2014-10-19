@@ -3,7 +3,6 @@
 #include "unit-test.h"
 #include "unit-test-data.h"
 #include "init.h"
-#include "mon-constants.h"
 #include "monster.h"
 
 int setup_tests(void **state) {
