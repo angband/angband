@@ -422,7 +422,10 @@ static void cleanup_player(void) {
 		object_wipe(&player->gear_k[i]);
 	mem_free(player->gear);
 	mem_free(player->gear_k);
+	for (i = 0; i < player->body.count; i++)
+		string_free(player->body.slots[i].name);
 	mem_free(player->body.slots);
+	mem_free(player->history);
 
 	mem_free(player);
 }

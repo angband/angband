@@ -2026,6 +2026,7 @@ static void cleanup_trap(void)
 		string_free(trap_info[i].name);
 		mem_free(trap_info[i].text);
 		free_effect(trap_info[i].effect);
+		string_free(trap_info[i].desc);
 	}
 	mem_free(trap_info);
 }
@@ -2703,6 +2704,7 @@ static void cleanup_body(void)
 		string_free((char *)b->name);
 		for (i = 0; i < b->count; i++)
 			string_free((char *)b->slots[i].name);
+		mem_free(b->slots);
 		mem_free(b);
 		b = next;
 	}
