@@ -174,6 +174,10 @@ static void init_obj_make(void) {
 }
 
 static void cleanup_obj_make(void) {
+	int i;
+	for (i = 0; i < num_money_types; i++) {
+		string_free(money_type[i].name);
+	}
 	mem_free(money_type);
 	mem_free(alloc_ego_table);
 	mem_free(obj_alloc_great);

@@ -985,6 +985,7 @@ static void cleanup_r(void)
 		string_free(r->plural);
 		string_free(r->text);
 		string_free(r->name);
+		mem_free(r->blow);
 	}
 
 	mem_free(r_info);
@@ -1350,6 +1351,8 @@ static void cleanup_lore(void)
 			mem_free(m);
 			m = mn;
 		}
+		mem_free(l->blows);
+		mem_free(l->blow_known);
 	}
 
 	mem_free(l_list);
