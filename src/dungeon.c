@@ -366,57 +366,30 @@ static void recharge_objects(void)
 }
 
 
+/**
+ * Play an ambient sound dependent on dungeon level, and day or night in town
+ */
 static void play_ambient_sound(void)
 {
-	/* Town sound */
-	if (player->depth == 0) 
-	{
-		/* Hack - is it daytime or nighttime? */
-		if (turn % (10L * TOWN_DAWN) < TOWN_DAWN / 2)
-		{
-			/* It's day. */
+	if (player->depth == 0) {
+		if (is_daytime())
 			sound(MSG_AMBIENT_DAY);
-		} 
 		else 
-		{
-			/* It's night. */
 			sound(MSG_AMBIENT_NITE);
-		}
-		
-	}
-
-	/* Dungeon level 1-20 */
-	else if (player->depth <= 20) 
-	{
+	} else if (player->depth <= 20) {
 		sound(MSG_AMBIENT_DNG1);
-	}
-
-	/* Dungeon level 21-40 */
-	else if (player->depth <= 40) 
-	{
+	} else if (player->depth <= 40) {
 		sound(MSG_AMBIENT_DNG2);
-	}
-
-	/* Dungeon level 41-60 */
-	else if (player->depth <= 60) 
-	{
+	} else if (player->depth <= 60) {
 		sound(MSG_AMBIENT_DNG3);
-	}
-
-	/* Dungeon level 61-80 */
-	else if (player->depth <= 80)
-	{
+	} else if (player->depth <= 80) {
 		sound(MSG_AMBIENT_DNG4);
-	}
-
-	/* Dungeon level 80- */
-	else
-	{
+	} else {
 		sound(MSG_AMBIENT_DNG5);
 	}
 }
 
-/*
+/**
  * Helper for process_world -- decrement player->timed[] fields.
  */
 static void decrease_timeouts(void)
@@ -424,15 +397,14 @@ static void decrease_timeouts(void)
 	int adjust = (adj_con_fix[player->state.stat_ind[STAT_CON]] + 1);
 	int i;
 
-	/* Decrement all effects that can be done simply */
-	for (i = 0; i < TMD_MAX; i++)
-	{
+	/* Most effects decrement by 1 */
+	for (i = 0; i < TMD_MAX; i++) {
 		int decr = 1;
 		if (!player->timed[i])
 			continue;
 
-		switch (i)
-		{
+		/* Special cases */
+		switch (i) {
 			case TMD_CUT:
 			{
 				/* Hack -- check for truly "mortal" wound */
@@ -455,8 +427,8 @@ static void decrease_timeouts(void)
 }
 
 
-/*
- * Handle certain things once every 10 game turns
+/**
+ * Handle things that need updating once every 10 game turns
  */
 static void process_world(struct chunk *c)
 {
@@ -466,26 +438,17 @@ static void process_world(struct chunk *c)
 
 	object_type *o_ptr;
 
-	/* Every 10 game turns */
-	if (turn % 10) return;
-
-
 	/*** Check the Time ***/
 
 	/* Play an ambient sound at regular intervals. */
 	if (!(turn % ((10L * TOWN_DAWN) / 4)))
-	{
 		play_ambient_sound();
-	}
 
-	/*** Handle the "town" (stores and sunshine) ***/
+	/*** Handle stores and sunshine ***/
 
-	/* While in town */
-	if (!player->depth)
-	{
-		/* Hack -- Daybreak/Nighfall in town */
-		if (!(turn % ((10L * TOWN_DAWN) / 2)))
-		{
+	if (!player->depth) {
+		/* Daybreak/Nighfall in town */
+		if (!(turn % ((10L * TOWN_DAWN) / 2))) {
 			bool dawn;
 
 			/* Check for dawn */
@@ -502,12 +465,7 @@ static void process_world(struct chunk *c)
 			/* Illuminate */
 			cave_illuminate(c, dawn);
 		}
-	}
-
-
-	/* While in the dungeon */
-	else
-	{
+	} else {
 		/* Update the stores once a day (while in the dungeon).
 		   The changes are not actually made until return to town,
 		   to avoid giving details away in the knowledge menu. */
@@ -517,23 +475,16 @@ static void process_world(struct chunk *c)
 
 	/* Check for creature generation */
 	if (one_in_(z_info->alloc_monster_chance))
-	{
-		/* Make a new monster */
 		(void)pick_and_place_distant_monster(cave, loc(player->px, player->py), MAX_SIGHT + 5, TRUE, player->depth);
-	}
 
 	/*** Damage over Time ***/
 
 	/* Take damage from poison */
 	if (player->timed[TMD_POISONED])
-	{
-		/* Take damage */
 		take_hit(player, 1, "poison");
-	}
 
 	/* Take damage from cuts */
-	if (player->timed[TMD_CUT])
-	{
+	if (player->timed[TMD_CUT]) {
 		/* Mortal wound or Deep Gash */
 		if (player->timed[TMD_CUT] > 200)
 			i = 3;
@@ -554,8 +505,7 @@ static void process_world(struct chunk *c)
 	/*** Check the Food, and Regenerate ***/
 
 	/* Digest normally */
-	if (!(turn % 100))
-	{
+	if (!(turn % 100)) {
 		/* Basic digestion rate based on speed */
 		i = extract_energy[player->state.speed] * 2;
 
@@ -573,24 +523,21 @@ static void process_world(struct chunk *c)
 	}
 
 	/* Getting Faint */
-	if (player->food < PY_FOOD_FAINT)
-	{
+	if (player->food < PY_FOOD_FAINT) {
 		/* Faint occasionally */
-		if (!player->timed[TMD_PARALYZED] && one_in_(10))
-		{
+		if (!player->timed[TMD_PARALYZED] && one_in_(10)) {
 			/* Message */
 			msg("You faint from the lack of food.");
 			disturb(player, 1);
 
 			/* Faint (bypass free action) */
-			(void)player_inc_timed(player, TMD_PARALYZED, 1 + randint0(5), TRUE, FALSE);
+			(void)player_inc_timed(player, TMD_PARALYZED, 1 + randint0(5),
+								   TRUE, FALSE);
 		}
 	}
 
-
 	/* Starve to death (slowly) */
-	if (player->food < PY_FOOD_STARVE)
-	{
+	if (player->food < PY_FOOD_STARVE) {
 		/* Calculate damage */
 		i = (PY_FOOD_STARVE - player->food) / 10;
 
@@ -668,7 +615,7 @@ static void process_world(struct chunk *c)
 		bool burn_fuel = TRUE;
 
 		/* Turn off the wanton burning of light during the day in the town */
-		if (!player->depth && ((turn % (10L * TOWN_DAWN)) < ((10L * TOWN_DAWN) / 2)))
+		if (!player->depth && is_daytime())
 			burn_fuel = FALSE;
 
 		/* If the light has the NO_FUEL flag, well... */
@@ -717,8 +664,7 @@ static void process_world(struct chunk *c)
 	/*** Process Inventory ***/
 
 	/* Handle experience draining */
-	if (player_of_has(player, OF_DRAIN_EXP))
-	{
+	if (player_of_has(player, OF_DRAIN_EXP)) {
 		if ((player->exp > 0) && one_in_(10)) {
 			s32b d = damroll(10, 6) +
 				(player->exp / 100) * z_info->life_drain_percent;
@@ -738,8 +684,7 @@ static void process_world(struct chunk *c)
 	/*** Involuntary Movement ***/
 
 	/* Random teleportation */
-	if (player_of_has(player, OF_TELEPORT) && one_in_(50))
-	{
+	if (player_of_has(player, OF_TELEPORT) && one_in_(50)) {
 		const char *forty = "40";
 		wieldeds_notice_flag(player, OF_TELEPORT);
 		effect_simple(EF_TELEPORT, forty, 0, 1, 0, NULL);
@@ -747,31 +692,26 @@ static void process_world(struct chunk *c)
 	}
 
 	/* Delayed Word-of-Recall */
-	if (player->word_recall)
-	{
+	if (player->word_recall) {
 		/* Count down towards recall */
 		player->word_recall--;
 
 		/* Activate the recall */
-		if (!player->word_recall)
-		{
+		if (!player->word_recall) {
 			/* Disturbing! */
 			disturb(player, 0);
 
 			/* Determine the level */
-			if (player->depth)
-			{
+			if (player->depth) {
 				msgt(MSG_TPLEVEL, "You feel yourself yanked upwards!");
 				dungeon_change_level(0);
-			}
-			else
-			{
+			} else {
 				msgt(MSG_TPLEVEL, "You feel yourself yanked downwards!");
                 
                 /* Force descent to a lower level if allowed */
-                if (OPT(birth_force_descend) && player->max_depth < MAX_DEPTH - 1
-                  && !is_quest(player->max_depth)){
-
+                if (OPT(birth_force_descend) &&
+					player->max_depth < MAX_DEPTH - 1 &&
+					!is_quest(player->max_depth)) {
                     player->max_depth = player->max_depth + 1;
                 }
 
@@ -1301,8 +1241,9 @@ static void dungeon(struct chunk *c)
 		if (refresh_and_check_for_leaving())
 			break;
 
-		/* Process the world */
-		process_world(c);
+		/* Process the world every ten turns */
+		if (!(turn % 10))
+			process_world(c);
 
 		/* Refresh */
 		if (refresh_and_check_for_leaving())
