@@ -886,10 +886,8 @@ static void process_player(void)
 		/* Redraw stuff (if needed) */
 		if (player->upkeep->redraw) redraw_stuff(player->upkeep);
 
-
 		/* Place cursor on player/target */
 		place_cursor();
-
 
 		/* Refresh (optional) */
 		Term_fresh();
@@ -901,8 +899,7 @@ static void process_player(void)
 		player->upkeep->energy_use = 0;
 
 		/* Dwarves detect treasure */
-		if (player_has(PF_SEE_ORE))
-		{
+		if (player_has(PF_SEE_ORE)) {
 			/* Only if they are in good shape */
 			if (!player->timed[TMD_IMAGE] &&
 					!player->timed[TMD_CONFUSED] &&
@@ -914,16 +911,12 @@ static void process_player(void)
 				effect_simple(EF_DETECT_GOLD, "3d3", 1, 0, 0, NULL);
 		}
 
-		/* Paralyzed or Knocked Out */
+		/* Paralyzed or Knocked Out player gets no turn */
 		if ((player->timed[TMD_PARALYZED]) || (player->timed[TMD_STUN] >= 100))
-		{
-			/* Take a turn */
 			player->upkeep->energy_use = 100;
-		}
 
 		/* Picking up objects */
-		else if (player->upkeep->notice & PN_PICKUP)
-		{
+		else if (player->upkeep->notice & PN_PICKUP) {
 			player->upkeep->energy_use = do_autopickup() * 10;
 			if (player->upkeep->energy_use > 100)
 				player->upkeep->energy_use = 100;
@@ -935,20 +928,14 @@ static void process_player(void)
 
 		/* Resting */
 		else if (player_is_resting(player))
-		{
 			player_resting_step_turn(player);
-		}
 
 		/* Running */
 		else if (player->upkeep->running)
-		{
-			/* Take a step */
 			run_step(0);
-		}
 
 		/* Repeated command */
-		else if (cmd_get_nrepeats() > 0)
-		{
+		else if (cmd_get_nrepeats() > 0) {
 			/* Hack -- Assume messages were seen */
 			msg_flag = FALSE;
 
@@ -957,11 +944,7 @@ static void process_player(void)
 
 			/* Process the command */
 			process_command(CMD_GAME, TRUE);
-		}
-
-		/* Normal command */
-		else
-		{
+		} else { /* Normal command */
 			/* Check monster recall */
 			if (player->upkeep->monster_race)
 				player->upkeep->redraw |= (PR_MONSTER);
@@ -981,8 +964,7 @@ static void process_player(void)
 		/*** Clean up ***/
 
 		/* Significant */
-		if (player->upkeep->energy_use)
-		{
+		if (player->upkeep->energy_use) {
 			/* Use some energy */
 			player->energy -= player->upkeep->energy_use;
 
@@ -991,13 +973,10 @@ static void process_player(void)
 
 			/* Hack -- constant hallucination */
 			if (player->timed[TMD_IMAGE])
-			{
 				player->upkeep->redraw |= (PR_MAP);
-			}
 
 			/* Shimmer multi-hued monsters */
-			for (i = 1; i < cave_monster_max(cave); i++)
-			{
+			for (i = 1; i < cave_monster_max(cave); i++) {
 				struct monster *mon = cave_monster(cave, i);
 				if (!mon->race)
 					continue;
@@ -1007,8 +986,7 @@ static void process_player(void)
 			}
 
 			/* Clear NICE flag, and show marked monsters */
-			for (i = 1; i < cave_monster_max(cave); i++)
-			{
+			for (i = 1; i < cave_monster_max(cave); i++) {
 				struct monster *mon = cave_monster(cave, i);
 				mflag_off(mon->mflag, MFLAG_NICE);
 				if (mflag_has(mon->mflag, MFLAG_MARK)) {
@@ -1021,8 +999,7 @@ static void process_player(void)
 		}
 
 		/* Clear SHOW flag */
-		for (i = 1; i < cave_monster_max(cave); i++)
-		{
+		for (i = 1; i < cave_monster_max(cave); i++) {
 			struct monster *mon = cave_monster(cave, i);
 			mflag_off(mon->mflag, MFLAG_SHOW);
 		}
@@ -1130,6 +1107,27 @@ void idle_update(void)
 }
 
 
+static bool refresh_and_check_for_leaving(void)
+{
+	/* Notice stuff */
+	if (player->upkeep->notice)
+		notice_stuff(player->upkeep);
+
+	/* Update stuff */
+	if (player->upkeep->update)
+		update_stuff(player->upkeep);
+
+	/* Redraw stuff */
+	if (player->upkeep->redraw)
+		redraw_stuff(player->upkeep);
+
+	/* Place cursor on player/target */
+	place_cursor();
+
+	/* Are we leaving the level/game? */
+	return player->upkeep->leaving;
+}
+
 /*
  * Interact with the current dungeon level.
  *
@@ -1165,20 +1163,15 @@ static void dungeon(struct chunk *c)
 
 	/* Track maximum player level */
 	if (player->max_lev < player->lev)
-	{
 		player->max_lev = player->lev;
-	}
 
 
 	/* Track maximum dungeon level */
 	if (player->max_depth < player->depth)
-	{
 		player->max_depth = player->depth;
-	}
 
 	/* If autosave is pending, do it now. */
-	if (player->upkeep->autosave)
-	{
+	if (player->upkeep->autosave) {
 		save_game();
 		player->upkeep->autosave = FALSE;
 	}
@@ -1186,18 +1179,14 @@ static void dungeon(struct chunk *c)
 	/* Choose panel */
 	verify_panel();
 
-
 	/* Flush messages */
 	message_flush();
-
 
 	/* Hack -- Increase "xtra" depth */
 	character_xtra++;
 
-
 	/* Clear */
 	Term_clear();
-
 
 	/* Update stuff */
 	player->upkeep->update |= (PU_BONUS | PU_HP | PU_MANA | PU_SPELLS);
@@ -1207,7 +1196,6 @@ static void dungeon(struct chunk *c)
 
 	/* Update stuff */
 	update_stuff(player->upkeep);
-
 
 	/* Fully update the visuals (and monster distances) */
 	player->upkeep->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_DISTANCE);
@@ -1227,10 +1215,8 @@ static void dungeon(struct chunk *c)
 	/* Redraw stuff */
 	redraw_stuff(player->upkeep);
 
-
 	/* Hack -- Decrease "xtra" depth */
 	character_xtra--;
-
 
 	/* Update stuff */
 	player->upkeep->update |= (PU_BONUS | PU_HP | PU_MANA | PU_SPELLS | PU_INVEN);
@@ -1256,7 +1242,8 @@ static void dungeon(struct chunk *c)
 	/* Announce (or repeat) the feeling */
 	if (player->depth) display_feeling(FALSE);
 
-	/* Give player minimum energy to start a new level, but do not reduce higher value from savefile for level in progress */
+	/* Give player minimum energy to start a new level, but do not reduce
+	 * higher value from savefile for level in progress */
 	if (player->energy < INITIAL_DUNGEON_ENERGY)
 		player->energy = INITIAL_DUNGEON_ENERGY;
 
@@ -1264,27 +1251,25 @@ static void dungeon(struct chunk *c)
 	/*** Process this dungeon level ***/
 
 	/* Main loop */
-	while (TRUE)
-	{
-		/* Hack -- Compact the monster list occasionally */
+	while (TRUE) {
+		/* Compact the monster list if we're approaching the limit */
 		if (cave_monster_count(cave) + 32 > z_info->level_monster_max) 
 			compact_monsters(64);
 
-		/* Hack -- Compress the monster list occasionally */
+		/* Too many holes in the monster list - compress */
 		if (cave_monster_count(cave) + 32 < cave_monster_max(cave)) 
 			compact_monsters(0);
 
-		/* Hack -- Compact the object list occasionally */
+		/* Compact the object list if we're approaching the limit */
 		if (cave_object_count(cave) + 32 > z_info->level_object_max) 
 			compact_objects(64);
 
-		/* Hack -- Compress the object list occasionally */
+		/* Too many holes in the object list - compress */
 		if (cave_object_count(cave) + 32 < cave_object_max(cave)) 
 			compact_objects(0);
 
 		/* Can the player move? */
-		while ((player->energy >= 100) && !player->upkeep->leaving)
-		{
+		while ((player->energy >= 100) && !player->upkeep->leaving) {
     		/* Do any necessary animations */
     		do_animation(); 
 
@@ -1292,8 +1277,7 @@ static void dungeon(struct chunk *c)
 			process_monsters(c, player->energy + 1);
 
 			/* if still alive */
-			if (!player->upkeep->leaving)
-			{
+			if (!player->upkeep->leaving) {
 			        /* Mega hack -redraw big graphics - sorry NRM */
 			        if ((tile_width > 1) || (tile_height > 1)) 
 				        player->upkeep->redraw |= (PR_MAP);
@@ -1303,20 +1287,9 @@ static void dungeon(struct chunk *c)
 			}
 		}
 
-		/* Notice stuff */
-		if (player->upkeep->notice) notice_stuff(player->upkeep);
-
-		/* Update stuff */
-		if (player->upkeep->update) update_stuff(player->upkeep);
-
-		/* Redraw stuff */
-		if (player->upkeep->redraw) redraw_stuff(player->upkeep);
-
-		/* Place cursor on player/target */
-		place_cursor();
-
-		/* Handle "leaving" */
-		if (player->upkeep->leaving) break;
+		/* Refresh */
+		if (refresh_and_check_for_leaving())
+			break;
 
 		/* Process all of the monsters */
 		process_monsters(c, 0);
@@ -1324,39 +1297,16 @@ static void dungeon(struct chunk *c)
 		/* Reset Monsters */
 		reset_monsters();
 
-		/* Notice stuff */
-		if (player->upkeep->notice) notice_stuff(player->upkeep);
-
-		/* Update stuff */
-		if (player->upkeep->update) update_stuff(player->upkeep);
-
-		/* Redraw stuff */
-		if (player->upkeep->redraw) redraw_stuff(player->upkeep);
-
-		/* Place cursor on player/target */
-		place_cursor();
-
-		/* Handle "leaving" */
-		if (player->upkeep->leaving) break;
-
+		/* Refresh */
+		if (refresh_and_check_for_leaving())
+			break;
 
 		/* Process the world */
 		process_world(c);
 
-		/* Notice stuff */
-		if (player->upkeep->notice) notice_stuff(player->upkeep);
-
-		/* Update stuff */
-		if (player->upkeep->update) update_stuff(player->upkeep);
-
-		/* Redraw stuff */
-		if (player->upkeep->redraw) redraw_stuff(player->upkeep);
-
-		/* Place cursor on player/target */
-		place_cursor();
-
-		/* Handle "leaving" */
-		if (player->upkeep->leaving) break;
+		/* Refresh */
+		if (refresh_and_check_for_leaving())
+			break;
 
 		/*** Apply energy ***/
 

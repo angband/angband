@@ -1,6 +1,6 @@
 /**
  * \file generate.c
- *	\brief Dungeon generation.
+ * \brief Dungeon generation.
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  * Copyright (c) 2013 Erik Osheim, Nick McConnell
