@@ -86,6 +86,27 @@ bool test_hit(int chance, int ac, int vis) {
 
 
 /**
+ * Determine standard melee damage.
+ *
+ * Factor in damage dice, to-dam and any brand or slay.
+ */
+static int melee_damage(struct object *obj, const struct brand *b,
+						const struct slay *s)
+{
+	int dmg = damroll(obj->dd, obj->ds);
+
+	if (s)
+		dmg *= s->multiplier;
+	else if (b)
+		dmg *= b->multiplier;
+
+	dmg += obj->to_d;
+
+	return dmg;
+}
+
+
+/**
  * Determine damage for critical hits from shooting.
  *
  * Factor in item weight, total plusses, and player level.
@@ -146,6 +167,46 @@ static int critical_norm(int weight, int plus, int dam, u32b *msg_type) {
 		*msg_type = MSG_HIT_HI_SUPERB;
 		return 4 * dam + 20;
 	}
+}
+
+/**
+ * Apply the player damage bonuses
+ */
+static int player_damage_bonus(struct player_state *state)
+{
+	return state->to_d;
+}
+
+/**
+ * Apply blow side effects
+ */
+static void blow_side_effects(struct player *p, struct monster *mon)
+{
+	/* Confusion attack */
+	if (p->confusing) {
+		p->confusing = FALSE;
+		msg("Your hands stop glowing.");
+
+		mon_inc_timed(mon, MON_TMD_CONF, (10 + randint0(p->lev) / 10),
+					  MON_TMD_FLG_NOTIFY, FALSE);
+	}
+}
+
+/**
+ * Apply blow after effects
+ */
+static bool blow_after_effects(int y, int x, bool quake)
+{
+	/* Apply earthquake brand */
+	if (quake) {
+		effect_simple(EF_EARTHQUAKE, "0", 0, 10, 0, NULL);
+
+		/* Monster may be dead or moved */
+		if (!square_monster(cave, y, x))
+			return TRUE;
+	}
+
+	return FALSE;
 }
 
 /* A list of the different hit types and their associated special message */
@@ -250,13 +311,7 @@ static bool py_attack_real(int y, int x, bool *fear) {
 		improve_attack_modifier(o_ptr, m_ptr, &b, &s, hit_verb, 
 								TRUE, FALSE);
 
-		dmg = damroll(o_ptr->dd, o_ptr->ds);
-		if (s)
-			dmg *= s->multiplier;
-		else if (b)
-			dmg *= b->multiplier;
-
-		dmg += o_ptr->to_d;
+		dmg = melee_damage(o_ptr, b, s);
 		dmg = critical_norm(o_ptr->weight, o_ptr->to_h, dmg, &msg_type);
 
 		/* Learn by use for the weapon */
@@ -272,7 +327,7 @@ static bool py_attack_real(int y, int x, bool *fear) {
 	wieldeds_notice_on_attack();
 
 	/* Apply the player damage bonuses */
-	dmg += player->state.to_d;
+	dmg += player_damage_bonus(&player->state);
 
 	/* No negative damage; change verb if no damage done */
 	if (dmg <= 0) {
@@ -297,14 +352,8 @@ static bool py_attack_real(int y, int x, bool *fear) {
 			msgt(msg_type, "You %s %s%s.", hit_verb, m_name, dmg_text);
 	}
 
-	/* Confusion attack */
-	if (player->confusing) {
-		player->confusing = FALSE;
-		msg("Your hands stop glowing.");
-
-		mon_inc_timed(m_ptr, MON_TMD_CONF,
-				(10 + randint0(player->lev) / 10), MON_TMD_FLG_NOTIFY, FALSE);
-	}
+	/* Pre-damage side effects */
+	blow_side_effects(player, m_ptr);
 
 	/* Damage, check for fear and death */
 	stop = mon_take_hit(m_ptr, dmg, fear, NULL);
@@ -312,11 +361,9 @@ static bool py_attack_real(int y, int x, bool *fear) {
 	if (stop)
 		(*fear) = FALSE;
 
-	/* Apply earthquake brand */
-	if (do_quake) {
-		effect_simple(EF_EARTHQUAKE, "0", 0, 10, 0, NULL);
-		if (cave->m_idx[y][x] == 0) stop = TRUE;
-	}
+	/* Post-damage effects */
+	if (blow_after_effects(y, x, do_quake))
+		stop = TRUE;
 
 	return stop;
 }
