@@ -62,6 +62,22 @@ int breakage_chance(const object_type *o_ptr, bool hit_target) {
 	return perc;
 }
 
+static int chance_of_missile_hit(struct player *p, struct object *missile,
+								 struct object *launcher, int y, int x)
+{
+	bool throw = (launcher ? FALSE : TRUE);
+	int bonus = p->state.to_h + missile->to_h;
+	int chance;
+
+	if (throw)
+		chance = p->state.skills[SKILL_TO_HIT_THROW] + bonus * BTH_PLUS_ADJ;
+	else {
+		bonus += launcher->to_h;
+		chance = player->state.skills[SKILL_TO_HIT_BOW] + bonus * BTH_PLUS_ADJ;
+	}
+
+	return chance - distance(p->py, p->px, y, x);
+}
 
 /**
  * Determine if the player "hits" a monster.
@@ -105,6 +121,31 @@ static int melee_damage(struct object *obj, const struct brand *b,
 	return dmg;
 }
 
+/**
+ * Determine standard ranged damage.
+ *
+ * Factor in damage dice, to-dam, multiplier and any brand or slay.
+ */
+static int ranged_damage(struct object *missile, struct object *launcher, 
+						 const struct brand *b, const struct slay *s, int mult)
+{
+	int dam;
+
+	/* If we have a slay, modify the multiplier appropriately */
+	if (b)
+		mult += b->multiplier;
+	else if (s)
+		mult += s->multiplier;
+
+	/* Apply damage: multiplier, slays, criticals, bonuses */
+	dam = damroll(missile->dd, missile->ds);
+	dam += missile->to_d;
+	if (launcher)
+		dam += launcher->to_d;
+	dam *= mult;
+
+	return dam;
+}
 
 /**
  * Determine damage for critical hits from shooting.
@@ -616,9 +657,7 @@ static struct attack_result make_ranged_shot(object_type *o_ptr, int y, int x) {
 
 	monster_type *m_ptr = square_monster(cave, y, x);
 	
-	int bonus = player->state.to_h + o_ptr->to_h + j_ptr->to_h;
-	int chance = player->state.skills[SKILL_TO_HIT_BOW] + bonus * BTH_PLUS_ADJ;
-	int chance2 = chance - distance(player->py, player->px, y, x);
+	int chance = chance_of_missile_hit(player, o_ptr, j_ptr, y, x);
 
 	int multiplier = player->state.ammo_mult;
 	const struct brand *b = NULL;
@@ -627,27 +666,16 @@ static struct attack_result make_ranged_shot(object_type *o_ptr, int y, int x) {
 	my_strcpy(hit_verb, "hits", sizeof(hit_verb));
 
 	/* Did we hit it (penalize distance travelled) */
-	if (!test_hit(chance2, m_ptr->race->ac, mflag_has(m_ptr->mflag,
-													  MFLAG_VISIBLE)))
+	if (!test_hit(chance, m_ptr->race->ac,
+				  mflag_has(m_ptr->mflag, MFLAG_VISIBLE)))
 		return result;
 
 	result.success = TRUE;
 
-	improve_attack_modifier(o_ptr, m_ptr, &b, &s, result.hit_verb,
-							TRUE, FALSE);
-	improve_attack_modifier(j_ptr, m_ptr, &b, &s, result.hit_verb,
-							TRUE, FALSE);
+	improve_attack_modifier(o_ptr, m_ptr, &b, &s, result.hit_verb, TRUE, FALSE);
+	improve_attack_modifier(j_ptr, m_ptr, &b, &s, result.hit_verb, TRUE, FALSE);
 
-	/* If we have a slay, modify the multiplier appropriately */
-	if (b)
-		multiplier += b->multiplier;
-	else if (s)
-		multiplier += s->multiplier;
-
-	/* Apply damage: multiplier, slays, criticals, bonuses */
-	result.dmg = damroll(o_ptr->dd, o_ptr->ds);
-	result.dmg += o_ptr->to_d + j_ptr->to_d;
-	result.dmg *= multiplier;
+	result.dmg = ranged_damage(o_ptr, j_ptr, b, s, multiplier);
 	result.dmg = critical_shot(o_ptr->weight, o_ptr->to_h, result.dmg,
 							   &result.msg_type);
 
@@ -666,9 +694,7 @@ static struct attack_result make_ranged_throw(object_type *o_ptr, int y, int x) 
 
 	monster_type *m_ptr = square_monster(cave, y, x);
 	
-	int bonus = player->state.to_h + o_ptr->to_h;
-	int chance = player->state.skills[SKILL_TO_HIT_THROW] + bonus * BTH_PLUS_ADJ;
-	int chance2 = chance - distance(player->py, player->px, y, x);
+	int chance = chance_of_missile_hit(player, o_ptr, NULL, y, x);
 
 	int multiplier = 1;
 	const struct brand *b = NULL;
@@ -677,24 +703,17 @@ static struct attack_result make_ranged_throw(object_type *o_ptr, int y, int x) 
 	my_strcpy(hit_verb, "hits", sizeof(hit_verb));
 
 	/* If we missed then we're done */
-	if (!test_hit(chance2, m_ptr->race->ac, mflag_has(m_ptr->mflag, MFLAG_VISIBLE))) return result;
+	if (!test_hit(chance, m_ptr->race->ac,
+				  mflag_has(m_ptr->mflag, MFLAG_VISIBLE)))
+		return result;
 
 	result.success = TRUE;
 
-	improve_attack_modifier(o_ptr, m_ptr, &b, &s, result.hit_verb,
-							TRUE, FALSE);
+	improve_attack_modifier(o_ptr, m_ptr, &b, &s, result.hit_verb, TRUE, FALSE);
 
-	/* If we have a slay, modify the multiplier appropriately */
-	if (b)
-		multiplier += b->multiplier;
-	else if (s)
-		multiplier += s->multiplier;
-
-	/* Apply damage: multiplier, slays, criticals, bonuses */
-	result.dmg = damroll(o_ptr->dd, o_ptr->ds);
-	result.dmg += o_ptr->to_d;
-	result.dmg *= multiplier;
-	result.dmg = critical_norm(o_ptr->weight, o_ptr->to_h, result.dmg, &result.msg_type);
+	result.dmg = ranged_damage(o_ptr, NULL, b, s, multiplier);
+	result.dmg = critical_norm(o_ptr->weight, o_ptr->to_h, result.dmg,
+							   &result.msg_type);
 
 	return result;
 }
