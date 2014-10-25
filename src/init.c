@@ -825,7 +825,7 @@ static enum parser_error parse_object_properties(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_k_a(struct parser *p) {
+static enum parser_error parse_object_alloc(struct parser *p) {
 	struct object_kind *k = parser_priv(p);
 	const char *tmp = parser_getstr(p, "minmax");
 	int amin, amax;
@@ -840,7 +840,7 @@ static enum parser_error parse_k_a(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_k_p(struct parser *p) {
+static enum parser_error parse_object_combat(struct parser *p) {
 	struct object_kind *k = parser_priv(p);
 	struct random hd = parser_getrand(p, "hd");
 	assert(k);
@@ -854,7 +854,7 @@ static enum parser_error parse_k_p(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_k_c(struct parser *p) {
+static enum parser_error parse_object_charges(struct parser *p) {
 	struct object_kind *k = parser_priv(p);
 	assert(k);
 
@@ -862,7 +862,7 @@ static enum parser_error parse_k_c(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_k_m(struct parser *p) {
+static enum parser_error parse_object_pile(struct parser *p) {
 	struct object_kind *k = parser_priv(p);
 	assert(k);
 
@@ -871,7 +871,7 @@ static enum parser_error parse_k_m(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_k_f(struct parser *p) {
+static enum parser_error parse_object_flags(struct parser *p) {
 	struct object_kind *k = parser_priv(p);
 	char *s = string_make(parser_getstr(p, "flags"));
 	char *t;
@@ -894,7 +894,7 @@ static enum parser_error parse_k_f(struct parser *p) {
 	return t ? PARSE_ERROR_INVALID_FLAG : PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_k_power(struct parser *p) {
+static enum parser_error parse_object_power(struct parser *p) {
 	struct object_kind *k = parser_priv(p);
 	assert(k);
 
@@ -902,7 +902,7 @@ static enum parser_error parse_k_power(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_k_effect(struct parser *p) {
+static enum parser_error parse_object_effect(struct parser *p) {
 	struct object_kind *k = parser_priv(p);
 	struct effect *effect;
 	struct effect *new_effect = mem_zalloc(sizeof(*new_effect));
@@ -923,7 +923,7 @@ static enum parser_error parse_k_effect(struct parser *p) {
 	return grab_effect_data(p, new_effect);
 }
 
-static enum parser_error parse_k_param(struct parser *p) {
+static enum parser_error parse_object_param(struct parser *p) {
 	struct object_kind *k = parser_priv(p);
 	struct effect *effect = k->effect;
 
@@ -944,7 +944,7 @@ static enum parser_error parse_k_param(struct parser *p) {
 }
 
 
-static enum parser_error parse_k_dice(struct parser *p) {
+static enum parser_error parse_object_dice(struct parser *p) {
 	struct object_kind *k = parser_priv(p);
 	dice_t *dice = NULL;
 	struct effect *effect = k->effect;
@@ -977,7 +977,7 @@ static enum parser_error parse_k_dice(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_k_expr(struct parser *p) {
+static enum parser_error parse_object_expr(struct parser *p) {
 	struct object_kind *k = parser_priv(p);
 	struct effect *effect = k->effect;
 	expression_t *expression = NULL;
@@ -1022,14 +1022,14 @@ static enum parser_error parse_k_expr(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_k_msg(struct parser *p) {
+static enum parser_error parse_object_msg(struct parser *p) {
 	struct object_kind *k = parser_priv(p);
 	assert(k);
 	k->effect_msg = string_append(k->effect_msg, parser_getstr(p, "text"));
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_k_time(struct parser *p) {
+static enum parser_error parse_object_time(struct parser *p) {
 	struct object_kind *k = parser_priv(p);
 	assert(k);
 
@@ -1037,14 +1037,14 @@ static enum parser_error parse_k_time(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_k_d(struct parser *p) {
+static enum parser_error parse_object_desc(struct parser *p) {
 	struct object_kind *k = parser_priv(p);
 	assert(k);
 	k->text = string_append(k->text, parser_getstr(p, "text"));
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_k_l(struct parser *p) {
+static enum parser_error parse_object_pval(struct parser *p) {
 	struct object_kind *k = parser_priv(p);
 	assert(k);
 
@@ -1052,7 +1052,7 @@ static enum parser_error parse_k_l(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_k_v(struct parser *p) {
+static enum parser_error parse_object_values(struct parser *p) {
 	struct object_kind *k = parser_priv(p);
 	char *s;
 	char *t;
@@ -1111,36 +1111,36 @@ static enum parser_error parse_k_v(struct parser *p) {
 }
 
 
-struct parser *init_parse_k(void) {
+struct parser *init_parse_object(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
 	parser_reg(p, "name int index str name", parse_object_name);
 	parser_reg(p, "graphics char glyph sym color", parse_object_graphics);
 	parser_reg(p, "type sym tval", parse_object_type);
 	parser_reg(p, "properties int level int weight int cost", parse_object_properties);
-	parser_reg(p, "A int common str minmax", parse_k_a);
-	parser_reg(p, "P int ac rand hd rand to-h rand to-d rand to-a", parse_k_p);
-	parser_reg(p, "C rand charges", parse_k_c);
-	parser_reg(p, "M int prob rand stack", parse_k_m);
-	parser_reg(p, "F str flags", parse_k_f);
-	parser_reg(p, "power int power", parse_k_power);
-	parser_reg(p, "effect sym eff ?sym type ?int xtra", parse_k_effect);
-	parser_reg(p, "param int p2 ?int p3", parse_k_param);
-	parser_reg(p, "dice str dice", parse_k_dice);
-	parser_reg(p, "expr sym name sym base str expr", parse_k_expr);
-	parser_reg(p, "msg str text", parse_k_msg);
-	parser_reg(p, "time rand time", parse_k_time);
-	parser_reg(p, "L rand pval", parse_k_l);
-	parser_reg(p, "V str values", parse_k_v);
-	parser_reg(p, "D str text", parse_k_d);
+	parser_reg(p, "alloc int common str minmax", parse_object_alloc);
+	parser_reg(p, "combat int ac rand hd rand to-h rand to-d rand to-a", parse_object_combat);
+	parser_reg(p, "charges rand charges", parse_object_charges);
+	parser_reg(p, "pile int prob rand stack", parse_object_pile);
+	parser_reg(p, "flags str flags", parse_object_flags);
+	parser_reg(p, "power int power", parse_object_power);
+	parser_reg(p, "effect sym eff ?sym type ?int xtra", parse_object_effect);
+	parser_reg(p, "param int p2 ?int p3", parse_object_param);
+	parser_reg(p, "dice str dice", parse_object_dice);
+	parser_reg(p, "expr sym name sym base str expr", parse_object_expr);
+	parser_reg(p, "msg str text", parse_object_msg);
+	parser_reg(p, "time rand time", parse_object_time);
+	parser_reg(p, "pval rand pval", parse_object_pval);
+	parser_reg(p, "values str values", parse_object_values);
+	parser_reg(p, "desc str text", parse_object_desc);
 	return p;
 }
 
-static errr run_parse_k(struct parser *p) {
+static errr run_parse_object(struct parser *p) {
 	return parse_file(p, "object");
 }
 
-static errr finish_parse_k(struct parser *p) {
+static errr finish_parse_object(struct parser *p) {
 	struct object_kind *k, *next = NULL;
 
 	/* scan the list for the max id */
@@ -1174,7 +1174,7 @@ static errr finish_parse_k(struct parser *p) {
 	return 0;
 }
 
-static void cleanup_k(void)
+static void cleanup_object(void)
 {
 	int idx;
 	for (idx = 0; idx < z_info->k_max; idx++) {
@@ -1188,12 +1188,12 @@ static void cleanup_k(void)
 	mem_free(k_info);
 }
 
-static struct file_parser k_parser = {
+static struct file_parser object_parser = {
 	"object",
-	init_parse_k,
-	run_parse_k,
-	finish_parse_k,
-	cleanup_k
+	init_parse_object,
+	run_parse_object,
+	finish_parse_object,
+	cleanup_object
 };
 
 /* Parsing functions for activation.txt */
@@ -3990,7 +3990,7 @@ static struct {
 	{ "traps", &trap_parser },
 	{ "features", &f_parser },
 	{ "object bases", &object_base_parser },
-	{ "objects", &k_parser },
+	{ "objects", &object_parser },
 	{ "activations", &act_parser },
 	{ "ego-items", &e_parser },
 	{ "artifacts", &artifact_parser },

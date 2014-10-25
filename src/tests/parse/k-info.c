@@ -8,7 +8,7 @@
 
 
 int setup_tests(void **state) {
-	*state = init_parse_k();
+	*state = init_parse_object();
 	return !*state;
 }
 
@@ -17,7 +17,7 @@ int teardown_tests(void *state) {
 	return 0;
 }
 
-int test_n0(void *state) {
+int test_name0(void *state) {
 	errr r = parser_parse(state, "name:3:Test Object Kind");
 	struct object_kind *k;
 
@@ -29,7 +29,7 @@ int test_n0(void *state) {
 	ok;
 }
 
-int test_g0(void *state) {
+int test_graphics0(void *state) {
 	errr r = parser_parse(state, "graphics:~:red");
 	struct object_kind *k;
 
@@ -41,7 +41,7 @@ int test_g0(void *state) {
 	ok;
 }
 
-int test_g1(void *state) {
+int test_graphics1(void *state) {
 	errr r = parser_parse(state, "graphics:!:W");
 	struct object_kind *k;
 
@@ -53,7 +53,7 @@ int test_g1(void *state) {
 	ok;
 }
 
-int test_i0(void *state) {
+int test_type0(void *state) {
 	errr r = parser_parse(state, "type:food");
 	struct object_kind *k;
 
@@ -64,7 +64,7 @@ int test_i0(void *state) {
 	ok;
 }
 
-int test_w0(void *state) {
+int test_properties0(void *state) {
 	errr r = parser_parse(state, "properties:10:5:120");
 	struct object_kind *k;
 
@@ -77,8 +77,8 @@ int test_w0(void *state) {
 	ok;
 }
 
-int test_a0(void *state) {
-	errr r = parser_parse(state, "A:3:4 to 6");
+int test_alloc0(void *state) {
+	errr r = parser_parse(state, "alloc:3:4 to 6");
 	struct object_kind *k;
 
 	eq(r, 0);
@@ -90,8 +90,8 @@ int test_a0(void *state) {
 	ok;
 }
 
-int test_p0(void *state) {
-	errr r = parser_parse(state, "P:3:4d8:1d4:2d5:7d6");
+int test_combat0(void *state) {
+	errr r = parser_parse(state, "combat:3:4d8:1d4:2d5:7d6");
 	struct object_kind *k;
 
 	eq(r, 0);
@@ -109,8 +109,8 @@ int test_p0(void *state) {
 	ok;
 }
 
-int test_c0(void *state) {
-	errr r = parser_parse(state, "C:2d8");
+int test_charges0(void *state) {
+	errr r = parser_parse(state, "charges:2d8");
 	struct object_kind *k;
 
 	eq(r, 0);
@@ -121,8 +121,8 @@ int test_c0(void *state) {
 	ok;
 }
 
-int test_m0(void *state) {
-	errr r = parser_parse(state, "M:4:3d6");
+int test_pile0(void *state) {
+	errr r = parser_parse(state, "pile:4:3d6");
 	struct object_kind *k;
 
 	eq(r, 0);
@@ -134,8 +134,8 @@ int test_m0(void *state) {
 	ok;
 }
 
-int test_f0(void *state) {
-	errr r = parser_parse(state, "F:EASY_KNOW | FEATHER");
+int test_flags0(void *state) {
+	errr r = parser_parse(state, "flags:EASY_KNOW | FEATHER");
 	struct object_kind *k;
 
 	eq(r, 0);
@@ -150,8 +150,8 @@ int test_f0(void *state) {
 	ok;
 }
 
-int test_l0(void *state) {
-	errr r = parser_parse(state, "L:1+2d3M4");
+int test_pval0(void *state) {
+	errr r = parser_parse(state, "pval:1+2d3M4");
 	struct object_kind *k;
 
 	eq(r, 0);
@@ -164,21 +164,20 @@ int test_l0(void *state) {
 	ok;
 }
 
-int test_e0(void *state) {
-	errr r = parser_parse(state, "E:POISON:4d5");
+int test_time0(void *state) {
+	errr r = parser_parse(state, "time:4d5");
 	struct object_kind *k;
 
 	eq(r, 0);
 	k = parser_priv(state);
 	require(k);
-	require(k->effect);
 	eq(k->time.dice, 4);
 	eq(k->time.sides, 5);
 	ok;
 }
 
-int test_d0(void *state) {
-	errr r = parser_parse(state, "D:foo bar");
+int test_desc0(void *state) {
+	errr r = parser_parse(state, "desc:foo bar");
 	struct object_kind *k;
 
 	eq(r, 0);
@@ -186,7 +185,7 @@ int test_d0(void *state) {
 	require(k);
 	require(k->text);
 	require(streq(k->text, "foo bar"));
-	r = parser_parse(state, "D: baz");
+	r = parser_parse(state, "desc: baz");
 	eq(r, 0);
 	ptreq(k, parser_priv(state));
 	require(streq(k->text, "foo bar baz"));
@@ -195,18 +194,17 @@ int test_d0(void *state) {
 
 const char *suite_name = "parse/k-info";
 struct test tests[] = {
-	{ "n0", test_n0 },
-	{ "g0", test_g0 },
-	{ "g1", test_g1 },
-	//{ "i0", test_i0 },
-	{ "w0", test_w0 },
-	{ "a0", test_a0 },
-	{ "p0", test_p0 },
-	{ "c0", test_c0 },
-	{ "m0", test_m0 },
-	{ "f0", test_f0 },
-	//{ "e0", test_e0 },
-	{ "d0", test_d0 },
-	{ "l0", test_l0 },
+	{ "name0", test_name0 },
+	{ "graphics0", test_graphics0 },
+	{ "graphics1", test_graphics1 },
+	{ "properties0", test_properties0 },
+	{ "alloc0", test_alloc0 },
+	{ "combat0", test_combat0 },
+	{ "charges0", test_charges0 },
+	{ "pile0", test_pile0 },
+	{ "flags0", test_flags0 },
+	{ "time0", test_time0 },
+	{ "desc0", test_desc0 },
+	{ "pval0", test_pval0 },
 	{ NULL, NULL }
 };
