@@ -16,7 +16,7 @@
 # alloc: commonness : min " to " max
 # charges: charges
 # pile: chance of being generated in a pile : dice for number of items
-# effect: effect when used : recharge time (if applicable)
+# effect: effect when used : parameter (maybe) : paramater (maybe)
 # flags: flag | flag | etc.
 # values: label[value] | label[value] | etc.
 # pval: pval

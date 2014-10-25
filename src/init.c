@@ -2203,7 +2203,7 @@ static struct file_parser f_parser = {
 };
 
 /* Parsing functions for ego-item.txt */
-static enum parser_error parse_e_n(struct parser *p) {
+static enum parser_error parse_ego_name(struct parser *p) {
 	int idx = parser_getint(p, "index");
 	const char *name = parser_getstr(p, "name");
 	struct ego_item *h = parser_priv(p);
@@ -2216,7 +2216,7 @@ static enum parser_error parse_e_n(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_e_x(struct parser *p) {
+static enum parser_error parse_ego_info(struct parser *p) {
 	int level = parser_getint(p, "level");
 	int rarity = parser_getint(p, "rarity");
 	int cost = parser_getint(p, "cost");
@@ -2232,7 +2232,7 @@ static enum parser_error parse_e_x(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_e_a(struct parser *p) {
+static enum parser_error parse_ego_alloc(struct parser *p) {
 	struct ego_item *e = parser_priv(p);
 	const char *tmp = parser_getstr(p, "minmax");
 	int amin, amax;
@@ -2249,7 +2249,7 @@ static enum parser_error parse_e_a(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_e_type(struct parser *p) {
+static enum parser_error parse_ego_type(struct parser *p) {
 	struct ego_poss_item *poss;
 	int i;
 	int tval = tval_find_idx(parser_getsym(p, "tval"));
@@ -2276,7 +2276,7 @@ static enum parser_error parse_e_type(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_e_item(struct parser *p) {
+static enum parser_error parse_ego_item(struct parser *p) {
 	struct ego_poss_item *poss;
 	int tval = tval_find_idx(parser_getsym(p, "tval"));
 	int sval = lookup_sval(tval, parser_getsym(p, "sval"));
@@ -2297,7 +2297,7 @@ static enum parser_error parse_e_item(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_e_c(struct parser *p) {
+static enum parser_error parse_ego_combat(struct parser *p) {
 	struct random th = parser_getrand(p, "th");
 	struct random td = parser_getrand(p, "td");
 	struct random ta = parser_getrand(p, "ta");
@@ -2313,7 +2313,7 @@ static enum parser_error parse_e_c(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_e_m(struct parser *p) {
+static enum parser_error parse_ego_min(struct parser *p) {
 	int th = parser_getint(p, "th");
 	int td = parser_getint(p, "td");
 	int ta = parser_getint(p, "ta");
@@ -2329,7 +2329,7 @@ static enum parser_error parse_e_m(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_e_effect(struct parser *p) {
+static enum parser_error parse_ego_effect(struct parser *p) {
 	struct ego_item *e = parser_priv(p);
 	struct effect *effect;
 	struct effect *new_effect = mem_zalloc(sizeof(*new_effect));
@@ -2350,7 +2350,7 @@ static enum parser_error parse_e_effect(struct parser *p) {
 	return grab_effect_data(p, new_effect);
 }
 
-static enum parser_error parse_e_dice(struct parser *p) {
+static enum parser_error parse_ego_dice(struct parser *p) {
 	struct ego_item *e = parser_priv(p);
 	dice_t *dice = NULL;
 	const char *string = NULL;
@@ -2376,7 +2376,7 @@ static enum parser_error parse_e_dice(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_e_time(struct parser *p) {
+static enum parser_error parse_ego_time(struct parser *p) {
 	struct ego_item *e = parser_priv(p);
 	assert(e);
 
@@ -2384,7 +2384,7 @@ static enum parser_error parse_e_time(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_e_f(struct parser *p) {
+static enum parser_error parse_ego_flags(struct parser *p) {
 	struct ego_item *e = parser_priv(p);
 	char *s;
 	char *t;
@@ -2411,7 +2411,7 @@ static enum parser_error parse_e_f(struct parser *p) {
 	return t ? PARSE_ERROR_INVALID_FLAG : PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_e_v(struct parser *p) {
+static enum parser_error parse_ego_values(struct parser *p) {
 	struct ego_item *e = parser_priv(p);
 	char *s; 
 	char *t;
@@ -2473,7 +2473,7 @@ static enum parser_error parse_e_v(struct parser *p) {
 	return t ? PARSE_ERROR_INVALID_VALUE : PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_e_l(struct parser *p) {
+static enum parser_error parse_ego_min_val(struct parser *p) {
 	struct ego_item *e = parser_priv(p);
 	char *s; 
 	char *t;
@@ -2500,7 +2500,7 @@ static enum parser_error parse_e_l(struct parser *p) {
 	return t ? PARSE_ERROR_INVALID_VALUE : PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_e_d(struct parser *p) {
+static enum parser_error parse_ego_desc(struct parser *p) {
 	struct ego_item *e = parser_priv(p);
 
 	if (!e)
@@ -2509,31 +2509,31 @@ static enum parser_error parse_e_d(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-struct parser *init_parse_e(void) {
+struct parser *init_parse_ego(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
-	parser_reg(p, "N int index str name", parse_e_n);
-	parser_reg(p, "X int level int rarity int cost int rating", parse_e_x);
-	parser_reg(p, "A int common str minmax", parse_e_a);
-	parser_reg(p, "type sym tval", parse_e_type);
-	parser_reg(p, "item sym tval sym sval", parse_e_item);
-	parser_reg(p, "C rand th rand td rand ta", parse_e_c);
-	parser_reg(p, "M int th int td int ta", parse_e_m);
-	parser_reg(p, "effect sym eff ?sym type ?int xtra", parse_e_effect);
-	parser_reg(p, "dice str dice", parse_e_dice);
-	parser_reg(p, "time rand time", parse_e_time);
-	parser_reg(p, "F ?str flags", parse_e_f);
-	parser_reg(p, "V str values", parse_e_v);
-	parser_reg(p, "L str min_values", parse_e_l);
-	parser_reg(p, "D str text", parse_e_d);
+	parser_reg(p, "name int index str name", parse_ego_name);
+	parser_reg(p, "info int level int rarity int cost int rating", parse_ego_info);
+	parser_reg(p, "alloc int common str minmax", parse_ego_alloc);
+	parser_reg(p, "type sym tval", parse_ego_type);
+	parser_reg(p, "item sym tval sym sval", parse_ego_item);
+	parser_reg(p, "combat rand th rand td rand ta", parse_ego_combat);
+	parser_reg(p, "min-combat int th int td int ta", parse_ego_min);
+	parser_reg(p, "effect sym eff ?sym type ?int xtra", parse_ego_effect);
+	parser_reg(p, "dice str dice", parse_ego_dice);
+	parser_reg(p, "time rand time", parse_ego_time);
+	parser_reg(p, "flags ?str flags", parse_ego_flags);
+	parser_reg(p, "values str values", parse_ego_values);
+	parser_reg(p, "min-values str min_values", parse_ego_min_val);
+	parser_reg(p, "desc str text", parse_ego_desc);
 	return p;
 }
 
-static errr run_parse_e(struct parser *p) {
+static errr run_parse_ego(struct parser *p) {
 	return parse_file(p, "ego_item");
 }
 
-static errr finish_parse_e(struct parser *p) {
+static errr finish_parse_ego(struct parser *p) {
 	struct ego_item *e, *n;
 
 	/* scan the list for the max id */
@@ -2564,7 +2564,7 @@ static errr finish_parse_e(struct parser *p) {
 	return 0;
 }
 
-static void cleanup_e(void)
+static void cleanup_ego(void)
 {
 	int idx;
 	struct ego_poss_item *poss, *pn;
@@ -2585,12 +2585,12 @@ static void cleanup_e(void)
 	free_slay_cache();
 }
 
-static struct file_parser e_parser = {
+static struct file_parser ego_parser = {
 	"ego_item",
-	init_parse_e,
-	run_parse_e,
-	finish_parse_e,
-	cleanup_e
+	init_parse_ego,
+	run_parse_ego,
+	finish_parse_ego,
+	cleanup_ego
 };
 
 /* Parsing functions for body.txt */
@@ -3992,7 +3992,7 @@ static struct {
 	{ "object bases", &object_base_parser },
 	{ "objects", &object_parser },
 	{ "activations", &act_parser },
-	{ "ego-items", &e_parser },
+	{ "ego-items", &ego_parser },
 	{ "artifacts", &artifact_parser },
 	{ "monster pain messages", &mp_parser },
 	{ "monster spells", &rs_parser },
