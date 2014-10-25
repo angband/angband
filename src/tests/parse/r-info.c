@@ -34,7 +34,7 @@ int test_t0(void *state) {
 	enum parser_error r;
 	struct monster_race *mr;
 
-	rb_info = &test_rb_info;
+	rb_info = &test_rb_townsfolk;
 	r = parser_parse(state, "T:townsfolk");
 	eq(r, PARSE_ERROR_NONE);
 	mr = parser_priv(state);

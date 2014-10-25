@@ -587,7 +587,7 @@ static struct player_class TEST_DATA test_class = {
 	.start_items = &start_longsword,
 };
 
-static struct monster_base TEST_DATA test_rb_info = {
+static struct monster_base TEST_DATA test_rb_townsfolk = {
 	.next = NULL,
 	.name = "townsfolk",
 	.text = "Townsfolk",
@@ -598,6 +598,26 @@ static struct monster_base TEST_DATA test_rb_info = {
 	
 };
 
+static struct monster_base TEST_DATA test_rb_canine = {
+	.next = &test_rb_townsfolk,
+	.name = "canine",
+	.text = "Canine",
+	.flags = "\0\0\0\0\0\0\0\0\0\0\0\0",
+	.spell_flags = "\0\0\0\0\0\0\0\0\0\0\0\0",
+	.d_char = 100,
+	.pain = NULL,
+};
+
+static struct monster_base TEST_DATA test_rb_angel = {
+	.next = &test_rb_canine,
+	.name = "angel",
+	.text = "Angel",
+	.flags = "\0\0\0\0\0\0\0\0\0\0\0\0",
+	.spell_flags = "\0\0\0\0\0\0\0\0\0\0\0\0",
+	.d_char = 65,
+	.pain = NULL,
+};
+
 #define _NOBLOW { .method = RBM_NONE, .effect = RBE_NONE, .d_dice = 0, .d_side = 0 }
 
 static struct monster_race TEST_DATA test_r_human = {
@@ -606,7 +626,54 @@ static struct monster_race TEST_DATA test_r_human = {
 	.name = "Human",
 	.text = "A random test human",
 
-	.base = &test_rb_info,
+	.base = &test_rb_townsfolk,
+
+	.avg_hp = 10,
+	.ac = 12,
+	.sleep = 0,
+	.aaf = 20,
+	.speed = 110,
+	.mexp = 50,
+	.power = 1,
+	.scaled_power = 1,
+	.highest_threat = 5,
+	.freq_innate = 0,
+	.freq_spell = 0,
+
+	.blow = {
+		{
+			.method = RBM_HIT,
+			.effect = RBE_HURT,
+			.d_dice = 3,
+			.d_side = 1,
+		},
+		_NOBLOW,
+		_NOBLOW,
+		_NOBLOW,
+	},
+
+	.level = 1,
+	.rarity = 1,
+
+	.d_attr = 0,
+	.d_char = 't',
+
+	.x_attr = 0,
+	.x_char = 't',
+
+	.max_num = 100,
+	.cur_num = 0,
+
+	.drops = NULL,
+};
+
+static struct monster_race TEST_DATA test_r_littledog = {
+	.next = NULL,
+	.ridx = 0,
+	.name = "Scruffy little dog",
+	.text = "A random test dog",
+
+	.base = &test_rb_canine,
 
 	.avg_hp = 10,
 	.ac = 12,

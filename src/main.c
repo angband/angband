@@ -37,6 +37,10 @@
 #include "textui.h"
 #include "init.h"
 
+#if !defined(USE_X11) && !defined(USE_SDL) && !defined(USE_GCU) && !defined(USE_TEST) && !defined(USE_STATS)
+#error Must define at least 1 frontend. Check configure for missing libraries
+#endif
+
 /*
  * List of the available modules in the order they are tried.
  */
