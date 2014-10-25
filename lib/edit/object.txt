@@ -7,10 +7,10 @@
 
 # === Understanding object.txt ===
 
-# N: serial number : & object name~
-# G: symbol : color
-# I: tval 
-# W: depth : rarity : weight : cost
+# name: serial number : & object name~
+# graphics: symbol : color
+# type: tval 
+# properties: depth : weight : cost
 # P: base armor class : base damage : plus to-hit : plus to-dam : plus to-ac
 # A: commonness : min " to " max
 # C: charges
@@ -29,7 +29,7 @@
 # range 10-14.  10+2d3 has the range 12-16.  10+d3 has the range 11-13.
 # 2d3, d3, M4, 2d3M4, and d3M4 are all acceptable as well.
 
-# 'N' indicates the beginning of an entry. The serial number must
+# 'name' indicates the beginning of an entry. The serial number must
 # increase for each new item. The '&' and '~' symbols are use to
 # include articles and pluralization as necessary to ensure
 # grammatical correctness in object descriptions.
@@ -40,20 +40,24 @@
 # and third | for plural.  The number of | symbols in the name must
 # always be a multiple of 3.
 
-# 'G' is for graphics - symbol and color. There are 15 colors, as
+# 'graphics' is for symbol and color. There are 27 colors, as
 # follows:
 
 # D - Dark Gray    w - White          s - Gray          o - Orange
-# r - Red          g - Green          b - Blue          u - Brown
-# W - Light Gray   v - Violet         y - Yellow        R - Light Red
-# G - Light Green  B - Light Blue     U - Light Brown
+# r - Red          g - Green          b - Blue          u - Umber
+# W - Light Gray   P - Light Purple   y - Yellow        R - Light Red
+# G - Light Green  B - Light Blue     U - Light Umber   p - Purple
+# v - Violet       t - Teal           m - Mud           Y - Light Yellow
+# i - Magenta-Pink T - Light Teal     V - Light Violet  I - Light Pink
+# M - Mustard      z - Blue Slate     Z - Deep Light Blue
+
 # Another color, "d", is used for "flavoured" items.
 
-# 'I' is for basic information. The tval is for the type of item.
+# 'type' is for the base type of item, from object_base.txt.
 
-# 'W' is for extra information. Depth defines what "level" the object is,
-# when determining how easy it is to use a wand, staff or rod; rarity
-# is unused; weight is in tenth-pounds and cost is the item's base value.
+# 'properties' is for level, weight and cost. Level defines how "advanced"
+# the object is, when determining how easy it is to use a wand, staff or rod;
+# weight is in tenth-pounds; cost is the item's base value.
 
 # 'P' is for power information. The items base armor class, its base
 # damage and pluses to-hit, to-dam and to-ac.  The latter three numbers
@@ -86,9 +90,9 @@
 
 ##### Non-kind (contains the "pile" picture) #####
 
-N:0:<pile>
-I:0
-G:&:w
+name:0:<pile>
+type:0
+graphics:&:w
 
 
 
@@ -96,28 +100,28 @@ G:&:w
 
 ### 1
 
-N:2:& Wooden Torch~
-G:~:u
-I:light
-W:1:0:22:2
+name:2:& Wooden Torch~
+graphics:~:u
+type:light
+properties:1:22:2
 A:70:1 to 40
 P:0:1d1:0:0:0
 F:BURNS_OUT | EASY_KNOW
 V:LIGHT[1]
 
-N:3:& Lantern~
-G:~:U
-I:light
-W:3:0:50:35
+name:3:& Lantern~
+graphics:~:U
+type:light
+properties:3:50:35
 A:70:5 to 100
 P:0:1d1:0:0:0
 F:TAKES_FUEL | EASY_KNOW | IGNORE_FIRE
 V:LIGHT[2]
 
-N:4:& Flask~ of oil
-G:!:y
-I:flask
-W:1:0:20:3
+name:4:& Flask~ of oil
+graphics:!:y
+type:flask
+properties:1:20:3
 A:50:1 to 100
 P:0:1d4:0:0:0
 V:BRAND_FIRE[3]
@@ -127,13 +131,13 @@ D: a maximum of 15000 turns of light.
 D:  When thrown, it is considered lit, so it does more than nominal
 D: damage (which occurs even against creatures resistant to fire).
 
-N:6:<unknown item>
-I:0
-G:*:r
+name:6:<unknown item>
+type:0
+graphics:*:r
 
-N:7:<unknown treasure>
-I:0
-G:*:o
+name:7:<unknown treasure>
+type:0
+graphics:*:o
 
 
 
@@ -141,10 +145,10 @@ G:*:o
 
 ### Normal Food ###
 
-N:10:& Ration~ of Food
-G:,:U
-I:food
-W:0:0:8:3
+name:10:& Ration~ of Food
+graphics:,:U
+type:food
+properties:0:8:3
 A:40:0 to 50
 M:100:1d5
 power:0
@@ -153,10 +157,10 @@ dice:6000
 D:This nutritious but fairly bland food is familiar to anyone contemplating
 D: long journeys.
 
-N:11:& Slime Mold~
-G:,:g
-I:food
-W:1:0:2:2
+name:11:& Slime Mold~
+graphics:,:g
+type:food
+properties:1:2:2
 A:40:5 to 60
 M:100:2d3
 power:0
@@ -165,10 +169,10 @@ dice:2500
 D:A strange fungal growth, prone to moving if not observed.  Not very tasty
 D: but quite filling.
 
-N:12:& Piece~ of Elvish Waybread
-G:,:B
-I:food
-W:5:0:3:10
+name:12:& Piece~ of Elvish Waybread
+graphics:,:B
+type:food
+properties:5:3:10
 A:40:30 to 100
 M:10:1d3
 power:4
@@ -180,20 +184,20 @@ dice:4d8
 D:Food of the elves is always good; their waybread is no exception.  These
 D: thin cakes are wrapped in leaves and keep their tastiness for months.
 
-N:13:& Hard Biscuit~
-G:,:U
-I:food
-W:0:0:2:1
+name:13:& Hard Biscuit~
+graphics:,:U
+type:food
+properties:0:2:1
 power:0
 effect:NOURISH
 dice:500
 effect:CRUNCH
 D:A filling if tooth-breaking biscuit made mostly of rye.
 
-N:14:& Flask~ of Whisky
-G:,:y
-I:food
-W:0:0:5:1
+name:14:& Flask~ of Whisky
+graphics:,:y
+type:food
+properties:0:5:1
 power:0
 effect:NOURISH
 dice:250
@@ -201,10 +205,10 @@ effect:TIMED_INC:CONFUSED
 dice:-1+1d5
 D:It raises your spirits.
 
-N:15:& Pint~ of Fine Wine
-G:,:r
-I:food
-W:0:0:10:2
+name:15:& Pint~ of Fine Wine
+graphics:,:r
+type:food
+properties:0:10:2
 power:0
 effect:NOURISH
 dice:250
@@ -214,10 +218,10 @@ D:A fine way to wash down some otherwise unappetising rations.
 
 ### The shrooms, an interesting collection ###
 
-N:16:Second Sight
-G:,:d
-I:mushroom
-W:0:0:1:200
+name:16:Second Sight
+graphics:,:d
+type:mushroom
+properties:0:1:200
 A:10:5 to 100
 M:70:1d4
 power:10
@@ -227,10 +231,10 @@ dice:24+9d9
 effect:NOURISH
 dice:500
 
-N:17:Fast Recovery
-G:,:d
-I:mushroom
-W:0:0:1:200
+name:17:Fast Recovery
+graphics:,:d
+type:mushroom
+properties:0:1:200
 A:10:5 to 40
 M:70:1d4
 power:7
@@ -243,10 +247,10 @@ effect:CURE:BLIND
 effect:NOURISH
 dice:500
 
-N:18:Vigor
-G:,:d
-I:mushroom
-W:0:0:1:200
+name:18:Vigor
+graphics:,:d
+type:mushroom
+properties:0:1:200
 A:25:20 to 100
 M:13:1d3
 power:15
@@ -258,10 +262,10 @@ effect:RESTORE_STAT:CON
 effect:NOURISH
 dice:500
 
-N:19:Clear Mind
-G:,:d
-I:mushroom
-W:0:0:1:200
+name:19:Clear Mind
+graphics:,:d
+type:mushroom
+properties:0:1:200
 A:10:5 to 40
 M:70:1d4
 power:8
@@ -275,10 +279,10 @@ dice:12+6d10
 effect:NOURISH
 dice:500
 
-N:20:Emergency
-G:,:d
-I:mushroom
-W:0:0:1:60
+name:20:Emergency
+graphics:,:d
+type:mushroom
+properties:0:1:60
 A:10:5 to 100
 M:70:1d4
 power:7
@@ -293,10 +297,10 @@ dice:200
 effect:NOURISH
 dice:500
 
-N:21:Terror
-G:,:d
-I:mushroom
-W:0:0:1:60
+name:21:Terror
+graphics:,:d
+type:mushroom
+properties:0:1:60
 A:10:5 to 40
 M:70:1d4
 power:5
@@ -305,10 +309,10 @@ dice:79+1d41
 effect:NOURISH
 dice:500
 
-N:22:Stoneskin
-G:,:d
-I:mushroom
-W:0:0:1:60
+name:22:Stoneskin
+graphics:,:d
+type:mushroom
+properties:0:1:60
 A:10:10 to 40
 M:70:1d4
 power:5
@@ -318,19 +322,19 @@ effect:NOURISH
 dice:500
 D:Its poison turns your skin to stone, albeit briefly.
 
-N:23:Turbulence
-G:,:d
-I:mushroom
-W:0:0:1:60
+name:23:Turbulence
+graphics:,:d
+type:mushroom
+properties:0:1:60
 #A:10:5 to 100
 M:70:1d4
 #E:SHROOM_TURB
 L:500
 
-N:24:Debility
-G:,:d
-I:mushroom
-W:0:0:1:20
+name:24:Debility
+graphics:,:d
+type:mushroom
+properties:0:1:20
 A:10:10 to 40
 M:70:1d4
 power:5
@@ -342,10 +346,10 @@ effect:DRAIN_STAT:CON
 effect:NOURISH
 dice:500
 
-N:25:Sprinting
-G:,:d
-I:mushroom
-W:0:0:1:100
+name:25:Sprinting
+graphics:,:d
+type:mushroom
+properties:0:1:100
 A:1:15 to 100
 M:70:1d4
 power:5
@@ -354,10 +358,10 @@ dice:100
 effect:NOURISH
 dice:500
 
-N:26:Purging
-G:,:d
-I:mushroom
-W:0:0:1:60
+name:26:Purging
+graphics:,:d
+type:mushroom
+properties:0:1:60
 A:1:15 to 100
 M:70:1d4
 power:5
@@ -374,109 +378,109 @@ dice:500
 
 ### Swords ###
 
-N:30:& Dagger~
-G:|:W
-I:sword
-W:0:0:12:30
+name:30:& Dagger~
+graphics:|:W
+type:sword
+properties:0:12:30
 A:20:0 to 100
 P:0:1d4:0:0:0
 D:A short two-edged blade perfect for thrusting.
 
-N:31:& Main Gauche~
-G:|:W
-I:sword
-W:3:0:30:45
+name:31:& Main Gauche~
+graphics:|:W
+type:sword
+properties:3:30:45
 A:20:3 to 100
 P:0:1d5:0:0:0
 
-N:32:& Rapier~
-G:|:W
-I:sword
-W:5:0:40:70
+name:32:& Rapier~
+graphics:|:W
+type:sword
+properties:5:40:70
 A:20:5 to 100
 P:0:1d6:0:0:0
 
-N:33:& Short Sword~
-G:|:W
-I:sword
-W:5:0:80:90
+name:33:& Short Sword~
+graphics:|:W
+type:sword
+properties:5:80:90
 A:20:5 to 100
 P:0:1d7:0:0:0
 
-N:34:& Cutlass~
-G:|:W
-I:sword
-W:5:0:110:120
+name:34:& Cutlass~
+graphics:|:W
+type:sword
+properties:5:110:120
 A:20:5 to 100
 P:0:1d8:0:0:0
 D:A thicker and slightly longer dagger, the cutlass is a slashing sword.  It
 D: possesses a slight curve and only one side is sharp.
 
-N:35:& Tulwar~
-G:|:W
-I:sword
-W:5:0:100:170
+name:35:& Tulwar~
+graphics:|:W
+type:sword
+properties:5:100:170
 A:20:5 to 100
 P:0:2d4:0:0:0
 D:A wider-bladed cousin of the shamshir, with less of a curve.
 
-N:36:& Scimitar~
-G:|:W
-I:sword
-W:10:0:150:300
+name:36:& Scimitar~
+graphics:|:W
+type:sword
+properties:10:150:300
 A:20:10 to 100
 P:0:4d2:0:0:0
 D:A long sabre with an extreme curve to the blade.
 
 
-N:37:& Long Sword~
-G:|:W
-I:sword
-W:10:0:130:300
+name:37:& Long Sword~
+graphics:|:W
+type:sword
+properties:10:130:300
 A:20:10 to 100
 P:0:2d5:0:0:0
 
-N:38:& Broad Sword~
-G:|:W
-I:sword
-W:10:0:150:300
+name:38:& Broad Sword~
+graphics:|:W
+type:sword
+properties:10:150:300
 A:20:10 to 100
 P:0:2d5:0:0:0
 
 
-N:39:& Bastard Sword~
-G:|:W
-I:sword
-W:15:0:140:400
+name:39:& Bastard Sword~
+graphics:|:W
+type:sword
+properties:15:140:400
 A:20:15 to 100
 P:0:3d4:0:0:0
 
-N:40:& Katana~
-G:|:W
-I:sword
-W:20:0:120:600
+name:40:& Katana~
+graphics:|:W
+type:sword
+properties:20:120:600
 A:20:20 to 100
 P:0:3d5:0:0:0
 
-N:41:& Zweihander~
-G:|:W
-I:sword
-W:30:0:200:700
+name:41:& Zweihander~
+graphics:|:W
+type:sword
+properties:30:200:700
 A:20:30 to 100
 P:0:3d6:0:0:0
 D:A sword designed for two hands.
 
-N:42:& Executioner's Sword~
-G:|:r
-I:sword
-W:40:0:260:850
+name:42:& Executioner's Sword~
+graphics:|:r
+type:sword
+properties:40:260:850
 A:20:40 to 100
 P:0:4d5:0:0:0
 
-N:43:& Blade~ of Chaos
-G:|:v
-I:sword
-W:70:0:180:4000
+name:43:& Blade~ of Chaos
+graphics:|:v
+type:sword
+properties:70:180:4000
 A:10:70 to 100
 P:0:6d5:0:0:0
 V:RES_CHAOS[1]
@@ -485,91 +489,91 @@ V:RES_CHAOS[1]
 
 ### Whips ###
 
-N:50:& Whip~
-G:\:D
-I:hafted
-W:3:0:30:30
+name:50:& Whip~
+graphics:\:D
+type:hafted
+properties:3:30:30
 A:20:3 to 100
 P:0:1d3:0:0:0
 
-N:51:& Ball-and-Chain~
-G:\:D
-I:hafted
-W:20:0:150:200
+name:51:& Ball-and-Chain~
+graphics:\:D
+type:hafted
+properties:20:150:200
 A:20:20 to 100
 P:0:2d4:0:0:0
 
-N:52:& Morning Star~
-G:\:D
-I:hafted
-W:10:0:150:396
+name:52:& Morning Star~
+graphics:\:D
+type:hafted
+properties:10:150:396
 A:20:10 to 100
 P:0:2d6:0:0:0
 
-N:53:& Flail~
-G:\:D
-I:hafted
-W:10:0:150:353
+name:53:& Flail~
+graphics:\:D
+type:hafted
+properties:10:150:353
 A:20:10 to 100
 P:0:2d6:0:0:0
 
-N:54:& Two-Handed Great Flail~
-G:\:y
-I:hafted
-W:45:0:280:590
+name:54:& Two-Handed Great Flail~
+graphics:\:y
+type:hafted
+properties:45:280:590
 A:20:45 to 100
 P:0:3d6:0:0:0
 
 
 ### Clubs ###
 
-N:55:& Mace~
-G:\:D
-I:hafted
-W:5:0:120:130
+name:55:& Mace~
+graphics:\:D
+type:hafted
+properties:5:120:130
 A:20:5 to 100
 P:0:2d4:0:0:0
 
-N:56:& Lead-Filled Mace~
-G:\:D
-I:hafted
-W:15:0:180:502
+name:56:& Lead-Filled Mace~
+graphics:\:D
+type:hafted
+properties:15:180:502
 A:20:15 to 100
 P:0:4d3:0:0:0
 
-N:57:& Quarterstaff~
-G:\:U
-I:hafted
-W:10:0:150:200
+name:57:& Quarterstaff~
+graphics:\:U
+type:hafted
+properties:10:150:200
 A:20:10 to 100
 P:0:1d9:0:0:0
 
-N:58:& War Hammer~
-G:\:D
-I:hafted
-W:5:0:120:225
+name:58:& War Hammer~
+graphics:\:D
+type:hafted
+properties:5:120:225
 A:20:5 to 100
 P:0:3d3:0:0:0
 
-N:59:& Maul~
-G:\:D
-I:hafted
-W:5:0:200:130
+name:59:& Maul~
+graphics:\:D
+type:hafted
+properties:5:200:130
 A:20:5 to 100
 P:0:4d4:0:0:0
 
-N:60:& Great Hammer~
-G:\:D
-I:hafted
-W:5:0:180:500
+name:60:& Great Hammer~
+graphics:\:D
+type:hafted
+properties:5:180:500
 A:20:20 to 100
 P:0:8d1:0:0:0
 
 
-N:61:& Mace~ of Disruption
-G:\:v
-I:hafted
-W:80:0:400:4300
+name:61:& Mace~ of Disruption
+graphics:\:v
+type:hafted
+properties:80:400:4300
 A:10:80 to 100
 P:0:5d8:0:0:0
 V:SLAY_UNDEAD[3]
@@ -578,114 +582,114 @@ V:SLAY_UNDEAD[3]
 
 ### Spears ###
 
-N:65:& Spear~
-G:/:s
-I:polearm
-W:5:0:50:36
+name:65:& Spear~
+graphics:/:s
+type:polearm
+properties:5:50:36
 A:20:5 to 100
 P:0:1d6:0:0:0
 
-N:66:& Awl-Pike~
-G:/:s
-I:polearm
-W:10:0:160:340
+name:66:& Awl-Pike~
+graphics:/:s
+type:polearm
+properties:10:160:340
 A:20:10 to 100
 P:0:1d8:0:0:0
 
-N:67:& Trident~
-G:/:y
-I:polearm
-W:5:0:70:120
+name:67:& Trident~
+graphics:/:y
+type:polearm
+properties:5:70:120
 A:20:5 to 100
 P:0:1d10:0:0:0
 
-N:68:& Halberd~
-G:/:s
-I:polearm
-W:25:0:190:430
+name:68:& Halberd~
+graphics:/:s
+type:polearm
+properties:25:190:430
 A:20:25 to 100
 P:0:3d5:0:0:0
 
-N:69:& Pike~
-G:/:s
-I:polearm
-W:15:0:160:358
+name:69:& Pike~
+graphics:/:s
+type:polearm
+properties:15:160:358
 A:20:15 to 100
 P:0:2d5:0:0:0
 
 
 ### Axes ###
 
-N:70:& Beaked Axe~
-G:/:s
-I:polearm
-W:15:0:180:408
+name:70:& Beaked Axe~
+graphics:/:s
+type:polearm
+properties:15:180:408
 A:20:15 to 100
 P:0:2d6:0:0:0
 
-N:71:& Broad Axe~
-G:/:s
-I:polearm
-W:15:0:160:304
+name:71:& Broad Axe~
+graphics:/:s
+type:polearm
+properties:15:160:304
 A:20:15 to 100
 P:0:2d6:0:0:0
 
-N:72:& Battle Axe~
-G:/:s
-I:polearm
-W:15:0:170:334
+name:72:& Battle Axe~
+graphics:/:s
+type:polearm
+properties:15:170:334
 A:20:15 to 100
 P:0:2d8:0:0:0
 
-N:73:& Lochaber Axe~
-G:/:D
-I:polearm
-W:45:0:250:750
+name:73:& Lochaber Axe~
+graphics:/:D
+type:polearm
+properties:45:250:750
 A:20:45 to 100
 P:0:3d8:0:0:0
 
-N:74:& Great Axe~
-G:/:s
-I:polearm
-W:40:0:230:500
+name:74:& Great Axe~
+graphics:/:s
+type:polearm
+properties:40:230:500
 A:20:40 to 100
 P:0:4d4:0:0:0
 
 
 ### Other misc polearms ###
 
-N:75:& Scythe~
-G:/:s
-I:polearm
-W:45:0:250:800
+name:75:& Scythe~
+graphics:/:s
+type:polearm
+properties:45:250:800
 A:20:45 to 100
 P:0:5d3:0:0:0
 
-N:76:& Glaive~
-G:/:s
-I:polearm
-W:20:0:190:363
+name:76:& Glaive~
+graphics:/:s
+type:polearm
+properties:20:190:363
 A:20:20 to 100
 P:0:2d6:0:0:0
 
-N:77:& Lance~
-G:/:s
-I:polearm
-W:10:0:300:230
+name:77:& Lance~
+graphics:/:s
+type:polearm
+properties:10:300:230
 A:20:10 to 100
 P:0:2d8:0:0:0
 
-N:78:& Scythe~ of Slicing
-G:/:r
-I:polearm
-W:60:0:250:3500
+name:78:& Scythe~ of Slicing
+graphics:/:r
+type:polearm
+properties:60:250:3500
 A:10:60 to 100
 P:0:8d4:0:0:0
 
-N:79:& Lucerne Hammer~
-G:/:B
-I:polearm
-W:10:0:120:376
+name:79:& Lucerne Hammer~
+graphics:/:B
+type:polearm
+properties:10:120:376
 A:20:10 to 100
 P:0:2d5:0:0:0
 
@@ -693,42 +697,42 @@ P:0:2d5:0:0:0
 
 ##### Bows, Crossbows, Slings #####
 
-N:90:& Sling~
-G:}:u
-I:bow
-W:1:0:5:5
+name:90:& Sling~
+graphics:}:u
+type:bow
+properties:1:5:5
 A:20:1 to 100
 F:SHOOTS_SHOTS
 L:2
 
-N:91:& Short Bow~
-G:}:U
-I:bow
-W:3:0:30:50
+name:91:& Short Bow~
+graphics:}:U
+type:bow
+properties:3:30:50
 A:20:3 to 100
 F:SHOOTS_ARROWS
 L:2
 
-N:92:& Long Bow~
-G:}:U
-I:bow
-W:10:0:40:120
+name:92:& Long Bow~
+graphics:}:U
+type:bow
+properties:10:40:120
 A:20:10 to 100
 F:SHOOTS_ARROWS
 L:3
 
-N:93:& Light Crossbow~
-G:}:s
-I:bow
-W:15:0:110:140
+name:93:& Light Crossbow~
+graphics:}:s
+type:bow
+properties:15:110:140
 A:20:15 to 100
 F:SHOOTS_BOLTS
 L:3
 
-N:94:& Heavy Crossbow~
-G:}:s
-I:bow
-W:30:0:200:300
+name:94:& Heavy Crossbow~
+graphics:}:s
+type:bow
+properties:30:200:300
 A:20:30 to 100
 F:SHOOTS_BOLTS
 L:4
@@ -736,28 +740,28 @@ L:4
 
 ##### Missiles #####
 
-N:100:& Arrow~
-G:{:U
-I:arrow
-W:3:0:2:1
+name:100:& Arrow~
+graphics:{:U
+type:arrow
+properties:3:2:1
 M:100:7d7
 A:30:3 to 100
 P:0:1d4:0:0:0
 D:It can be shot with a bow.
 
-N:101:& Seeker Arrow~
-G:{:G
-I:arrow
-W:55:0:2:20
+name:101:& Seeker Arrow~
+graphics:{:G
+type:arrow
+properties:55:2:20
 A:25:55 to 100
 M:100:7d7
 P:0:4d4:0:0:0
 D:It can be shot with a bow.
 
-N:102:& Mithril Arrow~
-G:{:B
-I:arrow
-W:55:0:2:25
+name:102:& Mithril Arrow~
+graphics:{:B
+type:arrow
+properties:55:2:25
 M:100:7d7
 A:20:50 to 100
 P:0:3d4:0:0:0
@@ -765,28 +769,28 @@ F:IGNORE_ACID | IGNORE_FIRE
 D:It can be shot with a bow.
 
 
-N:105:& Bolt~
-G:{:s
-I:bolt
-W:3:0:3:2
+name:105:& Bolt~
+graphics:{:s
+type:bolt
+properties:3:3:2
 M:100:5d7
 A:30:3 to 100
 P:0:1d5:0:0:0
 D:It can be shot with a crossbow.
 
-N:106:& Seeker Bolt~
-G:{:g
-I:bolt
-W:65:0:3:25
+name:106:& Seeker Bolt~
+graphics:{:g
+type:bolt
+properties:65:3:25
 M:100:5d7
 A:25:65 to 100
 P:0:4d5:0:0:0
 D:It can be shot with a crossbow.
 
-N:107:& Mithril Bolt~
-G:{:B
-I:bolt
-W:50:0:2:30
+name:107:& Mithril Bolt~
+graphics:{:B
+type:bolt
+properties:50:2:30
 M:100:5d7
 A:20:60 to 100
 P:0:3d5:0:0:0
@@ -794,28 +798,28 @@ F:IGNORE_ACID
 D:It can be shot with a crossbow.
 
 
-N:110:& Rounded Pebble~
-G:{:s
-I:shot
-W:0:0:4:1
+name:110:& Rounded Pebble~
+graphics:{:s
+type:shot
+properties:0:4:1
 M:100:5d7
 A:30:0 to 100
 P:0:1d2:0:0:0
 D:It can be shot with a sling.
 
-N:111:& Iron Shot~
-G:{:s
-I:shot
-W:3:0:5:2
+name:111:& Iron Shot~
+graphics:{:s
+type:shot
+properties:3:5:2
 M:100:5d7
 A:25:3 to 100
 P:0:1d4:0:0:0
 D:It can be shot with a sling.
 
-N:112:& Mithril Shot~
-G:{:B
-I:shot
-W:40:0:4:20
+name:112:& Mithril Shot~
+graphics:{:B
+type:shot
+properties:40:4:20
 M:100:5d7
 A:20:40 to 100
 P:0:2d4:5:5:0
@@ -825,26 +829,26 @@ D:It can be shot with a sling.
 
 ##### Digging Tools #####
 
-N:120:& Shovel~
-G:\:s
-I:digger
-W:1:0:60:10
+name:120:& Shovel~
+graphics:\:s
+type:digger
+properties:1:60:10
 A:20:5 to 100
 P:0:1d2:0:0:0
 V:TUNNEL[1]
 
-N:121:& Pick~
-G:\:g
-I:digger
-W:30:0:180:300
+name:121:& Pick~
+graphics:\:g
+type:digger
+properties:30:180:300
 A:20:30 to 100
 P:0:1d3:0:0:0
 V:TUNNEL[2]
 
-N:122:& Mattock~
-G:\:D
-I:digger
-W:50:0:250:700
+name:122:& Mattock~
+graphics:\:D
+type:digger
+properties:50:250:700
 A:20:50 to 100
 P:0:1d8:0:0:0
 V:TUNNEL[3]
@@ -852,50 +856,50 @@ V:TUNNEL[3]
 
 ##### Armor #####
 
-N:130:& Pair~ of Leather Sandals
-G:]:U
-I:boots
-W:0:0:15:4
+name:130:& Pair~ of Leather Sandals
+graphics:]:U
+type:boots
+properties:0:15:4
 A:20:1 to 100
 P:1:1d1:0:0:0
 D:A set of open-topped footgear with soft calfskin lacings and a sturdy 
 D:cured leather base.
 
-N:131:& Pair~ of Leather Boots
-G:]:U
-I:boots
-W:3:0:20:7
+name:131:& Pair~ of Leather Boots
+graphics:]:U
+type:boots
+properties:3:20:7
 A:20:3 to 100
 P:2:1d1:0:0:0
 
-N:132:& Pair~ of Iron Shod Boots
-G:]:U
-I:boots
-W:5:0:35:12
+name:132:& Pair~ of Iron Shod Boots
+graphics:]:U
+type:boots
+properties:5:35:12
 A:20:5 to 100
 P:4:1d1:0:0:0
 F:IGNORE_FIRE
 
-N:133:& Pair~ of Steel Shod Boots
-G:]:s
-I:boots
-W:20:0:60:50
+name:133:& Pair~ of Steel Shod Boots
+graphics:]:s
+type:boots
+properties:20:60:50
 A:20:20 to 100
 P:7:1d1:0:0:0
 F:IGNORE_FIRE
 
-N:134:& Pair~ of Mithril Shod Boots
-G:]:B
-I:boots
-W:60:0:40:500
+name:134:& Pair~ of Mithril Shod Boots
+graphics:]:B
+type:boots
+properties:60:40:500
 A:20:60 to 100
 P:8:1d1:0:0:0
 F:IGNORE_ACID | IGNORE_FIRE
 
-N:135:& Pair~ of Ethereal Slippers
-G:]:U
-I:boots
-W:0:0:0:4
+name:135:& Pair~ of Ethereal Slippers
+graphics:]:U
+type:boots
+properties:0:0:4
 A:10:30 to 100
 P:0:0d0:0:0:0
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD 
@@ -904,53 +908,53 @@ F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 
 ### Headgear ###
 
-N:140:& Hard Leather Cap~
-G:]:u
-I:helm
-W:3:0:20:12
+name:140:& Hard Leather Cap~
+graphics:]:u
+type:helm
+properties:3:20:12
 A:20:3 to 100
 P:2:0d0:0:0:0
 
-N:141:& Metal Cap~
-G:]:s
-I:helm
-W:10:0:25:30
+name:141:& Metal Cap~
+graphics:]:s
+type:helm
+properties:10:25:30
 A:20:10 to 100
 P:3:1d1:0:0:0
 
-N:142:& Iron Helm~
-G:]:s
-I:helm
-W:20:0:50:75
+name:142:& Iron Helm~
+graphics:]:s
+type:helm
+properties:20:50:75
 A:20:20 to 100
 P:7:1d3:0:0:0
 
-N:143:& Steel Helm~
-G:]:W
-I:helm
-W:40:0:60:200
+name:143:& Steel Helm~
+graphics:]:W
+type:helm
+properties:40:60:200
 A:20:40 to 100
 P:9:1d3:0:0:0
 
-N:144:& Iron Crown~
-G:]:s
-I:crown
-W:45:0:20:500
+name:144:& Iron Crown~
+graphics:]:s
+type:crown
+properties:45:20:500
 A:20:45 to 100
 P:0:1d1:0:0:0
 
-N:145:& Golden Crown~
-G:]:y
-I:crown
-W:45:0:30:1000
+name:145:& Golden Crown~
+graphics:]:y
+type:crown
+properties:45:30:1000
 A:10:45 to 100
 P:0:1d1:0:0:0
 F:IGNORE_ACID
 
-N:146:& Jewel Encrusted Crown~
-G:]:v
-I:crown
-W:50:0:40:2000
+name:146:& Jewel Encrusted Crown~
+graphics:]:v
+type:crown
+properties:50:40:2000
 A:10:50 to 100
 P:0:1d1:0:0:0
 F:IGNORE_ACID
@@ -958,124 +962,124 @@ F:IGNORE_ACID
 
 ### Body armours ###
 
-N:150:& Robe~
-G:(:b
-I:soft armor
-W:1:0:20:4
+name:150:& Robe~
+graphics:(:b
+type:soft armor
+properties:1:20:4
 A:20:1 to 100
 P:2:0d0:0:0:0
 
-N:151:Soft Leather Armour~
-G:(:U
-I:soft armor
-W:3:0:80:20
+name:151:Soft Leather Armour~
+graphics:(:U
+type:soft armor
+properties:3:80:20
 A:20:3 to 100
 P:8:0d0:0:0:0
 
-N:152:Studded Leather Armour~
-G:(:U
-I:soft armor
-W:10:0:100:100
+name:152:Studded Leather Armour~
+graphics:(:U
+type:soft armor
+properties:10:100:100
 A:20:5 to 100
 P:12:1d1:-1:0:0
 
-N:153:Hard Leather Armour~
-G:(:U
-I:soft armor
-W:5:0:120:150
+name:153:Hard Leather Armour~
+graphics:(:U
+type:soft armor
+properties:5:120:150
 A:20:10 to 100
 P:16:1d2:-1:0:0
 
-N:154:Leather Scale Mail~
-G:(:U
-I:soft armor
-W:15:0:140:370
+name:154:Leather Scale Mail~
+graphics:(:U
+type:soft armor
+properties:15:140:370
 A:20:15 to 100
 P:20:1d1:-1:0:0
 
-N:155:Metal Scale Mail~
-G:[:s
-I:hard armor
-W:25:0:250:550
+name:155:Metal Scale Mail~
+graphics:[:s
+type:hard armor
+properties:25:250:550
 A:20:25 to 100
 P:38:1d4:-2:0:0
 
-N:156:Chain Mail~
-G:[:s
-I:hard armor
-W:25:0:220:750
+name:156:Chain Mail~
+graphics:[:s
+type:hard armor
+properties:25:220:750
 A:20:20 to 100
 P:32:1d4:-2:0:0
 
-N:157:Augmented Chain Mail~
-G:[:s
-I:hard armor
-W:30:0:270:900
+name:157:Augmented Chain Mail~
+graphics:[:s
+type:hard armor
+properties:30:270:900
 A:20:35 to 100
 P:42:1d4:-2:0:0
 
-N:158:Bar Chain Mail~
-G:[:s
-I:hard armor
-W:35:0:280:950
+name:158:Bar Chain Mail~
+graphics:[:s
+type:hard armor
+properties:35:280:950
 A:20:40 to 100
 P:45:1d4:-2:0:0
 
-N:159:Metal Brigandine Armour~
-G:[:s
-I:hard armor
-W:35:0:290:1100
+name:159:Metal Brigandine Armour~
+graphics:[:s
+type:hard armor
+properties:35:290:1100
 A:20:45 to 100
 P:48:1d4:-3:0:0
 
-N:160:Partial Plate Armour~
-G:[:W
-I:hard armor
-W:45:0:260:1200
+name:160:Partial Plate Armour~
+graphics:[:W
+type:hard armor
+properties:45:260:1200
 A:20:30 to 100
 P:40:1d6:-3:0:0
 
-N:161:Metal Lamellar Armour~
-G:[:W
-I:hard armor
-W:45:0:340:1250
+name:161:Metal Lamellar Armour~
+graphics:[:W
+type:hard armor
+properties:45:340:1250
 A:20:50 to 100
 P:58:1d6:-3:0:0
 
-N:162:Full Plate Armour~
-G:[:W
-I:hard armor
-W:45:0:360:1350
+name:162:Full Plate Armour~
+graphics:[:W
+type:hard armor
+properties:45:360:1350
 A:15:55 to 100
 P:62:2d4:-3:0:0
 
-N:163:Ribbed Plate Armour~
-G:[:W
-I:hard armor
-W:50:0:380:1500
+name:163:Ribbed Plate Armour~
+graphics:[:W
+type:hard armor
+properties:50:380:1500
 A:15:60 to 100
 P:66:2d4:-3:0:0
 
-N:164:Mithril Chain Mail~
-G:[:B
-I:hard armor
-W:55:0:150:7000
+name:164:Mithril Chain Mail~
+graphics:[:B
+type:hard armor
+properties:55:150:7000
 A:10:55 to 100
 P:28:1d4:-1:0:0
 F:IGNORE_ACID
 
-N:165:Mithril Plate Mail~
-G:[:B
-I:hard armor
-W:60:0:300:15000
+name:165:Mithril Plate Mail~
+graphics:[:B
+type:hard armor
+properties:60:300:15000
 A:10:65 to 100
 P:60:2d4:-3:0:0
 F:IGNORE_ACID
 
-N:166:Adamantite Plate Mail~
-G:[:G
-I:hard armor
-W:75:0:420:20000
+name:166:Adamantite Plate Mail~
+graphics:[:G
+type:hard armor
+properties:75:420:20000
 A:10:75 to 100
 P:80:2d4:-4:0:0
 F:IGNORE_ACID
@@ -1084,36 +1088,36 @@ F:IGNORE_ACID
 
 ### The Cloaks ###
 
-N:170:& Cloak~
-G:(:g
-I:cloak
-W:1:0:10:3
+name:170:& Cloak~
+graphics:(:g
+type:cloak
+properties:1:10:3
 A:20:1 to 100
 P:1:0d0:0:0:0
 D:A traveller's sturdy outer garment.
 
-N:171:& Fur Cloak~
-G:(:o
-I:cloak
-W:1:0:25:600
+name:171:& Fur Cloak~
+graphics:(:o
+type:cloak
+properties:1:25:600
 A:20:20 to 100
 P:3:0d0:0:0:0
 D:A heavy cloak made from fur and lined with leather; a luxury.
 
-N:172:& Elven Cloak~
-G:(:D
-I:cloak
-W:60:0:5:2000
+name:172:& Elven Cloak~
+graphics:(:D
+type:cloak
+properties:60:5:2000
 A:8:40 to 100
 P:6:0d0:0:0:0
 V:STEALTH[1] | SPEED[1]
 D:A mantle made of curious silken material by the Galadrim that wondrously 
 D:takes on the hues and shapes of its surroundings.
 
-N:173:& Ethereal Cloak~
-G:(:W
-I:cloak
-W:50:0:0:4500
+name:173:& Ethereal Cloak~
+graphics:(:W
+type:cloak
+properties:50:0:4500
 A:10:70 to 100
 P:0:0d0:0:0:10
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD 
@@ -1123,41 +1127,41 @@ D:iridescent patterns around you.  It weighs absolutely nothing.
 
 ### The Gloves ###
 
-N:174:& Set~ of Leather Gloves
-G:]:U
-I:gloves
-W:0:0:10:5
+name:174:& Set~ of Leather Gloves
+graphics:]:U
+type:gloves
+properties:0:10:5
 A:20:1 to 100
 P:1:0d0:0:0:0
 
-N:175:& Set~ of Gauntlets
-G:]:s
-I:gloves
-W:0:0:25:45
+name:175:& Set~ of Gauntlets
+graphics:]:s
+type:gloves
+properties:0:25:45
 A:20:10 to 100
 P:3:1d1:0:0:0
 
-N:176:& Set~ of Mithril Gauntlets
-G:]:B
-I:gloves
-W:0:0:25:700
+name:176:& Set~ of Mithril Gauntlets
+graphics:]:B
+type:gloves
+properties:0:25:700
 A:20:40 to 100
 P:6:1d1:0:0:0
 F:IGNORE_ACID | IGNORE_FIRE
 
-N:177:& Set~ of Caestus
-G:]:U
-I:gloves
-W:0:0:40:100
+name:177:& Set~ of Caestus
+graphics:]:U
+type:gloves
+properties:0:40:100
 A:10:20 to 100
 P:5:1d1:0:3:0
 D:An ancient battle glove designed for hand-to-hand fighting.  Its layered
 D: leather thongs are enhanced for combat by bloody-looking spikes.
 
-N:178:& Set~ of Alchemist's Gloves
-G:]:R
-I:gloves
-W:0:0:5:500
+name:178:& Set~ of Alchemist's Gloves
+graphics:]:R
+type:gloves
+properties:0:5:500
 A:10:50 to 100
 P:0:1d1:0:0:2
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
@@ -1183,39 +1187,39 @@ D:Highly protective gloves designed for an alchemist's elemental magics.
 #P:1:1d1:0:0:0
 #D:A small round shield designed to be useful in deflecting enemy swords.
 
-N:181:& Wicker Shield~
-G:):U
-I:shield
-W:1:0:30:20
+name:181:& Wicker Shield~
+graphics:):U
+type:shield
+properties:1:30:20
 A:20:1 to 100
 P:2:1d1:0:0:0
 D:A light circular frame of wood surrounding fine-grained wickerwork.
 
-N:182:& Small Metal Shield~
-G:):s
-I:shield
-W:10:0:60:80
+name:182:& Small Metal Shield~
+graphics:):s
+type:shield
+properties:10:60:80
 A:20:15 to 100
 P:5:1d2:0:0:0
 
-N:183:& Leather Shield~
-G:):U
-I:shield
-W:15:0:90:200
+name:183:& Leather Shield~
+graphics:):U
+type:shield
+properties:15:90:200
 A:20:10 to 100
 P:8:1d3:0:0:0
 
-N:184:& Large Metal Shield~
-G:):s
-I:shield
-W:30:0:120:500
+name:184:& Large Metal Shield~
+graphics:):s
+type:shield
+properties:30:120:500
 A:20:30 to 100
 P:12:1d5:0:0:0
 
-N:185:& Mithril Shield~
-G:):B
-I:shield
-W:70:0:100:10000
+name:185:& Mithril Shield~
+graphics:):B
+type:shield
+properties:70:100:10000
 A:10:70 to 100
 P:16:1d4:0:0:10
 F:IGNORE_ACID
@@ -1227,50 +1231,50 @@ F:IGNORE_ACID
 
 ### Stat rings ###
 
-N:190:Strength
-G:=:d
-I:ring
-W:30:0:2:500
+name:190:Strength
+graphics:=:d
+type:ring
+properties:30:2:500
 A:50:30 to 100
 F:SUST_STR | 
 V:STR[1+M5]
 
-N:191:Intelligence
-G:=:d
-I:ring
-W:30:0:2:500
+name:191:Intelligence
+graphics:=:d
+type:ring
+properties:30:2:500
 A:50:30 to 100
 F:SUST_INT | 
 V:INT[1+M5]
 
-N:192:Dexterity
-G:=:d
-I:ring
-W:30:0:2:500
+name:192:Dexterity
+graphics:=:d
+type:ring
+properties:30:2:500
 A:50:30 to 100
 F:SUST_DEX | 
 V:DEX[1+M5]
 
-N:193:Constitution
-G:=:d
-I:ring
-W:30:0:2:500
+name:193:Constitution
+graphics:=:d
+type:ring
+properties:30:2:500
 A:50:30 to 100
 F:SUST_CON | 
 V:CON[1+M5]
 
-N:194:Speed
-G:=:d
-I:ring
-W:75:0:2:100000
+name:194:Speed
+graphics:=:d
+type:ring
+properties:75:2:100000
 A:40:75 to 100
 F:GOOD
 V:SPEED[4+M6]
 
-N:195:Searching
-G:=:d
-I:ring
-W:5:0:2:250
+name:195:Searching
+graphics:=:d
+type:ring
+properties:5:2:250
 A:20:5 to 90
 V:SEARCH[1+M5]
 
@@ -1279,17 +1283,17 @@ V:SEARCH[1+M5]
 
 ### Stat sustain rings ###
 
-N:198:Bodykeeping
-G:=:d
-I:ring
-W:30:0:2:750
+name:198:Bodykeeping
+graphics:=:d
+type:ring
+properties:30:2:750
 A:20:30 to 100
 F:SUST_STR | SUST_DEX | SUST_CON | EASY_KNOW
 
-N:199:Soulkeeping
-G:=:d
-I:ring
-W:30:0:2:600
+name:199:Soulkeeping
+graphics:=:d
+type:ring
+properties:30:2:600
 A:20:30 to 100
 F:SUST_STR | SUST_INT | SUST_WIS | EASY_KNOW
 
@@ -1298,18 +1302,18 @@ F:SUST_STR | SUST_INT | SUST_WIS | EASY_KNOW
 
 ### Resistance rings ###
 
-N:201:Resist Poison
-G:=:d
-I:ring
-W:40:0:2:16000
+name:201:Resist Poison
+graphics:=:d
+type:ring
+properties:40:2:16000
 A:50:40 to 100
 F:EASY_KNOW
 V:RES_POIS[1]
 
-N:202:Resist Fire and Cold
-G:=:d
-I:ring
-W:10:0:2:250
+name:202:Resist Fire and Cold
+graphics:=:d
+type:ring
+properties:10:2:250
 A:50:10 to 50
 F:IGNORE_COLD | IGNORE_FIRE | EASY_KNOW
 V:RES_FIRE[1] | RES_COLD[1]
@@ -1319,19 +1323,19 @@ V:RES_FIRE[1] | RES_COLD[1]
 
 ### Elemental rings ###
 
-N:205:Light
-G:=:d
-I:ring
-W:0:0:2:400
+name:205:Light
+graphics:=:d
+type:ring
+properties:0:2:400
 A:20:25 to 100
 V:SEARCH[1+M5] | LIGHT[1] | RES_LIGHT[1]
 
 ### 206, sval 17
 
-N:207:Flames
-G:=:d
-I:ring
-W:50:0:2:500
+name:207:Flames
+graphics:=:d
+type:ring
+properties:50:2:500
 A:20:20 to 100
 P:0:0d0:0:0:5+d5M10
 F:IGNORE_FIRE
@@ -1343,10 +1347,10 @@ effect:TIMED_INC:OPP_FIRE
 dice:20+1d20
 time:50+d50
 
-N:208:Acid
-G:=:d
-I:ring
-W:50:0:2:500
+name:208:Acid
+graphics:=:d
+type:ring
+properties:50:2:500
 A:20:20 to 100
 P:0:0d0:0:0:5+d5M10
 F:IGNORE_ACID
@@ -1358,10 +1362,10 @@ effect:TIMED_INC:OPP_ACID
 dice:20+1d20
 time:50+d50
 
-N:209:Ice
-G:=:d
-I:ring
-W:50:0:2:500
+name:209:Ice
+graphics:=:d
+type:ring
+properties:50:2:500
 A:20:20 to 100
 P:0:0d0:0:0:5+d5M10
 F:IGNORE_COLD
@@ -1373,10 +1377,10 @@ effect:TIMED_INC:OPP_COLD
 dice:20+1d20
 time:50+d50
 
-N:210:Lightning
-G:=:d
-I:ring
-W:50:0:2:500
+name:210:Lightning
+graphics:=:d
+type:ring
+properties:50:2:500
 A:20:20 to 100
 P:0:0d0:0:0:5+d5M10
 F:IGNORE_ELEC
@@ -1392,34 +1396,34 @@ time:50+d50
 
 ### Combat rings ###
 
-N:212:Damage
-G:=:d
-I:ring
-W:20:0:2:500
+name:212:Damage
+graphics:=:d
+type:ring
+properties:20:2:500
 A:30:20 to 100
 P:0:0d0:0:5+d3M7:0
 D:It boosts your to-dam value.
 
-N:213:Accuracy
-G:=:d
-I:ring
-W:20:0:2:500
+name:213:Accuracy
+graphics:=:d
+type:ring
+properties:20:2:500
 A:30:20 to 100
 P:0:0d0:10+d6M7:0:0
 D:It boosts your to-hit value.
 
-N:214:Slaying
-G:=:d
-I:ring
-W:40:0:2:1000
+name:214:Slaying
+graphics:=:d
+type:ring
+properties:40:2:1000
 A:20:40 to 100
 P:0:0d0:d10M10:d5M5:0
 D:It boosts your to-hit and to-dam values.
 
-N:215:Protection
-G:=:d
-I:ring
-W:10:0:2:500
+name:215:Protection
+graphics:=:d
+type:ring
+properties:10:2:500
 A:50:10 to 40
 P:0:0d0:0:0:5+d5M10
 D:It increases your armor class.
@@ -1427,25 +1431,25 @@ D:It increases your armor class.
 
 ### Mixed blessings ###
 
-N:216:Teleportation
-G:=:d
-I:ring
-W:5:0:2:1000
+name:216:Teleportation
+graphics:=:d
+type:ring
+properties:5:2:1000
 A:20:10 to 50
 F:TELEPORT | EASY_KNOW
 V:SPEED[2]
 
-N:217:Reckless Attacks
-G:=:d
-I:ring
-W:0:0:2:200
+name:217:Reckless Attacks
+graphics:=:d
+type:ring
+properties:0:2:200
 A:30:10 to 50
 P:0:0d0:2+d3:2+d3:-8+4d3
 
-N:218:Open Wounds
-G:=:d
-I:ring
-W:0:0:2:700
+name:218:Open Wounds
+graphics:=:d
+type:ring
+properties:0:2:700
 A:20:10 to 50
 F:IMPAIR_HP | EASY_KNOW
 power:6
@@ -1456,26 +1460,26 @@ effect:CURE:CUT
 effect:CURE:CONFUSED
 time:10+5d8
 
-N:219:Escaping
-G:=:d
-I:ring
-W:30:0:2:4000
+name:219:Escaping
+graphics:=:d
+type:ring
+properties:30:2:4000
 A:50:15 to 80
 F:AFRAID | EASY_KNOW
 V:SPEED[4]
 
-N:220:the Mouse
-G:=:d
-I:ring
-W:30:0:2:100
+name:220:the Mouse
+graphics:=:d
+type:ring
+properties:30:2:100
 A:50:10 to 50
 P:0:0d0:0:-3d5:0
 V:DEX[d4] | STEALTH[d4]
 
-N:221:the Dog
-G:=:d
-I:ring
-W:0:0:2:100
+name:221:the Dog
+graphics:=:d
+type:ring
+properties:0:2:100
 A:50:10 to 50
 F:PROT_FEAR
 V:STEALTH[-2]
@@ -1484,38 +1488,38 @@ V:STEALTH[-2]
 
 ### Misc rings ###
 
-N:223:Slow Digestion
-G:=:d
-I:ring
-W:5:0:2:250
+name:223:Slow Digestion
+graphics:=:d
+type:ring
+properties:5:2:250
 A:30:10 to 50
 F:SLOW_DIGEST | EASY_KNOW
 
-N:224:Feather Falling
-G:=:d
-I:ring
-W:5:0:2:200
+name:224:Feather Falling
+graphics:=:d
+type:ring
+properties:5:2:200
 A:20:10 to 50
 F:FEATHER | EASY_KNOW
 
-N:225:Free Action
-G:=:d
-I:ring
-W:20:0:2:1500
+name:225:Free Action
+graphics:=:d
+type:ring
+properties:20:2:1500
 A:50:20 to 100
 F:FREE_ACT | EASY_KNOW
 
-N:226:See Invisible
-G:=:d
-I:ring
-W:30:0:2:340
+name:226:See Invisible
+graphics:=:d
+type:ring
+properties:30:2:340
 A:50:30 to 100
 F:SEE_INVIS | EASY_KNOW
 
-N:227:Digging
-G:=:d
-I:ring
-W:0:0:2:800
+name:227:Digging
+graphics:=:d
+type:ring
+properties:0:2:800
 A:20:10 to 50
 V:TUNNEL[2+d3]
 power:6
@@ -1529,10 +1533,10 @@ time:15+2d10
 
 ### Stat boosts ###
 
-N:230:Wisdom
-G:":d
-I:amulet
-W:30:0:3:500
+name:230:Wisdom
+graphics:":d
+type:amulet
+properties:30:3:500
 A:50:20 to 90
 F:SUST_WIS | 
 V:WIS[1+M5]
@@ -1541,26 +1545,26 @@ V:WIS[1+M5]
 
 ### Resistances ###
 
-N:232:Resist Lightning
-G:":d
-I:amulet
-W:10:0:3:300
+name:232:Resist Lightning
+graphics:":d
+type:amulet
+properties:10:3:300
 A:50:10 to 50
 F:IGNORE_ELEC | EASY_KNOW
 V:RES_ELEC[1]
 
-N:233:Resist Acid
-G:":d
-I:amulet
-W:10:0:3:300
+name:233:Resist Acid
+graphics:":d
+type:amulet
+properties:10:3:300
 A:50:10 to 50
 F:IGNORE_ACID | EASY_KNOW
 V:RES_ACID[1]
 
-N:234:Resistance
-G:":d
-I:amulet
-W:60:0:3:20000
+name:234:Resistance
+graphics:":d
+type:amulet
+properties:60:3:20000
 A:10:60 to 100
 F:EASY_KNOW
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
@@ -1568,55 +1572,55 @@ V:RES_FIRE[1] | RES_ACID[1] | RES_ELEC[1] | RES_COLD[1]
 
 ### JLE amulets ###
 
-N:235:Sustenance
-G:":d
-I:amulet
-W:60:0:3:20000
+name:235:Sustenance
+graphics:":d
+type:amulet
+properties:60:3:20000
 A:10:60 to 100
 F:SUST_STR | SUST_INT | SUST_WIS | SUST_DEX | SUST_CON |
 F:HOLD_LIFE | SLOW_DIGEST | EASY_KNOW | 
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 
-N:236:the Magi
-G:":d
-I:amulet
-W:70:0:3:30000
+name:236:the Magi
+graphics:":d
+type:amulet
+properties:70:3:30000
 A:10:70 to 100
 P:0:0d0:0:0:d5M5
 F:FREE_ACT | SEE_INVIS | SUST_INT | PROT_BLIND | GOOD
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 V:SEARCH[1+M3] | INT[1+M3]
 
-N:237:ESP
-G:":d
-I:amulet
-W:50:0:3:25000
+name:237:ESP
+graphics:":d
+type:amulet
+properties:50:3:25000
 A:10:60 to 100
 F:TELEPATHY
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD | 
 V:SEARCH[d5M5]
 
-N:238:Devotion
-G:":d
-I:amulet
-W:70:0:3:30000
+name:238:Devotion
+graphics:":d
+type:amulet
+properties:70:3:30000
 A:10:70 to 100
 F:HOLD_LIFE | SUST_WIS | GOOD
 V:WIS[1+M3] | LIGHT[1] | RES_DARK[1] | RES_LIGHT[1] | RES_FIRE[1]
 
-N:239:Weaponmastery
-G:":d
-I:amulet
-W:70:0:3:30000
+name:239:Weaponmastery
+graphics:":d
+type:amulet
+properties:70:3:30000
 A:10:70 to 100
 P:0:0d0:1+M4:1+M4:0
 F:SUST_STR | SUST_CON | FREE_ACT | PROT_FEAR | GOOD
 V:STR[1+M2] | RES_DISEN[1]
 
-N:240:Trickery
-G:":d
-I:amulet
-W:70:0:3:30000
+name:240:Trickery
+graphics:":d
+type:amulet
+properties:70:3:30000
 A:10:70 to 100
 F:SUST_DEX | GOOD
 V:DEX[1+M4] | SPEED[1+M2] | STEALTH[1+M2] | SEARCH[1+d3M3] | INFRA[1+d3M3]
@@ -1628,57 +1632,57 @@ V:RES_NEXUS[1] | RES_POIS[1]
 
 ### Ability boosts ###
 
-N:244:Regeneration
-G:":d
-I:amulet
-W:30:0:3:600
+name:244:Regeneration
+graphics:":d
+type:amulet
+properties:30:3:600
 A:20:30 to 100
 F:REGEN | EASY_KNOW
 
-N:245:Infravision
-G:":d
-I:amulet
-W:10:0:3:200
+name:245:Infravision
+graphics:":d
+type:amulet
+properties:10:3:200
 A:30:10 to 70
 V:INFRA[1+M5]
 
-N:246:Searching
-G:":d
-I:amulet
-W:15:0:3:600
+name:246:Searching
+graphics:":d
+type:amulet
+properties:15:3:600
 A:20:10 to 40
 V:SEARCH[d5M5]
 
 ### Powers ###
 
-N:247:Teleportation
-G:":d
-I:amulet
-W:10:0:3:10
+name:247:Teleportation
+graphics:":d
+type:amulet
+properties:10:3:10
 A:20:10 to 40
 F:TELEPORT | EASY_KNOW
 
-N:248:Slow Digestion
-G:":d
-I:amulet
-W:15:0:3:200
+name:248:Slow Digestion
+graphics:":d
+type:amulet
+properties:15:3:200
 A:20:15 to 40
 F:SLOW_DIGEST | EASY_KNOW
 
-N:249:Adornment
-G:":d
-I:amulet
-W:10:0:3:0
+name:249:Adornment
+graphics:":d
+type:amulet
+properties:10:3:0
 A:20:10 to 40
 F:EASY_KNOW
 
 
 ### Mixed ###
 
-N:250:Inertia
-G:":d
-I:amulet
-W:15:0:3:10
+name:250:Inertia
+graphics:":d
+type:amulet
+properties:15:3:10
 A:20:15 to 40
 F:FREE_ACT | EASY_KNOW
 V:SPEED[-d2]
@@ -1690,30 +1694,30 @@ V:SPEED[-d2]
 
 ### Teleportation ###
 
-N:260:Phase Door
-G:?:w
-I:scroll
-W:1:0:5:15
+name:260:Phase Door
+graphics:?:w
+type:scroll
+properties:1:5:15
 A:50:1 to 100
 M:100:1d3
 power:5
 effect:TELEPORT
 dice:10
 
-N:261:Teleportation
-G:?:w
-I:scroll
-W:10:0:5:40
+name:261:Teleportation
+graphics:?:w
+type:scroll
+properties:10:5:40
 A:40:10 to 100
 M:25:2
 power:6
 effect:TELEPORT
 dice:100
 
-N:262:Teleport Level
-G:?:w
-I:scroll
-W:20:0:5:800
+name:262:Teleport Level
+graphics:?:w
+type:scroll
+properties:20:5:800
 A:16:20 to 100
 M:10:2
 power:15
@@ -1722,20 +1726,20 @@ effect:TELEPORT_LEVEL
 
 ### Detection ###
 
-N:263:Magic Mapping
-G:?:w
-I:scroll
-W:5:0:5:65
+name:263:Magic Mapping
+graphics:?:w
+type:scroll
+properties:5:5:65
 A:50:5 to 100
 M:70:1d3
 power:10
 effect:MAP_AREA
 dice:22d40
 
-N:264:Treasure Detection
-G:?:w
-I:scroll
-W:0:0:5:70
+name:264:Treasure Detection
+graphics:?:w
+type:scroll
+properties:0:5:70
 A:50:0 to 70
 M:40:1d5
 power:6
@@ -1744,20 +1748,20 @@ dice:22d40
 effect:SENSE_OBJECTS
 dice:22d40
 
-N:265:Trap Detection
-G:?:w
-I:scroll
-W:5:0:5:35
+name:265:Trap Detection
+graphics:?:w
+type:scroll
+properties:5:5:35
 A:50:0 to 70
 M:70:1d3
 power:6
 effect:DETECT_TRAPS
 dice:22d40
 
-N:266:Door/Stair Location
-G:?:w
-I:scroll
-W:5:0:5:50
+name:266:Door/Stair Location
+graphics:?:w
+type:scroll
+properties:5:5:50
 A:50:5 to 70
 M:70:1d3
 power:6
@@ -1766,10 +1770,10 @@ dice:22d40
 effect:DETECT_STAIRS
 dice:22d40
 
-N:267:Detect Invisible
-G:?:w
-I:scroll
-W:1:0:5:15
+name:267:Detect Invisible
+graphics:?:w
+type:scroll
+properties:1:5:15
 A:50:1 to 70
 M:70:1d3
 power:6
@@ -1781,40 +1785,40 @@ dice:22d40
 
 ### Enchantments ###
 
-N:270:Enchant Weapon To-Hit
-G:?:w
-I:scroll
-W:15:0:5:125
+name:270:Enchant Weapon To-Hit
+graphics:?:w
+type:scroll
+properties:15:5:125
 A:40:15 to 70
 M:25:2
 power:15
 effect:ENCHANT:TOHIT
 dice:1
 
-N:271:Enchant Weapon To-Dam
-G:?:w
-I:scroll
-W:15:0:5:125
+name:271:Enchant Weapon To-Dam
+graphics:?:w
+type:scroll
+properties:15:5:125
 A:40:15 to 70
 M:25:2
 power:20
 effect:ENCHANT:TODAM
 dice:1
 
-N:272:Enchant Armour
-G:?:w
-I:scroll
-W:15:0:5:125
+name:272:Enchant Armour
+graphics:?:w
+type:scroll
+properties:15:5:125
 A:40:15 to 70
 M:25:2
 power:12
 effect:ENCHANT:TOAC
 dice:1
 
-N:273:*Enchant Weapon*
-G:?:w
-I:scroll
-W:50:0:5:500
+name:273:*Enchant Weapon*
+graphics:?:w
+type:scroll
+properties:50:5:500
 A:40:50 to 100
 M:25:2
 power:22
@@ -1823,10 +1827,10 @@ dice:1d3
 effect:ENCHANT:TODAM
 dice:1d3
 
-N:274:*Enchant Armour*
-G:?:w
-I:scroll
-W:50:0:5:500
+name:274:*Enchant Armour*
+graphics:?:w
+type:scroll
+properties:50:5:500
 A:40:50 to 100
 M:25:2
 power:15
@@ -1834,20 +1838,20 @@ effect:ENCHANT:TOAC
 dice:2+1d3
 
 ## Removed in 3.4 until curses are redone
-N:275:Remove Curse
-G:?:w
-I:scroll
-W:10:0:5:100
+name:275:Remove Curse
+graphics:?:w
+type:scroll
+properties:10:5:100
 #A:16:10 to 100
 M:25:2
 power:8
 effect:REMOVE_CURSE
 
 ## Removed in 3.4 until curses are redone
-N:276:*Remove Curse*
-G:?:w
-I:scroll
-W:50:0:5:8000
+name:276:*Remove Curse*
+graphics:?:w
+type:scroll
+properties:50:5:8000
 #A:16:50 to 100
 M:25:2
 power:20
@@ -1857,40 +1861,39 @@ effect:REMOVE_ALL_CURSE
 
 ### Summoning ###
 
-N:278:Summon Monster
-G:?:w
-I:scroll
-W:1:0:5:0
+name:278:Summon Monster
+graphics:?:w
+type:scroll
+properties:1:5:0
 A:10:1 to 100
 M:70:1d3
 power:0
 effect:SUMMON
 dice:1d3
 
-N:279:Summon Undead
-G:?:w
-I:scroll
-W:15:0:5:0
+name:279:Summon Undead
+graphics:?:w
+type:scroll
+properties:15:5:0
 A:10:15 to 100
 M:70:1d3
-# 17 is S_UNDEAD- aaarrgh NRM
 power:0
-effect:SUMMON:17
+effect:SUMMON:UNDEAD
 dice:1d3
 
-N:280:Acquirement
-G:?:w
-I:scroll
-W:20:0:5:5000
+name:280:Acquirement
+graphics:?:w
+type:scroll
+properties:20:5:5000
 A:10:20 to 100
 power:20000
 effect:ACQUIRE
 dice:1
 
-N:281:*Acquirement*
-G:?:w
-I:scroll
-W:60:0:5:10000
+name:281:*Acquirement*
+graphics:?:w
+type:scroll
+properties:60:5:10000
 A:5:60 to 100
 power:20000
 effect:ACQUIRE
@@ -1899,28 +1902,28 @@ dice:1+1d2
 
 ### Killing scrolls ###
 
-N:282:Dispel Undead
-G:?:w
-I:scroll
-W:40:0:5:200
+name:282:Dispel Undead
+graphics:?:w
+type:scroll
+properties:40:5:200
 A:40:40 to 100
 M:25:2
 power:9
 effect:PROJECT_LOS:DISP_UNDEAD
 dice:60
 
-N:283:Banishment
-G:?:w
-I:scroll
-W:40:0:5:2500
+name:283:Banishment
+graphics:?:w
+type:scroll
+properties:40:5:2500
 A:25:40 to 100
 power:20
 effect:BANISH
 
-N:284:Mass Banishment
-G:?:w
-I:scroll
-W:50:0:5:3000
+name:284:Mass Banishment
+graphics:?:w
+type:scroll
+properties:50:5:3000
 A:20:50 to 100
 power:25
 effect:MASS_BANISH
@@ -1928,29 +1931,29 @@ effect:MASS_BANISH
 
 ### Utility ###
 
-N:285:Satisfy Hunger
-G:?:w
-I:scroll
-W:5:0:5:10
+name:285:Satisfy Hunger
+graphics:?:w
+type:scroll
+properties:5:5:10
 A:60:5 to 100
 M:100:2d3
 power:7
 effect:SET_NOURISH
 dice:16999
 
-N:286:Identify
-G:?:w
-I:scroll
-W:1:0:5:100
+name:286:Identify
+graphics:?:w
+type:scroll
+properties:1:5:100
 A:60:5 to 100
 M:100:2d3
 power:9
 effect:IDENTIFY
 
-N:289:Light
-G:?:w
-I:scroll
-W:0:0:5:15
+name:289:Light
+graphics:?:w
+type:scroll
+properties:0:5:15
 A:50:0 to 60
 M:35:2d3
 power:4
@@ -1958,38 +1961,38 @@ effect:LIGHT_AREA
 param:2
 dice:2d8
 
-N:290:Word of Recall
-G:?:w
-I:scroll
-W:5:0:5:125
+name:290:Word of Recall
+graphics:?:w
+type:scroll
+properties:5:5:125
 A:50:5 to 100
 M:35:2d3
 power:15
 effect:RECALL
 
-N:291:Recharging
-G:?:w
-I:scroll
-W:40:0:5:200
+name:291:Recharging
+graphics:?:w
+type:scroll
+properties:40:5:200
 A:40:40 to 100
 M:12:2d3
 power:11
 effect:RECHARGE
 dice:60
 
-N:292:Trap/Door Destruction
-G:?:w
-I:scroll
-W:10:0:5:50
+name:292:Trap/Door Destruction
+graphics:?:w
+type:scroll
+properties:10:5:50
 A:40:10 to 60
 M:25:2d3
 power:6
 effect:TOUCH:KILL_DOOR
 
-N:293:Deep Descent
-G:?:w
-I:scroll
-W:10:0:5:250
+name:293:Deep Descent
+graphics:?:w
+type:scroll
+properties:10:5:250
 A:20:1 to 100
 M:20:2
 power:19
@@ -1998,40 +2001,40 @@ effect:DEEP_DESCENT
 
 ### "Holy" spells ###
 
-N:294:Blessing
-G:?:w
-I:scroll
-W:1:0:5:15
+name:294:Blessing
+graphics:?:w
+type:scroll
+properties:1:5:15
 A:50:1 to 50
 M:70:1d3
 power:6
 effect:TIMED_INC:BLESSED
 dice:6+1d12
 
-N:295:Holy Chant
-G:?:w
-I:scroll
-W:10:0:5:40
+name:295:Holy Chant
+graphics:?:w
+type:scroll
+properties:10:5:40
 A:40:10 to 70
 M:25:2
 power:7
 effect:TIMED_INC:BLESSED
 dice:12+1d24
 
-N:296:Holy Prayer
-G:?:w
-I:scroll
-W:25:0:5:80
+name:296:Holy Prayer
+graphics:?:w
+type:scroll
+properties:25:5:80
 A:40:50 to 100
 M:25:2
 power:8
 effect:TIMED_INC:BLESSED
 dice:24+1d48
 
-N:297:Protection from Evil
-G:?:w
-I:scroll
-W:30:0:5:50
+name:297:Protection from Evil
+graphics:?:w
+type:scroll
+properties:30:5:50
 A:40:30 to 100
 M:25:2
 power:6
@@ -2042,27 +2045,27 @@ expr:B:PLAYER_LEVEL:* 3
 
 ### Misc. ###
 
-N:298:Monster Confusion
-G:?:w
-I:scroll
-W:5:0:5:30
+name:298:Monster Confusion
+graphics:?:w
+type:scroll
+properties:5:5:30
 A:16:5 to 60
 M:25:2
 power:8
 effect:CONFUSING
 
-N:299:Rune of Protection
-G:?:w
-I:scroll
-W:60:0:5:500
+name:299:Rune of Protection
+graphics:?:w
+type:scroll
+properties:60:5:500
 A:30:70 to 100
 power:20
 effect:RUNE
 
-N:300:*Destruction*
-G:?:w
-I:scroll
-W:40:0:5:1000
+name:300:*Destruction*
+graphics:?:w
+type:scroll
+properties:40:5:1000
 A:30:40 to 100
 power:12
 effect:DESTRUCTION
@@ -2070,37 +2073,37 @@ effect:DESTRUCTION
 
 ### Bad scrolls ###
 
-N:301:Aggravate Monster
-G:?:w
-I:scroll
-W:5:0:5:0
+name:301:Aggravate Monster
+graphics:?:w
+type:scroll
+properties:5:5:0
 A:10:5 to 70
 M:70:1d3
 power:0
 effect:AGGRAVATE
 
-N:302:Curse Weapon
-G:?:w
-I:scroll
-W:50:0:5:0
+name:302:Curse Weapon
+graphics:?:w
+type:scroll
+properties:50:5:0
 #A:10:50 to 100
 M:70:1d3
 power:0
 effect:CURSE_WEAPON
 
-N:303:Curse Armour
-G:?:w
-I:scroll
-W:50:0:5:0
+name:303:Curse Armour
+graphics:?:w
+type:scroll
+properties:50:5:0
 #A:10:50 to 100
 M:70:1d3
 power:0
 effect:CURSE_ARMOR
 
-N:304:Darkness
-G:?:w
-I:scroll
-W:1:0:5:0
+name:304:Darkness
+graphics:?:w
+type:scroll
+properties:1:5:0
 A:10:1 to 70
 M:70:1d3
 power:0
@@ -2108,10 +2111,10 @@ effect:DARKEN_AREA:DARK_WEAK:2
 effect:TIMED_INC:BLIND
 dice:3+1d5
 
-N:305:Trap Creation
-G:?:w
-I:scroll
-W:10:0:5:0
+name:305:Trap Creation
+graphics:?:w
+type:scroll
+properties:10:5:0
 A:10:10 to 70
 M:70:1d3
 power:0
@@ -2124,46 +2127,46 @@ effect:TOUCH:MAKE_TRAP
 
 ### Statgain ###
 
-N:310:Strength
-G:!:d
-I:potion
-W:30:0:4:8000
+name:310:Strength
+graphics:!:d
+type:potion
+properties:30:4:8000
 A:30:30 to 100
 M:10:2
 power:20000
 effect:GAIN_STAT:STR
 
-N:311:Intelligence
-G:!:d
-I:potion
-W:30:0:4:8000
+name:311:Intelligence
+graphics:!:d
+type:potion
+properties:30:4:8000
 A:30:30 to 100
 M:10:2
 power:20000
 effect:GAIN_STAT:INT
 
-N:312:Wisdom
-G:!:d
-I:potion
-W:30:0:4:8000
+name:312:Wisdom
+graphics:!:d
+type:potion
+properties:30:4:8000
 A:30:30 to 100
 M:10:2
 power:20000
 effect:GAIN_STAT:WIS
 
-N:313:Dexterity
-G:!:d
-I:potion
-W:30:0:4:8000
+name:313:Dexterity
+graphics:!:d
+type:potion
+properties:30:4:8000
 A:30:30 to 100
 M:10:2
 power:20000
 effect:GAIN_STAT:DEX
 
-N:314:Constitution
-G:!:d
-I:potion
-W:30:0:4:8000
+name:314:Constitution
+graphics:!:d
+type:potion
+properties:30:4:8000
 A:30:30 to 100
 M:10:2
 power:20000
@@ -2171,10 +2174,10 @@ effect:GAIN_STAT:CON
 
 ### 315, sval 6
 
-N:316:Augmentation
-G:!:d
-I:potion
-W:40:0:4:50000
+name:316:Augmentation
+graphics:!:d
+type:potion
+properties:40:4:50000
 A:20:40 to 100
 P:0:1d1:0:0:0
 power:20000
@@ -2184,10 +2187,10 @@ effect:GAIN_STAT:WIS
 effect:GAIN_STAT:DEX
 effect:GAIN_STAT:CON
 
-N:317:Experience
-G:!:d
-I:potion
-W:65:0:4:25000
+name:317:Experience
+graphics:!:d
+type:potion
+properties:65:4:25000
 A:50:65 to 100
 power:20000
 effect:GAIN_EXP
@@ -2195,10 +2198,10 @@ dice:100000
 
 ### Healings ###
 
-N:318:Cure Light Wounds
-G:!:d
-I:potion
-W:0:0:4:20
+name:318:Cure Light Wounds
+graphics:!:d
+type:potion
+properties:0:4:20
 A:80:1 to 15
 M:90:2d3
 power:3
@@ -2212,10 +2215,10 @@ dice:20
 effect:NOURISH
 dice:150
 
-N:319:Cure Serious Wounds
-G:!:d
-I:potion
-W:3:0:4:70
+name:319:Cure Serious Wounds
+graphics:!:d
+type:potion
+properties:3:4:70
 A:80:5 to 40
 M:80:2d3
 power:6
@@ -2227,10 +2230,10 @@ effect:CURE:CONFUSED
 effect:NOURISH
 dice:150
 
-N:320:Cure Critical Wounds
-G:!:d
-I:potion
-W:5:0:4:200
+name:320:Cure Critical Wounds
+graphics:!:d
+type:potion
+properties:5:4:200
 A:80:12 to 100
 M:70:2d3
 power:9
@@ -2245,10 +2248,10 @@ effect:CURE:CONFUSED
 effect:NOURISH
 dice:150
 
-N:321:Healing
-G:!:d
-I:potion
-W:15:0:4:800
+name:321:Healing
+graphics:!:d
+type:potion
+properties:15:4:800
 A:64:30 to 100
 M:25:2
 power:12
@@ -2263,10 +2266,10 @@ effect:CURE:CONFUSED
 effect:NOURISH
 dice:200
 
-N:322:*Healing*
-G:!:d
-I:potion
-W:40:0:4:1500
+name:322:*Healing*
+graphics:!:d
+type:potion
+properties:40:4:1500
 A:40:40 to 100
 P:0:1d1:0:0:0
 power:18
@@ -2281,10 +2284,10 @@ effect:CURE:CONFUSED
 effect:NOURISH
 dice:300
 
-N:323:Life
-G:!:d
-I:potion
-W:60:0:4:5000
+name:323:Life
+graphics:!:d
+type:potion
+properties:60:4:5000
 A:20:60 to 100
 P:0:1d1:0:0:0
 msg:You feel life flow through your body!
@@ -2304,19 +2307,19 @@ effect:RESTORE_STAT:CON
 effect:HEAL_HP
 dice:5000
 
-N:324:Neutralize Poison
-G:!:d
-I:potion
-W:5:0:4:75
+name:324:Neutralize Poison
+graphics:!:d
+type:potion
+properties:5:4:75
 A:40:1 to 35
 M:25:2
 power:1
 effect:CURE:POISONED
 
-N:325:Restore Mana
-G:!:d
-I:potion
-W:25:0:4:350
+name:325:Restore Mana
+graphics:!:d
+type:potion
+properties:25:4:350
 A:64:15 to 100
 M:25:2
 power:20
@@ -2327,10 +2330,10 @@ effect:RESTORE_MANA
 
 # removed: old stat restoration
 
-N:332:Restore Life Levels
-G:!:d
-I:potion
-W:40:0:4:400
+name:332:Restore Life Levels
+graphics:!:d
+type:potion
+properties:40:4:400
 A:40:30 to 100
 M:25:2
 power:8
@@ -2339,50 +2342,50 @@ effect:RESTORE_EXP
 
 ### Gain one/lose one potions ###
 
-N:333:Brawn
-G:!:d
-I:potion
-W:3:0:4:1000
+name:333:Brawn
+graphics:!:d
+type:potion
+properties:3:4:1000
 A:30:20 to 40
 M:10:2
 power:30
 effect:GAIN_STAT:STR
 effect:LOSE_RANDOM_STAT:STR
 
-N:334:Intellect
-G:!:d
-I:potion
-W:20:0:4:1000
+name:334:Intellect
+graphics:!:d
+type:potion
+properties:20:4:1000
 A:30:20 to 40
 M:10:2
 power:25
 effect:GAIN_STAT:INT
 effect:LOSE_RANDOM_STAT:INT
 
-N:335:Contemplation
-G:!:d
-I:potion
-W:20:0:4:1000
+name:335:Contemplation
+graphics:!:d
+type:potion
+properties:20:4:1000
 A:30:20 to 40
 M:10:2
 power:25
 effect:GAIN_STAT:WIS
 effect:LOSE_RANDOM_STAT:WIS
 
-N:336:Nimbleness
-G:!:d
-I:potion
-W:5:0:4:1000
+name:336:Nimbleness
+graphics:!:d
+type:potion
+properties:5:4:1000
 A:30:20 to 40
 M:10:2
 power:25
 effect:GAIN_STAT:DEX
 effect:LOSE_RANDOM_STAT:DEX
 
-N:337:Toughness
-G:!:d
-I:potion
-W:10:0:4:1000
+name:337:Toughness
+graphics:!:d
+type:potion
+properties:10:4:1000
 A:30:20 to 40
 M:10:2
 power:30
@@ -2392,19 +2395,19 @@ effect:LOSE_RANDOM_STAT:CON
 
 ### Knowledge ###
 
-N:341:Enlightenment
-G:!:d
-I:potion
-W:25:0:4:800
+name:341:Enlightenment
+graphics:!:d
+type:potion
+properties:25:4:800
 A:40:25 to 100
 M:25:2
 power:22
 effect:ENLIGHTENMENT
 
-N:342:*Enlightenment*
-G:!:d
-I:potion
-W:70:0:4:12000
+name:342:*Enlightenment*
+graphics:!:d
+type:potion
+properties:70:4:12000
 A:8:70 to 100
 P:0:1d1:0:0:0
 power:20000
@@ -2430,20 +2433,20 @@ effect:IDENTIFY_PACK
 
 ### Buffs ###
 
-N:343:Speed
-G:!:d
-I:potion
-W:1:0:4:75
+name:343:Speed
+graphics:!:d
+type:potion
+properties:1:4:75
 A:40:1 to 100
 M:25:2
 power:10
 effect:TIMED_INC:FAST:5
 dice:20+2d10
 
-N:344:Heroism
-G:!:d
-I:potion
-W:1:0:4:25
+name:344:Heroism
+graphics:!:d
+type:potion
+properties:1:4:25
 A:40:1 to 100
 M:25:2
 power:7
@@ -2453,10 +2456,10 @@ effect:CURE:AFRAID
 effect:TIMED_INC:HERO
 dice:25+1d25
 
-N:345:Berserk Strength
-G:!:d
-I:potion
-W:3:0:4:100
+name:345:Berserk Strength
+graphics:!:d
+type:potion
+properties:3:4:100
 A:40:3 to 100
 M:25:2
 power:9
@@ -2466,49 +2469,49 @@ effect:CURE:AFRAID
 effect:TIMED_INC:SHERO
 dice:25+1d25
 
-N:346:Boldness
-G:!:d
-I:potion
-W:1:0:4:8
+name:346:Boldness
+graphics:!:d
+type:potion
+properties:1:4:8
 A:40:1 to 90
 M:25:2
 power:2
 effect:CURE:AFRAID
 
-N:347:Resist Heat
-G:!:d
-I:potion
-W:1:0:4:30
+name:347:Resist Heat
+graphics:!:d
+type:potion
+properties:1:4:30
 A:40:1 to 100
 M:25:2
 power:4
 effect:TIMED_INC:OPP_FIRE
 dice:10+1d10
 
-N:348:Resist Cold
-G:!:d
-I:potion
-W:1:0:4:30
+name:348:Resist Cold
+graphics:!:d
+type:potion
+properties:1:4:30
 A:40:1 to 100
 M:25:2
 power:4
 effect:TIMED_INC:OPP_COLD
 dice:10+1d10
 
-N:349:Resist Poison
-G:!:d
-I:potion
-W:1:0:4:30
+name:349:Resist Poison
+graphics:!:d
+type:potion
+properties:1:4:30
 A:40:8 to 100
 M:25:2
 power:4
 effect:TIMED_INC:OPP_POIS
 dice:10+1d10
 
-N:350:True Seeing
-G:!:d
-I:potion
-W:3:0:4:50
+name:350:True Seeing
+graphics:!:d
+type:potion
+properties:3:4:50
 A:40:3 to 40
 M:25:2
 power:7
@@ -2516,10 +2519,10 @@ effect:CURE:BLIND
 effect:TIMED_INC:SINVIS
 dice:12+2d6
 
-N:351:Infravision
-G:!:d
-I:potion
-W:3:0:4:20
+name:351:Infravision
+graphics:!:d
+type:potion
+properties:3:4:20
 A:40:3 to 40
 M:25:2
 power:5
@@ -2529,20 +2532,20 @@ dice:100+4d25
 
 ### Useless buggers ###
 
-N:355:Slime Mold Juice
-G:!:d
-I:potion
-W:0:0:4:2
+name:355:Slime Mold Juice
+graphics:!:d
+type:potion
+properties:0:4:2
 A:10:1 to 10
 M:70:2d3
 power:0
 effect:NOURISH
 dice:1000
 
-N:356:Sleep
-G:!:d
-I:potion
-W:0:0:4:0
+name:356:Sleep
+graphics:!:d
+type:potion
+properties:0:4:0
 A:10:0 to 10
 M:70:2d3
 P:0:3d4:0:0:0
@@ -2552,10 +2555,10 @@ dice:5+1d5
 effect:NOURISH
 dice:100
 
-N:357:Blindness
-G:!:d
-I:potion
-W:0:0:4:0
+name:357:Blindness
+graphics:!:d
+type:potion
+properties:0:4:0
 A:10:0 to 10
 M:70:2d3
 P:0:3d4:0:0:0
@@ -2563,10 +2566,10 @@ power:0
 effect:TIMED_INC:BLIND
 dice:75+4d25
 
-N:358:Confusion
-G:!:d
-I:potion
-W:0:0:4:0
+name:358:Confusion
+graphics:!:d
+type:potion
+properties:0:4:0
 A:10:0 to 10
 M:70:2d3
 P:0:3d4:0:0:0
@@ -2576,10 +2579,10 @@ dice:10+4d5
 effect:NOURISH
 dice:50
 
-N:359:Poison
-G:!:d
-I:potion
-W:3:0:4:0
+name:359:Poison
+graphics:!:d
+type:potion
+properties:3:4:0
 A:10:0 to 10
 M:70:2d3
 P:0:3d4:0:0:0
@@ -2587,10 +2590,10 @@ power:0
 effect:TIMED_INC:POISONED
 dice:10+2d7
 
-N:360:Slowness
-G:!:d
-I:potion
-W:1:0:4:0
+name:360:Slowness
+graphics:!:d
+type:potion
+properties:1:4:0
 A:10:0 to 10
 M:70:2d3
 P:0:3d4:0:0:0
@@ -2600,19 +2603,19 @@ dice:15+1d25
 effect:NOURISH
 dice:50
 
-N:361:Lose Memories
-G:!:d
-I:potion
-W:10:0:4:0
+name:361:Lose Memories
+graphics:!:d
+type:potion
+properties:10:4:0
 A:10:10 to 15
 M:25:2
 power:0
 effect:LOSE_EXP
 
-N:362:Salt Water
-G:!:d
-I:potion
-W:0:0:4:0
+name:362:Salt Water
+graphics:!:d
+type:potion
+properties:0:4:0
 A:10:3 to 15
 M:100:1d2
 msg:The potion makes you vomit!
@@ -2627,10 +2630,10 @@ dice:4
 
 ### Weird one ###
 
-N:363:Dragon Breath
-G:!:d
-I:potion
-W:0:0:4:100
+name:363:Dragon Breath
+graphics:!:d
+type:potion
+properties:0:4:100
 M:100:1d2
 A:20:40 to 100
 M:70:1d3
@@ -2648,10 +2651,10 @@ dice:80
 
 ### Bolts ###
 
-N:370:Magic Missile
-G:-:d
-I:wand
-W:3:0:10:200
+name:370:Magic Missile
+graphics:-:d
+type:wand
+properties:3:10:200
 A:20:3 to 60
 P:0:1d1:0:0:0
 C:6+d10
@@ -2659,10 +2662,10 @@ power:3
 effect:BOLT_OR_BEAM:MISSILE
 dice:3d4
 
-N:371:Lightning Bolts
-G:-:d
-I:wand
-W:15:0:10:600
+name:371:Lightning Bolts
+graphics:-:d
+type:wand
+properties:15:10:600
 A:20:15 to 60
 P:0:1d1:0:0:0
 C:6+d8
@@ -2670,10 +2673,10 @@ power:5
 effect:BEAM:ELEC
 dice:6d6
 
-N:372:Frost Bolts
-G:-:d
-I:wand
-W:20:0:10:800
+name:372:Frost Bolts
+graphics:-:d
+type:wand
+properties:20:10:800
 A:20:20 to 60
 P:0:1d1:0:0:0
 C:6+d5
@@ -2681,10 +2684,10 @@ power:4
 effect:BOLT:COLD
 dice:12d8
 
-N:373:Fire Bolts
-G:-:d
-I:wand
-W:30:0:10:1000
+name:373:Fire Bolts
+graphics:-:d
+type:wand
+properties:30:10:1000
 A:20:30 to 60
 P:0:1d1:0:0:0
 C:6+d8
@@ -2692,10 +2695,10 @@ power:7
 effect:BOLT_OR_BEAM:FIRE
 dice:12d8
 
-N:374:Acid Bolts
-G:-:d
-I:wand
-W:30:0:10:950
+name:374:Acid Bolts
+graphics:-:d
+type:wand
+properties:30:10:950
 A:20:30 to 60
 P:0:1d1:0:0:0
 C:6+d8
@@ -2706,10 +2709,10 @@ dice:10d8
 
 ### Balls ###
 
-N:375:Stinking Cloud
-G:-:d
-I:wand
-W:5:0:10:400
+name:375:Stinking Cloud
+graphics:-:d
+type:wand
+properties:5:10:400
 A:20:5 to 60
 P:0:1d1:0:0:0
 C:6+d8
@@ -2717,10 +2720,10 @@ power:3
 effect:BALL:POIS:3
 dice:12
 
-N:376:Lightning Balls
-G:-:d
-I:wand
-W:35:0:10:1200
+name:376:Lightning Balls
+graphics:-:d
+type:wand
+properties:35:10:1200
 A:20:35 to 100
 P:0:1d1:0:0:0
 C:4+d8
@@ -2729,10 +2732,10 @@ power:9
 effect:BALL:ELEC:2
 dice:64
 
-N:377:Cold Balls
-G:-:d
-I:wand
-W:40:0:10:1500
+name:377:Cold Balls
+graphics:-:d
+type:wand
+properties:40:10:1500
 A:20:40 to 100
 P:0:1d1:0:0:0
 C:2+d6
@@ -2741,10 +2744,10 @@ power:10
 effect:BALL:COLD:2
 dice:100
 
-N:378:Fire Balls
-G:-:d
-I:wand
-W:50:0:10:1800
+name:378:Fire Balls
+graphics:-:d
+type:wand
+properties:50:10:1800
 A:20:50 to 100
 P:0:1d1:0:0:0
 C:2+d4
@@ -2753,10 +2756,10 @@ power:11
 effect:BALL:FIRE:2
 dice:144
 
-N:379:Acid Balls
-G:-:d
-I:wand
-W:50:0:10:1650
+name:379:Acid Balls
+graphics:-:d
+type:wand
+properties:50:10:1650
 A:20:50 to 100
 P:0:1d1:0:0:0
 C:2+d5
@@ -2768,10 +2771,10 @@ dice:120
 
 ### Monster status changing ###
 
-N:380:Slow Monster
-G:-:d
-I:wand
-W:5:0:10:500
+name:380:Slow Monster
+graphics:-:d
+type:wand
+properties:5:10:500
 A:20:5 to 60
 P:0:1d1:0:0:0
 C:6+d10
@@ -2779,10 +2782,10 @@ power:3
 effect:BOLT:OLD_SLOW
 dice:20
 
-N:381:Confuse Monster
-G:-:d
-I:wand
-W:5:0:10:500
+name:381:Confuse Monster
+graphics:-:d
+type:wand
+properties:5:10:500
 A:20:5 to 60
 P:0:1d1:0:0:0
 C:6+d12
@@ -2790,10 +2793,10 @@ power:3
 effect:BOLT_AWARE:OLD_CONF
 dice:10
 
-N:382:Sleep Monster
-G:-:d
-I:wand
-W:5:0:10:500
+name:382:Sleep Monster
+graphics:-:d
+type:wand
+properties:5:10:500
 A:20:5 to 60
 P:0:1d1:0:0:0
 C:8+d15
@@ -2802,10 +2805,10 @@ effect:BOLT_AWARE:OLD_SLEEP
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 
-N:383:Scare Monster
-G:-:d
-I:wand
-W:10:0:10:500
+name:383:Scare Monster
+graphics:-:d
+type:wand
+properties:10:10:500
 A:20:10 to 60
 P:0:1d1:0:0:0
 C:3+d5
@@ -2816,10 +2819,10 @@ dice:10
 
 ### Utility ###
 
-N:384:Light
-G:-:d
-I:wand
-W:3:0:10:200
+name:384:Light
+graphics:-:d
+type:wand
+properties:3:10:200
 A:20:3 to 60
 P:0:1d1:0:0:0
 C:6+d10
@@ -2828,10 +2831,10 @@ power:6
 effect:LINE:LIGHT_WEAK
 dice:6d8
 
-N:385:Stone to Mud
-G:-:d
-I:wand
-W:10:0:10:300
+name:385:Stone to Mud
+graphics:-:d
+type:wand
+properties:10:10:300
 A:20:10 to 100
 P:0:1d1:0:0:0
 C:3+d4
@@ -2839,10 +2842,10 @@ power:6
 effect:LINE:KILL_WALL
 dice:20+1d30
 
-N:386:Polymorph
-G:-:d
-I:wand
-W:20:0:10:400
+name:386:Polymorph
+graphics:-:d
+type:wand
+properties:20:10:400
 A:20:20 to 60
 P:0:1d1:0:0:0
 C:6+d8
@@ -2851,30 +2854,30 @@ effect:BOLT:OLD_POLY
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 
-N:387:Trap/Door Destruction
-G:-:d
-I:wand
-W:10:0:10:100
+name:387:Trap/Door Destruction
+graphics:-:d
+type:wand
+properties:10:10:100
 A:20:10 to 60
 P:0:1d1:0:0:0
 C:6+d8
 power:5
 effect:ALTER:KILL_DOOR
 
-N:388:Clone Monster
-G:-:d
-I:wand
-W:15:0:10:0
+name:388:Clone Monster
+graphics:-:d
+type:wand
+properties:15:10:0
 A:20:15 to 100
 P:0:1d1:0:0:0
 C:3+d5
 power:0
 effect:BOLT:OLD_CLONE
 
-N:389:Teleport Other
-G:-:d
-I:wand
-W:20:0:10:3500
+name:389:Teleport Other
+graphics:-:d
+type:wand
+properties:20:10:3500
 A:20:20 to 100
 P:0:1d1:0:0:0
 C:6+d5
@@ -2883,20 +2886,20 @@ effect:BOLT:AWAY_ALL
 dice:$B
 expr:B:MAX_SIGHT:* 5
 
-N:390:Disarming
-G:-:d
-I:wand
-W:20:0:10:700
+name:390:Disarming
+graphics:-:d
+type:wand
+properties:20:10:700
 A:20:20 to 60
 P:0:1d1:0:0:0
 C:4+d5
 power:7
 effect:ALTER:KILL_TRAP
 
-N:391:Wonder
-G:-:d
-I:wand
-W:3:0:10:250
+name:391:Wonder
+graphics:-:d
+type:wand
+properties:3:10:250
 A:20:3 to 60
 P:0:1d1:0:0:0
 C:8+d15
@@ -2910,10 +2913,10 @@ expr:B:PLAYER_LEVEL:/ 5
 
 ### Dragons' wands ###
 
-N:392:Dragon's Flame
-G:-:d
-I:wand
-W:50:0:10:2400
+name:392:Dragon's Flame
+graphics:-:d
+type:wand
+properties:50:10:2400
 A:20:50 to 100
 P:0:1d1:0:0:0
 C:1+d3
@@ -2922,10 +2925,10 @@ power:13
 effect:BREATH:FIRE:3
 dice:200
 
-N:393:Dragon's Frost
-G:-:d
-I:wand
-W:50:0:10:2400
+name:393:Dragon's Frost
+graphics:-:d
+type:wand
+properties:50:10:2400
 A:20:50 to 100
 P:0:1d1:0:0:0
 C:1+d3
@@ -2934,10 +2937,10 @@ power:12
 effect:BREATH:COLD:3
 dice:160
 
-N:394:Dragon's Breath
-G:-:d
-I:wand
-W:60:0:10:2400
+name:394:Dragon's Breath
+graphics:-:d
+type:wand
+properties:60:10:2400
 A:20:60 to 100
 P:0:1d1:0:0:0
 C:1+d3
@@ -2959,10 +2962,10 @@ dice:120
 
 ### Drain lifes ###
 
-N:395:Drain Life
-G:-:d
-I:wand
-W:50:0:10:1200
+name:395:Drain Life
+graphics:-:d
+type:wand
+properties:50:10:1200
 A:50:50 to 100
 P:0:1d1:0:0:0
 C:3+d3
@@ -2970,10 +2973,10 @@ power:11
 effect:BOLT:OLD_DRAIN
 dice:150
 
-N:396:Annihilation
-G:-:d
-I:wand
-W:60:0:10:3000
+name:396:Annihilation
+graphics:-:d
+type:wand
+properties:60:10:3000
 A:20:60 to 100
 P:0:1d1:0:0:0
 C:1+d2
@@ -2985,10 +2988,10 @@ dice:250
 
 ### Rubbish ###
 
-N:397:Heal Monster
-G:-:d
-I:wand
-W:3:0:10:0
+name:397:Heal Monster
+graphics:-:d
+type:wand
+properties:3:10:0
 A:10:3 to 40
 P:0:1d1:0:0:0
 C:8+d20
@@ -2996,10 +2999,10 @@ power:0
 effect:BOLT:OLD_HEAL
 dice:4d6
 
-N:398:Haste Monster
-G:-:d
-I:wand
-W:3:0:10:0
+name:398:Haste Monster
+graphics:-:d
+type:wand
+properties:3:10:0
 A:10:3 to 40
 P:0:1d1:0:0:0
 C:8+d20
@@ -3014,10 +3017,10 @@ dice:100
 
 ### Bad staffs ###
 
-N:400:Summoning
-G:_:d
-I:staff
-W:10:0:50:0
+name:400:Summoning
+graphics:_:d
+type:staff
+properties:10:50:0
 A:10:10 to 100
 P:0:1d2:0:0:0
 C:2d3
@@ -3025,10 +3028,10 @@ power:0
 effect:SUMMON
 dice:1d3
 
-N:401:Haste Monsters
-G:_:d
-I:staff
-W:10:0:50:0
+name:401:Haste Monsters
+graphics:_:d
+type:staff
+properties:10:50:0
 A:10:10 to 40
 P:0:1d2:0:0:0
 C:8+d8
@@ -3036,10 +3039,10 @@ power:0
 effect:PROJECT_LOS:OLD_SPEED
 dice:50
 
-N:402:Darkness
-G:_:d
-I:staff
-W:5:0:50:0
+name:402:Darkness
+graphics:_:d
+type:staff
+properties:5:50:0
 A:10:5 to 40
 P:0:1d2:0:0:0
 C:8+d8
@@ -3051,20 +3054,20 @@ dice:3+1d5
 
 ### Destruction ###
 
-N:403:Earthquakes
-G:_:d
-I:staff
-W:40:0:50:350
+name:403:Earthquakes
+graphics:_:d
+type:staff
+properties:40:50:350
 A:20:40 to 100
 P:0:1d2:0:0:0
 C:3+d5
 power:5
 effect:EARTHQUAKE
 
-N:404:*Destruction*
-G:_:d
-I:staff
-W:50:0:50:6000
+name:404:*Destruction*
+graphics:_:d
+type:staff
+properties:50:50:6000
 A:20:50 to 100
 P:0:1d2:0:0:0
 C:1+d3
@@ -3074,10 +3077,10 @@ effect:DESTRUCTION
 
 ### Monster-affecting ###
 
-N:405:Confuse Monsters
-G:_:d
-I:staff
-W:10:0:50:800
+name:405:Confuse Monsters
+graphics:_:d
+type:staff
+properties:10:50:800
 A:20:10 to 100
 P:0:1d2:0:0:0
 C:6+d5
@@ -3086,10 +3089,10 @@ effect:PROJECT_LOS:OLD_CONF
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 
-N:406:Slow Monsters
-G:_:d
-I:staff
-W:10:0:50:800
+name:406:Slow Monsters
+graphics:_:d
+type:staff
+properties:10:50:800
 A:20:10 to 100
 P:0:1d2:0:0:0
 C:6+d5
@@ -3097,10 +3100,10 @@ power:7
 effect:PROJECT_LOS:OLD_SLOW
 dice:20
 
-N:407:Sleep Monsters
-G:_:d
-I:staff
-W:10:0:50:700
+name:407:Sleep Monsters
+graphics:_:d
+type:staff
+properties:10:50:700
 A:20:10 to 100
 P:0:1d2:0:0:0
 C:6+d5
@@ -3112,10 +3115,10 @@ expr:B:PLAYER_LEVEL:+ 0
 
 ### Detect ###
 
-N:408:Detect Invisible
-G:_:d
-I:staff
-W:5:0:50:200
+name:408:Detect Invisible
+graphics:_:d
+type:staff
+properties:5:50:200
 A:30:5 to 100 
 P:0:1d2:0:0:0
 C:8+d15
@@ -3123,10 +3126,10 @@ power:6
 effect:DETECT_INVISIBLE_MONSTERS
 dice:22d40
 
-N:409:Detect Evil
-G:_:d
-I:staff
-W:20:0:50:350
+name:409:Detect Evil
+graphics:_:d
+type:staff
+properties:20:50:350
 A:30:20 to 100
 P:0:1d2:0:0:0
 C:8+d15
@@ -3134,10 +3137,10 @@ power:6
 effect:DETECT_EVIL
 dice:22d40
 
-N:410:Mapping
-G:_:d
-I:staff
-W:20:0:50:600
+name:410:Mapping
+graphics:_:d
+type:staff
+properties:20:50:600
 A:30:20 to 100
 P:0:1d2:0:0:0
 C:5+d5
@@ -3148,10 +3151,10 @@ dice:22d40
 
 ### Healing ###
 
-N:411:Curing
-G:_:d
-I:staff
-W:25:0:50:500
+name:411:Curing
+graphics:_:d
+type:staff
+properties:25:50:500
 A:30:10 to 100
 P:0:1d2:0:0:0
 C:4+d3
@@ -3162,10 +3165,10 @@ effect:CURE:POISONED
 effect:CURE:STUN
 effect:CURE:CONFUSED
 
-N:412:Cure Light Wounds
-G:_:d
-I:staff
-W:5:0:50:350
+name:412:Cure Light Wounds
+graphics:_:d
+type:staff
+properties:5:50:350
 A:30:5 to 100
 P:0:1d2:0:0:0
 C:6+d5
@@ -3178,10 +3181,10 @@ dice:20
 effect:TIMED_DEC:CONFUSED
 dice:20
 
-N:413:Healing
-G:_:d
-I:staff
-W:70:0:50:5000
+name:413:Healing
+graphics:_:d
+type:staff
+properties:70:50:5000
 A:10:70 to 100
 P:0:1d2:0:0:0
 C:1+d2
@@ -3198,10 +3201,10 @@ effect:CURE:CONFUSED
 
 ### Killing staffs ###
 
-N:414:Dispel Evil
-G:_:d
-I:staff
-W:50:0:50:1200
+name:414:Dispel Evil
+graphics:_:d
+type:staff
+properties:50:50:1200
 A:50:50 to 100
 P:0:1d2:0:0:0
 C:4+d3
@@ -3209,20 +3212,20 @@ power:9
 effect:PROJECT_LOS:DISP_EVIL
 dice:60
 
-N:415:Banishment
-G:_:d
-I:staff
-W:70:0:50:5000
+name:415:Banishment
+graphics:_:d
+type:staff
+properties:70:50:5000
 A:10:70 to 100
 P:0:1d2:0:0:0
 C:1+d2
 power:20
 effect:BANISH
 
-N:416:Power
-G:_:d
-I:staff
-W:70:0:50:4000
+name:416:Power
+graphics:_:d
+type:staff
+properties:70:50:4000
 A:20:70 to 100
 P:0:1d2:0:0:0
 C:1+d3
@@ -3230,10 +3233,10 @@ power:11
 effect:PROJECT_LOS:DISP_ALL
 dice:120
 
-N:417:Holiness
-G:_:d
-I:staff
-W:70:0:50:3500
+name:417:Holiness
+graphics:_:d
+type:staff
+properties:70:50:3500
 A:20:70 to 100
 P:0:1d2:0:0:0
 C:2d2
@@ -3259,10 +3262,10 @@ effect:CURE:AMNESIA
 
 ### Utility ###
 
-N:418:Light
-G:_:d
-I:staff
-W:5:0:50:250
+name:418:Light
+graphics:_:d
+type:staff
+properties:5:50:250
 A:20:5 to 80
 P:0:1d2:0:0:0
 C:8+d20
@@ -3271,10 +3274,10 @@ effect:LIGHT_AREA
 param:2
 dice:2d8
 
-N:419:Starlight
-G:_:d
-I:staff
-W:20:0:50:800
+name:419:Starlight
+graphics:_:d
+type:staff
+properties:20:50:800
 A:20:20 to 80
 P:0:1d2:0:0:0
 C:6+d5
@@ -3282,10 +3285,10 @@ power:5
 effect:STAR:LIGHT_WEAK
 dice:6d8
 
-N:420:Teleportation
-G:_:d
-I:staff
-W:20:0:50:2000
+name:420:Teleportation
+graphics:_:d
+type:staff
+properties:20:50:2000
 A:50:20 to 100
 P:0:1d2:0:0:0
 C:5+d4
@@ -3293,10 +3296,10 @@ power:6
 effect:TELEPORT
 dice:100
 
-N:421:Speed
-G:_:d
-I:staff
-W:40:0:50:2000
+name:421:Speed
+graphics:_:d
+type:staff
+properties:40:50:2000
 A:20:40 to 100
 P:0:1d2:0:0:0
 C:4+d3
@@ -3305,20 +3308,20 @@ effect:TIMED_INC:FAST:5
 dice:20+2d10
 
 ## Remove in 3.4 until curses are redone
-N:422:Remove Curse
-G:_:d
-I:staff
-W:40:0:50:500
+name:422:Remove Curse
+graphics:_:d
+type:staff
+properties:40:50:500
 #A:20:40 to 100
 P:0:1d2:0:0:0
 C:4+d3
 power:8
 effect:REMOVE_CURSE
 
-N:423:the Magi
-G:_:d
-I:staff
-W:70:0:50:4500
+name:423:the Magi
+graphics:_:d
+type:staff
+properties:70:50:4500
 A:10:70 to 100
 P:0:1d2:0:0:0
 C:2+1d2
@@ -3326,10 +3329,10 @@ power:20
 effect:RESTORE_STAT:INT
 effect:RESTORE_MANA
 
-N:424:Identify
-G:_:d
-I:staff
-W:10:0:50:600
+name:424:Identify
+graphics:_:d
+type:staff
+properties:10:50:600
 A:50:10 to 100
 P:0:1d2:0:0:0
 C:5+d15
@@ -3342,10 +3345,10 @@ effect:IDENTIFY
 
 ### Detection ###
 
-N:430:Treasure Location
-G:-:d
-I:rod
-W:5:0:15:1000
+name:430:Treasure Location
+graphics:-:d
+type:rod
+properties:5:15:1000
 A:30:8 to 75
 power:6
 effect:DETECT_GOLD
@@ -3354,10 +3357,10 @@ effect:SENSE_OBJECTS
 dice:22d40
 time:50
 
-N:431:Door/Stair Location
-G:-:d
-I:rod
-W:15:0:15:1000
+name:431:Door/Stair Location
+graphics:-:d
+type:rod
+properties:15:15:1000
 A:30:8 to 75
 P:0:1d1:0:0:0
 power:6
@@ -3367,10 +3370,10 @@ effect:DETECT_STAIRS
 dice:22d40
 time:70
 
-N:432:Trap Location
-G:-:d
-I:rod
-W:5:0:15:1000
+name:432:Trap Location
+graphics:-:d
+type:rod
+properties:5:15:1000
 A:30:8 to 75
 P:0:1d1:0:0:0
 power:6
@@ -3378,10 +3381,10 @@ effect:DETECT_TRAPS
 dice:22d40
 time:50
 
-N:433:Detection
-G:-:d
-I:rod
-W:30:0:15:3000
+name:433:Detection
+graphics:-:d
+type:rod
+properties:30:15:3000
 A:30:50 to 100
 P:0:1d1:0:0:0
 F:IGNORE_ELEC
@@ -3402,10 +3405,10 @@ effect:DETECT_VISIBLE_MONSTERS
 dice:22d40
 time:100
 
-N:434:Magic Mapping
-G:-:d
-I:rod
-W:65:0:15:2000
+name:434:Magic Mapping
+graphics:-:d
+type:rod
+properties:65:15:2000
 A:10:65 to 100
 P:0:1d1:0:0:0
 power:10
@@ -3413,10 +3416,10 @@ effect:MAP_AREA
 dice:22d40
 time:100
 
-N:435:Probing
-G:-:d
-I:rod
-W:35:0:15:1000
+name:435:Probing
+graphics:-:d
+type:rod
+properties:35:15:1000
 A:20:35 to 100
 P:0:1d1:0:0:0
 power:8
@@ -3426,10 +3429,10 @@ time:100
 
 ### Bolts ###
 
-N:436:Fire Bolts
-G:-:d
-I:rod
-W:30:0:15:3000
+name:436:Fire Bolts
+graphics:-:d
+type:rod
+properties:30:15:3000
 A:20:30 to 80
 P:0:1d1:0:0:0
 power:7
@@ -3437,10 +3440,10 @@ effect:BOLT_OR_BEAM:FIRE
 dice:12d8
 time:15
 
-N:437:Frost Bolts
-G:-:d
-I:rod
-W:25:0:15:2500
+name:437:Frost Bolts
+graphics:-:d
+type:rod
+properties:25:15:2500
 A:20:25 to 80
 P:0:1d1:0:0:0
 power:7
@@ -3448,10 +3451,10 @@ effect:BOLT:COLD
 dice:12d8
 time:13
 
-N:438:Lightning Bolts
-G:-:d
-I:rod
-W:20:0:15:2000
+name:438:Lightning Bolts
+graphics:-:d
+type:rod
+properties:20:15:2000
 A:20:20 to 80
 P:0:1d1:0:0:0
 power:5
@@ -3459,10 +3462,10 @@ effect:BEAM:ELEC
 dice:6d6
 time:11
 
-N:439:Acid Bolts
-G:-:d
-I:rod
-W:40:0:15:3500
+name:439:Acid Bolts
+graphics:-:d
+type:rod
+properties:40:15:3500
 A:20:40 to 80
 P:0:1d1:0:0:0
 power:7
@@ -3473,10 +3476,10 @@ time:12
 
 ### Balls ###
 
-N:440:Fire Balls
-G:-:d
-I:rod
-W:75:0:15:5000
+name:440:Fire Balls
+graphics:-:d
+type:rod
+properties:75:15:5000
 A:20:75 to 100
 P:0:1d1:0:0:0
 power:11
@@ -3484,10 +3487,10 @@ effect:BALL:FIRE:2
 dice:144
 time:30
 
-N:441:Cold Balls
-G:-:d
-I:rod
-W:60:0:15:4500
+name:441:Cold Balls
+graphics:-:d
+type:rod
+properties:60:15:4500
 A:20:60 to 100
 P:0:1d1:0:0:0
 power:10
@@ -3495,10 +3498,10 @@ effect:BALL:COLD:2
 dice:100
 time:25
 
-N:442:Lightning Balls
-G:-:d
-I:rod
-W:55:0:15:4000
+name:442:Lightning Balls
+graphics:-:d
+type:rod
+properties:55:15:4000
 A:20:55 to 100
 P:0:1d1:0:0:0
 F:IGNORE_ELEC
@@ -3507,10 +3510,10 @@ effect:BALL:ELEC:2
 dice:64
 time:23
 
-N:443:Acid Balls
-G:-:d
-I:rod
-W:70:0:15:5500
+name:443:Acid Balls
+graphics:-:d
+type:rod
+properties:70:15:5500
 A:20:70 to 100
 P:0:1d1:0:0:0
 power:11
@@ -3521,10 +3524,10 @@ time:27
 
 ### Status-affecting ###
 
-N:444:Slow Monster
-G:-:d
-I:rod
-W:30:0:15:1500
+name:444:Slow Monster
+graphics:-:d
+type:rod
+properties:30:15:1500
 A:20:30 to 100
 P:0:1d1:0:0:0
 power:3
@@ -3532,10 +3535,10 @@ effect:BOLT:OLD_SLOW
 dice:20
 time:20
 
-N:445:Sleep Monster
-G:-:d
-I:rod
-W:30:0:15:1500
+name:445:Sleep Monster
+graphics:-:d
+type:rod
+properties:30:15:1500
 A:20:30 to 100
 P:0:1d1:0:0:0
 power:3
@@ -3547,10 +3550,10 @@ time:18
 
 ### Healing ###
 
-N:446:Curing
-G:-:d
-I:rod
-W:65:0:15:1000
+name:446:Curing
+graphics:-:d
+type:rod
+properties:65:15:1000
 A:20:10 to 80
 P:0:1d1:0:0:0
 power:9
@@ -3561,10 +3564,10 @@ effect:CURE:STUN
 effect:CURE:CONFUSED
 time:100
 
-N:447:Healing
-G:-:d
-I:rod
-W:80:0:15:20000
+name:447:Healing
+graphics:-:d
+type:rod
+properties:80:15:20000
 A:20:80 to 100
 P:0:1d1:0:0:0
 F:IGNORE_ELEC
@@ -3575,10 +3578,10 @@ effect:CURE:CUT
 effect:CURE:STUN
 time:1000
 
-N:448:Restoration
-G:-:d
-I:rod
-W:80:0:15:25000
+name:448:Restoration
+graphics:-:d
+type:rod
+properties:80:15:25000
 A:10:80 to 100
 P:0:1d1:0:0:0
 F:IGNORE_ELEC
@@ -3594,10 +3597,10 @@ time:1000
 
 ### Other ###
 
-N:449:Polymorph
-G:-:d
-I:rod
-W:35:0:15:1200
+name:449:Polymorph
+graphics:-:d
+type:rod
+properties:35:15:1200
 A:20:35 to 80
 P:0:1d1:0:0:0
 power:7
@@ -3606,10 +3609,10 @@ dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 time:25
 
-N:450:Drain Life
-G:-:d
-I:rod
-W:75:0:15:3600
+name:450:Drain Life
+graphics:-:d
+type:rod
+properties:75:15:3600
 A:20:75 to 100
 P:0:1d1:0:0:0
 power:11
@@ -3617,10 +3620,10 @@ effect:BOLT:OLD_DRAIN
 dice:150
 time:23
 
-N:451:Teleport Other
-G:-:d
-I:rod
-W:45:0:15:5000
+name:451:Teleport Other
+graphics:-:d
+type:rod
+properties:45:15:5000
 A:20:45 to 100
 P:0:1d1:0:0:0
 power:11
@@ -3629,20 +3632,20 @@ dice:$B
 expr:B:MAX_SIGHT:* 5
 time:25
 
-N:452:Disarming
-G:-:d
-I:rod
-W:35:0:15:2100
+name:452:Disarming
+graphics:-:d
+type:rod
+properties:35:15:2100
 A:10:10 to 100
 P:0:1d1:0:0:0
 power:7
 effect:ALTER:KILL_TRAP
 time:30
 
-N:453:Light
-G:-:d
-I:rod
-W:10:0:15:500
+name:453:Light
+graphics:-:d
+type:rod
+properties:10:15:500
 A:20:8 to 100
 P:0:1d1:0:0:0
 msg:A line of shimmering blue light appears.
@@ -3651,10 +3654,10 @@ effect:LINE:LIGHT_WEAK
 dice:6d8
 time:9
 
-N:454:Illumination
-G:-:d
-I:rod
-W:20:0:15:1000
+name:454:Illumination
+graphics:-:d
+type:rod
+properties:20:15:1000
 A:20:20 to 100
 P:0:1d1:0:0:0
 power:4
@@ -3663,10 +3666,10 @@ param:2
 dice:2d8
 time:30
 
-N:455:Recall
-G:-:d
-I:rod
-W:30:0:15:4000
+name:455:Recall
+graphics:-:d
+type:rod
+properties:30:15:4000
 A:10:30 to 100
 P:0:1d1:0:0:0
 F:IGNORE_ELEC
@@ -3674,10 +3677,10 @@ power:15
 effect:RECALL
 time:60
 
-N:456:Identify
-G:-:d
-I:rod
-W:50:0:15:10000
+name:456:Identify
+graphics:-:d
+type:rod
+properties:50:15:10000
 A:15:50 to 100
 P:0:1d1:0:0:0
 F:IGNORE_ELEC
@@ -3685,10 +3688,10 @@ power:9
 effect:IDENTIFY
 time:10
 
-N:457:Speed
-G:-:d
-I:rod
-W:95:0:15:25000
+name:457:Speed
+graphics:-:d
+type:rod
+properties:95:15:25000
 A:10:80 to 100
 P:0:1d1:0:0:0
 F:IGNORE_ELEC
@@ -3701,59 +3704,59 @@ time:100
 
 ##### Basic Books #####
 
-N:460:[Magic for Beginners]
-G:?:R
-I:magic book
-W:1:0:30:25
+name:460:[Magic for Beginners]
+graphics:?:R
+type:magic book
+properties:1:30:25
 A:40:1 to 100
 P:0:1d1:0:0:0
 
-N:461:[Conjurings and Tricks]
-G:?:R
-I:magic book
-W:5:0:30:100
+name:461:[Conjurings and Tricks]
+graphics:?:R
+type:magic book
+properties:5:30:100
 A:40:5 to 100
 P:0:1d1:0:0:0
 
-N:462:[Incantations and Illusions]
-G:?:R
-I:magic book
-W:10:0:30:400
+name:462:[Incantations and Illusions]
+graphics:?:R
+type:magic book
+properties:10:30:400
 A:40:10 to 100
 P:0:1d1:0:0:0
 
-N:463:[Sorcery and Evocations]
-G:?:R
-I:magic book
-W:20:0:30:800
+name:463:[Sorcery and Evocations]
+graphics:?:R
+type:magic book
+properties:20:30:800
 A:40:20 to 100
 P:0:1d1:0:0:0
 
-N:464:[Beginners Handbook]
-G:?:G
-I:prayer book
-W:1:0:30:25
+name:464:[Beginners Handbook]
+graphics:?:G
+type:prayer book
+properties:1:30:25
 A:40:1 to 100
 P:0:1d1:0:0:0
 
-N:465:[Words of Wisdom]
-G:?:G
-I:prayer book
-W:5:0:30:100
+name:465:[Words of Wisdom]
+graphics:?:G
+type:prayer book
+properties:5:30:100
 A:40:5 to 100
 P:0:1d1:0:0:0
 
-N:466:[Chants and Blessings]
-G:?:G
-I:prayer book
-W:10:0:30:400
+name:466:[Chants and Blessings]
+graphics:?:G
+type:prayer book
+properties:10:30:400
 A:40:10 to 100
 P:0:1d1:0:0:0
 
-N:467:[Exorcism and Dispelling]
-G:?:G
-I:prayer book
-W:40:0:30:800
+name:467:[Exorcism and Dispelling]
+graphics:?:G
+type:prayer book
+properties:40:30:800
 A:50:20 to 100
 P:0:1d1:0:0:0
 
@@ -3761,82 +3764,82 @@ P:0:1d1:0:0:0
 
 ##### Special Books (note resistances) #####
 
-N:468:[Resistances of Scarabtarices]
-G:?:r
-I:magic book
-W:40:0:30:10000
+name:468:[Resistances of Scarabtarices]
+graphics:?:r
+type:magic book
+properties:40:30:10000
 A:15:40 to 100
 P:0:1d1:0:0:0
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD | GOOD
 
-N:469:[Raal's Tome of Destruction]
-G:?:r
-I:magic book
-W:50:0:30:20000
+name:469:[Raal's Tome of Destruction]
+graphics:?:r
+type:magic book
+properties:50:30:20000
 A:15:50 to 100
 P:0:1d1:0:0:0
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD | GOOD
 
-N:470:[Mordenkainen's Escapes]
-G:?:r
-I:magic book
-W:60:0:30:30000
+name:470:[Mordenkainen's Escapes]
+graphics:?:r
+type:magic book
+properties:60:30:30000
 A:15:60 to 100
 P:0:1d1:0:0:0
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD | GOOD
 
-N:471:[Tenser's Transformations]
-G:?:r
-I:magic book
-W:70:0:30:50000
+name:471:[Tenser's Transformations]
+graphics:?:r
+type:magic book
+properties:70:30:50000
 A:15:70 to 100
 P:0:1d1:0:0:0
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD | GOOD
 
-N:472:[Kelek's Grimoire of Power]
-G:?:r
-I:magic book
-W:80:0:30:90000
+name:472:[Kelek's Grimoire of Power]
+graphics:?:r
+type:magic book
+properties:80:30:90000
 A:10:90 to 100
 P:0:1d1:0:0:0
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD | GOOD
 
-N:473:[Ethereal Openings]
-G:?:g
-I:prayer book
-W:40:0:30:10000
+name:473:[Ethereal Openings]
+graphics:?:g
+type:prayer book
+properties:40:30:10000
 A:15:40 to 100
 P:0:1d1:0:0:0
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD | GOOD
 
-N:474:[Godly Insights]
-G:?:g
-I:prayer book
-W:50:0:30:20000
+name:474:[Godly Insights]
+graphics:?:g
+type:prayer book
+properties:50:30:20000
 A:15:50 to 100
 P:0:1d1:0:0:0
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD | GOOD
 
-N:475:[Purifications and Healing]
-G:?:g
-I:prayer book
-W:60:0:30:30000
+name:475:[Purifications and Healing]
+graphics:?:g
+type:prayer book
+properties:60:30:30000
 A:15:60 to 100
 P:0:1d1:0:0:0
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD | GOOD
 
-N:476:[Holy Infusions]
-G:?:g
-I:prayer book
-W:70:0:30:50000
+name:476:[Holy Infusions]
+graphics:?:g
+type:prayer book
+properties:70:30:50000
 A:15:70 to 100
 P:0:1d1:0:0:0
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD | GOOD
 
-N:477:[Wrath of God]
-G:?:g
-I:prayer book
-W:80:0:30:90000
+name:477:[Wrath of God]
+graphics:?:g
+type:prayer book
+properties:80:30:90000
 A:10:90 to 100
 P:0:1d1:0:0:0
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD | GOOD
@@ -3845,62 +3848,62 @@ F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD | GOOD
 
 ##### Chests #####
 
-N:480:& Small wooden chest~
-G:~:s
-I:chest
-W:5:0:250:20
+name:480:& Small wooden chest~
+graphics:~:s
+type:chest
+properties:5:250:20
 A:30:5 to 100
 P:0:2d3:0:0:0
 
-N:481:& Large wooden chest~
-G:~:s
-I:chest
-W:15:0:500:60
+name:481:& Large wooden chest~
+graphics:~:s
+type:chest
+properties:15:500:60
 A:30:15 to 100
 P:0:2d5:0:0:0
 
-N:482:& Small iron chest~
-G:~:s
-I:chest
-W:25:0:300:100
+name:482:& Small iron chest~
+graphics:~:s
+type:chest
+properties:25:300:100
 A:30:25 to 100
 P:0:2d4:0:0:0
 
-N:483:& Large iron chest~
-G:~:s
-I:chest
-W:35:0:1000:150
+name:483:& Large iron chest~
+graphics:~:s
+type:chest
+properties:35:1000:150
 A:30:35 to 100
 P:0:2d6:0:0:0
 
-N:484:& Small steel chest~
-G:~:s
-I:chest
-W:45:0:500:200
+name:484:& Small steel chest~
+graphics:~:s
+type:chest
+properties:45:500:200
 A:30:45 to 100
 P:0:2d4:0:0:0
 
-N:485:& Large steel chest~
-G:~:s
-I:chest
-W:55:0:1000:250
+name:485:& Large steel chest~
+graphics:~:s
+type:chest
+properties:55:1000:250
 A:30:55 to 100
 P:0:2d6:0:0:0
 
-N:486:& Ruined chest~
-G:~:s
-I:chest
-W:0:0:250:0
+name:486:& Ruined chest~
+graphics:~:s
+type:chest
+properties:0:250:0
 #A:100:75 to 100
 
 
 
 ##### Dragon Scale Mail #####
 
-N:500:Black Dragon Scale Mail~
-G:[:s
-I:dragon armor
-W:50:0:120:40000
+name:500:Black Dragon Scale Mail~
+graphics:[:s
+type:dragon armor
+properties:50:120:40000
 A:8:35 to 100
 P:16:2d4:-2:0:10
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
@@ -3910,10 +3913,10 @@ effect:BREATH:ACID:2
 dice:120
 time:50
 
-N:501:Blue Dragon Scale Mail~
-G:[:b
-I:dragon armor
-W:50:0:100:40000
+name:501:Blue Dragon Scale Mail~
+graphics:[:b
+type:dragon armor
+properties:50:100:40000
 A:8:25 to 100
 P:12:2d4:-2:0:10
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
@@ -3923,10 +3926,10 @@ effect:BREATH:ELEC:2
 dice:150
 time:50
 
-N:502:White Dragon Scale Mail~
-G:[:w
-I:dragon armor
-W:50:0:110:40000
+name:502:White Dragon Scale Mail~
+graphics:[:w
+type:dragon armor
+properties:50:110:40000
 A:8:30 to 100
 P:14:2d4:-2:0:10
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
@@ -3936,10 +3939,10 @@ effect:BREATH:COLD:2
 dice:100
 time:50
 
-N:503:Red Dragon Scale Mail~
-G:[:r
-I:dragon armor
-W:50:0:160:40000
+name:503:Red Dragon Scale Mail~
+graphics:[:r
+type:dragon armor
+properties:50:160:40000
 A:8:40 to 100
 P:24:2d4:-2:0:10
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
@@ -3949,10 +3952,10 @@ effect:BREATH:FIRE:2
 dice:200
 time:50
 
-N:504:Green Dragon Scale Mail~
-G:[:g
-I:dragon armor
-W:60:0:140:60000
+name:504:Green Dragon Scale Mail~
+graphics:[:g
+type:dragon armor
+properties:60:140:60000
 A:8:60 to 100
 P:20:2d4:-2:0:10
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
@@ -3962,10 +3965,10 @@ effect:BREATH:POIS:2
 dice:150
 time:50
 
-N:505:Multi-Hued Dragon Scale Mail~
-G:[:v
-I:dragon armor
-W:90:0:260:150000
+name:505:Multi-Hued Dragon Scale Mail~
+graphics:[:v
+type:dragon armor
+properties:90:260:150000
 A:5:75 to 100
 P:45:2d4:-2:0:10
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
@@ -3985,10 +3988,10 @@ effect:BREATH:POIS:2
 dice:250
 time:50
 
-N:506:Pseudo-Dragon Scale Mail~
-G:[:o
-I:dragon armor
-W:65:0:200:60000
+name:506:Pseudo-Dragon Scale Mail~
+graphics:[:o
+type:dragon armor
+properties:65:200:60000
 A:6:75 to 100
 P:32:2d4:-2:0:10
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
@@ -4002,10 +4005,10 @@ effect:BREATH:DARK:2
 dice:200
 time:50
 
-N:507:Law Dragon Scale Mail~
-G:[:B
-I:dragon armor
-W:80:0:220:80000
+name:507:Law Dragon Scale Mail~
+graphics:[:B
+type:dragon armor
+properties:80:220:80000
 A:6:80 to 100
 P:36:2d4:-2:0:10
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
@@ -4019,10 +4022,10 @@ effect:BREATH:SHARD:2
 dice:230
 time:50
 
-N:509:Gold Dragon Scale Mail~
-G:[:y
-I:dragon armor
-W:50:0:180:40000
+name:509:Gold Dragon Scale Mail~
+graphics:[:y
+type:dragon armor
+properties:50:180:40000
 A:8:70 to 100
 P:28:2d4:-2:0:10
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
@@ -4032,10 +4035,10 @@ effect:BREATH:SOUND:2
 dice:150
 time:50
 
-N:510:Chaos Dragon Scale Mail~
-G:[:v
-I:dragon armor
-W:80:0:240:80000
+name:510:Chaos Dragon Scale Mail~
+graphics:[:v
+type:dragon armor
+properties:80:240:80000
 A:5:85 to 100
 P:40:2d4:-2:0:10
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
@@ -4049,10 +4052,10 @@ effect:BREATH:DISEN:2
 dice:220
 time:50
 
-N:511:Balance Dragon Scale Mail~
-G:[:v
-I:dragon armor
-W:95:0:280:100000
+name:511:Balance Dragon Scale Mail~
+graphics:[:v
+type:dragon armor
+properties:95:280:100000
 A:3:95 to 100
 P:50:2d4:-2:0:10
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
@@ -4070,10 +4073,10 @@ effect:BREATH:DISEN:2
 dice:250
 time:50
 
-N:512:Power Dragon Scale Mail~
-G:[:v
-I:dragon armor
-W:100:0:300:300000
+name:512:Power Dragon Scale Mail~
+graphics:[:v
+type:dragon armor
+properties:100:300:300000
 A:1:100 to 100
 P:60:2d4:-3:0:15
 F:PROT_CONF
@@ -4090,49 +4093,49 @@ time:50
 
 ##### Gold/gems #####
 
-N:520:copper
-G:$:u
-I:gold
+name:520:copper
+graphics:$:u
+type:gold
 
-N:521:silver
-G:$:s
-I:gold
+name:521:silver
+graphics:$:s
+type:gold
 
-N:522:garnets
-G:$:r
-I:gold
+name:522:garnets
+graphics:$:r
+type:gold
 
-N:523:gold
-G:$:y
-I:gold
+name:523:gold
+graphics:$:y
+type:gold
 
-N:524:opals
-G:$:W
-I:gold
+name:524:opals
+graphics:$:W
+type:gold
 
-N:525:sapphires
-G:$:b
-I:gold
+name:525:sapphires
+graphics:$:b
+type:gold
 
-N:526:rubies
-G:$:r
-I:gold
+name:526:rubies
+graphics:$:r
+type:gold
 
-N:527:diamonds
-G:$:w
-I:gold
+name:527:diamonds
+graphics:$:w
+type:gold
 
-N:528:emeralds
-G:$:g
-I:gold
+name:528:emeralds
+graphics:$:g
+type:gold
 
-N:529:mithril
-G:$:B
-I:gold
+name:529:mithril
+graphics:$:B
+type:gold
 
-N:530:adamantite
-G:$:G
-I:gold
+name:530:adamantite
+graphics:$:G
+type:gold
 
 
 ##### "Morgoth Artifacts" #####
@@ -4140,17 +4143,17 @@ I:gold
 # These objects are never created without being turned into artifacts.
 # This simplifies the code for "killing the winner monster".
 
-N:540:& Mighty Hammer~
-G:\:D
-I:hafted
-W:15:0:200:1000
+name:540:& Mighty Hammer~
+graphics:\:D
+type:hafted
+properties:15:200:1000
 P:0:3d9:0:0:0
 F:INSTA_ART | QUEST_ART
 
-N:542:& Massive Iron Crown~
-G:]:D
-I:crown
-W:44:0:20:1000
+name:542:& Massive Iron Crown~
+graphics:]:D
+type:crown
+properties:44:20:1000
 P:0:1d1:0:0:0
 F:INSTA_ART | QUEST_ART
 

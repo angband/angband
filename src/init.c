@@ -768,7 +768,7 @@ static struct file_parser kb_parser = {
 
 /* Parsing functions for object.txt */
 
-static enum parser_error parse_k_n(struct parser *p) {
+static enum parser_error parse_object_name(struct parser *p) {
 	int idx = parser_getint(p, "index");
 	const char *name = parser_getstr(p, "name");
 	struct object_kind *h = parser_priv(p);
@@ -781,7 +781,7 @@ static enum parser_error parse_k_n(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_k_g(struct parser *p) {
+static enum parser_error parse_object_graphics(struct parser *p) {
 	wchar_t glyph = parser_getchar(p, "glyph");
 	const char *color = parser_getsym(p, "color");
 	struct object_kind *k = parser_priv(p);
@@ -796,7 +796,7 @@ static enum parser_error parse_k_g(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_k_i(struct parser *p) {
+static enum parser_error parse_object_type(struct parser *p) {
 	struct object_kind *k = parser_priv(p);
 	int tval;
 
@@ -814,7 +814,7 @@ static enum parser_error parse_k_i(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_k_w(struct parser *p) {
+static enum parser_error parse_object_properties(struct parser *p) {
 	struct object_kind *k = parser_priv(p);
 	assert(k);
 
@@ -1113,10 +1113,10 @@ static enum parser_error parse_k_v(struct parser *p) {
 struct parser *init_parse_k(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
-	parser_reg(p, "N int index str name", parse_k_n);
-	parser_reg(p, "G char glyph sym color", parse_k_g);
-	parser_reg(p, "I sym tval", parse_k_i);
-	parser_reg(p, "W int level int extra int weight int cost", parse_k_w);
+	parser_reg(p, "name int index str name", parse_object_name);
+	parser_reg(p, "graphics char glyph sym color", parse_object_graphics);
+	parser_reg(p, "type sym tval", parse_object_type);
+	parser_reg(p, "properties int level int weight int cost", parse_object_properties);
 	parser_reg(p, "A int common str minmax", parse_k_a);
 	parser_reg(p, "P int ac rand hd rand to-h rand to-d rand to-a", parse_k_p);
 	parser_reg(p, "C rand charges", parse_k_c);

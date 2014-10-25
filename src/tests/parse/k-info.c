@@ -18,7 +18,7 @@ int teardown_tests(void *state) {
 }
 
 int test_n0(void *state) {
-	errr r = parser_parse(state, "N:3:Test Object Kind");
+	errr r = parser_parse(state, "name:3:Test Object Kind");
 	struct object_kind *k;
 
 	eq(r, 0);
@@ -30,7 +30,7 @@ int test_n0(void *state) {
 }
 
 int test_g0(void *state) {
-	errr r = parser_parse(state, "G:~:red");
+	errr r = parser_parse(state, "graphics:~:red");
 	struct object_kind *k;
 
 	eq(r, 0);
@@ -42,7 +42,7 @@ int test_g0(void *state) {
 }
 
 int test_g1(void *state) {
-	errr r = parser_parse(state, "G:!:W");
+	errr r = parser_parse(state, "graphics:!:W");
 	struct object_kind *k;
 
 	eq(r, 0);
@@ -54,31 +54,18 @@ int test_g1(void *state) {
 }
 
 int test_i0(void *state) {
-	errr r = parser_parse(state, "I:4");
-	struct object_kind *k;
-
-	eq(r, 0);
-	k = parser_priv(state);
-	require(k);
-	eq(k->tval, 4);
-	eq(k->sval, 2);
-	ok;
-}
-
-int test_i1(void *state) {
-	errr r = parser_parse(state, "I:food");
+	errr r = parser_parse(state, "type:food");
 	struct object_kind *k;
 
 	eq(r, 0);
 	k = parser_priv(state);
 	require(k);
 	eq(k->tval, TV_FOOD);
-	eq(k->sval, 2);
 	ok;
 }
 
 int test_w0(void *state) {
-	errr r = parser_parse(state, "W:10:0:5:120");
+	errr r = parser_parse(state, "properties:10:5:120");
 	struct object_kind *k;
 
 	eq(r, 0);
@@ -212,7 +199,6 @@ struct test tests[] = {
 	{ "g0", test_g0 },
 	{ "g1", test_g1 },
 	//{ "i0", test_i0 },
-	//{ "i1", test_i1 },
 	{ "w0", test_w0 },
 	{ "a0", test_a0 },
 	{ "p0", test_p0 },
