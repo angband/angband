@@ -1,8 +1,8 @@
 /**
-   \file list-tvals.h
-   \brief List of object base types
-
-string			name */
+ * \file list-tvals.h
+ * \brief List of object base types
+ */
+/* string		name */
 TV(NULL,		"none")
 TV(CHEST,		"chest")
 TV(SHOT,		"shot")

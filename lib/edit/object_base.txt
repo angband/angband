@@ -1,146 +1,155 @@
-# D: lines are default values
+# File: object_base.txt
+#
+# This file is used to initialize object base information for Angband.
+# Object bases correspond to tvals as defined in src/list-tvals.h.
 
-# N: tval:name
-# G: default attr for inventory display
-# B: breakage chance when thrown
-# F: default flags
+# === Understanding object_base.txt ===
 
-D:B:10
+# default: lines are default values for any object base
 
-N:chest:Chest~
-G:slate
-F:HATES_ACID | HATES_FIRE
+# name: tval:name
+# graphics: default attr for inventory display
+# break: breakage chance when thrown
+# flags: default flags
 
-N:shot:Shot~
-G:light umber
-B:25
-F:SHOW_DICE | 
+default:break-chance:10
 
-N:arrow:Arrow~
-G:light umber
-B:35
-F:HATES_ACID | HATES_FIRE
-F:SHOW_DICE | 
+name:chest:Chest~
+graphics:slate
+flags:HATES_ACID | HATES_FIRE
 
-N:bolt:Bolt~
-G:light umber
-B:25
-F:HATES_ACID
-F:SHOW_DICE | 
+name:shot:Shot~
+graphics:light umber
+break:25
+flags:SHOW_DICE
 
-N:bow:Bow~
-G:umber
-F:HATES_ACID | HATES_FIRE
-F:SHOW_MULT | 
+name:arrow:Arrow~
+graphics:light umber
+break:35
+flags:HATES_ACID | HATES_FIRE
+flags:SHOW_DICE
 
-N:digger:Digger~
-G:slate
-F:SHOW_DICE | 
+name:bolt:Bolt~
+graphics:light umber
+break:25
+flags:HATES_ACID
+flags:SHOW_DICE
 
-N:hafted:Hafted weapon~
-G:white
-F:HATES_ACID | HATES_FIRE
-F:SHOW_DICE | 
+name:bow:Bow~
+graphics:umber
+flags:HATES_ACID | HATES_FIRE
+flags:SHOW_MULT
 
-N:polearm:Polearm~
-G:white
-F:HATES_ACID | HATES_FIRE
-F:SHOW_DICE | 
+name:digger:Digger~
+graphics:slate
+flags:SHOW_DICE
 
-N:sword:Bladed weapon~
-G:white
-F:HATES_ACID
-F:SHOW_DICE | 
+name:hafted:Hafted weapon~
+graphics:white
+flags:HATES_ACID | HATES_FIRE
+flags:SHOW_DICE
 
-N:boots:Boot~
-G:light umber
-F:HATES_ACID | HATES_FIRE
+name:polearm:Polearm~
+graphics:white
+flags:HATES_ACID | HATES_FIRE
+flags:SHOW_DICE
 
-N:gloves:Glove~
-G:light umber
-F:HATES_ACID | HATES_FIRE
+name:sword:Bladed weapon~
+graphics:white
+flags:HATES_ACID
+flags:SHOW_DICE
 
-N:helm:Helm~
-G:light umber
-F:HATES_ACID
+name:boots:Boot~
+graphics:light umber
+flags:HATES_ACID | HATES_FIRE
 
-N:crown:Crown~
-G:light umber
-F:HATES_ACID
+name:gloves:Glove~
+graphics:light umber
+flags:HATES_ACID | HATES_FIRE
 
-N:shield:Shield~
-G:light umber
-F:HATES_ACID
+name:helm:Helm~
+graphics:light umber
+flags:HATES_ACID
 
-N:cloak:Cloak~
-G:light umber
-F:HATES_ACID | HATES_FIRE
+name:crown:Crown~
+graphics:light umber
+flags:HATES_ACID
 
-N:soft armor:Soft Armor~
-G:slate
-F:HATES_ACID | HATES_FIRE
+name:shield:Shield~
+graphics:light umber
+flags:HATES_ACID
 
-N:hard armor:Hard Armor~
-G:slate
-F:HATES_ACID
+name:cloak:Cloak~
+graphics:light umber
+flags:HATES_ACID | HATES_FIRE
 
-N:dragon armor:Dragon Armor~
-G:slate
+name:soft armor:Soft Armor~
+graphics:slate
+flags:HATES_ACID | HATES_FIRE
 
-N:light:Light~
-G:yellow
-B:50
-F:HATES_FIRE
+name:hard armor:Hard Armor~
+graphics:slate
+flags:HATES_ACID
 
-N:amulet:Amulet~
-G:orange
+name:dragon armor:Dragon Armor~
+graphics:slate
 
-N:ring:Ring~
-G:red
-F:HATES_ELEC
+name:light:Light~
+graphics:yellow
+break:50
+flags:HATES_FIRE
 
-N:staff:Staff~
-G:light umber
-F:HATES_ACID | HATES_FIRE | EASY_KNOW
+name:amulet:Amulet~
+graphics:orange
 
-N:wand:Wand~
-G:green
-F:HATES_ELEC | EASY_KNOW
+name:ring:Ring~
+graphics:red
+flags:HATES_ELEC
 
-N:rod:Rod~
-G:light purple
-F:HATES_ELEC | EASY_KNOW
+name:staff:Staff~
+graphics:light umber
+flags:HATES_ACID | HATES_FIRE | EASY_KNOW
 
-N:scroll:Scroll~
-G:white
-F:HATES_ACID | HATES_FIRE | EASY_KNOW
+name:wand:Wand~
+graphics:green
+flags:HATES_ELEC | EASY_KNOW
 
-N:potion:Potion~
-G:light blue
-B:100
-F:HATES_COLD | HATES_SOUND | HATES_SHARD | HATES_ICE | HATES_FORCE | EASY_KNOW
+name:rod:Rod~
+graphics:light purple
+flags:HATES_ELEC | EASY_KNOW
 
-N:flask:Flask~
-G:yellow
-B:100
-F:HATES_COLD | HATES_SOUND | HATES_SHARD | HATES_ICE | HATES_FORCE | EASY_KNOW
+name:scroll:Scroll~
+graphics:white
+flags:HATES_ACID | HATES_FIRE | EASY_KNOW
 
-N:food:Food
-G:light umber
-B:100
-F:EASY_KNOW
+name:potion:Potion~
+graphics:light blue
+break:100
+flags:HATES_COLD | HATES_SOUND | HATES_SHARD | HATES_ICE | HATES_FORCE
+flags:EASY_KNOW
 
-N:mushroom:Mushroom~
-G:light umber
-B:100
-F:EASY_KNOW
+name:flask:Flask~
+graphics:yellow
+break:100
+flags:HATES_COLD | HATES_SOUND | HATES_SHARD | HATES_ICE | HATES_FORCE
+flags:EASY_KNOW
 
-N:magic book:Magic Book~
-G:light red
-F:HATES_FIRE | EASY_KNOW
+name:food:Food
+graphics:light umber
+break:100
+flags:EASY_KNOW
 
-N:prayer book:Prayer Book~
-G:light green
-F:HATES_FIRE | EASY_KNOW
+name:mushroom:Mushroom~
+graphics:light umber
+break:100
+flags:EASY_KNOW
 
-N:gold
+name:magic book:Magic Book~
+graphics:light red
+flags:HATES_FIRE | EASY_KNOW
+
+name:prayer book:Prayer Book~
+graphics:light green
+flags:HATES_FIRE | EASY_KNOW
+
+name:gold

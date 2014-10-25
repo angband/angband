@@ -597,14 +597,15 @@ static struct file_parser z_parser = {
 	cleanup_z
 };
 
-/* Parsing functions for object_base.txt */
-
+/**
+ * Parsing functions for object_base.txt
+ */
 struct kb_parsedata {
 	object_base defaults;
 	object_base *kb;
 };
 
-static enum parser_error parse_kb_d(struct parser *p) {
+static enum parser_error parse_object_base_defaults(struct parser *p) {
 	const char *label;
 	int value;
 
@@ -614,7 +615,7 @@ static enum parser_error parse_kb_d(struct parser *p) {
 	label = parser_getsym(p, "label");
 	value = parser_getint(p, "value");
 
-	if (streq(label, "B"))
+	if (streq(label, "break-chance"))
 		d->defaults.break_perc = value;
 	else
 		return PARSE_ERROR_UNDEFINED_DIRECTIVE;
@@ -622,7 +623,7 @@ static enum parser_error parse_kb_d(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_kb_n(struct parser *p) {
+static enum parser_error parse_object_base_name(struct parser *p) {
 	struct object_base *kb;
 
 	struct kb_parsedata *d = parser_priv(p);
@@ -644,7 +645,7 @@ static enum parser_error parse_kb_n(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_kb_g(struct parser *p) {
+static enum parser_error parse_object_base_graphics(struct parser *p) {
 	struct object_base *kb;
 	const char *color;
 
@@ -663,7 +664,7 @@ static enum parser_error parse_kb_g(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_kb_b(struct parser *p) {
+static enum parser_error parse_object_base_break(struct parser *p) {
 	struct object_base *kb;
 
 	struct kb_parsedata *d = parser_priv(p);
@@ -677,7 +678,7 @@ static enum parser_error parse_kb_b(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_kb_f(struct parser *p) {
+static enum parser_error parse_object_base_flags(struct parser *p) {
 	struct object_base *kb;
 	char *s, *t;
 
@@ -706,25 +707,25 @@ static enum parser_error parse_kb_f(struct parser *p) {
 	return t ? PARSE_ERROR_INVALID_FLAG : PARSE_ERROR_NONE;
 }
 
-struct parser *init_parse_kb(void) {
+struct parser *init_parse_object_base(void) {
 	struct parser *p = parser_new();
 
 	struct kb_parsedata *d = mem_zalloc(sizeof(*d));
 	parser_setpriv(p, d);
 
-	parser_reg(p, "D sym label int value", parse_kb_d);
-	parser_reg(p, "N sym tval ?str name", parse_kb_n);
-	parser_reg(p, "G sym color", parse_kb_g);
-	parser_reg(p, "B int breakage", parse_kb_b);
-	parser_reg(p, "F str flags", parse_kb_f);
+	parser_reg(p, "default sym label int value", parse_object_base_defaults);
+	parser_reg(p, "name sym tval ?str name", parse_object_base_name);
+	parser_reg(p, "graphics sym color", parse_object_base_graphics);
+	parser_reg(p, "break int breakage", parse_object_base_break);
+	parser_reg(p, "flags str flags", parse_object_base_flags);
 	return p;
 }
 
-static errr run_parse_kb(struct parser *p) {
+static errr run_parse_object_base(struct parser *p) {
 	return parse_file(p, "object_base");
 }
 
-static errr finish_parse_kb(struct parser *p) {
+static errr finish_parse_object_base(struct parser *p) {
 	struct object_base *kb;
 	struct object_base *next = NULL;
 	struct kb_parsedata *d = parser_priv(p);
@@ -746,7 +747,7 @@ static errr finish_parse_kb(struct parser *p) {
 	return 0;
 }
 
-static void cleanup_kb(void)
+static void cleanup_object_base(void)
 {
 	int idx;
 	for (idx = 0; idx < TV_MAX; idx++)
@@ -756,12 +757,12 @@ static void cleanup_kb(void)
 	mem_free(kb_info);
 }
 
-static struct file_parser kb_parser = {
+static struct file_parser object_base_parser = {
 	"object_base",
-	init_parse_kb,
-	run_parse_kb,
-	finish_parse_kb,
-	cleanup_kb
+	init_parse_object_base,
+	run_parse_object_base,
+	finish_parse_object_base,
+	cleanup_object_base
 };
 
 
@@ -3988,7 +3989,7 @@ static struct {
 	{ "array sizes", &z_parser },
 	{ "traps", &trap_parser },
 	{ "features", &f_parser },
-	{ "object bases", &kb_parser },
+	{ "object bases", &object_base_parser },
 	{ "objects", &k_parser },
 	{ "activations", &act_parser },
 	{ "ego-items", &e_parser },
