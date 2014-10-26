@@ -35,10 +35,9 @@
 /* Player magic realms */
 enum
 {
-	REALM_NONE = 0,
-	REALM_ARCANE,
-	REALM_PIOUS,
-
+	#define REALM(a, b, c, d, e, f) REALM_##a,
+	#include "list-magic-realms.h"
+	#undef REALM
 	REALM_MAX
 };
 

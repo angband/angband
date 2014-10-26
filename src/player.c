@@ -59,13 +59,13 @@ const player_sex sex_info[MAX_SEXES] =
 
 /**
  * Magic realms:
- * index, spell stat, verb, spell noun, book noun
+ * index, spell stat, verb, spell noun, book noun, realm name
  */
 struct magic_realm realms[REALM_MAX] =
 {
-	{ REALM_NONE, STAT_STR, "", "", "", "" },
-	{ REALM_ARCANE, STAT_INT, "cast", "spell", "magic book", "arcane" },
-	{ REALM_PIOUS, STAT_WIS, "recite", "prayer", "prayer book", "divine" }
+	#define REALM(a, b, c, d, e, f) { REALM_##a, b, c, d, e, f },
+	#include "list-magic-realms.h"
+	#undef REALM
 };
 
 

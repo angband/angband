@@ -57,7 +57,8 @@
 # 'title' is for class titles.
 
 # 'magic' is for general magic info - level of the first spell, weight that
-# hurts spells, primary spellcasting realm, number of books used.
+# hurts spells, primary spellcasting realm (as in src/list=magic-realms.h),
+# number of books used.
 
 # 'book' defines one of these books - object base, object kind, number of 
 # spells, book realm.  'spell:' lines always refer to spells in the previous
