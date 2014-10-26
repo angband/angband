@@ -2946,8 +2946,10 @@ static struct file_parser p_race_parser = {
 	cleanup_p_race
 };
 
-/* Parsing functions for pclass.txt */
-static enum parser_error parse_c_n(struct parser *p) {
+/**
+ * Parsing functions for class.txt
+ */
+static enum parser_error parse_class_name(struct parser *p) {
 	struct player_class *h = parser_priv(p);
 	struct player_class *c = mem_zalloc(sizeof *c);
 	c->cidx = parser_getuint(p, "index");
@@ -2957,7 +2959,7 @@ static enum parser_error parse_c_n(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_c_s(struct parser *p) {
+static enum parser_error parse_class_stats(struct parser *p) {
 	struct player_class *c = parser_priv(p);
 
 	if (!c)
@@ -2971,7 +2973,7 @@ static enum parser_error parse_c_s(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_c_c(struct parser *p) {
+static enum parser_error parse_class_skill_base(struct parser *p) {
 	struct player_class *c = parser_priv(p);
 
 	if (!c)
@@ -2989,7 +2991,7 @@ static enum parser_error parse_c_c(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_c_x(struct parser *p) {
+static enum parser_error parse_class_skill_incr(struct parser *p) {
 	struct player_class *c = parser_priv(p);
 
 	if (!c)
@@ -3007,7 +3009,7 @@ static enum parser_error parse_c_x(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_c_i(struct parser *p) {
+static enum parser_error parse_class_info(struct parser *p) {
 	struct player_class *c = parser_priv(p);
 
 	if (!c)
@@ -3019,7 +3021,7 @@ static enum parser_error parse_c_i(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_c_a(struct parser *p) {
+static enum parser_error parse_class_attack(struct parser *p) {
 	struct player_class *c = parser_priv(p);
 
 	if (!c)
@@ -3030,7 +3032,7 @@ static enum parser_error parse_c_a(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_c_t(struct parser *p) {
+static enum parser_error parse_class_title(struct parser *p) {
 	struct player_class *c = parser_priv(p);
 	int i;
 
@@ -3048,7 +3050,7 @@ static enum parser_error parse_c_t(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_c_e(struct parser *p) {
+static enum parser_error parse_class_equip(struct parser *p) {
 	struct player_class *c = parser_priv(p);
 	struct start_item *si;
 	int tval, sval;
@@ -3080,7 +3082,7 @@ static enum parser_error parse_c_e(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_c_f(struct parser *p) {
+static enum parser_error parse_class_flags(struct parser *p) {
 	struct player_class *c = parser_priv(p);
 	char *flags;
 	char *s;
@@ -3101,7 +3103,7 @@ static enum parser_error parse_c_f(struct parser *p) {
 	return s ? PARSE_ERROR_INVALID_FLAG : PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_c_magic(struct parser *p) {
+static enum parser_error parse_class_magic(struct parser *p) {
 	struct player_class *c = parser_priv(p);
 	int num_books;
 
@@ -3115,7 +3117,7 @@ static enum parser_error parse_c_magic(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_c_book(struct parser *p) {
+static enum parser_error parse_class_book(struct parser *p) {
 	struct player_class *c = parser_priv(p);
 	int tval, sval, spells;
 
@@ -3140,7 +3142,7 @@ static enum parser_error parse_c_book(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_c_spell(struct parser *p) {
+static enum parser_error parse_class_spell(struct parser *p) {
 	struct player_class *c = parser_priv(p);
 	class_book *book = &c->magic.books[c->magic.num_books - 1];
 
@@ -3158,7 +3160,7 @@ static enum parser_error parse_c_spell(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_c_effect(struct parser *p) {
+static enum parser_error parse_class_effect(struct parser *p) {
 	struct player_class *c = parser_priv(p);
 	class_book *book = &c->magic.books[c->magic.num_books - 1];
 	class_spell *spell = &book->spells[book->num_spells - 1];
@@ -3181,7 +3183,7 @@ static enum parser_error parse_c_effect(struct parser *p) {
 	return grab_effect_data(p, new_effect);
 }
 
-static enum parser_error parse_c_param(struct parser *p) {
+static enum parser_error parse_class_param(struct parser *p) {
 	struct player_class *c = parser_priv(p);
 	class_book *book = &c->magic.books[c->magic.num_books - 1];
 	class_spell *spell = &book->spells[book->num_spells - 1];
@@ -3204,7 +3206,7 @@ static enum parser_error parse_c_param(struct parser *p) {
 }
 
 
-static enum parser_error parse_c_dice(struct parser *p) {
+static enum parser_error parse_class_dice(struct parser *p) {
 	struct player_class *c = parser_priv(p);
 	class_book *book = &c->magic.books[c->magic.num_books - 1];
 	class_spell *spell = &book->spells[book->num_spells - 1];
@@ -3239,7 +3241,7 @@ static enum parser_error parse_c_dice(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_c_expr(struct parser *p) {
+static enum parser_error parse_class_expr(struct parser *p) {
 	struct player_class *c = parser_priv(p);
 	class_book *book = &c->magic.books[c->magic.num_books - 1];
 	class_spell *spell = &book->spells[book->num_spells - 1];
@@ -3286,7 +3288,7 @@ static enum parser_error parse_c_expr(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_c_desc(struct parser *p) {
+static enum parser_error parse_class_desc(struct parser *p) {
 	struct player_class *c = parser_priv(p);
 	class_book *book = &c->magic.books[c->magic.num_books - 1];
 	class_spell *spell = &book->spells[book->num_spells - 1];
@@ -3298,40 +3300,40 @@ static enum parser_error parse_c_desc(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-struct parser *init_parse_c(void) {
+struct parser *init_parse_class(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
-	parser_reg(p, "N uint index str name", parse_c_n);
-	parser_reg(p, "S int str int int int wis int dex int con", parse_c_s);
-	parser_reg(p, "C int dis int dev int sav int stl int srh int fos int thm int thb int throw int dig", parse_c_c);
-	parser_reg(p, "X int dis int dev int sav int stl int srh int fos int thm int thb int throw int dig", parse_c_x);
-	parser_reg(p, "I int mhp int exp int sense-base int sense-div", parse_c_i);
-	parser_reg(p, "A int max-attacks int min-weight int att-multiply", parse_c_a);
-	parser_reg(p, "T str title", parse_c_t);
-	parser_reg(p, "E sym tval sym sval uint min uint max", parse_c_e);
-	parser_reg(p, "F ?str flags", parse_c_f);
-	parser_reg(p, "magic uint first uint weight uint realm uint books", parse_c_magic);
-	parser_reg(p, "book sym tval sym sval uint spells uint realm", parse_c_book);
-	parser_reg(p, "spell sym name int level int mana int fail int exp", parse_c_spell);
-	parser_reg(p, "effect sym eff ?sym type ?int xtra", parse_c_effect);
-	parser_reg(p, "param int p2 ?int p3", parse_c_param);
-	parser_reg(p, "dice str dice", parse_c_dice);
-	parser_reg(p, "expr sym name sym base str expr", parse_c_expr);
-	parser_reg(p, "desc str desc", parse_c_desc);
+	parser_reg(p, "name uint index str name", parse_class_name);
+	parser_reg(p, "stats int str int int int wis int dex int con", parse_class_stats);
+	parser_reg(p, "skill-base int dis int dev int sav int stl int srh int fos int thm int thb int throw int dig", parse_class_skill_base);
+	parser_reg(p, "skill-incr int dis int dev int sav int stl int srh int fos int thm int thb int throw int dig", parse_class_skill_incr);
+	parser_reg(p, "info int mhp int exp int sense-base int sense-div", parse_class_info);
+	parser_reg(p, "attack int max-attacks int min-weight int att-multiply", parse_class_attack);
+	parser_reg(p, "title str title", parse_class_title);
+	parser_reg(p, "equip sym tval sym sval uint min uint max", parse_class_equip);
+	parser_reg(p, "flags ?str flags", parse_class_flags);
+	parser_reg(p, "magic uint first uint weight uint realm uint books", parse_class_magic);
+	parser_reg(p, "book sym tval sym sval uint spells uint realm", parse_class_book);
+	parser_reg(p, "spell sym name int level int mana int fail int exp", parse_class_spell);
+	parser_reg(p, "effect sym eff ?sym type ?int xtra", parse_class_effect);
+	parser_reg(p, "param int p2 ?int p3", parse_class_param);
+	parser_reg(p, "dice str dice", parse_class_dice);
+	parser_reg(p, "expr sym name sym base str expr", parse_class_expr);
+	parser_reg(p, "desc str desc", parse_class_desc);
 	return p;
 }
 
-static errr run_parse_c(struct parser *p) {
-	return parse_file(p, "p_class");
+static errr run_parse_class(struct parser *p) {
+	return parse_file(p, "class");
 }
 
-static errr finish_parse_c(struct parser *p) {
+static errr finish_parse_class(struct parser *p) {
 	classes = parser_priv(p);
 	parser_destroy(p);
 	return 0;
 }
 
-static void cleanup_c(void)
+static void cleanup_class(void)
 {
 	struct player_class *c = classes;
 	struct player_class *next;
@@ -3368,12 +3370,12 @@ static void cleanup_c(void)
 	}
 }
 
-static struct file_parser c_parser = {
-	"p_class",
-	init_parse_c,
-	run_parse_c,
-	finish_parse_c,
-	cleanup_c
+static struct file_parser class_parser = {
+	"class",
+	init_parse_class,
+	run_parse_class,
+	finish_parse_class,
+	cleanup_class
 };
 
 /* Parsing functions for p_hist.txt */
@@ -4022,7 +4024,7 @@ static struct {
 	{ "history charts", &h_parser },
 	{ "bodies", &body_parser },
 	{ "player races", &p_race_parser },
-	{ "player classes", &c_parser },
+	{ "player classes", &class_parser },
 	{ "flavours", &flavor_parser },
 	{ "hints", &hints_parser },
 	{ "random names", &names_parser }

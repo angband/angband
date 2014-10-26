@@ -1,4 +1,4 @@
-# File: p_class.txt
+# File: class.txt
 
 
 # This file is used to initialize the "player class" information for Angband.
@@ -6,119 +6,138 @@
 # Do not modify this file unless you know exactly what you are doing,
 # unless you wish to risk possible system crashes and broken savefiles.
 
-# === Understanding p_class.txt ===
+# === Understanding class.txt ===
 
 # Format:
-# N:class number:class name
-# S:str:int:wis:dex:con
-# C:dis:dev:sav:stl:srh:fos:thn:thb:throw:dig
-# X:dis:dev:sav:stl:srh:fos:thn:thb:throw:dig
-# I:mhp:exp:sense_base:sense_div
-# A:max_attacks:min_weight:att_multiply
-# M:spellbook tval:spell-stat:first-level:max weight
-# B:spell number:level:mana:fail:exp
-# T:title
-# E:tval:sval:min:max
-# F:class flags
+# name:class number:class name
+# stats:str:int:wis:dex:con
+# skill-base:dis:dev:sav:stl:srh:fos:thn:thb:throw:dig
+# skill-incr:dis:dev:sav:stl:srh:fos:thn:thb:throw:dig
+# info:mhp:exp:sense_base:sense_div
+# attack:max_attacks:min_weight:att_multiply
+# title:title
+# equip:tval:sval:min:max
+# flags:class flags
+# magic:spell_first:spell_weight:spell_realm:num_books
+# book:tval:sval:spells:realm
+# spell:name:level:mana:fail:exp
+# effect:effect:parameter (if needed):parameter (if needed)
+# param:parameter:parameter (if needed)
+# dice:dice string
+# expr:dice expression
+# desc: description
 
-# 'N' indicates the beginning of an entry. The serial number must
+
+# 'name' indicates the beginning of an entry. The serial number must
 # increase for each new class.
 
-# 'S' is for the stat modifiers - strength, intelligence, wisdom,
-# dexterity, constitution, charisma.
+# 'stats' is for the stat modifiers - strength, intelligence, wisdom,
+# dexterity, constitution.
 
-# 'C' is for the base skills - disarming, magic devices, saving throws,
+# 'skill-base' is for the base skills - disarming, magic devices, saving throws,
 # stealth, searching ability, searching frequency, to hit (normal),
 # to hit (bows), to hit (throwing), digging.
 
-# 'X' is for the skill modifiers (as above).  The modifiers are added to
-# the base skill every ten levels.
+# 'skill-incr' is for skill increments for the above skills.  The increments
+# are added to the base skill every ten levels.
 
-# 'I' is for extra info - max. hitpoints gained per level, experience
+# 'info' is for extra info - max. hitpoints gained per level, experience
 # factor in percent, base chance for pseudo-id (smaller is better),
 # level dependent divisor for the pseudo-id chance.
 
-# 'A' is for attack info - maximum possible number of attacks, minimum
+# 'attack' is for attack info - maximum possible number of attacks, minimum
 # weapon weight for calculating the number of attacks, multiplier for
 # attack calculations.
 
-# 'M' is for magic info - tval of the used spellbook, number of the
-# spell-stat, level of the first spell, weight that hurts spells.
-
-# 'B' is for spell/prayer info - number of the spell, level, mana
-# required, fail-rate, experience for first casting.
-
-# 'E' is for starting equipment - tval of the item, sval of the item,
+# 'equip' is for starting equipment - tval of the item, sval of the item,
 # minimum amount, maximum amount.
 
-# 'F' is for class flags.
+# 'flags' is for class flags.
 
-# 'T' is for class titles.
+# 'title' is for class titles.
 
 # 'magic' is for general magic info - level of the first spell, weight that
 # hurts spells, primary spellcasting realm, number of books used.
 
 # 'book' defines one of these books - object base, object kind, number of 
-# spells, book realm.
+# spells, book realm.  'spell:' lines always refer to spells in the previous
+# 'book:' line
 
 # 'spell' defines an individual spell - name, level, mana required,
-# fail-rate, experience for first casting.
+# fail-rate, experience for first casting.  The lines below are all used in
+# reference to the previous 'spell:' line.
 
-# 'effect' defines the spell effect
+# 'effect' defines the spell effect (as listed in src/list-effects.h), along
+# with up to two effect parameters if needed
+
+# 'param' defines an extra one or two effect parameters if needed
+
+# 'dice' provides a random value to be used by an effect (for damage,
+# healing, etc).  As well as the normal random value fields described above,
+# it can contain expressions like $B, which refer forward to an 'expr' line.
+
+# 'expr' provides an expression for use in effect dice.  It consists of a
+# code letter (eg B) for the expression, a base function to use (for example
+# PLAYER_LEVEL), and a sequence of operations to perform on that base.
+
+# 'desc' is for description. As many desc: lines may be used as are needed
+# to describe the spell. Note that lines will need spaces at their
+# ends or the beginning of the next line to prevent words from running
+# together.
 
 
 
 ############### WARRIOR ###############
-N:0:Warrior
-S:3:-2:-2:2:2
-C:25:18:18:0:14:2:70:55:55:0
-X:10:7:10:0:0:0:45:45:45:0
-I:9:0:7000:40
-A:6:30:5
-E:food:Ration of Food:1:3
-E:light:Wooden Torch:1:3
-E:potion:Berserk Strength:1:1
-E:sword:Dagger:1:1
-E:soft armour:Soft Leather Armour:1:1
-E:scroll:Word of Recall:1:1
-F:BRAVERY_30 | PSEUDO_ID_IMPROV | NO_MANA
-T:Rookie
-T:Soldier
-T:Swordsman
-T:Swashbuckler
-T:Veteran
-T:Myrmidon
-T:Commando
-T:Champion
-T:Hero
-T:Lord
+name:0:Warrior
+stats:3:-2:-2:2:2
+skill-base:25:18:18:0:14:2:70:55:55:0
+skill-incr:10:7:10:0:0:0:45:45:45:0
+info:9:0:7000:40
+attack:6:30:5
+equip:food:Ration of Food:1:3
+equip:light:Wooden Torch:1:3
+equip:potion:Berserk Strength:1:1
+equip:sword:Dagger:1:1
+equip:soft armour:Soft Leather Armour:1:1
+equip:scroll:Word of Recall:1:1
+flags:BRAVERY_30 | PSEUDO_ID_IMPROV | NO_MANA
+title:Rookie
+title:Soldier
+title:Swordsman
+title:Swashbuckler
+title:Veteran
+title:Myrmidon
+title:Commando
+title:Champion
+title:Hero
+title:Lord
 
 magic:0:0:0:0
 
 
 ############### MAGE ###############
-N:1:Mage
-S:-3:3:0:0:-2
-C:30:36:30:2:16:20:34:20:20:0
-X:7:13:9:0:0:0:15:15:15:0
-I:0:30:170000:5
-A:4:40:2
-E:food:Ration of Food:1:3
-E:light:Wooden Torch:1:3
-E:magic book:[Magic for Beginners]:1:1
-E:sword:Dagger:1:1
-E:scroll:Word of Recall:1:1
-F:CUMBER_GLOVE | ZERO_FAIL | BEAM | CHOOSE_SPELLS
-T:Novice
-T:Apprentice
-T:Trickster
-T:Illusionist
-T:Spellbinder
-T:Evoker
-T:Conjurer
-T:Warlock
-T:Sorcerer
-T:Arch-Mage
+name:1:Mage
+stats:-3:3:0:0:-2
+skill-base:30:36:30:2:16:20:34:20:20:0
+skill-incr:7:13:9:0:0:0:15:15:15:0
+info:0:30:170000:5
+attack:4:40:2
+equip:food:Ration of Food:1:3
+equip:light:Wooden Torch:1:3
+equip:magic book:[Magic for Beginners]:1:1
+equip:sword:Dagger:1:1
+equip:scroll:Word of Recall:1:1
+flags:CUMBER_GLOVE | ZERO_FAIL | BEAM | CHOOSE_SPELLS
+title:Novice
+title:Apprentice
+title:Trickster
+title:Illusionist
+title:Spellbinder
+title:Evoker
+title:Conjurer
+title:Warlock
+title:Sorcerer
+title:Arch-Mage
 
 magic:1:300:1:9
 
@@ -551,29 +570,29 @@ desc: damage to each monster in its area of effect.
 
 
 ############### PRIEST ###############
-N:2:Priest
-S:-1:-3:3:-1:1
-C:25:30:32:2:16:8:48:35:35:0
-X:7:10:12:0:0:0:20:20:20:0
-I:2:20:15000:40
-A:4:35:3
-E:food:Ration of Food:1:3
-E:light:Wooden Torch:1:3
-E:prayer book:[Beginners Handbook]:1:1
-E:hafted:Mace:1:1
-E:potion:Cure Serious Wounds:2:2
-E:scroll:Word of Recall:1:1
-F:BLESS_WEAPON | ZERO_FAIL | PSEUDO_ID_IMPROV
-T:Believer
-T:Acolyte
-T:Adept
-T:Evangelist
-T:Priest
-T:Curate
-T:Canon
-T:Bishop
-T:Prophet
-T:Patriarch
+name:2:Priest
+stats:-1:-3:3:-1:1
+skill-base:25:30:32:2:16:8:48:35:35:0
+skill-incr:7:10:12:0:0:0:20:20:20:0
+info:2:20:15000:40
+attack:4:35:3
+equip:food:Ration of Food:1:3
+equip:light:Wooden Torch:1:3
+equip:prayer book:[Beginners Handbook]:1:1
+equip:hafted:Mace:1:1
+equip:potion:Cure Serious Wounds:2:2
+equip:scroll:Word of Recall:1:1
+flags:BLESS_WEAPON | ZERO_FAIL | PSEUDO_ID_IMPROV
+title:Believer
+title:Acolyte
+title:Adept
+title:Evangelist
+title:Priest
+title:Curate
+title:Canon
+title:Bishop
+title:Prophet
+title:Patriarch
 
 magic:1:350:2:9
 
@@ -1014,29 +1033,29 @@ desc: undead, a demon, an elemental, a golem, or a vortex.
 
 
 ############### ROGUE ###############
-N:3:Rogue
-S:0:1:-3:3:-1
-C:45:32:28:3:32:24:60:66:66:0
-X:15:10:10:1:0:0:40:30:30:0
-I:6:25:10000:40
-A:5:30:4
-E:food:Ration of Food:1:3
-E:light:Wooden Torch:1:3
-E:magic book:[Magic for Beginners]:1:1
-E:sword:Dagger:1:1
-E:soft armour:Soft Leather Armour:1:1
-E:scroll:Word of Recall:1:1
-F:CUMBER_GLOVE | CHOOSE_SPELLS | PSEUDO_ID_IMPROV
-T:Vagabond
-T:Cutpurse
-T:Footpad
-T:Robber
-T:Burglar
-T:Filcher
-T:Sharper
-T:Rogue
-T:Thief
-T:Master Thief
+name:3:Rogue
+stats:0:1:-3:3:-1
+skill-base:45:32:28:3:32:24:60:66:66:0
+skill-incr:15:10:10:1:0:0:40:30:30:0
+info:6:25:10000:40
+attack:5:30:4
+equip:food:Ration of Food:1:3
+equip:light:Wooden Torch:1:3
+equip:magic book:[Magic for Beginners]:1:1
+equip:sword:Dagger:1:1
+equip:soft armour:Soft Leather Armour:1:1
+equip:scroll:Word of Recall:1:1
+flags:CUMBER_GLOVE | CHOOSE_SPELLS | PSEUDO_ID_IMPROV
+title:Vagabond
+title:Cutpurse
+title:Footpad
+title:Robber
+title:Burglar
+title:Filcher
+title:Sharper
+title:Rogue
+title:Thief
+title:Master Thief
 
 magic:1:350:1:9
 
@@ -1333,30 +1352,30 @@ desc:  Uniques or monsters that resist confusion are not affected.
 
 
 ############### RANGER ###############
-N:4:Ranger
-S:0:2:-2:1:-1
-C:30:32:28:3:24:16:56:72:72:0
-X:8:10:10:0:0:0:30:45:45:0
-I:4:30:20000:40
-A:5:35:4
-E:food:Ration of Food:1:3
-E:light:Wooden Torch:1:3
-E:magic book:[Magic for Beginners]:1:1
-E:sword:Dagger:1:1
-E:bow:Short Bow:1:1
-E:arrow:Arrow:15:20
-E:scroll:Word of Recall:1:1
-F:CUMBER_GLOVE | EXTRA_SHOT | CHOOSE_SPELLS | PSEUDO_ID_IMPROV
-T:Runner
-T:Strider
-T:Scout
-T:Courser
-T:Tracker
-T:Guide
-T:Explorer
-T:Pathfinder
-T:Ranger
-T:Ranger Lord
+name:4:Ranger
+stats:0:2:-2:1:-1
+skill-base:30:32:28:3:24:16:56:72:72:0
+skill-incr:8:10:10:0:0:0:30:45:45:0
+info:4:30:20000:40
+attack:5:35:4
+equip:food:Ration of Food:1:3
+equip:light:Wooden Torch:1:3
+equip:magic book:[Magic for Beginners]:1:1
+equip:sword:Dagger:1:1
+equip:bow:Short Bow:1:1
+equip:arrow:Arrow:15:20
+equip:scroll:Word of Recall:1:1
+flags:CUMBER_GLOVE | EXTRA_SHOT | CHOOSE_SPELLS | PSEUDO_ID_IMPROV
+title:Runner
+title:Strider
+title:Scout
+title:Courser
+title:Tracker
+title:Guide
+title:Explorer
+title:Pathfinder
+title:Ranger
+title:Ranger Lord
 
 magic:1:400:1:9
 
@@ -1773,29 +1792,29 @@ desc:  This spell has no effect when used in the town.
 
 
 ############### PALADIN ###############
-N:5:Paladin
-S:1:-3:1:-1:2
-C:20:24:25:0:12:2:68:40:40:0
-X:7:10:11:0:0:0:35:30:30:0
-I:6:35:60000:40
-A:5:30:5
-E:food:Ration of Food:1:3
-E:light:Wooden Torch:1:3
-E:prayer book:[Beginners Handbook]:1:1
-E:sword:Dagger:1:1
-E:scroll:Protection from Evil:1:1
-E:scroll:Word of Recall:1:1
-F:PSEUDO_ID_IMPROV
-T:Gallant
-T:Keeper
-T:Protector
-T:Defender
-T:Warder
-T:Knight
-T:Guardian
-T:Chevalier
-T:Paladin
-T:Paladin Lord
+name:5:Paladin
+stats:1:-3:1:-1:2
+skill-base:20:24:25:0:12:2:68:40:40:0
+skill-incr:7:10:11:0:0:0:35:30:30:0
+info:6:35:60000:40
+attack:5:30:5
+equip:food:Ration of Food:1:3
+equip:light:Wooden Torch:1:3
+equip:prayer book:[Beginners Handbook]:1:1
+equip:sword:Dagger:1:1
+equip:scroll:Protection from Evil:1:1
+equip:scroll:Word of Recall:1:1
+flags:PSEUDO_ID_IMPROV
+title:Gallant
+title:Keeper
+title:Protector
+title:Defender
+title:Warder
+title:Knight
+title:Guardian
+title:Chevalier
+title:Paladin
+title:Paladin Lord
 
 magic:1:400:2:9
 

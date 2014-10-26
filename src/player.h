@@ -208,9 +208,9 @@ struct player_race {
 
 extern struct player_race *races;
 
-/*
+/**
  * Items the player starts with.  Used in player_class and specified in
- * p_class.txt.
+ * class.txt.
  */
 struct start_item {
 	object_kind *kind;

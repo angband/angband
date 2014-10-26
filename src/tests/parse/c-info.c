@@ -10,7 +10,7 @@
 #include "player.h"
 
 int setup_tests(void **state) {
-	*state = init_parse_c();
+	*state = init_parse_class();
 	return !*state;
 }
 
@@ -19,8 +19,8 @@ int teardown_tests(void *state) {
 	return 0;
 }
 
-int test_n0(void *state) {
-	enum parser_error r = parser_parse(state, "N:4:Ranger");
+int test_name0(void *state) {
+	enum parser_error r = parser_parse(state, "name:4:Ranger");
 	struct player_class *c;
 
 	eq(r, PARSE_ERROR_NONE);
@@ -31,8 +31,8 @@ int test_n0(void *state) {
 	ok;
 }
 
-int test_s0(void *state) {
-	enum parser_error r = parser_parse(state, "S:3:-3:2:-2:1");
+int test_stats0(void *state) {
+	enum parser_error r = parser_parse(state, "stats:3:-3:2:-2:1");
 	struct player_class *c;
 
 	eq(r, PARSE_ERROR_NONE);
@@ -46,8 +46,8 @@ int test_s0(void *state) {
 	ok;
 }
 
-int test_c0(void *state) {
-	enum parser_error r = parser_parse(state, "C:30:32:28:3:24:16:56:72:72:0");
+int test_skill_base0(void *state) {
+	enum parser_error r = parser_parse(state, "skill-base:30:32:28:3:24:16:56:72:72:0");
 	struct player_class *c;
 
 	eq(r, PARSE_ERROR_NONE);
@@ -66,8 +66,8 @@ int test_c0(void *state) {
 	ok;
 }
 
-int test_x0(void *state) {
-	enum parser_error r = parser_parse(state, "X:8:10:10:0:0:0:30:45:45:0");
+int test_skill_incr0(void *state) {
+	enum parser_error r = parser_parse(state, "skill-incr:8:10:10:0:0:0:30:45:45:0");
 	struct player_class *c;
 
 	eq(r, PARSE_ERROR_NONE);
@@ -86,8 +86,8 @@ int test_x0(void *state) {
 	ok;
 }
 
-int test_i0(void *state) {
-	enum parser_error r = parser_parse(state, "I:4:30:20000:40");
+int test_info0(void *state) {
+	enum parser_error r = parser_parse(state, "info:4:30:20000:40");
 	struct player_class *c;
 
 	eq(r, PARSE_ERROR_NONE);
@@ -100,8 +100,8 @@ int test_i0(void *state) {
 	ok;
 }
 
-int test_a0(void *state) {
-	enum parser_error r = parser_parse(state, "A:5:35:4");
+int test_attack0(void *state) {
+	enum parser_error r = parser_parse(state, "attack:5:35:4");
 	struct player_class *c;
 
 	eq(r, PARSE_ERROR_NONE);
@@ -113,21 +113,9 @@ int test_a0(void *state) {
 	ok;
 }
 
-int test_m0(void *state) {
-	enum parser_error r = parser_parse(state, "magic:3:400:1:9");
-	struct player_class *c;
-
-	eq(r, PARSE_ERROR_NONE);
-	c = parser_priv(state);
-	require(c);
-	eq(c->magic.spell_first, 3);
-	eq(c->magic.spell_weight, 400);
-	ok;
-}
-
-int test_t0(void *state) {
-	enum parser_error r0 = parser_parse(state, "T:Runner");
-	enum parser_error r1 = parser_parse(state, "T:Strider");
+int test_title0(void *state) {
+	enum parser_error r0 = parser_parse(state, "title:Runner");
+	enum parser_error r1 = parser_parse(state, "title:Strider");
 	struct player_class *c;
 
 	eq(r0, PARSE_ERROR_NONE);
@@ -140,7 +128,7 @@ int test_t0(void *state) {
 }
 
 /* Causes segfault: lookup_sval() requires z_info/k_info */
-int test_e0(void *state) {
+int test_equip0(void *state) {
 	enum parser_error r = parser_parse(state, "E:magic book:2:2:5");
 	struct player_class *c;
 
@@ -153,8 +141,8 @@ int test_e0(void *state) {
 	ok;
 }
 
-int test_f0(void *state) {
-	enum parser_error r = parser_parse(state, "F:CUMBER_GLOVE | CHOOSE_SPELLS");
+int test_flags0(void *state) {
+	enum parser_error r = parser_parse(state, "flags:CUMBER_GLOVE | CHOOSE_SPELLS");
 	struct player_class *c;
 
 	eq(r, PARSE_ERROR_NONE);
@@ -164,18 +152,29 @@ int test_f0(void *state) {
 	ok;
 }
 
+int test_magic0(void *state) {
+	enum parser_error r = parser_parse(state, "magic:3:400:1:9");
+	struct player_class *c;
+
+	eq(r, PARSE_ERROR_NONE);
+	c = parser_priv(state);
+	require(c);
+	eq(c->magic.spell_first, 3);
+	eq(c->magic.spell_weight, 400);
+	ok;
+}
+
 const char *suite_name = "parse/c-info";
 struct test tests[] = {
-	{ "n0", test_n0 },
-	{ "s0", test_s0 },
-	{ "c0", test_c0 },
-	{ "x0", test_x0 },
-	{ "i0", test_i0 },
-	{ "a0", test_a0 },
-	{ "m0", test_m0 },
-	//{ "b0", test_b0 },
-	{ "t0", test_t0 },
-	/* { "e0", test_e0 }, */
-	{ "f0", test_f0 },
+	{ "name0", test_name0 },
+	{ "stats0", test_stats0 },
+	{ "skill_base0", test_skill_base0 },
+	{ "skill_incr0", test_skill_incr0 },
+	{ "info0", test_info0 },
+	{ "attack0", test_attack0 },
+	{ "title0", test_title0 },
+	/* { "equip0", test_equip0 }, */
+	{ "flags0", test_flags0 },
+	{ "magic0", test_magic0 },
 	{ NULL, NULL }
 };

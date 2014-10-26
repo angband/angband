@@ -1,6 +1,7 @@
-/** \file player-calcs.c
-	\brief Player status calculation, signalling ui events based on 
-	status changes.
+/**
+ * \file player-calcs.c
+ * \brief Player status calculation, signalling ui events based on 
+ *	status changes.
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  * Copyright (c) 2014 Nick McConnell
@@ -870,7 +871,7 @@ const int adj_mag_mana[STAT_RANGE] =
  *    Rogue   --> num = 5; mul = 4; div = MAX(30, weapon_weight);
  *    Ranger  --> num = 5; mul = 4; div = MAX(35, weapon_weight);
  *    Paladin --> num = 5; mul = 5; div = MAX(30, weapon_weight);
- * (all specified in p_class.txt now)
+ * (all specified in class.txt now)
  *
  * To get "P", we look up the relevant "adj_str_blow[]" (see above),
  * multiply it by "mul", and then divide it by "div", rounding down.

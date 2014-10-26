@@ -104,7 +104,7 @@ extern char *ANGBAND_DIR_XTRA_SOUND;
 extern char *ANGBAND_DIR_XTRA_ICON;
 
 extern struct parser *init_parse_artifact(void);
-extern struct parser *init_parse_c(void);
+extern struct parser *init_parse_class(void);
 extern struct parser *init_parse_ego(void);
 extern struct parser *init_parse_feat(void);
 extern struct parser *init_parse_h(void);
