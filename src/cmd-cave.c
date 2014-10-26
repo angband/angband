@@ -596,28 +596,26 @@ void do_cmd_close(struct command *cmd)
 }
 
 
-/*
+/**
  * Determine if a given grid may be "tunneled"
  */
 static bool do_cmd_tunnel_test(int y, int x)
 {
 	/* Must have knowledge */
-	if (!square_ismark(cave, y, x))
-	{
-		/* Message */
+	if (!square_ismark(cave, y, x)) {
 		msg("You see nothing there.");
+		return (FALSE);
+	}
 
-		/* Nope */
+	/* Titanium */
+	if (square_isperm(cave, y, x)) {
+		msg("This seems to be permanent rock.");
 		return (FALSE);
 	}
 
 	/* Must be a wall/door/etc */
-	if (!(square_isdiggable(cave, y, x) || square_iscloseddoor(cave, y, x)))
-	{
-		/* Message */
+	if (!(square_isdiggable(cave, y, x) || square_iscloseddoor(cave, y, x))) {
 		msg("You see nothing there to tunnel.");
-
-		/* Nope */
 		return (FALSE);
 	}
 
@@ -626,7 +624,7 @@ static bool do_cmd_tunnel_test(int y, int x)
 }
 
 
-/*
+/**
  * Tunnel through wall.  Assumes valid location.
  *
  * Note that it is impossible to "extend" rooms past their
@@ -662,179 +660,72 @@ static bool twall(int y, int x)
 }
 
 
-/*
+/**
  * Perform the basic "tunnel" command
  *
- * Assumes that no monster is blocking the destination
- *
- * Uses "twall" (above) to do all "terrain feature changing".
- *
- * Returns TRUE if repeated commands may continue
+ * Assumes that no monster is blocking the destination.
+ * Uses twall() (above) to do all "terrain feature changing".
+ * Returns TRUE if repeated commands may continue.
  */
 static bool do_cmd_tunnel_aux(int y, int x)
 {
 	bool more = FALSE;
 	int digging_chances[DIGGING_MAX];
+	bool okay = FALSE;
+	bool gold = FALSE;
 
 	/* Verify legality */
 	if (!do_cmd_tunnel_test(y, x)) return (FALSE);
 
 	calc_digging_chances(&player->state, digging_chances);
 
-	/* Sound XXX XXX XXX */
-	/* sound(MSG_DIG); */
+	/* Found gold */
+	if (square_hasgoldvein(cave, y, x))
+		gold = TRUE;
 
-	/* Titanium */
-	if (square_isperm(cave, y, x))
-	{
-		msg("This seems to be permanent rock.");
-	}
+	/* Do we succeed? */
+	okay = (digging_chances[square_digging(cave, y, x)] > randint0(1600));
 
-	/* Granite */
-	else if (square_isrock(cave, y, x))
-	{
-		/* Tunnel */
-		if (digging_chances[DIGGING_GRANITE] > randint0(1600) && twall(y, x))
-		{
-			msg("You have finished the tunnel.");
-		}
-
-		/* Keep trying */
-		else
-		{
-			/* We may continue tunelling */
-			msg("You tunnel into the granite wall.");
-			more = TRUE;
-		}
-	}
-
-	/* Quartz / Magma */
-	else if (square_ismagma(cave, y, x) || square_isquartz(cave, y, x))
-	{
-		bool okay = FALSE;
-		bool gold = FALSE;
-		bool hard = FALSE;
-
-		/* Found gold */
-		if (square_hasgoldvein(cave, y, x))
-			gold = TRUE;
-
-		/* Extract "quartz" flag XXX XXX XXX */
-		if (square_isquartz(cave, y, x))
-			hard = TRUE;
-
-		/* Quartz */
-		if (hard)
-			okay = (digging_chances[DIGGING_QUARTZ] > randint0(1600));
-		/* Magma */
-		else
-			okay = (digging_chances[DIGGING_MAGMA] > randint0(1600));
-
-		/* Success */
-		if (okay && twall(y, x))
-		{
-			/* Found treasure */
-			if (gold)
-			{
-				/* Place some gold */
-				place_gold(cave, y, x, player->depth, ORIGIN_FLOOR);
-
-				/* Message */
-				msg("You have found something!");
-			}
-
-			/* Found nothing */
-			else
-			{
-				/* Message */
-				msg("You have finished the tunnel.");
-			}
-		}
-
-		/* Failure (quartz) */
-		else if (hard)
-		{
-			/* Message, continue digging */
-			msg("You tunnel into the quartz vein.");
-			more = TRUE;
-		}
-
-		/* Failure (magma) */
-		else
-		{
-			/* Message, continue digging */
-			msg("You tunnel into the magma vein.");
-			more = TRUE;
-		}
-	}
-
-	/* Rubble */
-	else if (square_isrubble(cave, y, x))
-	{
-		/* Remove the rubble */
-		if ((digging_chances[DIGGING_RUBBLE] > randint0(1600)) && twall(y, x))
-		{
+	/* Success */
+	if (okay && twall(y, x)) {
+		/* Rubble is a special case - could be handled more generally NRM */
+		if (square_isrubble(cave, y, x)) {
 			/* Message */
 			msg("You have removed the rubble.");
 
-			/* Hack -- place an object */
+			/* Place an object */
 			if (randint0(100) < 10)	{
 				/* Create a simple object */
 				place_object(cave, y, x, player->depth, FALSE, FALSE,
-					ORIGIN_RUBBLE, 0);
+							 ORIGIN_RUBBLE, 0);
 
 				/* Observe the new object */
 				if (!ignore_item_ok(square_object(cave, y, x)) &&
-					    player_can_see_bold(y, x))
+					player_can_see_bold(y, x))
 					msg("You have found something!");
+			} else {
+				/* Message, keep digging */
+				msg("You dig in the rubble.");
+				more = TRUE;
 			}
-		}
-
-		else
-		{
-			/* Message, keep digging */
-			msg("You dig in the rubble.");
-			more = TRUE;
-		}
-	}
-
-	/* Secret doors */
-	else if (square_issecretdoor(cave, y, x))
-	{
-		/* Tunnel */
-		if ((digging_chances[DIGGING_DOORS] > randint0(1600)) && twall(y, x))
-		{
+		} else if (gold) {
+			/* Found treasure */
+			place_gold(cave, y, x, player->depth, ORIGIN_FLOOR);
+			msg("You have found something!");
+		} else {
 			msg("You have finished the tunnel.");
 		}
-
-		/* Keep trying */
+	} else {
+		/* Failure, continue digging */
+		if (square_isrubble(cave, y, x))
+			msg("You dig in the rubble.");
 		else
-		{
-			/* We may continue tunelling */
-			msg("You tunnel into the granite wall.");
-			more = TRUE;
-
+			msg("You tunnel into the %s.",
+				square_apparent_name(cave, player, y, x));
+		more = TRUE;
+		if (square_issecretdoor(cave, y, x))
 			/* Occasional Search XXX XXX */
 			if (randint0(100) < 25) search(FALSE);
-		}
-	}
-
-	/* Doors */
-	else
-	{
-		/* Tunnel */
-		if ((digging_chances[DIGGING_DOORS] > randint0(1600)) && twall(y, x))
-		{
-			msg("You have finished the tunnel.");
-		}
-
-		/* Keep trying */
-		else
-		{
-			/* We may continue tunelling */
-			msg("You tunnel into the door.");
-			more = TRUE;
-		}
 	}
 
 	/* Result */
@@ -842,8 +733,8 @@ static bool do_cmd_tunnel_aux(int y, int x)
 }
 
 
-/*
- * Tunnel through "walls" (including rubble and secret doors)
+/**
+ * Tunnel through "walls" (including rubble and doors, secret or otherwise)
  *
  * Digging is very difficult without a "digger" weapon, but can be
  * accomplished by strong players using heavy weapons.
@@ -861,10 +752,8 @@ void do_cmd_tunnel(struct command *cmd)
 	y = player->py + ddy[dir];
 	x = player->px + ddx[dir];
 
-
 	/* Oops */
-	if (!do_cmd_tunnel_test(y, x))
-	{
+	if (!do_cmd_tunnel_test(y, x)) {
 		/* Cancel repeat */
 		disturb(player, 0);
 		return;
@@ -874,27 +763,17 @@ void do_cmd_tunnel(struct command *cmd)
 	player->upkeep->energy_use = 100;
 
 	/* Apply confusion */
-	if (player_confuse_dir(player, &dir, FALSE))
-	{
+	if (player_confuse_dir(player, &dir, FALSE)) {
 		/* Get location */
 		y = player->py + ddy[dir];
 		x = player->px + ddx[dir];
 	}
 
-
-	/* Monster */
-	if (cave->m_idx[y][x] > 0)
-	{
-		/* Message */
+	/* Attack any monster we run into */
+	if (cave->m_idx[y][x] > 0) {
 		msg("There is a monster in the way!");
-
-		/* Attack */
 		py_attack(y, x);
-	}
-
-	/* Walls */
-	else
-	{
+	} else {
 		/* Tunnel through walls */
 		more = do_cmd_tunnel_aux(y, x);
 	}

@@ -869,6 +869,12 @@ int square_shopnum(struct chunk *c, int y, int x) {
 	return -1;
 }
 
+int square_digging(struct chunk *c, int y, int x) {
+	if (square_isdiggable(c, y, x))
+		return f_info[c->feat[y][x]].dig;
+	return 0;
+}
+
 const char *square_apparent_name(struct chunk *c, struct player *p, int y, int x) {
 	int f = f_info[c->feat[y][x]].mimic;
 

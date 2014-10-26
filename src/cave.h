@@ -361,6 +361,7 @@ void square_force_floor(struct chunk *c, int y, int x);
 
 
 int square_shopnum(struct chunk *c, int y, int x);
+int square_digging(struct chunk *c, int y, int x);
 const char *square_apparent_name(struct chunk *c, struct player *p, int y, int x);
 
 /* cave.c */
