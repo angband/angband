@@ -111,7 +111,7 @@ extern struct parser *init_parse_h(void);
 extern struct parser *init_parse_object(void);
 extern struct parser *init_parse_object_base(void);
 extern struct parser *init_parse_mp(void);
-extern struct parser *init_parse_p(void);
+extern struct parser *init_parse_p_race(void);
 extern struct parser *init_parse_pit(void);
 extern struct parser *init_parse_r(void);
 extern struct parser *init_parse_s(void);

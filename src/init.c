@@ -2744,8 +2744,10 @@ static struct file_parser body_parser = {
 	cleanup_body
 };
 
-/* Parsing functions for prace.txt */
-static enum parser_error parse_p_n(struct parser *p) {
+/**
+ * Parsing functions for prace.txt
+ */
+static enum parser_error parse_p_race_name(struct parser *p) {
 	struct player_race *h = parser_priv(p);
 	struct player_race *r = mem_zalloc(sizeof *r);
 
@@ -2758,7 +2760,7 @@ static enum parser_error parse_p_n(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_p_s(struct parser *p) {
+static enum parser_error parse_p_race_stats(struct parser *p) {
 	struct player_race *r = parser_priv(p);
 	if (!r)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
@@ -2770,7 +2772,7 @@ static enum parser_error parse_p_s(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_p_r(struct parser *p) {
+static enum parser_error parse_p_race_skills(struct parser *p) {
 	struct player_race *r = parser_priv(p);
 	if (!r)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
@@ -2787,7 +2789,7 @@ static enum parser_error parse_p_r(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_p_x(struct parser *p) {
+static enum parser_error parse_p_race_info(struct parser *p) {
 	struct player_race *r = parser_priv(p);
 	if (!r)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
@@ -2797,7 +2799,7 @@ static enum parser_error parse_p_x(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_p_i(struct parser *p) {
+static enum parser_error parse_p_race_history(struct parser *p) {
 	struct player_race *r = parser_priv(p);
 	if (!r)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
@@ -2807,7 +2809,7 @@ static enum parser_error parse_p_i(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_p_h(struct parser *p) {
+static enum parser_error parse_p_race_height(struct parser *p) {
 	struct player_race *r = parser_priv(p);
 	if (!r)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
@@ -2818,7 +2820,7 @@ static enum parser_error parse_p_h(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_p_w(struct parser *p) {
+static enum parser_error parse_p_race_weight(struct parser *p) {
 	struct player_race *r = parser_priv(p);
 	if (!r)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
@@ -2829,7 +2831,7 @@ static enum parser_error parse_p_w(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_p_f(struct parser *p) {
+static enum parser_error parse_p_race_obj_flags(struct parser *p) {
 	struct player_race *r = parser_priv(p);
 	char *flags;
 	char *s;
@@ -2849,7 +2851,7 @@ static enum parser_error parse_p_f(struct parser *p) {
 	return s ? PARSE_ERROR_INVALID_FLAG : PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_p_y(struct parser *p) {
+static enum parser_error parse_p_race_play_flags(struct parser *p) {
 	struct player_race *r = parser_priv(p);
 	char *flags;
 	char *s;
@@ -2869,7 +2871,7 @@ static enum parser_error parse_p_y(struct parser *p) {
 	return s ? PARSE_ERROR_INVALID_FLAG : PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_p_v(struct parser *p) {
+static enum parser_error parse_p_race_values(struct parser *p) {
 	struct player_race *r = parser_priv(p);
 	char *s;
 	char *t;
@@ -2897,33 +2899,33 @@ static enum parser_error parse_p_v(struct parser *p) {
 	return t ? PARSE_ERROR_INVALID_VALUE : PARSE_ERROR_NONE;
 }
 
-struct parser *init_parse_p(void) {
+struct parser *init_parse_p_race(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
-	parser_reg(p, "N uint index str name", parse_p_n);
-	parser_reg(p, "S int str int int int wis int dex int con", parse_p_s);
-	parser_reg(p, "R int dis int dev int sav int stl int srh int fos int thm int thb int throw int dig", parse_p_r);
-	parser_reg(p, "X int mhp int exp int infra", parse_p_x);
-	parser_reg(p, "I uint hist int b-age int m-age", parse_p_i);
-	parser_reg(p, "H int mbht int mmht int fbht int fmht", parse_p_h);
-	parser_reg(p, "W int mbwt int mmwt int fbwt int fmwt", parse_p_w);
-	parser_reg(p, "F ?str flags", parse_p_f);
-	parser_reg(p, "Y ?str flags", parse_p_y);
-	parser_reg(p, "V str values", parse_p_v);
+	parser_reg(p, "name uint index str name", parse_p_race_name);
+	parser_reg(p, "stats int str int int int wis int dex int con", parse_p_race_stats);
+	parser_reg(p, "skills int dis int dev int sav int stl int srh int fos int thm int thb int throw int dig", parse_p_race_skills);
+	parser_reg(p, "info int mhp int exp int infra", parse_p_race_info);
+	parser_reg(p, "history uint hist int b-age int m-age", parse_p_race_history);
+	parser_reg(p, "height int mbht int mmht int fbht int fmht", parse_p_race_height);
+	parser_reg(p, "weight int mbwt int mmwt int fbwt int fmwt", parse_p_race_weight);
+	parser_reg(p, "obj-flags ?str flags", parse_p_race_obj_flags);
+	parser_reg(p, "player-flags ?str flags", parse_p_race_play_flags);
+	parser_reg(p, "values str values", parse_p_race_values);
 	return p;
 }
 
-static errr run_parse_p(struct parser *p) {
+static errr run_parse_p_race(struct parser *p) {
 	return parse_file(p, "p_race");
 }
 
-static errr finish_parse_p(struct parser *p) {
+static errr finish_parse_p_race(struct parser *p) {
 	races = parser_priv(p);
 	parser_destroy(p);
 	return 0;
 }
 
-static void cleanup_p(void)
+static void cleanup_p_race(void)
 {
 	struct player_race *p = races;
 	struct player_race *next;
@@ -2936,12 +2938,12 @@ static void cleanup_p(void)
 	}
 }
 
-static struct file_parser p_parser = {
+static struct file_parser p_race_parser = {
 	"p_race",
-	init_parse_p,
-	run_parse_p,
-	finish_parse_p,
-	cleanup_p
+	init_parse_p_race,
+	run_parse_p_race,
+	finish_parse_p_race,
+	cleanup_p_race
 };
 
 /* Parsing functions for pclass.txt */
@@ -4019,7 +4021,7 @@ static struct {
 	{ "monster lore" , &lore_parser },
 	{ "history charts", &h_parser },
 	{ "bodies", &body_parser },
-	{ "player races", &p_parser },
+	{ "player races", &p_race_parser },
 	{ "player classes", &c_parser },
 	{ "flavours", &flavor_parser },
 	{ "hints", &hints_parser },

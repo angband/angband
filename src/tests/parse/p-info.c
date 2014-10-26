@@ -6,7 +6,7 @@
 
 
 int setup_tests(void **state) {
-	*state = init_parse_p();
+	*state = init_parse_p_race();
 	return !*state;
 }
 
@@ -15,8 +15,8 @@ int teardown_tests(void *state) {
 	return 0;
 }
 
-int test_n0(void *state) {
-	enum parser_error r = parser_parse(state, "N:1:Half-Elf");
+int test_name0(void *state) {
+	enum parser_error r = parser_parse(state, "name:1:Half-Elf");
 	struct player_race *pr;
 
 	eq(r, PARSE_ERROR_NONE);
@@ -27,8 +27,8 @@ int test_n0(void *state) {
 	ok;
 }
 
-int test_s0(void *state) {
-	enum parser_error r = parser_parse(state, "S:1:-1:2:-2:3");
+int test_stats0(void *state) {
+	enum parser_error r = parser_parse(state, "stats:1:-1:2:-2:3");
 	struct player_race *pr;
 
 	eq(r, PARSE_ERROR_NONE);
@@ -42,8 +42,8 @@ int test_s0(void *state) {
 	ok;
 }
 
-int test_r0(void *state) {
-	enum parser_error r = parser_parse(state, "R:1:3:5:7:9:2:4:6:8:10");
+int test_skills0(void *state) {
+	enum parser_error r = parser_parse(state, "skills:1:3:5:7:9:2:4:6:8:10");
 	struct player_race *pr;
 
 	eq(r, PARSE_ERROR_NONE);
@@ -62,8 +62,8 @@ int test_r0(void *state) {
 	ok;
 }
 
-int test_x0(void *state) {
-	enum parser_error r = parser_parse(state, "X:10:20:80");
+int test_info0(void *state) {
+	enum parser_error r = parser_parse(state, "info:10:20:80");
 	struct player_race *pr;
 
 	eq(r, PARSE_ERROR_NONE);
@@ -75,8 +75,8 @@ int test_x0(void *state) {
 	ok;
 }
 
-int test_i0(void *state) {
-	enum parser_error r = parser_parse(state, "I:0:10:3");
+int test_history0(void *state) {
+	enum parser_error r = parser_parse(state, "history:0:10:3");
 	struct player_race *pr;
 
 	eq(r, PARSE_ERROR_NONE);
@@ -88,8 +88,8 @@ int test_i0(void *state) {
 	ok;
 }
 
-int test_h0(void *state) {
-	enum parser_error r = parser_parse(state, "H:10:2:11:3");
+int test_height0(void *state) {
+	enum parser_error r = parser_parse(state, "height:10:2:11:3");
 	struct player_race *pr;
 
 	eq(r, PARSE_ERROR_NONE);
@@ -102,8 +102,8 @@ int test_h0(void *state) {
 	ok;
 }
 
-int test_w0(void *state) {
-	enum parser_error r = parser_parse(state, "W:80:10:75:7");
+int test_weight0(void *state) {
+	enum parser_error r = parser_parse(state, "weight:80:10:75:7");
 	struct player_race *pr;
 
 	eq(r, PARSE_ERROR_NONE);
@@ -116,8 +116,8 @@ int test_w0(void *state) {
 	ok;
 }
 
-int test_f0(void *state) {
-	enum parser_error r = parser_parse(state, "F:SUST_DEX");
+int test_obj_flags0(void *state) {
+	enum parser_error r = parser_parse(state, "obj-flags:SUST_DEX");
 	struct player_race *pr;
 
 	eq(r, PARSE_ERROR_NONE);
@@ -127,8 +127,8 @@ int test_f0(void *state) {
 	ok;
 }
 
-int test_y0(void *state) {
-	enum parser_error r = parser_parse(state, "Y:KNOW_ZAPPER");
+int test_play_flags0(void *state) {
+	enum parser_error r = parser_parse(state, "player-flags:KNOW_ZAPPER");
 	struct player_race *pr;
 
 	eq(r, PARSE_ERROR_NONE);
@@ -140,14 +140,14 @@ int test_y0(void *state) {
 
 const char *suite_name = "parse/p-info";
 struct test tests[] = {
-	{ "n0", test_n0 },
-	{ "s0", test_s0 },
-	{ "r0", test_r0 },
-	{ "x0", test_x0 },
-	{ "i0", test_i0 },
-	{ "h0", test_h0 },
-	{ "w0", test_w0 },
-	{ "f0", test_f0 },
-	{ "y0", test_y0 },
+	{ "name0", test_name0 },
+	{ "stats0", test_stats0 },
+	{ "skills0", test_skills0 },
+	{ "info0", test_info0 },
+	{ "history0", test_history0 },
+	{ "height0", test_height0 },
+	{ "weight0", test_weight0 },
+	{ "object_flags0", test_obj_flags0 },
+	{ "player_flags0", test_play_flags0 },
 	{ NULL, NULL }
 };
