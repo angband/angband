@@ -3378,8 +3378,10 @@ static struct file_parser class_parser = {
 	cleanup_class
 };
 
-/* Parsing functions for p_hist.txt */
-static enum parser_error parse_h_n(struct parser *p) {
+/**
+ * Parsing functions for history.txt
+ */
+static enum parser_error parse_history_chart(struct parser *p) {
 	struct history_chart *oc = parser_priv(p);
 	struct history_chart *c;
 	struct history_entry *e = mem_zalloc(sizeof *e);
@@ -3400,7 +3402,7 @@ static enum parser_error parse_h_n(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_h_d(struct parser *p) {
+static enum parser_error parse_history_phrase(struct parser *p) {
 	struct history_chart *h = parser_priv(p);
 
 	if (!h)
@@ -3410,19 +3412,19 @@ static enum parser_error parse_h_d(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-struct parser *init_parse_h(void) {
+struct parser *init_parse_history(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
-	parser_reg(p, "N uint chart int next int roll", parse_h_n);
-	parser_reg(p, "D str text", parse_h_d);
+	parser_reg(p, "chart uint chart int next int roll", parse_history_chart);
+	parser_reg(p, "phrase str text", parse_history_phrase);
 	return p;
 }
 
-static errr run_parse_h(struct parser *p) {
-	return parse_file(p, "p_hist");
+static errr run_parse_history(struct parser *p) {
+	return parse_file(p, "history");
 }
 
-static errr finish_parse_h(struct parser *p) {
+static errr finish_parse_history(struct parser *p) {
 	struct history_chart *c;
 	struct history_entry *e, *prev, *next;
 	histories = parser_priv(p);
@@ -3456,7 +3458,7 @@ static errr finish_parse_h(struct parser *p) {
 	return 0;
 }
 
-static void cleanup_h(void)
+static void cleanup_history(void)
 {
 	struct history_chart *c, *next_c;
 	struct history_entry *e, *next_e;
@@ -3476,12 +3478,12 @@ static void cleanup_h(void)
 	}
 }
 
-static struct file_parser h_parser = {
-	"p_hist",
-	init_parse_h,
-	run_parse_h,
-	finish_parse_h,
-	cleanup_h
+static struct file_parser history_parser = {
+	"history",
+	init_parse_history,
+	run_parse_history,
+	finish_parse_history,
+	cleanup_history
 };
 
 /* Parsing functions for flavor.txt */
@@ -4021,7 +4023,7 @@ static struct {
 	{ "monsters", &r_parser },
 	{ "monster pits" , &pit_parser },
 	{ "monster lore" , &lore_parser },
-	{ "history charts", &h_parser },
+	{ "history charts", &history_parser },
 	{ "bodies", &body_parser },
 	{ "player races", &p_race_parser },
 	{ "player classes", &class_parser },
