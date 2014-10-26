@@ -2067,8 +2067,10 @@ struct file_parser trap_parser = {
     cleanup_trap
 };
 
-/* Parsing functions for terrain.txt */
-static enum parser_error parse_f_n(struct parser *p) {
+/**
+ * Parsing functions for terrain.txt
+ */
+static enum parser_error parse_feat_name(struct parser *p) {
 	int idx = parser_getuint(p, "index");
 	const char *name = parser_getstr(p, "name");
 	struct feature *h = parser_priv(p);
@@ -2082,7 +2084,7 @@ static enum parser_error parse_f_n(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_f_g(struct parser *p) {
+static enum parser_error parse_feat_graphics(struct parser *p) {
 	wchar_t glyph = parser_getchar(p, "glyph");
 	const char *color = parser_getsym(p, "color");
 	int attr = 0;
@@ -2101,7 +2103,7 @@ static enum parser_error parse_f_g(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_f_m(struct parser *p) {
+static enum parser_error parse_feat_mimic(struct parser *p) {
 	unsigned int idx = parser_getuint(p, "index");
 	struct feature *f = parser_priv(p);
 
@@ -2111,7 +2113,7 @@ static enum parser_error parse_f_m(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_f_p(struct parser *p) {
+static enum parser_error parse_feat_priority(struct parser *p) {
 	unsigned int priority = parser_getuint(p, "priority");
 	struct feature *f = parser_priv(p);
 
@@ -2121,7 +2123,7 @@ static enum parser_error parse_f_p(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_f_f(struct parser *p) {
+static enum parser_error parse_feat_flags(struct parser *p) {
 	char *flags;
 	struct feature *f = parser_priv(p);
 	char *s;
@@ -2147,7 +2149,7 @@ static enum parser_error parse_f_f(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_f_x(struct parser *p) {
+static enum parser_error parse_feat_info(struct parser *p) {
 	struct feature *f = parser_priv(p);
 
 	if (!f)
@@ -2157,23 +2159,23 @@ static enum parser_error parse_f_x(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-struct parser *init_parse_f(void) {
+struct parser *init_parse_feat(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
-	parser_reg(p, "N uint index str name", parse_f_n);
-	parser_reg(p, "G char glyph sym color", parse_f_g);
-	parser_reg(p, "M uint index", parse_f_m);
-	parser_reg(p, "P uint priority", parse_f_p);
-	parser_reg(p, "F ?str flags", parse_f_f);
-	parser_reg(p, "X int shopnum int dig", parse_f_x);
+	parser_reg(p, "name uint index str name", parse_feat_name);
+	parser_reg(p, "graphics char glyph sym color", parse_feat_graphics);
+	parser_reg(p, "mimic uint index", parse_feat_mimic);
+	parser_reg(p, "priority uint priority", parse_feat_priority);
+	parser_reg(p, "flags ?str flags", parse_feat_flags);
+	parser_reg(p, "info int shopnum int dig", parse_feat_info);
 	return p;
 }
 
-static errr run_parse_f(struct parser *p) {
+static errr run_parse_feat(struct parser *p) {
 	return parse_file(p, "terrain");
 }
 
-static errr finish_parse_f(struct parser *p) {
+static errr finish_parse_feat(struct parser *p) {
 	struct feature *f, *n;
 
 	/* scan the list for the max id */
@@ -2205,7 +2207,7 @@ static errr finish_parse_f(struct parser *p) {
 	return 0;
 }
 
-static void cleanup_f(void) {
+static void cleanup_feat(void) {
 	int idx;
 	for (idx = 0; idx < z_info->f_max; idx++) {
 		string_free(f_info[idx].name);
@@ -2213,15 +2215,17 @@ static void cleanup_f(void) {
 	mem_free(f_info);
 }
 
-static struct file_parser f_parser = {
+static struct file_parser feat_parser = {
 	"terrain",
-	init_parse_f,
-	run_parse_f,
-	finish_parse_f,
-	cleanup_f
+	init_parse_feat,
+	run_parse_feat,
+	finish_parse_feat,
+	cleanup_feat
 };
 
-/* Parsing functions for ego-item.txt */
+/**
+ * Parsing functions for ego-item.txt
+ */
 static enum parser_error parse_ego_name(struct parser *p) {
 	int idx = parser_getint(p, "index");
 	const char *name = parser_getstr(p, "name");
@@ -2612,7 +2616,9 @@ static struct file_parser ego_parser = {
 	cleanup_ego
 };
 
-/* Parsing functions for body.txt */
+/**
+ * Parsing functions for body.txt
+ */
 static enum parser_error parse_body_body(struct parser *p) {
 	struct player_body *h = parser_priv(p);
 	struct player_body *b = mem_zalloc(sizeof *b);
@@ -3999,7 +4005,7 @@ static struct {
 } pl[] = {
 	{ "array sizes", &z_parser },
 	{ "traps", &trap_parser },
-	{ "features", &f_parser },
+	{ "features", &feat_parser },
 	{ "object bases", &object_base_parser },
 	{ "objects", &object_parser },
 	{ "activations", &act_parser },

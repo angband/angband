@@ -106,7 +106,7 @@ extern char *ANGBAND_DIR_XTRA_ICON;
 extern struct parser *init_parse_artifact(void);
 extern struct parser *init_parse_c(void);
 extern struct parser *init_parse_ego(void);
-extern struct parser *init_parse_f(void);
+extern struct parser *init_parse_feat(void);
 extern struct parser *init_parse_h(void);
 extern struct parser *init_parse_object(void);
 extern struct parser *init_parse_object_base(void);
