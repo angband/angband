@@ -1,6 +1,6 @@
-/*
- * File: randname.c
- * Purpose: Random name generation
+/**
+ * \file randname.c
+ * \brief Random name generation
  *
  * Copyright (c) 2007 Antony Sidwell, Sheldon Simms
  *
@@ -23,7 +23,7 @@
 #define E_WORD S_WORD
 #define TOTAL  27
 
-/*
+/**
  * Array[RANDNAME_NUM_TYPES][num_names] of random names
  */
 const char *** name_sections;
@@ -31,7 +31,7 @@ const char *** name_sections;
 
 typedef unsigned short name_probs[S_WORD+1][S_WORD+1][TOTAL+1];
 
-/*
+/**
  * This function builds probability tables from a list of purely alphabetical
  * lower-case words, and puts them into the supplied name_probs object.
  * The array of names should have a NULL entry at the end of the list.
@@ -68,7 +68,7 @@ static void build_prob(name_probs probs, const char **learn)
 	}
 }
 
-/*
+/**
  * Use W. Sheldon Simms' random name generator algorithm (Markov Chain stylee).
  * 
  * Generate a random word using the probability tables we built earlier.  

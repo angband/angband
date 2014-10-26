@@ -767,7 +767,9 @@ static struct file_parser object_base_parser = {
 
 
 
-/* Parsing functions for object.txt */
+/**
+ * Parsing functions for object.txt
+ */
 
 static enum parser_error parse_object_name(struct parser *p) {
 	int idx = parser_getint(p, "index");
@@ -1196,7 +1198,9 @@ static struct file_parser object_parser = {
 	cleanup_object
 };
 
-/* Parsing functions for activation.txt */
+/**
+ * Parsing functions for activation.txt
+ */
 static enum parser_error parse_act_name(struct parser *p) {
 	const char *name = parser_getstr(p, "name");
 	struct activation *h = parser_priv(p);
@@ -1399,7 +1403,9 @@ static struct file_parser act_parser = {
 	cleanup_act
 };
 
-/* Parsing functions for artifact.txt */
+/**
+ * Parsing functions for artifact.txt
+ */
 static enum parser_error parse_artifact_name(struct parser *p) {
 	size_t i;
 	int idx = parser_getint(p, "index");
@@ -1694,7 +1700,9 @@ static struct file_parser artifact_parser = {
 	cleanup_artifact
 };
 
-/* Parsing functions for names.txt (random name fragments) */
+/**
+ * Parsing functions for names.txt (random name fragments)
+ */
 struct name {
 	struct name *next;
 	char *str;
@@ -1706,7 +1714,7 @@ struct names_parse {
 	struct name *names[RANDNAME_NUM_TYPES];
 };
 
-static enum parser_error parse_names_n(struct parser *p) {
+static enum parser_error parse_names_section(struct parser *p) {
 	unsigned int section = parser_getint(p, "section");
 	struct names_parse *s = parser_priv(p);
 	if (s->section >= RANDNAME_NUM_TYPES)
@@ -1715,7 +1723,7 @@ static enum parser_error parse_names_n(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_names_d(struct parser *p) {
+static enum parser_error parse_names_word(struct parser *p) {
 	const char *name = parser_getstr(p, "name");
 	struct names_parse *s = parser_priv(p);
 	struct name *ns = mem_zalloc(sizeof *ns);
@@ -1732,8 +1740,8 @@ struct parser *init_parse_names(void) {
 	struct names_parse *n = mem_zalloc(sizeof *n);
 	n->section = 0;
 	parser_setpriv(p, n);
-	parser_reg(p, "N int section", parse_names_n);
-	parser_reg(p, "D str name", parse_names_d);
+	parser_reg(p, "section int section", parse_names_section);
+	parser_reg(p, "word str name", parse_names_word);
 	return p;
 }
 
