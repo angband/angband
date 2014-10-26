@@ -171,6 +171,30 @@ static const char *effect_list[] = {
 	"MAX"
 };
 
+static const char *trap_flags[] =
+{
+	#define TRF(a, b) #a,
+	#include "list-trap-flags.h"
+	#undef TRF
+    NULL
+};
+
+static const char *terrain_flags[] =
+{
+	#define TF(a, b) #a,
+	#include "list-terrain-flags.h"
+	#undef TF
+    NULL
+};
+
+static const char *player_info_flags[] =
+{
+	#define PF(a, b) #a,
+	#include "list-player-flags.h"
+	#undef PF
+	NULL
+};
+
 errr grab_effect_data(struct parser *p, struct effect *effect)
 {
 	const char *type;
@@ -1792,15 +1816,10 @@ static struct file_parser names_parser = {
 	cleanup_names
 };
 
-static const char *trap_flags[] =
-{
-#define TRF(a, b) #a,
-#include "list-trap-flags.h"
-#undef TRF
-    NULL
-};
-
-static enum parser_error parse_trap_n(struct parser *p) {
+/**
+ * Parsing functions for trap.txt
+ */
+static enum parser_error parse_trap_name(struct parser *p) {
     int idx = parser_getuint(p, "index");
     const char *name = parser_getsym(p, "name");
     const char *desc = parser_getstr(p, "desc");
@@ -1815,7 +1834,7 @@ static enum parser_error parse_trap_n(struct parser *p) {
     return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_trap_g(struct parser *p) {
+static enum parser_error parse_trap_graphics(struct parser *p) {
     char glyph = parser_getchar(p, "glyph");
     const char *color = parser_getsym(p, "color");
     int attr = 0;
@@ -1836,7 +1855,7 @@ static enum parser_error parse_trap_g(struct parser *p) {
     return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_trap_m(struct parser *p) {
+static enum parser_error parse_trap_appear(struct parser *p) {
     struct trap_kind *t = parser_priv(p);
 
     if (!t)
@@ -1847,7 +1866,7 @@ static enum parser_error parse_trap_m(struct parser *p) {
     return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_trap_f(struct parser *p) {
+static enum parser_error parse_trap_flags(struct parser *p) {
     char *flags;
     struct trap_kind *t = parser_priv(p);
     char *s;
@@ -1971,7 +1990,7 @@ static enum parser_error parse_trap_expr(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_trap_d(struct parser *p) {
+static enum parser_error parse_trap_desc(struct parser *p) {
     struct trap_kind *t = parser_priv(p);
     assert(t);
 
@@ -1982,14 +2001,14 @@ static enum parser_error parse_trap_d(struct parser *p) {
 struct parser *init_parse_trap(void) {
     struct parser *p = parser_new();
     parser_setpriv(p, NULL);
-    parser_reg(p, "N uint index sym name str desc", parse_trap_n);
-    parser_reg(p, "G char glyph sym color", parse_trap_g);
-    parser_reg(p, "M uint rarity uint mindepth uint maxnum", parse_trap_m);
-    parser_reg(p, "F ?str flags", parse_trap_f);
+    parser_reg(p, "name uint index sym name str desc", parse_trap_name);
+    parser_reg(p, "graphics char glyph sym color", parse_trap_graphics);
+    parser_reg(p, "appear uint rarity uint mindepth uint maxnum", parse_trap_appear);
+    parser_reg(p, "flags ?str flags", parse_trap_flags);
 	parser_reg(p, "effect sym eff ?sym type ?int xtra", parse_trap_effect);
 	parser_reg(p, "dice str dice", parse_trap_dice);
 	parser_reg(p, "expr sym name sym base str expr", parse_trap_expr);
-    parser_reg(p, "D str text", parse_trap_d);
+    parser_reg(p, "desc str text", parse_trap_desc);
     return p;
 }
 
@@ -2101,14 +2120,6 @@ static enum parser_error parse_f_p(struct parser *p) {
 	f->priority = priority;
 	return PARSE_ERROR_NONE;
 }
-
-static const char *terrain_flags[] =
-{
-#define TF(a, b) #a,
-#include "list-terrain-flags.h"
-#undef TF
-    NULL
-};
 
 static enum parser_error parse_f_f(struct parser *p) {
 	char *flags;
@@ -2831,14 +2842,6 @@ static enum parser_error parse_p_f(struct parser *p) {
 	mem_free(flags);
 	return s ? PARSE_ERROR_INVALID_FLAG : PARSE_ERROR_NONE;
 }
-
-static const char *player_info_flags[] =
-{
-	#define PF(a, b) #a,
-	#include "list-player-flags.h"
-	#undef PF
-	NULL
-};
 
 static enum parser_error parse_p_y(struct parser *p) {
 	struct player_race *r = parser_priv(p);
