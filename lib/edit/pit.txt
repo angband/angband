@@ -6,384 +6,386 @@
 # Do not modify this file unless you know exactly what you are doing, unless
 # you wish to risk possible system crashes and broken savefiles.
 
-# If you add more pits to the file, make sure to update limits.txt.
-
 # === Understanding pit.txt ===
 
-# N: serial number : name
-# R: room type
-# A: rarity : average level
-# O: object rarity
-# C: color
-# T: template name
-# T: template name
-# F: flag | flag | ...
-# f: forbidden flag | ...
-# S: spell | spell | ...
-# s: forbidden spell | ...
-# E: forbidden monster name
+# name: serial number : name
+# room: room type
+# alloc: rarity : average level
+# obj-rarity: object rarity
+# color: color
+# mon-base: template name
+# mon-base: template name
+# flags-req: flag | flag | ...
+# flags-ban: forbidden flag | ...
+# spell-req: spell | spell | ...
+# spell-ban: forbidden spell | ...
+# mon-ban: forbidden monster name
 #
-# Each entry must start with an 'N' line, with a new serial number,
+# Each entry must start with a 'name' line, with a new serial number,
 # and a name.
 #
-# 'R' is for room type. Currently, room type is one of the following:
+# 'room' is for room type. Currently, room type is one of the following:
 #   (1) Pits (large room filled with many monsters of a few types in an 
 #       ordered fashion)
 #   (2) Nests (large room filled with many types of monsters in a 
 #       disordered fashion)
+#   (3) Other (all monster groupings can be used to fill other areas with
+#       thematically chosen monsters; entries with all room types can be
+#       used for this, so type 3 allows grouping which don't appear in
+#       pits or nests)
 #
-# 'A' is for rarity and average level. A rarity of N means that the pit is 
+# 'alloc' is for rarity and average level. A rarity of N means that the pit is 
 # N times more rare than a pit with a rarity of 1. The average level is the 
 # dungeon level at which this pit is most common.
 #
-# 'O' is for object rarity. A rarity of N means that every square of the pit 
-# has an N % chance of having an item.
+# 'obj-rarity' is for object rarity. A rarity of N means that every square of
+# the pit has an N % chance of having an item.
 #
-# 'C' is for monster color. If any 'C' lines are present, then all monsters 
-# in this pit will be one of the specified colors. 
-# You may use any number of 'C' lines.
+# 'color' is for monster color. If any 'color' lines are present, then all
+# monsters in this pit will be one of the specified colors. 
+# As many 'color' lines as are necessary may be used.
 #
-# 'T' is for monster template (see monster_base.txt). Up to 4 'T' lines may be 
-# present.  If there are no 'T' lines, then monsters may have any monster 
-# template. Otherwise, every monster in this pit/nest will be one of the 
-# listed templates.
+# 'mon-base' is for monster template (see monster_base.txt). Up to 4
+# 'mon-base' lines may be  present.  If there are no 'mon-base' lines,
+# then monsters may have any monster template. Otherwise, every monster in
+# this pit/nest will be one of the listed templates.
 #
-# 'F' is for monster flags. Every monster in this pit/nest will have every 
-# listed flag.  
-# As many 'F' lines as are necessary may be used.
+# 'mon-ban' is for forbidden monsters. The named monster will not appear in
+# this pit.
+# As many 'mon-ban' lines as are necessary may be used.
 #
-# 'S' is for spell flags. Every monster in this nest/pit will have every 
-# listed spell flag. 
-# As many 'S' lines as are necessary may be used.
+# 'flags-req' is for monster flags. Every monster in this pit/nest will have
+# every listed flag.  
+# As many 'flags-req' lines as are necessary may be used.
 #
-# 'f' is for forbidden flags. No monster in this nest/pit will have any of 
-# the listed flags.
-# As many 'f' lines as are necessary may be used.
+# 'spell-req' is for spell flags. Every monster in this nest/pit will have
+# every listed spell flag. 
+# As many 'spell-req' lines as are necessary may be used.
 #
-# 's' is for forbidden spell flags. No monster in this nest/pit will have 
-# any of the listed spell flags.
-# As many 's' lines as are necessary may be used.
+# 'flags-ban' is for forbidden flags. No monster in this nest/pit will have
+# any of the listed flags.
+# As many 'flags-ban' lines as are necessary may be used.
 #
-# 'E' is for forbidden ('E'xcluded) monsters. The named monster will not 
-# appear in this pit.
-# You may use any number of 'E' lines.
+# 'spell-ban' is for forbidden spell flags. No monster in this nest/pit will
+# have any of the listed spell flags.
+# As many 'spell-ban' lines as are necessary may be used.
 
-N:1:Orc
-R:1
-A:1:25
-O:0
-T:orc
+name:1:Orc
+room:1
+alloc:1:25
+obj-rarity:0
+mon-base:orc
 
-N:2:Troll
-R:1
-A:1:45
-O:0
-T:troll
+name:2:Troll
+room:1
+alloc:1:45
+obj-rarity:0
+mon-base:troll
 
-N:3:Giant
-R:1
-A:1:65
-O:0
-T:giant
+name:3:Giant
+room:1
+alloc:1:65
+obj-rarity:0
+mon-base:giant
 
-N:4:Acid dragons
-R:1
-A:6:85
-O:0
-T:dragon
-T:ancient dragon
-S:BR_ACID
-s:BR_ELEC
+name:4:Acid dragons
+room:1
+alloc:6:85
+obj-rarity:0
+mon-base:dragon
+mon-base:ancient dragon
+spell-req:BR_ACID
+spell-ban:BR_ELEC
 
-N:5:Electric dragons
-R:1
-A:6:85
-O:0
-T:dragon
-T:ancient dragon
-S:BR_ELEC
-s:BR_ACID
+name:5:Electric dragons
+room:1
+alloc:6:85
+obj-rarity:0
+mon-base:dragon
+mon-base:ancient dragon
+spell-req:BR_ELEC
+spell-ban:BR_ACID
 
-N:6:Fire dragons
-R:1
-A:6:85
-O:0
-T:dragon
-T:ancient dragon
-S:BR_FIRE
-s:BR_COLD
+name:6:Fire dragons
+room:1
+alloc:6:85
+obj-rarity:0
+mon-base:dragon
+mon-base:ancient dragon
+spell-req:BR_FIRE
+spell-ban:BR_COLD
 
-N:7:Ice dragons
-R:1
-A:6:85
-O:0
-T:dragon
-T:ancient dragon
-S:BR_COLD
-s:BR_FIRE
+name:7:Ice dragons
+room:1
+alloc:6:85
+obj-rarity:0
+mon-base:dragon
+mon-base:ancient dragon
+spell-req:BR_COLD
+spell-ban:BR_FIRE
 
-N:8:Poison dragons
-R:1
-A:6:85
-O:0
-T:dragon
-T:ancient dragon
-S:BR_POIS
-s:BR_FIRE
+name:8:Poison dragons
+room:1
+alloc:6:85
+obj-rarity:0
+mon-base:dragon
+mon-base:ancient dragon
+spell-req:BR_POIS
+spell-ban:BR_FIRE
 
-N:9:Multi-hued dragons
-R:1
-A:6:85
-O:0
-T:dragon
-T:ancient dragon
-S:BR_ACID | BR_ELEC | BR_FIRE
-S:BR_COLD | BR_POIS
+name:9:Multi-hued dragons
+room:1
+alloc:6:85
+obj-rarity:0
+mon-base:dragon
+mon-base:ancient dragon
+spell-req:BR_ACID | BR_ELEC | BR_FIRE
+spell-req:BR_COLD | BR_POIS
 
-N:10:Demons
-R:1
-A:1:105
-O:0
-T:major demon
-E:Horned Reaper
+name:10:Demons
+room:1
+alloc:1:105
+obj-rarity:0
+mon-base:major demon
+mon-ban:Horned Reaper
 
-N:11:Jelly
-R:2
-A:1:20
-O:5
-T:icky thing
-T:jelly
-T:mold
-T:mushroom
+name:11:Jelly
+room:2
+alloc:1:20
+obj-rarity:5
+mon-base:icky thing
+mon-base:jelly
+mon-base:mold
+mon-base:mushroom
 
-N:12:Animals
-R:2
-A:1:50
-O:10
-F:ANIMAL
+name:12:Animals
+room:2
+alloc:1:50
+obj-rarity:10
+flags-req:ANIMAL
 
-N:13:Undead
-R:2
-A:1:80
-O:20
-F:UNDEAD
+name:13:Undead
+room:2
+alloc:1:80
+obj-rarity:20
+flags-req:UNDEAD
 
 # New pits and nests
 
-N:14:Ants
-R:2
-A:1:15
-O:5
-T:ant
-f:KILL_BODY
+name:14:Ants
+room:2
+alloc:1:15
+obj-rarity:5
+mon-base:ant
+flags-ban:KILL_BODY
 
-N:15:Kobolds
-R:1
-A:1:15
-O:0
-T:kobold
+name:15:Kobolds
+room:1
+alloc:1:15
+obj-rarity:0
+mon-base:kobold
 
-N:16:Creepy crawlies
-R:2
-A:1:20
-O:5
-T:centipede
-T:killer beetle
-T:spider
-s:BLINK
-s:CONF
-s:SLOW
+name:16:Creepy crawlies
+room:2
+alloc:1:20
+obj-rarity:5
+mon-base:centipede
+mon-base:killer beetle
+mon-base:spider
+spell-ban:BLINK
+spell-ban:CONF
+spell-ban:SLOW
 
-N:17:Minor demons
-R:1
-A:1:20
-O:5
-T:minor demon
-s:S_DEMON
+name:17:Minor demons
+room:1
+alloc:1:20
+obj-rarity:5
+mon-base:minor demon
+spell-ban:S_DEMON
 
-N:18:Spellcasters
-R:1
-A:1:20
-O:0
-T:kobold
-T:humanoid
-T:orc
-T:person
-S:MISSILE
-s:ARROW_1
-s:ARROW_2
+name:18:Spellcasters
+room:1
+alloc:1:20
+obj-rarity:0
+mon-base:kobold
+mon-base:humanoid
+mon-base:orc
+mon-base:person
+spell-req:MISSILE
+spell-ban:ARROW_1
+spell-ban:ARROW_2
 
-N:19:Archers
-R:1
-A:1:25
-O:0
-T:kobold
-T:orc
-T:person
-C:W
-C:D
-s:BO_NETH
-s:HASTE
+name:19:Archers
+room:1
+alloc:1:25
+obj-rarity:0
+mon-base:kobold
+mon-base:orc
+mon-base:person
+color:W
+color:D
+spell-ban:BO_NETH
+spell-ban:HASTE
 
-N:20:Naga
-R:1
-A:1:25
-O:0
-T:naga
+name:20:Naga
+room:1
+alloc:1:25
+obj-rarity:0
+mon-base:naga
 
-N:21:Thieves
-R:1
-A:1:25
-O:0
-T:person
-C:b
+name:21:Thieves
+room:1
+alloc:1:25
+obj-rarity:0
+mon-base:person
+color:b
 
-N:22:Warriors
-R:1
-A:1:25
-O:0
-T:person
-C:u
-C:y
+name:22:Warriors
+room:1
+alloc:1:25
+obj-rarity:0
+mon-base:person
+color:u
+color:y
 
-N:23:Dark elves
-R:1
-A:1:30
-O:0
-T:humanoid
-F:HURT_LIGHT
+name:23:Dark elves
+room:1
+alloc:1:30
+obj-rarity:0
+mon-base:humanoid
+flags-req:HURT_LIGHT
 
-N:24:Eyes
-R:1
-A:1:30
-O:5
-T:eye
-s:S_UNDEAD
-s:S_KIN
+name:24:Eyes
+room:1
+alloc:1:30
+obj-rarity:5
+mon-base:eye
+spell-ban:S_UNDEAD
+spell-ban:S_KIN
 
-N:25:Ogres
-R:1
-A:1:30
-O:0
-T:ogre
+name:25:Ogres
+room:1
+alloc:1:30
+obj-rarity:0
+mon-base:ogre
 
-N:26:Believers
-R:1
-A:1:35
-O:0
-T:person
-S:HEAL
-s:S_ANIMAL
+name:26:Believers
+room:1
+alloc:1:35
+obj-rarity:0
+mon-base:person
+spell-req:HEAL
+spell-ban:S_ANIMAL
 
-N:27:Serpents
-R:2
-A:1:40
-O:5
-T:snake
-T:naga
-T:hydra
-s:BA_POIS
-s:BR_FIRE
+name:27:Serpents
+room:2
+alloc:1:40
+obj-rarity:5
+mon-base:snake
+mon-base:naga
+mon-base:hydra
+spell-ban:BA_POIS
+spell-ban:BR_FIRE
 
-N:28:Lesser undead
-R:2
-A:1:40
-O:10
-T:skeleton
-T:zombie
-T:wraith
-s:BO_NETH
-s:TELE_AWAY
+name:28:Lesser undead
+room:2
+alloc:1:40
+obj-rarity:10
+mon-base:skeleton
+mon-base:zombie
+mon-base:wraith
+spell-ban:BO_NETH
+spell-ban:TELE_AWAY
 
-N:29:Wizards
-R:1
-A:1:45
-O:0
-T:person
-S:CONF
+name:29:Wizards
+room:1
+alloc:1:45
+obj-rarity:0
+mon-base:person
+spell-req:CONF
 
-N:30:Vampires
-R:1
-A:1:55
-O:0
-T:bat
-T:vampire
-F:UNDEAD
+name:30:Vampires
+room:1
+alloc:1:55
+obj-rarity:0
+mon-base:bat
+mon-base:vampire
+flags-req:UNDEAD
 
-N:31:Hydra
-R:2
-A:1:60
-O:8
-T:hydra
+name:31:Hydra
+room:2
+alloc:1:60
+obj-rarity:8
+mon-base:hydra
 
-N:32:Golems
-R:1
-A:1:65
-O:10
-T:golem
-f:DRAGON
-f:UNDEAD
-f:DEMON
+name:32:Golems
+room:1
+alloc:1:65
+obj-rarity:10
+mon-base:golem
+flags-ban:DRAGON
+flags-ban:UNDEAD
+flags-ban:DEMON
 
-N:33:Gold dragons
-R:1
-A:6:85
-O:0
-T:dragon
-T:ancient dragon
-S:BR_SOUN
-s:BR_SHAR
+name:33:Gold dragons
+room:1
+alloc:6:85
+obj-rarity:0
+mon-base:dragon
+mon-base:ancient dragon
+spell-req:BR_SOUN
+spell-ban:BR_SHAR
 
-N:34:Ainur
-R:1
-A:1:90
-O:0
-T:ainu
+name:34:Ainur
+room:1
+alloc:1:90
+obj-rarity:0
+mon-base:ainu
 
 
 # New chosen monster types, not necessarily for pits and not used yet
 
-N:35:Insects
-R:3
-A:2:15
-T:ant
-T:centipede
-T:louse
-T:dragon fly
-T:insect
-T:killer beetle
+name:35:Insects
+room:3
+alloc:2:15
+mon-base:ant
+mon-base:centipede
+mon-base:louse
+mon-base:dragon fly
+mon-base:insect
+mon-base:killer beetle
 
-N:36:Reptiles
-R:3
-A:1:20
-T:naga
-T:snake
-T:reptile
+name:36:Reptiles
+room:3
+alloc:1:20
+mon-base:naga
+mon-base:snake
+mon-base:reptile
 
-N:37:Cave dwellers
-R:3
-A:1:25
-T:yeek
-T:kobold
-T:orc
-T:troll
-T:ogre
+name:37:Cave dwellers
+room:3
+alloc:1:25
+mon-base:yeek
+mon-base:kobold
+mon-base:orc
+mon-base:troll
+mon-base:ogre
 
-N:38:Moria dwellers
-R:3
-A:8:30
-T:orc
-T:ogre
-T:troll
-T:giant
+name:38:Moria dwellers
+room:3
+alloc:8:30
+mon-base:orc
+mon-base:ogre
+mon-base:troll
+mon-base:giant
 
-N:39:Creatures of Earth
-R:3
-A:8:35
-T:xorn
+name:39:Creatures of Earth
+room:3
+alloc:8:35
+mon-base:xorn
 
-N:40:Elemental creatures
-R:3
-A:1:40
-T:elemental
-T:vortex
+name:40:Elemental creatures
+room:3
+alloc:1:40
+mon-base:elemental
+mon-base:vortex

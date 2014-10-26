@@ -3486,7 +3486,9 @@ static struct file_parser history_parser = {
 	cleanup_history
 };
 
-/* Parsing functions for flavor.txt */
+/**
+ * Parsing functions for flavor.txt
+ */
 static wchar_t flavor_glyph;
 static unsigned int flavor_tval;
 
@@ -3716,11 +3718,10 @@ static struct file_parser mp_parser = {
 };
 
 
-/*
+/**
  * Initialize monster pits
  */
-
-static enum parser_error parse_pit_n(struct parser *p) {
+static enum parser_error parse_pit_name(struct parser *p) {
 	struct pit_profile *h = parser_priv(p);
 	struct pit_profile *pit = mem_zalloc(sizeof *pit);
 	pit->next = h;
@@ -3732,7 +3733,7 @@ static enum parser_error parse_pit_n(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_pit_r(struct parser *p) {
+static enum parser_error parse_pit_room(struct parser *p) {
 	struct pit_profile *pit = parser_priv(p);
 
 	if (!pit)
@@ -3741,7 +3742,7 @@ static enum parser_error parse_pit_r(struct parser *p) {
 	pit->room_type = parser_getuint(p, "type");
 	return PARSE_ERROR_NONE;
 }
-static enum parser_error parse_pit_a(struct parser *p) {
+static enum parser_error parse_pit_alloc(struct parser *p) {
 	struct pit_profile *pit = parser_priv(p);
 
 	if (!pit)
@@ -3752,7 +3753,7 @@ static enum parser_error parse_pit_a(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_pit_o(struct parser *p) {
+static enum parser_error parse_pit_obj_rarity(struct parser *p) {
 	struct pit_profile *pit = parser_priv(p);
 
 	if (!pit)
@@ -3762,7 +3763,7 @@ static enum parser_error parse_pit_o(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_pit_t(struct parser *p) {
+static enum parser_error parse_pit_mon_base(struct parser *p) {
 	struct pit_profile *pit = parser_priv(p);
 	struct pit_monster_profile *bases;
 	monster_base *base = lookup_monster_base(parser_getsym(p, "base"));
@@ -3779,7 +3780,22 @@ static enum parser_error parse_pit_t(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_pit_c(struct parser *p) {
+static enum parser_error parse_pit_mon_ban(struct parser *p) {
+	struct pit_profile *pit = parser_priv(p);
+	struct pit_forbidden_monster *monsters;
+	monster_race *r = lookup_monster(parser_getsym(p, "race"));
+
+	if (!pit)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	monsters = mem_zalloc(sizeof *monsters);
+	monsters->race = r;
+	monsters->next = pit->forbidden_monsters;
+	pit->forbidden_monsters = monsters;
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_pit_color(struct parser *p) {
 	struct pit_profile *pit = parser_priv(p);
 	struct pit_color_profile *colors;
 	const char *color;
@@ -3802,7 +3818,7 @@ static enum parser_error parse_pit_c(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_pit_f(struct parser *p) {
+static enum parser_error parse_pit_flags_req(struct parser *p) {
 	struct pit_profile *pit = parser_priv(p);
 	char *flags;
 	char *s;
@@ -3825,7 +3841,7 @@ static enum parser_error parse_pit_f(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_pit_f2(struct parser *p) {
+static enum parser_error parse_pit_flags_ban(struct parser *p) {
 	struct pit_profile *pit = parser_priv(p);
 	char *flags;
 	char *s;
@@ -3848,7 +3864,7 @@ static enum parser_error parse_pit_f2(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_pit_s(struct parser *p) {
+static enum parser_error parse_pit_spell_req(struct parser *p) {
 	struct pit_profile *pit = parser_priv(p);
 	char *flags;
 	char *s;
@@ -3871,7 +3887,7 @@ static enum parser_error parse_pit_s(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_pit_s2(struct parser *p) {
+static enum parser_error parse_pit_spell_ban(struct parser *p) {
 	struct pit_profile *pit = parser_priv(p);
 	char *flags;
 	char *s;
@@ -3894,36 +3910,21 @@ static enum parser_error parse_pit_s2(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_pit_e(struct parser *p) {
-	struct pit_profile *pit = parser_priv(p);
-	struct pit_forbidden_monster *monsters;
-	monster_race *r = lookup_monster(parser_getsym(p, "race"));
-
-	if (!pit)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
-
-	monsters = mem_zalloc(sizeof *monsters);
-	monsters->race = r;
-	monsters->next = pit->forbidden_monsters;
-	pit->forbidden_monsters = monsters;
-	return PARSE_ERROR_NONE;
-}
-
 struct parser *init_parse_pit(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
 
-	parser_reg(p, "N uint index str name", parse_pit_n);
-	parser_reg(p, "R uint type", parse_pit_r);
-	parser_reg(p, "A uint rarity uint level", parse_pit_a);
-	parser_reg(p, "O uint obj_rarity", parse_pit_o);
-	parser_reg(p, "T sym base", parse_pit_t);
-	parser_reg(p, "C sym color", parse_pit_c);
-	parser_reg(p, "F ?str flags", parse_pit_f);
-	parser_reg(p, "f ?str flags", parse_pit_f2);
-	parser_reg(p, "S ?str spells", parse_pit_s);
-	parser_reg(p, "s ?str spells", parse_pit_s2);
-	parser_reg(p, "E sym race", parse_pit_e);
+	parser_reg(p, "name uint index str name", parse_pit_name);
+	parser_reg(p, "room uint type", parse_pit_room);
+	parser_reg(p, "alloc uint rarity uint level", parse_pit_alloc);
+	parser_reg(p, "obj-rarity uint obj_rarity", parse_pit_obj_rarity);
+	parser_reg(p, "mon-base sym base", parse_pit_mon_base);
+	parser_reg(p, "mon-ban sym race", parse_pit_mon_ban);
+	parser_reg(p, "color sym color", parse_pit_color);
+	parser_reg(p, "flags-req ?str flags", parse_pit_flags_req);
+	parser_reg(p, "flags-ban ?str flags", parse_pit_flags_ban);
+	parser_reg(p, "spell-req ?str spells", parse_pit_spell_req);
+	parser_reg(p, "spell-ban ?str spells", parse_pit_spell_ban);
 	return p;
 }
 
