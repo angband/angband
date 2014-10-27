@@ -3631,8 +3631,10 @@ static struct file_parser hints_parser = {
 	cleanup_hints
 };
 
-/* Initialise monster pain messages */
-static enum parser_error parse_mp_n(struct parser *p) {
+/**
+ * Initialise monster pain messages
+ */
+static enum parser_error parse_pain_type(struct parser *p) {
 	struct monster_pain *h = parser_priv(p);
 	struct monster_pain *mp = mem_zalloc(sizeof *mp);
 	mp->next = h;
@@ -3641,7 +3643,7 @@ static enum parser_error parse_mp_n(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_mp_m(struct parser *p) {
+static enum parser_error parse_pain_message(struct parser *p) {
 	struct monster_pain *mp = parser_priv(p);
 	int i;
 
@@ -3656,20 +3658,20 @@ static enum parser_error parse_mp_m(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-struct parser *init_parse_mp(void) {
+struct parser *init_parse_pain(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
 
-	parser_reg(p, "N uint index", parse_mp_n);
-	parser_reg(p, "M str message", parse_mp_m);
+	parser_reg(p, "type uint index", parse_pain_type);
+	parser_reg(p, "message str message", parse_pain_message);
 	return p;
 }
 
-static errr run_parse_mp(struct parser *p) {
+static errr run_parse_pain(struct parser *p) {
 	return parse_file(p, "pain");
 }
 
-static errr finish_parse_mp(struct parser *p) {
+static errr finish_parse_pain(struct parser *p) {
 	struct monster_pain *mp, *n;
 		
 	/* scan the list for the max id */
@@ -3698,7 +3700,7 @@ static errr finish_parse_mp(struct parser *p) {
 	return 0;
 }
 
-static void cleanup_mp(void)
+static void cleanup_pain(void)
 {
 	int idx, i;
 	for (idx = 0; idx < z_info->mp_max; idx++) {
@@ -3709,12 +3711,12 @@ static void cleanup_mp(void)
 	mem_free(pain_messages);
 }
 
-static struct file_parser mp_parser = {
+static struct file_parser pain_parser = {
 	"pain messages",
-	init_parse_mp,
-	run_parse_mp,
-	finish_parse_mp,
-	cleanup_mp
+	init_parse_pain,
+	run_parse_pain,
+	finish_parse_pain,
+	cleanup_pain
 };
 
 
@@ -4018,7 +4020,7 @@ static struct {
 	{ "activations", &act_parser },
 	{ "ego-items", &ego_parser },
 	{ "artifacts", &artifact_parser },
-	{ "monster pain messages", &mp_parser },
+	{ "monster pain messages", &pain_parser },
 	{ "monster spells", &rs_parser },
 	{ "monster bases", &rb_parser },
 	{ "monsters", &r_parser },
