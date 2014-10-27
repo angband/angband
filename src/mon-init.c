@@ -104,9 +104,11 @@ void write_flags(ang_file *fff, const char *intro_text, bitflag *flags,
 }
 
 
-/* Parsing functions for monster_spell.txt */
+/**
+ * Parsing functions for monster_spell.txt
+ */
 
-static enum parser_error parse_rs_name(struct parser *p) {
+static enum parser_error parse_mon_spell_name(struct parser *p) {
 	struct monster_spell *h = parser_priv(p);
 	struct monster_spell *s = mem_zalloc(sizeof *s);
 	const char *name = parser_getstr(p, "name");
@@ -120,14 +122,14 @@ static enum parser_error parse_rs_name(struct parser *p) {
 }
 
 
-static enum parser_error parse_rs_hit(struct parser *p) {
+static enum parser_error parse_mon_spell_hit(struct parser *p) {
 	struct monster_spell *s = parser_priv(p);
 	assert(s);
 	s->hit = parser_getuint(p, "hit");
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_rs_effect(struct parser *p) {
+static enum parser_error parse_mon_spell_effect(struct parser *p) {
 	struct monster_spell *s = parser_priv(p);
 	struct effect *effect;
 	struct effect *new_effect = mem_zalloc(sizeof(*new_effect));
@@ -171,7 +173,7 @@ static enum parser_error parse_rs_effect(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_rs_param(struct parser *p) {
+static enum parser_error parse_mon_spell_param(struct parser *p) {
 	struct monster_spell *s = parser_priv(p);
 	struct effect *effect = s->effect;
 
@@ -192,7 +194,7 @@ static enum parser_error parse_rs_param(struct parser *p) {
 }
 
 
-static enum parser_error parse_rs_dice(struct parser *p) {
+static enum parser_error parse_mon_spell_dice(struct parser *p) {
 	struct monster_spell *s = parser_priv(p);
 	dice_t *dice = NULL;
 	struct effect *effect = s->effect;
@@ -225,7 +227,7 @@ static enum parser_error parse_rs_dice(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_rs_expr(struct parser *p) {
+static enum parser_error parse_mon_spell_expr(struct parser *p) {
 	struct monster_spell *s = parser_priv(p);
 	struct effect *effect = s->effect;
 	expression_t *expression = NULL;
@@ -270,7 +272,7 @@ static enum parser_error parse_rs_expr(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_rs_power(struct parser *p) {
+static enum parser_error parse_mon_spell_power(struct parser *p) {
 	struct monster_spell *s = parser_priv(p);
 
 	s->power = parser_getrand(p, "power");
@@ -278,30 +280,30 @@ static enum parser_error parse_rs_power(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-struct parser *init_parse_rs(void) {
+struct parser *init_parse_mon_spell(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
-	parser_reg(p, "name str name", parse_rs_name);
-	parser_reg(p, "hit uint hit", parse_rs_hit);
-	parser_reg(p, "effect sym eff ?sym type ?int xtra", parse_rs_effect);
-	parser_reg(p, "param int p2 ?int p3", parse_rs_param);
-	parser_reg(p, "dice str dice", parse_rs_dice);
-	parser_reg(p, "expr sym name sym base str expr", parse_rs_expr);
-	parser_reg(p, "power rand power", parse_rs_power);
+	parser_reg(p, "name str name", parse_mon_spell_name);
+	parser_reg(p, "hit uint hit", parse_mon_spell_hit);
+	parser_reg(p, "effect sym eff ?sym type ?int xtra", parse_mon_spell_effect);
+	parser_reg(p, "param int p2 ?int p3", parse_mon_spell_param);
+	parser_reg(p, "dice str dice", parse_mon_spell_dice);
+	parser_reg(p, "expr sym name sym base str expr", parse_mon_spell_expr);
+	parser_reg(p, "power rand power", parse_mon_spell_power);
 	return p;
 }
 
-static errr run_parse_rs(struct parser *p) {
+static errr run_parse_mon_spell(struct parser *p) {
 	return parse_file(p, "monster_spell");
 }
 
-static errr finish_parse_rs(struct parser *p) {
+static errr finish_parse_mon_spell(struct parser *p) {
 	monster_spells = parser_priv(p);
 	parser_destroy(p);
 	return 0;
 }
 
-static void cleanup_rs(void)
+static void cleanup_mon_spell(void)
 {
 	struct monster_spell *rs = monster_spells;
 	struct monster_spell *next;
@@ -314,17 +316,18 @@ static void cleanup_rs(void)
 	}
 }
 
-struct file_parser rs_parser = {
+struct file_parser mon_spell_parser = {
 	"monster_spell",
-	init_parse_rs,
-	run_parse_rs,
-	finish_parse_rs,
-	cleanup_rs
+	init_parse_mon_spell,
+	run_parse_mon_spell,
+	finish_parse_mon_spell,
+	cleanup_mon_spell
 };
 
-/* Parsing functions for monster_base.txt */
-
-static enum parser_error parse_rb_name(struct parser *p) {
+/**
+ * Parsing functions for monster_base.txt
+ */
+static enum parser_error parse_mon_base_name(struct parser *p) {
 	struct monster_base *h = parser_priv(p);
 	struct monster_base *rb = mem_zalloc(sizeof *rb);
 	rb->next = h;
@@ -333,7 +336,7 @@ static enum parser_error parse_rb_name(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_rb_g(struct parser *p) {
+static enum parser_error parse_mon_base_glyph(struct parser *p) {
 	struct monster_base *rb = parser_priv(p);
 
 	if (!rb)
@@ -343,7 +346,7 @@ static enum parser_error parse_rb_g(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_rb_m(struct parser *p) {
+static enum parser_error parse_mon_base_pain(struct parser *p) {
 	struct monster_base *rb = parser_priv(p);
 	int pain_idx;
 
@@ -359,7 +362,7 @@ static enum parser_error parse_rb_m(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_rb_f(struct parser *p) {
+static enum parser_error parse_mon_base_flags(struct parser *p) {
 	struct monster_base *rb = parser_priv(p);
 	char *flags;
 	char *s;
@@ -383,7 +386,7 @@ static enum parser_error parse_rb_f(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_rb_s(struct parser *p) {
+static enum parser_error parse_mon_base_spells(struct parser *p) {
 	struct monster_base *rb = parser_priv(p);
 	char *flags;
 	char *s;
@@ -408,7 +411,7 @@ static enum parser_error parse_rb_s(struct parser *p) {
 }
 
 
-static enum parser_error parse_rb_d(struct parser *p) {
+static enum parser_error parse_mon_base_desc(struct parser *p) {
 	struct monster_base *rb = parser_priv(p);
 
 	if (!rb)
@@ -418,31 +421,30 @@ static enum parser_error parse_rb_d(struct parser *p) {
 }
 
 
-static struct parser *init_parse_rb(void) {
+static struct parser *init_parse_mon_base(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
 
-	parser_reg(p, "V sym version", ignored);
-	parser_reg(p, "name str name", parse_rb_name);
-	parser_reg(p, "G char glyph", parse_rb_g);
-	parser_reg(p, "M uint pain", parse_rb_m);
-	parser_reg(p, "F ?str flags", parse_rb_f);
-	parser_reg(p, "S ?str spells", parse_rb_s);
-	parser_reg(p, "D str desc", parse_rb_d);
+	parser_reg(p, "name str name", parse_mon_base_name);
+	parser_reg(p, "glyph char glyph", parse_mon_base_glyph);
+	parser_reg(p, "pain uint pain", parse_mon_base_pain);
+	parser_reg(p, "flags ?str flags", parse_mon_base_flags);
+	parser_reg(p, "spells ?str spells", parse_mon_base_spells);
+	parser_reg(p, "desc str desc", parse_mon_base_desc);
 	return p;
 }
 
-static errr run_parse_rb(struct parser *p) {
+static errr run_parse_mon_base(struct parser *p) {
 	return parse_file(p, "monster_base");
 }
 
-static errr finish_parse_rb(struct parser *p) {
+static errr finish_parse_mon_base(struct parser *p) {
 	rb_info = parser_priv(p);
 	parser_destroy(p);
 	return 0;
 }
 
-static void cleanup_rb(void)
+static void cleanup_mon_base(void)
 {
 	struct monster_base *rb, *next;
 
@@ -456,12 +458,12 @@ static void cleanup_rb(void)
 	}
 }
 
-struct file_parser rb_parser = {
+struct file_parser mon_base_parser = {
 	"monster_base",
-	init_parse_rb,
-	run_parse_rb,
-	finish_parse_rb,
-	cleanup_rb
+	init_parse_mon_base,
+	run_parse_mon_base,
+	finish_parse_mon_base,
+	cleanup_mon_base
 };
 
 

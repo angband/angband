@@ -1,26 +1,27 @@
 # This file provides information for monster "templates".
 # 
 # name : template name
-# G : default display character
-# M : pain message index
-# F : flag | flag | ...
-# S : spell flag | spell flag | ...
-# D : description
+# glyph : default display character
+# pain : pain message index
+# flags : flag | flag | ...
+# spells : spell flag | spell flag | ...
+# desc : description
 #
 # 'name' indicates the beginning of an entry. The template name is used in 
 # monster.txt.
 #
-# 'G' indicates the default display character. This is used for displaying the
-# monster in ASCII mode, and also for determining which monsters are
+# 'glyph' indicates the default display character. This is used for displaying
+# the monster in ASCII mode, and also for determining which monsters are
 # of the same "type" for things like the ESCORT flag or the S_KIN summon.
 #
-# 'M' indicates which set of "pain messages" (from pain.txt) is used.
+# 'pain' indicates which set of "pain messages" (from pain.txt) is used.
 #
-# 'F' indicates the flags that every monster inherits from this template.
+# 'flags' indicates the flags that every monster inherits from this template.
 #
-# 'S' indicates the spell flags that every monster inherits from this template.
+# 'spells' indicates the spell flags that every monster inherits from this
+# template.
 #
-# 'D' indicates the textual description of this template that is used by
+# 'desc' indicates the textual description of this template that is used by
 # the '/' command in-game.
 #
 # Note that some templates have hardcoded references. In particular, changing
@@ -32,410 +33,410 @@
 ##### Normal monster templates #####
 
 name:ancient dragon
-G:D
-M:1
-F:DRAGON | EVIL | POWERFUL | SMART
-F:DROP_4
-F:MOVE_BODY
-F:NO_CONF | NO_SLEEP
-F:FORCE_SLEEP
-D:Ancient Dragon/Wyrm
+glyph:D
+pain:1
+flags:DRAGON | EVIL | POWERFUL | SMART
+flags:DROP_4
+flags:MOVE_BODY
+flags:NO_CONF | NO_SLEEP
+flags:FORCE_SLEEP
+desc:Ancient Dragon/Wyrm
 
 name:ainu
-G:A
-M:1
-F:POWERFUL
-F:ONLY_ITEM
-F:OPEN_DOOR | BASH_DOOR | TAKE_ITEM
-F:IM_POIS | NO_CONF | NO_SLEEP
-F:FORCE_SLEEP
-D:Ainu/maia
+glyph:A
+pain:1
+flags:POWERFUL
+flags:ONLY_ITEM
+flags:OPEN_DOOR | BASH_DOOR | TAKE_ITEM
+flags:IM_POIS | NO_CONF | NO_SLEEP
+flags:FORCE_SLEEP
+desc:Ainu/maia
 
 name:ant
-G:a
-M:7
-F:ANIMAL | WEIRD_MIND
-F:BASH_DOOR
-D:Ant
+glyph:a
+pain:7
+flags:ANIMAL | WEIRD_MIND
+flags:BASH_DOOR
+desc:Ant
 
 name:bat
-G:b
-M:4
-F:ANIMAL
-D:Bat
+glyph:b
+pain:4
+flags:ANIMAL
+desc:Bat
 
 name:bird
-G:B
-M:8
-F:ANIMAL
-D:Bird
+glyph:B
+pain:8
+flags:ANIMAL
+desc:Bird
 
 name:canine
-G:C
-M:3
-F:ANIMAL
-D:Canine (Dog)
+glyph:C
+pain:3
+flags:ANIMAL
+desc:Canine (Dog)
 
 name:centipede
-G:c
-M:5
-F:ANIMAL | WEIRD_MIND
-D:Centipede
+glyph:c
+pain:5
+flags:ANIMAL | WEIRD_MIND
+desc:Centipede
 
 name:creeping coins
-G:$
-M:1
-F:COLD_BLOOD | METAL | UNAWARE | EMPTY_MIND
-F:ONLY_GOLD
-F:BASH_DOOR
-F:IM_ELEC | IM_POIS | NO_CONF | NO_SLEEP
-F:MIMIC_INV
-D:Creeping Coins
+glyph:$
+pain:1
+flags:COLD_BLOOD | METAL | UNAWARE | EMPTY_MIND
+flags:ONLY_GOLD
+flags:BASH_DOOR
+flags:IM_ELEC | IM_POIS | NO_CONF | NO_SLEEP
+flags:MIMIC_INV
+desc:Creeping Coins
 
 name:dragon
-G:d
-M:1
-F:DRAGON | EVIL
-F:FORCE_SLEEP
-D:Dragon
+glyph:d
+pain:1
+flags:DRAGON | EVIL
+flags:FORCE_SLEEP
+desc:Dragon
 
 name:dragon fly
-G:F
-M:7
-F:ANIMAL | WEIRD_MIND
-F:RAND_50 | BASH_DOOR
-F:FORCE_SLEEP
-D:Dragon Fly
+glyph:F
+pain:7
+flags:ANIMAL | WEIRD_MIND
+flags:RAND_50 | BASH_DOOR
+flags:FORCE_SLEEP
+desc:Dragon Fly
 
 name:eye
-G:e
-M:1
-D:Floating Eye
+glyph:e
+pain:1
+desc:Floating Eye
 
 name:elemental
-G:E
-M:1
-F:EMPTY_MIND
-F:IM_POIS | NO_FEAR | NO_CONF | NO_SLEEP
-F:NONLIVING
-D:Elemental
+glyph:E
+pain:1
+flags:EMPTY_MIND
+flags:IM_POIS | NO_FEAR | NO_CONF | NO_SLEEP
+flags:NONLIVING
+desc:Elemental
 
 name:feline
-G:f
-M:6
-F:ANIMAL
-D:Feline (Cat)
+glyph:f
+pain:6
+flags:ANIMAL
+desc:Feline (Cat)
 
 name:ghost
-G:G
-M:1
-F:UNDEAD | EVIL | INVISIBLE | COLD_BLOOD
-F:PASS_WALL
-F:IM_COLD | IM_POIS | NO_CONF | NO_SLEEP | NO_STUN
-D:Ghost
+glyph:G
+pain:1
+flags:UNDEAD | EVIL | INVISIBLE | COLD_BLOOD
+flags:PASS_WALL
+flags:IM_COLD | IM_POIS | NO_CONF | NO_SLEEP | NO_STUN
+desc:Ghost
 
 name:giant
-G:P
-M:1
-F:GIANT | EVIL
-F:BASH_DOOR
-S:BOULDER
-D:Giant Humanoid
+glyph:P
+pain:1
+flags:GIANT | EVIL
+flags:BASH_DOOR
+spells:BOULDER
+desc:Giant Humanoid
 
 name:golem
-G:g
-M:1
-F:EMPTY_MIND
-F:IM_ELEC | NO_FEAR | NO_CONF | NO_SLEEP
-F:NONLIVING
-D:Golem
+glyph:g
+pain:1
+flags:EMPTY_MIND
+flags:IM_ELEC | NO_FEAR | NO_CONF | NO_SLEEP
+flags:NONLIVING
+desc:Golem
 
 name:humanoid
-G:h
-M:1
-F:OPEN_DOOR | BASH_DOOR
-D:Hobbit/Elf/Dwarf
+glyph:h
+pain:1
+flags:OPEN_DOOR | BASH_DOOR
+desc:Hobbit/Elf/Dwarf
 
 name:hybrid
-G:H
-M:1
-D:Hybrid
+glyph:H
+pain:1
+desc:Hybrid
 
 name:hydra
-G:M
-M:4
-F:ANIMAL
-F:ONLY_GOLD
-F:BASH_DOOR
-F:FORCE_SLEEP | HURT_COLD
-D:Hydra
+glyph:M
+pain:4
+flags:ANIMAL
+flags:ONLY_GOLD
+flags:BASH_DOOR
+flags:FORCE_SLEEP | HURT_COLD
+desc:Hydra
 
 name:icky thing
-G:i
-M:2
-F:RAND_50
-D:Icky Thing
+glyph:i
+pain:2
+flags:RAND_50
+desc:Icky Thing
 
 name:insect
-G:I
-M:7
-F:ANIMAL | WEIRD_MIND | MULTIPLY
-F:RAND_25 | RAND_50
-D:Insect
+glyph:I
+pain:7
+flags:ANIMAL | WEIRD_MIND | MULTIPLY
+flags:RAND_25 | RAND_50
+desc:Insect
 
 name:jelly
-G:j
-M:2
-F:EMPTY_MIND | STUPID
-F:NO_FEAR
-D:Jelly
+glyph:j
+pain:2
+flags:EMPTY_MIND | STUPID
+flags:NO_FEAR
+desc:Jelly
 
 name:killer beetle
-G:K
-M:7
-F:ANIMAL | WEIRD_MIND
-F:BASH_DOOR
-D:Killer Beetle
+glyph:K
+pain:7
+flags:ANIMAL | WEIRD_MIND
+flags:BASH_DOOR
+desc:Killer Beetle
 
 name:kobold
-G:k
-M:1
-F:EVIL
-F:OPEN_DOOR | BASH_DOOR
-F:IM_POIS
-D:Kobold
+glyph:k
+pain:1
+flags:EVIL
+flags:OPEN_DOOR | BASH_DOOR
+flags:IM_POIS
+desc:Kobold
 
 name:lich
-G:L
-M:1
-F:UNDEAD | EVIL | COLD_BLOOD | SMART
-F:OPEN_DOOR | BASH_DOOR
-F:IM_COLD | IM_POIS | NO_CONF | NO_SLEEP | NO_STUN
-F:FORCE_SLEEP
-S:BRAIN_SMASH
-D:Lich
+glyph:L
+pain:1
+flags:UNDEAD | EVIL | COLD_BLOOD | SMART
+flags:OPEN_DOOR | BASH_DOOR
+flags:IM_COLD | IM_POIS | NO_CONF | NO_SLEEP | NO_STUN
+flags:FORCE_SLEEP
+spells:BRAIN_SMASH
+desc:Lich
 
 name:louse
-G:l
-M:7
-F:ANIMAL | WEIRD_MIND | MULTIPLY
-F:RAND_50
-D:Louse
+glyph:l
+pain:7
+flags:ANIMAL | WEIRD_MIND | MULTIPLY
+flags:RAND_50
+desc:Louse
 
 name:lurker
-G:.
-M:1
-F:COLD_BLOOD | EMPTY_MIND | INVISIBLE | UNAWARE
-F:NEVER_MOVE
-F:NO_FEAR | NO_CONF | NO_SLEEP
-F:CHAR_CLEAR | ATTR_CLEAR
-D:Lurker
+glyph:.
+pain:1
+flags:COLD_BLOOD | EMPTY_MIND | INVISIBLE | UNAWARE
+flags:NEVER_MOVE
+flags:NO_FEAR | NO_CONF | NO_SLEEP
+flags:CHAR_CLEAR | ATTR_CLEAR
+desc:Lurker
 
 name:major demon
-G:U
-M:1
-F:DEMON | EVIL
-F:ONLY_ITEM
-F:OPEN_DOOR | BASH_DOOR
-F:NO_CONF | NO_SLEEP
-F:FORCE_SLEEP
-D:Major Demon
+glyph:U
+pain:1
+flags:DEMON | EVIL
+flags:ONLY_ITEM
+flags:OPEN_DOOR | BASH_DOOR
+flags:NO_CONF | NO_SLEEP
+flags:FORCE_SLEEP
+desc:Major Demon
 
 name:mimic
-G:?
-M:1
-F:COLD_BLOOD | EMPTY_MIND | UNAWARE
-F:NEVER_MOVE
-F:NO_FEAR | NO_CONF | NO_SLEEP
-F:FORCE_SLEEP | ATTR_CLEAR
-S:BLIND | CAUSE_2 | CONF | SCARE
-D:Mimic
+glyph:?
+pain:1
+flags:COLD_BLOOD | EMPTY_MIND | UNAWARE
+flags:NEVER_MOVE
+flags:NO_FEAR | NO_CONF | NO_SLEEP
+flags:FORCE_SLEEP | ATTR_CLEAR
+spells:BLIND | CAUSE_2 | CONF | SCARE
+desc:Mimic
 
 name:minor demon
-G:u
-M:1
-F:DEMON | EVIL
-F:IM_FIRE
-D:Minor Demon
+glyph:u
+pain:1
+flags:DEMON | EVIL
+flags:IM_FIRE
+desc:Minor Demon
 
 name:mold
-G:m
-M:2
-F:NEVER_MOVE
-F:IM_POIS | HURT_FIRE | NO_FEAR | NO_CONF | NO_SLEEP
-D:Mold
+glyph:m
+pain:2
+flags:NEVER_MOVE
+flags:IM_POIS | HURT_FIRE | NO_FEAR | NO_CONF | NO_SLEEP
+desc:Mold
 
 name:mushroom
-G:,
-M:2
-F:EMPTY_MIND | STUPID
-F:HURT_FIRE | NO_FEAR | NO_CONF | NO_SLEEP
-D:Mushroom
+glyph:,
+pain:2
+flags:EMPTY_MIND | STUPID
+flags:HURT_FIRE | NO_FEAR | NO_CONF | NO_SLEEP
+desc:Mushroom
 
 name:naga
-G:n
-M:1
-F:FEMALE | EVIL | HURT_COLD
-F:BASH_DOOR
-D:Naga
+glyph:n
+pain:1
+flags:FEMALE | EVIL | HURT_COLD
+flags:BASH_DOOR
+desc:Naga
 
 name:ogre
-G:O
-M:1
-F:GIANT | EVIL
-F:OPEN_DOOR | BASH_DOOR
-D:Ogre
+glyph:O
+pain:1
+flags:GIANT | EVIL
+flags:OPEN_DOOR | BASH_DOOR
+desc:Ogre
 
 name:orc
-G:o
-M:1
-F:MALE | ORC | EVIL
-F:OPEN_DOOR | BASH_DOOR
-D:Orc
+glyph:o
+pain:1
+flags:MALE | ORC | EVIL
+flags:OPEN_DOOR | BASH_DOOR
+desc:Orc
 
 name:person
-G:p
-M:1
-F:BASH_DOOR
-D:Person/Human
+glyph:p
+pain:1
+flags:BASH_DOOR
+desc:Person/Human
 
 name:quadruped
-G:q
-M:4
-F:BASH_DOOR
-D:Quadruped
+glyph:q
+pain:4
+flags:BASH_DOOR
+desc:Quadruped
 
 name:quylthulg
-G:Q
-M:2
-F:EMPTY_MIND | INVISIBLE
-F:NEVER_BLOW | NEVER_MOVE
-F:NO_FEAR | NO_CONF | NO_SLEEP
-F:FORCE_SLEEP
-D:Quylthulg
+glyph:Q
+pain:2
+flags:EMPTY_MIND | INVISIBLE
+flags:NEVER_BLOW | NEVER_MOVE
+flags:NO_FEAR | NO_CONF | NO_SLEEP
+flags:FORCE_SLEEP
+desc:Quylthulg
 
 name:reptile
-G:R
-M:5
-F:ANIMAL | HURT_COLD
-D:Reptile/Amphibian
+glyph:R
+pain:5
+flags:ANIMAL | HURT_COLD
+desc:Reptile/Amphibian
 
 name:rodent
-G:r
-M:4
-F:ANIMAL
-D:Rodent
+glyph:r
+pain:4
+flags:ANIMAL
+desc:Rodent
 
 name:skeleton
-G:s
-M:9
-F:UNDEAD | EVIL | COLD_BLOOD
-F:IM_COLD | IM_POIS | NO_FEAR | NO_CONF | NO_SLEEP | NO_STUN
-D:Skeleton
+glyph:s
+pain:9
+flags:UNDEAD | EVIL | COLD_BLOOD
+flags:IM_COLD | IM_POIS | NO_FEAR | NO_CONF | NO_SLEEP | NO_STUN
+desc:Skeleton
 
 name:snake
-G:J
-M:5
-F:ANIMAL | HURT_COLD
-F:BASH_DOOR
-D:Snake
+glyph:J
+pain:5
+flags:ANIMAL | HURT_COLD
+flags:BASH_DOOR
+desc:Snake
 
 name:spider
-G:S
-M:7
-F:BASH_DOOR
-D:Spider/Scorpion/Tick
+glyph:S
+pain:7
+flags:BASH_DOOR
+desc:Spider/Scorpion/Tick
 
 name:townsfolk
-G:t
-M:4
-D:Townsfolk
+glyph:t
+pain:4
+desc:Townsfolk
 
 name:troll
-G:T
-M:1
-F:TROLL | EVIL
-F:OPEN_DOOR | BASH_DOOR
-D:Troll
+glyph:T
+pain:1
+flags:TROLL | EVIL
+flags:OPEN_DOOR | BASH_DOOR
+desc:Troll
 
 name:vampire
-G:V
-M:1
-F:UNDEAD | EVIL | COLD_BLOOD | REGENERATE
-F:OPEN_DOOR | BASH_DOOR
-F:HURT_LIGHT | HURT_FIRE | IM_COLD | IM_POIS | NO_CONF | NO_SLEEP | NO_STUN
-F:FORCE_SLEEP
-S:HOLD | SCARE
-D:Vampire
+glyph:V
+pain:1
+flags:UNDEAD | EVIL | COLD_BLOOD | REGENERATE
+flags:OPEN_DOOR | BASH_DOOR
+flags:HURT_LIGHT | HURT_FIRE | IM_COLD | IM_POIS | NO_CONF | NO_SLEEP | NO_STUN
+flags:FORCE_SLEEP
+spells:HOLD | SCARE
+desc:Vampire
 
 name:vortex
-G:v
-M:11
-F:EMPTY_MIND | POWERFUL
-F:RAND_50 | BASH_DOOR
-F:NO_FEAR | NO_CONF | NO_SLEEP
-F:FORCE_SLEEP
-F:NONLIVING
-D:Vortex
+glyph:v
+pain:11
+flags:EMPTY_MIND | POWERFUL
+flags:RAND_50 | BASH_DOOR
+flags:NO_FEAR | NO_CONF | NO_SLEEP
+flags:FORCE_SLEEP
+flags:NONLIVING
+desc:Vortex
 
 name:worm
-G:w
-M:1
-F:ANIMAL
-D:Worm/Worm Mass
+glyph:w
+pain:1
+flags:ANIMAL
+desc:Worm/Worm Mass
 
 name:wraith
-G:W
-M:1
-F:UNDEAD | EVIL | COLD_BLOOD
-F:HURT_LIGHT | IM_COLD | IM_POIS | NO_CONF | NO_SLEEP | NO_STUN
-D:Wight/Wraith
+glyph:W
+pain:1
+flags:UNDEAD | EVIL | COLD_BLOOD
+flags:HURT_LIGHT | IM_COLD | IM_POIS | NO_CONF | NO_SLEEP | NO_STUN
+desc:Wight/Wraith
 
 name:xorn
-G:X
-M:4
-F:COLD_BLOOD | EMPTY_MIND
-F:HURT_ROCK | IM_POIS | NO_CONF | NO_SLEEP
-D:Xorn/Xaren
+glyph:X
+pain:4
+flags:COLD_BLOOD | EMPTY_MIND
+flags:HURT_ROCK | IM_POIS | NO_CONF | NO_SLEEP
+desc:Xorn/Xaren
 
 name:yeek
-G:y
-M:1
-F:ANIMAL
-F:OPEN_DOOR | BASH_DOOR
-F:IM_ACID
-D:Yeek
+glyph:y
+pain:1
+flags:ANIMAL
+flags:OPEN_DOOR | BASH_DOOR
+flags:IM_ACID
+desc:Yeek
 
 name:yeti
-G:Y
-M:1
-F:ANIMAL
-F:OPEN_DOOR | BASH_DOOR
-F:IM_COLD
-D:Yeti
+glyph:Y
+pain:1
+flags:ANIMAL
+flags:OPEN_DOOR | BASH_DOOR
+flags:IM_COLD
+desc:Yeti
 
 name:zephyr hound
-G:Z
-M:3
-F:ANIMAL | GROUP_AI
-D:Zephyr Hound
+glyph:Z
+pain:3
+flags:ANIMAL | GROUP_AI
+desc:Zephyr Hound
 
 name:zombie
-G:z
-M:10
-F:UNDEAD | EVIL | COLD_BLOOD
-F:OPEN_DOOR | BASH_DOOR
-F:IM_COLD | IM_POIS | HURT_FIRE | NO_CONF | NO_SLEEP | NO_STUN
-D:Zombie/Mummy
+glyph:z
+pain:10
+flags:UNDEAD | EVIL | COLD_BLOOD
+flags:OPEN_DOOR | BASH_DOOR
+flags:IM_COLD | IM_POIS | HURT_FIRE | NO_CONF | NO_SLEEP | NO_STUN
+desc:Zombie/Mummy
 
 ##### Special templates #####
 
 name:player
-G:@
-M:1
-D:You
+glyph:@
+pain:1
+desc:You
 
 name:Morgoth
-G:P
-M:12
-D:Morgoth
+glyph:P
+pain:12
+desc:Morgoth
