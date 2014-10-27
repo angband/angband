@@ -1926,7 +1926,8 @@ static void update_one(struct cave *c, int y, int x, int blind)
 		if (cave_isfeel(c, y, x)) {
 			c->feeling_squares++;
 			c->info2[y][x] &= ~CAVE2_FEEL;
-			if (c->feeling_squares == FEELING1)
+			/* Don't display feeling if it will display for the new level */
+			if ((c->feeling_squares == FEELING1) && !character_xtra)
 				display_feeling(TRUE);
 		}
 
