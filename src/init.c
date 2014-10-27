@@ -442,8 +442,10 @@ void create_needed_dirs(void)
 	if (!dir_create(dirpath)) quit_fmt("Cannot create '%s'", dirpath);
 }
 
-/* Parsing functions for constants.txt */
-static enum parser_error parse_z_level_max(struct parser *p) {
+/**
+ * Parsing functions for constants.txt
+ */
+static enum parser_error parse_constants_level_max(struct parser *p) {
 	struct angband_constants *z;
 	const char *label;
 	int value;
@@ -467,7 +469,7 @@ static enum parser_error parse_z_level_max(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_z_mon_gen(struct parser *p) {
+static enum parser_error parse_constants_mon_gen(struct parser *p) {
 	struct angband_constants *z;
 	const char *label;
 	int value;
@@ -499,7 +501,7 @@ static enum parser_error parse_z_mon_gen(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_z_mon_play(struct parser *p) {
+static enum parser_error parse_constants_mon_play(struct parser *p) {
 	struct angband_constants *z;
 	const char *label;
 	int value;
@@ -525,7 +527,7 @@ static enum parser_error parse_z_mon_play(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_z_dun_gen(struct parser *p) {
+static enum parser_error parse_constants_dun_gen(struct parser *p) {
 	struct angband_constants *z;
 	const char *label;
 	int value;
@@ -559,7 +561,7 @@ static enum parser_error parse_z_dun_gen(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_z_dun_dim(struct parser *p) {
+static enum parser_error parse_constants_dun_dim(struct parser *p) {
 	struct angband_constants *z;
 	const char *label;
 	int value;
@@ -585,40 +587,40 @@ static enum parser_error parse_z_dun_dim(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-struct parser *init_parse_z(void) {
+struct parser *init_parse_constants(void) {
 	struct angband_constants *z = mem_zalloc(sizeof *z);
 	struct parser *p = parser_new();
 
 	parser_setpriv(p, z);
-	parser_reg(p, "level-max sym label int value", parse_z_level_max);
-	parser_reg(p, "mon-gen sym label int value", parse_z_mon_gen);
-	parser_reg(p, "mon-play sym label int value", parse_z_mon_play);
-	parser_reg(p, "dun-gen sym label int value", parse_z_dun_gen);
-	parser_reg(p, "dun-dim sym label int value", parse_z_dun_dim);
+	parser_reg(p, "level-max sym label int value", parse_constants_level_max);
+	parser_reg(p, "mon-gen sym label int value", parse_constants_mon_gen);
+	parser_reg(p, "mon-play sym label int value", parse_constants_mon_play);
+	parser_reg(p, "dun-gen sym label int value", parse_constants_dun_gen);
+	parser_reg(p, "dun-dim sym label int value", parse_constants_dun_dim);
 	return p;
 }
 
-static errr run_parse_z(struct parser *p) {
+static errr run_parse_constants(struct parser *p) {
 	return parse_file(p, "constants");
 }
 
-static errr finish_parse_z(struct parser *p) {
+static errr finish_parse_constants(struct parser *p) {
 	z_info = parser_priv(p);
 	parser_destroy(p);
 	return 0;
 }
 
-static void cleanup_z(void)
+static void cleanup_constants(void)
 {
 	mem_free(z_info);
 }
 
-static struct file_parser z_parser = {
+static struct file_parser constants_parser = {
 	"constants",
-	init_parse_z,
-	run_parse_z,
-	finish_parse_z,
-	cleanup_z
+	init_parse_constants,
+	run_parse_constants,
+	finish_parse_constants,
+	cleanup_constants
 };
 
 /**
@@ -3582,7 +3584,9 @@ static struct file_parser flavor_parser = {
 };
 
 
-/* Initialise hints */
+/**
+ * Initialise hints
+ */
 static enum parser_error parse_hint(struct parser *p) {
 	struct hint *h = parser_priv(p);
 	struct hint *new = mem_zalloc(sizeof *new);
@@ -4007,12 +4011,14 @@ static struct file_parser pit_parser = {
 };
 
 
-/* A list of all the above parsers */
+/**
+ * A list of all the above parsers, plus those found in src/mon-init.c
+ */
 static struct {
 	const char *name;
 	struct file_parser *parser;
 } pl[] = {
-	{ "array sizes", &z_parser },
+	{ "game constants", &constants_parser },
 	{ "traps", &trap_parser },
 	{ "features", &feat_parser },
 	{ "object bases", &object_base_parser },
@@ -4054,6 +4060,9 @@ void init_arrays(void)
 	}
 }
 
+/**
+ * Free all the internal arrays
+ */
 static void cleanup_arrays(void)
 {
 	unsigned int i;
@@ -4144,6 +4153,9 @@ bool init_angband(void)
 	return TRUE;
 }
 
+/**
+ * Free all the stuff initialised in init_angband()
+ */
 void cleanup_angband(void)
 {
 	int i;

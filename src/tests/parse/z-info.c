@@ -7,7 +7,7 @@
 
 
 int setup_tests(void **state) {
-	*state = init_parse_z();
+	*state = init_parse_constants();
 	return !*state;
 }
 
