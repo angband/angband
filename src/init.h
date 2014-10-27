@@ -113,7 +113,7 @@ extern struct parser *init_parse_object_base(void);
 extern struct parser *init_parse_pain(void);
 extern struct parser *init_parse_p_race(void);
 extern struct parser *init_parse_pit(void);
-extern struct parser *init_parse_r(void);
+extern struct parser *init_parse_monster(void);
 extern struct parser *init_parse_v(void);
 extern struct parser *init_parse_constants(void);
 extern struct parser *init_parse_flavor(void);

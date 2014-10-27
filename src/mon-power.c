@@ -1,6 +1,6 @@
 /**
-   \file mon-power.c
-   \brief functions for monster power evaluation
+ * \file mon-power.c
+ * \brief functions for monster power evaluation
  *
  * Copyright (c) 2000-11 Chris Carr, Chris Robertson, Andrew Doull
  *
@@ -366,7 +366,7 @@ void write_monster_entries(ang_file *fff)
  * Evaluate the whole monster list and write a new one.  power and scaled_power
  * are always adjusted, level, rarity and mexp only if requested.
  */
-errr eval_r_power(struct monster_race *racelist)
+errr eval_monster_power(struct monster_race *racelist)
 {
 	int i, j, iteration;
 	byte lvl;

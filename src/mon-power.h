@@ -1,6 +1,6 @@
-/*
- * File: src/mon-power.h
- * Purpose: structures and functions for monster power
+/**
+ * \file mon-power.h
+ * \brief structures and functions for monster power
  *
  * Copyright (c) 2011 Chris Carr
  *
@@ -22,7 +22,7 @@
 #include "monster.h"
 
 /** Functions **/
-errr eval_r_power(struct monster_race *races);
+errr eval_monster_power(struct monster_race *races);
 
 
 #endif /* MONSTER_POWER_H */

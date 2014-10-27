@@ -4029,7 +4029,7 @@ static struct {
 	{ "monster pain messages", &pain_parser },
 	{ "monster spells", &mon_spell_parser },
 	{ "monster bases", &mon_base_parser },
-	{ "monsters", &r_parser },
+	{ "monsters", &monster_parser },
 	{ "monster pits" , &pit_parser },
 	{ "monster lore" , &lore_parser },
 	{ "history charts", &history_parser },
