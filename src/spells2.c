@@ -1501,6 +1501,9 @@ bool spell_identify_unknown_available(void)
 		}
 	}
 
+	/* Reset the item tester to avoid bizarre behaviour of UI-only commands */
+	item_tester_hook = NULL;
+
 	return unidentified_inventory || floor_num > 0;
 }
 
