@@ -1482,13 +1482,6 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd,
 					break;
 				}
 
-				/* Hack -- Validate the item */
-				if (!allow_quiver)
-				{
-					bell("Illegal object choice (tag)!");
-					break;
-				}
-
 				/* Validate the item */
 				if (!item_test(tester, k))
 				{
