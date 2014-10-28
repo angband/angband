@@ -1020,10 +1020,15 @@ void calc_inventory(struct player_upkeep *upkeep, object_type gear[],
 			/* Allocate inscribed objects if it's the right slot */
 			if (current->note) {
 				s = strchr(quark_str(current->note), '@');
-				if ((s[1] == 'f') && (s[2] - '0' == quiver_slots)) {
-					first = current;
-					gear_index = i;
-					break;
+				if (s[1] == 'f') {
+					/* Correct slot, fill it straight away */
+					if (s[2] - '0' == quiver_slots) {
+						first = current;
+						gear_index = i;
+						break;
+					} else if (s[2] - '0' > quiver_slots)
+						/* Not up to the correct slot yet, so wait */
+						continue;
 				}
 			}
 
