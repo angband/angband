@@ -19,6 +19,7 @@
 #include "buildid.h"
 #include "dungeon.h"
 #include "history.h"
+#include "init.h"
 #include "obj-desc.h"
 #include "obj-gear.h"
 #include "obj-identify.h"
@@ -1022,7 +1023,7 @@ void write_character_dump(ang_file *fff)
 
 	/* Dump the inventory */
 	file_putf(fff, "\n\n  [Character Inventory]\n\n");
-	for (i = 0; i < INVEN_PACK; i++) {
+	for (i = 0; i < z_info->pack_size; i++) {
 		struct object *obj = &player->gear[player->upkeep->inven[i]];
 		if (!obj->kind) break;
 
@@ -1034,7 +1035,7 @@ void write_character_dump(ang_file *fff)
 
 	/* Dump the quiver */
 	file_putf(fff, "\n\n  [Character Quiver]\n\n");
-	for (i = 0; i < QUIVER_SIZE; i++) {
+	for (i = 0; i < z_info->quiver_size; i++) {
 		struct object *obj = &player->gear[player->upkeep->quiver[i]];
 		if (!obj->kind) break;
 

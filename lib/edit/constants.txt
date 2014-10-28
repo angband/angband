@@ -91,3 +91,13 @@ dun-dim:town-hgt:22
 # Max number of grids in each town level (horizontally)
 dun-dim:town-wid:66
 
+## Carrying Capacity ##
+
+# Max number of pack slots for carrying inventory
+carry-cap:pack-size:23
+
+# Max number of quiver slots for carrying missiles
+carry-cap:quiver-size:10
+
+# Max number of items per floor grid
+carry-cap:floor-size:23

@@ -1976,24 +1976,27 @@ static void see_floor_items(game_event_type type, game_event_data *data, void *u
 	int py = player->py;
 	int px = player->px;
 
-	size_t floor_num = 0;
-	int floor_list[MAX_FLOOR_STACK + 1];
+	int floor_max = z_info->floor_size;
+	int *floor_list = mem_zalloc(floor_max * sizeof(int));
+	int floor_num = 0;
 	bool blind = ((player->timed[TMD_BLIND]) || (no_light()));
 
 	const char *p = "see";
 	int can_pickup = 0;
-	size_t i;
+	int i;
 
 	/* Scan all marked objects in the grid */
-	floor_num = scan_floor(floor_list, N_ELEMENTS(floor_list), py, px, 0x09, FALSE);
-	if (floor_num == 0) return;
+	floor_num = scan_floor(floor_list, floor_max, py, px, 0x09, FALSE);
+	if (floor_num == 0) {
+		mem_free(floor_list);
+		return;
+	}
 
 	for (i = 0; i < floor_num; i++)
 	    can_pickup += inven_carry_okay(cave_object(cave, floor_list[i]));
 	
 	/* One object */
-	if (floor_num == 1)
-	{
+	if (floor_num == 1) {
 		/* Get the object */
 		object_type *o_ptr = cave_object(cave, floor_list[0]);
 		char o_name[80];
@@ -2006,7 +2009,7 @@ static void see_floor_items(game_event_type type, game_event_data *data, void *u
 		/* Describe the object.  Less detail if blind. */
 		if (blind)
 			object_desc(o_name, sizeof(o_name), o_ptr,
-					ODESC_PREFIX | ODESC_BASE);
+						ODESC_PREFIX | ODESC_BASE);
 		else
 			object_desc(o_name, sizeof(o_name), o_ptr,
 					ODESC_PREFIX | ODESC_FULL);
@@ -2014,9 +2017,7 @@ static void see_floor_items(game_event_type type, game_event_data *data, void *u
 		/* Message */
 		message_flush();
 		msg("You %s %s.", p, o_name);
-	}
-	else
-	{
+	} else {
 		ui_event e;
 
 		if (!can_pickup)	p = "have no room for the following objects";
@@ -2038,11 +2039,14 @@ static void see_floor_items(game_event_type type, game_event_data *data, void *u
 	/* Update the map to display the items that are felt during blindness. */
 	if (blind) {
 		for (i = 0; i < floor_num; i++) {
-			/* Since the messages are detailed, we use MARK_SEEN to match description. */
+			/* Since the messages are detailed, we use MARK_SEEN to match
+			 * description. */
 			object_type *o_ptr = cave_object(cave, floor_list[i]);
 			o_ptr->marked = MARK_SEEN;
 		}
 	}
+
+	mem_free(floor_list);
 }
 
 /* ------------------------------------------------------------------------

@@ -19,6 +19,7 @@
 #include "angband.h"
 #include "cmds.h"
 #include "cmd-core.h"
+#include "init.h"
 #include "keymap.h"
 #include "obj-desc.h"
 #include "obj-gear.h"
@@ -92,7 +93,7 @@ s16b label_to_inven(int c)
 	i = (islower((unsigned char)c) ? A2I(c) : -1);
 
 	/* Verify the index */
-	if ((i < 0) || (i > INVEN_PACK)) return (-1);
+	if ((i < 0) || (i > z_info->pack_size)) return (-1);
 
 	/* Empty slots can never be chosen */
 	if (!player->gear[player->upkeep->inven[i]].kind) return (-1);
@@ -139,7 +140,7 @@ s16b label_to_quiver(int c)
 	i = (islower((unsigned char)c) ? A2I(c) : -1);
 
 	/* Verify the index */
-	if ((i < 0) || (i >= QUIVER_SIZE))
+	if ((i < 0) || (i >= z_info->quiver_size))
 		return (-1);
 
 	/* Empty slots can never be chosen */
@@ -365,7 +366,7 @@ void show_inven(int mode, item_tester tester)
 	}
 
 	/* Find the last occupied inventory slot */
-	for (i = 0; i < INVEN_PACK; i++)
+	for (i = 0; i < z_info->pack_size; i++)
 		if (player->upkeep->inven[i] != NO_OBJECT) last_slot = i;
 
 	/* Build the object list */
@@ -416,7 +417,7 @@ void show_quiver(int mode, item_tester tester)
 	bool in_term = (mode & OLIST_WINDOW) ? TRUE : FALSE;
 
 	/* Find the last occupied quiver slot */
-	for (i = 0; i < QUIVER_SIZE; i++)
+	for (i = 0; i < z_info->quiver_size; i++)
 		if (player->upkeep->quiver[i] != NO_OBJECT) last_slot = i;
 
 	/* Build the object list */
@@ -500,7 +501,7 @@ void show_equip(int mode, item_tester tester)
 		num_obj++;
 
 		/* Find the last occupied quiver slot */
-		for (i = 0; i < QUIVER_SIZE; i++)
+		for (i = 0; i < z_info->quiver_size; i++)
 			if (player->upkeep->quiver[i] != NO_OBJECT) last_slot = i;
 
 		/* Extend the object list */
@@ -549,7 +550,8 @@ void show_floor(const int *floor_list, int floor_num, int mode, item_tester test
 	char labels[50][80];
 	object_type *objects[50];
 
-	if (floor_num > MAX_FLOOR_STACK) floor_num = MAX_FLOOR_STACK;
+	if (floor_num > z_info->floor_size)
+		floor_num = z_info->floor_size;
 
 	/* Build the object list */
 	for (i = 0; i < floor_num; i++) {
@@ -822,7 +824,8 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd,
 	char tmp_val[160];
 	char out_val[160];
 
-	int floor_list[MAX_FLOOR_STACK];
+	int floor_max = z_info->floor_size;
+	int *floor_list = mem_zalloc(floor_max * sizeof(int));
 	int floor_num;
 
 	bool show_list = TRUE;
@@ -856,7 +859,7 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd,
 
 	/* Full inventory */
 	i1 = 0;
-	i2 = INVEN_PACK - 1;
+	i2 = z_info->pack_size - 1;
 
 	/* Forbid inventory */
 	if (!use_inven) i2 = -1;
@@ -885,7 +888,7 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd,
 
 	/* Restrict quiver indexes */
 	q1 = 0;
-	q2 = QUIVER_SIZE - 1;
+	q2 = z_info->quiver_size - 1;
 
 	/* Forbid quiver */
 	if (!use_quiver) q2 = -1;
@@ -898,8 +901,7 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd,
 	if (q1 <= q2) allow_quiver = TRUE;
 
 	/* Scan all non-gold objects in the grid */
-	floor_num = scan_floor(floor_list, N_ELEMENTS(floor_list), py, px, 0x0B,
-						   tester);
+	floor_num = scan_floor(floor_list, floor_max, py, px, 0x0B, tester);
 
 	/* Full floor */
 	f1 = 0;
@@ -1598,6 +1600,8 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd,
 
 	/* Warning if needed */
 	if (oops && str) msg("%s", str);
+
+	mem_free(floor_list);
 
 	/* Result */
 	return (item);

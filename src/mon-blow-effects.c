@@ -246,7 +246,7 @@ static void melee_effect_handler_DRAIN_CHARGES(melee_effect_handler_context_t *c
 	for (tries = 0; tries < 10; tries++)
 	{
 		/* Pick an item */
-		item = context->p->upkeep->inven[randint0(INVEN_PACK)];
+		item = context->p->upkeep->inven[randint0(z_info->pack_size)];
 
 		/* Skip non-objects */
 		if (item == NO_OBJECT) continue;
@@ -408,7 +408,7 @@ static void melee_effect_handler_EAT_ITEM(melee_effect_handler_context_t *contex
 		object_type *o_ptr, *i_ptr;
 		char o_name[80];
         object_type object_type_body;
-		int index = randint0(INVEN_PACK);
+		int index = randint0(z_info->pack_size);
 
         /* Pick an item */
         item = context->p->upkeep->inven[index];
@@ -478,7 +478,7 @@ static void melee_effect_handler_EAT_FOOD(melee_effect_handler_context_t *contex
 
 	for (tries = 0; tries < 10; tries++) {
 		/* Pick an item from the pack */
-		int index = randint0(INVEN_PACK);
+		int index = randint0(z_info->pack_size);
 		item = context->p->upkeep->inven[index];
 
 		/* Skip non-objects */

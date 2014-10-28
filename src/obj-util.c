@@ -1242,7 +1242,7 @@ s16b floor_carry(struct chunk *c, int y, int x, object_type *j_ptr)
 	if (OPT(birth_no_stacking) && n) return (0);
 
 	/* The stack is already too large */
-	if (n >= MAX_FLOOR_STACK) {
+	if (n >= z_info->floor_size) {
 		/* Ignore the oldest ignored object */
 		s16b ignore_idx = floor_get_idx_oldest_ignored(y, x);
 
@@ -1391,7 +1391,7 @@ void drop_near(struct chunk *c, object_type *j_ptr, int chance, int y, int x,
 			if (OPT(birth_no_stacking) && (k > 1)) continue;
 			
 			/* Paranoia? */
-			if ((k + n) > MAX_FLOOR_STACK &&
+			if ((k + n) > z_info->floor_size &&
 				!floor_get_idx_oldest_ignored(ty, tx)) continue;
 
 			/* Calculate score */
@@ -1491,7 +1491,7 @@ void push_object(int y, int x)
 
 	object_type *o_ptr;
    
-	struct queue *queue = q_new(MAX_FLOOR_STACK);
+	struct queue *queue = q_new(z_info->floor_size);
 
 	/* Push all objects on the square into the queue */
 	for (o_ptr = get_first_object(y, x); o_ptr; o_ptr = get_next_object(o_ptr))
@@ -2058,7 +2058,8 @@ bool obj_can_fail(const struct object *o)
  * Returns the number of items placed into the list.
  *
  * Maximum space that can be used is
- * INVEN_PACK + QUIVER_SIZE + player->body.count + MAX_FLOOR_STACK,
+ * z_info->pack_size + z_info->quiver_size + player->body.count +
+ * z_info->floor_size,
  * though practically speaking much smaller numbers are likely.
  */
 int scan_items(int *item_list, size_t item_list_max, int mode,
@@ -2069,14 +2070,16 @@ int scan_items(int *item_list, size_t item_list_max, int mode,
 	bool use_quiver = ((mode & USE_QUIVER) ? TRUE : FALSE);
 	bool use_floor = ((mode & USE_FLOOR) ? TRUE : FALSE);
 
-	int floor_list[MAX_FLOOR_STACK];
+	int floor_max = z_info->floor_size;
+	int *floor_list = mem_zalloc(floor_max * sizeof(int));
 	int floor_num;
 
 	int i;
 	size_t item_list_num = 0;
 
 	if (use_inven)
-		for (i = 0; i < INVEN_PACK && item_list_num < item_list_max; i++) {
+		for (i = 0; i < z_info->pack_size && item_list_num < item_list_max; i++)
+		{
 			if (item_test(tester, player->upkeep->inven[i]))
 				item_list[item_list_num++] = player->upkeep->inven[i];
 		}
@@ -2089,20 +2092,21 @@ int scan_items(int *item_list, size_t item_list_max, int mode,
 		}
 
 	if (use_quiver)
-		for (i = 0; i < QUIVER_SIZE && item_list_num < item_list_max; i++){
+		for (i = 0; i < z_info->quiver_size && item_list_num < item_list_max; i++) {
 			if (item_test(tester, player->upkeep->quiver[i]))
 				item_list[item_list_num++] = player->upkeep->quiver[i];
 		}
 
 	/* Scan all non-gold objects in the grid */
 	if (use_floor) {
-		floor_num = scan_floor(floor_list, N_ELEMENTS(floor_list), player->py,
-							   player->px, 0x0B, tester);
+		floor_num = scan_floor(floor_list, floor_max, player->py, player->px,
+							   0x0B, tester);
 
 		for (i = 0; i < floor_num && item_list_num < item_list_max; i++)
 			item_list[item_list_num++] = -floor_list[i];
 	}
 
+	mem_free(floor_list);
 	return item_list_num;
 }
 
@@ -2114,8 +2118,8 @@ int scan_items(int *item_list, size_t item_list_max, int mode,
  */
 bool item_is_available(int item, bool (*tester)(const object_type *), int mode)
 {
-	int item_max = INVEN_PACK + QUIVER_SIZE + player->body.count +
-		MAX_FLOOR_STACK;
+	int item_max = z_info->pack_size + z_info->quiver_size +
+		player->body.count + z_info->floor_size;
 	int *item_list = mem_zalloc(item_max * sizeof(int));
 	int item_num;
 	int i;

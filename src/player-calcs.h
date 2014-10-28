@@ -20,7 +20,7 @@
 #ifndef PLAYER_CALCS_H
 #define PLAYER_CALCS_H
 
-/*
+/**
  * Indexes of the various "stats" (hard-coded by savefiles, etc).
  */
 enum
@@ -33,7 +33,7 @@ enum
 };
 
 
-/*
+/**
  * Player race and class flags
  */
 enum
@@ -67,7 +67,7 @@ enum
 #define player_has(flag)       (pf_has(player->race->pflags, (flag)) || pf_has(player->class->pflags, (flag)))
 
 
-/*
+/**
  * Skill indexes
  */
 enum
@@ -278,8 +278,8 @@ typedef struct player_upkeep {
 	bool running_withpathfind;	/* Are we using the pathfinder ? */
 	bool running_firststep;		/* Is this our first step running? */
 
-	int quiver[QUIVER_SIZE];	/* Quiver indices into the gear array */
-	int inven[INVEN_PACK + 1];	/* Inventory indices into the gear array */
+	int *quiver;				/* Quiver indices into the gear array */
+	int *inven;					/* Inventory indices into the gear array */
 	int total_weight;			/* Total weight being carried */
 	int inven_cnt;				/* Number of items in inventory */
 	int equip_cnt;				/* Number of items in equipment */

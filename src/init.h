@@ -75,6 +75,11 @@ struct angband_constants
 	u16b dungeon_wid;	/**< Maximum number of horizontical grids on a level */
 	u16b town_hgt;	/**< Maximum number of vertical grids in the town */
 	u16b town_wid;	/**< Maximum number of horizontical grids in the town */
+
+	/* Carrying capacity constants, read from constants.txt */
+	u16b pack_size;		/**< Maximum number of pack slots */
+	u16b quiver_size;	/**< Maximum number of quiver slots */
+	u16b floor_size;	/**< Maximum number of quiver slots */
 };
 
 struct init_module {

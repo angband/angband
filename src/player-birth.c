@@ -1,6 +1,6 @@
 /**
-   \file player-birth.c
-   \brief Character creation
+ * \file player-birth.c
+ * \brief Character creation
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  *
@@ -400,8 +400,13 @@ void player_init(struct player *p)
 		mem_free(p->gear);
 	if (p->gear)
 		mem_free(p->gear_k);
-	if (p->upkeep)
+	if (p->upkeep) {
+		if (p->upkeep->inven)
+			mem_free(p->upkeep->inven);
+		if (p->upkeep->quiver)
+			mem_free(p->upkeep->quiver);
 		mem_free(p->upkeep);
+	}
 	if (p->timed)
 		mem_free(p->timed);
 
@@ -436,12 +441,6 @@ void player_init(struct player *p)
 		l_ptr->pkills = 0;
 	}
 
-
-	/* Hack -- no ghosts */
-	if (z_info)
-		r_info[z_info->r_max-1].max_num = 0;
-
-
 	/* Always start with a well fed player (this is surely in the wrong fn) */
 	p->food = PY_FOOD_FULL - 1;
 
@@ -450,6 +449,8 @@ void player_init(struct player *p)
 	p->gear = mem_zalloc(MAX_GEAR * sizeof(object_type));
 	p->gear_k = mem_zalloc(MAX_GEAR * sizeof(object_type));
 	p->upkeep = mem_zalloc(sizeof(player_upkeep));
+	p->upkeep->inven = mem_zalloc(z_info->pack_size * sizeof(int));
+	p->upkeep->quiver = mem_zalloc(z_info->quiver_size * sizeof(int));
 	p->timed = mem_zalloc(TMD_MAX * sizeof(s16b));
 
 	/* First turn. */

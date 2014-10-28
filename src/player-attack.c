@@ -20,6 +20,7 @@
 #include "cave.h"
 #include "cmds.h"
 #include "game-event.h"
+#include "init.h"
 #include "mon-desc.h"
 #include "mon-lore.h"
 #include "mon-make.h"
@@ -826,7 +827,7 @@ void do_cmd_fire_at_nearest(void) {
 	}
 
 	/* Find first eligible ammo in the quiver */
-	for (i = 0; i < QUIVER_SIZE; i++) {
+	for (i = 0; i < z_info->quiver_size; i++) {
 		if (player->gear[player->upkeep->quiver[i]].tval !=
 			player->state.ammo_tval)
 			continue;

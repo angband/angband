@@ -22,6 +22,7 @@
 #include "cave.h"
 #include "dungeon.h"
 #include "game-event.h"
+#include "init.h"
 #include "mon-msg.h"
 #include "mon-util.h"
 #include "obj-gear.h"
@@ -1007,7 +1008,7 @@ void calc_inventory(struct player_upkeep *upkeep, object_type gear[],
 
 	/* Fill the quiver */
 	upkeep->quiver_cnt = 0;
-	while (quiver_slots < QUIVER_SIZE) {
+	while (quiver_slots < z_info->quiver_size) {
 		struct object *first = NULL;
 
 		/* Find the first quiver object not yet allocated */
@@ -1052,7 +1053,7 @@ void calc_inventory(struct player_upkeep *upkeep, object_type gear[],
 
 	/* Fill the inventory */
 	upkeep->inven_cnt = 0;
-	while ((num_left > 0) || (index <= INVEN_PACK)) {
+	while ((num_left > 0) || (index <= z_info->pack_size)) {
 		struct object *first = NULL;
 
 		/* Set to default for empty slots */
@@ -1074,7 +1075,7 @@ void calc_inventory(struct player_upkeep *upkeep, object_type gear[],
 		possible[gear_index] = FALSE;
 
 		/* Ensure legality */
-		assert((index <= INVEN_PACK) || (num_left <= 0));
+		assert((index <= z_info->pack_size) || (num_left <= 0));
 	}
 	mem_free(possible);
 }

@@ -19,6 +19,7 @@
 #include "angband.h"
 #include "cave.h"
 #include "cmd-core.h"
+#include "init.h"
 #include "keymap.h"
 #include "mon-desc.h"
 #include "mon-lore.h"
@@ -690,7 +691,8 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 
 	bool boring;
 
-	int floor_list[MAX_FLOOR_STACK];
+	int floor_max = z_info->floor_size;
+	int *floor_list = mem_zalloc(floor_max * sizeof(int));
 	int floor_num;
 
 	//struct keypress query;
@@ -755,6 +757,7 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 			if (press.key.code == KC_ENTER)
 				continue;
 
+			mem_free(floor_list);
 			return press;
 		}
 
@@ -1142,6 +1145,8 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
     			if (press.key.code != KC_ENTER) break;
 		}
 	}
+
+	mem_free(floor_list);
 
 	/* Keep going */
 	return (press);

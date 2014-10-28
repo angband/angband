@@ -587,6 +587,29 @@ static enum parser_error parse_constants_dun_dim(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_constants_carry_cap(struct parser *p) {
+	struct angband_constants *z;
+	const char *label;
+	int value;
+
+	z = parser_priv(p);
+	label = parser_getsym(p, "label");
+	value = parser_getint(p, "value");
+
+	if (value < 0)
+		return PARSE_ERROR_INVALID_VALUE;
+
+	if (streq(label, "pack-size"))
+		z->pack_size = value;
+	else if (streq(label, "quiver-size"))
+		z->quiver_size = value;
+	else if (streq(label, "floor-size"))
+		z->quiver_size = value;
+	else
+		return PARSE_ERROR_UNDEFINED_DIRECTIVE;
+
+	return PARSE_ERROR_NONE;
+}
 struct parser *init_parse_constants(void) {
 	struct angband_constants *z = mem_zalloc(sizeof *z);
 	struct parser *p = parser_new();
@@ -597,6 +620,7 @@ struct parser *init_parse_constants(void) {
 	parser_reg(p, "mon-play sym label int value", parse_constants_mon_play);
 	parser_reg(p, "dun-gen sym label int value", parse_constants_dun_gen);
 	parser_reg(p, "dun-dim sym label int value", parse_constants_dun_dim);
+	parser_reg(p, "carry-cap sym label int value", parse_constants_carry_cap);
 	return p;
 }
 
@@ -4095,8 +4119,8 @@ extern struct init_module monmsg_module;
 static struct init_module *modules[] = {
 	&z_quark_module,
 	&messages_module,
-	&player_module,
 	&arrays_module,
+	&player_module,
 	&generate_module,
 	&obj_make_module,
 	&ignore_module,

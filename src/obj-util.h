@@ -1,6 +1,6 @@
 /**
-   \file obj-util.h
-   \brief Object list maintenance and other object utilities
+ * \file obj-util.h
+ * \brief Object list maintenance and other object utilities
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  *

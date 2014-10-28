@@ -20,8 +20,9 @@
 #include "angband.h"
 #include "cave.h"
 #include "cmds.h"
-#include "effects.h"
 #include "cmd-core.h"
+#include "effects.h"
+#include "init.h"
 #include "obj-desc.h"
 #include "obj-gear.h"
 #include "obj-identify.h"
@@ -212,13 +213,14 @@ static bool item_tester_unknown(const object_type *o_ptr)
  */
 bool spell_identify_unknown_available(void)
 {
-	int floor_list[MAX_FLOOR_STACK];
+	int floor_max = z_info->floor_size;
+	int *floor_list = mem_zalloc(floor_max * sizeof(int));
 	int floor_num;
 	int i;
 	bool unidentified_gear = FALSE;
 
-	floor_num = scan_floor(floor_list, N_ELEMENTS(floor_list), player->py,
-						   player->px, 0x0B, item_tester_unknown);
+	floor_num = scan_floor(floor_list, floor_max, player->py, player->px, 0x0B,
+						   item_tester_unknown);
 
 	for (i = 0; i < player->max_gear; i++) {
 		if (item_test(item_tester_unknown, i)) {

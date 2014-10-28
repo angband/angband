@@ -1,5 +1,6 @@
-/** \file player-util.c
-	\brief Player utility functions
+/**
+ * \file player-util.c
+ * \brief Player utility functions
  *
  * Copyright (c) 2011 The Angband Developers. See COPYING.
  *
@@ -17,6 +18,7 @@
 
 #include "angband.h"
 #include "cave.h"
+#include "init.h"
 #include "obj-gear.h"
 #include "obj-tval.h"
 #include "obj-ui.h"
@@ -325,12 +327,14 @@ bool player_can_refuel_prereq(void)
 }
 
 /**
- * Return TRUE if the player has a book in their inventory that has unlearned spells.
+ * Return TRUE if the player has a book in their inventory that has unlearned
+ * spells.
  */
 bool player_book_has_unlearned_spells(struct player *p)
 {
 	int i, j;
-	int item_list[INVEN_PACK];
+	int item_max = z_info->pack_size;
+	int *item_list = mem_zalloc(item_max * sizeof(int));
 	int item_num;
 	const class_book *book;
 
@@ -339,8 +343,7 @@ bool player_book_has_unlearned_spells(struct player *p)
 		return FALSE;
 
 	/* Get the number of books in inventory */
-	item_num = scan_items(item_list, N_ELEMENTS(item_list), (USE_INVEN), 
-						  obj_can_browse);
+	item_num = scan_items(item_list, item_max, (USE_INVEN), obj_can_browse);
 
 	/* Check through all available books */
 	for (i = 0; i < item_num; i++) {

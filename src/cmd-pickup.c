@@ -23,6 +23,7 @@
 #include "game-event.h"
 #include "generate.h"
 #include "history.h"
+#include "init.h"
 #include "mon-lore.h"
 #include "mon-timed.h"
 #include "mon-util.h"
@@ -234,11 +235,15 @@ int do_autopickup(void)
 	/* Objects picked up.  Used to determine time cost of command. */
 	byte objs_picked_up = 0;
 
-	size_t floor_num = 0;
-	int floor_list[MAX_FLOOR_STACK + 1];
+	int floor_max = z_info->floor_size + 1;
+	int *floor_list = mem_zalloc(floor_max * sizeof(int));
+	int floor_num = 0;
 
 	/* Nothing to pick up -- return */
-	if (!cave->o_idx[py][px]) return (0);
+	if (!cave->o_idx[py][px]) {
+		mem_free(floor_list);
+		return (0);
+	}
 
 	/* Always pickup gold, effortlessly */
 	py_pickup_gold();
@@ -255,16 +260,13 @@ int do_autopickup(void)
 		if (ignore_item_ok(o_ptr) || !o_ptr->kind) continue;
 
 		/* XXX Hack -- Enforce limit */
-		if (floor_num >= N_ELEMENTS(floor_list)) break;
-
+		if (floor_num >= floor_max) break;
 
 		/* Hack -- disturb */
 		disturb(player, 0);
 
-
 		/* Automatically pick up items into the backpack */
-		if (auto_pickup_okay(o_ptr))
-		{
+		if (auto_pickup_okay(o_ptr)) {
 			/* Pick up the object with message */
 			py_pickup_aux(this_o_idx, TRUE);
 			objs_picked_up++;
@@ -281,6 +283,8 @@ int do_autopickup(void)
 		/* Count non-gold objects that remain on the floor. */
 		floor_num++;
 	}
+
+	mem_free(floor_list);
 
 	return objs_picked_up;
 }
@@ -329,8 +333,9 @@ byte py_pickup_item(int pickup, int item)
 
 	s16b this_o_idx = 0;
 
-	size_t floor_num = 0;
-	int floor_list[MAX_FLOOR_STACK + 1];
+	int floor_max = z_info->floor_size + 1;
+	int *floor_list = mem_zalloc(floor_max * sizeof(int));
+	int floor_num = 0;
 
 	size_t i;
 	int can_pickup = 0;
@@ -345,10 +350,13 @@ byte py_pickup_item(int pickup, int item)
 	py_pickup_gold();
 
 	/* Nothing else to pick up -- return */
-	if (!cave->o_idx[py][px]) return objs_picked_up;
+	if (!cave->o_idx[py][px]) {
+		mem_free(floor_list);
+		return objs_picked_up;
+	}
 
 	/* Tally objects that can be picked up.*/
-	floor_num = scan_floor(floor_list, N_ELEMENTS(floor_list), py, px, 0x08, NULL);
+	floor_num = scan_floor(floor_list, floor_max, py, px, 0x08, NULL);
 	for (i = 0; i < floor_num; i++)
 	    can_pickup += inven_carry_okay(cave_object(cave, floor_list[i]));
 	
@@ -356,6 +364,7 @@ byte py_pickup_item(int pickup, int item)
 	{
 	    /* Can't pick up, but probably want to know what's there. */
 	    event_signal(EVENT_SEEFLOOR);
+		mem_free(floor_list);
 	    return objs_picked_up;
 	}
 
@@ -381,8 +390,10 @@ byte py_pickup_item(int pickup, int item)
 		/* Get an object or exit. */
 		q = "Get which item?";
 		s = "You see nothing there.";
-		if (!get_item(&item, q, s, CMD_PICKUP, inven_carry_okay, USE_FLOOR))
+		if (!get_item(&item, q, s, CMD_PICKUP, inven_carry_okay, USE_FLOOR)) {
+			mem_free(floor_list);
 			return (objs_picked_up);
+		}
 
 		this_o_idx = 0 - item;
 		call_function_again = TRUE;
@@ -406,6 +417,8 @@ byte py_pickup_item(int pickup, int item)
 	 * up.  Force the display of a menu in all cases.
 	 */
 	if (call_function_again) objs_picked_up += py_pickup(2);
+
+	mem_free(floor_list);
 
 	/* Indicate how many objects have been picked up. */
 	return (objs_picked_up);

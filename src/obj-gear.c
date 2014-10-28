@@ -1,6 +1,6 @@
 /**
-   \file obj-gear.c
-   \brief management of inventory, equipment and quiver
+ * \file obj-gear.c
+ * \brief management of inventory, equipment and quiver
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  * Copyright (c) 2014 Nick McConnell
@@ -19,6 +19,7 @@
 
 #include "angband.h"
 #include "game-event.h"
+#include "init.h"
 #include "obj-desc.h"
 #include "obj-gear.h"
 #include "obj-identify.h"
@@ -55,11 +56,11 @@ char gear_to_label(int item)
 		return I2A(equipped_item_slot(player->body, item));
 
 	/* Check the quiver */
-	for (i = 0; i < QUIVER_SIZE; i++)
+	for (i = 0; i < z_info->quiver_size; i++)
 		if (player->upkeep->quiver[i] == item) return I2A(i);
 
 	/* Check the inventory */
-	for (i = 0; i < INVEN_PACK; i++)
+	for (i = 0; i < z_info->pack_size; i++)
 		if (player->upkeep->inven[i] == item) return I2A(i);
 
 	/* Assume it's floor */
@@ -182,7 +183,7 @@ int pack_slots_used(struct player *p)
 
 		/* Check if it could be in the quiver */
 		if (tval_is_ammo(obj))
-			if (quiver_slots < QUIVER_SIZE) {
+			if (quiver_slots < z_info->quiver_size) {
 				quiver_slots++;
 				quiver_ammo += obj->number;
 				continue;
@@ -476,7 +477,7 @@ void inven_item_optimize(int item)
 bool inven_carry_okay(const object_type *o_ptr)
 {
 	/* Empty slot? */
-	if (pack_slots_used(player) < INVEN_PACK) return TRUE;
+	if (pack_slots_used(player) < z_info->pack_size) return TRUE;
 
 	/* Check if it can stack */
 	if (inven_stack_okay(o_ptr)) return TRUE;
@@ -516,7 +517,7 @@ bool inven_stack_okay(const object_type *o_ptr)
 	player->gear[j].number -= o_ptr->number;
 
 	/* Analyse the results */
-	if (new_number + (extra_slot ? 1 : 0) > INVEN_PACK) return FALSE;
+	if (new_number + (extra_slot ? 1 : 0) > z_info->pack_size) return FALSE;
 
 	return TRUE;
 }
@@ -606,7 +607,7 @@ s16b inven_carry(struct player *p, struct object *o)
 	}
 
 	/* Paranoia */
-	if (pack_slots_used(p) > INVEN_PACK) return (-1);
+	if (pack_slots_used(p) > z_info->pack_size) return (-1);
 
 	/* Find an empty slot */
 	i = gear_find_slot(p);
@@ -866,7 +867,7 @@ void combine_pack(void)
  */
 bool pack_is_full(void)
 {
-	return pack_slots_used(player) == INVEN_PACK ? TRUE : FALSE;
+	return pack_slots_used(player) == z_info->pack_size ? TRUE : FALSE;
 }
 
 /**
@@ -875,7 +876,7 @@ bool pack_is_full(void)
  */
 bool pack_is_overfull(void)
 {
-	return pack_slots_used(player) > INVEN_PACK ? TRUE : FALSE;
+	return pack_slots_used(player) > z_info->pack_size ? TRUE : FALSE;
 }
 
 /**
@@ -883,7 +884,7 @@ bool pack_is_overfull(void)
  */
 void pack_overflow(void)
 {
-	int item = player->upkeep->inven[INVEN_PACK];
+	int item = player->upkeep->inven[z_info->pack_size];
 	char o_name[80];
 	object_type *o_ptr;
 
@@ -902,7 +903,7 @@ void pack_overflow(void)
 	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
 
 	/* Message */
-	msg("You drop %s (%c).", o_name, inven_to_label(INVEN_PACK));
+	msg("You drop %s (%c).", o_name, inven_to_label(z_info->pack_size));
 
 	/* Drop it (carefully) near the player */
 	drop_near(cave, o_ptr, 0, player->py, player->px, FALSE);
