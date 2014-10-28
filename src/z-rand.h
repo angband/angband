@@ -111,6 +111,12 @@ u32b Rand_simple(u32b m);
 int damroll(int num, int sides);
 
 /**
+ * Calculate the average result of `num` dice rolls of dice with `sides`
+ * sides.
+ */
+double damrollavg(int num,int sides);
+
+/**
  * Calculation helper function for damroll
  */
 int damcalc(int num, int sides, aspect dam_aspect);

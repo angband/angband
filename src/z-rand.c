@@ -301,6 +301,13 @@ int damroll(int num, int sides) {
 	return sum;
 }
 
+/**
+ * Calculates the average result of "2d6" style dice rolls.
+ */
+double damrollavg(int num, int sides) {
+        return ((double)(num + (num * sides)) / 2.0);
+}
+
 
 
 /**
