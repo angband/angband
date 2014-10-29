@@ -337,7 +337,7 @@ byte py_pickup_item(int pickup, int item)
 	int *floor_list = mem_zalloc(floor_max * sizeof(int));
 	int floor_num = 0;
 
-	size_t i;
+	int i;
 	int can_pickup = 0;
 	bool call_function_again = FALSE;
 

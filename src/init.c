@@ -604,7 +604,7 @@ static enum parser_error parse_constants_carry_cap(struct parser *p) {
 	else if (streq(label, "quiver-size"))
 		z->quiver_size = value;
 	else if (streq(label, "floor-size"))
-		z->quiver_size = value;
+		z->floor_size = value;
 	else
 		return PARSE_ERROR_UNDEFINED_DIRECTIVE;
 
@@ -646,6 +646,26 @@ static struct file_parser constants_parser = {
 	finish_parse_constants,
 	cleanup_constants
 };
+
+/**
+ * Initialise game constants.
+ *
+ * Assumption: Paths are set up correctly before calling this function.
+ */
+void init_game_constants(void)
+{
+	event_signal_string(EVENT_INITSTATUS, "Initializing constants");
+	if (run_parser(&constants_parser))
+		quit_fmt("Cannot initialise constants.");
+}
+
+/**
+ * Free the game constants
+ */
+static void cleanup_game_constants(void)
+{
+	cleanup_parser(&constants_parser);
+}
 
 /**
  * Parsing functions for object_base.txt
@@ -4042,7 +4062,6 @@ static struct {
 	const char *name;
 	struct file_parser *parser;
 } pl[] = {
-	{ "game constants", &constants_parser },
 	{ "traps", &trap_parser },
 	{ "features", &feat_parser },
 	{ "object bases", &object_base_parser },
@@ -4119,8 +4138,8 @@ extern struct init_module monmsg_module;
 static struct init_module *modules[] = {
 	&z_quark_module,
 	&messages_module,
-	&arrays_module,
 	&player_module,
+	&arrays_module,
 	&generate_module,
 	&obj_make_module,
 	&ignore_module,
@@ -4151,6 +4170,8 @@ bool init_angband(void)
 	int i;
 
 	event_signal(EVENT_ENTER_INIT);
+
+	init_game_constants();
 
 	/* Initialise modules */
 	for (i = 0; modules[i]; i++)
@@ -4186,6 +4207,8 @@ void cleanup_angband(void)
 	for (i = 0; modules[i]; i++)
 		if (modules[i]->cleanup)
 			modules[i]->cleanup();
+
+	cleanup_game_constants();
 
 	/* Free the macros */
 	keymap_free();

@@ -449,7 +449,7 @@ void player_init(struct player *p)
 	p->gear = mem_zalloc(MAX_GEAR * sizeof(object_type));
 	p->gear_k = mem_zalloc(MAX_GEAR * sizeof(object_type));
 	p->upkeep = mem_zalloc(sizeof(player_upkeep));
-	p->upkeep->inven = mem_zalloc(z_info->pack_size * sizeof(int));
+	p->upkeep->inven = mem_zalloc((z_info->pack_size + 1) * sizeof(int));
 	p->upkeep->quiver = mem_zalloc(z_info->quiver_size * sizeof(int));
 	p->timed = mem_zalloc(TMD_MAX * sizeof(s16b));
 

@@ -406,7 +406,7 @@ static void init_player(void) {
 	player->gear = mem_zalloc(MAX_GEAR * sizeof(object_type));
 	player->gear_k = mem_zalloc(MAX_GEAR * sizeof(object_type));
 	player->upkeep = mem_zalloc(sizeof(player_upkeep));
-	player->upkeep->inven = mem_zalloc(z_info->pack_size * sizeof(int));
+	player->upkeep->inven = mem_zalloc((z_info->pack_size + 1) * sizeof(int));
 	player->upkeep->quiver = mem_zalloc(z_info->quiver_size * sizeof(int));
 	player->timed = mem_zalloc(TMD_MAX * sizeof(s16b));
 }

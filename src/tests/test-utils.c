@@ -31,5 +31,6 @@ void read_edit_files(void) {
 		my_strcat(datapath, PATH_SEP, sizeof(datapath));
 
 	init_file_paths(configpath, libpath, datapath);
+	init_game_constants();
 	init_arrays();
 }
