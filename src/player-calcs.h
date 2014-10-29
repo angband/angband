@@ -164,16 +164,16 @@ enum
 #define PR_EXTRA \
 	(PR_STATUS | PR_STATE | PR_STUDY)
 
-/*
+/**
  * The range of possible indexes into tables based upon stats.
  * Currently things range from 3 to 18/220 = 40.
  */
 #define STAT_RANGE 38
 
-/** Inventory **/
+/**
+ * Gear handling constants
+ */
 
-#define QUIVER_SIZE		10
-#define INVEN_PACK		23
 #define MAX_GEAR		60
 #define MAX_GEAR_INCR	10
 #define NO_OBJECT		0

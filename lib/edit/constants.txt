@@ -99,5 +99,8 @@ carry-cap:pack-size:23
 # Max number of quiver slots for carrying missiles
 carry-cap:quiver-size:10
 
-# Max number of items per floor grid
+# Maximum number of objects allowed in a single dungeon grid.
+#
+# The main screen originally had a minimum size of 24 rows, so it could always
+# display 23 objects + 1 header line.
 carry-cap:floor-size:23
