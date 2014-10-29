@@ -164,7 +164,7 @@ bool history_add_full(bitflag *type, struct artifact *artifact, s16b dlev,
 	history_list[history_ctr].dlev = dlev;
 	history_list[history_ctr].clev = clev;
 	history_list[history_ctr].a_idx = artifact ? artifact->aidx : 0;
-	history_list[history_ctr].turn = player->total_energy / 100;
+	history_list[history_ctr].turn = turnno;
 	my_strcpy(history_list[history_ctr].event,
 	          text, sizeof(history_list[history_ctr].event));
 
@@ -187,7 +187,7 @@ bool history_add(const char *event, int type, struct artifact *artifact)
 	hist_wipe(h);
 	hist_on(h, type);
 
-	return history_add_full(h, artifact, player->depth, player->lev, turn, event);
+	return history_add_full(h, artifact, player->depth, player->lev, player->total_energy / 100, event);
 }
 
 
