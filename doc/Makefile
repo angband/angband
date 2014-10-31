@@ -27,6 +27,7 @@ RSTINDEX := $(addprefix $(HELPSRCPATH), $(RSTINDEXWITHOUTPATH))
 STY := $(addprefix $(HELPSRCPATH), angband.sty)
 CSS := $(addprefix $(HELPSRCPATH), angband.css)
 
+ifneq ($(HAVE_RST2HTML),NOTFOUND)
 manual.html: $(RSTINDEX) $(RSTFILES) $(CSS)
 	${COMPILE_STATUS}
 	@if $(RST2HTML) $(HELPSRCPATH)/index.txt --stylesheet-path $(CSS) > manual.html; then \
@@ -34,6 +35,10 @@ manual.html: $(RSTINDEX) $(RSTFILES) $(CSS)
 	else \
 		${COMPILE_FAILED}; \
 	fi
+else
+manual.html:
+	echo rst2html not found. Cannot build HTML manual
+endif
 
 manual.tex: $(RSTINDEX) $(RSTFILES) $(STY)
 	${COMPILE_STATUS}
