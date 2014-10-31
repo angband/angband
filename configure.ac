@@ -71,6 +71,9 @@ AC_PROG_LN_S
 AC_PROG_INSTALL
 AC_PROG_MKDIR_P
 AC_CHECK_TOOL(RC, windres, no)
+AC_ARG_VAR([RST2HTML], [command for converting reStructuredText to HTML])
+AC_CHECK_PROGS([RST2HTML], [rst2html.py rst2html], [NOTFOUND])
+AC_SUBST(RST2HTML)
 
 AC_PATH_PROG(RM, rm)
 AC_PATH_PROG(MV, mv)
