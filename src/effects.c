@@ -2135,6 +2135,8 @@ bool effect_handler_AGGRAVATE(effect_handler_context_t *context)
 		/* Speed up monsters in line of sight */
 		if (player_has_los_bold(m_ptr->fy, m_ptr->fx)) {
 			mon_inc_timed(m_ptr, MON_TMD_FAST, 25, MON_TMD_FLG_NOTIFY, FALSE);
+			if (is_mimicking(m_ptr))
+				become_aware(m_ptr);
 			context->ident = TRUE;
 		}
 	}
