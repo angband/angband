@@ -375,6 +375,10 @@ static void run_room_parser(void) {
 		quit("Cannot initialize room templates");
 }
 
+static void cleanup_room_parser(void) {
+	cleanup_parser(&room_parser);
+}
+
 /**
  * Shuffle an array using Knuth's shuffle.
  */
@@ -3990,5 +3994,5 @@ void cave_generate(struct cave *c, struct player *p) {
 struct init_module generate_module = {
 	.name = "generate",
 	.init = run_room_parser,
-	.cleanup = NULL
+	.cleanup = cleanup_room_parser,
 };

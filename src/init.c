@@ -2987,6 +2987,7 @@ void cleanup_angband(void)
 	quest_free();
 
 	FREE(p_ptr->inventory);
+	FREE(p_ptr->history);
 
 	/* Free the lore, monster, and object lists */
 	FREE(l_list);
