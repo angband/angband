@@ -495,13 +495,13 @@ desc:reveals to you the extent of an item's magical powers
 
 name:REMOVE_CURSE
 aim:0
-power:8
+power:20000
 effect:REMOVE_CURSE
 desc:removes all ordinary curses from all equipped items
 
 name:REMOVE_CURSE2
 aim:0
-power:20
+power:20000
 effect:REMOVE_ALL_CURSE
 desc:removes all curses from all equipped items
 
