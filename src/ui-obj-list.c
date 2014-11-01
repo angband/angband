@@ -108,15 +108,17 @@ static void object_list_format_section(const object_list_t *list, textblock *tb,
 
 		/* Get width available for object name: 2 for char and space; location
 		 * includes padding; last -1 for some reason? */
-		full_width = max_width - 2 - strlen(location) - 1;
+		full_width = max_width - 2 - utf8_strlen(location) - 1;
 
 		/* Add the object count and clip the object name to fit. */
 		object_list_format_name(&list->entries[entry_index], line_buffer,
-								sizeof(line_buffer), full_width);
+								sizeof(line_buffer));
+		utf8_clipto(line_buffer, full_width);
 
 		/* Calculate the width of the line for dynamic sizing; use a fixed max
 		 * width for location and object char. */
-		max_line_length = MAX(max_line_length, strlen(line_buffer) + 12 + 2);
+		max_line_length = MAX(max_line_length,
+							  utf8_strlen(line_buffer) + 12 + 2);
 
 		/* textblock_append_pict will safely add the object symbol, regardless
 		 * of ASCII/graphics mode. */
@@ -142,8 +144,7 @@ static void object_list_format_section(const object_list_t *list, textblock *tb,
 			 * additional padding for any raw bytes that might be consolidated
 			 * into one displayed character.
 			 */
-			full_width += strlen(line_buffer) -
-				text_mbstowcs(NULL, line_buffer, 0);
+			full_width += strlen(line_buffer) - utf8_strlen(line_buffer);
 			line_attr = object_list_entry_line_attribute(&list->entries[entry_index]);
 			textblock_append_c(tb, line_attr, "%-*s%s\n", full_width,
 							   line_buffer, location);

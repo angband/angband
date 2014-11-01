@@ -117,7 +117,7 @@ static void monster_list_format_section(const monster_list_t *list, textblock *t
 
 		/* Get width available for monster name and sleep tag: 2 for char and
 		 * space; location includes padding; last -1 for some reason? */
-		full_width = max_width - 2 - strlen(location) - 1;
+		full_width = max_width - 2 - utf8_strlen(location) - 1;
 
 		if (list->entries[index].asleep[section] > 1)
 			strnfmt(asleep, sizeof(asleep), " (%d asleep)",
@@ -126,14 +126,17 @@ static void monster_list_format_section(const monster_list_t *list, textblock *t
 			strnfmt(asleep, sizeof(asleep), " (asleep)");
 
 		/* Clip the monster name to fit, and append the sleep tag. */
-		name_width = MIN(full_width - strlen(asleep), sizeof(line_buffer));
-		get_mon_name(line_buffer, name_width + 1, list->entries[index].race,
+		name_width = MIN(full_width - utf8_strlen(asleep), sizeof(line_buffer));
+		get_mon_name(line_buffer, sizeof(line_buffer),
+					 list->entries[index].race,
 					 list->entries[index].count[section]);
+		utf8_clipto(line_buffer, name_width);
 		my_strcat(line_buffer, asleep, sizeof(line_buffer));
 
 		/* Calculate the width of the line for dynamic sizing; use a fixed max
 		 * width for location and monster char. */
-		max_line_length = MAX(max_line_length, strlen(line_buffer) + 12 + 2);
+		max_line_length = MAX(max_line_length,
+							  utf8_strlen(line_buffer) + 12 + 2);
 
 		/* textblock_append_pict will safely add the monster symbol,
 		 * regardless of ASCII/graphics mode. */
@@ -148,8 +151,7 @@ static void monster_list_format_section(const monster_list_t *list, textblock *t
 			/* Hack - Because monster race strings are UTF8, we have to add
 			 * additional padding for any raw bytes that might be consolidated
 			 * into one displayed character. */
-			full_width += strlen(line_buffer) -
-				text_mbstowcs(NULL, line_buffer, 0);
+			full_width += strlen(line_buffer) - utf8_strlen(line_buffer);
 			line_attr = monster_list_entry_line_color(&list->entries[index]);
 			textblock_append_c(tb, line_attr, "%-*s%s\n",
 							   full_width,

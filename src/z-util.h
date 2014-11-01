@@ -60,6 +60,17 @@ extern void (*quit_aux)(const char *);
 
 
 /**
+ * Count the number of characters in a UTF-8 encoded string
+ */
+size_t utf8_strlen(char *s);
+
+/**
+ * Clip a null-terminated UTF-8 string 's' to 'n' unicode characters.
+ * e.g. utf8_clipto("example", 4) will clip after 'm', resulting in 'exam'.
+ */
+void utf8_clipto(char *s, size_t n);
+
+/**
  * Case insensitive comparison between two strings
  */
 extern int my_stricmp(const char *s1, const char *s2);

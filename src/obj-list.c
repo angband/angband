@@ -335,16 +335,13 @@ byte object_list_entry_line_attribute(const object_list_entry_t *entry)
  * \param entry is the object list entry that has a name to be formatted.
  * \param line_buffer is the buffer to format into.
  * \param size is the size of line_buffer.
- * \param full_width is the maximum formatted width allowed.
  */
 void object_list_format_name(const object_list_entry_t *entry,
-							 char *line_buffer, size_t size,
-							 size_t full_width)
+							 char *line_buffer, size_t size)
 {
 	char name[80];
 	const char *chunk;
 	char *source;
-	size_t name_width = MIN(full_width, size);
 	bool has_singular_prefix;
 	byte old_number;
 
@@ -400,6 +397,6 @@ void object_list_format_name(const object_list_entry_t *entry,
 
 	/* Get the rest of the name and clip it to fit the max width. */
 	chunk = strtok(source, "\0");
-	my_strcat(line_buffer, chunk, name_width + 1);
+	my_strcat(line_buffer, chunk, size);
 }
 
