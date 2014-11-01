@@ -123,6 +123,9 @@ Dungeon
 
 Create a trap ('T')		
   Creates a random trap on your square.
+
+Quit without saving ('X')
+  Quits the game without saving (prompts first).
 		
 Query the dungeon ('q')
   Light up all the grids with a given square flag (see src/list-square-flags.h).
