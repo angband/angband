@@ -1,0 +1,1 @@
+TESTPROGS += z-util/util

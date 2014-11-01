@@ -53,6 +53,12 @@ void utf8_clipto(char *s, size_t n)
 {
 	size_t i = 0, j = 0;
 	bool terminate_next = FALSE;
+
+	if (n == 0) {
+		s[i] = 0;
+		return;
+	}
+
 	while (s[i]) {
 		if ((s[i] & 0xc0) != 0x80) {
 			j++;
