@@ -2046,6 +2046,14 @@ void do_cmd_debug(void)
 			break;
 		}
 
+		/* Quit the game, don't save */
+		case 'X':
+		{
+			if (get_check("Really quit without saving? "))
+				quit("user choice");
+			break;
+		}
+
 		/* Zap Monsters (Banishment) */
 		case 'z':
 		{
