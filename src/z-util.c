@@ -25,6 +25,43 @@
  */
 char *argv0 = NULL;
 
+
+/*
+ * Count the number of characters in a UTF-8 encoded string
+ *
+ * Taken from http://canonical.org/~kragen/strlen-utf8.html
+ */
+size_t utf8_strlen(char *s)
+{
+	size_t i = 0, j = 0;
+	while (s[i]) {
+		if ((s[i] & 0xc0) != 0x80) j++;
+		i++;
+	}
+	return j;
+}
+
+/*
+ * Clip a null-terminated UTF-8 string 's' to 'n' unicode characters.
+ * e.g. utf8_clipto("example", 4) will clip after 'm', resulting in 'exam'.
+ */
+void utf8_clipto(char *s, size_t n)
+{
+	size_t i = 0, j = 0;
+	bool terminate_next = FALSE;
+	while (s[i]) {
+		if ((s[i] & 0xc0) != 0x80) {
+			j++;
+			if (terminate_next)
+				break;
+			if (j == n)
+				terminate_next = TRUE;
+		}
+		i++;
+	}
+	s[i] = 0;
+}
+
 /*
  * Case insensitive comparison between two strings
  */
