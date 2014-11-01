@@ -872,6 +872,13 @@ static errr term_data_init_gcu(term_data *td, int rows, int cols, int y, int x)
 }
 
 static void hook_quit(const char *str) {
+	int i;
+
+	for (i = 0; i < term_count; i++) {
+		if (angband_term[i]) {
+			term_nuke(angband_term[i]);
+		}
+	}
 	endwin();
 }
 
