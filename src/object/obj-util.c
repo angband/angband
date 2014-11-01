@@ -622,7 +622,14 @@ const char *describe_use(int i)
 		case INVEN_HEAD:  p = "wearing on your head"; break;
 		case INVEN_HANDS: p = "wearing on your hands"; break;
 		case INVEN_FEET:  p = "wearing on your feet"; break;
-		default:          p = "carrying in your pack"; break;
+		default: {
+			if (i >= QUIVER_START)
+				p = "carrying in your quiver";
+			else
+				p = "carrying in your pack";
+
+			break;
+		}
 	}
 
 	/* Hack -- Heavy weapon */
@@ -4118,7 +4125,7 @@ int inventory_index_matching_object(const object_type *o_ptr)
 {
 	int i;
 
-	for (i = 0; i < INVEN_TOTAL; i++) {
+	for (i = 0; i < ALL_INVEN_TOTAL; i++) {
 		if (object_equals_object(o_ptr, &p_ptr->inventory[i]))
 			return i;
 	}
