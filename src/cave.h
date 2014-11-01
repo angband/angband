@@ -102,8 +102,6 @@ typedef struct feature
 	byte mimic;    /**< Feature to mimic */
 	byte priority; /**< Display priority */
 
-	byte locked;   /**< How locked is it? */
-	byte jammed;   /**< How jammed is it? */
 	byte shopnum;  /**< Which shop does it take you to? */
 	byte dig;      /**< How hard is it to dig through? */
 
@@ -113,7 +111,7 @@ typedef struct feature
 	wchar_t d_char;   /**< Default feature character */
 
 	byte x_attr[4];   /**< Desired feature attribute (set by user/pref file) */
-	wchar_t x_char[4];   /**< Desired feature character (set by user/pref file) */
+	wchar_t x_char[4]; /**< Desired feature character (set by user/pref file) */
 } feature_type;
 
 extern feature_type *f_info;
@@ -144,7 +142,15 @@ typedef struct
 	bool trapborder;
 } grid_data;
 
-
+struct square {
+	byte feat;
+	bitflag *info;
+	byte cost;
+	byte when;
+	s16b mon;
+	struct object *obj;
+	struct trap *trap;
+};
 
 struct chunk {
 	char *name;
@@ -168,6 +174,8 @@ struct chunk {
 	byte **when;
 	s16b **m_idx;
 	s16b **o_idx;
+
+	struct square **squares;
 
 	struct monster *monsters;
 	u16b mon_max;

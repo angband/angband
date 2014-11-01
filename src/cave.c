@@ -1,6 +1,6 @@
 /**
-   \file cave.c
-   \brief chunk allocation and utility functions
+ * \file cave.c
+ * \brief chunk allocation and utility functions
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  *
@@ -110,6 +110,13 @@ struct chunk *cave_new(int height, int width) {
 		c->o_idx[y] = mem_zalloc(c->width * sizeof(s16b));
 	}
 
+	c->squares = mem_zalloc(c->height * sizeof(struct square*));
+	for (y = 0; y < c->height; y++) {
+		c->squares[y] = mem_zalloc(c->width * sizeof(struct square));
+		for (x = 0; x < c->width; x++)
+			c->squares[y][x].info = mem_zalloc(SQUARE_SIZE * sizeof(bitflag));
+	}
+
 	c->monsters = mem_zalloc(z_info->level_monster_max *sizeof(struct monster));
 	c->mon_max = 1;
 	c->mon_current = -1;
@@ -123,11 +130,19 @@ struct chunk *cave_new(int height, int width) {
 	c->created_at = turn;
 	return c;
 }
+
 /**
  * Free a chunk
  */
 void cave_free(struct chunk *c) {
 	int y, x;
+	for (y = 0; y < c->height; y++) {
+		for (x = 0; x < c->width; x++)
+			mem_free(c->squares[y][x].info);
+		mem_free(c->squares[y]);
+		mem_free(c->squares);
+	}
+
 	for (y = 0; y < c->height; y++){
 		for (x = 0; x < c->width; x++)
 			mem_free(c->info[y][x]);
