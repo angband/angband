@@ -100,7 +100,7 @@ EFFECT(ENCHANT_ARMOR,  FALSE, 12,	"attempts to magically enhance a piece of armo
 EFFECT(ENCHANT_ARMOR2, FALSE, 15,	"attempts to magically enhance a piece of armour with high chance of success.  Also gives a chance to break a curse")
 EFFECT(RESTORE_ITEM,   FALSE, 10,	"restores an item after disenchantment or damage")
 EFFECT(IDENTIFY,       FALSE,  9,	"reveals to you the extent of an item's magical powers")
-EFFECT(REMOVE_CURSE,   FALSE,  8,	"removes all ordinary curses from all equipped items")
+EFFECT(REMOVE_CURSE,   FALSE, INHIBIT_POWER,	"removes all ordinary curses from all equipped items")
 EFFECT(REMOVE_CURSE2,  FALSE, 20,	"removes all curses from all equipped items")
 EFFECT(LIGHT,          FALSE,  4,	"lights up an area and inflicts 2d8 damage on light-sensitive creatures")
 EFFECT(SUMMON_MON,     FALSE,  0,	"summons monsters at the current dungeon level")
