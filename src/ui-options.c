@@ -1830,3 +1830,11 @@ void do_cmd_options(void)
 
 	screen_load();
 }
+
+void cleanup_options(void)
+{
+	if (keymap_menu) menu_free(keymap_menu);
+	if (visual_menu) menu_free(visual_menu);
+	if (color_menu) menu_free(color_menu);
+	if (option_menu) menu_free(option_menu);
+}

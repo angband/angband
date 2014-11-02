@@ -250,6 +250,7 @@ struct menu
  */
 struct menu *menu_new(skin_id, const menu_iter *iter);
 struct menu *menu_new_action(menu_action *acts, size_t n);
+void menu_free(struct menu *m);
 
 
 /**
