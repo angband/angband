@@ -229,6 +229,7 @@ struct menu_type
  */
 menu_type *menu_new(skin_id, const menu_iter *iter);
 menu_type *menu_new_action(menu_action *acts, size_t n);
+void menu_free(menu_type *m);
 
 
 /**

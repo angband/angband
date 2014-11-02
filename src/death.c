@@ -383,7 +383,6 @@ static void death_randarts(const char *title, int row)
  * Menu structures for the death menu. Note that Quit must always be the
  * last option, due to a hard-coded check in death_screen
  */
-static menu_type *death_menu;
 static menu_action death_actions[] =
 {
 	{ 0, 'i', "Information",   death_info      },
@@ -404,6 +403,7 @@ static menu_action death_actions[] =
  */
 void death_screen(void)
 {
+	menu_type *death_menu;
 	bool done = FALSE;
 	const region area = { 51, 2, 0, N_ELEMENTS(death_actions) };
 
@@ -430,13 +430,10 @@ void death_screen(void)
 	message_flush();
 
 	/* Display and use the death menu */
-	if (!death_menu)
-	{
-		death_menu = menu_new_action(death_actions,
-				N_ELEMENTS(death_actions));
+	death_menu = menu_new_action(death_actions,
+			N_ELEMENTS(death_actions));
 
-		death_menu->flags = MN_CASELESS_TAGS;
-	}
+	death_menu->flags = MN_CASELESS_TAGS;
 
 	menu_layout(death_menu, &area);
 
@@ -452,6 +449,8 @@ void death_screen(void)
 			done = get_check("Do you want to quit? ");
 		}
 	}
+
+	menu_free(death_menu);
 
 	/* Save dead player */
 	if (!savefile_save(savefile))

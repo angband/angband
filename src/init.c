@@ -3005,6 +3005,9 @@ void cleanup_angband(void)
 	/* Free the history */
 	history_clear();
 
+	/* Cleanup any options menus */
+	cleanup_options();
+
 	/* Free the "quarks" */
 	quarks_free();
 

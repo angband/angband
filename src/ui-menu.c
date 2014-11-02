@@ -864,6 +864,11 @@ menu_type *menu_new_action(menu_action *acts, size_t n)
 	return m;
 }
 
+void menu_free(menu_type *m)
+{
+	mem_free(m);
+}
+
 void menu_set_cursor_x_offset(menu_type *m, int offset)
 {
 	/* This value is used in the menu skin's display_list() function. */
