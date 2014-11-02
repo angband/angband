@@ -486,7 +486,7 @@ void move_player(int dir, bool disarm)
 			if (square_isrubble(cave, y, x))
 			{
 				msgt(MSG_HITWALL, "You feel a pile of rubble blocking your way.");
-				sqinfo_on(cave->info[y][x], SQUARE_MARK);
+				sqinfo_on(cave->squares[y][x].info, SQUARE_MARK);
 				square_light_spot(cave, y, x);
 			}
 
@@ -494,7 +494,7 @@ void move_player(int dir, bool disarm)
 			else if (square_iscloseddoor(cave, y, x))
 			{
 				msgt(MSG_HITWALL, "You feel a door blocking your way.");
-				sqinfo_on(cave->info[y][x], SQUARE_MARK);
+				sqinfo_on(cave->squares[y][x].info, SQUARE_MARK);
 				square_light_spot(cave, y, x);
 			}
 
@@ -502,7 +502,7 @@ void move_player(int dir, bool disarm)
 			else
 			{
 				msgt(MSG_HITWALL, "You feel a wall blocking your way.");
-				sqinfo_on(cave->info[y][x], SQUARE_MARK);
+				sqinfo_on(cave->squares[y][x].info, SQUARE_MARK);
 				square_light_spot(cave, y, x);
 			}
 		}

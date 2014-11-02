@@ -495,7 +495,7 @@ static void place_feeling(struct chunk *c)
 				continue;
 
 			/* Set the cave square appropriately */
-			sqinfo_on(c->info[y][x], SQUARE_FEEL);
+			sqinfo_on(c->squares[y][x].info, SQUARE_FEEL);
 			
 			break;
 		}
@@ -723,10 +723,10 @@ void cave_generate(struct chunk **c, struct player *p) {
 		/* Clear generation flags. */
 		for (y = 0; y < chunk->height; y++) {
 			for (x = 0; x < chunk->width; x++) {
-				sqinfo_off(chunk->info[y][x], SQUARE_WALL_INNER);
-				sqinfo_off(chunk->info[y][x], SQUARE_WALL_OUTER);
-				sqinfo_off(chunk->info[y][x], SQUARE_WALL_SOLID);
-				sqinfo_off(chunk->info[y][x], SQUARE_MON_RESTRICT);
+				sqinfo_off(chunk->squares[y][x].info, SQUARE_WALL_INNER);
+				sqinfo_off(chunk->squares[y][x].info, SQUARE_WALL_OUTER);
+				sqinfo_off(chunk->squares[y][x].info, SQUARE_WALL_SOLID);
+				sqinfo_off(chunk->squares[y][x].info, SQUARE_MON_RESTRICT);
 			}
 		}
 

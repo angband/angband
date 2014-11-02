@@ -1,6 +1,6 @@
 /**
-   \file cave-view.c
-   \brief Line-of-sight and view calculations
+ * \file cave-view.c
+ * \brief Line-of-sight and view calculations
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  *
@@ -287,7 +287,8 @@ bool los(struct chunk *c, int y1, int x1, int y2, int x2)
  * twice is inconsequential compared to the speed increase.
  *
  * Several pieces of information about each cave grid are stored in the
- * "cave->info" array, which is a special two dimensional array of bitflags.
+ * info field of the "cave->squares" array, which is a special array of
+ * bitflags.
  *
  * The "SQUARE_ROOM" flag is used to determine which grids are part of "rooms", 
  * and thus which grids are affected by "illumination" spells.
@@ -450,8 +451,8 @@ void forget_view(struct chunk *c)
 		for (x = 0; x < c->width; x++) {
 			if (!square_isview(c, y, x))
 				continue;
-			sqinfo_off(c->info[y][x], SQUARE_VIEW);
-			sqinfo_off(c->info[y][x], SQUARE_SEEN);
+			sqinfo_off(c->squares[y][x].info, SQUARE_VIEW);
+			sqinfo_off(c->squares[y][x].info, SQUARE_SEEN);
 			square_light_spot(c, y, x);
 		}
 	}
@@ -469,9 +470,9 @@ static void mark_wasseen(struct chunk *c)
 	for (y = 0; y < c->height; y++) {
 		for (x = 0; x < c->width; x++) {
 			if (square_isseen(c, y, x))
-				sqinfo_on(c->info[y][x], SQUARE_WASSEEN);
-			sqinfo_off(c->info[y][x], SQUARE_VIEW);
-			sqinfo_off(c->info[y][x], SQUARE_SEEN);
+				sqinfo_on(c->squares[y][x].info, SQUARE_WASSEEN);
+			sqinfo_off(c->squares[y][x].info, SQUARE_VIEW);
+			sqinfo_off(c->squares[y][x].info, SQUARE_SEEN);
 		}
 	}
 }
@@ -518,8 +519,8 @@ static void add_monster_lights(struct chunk *c, struct loc from)
 					continue;
 
 				/* Mark the square lit and seen */
-				sqinfo_on(c->info[sy][sx], SQUARE_VIEW);
-				sqinfo_on(c->info[sy][sx], SQUARE_SEEN);
+				sqinfo_on(c->squares[sy][sx].info, SQUARE_VIEW);
+				sqinfo_on(c->squares[sy][sx].info, SQUARE_SEEN);
 			}
 		}
 	}
@@ -531,13 +532,13 @@ static void add_monster_lights(struct chunk *c, struct loc from)
 static void update_one(struct chunk *c, int y, int x, int blind)
 {
 	if (blind)
-		sqinfo_off(c->info[y][x], SQUARE_SEEN);
+		sqinfo_off(c->squares[y][x].info, SQUARE_SEEN);
 
 	/* Square went from unseen -> seen */
 	if (square_isseen(c, y, x) && !square_wasseen(c, y, x)) {
 		if (square_isfeel(c, y, x)) {
 			c->feeling_squares++;
-			sqinfo_off(c->info[y][x], SQUARE_FEEL);
+			sqinfo_off(c->squares[y][x].info, SQUARE_FEEL);
 			if (c->feeling_squares == FEELING1)
 				display_feeling(TRUE);
 		}
@@ -550,7 +551,7 @@ static void update_one(struct chunk *c, int y, int x, int blind)
 	if (!square_isseen(c, y, x) && square_wasseen(c, y, x))
 		square_light_spot(c, y, x);
 
-	sqinfo_off(c->info[y][x], SQUARE_WASSEEN);
+	sqinfo_off(c->squares[y][x].info, SQUARE_WASSEEN);
 }
 
 /**
@@ -563,10 +564,10 @@ static void become_viewable(struct chunk *c, int y, int x, int lit, int py, int 
 	if (square_isview(c, y, x))
 		return;
 
-	sqinfo_on(c->info[y][x], SQUARE_VIEW);
+	sqinfo_on(c->squares[y][x].info, SQUARE_VIEW);
 
 	if (lit)
-		sqinfo_on(c->info[y][x], SQUARE_SEEN);
+		sqinfo_on(c->squares[y][x].info, SQUARE_SEEN);
 
 	if (square_isglow(c, y, x)) {
 		if (square_iswall(c, y, x)) {
@@ -577,7 +578,7 @@ static void become_viewable(struct chunk *c, int y, int x, int lit, int py, int 
 			yc = (y < py) ? (y + 1) : (y > py) ? (y - 1) : y;
 		}
 		if (square_isglow(c, yc, xc))
-			sqinfo_on(c->info[y][x], SQUARE_SEEN);
+			sqinfo_on(c->squares[y][x].info, SQUARE_SEEN);
 	}
 }
 
@@ -666,9 +667,9 @@ void update_view(struct chunk *c, struct player *p)
 	add_monster_lights(c, loc(p->px, p->py));
 
 	/* Assume we can view the player grid */
-	sqinfo_on(c->info[p->py][p->px], SQUARE_VIEW);
+	sqinfo_on(c->squares[p->py][p->px].info, SQUARE_VIEW);
 	if (radius > 0 || square_isglow(c, p->py, p->px))
-		sqinfo_on(c->info[p->py][p->px], SQUARE_SEEN);
+		sqinfo_on(c->squares[p->py][p->px].info, SQUARE_SEEN);
 
 	/* View squares we have LOS to */
 	for (y = 0; y < c->height; y++)
@@ -687,7 +688,7 @@ void update_view(struct chunk *c, struct player *p)
  */
 bool player_has_los_bold(int y, int x)
 {
-	if (sqinfo_has(cave->info[y][x], SQUARE_VIEW))
+	if (sqinfo_has(cave->squares[y][x].info, SQUARE_VIEW))
 		return TRUE;
 
 	return FALSE;
@@ -698,7 +699,7 @@ bool player_has_los_bold(int y, int x)
  */
 bool player_can_see_bold(int y, int x)
 {
-	if (sqinfo_has(cave->info[y][x], SQUARE_SEEN))
+	if (sqinfo_has(cave->squares[y][x].info, SQUARE_SEEN))
 		return TRUE;
 
 	return FALSE;

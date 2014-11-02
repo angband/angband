@@ -93,14 +93,10 @@ struct chunk *cave_new(int height, int width) {
 	c->height = height;
 	c->width = width;
 	c->feat_count = mem_zalloc((z_info->f_max + 1) * sizeof(int));
-	c->info = mem_zalloc(c->height * sizeof(bitflag**));
 	c->feat = mem_zalloc(c->height * sizeof(byte*));
 	c->m_idx = mem_zalloc(c->height * sizeof(s16b*));
 	c->o_idx = mem_zalloc(c->height * sizeof(s16b*));
 	for (y = 0; y < c->height; y++){
-		c->info[y] = mem_zalloc(c->width * sizeof(bitflag*));
-		for (x = 0; x < c->width; x++)
-			c->info[y][x] = mem_zalloc(SQUARE_SIZE * sizeof(bitflag));
 		c->feat[y] = mem_zalloc(c->width * sizeof(byte));
 		c->m_idx[y] = mem_zalloc(c->width * sizeof(s16b));
 		c->o_idx[y] = mem_zalloc(c->width * sizeof(s16b));
@@ -137,15 +133,11 @@ void cave_free(struct chunk *c) {
 	mem_free(c->squares);
 
 	for (y = 0; y < c->height; y++){
-		for (x = 0; x < c->width; x++)
-			mem_free(c->info[y][x]);
-		mem_free(c->info[y]);
 		mem_free(c->feat[y]);
 		mem_free(c->m_idx[y]);
 		mem_free(c->o_idx[y]);
 	}
 	mem_free(c->feat_count);
-	mem_free(c->info);
 	mem_free(c->feat);
 	mem_free(c->m_idx);
 	mem_free(c->o_idx);

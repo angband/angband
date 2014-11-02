@@ -1133,7 +1133,7 @@ static bool process_monster_can_move(struct chunk *c, struct monster *m_ptr,
 	/* Monster destroys walls (and doors) */
 	else if (rf_has(m_ptr->race->flags, RF_KILL_WALL)) {
 		/* Forget the wall */
-		sqinfo_off(c->info[ny][nx], SQUARE_MARK);
+		sqinfo_off(c->squares[ny][nx].info, SQUARE_MARK);
 
 		/* Notice */
 		square_destroy_wall(c, ny, nx);
@@ -1216,7 +1216,7 @@ static bool process_monster_glyph(struct chunk *c, struct monster *m_ptr,
 			msg("The rune of protection is broken!");
 
 		/* Forget the rune */
-		sqinfo_off(c->info[ny][nx], SQUARE_MARK);
+		sqinfo_off(c->squares[ny][nx].info, SQUARE_MARK);
 
 		/* Break the rune */
 		square_remove_ward(c, ny, nx);

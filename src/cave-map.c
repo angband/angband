@@ -233,7 +233,7 @@ void square_note_spot(struct chunk *c, int y, int x)
 		return;
 
 	/* Memorize this grid */
-	sqinfo_on(c->info[y][x], SQUARE_MARK);
+	sqinfo_on(c->squares[y][x].info, SQUARE_MARK);
 }
 
 
@@ -274,7 +274,7 @@ static void cave_light(struct point_set *ps)
 		int x = ps->pts[i].x;
 
 		/* Perma-Light */
-		sqinfo_on(cave->info[y][x], SQUARE_GLOW);
+		sqinfo_on(cave->squares[y][x].info, SQUARE_GLOW);
 	}
 
 	/* Fully update the visuals */
@@ -337,11 +337,11 @@ static void cave_unlight(struct point_set *ps)
 		int x = ps->pts[i].x;
 
 		/* Darken the grid */
-		sqinfo_off(cave->info[y][x], SQUARE_GLOW);
+		sqinfo_off(cave->squares[y][x].info, SQUARE_GLOW);
 
 		/* Hack -- Forget "boring" grids */
 		if (!square_isinteresting(cave, y, x))
-			sqinfo_off(cave->info[y][x], SQUARE_MARK);
+			sqinfo_off(cave->squares[y][x].info, SQUARE_MARK);
 	}
 
 	/* Fully update the visuals */
@@ -463,13 +463,13 @@ void wiz_light(struct chunk *c, bool full)
 					int xx = x + ddx_ddd[i];
 
 					/* Perma-light the grid */
-					sqinfo_on(c->info[yy][xx], SQUARE_GLOW);
+					sqinfo_on(c->squares[yy][xx].info, SQUARE_GLOW);
 
 					/* Memorize normal features */
 					if (!square_isfloor(c, yy, xx) || 
 						square_isvisibletrap(c, yy, xx))
 					{
-						sqinfo_on(c->info[yy][xx], SQUARE_MARK);
+						sqinfo_on(c->squares[yy][xx].info, SQUARE_MARK);
 						cave_k->feat[yy][xx] = c->feat[yy][xx];
 					}
 				}
@@ -499,9 +499,9 @@ void wiz_dark(void)
 		for (x = 0; x < cave->width; x++)
 		{
 			/* Process the grid */
-			sqinfo_off(cave->info[y][x], SQUARE_MARK);
-			sqinfo_off(cave->info[y][x], SQUARE_DTRAP);
-			sqinfo_off(cave->info[y][x], SQUARE_DEDGE);
+			sqinfo_off(cave->squares[y][x].info, SQUARE_MARK);
+			sqinfo_off(cave->squares[y][x].info, SQUARE_DTRAP);
+			sqinfo_off(cave->squares[y][x].info, SQUARE_DEDGE);
 		}
 	}
 
@@ -543,12 +543,12 @@ void cave_illuminate(struct chunk *c, bool daytime)
 			
 			/* Only interesting grids at night */
 			if (daytime || !tf_has(f_ptr->flags, TF_FLOOR)) {
-				sqinfo_on(c->info[y][x], SQUARE_GLOW);
-				sqinfo_on(c->info[y][x], SQUARE_MARK);
+				sqinfo_on(c->squares[y][x].info, SQUARE_GLOW);
+				sqinfo_on(c->squares[y][x].info, SQUARE_MARK);
 			}
 			else {
-				sqinfo_off(c->info[y][x], SQUARE_GLOW);
-				sqinfo_off(c->info[y][x], SQUARE_MARK);
+				sqinfo_off(c->squares[y][x].info, SQUARE_GLOW);
+				sqinfo_off(c->squares[y][x].info, SQUARE_MARK);
 			}
 		}
 			
@@ -561,8 +561,8 @@ void cave_illuminate(struct chunk *c, bool daytime)
 			for (i = 0; i < 8; i++) {
 				int yy = y + ddy_ddd[i];
 				int xx = x + ddx_ddd[i];
-				sqinfo_on(c->info[yy][xx], SQUARE_GLOW);
-				sqinfo_on(c->info[yy][xx], SQUARE_MARK);
+				sqinfo_on(c->squares[yy][xx].info, SQUARE_GLOW);
+				sqinfo_on(c->squares[yy][xx].info, SQUARE_MARK);
 			}
 		}
 	}

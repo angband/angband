@@ -644,7 +644,7 @@ static bool twall(int y, int x)
 	sound(MSG_DIG);
 
 	/* Forget the wall */
-	sqinfo_off(cave->info[y][x], SQUARE_MARK);
+	sqinfo_off(cave->squares[y][x].info, SQUARE_MARK);
 
 	/* Remove the feature */
 	square_tunnel_wall(cave, y, x);
@@ -921,7 +921,7 @@ static bool do_cmd_disarm_aux(int y, int x)
 		player_exp_gain(player, power);
 
 		/* Forget the trap */
-		sqinfo_off(cave->info[y][x], SQUARE_MARK);
+		sqinfo_off(cave->squares[y][x].info, SQUARE_MARK);
 
 		/* Remove the trap */
 		square_destroy_trap(cave, y, x);

@@ -100,9 +100,9 @@ static void generate_room(struct chunk *c, int y1, int x1, int y2, int x2, int l
 	int y, x;
 	for (y = y1; y <= y2; y++)
 		for (x = x1; x <= x2; x++) {
-			sqinfo_on(c->info[y][x], SQUARE_ROOM);
+			sqinfo_on(c->squares[y][x].info, SQUARE_ROOM);
 			if (light)
-				sqinfo_on(c->info[y][x], SQUARE_GLOW);
+				sqinfo_on(c->squares[y][x].info, SQUARE_GLOW);
 		}
 }
 
@@ -122,7 +122,7 @@ void generate_mark(struct chunk *c, int y1, int x1, int y2, int x2, int flag)
 
 	for (y = y1; y <= y2; y++) {
 		for (x = x1; x <= x2; x++) {
-			sqinfo_on(c->info[y][x], flag);
+			sqinfo_on(c->squares[y][x].info, flag);
 		}
 	}
 }
@@ -194,10 +194,10 @@ static void fill_xrange(struct chunk *c, int y, int x1, int x2, int feat,
 	int x;
 	for (x = x1; x <= x2; x++) {
 		square_set_feat(c, y, x, feat);
-		sqinfo_on(c->info[y][x], SQUARE_ROOM);
-		if (flag) sqinfo_on(c->info[y][x], flag);
+		sqinfo_on(c->squares[y][x].info, SQUARE_ROOM);
+		if (flag) sqinfo_on(c->squares[y][x].info, flag);
 		if (light)
-			sqinfo_on(c->info[y][x], SQUARE_GLOW);
+			sqinfo_on(c->squares[y][x].info, SQUARE_GLOW);
 	}
 }
 
@@ -218,10 +218,10 @@ static void fill_yrange(struct chunk *c, int x, int y1, int y2, int feat,
 	int y;
 	for (y = y1; y <= y2; y++) {
 		square_set_feat(c, y, x, feat);
-		sqinfo_on(c->info[y][x], SQUARE_ROOM);
-		if (flag) sqinfo_on(c->info[y][x], flag);
+		sqinfo_on(c->squares[y][x].info, SQUARE_ROOM);
+		if (flag) sqinfo_on(c->squares[y][x].info, flag);
 		if (light)
-			sqinfo_on(c->info[y][x], SQUARE_GLOW);
+			sqinfo_on(c->squares[y][x].info, SQUARE_GLOW);
 	}
 }
 
@@ -651,14 +651,14 @@ extern bool generate_starburst_room(struct chunk *c, int y1, int x1, int y2,
 							square_set_feat(c, y, x, feat);
 
 							if (tf_has(f_ptr->flags, TF_FLOOR))
-								sqinfo_on(c->info[y][x], SQUARE_ROOM);
+								sqinfo_on(c->squares[y][x].info, SQUARE_ROOM);
 							else
-								sqinfo_off(c->info[y][x], SQUARE_ROOM);
+								sqinfo_off(c->squares[y][x].info, SQUARE_ROOM);
 
 							if (light)
-								sqinfo_on(c->info[y][x], SQUARE_GLOW);
+								sqinfo_on(c->squares[y][x].info, SQUARE_GLOW);
 							else
-								sqinfo_off(c->info[y][x], SQUARE_GLOW);
+								sqinfo_off(c->squares[y][x].info, SQUARE_GLOW);
 						}
 
 						/* If new feature is non-floor passable terrain,
@@ -680,7 +680,7 @@ extern bool generate_starburst_room(struct chunk *c, int y1, int x1, int y2,
 
 							/* Light grid. */
 							if (light)
-								sqinfo_on(c->info[y][x], SQUARE_GLOW);
+								sqinfo_on(c->squares[y][x].info, SQUARE_GLOW);
 						}
 					}
 
@@ -707,11 +707,11 @@ extern bool generate_starburst_room(struct chunk *c, int y1, int x1, int y2,
 						int xx = x + ddx_ddd[d];
 
 						/* Join to room */
-						sqinfo_on(c->info[yy][xx], SQUARE_ROOM);
+						sqinfo_on(c->squares[yy][xx].info, SQUARE_ROOM);
 
 						/* Illuminate if requested. */
 						if (light)
-							sqinfo_on(c->info[yy][xx], SQUARE_GLOW);
+							sqinfo_on(c->squares[yy][xx].info, SQUARE_GLOW);
 
 						/* Look for dungeon granite. */
 						if (c->feat[yy][xx] == FEAT_GRANITE) {
@@ -1918,9 +1918,9 @@ static bool build_room_template(struct chunk *c, int y0, int x0, int ymax, int x
 			}
 
 			/* Part of a room */
-			sqinfo_on(c->info[y][x], SQUARE_ROOM);
+			sqinfo_on(c->squares[y][x].info, SQUARE_ROOM);
 			if (light)
-				sqinfo_on(c->info[y][x], SQUARE_GLOW);
+				sqinfo_on(c->squares[y][x].info, SQUARE_GLOW);
 		}
 	}
 
@@ -2071,8 +2071,8 @@ bool build_vault(struct chunk *c, int y0, int x0, struct vault *v)
 			}
 
 			/* Part of a vault */
-			sqinfo_on(c->info[y][x], SQUARE_ROOM);
-			if (icky) sqinfo_on(c->info[y][x], SQUARE_VAULT);
+			sqinfo_on(c->squares[y][x].info, SQUARE_ROOM);
+			if (icky) sqinfo_on(c->squares[y][x].info, SQUARE_VAULT);
 		}
 	}
 
@@ -2805,10 +2805,10 @@ bool build_room_of_chambers(struct chunk *c, int y0, int x0)
 					if (!square_in_bounds(c, yy, xx)) continue;
 
 					/* Turn into room. */
-					sqinfo_on(c->info[yy][xx], SQUARE_ROOM);
+					sqinfo_on(c->squares[yy][xx].info, SQUARE_ROOM);
 
 					/* Illuminate if requested. */
-					if (light) sqinfo_on(c->info[yy][xx], SQUARE_GLOW);
+					if (light) sqinfo_on(c->squares[yy][xx].info, SQUARE_GLOW);
 				}
 			}
 		}

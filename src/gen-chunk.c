@@ -63,7 +63,8 @@ struct chunk *chunk_write(int y0, int x0, int height, int width, bool monsters,
 
 			/* Terrain */
 			new->feat[y][x] = cave->feat[y0 + y][x0 + x];
-			sqinfo_copy(new->info[y][x], cave->info[y0 + y][x0 + x]);
+			sqinfo_copy(new->squares[y][x].info,
+						cave->squares[y0 + y][x0 + x].info);
 
 			/* Dungeon objects */
 			if (objects){
@@ -306,7 +307,8 @@ bool chunk_copy(struct chunk *dest, struct chunk *source, int y0, int x0,
 
 			/* Terrain */
 			dest->feat[dest_y][dest_x] = source->feat[y][x];
-			sqinfo_copy(dest->info[dest_y][dest_x], source->info[y][x]);
+			sqinfo_copy(dest->squares[dest_y][dest_x].info,
+						source->squares[y][x].info);
 
 			/* Dungeon objects */
 			held = 0;

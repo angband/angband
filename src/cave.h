@@ -168,10 +168,7 @@ struct chunk {
 	u16b feeling_squares; /* How many feeling squares the player has visited */
 	int *feat_count;
 
-	bitflag ***info;
 	byte **feat;
-	byte **cost;
-	byte **when;
 	s16b **m_idx;
 	s16b **o_idx;
 

@@ -293,7 +293,7 @@ bool square_isplayer(struct chunk *c, int y, int x) {
  */
 bool square_ismark(struct chunk *c, int y, int x) {
 	assert(square_in_bounds(c, y, x));
-	return sqinfo_has(c->info[y][x], SQUARE_MARK);
+	return sqinfo_has(c->squares[y][x].info, SQUARE_MARK);
 }
 
 /**
@@ -301,7 +301,7 @@ bool square_ismark(struct chunk *c, int y, int x) {
  */
 bool square_isglow(struct chunk *c, int y, int x) {
 	assert(square_in_bounds(c, y, x));
-	return sqinfo_has(c->info[y][x], SQUARE_GLOW);
+	return sqinfo_has(c->squares[y][x].info, SQUARE_GLOW);
 }
 
 /**
@@ -311,7 +311,7 @@ bool square_isglow(struct chunk *c, int y, int x) {
  */
 bool square_isvault(struct chunk *c, int y, int x) {
 	assert(square_in_bounds(c, y, x));
-	return sqinfo_has(c->info[y][x], SQUARE_VAULT);
+	return sqinfo_has(c->squares[y][x].info, SQUARE_VAULT);
 }
 
 /**
@@ -319,7 +319,7 @@ bool square_isvault(struct chunk *c, int y, int x) {
  */
 bool square_isroom(struct chunk *c, int y, int x) {
 	assert(square_in_bounds(c, y, x));
-	return sqinfo_has(c->info[y][x], SQUARE_ROOM);
+	return sqinfo_has(c->squares[y][x].info, SQUARE_ROOM);
 }
 
 /**
@@ -327,7 +327,7 @@ bool square_isroom(struct chunk *c, int y, int x) {
  */
 bool square_isseen(struct chunk *c, int y, int x) {
 	assert(square_in_bounds(c, y, x));
-	return sqinfo_has(c->info[y][x], SQUARE_SEEN);
+	return sqinfo_has(c->squares[y][x].info, SQUARE_SEEN);
 }
 
 /**
@@ -335,7 +335,7 @@ bool square_isseen(struct chunk *c, int y, int x) {
  */
 bool square_isview(struct chunk *c, int y, int x) {
 	assert(square_in_bounds(c, y, x));
-	return sqinfo_has(c->info[y][x], SQUARE_VIEW);
+	return sqinfo_has(c->squares[y][x].info, SQUARE_VIEW);
 }
 
 /**
@@ -343,7 +343,7 @@ bool square_isview(struct chunk *c, int y, int x) {
  */
 bool square_wasseen(struct chunk *c, int y, int x) {
 	assert(square_in_bounds(c, y, x));
-	return sqinfo_has(c->info[y][x], SQUARE_WASSEEN);
+	return sqinfo_has(c->squares[y][x].info, SQUARE_WASSEEN);
 }
 
 /**
@@ -351,7 +351,7 @@ bool square_wasseen(struct chunk *c, int y, int x) {
  */
 bool square_isdtrap(struct chunk *c, int y, int x) {
 	assert(square_in_bounds(c, y, x));
-	return sqinfo_has(c->info[y][x], SQUARE_DTRAP);
+	return sqinfo_has(c->squares[y][x].info, SQUARE_DTRAP);
 }
 
 /**
@@ -359,7 +359,7 @@ bool square_isdtrap(struct chunk *c, int y, int x) {
  */
 bool square_isfeel(struct chunk *c, int y, int x) {
 	assert(square_in_bounds(c, y, x));
-	return sqinfo_has(c->info[y][x], SQUARE_FEEL);
+	return sqinfo_has(c->squares[y][x].info, SQUARE_FEEL);
 }
 
 /**
@@ -367,7 +367,7 @@ bool square_isfeel(struct chunk *c, int y, int x) {
  */
 bool square_isdedge(struct chunk *c, int y, int x) {
 	assert(square_in_bounds(c, y, x));
-	return sqinfo_has(c->info[y][x], SQUARE_DEDGE);
+	return sqinfo_has(c->squares[y][x].info, SQUARE_DEDGE);
 }
 
 /**
@@ -375,7 +375,7 @@ bool square_isdedge(struct chunk *c, int y, int x) {
  */
 bool square_istrap(struct chunk *c, int y, int x) {
 	assert(square_in_bounds(c, y, x));
-	return sqinfo_has(c->info[y][x], SQUARE_TRAP);
+	return sqinfo_has(c->squares[y][x].info, SQUARE_TRAP);
 }
 
 /**
@@ -383,7 +383,7 @@ bool square_istrap(struct chunk *c, int y, int x) {
  */
 bool square_isinvis(struct chunk *c, int y, int x) {
 	assert(square_in_bounds(c, y, x));
-	return sqinfo_has(c->info[y][x], SQUARE_INVIS);
+	return sqinfo_has(c->squares[y][x].info, SQUARE_INVIS);
 }
 
 /**
@@ -391,7 +391,7 @@ bool square_isinvis(struct chunk *c, int y, int x) {
  */
 bool square_iswall_inner(struct chunk *c, int y, int x) {
 	assert(square_in_bounds(c, y, x));
-	return sqinfo_has(c->info[y][x], SQUARE_WALL_INNER);
+	return sqinfo_has(c->squares[y][x].info, SQUARE_WALL_INNER);
 }
 
 /**
@@ -399,7 +399,7 @@ bool square_iswall_inner(struct chunk *c, int y, int x) {
  */
 bool square_iswall_outer(struct chunk *c, int y, int x) {
 	assert(square_in_bounds(c, y, x));
-	return sqinfo_has(c->info[y][x], SQUARE_WALL_OUTER);
+	return sqinfo_has(c->squares[y][x].info, SQUARE_WALL_OUTER);
 }
 
 /**
@@ -407,7 +407,7 @@ bool square_iswall_outer(struct chunk *c, int y, int x) {
  */
 bool square_iswall_solid(struct chunk *c, int y, int x) {
 	assert(square_in_bounds(c, y, x));
-	return sqinfo_has(c->info[y][x], SQUARE_WALL_SOLID);
+	return sqinfo_has(c->squares[y][x].info, SQUARE_WALL_SOLID);
 }
 
 /**
@@ -415,7 +415,7 @@ bool square_iswall_solid(struct chunk *c, int y, int x) {
  */
 bool square_ismon_restrict(struct chunk *c, int y, int x) {
 	assert(square_in_bounds(c, y, x));
-	return sqinfo_has(c->info[y][x], SQUARE_MON_RESTRICT);
+	return sqinfo_has(c->squares[y][x].info, SQUARE_MON_RESTRICT);
 }
 
 /**
@@ -423,7 +423,7 @@ bool square_ismon_restrict(struct chunk *c, int y, int x) {
  */
 bool square_isno_teleport(struct chunk *c, int y, int x) {
 	assert(square_in_bounds(c, y, x));
-	return sqinfo_has(c->info[y][x], SQUARE_NO_TELEPORT);
+	return sqinfo_has(c->squares[y][x].info, SQUARE_NO_TELEPORT);
 }
 
 /**
@@ -431,7 +431,7 @@ bool square_isno_teleport(struct chunk *c, int y, int x) {
  */
 bool square_isno_map(struct chunk *c, int y, int x) {
 	assert(square_in_bounds(c, y, x));
-	return sqinfo_has(c->info[y][x], SQUARE_NO_MAP);
+	return sqinfo_has(c->squares[y][x].info, SQUARE_NO_MAP);
 }
 
 /**
@@ -439,7 +439,7 @@ bool square_isno_map(struct chunk *c, int y, int x) {
  */
 bool square_isno_esp(struct chunk *c, int y, int x) {
 	assert(square_in_bounds(c, y, x));
-	return sqinfo_has(c->info[y][x], SQUARE_NO_ESP);
+	return sqinfo_has(c->squares[y][x].info, SQUARE_NO_ESP);
 }
 
 /**
@@ -447,7 +447,7 @@ bool square_isno_esp(struct chunk *c, int y, int x) {
  */
 bool square_isproject(struct chunk *c, int y, int x) {
 	assert(square_in_bounds(c, y, x));
-	return sqinfo_has(c->info[y][x], SQUARE_PROJECT);
+	return sqinfo_has(c->squares[y][x].info, SQUARE_PROJECT);
 }
 
 
@@ -731,9 +731,9 @@ void square_set_feat(struct chunk *c, int y, int x, int feat)
 		square_light_spot(c, y, x);
 	} else {
 		/* Make sure no incorrect wall flags set for dungeon generation */
-		   sqinfo_off(c->info[y][x], SQUARE_WALL_INNER);
-		   sqinfo_off(c->info[y][x], SQUARE_WALL_OUTER);
-		   sqinfo_off(c->info[y][x], SQUARE_WALL_SOLID);
+		   sqinfo_off(c->squares[y][x].info, SQUARE_WALL_INNER);
+		   sqinfo_off(c->squares[y][x].info, SQUARE_WALL_OUTER);
+		   sqinfo_off(c->squares[y][x].info, SQUARE_WALL_SOLID);
 	}
 }
 

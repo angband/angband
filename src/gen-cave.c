@@ -16,10 +16,10 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  *
- * In this file, we use the SQUARE_WALL flags to cave->info, which should only
- * be applied to granite.  SQUARE_WALL_SOLID indicates the wall should not be
- * tunnelled; SQUARE_WALL_INNER is the inward-facing wall of a room;
- * SQUARE_WALL_OUTER is the outer wall of a room.
+ * In this file, we use the SQUARE_WALL flags to the info field in
+ * cave->squares, which should only be applied to granite.  SQUARE_WALL_SOLID
+ * indicates the wall should not be tunnelled; SQUARE_WALL_INNER is the
+ * inward-facing wall of a room; SQUARE_WALL_OUTER is the outer wall of a room.
  *
  * We use SQUARE_WALL_SOLID to prevent multiple corridors from piercing a wall
  * in two adjacent locations, which would be messy, and SQUARE_WALL_OUTER
@@ -84,7 +84,7 @@
 static bool square_is_granite_with_flag(struct chunk *c, int y, int x, int flag)
 {
 	if (c->feat[y][x] != FEAT_GRANITE) return FALSE;
-	if (!sqinfo_has(c->info[y][x], flag)) return FALSE;
+	if (!sqinfo_has(c->squares[y][x].info, flag)) return FALSE;
 
 	return TRUE;
 }
@@ -745,7 +745,7 @@ struct chunk *labyrinth_chunk(int depth, int h, int w, bool lit, bool soft)
 			int k = yx_to_i(y, x, w);
 			sets[k] = k;
 			square_set_feat(c, y + 1, x + 1, FEAT_FLOOR);
-			if (lit) sqinfo_on(c->info[y + 1][x + 1], SQUARE_GLOW);
+			if (lit) sqinfo_on(c->squares[y + 1][x + 1].info, SQUARE_GLOW);
 		}
     }
 
@@ -774,7 +774,7 @@ struct chunk *labyrinth_chunk(int depth, int h, int w, bool lit, bool soft)
 			int sa = sets[a];
 			int sb = sets[b];
 			square_set_feat(c, y + 1, x + 1, FEAT_FLOOR);
-			if (lit) sqinfo_on(c->info[y + 1][x + 1], SQUARE_GLOW);
+			if (lit) sqinfo_on(c->squares[y + 1][x + 1].info, SQUARE_GLOW);
 
 			for (k = 0; k < n; k++) {
 				if (sets[k] == sb) sets[k] = sa;
@@ -1005,7 +1005,7 @@ static void glow_point(struct chunk *c, int y, int x) {
     int i, j;
     for (i = -1; i <= -1; i++)
 		for (j = -1; j <= -1; j++)
-			sqinfo_on(c->info[y + i][x + j], SQUARE_GLOW);
+			sqinfo_on(c->squares[y + i][x + j].info, SQUARE_GLOW);
 }
 #endif
 

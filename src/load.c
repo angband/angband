@@ -1149,7 +1149,7 @@ static int rd_dungeon_aux(struct chunk ** c)
 
 	/*** Run length decoding ***/
 
-    /* Loop across bytes of cave->info */
+    /* Loop across bytes of cave->squares[y][x].info */
 	for (n = 0; n < square_size; n++)
 	{
 		/* Load the dungeon data */
@@ -1163,7 +1163,7 @@ static int rd_dungeon_aux(struct chunk ** c)
 			for (i = count; i > 0; i--)
 			{
 				/* Extract "info" */
-				cave->info[y][x][n] = tmp8u;
+				cave->squares[y][x].info[n] = tmp8u;
 
 				/* Advance/Wrap */
 				if (++x >= cave->width)
@@ -1306,7 +1306,7 @@ int rd_chunks(void)
 		c = cave_new(height, width);
 		c->name = string_make(name);
 
-		/* Loop across bytes of c->info */
+		/* Loop across bytes of c->squares[y][x].info */
 		for (k = 0; k < SQUARE_SIZE; k++)
 		{
 			/* Load the chunk data */
@@ -1320,7 +1320,7 @@ int rd_chunks(void)
                 for (i = count; i > 0; i--)
                 {
 					/* Extract "info" */
-					c->info[y][x][k] = tmp8u;
+					c->squares[y][x].info[k] = tmp8u;
 
 					/* Advance/Wrap */
 					if (++x >= width)
@@ -1404,7 +1404,7 @@ int rd_chunks(void)
 				trf_copy(new_trap->flags, trap->flags);
 
 				/* Toggle on the trap marker */
-				sqinfo_on(c->info[y][x], SQUARE_TRAP);
+				sqinfo_on(c->squares[y][x].info, SQUARE_TRAP);
 			}
 		}
 
@@ -1670,7 +1670,7 @@ static int rd_traps_aux(struct chunk * cave)
 			trf_copy(new_trap->flags, trap->flags);
 
 			/* Toggle on the trap marker */
-			sqinfo_on(cave->info[y][x], SQUARE_TRAP);
+			sqinfo_on(cave->squares[y][x].info, SQUARE_TRAP);
 		}
 	}
 

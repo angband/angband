@@ -1457,7 +1457,7 @@ static void do_cmd_wiz_query(void)
 			if (!square_in_bounds_fully(cave, y, x)) continue;
 
 			/* Given flag, show only those grids */
-			if (!sqinfo_has(cave->info[y][x], flag)) continue;
+			if (!sqinfo_has(cave->squares[y][x].info, flag)) continue;
 
 			/* Given no flag, show unknown grids */
 			if (!flag && (!square_ismark(cave, y, x))) continue;

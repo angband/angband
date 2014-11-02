@@ -690,7 +690,7 @@ static void wr_dungeon_aux(struct chunk * cave)
 
 	/*** Simple "Run-Length-Encoding" of cave ***/
 
-	/* Loop across bytes of cave->info */
+	/* Loop across bytes of cave->squares[y][x].info */
 	for (i = 0; i < SQUARE_SIZE; i++) {
 		count = 0;
 		prev_char = 0;
@@ -698,8 +698,8 @@ static void wr_dungeon_aux(struct chunk * cave)
 		/* Dump for each grid */
 		for (y = 0; y < cave->height; y++) {
 			for (x = 0; x < cave->width; x++) {
-				/* Extract the important cave->info flags */
-				tmp8u = cave->info[y][x][i];
+				/* Extract the important cave->squares[y][x].info flags */
+				tmp8u = cave->squares[y][x].info[i];
 
 				/* If the run is broken, or too full, flush it */
 				if ((tmp8u != prev_char) || (count == MAX_UCHAR)) {
@@ -807,7 +807,7 @@ void wr_chunks(void)
 
 		/*** Simple "Run-Length-Encoding" of info ***/
 
-		/* Loop across bytes of c->info */
+		/* Loop across bytes of c->squares[y][x].info */
 		for (k = 0; k < SQUARE_SIZE; k++){
 			/* Note that this will induce two wasted bytes */
 			count = 0;
@@ -816,8 +816,8 @@ void wr_chunks(void)
 			/* Dump the chunk */
 			for (y = 0; y < c->height; y++) {
 				for (x = 0; x < c->width; x++) {
-					/* Extract the important cave->info flags */
-					tmp8u = c->info[y][x][k];
+					/* Extract the important cave->squares[y][x].info flags */
+					tmp8u = c->squares[y][x].info[k];
 
 					/* If the run is broken, or too full, flush it */
 					if ((tmp8u != prev_char) || (count == MAX_UCHAR)) {

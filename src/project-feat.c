@@ -1,6 +1,6 @@
 /**
-   \file project-feat.c
-   \brief projection effects on terrain
+ * \file project-feat.c
+ * \brief projection effects on terrain
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  *
@@ -48,7 +48,7 @@ static void project_feature_handler_LIGHT_WEAK(project_feature_handler_context_t
 	const int y = context->y;
 
 	/* Turn on the light */
-	sqinfo_on(cave->info[y][x], SQUARE_GLOW);
+	sqinfo_on(cave->squares[y][x].info, SQUARE_GLOW);
 
 	/* Grid is in line of sight */
 	if (player_has_los_bold(y, x)) {
@@ -70,11 +70,11 @@ static void project_feature_handler_DARK_WEAK(project_feature_handler_context_t 
 
 	if (player->depth != 0 || !is_daytime()) {
 		/* Turn off the light */
-		sqinfo_off(cave->info[y][x], SQUARE_GLOW);
+		sqinfo_off(cave->squares[y][x].info, SQUARE_GLOW);
 
 		/* Hack -- Forget "boring" grids */
 		if (!square_isinteresting(cave, y, x))
-			sqinfo_off(cave->info[y][x], SQUARE_MARK);
+			sqinfo_off(cave->squares[y][x].info, SQUARE_MARK);
 	}
 
 	/* Grid is in line of sight */
@@ -102,13 +102,13 @@ static void project_feature_handler_KILL_WALL(project_feature_handler_context_t 
 	/* Granite */
 	if (square_iswall(cave, y, x) && !square_hasgoldvein(cave, y, x)) {
 		/* Message */
-		if (sqinfo_on(cave->info[y][x], SQUARE_MARK)) {
+		if (sqinfo_on(cave->squares[y][x].info, SQUARE_MARK)) {
 			msg("The wall turns into mud!");
 			context->obvious = TRUE;
 		}
 
 		/* Forget the wall */
-		sqinfo_off(cave->info[y][x], SQUARE_MARK);
+		sqinfo_off(cave->squares[y][x].info, SQUARE_MARK);
 
 		/* Destroy the wall */
 		square_destroy_wall(cave, y, x);
@@ -118,7 +118,7 @@ static void project_feature_handler_KILL_WALL(project_feature_handler_context_t 
 	else if (square_iswall(cave, y, x) && square_hasgoldvein(cave, y, x))
 	{
 		/* Message */
-		if (sqinfo_on(cave->info[y][x], SQUARE_MARK))
+		if (sqinfo_on(cave->squares[y][x].info, SQUARE_MARK))
 		{
 			msg("The vein turns into mud!");
 			msg("You have found something!");
@@ -126,7 +126,7 @@ static void project_feature_handler_KILL_WALL(project_feature_handler_context_t 
 		}
 
 		/* Forget the wall */
-		sqinfo_off(cave->info[y][x], SQUARE_MARK);
+		sqinfo_off(cave->squares[y][x].info, SQUARE_MARK);
 
 		/* Destroy the wall */
 		square_destroy_wall(cave, y, x);
@@ -139,14 +139,14 @@ static void project_feature_handler_KILL_WALL(project_feature_handler_context_t 
 	else if (square_ismagma(cave, y, x) || square_isquartz(cave, y, x))
 	{
 		/* Message */
-		if (sqinfo_on(cave->info[y][x], SQUARE_MARK))
+		if (sqinfo_on(cave->squares[y][x].info, SQUARE_MARK))
 		{
 			msg("The vein turns into mud!");
 			context->obvious = TRUE;
 		}
 
 		/* Forget the wall */
-		sqinfo_off(cave->info[y][x], SQUARE_MARK);
+		sqinfo_off(cave->squares[y][x].info, SQUARE_MARK);
 
 		/* Destroy the wall */
 		square_destroy_wall(cave, y, x);
@@ -156,14 +156,14 @@ static void project_feature_handler_KILL_WALL(project_feature_handler_context_t 
 	else if (square_isrubble(cave, y, x))
 	{
 		/* Message */
-		if (sqinfo_on(cave->info[y][x], SQUARE_MARK))
+		if (sqinfo_on(cave->squares[y][x].info, SQUARE_MARK))
 		{
 			msg("The rubble turns into mud!");
 			context->obvious = TRUE;
 		}
 
 		/* Forget the wall */
-		sqinfo_off(cave->info[y][x], SQUARE_MARK);
+		sqinfo_off(cave->squares[y][x].info, SQUARE_MARK);
 
 		/* Destroy the rubble */
 		square_destroy_rubble(cave, y, x);
@@ -183,14 +183,14 @@ static void project_feature_handler_KILL_WALL(project_feature_handler_context_t 
 	else if (square_isdoor(cave, y, x))
 	{
 		/* Hack -- special message */
-		if (sqinfo_on(cave->info[y][x], SQUARE_MARK))
+		if (sqinfo_on(cave->squares[y][x].info, SQUARE_MARK))
 		{
 			msg("The door turns into mud!");
 			context->obvious = TRUE;
 		}
 
 		/* Forget the wall */
-		sqinfo_off(cave->info[y][x], SQUARE_MARK);
+		sqinfo_off(cave->squares[y][x].info, SQUARE_MARK);
 
 		/* Destroy the feature */
 		square_destroy_door(cave, y, x);
@@ -228,7 +228,7 @@ static void project_feature_handler_KILL_DOOR(project_feature_handler_context_t 
 		}
 
 		/* Forget the door */
-		sqinfo_off(cave->info[y][x], SQUARE_MARK);
+		sqinfo_off(cave->squares[y][x].info, SQUARE_MARK);
 
 		/* Destroy the feature */
 		if (square_isdoor(cave, y, x))
@@ -267,7 +267,7 @@ static void project_feature_handler_KILL_TRAP(project_feature_handler_context_t 
 		}
 
 		/* Forget the trap */
-		sqinfo_off(cave->info[y][x], SQUARE_MARK);
+		sqinfo_off(cave->squares[y][x].info, SQUARE_MARK);
 
 		/* Destroy the trap */
 		square_destroy_trap(cave, y, x);
@@ -307,7 +307,8 @@ static void project_feature_handler_MAKE_DOOR(project_feature_handler_context_t 
 	square_add_door(cave, y, x, TRUE);
 
 	/* Observe */
-	if (sqinfo_on(cave->info[y][x], SQUARE_MARK)) context->obvious = TRUE;
+	if (sqinfo_on(cave->squares[y][x].info, SQUARE_MARK))
+		context->obvious = TRUE;
 
 	/* Update the visuals */
 	player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
