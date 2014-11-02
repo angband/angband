@@ -62,7 +62,7 @@ struct chunk *chunk_write(int y0, int x0, int height, int width, bool monsters,
 			int this_o_idx, next_o_idx, held;
 
 			/* Terrain */
-			new->feat[y][x] = cave->feat[y0 + y][x0 + x];
+			new->squares[y][x].feat = cave->squares[y0 + y][x0 + x].feat;
 			sqinfo_copy(new->squares[y][x].info,
 						cave->squares[y0 + y][x0 + x].info);
 
@@ -306,7 +306,7 @@ bool chunk_copy(struct chunk *dest, struct chunk *source, int y0, int x0,
 			symmetry_transform(&dest_y, &dest_x, y0, x0, h, w, rotate, reflect);
 
 			/* Terrain */
-			dest->feat[dest_y][dest_x] = source->feat[y][x];
+			dest->squares[dest_y][dest_x].feat = source->squares[y][x].feat;
 			sqinfo_copy(dest->squares[dest_y][dest_x].info,
 						source->squares[y][x].info);
 

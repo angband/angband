@@ -727,7 +727,7 @@ static void wr_dungeon_aux(struct chunk * cave)
 	for (y = 0; y < cave->height; y++) {
 		for (x = 0; x < cave->width; x++) {
 			/* Extract a byte */
-			tmp8u = cave->feat[y][x];
+			tmp8u = cave->squares[y][x].feat;
 
 			/* If the run is broken, or too full, flush it */
 			if ((tmp8u != prev_char) || (count == MAX_UCHAR)) {
@@ -848,7 +848,7 @@ void wr_chunks(void)
 		for (y = 0; y < c->height; y++) {
 			for (x = 0; x < c->width; x++) {
 				/* Extract a byte */
-				tmp8u = c->feat[y][x];
+				tmp8u = c->squares[y][x].feat;
 
 				/* If the run is broken, or too full, flush it */
 				if ((tmp8u != prev_char) || (count == MAX_UCHAR)) {

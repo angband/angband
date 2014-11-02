@@ -83,7 +83,7 @@
  */
 static bool square_is_granite_with_flag(struct chunk *c, int y, int x, int flag)
 {
-	if (c->feat[y][x] != FEAT_GRANITE) return FALSE;
+	if (c->squares[y][x].feat != FEAT_GRANITE) return FALSE;
 	if (!sqinfo_has(c->squares[y][x].info, flag)) return FALSE;
 
 	return TRUE;
@@ -273,8 +273,7 @@ static void build_tunnel(struct chunk *c, int row1, int col1, int row2, int col2
 			row1 = tmp_row;
 			col1 = tmp_col;
 
-		} else if (tf_has(f_info[c->feat[tmp_row][tmp_col]].flags, TF_GRANITE)||
-				   tf_has(f_info[c->feat[tmp_row][tmp_col]].flags, TF_PERMANENT)){
+		} else if (tf_has(f_info[c->squares[tmp_row][tmp_col].feat].flags, TF_GRANITE)|| tf_has(f_info[c->squares[tmp_row][tmp_col].feat].flags, TF_PERMANENT)){
 			/* Tunnel through all other walls */
 			/* Accept this location */
 			row1 = tmp_row;
@@ -953,7 +952,7 @@ static void mutate_cavern(struct chunk *c) {
 			else if (count < 4)
 				temp[y * w + x] = FEAT_FLOOR;
 			else
-				temp[y * w + x] = c->feat[y][x];
+				temp[y * w + x] = c->squares[y][x].feat;
 		}
     }
 
@@ -1545,7 +1544,7 @@ struct chunk *town_gen(struct player *p)
 		for (y = 0; y < c_new->height; y++) {
 			bool found = FALSE;
 			for (x = 0; x < c_new->width; x++) {
-				if (c_new->feat[y][x] == FEAT_MORE) {
+				if (c_new->squares[y][x].feat == FEAT_MORE) {
 					found = TRUE;
 					break;
 				}

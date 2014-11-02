@@ -184,7 +184,7 @@ bool square_player_trap_allowed(struct chunk *c, int y, int x)
     if (c->o_idx[y][x]) return FALSE;
 
     /* Check the feature trap flag */
-    return (tf_has(f_info[c->feat[y][x]].flags, TF_TRAP));
+    return (tf_has(f_info[c->squares[y][x].feat].flags, TF_TRAP));
 }
 
 /**
@@ -258,7 +258,7 @@ void place_trap(struct chunk *c, int y, int x, int t_idx, int trap_level)
 		/* Require the correct terrain */
 		if (!square_player_trap_allowed(c, y, x)) return;
 
-		t_idx = pick_trap(c->feat[y][x], trap_level);
+		t_idx = pick_trap(c->squares[y][x].feat, trap_level);
     }
 
     /* Failure */

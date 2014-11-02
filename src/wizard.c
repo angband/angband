@@ -1566,7 +1566,7 @@ static void do_cmd_wiz_features(void)
 
 			/* Given feature, show only those grids */
 			for (i = 0; i < length; i++)
-				if (cave->feat[y][x] == feat[i]) show = TRUE;
+				if (cave->squares[y][x].feat == feat[i]) show = TRUE;
 
 			/* Color */
 			if (square_ispassable(cave, y, x)) a = TERM_YELLOW;

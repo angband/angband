@@ -1501,7 +1501,7 @@ bool target_set_interactive(int mode, int x, int y)
 				{
 					y = KEY_GRID_Y(press);//.mouse.y;
 					x = KEY_GRID_X(press);//.mouse.x;
-					if (cave->squares[y][x].mon || cave->o_idx[y][x]){// || cave->feat[y][x]&) {
+					if (cave->squares[y][x].mon || cave->o_idx[y][x]){// || cave->squares[y][x].feat&) {
 						/* reset the flag, to make sure we stay in this mode if
 						 * something is actually there */
 						flag = FALSE;

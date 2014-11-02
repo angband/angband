@@ -90,7 +90,7 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 	g->unseen_money = FALSE;
 
 	/* Use real feature (remove later) */
-	g->f_idx = cave->feat[y][x];
+	g->f_idx = cave->squares[y][x].feat;
 	if (f_info[g->f_idx].mimic)
 		g->f_idx = f_info[g->f_idx].mimic;
 
@@ -108,12 +108,12 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 			g->lighting = LIGHTING_TORCH;
 
 		/* Remember seen feature */
-		cave_k->feat[y][x] = cave->feat[y][x];
+		cave_k->squares[y][x].feat = cave->squares[y][x].feat;
 	}
 	else if (!square_ismark(cave, y, x))
 	{
 		g->f_idx = FEAT_NONE;
-		//cave_k->feat[y][x] = FEAT_NONE;
+		//cave_k->squares[y][x].feat = FEAT_NONE;
 	}
 	else if (square_isglow(cave, y, x))
 	{
@@ -121,7 +121,7 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 	}
 
 	/* Use known feature */
-/*	g->f_idx = cave_k->feat[y][x];
+/*	g->f_idx = cave_k->squares[y][x].feat;
 	if (f_info[g->f_idx].mimic)
 		g->f_idx = f_info[g->f_idx].mimic;*/
 
@@ -470,7 +470,7 @@ void wiz_light(struct chunk *c, bool full)
 						square_isvisibletrap(c, yy, xx))
 					{
 						sqinfo_on(c->squares[yy][xx].info, SQUARE_MARK);
-						cave_k->feat[yy][xx] = c->feat[yy][xx];
+						cave_k->squares[yy][xx].feat = c->squares[yy][xx].feat;
 					}
 				}
 			}
@@ -539,7 +539,7 @@ void cave_illuminate(struct chunk *c, bool daytime)
 	/* Apply light or darkness */
 	for (y = 0; y < c->height; y++)
 		for (x = 0; x < c->width; x++) {
-			feature_type *f_ptr = &f_info[c->feat[y][x]];
+			feature_type *f_ptr = &f_info[c->squares[y][x].feat];
 			
 			/* Only interesting grids at night */
 			if (daytime || !tf_has(f_ptr->flags, TF_FLOOR)) {
@@ -727,7 +727,8 @@ void cave_update_flow(struct chunk *c)
 			if (c->squares[y][x].when == flow_n) continue;
 
 			/* Ignore "walls" and "rubble" */
-			if (tf_has(f_info[c->feat[y][x]].flags, TF_NO_FLOW)) continue;
+			if (tf_has(f_info[c->squares[y][x].feat].flags, TF_NO_FLOW))
+				continue;
 
 			/* Save the time-stamp */
 			c->squares[y][x].when = flow_n;
@@ -754,5 +755,5 @@ void cave_known (void)
 	int y,x;
 	for (y = 0; y < cave->height; y++)
 		for (x = 0; x < cave->width; x++)
-			cave_k->feat[y][x] = cave->feat[y][x];
+			cave_k->squares[y][x].feat = cave->squares[y][x].feat;
 }
