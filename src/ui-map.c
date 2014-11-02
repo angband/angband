@@ -193,7 +193,7 @@ void grid_data_as_text(grid_data *g, int *ap, wchar_t *cp, int *tap, wchar_t *tc
 	(*tcp) = c;
 
 	/* There is a trap in this grid, and we are not hallucinating */
-	if (((int) g->trap < cave_trap_max(cave)) && (!g->hallucinate))
+	if (g->trap && (!g->hallucinate))
 	{
 	    /* Change graphics to indicate a trap (if visible) */
 	    (void) get_trap_graphics(cave, g->trap, &a, &c, TRUE);

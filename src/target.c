@@ -929,7 +929,7 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 		/* A trap */
 		if (square_isvisibletrap(cave, y, x)) 
 		{
-			struct trap *trap = cave_trap(cave, square_trap_idx(cave, y, x));
+			struct trap *trap = cave->squares[y][x].trap;
 
 			/* Not boring */
 			boring = FALSE;

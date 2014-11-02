@@ -875,8 +875,7 @@ static bool do_cmd_disarm_aux(int y, int x)
 {
 	int i, j, power;
 
-	int t_idx;
-    struct trap *trap;
+    struct trap *trap = cave->squares[y][x].trap;
 
 	bool more = FALSE;
 
@@ -885,10 +884,14 @@ static bool do_cmd_disarm_aux(int y, int x)
 	if (!do_cmd_disarm_test(y, x)) return (FALSE);
 
 
-    /* Choose trap */
-    t_idx = square_trap_idx(cave, y, x);
-    if (t_idx < 0) return (FALSE);
-    trap = cave_trap(cave, t_idx);
+    /* Choose first player trap */
+	while (trap) {
+		if (trf_has(trap->flags, TRF_TRAP))
+			break;
+		trap = trap->next;
+	}
+	if (!trap)
+		return FALSE;
 
 	/* Get the "disarm" factor */
 	i = player->state.skills[SKILL_DISARM];

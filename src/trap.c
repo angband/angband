@@ -1,6 +1,6 @@
 /**
-   \file trap.c
-   \brief The trap layer - player traps, runes and door locks
+ * \file trap.c
+ * \brief The trap layer - player traps, runes and door locks
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  *
@@ -59,20 +59,18 @@ struct trap_kind *lookup_trap(const char *desc)
  */
 bool square_trap_specific(struct chunk *c, int y, int x, int t_idx)
 {
-    int i;
+    struct trap *trap = c->squares[y][x].trap;
 	
     /* First, check the trap marker */
     if (!square_istrap(c, y, x))
 		return FALSE;
 	
-    /* Scan the current trap list */
-    for (i = 0; i < cave_trap_max(c); i++) {
-		/* Point to this trap */
-		struct trap *trap = cave_trap(c, i);
-		
+    /* Scan the square trap list */
+    while (trap) {
 		/* We found a trap of the right kind */
-		if ((trap->fy == y) && (trap->fx == x) && (trap->t_idx == t_idx))
+		if (trap->t_idx == t_idx)
 			return TRUE;
+		trap = trap->next;
 	}
 
     /* Report failure */
@@ -84,22 +82,18 @@ bool square_trap_specific(struct chunk *c, int y, int x, int t_idx)
  */
 bool square_trap_flag(struct chunk *c, int y, int x, int flag)
 {
-    int i;
+    struct trap *trap = c->squares[y][x].trap;
 
     /* First, check the trap marker */
     if (!square_istrap(c, y, x))
 		return FALSE;
 	
-    /* Scan the current trap list */
-    for (i = 0; i < cave_trap_max(c); i++) {
-		/* Point to this trap */
-		struct trap *trap = cave_trap(c, i);
-		
-		/* Find a trap in this position */
-		if ((trap->fy == y) && (trap->fx == x)) {
-			/* We found a trap with the right flag */
-			if (trf_has(trap->flags, flag)) return TRUE;
-		}
+    /* Scan the square trap list */
+    while (trap) {
+		/* We found a trap with the right flag */
+		if (trf_has(trap->flags, flag))
+			return TRUE;
+		trap = trap->next;
     }
 
     /* Report failure */
@@ -116,68 +110,40 @@ bool square_trap_flag(struct chunk *c, int y, int x, int flag)
  */
 static bool square_verify_trap(struct chunk *c, int y, int x, int vis)
 {
-    int i;
+    struct trap *trap = c->squares[y][x].trap;
     bool trap_exists = FALSE;
-    
-    /* Scan the current trap list */
-    for (i = 0; i < cave_trap_max(c); i++) {
-		/* Point to this trap */
-		struct trap *trap = cave_trap(c, i);
-	
-		/* Find a trap in this position */
-		if ((trap->fy == y) && (trap->fx == x))
-		{
-			/* Accept any trap */
-			if (!vis)
-				return TRUE;
 
-			/* Accept traps that match visibility requirements */
-			if ((vis == 1) && trf_has(trap->flags, TRF_VISIBLE)) 
-				return TRUE;
-	    
-			if ((vis == -1)  && !trf_has(trap->flags, TRF_VISIBLE)) 
-				return TRUE;
-	    
-			/* Note that a trap does exist */
-			trap_exists = TRUE;
-		}
+    /* Scan the square trap list */
+    while (trap) {
+		/* Accept any trap */
+		if (!vis)
+			return TRUE;
+
+		/* Accept traps that match visibility requirements */
+		if ((vis == 1) && trf_has(trap->flags, TRF_VISIBLE)) 
+			return TRUE;
+
+		if ((vis == -1)  && !trf_has(trap->flags, TRF_VISIBLE)) 
+			return TRUE;
+
+		/* Note that a trap does exist */
+		trap_exists = TRUE;
     }
-    
+
     /* No traps in this location. */
     if (!trap_exists) {
 		/* No traps */
 		sqinfo_off(c->info[y][x], SQUARE_TRAP);
-	
+
 		/* No reason to mark this square, ... */
 		sqinfo_off(c->info[y][x], SQUARE_MARK);
 
 		/* ... unless certain conditions apply */
 		square_note_spot(c, y, x);
     }
-    
+
     /* Report failure */
     return FALSE;
-}
-
-/**
- * Return the index of any trap on this grid
- */
-int square_trap_idx(struct chunk *c, int y, int x)
-{
-    int i;
-
-    /* Scan the current trap list */
-    for (i = 0; i < cave_trap_max(c); i++) {
-		/* Point to this trap */
-		struct trap *trap = cave_trap(c, i);
-		
-		/* Find a trap in this position */
-		if ((trap->fy == y) && (trap->fx == x))
-			return (i);
-    }
-    
-    /* No trap */
-    return -1;
 }
 
 /**
@@ -185,12 +151,10 @@ int square_trap_idx(struct chunk *c, int y, int x)
  *
  * We should probably have better handling of stacked traps, but that can
  * wait until we do, in fact, have stacked traps under normal conditions.
- *
  */
-bool get_trap_graphics(struct chunk *c, int t_idx, int *a, wchar_t *ch, bool require_visible)
+bool get_trap_graphics(struct chunk *c, struct trap *trap, int *a, wchar_t *ch,
+					   bool require_visible)
 {
-    struct trap *trap = cave_trap(c, t_idx);
-    
     /* Trap is visible, or we don't care */
     if (!require_visible || trf_has(trap->flags, TRF_VISIBLE)) {
 		/* Get the graphics */
@@ -287,11 +251,7 @@ static int pick_trap(int feat, int trap_level)
  */
 void place_trap(struct chunk *c, int y, int x, int t_idx, int trap_level)
 {
-    int i;
-
-    /* Hack -- don't use up all the trap slots during dungeon generation */
-    if (!character_dungeon)
-		if (cave_trap_max(c) > z_info->level_trap_max - 50) return;
+	struct trap *new_trap;
 
     /* We've been called with an illegal index; choose a random trap */
     if ((t_idx <= 0) || (t_idx >= z_info->trap_max)) {
@@ -304,36 +264,23 @@ void place_trap(struct chunk *c, int y, int x, int t_idx, int trap_level)
     /* Failure */
     if (t_idx < 0) return;
 
-    /* Scan the entire trap list */
-    for (i = 1; i < z_info->level_trap_max; i++) {
-		/* Point to this trap */
-		struct trap *trap = cave_trap(c, i);
+	/* Allocate a new trap for this grid (at the front of the list) */
+	new_trap = mem_zalloc(sizeof(*new_trap));
+	new_trap->next = c->squares[y][x].trap;
+	c->squares[y][x].trap = new_trap;
 
-		/* This space is available */
-		if (!trap->t_idx) {
-			/* Fill in the trap index */
-			trap->t_idx = t_idx;
-			trap->kind = &trap_info[t_idx];
+	/* Set the details */
+	new_trap->t_idx = t_idx;
+	new_trap->kind = &trap_info[t_idx];
+	new_trap->fy = y;
+	new_trap->fx = x;
+	trf_copy(new_trap->flags, trap_info[t_idx].flags);
 
-			/* Fill in the trap details */
-			trap->fy = y;
-			trap->fx = x;
+	/* Toggle on the trap marker */
+	sqinfo_on(c->info[y][x], SQUARE_TRAP);
 
-			trf_copy(trap->flags, trap_info[trap->t_idx].flags);
-
-			/* Adjust trap count if necessary */
-			if (i + 1 > cave_trap_max(c)) c->trap_max = i + 1;
-
-			/* Toggle on the trap marker */
-			sqinfo_on(c->info[y][x], SQUARE_TRAP);
-
-			/* Redraw the grid */
-			square_light_spot(c, y, x);
-
-			/* Success */
-			return;
-		}
-    }
+	/* Redraw the grid */
+	square_light_spot(c, y, x);
 }
 
 /**
@@ -341,34 +288,35 @@ void place_trap(struct chunk *c, int y, int x, int t_idx, int trap_level)
  */
 bool square_reveal_trap(struct chunk *c, int y, int x, int chance, bool domsg)
 {
-    int i;
     int found_trap = 0;
+	struct trap *trap = c->squares[y][x].trap;
     
-    /* Check the trap */
+    /* Check there is a player trap */
     if (!square_isplayertrap(c, y, x))
 		return FALSE;
 
-    /* Scan the current trap list */
-    for (i = 0; i < cave_trap_max(c); i++) {
-		/* Point to this trap */
-		struct trap *trap = cave_trap(c, i);
-
-		/* Find a trap in this position */
-		if ((trap->fy == y) && (trap->fx == x)) {
-			/* Trap is invisible */
-			if (!trf_has(trap->flags, TRF_VISIBLE)) {
-				/* See the trap */
-				trf_on(trap->flags, TRF_VISIBLE);
-				sqinfo_on(c->info[y][x], SQUARE_MARK);
-
-				/* We found a trap */
-				found_trap++;
-
-				/* If chance is < 100, sometimes stop */
-				if ((chance < 100) && (randint1(100) > chance)) break;
-			}
+	/* Scan the grid */
+	while (trap) {
+		/* Skip non-player traps */
+		if (!trf_has(trap->flags, TRF_TRAP)) {
+			trap = trap->next;
+			continue;
 		}
-    }
+		
+		/* Trap is invisible */
+		if (!trf_has(trap->flags, TRF_VISIBLE)) {
+			/* See the trap */
+			trf_on(trap->flags, TRF_VISIBLE);
+			sqinfo_on(c->info[y][x], SQUARE_MARK);
+
+			/* We found a trap */
+			found_trap++;
+
+			/* If chance is < 100, check for further looking */
+			if ((chance < 100) && (randint1(100) > chance)) break;
+		}
+		trap = trap->next;
+	}
 
     /* We found at least one trap */
     if (found_trap) {
@@ -399,29 +347,24 @@ bool square_reveal_trap(struct chunk *c, int y, int x, int chance, bool domsg)
  */
 int num_traps(struct chunk *c, int y, int x, int vis)
 {
-    int i, num;
+    int num = 0;
+	struct trap *trap;
 
-    /* Scan the current trap list */
-    for (num = 0, i = 0; i < cave_trap_max(c); i++) {
-		/* Point to this trap */
-		struct trap *trap = cave_trap(c, i);
-
-		/* Find all traps in this position */
-		if ((trap->fy == y) && (trap->fx == x)) {
-			/* Require that trap be capable of affecting the character */
-			if (!trf_has(trap->kind->flags, TRF_TRAP)) continue;
+	/* Look at the traps in this grid */
+	for (trap = c->squares[y][x].trap; trap; trap = trap->next) {
+		/* Require that trap be capable of affecting the character */
+		if (!trf_has(trap->kind->flags, TRF_TRAP)) continue;
 	    
-			/* Require correct visibility */
-			if (vis >= 1) {
-				if (trf_has(trap->flags, TRF_VISIBLE)) num++;
-			} else if (vis <= -1) {
-				if (!trf_has(trap->flags, TRF_VISIBLE)) num++;
-			} else {
-				num++;
-			}
+		/* Require correct visibility */
+		if (vis >= 1) {
+			if (trf_has(trap->flags, TRF_VISIBLE)) num++;
+		} else if (vis <= -1) {
+			if (!trf_has(trap->flags, TRF_VISIBLE)) num++;
+		} else {
+			num++;
 		}
-    }
-	
+	}
+
     /* Return the number of traps */
     return (num);
 }
@@ -443,7 +386,7 @@ bool trap_check_hit(int power)
 extern void hit_trap(int y, int x)
 {
 	bool ident;
-    int i;
+	struct trap *trap;
 	struct effect *effect;
 
     /* Count the hidden traps here */
@@ -454,149 +397,87 @@ extern void hit_trap(int y, int x)
     else if (num >  1) msg("You stumble upon some traps!");
 
 
-    /* Scan the current trap list */
-    for (i = 0; i < cave_trap_max(cave); i++) {
-		/* Point to this trap */
-		struct trap *trap = cave_trap(cave, i);
+	/* Look at the traps in this grid */
+	for (trap = cave->squares[y][x].trap; trap; trap = trap->next) {
+		/* Require that trap be capable of affecting the character */
+		if (!trf_has(trap->kind->flags, TRF_TRAP)) continue;
+	    
+		/* Disturb the player */
+		disturb(player, 0);
 
-		/* Find all traps in this position */
-		if ((trap->fy == y) && (trap->fx == x)) {
-			/* Disturb the player */
-			disturb(player, 0);
+		/* Fire off the trap */
+		effect = trap->kind->effect;
+		effect_do(effect, &ident, FALSE, 0, 0, 0);
 
-			/* Fire off the trap */
-			effect = trap->kind->effect;
-			effect_do(effect, &ident, FALSE, 0, 0, 0);
-
-			/* Trap becomes visible (always XXX) */
-			trf_on(trap->flags, TRF_VISIBLE);
-			sqinfo_on(cave->info[y][x], SQUARE_MARK);
-		}
-    }
+		/* Trap becomes visible (always XXX) */
+		trf_on(trap->flags, TRF_VISIBLE);
+		sqinfo_on(cave->info[y][x], SQUARE_MARK);
+	}
 
     /* Verify traps (remove marker if appropriate) */
     (void)square_verify_trap(cave, y, x, 0);
 }
 
 /**
- * Delete/Remove all the traps when the player leaves the level
- */
-void wipe_trap_list(struct chunk *c)
-{
-	int i;
-
-	/* Delete all the traps */
-	for (i = cave_trap_max(c) - 1; i >= 0; i--) {
-		struct trap *trap = cave_trap(c, i);
-
-		/* Wipe the trap */
-		memset(trap, 0, sizeof(struct trap));
-	}
-
-	/* Reset "trap_max" */
-	c->trap_max = 0;
-}
-
-
-
-/**
  * Remove a trap
  */
-static void remove_trap_aux(struct chunk *c, struct trap *trap, int y, int x, bool domsg)
+static void remove_trap_aux(struct chunk *c, struct trap *trap, int y, int x,
+							bool domsg)
 {
     /* We are deleting a rune */
-    if (trf_has(trap->flags, TRF_RUNE))
-    {
+    if (trf_has(trap->flags, TRF_RUNE)) {
 		if (domsg)
 			msg("You have removed the %s.", trap->kind->name);
-    }
-    /* We are disarming a trap */
-    else if (domsg)
+    } else if (domsg)
+		/* We are disarming a trap */
 		msgt(MSG_DISARM, "You have disarmed the %s.", trap->kind->name);
-    
+
     /* Wipe the trap */
-    sqinfo_off(c->info[y][x], SQUARE_TRAP);
-	memset(trap, 0, sizeof(struct trap));
+	mem_free(trap);
 }
 
 /**
  * Remove traps.
  *
  * If called with t_idx < 0, will remove all traps in the location given.
- * Otherwise, will remove the trap with the given index.
+ * Otherwise, will remove all traps with the given kind.
  *
  * Return TRUE if no traps now exist in this grid.
  */
 bool square_remove_trap(struct chunk *c, int y, int x, bool domsg, int t_idx)
 {
-    int i;
     bool trap_exists;
+	struct trap **trap_slot = &c->squares[y][x].trap;
+	struct trap *next_trap;
 
-    /* Called with a specific index */
-    if (t_idx >= 0)
-    {
-		/* Point to this trap */
-		struct trap *trap = cave_trap(c, t_idx);
-	
-		/* Remove it */
-		remove_trap_aux(c, trap, y, x, domsg);
-	
-		/* Note when trap list actually gets shorter */
-		if (t_idx == cave_trap_max(c) - 1) c->trap_max--;
-    }
+	/* Look at the traps in this grid */
+	while (*trap_slot) {
+		/* Get the next trap (may be NULL) */
+		next_trap = (*trap_slot)->next;
 
-    /* No specific index -- remove all traps here */
-    else
-    {
-		/* Scan the current trap list (backwards) */
-		for (i = cave_trap_max(c) - 1; i >= 0; i--)
-		{
-			/* Point to this trap */
-			struct trap *trap = cave_trap(c, i);
-	    
-			/* Find all traps in this position */
-			if ((trap->fy == y) && (trap->fx == x))
-			{
-				/* Remove it */
-				remove_trap_aux(c, trap, y, x, domsg);
-		
-				/* Note when trap list actually gets shorter */
-				if (i == cave_trap_max(c) - 1) c->trap_max--;
-			}
+		/* If called with a specific index, skip others */
+		if ((t_idx >= 0) && (t_idx != (*trap_slot)->t_idx)) {
+			if (!next_trap) break;
+			trap_slot = &next_trap;
+			continue;
 		}
+
+		/* Replace with the next trap */
+		*trap_slot = next_trap;
+
+		/* Remove it */
+		remove_trap_aux(c, *trap_slot, y, x, domsg);
     }
 
     /* Refresh grids that the character can see */
-    if (player_can_see_bold(y, x)) square_light_spot(c, y, x);
+    if (player_can_see_bold(y, x))
+		square_light_spot(c, y, x);
     
     /* Verify traps (remove marker if appropriate) */
     trap_exists = square_verify_trap(c, y, x, 0);
-    
+
     /* Report whether any traps exist in this grid */
-    return (trap_exists);
-}
-
-/**
- * Remove all traps of a specific kind from a location.
- */
-void square_remove_trap_kind(struct chunk *c, int y, int x, bool domsg, int t_idx)
-{
-    int i;
-
-    /* Scan the current trap list */
-    for (i = 0; i < cave_trap_max(c); i++)
-    {
-		/* Point to this trap */
-		struct trap *trap = cave_trap(c, i);
-
-		/* Find a trap in this position */
-		if ((trap->fy == y) && (trap->fx == x))
-		{
-			/* Require that it be of this type */
-			if (trap->t_idx == t_idx) 
-				(void)square_remove_trap(c, y, x, domsg, i);
-		}
-    }
+    return (!trap_exists);
 }
 
 /**
@@ -605,7 +486,6 @@ void square_remove_trap_kind(struct chunk *c, int y, int x, bool domsg, int t_id
 void square_set_door_lock(struct chunk *c, int y, int x, int power)
 {
 	struct trap_kind *lock = lookup_trap("door lock");
-	int trap_index;
 	struct trap *trap;
 
 	/* Verify it's a closed door */
@@ -616,10 +496,13 @@ void square_set_door_lock(struct chunk *c, int y, int x, int power)
 	if (!square_trap_specific(c, y, x, lock->tidx))
 		place_trap(c, y, x, lock->tidx, 0);
 
-	/* Set the power */
-	trap_index = square_trap_idx(c, y, x);
-	trap = cave_trap(c, trap_index);
-	trap->xtra = power;
+	/* Set the power (of all locks - there should be only one) */
+	trap = c->squares[y][x].trap;
+	while (trap) {
+		if (trap->kind == lock)
+			trap->xtra = power;
+		trap = trap->next;
+	}
 }
 
 /**
@@ -628,7 +511,6 @@ void square_set_door_lock(struct chunk *c, int y, int x, int power)
 int square_door_power(struct chunk *c, int y, int x)
 {
 	struct trap_kind *lock = lookup_trap("door lock");
-	int trap_index;
 	struct trap *trap;
 
 	/* Verify it's a closed door */
@@ -640,8 +522,13 @@ int square_door_power(struct chunk *c, int y, int x)
 		return 0;
 
 	/* Get the power and return it */
-	trap_index = square_trap_idx(c, y, x);
-	trap = cave_trap(c, trap_index);
-	return trap->xtra;
+	trap = c->squares[y][x].trap;
+	while (trap) {
+		if (trap->kind == lock)
+			return trap->xtra;
+		trap = trap->next;
+	}
+
+	return 0;
 }
 

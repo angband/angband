@@ -124,9 +124,6 @@ struct chunk *cave_new(int height, int width) {
 	c->objects = mem_zalloc(z_info->level_object_max * sizeof(struct object));
 	c->obj_max = 1;
 
-	c->traps = mem_zalloc(z_info->level_trap_max * sizeof(struct trap));
-	c->trap_max = 1;
-
 	c->created_at = turn;
 	return c;
 }
@@ -140,8 +137,8 @@ void cave_free(struct chunk *c) {
 		for (x = 0; x < c->width; x++)
 			mem_free(c->squares[y][x].info);
 		mem_free(c->squares[y]);
-		mem_free(c->squares);
 	}
+	mem_free(c->squares);
 
 	for (y = 0; y < c->height; y++){
 		for (x = 0; x < c->width; x++)
@@ -162,7 +159,6 @@ void cave_free(struct chunk *c) {
 	mem_free(c->o_idx);
 	mem_free(c->monsters);
 	mem_free(c->objects);
-	mem_free(c->traps);
 	mem_free(c);
 }
 
@@ -252,21 +248,6 @@ int cave_object_max(struct chunk *c) {
  */
 int cave_object_count(struct chunk *c) {
 	return c->obj_cnt;
-}
-
-/**
- * Get a trap on the current level by its index.
- */
-struct trap *cave_trap(struct chunk *c, int idx) {
-	return &c->traps[idx];
-}
-
-/**
- * The maximum number of traps allowed in the level.
- */
-int cave_trap_max(struct chunk *c)
-{
-	return c->trap_max;
 }
 
 /**

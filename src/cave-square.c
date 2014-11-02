@@ -1,6 +1,6 @@
 /**
-   \file cave-square.c
-   \brief functions for dealing with individual squares
+ * \file cave-square.c
+ * \brief functions for dealing with individual squares
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  *
@@ -840,7 +840,7 @@ void square_remove_ward(struct chunk *c, int y, int x)
 {
 	struct trap_kind *rune = lookup_trap("glyph of warding");
 	assert(square_iswarded(c, y, x));
-	square_remove_trap_kind(c, y, x, TRUE, rune->tidx);
+	square_remove_trap(c, y, x, TRUE, rune->tidx);
 }
 
 /**

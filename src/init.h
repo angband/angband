@@ -43,7 +43,6 @@ struct angband_constants
 	/* Maxima of things on a given level, read from constants.txt */
 	u16b level_object_max;	/**< Maximum number of objects on a given level */
 	u16b level_monster_max;	/**< Maximum number of monsters on a given level */
-	u16b level_trap_max;	/**< Maximum number of traps on a given level */
 
 	/* Monster generation constants, read from constants.txt */
 	u16b alloc_monster_chance;	/**< 1/per-turn-chance of generation */

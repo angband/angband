@@ -461,8 +461,6 @@ static enum parser_error parse_constants_level_max(struct parser *p) {
 		z->level_object_max = value;
 	else if (streq(label, "monsters"))
 		z->level_monster_max = value;
-	else if (streq(label, "traps"))
-		z->level_trap_max = value;
 	else
 		return PARSE_ERROR_UNDEFINED_DIRECTIVE;
 

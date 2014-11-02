@@ -758,8 +758,7 @@ void cave_generate(struct chunk **c, struct player *p) {
 	/* Save the town */
 	else if (!chunk_find_name("Town")) {
 		struct chunk *town = chunk_write(0, 0, z_info->town_hgt,
-										 z_info->town_wid, FALSE, FALSE, FALSE,
-										 TRUE);
+										 z_info->town_wid, FALSE, FALSE, FALSE);
 		town->name = string_make("Town");
 		chunk_list_add(town);
 	}

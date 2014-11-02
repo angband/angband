@@ -11,9 +11,6 @@ level-max:objects:1024
 # Maximum number of monsters on the level
 level-max:monsters:1024
 
-# Maximum number of traps on the level
-level-max:traps:1024
-
 ## Monster Generation ##
 
 # 1/per-turn-chance of new monster generation

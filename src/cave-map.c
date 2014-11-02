@@ -83,7 +83,7 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 
 	/* Default "clear" values, others will be set later where appropriate. */
 	g->first_kind = NULL;
-	g->trap = cave_trap_max(cave);
+	g->trap = NULL;
 	g->multiple_objects = FALSE;
 	g->lighting = LIGHTING_DARK;
 	g->unseen_object = FALSE;
@@ -126,23 +126,17 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 		g->f_idx = f_info[g->f_idx].mimic;*/
 
     /* There is a trap in this square */
-    if (square_istrap(cave, y, x) && square_ismark(cave, y, x))
-    {
-		int i;
+    if (square_istrap(cave, y, x) && square_ismark(cave, y, x)) {
+		struct trap *trap = cave->squares[y][x].trap;
 
-		/* Scan the current trap list */
-		for (i = 0; i < cave_trap_max(cave); i++)
-		{
-			/* Point to this trap */
-			struct trap *trap = cave_trap(cave, i);
-
-			/* Find a trap in this position */
-			if ((trap->fy == y) && (trap->fx == x))
-			{
-				/* Get the trap */
-				g->trap = i;
+		/* Scan the square trap list */
+		while (trap) {
+			if (trf_has(trap->flags, TRF_TRAP)) {
+				/* Accept the trap */
+				g->trap = trap;
 				break;
 			}
+			trap = trap->next;
 		}
     }
 

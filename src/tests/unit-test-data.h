@@ -864,7 +864,6 @@ static struct angband_constants TEST_DATA test_z_info = {
 	.act_max  = 2,
 	.level_object_max  = 2,
 	.level_monster_max = 2,
-	.level_trap_max    = 2,
 };
 
 static struct object TEST_DATA test_gear[MAX_GEAR];

@@ -1,6 +1,6 @@
 /**
-   \file trap.h 
-   \brief trap predicates, structs and functions
+ * \file trap.h 
+ * \brief trap predicates, structs and functions
  */
 
 #ifndef TRAP_H
@@ -72,7 +72,8 @@ struct trap_kind *trap_info;
 struct trap
 {
 	byte t_idx;					/**< Trap kind index */
-	struct trap_kind *kind;
+	struct trap_kind *kind;		/**< Trap kind */
+	struct trap *next;			/**< Next trap in this location */
 
 	byte fy;					/**< Location of trap */
 	byte fx;
@@ -85,15 +86,14 @@ struct trap
 struct trap_kind *lookup_trap(const char *desc);
 bool square_trap_specific(struct chunk *c, int y, int x, int t_idx);
 bool square_trap_flag(struct chunk *c, int y, int x, int flag);
-int square_trap_idx(struct chunk *c, int y, int x);
-bool get_trap_graphics(struct chunk *c, int t_idx, int *a, wchar_t *ch, bool require_visible);
+bool get_trap_graphics(struct chunk *c, struct trap *trap, int *a, wchar_t *ch,
+					   bool require_visible);
 bool square_reveal_trap(struct chunk *c, int y, int x, int chance, bool domsg);
 bool trap_check_hit(int power);
 void hit_trap(int y, int x);
 void place_trap(struct chunk *c, int y, int x, int t_idx, int trap_level);
 void wipe_trap_list(struct chunk *c);
 bool square_remove_trap(struct chunk *c, int y, int x, bool domsg, int t_idx);
-void square_remove_trap_kind(struct chunk *c, int y, int x, bool domsg, int t_idx);
 void square_set_door_lock(struct chunk *c, int y, int x, int power);
 int square_door_power(struct chunk *c, int y, int x);
 

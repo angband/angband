@@ -130,7 +130,7 @@ typedef struct
 	u32b m_idx;				/* Monster index */
 	u32b f_idx;				/* Feature index */
 	struct object_kind *first_kind;	/* The kind of the first item on the grid */
-	u32b trap;				/* Trap index */
+	struct trap *trap;		/* Trap */
 	bool multiple_objects;	/* Is there more than one item there? */
 	bool unseen_object;		/* Is there an unaware object there? */
 	bool unseen_money;		/* Is there some unaware money there? */
@@ -185,9 +185,6 @@ struct chunk {
 	struct object *objects;
 	u16b obj_max;
 	u16b obj_cnt;
-
-	struct trap *traps;
-	u16b trap_max;
 };
 
 /*** Feature Indexes (see "lib/edit/terrain.txt") ***/
@@ -385,9 +382,6 @@ int cave_monster_count(struct chunk *c);
 struct object *cave_object(struct chunk *c, int idx); 
 int cave_object_max(struct chunk *c);
 int cave_object_count(struct chunk *c);
-
-struct trap *cave_trap(struct chunk *c, int idx);
-int cave_trap_max(struct chunk *c);
 
 int count_feats(int *y, int *x, bool (*test)(struct chunk *cave, int y, int x), bool under);
 

@@ -1,7 +1,6 @@
 /**
-	\file gen-chunk.c 
-    \brief Handling of chunks of cave
- 
+ * \file gen-chunk.c 
+ * \brief Handling of chunks of cave
  *
  * Copyright (c) 2014 Nick McConnell
  *
@@ -51,9 +50,8 @@ u16b chunk_list_max = 0;      /**< current max actual chunk index */
  * \return the memory location of the chunk
  */
 struct chunk *chunk_write(int y0, int x0, int height, int width, bool monsters,
-						 bool objects, bool traps, bool delete_old)
+						 bool objects, bool traps)
 {
-	int i;
 	int x, y;
 
 	struct chunk *new = cave_new(height, width);
@@ -85,7 +83,7 @@ struct chunk *chunk_write(int y0, int x0, int height, int width, bool monsters,
 						next_o_idx = source_obj->next_o_idx;
 						if (next_o_idx)
 							dest_obj->next_o_idx = new->obj_cnt + 1;
-						if (delete_old) delete_object_idx(this_o_idx);
+						delete_object_idx(this_o_idx);
 					}
 				}
 			}
@@ -129,36 +127,24 @@ struct chunk *chunk_write(int y0, int x0, int height, int width, bool monsters,
 							dest_obj->held_m_idx = cave_monster_count(new);
 							if (!held)
 								held = cave_object_count(new);
-							if (delete_old) delete_object_idx(this_o_idx);
+							delete_object_idx(this_o_idx);
 						}
 					}
 					dest_mon->hold_o_idx = held;
-					if (delete_old) delete_monster(y0 + y, x0 + x);
+					delete_monster(y0 + y, x0 + x);
 				}
 			}
-		}
-	}
 
-	/* Traps */
-	if (traps){
-		for (i = 0; i < cave_trap_max(cave); i++) {
-			/* Point to this trap */
-			struct trap *trap = cave_trap(cave, i);
-			struct trap *trap1 = cave_trap(new, cave_trap_max(new) + 1);
-			int ty = trap->fy;
-			int tx = trap->fx;
-
-			if ((ty >= y0) && (ty < y0 + height) &&
-				(tx >= x0) && (tx < x0 + width)) {
+			/* Traps */
+			if (traps) {
 				/* Copy over */
-				memcpy(trap1, trap, sizeof(*trap));
+				struct trap *trap = cave->squares[y][x].trap;
+				new->squares[y][x].trap = trap;
+				cave->squares[y][x].trap = NULL;
 
-				/* Adjust stuff */
-				new->trap_max++;
-				trap1->fy = ty - y0;
-				trap1->fx = tx - x0;
-				if (delete_old)
-					square_remove_trap(cave, trap->fy, trap->fx, FALSE, i);
+				/* Adjust position */
+				trap->fy -= y0;
+				trap->fx -= x0;
 			}
 		}
 	}
@@ -447,28 +433,36 @@ bool chunk_copy(struct chunk *dest, struct chunk *source, int y0, int x0,
 				}
 			}
 
+			/* Traps */
+			if (source->squares[y][x].trap) {
+				struct trap *trap = source->squares[y][x].trap;
+				struct trap *new_trap = mem_zalloc(sizeof(*new_trap));
+				dest->squares[y][x].trap = new_trap;
+
+				/* Traverse the trap list */
+				while (trap) {
+					struct trap *last_new_trap = new_trap;
+
+					/* Copy over */
+					memcpy(new_trap, trap, sizeof(*trap));
+
+					/* Adjust location */
+					new_trap->fy = dest_y;
+					new_trap->fx = dest_x;
+
+					/* Step, make a new trap if needed, point at it */
+					trap = trap->next;
+					if (trap) {
+						new_trap = mem_zalloc(sizeof(*new_trap));
+						last_new_trap->next = new_trap;
+					}
+				}
+			}
+
 			/* Player */
 			if (source->m_idx[y][x] == -1) 
 				dest->m_idx[dest_y][dest_x] = -1;
 		}
-	}
-
-	/* Traps */
-	for (i = 0; i < cave_trap_max(source); i++) {
-		/* Point to this trap */
-		struct trap *trap = cave_trap(source, cave_trap_max(dest) + 1);
-		struct trap *u_ptr = cave_trap(dest, i);
-
-		/* Copy over */
-		memcpy(u_ptr, trap, sizeof(*trap));
-
-		/* Adjust stuff */
-		dest->trap_max++;
-		y = trap->fy;
-		x = trap->fx;
-		symmetry_transform(&y, &x, y0, x0, h, w, rotate, reflect);
-		u_ptr->fy = y;
-		u_ptr->fx = x;
 	}
 
 	/* Miscellany */

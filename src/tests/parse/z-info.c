@@ -42,7 +42,6 @@ int test_badmax(void *state) {
 
 TEST_MAX(level_object_max, "objects")
 TEST_MAX(level_monster_max, "monsters")
-TEST_MAX(level_trap_max, "traps")
 
 #define TEST_MON(l,u) \
 	int test_##l(void *s) { \
@@ -68,7 +67,6 @@ struct test tests[] = {
 	{ "badmax", test_badmax },
 	{ "objects_max", test_level_object_max },
 	{ "monsters_max", test_level_monster_max },
-	{ "traps_max", test_level_trap_max },
 	{ "mon_chance", test_alloc_monster_chance },
 	{ "monsters_min", test_level_monster_min },
 	{ "town_day", test_town_monsters_day },
