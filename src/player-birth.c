@@ -515,11 +515,19 @@ void wield_all(struct player *p)
  */
 static void player_outfit(struct player *p)
 {
+	int i;
 	const struct start_item *si;
 	object_type object_type_body;
 
 	/* Player needs a body */
-	p->body = bodies[p->race->body];
+	memcpy(&p->body, &bodies[p->race->body], sizeof(p->body));
+	p->body.slots = mem_zalloc(p->body.count * sizeof(struct equip_slot));
+	for (i = 0; i < p->body.count; i++) {
+		char buf[80];
+		p->body.slots[i].type = bodies[p->race->body].slots[i].type;
+		my_strcpy(buf, bodies[p->race->body].slots[i].name, sizeof(buf));
+		p->body.slots[i].name = string_make(buf);
+	}
 
 	/* Currently carrying nothing */
 	p->upkeep->total_weight = 0;
