@@ -253,8 +253,8 @@ static bool near_permwall(const monster_type *m_ptr, struct chunk *c)
  * through obstacles.
  *
  * Monsters first try to use up-to-date distance information ('sound') as
- * saved in cave->cost.  Failing that, they'll try using scent ('when')
- * which is just old cost information.
+ * saved in cave->squares[y][x].cost.  Failing that, they'll try using scent
+ * ('when') which is just old cost information.
  *
  * Tracking by 'scent' means that monsters end up near enough the player to
  * switch to 'sound' (cost), or they end up somewhere the player left via 
@@ -281,11 +281,11 @@ static bool get_moves_flow(struct chunk *c, struct monster *m_ptr)
 		return (FALSE);
 
 	/* If the player has never been near this grid, abort */
-	if (c->when[my][mx] == 0) return FALSE;
+	if (c->squares[my][mx].when == 0) return FALSE;
 
 	/* Monster is too far away to notice the player */
-	if (c->cost[my][mx] > z_info->max_flow_depth) return FALSE;
-	if (c->cost[my][mx] > (OPT(birth_small_range) ? m_ptr->race->aaf / 2 : m_ptr->race->aaf)) return FALSE;
+	if (c->squares[my][mx].cost > z_info->max_flow_depth) return FALSE;
+	if (c->squares[my][mx].cost > (OPT(birth_small_range) ? m_ptr->race->aaf / 2 : m_ptr->race->aaf)) return FALSE;
 
 	/* If the player can see monster, run towards them */
 	if (player_has_los_bold(my, mx)) return FALSE;
@@ -299,17 +299,17 @@ static bool get_moves_flow(struct chunk *c, struct monster *m_ptr)
 		int x = mx + ddx_ddd[i];
 
 		/* Ignore unvisited/unpassable locations */
-		if (c->when[y][x] == 0) continue;
+		if (c->squares[y][x].when == 0) continue;
 
 		/* Ignore locations whose data is more stale */
-		if (c->when[y][x] < best_when) continue;
+		if (c->squares[y][x].when < best_when) continue;
 
 		/* Ignore locations which are farther away */
-		if (c->cost[y][x] > best_cost) continue;
+		if (c->squares[y][x].cost > best_cost) continue;
 
 		/* Save the cost and time */
-		best_when = c->when[y][x];
-		best_cost = c->cost[y][x];
+		best_when = c->squares[y][x].when;
+		best_cost = c->squares[y][x].cost;
 		best_direction = i;
 	}
 
@@ -341,12 +341,12 @@ static bool get_moves_fear(struct chunk *c, struct monster *m_ptr)
 	int my = m_ptr->fy, mx = m_ptr->fx;
 
 	/* If the player is not currently near the monster, no reason to flow */
-	if (c->when[my][mx] < c->when[py][px])
+	if (c->squares[my][mx].when < c->squares[py][px].when)
 		return FALSE;
 
 	/* Monster is too far away to use flow information */
-	if (c->cost[my][mx] > z_info->max_flow_depth) return FALSE;
-	if (c->cost[my][mx] > (OPT(birth_small_range) ? m_ptr->race->aaf / 2 :
+	if (c->squares[my][mx].cost > z_info->max_flow_depth) return FALSE;
+	if (c->squares[my][mx].cost > (OPT(birth_small_range) ? m_ptr->race->aaf / 2 :
 						   m_ptr->race->aaf)) return FALSE;
 
 	/* Check nearby grids, diagonals first */
@@ -359,7 +359,7 @@ static bool get_moves_fear(struct chunk *c, struct monster *m_ptr)
 		int x = mx + ddx_ddd[i];
 
 		/* Ignore illegal & older locations */
-		if (c->when[y][x] == 0 || c->when[y][x] < best_when) continue;
+		if (c->squares[y][x].when == 0 || c->squares[y][x].when < best_when) continue;
 
 		/* Calculate distance of this grid from our target */
 		dis = distance(y, x, m_ptr->ty, m_ptr->tx);
@@ -368,7 +368,7 @@ static bool get_moves_fear(struct chunk *c, struct monster *m_ptr)
 		 * First half of calculation is inversely proportional to distance
 		 * Second half is inversely proportional to grid's distance from player
 		 */
-		score = 5000 / (dis + 3) - 500 / (c->cost[y][x] + 1);
+		score = 5000 / (dis + 3) - 500 / (c->squares[y][x].cost + 1);
 
 		/* No negative scores */
 		if (score < 0) score = 0;
@@ -377,7 +377,7 @@ static bool get_moves_fear(struct chunk *c, struct monster *m_ptr)
 		if (score < best_score) continue;
 
 		/* Save the score and time */
-		best_when = c->when[y][x];
+		best_when = c->squares[y][x].when;
 		best_score = score;
 
 		/* Save the location */
@@ -578,10 +578,10 @@ static bool find_safety(struct chunk *c, struct monster *m_ptr)
 			if (!square_ispassable(cave, y, x)) continue;
 
 			/* Ignore grids very far from the player */
-			if (c->when[y][x] < c->when[py][px]) continue;
+			if (c->squares[y][x].when < c->squares[py][px].when) continue;
 
 			/* Ignore too-distant grids */
-			if (c->cost[y][x] > c->cost[fy][fx] + 2 * d) continue;
+			if (c->squares[y][x].cost > c->squares[fy][fx].cost + 2 * d) continue;
 
 			/* Check for absence of shot (more or less) */
 			if (!player_has_los_bold(y,x))
@@ -895,9 +895,9 @@ static bool monster_can_flow(struct chunk *c, struct monster *mon)
 	assert(c);
 
 	/* Check the flow (normal aaf is about 20) */
-	if ((c->when[fy][fx] == c->when[player->py][player->px]) &&
-	    (c->cost[fy][fx] < z_info->max_flow_depth) &&
-	    (c->cost[fy][fx] < dist))
+	if ((c->squares[fy][fx].when == c->squares[player->py][player->px].when) &&
+	    (c->squares[fy][fx].cost < z_info->max_flow_depth) &&
+	    (c->squares[fy][fx].cost < dist))
 		return TRUE;
 	return FALSE;
 }

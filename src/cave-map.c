@@ -609,13 +609,11 @@ void cave_forget_flow(struct chunk *c)
 	if (!flow_save) return;
 
 	/* Check the entire dungeon */
-	for (y = 0; y < c->height; y++)
-	{
-		for (x = 0; x < c->width; x++)
-		{
+	for (y = 0; y < c->height; y++) {
+		for (x = 0; x < c->width; x++) {
 			/* Forget the old data */
-			c->cost[y][x] = 0;
-			c->when[y][x] = 0;
+			c->squares[y][x].cost = 0;
+			c->squares[y][x].when = 0;
 		}
 	}
 
@@ -668,8 +666,8 @@ void cave_update_flow(struct chunk *c)
 		{
 			for (x = 0; x < c->width; x++)
 			{
-				int w = c->when[y][x];
-				c->when[y][x] = (w >= 128) ? (w - 128) : 0;
+				int w = c->squares[y][x].when;
+				c->squares[y][x].when = (w >= 128) ? (w - 128) : 0;
 			}
 		}
 
@@ -684,10 +682,10 @@ void cave_update_flow(struct chunk *c)
 	/*** Player Grid ***/
 
 	/* Save the time-stamp */
-	c->when[py][px] = flow_n;
+	c->squares[py][px].when = flow_n;
 
 	/* Save the flow cost */
-	c->cost[py][px] = 0;
+	c->squares[py][px].cost = 0;
 
 	/* Enqueue that entry */
 	flow_y[flow_head] = py;
@@ -710,7 +708,7 @@ void cave_update_flow(struct chunk *c)
 		if (++flow_head == FLOW_MAX) flow_head = 0;
 
 		/* Child cost */
-		n = c->cost[ty][tx] + 1;
+		n = c->squares[ty][tx].cost + 1;
 
 		/* Hack -- Limit flow depth */
 		if (n == z_info->max_flow_depth) continue;
@@ -726,16 +724,16 @@ void cave_update_flow(struct chunk *c)
 			if (!square_in_bounds(c, y, x)) continue;
 
 			/* Ignore "pre-stamped" entries */
-			if (c->when[y][x] == flow_n) continue;
+			if (c->squares[y][x].when == flow_n) continue;
 
 			/* Ignore "walls" and "rubble" */
 			if (tf_has(f_info[c->feat[y][x]].flags, TF_NO_FLOW)) continue;
 
 			/* Save the time-stamp */
-			c->when[y][x] = flow_n;
+			c->squares[y][x].when = flow_n;
 
 			/* Save the flow cost */
-			c->cost[y][x] = n;
+			c->squares[y][x].cost = n;
 
 			/* Enqueue that entry */
 			flow_y[flow_tail] = y;

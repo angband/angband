@@ -136,10 +136,10 @@ static void do_cmd_wiz_hack_ben(void)
 				if (!square_in_bounds_fully(cave, y, x)) continue;
 
 				/* Display proper cost */
-				if (cave->cost[y][x] != i) continue;
+				if (cave->squares[y][x].cost != i) continue;
 
 				/* Reliability in yellow */
-				if (cave->when[y][x] == cave->when[py][px])
+				if (cave->squares[y][x].when == cave->squares[py][px].when)
 					a = TERM_YELLOW;
 
 				/* Display player/floors/walls */
