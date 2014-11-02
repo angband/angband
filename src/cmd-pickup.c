@@ -445,7 +445,7 @@ void move_player(int dir, bool disarm)
 	int y = py + ddy[dir];
 	int x = px + ddx[dir];
 
-	int m_idx = cave->m_idx[y][x];
+	int m_idx = cave->squares[y][x].mon;
 	struct monster *m_ptr = cave_monster(cave, m_idx);
 
 	/* Attack monsters */

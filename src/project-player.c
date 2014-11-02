@@ -461,10 +461,10 @@ bool project_p(int who, int r, int y, int x, int dam, int typ)
 	};
 
 	/* No player here */
-	if (!(cave->m_idx[y][x] < 0)) return (FALSE);
+	if (!(cave->squares[y][x].mon < 0)) return (FALSE);
 
 	/* Never affect projector */
-	if (cave->m_idx[y][x] == who) return (FALSE);
+	if (cave->squares[y][x].mon == who) return (FALSE);
 
 	/* Source monster */
 	m_ptr = cave_monster(cave, who);

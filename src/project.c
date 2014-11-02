@@ -155,7 +155,7 @@ int project_path(struct loc *gp, int range, int y1, int x1, int y2, int x2, int 
 
 			/* Sometimes stop at non-initial monsters/players */
 			if (flg & (PROJECT_STOP))
-				if ((n > 0) && (cave->m_idx[y][x] != 0)) break;
+				if ((n > 0) && (cave->squares[y][x].mon != 0)) break;
 
 			/* Slant */
 			if (m) {
@@ -209,7 +209,7 @@ int project_path(struct loc *gp, int range, int y1, int x1, int y2, int x2, int 
 
 			/* Sometimes stop at non-initial monsters/players */
 			if (flg & (PROJECT_STOP))
-				if ((n > 0) && (cave->m_idx[y][x] != 0)) break;
+				if ((n > 0) && (cave->squares[y][x].mon != 0)) break;
 
 			/* Slant */
 			if (m) {
@@ -257,7 +257,7 @@ int project_path(struct loc *gp, int range, int y1, int x1, int y2, int x2, int 
 
 			/* Sometimes stop at non-initial monsters/players */
 			if (flg & (PROJECT_STOP))
-				if ((n > 0) && (cave->m_idx[y][x] != 0)) break;
+				if ((n > 0) && (cave->squares[y][x].mon != 0)) break;
 
 			/* Advance */
 			y += sy;
@@ -973,7 +973,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 			y = project_m_y;
 
 			/* Track if possible */
-			if (cave->m_idx[y][x] > 0) {
+			if (cave->squares[y][x].mon > 0) {
 				monster_type *m_ptr = square_monster(cave, y, x);
 
 				/* Recall and track */

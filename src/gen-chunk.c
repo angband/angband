@@ -92,7 +92,7 @@ struct chunk *chunk_write(int y0, int x0, int height, int width, bool monsters,
 			/* Monsters and held objects */
 			if (monsters){
 				held = 0;
-				if (cave->m_idx[y0 + y][x0 + x] > 0) {
+				if (cave->squares[y0 + y][x0 + x].mon > 0) {
 					monster_type *source_mon = square_monster(cave, y0 + y, x0 + x);
 					monster_type *dest_mon = NULL;
 
@@ -101,7 +101,7 @@ struct chunk *chunk_write(int y0, int x0, int height, int width, bool monsters,
 						continue;
 
 					/* Copy over */
-					new->m_idx[y][x] = ++new->mon_cnt;
+					new->squares[y][x].mon = ++new->mon_cnt;
 					dest_mon = cave_monster(new, new->mon_cnt);
 					memcpy(dest_mon, source_mon, sizeof(*source_mon));
 
@@ -362,7 +362,7 @@ bool chunk_copy(struct chunk *dest, struct chunk *source, int y0, int x0,
 			}
 
 			/* Monsters */
-			if (source->m_idx[y][x] > 0) {
+			if (source->squares[y][x].mon > 0) {
 				monster_type *source_mon = square_monster(source, y, x);
 				monster_type *dest_mon = NULL;
 				int idx;
@@ -380,7 +380,7 @@ bool chunk_copy(struct chunk *dest, struct chunk *source, int y0, int x0,
 
 				/* Copy over */
 				dest_mon = cave_monster(dest, idx);
-				dest->m_idx[dest_y][dest_x] = idx;
+				dest->squares[dest_y][dest_x].mon = idx;
 				memcpy(dest_mon, source_mon, sizeof(*source_mon));
 
 				/* Adjust stuff */
@@ -462,8 +462,8 @@ bool chunk_copy(struct chunk *dest, struct chunk *source, int y0, int x0,
 			}
 
 			/* Player */
-			if (source->m_idx[y][x] == -1) 
-				dest->m_idx[dest_y][dest_x] = -1;
+			if (source->squares[y][x].mon == -1) 
+				dest->squares[dest_y][dest_x].mon = -1;
 		}
 	}
 
@@ -496,7 +496,7 @@ void chunk_validate_objects(struct chunk *c) {
 				assert(c->objects[this_o_idx].tval != 0);
 				next_o_idx = c->objects[this_o_idx].next_o_idx;
 			}
-			if (c->m_idx[y][x] > 0) {
+			if (c->squares[y][x].mon > 0) {
 				monster_type *mon = square_monster(c, y, x);
 				if (mon->hold_o_idx) {
 					for (this_o_idx = mon->hold_o_idx; this_o_idx; this_o_idx = next_o_idx) {

@@ -484,7 +484,7 @@ int context_menu_cave(struct chunk *c, int y, int x, int adjacent, int mx, int m
 	cmdkey = (mode == KEYMAP_MODE_ORIG) ? 'l' : 'x';
 	menu_dynamic_add_label(m, "Look At", cmdkey, MENU_VALUE_LOOK, labels);
 
-	if (c->m_idx[y][x]) {
+	if (c->squares[y][x].mon) {
 		/* '/' is used for recall in both keymaps. */
 		menu_dynamic_add_label(m, "Recall Info", '/', MENU_VALUE_RECALL, labels);
 	}
@@ -496,7 +496,7 @@ int context_menu_cave(struct chunk *c, int y, int x, int adjacent, int mx, int m
 	}
 
 	if (adjacent) {
-		ADD_LABEL((c->m_idx[y][x]) ? "Attack" : "Alter", CMD_ALTER, MN_ROW_VALID);
+		ADD_LABEL((c->squares[y][x].mon) ? "Attack" : "Alter", CMD_ALTER, MN_ROW_VALID);
 
 		if (c->o_idx[y][x]) {
 			s16b o_idx = chest_check(y,x, CHEST_ANY);
@@ -582,7 +582,7 @@ int context_menu_cave(struct chunk *c, int y, int x, int adjacent, int mx, int m
 	if (player->timed[TMD_IMAGE]) {
 		prt("(Enter to select command, ESC to cancel) You see something strange:", 0, 0);
 	} else
-	if (c->m_idx[y][x]) {
+	if (c->squares[y][x].mon) {
 		char m_name[80];
 		monster_type *m_ptr = square_monster(c, y, x);
 

@@ -1041,7 +1041,7 @@ bool project_m(int who, int r, int y, int x, int dam, int typ, int flg)
 	char m_name[80];
 	char m_poss[80];
 
-	int m_idx = cave->m_idx[y][x];
+	int m_idx = cave->squares[y][x].mon;
 
 	project_monster_handler_f monster_handler = monster_handlers[typ];
 	project_monster_handler_context_t context = {

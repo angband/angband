@@ -498,12 +498,12 @@ void monster_swap(int y1, int x1, int y2, int x2)
 	monster_type *m_ptr;
 
 	/* Monsters */
-	m1 = cave->m_idx[y1][x1];
-	m2 = cave->m_idx[y2][x2];
+	m1 = cave->squares[y1][x1].mon;
+	m2 = cave->squares[y2][x2].mon;
 
 	/* Update grids */
-	cave->m_idx[y1][x1] = m2;
-	cave->m_idx[y2][x2] = m1;
+	cave->squares[y1][x1].mon = m2;
+	cave->squares[y2][x2].mon = m1;
 
 	/* Monster 1 */
 	if (m1 > 0) {

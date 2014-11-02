@@ -277,7 +277,7 @@ bool square_noticeable(struct chunk *c, int y, int x)
  * True if the square contains the player
  */
 bool square_isplayer(struct chunk *c, int y, int x) {
-	return c->m_idx[y][x] < 0 ? TRUE : FALSE;
+	return c->squares[y][x].mon < 0 ? TRUE : FALSE;
 }
 
 /**
@@ -465,7 +465,7 @@ bool square_isproject(struct chunk *c, int y, int x) {
  * True if the square is open (a floor square not occupied by a monster).
  */
 bool square_isopen(struct chunk *c, int y, int x) {
-	return square_isfloor(c, y, x) && !c->m_idx[y][x];
+	return square_isfloor(c, y, x) && !c->squares[y][x].mon;
 }
 
 /**
@@ -690,8 +690,8 @@ struct feature *square_feat(struct chunk *c, int y, int x)
  */
 struct monster *square_monster(struct chunk *c, int y, int x)
 {
-	if (c->m_idx[y][x] > 0) {
-		struct monster *mon = cave_monster(c, c->m_idx[y][x]);
+	if (c->squares[y][x].mon > 0) {
+		struct monster *mon = cave_monster(c, c->squares[y][x].mon);
 		return mon->race ? mon : NULL;
 	}
 

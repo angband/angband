@@ -164,7 +164,7 @@ void delete_monster_idx(int m_idx)
 	if (player->upkeep->health_who == m_ptr) health_track(player->upkeep, NULL);
 
 	/* Monster is gone */
-	cave->m_idx[y][x] = 0;
+	cave->squares[y][x].mon = 0;
 
 	/* Delete objects */
 	for (this_o_idx = m_ptr->hold_o_idx; this_o_idx; this_o_idx = next_o_idx)
@@ -213,8 +213,8 @@ void delete_monster(int y, int x)
 	assert(square_in_bounds(cave, y, x));
 
 	/* Delete the monster (if any) */
-	if (cave->m_idx[y][x] > 0)
-		delete_monster_idx(cave->m_idx[y][x]);
+	if (cave->squares[y][x].mon > 0)
+		delete_monster_idx(cave->squares[y][x].mon);
 }
 
 
@@ -238,7 +238,7 @@ static void compact_monsters_aux(int i1, int i2)
 	x = m_ptr->fx;
 
 	/* Update the cave */
-	cave->m_idx[y][x] = i2;
+	cave->squares[y][x].mon = i2;
 	
 	/* Update midx */
 	m_ptr->midx = i2;
@@ -394,7 +394,7 @@ void wipe_mon_list(struct chunk *c, struct player *p)
 		m_ptr->race->cur_num--;
 
 		/* Monster is gone */
-		c->m_idx[m_ptr->fy][m_ptr->fx] = 0;
+		c->squares[m_ptr->fy][m_ptr->fx].mon = 0;
 
 		/* Wipe the Monster */
 		(void)WIPE(m_ptr, monster_type);
@@ -632,14 +632,14 @@ monster_race *get_mon_num(int level)
  */
 void player_place(struct chunk *c, struct player *p, int y, int x)
 {
-	assert(!c->m_idx[y][x]);
+	assert(!c->squares[y][x].mon);
 
 	/* Save player location */
 	p->py = y;
 	p->px = x;
 
 	/* Mark cave grid */
-	c->m_idx[y][x] = -1;
+	c->squares[y][x].mon = -1;
 }
 
 /**
@@ -801,7 +801,7 @@ s16b place_monster(struct chunk *c, int y, int x, monster_type *mon, byte origin
 	m_ptr->midx = m_idx;
 
 	/* Set the location */
-	c->m_idx[y][x] = m_ptr->midx;
+	c->squares[y][x].mon = m_ptr->midx;
 	m_ptr->fy = y;
 	m_ptr->fx = x;
 	assert(square_monster(c, y, x) == m_ptr);

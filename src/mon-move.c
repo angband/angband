@@ -1041,7 +1041,7 @@ static bool process_monster_multiply(struct chunk *c, struct monster *m_ptr)
 	/* Count the adjacent monsters */
 	for (y = oy - 1; y <= m_ptr->fy + 1; y++)
 		for (x = ox - 1; x <= m_ptr->fx + 1; x++)
-			if (c->m_idx[y][x] > 0) k++;
+			if (c->squares[y][x].mon > 0) k++;
 
 	/* Multiply slower in crowded areas */
 	if ((k < 4) && (k == 0 || one_in_(k * z_info->repro_monster_rate))) {

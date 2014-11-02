@@ -581,7 +581,7 @@ void do_cmd_close(struct command *cmd)
 	}
 
 	/* Monster - alert, then attack */
-	if (cave->m_idx[y][x] > 0) {
+	if (cave->squares[y][x].mon > 0) {
 		msg("There is a monster in the way!");
 		py_attack(y, x);
 	}
@@ -770,7 +770,7 @@ void do_cmd_tunnel(struct command *cmd)
 	}
 
 	/* Attack any monster we run into */
-	if (cave->m_idx[y][x] > 0) {
+	if (cave->squares[y][x].mon > 0) {
 		msg("There is a monster in the way!");
 		py_attack(y, x);
 	} else {
@@ -1016,7 +1016,7 @@ void do_cmd_disarm(struct command *cmd)
 
 
 	/* Monster */
-	if (cave->m_idx[y][x] > 0) {
+	if (cave->squares[y][x].mon > 0) {
 		msg("There is a monster in the way!");
 		py_attack(y, x);
 	}
@@ -1069,7 +1069,7 @@ void do_cmd_alter_aux(int dir)
 	}
 
 	/* Attack monsters */
-	if (cave->m_idx[y][x] > 0)
+	if (cave->squares[y][x].mon > 0)
 		py_attack(y, x);
 
 	/* Tunnel through walls and rubble */
@@ -1108,7 +1108,7 @@ void do_cmd_alter(struct command *cmd)
  */
 static bool do_cmd_walk_test(int y, int x)
 {
-	int m_idx = cave->m_idx[y][x];
+	int m_idx = cave->squares[y][x].mon;
 	struct monster *m_ptr = cave_monster(cave, m_idx);
 
 	/* Allow attack on visible monsters if unafraid */

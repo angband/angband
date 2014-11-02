@@ -88,7 +88,7 @@ bool findpath(int y, int x)
 	terrain[player->py - oy][player->px - ox] = 1;
 
 	if ((x >= ox) && (x < ex) && (y >= oy) && (y < ey)) {
-		if ((cave->m_idx[y][x] > 0) &&
+		if ((cave->squares[y][x].mon > 0) &&
 			mflag_has(square_monster(cave, y, x)->mflag, MFLAG_VISIBLE))
 			terrain[y - oy][x - ox] = MAX_PF_LENGTH;
 
@@ -582,7 +582,7 @@ static bool run_test(void)
 
 
 		/* Visible monsters abort running */
-		if (cave->m_idx[row][col] > 0)
+		if (cave->squares[row][col].mon > 0)
 		{
 			monster_type *m_ptr = square_monster(cave, row, col);
 
@@ -691,7 +691,7 @@ static bool run_test(void)
 		if (row < 0 || col < 0) continue;
 
 		/* Visible monsters abort running */
-		if (cave->m_idx[row][col] > 0)
+		if (cave->squares[row][col].mon > 0)
 		{
 			monster_type *m_ptr = square_monster(cave, row, col);
 			

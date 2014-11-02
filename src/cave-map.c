@@ -95,8 +95,8 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 		g->f_idx = f_info[g->f_idx].mimic;
 
 	g->in_view = (square_isseen(cave, y, x)) ? TRUE : FALSE;
-	g->is_player = (cave->m_idx[y][x] < 0) ? TRUE : FALSE;
-	g->m_idx = (g->is_player) ? 0 : cave->m_idx[y][x];
+	g->is_player = (cave->squares[y][x].mon < 0) ? TRUE : FALSE;
+	g->m_idx = (g->is_player) ? 0 : cave->squares[y][x].mon;
 	g->hallucinate = player->timed[TMD_IMAGE] ? TRUE : FALSE;
 	g->trapborder = (square_isdedge(cave, y, x)) ? TRUE : FALSE;
 
@@ -293,7 +293,7 @@ static void cave_light(struct point_set *ps)
 		square_light_spot(cave, y, x);
 
 		/* Process affected monsters */
-		if (cave->m_idx[y][x] > 0)
+		if (cave->squares[y][x].mon > 0)
 		{
 			int chance = 25;
 

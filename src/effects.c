@@ -2511,13 +2511,13 @@ bool effect_handler_THRUST_AWAY(effect_handler_context_t *context)
 			xx = x + ddx_ddd[d % 8];
 
 			/* Cannot switch places with stronger monsters. */
-			if (cave->m_idx[yy][xx] != 0) {
+			if (cave->squares[yy][xx].mon != 0) {
 				/* A monster is trying to pass. */
-				if (cave->m_idx[y][x] > 0) {
+				if (cave->squares[y][x].mon > 0) {
 
 					monster_type *m_ptr = square_monster(cave, y, x);
 
-					if (cave->m_idx[yy][xx] > 0) {
+					if (cave->squares[yy][xx].mon > 0) {
 						monster_type *n_ptr = square_monster(cave, yy, xx);
 
 						/* Monsters cannot pass by stronger monsters. */
@@ -2531,8 +2531,8 @@ bool effect_handler_THRUST_AWAY(effect_handler_context_t *context)
 				}
 
 				/* The player is trying to pass. */
-				if (cave->m_idx[y][x] < 0) {
-					if (cave->m_idx[yy][xx] > 0) {
+				if (cave->squares[y][x].mon < 0) {
+					if (cave->squares[yy][xx].mon > 0) {
 						monster_type *n_ptr = square_monster(cave, yy, xx);
 
 						/* Players cannot pass by stronger monsters. */
@@ -2563,7 +2563,7 @@ bool effect_handler_THRUST_AWAY(effect_handler_context_t *context)
 				/* If there are walls everywhere, stop here. */
 				else if (d == (8 + first_d - 1)) {
 					/* Message for player. */
-					if (cave->m_idx[y][x] < 0)
+					if (cave->squares[y][x].mon < 0)
 						msg("You come to rest next to a wall.");
 					i = grids_away;
 				}
@@ -3072,7 +3072,7 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 			if (!map[16 + yy - cy][16 + xx - cx]) continue;
 
 			/* Process monsters */
-			if (cave->m_idx[yy][xx] > 0) {
+			if (cave->squares[yy][xx].mon > 0) {
 				monster_type *m_ptr = square_monster(cave, yy, xx);
 
 				/* Most monsters cannot co-exist with rock */

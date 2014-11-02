@@ -546,7 +546,7 @@ static void ranged_helper(int item, int dir, int range, int shots, ranged_attack
 							 object_char(o_ptr), object_attr(o_ptr), see, y, x);
 
 		/* Try the attack on the monster at (x, y) if any */
-		if (cave->m_idx[y][x] > 0) {
+		if (cave->squares[y][x].mon > 0) {
 			monster_type *m_ptr = square_monster(cave, y, x);
 			int visible = mflag_has(m_ptr->mflag, MFLAG_VISIBLE);
 
