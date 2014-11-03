@@ -284,6 +284,20 @@ void place_trap(struct chunk *c, int y, int x, int t_idx, int trap_level)
 }
 
 /**
+ * Free memory for all traps on a grid
+ */
+void square_free_trap(struct chunk *c, int y, int x)
+{
+	struct trap *next, *trap = c->squares[y][x].trap;
+
+	while (trap) {
+		next = trap->next;
+		mem_free(trap);
+		trap = next;
+	}
+}
+
+/**
  * Reveal some of the player traps in a square
  */
 bool square_reveal_trap(struct chunk *c, int y, int x, int chance, bool domsg)

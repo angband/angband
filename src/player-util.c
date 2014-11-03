@@ -339,8 +339,10 @@ bool player_book_has_unlearned_spells(struct player *p)
 	const class_book *book;
 
 	/* Check if the player can learn new spells */
-	if (!p->upkeep->new_spells)
+	if (!p->upkeep->new_spells) {
+		mem_free(item_list);
 		return FALSE;
+	}
 
 	/* Get the number of books in inventory */
 	item_num = scan_items(item_list, item_max, (USE_INVEN), obj_can_browse);
@@ -352,11 +354,14 @@ bool player_book_has_unlearned_spells(struct player *p)
 
 		/* Extract spells */
 		for (j = 0; j < book->num_spells; j++)
-			if (spell_okay_to_study(book->spells[j].sidx))
+			if (spell_okay_to_study(book->spells[j].sidx)) {
 				/* There is a spell the player can study */
+				mem_free(item_list);
 				return TRUE;
+			}
 	}
 
+	mem_free(item_list);
 	return FALSE;
 }
 

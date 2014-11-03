@@ -275,13 +275,14 @@ static errr finish_parse_profile(struct parser *p) {
 
 static void cleanup_profile(void)
 {
-	struct room_template *t, *next;
-	for (t = room_templates; t; t = next) {
-		next = t->next;
-		mem_free(t->name);
-		mem_free(t->text);
-		mem_free(t);
+	int i, j;
+	for (i = 0; i < z_info->profile_max; i++) {
+		for (j = 0; j < cave_profiles[i].n_room_profiles; j++)
+			string_free((char *) cave_profiles[i].room_profiles[j].name);
+		mem_free(cave_profiles[i].room_profiles);
+		string_free((char *) cave_profiles[i].name);
 	}
+	mem_free(cave_profiles);
 }
 
 static struct file_parser profile_parser = {

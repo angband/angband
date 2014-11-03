@@ -417,6 +417,8 @@ static void cleanup_player(void) {
 	player_spells_free(player);
 
 	mem_free(player->timed);
+	mem_free(player->upkeep->quiver);
+	mem_free(player->upkeep->inven);
 	mem_free(player->upkeep);
 	for (i = 0; i < player->max_gear; i++)
 		object_wipe(&player->gear[i]);
@@ -427,6 +429,7 @@ static void cleanup_player(void) {
 	for (i = 0; i < player->body.count; i++)
 		string_free(player->body.slots[i].name);
 	mem_free(player->body.slots);
+	string_free(player->body.name);
 	mem_free(player->history);
 
 	mem_free(player);

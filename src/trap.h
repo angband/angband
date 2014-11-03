@@ -92,6 +92,7 @@ bool square_reveal_trap(struct chunk *c, int y, int x, int chance, bool domsg);
 bool trap_check_hit(int power);
 void hit_trap(int y, int x);
 void place_trap(struct chunk *c, int y, int x, int t_idx, int trap_level);
+void square_free_trap(struct chunk *c, int y, int x);
 void wipe_trap_list(struct chunk *c);
 bool square_remove_trap(struct chunk *c, int y, int x, bool domsg, int t_idx);
 void square_set_door_lock(struct chunk *c, int y, int x, int power);
