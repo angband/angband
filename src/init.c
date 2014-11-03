@@ -4213,6 +4213,11 @@ void cleanup_angband(void)
 
 	event_remove_all_handlers();
 
+	/* Free the chunk list */
+	for (i = 0; i < chunk_list_max; i++)
+		cave_free(chunk_list[i]);
+	mem_free(chunk_list);
+
 	/* Free the main cave */
 	cave_free(cave);
 	cave_free(cave_k);

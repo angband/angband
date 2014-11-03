@@ -135,6 +135,8 @@ void cave_free(struct chunk *c) {
 	mem_free(c->o_idx);
 	mem_free(c->monsters);
 	mem_free(c->objects);
+	if (c->name)
+		mem_free(c->name);
 	mem_free(c);
 }
 
