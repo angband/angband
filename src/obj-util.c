@@ -761,8 +761,11 @@ void compact_objects(int size)
  */
 void object_free(struct object *obj)
 {
-	free_brand(obj->brands);
+	/* Free slays and brands */
 	free_slay(obj->slays);
+	free_brand(obj->brands);
+
+	/* Free the object structure */
 	object_wipe(obj);
 }
 
@@ -783,7 +786,7 @@ void wipe_o_list(struct chunk *c)
 	int i;
 
 	/* Delete the existing objects */
-	for (i = 1; i < cave_object_max(cave); i++)
+	for (i = 1; i < cave_object_max(c); i++)
 	{
 		object_type *o_ptr = cave_object(c, i);
 		if (!o_ptr->kind) continue;
@@ -823,10 +826,10 @@ void wipe_o_list(struct chunk *c)
 	}
 
 	/* Reset obj_max */
-	cave->obj_max = 1;
+	c->obj_max = 1;
 
 	/* Reset obj_cnt */
-	cave->obj_cnt = 0;
+	c->obj_cnt = 0;
 }
 
 
@@ -1119,10 +1122,10 @@ void object_absorb(object_type *o_ptr, object_type *j_ptr)
 /**
  * Wipe an object clean.
  */
-void object_wipe(object_type *o_ptr)
+void object_wipe(object_type *obj)
 {
 	/* Wipe the structure */
-	(void)WIPE(o_ptr, object_type);
+	memset(obj, 0, sizeof(object_type));
 }
 
 

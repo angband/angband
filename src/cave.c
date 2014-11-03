@@ -121,6 +121,9 @@ struct chunk *cave_new(int height, int width) {
  */
 void cave_free(struct chunk *c) {
 	int y, x;
+
+	wipe_o_list(c);
+
 	for (y = 0; y < c->height; y++) {
 		for (x = 0; x < c->width; x++) {
 			mem_free(c->squares[y][x].info);

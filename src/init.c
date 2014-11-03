@@ -4206,8 +4206,6 @@ void cleanup_angband(void)
 		if (modules[i]->cleanup)
 			modules[i]->cleanup();
 
-	cleanup_game_constants();
-
 	/* Free the macros */
 	keymap_free();
 
@@ -4227,6 +4225,8 @@ void cleanup_angband(void)
 
 	monster_list_finalize();
 	object_list_finalize();
+
+	cleanup_game_constants();
 
 	/* Free the format() buffer */
 	vformat_kill();

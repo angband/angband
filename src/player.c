@@ -421,9 +421,9 @@ static void cleanup_player(void) {
 	mem_free(player->upkeep->inven);
 	mem_free(player->upkeep);
 	for (i = 0; i < player->max_gear; i++)
-		object_wipe(&player->gear[i]);
+		object_free(&player->gear[i]);
 	for (i = 0; i < player->max_gear; i++)
-		object_wipe(&player->gear_k[i]);
+		object_free(&player->gear_k[i]);
 	mem_free(player->gear);
 	mem_free(player->gear_k);
 	for (i = 0; i < player->body.count; i++)
