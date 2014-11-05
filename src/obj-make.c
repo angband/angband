@@ -1,6 +1,6 @@
 /**
-   \file obj-make.c
-   \brief Object generation functions.
+ * \file obj-make.c
+ * \brief Object generation functions.
  *
  * Copyright (c) 1987-2007 Angband contributors
  *

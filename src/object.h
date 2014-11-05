@@ -402,6 +402,9 @@ typedef struct object
 	struct ego_item *ego;
 	struct artifact *artifact;
 
+	struct object *prev;	/* Previous object in a pile */
+	struct object *next;	/* Next object in a pile */
+
 	byte iy;			/* Y-position on map, or zero */
 	byte ix;			/* X-position on map, or zero */
 

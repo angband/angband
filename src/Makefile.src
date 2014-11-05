@@ -135,6 +135,7 @@ ANGFILES = \
 	obj-info.o \
 	obj-list.o \
 	obj-make.o \
+	obj-pile.o \
 	obj-power.o \
 	obj-properties.o \
 	obj-randart.o \
