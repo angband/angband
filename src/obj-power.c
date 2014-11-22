@@ -1,6 +1,6 @@
 /**
-   \file obj-power.c
-   \brief calculation of object power and value
+ * \file obj-power.c
+ * \brief calculation of object power and value
  *
  * Copyright (c) 2001 Chris Carr, Chris Robertson
  * Revised in 2009-11 by Chris Carr, Peter Denison
@@ -345,18 +345,16 @@ static s32b slay_power(const object_type *o_ptr, int p, int verbose,
 		 * monsters, which we'll divide out later).
 		 */
 		for (i = 0; i < z_info->r_max; i++)	{
-			monster_type *m_ptr;
-			monster_type monster_type_body;
+			monster_type *mon = mem_zalloc(sizeof(*mon));
 			const struct brand *b = NULL;
 			const struct slay *s = NULL;
 			char verb[20];
 
 			mult = 1;
-			m_ptr = &monster_type_body;
-			m_ptr->race = &r_info[i];
+			mon->race = &r_info[i];
 
 			/* Find the best multiplier against this monster */
-			improve_attack_modifier((object_type *)o_ptr, m_ptr, &b, &s, 
+			improve_attack_modifier((object_type *)o_ptr, mon, &b, &s, 
 									verb, FALSE, !known);
 			if (s)
 				mult = s->multiplier;
@@ -364,8 +362,9 @@ static s32b slay_power(const object_type *o_ptr, int p, int verbose,
 				mult = b->multiplier;
 
 			/* Add up totals */
-			tot_mon_power += m_ptr->race->scaled_power;
-			sv += mult * m_ptr->race->scaled_power;
+			tot_mon_power += mon->race->scaled_power;
+			sv += mult * mon->race->scaled_power;
+			mem_free(mon);
 		}
 
 		/*
