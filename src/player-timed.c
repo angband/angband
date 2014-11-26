@@ -1,5 +1,6 @@
-/** \file: player-timed.h
-	\brief Timed effects handling
+/**
+ * \file player-timed.h
+ * \brief Timed effects handling
  *
  * Copyright (c) 1997 Ben Harrison
  * Copyright (c) 2007 A Sidwell <andi@takkaria.org>
@@ -177,7 +178,7 @@ bool player_inc_timed(struct player *p, int idx, int v, bool notify, bool check)
 		/* This is all a bit gross - NRM */
 		if (effects->fail_code == 1) {
 			/* Code 1 is an object flag */
-			wieldeds_notice_flag(p, effect->fail);
+			equip_notice_flag(p, effect->fail);
 			if (mon) 
 				update_smart_learn(mon, player, effect->fail, 0, -1);
 			if (player_of_has(p, effect->fail)) {
@@ -187,12 +188,12 @@ bool player_inc_timed(struct player *p, int idx, int v, bool notify, bool check)
 			}
 		} else if (effects->fail_code == 2) {
 			/* Code 2 is a resist */
-			wieldeds_notice_element(p, effect->fail);
+			equip_notice_element(p, effect->fail);
 			if (p->state.el_info[effect->fail].res_level > 0)
 				return FALSE;
 		} else if (effects->fail_code == 2) {
 			/* Code 3 is a vulnerability */
-			wieldeds_notice_element(p, effect->fail);
+			equip_notice_element(p, effect->fail);
 			if (p->state.el_info[effect->fail].res_level < 0)
 				return FALSE;
 		}

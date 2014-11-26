@@ -36,7 +36,11 @@
 /** Time last item was wielded */
 s32b object_last_wield;
 
-/*** Knowledge accessor functions ***/
+/**
+ * ------------------------------------------------------------------------
+ * Object knowledge predicates
+ * These answer questions about an object's ID status
+ * ------------------------------------------------------------------------ */
 
 
 /**
@@ -279,6 +283,11 @@ bool object_this_mod_is_visible(const struct object *obj, int mod)
 	return FALSE;
 }
 
+/**
+ * ------------------------------------------------------------------------
+ * Object knowledge improvers
+ * These add to the player's knowledge of an object, where necessary
+ * ------------------------------------------------------------------------ */
 
 
 /**
@@ -708,24 +717,6 @@ bool object_notice_curses(struct object *obj)
 
 
 /**
- * Notice things which happen on defending.
- */
-void object_notice_on_defend(struct player *p)
-{
-	int i;
-
-	for (i = 0; i < p->body.count; i++) {
-		struct object *obj = slot_object(p, i);
-		if (obj)
-			object_notice_defence_plusses(p, obj);
-	}
-
-	event_signal(EVENT_INVENTORY);
-	event_signal(EVENT_EQUIPMENT);
-}
-
-
-/**
  * Notice object properties that become obvious on wielding or wearing
  */
 void object_notice_on_wield(struct object *obj)
@@ -856,9 +847,32 @@ void object_notice_on_wield(struct object *obj)
 
 
 /**
+ * ------------------------------------------------------------------------
+ * Equipment knowledge improvers
+ * These add to the player's knowledge of objects in their equipment
+ * ------------------------------------------------------------------------ */
+/**
+ * Notice things which happen on defending.
+ */
+void equip_notice_on_defend(struct player *p)
+{
+	int i;
+
+	for (i = 0; i < p->body.count; i++) {
+		struct object *obj = slot_object(p, i);
+		if (obj)
+			object_notice_defence_plusses(p, obj);
+	}
+
+	event_signal(EVENT_INVENTORY);
+	event_signal(EVENT_EQUIPMENT);
+}
+
+
+/**
  * Notice things about an object that would be noticed in time.
  */
-static void object_notice_after_time(void)
+static void equip_notice_after_time(void)
 {
 	int i;
 	int flag;
@@ -911,7 +925,7 @@ static void object_notice_after_time(void)
  *
  * \param flag is the flag to notice
  */
-void wieldeds_notice_flag(struct player *p, int flag)
+void equip_notice_flag(struct player *p, int flag)
 {
 	int i;
 
@@ -952,7 +966,7 @@ void wieldeds_notice_flag(struct player *p, int flag)
  *
  * \param element is the element to notice
  */
-void wieldeds_notice_element(struct player *p, int element)
+void equip_notice_element(struct player *p, int element)
 {
 	int i;
 
@@ -990,14 +1004,14 @@ void wieldeds_notice_element(struct player *p, int element)
  * Used e.g. for ranged attacks where the item's to_d is not involved.
  * Does not apply to weapon or bow which should be done separately
  */
-void wieldeds_notice_to_hit_on_attack(void)
+void equip_notice_to_hit_on_attack(struct player *p)
 {
 	int i;
 
-	for (i = 0; i < player->body.count; i++) {
-		struct object *obj = slot_object(player, i);
-		if (i == slot_by_name(player, "weapon")) continue;
-		if (i == slot_by_name(player, "bow")) continue;
+	for (i = 0; i < p->body.count; i++) {
+		struct object *obj = slot_object(p, i);
+		if (i == slot_by_name(p, "weapon")) continue;
+		if (i == slot_by_name(p, "bow")) continue;
 		if (obj && obj->to_h)
 			object_notice_attack_plusses(obj);
 	}
@@ -1010,14 +1024,14 @@ void wieldeds_notice_to_hit_on_attack(void)
  * Notice things which happen on attacking.
  * Does not apply to weapon or bow which should be done separately
  */
-void wieldeds_notice_on_attack(void)
+void equip_notice_on_attack(struct player *p)
 {
 	int i;
 
-	for (i = 0; i < player->body.count; i++) {
-		struct object *obj = slot_object(player, i);
-		if (i == slot_by_name(player, "weapon")) continue;
-		if (i == slot_by_name(player, "bow")) continue;
+	for (i = 0; i < p->body.count; i++) {
+		struct object *obj = slot_object(p, i);
+		if (i == slot_by_name(p, "weapon")) continue;
+		if (i == slot_by_name(p, "bow")) continue;
 		if (obj)
 			object_notice_attack_plusses(obj);
 	}
@@ -1026,7 +1040,11 @@ void wieldeds_notice_on_attack(void)
 }
 
 
-/* Ostracism line */
+/**
+ * ------------------------------------------------------------------------
+ * Other functions that either need a rethink, or will change in the move
+ * to "rune-based" ID
+ * ------------------------------------------------------------------------ */
 
 /**
  * \returns whether it is possible an object has a high resist given the
@@ -1243,7 +1261,7 @@ void sense_inventory(void)
 
 	/* Notice some things after a while */
 	if (turn >= (object_last_wield + 3000)) {
-		object_notice_after_time();
+		equip_notice_after_time();
 		object_last_wield = 0;
 	}
 

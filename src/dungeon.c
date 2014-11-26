@@ -179,8 +179,8 @@ static void regenhp(int percent)
 	{
 		/* Redraw */
 		player->upkeep->redraw |= (PR_HP);
-		wieldeds_notice_flag(player, OF_REGEN);
-		wieldeds_notice_flag(player, OF_IMPAIR_HP);
+		equip_notice_flag(player, OF_REGEN);
+		equip_notice_flag(player, OF_IMPAIR_HP);
 	}
 }
 
@@ -224,8 +224,8 @@ static void regenmana(int percent)
 	{
 		/* Redraw */
 		player->upkeep->redraw |= (PR_MANA);
-		wieldeds_notice_flag(player, OF_REGEN);
-		wieldeds_notice_flag(player, OF_IMPAIR_MANA);
+		equip_notice_flag(player, OF_REGEN);
+		equip_notice_flag(player, OF_IMPAIR_MANA);
 	}
 }
 
@@ -662,7 +662,7 @@ static void process_world(struct chunk *c)
 			player_exp_lose(player, d / 10, FALSE);
 		}
 
-		wieldeds_notice_flag(player, OF_DRAIN_EXP);
+		equip_notice_flag(player, OF_DRAIN_EXP);
 	}
 
 	/* Recharge activatable objects and rods */
@@ -677,7 +677,7 @@ static void process_world(struct chunk *c)
 	/* Random teleportation */
 	if (player_of_has(player, OF_TELEPORT) && one_in_(50)) {
 		const char *forty = "40";
-		wieldeds_notice_flag(player, OF_TELEPORT);
+		equip_notice_flag(player, OF_TELEPORT);
 		effect_simple(EF_TELEPORT, forty, 0, 1, 0, NULL);
 		disturb(player, 0);
 	}

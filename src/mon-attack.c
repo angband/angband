@@ -449,7 +449,7 @@ bool check_hit(struct player *p, int power, int level)
 
 	/* if the monster checks vs ac, the player learns ac bonuses */
 	/* XXX Eddie should you only learn +ac on miss, -ac on hit?  who knows */
-	object_notice_on_defend(p);
+	equip_notice_on_defend(p);
 
 	/* Check if the player was hit */
 	return test_hit(chance, ac, TRUE);

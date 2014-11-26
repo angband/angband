@@ -43,7 +43,7 @@ int adjust_dam(struct player *p, int type, int dam, aspect dam_aspect, int resis
 		resist = p->state.el_info[type].res_level;
 
 		/* Notice element stuff */
-		wieldeds_notice_element(p, type);
+		equip_notice_element(p, type);
 	}
 
 	if (resist == 3) /* immune */

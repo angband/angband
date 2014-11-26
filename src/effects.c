@@ -509,7 +509,7 @@ bool effect_handler_DRAIN_STAT(effect_handler_context_t *context)
 	/* Sustain */
 	if (player_of_has(player, flag)) {
 		/* Notice effect */
-		wieldeds_notice_flag(player, flag);
+		equip_notice_flag(player, flag);
 
 		/* Message */
 		msg("You feel very %s for a moment, but the feeling passes.",
@@ -621,7 +621,7 @@ bool effect_handler_LOSE_EXP(effect_handler_context_t *context)
 		player_exp_lose(player, player->exp / 4, FALSE);
 	}
 	context->ident = TRUE;
-	wieldeds_notice_flag(player, OF_HOLD_LIFE);
+	equip_notice_flag(player, OF_HOLD_LIFE);
 	return TRUE;
 }
 
@@ -2848,7 +2848,7 @@ bool effect_handler_DESTRUCTION(effect_handler_context_t *context)
 	msg("There is a searing blast of light!");
 
 	/* Blind the player */
-	wieldeds_notice_element(player, ELEM_LIGHT);
+	equip_notice_element(player, ELEM_LIGHT);
 	if (!player_resists(player, ELEM_LIGHT))
 		(void)player_inc_timed(player, TMD_BLIND, 10 + randint1(10),TRUE, TRUE);
 
@@ -3954,7 +3954,7 @@ bool effect_handler_TRAP_DOOR(effect_handler_context_t *context)
 		int dam = effect_calculate_value(context, FALSE);
 		take_hit(player, dam, "a trap");
 	}
-	wieldeds_notice_flag(player, OF_FEATHER);
+	equip_notice_flag(player, OF_FEATHER);
 
 	dungeon_change_level(player->depth + 1);
 	return TRUE;
@@ -3969,7 +3969,7 @@ bool effect_handler_TRAP_PIT(effect_handler_context_t *context)
 		int dam = effect_calculate_value(context, FALSE);
 		take_hit(player, dam, "a trap");
 	}
-	wieldeds_notice_flag(player, OF_FEATHER);
+	equip_notice_flag(player, OF_FEATHER);
 	return TRUE;
 }
 
@@ -3992,7 +3992,7 @@ bool effect_handler_TRAP_PIT_SPIKES(effect_handler_context_t *context)
 
 		take_hit(player, dam, "a trap");
 	}
-	wieldeds_notice_flag(player, OF_FEATHER);
+	equip_notice_flag(player, OF_FEATHER);
 	return TRUE;
 }
 
@@ -4015,7 +4015,7 @@ bool effect_handler_TRAP_PIT_POISON(effect_handler_context_t *context)
 
 		take_hit(player, dam, "a trap");
 	}
-	wieldeds_notice_flag(player, OF_FEATHER);
+	equip_notice_flag(player, OF_FEATHER);
 	return TRUE;
 }
 

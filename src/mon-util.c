@@ -635,8 +635,8 @@ void update_smart_learn(struct monster *m, struct player *p, int flag,
 	if (!flag && !element_ok) return;
 
 	/* anything a monster might learn, the player should learn */
-	if (flag) wieldeds_notice_flag(p, flag);
-	if (element_ok) wieldeds_notice_element(p, element);
+	if (flag) equip_notice_flag(p, flag);
+	if (element_ok) equip_notice_element(p, element);
 
 	/* Not allowed to learn */
 	if (!OPT(birth_ai_learn)) return;

@@ -363,12 +363,12 @@ static bool py_attack_real(int y, int x, bool *fear)
 
 		if (player_of_has(player, OF_IMPACT) && dmg > 50) {
 			do_quake = TRUE;
-			wieldeds_notice_flag(player, OF_IMPACT);
+			equip_notice_flag(player, OF_IMPACT);
 		}
 	}
 
 	/* Learn by use for other equipped items */
-	wieldeds_notice_on_attack();
+	equip_notice_on_attack(player);
 
 	/* Apply the player damage bonuses */
 	dmg += player_damage_bonus(&player->state);
@@ -569,7 +569,7 @@ static void ranged_helper(struct object *obj, int dir, int range, int shots,
 				object_notice_attack_plusses(obj);
 
 				/* Learn by use for other equipped items */
-				wieldeds_notice_to_hit_on_attack();
+				equip_notice_to_hit_on_attack(player);
 
 				/* No negative damage; change verb if no damage done */
 				if (dmg <= 0) {
