@@ -799,7 +799,7 @@ void do_cmd_throw(struct command *cmd) {
  */
 void do_cmd_fire_at_nearest(void) {
 	int i, dir = DIR_TARGET;
-	struct object *ammo;
+	struct object *ammo = NULL;
 	struct object *bow = equipped_item_by_slot_name(player, "shooting");
 
 	/* Require a usable launcher */

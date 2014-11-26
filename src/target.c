@@ -684,7 +684,7 @@ static ui_event target_recall_loop_object(object_type *o_ptr, int y, int x, char
 //static struct keypress target_set_interactive_aux(int y, int x, int mode)
 static ui_event target_set_interactive_aux(int y, int x, int mode)
 {
-	struct object *obj;
+	struct object *obj = NULL;
 
 	const char *s1, *s2, *s3;
 

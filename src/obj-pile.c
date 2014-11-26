@@ -505,7 +505,7 @@ struct object *floor_object_for_use(struct object *obj, int num, bool message)
  */
 static struct object *floor_get_oldest_ignored(int y, int x)
 {
-	struct object *obj, *ignore;
+	struct object *obj, *ignore = NULL;
 
 	for (obj = square_object(cave, y, x); obj; obj = obj->next)
 		if (ignore_item_ok(obj))
