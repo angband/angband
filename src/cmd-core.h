@@ -125,7 +125,7 @@ union cmd_arg_data {
 	const char *string;
 	
 	int choice;
-	int item;
+	struct object *obj;
 	int number;
 	int direction;
 	
@@ -277,7 +277,7 @@ void cmd_set_arg_string(struct command *cmd, const char *arg, const char *str);
 void cmd_set_arg_direction(struct command *cmd, const char *arg, int dir);
 void cmd_set_arg_target(struct command *cmd, const char *arg, int target);
 void cmd_set_arg_point(struct command *cmd, const char *arg, int x, int y);
-void cmd_set_arg_item(struct command *cmd, const char *arg, int item);
+void cmd_set_arg_item(struct command *cmd, const char *arg, struct object *obj);
 void cmd_set_arg_number(struct command *cmd, const char *arg, int amt);
 
 
@@ -289,7 +289,7 @@ int cmd_get_arg_string(struct command *cmd, const char *arg, const char **str);
 int cmd_get_arg_direction(struct command *cmd, const char *arg, int *dir);
 int cmd_get_arg_target(struct command *cmd, const char *arg, int *target);
 int cmd_get_arg_point(struct command *cmd, const char *arg, int *x, int *y);
-int cmd_get_arg_item(struct command *cmd, const char *arg, int *item);
+int cmd_get_arg_item(struct command *cmd, const char *arg, struct object **obj);
 int cmd_get_arg_number(struct command *cmd, const char *arg, int *amt);
 
 /**
@@ -297,8 +297,7 @@ int cmd_get_arg_number(struct command *cmd, const char *arg, int *amt);
  */
 int cmd_get_direction(struct command *cmd, const char *arg, int *dir, bool allow_5);
 int cmd_get_target(struct command *cmd, const char *arg, int *target);
-int cmd_get_item(struct command *cmd, const char *arg, int *item,
-		const char *prompt, const char *reject, item_tester filter, int mode);
+int cmd_get_item(struct command *cmd, const char *arg, struct object **obj, const char *prompt, const char *reject, item_tester filter, int mode);
 int cmd_get_quantity(struct command *cmd, const char *arg, int *amt, int max);
 int cmd_get_string(struct command *cmd, const char *arg, const char **str,
 		const char *initial, const char *title, const char *prompt);

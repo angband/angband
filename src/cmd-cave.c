@@ -130,21 +130,21 @@ bool search(bool verbose)
 
 	bool found = FALSE;
 
-	object_type *o_ptr;
+	object_type *obj;
 
 
 	/* Start with base search ability */
 	chance = player->state.skills[SKILL_SEARCH];
 
 	/* Penalize various conditions */
-	if (player->timed[TMD_BLIND] || no_light()) chance = chance / 10;
-	if (player->timed[TMD_CONFUSED] || player->timed[TMD_IMAGE]) chance = chance / 10;
+	if (player->timed[TMD_BLIND] || no_light())
+		chance = chance / 10;
+	if (player->timed[TMD_CONFUSED] || player->timed[TMD_IMAGE])
+		chance = chance / 10;
 
 	/* Prevent fruitless searches */
-	if (chance <= 0)
-	{
-		if (verbose)
-		{
+	if (chance <= 0) {
+		if (verbose) {
 			msg("You can't make out your surroundings well enough to search.");
 
 			/* Cancel repeat */
@@ -155,28 +155,21 @@ bool search(bool verbose)
 	}
 
 	/* Search the nearby grids, which are always in bounds */
-	for (y = (py - 1); y <= (py + 1); y++)
-	{
-		for (x = (px - 1); x <= (px + 1); x++)
-		{
+	for (y = (py - 1); y <= (py + 1); y++) {
+		for (x = (px - 1); x <= (px + 1); x++) {
 			/* Sometimes, notice things */
-			if (randint0(100) < chance)
-			{
-				if (square_issecrettrap(cave, y, x))
-				{
+			if (randint0(100) < chance) {
+				if (square_issecrettrap(cave, y, x)) {
 					found = TRUE;
 
 					/* Reveal trap, display a message */
 					if (square_reveal_trap(cave, y, x, chance, TRUE))
-					{
 						/* Disturb */
 						disturb(player, 0);
-					}
 				}
 
 				/* Secret door */
-				if (square_issecretdoor(cave, y, x))
-				{
+				if (square_issecretdoor(cave, y, x)) {
 					found = TRUE;
 
 					/* Message */
@@ -190,21 +183,19 @@ bool search(bool verbose)
 				}
 
 				/* Scan all objects in the grid */
-				for (o_ptr = get_first_object(y, x); o_ptr; o_ptr = get_next_object(o_ptr))
-				{
+				for (obj = square_object(cave, y, x); obj; obj = obj->next) {
 					/* Skip if not a trapped chest */
-					if (!is_trapped_chest(o_ptr)) continue;
+					if (!is_trapped_chest(obj)) continue;
 
 					/* Identify once */
-					if (!object_is_known(o_ptr))
-					{
+					if (!object_is_known(obj)) {
 						found = TRUE;
 
 						/* Message */
 						msg("You have discovered a trap on the chest!");
 
 						/* Know the trap */
-						object_notice_everything(o_ptr);
+						object_notice_everything(obj);
 
 						/* Notice it */
 						disturb(player, 0);
@@ -214,8 +205,7 @@ bool search(bool verbose)
 		}
 	}
 
-	if (verbose && !found)
-	{
+	if (verbose && !found) {
 		if (chance >= 100)
 			msg("There are no secrets here.");
 		else
@@ -386,7 +376,7 @@ static bool do_cmd_open_aux(int y, int x)
 void do_cmd_open(struct command *cmd)
 {
 	int y, x, dir;
-	s16b o_idx;
+	struct object *obj;
 	bool more = FALSE;
 	int err;
 	struct monster *m;
@@ -413,10 +403,10 @@ void do_cmd_open(struct command *cmd)
 	x = player->px + ddx[dir];
 
 	/* Check for chest */
-	o_idx = chest_check(y, x, CHEST_OPENABLE);
+	obj = chest_check(y, x, CHEST_OPENABLE);
 
 	/* Check for door */
-	if (!o_idx && !do_cmd_open_test(y, x)) {
+	if (!obj && !do_cmd_open_test(y, x)) {
 		/* Cancel repeat */
 		disturb(player, 0);
 		return;
@@ -432,7 +422,7 @@ void do_cmd_open(struct command *cmd)
 		x = player->px + ddx[dir];
 
 		/* Check for chest */
-		o_idx = chest_check(y, x, CHEST_OPENABLE);
+		obj = chest_check(y, x, CHEST_OPENABLE);
 	}
 
 	/* Monster */
@@ -454,8 +444,8 @@ void do_cmd_open(struct command *cmd)
 	}
 
 	/* Chest */
-	else if (o_idx)
-		more = do_cmd_open_chest(y, x, o_idx);
+	else if (obj)
+		more = do_cmd_open_chest(y, x, obj);
 
 	/* Door */
 	else
@@ -962,7 +952,7 @@ void do_cmd_disarm(struct command *cmd)
 	int y, x, dir;
 	int err;
 
-	s16b o_idx;
+	struct object *obj;
 	bool more = FALSE;
 
 	/* Get arguments */
@@ -990,11 +980,10 @@ void do_cmd_disarm(struct command *cmd)
 	x = player->px + ddx[dir];
 
 	/* Check for chests */
-	o_idx = chest_check(y, x, CHEST_TRAPPED);
+	obj = chest_check(y, x, CHEST_TRAPPED);
 
 	/* Verify legality */
-	if (!o_idx && !do_cmd_disarm_test(y, x))
-	{
+	if (!obj && !do_cmd_disarm_test(y, x)) {
 		/* Cancel repeat */
 		disturb(player, 0);
 		return;
@@ -1004,14 +993,13 @@ void do_cmd_disarm(struct command *cmd)
 	player->upkeep->energy_use = 100;
 
 	/* Apply confusion */
-	if (player_confuse_dir(player, &dir, FALSE))
-	{
+	if (player_confuse_dir(player, &dir, FALSE)) {
 		/* Get location */
 		y = player->py + ddy[dir];
 		x = player->px + ddx[dir];
 
 		/* Check for chests */
-		o_idx = chest_check(y, x, CHEST_TRAPPED);
+		obj = chest_check(y, x, CHEST_TRAPPED);
 	}
 
 
@@ -1022,8 +1010,8 @@ void do_cmd_disarm(struct command *cmd)
 	}
 
 	/* Chest */
-	else if (o_idx)
-		more = do_cmd_disarm_chest(y, x, o_idx);
+	else if (obj)
+		more = do_cmd_disarm_chest(y, x, obj);
 
 	/* Door to lock */
 	else if (    square_iscloseddoor(cave, y, x)

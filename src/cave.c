@@ -25,6 +25,7 @@
 #include "init.h"
 #include "monster.h"
 #include "obj-ignore.h"
+#include "obj-pile.h"
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "object.h"
@@ -93,10 +94,6 @@ struct chunk *cave_new(int height, int width) {
 	c->height = height;
 	c->width = width;
 	c->feat_count = mem_zalloc((z_info->f_max + 1) * sizeof(int));
-	c->o_idx = mem_zalloc(c->height * sizeof(s16b*));
-	for (y = 0; y < c->height; y++){
-		c->o_idx[y] = mem_zalloc(c->width * sizeof(s16b));
-	}
 
 	c->squares = mem_zalloc(c->height * sizeof(struct square*));
 	for (y = 0; y < c->height; y++) {
@@ -109,9 +106,6 @@ struct chunk *cave_new(int height, int width) {
 	c->mon_max = 1;
 	c->mon_current = -1;
 
-	c->objects = mem_zalloc(z_info->level_object_max * sizeof(struct object));
-	c->obj_max = 1;
-
 	c->created_at = turn;
 	return c;
 }
@@ -122,27 +116,22 @@ struct chunk *cave_new(int height, int width) {
 void cave_free(struct chunk *c) {
 	int y, x;
 
-	wipe_o_list(c);
-
 	for (y = 0; y < c->height; y++) {
 		for (x = 0; x < c->width; x++) {
 			mem_free(c->squares[y][x].info);
 			if (c->squares[y][x].trap)
 				square_free_trap(c, y, x);
+			if (c->squares[y][x].obj)
+				object_pile_free(c->squares[y][x].obj);
 		}
 		mem_free(c->squares[y]);
 	}
 	mem_free(c->squares);
 
-	for (y = 0; y < c->height; y++){
-		mem_free(c->o_idx[y]);
-	}
 	mem_free(c->feat_count);
-	mem_free(c->o_idx);
 	mem_free(c->monsters);
-	mem_free(c->objects);
 	if (c->name)
-		mem_free(c->name);
+		string_free(c->name);
 	mem_free(c);
 }
 
@@ -209,29 +198,6 @@ int cave_monster_max(struct chunk *c) {
  */
 int cave_monster_count(struct chunk *c) {
 	return c->mon_cnt;
-}
-
-/**
- * Get an object on the current level by its index.
- */
-struct object *cave_object(struct chunk *c, int idx) {
-	assert(idx > 0);
-	assert(idx <= z_info->level_object_max);
-	return &c->objects[idx];
-}
-
-/**
- * The maximum number of objects allowed in the level.
- */
-int cave_object_max(struct chunk *c) {
-	return c->obj_max;
-}
-
-/**
- * The current number of objects present on the level.
- */
-int cave_object_count(struct chunk *c) {
-	return c->obj_cnt;
 }
 
 /**

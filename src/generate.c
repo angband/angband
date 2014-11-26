@@ -732,8 +732,6 @@ void cave_generate(struct chunk **c, struct player *p) {
 		}
 
 		/* Regenerate levels that overflow their maxima */
-		if (cave_object_max(chunk) >= z_info->level_object_max)
-			error = "too many objects";
 		if (cave_monster_max(chunk) >= z_info->level_monster_max)
 			error = "too many monsters";
 

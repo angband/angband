@@ -28,6 +28,7 @@
 #include "obj-desc.h"
 #include "obj-identify.h"
 #include "obj-ignore.h"
+#include "obj-pile.h"
 #include "obj-util.h"
 #include "player-timed.h"
 #include "player-util.h"
@@ -312,11 +313,11 @@ void update_mon(struct monster *m_ptr, struct chunk *c, bool full)
 
 	/* If a mimic looks like an ignored item, it's not seen */
 	if (is_mimicking(m_ptr)) {
-		object_type *o_ptr = cave_object(c, m_ptr->mimicked_o_idx);
+		object_type *o_ptr = m_ptr->mimicked_obj;
 		if (ignore_item_ok(o_ptr))
 			easy = flag = FALSE;
 	}
-	
+
 	/* The monster is now visible */
 	if (flag) {
 		/* Learn about the monster's mind */
@@ -350,9 +351,7 @@ void update_mon(struct monster *m_ptr, struct chunk *c, bool full)
 		/* It was previously seen */
 		if (mflag_has(m_ptr->mflag, MFLAG_VISIBLE)) {
 			/* Treat mimics differently */
-			if (!m_ptr->mimicked_o_idx || 
-				ignore_item_ok(cave_object(c, m_ptr->mimicked_o_idx)))
-			{
+			if (!m_ptr->mimicked_obj || ignore_item_ok(m_ptr->mimicked_obj)) {
 				/* Mark as not visible */
 				mflag_off(m_ptr->mflag, MFLAG_VISIBLE);
 
@@ -425,67 +424,41 @@ void update_monsters(bool full)
 /**
  * Add the given object to the given monster's inventory.
  *
- * Returns the o_idx of the new object, or 0 if the object is
- * not successfully added.
+ * Currently always returns TRUE - it is left as a bool rather than
+ * void in case a limit on monster inventory size is proposed in future.
  */
-s16b monster_carry(struct chunk *c, struct monster *m_ptr, object_type *j_ptr)
+bool monster_carry(struct chunk *c, struct monster *mon, struct object *obj)
 {
-	s16b o_idx;
-
-	s16b this_o_idx, next_o_idx = 0;
+	struct object *held_obj;
 
 	/* Scan objects already being held for combination */
-	for (this_o_idx = m_ptr->hold_o_idx; this_o_idx; this_o_idx = next_o_idx) {
-		object_type *o_ptr;
-
-		/* Get the object */
-		o_ptr = cave_object(c, this_o_idx);
-
-		/* Get the next object */
-		next_o_idx = o_ptr->next_o_idx;
-
+	for (held_obj = mon->held_obj; held_obj; held_obj = held_obj->next) {
 		/* Check for combination */
-		if (object_similar(o_ptr, j_ptr, OSTACK_MONSTER)) {
+		if (object_similar(held_obj, obj, OSTACK_MONSTER)) {
 			/* Combine the items */
-			object_absorb(o_ptr, j_ptr);
+			object_absorb(held_obj, obj);
 
 			/* Result */
-			return (this_o_idx);
+			return TRUE;
 		}
 	}
 
+	/* Forget mark */
+	obj->marked = FALSE;
 
-	/* Make an object */
-	o_idx = o_pop(c);
+	/* Forget location */
+	obj->iy = obj->ix = 0;
 
-	/* Success */
-	if (o_idx) {
-		object_type *o_ptr;
+	/* Link the object to the monster */
+	obj->held_m_idx = mon->midx;
 
-		/* Get new object */
-		o_ptr = cave_object(c, o_idx);
-
-		/* Copy object */
-		object_copy(o_ptr, j_ptr);
-
-		/* Forget mark */
-		o_ptr->marked = FALSE;
-
-		/* Forget location */
-		o_ptr->iy = o_ptr->ix = 0;
-
-		/* Link the object to the monster */
-		o_ptr->held_m_idx = m_ptr->midx;
-
-		/* Link the object to the pile */
-		o_ptr->next_o_idx = m_ptr->hold_o_idx;
-
-		/* Link the monster to the object */
-		m_ptr->hold_o_idx = o_idx;
-	}
+	/* Add the object to the monster's inventory */
+	obj->next = mon->held_obj;
+	if (mon->held_obj)
+		mon->held_obj->prev = obj;
 
 	/* Result */
-	return (o_idx);
+	return TRUE;
 }
 
 /**
@@ -610,35 +583,25 @@ void become_aware(struct monster *m_ptr)
 			rf_on(l_ptr->flags, RF_UNAWARE);
 
 		/* Delete any false items */
-		if (m_ptr->mimicked_o_idx > 0) {
-			object_type *o_ptr = cave_object(cave, m_ptr->mimicked_o_idx);
+		if (m_ptr->mimicked_obj) {
+			struct object *obj = m_ptr->mimicked_obj;
 			char o_name[80];
-			object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
+			object_desc(o_name, sizeof(o_name), obj, ODESC_BASE);
 
 			/* Print a message */
 			msg("The %s was really a monster!", o_name);
 
 			/* Clear the mimicry */
-			o_ptr->mimicking_m_idx = 0;
+			obj->mimicking_m_idx = 0;
+			m_ptr->mimicked_obj = NULL;
 
 			/* Give the object to the monster if appropriate */
-			if (rf_has(m_ptr->race->flags, RF_MIMIC_INV)) {
-				object_type *i_ptr;
-				object_type object_type_body;
-
-				/* Get local object */
-				i_ptr = &object_type_body;
-
-				/* Obtain local object */
-				object_copy(i_ptr, o_ptr);
-
-				/* Carry the object */
-				monster_carry(cave, m_ptr, i_ptr);
+			if (rf_has(m_ptr->race->flags, RF_MIMIC_INV))
+				monster_carry(cave, m_ptr, obj);
+			else {
+				/* Otherwise delete the mimicked object */
+				object_delete(obj);
 			}
-
-			/* Delete the mimicked object */
-			delete_object_idx(m_ptr->mimicked_o_idx);
-			m_ptr->mimicked_o_idx = 0;
 		}
 
 		/* Update monster and item lists */
@@ -652,7 +615,7 @@ void become_aware(struct monster *m_ptr)
  */
 bool is_mimicking(struct monster *m_ptr)
 {
-	return (mflag_has(m_ptr->mflag, MFLAG_UNAWARE) && m_ptr->mimicked_o_idx);
+	return (mflag_has(m_ptr->mflag, MFLAG_UNAWARE) && m_ptr->mimicked_obj);
 }
 
 

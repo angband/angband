@@ -33,6 +33,7 @@
 #include "obj-ignore.h"
 #include "obj-info.h"
 #include "obj-make.h"
+#include "obj-pile.h"
 #include "obj-slays.h"
 #include "obj-tval.h"
 #include "obj-ui.h"
@@ -43,609 +44,124 @@
 #include "randname.h"
 #include "z-queue.h"
 
-/**
- * Get the indexes of objects at a given floor location. -TNB-
- *
- * Return the number of object indexes acquired.
- *
- * Valid flags are any combination of the bits:
- *   0x01 -- Verify item tester
- *   0x02 -- Marked items only
- *   0x04 -- Only the top item
- *   0x08 -- Visible items only
- */
-int scan_floor(int *items, int max_size, int y, int x, int mode,
-			   item_tester tester)
+struct object *pile_last_item(struct object *start)
 {
-	int this_o_idx, next_o_idx;
+	struct object *obj = start;
 
-	int num = 0;
+	/* No pile at all */
+	if (!obj)
+		return NULL;
 
-	/* Sanity */
-	if (!square_in_bounds(cave, y, x)) return 0;
+	/* Run along the list, stopping just before the end */
+	while (obj->next)
+		obj = obj->next;
 
-	/* Scan all objects in the grid */
-	for (this_o_idx = cave->o_idx[y][x]; this_o_idx; this_o_idx = next_o_idx) {
-		object_type *o_ptr;
-
-		/* XXX Hack -- Enforce limit */
-		if (num >= max_size) break;
-
-		/* Get the object */
-		o_ptr = cave_object(cave, this_o_idx);
-
-		/* Get the next object */
-		next_o_idx = o_ptr->next_o_idx;
-
-		/* Item tester */
-		if ((mode & 0x01) && !object_test(tester, o_ptr)) continue;
-
-		/* Marked */
-		if ((mode & 0x02) && (!o_ptr->marked)) continue;
-
-		/* Visible */
-		if ((mode & 0x08) && !is_unknown(o_ptr) && ignore_item_ok(o_ptr))
-			continue;
-
-		/* Accept this item */
-		items[num++] = this_o_idx;
-
-		/* Only one */
-		if (mode & 0x04) break;
-	}
-
-	return num;
+	return obj;
 }
 
-
-
-
-/**
- * Excise a dungeon object from any stacks
- */
-void excise_object_idx(int o_idx)
+bool object_in_pile(struct object *top, struct object *obj)
 {
-	object_type *j_ptr;
-	s16b this_o_idx, next_o_idx = 0;
-	s16b prev_o_idx = 0;
+	struct object *pile_obj = top;
 
-	/* Object */
-	j_ptr = cave_object(cave, o_idx);
-
-	/* Monster */
-	if (j_ptr->held_m_idx) {
-		monster_type *m_ptr = cave_monster(cave, j_ptr->held_m_idx);
-
-		/* Scan all objects in the grid */
-		for (this_o_idx = m_ptr->hold_o_idx; this_o_idx;
-			 this_o_idx = next_o_idx) {
-			object_type *o_ptr;
-
-			/* Get the object */
-			o_ptr = cave_object(cave, this_o_idx);
-
-			/* Get the next object */
-			next_o_idx = o_ptr->next_o_idx;
-
-			/* Found it? */
-			if (this_o_idx == o_idx) {
-				/* No previous */
-				if (prev_o_idx == 0)
-					/* Remove from list */
-					m_ptr->hold_o_idx = next_o_idx;
-
-				/* Real previous */
-				else {
-					object_type *i_ptr;
-
-					/* Previous object */
-					i_ptr = cave_object(cave, prev_o_idx);
-
-					/* Remove from list */
-					i_ptr->next_o_idx = next_o_idx;
-				}
-
-				/* Forget next pointer */
-				o_ptr->next_o_idx = 0;
-
-				/* Done */
-				break;
-			}
-
-			/* Save prev_o_idx */
-			prev_o_idx = this_o_idx;
-		}
-	} else {
-		/* Dungeon */
-		int y = j_ptr->iy;
-		int x = j_ptr->ix;
-
-		/* Scan all objects in the grid */
-		for (this_o_idx = cave->o_idx[y][x]; this_o_idx;
-			 this_o_idx = next_o_idx) {
-			object_type *o_ptr;
-
-			/* Get the object */
-			o_ptr = cave_object(cave, this_o_idx);
-
-			/* Get the next object */
-			next_o_idx = o_ptr->next_o_idx;
-
-			/* Found it? */
-			if (this_o_idx == o_idx) {
-				/* No previous */
-				if (prev_o_idx == 0)
-					/* Remove from list */
-					cave->o_idx[y][x] = next_o_idx;
-
-				/* Real previous */
-				else {
-					object_type *i_ptr;
-
-					/* Previous object */
-					i_ptr = cave_object(cave, prev_o_idx);
-
-					/* Remove from list */
-					i_ptr->next_o_idx = next_o_idx;
-				}
-
-				/* Forget next pointer */
-				o_ptr->next_o_idx = 0;
-
-				/* Done */
-				break;
-			}
-			/* Save prev_o_idx */
-			prev_o_idx = this_o_idx;
-		}
-	}
-}
-
-
-/**
- * Delete a dungeon object
- *
- * Handle "stacks" of objects correctly.
- */
-void delete_object_idx(int o_idx)
-{
-	object_type *j_ptr;
-
-	/* Excise */
-	excise_object_idx(o_idx);
-
-	/* Object */
-	j_ptr = cave_object(cave, o_idx);
-
-	/* Dungeon floor */
-	if (!(j_ptr->held_m_idx)) {
-		int y, x;
-
-		/* Location */
-		y = j_ptr->iy;
-		x = j_ptr->ix;
-
-		square_light_spot(cave, y, x);
+	while (pile_obj) {
+		if (obj == pile_obj)
+			return TRUE;
+		pile_obj = pile_obj->next;
 	}
 
-	/* Delete the mimicking monster if necessary */
-	if (j_ptr->mimicking_m_idx) {
-		monster_type *m_ptr;
-
-		m_ptr = cave_monster(cave, j_ptr->mimicking_m_idx);
-
-		/* Clear the mimicry */
-		m_ptr->mimicked_o_idx = 0;
-		mflag_off(m_ptr->mflag, MFLAG_UNAWARE);
-	}
-
-	/* Wipe the object */
-	object_wipe(j_ptr);
-
-	/* Count objects */
-	cave->obj_cnt--;
-
-	/* Stop tracking deleted objects if necessary */
-	if (tracked_object_is(player->upkeep, 0 - o_idx))
-		track_object(player->upkeep, NO_OBJECT);
-}
-
-
-/**
- * Deletes all objects at given location
- */
-void delete_object(int y, int x)
-{
-	object_type *obj;
-
-	/* Paranoia */
-	if (!square_in_bounds(cave, y, x)) return;
-
-	/* Scan all objects in the grid */
-	for (obj = get_first_object(y, x); obj; obj = get_next_object(obj)) {
-
-		/* Preserve unseen artifacts */
-		if (obj->artifact && !object_was_sensed(obj))
-			obj->artifact->created = FALSE;
-
-		/* Delete the mimicking monster if necessary */
-		if (obj->mimicking_m_idx) {
-			monster_type *m_ptr;
-
-			m_ptr = cave_monster(cave, obj->mimicking_m_idx);
-
-			/* Clear the mimicry */
-			m_ptr->mimicked_o_idx = 0;
-
-			delete_monster_idx(obj->mimicking_m_idx);
-		}
-
-		/* Wipe the object */
-		object_wipe(obj);
-
-		/* Count objects */
-		cave->obj_cnt--;
-	}
-
-	/* Objects are gone */
-	cave->o_idx[y][x] = 0;
-
-	/* Visual update */
-	square_light_spot(cave, y, x);
-}
-
-
-
-/*
- * Move an object from index i1 to index i2 in the object list
- */
-static void compact_objects_aux(int i1, int i2)
-{
-	int i;
-	object_type *o_ptr;
-
-	/* Do nothing */
-	if (i1 == i2) return;
-
-	/* Repair objects */
-	for (i = 1; i < cave_object_max(cave); i++) {
-		/* Get the object */
-		o_ptr = cave_object(cave, i);
-
-		/* Skip "dead" objects */
-		if (!o_ptr->kind) continue;
-
-		/* Repair "next" pointers */
-		if (o_ptr->next_o_idx == i1)
-		{
-			/* Repair */
-			o_ptr->next_o_idx = i2;
-		}
-	}
-
-	/* Get the object */
-	o_ptr = cave_object(cave, i1);
-
-	/* Monster */
-	if (o_ptr->held_m_idx) {
-		monster_type *m_ptr;
-
-		/* Get the monster */
-		m_ptr = cave_monster(cave, o_ptr->held_m_idx);
-
-		/* Repair monster */
-		if (m_ptr->hold_o_idx == i1)
-			m_ptr->hold_o_idx = i2;
-	} else {
-		/* Dungeon */
-		int y, x;
-
-		/* Get location */
-		y = o_ptr->iy;
-		x = o_ptr->ix;
-
-		/* Repair grid */
-		if (cave->o_idx[y][x] == i1)
-			cave->o_idx[y][x] = i2;
-
-		/* Mimic */
-		if (o_ptr->mimicking_m_idx) {
-			monster_type *m_ptr;
-
-			/* Get the monster */
-			m_ptr = cave_monster(cave, o_ptr->mimicking_m_idx);
-
-			/* Repair monster */
-			if (m_ptr->mimicked_o_idx == i1)
-				m_ptr->mimicked_o_idx = i2;
-		}
-	}
-	/* Hack -- move object */
-	COPY(cave_object(cave, i2), cave_object(cave, i1), object_type);
-
-	/* Hack -- wipe hole */
-	object_wipe(o_ptr);
-}
-
-
-/**
- * Compact and reorder the object list
- *
- * This function can be very dangerous, use with caution!
- *
- * When compacting objects, we first destroy gold, on the basis that by the
- * time item compaction becomes an issue, the player really won't care.
- * We also nuke items marked as ignore.
- *
- * When compacting other objects, we base the saving throw on a combination of
- * object level, distance from player, and current "desperation".
- *
- * After compacting, we "reorder" the objects into a more compact order, and we
- * reset the allocation info, and the "live" array.
- */
-void compact_objects(int size)
-{
-	int py = player->py;
-	int px = player->px;
-
-	int i, y, x, cnt;
-
-	int cur_lev, cur_dis, chance;
-
-	/* Reorder objects when not passed a size */
-	if (!size) {
-		/* Excise dead objects (backwards!) */
-		for (i = cave_object_max(cave) - 1; i >= 1; i--) {
-			object_type *o_ptr = cave_object(cave, i);
-			if (o_ptr->kind) continue;
-
-			/* Move last object into open hole */
-			compact_objects_aux(cave_object_max(cave) - 1, i);
-
-			/* Compress cave->obj_max */
-			cave->obj_max--;
-		}
-		return;
-	}
-
-	/* Message */
-	msg("Compacting objects...");
-
-	/*** Try destroying objects ***/
-
-	/* First do gold */
-	for (i = 1; (i < cave_object_max(cave)) && (size); i++) {
-		object_type *o_ptr = cave_object(cave, i);
-
-		/* Nuke gold or ignored items */
-		if (tval_is_money(o_ptr) || ignore_item_ok(o_ptr)) {
-			delete_object_idx(i);
-			size--;
-		}
-	}
-
-	/* Compact at least 'size' objects */
-	for (cnt = 1; size; cnt++) {
-		/* Get more vicious each iteration */
-		cur_lev = 5 * cnt;
-
-		/* Get closer each iteration */
-		cur_dis = 5 * (20 - cnt);
-
-		/* Examine the objects */
-		for (i = 1; (i < cave_object_max(cave)) && (size); i++) {
-			object_type *o_ptr = cave_object(cave, i);
-			if (!o_ptr->kind) continue;
-
-			/* Hack -- High level objects start out "immune" */
-			if (o_ptr->kind->level > cur_lev && !o_ptr->kind->ignore)
-				continue;
-
-			/* Monster */
-			if (o_ptr->held_m_idx) {
-				monster_type *m_ptr;
-
-				/* Get the monster */
-				m_ptr = cave_monster(cave, o_ptr->held_m_idx);
-
-				/* Get the location */
-				y = m_ptr->fy;
-				x = m_ptr->fx;
-
-				/* Monsters protect their objects */
-				if ((randint0(100) < 90) && !o_ptr->kind->ignore)
-					continue;
-			} else if (o_ptr->mimicking_m_idx) {
-				/* Mimicked items */
-
-				/* Get the location */
-				y = o_ptr->iy;
-				x = o_ptr->ix;
-
-				/* Mimicked items try hard not to be compacted */
-				if (randint0(100) < 90)
-					continue;
-			} else {
-				/* Dungeon */
-
-				/* Get the location */
-				y = o_ptr->iy;
-				x = o_ptr->ix;
-			}
-
-			/* Nearby objects start out "immune" */
-			if ((cur_dis > 0) && (distance(py, px, y, x) < cur_dis) &&
-				!o_ptr->kind->ignore)
-				continue;
-
-			/* Saving throw */
-			chance = 90;
-
-			/* Hack -- only compact artifacts in emergencies */
-			if (o_ptr->artifact && (cnt < 1000)) chance = 100;
-
-			/* Apply the saving throw */
-			if (randint0(100) < chance) continue;
-
-			/* Delete the object */
-			delete_object_idx(i);
-			size--;
-		}
-	}
-
-	/* Reorder objects */
-	compact_objects(0);
+	return FALSE;
 }
 
 /**
- * Free an object
+ * Excise an object from a floor pile, leaving it orphaned.
+
+ * Code using this function must then deal with the orphaned object in some
+ * way - usually by deleting it, or adding it to a player, monster or store
+ * inventory.
+ */
+bool pile_object_excise(struct chunk *c, int y, int x, struct object *obj)
+{
+	struct object *current = square_object(c, y, x);
+
+	/* Special case - excise top object */
+	if (current == obj) {
+		c->squares[y][x].obj = obj->next;
+		if (obj->next)
+			(obj->next)->prev = NULL;
+		obj->next = NULL;
+		obj->prev = NULL;
+		return TRUE;
+	}
+
+	/* Otherwise find the object... */
+	while (current != obj) {
+		current = current->next;
+
+		/* Object isn't in the pile */
+		if (!current)
+			return FALSE;
+	}
+
+	/* ...and remove it */
+	(obj->prev)->next = obj->next;
+	if (obj->next)
+		(obj->next)->prev = obj->prev;
+	obj->next = NULL;
+	obj->prev = NULL;
+	return TRUE;
+}
+
+/**
+ * Free an object's dynamically allocated memory and zero the struct
  */
 void object_free(struct object *obj)
 {
+	struct object *prev = obj->prev;
+	struct object *next = obj->next;
+
 	/* Free slays and brands */
 	free_slay(obj->slays);
 	free_brand(obj->brands);
 
-	/* Free the object structure */
+	/* Check any next and previous objects */
+	if (next) {
+		if (prev) {
+			prev->next = next;
+			next->prev = prev;
+		} else {
+			next->prev = NULL;
+		}
+	} else if (prev) {
+		prev->next = NULL;
+	}
+
+	/* Wipe the object structure */
 	object_wipe(obj);
 }
 
+/**
+ * Delete an object and free its memory
+ */
+void object_delete(struct object *obj)
+{
+	object_free(obj);
+	mem_free(obj);
+}
 
 /**
- * Delete all the items when player leaves the level
- *
- * Note -- we do NOT visually reflect these (irrelevant) changes
- *
- * Hack -- we clear the "cave->o_idx[y][x]" field for every grid,
- * and the "m_ptr->next_o_idx" field for every monster, since
- * we know we are clearing every object.  Technically, we only
- * clear those fields for grids/monsters containing objects,
- * and we clear it once for every such object.
+ * Free an entire object pile
  */
-void wipe_o_list(struct chunk *c)
+void object_pile_free(struct object *obj)
 {
-	int i;
+	struct object *current = obj, *next;
 
-	/* Delete the existing objects */
-	for (i = 1; i < cave_object_max(c); i++)
-	{
-		object_type *o_ptr = cave_object(c, i);
-		if (!o_ptr->kind) continue;
-
-		/* Preserve artifacts or mark them as lost in the history */
-		if (o_ptr->artifact) {
-			/* Preserve if dungeon creation failed, or preserve mode, or items
-			 * carried by monsters, and only artifacts not seen */
-			if ((!character_dungeon || !OPT(birth_no_preserve) ||
-					o_ptr->held_m_idx) && !object_was_sensed(o_ptr))
-				o_ptr->artifact->created = FALSE;
-			else
-				history_lose_artifact(o_ptr->artifact);
-		}
-
-		/* Monster */
-		if (o_ptr->held_m_idx) {
-			monster_type *m_ptr;
-
-			/* Monster */
-			m_ptr = cave_monster(c, o_ptr->held_m_idx);
-
-			/* Hack -- see above */
-			m_ptr->hold_o_idx = 0;
-		} else {
-			/* Dungeon */
-			/* Get the location */
-			int y = o_ptr->iy;
-			int x = o_ptr->ix;
-
-			/* Hack -- see above */
-			c->o_idx[y][x] = 0;
-		}
-
-		/* Wipe the object */
-		object_free(o_ptr);
+	while (current) {
+		next = current->next;
+		object_delete(current);
+		current = next;
 	}
-
-	/* Reset obj_max */
-	c->obj_max = 1;
-
-	/* Reset obj_cnt */
-	c->obj_cnt = 0;
 }
 
-
-/**
- * Get and return the index of a "free" object.
- *
- * This routine should almost never fail, but in case it does,
- * we must be sure to handle "failure" of this routine.
- */
-s16b o_pop(struct chunk *c)
-{
-	int i;
-
-	/* Initial allocation */
-	if (cave_object_max(c) < z_info->level_object_max) {
-		/* Get next space */
-		i = cave_object_max(c);
-
-		/* Expand object array */
-		c->obj_max++;
-
-		/* Count objects */
-		c->obj_cnt++;
-
-		/* Use this object */
-		return (i);
-	}
-
-	/* Recycle dead objects */
-	for (i = 1; i < cave_object_max(c); i++) {
-		object_type *obj = cave_object(c, i);
-		if (obj->kind) continue;
-
-		/* Count objects */
-		c->obj_cnt++;
-
-		/* Use this object */
-		return (i);
-	}
-
-	/* Warn the player (except during dungeon creation) */
-	if (character_dungeon) msg("Too many objects!");
-
-	/* Oops */
-	return (0);
-}
-
-
-/**
- * Get the first object at a dungeon location
- * or NULL if there isn't one.
- */
-object_type *get_first_object(int y, int x)
-{
-	s16b o_idx = cave->o_idx[y][x];
-
-	if (o_idx)
-		return cave_object(cave, o_idx);
-
-	/* No object */
-	return (NULL);
-}
-
-
-/**
- * Get the next object in a stack or NULL if there isn't one.
- */
-object_type *get_next_object(const object_type *o_ptr)
-{
-	if (o_ptr->next_o_idx)
-		return cave_object(cave, o_ptr->next_o_idx);
-
-	/* No more objects */
-	return NULL;
-}
 
 /**
  * Determine if an item can "absorb" a second item
@@ -662,15 +178,15 @@ object_type *get_next_object(const object_type *o_ptr)
  * Chests, and activatable items, except rods, never stack (for various
  * reasons).
  */
-bool object_stackable(const object_type *o_ptr, const object_type *j_ptr,
+bool object_stackable(const struct object *o_ptr, const struct object *j_ptr,
 					  object_stack_t mode)
 {
 	int i;
 
 	/* Equipment items don't stack */
-	if (item_is_equipped(player, object_gear_index(player, o_ptr)))
+	if (object_is_equipped(player->body, o_ptr))
 		return FALSE;
-	if (item_is_equipped(player, object_gear_index(player, j_ptr)))
+	if (object_is_equipped(player->body, j_ptr))
 		return FALSE;
 
 	/* If either item is unknown, do not stack */
@@ -754,7 +270,7 @@ bool object_stackable(const object_type *o_ptr, const object_type *j_ptr,
 /**
  * Return whether each stack of objects can be merged into one stack.
  */
-bool object_similar(const object_type *o_ptr, const object_type *j_ptr,
+bool object_similar(const struct object *o_ptr, const struct object *j_ptr,
 					object_stack_t mode)
 {
 	int total = o_ptr->number + j_ptr->number;
@@ -775,7 +291,7 @@ bool object_similar(const object_type *o_ptr, const object_type *j_ptr,
  *
 * These assumptions are enforced by the "object_similar()" code.
  */
-static void object_absorb_merge(object_type *o_ptr, const object_type *j_ptr)
+static void object_absorb_merge(struct object *o_ptr, const struct object *j_ptr)
 {
 	int total;
 
@@ -836,7 +352,7 @@ static void object_absorb_merge(object_type *o_ptr, const object_type *j_ptr)
 /**
  * Merge a smaller stack into a larger stack, leaving two uneven stacks.
  */
-void object_absorb_partial(object_type *o_ptr, object_type *j_ptr)
+void object_absorb_partial(struct object *o_ptr, struct object *j_ptr)
 {
 	int smallest = MIN(o_ptr->number, j_ptr->number);
 	int largest = MAX(o_ptr->number, j_ptr->number);
@@ -850,7 +366,7 @@ void object_absorb_partial(object_type *o_ptr, object_type *j_ptr)
 /**
  * Merge two stacks into one stack.
  */
-void object_absorb(object_type *o_ptr, object_type *j_ptr)
+void object_absorb(struct object *o_ptr, struct object *j_ptr)
 {
 	int total = o_ptr->number + j_ptr->number;
 
@@ -858,25 +374,30 @@ void object_absorb(object_type *o_ptr, object_type *j_ptr)
 	o_ptr->number = ((total < MAX_STACK_SIZE) ? total : (MAX_STACK_SIZE - 1));
 
 	object_absorb_merge(o_ptr, j_ptr);
+	object_delete(j_ptr);
 }
 
 /**
  * Wipe an object clean.
  */
-void object_wipe(object_type *obj)
+void object_wipe(struct object *obj)
 {
 	/* Wipe the structure */
-	memset(obj, 0, sizeof(object_type));
+	memset(obj, 0, sizeof(*obj));
 }
 
 
 /**
  * Prepare an object based on an existing object
  */
-void object_copy(object_type *o_ptr, const object_type *j_ptr)
+void object_copy(struct object *dest, const struct object *src)
 {
 	/* Copy the structure */
-	COPY(o_ptr, j_ptr, object_type);
+	memcpy(dest, src, sizeof(struct object));
+
+	/* Detach from any pile */
+	dest->prev = NULL;
+	dest->next = NULL;
 }
 
 /**
@@ -885,97 +406,135 @@ void object_copy(object_type *o_ptr, const object_type *j_ptr)
  *
  * Takes care of the charge redistribution concerns of stacked items.
  */
-void object_copy_amt(object_type *dst, object_type *src, int amt)
+void object_copy_amt(struct object *dest, struct object *src, int amt)
 {
 	int charge_time = randcalc(src->time, 0, AVERAGE), max_time;
 
 	/* Get a copy of the object */
-	object_copy(dst, src);
+	object_copy(dest, src);
 
 	/* Modify quantity */
-	dst->number = amt;
-	dst->note = src->note;
+	dest->number = amt;
+	dest->note = src->note;
 
 	/*
 	 * If the item has charges/timeouts, set them to the correct level
 	 * too. We split off the same amount as distribute_charges.
 	 */
 	if (tval_can_have_charges(src))
-		dst->pval = src->pval * amt / src->number;
+		dest->pval = src->pval * amt / src->number;
 
 	if (tval_can_have_timeout(src)) {
 		max_time = charge_time * amt;
 
 		if (src->timeout > max_time)
-			dst->timeout = max_time;
+			dest->timeout = max_time;
 		else
-			dst->timeout = src->timeout;
+			dest->timeout = src->timeout;
 	}
 }
 
 /**
  * Split off 'amt' items from 'src' into 'dest'.
+ *
+ * Where object_copy_amt() makes `amt` new objects, this function leaves the
+ * total number unchanged; otherwise the two functions are similar.
  */
 void object_split(struct object *dest, struct object *src, int amt)
 {
+	/* Get a copy of the object */
+	object_copy(dest, src);
+
+	/* Check legality */
+	if (src->number < amt)
+		amt = src->number;
+
 	/* Distribute charges of wands, staves, or rods */
 	distribute_charges(src, dest, amt);
 
 	/* Modify quantity */
 	dest->number = amt;
+	src->number -= amt;
 	if (src->note)
 		dest->note = src->note;
 }
 
 /**
- * Find and return the index to the oldest object on the given grid marked as
- * "ignore".
+ * Remove an amount of an object from the floor, returning a detached object
+ * which can be used - it is assumed that the object is on the player grid.
+ *
+ * Optionally describe what remains.
  */
-static s16b floor_get_idx_oldest_ignored(int y, int x)
+struct object *floor_object_for_use(struct object *obj, int num, bool message)
 {
-	s16b ignore_idx = 0;
-	s16b this_o_idx;
+	struct object *usable;
+	char name[80];
 
-	object_type *o_ptr = NULL;
+	/* Bounds check */
+	num = MAX(num, obj->number);
 
-	for (this_o_idx = cave->o_idx[y][x]; this_o_idx;
-		 this_o_idx = o_ptr->next_o_idx)
-	{
-		o_ptr = cave_object(cave, this_o_idx);
-
-		if (ignore_item_ok(o_ptr))
-			ignore_idx = this_o_idx;
+	/* Split off a usable object if necessary */
+	if (obj->number > num) {
+		usable = mem_zalloc(sizeof(*usable));
+		object_split(usable, obj, num);
+	} else {
+		usable = obj;
+		pile_object_excise(cave, player->py, player->px, usable);
 	}
 
-	return ignore_idx;
+	/* Housekeeping */
+	player->upkeep->update |= (PU_BONUS | PU_MANA | PU_INVEN);
+	player->upkeep->notice |= (PN_COMBINE);
+	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
+
+	/* Print a message if requested and there is anything left */
+	if (message && (usable != obj)) {
+		/* Get a description */
+		object_desc(name, sizeof(name), obj, ODESC_PREFIX | ODESC_FULL);
+
+		/* Print a message */
+		msg("You see %s.", name);
+	}
+
+	return usable;
 }
 
+
+/**
+ * Find and return the oldest object on the given grid marked as "ignore".
+ */
+static struct object *floor_get_oldest_ignored(int y, int x)
+{
+	struct object *obj, *ignore;
+
+	for (obj = square_object(cave, y, x); obj; obj = obj->next)
+		if (ignore_item_ok(obj))
+			ignore = obj;
+
+	return ignore;
+}
 
 
 /**
  * Let the floor carry an object, deleting old ignored items if necessary
+ *
+ * Optionally put the object at the top or bottom of the pile
  */
-s16b floor_carry(struct chunk *c, int y, int x, object_type *j_ptr)
+bool floor_carry(struct chunk *c, int y, int x, struct object *drop, bool last)
 {
 	int n = 0;
-	s16b o_idx;
-	s16b this_o_idx, next_o_idx = 0;
+	struct object *obj;
 
 
 	/* Scan objects in that grid for combination */
-	for (this_o_idx = c->o_idx[y][x]; this_o_idx; this_o_idx = next_o_idx) {
-		object_type *o_ptr = cave_object(c, this_o_idx);
-
-		/* Get the next object */
-		next_o_idx = o_ptr->next_o_idx;
-
+	for (obj = square_object(c, y, x); obj; obj = obj->next) {
 		/* Check for combination */
-		if (object_similar(o_ptr, j_ptr, OSTACK_FLOOR)) {
+		if (object_similar(obj, drop, OSTACK_FLOOR)) {
 			/* Combine the items */
-			object_absorb(o_ptr, j_ptr);
+			object_absorb(obj, drop);
 
 			/* Result */
-			return (this_o_idx);
+			return TRUE;
 		}
 
 		/* Count objects */
@@ -987,47 +546,43 @@ s16b floor_carry(struct chunk *c, int y, int x, object_type *j_ptr)
 
 	/* The stack is already too large */
 	if (n >= z_info->floor_size) {
-		/* Ignore the oldest ignored object */
-		s16b ignore_idx = floor_get_idx_oldest_ignored(y, x);
+		/* Delete the oldest ignored object */
+		struct object *ignore = floor_get_oldest_ignored(y, x);
 
-		if (ignore_idx)
-			delete_object_idx(ignore_idx);
+		if (ignore) {
+			pile_object_excise(c, y, x, ignore);
+			object_delete(ignore);
+		} else
+			return FALSE;
+	}
+
+	/* Location */
+	drop->iy = y;
+	drop->ix = x;
+
+	/* Forget monster */
+	drop->held_m_idx = 0;
+
+	/* Link to the first or last object in the pile */
+	if (last) {
+		obj = pile_last_item(square_object(c, y, x));
+		drop->next = NULL;
+		drop->prev = obj;
+		if (obj)
+			obj->next = drop;
 		else
-			return 0;
+			c->squares[y][x].obj = drop;
+	} else {
+		drop->next = square_object(c, y, x);
+		c->squares[y][x].obj = drop;
 	}
 
-	/* Make an object */
-	o_idx = o_pop(c);
-
-	/* Success */
-	if (o_idx) {
-		object_type *o_ptr;
-
-		/* Get the object */
-		o_ptr = cave_object(c, o_idx);
-
-		/* Structure Copy */
-		object_copy(o_ptr, j_ptr);
-
-		/* Location */
-		o_ptr->iy = y;
-		o_ptr->ix = x;
-
-		/* Forget monster */
-		o_ptr->held_m_idx = 0;
-
-		/* Link the object to the pile */
-		o_ptr->next_o_idx = c->o_idx[y][x];
-
-		/* Link the floor to the object */
-		c->o_idx[y][x] = o_idx;
-
-		square_note_spot(c, y, x);
-		square_light_spot(c, y, x);
-	}
+	/* Redraw */
+	square_note_spot(c, y, x);
+	square_light_spot(c, y, x);
 
 	/* Result */
-	return (o_idx);
+	return TRUE;
 }
 
 
@@ -1046,8 +601,10 @@ s16b floor_carry(struct chunk *c, int y, int x, object_type *j_ptr)
  * We check several locations to see if we can find a location at which
  * the object can combine, stack, or be placed.  Artifacts will try very
  * hard to be placed, including "teleporting" to a useful grid if needed.
+ *
+ * Objects which fail to be carried by the floor are deleted.
  */
-void drop_near(struct chunk *c, object_type *j_ptr, int chance, int y, int x,
+void drop_near(struct chunk *c, struct object *j_ptr, int chance, int y, int x,
 			   bool verbose)
 {
 	int i, k, n, d, s;
@@ -1057,7 +614,7 @@ void drop_near(struct chunk *c, object_type *j_ptr, int chance, int y, int x,
 	int dy, dx;
 	int ty, tx;
 
-	object_type *o_ptr;
+	struct object *o_ptr;
 
 	char o_name[80];
 
@@ -1115,8 +672,7 @@ void drop_near(struct chunk *c, object_type *j_ptr, int chance, int y, int x,
 			n = 0;
 
 			/* Scan objects in that grid */
-			for (o_ptr = get_first_object(ty, tx); o_ptr;
-					o_ptr = get_next_object(o_ptr)) {
+			for (o_ptr = square_object(c, ty, tx); o_ptr; o_ptr = o_ptr->next) {
 				/* Check for possible combination */
 				if (object_similar(o_ptr, j_ptr, OSTACK_FLOOR))
 					comb = TRUE;
@@ -1136,7 +692,7 @@ void drop_near(struct chunk *c, object_type *j_ptr, int chance, int y, int x,
 
 			/* Paranoia? */
 			if ((k + n) > z_info->floor_size &&
-				!floor_get_idx_oldest_ignored(ty, tx)) continue;
+				!floor_get_oldest_ignored(ty, tx)) continue;
 
 			/* Calculate score */
 			s = 1000 - (d + k * 5);
@@ -1199,7 +755,7 @@ void drop_near(struct chunk *c, object_type *j_ptr, int chance, int y, int x,
 	}
 
 	/* Give it to the floor */
-	if (!floor_carry(c, by, bx, j_ptr)) {
+	if (!floor_carry(c, by, bx, j_ptr, FALSE)) {
 		/* Message */
 		msg("The %s %s.", o_name,
 			VERB_AGREEMENT(j_ptr->number, "disappears", "disappear"));
@@ -1233,13 +789,13 @@ void push_object(int y, int x)
 	/* Save the original terrain feature */
 	struct feature *feat_old = square_feat(cave, y, x);
 
-	object_type *o_ptr;
+	struct object *obj;
 
 	struct queue *queue = q_new(z_info->floor_size);
 
 	/* Push all objects on the square into the queue */
-	for (o_ptr = get_first_object(y, x); o_ptr; o_ptr = get_next_object(o_ptr))
-		q_push_ptr(queue, o_ptr);
+	for (obj = square_object(cave, y, x); obj; obj = obj->next)
+		q_push_ptr(queue, obj);
 
 	/* Set feature to an open door */
 	square_force_floor(cave, y, x);
@@ -1248,14 +804,11 @@ void push_object(int y, int x)
 	/* Drop objects back onto the floor */
 	while (q_len(queue) > 0) {
 		/* Take object from the queue */
-		o_ptr = q_pop_ptr(queue);
+		obj = q_pop_ptr(queue);
 
 		/* Drop the object */
-		drop_near(cave, o_ptr, 0, y, x, FALSE);
+		drop_near(cave, obj, 0, y, x, FALSE);
 	}
-
-	/* Delete original objects */
-	delete_object(y, x);
 
 	/* Reset cave feature */
 	square_set_feat(cave, y, x, feat_old->fidx);
@@ -1266,88 +819,73 @@ void push_object(int y, int x)
 /**
  * Describe the charges on an item on the floor.
  */
-void floor_item_charges(int item)
+void floor_item_charges(struct object *obj)
 {
-	object_type *o_ptr = cave_object(cave, item);
-
 	/* Require staff/wand */
-	if (!tval_can_have_charges(o_ptr)) return;
+	if (!tval_can_have_charges(obj)) return;
 
 	/* Require known item */
-	if (!object_is_known(o_ptr)) return;
+	if (!object_is_known(obj)) return;
 
 	/* Print a message */
-	msg("There %s %d charge%s remaining.",
-	    (o_ptr->pval != 1) ? "are" : "is",
-	     o_ptr->pval,
-	    (o_ptr->pval != 1) ? "s" : "");
+	msg("There %s %d charge%s remaining.", (obj->pval != 1) ? "are" : "is",
+	     obj->pval, (obj->pval != 1) ? "s" : "");
 }
 
 
 
 /**
- * Describe an item on the floor.
+ * Get the indexes of objects at a given floor location. -TNB-
+ *
+ * Return the number of object indexes acquired.
+ *
+ * Valid flags are any combination of the bits:
+ *   0x01 -- Verify item tester
+ *   0x02 -- Marked items only
+ *   0x04 -- Only the top item
+ *   0x08 -- Visible items only
  */
-void floor_item_describe(int item)
+int scan_floor(struct object **items, int max_size, int y, int x, int mode,
+			   item_tester tester)
 {
-	object_type *o_ptr = cave_object(cave, item);
+	struct object *obj;
 
-	char o_name[80];
+	int num = 0;
 
-	/* Get a description */
-	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
+	/* Sanity */
+	if (!square_in_bounds(cave, y, x)) return 0;
 
-	/* Print a message */
-	msg("You see %s.", o_name);
+	/* Scan all objects in the grid */
+	for (obj = square_object(cave, y, x); obj; obj = obj->next) {
+		/* Enforce limit */
+		if (num >= max_size) break;
+
+		/* Item tester */
+		if ((mode & 0x01) && !object_test(tester, obj)) continue;
+
+		/* Marked */
+		if ((mode & 0x02) && (!obj->marked)) continue;
+
+		/* Visible */
+		if ((mode & 0x08) && !is_unknown(obj) && ignore_item_ok(obj))
+			continue;
+
+		/* Accept this item */
+		items[num++] = obj;
+
+		/* Only one */
+		if (mode & 0x04) break;
+	}
+
+	return num;
 }
 
-
 /**
- * Increase the "number" of an item on the floor
- */
-void floor_item_increase(int item, int num)
-{
-	object_type *o_ptr = cave_object(cave, item);
-
-	/* Apply */
-	num += o_ptr->number;
-
-	/* Bounds check */
-	if (num > 255) num = 255;
-	else if (num < 0) num = 0;
-
-	/* Un-apply */
-	num -= o_ptr->number;
-
-	/* Change the number */
-	o_ptr->number += num;
-}
-
-
-/**
- * Optimize an item on the floor (destroy "empty" items)
- */
-void floor_item_optimize(int item)
-{
-	object_type *o_ptr = cave_object(cave, item);
-
-	/* Paranoia -- be sure it exists */
-	if (!o_ptr->kind) return;
-
-	/* Only optimize empty items */
-	if (o_ptr->number) return;
-
-	/* Delete the object */
-	delete_object_idx(item);
-}
-
-
-/**
- * Get a list of "valid" item indexes.
+ * Get a list of "valid" objects.
  *
  * Fills item_list[] with items that are "okay" as defined by the
  * provided tester function, etc.  mode determines what combination of
- * inventory, equipment and player's floor location should be used
+ * inventory, equipment, quiver and player's floor location should be used
  * when drawing up the list.
  *
  * Returns the number of items placed into the list.
@@ -1357,7 +895,7 @@ void floor_item_optimize(int item)
  * z_info->floor_size,
  * though practically speaking much smaller numbers are likely.
  */
-int scan_items(int *item_list, size_t item_list_max, int mode,
+int scan_items(struct object **item_list, size_t item_max, int mode,
 			   item_tester tester)
 {
 	bool use_inven = ((mode & USE_INVEN) ? TRUE : FALSE);
@@ -1366,30 +904,28 @@ int scan_items(int *item_list, size_t item_list_max, int mode,
 	bool use_floor = ((mode & USE_FLOOR) ? TRUE : FALSE);
 
 	int floor_max = z_info->floor_size;
-	int *floor_list = mem_zalloc(floor_max * sizeof(int));
+	struct object **floor_list = mem_zalloc(floor_max * sizeof(struct object *));
 	int floor_num;
 
 	int i;
-	size_t item_list_num = 0;
+	size_t item_num = 0;
 
 	if (use_inven)
-		for (i = 0; i < z_info->pack_size && item_list_num < item_list_max; i++)
-		{
-			if (item_test(tester, player->upkeep->inven[i]))
-				item_list[item_list_num++] = player->upkeep->inven[i];
+		for (i = 0; i < z_info->pack_size && item_num < item_max; i++) {
+			if (object_test(tester, player->upkeep->inven[i]))
+				item_list[item_num++] = player->upkeep->inven[i];
 		}
 
 	if (use_equip)
-		for (i = 0; i < player->body.count && item_list_num < item_list_max;
-			 i++) {
-			if (item_test(tester, slot_index(player, i)))
-				item_list[item_list_num++] = slot_index(player, i);
+		for (i = 0; i < player->body.count && item_num < item_max; i++) {
+			if (object_test(tester, slot_object(player, i)))
+				item_list[item_num++] = slot_object(player, i);
 		}
 
 	if (use_quiver)
-		for (i = 0; i < z_info->quiver_size && item_list_num < item_list_max; i++) {
-			if (item_test(tester, player->upkeep->quiver[i]))
-				item_list[item_list_num++] = player->upkeep->quiver[i];
+		for (i = 0; i < z_info->quiver_size && item_num < item_max; i++) {
+			if (object_test(tester, player->upkeep->quiver[i]))
+				item_list[item_num++] = player->upkeep->quiver[i];
 		}
 
 	/* Scan all non-gold objects in the grid */
@@ -1397,12 +933,12 @@ int scan_items(int *item_list, size_t item_list_max, int mode,
 		floor_num = scan_floor(floor_list, floor_max, player->py, player->px,
 							   0x0B, tester);
 
-		for (i = 0; i < floor_num && item_list_num < item_list_max; i++)
-			item_list[item_list_num++] = -floor_list[i];
+		for (i = 0; i < floor_num && item_num < item_max; i++)
+			item_list[item_num++] = floor_list[i];
 	}
 
 	mem_free(floor_list);
-	return item_list_num;
+	return item_num;
 }
 
 
@@ -1411,18 +947,18 @@ int scan_items(int *item_list, size_t item_list_max, int mode,
  *
  * 'mode' defines which areas we should look at, a la scan_items().
  */
-bool item_is_available(int item, bool (*tester)(const object_type *), int mode)
+bool item_is_available(struct object *obj, bool (*tester)(const struct object *), int mode)
 {
 	int item_max = z_info->pack_size + z_info->quiver_size +
 		player->body.count + z_info->floor_size;
-	int *item_list = mem_zalloc(item_max * sizeof(int));
+	struct object **item_list = mem_zalloc(item_max * sizeof(struct object *));
 	int item_num;
 	int i;
 
 	item_num = scan_items(item_list, item_max, mode, tester);
 
 	for (i = 0; i < item_num; i++)
-		if (item_list[i] == item) {
+		if (item_list[i] == obj) {
 			mem_free(item_list);
 			return TRUE;
 		}

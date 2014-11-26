@@ -37,7 +37,7 @@ u16b chunk_list_max = 0;      /**< current max actual chunk index */
 
 /**
  * Write a chunk to memory and return a pointer to it.  Optionally write
- * monsters, objects and/or traps, and optionally delete those things from
+ * monsters, objects and/or traps, and in those cases delete those things from
  * the source chunk
  * \param y0
  * \param x0 coordinates of the top left corner of the chunk being written
@@ -59,41 +59,29 @@ struct chunk *chunk_write(int y0, int x0, int height, int width, bool monsters,
 	/* Write the location stuff */
 	for (y = 0; y < height; y++) {
 		for (x = 0; x < width; x++) {
-			int this_o_idx, next_o_idx, held;
-
 			/* Terrain */
 			new->squares[y][x].feat = cave->squares[y0 + y][x0 + x].feat;
 			sqinfo_copy(new->squares[y][x].info,
 						cave->squares[y0 + y][x0 + x].info);
 
 			/* Dungeon objects */
-			if (objects){
-				if (square_object(cave, y0 + y, x0 + x)) {
-					new->o_idx[y][x] = cave_object_count(new) + 1;
-					for (this_o_idx = cave->o_idx[y0 + y][x0 + x]; this_o_idx;
-						 this_o_idx = next_o_idx) {
-						object_type *source_obj = cave_object(cave, this_o_idx);
-						object_type *dest_obj = cave_object(new, ++new->obj_cnt);
-						
-						/* Copy over */
-						object_copy(dest_obj, source_obj);
-						
+			if (objects) {
+				struct object *obj = square_object(cave, y0 + y, x0 + x);
+				if (obj) {
+					new->squares[y][x].obj = obj;
+					while (obj) {
 						/* Adjust stuff */
-						dest_obj->iy = y;
-						dest_obj->ix = x;
-						next_o_idx = source_obj->next_o_idx;
-						if (next_o_idx)
-							dest_obj->next_o_idx = new->obj_cnt + 1;
-						delete_object_idx(this_o_idx);
+						obj->iy = y;
+						obj->ix = x;
 					}
 				}
 			}
 
 			/* Monsters and held objects */
-			if (monsters){
-				held = 0;
+			if (monsters) {
 				if (cave->squares[y0 + y][x0 + x].mon > 0) {
-					monster_type *source_mon = square_monster(cave, y0 + y, x0 + x);
+					monster_type *source_mon = square_monster(cave, y0 + y,
+															  x0 + x);
 					monster_type *dest_mon = NULL;
 
 					/* Valid monster */
@@ -110,28 +98,9 @@ struct chunk *chunk_write(int y0, int x0, int height, int width, bool monsters,
 					dest_mon->fx = x;
 
 					/* Held objects */
-					if (objects && source_mon->hold_o_idx) {
-						for (this_o_idx = source_mon->hold_o_idx; this_o_idx;
-							 this_o_idx = next_o_idx) {
-							object_type *source_obj = cave_object(cave, this_o_idx);
-							object_type *dest_obj = cave_object(new, ++new->obj_cnt);
-							
-							/* Copy over */
-							object_copy(dest_obj, source_obj);
+					if (objects && source_mon->held_obj)
+						dest_mon->held_obj = source_mon->held_obj;
 
-							/* Adjust stuff */
-							dest_obj->iy = y;
-							dest_obj->ix = x;
-							next_o_idx = source_obj->next_o_idx;
-							if (next_o_idx)
-								dest_obj->next_o_idx = cave_object_count(new) + 1;
-							dest_obj->held_m_idx = cave_monster_count(new);
-							if (!held)
-								held = cave_object_count(new);
-							delete_object_idx(this_o_idx);
-						}
-					}
-					dest_mon->hold_o_idx = held;
 					delete_monster(y0 + y, x0 + x);
 				}
 			}
@@ -144,8 +113,8 @@ struct chunk *chunk_write(int y0, int x0, int height, int width, bool monsters,
 				cave->squares[y][x].trap = NULL;
 
 				/* Adjust position */
-				trap->fy -= y0;
-				trap->fx -= x0;
+				trap->fy = y;
+				trap->fx = x;
 			}
 		}
 	}
@@ -269,7 +238,8 @@ void symmetry_transform(int *y, int *x, int y0, int x0, int height, int width,
 }
 
 /**
- * Write a chunk, transformed, to a given offset in another chunk
+ * Write a chunk, transformed, to a given offset in another chunk.  Note that
+ * objects are copied from the old chunk and not retained there
  * \param dest the chunk where the copy is going
  * \param source the chunk being copied
  * \param y0
@@ -297,9 +267,6 @@ bool chunk_copy(struct chunk *dest, struct chunk *source, int y0, int x0,
 	/* Write the location stuff */
 	for (y = 0; y < h; y++) {
 		for (x = 0; x < w; x++) {
-			int this_o_idx, next_o_idx, held;
-			bool first_obj = TRUE;
-
 			/* Work out where we're going */
 			int dest_y = y;
 			int dest_x = x;
@@ -311,53 +278,14 @@ bool chunk_copy(struct chunk *dest, struct chunk *source, int y0, int x0,
 						source->squares[y][x].info);
 
 			/* Dungeon objects */
-			held = 0;
-			if (source->o_idx[y][x]) {
-				for (this_o_idx = source->o_idx[y][x]; this_o_idx;
-					 this_o_idx = next_o_idx) {
-					object_type *source_obj = cave_object(source, this_o_idx);
-					object_type *dest_obj = NULL;
-					int o_idx = 0;
+			if (square_object(source, y, x)) {
+				struct object *obj;
+				dest->squares[dest_y][dest_x].obj = square_object(source, y, x);
 
-					/* Is this the first object on this square? */
-					if (first_obj) {
-						/* Make an object */
-						o_idx = o_pop(dest);
-
-						/* Hope this never happens */
-						if (!o_idx)
-							break;
-
-						/* Mark this square as holding this object */
-						dest->o_idx[dest_y][dest_x] = o_idx;
-
-						first_obj = FALSE;
-					}
-
-					/* Copy over */
-					dest_obj = cave_object(dest, o_idx);
-					object_copy(dest_obj, source_obj);
-
+				for (obj = square_object(source, y, x); obj; obj = obj->next) {
 					/* Adjust position */
-					dest_obj->iy = dest_y;
-					dest_obj->ix = dest_x;
-
-					/* Tell the monster on this square what it's holding */
-					if (source_obj->held_m_idx) {
-						if (!held)
-							held = o_idx;
-					}
-
-					/* Look at the next object, if there is one */
-					next_o_idx = source_obj->next_o_idx;
-
-					/* Make a slot for it if there is, and point to it */
-					if (next_o_idx) {
-						o_idx = o_pop(dest);
-						if (!o_idx)
-							break;
-						dest_obj->next_o_idx = o_idx;
-					}
+					obj->iy = dest_y;
+					obj->ix = dest_x;
 				}
 			}
 
@@ -388,76 +316,22 @@ bool chunk_copy(struct chunk *dest, struct chunk *source, int y0, int x0,
 				dest_mon->fy = dest_y;
 				dest_mon->fx = dest_x;
 
-				/* Objects take some work */
-				if (source_mon->hold_o_idx) {
-					int o_idx = 0;
-					first_obj = TRUE;
-					for (this_o_idx = source_mon->hold_o_idx; this_o_idx;
-						 this_o_idx = next_o_idx) {
-						object_type *held_obj = cave_object(source, this_o_idx);
-						object_type *dest_obj = NULL;
-
-						/* Is this the first object on this square? */
-						if (first_obj) {
-							/* Make an object */
-							o_idx = o_pop(dest);
-
-							/* Hope this never happens */
-							if (!o_idx)
-								break;
-
-							/* Mark this monster as holding this object */
-							dest_mon->hold_o_idx = o_idx;
-
-							first_obj = FALSE;
-						}
-
-						/* Copy over */
-						dest_obj = cave_object(dest, o_idx);
-						object_copy(dest_obj, held_obj);
-
-						/* No position, held by this monster */
-						dest_obj->iy = 0;
-						dest_obj->ix = 0;
-						dest_obj->held_m_idx = dest_mon->midx;
-
-						/* Look at the next object, if there is one */
-						next_o_idx = held_obj->next_o_idx;
-
-						/* Make a slot for it if there is, and point to it */
-						if (next_o_idx) {
-							o_idx = o_pop(dest);
-							if (!o_idx)
-								break;
-							dest_obj->next_o_idx = o_idx;
-						}
-					}
-				}
+				/* Held objects */
+				if (source_mon->held_obj)
+					dest_mon->held_obj = source_mon->held_obj;
 			}
 
 			/* Traps */
 			if (source->squares[y][x].trap) {
 				struct trap *trap = source->squares[y][x].trap;
-				struct trap *new_trap = mem_zalloc(sizeof(*new_trap));
-				dest->squares[y][x].trap = new_trap;
+				dest->squares[y][x].trap = trap;
 
 				/* Traverse the trap list */
 				while (trap) {
-					struct trap *last_new_trap = new_trap;
-
-					/* Copy over */
-					memcpy(new_trap, trap, sizeof(*trap));
-
 					/* Adjust location */
-					new_trap->fy = dest_y;
-					new_trap->fx = dest_x;
-
-					/* Step, make a new trap if needed, point at it */
+					trap->fy = dest_y;
+					trap->fx = dest_x;
 					trap = trap->next;
-					if (trap) {
-						new_trap = mem_zalloc(sizeof(*new_trap));
-						last_new_trap->next = new_trap;
-					}
 				}
 			}
 
@@ -488,23 +362,17 @@ bool chunk_copy(struct chunk *dest, struct chunk *source, int y0, int x0,
 
 void chunk_validate_objects(struct chunk *c) {
 	int x, y;
-	int this_o_idx, next_o_idx;
+	struct object *obj;
 
 	for (y = 0; y < c->height; y++) {
 		for (x = 0; x < c->width; x++) {
-			for (this_o_idx = c->o_idx[y][x]; this_o_idx; this_o_idx = next_o_idx) {
-				assert(c->objects[this_o_idx].tval != 0);
-				next_o_idx = c->objects[this_o_idx].next_o_idx;
-			}
+			for (obj = square_object(c, y, x); obj; obj = obj->next)
+				assert(obj->tval != 0);
 			if (c->squares[y][x].mon > 0) {
 				monster_type *mon = square_monster(c, y, x);
-				if (mon->hold_o_idx) {
-					for (this_o_idx = mon->hold_o_idx; this_o_idx; this_o_idx = next_o_idx) {
-						assert(c->objects[this_o_idx].tval != 0);
-						next_o_idx = c->objects[this_o_idx].next_o_idx;
-					}
-					
-				}
+				if (mon->held_obj)
+					for (obj = mon->held_obj; obj; obj = obj->next)
+						assert(obj->tval != 0);
 			}
 		}
 	}

@@ -1,6 +1,6 @@
 /**
-   \file obj-chest.h
-   \brief Encapsulation of chest-related functions
+ * \file obj-chest.h
+ * \brief Encapsulation of chest-related functions
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  * Copyright (c) 2012 Peter Denison
@@ -44,9 +44,9 @@ byte chest_trap_type(const object_type *o_ptr);
 bool is_trapped_chest(const object_type *o_ptr);
 bool is_locked_chest(const object_type *o_ptr);
 void unlock_chest(object_type *o_ptr);
-s16b chest_check(int y, int x, enum chest_query check_type);
+struct object *chest_check(int y, int x, enum chest_query check_type);
 int count_chests(int *y, int *x, enum chest_query check_type);
-bool do_cmd_open_chest(int y, int x, s16b o_idx);
-bool do_cmd_disarm_chest(int y, int x, s16b o_idx);
+bool do_cmd_open_chest(int y, int x, struct object *obj);
+bool do_cmd_disarm_chest(int y, int x, struct object *obj);
 
 #endif /* OBJECT_CHEST_H */

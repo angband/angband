@@ -30,6 +30,7 @@
 #include "obj-ignore.h"
 #include "obj-info.h"
 #include "obj-make.h"
+#include "obj-pile.h"
 #include "obj-tval.h"
 #include "obj-ui.h"
 #include "obj-util.h"
@@ -476,12 +477,11 @@ static bool store_get_check(const char *prompt)
 static bool store_sell(struct store *store)
 {
 	int amt;
-	int item;
 	int get_mode = USE_EQUIP | USE_INVEN | USE_FLOOR;
 
-	object_type *o_ptr;
-	object_type object_type_body;
-	object_type *i_ptr = &object_type_body;
+	struct object *obj;
+	struct object object_type_body;
+	struct object *temp_obj = &object_type_body;
 
 	char o_name[120];
 
@@ -506,15 +506,11 @@ static bool store_sell(struct store *store)
 	/* Get an item */
 	player->upkeep->command_wrk = USE_INVEN;
 
-	if (!get_item(&item, prompt, reject, CMD_DROP, tester, get_mode))
+	if (!get_item(&obj, prompt, reject, CMD_DROP, tester, get_mode))
 		return FALSE;
 
-	/* Get the item */
-	o_ptr = object_from_item_idx(item);
-
 	/* Hack -- Cannot remove cursed objects */
-	if (item_is_equipped(player, item) && cursed_p(o_ptr->flags))
-	{
+	if (object_is_equipped(player->body, obj) && cursed_p(obj->flags)) {
 		/* Oops */
 		msg("Hmmm, it seems to be cursed.");
 
@@ -523,16 +519,15 @@ static bool store_sell(struct store *store)
 	}
 
 	/* Get a quantity */
-	amt = get_quantity(NULL, o_ptr->number);
+	amt = get_quantity(NULL, obj->number);
 
 	/* Allow user abort */
 	if (amt <= 0) return FALSE;
 
 	/* Get a copy of the object representing the number being sold */
-	object_copy_amt(i_ptr, object_from_item_idx(item), amt);
+	object_copy_amt(temp_obj, obj, amt);
 
-	if (!store_check_num(store, i_ptr))
-	{
+	if (!store_check_num(store, temp_obj)) {
 		if (store->sidx == STORE_HOME)
 			msg("Your home is full.");
 		else
@@ -542,13 +537,12 @@ static bool store_sell(struct store *store)
 	}
 
 	/* Get a full description */
-	object_desc(o_name, sizeof(o_name), i_ptr, ODESC_PREFIX | ODESC_FULL);
+	object_desc(o_name, sizeof(o_name), temp_obj, ODESC_PREFIX | ODESC_FULL);
 
 	/* Real store */
-	if (store->sidx != STORE_HOME)
-	{
+	if (store->sidx != STORE_HOME) {
 		/* Extract the value of the items */
-		u32b price = price_item(store, i_ptr, TRUE, amt);
+		u32b price = price_item(store, temp_obj, TRUE, amt);
 
 		screen_save();
 
@@ -558,8 +552,7 @@ static bool store_sell(struct store *store)
 		/* Confirm sale */
 		if (!store_get_check(format("%s %s? [ESC, any other key to accept]",
 				OPT(birth_no_selling) ? "Give" : "Sell",
-				o_name)))
-		{
+				o_name))) {
 			screen_load();
 			return FALSE;
 		}
@@ -567,15 +560,11 @@ static bool store_sell(struct store *store)
 		screen_load();
 
 		cmdq_push(CMD_SELL);
-		cmd_set_arg_item(cmdq_peek(), "item", item);
+		cmd_set_arg_item(cmdq_peek(), "item", obj);
 		cmd_set_arg_number(cmdq_peek(), "quantity", amt);
-	}
-
-	/* Player is at home */
-	else
-	{
+	} else { /* Player is at home */
 		cmdq_push(CMD_STASH);
-		cmd_set_arg_item(cmdq_peek(), "item", item);
+		cmd_set_arg_item(cmdq_peek(), "item", obj);
 		cmd_set_arg_number(cmdq_peek(), "quantity", amt);
 	}
 

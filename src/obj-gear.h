@@ -1,6 +1,6 @@
 /**
-  \file: obj-gear.h
-  \brief management of inventory, equipment and quiver
+ * \file: obj-gear.h
+ * \brief management of inventory, equipment and quiver
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  * Copyright (c) 2014 Nick McConnell
@@ -36,32 +36,26 @@ enum
 	EQUIP_MAX
 };
 
-char gear_to_label(int i);
-char inven_to_label(int i);
-char equip_to_label(int i);
-char quiver_to_label(int i);
-char floor_to_label(int i);
 int slot_by_name(struct player *p, const char *name);
 bool slot_type_is(int slot, int type);
-int slot_index(struct player *p, int slot);
-struct object *equipped_item_by_slot(struct player *p, int slot);
+struct object *slot_object(struct player *p, int slot);
 struct object *equipped_item_by_slot_name(struct player *p, const char *name);
-bool item_is_equipped(struct player *p, int item);
-int object_gear_index(struct player *p, const struct object *obj);
+bool object_is_equipped(struct player_body body, const struct object *obj);
+bool object_is_carried(struct player *p, const struct object *obj);
 const char *equip_mention(struct player *p, int slot);
 const char *equip_describe(struct player *p, int slot);
-s16b wield_slot(const object_type *o_ptr);
+int wield_slot(const struct object *o_ptr);
 int minus_ac(struct player *p);
-void inven_item_charges(int item);
-void inven_item_describe(int item);
-void inven_item_increase(int item, int num);
-void inven_item_optimize(int item);
-bool inven_carry_okay(const object_type *o_ptr);
-bool inven_stack_okay(const object_type *o_ptr);
-int gear_find_slot(struct player *p);
-s16b inven_carry(struct player *p, struct object *o);
-void inven_takeoff(int item);
-void inven_drop(int item, int amt);
+char gear_to_label(struct object *obj);
+bool gear_excise_object(struct object *obj);
+struct object *gear_last_item(void);
+struct object *gear_object_for_use(struct object *obj, int num, bool message);
+bool inven_carry_okay(const struct object *obj);
+bool inven_stack_okay(const struct object *o_ptr);
+void inven_item_charges(struct object *obj);
+bool inven_carry(struct player *p, struct object *obj, bool message);
+void inven_takeoff(struct object *item);
+void inven_drop(struct object *obj, int amt);
 void combine_pack(void);
 bool pack_is_full(void);
 bool pack_is_overfull(void);

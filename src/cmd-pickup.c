@@ -31,6 +31,7 @@
 #include "obj-gear.h"
 #include "obj-identify.h"
 #include "obj-ignore.h"
+#include "obj-pile.h"
 #include "obj-tval.h"
 #include "obj-ui.h"
 #include "obj-util.h"
@@ -47,13 +48,13 @@
 void do_cmd_pickup(struct command *cmd)
 {
 	int energy_cost;
-	int item = 0;
+	struct object *obj = square_object(cave, player->py, player->px);
 
 	/* Autopickup first */
 	energy_cost = do_autopickup() * 10;
 
 	/* Pick up floor objects with a menu for multiple objects */
-	energy_cost += py_pickup_item(1, item) * 10;
+	energy_cost += py_pickup_item(1, obj) * 10;
 
 	/* Limit */
 	if (energy_cost > 100) energy_cost = 100;
@@ -77,35 +78,28 @@ void do_cmd_autopickup(struct command *cmd)
  */
 static void py_pickup_gold(void)
 {
-	int py = player->py;
-	int px = player->px;
-
 	s32b total_gold = 0L;
 	char name[30] = "";
 
-	s16b this_o_idx = 0;
-	s16b next_o_idx = 0;
-
-	object_type *o_ptr;
+	struct object *obj = square_object(cave, player->py, player->px), *next;
 
 	int sound_msg;
 	bool verbal = FALSE;
 	bool at_most_one = TRUE;
 
 	/* Pick up all the ordinary gold objects */
-	for (this_o_idx = cave->o_idx[py][px]; this_o_idx; this_o_idx = next_o_idx)
-	{
-		object_kind *kind = NULL;
+	while (obj) {
+		struct object_kind *kind = NULL;
 
-		/* Get the object */
-		o_ptr = cave_object(cave, this_o_idx);
-
-		/* Get the next object */
-		next_o_idx = o_ptr->next_o_idx;
+		/* Get next object */
+		next = obj->next;
 
 		/* Ignore if not legal treasure */
-		kind = lookup_kind(o_ptr->tval, o_ptr->sval);
-		if (!tval_is_money(o_ptr) || !kind)	continue;
+		kind = lookup_kind(obj->tval, obj->sval);
+		if (!tval_is_money(obj) || !kind) {
+			obj = next;
+			continue;
+		}
 
 		/* Multiple types if we have a second name, otherwise record the name */
 		if (total_gold && !streq(kind->name, name))
@@ -114,19 +108,20 @@ static void py_pickup_gold(void)
 			my_strcpy(name, kind->name, sizeof(name));
 
 		/* Remember whether feedback message is in order */
-		if (!ignore_item_ok(o_ptr))
+		if (!ignore_item_ok(obj))
 			verbal = TRUE;
 
 		/* Increment total value */
-		total_gold += (s32b)o_ptr->pval;
+		total_gold += (s32b)obj->pval;
 
 		/* Delete the gold */
-		delete_object_idx(this_o_idx);
+		pile_object_excise(cave, player->py, player->px, obj);
+		object_delete(obj);
+		obj = next;
 	}
 
 	/* Pick up the gold, if present */
-	if (total_gold)
-	{
+	if (total_gold) {
 		char buf[100];
 
 		/* Build a message */
@@ -177,50 +172,25 @@ static bool auto_pickup_okay(const object_type *o_ptr)
 /*
  * Carry an object and delete it.
  */
-static void py_pickup_aux(int o_idx, bool domsg)
+static void py_pickup_aux(struct object *obj, bool domsg)
 {
-	int index;
-
-	char o_name[80];
-	object_type *o_ptr = cave_object(cave, o_idx);
-
-	/* Carry the object */
-	index = inven_carry(player, o_ptr);
-
-	/* Handle errors (paranoia) */
-	if (index < 0) return;
-
-	/* Get the new object */
-	o_ptr = &player->gear[index];
+	/* Confirm the object can be picked up*/
+	if (!inven_carry_okay(obj))
+		quit_fmt("Failed pickup of %s", obj->kind->name);
 
 	/* Set ignore status */
 	player->upkeep->notice |= PN_IGNORE;
 
 	/* Automatically sense artifacts */
-	object_sense_artifact(o_ptr);
+	object_sense_artifact(obj);
 
 	/* Log artifacts if found */
-	if (o_ptr->artifact)
-		history_add_artifact(o_ptr->artifact, object_is_known(o_ptr), TRUE);
+	if (obj->artifact)
+		history_add_artifact(obj->artifact, object_is_known(obj), TRUE);
 
-	/* Optionally, display a message */
-	if (domsg)
-	{
-		/* Describe the object */
-		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
-
-		/* Message */
-		msg("You have %s (%c).", o_name, gear_to_label(index));
-	}
-
-	/* Update object_idx if necessary */
-	if (tracked_object_is(player->upkeep, 0 - o_idx))
-	{
-		track_object(player->upkeep, index);
-	}
-
-	/* Delete the object */
-	delete_object_idx(o_idx);
+	/* Carry the object */
+	pile_object_excise(cave, player->py, player->px, obj);
+	inven_carry(player, obj, domsg);
 }
 
 int do_autopickup(void)
@@ -228,63 +198,40 @@ int do_autopickup(void)
 	int py = player->py;
 	int px = player->px;
 
-	s16b this_o_idx, next_o_idx = 0;
-
-	object_type *o_ptr;
+	struct object *obj, *next;
 
 	/* Objects picked up.  Used to determine time cost of command. */
 	byte objs_picked_up = 0;
 
-	int floor_max = z_info->floor_size + 1;
-	int *floor_list = mem_zalloc(floor_max * sizeof(int));
-	int floor_num = 0;
-
 	/* Nothing to pick up -- return */
-	if (!cave->o_idx[py][px]) {
-		mem_free(floor_list);
-		return (0);
-	}
+	if (!square_object(cave, py, px))
+		return 0;
 
 	/* Always pickup gold, effortlessly */
 	py_pickup_gold();
 
-
 	/* Scan the remaining objects */
-	for (this_o_idx = cave->o_idx[py][px]; this_o_idx; this_o_idx = next_o_idx)
-	{
-		/* Get the object and the next object */
-		o_ptr = cave_object(cave, this_o_idx);
-		next_o_idx = o_ptr->next_o_idx;
-
+	obj = square_object(cave, py, px);
+	while (obj) {
 		/* Ignore all hidden objects and non-objects */
-		if (ignore_item_ok(o_ptr) || !o_ptr->kind) continue;
+		if (ignore_item_ok(obj)) continue;
 
-		/* XXX Hack -- Enforce limit */
-		if (floor_num >= floor_max) break;
+		next = obj->next;
 
 		/* Hack -- disturb */
 		disturb(player, 0);
 
 		/* Automatically pick up items into the backpack */
-		if (auto_pickup_okay(o_ptr)) {
+		if (auto_pickup_okay(obj)) {
 			/* Pick up the object with message */
-			py_pickup_aux(this_o_idx, TRUE);
+			py_pickup_aux(obj, TRUE);
 			objs_picked_up++;
+			obj = next;
 
 			continue;
 		}
-
-
-		/* Tally objects and store them in an array. */
-
-		/* Remember this object index */
-		floor_list[floor_num] = this_o_idx;
-
-		/* Count non-gold objects that remain on the floor. */
-		floor_num++;
+		obj = next;
 	}
-
-	mem_free(floor_list);
 
 	return objs_picked_up;
 }
@@ -308,9 +255,9 @@ int do_autopickup(void)
  *
  * [This paragraph is not true, intentional?]
  * If we are picking up objects automatically, and have room for at least
- * one, allow the "OPT(pickup_detail)" option to display information about objects
- * and prompt the player.  Otherwise, automatically pick up a single object
- * or use a menu for more than one.
+ * one, allow the "OPT(pickup_detail)" option to display information about
+ * objects and prompt the player.  Otherwise, automatically pick up a single
+ * object or use a menu for more than one.
  *
  * Pick up multiple objects using Tim Baker's menu system.   Recursively
  * call this function (forcing menus for any number of objects) until
@@ -326,15 +273,15 @@ int do_autopickup(void)
  *
  * \param item is the floor item index (must be negative) to pick up.
  */
-byte py_pickup_item(int pickup, int item)
+byte py_pickup_item(int pickup, struct object *obj)
 {
 	int py = player->py;
 	int px = player->px;
 
-	s16b this_o_idx = 0;
+	struct object *current = NULL;
 
 	int floor_max = z_info->floor_size + 1;
-	int *floor_list = mem_zalloc(floor_max * sizeof(int));
+	struct object **floor_list = mem_zalloc(floor_max * sizeof(*floor_list));
 	int floor_num = 0;
 
 	int i;
@@ -350,7 +297,7 @@ byte py_pickup_item(int pickup, int item)
 	py_pickup_gold();
 
 	/* Nothing else to pick up -- return */
-	if (!cave->o_idx[py][px]) {
+	if (!square_object(cave, py, px)) {
 		mem_free(floor_list);
 		return objs_picked_up;
 	}
@@ -358,10 +305,10 @@ byte py_pickup_item(int pickup, int item)
 	/* Tally objects that can be picked up.*/
 	floor_num = scan_floor(floor_list, floor_max, py, px, 0x08, NULL);
 	for (i = 0; i < floor_num; i++)
-	    can_pickup += inven_carry_okay(cave_object(cave, floor_list[i]));
+	    if (inven_carry_okay(floor_list[i]))
+			can_pickup++;
 	
-	if (!can_pickup)
-	{
+	if (!can_pickup) {
 	    /* Can't pick up, but probably want to know what's there. */
 	    event_signal(EVENT_SEEFLOOR);
 		mem_free(floor_list);
@@ -369,33 +316,31 @@ byte py_pickup_item(int pickup, int item)
 	}
 
 	/* Use the item that we are given, if it is on the floor. */
-	if (item < 0)
-		this_o_idx = 0 - item;
+	if (square_holds_object(cave, py, px, obj))
+		current = obj;
 
 	/* Use a menu interface for multiple objects, or pickup single objects */
-	if (pickup == 1 && !this_o_idx)
-	{
+	if (pickup == 1 && !current) {
 		if (floor_num > 1)
 			pickup = 2;
 		else
-			this_o_idx = floor_list[0];
+			current = floor_list[0];
 	}
 
 	/* Display a list if requested. */
-	if (pickup == 2 && !this_o_idx)
-	{
+	if (pickup == 2 && !current) {
 		const char *q, *s;
-		int item;
+		struct object *obj1;
 
 		/* Get an object or exit. */
 		q = "Get which item?";
 		s = "You see nothing there.";
-		if (!get_item(&item, q, s, CMD_PICKUP, inven_carry_okay, USE_FLOOR)) {
+		if (!get_item(&obj1, q, s, CMD_PICKUP, inven_carry_okay, USE_FLOOR)) {
 			mem_free(floor_list);
 			return (objs_picked_up);
 		}
 
-		this_o_idx = 0 - item;
+		current = obj1;
 		call_function_again = TRUE;
 
 		/* With a list, we do not need explicit pickup messages */
@@ -403,10 +348,9 @@ byte py_pickup_item(int pickup, int item)
 	}
 
 	/* Pick up object, if legal */
-	if (this_o_idx)
-	{
+	if (current) {
 		/* Pick up the object */
-		py_pickup_aux(this_o_idx, domsg);
+		py_pickup_aux(current, domsg);
 
 		/* Indicate an object picked up. */
 		objs_picked_up = 1;
@@ -426,7 +370,7 @@ byte py_pickup_item(int pickup, int item)
 
 byte py_pickup(int pickup)
 {
-	return py_pickup_item(pickup, 0);
+	return py_pickup_item(pickup, NULL);
 }
 
 /*

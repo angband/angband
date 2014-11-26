@@ -472,14 +472,14 @@ bool square_isopen(struct chunk *c, int y, int x) {
  * True if the square is empty (an open square without any items).
  */
 bool square_isempty(struct chunk *c, int y, int x) {
-	return square_isopen(c, y, x) && !c->o_idx[y][x];
+	return square_isopen(c, y, x) && !square_object(c, y, x);
 }
 
 /**
  * True if the square is a floor square without items.
  */
 bool square_canputitem(struct chunk *c, int y, int x) {
-	return square_isfloor(c, y, x) && !c->o_idx[y][x];
+	return square_isfloor(c, y, x) && !square_object(c, y, x);
 }
 
 /**
@@ -619,18 +619,17 @@ bool square_isknowntrap(struct chunk *c, int y, int x)
  */
 bool square_changeable(struct chunk *c, int y, int x)
 {
-	object_type *o_ptr;
+	object_type *obj;
 
 	/* Forbid perma-grids */
-	if (square_isperm(c, y, x) || square_isshop(c, y, x) || 
-		square_isstairs(c, y, x)) return (FALSE);
+	if (square_isperm(c, y, x) || square_isshop(c, y, x) ||
+		square_isstairs(c, y, x))
+		return (FALSE);
 
 	/* Check objects */
-	for (o_ptr = get_first_object(y, x); o_ptr; o_ptr = get_next_object(o_ptr))
-	{
+	for (obj = square_object(c, y, x); obj; obj = obj->next)
 		/* Forbid artifact grids */
-		if (o_ptr->artifact) return (FALSE);
-	}
+		if (obj->artifact) return (FALSE);
 
 	/* Accept */
 	return (TRUE);
@@ -702,12 +701,20 @@ struct monster *square_monster(struct chunk *c, int y, int x)
  * Get the top object of a pile on the current level by its position.
  */
 struct object *square_object(struct chunk *c, int y, int x) {
-	if (c->o_idx[y][x] > 0) {
-	struct object *obj = cave_object(c, c->o_idx[y][x]);
-	return obj->kind ? obj : NULL;
-	}
+	return c->squares[y][x].obj;
+}
 
-	return NULL;
+/**
+ * Return TRUE if the given object is on the floor at this grid
+ */
+bool square_holds_object(struct chunk *c, int y, int x, struct object *obj) {
+	struct object *square_obj = square_object(c, y, x);
+	while (square_obj) {
+		if (obj == square_obj)
+			return TRUE;
+		square_obj = square_obj->next;
+	}
+	return FALSE;
 }
 
 void square_set_feat(struct chunk *c, int y, int x, int feat)

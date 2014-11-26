@@ -463,23 +463,26 @@ void copy_artifact_data(object_type *o_ptr, const artifact_type *a_ptr)
  * We *prefer* to create the special artifacts in order, but this is
  * normally outweighed by the "rarity" rolls for those artifacts.
  */
-static bool make_artifact_special(object_type *o_ptr, int level)
+static struct object *make_artifact_special(int level)
 {
 	int i;
+	struct object *new_obj;
 
 	/* No artifacts, do nothing */
-	if (OPT(birth_no_artifacts)) return FALSE;
+	if (OPT(birth_no_artifacts))
+		return NULL;
 
 	/* No artifacts in the town */
-	if (!player->depth) return FALSE;
+	if (!player->depth)
+		return NULL;
 
 	/* Check the special artifacts */
 	for (i = 0; i < z_info->a_max; ++i) {
-		artifact_type *a_ptr = &a_info[i];
-		object_kind *kind = lookup_kind(a_ptr->tval, a_ptr->sval);
+		artifact_type *art = &a_info[i];
+		object_kind *kind = lookup_kind(art->tval, art->sval);
 
 		/* Skip "empty" artifacts */
-		if (!a_ptr->name) continue;
+		if (!art->name) continue;
 
 		/* Make sure the kind was found */
 		if (!kind) continue;
@@ -488,22 +491,22 @@ static bool make_artifact_special(object_type *o_ptr, int level)
 		if (!kf_has(kind->kind_flags, KF_INSTA_ART)) continue;
 
 		/* Cannot make an artifact twice */
-		if (a_ptr->created) continue;
+		if (art->created) continue;
 
 		/* Enforce minimum "depth" (loosely) */
-		if (a_ptr->alloc_min > player->depth) {
+		if (art->alloc_min > player->depth) {
 			/* Get the "out-of-depth factor" */
-			int d = (a_ptr->alloc_min - player->depth) * 2;
+			int d = (art->alloc_min - player->depth) * 2;
 
 			/* Roll for out-of-depth creation */
 			if (randint0(d) != 0) continue;
 		}
 
 		/* Enforce maximum depth (strictly) */
-		if (a_ptr->alloc_max < player->depth) continue;
+		if (art->alloc_max < player->depth) continue;
 
 		/* Artifact "rarity roll" */
-		if (randint1(100) > a_ptr->alloc_prob) continue;
+		if (randint1(100) > art->alloc_prob) continue;
 
 		/* Enforce minimum "object" level (loosely) */
 		if (kind->level > level) {
@@ -515,23 +518,24 @@ static bool make_artifact_special(object_type *o_ptr, int level)
 		}
 
 		/* Assign the template */
-		object_prep(o_ptr, kind, a_ptr->alloc_min, RANDOMISE);
+		new_obj = mem_zalloc(sizeof(*new_obj));
+		object_prep(new_obj, kind, art->alloc_min, RANDOMISE);
 
 		/* Mark the item as an artifact */
-		o_ptr->artifact = a_ptr;
+		new_obj->artifact = art;
 
 		/* Copy across all the data from the artifact struct */
-		copy_artifact_data(o_ptr, a_ptr);
+		copy_artifact_data(new_obj, art);
 
 		/* Mark the artifact as "created" */
-		a_ptr->created = 1;
+		art->created = 1;
 
 		/* Success */
-		return TRUE;
+		return new_obj;
 	}
 
 	/* Failure */
-	return FALSE;
+	return NULL;
 }
 
 
@@ -544,7 +548,7 @@ static bool make_artifact_special(object_type *o_ptr, int level)
  *
  * Note -- see "make_artifact_special()" and "apply_magic()"
  */
-static bool make_artifact(object_type *o_ptr)
+static bool make_artifact(struct object *obj)
 {
 	int i;
 	bool art_ok = TRUE;
@@ -553,7 +557,7 @@ static bool make_artifact(object_type *o_ptr)
 	if (OPT(birth_no_artifacts)) art_ok = FALSE;
 
 	/* Special handling of quest artifacts */
-	if (kf_has(o_ptr->kind->kind_flags, KF_QUEST_ART))
+	if (kf_has(obj->kind->kind_flags, KF_QUEST_ART))
 		art_ok = TRUE;
 
 	if (!art_ok) return (FALSE);
@@ -562,15 +566,15 @@ static bool make_artifact(object_type *o_ptr)
 	if (!player->depth) return (FALSE);
 
 	/* Paranoia -- no "plural" artifacts */
-	if (o_ptr->number != 1) return (FALSE);
+	if (obj->number != 1) return (FALSE);
 
 	/* Check the artifact list (skip the "specials") */
-	for (i = 0; !o_ptr->artifact && i < z_info->a_max; i++) {
-		artifact_type *a_ptr = &a_info[i];
-		object_kind *kind = lookup_kind(a_ptr->tval, a_ptr->sval);
+	for (i = 0; !obj->artifact && i < z_info->a_max; i++) {
+		artifact_type *art = &a_info[i];
+		object_kind *kind = lookup_kind(art->tval, art->sval);
 
 		/* Skip "empty" items */
-		if (!a_ptr->name) continue;
+		if (!art->name) continue;
 
 		/* Make sure the kind was found */
 		if (!kind) continue;
@@ -579,35 +583,35 @@ static bool make_artifact(object_type *o_ptr)
 		if (kf_has(kind->kind_flags, KF_INSTA_ART)) continue;
 
 		/* Cannot make an artifact twice */
-		if (a_ptr->created) continue;
+		if (art->created) continue;
 
 		/* Must have the correct fields */
-		if (a_ptr->tval != o_ptr->tval) continue;
-		if (a_ptr->sval != o_ptr->sval) continue;
+		if (art->tval != obj->tval) continue;
+		if (art->sval != obj->sval) continue;
 
 		/* XXX XXX Enforce minimum "depth" (loosely) */
-		if (a_ptr->alloc_min > player->depth)
+		if (art->alloc_min > player->depth)
 		{
 			/* Get the "out-of-depth factor" */
-			int d = (a_ptr->alloc_min - player->depth) * 2;
+			int d = (art->alloc_min - player->depth) * 2;
 
 			/* Roll for out-of-depth creation */
 			if (randint0(d) != 0) continue;
 		}
 
 		/* Enforce maximum depth (strictly) */
-		if (a_ptr->alloc_max < player->depth) continue;
+		if (art->alloc_max < player->depth) continue;
 
 		/* We must make the "rarity roll" */
-		if (randint1(100) > a_ptr->alloc_prob) continue;
+		if (randint1(100) > art->alloc_prob) continue;
 
 		/* Mark the item as an artifact */
-		o_ptr->artifact = a_ptr;
+		obj->artifact = art;
 	}
 
-	if (o_ptr->artifact) {
-		copy_artifact_data(o_ptr, o_ptr->artifact);
-		o_ptr->artifact->created = 1;
+	if (obj->artifact) {
+		copy_artifact_data(obj, obj->artifact);
+		obj->artifact->created = 1;
 		return TRUE;
 	}
 
@@ -662,13 +666,13 @@ static void apply_magic_armour(object_type *o_ptr, int level, int power)
 /**
  * Wipe an object clean and make it a standard object of the specified kind.
  */
-void object_prep(object_type *o_ptr, struct object_kind *k, int lev,
-		aspect rand_aspect)
+void object_prep(struct object *o_ptr, struct object_kind *k, int lev,
+				 aspect rand_aspect)
 {
 	int i;
 
 	/* Clean slate */
-	WIPE(o_ptr, object_type);
+	memset(o_ptr, 0, sizeof(*o_ptr));
 
 	/* Assign the kind and copy across data */
 	o_ptr->kind = k;
@@ -749,7 +753,7 @@ void object_prep(object_type *o_ptr, struct object_kind *k, int lev,
  * Returns 0 if a normal object, 1 if a good object, 2 if an ego item, 3 if an
  * artifact.
  */
-s16b apply_magic(object_type *o_ptr, int lev, bool allow_artifacts,
+int apply_magic(object_type *o_ptr, int lev, bool allow_artifacts,
 		bool good, bool great, bool extra_roll)
 {
 	int i;
@@ -896,7 +900,7 @@ bool kind_is_good(const object_kind *kind)
 /**
  * Choose an object kind of a given tval given a dungeon level.
  */
-static object_kind *get_obj_num_by_kind(int level, bool good, int tval)
+static struct object_kind *get_obj_num_by_kind(int level, bool good, int tval)
 {
 	/* This is the base index into obj_alloc for this dlev */
 	size_t ind, item;
@@ -933,7 +937,7 @@ static object_kind *get_obj_num_by_kind(int level, bool good, int tval)
  * If tval = 0, we can choose an object of any type.
  * Otherwise we can only choose one of the given tval.
  */
-object_kind *get_obj_num(int level, bool good, int tval)
+struct object_kind *get_obj_num(int level, bool good, int tval)
 {
 	/* This is the base index into obj_alloc for this dlev */
 	size_t ind, item;
@@ -983,26 +987,27 @@ object_kind *get_obj_num(int level, bool good, int tval)
  * Attempt to make an object
  *
  * \param c is the current dungeon level.
- * \param j_ptr is the object struct to be populated.
  * \param lev is the creation level of the object (not necessarily == depth).
  * \param good is whether the object is to be good
  * \param great is whether the object is to be great
  * \param value is the value to be returned to the calling function
  * \param tval is the desired tval, or 0 if we allow any tval
  *
- * Returns the whether or not creation worked.
+ * \return a pointer to the newly allocated object, or NULL on failure.
  */
-bool make_object(struct chunk *c, object_type *j_ptr, int lev, bool good,
-	bool great, bool extra_roll, s32b *value, int tval)
+struct object *make_object(struct chunk *c, int lev, bool good, bool great,
+						   bool extra_roll, s32b *value, int tval)
 {
 	int base;
 	object_kind *kind;
+	struct object *new_obj;
 
 	/* Try to make a special artifact */
 	if (one_in_(good ? 10 : 1000)) {
-		if (make_artifact_special(j_ptr, lev)) {
-			if (value) *value = object_value_real(j_ptr, 1, FALSE, TRUE);
-			return TRUE;
+		new_obj = make_artifact_special(lev);
+		if (new_obj) {
+			if (value) *value = object_value_real(new_obj, 1, FALSE, TRUE);
+			return new_obj;
 		}
 
 		/* If we failed to make an artifact, the player gets a good item */
@@ -1012,30 +1017,34 @@ bool make_object(struct chunk *c, object_type *j_ptr, int lev, bool good,
 	/* Base level for the object */
 	base = (good ? (lev + 10) : lev);
 
-	/* Get the object, prep it and apply magic */
+	/* Try to choose an object kind */
 	kind = get_obj_num(base, good || great, tval);
-	if (!kind) return FALSE;
-	object_prep(j_ptr, kind, lev, RANDOMISE);
-	apply_magic(j_ptr, lev, TRUE, good, great, extra_roll);
+	if (!kind)
+		return NULL;
+
+	/* Make the object, prep it and apply magic */
+	new_obj = mem_zalloc(sizeof(*new_obj));
+	object_prep(new_obj, kind, lev, RANDOMISE);
+	apply_magic(new_obj, lev, TRUE, good, great, extra_roll);
 
 	/* Generate multiple items */
 	if (kind->gen_mult_prob >= randint1(100))
-		j_ptr->number = randcalc(kind->stack_size, lev, RANDOMISE);
+		new_obj->number = randcalc(kind->stack_size, lev, RANDOMISE);
 
-	if (j_ptr->number >= MAX_STACK_SIZE)
-		j_ptr->number = MAX_STACK_SIZE - 1;
+	if (new_obj->number >= MAX_STACK_SIZE)
+		new_obj->number = MAX_STACK_SIZE - 1;
 
 	/* Return value, increased for uncursed out-of-depth objects */
 	if (value)
-		*value = object_value_real(j_ptr, j_ptr->number, FALSE, TRUE);
+		*value = object_value_real(new_obj, new_obj->number, FALSE, TRUE);
 
 	/* This seems to imply objects get less value from being > 1 but < 5
 	 * levels out of depth - should it be *value +=... - NRM */
-	if (!cursed_p(j_ptr->flags) && (kind->alloc_min > c->depth)) {
+	if (!cursed_p(new_obj->flags) && (kind->alloc_min > c->depth)) {
 		if (value) *value = (kind->alloc_min - c->depth) * (*value / 5);
 	}
 
-	return TRUE;
+	return new_obj;
 }
 
 
@@ -1063,22 +1072,27 @@ struct object_kind *money_kind(const char *name, int value)
 	return lookup_kind(TV_GOLD, money_type[rank].type);
 }
 
-/*
+/**
  * Make a money object
+ *
+ * \param lev the dungeon level
+ * \param coin_type the name of the type of money object to make
+ * \return a pointer to the newly minted cash (cannot fail)
  */
-void make_gold(object_type *j_ptr, int lev, char *coin_type)
+struct object *make_gold(int lev, char *coin_type)
 {
 	/* This average is 20 at dlev0, 100 at dlev40, 220 at dlev100. */
 	s32b avg = (18 * lev)/10 + 18;
 	s32b spread = lev + 10;
 	s32b value = rand_spread(avg, spread);
+	struct object *new_gold = mem_zalloc(sizeof(*new_gold)); 
 
 	/* Increase the range to infinite, moving the average to 110% */
 	while (one_in_(100) && value * 10 <= MAX_SHORT)
 		value *= 10;
 
 	/* Prepare a gold object */
-	object_prep(j_ptr, money_kind(coin_type, value), lev, RANDOMISE);
+	object_prep(new_gold, money_kind(coin_type, value), lev, RANDOMISE);
 
 	/* If we're playing with no_selling, increase the value */
 	if (OPT(birth_no_selling) && player->depth)
@@ -1088,7 +1102,9 @@ void make_gold(object_type *j_ptr, int lev, char *coin_type)
 	if (value > MAX_SHORT)
 		value = MAX_SHORT;
 
-	j_ptr->pval = value;
+	new_gold->pval = value;
+
+	return new_gold;
 }
 
 struct init_module obj_make_module = {

@@ -29,6 +29,7 @@
 #include "mon-make.h"
 #include "mon-spell.h"
 #include "obj-make.h"
+#include "obj-pile.h"
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "parser.h"
@@ -436,26 +437,26 @@ void place_random_stairs(struct chunk *c, int y, int x)
 void place_object(struct chunk *c, int y, int x, int level, bool good, bool great, byte origin, int tval)
 {
     s32b rating = 0;
-    object_type otype;
+    struct object *new_obj;
 
     assert(square_in_bounds(c, y, x));
 
     if (!square_canputitem(c, y, x)) return;
 
-    object_wipe(&otype);
-    if (!make_object(c, &otype, level, good, great, FALSE, &rating, tval)) return;
+    new_obj = make_object(c, level, good, great, FALSE, &rating, tval);
+	if (!new_obj) return;
 
-    otype.origin = origin;
-    otype.origin_depth = c->depth;
+    new_obj->origin = origin;
+    new_obj->origin_depth = c->depth;
 
     /* Give it to the floor */
     /* XXX Should this be done in floor_carry? */
-    if (!floor_carry(c, y, x, &otype)) {
-		if (otype.artifact)
-			otype.artifact->created = FALSE;
+    if (!floor_carry(c, y, x, new_obj, FALSE)) {
+		if (new_obj->artifact)
+			new_obj->artifact->created = FALSE;
 		return;
     } else {
-		if (otype.artifact)
+		if (new_obj->artifact)
 			c->good_item = TRUE;
 		if (rating > 250000)
 			rating = 250000; /* avoid overflows */
@@ -474,21 +475,18 @@ void place_object(struct chunk *c, int y, int x, int level, bool good, bool grea
  */
 void place_gold(struct chunk *c, int y, int x, int level, byte origin)
 {
-    object_type *i_ptr;
-    object_type object_type_body;
+    struct object *money = NULL;
 
     assert(square_in_bounds(c, y, x));
 
     if (!square_canputitem(c, y, x)) return;
 
-    i_ptr = &object_type_body;
-    object_wipe(i_ptr);
-    make_gold(i_ptr, level, "any");
+    money = make_gold(level, "any");
 
-    i_ptr->origin = origin;
-    i_ptr->origin_depth = level;
+    money->origin = origin;
+    money->origin_depth = level;
 
-    floor_carry(c, y, x, i_ptr);
+    floor_carry(c, y, x, money, FALSE);
 }
 
 

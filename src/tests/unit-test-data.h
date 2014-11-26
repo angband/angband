@@ -871,7 +871,7 @@ static struct object TEST_DATA test_gear[MAX_GEAR];
 static struct equip_slot TEST_DATA test_slot_light = {
 	.type = 5,
 	.name = "light",
-	.index = 0,
+	.obj = NULL,
 };
 
 static struct player_body TEST_DATA test_player_body = {
@@ -889,7 +889,7 @@ static struct player_upkeep TEST_DATA test_player_upkeep = {
 
 	.health_who = NULL,
 	.monster_race = NULL,
-	.object_idx = 0,
+	.object = NULL,
 	.object_kind = NULL,
 
 	.notice = 0,

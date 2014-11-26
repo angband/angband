@@ -23,6 +23,7 @@
 #include "wizard.h"
 #include "mon-make.h"
 #include "monster.h"
+#include "obj-pile.h"
 #include "obj-randart.h"
 #include "obj-tval.h"
 #include "obj-util.h"
@@ -1081,50 +1082,42 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
  */
 void monster_death_stats(int m_idx)
 {
-	int y, x;
-	s16b this_o_idx, next_o_idx = 0;
-
-	monster_type *m_ptr;
-
+	struct object *obj;
+	monster_type *mon;
 	bool uniq;
 
 	assert(m_idx > 0);
-	m_ptr = cave_monster(cave, m_idx);
-
+	mon = cave_monster(cave, m_idx);
 
 	/* Check if monster is UNIQUE */
-	uniq = rf_has(m_ptr->race->flags,RF_UNIQUE);
-
-	/* Get the location */
-	y = m_ptr->fy;
-	x = m_ptr->fx;
+	uniq = rf_has(mon->race->flags,RF_UNIQUE);
 
 	/* Delete any mimicked objects */
-	if (m_ptr->mimicked_o_idx > 0)
-		delete_object_idx(m_ptr->mimicked_o_idx);
+	if (mon->mimicked_obj) {
+		object_delete(mon->mimicked_obj);
+	}
+	mon->mimicked_obj = NULL;
 
 	/* Drop objects being carried */
-	for (this_o_idx = m_ptr->hold_o_idx; this_o_idx; this_o_idx = next_o_idx) {
-		object_type *o_ptr;
+	obj = mon->held_obj;
+	while (obj) {
+		struct object *next = obj->next;
 
-		/* Get the object */
-		o_ptr = cave_object(cave, this_o_idx);
-
-		/* Line up the next object */
-		next_o_idx = o_ptr->next_o_idx;
-
-		/* Paranoia */
-		o_ptr->held_m_idx = 0;
+		/* Object no longer held */
+		obj->held_m_idx = 0;
 
 		/* Get data */
-		get_obj_data(o_ptr, y, x, TRUE, uniq);
+		get_obj_data(obj, mon->fy, mon->fx, TRUE, uniq);
 
-		/* delete the object */
-		delete_object_idx(this_o_idx);
+		/* Delete the object */
+		object_delete(obj);
+
+		/* Next */
+		obj = next;
 	}
 
 	/* Forget objects */
-	m_ptr->hold_o_idx = 0;
+	mon->held_obj = NULL;
 }
 
 
@@ -1189,33 +1182,6 @@ static bool stats_monster(monster_type *m_ptr, int i)
 	/* success */
 	return TRUE;
 }
-
-
-/*
- * Delete a single dungeon object
- *
- * This piece of code is identical to delete_object_idx
- * except that it does not include light_spot to save
- * time
- */
-static void delete_object_stat(int o_idx)
-{
-	object_type *j_ptr;
-
-	/* Excise */
-	excise_object_idx(o_idx);
-
-	/* Object */
-	j_ptr = cave_object(cave, o_idx);
-
-
-	/* Wipe the object */
-	object_wipe(j_ptr);
-
-	/* Count objects */
-	cave->obj_cnt--;
-}
-
 
 
 /* Print heading infor for the file */
@@ -1418,24 +1384,24 @@ static void post_process_stats(void)
 
 
 
-/*
+/**
  * Scans the dungeon for objects
-*/
+ */
 static void scan_for_objects(void)
 { 
 	int y, x;
 
 	for (y = 1; y < cave->height - 1; y++) {
 		for (x = 1; x < cave->width - 1; x++) {
-			const object_type *o_ptr;
+			struct object *obj;
 
+			while ((obj = square_object(cave, y, x))) {
+				/* Get data on the object */
+				get_obj_data(obj, y, x, FALSE, FALSE);
 
-			while ((o_ptr = get_first_object(y, x))) {
-				/* get data on the object */
-				get_obj_data(o_ptr, y, x, FALSE, FALSE);
-
-				/* delete the object */
-				delete_object_stat(cave->o_idx[y][x]);
+				/* Delete the object */
+				pile_object_excise(cave, y, x, obj);
+				object_delete(obj);
 			}
 		}
 	}

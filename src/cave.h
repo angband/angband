@@ -170,7 +170,6 @@ struct chunk {
 
 	byte **feat;
 	s16b **m_idx;
-	s16b **o_idx;
 
 	struct square **squares;
 
@@ -178,10 +177,6 @@ struct chunk {
 	u16b mon_max;
 	u16b mon_cnt;
 	int mon_current;
-
-	struct object *objects;
-	u16b obj_max;
-	u16b obj_cnt;
 };
 
 /*** Feature Indexes (see "lib/edit/terrain.txt") ***/
@@ -334,6 +329,7 @@ bool square_in_bounds_fully(struct chunk *c, int y, int x);
 struct feature *square_feat(struct chunk *c, int y, int x);
 struct monster *square_monster(struct chunk *c, int y, int x);
 struct object *square_object(struct chunk *c, int y, int x);
+bool square_holds_object(struct chunk *c, int y, int x, struct object *obj);
 
 void square_set_feat(struct chunk *c, int y, int x, int feat);
 
@@ -375,10 +371,6 @@ void scatter(struct chunk *c, int *yp, int *xp, int y, int x, int d, bool need_l
 struct monster *cave_monster(struct chunk *c, int idx);
 int cave_monster_max(struct chunk *c);
 int cave_monster_count(struct chunk *c);
-
-struct object *cave_object(struct chunk *c, int idx); 
-int cave_object_max(struct chunk *c);
-int cave_object_count(struct chunk *c);
 
 int count_feats(int *y, int *x, bool (*test)(struct chunk *cave, int y, int x), bool under);
 

@@ -33,6 +33,7 @@
 #include "obj-desc.h"
 #include "obj-gear.h"
 #include "obj-list.h"
+#include "obj-pile.h"
 #include "obj-ui.h"
 #include "obj-util.h"
 #include "player.h"
@@ -272,7 +273,7 @@ static void prt_equippy(int row, int col)
 	byte a;
 	wchar_t c;
 
-	object_type *o_ptr;
+	struct object *obj;
 
 	/* No equippy chars in bigtile mode */
 	if (tile_width > 1 || tile_height > 1) return;
@@ -280,11 +281,11 @@ static void prt_equippy(int row, int col)
 	/* Dump equippy chars */
 	for (i = 0; i < player->body.count; i++) {
 		/* Object */
-		o_ptr = equipped_item_by_slot(player, i);
+		obj = slot_object(player, i);
 
-		if (o_ptr->kind) {
-			c = object_char(o_ptr);
-			a = object_attr(o_ptr);
+		if (obj) {
+			c = object_char(obj);
+			a = object_attr(obj);
 		} else {
 			c = ' ';
 			a = TERM_WHITE;
@@ -1432,8 +1433,8 @@ static void update_object_subwindow(game_event_type type, game_event_data *data,
 	/* Activate */
 	Term_activate(inv_term);
 	
-	if (player->upkeep->object_idx != NO_OBJECT)
-		display_object_idx_recall(player->upkeep->object_idx);
+	if (player->upkeep->object != NULL)
+		display_object_recall(player->upkeep->object);
 	else if (player->upkeep->object_kind)
 		display_object_kind_recall(player->upkeep->object_kind);
 	Term_fresh();
@@ -1977,12 +1978,12 @@ static void see_floor_items(game_event_type type, game_event_data *data, void *u
 	int px = player->px;
 
 	int floor_max = z_info->floor_size;
-	int *floor_list = mem_zalloc(floor_max * sizeof(int));
+	struct object **floor_list = mem_zalloc(floor_max * sizeof(*floor_list));
 	int floor_num = 0;
 	bool blind = ((player->timed[TMD_BLIND]) || (no_light()));
 
 	const char *p = "see";
-	int can_pickup = 0;
+	bool can_pickup = FALSE;
 	int i;
 
 	/* Scan all marked objects in the grid */
@@ -1992,13 +1993,15 @@ static void see_floor_items(game_event_type type, game_event_data *data, void *u
 		return;
 	}
 
+	/* Can we pick any up? */
 	for (i = 0; i < floor_num; i++)
-	    can_pickup += inven_carry_okay(cave_object(cave, floor_list[i]));
-	
+	    if (inven_carry_okay(floor_list[i]))
+			can_pickup = TRUE;
+
 	/* One object */
 	if (floor_num == 1) {
 		/* Get the object */
-		object_type *o_ptr = cave_object(cave, floor_list[0]);
+		struct object *obj = floor_list[0];
 		char o_name[80];
 
 		if (!can_pickup)
@@ -2008,11 +2011,9 @@ static void see_floor_items(game_event_type type, game_event_data *data, void *u
 
 		/* Describe the object.  Less detail if blind. */
 		if (blind)
-			object_desc(o_name, sizeof(o_name), o_ptr,
-						ODESC_PREFIX | ODESC_BASE);
+			object_desc(o_name, sizeof(o_name), obj, ODESC_PREFIX | ODESC_BASE);
 		else
-			object_desc(o_name, sizeof(o_name), o_ptr,
-					ODESC_PREFIX | ODESC_FULL);
+			object_desc(o_name, sizeof(o_name), obj, ODESC_PREFIX | ODESC_FULL);
 
 		/* Message */
 		message_flush();
@@ -2020,8 +2021,10 @@ static void see_floor_items(game_event_type type, game_event_data *data, void *u
 	} else {
 		ui_event e;
 
-		if (!can_pickup)	p = "have no room for the following objects";
-		else if (blind)     p = "feel something on the floor";
+		if (!can_pickup)
+			p = "have no room for the following objects";
+		else if (blind)
+			p = "feel something on the floor";
 
 		/* Display objects on the floor */
 		screen_save();
@@ -2041,8 +2044,8 @@ static void see_floor_items(game_event_type type, game_event_data *data, void *u
 		for (i = 0; i < floor_num; i++) {
 			/* Since the messages are detailed, we use MARK_SEEN to match
 			 * description. */
-			object_type *o_ptr = cave_object(cave, floor_list[i]);
-			o_ptr->marked = MARK_SEEN;
+			object_type *obj = floor_list[i];
+			obj->marked = MARK_SEEN;
 		}
 	}
 

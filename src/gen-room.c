@@ -614,9 +614,9 @@ extern bool generate_starburst_room(struct chunk *c, int y1, int x1, int y2,
 				continue;
 
 			/* Do not touch occupied grids. */
-			if (c->squares[y][x].mon != 0)
+			if (square_monster(c, y, x))
 				continue;
-			if (c->o_idx[y][x] != 0)
+			if (square_object(c, y, x))
 				continue;
 
 			/* Get distance to grid. */

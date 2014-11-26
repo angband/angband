@@ -76,7 +76,7 @@
  */
 void map_info(unsigned y, unsigned x, grid_data *g)
 {
-	object_type *o_ptr;
+	object_type *obj;
 
 	assert(x < (unsigned) cave->width);
 	assert(y < (unsigned) cave->height);
@@ -100,8 +100,7 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 	g->hallucinate = player->timed[TMD_IMAGE] ? TRUE : FALSE;
 	g->trapborder = (square_isdedge(cave, y, x)) ? TRUE : FALSE;
 
-	if (g->in_view)
-	{
+	if (g->in_view) {
 		g->lighting = LIGHTING_LOS;
 
 		if (!square_isglow(cave, y, x) && OPT(view_yellow_light))
@@ -109,14 +108,10 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 
 		/* Remember seen feature */
 		cave_k->squares[y][x].feat = cave->squares[y][x].feat;
-	}
-	else if (!square_ismark(cave, y, x))
-	{
+	} else if (!square_ismark(cave, y, x)) {
 		g->f_idx = FEAT_NONE;
 		//cave_k->squares[y][x].feat = FEAT_NONE;
-	}
-	else if (square_isglow(cave, y, x))
-	{
+	} else if (square_isglow(cave, y, x)) {
 		g->lighting = LIGHTING_LIT;
 	}
 
@@ -141,20 +136,19 @@ void map_info(unsigned y, unsigned x, grid_data *g)
     }
 
 	/* Objects */
-	for (o_ptr = get_first_object(y, x); o_ptr; o_ptr = get_next_object(o_ptr))
-	{
-		if (o_ptr->marked == MARK_AWARE) {
+	for (obj = square_object(cave, y, x); obj; obj = obj->next) {
+		if (obj->marked == MARK_AWARE) {
 
 			/* Distinguish between unseen money and objects */
-			if (tval_is_money(o_ptr)) {
+			if (tval_is_money(obj)) {
 				g->unseen_money = TRUE;
 			} else {
 				g->unseen_object = TRUE;
 			}
 
-		} else if (o_ptr->marked == MARK_SEEN && !ignore_item_ok(o_ptr)) {
+		} else if (obj->marked == MARK_SEEN && !ignore_item_ok(obj)) {
 			if (!g->first_kind) {
-				g->first_kind = o_ptr->kind;
+				g->first_kind = obj->kind;
 			} else {
 				g->multiple_objects = TRUE;
 				break;
@@ -163,16 +157,14 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 	}
 
 	/* Monsters */
-	if (g->m_idx > 0)
-	{
+	if (g->m_idx > 0) {
 		/* If the monster isn't "visible", make sure we don't list it.*/
 		monster_type *m_ptr = cave_monster(cave, g->m_idx);
 		if (!mflag_has(m_ptr->mflag, MFLAG_VISIBLE)) g->m_idx = 0;
 	}
 
 	/* Rare random hallucination on non-outer walls */
-	if (g->hallucinate && g->m_idx == 0 && g->first_kind == 0)
-	{
+	if (g->hallucinate && g->m_idx == 0 && g->first_kind == 0) {
 		if (one_in_(128) && (int) g->f_idx != FEAT_PERM)
 			g->m_idx = 1;
 		else if (one_in_(128) && (int) g->f_idx != FEAT_PERM)
@@ -220,14 +212,14 @@ void map_info(unsigned y, unsigned x, grid_data *g)
  */
 void square_note_spot(struct chunk *c, int y, int x)
 {
-	object_type *o_ptr;
+	object_type *obj;
 
 	/* Require "seen" flag */
 	if (!square_isseen(c, y, x))
 		return;
 
-	for (o_ptr = get_first_object(y, x); o_ptr; o_ptr = get_next_object(o_ptr))
-		o_ptr->marked = MARK_SEEN;
+	for (obj = square_object(c, y, x); obj; obj = obj->next)
+		obj->marked = MARK_SEEN;
 
 	if (square_ismark(c, y, x))
 		return;
@@ -431,34 +423,15 @@ void wiz_light(struct chunk *c, bool full)
 {
 	int i, y, x;
 
-	/* Memorize objects */
-	for (i = 1; i < cave_object_max(cave); i++)
-	{
-		object_type *o_ptr = cave_object(c, i);
+	/* Scan all grids */
+	for (y = 1; y < c->height - 1; y++) {
+		for (x = 1; x < c->width - 1; x++) {
+			struct object *obj;
 
-		/* Skip dead objects */
-		if (!o_ptr->kind) continue;
-
-		/* Skip held objects */
-		if (o_ptr->held_m_idx) continue;
-
-		/* Memorize it */
-		if (o_ptr->marked < MARK_SEEN)
-			o_ptr->marked = full ? MARK_SEEN : MARK_AWARE;
-	}
-
-	/* Scan all normal grids */
-	for (y = 1; y < c->height - 1; y++)
-	{
-		/* Scan all normal grids */
-		for (x = 1; x < c->width - 1; x++)
-		{
 			/* Process all non-walls */
-			if (!square_seemslikewall(c, y, x))
-			{
+			if (!square_seemslikewall(c, y, x)) {
 				/* Scan all neighbors */
-				for (i = 0; i < 9; i++)
-				{
+				for (i = 0; i < 9; i++) {
 					int yy = y + ddy_ddd[i];
 					int xx = x + ddx_ddd[i];
 
@@ -467,12 +440,21 @@ void wiz_light(struct chunk *c, bool full)
 
 					/* Memorize normal features */
 					if (!square_isfloor(c, yy, xx) || 
-						square_isvisibletrap(c, yy, xx))
-					{
+						square_isvisibletrap(c, yy, xx)) {
 						sqinfo_on(c->squares[yy][xx].info, SQUARE_MARK);
 						cave_k->squares[yy][xx].feat = c->squares[yy][xx].feat;
 					}
 				}
+			}
+
+			/* Memorize objects */
+			for (obj = square_object(cave, y, x); obj; obj = obj->next) {
+				/* Skip dead objects */
+				assert(obj->kind);
+
+				/* Memorize it */
+				if (obj->marked < MARK_SEEN)
+					obj->marked = full ? MARK_SEEN : MARK_AWARE;
 			}
 		}
 	}
@@ -490,34 +472,28 @@ void wiz_light(struct chunk *c, bool full)
  */
 void wiz_dark(void)
 {
-	int i, y, x;
+	int y, x;
 
 
 	/* Forget every grid */
-	for (y = 0; y < cave->height; y++)
-	{
-		for (x = 0; x < cave->width; x++)
-		{
+	for (y = 0; y < cave->height; y++) {
+		for (x = 0; x < cave->width; x++) {
+			struct object *obj;
+
 			/* Process the grid */
 			sqinfo_off(cave->squares[y][x].info, SQUARE_MARK);
 			sqinfo_off(cave->squares[y][x].info, SQUARE_DTRAP);
 			sqinfo_off(cave->squares[y][x].info, SQUARE_DEDGE);
+
+			/* Forget all objects */
+			for (obj = square_object(cave, y, x); obj; obj = obj->next) {
+				/* Skip dead objects */
+				assert(obj->kind);
+
+				/* Forget the object */
+				obj->marked = MARK_UNAWARE;
+			}
 		}
-	}
-
-	/* Forget all objects */
-	for (i = 1; i < cave_object_max(cave); i++)
-	{
-		object_type *o_ptr = cave_object(cave, i);
-
-		/* Skip dead objects */
-		if (!o_ptr->kind) continue;
-
-		/* Skip held objects */
-		if (o_ptr->held_m_idx) continue;
-
-		/* Forget the object */
-		o_ptr->marked = MARK_UNAWARE;
 	}
 
 	/* Fully update the visuals */

@@ -29,7 +29,7 @@ bool monster_is_unusual(struct monster_race *race);
 bool match_monster_bases(const monster_base *base, ...);
 void update_mon(struct monster *m_ptr, struct chunk *c, bool full);
 void update_monsters(bool full);
-s16b monster_carry(struct chunk *c, struct monster *m, object_type *j_ptr);
+bool monster_carry(struct chunk *c, struct monster *mon, struct object *obj);
 void monster_swap(int y1, int x1, int y2, int x2);
 void become_aware(struct monster *m);
 bool is_mimicking(struct monster *m);

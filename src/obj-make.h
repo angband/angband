@@ -59,13 +59,14 @@
 
 void free_obj_alloc(void);
 bool init_obj_alloc(void);
-object_kind *get_obj_num(int level, bool good, int tval);
+struct object_kind *get_obj_num(int level, bool good, int tval);
 bool kind_is_good(const object_kind *kind);
 void object_prep(object_type *o_ptr, struct object_kind *kind, int lev, aspect rand_aspect);
-s16b apply_magic(object_type *o_ptr, int lev, bool okay, bool good, bool great, bool extra_roll);
-bool make_object(struct chunk *c, object_type *j_ptr, int lev, bool good, bool great, bool extra_roll, s32b *value, int tval);
+int apply_magic(object_type *o_ptr, int lev, bool okay, bool good, bool great, bool extra_roll);
+struct object *make_object(struct chunk *c, int lev, bool good, bool great,
+						   bool extra_roll, s32b *value, int tval);
 struct object_kind *money_kind(const char *name, int value);
-void make_gold(object_type *j_ptr, int lev, char *coin_type);
+struct object *make_gold(int lev, char *coin_type);
 void copy_artifact_data(object_type *o_ptr, const artifact_type *a_ptr);
 void ego_apply_magic(object_type *o_ptr, int level);
 

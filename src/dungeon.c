@@ -36,6 +36,7 @@
 #include "obj-gear.h"
 #include "obj-identify.h"
 #include "obj-randart.h"
+#include "obj-pile.h"
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "object.h"
@@ -301,45 +302,41 @@ static void recharged_notice(const object_type *o_ptr, bool all)
  */
 static void recharge_objects(void)
 {
-	int i;
+	int y, x;
 
 	bool discharged_stack;
 
-	object_type *o_ptr;
+	struct object *obj;
 
 	/* Recharge carried gear */
-	for (i = 0; i < player->max_gear; i++)
-	{
-		o_ptr = &player->gear[i];
-
+	for (obj = player->gear; obj; obj = obj->next) {
 		/* Skip non-objects */
-		if (!o_ptr->kind) continue;
+		assert(obj->kind);
 
 		/* Recharge equipment */
-		if (item_is_equipped(player, i)) {
+		if (object_is_equipped(player->body, obj)) {
 			/* Recharge activatable objects */
-			if (recharge_timeout(o_ptr)) {
+			if (recharge_timeout(obj)) {
 				/* Message if an item recharged */
-				recharged_notice(o_ptr, TRUE);
+				recharged_notice(obj, TRUE);
 
 				/* Window stuff */
 				player->upkeep->redraw |= (PR_EQUIP);
 			}
-		}
-		/* Recharge the inventory */
-		else {
+		} else {
+			/* Recharge the inventory */
 			discharged_stack =
-				(number_charging(o_ptr) == o_ptr->number) ? TRUE : FALSE;
+				(number_charging(obj) == obj->number) ? TRUE : FALSE;
 
 			/* Recharge rods, and update if any rods are recharged */
-			if (tval_can_have_timeout(o_ptr) && recharge_timeout(o_ptr)) {
+			if (tval_can_have_timeout(obj) && recharge_timeout(obj)) {
 				/* Entire stack is recharged */
-				if (o_ptr->timeout == 0)
-					recharged_notice(o_ptr, TRUE);
+				if (obj->timeout == 0)
+					recharged_notice(obj, TRUE);
 
 				/* Previously exhausted stack has acquired a charge */
 				else if (discharged_stack)
-					recharged_notice(o_ptr, FALSE);
+					recharged_notice(obj, FALSE);
 
 				/* Combine pack */
 				player->upkeep->notice |= (PN_COMBINE);
@@ -351,18 +348,12 @@ static void recharge_objects(void)
 	}
 
 	/* Recharge the ground */
-	for (i = 1; i < cave_object_max(cave); i++)
-	{
-		/* Get the object */
-		o_ptr = cave_object(cave, i);
-
-		/* Skip dead objects */
-		if (!o_ptr->kind) continue;
-
-		/* Recharge rods on the ground */
-		if (tval_can_have_timeout(o_ptr))
-			recharge_timeout(o_ptr);
-	}
+	for (y = 1; y < cave->height; y++)
+		for (x = 1; x < cave->width; x++)
+			for (obj = square_object(cave, y, x); obj; obj = obj->next)
+				/* Recharge rods on the ground */
+				if (tval_can_have_timeout(obj))
+					recharge_timeout(obj);
 }
 
 
@@ -436,7 +427,7 @@ static void process_world(struct chunk *c)
 
 	int regen_amount;
 
-	object_type *o_ptr;
+	object_type *obj;
 
 	/*** Check the Time ***/
 
@@ -608,10 +599,10 @@ static void process_world(struct chunk *c)
 	/*** Process Light ***/
 
 	/* Check for light being wielded */
-	o_ptr = equipped_item_by_slot_name(player, "light");;
+	obj = equipped_item_by_slot_name(player, "light");;
 
 	/* Burn some fuel in the current light */
-	if (tval_is_light(o_ptr)) {
+	if (tval_is_light(obj)) {
 		bool burn_fuel = TRUE;
 
 		/* Turn off the wanton burning of light during the day in the town */
@@ -619,38 +610,38 @@ static void process_world(struct chunk *c)
 			burn_fuel = FALSE;
 
 		/* If the light has the NO_FUEL flag, well... */
-		if (of_has(o_ptr->flags, OF_NO_FUEL))
+		if (of_has(obj->flags, OF_NO_FUEL))
 		    burn_fuel = FALSE;
 
 		/* Use some fuel (except on artifacts, or during the day) */
-		if (burn_fuel && o_ptr->timeout > 0) {
+		if (burn_fuel && obj->timeout > 0) {
 			/* Decrease life-span */
-			o_ptr->timeout--;
+			obj->timeout--;
 
 			/* Hack -- notice interesting fuel steps */
-			if ((o_ptr->timeout < 100) || (!(o_ptr->timeout % 100)))
+			if ((obj->timeout < 100) || (!(obj->timeout % 100)))
 				/* Redraw stuff */
 				player->upkeep->redraw |= (PR_EQUIP);
 
 			/* Hack -- Special treatment when blind */
 			if (player->timed[TMD_BLIND]) {
 				/* Hack -- save some light for later */
-				if (o_ptr->timeout == 0) o_ptr->timeout++;
+				if (obj->timeout == 0) obj->timeout++;
 
 			/* The light is now out */
-			} else if (o_ptr->timeout == 0) {
+			} else if (obj->timeout == 0) {
 				disturb(player, 0);
 				msg("Your light has gone out!");
 
 				/* If it's a torch, now is the time to delete it */
-				if (of_has(o_ptr->flags, OF_BURNS_OUT)) {
-					inven_item_increase(object_gear_index(player, o_ptr), -1);
-					inven_item_optimize(object_gear_index(player, o_ptr));
+				if (of_has(obj->flags, OF_BURNS_OUT)) {
+					gear_excise_object(obj);
+					object_delete(obj);
 				}
 			}
 
 			/* The light is getting dim */
-			else if ((o_ptr->timeout < 50) && (!(o_ptr->timeout % 20))) {
+			else if ((obj->timeout < 50) && (!(obj->timeout % 20))) {
 				disturb(player, 0);
 				msg("Your light is growing faint.");
 			}
@@ -947,6 +938,8 @@ static void process_player(void)
 		/* HACK: This will redraw the itemlist too frequently, but I'm don't
 		   know all the individual places it should go. */
 		player->upkeep->redraw |= PR_ITEMLIST;
+		/* Hack - update needed first because inventory may have changed */
+		update_stuff(player->upkeep);
 		redraw_stuff(player->upkeep);
 	}
 
@@ -1199,14 +1192,6 @@ static void dungeon(struct chunk *c)
 		/* Too many holes in the monster list - compress */
 		if (cave_monster_count(cave) + 32 < cave_monster_max(cave)) 
 			compact_monsters(0);
-
-		/* Compact the object list if we're approaching the limit */
-		if (cave_object_count(cave) + 32 > z_info->level_object_max) 
-			compact_objects(64);
-
-		/* Too many holes in the object list - compress */
-		if (cave_object_count(cave) + 32 < cave_object_max(cave)) 
-			compact_objects(0);
 
 		/* Can the player move? */
 		while ((player->energy >= 100) && !player->upkeep->leaving) {
@@ -1649,8 +1634,7 @@ static void death_knowledge(void)
 	int i;
 
 	/* Retire in the town in a good state */
-	if (player->total_winner)
-	{
+	if (player->total_winner) {
 		player->depth = 0;
 		my_strcpy(player->died_from, "Ripe Old Age", sizeof(player->died_from));
 		player->exp = player->max_exp;
@@ -1658,17 +1642,12 @@ static void death_knowledge(void)
 		player->au += 10000000L;
 	}
 
-	for (i = 0; i < player->max_gear; i++)
-	{
-		o_ptr = &player->gear[i];
-		if (!o_ptr->kind) continue;
-
+	for (o_ptr = player->gear; o_ptr; o_ptr = o_ptr->next) {
 		object_flavor_aware(o_ptr);
 		object_notice_everything(o_ptr);
 	}
 
-	for (i = 0; i < st_ptr->stock_num; i++)
-	{
+	for (i = 0; i < st_ptr->stock_num; i++) {
 		o_ptr = &st_ptr->stock[i];
 		if (!o_ptr->kind) continue;
 

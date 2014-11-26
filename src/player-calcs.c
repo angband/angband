@@ -933,7 +933,7 @@ const byte blows_table[12][12] =
  *
  * \return whether to replace the original object with the new one
  */
-static bool earlier_object(struct object *orig, struct object *new)
+bool earlier_object(struct object *orig, struct object *new)
 {
 	/* Check we have actual objects */
 	if (!new) return FALSE;
@@ -974,15 +974,15 @@ static bool earlier_object(struct object *orig, struct object *new)
 	return FALSE;
 }
 
-int equipped_item_slot(struct player_body body, int item)
+int equipped_item_slot(struct player_body body, struct object *item)
 {
 	int i;
 
-	if (item == NO_OBJECT) return body.count;
+	if (item == NULL) return body.count;
 
 	/* Look for an equipment slot with this item */
 	for (i = 0; i < body.count; i++)
-		if (item == body.slots[i].index) break;
+		if (item == body.slots[i].obj) break;
 
 	/* Correct slot, or body.count if not equipped */
 	return i;
@@ -992,31 +992,30 @@ int equipped_item_slot(struct player_body body, int item)
  * Put the player's inventory and quiver into easily accessible arrays.  The
  * pack may be overfull by one item
  */
-void calc_inventory(struct player_upkeep *upkeep, object_type gear[],
-					struct player_body body, int max_gear)
+void calc_inventory(struct player_upkeep *upkeep, struct object *gear,
+					struct player_body body)
 {
-	int i, gear_index = 0, quiver_slots = 0, num_left = 0, index = 0;
-	bool *possible = mem_zalloc(max_gear * sizeof(bool));
-
-	/* Pass through, eliminate equipped objects and non-objects */
-	for (i = 0; i < max_gear; i++) {
-		possible[i] = (!gear[i].kind ||
-					   equipped_item_slot(body, i) < body.count)
-			? FALSE : TRUE;
-		if (possible[i]) num_left++;
-	}
+	int quiver_slots = 0;
 
 	/* Fill the quiver */
 	upkeep->quiver_cnt = 0;
 	while (quiver_slots < z_info->quiver_size) {
-		struct object *first = NULL;
+		struct object *current, *first = NULL;
 
 		/* Find the first quiver object not yet allocated */
-		for (i = 0; i < max_gear; i++) {
+		for (current = gear; current; current = current->next) {
+			int i;
 			const char *s;
-			struct object *current = &gear[i];
-			if (!possible[i]) continue;
+			bool already_quivered = FALSE;
+
+			/* Ignore non-ammo */
 			if (!tval_is_ammo(current)) continue;
+
+			/* Ignore ammo already stashed */
+			for (i = 0; i < z_info->quiver_size; i++)
+				if (upkeep->quiver[i] == current)
+					already_quivered = TRUE;
+			if (already_quivered) continue;
 
 			/* Allocate inscribed objects if it's the right slot */
 			if (current->note) {
@@ -1025,7 +1024,6 @@ void calc_inventory(struct player_upkeep *upkeep, object_type gear[],
 					/* Correct slot, fill it straight away */
 					if (s[2] - '0' == quiver_slots) {
 						first = current;
-						gear_index = i;
 						break;
 					} else if (s[2] - '0' > quiver_slots)
 						/* Not up to the correct slot yet, so wait */
@@ -1036,54 +1034,56 @@ void calc_inventory(struct player_upkeep *upkeep, object_type gear[],
 			/* Otherwise choose the first in order */
 			if (earlier_object(first, current)) {
 				first = current;
-				gear_index = i;
 			}
 		}
 
-		/* If there is one allocate it, otherwise fill with NO_OBJECT */
+		/* If there is one allocate it, otherwise fill with NULL */
 		if (first) {
-			upkeep->quiver[quiver_slots++] = gear_index;
-			upkeep->quiver_cnt += gear[gear_index].number;
-			num_left--;
-			possible[gear_index] = FALSE;
+			upkeep->quiver[quiver_slots++] = first;
+			upkeep->quiver_cnt += first->number;
 		}
 		else
-			upkeep->quiver[quiver_slots++] = NO_OBJECT;
+			upkeep->quiver[quiver_slots++] = NULL;
 	}
 
 	/* Fill the inventory */
 	upkeep->inven_cnt = 0;
-	while ((num_left > 0) || (index <= z_info->pack_size)) {
-		struct object *first = NULL;
+	while (upkeep->inven_cnt <= z_info->pack_size) {
+		struct object *current, *first = NULL;
+		for (current = gear; current; current = current->next) {
+			int i;
+			bool possible = TRUE;
 
-		/* Set to default for empty slots */
-		gear_index = NO_OBJECT;
+			/* Skip equipment */
+			if (object_is_equipped(body, current))
+				possible = FALSE;
 
-		/* Find the first quiver object not yet allocated */
-		for (i = 0; i < max_gear; i++) {
-			struct object *current = &gear[i];
-			if (!possible[i]) continue;
-			if (earlier_object(first, current)) {
+			/* Skip quivered objects */
+			for (i = 0; i < z_info->quiver_size; i++)
+				if (upkeep->quiver[i] == current)
+					possible = FALSE;
+
+			/* Skip objects already allocated to the inventory */
+			for (i = 0; i < upkeep->inven_cnt; i++)
+				if (upkeep->inven[i] == current)
+					possible = FALSE;
+
+			/* If still possible, choose the first in order */
+			if (!possible)
+				continue;
+			else if (earlier_object(first, current)) {
 				first = current;
-				gear_index = i;
 			}
 		}
-		/* Allocate */
-		upkeep->inven[index++] = gear_index;
-		upkeep->inven_cnt++;
-		num_left--;
-		possible[gear_index] = FALSE;
 
-		/* Ensure legality */
-		assert((index <= z_info->pack_size) || (num_left <= 0));
+		/* Allocate */
+		upkeep->inven[upkeep->inven_cnt++] = first;
 	}
-	mem_free(possible);
 }
 
 static void update_inventory(void)
 {
-	calc_inventory(player->upkeep, player->gear, player->body,
-				   player->max_gear);
+	calc_inventory(player->upkeep, player->gear, player->body);
 }
 
 /**
@@ -1324,8 +1324,7 @@ static void calc_mana(void)
 	bool old_cumber_armor = player->state.cumber_armor;
 
 	/* Hack -- Must be literate */
-	if (!player->class->magic.total_spells)
-	{
+	if (!player->class->magic.total_spells) {
 		player->msp = 0;
 		player->csp = 0;
 		player->csp_frac = 0;
@@ -1334,20 +1333,16 @@ static void calc_mana(void)
 
 	/* Extract "effective" player level */
 	levels = (player->lev - player->class->magic.spell_first) + 1;
-	if (levels > 0)
-	{
+	if (levels > 0) {
 		msp = 1;
 		msp += mana_per_level(player) * levels / 100;
-	}
-	else
-	{
+	} else {
 		levels = 0;
 		msp = 0;
 	}
 
 	/* Process gloves for those disturbed by them */
-	if (player_has(PF_CUMBER_GLOVE))
-	{
+	if (player_has(PF_CUMBER_GLOVE)) {
 		/* Assume player is not encumbered by gloves */
 		player->state.cumber_glove = FALSE;
 
@@ -1355,11 +1350,9 @@ static void calc_mana(void)
 		o_ptr = equipped_item_by_slot_name(player, "hands");
 
 		/* Normal gloves hurt mage-type spells */
-		if (o_ptr->kind &&
-			!of_has(o_ptr->flags, OF_FREE_ACT) && 
+		if (o_ptr && !of_has(o_ptr->flags, OF_FREE_ACT) && 
 			!kf_has(o_ptr->kind->kind_flags, KF_SPELLS_OK) &&
-			(o_ptr->modifiers[OBJ_MOD_DEX] <= 0))
-		{
+			(o_ptr->modifiers[OBJ_MOD_DEX] <= 0)) {
 			/* Encumbered */
 			player->state.cumber_glove = TRUE;
 
@@ -1374,6 +1367,8 @@ static void calc_mana(void)
 	/* Weigh the armor */
 	cur_wgt = 0;
 	for (i = 0; i < player->body.count; i++) {
+		struct object *obj = slot_object(player, i);
+
 		/* Ignore non-armor */
 		if (slot_type_is(i, EQUIP_WEAPON)) continue;
 		if (slot_type_is(i, EQUIP_BOW)) continue;
@@ -1382,15 +1377,15 @@ static void calc_mana(void)
 		if (slot_type_is(i, EQUIP_LIGHT)) continue;
 
 		/* Add weight */
-		cur_wgt += equipped_item_by_slot(player, i)->weight;
+		if (obj)
+			cur_wgt += obj->weight;
 	}
 
 	/* Determine the weight allowance */
 	max_wgt = player->class->magic.spell_weight;
 
 	/* Heavy armor penalizes mana */
-	if (((cur_wgt - max_wgt) / 10) > 0)
-	{
+	if (((cur_wgt - max_wgt) / 10) > 0) {
 		/* Encumbered */
 		player->state.cumber_armor = TRUE;
 
@@ -1402,14 +1397,12 @@ static void calc_mana(void)
 	if (msp < 0) msp = 0;
 
 	/* Maximum mana has changed */
-	if (player->msp != msp)
-	{
+	if (player->msp != msp) {
 		/* Save new limit */
 		player->msp = msp;
 
 		/* Enforce new limit */
-		if (player->csp >= msp)
-		{
+		if (player->csp >= msp) {
 			player->csp = msp;
 			player->csp_frac = 0;
 		}
@@ -1422,31 +1415,21 @@ static void calc_mana(void)
 	if (character_xtra) return;
 
 	/* Take note when "glove state" changes */
-	if (old_cumber_glove != player->state.cumber_glove)
-	{
+	if (old_cumber_glove != player->state.cumber_glove) {
 		/* Message */
 		if (player->state.cumber_glove)
-		{
 			msg("Your covered hands feel unsuitable for spellcasting.");
-		}
 		else
-		{
 			msg("Your hands feel more suitable for spellcasting.");
-		}
 	}
 
 	/* Take note when "armor state" changes */
-	if (old_cumber_armor != player->state.cumber_armor)
-	{
+	if (old_cumber_armor != player->state.cumber_armor) {
 		/* Message */
 		if (player->state.cumber_armor)
-		{
 			msg("The weight of your armor encumbers your movement.");
-		}
 		else
-		{
 			msg("You feel able to move more freely.");
-		}
 	}
 }
 
@@ -1516,12 +1499,12 @@ static void calc_torch(void)
 	}
 
 	/* Examine all wielded objects, use the brightest */
-	for (i = 0; i < player->body.count; i++)	{
+	for (i = 0; i < player->body.count; i++) {
 		int amt = 0;
-		object_type *o_ptr = equipped_item_by_slot(player, i);
+		object_type *o_ptr = slot_object(player, i);
 
 		/* Skip empty slots */
-		if (!o_ptr->kind) continue;
+		if (!o_ptr) continue;
 
 		/* Light radius is now a modifier */
 		amt = o_ptr->modifiers[OBJ_MOD_LIGHT];
@@ -1666,7 +1649,7 @@ int weight_remaining(void)
  * information of objects; thus it returns what the player _knows_
  * the character state to be.
  */
-void calc_bonuses(object_type gear[], player_state *state, bool known_only)
+void calc_bonuses(struct object *gear, player_state *state, bool known_only)
 {
 	int i, j, hold;
 
@@ -1674,7 +1657,7 @@ void calc_bonuses(object_type gear[], player_state *state, bool known_only)
 	int extra_shots = 0;
 	int extra_might = 0;
 
-	object_type *o_ptr;
+	struct object *obj;
 
 	bitflag f[OF_SIZE];
 	bitflag collect_f[OF_SIZE];
@@ -1725,88 +1708,87 @@ void calc_bonuses(object_type gear[], player_state *state, bool known_only)
 	/*** Analyze equipment ***/
 
 	/* Scan the equipment */
-	for (i = 0; i < player->body.count; i++)
-	{
-		o_ptr = equipped_item_by_slot(player, i);
+	for (i = 0; i < player->body.count; i++) {
+		obj = slot_object(player, i);
 
 		/* Skip non-objects */
-		if (!o_ptr->kind) continue;
+		if (!obj) continue;
 
 		/* Extract the item flags */
 		if (known_only)
-			object_flags_known(o_ptr, f);
+			object_flags_known(obj, f);
 		else
-			object_flags(o_ptr, f);
+			object_flags(obj, f);
 
 		of_union(collect_f, f);
 
 		/* Affect stats */
-		state->stat_add[STAT_STR] += o_ptr->modifiers[OBJ_MOD_STR];
-		state->stat_add[STAT_INT] += o_ptr->modifiers[OBJ_MOD_INT];
-		state->stat_add[STAT_WIS] += o_ptr->modifiers[OBJ_MOD_WIS];
-		state->stat_add[STAT_DEX] += o_ptr->modifiers[OBJ_MOD_DEX];
-		state->stat_add[STAT_CON] += o_ptr->modifiers[OBJ_MOD_CON];
+		state->stat_add[STAT_STR] += obj->modifiers[OBJ_MOD_STR];
+		state->stat_add[STAT_INT] += obj->modifiers[OBJ_MOD_INT];
+		state->stat_add[STAT_WIS] += obj->modifiers[OBJ_MOD_WIS];
+		state->stat_add[STAT_DEX] += obj->modifiers[OBJ_MOD_DEX];
+		state->stat_add[STAT_CON] += obj->modifiers[OBJ_MOD_CON];
 
 		/* Affect stealth */
-		state->skills[SKILL_STEALTH] += o_ptr->modifiers[OBJ_MOD_STEALTH];
+		state->skills[SKILL_STEALTH] += obj->modifiers[OBJ_MOD_STEALTH];
 
 		/* Affect searching ability (factor of five) */
-		state->skills[SKILL_SEARCH] += (o_ptr->modifiers[OBJ_MOD_SEARCH] * 5);
+		state->skills[SKILL_SEARCH] += (obj->modifiers[OBJ_MOD_SEARCH] * 5);
 
 		/* Affect searching frequency (factor of five) */
 		state->skills[SKILL_SEARCH_FREQUENCY] += 
-			(o_ptr->modifiers[OBJ_MOD_SEARCH] * 5);
+			(obj->modifiers[OBJ_MOD_SEARCH] * 5);
 
 		/* Affect infravision */
-		state->see_infra += o_ptr->modifiers[OBJ_MOD_INFRA];
+		state->see_infra += obj->modifiers[OBJ_MOD_INFRA];
 
 		/* Affect digging (factor of 20) */
-		state->skills[SKILL_DIGGING] += (o_ptr->modifiers[OBJ_MOD_TUNNEL] * 20);
+		state->skills[SKILL_DIGGING] += (obj->modifiers[OBJ_MOD_TUNNEL] * 20);
 
 		/* Affect speed */
-		state->speed += o_ptr->modifiers[OBJ_MOD_SPEED];
+		state->speed += obj->modifiers[OBJ_MOD_SPEED];
 
 		/* Affect blows */
-		extra_blows += o_ptr->modifiers[OBJ_MOD_BLOWS];
+		extra_blows += obj->modifiers[OBJ_MOD_BLOWS];
 
 		/* Affect shots */
-		extra_shots += o_ptr->modifiers[OBJ_MOD_SHOTS];
+		extra_shots += obj->modifiers[OBJ_MOD_SHOTS];
 
 		/* Affect Might */
-		extra_might += o_ptr->modifiers[OBJ_MOD_MIGHT];
+		extra_might += obj->modifiers[OBJ_MOD_MIGHT];
 
 		/* Affect resists */
 		for (j = 0; j < ELEM_MAX; j++)
-			if (!known_only || object_is_known(o_ptr) ||
-				object_element_is_known(o_ptr, j)) {
+			if (!known_only || object_is_known(obj) ||
+				object_element_is_known(obj, j)) {
 
 				/* Note vulnerability for later processing */
-				if (o_ptr->el_info[j].res_level == -1)
+				if (obj->el_info[j].res_level == -1)
 					vuln[i] = TRUE;
 
 				/* OK because res_level has not included vulnerability yet */
-				if (o_ptr->el_info[j].res_level > state->el_info[j].res_level)
-					state->el_info[j].res_level = o_ptr->el_info[j].res_level;
+				if (obj->el_info[j].res_level > state->el_info[j].res_level)
+					state->el_info[j].res_level = obj->el_info[j].res_level;
 			}
 
 		/* Modify the base armor class */
-		state->ac += o_ptr->ac;
+		state->ac += obj->ac;
 
 		/* Apply the bonuses to armor class */
-		if (!known_only || object_is_known(o_ptr) ||
-			object_defence_plusses_are_visible(o_ptr))
-			state->to_a += o_ptr->to_a;
+		if (!known_only || object_is_known(obj) ||
+			object_defence_plusses_are_visible(obj))
+			state->to_a += obj->to_a;
 
 		/* Do not apply weapon and bow bonuses until combat calculations */
 		if (slot_type_is(i, EQUIP_WEAPON)) continue;
 		if (slot_type_is(i, EQUIP_BOW)) continue;
 
 		/* Apply the bonuses to hit/damage */
-		if (!known_only || object_is_known(o_ptr) ||
-			object_attack_plusses_are_visible(o_ptr))
+		if (!known_only || object_is_known(obj) ||
+			object_attack_plusses_are_visible(obj))
 		{
-			state->to_h += o_ptr->to_h;
-			state->to_d += o_ptr->to_d;
+			state->to_h += obj->to_h;
+			state->to_d += obj->to_d;
 		}
 	}
 
@@ -1818,8 +1800,7 @@ void calc_bonuses(object_type gear[], player_state *state, bool known_only)
 	/*** Handle stats ***/
 
 	/* Calculate stats */
-	for (i = 0; i < STAT_MAX; i++)
-	{
+	for (i = 0; i < STAT_MAX; i++) {
 		int add, top, use, ind;
 
 		/* Extract modifier */
@@ -1841,16 +1822,14 @@ void calc_bonuses(object_type gear[], player_state *state, bool known_only)
 		state->stat_use[i] = use;
 
 		/* Values: n/a */
-		if (use <= 3) ind = 0;
-
-		/* Values: 3, 4, ..., 18 */
-		else if (use <= 18) ind = (use - 3);
-
-		/* Ranges: 18/00-18/09, ..., 18/210-18/219 */
-		else if (use <= 18+219) ind = (15 + (use - 18) / 10);
-
-		/* Range: 18/220+ */
-		else ind = (37);
+		if (use <= 3)
+			ind = 0;
+		else if (use <= 18) /* Values: 3, 4, ..., 18 */
+			ind = (use - 3);
+		else if (use <= 18+219) /* Ranges: 18/00-18/09, ..., 18/210-18/219 */
+			ind = (15 + (use - 18) / 10);
+		else /* Range: 18/220+ */
+			ind = (37);
 
 		assert((0 <= ind) && (ind < STAT_RANGE));
 
@@ -1867,15 +1846,12 @@ void calc_bonuses(object_type gear[], player_state *state, bool known_only)
 	/*** Temporary flags ***/
 
 	/* Apply temporary "stun" */
-	if (player->timed[TMD_STUN] > 50)
-	{
+	if (player->timed[TMD_STUN] > 50) {
 		state->to_h -= 20;
 		state->to_d -= 20;
 		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE]
 			* 8 / 10;
-	}
-	else if (player->timed[TMD_STUN])
-	{
+	} else if (player->timed[TMD_STUN]) {
 		state->to_h -= 5;
 		state->to_d -= 5;
 		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE]
@@ -1887,8 +1863,7 @@ void calc_bonuses(object_type gear[], player_state *state, bool known_only)
 		state->to_a += 100;
 
 	/* Temporary blessing */
-	if (player->timed[TMD_BLESSED])
-	{
+	if (player->timed[TMD_BLESSED]) {
 		state->to_a += 5;
 		state->to_h += 10;
 		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE]
@@ -1897,13 +1872,10 @@ void calc_bonuses(object_type gear[], player_state *state, bool known_only)
 
 	/* Temporary shield */
 	if (player->timed[TMD_SHIELD])
-	{
 		state->to_a += 50;
-	}
 
 	/* Temporary stoneskin */
-	if (player->timed[TMD_STONESKIN])
-	{
+	if (player->timed[TMD_STONESKIN]) {
 		state->to_a += 40;
 		state->speed -= 5;
 	}
@@ -1913,22 +1885,18 @@ void calc_bonuses(object_type gear[], player_state *state, bool known_only)
 		of_on(state->flags, OF_PROT_FEAR);
 
 	/* Temporary "Hero" */
-	if (player->timed[TMD_HERO])
-	{
+	if (player->timed[TMD_HERO]) {
 		of_on(state->flags, OF_PROT_FEAR);
 		state->to_h += 12;
-		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE]
-			* 105 / 100;
+		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE] * 105 / 100;
 	}
 
 	/* Temporary "Berserk" */
-	if (player->timed[TMD_SHERO])
-	{
+	if (player->timed[TMD_SHERO]) {
 		of_on(state->flags, OF_PROT_FEAR);
 		state->to_h += 24;
 		state->to_a -= 10;
-		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE]
-			* 9 / 10;
+		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE] * 9 / 10;
 	}
 
 	/* Temporary "fast" */
@@ -2020,14 +1988,18 @@ void calc_bonuses(object_type gear[], player_state *state, bool known_only)
 	i = weight_limit(state);
 
 	/* Apply "encumbrance" from weight */
-	if (j > i / 2) state->speed -= ((j - (i / 2)) / (i / 10));
+	if (j > i / 2)
+		state->speed -= ((j - (i / 2)) / (i / 10));
 
 	/* Searching slows the player down */
-	if (player->searching) state->speed -= 10;
+	if (player->searching)
+		state->speed -= 10;
 
 	/* Sanity check on extreme speeds */
-	if (state->speed < 0) state->speed = 0;
-	if (state->speed > 199) state->speed = 199;
+	if (state->speed < 0)
+		state->speed = 0;
+	if (state->speed > 199)
+		state->speed = 199;
 
 	/*** Apply modifier bonuses ***/
 
@@ -2074,41 +2046,37 @@ void calc_bonuses(object_type gear[], player_state *state, bool known_only)
 	/*** Analyze current bow ***/
 
 	/* Examine the "current bow" */
-	o_ptr = equipped_item_by_slot_name(player, "shooting");
+	obj = equipped_item_by_slot_name(player, "shooting");
 
 	/* Assume not heavy */
 	state->heavy_shoot = FALSE;
 
-	/* It is hard to hold a heavy bow */
-	if (hold < o_ptr->weight / 10)
-	{
-		/* Hard to wield a heavy bow */
-		state->to_h += 2 * (hold - o_ptr->weight / 10);
-
-		/* Heavy Bow */
-		state->heavy_shoot = TRUE;
-	}
-
 	/* Analyze launcher */
-	if (o_ptr->kind)
-	{
+	if (obj) {
+		if (hold < obj->weight / 10) {
+			/* Hard to wield a heavy bow */
+			state->to_h += 2 * (hold - obj->weight / 10);
+			
+			/* Heavy Bow */
+			state->heavy_shoot = TRUE;
+		}
+
 		/* Get to shoot */
 		state->num_shots = 1;
 
 		/* Type of ammo */
-		if (kf_has(o_ptr->kind->kind_flags, KF_SHOOTS_SHOTS))
+		if (kf_has(obj->kind->kind_flags, KF_SHOOTS_SHOTS))
 			state->ammo_tval = TV_SHOT;
-		else if (kf_has(o_ptr->kind->kind_flags, KF_SHOOTS_ARROWS))
+		else if (kf_has(obj->kind->kind_flags, KF_SHOOTS_ARROWS))
 			state->ammo_tval = TV_ARROW;
-		else if (kf_has(o_ptr->kind->kind_flags, KF_SHOOTS_BOLTS))
+		else if (kf_has(obj->kind->kind_flags, KF_SHOOTS_BOLTS))
 			state->ammo_tval = TV_BOLT;
 
 		/* Multiplier */
-		state->ammo_mult = o_ptr->pval;
+		state->ammo_mult = obj->pval;
 
 		/* Apply special flags */
-		if (o_ptr->kind && !state->heavy_shoot)
-		{
+		if (!state->heavy_shoot) {
 			/* Extra shots */
 			state->num_shots += extra_shots;
 
@@ -2116,9 +2084,7 @@ void calc_bonuses(object_type gear[], player_state *state, bool known_only)
 			state->ammo_mult += extra_might;
 
 			/* Hack -- Rangers love Bows */
-			if (player_has(PF_EXTRA_SHOT) &&
-			    (state->ammo_tval == TV_ARROW))
-			{
+			if (player_has(PF_EXTRA_SHOT) && (state->ammo_tval == TV_ARROW)) {
 				/* Extra shot at level 20 */
 				if (player->lev >= 20) state->num_shots++;
 
@@ -2135,48 +2101,43 @@ void calc_bonuses(object_type gear[], player_state *state, bool known_only)
 	/*** Analyze weapon ***/
 
 	/* Examine the "current weapon" */
-	o_ptr = equipped_item_by_slot_name(player, "weapon");
+	obj = equipped_item_by_slot_name(player, "weapon");
 
 	/* Assume not heavy */
 	state->heavy_wield = FALSE;
 
-	/* It is hard to hold a heavy weapon */
-	if (hold < o_ptr->weight / 10)
-	{
-		/* Hard to wield a heavy weapon */
-		state->to_h += 2 * (hold - o_ptr->weight / 10);
-
-		/* Heavy weapon */
-		state->heavy_wield = TRUE;
-	}
-
-	/* Non-object means barehanded attacks */
-	if (!o_ptr->kind)
-		assert(o_ptr->weight == 0);
-
-	/* Normal weapons */
-	if (!state->heavy_wield)
-	{
-		/* Calculate number of blows */
-		state->num_blows = calc_blows(o_ptr, state, extra_blows);
-
-		/* Boost digging skill by weapon weight */
-		state->skills[SKILL_DIGGING] += (o_ptr->weight / 10);
-	}
-
-	/* Assume okay */
+	/* Assume no pointy problem */
 	state->icky_wield = FALSE;
 
-	/* Priest weapon penalty for non-blessed edged weapons */
-	if (player_has(PF_BLESS_WEAPON) && !player_of_has(player, OF_BLESSED) &&
-		tval_is_pointy(o_ptr))
-	{
-		/* Reduce the real bonuses */
-		state->to_h -= 2;
-		state->to_d -= 2;
+	if (obj) {
+		/* It is hard to hold a heavy weapon */
+		if (hold < obj->weight / 10) {
+			/* Hard to wield a heavy weapon */
+			state->to_h += 2 * (hold - obj->weight / 10);
+			
+			/* Heavy weapon */
+			state->heavy_wield = TRUE;
+		}
 
-		/* Icky weapon */
-		state->icky_wield = TRUE;
+		/* Normal weapons */
+		if (!state->heavy_wield) {
+			/* Calculate number of blows */
+			state->num_blows = calc_blows(obj, state, extra_blows);
+
+			/* Boost digging skill by weapon weight */
+			state->skills[SKILL_DIGGING] += (obj->weight / 10);
+		}
+
+		/* Priest weapon penalty for non-blessed edged weapons */
+		if (player_has(PF_BLESS_WEAPON) && !player_of_has(player, OF_BLESSED) &&
+			tval_is_pointy(obj)) {
+			/* Reduce the real bonuses */
+			state->to_h -= 2;
+			state->to_d -= 2;
+
+			/* Icky weapon */
+			state->icky_wield = TRUE;
+		}
 	}
 
 	return;
@@ -2229,67 +2190,53 @@ static void update_bonuses(void)
 
 	/* Hack -- Telepathy Change */
 	if (of_has(state->flags, OF_TELEPATHY) != of_has(old.flags, OF_TELEPATHY))
-	{
 		/* Update monster visibility */
 		player->upkeep->update |= (PU_MONSTERS);
-	}
-
 	/* Hack -- See Invis Change */
 	if (of_has(state->flags, OF_SEE_INVIS) != of_has(old.flags, OF_SEE_INVIS))
-	{
 		/* Update monster visibility */
 		player->upkeep->update |= (PU_MONSTERS);
-	}
 
 	/* Redraw speed (if needed) */
 	if (state->speed != old.speed)
-	{
-		/* Redraw speed */
 		player->upkeep->redraw |= (PR_SPEED);
-	}
 
 	/* Redraw armor (if needed) */
 	if ((known_state->ac != known_old.ac) || 
 		(known_state->to_a != known_old.to_a))
-	{
-		/* Redraw */
 		player->upkeep->redraw |= (PR_ARMOR);
-	}
 
 	/* Hack -- handle "xtra" mode */
 	if (character_xtra) return;
 
 	/* Take note when "heavy bow" changes */
-	if (old.heavy_shoot != state->heavy_shoot)
-	{
+	if (old.heavy_shoot != state->heavy_shoot) {
 		/* Message */
 		if (state->heavy_shoot)
 			msg("You have trouble wielding such a heavy bow.");
-		else if (equipped_item_by_slot_name(player, "shooting")->kind)
+		else if (equipped_item_by_slot_name(player, "shooting"))
 			msg("You have no trouble wielding your bow.");
 		else
 			msg("You feel relieved to put down your heavy bow.");
 	}
 
 	/* Take note when "heavy weapon" changes */
-	if (old.heavy_wield != state->heavy_wield)
-	{
+	if (old.heavy_wield != state->heavy_wield) {
 		/* Message */
 		if (state->heavy_wield)
 			msg("You have trouble wielding such a heavy weapon.");
-		else if (equipped_item_by_slot_name(player, "weapon")->kind)
+		else if (equipped_item_by_slot_name(player, "weapon"))
 			msg("You have no trouble wielding your weapon.");
 		else
 			msg("You feel relieved to put down your heavy weapon.");	
 	}
 
 	/* Take note when "illegal weapon" changes */
-	if (old.icky_wield != state->icky_wield)
-	{
+	if (old.icky_wield != state->icky_wield) {
 		/* Message */
 		if (state->icky_wield)
 			msg("You do not feel comfortable with your weapon.");
-		else if (equipped_item_by_slot_name(player, "weapon")->kind)
+		else if (equipped_item_by_slot_name(player, "weapon"))
 			msg("You feel comfortable with your weapon.");
 		else
 			msg("You feel more comfortable after removing your weapon.");
@@ -2325,9 +2272,9 @@ void monster_race_track(struct player_upkeep *upkeep, monster_race *race)
 /*
  * Track the given object
  */
-void track_object(struct player_upkeep *upkeep, int item)
+void track_object(struct player_upkeep *upkeep, struct object *obj)
 {
-	upkeep->object_idx = item;
+	upkeep->object = obj;
 	upkeep->object_kind = NULL;
 	upkeep->redraw |= (PR_OBJECT);
 }
@@ -2337,7 +2284,7 @@ void track_object(struct player_upkeep *upkeep, int item)
  */
 void track_object_kind(struct player_upkeep *upkeep, struct object_kind *kind)
 {
-	upkeep->object_idx = NO_OBJECT;
+	upkeep->object = NULL;
 	upkeep->object_kind = kind;
 	upkeep->redraw |= (PR_OBJECT);
 }
@@ -2345,9 +2292,9 @@ void track_object_kind(struct player_upkeep *upkeep, struct object_kind *kind)
 /*
  * Is the given item tracked?
  */
-bool tracked_object_is(struct player_upkeep *upkeep, int item)
+bool tracked_object_is(struct player_upkeep *upkeep, struct object *obj)
 {
-	return (upkeep->object_idx == item);
+	return (upkeep->object == obj);
 }
 
 

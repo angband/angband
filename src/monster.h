@@ -309,7 +309,7 @@ typedef struct monster_race
  *
  * Note: fy, fx constrain dungeon size to 256x256
  *
- * The "hold_o_idx" field points to the first object of a stack
+ * The "held_obj" field points to the first object of a stack
  * of objects (if any) being carried by the monster (see above).
  */
 typedef struct monster
@@ -332,9 +332,8 @@ typedef struct monster
 
 	bitflag mflag[MFLAG_SIZE];	/* Temporary monster flags */
 
-	s16b mimicked_o_idx; /* Object this monster is mimicking */
-
-	s16b hold_o_idx;	/* Object being held (if any) */
+	struct object *mimicked_obj; /* Object this monster is mimicking */
+	struct object *held_obj;	/* Object being held (if any) */
 
 	byte attr;  		/* attr last used for drawing monster */
 

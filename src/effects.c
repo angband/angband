@@ -35,6 +35,7 @@
 #include "obj-identify.h"
 #include "obj-ignore.h"
 #include "obj-make.h"
+#include "obj-pile.h"
 #include "obj-power.h"
 #include "obj-tval.h"
 #include "obj-ui.h"
@@ -718,21 +719,20 @@ static int remove_curse_aux(bool heavy)
 	int i, cnt = 0;
 
 	/* Attempt to uncurse items being worn */
-	for (i = 0; i < player->body.count; i++)
-	{
-		object_type *o_ptr = equipped_item_by_slot(player, i);
+	for (i = 0; i < player->body.count; i++) {
+		struct object *obj = slot_object(player, i);
 
-		if (!o_ptr->kind) continue;
-		if (!cursed_p(o_ptr->flags)) continue;
+		if (!obj) continue;
+		if (!cursed_p(obj->flags)) continue;
 
 		/* Heavily cursed items need a special spell */
-		if (of_has(o_ptr->flags, OF_HEAVY_CURSE) && !heavy) continue;
+		if (of_has(obj->flags, OF_HEAVY_CURSE) && !heavy) continue;
 
 		/* Perma-cursed items can never be removed */
-		if (of_has(o_ptr->flags, OF_PERMA_CURSE)) continue;
+		if (of_has(obj->flags, OF_PERMA_CURSE)) continue;
 
 		/* Uncurse, and update things */
-		uncurse_object(o_ptr);
+		uncurse_object(obj);
 
 		player->upkeep->update |= (PU_BONUS);
 		player->upkeep->redraw |= (PR_EQUIP);
@@ -954,7 +954,7 @@ bool effect_handler_DETECT_TRAPS(effect_handler_context_t *context)
 
 	bool detect = FALSE;
 
-	object_type *o_ptr;
+	object_type *obj;
 
 	/* Pick an area to detect */
 	y1 = player->py - y_dist;
@@ -980,15 +980,14 @@ bool effect_handler_DETECT_TRAPS(effect_handler_context_t *context)
 					detect = TRUE;
 
 			/* Scan all objects in the grid to look for traps on chests */
-			for (o_ptr = get_first_object(y, x); o_ptr;
-				 o_ptr = get_next_object(o_ptr)) {
+			for (obj = square_object(cave, y, x); obj; obj = obj->next) {
 				/* Skip anything not a trapped chest */
-				if (!is_trapped_chest(o_ptr)) continue;
+				if (!is_trapped_chest(obj)) continue;
 
 				/* Identify once */
-				if (!object_is_known(o_ptr)) {
+				if (!object_is_known(obj)) {
 					/* Know the trap */
-					object_notice_everything(o_ptr);
+					object_notice_everything(obj);
 
 					/* Notice it */
 					disturb(player, 0);
@@ -1211,7 +1210,7 @@ bool effect_handler_DETECT_GOLD(effect_handler_context_t *context)
  */
 bool effect_handler_SENSE_OBJECTS(effect_handler_context_t *context)
 {
-	int i, x, y;
+	int x, y;
 	int x1, x2, y1, y2;
 	int y_dist = context->value.dice;
 	int x_dist = context->value.sides;
@@ -1229,33 +1228,28 @@ bool effect_handler_SENSE_OBJECTS(effect_handler_context_t *context)
 	if (y2 > cave->height - 1) y2 = cave->height - 1;
 	if (x2 > cave->width - 1) x2 = cave->width - 1;
 
-	/* Scan objects */
-	for (i = 1; i < cave_object_max(cave); i++)	{
-		object_type *o_ptr = cave_object(cave, i);
+	/* Scan the area for objects */
+	for (y = y1; y <= y2; y++) {
+		for (x = x1; x <= x2; x++) {
+			struct object *obj = square_object(cave, y, x);
 
-		/* Skip dead objects */
-		if (!o_ptr->kind) continue;
+			/* Skip empty grids */
+			if (!obj) continue;
 
-		/* Skip held objects */
-		if (o_ptr->held_m_idx) continue;
+			/* Memorize the pile */
+			while (obj) {
+				if (obj->marked == MARK_UNAWARE)
+					obj->marked = MARK_AWARE;
+				obj = obj->next;
+			}
 
-		/* Location */
-		y = o_ptr->iy;
-		x = o_ptr->ix;
-
-		/* Only sense nearby objects */
-		if (x < x1 || y < y1 || x > x2 || y > y2) continue;
-
-		/* Memorize it */
-		if (o_ptr->marked == MARK_UNAWARE)
-			o_ptr->marked = MARK_AWARE;
-
-		/* Redraw */
-		square_light_spot(cave, y, x);
-
-		/* Detected */
-		objects = TRUE;
-		context->ident = TRUE;
+			/* Redraw */
+			square_light_spot(cave, y, x);
+			
+			/* Detected */
+			objects = TRUE;
+			context->ident = TRUE;
+		}
 	}
 
 	if (objects)
@@ -1273,7 +1267,7 @@ bool effect_handler_SENSE_OBJECTS(effect_handler_context_t *context)
  */
 bool effect_handler_DETECT_OBJECTS(effect_handler_context_t *context)
 {
-	int i, x, y;
+	int x, y;
 	int x1, x2, y1, y2;
 	int y_dist = context->value.dice;
 	int x_dist = context->value.sides;
@@ -1291,33 +1285,28 @@ bool effect_handler_DETECT_OBJECTS(effect_handler_context_t *context)
 	if (y2 > cave->height - 1) y2 = cave->height - 1;
 	if (x2 > cave->width - 1) x2 = cave->width - 1;
 
-	/* Scan objects */
-	for (i = 1; i < cave_object_max(cave); i++)	{
-		object_type *o_ptr = cave_object(cave, i);
+	/* Scan the area for objects */
+	for (y = y1; y <= y2; y++) {
+		for (x = x1; x <= x2; x++) {
+			struct object *obj = square_object(cave, y, x);
 
-		/* Skip dead objects */
-		if (!o_ptr->kind) continue;
+			/* Skip empty grids */
+			if (!obj) continue;
 
-		/* Skip held objects */
-		if (o_ptr->held_m_idx) continue;
+			/* Memorize the pile */
+			while (obj) {
+				obj->marked = MARK_SEEN;
+				obj = obj->next;
+			}
 
-		/* Location */
-		y = o_ptr->iy;
-		x = o_ptr->ix;
+			/* Redraw */
+			square_light_spot(cave, y, x);
 
-		/* Only detect nearby objects */
-		if (x < x1 || y < y1 || x > x2 || y > y2) continue;
-
-		/* Memorize it */
-		o_ptr->marked = MARK_SEEN;
-
-		/* Redraw */
-		square_light_spot(cave, y, x);
-
-		/* Detect */
-		if (!ignore_item_ok(o_ptr)) {
-			objects = TRUE;
-			context->ident = TRUE;
+			/* Detect */
+			if (!ignore_item_ok(obj)) {
+				objects = TRUE;
+				context->ident = TRUE;
+			}
 		}
 	}
 
@@ -1562,7 +1551,8 @@ bool effect_handler_CREATE_STAIRS(effect_handler_context_t *context)
 	}
 
 	/* Push objects off the grid */
-	if (cave->o_idx[py][px]) push_object(py, px);
+	if (square_object(cave, py, px))
+		push_object(py, px);
 
 	square_add_stairs(cave, py, px, player->depth);
 
@@ -1575,7 +1565,7 @@ bool effect_handler_CREATE_STAIRS(effect_handler_context_t *context)
 bool effect_handler_DISENCHANT(effect_handler_context_t *context)
 {
 	int i, count = 0;
-	object_type *o_ptr;
+	object_type *obj;
 	char o_name[80];
 
 	/* Count slots */
@@ -1600,23 +1590,23 @@ bool effect_handler_DISENCHANT(effect_handler_context_t *context)
 	}
 
 	/* Get the item */
-	o_ptr = equipped_item_by_slot(player, i);
+	obj = slot_object(player, i);
 
 	/* No item, nothing happens */
-	if (!o_ptr->kind) return TRUE;
+	if (!obj) return TRUE;
 
 	/* Nothing to disenchant */
-	if ((o_ptr->to_h <= 0) && (o_ptr->to_d <= 0) && (o_ptr->to_a <= 0))
+	if ((obj->to_h <= 0) && (obj->to_d <= 0) && (obj->to_a <= 0))
 		return TRUE;
 
 	/* Describe the object */
-	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
+	object_desc(o_name, sizeof(o_name), obj, ODESC_BASE);
 
 	/* Artifacts have a 60% chance to resist */
-	if (o_ptr->artifact && (randint0(100) < 60)) {
+	if (obj->artifact && (randint0(100) < 60)) {
 		/* Message */
-		msg("Your %s (%c) resist%s disenchantment!", o_name, equip_to_label(i),
-			((o_ptr->number != 1) ? "" : "s"));
+		msg("Your %s (%c) resist%s disenchantment!", o_name, I2A(i),
+			((obj->number != 1) ? "" : "s"));
 
 		/* Notice */
 		context->ident = TRUE;
@@ -1627,21 +1617,21 @@ bool effect_handler_DISENCHANT(effect_handler_context_t *context)
 	/* Apply disenchantment, depending on which kind of equipment */
 	if (slot_type_is(i, EQUIP_WEAPON) || slot_type_is(i, EQUIP_BOW)) {
 		/* Disenchant to-hit */
-		if (o_ptr->to_h > 0) o_ptr->to_h--;
-		if ((o_ptr->to_h > 5) && (randint0(100) < 20)) o_ptr->to_h--;
+		if (obj->to_h > 0) obj->to_h--;
+		if ((obj->to_h > 5) && (randint0(100) < 20)) obj->to_h--;
 
 		/* Disenchant to-dam */
-		if (o_ptr->to_d > 0) o_ptr->to_d--;
-		if ((o_ptr->to_d > 5) && (randint0(100) < 20)) o_ptr->to_d--;
+		if (obj->to_d > 0) obj->to_d--;
+		if ((obj->to_d > 5) && (randint0(100) < 20)) obj->to_d--;
 	} else {
 		/* Disenchant to-ac */
-		if (o_ptr->to_a > 0) o_ptr->to_a--;
-		if ((o_ptr->to_a > 5) && (randint0(100) < 20)) o_ptr->to_a--;
+		if (obj->to_a > 0) obj->to_a--;
+		if ((obj->to_a > 5) && (randint0(100) < 20)) obj->to_a--;
 	}
 
 	/* Message */
-	msg("Your %s (%c) %s disenchanted!", o_name, equip_to_label(i),
-		((o_ptr->number != 1) ? "were" : "was"));
+	msg("Your %s (%c) %s disenchanted!", o_name, I2A(i),
+		((obj->number != 1) ? "were" : "was"));
 
 	/* Recalculate bonuses */
 	player->upkeep->update |= (PU_BONUS);
@@ -1812,17 +1802,16 @@ bool enchant(object_type *o_ptr, int n, int eflag)
 
 
 
-/*
+/**
  * Enchant an item (in the inventory or on the floor)
  * Note that "num_ac" requires armour, else weapon
  * Returns TRUE if attempted, FALSE if cancelled
  */
 bool enchant_spell(int num_hit, int num_dam, int num_ac)
 {
-	int item;
 	bool okay = FALSE;
 
-	object_type *o_ptr;
+	struct object *obj;
 
 	char o_name[80];
 
@@ -1831,29 +1820,26 @@ bool enchant_spell(int num_hit, int num_dam, int num_ac)
 	/* Get an item */
 	q = "Enchant which item? ";
 	s = "You have nothing to enchant.";
-	if (!get_item(&item, q, s, 0, 
+	if (!get_item(&obj, q, s, 0, 
 		num_ac ? item_tester_hook_armour : item_tester_hook_weapon,
-		(USE_EQUIP | USE_INVEN | USE_QUIVER | USE_FLOOR))) return (FALSE);
-
-	o_ptr = object_from_item_idx(item);
-
+		(USE_EQUIP | USE_INVEN | USE_QUIVER | USE_FLOOR)))
+		return FALSE;
 
 	/* Description */
-	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
+	object_desc(o_name, sizeof(o_name), obj, ODESC_BASE);
 
 	/* Describe */
 	msg("%s %s glow%s brightly!",
-	           ((item >= 0) ? "Your" : "The"), o_name,
-	           ((o_ptr->number > 1) ? "" : "s"));
+		(object_is_carried(player, obj) ? "Your" : "The"), o_name,
+	           ((obj->number > 1) ? "" : "s"));
 
 	/* Enchant */
-	if (enchant(o_ptr, num_hit, ENCH_TOHIT)) okay = TRUE;
-	if (enchant(o_ptr, num_dam, ENCH_TODAM)) okay = TRUE;
-	if (enchant(o_ptr, num_ac, ENCH_TOAC)) okay = TRUE;
+	if (enchant(obj, num_hit, ENCH_TOHIT)) okay = TRUE;
+	if (enchant(obj, num_dam, ENCH_TODAM)) okay = TRUE;
+	if (enchant(obj, num_ac, ENCH_TOAC)) okay = TRUE;
 
 	/* Failure */
-	if (!okay)
-	{
+	if (!okay) {
 		flush();
 
 		/* Message */
@@ -1865,12 +1851,12 @@ bool enchant_spell(int num_hit, int num_dam, int num_ac)
 }
 
 
-/*
+/**
  * Brand weapons (or ammo)
  *
  * Turns the (non-magical) object into an ego-item of 'brand_type'.
  */
-void brand_object(object_type *o_ptr, const char *name)
+void brand_object(object_type *obj, const char *name)
 {
 	int i;
 	ego_item_type *e_ptr;
@@ -1878,18 +1864,17 @@ void brand_object(object_type *o_ptr, const char *name)
 
 	/* you can never modify artifacts / ego-items */
 	/* you can never modify cursed / worthless items */
-	if (o_ptr->kind && !cursed_p(o_ptr->flags) && o_ptr->kind->cost &&
-	    !o_ptr->artifact && !o_ptr->ego)
-	{
+	if (obj && !cursed_p(obj->flags) && obj->kind->cost &&
+	    !obj->artifact && !obj->ego) {
 		char o_name[80];
 		char brand[20];
 
-		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
+		object_desc(o_name, sizeof(o_name), obj, ODESC_BASE);
 		strnfmt(brand, sizeof(brand), "of %s", name);
 
 		/* Describe */
 		msg("The %s %s surrounded with an aura of %s.", o_name,
-			(o_ptr->number > 1) ? "are" : "is", name);
+			(obj->number > 1) ? "are" : "is", name);
 
 		/* Get the right ego type for the object */
 		for (i = 0; i < z_info->e_max; i++) {
@@ -1900,16 +1885,16 @@ void brand_object(object_type *o_ptr, const char *name)
 			if (streq(e_ptr->name, brand)) {
 				struct ego_poss_item *poss;
 				for (poss = e_ptr->poss_items; poss; poss = poss->next)
-					if (poss->kidx == o_ptr->kind->kidx)
+					if (poss->kidx == obj->kind->kidx)
 						ok = TRUE;
 			}
 			if (ok) break;
 		}
 
 		/* Make it an ego item */
-		o_ptr->ego = &e_info[i];
-		ego_apply_magic(o_ptr, 0);
-		object_notice_ego(o_ptr);
+		obj->ego = &e_info[i];
+		ego_apply_magic(obj, 0);
+		object_notice_ego(obj);
 
 		/* Update the gear */
 		player->upkeep->update |= (PU_INVEN);
@@ -1921,10 +1906,8 @@ void brand_object(object_type *o_ptr, const char *name)
 		player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
 
 		/* Enchant */
-		enchant(o_ptr, randint0(3) + 4, ENCH_TOHIT | ENCH_TODAM);
-	}
-	else
-	{
+		enchant(obj, randint0(3) + 4, ENCH_TOHIT | ENCH_TODAM);
+	} else {
 		flush();
 		msg("The branding failed.");
 	}
@@ -1967,8 +1950,7 @@ static bool item_tester_unknown(const object_type *o_ptr)
  */
 bool effect_handler_IDENTIFY(effect_handler_context_t *context)
 {
-	int item;
-	object_type *o_ptr;
+	struct object *obj;
 	const char *q, *s;
 
 	context->ident = TRUE;
@@ -1976,14 +1958,12 @@ bool effect_handler_IDENTIFY(effect_handler_context_t *context)
 	/* Get an item */
 	q = "Identify which item? ";
 	s = "You have nothing to identify.";
-	if (!get_item(&item, q, s, 0, item_tester_unknown,
+	if (!get_item(&obj, q, s, 0, item_tester_unknown,
 				  (USE_EQUIP | USE_INVEN | USE_QUIVER | USE_FLOOR)))
 		return TRUE;
 
-	o_ptr = object_from_item_idx(item);
-
 	/* Identify the object */
-	do_ident_item(o_ptr);
+	do_ident_item(obj);
 
 	return TRUE;
 }
@@ -1993,22 +1973,17 @@ bool effect_handler_IDENTIFY(effect_handler_context_t *context)
  */
 bool effect_handler_IDENTIFY_PACK(effect_handler_context_t *context)
 {
-	int i;
+	struct object *obj;
 
 	context->ident = TRUE;
 
 	/* Simply identify and know every item */
-	for (i = 0; i < player->max_gear; i++) {
-		object_type *o_ptr = &player->gear[i];
-
-		/* Skip non-objects */
-		if (!o_ptr->kind) continue;
-
+	for (obj = player->gear; obj; obj = obj->next) {
 		/* Aware and Known */
-		if (object_is_known(o_ptr)) continue;
+		if (object_is_known(obj)) continue;
 
 		/* Identify it */
-		do_ident_item(o_ptr);
+		do_ident_item(obj);
 	}
 
 	return TRUE;
@@ -2017,10 +1992,10 @@ bool effect_handler_IDENTIFY_PACK(effect_handler_context_t *context)
 /*
  * Hook for "get_item()".  Determine if something is rechargable.
  */
-static bool item_tester_hook_recharge(const object_type *o_ptr)
+static bool item_tester_hook_recharge(const struct object *obj)
 {
 	/* Recharge staves and wands */
-	if (tval_can_have_charges(o_ptr)) return TRUE;
+	if (tval_can_have_charges(obj)) return TRUE;
 
 	return FALSE;
 }
@@ -2034,9 +2009,9 @@ static bool item_tester_hook_recharge(const object_type *o_ptr)
  */
 bool effect_handler_RECHARGE(effect_handler_context_t *context)
 {
-	int i, t, item, lev;
+	int i, t, lev;
 	int strength = context->value.base;
-	object_type *o_ptr;
+	object_type *obj;
 	const char *q, *s;
 
 	/* Immediately obvious */
@@ -2045,46 +2020,39 @@ bool effect_handler_RECHARGE(effect_handler_context_t *context)
 	/* Get an item */
 	q = "Recharge which item? ";
 	s = "You have nothing to recharge.";
-	if (!get_item(&item, q, s, 0, item_tester_hook_recharge,
+	if (!get_item(&obj, q, s, 0, item_tester_hook_recharge,
 				  (USE_INVEN | USE_FLOOR)))
 		return TRUE;
 
-	o_ptr = object_from_item_idx(item);
-
 	/* Extract the object "level" */
-	lev = o_ptr->kind->level;
+	lev = obj->kind->level;
 
-	/*
-	 * Chance of failure = 1 time in
-	 * [Spell_strength + 100 - item_level - 10 * charge_per_item]/15
-	 */
-	i = (strength + 100 - lev - (10 * (o_ptr->pval / o_ptr->number))) / 15;
+	/* Chance of failure = 1 time in
+	 * [Spell_strength + 100 - item_level - 10 * charge_per_item]/15 */
+	i = (strength + 100 - lev - (10 * (obj->pval / obj->number))) / 15;
 
 	/* Back-fire */
 	if ((i <= 1) || one_in_(i)) {
+		struct object *destroyed;
+
 		msg("The recharge backfires!");
 		msg("There is a bright flash of light.");
 
 		/* Reduce the charges of rods/wands/staves */
-		reduce_charges(o_ptr, 1);
+		reduce_charges(obj, 1);
 
 		/* Reduce and describe inventory */
-		if (item >= 0) {
-			inven_item_increase(item, -1);
-			inven_item_describe(item);
-			inven_item_optimize(item);
-		} else {
-			/* Reduce and describe floor item */
-			floor_item_increase(0 - item, -1);
-			floor_item_describe(0 - item);
-			floor_item_optimize(0 - item);
-		}
+		if (object_is_carried(player, obj))
+			destroyed = gear_object_for_use(obj, 1, TRUE);
+		else
+			destroyed = floor_object_for_use(obj, 1, TRUE);
+		object_delete(destroyed);
 	} else {
 		/* Extract a "power" */
 		t = (strength / (lev + 2)) + 1;
 
 		/* Recharge based on the power */
-		if (t > 0) o_ptr->pval += 2 + randint1(t);
+		if (t > 0) obj->pval += 2 + randint1(t);
 	}
 
 	/* Update the gear */
@@ -2870,7 +2838,7 @@ bool effect_handler_DESTRUCTION(effect_handler_context_t *context)
 			/* Destroy any grid that isn't a permament wall */
 			if (!square_isperm(cave, y, x)) {
 				/* Delete objects */
-				delete_object(y, x);
+				object_pile_free(square_object(cave, y, x));
 				square_destroy(cave, y, x);
 			}
 		}
@@ -3172,9 +3140,9 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 			if (!map[16 + yy - cy][16 + xx - cx])
 				square_light_spot(cave, yy, xx);
 
-			/* Destroy location (if valid) */
+			/* Destroy location and all objects (if valid) */
 			else if (square_changeable(cave, yy, xx)) {
-				delete_object(yy, xx);
+				object_pile_free(square_object(cave, yy, xx));
 				square_earthquake(cave, yy, xx);
 			}
 		}
@@ -3564,23 +3532,23 @@ bool effect_handler_TOUCH_AWARE(effect_handler_context_t *context)
  */
 bool effect_handler_CURSE_ARMOR(effect_handler_context_t *context)
 {
-	object_type *o_ptr;
+	object_type *obj;
 
 	char o_name[80];
 
 	context->ident = TRUE;
 
 	/* Curse the body armor */
-	o_ptr = equipped_item_by_slot_name(player, "body");
+	obj = equipped_item_by_slot_name(player, "body");
 
 	/* Nothing to curse */
-	if (!o_ptr->kind) return (FALSE);
+	if (!obj) return (FALSE);
 
 	/* Describe */
-	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_FULL);
+	object_desc(o_name, sizeof(o_name), obj, ODESC_FULL);
 
 	/* Attempt a saving throw for artifacts */
-	if (o_ptr->artifact && (randint0(100) < 50))
+	if (obj->artifact && (randint0(100) < 50))
 		/* Cool */
 		msg("A %s tries to %s, but your %s resists the effects!",
 		           "terrible black aura", "surround your armor", o_name);
@@ -3591,10 +3559,10 @@ bool effect_handler_CURSE_ARMOR(effect_handler_context_t *context)
 		msg("A terrible black aura blasts your %s!", o_name);
 
 		/* Take down bonus a wee bit */
-		o_ptr->to_a -= randint1(3);
+		obj->to_a -= randint1(3);
 
 		/* Curse it */
-		flags_set(o_ptr->flags, OF_SIZE, OF_LIGHT_CURSE, OF_HEAVY_CURSE, FLAG_END);
+		flags_set(obj->flags, OF_SIZE, OF_LIGHT_CURSE, OF_HEAVY_CURSE, FLAG_END);
 
 		/* Recalculate bonuses */
 		player->upkeep->update |= (PU_BONUS);
@@ -3615,23 +3583,23 @@ bool effect_handler_CURSE_ARMOR(effect_handler_context_t *context)
  */
 bool effect_handler_CURSE_WEAPON(effect_handler_context_t *context)
 {
-	object_type *o_ptr;
+	object_type *obj;
 
 	char o_name[80];
 
 	context->ident = TRUE;
 
 	/* Curse the weapon */
-	o_ptr = equipped_item_by_slot_name(player, "weapon");
+	obj = equipped_item_by_slot_name(player, "weapon");
 
 	/* Nothing to curse */
-	if (!o_ptr->kind) return (FALSE);
+	if (!obj) return (FALSE);
 
 	/* Describe */
-	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_FULL);
+	object_desc(o_name, sizeof(o_name), obj, ODESC_FULL);
 
 	/* Attempt a saving throw */
-	if (o_ptr->artifact && (randint0(100) < 50))
+	if (obj->artifact && (randint0(100) < 50))
 		/* Cool */
 		msg("A %s tries to %s, but your %s resists the effects!",
 		           "terrible black aura", "surround your weapon", o_name);
@@ -3642,11 +3610,11 @@ bool effect_handler_CURSE_WEAPON(effect_handler_context_t *context)
 		msg("A terrible black aura blasts your %s!", o_name);
 
 		/* Hurt it a bit */
-		o_ptr->to_h = 0 - randint1(3);
-		o_ptr->to_d = 0 - randint1(3);
+		obj->to_h = 0 - randint1(3);
+		obj->to_d = 0 - randint1(3);
 
 		/* Curse it */
-		flags_set(o_ptr->flags, OF_SIZE, OF_LIGHT_CURSE, OF_HEAVY_CURSE, FLAG_END);
+		flags_set(obj->flags, OF_SIZE, OF_LIGHT_CURSE, OF_HEAVY_CURSE, FLAG_END);
 
 		/* Recalculate bonuses */
 		player->upkeep->update |= (PU_BONUS);
@@ -3684,9 +3652,9 @@ bool effect_handler_BRAND_WEAPON(effect_handler_context_t *context)
 /*
  * Hook to specify "ammo"
  */
-static bool item_tester_hook_ammo(const object_type *o_ptr)
+static bool item_tester_hook_ammo(const object_type *obj)
 {
-	return tval_is_ammo(o_ptr);
+	return tval_is_ammo(obj);
 }
 
 
@@ -3695,8 +3663,7 @@ static bool item_tester_hook_ammo(const object_type *o_ptr)
  */
 bool effect_handler_BRAND_AMMO(effect_handler_context_t *context)
 {
-	int item;
-	object_type *o_ptr;
+	struct object *obj;
 	const char *q, *s;
 
 	/* Select the brand */
@@ -3707,20 +3674,19 @@ bool effect_handler_BRAND_AMMO(effect_handler_context_t *context)
 	/* Get an item */
 	q = "Brand which kind of ammunition? ";
 	s = "You have nothing to brand.";
-	if (!get_item(&item, q, s, 0, item_tester_hook_ammo, (USE_INVEN | USE_QUIVER | USE_FLOOR))) return TRUE;
-
-	o_ptr = object_from_item_idx(item);
+	if (!get_item(&obj, q, s, 0, item_tester_hook_ammo, (USE_INVEN | USE_QUIVER | USE_FLOOR)))
+		return TRUE;
 
 	/* Brand the ammo */
-	brand_object(o_ptr, brand);
+	brand_object(obj, brand);
 
 	/* Done */
 	return (TRUE);
 }
 
-static bool item_tester_hook_bolt(const struct object *o)
+static bool item_tester_hook_bolt(const struct object *obj)
 {
-	return o->tval == TV_BOLT;
+	return obj->tval == TV_BOLT;
 }
 
 /**
@@ -3728,8 +3694,7 @@ static bool item_tester_hook_bolt(const struct object *o)
  */
 bool effect_handler_BRAND_BOLTS(effect_handler_context_t *context)
 {
-	int item;
-	object_type *o_ptr;
+	object_type *obj;
 	const char *q, *s;
 
 	context->ident = TRUE;
@@ -3737,12 +3702,11 @@ bool effect_handler_BRAND_BOLTS(effect_handler_context_t *context)
 	/* Get an item */
 	q = "Brand which bolts? ";
 	s = "You have no bolts to brand.";
-	if (!get_item(&item, q, s, 0, item_tester_hook_bolt, (USE_INVEN | USE_QUIVER | USE_FLOOR))) return TRUE;
-
-	o_ptr = object_from_item_idx(item);
+	if (!get_item(&obj, q, s, 0, item_tester_hook_bolt, (USE_INVEN | USE_QUIVER | USE_FLOOR)))
+		return TRUE;
 
 	/* Brand the bolts */
-	brand_object(o_ptr, "Flame");
+	brand_object(obj, "Flame");
 
 	/* Done */
 	return (TRUE);

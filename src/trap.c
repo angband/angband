@@ -178,10 +178,12 @@ bool square_player_trap_allowed(struct chunk *c, int y, int x)
      * We currently forbid multiple traps in a grid under normal conditions.
      * If this changes, various bits of code elsewhere will have to change too.
      */
-    if (square_istrap(c, y, x)) return FALSE;
+    if (square_istrap(c, y, x))
+		return FALSE;
 
     /* We currently forbid traps in a grid with objects. */
-    if (c->o_idx[y][x]) return FALSE;
+    if (square_object(c, y, x))
+		return FALSE;
 
     /* Check the feature trap flag */
     return (tf_has(f_info[c->squares[y][x].feat].flags, TF_TRAP));
@@ -476,11 +478,11 @@ bool square_remove_trap(struct chunk *c, int y, int x, bool domsg, int t_idx)
 			continue;
 		}
 
-		/* Replace with the next trap */
-		*trap_slot = next_trap;
-
 		/* Remove it */
 		remove_trap_aux(c, *trap_slot, y, x, domsg);
+
+		/* Replace with the next trap */
+		*trap_slot = next_trap;
     }
 
     /* Refresh grids that the character can see */

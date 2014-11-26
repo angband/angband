@@ -1,6 +1,6 @@
 /**
-   \file obj-ui.h
-   \brief lists of objects and object pictures
+ * \file obj-ui.h
+ * \brief lists of objects and object pictures
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  *
@@ -57,9 +57,9 @@ byte object_attr(const struct object *o_ptr);
 wchar_t object_char(const struct object *o_ptr);
 void show_inven(int mode, item_tester tester);
 void show_equip(int mode, item_tester tester);
-void show_floor(const int *floor_list, int floor_num, int mode, item_tester tester);
-bool verify_item(const char *prompt, int item);
-bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, item_tester tester, int mode);
-bool get_item_allow(int item, unsigned char ch, cmd_code cmd, bool is_harmless);
+void show_floor(struct object **floor_list, int floor_num, int mode, item_tester tester);
+bool verify_object(const char *prompt, struct object *obj);
+bool get_item(struct object **choice, const char *pmt, const char *str, cmd_code cmd, item_tester tester, int mode);
+bool get_item_allow(const struct object *obj, unsigned char ch, cmd_code cmd, bool is_harmless);
 
 #endif /* OBJECT_UI_H */

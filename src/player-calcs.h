@@ -186,7 +186,7 @@ struct equip_slot {
 
 	u16b type;
 	char *name;
-	int index;
+	struct object *obj;
 };
 
 struct player_body {
@@ -255,7 +255,7 @@ typedef struct player_upkeep {
 
 	struct monster *health_who;			/* Health bar trackee */
 	struct monster_race *monster_race;	/* Monster race trackee */
-	int object_idx;						/* Object trackee */
+	struct object *object;				/* Object trackee */
 	struct object_kind *object_kind;	/* Object kind trackee */
 
 	u32b notice;		/* Bit flags for pending actions such as 
@@ -278,8 +278,8 @@ typedef struct player_upkeep {
 	bool running_withpathfind;	/* Are we using the pathfinder ? */
 	bool running_firststep;		/* Is this our first step running? */
 
-	int *quiver;				/* Quiver indices into the gear array */
-	int *inven;					/* Inventory indices into the gear array */
+	struct object **quiver;		/* Quiver objects */
+	struct object **inven;		/* Inventory objects */
 	int total_weight;			/* Total weight being carried */
 	int inven_cnt;				/* Number of items in inventory */
 	int equip_cnt;				/* Number of items in equipment */
@@ -292,9 +292,10 @@ extern const byte adj_dex_safe[STAT_RANGE];
 extern const byte adj_con_fix[STAT_RANGE];
 extern const byte adj_str_hold[STAT_RANGE];
 
-int equipped_item_slot(struct player_body body, int item);
-void calc_inventory(struct player_upkeep *upkeep, object_type gear[],
-					struct player_body body, int max_gear);
+bool earlier_object(struct object *orig, struct object *new);
+int equipped_item_slot(struct player_body body, struct object *obj);
+void calc_inventory(struct player_upkeep *upkeep, struct object *gear,
+					struct player_body body);
 void calc_bonuses(object_type inventory[], player_state *state, bool known_only);
 void calc_digging_chances(player_state *state, int chances[DIGGING_MAX]);
 int calc_blows(const object_type *o_ptr, player_state *state, int extra_blows);
@@ -302,9 +303,9 @@ int calc_blows(const object_type *o_ptr, player_state *state, int extra_blows);
 void health_track(struct player_upkeep *upkeep, struct monster *m_ptr);
 void monster_race_track(struct player_upkeep *upkeep, 
 						struct monster_race *race);
-void track_object(struct player_upkeep *upkeep, int item);
+void track_object(struct player_upkeep *upkeep, struct object *obj);
 void track_object_kind(struct player_upkeep *upkeep, struct object_kind *kind);
-bool tracked_object_is(struct player_upkeep *upkeep, int item);
+bool tracked_object_is(struct player_upkeep *upkeep, struct object *obj);
 
 void notice_stuff(struct player_upkeep *upkeep);
 void update_stuff(struct player_upkeep *upkeep);

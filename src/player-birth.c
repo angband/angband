@@ -29,6 +29,7 @@
 #include "obj-identify.h"
 #include "obj-ignore.h"
 #include "obj-make.h"
+#include "obj-pile.h"
 #include "obj-power.h"
 #include "obj-randart.h"	
 #include "obj-tval.h"
@@ -396,10 +397,6 @@ void player_init(struct player *p)
 {
 	int i;
 
-	if (p->gear)
-		mem_free(p->gear);
-	if (p->gear)
-		mem_free(p->gear_k);
 	if (p->upkeep) {
 		if (p->upkeep->inven)
 			mem_free(p->upkeep->inven);
@@ -411,7 +408,7 @@ void player_init(struct player *p)
 		mem_free(p->timed);
 
 	/* Wipe the player */
-	(void)WIPE(p, struct player);
+	memset(p, 0, sizeof(struct player));
 
 	/* Start with no artifacts made yet */
 	for (i = 0; z_info && i < z_info->a_max; i++)
@@ -444,13 +441,9 @@ void player_init(struct player *p)
 	/* Always start with a well fed player (this is surely in the wrong fn) */
 	p->food = PY_FOOD_FULL - 1;
 
-
-	p->max_gear = MAX_GEAR;
-	p->gear = mem_zalloc(MAX_GEAR * sizeof(object_type));
-	p->gear_k = mem_zalloc(MAX_GEAR * sizeof(object_type));
 	p->upkeep = mem_zalloc(sizeof(player_upkeep));
-	p->upkeep->inven = mem_zalloc((z_info->pack_size + 1) * sizeof(int));
-	p->upkeep->quiver = mem_zalloc(z_info->quiver_size * sizeof(int));
+	p->upkeep->inven = mem_zalloc((z_info->pack_size + 1) * sizeof(struct object *));
+	p->upkeep->quiver = mem_zalloc(z_info->quiver_size * sizeof(struct object *));
 	p->timed = mem_zalloc(TMD_MAX * sizeof(s16b));
 
 	/* First turn. */
@@ -467,41 +460,57 @@ void player_init(struct player *p)
  */
 void wield_all(struct player *p)
 {
-	object_type *o_ptr;
-	object_type *i_ptr;
-
+	struct object *obj, *new_pile = NULL;
 	int slot;
-	int item;
 
-	/* Scan through the slots backwards */
-	for (item = p->max_gear - 1; item >= 0; item--)
-	{
-		o_ptr = &p->gear[item];
+	/* Scan through the slots */
+	for (obj = p->gear; obj; obj = obj->next) {
+		struct object *obj_temp;
 
 		/* Skip non-objects */
-		if (!o_ptr->kind) continue;
+		assert(obj);
 
 		/* Make sure we can wield it */
-		slot = wield_slot(o_ptr);
-		if (slot < 0 || slot >= p->body.count) continue;
+		slot = wield_slot(obj);
+		if (slot < 0 || slot >= p->body.count)
+			continue;
 
-		i_ptr = equipped_item_by_slot(p, slot);
-		if (i_ptr->kind)
+		obj_temp = slot_object(p, slot);
+		if (obj_temp)
 			continue;
 
 		/* Split if necessary */
-		if (o_ptr->number > 1) {
-			int new_item = gear_find_slot(p);
-			object_copy(&player->gear[new_item], o_ptr);
-			player->gear[new_item].number = o_ptr->number - 1;
-			o_ptr->number = 1;
+		if (obj->number > 1) {
+			/* All but one go to the new object */
+			struct object *new = mem_zalloc(sizeof(*new));
+			object_split(new, obj, obj->number - 1);
+
+			/* Add to the pile of new objects to carry */
+			new->next = new_pile;
+			new->prev = NULL;
+			if (new_pile)
+				new_pile->prev = new;
+			else
+				new_pile = new;
 		}
 
 		/* Wear the new stuff */
-		p->body.slots[slot].index = item;
+		p->body.slots[slot].obj = obj;
 
 		/* Increment the equip counter by hand */
 		p->upkeep->equip_cnt++;
+	}
+
+	/* Now add the unwielded split objects to the gear */
+	if (new_pile) {
+		obj = gear_last_item();
+		if (obj) {
+			obj->next = new_pile;
+			new_pile->prev = obj;
+		} else {
+			/* This should be impossible */
+			p->gear = new_pile;
+		}
 	}
 
 	return;
@@ -515,15 +524,16 @@ void wield_all(struct player *p)
  */
 static void player_outfit(struct player *p)
 {
+	char buf[80];
 	int i;
 	const struct start_item *si;
-	object_type object_type_body;
 
 	/* Player needs a body */
 	memcpy(&p->body, &bodies[p->race->body], sizeof(p->body));
+	my_strcpy(buf, bodies[p->race->body].name, sizeof(buf));
+	p->body.name = string_make(buf);
 	p->body.slots = mem_zalloc(p->body.count * sizeof(struct equip_slot));
 	for (i = 0; i < p->body.count; i++) {
-		char buf[80];
 		p->body.slots[i].type = bodies[p->race->body].slots[i].type;
 		my_strcpy(buf, bodies[p->race->body].slots[i].name, sizeof(buf));
 		p->body.slots[i].name = string_make(buf);
@@ -533,10 +543,9 @@ static void player_outfit(struct player *p)
 	p->upkeep->total_weight = 0;
 
 	/* Give the player starting equipment */
-	for (si = p->class->start_items; si; si = si->next)
-	{
+	for (si = p->class->start_items; si; si = si->next) {
 		/* Get local object */
-		struct object *i_ptr = &object_type_body;
+		struct object *obj = mem_zalloc(sizeof(*obj));
 		int num = rand_range(si->min, si->max);
 
 		/* Without start_kit, only start with 1 food and 1 light */
@@ -548,18 +557,18 @@ static void player_outfit(struct player *p)
 		}
 
 		/* Prepare the item */
-		object_prep(i_ptr, si->kind, 0, MINIMISE);
-		i_ptr->number = num;
-		i_ptr->origin = ORIGIN_BIRTH;
+		object_prep(obj, si->kind, 0, MINIMISE);
+		obj->number = num;
+		obj->origin = ORIGIN_BIRTH;
 
-		object_flavor_aware(i_ptr);
-		object_notice_everything(i_ptr);
+		object_flavor_aware(obj);
+		object_notice_everything(obj);
 
-		inven_carry(p, i_ptr);
+		inven_carry(p, obj, FALSE);
 		si->kind->everseen = TRUE;
 
 		/* Deduct the cost of the item from starting cash */
-		p->au -= object_value(i_ptr, i_ptr->number, FALSE);
+		p->au -= object_value(obj, obj->number, FALSE);
 	}
 
 	/* Sanity check */

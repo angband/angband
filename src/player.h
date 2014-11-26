@@ -149,7 +149,7 @@ typedef struct player {
 	struct object *gear;
 	/* Known gear */
 	struct object *gear_k;
-	int max_gear;
+
 	struct player_body body;
 } player_type;
 

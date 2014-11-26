@@ -1,6 +1,6 @@
 /**
-   \file obj-desc.c
-   \brief Create object name descriptions
+ * \file obj-desc.c
+ * \brief Create object name descriptions
  *
  * Copyright (c) 1997 - 2007 Angband contributors
  *
@@ -680,7 +680,7 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr, int mode)
 	size_t end = 0;
 
 	/* Simple description for null item */
-	if (!o_ptr->tval)
+	if (!o_ptr)
 		return strnfmt(buf, max, "(nothing)");
 
 	known = object_is_known(o_ptr) || spoil;

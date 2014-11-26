@@ -30,6 +30,7 @@
 #include "obj-ignore.h"
 #include "obj-info.h"
 #include "obj-make.h"
+#include "obj-pile.h"
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "object.h"
@@ -1423,23 +1424,22 @@ static void display_artifact(int col, int row, bool cursor, int oid)
 	c_prt(attr, o_name, row, col);
 }
 
-static object_type *find_artifact(struct artifact *artifact)
+/* Look for an artifact, either on the ground, in inventory or store */
+static struct object *find_artifact(struct artifact *artifact)
 {
-	int i;
+	int i, y, x;
+	struct object *obj;
 	struct store *s;
 
-	/* Look for the artifact, either in inventory, store or the object list */
-	for (i = 1; i < cave_object_max(cave); i++)
-	{
-		if (cave_object(cave, i)->artifact == artifact)
-			return cave_object(cave, i);
-	}
+	for (y = 1; y < cave->height; y++)
+		for (x = 1; x < cave->width; x++)
+			for (obj = square_object(cave, y, x); obj; obj = obj->next)
+				if (obj->artifact == artifact)
+					return obj;
 
-	for (i = 0; i < player->max_gear; i++)
-	{
-		if (player->gear[i].artifact == artifact)
-			return &player->gear[i];
-	}
+	for (obj = player->gear; obj; obj = obj->next)
+		if (obj->artifact == artifact)
+			return obj;
 
 	for (s = stores; s; s = s->next)
 		for (i = 0; i < s->stock_size; i++)
@@ -1772,9 +1772,9 @@ static void display_object(int col, int row, bool cursor, int oid)
  */
 static void desc_obj_fake(int k_idx)
 {
-	object_kind *kind = &k_info[k_idx];
-	object_type object_type_body;
-	object_type *o_ptr = &object_type_body;
+	struct object_kind *kind = &k_info[k_idx];
+	struct object object_type_body;
+	struct object *o_ptr = &object_type_body;
 
 	char header[120];
 
@@ -1812,6 +1812,7 @@ static void desc_obj_fake(int k_idx)
 			ODESC_PREFIX | ODESC_FULL | ODESC_CAPITAL);
 
 	textui_textblock_show(tb, area, header);
+	object_free(o_ptr);
 	textblock_free(tb);
 }
 

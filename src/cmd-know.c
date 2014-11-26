@@ -429,11 +429,11 @@ void do_cmd_messages(void)
  */
 void do_cmd_inven(void)
 {
-	int item;
+	struct object *obj;
 	int ret = 3;
 	int diff = weight_remaining();
 
-	if (player->upkeep->inven[0] == NO_OBJECT) {
+	if (player->upkeep->inven[0] == NULL) {
 		msg("You have nothing in your inventory.");
 		return;
 	}
@@ -454,19 +454,15 @@ void do_cmd_inven(void)
 			        (diff < 0 ? "overweight" : "remaining")), 0, 0);
 
 		/* Get an item to use a context command on (Display the inventory) */
-		if (get_item(&item, NULL, NULL, CMD_NULL, NULL, GET_ITEM_PARAMS)) {
-			object_type *o_ptr;
-
+		if (get_item(&obj, NULL, NULL, CMD_NULL, NULL, GET_ITEM_PARAMS)) {
 			/* Load screen */
 			screen_load();
 
-			o_ptr = object_from_item_idx(item);
+			if (obj && obj->kind) {
+				/* Track the object */
+				track_object(player->upkeep, obj);
 
-			if (o_ptr && o_ptr->kind) {
-				/* Track the object kind */
-				track_object(player->upkeep, item);
-
-				while ((ret = context_menu_object(o_ptr, item)) == 2);
+				while ((ret = context_menu_object(obj)) == 2);
 			}
 		} else {
 			/* Load screen */
@@ -483,7 +479,7 @@ void do_cmd_inven(void)
  */
 void do_cmd_equip(void)
 {
-	int item;
+	struct object *obj;
 	int ret = 3;
 
 	if (!player->upkeep->equip_cnt) {
@@ -500,19 +496,15 @@ void do_cmd_equip(void)
 		screen_save();
 
 		/* Get an item to use a context command on (Display the inventory) */
-		if (get_item(&item, "Select Item:", NULL, CMD_NULL, NULL, GET_ITEM_PARAMS)) {
-			object_type *o_ptr;
-
+		if (get_item(&obj, "Select Item:", NULL, CMD_NULL, NULL, GET_ITEM_PARAMS)) {
 			/* Load screen */
 			screen_load();
 
-			o_ptr = object_from_item_idx(item);
+			if (obj && obj->kind) {
+				/* Track the object */
+				track_object(player->upkeep, obj);
 
-			if (o_ptr && o_ptr->kind) {
-				/* Track the object kind */
-				track_object(player->upkeep, item);
-
-				while ((ret = context_menu_object(o_ptr, item)) == 2);
+				while ((ret = context_menu_object(obj)) == 2);
 			}
 		} else {
 			/* Load screen */

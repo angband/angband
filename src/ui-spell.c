@@ -265,35 +265,34 @@ void textui_book_browse(const object_type *o_ptr)
  */
 void textui_spell_browse(void)
 {
-	int item;
+	struct object *obj;
 
-	if (!get_item(&item, "Browse which book? ",
+	if (!get_item(&obj, "Browse which book? ",
 			"You have no books that you can read.",
 			CMD_BROWSE_SPELL, obj_can_browse, (USE_INVEN | USE_FLOOR | IS_HARMLESS)))
 		return;
 
 	/* Track the object kind */
-	track_object(player->upkeep, item);
+	track_object(player->upkeep, obj);
 	handle_stuff(player->upkeep);
 
-	textui_book_browse(object_from_item_idx(item));
+	textui_book_browse(obj);
 }
 
 /**
  * Get a spell from specified book.
  */
-int get_spell_from_book(const char *verb, int book,
+int get_spell_from_book(const char *verb, struct object *book,
 		const char *error, bool (*spell_filter)(int spell))
 {
 	const char *noun = player->class->magic.spell_realm->spell_noun;
 
 	menu_type *m;
-	struct object *o_ptr = object_from_item_idx(book);
 
 	track_object(player->upkeep, book);
 	handle_stuff(player->upkeep);
 
-	m = spell_menu_new(o_ptr, spell_filter);
+	m = spell_menu_new(book, spell_filter);
 	if (m) {
 		int spell = spell_menu_select(m, noun, verb);
 		spell_menu_destroy(m);
@@ -310,7 +309,7 @@ int get_spell(const char *verb, item_tester book_filter,
 		cmd_code cmd, const char *error, bool (*spell_filter)(int spell))
 {
 	char prompt[1024];
-	int book;
+	struct object *book;
 
 	/* Create prompt */
 	strnfmt(prompt, sizeof prompt, "%s which book?", verb);

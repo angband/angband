@@ -537,7 +537,7 @@ static void run_init(int dir)
 }
 
 
-/*
+/**
  * Update the current "run" path
  *
  * Return TRUE if the running should be stopped
@@ -568,10 +568,8 @@ static bool run_test(void)
 
 
 	/* Look at every newly adjacent square. */
-	for (i = -max; i <= max; i++)
-	{
-		object_type *o_ptr;
-
+	for (i = -max; i <= max; i++) {
+		struct object *obj;
 
 		/* New direction */
 		new_dir = cycle[chome[prev_dir] + i];
@@ -582,8 +580,7 @@ static bool run_test(void)
 
 
 		/* Visible monsters abort running */
-		if (cave->squares[row][col].mon > 0)
-		{
+		if (cave->squares[row][col].mon > 0) {
 			monster_type *m_ptr = square_monster(cave, row, col);
 
 			/* Visible monster */
@@ -591,19 +588,15 @@ static bool run_test(void)
 		}
 
 		/* Visible objects abort running */
-		for (o_ptr = get_first_object(row, col); o_ptr; o_ptr = get_next_object(o_ptr))
-		{
+		for (obj = square_object(cave, row, col); obj; obj = obj->next)
 			/* Visible object */
-			if (o_ptr->marked && !ignore_item_ok(o_ptr)) return (TRUE);
-		}
-
+			if (obj->marked && !ignore_item_ok(obj)) return (TRUE);
 
 		/* Assume unknown */
 		inv = TRUE;
 
 		/* Check memorized grids */
-		if (square_ismark(cave, row, col))
-		{
+		if (square_ismark(cave, row, col)) {
 			bool notice = square_noticeable(cave, row, col);
 
 			/* Interesting feature */
@@ -614,59 +607,33 @@ static bool run_test(void)
 		}
 
 		/* Analyze unknown grids and floors */
-		if (inv || square_ispassable(cave, row, col))
-		{
+		if (inv || square_ispassable(cave, row, col)) {
 			/* Looking for open area */
-			if (run_open_area)
-			{
+			if (run_open_area) {
 				/* Nothing */
-			}
-
-			/* The first new direction. */
-			else if (!option)
-			{
+			} else if (!option) {
+				/* The first new direction. */
 				option = new_dir;
-			}
-
-			/* Three new directions. Stop running. */
-			else if (option2)
-			{
+			} else if (option2) {
+				/* Three new directions. Stop running. */
 				return (TRUE);
-			}
-
-			/* Two non-adjacent new directions.  Stop running. */
-			else if (option != cycle[chome[prev_dir] + i - 1])
-			{
+			} else if (option != cycle[chome[prev_dir] + i - 1]) {
+				/* Two non-adjacent new directions.  Stop running. */
 				return (TRUE);
-			}
-
-			/* Two new (adjacent) directions (case 1) */
-			else if (new_dir & 0x01)
-			{
+			} else if (new_dir & 0x01) {
+				/* Two new (adjacent) directions (case 1) */
 				option2 = new_dir;
-			}
-
-			/* Two new (adjacent) directions (case 2) */
-			else
-			{
+			} else {
+				/* Two new (adjacent) directions (case 2) */
 				option2 = option;
 				option = new_dir;
 			}
-		}
-
-		/* Obstacle, while looking for open area */
-		else
-		{
-			if (run_open_area)
-			{
-				if (i < 0)
-				{
+		} else { /* Obstacle, while looking for open area */
+			if (run_open_area) {
+				if (i < 0) {
 					/* Break to the right */
 					run_break_right = TRUE;
-				}
-
-				else if (i > 0)
-				{
+				} else if (i > 0) {
 					/* Break to the left */
 					run_break_left = TRUE;
 				}
@@ -676,8 +643,7 @@ static bool run_test(void)
 
 
 	/* Look at every soon to be newly adjacent square. */
-	for (i = -max; i <= max; i++)
-	{		
+	for (i = -max; i <= max; i++) {		
 		/* New direction */
 		new_dir = cycle[chome[prev_dir] + i];
 		
@@ -691,8 +657,7 @@ static bool run_test(void)
 		if (row < 0 || col < 0) continue;
 
 		/* Visible monsters abort running */
-		if (cave->squares[row][col].mon > 0)
-		{
+		if (cave->squares[row][col].mon > 0) {
 			monster_type *m_ptr = square_monster(cave, row, col);
 			
 			/* Visible monster */
@@ -702,11 +667,9 @@ static bool run_test(void)
 	}
 
 	/* Looking for open area */
-	if (run_open_area)
-	{
+	if (run_open_area) {
 		/* Hack -- look again */
-		for (i = -max; i < 0; i++)
-		{
+		for (i = -max; i < 0; i++) {
 			new_dir = cycle[chome[prev_dir] + i];
 
 			row = py + ddy[new_dir];
@@ -717,26 +680,19 @@ static bool run_test(void)
 			if (!square_ismark(cave, row, col) ||
 			    (square_ispassable(cave, row, col))) {
 				/* Looking to break right */
-				if (run_break_right)
-				{
+				if (run_break_right) {
 					return (TRUE);
 				}
-			}
-
-			/* Obstacle */
-			else
-			{
+			} else { /* Obstacle */
 				/* Looking to break left */
-				if (run_break_left)
-				{
+				if (run_break_left) {
 					return (TRUE);
 				}
 			}
 		}
 
 		/* Hack -- look again */
-		for (i = max; i > 0; i--)
-		{
+		for (i = max; i > 0; i--) {
 			new_dir = cycle[chome[prev_dir] + i];
 
 			row = py + ddy[new_dir];
@@ -747,47 +703,27 @@ static bool run_test(void)
 			if (!square_ismark(cave, row, col) ||
 			    (square_ispassable(cave, row, col))) {
 				/* Looking to break left */
-				if (run_break_left)
-				{
+				if (run_break_left) {
 					return (TRUE);
 				}
-			}
-
-			/* Obstacle */
-			else
-			{
+			} else { /* Obstacle */
 				/* Looking to break right */
-				if (run_break_right)
-				{
+				if (run_break_right) {
 					return (TRUE);
 				}
 			}
 		}
-	}
-
-
-	/* Not looking for open area */
-	else
-	{
+	} else { /* Not looking for open area */
 		/* No options */
-		if (!option)
-		{
+		if (!option) {
 			return (TRUE);
-		}
-
-		/* One option */
-		else if (!option2)
-		{
+		} else if (!option2) { /* One option */
 			/* Primary option */
 			run_cur_dir = option;
 
 			/* No other options */
 			run_old_dir = option;
-		}
-
-		/* Two options, examining corners */
-		else
-		{
+		} else { /* Two options, examining corners */
 			/* Primary option */
 			run_cur_dir = option;
 
@@ -799,9 +735,7 @@ static bool run_test(void)
 
 	/* About to hit a known wall, stop */
 	if (see_wall(run_cur_dir, py, px))
-	{
 		return (TRUE);
-	}
 
 
 	/* Failure */

@@ -24,6 +24,7 @@
 #include "obj-desc.h"
 #include "obj-gear.h"
 #include "obj-identify.h"
+#include "obj-pile.h"
 #include "obj-tval.h"
 #include "obj-ui.h"
 #include "obj-util.h"
@@ -81,11 +82,11 @@ wchar_t object_char(const struct object *o_ptr)
 }
 
 /**
- * Convert a label into the gear index of an item in the inventory.
+ * Convert a label into an item in the inventory.
  *
- * Return "-1" if the label does not indicate a real item.
+ * Return NULL if the label does not indicate a real item.
  */
-s16b label_to_inven(int c)
+struct object *label_to_inven(int c)
 {
 	int i;
 
@@ -93,22 +94,19 @@ s16b label_to_inven(int c)
 	i = (islower((unsigned char)c) ? A2I(c) : -1);
 
 	/* Verify the index */
-	if ((i < 0) || (i > z_info->pack_size)) return (-1);
+	if ((i < 0) || (i > z_info->pack_size)) return NULL;
 
-	/* Empty slots can never be chosen */
-	if (!player->gear[player->upkeep->inven[i]].kind) return (-1);
-
-	/* Return the index */
-	return (player->upkeep->inven[i]);
+	/* Return the object */
+	return player->upkeep->inven[i];
 }
 
 
 /**
- * Convert a label into the gear index of an item in the equipment or quiver.
+ * Convert a label into an item in the equipment.
  *
- * Return "-1" if the label does not indicate a real item.
+ * Return NULL if the label does not indicate a real item.
  */
-s16b label_to_equip(int c)
+struct object *label_to_equip(int c)
 {
 	int i;
 
@@ -117,22 +115,19 @@ s16b label_to_equip(int c)
 
 	/* Verify the index */
 	if ((i < 0) || (i >= player->body.count))
-		return (-1);
+		return NULL;
 
-	/* Empty slots can never be chosen */
-	if (!equipped_item_by_slot(player, i)->kind)
-		return (-1);
-
-	return object_gear_index(player, equipped_item_by_slot(player, i));
+	/* Return the object */
+	return slot_object(player, i);
 }
 
 
 /**
- * Convert a label into the gear index of an item in the equipment or quiver.
+ * Convert a label into an item in the equipment or quiver.
  *
- * Return "-1" if the label does not indicate a real item.
+ * Return NULL if the label does not indicate a real item.
  */
-s16b label_to_quiver(int c)
+struct object *label_to_quiver(int c)
 {
 	int i;
 
@@ -141,10 +136,7 @@ s16b label_to_quiver(int c)
 
 	/* Verify the index */
 	if ((i < 0) || (i >= z_info->quiver_size))
-		return (-1);
-
-	/* Empty slots can never be chosen */
-	if (!player->gear[player->upkeep->quiver[i]].kind) return (-1);
+		return NULL;
 
 	/* Return the index */
 	return player->upkeep->quiver[i];
@@ -158,14 +150,14 @@ s16b label_to_quiver(int c)
  * documented in object.h
  */
 static void show_obj_list(int num_obj, int num_head, char labels[50][80],
-						  object_type *objects[50], olist_detail_t mode)
+						  struct object *objects[50], olist_detail_t mode)
 {
 	int i, row = 0, col = 0;
 	int attr;
 	size_t max_len = 0;
 	int ex_width = 0, ex_offset, ex_offset_ctr;
 
-	object_type *o_ptr;
+	struct object *obj;
 	char o_name[50][80];
 	char tmp_val[80];
 	
@@ -179,20 +171,20 @@ static void show_obj_list(int num_obj, int num_head, char labels[50][80],
 
 	/* Calculate name offset and max name length */
 	for (i = 0; i < num_obj; i++) {
-		o_ptr = objects[i];
+		obj = objects[i];
 
 		/* Null objects are used to skip lines, or display only a label */		
-		if (!o_ptr || !o_ptr->kind) {
+		if (!obj) {
 			if ((i < num_head) || !strcmp(labels[i], "In quiver"))
 				strnfmt(o_name[i], sizeof(o_name[i]), "");
 			else
 				strnfmt(o_name[i], sizeof(o_name[i]), "(nothing)");
 		} else {
 			if (terse)
-				object_desc(o_name[i], sizeof(o_name[i]), o_ptr,
+				object_desc(o_name[i], sizeof(o_name[i]), obj,
 							ODESC_PREFIX | ODESC_FULL | ODESC_TERSE);
 			else
-				object_desc(o_name[i], sizeof(o_name[i]), o_ptr,
+				object_desc(o_name[i], sizeof(o_name[i]), obj,
 							ODESC_PREFIX | ODESC_FULL);
 		}
 
@@ -227,7 +219,7 @@ static void show_obj_list(int num_obj, int num_head, char labels[50][80],
 
 	/* Output the list */
 	for (i = 0; i < num_obj; i++) {
-		o_ptr = objects[i];
+		obj = objects[i];
 		
 		/* Clear the line */
 		prt("", row + i, MAX(col - 2, 0));
@@ -250,8 +242,8 @@ static void show_obj_list(int num_obj, int num_head, char labels[50][80],
 		}
 		
 		/* Item kind determines the color of the output */
-		if (o_ptr && o_ptr->kind)
-			attr = o_ptr->kind->base->attr;
+		if (obj)
+			attr = obj->kind->base->attr;
 		else
 			attr = TERM_SLATE;
 
@@ -259,7 +251,7 @@ static void show_obj_list(int num_obj, int num_head, char labels[50][80],
 		c_put_str(attr, o_name[i], row + i, col + strlen(labels[i]));
 
 		/* If we don't have an object, we can skip the rest of the output */
-		if (!(o_ptr && o_ptr->kind)) continue;
+		if (!obj) continue;
 
 		/* Extra fields */
 		ex_offset_ctr = ex_offset;
@@ -267,7 +259,7 @@ static void show_obj_list(int num_obj, int num_head, char labels[50][80],
 		if (mode & OLIST_PRICE) {
 			struct store *store = store_at(cave, player->py, player->px);
 			if (store) {
-				int price = price_item(store, o_ptr, TRUE, o_ptr->number);
+				int price = price_item(store, obj, TRUE, obj->number);
 
 				strnfmt(tmp_val, sizeof(tmp_val), "%6d au", price);
 				put_str(tmp_val, row + i, col + ex_offset_ctr);
@@ -275,9 +267,9 @@ static void show_obj_list(int num_obj, int num_head, char labels[50][80],
 			}
 		}
 
-		if (mode & OLIST_FAIL && obj_can_fail(o_ptr)) {
-			int fail = (9 + get_use_device_chance(o_ptr)) / 10;
-			if (object_effect_is_known(o_ptr))
+		if (mode & OLIST_FAIL && obj_can_fail(obj)) {
+			int fail = (9 + get_use_device_chance(obj)) / 10;
+			if (object_effect_is_known(obj))
 				strnfmt(tmp_val, sizeof(tmp_val), "%4d%% fail", fail);
 			else
 				my_strcpy(tmp_val, "    ? fail", sizeof(tmp_val));
@@ -286,7 +278,7 @@ static void show_obj_list(int num_obj, int num_head, char labels[50][80],
 		}
 
 		if (mode & OLIST_WEIGHT) {
-			int weight = o_ptr->weight * o_ptr->number;
+			int weight = obj->weight * obj->number;
 			strnfmt(tmp_val, sizeof(tmp_val), "%4d.%1d lb",
 					weight / 10, weight % 10);
 			put_str(tmp_val, row + i, col + ex_offset_ctr);
@@ -302,7 +294,7 @@ static void show_obj_list(int num_obj, int num_head, char labels[50][80],
 		/* Quiver may take multiple lines */
 		for (j = 0; j < quiver_slots; j++, i++) {
 			const char *fmt = "in Quiver: %d missile%s";
-			char letter = inven_to_label(in_term ? i - 1 : i);
+			char letter = I2A(in_term ? i - 1 : i);
 
 			/* Number of missiles in this "slot" */
 			if (j == quiver_slots - 1)
@@ -371,12 +363,11 @@ void show_inven(int mode, item_tester tester)
 
 	/* Build the object list */
 	for (i = 0; i <= last_slot; i++) {
-		o_ptr = &player->gear[player->upkeep->inven[i]];
+		o_ptr = player->upkeep->inven[i];
 
 		/* Acceptable items get a label */
 		if (object_test(tester, o_ptr))
-			strnfmt(labels[num_obj], sizeof(labels[num_obj]), "%c) ",
-					inven_to_label(i));
+			strnfmt(labels[num_obj], sizeof(labels[num_obj]), "%c) ", I2A(i));
 
 		/* Unacceptable items are still sometimes shown */
 		else if (in_term)
@@ -408,26 +399,25 @@ void show_quiver(int mode, item_tester tester)
 {
 	int i, last_slot = -1;
 
-	object_type *o_ptr;
+	struct object *obj;
 
 	int num_obj = 0;
 	char labels[50][80];
-	object_type *objects[50];
+	struct object *objects[50];
 
 	bool in_term = (mode & OLIST_WINDOW) ? TRUE : FALSE;
 
 	/* Find the last occupied quiver slot */
 	for (i = 0; i < z_info->quiver_size; i++)
-		if (player->upkeep->quiver[i] != NO_OBJECT) last_slot = i;
+		if (player->upkeep->quiver[i] != NULL) last_slot = i;
 
 	/* Build the object list */
 	for (i = 0; i <= last_slot; i++) {
-		o_ptr = &player->gear[player->upkeep->quiver[i]];
+		obj = player->upkeep->quiver[i];
 
 		/* Acceptable items get a label */
-		if (object_test(tester, o_ptr))
-			strnfmt(labels[num_obj], sizeof(labels[num_obj]), "%c) ",
-					quiver_to_label(i));
+		if (object_test(tester, obj))
+			strnfmt(labels[num_obj], sizeof(labels[num_obj]), "%c) ", I2A(i));
 
 		/* Unacceptable items are still sometimes shown */
 		else if (in_term)
@@ -437,7 +427,7 @@ void show_quiver(int mode, item_tester tester)
 		else continue;
 
 		/* Save the object */
-		objects[num_obj] = o_ptr;
+		objects[num_obj] = obj;
 		num_obj++;
 	}
 
@@ -455,11 +445,11 @@ void show_equip(int mode, item_tester tester)
 {
 	int i;
 
-	object_type *o_ptr;
+	struct object *obj;
 
 	int num_obj = 0;
 	char labels[50][80];
-	object_type *objects[50];
+	struct object *objects[50];
 
 	char tmp_val[80];
 
@@ -468,15 +458,14 @@ void show_equip(int mode, item_tester tester)
 
 	/* Build the object list */
 	for (i = 0; i < player->body.count; i++) {
-		o_ptr = equipped_item_by_slot(player, i);
+		obj = slot_object(player, i);
 
 		/* Acceptable items get a label */
-		if (object_test(tester, o_ptr))
-			strnfmt(labels[num_obj], sizeof(labels[num_obj]), "%c) ",
-					equip_to_label(i));
+		if (object_test(tester, obj))
+			strnfmt(labels[num_obj], sizeof(labels[num_obj]), "%c) ", I2A(i));
 
 		/* Unacceptable items are still sometimes shown */
-		else if ((!o_ptr->kind && show_empty) || in_term)
+		else if ((!obj && show_empty) || in_term)
 			my_strcpy(labels[num_obj], "   ", sizeof(labels[num_obj]));
 
 		/* Unacceptable items are skipped in the main window */
@@ -488,7 +477,7 @@ void show_equip(int mode, item_tester tester)
 		my_strcat(labels[num_obj], tmp_val, sizeof(labels[num_obj]));
 
 		/* Save the object */
-		objects[num_obj] = o_ptr;
+		objects[num_obj] = obj;
 		num_obj++;
 	}
 
@@ -506,12 +495,12 @@ void show_equip(int mode, item_tester tester)
 
 		/* Extend the object list */
 		for (i = 0; i <= last_slot; i++) {
-			o_ptr = &player->gear[player->upkeep->quiver[i]];
+			obj = player->upkeep->quiver[i];
 
 			/* Acceptable items get a label */
-			if (object_test(tester, o_ptr))
+			if (object_test(tester, obj))
 				strnfmt(labels[num_obj], sizeof(labels[num_obj]), "%c) ",
-						quiver_to_label(i));
+						I2A(i));
 
 			/* Unacceptable items are still sometimes shown */
 			else if (in_term)
@@ -525,7 +514,7 @@ void show_equip(int mode, item_tester tester)
 			my_strcat(labels[num_obj], tmp_val, sizeof(labels[num_obj]));
 
 			/* Save the object */
-			objects[num_obj] = o_ptr;
+			objects[num_obj] = obj;
 			num_obj++;
 		}
 	}
@@ -540,35 +529,34 @@ void show_equip(int mode, item_tester tester)
  * off to show_obj_list() for display.  Mode flags documented in
  * object.h
  */
-void show_floor(const int *floor_list, int floor_num, int mode, item_tester tester)
+void show_floor(struct object **floor_list, int floor_num, int mode, item_tester tester)
 {
 	int i;
 
-	object_type *o_ptr;
+	struct object *obj;
 
 	int num_obj = 0;
 	char labels[50][80];
-	object_type *objects[50];
+	struct object *objects[50];
 
 	if (floor_num > z_info->floor_size)
 		floor_num = z_info->floor_size;
 
 	/* Build the object list */
 	for (i = 0; i < floor_num; i++) {
-		o_ptr = cave_object(cave, floor_list[i]);
+		obj = (struct object *) floor_list[i];
 
 		/* Tester always skips gold. When gold should be displayed,
 		 * only test items that are not gold.
 		 */
-		if ((!tval_is_money(o_ptr) || !(mode & OLIST_GOLD)) &&
-		    !object_test(tester, o_ptr))
+		if ((!tval_is_money(obj) || !(mode & OLIST_GOLD)) &&
+		    !object_test(tester, obj))
 			continue;
 
-		strnfmt(labels[num_obj], sizeof(labels[num_obj]),
-		        "%c) ", floor_to_label(i));
+		strnfmt(labels[num_obj], sizeof(labels[num_obj]), "%c) ", I2A(i));
 
 		/* Save the object */
-		objects[num_obj] = o_ptr;
+		objects[num_obj] = obj;
 		num_obj++;
 	}
 
@@ -582,23 +570,14 @@ void show_floor(const int *floor_list, int floor_num, int mode, item_tester test
  *
  * The item can be negative to mean "item on floor".
  */
-bool verify_item(const char *prompt, int item)
+bool verify_object(const char *prompt, struct object *obj)
 {
 	char o_name[80];
 
 	char out_val[160];
 
-	object_type *o_ptr;
-
-	if (item >= 0)
-		/* Gear */
-		o_ptr = &player->gear[item];
-	else
-		/* Floor */
-		o_ptr = cave_object(cave, 0 - item);
-
 	/* Describe */
-	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
+	object_desc(o_name, sizeof(o_name), obj, ODESC_PREFIX | ODESC_FULL);
 
 	/* Prompt */
 	strnfmt(out_val, sizeof(out_val), "%s %s? ", prompt, o_name);
@@ -613,18 +592,12 @@ bool verify_item(const char *prompt, int item)
  *
  * The item can be negative to mean "item on floor".
  */
-bool get_item_allow(int item, unsigned char ch, cmd_code cmd, bool is_harmless)
+bool get_item_allow(const struct object *obj, unsigned char ch, cmd_code cmd,
+					bool is_harmless)
 {
-	object_type *o_ptr;
 	char verify_inscrip[] = "!*";
 
 	unsigned n;
-
-	/* Inventory or floor */
-	if (item >= 0)
-		o_ptr = &player->gear[item];
-	else
-		o_ptr = cave_object(cave, 0 - item);
 
 	/* Hack - Only shift the command key if it actually needs to be shifted. */
 	if (ch < 0x20)
@@ -634,11 +607,11 @@ bool get_item_allow(int item, unsigned char ch, cmd_code cmd, bool is_harmless)
 	verify_inscrip[1] = ch;
 
 	/* Look for the inscription */
-	n = check_for_inscrip(o_ptr, verify_inscrip);
+	n = check_for_inscrip(obj, verify_inscrip);
 
 	/* Also look for for the inscription '!*' */
 	if (!is_harmless)
-		n += check_for_inscrip(o_ptr, "!*");
+		n += check_for_inscrip(obj, "!*");
 
 	/* Choose string for the prompt */
 	if (n) {
@@ -650,9 +623,9 @@ bool get_item_allow(int item, unsigned char ch, cmd_code cmd, bool is_harmless)
 
 		strnfmt(prompt, sizeof(prompt), "Really %s", verb);
 
-		/* Promt for confirmation n times */
+		/* Prompt for confirmation n times */
 		while (n--) {
-			if (!verify_item(prompt, item))
+			if (!verify_object(prompt, (struct object *) obj))
 				return (FALSE);
 		}
 	}
@@ -673,34 +646,34 @@ bool get_item_allow(int item, unsigned char ch, cmd_code cmd, bool is_harmless)
  * Also, the tag "@xn" will work as well, where "n" is a tag-char,
  * and "x" is the action that tag will work for.
  */
-static int get_tag(int *cp, char tag, cmd_code cmd, bool quiver_tags)
+static int get_tag(struct object **tagged_obj, char tag, cmd_code cmd,
+				   bool quiver_tags)
 {
 	int i;
+	struct object *obj;
 	const char *s;
 	int mode = OPT(rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
 
 	/* (f)ire is handled differently from all others, due to the quiver */
 	if (quiver_tags) {
 		i = tag - '0';
-		if (player->upkeep->quiver[i] != NO_OBJECT) {
-			*cp = player->upkeep->quiver[i];
-			return (TRUE);
+		if (player->upkeep->quiver[i]) {
+			*tagged_obj = player->upkeep->quiver[i];
+			return TRUE;
 		}
-		return (FALSE);
+		return FALSE;
 	}
 
 	/* Check every object */
-	for (i = 0; i < player->max_gear; ++i) {
-		object_type *o_ptr = &player->gear[i];
-
+	for (obj = player->gear; obj; obj = obj->next) {
 		/* Skip non-objects */
-		if (!o_ptr->kind) continue;
+		assert(obj->kind);
 
 		/* Skip empty inscriptions */
-		if (!o_ptr->note) continue;
+		if (!obj->note) continue;
 
 		/* Find a '@' */
-		s = strchr(quark_str(o_ptr->note), '@');
+		s = strchr(quark_str(obj->note), '@');
 
 		/* Process all tags */
 		while (s) {
@@ -708,11 +681,11 @@ static int get_tag(int *cp, char tag, cmd_code cmd, bool quiver_tags)
 
 			/* Check the normal tags */
 			if (s[1] == tag) {
-				/* Save the actual inventory ID */
-				*cp = i;
+				/* Save the actual object */
+				*tagged_obj = obj;
 
 				/* Success */
-				return (TRUE);
+				return TRUE;
 			}
 
 			cmdkey = cmd_lookup_key(cmd, mode);
@@ -724,10 +697,10 @@ static int get_tag(int *cp, char tag, cmd_code cmd, bool quiver_tags)
 			/* Check the special tags */
 			if ((s[1] == cmdkey) && (s[2] == tag)) {
 				/* Save the actual inventory ID */
-				*cp = i;
+				*tagged_obj = obj;
 
 				/* Success */
-				return (TRUE);
+				return TRUE;
 			}
 
 			/* Find another '@' */
@@ -736,13 +709,13 @@ static int get_tag(int *cp, char tag, cmd_code cmd, bool quiver_tags)
 	}
 
 	/* No such tag */
-	return (FALSE);
+	return FALSE;
 }
 
 
 
 /**
- * Let the user select an item, save its gear array index
+ * Let the user select an object, save its address
  *
  * Return TRUE only if an acceptable item was chosen by the user.
  *
@@ -762,19 +735,15 @@ static int get_tag(int *cp, char tag, cmd_code cmd, bool quiver_tags)
  * use of "capital" letters will "examine" an inventory/equipment item,
  * and prompt for its use.
  *
- * If a legal item index is selected from the gear, we save it in "cp"
- * directly and return TRUE.
+ * If a legal item is selected , we save it in "obj" and return TRUE.
  *
- * If a legal item is selected from the floor, we save it in "cp" as
- * a negative (-1 to -511), and return TRUE.
- *
- * If no item is available, we do nothing to "cp", and we display a
+ * If no item is available, we do nothing to "obj", and we display a
  * warning message, using "str" if available, and return FALSE.
  *
- * If no item is selected, we do nothing to "cp", and return FALSE.
+ * If no item is selected, we do nothing to "obj", and return FALSE.
  *
  * Global "player->upkeep->command_wrk" is used to choose between
- * equip/inven/floor listings.  It is equal to USE_INVEN or USE_EQUIP or
+ * equip/inven/quiver/floor listings.  It is equal to USE_INVEN or USE_EQUIP or
  * USE_QUIVER or USE_FLOOR, except when this function is first called, when it
  * is equal to zero, which will cause it to be set to USE_INVEN.
  *
@@ -784,8 +753,8 @@ static int get_tag(int *cp, char tag, cmd_code cmd, bool quiver_tags)
  * Note that only "acceptable" floor objects get indexes, so between two
  * commands, the indexes of floor objects may change.  XXX XXX XXX
  */
-bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, 
-			  item_tester tester, int mode)
+bool get_item(struct object **choice, const char *pmt, const char *str,
+			  cmd_code cmd, item_tester tester, int mode)
 {
 	int py = player->py;
 	int px = player->px;
@@ -794,7 +763,8 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd,
 
 	ui_event press;
 
-	int j, k;
+	int j;
+	struct object *obj;
 
 	int i1, i2;
 	int e1, e2;
@@ -825,7 +795,7 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd,
 	char out_val[160];
 
 	int floor_max = z_info->floor_size;
-	int *floor_list = mem_zalloc(floor_max * sizeof(int));
+	struct object **floor_list = mem_zalloc(floor_max * sizeof(*floor_list));
 	int floor_num;
 
 	bool show_list = TRUE;
@@ -849,13 +819,11 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd,
 	/* Paranoia XXX XXX XXX */
 	message_flush();
 
-
 	/* Not done */
 	done = FALSE;
 
 	/* No item selected */
 	item = FALSE;
-
 
 	/* Full inventory */
 	i1 = 0;
@@ -865,23 +833,24 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd,
 	if (!use_inven) i2 = -1;
 
 	/* Restrict inventory indexes */
-	while ((i1 <= i2) && (!item_test(tester, player->upkeep->inven[i1]))) i1++;
-	while ((i1 <= i2) && (!item_test(tester, player->upkeep->inven[i2]))) i2--;
+	while ((i1 <= i2) && (!object_test(tester, player->upkeep->inven[i1])))
+		i1++;
+	while ((i1 <= i2) && (!object_test(tester, player->upkeep->inven[i2])))
+		i2--;
 
 	/* Accept inventory */
 	if (i1 <= i2) allow_inven = TRUE;
 
-
 	/* Full equipment */
 	e1 = 0;
-	e2 = player->body.count;
+	e2 = player->body.count - 1;
 
 	/* Forbid equipment */
 	if (!use_equip) e2 = -1;
 
 	/* Restrict equipment indexes */
-	while ((e1 <= e2) && (!item_test(tester, slot_index(player, e1)))) e1++;
-	while ((e1 <= e2) && (!item_test(tester, slot_index(player, e2)))) e2--;
+	while ((e1 <= e2) && (!object_test(tester, slot_object(player, e1)))) e1++;
+	while ((e1 <= e2) && (!object_test(tester, slot_object(player, e2)))) e2--;
 
 	/* Accept equipment */
 	if (e1 <= e2) allow_equip = TRUE;
@@ -894,8 +863,10 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd,
 	if (!use_quiver) q2 = -1;
 
 	/* Restrict quiver indexes */
-	while ((q1 <= q2) && (!item_test(tester, player->upkeep->quiver[q1]))) q1++;
-	while ((q1 <= q2) && (!item_test(tester, player->upkeep->quiver[q2]))) q2--;
+	while ((q1 <= q2) && (!object_test(tester, player->upkeep->quiver[q1])))
+		q1++;
+	while ((q1 <= q2) && (!object_test(tester, player->upkeep->quiver[q2])))
+		q2--;
 
 	/* Accept quiver */
 	if (q1 <= q2) allow_quiver = TRUE;
@@ -911,8 +882,8 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd,
 	if (!use_floor) f2 = -1;
 
 	/* Restrict floor indexes */
-	while ((f1 <= f2) && (!item_test(tester, 0 - floor_list[f1]))) f1++;
-	while ((f1 <= f2) && (!item_test(tester, 0 - floor_list[f2]))) f2--;
+	while ((f1 <= f2) && (!object_test(tester, floor_list[f1]))) f1++;
+	while ((f1 <= f2) && (!object_test(tester, floor_list[f2]))) f2--;
 
 	/* Accept floor */
 	if (f1 <= f2) allow_floor = TRUE;
@@ -1010,8 +981,7 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd,
 			/* List choices */
 			if (i1 <= i2) {
 				/* Build the prompt */
-				strnfmt(tmp_val, sizeof(tmp_val), " %c-%c,",
-				        inven_to_label(i1), inven_to_label(i2));
+				strnfmt(tmp_val, sizeof(tmp_val), " %c-%c,", I2A(i1), I2A(i2));
 
 				/* Append */
 				my_strcat(out_val, tmp_val, sizeof(out_val));
@@ -1046,8 +1016,7 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd,
 			/* List choices */
 			if (e1 <= e2) {
 				/* Build the prompt */
-				strnfmt(tmp_val, sizeof(tmp_val), " %c-%c,",
-				        equip_to_label(e1),	equip_to_label(e2));
+				strnfmt(tmp_val, sizeof(tmp_val), " %c-%c,", I2A(e1), I2A(e2));
 
 				/* Append */
 				my_strcat(out_val, tmp_val, sizeof(out_val));
@@ -1082,9 +1051,7 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd,
 			/* List choices */
 			if (q1 <= q2) {
 				/* Build the prompt */
-				strnfmt(tmp_val, sizeof(tmp_val), " %c-%c,",
-				        quiver_to_label(q1),
-				        quiver_to_label(q2));
+				strnfmt(tmp_val, sizeof(tmp_val), " %c-%c,", I2A(q1), I2A(q2));
 
 				/* Append */
 				my_strcat(out_val, tmp_val, sizeof(out_val));
@@ -1159,7 +1126,7 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd,
 			if (press.mouse.button == 2) {
 				done = TRUE;
 			} else if (press.mouse.button == 1) {
-				k = -1;
+				obj = NULL;
 				if (player->upkeep->command_wrk == USE_INVEN) {
 					if (press.mouse.y == 0) {
 						if (allow_equip) {
@@ -1170,12 +1137,12 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd,
 							player->upkeep->command_wrk = USE_FLOOR;
 						}
 					} else if ((press.mouse.y <= i2 - i1 + 1) ) {
-						/* get the item index, allowing for skipped indices */
+						/* Get the item index, allowing for skipped indices */
 						for (j = i1; j <= i2; j++) {
-							int gear_index = player->upkeep->inven[j];
-							if (item_test(tester, gear_index)) {
+							struct object *test = player->upkeep->inven[j];
+							if (object_test(tester, test)) {
 								if (press.mouse.y == 1) {
-									k = gear_index;
+									obj = test;
 									break;
 								}
 								press.mouse.y--;
@@ -1195,14 +1162,14 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd,
 						if (olist_mode & OLIST_SEMPTY) {
 							/* If we are showing empties, just set the object
 							 * (empty objects will just keep the loop going) */
-							k = label_to_equip('a' + e1 + press.mouse.y - 1);
+							obj = label_to_equip('a' + e1 + press.mouse.y - 1);
 						} else {
 							/* get the item index, allow for skipped indices */
 							for (j = e1; j <= e2; j++) {
-								int gear_index = slot_index(player, j);
-								if (item_test(tester, gear_index)) {
+								struct object *test = slot_object(player, j);
+								if (object_test(tester, test)) {
 									if (press.mouse.y == 1) {
-										k = gear_index;
+										obj = test;
 										break;
 									}
 									press.mouse.y--;
@@ -1222,10 +1189,10 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd,
 					} else if (press.mouse.y <= q2 - q1 + 1) {
 						/* get the item index, allow for skipped indices */
 						for (j = q1; j <= q2; j++) {
-							int gear_index = player->upkeep->quiver[j];
-							if (item_test(tester, gear_index)) {
+							struct object *test = player->upkeep->quiver[j];
+							if (object_test(tester, test)) {
 								if (press.mouse.y == 1) {
-									k = gear_index;
+									obj = test;
 									break;
 								}
 								press.mouse.y--;
@@ -1243,49 +1210,31 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd,
 						}
 					} else if ((press.mouse.y <= floor_num)
 							   && (press.mouse.y >= 1)) {
-						/* Special index */
-						k = 0 - floor_list[press.mouse.y - 1];
-						/* get the item index, allowing for skipped indices */
+						/* Get the item index, allowing for skipped indices */
 						for (j = f1; j <= f2; j++) {
-							int gear_index = 0 - floor_list[j];
-							if (item_test(tester, gear_index)) {
+							struct object *test = floor_list[j];
+							if (object_test(tester, test)) {
 								if (press.mouse.y == 1) {
-									k = gear_index;
+									obj = test;
 									break;
 								}
 								press.mouse.y--;
 							}
 						}
-						/* check the bounds the item number */
-						if (k < 0) {
-							/* Allow player to "refuse" certain actions */
-							if (!get_item_allow(k, cmdkey, cmd, is_harmless))
-							{
-								done = TRUE;
-							}
-
-							/* Accept that choice */
-							(*cp) = k;
-							item = TRUE;
-							done = TRUE;
-						} else {
-							/* set k to a value that will be invalid below */
-							k = -1;
-						}
 					}
 				}
-				if (k >= 0) {
+				if (obj) {
 					/* Validate the item */
-					if (!item_test(tester, k)) {
+					if (!object_test(tester, obj)) {
 						bell("Illegal object choice (normal)!");
 					}
 
 					/* Allow player to "refuse" certain actions */
-					if (!get_item_allow(k, cmdkey, cmd, is_harmless))
+					if (!get_item_allow(obj, cmdkey, cmd, is_harmless))
 						done = TRUE;
 
 					/* Accept that choice */
-					(*cp) = k;
+					(*choice) = obj;
 					item = TRUE;
 					done = TRUE;
 				} else if (press.mouse.y == 0) {
@@ -1375,16 +1324,16 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd,
 					/* Auto-select */
 					if (player->upkeep->command_wrk == (USE_FLOOR)) {
 						/* Special index */
-						k = 0 - floor_list[0];
+						obj = floor_list[0];
 
 						/* Allow player to "refuse" certain actions */
-						if (!get_item_allow(k, cmdkey, cmd, is_harmless)) {
+						if (!get_item_allow(obj, cmdkey, cmd, is_harmless)) {
 							done = TRUE;
 							break;
 						}
 
 						/* Accept that choice */
-						(*cp) = k;
+						(*choice) = obj;
 						item = TRUE;
 						done = TRUE;
 
@@ -1412,25 +1361,25 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd,
 			case '7': case '8': case '9':
 			{
 				/* Look up the tag */
-				if (!get_tag(&k, press.key.code, cmd, quiver_tags)) {
+				if (!get_tag(&obj, press.key.code, cmd, quiver_tags)) {
 					bell("Illegal object choice (tag)!");
 					break;
 				}
 
 				/* Validate the item */
-				if (!item_test(tester, k)) {
+				if (!object_test(tester, obj)) {
 					bell("Illegal object choice (tag)!");
 					break;
 				}
 
 				/* Allow player to "refuse" certain actions */
-				if (!get_item_allow(k, cmdkey, cmd, is_harmless)) {
+				if (!get_item_allow(obj, cmdkey, cmd, is_harmless)) {
 					done = TRUE;
 					break;
 				}
 
 				/* Accept that choice */
-				(*cp) = k;
+				(*choice) = obj;
 				item = TRUE;
 				done = TRUE;
 				break;
@@ -1445,12 +1394,12 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd,
 						break;
 					}
 
-					k = player->upkeep->inven[i1];
+					obj = player->upkeep->inven[i1];
 				}
 
 				/* Choose the "default" slot (0) of the quiver */
 				else if (quiver_tags)
-					k = player->upkeep->quiver[q1];
+					obj = player->upkeep->quiver[q1];
 
 				/* Choose "default" equipment item */
 				else if (player->upkeep->command_wrk == USE_EQUIP) {
@@ -1459,7 +1408,7 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd,
 						break;
 					}
 
-					k = slot_index(player, e1);
+					obj = slot_object(player, e1);
 				}
 
 				/* Choose "default" quiver item */
@@ -1469,7 +1418,7 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd,
 						break;
 					}
 
-					k = player->upkeep->quiver[q1];
+					obj = player->upkeep->quiver[q1];
 				}
 
 				/* Choose "default" floor item */
@@ -1479,23 +1428,23 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd,
 						break;
 					}
 
-					k = 0 - floor_list[f1];
+					obj = floor_list[f1];
 				}
 
 				/* Validate the item */
-				if (!item_test(tester, k)) {
+				if (!object_test(tester, obj)) {
 					bell("Illegal object choice (default)!");
 					break;
 				}
 
 				/* Allow player to "refuse" certain actions */
-				if (!get_item_allow(k, cmdkey, cmd, is_harmless)) {
+				if (!get_item_allow(obj, cmdkey, cmd, is_harmless)) {
 					done = TRUE;
 					break;
 				}
 
 				/* Accept that choice */
-				(*cp) = k;
+				(*choice) = obj;
 				item = TRUE;
 				done = TRUE;
 				break;
@@ -1511,70 +1460,69 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd,
 				/* Lowercase */
 				press.key.code = tolower((unsigned char)press.key.code);
 
-				/* Convert letter to inventory index */
+				/* Convert letter to inventory object */
 				if (player->upkeep->command_wrk == USE_INVEN) {
-					k = label_to_inven(press.key.code);
+					obj = label_to_inven(press.key.code);
 
-					if (k < 0) {
+					if (!obj) {
 						bell("Illegal object choice (inven)!");
 						break;
 					}
 				}
 
-				/* Convert letter to equipment index */
+				/* Convert letter to equipment object */
 				else if (player->upkeep->command_wrk == USE_EQUIP) {
-					k = label_to_equip(press.key.code);
+					obj = label_to_equip(press.key.code);
 
-					if (k < 0) {
+					if (!obj) {
 						bell("Illegal object choice (equip)!");
 						break;
 					}
 				}
 
-				/* Convert letter to quiver index */
+				/* Convert letter to quiver object */
 				else if (player->upkeep->command_wrk == USE_QUIVER) {
-					k = label_to_quiver(press.key.code);
+					obj = label_to_quiver(press.key.code);
 
-					if (k < 0) {
+					if (!obj) {
 						bell("Illegal object choice (quiver)!");
 						break;
 					}
 				}
 
-				/* Convert letter to floor index */
+				/* Convert letter to floor object */
 				else {
-					k = (islower((unsigned char)press.key.code) ?
-						 A2I((unsigned char)press.key.code) : -1);
+					int k = (islower((unsigned char)press.key.code) ?
+							 A2I((unsigned char)press.key.code) : -1);
 
 					if (k < 0 || k >= floor_num) {
 						bell("Illegal object choice (floor)!");
 						break;
 					}
 
-					/* Special index */
-					k = 0 - floor_list[k];
+					obj = floor_list[k];
 				}
 
 				/* Validate the item */
-				if (!item_test(tester, k)) {
+				if (!object_test(tester, obj)) {
 					bell("Illegal object choice (normal)!");
 					break;
 				}
 
 				/* Verify the item */
-				if (verify && !verify_item("Try", k)) {
+				if (verify && !verify_object("Try", obj)) {
 					done = TRUE;
 					break;
 				}
 
 				/* Allow player to "refuse" certain actions */
-				if (!get_item_allow(k, cmdkey, cmd, is_harmless)) {
+				if (!get_item_allow(obj, cmdkey, cmd, is_harmless)) {
 					done = TRUE;
 					break;
 				}
 
 				/* Accept that choice */
-				(*cp) = k;
+				(*choice) = obj;
 				item = TRUE;
 				done = TRUE;
 				break;

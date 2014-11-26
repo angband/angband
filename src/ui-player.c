@@ -188,27 +188,23 @@ static void display_player_equippy(int y, int x)
 	byte a;
 	wchar_t c;
 
-	object_type *o_ptr;
-
+	struct object *obj;
 
 	/* Dump equippy chars */
-	for (i = 0; i < player->body.count; ++i)
-	{
+	for (i = 0; i < player->body.count; ++i) {
 		/* Object */
-		o_ptr = equipped_item_by_slot(player, i);
+		obj = slot_object(player, i);
 
 		/* Skip empty objects */
-		if (!o_ptr->kind) continue;
+		if (!obj) continue;
 
 		/* Get attr/char for display */
-		a = object_attr(o_ptr);
-		c = object_char(o_ptr);
+		a = object_attr(obj);
+		c = object_char(obj);
 
 		/* Dump */
 		if ((tile_width == 1) && (tile_height == 1))
-		{
 		        Term_putch(x + i, y, a, c);
-		}
 	}
 }
 
@@ -283,7 +279,7 @@ static void display_resistance_panel(const struct player_flag_record *rec,
 
 		/* Repeated extraction of flags is inefficient but more natural */
 		for (j = 0; j <= player->body.count; j++) {
-			object_type *o_ptr = equipped_item_by_slot(player, j);
+			struct object *obj;
 			bitflag f[OF_SIZE];
 
 			byte attr = TERM_WHITE | (j % 2) * 8; /* alternating columns */
@@ -297,13 +293,14 @@ static void display_resistance_panel(const struct player_flag_record *rec,
 			of_wipe(f);
 
 			/* Get the object or player info */
-			if (j < player->body.count && o_ptr->kind) {
+			obj = j < player->body.count ? slot_object(player, j) : NULL;
+			if (j < player->body.count && obj) {
 				/* Get known properties */
-				object_flags_known(o_ptr, f);
+				object_flags_known(obj, f);
 				if (rec[i].element != -1)
-					known = object_element_is_known(o_ptr, rec[i].element);
+					known = object_element_is_known(obj, rec[i].element);
 				else if (rec[i].flag != -1)
-					known = object_flag_is_known(o_ptr, rec[i].flag);
+					known = object_flag_is_known(obj, rec[i].flag);
 				else
 					known = TRUE;
 			} else if (j == player->body.count) {
@@ -318,7 +315,7 @@ static void display_resistance_panel(const struct player_flag_record *rec,
 			/* Set which (if any) symbol and color are used */
 			if (rec[i].mod != -1) {
 				if (j != player->body.count)
-					res = (o_ptr->modifiers[rec[i].mod] != 0);
+					res = (obj && (obj->modifiers[rec[i].mod] != 0));
 				else {
 					/* Messy special cases */
 					if (rec[i].mod == OBJ_MOD_INFRA)
@@ -329,9 +326,18 @@ static void display_resistance_panel(const struct player_flag_record *rec,
 			} else if (rec[i].flag != -1) {
 				res = of_has(f, rec[i].flag);
 			} else if (rec[i].element != -1) {
-				imm = known && (o_ptr->el_info[rec[i].element].res_level == 3);
-				res = known && (o_ptr->el_info[rec[i].element].res_level == 1);
-				vul = known && (o_ptr->el_info[rec[i].element].res_level == -1);
+				if (j != player->body.count) {
+					imm = obj && known &&
+						(obj->el_info[rec[i].element].res_level == 3);
+					res = obj && known &&
+						(obj->el_info[rec[i].element].res_level == 1);
+					vul = obj && known &&
+						(obj->el_info[rec[i].element].res_level == -1);
+				} else {
+					imm = player->race->el_info[rec[i].element].res_level == 3;
+					res = player->race->el_info[rec[i].element].res_level == 1;
+					vul = player->race->el_info[rec[i].element].res_level == -1;
+				}
 			}
 
 			/* Set the symbols and print them */
@@ -342,7 +348,7 @@ static void display_resistance_panel(const struct player_flag_record *rec,
 			else if (imm) sym = '*';
 			else if (res) sym = '+';
 			else if (timed) { sym = '!'; attr = TERM_L_GREEN; }
-			else if ((j < player->body.count) && o_ptr->kind && !known)
+			else if ((j < player->body.count) && obj && !known)
 				sym = '?';
 
 			Term_addch(attr, sym);
@@ -484,9 +490,9 @@ static void display_player_sust_info(void)
 	for (i = 0; i < player->body.count; ++i)
 	{
 		/* Get the object */
-		o_ptr = equipped_item_by_slot(player, i);
+		o_ptr = slot_object(player, i);
 
-		if (!o_ptr->kind) {
+		if (!o_ptr) {
 			col++;
 			continue;
 		}
@@ -530,7 +536,7 @@ static void display_player_sust_info(void)
 				if (c == '.') c = 's';
 			}
 
-			if ((c == '.') && o_ptr->kind && 
+			if ((c == '.') && o_ptr && 
 				!object_flag_is_known(o_ptr, sustain_flag(stat)))
 				c = '?';
 
@@ -723,12 +729,12 @@ static struct panel *get_panel_combat(void) {
 	/* Melee */
 	obj = equipped_item_by_slot_name(player, "weapon");
 	bth = (player->state.skills[SKILL_TO_HIT_MELEE] * 10) / BTH_PLUS_ADJ;
-	dam = player->known_state.to_d + (object_attack_plusses_are_visible(obj) ? obj->to_d : 0);
-	hit = player->known_state.to_h + (object_attack_plusses_are_visible(obj) ? obj->to_h : 0);
+	dam = player->known_state.to_d + (obj && object_attack_plusses_are_visible(obj) ? obj->to_d : 0);
+	hit = player->known_state.to_h + (obj && object_attack_plusses_are_visible(obj) ? obj->to_h : 0);
 
 	panel_space(p);
 
-	if (obj->kind) {
+	if (obj) {
 		melee_dice = obj->dd;
 		melee_sides = obj->ds;
 	}
@@ -741,8 +747,8 @@ static struct panel *get_panel_combat(void) {
 	/* Ranged */
 	obj = equipped_item_by_slot_name(player, "shooting");
 	bth = (player->state.skills[SKILL_TO_HIT_BOW] * 10) / BTH_PLUS_ADJ;
-	hit = player->known_state.to_h + (object_attack_plusses_are_visible(obj) ? obj->to_h : 0);
-	dam = object_attack_plusses_are_visible(obj) ? obj->to_d : 0;
+	hit = player->known_state.to_h + (obj && object_attack_plusses_are_visible(obj) ? obj->to_h : 0);
+	dam = obj && object_attack_plusses_are_visible(obj) ? obj->to_d : 0;
 
 	panel_space(p);
 	panel_line(p, TERM_L_BLUE, "Shoot to-dam", "%+d", dam);
@@ -1012,11 +1018,11 @@ void write_character_dump(ang_file *fff)
 	/* Dump the equipment */
 	file_putf(fff, "  [Character Equipment]\n\n");
 	for (i = 0; i < player->body.count; i++) {
-		struct object *obj = equipped_item_by_slot(player, i);
-		if (!obj->kind) continue;
+		struct object *obj = slot_object(player, i);
+		if (!obj) continue;
 
 		object_desc(o_name, sizeof(o_name), obj, ODESC_PREFIX | ODESC_FULL);
-		file_putf(fff, "%c) %s\n", equip_to_label(i), o_name);
+		file_putf(fff, "%c) %s\n", gear_to_label(obj), o_name);
 		object_info_chardump(fff, obj, 5, 72);
 	}
 	file_putf(fff, "\n\n");
@@ -1024,11 +1030,11 @@ void write_character_dump(ang_file *fff)
 	/* Dump the inventory */
 	file_putf(fff, "\n\n  [Character Inventory]\n\n");
 	for (i = 0; i < z_info->pack_size; i++) {
-		struct object *obj = &player->gear[player->upkeep->inven[i]];
-		if (!obj->kind) break;
+		struct object *obj = player->upkeep->inven[i];
+		if (!obj) break;
 
 		object_desc(o_name, sizeof(o_name), obj, ODESC_PREFIX | ODESC_FULL);
-		file_putf(fff, "%c) %s\n", inven_to_label(i), o_name);
+		file_putf(fff, "%c) %s\n", gear_to_label(obj), o_name);
 		object_info_chardump(fff, obj, 5, 72);
 	}
 	file_putf(fff, "\n\n");
@@ -1036,11 +1042,11 @@ void write_character_dump(ang_file *fff)
 	/* Dump the quiver */
 	file_putf(fff, "\n\n  [Character Quiver]\n\n");
 	for (i = 0; i < z_info->quiver_size; i++) {
-		struct object *obj = &player->gear[player->upkeep->quiver[i]];
-		if (!obj->kind) break;
+		struct object *obj = player->upkeep->quiver[i];
+		if (!obj) break;
 
 		object_desc(o_name, sizeof(o_name), obj, ODESC_PREFIX | ODESC_FULL);
-		file_putf(fff, "%c) %s\n", quiver_to_label(i), o_name);
+		file_putf(fff, "%c) %s\n", gear_to_label(obj), o_name);
 		object_info_chardump(fff, obj, 5, 72);
 	}
 	file_putf(fff, "\n\n");
@@ -1051,8 +1057,7 @@ void write_character_dump(ang_file *fff)
 		file_putf(fff, "  [Home Inventory]\n\n");
 
 		/* Dump all available items */
-		for (i = 0; i < st_ptr->stock_num; i++)
-		{
+		for (i = 0; i < st_ptr->stock_num; i++) {
 			object_desc(o_name, sizeof(o_name), &st_ptr->stock[i],
 						ODESC_PREFIX | ODESC_FULL);
 			file_putf(fff, "%c) %s\n", I2A(i), o_name);

@@ -1,6 +1,9 @@
 #ifndef INCLUDED_SAVEFILE_H
 #define INCLUDED_SAVEFILE_H
 
+#define EQUIP_CODE 1
+#define INVEN_CODE 2
+#define FINISHED_CODE 3
 #define ITEM_VERSION	5
 
 /*** Savefile API ***/

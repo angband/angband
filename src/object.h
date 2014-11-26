@@ -372,29 +372,28 @@ extern ego_item_type *e_info;
 /*
  * Object information, for a specific object.
  *
- * Note that a "discount" on an item is permanent and never goes away.
- *
  * Note that inscriptions are now handled via the "quark_str()" function
  * applied to the "note" field, which will return NULL if "note" is zero.
  *
- * Note that "object" records are "copied" on a fairly regular basis,
- * and care must be taken when handling such objects.
+ * Each cave grid points to one (or zero) objects via the "obj" field in
+ * its "squares" struct.  Each object then points to one (or zero) objects
+ * via the "next" field, and (aside from the first) back via its "prev"
+ * field, forming a doubly linked list, which in game terms represents a
+ * stack of objects in the same grid.
  *
- * Note that "object flags" must now be derived from the object kind,
- * the artifact and ego-item indexes, and the two "xtra" fields.
- *
- * Each cave grid points to one (or zero) objects via the "o_idx"
- * field (above).  Each object then points to one (or zero) objects
- * via the "next_o_idx" field, forming a singly linked list, which
- * in game terms, represents a "stack" of objects in the same grid.
- *
- * Each monster points to one (or zero) objects via the "hold_o_idx"
- * field (below).  Each object then points to one (or zero) objects
- * via the "next_o_idx" field, forming a singly linked list, which
- * in game terms, represents a pile of objects held by the monster.
+ * Each monster points to one (or zero) objects via the "held_obj"
+ * field (see monster.h).  Each object then points to one (or zero) objects
+ * and back to previous objects by its own "next" and "prev" fields,
+ * forming a doubly linked list, which in game terms represents the
+ * monster's inventory.
  *
  * The "held_m_idx" field is used to indicate which monster, if any,
- * is holding the object.  Objects being held have "ix=0" and "iy=0".
+ * is holding the object.  Objects being held have "ix = 0" and "iy = 0".
+ *
+ * Note that object records are not now copied, but allocated on object
+ * creation and freed on object destruction.  These records are handed
+ * around between player and monster inventories and the floor on a fairly
+ * regular basis, and care must be taken when handling such objects.
  */
 typedef struct object
 {

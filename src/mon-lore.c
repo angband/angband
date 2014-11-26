@@ -60,6 +60,7 @@ static void get_attack_colors(int melee_colors[RBE_MAX],
 							  int spell_colors[RSF_MAX])
 {
 	int i;
+	struct object *obj;
 	bool known;
 	bitflag f[OF_SIZE];
 	player_state st = player->known_state;
@@ -72,40 +73,34 @@ static void get_attack_colors(int melee_colors[RBE_MAX],
 		spell_colors[i] = TERM_L_GREEN;
 
 	/* Scan for potentially vulnerable items */
-	for (i = 0; i < player->max_gear; i++) {
-		object_type *o_ptr = &player->gear[i];
-
-		/* Only occupied slots */
-		if (!o_ptr->kind) continue;
-
-		object_flags_known(o_ptr, f);
+	for (obj = player->gear; obj; obj = obj->next) {
+		object_flags_known(obj, f);
 
 		/* Don't reveal the nature of an object.
-		 * Assume the player is conservative with unknown items.
-		 */
-		known = object_is_known(o_ptr);
+		 * Assume the player is conservative with unknown items. */
+		known = object_is_known(obj);
 
 		/* Drain charges - requires a charged item */
-		if ((!known || o_ptr->pval > 0) && tval_can_have_charges(o_ptr))
+		if ((!known || obj->pval > 0) && tval_can_have_charges(obj))
 			melee_colors[RBE_DRAIN_CHARGES] = TERM_L_RED;
 
 		/* Steal item - requires non-artifacts */
-		if (!item_is_equipped(player, i) && (!known || !o_ptr->artifact) &&
-				player->lev + adj_dex_safe[st.stat_ind[STAT_DEX]] < 100)
+		if (!object_is_equipped(player->body, obj) && (!known || !obj->artifact)
+			&& player->lev + adj_dex_safe[st.stat_ind[STAT_DEX]] < 100)
 			melee_colors[RBE_EAT_ITEM] = TERM_L_RED;
 
 		/* Eat food - requries food */
-		if (tval_is_food(o_ptr))
+		if (tval_is_food(obj))
 			melee_colors[RBE_EAT_FOOD] = TERM_YELLOW;
 
 		/* Eat light - requires a fuelled light */
-		if (item_is_equipped(player, i) && tval_is_light(o_ptr) &&
-			!of_has(f, OF_NO_FUEL) && o_ptr->timeout > 0)
+		if (object_is_equipped(player->body, obj) && tval_is_light(obj) &&
+			!of_has(f, OF_NO_FUEL) && obj->timeout > 0)
 			melee_colors[RBE_EAT_LIGHT] = TERM_YELLOW;
 
 		/* Disenchantment - requires an enchanted item */
-		if (item_is_equipped(player, i) && (!known || o_ptr->to_a > 0 ||
-				o_ptr->to_h > 0 || o_ptr->to_d > 0) &&
+		if (object_is_equipped(player->body, obj) && (!known || obj->to_a > 0 ||
+				obj->to_h > 0 || obj->to_d > 0) &&
 				(st.el_info[ELEM_DISEN].res_level <= 0))
 		{
 			melee_colors[RBE_DISENCHANT] = TERM_L_RED;

@@ -28,6 +28,7 @@
 #include "obj-desc.h"
 #include "obj-gear.h"
 #include "obj-make.h"
+#include "obj-pile.h"
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "player-timed.h"
@@ -147,15 +148,13 @@ static void melee_effect_experience(melee_effect_handler_context_t *context, int
 
 	if (player_of_has(context->p, OF_HOLD_LIFE) && (randint0(100) < chance)) {
 		msg("You keep hold of your life force!");
-	}
-	else {
+	} else {
 		s32b d = drain_amount +
 			(context->p->exp/100) * z_info->life_drain_percent;
 		if (player_of_has(context->p, OF_HOLD_LIFE)) {
 			msg("You feel your life slipping away!");
 			player_exp_lose(context->p, d / 10, FALSE);
-		}
-		else {
+		} else {
 			msg("You feel your life draining away!");
 			player_exp_lose(context->p, d, FALSE);
 		}
@@ -233,46 +232,39 @@ static void melee_effect_handler_DISENCHANT(melee_effect_handler_context_t *cont
  */
 static void melee_effect_handler_DRAIN_CHARGES(melee_effect_handler_context_t *context)
 {
-	object_type *o_ptr;
+	struct object *obj;
 	struct monster *monster = context->m_ptr;
 	struct player *player = context->p;
-	int item, tries;
+	int tries;
 	int unpower = 0, newcharge;
 
 	/* Take damage */
 	take_hit(context->p, context->damage, context->ddesc);
 
 	/* Find an item */
-	for (tries = 0; tries < 10; tries++)
-	{
+	for (tries = 0; tries < 10; tries++) {
 		/* Pick an item */
-		item = context->p->upkeep->inven[randint0(z_info->pack_size)];
+		obj = context->p->upkeep->inven[randint0(z_info->pack_size)];
 
 		/* Skip non-objects */
-		if (item == NO_OBJECT) continue;
-
-		/* Obtain the item */
-		o_ptr = &context->p->gear[item];
+		if (obj == NULL) continue;
 
 		/* Drain charged wands/staves */
-		if (tval_can_have_charges(o_ptr))
-		{
+		if (tval_can_have_charges(obj)) {
 			/* Charged? */
-			if (o_ptr->pval)
-			{
+			if (obj->pval) {
 				/* Get number of charge to drain */
-				unpower = (context->rlev / (o_ptr->kind->level + 2)) + 1;
+				unpower = (context->rlev / (obj->kind->level + 2)) + 1;
 
 				/* Get new charge value, don't allow negative */
-				newcharge = MAX((o_ptr->pval - unpower),0);
+				newcharge = MAX((obj->pval - unpower),0);
 
 				/* Remove the charges */
-				o_ptr->pval = newcharge;
+				obj->pval = newcharge;
 			}
 		}
 
-		if (unpower)
-		{
+		if (unpower) {
 			int heal = context->rlev * unpower;
 
 			msg("Energy drains from your pack!");
@@ -317,8 +309,7 @@ static void melee_effect_handler_EAT_GOLD(melee_effect_handler_context_t *contex
     /* Saving throw (unless paralyzed) based on dex and level */
     if (!player->timed[TMD_PARALYZED] &&
         (randint0(100) < (adj_dex_safe[player->state.stat_ind[STAT_DEX]]
-						  + player->lev)))
-    {
+						  + player->lev))) {
         /* Saving throw message */
         msg("You quickly protect your money pouch!");
 
@@ -349,21 +340,21 @@ static void melee_effect_handler_EAT_GOLD(melee_effect_handler_context_t *contex
             int amt;
 
             /* Create a new temporary object */
-            object_type o;
-            object_wipe(&o);
-            object_prep(&o, money_kind("gold", gold), 0, MINIMISE);
+            object_type *obj = mem_zalloc(sizeof(*obj));
+            object_prep(obj, money_kind("gold", gold), 0, MINIMISE);
 
             /* Amount of gold to put in this object */
             amt = gold > MAX_PVAL ? MAX_PVAL : gold;
-            o.pval = amt;
+            obj->pval = amt;
             gold -= amt;
 
             /* Set origin to stolen, so it is not confused with
              * dropped treasure in monster_death */
-            o.origin = ORIGIN_STOLEN;
+            obj->origin = ORIGIN_STOLEN;
+			obj->origin_depth = player->depth;
 
             /* Give the gold to the monster */
-            monster_carry(cave, context->m_ptr, &o);
+            monster_carry(cave, context->m_ptr, obj);
         }
 
         /* Redraw gold */
@@ -379,7 +370,7 @@ static void melee_effect_handler_EAT_GOLD(melee_effect_handler_context_t *contex
  */
 static void melee_effect_handler_EAT_ITEM(melee_effect_handler_context_t *context)
 {
-	int item, tries;
+	int tries;
 
     /* Take damage */
     take_hit(context->p, context->damage, context->ddesc);
@@ -387,8 +378,7 @@ static void melee_effect_handler_EAT_ITEM(melee_effect_handler_context_t *contex
     /* Saving throw (unless paralyzed) based on dex and level */
     if (!context->p->timed[TMD_PARALYZED] &&
         (randint0(100) < (adj_dex_safe[context->p->state.stat_ind[STAT_DEX]] +
-                          context->p->lev)))
-    {
+                          context->p->lev))) {
         /* Saving throw message */
         msg("You grab hold of your backpack!");
 
@@ -403,54 +393,37 @@ static void melee_effect_handler_EAT_ITEM(melee_effect_handler_context_t *contex
     }
 
     /* Find an item */
-    for (tries = 0; tries < 10; tries++)
-    {
-		object_type *o_ptr, *i_ptr;
+    for (tries = 0; tries < 10; tries++) {
+		struct object *obj, *stolen;
 		char o_name[80];
-        object_type object_type_body;
-		int index = randint0(z_info->pack_size);
+		bool split = FALSE;
 
         /* Pick an item */
-        item = context->p->upkeep->inven[index];
-
-		/* Skip non-objects */
-		if (item == NO_OBJECT) continue;
+		int index = randint0(z_info->pack_size);
 
         /* Obtain the item */
-        o_ptr = &context->p->gear[item];
+        obj = context->p->upkeep->inven[index];
+
+		/* Skip non-objects */
+		if (obj == NULL) continue;
 
         /* Skip artifacts */
-        if (o_ptr->artifact) continue;
+        if (obj->artifact) continue;
 
         /* Get a description */
-        object_desc(o_name, sizeof(o_name), o_ptr, ODESC_FULL);
+        object_desc(o_name, sizeof(o_name), obj, ODESC_FULL);
+
+		/* Is it one of a stack being stolen? */
+		if (obj->number > 1)
+			split = TRUE;
 
         /* Message */
-        msg("%s %s (%c) was stolen!",
-            ((o_ptr->number > 1) ? "One of your" : "Your"),
-            o_name, inven_to_label(index));
+        msg("%s %s (%c) was stolen!", (split ? "One of your" : "Your"),
+			o_name, I2A(index));
 
-        /* Get local object */
-        i_ptr = &object_type_body;
-
-        /* Obtain local object */
-        object_copy(i_ptr, o_ptr);
-
-        /* Modify number */
-        i_ptr->number = 1;
-
-        /* Hack -- If a rod, staff, or wand, allocate total
-         * maximum timeouts or charges between those
-         * stolen and those missed. -LM-
-         */
-        distribute_charges(o_ptr, i_ptr, 1);
-
-        /* Carry the object */
-        (void)monster_carry(cave, context->m_ptr, i_ptr);
-
-        /* Steal the items */
-        inven_item_increase(item, -1);
-        inven_item_optimize(item);
+        /* Steal and carry */
+		stolen = gear_object_for_use(obj, 1, FALSE);
+        (void)monster_carry(cave, context->m_ptr, stolen);
 
         /* Obvious */
         context->obvious = TRUE;
@@ -469,9 +442,7 @@ static void melee_effect_handler_EAT_ITEM(melee_effect_handler_context_t *contex
 static void melee_effect_handler_EAT_FOOD(melee_effect_handler_context_t *context)
 {
 	/* Steal some food */
-	int item, tries;
-	object_type *o_ptr;
-	char o_name[80];
+	int tries;
 
 	/* Take damage */
 	take_hit(context->p, context->damage, context->ddesc);
@@ -479,30 +450,31 @@ static void melee_effect_handler_EAT_FOOD(melee_effect_handler_context_t *contex
 	for (tries = 0; tries < 10; tries++) {
 		/* Pick an item from the pack */
 		int index = randint0(z_info->pack_size);
-		item = context->p->upkeep->inven[index];
-
-		/* Skip non-objects */
-		if (item == NO_OBJECT) continue;
+		struct object *obj, *eaten;
+		char o_name[80];
 
 		/* Get the item */
-		o_ptr = &context->p->gear[item];
+		obj = context->p->upkeep->inven[index];
+
+		/* Skip non-objects */
+		if (obj == NULL) continue;
 
 		/* Skip non-food objects */
-		if (!tval_is_food(o_ptr)) continue;
+		if (!tval_is_food(obj)) continue;
 
-		if (o_ptr->number == 1) {
-			object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
-			msg("Your %s (%c) was eaten!", o_name, inven_to_label(index));
+		if (obj->number == 1) {
+			object_desc(o_name, sizeof(o_name), obj, ODESC_BASE);
+			msg("Your %s (%c) was eaten!", o_name, I2A(index));
 		} else {
-			object_desc(o_name, sizeof(o_name), o_ptr,
+			object_desc(o_name, sizeof(o_name), obj,
 						ODESC_PREFIX | ODESC_BASE);
 			msg("One of your %s (%c) was eaten!", o_name,
-				inven_to_label(index));
+				I2A(index));
 		}
 
-		/* Steal the items */
-		inven_item_increase(item, -1);
-		inven_item_optimize(item);
+		/* Steal and eat */
+		eaten = gear_object_for_use(obj, 1, FALSE);
+		object_delete(eaten);
 
 		/* Obvious */
 		context->obvious = TRUE;
@@ -517,22 +489,17 @@ static void melee_effect_handler_EAT_FOOD(melee_effect_handler_context_t *contex
  */
 static void melee_effect_handler_EAT_LIGHT(melee_effect_handler_context_t *context)
 {
-	object_type *o_ptr;
-	int i;
+	int light_slot = slot_by_name(player, "light");
+	struct object *obj = slot_object(player, light_slot);
 
 	/* Take damage */
 	take_hit(context->p, context->damage, context->ddesc);
 
-	/* Get the light - needs streamlining NRM */
-	for (i = 0; i < context->p->body.count; i++)
-		if (streq("light", context->p->body.slots[i].name)) break;
-	o_ptr = &context->p->gear[context->p->body.slots[i].index];
-
 	/* Drain fuel where applicable */
-	if (!of_has(o_ptr->flags, OF_NO_FUEL) && (o_ptr->timeout > 0)) {
+	if (!of_has(obj->flags, OF_NO_FUEL) && (obj->timeout > 0)) {
 		/* Reduce fuel */
-		o_ptr->timeout -= (250 + randint1(250));
-		if (o_ptr->timeout < 1) o_ptr->timeout = 1;
+		obj->timeout -= (250 + randint1(250));
+		if (obj->timeout < 1) obj->timeout = 1;
 
 		/* Notice */
 		if (!context->p->timed[TMD_BLIND]) {

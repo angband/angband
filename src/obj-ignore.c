@@ -146,12 +146,17 @@ void ignore_birth_init(void)
 
 /*** Autoinscription stuff ***/
 
+/**
+ * Return an object kind autoinscription
+ */
 const char *get_autoinscription(object_kind *kind)
 {
 	return kind ? quark_str(kind->note) : NULL;
 }
 
-/* Put the autoinscription on an object */
+/**
+ * Put an autoinscription on an object
+ */
 int apply_autoinscription(object_type *o_ptr)
 {
 	char o_name[80];
@@ -179,6 +184,9 @@ int apply_autoinscription(object_type *o_ptr)
 }
 
 
+/**
+ * Deregister an object kind autoinscription
+ */
 int remove_autoinscription(s16b kind)
 {
 	struct object_kind *k = objkind_byid(kind);
@@ -189,6 +197,9 @@ int remove_autoinscription(s16b kind)
 }
 
 
+/**
+ * Register an object kind autoinscription
+ */
 int add_autoinscription(s16b kind, const char *inscription)
 {
 	struct object_kind *k = objkind_byid(kind);
@@ -201,38 +212,30 @@ int add_autoinscription(s16b kind, const char *inscription)
 }
 
 
+/**
+ * Put an autoinscription on all objects on the floor beneath the player
+ */
 void autoinscribe_ground(void)
 {
 	int py = player->py;
 	int px = player->px;
-	s16b this_o_idx, next_o_idx = 0;
+	struct object *obj;
 
-	/* Scan the pile of objects */
-	for (this_o_idx = cave->o_idx[py][px]; this_o_idx; this_o_idx = next_o_idx)
-	{
-		/* Get the next object */
-		next_o_idx = cave_object(cave, this_o_idx)->next_o_idx;
-
-		/* Apply an autoinscription */
-		apply_autoinscription(cave_object(cave, this_o_idx));
-	}
+	/* Autoinscribe each object in the pile */
+	for (obj = square_object(cave, py, px); obj; obj = obj->next)
+		apply_autoinscription(obj);
 }
 
+/**
+ * Put an autoinscription on all the player's carried objects
+ */
 void autoinscribe_pack(void)
 {
-	int i;
+	struct object *obj;
 
-	/* Cycle through the inventory */
-	for (i = player->max_gear - 1; i >= 0; i--)
-	{
-		/* Skip empty items */
-		if (!player->gear[i].kind) continue;
-
-		/* Apply the inscription */
-		apply_autoinscription(&player->gear[i]);
-	}
-
-	return;
+	/* Autoinscribe each object in the inventory */
+	for (obj = player->gear; obj; obj = obj->next)
+		apply_autoinscription(obj);
 }
 
 
@@ -568,34 +571,30 @@ bool ignore_item_ok(const object_type *o_ptr)
  */
 void ignore_drop(void)
 {
-	int n;
+	struct object *obj;
 
 	/* Scan through the slots backwards */
-	for (n = player->max_gear - 1; n >= 0; n--)
-	{
-		object_type *o_ptr = &player->gear[n];
-
+	for (obj = gear_last_item(); obj; obj = obj->prev) {
 		/* Skip non-objects and unignoreable objects */
-		if (!o_ptr->kind) continue;
-		if (!ignore_item_ok(o_ptr)) continue;
+		assert(obj->kind);
+		if (!ignore_item_ok(obj)) continue;
 
 		/* Check for !d (no drop) inscription */
-		if (!check_for_inscrip(o_ptr, "!d") && !check_for_inscrip(o_ptr, "!*"))
-		{
+		if (!check_for_inscrip(obj, "!d") && !check_for_inscrip(obj, "!*")) {
 			/* Confirm the drop if the item is equipped. */
-			if (item_is_equipped(player, n)) {
-				if (!verify_item("Really take off and drop", n)) {
-					/* Hack - inscribe the item with !d to prevent repeated confirmations. */
-					const char *inscription = quark_str(o_ptr->note);
+			if (object_is_equipped(player->body, obj)) {
+				if (!verify_object("Really take off and drop", obj)) {
+					/* Hack - inscribe the item with !d to prevent repeated
+					 * confirmations. */
+					const char *inscription = quark_str(obj->note);
 
 					if (inscription == NULL) {
-						o_ptr->note = quark_add("!d");
-					}
-					else {
+						obj->note = quark_add("!d");
+					} else {
 						char buffer[1024];
 						my_strcpy(buffer, inscription, sizeof(buffer));
 						my_strcat(buffer, "!d", sizeof(buffer));
-						o_ptr->note = quark_add(buffer);
+						obj->note = quark_add(buffer);
 					}
 
 					continue;
@@ -603,7 +602,7 @@ void ignore_drop(void)
 			}
 
 			/* We're allowed to drop it. */
-			inven_drop(n, o_ptr->number);
+			inven_drop(obj, obj->number);
 		}
 	}
 

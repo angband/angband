@@ -310,7 +310,7 @@ int cmd_get_spell(struct command *cmd, const char *arg, int *spell,
 				  const char *verb, item_tester book_filter, const char *error,
 				  bool (*spell_filter)(int spell))
 {
-	int book;
+	struct object *book;
 
 	/* See if we've been provided with this one */
 	if (cmd_get_arg_choice(cmd, arg, spell) == CMD_OK) {
@@ -499,34 +499,33 @@ int cmd_get_arg_point(struct command *cmd, const char *arg, int *x, int *y)
 /** Item arguments **/
 
 /* Set argument 'n' to 'item' */
-void cmd_set_arg_item(struct command *cmd, const char *arg, int item)
+void cmd_set_arg_item(struct command *cmd, const char *arg, struct object *obj)
 {
 	union cmd_arg_data data;
-	data.item = item;
+	data.obj = obj;
 	cmd_set_arg(cmd, arg, arg_ITEM, data);
 }
 
 /* Retrieve argument 'n' as an item */
-int cmd_get_arg_item(struct command *cmd, const char *arg, int *item)
+int cmd_get_arg_item(struct command *cmd, const char *arg, struct object **obj)
 {
 	union cmd_arg_data data;
 	int err;
 
 	if ((err = cmd_get_arg(cmd, arg, arg_ITEM, &data)) == CMD_OK)
-		*item = data.item;
+		*obj = data.obj;
 
 	return err;
 }
 
 /* Get an item, first from the command or try the UI otherwise */
-int cmd_get_item(struct command *cmd, const char *arg, int *item,
-		const char *prompt, const char *reject, item_tester filter, int mode)
+int cmd_get_item(struct command *cmd, const char *arg, struct object **obj, const char *prompt, const char *reject, item_tester filter, int mode)
 {
-	if (cmd_get_arg_item(cmd, arg, item) == CMD_OK)
+	if (cmd_get_arg_item(cmd, arg, obj) == CMD_OK)
 		return CMD_OK;
 
-	if (get_item(item, prompt, reject, cmd->command, filter, mode)) {
-		cmd_set_arg_item(cmd, arg, *item);
+	if (get_item(obj, prompt, reject, cmd->command, filter, mode)) {
+		cmd_set_arg_item(cmd, arg, *obj);
 		return CMD_OK;
 	}
 

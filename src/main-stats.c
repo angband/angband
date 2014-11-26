@@ -293,51 +293,50 @@ static void log_all_objects(int level)
 
 	for (y = 1; y < cave->height - 1; y++) {
 		for (x = 1; x < cave->width - 1; x++) {
-			object_type *o_ptr = get_first_object(y, x);
+			struct object *obj = square_object(cave, y, x);
 
-			if (o_ptr) do {
-			/*	u32b o_power = 0; */
+			for (obj = square_object(cave, y, x); obj; obj = obj->next) {
+				/*	u32b o_power = 0; */
 
 				/* Mark object as fully known */
-				object_notice_everything(o_ptr);
+				object_notice_everything(obj);
 
-/*				o_power = object_power(o_ptr, FALSE, NULL, TRUE); */
+/*				o_power = object_power(obj, FALSE, NULL, TRUE); */
 
 				/* Capture gold amounts */
-				if (tval_is_money(o_ptr))
-					level_data[level].gold[o_ptr->origin] += o_ptr->pval;
+				if (tval_is_money(obj))
+					level_data[level].gold[obj->origin] += obj->pval;
 
 				/* Capture artifact drops */
-				if (o_ptr->artifact)
-					level_data[level].artifacts[o_ptr->origin][o_ptr->artifact->aidx]++;
+				if (obj->artifact)
+					level_data[level].artifacts[obj->origin][obj->artifact->aidx]++;
 
 				/* Capture kind details */
-				if (tval_has_variable_power(o_ptr)) {
+				if (tval_has_variable_power(obj)) {
 					struct wearables_data *w
-						= &level_data[level].wearables[o_ptr->origin][wearables_index[o_ptr->kind->kidx]];
+						= &level_data[level].wearables[obj->origin][wearables_index[obj->kind->kidx]];
 
 					w->count++;
-					w->dice[MIN(o_ptr->dd, TOP_DICE - 1)][MIN(o_ptr->ds, TOP_SIDES - 1)]++;
-					w->ac[MIN(MAX(o_ptr->ac + o_ptr->to_a, 0), TOP_AC - 1)]++;
-					w->hit[MIN(MAX(o_ptr->to_h, 0), TOP_PLUS - 1)]++;
-					w->dam[MIN(MAX(o_ptr->to_d, 0), TOP_PLUS - 1)]++;
+					w->dice[MIN(obj->dd, TOP_DICE - 1)][MIN(obj->ds, TOP_SIDES - 1)]++;
+					w->ac[MIN(MAX(obj->ac + obj->to_a, 0), TOP_AC - 1)]++;
+					w->hit[MIN(MAX(obj->to_h, 0), TOP_PLUS - 1)]++;
+					w->dam[MIN(MAX(obj->to_d, 0), TOP_PLUS - 1)]++;
 
 					/* Capture egos */
-					if (o_ptr->ego)
-						w->egos[o_ptr->ego->eidx]++;
+					if (obj->ego)
+						w->egos[obj->ego->eidx]++;
 					/* Capture object flags */
-					for (i = of_next(o_ptr->flags, FLAG_START); i != FLAG_END;
-							i = of_next(o_ptr->flags, i + 1))
+					for (i = of_next(obj->flags, FLAG_START); i != FLAG_END;
+							i = of_next(obj->flags, i + 1))
 						w->flags[i]++;
 					/* Capture object modifiers */
 					for (i = 0; i < OBJ_MOD_MAX; i++) {
-						int p = o_ptr->modifiers[i];
+						int p = obj->modifiers[i];
 						w->modifiers[MIN(MAX(p, 0), TOP_MOD - 1)][i]++;
 					}
 				} else
-					level_data[level].consumables[o_ptr->origin][consumables_index[o_ptr->kind->kidx]]++;
+					level_data[level].consumables[obj->origin][consumables_index[obj->kind->kidx]]++;
 			}
-			while ((o_ptr = get_next_object(o_ptr)));
 		}
 	}
 }

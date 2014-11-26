@@ -19,6 +19,7 @@
 #include "monster.h"
 #include "init.h"
 #include "quest.h"
+#include "obj-pile.h"
 #include "obj-util.h"
 
 /*

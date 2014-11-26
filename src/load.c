@@ -32,6 +32,7 @@
 #include "obj-identify.h"
 #include "obj-ignore.h"
 #include "obj-make.h"
+#include "obj-pile.h"
 #include "obj-slays.h"
 #include "obj-util.h"
 #include "object.h"
@@ -45,6 +46,8 @@
 #include "ui-game.h"
 #include "ui-input.h"
 
+/* Dungeon constants */
+byte square_size = 0;
 
 /* Object constants */
 byte obj_mod_max = 0;
@@ -99,8 +102,6 @@ static int rd_item(object_type *o_ptr)
 	rd_byte(&ver);
 	assert(tmp16u == 0xffff);
 
-	strip_bytes(2);
-
 	/* Location */
 	rd_byte(&o_ptr->iy);
 	rd_byte(&o_ptr->ix);
@@ -109,9 +110,6 @@ static int rd_item(object_type *o_ptr)
 	rd_byte(&o_ptr->tval);
 	rd_byte(&o_ptr->sval);
 	rd_s16b(&o_ptr->pval);
-
-	/* Pseudo-ID bit */
-	rd_byte(&tmp8u);
 
 	rd_byte(&o_ptr->number);
 	rd_s16b(&o_ptr->weight);
@@ -219,11 +217,12 @@ static int rd_item(object_type *o_ptr)
 	if (!o_ptr->kind)
 		return 0;
 
+	/* Lookup ego, set effect */
 	o_ptr->ego = lookup_ego(ego_idx);
 	if (o_ptr->ego)
 		o_ptr->effect = o_ptr->ego->effect;
 	else
-		o_ptr->effect = o_ptr->kind ? o_ptr->kind->effect : NULL;
+		o_ptr->effect = o_ptr->kind->effect;
 
 	if (art_idx >= z_info->a_max)
 		return -1;
@@ -243,6 +242,7 @@ static void rd_monster(monster_type *m_ptr)
 	byte tmp8u;
 	s16b r_idx;
 	size_t j;
+	struct object *obj = mem_zalloc(sizeof(*obj));;
 
 	/* Read the monster race */
 	rd_s16b(&r_idx);
@@ -270,8 +270,22 @@ static void rd_monster(monster_type *m_ptr)
 	for (j = 0; j < elem_max; j++)
 		rd_s16b(&m_ptr->known_pstate.el_info[j].res_level);
 
-	strip_bytes(1);
+	rd_byte(&tmp8u);
+	if (tmp8u) {
+		m_ptr->mimicked_obj = mem_zalloc(sizeof(struct object *));
+		rd_item(m_ptr->mimicked_obj);
+	}
 
+	/* Read all the held objects (order is unimportant) */
+	rd_item(obj);
+	while ((obj->iy != 0) || (obj->ix != 0)) {
+		obj->next = m_ptr->held_obj;
+		if (obj->next)
+			(obj->next)->prev = obj;
+		m_ptr->held_obj = obj;
+		obj = mem_zalloc(sizeof(*obj));
+	}
+	mem_free(obj);
 }
 
 
@@ -952,69 +966,47 @@ int rd_player_spells(void)
 /**
  * Read the player gear
  */
-static int rd_gear_aux(rd_item_t rd_item_version, struct object ** gear)
+static int rd_gear_aux(rd_item_t rd_item_version, struct object **gear)
 {
-	int slot = 1;
+	byte code;
+	struct object *last_gear_obj = NULL;
 
-	object_type *i_ptr;
-	object_type object_type_body;
-
-	/* Initialise the size of the gear array */
-	player->max_gear = MAX_GEAR;
+	/* Get the first item code */
+	rd_byte(&code);
 
 	/* Read until done */
-	while (1)
-	{
-		u16b n;
-		byte equip;
-
-		/* Get the next item index */
-		rd_u16b(&n);
-
-		/* Nope, we reached the end */
-		if (n == 0xFFFF) break;
-
-		/* Get local object */
-		i_ptr = &object_type_body;
-
-		/* Wipe the object */
-		object_wipe(i_ptr);
+	while (code != FINISHED_CODE) {
+		/* Allocate an object */
+		struct object *obj = mem_zalloc(sizeof(*obj));
 
 		/* Read the item */
-		if ((*rd_item_version)(i_ptr))
-		{
+		if ((*rd_item_version)(obj)) {
 			note("Error reading item");
 			return (-1);
 		}
 
-		/* Hack -- verify item */
-		if (!i_ptr->kind) continue;
+		/* Verify item */
+		if (!obj) return -1;
 
-		/* Increase array size if necessary */
-		if (n >= player->max_gear) {
-			int newsize = player->max_gear + MAX_GEAR_INCR;
-			*gear = (struct object *) mem_realloc(*gear, newsize);
-			player->max_gear += MAX_GEAR_INCR;
-		}
-
-		/* Get a slot */
-		n = slot++;
-
-		/* Copy object */
-		object_copy(&(*gear)[n], i_ptr);
+		/* Append the object */
+		obj->prev = last_gear_obj;
+		if (last_gear_obj)
+			last_gear_obj->next = obj;
+		else
+			*gear = obj;
+		last_gear_obj = obj;
 
 		/* Add the weight */
-		player->upkeep->total_weight += (i_ptr->number * i_ptr->weight);
+		player->upkeep->total_weight += (obj->number * obj->weight);
 
-		/* Is it equipment? */
-		rd_byte(&equip);
-		if (equip) {
-			player->body.slots[wield_slot(i_ptr)].index = n;
+		/* If it's equipment, wield it */
+		if (code == EQUIP_CODE) {
+			player->body.slots[wield_slot(obj)].obj = obj;
 			player->upkeep->equip_cnt++;
 		}
 
-		/* Free object */
-		object_wipe(i_ptr);
+		/* Get the next item code */
+		rd_byte(&code);
 	}
 
 	/* Success */
@@ -1030,8 +1022,7 @@ int rd_gear(void)
 	if (rd_gear_aux(rd_item, &player->gear))
 		return -1;
 	/* Maybe we have to duplicate also upkeep and body */
-	calc_inventory(player->upkeep, player->gear, player->body,
-			player->max_gear);
+	calc_inventory(player->upkeep, player->gear, player->body);
 
 	/* Get known gear */
 	if (rd_gear_aux(rd_item, &player->gear_k))
@@ -1125,54 +1116,51 @@ int rd_stores(void) { return rd_stores_aux(rd_item); }
  * After loading the monsters, the objects being held by monsters are
  * linked directly into those monsters.
  */
-static int rd_dungeon_aux(struct chunk ** c)
+static int rd_dungeon_aux(struct chunk **c)
 {
-	struct chunk * cave = * c;
+	struct chunk *c1 = *c;
 	int i, n, y, x;
 
-	s16b ymax, xmax;
+	u16b height, width;
 
 	byte count;
 	byte tmp8u;
-	u16b tmp16u, square_size;
+	u16b tmp16u;
+	char name[100];
 
 	/*** Basic info ***/
 
 	/* Header info */
-	rd_s16b(&ymax);
-	rd_s16b(&xmax);
-	rd_u16b(&square_size);
-	rd_u16b(&tmp16u);
+	rd_string(name, sizeof(name));
+	rd_u16b(&height);
+	rd_u16b(&width);
 
 	/* We need a cave array */
-	cave = cave_new(ymax, xmax);
+	c1 = cave_new(height, width);
+	c1->name = string_make(name);
 
 	/*** Run length decoding ***/
 
     /* Loop across bytes of cave->squares[y][x].info */
-	for (n = 0; n < square_size; n++)
-	{
+	for (n = 0; n < square_size; n++) {
 		/* Load the dungeon data */
-		for (x = y = 0; y < cave->height; )
-		{
+		for (x = y = 0; y < c1->height; ) {
 			/* Grab RLE info */
 			rd_byte(&count);
 			rd_byte(&tmp8u);
 
 			/* Apply the RLE info */
-			for (i = count; i > 0; i--)
-			{
+			for (i = count; i > 0; i--) {
 				/* Extract "info" */
-				cave->squares[y][x].info[n] = tmp8u;
+				c1->squares[y][x].info[n] = tmp8u;
 
 				/* Advance/Wrap */
-				if (++x >= cave->width)
-				{
+				if (++x >= c1->width) {
 					/* Wrap */
 					x = 0;
 
 					/* Advance/Wrap */
-					if (++y >= cave->height) break;
+					if (++y >= c1->height) break;
 				}
 			}
 		}
@@ -1182,26 +1170,23 @@ static int rd_dungeon_aux(struct chunk ** c)
 	/*** Run length decoding ***/
 
 	/* Load the dungeon data */
-	for (x = y = 0; y < cave->height; )
-	{
+	for (x = y = 0; y < c1->height; ) {
 		/* Grab RLE info */
 		rd_byte(&count);
 		rd_byte(&tmp8u);
 
 		/* Apply the RLE info */
-		for (i = count; i > 0; i--)
-		{
+		for (i = count; i > 0; i--) {
 			/* Extract "feat" */
-			square_set_feat(cave, y, x, tmp8u);
+			square_set_feat(c1, y, x, tmp8u);
 
 			/* Advance/Wrap */
-			if (++x >= cave->width)
-			{
+			if (++x >= c1->width) {
 				/* Wrap */
 				x = 0;
 
 				/* Advance/Wrap */
-				if (++y >= cave->height) break;
+				if (++y >= c1->height) break;
 			}
 		}
 	}
@@ -1209,47 +1194,148 @@ static int rd_dungeon_aux(struct chunk ** c)
 
 	/* Read "feeling" */
 	rd_byte(&tmp8u);
-	cave->feeling = tmp8u;
+	c1->feeling = tmp8u;
 	rd_u16b(&tmp16u);
-	cave->feeling_squares = tmp16u;
-	rd_s32b(&cave->created_at);
+	c1->feeling_squares = tmp16u;
+	rd_s32b(&c1->created_at);
 
 	/* Assign */
-	* c = cave;
+	*c = c1;
 
 	return 0;
 }
 
+/**
+ * Read the floor object list
+ */
+static int rd_objects_aux(rd_item_t rd_item_version, struct chunk *c)
+{
+	struct object *obj;
+	int y, x;
+
+	/* Only if the player's alive */
+	if (player->is_dead)
+		return 0;
+
+	/* Read the dungeon items until one has no location */
+	while (TRUE) {
+		obj = mem_zalloc(sizeof(*obj));
+		rd_item(obj);
+		y = obj->iy;
+		x = obj->ix;
+		if ((y == 0) && (x == 0))
+			break;
+		else if	(!floor_carry(c, y, x, obj, TRUE)) {
+			note(format("Cannot place object at row %d, column %d!", y, x));
+			return -1;
+		}
+	}
+
+	mem_free(obj);
+
+	return 0;
+}
+
+/**
+ * Read monsters
+ */
+static int rd_monsters_aux(struct chunk *c)
+{
+	int i;
+	u16b limit;
+
+	/* Only if the player's alive */
+	if (player->is_dead)
+		return 0;
+
+	/* Read the monster count */
+	rd_u16b(&limit);
+
+	/* Hack -- verify */
+	if (limit > z_info->level_monster_max) {
+		note(format("Too many (%d) monster entries!", limit));
+		return (-1);
+	}
+
+	/* Read the monsters */
+	for (i = 1; i < limit; i++) {
+		monster_type *m_ptr;
+		monster_type monster_type_body;
+
+		/* Get local monster */
+		m_ptr = &monster_type_body;
+		memset(m_ptr, 0, sizeof(*m_ptr));
+
+		/* Read the monster */
+		rd_monster(m_ptr);
+
+		/* Place monster in dungeon */
+		if (place_monster(c, m_ptr->fy, m_ptr->fx, m_ptr, 0) != i) {
+			note(format("Cannot place monster %d", i));
+			return (-1);
+		}
+	}
+
+	return 0;
+}
+
+static int rd_traps_aux(struct chunk *c)
+{
+	int y, x;
+	struct trap *trap;
+
+    /* Only if the player's alive */
+    if (player->is_dead)
+		return 0;
+
+    rd_byte(&trf_size);
+
+	/* Read traps until one has no location */
+	while (TRUE) {
+		trap = mem_zalloc(sizeof(*trap));
+		rd_trap(trap);
+		y = trap->fy;
+		x = trap->fx;
+		if ((y == 0) && (x == 0))
+			break;
+		else {
+			/* Put the trap at the front of the grid trap list */
+			trap->next = c->squares[y][x].trap;
+			c->squares[y][x].trap = trap;
+		}
+	}
+
+	mem_free(trap);
+    return 0;
+}
+
 int rd_dungeon(void)
 {
-	s16b depth;
-	s16b py, px;
+	u16b depth;
+	u16b py, px;
 
 	/* Only if the player's alive */
 	if (player->is_dead)
 		return 0;
 
 	/* Header info */
-	rd_s16b(&depth);
+	rd_u16b(&depth);
 	rd_u16b(&daycount);
-	rd_s16b(&py);
-	rd_s16b(&px);
+	rd_u16b(&py);
+	rd_u16b(&px);
+	rd_byte(&square_size);
 
 	/* Ignore illegal dungeons */
-	if ((depth < 0) || (depth >= MAX_DEPTH))
-	{
+	if (depth >= MAX_DEPTH) {
 		note(format("Ignoring illegal dungeon depth (%d)", depth));
 		return (0);
 	}
-
 
 	if (rd_dungeon_aux(&cave))
 		return 1;
 
 	/* Ignore illegal dungeons */
-	if ((px < 0) || (px >= cave->width) ||
-	    (py < 0) || (py >= cave->height))
-	{
+	if ((px >= cave->width) || (py >= cave->height)) {
 		note(format("Ignoring illegal player location (%d,%d).", py, px));
 		return (1);
 	}
@@ -1275,228 +1361,6 @@ int rd_dungeon(void)
 
 
 /*
- * Read the chunk list
- */
-int rd_chunks(void)
-{
-	int y, x;
-	int i, j;
-	size_t k;
-	u16b chunk_max;
-
-	byte tmp8u;
-
-	byte count;
-
-
-	if (player->is_dead)
-		return 0;
-
-	rd_u16b(&chunk_max);
-	for (j = 0; j < chunk_max; j++) {
-		struct chunk *c;
-		struct trap *trap = mem_zalloc(sizeof(*trap));
-		char name[100];
-		u16b height, width;
-
-		/* Read the name and dimensions */
-		rd_string(name, sizeof(name));
-		rd_u16b(&height);
-		rd_u16b(&width);
-		c = cave_new(height, width);
-		c->name = string_make(name);
-
-		/* Loop across bytes of c->squares[y][x].info */
-		for (k = 0; k < SQUARE_SIZE; k++)
-		{
-			/* Load the chunk data */
-			for (x = y = 0; y < height; )
-			{
-                /* Grab RLE info */
-                rd_byte(&count);
-                rd_byte(&tmp8u);
-
-                /* Apply the RLE info */
-                for (i = count; i > 0; i--)
-                {
-					/* Extract "info" */
-					c->squares[y][x].info[k] = tmp8u;
-
-					/* Advance/Wrap */
-					if (++x >= width)
-					{
-						/* Wrap */
-						x = 0;
-
-						/* Advance/Wrap */
-						if (++y >= height) break;
-					}
-                }
-			}
-		}
-
-        /*** Run length decoding ***/
-
-        /* Load the dungeon data */
-        for (x = y = 0; y < height; )
-        {
-			/* Grab RLE info */
-			rd_byte(&count);
-			rd_byte(&tmp8u);
-
-			/* Apply the RLE info */
-			for (i = count; i > 0; i--)
-			{
-				/* Extract "feat" */
-				square_set_feat(c, y, x, tmp8u);
-
-				/* Advance/Wrap */
-				if (++x >= width)
-				{
-					/* Wrap */
-					x = 0;
-
-					/* Advance/Wrap */
-					if (++y >= height) break;
-				}
-			}
-        }
-
-		/* Total objects */
-		rd_u16b(&c->obj_cnt);
-
-		/* Read the objects */
-		for (i = 1; i < c->obj_cnt; i++) {
-			object_type *o_ptr = &c->objects[i];
-
-			/* Read it */
-			rd_item(o_ptr);
-		}
-
-		/* Total monsters */
-		rd_u16b(&c->mon_cnt);
-
-		/* Read the monsters */
-		for (i = 1; i < c->mon_cnt; i++) {
-			monster_type *m_ptr = &c->monsters[i];
-
-			rd_monster(m_ptr);
-		}
-
-		/* Read traps until one has no location */
-		while (TRUE) {
-			rd_trap(trap);
-			y = trap->fy;
-			x = trap->fx;
-			if ((y == 0) && (x == 0))
-				break;
-			else {
-				/* Put a blank trap at the front of the grid trap list */
-				struct trap *new_trap = mem_zalloc(sizeof(*new_trap));
-				new_trap->next = c->squares[y][y].trap;
-				c->squares[y][x].trap = new_trap;
-
-				/* Copy over the data */
-				new_trap->t_idx = trap->t_idx;
-				new_trap->kind = &trap_info[trap->t_idx];
-				new_trap->fy = y;
-				new_trap->fx = x;
-				trf_copy(new_trap->flags, trap->flags);
-
-				/* Toggle on the trap marker */
-				sqinfo_on(c->squares[y][x].info, SQUARE_TRAP);
-			}
-		}
-
-		mem_free(trap);
-		chunk_list_add(c);
-	}
-
-	return 0;
-}
-
-
-/**
- * Read the floor object list
- */
-static int rd_objects_aux(rd_item_t rd_item_version, struct chunk * cave)
-{
-	int i;
-	u16b limit;
-
-	/* Only if the player's alive */
-	if (player->is_dead)
-		return 0;
-
-	/* Read the item count */
-	rd_u16b(&limit);
-
-	/* Verify maximum */
-	if (limit > z_info->level_object_max)
-	{
-		note(format("Too many (%d) object entries!", limit));
-		return (-1);
-	}
-
-	/* Read the dungeon items */
-	for (i = 1; i < limit; i++)
-	{
-		object_type *i_ptr;
-		object_type object_type_body;
-
-		s16b o_idx;
-		object_type *o_ptr;
-
-
-		/* Get the object */
-		i_ptr = &object_type_body;
-
-		/* Wipe the object */
-		object_wipe(i_ptr);
-
-		/* Read the item */
-		if ((*rd_item_version)(i_ptr))
-		{
-			note("Error reading item");
-			return (-1);
-		}
-
-		/* Make an object */
-		o_idx = o_pop(cave);
-
-		/* Paranoia */
-		if (o_idx != i)
-		{
-			note(format("Cannot place object %d!", i));
-			return (-1);
-		}
-
-		/* Get the object */
-		o_ptr = cave_object(cave, o_idx);
-
-		/* Structure Copy */
-		object_copy(o_ptr, i_ptr);
-
-		/* Dungeon floor */
-		if (!i_ptr->held_m_idx)
-		{
-			int x = i_ptr->ix;
-			int y = i_ptr->iy;
-
-			/* ToDo: Verify coordinates */
-
-			/* Link the object to the pile */
-			o_ptr->next_o_idx = cave->o_idx[y][x];
-
-			/* Link the floor to the object */
-			cave->o_idx[y][x] = o_idx;
-		}
-	}
-
-	return 0;
-}
-
-/*
  * Read the object list - wrapper functions
  */
 int rd_objects(void)
@@ -1508,105 +1372,61 @@ int rd_objects(void)
 	return 0;
 }
 
-/**
- * Read monsters
- */
-static int rd_monsters_aux (struct chunk * cave)
+int rd_monsters (void)
 {
-	int i;
-	u16b limit;
+	if (rd_monsters_aux(cave))
+		return -1;
+	if (rd_monsters_aux(cave_k))
+		return -1;
+	return 0;
+}
 
-	/* Only if the player's alive */
+int rd_traps(void)
+{
+	if (rd_traps_aux(cave))
+		return -1;
+	if (rd_traps_aux(cave_k))
+		return -1;
+	return 0;
+}
+
+/*
+ * Read the chunk list
+ */
+int rd_chunks(void)
+{
+	int j;
+	u16b chunk_max;
+
 	if (player->is_dead)
 		return 0;
 
-	/* Read the monster count */
-	rd_u16b(&limit);
+	rd_u16b(&chunk_max);
+	for (j = 0; j < chunk_max; j++) {
+		struct chunk *c;
 
-	/* Hack -- verify */
-	if (limit > z_info->level_monster_max)
-	{
-		note(format("Too many (%d) monster entries!", limit));
-		return (-1);
-	}
+		/* Read the dungeon */
+		if (rd_dungeon_aux(&c))
+			return -1;
 
-	/* Read the monsters */
-	for (i = 1; i < limit; i++)
-	{
-		monster_type *m_ptr;
-		monster_type monster_type_body;
+		/* Read the objects */
+		if (rd_objects_aux(rd_item, c))
+			return -1;
 
-		/* Get local monster */
-		m_ptr = &monster_type_body;
-		WIPE(m_ptr, monster_type);
+		/* Read the monsters */
+		if (rd_monsters_aux(c))
+			return -1;
 
-		/* Read the monster */
-		rd_monster(m_ptr);
+		/* Read traps */
+		if (rd_traps_aux(c))
+			return -1;
 
-		/* Place monster in dungeon */
-		if (place_monster(cave, m_ptr->fy, m_ptr->fx, m_ptr, 0) != i)
-		{
-			note(format("Cannot place monster %d", i));
-			return (-1);
-		}
-	}
-
-	/* Reacquire objects */
-	for (i = 1; i < cave_object_max(cave); ++i)
-	{
-		object_type *o_ptr;
-		monster_type *m_ptr;
-
-		/* Get the object */
-		o_ptr = cave_object(cave, i);
-
-		/* Check for mimics */
-		if (o_ptr->mimicking_m_idx) {
-
-			/* Verify monster index */
-			if (o_ptr->mimicking_m_idx > z_info->level_monster_max)
-			{
-				note("Invalid monster index");
-				return (-1);
-			}
-
-			/* Get the monster */
-			m_ptr = cave_monster(cave, o_ptr->mimicking_m_idx);
-
-			/* Link the monster to the object */
-			m_ptr->mimicked_o_idx = i;
-
-		} else if (o_ptr->held_m_idx) {
-
-			/* Verify monster index */
-			if (o_ptr->held_m_idx > z_info->level_monster_max)
-			{
-				note("Invalid monster index");
-				return (-1);
-			}
-
-			/* Get the monster */
-			m_ptr = cave_monster(cave, o_ptr->held_m_idx);
-
-			/* Link the object to the pile */
-			o_ptr->next_o_idx = m_ptr->hold_o_idx;
-
-			/* Link the monster to the object */
-			m_ptr->hold_o_idx = i;
-		} else continue;
+		chunk_list_add(c);
 	}
 
 	return 0;
 }
 
-int rd_monsters (void)
-{
-	if (rd_monsters_aux (cave))
-		return -1;
-	if (rd_monsters_aux (cave_k))
-		return -1;
-	return 0;
-}
 
 int rd_history(void)
 {
@@ -1634,56 +1454,6 @@ int rd_history(void)
 		history_add_full(type, &a_info[art_name], dlev, clev, turnno, text);
 	}
 
-	return 0;
-}
-
-static int rd_traps_aux(struct chunk * cave)
-{
-	int y, x;
-	struct trap *trap = mem_zalloc(sizeof(*trap));
-
-    /* Only if the player's alive */
-    if (player->is_dead)
-	return 0;
-
-
-    rd_byte(&trf_size);
-
-	/* Read traps until one has no location */
-	while (TRUE) {
-		rd_trap(trap);
-		y = trap->fy;
-		x = trap->fx;
-		if ((y == 0) && (x == 0))
-			break;
-		else {
-			/* Put a blank trap at the front of the grid trap list */
-			struct trap *new_trap = mem_zalloc(sizeof(*new_trap));
-			new_trap->next = cave->squares[y][y].trap;
-			cave->squares[y][x].trap = new_trap;
-
-			/* Copy over the data */
-			new_trap->t_idx = trap->t_idx;
-			new_trap->kind = &trap_info[trap->t_idx];
-			new_trap->fy = y;
-			new_trap->fx = x;
-			trf_copy(new_trap->flags, trap->flags);
-
-			/* Toggle on the trap marker */
-			sqinfo_on(cave->squares[y][x].info, SQUARE_TRAP);
-		}
-	}
-
-	mem_free(trap);
-    return 0;
-}
-
-int rd_traps(void)
-{
-	if (rd_traps_aux(cave))
-		return -1;
-	if (rd_traps_aux(cave_k))
-		return -1;
 	return 0;
 }
 

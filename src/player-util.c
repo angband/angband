@@ -254,10 +254,10 @@ bool player_can_read(struct player *p, bool show_msg)
  */
 bool player_can_fire(struct player *p, bool show_msg)
 {
-	object_type *o_ptr = equipped_item_by_slot_name(player, "shooting");
+	object_type *obj = equipped_item_by_slot_name(player, "shooting");
 
 	/* Require a usable launcher */
-	if (!o_ptr->tval || !p->state.ammo_tval)
+	if (!obj || !p->state.ammo_tval)
 	{
 		if (show_msg)
 			msg("You have nothing to fire with.");
@@ -277,7 +277,7 @@ bool player_can_refuel(struct player *p, bool show_msg)
 {
 	object_type *obj = equipped_item_by_slot_name(player, "light");
 
-	if (obj->kind && of_has(obj->flags, OF_TAKES_FUEL))
+	if (obj && of_has(obj->flags, OF_TAKES_FUEL))
 		return TRUE;
 
 	if (show_msg)
@@ -333,35 +333,26 @@ bool player_can_refuel_prereq(void)
 bool player_book_has_unlearned_spells(struct player *p)
 {
 	int i, j;
-	int item_max = z_info->pack_size;
-	int *item_list = mem_zalloc(item_max * sizeof(int));
-	int item_num;
 	const class_book *book;
 
 	/* Check if the player can learn new spells */
-	if (!p->upkeep->new_spells) {
-		mem_free(item_list);
+	if (!p->upkeep->new_spells)
 		return FALSE;
-	}
-
-	/* Get the number of books in inventory */
-	item_num = scan_items(item_list, item_max, (USE_INVEN), obj_can_browse);
 
 	/* Check through all available books */
-	for (i = 0; i < item_num; i++) {
-		book = object_to_book(object_from_item_idx(player->upkeep->inven[i]));
+	for (i = 0; i < z_info->pack_size; i++) {
+		struct object *obj = player->upkeep->inven[i];
+		if (!obj || !obj_can_browse(obj)) continue;
+		book = object_to_book(player->upkeep->inven[i]);
 		if (!book) continue;
 
 		/* Extract spells */
 		for (j = 0; j < book->num_spells; j++)
-			if (spell_okay_to_study(book->spells[j].sidx)) {
+			if (spell_okay_to_study(book->spells[j].sidx))
 				/* There is a spell the player can study */
-				mem_free(item_list);
 				return TRUE;
-			}
 	}
 
-	mem_free(item_list);
 	return FALSE;
 }
 

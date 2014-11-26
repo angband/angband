@@ -35,6 +35,7 @@
 #include "mon-util.h"
 #include "obj-desc.h"
 #include "obj-ignore.h"
+#include "obj-pile.h"
 #include "obj-slays.h"
 #include "obj-tval.h"
 #include "obj-util.h"
@@ -1302,7 +1303,7 @@ void process_monster_grab_objects(struct chunk *c, struct monster *m_ptr,
 		const char *m_name, int nx, int ny)
 {
 	monster_lore *l_ptr = get_lore(m_ptr->race);
-	s16b this_o_idx, next_o_idx = 0;
+	struct object *obj;
 
 	bool is_item = square_object(c, ny, nx);
 	if (is_item && mflag_has(m_ptr->mflag, MFLAG_VISIBLE)) {
@@ -1317,22 +1318,18 @@ void process_monster_grab_objects(struct chunk *c, struct monster *m_ptr,
 	}
 
 	/* Take or kill objects on the floor */
-	for (this_o_idx = c->o_idx[ny][nx]; this_o_idx; this_o_idx = next_o_idx) {
-		object_type *o_ptr = cave_object(c, this_o_idx);
+	for (obj = square_object(c, ny, nx); obj; obj = obj->next) {
 		char o_name[80];
-		bool safe = o_ptr->artifact ? TRUE : FALSE;
-
-		/* Get the next object */
-		next_o_idx = o_ptr->next_o_idx;
+		bool safe = obj->artifact ? TRUE : FALSE;
 
 		/* Skip gold */
-		if (tval_is_money(o_ptr)) continue;
+		if (tval_is_money(obj)) continue;
 
 		/* Get the object name */
-		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
+		object_desc(o_name, sizeof(o_name), obj, ODESC_PREFIX | ODESC_FULL);
 
 		/* React to objects that hurt the monster */
-		if (react_to_slay(o_ptr, m_ptr))
+		if (react_to_slay(obj, m_ptr))
 			safe = TRUE;
 
 		/* The object cannot be picked up by the monster */
@@ -1340,40 +1337,30 @@ void process_monster_grab_objects(struct chunk *c, struct monster *m_ptr,
 			/* Only give a message for "take_item" */
 			if (rf_has(m_ptr->race->flags, RF_TAKE_ITEM) &&
 				mflag_has(m_ptr->mflag, MFLAG_VISIBLE) &&
-				player_has_los_bold(ny, nx) && !ignore_item_ok(o_ptr)) {
+				player_has_los_bold(ny, nx) && !ignore_item_ok(obj)) {
 				/* Dump a message */
 				msg("%s tries to pick up %s, but fails.", m_name, o_name);
 			}
 
 		/* Pick up the item */
 		} else if (rf_has(m_ptr->race->flags, RF_TAKE_ITEM)) {
-			object_type *i_ptr;
-			object_type object_type_body;
-
 			/* Describe observable situations */
-			if (player_has_los_bold(ny, nx) && !ignore_item_ok(o_ptr))
+			if (player_has_los_bold(ny, nx) && !ignore_item_ok(obj))
 				msg("%s picks up %s.", m_name, o_name);
 
-			/* Get local object */
-			i_ptr = &object_type_body;
-
-			/* Obtain local object */
-			object_copy(i_ptr, o_ptr);
-
-			/* Delete the object */
-			delete_object_idx(this_o_idx);
-
 			/* Carry the object */
-			monster_carry(c, m_ptr, i_ptr);
+			pile_object_excise(c, ny, nx, obj);
+			monster_carry(c, m_ptr, obj);
 
 		/* Destroy the item */
 		} else {
 			/* Describe observable situations */
-			if (player_has_los_bold(ny, nx) && !ignore_item_ok(o_ptr))
+			if (player_has_los_bold(ny, nx) && !ignore_item_ok(obj))
 				msgt(MSG_DESTROY, "%s crushes %s.", m_name, o_name);
 
 			/* Delete the object */
-			delete_object_idx(this_o_idx);
+			pile_object_excise(c, ny, nx, obj);
+			object_delete(obj);
 		}
 	}
 }

@@ -29,6 +29,7 @@
 #include "mon-util.h"
 #include "obj-identify.h"
 #include "obj-make.h"
+#include "obj-pile.h"
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "quest.h"
@@ -140,7 +141,7 @@ static void cleanup_race_allocs(void) {
 void delete_monster_idx(int m_idx)
 {
 	int x, y;
-	s16b this_o_idx, next_o_idx = 0;
+	struct object *obj;
 	monster_type *m_ptr;
 
 	assert(m_idx > 0);
@@ -167,35 +168,28 @@ void delete_monster_idx(int m_idx)
 	cave->squares[y][x].mon = 0;
 
 	/* Delete objects */
-	for (this_o_idx = m_ptr->hold_o_idx; this_o_idx; this_o_idx = next_o_idx)
-	{
-		object_type *o_ptr;
-
-		/* Get the object */
-		o_ptr = cave_object(cave, this_o_idx);
-
-		/* Get the next object */
-		next_o_idx = o_ptr->next_o_idx;
+	obj = m_ptr->held_obj;
+	while (obj) {
+		struct object *next = obj->next;
 
 		/* Preserve unseen artifacts (we assume they were created as this
 		 * monster's drop) - this will cause unintended behaviour in preserve
 		 * off mode if monsters can pick up artifacts */
-		if (o_ptr->artifact && !object_was_sensed(o_ptr))
-			o_ptr->artifact->created = FALSE;
-
-		/* Clear held_m_idx now to avoid wasting time in delete_object_idx */
-		o_ptr->held_m_idx = 0;
+		if (obj->artifact && !object_was_sensed(obj))
+			obj->artifact->created = FALSE;
 
 		/* Delete the object */
-		delete_object_idx(this_o_idx);
+		object_delete(obj);
+		obj = next;
 	}
 
 	/* Delete mimicked objects */
-	if (m_ptr->mimicked_o_idx > 0)
-		delete_object_idx(m_ptr->mimicked_o_idx);
+	if (m_ptr->mimicked_obj) {
+		object_delete(m_ptr->mimicked_obj);
+	}
 
 	/* Wipe the Monster */
-	(void)WIPE(m_ptr, monster_type);
+	memset(m_ptr, 0, sizeof(monster_type));
 
 	/* Count monsters */
 	cave->mon_cnt--;
@@ -224,10 +218,8 @@ void delete_monster(int y, int x)
 static void compact_monsters_aux(int i1, int i2)
 {
 	int y, x;
-
 	monster_type *m_ptr;
-
-	s16b this_o_idx, next_o_idx = 0;
+	struct object *obj;
 
 	/* Do nothing */
 	if (i1 == i2) return;
@@ -244,30 +236,12 @@ static void compact_monsters_aux(int i1, int i2)
 	m_ptr->midx = i2;
 
 	/* Repair objects being carried by monster */
-	for (this_o_idx = m_ptr->hold_o_idx; this_o_idx; this_o_idx = next_o_idx)
-	{
-		object_type *o_ptr;
+	for (obj = m_ptr->held_obj; obj; obj = obj->next)
+		obj->held_m_idx = i2;
 
-		/* Get the object */
-		o_ptr = cave_object(cave, this_o_idx);
-
-		/* Get the next object */
-		next_o_idx = o_ptr->next_o_idx;
-
-		/* Reset monster pointer */
-		o_ptr->held_m_idx = i2;
-	}
-	
-	/* Move mimicked objects */
-	if (m_ptr->mimicked_o_idx > 0) {
-		object_type *o_ptr;
-
-		/* Get the object */
-		o_ptr = cave_object(cave, m_ptr->mimicked_o_idx);
-
-		/* Reset monster pointer */
-		o_ptr->mimicking_m_idx = i2;
-	}
+	/* Move mimicked objects (heh) */
+	if (m_ptr->mimicked_obj)
+		m_ptr->mimicked_obj->mimicking_m_idx = i2;
 
 	/* Hack -- Update the target */
 	if (target_get_monster() == m_ptr)
@@ -278,10 +252,11 @@ static void compact_monsters_aux(int i1, int i2)
 		player->upkeep->health_who = cave_monster(cave, i2);
 
 	/* Hack -- move monster */
-	COPY(cave_monster(cave, i2), cave_monster(cave, i1), struct monster);
+	memcpy(cave_monster(cave, i2), cave_monster(cave, i1),
+		   sizeof(struct monster));
 
 	/* Hack -- wipe hole */
-	(void)WIPE(cave_monster(cave, i1), monster_type);
+	memset(cave_monster(cave, i1), 0, sizeof(struct monster));
 }
 
 
@@ -694,7 +669,6 @@ static bool mon_create_drop(struct chunk *c, struct monster *m_ptr, byte origin)
 	int number = 0, level, j, monlevel;
 
 	object_type *i_ptr;
-	object_type object_type_body;
 	
 	assert(m_ptr);
 
@@ -708,7 +682,7 @@ static bool mon_create_drop(struct chunk *c, struct monster *m_ptr, byte origin)
 
     /* Give added bonus for unique monters */
     monlevel = m_ptr->race->level;
-    if (rf_has(m_ptr->race->flags, RF_UNIQUE)){
+    if (rf_has(m_ptr->race->flags, RF_UNIQUE)) {
         monlevel = MIN(monlevel + 15, monlevel * 2);
         extra_roll = TRUE;
     }
@@ -723,7 +697,8 @@ static bool mon_create_drop(struct chunk *c, struct monster *m_ptr, byte origin)
 		if ((unsigned int)randint0(100) >= drop->percent_chance)
 			continue;
 
-		i_ptr = &object_type_body;
+		/* Allocate by hand, prep, apply magic */
+		i_ptr = mem_zalloc(sizeof(*i_ptr));
 		if (drop->artifact) {
 			object_prep(i_ptr, lookup_kind(drop->artifact->tval,
 				drop->artifact->sval), level, RANDOMISE);
@@ -735,31 +710,42 @@ static bool mon_create_drop(struct chunk *c, struct monster *m_ptr, byte origin)
 			apply_magic(i_ptr, level, TRUE, good, great, extra_roll);
 		}
 
+		/* Set origin details */
 		i_ptr->origin = origin;
 		i_ptr->origin_depth = player->depth;
 		i_ptr->origin_xtra = m_ptr->race->ridx;
 		i_ptr->number = randint0(drop->max - drop->min) + drop->min;
+
+		/* Try to carry */
 		if (monster_carry(c, m_ptr, i_ptr))
 			any = TRUE;
+		else {
+			i_ptr->artifact->created = 0;
+			mem_free(i_ptr);
+		}
 	}
 
 	/* Make some objects */
 	for (j = 0; j < number; j++) {
-		i_ptr = &object_type_body;
-		object_wipe(i_ptr);
-
 		if (gold_ok && (!item_ok || (randint0(100) < 50))) {
-			make_gold(i_ptr, level, "any");
+			i_ptr = make_gold(level, "any");
 		} else {
-			if (!make_object(c, i_ptr, level, good,
-                great, extra_roll, NULL, 0)) continue;
+			i_ptr = make_object(c, level, good, great, extra_roll, NULL, 0);
+			if (!i_ptr) continue;
 		}
 
+		/* Set origin details */
 		i_ptr->origin = origin;
 		i_ptr->origin_depth = player->depth;
 		i_ptr->origin_xtra = m_ptr->race->ridx;
+
+		/* Try to carry */
 		if (monster_carry(c, m_ptr, i_ptr))
 			any = TRUE;
+		else {
+			i_ptr->artifact->created = 0;
+			mem_free(i_ptr);
+		}
 	}
 
 	return any;
@@ -784,7 +770,7 @@ static bool mon_create_drop(struct chunk *c, struct monster *m_ptr, byte origin)
 s16b place_monster(struct chunk *c, int y, int x, monster_type *mon, byte origin)
 {
 	s16b m_idx;
-	monster_type *m_ptr;
+	struct monster *m_ptr;
 
 	assert(square_in_bounds(c, y, x));
 	assert(!square_monster(c, y, x));
@@ -795,7 +781,7 @@ s16b place_monster(struct chunk *c, int y, int x, monster_type *mon, byte origin
 
 	/* Copy the monster */
 	m_ptr = cave_monster(c, m_idx);
-	COPY(m_ptr, mon, monster_type);
+	memcpy(m_ptr, mon, sizeof(struct monster));
 
 	/* Set the ID */
 	m_ptr->midx = m_idx;
@@ -820,9 +806,8 @@ s16b place_monster(struct chunk *c, int y, int x, monster_type *mon, byte origin
 
 	/* Make mimics start mimicking */
 	if (origin && m_ptr->race->mimic_kinds) {
-		object_type *i_ptr;
-		object_type object_type_body;
-		object_kind *kind = m_ptr->race->mimic_kinds->kind;
+		struct object *obj;
+		struct object_kind *kind = m_ptr->race->mimic_kinds->kind;
 		struct monster_mimic *mimic_kind;
 		int i = 1;
 		
@@ -832,20 +817,20 @@ s16b place_monster(struct chunk *c, int y, int x, monster_type *mon, byte origin
 			if (one_in_(i)) kind = mimic_kind->kind;
 		}
 
-		i_ptr = &object_type_body;
-
 		if (tval_is_money_k(kind)) {
-			make_gold(i_ptr, player->depth,
-					  lookup_kind(TV_GOLD, kind->sval)->name);
+			obj = make_gold(player->depth,
+							  lookup_kind(TV_GOLD, kind->sval)->name);
 		} else {
-			object_prep(i_ptr, kind, m_ptr->race->level, RANDOMISE);
-			apply_magic(i_ptr, m_ptr->race->level, TRUE, FALSE, FALSE, FALSE);
-			i_ptr->number = 1;
+			obj = mem_zalloc(sizeof(*obj));
+			object_prep(obj, kind, m_ptr->race->level, RANDOMISE);
+			apply_magic(obj, m_ptr->race->level, TRUE, FALSE, FALSE, FALSE);
+			obj->number = 1;
 		}
 
-		i_ptr->origin = origin;
-		i_ptr->mimicking_m_idx = m_idx;
-		m_ptr->mimicked_o_idx = floor_carry(c, y, x, i_ptr);
+		obj->origin = origin;
+		obj->mimicking_m_idx = m_idx;
+		m_ptr->mimicked_obj = obj;
+		floor_carry(c, y, x, obj, FALSE);
 	}
 
 	/* Result */
@@ -1340,77 +1325,62 @@ bool pick_and_place_distant_monster(struct chunk *c, struct loc loc, int dis,
  * If `stats` is true, then we skip updating the monster memory. This is
  * used by stats-generation code, for efficiency.
  */
-void monster_death(struct monster *m_ptr, bool stats)
+void monster_death(struct monster *mon, bool stats)
 {
 	int dump_item = 0;
 	int dump_gold = 0;
-	s16b this_o_idx, next_o_idx = 0;
+	struct object *obj = mon->held_obj;
 
-	object_type *i_ptr;
-	object_type object_type_body;
-
-	bool visible = (mflag_has(m_ptr->mflag, MFLAG_VISIBLE) ||
-					rf_has(m_ptr->race->flags, RF_UNIQUE));
-
-	int y = m_ptr->fy;
-	int x = m_ptr->fx;
+	bool visible = (mflag_has(mon->mflag, MFLAG_VISIBLE) ||
+					rf_has(mon->race->flags, RF_UNIQUE));
 
 	/* Delete any mimicked objects */
-	if (m_ptr->mimicked_o_idx > 0)
-		delete_object_idx(m_ptr->mimicked_o_idx);
+	if (mon->mimicked_obj) {
+		object_delete(mon->mimicked_obj);
+	}
 
 	/* Drop objects being carried */
-	for (this_o_idx = m_ptr->hold_o_idx; this_o_idx; this_o_idx = next_o_idx) {
-		object_type *o_ptr;
+	while (obj) {
+		struct object *next = obj->next;
 
-		/* Get the object */
-		o_ptr = cave_object(cave, this_o_idx);
-
-		/* Line up the next object */
-		next_o_idx = o_ptr->next_o_idx;
-
-		/* Paranoia */
-		o_ptr->held_m_idx = 0;
-
-		/* Get local object, copy it and delete the original */
-		i_ptr = &object_type_body;
-		object_copy(i_ptr, o_ptr);
-		delete_object_idx(this_o_idx);
+		/* Object no longer held */
+		obj->held_m_idx = 0;
 
 		/* Count it and drop it - refactor once origin is a bitflag */
 		if (!stats) {
-			if (tval_is_money(i_ptr) && (i_ptr->origin != ORIGIN_STOLEN))
+			if (tval_is_money(obj) && (obj->origin != ORIGIN_STOLEN))
 				dump_gold++;
-			else if (!tval_is_money(i_ptr) && ((i_ptr->origin == ORIGIN_DROP)
-					|| (i_ptr->origin == ORIGIN_DROP_PIT)
-					|| (i_ptr->origin == ORIGIN_DROP_VAULT)
-					|| (i_ptr->origin == ORIGIN_DROP_SUMMON)
-					|| (i_ptr->origin == ORIGIN_DROP_SPECIAL)
-					|| (i_ptr->origin == ORIGIN_DROP_BREED)
-					|| (i_ptr->origin == ORIGIN_DROP_POLY)
-					|| (i_ptr->origin == ORIGIN_DROP_WIZARD)))
+			else if (!tval_is_money(obj) && ((obj->origin == ORIGIN_DROP)
+					|| (obj->origin == ORIGIN_DROP_PIT)
+					|| (obj->origin == ORIGIN_DROP_VAULT)
+					|| (obj->origin == ORIGIN_DROP_SUMMON)
+					|| (obj->origin == ORIGIN_DROP_SPECIAL)
+					|| (obj->origin == ORIGIN_DROP_BREED)
+					|| (obj->origin == ORIGIN_DROP_POLY)
+					|| (obj->origin == ORIGIN_DROP_WIZARD)))
 				dump_item++;
 		}
 
 		/* Change origin if monster is invisible, unless we're in stats mode */
 		if (!visible && !stats)
-			i_ptr->origin = ORIGIN_DROP_UNKNOWN;
+			obj->origin = ORIGIN_DROP_UNKNOWN;
 
-		drop_near(cave, i_ptr, 0, y, x, TRUE);
+		drop_near(cave, obj, 0, mon->fy, mon->fx, TRUE);
+		obj = next;
 	}
 
 	/* Forget objects */
-	m_ptr->hold_o_idx = 0;
+	mon->held_obj = NULL;
 
 	/* Take note of any dropped treasure */
 	if (visible && (dump_item || dump_gold))
-		lore_treasure(m_ptr, dump_item, dump_gold);
+		lore_treasure(mon, dump_item, dump_gold);
 
 	/* Update monster list window */
 	player->upkeep->redraw |= PR_MONLIST;
 
 	/* Check if we finished a quest */
-	quest_check(m_ptr);
+	quest_check(mon);
 }
 
 

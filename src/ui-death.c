@@ -1,6 +1,6 @@
 /**
-   \file ui-death.c
-   \brief Handle the UI bits that happen after the character dies.
+ * \file ui-death.c
+ * \brief Handle the UI bits that happen after the character dies.
  *
  * Copyright (c) 1987 - 2007 Angband contributors
  *
@@ -291,24 +291,22 @@ static void death_scores(const char *title, int row)
  */
 static void death_examine(const char *title, int row)
 {
-	int item;
+	struct object *obj;
 	const char *q, *s;
 
 	/* Get an item */
 	q = "Examine which item? ";
 	s = "You have nothing to examine.";
 
-	while (get_item(&item, q, s, 0, NULL, (USE_INVEN | USE_QUIVER | USE_EQUIP | IS_HARMLESS)))
+	while (get_item(&obj, q, s, 0, NULL, (USE_INVEN | USE_QUIVER | USE_EQUIP | IS_HARMLESS)))
 	{
 		char header[120];
 
 		textblock *tb;
 		region area = { 0, 0, 0, 0 };
 
-		object_type *o_ptr = &player->gear[item];
-
-		tb = object_info(o_ptr, OINFO_NONE);
-		object_desc(header, sizeof(header), o_ptr,
+		tb = object_info(obj, OINFO_NONE);
+		object_desc(header, sizeof(header), obj,
 				ODESC_PREFIX | ODESC_FULL | ODESC_CAPITAL);
 
 		textui_textblock_show(tb, area, header);

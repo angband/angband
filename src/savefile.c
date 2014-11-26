@@ -116,19 +116,16 @@ static const struct {
 	{ "gear", wr_gear, 1 },
 	{ "stores", wr_stores, 1 },
 	{ "dungeon", wr_dungeon, 1 },
-	{ "chunks", wr_chunks, 1 },
 	{ "objects", wr_objects, 1 },
 	{ "monsters", wr_monsters, 1 },
-	{ "ghost", wr_ghost, 1 },
-	{ "history", wr_history, 1 },
 	{ "traps", wr_traps, 1 },
+	{ "chunks", wr_chunks, 1 },
+	{ "history", wr_history, 1 },
 };
 
 /** Savefile loading functions */
 static const struct blockinfo loaders[] = {
 	{ "description", rd_null, 1 },
-	{ "ghost", rd_null, 1 },
-	{ "randarts", rd_null, 1 },
 	{ "rng", rd_randomizer, 1 },
 	{ "options", rd_options, 1 },
 	{ "messages", rd_messages, 1 },
@@ -144,11 +141,11 @@ static const struct blockinfo loaders[] = {
 	{ "gear", rd_gear, 1 },	
 	{ "stores", rd_stores, 1 },	
 	{ "dungeon", rd_dungeon, 1 },
-	{ "chunks", rd_chunks, 1 },
 	{ "objects", rd_objects, 1 },	
 	{ "monsters", rd_monsters, 1 },
-	{ "history", rd_history, 1 },
 	{ "traps", rd_traps, 1 },
+	{ "chunks", rd_chunks, 1 },
+	{ "history", rd_history, 1 },
 };
 
 

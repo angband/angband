@@ -29,6 +29,7 @@
 #include "obj-gear.h"
 #include "obj-identify.h"
 #include "obj-make.h"
+#include "obj-pile.h"
 #include "obj-power.h"
 #include "obj-tval.h"
 #include "obj-ui.h"
@@ -463,31 +464,29 @@ static bool wiz_create_item_subaction(menu_type *m, const ui_event *e, int oid)
 	object_kind **choices = menu_priv(m);
 	object_kind *kind = choices[oid];
 
-	object_type *i_ptr;
-	object_type object_type_body;
+	object_type *obj;
 
 	if (e->type != EVT_SELECT)
 		return TRUE;
 
-
-	/* Get local object */
-	i_ptr = &object_type_body;
-
 	/* Create the item */
-	object_prep(i_ptr, kind, player->depth, RANDOMISE);
+	if (tval_is_money_k(kind))
+		obj = make_gold(player->depth, lookup_kind(TV_GOLD, kind->sval)->name);
+	else {
+		/* Get object */
+		obj = mem_zalloc(sizeof(*obj));
+		object_prep(obj, kind, player->depth, RANDOMISE);
 
-	/* Apply magic (no messages, no artifacts) */
-	apply_magic(i_ptr, player->depth, FALSE, FALSE, FALSE, FALSE);
+		/* Apply magic (no messages, no artifacts) */
+		apply_magic(obj, player->depth, FALSE, FALSE, FALSE, FALSE);
+	}
 
 	/* Mark as cheat, and where created */
-	i_ptr->origin = ORIGIN_CHEAT;
-	i_ptr->origin_depth = player->depth;
-
-	if (tval_is_money_k(kind))
-		make_gold(i_ptr, player->depth, lookup_kind(TV_GOLD, kind->sval)->name);
+	obj->origin = ORIGIN_CHEAT;
+	obj->origin_depth = player->depth;
 
 	/* Drop the object from heaven */
-	drop_near(cave, i_ptr, 0, player->py, player->px, TRUE);
+	drop_near(cave, obj, 0, player->py, player->px, TRUE);
 
 	return FALSE;
 }
@@ -776,8 +775,7 @@ static void wiz_statistics(object_type *o_ptr, int level)
 
 	bool good, great, ismatch, isbetter, isworse;
 
-	object_type *i_ptr;
-	object_type object_type_body;
+	struct object *test_obj;
 
 	const char *q = "Rolls: %ld, Matches: %ld, Better: %ld, Worse: %ld, Other: %ld";
 
@@ -787,8 +785,7 @@ static void wiz_statistics(object_type *o_ptr, int level)
 
 
 	/* Interact */
-	while (TRUE)
-	{
+	while (TRUE) {
 		const char *pmt = "Roll for [n]ormal, [g]ood, or [e]xcellent treasure? ";
 
 		/* Display item */
@@ -797,26 +794,19 @@ static void wiz_statistics(object_type *o_ptr, int level)
 		/* Get choices */
 		if (!get_com(pmt, &ch)) break;
 
-		if (ch.code == 'n' || ch.code == 'N')
-		{
+		if (ch.code == 'n' || ch.code == 'N') {
 			good = FALSE;
 			great = FALSE;
 			quality = "normal";
-		}
-		else if (ch.code == 'g' || ch.code == 'G')
-		{
+		} else if (ch.code == 'g' || ch.code == 'G') {
 			good = TRUE;
 			great = FALSE;
 			quality = "good";
-		}
-		else if (ch.code == 'e' || ch.code == 'E')
-		{
+		} else if (ch.code == 'e' || ch.code == 'E') {
 			good = TRUE;
 			great = TRUE;
 			quality = "excellent";
-		}
-		else
-		{
+		} else {
 #if 0 /* unused */
 			good = FALSE;
 			great = FALSE;
@@ -825,19 +815,17 @@ static void wiz_statistics(object_type *o_ptr, int level)
 		}
 
 		/* Let us know what we are doing */
-		msg("Creating a lot of %s items. Base level = %d.",
-		           quality, player->depth);
+		msg("Creating a lot of %s items. Base level = %d.", quality,
+			player->depth);
 		message_flush();
 
 		/* Set counters to zero */
 		matches = better = worse = other = 0;
 
 		/* Let's rock and roll */
-		for (i = 0; i <= TEST_ROLL; i++)
-		{
+		for (i = 0; i <= TEST_ROLL; i++) {
 			/* Output every few rolls */
-			if ((i < 100) || (i % 100 == 0))
-			{
+			if ((i < 100) || (i % 100 == 0)) {
 				struct keypress kp;
 
 				/* Do not wait */
@@ -845,8 +833,7 @@ static void wiz_statistics(object_type *o_ptr, int level)
 
 				/* Allow interupt */
 				kp = inkey();
-				if (kp.type != EVT_NONE)
-				{
+				if (kp.type != EVT_NONE) {
 					flush();
 					break;
 				}
@@ -856,68 +843,56 @@ static void wiz_statistics(object_type *o_ptr, int level)
 				Term_fresh();
 			}
 
-
-			/* Get local object */
-			i_ptr = &object_type_body;
-
-			/* Wipe the object */
-			object_wipe(i_ptr);
-
 			/* Create an object */
-			make_object(cave, i_ptr, level, good, great, FALSE, NULL, 0);
+			test_obj = make_object(cave, level, good, great, FALSE, NULL, 0);
 
-			/* Allow multiple artifacts, because breaking the game is fine here */
+			/* Allow multiple artifacts, because breaking the game is OK here */
 			if (o_ptr->artifact) o_ptr->artifact->created = FALSE;
 
 			/* Test for the same tval and sval. */
-			if ((o_ptr->tval) != (i_ptr->tval)) continue;
-			if ((o_ptr->sval) != (i_ptr->sval)) continue;
+			if ((o_ptr->tval) != (test_obj->tval)) continue;
+			if ((o_ptr->sval) != (test_obj->sval)) continue;
 
 			/* Check modifiers */
 			ismatch = TRUE;
 			for (j = 0; j < OBJ_MOD_MAX; j++)
-				if (i_ptr->modifiers[j] != o_ptr->modifiers[j])
+				if (test_obj->modifiers[j] != o_ptr->modifiers[j])
 					ismatch = FALSE;
 
 			isbetter = TRUE;
 			for (j = 0; j < OBJ_MOD_MAX; j++)
-				if (i_ptr->modifiers[j] < o_ptr->modifiers[j])
+				if (test_obj->modifiers[j] < o_ptr->modifiers[j])
 					isbetter = FALSE;
 
 			isworse = TRUE;
 			for (j = 0; j < OBJ_MOD_MAX; j++)
-				if (i_ptr->modifiers[j] > o_ptr->modifiers[j])
+				if (test_obj->modifiers[j] > o_ptr->modifiers[j])
 					isworse = FALSE;
 
 			/* Check for match */
-			if (ismatch && (i_ptr->to_a == o_ptr->to_a) &&
-				(i_ptr->to_h == o_ptr->to_h) &&
-				(i_ptr->to_d == o_ptr->to_d))
-			{
+			if (ismatch && (test_obj->to_a == o_ptr->to_a) &&
+				(test_obj->to_h == o_ptr->to_h) &&
+				(test_obj->to_d == o_ptr->to_d))
 				matches++;
-			}
 
 			/* Check for better */
-			else if (isbetter && (i_ptr->to_a >= o_ptr->to_a) &&
-			         (i_ptr->to_h >= o_ptr->to_h) &&
-			         (i_ptr->to_d >= o_ptr->to_d))
-			{
+			else if (isbetter && (test_obj->to_a >= o_ptr->to_a) &&
+			         (test_obj->to_h >= o_ptr->to_h) &&
+			         (test_obj->to_d >= o_ptr->to_d))
 					better++;
-			}
 
 			/* Check for worse */
-			else if (isworse && (i_ptr->to_a <= o_ptr->to_a) &&
-			         (i_ptr->to_h <= o_ptr->to_h) &&
-			         (i_ptr->to_d <= o_ptr->to_d))
-			{
+			else if (isworse && (test_obj->to_a <= o_ptr->to_a) &&
+			         (test_obj->to_h <= o_ptr->to_h) &&
+			         (test_obj->to_d <= o_ptr->to_d))
 				worse++;
-			}
 
 			/* Assume different */
 			else
-			{
 				other++;
-			}
+
+			/* Nuke the test object */
+			mem_free(test_obj);
 		}
 
 		/* Final dump */
@@ -1011,12 +986,10 @@ static void wiz_tweak_curse(object_type *o_ptr)
  */
 static void do_cmd_wiz_play(void)
 {
-	int item;
-
 	object_type *i_ptr;
 	object_type object_type_body;
 
-	object_type *o_ptr;
+	struct object *o_ptr;
 
 	struct keypress ch;
 
@@ -1029,13 +1002,10 @@ static void do_cmd_wiz_play(void)
 	/* Get an item */
 	q = "Play with which object? ";
 	s = "You have nothing to play with.";
-	if (!get_item(&item, q, s, 0, NULL, (USE_EQUIP | USE_INVEN | USE_QUIVER | USE_FLOOR))) return;
-
-	o_ptr = object_from_item_idx(item);
+	if (!get_item(&o_ptr, q, s, 0, NULL, (USE_EQUIP | USE_INVEN | USE_QUIVER | USE_FLOOR))) return;
 
 	/* Save screen */
 	screen_save();
-
 
 	/* Get local object */
 	i_ptr = &object_type_body;
@@ -1045,8 +1015,7 @@ static void do_cmd_wiz_play(void)
 
 
 	/* The main loop */
-	while (TRUE)
-	{
+	while (TRUE) {
 		/* Display the item */
 		wiz_display_item(i_ptr, all);
 
@@ -1071,7 +1040,7 @@ static void do_cmd_wiz_play(void)
 			all = !all;
 		else if (ch.code == 'q' || ch.code == 'Q')
 		{
-			bool carried = (item >= 0) ? TRUE : FALSE;
+			bool carried = (object_is_carried(player, i_ptr)) ? TRUE : FALSE;
 			wiz_quantity_item(i_ptr, carried);
 		}
 	}
@@ -1082,8 +1051,7 @@ static void do_cmd_wiz_play(void)
 
 
 	/* Accept change */
-	if (changed)
-	{
+	if (changed) {
 		/* Message */
 		msg("Changes accepted.");
 
@@ -1112,25 +1080,21 @@ static void do_cmd_wiz_play(void)
  */
 static void wiz_create_artifact(int a_idx)
 {
-	object_type *i_ptr;
-	object_type object_type_body;
-	object_kind *kind;
+	struct object *i_ptr;
+	struct object_kind *kind;
 
 	artifact_type *a_ptr = &a_info[a_idx];
 
 	/* Ignore "empty" artifacts */
 	if (!a_ptr->name) return;
 
-	/* Get local object */
-	i_ptr = &object_type_body;
-
-	/* Wipe the object */
-	object_wipe(i_ptr);
-
 	/* Acquire the "kind" index */
 	kind = lookup_kind(a_ptr->tval, a_ptr->sval);
 	if (!kind)
 		return;
+
+	/* Get object */
+	i_ptr = mem_zalloc(sizeof(*i_ptr));
 
 	/* Create the artifact */
 	object_prep(i_ptr, kind, a_ptr->alloc_min, RANDOMISE);
@@ -1603,29 +1567,29 @@ static void wiz_test_kind(int tval)
 	int px = player->px;
 	int sval;
 
-	object_type object_type_body;
-	object_type *i_ptr = &object_type_body;
+	object_type *obj;
 
-	for (sval = 0; sval < 255; sval++)
-	{
+	for (sval = 0; sval < 255; sval++) {
 		object_kind *kind = lookup_kind(tval, sval);
 		if (!kind) continue;
 
 		/* Create the item */
-		object_prep(i_ptr, kind, player->depth, RANDOMISE);
-
-		/* Apply magic (no messages, no artifacts) */
-		apply_magic(i_ptr, player->depth, FALSE, FALSE, FALSE, FALSE);
-
-		/* Mark as cheat, and where created */
-		i_ptr->origin = ORIGIN_CHEAT;
-		i_ptr->origin_depth = player->depth;
-
 		if (tval == TV_GOLD)
-			make_gold(i_ptr, player->depth, lookup_kind(TV_GOLD, sval)->name);
+			obj = make_gold(player->depth, lookup_kind(TV_GOLD, sval)->name);
+		else {
+			obj = mem_zalloc(sizeof(*obj));
+			object_prep(obj, kind, player->depth, RANDOMISE);
+
+			/* Apply magic (no messages, no artifacts) */
+			apply_magic(obj, player->depth, FALSE, FALSE, FALSE, FALSE);
+
+			/* Mark as cheat, and where created */
+			obj->origin = ORIGIN_CHEAT;
+			obj->origin_depth = player->depth;
+		}
 
 		/* Drop the object from heaven */
-		drop_near(cave, i_ptr, 0, py, px, TRUE);
+		drop_near(cave, obj, 0, py, px, TRUE);
 	}
 
 	msg("Done.");

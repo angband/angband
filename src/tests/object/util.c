@@ -5,6 +5,7 @@
 
 #include "object.h"
 #include "obj-make.h"
+#include "obj-pile.h"
 #include "obj-util.h"
 
 int setup_tests(void **state) {
@@ -23,7 +24,7 @@ int test_obj_can_refill(void *state) {
 
     /* Mimic equipping a light */
     object_type *light_ptr = &test_gear[1]; 
-    player->body.slots->index = 1; 
+    player->body.slots->obj = light_ptr; 
 
     /* Torches cannot be refilled */
     object_prep(&obj_torch, &test_torch, 1, AVERAGE);

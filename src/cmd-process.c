@@ -729,7 +729,7 @@ static void textui_process_click(ui_event e)
 		} else
 		{
 			if (e.mouse.button == 1) {
-				if (cave->o_idx[y][x]) {
+				if (square_object(cave, y, x)) {
 					cmdq_push(CMD_PICKUP);
 				} else {
 					cmdq_push(CMD_HOLD);
@@ -837,22 +837,20 @@ bool key_confirm_command(unsigned char c)
 	int i;
 
 	/* Hack -- Scan equipment */
-	for (i = 0; i < player->body.count; i++)
-	{
+	for (i = 0; i < player->body.count; i++) {
 		char verify_inscrip[] = "^*";
 		unsigned n;
 
-		object_type *o_ptr = equipped_item_by_slot(player, i);
-		if (!o_ptr->kind) continue;
+		struct object *obj = slot_object(player, i);
+		if (!obj) continue;
 
 		/* Set up string to look for, e.g. "^d" */
 		verify_inscrip[1] = c;
 
 		/* Verify command */
-		n = check_for_inscrip(o_ptr, "^*") +
-				check_for_inscrip(o_ptr, verify_inscrip);
-		while (n--)
-		{
+		n = check_for_inscrip(obj, "^*") +
+				check_for_inscrip(obj, verify_inscrip);
+		while (n--) {
 			if (!get_check("Are you sure? "))
 				return FALSE;
 		}

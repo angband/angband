@@ -33,6 +33,7 @@
 #include "obj-ignore.h"
 #include "obj-info.h"
 #include "obj-make.h"
+#include "obj-pile.h"
 #include "obj-slays.h"
 #include "obj-tval.h"
 #include "obj-ui.h"
@@ -237,21 +238,21 @@ void flavor_init(void)
 /**
  * Obtain the flags for an item
  */
-void object_flags(const object_type *o_ptr, bitflag flags[OF_SIZE])
+void object_flags(const struct object *obj, bitflag flags[OF_SIZE])
 {
 	of_wipe(flags);
 
-	if (!o_ptr->kind)
+	if (!obj)
 		return;
 
-	of_copy(flags, o_ptr->flags);
+	of_copy(flags, obj->flags);
 }
 
 
 /**
  * Obtain the flags for an item which are known to the player
  */
-void object_flags_known(const object_type *o_ptr, bitflag flags[OF_SIZE])
+void object_flags_known(const struct object *o_ptr, bitflag flags[OF_SIZE])
 {
 	object_flags(o_ptr, flags);
 
@@ -269,8 +270,8 @@ void object_flags_known(const object_type *o_ptr, bitflag flags[OF_SIZE])
  */
 bool object_test(item_tester tester, const struct object *obj)
 {
-	/* Require kind */
-	if (!obj->kind) return FALSE;
+	/* Require object */
+	if (!obj) return FALSE;
 
 	/* Ignore gold */
 	if (tval_is_money(obj)) return FALSE;
@@ -281,20 +282,9 @@ bool object_test(item_tester tester, const struct object *obj)
 
 
 /**
- * Verify the "okayness" of a given item.
- */
-bool item_test(item_tester tester, int item)
-{
-	/* Verify the item */
-	return object_test(tester, object_from_item_idx(item));
-}
-
-
-
-/**
  * Return true if the item is unknown (has yet to be seen by the player).
  */
-bool is_unknown(const object_type *o_ptr)
+bool is_unknown(const struct object *o_ptr)
 {
 	grid_data gd = { 0 };
 	map_info(o_ptr->iy, o_ptr->ix, &gd);
@@ -307,26 +297,19 @@ bool is_unknown(const object_type *o_ptr)
  */
 void acquirement(int y1, int x1, int level, int num, bool great)
 {
-	object_type *i_ptr;
-	object_type object_type_body;
+	struct object *nice_obj;
 
 	/* Acquirement */
 	while (num--) {
-		/* Get local object */
-		i_ptr = &object_type_body;
-
-		/* Wipe the object */
-		object_wipe(i_ptr);
-
 		/* Make a good (or great) object (if possible) */
-		if (!make_object(cave, i_ptr, level, TRUE, great, TRUE, NULL, 0))
-			continue;
+		nice_obj = make_object(cave, level, TRUE, great, TRUE, NULL, 0);
+		if (!nice_obj) continue;
 
-		i_ptr->origin = ORIGIN_ACQUIRE;
-		i_ptr->origin_depth = player->depth;
+		nice_obj->origin = ORIGIN_ACQUIRE;
+		nice_obj->origin_depth = player->depth;
 
 		/* Drop the object */
-		drop_near(cave, i_ptr, 0, y1, x1, TRUE);
+		drop_near(cave, nice_obj, 0, y1, x1, TRUE);
 	}
 }
 
@@ -334,7 +317,7 @@ void acquirement(int y1, int x1, int level, int num, bool great)
 /**
  * Looks if "inscrip" is present on the given object.
  */
-unsigned check_for_inscrip(const object_type *o_ptr, const char *inscrip)
+unsigned check_for_inscrip(const struct object *o_ptr, const char *inscrip)
 {
 	unsigned i = 0;
 	const char *s;
@@ -463,7 +446,7 @@ void object_short_name(char *buf, size_t max, const char *name)
  *  1 if o2 should be first
  *  0 if it doesn't matter
  */
-static int compare_types(const object_type *o1, const object_type *o2)
+static int compare_types(const struct object *o1, const struct object *o2)
 {
 	if (o1->tval == o2->tval)
 		return CMP(o1->sval, o2->sval);
@@ -480,7 +463,7 @@ static int compare_types(const object_type *o1, const object_type *o2)
  *
  * The sort order is designed with the "list items" command in mind.
  */
-int compare_items(const object_type *o1, const object_type *o2)
+int compare_items(const struct object *o1, const struct object *o2)
 {
 	/* unknown objects go at the end, order doesn't matter */
 	if (is_unknown(o1) || is_unknown(o2)) {
@@ -511,9 +494,10 @@ int compare_items(const object_type *o1, const object_type *o2)
 
 
 /**
- * Helper to draw the Object Recall subwindow; this actually does the work.
+ * This draws the Object Recall subwindow when displaying a particular object
+ * (e.g. a helmet in the backpack, or a scroll on the ground)
  */
-static void display_object_recall(object_type *o_ptr)
+void display_object_recall(struct object *o_ptr)
 {
 	char header[120];
 
@@ -527,23 +511,12 @@ static void display_object_recall(object_type *o_ptr)
 
 
 /**
- * This draws the Object Recall subwindow when displaying a particular object
- * (e.g. a helmet in the backpack, or a scroll on the ground)
- */
-void display_object_idx_recall(s16b item)
-{
-	object_type *o_ptr = object_from_item_idx(item);
-	display_object_recall(o_ptr);
-}
-
-
-/**
  * This draws the Object Recall subwindow when displaying a recalled item kind
  * (e.g. a generic ring of acid or a generic blade of chaos)
  */
 void display_object_kind_recall(struct object_kind *kind)
 {
-	object_type object = { 0 };
+	struct object object = { 0 };
 	object_prep(&object, kind, 0, EXTREMIFY);
 	if (kind->aware)
 		object_notice_everything(&object);
@@ -558,7 +531,7 @@ void display_object_kind_recall(struct object_kind *kind)
  *
  * \param o_ptr is the object to be described.
  */
-void display_object_recall_interactive(object_type *o_ptr)
+void display_object_recall_interactive(struct object *o_ptr)
 {
 	char header[120];
 	textblock *tb;
@@ -574,7 +547,7 @@ void display_object_recall_interactive(object_type *o_ptr)
 /**
  * Determine if an object has charges
  */
-bool obj_has_charges(const object_type *o_ptr)
+bool obj_has_charges(const struct object *o_ptr)
 {
 	if (!tval_can_have_charges(o_ptr)) return FALSE;
 
@@ -586,7 +559,7 @@ bool obj_has_charges(const object_type *o_ptr)
 /**
  * Determine if an object is zappable
  */
-bool obj_can_zap(const object_type *o_ptr)
+bool obj_can_zap(const struct object *o_ptr)
 {
 	/* Any rods not charging? */
 	if (tval_can_have_timeout(o_ptr) && number_charging(o_ptr) < o_ptr->number)
@@ -598,7 +571,7 @@ bool obj_can_zap(const object_type *o_ptr)
 /**
  * Determine if an object is activatable
  */
-bool obj_is_activatable(const object_type *o_ptr)
+bool obj_is_activatable(const struct object *o_ptr)
 {
 	return object_effect(o_ptr) ? TRUE : FALSE;
 }
@@ -606,7 +579,7 @@ bool obj_is_activatable(const object_type *o_ptr)
 /**
  * Determine if an object can be activated now
  */
-bool obj_can_activate(const object_type *o_ptr)
+bool obj_can_activate(const struct object *o_ptr)
 {
 	if (obj_is_activatable(o_ptr))
 	{
@@ -620,9 +593,9 @@ bool obj_can_activate(const object_type *o_ptr)
 /**
  * Check if an object can be used to refuel other objects.
  */
-bool obj_can_refill(const object_type *obj)
+bool obj_can_refill(const struct object *obj)
 {
-	const object_type *light = equipped_item_by_slot_name(player, "light");
+	const struct object *light = equipped_item_by_slot_name(player, "light");
 
 	/* Need fuel? */
 	if (of_has(obj->flags, OF_NO_FUEL)) return FALSE;
@@ -639,7 +612,7 @@ bool obj_can_refill(const object_type *obj)
 	return FALSE;
 }
 
-bool obj_can_browse(const object_type *o_ptr)
+bool obj_can_browse(const struct object *o_ptr)
 {
 	int i;
 
@@ -652,13 +625,13 @@ bool obj_can_browse(const object_type *o_ptr)
 	return FALSE;
 }
 
-bool obj_can_cast_from(const object_type *o_ptr)
+bool obj_can_cast_from(const struct object *o_ptr)
 {
 	return obj_can_browse(o_ptr) &&
 			spell_book_count_spells(o_ptr, spell_okay_to_cast) > 0;
 }
 
-bool obj_can_study(const object_type *o_ptr)
+bool obj_can_study(const struct object *o_ptr)
 {
 	return obj_can_browse(o_ptr) &&
 			spell_book_count_spells(o_ptr, spell_okay_to_study) > 0;
@@ -666,30 +639,30 @@ bool obj_can_study(const object_type *o_ptr)
 
 
 /* Can only take off non-cursed items */
-bool obj_can_takeoff(const object_type *o_ptr)
+bool obj_can_takeoff(const struct object *o_ptr)
 {
 	return !cursed_p((bitflag *)o_ptr->flags);
 }
 
 /* Can only put on wieldable items */
-bool obj_can_wear(const object_type *o_ptr)
+bool obj_can_wear(const struct object *o_ptr)
 {
 	return (wield_slot(o_ptr) >= 0);
 }
 
 /* Can only fire an item with the right tval */
-bool obj_can_fire(const object_type *o_ptr)
+bool obj_can_fire(const struct object *o_ptr)
 {
 	return o_ptr->tval == player->state.ammo_tval;
 }
 
 /* Can has inscrip pls */
-bool obj_has_inscrip(const object_type *o_ptr)
+bool obj_has_inscrip(const struct object *o_ptr)
 {
 	return (o_ptr->note ? TRUE : FALSE);
 }
 
-bool obj_is_useable(const object_type *o_ptr)
+bool obj_is_useable(const struct object *o_ptr)
 {
 	if (tval_is_useable(o_ptr))
 		return TRUE;
@@ -708,27 +681,16 @@ bool obj_is_useable(const object_type *o_ptr)
 /**
  * Return an object's effect.
  */
-u16b object_effect(const object_type *o_ptr)
+u16b object_effect(const struct object *o_ptr)
 {
 	if (!o_ptr->effect) return 0;
 	return o_ptr->effect->index;
 }
 
 /**
- * Get an o_ptr from an item number
- */
-object_type *object_from_item_idx(int item)
-{
-	if (item >= 0)
-		return &player->gear[item];
-	else
-		return cave_object(cave, 0 - item);
-}
-
-/**
  * Does the given object need to be aimed?
  */ 
-bool obj_needs_aim(object_type *o_ptr)
+bool obj_needs_aim(struct object *o_ptr)
 {
 	struct effect *effect = o_ptr->effect;
 
@@ -755,7 +717,7 @@ bool obj_can_fail(const struct object *o)
  * Returns the number of times in 1000 that @ will FAIL
  * - thanks to Ed Graham for the formula
  */
-int get_use_device_chance(const object_type *o_ptr)
+int get_use_device_chance(const struct object *o_ptr)
 {
 	int lev, fail, numerator, denominator;
 
@@ -796,7 +758,7 @@ int get_use_device_chance(const object_type *o_ptr)
  * \param q_ptr is the target item, must be of the same type as o_ptr
  * \param amt is the number of items that are transfered
  */
-void distribute_charges(object_type *o_ptr, object_type *q_ptr, int amt)
+void distribute_charges(struct object *o_ptr, struct object *q_ptr, int amt)
 {
 	int charge_time = randcalc(o_ptr->time, 0, AVERAGE), max_time;
 
@@ -837,7 +799,7 @@ void distribute_charges(object_type *o_ptr, object_type *q_ptr, int amt)
  * If rods or wand are destroyed, the total maximum timeout or charges of the
  * stack needs to be reduced, unless all the items are being destroyed. -LM-
  */
-void reduce_charges(object_type *o_ptr, int amt)
+void reduce_charges(struct object *o_ptr, int amt)
 {
 	if (tval_can_have_charges(o_ptr) && amt < o_ptr->number)
 		o_ptr->pval -= o_ptr->pval * amt / o_ptr->number;
@@ -849,7 +811,7 @@ void reduce_charges(object_type *o_ptr, int amt)
 /**
  * Number of items (usually rods) charging
  */
-int number_charging(const object_type *o_ptr)
+int number_charging(const struct object *o_ptr)
 {
 	int charge_time, num_charging;
 
@@ -874,7 +836,7 @@ int number_charging(const object_type *o_ptr)
  * Allow a stack of charging objects to charge by one unit per charging object
  * Return TRUE if something recharged
  */
-bool recharge_timeout(object_type *o_ptr)
+bool recharge_timeout(struct object *o_ptr)
 {
 	int charging_before, charging_after;
 

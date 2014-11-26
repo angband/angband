@@ -31,7 +31,7 @@ void textui_cmd_rest(void);
 /* cmd-context.c */
 int context_menu_player(int mx, int my);
 int context_menu_cave(struct chunk *c, int y, int x, int adjacent, int mx, int my);
-int context_menu_object(const object_type *o_ptr, const int slot);
+int context_menu_object(struct object *obj);
 int context_menu_store(struct store *store, const int oid, int mx, int my);
 int context_menu_store_item(struct store *store, const int oid, int mx, int my);
 
@@ -71,7 +71,7 @@ void do_cmd_note(void);
 void do_cmd_uninscribe(struct command *cmd);
 void do_cmd_inscribe(struct command *cmd);
 void do_cmd_takeoff(struct command *cmd);
-void wield_item(object_type *o_ptr, int item, int slot);
+void wield_item(struct object *obj, int slot);
 void do_cmd_wield(struct command *cmd);
 void do_cmd_drop(struct command *cmd);
 void do_cmd_destroy(struct command *cmd);
@@ -88,7 +88,7 @@ void do_cmd_cast(struct command *cmd);
 void do_cmd_study_spell(struct command *cmd);
 void do_cmd_study_book(struct command *cmd);
 void do_cmd_study(struct command *cmd);
-void textui_cmd_destroy_menu(int item);
+void textui_cmd_destroy_menu(struct object *obj);
 void textui_cmd_destroy(void);
 void textui_cmd_toggle_ignore(void);
 void textui_obj_examine(void);
@@ -98,7 +98,7 @@ void do_cmd_pickup(struct command *cmd);
 void do_cmd_autopickup(struct command *cmd);
 int do_autopickup(void);
 byte py_pickup(int pickup);
-byte py_pickup_item(int pickup, int item);
+byte py_pickup_item(int pickup, struct object *obj);
 void move_player(int dir, bool disarm);
 
 /* cmd-process.c */

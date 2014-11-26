@@ -27,6 +27,7 @@
 #include "obj-identify.h"
 #include "obj-info.h"
 #include "obj-make.h"
+#include "obj-pile.h"
 #include "obj-power.h"
 #include "obj-tval.h"
 #include "obj-util.h"
@@ -483,6 +484,7 @@ static void spoil_artifact(const char *fname)
 
 			/* Terminate the entry */
 			spoiler_blanklines(2);
+			object_free(i_ptr);
 		}
 	}
 

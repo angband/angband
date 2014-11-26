@@ -20,6 +20,7 @@
 #include "cave.h"
 #include "dungeon.h"
 #include "generate.h"
+#include "obj-pile.h"
 #include "obj-util.h"
 #include "player-timed.h"
 #include "trap.h"
@@ -301,7 +302,8 @@ static void project_feature_handler_MAKE_DOOR(project_feature_handler_context_t 
 	if (!square_isfloor(cave, y, x)) return;
 
 	/* Push objects off the grid */
-	if (cave->o_idx[y][x]) push_object(y,x);
+	if (square_object(cave, y, x))
+		push_object(y,x);
 
 	/* Create closed door */
 	square_add_door(cave, y, x, TRUE);

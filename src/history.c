@@ -17,9 +17,11 @@
  */
 
 #include "angband.h"
+#include "cave.h"
 #include "dungeon.h"
 #include "history.h"
 #include "obj-desc.h"
+#include "obj-pile.h"
 #include "obj-util.h"
 #include "wizard.h" /* make_fake_artifact() */
 
@@ -241,8 +243,8 @@ static bool history_is_artifact_logged(struct artifact *artifact)
  */
 bool history_add_artifact(struct artifact *artifact, bool known, bool found)
 {
-	object_type object_type_body;
-	object_type *o_ptr = &object_type_body;
+	struct object object_type_body;
+	struct object *fake = &object_type_body;
 
 	char o_name[80];
 	char buf[80];
@@ -251,11 +253,11 @@ bool history_add_artifact(struct artifact *artifact, bool known, bool found)
 	assert(artifact);
 
 	/* Make fake artifact for description purposes */
-	object_wipe(o_ptr);
-	make_fake_artifact(o_ptr, artifact);
-	object_desc(o_name, sizeof(o_name), o_ptr,
+	object_wipe(fake);
+	make_fake_artifact(fake, artifact);
+	object_desc(o_name, sizeof(o_name), fake,
 				ODESC_PREFIX | ODESC_BASE | ODESC_SPOIL);
-	object_wipe(o_ptr);
+	object_wipe(fake);
 	strnfmt(buf, sizeof(buf), (found)?"Found %s":"Missed %s", o_name);
 
 	/* Known objects gets different treatment */

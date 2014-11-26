@@ -51,9 +51,9 @@ bool get_check(const char *prompt) {
 	assert(getset.check);
 	return getset.check(prompt);
 }
-bool get_item(int *cp, const char *pmt, const char *fail, cmd_code cmd, item_filter filter, int mode) {
+bool get_item(struct object **choice, const char *pmt, const char *fail, cmd_code cmd, item_filter filter, int mode) {
 	assert(getset.item);
-	return getset.item(cp, pmt, fail, cmd, filter, mode);
+	return getset.item(choice, pmt, fail, cmd, filter, mode);
 }
 bool get_direction(int *dir, bool allow_5) {
 	assert(getset.direction);

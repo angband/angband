@@ -38,7 +38,7 @@ extern bool get_com_ex(const char *prompt, ui_event *command);
 extern void pause_line(struct term *term);
 
 /* ui-spell.c -- just for now */
-int get_spell_from_book(const char *verb, int book,
+int get_spell_from_book(const char *verb, struct object *book,
 		const char *error, bool (*spell_filter)(int spell));
 int get_spell(const char *verb, item_tester book_filter,
 		cmd_code cmd, const char *error, bool (*spell_filter)(int spell));

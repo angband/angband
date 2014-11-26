@@ -1,6 +1,6 @@
 /**
-   \file project-obj.c
-   \brief projection effects on objects
+ * \file project-obj.c
+ * \brief projection effects on objects
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  *
@@ -24,6 +24,7 @@
 #include "obj-gear.h"
 #include "obj-identify.h"
 #include "obj-ignore.h"
+#include "obj-pile.h"
 #include "obj-tval.h"
 #include "obj-util.h"
 
@@ -36,118 +37,101 @@
  */
 int inven_damage(struct player *p, int type, int cperc)
 {
-	int i, j, k, amt;
-
-	object_type *o_ptr;
-
+	int j, k, amt;
+	struct object *obj;
 	char o_name[80];
-	
 	bool damage;
 
 	/* No chance means no damage */
-	if (cperc <= 0) return 0;
+	if (cperc <= 0)
+		return 0;
 
 	/* Count the casualties */
 	k = 0;
 
 	/* Scan through the gear */
-	for (i = 0; i < p->max_gear; i++)
-	{
-		if (item_is_equipped(p, i)) continue;
-
-		o_ptr = &p->gear[i];
-
-		/* Skip non-objects */
-		if (!o_ptr->kind) continue;
+	for (obj = p->gear; obj; obj = obj->next) {
+		if (object_is_equipped(p->body, obj))
+			continue;
 
 		/* Hack -- for now, skip artifacts */
-		if (o_ptr->artifact) continue;
+		if (obj->artifact) continue;
 
 		/* Give this item slot a shot at death if it is vulnerable */
-		if ((o_ptr->el_info[type].flags & EL_INFO_HATES) &&
-			!(o_ptr->el_info[type].flags & EL_INFO_IGNORE))
-		{
+		if ((obj->el_info[type].flags & EL_INFO_HATES) &&
+			!(obj->el_info[type].flags & EL_INFO_IGNORE)) {
 			/* Chance to destroy this item */
 			int chance = cperc;
 
 			/* Track if it is damaged instead of destroyed */
 			damage = FALSE;
 
-			/*
-			 * Analyze the type to see if we just damage it
-			 * - we also check for rods to reduce chance
-			 */
-			if (tval_is_weapon(o_ptr) && !tval_is_ammo(o_ptr)) {
+			/* Analyze the type to see if we just damage it
+			 * - we also check for rods to reduce chance */
+			if (tval_is_weapon(obj) && !tval_is_ammo(obj)) {
 				/* Chance to damage it */
-				if (randint0(10000) < cperc)
-				{
+				if (randint0(10000) < cperc) {
 					/* Damage the item */
-					o_ptr->to_h--;
-					o_ptr->to_d--;
+					obj->to_h--;
+					obj->to_d--;
 
 					/* Damaged! */
 					damage = TRUE;
-				}
-				else continue;
-			}
-			else if (tval_is_armor(o_ptr)) {
+				} else
+					continue;
+			} else if (tval_is_armor(obj)) {
 				/* Chance to damage it */
-				if (randint0(10000) < cperc)
-				{
+				if (randint0(10000) < cperc) {
 					/* Damage the item */
-					o_ptr->to_a--;
+					obj->to_a--;
 
 					/* Damaged! */
 					damage = TRUE;
-				}
-				else continue;
-			}
-			else if (tval_is_rod(o_ptr)) {
+				} else
+					continue;
+			} else if (tval_is_rod(obj)) {
 				chance = (chance / 4);
 			}
 
 
 			/* Damage instead of destroy */
-			if (damage)
-			{
+			if (damage) {
 				p->upkeep->update |= (PU_BONUS);
 				p->upkeep->redraw |= (PR_EQUIP);
 
 				/* Casualty count */
-				amt = o_ptr->number;
-			}
-
-			/* ... or count the casualties */
-			else for (amt = j = 0; j < o_ptr->number; ++j)
-			{
-				if (randint0(10000) < chance) amt++;
-			}
+				amt = obj->number;
+			} else
+				/* ... or count the casualties */
+				for (amt = j = 0; j < obj->number; ++j)
+					if (randint0(10000) < chance) amt++;
 
 			/* Some casualities */
-			if (amt)
-			{
+			if (amt) {
+				struct object *destroyed;
+
 				/* Get a description */
-				object_desc(o_name, sizeof(o_name), o_ptr,
-					ODESC_BASE);
+				object_desc(o_name, sizeof(o_name), obj, ODESC_BASE);
 
 				/* Message */
 				msgt(MSG_DESTROY, "%sour %s (%c) %s %s!",
-				           ((o_ptr->number > 1) ?
-				            ((amt == o_ptr->number) ? "All of y" :
+				           ((obj->number > 1) ?
+				            ((amt == obj->number) ? "All of y" :
 				             (amt > 1 ? "Some of y" : "One of y")) : "Y"),
-				           o_name, gear_to_label(i),
+				           o_name, gear_to_label(obj),
 				           ((amt > 1) ? "were" : "was"),
 					   (damage ? "damaged" : "destroyed"));
 
 				/* Damage already done? */
-				if (damage) continue;
+				if (damage)
+					continue;
 
 				/* Reduce charges if some devices are destroyed */
-				reduce_charges(o_ptr, amt);
+				reduce_charges(obj, amt);
 
 				/* Destroy "amt" items */
-				inven_item_increase(i, -amt);
-				inven_item_optimize(i);
+				destroyed = gear_object_for_use(obj, 1, FALSE);
+				object_delete(destroyed);
 
 				/* Count the casualties */
 				k += amt;
@@ -171,7 +155,7 @@ typedef struct project_object_handler_context_s {
 	const int x;
 	const int dam;
 	const int type;
-	object_type *o_ptr; /* Ideally, this would be const, but we can't with C89 initialization. */
+	const struct object *obj;
 	bool obvious;
 	bool do_kill;
 	bool ignore;
@@ -194,11 +178,11 @@ static void project_object_elemental(project_object_handler_context_t *context,
 									 int element, const char *singular_verb,
 									 const char *plural_verb)
 {
-	if (context->o_ptr->el_info[element].flags & EL_INFO_HATES) {
+	if (context->obj->el_info[element].flags & EL_INFO_HATES) {
 		context->do_kill = TRUE;
-		context->note_kill = VERB_AGREEMENT(context->o_ptr->number,
+		context->note_kill = VERB_AGREEMENT(context->obj->number,
 											singular_verb, plural_verb);
-		context->ignore = (context->o_ptr->el_info[element].flags &
+		context->ignore = (context->obj->el_info[element].flags &
 						   EL_INFO_IGNORE) ? TRUE : FALSE;
 	}
 }
@@ -317,15 +301,15 @@ static void project_object_handler_MISSILE(project_object_handler_context_t *con
 static void project_object_handler_MANA(project_object_handler_context_t *context)
 {
 	context->do_kill = TRUE;
-	context->note_kill = VERB_AGREEMENT(context->o_ptr->number, "is destroyed", "are destroyed");
+	context->note_kill = VERB_AGREEMENT(context->obj->number, "is destroyed", "are destroyed");
 }
 
 /* Holy Orb -- destroys cursed non-artifacts */
 static void project_object_handler_HOLY_ORB(project_object_handler_context_t *context)
 {
-	if (cursed_p(context->o_ptr->flags)) {
+	if (cursed_p(context->obj->flags)) {
 		context->do_kill = TRUE;
-		context->note_kill = VERB_AGREEMENT(context->o_ptr->number, "is destroyed", "are destroyed");
+		context->note_kill = VERB_AGREEMENT(context->obj->number, "is destroyed", "are destroyed");
 	}
 }
 
@@ -349,15 +333,15 @@ static void project_object_handler_KILL_WALL(project_object_handler_context_t *c
 static void project_object_handler_KILL_DOOR(project_object_handler_context_t *context)
 {
 	/* Chests are noticed only if trapped or locked */
-	if (is_locked_chest(context->o_ptr)) {
+	if (is_locked_chest(context->obj)) {
 		/* Disarm or Unlock */
-		unlock_chest((object_type * const)context->o_ptr);
+		unlock_chest((object_type * const)context->obj);
 
 		/* Identify */
-		object_notice_everything((object_type * const)context->o_ptr);
+		object_notice_everything((object_type * const)context->obj);
 
 		/* Notice */
-		if (context->o_ptr->marked > MARK_UNAWARE && !ignore_item_ok(context->o_ptr)) {
+		if (context->obj->marked > MARK_UNAWARE && !ignore_item_ok(context->obj)) {
 			msg("Click!");
 			context->obvious = TRUE;
 		}
@@ -368,15 +352,15 @@ static void project_object_handler_KILL_DOOR(project_object_handler_context_t *c
 static void project_object_handler_KILL_TRAP(project_object_handler_context_t *context)
 {
 	/* Chests are noticed only if trapped or locked */
-	if (is_locked_chest(context->o_ptr)) {
+	if (is_locked_chest(context->obj)) {
 		/* Disarm or Unlock */
-		unlock_chest((object_type * const)context->o_ptr);
+		unlock_chest((object_type * const)context->obj);
 
 		/* Identify */
-		object_notice_everything((object_type * const)context->o_ptr);
+		object_notice_everything((object_type * const)context->obj);
 
 		/* Notice */
-		if (context->o_ptr->marked > MARK_UNAWARE && !ignore_item_ok(context->o_ptr)) {
+		if (context->obj->marked > MARK_UNAWARE && !ignore_item_ok(context->obj)) {
 			msg("Click!");
 			context->obvious = TRUE;
 		}
@@ -425,12 +409,11 @@ static const project_object_handler_f object_handlers[] = {
  */
 bool project_o(int who, int r, int y, int x, int dam, int typ)
 {
-	s16b this_o_idx, next_o_idx = 0;
+	struct object *obj;
 	bool obvious = FALSE;
 
 	/* Scan all objects in the grid */
-	for (this_o_idx = cave->o_idx[y][x]; this_o_idx; this_o_idx = next_o_idx) {
-		object_type *o_ptr;
+	for (obj = square_object(cave, y, x); obj; obj = obj->next) {
 		bool ignore = FALSE;
 		bool do_kill = FALSE;
 		const char *note_kill = NULL;
@@ -441,20 +424,13 @@ bool project_o(int who, int r, int y, int x, int dam, int typ)
 			x,
 			dam,
 			typ,
-			NULL,
+			obj,
 			obvious,
 			do_kill,
 			ignore,
 			note_kill,
 		};
 		project_object_handler_f object_handler = object_handlers[typ];
-
-		/* Get the object */
-		o_ptr = cave_object(cave, this_o_idx);
-		context.o_ptr = o_ptr;
-
-		/* Get the next object */
-		next_o_idx = o_ptr->next_o_idx;
 
 		if (object_handler != NULL)
 			object_handler(&context);
@@ -469,27 +445,28 @@ bool project_o(int who, int r, int y, int x, int dam, int typ)
 			char o_name[80];
 
 			/* Effect "observed" */
-			if (o_ptr->marked && !ignore_item_ok(o_ptr)) {
+			if (obj->marked && !ignore_item_ok(obj)) {
 				obvious = TRUE;
-				object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
+				object_desc(o_name, sizeof(o_name), obj, ODESC_BASE);
 			}
 
 			/* Artifacts, and other objects, get to resist */
-			if (o_ptr->artifact || ignore) {
+			if (obj->artifact || ignore) {
 				/* Observe the resist */
-				if (o_ptr->marked && !ignore_item_ok(o_ptr))
+				if (obj->marked && !ignore_item_ok(obj))
 					msg("The %s %s unaffected!", o_name,
-						VERB_AGREEMENT(o_ptr->number, "is", "are"));
-			} else if (o_ptr->mimicking_m_idx) {
+						VERB_AGREEMENT(obj->number, "is", "are"));
+			} else if (obj->mimicking_m_idx) {
 				/* Reveal mimics */
-				become_aware(cave_monster(cave, o_ptr->mimicking_m_idx));
+				become_aware(cave_monster(cave, obj->mimicking_m_idx));
 			} else {
 				/* Describe if needed */
-				if (o_ptr->marked && note_kill && !ignore_item_ok(o_ptr))
+				if (obj->marked && note_kill && !ignore_item_ok(obj))
 					msgt(MSG_DESTROY, "The %s %s!", o_name, note_kill);
 
 				/* Delete the object */
-				delete_object_idx(this_o_idx);
+				pile_object_excise(cave, y, x, obj);
+				object_delete(obj);
 
 				/* Redraw */
 				square_light_spot(cave, y, x);
