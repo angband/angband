@@ -42,9 +42,9 @@ s32b object_last_wield;
 /**
  * \returns whether an object counts as "known" due to EASY_KNOW status
  */
-bool easy_know(const object_type *o_ptr)
+bool easy_know(const struct object *obj)
 {
-	if (o_ptr->kind->aware && kf_has(o_ptr->kind->kind_flags, KF_EASY_KNOW))
+	if (obj->kind->aware && kf_has(obj->kind->kind_flags, KF_EASY_KNOW))
 		return TRUE;
 	else
 		return FALSE;
@@ -53,25 +53,25 @@ bool easy_know(const object_type *o_ptr)
 /**
  * Is the player aware of all of an object's flags?
  *
- * \param o_ptr is the object
+ * \param obj is the object
  */
-bool object_all_flags_are_known(const object_type *o_ptr)
+bool object_all_flags_are_known(const struct object *obj)
 {
-	return of_is_full(o_ptr->known_flags) ? TRUE : FALSE;
+	return of_is_full(obj->known_flags) ? TRUE : FALSE;
 }
 
 
 /**
  * Is the player aware of all of an object's elemental properties?
  *
- * \param o_ptr is the object
+ * \param obj is the object
  */
-bool object_all_elements_are_known(const object_type *o_ptr)
+bool object_all_elements_are_known(const struct object *obj)
 {
 	size_t i;
 
 	for (i = 0; i < ELEM_MAX; i++)
-		if (!(o_ptr->el_info[i].flags & EL_INFO_KNOWN)) return FALSE;
+		if (!(obj->el_info[i].flags & EL_INFO_KNOWN)) return FALSE;
 
 	return TRUE;
 }
@@ -80,16 +80,16 @@ bool object_all_elements_are_known(const object_type *o_ptr)
 /**
  * Is the player aware of all of an object's brands and slays?
  *
- * \param o_ptr is the object
+ * \param obj is the object
  */
-bool object_all_brands_and_slays_are_known(const object_type *o_ptr)
+bool object_all_brands_and_slays_are_known(const struct object *obj)
 {
 	struct brand *b;
 	struct slay *s;
 
-	for (b = o_ptr->brands; b; b = b->next)
+	for (b = obj->brands; b; b = b->next)
 		if (!b->known) return FALSE;
-	for (s = o_ptr->slays; s; s = s->next)
+	for (s = obj->slays; s; s = s->next)
 		if (!s->known) return FALSE;
 
 	return TRUE;
@@ -98,52 +98,52 @@ bool object_all_brands_and_slays_are_known(const object_type *o_ptr)
 /**
  * Is the player aware of all of an object's miscellaneous proerties?
  *
- * \param o_ptr is the object
+ * \param obj is the object
  */
-bool object_all_miscellaneous_are_known(const object_type *o_ptr)
+bool object_all_miscellaneous_are_known(const struct object *obj)
 {
-	return id_is_full(o_ptr->id_flags) ? TRUE : FALSE;
+	return id_is_full(obj->id_flags) ? TRUE : FALSE;
 }
 
 /**
  * Is the player aware of all of an object's miscellaneous proerties?
  *
- * \param o_ptr is the object
+ * \param obj is the object
  */
-bool object_all_but_flavor_is_known(const object_type *o_ptr)
+bool object_all_but_flavor_is_known(const struct object *obj)
 {
-	if (!object_all_flags_are_known(o_ptr)) return FALSE;
-	if (!object_all_elements_are_known(o_ptr)) return FALSE;
-	if (!object_all_brands_and_slays_are_known(o_ptr)) return FALSE;
-	if (!object_all_miscellaneous_are_known(o_ptr)) return FALSE;
+	if (!object_all_flags_are_known(obj)) return FALSE;
+	if (!object_all_elements_are_known(obj)) return FALSE;
+	if (!object_all_brands_and_slays_are_known(obj)) return FALSE;
+	if (!object_all_miscellaneous_are_known(obj)) return FALSE;
 	return TRUE;
 }
 
 /**
  * \returns whether an object should be treated as fully known (e.g. ID'd)
  */
-bool object_is_known(const object_type *o_ptr)
+bool object_is_known(const struct object *obj)
 {
-	if (!object_flavor_is_aware(o_ptr)) return FALSE;
-	return object_all_but_flavor_is_known(o_ptr) ? TRUE : FALSE;
+	if (!object_flavor_is_aware(obj)) return FALSE;
+	return object_all_but_flavor_is_known(obj) ? TRUE : FALSE;
 }
 
 /**
  * \returns whether the object is known to be an artifact
  */
-bool object_is_known_artifact(const object_type *o_ptr)
+bool object_is_known_artifact(const struct object *obj)
 {
-	return (o_ptr->artifact && id_has(o_ptr->id_flags, ID_ARTIFACT));
+	return (obj->artifact && id_has(obj->id_flags, ID_ARTIFACT));
 }
 
 /**
  * \returns whether the object is known to be blessed
  */
-bool object_is_known_blessed(const object_type *o_ptr)
+bool object_is_known_blessed(const struct object *obj)
 {
 	bitflag f[OF_SIZE];
 
-	object_flags_known(o_ptr, f);
+	object_flags_known(obj, f);
 
 	return (of_has(f, OF_BLESSED)) ? TRUE : FALSE;
 }
@@ -151,45 +151,45 @@ bool object_is_known_blessed(const object_type *o_ptr)
 /**
  * \returns whether the object is known to not be an artifact
  */
-bool object_is_known_not_artifact(const object_type *o_ptr)
+bool object_is_known_not_artifact(const struct object *obj)
 {
-	return (!(o_ptr->artifact) && id_has(o_ptr->id_flags, ID_ARTIFACT));
+	return (!(obj->artifact) && id_has(obj->id_flags, ID_ARTIFACT));
 }
 
 /**
  * \returns whether the object has been worn/wielded
  */
-bool object_was_worn(const object_type *o_ptr)
+bool object_was_worn(const struct object *obj)
 {
 	/* A hack, OK for now as ID_STR is only gained on wield or identify - NRM */
-	return id_has(o_ptr->id_flags, ID_STR) ? TRUE : FALSE;
+	return id_has(obj->id_flags, ID_STR) ? TRUE : FALSE;
 }
 
 /**
  * \returns whether the player is aware of the object's flavour
  */
-bool object_flavor_is_aware(const object_type *o_ptr)
+bool object_flavor_is_aware(const struct object *obj)
 {
-	assert(o_ptr->kind);
-	return o_ptr->kind->aware;
+	assert(obj->kind);
+	return obj->kind->aware;
 }
 
 /**
  * \returns whether the player has tried to use other objects of the same kind
  */
-bool object_flavor_was_tried(const object_type *o_ptr)
+bool object_flavor_was_tried(const struct object *obj)
 {
-	assert(o_ptr->kind);
-	return o_ptr->kind->tried;
+	assert(obj->kind);
+	return obj->kind->tried;
 }
 
 /**
  * \returns whether the player is aware of the object's effect when used
  */
-bool object_effect_is_known(const object_type *o_ptr)
+bool object_effect_is_known(const struct object *obj)
 {
-	assert(o_ptr->kind);
-	if (easy_know(o_ptr) || id_has(o_ptr->id_flags, ID_EFFECT))
+	assert(obj->kind);
+	if (easy_know(obj) || id_has(obj->id_flags, ID_EFFECT))
 		return TRUE;
 
 	return FALSE;
@@ -198,19 +198,19 @@ bool object_effect_is_known(const object_type *o_ptr)
 /**
  * \returns whether any ego or artifact name is available to the player
  */
-bool object_name_is_visible(const object_type *o_ptr)
+bool object_name_is_visible(const struct object *obj)
 {
-	bool ego = o_ptr->ego && id_has(o_ptr->id_flags, ID_EGO_ITEM);
-	bool art = o_ptr->artifact && id_has(o_ptr->id_flags, ID_ARTIFACT);
+	bool ego = obj->ego && id_has(obj->id_flags, ID_EGO_ITEM);
+	bool art = obj->artifact && id_has(obj->id_flags, ID_ARTIFACT);
 	return (ego || art) ? TRUE : FALSE;
 }
 
 /**
  * \returns whether both the object is both an ego and the player knows it is
  */
-bool object_ego_is_visible(const object_type *o_ptr)
+bool object_ego_is_visible(const struct object *obj)
 {
-	if (o_ptr->ego && id_has(o_ptr->id_flags, ID_EGO_ITEM))
+	if (obj->ego && id_has(obj->id_flags, ID_EGO_ITEM))
 		return TRUE;
 
 	return FALSE;
@@ -219,10 +219,10 @@ bool object_ego_is_visible(const object_type *o_ptr)
 /**
  * \returns whether the object's attack plusses are known
  */
-bool object_attack_plusses_are_visible(const object_type *o_ptr)
+bool object_attack_plusses_are_visible(const struct object *obj)
 {
 	/* Bonuses have been revealed or for sale */
-	if (id_has(o_ptr->id_flags, ID_TO_H) && id_has(o_ptr->id_flags, ID_TO_D))
+	if (id_has(obj->id_flags, ID_TO_H) && id_has(obj->id_flags, ID_TO_D))
 		return TRUE;
 
 	return FALSE;
@@ -231,10 +231,10 @@ bool object_attack_plusses_are_visible(const object_type *o_ptr)
 /**
  * \returns whether the object's defence bonuses are known
  */
-bool object_defence_plusses_are_visible(const object_type *o_ptr)
+bool object_defence_plusses_are_visible(const struct object *obj)
 {
 	/* Bonuses have been revealed or for sale */
-	if (id_has(o_ptr->id_flags, ID_TO_A))
+	if (id_has(obj->id_flags, ID_TO_A))
 		return TRUE;
 
 	return FALSE;
@@ -244,9 +244,9 @@ bool object_defence_plusses_are_visible(const object_type *o_ptr)
 /**
  * \returns whether the player knows whether an object has a given flag
  */
-bool object_flag_is_known(const object_type *o_ptr, int flag)
+bool object_flag_is_known(const struct object *obj, int flag)
 {
-	if (easy_know(o_ptr) || of_has(o_ptr->known_flags, flag))
+	if (easy_know(obj) || of_has(obj->known_flags, flag))
 		return TRUE;
 
 	return FALSE;
@@ -255,11 +255,11 @@ bool object_flag_is_known(const object_type *o_ptr, int flag)
 /**
  * \returns whether the player knows the given element properties of an object
  */
-bool object_element_is_known(const object_type *o_ptr, int element)
+bool object_element_is_known(const struct object *obj, int element)
 {
 	if (element < 0 || element >= ELEM_MAX) return FALSE;
 
-	if (easy_know(o_ptr) || (o_ptr->el_info[element].flags & EL_INFO_KNOWN))
+	if (easy_know(obj) || (obj->el_info[element].flags & EL_INFO_KNOWN))
 		return TRUE;
 
 	return FALSE;
@@ -269,11 +269,11 @@ bool object_element_is_known(const object_type *o_ptr, int element)
 /**
  * \returns whether a specific modifier is known to the player
  */
-bool object_this_mod_is_visible(const object_type *o_ptr, int mod)
+bool object_this_mod_is_visible(const struct object *obj, int mod)
 {
-	assert(o_ptr->kind);
+	assert(obj->kind);
 
-	if (id_has(o_ptr->id_flags, ID_MOD_MIN + mod))
+	if (id_has(obj->id_flags, ID_MOD_MIN + mod))
 		return TRUE;
 
 	return FALSE;
@@ -284,17 +284,17 @@ bool object_this_mod_is_visible(const object_type *o_ptr, int mod)
 /**
  * Sets an ID_ flag on an object.
  *
- * \param o_ptr is the object to check
+ * \param obj is the object to check
  * \param flag is the id flag to be added
  *
- * \returns whether o_ptr->id_flag changed
+ * \returns whether obj->id_flag changed
  */
-static bool object_add_id_flag(object_type *o_ptr, int flag)
+static bool object_add_id_flag(struct object *obj, int flag)
 {
-	if (id_has(o_ptr->id_flags, flag))
+	if (id_has(obj->id_flags, flag))
 		return FALSE;
 
-	id_on(o_ptr->id_flags, flag);
+	id_on(obj->id_flags, flag);
 
 	return TRUE;
 }
@@ -303,40 +303,40 @@ static bool object_add_id_flag(object_type *o_ptr, int flag)
 /**
  * Checks for additional knowledge implied by what the player already knows.
  *
- * \param o_ptr is the object to check
+ * \param obj is the object to check
  *
  * returns whether it calls object_notice_everyting
  */
-bool object_check_for_ident(object_type *o_ptr)
+bool object_check_for_ident(struct object *obj)
 {
 	/* Check things which need to be learned */
-	if (!object_all_flags_are_known(o_ptr)) return FALSE;
-	if (!object_all_elements_are_known(o_ptr)) return FALSE;
-	if (!object_all_brands_and_slays_are_known(o_ptr)) return FALSE;
+	if (!object_all_flags_are_known(obj)) return FALSE;
+	if (!object_all_elements_are_known(obj)) return FALSE;
+	if (!object_all_brands_and_slays_are_known(obj)) return FALSE;
 
 	/* If we know attack bonuses, and defence bonuses, and effect, then
 	 * we effectively know everything, so mark as such */
-	if ((object_attack_plusses_are_visible(o_ptr) ||
-		 (object_was_sensed(o_ptr) && o_ptr->to_h == 0 && o_ptr->to_d == 0)) &&
-	    (object_defence_plusses_are_visible(o_ptr) ||
-		 (object_was_sensed(o_ptr) && o_ptr->to_a == 0)) &&
-	    (object_effect_is_known(o_ptr) || !object_effect(o_ptr)))
+	if ((object_attack_plusses_are_visible(obj) ||
+		 (object_was_sensed(obj) && obj->to_h == 0 && obj->to_d == 0)) &&
+	    (object_defence_plusses_are_visible(obj) ||
+		 (object_was_sensed(obj) && obj->to_a == 0)) &&
+	    (object_effect_is_known(obj) || !object_effect(obj)))
 	{
 		/* In addition to knowing the pval flags, it is necessary to know 
 		 * the modifiers to know everything */
 		int i;
 		for (i = 0; i < OBJ_MOD_MAX; i++)
-			if (!object_this_mod_is_visible(o_ptr, i))
+			if (!object_this_mod_is_visible(obj, i))
 				break;
 		if (i == OBJ_MOD_MAX) {
-			object_notice_everything(o_ptr);
+			object_notice_everything(obj);
 			return TRUE;
 		}
 	}
 
 	/* We still know all the flags, so we still know if it's an ego */
-	if (o_ptr->ego)
-		object_notice_ego(o_ptr);
+	if (obj->ego)
+		object_notice_ego(obj);
 
 	return FALSE;
 }
@@ -347,7 +347,7 @@ bool object_check_for_ident(object_type *o_ptr)
  *
  * \param obj is the object whose flavour should be marked as aware
  */
-void object_flavor_aware(object_type *obj)
+void object_flavor_aware(struct object *obj)
 {
 	int i, y, x;
 
@@ -399,85 +399,85 @@ void object_flavor_aware(object_type *obj)
 /**
  * Mark an object's flavour as tried.
  *
- * \param o_ptr is the object whose flavour should be marked
+ * \param obj is the object whose flavour should be marked
  */
-void object_flavor_tried(object_type *o_ptr)
+void object_flavor_tried(struct object *obj)
 {
-	assert(o_ptr);
-	assert(o_ptr->kind);
+	assert(obj);
+	assert(obj->kind);
 
-	o_ptr->kind->tried = TRUE;
+	obj->kind->tried = TRUE;
 }
 
 /**
  * Make the player aware of all of an object's flags.
  *
- * \param o_ptr is the object to mark
+ * \param obj is the object to mark
  */
-void object_know_all_flags(object_type *o_ptr)
+void object_know_all_flags(struct object *obj)
 {
-	of_setall(o_ptr->known_flags);
+	of_setall(obj->known_flags);
 }
 
 
 /**
  * Make the player aware of all of an object's elemental properties.
  *
- * \param o_ptr is the object to mark
+ * \param obj is the object to mark
  */
-void object_know_all_elements(object_type *o_ptr)
+void object_know_all_elements(struct object *obj)
 {
 	size_t i;
 
 	for (i = 0; i < ELEM_MAX; i++)
-		o_ptr->el_info[i].flags |= EL_INFO_KNOWN;
+		obj->el_info[i].flags |= EL_INFO_KNOWN;
 }
 
 
 /**
  * Make the player aware of all of an object's brands and slays.
  *
- * \param o_ptr is the object to mark
+ * \param obj is the object to mark
  */
-void object_know_brands_and_slays(object_type *o_ptr)
+void object_know_brands_and_slays(struct object *obj)
 {
 	struct brand *b;
 	struct slay *s;
 
-	for (b = o_ptr->brands; b; b = b->next)
+	for (b = obj->brands; b; b = b->next)
 		b->known = TRUE;
-	for (s = o_ptr->slays; s; s = s->next)
+	for (s = obj->slays; s; s = s->next)
 		s->known = TRUE;
 }
 
 /**
  * Make the player aware of all of an object's miscellaneous properties.
  *
- * \param o_ptr is the object to mark
+ * \param obj is the object to mark
  */
-void object_know_all_miscellaneous(object_type *o_ptr)
+void object_know_all_miscellaneous(struct object *obj)
 {
-	id_setall(o_ptr->id_flags);
+	id_setall(obj->id_flags);
 }
 
 /**
  * Make the player aware of all of an object' properties except flavor.
  *
- * \param o_ptr is the object to mark
+ * \param obj is the object to mark
  */
-void object_know_all_but_flavor(object_type *o_ptr)
+void object_know_all_but_flavor(struct object *obj)
 {
 	/* Know all flags there are to be known */
-	object_know_all_flags(o_ptr);
+	object_know_all_flags(obj);
 
 	/* Know all elemental properties */
-	object_know_all_elements(o_ptr);
+	object_know_all_elements(obj);
 
 	/* Know all brands and slays */
-	object_know_brands_and_slays(o_ptr);
+	object_know_brands_and_slays(obj);
 
 	/* Know everything else */
-	object_know_all_miscellaneous(o_ptr);
+	object_know_all_miscellaneous(obj);
 }
 
 
@@ -485,21 +485,21 @@ void object_know_all_but_flavor(object_type *o_ptr)
 /**
  * Mark as object as fully known, a.k.a identified. 
  *
- * \param o_ptr is the object to mark as identified
+ * \param obj is the object to mark as identified
  */
-void object_notice_everything(object_type *o_ptr)
+void object_notice_everything(struct object *obj)
 {
 	/* Mark as known */
-	object_flavor_aware(o_ptr);
+	object_flavor_aware(obj);
 
 	/* Artifact has now been seen */
-	if (o_ptr->artifact) {
-		o_ptr->artifact->seen = o_ptr->artifact->everseen = TRUE;
-		history_add_artifact(o_ptr->artifact, TRUE, TRUE);
+	if (obj->artifact) {
+		obj->artifact->seen = obj->artifact->everseen = TRUE;
+		history_add_artifact(obj->artifact, TRUE, TRUE);
 	}
 
 	/* Know everything else */
-	object_know_all_but_flavor(o_ptr);
+	object_know_all_but_flavor(obj);
 }
 
 
@@ -507,47 +507,47 @@ void object_notice_everything(object_type *o_ptr)
 /**
  * Notice the ego on an ego item.
  */
-void object_notice_ego(object_type *o_ptr)
+void object_notice_ego(struct object *obj)
 {
 	bitflag learned_flags[OF_SIZE];
 	bitflag xtra_flags[OF_SIZE];
 	size_t i;
 
-	if (!o_ptr->ego)
+	if (!obj->ego)
 		return;
 
 	/* Learn ego flags */
-	of_union(o_ptr->known_flags, o_ptr->ego->flags);
+	of_union(obj->known_flags, obj->ego->flags);
 
 	/* Learn ego element properties */
 	for (i = 0; i < ELEM_MAX; i++)
-		if (o_ptr->ego->el_info[i].res_level != 0)
-			o_ptr->el_info[i].flags |= EL_INFO_KNOWN;
+		if (obj->ego->el_info[i].res_level != 0)
+			obj->el_info[i].flags |= EL_INFO_KNOWN;
 
 	/* Learn all flags except random abilities */
 	of_setall(learned_flags);
 
 	/* Random ego extras */
-	if (kf_has(o_ptr->ego->kind_flags, KF_RAND_SUSTAIN)) {
+	if (kf_has(obj->ego->kind_flags, KF_RAND_SUSTAIN)) {
 		create_mask(xtra_flags, FALSE, OFT_SUST, OFT_MAX);
 		of_diff(learned_flags, xtra_flags);
-	} else if (kf_has(o_ptr->ego->kind_flags, KF_RAND_POWER)) {
+	} else if (kf_has(obj->ego->kind_flags, KF_RAND_POWER)) {
 		create_mask(xtra_flags, FALSE, OFT_MISC, OFT_PROT, OFT_MAX);
 		of_diff(learned_flags, xtra_flags);
-	} else if (kf_has(o_ptr->ego->kind_flags, KF_RAND_HI_RES)) {
+	} else if (kf_has(obj->ego->kind_flags, KF_RAND_HI_RES)) {
 		for (i = ELEM_HIGH_MIN; i <= ELEM_HIGH_MAX; i++)
-			if ((o_ptr->ego->el_info[i].res_level == 1) &&
-				!(o_ptr->el_info[i].flags & EL_INFO_RANDOM))
-				o_ptr->el_info[i].flags |= EL_INFO_KNOWN;
+			if ((obj->ego->el_info[i].res_level == 1) &&
+				!(obj->el_info[i].flags & EL_INFO_RANDOM))
+				obj->el_info[i].flags |= EL_INFO_KNOWN;
 	}
 
-	of_union(o_ptr->known_flags, learned_flags);
+	of_union(obj->known_flags, learned_flags);
 
-	if (object_add_id_flag(o_ptr, ID_EGO_ITEM))
+	if (object_add_id_flag(obj, ID_EGO_ITEM))
 	{
 		/* if you know the ego, you know which it is of excellent or splendid */
-		object_notice_sensing(o_ptr);
-		object_check_for_ident(o_ptr);
+		object_notice_sensing(obj);
+		object_check_for_ident(obj);
 	}
 }
 
@@ -555,33 +555,33 @@ void object_notice_ego(object_type *o_ptr)
 /**
  * Notice the "effect" from activating an object.
  *
- * \param o_ptr is the object to become aware of
+ * \param obj is the object to become aware of
  */
-void object_notice_effect(object_type *o_ptr)
+void object_notice_effect(struct object *obj)
 {
-	if (object_add_id_flag(o_ptr, ID_EFFECT))
-		object_check_for_ident(o_ptr);
+	if (object_add_id_flag(obj, ID_EFFECT))
+		object_check_for_ident(obj);
 
 	/* noticing an effect gains awareness */
-	if (!object_flavor_is_aware(o_ptr))
-		object_flavor_aware(o_ptr);
+	if (!object_flavor_is_aware(obj))
+		object_flavor_aware(obj);
 }
 
 
-static void object_notice_defence_plusses(struct player *p, object_type *o_ptr)
+static void object_notice_defence_plusses(struct player *p, struct object *obj)
 {
-	assert(o_ptr && o_ptr->kind);
+	assert(obj && obj->kind);
 
-	if (object_defence_plusses_are_visible(o_ptr))
+	if (object_defence_plusses_are_visible(obj))
 		return;
 
-	if (object_add_id_flag(o_ptr, ID_TO_A)) 
-		object_check_for_ident(o_ptr);
+	if (object_add_id_flag(obj, ID_TO_A)) 
+		object_check_for_ident(obj);
 
-	if (o_ptr->ac || o_ptr->to_a) {
+	if (obj->ac || obj->to_a) {
 		char o_name[80];
 
-		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
+		object_desc(o_name, sizeof(o_name), obj, ODESC_BASE);
 		msgt(MSG_PSEUDOID, "You know more about the %s you are wearing.",
 			 o_name);
 	}
@@ -592,30 +592,30 @@ static void object_notice_defence_plusses(struct player *p, object_type *o_ptr)
 }
 
 
-void object_notice_attack_plusses(object_type *o_ptr)
+void object_notice_attack_plusses(struct object *obj)
 {
 	bool to_hit = FALSE, to_dam = FALSE;
 	char o_name[80];
 
-	assert(o_ptr && o_ptr->kind);
+	assert(obj && obj->kind);
 
-	if (object_attack_plusses_are_visible(o_ptr)) return;
+	if (object_attack_plusses_are_visible(obj)) return;
 
 	/* This looks silly while these only ever appear together */
-	to_hit = object_add_id_flag(o_ptr, ID_TO_H);
-	to_dam = object_add_id_flag(o_ptr, ID_TO_D);
-	if (object_add_id_flag(o_ptr, ID_DICE) || to_hit || to_dam)
-		object_check_for_ident(o_ptr);
+	to_hit = object_add_id_flag(obj, ID_TO_H);
+	to_dam = object_add_id_flag(obj, ID_TO_D);
+	if (object_add_id_flag(obj, ID_DICE) || to_hit || to_dam)
+		object_check_for_ident(obj);
 
-	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
+	object_desc(o_name, sizeof(o_name), obj, ODESC_BASE);
 
-	if (equipped_item_by_slot_name(player, "weapon") == o_ptr)
+	if (equipped_item_by_slot_name(player, "weapon") == obj)
 		msgt(MSG_PSEUDOID,
 			 "You know more about the %s you are using.", o_name);
-	else if ((o_ptr->to_d || o_ptr->to_h) &&
-			 !(tval_is_body_armor(o_ptr) && (o_ptr->to_h < 0)))
+	else if ((obj->to_d || obj->to_h) &&
+			 !(tval_is_body_armor(obj) && (obj->to_h < 0)))
 		msgt(MSG_PSEUDOID, "Your %s glow%s.", o_name,
-			 ((o_ptr->number > 1) ? "" : "s"));
+			 ((obj->number > 1) ? "" : "s"));
 
 	player->upkeep->update |= (PU_BONUS);
 	event_signal(EVENT_INVENTORY);
@@ -626,18 +626,18 @@ void object_notice_attack_plusses(object_type *o_ptr)
 /**
  * Notice elemental resistance properties for an element on an object
  */
-bool object_notice_element(object_type *o_ptr, int element)
+bool object_notice_element(struct object *obj, int element)
 {
 	if (element < 0 || element >= ELEM_MAX) return FALSE;
 
 	/* Already known */
-	if (o_ptr->el_info[element].flags & EL_INFO_KNOWN)
+	if (obj->el_info[element].flags & EL_INFO_KNOWN)
 		return FALSE;
 
 	/* Learn about this element */
-	o_ptr->el_info[element].flags |= EL_INFO_KNOWN;
+	obj->el_info[element].flags |= EL_INFO_KNOWN;
 
-	object_check_for_ident(o_ptr);
+	object_check_for_ident(obj);
 	event_signal(EVENT_INVENTORY);
 	event_signal(EVENT_EQUIPMENT);
 
@@ -648,13 +648,13 @@ bool object_notice_element(object_type *o_ptr, int element)
 /**
  * Notice a single flag - returns TRUE if anything new was learned
  */
-bool object_notice_flag(object_type *o_ptr, int flag)
+bool object_notice_flag(struct object *obj, int flag)
 {
-	if (of_has(o_ptr->known_flags, flag))
+	if (of_has(obj->known_flags, flag))
 		return FALSE;
 
-	of_on(o_ptr->known_flags, flag);
-	object_check_for_ident(o_ptr);
+	of_on(obj->known_flags, flag);
+	object_check_for_ident(obj);
 	event_signal(EVENT_INVENTORY);
 	event_signal(EVENT_EQUIPMENT);
 
@@ -665,13 +665,13 @@ bool object_notice_flag(object_type *o_ptr, int flag)
 /**
  * Notice a set of flags - returns TRUE if anything new was learned
  */
-bool object_notice_flags(object_type *o_ptr, bitflag flags[OF_SIZE])
+bool object_notice_flags(struct object *obj, bitflag flags[OF_SIZE])
 {
-	if (of_is_subset(o_ptr->known_flags, flags))
+	if (of_is_subset(obj->known_flags, flags))
 		return FALSE;
 
-	of_union(o_ptr->known_flags, flags);
-	object_check_for_ident(o_ptr);
+	of_union(obj->known_flags, flags);
+	object_check_for_ident(obj);
 	event_signal(EVENT_INVENTORY);
 	event_signal(EVENT_EQUIPMENT);
 
@@ -682,13 +682,13 @@ bool object_notice_flags(object_type *o_ptr, bitflag flags[OF_SIZE])
 /**
  * Notice curses on an object.
  *
- * \param o_ptr is the object to notice curses on
+ * \param obj is the object to notice curses on
  */
-bool object_notice_curses(object_type *o_ptr)
+bool object_notice_curses(struct object *obj)
 {
 	bitflag f[OF_SIZE], f2[OF_SIZE];
 
-	object_flags(o_ptr, f);
+	object_flags(obj, f);
 
 	/* Gather whatever curse flags there are to know */
 	create_mask(f2, FALSE, OFT_CURSE, OFT_MAX);
@@ -697,9 +697,9 @@ bool object_notice_curses(object_type *o_ptr)
 	of_inter(f, f2);
 
 	/* give knowledge of which curses are present */
-	object_notice_flags(o_ptr, f);
+	object_notice_flags(obj, f);
 
-	object_check_for_ident(o_ptr);
+	object_check_for_ident(obj);
 
 	player->upkeep->notice |= PN_IGNORE;
 
@@ -728,24 +728,24 @@ void object_notice_on_defend(struct player *p)
 /**
  * Notice object properties that become obvious on wielding or wearing
  */
-void object_notice_on_wield(object_type *o_ptr)
+void object_notice_on_wield(struct object *obj)
 {
 	bitflag f[OF_SIZE], f2[OF_SIZE], obvious_mask[OF_SIZE];
 	bool obvious = FALSE;
 	int i;
 
 	/* Only deal with un-ID'd items */
-	if (object_is_known(o_ptr)) return;
+	if (object_is_known(obj)) return;
 
 	/* EASY_KNOW jewelry is now known */
-	if (object_flavor_is_aware(o_ptr) && easy_know(o_ptr))
+	if (object_flavor_is_aware(obj) && easy_know(obj))
 	{
-		object_notice_everything(o_ptr);
+		object_notice_everything(obj);
 		return;
 	}
 
 	/* Worn means tried (for flavored wearables) */
-	object_flavor_tried(o_ptr);
+	object_flavor_tried(obj);
 
 	/* Save time of wield for later */
 	object_last_wield = turn;
@@ -754,13 +754,13 @@ void object_notice_on_wield(object_type *o_ptr)
 	create_mask(obvious_mask, TRUE, OFID_WIELD, OFT_MAX);
 
 	/* special case FA, needed for mages wielding gloves */
-	if (player_has(PF_CUMBER_GLOVE) && o_ptr->tval == TV_GLOVES &&
-		(o_ptr->modifiers[OBJ_MOD_DEX] <= 0) && 
-		!kf_has(o_ptr->kind->kind_flags, KF_SPELLS_OK))
+	if (player_has(PF_CUMBER_GLOVE) && obj->tval == TV_GLOVES &&
+		(obj->modifiers[OBJ_MOD_DEX] <= 0) && 
+		!kf_has(obj->kind->kind_flags, KF_SPELLS_OK))
 		of_on(obvious_mask, OF_FREE_ACT);
 
 	/* Extract the flags */
-	object_flags(o_ptr, f);
+	object_flags(obj, f);
 
 	/* Find obvious flags - curses left for special message later */
 	create_mask(f2, FALSE, OFT_CURSE, OFT_MAX);
@@ -768,82 +768,82 @@ void object_notice_on_wield(object_type *o_ptr)
 
 	/* Learn about obvious flags */
 	if (of_is_inter(f, obvious_mask)) obvious = TRUE;
-	of_union(o_ptr->known_flags, obvious_mask);
+	of_union(obj->known_flags, obvious_mask);
 
 	/* Notice all modifiers */
 	for (i = 0; i < OBJ_MOD_MAX; i++) {
-		if (o_ptr->modifiers[i]) obvious = TRUE;
-		id_on(o_ptr->id_flags, i + ID_MOD_MIN);
+		if (obj->modifiers[i]) obvious = TRUE;
+		id_on(obj->id_flags, i + ID_MOD_MIN);
 	}
 
 	/* Notice any brands */
-	object_notice_brands(o_ptr, NULL);
+	object_notice_brands(obj, NULL);
 
 	/* Automatically sense artifacts upon wield */
-	object_sense_artifact(o_ptr);
+	object_sense_artifact(obj);
 
 	/* Note artifacts when found */
-	if (o_ptr->artifact)
-		history_add_artifact(o_ptr->artifact, object_is_known(o_ptr), TRUE);
+	if (obj->artifact)
+		history_add_artifact(obj->artifact, object_is_known(obj), TRUE);
 
 	/* Special cases for jewellery (because the flavor isn't the whole story) */
-	if (tval_is_jewelry(o_ptr))
+	if (tval_is_jewelry(obj))
 	{
 		/* Learn the flavor of jewelry with obvious flags */
 		if (obvious)
-			object_flavor_aware(o_ptr);
+			object_flavor_aware(obj);
 
 		/* Learn all flags and elements on any aware non-artifact jewelry */
-		if (object_flavor_is_aware(o_ptr) && !o_ptr->artifact) {
-			object_know_all_flags(o_ptr);
-			object_know_all_elements(o_ptr);
+		if (object_flavor_is_aware(obj) && !obj->artifact) {
+			object_know_all_flags(obj);
+			object_know_all_elements(obj);
 		}
 	}
 
-	object_check_for_ident(o_ptr);
+	object_check_for_ident(obj);
 
 	if (!obvious) return;
 
 	/* Special messages for individual properties */
-	if (o_ptr->modifiers[OBJ_MOD_STR] > 0)
+	if (obj->modifiers[OBJ_MOD_STR] > 0)
 		msg("You feel stronger!");
-	else if (o_ptr->modifiers[OBJ_MOD_STR] < 0)
+	else if (obj->modifiers[OBJ_MOD_STR] < 0)
 		msg("You feel weaker!");
-	if (o_ptr->modifiers[OBJ_MOD_INT] > 0)
+	if (obj->modifiers[OBJ_MOD_INT] > 0)
 		msg("You feel smarter!");
-	else if (o_ptr->modifiers[OBJ_MOD_INT] < 0)
+	else if (obj->modifiers[OBJ_MOD_INT] < 0)
 		msg("You feel more stupid!");
-	if (o_ptr->modifiers[OBJ_MOD_WIS] > 0)
+	if (obj->modifiers[OBJ_MOD_WIS] > 0)
 		msg("You feel wiser!");
-	else if (o_ptr->modifiers[OBJ_MOD_WIS] < 0)
+	else if (obj->modifiers[OBJ_MOD_WIS] < 0)
 		msg("You feel more naive!");
-	if (o_ptr->modifiers[OBJ_MOD_DEX] > 0)
+	if (obj->modifiers[OBJ_MOD_DEX] > 0)
 		msg("You feel more dextrous!");
-	else if (o_ptr->modifiers[OBJ_MOD_DEX] < 0)
+	else if (obj->modifiers[OBJ_MOD_DEX] < 0)
 		msg("You feel clumsier!");
-	if (o_ptr->modifiers[OBJ_MOD_CON] > 0)
+	if (obj->modifiers[OBJ_MOD_CON] > 0)
 		msg("You feel healthier!");
-	else if (o_ptr->modifiers[OBJ_MOD_CON] < 0)
+	else if (obj->modifiers[OBJ_MOD_CON] < 0)
 		msg("You feel sicklier!");
-	if (o_ptr->modifiers[OBJ_MOD_STEALTH] > 0)
+	if (obj->modifiers[OBJ_MOD_STEALTH] > 0)
 		msg("You feel stealthier.");
-	else if (o_ptr->modifiers[OBJ_MOD_SPEED] < 0)
+	else if (obj->modifiers[OBJ_MOD_SPEED] < 0)
 		msg("You feel noisier.");
-	if (o_ptr->modifiers[OBJ_MOD_SPEED] > 0)
+	if (obj->modifiers[OBJ_MOD_SPEED] > 0)
 		msg("You feel strangely quick.");
-	else if (o_ptr->modifiers[OBJ_MOD_SPEED] < 0)
+	else if (obj->modifiers[OBJ_MOD_SPEED] < 0)
 		msg("You feel strangely sluggish.");
-	if (o_ptr->modifiers[OBJ_MOD_BLOWS] > 0)
+	if (obj->modifiers[OBJ_MOD_BLOWS] > 0)
 		msg("Your weapon tingles in your hands.");
-	else if (o_ptr->modifiers[OBJ_MOD_BLOWS] < 0)
+	else if (obj->modifiers[OBJ_MOD_BLOWS] < 0)
 		msg("Your weapon aches in your hands.");
-	if (o_ptr->modifiers[OBJ_MOD_SHOTS] > 0)
+	if (obj->modifiers[OBJ_MOD_SHOTS] > 0)
 		msg("Your bow tingles in your hands.");
-	else if (o_ptr->modifiers[OBJ_MOD_SHOTS] < 0)
+	else if (obj->modifiers[OBJ_MOD_SHOTS] < 0)
 		msg("Your bow aches in your hands.");
-	if (o_ptr->modifiers[OBJ_MOD_INFRA])
+	if (obj->modifiers[OBJ_MOD_INFRA])
 		msg("Your eyes tingle.");
-	if (o_ptr->modifiers[OBJ_MOD_LIGHT])
+	if (obj->modifiers[OBJ_MOD_LIGHT])
 		msg("It glows!");
 	if (of_has(f, OF_TELEPATHY))
 		msg("Your mind feels strangely sharper!");
@@ -851,7 +851,7 @@ void object_notice_on_wield(object_type *o_ptr)
 		msg("You feel mobile!");
 
 	/* Remember the flags */
-	object_notice_sensing(o_ptr);
+	object_notice_sensing(obj);
 }
 
 
@@ -863,7 +863,7 @@ static void object_notice_after_time(void)
 	int i;
 	int flag;
 
-	object_type *obj;
+	struct object *obj;
 	char o_name[80];
 
 	bitflag f[OF_SIZE], timed_mask[OF_SIZE];
@@ -920,7 +920,7 @@ void wieldeds_notice_flag(struct player *p, int flag)
 
 	/* All wielded items eligible */
 	for (i = 0; i < p->body.count; i++) {
-		object_type *obj = slot_object(p, i);
+		struct object *obj = slot_object(p, i);
 		if (!obj) continue;
 
 		if (of_has(obj->flags, flag) && !of_has(obj->known_flags, flag)) {
@@ -959,7 +959,7 @@ void wieldeds_notice_element(struct player *p, int element)
 	if (element < 0 || element >= ELEM_MAX) return;
 
 	for (i = 0; i < p->body.count; i++) {
-		object_type *obj = slot_object(p, i);
+		struct object *obj = slot_object(p, i);
 		if (!obj) continue;
 
 		/* Already known */
@@ -1032,7 +1032,7 @@ void wieldeds_notice_on_attack(void)
  * \returns whether it is possible an object has a high resist given the
  *          player's current knowledge
  */
-bool object_high_resist_is_possible(const object_type *obj)
+bool object_high_resist_is_possible(const struct object *obj)
 {
 	size_t i;
 
@@ -1056,7 +1056,7 @@ bool object_high_resist_is_possible(const object_type *obj)
 /**
  * \returns whether the object has been sensed with pseudo-ID
  */
-bool object_was_sensed(const object_type *obj)
+bool object_was_sensed(const struct object *obj)
 {
 	/* Hackish - NRM */
 	return id_has(obj->id_flags, ID_AC) ? TRUE : FALSE;
@@ -1065,7 +1065,7 @@ bool object_was_sensed(const object_type *obj)
 /**
  * Mark an object as sensed (kind of).
  */
-void object_notice_sensing(object_type *obj)
+void object_notice_sensing(struct object *obj)
 {
 	if (object_was_sensed(obj))
 		return;
@@ -1085,7 +1085,7 @@ void object_notice_sensing(object_type *obj)
 /**
  * Sense artifacts
  */
-void object_sense_artifact(object_type *obj)
+void object_sense_artifact(struct object *obj)
 {
 	id_on(obj->id_flags, ID_ARTIFACT);
 	if (obj->artifact)
@@ -1097,7 +1097,7 @@ void object_sense_artifact(object_type *obj)
  * Given an object, return a short identifier which gives some idea of what
  * the item is.
  */
-obj_pseudo_t object_pseudo(const object_type *obj)
+obj_pseudo_t object_pseudo(const struct object *obj)
 {
 	bitflag flags[OF_SIZE], f2[OF_SIZE];
 

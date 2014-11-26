@@ -1,6 +1,6 @@
 /**
-   \file obj-identify.h
-   \brief Object identification and knowledge routines
+ * \file obj-identify.h
+ * \brief Object identification and knowledge routines
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  * Copyright (c) 2009 Brian Bull
@@ -39,50 +39,50 @@ typedef enum
 
 extern s32b object_last_wield;
 
-bool easy_know(const object_type *o_ptr);
-bool object_all_but_flavor_is_known(const object_type *o_ptr);
-bool object_is_known(const object_type *o_ptr);
-bool object_is_known_artifact(const object_type *o_ptr);
-bool object_is_known_blessed(const object_type *o_ptr);
-bool object_is_known_not_artifact(const object_type *o_ptr);
-bool object_was_worn(const object_type *o_ptr);
-bool object_flavor_is_aware(const object_type *o_ptr);
-bool object_flavor_was_tried(const object_type *o_ptr);
-bool object_effect_is_known(const object_type *o_ptr);
-bool object_name_is_visible(const object_type *o_ptr);
-bool object_ego_is_visible(const object_type *o_ptr);
-bool object_attack_plusses_are_visible(const object_type *o_ptr);
-bool object_defence_plusses_are_visible(const object_type *o_ptr);
-bool object_flag_is_known(const object_type *o_ptr, int flag);
-bool object_element_is_known(const object_type *o_ptr, int element);
-bool object_this_mod_is_visible(const object_type *o_ptr, int mod);
-bool object_check_for_ident(object_type *o_ptr);
-void object_flavor_aware(object_type *o_ptr);
-void object_flavor_tried(object_type *o_ptr);
-void object_know_all_but_flavor(object_type *o_ptr);
-void object_notice_everything(object_type *o_ptr);
-void object_notice_ego(object_type *o_ptr);
-void object_notice_effect(object_type *o_ptr);
-void object_notice_attack_plusses(object_type *o_ptr);
-bool object_notice_element(object_type *o_ptr, int element);
-bool object_notice_flag(object_type *o_ptr, int flag);
-bool object_notice_flags(object_type *o_ptr, bitflag flags[OF_SIZE]);
-bool object_notice_curses(object_type *o_ptr);
+bool easy_know(const struct object *obj);
+bool object_all_but_flavor_is_known(const struct object *obj);
+bool object_is_known(const struct object *obj);
+bool object_is_known_artifact(const struct object *obj);
+bool object_is_known_blessed(const struct object *obj);
+bool object_is_known_not_artifact(const struct object *obj);
+bool object_was_worn(const struct object *obj);
+bool object_flavor_is_aware(const struct object *obj);
+bool object_flavor_was_tried(const struct object *obj);
+bool object_effect_is_known(const struct object *obj);
+bool object_name_is_visible(const struct object *obj);
+bool object_ego_is_visible(const struct object *obj);
+bool object_attack_plusses_are_visible(const struct object *obj);
+bool object_defence_plusses_are_visible(const struct object *obj);
+bool object_flag_is_known(const struct object *obj, int flag);
+bool object_element_is_known(const struct object *obj, int element);
+bool object_this_mod_is_visible(const struct object *obj, int mod);
+bool object_check_for_ident(struct object *obj);
+void object_flavor_aware(struct object *obj);
+void object_flavor_tried(struct object *obj);
+void object_know_all_but_flavor(struct object *obj);
+void object_notice_everything(struct object *obj);
+void object_notice_ego(struct object *obj);
+void object_notice_effect(struct object *obj);
+void object_notice_attack_plusses(struct object *obj);
+bool object_notice_element(struct object *obj, int element);
+bool object_notice_flag(struct object *obj, int flag);
+bool object_notice_flags(struct object *obj, bitflag flags[OF_SIZE]);
+bool object_notice_curses(struct object *obj);
 void object_notice_on_defend(struct player *p);
-void object_notice_on_firing(object_type *o_ptr);
-void object_notice_on_wield(object_type *o_ptr);
+void object_notice_on_firing(struct object *obj);
+void object_notice_on_wield(struct object *obj);
 void wieldeds_notice_flag(struct player *p, int flag);
 void wieldeds_notice_element(struct player *p, int element);
 void wieldeds_notice_to_hit_on_attack(void);
 void wieldeds_notice_on_attack(void);
 
 /* Ostracism line */
-bool object_high_resist_is_possible(const object_type *o_ptr);
-bool object_was_sensed(const object_type *o_ptr);
-void object_notice_sensing(object_type *o_ptr);
-void object_sense_artifact(object_type *o_ptr);
-obj_pseudo_t object_pseudo(const object_type *o_ptr);
-void do_ident_item(object_type *o_ptr);
+bool object_high_resist_is_possible(const struct object *obj);
+bool object_was_sensed(const struct object *obj);
+void object_notice_sensing(struct object *obj);
+void object_sense_artifact(struct object *obj);
+obj_pseudo_t object_pseudo(const struct object *obj);
+void do_ident_item(struct object *obj);
 void sense_inventory(void);
 
 #endif /* OBJECT_IDENTIFY_H */
