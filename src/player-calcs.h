@@ -170,14 +170,6 @@ enum
  */
 #define STAT_RANGE 38
 
-/**
- * Gear handling constants
- */
-
-#define MAX_GEAR		60
-#define MAX_GEAR_INCR	10
-#define NO_OBJECT		0
-
 
 /*** Structures ***/
 

@@ -193,7 +193,7 @@ static void show_obj_list(int num_obj, int num_head, char labels[50][80],
 	}
 
 	/* Take the quiver message into consideration */
-	if (mode & OLIST_QUIVER && player->upkeep->quiver[0] != NO_OBJECT)
+	if (mode & OLIST_QUIVER && player->upkeep->quiver[0] != NULL)
 		max_len = MAX(max_len, 24);
 
 	/* Width of extra fields */
@@ -359,7 +359,7 @@ void show_inven(int mode, item_tester tester)
 
 	/* Find the last occupied inventory slot */
 	for (i = 0; i < z_info->pack_size; i++)
-		if (player->upkeep->inven[i] != NO_OBJECT) last_slot = i;
+		if (player->upkeep->inven[i] != NULL) last_slot = i;
 
 	/* Build the object list */
 	for (i = 0; i <= last_slot; i++) {
@@ -491,7 +491,7 @@ void show_equip(int mode, item_tester tester)
 
 		/* Find the last occupied quiver slot */
 		for (i = 0; i < z_info->quiver_size; i++)
-			if (player->upkeep->quiver[i] != NO_OBJECT) last_slot = i;
+			if (player->upkeep->quiver[i] != NULL) last_slot = i;
 
 		/* Extend the object list */
 		for (i = 0; i <= last_slot; i++) {

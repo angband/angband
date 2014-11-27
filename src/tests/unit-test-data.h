@@ -866,8 +866,6 @@ static struct angband_constants TEST_DATA test_z_info = {
 	.level_monster_max = 2,
 };
 
-static struct object TEST_DATA test_gear[MAX_GEAR];
-
 static struct equip_slot TEST_DATA test_slot_light = {
 	.type = 5,
 	.name = "light",
@@ -965,7 +963,7 @@ static struct player TEST_DATA test_player = {
 	.history = "no history",
 	.is_dead = 0,
 	.wizard = 0,
-	.gear = &test_gear[0],
+	.gear = NULL,
 	.upkeep = &test_player_upkeep,
 };
 
