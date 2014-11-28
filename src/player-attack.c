@@ -271,9 +271,11 @@ static const struct {
  */
 int py_attack_hit_chance(const object_type *weapon)
 {
-	int bonus = player->state.to_h + weapon->to_h;
-	int chance = player->state.skills[SKILL_TO_HIT_MELEE] +
-		bonus * BTH_PLUS_ADJ;
+	int chance, bonus = player->state.to_h;
+
+	if (weapon)
+		bonus += player->state.to_h;
+	chance = player->state.skills[SKILL_TO_HIT_MELEE] + bonus * BTH_PLUS_ADJ;
 	return chance;
 }
 

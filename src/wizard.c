@@ -31,6 +31,7 @@
 #include "obj-make.h"
 #include "obj-pile.h"
 #include "obj-power.h"
+#include "obj-slays.h"
 #include "obj-tval.h"
 #include "obj-ui.h"
 #include "obj-util.h"
@@ -658,84 +659,70 @@ static void wiz_tweak_item(object_type *o_ptr)
 }
 
 
-/*
+/**
  * Apply magic to an item or turn it into an artifact. -Bernd-
  */
-static void wiz_reroll_item(object_type *o_ptr)
+static void wiz_reroll_item(struct object *obj)
 {
-	object_type *i_ptr;
-	object_type object_type_body;
+	struct object *new;
 
 	struct keypress ch;
 
 	bool changed = FALSE;
 
-
 	/* Hack -- leave artifacts alone */
-	if (o_ptr->artifact) return;
+	if (obj->artifact) return;
 
-
-	/* Get local object */
-	i_ptr = &object_type_body;
-
-	/* Copy the object */
-	object_copy(i_ptr, o_ptr);
-
+	/* Get new copy, hack off slays and brands */
+	new = mem_zalloc(sizeof(*new));
+	object_copy(new, obj);
+	new->slays = NULL;
+	new->brands = NULL;
 
 	/* Main loop. Ask for magification and artifactification */
-	while (TRUE)
-	{
+	while (TRUE) {
 		/* Display full item debug information */
-		wiz_display_item(i_ptr, TRUE);
+		wiz_display_item(new, TRUE);
 
 		/* Ask wizard what to do. */
 		if (!get_com("[a]ccept, [n]ormal, [g]ood, [e]xcellent? ", &ch))
 			break;
 
 		/* Create/change it! */
-		if (ch.code == 'A' || ch.code == 'a')
-		{
-			changed = TRUE;
+		if (ch.code == 'A' || ch.code == 'a') {
 			break;
-		}
-
-		/* Apply normal magic, but first clear object */
-		else if (ch.code == 'n' || ch.code == 'N')
-		{
-			object_prep(i_ptr, o_ptr->kind, player->depth, RANDOMISE);
-			apply_magic(i_ptr, player->depth, FALSE, FALSE, FALSE, FALSE);
-		}
-
-		/* Apply good magic, but first clear object */
-		else if (ch.code == 'g' || ch.code == 'G')
-		{
-			object_prep(i_ptr, o_ptr->kind, player->depth, RANDOMISE);
-			apply_magic(i_ptr, player->depth, FALSE, TRUE, FALSE, FALSE);
-		}
-
-		/* Apply great magic, but first clear object */
-		else if (ch.code == 'e' || ch.code == 'E')
-		{
-			object_prep(i_ptr, o_ptr->kind, player->depth, RANDOMISE);
-			apply_magic(i_ptr, player->depth, FALSE, TRUE, TRUE, FALSE);
+		} else if (ch.code == 'n' || ch.code == 'N') {
+			/* Apply normal magic, but first clear object */
+			changed = TRUE;
+			object_wipe(new);
+			object_prep(new, obj->kind, player->depth, RANDOMISE);
+			apply_magic(new, player->depth, FALSE, FALSE, FALSE, FALSE);
+		} else if (ch.code == 'g' || ch.code == 'G') {
+			/* Apply good magic, but first clear object */
+			changed = TRUE;
+			object_wipe(new);
+			object_prep(new, obj->kind, player->depth, RANDOMISE);
+			apply_magic(new, player->depth, FALSE, TRUE, FALSE, FALSE);
+		} else if (ch.code == 'e' || ch.code == 'E') {
+			/* Apply great magic, but first clear object */
+			changed = TRUE;
+			object_wipe(new);
+			object_prep(new, obj->kind, player->depth, RANDOMISE);
+			apply_magic(new, player->depth, FALSE, TRUE, TRUE, FALSE);
 		}
 	}
 
-
 	/* Notice change */
-	if (changed)
-	{
+	if (changed) {
+		/* Free slays and brands on the old object by hand */
+		free_slay(obj->slays);
+		free_brand(obj->brands);
+
+		/* Copy over - note that this deals with new slays and brands */
+		object_copy(obj, new);
+
 		/* Mark as cheat */
-		i_ptr->origin = ORIGIN_CHEAT;
-
-		/* Restore the position information */
-		i_ptr->iy = o_ptr->iy;
-		i_ptr->ix = o_ptr->ix;
-		i_ptr->next_o_idx = o_ptr->next_o_idx;
-		i_ptr->marked = o_ptr->marked;
-
-		/* Apply changes */
-		object_copy(o_ptr, i_ptr);
+		obj->origin = ORIGIN_CHEAT;
 
 		/* Recalculate bonuses, gear */
 		player->upkeep->update |= (PU_BONUS | PU_INVEN);
@@ -746,8 +733,10 @@ static void wiz_reroll_item(object_type *o_ptr)
 		/* Window stuff */
 		player->upkeep->redraw |= (PR_INVEN | PR_EQUIP );
 	}
-}
 
+	/* Free the copy */
+	mem_free(new);
+}
 
 
 /*
@@ -892,7 +881,7 @@ static void wiz_statistics(object_type *o_ptr, int level)
 				other++;
 
 			/* Nuke the test object */
-			mem_free(test_obj);
+			object_delete(test_obj);
 		}
 
 		/* Final dump */
@@ -986,10 +975,7 @@ static void wiz_tweak_curse(object_type *o_ptr)
  */
 static void do_cmd_wiz_play(void)
 {
-	object_type *i_ptr;
-	object_type object_type_body;
-
-	struct object *o_ptr;
+	struct object *obj;
 
 	struct keypress ch;
 
@@ -1002,61 +988,46 @@ static void do_cmd_wiz_play(void)
 	/* Get an item */
 	q = "Play with which object? ";
 	s = "You have nothing to play with.";
-	if (!get_item(&o_ptr, q, s, 0, NULL, (USE_EQUIP | USE_INVEN | USE_QUIVER | USE_FLOOR))) return;
+	if (!get_item(&obj, q, s, 0, NULL, (USE_EQUIP | USE_INVEN | USE_QUIVER | USE_FLOOR))) return;
 
 	/* Save screen */
 	screen_save();
 
-	/* Get local object */
-	i_ptr = &object_type_body;
-
-	/* Copy object */
-	object_copy(i_ptr, o_ptr);
-
-
 	/* The main loop */
 	while (TRUE) {
 		/* Display the item */
-		wiz_display_item(i_ptr, all);
+		wiz_display_item(obj, all);
 
 		/* Get choice */
 		if (!get_com("[a]ccept [s]tatistics [r]eroll [t]weak [c]urse [q]uantity [k]nown? ", &ch))
 			break;
 
-		if (ch.code == 'A' || ch.code == 'a')
-		{
+		if (ch.code == 'A' || ch.code == 'a') {
 			changed = TRUE;
 			break;
-		}
-		else if (ch.code == 'c' || ch.code == 'C')
-			wiz_tweak_curse(i_ptr);
+		} else if (ch.code == 'c' || ch.code == 'C')
+			wiz_tweak_curse(obj);
 		else if (ch.code == 's' || ch.code == 'S')
-			wiz_statistics(i_ptr, player->depth);
+			wiz_statistics(obj, player->depth);
 		else if (ch.code == 'r' || ch.code == 'R')
-			wiz_reroll_item(i_ptr);
+			wiz_reroll_item(obj);
 		else if (ch.code == 't' || ch.code == 'T')
-			wiz_tweak_item(i_ptr);
+			wiz_tweak_item(obj);
 		else if (ch.code == 'k' || ch.code == 'K')
 			all = !all;
-		else if (ch.code == 'q' || ch.code == 'Q')
-		{
-			bool carried = (object_is_carried(player, i_ptr)) ? TRUE : FALSE;
-			wiz_quantity_item(i_ptr, carried);
+		else if (ch.code == 'q' || ch.code == 'Q') {
+			bool carried = (object_is_carried(player, obj)) ? TRUE : FALSE;
+			wiz_quantity_item(obj, carried);
 		}
 	}
 
-
 	/* Load screen */
 	screen_load();
-
 
 	/* Accept change */
 	if (changed) {
 		/* Message */
 		msg("Changes accepted.");
-
-		/* Change */
-		object_copy(o_ptr, i_ptr);
 
 		/* Recalculate gear, bonuses */
 		player->upkeep->update |= (PU_INVEN | PU_BONUS);
@@ -1066,13 +1037,8 @@ static void do_cmd_wiz_play(void)
 
 		/* Window stuff */
 		player->upkeep->redraw |= (PR_INVEN | PR_EQUIP );
-	}
-
-	/* Ignore change */
-	else
-	{
+	} else
 		msg("Changes ignored.");
-	}
 }
 
 /*

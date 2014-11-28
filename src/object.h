@@ -1,6 +1,6 @@
 /**
-   \file object.h
-   \brief basic object structs and enums
+ * \file object.h
+ * \brief basic object structs and enums
  */
 #ifndef INCLUDED_OBJECT_H
 #define INCLUDED_OBJECT_H
@@ -441,7 +441,6 @@ typedef struct object
 	byte marked;		/* Object is marked */
 	byte ignore;		/* Object is ignored */
 
-	s16b next_o_idx;	/* Next object in stack (if any) */
 	s16b held_m_idx;	/* Monster holding us (if any) */
 	s16b mimicking_m_idx; /* Monster mimicking us (if any) */
 
