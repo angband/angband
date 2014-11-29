@@ -659,7 +659,7 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 			used = gear_object_for_use(obj, 1, TRUE);
 		else
 			/* Destroy an item on the floor */
-			used = gear_object_for_use(obj, 1, TRUE);
+			used = floor_object_for_use(obj, 1, TRUE);
 		object_delete(used);
 	}
 

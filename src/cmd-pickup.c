@@ -213,22 +213,19 @@ int do_autopickup(void)
 	/* Scan the remaining objects */
 	obj = square_object(cave, py, px);
 	while (obj) {
-		/* Ignore all hidden objects and non-objects */
-		if (ignore_item_ok(obj)) continue;
-
 		next = obj->next;
 
-		/* Hack -- disturb */
-		disturb(player, 0);
+		/* Ignore all hidden objects and non-objects */
+		if (!ignore_item_ok(obj)) {
+			/* Hack -- disturb */
+			disturb(player, 0);
 
-		/* Automatically pick up items into the backpack */
-		if (auto_pickup_okay(obj)) {
-			/* Pick up the object with message */
-			py_pickup_aux(obj, TRUE);
-			objs_picked_up++;
-			obj = next;
-
-			continue;
+			/* Automatically pick up items into the backpack */
+			if (auto_pickup_okay(obj)) {
+				/* Pick up the object with message */
+				py_pickup_aux(obj, TRUE);
+				objs_picked_up++;
+			}
 		}
 		obj = next;
 	}
