@@ -1186,35 +1186,22 @@ static void do_cmd_wiz_jump(void)
 }
 
 
-/*
- * Become aware of a lot of objects
+/**
+ * Become aware of all object flavors
  */
 static void do_cmd_wiz_learn(int lev)
 {
 	int i;
 
-	object_type *i_ptr;
-	object_type object_type_body;
-
 	/* Scan every object */
-	for (i = 1; i < z_info->k_max; i++)
-	{
-		object_kind *k_ptr = &k_info[i];
+	for (i = 1; i < z_info->k_max; i++) {
+		struct object_kind *kind = &k_info[i];
 
-		if (!k_ptr || !k_ptr->name) continue;
+		if (!kind || !kind->name) continue;
 
 		/* Induce awareness */
-		if (k_ptr->level <= lev)
-		{
-			/* Get local object */
-			i_ptr = &object_type_body;
-
-			/* Prepare object */
-			object_prep(i_ptr, k_ptr, 0, MAXIMISE);
-
-			/* Awareness */
-			object_flavor_aware(i_ptr);
-		}
+		if (kind->level <= lev)
+			kind->aware = TRUE;
 	}
 	
 	msg("You now know about many items!");
