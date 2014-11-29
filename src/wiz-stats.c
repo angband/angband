@@ -1,6 +1,6 @@
-/*
- * File: stats.c
- * Purpose: Statistics collection on dungeon generation
+/**
+ * \file wiz-stats.c
+ * \brief Statistics collection on dungeon generation
  *
  * Copyright (c) 2008 Andi Sidwell
  *
@@ -31,26 +31,28 @@
 #include "effects.h"
 #include "generate.h"
 #include "tables.h"
-/*
+/**
  * The stats programs here will provide information on the dungeon, the monsters
- * in it, and the items that they drop.  Statistics are gotten from a given level
- * by generating a new level, collecting all the items (noting if they were generated
- * in a vault).  Then all non-unique monsters are killed and their stats are tracked.
- * The items from these monster drops are then collected and analyzed.  Lastly, all
- * unique monsters are killed, and their drops are analyzed.  In this way, it is possible
- * to separate unique drops and normal monster drops.
+ * in it, and the items that they drop.  Statistics are gotten from a given
+ * level by generating a new level, collecting all the items (noting if they
+ * were generated in a vault).  Then all non-unique monsters are killed and
+ * their stats are tracked.
+ * The items from these monster drops are then collected and analyzed.  Lastly,
+ * all unique monsters are killed, and their drops are analyzed.  In this way,
+ * it is possible to separate unique drops and normal monster drops.
  *
- * There are two options for simulating the entirety of the dungeon.  There is a "diving"
- * option that begins each level with all artifacts and uniques available. and 
- * there is a "level-clearing" option that simulates all 100 levels of the dungeon, removing
- * artifacts and uniques as they are discovered/killed.  "diving" option only catalogues
- * every 5 levels.
+ * There are two options for simulating the entirety of the dungeon.  There is
+ * a "diving" option that begins each level with all artifacts and uniques
+ * available; and there is a "level-clearing" option that simulates all 100
+ * levels of the dungeon, removing artifacts and uniques as they are
+ * discovered/killed.  "diving" option only catalogues every 5 levels.
  *
- * At the end of the "level-clearing" log file, extra post-processing is done to find the
- * mean and standard deviation for the level you are likely to first gain an item with
- * a key resistance or item.
+ * At the end of the "level-clearing" log file, extra post-processing is done
+ * to find the mean and standard deviation for the level you are likely to
+ * first gain an item with a key resistance or item.
  * 
- * In addition to these sims there is a shorter sim that tests for dungeon connectivity.
+ * In addition to these sims there is a shorter sim that tests for dungeon
+ * connectivity.
 */
 
 #ifdef USE_STATS
@@ -392,16 +394,16 @@ static void init_stat_vals()
 {
 	int i,j,k;
 
-	for (i = 0;i<ST_END;i++)
-		for (j=0;j<3;k=j++)
-			for (k=0;k<MAX_LVL;k++)
+	for (i = 0; i < ST_END;i++)
+		for (j = 0; j < 3; k = j++)
+			for (k = 0; k < MAX_LVL; k++)
 				stat_all[i][j][k] = 0.0;
 				
-	for (i = 1; i<TRIES_SIZE; i++)
+	for (i = 1; i < TRIES_SIZE; i++)
 		art_it[i] = 0;
 	
-	for (i = 0; i<ST_FF_END; i++)
-		for (j=0; j<TRIES_SIZE; j++)
+	for (i = 0; i < ST_FF_END; i++)
+		for (j = 0; j < TRIES_SIZE; j++)
 			stat_ff_all[i][j] = 0.0;
 }
 
@@ -1092,10 +1094,7 @@ void monster_death_stats(int m_idx)
 	/* Check if monster is UNIQUE */
 	uniq = rf_has(mon->race->flags,RF_UNIQUE);
 
-	/* Delete any mimicked objects */
-	if (mon->mimicked_obj) {
-		object_delete(mon->mimicked_obj);
-	}
+	/* Mimicked objects will have already been counted as floor objects */
 	mon->mimicked_obj = NULL;
 
 	/* Drop objects being carried */
@@ -1434,6 +1433,11 @@ static void stats_collect_level(void)
 {
 	/* Make a dungeon */
 	cave_generate(&cave, player);
+	if (cave_k)
+		cave_free(cave_k);
+	cave_k = cave_new(cave->height, cave->width);
+	if (!cave->depth)
+		cave_known();
 
 	/* Scan for objects, these are floor objects */
 	scan_for_objects();
