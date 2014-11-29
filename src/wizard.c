@@ -20,6 +20,7 @@
 #include "cave.h"
 #include "cmds.h"
 #include "effects.h"
+#include "grafmode.h"
 #include "init.h"
 #include "mon-lore.h"
 #include "mon-make.h"
@@ -37,6 +38,7 @@
 #include "obj-util.h"
 #include "object.h"
 #include "player-timed.h"
+#include "prefs.h"
 #include "project.h"
 #include "target.h"
 #include "ui-event.h"
@@ -64,7 +66,15 @@ static void gf_display(menu_type *m, int type, bool cursor,
 
 	if (tile_height == 1) {
 		for (i = 0; i < BOLT_MAX; i++) {
-			col += big_pad(col, row, gf_to_attr[type][i], gf_to_char[type][i]);
+			if (use_graphics == GRAPHICS_NONE) {
+				/* ASCII is simple */
+				wchar_t chars[] = L"*|/-\\";
+
+				col += big_pad(col, row, gf_color(type), chars[i]);
+			} else {
+				col += big_pad(col, row, gf_to_attr[type][i],
+							   gf_to_char[type][i]);
+			}
 		}
 	} else {
 		prt("Change tile_height to 1 to see graphics.", row, col);
