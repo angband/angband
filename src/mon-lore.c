@@ -399,13 +399,15 @@ void lore_update(const monster_race *race, monster_lore *lore)
 	flags_set(lore->flags, RF_SIZE, RF_OBVIOUS_MASK, FLAG_END);
 
 	/* Blows */
-	for (i = 0; i < z_info->mon_blows_max; i++)
+	for (i = 0; i < z_info->mon_blows_max; i++) {
+		if (!race->blow) break;
 		if (lore->blows[i].times_seen || lore->all_known) {
 			lore->blow_known[i] = TRUE;
 			lore->blows[i].method = race->blow[i].method;
 			lore->blows[i].effect = race->blow[i].effect;
 			lore->blows[i].dice = race->blow[i].dice;
 		}
+	}
 
 	/* Killing a monster reveals some properties */
 	if ((lore->tkills > 0) || lore->all_known) {
