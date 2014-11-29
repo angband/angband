@@ -185,9 +185,9 @@ ANGFILES = \
 	ui-player.o \
 	ui-spell.o \
 	ui-store.o \
+	wiz-debug.o \
 	wiz-spoil.o \
 	wiz-stats.o \
-	wizard.o \
 
 STATSMAINFILES = main-stats.o \
         stats/db.o

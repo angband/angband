@@ -1,6 +1,6 @@
-/*
- * File: wizard2.c
- * Purpose: Debug mode commands
+/**
+ * \file wiz-debug.c
+ * \brief Debug mode commands
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  *
@@ -112,7 +112,7 @@ static void wiz_gf_demo(void)
 
 
 
-/*
+/**
  * This is a nice utility function; it determines if a (NULL-terminated)
  * string consists of only digits (starting with a non-zero digit).
  */
@@ -123,8 +123,9 @@ static s16b get_idx_from_name(char *s)
 	return *endptr == '\0' ? (s16b)l : 0;
 }
 
-/*
- * Hack -- quick debugging hook
+/**
+ * Display in sequence the squares at n grids from the player, as measured by
+ * the flow algorithm; n goes from 1 to max flow depth
  */
 static void do_cmd_wiz_hack_ben(void)
 {
@@ -184,21 +185,20 @@ static void do_cmd_wiz_hack_ben(void)
 
 
 
-/*
+/**
  * Output part of a bitflag set in binary format.
  */
-static void prt_binary(const bitflag *flags, int offset, int row, int col, char ch, int num)
+static void prt_binary(const bitflag *flags, int offset, int row, int col,
+					   char ch, int num)
 {
 	int flag;
 
 	/* Scan the flags */
 	for (flag = FLAG_START + offset; flag < FLAG_START + offset + num; flag++)
-	{
 		if (of_has(flags, flag))
 			Term_putch(col++, row, TERM_BLUE, ch);
 		else
 			Term_putch(col++, row, TERM_WHITE, '-');
-	}
 }
 
 /**
@@ -227,7 +227,8 @@ static void do_cmd_keylog(void) {
 			keypress_to_text(buf2, sizeof(buf2), keys, TRUE);
 
 			/* format this line of output */
-			strnfmt(buf, sizeof(buf), "    %-12s (code=%u mods=%u)", buf2, k.code, k.mods);
+			strnfmt(buf, sizeof(buf), "    %-12s (code=%u mods=%u)", buf2,
+					k.code, k.mods);
 		} else {
 			/* create a blank line of output */
 			strnfmt(buf, sizeof(buf), "%40s", "");
@@ -242,7 +243,7 @@ static void do_cmd_keylog(void) {
 }
 
 
-/*
+/**
  * Teleport to the requested target
  */
 static void do_cmd_wiz_bamf(void)
@@ -267,7 +268,7 @@ static void do_cmd_wiz_bamf(void)
 
 
 
-/*
+/**
  * Aux function for "do_cmd_wiz_change()"
  */
 static void do_cmd_wiz_change_aux(void)
@@ -284,8 +285,7 @@ static void do_cmd_wiz_change_aux(void)
 
 
 	/* Query the stats */
-	for (i = 0; i < STAT_MAX; i++)
-	{
+	for (i = 0; i < STAT_MAX; i++) {
 		/* Prompt */
 		strnfmt(ppp, sizeof(ppp), "%s (3-118): ", stat_names[i]);
 
@@ -342,8 +342,8 @@ static void do_cmd_wiz_change_aux(void)
 }
 
 
-/*
- * Change various "permanent" player variables.
+/**
+ * Change player stats, gold and experience.
  */
 static void do_cmd_wiz_change(void)
 {
@@ -355,7 +355,7 @@ static void do_cmd_wiz_change(void)
 }
 
 
-/*
+/**
  * Wizard routines for creating objects and modifying them
  *
  * This has been rewritten to make the whole procedure
@@ -405,15 +405,13 @@ static void do_cmd_wiz_change(void)
  */
 
 
-/*
+/**
  * Display an item's properties
  */
 static void wiz_display_item(const object_type *o_ptr, bool all)
 {
 	int j = 0;
-
 	bitflag f[OF_SIZE];
-
 	char buf[256];
 
 
@@ -433,17 +431,18 @@ static void wiz_display_item(const object_type *o_ptr, bool all)
 	prt(buf, 2, j);
 
 	prt(format("combat = (%dd%d) (%+d,%+d) [%d,%+d]",
-	           o_ptr->dd, o_ptr->ds, o_ptr->to_h, o_ptr->to_d, o_ptr->ac, o_ptr->to_a), 4, j);
+	           o_ptr->dd, o_ptr->ds, o_ptr->to_h, o_ptr->to_d, o_ptr->ac,
+			   o_ptr->to_a), 4, j);
 
 	prt(format("kind = %-5d  tval = %-5d  sval = %-5d  wgt = %-3d     timeout = %-d",
-	           o_ptr->kind->kidx, o_ptr->tval, o_ptr->sval, o_ptr->weight, o_ptr->timeout), 5, j);
+	           o_ptr->kind->kidx, o_ptr->tval, o_ptr->sval, o_ptr->weight,
+			   o_ptr->timeout), 5, j);
 
-	/* CC: multiple pvals not shown, pending #1290 */
 	prt(format("number = %-3d  pval = %-5d  name1 = %-4d  egoidx = %-4d  cost = %ld",
-			o_ptr->number, o_ptr->pval,
-			o_ptr->artifact ? o_ptr->artifact->aidx : 0,
-			o_ptr->ego ? o_ptr->ego->eidx : 0,
-			(long)object_value(o_ptr, 1, FALSE)), 6, j);
+			   o_ptr->number, o_ptr->pval,
+			   o_ptr->artifact ? o_ptr->artifact->aidx : 0,
+			   o_ptr->ego ? o_ptr->ego->eidx : 0,
+			   (long)object_value(o_ptr, 1, FALSE)), 6, j);
 
 	prt("+------------FLAGS-------------+", 16, j);
 	prt("SUST.PROT<-OTHER--><BAD->CUR....", 17, j);
@@ -459,7 +458,9 @@ static void wiz_display_item(const object_type *o_ptr, bool all)
 
 static const region wiz_create_item_area = { 0, 0, 0, 0 };
 
-/** Object kind selection */
+/**
+ * Object kind selection
+ */
 static void wiz_create_item_subdisplay(menu_type *m, int oid, bool cursor,
 		int row, int col, int width)
 {
@@ -511,7 +512,9 @@ static menu_iter wiz_create_item_submenu =
 	NULL
 };
 
-/** Object base kind selection **/
+/**
+ * Object base kind selection
+ */
 
 static void wiz_create_item_display(menu_type *m, int oid, bool cursor,
 		int row, int col, int width)
@@ -576,7 +579,7 @@ static const menu_iter wiz_create_item_menu =
 };
 
 
-/*
+/**
  * Choose and create an instance of an object kind
  */
 static void wiz_create_item(void)
@@ -615,8 +618,9 @@ static void wiz_create_item(void)
 
 
 
-/*
- * Tweak an item
+/**
+ * Tweak an item - make it ego or artifact, give values for modifiers, to_a,
+ * to_h or to_d
  */
 static void wiz_tweak_item(object_type *o_ptr)
 {
@@ -671,6 +675,7 @@ static void wiz_tweak_item(object_type *o_ptr)
 
 /**
  * Apply magic to an item or turn it into an artifact. -Bernd-
+ * Actually just regenerate it optionally with the good or great flag set - NRM
  */
 static void wiz_reroll_item(struct object *obj)
 {
@@ -755,7 +760,7 @@ static void wiz_reroll_item(struct object *obj)
 #define TEST_ROLL 100000
 
 
-/*
+/**
  * Try to create an item again. Output some statistics.    -Bernd-
  *
  * The statistics are correct now.  We acquire a clean grid, and then
@@ -905,7 +910,7 @@ static void wiz_statistics(object_type *o_ptr, int level)
 }
 
 
-/*
+/**
  * Change the quantity of an item
  */
 static void wiz_quantity_item(object_type *o_ptr, bool carried)
@@ -921,8 +926,7 @@ static void wiz_quantity_item(object_type *o_ptr, bool carried)
 	strnfmt(tmp_val, sizeof(tmp_val), "%d", o_ptr->number);
 
 	/* Query */
-	if (get_string("Quantity: ", tmp_val, 3))
-	{
+	if (get_string("Quantity: ", tmp_val, 3)) {
 		/* Extract */
 		tmp_int = atoi(tmp_val);
 
@@ -931,8 +935,7 @@ static void wiz_quantity_item(object_type *o_ptr, bool carried)
 		if (tmp_int > 99) tmp_int = 99;
 
 		/* Adjust total weight being carried */
-		if (carried)
-		{
+		if (carried) {
 			/* Remove the weight of the old number of objects */
 			player->upkeep->total_weight -= (o_ptr->number * o_ptr->weight);
 
@@ -956,8 +959,7 @@ static void wiz_quantity_item(object_type *o_ptr, bool carried)
  */
 static void wiz_tweak_curse(object_type *o_ptr)
 {
-	if (cursed_p(o_ptr->flags))
-	{
+	if (cursed_p(o_ptr->flags)) {
 		bitflag f[OF_SIZE];
 		msg("Resetting existing curses.");
 
@@ -968,15 +970,17 @@ static void wiz_tweak_curse(object_type *o_ptr)
 	if (get_check("Set light curse? "))
 		flags_set(o_ptr->flags, OF_SIZE, OF_LIGHT_CURSE, FLAG_END);
 	else if (get_check("Set heavy curse? "))
-		flags_set(o_ptr->flags, OF_SIZE, OF_LIGHT_CURSE, OF_HEAVY_CURSE, FLAG_END);
+		flags_set(o_ptr->flags, OF_SIZE, OF_LIGHT_CURSE, OF_HEAVY_CURSE,
+				  FLAG_END);
 	else if (get_check("Set permanent curse? "))
-		flags_set(o_ptr->flags, OF_SIZE, OF_LIGHT_CURSE, OF_HEAVY_CURSE, OF_PERMA_CURSE, FLAG_END);
+		flags_set(o_ptr->flags, OF_SIZE, OF_LIGHT_CURSE, OF_HEAVY_CURSE,
+				  OF_PERMA_CURSE, FLAG_END);
 }
 
 
 
 
-/*
+/**
  * Play with an item. Options include:
  *   - Output statistics (via wiz_roll_item)
  *   - Reroll item (via wiz_reroll_item)
@@ -1051,8 +1055,8 @@ static void do_cmd_wiz_play(void)
 		msg("Changes ignored.");
 }
 
-/*
- * Create the artifact with the specified number
+/**
+ * Create the artifact with the specified number - needs improvement NRM
  */
 static void wiz_create_artifact(int a_idx)
 {
@@ -1099,7 +1103,7 @@ static void wiz_create_artifact(int a_idx)
 }
 
 
-/*
+/**
  * Cure everything instantly
  */
 static void do_cmd_wiz_cure_all(void)
@@ -1148,8 +1152,8 @@ static void do_cmd_wiz_cure_all(void)
 }
 
 
-/*
- * Go to any level
+/**
+ * Go to any level. optionally choosing level generation algorithm
  */
 static void do_cmd_wiz_jump(void)
 {
@@ -1218,7 +1222,7 @@ static void do_cmd_wiz_learn(int lev)
 }
 
 
-/*
+/**
  * Hack -- Rerate Hitpoints
  */
 static void do_cmd_rerate(void)
@@ -1263,7 +1267,7 @@ static void do_cmd_rerate(void)
 }
 
 
-/*
+/**
  * Summon some creatures
  */
 static void do_cmd_wiz_summon(int num)
@@ -1275,10 +1279,8 @@ static void do_cmd_wiz_summon(int num)
 }
 
 
-/*
+/**
  * Summon a creature of the specified type
- *
- * This function is rather dangerous XXX XXX XXX
  */
 static void do_cmd_wiz_named(monster_race *r, bool slp)
 {
@@ -1301,14 +1303,15 @@ static void do_cmd_wiz_named(monster_race *r, bool slp)
 		if (!square_isempty(cave, y, x)) continue;
 
 		/* Place it (allow groups) */
-		if (place_new_monster(cave, y, x, r, slp, TRUE, ORIGIN_DROP_WIZARD)) break;
+		if (place_new_monster(cave, y, x, r, slp, TRUE, ORIGIN_DROP_WIZARD))
+			break;
 	}
 }
 
 
 
-/*
- * Hack -- Delete all nearby monsters
+/**
+ * Delete all nearby monsters
  */
 static void do_cmd_wiz_zap(int d)
 {
@@ -1334,8 +1337,8 @@ static void do_cmd_wiz_zap(int d)
 }
 
 
-/*
- * Query square flags
+/**
+ * Query square flags - needs alteration if list-square-flags.h changes
  */
 static void do_cmd_wiz_query(void)
 {
@@ -1375,10 +1378,8 @@ static void do_cmd_wiz_query(void)
 	}
 
 	/* Scan map */
-	for (y = Term->offset_y; y < Term->offset_y + SCREEN_HGT; y++)
-	{
-		for (x = Term->offset_x; x < Term->offset_x + SCREEN_WID; x++)
-		{
+	for (y = Term->offset_y; y < Term->offset_y + SCREEN_HGT; y++) {
+		for (x = Term->offset_x; x < Term->offset_x + SCREEN_WID; x++) {
 			byte a = TERM_RED;
 
 			if (!square_in_bounds_fully(cave, y, x)) continue;
@@ -1413,8 +1414,8 @@ static void do_cmd_wiz_query(void)
 	prt_map();
 }
 
-/*
- * Query terrain
+/**
+ * Query terrain - needs alteration if terrain types change
  */
 static void do_cmd_wiz_features(void)
 {
@@ -1481,10 +1482,8 @@ static void do_cmd_wiz_features(void)
 	}
 
 	/* Scan map */
-	for (y = Term->offset_y; y < Term->offset_y + SCREEN_HGT; y++)
-	{
-		for (x = Term->offset_x; x < Term->offset_x + SCREEN_WID; x++)
-		{
+	for (y = Term->offset_y; y < Term->offset_y + SCREEN_HGT; y++) {
+		for (x = Term->offset_x; x < Term->offset_x + SCREEN_WID; x++) {
 			byte a = TERM_RED;
 			bool show = FALSE;
 			int i;
@@ -1521,7 +1520,7 @@ static void do_cmd_wiz_features(void)
 	prt_map();
 }
 
-/*
+/**
  * Create lots of items.
  */
 static void wiz_test_kind(int tval)
@@ -1533,6 +1532,7 @@ static void wiz_test_kind(int tval)
 	object_type *obj;
 
 	for (sval = 0; sval < 255; sval++) {
+		/* This spams failure messages, but that's the downside of wizardry */
 		object_kind *kind = lookup_kind(tval, sval);
 		if (!kind) continue;
 
@@ -1558,8 +1558,8 @@ static void wiz_test_kind(int tval)
 	msg("Done.");
 }
 
-/*
- * Display the debug commands help file.
+/**
+ * Display the debug commands help file - which needs updating NRM.
  */
 static void do_cmd_wiz_help(void) 
 {
@@ -1570,7 +1570,7 @@ static void do_cmd_wiz_help(void)
 	screen_load();
 }
 
-/*
+/**
  * Advance the player to level 50 with max stats and other bonuses.
  */
 static void do_cmd_wiz_advance(void)
@@ -1670,8 +1670,9 @@ void do_cmd_wiz_effect(void)
 		msg("Identified!");
 }
 
-/*
- * Ask for and parse a "debug command"
+/**
+ * Main switch for processing debug commands.  This is a step back in time to
+ * how all commands used to be processed
  */
 void do_cmd_debug(void)
 {
@@ -1872,7 +1873,12 @@ void do_cmd_debug(void)
 			break;
 		}
 
-		case 'L': do_cmd_keylog(); break;
+		/* Work out what the kayer is typing */
+		case 'L': 
+		{
+			do_cmd_keylog();
+			break;
+		}
 
 		/* Magic Mapping */
 		case 'm':
@@ -2043,7 +2049,8 @@ void do_cmd_debug(void)
 		case 'u':
 		{
 			effect_simple(EF_DETECT_VISIBLE_MONSTERS, "500d500", 0, 0, 0, NULL);
-			effect_simple(EF_DETECT_INVISIBLE_MONSTERS, "500d500", 0, 0, 0, NULL);
+			effect_simple(EF_DETECT_INVISIBLE_MONSTERS, "500d500", 0, 0, 0,
+						  NULL);
 			break;
 		}
 
@@ -2089,15 +2096,12 @@ void do_cmd_debug(void)
 
 			if (!get_com(prompt, &sym)) return;
 
-			if (sym.code == 'a' || sym.code == 'A')
-			{
+			if (sym.code == 'a' || sym.code == 'A') {
 				int i;
 				for (i = 0; i < z_info->r_max; i++)
 					wipe_monster_lore(&r_info[i], &l_list[i]);
 				msg("Done.");
-			}
-			else if (sym.code == 's' || sym.code == 'S')
-			{
+			} else if (sym.code == 's' || sym.code == 'S') {
 				char name[80] = "";
 
 				/* Avoid the prompt getting in the way */
@@ -2107,8 +2111,7 @@ void do_cmd_debug(void)
 				prt("Which monster? ", 0, 0);
 
 				/* Get the name */
-				if (askfor_aux(name, sizeof(name), NULL))
-				{
+				if (askfor_aux(name, sizeof(name), NULL)) {
 					/* See if a r_idx was entered */
 					r_idx = get_idx_from_name(name);
 					if (r_idx)
