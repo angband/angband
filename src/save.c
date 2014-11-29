@@ -824,12 +824,6 @@ static void wr_traps_aux(struct chunk *c)
 			while (trap) {
 				wr_trap(trap);
 				trap = trap->next;
-
-				/* Mark whether we're done for this square */
-				if (trap)
-					wr_byte(1);
-				else
-					wr_byte(0);
 			}
 		}
 	}
