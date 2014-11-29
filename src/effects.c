@@ -1236,7 +1236,11 @@ bool effect_handler_SENSE_OBJECTS(effect_handler_context_t *context)
 			/* Skip empty grids */
 			if (!obj) continue;
 
-			/* Memorize the pile */
+			/* Notice an object is detected */
+			objects = TRUE;
+			context->ident = TRUE;
+
+			/* Mark the pile as aware */
 			while (obj) {
 				if (obj->marked == MARK_UNAWARE)
 					obj->marked = MARK_AWARE;
@@ -1245,10 +1249,6 @@ bool effect_handler_SENSE_OBJECTS(effect_handler_context_t *context)
 
 			/* Redraw */
 			square_light_spot(cave, y, x);
-			
-			/* Detected */
-			objects = TRUE;
-			context->ident = TRUE;
 		}
 	}
 
@@ -1293,7 +1293,13 @@ bool effect_handler_DETECT_OBJECTS(effect_handler_context_t *context)
 			/* Skip empty grids */
 			if (!obj) continue;
 
-			/* Memorize the pile */
+			/* Notice an object is detected */
+			if (!ignore_item_ok(obj)) {
+				objects = TRUE;
+				context->ident = TRUE;
+			}
+
+			/* Markthe pile as seen */
 			while (obj) {
 				obj->marked = MARK_SEEN;
 				obj = obj->next;
@@ -1301,12 +1307,6 @@ bool effect_handler_DETECT_OBJECTS(effect_handler_context_t *context)
 
 			/* Redraw */
 			square_light_spot(cave, y, x);
-
-			/* Detect */
-			if (!ignore_item_ok(obj)) {
-				objects = TRUE;
-				context->ident = TRUE;
-			}
 		}
 	}
 
