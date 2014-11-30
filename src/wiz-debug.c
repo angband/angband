@@ -456,41 +456,116 @@ static void wiz_display_item(const object_type *o_ptr, bool all)
 
 
 
+/** Object creation code **/
+bool choose_artifact = FALSE;
+
 static const region wiz_create_item_area = { 0, 0, 0, 0 };
 
 /**
- * Object kind selection
+ * Build an "artifact name" and transfer it into a buffer.
+ */
+static void get_art_name(char *buf, int max, int a_idx)
+{
+	struct object *obj;
+	struct object_kind *kind;
+	struct artifact *art = &a_info[a_idx];
+
+	/* Get object */
+	obj = mem_zalloc(sizeof(*obj));
+
+	/* Acquire the "kind" index */
+	kind = lookup_kind(art->tval, art->sval);
+
+	/* Oops */
+	if (!kind)
+		return;
+
+	/* Create the base object */
+	object_prep(obj, kind, 0, RANDOMISE);
+
+	/* Mark it as an artifact */
+	obj->artifact = art;
+
+	/* Make it known to us */
+	object_notice_everything(obj);
+
+	/* Create the artifact description */
+	object_desc(buf, max, obj, ODESC_SINGULAR | ODESC_SPOIL);
+
+	object_delete(obj);
+}
+
+/**
+ * Artifact or object kind selection
  */
 static void wiz_create_item_subdisplay(menu_type *m, int oid, bool cursor,
 		int row, int col, int width)
 {
-	object_kind **choices = menu_priv(m);
-	char buf[80];
+	int *choices = menu_priv(m);
+	char buf[70];
 
-	object_kind_name(buf, sizeof buf, choices[oid], TRUE);
-	c_prt(curs_attrs[CURS_KNOWN][0 != cursor], buf, row, col);
+	/* Artifacts */
+	if (choose_artifact) {
+		get_art_name(buf, sizeof(buf), choices[oid]);
+		c_prt(curs_attrs[CURS_KNOWN][0 != cursor], buf, row, col);
+	} else {
+		/* Regular objects */
+		object_kind_name(buf, sizeof(buf), &k_info[choices[oid]], TRUE);
+		c_prt(curs_attrs[CURS_KNOWN][0 != cursor], buf, row, col);
+	}
 }
 
 static bool wiz_create_item_subaction(menu_type *m, const ui_event *e, int oid)
 {
-	object_kind **choices = menu_priv(m);
-	object_kind *kind = choices[oid];
-
-	object_type *obj;
+	int *choices = menu_priv(m);
+	struct object_kind *kind;
+	struct object *obj;
 
 	if (e->type != EVT_SELECT)
 		return TRUE;
 
-	/* Create the item */
-	if (tval_is_money_k(kind))
-		obj = make_gold(player->depth, lookup_kind(TV_GOLD, kind->sval)->name);
-	else {
+	/* Artifacts */
+	if (choose_artifact) {
+		struct artifact *a_ptr = &a_info[choices[oid]];
+
+		/* Ignore "empty" artifacts */
+		if (!a_ptr->name) return FALSE;
+
+		/* Acquire the "kind" index */
+		kind = lookup_kind(a_ptr->tval, a_ptr->sval);
+		if (!kind)
+			return FALSE;
+
 		/* Get object */
 		obj = mem_zalloc(sizeof(*obj));
-		object_prep(obj, kind, player->depth, RANDOMISE);
 
-		/* Apply magic (no messages, no artifacts) */
-		apply_magic(obj, player->depth, FALSE, FALSE, FALSE, FALSE);
+		/* Create the artifact */
+		object_prep(obj, kind, a_ptr->alloc_min, RANDOMISE);
+
+		/* Save the artifact type */
+		obj->artifact = a_ptr;
+
+		/* Extract the fields */
+		copy_artifact_data(obj, a_ptr);
+
+		/* Mark that the artifact has been created. */
+		a_ptr->created = TRUE;
+	} else {
+		/* Regular objects */
+		kind = &k_info[choices[oid]];
+
+		/* Create the item */
+		if (tval_is_money_k(kind))
+			obj = make_gold(player->depth,
+							lookup_kind(TV_GOLD, kind->sval)->name);
+		else {
+			/* Get object */
+			obj = mem_zalloc(sizeof(*obj));
+			object_prep(obj, kind, player->depth, RANDOMISE);
+
+			/* Apply magic (no messages, no artifacts) */
+			apply_magic(obj, player->depth, FALSE, FALSE, FALSE, FALSE);
+		}
 	}
 
 	/* Mark as cheat, and where created */
@@ -520,7 +595,7 @@ static void wiz_create_item_display(menu_type *m, int oid, bool cursor,
 		int row, int col, int width)
 {
 	char buf[80];
-	object_base_name(buf, sizeof buf, oid, TRUE);
+	object_base_name(buf, sizeof(buf), oid, TRUE);
 	c_prt(curs_attrs[CURS_KNOWN][0 != cursor], buf, row, col);
 }
 
@@ -530,24 +605,36 @@ static bool wiz_create_item_action(menu_type *m, const ui_event *e, int oid)
 	menu_type *menu;
 
 	char buf[80];
+	char title[80];
 
-	object_kind *choice[60];
-	int n_choices;
+	int choice[60];
+	int num;
 
 	int i;
 
 	if (e->type != EVT_SELECT)
 		return TRUE;
 
-	for (n_choices = 0, i = 1; (n_choices < 60) && (i < z_info->k_max); i++)
-	{
-		object_kind *kind = &k_info[i];
+	/* Artifacts */
+	if (choose_artifact) {
+		/* ...We have to search the whole artifact list. */
+		for (num = 0, i = 1; (num < 60) && (i < z_info->a_max); i++) {
+			struct artifact *a_ptr = &a_info[i];
 
-		if (kind->tval != oid ||
-				kf_has(kind->kind_flags, KF_INSTA_ART))
-			continue;
+			if (a_ptr->tval != oid) continue;
 
-		choice[n_choices++] = kind;
+			choice[num++] = i;
+		}
+	} else {
+		/* Regular objects */
+		for (num = 0, i = 1; (num < 60) && (i < z_info->k_max); i++) {
+			struct object_kind *kind = &k_info[i];
+
+			if (kind->tval != oid || kf_has(kind->kind_flags, KF_INSTA_ART))
+				continue;
+
+			choice[num++] = i;
+		}
 	}
 
 	screen_save();
@@ -556,15 +643,18 @@ static bool wiz_create_item_action(menu_type *m, const ui_event *e, int oid)
 	menu = menu_new(MN_SKIN_COLUMNS, &wiz_create_item_submenu);
 	menu->selections = all_letters;
 
-	object_base_name(buf, sizeof buf, oid, TRUE);
-	menu->title = string_make(format("What kind of %s?", buf));
+	object_base_name(buf, sizeof(buf), oid, TRUE);
+	if (choose_artifact)
+		strnfmt(title, sizeof(title), "Which artifact %s? ", buf);
+	else
+		strnfmt(title, sizeof(title), "What kind of %s?", buf);
+	menu->title = title;
 
-	menu_setpriv(menu, n_choices, choice);
+	menu_setpriv(menu, num, choice);
 	menu_layout(menu, &wiz_create_item_area);
 	ret = menu_select(menu, 0, FALSE);
 
 	screen_load();
-	string_free((char *)menu->title);
 
 	return (ret.type == EVT_ESCAPE);
 }
@@ -580,22 +670,34 @@ static const menu_iter wiz_create_item_menu =
 
 
 /**
- * Choose and create an instance of an object kind
+ * Choose and create an instance of an artifact or object kind
  */
-static void wiz_create_item(void)
+static void wiz_create_item(bool art)
 {
 	int tvals[TV_MAX];
-	size_t i, n;
+	int i, n;
 
 	menu_type *menu = menu_new(MN_SKIN_COLUMNS, &wiz_create_item_menu);
 
+	choose_artifact = art;
+
 	menu->selections = all_letters;
-	menu->title = "What kind of object?";
+	menu->title = art ? "What kind of artifact?" : "What kind of object?";
 
 	/* Make a list of all tvals for the filter */
 	for (i = 0, n = 0; i < TV_MAX; i++) {
-		if (!kb_info[i].name)
-			continue;
+		/* Only real object bases */
+		if (!kb_info[i].name) continue;
+
+		/* For artifact creation, only include tvals which have an artifact */
+		if (art) {
+			int j;
+			for (j = 1; j < z_info->a_max; j++) {
+				struct artifact *a_ptr = &a_info[j];
+				if (a_ptr->tval == i) break;
+			}
+			if (j == z_info->a_max) continue;
+		}
 
 		tvals[n++] = i;
 	}
@@ -615,8 +717,6 @@ static void wiz_create_item(void)
 	handle_stuff(player->upkeep);
 
 }
-
-
 
 /**
  * Tweak an item - make it ego or artifact, give values for modifiers, to_a,
@@ -1054,54 +1154,6 @@ static void do_cmd_wiz_play(void)
 	} else
 		msg("Changes ignored.");
 }
-
-/**
- * Create the artifact with the specified number - needs improvement NRM
- */
-static void wiz_create_artifact(int a_idx)
-{
-	struct object *i_ptr;
-	struct object_kind *kind;
-
-	artifact_type *a_ptr = &a_info[a_idx];
-
-	/* Ignore "empty" artifacts */
-	if (!a_ptr->name) return;
-
-	/* Acquire the "kind" index */
-	kind = lookup_kind(a_ptr->tval, a_ptr->sval);
-	if (!kind)
-		return;
-
-	/* Get object */
-	i_ptr = mem_zalloc(sizeof(*i_ptr));
-
-	/* Create the artifact */
-	object_prep(i_ptr, kind, a_ptr->alloc_min, RANDOMISE);
-
-	/* Save the name */
-	i_ptr->artifact = a_ptr;
-
-	/* Extract the fields */
-	copy_artifact_data(i_ptr, a_ptr);
-
-	/* Mark that the artifact has been created. */
-	a_ptr->created = TRUE;
-
-	/* Mark as cheat */
-	i_ptr->origin = ORIGIN_CHEAT;
-
-	/* Drop the artifact from heaven */
-	drop_near(cave, i_ptr, 0, player->py, player->px, TRUE);
-
-	/* All done */
-	msg("Allocated.");
-	
-	/* Redraw map */
-	player->upkeep->redraw |= (PR_MAP | PR_ITEMLIST);
-	handle_stuff(player->upkeep);
-}
-
 
 /**
  * Cure everything instantly
@@ -1734,42 +1786,14 @@ void do_cmd_debug(void)
 		/* Create any object */
 		case 'c':
 		{
-			wiz_create_item();
+			wiz_create_item(FALSE);
 			break;
 		}
 
 		/* Create an artifact */
 		case 'C':
 		{
-			char name[80] = "";
-			int a_idx = -1;
-
-			/* Avoid the prompt getting in the way */
-			screen_save();
-
-			/* Prompt */
-			prt("Create which artifact? ", 0, 0);
-
-			/* Get the name */
-			if (askfor_aux(name, sizeof(name), NULL))
-			{
-				/* See if an a_idx was entered */
-				a_idx = get_idx_from_name(name);
-
-				/* If not, find the artifact with that name */
-				if (a_idx < 1)
-					a_idx = lookup_artifact_name(name); 
-
-				/* Did we find a valid artifact? */
-				if (a_idx != -1 && a_idx < z_info->a_max)
-					wiz_create_artifact(a_idx);
-				else
-					msg("No artifact found.");
-			}
-				
-			/* Reload the screen */
-			screen_load();
-
+			wiz_create_item(TRUE);
 			break;
 		}
 
