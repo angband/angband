@@ -1611,7 +1611,7 @@ static void wiz_test_kind(int tval)
 }
 
 /**
- * Display the debug commands help file - which needs updating NRM.
+ * Display the debug commands help file.
  */
 static void do_cmd_wiz_help(void) 
 {
@@ -1868,13 +1868,13 @@ void do_cmd_debug(void)
 			do_cmd_rerate();
 			break;
 		}
-        
-        /* Hit all monsters in LOS */
-        case 'H':
-        {
+
+		/* Hit all monsters in LOS */
+		case 'H':
+		{
 			effect_simple(EF_PROJECT_LOS, "10000", GF_DISP_ALL, 0, 0, NULL);
-            break;
-        }
+			break;
+		}
 
 		/* Identify */
 		case 'i':

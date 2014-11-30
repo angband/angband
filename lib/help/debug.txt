@@ -9,10 +9,7 @@ Create an object ('c')
   Provides a menu to let you create any object, and drops it on the floor.
 		
 Create an artifact ('C')
-  Prompts you for the name of an artifact, then drops that artifact nearby.
-  You must give the name exactly as in 'artifact.txt'. You may optionally
-  give a command-count, in which case this command drops the artifact with
-  that number nearby instead of prompting you for a name.
+  Provides a menu to let you create any artifact, and drops it on the floor.
 		
 Create a good object ('g')
   Creates a good object and places it nearby. If you provide a command-
@@ -121,20 +118,23 @@ Zap monsters ('z')
   monsters whose distance to the character is at most the command-count
   instead.
 
-Miscellaneous
-=============
+Dungeon
+========
 
 Create a trap ('T')		
   Creates a random trap on your square.
 		
-Undocumented
-============
-		
 Query the dungeon ('q')
-  ???
+  Light up all the grids with a given square flag (see src/list-square-flags.h).
+
+Query terrain ('F')
+  Light up all the grids with a given terrain type (see lib/edit/terrain.txt).
 		
-Collect stats ('f')
-  ???
+Collect stats ('f' or 'S')
+  Collects stats on monsters and objects present on level generation.  Requests
+  number of runs, and whether diving or clearing levels, and outputs the
+  results into the file 'stats.log' in the user directory.
 		
 Ben hack ('_')
-  ???
+  Maps out the reachable grids (by the flow algorithm) in successive distances
+  from the player grid.
