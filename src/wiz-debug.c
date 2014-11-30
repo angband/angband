@@ -408,7 +408,7 @@ static void do_cmd_wiz_change(void)
 /**
  * Display an item's properties
  */
-static void wiz_display_item(const object_type *o_ptr, bool all)
+static void wiz_display_item(const struct object *obj, bool all)
 {
 	int j = 0;
 	bitflag f[OF_SIZE];
@@ -417,32 +417,32 @@ static void wiz_display_item(const object_type *o_ptr, bool all)
 
 	/* Extract the flags */
 	if (all)
-		object_flags(o_ptr, f);
+		object_flags(obj, f);
 	else
-		object_flags_known(o_ptr, f);
+		object_flags_known(obj, f);
 
 	/* Clear screen */
 	Term_clear();
 
 	/* Describe fully */
-	object_desc(buf, sizeof(buf), o_ptr,
+	object_desc(buf, sizeof(buf), obj,
 				ODESC_PREFIX | ODESC_FULL | ODESC_SPOIL);
 
 	prt(buf, 2, j);
 
 	prt(format("combat = (%dd%d) (%+d,%+d) [%d,%+d]",
-	           o_ptr->dd, o_ptr->ds, o_ptr->to_h, o_ptr->to_d, o_ptr->ac,
-			   o_ptr->to_a), 4, j);
+	           obj->dd, obj->ds, obj->to_h, obj->to_d, obj->ac,
+			   obj->to_a), 4, j);
 
 	prt(format("kind = %-5d  tval = %-5d  sval = %-5d  wgt = %-3d     timeout = %-d",
-	           o_ptr->kind->kidx, o_ptr->tval, o_ptr->sval, o_ptr->weight,
-			   o_ptr->timeout), 5, j);
+	           obj->kind->kidx, obj->tval, obj->sval, obj->weight,
+			   obj->timeout), 5, j);
 
 	prt(format("number = %-3d  pval = %-5d  name1 = %-4d  egoidx = %-4d  cost = %ld",
-			   o_ptr->number, o_ptr->pval,
-			   o_ptr->artifact ? o_ptr->artifact->aidx : 0,
-			   o_ptr->ego ? o_ptr->ego->eidx : 0,
-			   (long)object_value(o_ptr, 1, FALSE)), 6, j);
+			   obj->number, obj->pval,
+			   obj->artifact ? obj->artifact->aidx : 0,
+			   obj->ego ? obj->ego->eidx : 0,
+			   (long)object_value(obj, 1, FALSE)), 6, j);
 
 	prt("+------------FLAGS-------------+", 16, j);
 	prt("SUST.PROT<-OTHER--><BAD->CUR....", 17, j);
@@ -451,7 +451,7 @@ static void wiz_display_item(const object_type *o_ptr, bool all)
 	prt("tnieoannuiaesnfhcefhsrlgxuuu....", 20, j);
 	prt("rtsxnrdfnglgpvaltsuppderprrr....", 21, j);
 	prt_binary(f, 0, 22, j, '*', 28);
-	prt_binary(o_ptr->known_flags, 0, 23, j, '+', 28);
+	prt_binary(obj->known_flags, 0, 23, j, '+', 28);
 }
 
 
@@ -526,13 +526,13 @@ static bool wiz_create_item_subaction(menu_type *m, const ui_event *e, int oid)
 
 	/* Artifacts */
 	if (choose_artifact) {
-		struct artifact *a_ptr = &a_info[choices[oid]];
+		struct artifact *art = &a_info[choices[oid]];
 
 		/* Ignore "empty" artifacts */
-		if (!a_ptr->name) return FALSE;
+		if (!art->name) return FALSE;
 
 		/* Acquire the "kind" index */
-		kind = lookup_kind(a_ptr->tval, a_ptr->sval);
+		kind = lookup_kind(art->tval, art->sval);
 		if (!kind)
 			return FALSE;
 
@@ -540,16 +540,16 @@ static bool wiz_create_item_subaction(menu_type *m, const ui_event *e, int oid)
 		obj = mem_zalloc(sizeof(*obj));
 
 		/* Create the artifact */
-		object_prep(obj, kind, a_ptr->alloc_min, RANDOMISE);
+		object_prep(obj, kind, art->alloc_min, RANDOMISE);
 
 		/* Save the artifact type */
-		obj->artifact = a_ptr;
+		obj->artifact = art;
 
 		/* Extract the fields */
-		copy_artifact_data(obj, a_ptr);
+		copy_artifact_data(obj, art);
 
 		/* Mark that the artifact has been created. */
-		a_ptr->created = TRUE;
+		art->created = TRUE;
 	} else {
 		/* Regular objects */
 		kind = &k_info[choices[oid]];
@@ -619,9 +619,9 @@ static bool wiz_create_item_action(menu_type *m, const ui_event *e, int oid)
 	if (choose_artifact) {
 		/* ...We have to search the whole artifact list. */
 		for (num = 0, i = 1; (num < 60) && (i < z_info->a_max); i++) {
-			struct artifact *a_ptr = &a_info[i];
+			struct artifact *art = &a_info[i];
 
-			if (a_ptr->tval != oid) continue;
+			if (art->tval != oid) continue;
 
 			choice[num++] = i;
 		}
@@ -693,8 +693,8 @@ static void wiz_create_item(bool art)
 		if (art) {
 			int j;
 			for (j = 1; j < z_info->a_max; j++) {
-				struct artifact *a_ptr = &a_info[j];
-				if (a_ptr->tval == i) break;
+				struct artifact *art = &a_info[j];
+				if (art->tval == i) break;
 			}
 			if (j == z_info->a_max) continue;
 		}
@@ -722,47 +722,47 @@ static void wiz_create_item(bool art)
  * Tweak an item - make it ego or artifact, give values for modifiers, to_a,
  * to_h or to_d
  */
-static void wiz_tweak_item(object_type *o_ptr)
+static void wiz_tweak_item(struct object *obj)
 {
 	const char *p;
 	char tmp_val[80];
 	int i, val;
 
 	/* Hack -- leave artifacts alone */
-	if (o_ptr->artifact) return;
+	if (obj->artifact) return;
 
 	p = "Enter new ego item index: ";
 	strnfmt(tmp_val, sizeof(tmp_val), "0");
-	if (o_ptr->ego)
-		strnfmt(tmp_val, sizeof(tmp_val), "%d", o_ptr->ego->eidx);
+	if (obj->ego)
+		strnfmt(tmp_val, sizeof(tmp_val), "%d", obj->ego->eidx);
 	if (!get_string(p, tmp_val, 6)) return;
 	val = atoi(tmp_val);
 	if (val) {
-		o_ptr->ego = &e_info[val];
-		ego_apply_magic(o_ptr, player->depth);
+		obj->ego = &e_info[val];
+		ego_apply_magic(obj, player->depth);
 	} else
-		o_ptr->ego = 0;
-	wiz_display_item(o_ptr, TRUE);
+		obj->ego = 0;
+	wiz_display_item(obj, TRUE);
 
 	p = "Enter new artifact index: ";
 	strnfmt(tmp_val, sizeof(tmp_val), "0");
-	if (o_ptr->artifact)
-		strnfmt(tmp_val, sizeof(tmp_val), "%d", o_ptr->artifact->aidx);
+	if (obj->artifact)
+		strnfmt(tmp_val, sizeof(tmp_val), "%d", obj->artifact->aidx);
 	if (!get_string(p, tmp_val, 6)) return;
 	val = atoi(tmp_val);
 	if (val) {
-		o_ptr->artifact = &a_info[val];
-		copy_artifact_data(o_ptr, o_ptr->artifact);
+		obj->artifact = &a_info[val];
+		copy_artifact_data(obj, obj->artifact);
 	} else
-		o_ptr->artifact = 0;
-	wiz_display_item(o_ptr, TRUE);
+		obj->artifact = 0;
+	wiz_display_item(obj, TRUE);
 
 #define WIZ_TWEAK(attribute) do {\
 	p = "Enter new '" #attribute "' setting: ";\
-	strnfmt(tmp_val, sizeof(tmp_val), "%d", o_ptr->attribute);\
+	strnfmt(tmp_val, sizeof(tmp_val), "%d", obj->attribute);\
 	if (!get_string(p, tmp_val, 6)) return;\
-	o_ptr->attribute = atoi(tmp_val);\
-	wiz_display_item(o_ptr, TRUE);\
+	obj->attribute = atoi(tmp_val);\
+	wiz_display_item(obj, TRUE);\
 } while (0)
 	for (i = 0; i < OBJ_MOD_MAX; i++) {
 		WIZ_TWEAK(modifiers[i]);
@@ -869,7 +869,7 @@ static void wiz_reroll_item(struct object *obj)
  * counter flags to prevent weirdness.  We use the items to collect
  * statistics on item creation relative to the initial item.
  */
-static void wiz_statistics(object_type *o_ptr, int level)
+static void wiz_statistics(struct object *obj, int level)
 {
 	long i, matches, better, worse, other;
 	int j;
@@ -885,7 +885,7 @@ static void wiz_statistics(object_type *o_ptr, int level)
 
 
 	/* Allow multiple artifacts, because breaking the game is fine here */
-	if (o_ptr->artifact) o_ptr->artifact->created = FALSE;
+	if (obj->artifact) obj->artifact->created = FALSE;
 
 
 	/* Interact */
@@ -893,7 +893,7 @@ static void wiz_statistics(object_type *o_ptr, int level)
 		const char *pmt = "Roll for [n]ormal, [g]ood, or [e]xcellent treasure? ";
 
 		/* Display item */
-		wiz_display_item(o_ptr, TRUE);
+		wiz_display_item(obj, TRUE);
 
 		/* Get choices */
 		if (!get_com(pmt, &ch)) break;
@@ -951,44 +951,44 @@ static void wiz_statistics(object_type *o_ptr, int level)
 			test_obj = make_object(cave, level, good, great, FALSE, NULL, 0);
 
 			/* Allow multiple artifacts, because breaking the game is OK here */
-			if (o_ptr->artifact) o_ptr->artifact->created = FALSE;
+			if (obj->artifact) obj->artifact->created = FALSE;
 
 			/* Test for the same tval and sval. */
-			if ((o_ptr->tval) != (test_obj->tval)) continue;
-			if ((o_ptr->sval) != (test_obj->sval)) continue;
+			if ((obj->tval) != (test_obj->tval)) continue;
+			if ((obj->sval) != (test_obj->sval)) continue;
 
 			/* Check modifiers */
 			ismatch = TRUE;
 			for (j = 0; j < OBJ_MOD_MAX; j++)
-				if (test_obj->modifiers[j] != o_ptr->modifiers[j])
+				if (test_obj->modifiers[j] != obj->modifiers[j])
 					ismatch = FALSE;
 
 			isbetter = TRUE;
 			for (j = 0; j < OBJ_MOD_MAX; j++)
-				if (test_obj->modifiers[j] < o_ptr->modifiers[j])
+				if (test_obj->modifiers[j] < obj->modifiers[j])
 					isbetter = FALSE;
 
 			isworse = TRUE;
 			for (j = 0; j < OBJ_MOD_MAX; j++)
-				if (test_obj->modifiers[j] > o_ptr->modifiers[j])
+				if (test_obj->modifiers[j] > obj->modifiers[j])
 					isworse = FALSE;
 
 			/* Check for match */
-			if (ismatch && (test_obj->to_a == o_ptr->to_a) &&
-				(test_obj->to_h == o_ptr->to_h) &&
-				(test_obj->to_d == o_ptr->to_d))
+			if (ismatch && (test_obj->to_a == obj->to_a) &&
+				(test_obj->to_h == obj->to_h) &&
+				(test_obj->to_d == obj->to_d))
 				matches++;
 
 			/* Check for better */
-			else if (isbetter && (test_obj->to_a >= o_ptr->to_a) &&
-			         (test_obj->to_h >= o_ptr->to_h) &&
-			         (test_obj->to_d >= o_ptr->to_d))
+			else if (isbetter && (test_obj->to_a >= obj->to_a) &&
+			         (test_obj->to_h >= obj->to_h) &&
+			         (test_obj->to_d >= obj->to_d))
 					better++;
 
 			/* Check for worse */
-			else if (isworse && (test_obj->to_a <= o_ptr->to_a) &&
-			         (test_obj->to_h <= o_ptr->to_h) &&
-			         (test_obj->to_d <= o_ptr->to_d))
+			else if (isworse && (test_obj->to_a <= obj->to_a) &&
+			         (test_obj->to_h <= obj->to_h) &&
+			         (test_obj->to_d <= obj->to_d))
 				worse++;
 
 			/* Assume different */
@@ -1006,24 +1006,24 @@ static void wiz_statistics(object_type *o_ptr, int level)
 
 
 	/* Hack -- Normally only make a single artifact */
-	if (o_ptr->artifact) o_ptr->artifact->created = TRUE;
+	if (obj->artifact) obj->artifact->created = TRUE;
 }
 
 
 /**
  * Change the quantity of an item
  */
-static void wiz_quantity_item(object_type *o_ptr, bool carried)
+static void wiz_quantity_item(struct object *obj, bool carried)
 {
 	int tmp_int;
 
 	char tmp_val[3];
 
 	/* Never duplicate artifacts */
-	if (o_ptr->artifact) return;
+	if (obj->artifact) return;
 
 	/* Default */
-	strnfmt(tmp_val, sizeof(tmp_val), "%d", o_ptr->number);
+	strnfmt(tmp_val, sizeof(tmp_val), "%d", obj->number);
 
 	/* Query */
 	if (get_string("Quantity: ", tmp_val, 3)) {
@@ -1037,17 +1037,17 @@ static void wiz_quantity_item(object_type *o_ptr, bool carried)
 		/* Adjust total weight being carried */
 		if (carried) {
 			/* Remove the weight of the old number of objects */
-			player->upkeep->total_weight -= (o_ptr->number * o_ptr->weight);
+			player->upkeep->total_weight -= (obj->number * obj->weight);
 
 			/* Add the weight of the new number of objects */
-			player->upkeep->total_weight += (tmp_int * o_ptr->weight);
+			player->upkeep->total_weight += (tmp_int * obj->weight);
 		}
 
 		/* Adjust charges/timeouts for devices */
-		reduce_charges(o_ptr, (o_ptr->number - tmp_int));
+		reduce_charges(obj, (obj->number - tmp_int));
 
 		/* Accept modifications */
-		o_ptr->number = tmp_int;
+		obj->number = tmp_int;
 	}
 }
 
@@ -1055,25 +1055,25 @@ static void wiz_quantity_item(object_type *o_ptr, bool carried)
 /**
  * Tweak the cursed status of an object.
  *
- * \param o_ptr is the object to curse or decurse
+ * \param obj is the object to curse or decurse
  */
-static void wiz_tweak_curse(object_type *o_ptr)
+static void wiz_tweak_curse(struct object *obj)
 {
-	if (cursed_p(o_ptr->flags)) {
+	if (cursed_p(obj->flags)) {
 		bitflag f[OF_SIZE];
 		msg("Resetting existing curses.");
 
 		create_mask(f, FALSE, OFT_CURSE, OFT_MAX);
-		of_diff(o_ptr->flags, f);
+		of_diff(obj->flags, f);
 	}
 
 	if (get_check("Set light curse? "))
-		flags_set(o_ptr->flags, OF_SIZE, OF_LIGHT_CURSE, FLAG_END);
+		flags_set(obj->flags, OF_SIZE, OF_LIGHT_CURSE, FLAG_END);
 	else if (get_check("Set heavy curse? "))
-		flags_set(o_ptr->flags, OF_SIZE, OF_LIGHT_CURSE, OF_HEAVY_CURSE,
+		flags_set(obj->flags, OF_SIZE, OF_LIGHT_CURSE, OF_HEAVY_CURSE,
 				  FLAG_END);
 	else if (get_check("Set permanent curse? "))
-		flags_set(o_ptr->flags, OF_SIZE, OF_LIGHT_CURSE, OF_HEAVY_CURSE,
+		flags_set(obj->flags, OF_SIZE, OF_LIGHT_CURSE, OF_HEAVY_CURSE,
 				  OF_PERMA_CURSE, FLAG_END);
 }
 
@@ -1334,7 +1334,7 @@ static void do_cmd_wiz_summon(int num)
 /**
  * Summon a creature of the specified type
  */
-static void do_cmd_wiz_named(monster_race *r, bool slp)
+static void do_cmd_wiz_named(struct monster_race *r, bool slp)
 {
 	int py = player->py;
 	int px = player->px;
@@ -1372,13 +1372,13 @@ static void do_cmd_wiz_zap(int d)
 	/* Banish everyone nearby */
 	for (i = 1; i < cave_monster_max(cave); i++)
 	{
-		monster_type *m_ptr = cave_monster(cave, i);
+		struct monster *mon = cave_monster(cave, i);
 
 		/* Skip dead monsters */
-		if (!m_ptr->race) continue;
+		if (!mon->race) continue;
 
 		/* Skip distant monsters */
-		if (m_ptr->cdis > d) continue;
+		if (mon->cdis > d) continue;
 
 		/* Delete the monster */
 		delete_monster_idx(i);
@@ -1581,7 +1581,7 @@ static void wiz_test_kind(int tval)
 	int px = player->px;
 	int sval;
 
-	object_type *obj;
+	struct object *obj;
 
 	for (sval = 0; sval < 255; sval++) {
 		/* This spams failure messages, but that's the downside of wizardry */
@@ -1914,7 +1914,7 @@ void do_cmd_debug(void)
 		/* Summon Named Monster */
 		case 'n':
 		{
-			monster_race *r = NULL;
+			struct monster_race *r = NULL;
 			char name[80] = "";
 
 			/* Avoid the prompt getting in the way */
@@ -1980,7 +1980,7 @@ void do_cmd_debug(void)
 		/* Get full recall for a monster */
 		case 'r':
 		{
-			const monster_race *r_ptr = NULL;
+			const struct monster_race *race = NULL;
 
 			struct keypress sym;
 			const char *prompt =
@@ -2011,18 +2011,18 @@ void do_cmd_debug(void)
 					/* See if a r_idx was entered */
 					int r_idx = get_idx_from_name(name);
 					if (r_idx)
-						r_ptr = &r_info[r_idx];
+						race = &r_info[r_idx];
 					else
 						/* If not, find the monster with that name */
-						r_ptr = lookup_monster(name); 
+						race = lookup_monster(name); 
 				}
 
 				/* Reload the screen */
 				screen_load();
 
 				/* Did we find a valid monster? */
-				if (r_ptr)
-					cheat_monster_lore(r_ptr, get_lore(r_ptr));
+				if (race)
+					cheat_monster_lore(race, get_lore(race));
 				else
 					msg("No monster found.");
 			}
@@ -2111,7 +2111,7 @@ void do_cmd_debug(void)
 		/* Wipe recall for a monster */
 		case 'W':
 		{
-			const monster_race *r_ptr = NULL;
+			const struct monster_race *race = NULL;
 			s16b r_idx = 0; 
 
 			struct keypress sym;
@@ -2139,18 +2139,18 @@ void do_cmd_debug(void)
 					/* See if a r_idx was entered */
 					r_idx = get_idx_from_name(name);
 					if (r_idx)
-						r_ptr = &r_info[r_idx];
+						race = &r_info[r_idx];
 					else
 						/* If not, find the monster with that name */
-						r_ptr = lookup_monster(name); 
+						race = lookup_monster(name); 
 				}
 					
 				/* Reload the screen */
 				screen_load();
 
 				/* Did we find a valid monster? */
-				if (r_ptr)
-					wipe_monster_lore(r_ptr, get_lore(r_ptr));
+				if (race)
+					wipe_monster_lore(race, get_lore(race));
 				else
 					msg("No monster found.");
 			}
