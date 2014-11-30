@@ -484,149 +484,31 @@ static void purchase_analyze(s32b price, s32b value, s32b guess)
  */
 static bool store_will_buy(struct store *store, const object_type *o_ptr)
 {
-	/* Switch on the store */
-	switch (store->sidx)
-	{
-		/* General Store */
-		case STORE_GENERAL:
-		{
-			/* Analyze the types */
-			switch (o_ptr->tval)
-			{
-				case TV_LIGHT:
-				case TV_FOOD:
-				case TV_MUSHROOM:
-				case TV_FLASK:
-				case TV_DIGGING:
-					break;
+	struct object_buy *buy;
 
-				default:
-					return (FALSE);
-			}
-			break;
-		}
-
-		/* Armoury */
-		case STORE_ARMOR:
-		{
-			/* Analyze the type */
-			switch (o_ptr->tval)
-			{
-				case TV_BOOTS:
-				case TV_GLOVES:
-				case TV_CROWN:
-				case TV_HELM:
-				case TV_SHIELD:
-				case TV_CLOAK:
-				case TV_SOFT_ARMOR:
-				case TV_HARD_ARMOR:
-				case TV_DRAG_ARMOR:
-					break;
-
-				default:
-					return (FALSE);
-			}
-			break;
-		}
-
-		/* Weapon Shop */
-		case STORE_WEAPON:
-		{
-			/* Analyze the type */
-			switch (o_ptr->tval)
-			{
-				case TV_SHOT:
-				case TV_BOLT:
-				case TV_ARROW:
-				case TV_BOW:
-				case TV_DIGGING:
-				case TV_HAFTED:
-				case TV_POLEARM:
-				case TV_SWORD:
-					break;
-
-				default:
-					return (FALSE);
-			}
-			break;
-		}
-
-		/* Temple */
-		case STORE_TEMPLE:
-		{
-			/* Analyze the type */
-			switch (o_ptr->tval)
-			{
-				case TV_PRAYER_BOOK:
-				case TV_SCROLL:
-				case TV_POTION:
-				case TV_HAFTED:
-					break;
-
-				case TV_POLEARM:
-				case TV_SWORD:
-				case TV_DIGGING:
-				{
-					/* Known blessed blades are accepted too */
-					if (object_is_known_blessed(o_ptr)) break;
-				}
-
-				default:
-					return (FALSE);
-			}
-			break;
-		}
-
-		/* Alchemist */
-		case STORE_ALCHEMY:
-		{
-			/* Analyze the type */
-			switch (o_ptr->tval)
-			{
-				case TV_SCROLL:
-				case TV_POTION:
-					break;
-
-				default:
-					return (FALSE);
-			}
-			break;
-		}
-
-		/* Magic Shop */
-		case STORE_MAGIC:
-		{
-			/* Analyze the type */
-			switch (o_ptr->tval)
-			{
-				case TV_MAGIC_BOOK:
-				case TV_AMULET:
-				case TV_RING:
-				case TV_STAFF:
-				case TV_WAND:
-				case TV_ROD:
-				case TV_SCROLL:
-				case TV_POTION:
-					break;
-
-				default:
-					return (FALSE);
-			}
-			break;
-		}
-
-		/* Home */
-		case STORE_HOME:
-		{
-			return TRUE;
-		}
-	}
+	/* Home accepts anything */
+	if (store->sidx == STORE_HOME) return TRUE;
 
 	/* Ignore "worthless" items */
-	if (object_value(o_ptr, 1, FALSE) <= 0) return (FALSE);
+	if (object_value(o_ptr, 1, FALSE) <= 0) return FALSE;
 
-	/* Assume okay */
-	return (TRUE);
+	/* No buy list means we buy anything */
+	if (!store->buy) return TRUE;
+
+	/* Run through the buy list */
+	for (buy = store->buy; buy; buy = buy->next) {
+		/* Wrong tval */
+		if (buy->tval != o_ptr->tval) continue;
+
+		/* No flag means we're good */
+		if (!buy->flag) return TRUE;
+
+		/* OK if the object is known to have the flag */
+		if (object_flag_is_known(o_ptr, buy->flag)) return TRUE;
+	}
+
+	/* Not on the list */
+	return FALSE;
 }
 
 
