@@ -1,6 +1,6 @@
-/*
- * File: store.c
- * Purpose: Store stocking and UI
+/**
+ * \file store.c
+ * \brief Store stocking
  *
  * Copyright (c) 1997 Robert A. Koeneke, James E. Wilson, Ben Harrison
  * Copyright (c) 2007 Andi Sidwell, who rewrote a fair portion
@@ -43,12 +43,12 @@
 
 /*** Constants and definitions ***/
 
-/*
+/**
  * Array[MAX_STORES] of stores
  */
 struct store *stores;
 
-/*
+/**
  * The hints array
  */
 struct hint *hints;
@@ -69,7 +69,9 @@ static const char *obj_flags[] = {
 	NULL
 };
 
-/* Return the store instance at the given location */
+/**
+ * Return the store instance at the given location
+ */
 struct store *store_at(struct chunk *c, int y, int x)
 {
 	if (square_isshop(c, player->py, player->px))
@@ -79,7 +81,7 @@ struct store *store_at(struct chunk *c, int y, int x)
 }
 
 
-/*
+/**
  * Create a new store.
  */
 static struct store *store_new(int idx) {
@@ -90,7 +92,7 @@ static struct store *store_new(int idx) {
 	return s;
 }
 
-/*
+/**
  * Get rid of stores at cleanup. Gets rid of everything.
  */
 void cleanup_stores(void)
@@ -482,7 +484,7 @@ static void purchase_analyze(s32b price, s32b value, s32b guess)
  *
  * Note that a shop-keeper must refuse to buy "worthless" objects
  */
-static bool store_will_buy(struct store *store, const object_type *o_ptr)
+static bool store_will_buy(struct store *store, const struct object *obj)
 {
 	struct object_buy *buy;
 
@@ -490,7 +492,7 @@ static bool store_will_buy(struct store *store, const object_type *o_ptr)
 	if (store->sidx == STORE_HOME) return TRUE;
 
 	/* Ignore "worthless" items */
-	if (object_value(o_ptr, 1, FALSE) <= 0) return FALSE;
+	if (object_value(obj, 1, FALSE) <= 0) return FALSE;
 
 	/* No buy list means we buy anything */
 	if (!store->buy) return TRUE;
@@ -498,13 +500,13 @@ static bool store_will_buy(struct store *store, const object_type *o_ptr)
 	/* Run through the buy list */
 	for (buy = store->buy; buy; buy = buy->next) {
 		/* Wrong tval */
-		if (buy->tval != o_ptr->tval) continue;
+		if (buy->tval != obj->tval) continue;
 
 		/* No flag means we're good */
 		if (!buy->flag) return TRUE;
 
 		/* OK if the object is known to have the flag */
-		if (object_flag_is_known(o_ptr, buy->flag)) return TRUE;
+		if (object_flag_is_known(obj, buy->flag)) return TRUE;
 	}
 
 	/* Not on the list */
@@ -514,51 +516,45 @@ static bool store_will_buy(struct store *store, const object_type *o_ptr)
 
 /*** Basics: pricing, generation, etc. ***/
 
-/*
+/**
  * Determine the price of an object (qty one) in a store.
  *
  *  store_buying == TRUE  means the shop is buying, player selling
  *               == FALSE means the shop is selling, player buying
- *
- * This function takes into account the player's charisma, but
- * never lets a shop-keeper lose money in a transaction.
  *
  * The "greed" value should exceed 100 when the player is "buying" the
  * object, and should be less than 100 when the player is "selling" it.
  *
  * Hack -- the black market always charges twice as much as it should.
  */
-int price_item(struct store *store, const object_type *o_ptr, bool store_buying, int qty)
+int price_item(struct store *store, const struct object *obj,
+			   bool store_buying, int qty)
 {
 	int adjust;
 	int price;
-	owner_type *ot_ptr;
+	struct owner *proprietor;
 
 	if (!store) return 0L;
 
-	ot_ptr = store->owner;
-
+	proprietor = store->owner;
 
 	/* Get the value of the stack of wands, or a single item */
-	if (tval_can_have_charges(o_ptr))
-		price = object_value(o_ptr, qty, FALSE);
+	if (tval_can_have_charges(obj))
+		price = object_value(obj, qty, FALSE);
 	else
-		price = object_value(o_ptr, 1, FALSE);
+		price = object_value(obj, 1, FALSE);
 
 	/* Worthless items */
 	if (price <= 0) return (0L);
 
-
-	/* Add in the charisma factor */
+	/* Adjustments */
 	if (store->sidx == STORE_B_MARKET)
 		adjust = 150;
 	else
 		adjust = 100;
 
-
 	/* Shop is buying */
-	if (store_buying)
-	{
+	if (store_buying) {
 		/* Set the factor */
 		adjust = 100 + (100 - adjust);
 		if (adjust > 100) adjust = 100;
@@ -572,12 +568,8 @@ int price_item(struct store *store, const object_type *o_ptr, bool store_buying,
 
 		/* Check for no_selling option */
 		if (OPT(birth_no_selling)) return (0L);
-	}
-
-	/* Shop is selling */
-	else
-	{
-		/* Fix the factor */
+	} else {
+		/* Shop is selling */
 		if (adjust < 100) adjust = 100;
 
 		/* Black market sucks */
@@ -589,12 +581,12 @@ int price_item(struct store *store, const object_type *o_ptr, bool store_buying,
 	price = (price * adjust + 50L) / 100L;
 
 	/* Now convert price to total price for non-wands */
-	if (!tval_can_have_charges(o_ptr))
+	if (!tval_can_have_charges(obj))
 		price *= qty;
 
 	/* Now limit the price to the purse limit */
-	if (store_buying && (price > ot_ptr->max_cost * qty))
-		price = ot_ptr->max_cost * qty;
+	if (store_buying && (price > proprietor->max_cost * qty))
+		price = proprietor->max_cost * qty;
 
 	/* Note -- Never become "free" */
 	if (price <= 0L) return (qty);
@@ -604,7 +596,7 @@ int price_item(struct store *store, const object_type *o_ptr, bool store_buying,
 }
 
 
-/*
+/**
  * Special "mass production" computation.
  */
 static int mass_roll(int times, int max)
@@ -620,16 +612,16 @@ static int mass_roll(int times, int max)
 }
 
 
-/*
+/**
  * Some cheap objects should be created in piles.
  */
-static void mass_produce(object_type *o_ptr)
+static void mass_produce(struct object *obj)
 {
 	int size = 1;
-	s32b cost = object_value(o_ptr, 1, FALSE);
+	s32b cost = object_value(obj, 1, FALSE);
 
 	/* Analyze the type */
-	switch (o_ptr->tval)
+	switch (obj->tval)
 	{
 		/* Food, Flasks, and Lights */
 		case TV_FOOD:
@@ -672,7 +664,7 @@ static void mass_produce(object_type *o_ptr)
 		case TV_DIGGING:
 		case TV_BOW:
 		{
-			if (o_ptr->ego) break;
+			if (obj->ego) break;
 			if (cost <= 10L) size += mass_roll(3, 5);
 			if (cost <= 100L) size += mass_roll(3, 5);
 			break;
@@ -695,16 +687,15 @@ static void mass_produce(object_type *o_ptr)
 		}
 	}
 
-
 	/* Save the total pile size */
-	o_ptr->number = size;
+	obj->number = size;
 }
 
 
-/*
+/**
  * Allow a store object to absorb another object
  */
-static void store_object_absorb(object_type *old, object_type *new)
+static void store_object_absorb(struct object *old, struct object *new)
 {
 	int total = old->number + new->number;
 
@@ -721,19 +712,18 @@ static void store_object_absorb(object_type *old, object_type *new)
 
 	if ((old->origin != new->origin) ||
 	    (old->origin_depth != new->origin_depth) ||
-	    (old->origin_xtra != new->origin_xtra))
-	{
+	    (old->origin_xtra != new->origin_xtra)) {
 		int act = 2;
 
 		if ((old->origin == ORIGIN_DROP) && (old->origin == new->origin)) {
-			monster_race *r_ptr = &r_info[old->origin_xtra];
-			monster_race *s_ptr = &r_info[new->origin_xtra];
+			struct monster_race *r_old = &r_info[old->origin_xtra];
+			struct monster_race *r_new = &r_info[new->origin_xtra];
 
-			bool r_uniq = rf_has(r_ptr->flags, RF_UNIQUE) ? TRUE : FALSE;
-			bool s_uniq = rf_has(s_ptr->flags, RF_UNIQUE) ? TRUE : FALSE;
+			bool old_uniq = rf_has(r_old->flags, RF_UNIQUE) ? TRUE : FALSE;
+			bool new_uniq = rf_has(r_new->flags, RF_UNIQUE) ? TRUE : FALSE;
 
-			if (r_uniq && !s_uniq) act = 0;
-			else if (s_uniq && !r_uniq) act = 1;
+			if (old_uniq && !new_uniq) act = 0;
+			else if (new_uniq && !old_uniq) act = 1;
 			else act = 2;
 		}
 
@@ -760,58 +750,50 @@ static void store_object_absorb(object_type *old, object_type *new)
 }
 
 
-/*
+/**
  * Check to see if the shop will be carrying too many objects
  *
  * Note that the shop, just like a player, will not accept things
  * it cannot hold.  Before, one could "nuke" objects this way, by
  * adding them to a pile which was already full.
  */
-bool store_check_num(struct store *store, const object_type *o_ptr)
+bool store_check_num(struct store *store, const struct object *obj)
 {
 	int i;
-	object_type *j_ptr;
+	struct object *stock_obj;
 
 	/* Free space is always usable */
 	if (store->stock_num < store->stock_size) return TRUE;
 
 	/* The "home" acts like the player */
-	if (store->sidx == STORE_HOME)
-	{
-		/* Check all the objects */
-		for (i = 0; i < store->stock_num; i++)
-		{
+	if (store->sidx == STORE_HOME) {
+		for (i = 0; i < store->stock_num; i++) {
 			/* Get the existing object */
-			j_ptr = &store->stock[i];
+			stock_obj = &store->stock[i];
 
 			/* Can the new object be combined with the old one? */
-			if (object_similar(j_ptr, o_ptr, OSTACK_PACK))
-				return (TRUE);
+			if (object_similar(stock_obj, obj, OSTACK_PACK))
+				return TRUE;
 		}
-	}
-
-	/* Normal stores do special stuff */
-	else
-	{
-		/* Check all the objects */
-		for (i = 0; i < store->stock_num; i++)
-		{
+	} else {
+		/* Normal stores do special stuff */
+		for (i = 0; i < store->stock_num; i++) {
 			/* Get the existing object */
-			j_ptr = &store->stock[i];
+			stock_obj = &store->stock[i];
 
 			/* Can the new object be combined with the old one? */
-			if (object_similar(j_ptr, o_ptr, OSTACK_STORE))
-				return (TRUE);
+			if (object_similar(stock_obj, obj, OSTACK_STORE))
+				return TRUE;
 		}
 	}
 
 	/* But there was no room at the inn... */
-	return (FALSE);
+	return FALSE;
 }
 
 
 
-/*
+/**
  * Add an object to the inventory of the Home.
  *
  * In all cases, return the slot (or -1) where the object was placed.
@@ -872,7 +854,7 @@ static int home_carry(struct object *obj)
 }
 
 
-/*
+/**
  * Add an object to a real stores inventory.
  *
  * If the object is "worthless", it is thrown away (except in the home).
@@ -944,9 +926,8 @@ static int store_carry(struct store *store, struct object *obj)
 	}
 
 	/* No space? */
-	if (store->stock_num >= store->stock_size) {
+	if (store->stock_num >= store->stock_size)
 		return (-1);
-	}
 
 	/* Check existing slots to see if we must "slide" */
 	for (slot = 0; slot < store->stock_num; slot++) {
@@ -994,53 +975,51 @@ static int store_carry(struct store *store, struct object *obj)
 }
 
 
-/*
+/**
  * Increase, by a 'num', the number of an item 'item' in store 'st'.
  * This can result in zero items.
  */
 static void store_item_increase(struct store *store, int item, int num)
 {
 	int cnt;
-	object_type *o_ptr;
+	struct object *obj;
 
 	/* Get the object */
-	o_ptr = &store->stock[item];
+	obj = &store->stock[item];
 
 	/* Verify the number */
-	cnt = o_ptr->number + num;
+	cnt = obj->number + num;
 	if (cnt > 255) cnt = 255;
 	else if (cnt < 0) cnt = 0;
 
 	/* Save the new number */
-	o_ptr->number = cnt;
+	obj->number = cnt;
 }
 
 
-/*
+/**
  * Remove a slot if it is empty, in store 'st'.
  */
 static void store_item_optimize(struct store *store, int item)
 {
 	int j;
-	object_type *o_ptr;
+	struct object *obj;
 
 	/* Get the object */
-	o_ptr = &store->stock[item];
+	obj = &store->stock[item];
 
 	/* Must exist */
-	if (!o_ptr->kind) return;
+	if (!obj->kind) return;
 
 	/* Must have no items */
-	if (o_ptr->number) return;
+	if (obj->number) return;
 
 	/* One less object */
 	store->stock_num--;
 
 	/* Slide everyone */
 	for (j = item; j < store->stock_num; j++)
-	{
 		store->stock[j] = store->stock[j + 1];
-	}
 
 	/* Nuke the final slot */
 	object_wipe(&store->stock[j]);
@@ -1048,38 +1027,36 @@ static void store_item_optimize(struct store *store, int item)
 
 
 
-/*
- * Delete an object from store 'st', or, if it is a stack, perhaps only
+/**
+ * Delete an object from store 'store', or, if it is a stack, perhaps only
  * partially delete it.
  */
 static void store_delete_index(struct store *store, int what)
 {
 	int num;
-	object_type *o_ptr;
+	struct object *obj;
 
 	/* Paranoia */
 	if (store->stock_num <= 0) return;
 
 	/* Get the object */
-	o_ptr = &store->stock[what];
+	obj = &store->stock[what];
 
 	/* Determine how many objects are in the slot */
-	num = o_ptr->number;
+	num = obj->number;
 
 	/* Deal with stacks */
-	if (num > 1)
-	{
+	if (num > 1) {
 		/* Special behaviour for arrows, bolts &tc. */
-		if (tval_is_ammo(o_ptr)) {
+		if (tval_is_ammo(obj)) {
 			/* 50% of the time, destroy the entire stack */
 			if (randint0(100) < 50 || num < 10)
-				num = o_ptr->number;
+				num = obj->number;
 
 			/* 50% of the time, reduce the size to a multiple of 5 */
 			else
 				num = randint1(num / 5) * 5 + (num % 5);
-		}
-		else {
+		} else {
 			/* 50% of the time, destroy a single object */
 			if (randint0(100) < 50) num = 1;
 
@@ -1087,18 +1064,16 @@ static void store_delete_index(struct store *store, int what)
 			else if (randint0(100) < 50) num = (num + 1) / 2;
 
 			/* 25% of the time, destroy all objects */
-			else num = o_ptr->number;
+			else num = obj->number;
 
 			/* Hack -- decrement the total charges of staves and wands. */
-			if (tval_can_have_charges(o_ptr))
-			{
-				o_ptr->pval -= num * o_ptr->pval / o_ptr->number;
-			}
+			if (tval_can_have_charges(obj))
+				obj->pval -= num * obj->pval / obj->number;
 		}
 	}
 
-	if (o_ptr->artifact)
-		history_lose_artifact(o_ptr->artifact);
+	if (obj->artifact)
+		history_lose_artifact(obj->artifact);
 
 	/* Delete the item */
 	store_item_increase(store, what, -num);
@@ -1108,7 +1083,7 @@ static void store_delete_index(struct store *store, int what)
 /**
  * Find a given object kind in the store.
  */
-static object_type *store_find_kind(struct store *s, object_kind *k) {
+static struct object *store_find_kind(struct store *s, object_kind *k) {
 	int slot;
 
 	assert(s);
@@ -1125,7 +1100,7 @@ static object_type *store_find_kind(struct store *s, object_kind *k) {
 }
 
 
-/*
+/**
  * Delete a random object from store 'st', or, if it is a stack, perhaps only
  * partially delete it.
  *
@@ -1149,53 +1124,50 @@ static void store_delete_random(struct store *store)
 }
 
 
-/*
+/**
  * This makes sure that the black market doesn't stock any object that other
  * stores have, unless it is an ego-item or has various bonuses.
  *
  * Based on a suggestion by Lee Vogt <lvogt@cig.mcel.mot.com>.
  */
-static bool black_market_ok(const object_type *o_ptr)
+static bool black_market_ok(const struct object *obj)
 {
 	int i, j;
 
 	/* Ego items are always fine */
-	if (o_ptr->ego) return (TRUE);
+	if (obj->ego) return TRUE;
 
 	/* Good items are normally fine */
-	if (o_ptr->to_a > 2) return (TRUE);
-	if (o_ptr->to_h > 1) return (TRUE);
-	if (o_ptr->to_d > 2) return (TRUE);
-
+	if (obj->to_a > 2) return TRUE;
+	if (obj->to_h > 1) return TRUE;
+	if (obj->to_d > 2) return TRUE;
 
 	/* No cheap items */
-	if (object_value(o_ptr, 1, FALSE) < 10) return (FALSE);
+	if (object_value(obj, 1, FALSE) < 10) return (FALSE);
 
 	/* Check the other stores */
-	for (i = 0; i < MAX_STORES; i++)
-	{
+	for (i = 0; i < MAX_STORES; i++) {
 		/* Skip home and black market */
 		if (i == STORE_B_MARKET || i == STORE_HOME)
 			continue;
 
 		/* Check every object in the store */
-		for (j = 0; j < stores[i].stock_num; j++)
-		{
-			object_type *j_ptr = &stores[i].stock[j];
+		for (j = 0; j < stores[i].stock_num; j++) {
+			struct object *stock_obj = &stores[i].stock[j];
 
 			/* Compare object kinds */
-			if (o_ptr->kind == j_ptr->kind)
-				return (FALSE);
+			if (obj->kind == stock_obj->kind)
+				return FALSE;
 		}
 	}
 
 	/* Otherwise fine */
-	return (TRUE);
+	return TRUE;
 }
 
 
 
-/*
+/**
  * Get a choice from the store allocation table, in tables.c
  */
 static object_kind *store_get_choice(struct store *store)
@@ -1205,8 +1177,8 @@ static object_kind *store_get_choice(struct store *store)
 }
 
 
-/*
- * Creates a random object and gives it to store 'st'
+/**
+ * Creates a random object and gives it to store 'store'
  */
 static bool store_create_random(struct store *store)
 {
@@ -1244,7 +1216,6 @@ static bool store_create_random(struct store *store)
 
 		/* No chests in stores XXX */
 		if (kind->tval == TV_CHEST) continue;
-
 
 		/*** Generate the item ***/
 
@@ -1290,7 +1261,10 @@ static bool store_create_random(struct store *store)
 		mass_produce(obj);
 
 		/* Attempt to carry the object */
-		(void)store_carry(store, obj);
+		if (store_carry(store, obj) < 0) {
+			mem_free(obj);
+			continue;
+		}
 
 		/* Definitely done */
 		return TRUE;
@@ -1300,7 +1274,7 @@ static bool store_create_random(struct store *store)
 }
 
 
-/*
+/**
  * Helper function: create an item with the given tval,sval pair, add it to the
  * store st.  Return the slot in the inventory.
  */
@@ -1320,7 +1294,7 @@ static int store_create_item(struct store *store, object_kind *kind)
 }
 
 
-/*
+/**
  * Maintain the inventory at the stores.
  */
 void store_maint(struct store *s)
@@ -1334,9 +1308,9 @@ void store_maint(struct store *s)
 	/* Destroy crappy black market items */
 	if (s->sidx == STORE_B_MARKET) {
 		for (j = s->stock_num - 1; j >= 0; j--) {
-			object_type *o_ptr = &s->stock[j];
-			if (!black_market_ok(o_ptr)) {
-				store_item_increase(s, j, 0 - o_ptr->number);
+			struct object *obj = &s->stock[j];
+			if (!black_market_ok(obj)) {
+				store_item_increase(s, j, 0 - obj->number);
 				store_item_optimize(s, j);
 			}
 		}
@@ -1381,7 +1355,8 @@ void store_maint(struct store *s)
 			store_delete_random(s);
 
 		if (!restock_attempts)
-			quit_fmt("Unable to (de-)stock store %d. Please report this bug", s->sidx + 1);
+			quit_fmt("Unable to (de-)stock store %d. Please report this bug",
+					 s->sidx + 1);
 	}
 
 	/* Ensure staples are created */
@@ -1389,7 +1364,7 @@ void store_maint(struct store *s)
 		size_t i;
 		for (i = 0; i < s->always_num; i++) {
 			object_kind *k = s->always_table[i];
-			object_type *o = store_find_kind(s, k);
+			struct object *o = store_find_kind(s, k);
 			if (o) {
 				/* ensure a full stack */
 				o->number = MAX_STACK_SIZE - 1;
@@ -1457,7 +1432,7 @@ static struct owner *store_choose_owner(struct store *s) {
 	return store_ownerbyidx(s, n);
 }
 
-/*
+/**
  * Shuffle one of the stores.
  */
 void store_shuffle(struct store *store)
@@ -1475,10 +1450,10 @@ void store_shuffle(struct store *store)
 
 /*** Higher-level code ***/
 
-/*
+/**
  * Return the quantity of a given item in the pack (include quiver).
  */
-int find_inven(const object_type *obj)
+int find_inven(const struct object *obj)
 {
 	int i;
 	struct object *gear_obj;
@@ -1632,7 +1607,7 @@ int find_inven(const object_type *obj)
 }
 
 
-/*
+/**
  * Buy the item with the given index from the current store's inventory.
  */
 void do_cmd_buy(struct command *cmd)
@@ -1640,8 +1615,8 @@ void do_cmd_buy(struct command *cmd)
 	int item;
 	int amt;
 
-	object_type *o_ptr;	
-	object_type *i_ptr = mem_zalloc(sizeof(*i_ptr));
+	struct object *obj;	
+	struct object *bought = mem_zalloc(sizeof(*bought));
 
 	char o_name[80];
 	int price;
@@ -1662,27 +1637,27 @@ void do_cmd_buy(struct command *cmd)
 		return;
 
 	/* Get the actual object */
-	o_ptr = &store->stock[item];
+	obj = &store->stock[item];
 
 	/* Get desired object */
-	object_copy_amt(i_ptr, o_ptr, amt);
+	object_copy_amt(bought, obj, amt);
 
 	/* Ensure we have room */
-	if (!inven_carry_okay(i_ptr)) {
+	if (!inven_carry_okay(bought)) {
 		msg("You cannot carry that many items.");
-		mem_free(i_ptr);
+		mem_free(bought);
 		return;
 	}
 
 	/* Describe the object (fully) */
-	object_desc(o_name, sizeof(o_name), i_ptr, ODESC_PREFIX | ODESC_FULL);
+	object_desc(o_name, sizeof(o_name), bought, ODESC_PREFIX | ODESC_FULL);
 
 	/* Extract the price for the entire stack */
-	price = price_item(store, i_ptr, FALSE, i_ptr->number);
+	price = price_item(store, bought, FALSE, bought->number);
 
 	if (price > player->au) {
 		msg("You cannot afford that purchase.");
-		mem_free(i_ptr);
+		mem_free(bought);
 		return;
 	}
 
@@ -1690,7 +1665,7 @@ void do_cmd_buy(struct command *cmd)
 	player->au -= price;
 
 	/* Completely ID objects on buy */
-	object_flavor_aware(i_ptr);
+	object_flavor_aware(bought);
 
 	/* Update the gear */
 	player->upkeep->update |= (PU_INVEN);
@@ -1703,18 +1678,18 @@ void do_cmd_buy(struct command *cmd)
 	msg("You bought %s for %ld gold.", o_name, (long)price);
 
 	/* Erase the inscription */
-	i_ptr->note = 0;
+	bought->note = 0;
 
 	/* Give it an origin if it doesn't have one */
-	if (i_ptr->origin == ORIGIN_NONE)
-		i_ptr->origin = ORIGIN_STORE;
+	if (bought->origin == ORIGIN_NONE)
+		bought->origin = ORIGIN_STORE;
 
 	/* Hack - Reduce the number of charges in the original stack */
-	if (tval_can_have_charges(o_ptr))
-		o_ptr->pval -= i_ptr->pval;
+	if (tval_can_have_charges(obj))
+		obj->pval -= bought->pval;
 
 	/* Give it to the player */
-	(void) inven_carry(player, i_ptr, TRUE);
+	(void) inven_carry(player, bought, TRUE);
 
 	/* Handle stuff */
 	handle_stuff(player->upkeep);
@@ -1747,14 +1722,14 @@ void do_cmd_buy(struct command *cmd)
 	event_signal(EVENT_EQUIPMENT);
 }
 
-/*
+/**
  * Retrieve the item with the given index from the home's inventory.
  */
 void do_cmd_retrieve(struct command *cmd)
 {
 	int item, amt;
 
-	struct object *o_ptr;	
+	struct object *obj;	
 	struct object *picked_item;
 
 	struct store *store = store_at(cave, player->py, player->px);
@@ -1773,11 +1748,11 @@ void do_cmd_retrieve(struct command *cmd)
 		return;
 
 	/* Get the actual object */
-	o_ptr = &store->stock[item];
+	obj = &store->stock[item];
 
 	/* Get desired object */
 	picked_item = mem_zalloc(sizeof(*picked_item));
-	object_copy_amt(picked_item, o_ptr, amt);
+	object_copy_amt(picked_item, obj, amt);
 
 	/* Ensure we have room */
 	if (!inven_carry_okay(picked_item)) {
@@ -1787,7 +1762,7 @@ void do_cmd_retrieve(struct command *cmd)
 	}
 
 	/* Distribute charges of wands, staves, or rods */
-	distribute_charges(o_ptr, picked_item, amt);
+	distribute_charges(obj, picked_item, amt);
 	
 	/* Give it to the player */
 	(void) inven_carry(player, picked_item, TRUE);
@@ -1804,7 +1779,7 @@ void do_cmd_retrieve(struct command *cmd)
 }
 
 
-/*
+/**
  * Determine if the current store will purchase the given object
  */
 bool store_will_buy_tester(const struct object *obj)
@@ -1816,8 +1791,7 @@ bool store_will_buy_tester(const struct object *obj)
 		if (tval_can_have_charges(obj)) {
 			if (!store_can_carry(store, obj->kind) && object_is_known(obj))
 				return FALSE;
-		}
-		else {
+		} else {
 			if (object_is_known(obj))
 				return FALSE;
 		}
@@ -1826,7 +1800,7 @@ bool store_will_buy_tester(const struct object *obj)
 	return store_will_buy(store, obj);
 }
 
-/*
+/**
  * Sell an item to the current store.
  */
 void do_cmd_sell(struct command *cmd)
@@ -1879,7 +1853,8 @@ void do_cmd_sell(struct command *cmd)
 	/* Get some money */
 	player->au += price;
 
-	/* Update the auto-history if selling an artifact that was previously un-IDed. (Ouch!) */
+	/* Update the auto-history if selling an artifact that was previously
+	 * un-IDed. (Ouch!) */
 	if (obj->artifact)
 		history_add_artifact(obj->artifact, TRUE, TRUE);
 
@@ -1901,10 +1876,8 @@ void do_cmd_sell(struct command *cmd)
 	/* Take a proper copy of the now known-about object. */
 	sold_item = gear_object_for_use(obj, amt, FALSE);
 
-	/*
-	* Hack -- Allocate charges between those wands, staves, or rods
-	* sold and retained, unless all are being sold.
-	 */
+	/* Allocate charges between those wands, staves, or rods
+	 * sold and retained, unless all are being sold. */
 	distribute_charges(obj, sold_item, amt);
 
 	/* Get the "actual" value */
@@ -1940,7 +1913,7 @@ void do_cmd_sell(struct command *cmd)
 	event_signal(EVENT_EQUIPMENT);
 }
 
-/*
+/**
  * Stash an item in the home.
  */
 void do_cmd_stash(struct command *cmd)

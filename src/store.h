@@ -33,12 +33,12 @@ struct object_buy {
 	size_t flag;
 };
 
-typedef struct owner {
+struct owner {
 	unsigned int oidx;
 	struct owner *next;
 	char *name;
 	s32b max_cost;
-} owner_type;
+};
 
 struct store {
 	struct store *next;
