@@ -58,6 +58,17 @@ struct hint *hints;
 #define STORE_OBJ_LEVEL 5       /* Magic Level for normal stores */
 
 
+static const char *obj_flags[] = {
+	"NONE",
+	#define STAT(a, b, c, d, e, f, g, h) #c,
+	#include "list-stats.h"
+	#undef STAT
+	#define OF(a, b, c, d, e) #a,
+	#include "list-object-flags.h"
+	#undef OF
+	NULL
+};
+
 /* Return the store instance at the given location */
 struct store *store_at(struct chunk *c, int y, int x)
 {
@@ -84,8 +95,8 @@ static struct store *store_new(int idx) {
  */
 void cleanup_stores(void)
 {
-	struct owner *o;
-	struct owner *next;
+	struct owner *o, *o_next;
+	struct object_buy *buy, *buy_next;
 	int i, j;
 
 	if (!stores)
@@ -104,10 +115,15 @@ void cleanup_stores(void)
 		mem_free(store->always_table);
 		mem_free(store->normal_table);
 
-		for (o = store->owners; o; o = next) {
-			next = o->next;
+		for (o = store->owners; o; o = o_next) {
+			o_next = o->next;
 			string_free(o->name);
 			mem_free(o);
+		}
+
+		for (buy = store->buy; buy; buy = buy_next) {
+			buy_next = buy->next;
+			mem_free(buy);
 		}
 
 		string_free((void *)store->name);
@@ -212,6 +228,41 @@ static enum parser_error parse_owner(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_buy(struct parser *p) {
+	struct store *s = parser_priv(p);
+	struct object_buy *buy;
+
+	if (!s)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	buy = mem_zalloc(sizeof(*buy));
+	buy->tval = tval_find_idx(parser_getstr(p, "base"));
+	buy->next = s->buy;
+	s->buy = buy;
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_buy_flag(struct parser *p) {
+	struct store *s = parser_priv(p);
+	struct object_buy *buy;
+	char *t;
+	int flag;
+
+	if (!s)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	buy = mem_zalloc(sizeof(*buy));
+	t = string_make(parser_getsym(p, "flag"));
+	flag = lookup_flag(obj_flags, t);
+	if (flag == FLAG_END)
+		return PARSE_ERROR_INVALID_FLAG;
+	buy->flag = flag;
+	buy->tval = tval_find_idx(parser_getstr(p, "base"));
+	buy->next = s->buy;
+	s->buy = buy;
+	return PARSE_ERROR_NONE;
+}
+
 struct parser *init_parse_stores(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
@@ -221,6 +272,8 @@ struct parser *init_parse_stores(void) {
 	parser_reg(p, "turnover uint turnover", parse_turnover);
 	parser_reg(p, "normal sym tval sym sval", parse_normal);
 	parser_reg(p, "always sym tval sym sval", parse_always);
+	parser_reg(p, "buy str base", parse_buy);
+	parser_reg(p, "buy-flag sym flag str base", parse_buy_flag);
 	return p;
 }
 
@@ -250,8 +303,8 @@ static struct store *flatten_stores(struct store *store_list) {
 	struct store *stores = mem_zalloc(MAX_STORES * sizeof(*stores));
 
 	for (s = store_list; s; s = s->next) {
-		/* XXX bounds-check */
-		memcpy(&stores[s->sidx], s, sizeof(*s));
+		if (s->sidx < MAX_STORES)
+			memcpy(&stores[s->sidx], s, sizeof(*s));
 	}
 
 	while (store_list) {
@@ -341,7 +394,7 @@ static bool store_can_carry(struct store *store, struct object_kind *kind) {
 
 /*** Flavour text stuff ***/
 
-/*
+/**
  * Messages for reacting to purchase prices.
  */
 static const char *comment_worthless[] =
@@ -395,7 +448,7 @@ static const char *comment_great[] =
 
 
 
-/*
+/**
  * Let a shop-keeper React to a purchase
  *
  * We paid "price", it was worth "value", and we thought it was worth "guess"
@@ -424,7 +477,7 @@ static void purchase_analyze(s32b price, s32b value, s32b guess)
 
 /*** Check if a store will buy an object ***/
 
-/*
+/**
  * Determine if the current store will purchase the given object
  *
  * Note that a shop-keeper must refuse to buy "worthless" objects

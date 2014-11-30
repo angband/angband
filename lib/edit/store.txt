@@ -7,6 +7,8 @@
 # slots: min : max					- number of 'normal' slots to keep stocked
 # normal: type name : item name		- for the normal stocking list
 # always: type name : item name		- for things to always stock
+# buy: type name					- base types the store will buy
+# buy-flag: flag : type name		- types to buy if the flag is present
 #
 
 # General store
@@ -31,6 +33,11 @@ normal:food:Slime Mold
 normal:food:Flask of Whisky
 normal:food:Hard Biscuit
 normal:mushroom:Stoneskin
+buy:light
+buy:food
+buy:mushroom
+buy:flask
+buy:digger
 
 # Armoury
 store:2:Armoury
@@ -58,6 +65,15 @@ normal:gloves:Set of Gauntlets
 normal:shield:Wicker Shield
 normal:shield:Small Metal Shield
 normal:shield:Leather Shield
+buy:boots
+buy:gloves
+buy:crown
+buy:helm
+buy:shield
+buy:cloak
+buy:soft armor
+buy:hard armor
+buy:dragon armor
 
 # Weaponsmith
 store:3:Weaponsmith
@@ -95,6 +111,15 @@ normal:bow:Sling
 normal:bow:Short Bow
 normal:bow:Long Bow
 normal:bow:Light Crossbow
+buy:shot
+buy:bolt
+buy:arrow
+buy:bow
+buy:digger
+buy:sword
+buy:polearm
+buy:hafted
+
 
 # Temple
 store:4:Temple
@@ -125,6 +150,13 @@ normal:potion:Heroism
 normal:potion:Neutralize Poison
 normal:potion:Cure Serious Wounds
 normal:potion:Cure Critical Wounds
+buy:prayer book
+buy:scroll
+buy:potion
+buy:hafted
+buy-flag:BLESSED:digger
+buy-flag:BLESSED:sword
+buy-flag:BLESSED:polearm
 
 # Alchemist
 store:5:Alchemist
@@ -150,6 +182,8 @@ normal:potion:Resist Heat
 normal:potion:Resist Cold
 normal:potion:Restore Life Levels
 normal:potion:Infravision
+buy:scroll
+buy:potion
 
 # Magic-user's
 store:6:Magic Shop
@@ -180,6 +214,14 @@ normal:staff:Light
 normal:staff:Mapping
 normal:staff:Detect Invisible
 normal:staff:Detect Evil
+buy:magic book
+buy:amulet
+buy:ring
+buy:staff
+buy:wand
+buy:rod
+buy:scroll
+buy:potion
 
 # Black Market - no stock given but we still need slot/turnover info
 store:7:Black Market

@@ -27,6 +27,12 @@ enum
 	MAX_STORES	= 8
 };
 
+struct object_buy {
+	struct object_buy *next;
+	size_t tval;
+	size_t flag;
+};
+
 typedef struct owner {
 	unsigned int oidx;
 	struct owner *next;
@@ -54,6 +60,9 @@ struct store {
 	size_t normal_size;
 	size_t normal_num;
 	object_kind **normal_table;
+
+	/* Buy these items */
+	struct object_buy *buy;
 
 	int turnover;
 	int normal_stock_min;
