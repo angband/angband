@@ -47,9 +47,10 @@ struct store {
 	unsigned int sidx;
 	const char *name;
 
-	byte stock_num;			/* Stock -- Number of entries */
-	s16b stock_size;		/* Stock -- Total Size of Array */
-	object_type *stock;		/* Stock -- Actual stock items */
+	byte stock_num;				/* Stock -- Number of entries */
+	s16b stock_size;			/* Stock -- Total Size of Array */
+	struct object *stock;		/* Stock -- Actual stock items */
+	struct object **stock_list;	/* Stock -- Sorted array of stock items */
 
 	/* Always stock these items */
 	size_t always_size;

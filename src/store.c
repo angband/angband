@@ -769,6 +769,7 @@ bool store_check_num(struct store *store, const struct object *obj)
 	if (store->sidx == STORE_HOME) {
 		for (i = 0; i < store->stock_num; i++) {
 			/* Get the existing object */
+			//stock_obj = store->stock_list[i];
 			stock_obj = &store->stock[i];
 
 			/* Can the new object be combined with the old one? */
@@ -779,6 +780,7 @@ bool store_check_num(struct store *store, const struct object *obj)
 		/* Normal stores do special stuff */
 		for (i = 0; i < store->stock_num; i++) {
 			/* Get the existing object */
+			//stock_obj = store->stock_list[i];
 			stock_obj = &store->stock[i];
 
 			/* Can the new object be combined with the old one? */
@@ -811,6 +813,7 @@ static int home_carry(struct object *obj)
 	/* Check each existing object (try to combine) */
 	for (slot = 0; slot < store->stock_num; slot++) {
 		/* Get the existing object */
+		//temp_obj = store->stock_list[slot];
 		temp_obj = &store->stock[slot];
 
 		/* The home acts just like the player */
@@ -842,12 +845,12 @@ static int home_carry(struct object *obj)
 		object_copy(&store->stock[i], &store->stock[i - 1]);
 	}
 
-	/* More stuff now */
-	store->stock_num++;
-
 	/* Insert the new object */
 	object_copy(&store->stock[slot], obj);
 	object_delete(obj);
+
+	/* More stuff now */
+	store->stock_num++;
 
 	/* Return the location */
 	return (slot);
@@ -913,6 +916,7 @@ static int store_carry(struct store *store, struct object *obj)
 	/* Check each existing object (try to combine) */
 	for (slot = 0; slot < store->stock_num; slot++) {
 		/* Get the existing object */
+		//temp_obj = store->stock_list[slot];
 		temp_obj = &store->stock[slot];
 
 		/* Can the existing items be incremented? */
@@ -956,9 +960,6 @@ static int store_carry(struct store *store, struct object *obj)
 		object_copy(&store->stock[i], &store->stock[i - 1]);
 	}
 
-	/* More stuff now */
-	store->stock_num++;
-
 	/* Insert the new object */
 	object_copy(&store->stock[slot], obj);
 
@@ -969,6 +970,9 @@ static int store_carry(struct store *store, struct object *obj)
 	copy_brand(&store->stock[slot].brands, obj->brands);
 
 	object_delete(obj);
+
+	/* More stuff now */
+	store->stock_num++;
 
 	/* Return the location */
 	return (slot);
@@ -1040,6 +1044,7 @@ static void store_delete_index(struct store *store, int what)
 	if (store->stock_num <= 0) return;
 
 	/* Get the object */
+	//obj = store->stock_list[what];
 	obj = &store->stock[what];
 
 	/* Determine how many objects are in the slot */
@@ -1091,6 +1096,8 @@ static struct object *store_find_kind(struct store *s, object_kind *k) {
 
 	/* Check if it's already in stock */
 	for (slot = 0; slot < s->stock_num; slot++) {
+		//if (s->stock_list[slot].kind == k && !s->stock_list[slot].ego) {
+		//	return &s->stock_list[slot];
 		if (s->stock[slot].kind == k && !s->stock[slot].ego) {
 			return &s->stock[slot];
 		}
