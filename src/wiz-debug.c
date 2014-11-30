@@ -829,12 +829,18 @@ static void wiz_reroll_item(struct object *obj)
 
 	/* Notice change */
 	if (changed) {
+		/* Record the old pile info */
+		struct object *prev = obj->prev;
+		struct object *next = obj->next;
+
 		/* Free slays and brands on the old object by hand */
 		free_slay(obj->slays);
 		free_brand(obj->brands);
 
-		/* Copy over - note that this deals with new slays and brands */
+		/* Copy over - slays and brands OK, pile info needs restoring */
 		object_copy(obj, new);
+		obj->prev = prev;
+		obj->next = next;
 
 		/* Mark as cheat */
 		obj->origin = ORIGIN_CHEAT;
