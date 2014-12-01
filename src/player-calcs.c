@@ -933,37 +933,42 @@ const byte blows_table[12][12] =
  *
  * \return whether to replace the original object with the new one
  */
-bool earlier_object(struct object *orig, struct object *new)
+bool earlier_object(struct object *orig, struct object *new, bool store)
 {
 	/* Check we have actual objects */
 	if (!new) return FALSE;
 	if (!orig) return TRUE;
 
-	/* Readable books always come first */
-	if (obj_can_browse(orig) && !obj_can_browse(new)) return FALSE;
-	if (!obj_can_browse(orig) && obj_can_browse(new)) return TRUE;
+	if (!store) {
+		/* Readable books always come first */
+		if (obj_can_browse(orig) && !obj_can_browse(new)) return FALSE;
+		if (!obj_can_browse(orig) && obj_can_browse(new)) return TRUE;
+	}
 
 	/* Objects sort by decreasing type */
 	if (orig->tval > new->tval) return FALSE;
 	if (orig->tval < new->tval) return TRUE;
 
-	/* Non-aware (flavored) items always come last (default to orig) */
-	if (!object_flavor_is_aware(new)) return FALSE;
-	if (!object_flavor_is_aware(orig)) return TRUE;
+	if (!store) {
+		/* Non-aware (flavored) items always come last (default to orig) */
+		if (!object_flavor_is_aware(new)) return FALSE;
+		if (!object_flavor_is_aware(orig)) return TRUE;
+	}
 
 	/* Objects sort by increasing sval */
 	if (orig->sval < new->sval) return FALSE;
 	if (orig->sval > new->sval) return TRUE;
 
-	/* Unidentified objects always come last (default to orig) */
-	if (!object_is_known(new)) return FALSE;
-	if (!object_is_known(orig)) return TRUE;
+	if (!store) {
+		/* Unidentified objects always come last (default to orig) */
+		if (!object_is_known(new)) return FALSE;
+		if (!object_is_known(orig)) return TRUE;
 
-	/* Lights sort by decreasing fuel */
-	if (tval_is_light(orig))
-	{
-		if (orig->pval > new->pval) return FALSE;
-		if (orig->pval < new->pval) return TRUE;
+		/* Lights sort by decreasing fuel */
+		if (tval_is_light(orig)) {
+			if (orig->pval > new->pval) return FALSE;
+			if (orig->pval < new->pval) return TRUE;
+		}
 	}
 
 	/* Objects sort by decreasing value */
@@ -1032,7 +1037,7 @@ void calc_inventory(struct player_upkeep *upkeep, struct object *gear,
 			}
 
 			/* Otherwise choose the first in order */
-			if (earlier_object(first, current)) {
+			if (earlier_object(first, current, FALSE)) {
 				first = current;
 			}
 		}
@@ -1071,7 +1076,7 @@ void calc_inventory(struct player_upkeep *upkeep, struct object *gear,
 			/* If still possible, choose the first in order */
 			if (!possible)
 				continue;
-			else if (earlier_object(first, current)) {
+			else if (earlier_object(first, current, FALSE)) {
 				first = current;
 			}
 		}

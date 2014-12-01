@@ -693,6 +693,39 @@ static void mass_produce(struct object *obj)
 
 
 /**
+ * Put the store's inventory into an array in the correct order
+ */
+void store_stock_list(struct store *store)
+{
+	bool home = (store->sidx != STORE_HOME);
+
+	store->stock_num = 0;
+
+	while (store->stock_num <= STORE_INVEN_MAX) {
+		struct object *current, *first = NULL;
+		for (current = store->stock; current; current = current->next) {
+			int i;
+			bool possible = TRUE;
+
+			/* Skip objects already allocated */
+			for (i = 0; i < store->stock_num; i++)
+				if (store->stock_list[i] == current)
+					possible = FALSE;
+
+			/* If still possible, choose the first in order */
+			if (!possible)
+				continue;
+			else if (earlier_object(first, current, home)) {
+				first = current;
+			}
+		}
+
+		/* Allocate */
+		store->stock_list[store->stock_num++] = first;
+	}
+}
+
+/**
  * Allow a store object to absorb another object
  */
 static void store_object_absorb(struct object *old, struct object *new)
@@ -835,7 +868,7 @@ static int home_carry(struct object *obj)
 		temp_obj = &store->stock[slot];
 
 		/* Break if new object is earlier */
-		if (earlier_object(obj, temp_obj)) break;
+		if (earlier_object(obj, temp_obj, FALSE)) break;
 		else continue;
 	}
 
