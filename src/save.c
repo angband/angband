@@ -646,14 +646,9 @@ void wr_stores(void)
 	int i;
 
 	wr_u16b(MAX_STORES);
-	for (i = 0; i < MAX_STORES; i++)
-	{
+	for (i = 0; i < MAX_STORES; i++) {
 		const struct store *st_ptr = &stores[i];
 		int j;
-
-		/* XXX Old values */
-		wr_u32b(0L);
-		wr_s16b(0);
 
 		/* Save the current owner */
 		wr_byte(st_ptr->owner->oidx);
@@ -661,13 +656,9 @@ void wr_stores(void)
 		/* Save the stock size */
 		wr_byte(st_ptr->stock_num);
 
-		/* XXX Old values */
-		wr_s16b(0);
-		wr_s16b(0);
-
 		/* Save the stock */
 		for (j = 0; j < st_ptr->stock_num; j++)
-			wr_item(&st_ptr->stock[j]);
+			wr_item(st_ptr->stock_list[j]);
 	}
 }
 

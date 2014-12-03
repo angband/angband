@@ -1424,10 +1424,12 @@ static void display_artifact(int col, int row, bool cursor, int oid)
 	c_prt(attr, o_name, row, col);
 }
 
-/* Look for an artifact, either on the ground, in inventory or store */
+/**
+ * Look for an artifact, either on the ground, in inventory or store
+ */
 static struct object *find_artifact(struct artifact *artifact)
 {
-	int i, y, x;
+	int y, x;
 	struct object *obj;
 	struct store *s;
 
@@ -1442,9 +1444,9 @@ static struct object *find_artifact(struct artifact *artifact)
 			return obj;
 
 	for (s = stores; s; s = s->next)
-		for (i = 0; i < s->stock_size; i++)
-			if (s->stock[i].artifact == artifact)
-				return &s->stock[i];
+		for (obj = s->stock; obj; obj = obj->next)
+			if (obj->artifact == artifact)
+				return obj;
 
 	return NULL;
 }

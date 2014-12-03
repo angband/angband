@@ -1058,11 +1058,11 @@ void write_character_dump(ang_file *fff)
 
 		/* Dump all available items */
 		for (i = 0; i < st_ptr->stock_num; i++) {
-			object_desc(o_name, sizeof(o_name), &st_ptr->stock[i],
+			object_desc(o_name, sizeof(o_name), st_ptr->stock_list[i],
 						ODESC_PREFIX | ODESC_FULL);
 			file_putf(fff, "%c) %s\n", I2A(i), o_name);
 
-			object_info_chardump(fff, &st_ptr->stock[i], 5, 72);
+			object_info_chardump(fff, st_ptr->stock_list[i], 5, 72);
 		}
 
 		/* Add an empty line */

@@ -75,6 +75,7 @@ extern struct store *stores;
 struct store *store_at(struct chunk *c, int y, int x);
 void store_init(void);
 void free_stores(void);
+int store_carry(struct store *store, struct object *obj);
 void store_reset(void);
 void store_shuffle(struct store *store);
 void store_maint(struct store *store);

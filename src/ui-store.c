@@ -286,7 +286,7 @@ static void store_display_entry(menu_type *menu, int oid, bool cursor, int row,
 	assert(store);
 
 	/* Get the object */
-	obj = &store->stock[oid];
+	obj = store->stock_list[oid];
 
 	/* Describe the object - preserving insriptions in the home */
 	if (store->sidx == STORE_HOME) desc = ODESC_FULL;
@@ -595,7 +595,7 @@ static bool store_purchase(struct store *store, int item)
 	if (item < 0) return FALSE;
 
 	/* Get the actual object */
-	obj = &store->stock[item];
+	obj = store->stock_list[item];
 
 	/* Clear all current messages */
 	msg_flag = FALSE;
@@ -713,7 +713,7 @@ static void store_examine(struct store *store, int item)
 	if (item < 0) return;
 
 	/* Get the actual object */
-	obj = &store->stock[item];
+	obj = store->stock_list[item];
 
 	/* Hack -- no flush needed */
 	msg_flag = FALSE;
@@ -734,35 +734,22 @@ static void store_examine(struct store *store, int item)
 
 static void store_menu_set_selections(menu_type *menu, bool knowledge_menu)
 {
-	if (knowledge_menu)
-	{
-		if (OPT(rogue_like_commands))
-		{
+	if (knowledge_menu) {
+		if (OPT(rogue_like_commands)) {
 			/* These two can't intersect! */
 			menu->cmd_keys = "?Ieilx";
 			menu->selections = "abcdfghjkmnopqrstuvwyz134567";
-		}
-		/* Original */
-		else
-		{
+		} else {
 			/* These two can't intersect! */
 			menu->cmd_keys = "?Ieil";
 			menu->selections = "abcdfghjkmnopqrstuvwxyz13456";
 		}
-	}
-	else
-	{
-		/* Roguelike */
-		if (OPT(rogue_like_commands))
-		{
+	} else {
+		if (OPT(rogue_like_commands)) {
 			/* These two can't intersect! */
 			menu->cmd_keys = "\x04\x05\x10?={}~CEIPTdegilpswx"; /* \x10 = ^p , \x04 = ^D, \x05 = ^E */
 			menu->selections = "abcfmnoqrtuvyz13456790ABDFGH";
-		}
-
-		/* Original */
-		else
-		{
+		} else {
 			/* These two can't intersect! */
 			menu->cmd_keys = "\x05\x010?={}~CEIbdegiklpstwx"; /* \x05 = ^E, \x10 = ^p */
 			menu->selections = "acfhjmnoqruvyz13456790ABDFGH";
@@ -831,9 +818,8 @@ static int store_get_stock(menu_type *m, int oid)
 	ui_event e;
 	int no_act = m->flags & MN_NO_ACTION;
 
-	/* set a flag to make sure that we get the selection or escape
-	 * without running the menu handler
-	 */
+	/* Set a flag to make sure that we get the selection or escape
+	 * without running the menu handler */
 	m->flags |= MN_NO_ACTION;
 	e = menu_select(m, 0, TRUE);
 	if (!no_act) {

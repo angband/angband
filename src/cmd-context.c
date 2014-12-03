@@ -948,7 +948,7 @@ int context_menu_store(struct store *store, const int oid, int mx, int my)
 	}
 
 	/* Get the actual object */
-	o_ptr = &store->stock[oid];
+	o_ptr = store->stock_list[oid];
 
 	labels = string_make(lower_case);
 	m->selections = labels;
@@ -1057,7 +1057,7 @@ int context_menu_store_item(struct store *store, const int oid, int mx, int my)
 	char header[120];
 
 	/* Get the actual object */
-	o_ptr = &store->stock[oid];
+	o_ptr = store->stock_list[oid];
 
 
 	m = menu_dynamic_new();

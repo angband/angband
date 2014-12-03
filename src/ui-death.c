@@ -73,8 +73,7 @@ static void print_tomb(void)
 	path_build(buf, sizeof(buf), ANGBAND_DIR_FILE, "dead.txt");
 	fp = file_open(buf, MODE_READ, FTYPE_TEXT);
 
-	if (fp)
-	{
+	if (fp) {
 		while (file_getl(fp, buf, sizeof(buf)))
 			put_str(buf, line++, 0);
 
@@ -124,8 +123,7 @@ static void display_winner(void)
 	Term_clear();
 	Term_get_size(&wid, &hgt);
 
-	if (fp)
-	{
+	if (fp) {
 		/* Get us the first line of file, which tells us how long the */
 		/* longest line is */
 		file_getl(fp, buf, sizeof(buf));
@@ -156,8 +154,7 @@ static void death_file(const char *title, int row)
 
 	strnfmt(ftmp, sizeof(ftmp), "%s.txt", player_safe_name(player, FALSE));
 
-	if (get_file(ftmp, buf, sizeof buf))
-	{
+	if (get_file(ftmp, buf, sizeof buf)) {
 		bool success;
 
 		/* Dump a character file */
@@ -201,8 +198,7 @@ static void death_info(const char *title, int row)
 	/* Show equipment and inventory */
 
 	/* Equipment -- if any */
-	if (player->upkeep->equip_cnt)
-	{
+	if (player->upkeep->equip_cnt) {
 		Term_clear();
 		show_equip(OLIST_WEIGHT | OLIST_SEMPTY, NULL);
 		prt("You are using: -more-", 0, 0);
@@ -210,35 +206,29 @@ static void death_info(const char *title, int row)
 	}
 
 	/* Inventory -- if any */
-	if (player->upkeep->inven_cnt)
-	{
+	if (player->upkeep->inven_cnt) {
 		Term_clear();
 		show_inven(OLIST_WEIGHT, NULL);
 		prt("You are carrying: -more-", 0, 0);
 		(void)anykey();
 	}
 
-
-
 	/* Home -- if anything there */
-	if (st_ptr->stock_num)
-	{
+	if (st_ptr->stock_num) {
 		/* Display contents of the home */
-		for (k = 0, i = 0; i < st_ptr->stock_num; k++)
-		{
+		for (k = 0, i = 0; i < st_ptr->stock_num; k++) {
 			/* Clear screen */
 			Term_clear();
 
 			/* Show 12 items */
-			for (j = 0; (j < 12) && (i < st_ptr->stock_num); j++, i++)
-			{
+			for (j = 0; (j < 12) && (i < st_ptr->stock_num); j++, i++) {
 				byte attr;
 
 				char o_name[80];
 				char tmp_val[80];
 
 				/* Get the object */
-				o_ptr = &st_ptr->stock[i];
+				o_ptr = st_ptr->stock_list[i];
 
 				/* Print header, clear line */
 				strnfmt(tmp_val, sizeof(tmp_val), "%c) ", I2A(j));
@@ -298,8 +288,7 @@ static void death_examine(const char *title, int row)
 	q = "Examine which item? ";
 	s = "You have nothing to examine.";
 
-	while (get_item(&obj, q, s, 0, NULL, (USE_INVEN | USE_QUIVER | USE_EQUIP | IS_HARMLESS)))
-	{
+	while (get_item(&obj, q, s, 0, NULL, (USE_INVEN | USE_QUIVER | USE_EQUIP | IS_HARMLESS))) {
 		char header[120];
 
 		textblock *tb;

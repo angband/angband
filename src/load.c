@@ -1037,56 +1037,38 @@ static int rd_stores_aux(rd_item_t rd_item_version)
 {
 	int i;
 	u16b tmp16u;
-	
+
 	/* Read the stores */
 	rd_u16b(&tmp16u);
-	for (i = 0; i < tmp16u; i++)
-	{
-		struct store *st_ptr = &stores[i];
+	for (i = 0; i < tmp16u; i++) {
+		struct store *store = &stores[i];
 
 		int j;		
 		byte own, num;
-		
-		/* XXX */
-		strip_bytes(6);
-		
+
 		/* Read the basic info */
 		rd_byte(&own);
 		rd_byte(&num);
-		
-		/* XXX */
-		strip_bytes(4);
-		
+
 		/* XXX: refactor into store.c */
-		st_ptr->owner = store_ownerbyidx(st_ptr, own);
-		
+		store->owner = store_ownerbyidx(store, own);
+
 		/* Read the items */
-		for (j = 0; j < num; j++)
-		{
-			object_type *i_ptr;
-			object_type object_type_body;
-			
-			/* Get local object */
-			i_ptr = &object_type_body;
-			
-			/* Wipe the object */
-			object_wipe(i_ptr);
-			
+		for (j = 0; j < num; j++) {
+			object_type *obj;
+
+			/* Make an object */
+			obj = mem_zalloc(sizeof(*obj));
+
 			/* Read the item */
-			if ((*rd_item_version)(i_ptr))
-			{
+			if ((*rd_item_version)(obj)) {
 				note("Error reading item");
 				return (-1);
 			}
 
 			/* Accept any valid items */
-			if (st_ptr->stock_num < STORE_INVEN_MAX && i_ptr->kind)
-			{
-				int k = st_ptr->stock_num++;
-
-				/* Accept the item */
-				object_copy(&st_ptr->stock[k], i_ptr);
-			}
+			if (store->stock_num < STORE_INVEN_MAX && obj->kind)
+				store_carry(store, obj);
 		}
 	}
 

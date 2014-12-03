@@ -1648,7 +1648,7 @@ static void death_knowledge(void)
 	}
 
 	for (i = 0; i < st_ptr->stock_num; i++) {
-		o_ptr = &st_ptr->stock[i];
+		o_ptr = st_ptr->stock_list[i];
 		if (!o_ptr->kind) continue;
 
 		object_flavor_aware(o_ptr);
