@@ -1133,7 +1133,7 @@ static void display_explosion(game_event_type type, game_event_data *data, void 
 	struct loc centre = data->explosion.centre;
 
 	/* Draw the blast from inside out */
-	for (i = 0; i <= num_grids; i++) {
+	for (i = 0; i < num_grids; i++) {
 		/* Extract the location */
 		y = blast_grid[i].y;
 		x = blast_grid[i].x;
@@ -1156,7 +1156,7 @@ static void display_explosion(game_event_type type, game_event_data *data, void 
 		move_cursor_relative(centre.y, centre.x);
 
 		/* Check for new radius, taking care not to overrun array */
-		if (i == num_grids)
+		if (i == num_grids - 1)
 			new_radius = TRUE;
 		else if (distance_to_grid[i + 1] > distance_to_grid[i])
 			new_radius = TRUE;

@@ -658,7 +658,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 		distance_to_grid[num_grids] = 0;
 		sqinfo_on(cave->squares[y][x].info, SQUARE_PROJECT);
 		num_grids++;
-		}
+	}
 
 	/* Otherwise, travel along the projection path. */
 	else {
@@ -916,7 +916,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 
 	/* Establish which grids are visible - no blast visuals with PROJECT_HIDE */
 	if (!blind && !(flg & (PROJECT_HIDE))) {
-		for (i = 0; i <= num_grids; i++) {
+		for (i = 0; i < num_grids; i++) {
 			if (panel_contains(blast_grid[i].y, blast_grid[i].x) &&
 				player_has_los_bold(blast_grid[i].y, blast_grid[i].x))
 				player_sees_grid[i] = TRUE;
