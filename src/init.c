@@ -2816,19 +2816,82 @@ static enum parser_error parse_p_race_stats(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_p_race_skills(struct parser *p) {
+static enum parser_error parse_p_race_skill_disarm(struct parser *p) {
 	struct player_race *r = parser_priv(p);
 	if (!r)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	r->r_skills[SKILL_DISARM] = parser_getint(p, "dis");
-	r->r_skills[SKILL_DEVICE] = parser_getint(p, "dev");
-	r->r_skills[SKILL_SAVE] = parser_getint(p, "sav");
-	r->r_skills[SKILL_STEALTH] = parser_getint(p, "stl");
-	r->r_skills[SKILL_SEARCH] = parser_getint(p, "srh");
-	r->r_skills[SKILL_SEARCH_FREQUENCY] = parser_getint(p, "fos");
-	r->r_skills[SKILL_TO_HIT_MELEE] = parser_getint(p, "thm");
-	r->r_skills[SKILL_TO_HIT_BOW] = parser_getint(p, "thb");
+	r->r_skills[SKILL_DISARM] = parser_getint(p, "disarm");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_p_race_skill_device(struct parser *p) {
+	struct player_race *r = parser_priv(p);
+	if (!r)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	r->r_skills[SKILL_DEVICE] = parser_getint(p, "device");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_p_race_skill_save(struct parser *p) {
+	struct player_race *r = parser_priv(p);
+	if (!r)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	r->r_skills[SKILL_SAVE] = parser_getint(p, "save");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_p_race_skill_stealth(struct parser *p) {
+	struct player_race *r = parser_priv(p);
+	if (!r)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	r->r_skills[SKILL_STEALTH] = parser_getint(p, "stealth");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_p_race_skill_search(struct parser *p) {
+	struct player_race *r = parser_priv(p);
+	if (!r)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	r->r_skills[SKILL_SEARCH] = parser_getint(p, "search");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_p_race_skill_search_freq(struct parser *p) {
+	struct player_race *r = parser_priv(p);
+	if (!r)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	r->r_skills[SKILL_SEARCH_FREQUENCY] = parser_getint(p, "freq");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_p_race_skill_melee(struct parser *p) {
+	struct player_race *r = parser_priv(p);
+	if (!r)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	r->r_skills[SKILL_TO_HIT_MELEE] = parser_getint(p, "melee");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_p_race_skill_shoot(struct parser *p) {
+	struct player_race *r = parser_priv(p);
+	if (!r)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	r->r_skills[SKILL_TO_HIT_BOW] = parser_getint(p, "shoot");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_p_race_skill_throw(struct parser *p) {
+	struct player_race *r = parser_priv(p);
+	if (!r)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
 	r->r_skills[SKILL_TO_HIT_THROW] = parser_getint(p, "throw");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_p_race_skill_dig(struct parser *p) {
+	struct player_race *r = parser_priv(p);
+	if (!r)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
 	r->r_skills[SKILL_DIGGING] = parser_getint(p, "dig");
 	return PARSE_ERROR_NONE;
 }
@@ -2948,7 +3011,16 @@ struct parser *init_parse_p_race(void) {
 	parser_setpriv(p, NULL);
 	parser_reg(p, "name uint index str name", parse_p_race_name);
 	parser_reg(p, "stats int str int int int wis int dex int con", parse_p_race_stats);
-	parser_reg(p, "skills int dis int dev int sav int stl int srh int fos int thm int thb int throw int dig", parse_p_race_skills);
+	parser_reg(p, "skill-disarm int disarm", parse_p_race_skill_disarm);
+	parser_reg(p, "skill-device int device", parse_p_race_skill_device);
+	parser_reg(p, "skill-save int save", parse_p_race_skill_save);
+	parser_reg(p, "skill-stealth int stealth", parse_p_race_skill_stealth);
+	parser_reg(p, "skill-search int search", parse_p_race_skill_search);
+	parser_reg(p, "skill-search-freq int freq", parse_p_race_skill_search_freq);
+	parser_reg(p, "skill-melee int melee", parse_p_race_skill_melee);
+	parser_reg(p, "skill-shoot int shoot", parse_p_race_skill_shoot);
+	parser_reg(p, "skill-throw int throw", parse_p_race_skill_throw);
+	parser_reg(p, "skill-dig int dig", parse_p_race_skill_dig);
 	parser_reg(p, "info int mhp int exp int infra", parse_p_race_info);
 	parser_reg(p, "history uint hist int b-age int m-age", parse_p_race_history);
 	parser_reg(p, "height int mbht int mmht int fbht int fmht", parse_p_race_height);
@@ -3017,39 +3089,93 @@ static enum parser_error parse_class_stats(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_class_skill_base(struct parser *p) {
+static enum parser_error parse_class_skill_disarm(struct parser *p) {
 	struct player_class *c = parser_priv(p);
-
 	if (!c)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	c->c_skills[SKILL_DISARM] = parser_getint(p, "dis");
-	c->c_skills[SKILL_DEVICE] = parser_getint(p, "dev");
-	c->c_skills[SKILL_SAVE] = parser_getint(p, "sav");
-	c->c_skills[SKILL_STEALTH] = parser_getint(p, "stl");
-	c->c_skills[SKILL_SEARCH] = parser_getint(p, "srh");
-	c->c_skills[SKILL_SEARCH_FREQUENCY] = parser_getint(p, "fos");
-	c->c_skills[SKILL_TO_HIT_MELEE] = parser_getint(p, "thm");
-	c->c_skills[SKILL_TO_HIT_BOW] = parser_getint(p, "thb");
-	c->c_skills[SKILL_TO_HIT_THROW] = parser_getint(p, "throw");
-	c->c_skills[SKILL_DIGGING] = parser_getint(p, "dig");
+	c->c_skills[SKILL_DISARM] = parser_getint(p, "base");
+	c->x_skills[SKILL_DISARM] = parser_getint(p, "incr");
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_class_skill_incr(struct parser *p) {
+static enum parser_error parse_class_skill_device(struct parser *p) {
 	struct player_class *c = parser_priv(p);
-
 	if (!c)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	c->x_skills[SKILL_DISARM] = parser_getint(p, "dis");
-	c->x_skills[SKILL_DEVICE] = parser_getint(p, "dev");
-	c->x_skills[SKILL_SAVE] = parser_getint(p, "sav");
-	c->x_skills[SKILL_STEALTH] = parser_getint(p, "stl");
-	c->x_skills[SKILL_SEARCH] = parser_getint(p, "srh");
-	c->x_skills[SKILL_SEARCH_FREQUENCY] = parser_getint(p, "fos");
-	c->x_skills[SKILL_TO_HIT_MELEE] = parser_getint(p, "thm");
-	c->x_skills[SKILL_TO_HIT_BOW] = parser_getint(p, "thb");
-	c->x_skills[SKILL_TO_HIT_THROW] = parser_getint(p, "throw");
-	c->x_skills[SKILL_DIGGING] = parser_getint(p, "dig");
+	c->c_skills[SKILL_DEVICE] = parser_getint(p, "base");
+	c->x_skills[SKILL_DEVICE] = parser_getint(p, "incr");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_class_skill_save(struct parser *p) {
+	struct player_class *c = parser_priv(p);
+	if (!c)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	c->c_skills[SKILL_SAVE] = parser_getint(p, "base");
+	c->x_skills[SKILL_SAVE] = parser_getint(p, "incr");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_class_skill_stealth(struct parser *p) {
+	struct player_class *c = parser_priv(p);
+	if (!c)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	c->c_skills[SKILL_STEALTH] = parser_getint(p, "base");
+	c->x_skills[SKILL_STEALTH] = parser_getint(p, "incr");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_class_skill_search(struct parser *p) {
+	struct player_class *c = parser_priv(p);
+	if (!c)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	c->c_skills[SKILL_SEARCH] = parser_getint(p, "base");
+	c->x_skills[SKILL_SEARCH] = parser_getint(p, "incr");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_class_skill_search_freq(struct parser *p) {
+	struct player_class *c = parser_priv(p);
+	if (!c)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	c->c_skills[SKILL_SEARCH_FREQUENCY] = parser_getint(p, "base");
+	c->x_skills[SKILL_SEARCH_FREQUENCY] = parser_getint(p, "incr");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_class_skill_melee(struct parser *p) {
+	struct player_class *c = parser_priv(p);
+	if (!c)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	c->c_skills[SKILL_TO_HIT_MELEE] = parser_getint(p, "base");
+	c->x_skills[SKILL_TO_HIT_MELEE] = parser_getint(p, "incr");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_class_skill_shoot(struct parser *p) {
+	struct player_class *c = parser_priv(p);
+	if (!c)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	c->c_skills[SKILL_TO_HIT_BOW] = parser_getint(p, "base");
+	c->x_skills[SKILL_TO_HIT_BOW] = parser_getint(p, "incr");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_class_skill_throw(struct parser *p) {
+	struct player_class *c = parser_priv(p);
+	if (!c)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	c->c_skills[SKILL_TO_HIT_THROW] = parser_getint(p, "base");
+	c->x_skills[SKILL_TO_HIT_THROW] = parser_getint(p, "incr");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_class_skill_dig(struct parser *p) {
+	struct player_class *c = parser_priv(p);
+	if (!c)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	c->c_skills[SKILL_DIGGING] = parser_getint(p, "base");
+	c->x_skills[SKILL_DIGGING] = parser_getint(p, "incr");
 	return PARSE_ERROR_NONE;
 }
 
@@ -3349,8 +3475,16 @@ struct parser *init_parse_class(void) {
 	parser_setpriv(p, NULL);
 	parser_reg(p, "name uint index str name", parse_class_name);
 	parser_reg(p, "stats int str int int int wis int dex int con", parse_class_stats);
-	parser_reg(p, "skill-base int dis int dev int sav int stl int srh int fos int thm int thb int throw int dig", parse_class_skill_base);
-	parser_reg(p, "skill-incr int dis int dev int sav int stl int srh int fos int thm int thb int throw int dig", parse_class_skill_incr);
+	parser_reg(p, "skill-disarm int base int incr", parse_class_skill_disarm);
+	parser_reg(p, "skill-device int base int incr", parse_class_skill_device);
+	parser_reg(p, "skill-save int base int incr", parse_class_skill_save);
+	parser_reg(p, "skill-stealth int base int incr", parse_class_skill_stealth);
+	parser_reg(p, "skill-search int base int incr", parse_class_skill_search);
+	parser_reg(p, "skill-search-freq int base int incr", parse_class_skill_search_freq);
+	parser_reg(p, "skill-melee int base int incr", parse_class_skill_melee);
+	parser_reg(p, "skill-shoot int base int incr", parse_class_skill_shoot);
+	parser_reg(p, "skill-throw int base int incr", parse_class_skill_throw);
+	parser_reg(p, "skill-dig int base int incr", parse_class_skill_dig);
 	parser_reg(p, "info int mhp int exp int sense-base int sense-div", parse_class_info);
 	parser_reg(p, "attack int max-attacks int min-weight int att-multiply", parse_class_attack);
 	parser_reg(p, "title str title", parse_class_title);

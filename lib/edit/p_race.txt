@@ -11,7 +11,16 @@
 # Format:
 # name:race number:race name
 # stats:str:int:wis:dex:con
-# skills:dis:dev:sav:stl:srh:fos:thn:thb:throw:dig
+# skill-disarm:base
+# skill-device:base
+# skill-save:base
+# skill-stealth:base
+# skill-search:base
+# skill-search-freq:base
+# skill-melee:base
+# skill-shoot:base
+# skill-throw:base
+# skill-dig:base
 # info:hitdie:expbase:infra
 # history:history:agebase:agemod
 # height:hgtmale:modhgtmale:hgtfemale:modhgtfemale
@@ -24,9 +33,10 @@
 # 'stats' is for the stat modifiers - strength, intelligence, wisdom,
 # dexterity, constitution.
 
-# 'skills' is for the base skills - disarming, magic devices, saving throws,
-# stealth, searching ability, searching frequency, to hit (melee),
-# to hit (bows), to hit (throwing), digging.
+# 'skill-<skill name>' is for skills that get added at birth.- disarming,
+# magic devices, saving throws, stealth, searching ability,
+# searching frequency, to hit (normal), to hit (bows), to hit (throwing),
+# digging.
 
 # 'info' is for gameplay info - max. hitpoints gained per level, experience
 # factor in percent, range of infravision in 10 feet.
@@ -52,7 +62,16 @@
 
 name:0:Human
 stats:0:0:0:0:0
-skills:0:0:0:0:0:10:0:0:0:0
+skill-disarm:0
+skill-device:0
+skill-save:0
+skill-stealth:0
+skill-search:0
+skill-search-freq:10
+skill-melee:0
+skill-shoot:0
+skill-throw:0
+skill-dig:0
 info:10:100:0
 history:1:14:6
 height:72:6:66:4
@@ -60,7 +79,16 @@ weight:180:25:150:20
 
 name:1:Half-Elf
 stats:0:1:-1:1:-1
-skills:2:3:3:1:6:11:-1:5:5:0
+skill-disarm:2
+skill-device:3
+skill-save:3
+skill-stealth:1
+skill-search:6
+skill-search-freq:11
+skill-melee:-1
+skill-shoot:5
+skill-throw:5
+skill-dig:0
 info:10:110:2
 history:4:24:16
 height:66:6:62:6
@@ -69,7 +97,16 @@ obj-flags:SUST_DEX
 
 name:2:Elf
 stats:-1:2:-1:1:-1
-skills:5:6:6:2:8:12:-5:15:15:0
+skill-disarm:5
+skill-device:6
+skill-save:6
+skill-stealth:2
+skill-search:8
+skill-search-freq:12
+skill-melee:-5
+skill-shoot:15
+skill-throw:15
+skill-dig:0
 info:9:120:3
 history:5:75:75
 height:60:4:54:4
@@ -79,7 +116,16 @@ values:RES_LIGHT[1]
 
 name:3:Hobbit
 stats:-2:2:1:3:2
-skills:15:18:18:4:12:15:-10:20:20:0
+skill-disarm:15
+skill-device:18
+skill-save:18
+skill-stealth:4
+skill-search:12
+skill-search-freq:15
+skill-melee:-10
+skill-shoot:20
+skill-throw:20
+skill-dig:0
 info:7:110:4
 history:10:21:12
 height:36:3:33:3
@@ -89,7 +135,16 @@ player-flags:KNOW_MUSHROOM
 
 name:4:Gnome
 stats:-1:2:0:2:1
-skills:10:22:12:3:6:13:-8:12:12:0
+skill-disarm:10
+skill-device:22
+skill-save:12
+skill-stealth:3
+skill-search:6
+skill-search-freq:13
+skill-melee:-8
+skill-shoot:12
+skill-throw:12
+skill-dig:0
 info:8:125:4
 history:13:50:40
 height:42:3:39:3
@@ -99,7 +154,16 @@ player-flags:KNOW_ZAPPER
 
 name:5:Dwarf
 stats:2:-3:2:-2:2
-skills:2:9:9:-1:7:10:15:0:0:40
+skill-disarm:2
+skill-device:9
+skill-save:9
+skill-stealth:-1
+skill-search:7
+skill-search-freq:10
+skill-melee:15
+skill-shoot:0
+skill-throw:0
+skill-dig:40
 info:11:120:5
 history:16:35:15
 height:48:3:46:3
@@ -109,7 +173,16 @@ player-flags:SEE_ORE
 
 name:6:Half-Orc
 stats:2:-1:0:0:1
-skills:-3:-3:-3:-1:0:7:12:-5:-5:0
+skill-disarm:-3
+skill-device:-3
+skill-save:-3
+skill-stealth:-1
+skill-search:0
+skill-search-freq:7
+skill-melee:12
+skill-shoot:-5
+skill-throw:-5
+skill-dig:0
 info:10:110:3
 history:19:11:4
 height:66:1:62:1
@@ -118,7 +191,16 @@ values:RES_DARK[1]
 
 name:7:Half-Troll
 stats:4:-4:-2:-4:3
-skills:-5:-8:-8:-2:-1:5:20:-10:-10:0
+skill-disarm:-5
+skill-device:-8
+skill-save:-8
+skill-stealth:-2
+skill-search:-1
+skill-search-freq:5
+skill-melee:20
+skill-shoot:-10
+skill-throw:-10
+skill-dig:0
 info:12:120:3
 history:21:20:10
 height:96:10:84:8
@@ -127,7 +209,16 @@ obj-flags:SUST_STR | REGEN
 
 name:8:Dunadan
 stats:1:2:2:2:3
-skills:4:5:5:1:3:13:15:10:10:0
+skill-disarm:4
+skill-device:5
+skill-save:5
+skill-stealth:1
+skill-search:3
+skill-search-freq:13
+skill-melee:15
+skill-shoot:10
+skill-throw:10
+skill-dig:0
 info:10:180:0
 history:1:50:20
 height:82:5:78:6
@@ -136,7 +227,16 @@ obj-flags:SUST_CON
 
 name:9:High-Elf
 stats:1:3:-1:3:1
-skills:4:20:20:2:3:14:10:25:25:0
+skill-disarm:4
+skill-device:20
+skill-save:20
+skill-stealth:2
+skill-search:3
+skill-search-freq:14
+skill-melee:10
+skill-shoot:25
+skill-throw:25
+skill-dig:0
 info:10:200:4
 history:7:100:30
 height:90:10:82:10
@@ -146,7 +246,16 @@ values:RES_LIGHT[1]
 
 name:10:Kobold
 stats:-1:-1:0:2:2
-skills:10:5:0:3:15:15:-5:10:10:0
+skill-disarm:10
+skill-device:5
+skill-save:0
+skill-stealth:3
+skill-search:15
+skill-search-freq:15
+skill-melee:-5
+skill-shoot:10
+skill-throw:10
+skill-dig:0
 info:8:115:5
 history:23:15:10
 height:38:4:36:3

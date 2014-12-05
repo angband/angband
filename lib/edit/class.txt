@@ -11,8 +11,16 @@
 # Format:
 # name:class number:class name
 # stats:str:int:wis:dex:con
-# skill-base:dis:dev:sav:stl:srh:fos:thn:thb:throw:dig
-# skill-incr:dis:dev:sav:stl:srh:fos:thn:thb:throw:dig
+# skill-disarm:base:increment
+# skill-device:base:increment
+# skill-save:base:increment
+# skill-stealth:base:increment
+# skill-search:base:increment
+# skill-search-freq:base:increment
+# skill-melee:base:increment
+# skill-shoot:base:increment
+# skill-throw:base:increment
+# skill-dig:base:increment
 # info:mhp:exp:sense_base:sense_div
 # attack:max_attacks:min_weight:att_multiply
 # title:title
@@ -34,12 +42,11 @@
 # 'stats' is for the stat modifiers - strength, intelligence, wisdom,
 # dexterity, constitution.
 
-# 'skill-base' is for the base skills - disarming, magic devices, saving throws,
+# 'skill-<skill name>' is for skills - disarming, magic devices, saving throws,
 # stealth, searching ability, searching frequency, to hit (normal),
-# to hit (bows), to hit (throwing), digging.
-
-# 'skill-incr' is for skill increments for the above skills.  The increments
-# are added to the base skill every ten levels.
+# to hit (bows), to hit (throwing), digging.  The base entry is what the 
+# gets added to the character's skills at birth, the increments are added to
+# the base skill every ten levels.
 
 # 'info' is for extra info - max. hitpoints gained per level, experience
 # factor in percent, base chance for pseudo-id (smaller is better),
@@ -91,8 +98,16 @@
 ############### WARRIOR ###############
 name:0:Warrior
 stats:3:-2:-2:2:2
-skill-base:25:18:18:0:14:2:70:55:55:0
-skill-incr:10:7:10:0:0:0:45:45:45:0
+skill-disarm:25:10
+skill-device:18:7
+skill-save:18:10
+skill-stealth:0:0
+skill-search:14:0
+skill-search-freq:2:0
+skill-melee:70:45
+skill-shoot:55:45
+skill-throw:55:45
+skill-dig:0:0
 info:9:0:7000:40
 attack:6:30:5
 equip:food:Ration of Food:1:3
@@ -119,8 +134,16 @@ magic:0:0:0:0
 ############### MAGE ###############
 name:1:Mage
 stats:-3:3:0:0:-2
-skill-base:30:36:30:2:16:20:34:20:20:0
-skill-incr:7:13:9:0:0:0:15:15:15:0
+skill-disarm:30:7
+skill-device:36:13
+skill-save:30:9
+skill-stealth:2:0
+skill-search:16:0
+skill-search-freq:20:0
+skill-melee:34:15
+skill-shoot:20:15
+skill-throw:20:15
+skill-dig:0:0
 info:0:30:170000:5
 attack:4:40:2
 equip:food:Ration of Food:1:3
@@ -573,8 +596,16 @@ desc: damage to each monster in its area of effect.
 ############### PRIEST ###############
 name:2:Priest
 stats:-1:-3:3:-1:1
-skill-base:25:30:32:2:16:8:48:35:35:0
-skill-incr:7:10:12:0:0:0:20:20:20:0
+skill-disarm:25:7
+skill-device:30:10
+skill-save:32:12
+skill-stealth:2:0
+skill-search:16:0
+skill-search-freq:8:0
+skill-melee:48:20
+skill-shoot:35:20
+skill-throw:35:20
+skill-dig:0:0
 info:2:20:15000:40
 attack:4:35:3
 equip:food:Ration of Food:1:3
@@ -1036,8 +1067,16 @@ desc: undead, a demon, an elemental, a golem, or a vortex.
 ############### ROGUE ###############
 name:3:Rogue
 stats:0:1:-3:3:-1
-skill-base:45:32:28:3:32:24:60:66:66:0
-skill-incr:15:10:10:1:0:0:40:30:30:0
+skill-disarm:45:15
+skill-device:32:10
+skill-save:28:10
+skill-stealth:3:1
+skill-search:32:0
+skill-search-freq:24:0
+skill-melee:60:40
+skill-shoot:66:30
+skill-throw:66:30
+skill-dig:0:0
 info:6:25:10000:40
 attack:5:30:4
 equip:food:Ration of Food:1:3
@@ -1355,8 +1394,16 @@ desc:  Uniques or monsters that resist confusion are not affected.
 ############### RANGER ###############
 name:4:Ranger
 stats:0:2:-2:1:-1
-skill-base:30:32:28:3:24:16:56:72:72:0
-skill-incr:8:10:10:0:0:0:30:45:45:0
+skill-disarm:30:8
+skill-device:32:10
+skill-save:28:10
+skill-stealth:3:0
+skill-search:24:0
+skill-search-freq:16:0
+skill-melee:56:30
+skill-shoot:72:45
+skill-throw:72:45
+skill-dig:0:0
 info:4:30:20000:40
 attack:5:35:4
 equip:food:Ration of Food:1:3
@@ -1795,8 +1842,16 @@ desc:  This spell has no effect when used in the town.
 ############### PALADIN ###############
 name:5:Paladin
 stats:1:-3:1:-1:2
-skill-base:20:24:25:0:12:2:68:40:40:0
-skill-incr:7:10:11:0:0:0:35:30:30:0
+skill-disarm:20:7
+skill-device:24:10
+skill-save:25:11
+skill-stealth:0:0
+skill-search:12:0
+skill-search-freq:2:0
+skill-melee:68:35
+skill-shoot:40:30
+skill-throw:40:30
+skill-dig:0:0
 info:6:35:60000:40
 attack:5:30:5
 equip:food:Ration of Food:1:3

@@ -704,7 +704,6 @@ static void store_stock_list(struct store *store)
 	store->stock_num = 0;
 
 	for (list_num = 0; list_num < STORE_INVEN_MAX; list_num++) {
-		//while (store->stock_num < STORE_INVEN_MAX) {
 		struct object *current, *first = NULL;
 		for (current = store->stock; current; current = current->next) {
 			int i;
