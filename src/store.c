@@ -334,6 +334,7 @@ void store_reset(void) {
 		s->stock_num = 0;
 		store_shuffle(s);
 		object_pile_free(s->stock);
+		s->stock = NULL;
 		for (j = 0; j < STORE_INVEN_MAX; j++)
 			s->stock_list[j] = NULL;
 		if (i == STORE_HOME)
