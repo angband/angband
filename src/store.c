@@ -54,10 +54,6 @@ struct store *stores;
 struct hint *hints;
 
 
-/* Some local constants */
-#define STORE_OBJ_LEVEL 5       /* Magic Level for normal stores */
-
-
 static const char *obj_flags[] = {
 	"NONE",
 	#define STAT(a, b, c, d, e, f, g, h) #c,
@@ -87,8 +83,8 @@ struct store *store_at(struct chunk *c, int y, int x)
 static struct store *store_new(int idx) {
 	struct store *s = mem_zalloc(sizeof *s);
 	s->sidx = idx;
-	s->stock_size = STORE_INVEN_MAX;
-	s->stock_list = mem_zalloc(sizeof(s->stock) * STORE_INVEN_MAX);
+	s->stock_size = z_info->store_inven_max;
+	s->stock_list = mem_zalloc(sizeof(s->stock) * z_info->store_inven_max);
 	return s;
 }
 
@@ -335,7 +331,7 @@ void store_reset(void) {
 		store_shuffle(s);
 		object_pile_free(s->stock);
 		s->stock = NULL;
-		for (j = 0; j < STORE_INVEN_MAX; j++)
+		for (j = 0; j < z_info->store_inven_max; j++)
 			s->stock_list[j] = NULL;
 		if (i == STORE_HOME)
 			continue;
@@ -703,7 +699,7 @@ static void store_stock_list(struct store *store)
 
 	store->stock_num = 0;
 
-	for (list_num = 0; list_num < STORE_INVEN_MAX; list_num++) {
+	for (list_num = 0; list_num < z_info->store_inven_max; list_num++) {
 		struct object *current, *first = NULL;
 		for (current = store->stock; current; current = current->next) {
 			int i;
@@ -1188,7 +1184,7 @@ static bool store_create_random(struct store *store)
 		max_level = player->max_depth + 20;
 	} else {
 		min_level = 1;
-		max_level = STORE_OBJ_LEVEL + MAX(player->max_depth - 20, 0);
+		max_level = z_info->store_magic_level + MAX(player->max_depth - 20, 0);
 	}
 
 	if (min_level > 55) min_level = 55;
@@ -1710,7 +1706,7 @@ void do_cmd_buy(struct command *cmd)
 			int i;
 
 			/* Sometimes shuffle the shopkeeper */
-			if (one_in_(STORE_SHUFFLE)) {
+			if (one_in_(z_info->store_shuffle)) {
 				/* Shuffle */
 				msg("The shopkeeper retires.");
 				store_shuffle(store);

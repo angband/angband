@@ -3,8 +3,11 @@
 #include "unit-test.h"
 #include "object.h"
 #include "store.h"
+#include "init.h"
 
 int setup_tests(void **state) {
+	z_info = mem_zalloc(sizeof(struct angband_constants));
+	z_info->store_inven_max = 24;
 	*state = init_parse_stores();
 	return !*state;
 }

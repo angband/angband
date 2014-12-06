@@ -606,6 +606,33 @@ static enum parser_error parse_constants_carry_cap(struct parser *p) {
 
 	return PARSE_ERROR_NONE;
 }
+
+static enum parser_error parse_constants_store(struct parser *p) {
+	struct angband_constants *z;
+	const char *label;
+	int value;
+
+	z = parser_priv(p);
+	label = parser_getsym(p, "label");
+	value = parser_getint(p, "value");
+
+	if (value < 0)
+		return PARSE_ERROR_INVALID_VALUE;
+
+	if (streq(label, "inven-max"))
+		z->store_inven_max = value;
+	else if (streq(label, "turns"))
+		z->store_turns = value;
+	else if (streq(label, "shuffle"))
+		z->store_shuffle = value;
+	else if (streq(label, "magic-level"))
+		z->store_magic_level = value;
+	else
+		return PARSE_ERROR_UNDEFINED_DIRECTIVE;
+
+	return PARSE_ERROR_NONE;
+}
+
 struct parser *init_parse_constants(void) {
 	struct angband_constants *z = mem_zalloc(sizeof *z);
 	struct parser *p = parser_new();
@@ -617,6 +644,7 @@ struct parser *init_parse_constants(void) {
 	parser_reg(p, "dun-gen sym label int value", parse_constants_dun_gen);
 	parser_reg(p, "dun-dim sym label int value", parse_constants_dun_dim);
 	parser_reg(p, "carry-cap sym label int value", parse_constants_carry_cap);
+	parser_reg(p, "store sym label int value", parse_constants_store);
 	return p;
 }
 

@@ -111,7 +111,7 @@ void dungeon_change_level(int dlev)
 			}
 
 			/* Sometimes, shuffle the shop-keepers */
-			if (one_in_(STORE_SHUFFLE))
+			if (one_in_(z_info->store_shuffle))
 			{
 				/* Message */
 				if (OPT(cheat_xtra)) msg("Shuffling a Shopkeeper...");
@@ -460,7 +460,7 @@ static void process_world(struct chunk *c)
 		/* Update the stores once a day (while in the dungeon).
 		   The changes are not actually made until return to town,
 		   to avoid giving details away in the knowledge menu. */
-		if (!(turn % (10L * STORE_TURNS))) daycount++;
+		if (!(turn % (10L * z_info->store_turns))) daycount++;
 	}
 
 

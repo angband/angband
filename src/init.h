@@ -78,6 +78,12 @@ struct angband_constants
 	u16b pack_size;		/**< Maximum number of pack slots */
 	u16b quiver_size;	/**< Maximum number of quiver slots */
 	u16b floor_size;	/**< Maximum number of quiver slots */
+
+	/* Store parameters, read from constants.txt */
+	u16b store_inven_max;	/**< Maximum number of objects in store inventory */
+	u16b store_turns;		/**< Number of turns between turnovers */
+	u16b store_shuffle;		/**< 1/per-day-chance of owner changing */
+	u16b store_magic_level;	/**< Level for apply_magic() in normal stores */
 };
 
 struct init_module {
