@@ -46,42 +46,122 @@ int test_stats0(void *state) {
 	ok;
 }
 
-int test_skill_base0(void *state) {
-	enum parser_error r = parser_parse(state, "skill-base:30:32:28:3:24:16:56:72:72:0");
+int test_skill_disarm0(void *state) {
+	enum parser_error r = parser_parse(state, "skill-disarm:30:8");
 	struct player_class *c;
 
 	eq(r, PARSE_ERROR_NONE);
 	c = parser_priv(state);
 	require(c);
 	eq(c->c_skills[SKILL_DISARM], 30);
-	eq(c->c_skills[SKILL_DEVICE], 32);
-	eq(c->c_skills[SKILL_SAVE], 28);
-	eq(c->c_skills[SKILL_STEALTH], 3);
-	eq(c->c_skills[SKILL_SEARCH], 24);
-	eq(c->c_skills[SKILL_SEARCH_FREQUENCY], 16);
-	eq(c->c_skills[SKILL_TO_HIT_MELEE], 56);
-	eq(c->c_skills[SKILL_TO_HIT_BOW], 72);
-	eq(c->c_skills[SKILL_TO_HIT_THROW], 72);
-	eq(c->c_skills[SKILL_DIGGING], 0);
+	eq(c->x_skills[SKILL_DISARM], 8);
 	ok;
 }
 
-int test_skill_incr0(void *state) {
-	enum parser_error r = parser_parse(state, "skill-incr:8:10:10:0:0:0:30:45:45:0");
+int test_skill_device0(void *state) {
+	enum parser_error r = parser_parse(state, "skill-device:32:10");
 	struct player_class *c;
 
 	eq(r, PARSE_ERROR_NONE);
 	c = parser_priv(state);
 	require(c);
-	eq(c->x_skills[SKILL_DISARM], 8);
+	eq(c->c_skills[SKILL_DEVICE], 32);
 	eq(c->x_skills[SKILL_DEVICE], 10);
+	ok;
+}
+
+int test_skill_save0(void *state) {
+	enum parser_error r = parser_parse(state, "skill-save:28:10");
+	struct player_class *c;
+
+	eq(r, PARSE_ERROR_NONE);
+	c = parser_priv(state);
+	require(c);
+	eq(c->c_skills[SKILL_SAVE], 28);
 	eq(c->x_skills[SKILL_SAVE], 10);
+	ok;
+}
+
+int test_skill_stealth0(void *state) {
+	enum parser_error r = parser_parse(state, "skill-stealth:3:0");
+	struct player_class *c;
+
+	eq(r, PARSE_ERROR_NONE);
+	c = parser_priv(state);
+	require(c);
+	eq(c->c_skills[SKILL_STEALTH], 3);
 	eq(c->x_skills[SKILL_STEALTH], 0);
+	ok;
+}
+
+int test_skill_search0(void *state) {
+	enum parser_error r = parser_parse(state, "skill-search:24:0");
+	struct player_class *c;
+
+	eq(r, PARSE_ERROR_NONE);
+	c = parser_priv(state);
+	require(c);
+	eq(c->c_skills[SKILL_SEARCH], 24);
 	eq(c->x_skills[SKILL_SEARCH], 0);
+	ok;
+}
+
+int test_skill_search_freq0(void *state) {
+	enum parser_error r = parser_parse(state, "skill-search-freq:16:0");
+	struct player_class *c;
+
+	eq(r, PARSE_ERROR_NONE);
+	c = parser_priv(state);
+	require(c);
+	eq(c->c_skills[SKILL_SEARCH_FREQUENCY], 16);
 	eq(c->x_skills[SKILL_SEARCH_FREQUENCY], 0);
+	ok;
+}
+
+int test_skill_melee0(void *state) {
+	enum parser_error r = parser_parse(state, "skill-melee:56:30");
+	struct player_class *c;
+
+	eq(r, PARSE_ERROR_NONE);
+	c = parser_priv(state);
+	require(c);
+	eq(c->c_skills[SKILL_TO_HIT_MELEE], 56);
 	eq(c->x_skills[SKILL_TO_HIT_MELEE], 30);
+	ok;
+}
+
+int test_skill_shoot0(void *state) {
+	enum parser_error r = parser_parse(state, "skill-shoot:72:45");
+	struct player_class *c;
+
+	eq(r, PARSE_ERROR_NONE);
+	c = parser_priv(state);
+	require(c);
+	eq(c->c_skills[SKILL_TO_HIT_BOW], 72);
 	eq(c->x_skills[SKILL_TO_HIT_BOW], 45);
+	ok;
+}
+
+int test_skill_throw0(void *state) {
+	enum parser_error r = parser_parse(state, "skill-throw:72:45");
+	struct player_class *c;
+
+	eq(r, PARSE_ERROR_NONE);
+	c = parser_priv(state);
+	require(c);
+	eq(c->c_skills[SKILL_TO_HIT_THROW], 72);
 	eq(c->x_skills[SKILL_TO_HIT_THROW], 45);
+	ok;
+}
+
+int test_skill_dig0(void *state) {
+	enum parser_error r = parser_parse(state, "skill-dig:0:0");
+	struct player_class *c;
+
+	eq(r, PARSE_ERROR_NONE);
+	c = parser_priv(state);
+	require(c);
+	eq(c->c_skills[SKILL_DIGGING], 0);
 	eq(c->x_skills[SKILL_DIGGING], 0);
 	ok;
 }
@@ -168,8 +248,16 @@ const char *suite_name = "parse/c-info";
 struct test tests[] = {
 	{ "name0", test_name0 },
 	{ "stats0", test_stats0 },
-	{ "skill_base0", test_skill_base0 },
-	{ "skill_incr0", test_skill_incr0 },
+	{ "skill_disarm0", test_skill_disarm0 },
+	{ "skill_device0", test_skill_device0 },
+	{ "skill_save0", test_skill_save0 },
+	{ "skill_stealth0", test_skill_stealth0 },
+	{ "skill_search0", test_skill_search0 },
+	{ "skill_search_freq0", test_skill_search_freq0 },
+	{ "skill_melee0", test_skill_melee0 },
+	{ "skill_shoot0", test_skill_shoot0 },
+	{ "skill_throw0", test_skill_throw0 },
+	{ "skill_dig0", test_skill_dig0 },
 	{ "info0", test_info0 },
 	{ "attack0", test_attack0 },
 	{ "title0", test_title0 },
