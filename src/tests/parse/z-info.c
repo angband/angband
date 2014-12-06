@@ -40,7 +40,6 @@ int test_badmax(void *state) {
 		ok; \
 	}
 
-TEST_MAX(level_object_max, "objects")
 TEST_MAX(level_monster_max, "monsters")
 
 #define TEST_MON(l,u) \
@@ -65,7 +64,6 @@ const char *suite_name = "parse/z-info";
 struct test tests[] = {
 	{ "negative", test_negative },
 	{ "badmax", test_badmax },
-	{ "objects_max", test_level_object_max },
 	{ "monsters_max", test_level_monster_max },
 	{ "mon_chance", test_alloc_monster_chance },
 	{ "monsters_min", test_level_monster_min },

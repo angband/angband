@@ -41,7 +41,6 @@ struct angband_constants
 	u16b profile_max;	/**< Maximum number of cave_profiles */
 
 	/* Maxima of things on a given level, read from constants.txt */
-	u16b level_object_max;	/**< Maximum number of objects on a given level */
 	u16b level_monster_max;	/**< Maximum number of monsters on a given level */
 
 	/* Monster generation constants, read from constants.txt */

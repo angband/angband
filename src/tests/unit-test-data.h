@@ -862,7 +862,6 @@ static struct angband_constants TEST_DATA test_z_info = {
 	.s_max    = 2,
 	.pit_max  = 2,
 	.act_max  = 2,
-	.level_object_max  = 2,
 	.level_monster_max = 2,
 };
 

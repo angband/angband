@@ -5,9 +5,6 @@
 
 ## Level Maxima ##
 
-# Maximum number of objects on the level
-level-max:objects:1024
-
 # Maximum number of monsters on the level
 level-max:monsters:1024
 
