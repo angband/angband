@@ -141,18 +141,6 @@ bool object_is_known_artifact(const struct object *obj)
 }
 
 /**
- * \returns whether the object is known to be blessed
- */
-bool object_is_known_blessed(const struct object *obj)
-{
-	bitflag f[OF_SIZE];
-
-	object_flags_known(obj, f);
-
-	return (of_has(f, OF_BLESSED)) ? TRUE : FALSE;
-}
-
-/**
  * \returns whether the object is known to not be an artifact
  */
 bool object_is_known_not_artifact(const struct object *obj)
