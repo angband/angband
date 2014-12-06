@@ -1,10 +1,10 @@
-/*
- * File: src/list-project_monster.h
- * Purpose: Spell types directly affecting monsters used by project()
+/**
+ * \file list-project_monster.h
+ * \brief Spell types directly affecting monsters used by project()
  * and related functions.
  *
  * Fields:
- * name - type index 
+ * name - type name
  * force_obv - TRUE to force obvious if seen in project_m(), FALSE to let the 
  *             handler decide
  */

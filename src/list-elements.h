@@ -1,11 +1,11 @@
-/*
- * File: src/list-elements.h
- * Purpose: Elements used in spells and other attacks.
+/**
+ * \file list-elements.h
+ * \brief Elements used in spells and other attacks.
  *
  * Fields:
  * name - text name 
  * desc - text description of attack
- * desc - text description of attack if blind
+ * blind desc - text description of attack if blind
  * num - numerator for resistance
  * denom - denominator for resistance (random_value)
  * divisor - what to divide hp by to give breath damage

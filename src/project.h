@@ -1,7 +1,7 @@
 /**
-   \file project.h
-   \brief projection and helpers
-*/
+ * \file project.h
+ * \brief projection and helpers
+ */
 
 #ifndef PROJECT_H
 #define PROJECT_H

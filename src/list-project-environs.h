@@ -1,13 +1,10 @@
-/*
- * File: src/list-project-environs.h
- * Purpose: Spell types used by project() and related functions.
+/**
+ * \file list-project-environs.h
+ * \brief Spell types used by project() and related functions.
  *
  * Fields:
- * name - type index 
+ * name - type name
  * color - color of the effect
- * feature handler - handler affecting the environment
- * object handler - handler affecting an object
- * monster handler - handler affecting a monster
  */
 
 /* name  				color	*/

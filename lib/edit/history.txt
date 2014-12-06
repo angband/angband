@@ -14,7 +14,7 @@
 # 'chart' lines give the number of the current chart, the number of the chart
 # that will be used next (or 0 if the last chart), and a cutoff for choosing
 # the current line.  If the first field in two chart lines is the same, the
-#second should be as well, to maintain consistent choices and end up with
+# second should be as well, to maintain consistent choices and end up with
 # something readable.
 
 # 'phrase' lines are the actual chart entries which make up the history.
