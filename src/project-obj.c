@@ -465,7 +465,7 @@ bool project_o(int who, int r, int y, int x, int dam, int typ)
 					msgt(MSG_DESTROY, "The %s %s!", o_name, note_kill);
 
 				/* Delete the object */
-				pile_object_excise(cave, y, x, obj);
+				square_excise_object(cave, y, x, obj);
 				object_delete(obj);
 
 				/* Redraw */

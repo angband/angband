@@ -333,7 +333,7 @@ bool gear_excise_object(struct object *obj)
 {
 	int i;
 
-	pile_remove(&player->gear, obj);
+	pile_excise(&player->gear, obj);
 
 	/* Make sure it isn't still equipped */
 	for (i = 0; i < player->body.count; i++) {

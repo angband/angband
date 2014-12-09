@@ -75,7 +75,7 @@ void pile_insert_end(struct object **pile, struct object *obj)
 	}
 }
 
-void pile_remove(struct object **pile, struct object *obj)
+void pile_excise(struct object **pile, struct object *obj)
 {
 	struct object *current = *pile;
 
@@ -526,7 +526,7 @@ struct object *floor_object_for_use(struct object *obj, int num, bool message)
 		usable = object_split(obj, num);
 	} else {
 		usable = obj;
-		pile_object_excise(cave, player->py, player->px, usable);
+		square_excise_object(cave, player->py, player->px, usable);
 	}
 
 	/* Housekeeping */
@@ -597,7 +597,7 @@ bool floor_carry(struct chunk *c, int y, int x, struct object *drop, bool last)
 		struct object *ignore = floor_get_oldest_ignored(y, x);
 
 		if (ignore) {
-			pile_object_excise(c, y, x, ignore);
+			square_excise_object(c, y, x, ignore);
 			object_delete(ignore);
 		} else
 			return FALSE;

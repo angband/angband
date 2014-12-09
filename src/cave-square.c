@@ -22,6 +22,7 @@
 #include "init.h"
 #include "monster.h"
 #include "obj-util.h"
+#include "obj-pile.h"
 #include "object.h"
 #include "trap.h"
 
@@ -711,6 +712,14 @@ struct object *square_object(struct chunk *c, int y, int x) {
 bool square_holds_object(struct chunk *c, int y, int x, struct object *obj) {
 	return pile_contains(square_object(c, y, x), obj);
 }
+
+/**
+ * Excise an object from a floor pile, leaving it orphaned.
+ */
+void square_excise_object(struct chunk *c, int y, int x, struct object *obj) {
+	pile_excise(&c->squares[y][x].obj, obj);
+}
+
 
 void square_set_feat(struct chunk *c, int y, int x, int feat)
 {

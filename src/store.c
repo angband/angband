@@ -986,7 +986,7 @@ static void store_delete_index(struct store *store, int what)
 
 	/* Delete the item, wholly or in part */
 	if (num == obj->number) {
-		pile_remove(&store->stock, obj);
+		pile_excise(&store->stock, obj);
 		object_delete(obj);
 	} else {
 		obj->number -= num;
@@ -1225,7 +1225,7 @@ void store_maint(struct store *s)
 		for (j = s->stock_num - 1; j >= 0; j--) {
 			struct object *obj = s->stock_list[j];
 			if (!black_market_ok(obj)) {
-				pile_remove(&s->stock, obj);
+				pile_excise(&s->stock, obj);
 				object_delete(obj);
 				store_stock_list(s);
 			}
@@ -1617,7 +1617,7 @@ void do_cmd_buy(struct command *cmd)
 		if (obj->number > amt) {
 			obj->number -= amt;
 		} else {
-			pile_remove(&store->stock, obj);
+			pile_excise(&store->stock, obj);
 			object_delete(obj);
 		}
 		store_stock_list(store);
@@ -1697,7 +1697,7 @@ void do_cmd_retrieve(struct command *cmd)
 	if (obj->number > amt) {
 		obj->number -= amt;
 	} else {
-		pile_remove(&store->stock, obj);
+		pile_excise(&store->stock, obj);
 		object_delete(obj);
 	}
 	store_stock_list(store);

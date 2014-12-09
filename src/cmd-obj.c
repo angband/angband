@@ -347,7 +347,7 @@ void wield_item(struct object *obj, int slot)
 
 	/* Carry floor items */
 	if (square_holds_object(cave, player->py, player->px, wielded)) {
-		pile_object_excise(cave, player->py, player->px, wielded);
+		square_excise_object(cave, player->py, player->px, wielded);
 		inven_carry(player, wielded, FALSE);
 	}
 

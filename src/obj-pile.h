@@ -35,7 +35,7 @@ typedef enum
 
 void pile_insert(struct object **pile, struct object *obj);
 void pile_insert_end(struct object **pile, struct object *obj);
-void pile_remove(struct object **pile, struct object *obj);
+void pile_excise(struct object **pile, struct object *obj);
 struct object *pile_last_item(struct object *const pile);
 bool pile_contains(const struct object *top, const struct object *obj);
 
