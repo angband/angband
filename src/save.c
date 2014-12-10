@@ -25,6 +25,7 @@
 #include "mon-make.h"
 #include "monster.h"
 #include "object.h"
+#include "obj-pile.h"
 #include "obj-gear.h"
 #include "obj-ignore.h"
 #include "option.h"
@@ -176,7 +177,7 @@ static void wr_monster(const monster_type *m_ptr)
 {
 	size_t j;
 	struct object *obj = m_ptr->held_obj; 
-	struct object *dummy = mem_zalloc(sizeof(*dummy));
+	struct object *dummy = object_new();
 
 	wr_s16b(m_ptr->race->ridx);
 	wr_byte(m_ptr->fy);
@@ -212,7 +213,7 @@ static void wr_monster(const monster_type *m_ptr)
 		obj = obj->next;
 	}
 	wr_item(dummy);
-	mem_free(dummy);
+	object_delete(dummy);
 }
 
 /**

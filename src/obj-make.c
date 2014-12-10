@@ -22,6 +22,7 @@
 #include "effects.h"
 #include "init.h"
 #include "obj-gear.h"
+#include "obj-pile.h"
 #include "obj-make.h"
 #include "obj-pile.h"
 #include "obj-power.h"

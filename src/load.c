@@ -65,7 +65,7 @@ byte mflag_size = 0;
 byte trf_size = 0;
 
 /* Shorthand function pointer for rd_item version */
-typedef int (*rd_item_t)(object_type *o_ptr);
+typedef struct object *(*rd_item_t)(void);
 
 /**
  * Find an ego item from its index
@@ -82,8 +82,10 @@ static struct ego_item *lookup_ego(int idx)
 /*
  * Read an object.
  */
-static int rd_item(object_type *o_ptr)
+static struct object *rd_item(void)
 {
+	struct object *o_ptr = object_new();
+
 	byte tmp8u;
 	u16b tmp16u;
 	s16b tmp16s;
@@ -214,8 +216,12 @@ static int rd_item(object_type *o_ptr)
 
 	/* Lookup item kind */
 	o_ptr->kind = lookup_kind(o_ptr->tval, o_ptr->sval);
-	if (!o_ptr->kind)
-		return 0;
+
+	/* Check we have a kind and a valid artifact index */
+	if (!o_ptr->kind || art_idx >= z_info->a_max) {
+		object_delete(o_ptr);
+		return NULL;
+	}
 
 	/* Lookup ego, set effect */
 	o_ptr->ego = lookup_ego(ego_idx);
@@ -224,13 +230,11 @@ static int rd_item(object_type *o_ptr)
 	else
 		o_ptr->effect = o_ptr->kind->effect;
 
-	if (art_idx >= z_info->a_max)
-		return -1;
 	if (art_idx > 0)
 		o_ptr->artifact = &a_info[art_idx];
 
 	/* Success */
-	return (0);
+	return o_ptr;
 }
 
 
@@ -242,7 +246,6 @@ static void rd_monster(monster_type *m_ptr)
 	byte tmp8u;
 	s16b r_idx;
 	size_t j;
-	struct object *obj = object_new();
 
 	/* Read the monster race */
 	rd_s16b(&r_idx);
@@ -271,21 +274,20 @@ static void rd_monster(monster_type *m_ptr)
 		rd_s16b(&m_ptr->known_pstate.el_info[j].res_level);
 
 	rd_byte(&tmp8u);
-	if (tmp8u) {
-		m_ptr->mimicked_obj = object_new();
-		rd_item(m_ptr->mimicked_obj);
-	}
+	if (tmp8u)
+		m_ptr->mimicked_obj = rd_item();
 
 	/* Read all the held objects (order is unimportant) */
-	rd_item(obj);
-	while ((obj->iy != 0) || (obj->ix != 0)) {
+	while (TRUE) {
+		struct object *obj = rd_item();
+		if (!obj || obj->iy == 0 || obj->ix == 0)
+			break;
+
 		obj->next = m_ptr->held_obj;
 		if (obj->next)
 			(obj->next)->prev = obj;
 		m_ptr->held_obj = obj;
-		obj = object_new();
 	}
-	object_delete(obj);
 }
 
 
@@ -971,17 +973,13 @@ static int rd_gear_aux(rd_item_t rd_item_version, struct object **gear)
 
 	/* Read until done */
 	while (code != FINISHED_CODE) {
-		/* Allocate an object */
-		struct object *obj = object_new();
+		struct object *obj = (*rd_item_version)();
 
 		/* Read the item */
-		if ((*rd_item_version)(obj)) {
+		if (!obj) {
 			note("Error reading item");
 			return (-1);
 		}
-
-		/* Verify item */
-		if (!obj) return -1;
 
 		/* Append the object */
 		obj->prev = last_gear_obj;
@@ -1050,13 +1048,10 @@ static int rd_stores_aux(rd_item_t rd_item_version)
 
 		/* Read the items */
 		for (j = 0; j < num; j++) {
-			object_type *obj;
-
-			/* Make an object */
-			obj = object_new();
+			struct object *obj = (*rd_item_version)();
 
 			/* Read the item */
-			if ((*rd_item_version)(obj)) {
+			if (!obj) {
 				note("Error reading item");
 				return (-1);
 			}
@@ -1196,8 +1191,7 @@ static int rd_objects_aux(rd_item_t rd_item_version, struct chunk *c)
 
 	/* Read the dungeon items until one has no location */
 	while (TRUE) {
-		obj = object_new();
-		rd_item(obj);
+		obj = rd_item();
 		y = obj->iy;
 		x = obj->ix;
 		if ((y == 0) && (x == 0))
@@ -1207,8 +1201,6 @@ static int rd_objects_aux(rd_item_t rd_item_version, struct chunk *c)
 			return -1;
 		}
 	}
-
-	object_delete(obj);
 
 	return 0;
 }
