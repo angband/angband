@@ -1775,7 +1775,7 @@ static void display_object(int col, int row, bool cursor, int oid)
 static void desc_obj_fake(int k_idx)
 {
 	struct object_kind *kind = &k_info[k_idx];
-	struct object *obj = mem_zalloc(sizeof(*obj));
+	struct object *obj = object_new();
 
 	char header[120];
 

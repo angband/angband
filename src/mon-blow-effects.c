@@ -340,7 +340,7 @@ static void melee_effect_handler_EAT_GOLD(melee_effect_handler_context_t *contex
             int amt;
 
             /* Create a new temporary object */
-            object_type *obj = mem_zalloc(sizeof(*obj));
+            object_type *obj = object_new();
             object_prep(obj, money_kind("gold", gold), 0, MINIMISE);
 
             /* Amount of gold to put in this object */

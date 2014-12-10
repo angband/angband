@@ -545,7 +545,7 @@ static void player_outfit(struct player *p)
 	/* Give the player starting equipment */
 	for (si = p->class->start_items; si; si = si->next) {
 		/* Get local object */
-		struct object *obj = mem_zalloc(sizeof(*obj));
+		struct object *obj = object_new();
 		int num = rand_range(si->min, si->max);
 
 		/* Without start_kit, only start with 1 food and 1 light */

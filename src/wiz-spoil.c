@@ -139,7 +139,7 @@ static void kind_info(char *buf, size_t buf_len, char *dam, size_t dam_len,
 					  char *wgt, size_t wgt_len, int *lev, s32b *val, int k)
 {
 	object_kind *kind = &k_info[k];
-	struct object *obj = mem_zalloc(sizeof(obj));
+	struct object *obj = object_new();
 	int i;
 
 	/* Prepare a fake item */
@@ -181,6 +181,8 @@ static void kind_info(char *buf, size_t buf_len, char *dam, size_t dam_len,
 		strnfmt(dam, dam_len, "%dd%d", obj->dd, obj->ds);
 	else if (tval_is_armor(obj))
 		strnfmt(dam, dam_len, "%d", obj->ac);
+
+	object_delete(obj);
 }
 
 
@@ -408,11 +410,11 @@ static void spoil_artifact(const char *fname)
 			if (art->tval != group_artifact[i].tval) continue;
 
 			/* Get local object */
-			obj = mem_zalloc(sizeof(obj));
+			obj = object_new();
 
 			/* Attempt to "forge" the artifact */
 			if (!make_fake_artifact(obj, art)) {
-				mem_free(obj);
+				object_delete(obj);
 				continue;
 			}
 

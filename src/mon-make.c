@@ -811,7 +811,7 @@ s16b place_monster(struct chunk *c, int y, int x, monster_type *mon, byte origin
 			obj = make_gold(player->depth,
 							  lookup_kind(TV_GOLD, kind->sval)->name);
 		} else {
-			obj = mem_zalloc(sizeof(*obj));
+			obj = object_new();
 			object_prep(obj, kind, m_ptr->race->level, RANDOMISE);
 			apply_magic(obj, m_ptr->race->level, TRUE, FALSE, FALSE, FALSE);
 			obj->number = 1;

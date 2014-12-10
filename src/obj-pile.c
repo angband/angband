@@ -112,6 +112,14 @@ bool pile_object_excise(struct chunk *c, int y, int x, struct object *obj)
 }
 
 /**
+ * Create a new object and return it
+ */
+struct object *object_new(void)
+{
+	return mem_zalloc(sizeof(struct object));
+}
+
+/**
  * Delete an object and free its memory
  */
 void object_delete(struct object *obj)
@@ -120,8 +128,10 @@ void object_delete(struct object *obj)
 	struct object *next = obj->next;
 
 	/* Free slays and brands */
-	free_slay(obj->slays);
-	free_brand(obj->brands);
+	if (obj->slays)
+		free_slay(obj->slays);
+	if (obj->brands)
+		free_brand(obj->brands);
 
 	/* Check any next and previous objects */
 	if (next) {
@@ -134,8 +144,6 @@ void object_delete(struct object *obj)
 	} else if (prev) {
 		prev->next = NULL;
 	}
-
-	mem_free(obj);
 }
 
 /**

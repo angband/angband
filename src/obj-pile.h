@@ -36,6 +36,7 @@ typedef enum
 bool object_in_pile(struct object *top, struct object *obj);
 bool pile_object_excise(struct chunk *c, int y, int x, struct object *obj);
 
+struct object *object_new(void);
 void object_delete(struct object *obj);
 void object_pile_free(struct object *obj);
 bool object_stackable(const struct object *o_ptr, const struct object *j_ptr,

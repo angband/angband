@@ -1212,7 +1212,7 @@ static bool store_create_random(struct store *store)
 		/*** Generate the item ***/
 
 		/* Create a new object of the chosen kind */
-		obj = mem_zalloc(sizeof(*obj));
+		obj = object_new();
 		object_prep(obj, kind, level, RANDOMISE);
 
 		/* Apply some "low-level" magic (no artifacts) */
@@ -1221,12 +1221,12 @@ static bool store_create_random(struct store *store)
 		/* Reject if item is 'damaged' (i.e. negative mods) */
 		if (tval_is_weapon(obj)) {
 			if ((obj->to_h < 0) || (obj->to_d < 0)) {
-				mem_free(obj);
+				object_delete(obj);
 				continue;
 			}
 		} else if (tval_is_armor(obj)) {
 			if (obj->to_a < 0) {
-				mem_free(obj);
+				object_delete(obj);
 				continue;
 			}
 		}
@@ -1239,13 +1239,13 @@ static bool store_create_random(struct store *store)
 
 		/* Black markets have expensive tastes */
 		if ((store->sidx == STORE_B_MARKET) && !black_market_ok(obj)) {
-			mem_free(obj);
+			object_delete(obj);
 			continue;
 		}
 
 		/* No "worthless" items */
 		if (object_value(obj, 1, FALSE) < 1)  {
-			mem_free(obj);
+			object_delete(obj);
 			continue;
 		}
 
@@ -1254,7 +1254,7 @@ static bool store_create_random(struct store *store)
 
 		/* Attempt to carry the object */
 		if (store_carry(store, obj) < 0) {
-			mem_free(obj);
+			object_delete(obj);
 			continue;
 		}
 
@@ -1272,7 +1272,7 @@ static bool store_create_random(struct store *store)
  */
 static int store_create_item(struct store *store, object_kind *kind)
 {
-	struct object *obj = mem_zalloc(sizeof(*obj));
+	struct object *obj = object_new();
 
 	/* Create a new object of the chosen kind */
 	object_prep(obj, kind, 0, RANDOMISE);

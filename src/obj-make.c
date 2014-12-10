@@ -519,7 +519,7 @@ static struct object *make_artifact_special(int level)
 		}
 
 		/* Assign the template */
-		new_obj = mem_zalloc(sizeof(*new_obj));
+		new_obj = object_new();
 		object_prep(new_obj, kind, art->alloc_min, RANDOMISE);
 
 		/* Mark the item as an artifact */
@@ -1024,7 +1024,7 @@ struct object *make_object(struct chunk *c, int lev, bool good, bool great,
 		return NULL;
 
 	/* Make the object, prep it and apply magic */
-	new_obj = mem_zalloc(sizeof(*new_obj));
+	new_obj = object_new();
 	object_prep(new_obj, kind, lev, RANDOMISE);
 	apply_magic(new_obj, lev, TRUE, good, great, extra_roll);
 

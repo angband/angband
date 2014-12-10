@@ -472,7 +472,7 @@ static void get_art_name(char *buf, int max, int a_idx)
 	struct artifact *art = &a_info[a_idx];
 
 	/* Get object */
-	obj = mem_zalloc(sizeof(*obj));
+	obj = object_new();
 
 	/* Acquire the "kind" index */
 	kind = lookup_kind(art->tval, art->sval);
@@ -538,7 +538,7 @@ static bool wiz_create_item_subaction(menu_type *m, const ui_event *e, int oid)
 			return FALSE;
 
 		/* Get object */
-		obj = mem_zalloc(sizeof(*obj));
+		obj = object_new();
 
 		/* Create the artifact */
 		object_prep(obj, kind, art->alloc_min, RANDOMISE);
@@ -561,7 +561,7 @@ static bool wiz_create_item_subaction(menu_type *m, const ui_event *e, int oid)
 							lookup_kind(TV_GOLD, kind->sval)->name);
 		else {
 			/* Get object */
-			obj = mem_zalloc(sizeof(*obj));
+			obj = object_new();
 			object_prep(obj, kind, player->depth, RANDOMISE);
 
 			/* Apply magic (no messages, no artifacts) */
@@ -1600,7 +1600,7 @@ static void wiz_test_kind(int tval)
 		if (tval == TV_GOLD)
 			obj = make_gold(player->depth, lookup_kind(TV_GOLD, sval)->name);
 		else {
-			obj = mem_zalloc(sizeof(*obj));
+			obj = object_new();
 			object_prep(obj, kind, player->depth, RANDOMISE);
 
 			/* Apply magic (no messages, no artifacts) */

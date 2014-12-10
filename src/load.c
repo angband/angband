@@ -242,7 +242,7 @@ static void rd_monster(monster_type *m_ptr)
 	byte tmp8u;
 	s16b r_idx;
 	size_t j;
-	struct object *obj = mem_zalloc(sizeof(*obj));;
+	struct object *obj = object_new();
 
 	/* Read the monster race */
 	rd_s16b(&r_idx);
@@ -272,7 +272,7 @@ static void rd_monster(monster_type *m_ptr)
 
 	rd_byte(&tmp8u);
 	if (tmp8u) {
-		m_ptr->mimicked_obj = mem_zalloc(sizeof(*obj));
+		m_ptr->mimicked_obj = object_new();
 		rd_item(m_ptr->mimicked_obj);
 	}
 
@@ -283,9 +283,9 @@ static void rd_monster(monster_type *m_ptr)
 		if (obj->next)
 			(obj->next)->prev = obj;
 		m_ptr->held_obj = obj;
-		obj = mem_zalloc(sizeof(*obj));
+		obj = object_new();
 	}
-	mem_free(obj);
+	object_delete(obj);
 }
 
 
@@ -972,7 +972,7 @@ static int rd_gear_aux(rd_item_t rd_item_version, struct object **gear)
 	/* Read until done */
 	while (code != FINISHED_CODE) {
 		/* Allocate an object */
-		struct object *obj = mem_zalloc(sizeof(*obj));
+		struct object *obj = object_new();
 
 		/* Read the item */
 		if ((*rd_item_version)(obj)) {
@@ -1053,7 +1053,7 @@ static int rd_stores_aux(rd_item_t rd_item_version)
 			object_type *obj;
 
 			/* Make an object */
-			obj = mem_zalloc(sizeof(*obj));
+			obj = object_new();
 
 			/* Read the item */
 			if ((*rd_item_version)(obj)) {
@@ -1196,7 +1196,7 @@ static int rd_objects_aux(rd_item_t rd_item_version, struct chunk *c)
 
 	/* Read the dungeon items until one has no location */
 	while (TRUE) {
-		obj = mem_zalloc(sizeof(*obj));
+		obj = object_new();
 		rd_item(obj);
 		y = obj->iy;
 		x = obj->ix;
@@ -1208,7 +1208,7 @@ static int rd_objects_aux(rd_item_t rd_item_version, struct chunk *c)
 		}
 	}
 
-	mem_free(obj);
+	object_delete(obj);
 
 	return 0;
 }
