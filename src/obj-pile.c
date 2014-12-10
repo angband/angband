@@ -112,9 +112,9 @@ bool pile_object_excise(struct chunk *c, int y, int x, struct object *obj)
 }
 
 /**
- * Free an object's dynamically allocated memory and zero the struct
+ * Delete an object and free its memory
  */
-void object_free(struct object *obj)
+void object_delete(struct object *obj)
 {
 	struct object *prev = obj->prev;
 	struct object *next = obj->next;
@@ -135,16 +135,6 @@ void object_free(struct object *obj)
 		prev->next = NULL;
 	}
 
-	/* Wipe the object structure */
-	object_wipe(obj);
-}
-
-/**
- * Delete an object and free its memory
- */
-void object_delete(struct object *obj)
-{
-	object_free(obj);
 	mem_free(obj);
 }
 

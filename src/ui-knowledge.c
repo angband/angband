@@ -1775,8 +1775,7 @@ static void display_object(int col, int row, bool cursor, int oid)
 static void desc_obj_fake(int k_idx)
 {
 	struct object_kind *kind = &k_info[k_idx];
-	struct object object_type_body;
-	struct object *o_ptr = &object_type_body;
+	struct object *obj = mem_zalloc(sizeof(*obj));
 
 	char header[120];
 
@@ -1794,27 +1793,24 @@ static void desc_obj_fake(int k_idx)
 	track_object_kind(player->upkeep, kind);
 	handle_stuff(player->upkeep);
 
-	/* Wipe the object */
-	object_wipe(o_ptr);
-
 	/* Create the artifact */
-	object_prep(o_ptr, kind, 0, EXTREMIFY);
+	object_prep(obj, kind, 0, EXTREMIFY);
 
 	/* Hack -- its in the store */
-	if (kind->aware) object_know_all_but_flavor(o_ptr);
+	if (kind->aware) object_know_all_but_flavor(obj);
 
 	/* It's fully know */
-	if (!kind->flavor) object_notice_everything(o_ptr);
+	if (!kind->flavor) object_notice_everything(obj);
 
 	/* Hack -- Handle stuff */
 	handle_stuff(player->upkeep);
 
-	tb = object_info(o_ptr, OINFO_NONE);
-	object_desc(header, sizeof(header), o_ptr,
+	tb = object_info(obj, OINFO_NONE);
+	object_desc(header, sizeof(header), obj,
 			ODESC_PREFIX | ODESC_FULL | ODESC_CAPITAL);
 
 	textui_textblock_show(tb, area, header);
-	object_free(o_ptr);
+	object_delete(obj);
 	textblock_free(tb);
 }
 
