@@ -272,7 +272,7 @@ static void rd_monster(monster_type *m_ptr)
 
 	rd_byte(&tmp8u);
 	if (tmp8u) {
-		m_ptr->mimicked_obj = mem_zalloc(sizeof(struct object *));
+		m_ptr->mimicked_obj = mem_zalloc(sizeof(*obj));
 		rd_item(m_ptr->mimicked_obj);
 	}
 
