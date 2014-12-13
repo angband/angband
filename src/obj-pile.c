@@ -44,6 +44,32 @@
 #include "randname.h"
 #include "z-queue.h"
 
+/* #define LIST_DEBUG */
+
+void pile_check_integrity(const char *op, struct object *pile, struct object *hilight)
+{
+	struct object *obj = pile;
+	struct object *prev = NULL;
+
+#ifdef LIST_DEBUG
+	int i = 0;
+	fprintf(stderr, "\n%s  pile %08x\n", op, (int)pile);
+#endif
+
+	do {
+#ifdef LIST_DEBUG
+		fprintf(stderr, "[%2d] this = %08x  prev = %08x  next = %08x  %s\n",
+			i, (int)obj, (int)obj->prev, (int)obj->next,
+			(obj == hilight) ? "*" : "");
+		i++;
+#endif
+
+		assert(obj->prev == prev);
+		prev = obj;
+		obj = obj->next;
+	} while (obj);
+}
+
 void pile_insert(struct object **pile, struct object *obj)
 {
 	assert(obj->prev == NULL);
@@ -55,6 +81,8 @@ void pile_insert(struct object **pile, struct object *obj)
 	}
 
 	*pile = obj;
+
+	pile_check_integrity("insert", *pile, obj);
 }
 
 /*
@@ -62,21 +90,24 @@ void pile_insert(struct object **pile, struct object *obj)
  */
 void pile_insert_end(struct object **pile, struct object *obj)
 {
-	struct object *end = pile_last_item(*pile);
-
 	assert(obj->prev == NULL);
 
-	if (end) {
+	if (*pile) {
+		struct object *end = pile_last_item(*pile);
+
 		end->next = obj;
 		obj->prev = end;
 	} else {
 		*pile = obj;
 	}
+
+	pile_check_integrity("insert_end", *pile, obj);
 }
 
 void pile_excise(struct object **pile, struct object *obj)
 {
 	assert(pile_contains(*pile, obj));
+	pile_check_integrity("excise", *pile, obj);
 
 	/* Special case: unlink top object */
 	if (*pile == obj) {
