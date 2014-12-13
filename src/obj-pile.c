@@ -572,7 +572,6 @@ bool floor_carry(struct chunk *c, int y, int x, struct object *drop, bool last)
 	int n = 0;
 	struct object *obj;
 
-
 	/* Scan objects in that grid for combination */
 	for (obj = square_object(c, y, x); obj; obj = obj->next) {
 		/* Check for combination */
@@ -611,18 +610,10 @@ bool floor_carry(struct chunk *c, int y, int x, struct object *drop, bool last)
 	drop->held_m_idx = 0;
 
 	/* Link to the first or last object in the pile */
-	if (last) {
-		obj = pile_last_item(square_object(c, y, x));
-		drop->next = NULL;
-		drop->prev = obj;
-		if (obj)
-			obj->next = drop;
-		else
-			c->squares[y][x].obj = drop;
-	} else {
-		drop->next = square_object(c, y, x);
-		c->squares[y][x].obj = drop;
-	}
+	if (last)
+		pile_insert_end(&c->squares[y][x].obj, drop);
+	else
+		pile_insert(&c->squares[y][x].obj, drop);
 
 	/* Redraw */
 	square_note_spot(c, y, x);

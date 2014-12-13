@@ -931,16 +931,46 @@ struct object *store_carry(struct store *store, struct object *obj)
 
 
 /**
+ * Find a given object kind in the store.
+ */
+static struct object *store_find_kind(struct store *s, object_kind *k) {
+	struct object *obj;
+
+	assert(s);
+	assert(k);
+
+	/* Check if it's already in stock */
+	for (obj = s->stock; obj; obj = obj->next) {
+		if (obj->kind == k && !obj->ego)
+			return obj;
+	}
+
+	return NULL;
+}
+
+
+/**
  * Delete an object from store 'store', or, if it is a stack, perhaps only
  * partially delete it.
+ *
+ * This function is used when store maintainance occurs, and is designed to
+ * imitate non-PC purchasers making purchases from the store.
+ *
+ * The reason this doesn't check for "staple" items and refuse to
+ * delete them is that a store could conceviably have two stacks of a
+ * single staple item, in which case, you could have a store which had
+ * more stacks than staple items, but all stacks are staple items.
  */
-static void store_delete_index(struct store *store, int what)
+static void store_delete_random(struct store *store)
 {
+	int what;
 	int num;
 	struct object *obj;
 
-	/* Paranoia */
-	if (store->stock_num <= 0) return;
+	assert(store->stock_num > 0);
+
+	/* Pick a random slot */
+	what = randint0(store->stock_num);
 
 	/* Walk through list until we find our item */
 	obj = store->stock;
@@ -994,48 +1024,6 @@ static void store_delete_index(struct store *store, int what)
 
 	/* Redo the stock list */
 	store_stock_list(store);
-}
-
-/**
- * Find a given object kind in the store.
- */
-static struct object *store_find_kind(struct store *s, object_kind *k) {
-	struct object *obj;
-
-	assert(s);
-	assert(k);
-
-	/* Check if it's already in stock */
-	for (obj = s->stock; obj; obj = obj->next) {
-		if (obj->kind == k && !obj->ego)
-			return obj;
-	}
-
-	return NULL;
-}
-
-
-/**
- * Delete a random object from store 'st', or, if it is a stack, perhaps only
- * partially delete it.
- *
- * This function is used when store maintainance occurs, and is designed to
- * imitate non-PC purchasers making purchases from the store.
- *
- * The reason this doesn't check for "staple" items and refuse to
- * delete them is that a store could conceviably have two stacks of a
- * single staple item, in which case, you could have a store which had
- * more stacks than staple items, but all stacks are staple items.
- */
-static void store_delete_random(struct store *store)
-{
-	int what;
-
-	if (store->stock_num <= 0) return;
-
-	/* Pick a random slot */
-	what = randint0(store->stock_num);
-	store_delete_index(store, what);
 }
 
 
