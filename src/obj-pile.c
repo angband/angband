@@ -44,12 +44,74 @@
 #include "randname.h"
 #include "z-queue.h"
 
-struct object *pile_last_item(struct object *start)
+void pile_insert(struct object **pile, struct object *obj)
 {
-	struct object *obj = start;
+	assert(obj->prev == NULL);
+	assert(obj->next == NULL);
+
+	if (*pile) {
+		obj->next = *pile;
+		(*pile)->prev = obj;
+	}
+
+	*pile = obj;
+}
+
+/*
+ * Unlike pile_insert(), obj can be the beginning of a new list of objects.
+ */
+void pile_insert_end(struct object **pile, struct object *obj)
+{
+	struct object *end = pile_last_item(*pile);
+
+	assert(obj->prev == NULL);
+	assert(obj->next == NULL);
+
+	if (end) {
+		end->next = obj;
+		obj->prev = end;
+	} else {
+		*pile = obj;
+	}
+}
+
+void pile_remove(struct object **pile, struct object *obj)
+{
+	struct object *current = *pile;
+
+	/* Special case: unlink top object */
+	if (*pile == obj) {
+		assert(obj->prev == NULL);	// Invariant - if it's the top of the pile
+
+		*pile = obj->next;
+		if (obj->next) {
+			(obj->next)->prev = NULL;
+			obj->next = NULL;
+		}
+	}
+
+	/* Otherwise find the object... */
+	while (current != obj) {
+		current = current->next;
+		assert(current);	// Invariant - the object must be in the pile, fail if we run out
+	}
+
+	/* ...and remove it */
+	(obj->prev)->next = obj->next;
+	obj->prev = NULL;
+
+	if (obj->next) {
+		(obj->next)->prev = obj->prev;
+		obj->next = NULL;
+	}
+}
+
+struct object *pile_last_item(struct object *const pile)
+{
+	struct object *obj = pile;
 
 	/* No pile at all */
-	if (!obj)
+	if (!pile)
 		return NULL;
 
 	/* Run along the list, stopping just before the end */
@@ -59,9 +121,9 @@ struct object *pile_last_item(struct object *start)
 	return obj;
 }
 
-bool object_in_pile(struct object *top, struct object *obj)
+bool pile_contains(const struct object *top, const struct object *obj)
 {
-	struct object *pile_obj = top;
+	const struct object *pile_obj = top;
 
 	while (pile_obj) {
 		if (obj == pile_obj)
@@ -74,41 +136,14 @@ bool object_in_pile(struct object *top, struct object *obj)
 
 /**
  * Excise an object from a floor pile, leaving it orphaned.
-
+ *
  * Code using this function must then deal with the orphaned object in some
  * way - usually by deleting it, or adding it to a player, monster or store
  * inventory.
  */
-bool pile_object_excise(struct chunk *c, int y, int x, struct object *obj)
+void pile_object_excise(struct chunk *c, int y, int x, struct object *obj)
 {
-	struct object *current = square_object(c, y, x);
-
-	/* Special case - excise top object */
-	if (current == obj) {
-		c->squares[y][x].obj = obj->next;
-		if (obj->next)
-			(obj->next)->prev = NULL;
-		obj->next = NULL;
-		obj->prev = NULL;
-		return TRUE;
-	}
-
-	/* Otherwise find the object... */
-	while (current != obj) {
-		current = current->next;
-
-		/* Object isn't in the pile */
-		if (!current)
-			return FALSE;
-	}
-
-	/* ...and remove it */
-	(obj->prev)->next = obj->next;
-	if (obj->next)
-		(obj->next)->prev = obj->prev;
-	obj->next = NULL;
-	obj->prev = NULL;
-	return TRUE;
+	pile_excise(&c->squares[y][x].obj, obj);
 }
 
 /**

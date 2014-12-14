@@ -709,13 +709,7 @@ struct object *square_object(struct chunk *c, int y, int x) {
  * Return TRUE if the given object is on the floor at this grid
  */
 bool square_holds_object(struct chunk *c, int y, int x, struct object *obj) {
-	struct object *square_obj = square_object(c, y, x);
-	while (square_obj) {
-		if (obj == square_obj)
-			return TRUE;
-		square_obj = square_obj->next;
-	}
-	return FALSE;
+	return pile_contains(square_object(c, y, x), obj);
 }
 
 void square_set_feat(struct chunk *c, int y, int x, int feat)

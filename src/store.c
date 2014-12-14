@@ -843,11 +843,7 @@ static void home_carry(struct object *obj)
 	if (store->stock_num >= store->stock_size) return;
 
 	/* Insert the new object */
-	obj->next = store->stock;
-	if (store->stock)
-		store->stock->prev = obj;
-	obj->prev = NULL;
-	store->stock = obj;
+	pile_insert(&store->stock, obj);
 
 	/* Rewrite the stock list */
 	store_stock_list(store);
@@ -925,11 +921,7 @@ struct object *store_carry(struct store *store, struct object *obj)
 		return NULL;
 
 	/* Insert the new object */
-	obj->next = store->stock;
-	if (store->stock)
-		store->stock->prev = obj;
-	obj->prev = NULL;
-	store->stock = obj;
+	pile_insert(&store->stock, obj);
 
 	/* Rewrite the stock list */
 	store_stock_list(store);
@@ -937,44 +929,6 @@ struct object *store_carry(struct store *store, struct object *obj)
 	return obj;
 }
 
-
-/**
- * Excise an object from a store's stock, leaving it orphaned.
- *
- * Code using this function must then deal with the orphaned object in some
- * way - usually by deleting it or giving it to the player.
- */
-static bool store_object_excise(struct store *store, struct object *obj)
-{
-	struct object *current = store->stock;
-
-	/* Special case - excise top object */
-	if (current == obj) {
-		store->stock = obj->next;
-		if (obj->next)
-			(obj->next)->prev = NULL;
-		obj->next = NULL;
-		obj->prev = NULL;
-		return TRUE;
-	}
-
-	/* Otherwise find the object... */
-	while (current != obj) {
-		current = current->next;
-
-		/* Object isn't in the pile */
-		if (!current)
-			return FALSE;
-	}
-
-	/* ...and remove it */
-	(obj->prev)->next = obj->next;
-	if (obj->next)
-		(obj->next)->prev = obj->prev;
-	obj->next = NULL;
-	obj->prev = NULL;
-	return TRUE;
-}
 
 /**
  * Delete an object from store 'store', or, if it is a stack, perhaps only
@@ -1032,10 +986,11 @@ static void store_delete_index(struct store *store, int what)
 
 	/* Delete the item, wholly or in part */
 	if (num == obj->number) {
-		store_object_excise(store, obj);
+		pile_remove(&store->stock, obj);
 		object_delete(obj);
-	} else
+	} else {
 		obj->number -= num;
+	}
 
 	/* Redo the stock list */
 	store_stock_list(store);
@@ -1270,7 +1225,7 @@ void store_maint(struct store *s)
 		for (j = s->stock_num - 1; j >= 0; j--) {
 			struct object *obj = s->stock_list[j];
 			if (!black_market_ok(obj)) {
-				store_object_excise(s, obj);
+				pile_remove(&s->stock, obj);
 				object_delete(obj);
 				store_stock_list(s);
 			}
@@ -1659,10 +1614,10 @@ void do_cmd_buy(struct command *cmd)
 	/* Remove the bought objects from the store if it's not a staple */
 	if (!store_is_staple(store, obj->kind)) {
 		/* Reduce or remove the item */
-		if (obj->number > amt)
+		if (obj->number > amt) {
 			obj->number -= amt;
-		else {
-			store_object_excise(store, obj);
+		} else {
+			pile_remove(&store->stock, obj);
 			object_delete(obj);
 		}
 		store_stock_list(store);
@@ -1739,10 +1694,10 @@ void do_cmd_retrieve(struct command *cmd)
 	handle_stuff(player->upkeep);
 	
 	/* Reduce or remove the item */
-	if (obj->number > amt)
+	if (obj->number > amt) {
 		obj->number -= amt;
-	else {
-		store_object_excise(store, obj);
+	} else {
+		pile_remove(&store->stock, obj);
 		object_delete(obj);
 	}
 	store_stock_list(store);
