@@ -792,7 +792,6 @@ static void store_object_absorb(struct object *old, struct object *new)
  */
 bool store_check_num(struct store *store, const struct object *obj)
 {
-	int i;
 	struct object *stock_obj;
 
 	/* Free space is always usable */
@@ -800,20 +799,14 @@ bool store_check_num(struct store *store, const struct object *obj)
 
 	/* The "home" acts like the player */
 	if (store->sidx == STORE_HOME) {
-		for (i = 0; i < store->stock_num; i++) {
-			/* Get the existing object */
-			stock_obj = store->stock_list[i];
-
+		for (stock_obj = store->stock; stock_obj; stock_obj = stock_obj->next) {
 			/* Can the new object be combined with the old one? */
 			if (object_similar(stock_obj, obj, OSTACK_PACK))
 				return TRUE;
 		}
 	} else {
 		/* Normal stores do special stuff */
-		for (i = 0; i < store->stock_num; i++) {
-			/* Get the existing object */
-			stock_obj = store->stock_list[i];
-
+		for (stock_obj = store->stock; stock_obj; stock_obj = stock_obj->next) {
 			/* Can the new object be combined with the old one? */
 			if (object_similar(stock_obj, obj, OSTACK_STORE))
 				return TRUE;
@@ -825,40 +818,29 @@ bool store_check_num(struct store *store, const struct object *obj)
 }
 
 
-
 /**
  * Add an object to the inventory of the Home.
- *
- * In all cases, return the slot (or -1) where the object was placed.
  *
  * Also note that it may not correctly "adapt" to "knowledge" becoming
  * known: the player may have to pick stuff up and drop it again.
  */
-static int home_carry(struct object *obj)
+static void home_carry(struct object *obj)
 {
-	int slot;
 	struct object *temp_obj;
-
 	struct store *store = &stores[STORE_HOME];
 
 	/* Check each existing object (try to combine) */
-	for (slot = 0; slot < store->stock_num; slot++) {
-		/* Get the existing object */
-		temp_obj = store->stock_list[slot];
-		if (!temp_obj) continue;
-
+	for (temp_obj = store->stock; temp_obj; temp_obj = temp_obj->next) {
 		/* The home acts just like the player */
 		if (object_similar(temp_obj, obj, OSTACK_PACK)) {
 			/* Save the new number of items */
 			object_absorb(temp_obj, obj);
-
-			/* All done */
-			return (slot);
+			return;
 		}
 	}
 
 	/* No space? */
-	if (store->stock_num >= store->stock_size) return (-1);
+	if (store->stock_num >= store->stock_size) return;
 
 	/* Insert the new object */
 	obj->next = store->stock;
@@ -869,12 +851,6 @@ static int home_carry(struct object *obj)
 
 	/* Rewrite the stock list */
 	store_stock_list(store);
-
-	/* Return the location */
-	for (slot = 0; slot < store->stock_num; slot++)
-		if (obj == store->stock_list[slot]) break;
-
-	return (slot);
 }
 
 
@@ -888,12 +864,11 @@ static int home_carry(struct object *obj)
  * this price will be negative, since the price will not be "fixed" yet.
  * Adding an object to a "fixed" price stack will not change the fixed price.
  *
- * In all cases, return the slot (or -1) where the object was placed
+ * Returns the object inserted (for ease of use) or NULL if it disappears
  */
-int store_carry(struct store *store, struct object *obj)
+struct object *store_carry(struct store *store, struct object *obj)
 {
 	unsigned int i;
-	unsigned int slot;
 	u32b value;
 	struct object *temp_obj;
 
@@ -903,7 +878,7 @@ int store_carry(struct store *store, struct object *obj)
 	value = object_value(obj, 1, FALSE);
 
 	/* Cursed/Worthless items "disappear" when sold */
-	if (value <= 0) return (-1);
+	if (value <= 0) return NULL;
 
 	/* Erase the inscription & pseudo-ID bit */
 	obj->note = 0;
@@ -934,25 +909,20 @@ int store_carry(struct store *store, struct object *obj)
 		}
 	}
 
-	/* Check each existing object (try to combine) */
-	for (slot = 0; slot < store->stock_num; slot++) {
-		/* Get the existing object */
-		temp_obj = store->stock_list[slot];
-		if (!temp_obj) continue;
-
+	for (temp_obj = store->stock; temp_obj; temp_obj = temp_obj->next) {
 		/* Can the existing items be incremented? */
 		if (object_similar(temp_obj, obj, OSTACK_STORE)) {
 			/* Absorb (some of) the object */
 			store_object_absorb(temp_obj, obj);
 
 			/* All done */
-			return (slot);
+			return temp_obj;
 		}
 	}
 
 	/* No space? */
 	if (store->stock_num >= store->stock_size)
-		return (-1);
+		return NULL;
 
 	/* Insert the new object */
 	obj->next = store->stock;
@@ -964,11 +934,7 @@ int store_carry(struct store *store, struct object *obj)
 	/* Rewrite the stock list */
 	store_stock_list(store);
 
-	/* Return the location */
-	for (slot = 0; slot < store->stock_num; slot++)
-		if (obj == store->stock_list[slot]) break;
-
-	return (slot);
+	return obj;
 }
 
 
@@ -1022,8 +988,12 @@ static void store_delete_index(struct store *store, int what)
 	/* Paranoia */
 	if (store->stock_num <= 0) return;
 
-	/* Get the object */
-	obj = store->stock_list[what];
+	/* Walk through list until we find our item */
+	obj = store->stock;
+	while (what--) {
+		assert(obj);
+		obj = obj->next;
+	}
 
 	/* Determine how many objects are in the slot */
 	num = obj->number;
@@ -1075,17 +1045,15 @@ static void store_delete_index(struct store *store, int what)
  * Find a given object kind in the store.
  */
 static struct object *store_find_kind(struct store *s, object_kind *k) {
-	int slot;
+	struct object *obj;
 
 	assert(s);
 	assert(k);
 
 	/* Check if it's already in stock */
-	for (slot = 0; slot < s->stock_num; slot++) {
-		if (!s->stock_list[slot]) continue;
-		if (s->stock_list[slot]->kind == k && !s->stock_list[slot]->ego) {
-			return s->stock_list[slot];
-		}
+	for (obj = s->stock; obj; obj = obj->next) {
+		if (obj->kind == k && !obj->ego)
+			return obj;
 	}
 
 	return NULL;
@@ -1124,7 +1092,7 @@ static void store_delete_random(struct store *store)
  */
 static bool black_market_ok(const struct object *obj)
 {
-	int i, j;
+	int i;
 
 	/* Ego items are always fine */
 	if (obj->ego) return TRUE;
@@ -1139,14 +1107,14 @@ static bool black_market_ok(const struct object *obj)
 
 	/* Check the other stores */
 	for (i = 0; i < MAX_STORES; i++) {
+		struct object *stock_obj;
+
 		/* Skip home and black market */
 		if (i == STORE_B_MARKET || i == STORE_HOME)
 			continue;
 
 		/* Check every object in the store */
-		for (j = 0; j < stores[i].stock_num; j++) {
-			struct object *stock_obj = stores[i].stock_list[j];
-
+		for (stock_obj = stores[i].stock; stock_obj; stock_obj = stock_obj->next) {
 			/* Compare object kinds */
 			if (obj->kind == stock_obj->kind)
 				return FALSE;
@@ -1253,7 +1221,7 @@ static bool store_create_random(struct store *store)
 		mass_produce(obj);
 
 		/* Attempt to carry the object */
-		if (store_carry(store, obj) < 0) {
+		if (!store_carry(store, obj)) {
 			object_delete(obj);
 			continue;
 		}
@@ -1268,9 +1236,9 @@ static bool store_create_random(struct store *store)
 
 /**
  * Helper function: create an item with the given tval,sval pair, add it to the
- * store st.  Return the slot in the inventory.
+ * store st.  Return the item in the inventory.
  */
-static int store_create_item(struct store *store, object_kind *kind)
+static struct object *store_create_item(struct store *store, object_kind *kind)
 {
 	struct object *obj = object_new();
 
@@ -1359,11 +1327,9 @@ void store_maint(struct store *s)
 			object_kind *kind = s->always_table[i];
 			struct object *obj = store_find_kind(s, kind);
 
-			if (!obj) {
-				/* Now create the item */
-				int slot = store_create_item(s, kind);
-				obj = s->stock_list[slot];
-			}
+			/* Create the item if it doesn't exist */
+			if (!obj)
+				obj = store_create_item(s, kind);
 
 			/* Snsure a full stack */
 			obj->number = z_info->stack_size;
@@ -1691,7 +1657,7 @@ void do_cmd_buy(struct command *cmd)
 	handle_stuff(player->upkeep);
 
 	/* Remove the bought objects from the store if it's not a staple */
-	if (!store_is_staple(store, store->stock_list[item]->kind)) {
+	if (!store_is_staple(store, obj->kind)) {
 		/* Reduce or remove the item */
 		if (obj->number > amt)
 			obj->number -= amt;
