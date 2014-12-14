@@ -434,13 +434,15 @@ void object_copy_amt(struct object *dest, struct object *src, int amt)
 }
 
 /**
- * Split off 'amt' items from 'src' into 'dest'.
+ * Split off 'amt' items from 'src' and return.
  *
  * Where object_copy_amt() makes `amt` new objects, this function leaves the
  * total number unchanged; otherwise the two functions are similar.
  */
-void object_split(struct object *dest, struct object *src, int amt)
+struct object *object_split(struct object *src, int amt)
 {
+	struct object *dest = object_new();
+
 	/* Get a copy of the object */
 	object_copy(dest, src);
 
@@ -456,6 +458,8 @@ void object_split(struct object *dest, struct object *src, int amt)
 	src->number -= amt;
 	if (src->note)
 		dest->note = src->note;
+
+	return dest;
 }
 
 /**
@@ -474,8 +478,7 @@ struct object *floor_object_for_use(struct object *obj, int num, bool message)
 
 	/* Split off a usable object if necessary */
 	if (obj->number > num) {
-		usable = mem_zalloc(sizeof(*usable));
-		object_split(usable, obj, num);
+		usable = object_split(obj, num);
 	} else {
 		usable = obj;
 		pile_object_excise(cave, player->py, player->px, usable);

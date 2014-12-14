@@ -482,8 +482,7 @@ void wield_all(struct player *p)
 		/* Split if necessary */
 		if (obj->number > 1) {
 			/* All but one go to the new object */
-			struct object *new = mem_zalloc(sizeof(*new));
-			object_split(new, obj, obj->number - 1);
+			struct object *new = object_split(obj, obj->number - 1);
 
 			/* Add to the pile of new objects to carry */
 			new->next = new_pile;

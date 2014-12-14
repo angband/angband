@@ -332,8 +332,7 @@ void wield_item(struct object *obj, int slot)
 	/* Split off a new object if necessary */
 	if (obj->number > 1) {
 		/* Split off a new single object */
-		wielded = mem_zalloc(sizeof(*wielded));
-		object_split(wielded, obj, 1);
+		wielded = object_split(obj, 1);
 
 		/* If it's a gear object, give the split item a list entry */
 		if (object_in_pile(player->gear, obj)) {
@@ -868,8 +867,7 @@ static void refill_lamp(struct object *lamp, struct object *obj)
 		/* Unstack if necessary */
 		if (obj->number > 1) {
 			/* Obtain a local object, split */
-			struct object *used = mem_zalloc(sizeof(*used));
-			object_split(used, obj, 1);
+			struct object *used = object_split(obj, 1);
 
 			/* Remove fuel */
 			used->timeout = 0;

@@ -424,8 +424,7 @@ struct object *gear_object_for_use(struct object *obj, int num, bool message)
 
 	/* Split off a usable object if necessary */
 	if (obj->number > num) {
-		usable = mem_zalloc(sizeof(*usable));
-		object_split(usable, obj, num);
+		usable = object_split(obj, num);
 	} else {
 		/* We're using the entire stack */
 		usable = obj;

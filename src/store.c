@@ -1358,15 +1358,15 @@ void store_maint(struct store *s)
 		for (i = 0; i < s->always_num; i++) {
 			object_kind *kind = s->always_table[i];
 			struct object *obj = store_find_kind(s, kind);
-			if (obj) {
-				/* ensure a full stack */
-				obj->number = z_info->stack_size;
-			} else {
+
+			if (!obj) {
 				/* Now create the item */
 				int slot = store_create_item(s, kind);
-				struct object *obj1 = s->stock_list[slot];
-				obj1->number = z_info->stack_size;
+				obj = s->stock_list[slot];
 			}
+
+			/* Snsure a full stack */
+			obj->number = z_info->stack_size;
 		}
 	}
 
