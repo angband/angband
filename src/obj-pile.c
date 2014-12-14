@@ -65,7 +65,6 @@ void pile_insert_end(struct object **pile, struct object *obj)
 	struct object *end = pile_last_item(*pile);
 
 	assert(obj->prev == NULL);
-	assert(obj->next == NULL);
 
 	if (end) {
 		end->next = obj;

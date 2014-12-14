@@ -485,12 +485,7 @@ void wield_all(struct player *p)
 			struct object *new = object_split(obj, obj->number - 1);
 
 			/* Add to the pile of new objects to carry */
-			new->next = new_pile;
-			new->prev = NULL;
-			if (new_pile)
-				new_pile->prev = new;
-			else
-				new_pile = new;
+			pile_insert(&new_pile, new);
 		}
 
 		/* Wear the new stuff */
@@ -501,16 +496,8 @@ void wield_all(struct player *p)
 	}
 
 	/* Now add the unwielded split objects to the gear */
-	if (new_pile) {
-		obj = gear_last_item();
-		if (obj) {
-			obj->next = new_pile;
-			new_pile->prev = obj;
-		} else {
-			/* This should be impossible */
-			p->gear = new_pile;
-		}
-	}
+	if (new_pile)
+		pile_insert_end(&player->gear, new_pile);
 
 	return;
 }
