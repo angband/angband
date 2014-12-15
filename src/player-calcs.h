@@ -38,7 +38,7 @@ enum
  */
 enum
 {
-	#define PF(a,b) PF_##a,
+	#define PF(a,b,c) PF_##a,
 	#include "list-player-flags.h"
 	#undef PF
 	PF_MAX
