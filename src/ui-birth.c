@@ -250,18 +250,11 @@ static const char *get_pflag_desc(bitflag flag)
 {
 	switch (flag)
 	{
-		case PF_EXTRA_SHOT: return "Gains extra shots with bow";
-		case PF_BRAVERY_30: return "Gains immunity to fear";
-		case PF_BLESS_WEAPON: return "Prefers blunt/blessed weapons";
-		case PF_CUMBER_GLOVE: return NULL;
-		case PF_ZERO_FAIL: return "Advanced spellcasting";
-		case PF_BEAM: return NULL;
-		case PF_CHOOSE_SPELLS: return NULL;
-		case PF_PSEUDO_ID_IMPROV: return NULL;
-		case PF_KNOW_MUSHROOM: return "Identifies mushrooms";
-		case PF_KNOW_ZAPPER: return "Identifies magic devices";
-		case PF_SEE_ORE: return "Senses ore/minerals";
-		default: return "Undocumented pflag";
+		#define PF(a,b,c) case PF_##a: return c;
+		#include "list-player-flags.h"
+		#undef PF
+	default:
+		abort(); /* compilation consistency problem */
 	}
 }
 
