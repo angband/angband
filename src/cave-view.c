@@ -19,6 +19,7 @@
 #include "angband.h"
 #include "cave.h"
 #include "cmds.h"
+#include "dungeon.h"
 #include "init.h"
 #include "monster.h"
 #include "player-timed.h"
@@ -539,7 +540,8 @@ static void update_one(struct chunk *c, int y, int x, int blind)
 		if (square_isfeel(c, y, x)) {
 			c->feeling_squares++;
 			sqinfo_off(c->squares[y][x].info, SQUARE_FEEL);
-			if (c->feeling_squares == FEELING1)
+			/* Don't display feeling if it will display for the new level */
+			if ((c->feeling_squares == FEELING1) && !character_xtra)
 				display_feeling(TRUE);
 		}
 
