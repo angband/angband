@@ -36,12 +36,7 @@
 #include "target.h"
 #include "trap.h"
 #include "ui-map.h"
-
-/*
- * Height of the help screen; any higher than 4 will overlap the health
- * bar which we want to keep in targeting mode.
- */
-#define HELP_HEIGHT 3
+#include "ui-target.h"
 
 /*** File-wide variables ***/
 
@@ -534,64 +529,6 @@ static void coords_desc(char *buf, int size, int y, int x)
 
 	strnfmt(buf, size, "%d %s, %d %s",
 		ABS(y-py), north_or_south, ABS(x-px), east_or_west);
-}
-
-/*
- * Display targeting help at the bottom of the screen.
- */
-static void target_display_help(bool monster, bool free)
-{
-	/* Determine help location */
-	int wid, hgt, help_loc;
-	Term_get_size(&wid, &hgt);
-	help_loc = hgt - HELP_HEIGHT;
-	
-	/* Clear */
-	clear_from(help_loc);
-
-	/* Prepare help hooks */
-	text_out_hook = text_out_to_screen;
-	text_out_indent = 1;
-	Term_gotoxy(1, help_loc);
-
-	/* Display help */
-	text_out_c(TERM_L_GREEN, "<dir>");
-	text_out(" and ");
-	text_out_c(TERM_L_GREEN, "<click>");
-	text_out(" look around. '");
-	text_out_c(TERM_L_GREEN, "g");
-	text_out(" moves to the selection. '");
-	text_out_c(TERM_L_GREEN, "p");
-	text_out("' selects the player. '");
-	text_out_c(TERM_L_GREEN, "q");
-	text_out("' exits. '");
-	text_out_c(TERM_L_GREEN, "r");
-	text_out("' displays details. '");
-
-	if (free)
-	{
-		text_out_c(TERM_L_GREEN, "m");
-		text_out("' restricts to interesting places. ");
-	}
-	else
-	{
-		text_out_c(TERM_L_GREEN, "+");
-		text_out("' and '");
-		text_out_c(TERM_L_GREEN, "-");
-		text_out("' cycle through interesting places. '");
-		text_out_c(TERM_L_GREEN, "o");
-		text_out("' allows free selection. ");
-	}
-	
-	if (monster || free)
-	{
-		text_out("'");
-		text_out_c(TERM_L_GREEN, "t");
-		text_out("' targets the current selection.");
-	}
-
-	/* Reset */
-	text_out_indent = 0;
 }
 
 /* Size of the array that is used for object names during targeting. */

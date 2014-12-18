@@ -185,6 +185,7 @@ ANGFILES = \
 	ui-player.o \
 	ui-spell.o \
 	ui-store.o \
+	ui-target.o \
 	wiz-debug.o \
 	wiz-spoil.o \
 	wiz-stats.o \
