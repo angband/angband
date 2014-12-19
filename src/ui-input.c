@@ -19,13 +19,14 @@
 #include "angband.h"
 #include "cmds.h"
 #include "dungeon.h"
-#include "target.h"
 #include "game-event.h"
 #include "init.h"
 #include "player-path.h"
 #include "randname.h"
 #include "signals.h"
+#include "target.h"
 #include "ui-player.h"
+#include "ui-target.h"
 #include "ui.h"
 
 static bool inkey_xtra;

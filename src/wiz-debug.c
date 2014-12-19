@@ -47,6 +47,7 @@
 #include "ui-input.h"
 #include "ui-map.h"
 #include "ui-menu.h"
+#include "ui-target.h"
 #include "wizard.h"
 
 

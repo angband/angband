@@ -36,6 +36,7 @@
 #include "ui-map.h"
 #include "ui-menu.h"
 #include "ui-player.h"
+#include "ui-target.h"
 #include "wizard.h"
 
 /*

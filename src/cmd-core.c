@@ -29,6 +29,7 @@
 #include "player-birth.h"
 #include "player-spell.h"
 #include "target.h"
+#include "ui-target.h"
 
 errr (*cmd_get_hook)(cmd_context c, bool wait);
 

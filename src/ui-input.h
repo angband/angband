@@ -36,6 +36,7 @@ extern bool (*get_file)(const char *suggested_name, char *path, size_t len);
 extern bool get_com(const char *prompt, struct keypress *command);
 extern bool get_com_ex(const char *prompt, ui_event *command);
 extern void pause_line(struct term *term);
+bool get_aim_dir(int *dp);
 
 /* ui-spell.c -- just for now */
 int get_spell_from_book(const char *verb, struct object *book,

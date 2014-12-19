@@ -41,6 +41,7 @@
 #include "ui-input.h"
 #include "ui-menu.h"
 #include "ui-player.h"
+#include "ui-target.h"
 #include "wizard.h"
 
 #define ADD_LABEL(text, cmd, valid) { \

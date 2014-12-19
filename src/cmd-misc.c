@@ -30,6 +30,7 @@
 #include "obj-util.h"
 #include "target.h"
 #include "ui-player.h"
+#include "ui-target.h"
 #include "wizard.h"
 
 
