@@ -57,17 +57,18 @@
 #define DEFAULT_TORCH FUEL_TORCH  /* Default amount of fuel in a torch */
 #define DEFAULT_LAMP  (FUEL_LAMP / 2)  /* Default amount of fuel in a lantern */
 
-void free_obj_alloc(void);
-bool init_obj_alloc(void);
-struct object_kind *get_obj_num(int level, bool good, int tval);
+void ego_apply_magic(struct object *o_ptr, int level);
+void copy_artifact_data(struct object *o_ptr, const struct artifact *a_ptr);
+void object_prep(struct object *o_ptr, struct object_kind *kind, int lev,
+				 aspect rand_aspect);
+int apply_magic(struct object *o_ptr, int lev, bool okay, bool good,
+				bool great, bool extra_roll);
 bool kind_is_good(const object_kind *kind);
-void object_prep(object_type *o_ptr, struct object_kind *kind, int lev, aspect rand_aspect);
-int apply_magic(object_type *o_ptr, int lev, bool okay, bool good, bool great, bool extra_roll);
+struct object_kind *get_obj_num(int level, bool good, int tval);
 struct object *make_object(struct chunk *c, int lev, bool good, bool great,
 						   bool extra_roll, s32b *value, int tval);
+void acquirement(int y1, int x1, int level, int num, bool great);
 struct object_kind *money_kind(const char *name, int value);
 struct object *make_gold(int lev, char *coin_type);
-void copy_artifact_data(object_type *o_ptr, const artifact_type *a_ptr);
-void ego_apply_magic(object_type *o_ptr, int level);
 
 #endif /* OBJECT_MAKE_H */

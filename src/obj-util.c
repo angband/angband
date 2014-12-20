@@ -1,6 +1,6 @@
 /**
  * \file obj-util.c
- * \brief Object list maintenance and other object utilities
+ * \brief Object utilities
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  *
@@ -290,28 +290,6 @@ bool is_unknown(const struct object *o_ptr)
 	map_info(o_ptr->iy, o_ptr->ix, &gd);
 	return gd.unseen_object;
 }	
-
-
-/**
- * Scatter some "great" objects near the player
- */
-void acquirement(int y1, int x1, int level, int num, bool great)
-{
-	struct object *nice_obj;
-
-	/* Acquirement */
-	while (num--) {
-		/* Make a good (or great) object (if possible) */
-		nice_obj = make_object(cave, level, TRUE, great, TRUE, NULL, 0);
-		if (!nice_obj) continue;
-
-		nice_obj->origin = ORIGIN_ACQUIRE;
-		nice_obj->origin_depth = player->depth;
-
-		/* Drop the object */
-		drop_near(cave, nice_obj, 0, y1, x1, TRUE);
-	}
-}
 
 
 /**

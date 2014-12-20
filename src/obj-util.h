@@ -1,6 +1,6 @@
 /**
  * \file obj-util.h
- * \brief Object list maintenance and other object utilities
+ * \brief Object utilities
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  *
@@ -31,7 +31,6 @@ void object_flags_known(const object_type *o_ptr, bitflag flags[OF_SIZE]);
 bool object_test(item_tester tester, const struct object *o);
 bool item_test(item_tester tester, int item);
 bool is_unknown(const object_type *o_ptr);
-void acquirement(int y1, int x1, int level, int num, bool great);
 unsigned check_for_inscrip(const object_type *o_ptr, const char *inscrip);
 struct object_kind *lookup_kind(int tval, int sval);
 struct object_kind *objkind_byid(int kidx);

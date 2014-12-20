@@ -23,6 +23,7 @@
 #include "init.h"
 #include "obj-gear.h"
 #include "obj-make.h"
+#include "obj-pile.h"
 #include "obj-power.h"
 #include "obj-slays.h"
 #include "obj-tval.h"
@@ -50,7 +51,7 @@ static void init_obj_make(void) {
 	int i, item, lev;
 	int k_max = z_info->k_max;
 	struct alloc_entry *table;
-	ego_item_type *e_ptr;
+	struct ego_item *e_ptr;
 	s16b num[MAX_DEPTH] = { 0 };
 	s16b aux[MAX_DEPTH] = { 0 };
 	int *money_svals;
@@ -213,7 +214,7 @@ static int get_new_attr(bitflag flags[OF_SIZE], bitflag newf[OF_SIZE])
 /**
  * Get a random new high resist on an item
  */
-static int random_high_resist(object_type *o_ptr, int *resist)
+static int random_high_resist(struct object *o_ptr, int *resist)
 {
 	int i, r, count = 0;
 
@@ -243,13 +244,13 @@ static int random_high_resist(object_type *o_ptr, int *resist)
 /**
  * Select an ego-item that fits the object's tval and sval.
  */
-static struct ego_item *ego_find_random(object_type *o_ptr, int level)
+static struct ego_item *ego_find_random(struct object *o_ptr, int level)
 {
 	int i, ood_chance;
 	long total = 0L;
 
 	alloc_entry *table = alloc_ego_table;
-	ego_item_type *ego;
+	struct ego_item *ego;
 	struct ego_poss_item *poss;
 
 	/* Go through all possible ego items and find ones which fit this item */
@@ -305,7 +306,7 @@ static struct ego_item *ego_find_random(object_type *o_ptr, int level)
 /**
  * Apply generation magic to an ego-item.
  */
-void ego_apply_magic(object_type *o_ptr, int level)
+void ego_apply_magic(struct object *o_ptr, int level)
 {
 	int i, x, resist = 0;
 	bitflag newf[OF_SIZE];
@@ -366,7 +367,7 @@ void ego_apply_magic(object_type *o_ptr, int level)
 /**
  * Apply minimum standards for ego-items.
  */
-static void ego_apply_minima(object_type *o_ptr)
+static void ego_apply_minima(struct object *o_ptr)
 {
 	int i;
 
@@ -393,7 +394,7 @@ static void ego_apply_minima(object_type *o_ptr)
  * Try to find an ego-item for an object, setting o_ptr->ego if successful and
  * applying various bonuses.
  */
-static void make_ego_item(object_type *o_ptr, int level)
+static void make_ego_item(struct object *o_ptr, int level)
 {
 	/* Cannot further improve artifacts or ego items */
 	if (o_ptr->artifact || o_ptr->ego) return;
@@ -423,7 +424,7 @@ static void make_ego_item(object_type *o_ptr, int level)
  * Copy artifact data to a normal object, and set various slightly hacky
  * globals.
  */
-void copy_artifact_data(object_type *o_ptr, const artifact_type *a_ptr)
+void copy_artifact_data(struct object *o_ptr, const struct artifact *a_ptr)
 {
 	int i;
 
@@ -478,8 +479,8 @@ static struct object *make_artifact_special(int level)
 
 	/* Check the special artifacts */
 	for (i = 0; i < z_info->a_max; ++i) {
-		artifact_type *art = &a_info[i];
-		object_kind *kind = lookup_kind(art->tval, art->sval);
+		struct artifact *art = &a_info[i];
+		struct object_kind *kind = lookup_kind(art->tval, art->sval);
 
 		/* Skip "empty" artifacts */
 		if (!art->name) continue;
@@ -570,8 +571,8 @@ static bool make_artifact(struct object *obj)
 
 	/* Check the artifact list (skip the "specials") */
 	for (i = 0; !obj->artifact && i < z_info->a_max; i++) {
-		artifact_type *art = &a_info[i];
-		object_kind *kind = lookup_kind(art->tval, art->sval);
+		struct artifact *art = &a_info[i];
+		struct object_kind *kind = lookup_kind(art->tval, art->sval);
 
 		/* Skip "empty" items */
 		if (!art->name) continue;
@@ -624,7 +625,7 @@ static bool make_artifact(struct object *obj)
 /**
  * Apply magic to a weapon.
  */
-static void apply_magic_weapon(object_type *o_ptr, int level, int power)
+static void apply_magic_weapon(struct object *o_ptr, int level, int power)
 {
 	if (power <= 0)
 		return;
@@ -652,7 +653,7 @@ static void apply_magic_weapon(object_type *o_ptr, int level, int power)
 /**
  * Apply magic to armour
  */
-static void apply_magic_armour(object_type *o_ptr, int level, int power)
+static void apply_magic_armour(struct object *o_ptr, int level, int power)
 {
 	if (power <= 0)
 		return;
@@ -753,8 +754,8 @@ void object_prep(struct object *o_ptr, struct object_kind *k, int lev,
  * Returns 0 if a normal object, 1 if a good object, 2 if an ego item, 3 if an
  * artifact.
  */
-int apply_magic(object_type *o_ptr, int lev, bool allow_artifacts,
-		bool good, bool great, bool extra_roll)
+int apply_magic(struct object *o_ptr, int lev, bool allow_artifacts, bool good,
+				bool great, bool extra_roll)
 {
 	int i;
 	s16b power = 0;
@@ -1045,6 +1046,28 @@ struct object *make_object(struct chunk *c, int lev, bool good, bool great,
 	}
 
 	return new_obj;
+}
+
+
+/**
+ * Scatter some objects near the player
+ */
+void acquirement(int y1, int x1, int level, int num, bool great)
+{
+	struct object *nice_obj;
+
+	/* Acquirement */
+	while (num--) {
+		/* Make a good (or great) object (if possible) */
+		nice_obj = make_object(cave, level, TRUE, great, TRUE, NULL, 0);
+		if (!nice_obj) continue;
+
+		nice_obj->origin = ORIGIN_ACQUIRE;
+		nice_obj->origin_depth = player->depth;
+
+		/* Drop the object */
+		drop_near(cave, nice_obj, 0, y1, x1, TRUE);
+	}
 }
 
 
