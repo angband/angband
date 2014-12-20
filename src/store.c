@@ -912,10 +912,10 @@ int store_carry(struct store *store, struct object *obj)
 	if (tval_is_light(obj)) {
 		if (!of_has(obj->flags, OF_NO_FUEL)) {
 			if (of_has(obj->flags, OF_BURNS_OUT))
-				obj->timeout = DEFAULT_TORCH;
+				obj->timeout = z_info->fuel_torch;
 
 			else if (of_has(obj->flags, OF_TAKES_FUEL))
-				obj->timeout = DEFAULT_LAMP;
+				obj->timeout = z_info->default_lamp;
 		}
 	} else if (tval_can_have_timeout(obj)) {
 		obj->timeout = 0;

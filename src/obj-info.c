@@ -1274,7 +1274,7 @@ static bool obj_known_light(const object_type *o_ptr, oinfo_detail_t mode, int *
 	}
 
 	if (is_light && of_has(flags, OF_TAKES_FUEL)) {
-		*refuel_turns = FUEL_LAMP;
+		*refuel_turns = z_info->fuel_lamp;
 	} else {
 		*refuel_turns = 0;
 	}

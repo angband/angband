@@ -84,6 +84,14 @@ struct angband_constants
 	u16b store_turns;		/**< Number of turns between turnovers */
 	u16b store_shuffle;		/**< 1/per-day-chance of owner changing */
 	u16b store_magic_level;	/**< Level for apply_magic() in normal stores */
+
+	/* Object creation constants, read from constants.txt */
+	u16b max_obj_depth;	/* Maximum depth used in object allocation */
+	u16b great_obj;		/* 1/chance of inflating the requested object level */
+	u16b great_ego;		/* 1/chance of inflating the requested ego item level */
+	u16b fuel_torch;	/* Maximum amount of fuel in a torch */
+	u16b fuel_lamp;		/* Maximum amount of fuel in a lantern */
+	u16b default_lamp;	/* Default amount of fuel in a lantern  */
 };
 
 struct init_module {

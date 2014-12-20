@@ -113,3 +113,24 @@ store:shuffle:25
 
 # Dungeon level to apply magic to objects for normal stores
 store:magic-level:5
+
+
+## Object generation ##
+
+# Maximum depth used in object allocation
+obj-make:max-depth:100
+
+# 1/chance of inflating the requested object level
+obj-make:great-obj:20
+
+# 1/chance of inflating the requested ego item level
+obj-make:great-ego:20
+
+# Maximum amount of fuel in a torch
+obj-make:fuel-torch:5000
+
+# Maximum amount of fuel in a lantern
+obj-make:fuel-lamp:15000
+
+# Default amount of fuel in a lantern
+obj-make:default-lamp:7500

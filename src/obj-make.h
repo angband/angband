@@ -1,6 +1,6 @@
 /**
-   \file obj-make.h
-   \brief Object generation functions.
+ * \file obj-make.h
+ * \brief Object generation functions.
  *
  * Copyright (c) 1987-2007 Angband contributors
  *
@@ -22,40 +22,16 @@
 #include "cave.h"
 
 /**
- * Don't worry about probabilities for anything past dlev100
- */
-#define MAX_O_DEPTH		100
-
-/**
- * The chance of inflating the requested object level (1/x).
- * Lower values yield better objects more often.
- */
-#define GREAT_OBJ   20
-
-/**
- * There is a 1/20 (5%) chance that ego-items with an inflated base-level are
- * generated when an object is turned into an ego-item (see make_ego_item()).
- * As above, lower values yield better ego-items more often.
- */
-#define GREAT_EGO   20
-
-/**
- * Define a value for minima which will be ignored.
+ * Define a value for minima which will be ignored (a replacement for 0,
+ * because 0 and some small negatives are valid values).
  */
 #define NO_MINIMUM 	255
 
 /**
- * The largest possible average gold drop at max depth with biggest spread
+ * (Roughly) the largest possible gold drop at max depth - this is actually
+ * derivable from make_gold(), but this is near enough
  */
 #define MAX_GOLD_DROP     (3 * MAX_DEPTH + 30)
-
-/**
- * Refueling constants
- */
-#define FUEL_TORCH    5000  /* Maximum amount of fuel in a torch */
-#define FUEL_LAMP     15000  /* Maximum amount of fuel in a lantern */
-#define DEFAULT_TORCH FUEL_TORCH  /* Default amount of fuel in a torch */
-#define DEFAULT_LAMP  (FUEL_LAMP / 2)  /* Default amount of fuel in a lantern */
 
 void ego_apply_magic(struct object *o_ptr, int level);
 void copy_artifact_data(struct object *o_ptr, const struct artifact *a_ptr);

@@ -12,10 +12,16 @@ int setup_tests(void **state) {
 	player = &test_player;
     player->body = test_player_body;
 	player->body.slots = &test_slot_light;
+	z_info = mem_zalloc(sizeof(struct angband_constants));
+	z_info->fuel_torch = 5000;
+	z_info->default_lamp = 7500;
     return 0;
 }
 
-NOTEARDOWN
+int teardown_tests(void **state) {
+	mem_free(z_info);
+	return 0;
+}
 
 /* Regression test for #1661 */
 int test_obj_can_refill(void *state) {

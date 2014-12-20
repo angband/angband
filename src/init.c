@@ -633,6 +633,36 @@ static enum parser_error parse_constants_store(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_constants_obj_make(struct parser *p) {
+	struct angband_constants *z;
+	const char *label;
+	int value;
+
+	z = parser_priv(p);
+	label = parser_getsym(p, "label");
+	value = parser_getint(p, "value");
+
+	if (value < 0)
+		return PARSE_ERROR_INVALID_VALUE;
+
+	if (streq(label, "max-depth"))
+		z->max_obj_depth = value;
+	else if (streq(label, "great-obj"))
+		z->great_obj = value;
+	else if (streq(label, "great-ego"))
+		z->great_ego = value;
+	else if (streq(label, "fuel-torch"))
+		z->fuel_torch = value;
+	else if (streq(label, "fuel-lamp"))
+		z->fuel_lamp = value;
+	else if (streq(label, "default-lamp"))
+		z->default_lamp = value;
+	else
+		return PARSE_ERROR_UNDEFINED_DIRECTIVE;
+
+	return PARSE_ERROR_NONE;
+}
+
 struct parser *init_parse_constants(void) {
 	struct angband_constants *z = mem_zalloc(sizeof *z);
 	struct parser *p = parser_new();
@@ -645,6 +675,7 @@ struct parser *init_parse_constants(void) {
 	parser_reg(p, "dun-dim sym label int value", parse_constants_dun_dim);
 	parser_reg(p, "carry-cap sym label int value", parse_constants_carry_cap);
 	parser_reg(p, "store sym label int value", parse_constants_store);
+	parser_reg(p, "obj-make sym label int value", parse_constants_obj_make);
 	return p;
 }
 

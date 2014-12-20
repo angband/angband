@@ -858,8 +858,8 @@ static void refill_lamp(struct object *lamp, struct object *obj)
 	msg("You fuel your lamp.");
 
 	/* Comment */
-	if (lamp->timeout >= FUEL_LAMP) {
-		lamp->timeout = FUEL_LAMP;
+	if (lamp->timeout >= z_info->fuel_lamp) {
+		lamp->timeout = z_info->fuel_lamp;
 		msg("Your lamp is full.");
 	}
 

@@ -59,8 +59,8 @@ static void init_obj_make(void) {
 	/*** Initialize object allocation info ***/
 
 	/* Allocate and wipe */
-	obj_alloc = mem_zalloc((MAX_O_DEPTH + 1) * k_max * sizeof(byte));
-	obj_alloc_great = mem_zalloc((MAX_O_DEPTH + 1) * k_max * sizeof(byte));
+	obj_alloc = mem_zalloc((z_info->max_obj_depth + 1) * k_max * sizeof(byte));
+	obj_alloc_great = mem_zalloc((z_info->max_obj_depth + 1) * k_max * sizeof(byte));
 
 	/* Init allocation data */
 	for (item = 1; item < k_max; item++)
@@ -74,7 +74,7 @@ static void init_obj_make(void) {
 		if (!kind->alloc_prob) continue;
 
 		/* Go through all the dungeon levels */
-		for (lev = 0; lev <= MAX_O_DEPTH; lev++)
+		for (lev = 0; lev <= z_info->max_obj_depth; lev++)
 		{
 			int rarity = kind->alloc_prob;
 
@@ -400,7 +400,7 @@ static void make_ego_item(struct object *o_ptr, int level)
 	if (o_ptr->artifact || o_ptr->ego) return;
 
 	/* Occasionally boost the generation level of an item */
-	if (level > 0 && one_in_(GREAT_EGO))
+	if (level > 0 && one_in_(z_info->great_ego))
 		level = 1 + (level * MAX_DEPTH / randint1(MAX_DEPTH));
 
 	/* Try to get a legal ego type for this item */
@@ -713,9 +713,9 @@ void object_prep(struct object *o_ptr, struct object_kind *k, int lev,
 	/* Default fuel */
 	if (tval_is_light(o_ptr)) {
 		if (of_has(o_ptr->flags, OF_BURNS_OUT))
-			o_ptr->timeout = DEFAULT_TORCH;
+			o_ptr->timeout = z_info->fuel_torch;
 		else if (of_has(o_ptr->flags, OF_TAKES_FUEL))
-			o_ptr->timeout = DEFAULT_LAMP;
+			o_ptr->timeout = z_info->default_lamp;
 	}
 
 	/* Default magic */
@@ -945,12 +945,12 @@ struct object_kind *get_obj_num(int level, bool good, int tval)
 	u32b value;
 
 	/* Occasional level boost */
-	if ((level > 0) && one_in_(GREAT_OBJ))
+	if ((level > 0) && one_in_(z_info->great_obj))
 		/* What a bizarre calculation */
-		level = 1 + (level * MAX_O_DEPTH / randint1(MAX_O_DEPTH));
+		level = 1 + (level * z_info->max_obj_depth / randint1(z_info->max_obj_depth));
 
 	/* Paranoia */
-	level = MIN(level, MAX_O_DEPTH);
+	level = MIN(level, z_info->max_obj_depth);
 	level = MAX(level, 0);
 
 	/* Pick an object */
