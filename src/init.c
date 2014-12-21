@@ -517,6 +517,10 @@ static enum parser_error parse_constants_mon_play(struct parser *p) {
 		z->life_drain_percent = value;
 	else if (streq(label, "flow-depth"))
 		z->max_flow_depth = value;
+	else if (streq(label, "flee-range"))
+		z->flee_range = value;
+	else if (streq(label, "turn-range"))
+		z->turn_range = value;
 	else
 		return PARSE_ERROR_UNDEFINED_DIRECTIVE;
 

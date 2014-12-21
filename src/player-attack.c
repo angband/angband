@@ -714,7 +714,7 @@ static struct attack_result make_ranged_throw(struct object *obj, int y, int x)
  */
 void do_cmd_fire(struct command *cmd) {
 	int dir;
-	int range = MIN(6 + 2 * player->state.ammo_mult, MAX_RANGE);
+	int range = MIN(6 + 2 * player->state.ammo_mult, z_info->max_range);
 	int shots = player->state.num_shots;
 
 	ranged_attack attack = make_ranged_shot;

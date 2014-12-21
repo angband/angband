@@ -20,6 +20,7 @@
 #include "cave.h"
 #include "game-event.h"
 #include "generate.h"
+#include "init.h"
 #include "mon-util.h"
 #include "player-timed.h"
 #include "project.h"
@@ -288,7 +289,7 @@ bool projectable(struct chunk *c, int y1, int x1, int y2, int x2, int flg)
 	struct loc grid_g[512];
 
 	/* Check the projection path */
-	grid_n = project_path(grid_g, MAX_RANGE, y1, x1, y2, x2, flg);
+	grid_n = project_path(grid_g, z_info->max_range, y1, x1, y2, x2, flg);
 
 	/* No grid is ever projectable from itself */
 	if (!grid_n) return (FALSE);
@@ -463,7 +464,7 @@ const char *gf_idx_to_name(int type)
  * If used with a direction, a ball will explode on the first occupied grid in 
  *   its path.  If given a target, it will explode on that target.  If a 
  *   wall is in the way, it will explode against the wall.  If a ball reaches 
- *   MAX_RANGE without hitting anything or reaching its target, it will 
+ *   z_info->max_range without hitting anything or reaching its target, it will 
  *   explode at that point.
  *
  * Arc:  (positive radius, with the PROJECT_ARC flag set)
@@ -605,7 +606,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 	bool player_sees_grid[256];
 
 	/* Precalculated damage values for each distance. */
-	int *dam_at_dist = malloc((MAX_RANGE + 1) * sizeof(*dam_at_dist));
+	int *dam_at_dist = malloc((z_info->max_range + 1) * sizeof(*dam_at_dist));
 
 	/* Flush any pending output */
 	handle_stuff(player->upkeep);
@@ -663,8 +664,9 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 	/* Otherwise, travel along the projection path. */
 	else {
 		/* Calculate the projection path */
-		num_path_grids = project_path(path_grid, MAX_RANGE, source.y, source.x,
-									  destination.y, destination.x, flg);
+		num_path_grids = project_path(path_grid, z_info->max_range, source.y,
+									  source.x, destination.y, destination.x,
+									  flg);
 
 		/* Start from caster */
 		y = source.y;
@@ -866,7 +868,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 	}
 
 	/* Calculate and store the actual damage at each distance. */
-	for (i = 0; i <= MAX_RANGE; i++) {
+	for (i = 0; i <= z_info->max_range; i++) {
 		/* No damage outside the radius. */
 		if (i > rad)
 			dam_temp = 0;

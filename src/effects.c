@@ -2144,7 +2144,8 @@ bool effect_handler_AGGRAVATE(effect_handler_context_t *context)
 		if (m_ptr == who) continue;
 
 		/* Wake up nearby sleeping monsters */
-		if ((m_ptr->cdis < MAX_SIGHT * 2) && m_ptr->m_timed[MON_TMD_SLEEP]) {
+		if ((m_ptr->cdis < z_info->max_sight * 2) &&
+			m_ptr->m_timed[MON_TMD_SLEEP]) {
 			mon_clear_timed(m_ptr, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, FALSE);
 			sleep = TRUE;
 			context->ident = TRUE;
@@ -2301,7 +2302,7 @@ bool effect_handler_BANISH(effect_handler_context_t *context)
 bool effect_handler_MASS_BANISH(effect_handler_context_t *context)
 {
 	int i;
-	int radius = context->p2 ? context->p2 : MAX_SIGHT;
+	int radius = context->p2 ? context->p2 : z_info->max_sight;
 	unsigned dam = 0;
 
 	context->ident = TRUE;

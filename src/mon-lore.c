@@ -1491,8 +1491,7 @@ static void lore_append_awareness(textblock *tb, const monster_race *race,
 		textblock_append(tb, "%s %s intruders, which %s may notice from ",
 						 lore_pronoun_nominative(msex, TRUE), aware,
 						 lore_pronoun_nominative(msex, FALSE));
-		textblock_append_c(tb, TERM_L_BLUE, "%d",
-						   (OPT(birth_small_range) ? 5 : 10) * race->aaf);
+		textblock_append_c(tb, TERM_L_BLUE, "%d", 10 * race->aaf);
 		textblock_append(tb, " feet.  ");
 	}
 }

@@ -236,7 +236,7 @@ void update_mon(struct monster *m_ptr, struct chunk *c, bool full)
 		telepathy_ok = FALSE;
 
 	/* Nearby */
-	if (d <= MAX_SIGHT) {
+	if (d <= z_info->max_sight) {
 		/* Basic telepathy */
 		if (player_of_has(player, OF_TELEPATHY) && telepathy_ok) {
 			/* Empty mind, no telepathy */

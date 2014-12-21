@@ -512,7 +512,7 @@ static void add_monster_lights(struct chunk *c, struct loc from)
 					continue;
 
 				/* If the tile is too far away we won't light it */
-				if (distance(from.y, from.x, sy, sx) > MAX_SIGHT)
+				if (distance(from.y, from.x, sy, sx) > z_info->max_sight)
 					continue;
 				
 				/* If the tile itself isn't in LOS, don't light it */
@@ -595,7 +595,7 @@ static void update_view_one(struct chunk *c, int y, int x, int radius, int py, i
 	int d = distance(y, x, py, px);
 	int lit = d < radius;
 
-	if (d > MAX_SIGHT)
+	if (d > z_info->max_sight)
 		return;
 
 	/* Special case for wall lighting. If we are a wall and the square in

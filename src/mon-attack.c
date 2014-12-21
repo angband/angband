@@ -272,10 +272,10 @@ bool make_attack_spell(struct monster *m_ptr)
 	if (randint0(100) >= chance) return FALSE;
 
 	/* Hack -- require projectable player */
-	if (normal)
-	{
+	if (normal) {
 		/* Check range */
-		if (m_ptr->cdis > MAX_RANGE) return FALSE;
+		if (m_ptr->cdis > z_info->max_range)
+			return FALSE;
 
 		/* Check path */
 		if (!projectable(cave, m_ptr->fy, m_ptr->fx, py, px, PROJECT_NONE))
@@ -677,7 +677,7 @@ bool make_attack_normal(struct monster *m_ptr, struct player *p)
 	if (blinked) {
 		char dice[5];
 		msg("There is a puff of smoke!");
-		strnfmt(dice, sizeof(dice), "%d", MAX_SIGHT * 2 + 5);
+		strnfmt(dice, sizeof(dice), "%d", z_info->max_sight * 2 + 5);
 		effect_simple(EF_TELEPORT, dice, 0, 0, 0, NULL);
 	}
 

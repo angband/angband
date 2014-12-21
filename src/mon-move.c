@@ -46,17 +46,6 @@
 
 
 /**
- * Monsters will run up to 5 grids out of sight
- */
-#define FLEE_RANGE      MAX_SIGHT + 5
-
-/**
- * Terrified monsters will turn to fight if they are slower than the
- * character, and closer than this distance.
- */
-#define TURN_RANGE      5
-
-/**
  * Given a central direction at position [dir #][0], return a series
  * of directions radiating out on both sides from the central direction
  * all the way back to its rear.
@@ -101,9 +90,12 @@ static void find_range(monster_type *m_ptr)
 	u16b m_chp, m_mhp;
 	u32b p_val, m_val;
 
+	/* Monsters will run up to z_info->flee_range grids out of sight */
+	int flee_range = z_info->max_sight + z_info->flee_range;
+
 	/* All "afraid" monsters will run away */
 	if (m_ptr->m_timed[MON_TMD_FEAR])
-		m_ptr->min_range = FLEE_RANGE;
+		m_ptr->min_range = flee_range;
 
 	else {
 
@@ -120,7 +112,7 @@ static void find_range(monster_type *m_ptr)
 
 		/* Simple cases first */
 		if (m_lev + 3 < p_lev)
-			m_ptr->min_range = FLEE_RANGE;
+			m_ptr->min_range = flee_range;
 		else if (m_lev - 5 < p_lev) {
 
 			/* Examine player health */
@@ -137,11 +129,11 @@ static void find_range(monster_type *m_ptr)
 
 			/* Strong players scare strong monsters */
 			if (p_val * m_mhp > m_val * p_mhp)
-				m_ptr->min_range = FLEE_RANGE;
+				m_ptr->min_range = flee_range;
 		}
 	}
 
-	if (m_ptr->min_range < FLEE_RANGE) {
+	if (m_ptr->min_range < flee_range) {
 		/* Creatures that don't move never like to get too close */
 		if (rf_has(m_ptr->race->flags, RF_NEVER_MOVE))
 			m_ptr->min_range += 3;
@@ -152,11 +144,11 @@ static void find_range(monster_type *m_ptr)
 	}
 
 	/* Maximum range to flee to */
-	if (!(m_ptr->min_range < FLEE_RANGE))
-		m_ptr->min_range = FLEE_RANGE;
+	if (!(m_ptr->min_range < flee_range))
+		m_ptr->min_range = flee_range;
 
 	/* Nearby monsters won't run away */
-	else if (m_ptr->cdis < TURN_RANGE)
+	else if (m_ptr->cdis < z_info->turn_range)
 		m_ptr->min_range = 1;
 
 	/* Now find preferred range */
@@ -286,7 +278,7 @@ static bool get_moves_flow(struct chunk *c, struct monster *m_ptr)
 
 	/* Monster is too far away to notice the player */
 	if (c->squares[my][mx].cost > z_info->max_flow_depth) return FALSE;
-	if (c->squares[my][mx].cost > (OPT(birth_small_range) ? m_ptr->race->aaf / 2 : m_ptr->race->aaf)) return FALSE;
+	if (c->squares[my][mx].cost > m_ptr->race->aaf) return FALSE;
 
 	/* If the player can see monster, run towards them */
 	if (player_has_los_bold(my, mx)) return FALSE;
@@ -347,8 +339,7 @@ static bool get_moves_fear(struct chunk *c, struct monster *m_ptr)
 
 	/* Monster is too far away to use flow information */
 	if (c->squares[my][mx].cost > z_info->max_flow_depth) return FALSE;
-	if (c->squares[my][mx].cost > (OPT(birth_small_range) ? m_ptr->race->aaf / 2 :
-						   m_ptr->race->aaf)) return FALSE;
+	if (c->squares[my][mx].cost > m_ptr->race->aaf) return FALSE;
 
 	/* Check nearby grids, diagonals first */
 	for (i = 7; i >= 0; i--)
@@ -789,6 +780,9 @@ static bool get_moves(struct chunk *c, struct monster *m_ptr, int *dir)
 
 	int y, x;
 
+	/* Monsters will run up to z_info->flee_range grids out of sight */
+	int flee_range = z_info->max_sight + z_info->flee_range;
+
 	bool done = FALSE;
 
 	/* Calculate range */
@@ -835,7 +829,7 @@ static bool get_moves(struct chunk *c, struct monster *m_ptr, int *dir)
 	}
 
 	/* Apply fear */
-	if (!done && (m_ptr->min_range == FLEE_RANGE)) {
+	if (!done && (m_ptr->min_range == flee_range)) {
 		/* Try to find safe place */
 		if (!find_safety(c, m_ptr)) {
 			/* Just leg it away from the player */
@@ -891,14 +885,13 @@ static bool monster_can_flow(struct chunk *c, struct monster *mon)
 {
 	int fy = mon->fy;
 	int fx = mon->fx;
-	int dist = (OPT(birth_small_range) ? mon->race->aaf / 2 : mon->race->aaf);
 
 	assert(c);
 
 	/* Check the flow (normal aaf is about 20) */
 	if ((c->squares[fy][fx].when == c->squares[player->py][player->px].when) &&
 	    (c->squares[fy][fx].cost < z_info->max_flow_depth) &&
-	    (c->squares[fy][fx].cost < dist))
+	    (c->squares[fy][fx].cost < mon->race->aaf))
 		return TRUE;
 	return FALSE;
 }
@@ -908,10 +901,8 @@ static bool monster_can_flow(struct chunk *c, struct monster *mon)
  */
 static bool monster_check_active(struct chunk *c, struct monster *mon)
 {
-	int dist = (OPT(birth_small_range) ? mon->race->aaf / 2 : mon->race->aaf);
-
 	/* Character is inside scanning range */
-	if (mon->cdis <= dist)
+	if (mon->cdis <= mon->race->aaf)
 		mflag_on(mon->mflag, MFLAG_ACTIVE);
 
 	/* Monster is hurt */

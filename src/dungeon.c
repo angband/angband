@@ -466,7 +466,9 @@ static void process_world(struct chunk *c)
 
 	/* Check for creature generation */
 	if (one_in_(z_info->alloc_monster_chance))
-		(void)pick_and_place_distant_monster(cave, loc(player->px, player->py), MAX_SIGHT + 5, TRUE, player->depth);
+		(void)pick_and_place_distant_monster(cave, loc(player->px, player->py),
+											 z_info->max_sight + 5, TRUE,
+											 player->depth);
 
 	/*** Damage over Time ***/
 

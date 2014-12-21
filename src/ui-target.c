@@ -957,8 +957,8 @@ bool target_set_interactive(int mode, int x, int y)
 	ui_event press;
 
 	/* These are used for displaying the path to the target */
-	wchar_t path_char[MAX_RANGE_LGE];
-	int path_attr[MAX_RANGE_LGE];
+	wchar_t *path_char = mem_zalloc(z_info->max_range * sizeof(wchar_t));
+	int *path_attr = mem_zalloc(z_info->max_range * sizeof(int));
 	struct point_set *targets;
 
 	/* If we haven't been given an initial location, start on the
@@ -1007,15 +1007,18 @@ bool target_set_interactive(int mode, int x, int y)
 			/* Update help */
 			if (help) {
 				bool good_target = target_able(square_monster(cave, y, x));
-				target_display_help(good_target, !(flag && point_set_size(targets)));
+				target_display_help(good_target,
+									!(flag && point_set_size(targets)));
 			}
 
 			/* Find the path. */
-			path_n = project_path(path_g, MAX_RANGE, py, px, y, x, PROJECT_THRU);
+			path_n = project_path(path_g, z_info->max_range, py, px, y, x,
+								  PROJECT_THRU);
 
 			/* Draw the path in "target" mode. If there is one */
 			if (mode & (TARGET_KILL))
-				path_drawn = draw_path(path_n, path_g, path_char, path_attr, py, px);
+				path_drawn = draw_path(path_n, path_g, path_char, path_attr,
+									   py, px);
 
 			/* Describe and Prompt */
 			press = target_set_interactive_aux(y, x, mode);
@@ -1245,11 +1248,13 @@ bool target_set_interactive(int mode, int x, int y)
 			}
 
 			/* Find the path. */
-			path_n = project_path(path_g, MAX_RANGE, py, px, y, x, PROJECT_THRU);
+			path_n = project_path(path_g, z_info->max_range, py, px, y, x,
+								  PROJECT_THRU);
 
 			/* Draw the path in "target" mode. If there is one */
 			if (mode & (TARGET_KILL))
-				path_drawn = draw_path (path_n, path_g, path_char, path_attr, py, px);
+				path_drawn = draw_path (path_n, path_g, path_char, path_attr,
+										py, px);
 
 			/* Describe and Prompt (enable "TARGET_LOOK") */
 			press = target_set_interactive_aux(y, x, mode | TARGET_LOOK);
@@ -1512,6 +1517,9 @@ bool target_set_interactive(int mode, int x, int y)
 
 	/* Handle stuff */
 	handle_stuff(player->upkeep);
+
+	mem_free(path_attr);
+	mem_free(path_char);
 
 	/* Failure to set target */
 	if (!target_is_set()) return (FALSE);

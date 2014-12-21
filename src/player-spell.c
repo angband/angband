@@ -1,6 +1,6 @@
 /**
-   \file player-spell.c
-   \brief Spell and prayer casting/praying
+ * \file player-spell.c
+ * \brief Spell and prayer casting/praying
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  *
@@ -20,6 +20,7 @@
 #include "cave.h"
 #include "cmd-core.h"
 #include "effects.h"
+#include "init.h"
 #include "monster.h"
 #include "obj-tval.h"
 #include "obj-util.h"
@@ -591,7 +592,7 @@ static int spell_value_base_player_level(void)
 
 static int spell_value_base_max_sight(void)
 {
-	return MAX_SIGHT;
+	return z_info->max_sight;
 }
 
 expression_base_value_f spell_value_base_by_name(const char *name)

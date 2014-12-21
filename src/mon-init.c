@@ -531,7 +531,8 @@ static enum parser_error parse_monster_info(struct parser *p) {
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 	r->speed = parser_getint(p, "speed");
 	r->avg_hp = parser_getint(p, "hp");
-	r->aaf = parser_getint(p, "aaf");
+	/* Area of action assumes max_sight is 20, so we adjust in case it isn't */
+	r->aaf = parser_getint(p, "aaf") * 20 / z_info->max_sight;
 	r->ac = parser_getint(p, "ac");
 	r->sleep = parser_getint(p, "sleep");
 	return PARSE_ERROR_NONE;

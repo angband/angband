@@ -6,12 +6,15 @@
 #include "monster.h"
 
 int setup_tests(void **state) {
+	z_info = mem_zalloc(sizeof(struct angband_constants));
+	z_info->max_sight = 20;
 	*state = init_parse_monster();
 	return !*state;
 }
 
 int teardown_tests(void *state) {
 	parser_destroy(state);
+	mem_free(z_info);
 	return 0;
 }
 

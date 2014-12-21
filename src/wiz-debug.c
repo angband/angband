@@ -2182,7 +2182,7 @@ void do_cmd_debug(void)
 		{
 			int n;
 			screen_save();
-			n = get_quantity("Zap within what distance? ", MAX_SIGHT);
+			n = get_quantity("Zap within what distance? ", z_info->max_sight);
 			screen_load();
 			do_cmd_wiz_zap(n);
 			break;

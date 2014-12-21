@@ -45,6 +45,13 @@ mon-play:life-drain:2
 # Maximum flow depth when using for monster flow calculation
 mon-play:flow-depth:32
 
+# Monsters will run up to this many grids out of sight
+mon-play:flee-range:5
+
+# Terrified monsters will turn to fight if they are slower than the character,
+# and closer than this distance.
+mon-play:turn-range:5
+
 ## Dungeon Generation ##
 
 # Number of possible room centres (and hence rooms) on a normal level

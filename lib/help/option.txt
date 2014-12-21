@@ -191,12 +191,6 @@ Word of Recall has no effect '[birth_no_recall]'
   Word of Recall scrolls have no effect.  When combined with the option
   to force player descent, this recreates the previous "ironman" option.
 
-.. _birth_small_range:
-
-Halve view and spell distances '[birth_small_range]'
-  Distance of seeing, casting spells, shooting and so on are all halved.
-  This is useful for playing with large tiles, or on small devices.
-
 .. _birth_no_artifacts:
 
 Restrict the creation of artifacts '[birth_no_artifacts]'

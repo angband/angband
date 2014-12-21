@@ -71,8 +71,6 @@ OP(birth_randarts,        "Randomise the artifacts (except a very few)",
 BIRTH, FALSE)
 OP(birth_no_recall,       "Word of Recall has no effect",
 BIRTH, FALSE)
-OP(birth_small_range,     "Halve view and spell distances",
-BIRTH, FALSE)
 OP(birth_no_artifacts,    "Restrict creation of artifacts",
 BIRTH, FALSE)
 OP(birth_no_stacking,     "Don't stack objects on the floor",
