@@ -396,7 +396,7 @@ static enum parser_error parse_v_x(struct parser *p) {
 	v->wid = parser_getuint(p, "width");
 	v->min_lev = parser_getuint(p, "min_lev");
 	max_lev = parser_getuint(p, "max_lev");
-	v->max_lev = max_lev ? max_lev : MAX_DEPTH;
+	v->max_lev = max_lev ? max_lev : z_info->max_depth;
 
 	/* Make sure vaults are no bigger than the room profiles allow. */
 	if (v->typ == 6 && (v->wid > 33 || v->hgt > 22))

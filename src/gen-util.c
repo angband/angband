@@ -403,7 +403,7 @@ static void place_stairs(struct chunk *c, int y, int x, int feat)
 {
     if (!c->depth)
 		square_set_feat(c, y, x, FEAT_MORE);
-    else if (is_quest(c->depth) || c->depth >= MAX_DEPTH - 1)
+    else if (is_quest(c->depth) || c->depth >= z_info->max_depth - 1)
 		square_set_feat(c, y, x, FEAT_LESS);
     else
 		square_set_feat(c, y, x, feat);

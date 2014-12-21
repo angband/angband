@@ -85,8 +85,8 @@ void do_cmd_go_down(struct command *cmd)
 		return;
 	}
 
-	/* Paranoia, no descent from MAX_DEPTH - 1 */
-	if (player->depth == MAX_DEPTH - 1) {
+	/* Paranoia, no descent from z_info->max_depth - 1 */
+	if (player->depth == z_info->max_depth - 1) {
 		msg("The dungeon does not appear to extend deeper");
 		return;
 	}
@@ -98,7 +98,7 @@ void do_cmd_go_down(struct command *cmd)
 			return;
 
 		/* Don't overshoot */
-		descend_to = MIN(player->max_depth + 1, MAX_DEPTH - 1);
+		descend_to = MIN(player->max_depth + 1, z_info->max_depth - 1);
 	}
 
 	/* Hack -- take a turn */

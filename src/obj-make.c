@@ -30,10 +30,10 @@
 #include "obj-util.h"
 
 /** Arrays holding an index of objects to generate for a given level */
-static u32b obj_total[MAX_DEPTH] = { 0 };
+static u32b *obj_total;
 static byte *obj_alloc;
 
-static u32b obj_total_great[MAX_DEPTH] = { 0 };
+static u32b *obj_total_great;
 static byte *obj_alloc_great;
 
 static s16b alloc_ego_size = 0;
@@ -52,8 +52,8 @@ static void init_obj_make(void) {
 	int k_max = z_info->k_max;
 	struct alloc_entry *table;
 	struct ego_item *e_ptr;
-	s16b num[MAX_DEPTH] = { 0 };
-	s16b aux[MAX_DEPTH] = { 0 };
+	s16b *num;
+	s16b *aux;
 	int *money_svals;
 
 	/*** Initialize object allocation info ***/
@@ -61,11 +61,12 @@ static void init_obj_make(void) {
 	/* Allocate and wipe */
 	obj_alloc = mem_zalloc((z_info->max_obj_depth + 1) * k_max * sizeof(byte));
 	obj_alloc_great = mem_zalloc((z_info->max_obj_depth + 1) * k_max * sizeof(byte));
+	obj_total = mem_zalloc((z_info->max_obj_depth + 1) * sizeof(u32b));
+	obj_total_great = mem_zalloc((z_info->max_obj_depth + 1) * sizeof(u32b));
 
 	/* Init allocation data */
-	for (item = 1; item < k_max; item++)
-	{
-		const object_kind *kind = &k_info[item];
+	for (item = 1; item < k_max; item++) {
+		const struct object_kind *kind = &k_info[item];
 
 		int min = kind->alloc_min;
 		int max = kind->alloc_max;
@@ -74,8 +75,7 @@ static void init_obj_make(void) {
 		if (!kind->alloc_prob) continue;
 
 		/* Go through all the dungeon levels */
-		for (lev = 0; lev <= z_info->max_obj_depth; lev++)
-		{
+		for (lev = 0; lev <= z_info->max_obj_depth; lev++) {
 			int rarity = kind->alloc_prob;
 
 			/* Save the probability in the standard table */
@@ -92,15 +92,16 @@ static void init_obj_make(void) {
 
 	/*** Initialize ego-item allocation info ***/
 
+	num = mem_zalloc((z_info->max_obj_depth + 1) * sizeof(s16b));
+	aux = mem_zalloc((z_info->max_obj_depth + 1) * sizeof(s16b));
+
 	/* Scan the ego items */
-	for (i = 1; i < z_info->e_max; i++)
-	{
+	for (i = 1; i < z_info->e_max; i++) {
 		/* Get the i'th ego item */
 		e_ptr = &e_info[i];
 
 		/* Legal items */
-		if (e_ptr->rarity)
-		{
+		if (e_ptr->rarity) {
 			/* Count the entries */
 			alloc_ego_size++;
 
@@ -110,11 +111,8 @@ static void init_obj_make(void) {
 	}
 
 	/* Collect the level indexes */
-	for (i = 1; i < MAX_DEPTH; i++)
-	{
-		/* Group by level */
+	for (i = 1; i < z_info->max_obj_depth; i++)
 		num[i] += num[i - 1];
-	}
 
 	/* Allocate the alloc_ego_table */
 	alloc_ego_table = mem_zalloc(alloc_ego_size * sizeof(alloc_entry));
@@ -123,14 +121,12 @@ static void init_obj_make(void) {
 	table = alloc_ego_table;
 
 	/* Scan the ego-items */
-	for (i = 1; i < z_info->e_max; i++)
-	{
+	for (i = 1; i < z_info->e_max; i++) {
 		/* Get the i'th ego item */
 		e_ptr = &e_info[i];
 
 		/* Count valid pairs */
-		if (e_ptr->rarity)
-		{
+		if (e_ptr->rarity) {
 			int p, x, y, z;
 
 			/* Extract the base level */
@@ -156,6 +152,8 @@ static void init_obj_make(void) {
 			aux[x]++;
 		}
 	}
+	mem_free(aux);
+	mem_free(num);
 
 	/*** Initialize money info ***/
 
@@ -181,6 +179,8 @@ static void cleanup_obj_make(void) {
 	}
 	mem_free(money_type);
 	mem_free(alloc_ego_table);
+	mem_free(obj_total_great);
+	mem_free(obj_total);
 	mem_free(obj_alloc_great);
 	mem_free(obj_alloc);
 }
@@ -401,7 +401,7 @@ static void make_ego_item(struct object *o_ptr, int level)
 
 	/* Occasionally boost the generation level of an item */
 	if (level > 0 && one_in_(z_info->great_ego))
-		level = 1 + (level * MAX_DEPTH / randint1(MAX_DEPTH));
+		level = 1 + (level * z_info->max_depth / randint1(z_info->max_depth));
 
 	/* Try to get a legal ego type for this item */
 	o_ptr->ego = ego_find_random(o_ptr, level);
@@ -1079,6 +1079,10 @@ void acquirement(int y1, int x1, int level, int num, bool great)
 struct object_kind *money_kind(const char *name, int value)
 {
 	int rank;
+	/* (Roughly) the largest possible gold drop at max depth - the precise
+	 * value is derivable from the calculations in make_gold(), but this is
+	 * near enough */
+	int max_gold_drop = 3 * z_info->max_depth + 30;
 
 	/* Check for specified treasure variety */
 	for (rank = 0; rank < num_money_types; rank++)
@@ -1087,7 +1091,7 @@ struct object_kind *money_kind(const char *name, int value)
 
 	/* Pick a treasure variety scaled by level */
 	if (rank == num_money_types)
-		rank = (((value * 100) / MAX_GOLD_DROP) * num_money_types) / 100;
+		rank = (((value * 100) / max_gold_drop) * num_money_types) / 100;
 
 	/* Do not create illegal treasure types */
 	if (rank >= num_money_types) rank = num_money_types - 1;

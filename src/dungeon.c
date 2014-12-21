@@ -703,7 +703,7 @@ static void process_world(struct chunk *c)
                 
                 /* Force descent to a lower level if allowed */
                 if (OPT(birth_force_descend) &&
-					player->max_depth < MAX_DEPTH - 1 &&
+					player->max_depth < z_info->max_depth - 1 &&
 					!is_quest(player->max_depth)) {
                     player->max_depth = player->max_depth + 1;
                 }
@@ -726,7 +726,7 @@ static void process_world(struct chunk *c)
 			/* Calculate target depth */
 			for (i = 5; i > 0; i--) {
 				if (is_quest(target_depth)) break;
-				if (target_depth >= MAX_DEPTH - 1) break;
+				if (target_depth >= z_info->max_depth - 1) break;
 				
 				target_depth++;
 			}

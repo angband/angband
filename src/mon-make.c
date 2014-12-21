@@ -44,27 +44,19 @@ static void init_race_allocs(void) {
 	int i;
 	monster_race *r_ptr;
 	alloc_entry *table;
-	s16b num[MAX_DEPTH];
-	s16b aux[MAX_DEPTH];
-
-	/* Clear the "aux" array */
-	(void)C_WIPE(aux, MAX_DEPTH, s16b);
-
-	/* Clear the "num" array */
-	(void)C_WIPE(num, MAX_DEPTH, s16b);
+	s16b *num = mem_zalloc(z_info->max_depth * sizeof(s16b));
+	s16b *aux = mem_zalloc(z_info->max_depth * sizeof(s16b));
 
 	/* Size of "alloc_race_table" */
 	alloc_race_size = 0;
 
 	/* Scan the monsters (not the ghost) */
-	for (i = 1; i < z_info->r_max - 1; i++)
-	{
+	for (i = 1; i < z_info->r_max - 1; i++) {
 		/* Get the i'th race */
 		r_ptr = &r_info[i];
 
 		/* Legal monsters */
-		if (r_ptr->rarity)
-		{
+		if (r_ptr->rarity) {
 			/* Count the entries */
 			alloc_race_size++;
 
@@ -74,10 +66,9 @@ static void init_race_allocs(void) {
 	}
 
 	/* Collect the level indexes */
-	for (i = 1; i < MAX_DEPTH; i++)
-	{
+	for (i = 1; i < z_info->max_depth; i++) {
 		/* Group by level */
-		num[i] += num[i-1];
+		num[i] += num[i - 1];
 	}
 
 	/* Paranoia */
@@ -87,20 +78,18 @@ static void init_race_allocs(void) {
 	/*** Initialize monster allocation info ***/
 
 	/* Allocate the alloc_race_table */
-	alloc_race_table = C_ZNEW(alloc_race_size, alloc_entry);
+	alloc_race_table = mem_zalloc(alloc_race_size * sizeof(alloc_entry));
 
 	/* Get the table entry */
 	table = alloc_race_table;
 
 	/* Scan the monsters (not the ghost) */
-	for (i = 1; i < z_info->r_max - 1; i++)
-	{
+	for (i = 1; i < z_info->r_max - 1; i++) {
 		/* Get the i'th race */
 		r_ptr = &r_info[i];
 
 		/* Count valid pairs */
-		if (r_ptr->rarity)
-		{
+		if (r_ptr->rarity) {
 			int p, x, y, z;
 
 			/* Extract the base level */
@@ -126,11 +115,12 @@ static void init_race_allocs(void) {
 			aux[x]++;
 		}
 	}
-
+	mem_free(aux);
+	mem_free(num);
 }
 
 static void cleanup_race_allocs(void) {
-	FREE(alloc_race_table);
+	mem_free(alloc_race_table);
 }
 
 /**

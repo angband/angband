@@ -851,7 +851,7 @@ bool effect_handler_DEEP_DESCENT(effect_handler_context_t *context)
 	/* Calculate target depth */
 	for (i = 5; i > 0; i--) {
 		if (is_quest(target_depth)) break;
-		if (target_depth >= MAX_DEPTH - 1) break;
+		if (target_depth >= z_info->max_depth - 1) break;
 
 		target_depth++;
 	}
@@ -2753,7 +2753,7 @@ bool effect_handler_TELEPORT_LEVEL(effect_handler_context_t *context)
 		down = FALSE;
 
 	/* Can't leave quest levels or go down deeper than the dungeon */
-	if (is_quest(player->depth) || (player->depth >= MAX_DEPTH - 1))
+	if (is_quest(player->depth) || (player->depth >= z_info->max_depth - 1))
 		down = FALSE;
 
 	/* Determine up/down if not already done */

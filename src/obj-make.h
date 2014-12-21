@@ -27,12 +27,6 @@
  */
 #define NO_MINIMUM 	255
 
-/**
- * (Roughly) the largest possible gold drop at max depth - this is actually
- * derivable from make_gold(), but this is near enough
- */
-#define MAX_GOLD_DROP     (3 * MAX_DEPTH + 30)
-
 void ego_apply_magic(struct object *o_ptr, int level);
 void copy_artifact_data(struct object *o_ptr, const struct artifact *a_ptr);
 void object_prep(struct object *o_ptr, struct object_kind *kind, int lev,

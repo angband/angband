@@ -1223,7 +1223,7 @@ static void do_cmd_wiz_jump(void)
 	char answer;
 
 	/* Prompt */
-	strnfmt(ppp, sizeof(ppp), "Jump to level (0-%d): ", MAX_DEPTH-1);
+	strnfmt(ppp, sizeof(ppp), "Jump to level (0-%d): ", z_info->max_depth-1);
 
 	/* Default */
 	strnfmt(tmp_val, sizeof(tmp_val), "%d", player->depth);
@@ -1238,7 +1238,8 @@ static void do_cmd_wiz_jump(void)
 	if (depth < 0) depth = 0;
 
 	/* Paranoia */
-	if (depth > MAX_DEPTH - 1) depth = MAX_DEPTH - 1;
+	if (depth > z_info->max_depth - 1)
+		depth = z_info->max_depth - 1;
 
 	/* Prompt */
 	strnfmt(ppp, sizeof(ppp), "Choose cave_profile?");

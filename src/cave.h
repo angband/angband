@@ -1,4 +1,20 @@
-/* cave.h - cave interface */
+/**
+ * \file cave.h
+ * \brief Matters relating to the current dungeon level
+ *
+ * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
+ *
+ * This work is free software; you can redistribute it and/or modify it
+ * under the terms of either:
+ *
+ * a) the GNU General Public License as published by the Free Software
+ *    Foundation, version 2, or
+ *
+ * b) the "Angband licence":
+ *    This software may be copied and distributed for educational, research,
+ *    and not for profit purposes provided that this copyright and statement
+ *    are included in all such copies.  Other copyrights may also apply.
+ */
 
 #ifndef CAVE_H
 #define CAVE_H
@@ -8,18 +24,7 @@
 struct player;
 struct monster;
 
-/*** Constants ***/
-
-/*
- * Maximum dungeon level.  The player can never reach this level
- * in the dungeon, and this value is used for various calculations
- * involving object and monster creation.  It must be at least 100.
- * Setting it below 128 may prevent the creation of some objects.
- */
-#define MAX_DEPTH	128
-
-
-/*
+/**
  * Square flags
  */
 
@@ -52,7 +57,7 @@ enum
 #define sqinfo_diff(f1, f2)        flag_diff(f1, f2, SQUARE_SIZE)
 
 
-/*
+/**
  * Terrain flags
  */
 enum

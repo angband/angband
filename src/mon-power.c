@@ -370,8 +370,6 @@ errr eval_monster_power(struct monster_race *racelist)
 {
 	int i, j, iteration;
 	byte lvl;
-	long hp, av_hp, dam, av_dam;
-	long tot_hp[MAX_DEPTH], tot_dam[MAX_DEPTH], mon_count[MAX_DEPTH];
 	monster_race *r_ptr = NULL;
 	ang_file *mon_fp;
 	char buf[1024];
@@ -386,16 +384,13 @@ errr eval_monster_power(struct monster_race *racelist)
 	highest_threat = mem_zalloc(z_info->r_max * sizeof(int));
 
 	for (iteration = 0; iteration < 3; iteration ++) {
+		long hp, av_hp, dam, av_dam;
+		long *tot_hp = mem_zalloc(z_info->max_depth * sizeof(long));
+		long *tot_dam = mem_zalloc(z_info->max_depth * sizeof(long));
+		long *mon_count = mem_zalloc(z_info->max_depth * sizeof(long));
 
 		/* Reset the sum of all monster power values */
 		tot_mon_power = 0;
-
-		/* Make sure all arrays start at zero */
-		for (i = 0; i < MAX_DEPTH; i++)	{
-			tot_hp[i] = 0;
-			tot_dam[i] = 0;
-			mon_count[i] = 0;
-		}
 
 		/* Go through r_info and evaluate power ratings & flows. */
 		for (i = 0; i < z_info->r_max; i++)	{
@@ -518,7 +513,7 @@ errr eval_monster_power(struct monster_race *racelist)
 
 			/* Update the running totals - these will be used as divisors later
 			 * Total HP / dam / count for everything up to the current level */
-			for (j = lvl; j < (lvl == 0 ? lvl + 1: MAX_DEPTH); j++)	{
+			for (j = lvl; j < (lvl == 0 ? lvl + 1: z_info->max_depth); j++)	{
 				int count = 10;
 
 				/* Uniques don't count towards monster power on the level. */
@@ -629,6 +624,9 @@ errr eval_monster_power(struct monster_race *racelist)
 			}
 		}
 
+		mem_free(mon_count);
+		mem_free(tot_dam);
+		mem_free(tot_hp);
 	}
 
 	/* Determine total monster power */

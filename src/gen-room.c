@@ -2058,7 +2058,7 @@ bool build_vault(struct chunk *c, int y0, int x0, struct vault *v)
 			case '<': square_set_feat(c, y, x, FEAT_LESS); break;
 			case '>': {
 				/* No down stairs at bottom or on quests */
-				if (is_quest(c->depth) || c->depth >= MAX_DEPTH - 1)
+				if (is_quest(c->depth) || c->depth >= z_info->max_depth - 1)
 					square_set_feat(c, y, x, FEAT_LESS);
 				else
 					square_set_feat(c, y, x, FEAT_MORE);

@@ -19,6 +19,7 @@
 #include "angband.h"
 #include "cave.h"
 #include "dungeon.h"
+#include "init.h"
 #include "monster.h"
 #include "obj-util.h"
 #include "object.h"
@@ -759,7 +760,7 @@ void square_add_stairs(struct chunk *c, int y, int x, int depth) {
 	int down = randint0(100) < 50;
 	if (depth == 0)
 		down = 1;
-	else if (is_quest(depth) || depth >= MAX_DEPTH - 1)
+	else if (is_quest(depth) || depth >= z_info->max_depth - 1)
 		down = 0;
 	square_set_feat(c, y, x, down ? FEAT_MORE : FEAT_LESS);
 }

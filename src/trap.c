@@ -233,7 +233,8 @@ static int pick_trap(int feat, int trap_level)
 			if (is_quest(player->depth)) trap_is_okay = FALSE;
 
 			/* No trap doors on the deepest level */
-			if (player->depth >= MAX_DEPTH - 1) trap_is_okay = FALSE;
+			if (player->depth >= z_info->max_depth - 1)
+				trap_is_okay = FALSE;
 	    }
 
     }
