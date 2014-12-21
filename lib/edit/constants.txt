@@ -71,19 +71,32 @@ dun-gen:amt-gold:3
 # Maximum number of pits or nests allowed per level
 dun-gen:pit-max:2
 
-## Dungeon Dimensions ##
+## Game World ##
+
+# Maximum dungeon level; must be at least 100.
+# Setting it below 128 may prevent the creation of some objects.
+world:max-depth:128
+
+# Number of turns from dawn to dawn
+world:day-length:10000
 
 # Max number of grids in each dungeon level (vertically)
-dun-dim:dungeon-hgt:66
+world:dungeon-hgt:66
 
 # Max number of grids in each dungeon level (horizontally)
-dun-dim:dungeon-wid:198
+world:dungeon-wid:198
 
 # Max number of grids in each town level (vertically)
-dun-dim:town-hgt:22
+world:town-hgt:22
 
 # Max number of grids in each town level (horizontally)
-dun-dim:town-wid:66
+world:town-wid:66
+
+# Total number of feeling squares per level
+world:feeling-total:100
+
+# Squares needed to see to get first feeling
+world:feeling-need:10
 
 ## Carrying Capacity ##
 
@@ -134,3 +147,13 @@ obj-make:fuel-lamp:15000
 
 # Default amount of fuel in a lantern
 obj-make:default-lamp:7500
+
+
+## Player constants ##
+
+# Maximum visual range
+player:max-sight:20
+
+# Maximum missile and spell range
+player:max-range:20
+

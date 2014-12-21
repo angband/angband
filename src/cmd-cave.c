@@ -23,6 +23,7 @@
 #include "cmd-core.h"
 #include "game-event.h"
 #include "generate.h"
+#include "init.h"
 #include "mon-desc.h"
 #include "mon-lore.h"
 #include "mon-timed.h"
@@ -1358,7 +1359,7 @@ void display_feeling(bool obj_only)
 	}
 	
 	/* Players automatically get a monster feeling. */
-	if (cave->feeling_squares < FEELING1){
+	if (cave->feeling_squares < z_info->feeling_need){
 		msg("%s.", mon_feeling_text[mon_feeling]);
 		return;
 	}

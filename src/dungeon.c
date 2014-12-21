@@ -76,7 +76,7 @@ s16b character_xtra;		/* Depth of the game in startup mode */
  */
 bool is_daytime(void)
 {
-	if ((turn % (10L * TOWN_DAWN)) < ((10L * TOWN_DAWN) / 2)) 
+	if ((turn % (10L * z_info->day_length)) < ((10L * z_info->day_length) / 2)) 
 		return FALSE;
 
 	return TRUE;
@@ -432,18 +432,18 @@ static void process_world(struct chunk *c)
 	/*** Check the Time ***/
 
 	/* Play an ambient sound at regular intervals. */
-	if (!(turn % ((10L * TOWN_DAWN) / 4)))
+	if (!(turn % ((10L * z_info->day_length) / 4)))
 		play_ambient_sound();
 
 	/*** Handle stores and sunshine ***/
 
 	if (!player->depth) {
 		/* Daybreak/Nighfall in town */
-		if (!(turn % ((10L * TOWN_DAWN) / 2))) {
+		if (!(turn % ((10L * z_info->day_length) / 2))) {
 			bool dawn;
 
 			/* Check for dawn */
-			dawn = (!(turn % (10L * TOWN_DAWN)));
+			dawn = (!(turn % (10L * z_info->day_length)));
 
 			/* Day breaks */
 			if (dawn)

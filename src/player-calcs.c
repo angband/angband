@@ -1477,7 +1477,7 @@ static void calc_hitpoints(void)
 }
 
 
-/*
+/**
  * Calculate and set the current light radius.
  *
  * The brightest wielded object counts as the light source; radii do not add
@@ -1493,7 +1493,7 @@ static void calc_torch(void)
 	s16b new_light = 0;
 
 	/* Ascertain lightness if in the town */
-	if (!player->depth && ((turn % (10L * TOWN_DAWN)) < ((10L * TOWN_DAWN) / 2))) {
+	if (!player->depth && is_daytime()) {
 		new_light = 0;
 		if (old_light != new_light) {
 			/* Update the visuals */

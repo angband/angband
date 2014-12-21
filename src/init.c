@@ -557,7 +557,7 @@ static enum parser_error parse_constants_dun_gen(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_constants_dun_dim(struct parser *p) {
+static enum parser_error parse_constants_world(struct parser *p) {
 	struct angband_constants *z;
 	const char *label;
 	int value;
@@ -569,7 +569,11 @@ static enum parser_error parse_constants_dun_dim(struct parser *p) {
 	if (value < 0)
 		return PARSE_ERROR_INVALID_VALUE;
 
-	if (streq(label, "dungeon-hgt"))
+	if (streq(label, "max-depth"))
+		z->max_depth = value;
+	else if (streq(label, "day-length"))
+		z->day_length = value;
+	else if (streq(label, "dungeon-hgt"))
 		z->dungeon_hgt = value;
 	else if (streq(label, "dungeon-wid"))
 		z->dungeon_wid = value;
@@ -577,6 +581,10 @@ static enum parser_error parse_constants_dun_dim(struct parser *p) {
 		z->town_hgt = value;
 	else if (streq(label, "town-wid"))
 		z->town_wid = value;
+	else if (streq(label, "feeling-total"))
+		z->feeling_total = value;
+	else if (streq(label, "feeling-need"))
+		z->feeling_need = value;
 	else
 		return PARSE_ERROR_UNDEFINED_DIRECTIVE;
 
@@ -663,6 +671,28 @@ static enum parser_error parse_constants_obj_make(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_constants_player(struct parser *p) {
+	struct angband_constants *z;
+	const char *label;
+	int value;
+
+	z = parser_priv(p);
+	label = parser_getsym(p, "label");
+	value = parser_getint(p, "value");
+
+	if (value < 0)
+		return PARSE_ERROR_INVALID_VALUE;
+
+	if (streq(label, "max-sight"))
+		z->max_sight = value;
+	else if (streq(label, "max-range"))
+		z->max_range = value;
+	else
+		return PARSE_ERROR_UNDEFINED_DIRECTIVE;
+
+	return PARSE_ERROR_NONE;
+}
+
 struct parser *init_parse_constants(void) {
 	struct angband_constants *z = mem_zalloc(sizeof *z);
 	struct parser *p = parser_new();
@@ -672,10 +702,11 @@ struct parser *init_parse_constants(void) {
 	parser_reg(p, "mon-gen sym label int value", parse_constants_mon_gen);
 	parser_reg(p, "mon-play sym label int value", parse_constants_mon_play);
 	parser_reg(p, "dun-gen sym label int value", parse_constants_dun_gen);
-	parser_reg(p, "dun-dim sym label int value", parse_constants_dun_dim);
+	parser_reg(p, "world sym label int value", parse_constants_world);
 	parser_reg(p, "carry-cap sym label int value", parse_constants_carry_cap);
 	parser_reg(p, "store sym label int value", parse_constants_store);
 	parser_reg(p, "obj-make sym label int value", parse_constants_obj_make);
+	parser_reg(p, "player sym label int value", parse_constants_player);
 	return p;
 }
 

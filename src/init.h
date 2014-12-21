@@ -68,11 +68,15 @@ struct angband_constants
 	u16b both_gold_av;		/**< Average number of money items */
 	u16b level_pit_max;		/**< Maximum number of pits on a level */
 
-	/* Dungeon dimensions constants, read from constants.txt */
+	/* World shape constants, read from constants.txt */
+	u16b max_depth;		/* Maximum dungeon level */
+	u16b day_length;	/* Number of turns from dawn to dawn */
 	u16b dungeon_hgt;	/**< Maximum number of vertical grids on a level */
 	u16b dungeon_wid;	/**< Maximum number of horizontical grids on a level */
 	u16b town_hgt;	/**< Maximum number of vertical grids in the town */
 	u16b town_wid;	/**< Maximum number of horizontical grids in the town */
+	u16b feeling_total;	/* Total number of feeling squares per level */
+	u16b feeling_need;	/* Squares needed to see to get first feeling */
 
 	/* Carrying capacity constants, read from constants.txt */
 	u16b pack_size;		/**< Maximum number of pack slots */
@@ -92,6 +96,10 @@ struct angband_constants
 	u16b fuel_torch;	/* Maximum amount of fuel in a torch */
 	u16b fuel_lamp;		/* Maximum amount of fuel in a lantern */
 	u16b default_lamp;	/* Default amount of fuel in a lantern  */
+
+	/* Player constants, read from constants.txt */
+	u16b max_sight;	/* Maximum visual range */
+	u16b max_range;	/* Maximum missile and spell range */
 };
 
 struct init_module {

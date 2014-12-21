@@ -30,13 +30,6 @@ struct monster;
 #define MAX_RANGE (OPT(birth_small_range) ? MAX_RANGE_SML : MAX_RANGE_LGE)
 
 
-/* 
- * Information for Feelings 
- */
-#define FEELING_TOTAL	100		/* total number of feeling squares per level */ 
-#define FEELING1		10		/* Squares needed to see to get first feeling */
-
-
 
 /*
  * Square flags

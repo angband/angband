@@ -481,7 +481,7 @@ static void place_feeling(struct chunk *c)
 	int y,x,i,j;
 	int tries = 500;
 	
-	for (i = 0; i < FEELING_TOTAL; i++) {
+	for (i = 0; i < z_info->feeling_total; i++) {
 		for (j = 0; j < tries; j++) {
 			/* Pick a random dungeon coordinate */
 			y = randint0(c->height);

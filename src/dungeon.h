@@ -3,9 +3,6 @@
 
 #include "angband.h"
 
-#define TOWN_DAWN		10000	/* Number of turns from dawn to dawn */
-#define TOWN_DUSK         5000    /* Number of turns from dawn to dusk */
-
 extern u16b daycount;
 extern u32b seed_randart;
 extern u32b seed_flavor;

@@ -1521,8 +1521,7 @@ static void town_gen_layout(struct chunk *c, struct player *p)
 struct chunk *town_gen(struct player *p)
 {
 	int i, y, x = 0;
-	bool daytime = turn % (10 * TOWN_DAWN) < (10 * TOWN_DUSK);
-	int residents = daytime ? z_info->town_monsters_day :
+	int residents = is_daytime() ? z_info->town_monsters_day :
 		z_info->town_monsters_night;
 	struct chunk *c_new, *c_old = chunk_find_name("Town");
 
@@ -1557,7 +1556,7 @@ struct chunk *town_gen(struct player *p)
 	}
 
 	/* Apply illumination */
-	cave_illuminate(c_new, daytime);
+	cave_illuminate(c_new, is_daytime());
 
 	/* Make some residents */
 	for (i = 0; i < residents; i++)
