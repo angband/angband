@@ -133,7 +133,7 @@ int pack_slots_used(struct player *p)
 {
 	struct object *obj;
 	int quiver_slots = 0, pack_slots = 0, quiver_ammo = 0;
-	int maxsize = MAX_STACK_SIZE - 1;
+	int maxsize = z_info->stack_size;
 
 	for (obj = p->gear; obj; obj = obj->next) {
 		/* Equipment doesn't count */
@@ -500,7 +500,7 @@ bool inven_stack_okay(const object_type *o_ptr)
 
 	/* Add it and see what happens */
 	gear_obj->number += o_ptr->number;
-	extra_slot = (gear_obj->number > MAX_STACK_SIZE - 1);
+	extra_slot = (gear_obj->number > z_info->stack_size);
 	new_number = pack_slots_used(player);
 	gear_obj->number -= o_ptr->number;
 
@@ -739,9 +739,9 @@ static bool inven_can_stack_partial(const object_type *o_ptr,
 {
 	if (!(mode & OSTACK_STORE)) {
 		int total = o_ptr->number + j_ptr->number;
-		int remainder = total - (MAX_STACK_SIZE - 1);
+		int remainder = total - (z_info->stack_size);
 
-		if (remainder >= MAX_STACK_SIZE)
+		if (remainder > z_info->stack_size)
 			return FALSE;
 	}
 

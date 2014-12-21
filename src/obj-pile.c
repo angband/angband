@@ -276,7 +276,8 @@ bool object_similar(const struct object *o_ptr, const struct object *j_ptr,
 	int total = o_ptr->number + j_ptr->number;
 
 	/* Check against stacking limit - except in stores which absorb anyway */
-	if (!(mode & OSTACK_STORE) && (total >= MAX_STACK_SIZE)) return FALSE;
+	if (!(mode & OSTACK_STORE) && (total > z_info->stack_size))
+		return FALSE;
 
 	return object_stackable(o_ptr, j_ptr, mode);
 }
@@ -356,7 +357,7 @@ void object_absorb_partial(struct object *o_ptr, struct object *j_ptr)
 {
 	int smallest = MIN(o_ptr->number, j_ptr->number);
 	int largest = MAX(o_ptr->number, j_ptr->number);
-	int difference = (MAX_STACK_SIZE - 1) - largest;
+	int difference = (z_info->stack_size) - largest;
 	o_ptr->number = largest + difference;
 	j_ptr->number = smallest - difference;
 
@@ -371,7 +372,7 @@ void object_absorb(struct object *o_ptr, struct object *j_ptr)
 	int total = o_ptr->number + j_ptr->number;
 
 	/* Add together the item counts */
-	o_ptr->number = ((total < MAX_STACK_SIZE) ? total : (MAX_STACK_SIZE - 1));
+	o_ptr->number = (total < z_info->stack_size ? total : z_info->stack_size);
 
 	object_absorb_merge(o_ptr, j_ptr);
 	object_delete(j_ptr);

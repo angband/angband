@@ -733,7 +733,7 @@ static void store_object_absorb(struct object *old, struct object *new)
 	int total = old->number + new->number;
 
 	/* Combine quantity, lose excess items */
-	old->number = (total >= MAX_STACK_SIZE) ? MAX_STACK_SIZE - 1 : total;
+	old->number = (total > z_info->stack_size) ? z_info->stack_size : total;
 
 	/* If rods are stacking, add the charging timeouts */
 	if (tval_can_have_timeout(old))
@@ -1356,16 +1356,16 @@ void store_maint(struct store *s)
 	if (s->always_num) {
 		size_t i;
 		for (i = 0; i < s->always_num; i++) {
-			object_kind *k = s->always_table[i];
-			struct object *o = store_find_kind(s, k);
-			if (o) {
+			object_kind *kind = s->always_table[i];
+			struct object *obj = store_find_kind(s, kind);
+			if (obj) {
 				/* ensure a full stack */
-				o->number = MAX_STACK_SIZE - 1;
+				obj->number = z_info->stack_size;
 			} else {
 				/* Now create the item */
-				int slot = store_create_item(s, k);
-				struct object *o = s->stock_list[slot];
-				o->number = MAX_STACK_SIZE - 1;
+				int slot = store_create_item(s, kind);
+				struct object *obj1 = s->stock_list[slot];
+				obj1->number = z_info->stack_size;
 			}
 		}
 	}

@@ -83,7 +83,8 @@ struct angband_constants
 	/* Carrying capacity constants, read from constants.txt */
 	u16b pack_size;		/**< Maximum number of pack slots */
 	u16b quiver_size;	/**< Maximum number of quiver slots */
-	u16b floor_size;	/**< Maximum number of quiver slots */
+	u16b floor_size;	/**< Maximum number of items per floor grid */
+	u16b stack_size;	/**< Maximum number of items per stack */
 
 	/* Store parameters, read from constants.txt */
 	u16b store_inven_max;	/**< Maximum number of objects in store inventory */

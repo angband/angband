@@ -1032,8 +1032,8 @@ struct object *make_object(struct chunk *c, int lev, bool good, bool great,
 	if (kind->gen_mult_prob >= randint1(100))
 		new_obj->number = randcalc(kind->stack_size, lev, RANDOMISE);
 
-	if (new_obj->number >= MAX_STACK_SIZE)
-		new_obj->number = MAX_STACK_SIZE - 1;
+	if (new_obj->number > z_info_stack_size)
+		new_obj->number = z_info->stack_size;
 
 	/* Return value, increased for uncursed out-of-depth objects */
 	if (value)

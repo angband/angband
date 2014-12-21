@@ -22,10 +22,7 @@
 
 #include "player.h"
 
-/* A "stack" of items is limited to 40 items (hard-coded). */
-#define MAX_STACK_SIZE 41
-
-/*
+/**
  * Player equipment slot types
  */
 enum

@@ -119,6 +119,9 @@ carry-cap:quiver-size:10
 # display 23 objects + 1 header line.
 carry-cap:floor-size:23
 
+# Max number of pack slots for carrying inventory
+carry-cap:stack-size:40
+
 
 ## Store Parameters ##
 
