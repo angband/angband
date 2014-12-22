@@ -396,6 +396,14 @@ void object_copy(struct object *dest, const struct object *src)
 	/* Copy the structure */
 	memcpy(dest, src, sizeof(struct object));
 
+	dest->slays = NULL;
+	dest->brands = NULL;
+
+	if (src->slays)
+		copy_slay(&dest->slays, src->slays);
+	if (src->brands)
+		copy_brand(&dest->brands, src->brands);
+
 	/* Detach from any pile */
 	dest->prev = NULL;
 	dest->next = NULL;
