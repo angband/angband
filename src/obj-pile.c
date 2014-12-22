@@ -144,6 +144,8 @@ void object_delete(struct object *obj)
 	} else if (prev) {
 		prev->next = NULL;
 	}
+
+	mem_free(obj);
 }
 
 /**
