@@ -77,9 +77,9 @@ s16b character_xtra;		/* Depth of the game in startup mode */
 bool is_daytime(void)
 {
 	if ((turn % (10L * z_info->day_length)) < ((10L * z_info->day_length) / 2)) 
-		return FALSE;
+		return TRUE;
 
-	return TRUE;
+	return FALSE;
 } 
 
 
