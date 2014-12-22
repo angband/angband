@@ -51,11 +51,11 @@
 #include "option.h"
 #include "parser.h"
 #include "player.h"
+#include "player-quest.h"
 #include "player-spell.h"
 #include "player-timed.h"
 #include "prefs.h"
 #include "project.h"
-#include "quest.h"
 #include "randname.h"
 #include "store.h"
 #include "trap.h"
@@ -1558,7 +1558,7 @@ static void cleanup_act(void)
 }
 
 static struct file_parser act_parser = {
-	"object",
+	"activation",
 	init_parse_act,
 	run_parse_act,
 	finish_parse_act,
@@ -4301,6 +4301,7 @@ static struct {
 	{ "monsters", &monster_parser },
 	{ "monster pits" , &pit_parser },
 	{ "monster lore" , &lore_parser },
+	{ "quests", &quests_parser },
 	{ "history charts", &history_parser },
 	{ "bodies", &body_parser },
 	{ "player races", &p_race_parser },
@@ -4356,7 +4357,6 @@ extern struct init_module ignore_module;
 extern struct init_module mon_make_module;
 extern struct init_module player_module;
 extern struct init_module store_module;
-extern struct init_module quest_module;
 extern struct init_module messages_module;
 extern struct init_module options_module;
 extern struct init_module monmsg_module;
@@ -4371,7 +4371,6 @@ static struct init_module *modules[] = {
 	&ignore_module,
 	&mon_make_module,
 	&store_module,
-	&quest_module,
 	&options_module,
 	&monmsg_module,
 	NULL

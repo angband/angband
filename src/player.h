@@ -49,6 +49,20 @@ enum
 extern struct player_body *bodies;
 
 
+/**
+ * Structure for the "quests"
+ */
+struct quest
+{
+	struct quest *next;
+	byte index;
+	char *name;
+	byte level;					/* Dungeon level */
+	struct monster_race *race;	/* Monster race */
+	int cur_num;				/* Number killed (unused) */
+	int max_num;				/* Number required (unused) */
+};
+
 /*
  * Most of the "player" information goes here.
  *
@@ -122,8 +136,8 @@ typedef struct player {
 	s16b player_hp[PY_MAX_LEVEL];	/* HP Array */
 
 	char died_from[80];		/* Cause of death */
-	char *history;
-
+	char *history;			/* Player history */
+	struct quest *quests;	/* Quest history */
 	u16b total_winner;		/* Total winner */
 
 	u16b noscore;			/* Cheating flags */

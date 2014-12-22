@@ -39,6 +39,7 @@ struct angband_constants
 	u16b mon_blows_max;	/**< Maximum number of monster blows */
 	u16b equip_slots_max;	/**< Maximum number of player equipment slots */
 	u16b profile_max;	/**< Maximum number of cave_profiles */
+	u16b quest_max;		/**< Maximum number of quests */
 
 	/* Maxima of things on a given level, read from constants.txt */
 	u16b level_monster_max;	/**< Maximum number of monsters on a given level */
@@ -148,6 +149,7 @@ extern struct parser *init_parse_flavor(void);
 extern struct parser *init_parse_names(void);
 extern struct parser *init_parse_hints(void);
 extern struct parser *init_parse_trap(void);
+extern struct parser *init_parse_quest(void);
 
 extern void init_file_paths(const char *config, const char *lib, const char *data);
 extern void init_game_constants(void);

@@ -2,17 +2,18 @@
  * Copyright (c) 2011 elly+angband@leptoquark.net. See COPYING.
  */
 
-#include "z-color.h" /* TERM_* */
-#include "z-util.h" /* my_strcpy */
 #include "init.h"
 #include "history.h" /* history_add */
-#include "player.h"
-#include "player-birth.h"
-#include "player-timed.h"
-#include "player-spell.h"
 #include "obj-pile.h"
 #include "obj-util.h"
+#include "player.h"
+#include "player-birth.h"
+#include "player-quest.h"
+#include "player-spell.h"
+#include "player-timed.h"
 #include "ui-input.h"
+#include "z-color.h" /* TERM_* */
+#include "z-util.h" /* my_strcpy */
 
 
 /*
@@ -413,6 +414,7 @@ static void init_player(void) {
 static void cleanup_player(void) {
 	int i;
 
+	player_quests_free(player);
 	player_spells_free(player);
 
 	mem_free(player->timed);

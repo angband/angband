@@ -32,7 +32,7 @@
 #include "obj-pile.h"
 #include "obj-tval.h"
 #include "obj-util.h"
-#include "quest.h"
+#include "player-quest.h"
 #include "tables.h"
 
 s16b num_repro;

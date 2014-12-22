@@ -37,11 +37,11 @@
 #include "obj-util.h"
 #include "object.h"
 #include "player.h"
+#include "player-quest.h"
 #include "player-spell.h"
 #include "player-timed.h"
 #include "savefile.h"
 #include "store.h"
-#include "quest.h"
 #include "trap.h"
 #include "ui-game.h"
 #include "ui-input.h"
@@ -585,22 +585,17 @@ int rd_quests(void)
 	rd_u16b(&tmp16u);
 	
 	/* Incompatible save files */
-	if (tmp16u > MAX_Q_IDX)
-	{
+	if (tmp16u > z_info->quest_max) {
 		note(format("Too many (%u) quests!", tmp16u));
 		return (-1);
 	}
 	
 	/* Load the Quests */
-	for (i = 0; i < tmp16u; i++)
-	{
-		byte tmp8u;
-		
-		rd_byte(&tmp8u);
-		q_list[i].level = tmp8u;
-		rd_byte(&tmp8u);
-		rd_byte(&tmp8u);
-		rd_byte(&tmp8u);
+	player_quests_reset(player);
+	for (i = 0; i < tmp16u; i++) {
+		rd_byte(&player->quests[i].level);
+		rd_u16b(&tmp16u);
+		player->quests[i].cur_num = tmp16u;
 	}
 	
 	return 0;

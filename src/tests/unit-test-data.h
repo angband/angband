@@ -871,6 +871,16 @@ static struct equip_slot TEST_DATA test_slot_light = {
 	.obj = NULL,
 };
 
+static struct quest TEST_DATA test_quest = {
+	.next = NULL,
+	.index = 0,
+	.name = "Test",
+	.level = 1,
+	.race = &test_r_human,
+	.cur_num = 0,
+	.max_num = 4,
+};
+
 static struct player_body TEST_DATA test_player_body = {
 	.next    = NULL,
 	.name    = "Humanoid",

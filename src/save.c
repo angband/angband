@@ -28,7 +28,7 @@
 #include "obj-gear.h"
 #include "obj-ignore.h"
 #include "option.h"
-#include "quest.h"
+#include "player.h"
 #include "savefile.h"
 #include "store.h"
 #include "obj-util.h"
@@ -384,17 +384,12 @@ void wr_object_memory(void)
 void wr_quests(void)
 {
 	int i;
-	u16b tmp16u;
 
-	/* Hack -- Dump the quests */
-	tmp16u = MAX_Q_IDX;
-	wr_u16b(tmp16u);
-	for (i = 0; i < tmp16u; i++)
-	{
-		wr_byte(q_list[i].level);
-		wr_byte(0);
-		wr_byte(0);
-		wr_byte(0);
+	/* Dump the quests */
+	wr_u16b(z_info->quest_max);
+	for (i = 0; i < z_info->quest_max; i++) {
+		wr_byte(player->quests[i].level);
+		wr_u16b(player->quests[i].cur_num);
 	}
 }
 

@@ -37,12 +37,12 @@
 #include "object.h"
 #include "player.h"
 #include "player-birth.h"
+#include "player-quest.h"
 #include "player-spell.h"
 #include "player-timed.h"
 #include "player-util.h"
 #include "store.h"
 #include "savefile.h"
-#include "quest.h"
 #include "ui-input.h"
 #include "ui-menu.h"
 #include "ui-player.h"
@@ -419,7 +419,7 @@ void player_init(struct player *p)
 	}
 
 	/* Start with no quests */
-	quest_reset();
+	player_quests_reset(p);
 
 	for (i = 1; z_info && i < z_info->k_max; i++) {
 		object_kind *k_ptr = &k_info[i];

@@ -50,6 +50,7 @@ const char *parser_error_str[PARSE_ERROR_MAX] = {
 	"invalid item number",
 	"invalid lighting",
 	"invalid message",
+	"invalid monster race",
 	"invalid option",
 	"invalid spell frequency",
 	"invalid spell name",

@@ -152,6 +152,7 @@ ANGFILES = \
 	player-calcs.o \
 	player-class.o \
 	player-path.o \
+	player-quest.o \
 	player-race.o \
 	player-spell.o \
 	player-timed.o \
@@ -162,7 +163,6 @@ ANGFILES = \
 	project-mon.o \
 	project-obj.o \
 	project-player.o \
-	quest.o \
 	score.o \
 	signals.o \
 	save.o \
