@@ -77,12 +77,6 @@ static const char *comment_hint[] =
 
 
 /**
- * Flag to override which store is selected if in a knowledge menu
- */
-int store_knowledge = STORE_NONE;
-
-
-/**
  * Easy names for the elements of the 'scr_places' arrays.
  */
 enum
@@ -116,6 +110,8 @@ struct store_context {
 	struct store *store;	/* Pointer to store */
 	struct object **list;	/* List of objects (unused) */
 	int flags;				/* Display flags */
+
+	bool inspect_only;		/* Only allow looking */
 };
 
 /** Variables to maintain state XXX ***/
@@ -378,8 +374,9 @@ static void store_display_frame(struct store *store)
 /**
  * Display help.
  */
-static void store_display_help(struct store *store)
+static void store_display_help(struct store_context *ctx)
 {
+	struct store *store = ctx->store;
 	int help_loc = scr_places_y[LOC_HELP_PROMPT];
 	bool is_home = (store->sidx == STORE_HOME) ? TRUE : FALSE;
 
@@ -397,7 +394,7 @@ static void store_display_help(struct store *store)
 		text_out_c(TERM_L_GREEN, "l");
 
 	text_out(" examines");
-	if (store_knowledge == STORE_NONE) {
+	if (!ctx->inspect_only) {
 		text_out(" and ");
 		text_out_c(TERM_L_GREEN, "p");
 
@@ -406,7 +403,7 @@ static void store_display_help(struct store *store)
 	}
 	text_out(" the selected item. ");
 
-	if (store_knowledge == STORE_NONE) {
+	if (!ctx->inspect_only) {
 		if (OPT(birth_no_selling)) {
 			text_out_c(TERM_L_GREEN, "d");
 			text_out(" gives an item to the store in return for its identification. Some wands and staves will also be recharged. ");
@@ -422,7 +419,7 @@ static void store_display_help(struct store *store)
 	}
 
 	text_out_c(TERM_L_GREEN, "ESC");
-	if (store_knowledge == STORE_NONE)
+	if (!ctx->inspect_only)
 		text_out(" exits the building.");
 	else
 		text_out(" exits this screen.");
@@ -440,7 +437,7 @@ static void store_redraw(struct store_context *ctx)
 		store_display_frame(ctx->store);
 
 		if (ctx->flags & STORE_SHOW_HELP)
-			store_display_help(ctx->store);
+			store_display_help(ctx);
 		else
 			prt("Press '?' for help.", scr_places_y[LOC_HELP_PROMPT], 1);
 
@@ -1193,6 +1190,9 @@ void store_menu_init(struct store_context *ctx, bool inspect_only)
 {
 	menu_type *menu = ctx->menu;
 
+	ctx->flags = STORE_INIT_CHANGE;
+	ctx->inspect_only = inspect_only;
+
 	/* Init the menu structure */
 	menu_init(menu, MN_SKIN_SCROLL, &store_menu);
 	menu_setpriv(menu, 0, ctx);
@@ -1200,7 +1200,6 @@ void store_menu_init(struct store_context *ctx, bool inspect_only)
 	/* Calculate the positions of things and draw */
 	menu_layout(menu, &store_menu_region);
 	store_menu_set_selections(menu, inspect_only);
-	ctx->flags = STORE_INIT_CHANGE;
 	store_display_recalc(ctx);
 	store_menu_recalc(menu);
 	store_redraw(ctx);
@@ -1218,9 +1217,6 @@ void textui_store_knowledge(int n)
 
 	ctx.store = &stores[n];
 	ctx.menu = &menu;
-
-	/* XXX-AS replace with flag */
-	store_knowledge = n;
 
 	screen_save();
 	clear_from(0);
