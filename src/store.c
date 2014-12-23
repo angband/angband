@@ -692,7 +692,7 @@ static void mass_produce(struct object *obj)
 /**
  * Put the store's inventory into an array in the correct order
  */
-static void store_stock_list(struct store *store)
+void store_stock_list(struct store *store)
 {
 	bool home = (store->sidx != STORE_HOME);
 	int list_num;
@@ -923,9 +923,6 @@ struct object *store_carry(struct store *store, struct object *obj)
 	/* Insert the new object */
 	pile_insert(&store->stock, obj);
 
-	/* Rewrite the stock list */
-	store_stock_list(store);
-
 	return obj;
 }
 
@@ -1021,9 +1018,6 @@ static void store_delete_random(struct store *store)
 	} else {
 		obj->number -= num;
 	}
-
-	/* Redo the stock list */
-	store_stock_list(store);
 }
 
 
@@ -1303,9 +1297,6 @@ void store_maint(struct store *s)
 		if (!restock_attempts)
 			quit_fmt("Unable to (re-)stock store %d. Please report this bug", s->sidx + 1);
 	}
-
-	/* Redo the stock list */
-	store_stock_list(s);
 }
 
 /** Owner stuff **/
@@ -1605,7 +1596,6 @@ void do_cmd_buy(struct command *cmd)
 			pile_excise(&store->stock, obj);
 			object_delete(obj);
 		}
-		store_stock_list(store);
 
 		/* Store is empty */
 		if (store->stock_num == 0) {
@@ -1626,6 +1616,7 @@ void do_cmd_buy(struct command *cmd)
 		}
 	}
 
+	event_signal(EVENT_STORECHANGED);
 	event_signal(EVENT_INVENTORY);
 	event_signal(EVENT_EQUIPMENT);
 }
@@ -1686,8 +1677,8 @@ void do_cmd_retrieve(struct command *cmd)
 		pile_excise(&store->stock, obj);
 		object_delete(obj);
 	}
-	store_stock_list(store);
-	
+
+	event_signal(EVENT_STORECHANGED);
 	event_signal(EVENT_INVENTORY);
 	event_signal(EVENT_EQUIPMENT);
 }
@@ -1823,6 +1814,7 @@ void do_cmd_sell(struct command *cmd)
 	/* The store gets that (known) object */
 	store_carry(store, sold_item);
 
+	event_signal(EVENT_STORECHANGED);
 	event_signal(EVENT_INVENTORY);
 	event_signal(EVENT_EQUIPMENT);
 }
@@ -1883,6 +1875,7 @@ void do_cmd_stash(struct command *cmd)
 	/* Let the home carry it */
 	home_carry(dropped);
 
+	event_signal(EVENT_STORECHANGED);
 	event_signal(EVENT_INVENTORY);
 	event_signal(EVENT_EQUIPMENT);
 }

@@ -1232,6 +1232,14 @@ void textui_store_knowledge(int n)
 }
 
 /**
+ * Handle stock change.
+ */
+void refresh_stock(game_event_type type, game_event_data *data, void *user) {
+	struct store *store = user;
+	store_stock_list(store);
+}
+
+/**
  * Enter a store, and interact with it.
  */
 void do_cmd_store(struct command *cmd)
@@ -1258,6 +1266,10 @@ void do_cmd_store(struct command *cmd)
 
 	/*** Display ***/
 
+	/* Get a array version of the store stock, register handler for changes */
+	store_stock_list(store);
+	event_add_handler(EVENT_STORECHANGED, refresh_stock, store);
+
 	/* Save current screen (ie. dungeon) */
 	screen_save();
 	msg_flag = FALSE;
@@ -1269,6 +1281,9 @@ void do_cmd_store(struct command *cmd)
 		prt_welcome(store->owner);
 
 	menu_select(&menu, 0, FALSE);
+
+	/* Unregister stock change handler */
+	event_remove_handler(EVENT_STORECHANGED, refresh_stock, store);
 
 	msg_flag = FALSE;
 
