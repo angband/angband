@@ -76,29 +76,22 @@ void pile_insert_end(struct object **pile, struct object *obj)
 
 void pile_excise(struct object **pile, struct object *obj)
 {
-	struct object *current = *pile;
+	assert(pile_contains(*pile, obj));
 
 	/* Special case: unlink top object */
 	if (*pile == obj) {
-		assert(obj->prev == NULL);	// Invariant - if it's the top of the pile
+		assert(obj->prev == NULL);	/* Invariant - if it's the top of the pile */
 
 		*pile = obj->next;
-		if (obj->next) {
-			(obj->next)->prev = NULL;
-			obj->next = NULL;
-		}
+	} else {
+		assert(obj->prev != NULL);	/* Should definitely have a previous one set */
+
+		/* Otherwise unlink from the previous */
+		(obj->prev)->next = obj->next;
+		obj->prev = NULL;
 	}
 
-	/* Otherwise find the object... */
-	while (current != obj) {
-		current = current->next;
-		assert(current);	// Invariant - the object must be in the pile, fail if we run out
-	}
-
-	/* ...and remove it */
-	(obj->prev)->next = obj->next;
-	obj->prev = NULL;
-
+	/* And then unlink from the next */
 	if (obj->next) {
 		(obj->next)->prev = obj->prev;
 		obj->next = NULL;
