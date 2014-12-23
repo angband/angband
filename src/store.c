@@ -84,7 +84,6 @@ static struct store *store_new(int idx) {
 	struct store *s = mem_zalloc(sizeof *s);
 	s->sidx = idx;
 	s->stock_size = z_info->store_inven_max;
-	s->stock_list = mem_zalloc(sizeof(s->stock) * z_info->store_inven_max);
 	return s;
 }
 
@@ -107,7 +106,6 @@ void cleanup_stores(void)
 
 		/* Free the store inventory */
 		object_pile_free(store->stock);
-		mem_free(store->stock_list);
 		mem_free(store->always_table);
 		mem_free(store->normal_table);
 
@@ -331,8 +329,6 @@ void store_reset(void) {
 		store_shuffle(s);
 		object_pile_free(s->stock);
 		s->stock = NULL;
-		for (j = 0; j < z_info->store_inven_max; j++)
-			s->stock_list[j] = NULL;
 		if (i == STORE_HOME)
 			continue;
 		for (j = 0; j < 10; j++)

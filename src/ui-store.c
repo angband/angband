@@ -285,7 +285,7 @@ static void store_display_entry(menu_type *menu, int oid, bool cursor, int row,
 	assert(store);
 
 	/* Get the object */
-	obj = store->stock_list[oid];
+	obj = ctx->list[oid];
 
 	/* Describe the object - preserving insriptions in the home */
 	if (store->sidx == STORE_HOME) desc = ODESC_FULL;
@@ -598,7 +598,7 @@ static bool store_purchase(struct store_context *ctx, int item)
 	if (item < 0) return FALSE;
 
 	/* Get the actual object */
-	obj = store->stock_list[item];
+	obj = ctx->list[item];
 
 	/* Clear all current messages */
 	msg_flag = FALSE;
@@ -708,7 +708,7 @@ static bool store_purchase(struct store_context *ctx, int item)
 /**
  * Examine an item in a store
  */
-static void store_examine(struct store *store, int item)
+static void store_examine(struct store_context *ctx, int item)
 {
 	struct object *obj;
 
@@ -720,7 +720,7 @@ static void store_examine(struct store *store, int item)
 	if (item < 0) return;
 
 	/* Get the actual object */
-	obj = store->stock_list[item];
+	obj = ctx->list[item];
 
 	/* Hack -- no flush needed */
 	msg_flag = FALSE;
@@ -844,8 +844,9 @@ static int store_get_stock(menu_type *m, int oid)
 }
 
 /* pick the context menu options appropiate for a store */
-int context_menu_store(struct store *store, const int oid, int mx, int my)
+static int context_menu_store(struct store_context *ctx, const int oid, int mx, int my)
 {
+	struct store *store = ctx->store;
 	menu_type *m;
 	region r;
 	int selected;
@@ -858,7 +859,7 @@ int context_menu_store(struct store *store, const int oid, int mx, int my)
 	}
 
 	/* Get the actual object */
-	o_ptr = store->stock_list[oid];
+	o_ptr = ctx->list[oid];
 
 	labels = string_make(lower_case);
 	m->selections = labels;
@@ -957,8 +958,9 @@ int context_menu_store(struct store *store, const int oid, int mx, int my)
 }
 
 /* pick the context menu options appropiate for an item available in a store */
-int context_menu_store_item(struct store *store, const int oid, int mx, int my)
+static int context_menu_store_item(struct store_context *ctx, const int oid, int mx, int my)
 {
+	struct store *store = ctx->store;
 	menu_type *m;
 	region r;
 	int selected;
@@ -967,7 +969,7 @@ int context_menu_store_item(struct store *store, const int oid, int mx, int my)
 	char header[120];
 
 	/* Get the actual object */
-	o_ptr = store->stock_list[oid];
+	o_ptr = ctx->list[oid];
 
 
 	m = menu_dynamic_new();
@@ -1067,11 +1069,11 @@ static bool store_menu_handle(menu_type *m, const ui_event *event, int oid)
 			bool action = FALSE;
 			if ((event->mouse.y == 0) || (event->mouse.y == 1)) {
 				/* show the store context menu */
-				context_menu_store(store,oid,event->mouse.x,event->mouse.y);
+				context_menu_store(ctx, oid, event->mouse.x, event->mouse.y);
 				action = TRUE;
 			} else if (event->mouse.y == 4+oid) {
 				/* if press is on a list item, so store item context */
-				context_menu_store_item(store, oid, event->mouse.x,
+				context_menu_store_item(ctx, oid, event->mouse.x,
 										event->mouse.y);
 				action = TRUE;
 			}
@@ -1125,7 +1127,7 @@ static bool store_menu_handle(menu_type *m, const ui_event *event, int oid)
 				oid = store_get_stock(m, oid);
 				prt("", 0, 0);
 				if (oid >= 0) {
-					store_examine(store, oid);
+					store_examine(ctx, oid);
 				}
 				break;
 
@@ -1192,6 +1194,9 @@ void store_menu_init(struct store_context *ctx, bool inspect_only)
 
 	ctx->flags = STORE_INIT_CHANGE;
 	ctx->inspect_only = inspect_only;
+	ctx->list = mem_zalloc(sizeof(struct object *) * z_info->store_inven_max);
+
+	store_stock_list(ctx->store, ctx->list, z_info->store_inven_max);
 
 	/* Init the menu structure */
 	menu_init(menu, MN_SKIN_SCROLL, &store_menu);
@@ -1225,6 +1230,8 @@ void textui_store_knowledge(int n)
 	message_flush();
 
 	screen_load();
+
+	mem_free(ctx.list);
 }
 
 
@@ -1235,9 +1242,8 @@ void refresh_stock(game_event_type type, game_event_data *unused, void *user)
 {
 	struct store_context *ctx = user;
 	menu_type *menu = &ctx->menu;
-	struct store *store = ctx->store;
 
-	store_stock_list(store, store->stock_list, z_info->store_inven_max);
+	store_stock_list(ctx->store, ctx->list, z_info->store_inven_max);
 
 	/* Display the store */
 	store_display_recalc(ctx);
@@ -1279,7 +1285,6 @@ void do_cmd_store(struct command *cmd)
 	ctx.store = store;
 
 	/* Get a array version of the store stock, register handler for changes */
-	store_stock_list(store, store->stock_list, z_info->store_inven_max);
 	event_add_handler(EVENT_STORECHANGED, refresh_stock, &ctx);
 	store_menu_init(&ctx, FALSE);
 
@@ -1293,6 +1298,8 @@ void do_cmd_store(struct command *cmd)
 	event_remove_handler(EVENT_STORECHANGED, refresh_stock, &ctx);
 
 	msg_flag = FALSE;
+
+	mem_free(ctx.list);
 
 	/* Switch back to the normal game view. */
 	event_signal(EVENT_LEAVE_STORE);
