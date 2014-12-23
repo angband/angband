@@ -341,6 +341,7 @@ void menu_dynamic_add_valid(struct menu *m, const char *text, int value, menu_ro
 void menu_dynamic_add_label(struct menu *m, const char *text, const char label, int value, char *label_list);
 void menu_dynamic_add_label_valid(struct menu *m, const char *text, const char label, int value, char *label_list, menu_row_validity_t valid);
 size_t menu_dynamic_longest_entry(struct menu *m);
+void menu_dynamic_calc_location(struct menu *m, int mx, int my);
 int menu_dynamic_select(struct menu *m);
 void menu_dynamic_free(struct menu *m);
 

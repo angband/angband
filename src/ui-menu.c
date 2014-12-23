@@ -991,6 +991,33 @@ size_t menu_dynamic_longest_entry(struct menu *m)
 	return biggest;
 }
 
+void menu_dynamic_calc_location(struct menu *m, int mx, int my)
+{
+	region r;
+
+	/* work out display region */
+	r.width = menu_dynamic_longest_entry(m) + 3 + 2; /* +3 for tag, 2 for pad */
+	if (mx > Term->wid - r.width - 1) {
+		r.col = Term->wid - r.width - 1;
+	} else {
+		r.col = mx + 1;
+	}
+	r.page_rows = m->count;
+	if (my > Term->hgt - r.page_rows - 1) {
+		if (my - r.page_rows - 1 <= 0) {
+			/* menu has too many items, so put in upper right corner */
+			r.row = 1;
+			r.col = Term->wid - r.width - 1;
+		} else {
+			r.row = Term->hgt - r.page_rows - 1;
+		}
+	} else {
+		r.row = my + 1;
+	}
+
+	menu_layout(m, &r);
+}
+
 int menu_dynamic_select(struct menu *m)
 {
 	ui_event e = menu_select(m, 0, TRUE);

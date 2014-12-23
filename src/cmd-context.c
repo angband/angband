@@ -78,7 +78,6 @@ enum context_menu_value_e {
 static int context_menu_player_2(int mx, int my)
 {
 	struct menu *m;
-	region r;
 	int selected;
 	char *labels;
 	bool allowed = TRUE;
@@ -110,32 +109,12 @@ static int context_menu_player_2(int mx, int my)
 	menu_dynamic_add_label(m, "Options", '=', MENU_VALUE_OPTIONS, labels);
 	menu_dynamic_add_label(m, "Commands", '?', MENU_VALUE_HELP, labels);
 
-	/* work out display region */
-	r.width = (int)menu_dynamic_longest_entry(m) + 3 + 2; /* +3 for tag, 2 for pad */
-	if (mx > Term->wid - r.width - 1) {
-		r.col = Term->wid - r.width - 1;
-	} else {
-		r.col = mx + 1;
-	}
-	r.page_rows = m->count;
-	if (my > Term->hgt - r.page_rows - 1) {
-		if (my - r.page_rows - 1 <= 0) {
-			/* menu has too many items, so put in upper right corner */
-			r.row = 1;
-			r.col = Term->wid - r.width - 1;
-		} else {
-			r.row = Term->hgt - r.page_rows - 1;
-		}
-	} else {
-		r.row = my + 1;
-	}
-
 	/* Hack -- no flush needed */
 	msg_flag = FALSE;
 	screen_save();
 
-	menu_layout(m, &r);
-	region_erase_bordered(&r);
+	menu_dynamic_calc_location(m, mx, my);
+	region_erase_bordered(&m->boundary);
 
 	prt("(Enter to select, ESC) Command:", 0, 0);
 	selected = menu_dynamic_select(m);
@@ -261,7 +240,6 @@ static void context_menu_player_display_floor(void)
 int context_menu_player(int mx, int my)
 {
 	struct menu *m;
-	region r;
 	int selected;
 	char *labels;
 	bool allowed = TRUE;
@@ -328,32 +306,12 @@ int context_menu_player(int mx, int my)
 
 	menu_dynamic_add_label(m, "Other", ' ', MENU_VALUE_OTHER, labels);
 
-	/* work out display region */
-	r.width = (int)menu_dynamic_longest_entry(m) + 3 + 2; /* +3 for tag, 2 for pad */
-	if (mx > Term->wid - r.width - 1) {
-		r.col = Term->wid - r.width - 1;
-	} else {
-		r.col = mx + 1;
-	}
-	r.page_rows = m->count;
-	if (my > Term->hgt - r.page_rows - 1) {
-		if (my - r.page_rows - 1 <= 0) {
-			/* menu has too many items, so put in upper right corner */
-			r.row = 1;
-			r.col = Term->wid - r.width - 1;
-		} else {
-			r.row = Term->hgt - r.page_rows - 1;
-		}
-	} else {
-		r.row = my + 1;
-	}
-
 	/* Hack -- no flush needed */
 	msg_flag = FALSE;
 	screen_save();
 
-	menu_layout(m, &r);
-	region_erase_bordered(&r);
+	menu_dynamic_calc_location(m, mx, my);
+	region_erase_bordered(&m->boundary);
 
 	prt("(Enter to select, ESC) Command:", 0, 0);
 	selected = menu_dynamic_select(m);
@@ -459,7 +417,6 @@ int context_menu_player(int mx, int my)
 int context_menu_cave(struct chunk *c, int y, int x, int adjacent, int mx, int my)
 {
 	struct menu *m;
-	region r;
 	int selected;
 	char *labels;
 	bool allowed = TRUE;
@@ -543,32 +500,13 @@ int context_menu_cave(struct chunk *c, int y, int x, int adjacent, int mx, int m
 
 	ADD_LABEL("Throw To", CMD_THROW, MN_ROW_VALID);
 
-	/* Work out display region: +3 for tag, 2 for pad */
-	r.width = (int)menu_dynamic_longest_entry(m) + 3 + 2;
-	if (mx > Term->wid - r.width - 1) {
-		r.col = Term->wid - r.width - 1;
-	} else {
-		r.col = mx + 1;
-	}
-	r.page_rows = m->count;
-	if (my > Term->hgt - r.page_rows - 1) {
-		if (my - r.page_rows - 1 <= 0) {
-			/* menu has too many items, so put in upper right corner */
-			r.row = 1;
-			r.col = Term->wid - r.width - 1;
-		} else {
-			r.row = Term->hgt - r.page_rows - 1;
-		}
-	} else {
-		r.row = my + 1;
-	}
-
 	/* Hack -- no flush needed */
 	msg_flag = FALSE;
 	screen_save();
 
-	menu_layout(m, &r);
-	region_erase_bordered(&r);
+	menu_dynamic_calc_location(m, mx, my);
+	region_erase_bordered(&m->boundary);
+
 	if (player->timed[TMD_IMAGE]) {
 		prt("(Enter to select command, ESC to cancel) You see something strange:", 0, 0);
 	} else if (c->squares[y][x].mon) {
