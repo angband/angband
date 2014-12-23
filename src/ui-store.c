@@ -111,7 +111,11 @@ static unsigned int scr_places_y[LOC_MAX];
 /* Compound flag for the initial display of a store */
 #define STORE_INIT_CHANGE		(STORE_FRAME_CHANGE | STORE_GOLD_CHANGE)
 
-
+struct store_context {
+	menu_type *menu;
+	struct store *store;
+	struct object **list;
+};
 
 /** Variables to maintain state XXX ***/
 
@@ -219,7 +223,8 @@ static void store_display_recalc(menu_type *m)
 	int wid, hgt;
 	region loc;
 
-	struct store *store = menu_priv(m);
+	struct store_context *ctx = menu_priv(m);
+	struct store *store = ctx->store;
 
 	Term_get_size(&wid, &hgt);
 
@@ -282,7 +287,8 @@ static void store_display_entry(menu_type *menu, int oid, bool cursor, int row,
 	char out_val[160];
 	byte colour;
 
-	struct store *store = menu_priv(menu);
+	struct store_context *ctx = menu_priv(menu);
+	struct store *store = ctx->store;
 	assert(store);
 
 	/* Get the object */
@@ -761,8 +767,8 @@ static void store_menu_set_selections(menu_type *menu, bool knowledge_menu)
 
 static void store_menu_recalc(menu_type *m)
 {
-	struct store *store = menu_priv(m);
-	menu_setpriv(m, store->stock_num, store);
+	struct store_context *ctx = menu_priv(m);
+	menu_setpriv(m, ctx->store->stock_num, ctx);
 }
 
 /**
@@ -1046,7 +1052,8 @@ int context_menu_store_item(struct store *store, const int oid, int mx, int my)
 static bool store_menu_handle(menu_type *m, const ui_event *event, int oid)
 {
 	bool processed = TRUE;
-	struct store *store = menu_priv(m);
+	struct store_context *ctx = menu_priv(m);
+	struct store *store = ctx->store;
 	
 	if (event->type == EVT_SELECT) {
 		/* Nothing for now, except "handle" the event */
@@ -1089,11 +1096,10 @@ static bool store_menu_handle(menu_type *m, const ui_event *event, int oid)
 			}
 		}
 	} else if (event->type == EVT_KBRD) {
-		bool storechange = FALSE;
-
 		switch (event->key.code) {
 			case 's':
-			case 'd': storechange = store_sell(store); break;
+			case 'd': store_sell(store); break;
+
 			case 'p':
 			case 'g':
 				/* use the old way of purchasing items */
@@ -1108,7 +1114,7 @@ static bool store_menu_handle(menu_type *m, const ui_event *event, int oid)
 				oid = store_get_stock(m, oid);
 				prt("", 0, 0);
 				if (oid >= 0) {
-					storechange = store_purchase(store, oid);
+					store_purchase(store, oid);
 				}
 				break;
 			case 'l':
@@ -1124,13 +1130,6 @@ static bool store_menu_handle(menu_type *m, const ui_event *event, int oid)
 				}
 				break;
 
-			/* XXX redraw functionality should be another menu_iter handler */
-			case KTRL('R'): {
-				Term_clear();
-				store_flags |= (STORE_FRAME_CHANGE | STORE_GOLD_CHANGE);
-				break;
-			}
-
 			case '?': {
 				/* Toggle help */
 				if (store_flags & STORE_SHOW_HELP)
@@ -1140,6 +1139,10 @@ static bool store_menu_handle(menu_type *m, const ui_event *event, int oid)
 
 				/* Redisplay */
 				store_flags |= STORE_INIT_CHANGE;
+
+				store_display_recalc(m);
+				store_redraw(store);
+
 				break;
 			}
 
@@ -1156,9 +1159,6 @@ static bool store_menu_handle(menu_type *m, const ui_event *event, int oid)
 		/* Let the game handle any core commands (equipping, etc) */
 		process_command(CMD_STORE, TRUE);
 
-		if (storechange)
-			store_menu_recalc(m);
-
 		if (processed) {
 			event_signal(EVENT_INVENTORY);
 			event_signal(EVENT_EQUIPMENT);
@@ -1167,11 +1167,6 @@ static bool store_menu_handle(menu_type *m, const ui_event *event, int oid)
 		/* Notice and handle stuff */
 		notice_stuff(player->upkeep);
 		handle_stuff(player->upkeep);
-
-		/* Display the store */
-		store_display_recalc(m);
-		store_menu_recalc(m);
-		store_redraw(store);
 
 		return processed;
 	}
@@ -1192,11 +1187,13 @@ static const menu_iter store_menu =
 /**
  * Init the store menu
  */
-void store_menu_init(struct store *store, menu_type *menu, bool inspect_only)
+void store_menu_init(struct store_context *ctx, bool inspect_only)
 {
+	menu_type *menu = ctx->menu;
+
 	/* Init the menu structure */
 	menu_init(menu, MN_SKIN_SCROLL, &store_menu);
-	menu_setpriv(menu, 0, store);
+	menu_setpriv(menu, 0, ctx);
 
 	/* Calculate the positions of things and draw */
 	menu_layout(menu, &store_menu_region);
@@ -1204,7 +1201,7 @@ void store_menu_init(struct store *store, menu_type *menu, bool inspect_only)
 	store_flags = STORE_INIT_CHANGE;
 	store_display_recalc(menu);
 	store_menu_recalc(menu);
-	store_redraw(store);
+	store_redraw(ctx->store);
 }
 
 /**
@@ -1214,15 +1211,19 @@ void store_menu_init(struct store *store, menu_type *menu, bool inspect_only)
  */
 void textui_store_knowledge(int n)
 {
-	struct store *store = &stores[n];
 	menu_type menu;
+	struct store_context ctx;
 
+	ctx.store = &stores[n];
+	ctx.menu = &menu;
+
+	/* XXX-AS replace with flag */
 	store_knowledge = n;
 
 	screen_save();
 	clear_from(0);
 
-	store_menu_init(store, &menu, TRUE);
+	store_menu_init(&ctx, TRUE);
 	menu_select(&menu, 0, FALSE);
 
 	/* Flush messages XXX XXX XXX */
@@ -1231,12 +1232,22 @@ void textui_store_knowledge(int n)
 	screen_load();
 }
 
+
 /**
  * Handle stock change.
  */
-void refresh_stock(game_event_type type, game_event_data *data, void *user) {
-	struct store *store = user;
+void refresh_stock(game_event_type type, game_event_data *unused, void *user)
+{
+	struct store_context *ctx = user;
+	menu_type *menu = ctx->menu;
+	struct store *store = ctx->store;
+
 	store_stock_list(store);
+
+	/* Display the store */
+	store_display_recalc(menu);
+	store_menu_recalc(menu);
+	store_redraw(store);
 }
 
 /**
@@ -1246,6 +1257,7 @@ void do_cmd_store(struct command *cmd)
 {
 	struct store *store = store_at(cave, player->py, player->px);
 	menu_type menu;
+	struct store_context ctx;
 
 	/* Check that we're on a store */
 	if (!store) {
@@ -1266,15 +1278,17 @@ void do_cmd_store(struct command *cmd)
 
 	/*** Display ***/
 
-	/* Get a array version of the store stock, register handler for changes */
-	store_stock_list(store);
-	event_add_handler(EVENT_STORECHANGED, refresh_stock, store);
-
 	/* Save current screen (ie. dungeon) */
 	screen_save();
 	msg_flag = FALSE;
 
-	store_menu_init(store, &menu, FALSE);
+	ctx.store = store;
+	ctx.menu = &menu;
+
+	/* Get a array version of the store stock, register handler for changes */
+	store_stock_list(store);
+	event_add_handler(EVENT_STORECHANGED, refresh_stock, &ctx);
+	store_menu_init(&ctx, FALSE);
 
 	/* Say a friendly hello. */
 	if (store->sidx != STORE_HOME)
@@ -1283,7 +1297,7 @@ void do_cmd_store(struct command *cmd)
 	menu_select(&menu, 0, FALSE);
 
 	/* Unregister stock change handler */
-	event_remove_handler(EVENT_STORECHANGED, refresh_stock, store);
+	event_remove_handler(EVENT_STORECHANGED, refresh_stock, &ctx);
 
 	msg_flag = FALSE;
 
