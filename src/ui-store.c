@@ -93,10 +93,6 @@ enum
 	LOC_MAX
 };
 
-/* Places for the various things displayed onscreen */
-static unsigned int scr_places_x[LOC_MAX];
-static unsigned int scr_places_y[LOC_MAX];
-
 /* State flags */
 #define STORE_GOLD_CHANGE      0x01
 #define STORE_FRAME_CHANGE     0x02
@@ -110,8 +106,11 @@ struct store_context {
 	struct store *store;	/* Pointer to store */
 	struct object **list;	/* List of objects (unused) */
 	int flags;				/* Display flags */
-
 	bool inspect_only;		/* Only allow looking */
+
+	/* Places for the various things displayed onscreen */
+	unsigned int scr_places_x[LOC_MAX];
+	unsigned int scr_places_y[LOC_MAX];
 };
 
 /** Variables to maintain state XXX ***/
@@ -230,36 +229,36 @@ static void store_display_recalc(struct store_context *ctx)
 
 
 	/* X co-ords first */
-	scr_places_x[LOC_PRICE] = wid - 14;
-	scr_places_x[LOC_AU] = wid - 26;
-	scr_places_x[LOC_OWNER] = wid - 2;
-	scr_places_x[LOC_WEIGHT] = wid - 14;
+	ctx->scr_places_x[LOC_PRICE] = wid - 14;
+	ctx->scr_places_x[LOC_AU] = wid - 26;
+	ctx->scr_places_x[LOC_OWNER] = wid - 2;
+	ctx->scr_places_x[LOC_WEIGHT] = wid - 14;
 
 	/* Add space for for prices */
 	if (store->sidx != STORE_HOME)
-		scr_places_x[LOC_WEIGHT] -= 10;
+		ctx->scr_places_x[LOC_WEIGHT] -= 10;
 
 	/* Then Y */
-	scr_places_y[LOC_OWNER] = 1;
-	scr_places_y[LOC_HEADER] = 3;
+	ctx->scr_places_y[LOC_OWNER] = 1;
+	ctx->scr_places_y[LOC_HEADER] = 3;
 
 	/* If we are displaying help, make the height smaller */
 	if (ctx->flags & (STORE_SHOW_HELP))
 		hgt -= 3;
 
-	scr_places_y[LOC_MORE] = hgt - 3;
-	scr_places_y[LOC_AU] = hgt - 1;
+	ctx->scr_places_y[LOC_MORE] = hgt - 3;
+	ctx->scr_places_y[LOC_AU] = hgt - 1;
 
 	loc = m->boundary;
 
 	/* If we're displaying the help, then put it with a line of padding */
 	if (ctx->flags & (STORE_SHOW_HELP)) {
-		scr_places_y[LOC_HELP_CLEAR] = hgt - 1;
-		scr_places_y[LOC_HELP_PROMPT] = hgt;
+		ctx->scr_places_y[LOC_HELP_CLEAR] = hgt - 1;
+		ctx->scr_places_y[LOC_HELP_PROMPT] = hgt;
 		loc.page_rows = -5;
 	} else {
-		scr_places_y[LOC_HELP_CLEAR] = hgt - 2;
-		scr_places_y[LOC_HELP_PROMPT] = hgt - 1;
+		ctx->scr_places_y[LOC_HELP_CLEAR] = hgt - 2;
+		ctx->scr_places_y[LOC_HELP_PROMPT] = hgt - 1;
 		loc.page_rows = -2;
 	}
 
@@ -300,7 +299,7 @@ static void store_display_entry(menu_type *menu, int oid, bool cursor, int row,
 	colour = curs_attrs[CURS_KNOWN][(int)cursor];
 	strnfmt(out_val, sizeof out_val, "%3d.%d lb", obj->weight / 10,
 			obj->weight % 10);
-	c_put_str(colour, out_val, row, scr_places_x[LOC_WEIGHT]);
+	c_put_str(colour, out_val, row, ctx->scr_places_x[LOC_WEIGHT]);
 
 	/* Describe an object (fully) in a store */
 	if (store->sidx != STORE_HOME) {
@@ -317,7 +316,7 @@ static void store_display_entry(menu_type *menu, int oid, bool cursor, int row,
 		else
 			strnfmt(out_val, sizeof out_val, "%9ld    ", (long)x);
 
-		c_put_str(colour, out_val, row, scr_places_x[LOC_PRICE]);
+		c_put_str(colour, out_val, row, ctx->scr_places_x[LOC_PRICE]);
 	}
 }
 
@@ -325,9 +324,10 @@ static void store_display_entry(menu_type *menu, int oid, bool cursor, int row,
 /**
  * Display store (after clearing screen)
  */
-static void store_display_frame(struct store *store)
+static void store_display_frame(struct store_context *ctx)
 {
 	char buf[80];
+	struct store *store = ctx->store;
 	struct owner *proprietor = store->owner;
 
 	/* Clear screen */
@@ -336,37 +336,37 @@ static void store_display_frame(struct store *store)
 	/* The "Home" is special */
 	if (store->sidx == STORE_HOME) {
 		/* Put the owner name */
-		put_str("Your Home", scr_places_y[LOC_OWNER], 1);
+		put_str("Your Home", ctx->scr_places_y[LOC_OWNER], 1);
 
 		/* Label the object descriptions */
-		put_str("Home Inventory", scr_places_y[LOC_HEADER], 1);
+		put_str("Home Inventory", ctx->scr_places_y[LOC_HEADER], 1);
 
 		/* Show weight header */
-		put_str("Weight", scr_places_y[LOC_HEADER],
-				scr_places_x[LOC_WEIGHT] + 2);
+		put_str("Weight", ctx->scr_places_y[LOC_HEADER],
+				ctx->scr_places_x[LOC_WEIGHT] + 2);
 	} else {
 		/* Normal stores */
 		const char *store_name = store->name;
 		const char *owner_name = proprietor->name;
 
 		/* Put the owner name */
-		put_str(owner_name, scr_places_y[LOC_OWNER], 1);
+		put_str(owner_name, ctx->scr_places_y[LOC_OWNER], 1);
 
 		/* Show the max price in the store (above prices) */
 		strnfmt(buf, sizeof(buf), "%s (%ld)", store_name,
 				(long)(proprietor->max_cost));
-		prt(buf, scr_places_y[LOC_OWNER],
-			scr_places_x[LOC_OWNER] - strlen(buf));
+		prt(buf, ctx->scr_places_y[LOC_OWNER],
+			ctx->scr_places_x[LOC_OWNER] - strlen(buf));
 
 		/* Label the object descriptions */
-		put_str("Store Inventory", scr_places_y[LOC_HEADER], 1);
+		put_str("Store Inventory", ctx->scr_places_y[LOC_HEADER], 1);
 
 		/* Showing weight label */
-		put_str("Weight", scr_places_y[LOC_HEADER],
-				scr_places_x[LOC_WEIGHT] + 2);
+		put_str("Weight", ctx->scr_places_y[LOC_HEADER],
+				ctx->scr_places_x[LOC_WEIGHT] + 2);
 
 		/* Label the asking price (in stores) */
-		put_str("Price", scr_places_y[LOC_HEADER], scr_places_x[LOC_PRICE] + 4);
+		put_str("Price", ctx->scr_places_y[LOC_HEADER], ctx->scr_places_x[LOC_PRICE] + 4);
 	}
 }
 
@@ -377,11 +377,11 @@ static void store_display_frame(struct store *store)
 static void store_display_help(struct store_context *ctx)
 {
 	struct store *store = ctx->store;
-	int help_loc = scr_places_y[LOC_HELP_PROMPT];
+	int help_loc = ctx->scr_places_y[LOC_HELP_PROMPT];
 	bool is_home = (store->sidx == STORE_HOME) ? TRUE : FALSE;
 
 	/* Clear */
-	clear_from(scr_places_y[LOC_HELP_CLEAR]);
+	clear_from(ctx->scr_places_y[LOC_HELP_CLEAR]);
 
 	/* Prepare help hooks */
 	text_out_hook = text_out_to_screen;
@@ -434,19 +434,19 @@ static void store_display_help(struct store_context *ctx)
 static void store_redraw(struct store_context *ctx)
 {
 	if (ctx->flags & (STORE_FRAME_CHANGE)) {
-		store_display_frame(ctx->store);
+		store_display_frame(ctx);
 
 		if (ctx->flags & STORE_SHOW_HELP)
 			store_display_help(ctx);
 		else
-			prt("Press '?' for help.", scr_places_y[LOC_HELP_PROMPT], 1);
+			prt("Press '?' for help.", ctx->scr_places_y[LOC_HELP_PROMPT], 1);
 
 		ctx->flags &= ~(STORE_FRAME_CHANGE);
 	}
 
 	if (ctx->flags & (STORE_GOLD_CHANGE)) {
 		prt(format("Gold Remaining: %9ld", (long)player->au),
-				scr_places_y[LOC_AU], scr_places_x[LOC_AU]);
+				ctx->scr_places_y[LOC_AU], ctx->scr_places_x[LOC_AU]);
 		ctx->flags &= ~(STORE_GOLD_CHANGE);
 	}
 }
