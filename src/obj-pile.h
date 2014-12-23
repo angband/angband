@@ -33,18 +33,16 @@ typedef enum
 	OSTACK_QUIVER  = 0x20  /* Quiver */
 } object_stack_t;
 
+struct object *object_new(void);
+void object_delete(struct object *obj);
+void object_pile_free(struct object *obj);
+
 void pile_insert(struct object **pile, struct object *obj);
 void pile_insert_end(struct object **pile, struct object *obj);
 void pile_excise(struct object **pile, struct object *obj);
 struct object *pile_last_item(struct object *const pile);
 bool pile_contains(const struct object *top, const struct object *obj);
 
-/* XXX-AS rename to square_object_excise */
-void pile_object_excise(struct chunk *c, int y, int x, struct object *obj);
-
-struct object *object_new(void);
-void object_delete(struct object *obj);
-void object_pile_free(struct object *obj);
 bool object_stackable(const struct object *o_ptr, const struct object *j_ptr,
 					  object_stack_t mode);
 bool object_similar(const struct object *o_ptr, const struct object *j_ptr,

@@ -46,6 +46,10 @@
 
 /* #define LIST_DEBUG */
 
+/**
+ * Check the integrity of a linked - make sure it's not circular and that each
+ * entry in the chain has consistent next and prev pointers.
+ */
 void pile_check_integrity(const char *op, struct object *pile, struct object *hilight)
 {
 	struct object *obj = pile;
@@ -79,6 +83,11 @@ void pile_check_integrity(const char *op, struct object *pile, struct object *hi
 	}
 }
 
+/**
+ * Insert 'obj' into the pile 'pile'.
+ *
+ * 'obj' must not already be in any other lists.
+ */
 void pile_insert(struct object **pile, struct object *obj)
 {
 	assert(obj->prev == NULL);
@@ -94,7 +103,9 @@ void pile_insert(struct object **pile, struct object *obj)
 	pile_check_integrity("insert", *pile, obj);
 }
 
-/*
+/**
+ * Insert 'obj' at the end of pile 'pile'.
+ *
  * Unlike pile_insert(), obj can be the beginning of a new list of objects.
  */
 void pile_insert_end(struct object **pile, struct object *obj)
@@ -113,6 +124,9 @@ void pile_insert_end(struct object **pile, struct object *obj)
 	pile_check_integrity("insert_end", *pile, obj);
 }
 
+/**
+ * Remove object 'obj' from pile 'pile'.
+ */
 void pile_excise(struct object **pile, struct object *obj)
 {
 	struct object *prev = obj->prev;
@@ -143,6 +157,9 @@ void pile_excise(struct object **pile, struct object *obj)
 	pile_check_integrity("excise [post]", *pile, NULL);
 }
 
+/**
+ * Return the last item in pile 'pile'.
+ */
 struct object *pile_last_item(struct object *const pile)
 {
 	struct object *obj = pile;
@@ -160,6 +177,9 @@ struct object *pile_last_item(struct object *const pile)
 	return obj;
 }
 
+/**
+ * Check if pile 'pile' contains object 'obj'.
+ */
 bool pile_contains(const struct object *top, const struct object *obj)
 {
 	const struct object *pile_obj = top;
@@ -171,18 +191,6 @@ bool pile_contains(const struct object *top, const struct object *obj)
 	}
 
 	return FALSE;
-}
-
-/**
- * Excise an object from a floor pile, leaving it orphaned.
- *
- * Code using this function must then deal with the orphaned object in some
- * way - usually by deleting it, or adding it to a player, monster or store
- * inventory.
- */
-void pile_object_excise(struct chunk *c, int y, int x, struct object *obj)
-{
-	pile_excise(&c->squares[y][x].obj, obj);
 }
 
 /**
