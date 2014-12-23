@@ -1095,7 +1095,7 @@ void textui_cmd_destroy_menu(struct object *obj)
 {
 	char out_val[160];
 
-	menu_type *m;
+	struct menu *m;
 	region r;
 	int selected;
 

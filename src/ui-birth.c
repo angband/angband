@@ -141,7 +141,7 @@ static enum birth_stage textui_birth_quickstart(void)
  * ------------------------------------------------------------------------ */
 
 /* The various menus */
-static menu_type sex_menu, race_menu, class_menu, roller_menu;
+static struct menu sex_menu, race_menu, class_menu, roller_menu;
 
 /* Locations of the menus, etc. on the screen */
 #define HEADER_ROW       1
@@ -183,7 +183,7 @@ struct birthmenu_data
 /* A custom "display" function for our menus that simply displays the
    text from our stored data in a different colour if it's currently
    selected. */
-static void birthmenu_display(menu_type *menu, int oid, bool cursor,
+static void birthmenu_display(struct menu *menu, int oid, bool cursor,
 			      int row, int col, int width)
 {
 	struct birthmenu_data *data = menu->menu_data;
@@ -397,7 +397,7 @@ static void class_help(int i, void *db, const region *l)
 
 /* Set up one of our menus ready to display choices for a birth question.
    This is slightly involved. */
-static void init_birth_menu(menu_type *menu, int n_choices, int initial_choice, const region *reg, bool allow_random, browse_f aux)
+static void init_birth_menu(struct menu *menu, int n_choices, int initial_choice, const region *reg, bool allow_random, browse_f aux)
 {
 	struct birthmenu_data *menu_data;
 
@@ -483,7 +483,7 @@ static void setup_menus(void)
 }
 
 /* Cleans up our stored menu info when we've finished with it. */
-static void free_birth_menu(menu_type *menu)
+static void free_birth_menu(struct menu *menu)
 {
 	struct birthmenu_data *data = menu->menu_data;
 
@@ -549,7 +549,7 @@ static void print_menu_instructions(void)
 /* Allow the user to select from the current menu, and return the 
    corresponding command to the game.  Some actions are handled entirely
    by the UI (displaying help text, for instance). */
-static enum birth_stage menu_question(enum birth_stage current, menu_type *current_menu, cmd_code choice_command)
+static enum birth_stage menu_question(enum birth_stage current, struct menu *current_menu, cmd_code choice_command)
 {
 	struct birthmenu_data *menu_data = menu_priv(current_menu);
 	ui_event cx;
@@ -986,7 +986,7 @@ int textui_do_birth(void)
 			case BIRTH_RACE_CHOICE:
 			case BIRTH_ROLLER_CHOICE:
 			{
-				menu_type *menu = &sex_menu;
+				struct menu *menu = &sex_menu;
 				cmd_code command = CMD_CHOOSE_SEX;
 
 				Term_clear();

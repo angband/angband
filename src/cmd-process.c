@@ -196,7 +196,7 @@ static command_list cmds_all[] =
 /*** Menu functions ***/
 
 /* Display an entry on a command menu */
-static void cmd_sub_entry(menu_type *menu, int oid, bool cursor, int row, int col, int width)
+static void cmd_sub_entry(struct menu *menu, int oid, bool cursor, int row, int col, int width)
 {
 	byte attr = (cursor ? TERM_L_BLUE : TERM_WHITE);
 	const struct cmd_info *commands = menu_priv(menu);
@@ -224,7 +224,7 @@ static void cmd_sub_entry(menu_type *menu, int oid, bool cursor, int row, int co
  */
 static bool cmd_menu(command_list *list, void *selection_p)
 {
-	menu_type menu;
+	struct menu menu;
 	menu_iter commands_menu = { NULL, NULL, cmd_sub_entry, NULL, NULL };
 	region area = { 23, 4, 37, 13 };
 
@@ -254,7 +254,7 @@ static bool cmd_menu(command_list *list, void *selection_p)
 
 
 
-static bool cmd_list_action(menu_type *m, const ui_event *event, int oid)
+static bool cmd_list_action(struct menu *m, const ui_event *event, int oid)
 {
 	if (event->type == EVT_SELECT)
 		return cmd_menu(&cmds_all[oid], menu_priv(m));
@@ -262,13 +262,13 @@ static bool cmd_list_action(menu_type *m, const ui_event *event, int oid)
 		return FALSE;
 }
 
-static void cmd_list_entry(menu_type *menu, int oid, bool cursor, int row, int col, int width)
+static void cmd_list_entry(struct menu *menu, int oid, bool cursor, int row, int col, int width)
 {
 	byte attr = (cursor ? TERM_L_BLUE : TERM_WHITE);
 	Term_putstr(col, row, -1, attr, cmds_all[oid].name);
 }
 
-static menu_type *command_menu;
+static struct menu *command_menu;
 static menu_iter command_menu_iter =
 {
 	NULL,
@@ -541,7 +541,7 @@ static ui_event textui_get_command(int *count)
 static int show_command_list(struct cmd_info cmd_list[], int size, int mx,
                              int my)
 {
-	menu_type *m;
+	struct menu *m;
 	region r;
 	int selected;
 	int i;
@@ -609,7 +609,7 @@ static int show_command_list(struct cmd_info cmd_list[], int size, int mx,
 
 int context_menu_command(int mx, int my)
 {
-	menu_type *m;
+	struct menu *m;
 	region r;
 	int selected;
 

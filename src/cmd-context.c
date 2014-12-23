@@ -77,7 +77,7 @@ enum context_menu_value_e {
 
 static int context_menu_player_2(int mx, int my)
 {
-	menu_type *m;
+	struct menu *m;
 	region r;
 	int selected;
 	char *labels;
@@ -260,7 +260,7 @@ static void context_menu_player_display_floor(void)
 
 int context_menu_player(int mx, int my)
 {
-	menu_type *m;
+	struct menu *m;
 	region r;
 	int selected;
 	char *labels;
@@ -458,7 +458,7 @@ int context_menu_player(int mx, int my)
 
 int context_menu_cave(struct chunk *c, int y, int x, int adjacent, int mx, int my)
 {
-	menu_type *m;
+	struct menu *m;
 	region r;
 	int selected;
 	char *labels;
@@ -708,7 +708,7 @@ int context_menu_cave(struct chunk *c, int y, int x, int adjacent, int mx, int m
 /* pick the context menu options appropiate for the item */
 int context_menu_object(struct object *obj)
 {
-	menu_type *m;
+	struct menu *m;
 	region r;
 	int selected;
 	char *labels;

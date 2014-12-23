@@ -309,7 +309,7 @@ static int logical_height(int height)
 }
 
 
-static void display_group_member(menu_type *menu, int oid,
+static void display_group_member(struct menu *menu, int oid,
 						bool cursor, int row, int col, int wid)
 {
 	const member_funcs *o_funcs = menu->menu_data;
@@ -380,15 +380,15 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 
 	int delay = 0;
 
-	menu_type group_menu;
-	menu_type object_menu;
+	struct menu group_menu;
+	struct menu object_menu;
 	menu_iter object_iter = { NULL, NULL, display_group_member, NULL, NULL };
 
 	/* Panel state */
 	/* These are swapped in parallel whenever the actively browsing " */
 	/* changes */
 	int *active_cursor = &g_cur, *inactive_cursor = &o_cur;
-	menu_type *active_menu = &group_menu, *inactive_menu = &object_menu;
+	struct menu *active_menu = &group_menu, *inactive_menu = &object_menu;
 	int panel = 0;
 
 	void *swapspace;
@@ -2152,7 +2152,7 @@ static menu_action knowledge_actions[] =
 { 0, 0, "Display character history",  	   do_cmd_knowledge_history   },
 };
 
-static menu_type knowledge_menu;
+static struct menu knowledge_menu;
 
 
 
@@ -2167,7 +2167,7 @@ static void cleanup_cmds(void) {
 void textui_knowledge_init(void)
 {
 	/* Initialize the menus */
-	menu_type *menu = &knowledge_menu;
+	struct menu *menu = &knowledge_menu;
 	menu_init(menu, MN_SKIN_SCROLL, menu_find_iter(MN_ITER_ACTIONS));
 	menu_setpriv(menu, N_ELEMENTS(knowledge_actions), knowledge_actions);
 

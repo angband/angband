@@ -334,7 +334,7 @@ static void death_randarts(const char *title, int row)
  * Menu structures for the death menu. Note that Quit must always be the
  * last option, due to a hard-coded check in death_screen
  */
-static menu_type *death_menu;
+static struct menu *death_menu;
 static menu_action death_actions[] =
 {
 	{ 0, 'i', "Information",   death_info      },

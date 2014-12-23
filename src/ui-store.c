@@ -102,7 +102,7 @@ enum
 #define STORE_INIT_CHANGE		(STORE_FRAME_CHANGE | STORE_GOLD_CHANGE)
 
 struct store_context {
-	menu_type menu;			/* Menu instance */
+	struct menu menu;			/* Menu instance */
 	struct store *store;	/* Pointer to store */
 	struct object **list;	/* List of objects (unused) */
 	int flags;				/* Display flags */
@@ -216,7 +216,7 @@ static void store_display_recalc(struct store_context *ctx)
 	int wid, hgt;
 	region loc;
 
-	menu_type *m = &ctx->menu;
+	struct menu *m = &ctx->menu;
 	struct store *store = ctx->store;
 
 	Term_get_size(&wid, &hgt);
@@ -269,7 +269,7 @@ static void store_display_recalc(struct store_context *ctx)
 /**
  * Redisplay a single store entry
  */
-static void store_display_entry(menu_type *menu, int oid, bool cursor, int row,
+static void store_display_entry(struct menu *menu, int oid, bool cursor, int row,
 								int col, int width)
 {
 	struct object *obj;
@@ -739,7 +739,7 @@ static void store_examine(struct store_context *ctx, int item)
 }
 
 
-static void store_menu_set_selections(menu_type *menu, bool knowledge_menu)
+static void store_menu_set_selections(struct menu *menu, bool knowledge_menu)
 {
 	if (knowledge_menu) {
 		if (OPT(rogue_like_commands)) {
@@ -764,7 +764,7 @@ static void store_menu_set_selections(menu_type *menu, bool knowledge_menu)
 	}
 }
 
-static void store_menu_recalc(menu_type *m)
+static void store_menu_recalc(struct menu *m)
 {
 	struct store_context *ctx = menu_priv(m);
 	menu_setpriv(m, ctx->store->stock_num, ctx);
@@ -820,7 +820,7 @@ static bool store_process_command_key(struct keypress kp)
 /**
  * Select an item from the store's stock, and return the stock index
  */
-static int store_get_stock(menu_type *m, int oid)
+static int store_get_stock(struct menu *m, int oid)
 {
 	ui_event e;
 	int no_act = m->flags & MN_NO_ACTION;
@@ -847,7 +847,7 @@ static int store_get_stock(menu_type *m, int oid)
 static int context_menu_store(struct store_context *ctx, const int oid, int mx, int my)
 {
 	struct store *store = ctx->store;
-	menu_type *m;
+	struct menu *m;
 	region r;
 	int selected;
 	char *labels;
@@ -961,7 +961,7 @@ static int context_menu_store(struct store_context *ctx, const int oid, int mx, 
 static int context_menu_store_item(struct store_context *ctx, const int oid, int mx, int my)
 {
 	struct store *store = ctx->store;
-	menu_type *m;
+	struct menu *m;
 	region r;
 	int selected;
 	char *labels;
@@ -1050,7 +1050,7 @@ static int context_menu_store_item(struct store_context *ctx, const int oid, int
 /**
  * Handle store menu input
  */
-static bool store_menu_handle(menu_type *m, const ui_event *event, int oid)
+static bool store_menu_handle(struct menu *m, const ui_event *event, int oid)
 {
 	bool processed = TRUE;
 	struct store_context *ctx = menu_priv(m);
@@ -1190,7 +1190,7 @@ static const menu_iter store_menu =
  */
 void store_menu_init(struct store_context *ctx, bool inspect_only)
 {
-	menu_type *menu = &ctx->menu;
+	struct menu *menu = &ctx->menu;
 
 	ctx->flags = STORE_INIT_CHANGE;
 	ctx->inspect_only = inspect_only;
@@ -1241,7 +1241,7 @@ void textui_store_knowledge(int n)
 void refresh_stock(game_event_type type, game_event_data *unused, void *user)
 {
 	struct store_context *ctx = user;
-	menu_type *menu = &ctx->menu;
+	struct menu *menu = &ctx->menu;
 
 	store_stock_list(ctx->store, ctx->list, z_info->store_inven_max);
 

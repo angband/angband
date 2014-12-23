@@ -99,7 +99,7 @@ static void do_cmd_pref_file_hack(long row);
 /**
  * Displays an option entry.
  */
-static void option_toggle_display(menu_type *m, int oid, bool cursor,
+static void option_toggle_display(struct menu *m, int oid, bool cursor,
 		int row, int col, int width)
 {
 	byte attr = curs_attrs[CURS_KNOWN][cursor != 0];
@@ -112,7 +112,7 @@ static void option_toggle_display(menu_type *m, int oid, bool cursor,
 /**
  * Handle keypresses for an option entry.
  */
-static bool option_toggle_handle(menu_type *m, const ui_event *event,
+static bool option_toggle_handle(struct menu *m, const ui_event *event,
 		int oid)
 {
 	bool next = FALSE;
@@ -169,7 +169,7 @@ static void option_toggle_menu(const char *name, int page)
 {
 	int i;
 	
-	menu_type *m = menu_new(MN_SKIN_SCROLL, &option_toggle_iter);
+	struct menu *m = menu_new(MN_SKIN_SCROLL, &option_toggle_iter);
 
 	/* for all menus */
 	m->prompt = "Set option (y/n/t), '?' for information";
@@ -584,7 +584,7 @@ static void keymap_browse_hook(int oid, void *db, const region *loc)
 	prt(tmp, 14, 0);
 }
 
-static menu_type *keymap_menu;
+static struct menu *keymap_menu;
 static menu_action keymap_actions[] =
 {
 	{ 0, 0, "Load a user pref file",    ui_keymap_pref_load },
@@ -658,7 +658,7 @@ static void visuals_reset(const char *title, int row)
 }
 
 
-static menu_type *visual_menu;
+static struct menu *visual_menu;
 static menu_action visual_menu_items [] =
 {
 	{ 0, 0, "Load a user pref file",   visuals_pref_load },
@@ -809,7 +809,7 @@ static void colors_browse_hook(int oid, void *db, const region *loc)
 }
 
 
-static menu_type *color_menu;
+static struct menu *color_menu;
 static menu_action color_events [] =
 {
 	{ 0, 0, "Load a user pref file", colors_pref_load },
@@ -1128,7 +1128,7 @@ static int ego_comp_func(const void *a_ptr, const void *b_ptr)
 /**
  * Display an entry on the sval menu
  */
-static void ego_display(menu_type * menu, int oid, bool cursor, int row,
+static void ego_display(struct menu * menu, int oid, bool cursor, int row,
 						int col, int width)
 {
 	char buf[80] = "";
@@ -1155,7 +1155,7 @@ static void ego_display(menu_type * menu, int oid, bool cursor, int row,
 /**
  * Deal with events on the sval menu
  */
-static bool ego_action(menu_type * menu, const ui_event * event, int oid)
+static bool ego_action(struct menu * menu, const ui_event * event, int oid)
 {
 	ego_desc *choice = menu->menu_data;
 
@@ -1179,7 +1179,7 @@ static void ego_menu(const char *unused, int also_unused)
 	ego_desc *choice;
 	struct ego_poss_item *poss;
 
-	menu_type menu;
+	struct menu menu;
 	menu_iter menu_f = { 0, 0, ego_display, ego_action, 0 };
 	region area = { 1, 5, -1, -1 };
 	int cursor = 0;
@@ -1356,7 +1356,7 @@ static int cmp_ignore(const void *a, const void *b)
 /*
  * Display an entry in the menu.
  */
-static void quality_display(menu_type *menu, int oid, bool cursor, int row, int col, int width)
+static void quality_display(struct menu *menu, int oid, bool cursor, int row, int col, int width)
 {
 	/* Note: the order of the values in quality_choices do not align with the ignore_type_t enum order. */
 	const char *name = quality_choices[oid].name;
@@ -1374,7 +1374,7 @@ static void quality_display(menu_type *menu, int oid, bool cursor, int row, int 
 /*
  * Display the quality ignore subtypes.
  */
-static void quality_subdisplay(menu_type *menu, int oid, bool cursor, int row, int col, int width)
+static void quality_subdisplay(struct menu *menu, int oid, bool cursor, int row, int col, int width)
 {
 	const char *name = quality_values[oid].name;
 	byte attr = (cursor ? TERM_L_BLUE : TERM_WHITE);
@@ -1386,9 +1386,9 @@ static void quality_subdisplay(menu_type *menu, int oid, bool cursor, int row, i
 /*
  * Handle keypresses.
  */
-static bool quality_action(menu_type *m, const ui_event *event, int oid)
+static bool quality_action(struct menu *m, const ui_event *event, int oid)
 {
-	menu_type menu;
+	struct menu menu;
 	menu_iter menu_f = { NULL, NULL, quality_subdisplay, NULL, NULL };
 	region area = { 27, 2, 29, IGNORE_MAX };
 	ui_event evt;
@@ -1433,7 +1433,7 @@ static bool quality_action(menu_type *m, const ui_event *event, int oid)
  */
 static void quality_menu(void *unused, const char *also_unused)
 {
-	menu_type menu;
+	struct menu menu;
 	menu_iter menu_f = { NULL, NULL, quality_display, quality_action, NULL };
 	region area = { 0, 0, 0, 0 };
 
@@ -1462,7 +1462,7 @@ static void quality_menu(void *unused, const char *also_unused)
 /*
  * Display an entry on the sval menu
  */
-static void ignore_sval_menu_display(menu_type *menu, int oid, bool cursor,
+static void ignore_sval_menu_display(struct menu *menu, int oid, bool cursor,
 		int row, int col, int width)
 {
 	char buf[80];
@@ -1487,7 +1487,7 @@ static void ignore_sval_menu_display(menu_type *menu, int oid, bool cursor,
 /*
  * Deal with events on the sval menu
  */
-static bool ignore_sval_menu_action(menu_type *m, const ui_event *event,
+static bool ignore_sval_menu_action(struct menu *m, const ui_event *event,
 		int oid)
 {
 	const ignore_choice *choice = menu_priv(m);
@@ -1573,7 +1573,7 @@ static int ignore_collect_kind(int tval, ignore_choice **ch)
  */
 static bool sval_menu(int tval, const char *desc)
 {
-	menu_type *menu;
+	struct menu *menu;
 	region area = { 1, 2, -1, -1 };
 
 	ignore_choice *choices;
@@ -1657,7 +1657,7 @@ static struct
 	{ '{', "Autoinscription setup", textui_browse_object_knowledge },
 };
 
-static char tag_options_item(menu_type *menu, int oid)
+static char tag_options_item(struct menu *menu, int oid)
 {
 	size_t line = (size_t) oid;
 
@@ -1676,7 +1676,7 @@ static char tag_options_item(menu_type *menu, int oid)
 	return 0;
 }
 
-static int valid_options_item(menu_type *menu, int oid)
+static int valid_options_item(struct menu *menu, int oid)
 {
 	size_t line = (size_t) oid;
 
@@ -1695,7 +1695,7 @@ static int valid_options_item(menu_type *menu, int oid)
 	return 0;
 }
 
-static void display_options_item(menu_type *menu, int oid, bool cursor, int row, int col, int width)
+static void display_options_item(struct menu *menu, int oid, bool cursor, int row, int col, int width)
 {
 	size_t line = (size_t) oid;
 
@@ -1719,7 +1719,7 @@ static void display_options_item(menu_type *menu, int oid, bool cursor, int row,
 	}
 }
 
-static bool handle_options_item(menu_type *menu, const ui_event *event, int oid)
+static bool handle_options_item(struct menu *menu, const ui_event *event, int oid)
 {
 	if (event->type == EVT_SELECT)
 	{
@@ -1756,7 +1756,7 @@ static const menu_iter options_item_iter =
  */
 void do_cmd_options_item(const char *title, int row)
 {
-	menu_type menu;
+	struct menu menu;
 
 	menu_init(&menu, MN_SKIN_SCROLL, &options_item_iter);
 	menu_setpriv(&menu, N_ELEMENTS(sval_dependent) + N_ELEMENTS(extra_item_options) + 1, NULL);
@@ -1778,7 +1778,7 @@ void do_cmd_options_item(const char *title, int row)
 
 /*** Main menu definitions and display ***/
 
-static menu_type *option_menu;
+static struct menu *option_menu;
 static menu_action option_actions[] = 
 {
 	{ 0, 'a', "User interface options", option_toggle_menu },

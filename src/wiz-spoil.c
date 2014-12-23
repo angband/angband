@@ -708,7 +708,7 @@ static void spoiler_menu_act(const char *title, int row)
 	message_flush();
 }
 
-static menu_type *spoil_menu;
+static struct menu *spoil_menu;
 static menu_action spoil_actions[] =
 {
 	{ 0, 0, "Brief Object Info (obj-desc.spo)",		spoiler_menu_act },
