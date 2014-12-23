@@ -111,7 +111,6 @@ unsigned char cmd_lookup_key_unktrl(cmd_code lookup_cmd, int mode);
 /* XXX none under here should be here */
 
 /* store.c */
-extern void do_cmd_store(struct command *cmd);
 extern void do_cmd_sell(struct command *cmd);
 extern void do_cmd_stash(struct command *cmd);
 extern void do_cmd_buy(struct command *cmd);

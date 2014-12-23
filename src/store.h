@@ -76,11 +76,16 @@ void store_shuffle(struct store *store);
 void store_maint(struct store *store);
 int price_item(struct store *store, const object_type *o_ptr, bool store_buying, int qty);
 
+bool store_will_buy_tester(const struct object *obj);
+bool store_check_num(struct store *store, const struct object *obj);
+int find_inven(const struct object *obj);
+
 extern struct owner *store_ownerbyidx(struct store *s, unsigned int idx);
 
 struct parser *init_parse_stores(void);
 extern struct parser *store_parser_new(void);
 extern struct parser *store_owner_parser_new(struct store *stores);
 void textui_store_knowledge(int store);
+void textui_enter_store(void);
 
 #endif /* INCLUDED_STORE_H */

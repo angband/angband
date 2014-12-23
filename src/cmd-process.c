@@ -29,6 +29,7 @@
 #include "player-util.h"
 #include "target.h"
 #include "textui.h"
+#include "store.h"
 #include "ui-event.h"
 #include "ui-game.h"
 #include "ui-help.h"
@@ -155,7 +156,7 @@ static struct cmd_info cmd_hidden[] =
 	{ "Take notes", { ':' }, CMD_NULL, do_cmd_note },
 	{ "Version info", { 'V' }, CMD_NULL, do_cmd_version },
 	{ "Load a single pref line", { '"' }, CMD_NULL, do_cmd_pref },
-	{ "Enter a store", { '_' }, CMD_ENTER_STORE, NULL },
+	{ "Enter a store", { '_' }, CMD_NULL, textui_enter_store },
 	{ "Toggle windows", { KTRL('E') }, CMD_NULL, toggle_inven_equip }, /* XXX */
 	{ "Alter a grid", { '+' }, CMD_ALTER, NULL },
 	{ "Walk", { ';' }, CMD_WALK, NULL },

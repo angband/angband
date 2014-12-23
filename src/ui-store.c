@@ -43,11 +43,6 @@
 #include "z-debug.h"
 
 
-extern bool store_will_buy_tester(const struct object *obj);
-extern bool store_check_num(struct store *store, const struct object *obj);
-extern int find_inven(const struct object *obj);
-
-
 /**
  * Shopkeeper welcome messages.
  *
@@ -120,7 +115,7 @@ bool store_in_store = FALSE;
 
 
 /* Return a random hint from the global hints list */
-const char *random_hint(void)
+static const char *random_hint(void)
 {
 	struct hint *v, *r = NULL;
 	int n;
@@ -1188,7 +1183,7 @@ static const menu_iter store_menu =
 /**
  * Init the store menu
  */
-void store_menu_init(struct store_context *ctx, bool inspect_only)
+static void store_menu_init(struct store_context *ctx, bool inspect_only)
 {
 	struct menu *menu = &ctx->menu;
 
@@ -1238,7 +1233,7 @@ void textui_store_knowledge(int n)
 /**
  * Handle stock change.
  */
-void refresh_stock(game_event_type type, game_event_data *unused, void *user)
+static void refresh_stock(game_event_type type, game_event_data *unused, void *user)
 {
 	struct store_context *ctx = user;
 	struct menu *menu = &ctx->menu;
@@ -1254,7 +1249,7 @@ void refresh_stock(game_event_type type, game_event_data *unused, void *user)
 /**
  * Enter a store, and interact with it.
  */
-void do_cmd_store(struct command *cmd)
+void textui_enter_store(void)
 {
 	struct store *store = store_at(cave, player->py, player->px);
 	struct store_context ctx;

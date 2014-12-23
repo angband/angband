@@ -75,7 +75,6 @@ typedef enum cmd_code
 	CMD_CLOSE,
 	CMD_RUN,
 	CMD_HOLD,
-	CMD_ENTER_STORE,
 	CMD_ALTER,
 
     /* Store commands */	
