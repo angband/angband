@@ -115,7 +115,7 @@ static void py_pickup_gold(void)
 		total_gold += (s32b)obj->pval;
 
 		/* Delete the gold */
-		pile_object_excise(cave, player->py, player->px, obj);
+		square_excise_object(cave, player->py, player->px, obj);
 		object_delete(obj);
 		obj = next;
 	}
@@ -189,7 +189,7 @@ static void py_pickup_aux(struct object *obj, bool domsg)
 		history_add_artifact(obj->artifact, object_is_known(obj), TRUE);
 
 	/* Carry the object */
-	pile_object_excise(cave, player->py, player->px, obj);
+	square_excise_object(cave, player->py, player->px, obj);
 	inven_carry(player, obj, domsg);
 }
 

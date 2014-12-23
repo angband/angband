@@ -1340,7 +1340,7 @@ void process_monster_grab_objects(struct chunk *c, struct monster *m_ptr,
 				msg("%s picks up %s.", m_name, o_name);
 
 			/* Carry the object */
-			pile_object_excise(c, ny, nx, obj);
+			square_excise_object(c, ny, nx, obj);
 			monster_carry(c, m_ptr, obj);
 
 		/* Destroy the item */
@@ -1350,7 +1350,7 @@ void process_monster_grab_objects(struct chunk *c, struct monster *m_ptr,
 				msgt(MSG_DESTROY, "%s crushes %s.", m_name, o_name);
 
 			/* Delete the object */
-			pile_object_excise(c, ny, nx, obj);
+			square_excise_object(c, ny, nx, obj);
 			object_delete(obj);
 		}
 	}

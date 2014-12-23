@@ -118,15 +118,7 @@ bool object_is_equipped(struct player_body body, const struct object *obj)
 
 bool object_is_carried(struct player *p, const struct object *obj)
 {
-	struct object *carried = p->gear;
-
-	/* Check against all the player's gear */
-	while (carried) {
-		if (carried == obj)
-			return TRUE;
-		carried = carried->next;
-	}
-	return FALSE;
+	return pile_contains(p->gear, obj);
 }
 
 int pack_slots_used(struct player *p)
@@ -339,57 +331,32 @@ char gear_to_label(struct object *obj)
  */
 bool gear_excise_object(struct object *obj)
 {
-	struct object *gear_obj = player->gear;
+	int i;
 
-	/* Test each object */
-	while (gear_obj) {
-		int i;
+	pile_excise(&player->gear, obj);
 
-		/* Remove it when we find it */
-		if (obj == gear_obj) {
-			/* Previous object points one further */
-			if (gear_obj->prev)
-				(gear_obj->prev)->next = gear_obj->next;
-
-			/* Next object points one back */
-			if (gear_obj->next)
-				(gear_obj->next)->prev = gear_obj->prev;
-
-			/* Original object points nowhere */
-			obj->prev = NULL;
-			obj->next = NULL;
-
-			/* Make sure it isn't still equipped */
-			for (i = 0; i < player->body.count; i++)
-				if (slot_object(player, i) == obj)
-					player->body.slots[i].obj = NULL;
-
-			/* Housekeeping */
-			player->upkeep->update |= (PU_BONUS | PU_MANA | PU_INVEN);
-			player->upkeep->notice |= (PN_COMBINE);
-			player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
-
-			return TRUE;
-		}
-		gear_obj = gear_obj->next;
+	/* Make sure it isn't still equipped */
+	for (i = 0; i < player->body.count; i++) {
+		if (slot_object(player, i) == obj)
+			player->body.slots[i].obj = NULL;
 	}
 
-	return FALSE;
+	/* Housekeeping */
+	player->upkeep->update |= (PU_BONUS | PU_MANA | PU_INVEN);
+	player->upkeep->notice |= (PN_COMBINE);
+	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
+
+	return TRUE;
 }
 
 struct object *gear_last_item(void)
 {
-	struct object *gear_obj = player->gear;
+	return pile_last_item(player->gear);
+}
 
-	/* No gear at all */
-	if (!gear_obj)
-		return NULL;
-
-	/* Run along the list, stopping just before the end */
-	while (gear_obj->next)
-		gear_obj = gear_obj->next;
-
-	return gear_obj;
+void gear_insert_end(struct object *obj)
+{
+	pile_insert_end(&player->gear, obj);
 }
 
 /**
@@ -594,15 +561,7 @@ bool inven_carry(struct player *p, struct object *obj, bool message)
 		return FALSE;
 
 	/* Add to the end of the list */
-	gear_obj = gear_last_item();
-	if (gear_obj) {
-		gear_obj->next = obj;
-		obj->prev = gear_obj;
-	} else {
-		p->gear = obj;
-		obj->prev = NULL;
-	}
-	obj->next = NULL;
+	gear_insert_end(obj);
 
 	/* Remove cave object details */
 	obj->held_m_idx = 0;

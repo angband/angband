@@ -843,11 +843,7 @@ static void home_carry(struct object *obj)
 	if (store->stock_num >= store->stock_size) return;
 
 	/* Insert the new object */
-	obj->next = store->stock;
-	if (store->stock)
-		store->stock->prev = obj;
-	obj->prev = NULL;
-	store->stock = obj;
+	pile_insert(&store->stock, obj);
 
 	/* Rewrite the stock list */
 	store_stock_list(store);
@@ -925,11 +921,7 @@ struct object *store_carry(struct store *store, struct object *obj)
 		return NULL;
 
 	/* Insert the new object */
-	obj->next = store->stock;
-	if (store->stock)
-		store->stock->prev = obj;
-	obj->prev = NULL;
-	store->stock = obj;
+	pile_insert(&store->stock, obj);
 
 	/* Rewrite the stock list */
 	store_stock_list(store);
@@ -939,54 +931,46 @@ struct object *store_carry(struct store *store, struct object *obj)
 
 
 /**
- * Excise an object from a store's stock, leaving it orphaned.
- *
- * Code using this function must then deal with the orphaned object in some
- * way - usually by deleting it or giving it to the player.
+ * Find a given object kind in the store.
  */
-static bool store_object_excise(struct store *store, struct object *obj)
-{
-	struct object *current = store->stock;
+static struct object *store_find_kind(struct store *s, object_kind *k) {
+	struct object *obj;
 
-	/* Special case - excise top object */
-	if (current == obj) {
-		store->stock = obj->next;
-		if (obj->next)
-			(obj->next)->prev = NULL;
-		obj->next = NULL;
-		obj->prev = NULL;
-		return TRUE;
+	assert(s);
+	assert(k);
+
+	/* Check if it's already in stock */
+	for (obj = s->stock; obj; obj = obj->next) {
+		if (obj->kind == k && !obj->ego)
+			return obj;
 	}
 
-	/* Otherwise find the object... */
-	while (current != obj) {
-		current = current->next;
-
-		/* Object isn't in the pile */
-		if (!current)
-			return FALSE;
-	}
-
-	/* ...and remove it */
-	(obj->prev)->next = obj->next;
-	if (obj->next)
-		(obj->next)->prev = obj->prev;
-	obj->next = NULL;
-	obj->prev = NULL;
-	return TRUE;
+	return NULL;
 }
+
 
 /**
  * Delete an object from store 'store', or, if it is a stack, perhaps only
  * partially delete it.
+ *
+ * This function is used when store maintainance occurs, and is designed to
+ * imitate non-PC purchasers making purchases from the store.
+ *
+ * The reason this doesn't check for "staple" items and refuse to
+ * delete them is that a store could conceviably have two stacks of a
+ * single staple item, in which case, you could have a store which had
+ * more stacks than staple items, but all stacks are staple items.
  */
-static void store_delete_index(struct store *store, int what)
+static void store_delete_random(struct store *store)
 {
+	int what;
 	int num;
 	struct object *obj;
 
-	/* Paranoia */
-	if (store->stock_num <= 0) return;
+	assert(store->stock_num > 0);
+
+	/* Pick a random slot */
+	what = randint0(store->stock_num);
 
 	/* Walk through list until we find our item */
 	obj = store->stock;
@@ -1032,55 +1016,14 @@ static void store_delete_index(struct store *store, int what)
 
 	/* Delete the item, wholly or in part */
 	if (num == obj->number) {
-		store_object_excise(store, obj);
+		pile_excise(&store->stock, obj);
 		object_delete(obj);
-	} else
+	} else {
 		obj->number -= num;
+	}
 
 	/* Redo the stock list */
 	store_stock_list(store);
-}
-
-/**
- * Find a given object kind in the store.
- */
-static struct object *store_find_kind(struct store *s, object_kind *k) {
-	struct object *obj;
-
-	assert(s);
-	assert(k);
-
-	/* Check if it's already in stock */
-	for (obj = s->stock; obj; obj = obj->next) {
-		if (obj->kind == k && !obj->ego)
-			return obj;
-	}
-
-	return NULL;
-}
-
-
-/**
- * Delete a random object from store 'st', or, if it is a stack, perhaps only
- * partially delete it.
- *
- * This function is used when store maintainance occurs, and is designed to
- * imitate non-PC purchasers making purchases from the store.
- *
- * The reason this doesn't check for "staple" items and refuse to
- * delete them is that a store could conceviably have two stacks of a
- * single staple item, in which case, you could have a store which had
- * more stacks than staple items, but all stacks are staple items.
- */
-static void store_delete_random(struct store *store)
-{
-	int what;
-
-	if (store->stock_num <= 0) return;
-
-	/* Pick a random slot */
-	what = randint0(store->stock_num);
-	store_delete_index(store, what);
 }
 
 
@@ -1270,7 +1213,7 @@ void store_maint(struct store *s)
 		for (j = s->stock_num - 1; j >= 0; j--) {
 			struct object *obj = s->stock_list[j];
 			if (!black_market_ok(obj)) {
-				store_object_excise(s, obj);
+				pile_excise(&s->stock, obj);
 				object_delete(obj);
 				store_stock_list(s);
 			}
@@ -1659,10 +1602,10 @@ void do_cmd_buy(struct command *cmd)
 	/* Remove the bought objects from the store if it's not a staple */
 	if (!store_is_staple(store, obj->kind)) {
 		/* Reduce or remove the item */
-		if (obj->number > amt)
+		if (obj->number > amt) {
 			obj->number -= amt;
-		else {
-			store_object_excise(store, obj);
+		} else {
+			pile_excise(&store->stock, obj);
 			object_delete(obj);
 		}
 		store_stock_list(store);
@@ -1739,10 +1682,10 @@ void do_cmd_retrieve(struct command *cmd)
 	handle_stuff(player->upkeep);
 	
 	/* Reduce or remove the item */
-	if (obj->number > amt)
+	if (obj->number > amt) {
 		obj->number -= amt;
-	else {
-		store_object_excise(store, obj);
+	} else {
+		pile_excise(&store->stock, obj);
 		object_delete(obj);
 	}
 	store_stock_list(store);

@@ -44,12 +44,130 @@
 #include "randname.h"
 #include "z-queue.h"
 
-struct object *pile_last_item(struct object *start)
+/* #define LIST_DEBUG */
+
+/**
+ * Check the integrity of a linked - make sure it's not circular and that each
+ * entry in the chain has consistent next and prev pointers.
+ */
+void pile_check_integrity(const char *op, struct object *pile, struct object *hilight)
 {
-	struct object *obj = start;
+	struct object *obj = pile;
+	struct object *prev = NULL;
+
+#ifdef LIST_DEBUG
+	int i = 0;
+	fprintf(stderr, "\n%s  pile %08x\n", op, (int)pile);
+#endif
+
+	/* Check prev<->next chain */
+	while (obj) {
+#ifdef LIST_DEBUG
+		fprintf(stderr, "[%2d] this = %08x  prev = %08x  next = %08x  %s\n",
+			i, (int)obj, (int)obj->prev, (int)obj->next,
+			(obj == hilight) ? "*" : "");
+		i++;
+#endif
+
+		assert(obj->prev == prev);
+		prev = obj;
+		obj = obj->next;
+	};
+
+	/* Check for circularity */
+	for (obj = pile; obj; obj = obj->next) {
+		struct object *check;
+		for (check = obj->next; check; check = check->next) {
+			assert(check->next != obj);
+		}
+	}
+}
+
+/**
+ * Insert 'obj' into the pile 'pile'.
+ *
+ * 'obj' must not already be in any other lists.
+ */
+void pile_insert(struct object **pile, struct object *obj)
+{
+	assert(obj->prev == NULL);
+	assert(obj->next == NULL);
+
+	if (*pile) {
+		obj->next = *pile;
+		(*pile)->prev = obj;
+	}
+
+	*pile = obj;
+
+	pile_check_integrity("insert", *pile, obj);
+}
+
+/**
+ * Insert 'obj' at the end of pile 'pile'.
+ *
+ * Unlike pile_insert(), obj can be the beginning of a new list of objects.
+ */
+void pile_insert_end(struct object **pile, struct object *obj)
+{
+	assert(obj->prev == NULL);
+
+	if (*pile) {
+		struct object *end = pile_last_item(*pile);
+
+		end->next = obj;
+		obj->prev = end;
+	} else {
+		*pile = obj;
+	}
+
+	pile_check_integrity("insert_end", *pile, obj);
+}
+
+/**
+ * Remove object 'obj' from pile 'pile'.
+ */
+void pile_excise(struct object **pile, struct object *obj)
+{
+	struct object *prev = obj->prev;
+	struct object *next = obj->next;
+
+	assert(pile_contains(*pile, obj));
+	pile_check_integrity("excise [pre]", *pile, obj);
+
+	/* Special case: unlink top object */
+	if (*pile == obj) {
+		assert(prev == NULL);	/* Invariant - if it's the top of the pile */
+
+		*pile = next;
+	} else {
+		assert(obj->prev != NULL);	/* Should definitely have a previous one set */
+
+		/* Otherwise unlink from the previous */
+		prev->next = next;
+		obj->prev = NULL;
+	}
+
+	/* And then unlink from the next */
+	if (next) {
+		next->prev = prev;
+		obj->next = NULL;
+	}
+
+	pile_check_integrity("excise [post]", *pile, NULL);
+}
+
+/**
+ * Return the last item in pile 'pile'.
+ */
+struct object *pile_last_item(struct object *const pile)
+{
+	struct object *obj = pile;
+
+	pile_check_integrity("last_item", pile, NULL);
 
 	/* No pile at all */
-	if (!obj)
+	if (!pile)
 		return NULL;
 
 	/* Run along the list, stopping just before the end */
@@ -59,9 +177,12 @@ struct object *pile_last_item(struct object *start)
 	return obj;
 }
 
-bool object_in_pile(struct object *top, struct object *obj)
+/**
+ * Check if pile 'pile' contains object 'obj'.
+ */
+bool pile_contains(const struct object *top, const struct object *obj)
 {
-	struct object *pile_obj = top;
+	const struct object *pile_obj = top;
 
 	while (pile_obj) {
 		if (obj == pile_obj)
@@ -70,45 +191,6 @@ bool object_in_pile(struct object *top, struct object *obj)
 	}
 
 	return FALSE;
-}
-
-/**
- * Excise an object from a floor pile, leaving it orphaned.
-
- * Code using this function must then deal with the orphaned object in some
- * way - usually by deleting it, or adding it to a player, monster or store
- * inventory.
- */
-bool pile_object_excise(struct chunk *c, int y, int x, struct object *obj)
-{
-	struct object *current = square_object(c, y, x);
-
-	/* Special case - excise top object */
-	if (current == obj) {
-		c->squares[y][x].obj = obj->next;
-		if (obj->next)
-			(obj->next)->prev = NULL;
-		obj->next = NULL;
-		obj->prev = NULL;
-		return TRUE;
-	}
-
-	/* Otherwise find the object... */
-	while (current != obj) {
-		current = current->next;
-
-		/* Object isn't in the pile */
-		if (!current)
-			return FALSE;
-	}
-
-	/* ...and remove it */
-	(obj->prev)->next = obj->next;
-	if (obj->next)
-		(obj->next)->prev = obj->prev;
-	obj->next = NULL;
-	obj->prev = NULL;
-	return TRUE;
 }
 
 /**
@@ -491,7 +573,7 @@ struct object *floor_object_for_use(struct object *obj, int num, bool message)
 		usable = object_split(obj, num);
 	} else {
 		usable = obj;
-		pile_object_excise(cave, player->py, player->px, usable);
+		square_excise_object(cave, player->py, player->px, usable);
 	}
 
 	/* Housekeeping */
@@ -537,7 +619,6 @@ bool floor_carry(struct chunk *c, int y, int x, struct object *drop, bool last)
 	int n = 0;
 	struct object *obj;
 
-
 	/* Scan objects in that grid for combination */
 	for (obj = square_object(c, y, x); obj; obj = obj->next) {
 		/* Check for combination */
@@ -562,7 +643,7 @@ bool floor_carry(struct chunk *c, int y, int x, struct object *drop, bool last)
 		struct object *ignore = floor_get_oldest_ignored(y, x);
 
 		if (ignore) {
-			pile_object_excise(c, y, x, ignore);
+			square_excise_object(c, y, x, ignore);
 			object_delete(ignore);
 		} else
 			return FALSE;
@@ -576,18 +657,10 @@ bool floor_carry(struct chunk *c, int y, int x, struct object *drop, bool last)
 	drop->held_m_idx = 0;
 
 	/* Link to the first or last object in the pile */
-	if (last) {
-		obj = pile_last_item(square_object(c, y, x));
-		drop->next = NULL;
-		drop->prev = obj;
-		if (obj)
-			obj->next = drop;
-		else
-			c->squares[y][x].obj = drop;
-	} else {
-		drop->next = square_object(c, y, x);
-		c->squares[y][x].obj = drop;
-	}
+	if (last)
+		pile_insert_end(&c->squares[y][x].obj, drop);
+	else
+		pile_insert(&c->squares[y][x].obj, drop);
 
 	/* Redraw */
 	square_note_spot(c, y, x);

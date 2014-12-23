@@ -335,7 +335,7 @@ void wield_item(struct object *obj, int slot)
 		wielded = object_split(obj, 1);
 
 		/* If it's a gear object, give the split item a list entry */
-		if (object_in_pile(player->gear, obj)) {
+		if (pile_contains(player->gear, obj)) {
 			wielded->next = obj->next;
 			obj->next = wielded;
 			wielded->prev = obj;
@@ -346,8 +346,8 @@ void wield_item(struct object *obj, int slot)
 		wielded = obj;
 
 	/* Carry floor items */
-	if (object_in_pile(square_object(cave, player->py, player->px), wielded)) {
-		pile_object_excise(cave, player->py, player->px, wielded);
+	if (square_holds_object(cave, player->py, player->px, wielded)) {
+		square_excise_object(cave, player->py, player->px, wielded);
 		inven_carry(player, wielded, FALSE);
 	}
 

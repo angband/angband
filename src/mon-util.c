@@ -453,9 +453,7 @@ bool monster_carry(struct chunk *c, struct monster *mon, struct object *obj)
 	obj->held_m_idx = mon->midx;
 
 	/* Add the object to the monster's inventory */
-	obj->next = mon->held_obj;
-	if (mon->held_obj)
-		mon->held_obj->prev = obj;
+	pile_insert(&mon->held_obj, obj);
 
 	/* Result */
 	return TRUE;

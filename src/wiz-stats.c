@@ -1408,7 +1408,7 @@ static void scan_for_objects(void)
 				get_obj_data(obj, y, x, FALSE, FALSE);
 
 				/* Delete the object */
-				pile_object_excise(cave, y, x, obj);
+				square_excise_object(cave, y, x, obj);
 				object_delete(obj);
 			}
 		}
