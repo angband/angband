@@ -844,9 +844,7 @@ static void home_carry(struct object *obj)
 
 	/* Insert the new object */
 	pile_insert(&store->stock, obj);
-
-	/* Rewrite the stock list */
-	store_stock_list(store);
+	store->stock_num++;
 }
 
 
@@ -922,8 +920,21 @@ struct object *store_carry(struct store *store, struct object *obj)
 
 	/* Insert the new object */
 	pile_insert(&store->stock, obj);
+	store->stock_num++;
 
 	return obj;
+}
+
+
+void store_delete(struct store *s, struct object *obj, int amt)
+{
+	if (obj->number > amt) {
+		obj->number -= amt;
+	} else {
+		pile_excise(&s->stock, obj);
+		object_delete(obj);
+		s->stock_num--;
+	}
 }
 
 
@@ -1012,12 +1023,7 @@ static void store_delete_random(struct store *store)
 		history_lose_artifact(obj->artifact);
 
 	/* Delete the item, wholly or in part */
-	if (num == obj->number) {
-		pile_excise(&store->stock, obj);
-		object_delete(obj);
-	} else {
-		obj->number -= num;
-	}
+	store_delete(store, obj, num);
 }
 
 
@@ -1190,7 +1196,6 @@ static struct object *store_create_item(struct store *store, object_kind *kind)
 	return store_carry(store, obj);
 }
 
-
 /**
  * Maintain the inventory at the stores.
  */
@@ -1204,10 +1209,8 @@ void store_maint(struct store *s)
 	if (s->sidx == STORE_B_MARKET) {
 		struct object *obj;
 		for (obj = s->stock; obj; obj = obj->next) {
-			if (!black_market_ok(obj)) {
-				pile_excise(&s->stock, obj);
-				object_delete(obj);
-			}
+			if (!black_market_ok(obj))
+				store_delete(s, obj, obj->number);
 		}
 	}
 
@@ -1590,12 +1593,7 @@ void do_cmd_buy(struct command *cmd)
 	/* Remove the bought objects from the store if it's not a staple */
 	if (!store_is_staple(store, obj->kind)) {
 		/* Reduce or remove the item */
-		if (obj->number > amt) {
-			obj->number -= amt;
-		} else {
-			pile_excise(&store->stock, obj);
-			object_delete(obj);
-		}
+		store_delete(store, obj, amt);
 
 		/* Store is empty */
 		if (store->stock_num == 0) {
@@ -1671,12 +1669,7 @@ void do_cmd_retrieve(struct command *cmd)
 	handle_stuff(player->upkeep);
 	
 	/* Reduce or remove the item */
-	if (obj->number > amt) {
-		obj->number -= amt;
-	} else {
-		pile_excise(&store->stock, obj);
-		object_delete(obj);
-	}
+	store_delete(store, obj, amt);
 
 	event_signal(EVENT_STORECHANGED);
 	event_signal(EVENT_INVENTORY);
