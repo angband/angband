@@ -106,25 +106,28 @@ void pile_insert_end(struct object **pile, struct object *obj)
 
 void pile_excise(struct object **pile, struct object *obj)
 {
+	struct object *prev = obj->prev;
+	struct object *next = obj->next;
+
 	assert(pile_contains(*pile, obj));
 	pile_check_integrity("excise", *pile, obj);
 
 	/* Special case: unlink top object */
 	if (*pile == obj) {
-		assert(obj->prev == NULL);	/* Invariant - if it's the top of the pile */
+		assert(prev == NULL);	/* Invariant - if it's the top of the pile */
 
-		*pile = obj->next;
+		*pile = next;
 	} else {
 		assert(obj->prev != NULL);	/* Should definitely have a previous one set */
 
 		/* Otherwise unlink from the previous */
-		(obj->prev)->next = obj->next;
+		prev->next = next;
 		obj->prev = NULL;
 	}
 
 	/* And then unlink from the next */
-	if (obj->next) {
-		(obj->next)->prev = obj->prev;
+	if (next) {
+		next->prev = prev;
 		obj->next = NULL;
 	}
 }
