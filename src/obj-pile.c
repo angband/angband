@@ -56,7 +56,8 @@ void pile_check_integrity(const char *op, struct object *pile, struct object *hi
 	fprintf(stderr, "\n%s  pile %08x\n", op, (int)pile);
 #endif
 
-	do {
+	/* Check prev<->next chain */
+	while (obj) {
 #ifdef LIST_DEBUG
 		fprintf(stderr, "[%2d] this = %08x  prev = %08x  next = %08x  %s\n",
 			i, (int)obj, (int)obj->prev, (int)obj->next,
@@ -67,7 +68,15 @@ void pile_check_integrity(const char *op, struct object *pile, struct object *hi
 		assert(obj->prev == prev);
 		prev = obj;
 		obj = obj->next;
-	} while (obj);
+	};
+
+	/* Check for circularity */
+	for (obj = pile; obj; obj = obj->next) {
+		struct object *check;
+		for (check = obj->next; check; check = check->next) {
+			assert(check->next != obj);
+		}
+	}
 }
 
 void pile_insert(struct object **pile, struct object *obj)
@@ -110,7 +119,7 @@ void pile_excise(struct object **pile, struct object *obj)
 	struct object *next = obj->next;
 
 	assert(pile_contains(*pile, obj));
-	pile_check_integrity("excise", *pile, obj);
+	pile_check_integrity("excise [pre]", *pile, obj);
 
 	/* Special case: unlink top object */
 	if (*pile == obj) {
@@ -130,11 +139,15 @@ void pile_excise(struct object **pile, struct object *obj)
 		next->prev = prev;
 		obj->next = NULL;
 	}
+
+	pile_check_integrity("excise [post]", *pile, NULL);
 }
 
 struct object *pile_last_item(struct object *const pile)
 {
 	struct object *obj = pile;
+
+	pile_check_integrity("last_item", pile, NULL);
 
 	/* No pile at all */
 	if (!pile)
