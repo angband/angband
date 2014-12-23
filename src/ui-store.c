@@ -106,7 +106,7 @@ static unsigned int scr_places_y[LOC_MAX];
 #define STORE_INIT_CHANGE		(STORE_FRAME_CHANGE | STORE_GOLD_CHANGE)
 
 struct store_context {
-	menu_type *menu;		/* Menu instance */
+	menu_type menu;			/* Menu instance */
 	struct store *store;	/* Pointer to store */
 	struct object **list;	/* List of objects (unused) */
 	int flags;				/* Display flags */
@@ -217,7 +217,7 @@ static void store_display_recalc(struct store_context *ctx)
 	int wid, hgt;
 	region loc;
 
-	menu_type *m = ctx->menu;
+	menu_type *m = &ctx->menu;
 	struct store *store = ctx->store;
 
 	Term_get_size(&wid, &hgt);
@@ -1188,7 +1188,7 @@ static const menu_iter store_menu =
  */
 void store_menu_init(struct store_context *ctx, bool inspect_only)
 {
-	menu_type *menu = ctx->menu;
+	menu_type *menu = &ctx->menu;
 
 	ctx->flags = STORE_INIT_CHANGE;
 	ctx->inspect_only = inspect_only;
@@ -1212,17 +1212,14 @@ void store_menu_init(struct store_context *ctx, bool inspect_only)
  */
 void textui_store_knowledge(int n)
 {
-	menu_type menu;
 	struct store_context ctx;
-
 	ctx.store = &stores[n];
-	ctx.menu = &menu;
 
 	screen_save();
 	clear_from(0);
 
 	store_menu_init(&ctx, TRUE);
-	menu_select(&menu, 0, FALSE);
+	menu_select(&ctx.menu, 0, FALSE);
 
 	/* Flush messages XXX XXX XXX */
 	message_flush();
@@ -1237,7 +1234,7 @@ void textui_store_knowledge(int n)
 void refresh_stock(game_event_type type, game_event_data *unused, void *user)
 {
 	struct store_context *ctx = user;
-	menu_type *menu = ctx->menu;
+	menu_type *menu = &ctx->menu;
 	struct store *store = ctx->store;
 
 	store_stock_list(store);
@@ -1254,7 +1251,6 @@ void refresh_stock(game_event_type type, game_event_data *unused, void *user)
 void do_cmd_store(struct command *cmd)
 {
 	struct store *store = store_at(cave, player->py, player->px);
-	menu_type menu;
 	struct store_context ctx;
 
 	/* Check that we're on a store */
@@ -1281,7 +1277,6 @@ void do_cmd_store(struct command *cmd)
 	msg_flag = FALSE;
 
 	ctx.store = store;
-	ctx.menu = &menu;
 
 	/* Get a array version of the store stock, register handler for changes */
 	store_stock_list(store);
@@ -1292,7 +1287,7 @@ void do_cmd_store(struct command *cmd)
 	if (store->sidx != STORE_HOME)
 		prt_welcome(store->owner);
 
-	menu_select(&menu, 0, FALSE);
+	menu_select(&ctx.menu, 0, FALSE);
 
 	/* Unregister stock change handler */
 	event_remove_handler(EVENT_STORECHANGED, refresh_stock, &ctx);
