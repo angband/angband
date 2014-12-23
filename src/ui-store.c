@@ -112,15 +112,13 @@ static unsigned int scr_places_y[LOC_MAX];
 #define STORE_INIT_CHANGE		(STORE_FRAME_CHANGE | STORE_GOLD_CHANGE)
 
 struct store_context {
-	menu_type *menu;
-	struct store *store;
-	struct object **list;
+	menu_type *menu;		/* Menu instance */
+	struct store *store;	/* Pointer to store */
+	struct object **list;	/* List of objects (unused) */
+	int flags;				/* Display flags */
 };
 
 /** Variables to maintain state XXX ***/
-
-/* Flags for the display */
-static u16b store_flags;
 
 /* Are we in store? */
 bool store_in_store = FALSE;
@@ -218,12 +216,12 @@ static void prt_welcome(const struct owner *proprietor)
  *  line (height - 4): gold remaining
  *  line (height - 3): command help 
  */
-static void store_display_recalc(menu_type *m)
+static void store_display_recalc(struct store_context *ctx)
 {
 	int wid, hgt;
 	region loc;
 
-	struct store_context *ctx = menu_priv(m);
+	menu_type *m = ctx->menu;
 	struct store *store = ctx->store;
 
 	Term_get_size(&wid, &hgt);
@@ -250,7 +248,7 @@ static void store_display_recalc(menu_type *m)
 	scr_places_y[LOC_HEADER] = 3;
 
 	/* If we are displaying help, make the height smaller */
-	if (store_flags & (STORE_SHOW_HELP))
+	if (ctx->flags & (STORE_SHOW_HELP))
 		hgt -= 3;
 
 	scr_places_y[LOC_MORE] = hgt - 3;
@@ -259,7 +257,7 @@ static void store_display_recalc(menu_type *m)
 	loc = m->boundary;
 
 	/* If we're displaying the help, then put it with a line of padding */
-	if (store_flags & (STORE_SHOW_HELP)) {
+	if (ctx->flags & (STORE_SHOW_HELP)) {
 		scr_places_y[LOC_HELP_CLEAR] = hgt - 1;
 		scr_places_y[LOC_HELP_PROMPT] = hgt;
 		loc.page_rows = -5;
@@ -436,23 +434,23 @@ static void store_display_help(struct store *store)
  * Decides what parts of the store display to redraw.  Called on terminal
  * resizings and the redraw command.
  */
-static void store_redraw(struct store *store)
+static void store_redraw(struct store_context *ctx)
 {
-	if (store_flags & (STORE_FRAME_CHANGE)) {
-		store_display_frame(store);
+	if (ctx->flags & (STORE_FRAME_CHANGE)) {
+		store_display_frame(ctx->store);
 
-		if (store_flags & STORE_SHOW_HELP)
-			store_display_help(store);
+		if (ctx->flags & STORE_SHOW_HELP)
+			store_display_help(ctx->store);
 		else
 			prt("Press '?' for help.", scr_places_y[LOC_HELP_PROMPT], 1);
 
-		store_flags &= ~(STORE_FRAME_CHANGE);
+		ctx->flags &= ~(STORE_FRAME_CHANGE);
 	}
 
-	if (store_flags & (STORE_GOLD_CHANGE)) {
+	if (ctx->flags & (STORE_GOLD_CHANGE)) {
 		prt(format("Gold Remaining: %9ld", (long)player->au),
-		    scr_places_y[LOC_AU], scr_places_x[LOC_AU]);
-		store_flags &= ~(STORE_GOLD_CHANGE);
+				scr_places_y[LOC_AU], scr_places_x[LOC_AU]);
+		ctx->flags &= ~(STORE_GOLD_CHANGE);
 	}
 }
 
@@ -479,10 +477,12 @@ static bool store_get_check(const char *prompt)
 /*
  * Sell an object, or drop if it we're in the home.
  */
-static bool store_sell(struct store *store)
+static bool store_sell(struct store_context *ctx)
 {
 	int amt;
 	int get_mode = USE_EQUIP | USE_INVEN | USE_FLOOR;
+
+	struct store *store = ctx->store;
 
 	struct object *obj;
 	struct object object_type_body;
@@ -574,7 +574,7 @@ static bool store_sell(struct store *store)
 	}
 
 	/* Update the display */
-	store_flags |= STORE_GOLD_CHANGE;
+	ctx->flags |= STORE_GOLD_CHANGE;
 
 	return TRUE;
 }
@@ -584,9 +584,11 @@ static bool store_sell(struct store *store)
 /**
  * Buy an object from a store
  */
-static bool store_purchase(struct store *store, int item)
+static bool store_purchase(struct store_context *ctx, int item)
 {
 	int amt, num;
+
+	struct store *store = ctx->store;
 
 	struct object *obj;
 	struct object *dummy = NULL;
@@ -697,7 +699,7 @@ static bool store_purchase(struct store *store, int item)
 	}
 
 	/* Update the display */
-	store_flags |= STORE_GOLD_CHANGE;
+	ctx->flags |= STORE_GOLD_CHANGE;
 
 	object_delete(dummy);
 
@@ -1078,7 +1080,7 @@ static bool store_menu_handle(menu_type *m, const ui_event *event, int oid)
 			}
 
 			if (action) {
-				store_flags |= (STORE_FRAME_CHANGE | STORE_GOLD_CHANGE);
+				ctx->flags |= (STORE_FRAME_CHANGE | STORE_GOLD_CHANGE);
 
 				/* Let the game handle any core commands (equipping, etc) */
 				process_command(CMD_STORE, TRUE);
@@ -1088,9 +1090,9 @@ static bool store_menu_handle(menu_type *m, const ui_event *event, int oid)
 				handle_stuff(player->upkeep);
 
 				/* Display the store */
-				store_display_recalc(m);
+				store_display_recalc(ctx);
 				store_menu_recalc(m);
-				store_redraw(store);
+				store_redraw(ctx);
 
 				return TRUE;
 			}
@@ -1098,7 +1100,7 @@ static bool store_menu_handle(menu_type *m, const ui_event *event, int oid)
 	} else if (event->type == EVT_KBRD) {
 		switch (event->key.code) {
 			case 's':
-			case 'd': store_sell(store); break;
+			case 'd': store_sell(ctx); break;
 
 			case 'p':
 			case 'g':
@@ -1114,7 +1116,7 @@ static bool store_menu_handle(menu_type *m, const ui_event *event, int oid)
 				oid = store_get_stock(m, oid);
 				prt("", 0, 0);
 				if (oid >= 0) {
-					store_purchase(store, oid);
+					store_purchase(ctx, oid);
 				}
 				break;
 			case 'l':
@@ -1132,16 +1134,16 @@ static bool store_menu_handle(menu_type *m, const ui_event *event, int oid)
 
 			case '?': {
 				/* Toggle help */
-				if (store_flags & STORE_SHOW_HELP)
-					store_flags &= ~(STORE_SHOW_HELP);
+				if (ctx->flags & STORE_SHOW_HELP)
+					ctx->flags &= ~(STORE_SHOW_HELP);
 				else
-					store_flags |= STORE_SHOW_HELP;
+					ctx->flags |= STORE_SHOW_HELP;
 
 				/* Redisplay */
-				store_flags |= STORE_INIT_CHANGE;
+				ctx->flags |= STORE_INIT_CHANGE;
 
-				store_display_recalc(m);
-				store_redraw(store);
+				store_display_recalc(ctx);
+				store_redraw(ctx);
 
 				break;
 			}
@@ -1198,10 +1200,10 @@ void store_menu_init(struct store_context *ctx, bool inspect_only)
 	/* Calculate the positions of things and draw */
 	menu_layout(menu, &store_menu_region);
 	store_menu_set_selections(menu, inspect_only);
-	store_flags = STORE_INIT_CHANGE;
-	store_display_recalc(menu);
+	ctx->flags = STORE_INIT_CHANGE;
+	store_display_recalc(ctx);
 	store_menu_recalc(menu);
-	store_redraw(ctx->store);
+	store_redraw(ctx);
 }
 
 /**
@@ -1245,9 +1247,9 @@ void refresh_stock(game_event_type type, game_event_data *unused, void *user)
 	store_stock_list(store);
 
 	/* Display the store */
-	store_display_recalc(menu);
+	store_display_recalc(ctx);
 	store_menu_recalc(menu);
-	store_redraw(store);
+	store_redraw(ctx);
 }
 
 /**
