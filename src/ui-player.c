@@ -1053,16 +1053,16 @@ void write_character_dump(ang_file *fff)
 
 	/* Dump the Home -- if anything there */
 	if (st_ptr->stock_num) {
+		struct object *obj;
 		/* Header */
 		file_putf(fff, "  [Home Inventory]\n\n");
 
 		/* Dump all available items */
-		for (i = 0; i < st_ptr->stock_num; i++) {
-			object_desc(o_name, sizeof(o_name), st_ptr->stock_list[i],
-						ODESC_PREFIX | ODESC_FULL);
+		for (obj = st_ptr->stock, i = 0; obj; obj = obj->next, i++) {
+			object_desc(o_name, sizeof(o_name), obj, ODESC_PREFIX | ODESC_FULL);
 			file_putf(fff, "%c) %s\n", I2A(i), o_name);
 
-			object_info_chardump(fff, st_ptr->stock_list[i], 5, 72);
+			object_info_chardump(fff, obj, 5, 72);
 		}
 
 		/* Add an empty line */

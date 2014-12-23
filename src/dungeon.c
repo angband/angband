@@ -1629,11 +1629,9 @@ void save_game(void)
  */
 static void death_knowledge(void)
 {
-	struct store *st_ptr = &stores[STORE_HOME];
-	object_type *o_ptr;
+	struct store *home = &stores[STORE_HOME];
+	object_type *obj;
 	time_t death_time = (time_t)0;
-
-	int i;
 
 	/* Retire in the town in a good state */
 	if (player->total_winner) {
@@ -1644,17 +1642,14 @@ static void death_knowledge(void)
 		player->au += 10000000L;
 	}
 
-	for (o_ptr = player->gear; o_ptr; o_ptr = o_ptr->next) {
-		object_flavor_aware(o_ptr);
-		object_notice_everything(o_ptr);
+	for (obj = player->gear; obj; obj = obj->next) {
+		object_flavor_aware(obj);
+		object_notice_everything(obj);
 	}
 
-	for (i = 0; i < st_ptr->stock_num; i++) {
-		o_ptr = st_ptr->stock_list[i];
-		if (!o_ptr->kind) continue;
-
-		object_flavor_aware(o_ptr);
-		object_notice_everything(o_ptr);
+	for (obj = home->stock; obj; obj = obj->next) {
+		object_flavor_aware(obj);
+		object_notice_everything(obj);
 	}
 
 	history_unmask_unknown();

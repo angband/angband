@@ -583,9 +583,7 @@ static bool store_purchase(struct store *store, int item)
 	int amt, num;
 
 	struct object *obj;
-
-	struct object object_type_body;
-	struct object *dummy = &object_type_body;
+	struct object *dummy = NULL;
 
 	char o_name[80];
 
@@ -649,11 +647,13 @@ static bool store_purchase(struct store *store, int item)
 	if (amt <= 0) return FALSE;
 
 	/* Get desired object */
+	dummy = object_new();
 	object_copy_amt(dummy, obj, amt);
 
 	/* Ensure we have room */
 	if (!inven_carry_okay(dummy)) {
 		msg("You cannot carry that many items.");
+		object_delete(dummy);
 		return FALSE;
 	}
 
@@ -681,17 +681,19 @@ static bool store_purchase(struct store *store, int item)
 		if (!response) return FALSE;
 
 		cmdq_push(CMD_BUY);
-		cmd_set_arg_choice(cmdq_peek(), "item", item);
+		cmd_set_arg_item(cmdq_peek(), "item", obj);
 		cmd_set_arg_number(cmdq_peek(), "quantity", amt);
 	} else {
 		/* Home is much easier */
 		cmdq_push(CMD_RETRIEVE);
-		cmd_set_arg_choice(cmdq_peek(), "item", item);
+		cmd_set_arg_item(cmdq_peek(), "item", obj);
 		cmd_set_arg_number(cmdq_peek(), "quantity", amt);
 	}
 
 	/* Update the display */
 	store_flags |= STORE_GOLD_CHANGE;
+
+	object_delete(dummy);
 
 	/* Not kicked out */
 	return TRUE;
@@ -834,6 +836,208 @@ static int store_get_stock(menu_type *m, int oid)
 
 	/* if we do not have a new selection, just return the original item */
 	return oid;
+}
+
+/* pick the context menu options appropiate for a store */
+int context_menu_store(struct store *store, const int oid, int mx, int my)
+{
+	menu_type *m;
+	region r;
+	int selected;
+	char *labels;
+	object_type *o_ptr;
+
+	m = menu_dynamic_new();
+	if (!m || !store) {
+		return 0;
+	}
+
+	/* Get the actual object */
+	o_ptr = store->stock_list[oid];
+
+	labels = string_make(lower_case);
+	m->selections = labels;
+
+	menu_dynamic_add_label(m, "Inspect Inventory", 'I', 1, labels);
+	if (store->sidx == STORE_HOME) {
+		/*menu_dynamic_add(m, "Stash One", 2);*/
+		menu_dynamic_add_label(m, "Stash", 'd', 3, labels);
+		menu_dynamic_add_label(m, "Examine", 'x', 4, labels);
+		menu_dynamic_add_label(m, "Take", 'p', 6, labels);
+		if (o_ptr->number > 1) {
+			menu_dynamic_add_label(m, "Take One", 'o', 5, labels);
+		}
+	} else {
+		/*menu_dynamic_add(m, "Sell One", 2);*/
+		menu_dynamic_add_label(m, "Sell", 'd', 3, labels);
+		menu_dynamic_add_label(m, "Examine", 'x', 4, labels);
+		menu_dynamic_add_label(m, "Buy", 'p', 6, labels);
+		if (o_ptr->number > 1) {
+			menu_dynamic_add_label(m, "Buy One", 'o', 5, labels);
+		}
+	}
+	menu_dynamic_add_label(m, "Exit", '`', 7, labels);
+
+
+	/* work out display region */
+	r.width = menu_dynamic_longest_entry(m) + 3 + 2; /* +3 for tag, 2 for pad */
+	if (mx > Term->wid - r.width - 1) {
+		r.col = Term->wid - r.width - 1;
+	} else {
+		r.col = mx + 1;
+	}
+	r.page_rows = m->count;
+	if (my > Term->hgt - r.page_rows - 1) {
+		if (my - r.page_rows - 1 <= 0) {
+			/* menu has too many items, so put in upper right corner */
+			r.row = 1;
+			r.col = Term->wid - r.width - 1;
+		} else {
+			r.row = Term->hgt - r.page_rows - 1;
+		}
+	} else {
+		r.row = my + 1;
+	}
+
+	/* Hack -- no flush needed */
+	msg_flag = FALSE;
+	screen_save();
+
+	menu_layout(m, &r);
+	region_erase_bordered(&r);
+
+	prt("(Enter to select, ESC) Command:", 0, 0);
+	selected = menu_dynamic_select(m);
+
+	menu_dynamic_free(m);
+	string_free(labels);
+
+	screen_load();
+	if (selected == 1) {
+		Term_keypress('I', 0);
+	} else
+	if (selected == 2) {
+		Term_keypress('s', 0);
+		/* oid is store item we do not know item we want to sell here */
+		/*if (store->sidx == STORE_HOME) {
+			cmdq_push(CMD_STASH);
+		} else {
+			cmdq_push(CMD_SELL);
+		}
+		cmd_set_arg_item(cmdq_peek(), "item", oid);
+		cmd_set_arg_number(cmdq_peek(), "quantity", 1);*/
+	} else
+	if (selected == 3) {
+		Term_keypress('s', 0);
+	} else
+	if (selected == 4) {
+		Term_keypress('x', 0);
+	} else
+	if (selected == 5) {
+		if (store->sidx == STORE_HOME) {
+			cmdq_push(CMD_RETRIEVE);
+		} else {
+			cmdq_push(CMD_BUY);
+		}
+		cmd_set_arg_item(cmdq_peek(), "item", o_ptr);
+		cmd_set_arg_number(cmdq_peek(), "quantity", 1);
+	} else
+	if (selected == 6) {
+		Term_keypress('p', 0);
+	} else
+	if (selected == 7) {
+		Term_keypress(ESCAPE, 0);
+	}
+	return 1;
+}
+
+/* pick the context menu options appropiate for an item available in a store */
+int context_menu_store_item(struct store *store, const int oid, int mx, int my)
+{
+	menu_type *m;
+	region r;
+	int selected;
+	char *labels;
+	object_type *o_ptr;
+	char header[120];
+
+	/* Get the actual object */
+	o_ptr = store->stock_list[oid];
+
+
+	m = menu_dynamic_new();
+	if (!m || !store) {
+		return 0;
+	}
+	object_desc(header, sizeof(header), o_ptr, ODESC_PREFIX | ODESC_BASE);
+
+	labels = string_make(lower_case);
+	m->selections = labels;
+
+	menu_dynamic_add_label(m, "Examine", 'x', 4, labels);
+	if (store->sidx == STORE_HOME) {
+		menu_dynamic_add_label(m, "Take", 'p', 6, labels);
+		if (o_ptr->number > 1) {
+			menu_dynamic_add_label(m, "Take One", 'o', 5, labels);
+		}
+	} else {
+		menu_dynamic_add_label(m, "Buy", 'p', 6, labels);
+		if (o_ptr->number > 1) {
+			menu_dynamic_add_label(m, "Buy One", 'o', 5, labels);
+		}
+	}
+
+	/* work out display region */
+	r.width = menu_dynamic_longest_entry(m) + 3 + 2; /* +3 for tag, 2 for pad */
+	if (mx > Term->wid - r.width - 1) {
+		r.col = Term->wid - r.width - 1;
+	} else {
+		r.col = mx + 1;
+	}
+	r.page_rows = m->count;
+	if (my > Term->hgt - r.page_rows - 1) {
+		if (my - r.page_rows - 1 <= 0) {
+			/* menu has too many items, so put in upper right corner */
+			r.row = 1;
+			r.col = Term->wid - r.width - 1;
+		} else {
+			r.row = Term->hgt - r.page_rows - 1;
+		}
+	} else {
+		r.row = my + 1;
+	}
+
+	/* Hack -- no flush needed */
+	msg_flag = FALSE;
+	screen_save();
+
+	menu_layout(m, &r);
+	region_erase_bordered(&r);
+
+	prt(format("(Enter to select, ESC) Command for %s:", header), 0, 0);
+	selected = menu_dynamic_select(m);
+
+	menu_dynamic_free(m);
+	string_free(labels);
+
+	screen_load();
+	if (selected == 4) {
+		Term_keypress('x', 0);
+	} else
+	if (selected == 5) {
+		if (store->sidx == STORE_HOME) {
+			cmdq_push(CMD_RETRIEVE);
+		} else {
+			cmdq_push(CMD_BUY);
+		}
+		cmd_set_arg_choice(cmdq_peek(), "item", oid);
+		cmd_set_arg_number(cmdq_peek(), "quantity", 1);
+	} else
+	if (selected == 6) {
+		Term_keypress('p', 0);
+	}
+
+	return 1;
 }
 
 /**

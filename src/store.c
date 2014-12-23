@@ -1202,20 +1202,17 @@ static struct object *store_create_item(struct store *store, object_kind *kind)
  */
 void store_maint(struct store *s)
 {
-	int j;
-
 	/* Ignore home */
 	if (s->sidx == STORE_HOME)
 		return;
 
 	/* Destroy crappy black market items */
 	if (s->sidx == STORE_B_MARKET) {
-		for (j = s->stock_num - 1; j >= 0; j--) {
-			struct object *obj = s->stock_list[j];
+		struct object *obj;
+		for (obj = s->stock; obj; obj = obj->next) {
 			if (!black_market_ok(obj)) {
 				pile_excise(&s->stock, obj);
 				object_delete(obj);
-				store_stock_list(s);
 			}
 		}
 	}
@@ -1302,7 +1299,6 @@ void store_maint(struct store *s)
 		 * infinite loop) if stores don't have enough items they can stock! */
 		while (s->stock_num < stock && --restock_attempts)
 			store_create_random(s);
-
 
 		if (!restock_attempts)
 			quit_fmt("Unable to (re-)stock store %d. Please report this bug", s->sidx + 1);
@@ -1517,7 +1513,6 @@ int find_inven(const struct object *obj)
  */
 void do_cmd_buy(struct command *cmd)
 {
-	int item;
 	int amt;
 
 	struct object *obj;	
@@ -1535,14 +1530,16 @@ void do_cmd_buy(struct command *cmd)
 
 	/* Get arguments */
 	/* XXX-AS fill this out, split into cmd-store.c */
-	if (cmd_get_arg_choice(cmd, "item", &item) != CMD_OK)
+	if (cmd_get_arg_item(cmd, "item", &obj) != CMD_OK)
 		return;
+
+	if (!pile_contains(store->stock, obj)) {
+		msg("You cannot buy that item because it's not in the store.");
+		return;
+	}
 
 	if (cmd_get_arg_number(cmd, "quantity", &amt) != CMD_OK)
 		return;
-
-	/* Get the actual object */
-	obj = store->stock_list[item];
 
 	/* Get desired object */
 	object_copy_amt(bought, obj, amt);
@@ -1638,7 +1635,7 @@ void do_cmd_buy(struct command *cmd)
  */
 void do_cmd_retrieve(struct command *cmd)
 {
-	int item, amt;
+	int amt;
 
 	struct object *obj;	
 	struct object *picked_item;
@@ -1651,24 +1648,25 @@ void do_cmd_retrieve(struct command *cmd)
 	}
 
 	/* Get arguments */
-	/* XXX-AS fill this out, split into cmd-store.c */
-	if (cmd_get_arg_choice(cmd, "item", &item) != CMD_OK)
+	if (cmd_get_arg_item(cmd, "item", &obj) != CMD_OK)
 		return;
+
+	if (!pile_contains(store->stock, obj)) {
+		msg("You cannot retrieve that item because it's not in the home.");
+		return;
+	}
 
 	if (cmd_get_arg_number(cmd, "quantity", &amt) != CMD_OK)
 		return;
 
-	/* Get the actual object */
-	obj = store->stock_list[item];
-
 	/* Get desired object */
-	picked_item = mem_zalloc(sizeof(*picked_item));
+	picked_item = object_new();
 	object_copy_amt(picked_item, obj, amt);
 
 	/* Ensure we have room */
 	if (!inven_carry_okay(picked_item)) {
 		msg("You cannot carry that many items.");
-		mem_free(picked_item);
+		object_delete(picked_item);
 		return;
 	}
 
