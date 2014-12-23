@@ -690,38 +690,36 @@ static void mass_produce(struct object *obj)
 
 
 /**
- * Put the store's inventory into an array in the correct order
+ * Sort the store inventory into an ordered array.
  */
-void store_stock_list(struct store *store)
+void store_stock_list(struct store *store, struct object **list, int n)
 {
 	bool home = (store->sidx != STORE_HOME);
 	int list_num;
+	int num = 0;
 
-	store->stock_num = 0;
-
-	for (list_num = 0; list_num < z_info->store_inven_max; list_num++) {
+	for (list_num = 0; list_num < n; list_num++) {
 		struct object *current, *first = NULL;
 		for (current = store->stock; current; current = current->next) {
 			int i;
 			bool possible = TRUE;
 
 			/* Skip objects already allocated */
-			for (i = 0; i < store->stock_num; i++)
-				if (store->stock_list[i] == current)
+			for (i = 0; i < num; i++)
+				if (list[i] == current)
 					possible = FALSE;
 
 			/* If still possible, choose the first in order */
 			if (!possible)
 				continue;
-			else if (earlier_object(first, current, home)) {
+			else if (earlier_object(first, current, home))
 				first = current;
-			}
 		}
 
 		/* Allocate and count the stock */
-		store->stock_list[list_num] = first;
+		list[list_num] = first;
 		if (first)
-			store->stock_num++;
+			num++;
 	}
 }
 

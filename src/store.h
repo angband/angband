@@ -70,7 +70,7 @@ extern struct store *stores;
 struct store *store_at(struct chunk *c, int y, int x);
 void store_init(void);
 void free_stores(void);
-void store_stock_list(struct store *store);
+void store_stock_list(struct store *store, struct object **list, int n);
 struct object *store_carry(struct store *store, struct object *obj);
 void store_reset(void);
 void store_shuffle(struct store *store);

@@ -1237,7 +1237,7 @@ void refresh_stock(game_event_type type, game_event_data *unused, void *user)
 	menu_type *menu = &ctx->menu;
 	struct store *store = ctx->store;
 
-	store_stock_list(store);
+	store_stock_list(store, store->stock_list, z_info->store_inven_max);
 
 	/* Display the store */
 	store_display_recalc(ctx);
@@ -1279,7 +1279,7 @@ void do_cmd_store(struct command *cmd)
 	ctx.store = store;
 
 	/* Get a array version of the store stock, register handler for changes */
-	store_stock_list(store);
+	store_stock_list(store, store->stock_list, z_info->store_inven_max);
 	event_add_handler(EVENT_STORECHANGED, refresh_stock, &ctx);
 	store_menu_init(&ctx, FALSE);
 
