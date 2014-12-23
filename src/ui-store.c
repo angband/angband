@@ -1091,10 +1091,11 @@ static const menu_iter store_menu =
 /**
  * Init the store menu
  */
-static void store_menu_init(struct store_context *ctx, bool inspect_only)
+static void store_menu_init(struct store_context *ctx, struct store *store, bool inspect_only)
 {
 	struct menu *menu = &ctx->menu;
 
+	ctx->store = store;
 	ctx->flags = STORE_INIT_CHANGE;
 	ctx->inspect_only = inspect_only;
 	ctx->list = mem_zalloc(sizeof(struct object *) * z_info->store_inven_max);
@@ -1121,12 +1122,11 @@ static void store_menu_init(struct store_context *ctx, bool inspect_only)
 void textui_store_knowledge(int n)
 {
 	struct store_context ctx;
-	ctx.store = &stores[n];
 
 	screen_save();
 	clear_from(0);
 
-	store_menu_init(&ctx, TRUE);
+	store_menu_init(&ctx, &stores[n], TRUE);
 	menu_select(&ctx.menu, 0, FALSE);
 
 	/* Flush messages XXX XXX XXX */
@@ -1185,11 +1185,9 @@ void textui_enter_store(void)
 	screen_save();
 	msg_flag = FALSE;
 
-	ctx.store = store;
-
 	/* Get a array version of the store stock, register handler for changes */
 	event_add_handler(EVENT_STORECHANGED, refresh_stock, &ctx);
-	store_menu_init(&ctx, FALSE);
+	store_menu_init(&ctx, store, FALSE);
 
 	/* Say a friendly hello. */
 	if (store->sidx != STORE_HOME)
