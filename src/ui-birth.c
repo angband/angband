@@ -558,7 +558,7 @@ static enum birth_stage menu_question(enum birth_stage current, struct menu *cur
 	
 	/* Print the question currently being asked. */
 	clear_question();
-	Term_putstr(QUESTION_COL, QUESTION_ROW, -1, TERM_YELLOW, menu_data->hint);
+	Term_putstr(QUESTION_COL, QUESTION_ROW, -1, COLOUR_YELLOW, menu_data->hint);
 
 	current_menu->cmd_keys = "?=*\x18";	 /* ?, =, *, <ctl-X> */
 

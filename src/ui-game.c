@@ -129,10 +129,10 @@ void cnv_stat(int val, char *out_val, size_t out_len)
 static void prt_field(const char *info, int row, int col)
 {
 	/* Dump 13 spaces to clear */
-	c_put_str(TERM_WHITE, "             ", row, col);
+	c_put_str(COLOUR_WHITE, "             ", row, col);
 
 	/* Dump the info itself */
-	c_put_str(TERM_L_BLUE, info, row, col);
+	c_put_str(COLOUR_L_BLUE, info, row, col);
 }
 
 
@@ -148,7 +148,7 @@ static void prt_stat(int stat, int row, int col)
 	{
 		put_str(stat_names_reduced[stat], row, col);
 		cnv_stat(player->state.stat_use[stat], tmp, sizeof(tmp));
-		c_put_str(TERM_YELLOW, tmp, row, col + 6);
+		c_put_str(COLOUR_YELLOW, tmp, row, col + 6);
 	}
 
 	/* Display "healthy" stat */
@@ -156,7 +156,7 @@ static void prt_stat(int stat, int row, int col)
 	{
 		put_str(stat_names[stat], row, col);
 		cnv_stat(player->state.stat_use[stat], tmp, sizeof(tmp));
-		c_put_str(TERM_L_GREEN, tmp, row, col + 6);
+		c_put_str(COLOUR_L_GREEN, tmp, row, col + 6);
 	}
 
 	/* Indicate natural maximum */
@@ -208,12 +208,12 @@ static void prt_level(int row, int col)
 	if (player->lev >= player->max_lev)
 	{
 		put_str("LEVEL ", row, col);
-		c_put_str(TERM_L_GREEN, tmp, row, col + 6);
+		c_put_str(COLOUR_L_GREEN, tmp, row, col + 6);
 	}
 	else
 	{
 		put_str("Level ", row, col);
-		c_put_str(TERM_YELLOW, tmp, row, col + 6);
+		c_put_str(COLOUR_YELLOW, tmp, row, col + 6);
 	}
 }
 
@@ -240,12 +240,12 @@ static void prt_exp(int row, int col)
 	if (player->exp >= player->max_exp)
 	{
 		put_str((lev50 ? "EXP" : "NXT"), row, col);
-		c_put_str(TERM_L_GREEN, out_val, row, col + 4);
+		c_put_str(COLOUR_L_GREEN, out_val, row, col + 4);
 	}
 	else
 	{
 		put_str((lev50 ? "Exp" : "Nxt"), row, col);
-		c_put_str(TERM_YELLOW, out_val, row, col + 4);
+		c_put_str(COLOUR_YELLOW, out_val, row, col + 4);
 	}
 }
 
@@ -259,7 +259,7 @@ static void prt_gold(int row, int col)
 
 	put_str("AU ", row, col);
 	strnfmt(tmp, sizeof(tmp), "%9ld", (long)player->au);
-	c_put_str(TERM_L_GREEN, tmp, row, col + 3);
+	c_put_str(COLOUR_L_GREEN, tmp, row, col + 3);
 }
 
 
@@ -288,7 +288,7 @@ static void prt_equippy(int row, int col)
 			a = object_attr(obj);
 		} else {
 			c = ' ';
-			a = TERM_WHITE;
+			a = COLOUR_WHITE;
 		}
 
 		/* Dump */
@@ -307,7 +307,7 @@ static void prt_ac(int row, int col)
 	put_str("Cur AC ", row, col);
 	strnfmt(tmp, sizeof(tmp), "%5d", 
 			player->known_state.ac + player->known_state.to_a);
-	c_put_str(TERM_L_GREEN, tmp, row, col + 7);
+	c_put_str(COLOUR_L_GREEN, tmp, row, col + 7);
 }
 
 /*
@@ -324,8 +324,8 @@ static void prt_hp(int row, int col)
 	strnfmt(cur_hp, sizeof(cur_hp), "%4d", player->chp);
 	
 	c_put_str(color, cur_hp, row, col + 3);
-	c_put_str(TERM_WHITE, "/", row, col + 7);
-	c_put_str(TERM_L_GREEN, max_hp, row, col + 8);
+	c_put_str(COLOUR_WHITE, "/", row, col + 7);
+	c_put_str(COLOUR_L_GREEN, max_hp, row, col + 8);
 }
 
 /*
@@ -346,8 +346,8 @@ static void prt_sp(int row, int col)
 
 	/* Show mana */
 	c_put_str(color, cur_sp, row, col + 3);
-	c_put_str(TERM_WHITE, "/", row, col + 7);
-	c_put_str(TERM_L_GREEN, max_sp, row, col + 8);
+	c_put_str(COLOUR_WHITE, "/", row, col + 7);
+	c_put_str(COLOUR_L_GREEN, max_sp, row, col + 8);
 }
 
 /*
@@ -360,45 +360,45 @@ byte monster_health_attr(void)
 
 	if (!mon) {
 		/* Not tracking */
-		attr = TERM_DARK;
+		attr = COLOUR_DARK;
 
 	} else if (!mflag_has(mon->mflag, MFLAG_VISIBLE) || mon->hp < 0 ||
 			   player->timed[TMD_IMAGE]) {
 		/* The monster health is "unknown" */
-		attr = TERM_WHITE;
+		attr = COLOUR_WHITE;
 
 	} else {
 		int pct;
 
 		/* Default to almost dead */
-		attr = TERM_RED;
+		attr = COLOUR_RED;
 
 		/* Extract the "percent" of health */
 		pct = 100L * mon->hp / mon->maxhp;
 
 		/* Badly wounded */
-		if (pct >= 10) attr = TERM_L_RED;
+		if (pct >= 10) attr = COLOUR_L_RED;
 
 		/* Wounded */
-		if (pct >= 25) attr = TERM_ORANGE;
+		if (pct >= 25) attr = COLOUR_ORANGE;
 
 		/* Somewhat Wounded */
-		if (pct >= 60) attr = TERM_YELLOW;
+		if (pct >= 60) attr = COLOUR_YELLOW;
 
 		/* Healthy */
-		if (pct >= 100) attr = TERM_L_GREEN;
+		if (pct >= 100) attr = COLOUR_L_GREEN;
 
 		/* Afraid */
-		if (mon->m_timed[MON_TMD_FEAR]) attr = TERM_VIOLET;
+		if (mon->m_timed[MON_TMD_FEAR]) attr = COLOUR_VIOLET;
 
 		/* Confused */
-		if (mon->m_timed[MON_TMD_CONF]) attr = TERM_UMBER;
+		if (mon->m_timed[MON_TMD_CONF]) attr = COLOUR_UMBER;
 
 		/* Stunned */
-		if (mon->m_timed[MON_TMD_STUN]) attr = TERM_L_BLUE;
+		if (mon->m_timed[MON_TMD_STUN]) attr = COLOUR_L_BLUE;
 
 		/* Asleep */
-		if (mon->m_timed[MON_TMD_SLEEP]) attr = TERM_BLUE;
+		if (mon->m_timed[MON_TMD_SLEEP]) attr = COLOUR_BLUE;
 	}
 	
 	return attr;
@@ -446,7 +446,7 @@ static void prt_health(int row, int col)
 		int len = (pct < 10) ? 1 : (pct < 90) ? (pct / 10 + 1) : 10;
 
 		/* Default to "unknown" */
-		Term_putstr(col, row, 12, TERM_WHITE, "[----------]");
+		Term_putstr(col, row, 12, COLOUR_WHITE, "[----------]");
 
 		/* Dump the current "health" (use '*' symbols) */
 		Term_putstr(col + 1, row, len, attr, "**********");
@@ -461,7 +461,7 @@ static void prt_speed(int row, int col)
 {
 	int i = player->state.speed;
 
-	byte attr = TERM_WHITE;
+	byte attr = COLOUR_WHITE;
 	const char *type = NULL;
 	char buf[32] = "";
 
@@ -471,14 +471,14 @@ static void prt_speed(int row, int col)
 	/* Fast */
 	if (i > 110)
 	{
-		attr = TERM_L_GREEN;
+		attr = COLOUR_L_GREEN;
 		type = "Fast";
 	}
 
 	/* Slow */
 	else if (i < 110)
 	{
-		attr = TERM_L_UMBER;
+		attr = COLOUR_L_UMBER;
 		type = "Slow";
 	}
 
@@ -647,62 +647,62 @@ struct state_info
 /* TMD_CUT descriptions */
 static const struct state_info cut_data[] =
 {
-	{ 1000, S("Mortal wound"), TERM_L_RED },
-	{  200, S("Deep gash"),    TERM_RED },
-	{  100, S("Severe cut"),   TERM_RED },
-	{   50, S("Nasty cut"),    TERM_ORANGE },
-	{   25, S("Bad cut"),      TERM_ORANGE },
-	{   10, S("Light cut"),    TERM_YELLOW },
-	{    0, S("Graze"),        TERM_YELLOW },
+	{ 1000, S("Mortal wound"), COLOUR_L_RED },
+	{  200, S("Deep gash"),    COLOUR_RED },
+	{  100, S("Severe cut"),   COLOUR_RED },
+	{   50, S("Nasty cut"),    COLOUR_ORANGE },
+	{   25, S("Bad cut"),      COLOUR_ORANGE },
+	{   10, S("Light cut"),    COLOUR_YELLOW },
+	{    0, S("Graze"),        COLOUR_YELLOW },
 };
 
 /* TMD_STUN descriptions */
 static const struct state_info stun_data[] =
 {
-	{   100, S("Knocked out"), TERM_RED },
-	{    50, S("Heavy stun"),  TERM_ORANGE },
-	{     0, S("Stun"),        TERM_ORANGE },
+	{   100, S("Knocked out"), COLOUR_RED },
+	{    50, S("Heavy stun"),  COLOUR_ORANGE },
+	{     0, S("Stun"),        COLOUR_ORANGE },
 };
 
 /* player->hunger descriptions */
 static const struct state_info hunger_data[] =
 {
-	{ PY_FOOD_FAINT, S("Faint"),    TERM_RED },
-	{ PY_FOOD_WEAK,  S("Weak"),     TERM_ORANGE },
-	{ PY_FOOD_ALERT, S("Hungry"),   TERM_YELLOW },
-	{ PY_FOOD_FULL,  S(""),         TERM_L_GREEN },
-	{ PY_FOOD_MAX,   S("Full"),     TERM_L_GREEN },
+	{ PY_FOOD_FAINT, S("Faint"),    COLOUR_RED },
+	{ PY_FOOD_WEAK,  S("Weak"),     COLOUR_ORANGE },
+	{ PY_FOOD_ALERT, S("Hungry"),   COLOUR_YELLOW },
+	{ PY_FOOD_FULL,  S(""),         COLOUR_L_GREEN },
+	{ PY_FOOD_MAX,   S("Full"),     COLOUR_L_GREEN },
 };
 
 /* For the various TMD_* effects */
 static const struct state_info effects[] =
 {
-	{ TMD_BLIND,     S("Blind"),      TERM_ORANGE },
-	{ TMD_PARALYZED, S("Paralyzed!"), TERM_RED },
-	{ TMD_CONFUSED,  S("Confused"),   TERM_ORANGE },
-	{ TMD_AFRAID,    S("Afraid"),     TERM_ORANGE },
-	{ TMD_TERROR,    S("Terror"),     TERM_RED },
-	{ TMD_IMAGE,     S("Halluc"),     TERM_ORANGE },
-	{ TMD_POISONED,  S("Poisoned"),   TERM_ORANGE },
-	{ TMD_PROTEVIL,  S("ProtEvil"),   TERM_L_GREEN },
-	{ TMD_SPRINT,    S("Sprint"),     TERM_L_GREEN },
-	{ TMD_TELEPATHY, S("ESP"),        TERM_L_BLUE },
-	{ TMD_INVULN,    S("Invuln"),     TERM_L_GREEN },
-	{ TMD_HERO,      S("Hero"),       TERM_L_GREEN },
-	{ TMD_SHERO,     S("Berserk"),    TERM_L_GREEN },
-	{ TMD_BOLD,      S("Bold"),       TERM_L_GREEN },
-	{ TMD_STONESKIN, S("Stone"),      TERM_L_GREEN },
-	{ TMD_SHIELD,    S("Shield"),     TERM_L_GREEN },
-	{ TMD_BLESSED,   S("Blssd"),      TERM_L_GREEN },
-	{ TMD_SINVIS,    S("SInvis"),     TERM_L_GREEN },
-	{ TMD_SINFRA,    S("Infra"),      TERM_L_GREEN },
-	{ TMD_OPP_ACID,  S("RAcid"),      TERM_SLATE },
-	{ TMD_OPP_ELEC,  S("RElec"),      TERM_BLUE },
-	{ TMD_OPP_FIRE,  S("RFire"),      TERM_RED },
-	{ TMD_OPP_COLD,  S("RCold"),      TERM_WHITE },
-	{ TMD_OPP_POIS,  S("RPois"),      TERM_GREEN },
-	{ TMD_OPP_CONF,  S("RConf"),      TERM_VIOLET },
-	{ TMD_AMNESIA,   S("Amnesiac"),   TERM_ORANGE },
+	{ TMD_BLIND,     S("Blind"),      COLOUR_ORANGE },
+	{ TMD_PARALYZED, S("Paralyzed!"), COLOUR_RED },
+	{ TMD_CONFUSED,  S("Confused"),   COLOUR_ORANGE },
+	{ TMD_AFRAID,    S("Afraid"),     COLOUR_ORANGE },
+	{ TMD_TERROR,    S("Terror"),     COLOUR_RED },
+	{ TMD_IMAGE,     S("Halluc"),     COLOUR_ORANGE },
+	{ TMD_POISONED,  S("Poisoned"),   COLOUR_ORANGE },
+	{ TMD_PROTEVIL,  S("ProtEvil"),   COLOUR_L_GREEN },
+	{ TMD_SPRINT,    S("Sprint"),     COLOUR_L_GREEN },
+	{ TMD_TELEPATHY, S("ESP"),        COLOUR_L_BLUE },
+	{ TMD_INVULN,    S("Invuln"),     COLOUR_L_GREEN },
+	{ TMD_HERO,      S("Hero"),       COLOUR_L_GREEN },
+	{ TMD_SHERO,     S("Berserk"),    COLOUR_L_GREEN },
+	{ TMD_BOLD,      S("Bold"),       COLOUR_L_GREEN },
+	{ TMD_STONESKIN, S("Stone"),      COLOUR_L_GREEN },
+	{ TMD_SHIELD,    S("Shield"),     COLOUR_L_GREEN },
+	{ TMD_BLESSED,   S("Blssd"),      COLOUR_L_GREEN },
+	{ TMD_SINVIS,    S("SInvis"),     COLOUR_L_GREEN },
+	{ TMD_SINFRA,    S("Infra"),      COLOUR_L_GREEN },
+	{ TMD_OPP_ACID,  S("RAcid"),      COLOUR_SLATE },
+	{ TMD_OPP_ELEC,  S("RElec"),      COLOUR_BLUE },
+	{ TMD_OPP_FIRE,  S("RFire"),      COLOUR_RED },
+	{ TMD_OPP_COLD,  S("RCold"),      COLOUR_WHITE },
+	{ TMD_OPP_POIS,  S("RPois"),      COLOUR_GREEN },
+	{ TMD_OPP_CONF,  S("RConf"),      COLOUR_VIOLET },
+	{ TMD_AMNESIA,   S("Amnesiac"),   COLOUR_ORANGE },
 };
 
 #define PRINT_STATE(sym, data, index, row, col) \
@@ -734,7 +734,7 @@ static size_t prt_recall(int row, int col)
 {
 	if (player->word_recall)
 	{
-		c_put_str(TERM_WHITE, "Recall", row, col);
+		c_put_str(COLOUR_WHITE, "Recall", row, col);
 		return sizeof "Recall";
 	}
 
@@ -782,7 +782,7 @@ static size_t prt_hunger(int row, int col)
  */
 static size_t prt_state(int row, int col)
 {
-	byte attr = TERM_WHITE;
+	byte attr = COLOUR_WHITE;
 
 	char text[16] = "";
 
@@ -893,9 +893,9 @@ static size_t prt_dtrap(int row, int col)
 	{
 		/* The player is on the border */
 		if (square_isdedge(cave, player->py, player->px))
-			c_put_str(TERM_YELLOW, "DTrap", row, col);
+			c_put_str(COLOUR_YELLOW, "DTrap", row, col);
 		else
-			c_put_str(TERM_L_GREEN, "DTrap", row, col);
+			c_put_str(COLOUR_L_GREEN, "DTrap", row, col);
 
 		return 5;
 	}
@@ -910,7 +910,7 @@ static size_t prt_dtrap(int row, int col)
 static size_t prt_study(int row, int col)
 {
 	char *text;
-	int attr = TERM_WHITE;
+	int attr = COLOUR_WHITE;
 
 	/* Can the player learn new spells? */
 	if (player->upkeep->new_spells)
@@ -918,7 +918,7 @@ static size_t prt_study(int row, int col)
 		/* If the player does not carry a book with spells they can study,
 		   the message is displayed in a darker colour */
 		if (!player_book_has_unlearned_spells(player))
-			attr = TERM_L_DARK;
+			attr = COLOUR_L_DARK;
 
 		/* Print study message */
 		text = format("Study (%d)", player->upkeep->new_spells);
@@ -1069,11 +1069,11 @@ static void update_maps(game_event_type type, game_event_data *data, void *user)
 		Term_queue_char(t, vx, vy, a, c, ta, tc);
 #if 0
 		/* Plot 'spot' updates in light green to make them visible */
-		Term_queue_char(t, vx, vy, TERM_L_GREEN, c, ta, tc);
+		Term_queue_char(t, vx, vy, COLOUR_L_GREEN, c, ta, tc);
 #endif
 
 		if ((tile_width > 1) || (tile_height > 1))
-		        Term_big_queue_char(t, vx, vy, a, c, TERM_WHITE, ' ');
+		        Term_big_queue_char(t, vx, vy, a, c, COLOUR_WHITE, ' ');
 	}
 }
 
@@ -1906,7 +1906,7 @@ static void init_angband_aux(const char *why)
 static void splashscreen_note(game_event_type type, game_event_data *data, void *user)
 {
 	Term_erase(0, 23, 255);
-	Term_putstr(20, 23, -1, TERM_WHITE, format("[%s]", data->string));
+	Term_putstr(20, 23, -1, COLOUR_WHITE, format("[%s]", data->string));
 	Term_fresh();
 }
 

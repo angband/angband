@@ -583,7 +583,7 @@ static void term_data_link(int i)
 	/* t->never_frosh = TRUE; */
 
 	/* Erase with "white space" XXX XXX XXX */
-	/* t->attr_blank = TERM_WHITE; */
+	/* t->attr_blank = COLOUR_WHITE; */
 	/* t->char_blank = ' '; */
 
 	/* Prepare the init/nuke hooks */

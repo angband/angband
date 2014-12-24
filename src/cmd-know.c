@@ -148,7 +148,7 @@ void do_cmd_change_name(void)
 		display_player(mode);
 
 		/* Prompt */
-		Term_putstr(2, 23, -1, TERM_WHITE, p);
+		Term_putstr(2, 23, -1, COLOUR_WHITE, p);
 
 		/* Query */
 		ke = inkey_ex();
@@ -307,7 +307,7 @@ void do_cmd_messages(void)
 					int len = strlen(shower);
 
 					/* Display the match */
-					Term_putstr(str-msg, hgt - 3 - j, len, TERM_YELLOW, str);
+					Term_putstr(str-msg, hgt - 3 - j, len, COLOUR_YELLOW, str);
 
 					/* Advance */
 					str += len;

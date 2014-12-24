@@ -497,10 +497,10 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 
 			/* Print dividers: horizontal and vertical */
 			for (i = 0; i < 79; i++)
-				Term_putch(i, 5, TERM_WHITE, '=');
+				Term_putch(i, 5, COLOUR_WHITE, '=');
 
 			for (i = 0; i < browser_rows; i++)
-				Term_putch(g_name_len + 1, 6 + i, TERM_WHITE, '|');
+				Term_putch(g_name_len + 1, 6 + i, COLOUR_WHITE, '|');
 
 
 			/* Reset redraw flag */
@@ -1213,11 +1213,11 @@ static void display_monster(int col, int row, bool cursor, int oid)
 		c = r_ptr->d_char;
 		/* If uniques are purple, make it so */
 		if (OPT(purple_uniques) && rf_has(r_ptr->flags, RF_UNIQUE))
-			a = TERM_VIOLET;
+			a = COLOUR_VIOLET;
 	}
 	/* If uniques are purple, make it so */
 	else if (OPT(purple_uniques) && !(a & 0x80) && rf_has(r_ptr->flags, RF_UNIQUE))
-		a = TERM_VIOLET;
+		a = COLOUR_VIOLET;
 
 	/* Display the name */
 	c_prt(attr, r_ptr->name, row, col);
@@ -1300,7 +1300,7 @@ static void mon_summary(int gid, const int *object_list, int n, int top, int row
 	/* Different display for the first item if we've got uniques to show */
 	if (gid == 0 && rf_has((&r_info[default_join[object_list[0]].oid])->flags, RF_UNIQUE))
 	{
-		c_prt(TERM_L_BLUE, format("%d known uniques, %d slain.", n, kills),
+		c_prt(COLOUR_L_BLUE, format("%d known uniques, %d slain.", n, kills),
 					row, col);
 	}
 	else
@@ -1310,7 +1310,7 @@ static void mon_summary(int gid, const int *object_list, int n, int top, int row
 		for (i = 0; i < z_info->r_max; i++)
 			tkills += l_list[i].pkills;
 
-		c_prt(TERM_L_BLUE, format("Creatures slain: %d/%d (in group/in total)", kills, tkills), row, col);
+		c_prt(COLOUR_L_BLUE, format("Creatures slain: %d/%d (in group/in total)", kills, tkills), row, col);
 	}
 }
 
@@ -1762,7 +1762,7 @@ static void display_object(int col, int row, bool cursor, int oid)
 
 	/* Show autoinscription if around */
 	if (aware && inscrip)
-		c_put_str(TERM_YELLOW, inscrip, row, 55);
+		c_put_str(COLOUR_YELLOW, inscrip, row, 55);
 
 	if (tile_height == 1) {
 		big_pad(76, row, a, c);

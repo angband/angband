@@ -295,7 +295,7 @@ static void display_scores_aux(const high_score scores[], int from, int to, int 
 
 
 			/* Hack -- indicate death in yellow */
-			attr = (j == highlight) ? TERM_L_GREEN : TERM_WHITE;
+			attr = (j == highlight) ? COLOUR_L_GREEN : COLOUR_WHITE;
 
 			c = player_id2class(atoi(score->p_c));
 			r = player_id2race(atoi(score->p_r));

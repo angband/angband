@@ -145,7 +145,7 @@ static void do_cmd_wiz_hack_ben(void)
 		{
 			for (x = Term->offset_x; x < Term->offset_x + SCREEN_WID; x++)
 			{
-				byte a = TERM_RED;
+				byte a = COLOUR_RED;
 
 				if (!square_in_bounds_fully(cave, y, x)) continue;
 
@@ -154,7 +154,7 @@ static void do_cmd_wiz_hack_ben(void)
 
 				/* Reliability in yellow */
 				if (cave->squares[y][x].when == cave->squares[py][px].when)
-					a = TERM_YELLOW;
+					a = COLOUR_YELLOW;
 
 				/* Display player/floors/walls */
 				if ((y == py) && (x == px))
@@ -197,9 +197,9 @@ static void prt_binary(const bitflag *flags, int offset, int row, int col,
 	/* Scan the flags */
 	for (flag = FLAG_START + offset; flag < FLAG_START + offset + num; flag++)
 		if (of_has(flags, flag))
-			Term_putch(col++, row, TERM_BLUE, ch);
+			Term_putch(col++, row, COLOUR_BLUE, ch);
 		else
-			Term_putch(col++, row, TERM_WHITE, '-');
+			Term_putch(col++, row, COLOUR_WHITE, '-');
 }
 
 /**
@@ -1440,7 +1440,7 @@ static void do_cmd_wiz_query(void)
 	/* Scan map */
 	for (y = Term->offset_y; y < Term->offset_y + SCREEN_HGT; y++) {
 		for (x = Term->offset_x; x < Term->offset_x + SCREEN_WID; x++) {
-			byte a = TERM_RED;
+			byte a = COLOUR_RED;
 
 			if (!square_in_bounds_fully(cave, y, x)) continue;
 
@@ -1451,7 +1451,7 @@ static void do_cmd_wiz_query(void)
 			if (!flag && (!square_ismark(cave, y, x))) continue;
 
 			/* Color */
-			if (square_ispassable(cave, y, x)) a = TERM_YELLOW;
+			if (square_ispassable(cave, y, x)) a = COLOUR_YELLOW;
 
 			/* Display player/floors/walls */
 			if ((y == py) && (x == px))
@@ -1544,7 +1544,7 @@ static void do_cmd_wiz_features(void)
 	/* Scan map */
 	for (y = Term->offset_y; y < Term->offset_y + SCREEN_HGT; y++) {
 		for (x = Term->offset_x; x < Term->offset_x + SCREEN_WID; x++) {
-			byte a = TERM_RED;
+			byte a = COLOUR_RED;
 			bool show = FALSE;
 			int i;
 
@@ -1555,7 +1555,7 @@ static void do_cmd_wiz_features(void)
 				if (cave->squares[y][x].feat == feat[i]) show = TRUE;
 
 			/* Color */
-			if (square_ispassable(cave, y, x)) a = TERM_YELLOW;
+			if (square_ispassable(cave, y, x)) a = COLOUR_YELLOW;
 
 			if (!show) continue;
 

@@ -309,7 +309,7 @@ static enum parser_error write_dummy_object_record(struct artifact *art, const c
 
 	/* Give the object default colours (these should be overwritten) */
 	dummy->d_char = '*';
-	dummy->d_attr = TERM_RED;
+	dummy->d_attr = COLOUR_RED;
 
 	/* Register this as an INSTA_ART object */
 	kf_on(dummy->kind_flags, KF_INSTA_ART);

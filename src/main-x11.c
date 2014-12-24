@@ -1475,7 +1475,7 @@ static errr Infofnt_text_std(int x, int y, const wchar_t *str, int len)
 	h = td->tile_hgt;
 
 	/* Fill the background */
-	XFillRectangle(Metadpy->dpy, Infowin->win, clr[TERM_DARK]->gc, x, y, w, h);
+	XFillRectangle(Metadpy->dpy, Infowin->win, clr[COLOUR_DARK]->gc, x, y, w, h);
 
 
 	/*** Actually draw 'str' onto the infowin ***/
@@ -2068,7 +2068,7 @@ static errr Term_bigcurs_x11(int x, int y)
 static errr Term_wipe_x11(int x, int y, int n)
 {
 	/* Erase (use black) */
-	Infoclr_set(clr[TERM_DARK]);
+	Infoclr_set(clr[COLOUR_DARK]);
 
 	/* Mega-Hack -- Erase some space */
 	Infofnt_text_non(x, y, L"", n);
@@ -2503,7 +2503,7 @@ static errr term_data_init(term_data *td, int i)
 	t->soft_cursor = TRUE;
 
 	/* Erase with "white space" */
-	t->attr_blank = TERM_WHITE;
+	t->attr_blank = COLOUR_WHITE;
 	t->char_blank = ' ';
 
 	/* Differentiate between BS/^h, Tab/^i, etc. */
@@ -2729,9 +2729,9 @@ errr init_x11(int argc, char **argv)
 				case BG_DARK:
 					/* Highlight Background */
 					backpixel = create_pixel(Metadpy->dpy,
-											 color_table_x11[TERM_SHADE][1],
-											 color_table_x11[TERM_SHADE][2],
-											 color_table_x11[TERM_SHADE][3]);
+											 color_table_x11[COLOUR_SHADE][1],
+											 color_table_x11[COLOUR_SHADE][2],
+											 color_table_x11[COLOUR_SHADE][3]);
 					Infoclr_init_ppn(pixel, backpixel, "cpy", 0);
 					break;
 			}

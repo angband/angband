@@ -549,7 +549,7 @@ void Term_big_queue_char(term *t, int x, int y, int a, wchar_t c, int a1, wchar_
 			        if (a & 0x80)
 				        Term_queue_char(t, x + hor, y, 255, -1, 0, 0);
 				else
-				        Term_queue_char(t, x + hor, y, TERM_WHITE, ' ', a1, c1);
+				        Term_queue_char(t, x + hor, y, COLOUR_WHITE, ' ', a1, c1);
 			}
 
 			/* Now vertical */
@@ -561,7 +561,7 @@ void Term_big_queue_char(term *t, int x, int y, int a, wchar_t c, int a1, wchar_
 			        if (a & 0x80)
 				        Term_queue_char(t, x + hor, y + vert, 255, -1, 0, 0);
 					else
-				        Term_queue_char(t, x + hor, y + vert, TERM_WHITE, ' ', a1, c1);
+				        Term_queue_char(t, x + hor, y + vert, COLOUR_WHITE, ' ', a1, c1);
 				}
 			}
 		}
@@ -577,7 +577,7 @@ void Term_big_queue_char(term *t, int x, int y, int a, wchar_t c, int a1, wchar_
 					if (a & 0x80)
 						Term_queue_char(t, x, y + vert, 255, -1, 0, 0);
 					else
-						Term_queue_char(t, x, y + vert, TERM_WHITE, ' ', a1, c1);
+						Term_queue_char(t, x, y + vert, COLOUR_WHITE, ' ', a1, c1);
 				}
 			}
 	}
@@ -1672,7 +1672,7 @@ void Term_big_putch(int x, int y, int a, wchar_t c)
 				if (a & 0x80)
 					Term_putch(x + hor, y, 255, -1);
 				else
-					Term_putch(x + hor, y, TERM_WHITE, ' ');
+					Term_putch(x + hor, y, COLOUR_WHITE, ' ');
 			}
 
 			/* Now vertical */
@@ -1682,7 +1682,7 @@ void Term_big_putch(int x, int y, int a, wchar_t c)
 				if (a & 0x80)
 					Term_putch(x + hor, y + vert, 255, -1);
 				else
-					Term_putch(x + hor, y + vert, TERM_WHITE, ' ');
+					Term_putch(x + hor, y + vert, COLOUR_WHITE, ' ');
 			}
 		}
 	}
@@ -1695,7 +1695,7 @@ void Term_big_putch(int x, int y, int a, wchar_t c)
 			if (a & 0x80)
 				Term_putch(x, y + vert, 255, -1);
 			else
-				Term_putch(x, y + vert, TERM_WHITE, ' ');
+				Term_putch(x, y + vert, COLOUR_WHITE, ' ');
 		}
 	}
 }

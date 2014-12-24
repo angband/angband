@@ -128,7 +128,7 @@
 #define NOLSTRING         /* lstr* string management routines */
 #define NODBCS            /* Double-byte character set routines */
 #define NOKEYBOARDINFO    /* Keyboard driver routines */
-#define NOCOLOR           /* COLOR_* color values */
+#define NOCOLOR           /* COLOUR_* color values */
 #define NODRAWTEXT        /* DrawText() and related definitions */
 #define NOSCALABLEFONT    /* Truetype scalable font support */
 #define NOMETAFILE        /* Metafile support */
@@ -2104,7 +2104,7 @@ static errr Term_text_win(int x, int y, int n, int a, const wchar_t *s)
 				break;
 			case BG_DARK:
 				/* Highlight Background */
-				SetBkColor(hdc, win_clr[TERM_SHADE]);
+				SetBkColor(hdc, win_clr[COLOUR_SHADE]);
 				break;
 		}
 	}
@@ -2571,7 +2571,7 @@ static void term_data_link(term_data *td)
 	t->higher_pict = TRUE;
 
 	/* Erase with "white space" */
-	t->attr_blank = TERM_WHITE;
+	t->attr_blank = COLOUR_WHITE;
 	t->char_blank = ' ';
 
 #if 0
@@ -2769,7 +2769,7 @@ static void init_windows(void)
 
 
 	/* Create a "brush" for drawing the "cursor" */
-	hbrYellow = CreateSolidBrush(win_clr[TERM_YELLOW]);
+	hbrYellow = CreateSolidBrush(win_clr[COLOUR_YELLOW]);
 
 	/* Populate the graphic options sub menu with the graphics modes */
 	hm = GetMenu(data[0].w);

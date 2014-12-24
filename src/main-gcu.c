@@ -840,7 +840,7 @@ static errr term_data_init_gcu(term_data *td, int rows, int cols, int y, int x) 
 	t->icky_corner = TRUE;
 
 	/* Erase with "white space" */
-	t->attr_blank = TERM_WHITE;
+	t->attr_blank = COLOUR_WHITE;
 	t->char_blank = ' ';
 
 	/* Differentiate between BS/^h, Tab/^i, etc. */
@@ -945,35 +945,35 @@ errr init_gcu(int argc, char **argv) {
 		init_pair(PAIR_BLACK, COLOR_BLACK, bg_color);
 
 		/* Prepare the colors */
-		colortable[TERM_DARK]     = (COLOR_PAIR(PAIR_BLACK));
-		colortable[TERM_WHITE]    = (COLOR_PAIR(PAIR_WHITE) | A_BRIGHT);
-		colortable[TERM_SLATE]    = (COLOR_PAIR(PAIR_WHITE));
-		colortable[TERM_ORANGE]   = (COLOR_PAIR(PAIR_YELLOW) | A_BRIGHT);
-		colortable[TERM_RED]      = (COLOR_PAIR(PAIR_RED));
-		colortable[TERM_GREEN]    = (COLOR_PAIR(PAIR_GREEN));
-		colortable[TERM_BLUE]     = (COLOR_PAIR(PAIR_BLUE));
-		colortable[TERM_UMBER]    = (COLOR_PAIR(PAIR_YELLOW));
-		colortable[TERM_L_DARK]   = (COLOR_PAIR(PAIR_BLACK) | A_BRIGHT);
-		colortable[TERM_L_WHITE]  = (COLOR_PAIR(PAIR_WHITE));
-		colortable[TERM_L_PURPLE] = (COLOR_PAIR(PAIR_MAGENTA));
-		colortable[TERM_YELLOW]   = (COLOR_PAIR(PAIR_YELLOW) | A_BRIGHT);
-		colortable[TERM_L_RED]    = (COLOR_PAIR(PAIR_MAGENTA) | A_BRIGHT);
-		colortable[TERM_L_GREEN]  = (COLOR_PAIR(PAIR_GREEN) | A_BRIGHT);
-		colortable[TERM_L_BLUE]   = (COLOR_PAIR(PAIR_BLUE) | A_BRIGHT);
-		colortable[TERM_L_UMBER]  = (COLOR_PAIR(PAIR_YELLOW));
+		colortable[COLOUR_DARK]     = (COLOR_PAIR(PAIR_BLACK));
+		colortable[COLOUR_WHITE]    = (COLOR_PAIR(PAIR_WHITE) | A_BRIGHT);
+		colortable[COLOUR_SLATE]    = (COLOR_PAIR(PAIR_WHITE));
+		colortable[COLOUR_ORANGE]   = (COLOR_PAIR(PAIR_YELLOW) | A_BRIGHT);
+		colortable[COLOUR_RED]      = (COLOR_PAIR(PAIR_RED));
+		colortable[COLOUR_GREEN]    = (COLOR_PAIR(PAIR_GREEN));
+		colortable[COLOUR_BLUE]     = (COLOR_PAIR(PAIR_BLUE));
+		colortable[COLOUR_UMBER]    = (COLOR_PAIR(PAIR_YELLOW));
+		colortable[COLOUR_L_DARK]   = (COLOR_PAIR(PAIR_BLACK) | A_BRIGHT);
+		colortable[COLOUR_L_WHITE]  = (COLOR_PAIR(PAIR_WHITE));
+		colortable[COLOUR_L_PURPLE] = (COLOR_PAIR(PAIR_MAGENTA));
+		colortable[COLOUR_YELLOW]   = (COLOR_PAIR(PAIR_YELLOW) | A_BRIGHT);
+		colortable[COLOUR_L_RED]    = (COLOR_PAIR(PAIR_MAGENTA) | A_BRIGHT);
+		colortable[COLOUR_L_GREEN]  = (COLOR_PAIR(PAIR_GREEN) | A_BRIGHT);
+		colortable[COLOUR_L_BLUE]   = (COLOR_PAIR(PAIR_BLUE) | A_BRIGHT);
+		colortable[COLOUR_L_UMBER]  = (COLOR_PAIR(PAIR_YELLOW));
 
-		colortable[TERM_PURPLE]      = (COLOR_PAIR(PAIR_MAGENTA));
-		colortable[TERM_VIOLET]      = (COLOR_PAIR(PAIR_MAGENTA));
-		colortable[TERM_TEAL]        = (COLOR_PAIR(PAIR_CYAN));
-		colortable[TERM_MUD]         = (COLOR_PAIR(PAIR_YELLOW));
-		colortable[TERM_L_YELLOW]    = (COLOR_PAIR(PAIR_YELLOW | A_BRIGHT));
-		colortable[TERM_MAGENTA]     = (COLOR_PAIR(PAIR_MAGENTA | A_BRIGHT));
-		colortable[TERM_L_TEAL]      = (COLOR_PAIR(PAIR_CYAN) | A_BRIGHT);
-		colortable[TERM_L_VIOLET]    = (COLOR_PAIR(PAIR_MAGENTA) | A_BRIGHT);
-		colortable[TERM_L_PINK]      = (COLOR_PAIR(PAIR_MAGENTA) | A_BRIGHT);
-		colortable[TERM_MUSTARD]     = (COLOR_PAIR(PAIR_YELLOW));
-		colortable[TERM_BLUE_SLATE]  = (COLOR_PAIR(PAIR_BLUE));
-		colortable[TERM_DEEP_L_BLUE] = (COLOR_PAIR(PAIR_BLUE));
+		colortable[COLOUR_PURPLE]      = (COLOR_PAIR(PAIR_MAGENTA));
+		colortable[COLOUR_VIOLET]      = (COLOR_PAIR(PAIR_MAGENTA));
+		colortable[COLOUR_TEAL]        = (COLOR_PAIR(PAIR_CYAN));
+		colortable[COLOUR_MUD]         = (COLOR_PAIR(PAIR_YELLOW));
+		colortable[COLOUR_L_YELLOW]    = (COLOR_PAIR(PAIR_YELLOW | A_BRIGHT));
+		colortable[COLOUR_MAGENTA]     = (COLOR_PAIR(PAIR_MAGENTA | A_BRIGHT));
+		colortable[COLOUR_L_TEAL]      = (COLOR_PAIR(PAIR_CYAN) | A_BRIGHT);
+		colortable[COLOUR_L_VIOLET]    = (COLOR_PAIR(PAIR_MAGENTA) | A_BRIGHT);
+		colortable[COLOUR_L_PINK]      = (COLOR_PAIR(PAIR_MAGENTA) | A_BRIGHT);
+		colortable[COLOUR_MUSTARD]     = (COLOR_PAIR(PAIR_YELLOW));
+		colortable[COLOUR_BLUE_SLATE]  = (COLOR_PAIR(PAIR_BLUE));
+		colortable[COLOUR_DEEP_L_BLUE] = (COLOR_PAIR(PAIR_BLUE));
 	}
 #endif
 

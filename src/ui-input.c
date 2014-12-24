@@ -384,7 +384,7 @@ void bell(const char *reason)
  */
 static void msg_flush(int x)
 {
-	byte a = TERM_L_BLUE;
+	byte a = COLOUR_L_BLUE;
 
 	/* Pause for response */
 	Term_putstr(x, 0, -1, a, "-more-");
@@ -752,7 +752,7 @@ bool askfor_aux(char *buf, size_t len, bool (*keypress_h)(char *, size_t, size_t
 
 	/* Display the default answer */
 	Term_erase(x, y, (int)len);
-	Term_putstr(x, y, -1, TERM_YELLOW, buf);
+	Term_putstr(x, y, -1, COLOUR_YELLOW, buf);
 
 	/* Process input */
 	while (!done)
@@ -768,7 +768,7 @@ bool askfor_aux(char *buf, size_t len, bool (*keypress_h)(char *, size_t, size_t
 
 		/* Update the entry */
 		Term_erase(x, y, (int)len);
-		Term_putstr(x, y, -1, TERM_WHITE, buf);
+		Term_putstr(x, y, -1, COLOUR_WHITE, buf);
 
 		/* Not the first time round anymore */
 		firsttime = FALSE;

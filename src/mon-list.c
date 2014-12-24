@@ -311,11 +311,11 @@ static byte monster_list_entry_line_attribute(const monster_list_entry_t *entry)
 {
 	/* Display uniques in a special colour */
 	if (rf_has(entry->race->flags, RF_UNIQUE))
-		return TERM_VIOLET;
+		return COLOUR_VIOLET;
 	else if (entry->race->level > player->depth)
-		return TERM_RED;
+		return COLOUR_RED;
 	else
-		return TERM_WHITE;
+		return COLOUR_WHITE;
 }
 
 /**
@@ -471,7 +471,7 @@ static bool monster_list_format_special(const monster_list_t *list, textblock *t
 			*max_width_result = strlen(message);
 
 		if (tb != NULL)
-			textblock_append_c(tb, TERM_ORANGE, "%s", message);
+			textblock_append_c(tb, COLOUR_ORANGE, "%s", message);
 
 		return TRUE;
 	}

@@ -25,8 +25,8 @@
 /* Cursor colours */
 const byte curs_attrs[2][2] =
 {
-	{ TERM_SLATE, TERM_BLUE },      /* Greyed row */
-	{ TERM_WHITE, TERM_L_BLUE }     /* Valid row */
+	{ COLOUR_SLATE, COLOUR_BLUE },      /* Greyed row */
+	{ COLOUR_WHITE, COLOUR_L_BLUE }     /* Valid row */
 };
 
 /* Some useful constants */
@@ -476,15 +476,15 @@ void menu_refresh(struct menu *menu, bool reset_screen)
 
 	if (menu->title)
 		Term_putstr(menu->boundary.col, menu->boundary.row,
-				loc->width, TERM_WHITE, menu->title);
+				loc->width, COLOUR_WHITE, menu->title);
 
 	if (menu->header)
 		Term_putstr(loc->col, loc->row - 1, loc->width,
-				TERM_WHITE, menu->header);
+				COLOUR_WHITE, menu->header);
 
 	if (menu->prompt)
 		Term_putstr(menu->boundary.col, loc->row + loc->page_rows,
-				loc->width, TERM_WHITE, menu->prompt);
+				loc->width, COLOUR_WHITE, menu->prompt);
 
 	if (menu->browse_hook && oid >= 0)
 		menu->browse_hook(oid, menu->menu_data, loc);

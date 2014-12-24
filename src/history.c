@@ -330,8 +330,8 @@ static size_t last_printable_item(void)
 
 static void print_history_header(void)
 {
-	c_put_str(TERM_WHITE, "[Player history]", 0, 0);
-	c_put_str(TERM_L_BLUE, "      Turn   Depth  Note", 1, 0);
+	c_put_str(COLOUR_WHITE, "[Player history]", 0, 0);
+	c_put_str(COLOUR_L_BLUE, "      Turn   Depth  Note", 1, 0);
 }
 
 

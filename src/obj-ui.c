@@ -245,7 +245,7 @@ static void show_obj_list(int num_obj, int num_head, char labels[50][80],
 		if (obj)
 			attr = obj->kind->base->attr;
 		else
-			attr = TERM_SLATE;
+			attr = COLOUR_SLATE;
 
 		/* Object name */
 		c_put_str(attr, o_name[i], row + i, col + strlen(labels[i]));
@@ -307,12 +307,12 @@ static void show_obj_list(int num_obj, int num_head, char labels[50][80],
 
 			/* Print the (disabled) label */
 			strnfmt(tmp_val, sizeof(tmp_val), "%c) ", letter);
-			c_put_str(TERM_SLATE, tmp_val, row + i, col);
+			c_put_str(COLOUR_SLATE, tmp_val, row + i, col);
 
 			/* Print the count */
 			strnfmt(tmp_val, sizeof(tmp_val), fmt, count,
 					count == 1 ? "" : "s");
-			c_put_str(TERM_L_UMBER, tmp_val, row + i, col + 3);
+			c_put_str(COLOUR_L_UMBER, tmp_val, row + i, col + 3);
 		}
 	}
 

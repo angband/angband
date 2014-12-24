@@ -53,38 +53,38 @@ void target_display_help(bool monster, bool free)
 	Term_gotoxy(1, help_loc);
 
 	/* Display help */
-	text_out_c(TERM_L_GREEN, "<dir>");
+	text_out_c(COLOUR_L_GREEN, "<dir>");
 	text_out(" and ");
-	text_out_c(TERM_L_GREEN, "<click>");
+	text_out_c(COLOUR_L_GREEN, "<click>");
 	text_out(" look around. '");
-	text_out_c(TERM_L_GREEN, "g");
+	text_out_c(COLOUR_L_GREEN, "g");
 	text_out(" moves to the selection. '");
-	text_out_c(TERM_L_GREEN, "p");
+	text_out_c(COLOUR_L_GREEN, "p");
 	text_out("' selects the player. '");
-	text_out_c(TERM_L_GREEN, "q");
+	text_out_c(COLOUR_L_GREEN, "q");
 	text_out("' exits. '");
-	text_out_c(TERM_L_GREEN, "r");
+	text_out_c(COLOUR_L_GREEN, "r");
 	text_out("' displays details. '");
 
 	if (free)
 	{
-		text_out_c(TERM_L_GREEN, "m");
+		text_out_c(COLOUR_L_GREEN, "m");
 		text_out("' restricts to interesting places. ");
 	}
 	else
 	{
-		text_out_c(TERM_L_GREEN, "+");
+		text_out_c(COLOUR_L_GREEN, "+");
 		text_out("' and '");
-		text_out_c(TERM_L_GREEN, "-");
+		text_out_c(COLOUR_L_GREEN, "-");
 		text_out("' cycle through interesting places. '");
-		text_out_c(TERM_L_GREEN, "o");
+		text_out_c(COLOUR_L_GREEN, "o");
 		text_out("' allows free selection. ");
 	}
 	
 	if (monster || free)
 	{
 		text_out("'");
-		text_out_c(TERM_L_GREEN, "t");
+		text_out_c(COLOUR_L_GREEN, "t");
 		text_out("' targets the current selection.");
 	}
 
@@ -844,26 +844,26 @@ static int draw_path(u16b path_n, struct loc *path_g, wchar_t *c, int *a, int y1
 		if (mon && mflag_has(mon->mflag, MFLAG_VISIBLE)) {
 			/* Mimics act as objects */
 			if (rf_has(mon->race->flags, RF_UNAWARE)) 
-				colour = TERM_YELLOW;
+				colour = COLOUR_YELLOW;
 			else
 				/* Visible monsters are red. */
-				colour = TERM_L_RED;
+				colour = COLOUR_L_RED;
 		} else if (obj && obj->marked)
 			/* Known objects are yellow. */
-			colour = TERM_YELLOW;
+			colour = COLOUR_YELLOW;
 
 		else if ((!square_isprojectable(cave, y,x) && square_ismark(cave, y, x))
 				 || player_can_see_bold(y, x))
 			/* Known walls are blue. */
-			colour = TERM_BLUE;
+			colour = COLOUR_BLUE;
 
 		else if (!square_ismark(cave, y, x) && !player_can_see_bold(y,x))
 			/* Unknown squares are grey. */
-			colour = TERM_L_DARK;
+			colour = COLOUR_L_DARK;
 
 		else
 			/* Unoccupied squares are white. */
-			colour = TERM_WHITE;
+			colour = COLOUR_WHITE;
 
 		/* Draw the path segment */
 		(void)Term_addch(colour, L'*');

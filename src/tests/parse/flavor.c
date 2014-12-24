@@ -35,7 +35,7 @@ int test_flavor0(void *state) {
 	eq(f->fidx, 2);
 	eq(f->tval, TV_LIGHT);
 	eq(f->d_char, L'&');
-	eq(f->d_attr, TERM_BLUE);
+	eq(f->d_attr, COLOUR_BLUE);
 	require(streq(f->text, "Fishy"));
 	ok;
 }

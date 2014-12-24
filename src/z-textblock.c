@@ -157,7 +157,7 @@ void textblock_append_utf8(textblock *tb, const char *utf8_string)
 		tb->text[tb->strlen + i] = (wchar_t)utf8_string[i];
 	}
 
-	memset(tb->attrs + tb->strlen, TERM_WHITE, new_length);
+	memset(tb->attrs + tb->strlen, COLOUR_WHITE, new_length);
 	tb->strlen += new_length;
 }
 
@@ -169,7 +169,7 @@ void textblock_append(textblock *tb, const char *fmt, ...)
 	va_list vp;
 	va_start(vp, fmt);
 
-	textblock_vappend_c(tb, TERM_WHITE, fmt, vp);
+	textblock_vappend_c(tb, COLOUR_WHITE, fmt, vp);
 
 	va_end(vp);
 }
@@ -496,7 +496,7 @@ void text_out(const char *fmt, ...)
 	va_end(vp);
 
 	/* Output now */
-	text_out_hook(TERM_WHITE, buf);
+	text_out_hook(COLOUR_WHITE, buf);
 }
 
 
@@ -659,7 +659,7 @@ void text_out_e(const char *fmt, ...)
 		}
 		
 		if (a == -1) 
-			a = TERM_WHITE;
+			a = COLOUR_WHITE;
 
 		/* Output now */
 		text_out_hook(a, smallbuf);

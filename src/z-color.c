@@ -1,6 +1,6 @@
-/*
- * File: z-color.c
- * Purpose: generic color definitions
+/**
+ * \file z-color.c
+ * \brief Generic color definitions
  *
  * Copyright (c) 1997 Ben Harrison
  *
@@ -26,35 +26,35 @@
  */
 byte angband_color_table[MAX_COLORS][4] =
 {
-	{0x00, 0x00, 0x00, 0x00}, /* 0  TERM_DARK */
-	{0x00, 0xff, 0xff, 0xff}, /* 1  TERM_WHITE */
-	{0x00, 0x80, 0x80, 0x80}, /* 2  TERM_SLATE */
-	{0x00, 0xff, 0x80, 0x00}, /* 3  TERM_ORANGE */
-	{0x00, 0xc0, 0x00, 0x00}, /* 4  TERM_RED */
-	{0x00, 0x00, 0x80, 0x40}, /* 5  TERM_GREEN */
-	{0x00, 0x00, 0x40, 0xff}, /* 6  TERM_BLUE */
-	{0x00, 0x80, 0x40, 0x00}, /* 7  TERM_UMBER */
-	{0x00, 0x60, 0x60, 0x60}, /* 8  TERM_L_DARK */
-	{0x00, 0xc0, 0xc0, 0xc0}, /* 9  TERM_L_WHITE */
-	{0x00, 0xff, 0x00, 0xff}, /* 10 TERM_L_PURPLE */
-	{0x00, 0xff, 0xff, 0x00}, /* 11 TERM_YELLOW */
-	{0x00, 0xff, 0x40, 0x40}, /* 12 TERM_L_RED */
-	{0x00, 0x00, 0xff, 0x00}, /* 13 TERM_L_GREEN */
-	{0x00, 0x00, 0xff, 0xff}, /* 14 TERM_L_BLUE */
-	{0x00, 0xc0, 0x80, 0x40}, /* 15 TERM_L_UMBER */
-	{0x00, 0x90, 0x00, 0x90}, /* 16 TERM_PURPLE */
-	{0x00, 0x90, 0x20, 0xff}, /* 17 TERM_VIOLET */
-	{0x00, 0x00, 0xa0, 0xa0}, /* 18 TERM_TEAL */
-	{0x00, 0x6c, 0x6c, 0x30}, /* 19 TERM_MUD */
-	{0x00, 0xff, 0xff, 0x90}, /* 20 TERM_L_YELLOW */
-	{0x00, 0xff, 0x00, 0xa0}, /* 21 TERM_MAGENTA */
-	{0x00, 0x20, 0xff, 0xdc}, /* 22 TERM_L_TEAL */
-	{0x00, 0xb8, 0xa8, 0xff}, /* 23 TERM_L_VIOLET */
-	{0x00, 0xff, 0x80, 0x80}, /* 24 TERM_L_PINK */
-	{0x00, 0xb4, 0xb4, 0x00}, /* 25 TERM_MUSTARD */
-	{0x00, 0xa0, 0xc0, 0xd0}, /* 26 TERM_BLUE_SLATE */
-	{0x00, 0x00, 0xb0, 0xff}, /* 27 TERM_DEEP_L_BLUE */
-	{0x00, 0x28, 0x28, 0x28}, /* 28 TERM_SHADE */
+	{0x00, 0x00, 0x00, 0x00}, /* 0  COLOUR_DARK */
+	{0x00, 0xff, 0xff, 0xff}, /* 1  COLOUR_WHITE */
+	{0x00, 0x80, 0x80, 0x80}, /* 2  COLOUR_SLATE */
+	{0x00, 0xff, 0x80, 0x00}, /* 3  COLOUR_ORANGE */
+	{0x00, 0xc0, 0x00, 0x00}, /* 4  COLOUR_RED */
+	{0x00, 0x00, 0x80, 0x40}, /* 5  COLOUR_GREEN */
+	{0x00, 0x00, 0x40, 0xff}, /* 6  COLOUR_BLUE */
+	{0x00, 0x80, 0x40, 0x00}, /* 7  COLOUR_UMBER */
+	{0x00, 0x60, 0x60, 0x60}, /* 8  COLOUR_L_DARK */
+	{0x00, 0xc0, 0xc0, 0xc0}, /* 9  COLOUR_L_WHITE */
+	{0x00, 0xff, 0x00, 0xff}, /* 10 COLOUR_L_PURPLE */
+	{0x00, 0xff, 0xff, 0x00}, /* 11 COLOUR_YELLOW */
+	{0x00, 0xff, 0x40, 0x40}, /* 12 COLOUR_L_RED */
+	{0x00, 0x00, 0xff, 0x00}, /* 13 COLOUR_L_GREEN */
+	{0x00, 0x00, 0xff, 0xff}, /* 14 COLOUR_L_BLUE */
+	{0x00, 0xc0, 0x80, 0x40}, /* 15 COLOUR_L_UMBER */
+	{0x00, 0x90, 0x00, 0x90}, /* 16 COLOUR_PURPLE */
+	{0x00, 0x90, 0x20, 0xff}, /* 17 COLOUR_VIOLET */
+	{0x00, 0x00, 0xa0, 0xa0}, /* 18 COLOUR_TEAL */
+	{0x00, 0x6c, 0x6c, 0x30}, /* 19 COLOUR_MUD */
+	{0x00, 0xff, 0xff, 0x90}, /* 20 COLOUR_L_YELLOW */
+	{0x00, 0xff, 0x00, 0xa0}, /* 21 COLOUR_MAGENTA */
+	{0x00, 0x20, 0xff, 0xdc}, /* 22 COLOUR_L_TEAL */
+	{0x00, 0xb8, 0xa8, 0xff}, /* 23 COLOUR_L_VIOLET */
+	{0x00, 0xff, 0x80, 0x80}, /* 24 COLOUR_L_PINK */
+	{0x00, 0xb4, 0xb4, 0x00}, /* 25 COLOUR_MUSTARD */
+	{0x00, 0xa0, 0xc0, 0xd0}, /* 26 COLOUR_BLUE_SLATE */
+	{0x00, 0x00, 0xb0, 0xff}, /* 27 COLOUR_DEEP_L_BLUE */
+	{0x00, 0x28, 0x28, 0x28}, /* 28 COLOUR_SHADE */
 };
 
 /*
@@ -63,90 +63,90 @@ byte angband_color_table[MAX_COLORS][4] =
 color_type color_table[MAX_COLORS] =
 {
 	/* full mono vga blind lighter darker highlight metallic misc */
-	{'d', "Dark", {0, 0, 0, TERM_DARK, TERM_L_DARK, TERM_DARK,
-				   TERM_L_DARK, TERM_L_DARK, TERM_DARK}},
+	{'d', "Dark", {0, 0, 0, COLOUR_DARK, COLOUR_L_DARK, COLOUR_DARK,
+				   COLOUR_L_DARK, COLOUR_L_DARK, COLOUR_DARK}},
 
-	{'w', "White", {1, 1, 1, TERM_WHITE, TERM_YELLOW, TERM_SLATE,
-					TERM_L_BLUE, TERM_YELLOW, TERM_WHITE}},
+	{'w', "White", {1, 1, 1, COLOUR_WHITE, COLOUR_YELLOW, COLOUR_SLATE,
+					COLOUR_L_BLUE, COLOUR_YELLOW, COLOUR_WHITE}},
 
-	{'s', "Slate", {2, 1, 2, TERM_SLATE, TERM_L_WHITE, TERM_L_DARK,
-					TERM_L_WHITE, TERM_L_WHITE, TERM_SLATE}},
+	{'s', "Slate", {2, 1, 2, COLOUR_SLATE, COLOUR_L_WHITE, COLOUR_L_DARK,
+					COLOUR_L_WHITE, COLOUR_L_WHITE, COLOUR_SLATE}},
 
-	{'o', "Orange", {3, 1, 3, TERM_L_WHITE, TERM_YELLOW, TERM_SLATE,
-					 TERM_YELLOW, TERM_YELLOW, TERM_ORANGE}},
+	{'o', "Orange", {3, 1, 3, COLOUR_L_WHITE, COLOUR_YELLOW, COLOUR_SLATE,
+					 COLOUR_YELLOW, COLOUR_YELLOW, COLOUR_ORANGE}},
 
-	{'r', "Red", {4, 1, 4, TERM_SLATE, TERM_L_RED, TERM_SLATE,
-				  TERM_L_RED, TERM_L_RED, TERM_RED}},
+	{'r', "Red", {4, 1, 4, COLOUR_SLATE, COLOUR_L_RED, COLOUR_SLATE,
+				  COLOUR_L_RED, COLOUR_L_RED, COLOUR_RED}},
 
-	{'g', "Green", {5, 1, 5, TERM_SLATE, TERM_L_GREEN, TERM_SLATE,
-					TERM_L_GREEN, TERM_L_GREEN, TERM_GREEN}},
+	{'g', "Green", {5, 1, 5, COLOUR_SLATE, COLOUR_L_GREEN, COLOUR_SLATE,
+					COLOUR_L_GREEN, COLOUR_L_GREEN, COLOUR_GREEN}},
 
-	{'b', "Blue", {6, 1, 6, TERM_SLATE, TERM_L_BLUE, TERM_SLATE,
-				   TERM_L_BLUE, TERM_L_BLUE, TERM_BLUE}},
+	{'b', "Blue", {6, 1, 6, COLOUR_SLATE, COLOUR_L_BLUE, COLOUR_SLATE,
+				   COLOUR_L_BLUE, COLOUR_L_BLUE, COLOUR_BLUE}},
 
-	{'u', "Umber", {7, 1, 7, TERM_L_DARK, TERM_L_UMBER, TERM_L_DARK,
-					TERM_L_UMBER, TERM_L_UMBER, TERM_UMBER}},
+	{'u', "Umber", {7, 1, 7, COLOUR_L_DARK, COLOUR_L_UMBER, COLOUR_L_DARK,
+					COLOUR_L_UMBER, COLOUR_L_UMBER, COLOUR_UMBER}},
 
-	{'D', "Light Dark", {8, 1, 8, TERM_L_DARK, TERM_SLATE, TERM_L_DARK,
-						 TERM_SLATE, TERM_SLATE, TERM_L_DARK}},
+	{'D', "Light Dark", {8, 1, 8, COLOUR_L_DARK, COLOUR_SLATE, COLOUR_L_DARK,
+						 COLOUR_SLATE, COLOUR_SLATE, COLOUR_L_DARK}},
 
-	{'W', "Light Slate", {9, 1, 9, TERM_L_WHITE, TERM_WHITE, TERM_SLATE,
-						  TERM_WHITE, TERM_WHITE, TERM_SLATE}},
+	{'W', "Light Slate", {9, 1, 9, COLOUR_L_WHITE, COLOUR_WHITE, COLOUR_SLATE,
+						  COLOUR_WHITE, COLOUR_WHITE, COLOUR_SLATE}},
 
-	{'P', "Light Purple", {10, 1, 10, TERM_SLATE, TERM_YELLOW, TERM_SLATE,
-						   TERM_YELLOW, TERM_YELLOW, TERM_L_PURPLE}},
+	{'P', "Light Purple", {10, 1, 10, COLOUR_SLATE, COLOUR_YELLOW, COLOUR_SLATE,
+						   COLOUR_YELLOW, COLOUR_YELLOW, COLOUR_L_PURPLE}},
 
-	{'y', "Yellow", {11, 1, 11, TERM_L_WHITE, TERM_L_YELLOW, TERM_L_WHITE,
-					 TERM_WHITE, TERM_WHITE, TERM_YELLOW}},
+	{'y', "Yellow", {11, 1, 11, COLOUR_L_WHITE, COLOUR_L_YELLOW, COLOUR_L_WHITE,
+					 COLOUR_WHITE, COLOUR_WHITE, COLOUR_YELLOW}},
 
-	{'R', "Light Red", {12, 1, 12, TERM_L_WHITE, TERM_YELLOW, TERM_RED,
-						TERM_YELLOW, TERM_YELLOW, TERM_L_RED}},
+	{'R', "Light Red", {12, 1, 12, COLOUR_L_WHITE, COLOUR_YELLOW, COLOUR_RED,
+						COLOUR_YELLOW, COLOUR_YELLOW, COLOUR_L_RED}},
 
-	{'G', "Light Green", {13, 1, 13, TERM_L_WHITE, TERM_YELLOW, TERM_GREEN,
-						  TERM_YELLOW, TERM_YELLOW, TERM_L_GREEN}},
+	{'G', "Light Green", {13, 1, 13, COLOUR_L_WHITE, COLOUR_YELLOW, COLOUR_GREEN,
+						  COLOUR_YELLOW, COLOUR_YELLOW, COLOUR_L_GREEN}},
 
-	{'B', "Light Blue", {14, 1, 14, TERM_L_WHITE, TERM_YELLOW, TERM_BLUE,
-						 TERM_YELLOW, TERM_YELLOW, TERM_L_BLUE}},
+	{'B', "Light Blue", {14, 1, 14, COLOUR_L_WHITE, COLOUR_YELLOW, COLOUR_BLUE,
+						 COLOUR_YELLOW, COLOUR_YELLOW, COLOUR_L_BLUE}},
 
-	{'U', "Light Umber", {15, 1, 15, TERM_L_WHITE, TERM_YELLOW, TERM_UMBER,
-						  TERM_YELLOW, TERM_YELLOW, TERM_L_UMBER}},
+	{'U', "Light Umber", {15, 1, 15, COLOUR_L_WHITE, COLOUR_YELLOW, COLOUR_UMBER,
+						  COLOUR_YELLOW, COLOUR_YELLOW, COLOUR_L_UMBER}},
 
 	/* "new" colors */
-	{'p', "Purple", {16, 1, 10,TERM_SLATE, TERM_L_PURPLE, TERM_SLATE,
-					 TERM_L_PURPLE, TERM_L_PURPLE, TERM_L_PURPLE}},
+	{'p', "Purple", {16, 1, 10,COLOUR_SLATE, COLOUR_L_PURPLE, COLOUR_SLATE,
+					 COLOUR_L_PURPLE, COLOUR_L_PURPLE, COLOUR_L_PURPLE}},
 
-	{'v', "Violet", {17, 1, 10,TERM_SLATE, TERM_L_PURPLE, TERM_SLATE,
-					 TERM_L_PURPLE, TERM_L_PURPLE, TERM_L_PURPLE}},
+	{'v', "Violet", {17, 1, 10,COLOUR_SLATE, COLOUR_L_PURPLE, COLOUR_SLATE,
+					 COLOUR_L_PURPLE, COLOUR_L_PURPLE, COLOUR_L_PURPLE}},
 
-	{'t', "Teal", {18, 1, 6, TERM_SLATE, TERM_L_TEAL, TERM_SLATE,
-				   TERM_L_TEAL, TERM_L_TEAL, TERM_L_BLUE}},
+	{'t', "Teal", {18, 1, 6, COLOUR_SLATE, COLOUR_L_TEAL, COLOUR_SLATE,
+				   COLOUR_L_TEAL, COLOUR_L_TEAL, COLOUR_L_BLUE}},
 
-	{'m', "Mud", {19, 1, 5, TERM_SLATE, TERM_MUSTARD, TERM_SLATE,
-				  TERM_MUSTARD, TERM_MUSTARD, TERM_UMBER}},
+	{'m', "Mud", {19, 1, 5, COLOUR_SLATE, COLOUR_MUSTARD, COLOUR_SLATE,
+				  COLOUR_MUSTARD, COLOUR_MUSTARD, COLOUR_UMBER}},
 
-	{'Y', "Light Yellow", {20, 1, 11, TERM_WHITE, TERM_WHITE, TERM_YELLOW,
-						   TERM_WHITE, TERM_WHITE, TERM_L_YELLOW}},
+	{'Y', "Light Yellow", {20, 1, 11, COLOUR_WHITE, COLOUR_WHITE, COLOUR_YELLOW,
+						   COLOUR_WHITE, COLOUR_WHITE, COLOUR_L_YELLOW}},
 
-	{'i', "Magenta-Pink", {21, 1, 12, TERM_SLATE, TERM_L_PINK, TERM_RED,
-						   TERM_L_PINK, TERM_L_PINK, TERM_L_PURPLE}},
+	{'i', "Magenta-Pink", {21, 1, 12, COLOUR_SLATE, COLOUR_L_PINK, COLOUR_RED,
+						   COLOUR_L_PINK, COLOUR_L_PINK, COLOUR_L_PURPLE}},
 
-	{'T', "Light Teal", {22, 1, 14, TERM_L_WHITE, TERM_YELLOW, TERM_TEAL,
-						 TERM_YELLOW, TERM_YELLOW, TERM_L_BLUE}},
+	{'T', "Light Teal", {22, 1, 14, COLOUR_L_WHITE, COLOUR_YELLOW, COLOUR_TEAL,
+						 COLOUR_YELLOW, COLOUR_YELLOW, COLOUR_L_BLUE}},
 
-	{'V', "Light Violet", {23, 1, 10, TERM_L_WHITE, TERM_YELLOW, TERM_VIOLET,
-						   TERM_YELLOW, TERM_YELLOW, TERM_L_PURPLE}},
+	{'V', "Light Violet", {23, 1, 10, COLOUR_L_WHITE, COLOUR_YELLOW, COLOUR_VIOLET,
+						   COLOUR_YELLOW, COLOUR_YELLOW, COLOUR_L_PURPLE}},
 
-	{'I', "Light Pink", {24, 1, 12, TERM_L_WHITE, TERM_YELLOW, TERM_MAGENTA,
-						 TERM_YELLOW, TERM_YELLOW, TERM_L_PURPLE}},
+	{'I', "Light Pink", {24, 1, 12, COLOUR_L_WHITE, COLOUR_YELLOW, COLOUR_MAGENTA,
+						 COLOUR_YELLOW, COLOUR_YELLOW, COLOUR_L_PURPLE}},
 
-	{'M', "Mustard", {25, 1, 11, TERM_SLATE, TERM_YELLOW, TERM_SLATE,
-					  TERM_YELLOW, TERM_YELLOW, TERM_YELLOW}},
+	{'M', "Mustard", {25, 1, 11, COLOUR_SLATE, COLOUR_YELLOW, COLOUR_SLATE,
+					  COLOUR_YELLOW, COLOUR_YELLOW, COLOUR_YELLOW}},
 
-	{'z', "Blue Slate",  {26, 1, 9, TERM_SLATE, TERM_DEEP_L_BLUE, TERM_SLATE,
-						  TERM_DEEP_L_BLUE, TERM_DEEP_L_BLUE, TERM_L_WHITE}},
+	{'z', "Blue Slate",  {26, 1, 9, COLOUR_SLATE, COLOUR_DEEP_L_BLUE, COLOUR_SLATE,
+						  COLOUR_DEEP_L_BLUE, COLOUR_DEEP_L_BLUE, COLOUR_L_WHITE}},
 
-	{'Z', "Deep Light Blue", {27, 1, 14, TERM_L_WHITE, TERM_L_BLUE, TERM_BLUE_SLATE,
-							  TERM_L_BLUE, TERM_L_BLUE, TERM_L_BLUE}},
+	{'Z', "Deep Light Blue", {27, 1, 14, COLOUR_L_WHITE, COLOUR_L_BLUE, COLOUR_BLUE_SLATE,
+							  COLOUR_L_BLUE, COLOUR_L_BLUE, COLOUR_L_BLUE}},
 
 	/* Rest to be filled in when the game loads */
 };
@@ -167,7 +167,7 @@ int color_char_to_attr(char c)
 	if (c < 0) return (c);
 
 	/* Is a space or '\0' -- return black */
-	if (c == '\0' || c == ' ') return (TERM_DARK);
+	if (c == '\0' || c == ' ') return (COLOUR_DARK);
 
 	/* Search the color table */
 	for (a = 0; a < BASIC_COLORS; a++)
@@ -177,7 +177,7 @@ int color_char_to_attr(char c)
 	}
 
 	/* If we don't find the color, we assume white */
-	if (a == BASIC_COLORS) return (TERM_WHITE);
+	if (a == BASIC_COLORS) return (COLOUR_WHITE);
 
 	/* Return the color */
 	return (a);
@@ -197,7 +197,7 @@ int color_text_to_attr(const char *name)
 	}
 
 	/* Default to white */
-	return (TERM_WHITE);
+	return (COLOUR_WHITE);
 }
 
 
@@ -217,9 +217,9 @@ const char *attr_to_text(byte a)
 /*
  * XXX XXX XXX Important note about "colors" XXX XXX XXX
  *
- * The "TERM_*" color definitions list the "composition" of each
+ * The "COLOUR_*" color definitions list the "composition" of each
  * "Angband color" in terms of "quarters" of each of the three color
- * components (Red, Green, Blue), for example, TERM_UMBER is defined
+ * components (Red, Green, Blue), for example, COLOUR_UMBER is defined
  * as 2/4 Red, 1/4 Green, 0/4 Blue.
  *
  * These values are NOT gamma-corrected.  On most machines (with the

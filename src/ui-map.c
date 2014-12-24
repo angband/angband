@@ -1,6 +1,6 @@
 /**
-   \file ui-map.c
-   \brief Writing level map info to the screen
+ * \file ui-map.c
+ * \brief Writing level map info to the screen
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  *
@@ -98,28 +98,28 @@ static void grid_get_attr(grid_data *g, int *a)
 
 		/* Tint trap detection borders */
 		if (g->trapborder)
-			*a = (g->in_view ? TERM_L_GREEN : TERM_GREEN);
+			*a = (g->in_view ? COLOUR_L_GREEN : COLOUR_GREEN);
 
 		/* Only apply lighting effects when the attr is white --
 		 * this is to stop e.g. doors going grey when out of LOS */
-		if (*a == TERM_WHITE) {
+		if (*a == COLOUR_WHITE) {
 			/* If it's a floor tile then we'll tint based on lighting. */
 			if (tf_has(f_ptr->flags, TF_TORCH))
 				switch (g->lighting) {
-					case LIGHTING_TORCH: *a = TERM_YELLOW; break;
-					case LIGHTING_LIT: *a = TERM_L_DARK; break;
-					case LIGHTING_DARK: *a = TERM_L_DARK; break;
+					case LIGHTING_TORCH: *a = COLOUR_YELLOW; break;
+					case LIGHTING_LIT: *a = COLOUR_L_DARK; break;
+					case LIGHTING_DARK: *a = COLOUR_L_DARK; break;
 					default: break;
 				}
 
 			/* If it's another kind of tile, only tint when unlit. */
 			else if (g->lighting == LIGHTING_DARK ||
 					 g->lighting == LIGHTING_LIT)
-				*a = TERM_L_DARK;
+				*a = COLOUR_L_DARK;
 		}
 		else if (feat_is_magma(g->f_idx) || feat_is_quartz(g->f_idx)) {
 			if (!g->in_view) {
-				*a = TERM_L_DARK;
+				*a = COLOUR_L_DARK;
 			}
 		}
 	}
@@ -254,7 +254,7 @@ void grid_data_as_text(grid_data *g, int *ap, wchar_t *cp, int *tap, wchar_t *tc
 			/* Turn uniques purple if desired (violet, actually) */
 			else if (OPT(purple_uniques) && rf_has(m_ptr->race->flags, RF_UNIQUE)) {
 				/* Use (light) violet attr */
-				a = TERM_VIOLET;
+				a = COLOUR_VIOLET;
 
 				/* Use char */
 				c = dc;
@@ -329,37 +329,37 @@ void grid_data_as_text(grid_data *g, int *ap, wchar_t *cp, int *tap, wchar_t *tc
 			case 10:
 			case  9: 
 			{
-				a = TERM_WHITE; 
+				a = COLOUR_WHITE; 
 				break;
 			}
 			case  8:
 			case  7:
 			{
-				a = TERM_YELLOW;
+				a = COLOUR_YELLOW;
 				break;
 			}
 			case  6:
 			case  5:
 			{
-				a = TERM_ORANGE;
+				a = COLOUR_ORANGE;
 				break;
 			}
 			case  4:
 			case  3:
 			{
-				a = TERM_L_RED;
+				a = COLOUR_L_RED;
 				break;
 			}
 			case  2:
 			case  1:
 			case  0:
 			{
-				a = TERM_RED;
+				a = COLOUR_RED;
 				break;
 			}
 			default:
 			{
-				a = TERM_WHITE;
+				a = COLOUR_WHITE;
 				break;
 			}
 			}
@@ -671,7 +671,7 @@ void prt_map(void)
 
 			if ((tile_width > 1) || (tile_height > 1))
 			{
-				Term_big_queue_char(Term, vx, vy, a, c, TERM_WHITE, L' ');
+				Term_big_queue_char(Term, vx, vy, a, c, COLOUR_WHITE, L' ');
 			}
 		}
 	}
@@ -732,9 +732,9 @@ void display_map(int *cy, int *cx)
 	}
 
 	/* Nothing here */
-	a = TERM_WHITE;
+	a = COLOUR_WHITE;
     c = L' ';
-	ta = TERM_WHITE;
+	ta = COLOUR_WHITE;
 	tc = L' ';
 
 	/* Draw a box around the edge of the term */

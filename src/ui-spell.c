@@ -75,26 +75,26 @@ static void spell_menu_display(struct menu *m, int oid, bool cursor,
 
 	if (s_ptr->slevel >= 99) {
 		illegible = "(illegible)";
-		attr = TERM_L_DARK;
+		attr = COLOUR_L_DARK;
 	} else if (player->spell_flags[spell] & PY_SPELL_FORGOTTEN) {
 		comment = " forgotten";
-		attr = TERM_YELLOW;
+		attr = COLOUR_YELLOW;
 	} else if (player->spell_flags[spell] & PY_SPELL_LEARNED) {
 		if (player->spell_flags[spell] & PY_SPELL_WORKED) {
 			/* Get extra info */
 			get_spell_info(spell, help, sizeof(help));
 			comment = help;
-			attr = TERM_WHITE;
+			attr = COLOUR_WHITE;
 		} else {
 			comment = " untried";
-			attr = TERM_L_GREEN;
+			attr = COLOUR_L_GREEN;
 		}
 	} else if (s_ptr->slevel <= player->lev) {
 		comment = " unknown";
-		attr = TERM_L_BLUE;
+		attr = COLOUR_L_BLUE;
 	} else {
 		comment = " difficult";
-		attr = TERM_RED;
+		attr = COLOUR_RED;
 	}
 
 	/* Dump the spell --(-- */

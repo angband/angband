@@ -165,7 +165,7 @@ static void handle_signal_simple(int sig)
 		Term_erase(0, 0, 255);
 
 		/* Display the cause */
-		Term_putstr(0, 0, -1, TERM_WHITE, "Contemplating suicide!");
+		Term_putstr(0, 0, -1, COLOUR_WHITE, "Contemplating suicide!");
 
 		/* Flush */
 		Term_fresh();
@@ -203,11 +203,11 @@ static void handle_signal_abort(int sig)
 	Term_erase(0, 23, 255);
 
 	/* Give a warning */
-	Term_putstr(0, 23, -1, TERM_RED,
+	Term_putstr(0, 23, -1, COLOUR_RED,
 	            "A gruesome software bug LEAPS out at you!");
 
 	/* Message */
-	Term_putstr(45, 23, -1, TERM_RED, "Panic save...");
+	Term_putstr(45, 23, -1, COLOUR_RED, "Panic save...");
 
 	/* Flush output */
 	Term_fresh();
@@ -220,9 +220,9 @@ static void handle_signal_abort(int sig)
 
 	/* Attempt to save */
 	if (savefile_save(savefile))
-		Term_putstr(45, 23, -1, TERM_RED, "Panic save succeeded!");
+		Term_putstr(45, 23, -1, COLOUR_RED, "Panic save succeeded!");
 	else
-		Term_putstr(45, 23, -1, TERM_RED, "Panic save failed!");
+		Term_putstr(45, 23, -1, COLOUR_RED, "Panic save failed!");
 
 	/* Flush output */
 	Term_fresh();

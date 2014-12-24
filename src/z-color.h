@@ -21,36 +21,36 @@
  * The "(R,G,B)" codes are given in "fourths" of the "maximal" value,
  * and should "gamma corrected" on most (non-Macintosh) machines.
  */
-#define TERM_DARK     0  /* d */    /* 0 0 0 */
-#define TERM_WHITE    1  /* w */    /* 4 4 4 */
-#define TERM_SLATE    2  /* s */    /* 2 2 2 */
-#define TERM_ORANGE   3  /* o */    /* 4 2 0 */
-#define TERM_RED      4  /* r */    /* 3 0 0 */
-#define TERM_GREEN    5  /* g */    /* 0 2 1 */
-#define TERM_BLUE     6  /* b */    /* 0 0 4 */
-#define TERM_UMBER    7  /* u */    /* 2 1 0 */
-#define TERM_L_DARK   8  /* D */    /* 1 1 1 */
-#define TERM_L_WHITE  9  /* W */    /* 3 3 3 */
-#define TERM_L_PURPLE 10 /* P */    /* ? ? ? */
-#define TERM_YELLOW   11 /* y */    /* 4 4 0 */
-#define TERM_L_RED    12 /* R */    /* 4 0 0 */
-#define TERM_L_GREEN  13 /* G */    /* 0 4 0 */
-#define TERM_L_BLUE   14 /* B */    /* 0 4 4 */
-#define TERM_L_UMBER  15 /* U */    /* 3 2 1 */
+#define COLOUR_DARK     0  /* d */    /* 0 0 0 */
+#define COLOUR_WHITE    1  /* w */    /* 4 4 4 */
+#define COLOUR_SLATE    2  /* s */    /* 2 2 2 */
+#define COLOUR_ORANGE   3  /* o */    /* 4 2 0 */
+#define COLOUR_RED      4  /* r */    /* 3 0 0 */
+#define COLOUR_GREEN    5  /* g */    /* 0 2 1 */
+#define COLOUR_BLUE     6  /* b */    /* 0 0 4 */
+#define COLOUR_UMBER    7  /* u */    /* 2 1 0 */
+#define COLOUR_L_DARK   8  /* D */    /* 1 1 1 */
+#define COLOUR_L_WHITE  9  /* W */    /* 3 3 3 */
+#define COLOUR_L_PURPLE 10 /* P */    /* ? ? ? */
+#define COLOUR_YELLOW   11 /* y */    /* 4 4 0 */
+#define COLOUR_L_RED    12 /* R */    /* 4 0 0 */
+#define COLOUR_L_GREEN  13 /* G */    /* 0 4 0 */
+#define COLOUR_L_BLUE   14 /* B */    /* 0 4 4 */
+#define COLOUR_L_UMBER  15 /* U */    /* 3 2 1 */
 
-#define TERM_PURPLE      16    /* p */
-#define TERM_VIOLET      17    /* v */
-#define TERM_TEAL        18    /* t */
-#define TERM_MUD         19    /* m */
-#define TERM_L_YELLOW    20    /* Y */
-#define TERM_MAGENTA     21    /* i */
-#define TERM_L_TEAL      22    /* T */
-#define TERM_L_VIOLET    23    /* V */
-#define TERM_L_PINK      24    /* I */
-#define TERM_MUSTARD     25    /* M */
-#define TERM_BLUE_SLATE  26    /* z */
-#define TERM_DEEP_L_BLUE 27    /* Z */
-#define TERM_SHADE       28    /* for shaded backgrounds */
+#define COLOUR_PURPLE      16    /* p */
+#define COLOUR_VIOLET      17    /* v */
+#define COLOUR_TEAL        18    /* t */
+#define COLOUR_MUD         19    /* m */
+#define COLOUR_L_YELLOW    20    /* Y */
+#define COLOUR_MAGENTA     21    /* i */
+#define COLOUR_L_TEAL      22    /* T */
+#define COLOUR_L_VIOLET    23    /* V */
+#define COLOUR_L_PINK      24    /* I */
+#define COLOUR_MUSTARD     25    /* M */
+#define COLOUR_BLUE_SLATE  26    /* z */
+#define COLOUR_DEEP_L_BLUE 27    /* Z */
+#define COLOUR_SHADE       28    /* for shaded backgrounds */
 
 /* The following allow color 'translations' to support environments with a limited color depth
  * as well as translate colours to alternates for e.g. menu highlighting. */

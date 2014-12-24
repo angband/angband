@@ -36,7 +36,7 @@ int test_graphics0(void *state) {
 	f = parser_priv(state);
 	require(f);
 	eq(f->d_char, L':');
-	eq(f->d_attr, TERM_RED);
+	eq(f->d_attr, COLOUR_RED);
 	ok;
 }
 

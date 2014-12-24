@@ -50,7 +50,7 @@ int test_color0(void *state) {
 	eq(r, PARSE_ERROR_NONE);
 	mr = parser_priv(state);
 	require(mr);
-	eq(mr->d_attr, TERM_VIOLET);
+	eq(mr->d_attr, COLOUR_VIOLET);
 	ok;
 }
 

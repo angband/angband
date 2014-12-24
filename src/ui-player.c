@@ -112,7 +112,7 @@ static const char *likert(int x, int y, byte *attr)
 	/* Negative value */
 	if (x < 0)
 	{
-		*attr = TERM_RED;
+		*attr = COLOUR_RED;
 		return ("Very Bad");
 	}
 
@@ -122,34 +122,34 @@ static const char *likert(int x, int y, byte *attr)
 		case 0:
 		case 1:
 		{
-			*attr = TERM_RED;
+			*attr = COLOUR_RED;
 			return ("Bad");
 		}
 		case 2:
 		{
-			*attr = TERM_RED;
+			*attr = COLOUR_RED;
 			return ("Poor");
 		}
 		case 3:
 		case 4:
 		{
-			*attr = TERM_YELLOW;
+			*attr = COLOUR_YELLOW;
 			return ("Fair");
 		}
 		case 5:
 		{
-			*attr = TERM_YELLOW;
+			*attr = COLOUR_YELLOW;
 			return ("Good");
 		}
 		case 6:
 		{
-			*attr = TERM_YELLOW;
+			*attr = COLOUR_YELLOW;
 			return ("Very Good");
 		}
 		case 7:
 		case 8:
 		{
-			*attr = TERM_L_GREEN;
+			*attr = COLOUR_L_GREEN;
 			return ("Excellent");
 		}
 		case 9:
@@ -158,7 +158,7 @@ static const char *likert(int x, int y, byte *attr)
 		case 12:
 		case 13:
 		{
-			*attr = TERM_L_GREEN;
+			*attr = COLOUR_L_GREEN;
 			return ("Superb");
 		}
 		case 14:
@@ -166,12 +166,12 @@ static const char *likert(int x, int y, byte *attr)
 		case 16:
 		case 17:
 		{
-			*attr = TERM_L_GREEN;
+			*attr = COLOUR_L_GREEN;
 			return ("Heroic");
 		}
 		default:
 		{
-			*attr = TERM_L_GREEN;
+			*attr = COLOUR_L_GREEN;
 			return ("Legendary");
 		}
 	}
@@ -272,9 +272,9 @@ static void display_resistance_panel(const struct player_flag_record *rec,
 	int row = bounds->row;
 	int res_cols = 5 + 2 + player->body.count;
 
-	Term_putstr(col, row++, res_cols, TERM_WHITE, "      abcdefghijkl@");
+	Term_putstr(col, row++, res_cols, COLOUR_WHITE, "      abcdefghijkl@");
 	for (i = 0; i < size - 3; i++, row++) {
-		byte name_attr = TERM_WHITE;
+		byte name_attr = COLOUR_WHITE;
 		Term_gotoxy(col + 6, row);
 
 		/* Repeated extraction of flags is inefficient but more natural */
@@ -282,7 +282,7 @@ static void display_resistance_panel(const struct player_flag_record *rec,
 			struct object *obj;
 			bitflag f[OF_SIZE];
 
-			byte attr = TERM_WHITE | (j % 2) * 8; /* alternating columns */
+			byte attr = COLOUR_WHITE | (j % 2) * 8; /* alternating columns */
 			char sym = '.';
 
 			bool res = FALSE, imm = FALSE, vul = FALSE;
@@ -341,13 +341,13 @@ static void display_resistance_panel(const struct player_flag_record *rec,
 			}
 
 			/* Set the symbols and print them */
-			if (imm) name_attr = TERM_GREEN;
-			else if (res) name_attr = TERM_L_BLUE;
+			if (imm) name_attr = COLOUR_GREEN;
+			else if (res) name_attr = COLOUR_L_BLUE;
 
 			if (vul) sym = '-';
 			else if (imm) sym = '*';
 			else if (res) sym = '+';
-			else if (timed) { sym = '!'; attr = TERM_L_GREEN; }
+			else if (timed) { sym = '!'; attr = COLOUR_L_GREEN; }
 			else if ((j < player->body.count) && obj && !known)
 				sym = '?';
 
@@ -355,7 +355,7 @@ static void display_resistance_panel(const struct player_flag_record *rec,
 		}
 		Term_putstr(col, row, 6, name_attr, format("%5s:", rec[i].name));
 	}
-	Term_putstr(col, row++, res_cols, TERM_WHITE, "      abcdefghijkl@");
+	Term_putstr(col, row++, res_cols, COLOUR_WHITE, "      abcdefghijkl@");
 
 	/* Equippy */
 	display_player_equippy(row++, col + 6);
@@ -396,11 +396,11 @@ void display_player_stat_info(void)
 	col = 42;
 
 	/* Print out the labels for the columns */
-	c_put_str(TERM_WHITE, "  Self", row-1, col+5);
-	c_put_str(TERM_WHITE, " RB", row-1, col+12);
-	c_put_str(TERM_WHITE, " CB", row-1, col+16);
-	c_put_str(TERM_WHITE, " EB", row-1, col+20);
-	c_put_str(TERM_WHITE, "  Best", row-1, col+24);
+	c_put_str(COLOUR_WHITE, "  Self", row-1, col+5);
+	c_put_str(COLOUR_WHITE, " RB", row-1, col+12);
+	c_put_str(COLOUR_WHITE, " CB", row-1, col+16);
+	c_put_str(COLOUR_WHITE, " EB", row-1, col+20);
+	c_put_str(COLOUR_WHITE, "  Best", row-1, col+24);
 
 	/* Display the stats */
 	for (i = 0; i < STAT_MAX; i++)
@@ -427,29 +427,29 @@ void display_player_stat_info(void)
 
 		/* Internal "natural" maximum value */
 		cnv_stat(player->stat_max[i], buf, sizeof(buf));
-		c_put_str(TERM_L_GREEN, buf, row+i, col+5);
+		c_put_str(COLOUR_L_GREEN, buf, row+i, col+5);
 
 		/* Race Bonus */
 		strnfmt(buf, sizeof(buf), "%+3d", player->race->r_adj[i]);
-		c_put_str(TERM_L_BLUE, buf, row+i, col+12);
+		c_put_str(COLOUR_L_BLUE, buf, row+i, col+12);
 
 		/* Class Bonus */
 		strnfmt(buf, sizeof(buf), "%+3d", player->class->c_adj[i]);
-		c_put_str(TERM_L_BLUE, buf, row+i, col+16);
+		c_put_str(COLOUR_L_BLUE, buf, row+i, col+16);
 
 		/* Equipment Bonus */
 		strnfmt(buf, sizeof(buf), "%+3d", player->state.stat_add[i]);
-		c_put_str(TERM_L_BLUE, buf, row+i, col+20);
+		c_put_str(COLOUR_L_BLUE, buf, row+i, col+20);
 
 		/* Resulting "modified" maximum value */
 		cnv_stat(player->state.stat_top[i], buf, sizeof(buf));
-		c_put_str(TERM_L_GREEN, buf, row+i, col+24);
+		c_put_str(COLOUR_L_GREEN, buf, row+i, col+24);
 
 		/* Only display stat_use if there has been draining */
 		if (player->stat_cur[i] < player->stat_max[i])
 		{
 			cnv_stat(player->state.stat_use[i], buf, sizeof(buf));
-			c_put_str(TERM_YELLOW, buf, row+i, col+31);
+			c_put_str(COLOUR_YELLOW, buf, row+i, col+31);
 		}
 	}
 }
@@ -484,7 +484,7 @@ static void display_player_sust_info(void)
 	col = 26;
 
 	/* Header */
-	c_put_str(TERM_WHITE, "abcdefghijkl@", row-1, col);
+	c_put_str(COLOUR_WHITE, "abcdefghijkl@", row-1, col);
 
 	/* Process equipment */
 	for (i = 0; i < player->body.count; ++i)
@@ -504,7 +504,7 @@ static void display_player_sust_info(void)
 		for (stat = 0; stat < STAT_MAX; stat++)
 		{
 			/* Default */
-			a = TERM_SLATE;
+			a = COLOUR_SLATE;
 			c = '.';
 
 			/* Boost */
@@ -512,14 +512,14 @@ static void display_player_sust_info(void)
 			 * This assumption should be removed asap NRM */
 			if (o_ptr->modifiers[stat] > 0) {
 				/* Good */
-				a = TERM_L_GREEN;
+				a = COLOUR_L_GREEN;
 
 				/* Label boost */
 				if (o_ptr->modifiers[stat] < 10)
 						c = I2D(o_ptr->modifiers[stat]);
 			} else if (o_ptr->modifiers[stat] > 0) {
 				/* Bad */
-				a = TERM_RED;
+				a = COLOUR_RED;
 
 				/* Label boost */
 				if (o_ptr->modifiers[stat] > -10)
@@ -530,7 +530,7 @@ static void display_player_sust_info(void)
 			if (of_has(f, sustain_flag(stat)))
 			{
 				/* Dark green */
-				a = TERM_GREEN;
+				a = COLOUR_GREEN;
 
 				/* Convert '.' to 's' */
 				if (c == '.') c = 's';
@@ -555,14 +555,14 @@ static void display_player_sust_info(void)
 	for (stat = 0; stat < STAT_MAX; ++stat)
 	{
 		/* Default */
-		a = TERM_SLATE;
+		a = COLOUR_SLATE;
 		c = '.';
 
 		/* Sustain */
 		if (of_has(f, sustain_flag(stat)))
 		{
 			/* Dark green "s" */
-			a = TERM_GREEN;
+			a = COLOUR_GREEN;
 			c = 's';
 		}
 
@@ -574,7 +574,7 @@ static void display_player_sust_info(void)
 	col = 26;
 
 	/* Footer */
-	c_put_str(TERM_WHITE, "abcdefghijkl@", row+6, col);
+	c_put_str(COLOUR_WHITE, "abcdefghijkl@", row+6, col);
 
 	/* Equippy */
 	display_player_equippy(row+7, col);
@@ -610,7 +610,7 @@ static void display_panel(const struct panel *p, bool left_adj,
 		if (!pl->label)
 			continue;
 
-		Term_putstr(col, row, strlen(pl->label), TERM_WHITE, pl->label);
+		Term_putstr(col, row, strlen(pl->label), COLOUR_WHITE, pl->label);
 
 		len = strlen(pl->value);
 		len = len < w - offset ? len : w - offset - 1;
@@ -671,28 +671,28 @@ static const char *show_speed(void)
 
 static byte max_color(int val, int max)
 {
-	return val < max ? TERM_YELLOW : TERM_L_GREEN;
+	return val < max ? COLOUR_YELLOW : COLOUR_L_GREEN;
 }
 
 /* colours for table items */
 static const byte colour_table[] =
 {
-	TERM_RED, TERM_RED, TERM_RED, TERM_L_RED, TERM_ORANGE,
-	TERM_YELLOW, TERM_YELLOW, TERM_GREEN, TERM_GREEN, TERM_L_GREEN,
-	TERM_L_BLUE
+	COLOUR_RED, COLOUR_RED, COLOUR_RED, COLOUR_L_RED, COLOUR_ORANGE,
+	COLOUR_YELLOW, COLOUR_YELLOW, COLOUR_GREEN, COLOUR_GREEN, COLOUR_L_GREEN,
+	COLOUR_L_BLUE
 };
 
 
 static struct panel *get_panel_topleft(void) {
 	struct panel *p = panel_allocate(7);
 
-	panel_line(p, TERM_L_BLUE, "Name", "%s", op_ptr->full_name);
-	panel_line(p, TERM_L_BLUE, "Sex", "%s", player->sex->title);
-	panel_line(p, TERM_L_BLUE, "Race",	"%s", player->race->name);
-	panel_line(p, TERM_L_BLUE, "Class", "%s", player->class->name);
-	panel_line(p, TERM_L_BLUE, "Title", "%s", show_title());
-	panel_line(p, TERM_L_BLUE, "HP", "%d/%d", player->chp, player->mhp);
-	panel_line(p, TERM_L_BLUE, "SP", "%d/%d", player->csp, player->msp);
+	panel_line(p, COLOUR_L_BLUE, "Name", "%s", op_ptr->full_name);
+	panel_line(p, COLOUR_L_BLUE, "Sex", "%s", player->sex->title);
+	panel_line(p, COLOUR_L_BLUE, "Race",	"%s", player->race->name);
+	panel_line(p, COLOUR_L_BLUE, "Class", "%s", player->class->name);
+	panel_line(p, COLOUR_L_BLUE, "Title", "%s", show_title());
+	panel_line(p, COLOUR_L_BLUE, "HP", "%d/%d", player->chp, player->mhp);
+	panel_line(p, COLOUR_L_BLUE, "SP", "%d/%d", player->csp, player->msp);
 
 	return p;
 }
@@ -704,14 +704,14 @@ static struct panel *get_panel_midleft(void) {
 			"Level", "%d", player->lev);
 	panel_line(p, max_color(player->exp, player->max_exp),
 			"Cur Exp", "%d", player->exp);
-	panel_line(p, TERM_L_GREEN, "Max Exp", "%d", player->max_exp);
-	panel_line(p, TERM_L_GREEN, "Adv Exp", "%s", show_adv_exp());
+	panel_line(p, COLOUR_L_GREEN, "Max Exp", "%d", player->max_exp);
+	panel_line(p, COLOUR_L_GREEN, "Adv Exp", "%s", show_adv_exp());
 	panel_space(p);
-	panel_line(p, TERM_L_GREEN, "Gold", "%d", player->au);
-	panel_line(p, TERM_L_GREEN, "Burden", "%.1f lbs",
+	panel_line(p, COLOUR_L_GREEN, "Gold", "%d", player->au);
+	panel_line(p, COLOUR_L_GREEN, "Burden", "%.1f lbs",
 			player->upkeep->total_weight / 10.0F);
-	panel_line(p, TERM_L_GREEN, "Speed", "%s", show_speed());
-	panel_line(p, TERM_L_GREEN, "Max Depth", "%s", show_depth());
+	panel_line(p, COLOUR_L_GREEN, "Speed", "%s", show_speed());
+	panel_line(p, COLOUR_L_GREEN, "Max Depth", "%s", show_depth());
 
 	return p;
 }
@@ -723,7 +723,7 @@ static struct panel *get_panel_combat(void) {
 	int melee_dice = 1, melee_sides = 1;
 
 	/* AC */
-	panel_line(p, TERM_L_BLUE, "Armor", "[%d,%+d]",
+	panel_line(p, COLOUR_L_BLUE, "Armor", "[%d,%+d]",
 			player->known_state.ac, player->known_state.to_a);
 
 	/* Melee */
@@ -739,9 +739,9 @@ static struct panel *get_panel_combat(void) {
 		melee_sides = obj->ds;
 	}
 
-	panel_line(p, TERM_L_BLUE, "Melee", "%dd%d,%+d", melee_dice, melee_sides, dam);
-	panel_line(p, TERM_L_BLUE, "To-hit", "%d,%+d", bth / 10, hit);
-	panel_line(p, TERM_L_BLUE, "Blows", "%d.%d/turn",
+	panel_line(p, COLOUR_L_BLUE, "Melee", "%dd%d,%+d", melee_dice, melee_sides, dam);
+	panel_line(p, COLOUR_L_BLUE, "To-hit", "%d,%+d", bth / 10, hit);
+	panel_line(p, COLOUR_L_BLUE, "Blows", "%d.%d/turn",
 			player->state.num_blows / 100, (player->state.num_blows / 10 % 10));
 
 	/* Ranged */
@@ -751,9 +751,9 @@ static struct panel *get_panel_combat(void) {
 	dam = obj && object_attack_plusses_are_visible(obj) ? obj->to_d : 0;
 
 	panel_space(p);
-	panel_line(p, TERM_L_BLUE, "Shoot to-dam", "%+d", dam);
-	panel_line(p, TERM_L_BLUE, "To-hit", "%d,%+d", bth / 10, hit);
-	panel_line(p, TERM_L_BLUE, "Shots", "%d/turn", player->state.num_shots);
+	panel_line(p, COLOUR_L_BLUE, "Shoot to-dam", "%+d", dam);
+	panel_line(p, COLOUR_L_BLUE, "To-hit", "%d,%+d", bth / 10, hit);
+	panel_line(p, COLOUR_L_BLUE, "Shots", "%d/turn", player->state.num_shots);
 
 	return p;
 }
@@ -799,7 +799,7 @@ static struct panel *get_panel_skills(void) {
 	panel_line(p, colour_table[skill / 10], "Searching", "%d%%", skill);
 
 	/* Infravision */
-	panel_line(p, TERM_L_GREEN, "Infravision", "%d ft",
+	panel_line(p, COLOUR_L_GREEN, "Infravision", "%d ft",
 			player->state.see_infra * 10);
 
 	return p;
@@ -807,7 +807,7 @@ static struct panel *get_panel_skills(void) {
 
 static struct panel *get_panel_misc(void) {
 	struct panel *p = panel_allocate(7);
-	byte attr = TERM_L_BLUE;
+	byte attr = COLOUR_L_BLUE;
 
 	panel_line(p, attr, "Age", "%d", player->age);
 	panel_line(p, attr, "Height", "%d'%d\"", player->ht / 12, player->ht % 12);
@@ -850,7 +850,7 @@ void display_player_xtra_info(void)
 
 	/* History */
 	Term_gotoxy(text_out_indent, 19);
-	text_out_to_screen(TERM_WHITE, player->history);
+	text_out_to_screen(COLOUR_WHITE, player->history);
 
 	/* Reset text_out() vars */
 	text_out_wrap = 0;

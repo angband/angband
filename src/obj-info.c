@@ -185,11 +185,11 @@ static bool describe_curses(textblock *tb, const object_type *o_ptr,
 		const bitflag flags[OF_SIZE])
 {
 	if (of_has(flags, OF_PERMA_CURSE))
-		textblock_append_c(tb, TERM_L_RED, "Permanently cursed.\n");
+		textblock_append_c(tb, COLOUR_L_RED, "Permanently cursed.\n");
 	else if (of_has(flags, OF_HEAVY_CURSE))
-		textblock_append_c(tb, TERM_L_RED, "Heavily cursed.\n");
+		textblock_append_c(tb, COLOUR_L_RED, "Heavily cursed.\n");
 	else if (of_has(flags, OF_LIGHT_CURSE))
-		textblock_append_c(tb, TERM_L_RED, "Cursed.\n");
+		textblock_append_c(tb, COLOUR_L_RED, "Cursed.\n");
 	else
 		return FALSE;
 
@@ -228,7 +228,7 @@ static bool describe_stats(textblock *tb, const object_type *o_ptr,
 		if (!val) continue;
 		if (!mod_flags[i].name[0]) continue;
 		if (detail && !suppress_details) {
-			int attr = (val > 0) ? TERM_L_GREEN : TERM_RED;
+			int attr = (val > 0) ? COLOUR_L_GREEN : COLOUR_RED;
 			textblock_append_c(tb, attr, "%+i %s.\n", val, desc);
 		} 
 		else
@@ -707,7 +707,7 @@ static bool describe_blows(textblock *tb, const object_type *o_ptr)
 	if (num_entries == 0) return FALSE;
 
 	/* First entry is always current blows (+0, +0) */
-	textblock_append_c(tb, TERM_L_GREEN, "%d.%d ",
+	textblock_append_c(tb, COLOUR_L_GREEN, "%d.%d ",
 			blow_info[0].centiblows / 100, 
 			(blow_info[0].centiblows / 10) % 10);
 	textblock_append(tb, "blow%s/round.\n",
@@ -939,12 +939,12 @@ static bool describe_damage(textblock *tb, const object_type *o_ptr)
 	if (brands)
 		do {
 			if (brand_damage[i] <= 0)
-				textblock_append_c(tb, TERM_L_RED, "%d", 0);
+				textblock_append_c(tb, COLOUR_L_RED, "%d", 0);
 			else if (brand_damage[i] % 10)
-				textblock_append_c(tb, TERM_L_GREEN, "%d.%d",
+				textblock_append_c(tb, COLOUR_L_GREEN, "%d.%d",
 								   brand_damage[i] / 10, brand_damage[i] % 10);
 			else
-				textblock_append_c(tb, TERM_L_GREEN, "%d",brand_damage[i] / 10);
+				textblock_append_c(tb, COLOUR_L_GREEN, "%d",brand_damage[i] / 10);
 
 			textblock_append(tb, " vs. creatures not resistant to %s, ",
 							 brands[i].name);
@@ -956,12 +956,12 @@ static bool describe_damage(textblock *tb, const object_type *o_ptr)
 	if (slays)
 		do {
 			if (slay_damage[i] <= 0)
-				textblock_append_c(tb, TERM_L_RED, "%d", 0);
+				textblock_append_c(tb, COLOUR_L_RED, "%d", 0);
 			else if (slay_damage[i] % 10)
-				textblock_append_c(tb, TERM_L_GREEN, "%d.%d",
+				textblock_append_c(tb, COLOUR_L_GREEN, "%d.%d",
 								   slay_damage[i] / 10, slay_damage[i] % 10);
 			else
-				textblock_append_c(tb, TERM_L_GREEN, "%d", slay_damage[i] / 10);
+				textblock_append_c(tb, COLOUR_L_GREEN, "%d", slay_damage[i] / 10);
 
 			textblock_append(tb, " vs. %s, ", slays[i].name);
 			i++;
@@ -970,12 +970,12 @@ static bool describe_damage(textblock *tb, const object_type *o_ptr)
 	if (num) textblock_append(tb, "and ");
 
 	if (normal_damage <= 0)
-		textblock_append_c(tb, TERM_L_RED, "%d", 0);
+		textblock_append_c(tb, COLOUR_L_RED, "%d", 0);
 	else if (normal_damage % 10)
-		textblock_append_c(tb, TERM_L_GREEN, "%d.%d",
+		textblock_append_c(tb, COLOUR_L_GREEN, "%d.%d",
 			   normal_damage / 10, normal_damage % 10);
 	else
-		textblock_append_c(tb, TERM_L_GREEN, "%d", normal_damage / 10);
+		textblock_append_c(tb, COLOUR_L_GREEN, "%d", normal_damage / 10);
 
 	if (num) textblock_append(tb, " vs. others");
 	textblock_append(tb, ".\n");
@@ -1068,16 +1068,16 @@ static bool describe_combat(textblock *tb, const object_type *o_ptr)
 			return FALSE;
 	}
 
-	textblock_append_c(tb, TERM_L_WHITE, "Combat info:\n");
+	textblock_append_c(tb, COLOUR_L_WHITE, "Combat info:\n");
 
 	if (too_heavy)
-		textblock_append_c(tb, TERM_L_RED, "You are too weak to use this weapon.\n");
+		textblock_append_c(tb, COLOUR_L_RED, "You are too weak to use this weapon.\n");
 
 	describe_blows(tb, o_ptr);
 
 	if (!weapon) { /* Ammo */
 		textblock_append(tb, "Hits targets up to ");
-		textblock_append_c(tb, TERM_L_GREEN, format("%d", range));
+		textblock_append_c(tb, COLOUR_L_GREEN, format("%d", range));
 		textblock_append(tb, " feet away.\n");
 	}
 
@@ -1087,7 +1087,7 @@ static bool describe_combat(textblock *tb, const object_type *o_ptr)
 		textblock_append(tb, "Sometimes creates earthquakes on impact.\n");
 
 	if (ammo) {
-		textblock_append_c(tb, TERM_L_GREEN, "%d%%", break_chance);
+		textblock_append_c(tb, COLOUR_L_GREEN, "%d%%", break_chance);
 		textblock_append(tb, " chance of breaking upon contact.\n");
 	}
 
@@ -1165,7 +1165,7 @@ static bool describe_digger(textblock *tb, const object_type *o_ptr)
 			textblock_append(tb, "and ");
 
 		if (deciturns[i] == 0) {
-			textblock_append_c(tb, TERM_L_RED, "doesn't affect ");
+			textblock_append_c(tb, COLOUR_L_RED, "doesn't affect ");
 			textblock_append(tb, "%s.\n", names[i]);
 			break;
 		}
@@ -1173,13 +1173,13 @@ static bool describe_digger(textblock *tb, const object_type *o_ptr)
 		textblock_append(tb, "%s in ", names[i]);
 
 		if (deciturns[i] == 10) {
-			textblock_append_c(tb, TERM_L_GREEN, "1 ");
+			textblock_append_c(tb, COLOUR_L_GREEN, "1 ");
 		} else if (deciturns[i] < 100) {
-			textblock_append_c(tb, TERM_GREEN, "%d.%d ", deciturns[i]/10,
+			textblock_append_c(tb, COLOUR_GREEN, "%d.%d ", deciturns[i]/10,
 							   deciturns[i]%10);
 		} else {
-			textblock_append_c(tb, (deciturns[i] < 1000) ? TERM_YELLOW :
-							   TERM_RED, "%d ", (deciturns[i]+5)/10);
+			textblock_append_c(tb, (deciturns[i] < 1000) ? COLOUR_YELLOW :
+							   COLOUR_RED, "%d ", (deciturns[i]+5)/10);
 		}
 
 		textblock_append(tb, "turn%s%s", deciturns[i] == 10 ? "" : "s",
@@ -1225,7 +1225,7 @@ static bool describe_food(textblock *tb, const object_type *o_ptr,
 			textblock_append(tb, "Provides some nourishment.\n");
 		} else {
 			textblock_append(tb, "Nourishes for around ");
-			textblock_append_c(tb, TERM_L_GREEN, "%d", nourishment *
+			textblock_append_c(tb, COLOUR_L_GREEN, "%d", nourishment *
 				multiplier / 10);
 			textblock_append(tb, " turns.\n");
 		}
@@ -1298,7 +1298,7 @@ static bool describe_light(textblock *tb, const object_type *o_ptr,
 		return FALSE;
 
 	textblock_append(tb, "Radius ");
-	textblock_append_c(tb, TERM_L_GREEN, format("%d", rad));
+	textblock_append_c(tb, COLOUR_L_GREEN, format("%d", rad));
 	textblock_append(tb, " light.");
 
 	if (!o_ptr->artifact && !uses_fuel)
@@ -1425,7 +1425,7 @@ static bool describe_effect(textblock *tb, const object_type *o_ptr,
 	while (e) {
 		do {
 			if (isdigit((unsigned char) *desc))
-				textblock_append_c(tb, TERM_L_GREEN, "%c", *desc);
+				textblock_append_c(tb, COLOUR_L_GREEN, "%c", *desc);
 			else
 				textblock_append(tb, "%c", *desc);
 		} while (*desc++);
@@ -1453,12 +1453,12 @@ static bool describe_effect(textblock *tb, const object_type *o_ptr,
 		min_time *= multiplier / 10;
 		max_time *= multiplier / 10;
 
-		textblock_append_c(tb, TERM_L_GREEN, "%d", min_time);
+		textblock_append_c(tb, COLOUR_L_GREEN, "%d", min_time);
 
 		if (min_time != max_time)
 		{
 			textblock_append(tb, " to ");
-			textblock_append_c(tb, TERM_L_GREEN, "%d", max_time);
+			textblock_append_c(tb, COLOUR_L_GREEN, "%d", max_time);
 		}
 
 		textblock_append(tb, " turns to recharge");

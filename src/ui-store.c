@@ -384,14 +384,14 @@ static void store_display_help(struct store_context *ctx)
 	Term_gotoxy(1, help_loc);
 
 	if (OPT(rogue_like_commands))
-		text_out_c(TERM_L_GREEN, "x");
+		text_out_c(COLOUR_L_GREEN, "x");
 	else
-		text_out_c(TERM_L_GREEN, "l");
+		text_out_c(COLOUR_L_GREEN, "l");
 
 	text_out(" examines");
 	if (!ctx->inspect_only) {
 		text_out(" and ");
-		text_out_c(TERM_L_GREEN, "p");
+		text_out_c(COLOUR_L_GREEN, "p");
 
 		if (is_home) text_out(" picks up");
 		else text_out(" purchases");
@@ -400,20 +400,20 @@ static void store_display_help(struct store_context *ctx)
 
 	if (!ctx->inspect_only) {
 		if (OPT(birth_no_selling)) {
-			text_out_c(TERM_L_GREEN, "d");
+			text_out_c(COLOUR_L_GREEN, "d");
 			text_out(" gives an item to the store in return for its identification. Some wands and staves will also be recharged. ");
 		} else {
-			text_out_c(TERM_L_GREEN, "d");
+			text_out_c(COLOUR_L_GREEN, "d");
 			if (is_home) text_out(" drops");
 			else text_out(" sells");
 			text_out(" an item from your inventory. ");
 		}
 	} else {
-		text_out_c(TERM_L_GREEN, "I");
+		text_out_c(COLOUR_L_GREEN, "I");
 		text_out(" inspects an item from your inventory. ");
 	}
 
-	text_out_c(TERM_L_GREEN, "ESC");
+	text_out_c(COLOUR_L_GREEN, "ESC");
 	if (!ctx->inspect_only)
 		text_out(" exits the building.");
 	else

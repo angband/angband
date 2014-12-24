@@ -160,22 +160,22 @@ static term_data data[MAX_TERM_DATA];
  */
 
 u16b color_data[] = {
-	RGB15(  0,  0,  0), 		/* TERM_DARK */
-	RGB15( 31, 31, 31), 		/* TERM_WHITE */
-	RGB15( 15, 15, 15), 		/* TERM_SLATE */
-	RGB15( 31, 15,  0),		/* TERM_ORANGE */ 
-	RGB15( 23,  0,  0), 		/* TERM_RED */
-	RGB15(  0, 15,  9), 		/* TERM_GREEN */
-	RGB15(  0,  0, 31), 		/* TERM_BLUE */
-	RGB15( 15,  9,  0), 		/* TERM_UMBER */
-	RGB15(  9,  9,  9), 		/* TERM_L_DARK */
-	RGB15( 23, 23, 23), 		/* TERM_L_WHITE */
-	RGB15( 31,  0, 31), 		/* TERM_VIOLET */
-	RGB15( 31, 31,  0), 		/* TERM_YELLOW */
-	RGB15( 31,  0,  0), 		/* TERM_L_RED */
-	RGB15(  0, 31,  0), 		/* TERM_L_GREEN */
-	RGB15(  0, 31, 31), 		/* TERM_L_BLUE */
-	RGB15( 23, 15,  9)		/* TERM_L_UMBER */
+	RGB15(  0,  0,  0), 		/* COLOUR_DARK */
+	RGB15( 31, 31, 31), 		/* COLOUR_WHITE */
+	RGB15( 15, 15, 15), 		/* COLOUR_SLATE */
+	RGB15( 31, 15,  0),		/* COLOUR_ORANGE */ 
+	RGB15( 23,  0,  0), 		/* COLOUR_RED */
+	RGB15(  0, 15,  9), 		/* COLOUR_GREEN */
+	RGB15(  0,  0, 31), 		/* COLOUR_BLUE */
+	RGB15( 15,  9,  0), 		/* COLOUR_UMBER */
+	RGB15(  9,  9,  9), 		/* COLOUR_L_DARK */
+	RGB15( 23, 23, 23), 		/* COLOUR_L_WHITE */
+	RGB15( 31,  0, 31), 		/* COLOUR_VIOLET */
+	RGB15( 31, 31,  0), 		/* COLOUR_YELLOW */
+	RGB15( 31,  0,  0), 		/* COLOUR_L_RED */
+	RGB15(  0, 31,  0), 		/* COLOUR_L_GREEN */
+	RGB15(  0, 31, 31), 		/* COLOUR_L_BLUE */
+	RGB15( 23, 15,  9)		/* COLOUR_L_UMBER */
 };
 
 

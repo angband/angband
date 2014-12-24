@@ -2778,7 +2778,7 @@ static errr Term_bigcurs_sdl(int col, int row)
 {
 	term_window *win = (term_window*)(Term->data);
 	
-	SDL_Color colour = text_colours[TERM_YELLOW];
+	SDL_Color colour = text_colours[COLOUR_YELLOW];
 	
 	SDL_Rect rc;
 	
@@ -2803,7 +2803,7 @@ static errr Term_curs_sdl(int col, int row)
 {
 	term_window *win = (term_window*)(Term->data);
 	
-	SDL_Color colour = text_colours[TERM_YELLOW];
+	SDL_Color colour = text_colours[COLOUR_YELLOW];
 	
 	SDL_Rect rc;
 	
@@ -2920,7 +2920,7 @@ static errr Term_text_sdl(int col, int row, int n, int a, const wchar_t *s)
 {
 	term_window *win = (term_window*)(Term->data);
 	SDL_Color colour = text_colours[a % MAX_COLORS];
-	SDL_Color bg = text_colours[TERM_DARK];
+	SDL_Color bg = text_colours[COLOUR_DARK];
 	int x = col * win->tile_wid;
 	int y = row * win->tile_hgt;
 	wchar_t src[255];
@@ -2956,7 +2956,7 @@ static errr Term_text_sdl(int col, int row, int n, int a, const wchar_t *s)
 	    break;
 	case BG_DARK:
 	    /* Highlight Background */
-	    bg = text_colours[TERM_SHADE];
+	    bg = text_colours[COLOUR_SHADE];
 	    break;
 	}
 
@@ -3285,7 +3285,7 @@ static void term_data_link_sdl(term_window *win)
 	t->soft_cursor = TRUE;
 	
 	/* Erase with "white space" */
-	t->attr_blank = TERM_WHITE;
+	t->attr_blank = COLOUR_WHITE;
 	t->char_blank = ' ';
 	
 	/* Never refresh one row */
@@ -3582,9 +3582,9 @@ static void init_sdl_local(void)
 	(void)SDL_EnableUNICODE(1);
 	
 	/* Build a color for "black" that matches the pixel depth of this surface */
-	back_colour.r = angband_color_table[TERM_DARK][1];
-	back_colour.g = angband_color_table[TERM_DARK][2];
-	back_colour.b = angband_color_table[TERM_DARK][3];
+	back_colour.r = angband_color_table[COLOUR_DARK][1];
+	back_colour.g = angband_color_table[COLOUR_DARK][2];
+	back_colour.b = angband_color_table[COLOUR_DARK][3];
 	back_pixel_colour = SDL_MapRGB(AppWin->format, back_colour.r,
 						   back_colour.g, back_colour.b);
 	

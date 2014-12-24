@@ -124,7 +124,7 @@ void textui_textblock_place(textblock *tb, region orig_area, const char *header)
 
 	if (header != NULL) {
 		area.page_rows--;
-		c_prt(TERM_L_BLUE, header, area.row, area.col);
+		c_prt(COLOUR_L_BLUE, header, area.row, area.col);
 		area.row++;
 	}
 
@@ -159,15 +159,15 @@ void textui_textblock_show(textblock *tb, region orig_area, const char *header)
 
 	if (header != NULL) {
 		area.page_rows--;
-		c_prt(TERM_L_BLUE, header, area.row, area.col);
+		c_prt(COLOUR_L_BLUE, header, area.row, area.col);
 		area.row++;
 	}
 
 	if (n_lines > (size_t) area.page_rows) {
 		int start_line = 0;
 
-		c_prt(TERM_WHITE, "", area.row + area.page_rows, area.col);
-		c_prt(TERM_L_BLUE, "(Up/down or ESCAPE to exit.)",
+		c_prt(COLOUR_WHITE, "", area.row + area.page_rows, area.col);
+		c_prt(COLOUR_L_BLUE, "(Up/down or ESCAPE to exit.)",
 				area.row + area.page_rows + 1, area.col);
 
 		/* Pager mode */
@@ -196,8 +196,8 @@ void textui_textblock_show(textblock *tb, region orig_area, const char *header)
 		display_area(textblock_text(tb), textblock_attrs(tb), line_starts,
 				line_lengths, n_lines, area, 0);
 
-		c_prt(TERM_WHITE, "", area.row + n_lines, area.col);
-		c_prt(TERM_L_BLUE, "(Press any key to continue.)",
+		c_prt(COLOUR_WHITE, "", area.row + n_lines, area.col);
+		c_prt(COLOUR_L_BLUE, "(Press any key to continue.)",
 				area.row + n_lines + 1, area.col);
 		inkey();
 	}
@@ -354,7 +354,7 @@ void c_put_str(byte attr, const char *str, int row, int col) {
 
 /* As above, but in white */
 void put_str(const char *str, int row, int col) {
-	c_put_str(TERM_WHITE, str, row, col);
+	c_put_str(COLOUR_WHITE, str, row, col);
 }
 
 /*
@@ -370,7 +370,7 @@ void c_prt(byte attr, const char *str, int row, int col) {
 
 /* As above, but in white */
 void prt(const char *str, int row, int col) {
-	c_prt(TERM_WHITE, str, row, col);
+	c_prt(COLOUR_WHITE, str, row, col);
 }
 
 
@@ -433,21 +433,21 @@ void window_make(int origin_x, int origin_y, int end_x, int end_y)
 
 	region_erase(&to_clear);
 
-	Term_putch(origin_x, origin_y, TERM_WHITE, '+');
-	Term_putch(end_x, origin_y, TERM_WHITE, '+');
-	Term_putch(origin_x, end_y, TERM_WHITE, '+');
-	Term_putch(end_x, end_y, TERM_WHITE, '+');
+	Term_putch(origin_x, origin_y, COLOUR_WHITE, '+');
+	Term_putch(end_x, origin_y, COLOUR_WHITE, '+');
+	Term_putch(origin_x, end_y, COLOUR_WHITE, '+');
+	Term_putch(end_x, end_y, COLOUR_WHITE, '+');
 
 	for (n = 1; n < (end_x - origin_x); n++)
 	{
-		Term_putch(origin_x + n, origin_y, TERM_WHITE, '-');
-		Term_putch(origin_x + n, end_y, TERM_WHITE, '-');
+		Term_putch(origin_x + n, origin_y, COLOUR_WHITE, '-');
+		Term_putch(origin_x + n, end_y, COLOUR_WHITE, '-');
 	}
 
 	for (n = 1; n < (end_y - origin_y); n++)
 	{
-		Term_putch(origin_x, origin_y + n, TERM_WHITE, '|');
-		Term_putch(end_x, origin_y + n, TERM_WHITE, '|');
+		Term_putch(origin_x, origin_y + n, COLOUR_WHITE, '|');
+		Term_putch(end_x, origin_y + n, COLOUR_WHITE, '|');
 	}
 }
 

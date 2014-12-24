@@ -266,7 +266,7 @@ void do_cmd_load_screen(void)
 		{
 			text_mbstowcs(&c, &buf[x], 1);
 			/* Put the attr/char */
-			Term_draw(x, y, TERM_WHITE, c);
+			Term_draw(x, y, COLOUR_WHITE, c);
 		}
 	}
 
@@ -436,10 +436,10 @@ void html_screenshot(const char *path, int mode)
 	int y, x;
 	int wid, hgt;
 
-	int a = TERM_WHITE;
-	int oa = TERM_WHITE;
-	int fg_colour = TERM_WHITE;
-	int bg_colour = TERM_DARK;
+	int a = COLOUR_WHITE;
+	int oa = COLOUR_WHITE;
+	int fg_colour = COLOUR_WHITE;
+	int bg_colour = COLOUR_DARK;
 	wchar_t c = L' ';
 
 	const char *new_color_fmt = (mode == 0) ?
@@ -491,13 +491,13 @@ void html_screenshot(const char *path, int mode)
 			switch (a / MAX_COLORS)
 			{
 				case BG_BLACK:
-					bg_colour = TERM_DARK;
+					bg_colour = COLOUR_DARK;
 					break;
 				case BG_SAME:
 					bg_colour = fg_colour;
 					break;
 				case BG_DARK:
-					bg_colour = TERM_SHADE;
+					bg_colour = COLOUR_SHADE;
 					break;
 				default:
 				assert((a >= BG_BLACK) && (a < BG_MAX * MAX_COLORS));
@@ -507,7 +507,7 @@ void html_screenshot(const char *path, int mode)
 			if (oa != a)
 			{
 				/* From the default white to another color */
-				if (oa == TERM_WHITE)
+				if (oa == COLOUR_WHITE)
 				{
 					file_putf(fp, new_color_fmt,
 							angband_color_table[fg_colour][1],
@@ -519,8 +519,8 @@ void html_screenshot(const char *path, int mode)
 				}
 
 				/* From another color to the default white */
-				else if (fg_colour == TERM_WHITE &&
-						bg_colour == TERM_DARK)
+				else if (fg_colour == COLOUR_WHITE &&
+						bg_colour == COLOUR_DARK)
 				{
 					file_putf(fp, close_color_fmt);
 				}
@@ -556,7 +556,7 @@ void html_screenshot(const char *path, int mode)
 	}
 
 	/* Close the last font-color tag if necessary */
-	if (oa != TERM_WHITE) file_putf(fp, close_color_fmt);
+	if (oa != COLOUR_WHITE) file_putf(fp, close_color_fmt);
 
 	if (mode == 0)
 	{

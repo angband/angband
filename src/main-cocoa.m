@@ -2228,7 +2228,7 @@ static errr Term_text_cocoa(int x, int y, int n, int a, const wchar_t *cp)
 	    set_color_for_index(a % MAX_COLORS);
 	    break;
     case BG_DARK:
-	    set_color_for_index(TERM_SHADE);
+	    set_color_for_index(COLOUR_SHADE);
 	    break;
     }
     
@@ -2265,7 +2265,7 @@ static errr Term_text_cocoa(int x, int y, int n, int a, const wchar_t *cp)
 		    set_color_for_index(previouslyDrawnAttr % MAX_COLORS);
 		    break;
 		case BG_DARK:
-		    set_color_for_index(TERM_SHADE);
+		    set_color_for_index(COLOUR_SHADE);
 		    break;
 		}
                 NSRectFill(expandedRect);
@@ -2346,7 +2346,7 @@ static term *term_data_link(int i)
     newterm->soft_cursor = TRUE;
     
     /* Erase with "white space" */
-    newterm->attr_blank = TERM_WHITE;
+    newterm->attr_blank = COLOUR_WHITE;
     newterm->char_blank = ' ';
     
     /* Prepare the init/nuke hooks */

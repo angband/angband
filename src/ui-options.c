@@ -255,12 +255,12 @@ static void do_cmd_options_win(const char *name, int row)
 		/* Display the windows */
 		for (j = 0; j < ANGBAND_TERM_MAX; j++)
 		{
-			byte a = TERM_WHITE;
+			byte a = COLOUR_WHITE;
 
 			const char *s = angband_term_name[j];
 
 			/* Use color */
-			if (j == x) a = TERM_L_BLUE;
+			if (j == x) a = COLOUR_L_BLUE;
 
 			/* Window name, staggered, centered */
 			Term_putstr(35 + j * 5 - strlen(s) / 2, 2 + j % 2, -1, a, s);
@@ -269,12 +269,12 @@ static void do_cmd_options_win(const char *name, int row)
 		/* Display the options */
 		for (i = 0; i < PW_MAX_FLAGS; i++)
 		{
-			byte a = TERM_WHITE;
+			byte a = COLOUR_WHITE;
 
 			const char *str = window_flag_desc[i];
 
 			/* Use color */
-			if (i == y) a = TERM_L_BLUE;
+			if (i == y) a = COLOUR_L_BLUE;
 
 			/* Unused option */
 			if (!str) str = "(Unused option)";
@@ -287,10 +287,10 @@ static void do_cmd_options_win(const char *name, int row)
 			{
 				char c = '.';
 
-				a = TERM_WHITE;
+				a = COLOUR_WHITE;
 
 				/* Use color */
-				if ((i == y) && (j == x)) a = TERM_L_BLUE;
+				if ((i == y) && (j == x)) a = COLOUR_L_BLUE;
 
 				/* Active flag */
 				if (new_flags[j] & (1L << i)) c = 'X';
@@ -410,7 +410,7 @@ static struct keypress keymap_get_trigger(void)
 	keypress_to_text(tmp, sizeof(tmp), buf, FALSE);
 
 	/* Hack -- display the trigger */
-	Term_addstr(-1, TERM_WHITE, tmp);
+	Term_addstr(-1, COLOUR_WHITE, tmp);
 
 	/* Flush */
 	flush();
@@ -464,7 +464,7 @@ static void ui_keymap_query(const char *title, int row)
 	
 		/* Display the current action */
 		prt("Found: ", 15, 0);
-		Term_addstr(-1, TERM_WHITE, tmp);
+		Term_addstr(-1, COLOUR_WHITE, tmp);
 
 		prt("Press any key to continue.", 17, 0);
 		inkey();
@@ -485,7 +485,7 @@ static void ui_keymap_create(const char *title, int row)
 
 	c = keymap_get_trigger();
 	if (c.code == '$') {
-		c_prt(TERM_L_RED, "The '$' key is reserved.", 16, 2);
+		c_prt(COLOUR_L_RED, "The '$' key is reserved.", 16, 2);
 		prt("Press any key to continue.", 18, 0);
 		inkey();
 		return;
@@ -495,16 +495,16 @@ static void ui_keymap_create(const char *title, int row)
 	while (!done) {
 		struct keypress kp = {EVT_NONE, 0, 0};
 
-		int color = TERM_WHITE;
-		if (n == 0) color = TERM_YELLOW;
-		if (n == KEYMAP_ACTION_MAX) color = TERM_L_RED;
+		int color = COLOUR_WHITE;
+		if (n == 0) color = COLOUR_YELLOW;
+		if (n == KEYMAP_ACTION_MAX) color = COLOUR_L_RED;
 
 		keypress_to_text(tmp, sizeof(tmp), keymap_buffer, FALSE);
 		c_prt(color, format("Action: %s", tmp), 15, 0);
 
-		c_prt(TERM_L_BLUE, "  Press '$' when finished.", 17, 0);
-		c_prt(TERM_L_BLUE, "  Use 'CTRL-U' to reset.", 18, 0);
-		c_prt(TERM_L_BLUE, format("(Maximum keymap length is %d keys.)", KEYMAP_ACTION_MAX), 19, 0);
+		c_prt(COLOUR_L_BLUE, "  Press '$' when finished.", 17, 0);
+		c_prt(COLOUR_L_BLUE, "  Use 'CTRL-U' to reset.", 18, 0);
+		c_prt(COLOUR_L_BLUE, format("(Maximum keymap length is %d keys.)", KEYMAP_ACTION_MAX), 19, 0);
 
 		kp = inkey();
 
@@ -761,11 +761,11 @@ static void colors_modify(const char *title, int row)
 		index = ((a < BASIC_COLORS) ? color_table[a].index_char : '?');
 
 		/* Describe the color */
-		Term_putstr(5, 10, -1, TERM_WHITE,
+		Term_putstr(5, 10, -1, COLOUR_WHITE,
 					format("Color = %d, Name = %s, Index = %c", a, name, index));
 
 		/* Label the Current values */
-		Term_putstr(5, 12, -1, TERM_WHITE,
+		Term_putstr(5, 12, -1, COLOUR_WHITE,
 				format("K = 0x%02x / R,G,B = 0x%02x,0x%02x,0x%02x",
 				   angband_color_table[a][0],
 				   angband_color_table[a][1],
@@ -773,7 +773,7 @@ static void colors_modify(const char *title, int row)
 				   angband_color_table[a][3]));
 
 		/* Prompt */
-		Term_putstr(0, 14, -1, TERM_WHITE,
+		Term_putstr(0, 14, -1, COLOUR_WHITE,
 				"Command (n/N/k/K/r/R/g/G/b/B): ");
 
 		/* Get a command */
@@ -1135,8 +1135,8 @@ static void ego_display(struct menu * menu, int oid, bool cursor, int row,
 	ego_desc *choice = (ego_desc *) menu->menu_data;
 	bool ignored = ego_is_ignored(choice[oid].e_idx, choice[oid].itype);
 
-	byte attr = (cursor ? TERM_L_BLUE : TERM_WHITE);
-	byte sq_attr = (ignored ? TERM_L_RED : TERM_L_GREEN);
+	byte attr = (cursor ? COLOUR_L_BLUE : COLOUR_WHITE);
+	byte sq_attr = (ignored ? COLOUR_L_RED : COLOUR_L_GREEN);
 
 	/* Acquire the "name" of object "i" */
 	(void) ego_item_name(buf, sizeof(buf), &choice[oid]);
@@ -1146,7 +1146,7 @@ static void ego_display(struct menu * menu, int oid, bool cursor, int row,
 
 	/* Show ignore mark, if any */
 	if (ignored)
-		c_put_str(TERM_L_RED, "*", row, col + 1);
+		c_put_str(COLOUR_L_RED, "*", row, col + 1);
 
 	/* Show the stripped ego-item name using another colour */
 	c_put_str(sq_attr, choice[oid].short_name, row, col + strlen(buf));
@@ -1364,7 +1364,7 @@ static void quality_display(struct menu *menu, int oid, bool cursor, int row, in
 	byte level = ignore_level[oid];
 	const char *level_name = quality_values[level].name;
 
-	byte attr = (cursor ? TERM_L_BLUE : TERM_WHITE);
+	byte attr = (cursor ? COLOUR_L_BLUE : COLOUR_WHITE);
 
 
 	c_put_str(attr, format("%-20s : %s", name, level_name), row, col);
@@ -1377,7 +1377,7 @@ static void quality_display(struct menu *menu, int oid, bool cursor, int row, in
 static void quality_subdisplay(struct menu *menu, int oid, bool cursor, int row, int col, int width)
 {
 	const char *name = quality_values[oid].name;
-	byte attr = (cursor ? TERM_L_BLUE : TERM_WHITE);
+	byte attr = (cursor ? COLOUR_L_BLUE : COLOUR_WHITE);
 
 	c_put_str(attr, name, row, col);
 }
@@ -1480,7 +1480,7 @@ static void ignore_sval_menu_display(struct menu *menu, int oid, bool cursor,
 	c_put_str(attr, format("[ ] %s", buf), row, col);
 	if ((aware && (kind->ignore & IGNORE_IF_AWARE)) ||
 			(!aware && (kind->ignore & IGNORE_IF_UNAWARE)))
-		c_put_str(TERM_L_RED, "*", row, col + 1);
+		c_put_str(COLOUR_L_RED, "*", row, col + 1);
 }
 
 

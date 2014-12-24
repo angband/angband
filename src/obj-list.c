@@ -321,23 +321,23 @@ static byte object_list_entry_line_attribute(const object_list_entry_t *entry)
 	byte attr;
 
 	if (entry == NULL || entry->object == NULL || entry->object->kind == NULL)
-		return TERM_WHITE;
+		return COLOUR_WHITE;
 
 	if (is_unknown(entry->object))
 	/* unknown object */
-		attr = TERM_RED;
+		attr = COLOUR_RED;
 	else if (entry->object->artifact && object_is_known(entry->object))
 	/* known artifact */
-		attr = TERM_VIOLET;
+		attr = COLOUR_VIOLET;
 	else if (!object_flavor_is_aware(entry->object))
 	/* unaware of kind */
-		attr = TERM_L_RED;
+		attr = COLOUR_L_RED;
 	else if (entry->object->kind->cost == 0)
 	/* worthless */
-		attr = TERM_SLATE;
+		attr = COLOUR_SLATE;
 	else
 	/* default */
-		attr = TERM_WHITE;
+		attr = COLOUR_WHITE;
 
 	return attr;
 }
@@ -504,7 +504,7 @@ static void object_list_format_section(const object_list_t *list, textblock *tb,
 		/* textblock_append_pict will safely add the object symbol, regardless
 		 * of ASCII/graphics mode. */
 		if (tb != NULL && tile_width == 1 && tile_height == 1) {
-			byte a = TERM_RED;
+			byte a = COLOUR_RED;
 			wchar_t c = L'*';
 
 			if (!is_unknown(list->entries[entry_index].object) &&

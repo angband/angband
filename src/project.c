@@ -334,10 +334,10 @@ static const struct gf_type {
 	#include "list-project-environs.h"
 	#undef PROJ_ENV
 
-	#define PROJ_MON(a, obv) { NULL, 0, {0, 0, 0, 0}, obv, TERM_WHITE }, 
+	#define PROJ_MON(a, obv) { NULL, 0, {0, 0, 0, 0}, obv, COLOUR_WHITE }, 
 	#include "list-project-monsters.h"
 	#undef PROJ_MON
-	{ NULL, 0, {0, 0, 0, 0}, FALSE, TERM_WHITE }
+	{ NULL, 0, {0, 0, 0, 0}, FALSE, COLOUR_WHITE }
 };
 
 static const char *gf_name_list[] =
@@ -366,7 +366,7 @@ bool gf_force_obvious(int type)
 int gf_color(int type)
 {
 	if (type < 0 || type >= GF_MAX)
-		return TERM_WHITE;
+		return COLOUR_WHITE;
 
 	return gf_table[type].color;
 }
