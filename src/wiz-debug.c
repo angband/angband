@@ -51,7 +51,7 @@
 #include "wizard.h"
 
 
-static void gf_display(menu_type *m, int type, bool cursor,
+static void gf_display(struct menu *m, int type, bool cursor,
 		int row, int col, int wid)
 {
 	size_t i;
@@ -92,7 +92,7 @@ static const menu_iter gf_iter = {
 
 static void wiz_gf_demo(void)
 {
-	menu_type *m = menu_new(MN_SKIN_SCROLL, &gf_iter);
+	struct menu *m = menu_new(MN_SKIN_SCROLL, &gf_iter);
 	region loc = { 0, 0, 0, 0 };
 
 	menu_setpriv(m, GF_MAX, NULL);
@@ -499,7 +499,7 @@ static void get_art_name(char *buf, int max, int a_idx)
 /**
  * Artifact or object kind selection
  */
-static void wiz_create_item_subdisplay(menu_type *m, int oid, bool cursor,
+static void wiz_create_item_subdisplay(struct menu *m, int oid, bool cursor,
 		int row, int col, int width)
 {
 	int *choices = menu_priv(m);
@@ -516,7 +516,7 @@ static void wiz_create_item_subdisplay(menu_type *m, int oid, bool cursor,
 	}
 }
 
-static bool wiz_create_item_subaction(menu_type *m, const ui_event *e, int oid)
+static bool wiz_create_item_subaction(struct menu *m, const ui_event *e, int oid)
 {
 	int *choices = menu_priv(m);
 	struct object_kind *kind;
@@ -592,7 +592,7 @@ static menu_iter wiz_create_item_submenu =
  * Object base kind selection
  */
 
-static void wiz_create_item_display(menu_type *m, int oid, bool cursor,
+static void wiz_create_item_display(struct menu *m, int oid, bool cursor,
 		int row, int col, int width)
 {
 	char buf[80];
@@ -600,10 +600,10 @@ static void wiz_create_item_display(menu_type *m, int oid, bool cursor,
 	c_prt(curs_attrs[CURS_KNOWN][0 != cursor], buf, row, col);
 }
 
-static bool wiz_create_item_action(menu_type *m, const ui_event *e, int oid)
+static bool wiz_create_item_action(struct menu *m, const ui_event *e, int oid)
 {
 	ui_event ret;
-	menu_type *menu;
+	struct menu *menu;
 
 	char buf[80];
 	char title[80];
@@ -678,7 +678,7 @@ static void wiz_create_item(bool art)
 	int tvals[TV_MAX];
 	int i, n;
 
-	menu_type *menu = menu_new(MN_SKIN_COLUMNS, &wiz_create_item_menu);
+	struct menu *menu = menu_new(MN_SKIN_COLUMNS, &wiz_create_item_menu);
 
 	choose_artifact = art;
 

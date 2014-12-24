@@ -84,7 +84,6 @@ static struct store *store_new(int idx) {
 	struct store *s = mem_zalloc(sizeof *s);
 	s->sidx = idx;
 	s->stock_size = z_info->store_inven_max;
-	s->stock_list = mem_zalloc(sizeof(s->stock) * z_info->store_inven_max);
 	return s;
 }
 
@@ -107,7 +106,6 @@ void cleanup_stores(void)
 
 		/* Free the store inventory */
 		object_pile_free(store->stock);
-		mem_free(store->stock_list);
 		mem_free(store->always_table);
 		mem_free(store->normal_table);
 
@@ -331,8 +329,6 @@ void store_reset(void) {
 		store_shuffle(s);
 		object_pile_free(s->stock);
 		s->stock = NULL;
-		for (j = 0; j < z_info->store_inven_max; j++)
-			s->stock_list[j] = NULL;
 		if (i == STORE_HOME)
 			continue;
 		for (j = 0; j < 10; j++)
@@ -690,38 +686,36 @@ static void mass_produce(struct object *obj)
 
 
 /**
- * Put the store's inventory into an array in the correct order
+ * Sort the store inventory into an ordered array.
  */
-static void store_stock_list(struct store *store)
+void store_stock_list(struct store *store, struct object **list, int n)
 {
 	bool home = (store->sidx != STORE_HOME);
 	int list_num;
+	int num = 0;
 
-	store->stock_num = 0;
-
-	for (list_num = 0; list_num < z_info->store_inven_max; list_num++) {
+	for (list_num = 0; list_num < n; list_num++) {
 		struct object *current, *first = NULL;
 		for (current = store->stock; current; current = current->next) {
 			int i;
 			bool possible = TRUE;
 
 			/* Skip objects already allocated */
-			for (i = 0; i < store->stock_num; i++)
-				if (store->stock_list[i] == current)
+			for (i = 0; i < num; i++)
+				if (list[i] == current)
 					possible = FALSE;
 
 			/* If still possible, choose the first in order */
 			if (!possible)
 				continue;
-			else if (earlier_object(first, current, home)) {
+			else if (earlier_object(first, current, home))
 				first = current;
-			}
 		}
 
 		/* Allocate and count the stock */
-		store->stock_list[list_num] = first;
+		list[list_num] = first;
 		if (first)
-			store->stock_num++;
+			num++;
 	}
 }
 
@@ -844,9 +838,7 @@ static void home_carry(struct object *obj)
 
 	/* Insert the new object */
 	pile_insert(&store->stock, obj);
-
-	/* Rewrite the stock list */
-	store_stock_list(store);
+	store->stock_num++;
 }
 
 
@@ -922,11 +914,21 @@ struct object *store_carry(struct store *store, struct object *obj)
 
 	/* Insert the new object */
 	pile_insert(&store->stock, obj);
-
-	/* Rewrite the stock list */
-	store_stock_list(store);
+	store->stock_num++;
 
 	return obj;
+}
+
+
+void store_delete(struct store *s, struct object *obj, int amt)
+{
+	if (obj->number > amt) {
+		obj->number -= amt;
+	} else {
+		pile_excise(&s->stock, obj);
+		object_delete(obj);
+		s->stock_num--;
+	}
 }
 
 
@@ -1015,15 +1017,7 @@ static void store_delete_random(struct store *store)
 		history_lose_artifact(obj->artifact);
 
 	/* Delete the item, wholly or in part */
-	if (num == obj->number) {
-		pile_excise(&store->stock, obj);
-		object_delete(obj);
-	} else {
-		obj->number -= num;
-	}
-
-	/* Redo the stock list */
-	store_stock_list(store);
+	store_delete(store, obj, num);
 }
 
 
@@ -1196,27 +1190,21 @@ static struct object *store_create_item(struct store *store, object_kind *kind)
 	return store_carry(store, obj);
 }
 
-
 /**
  * Maintain the inventory at the stores.
  */
 void store_maint(struct store *s)
 {
-	int j;
-
 	/* Ignore home */
 	if (s->sidx == STORE_HOME)
 		return;
 
 	/* Destroy crappy black market items */
 	if (s->sidx == STORE_B_MARKET) {
-		for (j = s->stock_num - 1; j >= 0; j--) {
-			struct object *obj = s->stock_list[j];
-			if (!black_market_ok(obj)) {
-				pile_excise(&s->stock, obj);
-				object_delete(obj);
-				store_stock_list(s);
-			}
+		struct object *obj;
+		for (obj = s->stock; obj; obj = obj->next) {
+			if (!black_market_ok(obj))
+				store_delete(s, obj, obj->number);
 		}
 	}
 
@@ -1303,13 +1291,9 @@ void store_maint(struct store *s)
 		while (s->stock_num < stock && --restock_attempts)
 			store_create_random(s);
 
-
 		if (!restock_attempts)
 			quit_fmt("Unable to (re-)stock store %d. Please report this bug", s->sidx + 1);
 	}
-
-	/* Redo the stock list */
-	store_stock_list(s);
 }
 
 /** Owner stuff **/
@@ -1517,7 +1501,6 @@ int find_inven(const struct object *obj)
  */
 void do_cmd_buy(struct command *cmd)
 {
-	int item;
 	int amt;
 
 	struct object *obj;	
@@ -1535,14 +1518,16 @@ void do_cmd_buy(struct command *cmd)
 
 	/* Get arguments */
 	/* XXX-AS fill this out, split into cmd-store.c */
-	if (cmd_get_arg_choice(cmd, "item", &item) != CMD_OK)
+	if (cmd_get_arg_item(cmd, "item", &obj) != CMD_OK)
 		return;
+
+	if (!pile_contains(store->stock, obj)) {
+		msg("You cannot buy that item because it's not in the store.");
+		return;
+	}
 
 	if (cmd_get_arg_number(cmd, "quantity", &amt) != CMD_OK)
 		return;
-
-	/* Get the actual object */
-	obj = store->stock_list[item];
 
 	/* Get desired object */
 	object_copy_amt(bought, obj, amt);
@@ -1602,13 +1587,7 @@ void do_cmd_buy(struct command *cmd)
 	/* Remove the bought objects from the store if it's not a staple */
 	if (!store_is_staple(store, obj->kind)) {
 		/* Reduce or remove the item */
-		if (obj->number > amt) {
-			obj->number -= amt;
-		} else {
-			pile_excise(&store->stock, obj);
-			object_delete(obj);
-		}
-		store_stock_list(store);
+		store_delete(store, obj, amt);
 
 		/* Store is empty */
 		if (store->stock_num == 0) {
@@ -1629,6 +1608,7 @@ void do_cmd_buy(struct command *cmd)
 		}
 	}
 
+	event_signal(EVENT_STORECHANGED);
 	event_signal(EVENT_INVENTORY);
 	event_signal(EVENT_EQUIPMENT);
 }
@@ -1638,7 +1618,7 @@ void do_cmd_buy(struct command *cmd)
  */
 void do_cmd_retrieve(struct command *cmd)
 {
-	int item, amt;
+	int amt;
 
 	struct object *obj;	
 	struct object *picked_item;
@@ -1651,24 +1631,25 @@ void do_cmd_retrieve(struct command *cmd)
 	}
 
 	/* Get arguments */
-	/* XXX-AS fill this out, split into cmd-store.c */
-	if (cmd_get_arg_choice(cmd, "item", &item) != CMD_OK)
+	if (cmd_get_arg_item(cmd, "item", &obj) != CMD_OK)
 		return;
+
+	if (!pile_contains(store->stock, obj)) {
+		msg("You cannot retrieve that item because it's not in the home.");
+		return;
+	}
 
 	if (cmd_get_arg_number(cmd, "quantity", &amt) != CMD_OK)
 		return;
 
-	/* Get the actual object */
-	obj = store->stock_list[item];
-
 	/* Get desired object */
-	picked_item = mem_zalloc(sizeof(*picked_item));
+	picked_item = object_new();
 	object_copy_amt(picked_item, obj, amt);
 
 	/* Ensure we have room */
 	if (!inven_carry_okay(picked_item)) {
 		msg("You cannot carry that many items.");
-		mem_free(picked_item);
+		object_delete(picked_item);
 		return;
 	}
 
@@ -1682,14 +1663,9 @@ void do_cmd_retrieve(struct command *cmd)
 	handle_stuff(player->upkeep);
 	
 	/* Reduce or remove the item */
-	if (obj->number > amt) {
-		obj->number -= amt;
-	} else {
-		pile_excise(&store->stock, obj);
-		object_delete(obj);
-	}
-	store_stock_list(store);
-	
+	store_delete(store, obj, amt);
+
+	event_signal(EVENT_STORECHANGED);
 	event_signal(EVENT_INVENTORY);
 	event_signal(EVENT_EQUIPMENT);
 }
@@ -1825,6 +1801,7 @@ void do_cmd_sell(struct command *cmd)
 	/* The store gets that (known) object */
 	store_carry(store, sold_item);
 
+	event_signal(EVENT_STORECHANGED);
 	event_signal(EVENT_INVENTORY);
 	event_signal(EVENT_EQUIPMENT);
 }
@@ -1885,6 +1862,7 @@ void do_cmd_stash(struct command *cmd)
 	/* Let the home carry it */
 	home_carry(dropped);
 
+	event_signal(EVENT_STORECHANGED);
 	event_signal(EVENT_INVENTORY);
 	event_signal(EVENT_EQUIPMENT);
 }

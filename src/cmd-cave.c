@@ -38,6 +38,7 @@
 #include "player-timed.h"
 #include "player-util.h"
 #include "trap.h"
+#include "store.h"
 #include "tables.h"
 
 /**
@@ -1207,7 +1208,7 @@ void do_cmd_hold(struct command *cmd)
 	/* Enter a store if we are on one, otherwise look at the floor */
 	if (square_isshop(cave, player->py, player->px)) {
 		disturb(player, 0);
-		cmdq_push(CMD_ENTER_STORE);
+		textui_enter_store();
 
 		/* Free turn XXX XXX XXX */
 		player->upkeep->energy_use = 0;

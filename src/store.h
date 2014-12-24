@@ -45,7 +45,6 @@ struct store {
 	byte stock_num;				/* Stock -- Number of entries */
 	s16b stock_size;			/* Stock -- Total Size of Array */
 	struct object *stock;		/* Stock -- Actual stock items */
-	struct object **stock_list;	/* Stock -- Sorted array of stock items */
 
 	/* Always stock these items */
 	size_t always_size;
@@ -70,11 +69,16 @@ extern struct store *stores;
 struct store *store_at(struct chunk *c, int y, int x);
 void store_init(void);
 void free_stores(void);
+void store_stock_list(struct store *store, struct object **list, int n);
 struct object *store_carry(struct store *store, struct object *obj);
 void store_reset(void);
 void store_shuffle(struct store *store);
 void store_maint(struct store *store);
 int price_item(struct store *store, const object_type *o_ptr, bool store_buying, int qty);
+
+bool store_will_buy_tester(const struct object *obj);
+bool store_check_num(struct store *store, const struct object *obj);
+int find_inven(const struct object *obj);
 
 extern struct owner *store_ownerbyidx(struct store *s, unsigned int idx);
 
@@ -82,5 +86,6 @@ struct parser *init_parse_stores(void);
 extern struct parser *store_parser_new(void);
 extern struct parser *store_owner_parser_new(struct store *stores);
 void textui_store_knowledge(int store);
+void textui_enter_store(void);
 
 #endif /* INCLUDED_STORE_H */

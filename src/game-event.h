@@ -41,6 +41,7 @@ typedef enum game_event_type
 	EVENT_OBJECTTARGET,
 	EVENT_MESSAGE,
 	EVENT_SOUND,
+	EVENT_STORECHANGED,	/* Triggered on a successful buy/retrieve or sell/drop */
 
 	EVENT_INITSTATUS,	/* New status message for initialisation */
 	EVENT_BIRTHPOINTS,	/* Change in the birth points */

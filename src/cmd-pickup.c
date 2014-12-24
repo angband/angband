@@ -496,7 +496,7 @@ void move_player(int dir, bool disarm)
 		if (square_isshop(cave, player->py, player->px)) {
 			/* Disturb */
 			disturb(player, 0);
-			cmdq_push(CMD_ENTER_STORE);
+			textui_enter_store();
 		}
 
 		/* All other grids (including traps) */

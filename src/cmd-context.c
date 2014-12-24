@@ -77,8 +77,7 @@ enum context_menu_value_e {
 
 static int context_menu_player_2(int mx, int my)
 {
-	menu_type *m;
-	region r;
+	struct menu *m;
 	int selected;
 	char *labels;
 	bool allowed = TRUE;
@@ -110,32 +109,12 @@ static int context_menu_player_2(int mx, int my)
 	menu_dynamic_add_label(m, "Options", '=', MENU_VALUE_OPTIONS, labels);
 	menu_dynamic_add_label(m, "Commands", '?', MENU_VALUE_HELP, labels);
 
-	/* work out display region */
-	r.width = (int)menu_dynamic_longest_entry(m) + 3 + 2; /* +3 for tag, 2 for pad */
-	if (mx > Term->wid - r.width - 1) {
-		r.col = Term->wid - r.width - 1;
-	} else {
-		r.col = mx + 1;
-	}
-	r.page_rows = m->count;
-	if (my > Term->hgt - r.page_rows - 1) {
-		if (my - r.page_rows - 1 <= 0) {
-			/* menu has too many items, so put in upper right corner */
-			r.row = 1;
-			r.col = Term->wid - r.width - 1;
-		} else {
-			r.row = Term->hgt - r.page_rows - 1;
-		}
-	} else {
-		r.row = my + 1;
-	}
-
 	/* Hack -- no flush needed */
 	msg_flag = FALSE;
 	screen_save();
 
-	menu_layout(m, &r);
-	region_erase_bordered(&r);
+	menu_dynamic_calc_location(m, mx, my);
+	region_erase_bordered(&m->boundary);
 
 	prt("(Enter to select, ESC) Command:", 0, 0);
 	selected = menu_dynamic_select(m);
@@ -260,8 +239,7 @@ static void context_menu_player_display_floor(void)
 
 int context_menu_player(int mx, int my)
 {
-	menu_type *m;
-	region r;
+	struct menu *m;
 	int selected;
 	char *labels;
 	bool allowed = TRUE;
@@ -328,32 +306,12 @@ int context_menu_player(int mx, int my)
 
 	menu_dynamic_add_label(m, "Other", ' ', MENU_VALUE_OTHER, labels);
 
-	/* work out display region */
-	r.width = (int)menu_dynamic_longest_entry(m) + 3 + 2; /* +3 for tag, 2 for pad */
-	if (mx > Term->wid - r.width - 1) {
-		r.col = Term->wid - r.width - 1;
-	} else {
-		r.col = mx + 1;
-	}
-	r.page_rows = m->count;
-	if (my > Term->hgt - r.page_rows - 1) {
-		if (my - r.page_rows - 1 <= 0) {
-			/* menu has too many items, so put in upper right corner */
-			r.row = 1;
-			r.col = Term->wid - r.width - 1;
-		} else {
-			r.row = Term->hgt - r.page_rows - 1;
-		}
-	} else {
-		r.row = my + 1;
-	}
-
 	/* Hack -- no flush needed */
 	msg_flag = FALSE;
 	screen_save();
 
-	menu_layout(m, &r);
-	region_erase_bordered(&r);
+	menu_dynamic_calc_location(m, mx, my);
+	region_erase_bordered(&m->boundary);
 
 	prt("(Enter to select, ESC) Command:", 0, 0);
 	selected = menu_dynamic_select(m);
@@ -458,8 +416,7 @@ int context_menu_player(int mx, int my)
 
 int context_menu_cave(struct chunk *c, int y, int x, int adjacent, int mx, int my)
 {
-	menu_type *m;
-	region r;
+	struct menu *m;
 	int selected;
 	char *labels;
 	bool allowed = TRUE;
@@ -543,32 +500,13 @@ int context_menu_cave(struct chunk *c, int y, int x, int adjacent, int mx, int m
 
 	ADD_LABEL("Throw To", CMD_THROW, MN_ROW_VALID);
 
-	/* Work out display region: +3 for tag, 2 for pad */
-	r.width = (int)menu_dynamic_longest_entry(m) + 3 + 2;
-	if (mx > Term->wid - r.width - 1) {
-		r.col = Term->wid - r.width - 1;
-	} else {
-		r.col = mx + 1;
-	}
-	r.page_rows = m->count;
-	if (my > Term->hgt - r.page_rows - 1) {
-		if (my - r.page_rows - 1 <= 0) {
-			/* menu has too many items, so put in upper right corner */
-			r.row = 1;
-			r.col = Term->wid - r.width - 1;
-		} else {
-			r.row = Term->hgt - r.page_rows - 1;
-		}
-	} else {
-		r.row = my + 1;
-	}
-
 	/* Hack -- no flush needed */
 	msg_flag = FALSE;
 	screen_save();
 
-	menu_layout(m, &r);
-	region_erase_bordered(&r);
+	menu_dynamic_calc_location(m, mx, my);
+	region_erase_bordered(&m->boundary);
+
 	if (player->timed[TMD_IMAGE]) {
 		prt("(Enter to select command, ESC to cancel) You see something strange:", 0, 0);
 	} else if (c->squares[y][x].mon) {
@@ -708,7 +646,7 @@ int context_menu_cave(struct chunk *c, int y, int x, int adjacent, int mx, int m
 /* pick the context menu options appropiate for the item */
 int context_menu_object(struct object *obj)
 {
-	menu_type *m;
+	struct menu *m;
 	region r;
 	int selected;
 	char *labels;
@@ -934,204 +872,3 @@ int context_menu_object(struct object *obj)
 	return 1;
 }
 
-/* pick the context menu options appropiate for a store */
-int context_menu_store(struct store *store, const int oid, int mx, int my)
-{
-	menu_type *m;
-	region r;
-	int selected;
-	char *labels;
-	object_type *o_ptr;
-
-	m = menu_dynamic_new();
-	if (!m || !store) {
-		return 0;
-	}
-
-	/* Get the actual object */
-	o_ptr = store->stock_list[oid];
-
-	labels = string_make(lower_case);
-	m->selections = labels;
-
-	menu_dynamic_add_label(m, "Inspect Inventory", 'I', 1, labels);
-	if (store->sidx == STORE_HOME) {
-		/*menu_dynamic_add(m, "Stash One", 2);*/
-		menu_dynamic_add_label(m, "Stash", 'd', 3, labels);
-		menu_dynamic_add_label(m, "Examine", 'x', 4, labels);
-		menu_dynamic_add_label(m, "Take", 'p', 6, labels);
-		if (o_ptr->number > 1) {
-			menu_dynamic_add_label(m, "Take One", 'o', 5, labels);
-		}
-	} else {
-		/*menu_dynamic_add(m, "Sell One", 2);*/
-		menu_dynamic_add_label(m, "Sell", 'd', 3, labels);
-		menu_dynamic_add_label(m, "Examine", 'x', 4, labels);
-		menu_dynamic_add_label(m, "Buy", 'p', 6, labels);
-		if (o_ptr->number > 1) {
-			menu_dynamic_add_label(m, "Buy One", 'o', 5, labels);
-		}
-	}
-	menu_dynamic_add_label(m, "Exit", '`', 7, labels);
-
-
-	/* work out display region */
-	r.width = menu_dynamic_longest_entry(m) + 3 + 2; /* +3 for tag, 2 for pad */
-	if (mx > Term->wid - r.width - 1) {
-		r.col = Term->wid - r.width - 1;
-	} else {
-		r.col = mx + 1;
-	}
-	r.page_rows = m->count;
-	if (my > Term->hgt - r.page_rows - 1) {
-		if (my - r.page_rows - 1 <= 0) {
-			/* menu has too many items, so put in upper right corner */
-			r.row = 1;
-			r.col = Term->wid - r.width - 1;
-		} else {
-			r.row = Term->hgt - r.page_rows - 1;
-		}
-	} else {
-		r.row = my + 1;
-	}
-
-	/* Hack -- no flush needed */
-	msg_flag = FALSE;
-	screen_save();
-
-	menu_layout(m, &r);
-	region_erase_bordered(&r);
-
-	prt("(Enter to select, ESC) Command:", 0, 0);
-	selected = menu_dynamic_select(m);
-
-	menu_dynamic_free(m);
-	string_free(labels);
-
-	screen_load();
-	if (selected == 1) {
-		Term_keypress('I', 0);
-	} else
-	if (selected == 2) {
-		Term_keypress('s', 0);
-		/* oid is store item we do not know item we want to sell here */
-		/*if (store->sidx == STORE_HOME) {
-			cmdq_push(CMD_STASH);
-		} else {
-			cmdq_push(CMD_SELL);
-		}
-		cmd_set_arg_item(cmdq_peek(), "item", oid);
-		cmd_set_arg_number(cmdq_peek(), "quantity", 1);*/
-	} else
-	if (selected == 3) {
-		Term_keypress('s', 0);
-	} else
-	if (selected == 4) {
-		Term_keypress('x', 0);
-	} else
-	if (selected == 5) {
-		if (store->sidx == STORE_HOME) {
-			cmdq_push(CMD_RETRIEVE);
-		} else {
-			cmdq_push(CMD_BUY);
-		}
-		cmd_set_arg_choice(cmdq_peek(), "item", oid);
-		cmd_set_arg_number(cmdq_peek(), "quantity", 1);
-	} else
-	if (selected == 6) {
-		Term_keypress('p', 0);
-	} else
-	if (selected == 7) {
-		Term_keypress(ESCAPE, 0);
-	}
-	return 1;
-}
-
-/* pick the context menu options appropiate for an item available in a store */
-int context_menu_store_item(struct store *store, const int oid, int mx, int my)
-{
-	menu_type *m;
-	region r;
-	int selected;
-	char *labels;
-	object_type *o_ptr;
-	char header[120];
-
-	/* Get the actual object */
-	o_ptr = store->stock_list[oid];
-
-
-	m = menu_dynamic_new();
-	if (!m || !store) {
-		return 0;
-	}
-	object_desc(header, sizeof(header), o_ptr, ODESC_PREFIX | ODESC_BASE);
-
-	labels = string_make(lower_case);
-	m->selections = labels;
-
-	menu_dynamic_add_label(m, "Examine", 'x', 4, labels);
-	if (store->sidx == STORE_HOME) {
-		menu_dynamic_add_label(m, "Take", 'p', 6, labels);
-		if (o_ptr->number > 1) {
-			menu_dynamic_add_label(m, "Take One", 'o', 5, labels);
-		}
-	} else {
-		menu_dynamic_add_label(m, "Buy", 'p', 6, labels);
-		if (o_ptr->number > 1) {
-			menu_dynamic_add_label(m, "Buy One", 'o', 5, labels);
-		}
-	}
-
-	/* work out display region */
-	r.width = menu_dynamic_longest_entry(m) + 3 + 2; /* +3 for tag, 2 for pad */
-	if (mx > Term->wid - r.width - 1) {
-		r.col = Term->wid - r.width - 1;
-	} else {
-		r.col = mx + 1;
-	}
-	r.page_rows = m->count;
-	if (my > Term->hgt - r.page_rows - 1) {
-		if (my - r.page_rows - 1 <= 0) {
-			/* menu has too many items, so put in upper right corner */
-			r.row = 1;
-			r.col = Term->wid - r.width - 1;
-		} else {
-			r.row = Term->hgt - r.page_rows - 1;
-		}
-	} else {
-		r.row = my + 1;
-	}
-
-	/* Hack -- no flush needed */
-	msg_flag = FALSE;
-	screen_save();
-
-	menu_layout(m, &r);
-	region_erase_bordered(&r);
-
-	prt(format("(Enter to select, ESC) Command for %s:", header), 0, 0);
-	selected = menu_dynamic_select(m);
-
-	menu_dynamic_free(m);
-	string_free(labels);
-
-	screen_load();
-	if (selected == 4) {
-		Term_keypress('x', 0);
-	} else
-	if (selected == 5) {
-		if (store->sidx == STORE_HOME) {
-			cmdq_push(CMD_RETRIEVE);
-		} else {
-			cmdq_push(CMD_BUY);
-		}
-		cmd_set_arg_choice(cmdq_peek(), "item", oid);
-		cmd_set_arg_number(cmdq_peek(), "quantity", 1);
-	} else
-	if (selected == 6) {
-		Term_keypress('p', 0);
-	}
-
-	return 1;
-}

@@ -1036,7 +1036,6 @@ static int rd_stores_aux(rd_item_t rd_item_version)
 	for (i = 0; i < tmp16u; i++) {
 		struct store *store = &stores[i];
 
-		int j;		
 		byte own, num;
 
 		/* Read the basic info */
@@ -1047,7 +1046,7 @@ static int rd_stores_aux(rd_item_t rd_item_version)
 		store->owner = store_ownerbyidx(store, own);
 
 		/* Read the items */
-		for (j = 0; j < num; j++) {
+		for (; num; num--) {
 			struct object *obj = (*rd_item_version)();
 
 			/* Read the item */

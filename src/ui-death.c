@@ -178,10 +178,7 @@ static void death_file(const char *title, int row)
  */
 static void death_info(const char *title, int row)
 {
-	int i, j, k;
-	object_type *o_ptr;
-	struct store *st_ptr = &stores[STORE_HOME];
-
+	struct store *home = &stores[STORE_HOME];
 
 	screen_save();
 
@@ -214,39 +211,41 @@ static void death_info(const char *title, int row)
 	}
 
 	/* Home -- if anything there */
-	if (st_ptr->stock_num) {
+	if (home->stock) {
+		int page;
+		object_type *obj = home->stock;
+
 		/* Display contents of the home */
-		for (k = 0, i = 0; i < st_ptr->stock_num; k++) {
+		for (page = 1; obj; page++) {
+			int line;
+
 			/* Clear screen */
 			Term_clear();
 
 			/* Show 12 items */
-			for (j = 0; (j < 12) && (i < st_ptr->stock_num); j++, i++) {
+			for (line = 0; obj && line < 12; obj = obj->next, line++) {
 				byte attr;
 
 				char o_name[80];
 				char tmp_val[80];
 
-				/* Get the object */
-				o_ptr = st_ptr->stock_list[i];
-
 				/* Print header, clear line */
-				strnfmt(tmp_val, sizeof(tmp_val), "%c) ", I2A(j));
-				prt(tmp_val, j+2, 4);
+				strnfmt(tmp_val, sizeof(tmp_val), "%c) ", I2A(line));
+				prt(tmp_val, line + 2, 4);
 
 				/* Get the object description */
-				object_desc(o_name, sizeof(o_name), o_ptr,
-							ODESC_PREFIX | ODESC_FULL);
+				object_desc(o_name, sizeof(o_name), obj,
+						ODESC_PREFIX | ODESC_FULL);
 
 				/* Get the inventory color */
-				attr = o_ptr->kind->base->attr;
+				attr = obj->kind->base->attr;
 
 				/* Display the object */
-				c_put_str(attr, o_name, j+2, 7);
+				c_put_str(attr, o_name, line + 2, 7);
 			}
 
 			/* Caption */
-			prt(format("Your home contains (page %d): -more-", k+1), 0, 0);
+			prt(format("Your home contains (page %d): -more-", page), 0, 0);
 
 			/* Wait for it */
 			(void)anykey();
@@ -335,7 +334,7 @@ static void death_randarts(const char *title, int row)
  * Menu structures for the death menu. Note that Quit must always be the
  * last option, due to a hard-coded check in death_screen
  */
-static menu_type *death_menu;
+static struct menu *death_menu;
 static menu_action death_actions[] =
 {
 	{ 0, 'i', "Information",   death_info      },

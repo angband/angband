@@ -48,7 +48,7 @@ struct spell_menu_data {
 /**
  * Is item oid valid?
  */
-static int spell_menu_valid(menu_type *m, int oid)
+static int spell_menu_valid(struct menu *m, int oid)
 {
 	struct spell_menu_data *d = menu_priv(m);
 	int *spells = d->spells;
@@ -59,7 +59,7 @@ static int spell_menu_valid(menu_type *m, int oid)
 /**
  * Display a row of the spell menu
  */
-static void spell_menu_display(menu_type *m, int oid, bool cursor,
+static void spell_menu_display(struct menu *m, int oid, bool cursor,
 		int row, int col, int wid)
 {
 	struct spell_menu_data *d = menu_priv(m);
@@ -106,7 +106,7 @@ static void spell_menu_display(menu_type *m, int oid, bool cursor,
 /**
  * Handle an event on a menu row.
  */
-static bool spell_menu_handler(menu_type *m, const ui_event *e, int oid)
+static bool spell_menu_handler(struct menu *m, const ui_event *e, int oid)
 {
 	struct spell_menu_data *d = menu_priv(m);
 
@@ -156,10 +156,10 @@ static const menu_iter spell_menu_iter = {
 };
 
 /** Create and initialise a spell menu, given an object and a validity hook */
-static menu_type *spell_menu_new(const object_type *o_ptr,
+static struct menu *spell_menu_new(const object_type *o_ptr,
 		bool (*is_valid)(int spell))
 {
-	menu_type *m = menu_new(MN_SKIN_SCROLL, &spell_menu_iter);
+	struct menu *m = menu_new(MN_SKIN_SCROLL, &spell_menu_iter);
 	struct spell_menu_data *d = mem_alloc(sizeof *d);
 
 	region loc = { -60, 1, 60, -99 };
@@ -196,7 +196,7 @@ static menu_type *spell_menu_new(const object_type *o_ptr,
 }
 
 /** Clean up a spell menu instance */
-static void spell_menu_destroy(menu_type *m)
+static void spell_menu_destroy(struct menu *m)
 {
 	struct spell_menu_data *d = menu_priv(m);
 	mem_free(d);
@@ -206,7 +206,7 @@ static void spell_menu_destroy(menu_type *m)
 /**
  * Run the spell menu to select a spell.
  */
-static int spell_menu_select(menu_type *m, const char *noun, const char *verb)
+static int spell_menu_select(struct menu *m, const char *noun, const char *verb)
 {
 	struct spell_menu_data *d = menu_priv(m);
 	char buf[80];
@@ -228,7 +228,7 @@ static int spell_menu_select(menu_type *m, const char *noun, const char *verb)
 /**
  * Run the spell menu, without selections.
  */
-static void spell_menu_browse(menu_type *m, const char *noun)
+static void spell_menu_browse(struct menu *m, const char *noun)
 {
 	struct spell_menu_data *d = menu_priv(m);
 
@@ -248,7 +248,7 @@ static void spell_menu_browse(menu_type *m, const char *noun)
  */
 void textui_book_browse(const object_type *o_ptr)
 {
-	menu_type *m;
+	struct menu *m;
 	const char *noun = player->class->magic.spell_realm->spell_noun;
 
 	m = spell_menu_new(o_ptr, spell_okay_to_browse);
@@ -287,7 +287,7 @@ int get_spell_from_book(const char *verb, struct object *book,
 {
 	const char *noun = player->class->magic.spell_realm->spell_noun;
 
-	menu_type *m;
+	struct menu *m;
 
 	track_object(player->upkeep, book);
 	handle_stuff(player->upkeep);

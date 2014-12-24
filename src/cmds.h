@@ -32,8 +32,6 @@ void textui_cmd_rest(void);
 int context_menu_player(int mx, int my);
 int context_menu_cave(struct chunk *c, int y, int x, int adjacent, int mx, int my);
 int context_menu_object(struct object *obj);
-int context_menu_store(struct store *store, const int oid, int mx, int my);
-int context_menu_store_item(struct store *store, const int oid, int mx, int my);
 
 /* cmd-know.c */
 void do_cmd_redraw(void);
@@ -113,7 +111,6 @@ unsigned char cmd_lookup_key_unktrl(cmd_code lookup_cmd, int mode);
 /* XXX none under here should be here */
 
 /* store.c */
-extern void do_cmd_store(struct command *cmd);
 extern void do_cmd_sell(struct command *cmd);
 extern void do_cmd_stash(struct command *cmd);
 extern void do_cmd_buy(struct command *cmd);
