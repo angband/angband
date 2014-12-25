@@ -1,6 +1,6 @@
-/*
- * File: cmd-pickup.c
- * Purpose: Pickup code
+/**
+ * \file cmd-pickup.c
+ * \brief Pickup code
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke,
  * Copyright (c) 2007 Leon Marrick
@@ -40,43 +40,10 @@
 #include "tables.h"
 #include "trap.h"
 
-
-
-/*
- * Pick up objects on the floor beneath you.  -LM-
+/**
+ * Pick up all gold at the player's current location.
  */
-void do_cmd_pickup(struct command *cmd)
-{
-	int energy_cost;
-	struct object *obj = square_object(cave, player->py, player->px);
-
-	/* Autopickup first */
-	energy_cost = do_autopickup() * 10;
-
-	/* Pick up floor objects with a menu for multiple objects */
-	energy_cost += py_pickup_item(1, obj) * 10;
-
-	/* Limit */
-	if (energy_cost > 100) energy_cost = 100;
-
-	/* Charge this amount of energy. */
-	player->upkeep->energy_use = energy_cost;
-}
-
-/*
- * Pick up objects on the floor beneath you.  -LM-
- */
-void do_cmd_autopickup(struct command *cmd)
-{
-	player->upkeep->energy_use = do_autopickup() * 10;
-}
-
-
-
-/*
- * Pickup all gold at the player's current location.
- */
-static void py_pickup_gold(void)
+static void player_pickup_gold(void)
 {
 	s32b total_gold = 0L;
 	char name[30] = "";
@@ -156,23 +123,23 @@ static void py_pickup_gold(void)
 
 
 
-/*
- * Determine if the object can be picked up automatically.
+/**
+ * Determine if an object can be picked up automatically.
  */
-static bool auto_pickup_okay(const object_type *o_ptr)
+static bool auto_pickup_okay(const struct object *obj)
 {
-	if (!inven_carry_okay(o_ptr)) return FALSE;
-	if (OPT(pickup_always) || check_for_inscrip(o_ptr, "=g")) return TRUE;
-	if (OPT(pickup_inven) && inven_stack_okay(o_ptr)) return TRUE;
+	if (!inven_carry_okay(obj)) return FALSE;
+	if (OPT(pickup_always) || check_for_inscrip(obj, "=g")) return TRUE;
+	if (OPT(pickup_inven) && inven_stack_okay(obj)) return TRUE;
 
 	return FALSE;
 }
 
 
-/*
- * Carry an object and delete it.
+/**
+ * Move an object from a floor pile to the player's gear
  */
-static void py_pickup_aux(struct object *obj, bool domsg)
+static void player_pickup_aux(struct object *obj, bool domsg)
 {
 	/* Confirm the object can be picked up*/
 	if (!inven_carry_okay(obj))
@@ -193,68 +160,16 @@ static void py_pickup_aux(struct object *obj, bool domsg)
 	inven_carry(player, obj, domsg);
 }
 
-int do_autopickup(void)
-{
-	int py = player->py;
-	int px = player->px;
-
-	struct object *obj, *next;
-
-	/* Objects picked up.  Used to determine time cost of command. */
-	byte objs_picked_up = 0;
-
-	/* Nothing to pick up -- return */
-	if (!square_object(cave, py, px))
-		return 0;
-
-	/* Always pickup gold, effortlessly */
-	py_pickup_gold();
-
-	/* Scan the remaining objects */
-	obj = square_object(cave, py, px);
-	while (obj) {
-		next = obj->next;
-
-		/* Ignore all hidden objects and non-objects */
-		if (!ignore_item_ok(obj)) {
-			/* Hack -- disturb */
-			disturb(player, 0);
-
-			/* Automatically pick up items into the backpack */
-			if (auto_pickup_okay(obj)) {
-				/* Pick up the object with message */
-				py_pickup_aux(obj, TRUE);
-				objs_picked_up++;
-			}
-		}
-		obj = next;
-	}
-
-	return objs_picked_up;
-}
-
 /**
  * Pick up objects and treasure on the floor.  -LM-
  *
- * Called with pickup:
- * 0 to act according to the player's settings
- * 1 to quickly pickup single objects or present a menu for more
- * 2 to force a menu for any number of objects
- *
  * Scan the list of objects in that floor grid. Pick up gold automatically.
  * Pick up objects automatically until backpack space is full if
- * auto-pickup option is on, Otherwise, store objects on
+ * auto-pickup option is on, otherwise, store objects on
  * floor in an array, and tally both how many there are and can be picked up.
  *
- * If not picking up anything, indicate objects on the floor.  Show more
- * details if the "OPT(pickup_detail)" option is set.  Do the same thing if we
- * don't have room for anything.
- *
- * [This paragraph is not true, intentional?]
- * If we are picking up objects automatically, and have room for at least
- * one, allow the "OPT(pickup_detail)" option to display information about
- * objects and prompt the player.  Otherwise, automatically pick up a single
- * object or use a menu for more than one.
+ * If not picking up anything, indicate objects on the floor.  Do the same
+ * thing if we don't have room for anything.
  *
  * Pick up multiple objects using Tim Baker's menu system.   Recursively
  * call this function (forcing menus for any number of objects) until
@@ -270,7 +185,7 @@ int do_autopickup(void)
  *
  * \param item is the floor item index (must be negative) to pick up.
  */
-byte py_pickup_item(int pickup, struct object *obj)
+static byte player_pickup_item(struct object *obj, bool menu)
 {
 	int py = player->py;
 	int px = player->px;
@@ -291,7 +206,7 @@ byte py_pickup_item(int pickup, struct object *obj)
 	byte objs_picked_up = 0;
 
 	/* Always pickup gold, effortlessly */
-	py_pickup_gold();
+	player_pickup_gold();
 
 	/* Nothing else to pick up -- return */
 	if (!square_object(cave, py, px)) {
@@ -317,15 +232,15 @@ byte py_pickup_item(int pickup, struct object *obj)
 		current = obj;
 
 	/* Use a menu interface for multiple objects, or pickup single objects */
-	if (pickup == 1 && !current) {
+	if (!menu && !current) {
 		if (floor_num > 1)
-			pickup = 2;
+			menu = TRUE;
 		else
 			current = floor_list[0];
 	}
 
 	/* Display a list if requested. */
-	if (pickup == 2 && !current) {
+	if (menu && !current) {
 		const char *q, *s;
 		struct object *obj1;
 
@@ -347,7 +262,7 @@ byte py_pickup_item(int pickup, struct object *obj)
 	/* Pick up object, if legal */
 	if (current) {
 		/* Pick up the object */
-		py_pickup_aux(current, domsg);
+		player_pickup_aux(current, domsg);
 
 		/* Indicate an object picked up. */
 		objs_picked_up = 1;
@@ -357,7 +272,8 @@ byte py_pickup_item(int pickup, struct object *obj)
 	 * If requested, call this function recursively.  Count objects picked
 	 * up.  Force the display of a menu in all cases.
 	 */
-	if (call_function_again) objs_picked_up += py_pickup(2);
+	if (call_function_again)
+		objs_picked_up += player_pickup_item(NULL, TRUE);
 
 	mem_free(floor_list);
 
@@ -365,168 +281,74 @@ byte py_pickup_item(int pickup, struct object *obj)
 	return (objs_picked_up);
 }
 
-byte py_pickup(int pickup)
-{
-	return py_pickup_item(pickup, NULL);
-}
-
-/*
- * Move player in the given direction.
- *
- * This routine should only be called when energy has been expended.
- *
- * Note that this routine handles monsters in the destination grid,
- * and also handles attempting to move into walls/doors/rubble/etc.
+/**
+ * Pick up everything on the floor that requires no player action
  */
-void move_player(int dir, bool disarm)
+int do_autopickup(void)
 {
 	int py = player->py;
 	int px = player->px;
 
-	int y = py + ddy[dir];
-	int x = px + ddx[dir];
+	struct object *obj, *next;
 
-	int m_idx = cave->squares[y][x].mon;
-	struct monster *m_ptr = cave_monster(cave, m_idx);
+	/* Objects picked up.  Used to determine time cost of command. */
+	byte objs_picked_up = 0;
 
-	/* Attack monsters */
-	if (m_idx > 0) {
-		/* Mimics surprise the player */
-		if (is_mimicking(m_ptr)) {
-			become_aware(m_ptr);
+	/* Nothing to pick up -- return */
+	if (!square_object(cave, py, px))
+		return 0;
 
-			/* Mimic wakes up */
-			mon_clear_timed(m_ptr, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, FALSE);
+	/* Always pickup gold, effortlessly */
+	player_pickup_gold();
 
-		} else {
-			py_attack(y, x);
-		}
-	}
+	/* Scan the remaining objects */
+	obj = square_object(cave, py, px);
+	while (obj) {
+		next = obj->next;
 
-	/* Optionally alter traps/doors on movement */
-	else if (disarm && square_ismark(cave, y, x) &&
-			(square_isknowntrap(cave, y, x) || square_iscloseddoor(cave, y, x)))
-	{
-		/* Auto-repeat if not already repeating */
-		if (cmd_get_nrepeats() == 0)
-			cmd_set_repeat(99);
+		/* Ignore all hidden objects and non-objects */
+		if (!ignore_item_ok(obj)) {
+			/* Hack -- disturb */
+			disturb(player, 0);
 
-		do_cmd_alter_aux(dir);
-	}
-
-	/* Cannot walk through walls */
-	else if (!square_ispassable(cave, y, x))
-	{
-		/* Disturb the player */
-		disturb(player, 0);
-
-		/* Notice unknown obstacles */
-		if (!square_ismark(cave, y, x))
-		{
-			/* Rubble */
-			if (square_isrubble(cave, y, x))
-			{
-				msgt(MSG_HITWALL, "You feel a pile of rubble blocking your way.");
-				sqinfo_on(cave->squares[y][x].info, SQUARE_MARK);
-				square_light_spot(cave, y, x);
-			}
-
-			/* Closed door */
-			else if (square_iscloseddoor(cave, y, x))
-			{
-				msgt(MSG_HITWALL, "You feel a door blocking your way.");
-				sqinfo_on(cave->squares[y][x].info, SQUARE_MARK);
-				square_light_spot(cave, y, x);
-			}
-
-			/* Wall (or secret door) */
-			else
-			{
-				msgt(MSG_HITWALL, "You feel a wall blocking your way.");
-				sqinfo_on(cave->squares[y][x].info, SQUARE_MARK);
-				square_light_spot(cave, y, x);
+			/* Automatically pick up items into the backpack */
+			if (auto_pickup_okay(obj)) {
+				/* Pick up the object with message */
+				player_pickup_aux(obj, TRUE);
+				objs_picked_up++;
 			}
 		}
-
-		/* Mention known obstacles */
-		else
-		{
-			if (square_isrubble(cave, y, x))
-				msgt(MSG_HITWALL, "There is a pile of rubble blocking your way.");
-			else if (square_iscloseddoor(cave, y, x))
-				msgt(MSG_HITWALL, "There is a door blocking your way.");
-			else
-				msgt(MSG_HITWALL, "There is a wall blocking your way.");
-		}
+		obj = next;
 	}
 
-	/* Normal movement */
-	else
-	{
-		/* See if trap detection status will change */
-		bool old_dtrap = square_isdtrap(cave, py, px);
-		bool new_dtrap = square_isdtrap(cave, y, x);
+	return objs_picked_up;
+}
 
-		/* Note the change in the detect status */
-		if (old_dtrap != new_dtrap)
-			player->upkeep->redraw |= (PR_DTRAP);
+/**
+ * Pick up objects on the floor beneath you.  -LM-
+ */
+void do_cmd_pickup(struct command *cmd)
+{
+	int energy_cost;
+	struct object *obj = square_object(cave, player->py, player->px);
 
-		/* Disturb player if the player is about to leave the area */
-		if (player->upkeep->running && !player->upkeep->running_firststep && 
-			old_dtrap && !new_dtrap)
-		{
-			disturb(player, 0);
-			return;
-		}
+	/* Autopickup first */
+	energy_cost = do_autopickup() * 10;
 
-		/* Move player */
-		monster_swap(py, px, y, x);
-  
-		/* New location */
-		y = py = player->py;
-		x = px = player->px;
+	/* Pick up floor objects with a menu for multiple objects */
+	energy_cost += player_pickup_item(obj, FALSE) * 10;
 
-		/* Searching */
-		if (player->searching ||
-				(player->state.skills[SKILL_SEARCH_FREQUENCY] >= 50) ||
-				one_in_(50 - player->state.skills[SKILL_SEARCH_FREQUENCY]))
-			search(FALSE);
+	/* Limit */
+	if (energy_cost > 100) energy_cost = 100;
 
-		/* Handle "store doors" */
-		if (square_isshop(cave, player->py, player->px)) {
-			/* Disturb */
-			disturb(player, 0);
-			textui_enter_store();
-		}
+	/* Charge this amount of energy. */
+	player->upkeep->energy_use = energy_cost;
+}
 
-		/* All other grids (including traps) */
-		else
-		{
-			/* Handle objects (later) */
-			player->upkeep->notice |= (PN_PICKUP);
-		}
-
-
-		/* Discover invisible traps */
-		if (square_issecrettrap(cave, y, x))
-		{
-			/* Disturb */
-			disturb(player, 0);
-			
-			/* Hit the trap. */
-			hit_trap(y, x);
-		}
-
-		/* Set off a visible trap */
-		else if (square_isknowntrap(cave, y, x))
-		{
-			/* Disturb */
-			disturb(player, 0);
-
-			/* Hit the trap */
-			hit_trap(y, x);
-		}
-	}
-
-	player->upkeep->running_firststep = FALSE;
+/**
+ * Pick up objects on the floor beneath you.  -LM-
+ */
+void do_cmd_autopickup(struct command *cmd)
+{
+	player->upkeep->energy_use = do_autopickup() * 10;
 }

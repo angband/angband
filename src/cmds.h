@@ -17,6 +17,7 @@ void do_cmd_tunnel(struct command *cmd);
 void do_cmd_disarm(struct command *cmd);
 void do_cmd_alter_aux(int dir);
 void do_cmd_alter(struct command *cmd);
+void move_player(int dir, bool disarm);
 void do_cmd_walk(struct command *cmd);
 void do_cmd_jump(struct command *cmd);
 void do_cmd_run(struct command *cmd);
@@ -92,12 +93,9 @@ void textui_cmd_toggle_ignore(void);
 void textui_obj_examine(void);
 
 /* cmd-pickup.c */
+int do_autopickup(void);
 void do_cmd_pickup(struct command *cmd);
 void do_cmd_autopickup(struct command *cmd);
-int do_autopickup(void);
-byte py_pickup(int pickup);
-byte py_pickup_item(int pickup, struct object *obj);
-void move_player(int dir, bool disarm);
 
 /* cmd-process.c */
 void cmd_init(void);

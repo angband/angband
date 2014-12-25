@@ -1022,6 +1022,133 @@ void do_cmd_alter(struct command *cmd)
 }
 
 /**
+ * Move player in the given direction.
+ *
+ * This routine should only be called when energy has been expended.
+ *
+ * Note that this routine handles monsters in the destination grid,
+ * and also handles attempting to move into walls/doors/rubble/etc.
+ */
+void move_player(int dir, bool disarm)
+{
+	int py = player->py;
+	int px = player->px;
+
+	int y = py + ddy[dir];
+	int x = px + ddx[dir];
+
+	int m_idx = cave->squares[y][x].mon;
+	struct monster *m_ptr = cave_monster(cave, m_idx);
+	bool alterable = (square_isknowntrap(cave, y, x) ||
+					  square_iscloseddoor(cave, y, x));
+
+	/* Attack monsters, alter traps/doors on movement, hit obstacles or move */
+	if (m_idx > 0) {
+		/* Mimics surprise the player */
+		if (is_mimicking(m_ptr)) {
+			become_aware(m_ptr);
+
+			/* Mimic wakes up */
+			mon_clear_timed(m_ptr, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, FALSE);
+
+		} else {
+			py_attack(y, x);
+		}
+	} else if (disarm && square_ismark(cave, y, x) && alterable) {
+		/* Auto-repeat if not already repeating */
+		if (cmd_get_nrepeats() == 0)
+			cmd_set_repeat(99);
+
+		do_cmd_alter_aux(dir);
+	} else if (!square_ispassable(cave, y, x)) {
+		/* Disturb the player */
+		disturb(player, 0);
+
+		/* Notice unknown obstacles, mention known obstacles */
+		if (!square_ismark(cave, y, x)) {
+			if (square_isrubble(cave, y, x)) {
+				msgt(MSG_HITWALL,
+					 "You feel a pile of rubble blocking your way.");
+				sqinfo_on(cave->squares[y][x].info, SQUARE_MARK);
+				square_light_spot(cave, y, x);
+			} else if (square_iscloseddoor(cave, y, x)) {
+				msgt(MSG_HITWALL, "You feel a door blocking your way.");
+				sqinfo_on(cave->squares[y][x].info, SQUARE_MARK);
+				square_light_spot(cave, y, x);
+			} else {
+				msgt(MSG_HITWALL, "You feel a wall blocking your way.");
+				sqinfo_on(cave->squares[y][x].info, SQUARE_MARK);
+				square_light_spot(cave, y, x);
+			}
+		} else {
+			if (square_isrubble(cave, y, x))
+				msgt(MSG_HITWALL,
+					 "There is a pile of rubble blocking your way.");
+			else if (square_iscloseddoor(cave, y, x))
+				msgt(MSG_HITWALL, "There is a door blocking your way.");
+			else
+				msgt(MSG_HITWALL, "There is a wall blocking your way.");
+		}
+	} else {
+		/* See if trap detection status will change */
+		bool old_dtrap = square_isdtrap(cave, py, px);
+		bool new_dtrap = square_isdtrap(cave, y, x);
+
+		/* Note the change in the detect status */
+		if (old_dtrap != new_dtrap)
+			player->upkeep->redraw |= (PR_DTRAP);
+
+		/* Disturb player if the player is about to leave the area */
+		if (player->upkeep->running && !player->upkeep->running_firststep && 
+			old_dtrap && !new_dtrap) {
+			disturb(player, 0);
+			return;
+		}
+
+		/* Move player */
+		monster_swap(py, px, y, x);
+
+		/* New location */
+		y = py = player->py;
+		x = px = player->px;
+
+		/* Searching */
+		if (player->searching ||
+				(player->state.skills[SKILL_SEARCH_FREQUENCY] >= 50) ||
+				one_in_(50 - player->state.skills[SKILL_SEARCH_FREQUENCY]))
+			search(FALSE);
+
+		/* Handle store doors, or notice objects */
+		if (square_isshop(cave, player->py, player->px)) {
+			/* Disturb */
+			disturb(player, 0);
+			textui_enter_store();
+		} else {
+			/* Handle objects (later) */
+			player->upkeep->notice |= (PN_PICKUP);
+		}
+
+
+		/* Discover invisible traps, set off visible ones */
+		if (square_issecrettrap(cave, y, x)) {
+			/* Disturb */
+			disturb(player, 0);
+
+			/* Hit the trap. */
+			hit_trap(y, x);
+		} else if (square_isknowntrap(cave, y, x)) {
+			/* Disturb */
+			disturb(player, 0);
+
+			/* Hit the trap */
+			hit_trap(y, x);
+		}
+	}
+
+	player->upkeep->running_firststep = FALSE;
+}
+
+/**
  * Determine if a given grid may be "walked"
  */
 static bool do_cmd_walk_test(int y, int x)
