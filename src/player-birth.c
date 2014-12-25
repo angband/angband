@@ -43,9 +43,6 @@
 #include "player-util.h"
 #include "store.h"
 #include "savefile.h"
-#include "ui-input.h"
-#include "ui-menu.h"
-#include "ui-player.h"
 
 /*
  * Overview

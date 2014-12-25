@@ -19,7 +19,6 @@
 #include "angband.h"
 #include "cmds.h"
 #include "init.h"
-#include "ui-menu.h"
 #include "obj-desc.h"
 #include "obj-gear.h"
 #include "obj-identify.h"
