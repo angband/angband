@@ -1,6 +1,6 @@
-/*
- * File: cmd-obj.c
- * Purpose: Handle objects in various ways
+/**
+ * \file cmd-obj.c
+ * \brief Handle objects in various ways
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  * Copyright (c) 2007-9 Andi Sidwell, Chris Carr, Ed Graham, Erik Osheim
@@ -42,47 +42,46 @@
 #include "ui-menu.h"
 #include "ui-options.h"
 
-/*** Utility bits and bobs ***/
+/**
+ * ------------------------------------------------------------------------
+ * Utility bits and bobs
+ * ------------------------------------------------------------------------
+ */
 
-/*
+/**
  * Check to see if the player can use a rod/wand/staff/activatable object.
  */
-static int check_devices(object_type *o_ptr)
+static int check_devices(struct object *obj)
 {
 	int fail;
 	const char *action;
 	const char *what = NULL;
 
 	/* Get the right string */
-	if (tval_is_rod(o_ptr)) {
+	if (tval_is_rod(obj)) {
 		action = "zap the rod";
-	}
-	else if (tval_is_wand(o_ptr)) {
+	} else if (tval_is_wand(obj)) {
 		action = "use the wand";
 		what = "wand";
-	}
-	else if (tval_is_staff(o_ptr)) {
+	} else if (tval_is_staff(obj)) {
 		action = "use the staff";
 		what = "staff";
-	}
-	else {
+	} else {
 		action = "activate it";
 	}
 
 	/* Figure out how hard the item is to use */
-	fail = get_use_device_chance(o_ptr);
+	fail = get_use_device_chance(obj);
 
 	/* Roll for usage */
-	if (randint1(1000) < fail)
-	{
+	if (randint1(1000) < fail) {
 		flush();
 		msg("You failed to %s properly.", action);
 		return FALSE;
 	}
 
 	/* Notice empty staffs */
-	if (what && o_ptr->pval <= 0)
-	{
+	if (what && obj->pval <= 0) {
 		flush();
 		msg("The %s has no charges left.", what);
 		return FALSE;
@@ -92,7 +91,7 @@ static int check_devices(object_type *o_ptr)
 }
 
 
-/*
+/**
  * Return the chance of an effect beaming, given a tval.
  */
 static int beam_chance(int tval)
@@ -129,7 +128,7 @@ static art_tag_t art_tag_lookup(const char *tag)
 		return ART_TAG_NONE;
 }
 
-/*
+/**
  * Print an artifact activation message.
  *
  * In order to support randarts, with scrambled names, we re-write
@@ -141,7 +140,7 @@ static art_tag_t art_tag_lookup(const char *tag)
  * always singular in the current code (gloves are "Set of" and boots
  * are "Pair of")
  */
-static void activation_message(object_type *o_ptr)
+static void activation_message(struct object *obj)
 {
 	char buf[1024] = "\0";
 	const char *next;
@@ -151,9 +150,9 @@ static void activation_message(object_type *o_ptr)
 	size_t end = 0;
 
 	/* See if we have a message */
-	if (!o_ptr->activation) return;
-	if (!o_ptr->activation->message) return;
-	in_cursor = o_ptr->activation->message;
+	if (!obj->activation) return;
+	if (!obj->activation->message) return;
+	in_cursor = obj->activation->message;
 
 	next = strchr(in_cursor, '{');
 	while (next) {
@@ -171,10 +170,10 @@ static void activation_message(object_type *o_ptr)
 
 			switch(art_tag_lookup(tag)) {
 			case ART_TAG_NAME:
-				end += object_desc(buf, 1024, o_ptr, ODESC_PREFIX | ODESC_BASE); 
+				end += object_desc(buf, 1024, obj, ODESC_PREFIX | ODESC_BASE); 
 				break;
 			case ART_TAG_KIND:
-				object_kind_name(&buf[end], 1024-end, o_ptr->kind, TRUE);
+				object_kind_name(&buf[end], 1024-end, obj->kind, TRUE);
 				end += strlen(&buf[end]);
 				break;
 			case ART_TAG_VERB:
@@ -200,12 +199,12 @@ static void activation_message(object_type *o_ptr)
 }
 
 
-/*
- * Hopefully this is OK now
+/**
+ * Unknown item hook for get_item()
  */
-static bool item_tester_unknown(const object_type *o_ptr)
+static bool item_tester_unknown(const struct object *obj)
 {
-	return object_is_known(o_ptr) ? FALSE : TRUE;
+	return object_is_known(obj) ? FALSE : TRUE;
 }
 
 /**
@@ -235,9 +234,15 @@ bool spell_identify_unknown_available(void)
 
 
 
-/*** Inscriptions ***/
+/**
+ * ------------------------------------------------------------------------
+ * Inscriptions
+ * ------------------------------------------------------------------------
+ */
 
-/* Remove inscription */
+/**
+ * Remove inscription
+ */
 void do_cmd_uninscribe(struct command *cmd)
 {
 	struct object *obj;
@@ -257,7 +262,9 @@ void do_cmd_uninscribe(struct command *cmd)
 	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
 }
 
-/* Add inscription */
+/**
+ * Add inscription
+ */
 void do_cmd_inscribe(struct command *cmd)
 {
 	struct object *obj;
@@ -291,9 +298,15 @@ void do_cmd_inscribe(struct command *cmd)
 }
 
 
-/*** Taking off/putting on ***/
+/**
+ * ------------------------------------------------------------------------
+ * Taking off/putting on
+ * ------------------------------------------------------------------------
+ */
 
-/* Take off an item */
+/**
+ * Take off an item
+ */
 void do_cmd_takeoff(struct command *cmd)
 {
 	struct object *obj;
@@ -514,7 +527,11 @@ void do_cmd_destroy(struct command *cmd)
 
 
 
-/*** Using items the traditional way ***/
+/**
+ * ------------------------------------------------------------------------
+ * Using items the traditional way
+ * ------------------------------------------------------------------------
+ */
 
 enum use {
 	USE_TIMEOUT,
@@ -524,21 +541,6 @@ enum use {
 
 /**
  * Use an object the right way.
- *
- * There may be a BIG problem with any "effect" that can cause "changes"
- * to the inventory.  For example, a "scroll of recharging" can cause
- * a wand/staff to "disappear", moving the inventory up.  Luckily, the
- * scrolls all appear BEFORE the staffs/wands, so this is not a problem.
- * But, for example, a "staff of recharging" could cause MAJOR problems.
- * In such a case, it will be best to either (1) "postpone" the effect
- * until the end of the function, or (2) "change" the effect, say, into
- * giving a staff "negative" charges, or "turning a staff into a stick".
- * It seems as though a "rod of recharging" might in fact cause problems.
- * The basic problem is that the act of recharging (and destroying) an
- * item causes the inducer of that action to "move", causing "obj" to
- * no longer point at the correct item, with horrifying results.
- *
- * The foregoing should now all not be a problem - NRM
  */
 static void use_aux(struct command *cmd, struct object *obj, enum use use,
 					int snd)
@@ -846,7 +848,11 @@ void do_cmd_use(struct command *cmd)
 }
 
 
-/*** Refuelling ***/
+/**
+ * ------------------------------------------------------------------------
+ * Refuelling
+ * ------------------------------------------------------------------------
+ */
 
 static void refill_lamp(struct object *lamp, struct object *obj)
 {
@@ -939,7 +945,11 @@ void do_cmd_refill(struct command *cmd)
 
 
 
-/*** Spell casting ***/
+/**
+ * ------------------------------------------------------------------------
+ * Spell casting
+ * ------------------------------------------------------------------------
+ */
 
 /**
  * Cast a spell from a book
@@ -1080,8 +1090,7 @@ void do_cmd_study(struct command *cmd)
 
 
 
-enum
-{
+enum {
 	IGNORE_THIS_ITEM,
 	UNIGNORE_THIS_ITEM,
 	IGNORE_THIS_FLAVOR,
@@ -1237,7 +1246,7 @@ void textui_obj_examine(void)
 	textblock *tb;
 	region area = { 0, 0, 0, 0 };
 
-	object_type *obj;
+	struct object *obj;
 
 	/* Select item */
 	if (!get_item(&obj, "Examine which item?", "You have nothing to examine.",
