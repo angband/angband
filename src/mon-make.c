@@ -605,6 +605,10 @@ void player_place(struct chunk *c, struct player *p, int y, int x)
 
 	/* Mark cave grid */
 	c->squares[y][x].mon = -1;
+
+	/* Clear stair creation */
+	p->upkeep->create_down_stair = FALSE;
+	p->upkeep->create_up_stair = FALSE;
 }
 
 /**

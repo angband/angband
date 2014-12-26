@@ -344,14 +344,12 @@ void new_player_spot(struct chunk *c, struct player *p)
     cave_find_in_range(c, &y, 0, c->height, &x, 0, c->width, square_isstart);
 
     /* Create stairs the player came down if allowed and necessary */
-    if (OPT(birth_no_stairs)) {
-    } else if (p->upkeep->create_down_stair) {
+	if (OPT(birth_no_stairs))
+		;
+	else if (p->upkeep->create_down_stair)
 		square_set_feat(c, y, x, FEAT_MORE);
-		p->upkeep->create_down_stair = FALSE;
-    } else if (p->upkeep->create_up_stair) {
+	else if (p->upkeep->create_up_stair)
 		square_set_feat(c, y, x, FEAT_LESS);
-		p->upkeep->create_up_stair = FALSE;
-    }
 
     player_place(c, p, y, x);
 }
