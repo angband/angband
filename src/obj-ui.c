@@ -617,7 +617,7 @@ bool get_item_allow(const struct object *obj, unsigned char ch, cmd_code cmd,
 	if (n) {
 		char prompt[1024];
 
-		const char *verb = cmdq_pop_verb(cmd);
+		const char *verb = cmd_verb(cmd);
 		if (!verb)
 			verb = "do that with";
 

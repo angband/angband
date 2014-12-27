@@ -120,7 +120,7 @@ static const struct command_info game_cmds[] =
 	{ CMD_REPEAT, "repeat", NULL, FALSE, 0 },
 };
 
-const char *cmdq_pop_verb(cmd_code cmd)
+const char *cmd_verb(cmd_code cmd)
 {
 	size_t i;
 	for (i = 0; i < N_ELEMENTS(game_cmds); i++) {
