@@ -770,6 +770,13 @@ void cave_generate(struct chunk **c, struct player *p) {
 	/* The dungeon is ready */
 	character_dungeon = TRUE;
 
+	/* Free old and allocate new known level */
+	if (cave_k)
+		cave_free(cave_k);
+	cave_k = cave_new(cave->height, cave->width);
+	if (!cave->depth)
+		cave_known();
+
 	(*c)->created_at = turn;
 }
 

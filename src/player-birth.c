@@ -1134,8 +1134,14 @@ void do_cmd_accept_character(struct command *cmd)
 	seed_flavor = randint0(0x10000000);
 	flavor_init();
 
+	/* Stop the player being quite so dead */
+	player->is_dead = FALSE;
+
 	/* Now we're really done.. */
 	event_signal(EVENT_LEAVE_BIRTH);
+
+	/* Generate a dungeon level if needed */
+	cave_generate(&cave, player);
 }
 
 

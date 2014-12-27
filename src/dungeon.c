@@ -1379,9 +1379,6 @@ void play_game(bool new_game)
 		textui_do_birth();
 	}
 
-	/* Stop the player being quite so dead */
-	player->is_dead = FALSE;
-
 	/* Flash a message */
 	prt("Please wait...", 0, 0);
 
@@ -1408,20 +1405,6 @@ void play_game(bool new_game)
 
 	/* React to changes */
 	Term_xtra(TERM_XTRA_REACT, 0);
-
-
-	/* Generate a dungeon level if needed */
-	if (!character_dungeon)
-	{
-		cave_generate(&cave, player);
-		/* Free old and allocate new known level */
-		if (cave_k)
-			cave_free(cave_k);
-		cave_k = cave_new(cave->height, cave->width);
-		if (!cave->depth)
-			cave_known();
-	}
-
 
 
 	/* Character is now "complete" */
@@ -1547,12 +1530,6 @@ void play_game(bool new_game)
 
 		/* Make a new level */
 		cave_generate(&cave, player);
-		/* Free old and allocate new known level */
-		if (cave_k)
-			cave_free(cave_k);
-		cave_k = cave_new(cave->height, cave->width);
-		if (!cave->depth)
-			cave_known();
 	}
 
 	/* Disallow big cursor */
