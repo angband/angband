@@ -21,6 +21,7 @@
 #include "cmd-core.h"
 #include "init.h"
 #include "keymap.h"
+#include "ui-game.h"
 #include "obj-desc.h"
 #include "obj-gear.h"
 #include "obj-identify.h"
@@ -29,7 +30,6 @@
 #include "obj-ui.h"
 #include "obj-util.h"
 #include "store.h"
-#include "ui-game.h"
 
 /**
  * Determine if the attr and char should consider the item's flavor

@@ -28,8 +28,10 @@
 #include "player-attack.h"
 #include "player-birth.h"
 #include "player-spell.h"
+#include "store.h"
 #include "target.h"
 #include "ui-target.h"
+#include "ui-spell.h"
 
 errr (*cmd_get_hook)(cmd_context c, bool wait);
 

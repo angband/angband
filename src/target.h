@@ -37,16 +37,17 @@ int target_dir_allow(struct keypress ch, bool allow_5);
 void look_mon_desc(char *buf, size_t max, int m_idx);
 bool target_able(struct monster *m);
 bool target_okay(void);
-bool target_set_monster(struct monster *m);
+bool target_set_monster(struct monster *mon);
 void target_set_location(int y, int x);
 bool target_is_set(void);
 int cmp_distance(const void *a, const void *b);
 s16b target_pick(int y1, int x1, int dy, int dx, struct point_set *targets);
 bool target_accept(int y, int x);
 void coords_desc(char *buf, int size, int y, int x);
-bool get_rep_dir(int *dp, bool allow_5);
-void target_get(s16b *col, s16b *row);
+void target_get(s16b *x, s16b *y);
 struct monster *target_get_monster(void);
 bool target_sighted(void);
+struct point_set *target_get_monsters(int mode);
+bool target_set_closest(int mode);
 
 #endif /* !TARGET_H */

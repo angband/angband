@@ -26,6 +26,7 @@
 #include "obj-pile.h"
 #include "obj-ui.h"
 #include "obj-util.h"
+#include "player-attack.h"
 #include "player-timed.h"
 #include "project.h"
 #include "tables.h"
@@ -92,43 +93,6 @@ void target_display_help(bool monster, bool free)
 	text_out_indent = 0;
 }
 
-/*
- * Return a target set of target_able monsters.
- */
-static struct point_set *target_set_interactive_prepare(int mode)
-{
-	int y, x;
-	struct point_set *targets = point_set_new(TS_INITIAL_SIZE);
-
-	/* Scan the current panel */
-	for (y = Term->offset_y; y < Term->offset_y + SCREEN_HGT; y++)
-	{
-		for (x = Term->offset_x; x < Term->offset_x + SCREEN_WID; x++)
-		{
-			/* Check bounds */
-			if (!square_in_bounds_fully(cave, y, x)) continue;
-
-			/* Require "interesting" contents */
-			if (!target_accept(y, x)) continue;
-
-			/* Special mode */
-			if (mode & (TARGET_KILL))
-			{
-				/* Must contain a monster */
-				if (!(cave->squares[y][x].mon > 0)) continue;
-
-				/* Must be a targettable monster */
-			 	if (!target_able(square_monster(cave, y, x))) continue;
-			}
-
-			/* Save the location */
-			add_to_point_set(targets, y, x);
-		}
-	}
-
-	sort(targets->pts, point_set_size(targets), sizeof(*(targets->pts)), cmp_distance);
-	return targets;
-}
 
 /*
  * Perform the minimum "whole panel" adjustment to ensure that the given
@@ -721,65 +685,42 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 	return (press);
 }
 
-
-bool target_set_closest(int mode)
+/*
+ * Target command
+ */
+void textui_target(void)
 {
-	int y, x;
-	monster_type *m_ptr;
-	char m_name[80];
-	bool visibility;
-	struct point_set *targets;
+	if (target_set_interactive(TARGET_KILL, -1, -1))
+		msg("Target Selected.");
+	else
+		msg("Target Aborted.");
+}
 
-	/* Cancel old target */
-	target_set_monster(0);
+/**
+ * Target closest monster.
+ *
+ * XXX: Move to using CMD_TARGET_CLOSEST at some point instead of invoking
+ * target_set_closest() directly.
+ */
+void textui_target_closest(void)
+{
+	if (target_set_closest(TARGET_KILL)) {
+		bool visibility;
+		s16b x, y;
 
-	/* Get ready to do targetting */
-	targets = target_set_interactive_prepare(mode);
+		target_get(&x, &y);
 
-	/* If nothing was prepared, then return */
-	if (point_set_size(targets) < 1)
-	{
-		msg("No Available Target.");
-		point_set_dispose(targets);
-		return FALSE;
+		/* Visual cue */
+		Term_fresh();
+		Term_get_cursor(&visibility);
+		(void)Term_set_cursor(TRUE);
+		move_cursor_relative(y, x);
+		Term_redraw_section(x, y, x, y);
+
+		/* TODO: what's an appropriate amount of time to spend highlighting */
+		Term_xtra(TERM_XTRA_DELAY, 150);
+		(void)Term_set_cursor(visibility);
 	}
-
-	/* Find the first monster in the queue */
-	y = targets->pts[0].y;
-	x = targets->pts[0].x;
-	m_ptr = square_monster(cave, y, x);
-	
-	/* Target the monster, if possible */
-	if (!target_able(m_ptr))
-	{
-		msg("No Available Target.");
-		point_set_dispose(targets);
-		return FALSE;
-	}
-
-	/* Target the monster */
-	monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_CAPITAL);
-	if (!(mode & TARGET_QUIET))
-		msg("%s is targeted.", m_name);
-	Term_fresh();
-
-	/* Set up target information */
-	monster_race_track(player->upkeep, m_ptr->race);
-	health_track(player->upkeep, m_ptr);
-	target_set_monster(m_ptr);
-
-	/* Visual cue */
-	Term_get_cursor(&visibility);
-	(void)Term_set_cursor(TRUE);
-	move_cursor_relative(y, x);
-	Term_redraw_section(x, y, x, y);
-
-	/* TODO: what's an appropriate amount of time to spend highlighting */
-	Term_xtra(TERM_XTRA_DELAY, 150);
-	(void)Term_set_cursor(visibility);
-
-	point_set_dispose(targets);
-	return TRUE;
 }
 
 
@@ -986,7 +927,7 @@ bool target_set_interactive(int mode, int x, int y)
 	prt("Press '?' for help.", help_prompt_loc, 0);
 
 	/* Prepare the target set */
-	targets = target_set_interactive_prepare(mode);
+	targets = target_get_monsters(mode);
 
 	/* Start near the player */
 	m = 0;
@@ -1214,7 +1155,7 @@ bool target_set_interactive(int mode, int x, int y)
 					{
 						/* Recalculate interesting grids */
 						point_set_dispose(targets);
-						targets = target_set_interactive_prepare(mode);
+						targets = target_get_monsters(mode);
 
 						/* Find a new monster */
 						i = target_pick(old_y, old_x, ddy[d], ddx[d], targets);
@@ -1224,7 +1165,7 @@ bool target_set_interactive(int mode, int x, int y)
 						{
 							/* Recalculate interesting grids */
 							point_set_dispose(targets);
-							targets = target_set_interactive_prepare(mode);
+							targets = target_get_monsters(mode);
 						}
 
 						/* Handle stuff */
@@ -1340,7 +1281,7 @@ bool target_set_interactive(int mode, int x, int y)
 
 						/* Recalculate interesting grids */
 						point_set_dispose(targets);
-						targets = target_set_interactive_prepare(mode);
+						targets = target_get_monsters(mode);
 					}
 
 					if (square_monster(cave, y, x) ||
@@ -1490,7 +1431,7 @@ bool target_set_interactive(int mode, int x, int y)
 
 					/* Recalculate interesting grids */
 					point_set_dispose(targets);
-					targets = target_set_interactive_prepare(mode);
+					targets = target_get_monsters(mode);
 				}
 			}
 		}

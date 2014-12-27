@@ -27,13 +27,6 @@ void do_cmd_rest(struct command *cmd);
 void display_feeling(bool obj_only);
 void do_cmd_feeling(void);
 
-void textui_cmd_rest(void);
-
-/* cmd-context.c */
-int context_menu_player(int mx, int my);
-int context_menu_cave(struct chunk *c, int y, int x, int adjacent, int mx, int my);
-int context_menu_object(struct object *obj);
-
 /* cmd-know.c */
 void do_cmd_redraw(void);
 void do_cmd_change_name(void);
@@ -58,8 +51,6 @@ void do_cmd_unknown(void);
 void do_cmd_suicide(struct command *cmd);
 void textui_cmd_suicide(void);
 void do_cmd_save_game(struct command *cmd);
-void do_cmd_target(void);
-void do_cmd_target_closest(void);
 void do_cmd_load_screen(void);
 void do_cmd_save_screen(void);
 void do_cmd_version(void);
@@ -87,10 +78,6 @@ void do_cmd_cast(struct command *cmd);
 void do_cmd_study_spell(struct command *cmd);
 void do_cmd_study_book(struct command *cmd);
 void do_cmd_study(struct command *cmd);
-void textui_cmd_destroy_menu(struct object *obj);
-void textui_cmd_destroy(void);
-void textui_cmd_toggle_ignore(void);
-void textui_obj_examine(void);
 
 /* cmd-pickup.c */
 int do_autopickup(void);
@@ -108,19 +95,23 @@ unsigned char cmd_lookup_key_unktrl(cmd_code lookup_cmd, int mode);
 
 /* XXX none under here should be here */
 
-/* store.c */
-extern void do_cmd_sell(struct command *cmd);
-extern void do_cmd_stash(struct command *cmd);
-extern void do_cmd_buy(struct command *cmd);
-extern void do_cmd_retrieve(struct command *cmd);
-
 /* ui-knowledge.c */
 extern int big_pad(int col, int row, byte a, wchar_t c);
 extern void textui_browse_object_knowledge(const char *name, int row);
 extern void textui_knowledge_init(void);
 extern void textui_browse_knowledge(void);
 
-/* ui-option.c */
-void do_cmd_options(void);
-
 #endif
+
+
+void textui_cmd_rest(void);
+
+/* cmd-context.c */
+int context_menu_player(int mx, int my);
+int context_menu_cave(struct chunk *c, int y, int x, int adjacent, int mx, int my);
+int context_menu_object(struct object *obj);
+
+void textui_cmd_destroy_menu(struct object *obj);
+void textui_cmd_destroy(void);
+void textui_cmd_toggle_ignore(void);
+void textui_obj_examine(void);

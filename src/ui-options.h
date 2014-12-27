@@ -5,7 +5,7 @@ extern void do_cmd_options_birth(void);
 extern bool ignore_tval(int tval);
 extern void do_cmd_options_item(const char *title, int row);
 
-/* already in cmds.h
- * extern void do_cmd_options(void); */
+/* ui-option.c */
+void do_cmd_options(void);
 
 #endif

@@ -1384,40 +1384,6 @@ void do_cmd_rest(struct command *cmd)
 }
 
 
-void textui_cmd_rest(void)
-{
-	const char *p = "Rest (0-9999, '!' for HP or SP, '*' for HP and SP, '&' as needed): ";
-
-	char out_val[5] = "& ";
-
-	/* Ask for duration */
-	if (!get_string(p, out_val, sizeof(out_val))) return;
-
-	/* Rest... */
-	if (out_val[0] == '&') {
-		/* ...until done */
-		cmdq_push(CMD_REST);
-		cmd_set_arg_choice(cmdq_peek(), "choice", REST_COMPLETE);
-	} else if (out_val[0] == '*') {
-		/* ...a lot */
-		cmdq_push(CMD_REST);
-		cmd_set_arg_choice(cmdq_peek(), "choice", REST_ALL_POINTS);
-	} else if (out_val[0] == '!') {
-		/* ...until HP or SP filled */
-		cmdq_push(CMD_REST);
-		cmd_set_arg_choice(cmdq_peek(), "choice", REST_SOME_POINTS);
-	} else {
-		/* ...some */
-		int turns = atoi(out_val);
-		if (turns <= 0) return;
-		if (turns > 9999) turns = 9999;
-		
-		cmdq_push(CMD_REST);
-		cmd_set_arg_choice(cmdq_peek(), "choice", turns);
-	}
-}
-
-
 /**
  * Array of feeling strings for object feelings.
  * Keep strings at 36 or less characters to keep the

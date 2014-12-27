@@ -89,7 +89,6 @@ ANGFILES = \
 	cave-view.o \
 	cmd-cave.o \
 	cmd-core.o \
-	cmd-know.o \
 	cmd-misc.o \
 	cmd-obj.o \
 	cmd-pickup.o \
