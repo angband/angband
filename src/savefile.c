@@ -163,28 +163,13 @@ static u32b buffer_check;
 
 /** Utility **/
 
-
 /*
- * Hack -- Show information on the screen, one line at a time.
- *
- * Avoid the top two lines, to avoid interference with "note()".
+ * Tell the UI something about loading the game.
  */
 void note(const char *message)
 {
-	static int y = 2;
-
-	/* Draw the message */
-	prt(message, y, 0);
-	pause_line(Term);
-
-	/* Advance one line (wrap if needed) */
-	if (++y >= 24) y = 2;
-
-	/* Flush it */
-	Term_fresh();
+	event_signal_message(EVENT_INITSTATUS, MSG_BIRTH, message);
 }
-
-
 
 
 /** Base put/get **/

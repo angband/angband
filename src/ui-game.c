@@ -1905,8 +1905,20 @@ static void init_angband_aux(const char *why)
  */
 static void splashscreen_note(game_event_type type, game_event_data *data, void *user)
 {
-	Term_erase(0, 23, 255);
-	Term_putstr(20, 23, -1, COLOUR_WHITE, format("[%s]", data->string));
+	if (data->message.type == MSG_BIRTH) {
+		static int y = 2;
+
+		/* Draw the message */
+		prt(data->message.msg, y, 0);
+		pause_line(Term);
+
+		/* Advance one line (wrap if needed) */
+		if (++y >= 24) y = 2;
+	} else {
+		Term_erase(0, 23, 255);
+		Term_putstr(20, 23, -1, COLOUR_WHITE, format("[%s]", data->message.msg));
+	}
+
 	Term_fresh();
 }
 

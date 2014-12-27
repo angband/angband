@@ -314,7 +314,7 @@ static struct store *flatten_stores(struct store *store_list) {
 
 void store_init(void)
 {
-	event_signal_string(EVENT_INITSTATUS, "Initialising stores...");
+	event_signal_message(EVENT_INITSTATUS, 0, "Initialising stores...");
 	if (run_parser(&store_parser)) quit("Can't initialise stores");
 	stores = flatten_stores(stores);
 }

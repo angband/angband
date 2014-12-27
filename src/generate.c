@@ -455,17 +455,17 @@ static struct file_parser v_parser = {
 
 static void run_template_parser(void) {
 	/* Initialize room info */
-	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (dungeon profiles)");
+	event_signal_message(EVENT_INITSTATUS, 0, "Initializing arrays... (dungeon profiles)");
 	if (run_parser(&profile_parser))
 		quit("Cannot initialize dungeon profiles");
 
 	/* Initialize room info */
-	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (room templates)");
+	event_signal_message(EVENT_INITSTATUS, 0, "Initializing arrays... (room templates)");
 	if (run_parser(&room_parser))
 		quit("Cannot initialize room templates");
 
 	/* Initialize vault info */
-	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (vaults)");
+	event_signal_message(EVENT_INITSTATUS, 0, "Initializing arrays... (vaults)");
 	if (run_parser(&v_parser))
 		quit("Cannot initialize vaults");
 }
