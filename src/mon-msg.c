@@ -513,14 +513,15 @@ void flush_all_monster_messages(void)
 
 static void monmsg_init(void) {
 	/* Array of stacked monster messages */
-	mon_msg = C_ZNEW(MAX_STORED_MON_MSG, monster_race_message);
-	mon_message_hist = C_ZNEW(MAX_STORED_MON_CODES, monster_message_history);
+	mon_msg = mem_zalloc(MAX_STORED_MON_MSG * sizeof(monster_race_message));
+	mon_message_hist = mem_zalloc(MAX_STORED_MON_CODES *
+								  sizeof(monster_message_history));
 }
 
 static void monmsg_cleanup(void) {
 	/* Free the stacked monster messages */
-	FREE(mon_msg);
-	FREE(mon_message_hist);
+	mem_free(mon_msg);
+	mem_free(mon_message_hist);
 }
 
 struct init_module monmsg_module = {

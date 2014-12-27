@@ -1,7 +1,7 @@
 /**
  * \file mon-summon.c
  * \brief Monster summoning
-
+ *
  * Copyright (c) 1997-2007 Ben Harrison, James E. Wilson, Robert A. Koeneke
  *
  * This work is free software; you can redistribute it and/or modify it
