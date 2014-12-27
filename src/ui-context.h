@@ -1,6 +1,7 @@
-
 #ifndef UI_CONTEXT_H
 #define UI_CONTEXT_H
+
+#include "ui-input.h"
 
 int context_menu_player(int mx, int my);
 int context_menu_cave(struct chunk *c, int y, int x, int adjacent, int mx, int my);

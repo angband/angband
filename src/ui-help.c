@@ -18,6 +18,9 @@
 #include "angband.h"
 #include "buildid.h"
 #include "init.h"
+#include "ui-input.h"
+#include "ui.h"
+#include "z-term.h"
 
 /*
  * Make a string lower case.

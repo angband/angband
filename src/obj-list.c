@@ -27,6 +27,8 @@
 #include "obj-tval.h"
 #include "obj-ui.h"
 #include "obj-util.h"
+#include "z-textblock.h"
+#include "ui.h" /* regions */
 
 #define MAX_ITEMLIST 2560
 

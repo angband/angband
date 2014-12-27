@@ -62,4 +62,8 @@ bool verify_object(const char *prompt, struct object *obj);
 bool get_item(struct object **choice, const char *pmt, const char *str, cmd_code cmd, item_tester tester, int mode);
 bool get_item_allow(const struct object *obj, unsigned char ch, cmd_code cmd, bool is_harmless);
 
+void display_object_recall(struct object *obj);
+void display_object_kind_recall(struct object_kind *kind);
+void display_object_recall_interactive(object_type *o_ptr);
+
 #endif /* OBJECT_UI_H */

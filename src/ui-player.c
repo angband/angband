@@ -33,6 +33,7 @@
 #include "ui-game.h"
 #include "ui-menu.h"
 #include "ui-player.h"
+#include "ui-input.h"
 #include "ui.h"
 
 

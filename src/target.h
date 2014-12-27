@@ -3,6 +3,8 @@
 #ifndef TARGET_H
 #define TARGET_H
 
+#include "ui-event.h"
+
 /*
  * Convert a "key event" into a "location" (Y)
  */

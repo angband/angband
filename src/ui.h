@@ -1,6 +1,9 @@
 #ifndef INCLUDED_UI_H
 #define INCLUDED_UI_H
 
+#include "z-term.h"
+#include "ui-event.h"
+
 /* ================== GEOMETRY ====================== */
 
 /* Defines a rectangle on the screen that is bound to a Panel or subpanel */

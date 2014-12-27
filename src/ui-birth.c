@@ -29,6 +29,7 @@
 #include "ui-menu.h"
 #include "ui-options.h"
 #include "ui-player.h"
+#include "ui-input.h"
 
 
 /*

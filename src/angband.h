@@ -25,7 +25,6 @@
 #include "z-util.h"
 #include "z-virt.h"
 #include "z-rand.h"
-#include "z-term.h"
 
 /*
  * Include the high-level includes.
@@ -35,8 +34,6 @@
 #include "message.h"
 #include "option.h"
 #include "player.h"
-#include "ui.h"
-#include "ui-input.h"
 
 
 /***** Some older copyright messages follow below *****/

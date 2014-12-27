@@ -28,6 +28,7 @@
 #include "project.h"
 #include "target.h"
 #include "ui-target.h"
+#include "z-term.h" /* panel_contains */
 
 /*** File-wide variables ***/
 

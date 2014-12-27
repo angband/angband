@@ -20,6 +20,7 @@
 #include "dungeon.h"
 #include "savefile.h"
 #include "signals.h"
+#include "z-term.h"
 
 s16b signal_count;		/* Hack -- Count interrupts */
 

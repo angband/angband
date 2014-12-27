@@ -27,7 +27,10 @@
 #include "player-timed.h"
 #include "prefs.h"
 #include "trap.h"
+#include "ui-input.h"
 #include "ui-map.h"
+#include "ui.h"
+#include "z-term.h"
 
 
 /*

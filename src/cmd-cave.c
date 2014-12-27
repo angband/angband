@@ -18,9 +18,9 @@
 
 #include "angband.h"
 #include "cave.h"
+#include "cmd-core.h"
 #include "cmds.h"
 #include "dungeon.h"
-#include "cmd-core.h"
 #include "game-event.h"
 #include "generate.h"
 #include "init.h"
@@ -37,10 +37,12 @@
 #include "player-path.h"
 #include "player-timed.h"
 #include "player-util.h"
-#include "trap.h"
-#include "ui-store.h"
 #include "store.h"
 #include "tables.h"
+#include "trap.h"
+#include "ui-input.h"
+#include "ui-store.h"
+#include "z-term.h"
 
 /**
  * Go up one level

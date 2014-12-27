@@ -32,8 +32,11 @@
 #include "tables.h"
 #include "target.h"
 #include "trap.h"
+#include "ui.h"
 #include "ui-map.h"
 #include "ui-target.h"
+#include "ui-input.h"
+#include "z-term.h"
 
 /**
  * Display targeting help at the bottom of the screen.

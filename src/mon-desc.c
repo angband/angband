@@ -18,6 +18,7 @@
 
 #include "angband.h"
 #include "mon-desc.h"
+#include "z-term.h" /* panel_contains */
 
 /**
  * Perform simple English pluralization on a monster name.

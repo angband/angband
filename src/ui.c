@@ -18,8 +18,9 @@
 #include "angband.h"
 #include "cave.h"
 #include "tables.h"
+#include "ui-input.h"
+#include "ui.h"
 #include "z-textblock.h"
-
 
 /*** Regions ***/
 

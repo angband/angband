@@ -18,6 +18,7 @@
  */
 
 #include "angband.h"
+#include "cmd-core.h"
 #include "game-event.h"
 #include "init.h"
 #include "obj-desc.h"

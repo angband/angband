@@ -19,8 +19,8 @@
 
 #include "angband.h"
 #include "cave.h"
-#include "cmds.h"
 #include "cmd-core.h"
+#include "cmds.h"
 #include "effects.h"
 #include "init.h"
 #include "obj-desc.h"
@@ -39,6 +39,7 @@
 #include "player-util.h"
 #include "target.h"
 #include "trap.h"
+#include "ui-input.h"
 
 /**
  * ------------------------------------------------------------------------

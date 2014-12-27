@@ -28,6 +28,7 @@
 #include "score.h"
 #include "store.h"
 #include "ui-death.h"
+#include "ui-input.h"
 #include "ui-knowledge.h"
 #include "ui-menu.h"
 #include "ui-player.h"

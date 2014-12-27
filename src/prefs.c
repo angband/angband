@@ -30,6 +30,8 @@
 #include "prefs.h"
 #include "project.h"
 #include "ui-game.h"
+#include "z-term.h"
+#include "ui-input.h" /* message_flush */
 
 bool arg_wizard;			/* Command arg -- Request wizard mode */
 bool arg_power;				/* Command arg -- Generate monster power */

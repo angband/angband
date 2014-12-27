@@ -17,10 +17,10 @@
  */
 
 #include "angband.h"
+#include "cmd-core.h"
 #include "cmds.h"
 #include "dungeon.h"
 #include "game-event.h"
-#include "cmd-core.h"
 #include "history.h"
 #include "init.h"
 #include "mon-lore.h"
@@ -31,18 +31,19 @@
 #include "obj-make.h"
 #include "obj-pile.h"
 #include "obj-power.h"
-#include "obj-randart.h"	
+#include "obj-randart.h"
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "object.h"
-#include "player.h"
 #include "player-birth.h"
 #include "player-quest.h"
 #include "player-spell.h"
 #include "player-timed.h"
 #include "player-util.h"
-#include "store.h"
+#include "player.h"
 #include "savefile.h"
+#include "store.h"
+#include "ui-input.h" /* msg_flag */
 
 /*
  * Overview
@@ -1097,6 +1098,7 @@ void do_cmd_accept_character(struct command *cmd)
 	history_add("Began the quest to destroy Morgoth.", HISTORY_PLAYER_BIRTH, 0);
 
 	/* Reset message prompt (i.e. no extraneous -more-s) */
+	/* XXX-AS remove and then remove ui-input include */
 	msg_flag = TRUE;
 
 	/* Note player birth in the message recall */
