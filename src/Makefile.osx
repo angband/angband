@@ -210,7 +210,7 @@ dist: install
 	rm -rf disttemp*
 
 tests:
-	$(MAKE) -C tests all CFLAGS="-I.. $(CFLAGS)" LDFLAGS="$(LIBS)" DEFAULT_CONFIG_PATH=../lib
+	$(MAKE) -C tests all CFLAGS='-I.. -DDEFAULT_CONFIG_PATH=\"../../lib\" -DDEFAULT_LIB_PATH=\"../../lib\" -DDEFAULT_DATA_PATH=\"../../lib\" $(CFLAGS)' LDFLAGS="$(LIBS)"
 
 test-clean:
 	$(MAKE) -C tests clean
