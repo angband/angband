@@ -2,7 +2,7 @@
 # File: Makefile.src
 #
 # A makefile which includes the current object files, hopefully includable
-# across a range of different makefiles, to cut down on maintenance.
+# across a range of different makefiles, to cut down on maintenance.
 #
 
 NAME = Angband
@@ -89,12 +89,9 @@ ANGFILES = \
 	cave-view.o \
 	cmd-cave.o \
 	cmd-core.o \
-	cmd-context.o \
-	cmd-know.o \
 	cmd-misc.o \
 	cmd-obj.o \
 	cmd-pickup.o \
-	cmd-process.o \
 	debug.o \
 	dungeon.o \
 	effects.o \
@@ -173,6 +170,8 @@ ANGFILES = \
 	trap.o \
 	ui.o \
 	ui-birth.o \
+	ui-command.o \
+	ui-context.o \
 	ui-death.o \
 	ui-event.o \
 	ui-game.o \
@@ -181,6 +180,7 @@ ANGFILES = \
 	ui-knowledge.o \
 	ui-map.o \
 	ui-menu.o \
+	ui-object.o \
 	ui-options.o \
 	ui-player.o \
 	ui-spell.o \

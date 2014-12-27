@@ -21,11 +21,25 @@
 #include "dungeon.h"
 #include "game-event.h"
 #include "init.h"
+#include "keymap.h"
+#include "obj-gear.h"
+#include "obj-util.h"
+#include "player-attack.h"
 #include "player-path.h"
+#include "player-util.h"
 #include "randname.h"
 #include "signals.h"
 #include "target.h"
+#include "ui-command.h"
+#include "ui-context.h"
+#include "ui-game.h"
+#include "ui-help.h"
+#include "ui-knowledge.h"
+#include "ui-map.h"
+#include "ui-object.h"
 #include "ui-player.h"
+#include "ui-spell.h"
+#include "ui-store.h"
 #include "ui-target.h"
 #include "ui.h"
 
@@ -1345,3 +1359,451 @@ bool get_aim_dir(int *dp)
 	return (TRUE);
 }
 
+
+
+
+/*
+ * Here are lists of commands, stored in this format so that they can be
+ * easily maniuplated for e.g. help displays, or if a port wants to provide a
+ * native menu containing a command list.
+ *
+ * Consider a two-paned layout for the command menus. XXX
+ */
+
+struct cmd_info cmd_item[] =
+{
+	{ "Inscribe an object", { '{' }, CMD_INSCRIBE },
+	{ "Uninscribe an object", { '}' }, CMD_UNINSCRIBE },
+	{ "Wear/wield an item", { 'w' }, CMD_WIELD },
+	{ "Take off/unwield an item", { 't', 'T'}, CMD_TAKEOFF },
+	{ "Examine an item", { 'I' }, CMD_NULL, textui_obj_examine },
+	{ "Drop an item", { 'd' }, CMD_DROP },
+	{ "Fire your missile weapon", { 'f', 't' }, CMD_FIRE, NULL, player_can_fire_prereq },
+	{ "Use a staff", { 'u', 'Z' }, CMD_USE_STAFF },
+	{ "Aim a wand", {'a', 'z'}, CMD_USE_WAND },
+	{ "Zap a rod", {'z', 'a'}, CMD_USE_ROD },
+	{ "Activate an object", {'A' }, CMD_ACTIVATE },
+	{ "Eat some food", { 'E' }, CMD_EAT },
+	{ "Quaff a potion", { 'q' }, CMD_QUAFF },
+	{ "Read a scroll", { 'r' }, CMD_READ_SCROLL, NULL, player_can_read_prereq },
+	{ "Fuel your light source", { 'F' }, CMD_REFILL, NULL, player_can_refuel_prereq },
+	{ "Use an item", { 'U', 'X' }, CMD_USE }
+};
+
+/* General actions */
+struct cmd_info cmd_action[] =
+{
+	{ "Search for traps/doors", { 's' }, CMD_SEARCH },
+	{ "Disarm a trap or chest", { 'D' }, CMD_DISARM },
+	{ "Rest for a while", { 'R' }, CMD_NULL, textui_cmd_rest },
+	{ "Look around", { 'l', 'x' }, CMD_NULL, do_cmd_look },
+	{ "Target monster or location", { '*' }, CMD_NULL, textui_target },
+	{ "Target closest monster", { '\'' }, CMD_NULL, textui_target_closest },
+	{ "Dig a tunnel", { 'T', KTRL('T') }, CMD_TUNNEL },
+	{ "Go up staircase", {'<' }, CMD_GO_UP },
+	{ "Go down staircase", { '>' }, CMD_GO_DOWN },
+	{ "Toggle search mode", { 'S', '#' }, CMD_TOGGLE_SEARCH },
+	{ "Open a door or a chest", { 'o' }, CMD_OPEN },
+	{ "Close a door", { 'c' }, CMD_CLOSE },
+	{ "Fire at nearest target", { 'h', KC_TAB }, CMD_NULL, do_cmd_fire_at_nearest },
+	{ "Throw an item", { 'v' }, CMD_THROW },
+	{ "Walk into a trap", { 'W', '-' }, CMD_JUMP, NULL },
+};
+
+/* Item management commands */
+struct cmd_info cmd_item_manage[] =
+{
+	{ "Display equipment listing", { 'e' }, CMD_NULL, do_cmd_equip },
+	{ "Display inventory listing", { 'i' }, CMD_NULL, do_cmd_inven },
+	{ "Pick up objects", { 'g' }, CMD_PICKUP, NULL },
+	{ "Destroy an item", { 'k', KTRL('D') }, CMD_DESTROY, textui_cmd_destroy },	
+};
+
+/* Information access commands */
+struct cmd_info cmd_info[] =
+{
+	{ "Browse a book", { 'b', 'P' }, CMD_BROWSE_SPELL, textui_spell_browse },
+	{ "Gain new spells", { 'G' }, CMD_STUDY, NULL, player_can_study_prereq },
+	{ "Cast a spell", { 'm' }, CMD_CAST, NULL, player_can_cast_prereq },
+	{ "Cast a spell", { 'p' }, CMD_CAST, NULL, player_can_cast_prereq },
+	{ "Full dungeon map", { 'M' }, CMD_NULL, do_cmd_view_map },
+	{ "Toggle ignoring of items", { 'K', 'O' }, CMD_NULL, textui_cmd_toggle_ignore },
+	{ "Display visible item list", { ']' }, CMD_NULL, do_cmd_itemlist },
+	{ "Display visible monster list", { '[' }, CMD_NULL, do_cmd_monlist },
+	{ "Locate player on map", { 'L', 'W' }, CMD_NULL, do_cmd_locate },
+	{ "Help", { '?' }, CMD_NULL, do_cmd_help },
+	{ "Identify symbol", { '/' }, CMD_NULL, do_cmd_query_symbol },
+	{ "Character description", { 'C' }, CMD_NULL, do_cmd_change_name },
+	{ "Check knowledge", { '~' }, CMD_NULL, textui_browse_knowledge },
+	{ "Repeat level feeling", { KTRL('F') }, CMD_NULL, do_cmd_feeling },
+	{ "Show previous message", { KTRL('O') }, CMD_NULL, do_cmd_message_one },
+	{ "Show previous messages", { KTRL('P') }, CMD_NULL, do_cmd_messages }
+};
+
+/* Utility/assorted commands */
+struct cmd_info cmd_util[] =
+{
+	{ "Interact with options", { '=' }, CMD_NULL, do_cmd_xxx_options },
+
+	{ "Save and don't quit", { KTRL('S') }, CMD_SAVE },
+	{ "Save and quit", { KTRL('X') }, CMD_QUIT },
+	{ "Quit (commit suicide)", { 'Q' }, CMD_NULL, textui_cmd_suicide },
+	{ "Redraw the screen", { KTRL('R') }, CMD_NULL, do_cmd_redraw },
+
+	{ "Load \"screen dump\"", { '(' }, CMD_NULL, do_cmd_load_screen },
+	{ "Save \"screen dump\"", { ')' }, CMD_NULL, do_cmd_save_screen }
+};
+
+/* Commands that shouldn't be shown to the user */ 
+struct cmd_info cmd_hidden[] =
+{
+	{ "Take notes", { ':' }, CMD_NULL, do_cmd_note },
+	{ "Version info", { 'V' }, CMD_NULL, do_cmd_version },
+	{ "Load a single pref line", { '"' }, CMD_NULL, do_cmd_pref },
+	{ "Enter a store", { '_' }, CMD_NULL, textui_enter_store },
+	{ "Toggle windows", { KTRL('E') }, CMD_NULL, toggle_inven_equip }, /* XXX */
+	{ "Alter a grid", { '+' }, CMD_ALTER, NULL },
+	{ "Walk", { ';' }, CMD_WALK, NULL },
+	{ "Start running", { '.', ',' }, CMD_RUN, NULL },
+	{ "Stand still", { ',', '.' }, CMD_HOLD, NULL },
+	{ "Center map", { KTRL('L'), '@' }, CMD_NULL, do_cmd_center_map },
+	{ "Toggle wizard mode", { KTRL('W') }, CMD_NULL, do_cmd_wizard },
+	{ "Repeat previous command", { 'n', KTRL('V') }, CMD_REPEAT, NULL },
+	{ "Do autopickup", { KTRL('G') }, CMD_AUTOPICKUP, NULL },
+	{ "Debug mode commands", { KTRL('A') }, CMD_NULL, do_cmd_try_debug },
+};
+
+struct command_list cmds_all[] =
+{
+	{ "Items",           cmd_item,        N_ELEMENTS(cmd_item) },
+	{ "Action commands", cmd_action,      N_ELEMENTS(cmd_action) },
+	{ "Manage items",    cmd_item_manage, N_ELEMENTS(cmd_item_manage) },
+	{ "Information",     cmd_info,        N_ELEMENTS(cmd_info) },
+	{ "Utility",         cmd_util,        N_ELEMENTS(cmd_util) },
+	{ "Hidden",          cmd_hidden,      N_ELEMENTS(cmd_hidden) },
+	{ 0 }
+};
+
+
+
+/*** Exported functions ***/
+
+/* List indexed by char */
+/* XXX 2 shoud be KEYMAP_MAX */
+static struct cmd_info *converted_list[2][UCHAR_MAX+1];
+
+
+/*
+ * Initialise the command list.
+ */
+void cmd_init(void)
+{
+	size_t i, j;
+
+	memset(converted_list, 0, sizeof(converted_list));
+
+	/* Go through all generic commands (-1 for NULL end entry) */
+	for (j = 0; j < N_ELEMENTS(cmds_all) - 1; j++)
+	{
+		struct cmd_info *commands = cmds_all[j].list;
+
+		/* Fill everything in */
+		for (i = 0; i < cmds_all[j].len; i++) {
+			/* If a roguelike key isn't set, use default */
+			if (!commands[i].key[1])
+				commands[i].key[1] = commands[i].key[0];
+
+			converted_list[0][commands[i].key[0]] = &commands[i];
+			converted_list[1][commands[i].key[1]] = &commands[i];
+		}
+	}
+}
+
+unsigned char cmd_lookup_key(cmd_code lookup_cmd, int mode)
+{
+	unsigned int i;
+
+	assert(mode == KEYMAP_MODE_ROGUE || mode == KEYMAP_MODE_ORIG);
+
+	for (i = 0; i < N_ELEMENTS(converted_list[mode]); i++) {
+		struct cmd_info *cmd = converted_list[mode][i];
+
+		if (cmd && cmd->cmd == lookup_cmd)
+			return cmd->key[mode];
+	}
+
+	return 0;
+}
+
+unsigned char cmd_lookup_key_unktrl(cmd_code lookup_cmd, int mode)
+{
+	unsigned char c = cmd_lookup_key(lookup_cmd, mode);
+
+	if (c < 0x20)
+		c = UN_KTRL(c);
+
+	return c;
+}
+
+cmd_code cmd_lookup(unsigned char key, int mode)
+{
+	assert(mode == KEYMAP_MODE_ROGUE || mode == KEYMAP_MODE_ORIG);
+
+	if (!converted_list[mode][key])
+		return CMD_NULL;
+
+	return converted_list[mode][key]->cmd;
+}
+
+
+/*** Input processing ***/
+
+
+/**
+ * Get a command count, with the '0' key.
+ */
+static int textui_get_count(void)
+{
+	int count = 0;
+
+	while (1)
+	{
+		struct keypress ke;
+
+		prt(format("Repeat: %d", count), 0, 0);
+
+		ke = inkey();
+		if (ke.code == ESCAPE)
+			return -1;
+
+		/* Simple editing (delete or backspace) */
+		else if (ke.code == KC_DELETE || ke.code == KC_BACKSPACE)
+			count = count / 10;
+
+		/* Actual numeric data */
+		else if (isdigit((unsigned char) ke.code))
+		{
+			count = count * 10 + D2I(ke.code);
+
+			if (count >= 9999)
+			{
+				bell("Invalid repeat count!");
+				count = 9999;
+			}
+		}
+
+		/* Anything non-numeric passes straight to command input */
+		else
+		{
+			/* XXX nasty hardcoding of action menu key */
+			if (ke.code != KC_ENTER)
+				Term_keypress(ke.code, ke.mods);
+
+			break;
+		}
+	}
+
+	return count;
+}
+
+
+
+/*
+ * Hack -- special buffer to hold the action of the current keymap
+ */
+static struct keypress request_command_buffer[256];
+
+
+/*
+ * Request a command from the user.
+ *
+ * Note that "caret" ("^") is treated specially, and is used to
+ * allow manual input of control characters.  This can be used
+ * on many machines to request repeated tunneling (Ctrl-H) and
+ * on the Macintosh to request "Control-Caret".
+ *
+ * Note that "backslash" is treated specially, and is used to bypass any
+ * keymap entry for the following character.  This is useful for macros.
+ */
+static ui_event textui_get_command(int *count)
+{
+	int mode = OPT(rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
+
+	struct keypress tmp[2] = { { 0 }, { 0 } };
+
+	ui_event ke = EVENT_EMPTY;
+
+	const struct keypress *act = NULL;
+
+
+
+	/* Get command */
+	while (1)
+	{
+		/* Hack -- no flush needed */
+		msg_flag = FALSE;
+
+		/* Activate "command mode" */
+		inkey_flag = TRUE;
+
+		/* Get a command */
+		ke = inkey_ex();
+
+		if (ke.type == EVT_KBRD) {
+			bool keymap_ok = TRUE;
+			switch (ke.key.code) {
+				case '0': {
+					int c = textui_get_count();
+
+					if (c == -1 || !get_com_ex("Command: ", &ke))
+						continue;
+					else
+						*count = c;
+					break;
+				}
+
+				case '\\': {
+					/* Allow keymaps to be bypassed */
+					(void)get_com_ex("Command: ", &ke);
+					keymap_ok = FALSE;
+					break;
+				}
+
+				case '^': {
+					/* Allow "control chars" to be entered */
+					if (get_com("Control: ", &ke.key))
+						ke.key.code = KTRL(ke.key.code);
+					break;
+				}
+			}
+
+			/* Find any relevant keymap */
+			if (keymap_ok)
+				act = keymap_find(mode, ke.key);
+		}
+
+		/* Erase the message line */
+		prt("", 0, 0);
+
+		if (ke.type == EVT_BUTTON)
+		{
+			/* Buttons are always specified in standard keyset */
+			act = tmp;
+			tmp[0] = ke.key;
+		}
+
+		/* Apply keymap if not inside a keymap already */
+		if (ke.key.code && act && !inkey_next)
+		{
+			size_t n = 0;
+			while (act[n].type)
+				n++;
+
+			/* Make room for the terminator */
+			n += 1;
+
+			/* Install the keymap */
+			memcpy(request_command_buffer, act, n * sizeof(struct keypress));
+
+			/* Start using the buffer */
+			inkey_next = request_command_buffer;
+
+			/* Continue */
+			continue;
+		}
+
+		/* Done */
+		break;
+	}
+
+	return ke;
+}
+
+/**
+ * Check no currently worn items are stopping the action 'c'
+ */
+bool key_confirm_command(unsigned char c)
+{
+	int i;
+
+	/* Hack -- Scan equipment */
+	for (i = 0; i < player->body.count; i++) {
+		char verify_inscrip[] = "^*";
+		unsigned n;
+
+		struct object *obj = slot_object(player, i);
+		if (!obj) continue;
+
+		/* Set up string to look for, e.g. "^d" */
+		verify_inscrip[1] = c;
+
+		/* Verify command */
+		n = check_for_inscrip(obj, "^*") +
+				check_for_inscrip(obj, verify_inscrip);
+		while (n--) {
+			if (!get_check("Are you sure? "))
+				return FALSE;
+		}
+	}
+
+	return TRUE;
+}
+
+
+/**
+ * Process a textui keypress.
+ */
+static bool textui_process_key(struct keypress kp, int count)
+{
+	struct cmd_info *cmd;
+	int mode = OPT(rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
+
+	/* XXXmacro this needs rewriting */
+	keycode_t c = kp.code;
+
+	if (c == '\0' || c == ESCAPE || c == ' ' || c == '\a')
+		return TRUE;
+
+	if (c == KC_ENTER) {
+		cmd = textui_action_menu_choose();
+	} else {
+		if (c > UCHAR_MAX) return FALSE;
+		cmd = converted_list[mode][c];
+	}
+
+	if (!cmd) return FALSE;
+
+	if (key_confirm_command(c) && (!cmd->prereq || cmd->prereq())) {
+		if (cmd->hook)
+			cmd->hook();
+		else if (cmd->cmd)
+			cmdq_push_repeat(cmd->cmd, count);
+	}
+
+	return TRUE;
+}
+
+
+/**
+ * Parse and execute the current command
+ * Give "Warning" on illegal commands.
+ */
+void textui_process_command(bool no_request)
+{
+	int count = 0;
+	bool done = TRUE;
+	ui_event e;
+
+	e = textui_get_command(&count);
+
+	switch (e.type) {
+		case EVT_RESIZE: do_cmd_redraw(); break;
+		case EVT_MOUSE: textui_process_click(e); break;
+		case EVT_BUTTON:
+		case EVT_KBRD: done = textui_process_key(e.key, count); break;
+		default: ;
+	}
+
+	if (!done)
+		do_cmd_unknown();
+}

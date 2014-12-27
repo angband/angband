@@ -19,8 +19,8 @@
 
 #include "angband.h"
 #include "cave.h"
-#include "effects.h"
 #include "dungeon.h"
+#include "effects.h"
 #include "generate.h"
 #include "init.h"
 #include "mon-desc.h"
@@ -46,6 +46,7 @@
 #include "tables.h"
 #include "target.h"
 #include "trap.h"
+#include "ui-input.h"
 
 
 typedef struct effect_handler_context_s {

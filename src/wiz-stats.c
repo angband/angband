@@ -1441,11 +1441,6 @@ static void stats_collect_level(void)
 {
 	/* Make a dungeon */
 	cave_generate(&cave, player);
-	if (cave_k)
-		cave_free(cave_k);
-	cave_k = cave_new(cave->height, cave->width);
-	if (!cave->depth)
-		cave_known();
 
 	/* Scan for objects, these are floor objects */
 	scan_for_objects();

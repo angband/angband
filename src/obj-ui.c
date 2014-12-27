@@ -17,19 +17,23 @@
  */
 
 #include "angband.h"
-#include "cmds.h"
 #include "cmd-core.h"
+#include "cmds.h"
 #include "init.h"
 #include "keymap.h"
 #include "obj-desc.h"
 #include "obj-gear.h"
 #include "obj-identify.h"
+#include "obj-info.h"
+#include "obj-make.h"
 #include "obj-pile.h"
 #include "obj-tval.h"
 #include "obj-ui.h"
 #include "obj-util.h"
 #include "store.h"
 #include "ui-game.h"
+#include "ui-input.h"
+#include "ui.h"
 
 /**
  * Determine if the attr and char should consider the item's flavor
@@ -617,7 +621,7 @@ bool get_item_allow(const struct object *obj, unsigned char ch, cmd_code cmd,
 	if (n) {
 		char prompt[1024];
 
-		const char *verb = cmdq_pop_verb(cmd);
+		const char *verb = cmd_verb(cmd);
 		if (!verb)
 			verb = "do that with";
 
@@ -1553,5 +1557,58 @@ bool get_item(struct object **choice, const char *pmt, const char *str,
 
 	/* Result */
 	return (item);
+}
+
+
+
+/**
+ * This draws the Object Recall subwindow when displaying a particular object
+ * (e.g. a helmet in the backpack, or a scroll on the ground)
+ */
+void display_object_recall(struct object *o_ptr)
+{
+	char header[120];
+
+	textblock *tb = object_info(o_ptr, OINFO_NONE);
+	object_desc(header, sizeof(header), o_ptr, ODESC_PREFIX | ODESC_FULL);
+
+	clear_from(0);
+	textui_textblock_place(tb, SCREEN_REGION, header);
+	textblock_free(tb);
+}
+
+
+/**
+ * This draws the Object Recall subwindow when displaying a recalled item kind
+ * (e.g. a generic ring of acid or a generic blade of chaos)
+ */
+void display_object_kind_recall(struct object_kind *kind)
+{
+	struct object object = { 0 };
+	object_prep(&object, kind, 0, EXTREMIFY);
+	if (kind->aware)
+		object_notice_everything(&object);
+
+	display_object_recall(&object);
+}
+
+/**
+ * Display object recall modally and wait for a keypress.
+ *
+ * This is set up for use in look mode (see target_set_interactive_aux()).
+ *
+ * \param o_ptr is the object to be described.
+ */
+void display_object_recall_interactive(struct object *o_ptr)
+{
+	char header[120];
+	textblock *tb;
+
+	message_flush();
+
+	tb = object_info(o_ptr, OINFO_NONE);
+	object_desc(header, sizeof(header), o_ptr, ODESC_PREFIX | ODESC_FULL);
+	textui_textblock_show(tb, SCREEN_REGION, header);
+	textblock_free(tb);
 }
 

@@ -23,6 +23,8 @@
 #include "obj-desc.h"
 #include "obj-pile.h"
 #include "obj-util.h"
+#include "ui-input.h"
+#include "ui.h"
 #include "wizard.h" /* make_fake_artifact() */
 
 /*

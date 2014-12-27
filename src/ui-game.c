@@ -21,13 +21,13 @@
 #include "angband.h"
 #include "buildid.h"
 #include "cave.h"
-#include "game-event.h"
 #include "cmd-core.h"
+#include "game-event.h"
 #include "grafmode.h"
 #include "hint.h"
 #include "init.h"
-#include "mon-lore.h"
 #include "mon-list.h"
+#include "mon-lore.h"
 #include "mon-util.h"
 #include "monster.h"
 #include "obj-desc.h"
@@ -36,15 +36,18 @@
 #include "obj-pile.h"
 #include "obj-ui.h"
 #include "obj-util.h"
-#include "player.h"
 #include "player-timed.h"
 #include "player-util.h"
+#include "player.h"
 #include "prefs.h"
 #include "project.h"
 #include "textui.h"
 #include "ui-birth.h"
+#include "ui-input.h"
 #include "ui-map.h"
 #include "ui-player.h"
+#include "ui.h"
+#include "z-term.h"
 
 /* 
  * There are a few functions installed to be triggered by several 
@@ -1905,8 +1908,20 @@ static void init_angband_aux(const char *why)
  */
 static void splashscreen_note(game_event_type type, game_event_data *data, void *user)
 {
-	Term_erase(0, 23, 255);
-	Term_putstr(20, 23, -1, COLOUR_WHITE, format("[%s]", data->string));
+	if (data->message.type == MSG_BIRTH) {
+		static int y = 2;
+
+		/* Draw the message */
+		prt(data->message.msg, y, 0);
+		pause_line(Term);
+
+		/* Advance one line (wrap if needed) */
+		if (++y >= 24) y = 2;
+	} else {
+		Term_erase(0, 23, 255);
+		Term_putstr(20, 23, -1, COLOUR_WHITE, format("[%s]", data->message.msg));
+	}
+
 	Term_fresh();
 }
 
@@ -2067,6 +2082,18 @@ static void ui_leave_init(game_event_type type, game_event_data *data, void *use
 {
 	/* Remove our splashscreen handlers */
 	event_remove_handler(EVENT_INITSTATUS, splashscreen_note, NULL);
+
+	/* Flash a message */
+	prt("Please wait...", 0, 0);
+
+	/* Allow big cursor */
+	smlcurs = FALSE;
+
+	/* Flush the message */
+	Term_fresh();
+
+	/* Reset visuals */
+	reset_visuals(TRUE);
 }
 
 static void ui_enter_game(game_event_type type, game_event_data *data, void *user)

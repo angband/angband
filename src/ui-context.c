@@ -18,8 +18,8 @@
 
 #include "angband.h"
 #include "cave.h"
-#include "cmds.h"
 #include "cmd-core.h"
+#include "cmds.h"
 #include "keymap.h"
 #include "mon-desc.h"
 #include "mon-lore.h"
@@ -38,9 +38,14 @@
 #include "store.h"
 #include "target.h"
 #include "textui.h"
+#include "ui-context.h"
 #include "ui-input.h"
+#include "ui-knowledge.h"
 #include "ui-menu.h"
+#include "ui-object.h"
 #include "ui-player.h"
+#include "ui-spell.h"
+#include "ui-store.h"
 #include "ui-target.h"
 #include "wizard.h"
 
@@ -872,3 +877,362 @@ int context_menu_object(struct object *obj)
 	return 1;
 }
 
+
+
+static int show_command_list(struct cmd_info cmd_list[], int size, int mx,
+                             int my)
+{
+	struct menu *m;
+	int selected;
+	int i;
+	char cmd_name[80];
+	char key[3];
+
+	int mode = OPT(rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
+
+	m = menu_dynamic_new();
+	if (!m) {
+		return 0;
+	}
+	m->selections = lower_case;
+	key[2] = '\0';
+
+	for (i=0; i < size; ++i) {
+		if (KTRL(cmd_list[i].key[mode]) == cmd_list[i].key[mode]) {
+			key[0] = '^';
+			key[1] = UN_KTRL(cmd_list[i].key[mode]);
+		} else {
+			key[0] = cmd_list[i].key[mode];
+			key[1] = '\0';
+		}
+		strnfmt(cmd_name, 80, "%s (%s)",  cmd_list[i].desc, key);
+		menu_dynamic_add(m, cmd_name, i+1);
+	}
+
+	menu_dynamic_calc_location(m, mx, my);
+
+	screen_save();
+	region_erase_bordered(&m->boundary);
+
+	prt("(Enter to select, ESC) Command:", 0, 0);
+	selected = menu_dynamic_select(m);
+	menu_dynamic_free(m);
+
+	screen_load();
+
+	if ((selected > 0) && (selected < size+1)) {
+		/* execute the command */
+		Term_keypress(cmd_list[selected-1].key[mode], 0);
+	}
+
+	return 1;
+}
+
+int context_menu_command(int mx, int my)
+{
+	struct menu *m;
+	int selected;
+
+	m = menu_dynamic_new();
+	if (!m) {
+		return 0;
+	}
+
+	m->selections = lower_case;
+	menu_dynamic_add(m, "Item", 1);
+	menu_dynamic_add(m, "Action", 2);
+	menu_dynamic_add(m, "Item Management", 3);
+	menu_dynamic_add(m, "Info", 4);
+	menu_dynamic_add(m, "Util", 5);
+	menu_dynamic_add(m, "Misc", 6);
+
+	menu_dynamic_calc_location(m, mx, my);
+
+	screen_save();
+	region_erase_bordered(&m->boundary);
+
+	prt("(Enter to select, ESC) Command:", 0, 0);
+	selected = menu_dynamic_select(m);
+	menu_dynamic_free(m);
+
+	screen_load();
+
+	/* XXX-AS this is gross, as is the way there's two ways to display the entire command list.  Fix me */
+	if (selected > 0) {
+		selected--;
+		show_command_list(cmds_all[selected].list, cmds_all[selected].len, mx, my);
+	} else {
+		return 0;
+	}
+
+	return 1;
+}
+
+/**
+ * Handle a textui mouseclick.
+ */
+void textui_process_click(ui_event e)
+{
+	int x, y;
+
+	if (!OPT(mouse_movement)) return;
+
+	y = KEY_GRID_Y(e);
+	x = KEY_GRID_X(e);
+
+	/* Check for a valid location */
+	if (!square_in_bounds_fully(cave, y, x)) return;
+
+	/* XXX show context menu here */
+	if ((player->py == y) && (player->px == x)) {
+		if (e.mouse.mods & KC_MOD_SHIFT) {
+			/* shift-click - cast magic */
+			if (e.mouse.button == 1) {
+				cmdq_push(CMD_CAST);
+			} else if (e.mouse.button == 2) {
+				Term_keypress('i',0);
+			}
+		} else
+		if (e.mouse.mods & KC_MOD_CONTROL) {
+			/* ctrl-click - use feature / use inventory item */
+			/* switch with default */
+			if (e.mouse.button == 1) {
+				if (square_isupstairs(cave, player->py, player->px))
+					cmdq_push(CMD_GO_UP);
+				else if (square_isdownstairs(cave, player->py, player->px))
+					cmdq_push(CMD_GO_DOWN);
+			} else
+			if (e.mouse.button == 2) {
+				cmdq_push(CMD_USE);
+			}
+		} else
+		if (e.mouse.mods & KC_MOD_ALT) {
+			/* alt-click - Search  or show char screen */
+			/* XXX call a platform specific hook */
+			if (e.mouse.button == 1) {
+ 				cmdq_push(CMD_SEARCH);
+			} else
+			if (e.mouse.button == 2) {
+				Term_keypress('C',0);
+			}
+		} else
+		{
+			if (e.mouse.button == 1) {
+				if (square_object(cave, y, x)) {
+					cmdq_push(CMD_PICKUP);
+				} else {
+					cmdq_push(CMD_HOLD);
+				}
+			} else
+			if (e.mouse.button == 2) {
+				// show a context menu
+				context_menu_player(e.mouse.x, e.mouse.y);
+			}
+		}
+	}
+
+	else if (e.mouse.button == 1)
+	{
+		if (player->timed[TMD_CONFUSED])
+		{
+			cmdq_push(CMD_WALK);
+		}
+		else
+		{
+			if (e.mouse.mods & KC_MOD_SHIFT) {
+				/* shift-click - run */
+				cmdq_push(CMD_RUN);
+				cmd_set_arg_direction(cmdq_peek(), "direction", coords_to_dir(y,x));
+				/*if ((y-player->py >= -1) && (y-player->py <= 1)
+					&& (x-player->px >= -1) && (x-player->px <= 1)) {
+					cmdq_push(CMD_JUMP);
+					cmd_set_arg_direction(cmdq_peek(), "direction", coords_to_dir(y,x));
+				} else {
+				  cmdq_push(CMD_RUN);
+				  cmd_set_arg_direction(cmdq_peek(), "direction", coords_to_dir(y,x));
+				}*/
+			} else
+			if (e.mouse.mods & KC_MOD_CONTROL) {
+				/* control-click - alter */
+				cmdq_push(CMD_ALTER);
+				cmd_set_arg_direction(cmdq_peek(), "direction", coords_to_dir(y,x));
+			} else
+			if (e.mouse.mods & KC_MOD_ALT) {
+				/* alt-click - look */
+				if (target_set_interactive(TARGET_LOOK, x, y)) {
+					msg("Target Selected.");
+				}
+				//cmdq_push(CMD_LOOK);
+				//cmd_set_arg_point(cmdq_peek(), "point", y, x);
+			} else
+			{
+				/* pathfind does not work well on trap detection borders,
+				 * so if the click is next to the player, force a walk step */
+				if ((y-player->py >= -1) && (y-player->py <= 1)
+					&& (x-player->px >= -1) && (x-player->px <= 1)) {
+					cmdq_push(CMD_WALK);
+					cmd_set_arg_direction(cmdq_peek(), "direction", coords_to_dir(y,x));
+				} else {
+					cmdq_push(CMD_PATHFIND);
+					cmd_set_arg_point(cmdq_peek(), "point", y, x);
+				}
+			}
+		}
+	}
+
+	else if (e.mouse.button == 2)
+	{
+		struct monster *m = square_monster(cave, y, x);
+		if (m && target_able(m)) {
+			/* Set up target information */
+			monster_race_track(player->upkeep, m->race);
+			health_track(player->upkeep, m);
+			target_set_monster(m);
+		} else {
+			target_set_location(y,x);
+		}
+
+		if (e.mouse.mods & KC_MOD_SHIFT) {
+			/* shift-click - cast spell at target */
+			cmdq_push(CMD_CAST);
+			cmd_set_arg_target(cmdq_peek(), "target", DIR_TARGET);
+		} else if (e.mouse.mods & KC_MOD_CONTROL) {
+			/* control-click - fire at target */
+			cmdq_push(CMD_USE);
+			cmd_set_arg_target(cmdq_peek(), "target", DIR_TARGET);
+		} else if (e.mouse.mods & KC_MOD_ALT) {
+			/* alt-click - throw at target */
+			cmdq_push(CMD_THROW);
+			cmd_set_arg_target(cmdq_peek(), "target", DIR_TARGET);
+		} else {
+			//msg("Target set.");
+			/* see if the click was adjacent to the player */
+			if ((y-player->py >= -1) && (y-player->py <= 1)
+				&& (x-player->px >= -1) && (x-player->px <= 1)) {
+				context_menu_cave(cave,y,x,1,e.mouse.x, e.mouse.y);
+			} else {
+				context_menu_cave(cave,y,x,0,e.mouse.x, e.mouse.y);
+			}
+		}
+	}
+}
+
+
+
+
+/*** Menu functions ***/
+
+/* Display an entry on a command menu */
+static void cmd_sub_entry(struct menu *menu, int oid, bool cursor, int row, int col, int width)
+{
+	byte attr = (cursor ? COLOUR_L_BLUE : COLOUR_WHITE);
+	const struct cmd_info *commands = menu_priv(menu);
+
+	int mode = OPT(rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
+	struct keypress kp = { EVT_KBRD, commands[oid].key[mode] };
+	char buf[16];
+
+	/* Write the description */
+	Term_putstr(col, row, -1, attr, commands[oid].desc);
+
+	/* Include keypress */
+	Term_addch(attr, ' ');
+	Term_addch(attr, '(');
+
+	/* Get readable version */
+	keypress_to_readable(buf, sizeof buf, kp);
+	Term_addstr(-1, attr, buf);
+
+	Term_addch(attr, ')');
+}
+
+/*
+ * Display a list of commands.
+ */
+static bool cmd_menu(struct command_list *list, void *selection_p)
+{
+	struct menu menu;
+	menu_iter commands_menu = { NULL, NULL, cmd_sub_entry, NULL, NULL };
+	region area = { 23, 4, 37, 13 };
+
+	ui_event evt;
+	struct cmd_info **selection = selection_p;
+
+	/* Set up the menu */
+	menu_init(&menu, MN_SKIN_SCROLL, &commands_menu);
+	menu_setpriv(&menu, list->len, list->list);
+	menu_layout(&menu, &area);
+
+	/* Set up the screen */
+	screen_save();
+	window_make(21, 3, 62, 17);
+
+	/* Select an entry */
+	evt = menu_select(&menu, 0, TRUE);
+
+	/* Load de screen */
+	screen_load();
+
+	if (evt.type == EVT_SELECT)
+		*selection = &list->list[menu.cursor];
+
+	return FALSE;
+}
+
+
+
+static bool cmd_list_action(struct menu *m, const ui_event *event, int oid)
+{
+	if (event->type == EVT_SELECT)
+		return cmd_menu(&cmds_all[oid], menu_priv(m));
+	else
+		return FALSE;
+}
+
+static void cmd_list_entry(struct menu *menu, int oid, bool cursor, int row, int col, int width)
+{
+	byte attr = (cursor ? COLOUR_L_BLUE : COLOUR_WHITE);
+	Term_putstr(col, row, -1, attr, cmds_all[oid].name);
+}
+
+static struct menu *command_menu;
+static menu_iter command_menu_iter =
+{
+	NULL,
+	NULL,
+	cmd_list_entry,
+	cmd_list_action,
+	NULL
+};
+
+/*
+ * Display a list of command types, allowing the user to select one.
+ */
+struct cmd_info *textui_action_menu_choose(void)
+{
+	region area = { 21, 5, 37, 6 };
+	int len = 0;
+
+	struct cmd_info *chosen_command = NULL;
+
+	if (!command_menu)
+		command_menu = menu_new(MN_SKIN_SCROLL, &command_menu_iter);
+
+	while (cmds_all[len].len) {
+		if (cmds_all[len].len)
+			len++;
+	};
+
+	menu_setpriv(command_menu, len, &chosen_command);
+	menu_layout(command_menu, &area);
+
+	/* Set up the screen */
+	screen_save();
+	window_make(19, 4, 58, 11);
+
+	menu_select(command_menu, 0, TRUE);
+
+	screen_load();
+
+	return chosen_command;
+}

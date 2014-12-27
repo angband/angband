@@ -9,6 +9,7 @@
 #ifndef TEST_UTILS_H
 #define TEST_UTILS_H
 
-extern void read_edit_files(void);
+void set_file_paths(void);
+void read_edit_files(void);
 
 #endif /* TEST_UTIL_H */

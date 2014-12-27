@@ -19,6 +19,7 @@
 #include "option.h"
 #include "ui-game.h"
 #include "init.h"
+#include "z-term.h"
 
 typedef struct {
 	const char *name;

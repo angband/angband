@@ -20,6 +20,9 @@
 #include "dungeon.h"
 #include "init.h"
 #include "score.h"
+#include "ui-input.h"
+#include "ui.h"
+#include "z-term.h"
 
 
 /*

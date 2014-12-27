@@ -26,6 +26,7 @@
 #include "project.h"
 #include "tables.h"
 #include "ui-map.h"
+#include "z-term.h" /* panel_contains */
 
 /*
  * Specify attr/char pairs for visual special effects for project()

@@ -7,6 +7,7 @@
 
 /* id					sound */
 MSG(GENERIC,			"")
+MSG(BIRTH,				"")
 MSG(HIT,				"hit")
 MSG(MISS,				"miss")
 MSG(FLEE,				"flee")

@@ -33,13 +33,14 @@
 #include "obj-ignore.h"
 #include "obj-make.h"
 #include "obj-pile.h"
+#include "obj-randart.h"
 #include "obj-slays.h"
 #include "obj-util.h"
 #include "object.h"
-#include "player.h"
 #include "player-quest.h"
 #include "player-spell.h"
 #include "player-timed.h"
+#include "player.h"
 #include "savefile.h"
 #include "store.h"
 #include "trap.h"
@@ -753,6 +754,10 @@ int rd_player(void)
 	/* Hack -- Repair maximum dungeon level */
 	if (player->max_depth < 0) player->max_depth = 1;
 
+	/* Hack -- Reset cause of death */
+	if (player->chp >= 0)
+		my_strcpy(player->died_from, "(alive and well)", sizeof(player->died_from));
+
 	/* More info */
 	strip_bytes(9);
 	rd_byte(&player->unignoring);
@@ -885,9 +890,11 @@ int rd_misc(void)
 	
 	/* Read the randart seed */
 	rd_u32b(&seed_randart);
+	if (OPT(birth_randarts)) do_randart(seed_randart, TRUE);
 
-	/* Hack -- the two "special seeds" */
+	/* Read the flavors seed */
 	rd_u32b(&seed_flavor);
+	flavor_init();
 
 	/* Special stuff */
 	rd_u16b(&player->total_winner);

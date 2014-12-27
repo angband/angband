@@ -20,6 +20,7 @@
 #define CAVE_H
 
 #include "z-type.h"
+#include "z-bitflag.h"
 
 struct player;
 struct monster;

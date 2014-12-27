@@ -18,18 +18,22 @@
 
 #include "angband.h"
 #include "init.h"
+#include "mon-blow-effects.h"
 #include "mon-init.h"
 #include "mon-lore.h"
 #include "mon-make.h"
 #include "mon-spell.h"
 #include "mon-util.h"
-#include "mon-blow-effects.h"
 #include "obj-gear.h"
 #include "obj-identify.h"
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "player-attack.h"
 #include "player-timed.h"
+#include "ui-input.h" /* message_flush */
+#include "ui.h" /* SCREEN_REGION, textui_textblock_place */
+#include "z-term.h" /* tile_width/tile_height */
+#include "z-textblock.h"
 
 /*
  * Monster genders

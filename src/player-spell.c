@@ -29,6 +29,7 @@
 #include "player-timed.h"
 #include "player-util.h"
 #include "project.h"
+#include "ui-input.h" /* flush */
 
 /**
  * Stat Table (INT/WIS) -- Minimum failure rate (percentage)

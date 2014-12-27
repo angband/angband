@@ -20,6 +20,7 @@
 #include "cave.h"
 #include "cmd-core.h"
 #include "keymap.h"
+#include "mon-desc.h"
 #include "mon-util.h"
 #include "monster.h"
 #include "obj-ignore.h"
@@ -27,6 +28,7 @@
 #include "project.h"
 #include "target.h"
 #include "ui-target.h"
+#include "z-term.h" /* panel_contains */
 
 /*** File-wide variables ***/
 
@@ -37,7 +39,7 @@ static bool target_set;
 static struct monster *target_who;
 
 /* Target location */
-static s16b target_x, target_y;
+static int target_x, target_y;
 
 /*** Functions ***/
 
@@ -434,17 +436,16 @@ void coords_desc(char *buf, int size, int y, int x)
 
 /**
  * Obtains the location the player currently targets.
- *
- * Both `col` and `row` must point somewhere, and on function termination,
- * contain the X and Y locations respectively.
+ * 
+ * XXX-AS replace x/y with ints
  */
-void target_get(s16b *col, s16b *row)
+void target_get(s16b *x, s16b *y)
 {
-	assert(col);
-	assert(row);
+	assert(x);
+	assert(y);
 
-	*col = target_x;
-	*row = target_y;
+	*x = target_x;
+	*y = target_y;
 }
 
 
@@ -470,3 +471,93 @@ bool target_sighted(void)
 			 (target_who && mflag_has(target_who->mflag, MFLAG_VISIBLE)));
 }
 
+
+/*
+ * Return a target set of target_able monsters.
+ */
+struct point_set *target_get_monsters(int mode)
+{
+	int y, x;
+	struct point_set *targets = point_set_new(TS_INITIAL_SIZE);
+
+	/* Scan the current panel */
+	for (y = Term->offset_y; y < Term->offset_y + SCREEN_HGT; y++)
+	{
+		for (x = Term->offset_x; x < Term->offset_x + SCREEN_WID; x++)
+		{
+			/* Check bounds */
+			if (!square_in_bounds_fully(cave, y, x)) continue;
+
+			/* Require "interesting" contents */
+			if (!target_accept(y, x)) continue;
+
+			/* Special mode */
+			if (mode & (TARGET_KILL))
+			{
+				/* Must contain a monster */
+				if (!(cave->squares[y][x].mon > 0)) continue;
+
+				/* Must be a targettable monster */
+			 	if (!target_able(square_monster(cave, y, x))) continue;
+			}
+
+			/* Save the location */
+			add_to_point_set(targets, y, x);
+		}
+	}
+
+	sort(targets->pts, point_set_size(targets), sizeof(*(targets->pts)), cmp_distance);
+	return targets;
+}
+
+
+/** 
+ * Set target to closest monster.
+ */
+bool target_set_closest(int mode)
+{
+	int y, x;
+	monster_type *m_ptr;
+	char m_name[80];
+	struct point_set *targets;
+
+	/* Cancel old target */
+	target_set_monster(0);
+
+	/* Get ready to do targetting */
+	targets = target_get_monsters(mode);
+
+	/* If nothing was prepared, then return */
+	if (point_set_size(targets) < 1)
+	{
+		msg("No Available Target.");
+		point_set_dispose(targets);
+		return FALSE;
+	}
+
+	/* Find the first monster in the queue */
+	y = targets->pts[0].y;
+	x = targets->pts[0].x;
+	m_ptr = square_monster(cave, y, x);
+	
+	/* Target the monster, if possible */
+	if (!target_able(m_ptr))
+	{
+		msg("No Available Target.");
+		point_set_dispose(targets);
+		return FALSE;
+	}
+
+	/* Target the monster */
+	monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_CAPITAL);
+	if (!(mode & TARGET_QUIET))
+		msg("%s is targeted.", m_name);
+
+	/* Set up target information */
+	monster_race_track(player->upkeep, m_ptr->race);
+	health_track(player->upkeep, m_ptr);
+	target_set_monster(m_ptr);
+
+	point_set_dispose(targets);
+	return TRUE;
+}

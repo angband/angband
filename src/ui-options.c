@@ -34,13 +34,14 @@
 #include "ui-input.h"
 #include "ui-menu.h"
 #include "ui-options.h"
-
+#include "ui-knowledge.h"
 
 
 /**
  * Prompt the user for a filename to save the pref file to.
  */
-static bool get_pref_path(const char *what, int row, char *buf, size_t max) {
+static bool get_pref_path(const char *what, int row, char *buf, size_t max)
+{
 	char ftmp[80];
 	bool ok;
 
@@ -65,7 +66,8 @@ static bool get_pref_path(const char *what, int row, char *buf, size_t max) {
 }
 
 
-static void dump_pref_file(void (*dump)(ang_file *), const char *title, int row) {
+static void dump_pref_file(void (*dump)(ang_file *), const char *title, int row)
+{
 	char buf[1024];
 
 	/* Get filename from user */

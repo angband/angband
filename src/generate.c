@@ -30,10 +30,10 @@
 #include "angband.h"
 #include "cave.h"
 #include "dungeon.h"
-#include "math.h"
 #include "game-event.h"
 #include "generate.h"
 #include "init.h"
+#include "math.h"
 #include "mon-make.h"
 #include "mon-spell.h"
 #include "monster.h"
@@ -41,6 +41,7 @@
 #include "object.h"
 #include "parser.h"
 #include "trap.h"
+#include "ui-input.h"
 #include "z-queue.h"
 #include "z-type.h"
 
@@ -455,17 +456,17 @@ static struct file_parser v_parser = {
 
 static void run_template_parser(void) {
 	/* Initialize room info */
-	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (dungeon profiles)");
+	event_signal_message(EVENT_INITSTATUS, 0, "Initializing arrays... (dungeon profiles)");
 	if (run_parser(&profile_parser))
 		quit("Cannot initialize dungeon profiles");
 
 	/* Initialize room info */
-	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (room templates)");
+	event_signal_message(EVENT_INITSTATUS, 0, "Initializing arrays... (room templates)");
 	if (run_parser(&room_parser))
 		quit("Cannot initialize room templates");
 
 	/* Initialize vault info */
-	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (vaults)");
+	event_signal_message(EVENT_INITSTATUS, 0, "Initializing arrays... (vaults)");
 	if (run_parser(&v_parser))
 		quit("Cannot initialize vaults");
 }
@@ -769,6 +770,13 @@ void cave_generate(struct chunk **c, struct player *p) {
 
 	/* The dungeon is ready */
 	character_dungeon = TRUE;
+
+	/* Free old and allocate new known level */
+	if (cave_k)
+		cave_free(cave_k);
+	cave_k = cave_new(cave->height, cave->width);
+	if (!cave->depth)
+		cave_known();
 
 	(*c)->created_at = turn;
 }

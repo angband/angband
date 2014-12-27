@@ -20,6 +20,7 @@
 #include "grafmode.h"
 #include "init.h"
 #include "parser.h"
+#include "ui-input.h"
 
 graphics_mode *graphics_modes;
 graphics_mode *current_graphics_mode = NULL;

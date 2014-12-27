@@ -2669,3 +2669,14 @@ bool panel_contains(unsigned int y, unsigned int x)
 	wid = SCREEN_WID;
 	return (y - Term->offset_y) < hgt && (x - Term->offset_x) < wid;
 }
+
+/* Emit a 'graphical' symbol and a padding character if appropriate */
+int big_pad(int col, int row, byte a, wchar_t c)
+{
+	Term_putch(col, row, a, c);
+
+	if ((tile_width > 1) || (tile_height > 1))
+		Term_big_putch(col, row, a, c);
+
+	return tile_width;
+}

@@ -41,6 +41,7 @@
 #include "prefs.h"
 #include "project.h"
 #include "target.h"
+#include "ui-command.h"
 #include "ui-event.h"
 #include "ui-game.h"
 #include "ui-help.h"

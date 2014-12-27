@@ -18,6 +18,7 @@
 
 #include "angband.h"
 #include "cave.h"
+#include "cmd-core.h"
 #include "init.h"
 #include "obj-gear.h"
 #include "obj-tval.h"
@@ -28,7 +29,8 @@
 #include "player-util.h"
 #include "tables.h"
 #include "target.h"
-#include "cmd-core.h"
+#include "ui.h" /* verify_panel */
+#include "ui-input.h" /* bell/flush/message_flush */
 
 /*
  * Decreases players hit points and sets death flag if necessary

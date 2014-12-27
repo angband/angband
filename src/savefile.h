@@ -8,6 +8,7 @@
 
 /*** Savefile API ***/
 
+/* XXX-AS Remove this from the API */
 extern char savefile[1024];
 
 /**
@@ -23,7 +24,7 @@ bool savefile_save(const char *path);
 /**
  * Load the savefile given.  Returns TRUE on succcess, FALSE otherwise.
  */
-bool savefile_load(const char *path);
+bool savefile_load(const char *path, bool cheat_death);
 
 /**
  * Try to get a description for this savefile.

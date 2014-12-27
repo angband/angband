@@ -17,10 +17,10 @@
  */
 
 #include "angband.h"
+#include "cmd-core.h"
 #include "cmds.h"
 #include "dungeon.h"
 #include "game-event.h"
-#include "cmd-core.h"
 #include "history.h"
 #include "init.h"
 #include "mon-lore.h"
@@ -31,21 +31,19 @@
 #include "obj-make.h"
 #include "obj-pile.h"
 #include "obj-power.h"
-#include "obj-randart.h"	
+#include "obj-randart.h"
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "object.h"
-#include "player.h"
 #include "player-birth.h"
 #include "player-quest.h"
 #include "player-spell.h"
 #include "player-timed.h"
 #include "player-util.h"
-#include "store.h"
+#include "player.h"
 #include "savefile.h"
-#include "ui-input.h"
-#include "ui-menu.h"
-#include "ui-player.h"
+#include "store.h"
+#include "ui-input.h" /* msg_flag */
 
 /*
  * Overview
@@ -907,13 +905,14 @@ void player_generate(struct player *p, const player_sex *s,
 /* Reset everything back to how it would be on loading the game. */
 static void do_birth_reset(bool use_quickstart, birther *quickstart_prev)
 {
-
 	/* If there's quickstart data, we use it to set default
 	   character choices. */
 	if (use_quickstart && quickstart_prev)
 		load_roller_data(quickstart_prev, NULL);
 
 	player_generate(player, NULL, NULL, NULL);
+
+	player->depth = 0;
 
 	/* Update stats with bonuses, etc. */
 	get_bonuses();
@@ -1099,6 +1098,7 @@ void do_cmd_accept_character(struct command *cmd)
 	history_add("Began the quest to destroy Morgoth.", HISTORY_PLAYER_BIRTH, 0);
 
 	/* Reset message prompt (i.e. no extraneous -more-s) */
+	/* XXX-AS remove and then remove ui-input include */
 	msg_flag = TRUE;
 
 	/* Note player birth in the message recall */
@@ -1132,11 +1132,18 @@ void do_cmd_accept_character(struct command *cmd)
 	if (!savefile[0])
 		savefile_set_name(player_safe_name(player, TRUE));
 
-	/* Flavor the objects */
+	/* Seed for flavors */
+	seed_flavor = randint0(0x10000000);
 	flavor_init();
+
+	/* Stop the player being quite so dead */
+	player->is_dead = FALSE;
 
 	/* Now we're really done.. */
 	event_signal(EVENT_LEAVE_BIRTH);
+
+	/* Generate a dungeon level if needed */
+	cave_generate(&cave, player);
 }
 
 

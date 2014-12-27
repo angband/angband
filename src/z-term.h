@@ -385,4 +385,6 @@ extern errr term_init(term *t, int w, int h, int k);
 
 extern bool panel_contains(unsigned int y, unsigned int x);
 
+extern int big_pad(int col, int row, byte a, wchar_t c);
+
 #endif /* INCLUDED_Z_TERM_H */

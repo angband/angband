@@ -35,6 +35,18 @@ const char *suite_name;
 		return 1; \
 	}
 
+#define noteq(x,y) \
+	if ((x) == (y)) { \
+		if (verbose) { \
+			showfail(); \
+			printf("    %s:%d: requirement '%s' != '%s' failed\n", suite_name, \
+		           __LINE__, #x, #y); \
+			printf("      %s: 0x%016lld\n", #x, (long long)x); \
+			printf("      %s: 0x%016lld\n", #y, (long long)y); \
+		} \
+		return 1; \
+	}
+
 #define require(x) \
 	do { \
 		if (!(x)) { \

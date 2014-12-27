@@ -163,28 +163,13 @@ static u32b buffer_check;
 
 /** Utility **/
 
-
 /*
- * Hack -- Show information on the screen, one line at a time.
- *
- * Avoid the top two lines, to avoid interference with "note()".
+ * Tell the UI something about loading the game.
  */
 void note(const char *message)
 {
-	static int y = 2;
-
-	/* Draw the message */
-	prt(message, y, 0);
-	pause_line(Term);
-
-	/* Advance one line (wrap if needed) */
-	if (++y >= 24) y = 2;
-
-	/* Flush it */
-	Term_fresh();
+	event_signal_message(EVENT_INITSTATUS, MSG_BIRTH, message);
 }
-
-
 
 
 /** Base put/get **/
@@ -436,16 +421,16 @@ bool savefile_save(const char *path)
 
 		safe_setuid_grab();
 
-		if (file_exists(savefile) && !file_move(savefile, old_savefile))
+		if (file_exists(path) && !file_move(path, old_savefile))
 			err = TRUE;
 
 		if (!err)
 		{
-			if (!file_move(new_savefile, savefile))
+			if (!file_move(new_savefile, path))
 				err = TRUE;
 
 			if (err)
-				file_move(old_savefile, savefile);
+				file_move(old_savefile, path);
 			else
 				file_delete(old_savefile);
 		} 
@@ -581,10 +566,6 @@ static bool try_load(ang_file *f, const struct blockinfo *loaders) {
 		return FALSE;
 	}
 
-	/* XXX Reset cause of death */
-	if (player->chp >= 0)
-		my_strcpy(player->died_from, "(alive and well)", sizeof(player->died_from));
-
 	return TRUE;
 }
 
@@ -629,7 +610,7 @@ const char *savefile_get_description(const char *path) {
 /**
  * Load a savefile.
  */
-bool savefile_load(const char *path)
+bool savefile_load(const char *path, bool cheat_death)
 {
 	bool ok;
 	ang_file *f = file_open(path, MODE_READ, FTYPE_TEXT);
@@ -640,6 +621,12 @@ bool savefile_load(const char *path)
 
 	ok = try_load(f, loaders);
 	file_close(f);
+
+	if (player->is_dead && cheat_death) {
+			player->is_dead = FALSE;
+			player->chp = player->mhp;
+			player->noscore |= NOSCORE_WIZARD;
+	}
 
 	return ok;
 }

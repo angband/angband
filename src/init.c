@@ -746,7 +746,7 @@ static struct file_parser constants_parser = {
  */
 void init_game_constants(void)
 {
-	event_signal_string(EVENT_INITSTATUS, "Initializing constants");
+	event_signal_message(EVENT_INITSTATUS, 0, "Initializing constants");
 	if (run_parser(&constants_parser))
 		quit_fmt("Cannot initialise constants.");
 }
@@ -4324,7 +4324,7 @@ void init_arrays(void)
 
 	for (i = 0; i < N_ELEMENTS(pl); i++) {
 
-		event_signal_string(EVENT_INITSTATUS, format("Initializing %s...", pl[i].name));
+		event_signal_message(EVENT_INITSTATUS, 0, format("Initializing %s...", pl[i].name));
 		if (run_parser(pl[i].parser))
 			quit_fmt("Cannot initialise %s.", pl[i].name);
 	}
@@ -4404,22 +4404,22 @@ bool init_angband(void)
 			modules[i]->init();
 
 	/* Initialize some other things */
-	event_signal_string(EVENT_INITSTATUS, "Initializing other stuff...");
+	event_signal_message(EVENT_INITSTATUS, 0, "Initializing other stuff...");
 
 	/* List display codes */
 	monster_list_init();
 	object_list_init();
 
 	/* Initialize graphics info and basic user pref data */
-	event_signal_string(EVENT_INITSTATUS, "Loading basic user pref file...");
+	event_signal_message(EVENT_INITSTATUS, 0, "Loading basic user pref file...");
 	(void)process_pref_file("pref.prf", FALSE, FALSE);
 
 	/* Initialise RNG */
-	event_signal_string(EVENT_INITSTATUS, "Getting the dice rolling...");
+	event_signal_message(EVENT_INITSTATUS, 0, "Getting the dice rolling...");
 	Rand_init();
 
 	/* Done */
-	event_signal_string(EVENT_INITSTATUS, "Initialization complete");
+	event_signal_message(EVENT_INITSTATUS, 0, "Initialization complete");
 	return TRUE;
 }
 

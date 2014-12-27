@@ -592,8 +592,9 @@ bool make_attack_normal(struct monster *m_ptr, struct player *p)
 				obvious = context.obvious;
 				blinked = context.blinked;
 				damage = context.damage;
-			} else
-				bell(format("Effect handler not found for %d.", effect));
+			} else {
+				msg("ERROR: Effect handler not found for %d.", effect);
+			}
 
 
 			/* Hack -- only one of cut or stun */

@@ -24,6 +24,8 @@
 #include "mon-util.h"
 #include "player-timed.h"
 #include "project.h"
+#include "z-term.h"
+#include "ui.h"
 
 typedef enum monster_list_section_e {
 	MONSTER_LIST_SECTION_LOS = 0,

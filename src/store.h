@@ -2,11 +2,9 @@
 #define INCLUDED_STORE_H
 
 #include "cave.h"
+#include "cmd-core.h"
 #include "object.h"
 #include "parser.h"
-
-extern bool store_in_store;
-
 
 /* List of store indices */
 enum {
@@ -85,7 +83,10 @@ extern struct owner *store_ownerbyidx(struct store *s, unsigned int idx);
 struct parser *init_parse_stores(void);
 extern struct parser *store_parser_new(void);
 extern struct parser *store_owner_parser_new(struct store *stores);
-void textui_store_knowledge(int store);
-void textui_enter_store(void);
+
+extern void do_cmd_sell(struct command *cmd);
+extern void do_cmd_stash(struct command *cmd);
+extern void do_cmd_buy(struct command *cmd);
+extern void do_cmd_retrieve(struct command *cmd);
 
 #endif /* INCLUDED_STORE_H */

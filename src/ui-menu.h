@@ -1,6 +1,8 @@
 #ifndef INCLUDED_UI_MENU_H
 #define INCLUDED_UI_MENU_H
 
+#include "ui.h" 
+
 /*** Constants ***/
 
 /* Colors for interactive menus */

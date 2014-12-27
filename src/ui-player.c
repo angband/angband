@@ -33,6 +33,7 @@
 #include "ui-game.h"
 #include "ui-menu.h"
 #include "ui-player.h"
+#include "ui-input.h"
 #include "ui.h"
 
 
@@ -1118,3 +1119,101 @@ bool dump_save(const char *path)
 	return TRUE;
 }
 
+
+
+#define INFO_SCREENS 2 /* Number of screens in character info mode */
+
+
+/*
+ * Hack -- change name
+ */
+void do_cmd_change_name(void)
+{
+	ui_event ke;
+	int mode = 0;
+
+	const char *p;
+
+	bool more = TRUE;
+
+	/* Prompt */
+	p = "['c' to change name, 'f' to file, 'h' to change mode, or ESC]";
+
+	/* Save screen */
+	screen_save();
+
+	/* Forever */
+	while (more)
+	{
+		/* Display the player */
+		display_player(mode);
+
+		/* Prompt */
+		Term_putstr(2, 23, -1, COLOUR_WHITE, p);
+
+		/* Query */
+		ke = inkey_ex();
+
+		if ((ke.type == EVT_KBRD)||(ke.type == EVT_BUTTON)) {
+			switch (ke.key.code) {
+				case ESCAPE: more = FALSE; break;
+				case 'c': {
+					char namebuf[32] = "";
+
+					/* Set player name */
+					if (get_name(namebuf, sizeof namebuf))
+						my_strcpy(op_ptr->full_name, namebuf,
+								  sizeof(op_ptr->full_name));
+
+					break;
+				}
+
+				case 'f': {
+					char buf[1024];
+					char fname[80];
+
+					strnfmt(fname, sizeof fname, "%s.txt", player_safe_name(player, FALSE));
+
+					if (get_file(fname, buf, sizeof buf))
+					{
+						if (dump_save(buf))
+							msg("Character dump successful.");
+						else
+							msg("Character dump failed!");
+					}
+					break;
+				}
+				
+				case 'h':
+				case ARROW_LEFT:
+				case ' ':
+					mode = (mode + 1) % INFO_SCREENS;
+					break;
+
+				case 'l':
+				case ARROW_RIGHT:
+					mode = (mode - 1) % INFO_SCREENS;
+					break;
+			}
+		} else if (ke.type == EVT_MOUSE) {
+			if (ke.mouse.button == 1) {
+				/* Flip through the screens */			
+				mode = (mode + 1) % INFO_SCREENS;
+			} else
+			if (ke.mouse.button == 2) {
+				/* exit the screen */
+				more = FALSE;
+			} else
+			{
+				/* Flip backwards through the screens */			
+				mode = (mode - 1) % INFO_SCREENS;
+			}
+		}
+
+		/* Flush messages */
+		message_flush();
+	}
+
+	/* Load screen */
+	screen_load();
+}

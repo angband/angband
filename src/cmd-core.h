@@ -200,7 +200,7 @@ typedef void (*cmd_handler_fn)(struct command *cmd);
 /*** Command type functions ***/
 
 /* Return the verb that goes alongside the given command. */
-const char *cmdq_pop_verb(cmd_code cmd);
+const char *cmd_verb(cmd_code cmd);
 
 
 /*** Command queue functions ***/

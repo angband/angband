@@ -32,7 +32,8 @@
 #define TS_INITIAL_SIZE	20
 
 void target_display_help(bool monster, bool free);
-bool target_set_closest(int mode);
+void textui_target(void);
+void textui_target_closest(void);
 bool target_set_interactive(int mode, int x, int y);
 
 #endif /* UI_TARGET_H */

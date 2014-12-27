@@ -27,6 +27,7 @@
 #include "obj-util.h"
 #include "prefs.h"
 #include "tables.h"
+#include "z-textblock.h"
 
 long *power, *scaled_power, *final_hp, *final_melee_dam, *final_spell_dam;
 int *highest_threat;

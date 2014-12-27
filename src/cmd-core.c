@@ -28,8 +28,11 @@
 #include "player-attack.h"
 #include "player-birth.h"
 #include "player-spell.h"
+#include "store.h"
 #include "target.h"
 #include "ui-target.h"
+#include "ui-spell.h"
+#include "ui-input.h"
 
 errr (*cmd_get_hook)(cmd_context c, bool wait);
 
@@ -118,7 +121,7 @@ static const struct command_info game_cmds[] =
 	{ CMD_REPEAT, "repeat", NULL, FALSE, 0 },
 };
 
-const char *cmdq_pop_verb(cmd_code cmd)
+const char *cmd_verb(cmd_code cmd)
 {
 	size_t i;
 	for (i = 0; i < N_ELEMENTS(game_cmds); i++) {
@@ -603,7 +606,8 @@ errr cmdq_push(cmd_code c)
  */
 void cmdq_execute(cmd_context ctx)
 {
-	process_command(ctx, TRUE);
+	while (cmd_head != cmd_tail)
+		process_command(ctx, TRUE);
 }
 
 /* 

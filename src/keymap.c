@@ -17,6 +17,7 @@
  */
 #include "angband.h"
 #include "keymap.h"
+#include "z-term.h"
 
 /**
  * Keymap implementation.
