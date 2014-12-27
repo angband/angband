@@ -38,6 +38,7 @@
 #include "player-timed.h"
 #include "player-util.h"
 #include "trap.h"
+#include "ui-store.h"
 #include "store.h"
 #include "tables.h"
 

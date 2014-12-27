@@ -40,6 +40,7 @@
 #include "object.h"
 #include "score.h"
 #include "store.h"
+#include "ui-store.h"
 #include "tables.h"
 #include "target.h"
 #include "ui-menu.h"

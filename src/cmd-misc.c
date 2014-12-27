@@ -181,7 +181,8 @@ void do_cmd_pref(void)
  * written as 'Frodo says: "____"', and notes beginning with "/me" will
  * be written as 'Frodo ____'.
  */
-void do_cmd_note(void) {
+void do_cmd_note(void)
+{
 	/* Allocate/Initialize strings to get and format user input. */
 	char tmp[70];
 	char note[90];

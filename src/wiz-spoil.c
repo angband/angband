@@ -33,6 +33,7 @@
 #include "obj-util.h"
 #include "object.h"
 #include "ui-menu.h"
+#include "ui-knowledge.h"
 #include "wizard.h"
 #include "z-file.h"
 

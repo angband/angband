@@ -209,7 +209,7 @@ static bool item_tester_unknown(const struct object *obj)
  * Return TRUE if there are any objects available to identify (whether on
  * floor or in gear)
  */
-bool spell_identify_unknown_available(void)
+static bool spell_identify_unknown_available(void)
 {
 	int floor_max = z_info->floor_size;
 	struct object **floor_list = mem_zalloc(floor_max * sizeof(*floor_list));
