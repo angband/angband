@@ -436,16 +436,16 @@ bool savefile_save(const char *path)
 
 		safe_setuid_grab();
 
-		if (file_exists(savefile) && !file_move(savefile, old_savefile))
+		if (file_exists(path) && !file_move(path, old_savefile))
 			err = TRUE;
 
 		if (!err)
 		{
-			if (!file_move(new_savefile, savefile))
+			if (!file_move(new_savefile, path))
 				err = TRUE;
 
 			if (err)
-				file_move(old_savefile, savefile);
+				file_move(old_savefile, path);
 			else
 				file_delete(old_savefile);
 		} 
