@@ -605,7 +605,8 @@ errr cmdq_push(cmd_code c)
  */
 void cmdq_execute(cmd_context ctx)
 {
-	process_command(ctx, TRUE);
+	while (cmd_head != cmd_tail)
+		process_command(ctx, TRUE);
 }
 
 /* 
