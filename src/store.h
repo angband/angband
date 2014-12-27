@@ -2,9 +2,9 @@
 #define INCLUDED_STORE_H
 
 #include "cave.h"
+#include "cmd-core.h"
 #include "object.h"
 #include "parser.h"
-
 
 /* List of store indices */
 enum {
