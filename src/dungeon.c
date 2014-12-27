@@ -1314,9 +1314,6 @@ void play_game(bool new_game)
 	/* Initialize knowledge things */
 	textui_knowledge_init();
 
-	/* XXX-UI This should be issued after CMD_NEWGAME / CMD_LOADFILE */
-	event_signal(EVENT_LEAVE_INIT);
-
 	/*** Do horrible, hacky things, to start the game off ***/
 
 	/* Hack -- Increase "icky" depth */
@@ -1324,14 +1321,14 @@ void play_game(bool new_game)
 
 	/* Verify main term */
 	if (!term_screen)
-		quit("main window does not exist");
+		quit("Main window does not exist");
 
 	/* Make sure main term is active */
 	Term_activate(term_screen);
 
 	/* Verify minimum size */
 	if ((Term->hgt < 24) || (Term->wid < 80))
-		quit("main window is too small");
+		plog("Main window is too small - please make it bigger.");
 
 	/* Hack -- Turn off the cursor */
 	(void)Term_set_cursor(FALSE);
@@ -1354,24 +1351,13 @@ void play_game(bool new_game)
 
 	player->is_dead = TRUE;
 
-	if (file_exists(savefile)) {
-		if (!savefile_load(savefile, arg_wizard))
-			quit("broken savefile");
+	/* Try loading */
+	if (file_exists(savefile) && !savefile_load(savefile, arg_wizard)) {
+		quit("Broken savefile");
 	}
 
 	/* No living character loaded */
-	if (player->is_dead)
-	{
-		/* Make new player */
-		new_game = TRUE;
-
-		/* The dungeon is not ready */
-		character_dungeon = FALSE;
-	}
-
-	/* Roll new character */
-	if (new_game)
-	{
+	if (player->is_dead || new_game) {
 		/* The dungeon is not ready */
 		character_dungeon = FALSE;
 
@@ -1379,41 +1365,25 @@ void play_game(bool new_game)
 		textui_do_birth();
 	}
 
-	/* Flash a message */
-	prt("Please wait...", 0, 0);
-
-	/* Allow big cursor */
-	smlcurs = FALSE;
-
-	/* Flush the message */
-	Term_fresh();
-
-	/* Reset visuals */
-	reset_visuals(TRUE);
-
 	/* Tell the UI we've started. */
+	event_signal(EVENT_LEAVE_INIT);
 	event_signal(EVENT_ENTER_GAME);
 
 	/* Redraw stuff */
 	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP | PR_MONSTER | PR_MESSAGE);
 	redraw_stuff(player->upkeep);
 
-
 	/* Process some user pref files */
 	process_some_user_pref_files();
-
 
 	/* React to changes */
 	Term_xtra(TERM_XTRA_REACT, 0);
 
-
 	/* Character is now "complete" */
 	character_generated = TRUE;
 
-
 	/* Hack -- Decrease "icky" depth */
 	character_icky--;
-
 
 	/* Start playing */
 	player->upkeep->playing = TRUE;

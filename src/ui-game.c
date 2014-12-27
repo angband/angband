@@ -2079,6 +2079,18 @@ static void ui_leave_init(game_event_type type, game_event_data *data, void *use
 {
 	/* Remove our splashscreen handlers */
 	event_remove_handler(EVENT_INITSTATUS, splashscreen_note, NULL);
+
+	/* Flash a message */
+	prt("Please wait...", 0, 0);
+
+	/* Allow big cursor */
+	smlcurs = FALSE;
+
+	/* Flush the message */
+	Term_fresh();
+
+	/* Reset visuals */
+	reset_visuals(TRUE);
 }
 
 static void ui_enter_game(game_event_type type, game_event_data *data, void *user)
