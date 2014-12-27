@@ -25,6 +25,7 @@
 #include "savefile.h"
 #include "ui-game.h"
 #include "ui-input.h"
+#include "ui-command.h"
 
 #if defined(SAFE_DIRECTORY)
 #import "buildid.h"

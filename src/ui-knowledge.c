@@ -40,11 +40,12 @@
 #include "object.h"
 #include "score.h"
 #include "store.h"
-#include "ui-store.h"
 #include "tables.h"
 #include "target.h"
+#include "ui-context.h"
 #include "ui-menu.h"
 #include "ui-options.h"
+#include "ui-store.h"
 #include "ui-target.h"
 #include "ui.h"
 #include "wizard.h"
@@ -276,17 +277,6 @@ static int feat_order(int feat)
 	}
 }
 
-
-/* Emit a 'graphical' symbol and a padding character if appropriate */
-extern int big_pad(int col, int row, byte a, wchar_t c)
-{
-	Term_putch(col, row, a, c);
-
-	if ((tile_width > 1) || (tile_height > 1))
-	        Term_big_putch(col, row, a, c);
-
-	return tile_width;
-}
 
 /* Return the actual width of a symbol */
 static int actual_width(int width)

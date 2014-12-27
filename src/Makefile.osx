@@ -67,6 +67,8 @@ $(EXE).o: $(OBJS)
 	@$(LD) -r -arch i386 -o $@.i386 $(OBJS)
 	lipo -arch x86_64 $@.x86_64 -arch i386 $@.i386 -create -output $(PROGNAME).o
 
+izzywizzy: $(OBJS) izzywizzy.o
+
 $(EXE): $(EXE).o $(OSX_OBJS)
 	$(DEPLOYMENT_TARGET) $(CC) $(CFLAGS) $(LDFLAGS) -o $(EXE) $(EXE).o $(OSX_OBJS) $(LIBS) 
 

@@ -37,6 +37,7 @@
 #include "player-spell.h"
 #include "player-timed.h"
 #include "player-util.h"
+#include "ui-command.h"
 #include "ui-menu.h"
 #include "ui-options.h"
 

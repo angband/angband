@@ -8,6 +8,7 @@
 
 /*** Savefile API ***/
 
+/* XXX-AS Remove this from the API */
 extern char savefile[1024];
 
 /**

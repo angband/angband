@@ -40,8 +40,12 @@
 #include "ui-game.h"
 #include "ui-input.h"
 #include "ui-menu.h"
+#include "ui-object.h"
 #include "ui-options.h"
+#include "ui-knowledge.h"
+#include "ui-player.h"
 #include "ui-spell.h"
+#include "ui-command.h"
 #include "ui-store.h"
 #include "z-debug.h"
 
