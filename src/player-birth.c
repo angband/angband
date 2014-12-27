@@ -904,13 +904,14 @@ void player_generate(struct player *p, const player_sex *s,
 /* Reset everything back to how it would be on loading the game. */
 static void do_birth_reset(bool use_quickstart, birther *quickstart_prev)
 {
-
 	/* If there's quickstart data, we use it to set default
 	   character choices. */
 	if (use_quickstart && quickstart_prev)
 		load_roller_data(quickstart_prev, NULL);
 
 	player_generate(player, NULL, NULL, NULL);
+
+	player->depth = 0;
 
 	/* Update stats with bonuses, etc. */
 	get_bonuses();
@@ -1129,7 +1130,8 @@ void do_cmd_accept_character(struct command *cmd)
 	if (!savefile[0])
 		savefile_set_name(player_safe_name(player, TRUE));
 
-	/* Flavor the objects */
+	/* Seed for flavors */
+	seed_flavor = randint0(0x10000000);
 	flavor_init();
 
 	/* Now we're really done.. */

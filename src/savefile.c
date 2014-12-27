@@ -581,10 +581,6 @@ static bool try_load(ang_file *f, const struct blockinfo *loaders) {
 		return FALSE;
 	}
 
-	/* XXX Reset cause of death */
-	if (player->chp >= 0)
-		my_strcpy(player->died_from, "(alive and well)", sizeof(player->died_from));
-
 	return TRUE;
 }
 
@@ -629,7 +625,7 @@ const char *savefile_get_description(const char *path) {
 /**
  * Load a savefile.
  */
-bool savefile_load(const char *path)
+bool savefile_load(const char *path, bool cheat_death)
 {
 	bool ok;
 	ang_file *f = file_open(path, MODE_READ, FTYPE_TEXT);
@@ -640,6 +636,12 @@ bool savefile_load(const char *path)
 
 	ok = try_load(f, loaders);
 	file_close(f);
+
+	if (player->is_dead && cheat_death) {
+			player->is_dead = FALSE;
+			player->chp = player->mhp;
+			player->noscore |= NOSCORE_WIZARD;
+	}
 
 	return ok;
 }

@@ -1354,19 +1354,9 @@ void play_game(bool new_game)
 
 	player->is_dead = TRUE;
 
-	if (savefile[0] && file_exists(savefile)) {
-		if (!savefile_load(savefile))
+	if (file_exists(savefile)) {
+		if (!savefile_load(savefile, arg_wizard))
 			quit("broken savefile");
-
-		if (player->is_dead && arg_wizard) {
-				player->is_dead = FALSE;
-				player->chp = player->mhp;
-				player->noscore |= NOSCORE_WIZARD;
-		}
-
-		/* Populate flavors and randarts based on saved seeds */
-		flavor_init();
-		if (OPT(birth_randarts)) do_randart(seed_randart, TRUE);
 	}
 
 	/* No living character loaded */
@@ -1384,12 +1374,6 @@ void play_game(bool new_game)
 	{
 		/* The dungeon is not ready */
 		character_dungeon = FALSE;
-
-		/* Start in town */
-		player->depth = 0;
-
-		/* Seed for flavors */
-		seed_flavor = randint0(0x10000000);
 
 		/* Roll up a new character */
 		textui_do_birth();
