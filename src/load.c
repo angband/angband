@@ -219,7 +219,7 @@ static struct object *rd_item(void)
 	o_ptr->kind = lookup_kind(o_ptr->tval, o_ptr->sval);
 
 	/* Check we have a kind and a valid artifact index */
-	if (!o_ptr->kind || art_idx >= z_info->a_max) {
+	if (!o_ptr->tval || !o_ptr->kind || art_idx >= z_info->a_max) {
 		object_delete(o_ptr);
 		return NULL;
 	}
@@ -281,7 +281,7 @@ static void rd_monster(monster_type *m_ptr)
 	/* Read all the held objects (order is unimportant) */
 	while (TRUE) {
 		struct object *obj = rd_item();
-		if (!obj || obj->iy == 0 || obj->ix == 0)
+		if (!obj)
 			break;
 
 		pile_insert(&m_ptr->held_obj, obj);
@@ -1185,22 +1185,19 @@ static int rd_dungeon_aux(struct chunk **c)
  */
 static int rd_objects_aux(rd_item_t rd_item_version, struct chunk *c)
 {
-	struct object *obj;
-	int y, x;
-
 	/* Only if the player's alive */
 	if (player->is_dead)
 		return 0;
 
-	/* Read the dungeon items until one has no location */
+	/* Read the dungeon items until one isn't returned */
 	while (TRUE) {
-		obj = rd_item();
-		y = obj->iy;
-		x = obj->ix;
-		if ((y == 0) && (x == 0))
+		struct object *obj = rd_item();
+		if (!obj)
 			break;
-		else if	(!floor_carry(c, y, x, obj, TRUE)) {
-			note(format("Cannot place object at row %d, column %d!", y, x));
+
+		if	(!floor_carry(c, obj->iy, obj->ix, obj, TRUE)) {
+			note(format("Cannot place object at row %d, column %d!",
+					obj->iy, obj->ix));
 			return -1;
 		}
 	}
