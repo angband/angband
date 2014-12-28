@@ -21,7 +21,6 @@
 #include "cmds.h"
 #include "dungeon.h"
 #include "game-event.h"
-#include "history.h"
 #include "init.h"
 #include "mon-lore.h"
 #include "monster.h"
@@ -36,6 +35,7 @@
 #include "obj-util.h"
 #include "object.h"
 #include "player-birth.h"
+#include "player-history.h"
 #include "player-quest.h"
 #include "player-spell.h"
 #include "player-timed.h"
@@ -1095,7 +1095,7 @@ void do_cmd_accept_character(struct command *cmd)
 
 	/* Clear old messages, add new starting message */
 	history_clear();
-	history_add("Began the quest to destroy Morgoth.", HISTORY_PLAYER_BIRTH, 0);
+	history_add("Began the quest to destroy Morgoth.", HIST_PLAYER_BIRTH, 0);
 
 	/* Reset message prompt (i.e. no extraneous -more-s) */
 	/* XXX-AS remove and then remove ui-input include */

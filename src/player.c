@@ -1,19 +1,33 @@
-/* player/player.c - player implementation
+/**
+ * \file player.c
+ * \brief  player implementation
+ *
  * Copyright (c) 2011 elly+angband@leptoquark.net. See COPYING.
+ *
+ * This work is free software; you can redistribute it and/or modify it
+ * under the terms of either:
+ *
+ * a) the GNU General Public License as published by the Free Software
+ *    Foundation, version 2, or
+ *
+ * b) the "Angband licence":
+ *    This software may be copied and distributed for educational, research,
+ *    and not for profit purposes provided that this copyright and statement
+ *    are included in all such copies.  Other copyrights may also apply.
  */
 
 #include "init.h"
-#include "history.h" /* history_add */
 #include "obj-pile.h"
 #include "obj-util.h"
 #include "player.h"
 #include "player-birth.h"
+#include "player-history.h"
 #include "player-quest.h"
 #include "player-spell.h"
 #include "player-timed.h"
 #include "ui-input.h"
-#include "z-color.h" /* COLOUR_* */
-#include "z-util.h" /* my_strcpy */
+#include "z-color.h"
+#include "z-util.h"
 
 
 /*
@@ -262,7 +276,7 @@ static void adjust_level(struct player *p, bool verbose)
 		{
 			/* Log level updates */
 			strnfmt(buf, sizeof(buf), "Reached level %d", p->lev);
-			history_add(buf, HISTORY_GAIN_LEVEL, 0);
+			history_add(buf, HIST_GAIN_LEVEL, 0);
 
 			/* Message */
 			msgt(MSG_LEVEL, "Welcome to level %d.",	p->lev);

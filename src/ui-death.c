@@ -18,12 +18,12 @@
 
 #include "angband.h"
 #include "cmds.h"
-#include "history.h"
 #include "init.h"
 #include "obj-desc.h"
 #include "obj-identify.h"
 #include "obj-info.h"
 #include "obj-ui.h"
+#include "player-history.h"
 #include "savefile.h"
 #include "score.h"
 #include "store.h"

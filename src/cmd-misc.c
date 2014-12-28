@@ -22,12 +22,12 @@
 #include "cmd-core.h"
 #include "cmds.h"
 #include "dungeon.h"
-#include "history.h"
 #include "init.h"
 #include "mon-lore.h"
 #include "mon-util.h"
-#include "obj-util.h"
+#include "player-history.h"
 #include "prefs.h"
+#include "obj-util.h"
 #include "target.h"
 #include "ui-input.h"
 #include "wizard.h"
@@ -208,5 +208,5 @@ void do_cmd_note(void)
 	msg(&note[3]);
 
 	/* Add a history entry */
-	history_add(note, HISTORY_USER_INPUT, 0);
+	history_add(note, HIST_USER_INPUT, 0);
 }

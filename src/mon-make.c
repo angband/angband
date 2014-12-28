@@ -19,7 +19,6 @@
 #include "angband.h"
 #include "alloc.h"
 #include "dungeon.h"
-#include "history.h"
 #include "init.h"
 #include "target.h"
 #include "mon-desc.h"
@@ -32,6 +31,7 @@
 #include "obj-pile.h"
 #include "obj-tval.h"
 #include "obj-util.h"
+#include "player-history.h"
 #include "player-quest.h"
 #include "tables.h"
 
@@ -1488,7 +1488,7 @@ bool mon_take_hit(struct monster *m_ptr, int dam, bool *fear, const char *note)
 
 			/* Log the slaying of a unique */
 			strnfmt(buf, sizeof(buf), "Killed %s", unique_name);
-			history_add(buf, HISTORY_SLAY_UNIQUE, 0);
+			history_add(buf, HIST_SLAY_UNIQUE, 0);
 		}
 
 		/* Gain experience */

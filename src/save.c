@@ -19,7 +19,6 @@
 #include "angband.h"
 #include "cave.h"
 #include "dungeon.h"
-#include "history.h"
 #include "init.h"
 #include "mon-lore.h"
 #include "mon-make.h"
@@ -33,6 +32,7 @@
 #include "savefile.h"
 #include "store.h"
 #include "obj-util.h"
+#include "player-history.h"
 #include "player-timed.h"
 #include "trap.h"
 #include "ui-game.h"
@@ -893,13 +893,14 @@ void wr_chunks(void)
 
 void wr_history(void)
 {
-	size_t i;
+	size_t i, j;
 	u32b tmp32u = history_get_num();
 
+	wr_byte(HIST_SIZE);
 	wr_u32b(tmp32u);
-	for (i = 0; i < tmp32u; i++)
-	{
-		wr_u16b(history_list[i].type);
+	for (i = 0; i < tmp32u; i++) {
+		for (j = 0; j < HIST_SIZE; j++)
+			wr_byte(history_list[i].type[j]);
 		wr_s32b(history_list[i].turn);
 		wr_s16b(history_list[i].dlev);
 		wr_s16b(history_list[i].clev);

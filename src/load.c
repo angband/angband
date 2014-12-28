@@ -21,7 +21,6 @@
 #include "dungeon.h"
 #include "effects.h"
 #include "generate.h"
-#include "history.h"
 #include "init.h"
 #include "mon-lore.h"
 #include "mon-make.h"
@@ -37,6 +36,7 @@
 #include "obj-slays.h"
 #include "obj-util.h"
 #include "object.h"
+#include "player-history.h"
 #include "player-quest.h"
 #include "player-spell.h"
 #include "player-timed.h"
@@ -49,6 +49,9 @@
 
 /* Dungeon constants */
 byte square_size = 0;
+
+/* Player constants */
+byte hist_size = 0;
 
 /* Object constants */
 byte obj_mod_max = 0;
@@ -1400,20 +1403,30 @@ int rd_chunks(void)
 int rd_history(void)
 {
 	u32b tmp32u;
-	size_t i;
+	size_t i, j;
 	
 	history_clear();
-	
+
+	/* History type flags */
+	rd_byte(&hist_size);
+
+	/* Incompatible save files */
+	if (hist_size > HIST_SIZE) {
+	        note(format("Too many (%u) history types!", hist_size));
+		return (-1);
+	}
+
 	rd_u32b(&tmp32u);
 	for (i = 0; i < tmp32u; i++)
 	{
 		s32b turnno;
 		s16b dlev, clev;
-		u16b type;
+		bitflag type[HIST_SIZE];
 		byte art_name;
 		char text[80];
-		
-		rd_u16b(&type);
+
+		for (j = 0; j < hist_size; j++)		
+			rd_byte(&type[j]);
 		rd_s32b(&turnno);
 		rd_s16b(&dlev);
 		rd_s16b(&clev);

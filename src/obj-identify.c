@@ -21,7 +21,6 @@
 #include "cave.h"
 #include "dungeon.h"
 #include "game-event.h"
-#include "history.h"
 #include "obj-desc.h"
 #include "obj-gear.h"
 #include "obj-identify.h"
@@ -30,6 +29,7 @@
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "object.h"
+#include "player-history.h"
 #include "player-timed.h"
 #include "player-util.h"
 

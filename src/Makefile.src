@@ -104,7 +104,6 @@ ANGFILES = \
 	gen-util.o \
 	grafmode.o \
 	guid.o \
-	history.o \
 	init.o \
 	keymap.o \
 	load.o \
@@ -148,6 +147,7 @@ ANGFILES = \
 	player-birth.o \
 	player-calcs.o \
 	player-class.o \
+	player-history.o \
 	player-path.o \
 	player-quest.o \
 	player-race.o \
