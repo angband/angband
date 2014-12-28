@@ -41,6 +41,7 @@
 #include "quest.h"
 #include "randname.h"
 #include "squelch.h"
+#include "ui-options.h"
 
 /*
  * Structure (not array) of size limits
