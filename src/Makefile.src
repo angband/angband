@@ -176,6 +176,7 @@ ANGFILES = \
 	ui-event.o \
 	ui-game.o \
 	ui-help.o \
+	ui-history.o \
 	ui-input.o \
 	ui-knowledge.o \
 	ui-map.o \

@@ -1,6 +1,6 @@
 /**
  * \file player-history.h
- * \brief Character auto-history creation, management, and display
+ * \brief Character auto-history creation and management
  *
  * Copyright (c) 2007 J.D. White
  *
@@ -62,8 +62,7 @@ bool history_add(const char *event, int type, struct artifact *art);
 bool history_add_artifact(struct artifact *art, bool known, bool found);
 void history_unmask_unknown(void);
 bool history_lose_artifact(struct artifact *art);
-void history_display(void);
-void dump_history(ang_file *file);
 bool history_is_artifact_known(struct artifact *art);
+size_t history_get_list(struct history_info **list);
 
 #endif /* !HISTORY_H */

@@ -43,6 +43,7 @@
 #include "tables.h"
 #include "target.h"
 #include "ui-context.h"
+#include "ui-history.h"
 #include "ui-menu.h"
 #include "ui-options.h"
 #include "ui-store.h"

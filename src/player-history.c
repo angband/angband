@@ -23,8 +23,6 @@
 #include "obj-pile.h"
 #include "obj-util.h"
 #include "player-history.h"
-#include "ui-input.h"
-#include "ui.h"
 #include "wizard.h"
 
 /**
@@ -302,124 +300,11 @@ void history_unmask_unknown(void)
 	}
 }
 
-
-static void print_history_header(void)
-{
-	c_put_str(COLOUR_WHITE, "[Player history]", 0, 0);
-	c_put_str(COLOUR_L_BLUE, "      Turn   Depth  Note", 1, 0);
-}
-
-
 /**
- * Handles all of the display functionality for the history list.
+ * Present a copy of the history fot UI use
  */
-void history_display(void)
+size_t history_get_list(struct history_info **list)
 {
-	int row, wid, hgt, page_size;
-	char buf[120];
-	static size_t first_item = 0;
-	size_t max_item = history_ctr;
-	size_t i;
-	bool active = TRUE;
-
-	Term_get_size(&wid, &hgt);
-
-	/* Five lines provide space for the header and footer */
-	page_size = hgt - 5;
-
-	screen_save();
-
-	while (active)
-	{
-		struct keypress ch;
-
-		Term_clear();
-
-		/* Print everything to screen */
-		print_history_header();
-
-		row = 0;
-		for (i = first_item; row <= page_size && i < history_ctr; i++)
-		{
-			strnfmt(buf, sizeof(buf), "%10d%7d\'  %s",
-				history_list[i].turn,
-				history_list[i].dlev * 50,
-				history_list[i].event);
-
-			if (hist_has(history_list[i].type, HIST_ARTIFACT_LOST))
-				my_strcat(buf, " (LOST)", sizeof(buf));
-
-			/* Size of header = 3 lines */
-			prt(buf, row + 2, 0);
-			row++;
-		}
-		prt("[Arrow keys scroll, p/PgUp for previous page, n/PgDn for next page, ESC to exit.]", hgt - 1, 0);
-
-		ch = inkey();
-
-		switch (ch.code) {
-			case 'n':
-			case ' ':
-			case KC_PGDOWN: {
-				size_t scroll_to = first_item + page_size;
-				first_item = (scroll_to < max_item ? scroll_to : max_item);
-				break;
-			}
-
-			case 'p':
-			case KC_PGUP: {
-				int scroll_to = first_item - page_size;
-				first_item = (scroll_to >= 0 ? scroll_to : 0);
-				break;
-			}
-
-			case ARROW_DOWN: {
-				size_t scroll_to = first_item + 1;
-				first_item = (scroll_to < max_item ? scroll_to : max_item);
-				break;
-			}
-
-			case ARROW_UP: {
-				int scroll_to = first_item - 1;
-				first_item = (scroll_to >= 0 ? scroll_to : 0);
-				break;
-			}
-
-			case ESCAPE:
-				active = FALSE;
-				break;
-		}
-	}
-
-	screen_load();
-
-	return;
-}
-
-
-/**
- * Dump character history to a file, which we assume is already open.
- */
-void dump_history(ang_file *file)
-{
-	size_t i;
-	char buf[120];
-
-	file_putf(file, "[Player history]\n");
-	file_putf(file, "      Turn   Depth  Note\n");
-
-	for (i = 0; i < (history_ctr + 1); i++) {
-		strnfmt(buf, sizeof(buf), "%10d%7d\'  %s",
-				history_list[i].turn,
-				history_list[i].dlev * 50,
-				history_list[i].event);
-
-		if (hist_has(history_list[i].type, HIST_ARTIFACT_LOST))
-			my_strcat(buf, " (LOST)", sizeof(buf));
-
-		file_putf(file, "%s", buf);
-		file_put(file, "\n");
-	}
-
-	return;
+	*list = history_list;
+	return history_ctr;
 }
