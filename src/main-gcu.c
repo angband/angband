@@ -806,11 +806,21 @@ static errr Term_text_gcu(int x, int y, int n, int a, const wchar_t *s) {
 	if (can_use_color) {
 		/* the lower 7 bits of the attribute indicate the fg/bg */
 		int attr = a & 127;
+		int color = colortable[attr];
 
 		/* the high bit of the attribute indicates a reversed fg/bg */
-		int flip = a > 127 ? A_REVERSE : A_NORMAL;
+		bool reversed = a > 127;
 
-		wattrset(td->win, colortable[attr] | flip);
+		/* the following check for A_BRIGHT is to avoid #1813 */
+		int mode;
+		if (reversed && (color & A_BRIGHT))
+			mode = (color & ~A_BRIGHT) | A_BLINK | A_REVERSE;
+		else if (reversed)
+			mode = color | A_REVERSE;
+		else
+			mode = color | A_NORMAL;
+
+		wattrset(td->win, mode);
 		mvwaddnwstr(td->win, y, x, s, n);
 		wattrset(td->win, A_NORMAL);
 		return 0;
