@@ -284,10 +284,7 @@ static void rd_monster(monster_type *m_ptr)
 		if (!obj || obj->iy == 0 || obj->ix == 0)
 			break;
 
-		obj->next = m_ptr->held_obj;
-		if (obj->next)
-			(obj->next)->prev = obj;
-		m_ptr->held_obj = obj;
+		pile_insert(&m_ptr->held_obj, obj);
 	}
 }
 
