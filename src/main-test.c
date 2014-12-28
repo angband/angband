@@ -18,6 +18,7 @@
 
 #include "angband.h"
 #include "buildid.h"
+#include "main.h"
 #include "player.h"
 #include "player-birth.h"
 

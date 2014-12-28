@@ -31,6 +31,9 @@
 #include "effects.h"
 #include "generate.h"
 #include "tables.h"
+#include "ui-command.h"
+#include "ui-input.h"
+
 /**
  * The stats programs here will provide information on the dungeon, the monsters
  * in it, and the items that they drop.  Statistics are gotten from a given

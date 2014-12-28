@@ -23,6 +23,7 @@
 #include "buildid.h"
 #include "dungeon.h"
 #include "init.h"
+#include "main.h"
 #include "mon-make.h"
 #include "monster.h"
 #include "obj-gear.h"

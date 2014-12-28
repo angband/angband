@@ -22,6 +22,8 @@
 #include "prefs.h"
 #include "savefile.h"
 #include "signals.h"
+#include "ui-command.h"
+#include "ui-input.h"
 
 /* locale junk */
 #include "locale.h"

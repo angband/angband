@@ -12,6 +12,7 @@
 #define INCLUDED_MAIN_H
 
 #include "angband.h"
+#include "z-term.h"
 
 extern errr init_sound_sdl(int argc, char **argv);
 
