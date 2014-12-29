@@ -32,7 +32,7 @@
 #include "target.h"
 #include "ui-command.h"
 #include "ui-context.h"
-#include "ui-game.h"
+#include "ui-display.h"
 #include "ui-help.h"
 #include "ui-knowledge.h"
 #include "ui-map.h"

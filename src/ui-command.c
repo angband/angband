@@ -36,7 +36,7 @@
 #include "store.h"
 #include "ui.h"
 #include "ui-event.h"
-#include "ui-game.h"
+#include "ui-display.h"
 #include "ui-help.h"
 #include "ui-input.h"
 #include "ui-map.h"

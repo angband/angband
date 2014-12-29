@@ -29,7 +29,7 @@
 #include "object.h"
 #include "tables.h"
 #include "target.h"
-#include "ui-game.h"
+#include "ui-display.h"
 #include "ui-help.h"
 #include "ui-input.h"
 #include "ui-menu.h"

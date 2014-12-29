@@ -35,7 +35,7 @@
 #include "player-history.h"
 #include "player-timed.h"
 #include "trap.h"
-#include "ui-game.h"
+#include "ui-display.h"
 #include "ui-input.h"
 
 

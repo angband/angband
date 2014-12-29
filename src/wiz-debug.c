@@ -43,7 +43,7 @@
 #include "target.h"
 #include "ui-command.h"
 #include "ui-event.h"
-#include "ui-game.h"
+#include "ui-display.h"
 #include "ui-help.h"
 #include "ui-input.h"
 #include "ui-map.h"

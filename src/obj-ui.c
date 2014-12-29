@@ -31,7 +31,7 @@
 #include "obj-ui.h"
 #include "obj-util.h"
 #include "store.h"
-#include "ui-game.h"
+#include "ui-display.h"
 #include "ui-input.h"
 #include "ui.h"
 

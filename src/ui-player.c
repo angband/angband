@@ -29,7 +29,7 @@
 #include "player-timed.h"
 #include "player-util.h"
 #include "store.h"
-#include "ui-game.h"
+#include "ui-display.h"
 #include "ui-history.h"
 #include "ui-menu.h"
 #include "ui-player.h"

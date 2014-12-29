@@ -53,7 +53,7 @@
 #include "target.h"
 #include "ui-birth.h"
 #include "ui-death.h"
-#include "ui-game.h"
+#include "ui-display.h"
 #include "ui-input.h"
 #include "ui-knowledge.h"
 #include "ui-map.h"

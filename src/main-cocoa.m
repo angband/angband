@@ -24,7 +24,7 @@
 #include "prefs.h"
 #include "savefile.h"
 #include "ui.h"
-#include "ui-game.h"
+#include "ui-display.h"
 #include "ui-input.h"
 #include "ui-command.h"
 

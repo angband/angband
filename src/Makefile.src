@@ -173,8 +173,8 @@ ANGFILES = \
 	ui-command.o \
 	ui-context.o \
 	ui-death.o \
+	ui-display.o \
 	ui-event.o \
-	ui-game.o \
 	ui-help.o \
 	ui-history.o \
 	ui-input.o \

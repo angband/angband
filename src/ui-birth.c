@@ -24,7 +24,7 @@
 #include "player.h"
 #include "target.h"
 #include "ui-birth.h"
-#include "ui-game.h"
+#include "ui-display.h"
 #include "ui-help.h"
 #include "ui-menu.h"
 #include "ui-options.h"

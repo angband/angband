@@ -44,7 +44,7 @@
 #include "savefile.h"
 #include "store.h"
 #include "trap.h"
-#include "ui-game.h"
+#include "ui-display.h"
 #include "ui-input.h"
 
 /* Dungeon constants */

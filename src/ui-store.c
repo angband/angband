@@ -37,7 +37,7 @@
 #include "store.h"
 #include "target.h"
 #include "textui.h"
-#include "ui-game.h"
+#include "ui-display.h"
 #include "ui-input.h"
 #include "ui-menu.h"
 #include "ui-object.h"

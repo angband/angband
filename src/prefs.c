@@ -29,7 +29,7 @@
 #include "object.h"
 #include "prefs.h"
 #include "project.h"
-#include "ui-game.h"
+#include "ui-display.h"
 #include "z-term.h"
 #include "ui-input.h" /* message_flush */
 

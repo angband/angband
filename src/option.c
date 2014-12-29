@@ -17,7 +17,7 @@
  */
 #include "angband.h"
 #include "option.h"
-#include "ui-game.h"
+#include "ui-display.h"
 #include "init.h"
 #include "z-term.h"
 
