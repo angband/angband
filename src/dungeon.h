@@ -14,7 +14,7 @@ extern s16b character_xtra;
 
 extern bool is_daytime(void);
 extern void dungeon_change_level(int dlev);
-extern void idle_update(void);
+void do_animation(void);
 extern void play_game(bool new_game);
 extern void save_game(void);
 extern void close_game(void);

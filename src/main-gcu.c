@@ -23,6 +23,7 @@
 #include "cave.h"
 #include "dungeon.h"
 #include "ui-command.h"
+#include "ui-display.h"
 
 #ifdef USE_GCU
 #include "main.h"

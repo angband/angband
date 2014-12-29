@@ -995,10 +995,10 @@ static byte get_flicker(byte a)
 	return a;
 }
 
-/*
+/**
  * This animates monsters and/or items as necessary.
  */
-static void do_animation(void)
+void do_animation(void)
 {
 	int i;
 
@@ -1021,25 +1021,6 @@ static void do_animation(void)
 	}
 
 	flicker++;
-}
-
-
-/*
- * This is used when the user is idle to allow for simple animations.
- * Currently the only thing it really does is animate shimmering monsters.
- */
-void idle_update(void)
-{
-	if (!character_dungeon) return;
-
-	if (!OPT(animate_flicker) || (use_graphics != GRAPHICS_NONE)) return;
-
-	/* Animate and redraw if necessary */
-	do_animation();
-	redraw_stuff(player->upkeep);
-
-	/* Refresh the main screen */
-	Term_fresh();
 }
 
 

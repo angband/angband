@@ -21,6 +21,7 @@
 #include "buildid.h"
 #include "cave.h"
 #include "cmd-core.h"
+#include "dungeon.h"
 #include "game-event.h"
 #include "grafmode.h"
 #include "hint.h"
@@ -927,6 +928,25 @@ static void trace_map_updates(game_event_type type, game_event_data *data,
 		printf("Redraw (%i, %i)\n", data->point.x, data->point.y);
 }
 #endif
+
+/**
+ * This is used when the user is idle to allow for simple animations.
+ * Currently the only thing it really does is animate shimmering monsters.
+ */
+void idle_update(void)
+{
+	if (!character_dungeon) return;
+
+	if (!OPT(animate_flicker) || (use_graphics != GRAPHICS_NONE)) return;
+
+	/* Animate and redraw if necessary */
+	do_animation();
+	redraw_stuff(player->upkeep);
+
+	/* Refresh the main screen */
+	Term_fresh();
+}
+
 
 /**
  * Update either a single map grid or a whole map
