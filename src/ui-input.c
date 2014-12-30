@@ -20,6 +20,7 @@
 #include "cmds.h"
 #include "dungeon.h"
 #include "game-event.h"
+#include "game-input.h"
 #include "init.h"
 #include "keymap.h"
 #include "obj-gear.h"
@@ -947,7 +948,7 @@ s16b get_quantity(const char *prompt, int max)
  *
  * Note that "[y/n]" is appended to the prompt.
  */
-bool get_check(const char *prompt)
+bool textui_get_check(const char *prompt)
 {
 	//struct keypress ke;
 	ui_event ke;
@@ -1359,7 +1360,13 @@ bool get_aim_dir(int *dp)
 	return (TRUE);
 }
 
-
+/**
+ * Initialise the UI hooks to give input asked for by the game
+ */
+void textui_input_init(void)
+{
+	get_check_hook = textui_get_check;
+}
 
 
 /*

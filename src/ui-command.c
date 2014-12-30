@@ -22,6 +22,7 @@
 #include "cmd-core.h"
 #include "buildid.h"
 #include "dungeon.h"
+#include "game-input.h"
 #include "init.h"
 #include "keymap.h"
 #include "monster.h"

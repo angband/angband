@@ -22,6 +22,7 @@
 #include "cmd-core.h"
 #include "cmds.h"
 #include "effects.h"
+#include "game-input.h"
 #include "init.h"
 #include "obj-desc.h"
 #include "obj-gear.h"

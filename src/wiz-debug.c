@@ -20,6 +20,7 @@
 #include "cave.h"
 #include "cmds.h"
 #include "effects.h"
+#include "game-input.h"
 #include "grafmode.h"
 #include "init.h"
 #include "mon-lore.h"

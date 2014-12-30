@@ -19,6 +19,7 @@
 #include "angband.h"
 #include "cmd-core.h"
 #include "cmds.h"
+#include "game-input.h"
 #include "init.h"
 #include "keymap.h"
 #include "obj-desc.h"

@@ -21,6 +21,7 @@
 #include "cmds.h"
 #include "dungeon.h"
 #include "game-event.h"
+#include "game-input.h"
 #include "generate.h"
 #include "grafmode.h"
 #include "init.h"
@@ -1294,6 +1295,9 @@ void play_game(bool new_game)
 
 	/* Initialize knowledge things */
 	textui_knowledge_init();
+
+	/* Initialize input hooks (only here temporarily - NRM) */
+	textui_input_init();
 
 	/*** Do horrible, hacky things, to start the game off ***/
 

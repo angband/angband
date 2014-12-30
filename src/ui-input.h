@@ -61,7 +61,7 @@ bool askfor_aux(char *buf, size_t len, bool (*keypress_h)(char *, size_t, size_t
 bool get_name(char *buf, size_t buflen);
 bool get_string(const char *prompt, char *buf, size_t len);
 s16b get_quantity(const char *prompt, int max);
-bool get_check(const char *prompt);
+//bool get_check(const char *prompt);
 char get_char(const char *prompt, const char *options, size_t len, char fallback);
 bool (*get_file)(const char *suggested_name, char *path, size_t len);
 bool get_com(const char *prompt, struct keypress *command);
@@ -69,6 +69,7 @@ bool get_com_ex(const char *prompt, ui_event *command);
 void pause_line(struct term *term);
 bool get_rep_dir(int *dp, bool allow_5);
 bool get_aim_dir(int *dp);
+void textui_input_init(void);
 void cmd_init(void);
 unsigned char cmd_lookup_key(cmd_code lookup_cmd, int mode);
 unsigned char cmd_lookup_key_unktrl(cmd_code lookup_cmd, int mode);

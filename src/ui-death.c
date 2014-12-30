@@ -18,6 +18,7 @@
 
 #include "angband.h"
 #include "cmds.h"
+#include "game-input.h"
 #include "init.h"
 #include "obj-desc.h"
 #include "obj-identify.h"
