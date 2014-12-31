@@ -20,6 +20,7 @@
 #include "angband.h"
 #include "cave.h"
 #include "cmds.h"
+#include "dungeon.h"
 #include "game-event.h"
 #include "hint.h"
 #include "init.h"
@@ -40,6 +41,9 @@
 #include "store.h"
 #include "target.h"
 #include "debug.h"
+
+
+static void store_maint(struct store *s);
 
 /*** Constants and definitions ***/
 
@@ -342,6 +346,7 @@ struct init_module store_module = {
 	.init = store_init,
 	.cleanup = cleanup_stores
 };
+
 
 
 
@@ -1193,7 +1198,7 @@ static struct object *store_create_item(struct store *store, object_kind *kind)
 /**
  * Maintain the inventory at the stores.
  */
-void store_maint(struct store *s)
+static void store_maint(struct store *s)
 {
 	/* Ignore home */
 	if (s->sidx == STORE_HOME)
@@ -1294,6 +1299,47 @@ void store_maint(struct store *s)
 		if (!restock_attempts)
 			quit_fmt("Unable to (re-)stock store %d. Please report this bug", s->sidx + 1);
 	}
+}
+
+/**
+ * Update the stores on the return to town.
+ */
+void store_update(void)
+{
+	if (OPT(cheat_xtra)) msg("Updating Shops...");
+	while (daycount--)
+	{
+		int n;
+
+		/* Maintain each shop (except home) */
+		for (n = 0; n < MAX_STORES; n++)
+		{
+			/* Skip the home */
+			if (n == STORE_HOME) continue;
+
+			/* Maintain */
+			store_maint(&stores[n]);
+		}
+
+		/* Sometimes, shuffle the shop-keepers */
+		if (one_in_(z_info->store_shuffle))
+		{
+			/* Message */
+			if (OPT(cheat_xtra)) msg("Shuffling a Shopkeeper...");
+
+			/* Pick a random shop (except home) */
+			while (1)
+			{
+				n = randint0(MAX_STORES);
+				if (n != STORE_HOME) break;
+			}
+
+			/* Shuffle it */
+			store_shuffle(&stores[n]);
+		}
+	}
+	daycount = 0;
+	if (OPT(cheat_xtra)) msg("Done.");
 }
 
 /** Owner stuff **/

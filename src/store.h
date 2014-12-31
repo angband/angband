@@ -71,7 +71,7 @@ void store_stock_list(struct store *store, struct object **list, int n);
 struct object *store_carry(struct store *store, struct object *obj);
 void store_reset(void);
 void store_shuffle(struct store *store);
-void store_maint(struct store *store);
+void store_update(void);
 int price_item(struct store *store, const object_type *o_ptr, bool store_buying, int qty);
 
 bool store_will_buy_tester(const struct object *obj);
