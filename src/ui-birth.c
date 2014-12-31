@@ -22,14 +22,14 @@
 #include "game-event.h"
 #include "obj-tval.h"
 #include "player.h"
-#include "target.h"
 #include "ui-birth.h"
 #include "ui-display.h"
 #include "ui-help.h"
+#include "ui-input.h"
 #include "ui-menu.h"
 #include "ui-options.h"
 #include "ui-player.h"
-#include "ui-input.h"
+#include "ui-target.h"
 
 
 /*

@@ -19,8 +19,10 @@
 #include "cave.h"
 #include "cmds.h"
 #include "dungeon.h"
+#include "effects.h"
+#include "game-input.h"
+#include "generate.h"
 #include "init.h"
-#include "wizard.h"
 #include "mon-make.h"
 #include "monster.h"
 #include "obj-pile.h"
@@ -28,11 +30,9 @@
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "object.h"
-#include "effects.h"
-#include "generate.h"
 #include "tables.h"
 #include "ui-command.h"
-#include "ui-input.h"
+#include "wizard.h"
 
 /**
  * The stats programs here will provide information on the dungeon, the monsters
@@ -1572,7 +1572,7 @@ static void clearing_stats(void)
 static int stats_prompt(void)
 {
 	static int temp,simtype = 1;
-	static char tmp_val[100], yn;
+	static char tmp_val[100];
 	static char prompt[50];
 
 	/* This is the prompt for no. of tries*/
@@ -1618,12 +1618,7 @@ static int stats_prompt(void)
 		/* Prompt */
 		strnfmt(prompt, sizeof(prompt), "Regen randarts? (warning SLOW)");
 
-		yn = get_char(prompt, "yn", 3, 'n');
-
-		if (( yn == 'y') || (yn == 'Y'))
-			regen = TRUE;
-		else
-			regen = FALSE;
+		regen = get_check(prompt) ? TRUE : FALSE;
 	}
 
 	return simtype;

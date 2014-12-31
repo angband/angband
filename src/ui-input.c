@@ -709,7 +709,7 @@ bool askfor_aux_keypress(char *buf, size_t buflen, size_t *curs, size_t *len, st
 }
 
 
-/*
+/**
  * Get some input at the cursor location.
  *
  * The buffer is assumed to have been initialized to a default string.
@@ -872,7 +872,7 @@ bool get_name(char *buf, size_t buflen)
  * See "askfor_aux" for some notes about "buf" and "len", and about
  * the return value of this function.
  */
-bool get_string(const char *prompt, char *buf, size_t len)
+bool textui_get_string(const char *prompt, char *buf, size_t len)
 {
 	bool res;
 
@@ -897,7 +897,7 @@ bool get_string(const char *prompt, char *buf, size_t len)
 /*
  * Request a "quantity" from the user
  */
-s16b get_quantity(const char *prompt, int max)
+int textui_get_quantity(const char *prompt, int max)
 {
 	int amt = 1;
 
@@ -1059,20 +1059,23 @@ bool (*get_file)(const char *suggested_name, char *path, size_t len) = get_file_
 
 
 
-/*
+/**
  * Prompts for a keypress
  *
  * The "prompt" should take the form "Command: "
- *
+ * -------
+ * Warning - this function assumes that the entered command is an ASCII
+ *           character, and so should be used with great caution - NRM
+ * -------
  * Returns TRUE unless the character is "Escape"
  */
-bool get_com(const char *prompt, struct keypress *command)
+bool textui_get_com(const char *prompt, char *command)
 {
 	ui_event ke;
 	bool result;
 
 	result = get_com_ex(prompt, &ke);
-	*command = ke.key;
+	*command = (char)ke.key.code;
 
 	return result;
 }
@@ -1146,7 +1149,7 @@ static int dir_transitions[10][10] =
  * This function tracks and uses the "global direction", and uses
  * that as the "desired direction", if it is set.
  */
-bool get_rep_dir(int *dp, bool allow_5)
+bool textui_get_rep_dir(int *dp, bool allow_5)
 {
 	int dir = 0;
 
@@ -1262,7 +1265,7 @@ bool get_rep_dir(int *dp, bool allow_5)
  * Note that "Force Target", if set, will pre-empt user interaction,
  * if there is a usable target already set.
  */
-bool get_aim_dir(int *dp)
+bool textui_get_aim_dir(int *dp)
 {
 	/* Global direction */
 	int dir = 0;
@@ -1365,7 +1368,12 @@ bool get_aim_dir(int *dp)
  */
 void textui_input_init(void)
 {
+	get_string_hook = textui_get_string;
+	get_quantity_hook = textui_get_quantity;
 	get_check_hook = textui_get_check;
+	get_com_hook = textui_get_com;
+	get_rep_dir_hook = textui_get_rep_dir;
+	get_aim_dir_hook = textui_get_aim_dir;
 }
 
 
@@ -1677,9 +1685,10 @@ static ui_event textui_get_command(int *count)
 				}
 
 				case '^': {
+					char ch;
 					/* Allow "control chars" to be entered */
-					if (get_com("Control: ", &ke.key))
-						ke.key.code = KTRL(ke.key.code);
+					if (get_com("Control: ", &ch))
+						ke.key.code = KTRL(ch);
 					break;
 				}
 			}

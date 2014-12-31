@@ -20,6 +20,7 @@
 #include "angband.h"
 #include "cave.h"
 #include "cmds.h"
+#include "game-input.h"
 #include "grafmode.h"
 #include "init.h"
 #include "mon-list.h"
@@ -2618,7 +2619,7 @@ void do_cmd_locate(void)
 			struct keypress command;
 
 			/* Get a command (or Cancel) */
-			if (!get_com(out_val, &command)) break;
+			if (!get_com(out_val, (char *)&command.code)) break;
 
 			/* Extract direction */
 			dir = target_dir(command);
@@ -2705,7 +2706,7 @@ int cmp_monsters(const void *a, const void *b)
  *
  * Todo: Should this take the user's pref files into account?
  */
-static void lookup_symbol(struct keypress sym, char *buf, size_t max)
+static void lookup_symbol(char sym, char *buf, size_t max)
 {
 	int i;
 	monster_base *race;
@@ -2715,8 +2716,8 @@ static void lookup_symbol(struct keypress sym, char *buf, size_t max)
 	It would make more sense to loop through tvals, but then we need to associate
 	a display character with each tval. */
 	for (i = 1; i < z_info->k_max; i++) {
-		if (char_matches_key(k_info[i].d_char, sym.code)) {
-			strnfmt(buf, max, "%c - %s.", (char)sym.code, tval_find_name(k_info[i].tval));
+		if (char_matches_key(k_info[i].d_char, sym)) {
+			strnfmt(buf, max, "%c - %s.", sym, tval_find_name(k_info[i].tval));
 			return;
 		}
 	}
@@ -2725,23 +2726,23 @@ static void lookup_symbol(struct keypress sym, char *buf, size_t max)
 	/* Note: We need a better way of doing this. Currently '#' matches secret door,
 	and '^' matches trap door (instead of the more generic "trap"). */
 	for (i = 1; i < z_info->f_max; i++) {
-		if (char_matches_key(f_info[i].d_char, sym.code)) {
-			strnfmt(buf, max, "%c - %s.", (char)sym.code, f_info[i].name);
+		if (char_matches_key(f_info[i].d_char, sym)) {
+			strnfmt(buf, max, "%c - %s.", sym, f_info[i].name);
 			return;
 		}
 	}
 	
 	/* Look through monster templates */
 	for (race = rb_info; race; race = race->next){
-		if (char_matches_key(race->d_char, sym.code)) {
-			strnfmt(buf, max, "%c - %s.", (char)sym.code, race->text);
+		if (char_matches_key(race->d_char, sym)) {
+			strnfmt(buf, max, "%c - %s.", sym, race->text);
 			return;
 		}
 	}
 
 	/* No matches */
-        if (isprint((char)sym.code)) {
-	    strnfmt(buf, max, "%c - Unknown Symbol.", (char)sym.code);
+        if (isprint(sym)) {
+	    strnfmt(buf, max, "%c - Unknown Symbol.", sym);
         } else {
 	    strnfmt(buf, max, "? - Unknown Symbol.");
         }
@@ -2766,7 +2767,7 @@ void do_cmd_query_symbol(void)
 	int i, n;
 	char buf[128];
 
-	struct keypress sym;
+	char sym;
 	struct keypress query;
 
 	bool all = FALSE;
@@ -2782,17 +2783,17 @@ void do_cmd_query_symbol(void)
 		return;
 
 	/* Describe */
-	if (sym.code == KTRL('A'))
+	if (sym == KTRL('A'))
 	{
 		all = TRUE;
 		my_strcpy(buf, "Full monster list.", sizeof(buf));
 	}
-	else if (sym.code == KTRL('U'))
+	else if (sym == KTRL('U'))
 	{
 		all = uniq = TRUE;
 		my_strcpy(buf, "Unique monster list.", sizeof(buf));
 	}
-	else if (sym.code == KTRL('N'))
+	else if (sym == KTRL('N'))
 	{
 		all = norm = TRUE;
 		my_strcpy(buf, "Non-unique monster list.", sizeof(buf));
@@ -2824,7 +2825,7 @@ void do_cmd_query_symbol(void)
 		if (uniq && !rf_has(r_ptr->flags, RF_UNIQUE)) continue;
 
 		/* Collect "appropriate" monsters */
-		if (all || char_matches_key(r_ptr->d_char, sym.code)) who[n++] = i;
+		if (all || char_matches_key(r_ptr->d_char, sym)) who[n++] = i;
 	}
 
 	/* Nothing to recall */

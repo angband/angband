@@ -29,13 +29,13 @@
 #include "obj-util.h"
 #include "object.h"
 #include "tables.h"
-#include "target.h"
 #include "ui-display.h"
 #include "ui-help.h"
 #include "ui-input.h"
+#include "ui-knowledge.h"
 #include "ui-menu.h"
 #include "ui-options.h"
-#include "ui-knowledge.h"
+#include "ui-target.h"
 
 
 /**

@@ -20,6 +20,8 @@
 #ifndef UI_TARGET_H
 #define UI_TARGET_H
 
+#include "ui-event.h"
+
 /*
  * Height of the help screen; any higher than 4 will overlap the health
  * bar which we want to keep in targeting mode.
@@ -31,6 +33,8 @@
 
 #define TS_INITIAL_SIZE	20
 
+int target_dir(struct keypress ch);
+int target_dir_allow(struct keypress ch, bool allow_5);
 void target_display_help(bool monster, bool free);
 void textui_target(void);
 void textui_target_closest(void);

@@ -31,6 +31,7 @@
 #include "cave.h"
 #include "dungeon.h"
 #include "game-event.h"
+#include "game-input.h"
 #include "generate.h"
 #include "init.h"
 #include "math.h"
@@ -41,7 +42,6 @@
 #include "object.h"
 #include "parser.h"
 #include "trap.h"
-#include "ui-input.h"
 #include "z-queue.h"
 #include "z-type.h"
 

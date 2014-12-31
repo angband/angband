@@ -19,8 +19,18 @@
 #ifndef INCLUDED_GAME_INPUT_H
 #define INCLUDED_GAME_INPUT_H
 
+bool (*get_string_hook)(const char *prompt, char *buf, size_t len);
+int (*get_quantity_hook)(const char *prompt, int max);
 bool (*get_check_hook)(const char *prompt);
+bool (*get_com_hook)(const char *prompt, char *command);
+bool (*get_rep_dir_hook)(int *dir, bool allow_none);
+bool (*get_aim_dir_hook)(int *dir);
 
+bool get_string(const char *prompt, char *buf, size_t len);
+int get_quantity(const char *prompt, int max);
 bool get_check(const char *prompt);
+bool get_com(const char *prompt, char *command);
+bool get_rep_dir(int *dir, bool allow_none);
+bool get_aim_dir(int *dir);
 
 #endif /* INCLUDED_GAME_INPUT_H */

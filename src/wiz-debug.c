@@ -137,16 +137,12 @@ static void do_cmd_wiz_hack_ben(void)
 
 	int i, y, x;
 
-	struct keypress kp;
+	char kp;
 
-
-	for (i = 0; i < z_info->max_flow_depth; ++i)
-	{
+	for (i = 0; i < z_info->max_flow_depth; ++i) {
 		/* Update map */
 		for (y = Term->offset_y; y < Term->offset_y + SCREEN_HGT; y++)
-		{
-			for (x = Term->offset_x; x < Term->offset_x + SCREEN_WID; x++)
-			{
+			for (x = Term->offset_x; x < Term->offset_x + SCREEN_WID; x++) {
 				byte a = COLOUR_RED;
 
 				if (!square_in_bounds_fully(cave, y, x)) continue;
@@ -166,14 +162,10 @@ static void do_cmd_wiz_hack_ben(void)
 				else
 					print_rel(L'#', a, y, x);
 			}
-		}
-
-		/* Prompt */
-		prt(format("Depth %d: ", i), 0, 0);
 
 		/* Get key */
-		kp = inkey();
-		if (kp.code == ESCAPE) break;
+		if (!get_com(format("Depth %d: ", i), &kp))
+			break;
 
 		/* Redraw map */
 		prt_map();
@@ -241,7 +233,7 @@ static void do_cmd_keylog(void) {
 	}
 
 	prt("Press any key to continue.", KEYLOG_SIZE + 1, 0);
-	inkey();
+	anykey();
 	screen_load();
 }
 
@@ -784,7 +776,7 @@ static void wiz_reroll_item(struct object *obj)
 {
 	struct object *new;
 
-	struct keypress ch;
+	char ch;
 
 	bool changed = FALSE;
 
@@ -807,21 +799,21 @@ static void wiz_reroll_item(struct object *obj)
 			break;
 
 		/* Create/change it! */
-		if (ch.code == 'A' || ch.code == 'a') {
+		if (ch == 'A' || ch == 'a') {
 			break;
-		} else if (ch.code == 'n' || ch.code == 'N') {
+		} else if (ch == 'n' || ch == 'N') {
 			/* Apply normal magic, but first clear object */
 			changed = TRUE;
 			object_wipe(new);
 			object_prep(new, obj->kind, player->depth, RANDOMISE);
 			apply_magic(new, player->depth, FALSE, FALSE, FALSE, FALSE);
-		} else if (ch.code == 'g' || ch.code == 'G') {
+		} else if (ch == 'g' || ch == 'G') {
 			/* Apply good magic, but first clear object */
 			changed = TRUE;
 			object_wipe(new);
 			object_prep(new, obj->kind, player->depth, RANDOMISE);
 			apply_magic(new, player->depth, FALSE, TRUE, FALSE, FALSE);
-		} else if (ch.code == 'e' || ch.code == 'E') {
+		} else if (ch == 'e' || ch == 'E') {
 			/* Apply great magic, but first clear object */
 			changed = TRUE;
 			object_wipe(new);
@@ -883,7 +875,7 @@ static void wiz_statistics(struct object *obj, int level)
 	long i, matches, better, worse, other;
 	int j;
 
-	struct keypress ch;
+	char ch;
 	const char *quality;
 
 	bool good, great, ismatch, isbetter, isworse;
@@ -907,15 +899,15 @@ static void wiz_statistics(struct object *obj, int level)
 		/* Get choices */
 		if (!get_com(pmt, &ch)) break;
 
-		if (ch.code == 'n' || ch.code == 'N') {
+		if (ch == 'n' || ch == 'N') {
 			good = FALSE;
 			great = FALSE;
 			quality = "normal";
-		} else if (ch.code == 'g' || ch.code == 'G') {
+		} else if (ch == 'g' || ch == 'G') {
 			good = TRUE;
 			great = FALSE;
 			quality = "good";
-		} else if (ch.code == 'e' || ch.code == 'E') {
+		} else if (ch == 'e' || ch == 'E') {
 			good = TRUE;
 			great = TRUE;
 			quality = "excellent";
@@ -1100,7 +1092,7 @@ static void do_cmd_wiz_play(void)
 {
 	struct object *obj;
 
-	struct keypress ch;
+	char ch;
 
 	const char *q, *s;
 
@@ -1125,20 +1117,20 @@ static void do_cmd_wiz_play(void)
 		if (!get_com("[a]ccept [s]tatistics [r]eroll [t]weak [c]urse [q]uantity [k]nown? ", &ch))
 			break;
 
-		if (ch.code == 'A' || ch.code == 'a') {
+		if (ch == 'A' || ch == 'a') {
 			changed = TRUE;
 			break;
-		} else if (ch.code == 'c' || ch.code == 'C')
+		} else if (ch == 'c' || ch == 'C')
 			wiz_tweak_curse(obj);
-		else if (ch.code == 's' || ch.code == 'S')
+		else if (ch == 's' || ch == 'S')
 			wiz_statistics(obj, player->depth);
-		else if (ch.code == 'r' || ch.code == 'R')
+		else if (ch == 'r' || ch == 'R')
 			wiz_reroll_item(obj);
-		else if (ch.code == 't' || ch.code == 'T')
+		else if (ch == 't' || ch == 'T')
 			wiz_tweak_item(obj);
-		else if (ch.code == 'k' || ch.code == 'K')
+		else if (ch == 'k' || ch == 'K')
 			all = !all;
-		else if (ch.code == 'q' || ch.code == 'Q') {
+		else if (ch == 'q' || ch == 'Q') {
 			bool carried = (object_is_carried(player, obj)) ? TRUE : FALSE;
 			wiz_quantity_item(obj, carried);
 		}
@@ -1222,7 +1214,6 @@ static void do_cmd_wiz_jump(void)
 
 	char ppp[80];
 	char tmp_val[160];
-	char answer;
 
 	/* Prompt */
 	strnfmt(ppp, sizeof(ppp), "Jump to level (0-%d): ", z_info->max_depth-1);
@@ -1247,8 +1238,7 @@ static void do_cmd_wiz_jump(void)
 	strnfmt(ppp, sizeof(ppp), "Choose cave_profile?");
 
 	/* Get to choose generation algorithm */
-	answer = get_char(ppp, "yn", 2, 'n');
-	if ((answer == 'y') || (answer == 'Y'))
+	if (get_check(ppp))
 		player->noscore |= NOSCORE_JUMPING;
 
 	/* Accept request */
@@ -1409,7 +1399,7 @@ static void do_cmd_wiz_query(void)
 
 	int y, x;
 
-	struct keypress cmd;
+	char cmd;
 
 	int flag = 0;
 
@@ -1418,7 +1408,7 @@ static void do_cmd_wiz_query(void)
 	if (!get_com("Debug Command Query: ", &cmd)) return;
 
 	/* Extract a flag */
-	switch (cmd.code)
+	switch (cmd)
 	{
 		case 'm': flag = (SQUARE_MARK); break;
 		case 'g': flag = (SQUARE_GLOW); break;
@@ -1486,7 +1476,7 @@ static void do_cmd_wiz_features(void)
 
 	int y, x;
 
-	struct keypress cmd;
+	char cmd;
 
 	/* OMG hax */
 	int *feat = NULL;
@@ -1511,7 +1501,7 @@ static void do_cmd_wiz_features(void)
 	if (!get_com("Debug Command Feature Query: ", &cmd)) return;
 
 	/* Choose a feature (type) */
-	switch (cmd.code)
+	switch (cmd)
 	{
 		/* Floors */
 		case 'f': feat = featf; length = 1; break;
@@ -1741,19 +1731,16 @@ void do_cmd_debug(void)
 	int py = player->py;
 	int px = player->px;
 
-	struct keypress cmd;
-
+	char cmd;
 
 	/* Get a "debug command" */
 	if (!get_com("Debug Command: ", &cmd)) return;
 
 	/* Analyze the command */
-	switch (cmd.code)
+	switch (cmd)
 	{
 		/* Ignore */
-		case ESCAPE:
 		case ' ':
-		case KC_ENTER:
 		{
 			break;
 		}
@@ -1992,20 +1979,20 @@ void do_cmd_debug(void)
 		{
 			const struct monster_race *race = NULL;
 
-			struct keypress sym;
+			char sym;
 			const char *prompt =
 				"Full recall for [a]ll monsters or [s]pecific monster? ";
 
 			if (!get_com(prompt, &sym)) return;
 
-			if (sym.code == 'a' || sym.code == 'A')
+			if (sym == 'a' || sym == 'A')
 			{
 				int i;
 				for (i = 0; i < z_info->r_max; i++)
 					cheat_monster_lore(&r_info[i], &l_list[i]);
 				msg("Done.");
 			}
-			else if (sym.code == 's' || sym.code == 'S')
+			else if (sym == 's' || sym == 'S')
 			{
 				char name[80] = "";
 					
@@ -2124,18 +2111,18 @@ void do_cmd_debug(void)
 			const struct monster_race *race = NULL;
 			s16b r_idx = 0; 
 
-			struct keypress sym;
+			char sym;
 			const char *prompt =
 				"Wipe recall for [a]ll monsters or [s]pecific monster? ";
 
 			if (!get_com(prompt, &sym)) return;
 
-			if (sym.code == 'a' || sym.code == 'A') {
+			if (sym == 'a' || sym == 'A') {
 				int i;
 				for (i = 0; i < z_info->r_max; i++)
 					wipe_monster_lore(&r_info[i], &l_list[i]);
 				msg("Done.");
-			} else if (sym.code == 's' || sym.code == 'S') {
+			} else if (sym == 's' || sym == 'S') {
 				char name[80] = "";
 
 				/* Avoid the prompt getting in the way */

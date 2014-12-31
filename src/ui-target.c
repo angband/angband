@@ -19,6 +19,7 @@
 #include "angband.h"
 #include "cave.h"
 #include "init.h"
+#include "keymap.h"
 #include "mon-desc.h"
 #include "mon-lore.h"
 #include "monster.h"
@@ -37,6 +38,55 @@
 #include "ui-target.h"
 #include "ui-input.h"
 #include "z-term.h"
+
+/**
+ * Extract a direction (or zero) from a character
+ */
+int target_dir(struct keypress ch)
+{
+	return target_dir_allow(ch, FALSE);
+}
+
+int target_dir_allow(struct keypress ch, bool allow_5)
+{
+	int d = 0;
+
+	/* Already a direction? */
+	if (isdigit((unsigned char)ch.code)) {
+		d = D2I(ch.code);
+	} else if (isarrow(ch.code)) {
+		switch (ch.code) {
+			case ARROW_DOWN:  d = 2; break;
+			case ARROW_LEFT:  d = 4; break;
+			case ARROW_RIGHT: d = 6; break;
+			case ARROW_UP:    d = 8; break;
+		}
+	} else {
+		int mode;
+		const struct keypress *act;
+
+		if (OPT(rogue_like_commands))
+			mode = KEYMAP_MODE_ROGUE;
+		else
+			mode = KEYMAP_MODE_ORIG;
+
+		/* XXX see if this key has a digit in the keymap we can use */
+		act = keymap_find(mode, ch);
+		if (act) {
+			const struct keypress *cur;
+			for (cur = act; cur->type == EVT_KBRD; cur++) {
+				if (isdigit((unsigned char) cur->code))
+					d = D2I(cur->code);
+			}
+		}
+	}
+
+	/* Paranoia */
+	if (d == 5 && !allow_5) d = 0;
+
+	/* Return direction */
+	return (d);
+}
 
 /**
  * Display targeting help at the bottom of the screen.

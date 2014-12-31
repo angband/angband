@@ -20,6 +20,7 @@
 #include "angband.h"
 #include "cmds.h"
 #include "cmd-core.h"
+#include "game-input.h"
 #include "obj-chest.h"
 #include "obj-desc.h"
 #include "obj-tval.h"

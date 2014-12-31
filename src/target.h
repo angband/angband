@@ -34,8 +34,6 @@
 #define TARGET_QUIET  0x10
 
 int motion_dir(int y1, int x1, int y2, int x2);
-int target_dir(struct keypress ch);
-int target_dir_allow(struct keypress ch, bool allow_5);
 void look_mon_desc(char *buf, size_t max, int m_idx);
 bool target_able(struct monster *m);
 bool target_okay(void);

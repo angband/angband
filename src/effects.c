@@ -2260,7 +2260,7 @@ bool effect_handler_BANISH(effect_handler_context_t *context)
 	int i;
 	unsigned dam = 0;
 
-	struct keypress typ;
+	char typ;
 
 	context->ident = TRUE;
 
@@ -2278,7 +2278,7 @@ bool effect_handler_BANISH(effect_handler_context_t *context)
 		if (rf_has(m_ptr->race->flags, RF_UNIQUE)) continue;
 
 		/* Skip "wrong" monsters */
-		if (!char_matches_key(m_ptr->race->d_char, typ.code)) continue;
+		if (!char_matches_key(m_ptr->race->d_char, typ)) continue;
 
 		/* Delete the monster */
 		delete_monster_idx(i);

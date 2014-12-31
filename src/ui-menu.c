@@ -18,7 +18,7 @@
  */
 #include "angband.h"
 #include "tables.h"
-#include "target.h"
+#include "ui-target.h"
 #include "ui-event.h"
 #include "ui-menu.h"
 #include "ui-input.h"
