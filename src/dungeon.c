@@ -1272,24 +1272,7 @@ static void process_some_user_pref_files(void)
 }
 
 
-/*
- * Actually play a game.
- *
- * This function is called from a variety of entry points, since both
- * the standard "main.c" file, as well as several platform-specific
- * "main-xxx.c" files, call this function to start a new game with a
- * new savefile, start a new game with an existing savefile, or resume
- * a saved game with an existing savefile.
- *
- * If the "new_game" parameter is true, and the savefile contains a
- * living character, then that character will be killed, so that the
- * player may start a new game with that savefile.  This is only used
- * by the "-n" option in "main.c".
- *
- * If the savefile does not exist, cannot be loaded, or contains a dead
- * character, then a new game will be started.
- */
-void play_game(bool new_game)
+void textui_pregame_init(void)
 {
 	u32b default_window_flag[ANGBAND_TERM_MAX];
 
@@ -1301,8 +1284,6 @@ void play_game(bool new_game)
 
 	/* Initialize input hooks (only here temporarily - NRM) */
 	textui_input_init();
-
-	/*** Do horrible, hacky things, to start the game off ***/
 
 	/* Hack -- Increase "icky" depth */
 	character_icky++;
@@ -1334,26 +1315,43 @@ void play_game(bool new_game)
 
 	/* Set up the subwindows */
 	subwindows_set_flags(default_window_flag, ANGBAND_TERM_MAX);
+}
+
+/*
+ * Actually play a game.
+ *
+ * This function is called from a variety of entry points, since both
+ * the standard "main.c" file, as well as several platform-specific
+ * "main-xxx.c" files, call this function to start a new game with a
+ * new savefile, start a new game with an existing savefile, or resume
+ * a saved game with an existing savefile.
+ *
+ * If the "new_game" parameter is true, and the savefile contains a
+ * living character, then that character will be killed, so that the
+ * player may start a new game with that savefile.  This is only used
+ * by the "-n" option in "main.c".
+ *
+ * If the savefile does not exist, cannot be loaded, or contains a dead
+ * character, then a new game will be started.
+ */
+void play_game(bool new_game)
+{
+	textui_pregame_init();
 
 	/*** Try to load the savefile ***/
 
 	player->is_dead = TRUE;
 
 	/* Try loading */
-	if (file_exists(savefile) && !savefile_load(savefile, arg_wizard)) {
+	if (file_exists(savefile) && !savefile_load(savefile, arg_wizard))
 		quit("Broken savefile");
-	}
 
 	/* No living character loaded */
-	if (player->is_dead || new_game) {
-		/* The dungeon is not ready */
-		character_dungeon = FALSE;
-
-		/* Roll up a new character */
+	if (player->is_dead || new_game)
 		textui_do_birth();
-	}
 
-	/* Process some user pref files */
+	/* Reset visuals, then load prefs */
+	reset_visuals(TRUE);
 	process_some_user_pref_files();
 
 	/* Tell the UI we've started. */

@@ -922,6 +922,9 @@ void do_cmd_birth_init(struct command *cmd)
 {
 	char *buf;
 
+	/* The dungeon is not ready */
+	character_dungeon = FALSE;
+
 	/*
 	 * If there's a quickstart character, store it for later use.
 	 * If not, default to whatever the first of the choices is.
