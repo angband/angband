@@ -282,8 +282,9 @@ void textui_spell_browse(void)
 /**
  * Get a spell from specified book.
  */
-int get_spell_from_book(const char *verb, struct object *book,
-		const char *error, bool (*spell_filter)(int spell))
+int textui_get_spell_from_book(const char *verb, struct object *book,
+							   const char *error,
+							   bool (*spell_filter)(int spell))
 {
 	const char *noun = player->class->magic.spell_realm->spell_noun;
 
@@ -305,8 +306,9 @@ int get_spell_from_book(const char *verb, struct object *book,
 /**
  * Get a spell from the player.
  */
-int get_spell(const char *verb, item_tester book_filter,
-		cmd_code cmd, const char *error, bool (*spell_filter)(int spell))
+int textui_get_spell(const char *verb, item_tester book_filter,
+					 cmd_code cmd, const char *error,
+					 bool (*spell_filter)(int spell))
 {
 	char prompt[1024];
 	struct object *book;
@@ -319,5 +321,5 @@ int get_spell(const char *verb, item_tester book_filter,
 			cmd, book_filter, (USE_INVEN | USE_FLOOR)))
 		return -1;
 
-	return get_spell_from_book(verb, book, error, spell_filter);
+	return textui_get_spell_from_book(verb, book, error, spell_filter);
 }

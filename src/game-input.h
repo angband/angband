@@ -19,12 +19,19 @@
 #ifndef INCLUDED_GAME_INPUT_H
 #define INCLUDED_GAME_INPUT_H
 
+#include "cmd-core.h"
+
 bool (*get_string_hook)(const char *prompt, char *buf, size_t len);
 int (*get_quantity_hook)(const char *prompt, int max);
 bool (*get_check_hook)(const char *prompt);
 bool (*get_com_hook)(const char *prompt, char *command);
 bool (*get_rep_dir_hook)(int *dir, bool allow_none);
 bool (*get_aim_dir_hook)(int *dir);
+int (*get_spell_from_book_hook)(const char *verb, struct object *book,
+								const char *error,
+								bool (*spell_filter)(int spell));
+int (*get_spell_hook)(const char *verb, item_tester book_filter, cmd_code cmd,
+					  const char *error, bool (*spell_filter)(int spell));
 
 bool get_string(const char *prompt, char *buf, size_t len);
 int get_quantity(const char *prompt, int max);
@@ -32,5 +39,9 @@ bool get_check(const char *prompt);
 bool get_com(const char *prompt, char *command);
 bool get_rep_dir(int *dir, bool allow_none);
 bool get_aim_dir(int *dir);
+int get_spell_from_book(const char *verb, struct object *book,
+						const char *error, bool (*spell_filter)(int spell));
+int get_spell(const char *verb, item_tester book_filter, cmd_code cmd,
+			  const char *error, bool (*spell_filter)(int spell));
 
 #endif /* INCLUDED_GAME_INPUT_H */

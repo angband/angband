@@ -17,6 +17,7 @@
  */
 
 #include "angband.h"
+#include "cmd-core.h"
 
 bool (*get_string_hook)(const char *prompt, char *buf, size_t len);
 int (*get_quantity_hook)(const char *prompt, int max);
@@ -24,6 +25,11 @@ bool (*get_check_hook)(const char *prompt);
 bool (*get_com_hook)(const char *prompt, char *command);
 bool (*get_rep_dir_hook)(int *dir, bool allow_none);
 bool (*get_aim_dir_hook)(int *dir);
+int (*get_spell_from_book_hook)(const char *verb, struct object *book,
+								const char *error,
+								bool (*spell_filter)(int spell));
+int (*get_spell_hook)(const char *verb, item_tester book_filter, cmd_code cmd,
+					  const char *error, bool (*spell_filter)(int spell));
 
 /**
  * Prompt for a string from the user.
@@ -104,4 +110,25 @@ bool get_aim_dir(int *dir)
 {
 	/* Ask the UI for it */
 	return get_aim_dir_hook(dir);
+}
+
+/**
+ * Get a spell from a specified book.
+ */
+int get_spell_from_book(const char *verb, struct object *book,
+		const char *error, bool (*spell_filter)(int spell))
+{
+	/* Ask the UI for it */
+	return get_spell_from_book_hook(verb, book, error, spell_filter);
+}
+
+/**
+ * Get a spell from the player.
+ */
+int get_spell(const char *verb, item_tester book_filter,
+						cmd_code cmd, const char *error,
+						bool (*spell_filter)(int spell))
+{
+	/* Ask the UI for it */
+	return get_spell_hook(verb, book_filter, cmd, error, spell_filter);
 }
