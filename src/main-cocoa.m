@@ -1069,7 +1069,6 @@ static size_t Term_mbcs_cocoa(wchar_t *dest, const char *src, int n)
     msg_flag = FALSE;
     
     player->upkeep->playing = FALSE;
-    player->upkeep->leaving = TRUE;
     quit_when_ready = TRUE;
 }
 
@@ -3405,9 +3404,6 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
     {
         /* Stop playing */
         player->upkeep->playing = FALSE;
-
-        /* Leaving */
-        player->upkeep->leaving = TRUE;
 
         /* Post an escape event so that we can return from our get-key-event function */
         wakeup_event_loop();
