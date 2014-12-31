@@ -47,7 +47,6 @@
 #include "tables.h"
 #include "target.h"
 #include "trap.h"
-#include "ui-input.h"
 
 
 typedef struct effect_handler_context_s {

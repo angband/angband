@@ -1211,7 +1211,7 @@ void do_cmd_change_name(void)
 		}
 
 		/* Flush messages */
-		message_flush();
+		event_signal(EVENT_MESSAGE_FLUSH);
 	}
 
 	/* Load screen */

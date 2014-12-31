@@ -172,7 +172,7 @@ static void death_file(const char *title, int row)
 			msg("Character dump failed!");
 
 		/* Flush messages */
-		message_flush();
+		event_signal(EVENT_MESSAGE_FLUSH);
 	}
 }
 
@@ -372,7 +372,7 @@ void death_screen(void)
 
 	/* Flush all input and output */
 	event_signal(EVENT_INPUT_FLUSH);
-	message_flush();
+	event_signal(EVENT_MESSAGE_FLUSH);
 
 	/* Display and use the death menu */
 	if (!death_menu)

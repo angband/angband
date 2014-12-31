@@ -1138,7 +1138,7 @@ void textui_store_knowledge(int n)
 	menu_select(&ctx.menu, 0, FALSE);
 
 	/* Flush messages XXX XXX XXX */
-	message_flush();
+	event_signal(EVENT_MESSAGE_FLUSH);
 
 	screen_load();
 
@@ -1221,7 +1221,7 @@ void textui_enter_store(void)
 	player->upkeep->energy_use = 100;
 
 	/* Flush messages XXX XXX XXX */
-	message_flush();
+	event_signal(EVENT_MESSAGE_FLUSH);
 
 	/* Load the screen */
 	screen_load();

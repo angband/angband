@@ -81,7 +81,7 @@ static void dump_pref_file(void (*dump)(ang_file *), const char *title, int row)
 	else
 		msg("Failed to save %s.", strstr(title, " ") + 1);
 
-	message_flush();
+	event_signal(EVENT_MESSAGE_FLUSH);
 
 	return;
 }
@@ -578,7 +578,7 @@ static void keymap_browse_hook(int oid, void *db, const region *loc)
 {
 	char tmp[1024];
 
-	message_flush();
+	event_signal(EVENT_MESSAGE_FLUSH);
 
 	clear_from(13);
 
@@ -658,7 +658,7 @@ static void visuals_reset(const char *title, int row)
 	/* Message */
 	prt("", 0, 0);
 	msg("Visual attr/char tables reset.");
-	message_flush();
+	event_signal(EVENT_MESSAGE_FLUSH);
 }
 
 
@@ -676,7 +676,7 @@ static menu_action visual_menu_items [] =
 
 static void visuals_browse_hook(int oid, void *db, const region *loc)
 {
-	message_flush();
+	event_signal(EVENT_MESSAGE_FLUSH);
 	clear_from(1);
 }
 
@@ -808,7 +808,7 @@ static void colors_modify(const char *title, int row)
 
 static void colors_browse_hook(int oid, void *db, const region *loc)
 {
-	message_flush();
+	event_signal(EVENT_MESSAGE_FLUSH);
 	clear_from(1);
 }
 

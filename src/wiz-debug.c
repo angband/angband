@@ -922,7 +922,7 @@ static void wiz_statistics(struct object *obj, int level)
 		/* Let us know what we are doing */
 		msg("Creating a lot of %s items. Base level = %d.", quality,
 			player->depth);
-		message_flush();
+		event_signal(EVENT_MESSAGE_FLUSH);
 
 		/* Set counters to zero */
 		matches = better = worse = other = 0;
@@ -1002,7 +1002,7 @@ static void wiz_statistics(struct object *obj, int level)
 
 		/* Final dump */
 		msg(q, i, matches, better, worse, other);
-		message_flush();
+		event_signal(EVENT_MESSAGE_FLUSH);
 	}
 
 
@@ -1460,7 +1460,7 @@ static void do_cmd_wiz_query(void)
 	/* Get keypress */
 	msg("Press any key.");
 	inkey_ex();
-	message_flush();
+	event_signal(EVENT_MESSAGE_FLUSH);
 
 	/* Redraw map */
 	prt_map();
@@ -1566,7 +1566,7 @@ static void do_cmd_wiz_features(void)
 	/* Get keypress */
 	msg("Press any key.");
 	inkey_ex();
-	message_flush();
+	event_signal(EVENT_MESSAGE_FLUSH);
 
 	/* Redraw map */
 	prt_map();

@@ -30,7 +30,6 @@
 #include "obj-util.h"
 #include "player-attack.h"
 #include "player-timed.h"
-#include "ui-input.h" /* message_flush */
 #include "ui.h" /* SCREEN_REGION, textui_textblock_place */
 #include "z-term.h" /* tile_width/tile_height */
 #include "z-textblock.h"
@@ -1996,7 +1995,7 @@ void lore_show_interactive(const monster_race *race, const monster_lore *lore)
 	textblock *tb;
 	assert(race && lore);
 
-	message_flush();
+	event_signal(EVENT_MESSAGE_FLUSH);
 
 	tb = textblock_new();
 	lore_description(tb, race, lore, FALSE);

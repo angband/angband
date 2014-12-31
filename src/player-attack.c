@@ -41,7 +41,6 @@
 #include "project.h"
 #include "tables.h"
 #include "target.h"
-#include "ui-input.h" /* get_check */
 #include "ui-map.h"
 #include "ui-target.h"
 
@@ -502,7 +501,7 @@ static void ranged_helper(struct object *obj, int dir, int range, int shots,
 
 	/* Check for target validity */
 	/* XXX-AS this is the wrong place for this - it should be in the UI layer */
-	/* Fix and then remove the include of ui-input.h */
+	/* Fix and then remove the include of ui-input.h (or something - NRM) */
 	if ((dir == 5) && target_okay()) {
 		int taim;
 		target_get(&tx, &ty);

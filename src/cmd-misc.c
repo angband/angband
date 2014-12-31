@@ -30,7 +30,6 @@
 #include "prefs.h"
 #include "obj-util.h"
 #include "target.h"
-#include "ui-input.h"
 #include "wizard.h"
 
 
@@ -45,7 +44,7 @@ void do_cmd_wizard(void)
 		/* Mention effects */
 		msg("You are about to enter 'wizard' mode for the very first time!");
 		msg("This is a form of cheating, and your game will not be scored!");
-		message_flush();
+		event_signal(EVENT_MESSAGE_FLUSH);
 
 		/* Verify request */
 		if (!get_check("Are you sure you want to enter wizard mode? "))
@@ -88,7 +87,7 @@ void do_cmd_try_debug(void)
 		/* Mention effects */
 		msg("You are about to use the dangerous, unsupported, debug commands!");
 		msg("Your machine may crash, and your savefile may become corrupted!");
-		message_flush();
+		event_signal(EVENT_MESSAGE_FLUSH);
 
 		/* Verify request */
 		if (!get_check("Are you sure you want to use the debug commands? "))

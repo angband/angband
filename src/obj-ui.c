@@ -822,7 +822,7 @@ bool get_item(struct object **choice, const char *pmt, const char *str,
 		olist_mode |= OLIST_SEMPTY;
 
 	/* Paranoia XXX XXX XXX */
-	message_flush();
+	event_signal(EVENT_MESSAGE_FLUSH);
 
 	/* Not done */
 	done = FALSE;
@@ -1605,7 +1605,7 @@ void display_object_recall_interactive(struct object *o_ptr)
 	char header[120];
 	textblock *tb;
 
-	message_flush();
+	event_signal(EVENT_MESSAGE_FLUSH);
 
 	tb = object_info(o_ptr, OINFO_NONE);
 	object_desc(header, sizeof(header), o_ptr, ODESC_PREFIX | ODESC_FULL);

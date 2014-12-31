@@ -270,7 +270,7 @@ void do_cmd_load_screen(void)
 
 	/* Message */
 	msg("Screen dump loaded.");
-	message_flush();
+	event_signal(EVENT_MESSAGE_FLUSH);
 
 
 	/* Load screen */
@@ -358,7 +358,7 @@ static void do_cmd_save_screen_text(void)
 
 	/* Message */
 	msg("Screen dump saved.");
-	message_flush();
+	event_signal(EVENT_MESSAGE_FLUSH);
 
 
 	/* Load screen */
@@ -567,7 +567,7 @@ static void do_cmd_save_screen_html(int mode)
 	if (!fff)
 	{
 		msg("Screen dump failed.");
-		message_flush();
+		event_signal(EVENT_MESSAGE_FLUSH);
 		return;
 	}
 
@@ -589,7 +589,7 @@ static void do_cmd_save_screen_html(int mode)
 	do_cmd_redraw();
 
 	msg("HTML screen dump saved.");
-	message_flush();
+	event_signal(EVENT_MESSAGE_FLUSH);
 }
 
 

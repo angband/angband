@@ -31,7 +31,6 @@
 #include "project.h"
 #include "ui-display.h"
 #include "z-term.h"
-#include "ui-input.h" /* message_flush */
 
 bool arg_wizard;			/* Command arg -- Request wizard mode */
 bool arg_power;				/* Command arg -- Generate monster power */
@@ -1052,7 +1051,7 @@ static void print_error(const char *name, struct parser *p) {
 	parser_getstate(p, &s);
 	msg("Parse error in %s line %d column %d: %s: %s", name,
 	           s.line, s.col, s.msg, parser_error_str[s.error]);
-	message_flush();
+	event_signal(EVENT_MESSAGE_FLUSH);
 }
 
 /**

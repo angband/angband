@@ -707,7 +707,7 @@ static void spoiler_menu_act(const char *title, int row)
 	else if (row == 3)
 		spoil_mon_info("mon-info.spo");
 
-	message_flush();
+	event_signal(EVENT_MESSAGE_FLUSH);
 }
 
 static struct menu *spoil_menu;

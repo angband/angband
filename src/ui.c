@@ -396,7 +396,7 @@ s16b character_icky;
  */
 void screen_save(void)
 {
-	message_flush();
+	event_signal(EVENT_MESSAGE_FLUSH);
 	Term_save();
 	character_icky++;
 }
@@ -406,7 +406,7 @@ void screen_save(void)
  */
 void screen_load(void)
 {
-	message_flush();
+	event_signal(EVENT_MESSAGE_FLUSH);
 	Term_load();
 	character_icky--;
 

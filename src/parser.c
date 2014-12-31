@@ -25,10 +25,10 @@
  */
 
 #include "init.h"
+#include "game-event.h"
 #include "message.h"
 #include "mon-util.h"
 #include "parser.h"
-#include "ui-input.h"
 #include "z-file.h"
 #include "z-form.h"
 #include "z-term.h"
@@ -627,7 +627,7 @@ static void print_error(struct file_parser *fp, struct parser *p) {
 	parser_getstate(p, &s);
 	msg("Parse error in %s line %d column %d: %s: %s", fp->name,
 	           s.line, s.col, s.msg, parser_error_str[s.error]);
-	message_flush();
+	event_signal(EVENT_MESSAGE_FLUSH);
 	quit_fmt("Parse error in %s line %d column %d.", fp->name, s.line, s.col);
 }
 
@@ -665,7 +665,7 @@ errr parse_file(struct parser *p, const char *filename) {
 		/* Failure is always an option */
 		if (!fh) {
 			msg("No monster lore file found");
-			message_flush();
+			event_signal(EVENT_MESSAGE_FLUSH);
 			return PARSE_ERROR_NONE;
 		}
 	} else {

@@ -33,7 +33,6 @@
 #include "target.h"
 #include "ui-target.h"
 #include "ui-spell.h"
-#include "ui-input.h"
 
 errr (*cmd_get_hook)(cmd_context c, bool wait);
 
@@ -370,7 +369,7 @@ int cmd_get_string(struct command *cmd, const char *arg, const char **str,
 
 	/* Introduce */
 	msg("%s", title);
-	message_flush();
+	event_signal(EVENT_MESSAGE_FLUSH);
 
 	/* Prompt properly */
 	if (initial)

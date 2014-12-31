@@ -54,7 +54,7 @@ struct keypress inkey(void);
 ui_event inkey_m(void);
 void bell(const char *reason);
 void display_message(game_event_type unused, game_event_data *data, void *user);
-void message_flush(void);
+void message_flush(game_event_type unused, game_event_data *data, void *user);
 void clear_from(int row);
 bool askfor_aux_keypress(char *buf, size_t buflen, size_t *curs, size_t *len, struct keypress keypress, bool firsttime);
 bool askfor_aux(char *buf, size_t len, bool (*keypress_h)(char *, size_t, size_t *, size_t *, struct keypress, bool));
@@ -63,8 +63,6 @@ char get_char(const char *prompt, const char *options, size_t len, char fallback
 bool (*get_file)(const char *suggested_name, char *path, size_t len);
 bool get_com_ex(const char *prompt, ui_event *command);
 void pause_line(struct term *term);
-bool get_rep_dir(int *dp, bool allow_5);
-bool get_aim_dir(int *dp);
 void textui_input_init(void);
 void cmd_init(void);
 unsigned char cmd_lookup_key(cmd_code lookup_cmd, int mode);

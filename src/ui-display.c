@@ -1978,7 +1978,7 @@ static void see_floor_items(game_event_type type, game_event_data *data,
 			object_desc(o_name, sizeof(o_name), obj, ODESC_PREFIX | ODESC_FULL);
 
 		/* Message */
-		message_flush();
+		event_signal(EVENT_MESSAGE_FLUSH);
 		msg("You %s %s.", p, o_name);
 	} else {
 		ui_event e;
@@ -2075,6 +2075,7 @@ static void ui_enter_game(game_event_type type, game_event_data *data,
 	event_add_handler(EVENT_MISSILE, display_missile, NULL);
 	event_add_handler(EVENT_MESSAGE, display_message, NULL);
 	event_add_handler(EVENT_INPUT_FLUSH, flush, NULL);
+	event_add_handler(EVENT_MESSAGE_FLUSH, message_flush, NULL);
 }
 
 static void ui_leave_game(game_event_type type, game_event_data *data,
@@ -2106,6 +2107,7 @@ static void ui_leave_game(game_event_type type, game_event_data *data,
 	event_remove_handler(EVENT_MISSILE, display_missile, NULL);
 	event_remove_handler(EVENT_MESSAGE, display_message, NULL);
 	event_remove_handler(EVENT_INPUT_FLUSH, flush, NULL);
+	event_remove_handler(EVENT_MESSAGE_FLUSH, message_flush, NULL);
 }
 
 errr textui_get_cmd(cmd_context context, bool wait)

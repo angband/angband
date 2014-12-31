@@ -40,7 +40,6 @@
 #include "player-util.h"
 #include "target.h"
 #include "trap.h"
-#include "ui-input.h"
 
 /**
  * ------------------------------------------------------------------------

@@ -41,7 +41,6 @@
 #include "store.h"
 #include "tables.h"
 #include "trap.h"
-#include "ui-input.h"
 #include "ui-store.h"
 #include "z-term.h"
 

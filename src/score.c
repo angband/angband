@@ -437,29 +437,28 @@ void enter_score(time_t *death_time)
 			continue;
 
 		msg("Score not registered for cheaters.");
-		message_flush();
+		event_signal(EVENT_MESSAGE_FLUSH);
 		return;
 	}
 
 	/* Wizard-mode pre-empts scoring */
-	if (player->noscore & (NOSCORE_WIZARD | NOSCORE_DEBUG))
-	{
+	if (player->noscore & (NOSCORE_WIZARD | NOSCORE_DEBUG)) {
 		msg("Score not registered for wizards.");
-		message_flush();
+		event_signal(EVENT_MESSAGE_FLUSH);
 	}
 
 	/* Hack -- Interupted */
 	else if (!player->total_winner && streq(player->died_from, "Interrupting"))
 	{
 		msg("Score not registered due to interruption.");
-		message_flush();
+		event_signal(EVENT_MESSAGE_FLUSH);
 	}
 
 	/* Hack -- Quitter */
 	else if (!player->total_winner && streq(player->died_from, "Quitting"))
 	{
 		msg("Score not registered due to quitting.");
-		message_flush();
+		event_signal(EVENT_MESSAGE_FLUSH);
 	}
 
 	/* Add a new entry to the score list, see where it went */

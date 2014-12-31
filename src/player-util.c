@@ -30,7 +30,7 @@
 #include "tables.h"
 #include "target.h"
 #include "ui.h" /* verify_panel */
-#include "ui-input.h" /* bell/flush/message_flush */
+#include "ui-input.h" /* bell */
 
 /*
  * Decreases players hit points and sets death flag if necessary
@@ -69,7 +69,7 @@ void take_hit(struct player *p, int dam, const char *kb_str)
 	{
 		/* Hack -- Note death */
 		msgt(MSG_DEATH, "You die.");
-		message_flush();
+		event_signal(EVENT_MESSAGE_FLUSH);
 
 		/* Note cause of death */
 		my_strcpy(p->died_from, kb_str, sizeof(p->died_from));
@@ -98,7 +98,7 @@ void take_hit(struct player *p, int dam, const char *kb_str)
 
 		/* Message */
 		msgt(MSG_HITPOINT_WARN, "*** LOW HITPOINT WARNING! ***");
-		message_flush();
+		event_signal(EVENT_MESSAGE_FLUSH);
 	}
 }
 

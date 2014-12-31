@@ -20,7 +20,6 @@
 #include "grafmode.h"
 #include "init.h"
 #include "parser.h"
-#include "ui-input.h"
 
 graphics_mode *graphics_modes;
 graphics_mode *current_graphics_mode = NULL;
@@ -156,7 +155,7 @@ static void print_error(const char *name, struct parser *p) {
 	parser_getstate(p, &s);
 	msg("Parse error in %s line %d column %d: %s: %s", name,
 	           s.line, s.col, s.msg, parser_error_str[s.error]);
-	message_flush();
+	event_signal(EVENT_MESSAGE_FLUSH);
 }
 
 bool init_graphics_modes(const char *filename) {

@@ -161,7 +161,7 @@ bool show_file(const char *name, const char *what, int line, int mode)
 	{
 		/* Message */
 		msg("Cannot open '%s'.", name);
-		message_flush();
+		event_signal(EVENT_MESSAGE_FLUSH);
 
 		/* Oops */
 		return (TRUE);

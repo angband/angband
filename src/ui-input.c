@@ -549,14 +549,13 @@ void display_message(game_event_type unused, game_event_data *data, void *user)
 /*
  * Print the queued messages.
  */
-void message_flush(void)
+void message_flush(game_event_type unused, game_event_data *data, void *user)
 {
 	/* Hack -- Reset */
 	if (!msg_flag) message_column = 0;
 
 	/* Flush when needed */
-	if (message_column)
-	{
+	if (message_column) {
 		/* Print pending messages */
 		if (Term)
 			msg_flush(message_column);
@@ -839,7 +838,7 @@ bool get_name(char *buf, size_t buflen)
 	bool res;
 
 	/* Paranoia XXX XXX XXX */
-	message_flush();
+	event_signal(EVENT_MESSAGE_FLUSH);
 
 	/* Display prompt */
 	prt("Enter a name for your character (* for a random name): ", 0, 0);
@@ -877,7 +876,7 @@ bool textui_get_string(const char *prompt, char *buf, size_t len)
 	bool res;
 
 	/* Paranoia XXX XXX XXX */
-	message_flush();
+	event_signal(EVENT_MESSAGE_FLUSH);
 
 	/* Display prompt */
 	prt(prompt, 0, 0);
@@ -956,7 +955,7 @@ bool textui_get_check(const char *prompt)
 	char buf[80];
 
 	/* Paranoia XXX XXX XXX */
-	message_flush();
+	event_signal(EVENT_MESSAGE_FLUSH);
 
 	/* Hack -- Build a "useful" prompt */
 	strnfmt(buf, 78, "%.70s[y/n] ", prompt);
@@ -994,7 +993,7 @@ char get_char(const char *prompt, const char *options, size_t len, char fallback
 	char buf[80];
 
 	/* Paranoia XXX XXX XXX */
-	message_flush();
+	event_signal(EVENT_MESSAGE_FLUSH);
 
 	/* Hack -- Build a "useful" prompt */
 	strnfmt(buf, 78, "%.70s[%s] ", prompt, options);
@@ -1086,7 +1085,7 @@ bool get_com_ex(const char *prompt, ui_event *command)
 	ui_event ke;
 
 	/* Paranoia XXX XXX XXX */
-	message_flush();
+	event_signal(EVENT_MESSAGE_FLUSH);
 
 	/* Display a prompt */
 	prt(prompt, 0, 0);
@@ -1162,7 +1161,7 @@ bool textui_get_rep_dir(int *dp, bool allow_5)
 	while (!dir)
 	{
 		/* Paranoia XXX XXX XXX */
-		message_flush();
+		event_signal(EVENT_MESSAGE_FLUSH);
 
 		/* Get first keypress - the first test is to avoid displaying the
 		 prompt for direction if there's already a keypress queued up

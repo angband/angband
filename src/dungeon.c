@@ -1098,7 +1098,7 @@ static void dungeon(struct chunk *c)
 	verify_panel();
 
 	/* Flush messages */
-	message_flush();
+	event_signal(EVENT_MESSAGE_FLUSH);
 
 	/* Hack -- Increase "xtra" depth */
 	character_xtra++;
@@ -1414,7 +1414,7 @@ void play_game(bool new_game)
 
 
 		/* XXX XXX XXX */
-		message_flush();
+		event_signal(EVENT_MESSAGE_FLUSH);
 
 		/* Accidental Death */
 		if (player->upkeep->playing && player->is_dead) {
@@ -1432,7 +1432,7 @@ void play_game(bool new_game)
 
 				/* Message */
 				msg("You invoke wizard mode and cheat death.");
-				message_flush();
+				event_signal(EVENT_MESSAGE_FLUSH);
 
 				/* Cheat death */
 				player->is_dead = FALSE;
@@ -1463,7 +1463,7 @@ void play_game(bool new_game)
 				{
 					/* Message */
 					msg("A tension leaves the air around you...");
-					message_flush();
+					event_signal(EVENT_MESSAGE_FLUSH);
 
 					/* Hack -- Prevent recall */
 					player->word_recall = 0;
@@ -1506,7 +1506,7 @@ void save_game(void)
 	disturb(player, 1);
 
 	/* Clear messages */
-	message_flush();
+	event_signal(EVENT_MESSAGE_FLUSH);
 
 	/* Handle stuff */
 	handle_stuff(player->upkeep);
@@ -1596,7 +1596,7 @@ void close_game(void)
 	handle_stuff(player->upkeep);
 
 	/* Flush the messages */
-	message_flush();
+	event_signal(EVENT_MESSAGE_FLUSH);
 
 	/* Flush the input */
 	event_signal(EVENT_INPUT_FLUSH);
@@ -1611,7 +1611,7 @@ void close_game(void)
 
 	if (!lore_save("lore.txt")) {
 		msg("lore save failed!");
-		message_flush();
+		event_signal(EVENT_MESSAGE_FLUSH);
 	}
 
 	/* Handle death */
@@ -1624,7 +1624,7 @@ void close_game(void)
 		if (!savefile_save(savefile))
 		{
 			msg("death save failed!");
-			message_flush();
+			event_signal(EVENT_MESSAGE_FLUSH);
 		}
 	}
 
