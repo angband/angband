@@ -27,7 +27,6 @@
 #include "player-timed.h"
 #include "project.h"
 #include "target.h"
-#include "ui-target.h"
 #include "z-term.h" /* panel_contains */
 
 /*** File-wide variables ***/
@@ -422,6 +421,8 @@ bool target_sighted(void)
 			 (target_who && mflag_has(target_who->mflag, MFLAG_VISIBLE)));
 }
 
+
+#define TS_INITIAL_SIZE	20
 
 /*
  * Return a target set of target_able monsters.

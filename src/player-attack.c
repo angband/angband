@@ -42,7 +42,6 @@
 #include "tables.h"
 #include "target.h"
 #include "ui-map.h"
-#include "ui-target.h"
 
 /**
  * Returns percent chance of an object breaking after throwing or shooting.

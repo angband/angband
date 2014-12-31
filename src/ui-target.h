@@ -31,8 +31,6 @@
 /* Size of the array that is used for object names during targeting. */
 #define TARGET_OUT_VAL_SIZE 256
 
-#define TS_INITIAL_SIZE	20
-
 int target_dir(struct keypress ch);
 int target_dir_allow(struct keypress ch, bool allow_5);
 void target_display_help(bool monster, bool free);
