@@ -653,9 +653,5 @@ void textui_cmd_rest(void)
  */
 void textui_quit(void)
 {
-	/* Stop playing */
 	player->upkeep->playing = FALSE;
-
-	/* Leaving */
-	player->upkeep->leaving = TRUE;
 }

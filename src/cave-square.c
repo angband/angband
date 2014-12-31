@@ -742,9 +742,9 @@ void square_set_feat(struct chunk *c, int y, int x, int feat)
 		square_light_spot(c, y, x);
 	} else {
 		/* Make sure no incorrect wall flags set for dungeon generation */
-		   sqinfo_off(c->squares[y][x].info, SQUARE_WALL_INNER);
-		   sqinfo_off(c->squares[y][x].info, SQUARE_WALL_OUTER);
-		   sqinfo_off(c->squares[y][x].info, SQUARE_WALL_SOLID);
+		sqinfo_off(c->squares[y][x].info, SQUARE_WALL_INNER);
+		sqinfo_off(c->squares[y][x].info, SQUARE_WALL_OUTER);
+		sqinfo_off(c->squares[y][x].info, SQUARE_WALL_SOLID);
 	}
 }
 

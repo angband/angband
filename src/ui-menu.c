@@ -20,8 +20,8 @@
 #include "tables.h"
 #include "ui-target.h"
 #include "ui-event.h"
-#include "ui-menu.h"
 #include "ui-input.h"
+#include "ui-menu.h"
 
 /* Cursor colours */
 const byte curs_attrs[2][2] =

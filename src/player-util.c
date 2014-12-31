@@ -91,9 +91,6 @@ void take_hit(struct player *p, int dam, const char *kb_str)
 		/* Note death */
 		p->is_dead = TRUE;
 
-		/* Leaving */
-		p->upkeep->leaving = TRUE;
-
 		/* Dead */
 		return;
 	}

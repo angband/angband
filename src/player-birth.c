@@ -1148,9 +1148,6 @@ void do_cmd_accept_character(struct command *cmd)
 
 	/* Now we're really done.. */
 	event_signal(EVENT_LEAVE_BIRTH);
-
-	/* Generate a dungeon level if needed */
-	cave_generate(&cave, player);
 }
 
 
