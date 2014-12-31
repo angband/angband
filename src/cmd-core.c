@@ -115,8 +115,6 @@ static const struct command_info game_cmds[] =
 	{ CMD_RETRIEVE, "retrieve", do_cmd_retrieve, FALSE, 0 },
 	{ CMD_USE, "use", do_cmd_use, FALSE, 0 },
 	{ CMD_SUICIDE, "commit suicide", do_cmd_suicide, FALSE, 0 },
-	{ CMD_SAVE, "save", do_cmd_save_game, FALSE, 0 },
-	{ CMD_QUIT, "quit", do_cmd_quit, FALSE, 0 },
 	{ CMD_HELP, "help", NULL, FALSE, 0 },
 	{ CMD_REPEAT, "repeat", NULL, FALSE, 0 },
 };

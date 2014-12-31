@@ -116,8 +116,7 @@ static enum birth_stage textui_birth_quickstart(void)
 		}
 		else if (ke.code == KTRL('X'))
 		{
-			cmdq_push(CMD_QUIT);
-			next = BIRTH_COMPLETE;
+			quit(NULL);
 		}
 		else if (ke.code == 'C' || ke.code == 'c')
 		{
@@ -627,8 +626,7 @@ static enum birth_stage menu_question(enum birth_stage current, struct menu *cur
 			}
 			else if (cx.key.code == KTRL('X')) 
 			{
-				cmdq_push(CMD_QUIT);
-				next = BIRTH_COMPLETE;
+				quit(NULL);
 			}
 			else if (cx.key.code == '?')
 			{
@@ -700,8 +698,7 @@ static enum birth_stage roller_command(bool first_call)
 	/* Quit */
 	else if (ch.code == KTRL('X')) 
 	{
-		cmdq_push(CMD_QUIT);
-		next = BIRTH_COMPLETE;
+		quit(NULL);
 	}
 
 	/* Help XXX */
@@ -809,10 +806,7 @@ static enum birth_stage point_based_command(void)
 	ch = inkey();
 	
 	if (ch.code == KTRL('X')) 
-	{
-		cmdq_push(CMD_QUIT);
-		next = BIRTH_COMPLETE;
-	}
+		quit(NULL);
 	
 	/* Go back a step, or back to the start of this step */
 	else if (ch.code == ESCAPE) 
@@ -906,8 +900,7 @@ static enum birth_stage get_confirm_command(void)
 	}
 	else if (ke.code == KTRL('X'))
 	{
-		cmdq_push(CMD_QUIT);
-		next = BIRTH_COMPLETE;
+		quit(NULL);
 	}
 	else if (ke.code == ESCAPE)
 	{

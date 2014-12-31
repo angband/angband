@@ -103,23 +103,6 @@ void do_cmd_try_debug(void)
 
 
 /*
- * Quit the game.
- */
-void do_cmd_quit(struct command *cmd)
-{
-	if (cmd->context == CMD_BIRTH)
-		quit(NULL);
-
-	/* Stop playing */
-	player->upkeep->playing = FALSE;
-
-	/* Leaving */
-	player->upkeep->leaving = TRUE;
-}
-
-
-
-/*
  * Hack -- commit suicide
  */
 void do_cmd_suicide(struct command *cmd)
@@ -127,24 +110,9 @@ void do_cmd_suicide(struct command *cmd)
 	/* Commit suicide */
 	player->is_dead = TRUE;
 
-	/* Stop playing */
-	player->upkeep->playing = FALSE;
-
-	/* Leaving */
-	player->upkeep->leaving = TRUE;
-
 	/* Cause of death */
 	my_strcpy(player->died_from, "Quitting", sizeof(player->died_from));
 }
-
-
-void do_cmd_save_game(struct command *cmd)
-{
-	save_game();
-}
-
-
-
 
 
 /*

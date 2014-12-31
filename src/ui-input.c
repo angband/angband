@@ -1459,8 +1459,8 @@ struct cmd_info cmd_util[] =
 {
 	{ "Interact with options", { '=' }, CMD_NULL, do_cmd_xxx_options },
 
-	{ "Save and don't quit", { KTRL('S') }, CMD_SAVE },
-	{ "Save and quit", { KTRL('X') }, CMD_QUIT },
+	{ "Save and don't quit", { KTRL('S') }, CMD_NULL, save_game },
+	{ "Save and quit", { KTRL('X') }, CMD_NULL, textui_quit },
 	{ "Quit (commit suicide)", { 'Q' }, CMD_NULL, textui_cmd_suicide },
 	{ "Redraw the screen", { KTRL('R') }, CMD_NULL, do_cmd_redraw },
 

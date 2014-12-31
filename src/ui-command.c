@@ -17,10 +17,10 @@
  */
 
 #include "angband.h"
-#include "cave.h"
-#include "cmds.h"
-#include "cmd-core.h"
 #include "buildid.h"
+#include "cave.h"
+#include "cmd-core.h"
+#include "cmds.h"
 #include "dungeon.h"
 #include "game-input.h"
 #include "init.h"
@@ -28,16 +28,17 @@
 #include "monster.h"
 #include "obj-gear.h"
 #include "obj-util.h"
-#include "prefs.h"
 #include "player-attack.h"
 #include "player-timed.h"
 #include "player-util.h"
+#include "prefs.h"
+#include "store.h"
 #include "target.h"
 #include "textui.h"
-#include "store.h"
 #include "ui.h"
-#include "ui-event.h"
+#include "ui-command.h"
 #include "ui-display.h"
+#include "ui-event.h"
 #include "ui-help.h"
 #include "ui-input.h"
 #include "ui-map.h"
@@ -172,6 +173,7 @@ void textui_cmd_suicide(void)
 	}
 
 	cmdq_push(CMD_SUICIDE);
+	textui_quit();
 }
 
 
@@ -643,4 +645,17 @@ void textui_cmd_rest(void)
 		cmdq_push(CMD_REST);
 		cmd_set_arg_choice(cmdq_peek(), "choice", turns);
 	}
+}
+
+
+/*
+ * Quit the game.
+ */
+void textui_quit(void)
+{
+	/* Stop playing */
+	player->upkeep->playing = FALSE;
+
+	/* Leaving */
+	player->upkeep->leaving = TRUE;
 }
