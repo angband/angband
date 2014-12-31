@@ -59,7 +59,7 @@ u16b lazymove_delay = 0;
  * next call to "inkey()", perform the actual flushing, for efficiency,
  * and correctness of the "inkey()" function.
  */
-void flush(void)
+void flush(game_event_type unused, game_event_data *data, void *user)
 {
 	/* Do it later */
 	inkey_xtra = TRUE;
@@ -389,7 +389,7 @@ void bell(const char *reason)
 	event_signal_message(EVENT_MESSAGE, MSG_BELL, reason);
 
 	/* Flush the input (later!) */
-	flush();
+	event_signal(EVENT_INPUT_FLUSH);
 }
 
 

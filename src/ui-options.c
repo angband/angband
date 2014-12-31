@@ -395,7 +395,8 @@ static struct keypress keymap_buffer[KEYMAP_ACTION_MAX];
  *
  * Returns the trigger input.
  *
- * Note that both "flush()" calls are extremely important.  This may
+ * Note that both "event_signal(EVENT_INPUT_FLUSH)" calls are extremely
+ * important.  This may
  * no longer be true, since "util.c" is much simpler now.  XXX XXX XXX
  */
 static struct keypress keymap_get_trigger(void)
@@ -404,7 +405,7 @@ static struct keypress keymap_get_trigger(void)
 	struct keypress buf[2] = { { 0 }, { 0 } };
 
 	/* Flush */
-	flush();
+	event_signal(EVENT_INPUT_FLUSH);
 
 	/* Get a key */
 	buf[0] = inkey();
@@ -416,7 +417,7 @@ static struct keypress keymap_get_trigger(void)
 	Term_addstr(-1, COLOUR_WHITE, tmp);
 
 	/* Flush */
-	flush();
+	event_signal(EVENT_INPUT_FLUSH);
 
 	/* Return trigger */
 	return buf[0];

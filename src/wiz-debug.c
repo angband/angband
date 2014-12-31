@@ -939,7 +939,7 @@ static void wiz_statistics(struct object *obj, int level)
 				/* Allow interupt */
 				kp = inkey();
 				if (kp.type != EVT_NONE) {
-					flush();
+					event_signal(EVENT_INPUT_FLUSH);
 					break;
 				}
 

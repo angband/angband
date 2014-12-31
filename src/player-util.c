@@ -610,13 +610,12 @@ void disturb(struct player *p, int stop_search)
 	}
 
 	/* Cancel searching if requested */
-	if (stop_search && p->searching)
-	{
+	if (stop_search && p->searching) {
 		p->searching = FALSE;
 		p->upkeep->update |= PU_BONUS;
 		p->upkeep->redraw |= PR_STATE;
 	}
 
 	/* Flush input */
-	flush();
+	event_signal(EVENT_INPUT_FLUSH);
 }

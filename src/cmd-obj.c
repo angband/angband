@@ -75,14 +75,14 @@ static int check_devices(struct object *obj)
 
 	/* Roll for usage */
 	if (randint1(1000) < fail) {
-		flush();
+		event_signal(EVENT_INPUT_FLUSH);
 		msg("You failed to %s properly.", action);
 		return FALSE;
 	}
 
 	/* Notice empty staffs */
 	if (what && obj->pval <= 0) {
-		flush();
+		event_signal(EVENT_INPUT_FLUSH);
 		msg("The %s has no charges left.", what);
 		return FALSE;
 	}
@@ -996,7 +996,7 @@ void do_cmd_cast(struct command *cmd)
 		msg("You do not have enough mana to %s this %s.", verb, noun);
 
 		/* Flush input */
-		flush();
+		event_signal(EVENT_INPUT_FLUSH);
 
 		/* Verify */
 		if (!get_check("Attempt it anyway? ")) return;

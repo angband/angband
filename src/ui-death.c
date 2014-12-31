@@ -142,7 +142,7 @@ static void display_winner(void)
 
 	put_str_centred(i, 0, wid, "All Hail the Mighty %s!", player->sex->winner);
 
-	flush();
+	event_signal(EVENT_INPUT_FLUSH);
 	pause_line(Term);
 }
 
@@ -371,7 +371,7 @@ void death_screen(void)
 	print_tomb();
 
 	/* Flush all input and output */
-	flush();
+	event_signal(EVENT_INPUT_FLUSH);
 	message_flush();
 
 	/* Display and use the death menu */

@@ -800,7 +800,7 @@ static void process_player(void)
 		e = inkey_ex();
 		if (e.type != EVT_NONE) {
 			/* Flush and disturb */
-			flush();
+			event_signal(EVENT_INPUT_FLUSH);
 			disturb(player, 0);
 			msg("Cancelled.");
 		}
@@ -1599,7 +1599,7 @@ void close_game(void)
 	message_flush();
 
 	/* Flush the input */
-	flush();
+	event_signal(EVENT_INPUT_FLUSH);
 
 
 	/* No suspending now */

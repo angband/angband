@@ -319,7 +319,7 @@ static bool do_cmd_open_aux(int y, int x)
 			/* Removed to avoid exploit by repeatedly locking and unlocking */
 			/* player_exp_gain(player, 1); */
 		} else {
-			flush();
+			event_signal(EVENT_INPUT_FLUSH);
 
 			/* Message */
 			msgt(MSG_LOCKPICK_FAIL, "You failed to pick the lock.");
@@ -796,7 +796,7 @@ static bool do_cmd_lock_door(int y, int x)
 
 	/* Failure -- Keep trying */
 	else if ((i > 5) && (randint1(i) > 5)) {
-		flush();
+		event_signal(EVENT_INPUT_FLUSH);
 		msg("You failed to lock the door.");
 
 		/* We may keep trying */
@@ -871,7 +871,7 @@ static bool do_cmd_disarm_aux(int y, int x)
 		square_destroy_trap(cave, y, x);
 	} else if ((i > 5) && (randint1(i) > 5)) {
 		/* Failure -- Keep trying */
-		flush();
+		event_signal(EVENT_INPUT_FLUSH);
 		msg("You failed to disarm the %s.", trap->kind->name);
 		more = TRUE;
 	} else {

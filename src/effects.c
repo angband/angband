@@ -1842,7 +1842,7 @@ bool enchant_spell(int num_hit, int num_dam, int num_ac)
 
 	/* Failure */
 	if (!okay) {
-		flush();
+		event_signal(EVENT_INPUT_FLUSH);
 
 		/* Message */
 		msg("The enchantment failed.");
@@ -1910,7 +1910,7 @@ void brand_object(object_type *obj, const char *name)
 		/* Enchant */
 		enchant(obj, randint0(3) + 4, ENCH_TOHIT | ENCH_TODAM);
 	} else {
-		flush();
+		event_signal(EVENT_INPUT_FLUSH);
 		msg("The branding failed.");
 	}
 }

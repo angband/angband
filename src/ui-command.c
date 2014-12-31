@@ -72,7 +72,7 @@ void do_cmd_redraw(void)
 	Term_flush();
 
 	/* Reset "inkey()" */
-	flush();
+	event_signal(EVENT_INPUT_FLUSH);
 
 	if (character_dungeon)
 		verify_panel();
@@ -146,7 +146,7 @@ void do_cmd_unknown(void)
 void textui_cmd_suicide(void)
 {
 	/* Flush input */
-	flush();
+	event_signal(EVENT_INPUT_FLUSH);
 
 	/* Verify Retirement */
 	if (player->total_winner)
@@ -165,7 +165,7 @@ void textui_cmd_suicide(void)
 
 		/* Special Verification for suicide */
 		prt("Please verify SUICIDE by typing the '@' sign: ", 0, 0);
-		flush();
+		event_signal(EVENT_INPUT_FLUSH);
 		ch = inkey();
 		prt("", 0, 0);
 		if (ch.code != '@') return;

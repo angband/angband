@@ -47,7 +47,7 @@ extern bool inkey_flag;
 extern u16b lazymove_delay;
 extern bool msg_flag;
 
-void flush(void);
+void flush(game_event_type unused, game_event_data *data, void *user);
 ui_event inkey_ex(void);
 void anykey(void);
 struct keypress inkey(void);

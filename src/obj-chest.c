@@ -393,7 +393,7 @@ bool do_cmd_open_chest(int y, int x, struct object *obj)
 		} else {
 			/* We may continue repeating */
 			more = TRUE;
-			flush();
+			event_signal(EVENT_INPUT_FLUSH);
 			msgt(MSG_LOCKPICK_FAIL, "You failed to pick the lock.");
 		}
 	}
@@ -467,7 +467,7 @@ bool do_cmd_disarm_chest(int y, int x, struct object *obj)
 	} else if ((i > 5) && (randint1(i) > 5)) {
 		/* Failure -- Keep trying */
 		more = TRUE;
-		flush();
+		event_signal(EVENT_INPUT_FLUSH);
 		msg("You failed to disarm the chest.");
 	} else {
 		/* Failure -- Set off the trap */
