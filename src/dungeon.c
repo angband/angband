@@ -603,10 +603,10 @@ static void process_world(struct chunk *c)
 	/*** Process Light ***/
 
 	/* Check for light being wielded */
-	obj = equipped_item_by_slot_name(player, "light");;
+	obj = equipped_item_by_slot_name(player, "light");
 
 	/* Burn some fuel in the current light */
-	if (tval_is_light(obj)) {
+	if (obj && tval_is_light(obj)) {
 		bool burn_fuel = TRUE;
 
 		/* Turn off the wanton burning of light during the day in the town */
