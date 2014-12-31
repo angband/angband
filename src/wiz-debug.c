@@ -1157,6 +1157,57 @@ static void do_cmd_wiz_play(void)
 }
 
 /**
+ * What happens when you cheat death.  Tsk, tsk.
+ */
+void wiz_cheat_death(void)
+{
+	/* Mark social class, reset age, if needed */
+	player->age = 1;
+	player->noscore |= NOSCORE_WIZARD;
+
+	player->is_dead = FALSE;
+
+	/* Restore hit & spell points */
+	player->chp = player->mhp;
+	player->chp_frac = 0;
+	player->csp = player->msp;
+	player->csp_frac = 0;
+
+	/* Healing */
+	(void)player_clear_timed(player, TMD_BLIND, TRUE);
+	(void)player_clear_timed(player, TMD_CONFUSED, TRUE);
+	(void)player_clear_timed(player, TMD_POISONED, TRUE);
+	(void)player_clear_timed(player, TMD_AFRAID, TRUE);
+	(void)player_clear_timed(player, TMD_PARALYZED, TRUE);
+	(void)player_clear_timed(player, TMD_IMAGE, TRUE);
+	(void)player_clear_timed(player, TMD_STUN, TRUE);
+	(void)player_clear_timed(player, TMD_CUT, TRUE);
+
+	/* Prevent starvation */
+	player_set_food(player, PY_FOOD_MAX - 1);
+
+	/* Cancel recall */
+	if (player->word_recall)
+	{
+		/* Message */
+		msg("A tension leaves the air around you...");
+		event_signal(EVENT_MESSAGE_FLUSH);
+
+		/* Hack -- Prevent recall */
+		player->word_recall = 0;
+	}
+
+	/* Note cause of death XXX XXX XXX */
+	my_strcpy(player->died_from, "Cheating death", sizeof(player->died_from));
+
+	/* New depth */
+	player->depth = 0;
+
+	/* Leaving */
+	player->upkeep->leaving = TRUE;
+}
+
+/**
  * Cure everything instantly
  */
 static void do_cmd_wiz_cure_all(void)

@@ -20,7 +20,8 @@
 #define INCLUDED_WIZARD_H
 
 /* wiz-debug.c */
-extern void do_cmd_debug(void);
+void wiz_cheat_death(void);
+void do_cmd_debug(void);
 
 /* wiz-stats.c */
 void stats_collect(void);

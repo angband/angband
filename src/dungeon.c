@@ -1227,6 +1227,18 @@ static void dungeon(struct chunk *c)
 		/* Count game turns */
 		turn++;
 	}
+
+	/* Notice stuff */
+	if (player->upkeep->notice) notice_stuff(player->upkeep);
+
+	/* Update stuff */
+	if (player->upkeep->update) update_stuff(player->upkeep);
+
+	/* Redraw stuff */
+	if (player->upkeep->redraw) redraw_stuff(player->upkeep);
+
+	/* Forget the view */
+	forget_view(cave);
 }
 
 
@@ -1350,25 +1362,18 @@ void play_game(bool new_game)
 		textui_do_birth();
 	}
 
+	/* Process some user pref files */
+	process_some_user_pref_files();
+
 	/* Tell the UI we've started. */
 	event_signal(EVENT_LEAVE_INIT);
 	event_signal(EVENT_ENTER_GAME);
 
-	/* Redraw stuff */
-	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP | PR_MONSTER | PR_MESSAGE);
-	redraw_stuff(player->upkeep);
-
-	/* Process some user pref files */
-	process_some_user_pref_files();
-
-	/* React to changes */
-	Term_xtra(TERM_XTRA_REACT, 0);
+	/* Hack -- Decrease "icky" depth */
+	character_icky--;
 
 	/* Character is now "complete" */
 	character_generated = TRUE;
-
-	/* Hack -- Decrease "icky" depth */
-	character_icky--;
 
 	/* Start playing */
 	player->upkeep->playing = TRUE;
@@ -1388,96 +1393,20 @@ void play_game(bool new_game)
 		/* Process the level */
 		dungeon(cave);
 
-		/* Notice stuff */
-		if (player->upkeep->notice) notice_stuff(player->upkeep);
-
-		/* Update stuff */
-		if (player->upkeep->update) update_stuff(player->upkeep);
-
-		/* Redraw stuff */
-		if (player->upkeep->redraw) redraw_stuff(player->upkeep);
-
-
-		/* Cancel the target */
-		target_set_monster(0);
-
-		/* Cancel the health bar */
-		health_track(player->upkeep, NULL);
-
-
-		/* Forget the view */
-		forget_view(cave);
-
-
 		/* Handle "quit and save" */
 		if (!player->upkeep->playing && !player->is_dead) break;
-
 
 		/* XXX XXX XXX */
 		event_signal(EVENT_MESSAGE_FLUSH);
 
 		/* Accidental Death */
-		if (player->upkeep->playing && player->is_dead) {
-			/* XXX-elly: this does not belong here. Refactor or
-			 * remove. Very similar to do_cmd_wiz_cure_all(). */
-			if ((player->wizard || OPT(cheat_live)) && !get_check("Die? ")) {
-				/* Mark social class, reset age, if needed */
-				player->age = 0;
+		if ((player->wizard || OPT(cheat_live) &&
+				player->upkeep->playing && player->is_dead &&
+				!get_check("Die? ")) {
+			msg("You invoke wizard mode and cheat death.");
+			event_signal(EVENT_MESSAGE_FLUSH);
 
-				/* Increase age */
-				player->age++;
-
-				/* Mark savefile */
-				player->noscore |= NOSCORE_WIZARD;
-
-				/* Message */
-				msg("You invoke wizard mode and cheat death.");
-				event_signal(EVENT_MESSAGE_FLUSH);
-
-				/* Cheat death */
-				player->is_dead = FALSE;
-
-				/* Restore hit points */
-				player->chp = player->mhp;
-				player->chp_frac = 0;
-
-				/* Restore spell points */
-				player->csp = player->msp;
-				player->csp_frac = 0;
-
-				/* Hack -- Healing */
-				(void)player_clear_timed(player, TMD_BLIND, TRUE);
-				(void)player_clear_timed(player, TMD_CONFUSED, TRUE);
-				(void)player_clear_timed(player, TMD_POISONED, TRUE);
-				(void)player_clear_timed(player, TMD_AFRAID, TRUE);
-				(void)player_clear_timed(player, TMD_PARALYZED, TRUE);
-				(void)player_clear_timed(player, TMD_IMAGE, TRUE);
-				(void)player_clear_timed(player, TMD_STUN, TRUE);
-				(void)player_clear_timed(player, TMD_CUT, TRUE);
-
-				/* Hack -- Prevent starvation */
-				player_set_food(player, PY_FOOD_MAX - 1);
-
-				/* Hack -- cancel recall */
-				if (player->word_recall)
-				{
-					/* Message */
-					msg("A tension leaves the air around you...");
-					event_signal(EVENT_MESSAGE_FLUSH);
-
-					/* Hack -- Prevent recall */
-					player->word_recall = 0;
-				}
-
-				/* Note cause of death XXX XXX XXX */
-				my_strcpy(player->died_from, "Cheating death", sizeof(player->died_from));
-
-				/* New depth */
-				player->depth = 0;
-
-				/* Leaving */
-				player->upkeep->leaving = TRUE;
-			}
+			wiz_cheat_death();
 		}
 
 		/* Handle "death" */
