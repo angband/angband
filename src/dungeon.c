@@ -96,45 +96,10 @@ void dungeon_change_level(int dlev)
 	/* If we're returning to town, update the store contents
 	   according to how long we've been away */
 	if (!dlev && daycount)
-	{
-		if (OPT(cheat_xtra)) msg("Updating Shops...");
-		while (daycount--)
-		{
-			int n;
+		store_update();
 
-			/* Maintain each shop (except home) */
-			for (n = 0; n < MAX_STORES; n++)
-			{
-				/* Skip the home */
-				if (n == STORE_HOME) continue;
-
-				/* Maintain */
-				store_maint(&stores[n]);
-			}
-
-			/* Sometimes, shuffle the shop-keepers */
-			if (one_in_(z_info->store_shuffle))
-			{
-				/* Message */
-				if (OPT(cheat_xtra)) msg("Shuffling a Shopkeeper...");
-
-				/* Pick a random shop (except home) */
-				while (1)
-				{
-					n = randint0(MAX_STORES);
-					if (n != STORE_HOME) break;
-				}
-
-				/* Shuffle it */
-				store_shuffle(&stores[n]);
-			}
-		}
-		daycount = 0;
-		if (OPT(cheat_xtra)) msg("Done.");
-	}
-
-	/* Leaving */
-	player->upkeep->leaving = TRUE;
+	/* Leaving, make new level */
+	player->upkeep->generate_level = TRUE;
 
 	/* Save the game when we arrive on the new level. */
 	player->upkeep->autosave = TRUE;
@@ -809,6 +774,10 @@ static void process_player(void)
 
 	/*** Handle actual user input ***/
 
+	/* Mega hack -redraw big graphics - sorry NRM */
+	if ((tile_width > 1) || (tile_height > 1))
+		player->upkeep->redraw |= (PR_MAP);
+
 	/* Repeat until energy is reduced */
 	do
 	{
@@ -890,9 +859,12 @@ static void process_player(void)
 			/* Get and process a command */
 			process_command(CMD_GAME, FALSE);
 
+			if (!player->upkeep->playing)
+				break;
+
 			/* Mega hack - redraw if big graphics - sorry NRM */
 			if ((tile_width > 1) || (tile_height > 1)) 
-			        player->upkeep->redraw |= (PR_MAP);
+				player->upkeep->redraw |= (PR_MAP);
 		}
 
 
@@ -947,7 +919,7 @@ static void process_player(void)
 		redraw_stuff(player->upkeep);
 	}
 
-	while (!player->upkeep->energy_use && !player->upkeep->leaving);
+	while (!player->upkeep->energy_use && !player->is_dead && !player->upkeep->generate_level);
 
 	/* Notice stuff (if needed) */
 	if (player->upkeep->notice) notice_stuff(player->upkeep);
@@ -1025,7 +997,7 @@ void do_animation(void)
 }
 
 
-static bool refresh_and_check_for_leaving(void)
+static void refresh(void)
 {
 	/* Notice stuff */
 	if (player->upkeep->notice)
@@ -1041,27 +1013,16 @@ static bool refresh_and_check_for_leaving(void)
 
 	/* Place cursor on player/target */
 	place_cursor();
-
-	/* Are we leaving the level/game? */
-	return player->upkeep->leaving;
 }
 
-/*
- * Interact with the current dungeon level.
- *
- * This function will not exit until the level is completed,
- * the user dies, or the game is terminated.
- */
-static void dungeon(struct chunk *c)
+static void on_new_level(void)
 {
+	/* Play ambient sound on change of level. */
+	play_ambient_sound();
 
 	/* Hack -- enforce illegal panel */
 	Term->offset_y = z_info->dungeon_hgt;
 	Term->offset_x = z_info->dungeon_wid;
-
-
-	/* Not leaving */
-	player->upkeep->leaving = FALSE;
 
 
 	/* Cancel the target */
@@ -1154,9 +1115,6 @@ static void dungeon(struct chunk *c)
 	/* Refresh */
 	Term_fresh();
 
-	/* Handle delayed death */
-	if (player->is_dead) return;
-
 	/* Announce (or repeat) the feeling */
 	if (player->depth) display_feeling(FALSE);
 
@@ -1164,71 +1122,19 @@ static void dungeon(struct chunk *c)
 	 * higher value from savefile for level in progress */
 	if (player->energy < INITIAL_DUNGEON_ENERGY)
 		player->energy = INITIAL_DUNGEON_ENERGY;
-
-
-	/*** Process this dungeon level ***/
-
-	/* Main loop */
-	while (TRUE) {
-		/* Compact the monster list if we're approaching the limit */
-		if (cave_monster_count(cave) + 32 > z_info->level_monster_max) 
-			compact_monsters(64);
-
-		/* Too many holes in the monster list - compress */
-		if (cave_monster_count(cave) + 32 < cave_monster_max(cave)) 
-			compact_monsters(0);
-
-		/* Can the player move? */
-		while ((player->energy >= 100) && !player->upkeep->leaving) {
-    		/* Do any necessary animations */
-    		do_animation(); 
-
-			/* process monster with even more energy first */
-			process_monsters(c, player->energy + 1);
-
-			/* if still alive */
-			if (!player->upkeep->leaving) {
-			        /* Mega hack -redraw big graphics - sorry NRM */
-			        if ((tile_width > 1) || (tile_height > 1)) 
-				        player->upkeep->redraw |= (PR_MAP);
-
-				/* Process the player */
-				process_player();
-			}
-		}
-
-		/* Refresh */
-		if (refresh_and_check_for_leaving())
-			break;
-
-		/* Process all of the monsters */
-		process_monsters(c, 0);
-
-		/* Reset Monsters */
-		reset_monsters();
-
-		/* Refresh */
-		if (refresh_and_check_for_leaving())
-			break;
-
-		/* Process the world every ten turns */
-		if (!(turn % 10))
-			process_world(c);
-
-		/* Refresh */
-		if (refresh_and_check_for_leaving())
-			break;
-
-		/*** Apply energy ***/
-
-		/* Give the player some energy */
-		player->energy += extract_energy[player->state.speed];
-
-		/* Count game turns */
-		turn++;
-	}
 }
 
+static void on_leave_level(void) {
+	/* Notice stuff */
+	if (player->upkeep->notice) notice_stuff(player->upkeep);
+	if (player->upkeep->update) update_stuff(player->upkeep);
+	if (player->upkeep->redraw) redraw_stuff(player->upkeep);
+
+	forget_view(cave);
+
+	/* XXX XXX XXX */
+	event_signal(EVENT_MESSAGE_FLUSH);
+}
 
 
 /*
@@ -1260,33 +1166,7 @@ static void process_some_user_pref_files(void)
 }
 
 
-/*
- * Actually play a game.
- *
- * This function is called from a variety of entry points, since both
- * the standard "main.c" file, as well as several platform-specific
- * "main-xxx.c" files, call this function to start a new game with a
- * new savefile, start a new game with an existing savefile, or resume
- * a saved game with an existing savefile.
- *
- * If the "new_game" parameter is true, and the savefile contains a
- * living character, then that character will be killed, so that the
- * player may start a new game with that savefile.  This is only used
- * by the "-n" option in "main.c".
- *
- * If the savefile does not exist, cannot be loaded, or contains a dead
- * character, then a new game will be started.
- *
- * Several platforms (Windows, Macintosh, Amiga) start brand new games
- * with "savefile" empty, and initialize it later based on the player
- * name.
- *
- * Note that we load the RNG state from savefiles (2.8.0 or later) and
- * so we only initialize it if we were unable to load it.  The loading
- * code marks successful loading of the RNG state using the "Rand_quick"
- * flag, which is a hack, but which optimizes loading of savefiles.
- */
-void play_game(bool new_game)
+void textui_pregame_init(void)
 {
 	u32b default_window_flag[ANGBAND_TERM_MAX];
 
@@ -1298,8 +1178,6 @@ void play_game(bool new_game)
 
 	/* Initialize input hooks (only here temporarily - NRM) */
 	textui_input_init();
-
-	/*** Do horrible, hacky things, to start the game off ***/
 
 	/* Hack -- Increase "icky" depth */
 	character_icky++;
@@ -1331,160 +1209,133 @@ void play_game(bool new_game)
 
 	/* Set up the subwindows */
 	subwindows_set_flags(default_window_flag, ANGBAND_TERM_MAX);
+}
+
+/*
+ * Actually play a game.
+ *
+ * This function is called from a variety of entry points, since both
+ * the standard "main.c" file, as well as several platform-specific
+ * "main-xxx.c" files, call this function to start a new game with a
+ * new savefile, start a new game with an existing savefile, or resume
+ * a saved game with an existing savefile.
+ *
+ * If the "new_game" parameter is true, and the savefile contains a
+ * living character, then that character will be killed, so that the
+ * player may start a new game with that savefile.  This is only used
+ * by the "-n" option in "main.c".
+ *
+ * If the savefile does not exist, cannot be loaded, or contains a dead
+ * character, then a new game will be started.
+ */
+void play_game(bool new_game)
+{
+	bool new_level = TRUE;
+
+	textui_pregame_init();
 
 	/*** Try to load the savefile ***/
 
 	player->is_dead = TRUE;
 
 	/* Try loading */
-	if (file_exists(savefile) && !savefile_load(savefile, arg_wizard)) {
+	if (file_exists(savefile) && !savefile_load(savefile, arg_wizard))
 		quit("Broken savefile");
-	}
 
 	/* No living character loaded */
-	if (player->is_dead || new_game) {
-		/* The dungeon is not ready */
-		character_dungeon = FALSE;
-
-		/* Roll up a new character */
+	if (player->is_dead || new_game)
 		textui_do_birth();
-	}
+
+	/* Reset visuals, then load prefs */
+	reset_visuals(TRUE);
+	process_some_user_pref_files();
 
 	/* Tell the UI we've started. */
 	event_signal(EVENT_LEAVE_INIT);
 	event_signal(EVENT_ENTER_GAME);
 
-	/* Redraw stuff */
-	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP | PR_MONSTER | PR_MESSAGE);
-	redraw_stuff(player->upkeep);
-
-	/* Process some user pref files */
-	process_some_user_pref_files();
-
-	/* React to changes */
-	Term_xtra(TERM_XTRA_REACT, 0);
-
-	/* Character is now "complete" */
-	character_generated = TRUE;
-
 	/* Hack -- Decrease "icky" depth */
 	character_icky--;
-
-	/* Start playing */
-	player->upkeep->playing = TRUE;
 
 	/* Save not required yet. */
 	player->upkeep->autosave = FALSE;
 
-	/* Hack -- Enforce "delayed death" */
-	if (player->chp < 0) player->is_dead = TRUE;
-
 	/* Process */
-	while (TRUE)
-	{
-		/* Play ambient sound on change of level. */
-		play_ambient_sound();
+	while (!player->is_dead && player->upkeep->playing) {
 
-		/* Process the level */
-		dungeon(cave);
+		/* Make a new level if requested */
+		if (player->upkeep->generate_level) {
+			if (character_dungeon)
+				on_leave_level();
 
-		/* Notice stuff */
-		if (player->upkeep->notice) notice_stuff(player->upkeep);
+			cave_generate(&cave, player);
 
-		/* Update stuff */
-		if (player->upkeep->update) update_stuff(player->upkeep);
-
-		/* Redraw stuff */
-		if (player->upkeep->redraw) redraw_stuff(player->upkeep);
-
-
-		/* Cancel the target */
-		target_set_monster(0);
-
-		/* Cancel the health bar */
-		health_track(player->upkeep, NULL);
-
-
-		/* Forget the view */
-		forget_view(cave);
-
-
-		/* Handle "quit and save" */
-		if (!player->upkeep->playing && !player->is_dead) break;
-
-
-		/* XXX XXX XXX */
-		event_signal(EVENT_MESSAGE_FLUSH);
-
-		/* Accidental Death */
-		if (player->upkeep->playing && player->is_dead) {
-			/* XXX-elly: this does not belong here. Refactor or
-			 * remove. Very similar to do_cmd_wiz_cure_all(). */
-			if ((player->wizard || OPT(cheat_live)) && !get_check("Die? ")) {
-				/* Mark social class, reset age, if needed */
-				player->age = 0;
-
-				/* Increase age */
-				player->age++;
-
-				/* Mark savefile */
-				player->noscore |= NOSCORE_WIZARD;
-
-				/* Message */
-				msg("You invoke wizard mode and cheat death.");
-				event_signal(EVENT_MESSAGE_FLUSH);
-
-				/* Cheat death */
-				player->is_dead = FALSE;
-
-				/* Restore hit points */
-				player->chp = player->mhp;
-				player->chp_frac = 0;
-
-				/* Restore spell points */
-				player->csp = player->msp;
-				player->csp_frac = 0;
-
-				/* Hack -- Healing */
-				(void)player_clear_timed(player, TMD_BLIND, TRUE);
-				(void)player_clear_timed(player, TMD_CONFUSED, TRUE);
-				(void)player_clear_timed(player, TMD_POISONED, TRUE);
-				(void)player_clear_timed(player, TMD_AFRAID, TRUE);
-				(void)player_clear_timed(player, TMD_PARALYZED, TRUE);
-				(void)player_clear_timed(player, TMD_IMAGE, TRUE);
-				(void)player_clear_timed(player, TMD_STUN, TRUE);
-				(void)player_clear_timed(player, TMD_CUT, TRUE);
-
-				/* Hack -- Prevent starvation */
-				player_set_food(player, PY_FOOD_MAX - 1);
-
-				/* Hack -- cancel recall */
-				if (player->word_recall)
-				{
-					/* Message */
-					msg("A tension leaves the air around you...");
-					event_signal(EVENT_MESSAGE_FLUSH);
-
-					/* Hack -- Prevent recall */
-					player->word_recall = 0;
-				}
-
-				/* Note cause of death XXX XXX XXX */
-				my_strcpy(player->died_from, "Cheating death", sizeof(player->died_from));
-
-				/* New depth */
-				player->depth = 0;
-
-				/* Leaving */
-				player->upkeep->leaving = TRUE;
-			}
+			new_level = TRUE;
+			player->upkeep->generate_level = FALSE;
 		}
 
-		/* Handle "death" */
-		if (player->is_dead) break;
+		if (new_level) {
+			on_new_level();
+			new_level = FALSE;
+		}
 
-		/* Make a new level */
-		cave_generate(&cave, player);
+		/* Can the player move? */
+		while (player->energy >= 100) {
+			/* Do any necessary animations */
+			do_animation();
+
+			/* Process monster with even more energy first */
+			process_monsters(cave, player->energy + 1);
+			if (player->is_dead || !player->upkeep->playing || player->upkeep->generate_level)
+				break;
+
+			/* Process the player */
+			process_player();
+			if (player->is_dead || !player->upkeep->playing || player->upkeep->generate_level)
+				break;
+		}
+
+		/* Refresh */
+		refresh();
+		if (player->is_dead || !player->upkeep->playing || player->upkeep->generate_level)
+			continue;
+
+		/* Process the rest of the monsters */
+		process_monsters(cave, 0);
+
+		/* Mark all monsters as processed this turn */
+		reset_monsters();
+
+		/* Refresh */
+		refresh();
+		if (player->is_dead || !player->upkeep->playing || player->upkeep->generate_level)
+			continue;
+
+		/* Process the world every ten turns */
+		if (!(turn % 10)) {
+			/* Compact the monster list if we're approaching the limit */
+			if (cave_monster_count(cave) + 32 > z_info->level_monster_max)
+				compact_monsters(64);
+
+			/* Too many holes in the monster list - compress */
+			if (cave_monster_count(cave) + 32 < cave_monster_max(cave))
+				compact_monsters(0);			
+
+			process_world(cave);
+
+			/* Refresh */
+			refresh();
+			if (player->is_dead || !player->upkeep->playing || player->upkeep->generate_level)
+				continue;
+		}
+
+		/*** Apply energy ***/
+
+		/* Give the player some energy */
+		player->energy += extract_energy[player->state.speed];
+
+		/* Count game turns */
+		turn++;
 	}
 
 	/* Disallow big cursor */

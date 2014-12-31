@@ -1545,7 +1545,7 @@ void process_monsters(struct chunk *c, int minimum_energy)
 		monster_type *m_ptr;
 
 		/* Handle "leaving" */
-		if (player->upkeep->leaving) break;
+		if (player->is_dead || player->upkeep->generate_level) break;
 
 		/* Get a 'live' monster */
 		m_ptr = cave_monster(cave, i);

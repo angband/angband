@@ -9,5 +9,6 @@ void do_cmd_load_screen(void);
 void html_screenshot(const char *path, int mode);
 void do_cmd_save_screen(void);
 void textui_cmd_rest(void);
+void textui_quit(void);
 
 #endif /* UI_COMMAND_H */

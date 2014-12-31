@@ -66,10 +66,8 @@ typedef enum cmd_code
 	CMD_PICKUP,
 	CMD_AUTOPICKUP,
 	CMD_DESTROY,
-/*	CMD_IGNORE_TYPE, -- might be a command, might have another interface */
 	CMD_DISARM,
 	CMD_REST,
-/*	CMD_TARGET, -- possibly should be a UI-level thing */
 	CMD_TUNNEL,
 	CMD_OPEN,
 	CMD_CLOSE,
@@ -85,10 +83,7 @@ typedef enum cmd_code
 
 	/* Hors categorie Commands */
 	CMD_SUICIDE,
-	CMD_SAVE,
 
-/*	CMD_OPTIONS, -- probably won't be a command in this sense*/
-	CMD_QUIT,
 	CMD_HELP,
 	CMD_REPEAT
 }

@@ -253,9 +253,6 @@ bool make_attack_spell(struct monster *m_ptr)
 	/* Assume "normal" target */
 	bool normal = TRUE;
 
-	/* Handle "leaving" */
-	if (player->upkeep->leaving) return FALSE;
-
 	/* Cannot cast spells when confused */
 	if (m_ptr->m_timed[MON_TMD_CONF]) return (FALSE);
 
@@ -519,7 +516,7 @@ bool make_attack_normal(struct monster *m_ptr, struct player *p)
 		if (!method) break;
 
 		/* Handle "leaving" */
-		if (p->upkeep->leaving) break;
+		if (p->is_dead || p->upkeep->generate_level) break;
 
 		/* Extract visibility (before blink) */
 		if (mflag_has(m_ptr->mflag, MFLAG_VISIBLE)) visible = TRUE;

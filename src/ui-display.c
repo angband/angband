@@ -2040,14 +2040,18 @@ static void ui_leave_init(game_event_type type, game_event_data *data,
 
 	/* Flush the message */
 	Term_fresh();
-
-	/* Reset visuals */
-	reset_visuals(TRUE);
 }
 
 static void ui_enter_game(game_event_type type, game_event_data *data,
 						  void *user)
 {
+	/* Redraw stuff */
+	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP | PR_MONSTER | PR_MESSAGE);
+	redraw_stuff(player->upkeep);
+
+	/* React to changes */
+	Term_xtra(TERM_XTRA_REACT, 0);
+
 	/* Because of the "flexible" sidebar, all these things trigger
 	   the same function. */
 	event_add_handler_set(player_events, N_ELEMENTS(player_events),

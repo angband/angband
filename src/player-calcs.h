@@ -239,8 +239,8 @@ typedef struct player_state {
  */
 typedef struct player_upkeep {
 	bool playing;			/* True if player is playing */
-	bool leaving;			/* True if player is leaving */
 	bool autosave;			/* True if autosave is pending */
+	bool generate_level;	/* True if level needs regenerating */
 
 	int energy_use;			/* Energy use this turn */
 	int new_spells;			/* Number of spells available */

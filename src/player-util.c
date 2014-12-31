@@ -19,6 +19,7 @@
 #include "angband.h"
 #include "cave.h"
 #include "cmd-core.h"
+#include "game-input.h"
 #include "init.h"
 #include "obj-gear.h"
 #include "obj-tval.h"
@@ -31,6 +32,7 @@
 #include "target.h"
 #include "ui.h" /* verify_panel */
 #include "ui-input.h" /* bell */
+#include "wizard.h"
 
 /*
  * Decreases players hit points and sets death flag if necessary
@@ -67,6 +69,15 @@ void take_hit(struct player *p, int dam, const char *kb_str)
 	/* Dead player */
 	if (p->chp < 0)
 	{
+		/* Allow cheating */
+		if ((p->wizard || OPT(cheat_live)) && !get_check("Die? ")) {
+			msg("You invoke wizard mode and cheat death.");
+			event_signal(EVENT_MESSAGE_FLUSH);
+
+			wiz_cheat_death();
+			return;
+		}
+
 		/* Hack -- Note death */
 		msgt(MSG_DEATH, "You die.");
 		event_signal(EVENT_MESSAGE_FLUSH);
@@ -79,9 +90,6 @@ void take_hit(struct player *p, int dam, const char *kb_str)
 
 		/* Note death */
 		p->is_dead = TRUE;
-
-		/* Leaving */
-		p->upkeep->leaving = TRUE;
 
 		/* Dead */
 		return;

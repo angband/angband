@@ -146,9 +146,6 @@ static void handle_signal_simple(int sig)
 		/* Stop playing */
 		player->upkeep->playing = FALSE;
 
-		/* Leaving */
-		player->upkeep->leaving = TRUE;
-
 		/* Close stuff */
 		close_game();
 

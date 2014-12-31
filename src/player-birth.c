@@ -922,6 +922,9 @@ void do_cmd_birth_init(struct command *cmd)
 {
 	char *buf;
 
+	/* The dungeon is not ready */
+	character_dungeon = FALSE;
+
 	/*
 	 * If there's a quickstart character, store it for later use.
 	 * If not, default to whatever the first of the choices is.
@@ -1139,11 +1142,15 @@ void do_cmd_accept_character(struct command *cmd)
 	/* Stop the player being quite so dead */
 	player->is_dead = FALSE;
 
+	/* Character is now "complete" */
+	character_generated = TRUE;
+	player->upkeep->playing = TRUE;
+
+	/* Generate a new level */
+	player->upkeep->generate_level = TRUE;
+
 	/* Now we're really done.. */
 	event_signal(EVENT_LEAVE_BIRTH);
-
-	/* Generate a dungeon level if needed */
-	cave_generate(&cave, player);
 }
 
 
