@@ -774,6 +774,10 @@ static void process_player(void)
 
 	/*** Handle actual user input ***/
 
+	/* Mega hack -redraw big graphics - sorry NRM */
+	if ((tile_width > 1) || (tile_height > 1))
+		player->upkeep->redraw |= (PR_MAP);
+
 	/* Repeat until energy is reduced */
 	do
 	{
@@ -1226,7 +1230,7 @@ void textui_pregame_init(void)
  */
 void play_game(bool new_game)
 {
-	struct chunk *c = cave;
+	bool new_level = TRUE;
 
 	textui_pregame_init();
 
@@ -1256,93 +1260,82 @@ void play_game(bool new_game)
 	/* Save not required yet. */
 	player->upkeep->autosave = FALSE;
 
-	/* Generate a new level */
-	player->upkeep->generate_level = TRUE;
-
 	/* Process */
 	while (!player->is_dead && player->upkeep->playing) {
 
-		/* Make a new level */
+		/* Make a new level if requested */
 		if (player->upkeep->generate_level) {
 			if (character_dungeon)
 				on_leave_level();
 
 			cave_generate(&cave, player);
-			on_new_level();
 
+			new_level = TRUE;
 			player->upkeep->generate_level = FALSE;
 		}
 
-		/*** Process this dungeon level ***/
+		if (new_level) {
+			on_new_level();
+			new_level = FALSE;
+		}
 
-		/* Main loop */
-		while (TRUE) {
+		/* Can the player move? */
+		while (player->energy >= 100) {
+			/* Do any necessary animations */
+			do_animation();
+
+			/* Process monster with even more energy first */
+			process_monsters(cave, player->energy + 1);
+			if (player->is_dead || !player->upkeep->playing || player->upkeep->generate_level)
+				break;
+
+			/* Process the player */
+			process_player();
+			if (player->is_dead || !player->upkeep->playing || player->upkeep->generate_level)
+				break;
+		}
+
+		/* Refresh */
+		refresh();
+		if (player->is_dead || !player->upkeep->playing || player->upkeep->generate_level)
+			continue;
+
+		/* Process the rest of the monsters */
+		process_monsters(cave, 0);
+
+		/* Mark all monsters as processed this turn */
+		reset_monsters();
+
+		/* Refresh */
+		refresh();
+		if (player->is_dead || !player->upkeep->playing || player->upkeep->generate_level)
+			continue;
+
+		/* Process the world every ten turns */
+		if (!(turn % 10)) {
 			/* Compact the monster list if we're approaching the limit */
 			if (cave_monster_count(cave) + 32 > z_info->level_monster_max)
 				compact_monsters(64);
 
 			/* Too many holes in the monster list - compress */
 			if (cave_monster_count(cave) + 32 < cave_monster_max(cave))
-				compact_monsters(0);
+				compact_monsters(0);			
+
+			process_world(cave);
 
 			/* Refresh */
 			refresh();
-			if (player->upkeep->generate_level || player->is_dead || !player->upkeep->playing)
-				break;
-
-			/* Can the player move? */
-			while ((player->energy >= 100) && !player->upkeep->generate_level &&
-					!player->is_dead && player->upkeep->playing) {
-				/* Do any necessary animations */
-				do_animation();
-
-				/* process monster with even more energy first */
-				process_monsters(c, player->energy + 1);
-
-				/* if still alive */
-				if (!player->upkeep->generate_level && !player->is_dead && player->upkeep->playing) {
-					/* Mega hack -redraw big graphics - sorry NRM */
-					if ((tile_width > 1) || (tile_height > 1))
-						player->upkeep->redraw |= (PR_MAP);
-
-					/* Process the player */
-					process_player();
-				}
-			}
-
-			/* Refresh */
-			refresh();
-			if (player->upkeep->generate_level || player->is_dead || !player->upkeep->playing)
-				break;
-
-			/* Process all of the monsters */
-			process_monsters(c, 0);
-
-			/* Reset Monsters */
-			reset_monsters();
-
-			/* Refresh */
-			refresh();
-			if (player->upkeep->generate_level || player->is_dead || !player->upkeep->playing)
-				break;
-
-			/* Process the world every ten turns */
-			if (!(turn % 10))
-				process_world(c);
-
-			/* Refresh */
-			refresh();
-			if (player->upkeep->generate_level || player->is_dead || !player->upkeep->playing)
-				break;
-
-			/*** Apply energy ***/
-
-			/* Give the player some energy */
-			player->energy += extract_energy[player->state.speed];
-
-			/* Count game turns */
-			turn++;
+			if (player->is_dead || !player->upkeep->playing || player->upkeep->generate_level)
+				continue;
 		}
+
+		/*** Apply energy ***/
+
+		/* Give the player some energy */
+		player->energy += extract_energy[player->state.speed];
+
+		/* Count game turns */
+		turn++;
 	}
 
 	/* Disallow big cursor */
