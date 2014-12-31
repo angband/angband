@@ -889,8 +889,8 @@ static struct player_body TEST_DATA test_player_body = {
 
 static struct player_upkeep TEST_DATA test_player_upkeep = {
 	.playing = 1,
-	.leaving = 0,
 	.autosave = 0,
+	.generate_level = 0,
 	.energy_use = 0,
 	.new_spells = 0,
 
