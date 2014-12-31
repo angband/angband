@@ -1288,15 +1288,6 @@ static void process_some_user_pref_files(void)
  *
  * If the savefile does not exist, cannot be loaded, or contains a dead
  * character, then a new game will be started.
- *
- * Several platforms (Windows, Macintosh, Amiga) start brand new games
- * with "savefile" empty, and initialize it later based on the player
- * name.
- *
- * Note that we load the RNG state from savefiles (2.8.0 or later) and
- * so we only initialize it if we were unable to load it.  The loading
- * code marks successful loading of the RNG state using the "Rand_quick"
- * flag, which is a hack, but which optimizes loading of savefiles.
  */
 void play_game(bool new_game)
 {
