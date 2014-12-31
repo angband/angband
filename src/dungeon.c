@@ -1046,19 +1046,14 @@ static bool refresh_and_check_for_leaving(void)
 	return player->upkeep->leaving;
 }
 
-/*
- * Interact with the current dungeon level.
- *
- * This function will not exit until the level is completed,
- * the user dies, or the game is terminated.
- */
-static void dungeon(struct chunk *c)
+static void on_new_level(void)
 {
+	/* Play ambient sound on change of level. */
+	play_ambient_sound();
 
 	/* Hack -- enforce illegal panel */
 	Term->offset_y = z_info->dungeon_hgt;
 	Term->offset_x = z_info->dungeon_wid;
-
 
 	/* Not leaving */
 	player->upkeep->leaving = FALSE;
@@ -1154,9 +1149,6 @@ static void dungeon(struct chunk *c)
 	/* Refresh */
 	Term_fresh();
 
-	/* Handle delayed death */
-	if (player->is_dead) return;
-
 	/* Announce (or repeat) the feeling */
 	if (player->depth) display_feeling(FALSE);
 
@@ -1164,7 +1156,31 @@ static void dungeon(struct chunk *c)
 	 * higher value from savefile for level in progress */
 	if (player->energy < INITIAL_DUNGEON_ENERGY)
 		player->energy = INITIAL_DUNGEON_ENERGY;
+}
 
+static void on_leave_level(void) {
+	/* Notice stuff */
+	if (player->upkeep->notice) notice_stuff(player->upkeep);
+	if (player->upkeep->update) update_stuff(player->upkeep);
+	if (player->upkeep->redraw) redraw_stuff(player->upkeep);
+
+	forget_view(cave);
+
+	/* XXX XXX XXX */
+	event_signal(EVENT_MESSAGE_FLUSH);
+}
+
+/*
+ * Interact with the current dungeon level.
+ *
+ * This function will not exit until the level is completed,
+ * the user dies, or the game is terminated.
+ */
+static void dungeon(struct chunk *c)
+{
+	if (player->is_dead) return;
+
+	on_new_level();
 
 	/*** Process this dungeon level ***/
 
@@ -1228,17 +1244,7 @@ static void dungeon(struct chunk *c)
 		turn++;
 	}
 
-	/* Notice stuff */
-	if (player->upkeep->notice) notice_stuff(player->upkeep);
-
-	/* Update stuff */
-	if (player->upkeep->update) update_stuff(player->upkeep);
-
-	/* Redraw stuff */
-	if (player->upkeep->redraw) redraw_stuff(player->upkeep);
-
-	/* Forget the view */
-	forget_view(cave);
+	on_leave_level();
 }
 
 
@@ -1367,17 +1373,11 @@ void play_game(bool new_game)
 	/* Process */
 	while (TRUE)
 	{
-		/* Play ambient sound on change of level. */
-		play_ambient_sound();
-
 		/* Process the level */
 		dungeon(cave);
 
 		/* Handle "quit and save" */
 		if (!player->upkeep->playing || player->is_dead) break;
-
-		/* XXX XXX XXX */
-		event_signal(EVENT_MESSAGE_FLUSH);
 
 		/* Make a new level */
 		cave_generate(&cave, player);
