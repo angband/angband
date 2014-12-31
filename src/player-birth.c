@@ -1142,6 +1142,10 @@ void do_cmd_accept_character(struct command *cmd)
 	/* Stop the player being quite so dead */
 	player->is_dead = FALSE;
 
+	/* Character is now "complete" */
+	character_generated = TRUE;
+	player->upkeep->playing = TRUE;
+
 	/* Now we're really done.. */
 	event_signal(EVENT_LEAVE_BIRTH);
 

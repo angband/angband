@@ -1361,17 +1361,8 @@ void play_game(bool new_game)
 	/* Hack -- Decrease "icky" depth */
 	character_icky--;
 
-	/* Character is now "complete" */
-	character_generated = TRUE;
-
-	/* Start playing */
-	player->upkeep->playing = TRUE;
-
 	/* Save not required yet. */
 	player->upkeep->autosave = FALSE;
-
-	/* Hack -- Enforce "delayed death" */
-	if (player->chp < 0) player->is_dead = TRUE;
 
 	/* Process */
 	while (TRUE)
@@ -1383,23 +1374,10 @@ void play_game(bool new_game)
 		dungeon(cave);
 
 		/* Handle "quit and save" */
-		if (!player->upkeep->playing && !player->is_dead) break;
+		if (!player->upkeep->playing || player->is_dead) break;
 
 		/* XXX XXX XXX */
 		event_signal(EVENT_MESSAGE_FLUSH);
-
-		/* Accidental Death */
-		if ((player->wizard || OPT(cheat_live) &&
-				player->upkeep->playing && player->is_dead &&
-				!get_check("Die? ")) {
-			msg("You invoke wizard mode and cheat death.");
-			event_signal(EVENT_MESSAGE_FLUSH);
-
-			wiz_cheat_death();
-		}
-
-		/* Handle "death" */
-		if (player->is_dead) break;
 
 		/* Make a new level */
 		cave_generate(&cave, player);
