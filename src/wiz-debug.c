@@ -1200,11 +1200,8 @@ void wiz_cheat_death(void)
 	/* Note cause of death XXX XXX XXX */
 	my_strcpy(player->died_from, "Cheating death", sizeof(player->died_from));
 
-	/* New depth */
-	player->depth = 0;
-
-	/* Leaving */
-	player->upkeep->leaving = TRUE;
+	/* Back to the town */
+	dungeon_change_level(0);
 }
 
 /**
@@ -1296,10 +1293,7 @@ static void do_cmd_wiz_jump(void)
 	msg("You jump to dungeon level %d.", depth);
 
 	/* New depth */
-	player->depth = depth;
-
-	/* Leaving */
-	player->upkeep->leaving = TRUE;
+	dungeon_change_level(depth);
 }
 
 
