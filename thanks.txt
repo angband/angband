@@ -14,6 +14,7 @@ This version
  * Andi Sidwell (takkaria)
  * Aaron Bader (fizzix)
  * Brett Reid (blubaron)
+ * Peter Denison (noz)
  * Elly Jones
  * Bardur Arantsson
  * Ben Semmler
@@ -23,9 +24,13 @@ This version
  * Janeene Beeforth
  * Nick McConnell
  * "Seebs"
+ * PowerWyrm
 
 Previous maintainers
 ====================
+
+Angband 3.0.8 - 3.5.0:
+  Andi Sidwell <andi at takkaria.org>
 
 Angband 2.9.0 - 3.0.6:
   Robert Ruehlmann <rr9 at thangorodrim.net>
@@ -79,7 +84,7 @@ Rooslan S. Khayrov, Thapper, "Max Stats", "SSK", "ChodTheWacko", "Zaxx",
 Jonas Lith, Jens Schou, "Lebannen", Daniel Santos, Edd Barrett (vext01),
 mtadd, Peter Denison (noz), Kiyoshi Aman (Aerdan), David Barr (david3x3x3),
 Chris Weisiger (Derakon), Buzzkill, Scott Michael, LastQuestion,
-danial.santos,
+danial.santos, LuthienCeleste, shadowsun
 
 Raymond "Shockbolt" Gaustadnes
   The Shockbolt tiles.
