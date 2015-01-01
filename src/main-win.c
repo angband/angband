@@ -73,12 +73,13 @@
 #include "dungeon.h"
 #include "init.h"
 #include "grafmode.h"
-#include "prefs.h"
+#include "mon-power.h"
 #include "win/win-menu.h"
 #include "savefile.h" /* savefile_set_name() */
 #include "ui-display.h"
 #include "ui-input.h"
 #include "ui-map.h"
+#include "ui-prefs.h"
 
 /* Make sure the winver allows the AlphaBlend function */
 #if (WINVER < 0x0500)

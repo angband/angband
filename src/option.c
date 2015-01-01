@@ -140,9 +140,9 @@ void option_dump(ang_file *f)
 
 			/* Dump the flag */
 			if (window_flag[i] & (1L << j))
-				file_putf(f, "W:%d:%d:1\n", i, j);
+				file_putf(f, "window:%d:%d:1\n", i, j);
 			else
-				file_putf(f, "W:%d:%d:0\n", i, j);
+				file_putf(f, "window:%d:%d:0\n", i, j);
 
 			/* Skip a line */
 			file_putf(f, "\n");

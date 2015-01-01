@@ -143,7 +143,6 @@ ANGFILES = \
 	option.o \
 	parser.o \
 	randname.o \
-	prefs.o \
 	player-attack.o \
 	player-birth.o \
 	player-calcs.o \
@@ -185,6 +184,7 @@ ANGFILES = \
 	ui-object.o \
 	ui-options.o \
 	ui-player.o \
+	ui-prefs.o \
 	ui-spell.o \
 	ui-store.o \
 	ui-target.o \

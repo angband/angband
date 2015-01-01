@@ -18,15 +18,15 @@
 #include "angband.h"
 #include "cmds.h"
 #include "dungeon.h"
-#include "init.h"
 #include "grafmode.h"
+#include "init.h"
 #include "obj-util.h"
-#include "prefs.h"
 #include "savefile.h"
 #include "ui.h"
+#include "ui-command.h"
 #include "ui-display.h"
 #include "ui-input.h"
-#include "ui-command.h"
+#include "ui-prefs.h"
 
 
 #if defined(SAFE_DIRECTORY)

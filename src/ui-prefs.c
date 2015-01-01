@@ -1,6 +1,6 @@
-/*
- * File: prefs.c
- * Purpose: Pref file handling code
+/**
+ * \file ui-prefs.c
+ * \brief Pref file handling code
  *
  * Copyright (c) 2003 Takeshi Mogami, Robert Ruehlmann
  * Copyright (c) 2007 Pete Mack
@@ -27,26 +27,27 @@
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "object.h"
-#include "prefs.h"
 #include "project.h"
 #include "ui-display.h"
+#include "ui-prefs.h"
 #include "z-term.h"
 
-bool arg_wizard;			/* Command arg -- Request wizard mode */
-bool arg_power;				/* Command arg -- Generate monster power */
-bool arg_rebalance;			/* Command arg -- Rebalance monsters */
 int arg_graphics;			/* Command arg -- Request graphics mode */
 bool arg_graphics_nice;		/* Command arg -- Request nice graphics mode */
+int use_graphics;			/* The "graphics" mode is enabled */
 
-/*** Pref file saving code ***/
+/**
+ * ------------------------------------------------------------------------
+ * Pref file saving code
+ * ------------------------------------------------------------------------ */
 
-/*
+/**
  * Header and footer marker string for pref file dumps
  */
 static const char *dump_separator = "#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#";
 
 
-/*
+/**
  * Remove old lines from pref files
  *
  * If you are using setgid, make sure privileges were raised prior
@@ -68,7 +69,6 @@ static void remove_old_dump(const char *cur_fname, const char *mark)
 	ang_file *new_file;
 	ang_file *cur_file;
 
-
 	/* Format up some filenames */
 	strnfmt(new_fname, sizeof(new_fname), "%s.new", cur_fname);
 
@@ -79,29 +79,23 @@ static void remove_old_dump(const char *cur_fname, const char *mark)
 			dump_separator, mark);
 
 
-
 	/* Open current file */
 	cur_file = file_open(cur_fname, MODE_READ, FTYPE_TEXT);
 	if (!cur_file) return;
 
 	/* Open new file */
 	new_file = file_open(new_fname, MODE_WRITE, FTYPE_TEXT);
-	if (!new_file)
-	{
+	if (!new_file) {
 		msg("Failed to create file %s", new_fname);
 		return;
 	}
 
 	/* Loop for every line */
-	while (file_getl(cur_file, buf, sizeof(buf)))
-	{
-		/* If we find the start line, turn on */
+	while (file_getl(cur_file, buf, sizeof(buf))) {
+		/* Turn on at the start line, turn off at the finish line */
 		if (!strcmp(buf, start_line))
 			between_marks = TRUE;
-
-		/* If we find the finish line, turn off */
-		else if (!strcmp(buf, end_line))
-		{
+		else if (!strcmp(buf, end_line)) {
 			between_marks = FALSE;
 			skip_one = TRUE;
 			changed = TRUE;
@@ -117,28 +111,22 @@ static void remove_old_dump(const char *cur_fname, const char *mark)
 	file_close(cur_file);
 	file_close(new_file);
 
-	/* If there are changes, move things around */
-	if (changed)
-	{
+	/* If there are changes use the new file. otherwise just destroy it */
+	if (changed) {
 		char old_fname[1024];
 		strnfmt(old_fname, sizeof(old_fname), "%s.old", cur_fname);
 
-		if (file_move(cur_fname, old_fname))
-		{
+		if (file_move(cur_fname, old_fname)) {
 			file_move(new_fname, cur_fname);
 			file_delete(old_fname);
 		}
-	}
-
-	/* Otherwise just destroy the new file */
-	else
-	{
+	} else {
 		file_delete(new_fname);
 	}
 }
 
 
-/*
+/**
  * Output the header of a pref-file dump
  */
 static void pref_header(ang_file *fff, const char *mark)
@@ -150,7 +138,7 @@ static void pref_header(ang_file *fff, const char *mark)
 	file_putf(fff, "# Don't edit them; changes will be deleted and replaced automatically.\n");
 }
 
-/*
+/**
  * Output the footer of a pref-file dump
  */
 static void pref_footer(ang_file *fff, const char *mark)
@@ -163,13 +151,14 @@ static void pref_footer(ang_file *fff, const char *mark)
 }
 
 
-/* Dump monsters */
+/**
+ * Dump monsters
+ */
 void dump_monsters(ang_file *fff)
 {
 	int i;
 
-	for (i = 0; i < z_info->r_max; i++)
-	{
+	for (i = 0; i < z_info->r_max; i++) {
 		monster_race *r_ptr = &r_info[i];
 		byte attr = r_ptr->x_attr;
 		wint_t chr = r_ptr->x_char;
@@ -178,30 +167,34 @@ void dump_monsters(ang_file *fff)
 		if (!r_ptr->name) continue;
 
 		file_putf(fff, "# Monster: %s\n", r_ptr->name);
-		file_putf(fff, "R:%d:%d:%d\n", i, attr, chr);
+		file_putf(fff, "monster:%d:%d:%d\n", i, attr, chr);
 	}
 }
 
-/* Dump objects */
+/**
+ * Dump objects
+ */
 void dump_objects(ang_file *fff)
 {
 	int i;
 
 	file_putf(fff, "# Objects\n");
 
-	for (i = 1; i < z_info->k_max; i++)
-	{
+	for (i = 1; i < z_info->k_max; i++) {
 		object_kind *k_ptr = &k_info[i];
 		char name[120] = "";
 
 		if (!k_ptr->name || !k_ptr->tval) continue;
 
 		object_short_name(name, sizeof name, k_ptr->name);
-		file_putf(fff, "K:%s:%s:%d:%d\n", tval_find_name(k_ptr->tval),
+		file_putf(fff, "object:%s:%s:%d:%d\n", tval_find_name(k_ptr->tval),
 				name, k_ptr->x_attr, k_ptr->x_char);
 	}
 }
 
+/**
+ * Dump autoinscriptions
+ */
 void dump_autoinscriptions(ang_file *f) {
 	int i;
 	for (i = 1; i < z_info->k_max; i++) {
@@ -218,13 +211,14 @@ void dump_autoinscriptions(ang_file *f) {
 	}
 }
 
-/* Dump features */
+/**
+ * Dump features
+ */
 void dump_features(ang_file *fff)
 {
 	int i;
 
-	for (i = 0; i < z_info->f_max; i++)
-	{
+	for (i = 0; i < z_info->f_max; i++) {
 		feature_type *f_ptr = &f_info[i];
 		size_t j;
 
@@ -235,8 +229,7 @@ void dump_features(ang_file *fff)
 		if (f_ptr->mimic != i) continue;
 
 		file_putf(fff, "# Terrain: %s\n", f_ptr->name);
-		for (j = 0; j < LIGHTING_MAX; j++)
-		{
+		for (j = 0; j < LIGHTING_MAX; j++) {
 			byte attr = f_ptr->x_attr[j];
 			wint_t chr = f_ptr->x_char[j];
 
@@ -252,12 +245,14 @@ void dump_features(ang_file *fff)
 
 			assert(light);
 
-			file_putf(fff, "F:%d:%s:%d:%d\n", i, light, attr, chr);
+			file_putf(fff, "feat:%d:%s:%d:%d\n", i, light, attr, chr);
 		}
 	}
 }
 
-/* Dump flavors */
+/**
+ * Dump flavors
+ */
 void dump_flavors(ang_file *fff)
 {
 	struct flavor *f;
@@ -267,17 +262,18 @@ void dump_flavors(ang_file *fff)
 		wint_t chr = f->x_char;
 
 		file_putf(fff, "# Item flavor: %s\n", f->text);
-		file_putf(fff, "L:%d:%d:%d\n\n", f->fidx, attr, chr);
+		file_putf(fff, "flavor:%d:%d:%d\n\n", f->fidx, attr, chr);
 	}
 }
 
-/* Dump colors */
+/**
+ * Dump colors
+ */
 void dump_colors(ang_file *fff)
 {
 	int i;
 
-	for (i = 0; i < MAX_COLORS; i++)
-	{
+	for (i = 0; i < MAX_COLORS; i++) {
 		int kv = angband_color_table[i][0];
 		int rv = angband_color_table[i][1];
 		int gv = angband_color_table[i][2];
@@ -292,11 +288,9 @@ void dump_colors(ang_file *fff)
 		if (i < BASIC_COLORS) name = color_table[i].name;
 
 		file_putf(fff, "# Color: %s\n", name);
-		file_putf(fff, "V:%d:%d:%d:%d:%d\n\n", i, kv, rv, gv, bv);
+		file_putf(fff, "color:%d:%d:%d:%d:%d\n\n", i, kv, rv, gv, bv);
 	}
 }
-
-
 
 
 /**
@@ -344,7 +338,10 @@ bool prefs_save(const char *path, void (*dump)(ang_file *), const char *title)
 
 
 
-/*** Pref file parser ***/
+/**
+ * ------------------------------------------------------------------------
+ * Pref file parser
+ * ------------------------------------------------------------------------ */
 
 
 /**
@@ -377,7 +374,7 @@ static enum parser_error parse_prefs_load(struct parser *p)
 	return PARSE_ERROR_NONE;
 }
 
-/*
+/**
  * Helper function for "process_pref_file()"
  *
  * Input:
@@ -408,9 +405,8 @@ static const char *process_pref_file_expr(char **sp, char *fp)
 	/* Default */
 	v = "?o?o?";
 
-	/* Analyze */
-	if (*s == '[')
-	{
+	/* Either the string starts with a [ or it doesn't */
+	if (*s == '[') {
 		const char *p;
 		const char *t;
 
@@ -420,98 +416,59 @@ static const char *process_pref_file_expr(char **sp, char *fp)
 		/* First */
 		t = process_pref_file_expr(&s, &f);
 
-		/* Oops */
-		if (!*t)
-		{
+		/* Check all the different types of connective */
+		if (!*t) {
 			/* Nothing */
-		}
-
-		/* Function: IOR */
-		else if (streq(t, "IOR"))
-		{
+		} else if (streq(t, "IOR")) {
 			v = "0";
-			while (*s && (f != ']'))
-			{
+			while (*s && (f != ']')) {
 				t = process_pref_file_expr(&s, &f);
 				if (*t && !streq(t, "0")) v = "1";
 			}
-		}
-
-		/* Function: AND */
-		else if (streq(t, "AND"))
-		{
+		} else if (streq(t, "AND")) {
 			v = "1";
-			while (*s && (f != ']'))
-			{
+			while (*s && (f != ']')) {
 				t = process_pref_file_expr(&s, &f);
 				if (*t && streq(t, "0")) v = "0";
 			}
-		}
-
-		/* Function: NOT */
-		else if (streq(t, "NOT"))
-		{
+		} else if (streq(t, "NOT")) {
 			v = "1";
-			while (*s && (f != ']'))
-			{
+			while (*s && (f != ']')) {
 				t = process_pref_file_expr(&s, &f);
 				if (*t && !streq(t, "0")) v = "0";
 			}
-		}
-
-		/* Function: EQU */
-		else if (streq(t, "EQU"))
-		{
+		} else if (streq(t, "EQU")) {
 			v = "1";
-			if (*s && (f != ']'))
-			{
+			if (*s && (f != ']')) {
 				t = process_pref_file_expr(&s, &f);
 			}
-			while (*s && (f != ']'))
-			{
+			while (*s && (f != ']')) {
 				p = t;
 				t = process_pref_file_expr(&s, &f);
 				if (*t && !streq(p, t)) v = "0";
 			}
-		}
-
-		/* Function: LEQ */
-		else if (streq(t, "LEQ"))
-		{
+		} else if (streq(t, "LEQ")) {
 			v = "1";
-			if (*s && (f != ']'))
-			{
+			if (*s && (f != ']')) {
 				t = process_pref_file_expr(&s, &f);
 			}
-			while (*s && (f != ']'))
-			{
+			while (*s && (f != ']')) {
 				p = t;
 				t = process_pref_file_expr(&s, &f);
 				if (*t && (strcmp(p, t) >= 0)) v = "0";
 			}
-		}
-
-		/* Function: GEQ */
-		else if (streq(t, "GEQ"))
-		{
+		} else if (streq(t, "GEQ")) {
 			v = "1";
-			if (*s && (f != ']'))
-			{
+			if (*s && (f != ']')) {
 				t = process_pref_file_expr(&s, &f);
 			}
-			while (*s && (f != ']'))
-			{
+			while (*s && (f != ']')) {
 				p = t;
 				t = process_pref_file_expr(&s, &f);
 				if (*t && (strcmp(p, t) <= 0)) v = "0";
 			}
-		}
-
-		/* Oops */
-		else
-		{
-			while (*s && (f != ']'))
-			{
+		} else {
+			while (*s && (f != ']')) {
 				t = process_pref_file_expr(&s, &f);
 			}
 		}
@@ -521,20 +478,15 @@ static const char *process_pref_file_expr(char **sp, char *fp)
 
 		/* Extract final and Terminate */
 		if ((f = *s) != '\0') *s++ = '\0';
-	}
-
-	/* Other */
-	else
-	{
+	} else {
 		/* Accept all printables except spaces and brackets */
 		while (isprint((unsigned char)*s) && !strchr(" []", *s)) ++s;
 
 		/* Extract final and Terminate */
 		if ((f = *s) != '\0') *s++ = '\0';
 
-		/* Variable */
-		if (*b == '$')
-		{
+		/* Variables start with $, otherwise it's a constant */
+		if (*b == '$') {
 			if (streq(b+1, "SYS"))
 				v = ANGBAND_SYS;
 			else if (streq(b+1, "GRAF"))
@@ -547,11 +499,7 @@ static const char *process_pref_file_expr(char **sp, char *fp)
 				v = player_safe_name(player, TRUE);
 			else if (streq(b+1, "GENDER"))
 				v = player->sex->title;
-		}
-
-		/* Constant */
-		else
-		{
+		} else {
 			v = b;
 		}
 	}
@@ -563,6 +511,9 @@ static const char *process_pref_file_expr(char **sp, char *fp)
 	return v;
 }
 
+/**
+ * Parse one of the prefix-based logical expressions used in pref files
+ */
 static enum parser_error parse_prefs_expr(struct parser *p)
 {
 	struct prefs_data *d = parser_priv(p);
@@ -588,7 +539,7 @@ static enum parser_error parse_prefs_expr(struct parser *p)
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_prefs_k(struct parser *p)
+static enum parser_error parse_prefs_object(struct parser *p)
 {
 	int tvi, svi;
 	object_kind *kind;
@@ -615,7 +566,7 @@ static enum parser_error parse_prefs_k(struct parser *p)
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_prefs_r(struct parser *p)
+static enum parser_error parse_prefs_monster(struct parser *p)
 {
 	int idx;
 	monster_race *monster;
@@ -635,7 +586,7 @@ static enum parser_error parse_prefs_r(struct parser *p)
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_prefs_f(struct parser *p)
+static enum parser_error parse_prefs_feat(struct parser *p)
 {
 	int idx;
 	feature_type *feature;
@@ -665,16 +616,12 @@ static enum parser_error parse_prefs_f(struct parser *p)
 	else
 		return PARSE_ERROR_INVALID_LIGHTING;
 
-	if (light_idx < LIGHTING_MAX)
-	{
+	if (light_idx < LIGHTING_MAX) {
 		feature = &f_info[idx];
 		feature->x_attr[light_idx] = (byte)parser_getint(p, "attr");
 		feature->x_char[light_idx] = (wchar_t)parser_getint(p, "char");
-	}
-	else
-	{
-		for (light_idx = 0; light_idx < LIGHTING_MAX; light_idx++)
-		{
+	} else {
+		for (light_idx = 0; light_idx < LIGHTING_MAX; light_idx++) {
 			feature = &f_info[idx];
 			feature->x_attr[light_idx] = (byte)parser_getint(p, "attr");
 			feature->x_char[light_idx] = (wchar_t)parser_getint(p, "char");
@@ -741,7 +688,7 @@ static enum parser_error parse_prefs_gf(struct parser *p)
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_prefs_l(struct parser *p)
+static enum parser_error parse_prefs_flavor(struct parser *p)
 {
 	unsigned int idx;
 	struct flavor *flavor;
@@ -758,42 +705,6 @@ static enum parser_error parse_prefs_l(struct parser *p)
 	if (flavor) {
 		flavor->x_attr = (byte)parser_getint(p, "attr");
 		flavor->x_char = (wchar_t)parser_getint(p, "char");
-	}
-
-	return PARSE_ERROR_NONE;
-}
-
-static enum parser_error parse_prefs_q(struct parser *p)
-{
-	struct prefs_data *d = parser_priv(p);
-	assert(d != NULL);
-	if (d->bypass) return PARSE_ERROR_NONE;
-
-	if (parser_hasval(p, "sval") && parser_hasval(p, "flag"))
-	{
-		object_kind *kind;
-		int tvi, svi;
-
-		tvi = tval_find_idx(parser_getsym(p, "n"));
-		if (tvi < 0)
-			return PARSE_ERROR_UNRECOGNISED_TVAL;
-	
-		svi = lookup_sval(tvi, parser_getsym(p, "sval"));
-		if (svi < 0)
-			return PARSE_ERROR_UNRECOGNISED_SVAL;
-
-		kind = lookup_kind(tvi, svi);
-		if (!kind)
-			return PARSE_ERROR_UNRECOGNISED_SVAL;
-
-		kind->ignore = parser_getint(p, "flag");
-	}
-	else
-	{
-		int idx = parser_getint(p, "idx");
-		int level = parser_getint(p, "n");
-
-		ignore_level[idx] = level;
 	}
 
 	return PARSE_ERROR_NONE;
@@ -825,7 +736,7 @@ static enum parser_error parse_prefs_inscribe(struct parser *p)
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_prefs_a(struct parser *p)
+static enum parser_error parse_prefs_keymap_action(struct parser *p)
 {
 	const char *act = "";
 
@@ -841,7 +752,7 @@ static enum parser_error parse_prefs_a(struct parser *p)
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_prefs_c(struct parser *p)
+static enum parser_error parse_prefs_keymap_input(struct parser *p)
 {
 	int mode;
 	struct keypress tmp[2];
@@ -863,7 +774,7 @@ static enum parser_error parse_prefs_c(struct parser *p)
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_prefs_m(struct parser *p)
+static enum parser_error parse_prefs_message(struct parser *p)
 {
 	int a, msg_index;
 	const char *attr;
@@ -894,7 +805,7 @@ static enum parser_error parse_prefs_m(struct parser *p)
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_prefs_v(struct parser *p)
+static enum parser_error parse_prefs_color(struct parser *p)
 {
 	int idx;
 
@@ -914,7 +825,7 @@ static enum parser_error parse_prefs_v(struct parser *p)
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_prefs_w(struct parser *p)
+static enum parser_error parse_prefs_window(struct parser *p)
 {
 	int window;
 	size_t flag;
@@ -945,40 +856,6 @@ static enum parser_error parse_prefs_w(struct parser *p)
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_prefs_x(struct parser *p)
-{
-	struct prefs_data *d = parser_priv(p);
-	assert(d != NULL);
-	if (d->bypass) return PARSE_ERROR_NONE;
-
-	option_set(parser_getstr(p, "option"), FALSE);
-
-	return PARSE_ERROR_NONE;
-}
-
-static enum parser_error parse_prefs_y(struct parser *p)
-{
-	struct prefs_data *d = parser_priv(p);
-	assert(d != NULL);
-	if (d->bypass) return PARSE_ERROR_NONE;
-
-	option_set(parser_getstr(p, "option"), TRUE);
-
-	return PARSE_ERROR_NONE;
-}
-
-static enum parser_error parse_prefs_o(struct parser *p)
-{
-	struct prefs_data *d = parser_priv(p);
-	assert(d != NULL);
-	if (d->bypass) return PARSE_ERROR_NONE;
-
-	/* Don't load options anymore */
-
-	return PARSE_ERROR_NONE;
-}
-
-
 static struct parser *init_parse_prefs(bool user)
 {
 	struct parser *p = parser_new();
@@ -993,22 +870,17 @@ static struct parser *init_parse_prefs(bool user)
 
 	parser_reg(p, "% str file", parse_prefs_load);
 	parser_reg(p, "? str expr", parse_prefs_expr);
-	parser_reg(p, "K sym tval sym sval int attr int char", parse_prefs_k);
-	parser_reg(p, "R uint idx int attr int char", parse_prefs_r);
-	parser_reg(p, "F uint idx sym lighting int attr int char", parse_prefs_f);
+	parser_reg(p, "object sym tval sym sval int attr int char", parse_prefs_object);
+	parser_reg(p, "monster uint idx int attr int char", parse_prefs_monster);
+	parser_reg(p, "feat uint idx sym lighting int attr int char", parse_prefs_feat);
 	parser_reg(p, "GF sym type sym direction uint attr uint char", parse_prefs_gf);
-	parser_reg(p, "L uint idx int attr int char", parse_prefs_l);
-	parser_reg(p, "Q sym idx sym n ?sym sval ?sym flag", parse_prefs_q);
-		/* XXX should be split into two kinds of line */
+	parser_reg(p, "flavor uint idx int attr int char", parse_prefs_flavor);
 	parser_reg(p, "inscribe sym tval sym sval str text", parse_prefs_inscribe);
-	parser_reg(p, "A ?str act", parse_prefs_a);
-	parser_reg(p, "C int mode str key", parse_prefs_c);
-	parser_reg(p, "M sym type sym attr", parse_prefs_m);
-	parser_reg(p, "V uint idx int k int r int g int b", parse_prefs_v);
-	parser_reg(p, "W int window uint flag uint value", parse_prefs_w);
-	parser_reg(p, "X str option", parse_prefs_x);
-	parser_reg(p, "Y str option", parse_prefs_y);
-	parser_reg(p, "O sym name uint value", parse_prefs_o);
+	parser_reg(p, "keymap-act ?str act", parse_prefs_keymap_action);
+	parser_reg(p, "keymap-input int mode str key", parse_prefs_keymap_input);
+	parser_reg(p, "message sym type sym attr", parse_prefs_message);
+	parser_reg(p, "color uint idx int k int r int g int b", parse_prefs_color);
+	parser_reg(p, "window int window uint flag uint value", parse_prefs_window);
 
 	return p;
 }
@@ -1059,13 +931,19 @@ static void print_error(const char *name, struct parser *p) {
  *
  * \param name is the name of the pref file.
  * \param quiet means "don't complain about not finding the file".
- * \param user should be TRUE if the pref file is user-specific and not a game default.
- * \param base_search_path is the first path that should be checked for the file.
- * \param fallback_search_path is the path that should be checked if the file couldn't be found at the base path.
- * \param used_fallback will be set on return to TRUE if the fallback path was used, FALSE otherwise.
+ * \param user should be TRUE if the pref file is user-specific and not a game
+ * default.
+ * \param base_search_path is the first path that should be checked for the file
+ * \param fallback_search_path is the path that should be checked if the file
+ * couldn't be found at the base path.
+ * \param used_fallback will be set on return to TRUE if the fallback path was
+ * used, FALSE otherwise.
  * \returns TRUE if everything worked OK, FALSE otherwise.
  */
-static bool process_pref_file_layered(const char *name, bool quiet, bool user, const char *base_search_path, const char *fallback_search_path, bool *used_fallback)
+static bool process_pref_file_layered(const char *name, bool quiet, bool user,
+									  const char *base_search_path,
+									  const char *fallback_search_path,
+									  bool *used_fallback)
 {
 	char buf[1024];
 
@@ -1091,25 +969,20 @@ static bool process_pref_file_layered(const char *name, bool quiet, bool user, c
 	}
 
 	f = file_open(buf, MODE_READ, -1);
-	if (!f)
-	{
+	if (!f) {
 		if (!quiet)
 			msg("Cannot open '%s'.", buf);
 
 		e = PARSE_ERROR_INTERNAL; /* signal failure to callers */
-	}
-	else
-	{
+	} else {
 		char line[1024];
 
 		p = init_parse_prefs(user);
-		while (file_getl(f, line, sizeof line))
-		{
+		while (file_getl(f, line, sizeof line)) {
 			line_no++;
 
 			e = parser_parse(p, line);
-			if (e != PARSE_ERROR_NONE)
-			{
+			if (e != PARSE_ERROR_NONE) {
 				print_error(buf, p);
 				break;
 			}
@@ -1126,16 +999,20 @@ static bool process_pref_file_layered(const char *name, bool quiet, bool user, c
 }
 
 /**
- * Look for a pref file at its base location (falling back to another path if needed) and then in the user location. This
- * effectively will layer a user pref file on top of a default pref file.
+ * Look for a pref file at its base location (falling back to another path if
+ * needed) and then in the user location. This effectively will layer a user
+ * pref file on top of a default pref file.
  *
- * Because of the way this function works, there might be some unexpected effects when a pref file triggers another
- * pref file to be loaded. For example, pref/pref.prf causes message.prf to load. This means that the game will
- * load pref/pref.prf, then pref/message.prf, then user/message.prf, and finally user/pref.prf.
+ * Because of the way this function works, there might be some unexpected
+ * effects when a pref file triggers another pref file to be loaded.
+ * For example, pref/pref.prf causes message.prf to load. This means that the
+ * game will load pref/pref.prf, then pref/message.prf, then user/message.prf,
+ * and finally user/pref.prf.
  *
  * \param name is the name of the pref file.
  * \param quiet means "don't complain about not finding the file".
- * \param user should be TRUE if the pref file is user-specific and not a game default.
+ * \param user should be TRUE if the pref file is user-specific and not a game
+ * default.
  * \returns TRUE if everything worked OK, FALSE otherwise.
  */
 bool process_pref_file(const char *name, bool quiet, bool user)
@@ -1144,24 +1021,29 @@ bool process_pref_file(const char *name, bool quiet, bool user)
 	bool user_success = FALSE;
 	bool used_fallback = FALSE;
 
-	/* This supports the old behavior: look for a file first in 'pref/', and if not found there, then 'user/'. */
-	root_success = process_pref_file_layered(name, quiet, user, ANGBAND_DIR_PREF, ANGBAND_DIR_USER, &used_fallback);
+	/* This supports the old behavior: look for a file first in 'pref/', and
+	 * if not found there, then 'user/'. */
+	root_success = process_pref_file_layered(name, quiet, user,
+											 ANGBAND_DIR_PREF, ANGBAND_DIR_USER,
+											 &used_fallback);
 
-	/* Next, we want to force a check for the file in the user/ directory. However, since we used the user directory
-	 * as a fallback in the previous check, we only want to do this if the fallback wasn't used. This cuts down on
-	 * unnecessary parsing. */
+	/* Next, we want to force a check for the file in the user/ directory.
+	 * However, since we used the user directory as a fallback in the previous
+	 * check, we only want to do this if the fallback wasn't used. This cuts
+	 * down on unnecessary parsing. */
 	if (!used_fallback) {
-		/* Force quiet (since this is an optional file) and force user (since this should always be considered user-specific). */
-		user_success = process_pref_file_layered(name, TRUE, TRUE, ANGBAND_DIR_USER, NULL, &used_fallback);
+		/* Force quiet (since this is an optional file) and force user
+		 * (since this should always be considered user-specific). */
+		user_success = process_pref_file_layered(name, TRUE, TRUE,
+												 ANGBAND_DIR_USER, NULL,
+												 &used_fallback);
 	}
 
 	/* If only one load was successful, that's okay; we loaded something. */
 	return root_success || user_success;
 }
 
-int use_graphics;		/* The "graphics" mode is enabled */
-
-/*
+/**
  * Reset the "visual" lists
  *
  * This involves resetting various things to their "default" state.
@@ -1176,22 +1058,19 @@ void reset_visuals(bool load_prefs)
 	struct flavor *f;
 
 	/* Extract default attr/char code for features */
-	for (i = 0; i < z_info->f_max; i++)
-	{
+	for (i = 0; i < z_info->f_max; i++) {
 		int j;
 		feature_type *f_ptr = &f_info[i];
 
 		/* Assume we will use the underlying values */
-		for (j = 0; j < LIGHTING_MAX; j++)
-		{
+		for (j = 0; j < LIGHTING_MAX; j++) {
 			f_ptr->x_attr[j] = f_ptr->d_attr;
 			f_ptr->x_char[j] = f_ptr->d_char;
 		}
 	}
 
 	/* Extract default attr/char code for objects */
-	for (i = 0; i < z_info->k_max; i++)
-	{
+	for (i = 0; i < z_info->k_max; i++) {
 		object_kind *k_ptr = &k_info[i];
 
 		/* Default attr/char */
@@ -1200,8 +1079,7 @@ void reset_visuals(bool load_prefs)
 	}
 
 	/* Extract default attr/char code for monsters */
-	for (i = 0; i < z_info->r_max; i++)
-	{
+	for (i = 0; i < z_info->r_max; i++) {
 		monster_race *r_ptr = &r_info[i];
 
 		/* Default attr/char */
@@ -1210,8 +1088,7 @@ void reset_visuals(bool load_prefs)
 	}
 
 	/* Extract default attr/char code for flavors */
-	for (f = flavors; f; f = f->next)
-	{
+	for (f = flavors; f; f = f->next) {
 		f->x_attr = f->d_attr;
 		f->x_char = f->d_char;
 	}

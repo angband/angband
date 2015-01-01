@@ -38,7 +38,6 @@
 #include "player-history.h"
 #include "player-spell.h"
 #include "player-util.h"
-#include "prefs.h"
 #include "randname.h"
 #include "z-queue.h"
 

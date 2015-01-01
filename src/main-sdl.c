@@ -21,12 +21,12 @@
 #include "cmds.h"
 #include "dungeon.h"
 #include "init.h"
-#include "prefs.h"
 #include "ui.h"
 #include "ui-command.h"
 #include "ui-display.h"
 #include "ui-input.h"
 #include "ui-map.h"
+#include "ui-prefs.h"
 
 /*
  * Comments and suggestions are welcome. The UI probably needs some

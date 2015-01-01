@@ -45,7 +45,6 @@
 #include "player-path.h"
 #include "player-timed.h"
 #include "player-util.h"
-#include "prefs.h"
 #include "savefile.h"
 #include "score.h"
 #include "signals.h"
@@ -59,6 +58,7 @@
 #include "ui-knowledge.h"
 #include "ui-map.h"
 #include "ui-player.h"
+#include "ui-prefs.h"
 #include "ui.h"
 
 /* The minimum amount of energy a player has at the start of a new level */
@@ -72,6 +72,7 @@ bool character_generated;	/* The character exists */
 bool character_dungeon;		/* The character has a dungeon */
 bool character_saved;		/* The character was just saved to a savefile */
 s16b character_xtra;		/* Depth of the game in startup mode */
+bool arg_wizard;			/* Command arg -- Request wizard mode */
 
 /*
  * Say whether it's daytime or not

@@ -33,7 +33,6 @@
 #include "player-spell.h"
 #include "player-timed.h"
 #include "player-util.h"
-#include "ui-player.h"
 #include "ui.h"
 
 /*

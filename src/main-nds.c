@@ -26,7 +26,7 @@
 #include "buildid.h"
 #include "main.h"
 #include "init.h"
-#include "prefs.h"
+#include "ui-prefs.h"
 #include "savefile.h"
 
 /* DS includes */

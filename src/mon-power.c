@@ -25,9 +25,11 @@
 #include "mon-blow-effects.h"
 #include "obj-tval.h"
 #include "obj-util.h"
-#include "prefs.h"
 #include "tables.h"
 #include "z-textblock.h"
+
+bool arg_power;				/* Command arg -- Generate monster power */
+bool arg_rebalance;			/* Command arg -- Rebalance monsters */
 
 long *power, *scaled_power, *final_hp, *final_melee_dam, *final_spell_dam;
 int *highest_threat;

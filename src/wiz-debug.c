@@ -40,7 +40,6 @@
 #include "obj-util.h"
 #include "object.h"
 #include "player-timed.h"
-#include "prefs.h"
 #include "project.h"
 #include "target.h"
 #include "ui-command.h"
@@ -50,6 +49,7 @@
 #include "ui-input.h"
 #include "ui-map.h"
 #include "ui-menu.h"
+#include "ui-prefs.h"
 #include "ui-target.h"
 #include "wizard.h"
 

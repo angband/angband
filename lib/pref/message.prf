@@ -8,7 +8,7 @@
 # See "lib/help/command.txt" and "src/files.c" for more information.
 #
 # Format:
-# M:<message-type>:<color>
+# message:<message-type>:<color>
 
 # d - 0  - Black         w - 1  - White         s - 2  - Slate
 # o - 3  - Orange        r - 4  - Red           g - 5  - Green
@@ -26,453 +26,453 @@
 # sound.cfg can be found in /lib/extra/sound (Twilight).
 
 # MSG_GENERIC
-M:GENERIC:w
+message:GENERIC:w
 
 # MSG_HIT
-M:HIT:w
+message:HIT:w
 
 # MSG_MISS
-M:MISS:w
+message:MISS:w
 
 # MSG_FLEE
-M:FLEE:w
+message:FLEE:w
 
 # MSG_DROP (sound only)
-M:DROP:w
+message:DROP:w
 
 # MSG_KILL
-M:KILL:w
+message:KILL:w
 
 # MSG_LEVEL
-M:LEVEL:w
+message:LEVEL:w
 
 # MSG_DEATH
-M:DEATH:w
+message:DEATH:w
 
 # MSG_STUDY
-M:STUDY:w
+message:STUDY:w
 
 # MSG_TELEPORT (sound only)
-M:TELEPORT:w
+message:TELEPORT:w
 
 # MSG_SHOOT (sound only)
-M:SHOOT:w
+message:SHOOT:w
 
 # MSG_QUAFF (sound only)
-M:QUAFF:w
+message:QUAFF:w
 
 # MSG_ZAP_ROD (sound only)
-M:ZAP_ROD:w
+message:ZAP_ROD:w
 
 # MSG_WALK (unused)
-M:WALK:w
+message:WALK:w
 
 # MSG_TPOTHER (sound only)
-M:TPOTHER:w
+message:TPOTHER:w
 
 # MSG_HITWALL
-M:HITWALL:w
+message:HITWALL:w
 
 # MSG_EAT (sound only)
-M:EAT:w
+message:EAT:w
 
 # MSG_STORE1
-M:STORE1:w
+message:STORE1:w
 
 # MSG_STORE2
-M:STORE2:w
+message:STORE2:w
 
 # MSG_STORE3
-M:STORE3:w
+message:STORE3:w
 
 # MSG_STORE4
-M:STORE4:w
+message:STORE4:w
 
 # MSG_DIG (sound only)
-M:DIG:w
+message:DIG:w
 
 # MSG_OPENDOOR
-M:OPENDOOR:w
+message:OPENDOOR:w
 
 # MSG_SHUTDOOR (sound only)
-M:SHUTDOOR:w
+message:SHUTDOOR:w
 
 # MSG_TPLEVEL
-M:TPLEVEL:w
+message:TPLEVEL:w
 
 # MSG_BELL
-M:BELL:o
+message:BELL:o
 
 # MSG_NOTHING_TO_OPEN
-M:NOTHING_TO_OPEN:w
+message:NOTHING_TO_OPEN:w
 
 # MSG_LOCKPICK_FAIL
-M:LOCKPICK_FAIL:w
+message:LOCKPICK_FAIL:w
 
 # MSG_STAIRS_DOWN
-M:STAIRS_DOWN:w
+message:STAIRS_DOWN:w
 
 # MSG_HITPOINT_WARN
-M:HITPOINT_WARN:o
+message:HITPOINT_WARN:o
 
 # MSG_ACT_ARTIFACT
-M:ACT_ARTIFACT:w
+message:ACT_ARTIFACT:w
 
 # MSG_USE_STAFF (sound only)
-M:USE_STAFF:w
+message:USE_STAFF:w
 
 # MSG_DESTROY
-M:DESTROY:w
+message:DESTROY:w
 
 # MSG_MON_HIT
-M:MON_HIT:w
+message:MON_HIT:w
 
 # MSG_MON_TOUCH
-M:MON_TOUCH:w
+message:MON_TOUCH:w
 
 # MSG_MON_PUNCH
-M:MON_PUNCH:w
+message:MON_PUNCH:w
 
 # MSG_MON_KICK
-M:MON_KICK:w
+message:MON_KICK:w
 
 # MSG_MON_CLAW
-M:MON_CLAW:w
+message:MON_CLAW:w
 
 # MSG_MON_BITE
-M:MON_BITE:w
+message:MON_BITE:w
 
 # MSG_MON_STING
-M:MON_STING:w
+message:MON_STING:w
 
 # MSG_MON_BUTT 
-M:MON_BUTT:w
+message:MON_BUTT:w
 
 # MSG_MON_CRUSH
-M:MON_CRUSH:w
+message:MON_CRUSH:w
 
 # MSG_MON_ENGULF
-M:MON_ENGULF:w
+message:MON_ENGULF:w
 
 # MSG_MON_CRAWL
-M:MON_CRAWL:w
+message:MON_CRAWL:w
 
 # MSG_MON_DROOL
-M:MON_DROOL:w
+message:MON_DROOL:w
 
 # MSG_MON_SPIT
-M:MON_SPIT:w
+message:MON_SPIT:w
 
 # MSG_MON_GAZE
-M:MON_GAZE:w
+message:MON_GAZE:w
 
 # MSG_MON_WAIL
-M:MON_WAIL:w
+message:MON_WAIL:w
 
 # MSG_MON_SPORE
-M:MON_SPORE:w
+message:MON_SPORE:w
 
 # MSG_MON_BEG
-M:MON_BEG:w
+message:MON_BEG:w
 
 # MSG_MON_INSULT
-M:MON_INSULT:w
+message:MON_INSULT:w
 
 # MSG_MON_MOAN
-M:MON_MOAN:w
+message:MON_MOAN:w
 
 # MSG_RECOVER
-M:RECOVER:w
+message:RECOVER:w
 
 # MSG_BLIND
-M:BLIND:w
+message:BLIND:w
 
 # MSG_CONFUSED
-M:CONFUSED:w
+message:CONFUSED:w
 
 # MSG_POISONED
-M:POISONED:w
+message:POISONED:w
 
 # MSG_AFRAID
-M:AFRAID:o
+message:AFRAID:o
 
 # MSG_PARALYZED
-M:PARALYZED:w
+message:PARALYZED:w
 
 # MSG_DRUGGED
-M:DRUGGED:w
+message:DRUGGED:w
 
 # MSG_SPEED
-M:SPEED:w
+message:SPEED:w
 
 # MSG_SLOW
-M:SLOW:w
+message:SLOW:w
 
 # MSG_SHIELD
-M:SHIELD:w
+message:SHIELD:w
 
 # MSG_BLESSED
-M:BLESSED:w
+message:BLESSED:w
 
 # MSG_HERO
-M:HERO:w
+message:HERO:w
 
 # MSG_BERSERK
-M:BERSERK:w
+message:BERSERK:w
 
 # MSG_PROT_EVIL
-M:PROT_EVIL:w
+message:PROT_EVIL:w
 
 # MSG_INVULN
-M:INVULN:w
+message:INVULN:w
 
 # MSG_SEE_INVIS
-M:SEE_INVIS:w
+message:SEE_INVIS:w
 
 # MSG_INFRARED
-M:INFRARED:w
+message:INFRARED:w
 
 # MSG_RES_ACID
-M:RES_ACID:w
+message:RES_ACID:w
 
 # MSG_RES_ELEC
-M:RES_ELEC:w
+message:RES_ELEC:w
 
 # MSG_RES_FIRE
-M:RES_FIRE:w
+message:RES_FIRE:w
 
 # MSG_RES_COLD
-M:RES_COLD:w
+message:RES_COLD:w
 
 # MSG_RES_POIS
-M:RES_POIS:w
+message:RES_POIS:w
 
 # MSG_STUN
-M:STUN:w
+message:STUN:w
 
 # MSG_CUT
-M:CUT:w
+message:CUT:w
 
 # MSG_STAIRS_UP
-M:STAIRS_UP:w
+message:STAIRS_UP:w
 
 # MSG_STORE_ENTER (unused)
-M:STORE_ENTER:w
+message:STORE_ENTER:w
 
 # MSG_STORE_LEAVE (unused)
-M:STORE_LEAVE:w
+message:STORE_LEAVE:w
 
 # MSG_STORE_HOME (unused)
-M:STORE_HOME:w
+message:STORE_HOME:w
 
 # MSG_MONEY1
-M:MONEY1:w
+message:MONEY1:w
 
 # MSG_MONEY2
-M:MONEY2:w
+message:MONEY2:w
 
 # MSG_MONEY3
-M:MONEY3:w
+message:MONEY3:w
 
 # MSG_SHOOT_HIT
-M:SHOOT_HIT:w
+message:SHOOT_HIT:w
 
 # MSG_STORE5
-M:STORE5:w
+message:STORE5:w
 
 # MSG_LOCKPICK
-M:LOCKPICK:w
+message:LOCKPICK:w
 
 # MSG_DISARM
-M:DISARM:w
+message:DISARM:w
 
 # MSG_IDENT_BAD
-M:IDENT_BAD:w
+message:IDENT_BAD:w
 
 # MSG_IDENT_EGO
-M:IDENT_EGO:w
+message:IDENT_EGO:w
 
 # MSG_IDENT_ART
-M:IDENT_ART:w
+message:IDENT_ART:w
 
 # MSG_BR_ELEMENTS
 # This is used as a generic breath.Another message type should be defined.
-M:BR_ELEMENTS:w
+message:BR_ELEMENTS:w
 
 # MSG_BR_FROST
-M:BR_FROST:w
+message:BR_FROST:w
 
 # MSG_BR_ELEC
-M:BR_ELEC:w
+message:BR_ELEC:w
 
 # MSG_BR_ACID
-M:BR_ACID:w
+message:BR_ACID:w
 
 # MSG_BR_GAS
-M:BR_GAS:w
+message:BR_GAS:w
 
 # MSG_BR_FIRE
-M:BR_FIRE:w
+message:BR_FIRE:w
 
 # MSG_BR_DISEN
-M:BR_DISEN:w
+message:BR_DISEN:w
 
 # MSG_BR_CHAOS
-M:BR_CHAOS:w
+message:BR_CHAOS:w
 
 # MSG_BR_SHARDS
-M:BR_SHARDS:w
+message:BR_SHARDS:w
 
 # MSG_BR_SOUND
-M:BR_SOUND:w
+message:BR_SOUND:w
 
 # MSG_BR_LIGHT
-M:BR_LIGHT:w
+message:BR_LIGHT:w
 
 # MSG_BR_DARK
-M:BR_DARK:w
+message:BR_DARK:w
 
 # MSG_BR_NETHER
-M:BR_NETHER:w
+message:BR_NETHER:w
 
 # MSG_BR_NEXUS
-M:BR_NEXUS:w
+message:BR_NEXUS:w
 
 # MSG_BR_TIME
-M:BR_TIME:w
+message:BR_TIME:w
 
 # MSG_BR_INERTIA
-M:BR_INERTIA:w
+message:BR_INERTIA:w
 
 # MSG_BR_GRAVITY
-M:BR_GRAVITY:w
+message:BR_GRAVITY:w
 
 # MSG_BR_PLASMA
-M:BR_PLASMA:w
+message:BR_PLASMA:w
 
 # MSG_BR_FORCE
-M:BR_FORCE:w
+message:BR_FORCE:w
 
 # MSG_SUM_MONSTER
-M:SUM_MONSTER:w
+message:SUM_MONSTER:w
 
 # MSG_SUM_ANGEL
-M:SUM_AINU:w
+message:SUM_AINU:w
 
 # MSG_SUM_UNDEAD
-M:SUM_UNDEAD:w
+message:SUM_UNDEAD:w
 
 # MSG_SUM_ANIMAL
-M:SUM_ANIMAL:w
+message:SUM_ANIMAL:w
 
 # MSG_SUM_SPIDER
-M:SUM_SPIDER:w
+message:SUM_SPIDER:w
 
 # MSG_SUM_HOUND
-M:SUM_HOUND:w
+message:SUM_HOUND:w
 
 # MSG_SUM_HYDRA
-M:SUM_HYDRA:w
+message:SUM_HYDRA:w
 
 # MSG_SUM_DEMON
-M:SUM_DEMON:w
+message:SUM_DEMON:w
 
 # MSG_SUM_DRAGON
-M:SUM_DRAGON:w
+message:SUM_DRAGON:w
 
 # MSG_SUM_HI_UNDEAD
-M:SUM_HI_UNDEAD:w
+message:SUM_HI_UNDEAD:w
 
 # MSG_SUM_HI_DRAGON
-M:SUM_HI_DRAGON:w
+message:SUM_HI_DRAGON:w
 
 # MSG_SUM_HI_DEMON
-M:SUM_HI_DEMON:w
+message:SUM_HI_DEMON:w
 
 # MSG_SUM_WRAITH
-M:SUM_WRAITH:w
+message:SUM_WRAITH:w
 
 # MSG_SUM_UNIQUE
-M:SUM_UNIQUE:w
+message:SUM_UNIQUE:w
 
 # MSG_WIELD
-M:WIELD:w
+message:WIELD:w
 
 # MSG_CURSED
-M:CURSED:w
+message:CURSED:w
 
 # MSG_PSEUDOID
-M:PSEUDOID:w
+message:PSEUDOID:w
 
 # MSG_HUNGRY
-M:HUNGRY:w
+message:HUNGRY:w
 
 # MSG_NOTICE
-M:NOTICE:w
+message:NOTICE:w
 
 # MSG_AMBIENT_DAY (sound only)
-M:AMBIENT_DAY:w
+message:AMBIENT_DAY:w
 
 # MSG_AMBIENT_NITE (sound only)
-M:AMBIENT_NITE:w
+message:AMBIENT_NITE:w
 
 # MSG_AMBIENT_DNG1 (sound only)
-M:AMBIENT_DNG1:w
+message:AMBIENT_DNG1:w
 
 # MSG_AMBIENT_DNG2 (sound only)
-M:AMBIENT_DNG2:w
+message:AMBIENT_DNG2:w
 
 # MSG_AMBIENT_DNG3 (sound only)
-M:AMBIENT_DNG3:w
+message:AMBIENT_DNG3:w
 
 # MSG_AMBIENT_DNG4 (sound only)
-M:AMBIENT_DNG4:w
+message:AMBIENT_DNG4:w
 
 # MSG_AMBIENT_DNG5 (sound only)
-M:AMBIENT_DNG5:w
+message:AMBIENT_DNG5:w
 
 # MSG_CREATE_TRAP
-M:CREATE_TRAP:w
+message:CREATE_TRAP:w
 
 # MSG_SHRIEK
-M:SHRIEK:w
+message:SHRIEK:w
 
 # MSG_CAST_FEAR
-M:CAST_FEAR:w
+message:CAST_FEAR:w
 
 # MSG_HIT_GOOD
-M:HIT_GOOD:w
+message:HIT_GOOD:w
 
 # MSG_HIT_GREAT
-M:HIT_GREAT:w
+message:HIT_GREAT:w
 
 # MSG_HIT_SUPERB
-M:HIT_SUPERB:w
+message:HIT_SUPERB:w
 
 # MSG_HIT_HI_GREAT
-M:HIT_HI_GREAT:w
+message:HIT_HI_GREAT:w
 
 # MSG_HIT_HI_SUPERB
-M:HIT_HI_SUPERB:w
+message:HIT_HI_SUPERB:w
 
 # MSG_SPELL (sound only)
-M:SPELL:w
+message:SPELL:w
 
 # MSG_PRAYER (unused)
-M:PRAYER:w
+message:PRAYER:w
 
 # MSG_KILL_UNIQUE
-M:KILL_UNIQUE:w
+message:KILL_UNIQUE:w
 
 # MSG_KILL_KING
-M:KILL_KING:w
+message:KILL_KING:w
 
 # MSG_DRAIN_STAT
-M:DRAIN_STAT:w
+message:DRAIN_STAT:w
 
 # MSG_MULTIPLY (sound only)
-M:MULTIPLY:w
+message:MULTIPLY:w
 
-M:BOLD:w
+message:BOLD:w
 
 ?:1

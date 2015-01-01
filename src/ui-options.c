@@ -22,7 +22,6 @@
 #include "game-input.h"
 #include "init.h"
 #include "keymap.h"
-#include "prefs.h"
 #include "obj-desc.h"
 #include "obj-ignore.h"
 #include "obj-tval.h"
@@ -35,6 +34,7 @@
 #include "ui-knowledge.h"
 #include "ui-menu.h"
 #include "ui-options.h"
+#include "ui-prefs.h"
 #include "ui-target.h"
 
 

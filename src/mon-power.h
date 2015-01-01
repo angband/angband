@@ -21,6 +21,9 @@
 
 #include "monster.h"
 
+extern bool arg_power;
+extern bool arg_rebalance;
+
 /** Functions **/
 errr eval_monster_power(struct monster_race *races);
 

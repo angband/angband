@@ -27,9 +27,9 @@
 #include "mon-lore.h"
 #include "mon-util.h"
 #include "player-history.h"
-#include "prefs.h"
 #include "obj-util.h"
 #include "target.h"
+#include "ui-prefs.h"
 #include "wizard.h"
 
 

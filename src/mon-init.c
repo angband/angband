@@ -32,7 +32,6 @@
 #include "object.h"
 #include "parser.h"
 #include "player-spell.h"
-#include "prefs.h"
 
 monster_pain *pain_messages;
 struct monster_spell *monster_spells;

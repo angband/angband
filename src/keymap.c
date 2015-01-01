@@ -181,12 +181,12 @@ void keymap_dump(ang_file *fff)
 
 		/* Encode the action */
 		keypress_to_text(buf, sizeof(buf), k->actions, FALSE);
-		file_putf(fff, "A:%s\n", buf);
+		file_putf(fff, "keymap-act:%s\n", buf);
 
 		/* Convert the key into a string */
 		key[0] = k->key;
 		keypress_to_text(buf, sizeof(buf), key, TRUE);
-		file_putf(fff, "C:%d:%s\n", mode, buf);
+		file_putf(fff, "keymap-input:%d:%s\n", mode, buf);
 
 		file_putf(fff, "\n");
 	}

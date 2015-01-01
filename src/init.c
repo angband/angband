@@ -54,11 +54,11 @@
 #include "player-quest.h"
 #include "player-spell.h"
 #include "player-timed.h"
-#include "prefs.h"
 #include "project.h"
 #include "randname.h"
 #include "store.h"
 #include "trap.h"
+#include "ui-prefs.h"
 
 /**
  * Structure (not array) of game constants

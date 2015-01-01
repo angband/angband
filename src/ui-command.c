@@ -31,7 +31,6 @@
 #include "player-attack.h"
 #include "player-timed.h"
 #include "player-util.h"
-#include "prefs.h"
 #include "store.h"
 #include "target.h"
 #include "textui.h"
@@ -45,6 +44,7 @@
 #include "ui-menu.h"
 #include "ui-options.h"
 #include "ui-player.h"
+#include "ui-prefs.h"
 #include "ui-target.h"
 #include "wizard.h"
 

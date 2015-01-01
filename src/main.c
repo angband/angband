@@ -19,11 +19,12 @@
 #include "angband.h"
 #include "dungeon.h"
 #include "init.h"
-#include "prefs.h"
+#include "mon-power.h"
 #include "savefile.h"
 #include "signals.h"
 #include "ui-command.h"
 #include "ui-input.h"
+#include "ui-prefs.h"
 
 /* locale junk */
 #include "locale.h"
