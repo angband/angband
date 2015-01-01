@@ -5,8 +5,8 @@
 # across a range of different makefiles, to cut down on maintenance.
 #
 
-VERSION = 3.5.0
-COPYRIGHT = (c) 1995-2013 Angband contributors
+VERSION = 3.5.1
+COPYRIGHT = (c) 1995-2015 Angband contributors
 
 HEADERS = \
 	angband.h \
