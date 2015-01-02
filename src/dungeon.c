@@ -1189,8 +1189,6 @@ void play_game(bool new_game)
 {
 	bool new_level = TRUE;
 
-	textui_init();
-
 	/*** Try to load the savefile ***/
 
 	player->is_dead = TRUE;

@@ -58,7 +58,6 @@
 #include "randname.h"
 #include "store.h"
 #include "trap.h"
-#include "ui-prefs.h"
 
 /**
  * Structure (not array) of game constants
@@ -4409,10 +4408,6 @@ bool init_angband(void)
 	/* List display codes */
 	monster_list_init();
 	object_list_init();
-
-	/* Initialize graphics info and basic user pref data */
-	event_signal_message(EVENT_INITSTATUS, 0, "Loading basic user pref file...");
-	(void)process_pref_file("pref.prf", FALSE, FALSE);
 
 	/* Initialise RNG */
 	event_signal_message(EVENT_INITSTATUS, 0, "Getting the dice rolling...");

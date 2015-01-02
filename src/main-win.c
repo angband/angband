@@ -77,6 +77,7 @@
 #include "win/win-menu.h"
 #include "savefile.h" /* savefile_set_name() */
 #include "ui-display.h"
+#include "ui-init.h"
 #include "ui-input.h"
 #include "ui-map.h"
 #include "ui-prefs.h"
@@ -5250,6 +5251,8 @@ int FAR PASCAL WinMain(HINSTANCE hInst, HINSTANCE hPrevInst,
 	/* Set up the display handlers and things. */
 	init_display();
 	init_angband();
+
+	textui_init();
 
 	initialized = TRUE;
 

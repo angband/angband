@@ -25,9 +25,11 @@
 
 #include "angband.h"
 #include "game-input.h"
+#include "game-event.h"
 #include "ui-display.h"
 #include "ui-input.h"
 #include "ui-knowledge.h"
+#include "ui-prefs.h"
 #include "ui.h"
 #include "z-term.h"
 
@@ -37,6 +39,10 @@
 void textui_init(void)
 {
 	u32b default_window_flag[ANGBAND_TERM_MAX];
+
+	/* Initialize graphics info and basic pref data */
+	event_signal_message(EVENT_INITSTATUS, 0, "Loading basic pref file...");
+	(void)process_pref_file("pref.prf", FALSE, FALSE);
 
 	/* Sneakily init command list */
 	cmd_init();

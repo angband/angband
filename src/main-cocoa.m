@@ -1021,6 +1021,8 @@ static size_t Term_mbcs_cocoa(wchar_t *dest, const char *src, int n)
 
     /* Initialise game */
     init_angband();
+
+	textui_init();
     
     /* Register the sound hook */
     event_add_handler(EVENT_SOUND, play_sound, NULL);

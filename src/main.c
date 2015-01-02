@@ -23,6 +23,7 @@
 #include "savefile.h"
 #include "signals.h"
 #include "ui-command.h"
+#include "ui-init.h"
 #include "ui-input.h"
 #include "ui-prefs.h"
 
@@ -590,6 +591,7 @@ int main(int argc, char *argv[])
 	/* Set up the display handlers and things. */
 	init_display();
 	init_angband();
+	textui_init();
 
 	/* Wait for response */
 	pause_line(Term);
