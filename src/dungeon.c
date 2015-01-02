@@ -54,6 +54,7 @@
 #include "ui-birth.h"
 #include "ui-death.h"
 #include "ui-display.h"
+#include "ui-init.h"
 #include "ui-input.h"
 #include "ui-knowledge.h"
 #include "ui-map.h"
@@ -1167,51 +1168,6 @@ static void process_some_user_pref_files(void)
 }
 
 
-void textui_pregame_init(void)
-{
-	u32b default_window_flag[ANGBAND_TERM_MAX];
-
-	/* Sneakily init command list */
-	cmd_init();
-
-	/* Initialize knowledge things */
-	textui_knowledge_init();
-
-	/* Initialize input hooks (only here temporarily - NRM) */
-	textui_input_init();
-
-	/* Hack -- Increase "icky" depth */
-	character_icky++;
-
-	/* Verify main term */
-	if (!term_screen)
-		quit("Main window does not exist");
-
-	/* Make sure main term is active */
-	Term_activate(term_screen);
-
-	/* Verify minimum size */
-	if ((Term->hgt < 24) || (Term->wid < 80))
-		plog("Main window is too small - please make it bigger.");
-
-	/* Hack -- Turn off the cursor */
-	(void)Term_set_cursor(FALSE);
-
-	/* initialize window options that will be overridden by the savefile */
-	memset(window_flag, 0, sizeof(u32b)*ANGBAND_TERM_MAX);
-	memset(default_window_flag, 0, sizeof default_window_flag);
-	if (ANGBAND_TERM_MAX > 1) default_window_flag[1] = (PW_MESSAGE);
-	if (ANGBAND_TERM_MAX > 2) default_window_flag[2] = (PW_INVEN);
-	if (ANGBAND_TERM_MAX > 3) default_window_flag[3] = (PW_MONLIST);
-	if (ANGBAND_TERM_MAX > 4) default_window_flag[4] = (PW_ITEMLIST);
-	if (ANGBAND_TERM_MAX > 5) default_window_flag[5] = (PW_MONSTER | PW_OBJECT);
-	if (ANGBAND_TERM_MAX > 6) default_window_flag[6] = (PW_OVERHEAD);
-	if (ANGBAND_TERM_MAX > 7) default_window_flag[7] = (PW_PLAYER_2);
-
-	/* Set up the subwindows */
-	subwindows_set_flags(default_window_flag, ANGBAND_TERM_MAX);
-}
-
 /*
  * Actually play a game.
  *
@@ -1233,7 +1189,7 @@ void play_game(bool new_game)
 {
 	bool new_level = TRUE;
 
-	textui_pregame_init();
+	textui_init();
 
 	/*** Try to load the savefile ***/
 
@@ -1461,6 +1417,7 @@ void close_game(void)
 	/* Hack -- Increase "icky" depth */
 	character_icky++;
 
+	/* Save monster memory to user directory */
 	if (!lore_save("lore.txt")) {
 		msg("lore save failed!");
 		event_signal(EVENT_MESSAGE_FLUSH);

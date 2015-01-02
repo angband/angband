@@ -164,8 +164,8 @@ depgen:
  obj-tval.h list-tvals.h obj-util.h player-birth.h player-history.h \
  list-history-types.h player-path.h player-timed.h list-player-timed.h \
  player-util.h savefile.h score.h signals.h store.h tables.h target.h \
- ui-event.h ui-birth.h ui-death.h ui-display.h ui-input.h z-term.h \
- ui-knowledge.h ui-map.h ui-player.h ui-prefs.h ui.h
+ ui-event.h ui-birth.h ui-death.h ui-display.h ui-init.h ui-input.h \
+ z-term.h ui-knowledge.h ui-map.h ui-player.h ui-prefs.h ui.h
 ./effects.o: effects.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
  z-color.h z-util.h z-rand.h config.h game-event.h z-type.h message.h \
  message-list.h option.h z-file.h list-options.h player.h guid.h \
@@ -1166,6 +1166,14 @@ depgen:
  list-identify-flags.h list-origins.h player-calcs.h list-player-flags.h \
  list-magic-realms.h player-history.h list-history-types.h ui-input.h \
  z-term.h ui-event.h cmd-core.h ui.h z-textblock.h
+./ui-init.o: ui-init.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
+ z-color.h z-util.h z-rand.h config.h game-event.h z-type.h message.h \
+ message-list.h option.h z-file.h list-options.h player.h guid.h \
+ obj-properties.h list-stats.h list-object-flags.h list-kind-flags.h \
+ list-object-modifiers.h object.h z-quark.h z-dice.h z-expression.h \
+ effects.h list-effects.h list-elements.h list-identify-flags.h \
+ list-origins.h player-calcs.h list-player-flags.h list-magic-realms.h \
+ game-input.h cmd-core.h
 ./ui-input.o: ui-input.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
  z-color.h z-util.h z-rand.h config.h game-event.h z-type.h message.h \
  message-list.h option.h z-file.h list-options.h player.h guid.h \

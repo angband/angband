@@ -1,0 +1,31 @@
+/**
+ * \file ui-init.h
+ * \brief UI initialistion
+ *
+ * Copyright (c) 2015 Nick McConnell
+ *
+ * This work is free software; you can redistribute it and/or modify it
+ * under the terms of either:
+ *
+ * a) the GNU General Public License as published by the Free Software
+ *    Foundation, version 2, or
+ *
+ * b) the "Angband licence":
+ *    This software may be copied and distributed for educational, research,
+ *    and not for profit purposes provided that this copyright and statement
+ *    are included in all such copies.  Other copyrights may also apply.
+ *
+ * This file is used to initialize various variables and arrays for the
+ * Angband game.
+ *
+ * Several of the arrays for Angband are built from "template" files in
+ * the "lib/edit" directory.
+ */
+
+
+#ifndef UI_INIT_H
+#define UI_INIT_H
+
+void textui_init(void);
+
+#endif /* !UI_INIT_H */
