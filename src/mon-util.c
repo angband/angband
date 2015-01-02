@@ -45,7 +45,7 @@ monster_race *lookup_monster(const char *name)
 	monster_race *closest = NULL;
 	
 	/* Look for it */
-	for (i = 1; i < z_info->r_max; i++)
+	for (i = 0; i < z_info->r_max; i++)
 	{
 		monster_race *r_ptr = &r_info[i];
 		if (!r_ptr->name)

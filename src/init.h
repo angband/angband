@@ -115,7 +115,6 @@ struct init_module {
 struct angband_constants *z_info;
 
 extern const char *ANGBAND_SYS;
-extern const char *ANGBAND_GRAF;
 
 extern char *ANGBAND_DIR_APEX;
 extern char *ANGBAND_DIR_EDIT;

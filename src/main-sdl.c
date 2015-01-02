@@ -3443,7 +3443,6 @@ static errr load_gfx(void)
 	GfxSurface = SDL_DisplayFormatAlpha(temp);
 
 	/* Make sure we know what pref file to use */
-	ANGBAND_GRAF = current_graphics_mode->pref;
 	overdraw = current_graphics_mode->overdrawRow;
 	overdraw_max = current_graphics_mode->overdrawMax;
 

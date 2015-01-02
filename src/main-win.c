@@ -1135,7 +1135,6 @@ static bool init_graphics(void)
 			}
 
 			name = mode->file;
-			ANGBAND_GRAF = mode->pref;
 
 			overdraw = mode->overdrawRow;
 			overdrawmax = mode->overdrawMax;
@@ -1146,7 +1145,6 @@ static bool init_graphics(void)
 			wid = 8;
 			hgt = 8;
 			name = "8x8.png";
-			ANGBAND_GRAF = "old";
 		}
 
 		/* Access the bitmap file */

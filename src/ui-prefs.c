@@ -22,14 +22,16 @@
 #include "grafmode.h"
 #include "init.h"
 #include "keymap.h"
+#include "mon-util.h" /* lookup_monster */
 #include "monster.h"
 #include "obj-ignore.h"
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "object.h"
 #include "project.h"
+#include "trap.h"
 #include "ui-display.h"
-#include "ui-prefs.h"
+#include "ui-prefs.h" /* subwindows_set_flags */
 #include "z-term.h"
 
 int arg_graphics;			/* Command arg -- Request graphics mode */
@@ -159,15 +161,14 @@ void dump_monsters(ang_file *fff)
 	int i;
 
 	for (i = 0; i < z_info->r_max; i++) {
-		monster_race *r_ptr = &r_info[i];
-		byte attr = r_ptr->x_attr;
-		wint_t chr = r_ptr->x_char;
+		monster_race *race = &r_info[i];
+		byte attr = race->x_attr;
+		wint_t chr = race->x_char;
 
 		/* Skip non-entries */
-		if (!r_ptr->name) continue;
+		if (!race->name) continue;
 
-		file_putf(fff, "# Monster: %s\n", r_ptr->name);
-		file_putf(fff, "monster:%d:%d:%d\n", i, attr, chr);
+		file_putf(fff, "monster:%s:0x%2X:0x%2X\n", race->name, attr, chr);
 	}
 }
 
@@ -489,8 +490,6 @@ static const char *process_pref_file_expr(char **sp, char *fp)
 		if (*b == '$') {
 			if (streq(b+1, "SYS"))
 				v = ANGBAND_SYS;
-			else if (streq(b+1, "GRAF"))
-				v = ANGBAND_GRAF;
 			else if (streq(b+1, "RACE"))
 				v = player->race->name;
 			else if (streq(b+1, "CLASS"))
@@ -568,20 +567,42 @@ static enum parser_error parse_prefs_object(struct parser *p)
 
 static enum parser_error parse_prefs_monster(struct parser *p)
 {
-	int idx;
+	const char *name;
 	monster_race *monster;
 
 	struct prefs_data *d = parser_priv(p);
 	assert(d != NULL);
 	if (d->bypass) return PARSE_ERROR_NONE;
 
-	idx = parser_getuint(p, "idx");
-	if (idx >= z_info->r_max)
-		return PARSE_ERROR_OUT_OF_BOUNDS;
+	name = parser_getsym(p, "name");
+	monster = lookup_monster(name);
+	if (!monster)
+		return PARSE_ERROR_NO_KIND_FOUND;
 
-	monster = &r_info[idx];
 	monster->x_attr = (byte)parser_getint(p, "attr");
 	monster->x_char = (wchar_t)parser_getint(p, "char");
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_prefs_trap(struct parser *p)
+{
+	int idx;
+	struct trap_kind *trap;
+
+	struct prefs_data *d = parser_priv(p);
+	assert(d != NULL);
+	if (d->bypass) return PARSE_ERROR_NONE;
+
+	idx = parser_getuint(p, "idx");
+	if (idx >= z_info->trap_max)
+		return PARSE_ERROR_OUT_OF_BOUNDS;
+
+	trap = &trap_info[idx];
+	trap->x_attr = (byte)parser_getint(p, "attr");
+	trap->x_char = (wchar_t)parser_getint(p, "char");
+
+	/* XXX We need to do something about lighting! */
 
 	return PARSE_ERROR_NONE;
 }
@@ -871,8 +892,9 @@ static struct parser *init_parse_prefs(bool user)
 	parser_reg(p, "% str file", parse_prefs_load);
 	parser_reg(p, "? str expr", parse_prefs_expr);
 	parser_reg(p, "object sym tval sym sval int attr int char", parse_prefs_object);
-	parser_reg(p, "monster uint idx int attr int char", parse_prefs_monster);
+	parser_reg(p, "monster sym name int attr int char", parse_prefs_monster);
 	parser_reg(p, "feat uint idx sym lighting int attr int char", parse_prefs_feat);
+	parser_reg(p, "trap uint idx sym lighting int attr int char", parse_prefs_trap);
 	parser_reg(p, "GF sym type sym direction uint attr uint char", parse_prefs_gf);
 	parser_reg(p, "flavor uint idx int attr int char", parse_prefs_flavor);
 	parser_reg(p, "inscribe sym tval sym sval str text", parse_prefs_inscribe);
@@ -1100,15 +1122,11 @@ void reset_visuals(bool load_prefs)
 	if (use_graphics) {
 		/* if we have a graphics mode, see if the mode has a pref file name */
 		graphics_mode *mode = get_graphics_mode(use_graphics);
-		if (mode && strstr(mode->pref,".prf")) {
-			(void)process_pref_file(mode->pref, FALSE, FALSE);
-		} else {
-			(void)process_pref_file("graf.prf", FALSE, FALSE);
-		}
-		/* process_pref_file("graf.prf", FALSE, FALSE); */
+		assert(mode);
 
-	/* Normal symbols */
+		(void)process_pref_file(mode->pref, FALSE, FALSE);
 	} else {
+		/* Normal symbols */
 		process_pref_file("font.prf", FALSE, FALSE);
 	}
 }
