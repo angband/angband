@@ -29,6 +29,7 @@
 #include "obj-util.h"
 #include "object.h"
 #include "project.h"
+#include "trap.h"
 #include "ui-display.h"
 #include "ui-prefs.h" /* subwindows_set_flags */
 #include "z-term.h"
@@ -584,6 +585,26 @@ static enum parser_error parse_prefs_monster(struct parser *p)
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_prefs_trap(struct parser *p)
+{
+	int idx;
+	struct trap_kind *trap;
+
+	struct prefs_data *d = parser_priv(p);
+	assert(d != NULL);
+	if (d->bypass) return PARSE_ERROR_NONE;
+
+	idx = parser_getuint(p, "idx");
+	if (idx >= z_info->trap_max)
+		return PARSE_ERROR_OUT_OF_BOUNDS;
+
+	trap = &trap_info[idx];
+	trap->x_attr = (byte)parser_getint(p, "attr");
+	trap->x_char = (wchar_t)parser_getint(p, "char");
+
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_prefs_feat(struct parser *p)
 {
 	int idx;
@@ -871,6 +892,7 @@ static struct parser *init_parse_prefs(bool user)
 	parser_reg(p, "object sym tval sym sval int attr int char", parse_prefs_object);
 	parser_reg(p, "monster sym name int attr int char", parse_prefs_monster);
 	parser_reg(p, "feat uint idx sym lighting int attr int char", parse_prefs_feat);
+	parser_reg(p, "trap uint idx int attr int char", parse_prefs_trap);
 	parser_reg(p, "GF sym type sym direction uint attr uint char", parse_prefs_gf);
 	parser_reg(p, "flavor uint idx int attr int char", parse_prefs_flavor);
 	parser_reg(p, "inscribe sym tval sym sval str text", parse_prefs_inscribe);
