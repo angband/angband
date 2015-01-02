@@ -21,6 +21,8 @@
 #ifndef UI_PREFS_H
 #define UI_PREFS_H
 
+#include "z-file.h"
+
 extern int use_graphics;
 extern int arg_graphics;
 extern bool arg_graphics_nice;
