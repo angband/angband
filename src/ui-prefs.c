@@ -602,6 +602,8 @@ static enum parser_error parse_prefs_trap(struct parser *p)
 	trap->x_attr = (byte)parser_getint(p, "attr");
 	trap->x_char = (wchar_t)parser_getint(p, "char");
 
+	/* XXX We need to do something about lighting! */
+
 	return PARSE_ERROR_NONE;
 }
 
@@ -892,7 +894,7 @@ static struct parser *init_parse_prefs(bool user)
 	parser_reg(p, "object sym tval sym sval int attr int char", parse_prefs_object);
 	parser_reg(p, "monster sym name int attr int char", parse_prefs_monster);
 	parser_reg(p, "feat uint idx sym lighting int attr int char", parse_prefs_feat);
-	parser_reg(p, "trap uint idx int attr int char", parse_prefs_trap);
+	parser_reg(p, "trap uint idx sym lighting int attr int char", parse_prefs_trap);
 	parser_reg(p, "GF sym type sym direction uint attr uint char", parse_prefs_gf);
 	parser_reg(p, "flavor uint idx int attr int char", parse_prefs_flavor);
 	parser_reg(p, "inscribe sym tval sym sval str text", parse_prefs_inscribe);

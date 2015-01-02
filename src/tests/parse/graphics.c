@@ -10,6 +10,7 @@
 #include "message.h" /* msg */
 #include "grafmode.h"
 #include "ui-prefs.h"
+#include "cmd-core.h"
 
 int setup_tests(void **state) {
 	set_file_paths();
@@ -32,6 +33,11 @@ static void getmsg(game_event_type type, game_event_data *data, void *user) {
 int test_prefs(void *state) {
 	bool error = FALSE;
 	graphics_mode *mode;
+
+	/* This is a bit of a hack to ensure we have a player struct set up */
+	/* Otherwise race/class dependent graphics will crash */
+	cmdq_push(CMD_BIRTH_RESET);
+	cmdq_execute(CMD_BIRTH);
 
 	event_add_handler(EVENT_MESSAGE, getmsg, &error);
 
