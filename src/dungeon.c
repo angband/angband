@@ -53,13 +53,8 @@
 #include "target.h"
 #include "ui-birth.h"
 #include "ui-death.h"
-#include "ui-display.h"
-#include "ui-init.h"
 #include "ui-input.h"
-#include "ui-knowledge.h"
 #include "ui-map.h"
-#include "ui-player.h"
-#include "ui-prefs.h"
 #include "ui.h"
 
 /* The minimum amount of energy a player has at the start of a new level */
@@ -1140,35 +1135,6 @@ static void on_leave_level(void) {
 
 
 /*
- * Process some user pref files
- */
-static void process_some_user_pref_files(void)
-{
-	bool found;
-	char buf[1024];
-
-	/* Process the "user.prf" file */
-	process_pref_file("user.prf", TRUE, TRUE);
-
-	/* Get the "PLAYER.prf" filename */
-	strnfmt(buf, sizeof(buf), "%s.prf", player_safe_name(player, TRUE));
-
-	/* Process the "PLAYER.prf" file, using the character name */
-	found = process_pref_file(buf, TRUE, TRUE);
-
-    /* Try pref file using savefile name if we fail using character name */
-    if (!found) {
-		int filename_index = path_filename_index(savefile);
-		char filename[128];
-
-		my_strcpy(filename, &savefile[filename_index], sizeof(filename));
-		strnfmt(buf, sizeof(buf), "%s.prf", filename);
-		process_pref_file(buf, TRUE, TRUE);
-    }
-}
-
-
-/*
  * Actually play a game.
  *
  * This function is called from a variety of entry points, since both
@@ -1201,16 +1167,9 @@ void play_game(bool new_game)
 	if (player->is_dead || new_game)
 		textui_do_birth();
 
-	/* Reset visuals, then load prefs */
-	reset_visuals(TRUE);
-	process_some_user_pref_files();
-
 	/* Tell the UI we've started. */
 	event_signal(EVENT_LEAVE_INIT);
 	event_signal(EVENT_ENTER_GAME);
-
-	/* Hack -- Decrease "icky" depth */
-	character_icky--;
 
 	/* Save not required yet. */
 	player->upkeep->autosave = FALSE;
@@ -1241,18 +1200,21 @@ void play_game(bool new_game)
 
 			/* Process monster with even more energy first */
 			process_monsters(cave, player->energy + 1);
-			if (player->is_dead || !player->upkeep->playing || player->upkeep->generate_level)
+			if (player->is_dead || !player->upkeep->playing ||
+				player->upkeep->generate_level)
 				break;
 
 			/* Process the player */
 			process_player();
-			if (player->is_dead || !player->upkeep->playing || player->upkeep->generate_level)
+			if (player->is_dead || !player->upkeep->playing ||
+				player->upkeep->generate_level)
 				break;
 		}
 
 		/* Refresh */
 		refresh();
-		if (player->is_dead || !player->upkeep->playing || player->upkeep->generate_level)
+		if (player->is_dead || !player->upkeep->playing ||
+			player->upkeep->generate_level)
 			continue;
 
 		/* Process the rest of the monsters */
@@ -1263,7 +1225,8 @@ void play_game(bool new_game)
 
 		/* Refresh */
 		refresh();
-		if (player->is_dead || !player->upkeep->playing || player->upkeep->generate_level)
+		if (player->is_dead || !player->upkeep->playing ||
+			player->upkeep->generate_level)
 			continue;
 
 		/* Process the world every ten turns */
@@ -1280,7 +1243,8 @@ void play_game(bool new_game)
 
 			/* Refresh */
 			refresh();
-			if (player->is_dead || !player->upkeep->playing || player->upkeep->generate_level)
+			if (player->is_dead || !player->upkeep->playing ||
+				player->upkeep->generate_level)
 				continue;
 		}
 
@@ -1292,9 +1256,6 @@ void play_game(bool new_game)
 		/* Count game turns */
 		turn++;
 	}
-
-	/* Disallow big cursor */
-	smlcurs = TRUE;
 
 	/* Tell the UI we're done with the game state */
 	event_signal(EVENT_LEAVE_GAME);

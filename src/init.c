@@ -4413,8 +4413,6 @@ bool init_angband(void)
 	event_signal_message(EVENT_INITSTATUS, 0, "Getting the dice rolling...");
 	Rand_init();
 
-	/* Done */
-	event_signal_message(EVENT_INITSTATUS, 0, "Initialization complete");
 	return TRUE;
 }
 

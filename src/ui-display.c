@@ -40,6 +40,7 @@
 #include "player-util.h"
 #include "player.h"
 #include "project.h"
+#include "savefile.h"
 #include "textui.h"
 #include "ui-birth.h"
 #include "ui-input.h"
@@ -2017,6 +2018,33 @@ static void see_floor_items(game_event_type type, game_event_data *data,
 /* ------------------------------------------------------------------------
  * Initialising
  * ------------------------------------------------------------------------ */
+/**
+ * Process the user pref files relevant to a newly loaded character
+ */
+static void process_character_pref_files(void)
+{
+	bool found;
+	char buf[1024];
+
+	/* Process the "user.prf" file */
+	process_pref_file("user.prf", TRUE, TRUE);
+
+	/* Process the pref file based on the character name */
+	strnfmt(buf, sizeof(buf), "%s.prf", player_safe_name(player, TRUE));
+	found = process_pref_file(buf, TRUE, TRUE);
+
+    /* Try pref file using savefile name if we fail using character name */
+    if (!found) {
+		int filename_index = path_filename_index(savefile);
+		char filename[128];
+
+		my_strcpy(filename, &savefile[filename_index], sizeof(filename));
+		strnfmt(buf, sizeof(buf), "%s.prf", filename);
+		process_pref_file(buf, TRUE, TRUE);
+    }
+}
+
+
 static void ui_enter_init(game_event_type type, game_event_data *data,
 						  void *user)
 {
@@ -2029,6 +2057,10 @@ static void ui_enter_init(game_event_type type, game_event_data *data,
 static void ui_leave_init(game_event_type type, game_event_data *data,
 						  void *user)
 {
+	/* Reset visuals, then load prefs */
+	reset_visuals(TRUE);
+	process_character_pref_files();
+
 	/* Remove our splashscreen handlers */
 	event_remove_handler(EVENT_INITSTATUS, splashscreen_note, NULL);
 
@@ -2080,11 +2112,17 @@ static void ui_enter_game(game_event_type type, game_event_data *data,
 	event_add_handler(EVENT_MESSAGE, display_message, NULL);
 	event_add_handler(EVENT_INPUT_FLUSH, flush, NULL);
 	event_add_handler(EVENT_MESSAGE_FLUSH, message_flush, NULL);
+
+	/* Hack -- Decrease "icky" depth */
+	character_icky--;
 }
 
 static void ui_leave_game(game_event_type type, game_event_data *data,
 						  void *user)
 {
+	/* Disallow big cursor */
+	smlcurs = TRUE;
+
 	/* Because of the "flexible" sidebar, all these things trigger
 	   the same function. */
 	event_remove_handler_set(player_events, N_ELEMENTS(player_events),

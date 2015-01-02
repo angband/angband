@@ -83,6 +83,9 @@ void textui_init(void)
 
 	/* Set up the subwindows */
 	subwindows_set_flags(default_window_flag, ANGBAND_TERM_MAX);
+
+	/* Done */
+	event_signal_message(EVENT_INITSTATUS, 0, "Initialization complete");
 }
 
 
