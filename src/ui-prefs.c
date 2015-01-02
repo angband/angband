@@ -29,7 +29,7 @@
 #include "object.h"
 #include "project.h"
 #include "ui-display.h"
-#include "ui-prefs.h"
+#include "ui-prefs.h" /* subwindows_set_flags */
 #include "z-term.h"
 
 int arg_graphics;			/* Command arg -- Request graphics mode */
@@ -489,8 +489,6 @@ static const char *process_pref_file_expr(char **sp, char *fp)
 		if (*b == '$') {
 			if (streq(b+1, "SYS"))
 				v = ANGBAND_SYS;
-			else if (streq(b+1, "GRAF"))
-				v = ANGBAND_GRAF;
 			else if (streq(b+1, "RACE"))
 				v = player->race->name;
 			else if (streq(b+1, "CLASS"))
@@ -1100,15 +1098,11 @@ void reset_visuals(bool load_prefs)
 	if (use_graphics) {
 		/* if we have a graphics mode, see if the mode has a pref file name */
 		graphics_mode *mode = get_graphics_mode(use_graphics);
-		if (mode && strstr(mode->pref,".prf")) {
-			(void)process_pref_file(mode->pref, FALSE, FALSE);
-		} else {
-			(void)process_pref_file("graf.prf", FALSE, FALSE);
-		}
-		/* process_pref_file("graf.prf", FALSE, FALSE); */
+		assert(mode);
 
-	/* Normal symbols */
+		(void)process_pref_file(mode->pref, FALSE, FALSE);
 	} else {
+		/* Normal symbols */
 		process_pref_file("font.prf", FALSE, FALSE);
 	}
 }

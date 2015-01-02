@@ -1854,8 +1854,7 @@ static errr Term_xtra_cocoa_react(void)
         }
         
         /* Record what we did */
-        use_graphics = (new_mode != NULL);
-        ANGBAND_GRAF = (new_mode ? new_mode->pref : NULL);
+        use_graphics = new_mode ? new_mode->grafID : 0;
         current_graphics_mode = new_mode;
         
         /* Enable or disable higher picts. Note: this should be done for all terms. */

@@ -71,12 +71,6 @@ struct angband_constants *z_info;
 const char *ANGBAND_SYS = "xxx";
 
 /*
- * Hack -- The special Angband "Graphics Suffix"
- * This variable is used to choose an appropriate "graf-xxx" file
- */
-const char *ANGBAND_GRAF = "old";
-
-/*
  * Various directories. These are no longer necessarily all subdirs of "lib"
  */
 char *ANGBAND_DIR_APEX;
