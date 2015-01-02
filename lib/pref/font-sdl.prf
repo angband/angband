@@ -1,4 +1,4 @@
-# File: font-win.prf
+# File: font-sdl.prf
 
 #
 # This file is used by Angband (when it was compiled using "main-sdl.c")
@@ -15,4 +15,4 @@
 ### Terrain features ###
 
 # Floors (white : centered dot)
-F:1:all:1:7
+feat:1:all:1:7
