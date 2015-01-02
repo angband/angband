@@ -30,7 +30,6 @@
 #include "player-util.h"
 #include "tables.h"
 #include "target.h"
-#include "ui.h" /* verify_panel */
 #include "ui-input.h" /* bell */
 #include "wizard.h"
 
@@ -613,7 +612,8 @@ void disturb(struct player *p, int stop_search)
 		p->upkeep->running = 0;
 
 		/* Check for new panel if appropriate */
-		if (OPT(center_player)) verify_panel();
+		if (OPT(center_player))
+			event_signal(EVENT_PLAYERMOVED);
 		p->upkeep->update |= PU_TORCH;
 	}
 
