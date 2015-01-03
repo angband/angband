@@ -1,7 +1,7 @@
 Angband 3.5.1
 =============
 
-Welcome to the changelog for Angband 3.5. This file tracks the changes made since 3.4.0. References are to tickets at tracrephial.org, or (if no ticket exists) to git commit IDs.
+Welcome to the changelog for Angband 3.5. This file tracks the changes made since 3.4.0. References are to tickets at trac.rephial.org, or (if no ticket exists) to git commit IDs.
 
 Please note that we don't guarantee that living characters will move gracefully between versions - it might work or it might not!  Ideally, you should finish off your character in 3.4.1 before moving over.
 
