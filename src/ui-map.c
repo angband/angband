@@ -47,8 +47,8 @@ static void hallucinatory_monster(int *a, wchar_t *c)
 		if (!r_ptr->name) continue;
 		
 		/* Retrieve attr/char */
-		*a = r_ptr->x_attr;
-		*c = r_ptr->x_char;
+		*a = monster_x_attr[r_ptr->ridx];
+		*c = monster_x_char[r_ptr->ridx];
 		return;
 	}
 }
@@ -69,8 +69,8 @@ static void hallucinatory_object(int *a, wchar_t *c)
 		if (!k_ptr->name) continue;
 		
 		/* Retrieve attr/char (HACK - without flavors) */
-		*a = k_ptr->x_attr;
-		*c = k_ptr->x_char;
+		*a = kind_x_attr[k_ptr->kidx];
+		*c = kind_x_char[k_ptr->kidx];
 		
 		/* HACK - Skip empty entries */
 		if (*a == 0 || *c == 0) continue;
@@ -177,8 +177,8 @@ void grid_data_as_text(grid_data *g, int *ap, wchar_t *cp, int *tap, wchar_t *tc
 {
 	feature_type *f_ptr = &f_info[g->f_idx];
 
-	int a = f_ptr->x_attr[g->lighting];
-	wchar_t c = f_ptr->x_char[g->lighting];
+	int a = feat_x_attr[g->lighting][f_ptr->fidx];
+	wchar_t c = feat_x_char[g->lighting][f_ptr->fidx];
 
 	/* Check for trap detection boundaries */
 	if (use_graphics == GRAPHICS_NONE)
@@ -187,8 +187,8 @@ void grid_data_as_text(grid_data *g, int *ap, wchar_t *cp, int *tap, wchar_t *tc
 			 && (g->m_idx || g->first_kind)) {
 		/* if there is an object or monster here, and this is a plain floor
 		 * display the border here rather than an overlay below */
-		a = f_info[FEAT_DTRAP_FLOOR].x_attr[g->lighting];
-		c = f_info[FEAT_DTRAP_FLOOR].x_char[g->lighting];
+		a = feat_x_attr[g->lighting][FEAT_DTRAP_FLOOR];
+		c = feat_x_char[g->lighting][FEAT_DTRAP_FLOOR];
 	}
 
 	/* Save the terrain info for the transparency effects */
@@ -242,8 +242,8 @@ void grid_data_as_text(grid_data *g, int *ap, wchar_t *cp, int *tap, wchar_t *tc
 			wchar_t dc;
 
 			/* Desired attr & char */
-			da = m_ptr->race->x_attr;
-			dc = m_ptr->race->x_char;
+			da = monster_x_attr[m_ptr->race->ridx];
+			dc = monster_x_char[m_ptr->race->ridx];
 
 			/* Special attr/char codes */
 			if (da & 0x80) {
@@ -255,7 +255,8 @@ void grid_data_as_text(grid_data *g, int *ap, wchar_t *cp, int *tap, wchar_t *tc
 			}
 
 			/* Turn uniques purple if desired (violet, actually) */
-			else if (OPT(purple_uniques) && rf_has(m_ptr->race->flags, RF_UNIQUE)) {
+			else if (OPT(purple_uniques) &&
+					 rf_has(m_ptr->race->flags, RF_UNIQUE)) {
 				/* Use (light) violet attr */
 				a = COLOUR_VIOLET;
 
@@ -282,8 +283,8 @@ void grid_data_as_text(grid_data *g, int *ap, wchar_t *cp, int *tap, wchar_t *tc
 				a = da;
 
 				/* Desired attr & char. da is not used, but should a be set to it? */
-				/*da = m_ptr->race->x_attr;*/
-				dc = m_ptr->race->x_char;
+				/*da = monster_x_attr[m_ptr->race->ridx];*/
+				dc = monster_x_char[m_ptr->race->ridx];
 				
 				/* Use char */
 				c = dc;
@@ -324,7 +325,7 @@ void grid_data_as_text(grid_data *g, int *ap, wchar_t *cp, int *tap, wchar_t *tc
 		monster_race *r_ptr = &r_info[0];
 
 		/* Get the "player" attr */
-		a = r_ptr->x_attr;
+		a = monster_x_attr[r_ptr->ridx];
 		if ((OPT(hp_changes_color)) && !(a & 0x80))
 		{
 			switch(player->chp * 10 / player->mhp)
@@ -369,13 +370,13 @@ void grid_data_as_text(grid_data *g, int *ap, wchar_t *cp, int *tap, wchar_t *tc
 		}
 
 		/* Get the "player" char */
-		c = r_ptr->x_char;
+		c = monster_x_char[r_ptr->ridx];
 	}
 	else if (g->trapborder && (g->f_idx) && !(g->first_kind)
 			 && (use_graphics != GRAPHICS_NONE)) {
 		/* no overlay is used, so we can use the trap border overlay */
-		a = f_info[FEAT_DTRAP_WALL].x_attr[g->lighting];
-		c = f_info[FEAT_DTRAP_WALL].x_char[g->lighting];
+		a = feat_x_attr[g->lighting][FEAT_DTRAP_WALL];
+		c = feat_x_char[g->lighting][FEAT_DTRAP_WALL];
 	}
 
 	/* Result */
@@ -796,8 +797,8 @@ void display_map(int *cy, int *cx)
 		row = row - (row % tile_height);
 
 	/* Get the "player" tile */
-	ta = r_ptr->x_attr;
-	tc = r_ptr->x_char;
+	ta = monster_x_attr[r_ptr->ridx];
+	tc = monster_x_char[r_ptr->ridx];
 
 	/* Draw the player */
 	Term_putch(col + 1, row + 1, ta, tc);

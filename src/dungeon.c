@@ -55,6 +55,7 @@
 #include "ui-death.h"
 #include "ui-input.h"
 #include "ui-map.h"
+#include "ui-prefs.h"
 #include "ui.h"
 
 /* The minimum amount of energy a player has at the start of a new level */
@@ -982,7 +983,7 @@ void do_animation(void)
 		else if (rf_has(m_ptr->race->flags, RF_ATTR_MULTI))
 			attr = randint1(BASIC_COLORS - 1);
 		else if (rf_has(m_ptr->race->flags, RF_ATTR_FLICKER))
-			attr = get_flicker(m_ptr->race->x_attr);
+			attr = get_flicker(monster_x_attr[m_ptr->race->ridx]);
 		else
 			continue;
 

@@ -24,6 +24,7 @@
 #include "mon-util.h"
 #include "player-timed.h"
 #include "project.h"
+#include "ui-prefs.h"
 #include "z-term.h"
 #include "ui.h"
 
@@ -208,7 +209,8 @@ static void monster_list_collect(monster_list_t *list)
 
 		/* Always collect the latest monster attribute so that flicker
 		 * animation works. */
-		entry->attr = (mon->attr > 0) ? mon->attr : mon->race->x_attr;
+		entry->attr = (mon->attr > 0) ? mon->attr :
+			monster_x_attr[mon->race->ridx];
 
 		/* Skip the projection and location checks if nothing has changed. */
 		if (!monster_list_needs_update(list))
@@ -442,8 +444,7 @@ static void monster_list_format_section(const monster_list_t *list, textblock *t
 		/* textblock_append_pict will safely add the monster symbol,
 		 * regardless of ASCII/graphics mode. */
 		if (tb != NULL && tile_width == 1 && tile_height == 1) {
-			textblock_append_pict(tb, list->entries[index].attr,
-								  list->entries[index].race->x_char);
+			textblock_append_pict(tb, list->entries[index].attr, monster_x_char[list->entries[index].race->ridx]);
 			textblock_append(tb, " ");
 		}
 

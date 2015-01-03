@@ -24,6 +24,7 @@
 #include "dungeon.h"
 #include "ui-command.h"
 #include "ui-display.h"
+#include "ui-prefs.h"
 
 #ifdef USE_GCU
 #include "main.h"
@@ -672,24 +673,24 @@ static errr Term_xtra_gcu_react(void) {
 		ascii_walls = FALSE;
 		for (i = 0; i < 4; i++) {
 			// magma as %:D
-			f_info[FEAT_MAGMA].x_char[i] = 0x23;
-			f_info[FEAT_MAGMA].x_attr[i] = 0x01;
+			feat_x_char[i][FEAT_MAGMA] = 0x23;
+			feat_x_attr[i][FEAT_MAGMA] = 0x01;
 
 			// quartz as %:D
-			f_info[FEAT_QUARTZ].x_char[i] = 0x23;
-			f_info[FEAT_QUARTZ].x_attr[i] = 0x01;
+			feat_x_char[i][FEAT_QUARTZ] = 0x23;
+			feat_x_attr[i][FEAT_QUARTZ] = 0x01;
 
 			// quartz/magma w treasure as *:o
-			f_info[FEAT_MAGMA_K].x_char[i] = f_info[FEAT_QUARTZ_K].x_char[i] = 0x2A;
-			f_info[FEAT_MAGMA_K].x_attr[i] = f_info[FEAT_QUARTZ_K].x_attr[i] = 0x03;
+			feat_x_char[i][FEAT_MAGMA_K] = feat_x_char[i][FEAT_QUARTZ_K] = 0x2A;
+			feat_x_attr[i][FEAT_MAGMA_K] = feat_x_attr[i][FEAT_QUARTZ_K] = 0x03;
 
 			// granite walls as #:D
-			f_info[FEAT_GRANITE].x_char[i] = 0x23;
-			f_info[FEAT_GRANITE].x_attr[i] = 0x01;
+			feat_x_char[i][FEAT_GRANITE] = 0x23;
+			feat_x_attr[i][FEAT_GRANITE] = 0x01;
 
 			// permanent walls as #:r
-			f_info[FEAT_PERM].x_char[i] = 0x23;
-			f_info[FEAT_PERM].x_attr[i] = 0x04;
+			feat_x_char[i][FEAT_PERM] = 0x23;
+			feat_x_attr[i][FEAT_PERM] = 0x04;
 		}
 	}
 

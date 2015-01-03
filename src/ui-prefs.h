@@ -30,8 +30,8 @@ extern bool arg_graphics_nice;
 
 byte *monster_x_attr;
 wchar_t *monster_x_char;
-byte *object_x_attr;
-wchar_t *object_x_char;
+byte *kind_x_attr;
+wchar_t *kind_x_char;
 byte *feat_x_attr[LIGHTING_MAX];
 wchar_t *feat_x_char[LIGHTING_MAX];
 byte *trap_x_attr;

@@ -52,9 +52,6 @@ struct trap_kind
 	byte d_attr;				/**< Default trap attribute */
 	wchar_t d_char;				/**< Default trap character */
 
-	byte x_attr;				/**< Desired trap attribute */
-	wchar_t x_char				;/**< Desired trap character */
-
 	int rarity;					/**< Rarity */
 	int min_depth;				/**< Minimum depth */
 	int max_num;				/**< Unused */

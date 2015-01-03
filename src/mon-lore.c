@@ -30,6 +30,7 @@
 #include "obj-util.h"
 #include "player-attack.h"
 #include "player-timed.h"
+#include "ui-prefs.h"
 #include "ui.h" /* SCREEN_REGION, textui_textblock_place */
 #include "z-term.h" /* tile_width/tile_height */
 #include "z-textblock.h"
@@ -1872,11 +1873,11 @@ void lore_title(textblock *tb, const monster_race *race)
 
 	/* Get the chars */
 	standard_char = race->d_char;
-	optional_char = race->x_char;
+	optional_char = monster_x_char[race->ridx];
 
 	/* Get the attrs */
 	standard_attr = race->d_attr;
-	optional_attr = race->x_attr;
+	optional_attr = monster_x_attr[race->ridx];
 
 	/* A title (use "The" for non-uniques) */
 	if (!rf_has(race->flags, RF_UNIQUE))

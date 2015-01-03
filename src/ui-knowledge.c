@@ -47,6 +47,7 @@
 #include "ui-history.h"
 #include "ui-menu.h"
 #include "ui-options.h"
+#include "ui-prefs.h"
 #include "ui-store.h"
 #include "ui-target.h"
 #include "ui.h"
@@ -1202,8 +1203,8 @@ static void display_monster(int col, int row, bool cursor, int oid)
 
 	/* Choose colors */
 	byte attr = curs_attrs[CURS_KNOWN][(int)cursor];
-	byte a = r_ptr->x_attr;
-	wchar_t c = r_ptr->x_char;
+	byte a = monster_x_attr[r_ptr->ridx];
+	wchar_t c = monster_x_char[r_ptr->ridx];
 
 	if ((tile_height != 1) && (a & 0x80)) {
 		a = r_ptr->d_attr;
@@ -1255,8 +1256,8 @@ static int m_cmp_race(const void *a, const void *b)
 	return strcmp(r_a->name, r_b->name);
 }
 
-static wchar_t *m_xchar(int oid) { return &r_info[default_join[oid].oid].x_char; }
-static byte *m_xattr(int oid) { return &r_info[default_join[oid].oid].x_attr; }
+static wchar_t *m_xchar(int oid) { return &monster_x_char[default_join[oid].oid]; }
+static byte *m_xattr(int oid) { return &monster_x_attr[default_join[oid].oid]; }
 static const char *race_name(int gid) { return monster_group[gid].name; }
 
 static void mon_lore(int oid)
@@ -1730,11 +1731,9 @@ static void display_object(int col, int row, bool cursor, int oid)
 	bool aware = (!kind->flavor || kind->aware);
 	byte attr = curs_attrs[(int)aware][(int)cursor];
 
-	/* Find graphics bits -- versions of the object_char and object_attr defines */
-	bool use_flavour = (kind->flavor) && !(aware && kind->tval == TV_SCROLL);
-
-	byte a = use_flavour ? kind->flavor->x_attr : kind->x_attr;
-	wchar_t c = use_flavour ? kind->flavor->x_char : kind->x_char;
+	/* Graphics versions of the object_char and object_attr defines */
+	byte a = object_kind_attr(kind);
+	wchar_t c = object_kind_char(kind);
 
 	/* Display known artifacts differently */
 	if (kf_has(kind->kind_flags, KF_INSTA_ART) && 
@@ -1856,9 +1855,9 @@ static wchar_t *o_xchar(int oid)
 	object_kind *kind = objkind_byid(oid);
 
 	if (!kind->flavor || kind->aware)
-		return &kind->x_char;
+		return &kind_x_char[kind->kidx];
 	else
-		return &kind->flavor->x_char;
+		return &flavor_x_char[kind->flavor->fidx];
 }
 
 static byte *o_xattr(int oid)
@@ -1866,9 +1865,9 @@ static byte *o_xattr(int oid)
 	object_kind *kind = objkind_byid(oid);
 
 	if (!kind->flavor || kind->aware)
-		return &kind->x_attr;
+		return &kind_x_attr[kind->kidx];
 	else
-		return &kind->flavor->x_attr;
+		return &flavor_x_attr[kind->flavor->fidx];
 }
 
 /*
@@ -2013,14 +2012,14 @@ static void display_feature(int col, int row, bool cursor, int oid )
 	if (tile_height == 1) {
 		/* Display symbols */
 		col = 65;
-		col += big_pad(col, row, f_ptr->x_attr[LIGHTING_DARK],
-				f_ptr->x_char[LIGHTING_DARK]);
-		col += big_pad(col, row, f_ptr->x_attr[LIGHTING_LIT],
-				f_ptr->x_char[LIGHTING_LIT]);
-		col += big_pad(col, row, f_ptr->x_attr[LIGHTING_TORCH],
-				f_ptr->x_char[LIGHTING_TORCH]);
-		col += big_pad(col, row, f_ptr->x_attr[LIGHTING_LOS],
-				f_ptr->x_char[LIGHTING_LOS]);
+		col += big_pad(col, row, feat_x_attr[LIGHTING_DARK][f_ptr->fidx],
+				feat_x_char[LIGHTING_DARK][f_ptr->fidx]);
+		col += big_pad(col, row, feat_x_attr[LIGHTING_LIT][f_ptr->fidx],
+				feat_x_char[LIGHTING_LIT][f_ptr->fidx]);
+		col += big_pad(col, row, feat_x_attr[LIGHTING_TORCH][f_ptr->fidx],
+				feat_x_char[LIGHTING_TORCH][f_ptr->fidx]);
+		col += big_pad(col, row, feat_x_attr[LIGHTING_LOS][f_ptr->fidx],
+				feat_x_char[LIGHTING_LOS][f_ptr->fidx]);
 	}
 }
 
@@ -2042,8 +2041,8 @@ static const char *fkind_name(int gid) { return feature_group_text[gid]; }
 /* Disgusting hack to allow 4 in 1 editing of terrain visuals */
 static enum grid_light_level f_uik_lighting = LIGHTING_LIT;
 /* XXX needs *better* retooling for multi-light terrain */
-static byte *f_xattr(int oid) { return &f_info[oid].x_attr[f_uik_lighting]; }
-static wchar_t *f_xchar(int oid) { return &f_info[oid].x_char[f_uik_lighting]; }
+static byte *f_xattr(int oid) { return &feat_x_attr[f_uik_lighting][oid]; }
+static wchar_t *f_xchar(int oid) { return &feat_x_char[f_uik_lighting][oid]; }
 static void feat_lore(int oid) { (void)oid; /* noop */ }
 static const char *feat_prompt(int oid)
 {

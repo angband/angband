@@ -40,15 +40,15 @@ int use_graphics;			/* The "graphics" mode is enabled */
 
 byte *monster_x_attr;
 wchar_t *monster_x_char;
-byte *object_x_attr;
-wchar_t *object_x_char;
+byte *kind_x_attr;
+wchar_t *kind_x_char;
 byte *feat_x_attr[LIGHTING_MAX];
 wchar_t *feat_x_char[LIGHTING_MAX];
 byte *trap_x_attr;
 wchar_t *trap_x_char;
 byte *flavor_x_attr;
 wchar_t *flavor_x_char;
-int flavor_max = 0
+size_t flavor_max = 0;
 
 /**
  * ------------------------------------------------------------------------
@@ -174,8 +174,8 @@ void dump_monsters(ang_file *fff)
 
 	for (i = 0; i < z_info->r_max; i++) {
 		monster_race *race = &r_info[i];
-		byte attr = race->x_attr;
-		wint_t chr = race->x_char;
+		byte attr = monster_x_attr[i];
+		wint_t chr = monster_x_char[i];
 
 		/* Skip non-entries */
 		if (!race->name) continue;
@@ -201,7 +201,7 @@ void dump_objects(ang_file *fff)
 
 		object_short_name(name, sizeof name, k_ptr->name);
 		file_putf(fff, "object:%s:%s:%d:%d\n", tval_find_name(k_ptr->tval),
-				name, k_ptr->x_attr, k_ptr->x_char);
+				name, kind_x_attr[i], kind_x_char[i]);
 	}
 }
 
@@ -243,8 +243,8 @@ void dump_features(ang_file *fff)
 
 		file_putf(fff, "# Terrain: %s\n", f_ptr->name);
 		for (j = 0; j < LIGHTING_MAX; j++) {
-			byte attr = f_ptr->x_attr[j];
-			wint_t chr = f_ptr->x_char[j];
+			byte attr = feat_x_attr[j][i];
+			wint_t chr = feat_x_char[j][i];
 
 			const char *light = NULL;
 			if (j == LIGHTING_TORCH)
@@ -271,8 +271,8 @@ void dump_flavors(ang_file *fff)
 	struct flavor *f;
 
 	for (f = flavors; f; f = f->next) {
-		byte attr = f->x_attr;
-		wint_t chr = f->x_char;
+		byte attr = flavor_x_attr[f->fidx];
+		wint_t chr = flavor_x_char[f->fidx];
 
 		file_putf(fff, "# Item flavor: %s\n", f->text);
 		file_putf(fff, "flavor:%d:%d:%d\n\n", f->fidx, attr, chr);
@@ -571,8 +571,8 @@ static enum parser_error parse_prefs_object(struct parser *p)
 	if (!kind)
 		return PARSE_ERROR_UNRECOGNISED_SVAL;
 
-	kind->x_attr = (byte)parser_getint(p, "attr");
-	kind->x_char = (wchar_t)parser_getint(p, "char");
+	kind_x_attr[kind->kidx] = (byte)parser_getint(p, "attr");
+	kind_x_char[kind->kidx] = (wchar_t)parser_getint(p, "char");
 
 	return PARSE_ERROR_NONE;
 }
@@ -591,8 +591,8 @@ static enum parser_error parse_prefs_monster(struct parser *p)
 	if (!monster)
 		return PARSE_ERROR_NO_KIND_FOUND;
 
-	monster->x_attr = (byte)parser_getint(p, "attr");
-	monster->x_char = (wchar_t)parser_getint(p, "char");
+	monster_x_attr[monster->ridx] = (byte)parser_getint(p, "attr");
+	monster_x_char[monster->ridx] = (wchar_t)parser_getint(p, "char");
 
 	return PARSE_ERROR_NONE;
 }
@@ -600,7 +600,6 @@ static enum parser_error parse_prefs_monster(struct parser *p)
 static enum parser_error parse_prefs_trap(struct parser *p)
 {
 	int idx;
-	struct trap_kind *trap;
 
 	struct prefs_data *d = parser_priv(p);
 	assert(d != NULL);
@@ -610,9 +609,8 @@ static enum parser_error parse_prefs_trap(struct parser *p)
 	if (idx >= z_info->trap_max)
 		return PARSE_ERROR_OUT_OF_BOUNDS;
 
-	trap = &trap_info[idx];
-	trap->x_attr = (byte)parser_getint(p, "attr");
-	trap->x_char = (wchar_t)parser_getint(p, "char");
+	trap_x_attr[idx] = (byte)parser_getint(p, "attr");
+	trap_x_char[idx] = (wchar_t)parser_getint(p, "char");
 
 	/* XXX We need to do something about lighting! */
 
@@ -622,8 +620,6 @@ static enum parser_error parse_prefs_trap(struct parser *p)
 static enum parser_error parse_prefs_feat(struct parser *p)
 {
 	int idx;
-	feature_type *feature;
-
 	const char *lighting;
 	int light_idx;
 
@@ -650,14 +646,12 @@ static enum parser_error parse_prefs_feat(struct parser *p)
 		return PARSE_ERROR_INVALID_LIGHTING;
 
 	if (light_idx < LIGHTING_MAX) {
-		feature = &f_info[idx];
-		feature->x_attr[light_idx] = (byte)parser_getint(p, "attr");
-		feature->x_char[light_idx] = (wchar_t)parser_getint(p, "char");
+		feat_x_attr[light_idx][idx] = (byte)parser_getint(p, "attr");
+		feat_x_char[light_idx][idx] = (wchar_t)parser_getint(p, "char");
 	} else {
 		for (light_idx = 0; light_idx < LIGHTING_MAX; light_idx++) {
-			feature = &f_info[idx];
-			feature->x_attr[light_idx] = (byte)parser_getint(p, "attr");
-			feature->x_char[light_idx] = (wchar_t)parser_getint(p, "char");
+			feat_x_attr[light_idx][idx] = (byte)parser_getint(p, "attr");
+			feat_x_char[light_idx][idx] = (wchar_t)parser_getint(p, "char");
 		}
 	}
 
@@ -736,8 +730,8 @@ static enum parser_error parse_prefs_flavor(struct parser *p)
 			break;
 
 	if (flavor) {
-		flavor->x_attr = (byte)parser_getint(p, "attr");
-		flavor->x_char = (wchar_t)parser_getint(p, "char");
+		flavor_x_attr[idx] = (byte)parser_getint(p, "attr");
+		flavor_x_char[idx] = (wchar_t)parser_getint(p, "char");
 	}
 
 	return PARSE_ERROR_NONE;
@@ -1098,8 +1092,8 @@ void reset_visuals(bool load_prefs)
 
 		/* Assume we will use the underlying values */
 		for (j = 0; j < LIGHTING_MAX; j++) {
-			f_ptr->x_attr[j] = f_ptr->d_attr;
-			f_ptr->x_char[j] = f_ptr->d_char;
+			feat_x_attr[j][i] = f_ptr->d_attr;
+			feat_x_char[j][i] = f_ptr->d_char;
 		}
 	}
 
@@ -1108,8 +1102,8 @@ void reset_visuals(bool load_prefs)
 		object_kind *k_ptr = &k_info[i];
 
 		/* Default attr/char */
-		k_ptr->x_attr = k_ptr->d_attr;
-		k_ptr->x_char = k_ptr->d_char;
+		kind_x_attr[i] = k_ptr->d_attr;
+		kind_x_char[i] = k_ptr->d_char;
 	}
 
 	/* Extract default attr/char code for monsters */
@@ -1117,14 +1111,14 @@ void reset_visuals(bool load_prefs)
 		monster_race *r_ptr = &r_info[i];
 
 		/* Default attr/char */
-		r_ptr->x_attr = r_ptr->d_attr;
-		r_ptr->x_char = r_ptr->d_char;
+		monster_x_attr[i] = r_ptr->d_attr;
+		monster_x_char[i] = r_ptr->d_char;
 	}
 
 	/* Extract default attr/char code for flavors */
 	for (f = flavors; f; f = f->next) {
-		f->x_attr = f->d_attr;
-		f->x_char = f->d_char;
+		flavor_x_attr[f->fidx] = f->d_attr;
+		flavor_x_char[f->fidx] = f->d_char;
 	}
 
 	if (!load_prefs)
@@ -1153,8 +1147,8 @@ void textui_prefs_init(void)
 
 	monster_x_attr = mem_zalloc(z_info->r_max * sizeof(byte));
 	monster_x_char = mem_zalloc(z_info->r_max * sizeof(wchar_t));
-	object_x_attr = mem_zalloc(z_info->k_max * sizeof(byte));
-	object_x_char = mem_zalloc(z_info->k_max * sizeof(wchar_t));
+	kind_x_attr = mem_zalloc(z_info->k_max * sizeof(byte));
+	kind_x_char = mem_zalloc(z_info->k_max * sizeof(wchar_t));
 	for (i = 0; i < LIGHTING_MAX; i++) {
 		feat_x_attr[i] = mem_zalloc(z_info->f_max * sizeof(byte));
 		feat_x_char[i] = mem_zalloc(z_info->f_max * sizeof(wchar_t));
@@ -1162,9 +1156,12 @@ void textui_prefs_init(void)
 	trap_x_attr = mem_zalloc(z_info->trap_max * sizeof(byte));
 	trap_x_char = mem_zalloc(z_info->trap_max * sizeof(wchar_t));
 	for (f = flavors; f; f = f->next)
-		flavor_max = MAX(flavor_max, f->fidx)
+		if (flavor_max < f->fidx)
+			flavor_max = f->fidx;
 	flavor_x_attr = mem_zalloc(flavor_max * sizeof(byte));
 	flavor_x_char = mem_zalloc(flavor_max * sizeof(wchar_t));
+
+	reset_visuals(FALSE);
 }
 
 /**
@@ -1176,11 +1173,11 @@ void textui_prefs_free(void)
 
 	mem_free(monster_x_attr);
 	mem_free(monster_x_char);
-	mem_free(object_x_attr);
-	mem_free(object_x_char);
+	mem_free(kind_x_attr);
+	mem_free(kind_x_char);
 	for (i = 0; i < LIGHTING_MAX; i++) {
-		mem_free(feat_x_attr);
-		mem_free(feat_x_char);
+		mem_free(feat_x_attr[i]);
+		mem_free(feat_x_char[i]);
 	}
 	mem_free(trap_x_attr);
 	mem_free(trap_x_char);

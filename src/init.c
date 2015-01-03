@@ -1981,8 +1981,6 @@ static enum parser_error parse_trap_graphics(struct parser *p) {
     if (attr < 0)
 		return PARSE_ERROR_INVALID_COLOR;
     t->d_attr = attr;
-    t->x_char = t->d_char;
-    t->x_attr = t->d_attr;
     return PARSE_ERROR_NONE;
 }
 

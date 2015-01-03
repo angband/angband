@@ -27,5 +27,6 @@
 #define UI_INIT_H
 
 void textui_init(void);
+void textui_cleanup(void);
 
 #endif /* !UI_INIT_H */

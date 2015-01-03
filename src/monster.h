@@ -236,8 +236,6 @@ struct monster_mimic {
  *
  * Note that "d_attr" and "d_char" are used for MORE than "visual" stuff.
  *
- * Note that "x_attr" and "x_char" are used ONLY for "visual" stuff.
- *
  * Note that "cur_num" (and "max_num") represent the number of monsters
  * of the given race currently on (and allowed on) the current level.
  * This information yields the "dead" flag for Unique monsters.
@@ -245,9 +243,8 @@ struct monster_mimic {
  * Note that "max_num" is reset when a new player is created.
  * Note that "cur_num" is reset when a new level is created.
  *
- * Maybe "x_attr", "x_char", "cur_num", and "max_num" should
- * be moved out of this array since they are not read from
- * "monster.txt".
+ * Maybe "cur_num", and "max_num" should be moved out of this array since
+ * they are not read from "monster.txt".
  */
 typedef struct monster_race
 {
@@ -287,9 +284,6 @@ typedef struct monster_race
 
 	byte d_attr;			/* Default monster attribute */
 	wchar_t d_char;			/* Default monster character */
-
-	byte x_attr;			/* Desired monster attribute */
-	wchar_t x_char;			/* Desired monster character */
 
 	byte max_num;			/* Maximum population allowed per level */
 	int cur_num;			/* Monster population on current level */

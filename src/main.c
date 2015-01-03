@@ -600,6 +600,7 @@ int main(int argc, char *argv[])
 	play_game(new_game);
 
 	/* Free resources */
+	textui_cleanup();
 	cleanup_angband();
 
 	/* Quit */

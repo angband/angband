@@ -811,9 +811,6 @@ static struct monster_race TEST_DATA test_r_human = {
 	.d_attr = 0,
 	.d_char = 't',
 
-	.x_attr = 0,
-	.x_char = 't',
-
 	.max_num = 100,
 	.cur_num = 0,
 

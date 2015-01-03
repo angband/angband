@@ -95,10 +95,7 @@ typedef struct feature
 	bitflag flags[TF_SIZE];    /**< Terrain flags */
 
 	byte d_attr;   /**< Default feature attribute */
-	wchar_t d_char;   /**< Default feature character */
-
-	byte x_attr[4];   /**< Desired feature attribute (set by user/pref file) */
-	wchar_t x_char[4]; /**< Desired feature character (set by user/pref file) */
+	wchar_t d_char;/**< Default feature character */
 } feature_type;
 
 extern feature_type *f_info;

@@ -226,12 +226,6 @@ typedef struct object_kind
 
 	struct flavor *flavor;	/**< Special object flavor (or zero) */
 
-
-	/** Game-dependent **/
-
-	byte x_attr;	/**< Desired object attribute (set by user/pref file) */
-	wchar_t x_char;	/**< Desired object character (set by user/pref file) */
-
 	/** Also saved in savefile **/
 
 	quark_t note; 	/**< Autoinscription quark number */
@@ -462,9 +456,6 @@ struct flavor
 
 	byte d_attr;	/* Default flavor attribute */
 	wchar_t d_char;	/* Default flavor character */
-
-	byte x_attr;	/* Desired flavor attribute */
-	wchar_t x_char;	/* Desired flavor character */
 };
 
 extern struct flavor *flavors;

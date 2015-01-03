@@ -24,6 +24,7 @@
 #include "player-attack.h"
 #include "player-util.h"
 #include "trap.h"
+#include "ui-prefs.h"
 
 struct trap_kind *trap_info;
 
@@ -158,8 +159,8 @@ bool get_trap_graphics(struct chunk *c, struct trap *trap, int *a, wchar_t *ch,
     /* Trap is visible, or we don't care */
     if (!require_visible || trf_has(trap->flags, TRF_VISIBLE)) {
 		/* Get the graphics */
-		*a = trap->kind->x_attr;
-		*ch = trap->kind->x_char;
+		*a = trap_x_attr[trap->kind->tidx];
+		*ch = trap_x_char[trap->kind->tidx];
 	
 		/* We found a trap */
 		return TRUE;

@@ -34,6 +34,7 @@
 #include "store.h"
 #include "ui-display.h"
 #include "ui-input.h"
+#include "ui-prefs.h"
 #include "ui.h"
 
 /**
@@ -53,7 +54,8 @@ static bool use_flavor_glyph(const struct object_kind *kind)
  */
 byte object_kind_attr(const struct object_kind *kind)
 {
-	return use_flavor_glyph(kind) ? kind->flavor->x_attr : kind->x_attr;
+	return use_flavor_glyph(kind) ? flavor_x_attr[kind->flavor->fidx] :
+		kind_x_attr[kind->kidx];
 }
 
 /**
@@ -63,7 +65,8 @@ byte object_kind_attr(const struct object_kind *kind)
  */
 wchar_t object_kind_char(const struct object_kind *kind)
 {
-	return use_flavor_glyph(kind) ? kind->flavor->x_char : kind->x_char;
+	return use_flavor_glyph(kind) ? flavor_x_char[kind->flavor->fidx] :
+		kind_x_char[kind->kidx];
 }
 
 /**
