@@ -29,7 +29,7 @@ bin/% : %.o ../angband.o unit-test.o
 	@echo "  CC $@"
 
 clean :
-	$(RM) $(TESTPROGS) $(TESTOBJS)
+	$(RM) bin/* $(TESTOBJS)
 
 .PHONY : all clean
 .PRECIOUS : %.o
