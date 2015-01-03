@@ -66,6 +66,7 @@ int test_newgame(void *state) {
 	cmdq_execute(CMD_BIRTH);
 
 	eq(player->is_dead, FALSE);
+	cave_generate(&cave, player);
 	noteq(cave, NULL);
 	eq(player->chp, player->mhp);
 	eq(player->food, PY_FOOD_FULL - 1);

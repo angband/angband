@@ -1164,8 +1164,10 @@ void play_game(bool new_game)
 		quit("Broken savefile");
 
 	/* No living character loaded */
-	if (player->is_dead || new_game)
+	if (player->is_dead || new_game) {
+		character_generated = FALSE;
 		textui_do_birth();
+	}
 
 	/* Tell the UI we've started. */
 	event_signal(EVENT_LEAVE_INIT);
