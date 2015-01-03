@@ -73,7 +73,7 @@ NPPAngband.)
 1h. Is there a way to disable that thing that pops up when you hit the 
 enter key?
 
-Go into the options menu, choose "Interact with macros", then "Create a 
+Go into the options menu, choose "Edit keymaps", then "Create a 
 keymap".  Press Enter at the "Keypress" prompt and a single space as the 
 "Action".  In short: `=m8<enter> <enter>`
 
