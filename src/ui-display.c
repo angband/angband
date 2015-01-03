@@ -2110,6 +2110,7 @@ static void ui_enter_game(game_event_type type, game_event_data *data,
 	event_add_handler(EVENT_BOLT, display_bolt, NULL);
 	event_add_handler(EVENT_MISSILE, display_missile, NULL);
 	event_add_handler(EVENT_MESSAGE, display_message, NULL);
+	event_add_handler(EVENT_BELL, bell_message, NULL);
 	event_add_handler(EVENT_INPUT_FLUSH, flush, NULL);
 	event_add_handler(EVENT_MESSAGE_FLUSH, message_flush, NULL);
 
@@ -2148,6 +2149,7 @@ static void ui_leave_game(game_event_type type, game_event_data *data,
 	event_remove_handler(EVENT_BOLT, display_bolt, NULL);
 	event_remove_handler(EVENT_MISSILE, display_missile, NULL);
 	event_remove_handler(EVENT_MESSAGE, display_message, NULL);
+	event_remove_handler(EVENT_BELL, bell_message, NULL);
 	event_remove_handler(EVENT_INPUT_FLUSH, flush, NULL);
 	event_remove_handler(EVENT_MESSAGE_FLUSH, message_flush, NULL);
 }

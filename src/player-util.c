@@ -30,13 +30,10 @@
 #include "player-util.h"
 #include "tables.h"
 #include "target.h"
-#include "ui-input.h" /* bell */
 #include "wizard.h"
 
-/*
+/**
  * Decreases players hit points and sets death flag if necessary
- *
- * Invulnerability needs to be changed into a "shield" XXX XXX XXX
  *
  * Hack -- this function allows the user to save (or quit) the game
  * when he dies, since the "You die." message is shown before setting
@@ -48,10 +45,8 @@ void take_hit(struct player *p, int dam, const char *kb_str)
 
 	int warning = (p->mhp * op_ptr->hitpoint_warn / 10);
 
-
 	/* Paranoia */
 	if (p->is_dead) return;
-
 
 	/* Disturb */
 	disturb(p, 1);
@@ -66,8 +61,7 @@ void take_hit(struct player *p, int dam, const char *kb_str)
 	p->upkeep->redraw |= (PR_HP);
 
 	/* Dead player */
-	if (p->chp < 0)
-	{
+	if (p->chp < 0) {
 		/* Allow cheating */
 		if ((p->wizard || OPT(cheat_live)) && !get_check("Die? ")) {
 			msg("You invoke wizard mode and cheat death.");
@@ -95,13 +89,10 @@ void take_hit(struct player *p, int dam, const char *kb_str)
 	}
 
 	/* Hitpoint warning */
-	if (p->chp < warning)
-	{
+	if (p->chp < warning) {
 		/* Hack -- bell on first notice */
 		if (old_chp > warning)
-		{
 			bell("Low hitpoint warning!");
-		}
 
 		/* Message */
 		msgt(MSG_HITPOINT_WARN, "*** LOW HITPOINT WARNING! ***");

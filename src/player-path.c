@@ -26,7 +26,6 @@
 #include "player-path.h"
 #include "player-util.h"
 #include "tables.h"
-#include "ui-input.h" /* bell */
 
 /****** Pathfinding code ******/
 

@@ -133,6 +133,13 @@ const char *message_sound_name(int message);
 void sound(int type);
 
 /**
+ * Clear everything, display a formatted message, ring the system bell.
+ *
+ * \param fmt Format string
+ */
+void bell(const char *fmt, ...);
+
+/**
  * Display a formatted message.
  *
  * NB: Never call this function directly with a string read in from a

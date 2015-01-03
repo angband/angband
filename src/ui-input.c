@@ -373,28 +373,6 @@ ui_event inkey_m(void)
 
 
 /*
- * Flush the screen, make a noise
- */
-void bell(const char *reason)
-{
-	assert(reason);
-
-	/* Mega-Hack -- Flush the output */
-	Term_fresh();
-
-	/* Add the message */
-	message_add(reason, MSG_BELL);
-
-	/* Tell the UI */
-	event_signal_message(EVENT_MESSAGE, MSG_BELL, reason);
-
-	/* Flush the input (later!) */
-	event_signal(EVENT_INPUT_FLUSH);
-}
-
-
-
-/*
  * Hack -- flush
  */
 static void msg_flush(int x)
@@ -545,6 +523,16 @@ void display_message(game_event_type unused, game_event_data *data, void *user)
 	message_column += n + 1;
 }
 
+/**
+ * Flush the output before displaying for emphasis
+ */
+void bell_message(game_event_type unused, game_event_data *data, void *user)
+{
+	/* Flush the output */
+	Term_fresh();
+
+	display_message(unused, data, user);
+}
 
 /*
  * Print the queued messages.

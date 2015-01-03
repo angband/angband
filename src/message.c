@@ -273,6 +273,31 @@ void sound(int type)
 	event_signal_message(EVENT_SOUND, type, NULL);
 }
 
+void bell(const char *fmt, ...)
+{
+	va_list vp;
+
+	char buf[1024];
+
+	/* Begin the Varargs Stuff */
+	va_start(vp, fmt);
+
+	/* Format the args, save the length */
+	(void)vstrnfmt(buf, sizeof(buf), fmt, vp);
+
+	/* End the Varargs Stuff */
+	va_end(vp);
+
+	/* Fail if messages not loaded */
+	if (!messages) return;
+
+	/* Add to message log */
+	message_add(buf, MSG_BELL);
+
+	/* Send bell event */
+	event_signal_message(EVENT_BELL, MSG_BELL, buf);
+}
+
 void msg(const char *fmt, ...)
 {
 	va_list vp;
