@@ -885,7 +885,7 @@ static enum birth_stage get_confirm_command(void)
 	const char *prompt = "['ESC' to step back, 'S' to start over, or any other key to continue]";
 	struct keypress ke;
 
-	enum birth_stage next;
+	enum birth_stage next = BIRTH_RESET;
 
 	/* Prompt for it */
 	prt(prompt, Term->hgt - 1, Term->wid / 2 - strlen(prompt) / 2);
