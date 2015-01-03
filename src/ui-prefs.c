@@ -38,6 +38,18 @@ int arg_graphics;			/* Command arg -- Request graphics mode */
 bool arg_graphics_nice;		/* Command arg -- Request nice graphics mode */
 int use_graphics;			/* The "graphics" mode is enabled */
 
+byte *monster_x_attr;
+wchar_t *monster_x_char;
+byte *object_x_attr;
+wchar_t *object_x_char;
+byte *feat_x_attr[LIGHTING_MAX];
+wchar_t *feat_x_char[LIGHTING_MAX];
+byte *trap_x_attr;
+wchar_t *trap_x_char;
+byte *flavor_x_attr;
+wchar_t *flavor_x_char;
+int flavor_max = 0
+
 /**
  * ------------------------------------------------------------------------
  * Pref file saving code
@@ -1129,4 +1141,49 @@ void reset_visuals(bool load_prefs)
 		/* Normal symbols */
 		process_pref_file("font.prf", FALSE, FALSE);
 	}
+}
+
+/**
+ * Initialise the glyphs for monsters, objects, traps, flavors and terrain
+ */
+void textui_prefs_init(void)
+{
+	int i;
+	struct flavor *f;
+
+	monster_x_attr = mem_zalloc(z_info->r_max * sizeof(byte));
+	monster_x_char = mem_zalloc(z_info->r_max * sizeof(wchar_t));
+	object_x_attr = mem_zalloc(z_info->k_max * sizeof(byte));
+	object_x_char = mem_zalloc(z_info->k_max * sizeof(wchar_t));
+	for (i = 0; i < LIGHTING_MAX; i++) {
+		feat_x_attr[i] = mem_zalloc(z_info->f_max * sizeof(byte));
+		feat_x_char[i] = mem_zalloc(z_info->f_max * sizeof(wchar_t));
+	}
+	trap_x_attr = mem_zalloc(z_info->trap_max * sizeof(byte));
+	trap_x_char = mem_zalloc(z_info->trap_max * sizeof(wchar_t));
+	for (f = flavors; f; f = f->next)
+		flavor_max = MAX(flavor_max, f->fidx)
+	flavor_x_attr = mem_zalloc(flavor_max * sizeof(byte));
+	flavor_x_char = mem_zalloc(flavor_max * sizeof(wchar_t));
+}
+
+/**
+ * Free the glyph arrays for monsters, objects, traps, flavors and terrain
+ */
+void textui_prefs_free(void)
+{
+	int i;
+
+	mem_free(monster_x_attr);
+	mem_free(monster_x_char);
+	mem_free(object_x_attr);
+	mem_free(object_x_char);
+	for (i = 0; i < LIGHTING_MAX; i++) {
+		mem_free(feat_x_attr);
+		mem_free(feat_x_char);
+	}
+	mem_free(trap_x_attr);
+	mem_free(trap_x_char);
+	mem_free(flavor_x_attr);
+	mem_free(flavor_x_char);
 }

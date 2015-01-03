@@ -21,11 +21,23 @@
 #ifndef UI_PREFS_H
 #define UI_PREFS_H
 
+#include "cave.h"
 #include "z-file.h"
 
 extern int use_graphics;
 extern int arg_graphics;
 extern bool arg_graphics_nice;
+
+byte *monster_x_attr;
+wchar_t *monster_x_char;
+byte *object_x_attr;
+wchar_t *object_x_char;
+byte *feat_x_attr[LIGHTING_MAX];
+wchar_t *feat_x_char[LIGHTING_MAX];
+byte *trap_x_attr;
+wchar_t *trap_x_char;
+byte *flavor_x_attr;
+wchar_t *flavor_x_char;
 
 void dump_monsters(ang_file *fff);
 void dump_objects(ang_file *fff);
@@ -37,5 +49,7 @@ bool prefs_save(const char *path, void (*dump)(ang_file *), const char *title);
 errr process_pref_file_command(const char *buf);
 bool process_pref_file(const char *name, bool quiet, bool user);
 void reset_visuals(bool load_prefs);
+void textui_prefs_init(void);
+void textui_prefs_free(void);
 
 #endif /* !UI_PREFS_H */

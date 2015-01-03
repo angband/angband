@@ -53,6 +53,9 @@ void textui_init(void)
 	/* Initialize input hooks */
 	textui_input_init();
 
+	/* Initialize visual prefs */
+	textui_prefs_init();
+
 	/* Hack -- Increase "icky" depth */
 	character_icky++;
 
@@ -89,3 +92,10 @@ void textui_init(void)
 }
 
 
+/**
+ * Clean up UI
+ */
+void textui_cleanup(void)
+{
+	textui_prefs_free();
+}
