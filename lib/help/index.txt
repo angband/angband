@@ -31,7 +31,5 @@ The Angband Manual
 
 .. include:: version.txt
 
-.. include:: readme.txt
-
 .. include:: ../../thanks.txt
 
