@@ -1,10 +1,29 @@
-#ifndef INCLUDED_GAME_CMD_H
-#define INCLUDED_GAME_CMD_H
+/**
+ * \file cmd-core.h
+ * \brief Handles the queueing of game commands.
+ *
+ * Copyright (c) 2008-9 Antony Sidwell
+ * Copyright (c) 2014 Andi Sidwell
+ *
+ * This work is free software; you can redistribute it and/or modify it
+ * under the terms of either:
+ *
+ * a) the GNU General Public License as published by the Free Software
+ *    Foundation, version 2, or
+ *
+ * b) the "Angband licence":
+ *    This software may be copied and distributed for educational, research,
+ *    and not for profit purposes provided that this copyright and statement
+ *    are included in all such copies.  Other copyrights may also apply.
+ */
+
+#ifndef INCLUDED_CMD_CORE_H
+#define INCLUDED_CMD_CORE_H
 
 #include "object.h"
 #include "z-type.h"
 
-/*
+/**
  * All valid game commands.  Not all implemented yet.
  */
 typedef enum cmd_code
@@ -112,9 +131,14 @@ enum {
 	DIR_SE = 3,
 };
 
-/** Argument structures **/
+/**
+ * ------------------------------------------------------------------------
+ * Argument structures
+ * ------------------------------------------------------------------------ */
 
-/* The data of the argument */
+/**
+ * The data of the argument
+ */
 union cmd_arg_data {
 	const char *string;
 	
@@ -126,7 +150,9 @@ union cmd_arg_data {
 	struct loc point;
 };
 
-/* The type of the data */
+/**
+ * The type of the data
+ */
 enum cmd_arg_type {
 	arg_NONE = 0,
 	arg_STRING = 1,
@@ -138,7 +164,9 @@ enum cmd_arg_type {
 	arg_POINT
 };
 
-/* A single argument */
+/**
+ * A single argument
+ */
 struct cmd_arg {
 	enum cmd_arg_type type;
 	union cmd_arg_data data;
@@ -146,12 +174,14 @@ struct cmd_arg {
 };
 
 
-/* Maximum number of arguments a command needs to take. */
+/**
+ * Maximum number of arguments a command needs to take.
+ */
 #define CMD_MAX_ARGS 4
 
 
 
-/*
+/**
  * The struct command type is used to return details of the command the
  * game should carry out.
  *
@@ -176,7 +206,9 @@ struct command {
 };
 
 
-/* Return codes for cmd_get_arg() */
+/**
+ * Return codes for cmd_get_arg()
+ */
 enum cmd_return_codes {
 	CMD_OK = 0,
 	CMD_ARG_NOT_PRESENT = -1,
@@ -185,27 +217,35 @@ enum cmd_return_codes {
 };
 
 
-/* 
+/**
  * Command handlers will take a pointer to the command structure
  * so that they can access any arguments supplied.
  */
 typedef void (*cmd_handler_fn)(struct command *cmd);
 
 
-/*** Command type functions ***/
+/**
+ * ------------------------------------------------------------------------
+ * Command type functions
+ * ------------------------------------------------------------------------ */
 
 /* Return the verb that goes alongside the given command. */
 const char *cmd_verb(cmd_code cmd);
 
 
-/*** Command queue functions ***/
+/**
+ * ------------------------------------------------------------------------
+ * Command queue functions
+ * ------------------------------------------------------------------------ */
 
 /**
  * Returns the top command on the queue.
  */
 struct command *cmdq_peek(void);
 
-/** A function called by the game to get a command from the UI. */
+/**
+ * A function called by the game to get a command from the UI.
+ */
 extern errr (*cmd_get_hook)(cmd_context c, bool wait);
 
 /**
@@ -235,7 +275,10 @@ void cmdq_execute(cmd_context ctx);
 void process_command(cmd_context c, bool no_request);
 
 
-/*** Command repeat manipulation ***/
+/**
+ * ------------------------------------------------------------------------
+ * Command repeat manipulation
+ * ------------------------------------------------------------------------ */
 
 /**
  * Remove any pending repeats from the current command.
@@ -261,7 +304,10 @@ int cmd_get_nrepeats(void);
 
 
 
-/*** Command type functions ***/
+/**
+ * ------------------------------------------------------------------------
+ * Command type functions
+ * ------------------------------------------------------------------------ */
 
 /**
  * Set the args of a command.
@@ -291,10 +337,12 @@ int cmd_get_arg_number(struct command *cmd, const char *arg, int *amt);
  */
 int cmd_get_direction(struct command *cmd, const char *arg, int *dir, bool allow_5);
 int cmd_get_target(struct command *cmd, const char *arg, int *target);
-int cmd_get_item(struct command *cmd, const char *arg, struct object **obj, const char *prompt, const char *reject, item_tester filter, int mode);
+int cmd_get_item(struct command *cmd, const char *arg, struct object **obj,
+				 const char *prompt, const char *reject, item_tester filter,
+				 int mode);
 int cmd_get_quantity(struct command *cmd, const char *arg, int *amt, int max);
 int cmd_get_string(struct command *cmd, const char *arg, const char **str,
-		const char *initial, const char *title, const char *prompt);
+				   const char *initial, const char *title, const char *prompt);
 int cmd_get_spell(struct command *cmd, const char *arg, int *spell,
 				  const char *verb, item_tester book_filter, const char *error,
 				  bool (*spell_filter)(int spell));
