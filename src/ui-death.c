@@ -23,7 +23,6 @@
 #include "obj-desc.h"
 #include "obj-identify.h"
 #include "obj-info.h"
-#include "obj-ui.h"
 #include "savefile.h"
 #include "score.h"
 #include "store.h"
@@ -32,6 +31,7 @@
 #include "ui-input.h"
 #include "ui-knowledge.h"
 #include "ui-menu.h"
+#include "ui-obj.h"
 #include "ui-player.h"
 #include "wizard.h"
 

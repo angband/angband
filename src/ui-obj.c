@@ -1,5 +1,5 @@
 /**
- * \file obj-ui.c
+ * \file ui-obj.c
  * \brief lists of objects and object pictures
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
@@ -29,11 +29,11 @@
 #include "obj-make.h"
 #include "obj-pile.h"
 #include "obj-tval.h"
-#include "obj-ui.h"
 #include "obj-util.h"
 #include "store.h"
 #include "ui-display.h"
 #include "ui-input.h"
+#include "ui-obj.h"
 #include "ui-prefs.h"
 #include "ui.h"
 

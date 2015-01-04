@@ -138,7 +138,6 @@ ANGFILES = \
 	obj-randart.o \
 	obj-slays.o \
 	obj-tval.o \
-	obj-ui.o \
 	obj-util.o \
 	option.o \
 	parser.o \
@@ -182,6 +181,7 @@ ANGFILES = \
 	ui-knowledge.o \
 	ui-map.o \
 	ui-menu.o \
+	ui-obj.o \
 	ui-object.o \
 	ui-options.o \
 	ui-player.o \
