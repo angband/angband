@@ -120,8 +120,7 @@ typedef union
 
 	struct
 	{
-		byte mattr;
-		wchar_t mchar;
+		struct object *obj;
 		bool seen;
 		int y;
 		int x;
@@ -167,8 +166,7 @@ void event_signal_bolt(game_event_type type,
 					   int y,
 					   int x);
 void event_signal_missile(game_event_type type,
-						  byte mattr,
-						  wchar_t mchar,
+						  struct object *obj,
 						  bool seen,
 						  int y,
 						  int x);

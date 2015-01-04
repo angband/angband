@@ -1215,15 +1215,14 @@ static void display_missile(game_event_type type, game_event_data *data,
 							void *user)
 {
 	int msec = op_ptr->delay_factor;
-	byte mattr = data->missile.mattr;
-	char mchar = data->missile.mchar;
+	struct object *obj = data->missile.obj;
 	bool seen = data->missile.seen;
 	int y = data->missile.y;
 	int x = data->missile.x;
 
 	/* Only do visuals if the player can "see" the missile */
 	if (seen) {
-		print_rel(mchar, mattr, y, x);
+		print_rel(object_char(obj), object_attr(obj), y, x);
 		move_cursor_relative(y, x);
 
 		Term_fresh();

@@ -21,6 +21,21 @@
 
 #include "cmd-core.h"
 
+/**
+ * Bit flags for get_item() function
+ */
+#define USE_EQUIP     0x0001	/* Allow equip items */
+#define USE_INVEN     0x0002	/* Allow inven items */
+#define USE_FLOOR     0x0004	/* Allow quiver items */
+#define USE_QUIVER    0x0008	/* Allow floor items */
+#define IS_HARMLESS   0x0010	/* Ignore generic warning inscriptions */
+#define SHOW_PRICES   0x0020	/* Show item prices in item lists */
+#define SHOW_FAIL     0x0040 	/* Show device failure in item lists */
+#define SHOW_QUIVER   0x0080	/* Show quiver summary when in inventory */
+#define SHOW_EMPTY    0x0100	/* Show empty slots in equipment display */
+#define QUIVER_TAGS   0x0200	/* 0-9 are quiver slots when selecting */
+
+
 bool (*get_string_hook)(const char *prompt, char *buf, size_t len);
 int (*get_quantity_hook)(const char *prompt, int max);
 bool (*get_check_hook)(const char *prompt);
@@ -32,6 +47,8 @@ int (*get_spell_from_book_hook)(const char *verb, struct object *book,
 								bool (*spell_filter)(int spell));
 int (*get_spell_hook)(const char *verb, item_tester book_filter, cmd_code cmd,
 					  const char *error, bool (*spell_filter)(int spell));
+bool (*get_item_hook)(struct object **choice, const char *pmt, const char *str,
+					  cmd_code cmd, item_tester tester, int mode);
 
 bool get_string(const char *prompt, char *buf, size_t len);
 int get_quantity(const char *prompt, int max);
@@ -43,5 +60,7 @@ int get_spell_from_book(const char *verb, struct object *book,
 						const char *error, bool (*spell_filter)(int spell));
 int get_spell(const char *verb, item_tester book_filter, cmd_code cmd,
 			  const char *error, bool (*spell_filter)(int spell));
+bool get_item(struct object **choice, const char *pmt, const char *str,
+			  cmd_code cmd, item_tester tester, int mode);
 
 #endif /* INCLUDED_GAME_INPUT_H */

@@ -60,6 +60,7 @@ void distribute_charges(object_type *o_ptr, object_type *q_ptr, int amt);
 void reduce_charges(object_type *o_ptr, int amt);
 int number_charging(const object_type *o_ptr);
 bool recharge_timeout(object_type *o_ptr);
+bool verify_object(const char *prompt, struct object *obj);
 
 
 #endif /* OBJECT_UTIL_H */

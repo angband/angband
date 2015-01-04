@@ -36,7 +36,6 @@
 #include "obj-power.h"
 #include "obj-slays.h"
 #include "obj-tval.h"
-#include "obj-ui.h"
 #include "obj-util.h"
 #include "object.h"
 #include "player-timed.h"

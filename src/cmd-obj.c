@@ -32,7 +32,6 @@
 #include "obj-make.h"
 #include "obj-pile.h"
 #include "obj-tval.h"
-#include "obj-ui.h"
 #include "obj-util.h"
 #include "player-attack.h"
 #include "player-spell.h"

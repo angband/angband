@@ -30,6 +30,8 @@ int (*get_spell_from_book_hook)(const char *verb, struct object *book,
 								bool (*spell_filter)(int spell));
 int (*get_spell_hook)(const char *verb, item_tester book_filter, cmd_code cmd,
 					  const char *error, bool (*spell_filter)(int spell));
+bool (*get_item_hook)(struct object **choice, const char *pmt, const char *str,
+					  cmd_code cmd, item_tester tester, int mode);
 
 /**
  * Prompt for a string from the user.
@@ -131,4 +133,26 @@ int get_spell(const char *verb, item_tester book_filter,
 {
 	/* Ask the UI for it */
 	return get_spell_hook(verb, book_filter, cmd, error, spell_filter);
+}
+
+/**
+ * Let the user select an object, save its address
+ *
+ * \param choice is the chosen object
+ * \param pmt is the prompt to the player
+ * \param str is the message if no valid item is available
+ * \param cmd is the command (if any) the request is called from
+ * \param tester is the function (if any) used to test for valid objects
+ * \param mode gives more information on where the object can be chosen from
+ *
+ * If a legal item is selected , we save it in "obj" and return TRUE.
+ * If no item is available, we do nothing to "obj", and we display a
+ *   warning message, using "str" if available, and return FALSE.
+ * If no item is selected, we do nothing to "obj", and return FALSE.
+ */
+bool get_item(struct object **choice, const char *pmt, const char *str,
+			  cmd_code cmd, item_tester tester, int mode)
+{
+	/* Ask the UI for it */
+	return get_item_hook(choice, pmt, str, cmd, tester, mode);
 }

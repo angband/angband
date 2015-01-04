@@ -24,6 +24,7 @@
 #include "init.h"
 #include "keymap.h"
 #include "obj-gear.h"
+#include "obj-ui.h"
 #include "obj-util.h"
 #include "player-attack.h"
 #include "player-path.h"
@@ -1363,6 +1364,7 @@ void textui_input_init(void)
 	get_aim_dir_hook = textui_get_aim_dir;
 	get_spell_from_book_hook = textui_get_spell_from_book;
 	get_spell_hook = textui_get_spell;
+	get_item_hook = textui_get_item;
 }
 
 

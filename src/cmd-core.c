@@ -24,7 +24,6 @@
 #include "obj-chest.h"
 #include "obj-desc.h"
 #include "obj-tval.h"
-#include "obj-ui.h"
 #include "obj-util.h"
 #include "player-attack.h"
 #include "player-birth.h"

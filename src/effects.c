@@ -39,7 +39,6 @@
 #include "obj-pile.h"
 #include "obj-power.h"
 #include "obj-tval.h"
-#include "obj-ui.h"
 #include "obj-util.h"
 #include "player-timed.h"
 #include "player-util.h"

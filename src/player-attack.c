@@ -34,7 +34,6 @@
 #include "obj-identify.h"
 #include "obj-pile.h"
 #include "obj-slays.h"
-#include "obj-ui.h"
 #include "obj-util.h"
 #include "player-attack.h"
 #include "player-util.h"
@@ -548,8 +547,7 @@ static void ranged_helper(struct object *obj, int dir, int range, int shots,
 		y = ny;
 
 		/* Tell the UI to display the missile */
-		event_signal_missile(EVENT_MISSILE, 
-							 object_char(obj), object_attr(obj), see, y, x);
+		event_signal_missile(EVENT_MISSILE, obj, see, y, x);
 
 		/* Try the attack on the monster at (x, y) if any */
 		if (cave->squares[y][x].mon > 0) {

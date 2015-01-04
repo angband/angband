@@ -36,21 +36,6 @@ typedef enum {
 } olist_detail_t;
 
 
-/**
- * Bit flags for get_item() function
- */
-#define USE_EQUIP     0x0001	/* Allow equip items */
-#define USE_INVEN     0x0002	/* Allow inven items */
-#define USE_FLOOR     0x0004	/* Allow quiver items */
-#define USE_QUIVER    0x0008	/* Allow floor items */
-#define IS_HARMLESS   0x0010	/* Ignore generic warning inscriptions */
-#define SHOW_PRICES   0x0020	/* Show item prices in item lists */
-#define SHOW_FAIL     0x0040 	/* Show device failure in item lists */
-#define SHOW_QUIVER   0x0080	/* Show quiver summary when in inventory */
-#define SHOW_EMPTY    0x0100	/* Show empty slots in equipment display */
-#define QUIVER_TAGS   0x0200	/* 0-9 are quiver slots when selecting */
-
-
 byte object_kind_attr(const struct object_kind *kind);
 wchar_t object_kind_char(const struct object_kind *kind);
 byte object_attr(const struct object *o_ptr);
@@ -58,8 +43,8 @@ wchar_t object_char(const struct object *o_ptr);
 void show_inven(int mode, item_tester tester);
 void show_equip(int mode, item_tester tester);
 void show_floor(struct object **floor_list, int floor_num, int mode, item_tester tester);
-bool verify_object(const char *prompt, struct object *obj);
-bool get_item(struct object **choice, const char *pmt, const char *str, cmd_code cmd, item_tester tester, int mode);
+bool textui_get_item(struct object **choice, const char *pmt, const char *str,
+					 cmd_code cmd, item_tester tester, int mode);
 bool get_item_allow(const struct object *obj, unsigned char ch, cmd_code cmd, bool is_harmless);
 
 void display_object_recall(struct object *obj);

@@ -23,7 +23,6 @@
 #include "init.h"
 #include "obj-gear.h"
 #include "obj-tval.h"
-#include "obj-ui.h"
 #include "obj-util.h"
 #include "player-spell.h"
 #include "player-timed.h"

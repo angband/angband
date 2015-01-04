@@ -24,7 +24,6 @@
 #include "obj-identify.h"
 #include "obj-ignore.h"
 #include "obj-tval.h"
-#include "obj-ui.h"
 #include "obj-util.h"
 #include "object.h"
 

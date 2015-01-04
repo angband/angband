@@ -574,28 +574,6 @@ void show_floor(struct object **floor_list, int floor_num, int mode, item_tester
 
 
 /**
- * Verify the choice of an item.
- *
- * The item can be negative to mean "item on floor".
- */
-bool verify_object(const char *prompt, struct object *obj)
-{
-	char o_name[80];
-
-	char out_val[160];
-
-	/* Describe */
-	object_desc(o_name, sizeof(o_name), obj, ODESC_PREFIX | ODESC_FULL);
-
-	/* Prompt */
-	strnfmt(out_val, sizeof(out_val), "%s %s? ", prompt, o_name);
-
-	/* Query */
-	return (get_check(out_val));
-}
-
-
-/**
  * Prevent certain choices depending on the inscriptions on the item.
  *
  * The item can be negative to mean "item on floor".
@@ -761,8 +739,8 @@ static int get_tag(struct object **tagged_obj, char tag, cmd_code cmd,
  * Note that only "acceptable" floor objects get indexes, so between two
  * commands, the indexes of floor objects may change.  XXX XXX XXX
  */
-bool get_item(struct object **choice, const char *pmt, const char *str,
-			  cmd_code cmd, item_tester tester, int mode)
+bool textui_get_item(struct object **choice, const char *pmt, const char *str,
+					 cmd_code cmd, item_tester tester, int mode)
 {
 	int py = player->py;
 	int px = player->px;

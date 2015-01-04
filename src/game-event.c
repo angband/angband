@@ -17,8 +17,9 @@
  */
 
 #include <assert.h>
-#include "z-virt.h"
 #include "game-event.h"
+#include "object.h"
+#include "z-virt.h"
 
 struct event_handler_entry
 {
@@ -218,15 +219,13 @@ void event_signal_bolt(game_event_type type,
 }
 
 void event_signal_missile(game_event_type type,
-						  byte mattr,
-						  wchar_t mchar,
+						  struct object *obj,
 						  bool seen,
 						  int y,
 						  int x)
 {
 	game_event_data data;
-	data.missile.mattr = mattr;
-	data.missile.mchar = mchar;
+	data.missile.obj = obj;
 	data.missile.seen = seen;
 	data.missile.y = y;
 	data.missile.x = x;

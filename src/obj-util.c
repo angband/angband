@@ -21,6 +21,7 @@
 #include "dungeon.h"
 #include "effects.h"
 #include "cmd-core.h"
+#include "game-input.h"
 #include "generate.h"
 #include "grafmode.h"
 #include "init.h"
@@ -783,4 +784,26 @@ bool recharge_timeout(struct object *o_ptr)
 	else
 		return FALSE;
 }
+
+/**
+ * Verify the choice of an item.
+ *
+ * The item can be negative to mean "item on floor".
+ */
+bool verify_object(const char *prompt, struct object *obj)
+{
+	char o_name[80];
+
+	char out_val[160];
+
+	/* Describe */
+	object_desc(o_name, sizeof(o_name), obj, ODESC_PREFIX | ODESC_FULL);
+
+	/* Prompt */
+	strnfmt(out_val, sizeof(out_val), "%s %s? ", prompt, o_name);
+
+	/* Query */
+	return (get_check(out_val));
+}
+
 
