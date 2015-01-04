@@ -1,0 +1,38 @@
+markdown = "true"
+Downloads
+=========
+ - [Source code][1]
+ - [Windows][2]
+ - [OS X][3] (10.5+)
+
+[1]:http://rephial.org/downloads/3.5/angband-v3.5.1.tar.gz "Source tarball, 20M"
+[2]:http://rephial.org/downloads/3.5/angband-v3.5.1-win.zip "Windows port, 19M zip file"
+[3]:http://rephial.org/downloads/3.5/Angband-v3.5.1-osx.dmg "Max OS X port, 19M .dmg file"
+
+Background
+==========
+Angband 3.5.1 was released Sunday 4 January 2015, and is a minor release.  It updates some in-game help text and fixes lots of bugs from 3.5.0, including some crash bugs.
+
+
+Changelog
+---------
+* Allow stores to be given items for recharging in no_selling (thanks PowerWrym)
+* Fix crash bug with non-ASCII characters in monster + object lists (#1811)
+* Fix a bug introduced with monster lights that makes monsters stupider
+* Display level feelings in the status bar (thanks LuthienCeleste)
+* Fix player history log turncount bug (#1815)
+* Fix bugs where mimics could sometimes be hasted without being woken up (#1821)
+* Fix the curses port ascii walls option & wall lighting bug (#1813)
+* Fix bug where pressing 'e' with no equipment would bring up inventory (#1824)
+* Update help files and improve some in-game explanatory text.
+* Remove occasional double object feelings
+* Fix bug where down stairs could occur on quest levels without killing the boss (#1802)
+* Fix some memory leaks (thanks noz)
+* Fix bug where identifying items in the quiver would say they were on the ground (#1820)
+* Fix bug where randarts could get the remove curse activation
+* Fix bug where artifacts sometimes weren't located
+* Fix bug where sometimes identifying objects would produce strange effects when selecting later objects
+* Fix bug where hitting monsters with missile weapons at maximum range would damage them twice (thanks shadowsun)
+* Fix Windows 8 compilation & Windows DLL issue
+* Fix build problems with HTML and PDF manual generation (#1810, #1831)
+* Fix some unit tests
