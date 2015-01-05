@@ -52,5 +52,6 @@ bool process_pref_file(const char *name, bool quiet, bool user);
 void reset_visuals(bool load_prefs);
 void textui_prefs_init(void);
 void textui_prefs_free(void);
+void do_cmd_pref(void);
 
 #endif /* !UI_PREFS_H */

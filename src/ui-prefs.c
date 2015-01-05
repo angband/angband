@@ -19,6 +19,7 @@
  */
 #include "angband.h"
 #include "cave.h"
+#include "game-input.h"
 #include "grafmode.h"
 #include "init.h"
 #include "keymap.h"
@@ -1227,4 +1228,21 @@ void textui_prefs_free(void)
 	mem_free(trap_x_char);
 	mem_free(flavor_x_attr);
 	mem_free(flavor_x_char);
+}
+
+/**
+ * Ask for a "user pref line" and process it
+ */
+void do_cmd_pref(void)
+{
+	char tmp[80];
+
+	/* Default */
+	my_strcpy(tmp, "", sizeof(tmp));
+
+	/* Ask for a "user pref command" */
+	if (!get_string("Pref: ", tmp, 80)) return;
+
+	/* Process that pref command */
+	(void)process_pref_file_command(tmp);
 }

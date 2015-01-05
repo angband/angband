@@ -40,6 +40,7 @@
 #include "ui-obj.h"
 #include "ui-object.h"
 #include "ui-player.h"
+#include "ui-prefs.h"
 #include "ui-spell.h"
 #include "ui-store.h"
 #include "ui-target.h"

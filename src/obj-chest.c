@@ -29,6 +29,7 @@
 #include "player-timed.h"
 #include "player-util.h"
 #include "tables.h"
+#include "z-term.h"
 
 /**
  * Each chest has a certain set of traps, determined by pval

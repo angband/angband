@@ -1,6 +1,6 @@
-/*
- * File: cmd-misc.c
- * Purpose: Deal with miscellaneous commands.
+/**
+ * \file cmd-misc.c
+ * \brief Deal with miscellaneous commands.
  *
  * Copyright (c) 2010 Andi Sidwell
  *
@@ -29,18 +29,16 @@
 #include "player-history.h"
 #include "obj-util.h"
 #include "target.h"
-#include "ui-prefs.h"
 #include "wizard.h"
 
 
-/*
+/**
  * Toggle wizard mode
  */
 void do_cmd_wizard(void)
 {
 	/* Verify first time */
-	if (!(player->noscore & NOSCORE_WIZARD))
-	{
+	if (!(player->noscore & NOSCORE_WIZARD)) {
 		/* Mention effects */
 		msg("You are about to enter 'wizard' mode for the very first time!");
 		msg("This is a form of cheating, and your game will not be scored!");
@@ -55,13 +53,10 @@ void do_cmd_wizard(void)
 	}
 
 	/* Toggle mode */
-	if (player->wizard)
-	{
+	if (player->wizard) {
 		player->wizard = FALSE;
 		msg("Wizard mode off.");
-	}
-	else
-	{
+	} else {
 		player->wizard = TRUE;
 		msg("Wizard mode on.");
 	}
@@ -76,14 +71,13 @@ void do_cmd_wizard(void)
 
 
 
-/*
+/**
  * Verify use of "debug" mode
  */
 void do_cmd_try_debug(void)
 {
 	/* Ask first time */
-	if (!(player->noscore & NOSCORE_DEBUG))
-	{
+	if (!(player->noscore & NOSCORE_DEBUG)) {
 		/* Mention effects */
 		msg("You are about to use the dangerous, unsupported, debug commands!");
 		msg("Your machine may crash, and your savefile may become corrupted!");
@@ -102,8 +96,8 @@ void do_cmd_try_debug(void)
 }
 
 
-/*
- * Hack -- commit suicide
+/**
+ * Commit suicide
  */
 void do_cmd_suicide(struct command *cmd)
 {
@@ -115,7 +109,7 @@ void do_cmd_suicide(struct command *cmd)
 }
 
 
-/*
+/**
  * Mention the current version
  */
 void do_cmd_version(void)
@@ -124,23 +118,6 @@ void do_cmd_version(void)
 	msg("You are playing %s.  Type '?' for more info.", buildver);
 }
 
-
-/*
- * Ask for a "user pref line" and process it
- */
-void do_cmd_pref(void)
-{
-	char tmp[80];
-
-	/* Default */
-	my_strcpy(tmp, "", sizeof(tmp));
-
-	/* Ask for a "user pref command" */
-	if (!get_string("Pref: ", tmp, 80)) return;
-
-	/* Process that pref command */
-	(void)process_pref_file_command(tmp);
-}
 
 /**
  * Record the player's thoughts as a note.
@@ -166,7 +143,8 @@ void do_cmd_note(void)
 
 	/* Format the note correctly, supporting some cute /me commands */
 	if (strncmp(tmp, "/say ", 5) == 0)
-		strnfmt(note, sizeof(note), "-- %s says: \"%s\"", op_ptr->full_name, &tmp[5]);
+		strnfmt(note, sizeof(note), "-- %s says: \"%s\"", op_ptr->full_name,
+				&tmp[5]);
 	else if (strncmp(tmp, "/me", 3) == 0)
 		strnfmt(note, sizeof(note), "-- %s%s", op_ptr->full_name, &tmp[3]);
 	else
