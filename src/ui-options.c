@@ -435,7 +435,7 @@ static void ui_keymap_pref_load(const char *title, int row)
 
 static void ui_keymap_pref_append(const char *title, int row)
 {
-	(void)dump_pref_file(keymap_dump, "Dump keymaps", 13);
+	dump_pref_file(keymap_dump, "Dump keymaps", 13);
 }
 
 static void ui_keymap_query(const char *title, int row)
@@ -1026,11 +1026,11 @@ static void do_cmd_pref_file_hack(long row)
  * Write options to a file.
  */
 static void do_dump_options(const char *title, int row) {
-	(void)dump_pref_file(option_dump, "Dump window settings", 20);
+	dump_pref_file(option_dump, "Dump window settings", 20);
 }
 
 static void do_dump_autoinsc(const char *title, int row) {
-	(void)dump_pref_file(dump_autoinscriptions, "Dump autoinscriptions", 20);
+	dump_pref_file(dump_autoinscriptions, "Dump autoinscriptions", 20);
 }
 
 /*

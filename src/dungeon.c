@@ -1272,6 +1272,9 @@ void play_game(bool new_game)
  */
 void save_game(void)
 {
+	char name[80];
+	char path[1024];
+
 	/* Disturb the player */
 	disturb(player, 1);
 
@@ -1298,6 +1301,15 @@ void save_game(void)
 		prt("Saving game... done.", 0, 0);
 	else
 		prt("Saving game... failed!", 0, 0);
+
+	/* Refresh */
+	Term_fresh();
+
+	/* Save the window prefs */
+	strnfmt(name, sizeof(name), "%s.prf", player_safe_name(player, TRUE));
+	path_build(path, sizeof(path), ANGBAND_DIR_USER, name);
+	if (!prefs_save(path, option_dump, "Dump window settings"))
+		prt("Failed to save subwindow preferences", 0, 0);
 
 	/* Allow suspend again */
 	signals_handle_tstp();

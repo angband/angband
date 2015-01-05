@@ -44,7 +44,6 @@
 #include "savefile.h"
 #include "store.h"
 #include "trap.h"
-#include "ui-display.h"
 #include "ui-input.h"
 
 /* Dungeon constants */
@@ -354,15 +353,9 @@ int rd_randomizer(void)
  */
 int rd_options(void)
 {
-	int i, n;
-
 	byte b;
 
 	u16b tmp16u;
-
-	u32b window_flag[ANGBAND_TERM_MAX];
-	u32b window_mask[ANGBAND_TERM_MAX];
-
 
 	/*** Special info */
 
@@ -392,34 +385,6 @@ int rd_options(void)
 		rd_byte(&value);
 		option_set(name, !!value);
 	}
-
-	/*** Window Options ***/
-
-	for (n = 0; n < ANGBAND_TERM_MAX; n++)
-		rd_u32b(&window_flag[n]);
-	for (n = 0; n < ANGBAND_TERM_MAX; n++)
-		rd_u32b(&window_mask[n]);
-
-	/* Analyze the options */
-	for (n = 0; n < ANGBAND_TERM_MAX; n++)
-	{
-		/* Analyze the options */
-		for (i = 0; i < 32; i++)
-		{
-			/* Process valid flags */
-			if (window_flag_desc[i])
-			{
-				/* Blank invalid flags */
-				if (!(window_mask[n] & (1L << i)))
-				{
-					window_flag[n] &= ~(1L << i);
-				}
-			}
-		}
-	}
-
-	/* Set up the subwindows */
-	subwindows_set_flags(window_flag, ANGBAND_TERM_MAX);
 
 	return 0;
 }

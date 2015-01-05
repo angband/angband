@@ -35,7 +35,6 @@
 #include "player-history.h"
 #include "player-timed.h"
 #include "trap.h"
-#include "ui-display.h"
 #include "ui-input.h"
 
 
@@ -269,10 +268,7 @@ void wr_randomizer(void)
  */
 void wr_options(void)
 {
-	int i, k;
-
-	u32b window_mask[ANGBAND_TERM_MAX];
-
+	int i;
 
 	/* Special Options */
 	wr_byte(op_ptr->delay_factor);
@@ -291,31 +287,6 @@ void wr_options(void)
 
 	/* Sentinel */
 	wr_byte(0);
-
-	/*** Window options ***/
-
-	/* Reset */
-	for (i = 0; i < ANGBAND_TERM_MAX; i++)
-	{
-		/* Mask */
-		window_mask[i] = 0L;
-
-		/* Build the mask */
-		for (k = 0; k < 32; k++)
-		{
-			/* Set mask */
-			if (window_flag_desc[k])
-			{
-				window_mask[i] |= (1L << k);
-			}
-		}
-	}
-
-	/* Dump the flags */
-	for (i = 0; i < ANGBAND_TERM_MAX; i++) wr_u32b(window_flag[i]);
-
-	/* Dump the masks */
-	for (i = 0; i < ANGBAND_TERM_MAX; i++) wr_u32b(window_mask[i]);
 }
 
 
