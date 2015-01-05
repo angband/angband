@@ -24,7 +24,6 @@
 #include "player-attack.h"
 #include "player-util.h"
 #include "trap.h"
-#include "ui-prefs.h"
 
 struct trap_kind *trap_info;
 
@@ -144,29 +143,6 @@ static bool square_verify_trap(struct chunk *c, int y, int x, int vis)
     }
 
     /* Report failure */
-    return FALSE;
-}
-
-/**
- * Get the graphics of a listed trap.
- *
- * We should probably have better handling of stacked traps, but that can
- * wait until we do, in fact, have stacked traps under normal conditions.
- */
-bool get_trap_graphics(struct chunk *c, struct trap *trap, int *a, wchar_t *ch,
-					   bool require_visible)
-{
-    /* Trap is visible, or we don't care */
-    if (!require_visible || trf_has(trap->flags, TRF_VISIBLE)) {
-		/* Get the graphics */
-		*a = trap_x_attr[trap->kind->tidx];
-		*ch = trap_x_char[trap->kind->tidx];
-	
-		/* We found a trap */
-		return TRUE;
-    }
-    
-    /* No traps found with the requirement */
     return FALSE;
 }
 

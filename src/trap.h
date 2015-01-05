@@ -83,8 +83,6 @@ struct trap
 struct trap_kind *lookup_trap(const char *desc);
 bool square_trap_specific(struct chunk *c, int y, int x, int t_idx);
 bool square_trap_flag(struct chunk *c, int y, int x, int flag);
-bool get_trap_graphics(struct chunk *c, struct trap *trap, int *a, wchar_t *ch,
-					   bool require_visible);
 bool square_reveal_trap(struct chunk *c, int y, int x, int chance, bool domsg);
 bool trap_check_hit(int power);
 void hit_trap(int y, int x);

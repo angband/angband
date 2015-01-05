@@ -180,7 +180,7 @@ void dump_monsters(ang_file *fff)
 		/* Skip non-entries */
 		if (!race->name) continue;
 
-		file_putf(fff, "monster:%s:0x%2X:0x%2X\n", race->name, attr, chr);
+		file_putf(fff, "monster:%s:0x%02X:0x%02X\n", race->name, attr, chr);
 	}
 }
 
@@ -1148,6 +1148,15 @@ void reset_visuals(bool load_prefs)
 		/* Default attr/char */
 		monster_x_attr[i] = r_ptr->d_attr;
 		monster_x_char[i] = r_ptr->d_char;
+	}
+
+	/* Extract default attr/char code for traps */
+	for (i = 0; i < z_info->trap_max; i++) {
+		struct trap_kind *trap = &trap_info[i];
+
+		/* Default attr/char */
+		trap_x_attr[i] = trap->d_attr;
+		trap_x_char[i] = trap->d_char;
 	}
 
 	/* Extract default attr/char code for flavors */

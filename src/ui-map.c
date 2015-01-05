@@ -81,6 +81,23 @@ static void hallucinatory_object(int *a, wchar_t *c)
 
 
 /**
+ * Get the graphics of a listed trap.
+ *
+ * We should probably have better handling of stacked traps, but that can
+ * wait until we do, in fact, have stacked traps under normal conditions.
+ */
+static void get_trap_graphics(struct chunk *c, struct trap *trap, int *a,
+							  wchar_t *ch)
+{
+    /* Trap is visible */
+    if (trf_has(trap->flags, TRF_VISIBLE)) {
+		/* Get the graphics */
+		*a = trap_x_attr[trap->kind->tidx];
+		*ch = trap_x_char[trap->kind->tidx];
+    }
+}
+
+/**
  * Apply text lighting effects
  */
 static void grid_get_attr(grid_data *g, int *a)
@@ -197,10 +214,8 @@ void grid_data_as_text(grid_data *g, int *ap, wchar_t *cp, int *tap, wchar_t *tc
 
 	/* There is a trap in this grid, and we are not hallucinating */
 	if (g->trap && (!g->hallucinate))
-	{
 	    /* Change graphics to indicate a trap (if visible) */
-	    (void) get_trap_graphics(cave, g->trap, &a, &c, TRUE);
-	}
+	    get_trap_graphics(cave, g->trap, &a, &c);
 
 	/* If there's an object, deal with that. */
 	if (g->unseen_money) {
