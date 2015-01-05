@@ -25,23 +25,22 @@
 #include "player-quest.h"
 #include "player-spell.h"
 #include "player-timed.h"
-#include "ui-input.h"
 #include "z-color.h"
 #include "z-util.h"
 
 
-/*
+/**
  * The player other record (static)
  */
 static player_other player_other_body;
 
-/*
+/**
  * Pointer to the player other record
  */
 player_other *op_ptr = &player_other_body;
 
-/*
- * Pointer to the player info record
+/**
+ * Pointer to the player struct
  */
 player_type *player;
 
@@ -49,7 +48,7 @@ struct player_body *bodies;
 struct player_race *races;
 struct player_class *classes;
 
-/*
+/**
  * Player Sexes
  *
  *	Title,
@@ -85,7 +84,7 @@ struct magic_realm realms[REALM_MAX] =
 };
 
 
-/*
+/**
  * Base experience levels, may be adjusted up for race and/or class
  */
 const s32b player_exp[PY_MAX_LEVEL] =
@@ -255,15 +254,12 @@ static void adjust_level(struct player *p, bool verbose)
 	handle_stuff(p->upkeep);
 
 	while ((p->lev > 1) &&
-	       (p->exp < (player_exp[p->lev-2] *
-	                      p->expfact / 100L)))
+	       (p->exp < (player_exp[p->lev-2] * p->expfact / 100L)))
 		p->lev--;
 
 
 	while ((p->lev < PY_MAX_LEVEL) &&
-	       (p->exp >= (player_exp[p->lev-1] *
-	                       p->expfact / 100L)))
-	{
+	       (p->exp >= (player_exp[p->lev-1] * p->expfact / 100L))) {
 		char buf[80];
 
 		p->lev++;
@@ -272,8 +268,7 @@ static void adjust_level(struct player *p, bool verbose)
 		if (p->lev > p->max_lev)
 			p->max_lev = p->lev;
 
-		if (verbose)
-		{
+		if (verbose) {
 			/* Log level updates */
 			strnfmt(buf, sizeof(buf), "Reached level %d", p->lev);
 			history_add(buf, HIST_GAIN_LEVEL, 0);
@@ -290,8 +285,7 @@ static void adjust_level(struct player *p, bool verbose)
 	}
 
 	while ((p->max_lev < PY_MAX_LEVEL) &&
-	       (p->max_exp >= (player_exp[p->max_lev-1] *
-	                           p->expfact / 100L)))
+	       (p->max_exp >= (player_exp[p->max_lev-1] * p->expfact / 100L)))
 		p->max_lev++;
 
 	p->upkeep->update |= (PU_BONUS | PU_HP | PU_MANA | PU_SPELLS);
@@ -412,8 +406,9 @@ const char *player_safe_name(struct player *p, bool strip_suffix)
 }
 
 
-/** Init / cleanup routines **/
-
+/**
+ * Initialise player struct
+ */
 static void init_player(void) {
 	/* Create the player array, initialised with 0 */
 	player = mem_zalloc(sizeof *player);
@@ -425,6 +420,9 @@ static void init_player(void) {
 	player->timed = mem_zalloc(TMD_MAX * sizeof(s16b));
 }
 
+/**
+ * Free player struct
+ */
 static void cleanup_player(void) {
 	int i;
 
