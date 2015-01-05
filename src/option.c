@@ -1,6 +1,6 @@
-/*
- * File: options.c
- * Purpose: Options table and definitions.
+/**
+ * \file options.c
+ * \brief Options table and definitions.
  *
  * Copyright (c) 1997 Ben Harrison
  *
@@ -16,10 +16,8 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
-#include "option.h"
-#include "ui-display.h"
 #include "init.h"
-#include "z-term.h"
+#include "option.h"
 
 typedef struct {
 	const char *name;
@@ -28,30 +26,38 @@ typedef struct {
 	bool normal;
 } option_entry;
 
-/*
+/**
  * Option screen interface
  */
 int option_page[OPT_PAGE_MAX][OPT_PAGE_PER] = { {0} };
 
 static option_entry options[OPT_MAX] = {
-#define OP(a, b, c, d)    { #a, b, OP_##c, d },
-#include "list-options.h"
-#undef OP
+	#define OP(a, b, c, d)    { #a, b, OP_##c, d },
+	#include "list-options.h"
+	#undef OP
 };
 
-/* Accessor functions */
+/**
+ * Given an option index, return its name
+ */
 const char *option_name(int opt)
 {
 	if (opt >= OPT_MAX) return NULL;
 	return options[opt].name;
 }
 
+/**
+ * Given an option index, return its description
+ */
 const char *option_desc(int opt)
 {
 	if (opt >= OPT_MAX) return NULL;
 	return options[opt].description;
 }
 
+/**
+ * Determine the type of option (score, birth etc)
+ */
 int option_type(int opt)
 {
 	if (opt >= OPT_MAX)
@@ -59,14 +65,14 @@ int option_type(int opt)
 	return options[opt].type;
 }
 
-#if 0 /* unused so far but may be useful in future */
-static bool option_is_birth(int opt) { return (option_type(opt) == OP_BIRTH); }
-static bool option_is_score(int opt) { return (option_type(opt) == OP_SCORE); }
-#endif
+static bool option_is_cheat(int opt)
+{
+	return (option_type(opt) == OP_CHEAT);
+}
 
-static bool option_is_cheat(int opt) { return (option_type(opt) == OP_CHEAT); }
-
-/* Setup functions */
+/**
+ * Set an option, return TRUE if successful
+ */
 bool option_set(const char *name, int val)
 {
 	size_t opt;
@@ -86,6 +92,9 @@ bool option_set(const char *name, int val)
 	return FALSE;
 }
 
+/**
+ * Initialise options to defaults
+ */
 void init_options(void)
 {
 	int opt, page;
