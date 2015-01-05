@@ -34,9 +34,6 @@ bool option_set(const char *opt, int val);
 /** Initialise options to defaults */
 void init_options(void);
 
-/** Write options to file */
-void option_dump(ang_file *f);
-
 /*** Option display definitions ***/
 
 /*

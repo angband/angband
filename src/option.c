@@ -113,43 +113,6 @@ void init_options(void)
 }
 
 
-/*
- * Write all current options to a user preference file.
- */
-void option_dump(ang_file *f)
-{
-	int i, j;
-
-	file_putf(f, "# Options\n\n");
-
-	/* Dump window flags */
-	for (i = 1; i < ANGBAND_TERM_MAX; i++)
-	{
-		/* Require a real window */
-		if (!angband_term[i]) continue;
-
-		/* Check each flag */
-		for (j = 0; j < (int)N_ELEMENTS(window_flag_desc); j++)
-		{
-			/* Require a real flag */
-			if (!window_flag_desc[j]) continue;
-
-			/* Comment */
-			file_putf(f, "# Window '%s', Flag '%s'\n",
-				angband_term_name[i], window_flag_desc[j]);
-
-			/* Dump the flag */
-			if (window_flag[i] & (1L << j))
-				file_putf(f, "window:%d:%d:1\n", i, j);
-			else
-				file_putf(f, "window:%d:%d:0\n", i, j);
-
-			/* Skip a line */
-			file_putf(f, "\n");
-		}
-	}
-}
-
 struct init_module options_module = {
 	.name = "options",
 	.init = init_options,

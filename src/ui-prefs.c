@@ -307,6 +307,41 @@ void dump_colors(ang_file *fff)
 
 
 /**
+ * Write all current options to a user preference file.
+ */
+void option_dump(ang_file *fff)
+{
+	int i, j;
+
+	file_putf(fff, "# Options\n\n");
+
+	/* Dump window flags */
+	for (i = 1; i < ANGBAND_TERM_MAX; i++) {
+		/* Require a real window */
+		if (!angband_term[i]) continue;
+
+		/* Check each flag */
+		for (j = 0; j < (int)N_ELEMENTS(window_flag_desc); j++) {
+			/* Require a real flag */
+			if (!window_flag_desc[j]) continue;
+
+			/* Comment */
+			file_putf(fff, "# Window '%s', Flag '%s'\n",
+				angband_term_name[i], window_flag_desc[j]);
+
+			/* Dump the flag */
+			if (window_flag[i] & (1L << j))
+				file_putf(fff, "window:%d:%d:1\n", i, j);
+			else
+				file_putf(fff, "window:%d:%d:0\n", i, j);
+
+			/* Skip a line */
+			file_putf(fff, "\n");
+		}
+	}
+}
+
+/**
  * Save a set of preferences to file, overwriting any old preferences with the
  * same title.
  *
