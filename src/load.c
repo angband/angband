@@ -44,7 +44,6 @@
 #include "savefile.h"
 #include "store.h"
 #include "trap.h"
-#include "ui-input.h"
 
 /* Dungeon constants */
 byte square_size = 0;
@@ -369,7 +368,7 @@ int rd_options(void)
 
 	/* Read lazy movement delay */
 	rd_u16b(&tmp16u);
-	lazymove_delay = (tmp16u < 1000) ? tmp16u : 0;
+	op_ptr->lazymove_delay = (tmp16u < 1000) ? tmp16u : 0;
 
 
 	/*** Normal Options ***/

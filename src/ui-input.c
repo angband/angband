@@ -49,10 +49,6 @@ static bool inkey_xtra;
 u32b inkey_scan;		/* See the "inkey()" function */
 bool inkey_flag;		/* See the "inkey()" function */
 
-/* Delay in centiseconds before moving to allow another keypress */
-/* Zero means normal instant movement. */
-u16b lazymove_delay = 0;
-
 /*
  * Flush all pending input.
  *
@@ -1209,10 +1205,10 @@ bool textui_get_rep_dir(int *dp, bool allow_5)
 				if (this_dir)
 					dir = dir_transitions[dir][this_dir];
 
-				if (lazymove_delay == 0 || ++keypresses_handled > 1)
+				if (op_ptr->lazymove_delay == 0 || ++keypresses_handled > 1)
 					break;
 
-				inkey_scan = lazymove_delay;
+				inkey_scan = op_ptr->lazymove_delay;
 				ke = inkey_ex();
 			}
 
@@ -1326,12 +1322,12 @@ bool textui_get_aim_dir(int *dp)
 						else
 							break;
 
-						if (lazymove_delay == 0 || ++keypresses_handled > 1)
+						if (op_ptr->lazymove_delay == 0 || ++keypresses_handled > 1)
 							break;
 
 						/* See if there's a second keypress within the defined
 						 period of time. */
-						inkey_scan = lazymove_delay;
+						inkey_scan = op_ptr->lazymove_delay;
 						ke = inkey_ex();
 					}
 				}

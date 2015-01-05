@@ -374,7 +374,7 @@ typedef struct {
 	bool opt[OPT_MAX];		/* Options */
 	
 	byte hitpoint_warn;		/* Hitpoint warning (0 to 9) */
-	
+	u16b lazymove_delay;	/* Delay in cs before moving to allow another key */
 	byte delay_factor;		/* Delay factor (0 to 9) */
 	
 	byte name_suffix;		/* numeric suffix for player name */

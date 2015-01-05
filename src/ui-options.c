@@ -951,7 +951,7 @@ static void do_cmd_lazymove_delay(const char *name, int row)
 	bool res;
 	char tmp[4] = "";
 
-	strnfmt(tmp, sizeof(tmp), "%i", lazymove_delay);
+	strnfmt(tmp, sizeof(tmp), "%i", op_ptr->lazymove_delay);
 
 	screen_save();
 
@@ -959,7 +959,7 @@ static void do_cmd_lazymove_delay(const char *name, int row)
 	prt("Command: Movement Delay Factor", 20, 0);
 
 	prt(format("Current movement delay: %d (%d msec)",
-			   lazymove_delay, lazymove_delay * 10), 22, 0);
+			   op_ptr->lazymove_delay, op_ptr->lazymove_delay * 10), 22, 0);
 	prt("New movement delay: ", 21, 0);
 
 	/* Ask the user for a string */
@@ -968,7 +968,7 @@ static void do_cmd_lazymove_delay(const char *name, int row)
 	/* Process input */
 	if (res)
 	{
-		lazymove_delay = (u16b) strtoul(tmp, NULL, 0);
+		op_ptr->lazymove_delay = (u16b) strtoul(tmp, NULL, 0);
 	}
 
 	screen_load();

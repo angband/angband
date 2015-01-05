@@ -35,7 +35,6 @@
 #include "player-history.h"
 #include "player-timed.h"
 #include "trap.h"
-#include "ui-input.h"
 
 
 /*
@@ -273,7 +272,7 @@ void wr_options(void)
 	/* Special Options */
 	wr_byte(op_ptr->delay_factor);
 	wr_byte(op_ptr->hitpoint_warn);
-	wr_u16b(lazymove_delay);
+	wr_u16b(op_ptr->lazymove_delay);
 
 	/* Normal options */
 	for (i = 0; i < OPT_MAX; i++) {
