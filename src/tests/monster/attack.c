@@ -7,10 +7,12 @@
 #include "mon-lore.h"
 #include "monster.h"
 #include "player-timed.h"
+#include "ui-input.h"
 
 int setup_tests(void **state) {
 	struct monster_race *r = &test_r_human;
 	struct monster *m = mem_zalloc(sizeof *m);
+	textui_input_init();
 	z_info = mem_zalloc(sizeof(struct angband_constants));
 	z_info->mon_blows_max = 2;
 	m->race = r;

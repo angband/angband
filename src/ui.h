@@ -60,5 +60,7 @@ bool modify_panel(term *t, int wy, int wx);
 bool change_panel(int dir);
 void verify_panel(void);
 void center_panel(void);
+void textui_get_panel(int *min_y, int *min_x, int *max_y, int *max_x);
+bool textui_panel_contains(unsigned int y, unsigned int x);
 
 #endif /* INCLUDED_UI_H */

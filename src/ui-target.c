@@ -18,6 +18,7 @@
 
 #include "angband.h"
 #include "cave.h"
+#include "game-input.h"
 #include "init.h"
 #include "keymap.h"
 #include "mon-desc.h"

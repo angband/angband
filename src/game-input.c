@@ -32,6 +32,8 @@ int (*get_spell_hook)(const char *verb, item_tester book_filter, cmd_code cmd,
 					  const char *error, bool (*spell_filter)(int spell));
 bool (*get_item_hook)(struct object **choice, const char *pmt, const char *str,
 					  cmd_code cmd, item_tester tester, int mode);
+void (*get_panel_hook)(int *min_y, int *min_x, int *max_y, int *max_x);
+bool (*panel_contains_hook)(unsigned int y, unsigned int x);
 
 /**
  * Prompt for a string from the user.
@@ -155,4 +157,22 @@ bool get_item(struct object **choice, const char *pmt, const char *str,
 {
 	/* Ask the UI for it */
 	return get_item_hook(choice, pmt, str, cmd, tester, mode);
+}
+
+/**
+ * Check to see if a map grid is in the area the player can see (the "panel")
+ */
+void get_panel(int *min_y, int *min_x, int *max_y, int *max_x)
+{
+	/* Ask the UI for it */
+	get_panel_hook(min_y, min_x, max_y, max_x);
+}
+
+/**
+ * Check to see if a map grid is in the area the player can see (the "panel")
+ */
+bool panel_contains(unsigned int y, unsigned int x)
+{
+	/* Ask the UI for it */
+	return panel_contains_hook(y, x);
 }

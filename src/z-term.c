@@ -2659,17 +2659,6 @@ errr term_init(term *t, int w, int h, int k)
 	return (0);
 }
 
-bool panel_contains(unsigned int y, unsigned int x)
-{
-	unsigned int hgt;
-	unsigned int wid;
-	if (!Term)
-		return TRUE;
-	hgt = SCREEN_HGT;
-	wid = SCREEN_WID;
-	return (y - Term->offset_y) < hgt && (x - Term->offset_x) < wid;
-}
-
 /* Emit a 'graphical' symbol and a padding character if appropriate */
 int big_pad(int col, int row, byte a, wchar_t c)
 {

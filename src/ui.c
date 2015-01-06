@@ -612,3 +612,26 @@ void center_panel(void)
 {
 	verify_panel_int(TRUE);
 }
+
+void textui_get_panel(int *min_y, int *min_x, int *max_y, int *max_x)
+{
+	term *t = term_screen;
+
+	if (!t) return;
+
+	*min_y = t->offset_y;
+	*min_x = t->offset_x;
+	*max_y = t->offset_y + SCREEN_HGT;
+	*max_x = t->offset_x + SCREEN_WID;
+}
+
+bool textui_panel_contains(unsigned int y, unsigned int x)
+{
+	unsigned int hgt;
+	unsigned int wid;
+	if (!Term)
+		return TRUE;
+	hgt = SCREEN_HGT;
+	wid = SCREEN_WID;
+	return (y - Term->offset_y) < hgt && (x - Term->offset_x) < wid;
+}

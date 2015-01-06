@@ -49,6 +49,8 @@ int (*get_spell_hook)(const char *verb, item_tester book_filter, cmd_code cmd,
 					  const char *error, bool (*spell_filter)(int spell));
 bool (*get_item_hook)(struct object **choice, const char *pmt, const char *str,
 					  cmd_code cmd, item_tester tester, int mode);
+void (*get_panel_hook)(int *min_y, int *min_x, int *max_y, int *max_x);
+bool (*panel_contains_hook)(unsigned int y, unsigned int x);
 
 bool get_string(const char *prompt, char *buf, size_t len);
 int get_quantity(const char *prompt, int max);
@@ -62,5 +64,7 @@ int get_spell(const char *verb, item_tester book_filter, cmd_code cmd,
 			  const char *error, bool (*spell_filter)(int spell));
 bool get_item(struct object **choice, const char *pmt, const char *str,
 			  cmd_code cmd, item_tester tester, int mode);
+void get_panel(int *min_y, int *min_x, int *max_y, int *max_x);
+bool panel_contains(unsigned int y, unsigned int x);
 
 #endif /* INCLUDED_GAME_INPUT_H */

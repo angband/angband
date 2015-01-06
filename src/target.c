@@ -19,6 +19,7 @@
 #include "angband.h"
 #include "cave.h"
 #include "cmd-core.h"
+#include "game-input.h"
 #include "keymap.h"
 #include "mon-desc.h"
 #include "mon-util.h"
@@ -27,7 +28,6 @@
 #include "player-timed.h"
 #include "project.h"
 #include "target.h"
-#include "z-term.h" /* panel_contains */
 
 /*** File-wide variables ***/
 
@@ -424,19 +424,21 @@ bool target_sighted(void)
 
 #define TS_INITIAL_SIZE	20
 
-/*
+/**
  * Return a target set of target_able monsters.
  */
 struct point_set *target_get_monsters(int mode)
 {
 	int y, x;
+	int min_y, min_x, max_y, max_x;
 	struct point_set *targets = point_set_new(TS_INITIAL_SIZE);
 
-	/* Scan the current panel */
-	for (y = Term->offset_y; y < Term->offset_y + SCREEN_HGT; y++)
-	{
-		for (x = Term->offset_x; x < Term->offset_x + SCREEN_WID; x++)
-		{
+	/* Get the current panel */
+	get_panel(&min_y, &min_x, &max_y, &max_x);
+
+	/* Scan for targets */
+	for (y = min_y; y < max_y; y++) {
+		for (x = min_x; x < max_x; x++) {
 			/* Check bounds */
 			if (!square_in_bounds_fully(cave, y, x)) continue;
 
@@ -444,8 +446,7 @@ struct point_set *target_get_monsters(int mode)
 			if (!target_accept(y, x)) continue;
 
 			/* Special mode */
-			if (mode & (TARGET_KILL))
-			{
+			if (mode & (TARGET_KILL)) {
 				/* Must contain a monster */
 				if (!(cave->squares[y][x].mon > 0)) continue;
 
@@ -458,7 +459,8 @@ struct point_set *target_get_monsters(int mode)
 		}
 	}
 
-	sort(targets->pts, point_set_size(targets), sizeof(*(targets->pts)), cmp_distance);
+	sort(targets->pts, point_set_size(targets), sizeof(*(targets->pts)),
+		 cmp_distance);
 	return targets;
 }
 
