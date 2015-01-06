@@ -2151,6 +2151,9 @@ static void ui_leave_game(game_event_type type, game_event_data *data,
 	event_remove_handler(EVENT_BELL, bell_message, NULL);
 	event_remove_handler(EVENT_INPUT_FLUSH, flush, NULL);
 	event_remove_handler(EVENT_MESSAGE_FLUSH, message_flush, NULL);
+
+	/* Hack -- Increase "icky" depth */
+	character_icky++;
 }
 
 errr textui_get_cmd(cmd_context context, bool wait)
