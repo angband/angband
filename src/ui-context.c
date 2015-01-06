@@ -734,11 +734,12 @@ int context_menu_object(struct object *obj)
 	}
 
 	if (object_is_carried(player, obj)) {
-		if (!store_in_store || square_shopnum(cave, player->py, player->px) == STORE_HOME) {
+		if (!square_isshop(cave, player->py, player->px) ||
+			square_shopnum(cave, player->py, player->px) == STORE_HOME) {
 			ADD_LABEL("Drop", CMD_DROP, MN_ROW_VALID);
 
 			if (obj->number > 1) {
-				/* 'D' is used for ignore in rogue keymap, so we'll just swap letters. */
+				/* 'D' is used for ignore in rogue keymap, so swap letters. */
 				cmdkey = (mode == KEYMAP_MODE_ORIG) ? 'D' : 'k';
 				menu_dynamic_add_label(m, "Drop All", cmdkey, MENU_VALUE_DROP_ALL, labels);
 			}
@@ -808,7 +809,10 @@ int context_menu_object(struct object *obj)
 		case MENU_VALUE_DROP_ALL:
 			/* Drop entire stack with confirmation. */
 			if (get_check(format("Drop %s? ", header))) {
-				cmdq_push(store_in_store ? CMD_STASH : CMD_DROP);
+				if (square_isshop(cave, player->py, player->px))
+					cmdq_push(CMD_STASH);
+				else
+					cmdq_push(CMD_DROP);
 				cmd_set_arg_item(cmdq_peek(), "item", obj);
 				cmd_set_arg_number(cmdq_peek(), "quantity", obj->number);
 			}
@@ -868,8 +872,9 @@ int context_menu_object(struct object *obj)
 		cmdq_push(selected);
 		cmd_set_arg_item(cmdq_peek(), "item", obj);
 
-		/* If we're in a store, we need to change the "drop" command to "stash". */
-		if (selected == CMD_DROP && store_in_store) {
+		/* If we're in a store, change the "drop" command to "stash". */
+		if (selected == CMD_DROP &&
+			square_isshop(cave, player->py, player->px)) {
 			struct command *gc = cmdq_peek();
 			gc->command = CMD_STASH;
 		}

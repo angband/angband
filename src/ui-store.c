@@ -116,12 +116,6 @@ struct store_context {
 	unsigned int scr_places_y[LOC_MAX];
 };
 
-/** Variables to maintain state XXX ***/
-
-/* Are we in store? */
-bool store_in_store = FALSE;
-
-
 /* Return a random hint from the global hints list */
 static const char *random_hint(void)
 {
@@ -1181,9 +1175,6 @@ void textui_enter_store(void)
 	event_signal(EVENT_LEAVE_GAME);
 	event_signal(EVENT_ENTER_STORE);
 
-	/* XXX ick */
-	store_in_store = TRUE;
-
 	/* Forget the view */
 	forget_view(cave);
 
@@ -1213,9 +1204,6 @@ void textui_enter_store(void)
 	/* Switch back to the normal game view. */
 	event_signal(EVENT_LEAVE_STORE);
 	event_signal(EVENT_ENTER_GAME);
-
-	/* XXX ick */
-	store_in_store = FALSE;
 
 	/* Take a turn */
 	player->upkeep->energy_use = 100;
