@@ -47,6 +47,7 @@
 #include "ui-obj.h"
 #include "ui-player.h"
 #include "ui-prefs.h"
+#include "ui-store.h"
 #include "ui.h"
 #include "z-term.h"
 
@@ -2105,6 +2106,7 @@ static void ui_enter_game(game_event_type type, game_event_data *data,
 	/* Check if the panel should shift when the player's moved */
 	event_add_handler(EVENT_PLAYERMOVED, check_panel, NULL);
 	event_add_handler(EVENT_SEEFLOOR, see_floor_items, NULL);
+	event_add_handler(EVENT_ENTER_STORE, enter_store, NULL);
 	event_add_handler(EVENT_EXPLOSION, display_explosion, NULL);
 	event_add_handler(EVENT_BOLT, display_bolt, NULL);
 	event_add_handler(EVENT_MISSILE, display_missile, NULL);
@@ -2144,6 +2146,7 @@ static void ui_leave_game(game_event_type type, game_event_data *data,
 	/* Check if the panel should shift when the player's moved */
 	event_remove_handler(EVENT_PLAYERMOVED, check_panel, NULL);
 	event_remove_handler(EVENT_SEEFLOOR, see_floor_items, NULL);
+	event_add_handler(EVENT_LEAVE_STORE, leave_store, NULL);
 	event_remove_handler(EVENT_EXPLOSION, display_explosion, NULL);
 	event_remove_handler(EVENT_BOLT, display_bolt, NULL);
 	event_remove_handler(EVENT_MISSILE, display_missile, NULL);

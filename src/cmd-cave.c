@@ -41,7 +41,6 @@
 #include "store.h"
 #include "tables.h"
 #include "trap.h"
-#include "ui-store.h"
 #include "z-term.h"
 
 /**
@@ -1125,7 +1124,8 @@ void move_player(int dir, bool disarm)
 		if (square_isshop(cave, player->py, player->px)) {
 			/* Disturb */
 			disturb(player, 0);
-			textui_enter_store();
+			event_signal(EVENT_ENTER_STORE);
+			event_signal(EVENT_LEAVE_STORE);
 		} else {
 			/* Handle objects (later) */
 			player->upkeep->notice |= (PN_PICKUP);
@@ -1338,9 +1338,10 @@ void do_cmd_hold(struct command *cmd)
 	/* Enter a store if we are on one, otherwise look at the floor */
 	if (square_isshop(cave, player->py, player->px)) {
 		disturb(player, 0);
-		textui_enter_store();
+		event_signal(EVENT_ENTER_STORE);
+		event_signal(EVENT_LEAVE_STORE);
 
-		/* Free turn XXX XXX XXX */
+		/* Turn will be taken exiting the shop */
 		player->upkeep->energy_use = 0;
 	} else
 	    event_signal(EVENT_SEEFLOOR);

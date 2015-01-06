@@ -1173,7 +1173,6 @@ void textui_enter_store(void)
 	/* Shut down the normal game view - it won't be updated - and start
 	   up the store state. */
 	event_signal(EVENT_LEAVE_GAME);
-	event_signal(EVENT_ENTER_STORE);
 
 	/* Forget the view */
 	forget_view(cave);
@@ -1192,27 +1191,34 @@ void textui_enter_store(void)
 	if (store->sidx != STORE_HOME)
 		prt_welcome(store->owner);
 
+	/* Shopping */
 	menu_select(&ctx.menu, 0, FALSE);
 
-	/* Unregister stock change handler */
+	/* Shopping's done */
 	event_remove_handler(EVENT_STORECHANGED, refresh_stock, &ctx);
-
 	msg_flag = FALSE;
-
 	mem_free(ctx.list);
-
-	/* Switch back to the normal game view. */
-	event_signal(EVENT_LEAVE_STORE);
-	event_signal(EVENT_ENTER_GAME);
 
 	/* Take a turn */
 	player->upkeep->energy_use = 100;
 
-	/* Flush messages XXX XXX XXX */
+	/* Flush messages */
 	event_signal(EVENT_MESSAGE_FLUSH);
 
 	/* Load the screen */
 	screen_load();
+}
+
+void enter_store(game_event_type type, game_event_data *data, void *user)
+{
+	textui_enter_store();
+	event_remove_handler(EVENT_ENTER_STORE, enter_store, NULL);
+}
+
+void leave_store(game_event_type type, game_event_data *data, void *user)
+{
+	/* Switch back to the normal game view. */
+	event_signal(EVENT_ENTER_GAME);
 
 	/* Update the visuals */
 	player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
@@ -1222,5 +1228,6 @@ void textui_enter_store(void)
 
 	/* Redraw map */
 	player->upkeep->redraw |= (PR_MAP);
-}
 
+	event_remove_handler(EVENT_LEAVE_STORE, leave_store, NULL);
+}
