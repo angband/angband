@@ -717,7 +717,7 @@ static void process_world(struct chunk *c)
  */
 static void place_cursor(void) {
 	if (OPT(show_target) && target_sighted()) {
-		s16b col, row;
+		int col, row;
 		target_get(&col, &row);
 		move_cursor_relative(row, col);
 	}

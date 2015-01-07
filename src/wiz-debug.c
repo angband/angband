@@ -243,7 +243,7 @@ static void do_cmd_keylog(void) {
  */
 static void do_cmd_wiz_bamf(void)
 {
-	s16b x = 0, y = 0;
+	int x = 0, y = 0;
 
 	/* Use the targeting function. */
 	if (!target_set_interactive(TARGET_LOOK, -1, -1))

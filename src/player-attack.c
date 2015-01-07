@@ -489,16 +489,14 @@ static void ranged_helper(struct object *obj, int dir, int range, int shots,
 	int y = player->py;
 
 	/* Predict the "target" location */
-	s16b ty = y + 99 * ddy[dir];
-	s16b tx = x + 99 * ddx[dir];
+	int ty = y + 99 * ddy[dir];
+	int tx = x + 99 * ddx[dir];
 
 	bool hit_target = FALSE;
 
 	struct object *missile;
 
 	/* Check for target validity */
-	/* XXX-AS this is the wrong place for this - it should be in the UI layer */
-	/* Fix and then remove the include of ui-input.h (or something - NRM) */
 	if ((dir == 5) && target_okay()) {
 		int taim;
 		target_get(&tx, &ty);

@@ -41,7 +41,9 @@
  */
 #define HELP_HEIGHT 3
 
-/* Size of the array that is used for object names during targeting. */
+/**
+ * Size of the array that is used for object names during targeting.
+ */
 #define TARGET_OUT_VAL_SIZE 256
 
 int target_dir(struct keypress ch);

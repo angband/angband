@@ -152,7 +152,7 @@ static bool project_aimed(int typ, int dir, int dam, int flg)
 	/* Player or monster? */
 	int source = (cave->mon_current > 0) ? cave->mon_current : -1;
 
-	s16b ty, tx;
+	int ty, tx;
 
 	/* Pass through the target if needed */
 	flg |= (PROJECT_THRU);
@@ -2405,7 +2405,7 @@ bool effect_handler_THRUST_AWAY(effect_handler_context_t *context)
 	int c_y, c_x;
 
 	int who = (cave->mon_current > 0) ? cave->mon_current : -1;
-	s16b t_y = context->p1, t_x = context->p2;
+	int t_y = context->p1, t_x = context->p2;
 	int grids_away = effect_calculate_value(context, FALSE);
 
 	/*** Find a suitable endpoint for testing. ***/
@@ -2674,7 +2674,7 @@ bool effect_handler_TELEPORT_TO(effect_handler_context_t *context)
 	int py = player->py;
 	int px = player->px;
 
-	s16b ny = py, nx = px;
+	int ny = py, nx = px;
 	int y, x, dis = 0, ctr = 0;
 	int midx = cave->mon_current;
 	struct monster *mon;
@@ -3247,8 +3247,8 @@ bool effect_handler_BALL(effect_handler_context_t *context)
 	int rad = context->p2 ? context->p2 : 2;
 	int source;
 
-	s16b ty = py + 99 * ddy[context->dir];
-	s16b tx = px + 99 * ddx[context->dir];
+	int ty = py + 99 * ddy[context->dir];
+	int tx = px + 99 * ddx[context->dir];
 
 	int flg = PROJECT_STOP | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
 
@@ -3294,8 +3294,8 @@ bool effect_handler_BREATH(effect_handler_context_t *context)
 	int rad = context->p2;
 	int source;
 
-	s16b ty = py + 99 * ddy[context->dir];
-	s16b tx = px + 99 * ddx[context->dir];
+	int ty = py + 99 * ddy[context->dir];
+	int tx = px + 99 * ddx[context->dir];
 
 	int flg = PROJECT_STOP | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
 
@@ -3341,8 +3341,8 @@ bool effect_handler_SWARM(effect_handler_context_t *context)
 	int dam = effect_calculate_value(context, TRUE);
 	int num = context->value.m_bonus;
 
-	s16b ty = py + 99 * ddy[context->dir];
-	s16b tx = px + 99 * ddx[context->dir];
+	int ty = py + 99 * ddy[context->dir];
+	int tx = px + 99 * ddx[context->dir];
 
 	int flg = PROJECT_THRU | PROJECT_STOP | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
 
@@ -3763,8 +3763,8 @@ bool effect_handler_BIZARRE(effect_handler_context_t *context)
 		{
 			/* Mana Ball */
 			int flg = PROJECT_STOP | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
-			s16b ty = player->py + 99 * ddy[context->dir];
-			s16b tx = player->px + 99 * ddx[context->dir];
+			int ty = player->py + 99 * ddy[context->dir];
+			int tx = player->px + 99 * ddx[context->dir];
 
 			/* Ask for a target if no direction given */
 			if ((context->dir == 5) && target_okay()) {
@@ -3786,8 +3786,8 @@ bool effect_handler_BIZARRE(effect_handler_context_t *context)
 		{
 			/* Mana Bolt */
 			int flg = PROJECT_STOP | PROJECT_KILL | PROJECT_THRU;
-			s16b ty = player->py + ddy[context->dir];
-			s16b tx = player->px + ddx[context->dir];
+			int ty = player->py + ddy[context->dir];
+			int tx = player->px + ddx[context->dir];
 
 			/* Use an actual target */
 			if ((context->dir == 5) && target_okay())
