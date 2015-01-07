@@ -160,7 +160,7 @@ bool get_item(struct object **choice, const char *pmt, const char *str,
 }
 
 /**
- * Check to see if a map grid is in the area the player can see (the "panel")
+ * Get the borders of the area the player can see (the "panel")
  */
 void get_panel(int *min_y, int *min_x, int *max_y, int *max_x)
 {
@@ -169,7 +169,7 @@ void get_panel(int *min_y, int *min_x, int *max_y, int *max_x)
 }
 
 /**
- * Check to see if a map grid is in the area the player can see (the "panel")
+ * Check to see if a map grid is in the panel
  */
 bool panel_contains(unsigned int y, unsigned int x)
 {

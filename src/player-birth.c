@@ -43,7 +43,6 @@
 #include "player.h"
 #include "savefile.h"
 #include "store.h"
-#include "ui-input.h" /* msg_flag */
 
 /*
  * Overview
@@ -1099,10 +1098,6 @@ void do_cmd_accept_character(struct command *cmd)
 	/* Clear old messages, add new starting message */
 	history_clear();
 	history_add("Began the quest to destroy Morgoth.", HIST_PLAYER_BIRTH, 0);
-
-	/* Reset message prompt (i.e. no extraneous -more-s) */
-	/* XXX-AS remove and then remove ui-input include */
-	msg_flag = TRUE;
 
 	/* Note player birth in the message recall */
 	message_add(" ", MSG_GENERIC);

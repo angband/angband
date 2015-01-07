@@ -2250,6 +2250,10 @@ bool effect_handler_SUMMON(effect_handler_context_t *context)
 
 /**
  * Delete all non-unique monsters of a given "type" from the level
+ * -------
+ * Warning - this function assumes that the entered monster symbol is an ASCII
+ *           character, which may not be true in the future - NRM
+ * -------
  */
 bool effect_handler_BANISH(effect_handler_context_t *context)
 {
@@ -2273,8 +2277,8 @@ bool effect_handler_BANISH(effect_handler_context_t *context)
 		/* Hack -- Skip Unique Monsters */
 		if (rf_has(m_ptr->race->flags, RF_UNIQUE)) continue;
 
-		/* Skip "wrong" monsters */
-		if (!char_matches_key(m_ptr->race->d_char, typ)) continue;
+		/* Skip "wrong" monsters (see warning above) */
+		if ((char) m_ptr->race->d_char != typ) continue;
 
 		/* Delete the monster */
 		delete_monster_idx(i);

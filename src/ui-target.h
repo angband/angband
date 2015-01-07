@@ -22,7 +22,20 @@
 
 #include "ui-event.h"
 
-/*
+/**
+ * Convert a "key event" into a "location" (Y)
+ */
+#define KEY_GRID_Y(K) \
+  ((int) (((K.mouse.y - ROW_MAP) / tile_height) + Term->offset_y))
+
+/**
+ * Convert a "key event" into a "location" (X)
+ */
+#define KEY_GRID_X(K) \
+	((int) (((K.mouse.x - COL_MAP) / tile_width) + Term->offset_x))
+
+
+/**
  * Height of the help screen; any higher than 4 will overlap the health
  * bar which we want to keep in targeting mode.
  */
