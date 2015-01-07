@@ -24,7 +24,6 @@
 #include "obj-identify.h"
 #include "obj-info.h"
 #include "savefile.h"
-#include "score.h"
 #include "store.h"
 #include "ui-death.h"
 #include "ui-history.h"
@@ -33,6 +32,7 @@
 #include "ui-menu.h"
 #include "ui-obj.h"
 #include "ui-player.h"
+#include "ui-score.h"
 #include "wizard.h"
 
 /**

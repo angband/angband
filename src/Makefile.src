@@ -186,6 +186,7 @@ ANGFILES = \
 	ui-options.o \
 	ui-player.o \
 	ui-prefs.o \
+	ui-score.o \
 	ui-spell.o \
 	ui-store.o \
 	ui-target.o \
