@@ -182,6 +182,7 @@ ANGFILES = \
 	ui-map.o \
 	ui-menu.o \
 	ui-obj.o \
+	ui-obj-list.o \
 	ui-object.o \
 	ui-options.o \
 	ui-player.o \
