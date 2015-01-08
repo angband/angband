@@ -381,7 +381,7 @@ void prt(const char *str, int row, int col) {
 /*
  * Screen loading and saving can be done to an arbitrary depth but it's
  * important that every call to screen_save() is balanced by a call to
- * screen_load() later on.  'character_icky' is used by the game to keep
+ * screen_load() later on.  'screen_save_depth' is used by the game to keep
  * track of whether it should try to update the map and sidebar or not,
  * so if you miss out a screen_load you will not get proper game updates.
  *
@@ -389,7 +389,7 @@ void prt(const char *str, int row, int col) {
  */
 
 /* Depth of the screen_save() stack */
-s16b character_icky;
+s16b screen_save_depth;
 
 /*
  * Save the screen, and increase the "icky" depth.
@@ -398,7 +398,7 @@ void screen_save(void)
 {
 	event_signal(EVENT_MESSAGE_FLUSH);
 	Term_save();
-	character_icky++;
+	screen_save_depth++;
 }
 
 /*
@@ -408,14 +408,17 @@ void screen_load(void)
 {
 	event_signal(EVENT_MESSAGE_FLUSH);
 	Term_load();
-	character_icky--;
+	screen_save_depth--;
 
 	/* Mega hack - redraw big graphics - sorry NRM */
-	if (character_icky == 0 && (tile_width > 1 || tile_height > 1))
+	if (screen_save_depth == 0 && (tile_width > 1 || tile_height > 1))
 		Term_redraw();
 }
 
-
+bool textui_map_is_visible(void)
+{
+	return (screen_save_depth == 0);
+}
 
 /*** Miscellaneous things ***/
 

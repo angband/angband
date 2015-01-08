@@ -216,7 +216,8 @@ ui_event inkey_ex(void)
 	(void)Term_get_cursor(&cursor_state);
 
 	/* Show the cursor if waiting, except sometimes in "command" mode */
-	if (!inkey_scan && (!inkey_flag || character_icky || (OPT(show_target) && target_sighted())))
+	if (!inkey_scan && (!inkey_flag || screen_save_depth ||
+						(OPT(show_target) && target_sighted())))
 		(void)Term_set_cursor(TRUE);
 
 
@@ -1364,6 +1365,7 @@ void textui_input_init(void)
 	get_item_hook = textui_get_item;
 	get_panel_hook = textui_get_panel;
 	panel_contains_hook = textui_panel_contains;
+	map_is_visible_hook = textui_map_is_visible;
 }
 
 

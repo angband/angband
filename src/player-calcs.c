@@ -22,6 +22,7 @@
 #include "cave.h"
 #include "dungeon.h"
 #include "game-event.h"
+#include "game-input.h"
 #include "init.h"
 #include "mon-msg.h"
 #include "mon-util.h"
@@ -33,7 +34,6 @@
 #include "player-spell.h"
 #include "player-timed.h"
 #include "player-util.h"
-#include "ui.h"
 
 /*
  * Stat Table (INT) -- Magic devices
@@ -2305,7 +2305,7 @@ bool tracked_object_is(struct player_upkeep *upkeep, struct object *obj)
 
 /*** Generic "deal with" functions ***/
 
-/*
+/**
  * Handle "player->upkeep->notice"
  */
 void notice_stuff(struct player_upkeep *upkeep)
@@ -2313,32 +2313,27 @@ void notice_stuff(struct player_upkeep *upkeep)
 	/* Notice stuff */
 	if (!upkeep->notice) return;
 
-
 	/* Deal with autoinscribe stuff */
-	if (upkeep->notice & PN_AUTOINSCRIBE)
-	{
+	if (upkeep->notice & PN_AUTOINSCRIBE) {
 		upkeep->notice &= ~(PN_AUTOINSCRIBE);
 		autoinscribe_pack();
 		autoinscribe_ground();
 	}
 
 	/* Deal with ignore stuff */
-	if (upkeep->notice & PN_IGNORE)
-	{
+	if (upkeep->notice & PN_IGNORE) {
 		upkeep->notice &= ~(PN_IGNORE);
 		ignore_drop();
 	}
 
 	/* Combine the pack */
-	if (upkeep->notice & PN_COMBINE)
-	{
+	if (upkeep->notice & PN_COMBINE) {
 		upkeep->notice &= ~(PN_COMBINE);
 		combine_pack();
 	}
 
 	/* Dump the monster messages */
-	if (upkeep->notice & PN_MON_MESSAGE)
-	{
+	if (upkeep->notice & PN_MON_MESSAGE) {
 		upkeep->notice &= ~(PN_MON_MESSAGE);
 
 		/* Make sure this comes after all of the monster messages */
@@ -2346,7 +2341,7 @@ void notice_stuff(struct player_upkeep *upkeep)
 	}
 }
 
-/*
+/**
  * Handle "player->upkeep->update"
  */
 void update_stuff(struct player_upkeep *upkeep)
@@ -2355,93 +2350,77 @@ void update_stuff(struct player_upkeep *upkeep)
 	if (!upkeep->update) return;
 
 
-	if (upkeep->update & (PU_INVEN))
-	{
+	if (upkeep->update & (PU_INVEN)) {
 		upkeep->update &= ~(PU_INVEN);
 		update_inventory();
 	}
 
-	if (upkeep->update & (PU_BONUS))
-	{
+	if (upkeep->update & (PU_BONUS)) {
 		upkeep->update &= ~(PU_BONUS);
 		update_bonuses();
 	}
 
-	if (upkeep->update & (PU_TORCH))
-	{
+	if (upkeep->update & (PU_TORCH)) {
 		upkeep->update &= ~(PU_TORCH);
 		calc_torch();
 	}
 
-	if (upkeep->update & (PU_HP))
-	{
+	if (upkeep->update & (PU_HP)) {
 		upkeep->update &= ~(PU_HP);
 		calc_hitpoints();
 	}
 
-	if (upkeep->update & (PU_MANA))
-	{
+	if (upkeep->update & (PU_MANA)) {
 		upkeep->update &= ~(PU_MANA);
 		calc_mana();
 	}
 
-	if (upkeep->update & (PU_SPELLS))
-	{
+	if (upkeep->update & (PU_SPELLS)) {
 		upkeep->update &= ~(PU_SPELLS);
 		calc_spells();
 	}
 
-
-	/* Character is not ready yet, no screen updates */
+	/* Character is not ready yet, no map updates */
 	if (!character_generated) return;
 
+	/* Map is not shown, no map updates */
+	if (!map_is_visible()) return;
 
-	/* Character is in "icky" mode, no screen updates */
-	if (character_icky) return;
-
-
-	if (upkeep->update & (PU_FORGET_VIEW))
-	{
+	if (upkeep->update & (PU_FORGET_VIEW)) {
 		upkeep->update &= ~(PU_FORGET_VIEW);
 		forget_view(cave);
 	}
 
-	if (upkeep->update & (PU_UPDATE_VIEW))
-	{
+	if (upkeep->update & (PU_UPDATE_VIEW)) {
 		upkeep->update &= ~(PU_UPDATE_VIEW);
 		update_view(cave, player);
 	}
 
 
-	if (upkeep->update & (PU_FORGET_FLOW))
-	{
+	if (upkeep->update & (PU_FORGET_FLOW)) {
 		upkeep->update &= ~(PU_FORGET_FLOW);
 		cave_forget_flow(cave);
 	}
 
-	if (upkeep->update & (PU_UPDATE_FLOW))
-	{
+	if (upkeep->update & (PU_UPDATE_FLOW)) {
 		upkeep->update &= ~(PU_UPDATE_FLOW);
 		cave_update_flow(cave);
 	}
 
 
-	if (upkeep->update & (PU_DISTANCE))
-	{
+	if (upkeep->update & (PU_DISTANCE)) {
 		upkeep->update &= ~(PU_DISTANCE);
 		upkeep->update &= ~(PU_MONSTERS);
 		update_monsters(TRUE);
 	}
 
-	if (upkeep->update & (PU_MONSTERS))
-	{
+	if (upkeep->update & (PU_MONSTERS)) {
 		upkeep->update &= ~(PU_MONSTERS);
 		update_monsters(FALSE);
 	}
 
 
-	if (upkeep->update & (PU_PANEL))
-	{
+	if (upkeep->update & (PU_PANEL)) {
 		upkeep->update &= ~(PU_PANEL);
 		event_signal(EVENT_PLAYERMOVED);
 	}
@@ -2457,7 +2436,7 @@ struct flag_event_trigger
 
 
 
-/*
+/**
  * Events triggered by the various flags.
  */
 static const struct flag_event_trigger redraw_events[] =
@@ -2488,7 +2467,7 @@ static const struct flag_event_trigger redraw_events[] =
 	{ PR_MESSAGE, EVENT_MESSAGE },
 };
 
-/*
+/**
  * Handle "player->upkeep->redraw"
  */
 void redraw_stuff(struct player_upkeep *upkeep)
@@ -2501,12 +2480,11 @@ void redraw_stuff(struct player_upkeep *upkeep)
 	/* Character is not ready yet, no screen updates */
 	if (!character_generated) return;
 
-	/* Character is in "icky" mode, no screen updates */
-	if (character_icky) return;
+	/* Map is not shown, no screen updates */
+	if (!map_is_visible()) return;
 
 	/* For each listed flag, send the appropriate signal to the UI */
-	for (i = 0; i < N_ELEMENTS(redraw_events); i++)
-	{
+	for (i = 0; i < N_ELEMENTS(redraw_events); i++) {
 		const struct flag_event_trigger *hnd = &redraw_events[i];
 
 		if (upkeep->redraw & hnd->flag)
@@ -2514,8 +2492,7 @@ void redraw_stuff(struct player_upkeep *upkeep)
 	}
 
 	/* Then the ones that require parameters to be supplied. */
-	if (upkeep->redraw & PR_MAP)
-	{
+	if (upkeep->redraw & PR_MAP) {
 		/* Mark the whole map to be redrawn */
 		event_signal_point(EVENT_MAP, -1, -1);
 	}
@@ -2530,7 +2507,7 @@ void redraw_stuff(struct player_upkeep *upkeep)
 }
 
 
-/*
+/**
  * Handle "player->upkeep->update" and "player->upkeep->redraw"
  */
 void handle_stuff(struct player_upkeep *upkeep)

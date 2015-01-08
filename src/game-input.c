@@ -34,6 +34,7 @@ bool (*get_item_hook)(struct object **choice, const char *pmt, const char *str,
 					  cmd_code cmd, item_tester tester, int mode);
 void (*get_panel_hook)(int *min_y, int *min_x, int *max_y, int *max_x);
 bool (*panel_contains_hook)(unsigned int y, unsigned int x);
+bool (*map_is_visible_hook)(void);
 
 /**
  * Prompt for a string from the user.
@@ -175,4 +176,13 @@ bool panel_contains(unsigned int y, unsigned int x)
 {
 	/* Ask the UI for it */
 	return panel_contains_hook(y, x);
+}
+
+/**
+ * Check to see if the map is currently shown
+ */
+bool map_is_visible(void)
+{
+	/* Ask the UI for it */
+	return map_is_visible_hook();
 }

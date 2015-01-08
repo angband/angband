@@ -1390,7 +1390,7 @@ void close_game(void)
 
 
 	/* Hack -- Increase "icky" depth */
-	character_icky++;
+	screen_save_depth++;
 
 	/* Save monster memory to user directory */
 	if (!lore_save("lore.txt")) {
@@ -1431,7 +1431,7 @@ void close_game(void)
 
 
 	/* Hack -- Decrease "icky" depth */
-	character_icky--;
+	screen_save_depth--;
 
 
 	/* Allow suspending now */

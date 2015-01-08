@@ -51,6 +51,7 @@ bool (*get_item_hook)(struct object **choice, const char *pmt, const char *str,
 					  cmd_code cmd, item_tester tester, int mode);
 void (*get_panel_hook)(int *min_y, int *min_x, int *max_y, int *max_x);
 bool (*panel_contains_hook)(unsigned int y, unsigned int x);
+bool (*map_is_visible_hook)(void);
 
 bool get_string(const char *prompt, char *buf, size_t len);
 int get_quantity(const char *prompt, int max);
@@ -66,5 +67,6 @@ bool get_item(struct object **choice, const char *pmt, const char *str,
 			  cmd_code cmd, item_tester tester, int mode);
 void get_panel(int *min_y, int *min_x, int *max_y, int *max_x);
 bool panel_contains(unsigned int y, unsigned int x);
+bool map_is_visible(void);
 
 #endif /* INCLUDED_GAME_INPUT_H */

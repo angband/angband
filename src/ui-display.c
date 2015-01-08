@@ -2116,7 +2116,7 @@ static void ui_enter_game(game_event_type type, game_event_data *data,
 	event_add_handler(EVENT_MESSAGE_FLUSH, message_flush, NULL);
 
 	/* Hack -- Decrease "icky" depth */
-	character_icky--;
+	screen_save_depth--;
 }
 
 static void ui_leave_game(game_event_type type, game_event_data *data,
@@ -2156,7 +2156,7 @@ static void ui_leave_game(game_event_type type, game_event_data *data,
 	event_remove_handler(EVENT_MESSAGE_FLUSH, message_flush, NULL);
 
 	/* Hack -- Increase "icky" depth */
-	character_icky++;
+	screen_save_depth++;
 }
 
 errr textui_get_cmd(cmd_context context, bool wait)

@@ -42,9 +42,10 @@ void textui_textblock_place(textblock *tb, region orig_area, const char *header)
 void text_out_to_screen(byte a, const char *str);
 
 /* Screen loading/saving */
-extern s16b character_icky;
+extern s16b screen_save_depth;
 extern void screen_save(void);
 extern void screen_load(void);
+bool textui_map_is_visible(void);
 
 /* Placing text on screen */
 extern void c_put_str(byte attr, const char *str, int row, int col);

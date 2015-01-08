@@ -57,7 +57,7 @@ void textui_init(void)
 	textui_prefs_init();
 
 	/* Hack -- Increase "icky" depth */
-	character_icky++;
+	screen_save_depth++;
 
 	/* Verify main term */
 	if (!term_screen)
