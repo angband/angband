@@ -181,6 +181,7 @@ ANGFILES = \
 	ui-knowledge.o \
 	ui-map.o \
 	ui-menu.o \
+	ui-mon-list.o \
 	ui-obj.o \
 	ui-obj-list.o \
 	ui-object.o \
