@@ -43,6 +43,7 @@
 #include "ui-history.h"
 #include "ui-menu.h"
 #include "ui-mon-list.h"
+#include "ui-mon-lore.h"
 #include "ui-obj.h"
 #include "ui-obj-list.h"
 #include "ui-options.h"

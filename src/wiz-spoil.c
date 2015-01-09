@@ -35,6 +35,7 @@
 #include "ui-input.h"
 #include "ui-knowledge.h"
 #include "ui-menu.h"
+#include "ui-mon-lore.h"
 #include "wizard.h"
 #include "z-file.h"
 
