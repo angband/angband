@@ -106,98 +106,6 @@ void dungeon_change_level(int dlev)
 
 
 /*
- * Regenerate hit points
- */
-static void regenhp(int percent)
-{
-	s32b new_chp, new_chp_frac;
-	int old_chp;
-
-	/* Save the old hitpoints */
-	old_chp = player->chp;
-
-	/* Extract the new hitpoints */
-	new_chp = ((long)player->mhp) * percent + PY_REGEN_HPBASE;
-	player->chp += (s16b)(new_chp >> 16);   /* div 65536 */
-
-	/* check for overflow */
-	if ((player->chp < 0) && (old_chp > 0)) player->chp = MAX_SHORT;
-	new_chp_frac = (new_chp & 0xFFFF) + player->chp_frac;	/* mod 65536 */
-	if (new_chp_frac >= 0x10000L)
-	{
-		player->chp_frac = (u16b)(new_chp_frac - 0x10000L);
-		player->chp++;
-	}
-	else
-	{
-		player->chp_frac = (u16b)new_chp_frac;
-	}
-
-	/* Fully healed */
-	if (player->chp >= player->mhp)
-	{
-		player->chp = player->mhp;
-		player->chp_frac = 0;
-	}
-
-	/* Notice changes */
-	if (old_chp != player->chp)
-	{
-		/* Redraw */
-		player->upkeep->redraw |= (PR_HP);
-		equip_notice_flag(player, OF_REGEN);
-		equip_notice_flag(player, OF_IMPAIR_HP);
-	}
-}
-
-
-/*
- * Regenerate mana points
- */
-static void regenmana(int percent)
-{
-	s32b new_mana, new_mana_frac;
-	int old_csp;
-
-	old_csp = player->csp;
-	new_mana = ((long)player->msp) * percent + PY_REGEN_MNBASE;
-	player->csp += (s16b)(new_mana >> 16);	/* div 65536 */
-	/* check for overflow */
-	if ((player->csp < 0) && (old_csp > 0))
-	{
-		player->csp = MAX_SHORT;
-	}
-	new_mana_frac = (new_mana & 0xFFFF) + player->csp_frac;	/* mod 65536 */
-	if (new_mana_frac >= 0x10000L)
-	{
-		player->csp_frac = (u16b)(new_mana_frac - 0x10000L);
-		player->csp++;
-	}
-	else
-	{
-		player->csp_frac = (u16b)new_mana_frac;
-	}
-
-	/* Must set frac to zero even if equal */
-	if (player->csp >= player->msp)
-	{
-		player->csp = player->msp;
-		player->csp_frac = 0;
-	}
-
-	/* Redraw mana */
-	if (old_csp != player->csp)
-	{
-		/* Redraw */
-		player->upkeep->redraw |= (PR_MANA);
-		equip_notice_flag(player, OF_REGEN);
-		equip_notice_flag(player, OF_IMPAIR_MANA);
-	}
-}
-
-
-
-/*
  * If player has inscribed the object with "!!", let him know when it's
  * recharged. -LM-
  * Also inform player when first item of a stack has recharged. -HK-
@@ -534,7 +442,7 @@ static void process_world(struct chunk *c)
 
 	/* Regenerate Hit Points if needed */
 	if (player->chp < player->mhp)
-		regenhp(regen_amount);
+		player_regen_hp(regen_amount);
 
 
 	/** Regenerate SP **/
@@ -554,7 +462,7 @@ static void process_world(struct chunk *c)
 
 	/* Regenerate mana */
 	if (player->csp < player->msp)
-		regenmana(regen_amount);
+		player_regen_mana(regen_amount);
 
 
 

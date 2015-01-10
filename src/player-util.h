@@ -1,5 +1,6 @@
-/** \file player-util.h
-	\brief Player utility functions
+/**
+ * \file player-util.h
+ * \brief Player utility functions
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  * Copyright (c) 2014 Nick McConnell
@@ -28,7 +29,7 @@
 #define PY_REGEN_HPBASE		1442	/* Min amount hp regen*2^16 */
 #define PY_REGEN_MNBASE		524		/* Min amount mana regen*2^16 */
 
-/* 
+/**
  * Special values for the number of turns to rest, these need to be
  * negative numbers, as postive numbers are taken to be a turncount,
  * and zero means "not resting". 
@@ -47,6 +48,8 @@ enum
 
 void take_hit(struct player *p, int dam, const char *kb_str);
 s16b modify_stat_value(int value, int amount);
+void player_regen_hp(int percent);
+void player_regen_mana(int percent);
 bool player_can_cast(struct player *p, bool show_msg);
 bool player_can_study(struct player *p, bool show_msg);
 bool player_can_read(struct player *p, bool show_msg);
