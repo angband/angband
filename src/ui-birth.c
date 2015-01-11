@@ -847,24 +847,154 @@ static enum birth_stage get_name_command(void)
 	return next;
 }
 
+void get_screen_loc(size_t cursor, int *x, int *y, size_t n_lines, size_t *line_starts, size_t *line_lengths)
+{
+	size_t lengths_so_far = 0;
+	size_t i;
+	for (i = 0; i < n_lines; i++) {
+		if (cursor >= line_starts[i]) {
+			if (cursor <= (line_starts[i] + line_lengths[i])) {
+				*y = i;
+				*x = cursor - lengths_so_far;
+				break;
+			}
+		}
+		/* +1 for the space */
+		lengths_so_far += line_lengths[i] + 1;
+	}
+}
+
+int edit_text(char *buffer, int buflen) {
+	int len = strlen(buffer);
+	bool done = FALSE;
+	int cursor = 0;
+
+	while (!done) {
+		int x, y;
+		struct keypress ke;
+
+		region area = { 1, HIST_INSTRUCT_ROW + 1, 71, 5 };
+		textblock *tb = textblock_new();
+
+		size_t *line_starts = NULL, *line_lengths = NULL;
+		size_t n_lines;
+
+		/* Display on screen */
+		clear_from(HIST_INSTRUCT_ROW);
+		textblock_append(tb, buffer);
+		textblock_append(tb, "\n"); /* XXX This shouldn't be necessary */
+		textui_textblock_place(tb, area, NULL);
+
+		n_lines = textblock_calculate_lines(tb,
+				&line_starts, &line_lengths, area.width);
+
+		/* Set cursor to current editing position */
+		get_screen_loc(cursor, &x, &y, n_lines, line_starts, line_lengths);
+		Term_gotoxy(1 + x, 19 + y);
+
+		ke = inkey();
+		switch (ke.code) {
+			case ESCAPE:
+				return -1;
+
+			case KC_ENTER:
+				done = TRUE;
+				break;
+
+			case ARROW_LEFT:
+				if (cursor > 0) cursor--;
+				break;
+
+			case ARROW_RIGHT:
+				if (cursor < len) cursor++;
+				break;
+
+			case ARROW_DOWN: {
+				int add = line_lengths[y] + 1;
+				if (cursor + add < len) cursor += add;
+				break;
+			}
+
+			case ARROW_UP:
+				if (y > 0) {
+					int up = line_lengths[y - 1] + 1;
+					if (cursor - up >= 0) cursor -= up;
+				}
+				break;
+
+			case KC_BACKSPACE:
+			case KC_DELETE: {
+				/* Refuse to backspace into oblivion */
+				if ((ke.code == KC_BACKSPACE && cursor == 0) ||
+						(ke.code == KC_DELETE && cursor >= len))
+					break;
+
+				/* Move the string from k to nul along to the left by 1 */
+				if (ke.code == KC_BACKSPACE)
+					memmove(&buffer[cursor - 1], &buffer[cursor], len - cursor);
+				else
+					memmove(&buffer[cursor], &buffer[cursor + 1], len - cursor - 1);
+
+				/* Decrement */
+				if (ke.code == KC_BACKSPACE)
+					cursor--;
+				len--;
+
+				/* Terminate */
+				buffer[len] = '\0';
+
+				break;
+			}
+			
+			default: {
+				bool atnull = (buffer[cursor] == 0);
+
+				if (!isprint(ke.code))
+					break;
+
+				if (atnull) {
+					/* Make sure we have enough room for a new character */
+					if ((cursor + 1) >= buflen) break;
+				} else {
+					/* Make sure we have enough room to add a new character */
+					if ((cursor + 1) >= buflen) break;
+
+					/* Move the rest of the buffer along to make room */
+					memmove(&buffer[cursor + 1], &buffer[cursor], len - cursor);
+				}
+
+				/* Insert the character */
+				buffer[cursor++] = (char)ke.code;
+				len++;
+
+				/* Terminate */
+				buffer[len] = '\0';
+
+				break;
+			}
+		}
+
+		textblock_free(tb);
+	}
+
+	return 0;
+}
+
 /**
  * ------------------------------------------------------------------------
  * Allowing the player to choose their history.
  * ------------------------------------------------------------------------ */
 static enum birth_stage get_history_command(void)
 {
-	enum birth_stage next;
+	enum birth_stage next = 0;
 	struct keypress ke;
-	char line[80];
-	char history[240];
 	char old_history[240];
 
 	/* Save the original history */
 	my_strcpy(old_history, player->history, sizeof(old_history));
-	line[0] = '\0';
 
 	/* Ask for some history */
-	prt("Accept character history?", 0, 0);
+	prt("Accept character history? [y/n]", 0, 0);
 	ke = inkey();
 
 	/* Quit, go back, change history, or accept */
@@ -873,49 +1003,18 @@ static enum birth_stage get_history_command(void)
 	} else if (ke.code == ESCAPE) {
 		next = BIRTH_BACK;
 	} else if (ke.code == 'N' || ke.code == 'n') {
-		/* Clear the history display */
-		prt("", HIST_INSTRUCT_ROW + 1, 0);
-		prt("", HIST_INSTRUCT_ROW + 2, 0);
-		prt("", HIST_INSTRUCT_ROW + 3, 0);
+		char history[240];
+		my_strcpy(history, player->history, sizeof(history));
 
-		/* First line, or back out */
-		c_prt(COLOUR_DEEP_L_BLUE, "First (up to) 75 characters of history:",
-			  HIST_INSTRUCT_ROW, 0);
-		Term_gotoxy(1, HIST_INSTRUCT_ROW + 1);
-		if (!askfor_aux(line, sizeof(line), NULL)) {
+		switch (edit_text(history, sizeof(history))) {
+			case -1:
+				next = BIRTH_BACK;
 
-			/* Bail out */
-			prt("", HIST_INSTRUCT_ROW, 0);
-			cmdq_push(CMD_HISTORY_CHOICE);
-			cmd_set_arg_string(cmdq_peek(), "history", old_history);
-			display_player(0);
-			return BIRTH_HISTORY_CHOICE;
+			case 0:
+				cmdq_push(CMD_HISTORY_CHOICE);
+				cmd_set_arg_string(cmdq_peek(), "history", history);
+				next = BIRTH_HISTORY_CHOICE;
 		}
-		my_strcpy(history, line, sizeof(history));
-
-		/* Second line */
-		c_prt(COLOUR_DEEP_L_BLUE, "Next 75 characters (or escape):",
-			  HIST_INSTRUCT_ROW, 0);
-		c_prt(COLOUR_L_YELLOW, line, HIST_INSTRUCT_ROW + 1, 0);
-		line[0] = '\0';
-		Term_gotoxy(1, HIST_INSTRUCT_ROW + 2);
-		if (askfor_aux(line, sizeof(line), NULL)) {
-			my_strcat(history, line, sizeof(history));
-
-			/* Third line */
-			c_prt(COLOUR_DEEP_L_BLUE,
-				  "Next 75 characters (or escape):",
-				  HIST_INSTRUCT_ROW, 0);
-			c_prt(COLOUR_L_YELLOW, line, HIST_INSTRUCT_ROW + 2, 0);
-			line[0] = '\0';
-			Term_gotoxy(1, HIST_INSTRUCT_ROW + 3);
-			if (askfor_aux(line, sizeof(line), NULL))
-				my_strcat(history, line, sizeof(history));
-		}
-
-		cmdq_push(CMD_HISTORY_CHOICE);
-		cmd_set_arg_string(cmdq_peek(), "history", history);
-		next = BIRTH_HISTORY_CHOICE;
 	} else {
 		next = BIRTH_FINAL_CONFIRM;
 	}
