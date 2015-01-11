@@ -23,6 +23,7 @@ void do_cmd_reset_stats(struct command *cmd);
 void do_cmd_roll_stats(struct command *cmd);
 void do_cmd_prev_stats(struct command *cmd);
 void do_cmd_choose_name(struct command *cmd);
+void do_cmd_choose_history(struct command *cmd);
 void do_cmd_accept_character(struct command *cmd);
 
 char *find_roman_suffix_start(const char *buf);

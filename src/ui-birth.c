@@ -20,6 +20,7 @@
 #include "cmds.h"
 #include "cmd-core.h"
 #include "game-event.h"
+#include "game-input.h"
 #include "obj-tval.h"
 #include "player.h"
 #include "ui-birth.h"
@@ -65,6 +66,7 @@ enum birth_stage
 	BIRTH_POINTBASED,
 	BIRTH_ROLLER,
 	BIRTH_NAME_CHOICE,
+	BIRTH_HISTORY_CHOICE,
 	BIRTH_FINAL_CONFIRM,
 	BIRTH_COMPLETE
 };
@@ -155,6 +157,7 @@ static struct menu sex_menu, race_menu, class_menu, roller_menu;
 #define CLASS_COL       29
 #define CLASS_AUX_COL   43
 #define ROLLER_COL 43
+#define HIST_INSTRUCT_ROW 18
 
 #define MENU_ROWS TABLE_ROW + 14
 
@@ -867,11 +870,86 @@ static enum birth_stage get_name_command(void)
 	{	
 		cmdq_push(CMD_NAME_CHOICE);
 		cmd_set_arg_string(cmdq_peek(), "name", name);
-		next = BIRTH_FINAL_CONFIRM;
+		next = BIRTH_HISTORY_CHOICE;
 	}
 	else
 	{
 		next = BIRTH_BACK;
+	}
+
+	return next;
+}
+
+/* ------------------------------------------------------------------------
+ * Allowing the player to choose their history.
+ * ------------------------------------------------------------------------ */
+static enum birth_stage get_history_command(void)
+{
+	enum birth_stage next;
+	struct keypress ke;
+	char line[80];
+	char history[240];
+	char old_history[240];
+
+	/* Save the original history */
+	my_strcpy(old_history, player->history, sizeof(old_history));
+	line[0] = '\0';
+
+	/* Ask for some history */
+	prt("Accept character history?", 0, 0);
+	ke = inkey();
+
+	/* Quit, go back, change history, or accept */
+	if (ke.code == KTRL('X')) {
+		quit(NULL);
+	} else if (ke.code == ESCAPE) {
+		next = BIRTH_BACK;
+	} else if (ke.code == 'N' || ke.code == 'n') {
+		/* Clear the history display */
+		prt("", HIST_INSTRUCT_ROW + 1, 0);
+		prt("", HIST_INSTRUCT_ROW + 2, 0);
+		prt("", HIST_INSTRUCT_ROW + 3, 0);
+
+		/* First line, or back out */
+		c_prt(COLOUR_DEEP_L_BLUE, "First (up to) 75 characters of history:",
+			  HIST_INSTRUCT_ROW, 0);
+		Term_gotoxy(1, HIST_INSTRUCT_ROW + 1);
+		if (!askfor_aux(line, sizeof(line), NULL)) {
+
+			/* Bail out */
+			prt("", HIST_INSTRUCT_ROW, 0);
+			cmdq_push(CMD_HISTORY_CHOICE);
+			cmd_set_arg_string(cmdq_peek(), "history", old_history);
+			display_player(0);
+			return BIRTH_HISTORY_CHOICE;
+		}
+		my_strcpy(history, line, sizeof(history));
+
+		/* Second line */
+		c_prt(COLOUR_DEEP_L_BLUE, "Next 75 characters (or escape):",
+			  HIST_INSTRUCT_ROW, 0);
+		c_prt(COLOUR_L_YELLOW, line, HIST_INSTRUCT_ROW + 1, 0);
+		line[0] = '\0';
+		Term_gotoxy(1, HIST_INSTRUCT_ROW + 2);
+		if (askfor_aux(line, sizeof(line), NULL)) {
+			my_strcat(history, line, sizeof(history));
+
+			/* Third line */
+			c_prt(COLOUR_DEEP_L_BLUE,
+				  "Next 75 characters (or escape):",
+				  HIST_INSTRUCT_ROW, 0);
+			c_prt(COLOUR_L_YELLOW, line, HIST_INSTRUCT_ROW + 2, 0);
+			line[0] = '\0';
+			Term_gotoxy(1, HIST_INSTRUCT_ROW + 3);
+			if (askfor_aux(line, sizeof(line), NULL))
+				my_strcat(history, line, sizeof(history));
+		}
+
+		cmdq_push(CMD_HISTORY_CHOICE);
+		cmd_set_arg_string(cmdq_peek(), "history", history);
+		next = BIRTH_HISTORY_CHOICE;
+	} else {
+		next = BIRTH_FINAL_CONFIRM;
 	}
 
 	return next;
@@ -1055,6 +1133,18 @@ int textui_do_birth(void)
 				break;
 			}
 
+			case BIRTH_HISTORY_CHOICE:
+			{
+				if (prev < BIRTH_HISTORY_CHOICE)
+					display_player(0);
+
+				next = get_history_command();
+				if (next == BIRTH_BACK)
+					next = BIRTH_NAME_CHOICE;
+
+				break;
+			}
+
 			case BIRTH_FINAL_CONFIRM:
 			{
 				if (prev < BIRTH_FINAL_CONFIRM)
@@ -1062,7 +1152,7 @@ int textui_do_birth(void)
 
 				next = get_confirm_command();
 				if (next == BIRTH_BACK)
-					next = BIRTH_NAME_CHOICE;
+					next = BIRTH_HISTORY_CHOICE;
 
 				if (next == BIRTH_COMPLETE)
 					done = TRUE;

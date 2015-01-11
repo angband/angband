@@ -71,6 +71,7 @@ static const struct command_info game_cmds[] =
 	{ CMD_ROLL_STATS, "roll new stats", do_cmd_roll_stats, FALSE, 0 },
 	{ CMD_PREV_STATS, "use previously rolled stats", do_cmd_prev_stats, FALSE, 0 },
 	{ CMD_NAME_CHOICE, "choose name", do_cmd_choose_name, FALSE, 0 },
+	{ CMD_HISTORY_CHOICE, "write history", do_cmd_choose_history, FALSE, 0 },
 	{ CMD_ACCEPT_CHARACTER, "accept character", do_cmd_accept_character, FALSE, 0 },
 
 	{ CMD_GO_UP, "go up stairs", do_cmd_go_up, FALSE, 0 },

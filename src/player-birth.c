@@ -1081,6 +1081,21 @@ void do_cmd_choose_name(struct command *cmd)
 	string_free((char *) str);
 }
 
+void do_cmd_choose_history(struct command *cmd)
+{
+	const char *str;
+
+	/* Forget the old history */
+	if (player->history)
+		string_free(player->history);
+
+	/* Get the new history */
+	cmd_get_arg_string(cmd, "history", &str);
+	player->history = string_make(str);
+
+	string_free((char *) str);
+}
+
 void do_cmd_accept_character(struct command *cmd)
 {
 	int i;
