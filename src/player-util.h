@@ -48,8 +48,9 @@ enum
 
 void take_hit(struct player *p, int dam, const char *kb_str);
 s16b modify_stat_value(int value, int amount);
-void player_regen_hp(int percent);
-void player_regen_mana(int percent);
+void player_regen_hp(void);
+void player_regen_mana(void);
+void player_update_light(void);
 bool player_can_cast(struct player *p, bool show_msg);
 bool player_can_study(struct player *p, bool show_msg);
 bool player_can_read(struct player *p, bool show_msg);

@@ -299,10 +299,6 @@ static void process_world(struct chunk *c)
 {
 	int i;
 
-	int regen_amount;
-
-	object_type *obj;
-
 	/*** Check the Time ***/
 
 	/* Play an ambient sound at regular intervals. */
@@ -412,120 +408,19 @@ static void process_world(struct chunk *c)
 		take_hit(player, i, "starvation");
 	}
 
-	/** Regenerate HP **/
-
-	/* Default regeneration */
-	if (player->food >= PY_FOOD_WEAK)
-		regen_amount = PY_REGEN_NORMAL;
-	else if (player->food < PY_FOOD_STARVE)
-		regen_amount = 0;
-	else if (player->food < PY_FOOD_FAINT)
-		regen_amount = PY_REGEN_FAINT;
-	else /* if (player->food < PY_FOOD_WEAK) */
-		regen_amount = PY_REGEN_WEAK;
-
-	/* Various things speed up regeneration */
-	if (player_of_has(player, OF_REGEN))
-		regen_amount *= 2;
-	if (player->searching || player_resting_can_regenerate(player))
-		regen_amount *= 2;
-
-	/* Some things slow it down */
-	if (player_of_has(player, OF_IMPAIR_HP))
-		regen_amount /= 2;
-
-	/* Various things interfere with physical healing */
-	if (player->timed[TMD_PARALYZED]) regen_amount = 0;
-	if (player->timed[TMD_POISONED]) regen_amount = 0;
-	if (player->timed[TMD_STUN]) regen_amount = 0;
-	if (player->timed[TMD_CUT]) regen_amount = 0;
-
 	/* Regenerate Hit Points if needed */
 	if (player->chp < player->mhp)
-		player_regen_hp(regen_amount);
+		player_regen_hp();
 
-
-	/** Regenerate SP **/
-
-	/* Default regeneration */
-	regen_amount = PY_REGEN_NORMAL;
-
-	/* Various things speed up regeneration */
-	if (player_of_has(player, OF_REGEN))
-		regen_amount *= 2;
-	if (player->searching || player_resting_can_regenerate(player))
-		regen_amount *= 2;
-
-	/* Some things slow it down */
-	if (player_of_has(player, OF_IMPAIR_MANA))
-		regen_amount /= 2;
-
-	/* Regenerate mana */
+	/* Regenerate mana if needed */
 	if (player->csp < player->msp)
-		player_regen_mana(regen_amount);
+		player_regen_mana();
 
-
-
-	/*** Timeout Various Things ***/
-
+	/* Timeout various things */
 	decrease_timeouts();
 
-
-
-	/*** Process Light ***/
-
-	/* Check for light being wielded */
-	obj = equipped_item_by_slot_name(player, "light");
-
-	/* Burn some fuel in the current light */
-	if (obj && tval_is_light(obj)) {
-		bool burn_fuel = TRUE;
-
-		/* Turn off the wanton burning of light during the day in the town */
-		if (!player->depth && is_daytime())
-			burn_fuel = FALSE;
-
-		/* If the light has the NO_FUEL flag, well... */
-		if (of_has(obj->flags, OF_NO_FUEL))
-		    burn_fuel = FALSE;
-
-		/* Use some fuel (except on artifacts, or during the day) */
-		if (burn_fuel && obj->timeout > 0) {
-			/* Decrease life-span */
-			obj->timeout--;
-
-			/* Hack -- notice interesting fuel steps */
-			if ((obj->timeout < 100) || (!(obj->timeout % 100)))
-				/* Redraw stuff */
-				player->upkeep->redraw |= (PR_EQUIP);
-
-			/* Hack -- Special treatment when blind */
-			if (player->timed[TMD_BLIND]) {
-				/* Hack -- save some light for later */
-				if (obj->timeout == 0) obj->timeout++;
-
-			/* The light is now out */
-			} else if (obj->timeout == 0) {
-				disturb(player, 0);
-				msg("Your light has gone out!");
-
-				/* If it's a torch, now is the time to delete it */
-				if (of_has(obj->flags, OF_BURNS_OUT)) {
-					gear_excise_object(obj);
-					object_delete(obj);
-				}
-			}
-
-			/* The light is getting dim */
-			else if ((obj->timeout < 50) && (!(obj->timeout % 20))) {
-				disturb(player, 0);
-				msg("Your light is growing faint.");
-			}
-		}
-	}
-
-	/* Calculate torch radius */
-	player->upkeep->update |= (PU_TORCH);
+	/* Process light */
+	player_update_light();
 
 
 	/*** Process Inventory ***/

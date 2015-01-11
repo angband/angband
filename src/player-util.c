@@ -19,11 +19,13 @@
 #include "angband.h"
 #include "cave.h"
 #include "cmd-core.h"
+#include "dungeon.h"
 #include "game-input.h"
 #include "init.h"
 #include "obj-gear.h"
 #include "obj-identify.h"
 #include "obj-tval.h"
+#include "obj-pile.h"
 #include "obj-util.h"
 #include "player-spell.h"
 #include "player-timed.h"
@@ -151,20 +153,45 @@ s16b modify_stat_value(int value, int amount)
 /**
  * Regenerate hit points
  */
-void player_regen_hp(int percent)
+void player_regen_hp(void)
 {
 	s32b new_chp, new_chp_frac;
-	int old_chp;
+	int old_chp, percent = 0;
 
 	/* Save the old hitpoints */
 	old_chp = player->chp;
+
+	/* Default regeneration */
+	if (player->food >= PY_FOOD_WEAK)
+		percent = PY_REGEN_NORMAL;
+	else if (player->food >= PY_FOOD_FAINT)
+		percent = PY_REGEN_WEAK;
+	else if (player->food >= PY_FOOD_STARVE)
+		percent = PY_REGEN_FAINT;
+
+	/* Various things speed up regeneration */
+	if (player_of_has(player, OF_REGEN))
+		percent *= 2;
+	if (player->searching || player_resting_can_regenerate(player))
+		percent *= 2;
+
+	/* Some things slow it down */
+	if (player_of_has(player, OF_IMPAIR_HP))
+		percent /= 2;
+
+	/* Various things interfere with physical healing */
+	if (player->timed[TMD_PARALYZED]) percent = 0;
+	if (player->timed[TMD_POISONED]) percent = 0;
+	if (player->timed[TMD_STUN]) percent = 0;
+	if (player->timed[TMD_CUT]) percent = 0;
 
 	/* Extract the new hitpoints */
 	new_chp = ((long)player->mhp) * percent + PY_REGEN_HPBASE;
 	player->chp += (s16b)(new_chp >> 16);   /* div 65536 */
 
 	/* check for overflow */
-	if ((player->chp < 0) && (old_chp > 0)) player->chp = MAX_SHORT;
+	if ((player->chp < 0) && (old_chp > 0))
+		player->chp = MAX_SHORT;
 	new_chp_frac = (new_chp & 0xFFFF) + player->chp_frac;	/* mod 65536 */
 	if (new_chp_frac >= 0x10000L) {
 		player->chp_frac = (u16b)(new_chp_frac - 0x10000L);
@@ -181,7 +208,6 @@ void player_regen_hp(int percent)
 
 	/* Notice changes */
 	if (old_chp != player->chp) {
-		/* Redraw */
 		player->upkeep->redraw |= (PR_HP);
 		equip_notice_flag(player, OF_REGEN);
 		equip_notice_flag(player, OF_IMPAIR_HP);
@@ -192,14 +218,31 @@ void player_regen_hp(int percent)
 /**
  * Regenerate mana points
  */
-void player_regen_mana(int percent)
+void player_regen_mana(void)
 {
 	s32b new_mana, new_mana_frac;
-	int old_csp;
+	int old_csp, percent;
 
+	/* Save the old spell points */
 	old_csp = player->csp;
+
+	/* Default regeneration */
+	percent = PY_REGEN_NORMAL;
+
+	/* Various things speed up regeneration */
+	if (player_of_has(player, OF_REGEN))
+		percent *= 2;
+	if (player->searching || player_resting_can_regenerate(player))
+		percent *= 2;
+
+	/* Some things slow it down */
+	if (player_of_has(player, OF_IMPAIR_MANA))
+		percent /= 2;
+
+	/* Regenerate mana */
 	new_mana = ((long)player->msp) * percent + PY_REGEN_MNBASE;
 	player->csp += (s16b)(new_mana >> 16);	/* div 65536 */
+
 	/* check for overflow */
 	if ((player->csp < 0) && (old_csp > 0)) {
 		player->csp = MAX_SHORT;
@@ -218,15 +261,69 @@ void player_regen_mana(int percent)
 		player->csp_frac = 0;
 	}
 
-	/* Redraw mana */
+	/* Notice changes */
 	if (old_csp != player->csp) {
-		/* Redraw */
 		player->upkeep->redraw |= (PR_MANA);
 		equip_notice_flag(player, OF_REGEN);
 		equip_notice_flag(player, OF_IMPAIR_MANA);
 	}
 }
 
+/**
+ * Update the player's light fuel
+ */
+void player_update_light(void)
+{
+	/* Check for light being wielded */
+	struct object *obj = equipped_item_by_slot_name(player, "light");
+
+	/* Burn some fuel in the current light */
+	if (obj && tval_is_light(obj)) {
+		bool burn_fuel = TRUE;
+
+		/* Turn off the wanton burning of light during the day in the town */
+		if (!player->depth && is_daytime())
+			burn_fuel = FALSE;
+
+		/* If the light has the NO_FUEL flag, well... */
+		if (of_has(obj->flags, OF_NO_FUEL))
+		    burn_fuel = FALSE;
+
+		/* Use some fuel (except on artifacts, or during the day) */
+		if (burn_fuel && obj->timeout > 0) {
+			/* Decrease life-span */
+			obj->timeout--;
+
+			/* Hack -- notice interesting fuel steps */
+			if ((obj->timeout < 100) || (!(obj->timeout % 100)))
+				/* Redraw stuff */
+				player->upkeep->redraw |= (PR_EQUIP);
+
+			/* Hack -- Special treatment when blind */
+			if (player->timed[TMD_BLIND]) {
+				/* Hack -- save some light for later */
+				if (obj->timeout == 0) obj->timeout++;
+			} else if (obj->timeout == 0) {
+				/* The light is now out */
+				disturb(player, 0);
+				msg("Your light has gone out!");
+
+				/* If it's a torch, now is the time to delete it */
+				if (of_has(obj->flags, OF_BURNS_OUT)) {
+					gear_excise_object(obj);
+					object_delete(obj);
+				}
+			} else if ((obj->timeout < 50) && (!(obj->timeout % 20))) {
+				/* The light is getting dim */
+				disturb(player, 0);
+				msg("Your light is growing faint.");
+			}
+		}
+	}
+
+	/* Calculate torch radius */
+	player->upkeep->update |= (PU_TORCH);
+}
 
 
 /**
