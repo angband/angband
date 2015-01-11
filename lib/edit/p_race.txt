@@ -44,11 +44,9 @@
 # 'history' is for background info - starting point of the player history,
 # base age, random age modifier.
 
-# 'height' is height info - base height (males), mod height (males),
-# base height (females), mod height (females).
+# 'height' is height info - base height, mod height.
 
-# 'weight' is weight info - base weight (males), mod weight (males),
-# base weight (females), mod weight (females).
+# 'weight' is weight info - base weight, mod weight.
 
 # 'obj-flags' is for object flags (as in src/list-obj-flags.h) that
 # races possess innately.
@@ -74,8 +72,8 @@ skill-throw:0
 skill-dig:0
 info:10:100:0
 history:1:14:6
-height:72:6:66:4
-weight:180:25:150:20
+height:69:10
+weight:165:35
 
 name:1:Half-Elf
 stats:0:1:-1:1:-1
@@ -91,8 +89,8 @@ skill-throw:5
 skill-dig:0
 info:10:110:2
 history:4:24:16
-height:66:6:62:6
-weight:130:15:100:10
+height:64:10
+weight:115:25
 obj-flags:SUST_DEX
 
 name:2:Elf
@@ -110,7 +108,7 @@ skill-dig:0
 info:9:120:3
 history:5:75:75
 height:60:4:54:4
-weight:100:6:80:6
+weight:90:10
 obj-flags:SUST_DEX
 values:RES_LIGHT[1]
 
@@ -128,8 +126,8 @@ skill-throw:20
 skill-dig:0
 info:7:110:4
 history:10:21:12
-height:36:3:33:3
-weight:60:3:50:3
+height:34:4
+weight:55:5
 obj-flags:HOLD_LIFE
 player-flags:KNOW_MUSHROOM
 
@@ -147,8 +145,8 @@ skill-throw:12
 skill-dig:0
 info:8:125:4
 history:13:50:40
-height:42:3:39:3
-weight:90:6:75:3
+height:40:5
+weight:80:5
 obj-flags:FREE_ACT
 player-flags:KNOW_ZAPPER
 
@@ -166,8 +164,8 @@ skill-throw:0
 skill-dig:40
 info:11:120:5
 history:16:35:15
-height:48:3:46:3
-weight:150:10:120:10
+height:47:4
+weight:135:20
 obj-flags:PROT_BLIND
 player-flags:SEE_ORE
 
@@ -185,8 +183,8 @@ skill-throw:-5
 skill-dig:0
 info:10:110:3
 history:19:11:4
-height:66:1:62:1
-weight:150:5:120:5
+height:64:2
+weight:135:15
 values:RES_DARK[1]
 
 name:7:Half-Troll
@@ -203,8 +201,8 @@ skill-throw:-10
 skill-dig:0
 info:12:120:3
 history:21:20:10
-height:96:10:84:8
-weight:250:50:225:40
+height:90:16
+weight:240:60
 obj-flags:SUST_STR | REGEN
 
 name:8:Dunadan
@@ -221,8 +219,8 @@ skill-throw:10
 skill-dig:0
 info:10:180:0
 history:1:50:20
-height:82:5:78:6
-weight:190:20:180:15
+height:80:6
+weight:190:20
 obj-flags:SUST_CON
 
 name:9:High-Elf
@@ -239,8 +237,8 @@ skill-throw:25
 skill-dig:0
 info:10:200:4
 history:7:100:30
-height:90:10:82:10
-weight:190:20:180:15
+height:86:15
+weight:190:20
 obj-flags:SEE_INVIS
 values:RES_LIGHT[1]
 
@@ -258,6 +256,6 @@ skill-throw:10
 skill-dig:0
 info:8:115:5
 history:23:15:10
-height:38:4:36:3
-weight:70:5:60:4
+height:37:4
+weight:65:5
 values:RES_POIS[1]

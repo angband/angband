@@ -62,7 +62,6 @@ static const struct command_info game_cmds[] =
 
 	{ CMD_BIRTH_INIT, "start the character birth process", do_cmd_birth_init, FALSE, 0 },
 	{ CMD_BIRTH_RESET, "go back to the beginning", do_cmd_birth_reset, FALSE, 0 },
-	{ CMD_CHOOSE_SEX, "select sex", do_cmd_choose_sex, FALSE, 0 },
 	{ CMD_CHOOSE_RACE, "select race", do_cmd_choose_race, FALSE, 0 },
 	{ CMD_CHOOSE_CLASS, "select class", do_cmd_choose_class, FALSE, 0 },
 	{ CMD_BUY_STAT, "buy points in a stat", do_cmd_buy_stat, FALSE, 0 },

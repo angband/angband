@@ -44,7 +44,6 @@ typedef struct
 	char day[10];		/* Time stamp (string) */
 	char who[16];		/* Player Name (string) */
 	char uid[8];		/* Player UID (number) */
-	char sex[2];		/* Player Sex (string) */
 	char p_r[3];		/* Player Race (number) */
 	char p_c[3];		/* Player Class (number) */
 	char cur_lev[4];	/* Current Player Level (number) */

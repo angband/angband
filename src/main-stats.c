@@ -182,7 +182,6 @@ static void generate_player_for_stats()
 
 	player->wizard = 1; /* Set wizard mode on */
 
-	player->psex = 0;   /* Female  */
 	player->race = races;  /* Human   */
 	player->class = classes; /* Warrior */
 

@@ -49,30 +49,6 @@ struct player_race *races;
 struct player_class *classes;
 
 /**
- * Player Sexes
- *
- *	Title,
- *	Winner
- */
-const player_sex sex_info[MAX_SEXES] =
-{
-	{
-		"Female",
-		"Queen"
-	},
-
-	{
-		"Male",
-		"King"
-	},
-
-	{
-		"Neuter",
-		"Regent"
-	}
-};
-
-/**
  * Magic realms:
  * index, spell stat, verb, spell noun, book noun, realm name
  */

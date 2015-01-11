@@ -25,11 +25,6 @@
 static s16b TEST_DATA test_timed[30] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 
 };
 
-static struct player_sex TEST_DATA test_sex = {
-	.title = "Test Sex",
-	.winner = "Test Winner",
-};
-
 static struct object_base TEST_DATA sword_base = {
 	.name = "Test Sword",
 	.tval = TV_SWORD,
@@ -626,15 +621,10 @@ static struct player_race TEST_DATA test_race = {
 	.b_age = 14,
 	.m_age = 6,
 
-	.m_b_ht = 72,
-	.m_m_ht = 6,
-	.f_b_ht = 66,
-	.f_m_ht = 4,
-
-	.m_b_wt = 180,
-	.m_m_wt = 25,
-	.f_b_wt = 150,
-	.f_m_wt = 20,
+	.base_hgt = 72,
+	.mod_hgt = 6,
+	.base_wgt = 150,
+	.mod_wgt = 20,
 
 	.infra = 40,
 
@@ -921,8 +911,6 @@ static struct player_upkeep TEST_DATA test_player_upkeep = {
 static struct player TEST_DATA test_player = {
 	.py = 1,
 	.px = 1,
-	.psex = 0,
-	.sex = &test_sex,
 	.race = &test_race,
 	.class = &test_class,
 	.hitdie = 10,

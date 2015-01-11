@@ -8,7 +8,7 @@ control is the birth of your character, in which you choose or allow to be
 chosen various attributes that will affect the future life of your
 character.
 
-At the character creation screen you will be prompted to select the sex,
+At the character creation screen you will be prompted to select the
 race and class of your character. You also have the option to change the
 'birth options' at this time. These need to be set at the character
 creation menu and cannot be altered later in the game. They are discussed
@@ -17,22 +17,22 @@ with the rest of the options in the "options" help file.
 Character Characteristics
 =========================
 
-Each character has three primary attributes: sex, race, and class. These
+Each character has two primary attributes: race and class. These
 are chosen at the beginning and which will stay fixed for the entire life
-of that character. The sex of your character is purely for flavour, but the
-race and class have many effects which are discussed in detail below.
+of that character. The race and class have many effects which are discussed
+in detail below.
 
 Each character has a few secondary attributes: height, weight, social
 class, and background history. These are randomly determined, but are
-affected by the sex and race of the character. In general, these attributes
+affected by the race of the character. In general, these attributes
 are only used to provide flavour to the character, to assist in the role
 playing, but they do have a few minor effects on the game. For example,
 background history affects social class, which affects the starting money.
 (Not a lot, in the case of some races: for instance, Half-Trolls are always
 going to be the scum of society, even if their father was the Clan Chief.)
 
-Each character also has six primary "stats": strength, intelligence,
-wisdom, dexterity, constitution, and charisma, which modify the abilities
+Each character also has five primary "stats": strength, intelligence,
+wisdom, dexterity, and constitution, which modify the abilities
 of the character in a variety of ways. Every stat has a numerical value,
 ranging from a minimum of 3, up to a normal maximum of 18, and even higher,
 into the "percentile" range, represented as '18/01' through '18/100':

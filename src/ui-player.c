@@ -685,10 +685,9 @@ static const byte colour_table[] =
 
 
 static struct panel *get_panel_topleft(void) {
-	struct panel *p = panel_allocate(7);
+	struct panel *p = panel_allocate(6);
 
 	panel_line(p, COLOUR_L_BLUE, "Name", "%s", op_ptr->full_name);
-	panel_line(p, COLOUR_L_BLUE, "Sex", "%s", player->sex->title);
 	panel_line(p, COLOUR_L_BLUE, "Race",	"%s", player->race->name);
 	panel_line(p, COLOUR_L_BLUE, "Class", "%s", player->class->name);
 	panel_line(p, COLOUR_L_BLUE, "Title", "%s", show_title());

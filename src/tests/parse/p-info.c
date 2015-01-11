@@ -179,30 +179,26 @@ int test_history0(void *state) {
 }
 
 int test_height0(void *state) {
-	enum parser_error r = parser_parse(state, "height:10:2:11:3");
+	enum parser_error r = parser_parse(state, "height:10:2");
 	struct player_race *pr;
 
 	eq(r, PARSE_ERROR_NONE);
 	pr = parser_priv(state);
 	require(pr);
-	eq(pr->m_b_ht, 10);
-	eq(pr->m_m_ht, 2);
-	eq(pr->f_b_ht, 11);
-	eq(pr->f_m_ht, 3);
+	eq(pr->base_hgt, 10);
+	eq(pr->mod_hgt, 2);
 	ok;
 }
 
 int test_weight0(void *state) {
-	enum parser_error r = parser_parse(state, "weight:80:10:75:7");
+	enum parser_error r = parser_parse(state, "weight:80:10");
 	struct player_race *pr;
 
 	eq(r, PARSE_ERROR_NONE);
 	pr = parser_priv(state);
 	require(pr);
-	eq(pr->m_b_wt, 80);
-	eq(pr->m_m_wt, 10);
-	eq(pr->f_b_wt, 75);
-	eq(pr->f_m_wt, 7);
+	eq(pr->base_wgt, 80);
+	eq(pr->mod_wgt, 10);
 	ok;
 }
 

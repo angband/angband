@@ -165,14 +165,8 @@ static void prt_welcome(const struct owner *proprietor)
 			player_name = player->class->title[(player->lev - 1) / 5];
 		else if (randint0(2))
 			player_name = op_ptr->full_name;
-		else {
-			switch (player->psex) {
-				case SEX_MALE:   player_name = "sir"; break;
-				case SEX_FEMALE: player_name = "madam"; break;
-				case SEX_NEUTER:
-				default:         player_name = "ser"; break;
-			}
-		}
+		else
+			player_name = "valued customer";
 
 		/* Balthazar says "Welcome" */
 		prt(format(comment_welcome[i], short_name, player_name), 0, 0);

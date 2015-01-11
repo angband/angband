@@ -95,7 +95,6 @@ typedef struct birther /*lovely*/ birther; /*sometimes we think she's a dream*/
  */
 struct birther
 {
-	byte sex;
 	const struct player_race *race;
 	const struct player_class *class;
 
@@ -146,7 +145,6 @@ static void save_roller_data(birther *tosave)
 	int i;
 
 	/* Save the data */
-	tosave->sex = player->psex;
 	tosave->race = player->race;
 	tosave->class = player->class;
 	tosave->age = player->age;
@@ -186,7 +184,6 @@ static void load_roller_data(birther *saved, birther *prev_player)
 	/*** Load the previous data ***/
 
 	/* Load the data */
-	player->psex     = saved->sex;
 	player->race     = saved->race;
 	player->class    = saved->class;
 	player->age      = saved->age;
@@ -338,7 +335,7 @@ char *get_history(struct history_chart *chart)
 }
 
 
-/*
+/**
  * Computes character's age, height, and weight
  */
 static void get_ahw(struct player *p)
@@ -346,30 +343,9 @@ static void get_ahw(struct player *p)
 	/* Calculate the age */
 	p->age = p->race->b_age + randint1(p->race->m_age);
 
-	/* Calculate the height/weight for males */
-	if (p->psex == SEX_MALE)
-	{
-		p->ht = p->ht_birth = Rand_normal(p->race->m_b_ht, p->race->m_m_ht);
-		p->wt = p->wt_birth = Rand_normal(p->race->m_b_wt, p->race->m_m_wt);
-	}
-
-	/* Calculate the height/weight for females */
-	else if (p->psex == SEX_FEMALE)
-	{
-		p->ht = p->ht_birth = Rand_normal(p->race->f_b_ht, p->race->f_m_ht);
-		p->wt = p->wt_birth = Rand_normal(p->race->f_b_wt, p->race->f_m_wt);
-	}
-
-	/* For neither, go inbetween */
-	else 
-	{
-		p->ht = p->ht_birth = Rand_normal(
-			(p->race->f_b_ht + p->race->m_b_ht) / 2,
-			(p->race->f_m_ht + p->race->m_m_ht) / 2);
-		p->wt = p->wt_birth = Rand_normal(
-			(p->race->f_b_wt + p->race->m_b_wt) / 2,
-			(p->race->f_m_wt + p->race->m_m_wt) / 2);
-	}
+	/* Calculate the height/weight */
+	p->ht = p->ht_birth = Rand_normal(p->race->base_hgt, p->race->mod_hgt);
+	p->wt = p->wt_birth = Rand_normal(p->race->base_wgt, p->race->mod_wgt);
 }
 
 
@@ -866,16 +842,14 @@ static void generate_stats(int stats[STAT_MAX], int points_spent[STAT_MAX],
  * This fleshes out a full player based on the choices currently made,
  * and so is called whenever things like race or class are chosen.
  */
-void player_generate(struct player *p, const player_sex *s,
-		const struct player_race *r, const struct player_class *c)
+void player_generate(struct player *p, const struct player_race *r,
+					 const struct player_class *c)
 {
-	if (!s) s = &sex_info[p->psex];
 	if (!c)
 		c = p->class;
 	if (!r)
 		r = p->race;
 
-	p->sex = s;
 	p->class = c;
 	p->race = r;
 
@@ -909,7 +883,7 @@ static void do_birth_reset(bool use_quickstart, birther *quickstart_prev)
 	if (use_quickstart && quickstart_prev)
 		load_roller_data(quickstart_prev, NULL);
 
-	player_generate(player, NULL, NULL, NULL);
+	player_generate(player, NULL, NULL);
 
 	player->depth = 0;
 
@@ -932,7 +906,7 @@ void do_cmd_birth_init(struct command *cmd)
 		save_roller_data(&quickstart_prev);
 		quickstart_allowed = TRUE;
 	} else {
-		player_generate(player, &sex_info[player->psex], player_id2race(0), player_id2class(0));
+		player_generate(player, player_id2race(0), player_id2class(0));
 		quickstart_allowed = FALSE;
 	}
 
@@ -959,19 +933,11 @@ void do_cmd_birth_reset(struct command *cmd)
 	rolled_stats = FALSE;
 }
 
-void do_cmd_choose_sex(struct command *cmd)
-{
-	int choice;
-	cmd_get_arg_choice(cmd, "choice", &choice);
-	player->psex = choice;
-	player_generate(player, NULL, NULL, NULL);
-}
-
 void do_cmd_choose_race(struct command *cmd)
 {
 	int choice;
 	cmd_get_arg_choice(cmd, "choice", &choice);
-	player_generate(player, NULL, player_id2race(choice), NULL);
+	player_generate(player, player_id2race(choice), NULL);
 
 	reset_stats(stats, points_spent, &points_left, FALSE);
 	generate_stats(stats, points_spent, &points_left);
@@ -982,7 +948,7 @@ void do_cmd_choose_class(struct command *cmd)
 {
 	int choice;
 	cmd_get_arg_choice(cmd, "choice", &choice);
-	player_generate(player, NULL, NULL, player_id2class(choice));
+	player_generate(player, NULL, player_id2class(choice));
 
 	reset_stats(stats, points_spent, &points_left, FALSE);
 	generate_stats(stats, points_spent, &points_left);

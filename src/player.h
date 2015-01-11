@@ -22,16 +22,6 @@
 
 #define BTH_PLUS_ADJ    	3 		/* Adjust BTH per plus-to-hit */
 
-/** Sexes **/
-
-/* Maximum number of player "sex" types (see "table.c", etc) */
-#define MAX_SEXES            3
-
-/* Player sex constants (hard-coded by save-files, arrays, etc) */
-#define SEX_FEMALE		0
-#define SEX_MALE		1
-#define SEX_NEUTER		2
-
 /* Player magic realms */
 enum
 {
@@ -78,10 +68,6 @@ typedef struct player {
 	s16b py;			/* Player location */
 	s16b px;			/* Player location */
 
-	byte psex;			/* Sex index */
-	byte oops;			/* Unused */
-
-	const struct player_sex *sex;
 	const struct player_race *race;
 	const struct player_class *class;
 
@@ -170,16 +156,6 @@ typedef struct player {
 
 
 /*
- * Player sex info
- */
-typedef struct player_sex {
-	const char *title;		/* Type of sex */
-	const char *winner;		/* Name of winner */
-} player_sex;
-
-extern const player_sex sex_info[MAX_SEXES];
-
-/*
  * Player racial info
  */
 struct player_race {
@@ -198,15 +174,10 @@ struct player_race {
 	int b_age;			/* base age */
 	int m_age;			/* mod age */
 	
-	int m_b_ht;		/* base height (males) */
-	int m_m_ht;		/* mod height (males) */
-	int m_b_wt;		/* base weight (males) */
-	int m_m_wt;		/* mod weight (males) */
-	
-	int f_b_ht;		/* base height (females) */
-	int f_m_ht;		/* mod height (females) */
-	int f_b_wt;		/* base weight (females) */
-	int f_m_wt;		/* mod weight (females) */
+	int base_hgt;		/* base height */
+	int mod_hgt;		/* mod height */
+	int base_wgt;		/* base weight */
+	int mod_wgt;		/* mod weight */
 	
 	int infra;			/* Infra-vision	range */
 	

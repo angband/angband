@@ -397,7 +397,6 @@ void wr_player(void)
 	/* Race/Class/Gender/Spells */
 	wr_byte(player->race->ridx);
 	wr_byte(player->class->cidx);
-	wr_byte(player->psex);
 	wr_byte(op_ptr->name_suffix);
 
 	wr_byte(player->hitdie);

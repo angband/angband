@@ -3005,10 +3005,8 @@ static enum parser_error parse_p_race_height(struct parser *p) {
 	struct player_race *r = parser_priv(p);
 	if (!r)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	r->m_b_ht = parser_getint(p, "mbht");
-	r->m_m_ht = parser_getint(p, "mmht");
-	r->f_b_ht = parser_getint(p, "fbht");
-	r->f_m_ht = parser_getint(p, "fmht");
+	r->base_hgt = parser_getint(p, "base_hgt");
+	r->mod_hgt = parser_getint(p, "mod_hgt");
 	return PARSE_ERROR_NONE;
 }
 
@@ -3016,10 +3014,8 @@ static enum parser_error parse_p_race_weight(struct parser *p) {
 	struct player_race *r = parser_priv(p);
 	if (!r)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	r->m_b_wt = parser_getint(p, "mbwt");
-	r->m_m_wt = parser_getint(p, "mmwt");
-	r->f_b_wt = parser_getint(p, "fbwt");
-	r->f_m_wt = parser_getint(p, "fmwt");
+	r->base_wgt = parser_getint(p, "base_wgt");
+	r->mod_wgt = parser_getint(p, "mod_wgt");
 	return PARSE_ERROR_NONE;
 }
 
@@ -3108,8 +3104,8 @@ struct parser *init_parse_p_race(void) {
 	parser_reg(p, "skill-dig int dig", parse_p_race_skill_dig);
 	parser_reg(p, "info int mhp int exp int infra", parse_p_race_info);
 	parser_reg(p, "history uint hist int b-age int m-age", parse_p_race_history);
-	parser_reg(p, "height int mbht int mmht int fbht int fmht", parse_p_race_height);
-	parser_reg(p, "weight int mbwt int mmwt int fbwt int fmwt", parse_p_race_weight);
+	parser_reg(p, "height int base_hgt int mod_hgt", parse_p_race_height);
+	parser_reg(p, "weight int base_wgt int mod_wgt", parse_p_race_weight);
 	parser_reg(p, "obj-flags ?str flags", parse_p_race_obj_flags);
 	parser_reg(p, "player-flags ?str flags", parse_p_race_play_flags);
 	parser_reg(p, "values str values", parse_p_race_values);

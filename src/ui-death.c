@@ -140,7 +140,7 @@ static void display_winner(void)
 		file_close(fp);
 	}
 
-	put_str_centred(i, 0, wid, "All Hail the Mighty %s!", player->sex->winner);
+	put_str_centred(i, 0, wid, "All Hail the Mighty Champion!");
 
 	event_signal(EVENT_INPUT_FLUSH);
 	pause_line(Term);

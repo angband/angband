@@ -187,16 +187,7 @@ static void highscore_write(const high_score scores[], size_t sz)
 
 void build_score(high_score *entry, const char *died_from, time_t *death_time)
 {
-	char psex;
-
 	memset(entry, 0, sizeof(high_score));
-
-	switch (player->psex) {
-		case SEX_MALE:   psex = 'm'; break;
-		case SEX_FEMALE: psex = 'f'; break;
-		case SEX_NEUTER:
-		default:         psex = 'n'; break;
-	}
 
 	/* Save the version */
 	strnfmt(entry->what, sizeof(entry->what), "%s", buildid);
@@ -222,7 +213,6 @@ void build_score(high_score *entry, const char *died_from, time_t *death_time)
 
 	/* Save the player info XXX XXX XXX */
 	strnfmt(entry->uid, sizeof(entry->uid), "%7u", player_uid);
-	strnfmt(entry->sex, sizeof(entry->sex), "%c", psex);
 	strnfmt(entry->p_r, sizeof(entry->p_r), "%2d", player->race->ridx);
 	strnfmt(entry->p_c, sizeof(entry->p_c), "%2d", player->class->cidx);
 

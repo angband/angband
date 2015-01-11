@@ -49,9 +49,6 @@ int test_newgame(void *state) {
 
 	cmdq_push(CMD_BIRTH_INIT);
 	cmdq_push(CMD_BIRTH_RESET);
-	cmdq_push(CMD_CHOOSE_SEX);
-	cmd_set_arg_choice(cmdq_peek(), "choice", 0);
-
 	cmdq_push(CMD_CHOOSE_RACE);
 	cmd_set_arg_choice(cmdq_peek(), "choice", 0);
 

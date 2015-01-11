@@ -544,8 +544,6 @@ static const char *process_pref_file_expr(char **sp, char *fp)
 				v = player->class->name;
 			else if (streq(b+1, "PLAYER"))
 				v = player_safe_name(player, TRUE);
-			else if (streq(b+1, "GENDER"))
-				v = player->sex->title;
 		} else {
 			v = b;
 		}
