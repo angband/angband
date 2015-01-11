@@ -1339,6 +1339,7 @@ void monster_death(struct monster *mon, bool stats)
 
 		/* Object no longer held */
 		obj->held_m_idx = 0;
+		pile_excise(&mon->held_obj, obj);
 
 		/* Count it and drop it - refactor once origin is a bitflag */
 		if (!stats) {
