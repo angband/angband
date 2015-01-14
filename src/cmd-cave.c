@@ -1368,25 +1368,29 @@ void do_cmd_rest(struct command *cmd)
     if (n < 0 && !player_resting_is_special(n))
         return;
 
+	/* Do some upkeep on the first turn of rest */
+	if (!player_is_resting(player)) {
+		player->searching = FALSE;
+		player->upkeep->update |= (PU_BONUS);
+	}
+
 	player_resting_set_count(player, n);
 
-	/* Take a turn XXX XXX XXX (?) */
-	player->upkeep->energy_use = 100;
-
-	/* Cancel searching */
-	player->searching = FALSE;
-
-	/* Recalculate bonuses */
-	player->upkeep->update |= (PU_BONUS);
+	/* Take a turn */
+	player_resting_step_turn(player);
 
 	/* Redraw the state */
 	player->upkeep->redraw |= (PR_STATE);
-
-	/* Handle stuff */
 	handle_stuff(player->upkeep);
 
-	/* Refresh XXX XXX XXX */
-	Term_fresh();
+	/* Prepare to continue, or cancel and clean up */
+	if (player_resting_count(player) > 0) {
+		cmdq_push(CMD_REST);
+		cmd_set_arg_choice(cmdq_peek(), "choice", n - 1);
+	} else {
+		player_resting_cancel(player);
+	}
+
 }
 
 

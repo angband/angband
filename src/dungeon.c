@@ -632,10 +632,6 @@ static void process_player(void)
 			event_signal(EVENT_SEEFLOOR);
 		}
 
-		/* Resting */
-		else if (player_is_resting(player))
-			player_resting_step_turn(player);
-
 		/* Repeated command */
 		else if (cmd_get_nrepeats() > 0) {
 			/* Hack -- Assume messages were seen */
