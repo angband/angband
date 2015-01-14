@@ -810,8 +810,9 @@ void do_cmd_fire_at_nearest(void) {
 
 	/* Find first eligible ammo in the quiver */
 	for (i = 0; i < z_info->quiver_size; i++) {
-		if (player->upkeep->quiver[i]->tval !=
-			player->state.ammo_tval)
+		if (!player->upkeep->quiver[i])
+			continue;
+		if (player->upkeep->quiver[i]->tval != player->state.ammo_tval)
 			continue;
 		ammo = player->upkeep->quiver[i];
 		break;
