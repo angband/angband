@@ -51,7 +51,7 @@ enum {
 	IGNORE_THIS_QUALITY
 };
 
-void textui_cmd_destroy_menu(struct object *obj)
+void textui_cmd_ignore_menu(struct object *obj)
 {
 	char out_val[160];
 
@@ -142,8 +142,7 @@ void textui_cmd_destroy_menu(struct object *obj)
 	screen_load();
 
 	if (selected == IGNORE_THIS_ITEM) {
-		cmdq_push(CMD_DESTROY);
-		cmd_set_arg_item(cmdq_peek(), "item", obj);
+		obj->ignore = TRUE;
 	} else if (selected == UNIGNORE_THIS_ITEM) {
 		obj->ignore = FALSE;
 	} else if (selected == IGNORE_THIS_FLAVOR) {
@@ -166,18 +165,18 @@ void textui_cmd_destroy_menu(struct object *obj)
 	menu_dynamic_free(m);
 }
 
-void textui_cmd_destroy(void)
+void textui_cmd_ignore(void)
 {
 	struct object *obj;
 
 	/* Get an item */
 	const char *q = "Ignore which item? ";
 	const char *s = "You have nothing to ignore.";
-	if (!get_item(&obj, q, s, CMD_DESTROY, NULL,
+	if (!get_item(&obj, q, s, CMD_IGNORE, NULL,
 				  USE_INVEN | USE_QUIVER | USE_EQUIP | USE_FLOOR))
 		return;
 
-	textui_cmd_destroy_menu(obj);
+	textui_cmd_ignore_menu(obj);
 }
 
 void textui_cmd_toggle_ignore(void)

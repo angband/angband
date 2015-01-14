@@ -104,7 +104,6 @@ static const struct command_info game_cmds[] =
 	{ CMD_REFILL, "refuel with", do_cmd_refill, FALSE, 0 },
 	{ CMD_FIRE, "fire", do_cmd_fire, FALSE, 0 },
 	{ CMD_THROW, "throw", do_cmd_throw, FALSE, 0 },
-	{ CMD_DESTROY, "ignore", do_cmd_destroy, FALSE, 0 },
 	{ CMD_INSCRIBE, "inscribe", do_cmd_inscribe, FALSE, 0 },
 	{ CMD_STUDY, "study", do_cmd_study, FALSE, 0 },
 	{ CMD_CAST, "cast", do_cmd_cast, FALSE, 0 },

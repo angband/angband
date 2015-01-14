@@ -785,7 +785,7 @@ static bool store_process_command_key(struct keypress kp)
 		case 't': cmd = CMD_TAKEOFF; break;
 
 		case KTRL('D'): /* roguelike */
-		case 'k': textui_cmd_destroy(); break;
+		case 'k': textui_cmd_ignore(); break;
 
 		case 'P': /* roguelike */
 		case 'b': textui_spell_browse(); break;

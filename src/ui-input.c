@@ -1423,7 +1423,7 @@ struct cmd_info cmd_item_manage[] =
 	{ "Display equipment listing", { 'e' }, CMD_NULL, do_cmd_equip },
 	{ "Display inventory listing", { 'i' }, CMD_NULL, do_cmd_inven },
 	{ "Pick up objects", { 'g' }, CMD_PICKUP, NULL },
-	{ "Destroy an item", { 'k', KTRL('D') }, CMD_DESTROY, textui_cmd_destroy },	
+	{ "Ignore an item", { 'k', KTRL('D') }, CMD_IGNORE, textui_cmd_ignore },	
 };
 
 /* Information access commands */

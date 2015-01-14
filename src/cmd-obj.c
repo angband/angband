@@ -494,35 +494,6 @@ void do_cmd_drop(struct command *cmd)
 	player->upkeep->energy_use = 50;
 }
 
-/**
- * Destroy an item
- */
-void do_cmd_destroy(struct command *cmd)
-{
-	struct object *obj;
-
-	/* XXX-AS rewrite */
-	if (cmd_get_arg_item(cmd, "item", &obj))
-		return;
-
-	if (!item_is_available(obj, NULL, USE_INVEN | USE_QUIVER | USE_EQUIP | USE_FLOOR)) {
-		msg("You do not have that item to ignore it.");
-		return;
-	}
-
-	if (object_is_equipped(player->body, obj) && cursed_p(obj->flags)) {
-		msg("You cannot ignore cursed equipment.");
-	} else {	
-		char o_name[80];
-
-		object_desc(o_name, sizeof o_name, obj, ODESC_PREFIX | ODESC_FULL);
-		msgt(MSG_DESTROY, "Ignoring %s.", o_name);
-
-		obj->ignore = TRUE;
-		player->upkeep->notice |= PN_IGNORE;
-	}
-}
-
 
 
 /**

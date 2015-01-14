@@ -111,7 +111,7 @@ static int context_menu_player_2(int mx, int my)
 	cmdkey = (mode == KEYMAP_MODE_ORIG) ? 'K' : 'O';
 	menu_dynamic_add_label(m, "Toggle Ignored", cmdkey, MENU_VALUE_TOGGLE_IGNORED, labels);
 
-	ADD_LABEL("Ignore an item", CMD_DESTROY, MN_ROW_VALID);
+	ADD_LABEL("Ignore an item", CMD_IGNORE, MN_ROW_VALID);
 
 	menu_dynamic_add_label(m, "Options", '=', MENU_VALUE_OPTIONS, labels);
 	menu_dynamic_add_label(m, "Commands", '?', MENU_VALUE_HELP, labels);
@@ -149,7 +149,7 @@ static int context_menu_player_2(int mx, int my)
 			allowed = TRUE;
 			break;
 
-		case CMD_DESTROY:
+		case CMD_IGNORE:
 			cmdkey = cmd_lookup_key(selected, mode);
 			allowed = key_confirm_command(cmdkey);
 			break;
@@ -178,7 +178,7 @@ static int context_menu_player_2(int mx, int my)
 			Term_keypress(KTRL('p'), 0);
 			break;
 
-		case CMD_DESTROY:
+		case CMD_IGNORE:
 		case CMD_TOGGLE_SEARCH:
 			cmdkey = cmd_lookup_key(selected, mode);
 			Term_keypress(cmdkey, 0);
@@ -758,7 +758,7 @@ int context_menu_object(struct object *obj)
 		ADD_LABEL("Uninscribe", CMD_UNINSCRIBE, MN_ROW_VALID);
 	}
 
-	ADD_LABEL( (object_is_ignored(obj) ? "Unignore" : "Ignore"), CMD_DESTROY, MN_ROW_VALID);
+	ADD_LABEL( (object_is_ignored(obj) ? "Unignore" : "Ignore"), CMD_IGNORE, MN_ROW_VALID);
 
 	/* work out display region */
 	r.width = (int)menu_dynamic_longest_entry(m) + 3 + 2; /* +3 for tag, 2 for pad */
@@ -822,7 +822,7 @@ int context_menu_object(struct object *obj)
 		case CMD_BROWSE_SPELL:
 		case CMD_STUDY:
 		case CMD_CAST:
-		case CMD_DESTROY:
+		case CMD_IGNORE:
 		case CMD_WIELD:
 		case CMD_TAKEOFF:
 		case CMD_INSCRIBE:
@@ -853,9 +853,9 @@ int context_menu_object(struct object *obj)
 	if (!allowed)
 		return 1;
 
-	if (selected == CMD_DESTROY) {
+	if (selected == CMD_IGNORE) {
 		/* ignore or unignore the item */
-		textui_cmd_destroy_menu(obj);
+		textui_cmd_ignore_menu(obj);
 	} else if (selected == CMD_BROWSE_SPELL) {
 		/* browse a spellbook */
 		/* copied from textui_spell_browse */
