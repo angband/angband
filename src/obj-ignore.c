@@ -124,7 +124,7 @@ void cleanup_ignore(void)
 }
 
 
-/*
+/**
  * Reset the player's ignore choices for a new game.
  */
 void ignore_birth_init(void)
@@ -142,7 +142,11 @@ void ignore_birth_init(void)
 
 
 
-/*** Autoinscription stuff ***/
+/**
+ * ------------------------------------------------------------------------
+ * Autoinscription stuff
+ * ------------------------------------------------------------------------ */
+
 
 /**
  * Return an object kind autoinscription
@@ -239,9 +243,13 @@ void autoinscribe_pack(void)
 
 
 
-/*** Ignore code ***/
+/**
+ * ------------------------------------------------------------------------
+ * Ignore code
+ * ------------------------------------------------------------------------ */
 
-/*
+
+/**
  * Ignore the flavor of an object
  */
 void object_ignore_flavor_of(const object_type *o_ptr)
@@ -325,7 +333,7 @@ static int is_object_good(const object_type *o_ptr)
 }
 
 
-/*
+/**
  * Determine the ignore level of an object, which is similar to its pseudo.
  *
  * The main point is when the value is undetermined given current info,
@@ -453,7 +461,7 @@ byte ignore_level_of(const object_type *o_ptr)
 	return value;
 }
 
-/*
+/**
  * Remove any ignoring of a particular flavor
  */
 void kind_ignore_clear(object_kind *k_ptr)
@@ -564,7 +572,7 @@ bool ignore_item_ok(const object_type *o_ptr)
 	return object_is_ignored(o_ptr);
 }
 
-/*
+/**
  * Drop all {ignore}able items.
  */
 void ignore_drop(void)
@@ -600,7 +608,9 @@ void ignore_drop(void)
 			}
 
 			/* We're allowed to drop it. */
-			inven_drop(obj, obj->number);
+			cmdq_push(CMD_DROP);
+			cmd_set_arg_item(cmdq_peek(), "item", obj);
+			cmd_set_arg_number(cmdq_peek(), "quantity", obj->number);
 		}
 	}
 
