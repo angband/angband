@@ -858,5 +858,11 @@ void run_step(int dir)
 
 	/* Move the player */
 	move_player(run_cur_dir, TRUE);
+
+	/* Prepare the next step */
+	if (player->upkeep->running) {
+		cmdq_push(CMD_RUN);
+		cmd_set_arg_direction(cmdq_peek(), "direction", 0);
+	}
 }
 

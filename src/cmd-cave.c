@@ -1271,17 +1271,19 @@ void do_cmd_run(struct command *cmd)
 	int x, y, dir;
 
 	/* Get arguments */
-	if (cmd_get_direction(cmd, "dirction", &dir, FALSE) != CMD_OK)
+	if (cmd_get_direction(cmd, "direction", &dir, FALSE) != CMD_OK)
 		return;
 
 	if (player_confuse_dir(player, &dir, TRUE))
 		return;
 
 	/* Get location */
-	y = player->py + ddy[dir];
-	x = player->px + ddx[dir];
-	if (!do_cmd_walk_test(y, x))
-		return;
+	if (dir) {
+		y = player->py + ddy[dir];
+		x = player->px + ddx[dir];
+		if (!do_cmd_walk_test(y, x))
+			return;
+	}
 
 	/* Start run */
 	run_step(dir);

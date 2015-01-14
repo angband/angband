@@ -636,10 +636,6 @@ static void process_player(void)
 		else if (player_is_resting(player))
 			player_resting_step_turn(player);
 
-		/* Running */
-		else if (player->upkeep->running)
-			run_step(0);
-
 		/* Repeated command */
 		else if (cmd_get_nrepeats() > 0) {
 			/* Hack -- Assume messages were seen */
