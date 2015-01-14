@@ -1015,10 +1015,13 @@ void calc_inventory(struct player_upkeep *upkeep, struct object *gear,
 			/* Ignore non-ammo */
 			if (!tval_is_ammo(current)) continue;
 
-			/* Ignore ammo already stashed */
+			/* Ammo already stashed stays where it is */
 			for (i = 0; i < z_info->quiver_size; i++)
-				if (upkeep->quiver[i] == current)
+				if (upkeep->quiver[i] == current) {
 					already_quivered = TRUE;
+					if (i == quiver_slots)
+						first = current;
+				}
 			if (already_quivered) continue;
 
 			/* Allocate inscribed objects if it's the right slot */
