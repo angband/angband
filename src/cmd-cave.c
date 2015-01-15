@@ -1401,6 +1401,16 @@ void do_cmd_rest(struct command *cmd)
 
 
 /**
+ * Spend a turn doing nothing
+ */
+void do_cmd_sleep(struct command *cmd)
+{
+	/* Take a turn */
+	player->upkeep->energy_use = 100;
+}
+
+
+/**
  * Array of feeling strings for object feelings.
  * Keep strings at 36 or less characters to keep the
  * combined feeling on one row.

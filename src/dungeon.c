@@ -619,10 +619,10 @@ static void process_player(void)
 
 		/* Paralyzed or Knocked Out player gets no turn */
 		if ((player->timed[TMD_PARALYZED]) || (player->timed[TMD_STUN] >= 100))
-			player->upkeep->energy_use = 100;
+			cmdq_push(CMD_SLEEP);
 
 		/* Repeated command */
-		else if (cmd_get_nrepeats() > 0) {
+		if (cmd_get_nrepeats() > 0) {
 			/* Hack -- Assume messages were seen */
 			msg_flag = FALSE;
 
