@@ -1128,7 +1128,7 @@ void move_player(int dir, bool disarm)
 			event_signal(EVENT_LEAVE_STORE);
 		} else {
 			/* Handle objects (later) */
-			player->upkeep->notice |= (PN_PICKUP);
+			cmdq_push(CMD_AUTOPICKUP);
 		}
 
 

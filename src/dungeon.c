@@ -621,17 +621,6 @@ static void process_player(void)
 		if ((player->timed[TMD_PARALYZED]) || (player->timed[TMD_STUN] >= 100))
 			player->upkeep->energy_use = 100;
 
-		/* Picking up objects */
-		else if (player->upkeep->notice & PN_PICKUP) {
-			player->upkeep->energy_use = do_autopickup() * 10;
-			if (player->upkeep->energy_use > 100)
-				player->upkeep->energy_use = 100;
-			player->upkeep->notice &= ~(PN_PICKUP);
-			
-			/* Appropriate time for the player to see objects */
-			event_signal(EVENT_SEEFLOOR);
-		}
-
 		/* Repeated command */
 		else if (cmd_get_nrepeats() > 0) {
 			/* Hack -- Assume messages were seen */

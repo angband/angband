@@ -325,7 +325,7 @@ int do_autopickup(void)
 }
 
 /**
- * Pick up objects on the floor beneath you.  -LM-
+ * Pick up objects at the player's request
  */
 void do_cmd_pickup(struct command *cmd)
 {
@@ -346,9 +346,15 @@ void do_cmd_pickup(struct command *cmd)
 }
 
 /**
- * Pick up objects on the floor beneath you.  -LM-
+ * Pick up or look at objects on a square when the player steps onto it
  */
 void do_cmd_autopickup(struct command *cmd)
 {
+	/* Get the obvious things */
 	player->upkeep->energy_use = do_autopickup() * 10;
+	if (player->upkeep->energy_use > 100)
+		player->upkeep->energy_use = 100;
+
+	/* Look at what's left */
+	event_signal(EVENT_SEEFLOOR);
 }
