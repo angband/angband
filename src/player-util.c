@@ -610,16 +610,16 @@ static bool player_rest_disturb = FALSE;
  */
 void player_resting_set_count(struct player *p, s16b count)
 {
-	/* Ignore if the rest count is negative. */
-	if (count < 0 && !player_resting_is_special(count)) {
-		resting = 0;
-		return;
-	}
-
 	/* Cancel if player is disturbed */
 	if (player_rest_disturb) {
 		resting = 0;
 		player_rest_disturb = FALSE;
+		return;
+	}
+
+	/* Ignore if the rest count is negative. */
+	if ((count < 0) && !player_resting_is_special(count)) {
+		resting = 0;
 		return;
 	}
 

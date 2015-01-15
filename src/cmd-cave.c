@@ -1374,7 +1374,10 @@ void do_cmd_rest(struct command *cmd)
 		player->upkeep->update |= (PU_BONUS);
 	}
 
+	/* Set the counter, and stop if told to */
 	player_resting_set_count(player, n);
+	if (!player_is_resting(player))
+		return;
 
 	/* Take a turn */
 	player_resting_step_turn(player);
@@ -1387,6 +1390,9 @@ void do_cmd_rest(struct command *cmd)
 	if (player_resting_count(player) > 0) {
 		cmdq_push(CMD_REST);
 		cmd_set_arg_choice(cmdq_peek(), "choice", n - 1);
+	} else if (player_resting_is_special(n)) {
+		cmdq_push(CMD_REST);
+		cmd_set_arg_choice(cmdq_peek(), "choice", n);
 	} else {
 		player_resting_cancel(player);
 	}
