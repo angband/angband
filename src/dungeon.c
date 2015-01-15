@@ -640,7 +640,10 @@ static void process_player(void)
 			place_cursor();
 
 			/* Get and process a command */
-			process_command(CMD_GAME, FALSE);
+			if (cmdq_is_empty())
+				process_command(CMD_GAME, FALSE);
+			else
+				process_command(CMD_GAME, TRUE);
 
 			if (!player->upkeep->playing)
 				break;

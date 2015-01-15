@@ -208,6 +208,16 @@ static int cmd_idx(cmd_code code)
 	return CMD_ARG_NOT_PRESENT;
 }
 
+
+/**
+ * Is the command queue empty?
+ */
+bool cmdq_is_empty(void)
+{
+	return (cmd_head == cmd_tail);
+}
+
+
 /**
  * ------------------------------------------------------------------------
  * Argument setting/getting generics

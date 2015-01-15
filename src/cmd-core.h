@@ -254,6 +254,10 @@ extern errr (*cmd_get_hook)(cmd_context c);
  */
 errr cmdq_pop(cmd_context c, struct command **cmd, bool wait);
 
+/**
+ * Is the command queue empty?
+ */
+bool cmdq_is_empty(void);
 
 /**
  * Insert commands in the queue.
