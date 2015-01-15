@@ -37,7 +37,6 @@
 #include "player-util.h"
 #include "store.h"
 #include "target.h"
-#include "textui.h"
 #include "ui-context.h"
 #include "ui-input.h"
 #include "ui-knowledge.h"

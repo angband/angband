@@ -36,7 +36,6 @@
 #include "player-history.h"
 #include "store.h"
 #include "target.h"
-#include "textui.h"
 #include "ui-display.h"
 #include "ui-input.h"
 #include "ui-menu.h"

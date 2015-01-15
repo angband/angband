@@ -69,6 +69,6 @@ unsigned char cmd_lookup_key(cmd_code lookup_cmd, int mode);
 unsigned char cmd_lookup_key_unktrl(cmd_code lookup_cmd, int mode);
 cmd_code cmd_lookup(unsigned char key, int mode);
 bool key_confirm_command(unsigned char c);
-void textui_process_command(bool no_request);
+void textui_process_command(void);
 
 #endif /* INCLUDED_UI_INPUT_H */

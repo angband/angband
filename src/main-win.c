@@ -443,8 +443,6 @@ static byte win_pal[MAX_COLORS] =
 static int gamma_correction;
 
 
-#include "cmds.h"
-#include "textui.h"
 
 #if 0
 /*

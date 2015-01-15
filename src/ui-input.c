@@ -1796,7 +1796,7 @@ static bool textui_process_key(struct keypress kp, int count)
  * Parse and execute the current command
  * Give "Warning" on illegal commands.
  */
-void textui_process_command(bool no_request)
+void textui_process_command(void)
 {
 	int count = 0;
 	bool done = TRUE;

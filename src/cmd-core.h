@@ -246,7 +246,7 @@ struct command *cmdq_peek(void);
 /**
  * A function called by the game to get a command from the UI.
  */
-extern errr (*cmd_get_hook)(cmd_context c, bool wait);
+extern errr (*cmd_get_hook)(cmd_context c);
 
 /**
  * Gets the next command from the queue, optionally waiting to allow

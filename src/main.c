@@ -23,6 +23,7 @@
 #include "savefile.h"
 #include "signals.h"
 #include "ui-command.h"
+#include "ui-display.h"
 #include "ui-init.h"
 #include "ui-input.h"
 #include "ui-prefs.h"
@@ -39,8 +40,6 @@
 #if defined(WIN32_CONSOLE_MODE) || !defined(WINDOWS) || defined(USE_SDL)
 
 #include "main.h"
-#include "textui.h"
-#include "init.h"
 
 /*
  * List of the available modules in the order they are tried.

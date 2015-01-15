@@ -64,12 +64,6 @@ static NSInteger const AngbandCommandMenuItemTagBase = 2000;
 # define USE_LIVE_RESIZE_CACHE 1
 #endif
 
-/*
- * Support the improved game command handling
- */
-#include "textui.h"
-
-
 /* Application defined event numbers */
 enum
 {

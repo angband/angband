@@ -33,7 +33,6 @@
 #include "player-util.h"
 #include "store.h"
 #include "target.h"
-#include "textui.h"
 #include "ui.h"
 #include "ui-command.h"
 #include "ui-display.h"

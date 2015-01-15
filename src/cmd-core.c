@@ -31,7 +31,7 @@
 #include "store.h"
 #include "target.h"
 
-errr (*cmd_get_hook)(cmd_context c, bool wait);
+errr (*cmd_get_hook)(cmd_context c);
 
 #define CMD_QUEUE_SIZE 20
 #define prev_cmd_idx(idx) ((idx + CMD_QUEUE_SIZE - 1) % CMD_QUEUE_SIZE)
@@ -180,7 +180,7 @@ errr cmdq_pop(cmd_context c, struct command **cmd, bool wait)
 
 	/* If there are no commands queued, ask the UI for one. */
 	if (wait && cmd_head == cmd_tail)
-		cmd_get_hook(c, wait);
+		cmd_get_hook(c);
 
 	/* If we have a command ready, set it and return success. */
 	if (cmd_head != cmd_tail) {
