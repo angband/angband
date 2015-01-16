@@ -630,7 +630,7 @@ static void process_player(void)
 			prt("", 0, 0);
 
 			/* Process the command */
-			process_command(CMD_GAME, TRUE);
+			cmdq_pop(CMD_GAME);
 		} else { /* Normal command */
 			/* Check monster recall */
 			if (player->upkeep->monster_race)
@@ -639,11 +639,9 @@ static void process_player(void)
 			/* Place cursor on player/target */
 			place_cursor();
 
-			/* Get and process a command */
-			if (cmdq_is_empty())
-				process_command(CMD_GAME, FALSE);
-			else
-				process_command(CMD_GAME, TRUE);
+			/* Get and a command from the queue, or failing that the UI */
+			if (!cmdq_pop(CMD_GAME))
+				cmd_get_hook(CMD_GAME);
 
 			if (!player->upkeep->playing)
 				break;

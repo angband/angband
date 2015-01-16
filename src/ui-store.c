@@ -980,7 +980,7 @@ static bool store_menu_handle(struct menu *m, const ui_event *event, int oid)
 				ctx->flags |= (STORE_FRAME_CHANGE | STORE_GOLD_CHANGE);
 
 				/* Let the game handle any core commands (equipping, etc) */
-				process_command(CMD_STORE, TRUE);
+				cmdq_pop(CMD_STORE);
 
 				/* Notice and handle stuff */
 				notice_stuff(player->upkeep);
@@ -1056,7 +1056,7 @@ static bool store_menu_handle(struct menu *m, const ui_event *event, int oid)
 		}
 
 		/* Let the game handle any core commands (equipping, etc) */
-		process_command(CMD_STORE, TRUE);
+		cmdq_pop(CMD_STORE);
 
 		if (processed) {
 			event_signal(EVENT_INVENTORY);

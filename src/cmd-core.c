@@ -33,19 +33,10 @@
 
 errr (*cmd_get_hook)(cmd_context c);
 
-#define CMD_QUEUE_SIZE 20
-#define prev_cmd_idx(idx) ((idx + CMD_QUEUE_SIZE - 1) % CMD_QUEUE_SIZE)
-
-static int cmd_head = 0;
-static int cmd_tail = 0;
-static struct command cmd_queue[CMD_QUEUE_SIZE];
-
-static bool repeat_prev_allowed = FALSE;
-static bool repeating = FALSE;
-
 /**
+ * ------------------------------------------------------------------------
  * A simple list of commands and their handling functions.
- */
+ * ------------------------------------------------------------------------ */
 struct command_info
 {
 	cmd_code cmd;
@@ -128,6 +119,36 @@ const char *cmd_verb(cmd_code cmd)
 	return NULL;
 }
 
+/**
+ * Return the index of the given command in the command array.
+ */
+static int cmd_idx(cmd_code code)
+{
+	size_t i;
+
+	for (i = 0; i < N_ELEMENTS(game_cmds); i++)
+		if (game_cmds[i].cmd == code)
+			return i;
+
+	return CMD_ARG_NOT_PRESENT;
+}
+
+
+/**
+ * ------------------------------------------------------------------------
+ * The command queue.
+ * ------------------------------------------------------------------------ */
+
+#define CMD_QUEUE_SIZE 20
+#define prev_cmd_idx(idx) ((idx + CMD_QUEUE_SIZE - 1) % CMD_QUEUE_SIZE)
+
+static int cmd_head = 0;
+static int cmd_tail = 0;
+static struct command cmd_queue[CMD_QUEUE_SIZE];
+
+static bool repeat_prev_allowed = FALSE;
+static bool repeating = FALSE;
+
 struct command *cmdq_peek(void)
 {
 	return &cmd_queue[prev_cmd_idx(cmd_head)];
@@ -167,57 +188,158 @@ errr cmdq_push_copy(struct command *cmd)
 }
 
 /**
- * Get the next game command, with 'wait' indicating whether we
- * are prepared to wait for a command or require a quick return with
- * no command.
+ * Process a game command from the UI or the command queue and carry out
+ * whatever actions go along with it.
  */
-errr cmdq_pop(cmd_context c, struct command **cmd, bool wait)
+void process_command(cmd_context ctx, struct command *cmd)
 {
+	int oldrepeats = cmd->nrepeats;
+	int idx = cmd_idx(cmd->command);
+
+	/* Reset so that when selecting items, we look in the default location */
+	player->upkeep->command_wrk = 0;
+
+	if (idx == -1) return;
+
+	/* Command repetition */
+	if (game_cmds[idx].repeat_allowed) {
+		/* Auto-repeat only if there isn't already a repeat length. */
+		if (game_cmds[idx].auto_repeat_n > 0 && cmd->nrepeats == 0)
+			cmd_set_repeat(game_cmds[idx].auto_repeat_n);
+	} else {
+		cmd->nrepeats = 0;
+		repeating = FALSE;
+	}
+
+	/* The command gets to unset this if it isn't appropriate for
+	 * the user to repeat it. */
+	repeat_prev_allowed = TRUE;
+
+	cmd->context = ctx;
+
+	/* Actually execute the command function */
+	if (game_cmds[idx].fn)
+		game_cmds[idx].fn(cmd);
+
+	/* If the command hasn't changed nrepeats, count this execution. */
+	if (cmd->nrepeats > 0 && oldrepeats == cmd_get_nrepeats())
+		cmd_set_repeat(oldrepeats - 1);
+}
+
+/**
+ * Get the next game command from the queue and process it.
+ */
+bool cmdq_pop(cmd_context c)
+{
+	struct command *cmd;
+
 	/* If we're repeating, just pull the last command again. */
 	if (repeating) {
-		*cmd = &cmd_queue[prev_cmd_idx(cmd_tail)];
-		return 0;
+		cmd = &cmd_queue[prev_cmd_idx(cmd_tail)];
+	} else if (cmd_head != cmd_tail) {
+		/* If we have a command ready, set it. */
+		cmd = &cmd_queue[cmd_tail++];
+		if (cmd_tail == CMD_QUEUE_SIZE)
+			cmd_tail = 0;
+	} else {
+		/* Failure to get a command. */
+		return FALSE;
 	}
 
-	/* If there are no commands queued, ask the UI for one. */
-	if (wait && cmd_head == cmd_tail)
-		cmd_get_hook(c);
-
-	/* If we have a command ready, set it and return success. */
-	if (cmd_head != cmd_tail) {
-		*cmd = &cmd_queue[cmd_tail++];
-		if (cmd_tail == CMD_QUEUE_SIZE) cmd_tail = 0;
-
-		return 0;
-	}
-
-	/* Failure to get a command. */
-	return 1;
+	/* Now process it */
+	process_command(c, cmd);
+	return TRUE;
 }
 
 /**
- * Return the index of the given command in the command array.
+ * Inserts a command in the queue to be carried out, with the given
+ * number of repeats.
  */
-static int cmd_idx(cmd_code code)
+errr cmdq_push_repeat(cmd_code c, int nrepeats)
 {
-	size_t i;
+	struct command cmd = { 0 };
 
-	for (i = 0; i < N_ELEMENTS(game_cmds); i++)
-		if (game_cmds[i].cmd == code)
-			return i;
+	if (cmd_idx(c) == -1)
+		return 1;
 
-	return CMD_ARG_NOT_PRESENT;
+	cmd.command = c;
+	cmd.nrepeats = nrepeats;
+
+	return cmdq_push_copy(&cmd);
+}
+
+/**
+ * Inserts a command in the queue to be carried out. 
+ */
+errr cmdq_push(cmd_code c)
+{
+	return cmdq_push_repeat(c, 0);
 }
 
 
 /**
- * Is the command queue empty?
+ * Shorthand to execute all commands in the queue right now, no waiting
+ * for input.
  */
-bool cmdq_is_empty(void)
+void cmdq_execute(cmd_context ctx)
 {
-	return (cmd_head == cmd_tail);
+	while (cmdq_pop(ctx)) ;
 }
 
+/**
+ * ------------------------------------------------------------------------
+ * Handling of repeated commands
+ * ------------------------------------------------------------------------ */
+
+/**
+ * Remove any pending repeats from the current command.
+ */
+void cmd_cancel_repeat(void)
+{
+	struct command *cmd = &cmd_queue[prev_cmd_idx(cmd_tail)];
+
+	if (cmd->nrepeats || repeating) {
+		/* Cancel */
+		cmd->nrepeats = 0;
+		repeating = FALSE;
+
+		/* Redraw the state (later) */
+		player->upkeep->redraw |= (PR_STATE);
+	}
+}
+
+/**
+ * Update the number of repeats pending for the current command.
+ */
+void cmd_set_repeat(int nrepeats)
+{
+	struct command *cmd = &cmd_queue[prev_cmd_idx(cmd_tail)];
+
+	cmd->nrepeats = nrepeats;
+	if (nrepeats) repeating = TRUE;
+	else repeating = FALSE;
+
+	/* Redraw the state (later) */
+	player->upkeep->redraw |= (PR_STATE);
+}
+
+/**
+ * Return the number of repeats pending for the current command.
+ */
+int cmd_get_nrepeats(void)
+{
+	struct command *cmd = &cmd_queue[prev_cmd_idx(cmd_tail)];
+	return cmd->nrepeats;
+}
+
+/**
+ * Do not allow the current command to be repeated by the user using the
+ * "repeat last command" command.
+ */
+void cmd_disable_repeat(void)
+{
+	repeat_prev_allowed = FALSE;
+}
 
 /**
  * ------------------------------------------------------------------------
@@ -643,137 +765,4 @@ int cmd_get_quantity(struct command *cmd, const char *arg, int *amt, int max)
 	}
 
 	return CMD_ARG_ABORTED;
-}
-
-
-
-/**
- * Inserts a command in the queue to be carried out, with the given
- * number of repeats.
- */
-errr cmdq_push_repeat(cmd_code c, int nrepeats)
-{
-	struct command cmd = { 0 };
-
-	if (cmd_idx(c) == -1)
-		return 1;
-
-	cmd.command = c;
-	cmd.nrepeats = nrepeats;
-
-	return cmdq_push_copy(&cmd);
-}
-
-/**
- * Inserts a command in the queue to be carried out. 
- */
-errr cmdq_push(cmd_code c)
-{
-	return cmdq_push_repeat(c, 0);
-}
-
-
-/**
- * Shorthand to execute all commands in the queue right now, no waiting
- * for input.
- */
-void cmdq_execute(cmd_context ctx)
-{
-	while (cmd_head != cmd_tail)
-		process_command(ctx, TRUE);
-}
-
-/**
- * Request a game command from the UI and carry out whatever actions
- * go along with it.
- */
-void process_command(cmd_context ctx, bool no_request)
-{
-	struct command *cmd;
-
-	/* Reset so that when selecting items, we look in the default location */
-	player->upkeep->command_wrk = 0;
-
-	/* If we've got a command to process, do it. */
-	if (cmdq_pop(ctx, &cmd, !no_request) == 0) {
-		int oldrepeats = cmd->nrepeats;
-		int idx = cmd_idx(cmd->command);
-
-		if (idx == -1) return;
-
-		/* Command repetition */
-		if (game_cmds[idx].repeat_allowed) {
-			/* Auto-repeat only if there isn't already a repeat length. */
-			if (game_cmds[idx].auto_repeat_n > 0 && cmd->nrepeats == 0)
-				cmd_set_repeat(game_cmds[idx].auto_repeat_n);
-		} else {
-			cmd->nrepeats = 0;
-			repeating = FALSE;
-		}
-
-		/* 
-		 * The command gets to unset this if it isn't appropriate for
-		 * the user to repeat it.
-		 */
-		repeat_prev_allowed = TRUE;
-
-		cmd->context = ctx;
-
-		if (game_cmds[idx].fn)
-			game_cmds[idx].fn(cmd);
-
-		/* If the command hasn't changed nrepeats, count this execution. */
-		if (cmd->nrepeats > 0 && oldrepeats == cmd_get_nrepeats())
-			cmd_set_repeat(oldrepeats - 1);
-	}
-}
-
-/**
- * Remove any pending repeats from the current command. 
- */
-void cmd_cancel_repeat(void)
-{
-	struct command *cmd = &cmd_queue[prev_cmd_idx(cmd_tail)];
-
-	if (cmd->nrepeats || repeating) {
-		/* Cancel */
-		cmd->nrepeats = 0;
-		repeating = FALSE;
-		
-		/* Redraw the state (later) */
-		player->upkeep->redraw |= (PR_STATE);
-	}
-}
-
-/**
- * Update the number of repeats pending for the current command. 
- */
-void cmd_set_repeat(int nrepeats)
-{
-	struct command *cmd = &cmd_queue[prev_cmd_idx(cmd_tail)];
-
-	cmd->nrepeats = nrepeats;
-	if (nrepeats) repeating = TRUE;
-	else repeating = FALSE;
-
-	/* Redraw the state (later) */
-	player->upkeep->redraw |= (PR_STATE);
-}
-
-/**
- * Return the number of repeats pending for the current command. 
- */
-int cmd_get_nrepeats(void)
-{
-	struct command *cmd = &cmd_queue[prev_cmd_idx(cmd_tail)];
-	return cmd->nrepeats;
-}
-
-/**
- * Do not allow the current command to be repeated by the user using the
- * "repeat last command" command.
- */
-void cmd_disable_repeat(void)
-{
-	repeat_prev_allowed = FALSE;
 }

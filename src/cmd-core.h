@@ -250,15 +250,9 @@ struct command *cmdq_peek(void);
 extern errr (*cmd_get_hook)(cmd_context c);
 
 /**
- * Gets the next command from the queue, optionally waiting to allow
- * the UI time to process user input, etc. if wait is TRUE 
+ * Gets the next command from the queue and processes it
  */
-errr cmdq_pop(cmd_context c, struct command **cmd, bool wait);
-
-/**
- * Is the command queue empty?
- */
-bool cmdq_is_empty(void);
+bool cmdq_pop(cmd_context c);
 
 /**
  * Insert commands in the queue.
@@ -272,13 +266,6 @@ errr cmdq_push(cmd_code c);
  * Process all commands presently in the queue.
  */
 void cmdq_execute(cmd_context ctx);
-
-
-/**
- * Called by the game engine to get the player's next action.
- */
-void process_command(cmd_context c, bool no_request);
-
 
 /**
  * ------------------------------------------------------------------------
