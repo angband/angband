@@ -876,7 +876,7 @@ int context_menu_object(struct object *obj)
 		if (selected == CMD_DROP &&
 			square_isshop(cave, player->py, player->px)) {
 			struct command *gc = cmdq_peek();
-			gc->command = CMD_STASH;
+			gc->code = CMD_STASH;
 		}
 	}
 

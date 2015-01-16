@@ -165,7 +165,7 @@ errr cmdq_push_copy(struct command *cmd)
 	if (cmd_head + 1 == CMD_QUEUE_SIZE && cmd_tail == 0) return 1;
 
 	/* Insert command into queue. */
-	if (cmd->command != CMD_REPEAT) {
+	if (cmd->code != CMD_REPEAT) {
 		cmd_queue[cmd_head] = *cmd;
 	} else {
 		int cmd_prev = cmd_head - 1;
@@ -176,7 +176,7 @@ errr cmdq_push_copy(struct command *cmd)
 		   in the next command "slot". */
 		if (cmd_prev < 0) cmd_prev = CMD_QUEUE_SIZE - 1;
 		
-		if (cmd_queue[cmd_prev].command != CMD_NULL)
+		if (cmd_queue[cmd_prev].code != CMD_NULL)
 			cmd_queue[cmd_head] = cmd_queue[cmd_prev];
 	}
 
@@ -194,7 +194,7 @@ errr cmdq_push_copy(struct command *cmd)
 void process_command(cmd_context ctx, struct command *cmd)
 {
 	int oldrepeats = cmd->nrepeats;
-	int idx = cmd_idx(cmd->command);
+	int idx = cmd_idx(cmd->code);
 
 	/* Reset so that when selecting items, we look in the default location */
 	player->upkeep->command_wrk = 0;
@@ -262,7 +262,7 @@ errr cmdq_push_repeat(cmd_code c, int nrepeats)
 	if (cmd_idx(c) == -1)
 		return 1;
 
-	cmd.command = c;
+	cmd.code = c;
 	cmd.nrepeats = nrepeats;
 
 	return cmdq_push_copy(&cmd);
@@ -350,7 +350,7 @@ void cmd_disable_repeat(void)
  * Set an argument of name 'arg' to data 'data'
  */
 static void cmd_set_arg(struct command *cmd, const char *name,
-		enum cmd_arg_type type, union cmd_arg_data data)
+						enum cmd_arg_type type, union cmd_arg_data data)
 {
 	size_t i;
 
@@ -386,7 +386,7 @@ static void cmd_set_arg(struct command *cmd, const char *name,
  * Get an argument with name 'arg'
  */
 static int cmd_get_arg(struct command *cmd, const char *arg,
-		enum cmd_arg_type type, union cmd_arg_data *data)
+					   enum cmd_arg_type type, union cmd_arg_data *data)
 {
 	size_t i;
 
@@ -466,7 +466,7 @@ int cmd_get_spell(struct command *cmd, const char *arg, int *spell,
 	if (cmd_get_arg_item(cmd, "book", &book) == CMD_OK)
 		*spell = get_spell_from_book(verb, book, error, spell_filter);
 	else
-		*spell = get_spell(verb, book_filter, cmd->command, error, spell_filter);
+		*spell = get_spell(verb, book_filter, cmd->code, error, spell_filter);
 
 	if (*spell >= 0) {
 		cmd_set_arg_choice(cmd, arg, *spell);
@@ -509,7 +509,7 @@ int cmd_get_arg_string(struct command *cmd, const char *arg, const char **str)
  * Get a string, first from the command or failing that prompt the user
  */
 int cmd_get_string(struct command *cmd, const char *arg, const char **str,
-		const char *initial, const char *title, const char *prompt)
+				   const char *initial, const char *title, const char *prompt)
 {
 	char tmp[80] = "";
 
@@ -713,7 +713,7 @@ int cmd_get_item(struct command *cmd, const char *arg, struct object **obj,
 	if (cmd_get_arg_item(cmd, arg, obj) == CMD_OK)
 		return CMD_OK;
 
-	if (get_item(obj, prompt, reject, cmd->command, filter, mode)) {
+	if (get_item(obj, prompt, reject, cmd->code, filter, mode)) {
 		cmd_set_arg_item(cmd, arg, *obj);
 		return CMD_OK;
 	}

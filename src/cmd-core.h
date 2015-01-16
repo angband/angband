@@ -26,8 +26,7 @@
 /**
  * All valid game commands.  Not all implemented yet.
  */
-typedef enum cmd_code
-{
+typedef enum cmd_code {
 	CMD_NULL = 0,	/* A "do nothing" command so that there's something
 					   UIs can use as a "no command yet" sentinel. */
 	/* 
@@ -106,11 +105,9 @@ typedef enum cmd_code
 
 	CMD_HELP,
 	CMD_REPEAT
-}
-cmd_code;
+} cmd_code;
 
-typedef enum cmd_context
-{
+typedef enum cmd_context {
 	CMD_INIT,
 	CMD_BIRTH,
 	CMD_GAME,
@@ -188,16 +185,13 @@ struct cmd_arg {
  *
  * 'command' should always have a valid cmd_code value, the other entries
  * may or may not be significant depending on the command being returned.
- *
- * NOTE: This is prone to change quite a bit while things are shaken out.
  */
 struct command {
 	/* What context this is happening in */
 	cmd_context context;
 
 	/* A valid command code. */
-	/* XXX-AS rename to 'code' */
-	cmd_code command;
+	cmd_code code;
 
 	/* Number of times to attempt to repeat command. */
 	int nrepeats;
@@ -327,7 +321,8 @@ int cmd_get_arg_number(struct command *cmd, const char *arg, int *amt);
 /**
  * Try a bit harder.
  */
-int cmd_get_direction(struct command *cmd, const char *arg, int *dir, bool allow_5);
+int cmd_get_direction(struct command *cmd, const char *arg, int *dir,
+					  bool allow_5);
 int cmd_get_target(struct command *cmd, const char *arg, int *target);
 int cmd_get_item(struct command *cmd, const char *arg, struct object **obj,
 				 const char *prompt, const char *reject, item_tester filter,
