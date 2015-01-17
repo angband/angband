@@ -921,10 +921,8 @@ static void on_leave_level(void) {
  * If the savefile does not exist, cannot be loaded, or contains a dead
  * character, then a new game will be started.
  */
-void play_game(bool new_game)
+void start_game(bool new_game)
 {
-	bool new_level = TRUE;
-
 	/*** Try to load the savefile ***/
 
 	player->is_dead = TRUE;
@@ -945,98 +943,113 @@ void play_game(bool new_game)
 
 	/* Save not required yet. */
 	player->upkeep->autosave = FALSE;
+}
 
-	/* Process */
-	while (!player->is_dead && player->upkeep->playing) {
+void game_turn(void)
+{
+	static bool new_level = TRUE;
 
-		/* Make a new level if requested */
-		if (player->upkeep->generate_level) {
-			if (character_dungeon)
-				on_leave_level();
+	/* Make a new level if requested */
+	if (player->upkeep->generate_level) {
+		if (character_dungeon)
+			on_leave_level();
 
-			cave_generate(&cave, player);
+		cave_generate(&cave, player);
 
-			new_level = TRUE;
-			player->upkeep->generate_level = FALSE;
-		}
-
-		if (new_level) {
-			on_new_level();
-			new_level = FALSE;
-		}
-
-		/* Can the player move? */
-		while (player->energy >= 100) {
-			/* Do any necessary animations */
-			do_animation();
-
-			/* Process monster with even more energy first */
-			process_monsters(cave, player->energy + 1);
-			if (player->is_dead || !player->upkeep->playing ||
-				player->upkeep->generate_level)
-				break;
-
-			/* Process the player */
-			while (!process_player() && player->upkeep->playing) {
-				cmd_get_hook(CMD_GAME);
-				process_player_post_command();
-			}
-			if (player->is_dead || !player->upkeep->playing ||
-				player->upkeep->generate_level)
-				break;
-		}
-
-		/* Refresh */
-		refresh();
-		if (player->is_dead || !player->upkeep->playing ||
-			player->upkeep->generate_level)
-			continue;
-
-		/* Process the rest of the monsters */
-		process_monsters(cave, 0);
-
-		/* Mark all monsters as processed this turn */
-		reset_monsters();
-
-		/* Refresh */
-		refresh();
-		if (player->is_dead || !player->upkeep->playing ||
-			player->upkeep->generate_level)
-			continue;
-
-		/* Process the world every ten turns */
-		if (!(turn % 10)) {
-			/* Compact the monster list if we're approaching the limit */
-			if (cave_monster_count(cave) + 32 > z_info->level_monster_max)
-				compact_monsters(64);
-
-			/* Too many holes in the monster list - compress */
-			if (cave_monster_count(cave) + 32 < cave_monster_max(cave))
-				compact_monsters(0);			
-
-			process_world(cave);
-
-			/* Refresh */
-			refresh();
-			if (player->is_dead || !player->upkeep->playing ||
-				player->upkeep->generate_level)
-				continue;
-		}
-
-		/*** Apply energy ***/
-
-		/* Give the player some energy */
-		player->energy += extract_energy[player->state.speed];
-
-		/* Count game turns */
-		turn++;
+		new_level = TRUE;
+		player->upkeep->generate_level = FALSE;
 	}
 
+	if (new_level) {
+		on_new_level();
+		new_level = FALSE;
+	}
+
+	/* Can the player move? */
+	while (player->energy >= 100) {
+		/* Do any necessary animations */
+		do_animation();
+
+		/* Process monster with even more energy first */
+		process_monsters(cave, player->energy + 1);
+		if (player->is_dead || !player->upkeep->playing ||
+			player->upkeep->generate_level)
+			break;
+
+		/* Process the player */
+		while (!process_player() && player->upkeep->playing) {
+			cmd_get_hook(CMD_GAME);
+			process_player_post_command();
+		}
+		if (player->is_dead || !player->upkeep->playing ||
+			player->upkeep->generate_level)
+			break;
+	}
+
+	/* Refresh */
+	refresh();
+	if (player->is_dead || !player->upkeep->playing ||
+		player->upkeep->generate_level)
+		return;
+
+	/* Process the rest of the monsters */
+	process_monsters(cave, 0);
+
+	/* Mark all monsters as processed this turn */
+	reset_monsters();
+
+	/* Refresh */
+	refresh();
+	if (player->is_dead || !player->upkeep->playing ||
+		player->upkeep->generate_level)
+		return;
+
+	/* Process the world every ten turns */
+	if (!(turn % 10)) {
+		/* Compact the monster list if we're approaching the limit */
+		if (cave_monster_count(cave) + 32 > z_info->level_monster_max)
+			compact_monsters(64);
+
+		/* Too many holes in the monster list - compress */
+		if (cave_monster_count(cave) + 32 < cave_monster_max(cave))
+			compact_monsters(0);			
+
+		process_world(cave);
+
+		/* Refresh */
+		refresh();
+		if (player->is_dead || !player->upkeep->playing ||
+			player->upkeep->generate_level)
+			return;
+	}
+
+	/*** Apply energy ***/
+
+	/* Give the player some energy */
+	player->energy += extract_energy[player->state.speed];
+
+	/* Count game turns */
+	turn++;
+}
+
+void stop_game(void)
+{
 	/* Tell the UI we're done with the game state */
 	event_signal(EVENT_LEAVE_GAME);
 
 	/* Close stuff */
 	close_game();
+}
+
+void play_game(bool new_game)
+{
+	start_game(new_game);
+
+	/* Process */
+	while (!player->is_dead && player->upkeep->playing)
+		game_turn();
+
+	stop_game();
 }
 
 /*
