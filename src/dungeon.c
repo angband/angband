@@ -547,6 +547,101 @@ static void refresh(void)
 	Term_fresh();
 }
 
+static void process_player_pre_command(void)
+{
+	/* Refresh */
+	refresh();
+
+	/* Hack -- Pack Overflow */
+	pack_overflow();
+
+	/* Assume free turn */
+	player->upkeep->energy_use = 0;
+
+	/* Dwarves detect treasure */
+	if (player_has(PF_SEE_ORE)) {
+		/* Only if they are in good shape */
+		if (!player->timed[TMD_IMAGE] &&
+			!player->timed[TMD_CONFUSED] &&
+			!player->timed[TMD_AMNESIA] &&
+			!player->timed[TMD_STUN] &&
+			!player->timed[TMD_PARALYZED] &&
+			!player->timed[TMD_TERROR] &&
+			!player->timed[TMD_AFRAID])
+			effect_simple(EF_DETECT_GOLD, "3d3", 1, 0, 0, NULL);
+	}
+
+	/* Paralyzed or Knocked Out player gets no turn */
+	if ((player->timed[TMD_PARALYZED]) || (player->timed[TMD_STUN] >= 100))
+		cmdq_push(CMD_SLEEP);
+
+	/* Prepare for the next command */
+	if (cmd_get_nrepeats() > 0) {
+		/* Hack -- Assume messages were seen */
+		msg_flag = FALSE;
+
+		/* Clear the top line */
+		prt("", 0, 0);
+	} else {
+		/* Check monster recall */
+		if (player->upkeep->monster_race)
+			player->upkeep->redraw |= (PR_MONSTER);
+
+		/* Place cursor on player/target */
+		place_cursor();
+	}
+}
+
+static void process_player_post_command(void)
+{
+	int i;
+
+	/* Significant */
+	if (player->upkeep->energy_use) {
+		/* Use some energy */
+		player->energy -= player->upkeep->energy_use;
+
+		/* Increment the total energy counter */
+		player->total_energy += player->upkeep->energy_use;
+
+		/* Hack -- constant hallucination */
+		if (player->timed[TMD_IMAGE])
+			player->upkeep->redraw |= (PR_MAP);
+
+		/* Shimmer multi-hued monsters */
+		for (i = 1; i < cave_monster_max(cave); i++) {
+			struct monster *mon = cave_monster(cave, i);
+			if (!mon->race)
+				continue;
+			if (!rf_has(mon->race->flags, RF_ATTR_MULTI))
+				continue;
+			square_light_spot(cave, mon->fy, mon->fx);
+		}
+
+		/* Clear NICE flag, and show marked monsters */
+		for (i = 1; i < cave_monster_max(cave); i++) {
+			struct monster *mon = cave_monster(cave, i);
+			mflag_off(mon->mflag, MFLAG_NICE);
+			if (mflag_has(mon->mflag, MFLAG_MARK)) {
+				if (!mflag_has(mon->mflag, MFLAG_SHOW)) {
+					mflag_off(mon->mflag, MFLAG_MARK);
+					update_mon(mon, cave, FALSE);
+				}
+			}
+		}
+	}
+
+	/* Clear SHOW flag */
+	for (i = 1; i < cave_monster_max(cave); i++) {
+		struct monster *mon = cave_monster(cave, i);
+		mflag_off(mon->mflag, MFLAG_SHOW);
+	}
+
+	/* Hack - update needed first because inventory may have changed */
+	update_stuff(player->upkeep);
+	redraw_stuff(player->upkeep);
+}
+
 /*
  * Process the player
  *
@@ -565,10 +660,8 @@ static void refresh(void)
  * even if not disabled, it will only check during every 128th game turn
  * while resting, for efficiency.
  */
-static void process_player(void)
+static bool process_player(void)
 {
-	int i;
-
 	/*** Check for interrupts ***/
 
 	player_resting_complete_special(player);
@@ -576,8 +669,7 @@ static void process_player(void)
 	/* Check for "player abort" */
 	if (player->upkeep->running ||
 	    cmd_get_nrepeats() > 0 ||
-	    (player_is_resting(player) && !(turn & 0x7F)))
-	{
+	    (player_is_resting(player) && !(turn & 0x7F))) {
 		ui_event e;
 
 		/* Do not wait */
@@ -593,110 +685,19 @@ static void process_player(void)
 		}
 	}
 
-
-	/*** Handle actual user input ***/
-
 	/* Repeat until energy is reduced */
 	do {
-		/* Refresh */
-		refresh();
+		process_player_pre_command();
 
-		/* Hack -- Pack Overflow */
-		pack_overflow();
+		/* Get and a command from the queue, or failing that the UI */
+		if (!cmdq_pop(CMD_GAME))
+			//cmd_get_hook(CMD_GAME);
+			return FALSE;
 
-		/* Assume free turn */
-		player->upkeep->energy_use = 0;
+		if (!player->upkeep->playing)
+			break;
 
-		/* Dwarves detect treasure */
-		if (player_has(PF_SEE_ORE)) {
-			/* Only if they are in good shape */
-			if (!player->timed[TMD_IMAGE] &&
-					!player->timed[TMD_CONFUSED] &&
-					!player->timed[TMD_AMNESIA] &&
-					!player->timed[TMD_STUN] &&
-					!player->timed[TMD_PARALYZED] &&
-					!player->timed[TMD_TERROR] &&
-					!player->timed[TMD_AFRAID])
-				effect_simple(EF_DETECT_GOLD, "3d3", 1, 0, 0, NULL);
-		}
-
-		/* Paralyzed or Knocked Out player gets no turn */
-		if ((player->timed[TMD_PARALYZED]) || (player->timed[TMD_STUN] >= 100))
-			cmdq_push(CMD_SLEEP);
-
-		/* Repeated command */
-		if (cmd_get_nrepeats() > 0) {
-			/* Hack -- Assume messages were seen */
-			msg_flag = FALSE;
-
-			/* Clear the top line */
-			prt("", 0, 0);
-
-			/* Process the command */
-			cmdq_pop(CMD_GAME);
-		} else { /* Normal command */
-			/* Check monster recall */
-			if (player->upkeep->monster_race)
-				player->upkeep->redraw |= (PR_MONSTER);
-
-			/* Place cursor on player/target */
-			place_cursor();
-
-			/* Get and a command from the queue, or failing that the UI */
-			if (!cmdq_pop(CMD_GAME))
-				cmd_get_hook(CMD_GAME);
-
-			if (!player->upkeep->playing)
-				break;
-		}
-
-
-		/*** Clean up ***/
-
-		/* Significant */
-		if (player->upkeep->energy_use) {
-			/* Use some energy */
-			player->energy -= player->upkeep->energy_use;
-
-			/* Increment the total energy counter */
-			player->total_energy += player->upkeep->energy_use;
-
-			/* Hack -- constant hallucination */
-			if (player->timed[TMD_IMAGE])
-				player->upkeep->redraw |= (PR_MAP);
-
-			/* Shimmer multi-hued monsters */
-			for (i = 1; i < cave_monster_max(cave); i++) {
-				struct monster *mon = cave_monster(cave, i);
-				if (!mon->race)
-					continue;
-				if (!rf_has(mon->race->flags, RF_ATTR_MULTI))
-					continue;
-				square_light_spot(cave, mon->fy, mon->fx);
-			}
-
-			/* Clear NICE flag, and show marked monsters */
-			for (i = 1; i < cave_monster_max(cave); i++) {
-				struct monster *mon = cave_monster(cave, i);
-				mflag_off(mon->mflag, MFLAG_NICE);
-				if (mflag_has(mon->mflag, MFLAG_MARK)) {
-					if (!mflag_has(mon->mflag, MFLAG_SHOW)) {
-						mflag_off(mon->mflag, MFLAG_MARK);
-						update_mon(mon, cave, FALSE);
-					}
-				}
-			}
-		}
-
-		/* Clear SHOW flag */
-		for (i = 1; i < cave_monster_max(cave); i++) {
-			struct monster *mon = cave_monster(cave, i);
-			mflag_off(mon->mflag, MFLAG_SHOW);
-		}
-
-		/* Hack - update needed first because inventory may have changed */
-		update_stuff(player->upkeep);
-		redraw_stuff(player->upkeep);
+		process_player_post_command();
 	}
 
 	while (!player->upkeep->energy_use &&
@@ -705,6 +706,8 @@ static void process_player(void)
 
 	/* Notice stuff (if needed) */
 	if (player->upkeep->notice) notice_stuff(player->upkeep);
+
+	return TRUE;
 }
 
 static byte flicker = 0;
@@ -974,7 +977,10 @@ void play_game(bool new_game)
 				break;
 
 			/* Process the player */
-			process_player();
+			while (!process_player() && player->upkeep->playing) {
+				cmd_get_hook(CMD_GAME);
+				process_player_post_command();
+			}
 			if (player->is_dead || !player->upkeep->playing ||
 				player->upkeep->generate_level)
 				break;
