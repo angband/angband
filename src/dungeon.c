@@ -527,6 +527,26 @@ static void place_cursor(void) {
 }
 
 
+static void refresh(void)
+{
+	/* Notice stuff */
+	if (player->upkeep->notice)
+		notice_stuff(player->upkeep);
+
+	/* Update stuff */
+	if (player->upkeep->update)
+		update_stuff(player->upkeep);
+
+	/* Redraw stuff */
+	if (player->upkeep->redraw)
+		redraw_stuff(player->upkeep);
+
+	/* Place cursor on player/target */
+	place_cursor();
+
+	Term_fresh();
+}
+
 /*
  * Process the player
  *
@@ -576,27 +596,10 @@ static void process_player(void)
 
 	/*** Handle actual user input ***/
 
-	/* Mega hack -redraw big graphics - sorry NRM */
-	if ((tile_width > 1) || (tile_height > 1))
-		player->upkeep->redraw |= (PR_MAP);
-
 	/* Repeat until energy is reduced */
-	do
-	{
-		/* Notice stuff (if needed) */
-		if (player->upkeep->notice) notice_stuff(player->upkeep);
-
-		/* Update stuff (if needed) */
-		if (player->upkeep->update) update_stuff(player->upkeep);
-
-		/* Redraw stuff (if needed) */
-		if (player->upkeep->redraw) redraw_stuff(player->upkeep);
-
-		/* Place cursor on player/target */
-		place_cursor();
-
-		/* Refresh (optional) */
-		Term_fresh();
+	do {
+		/* Refresh */
+		refresh();
 
 		/* Hack -- Pack Overflow */
 		pack_overflow();
@@ -645,10 +648,6 @@ static void process_player(void)
 
 			if (!player->upkeep->playing)
 				break;
-
-			/* Mega hack - redraw if big graphics - sorry NRM */
-			if ((tile_width > 1) || (tile_height > 1)) 
-				player->upkeep->redraw |= (PR_MAP);
 		}
 
 
@@ -695,15 +694,14 @@ static void process_player(void)
 			mflag_off(mon->mflag, MFLAG_SHOW);
 		}
 
-		/* HACK: This will redraw the itemlist too frequently, but I'm don't
-		   know all the individual places it should go. */
-		player->upkeep->redraw |= PR_ITEMLIST;
 		/* Hack - update needed first because inventory may have changed */
 		update_stuff(player->upkeep);
 		redraw_stuff(player->upkeep);
 	}
 
-	while (!player->upkeep->energy_use && !player->is_dead && !player->upkeep->generate_level);
+	while (!player->upkeep->energy_use &&
+		   !player->is_dead &&
+		   !player->upkeep->generate_level);
 
 	/* Notice stuff (if needed) */
 	if (player->upkeep->notice) notice_stuff(player->upkeep);
@@ -780,24 +778,6 @@ void do_animation(void)
 	flicker++;
 }
 
-
-static void refresh(void)
-{
-	/* Notice stuff */
-	if (player->upkeep->notice)
-		notice_stuff(player->upkeep);
-
-	/* Update stuff */
-	if (player->upkeep->update)
-		update_stuff(player->upkeep);
-
-	/* Redraw stuff */
-	if (player->upkeep->redraw)
-		redraw_stuff(player->upkeep);
-
-	/* Place cursor on player/target */
-	place_cursor();
-}
 
 static void on_new_level(void)
 {

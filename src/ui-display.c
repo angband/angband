@@ -1021,6 +1021,9 @@ static void update_maps(game_event_type type, game_event_data *data, void *user)
 		if ((tile_width > 1) || (tile_height > 1))
 			Term_big_queue_char(t, vx, vy, a, c, COLOUR_WHITE, ' ');
 	}
+
+	/* Refresh the main screen */
+	Term_fresh();
 }
 
 /* ------------------------------------------------------------------------
