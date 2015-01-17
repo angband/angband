@@ -754,9 +754,8 @@ void run_step(int dir)
 {
 	int x, y;
 
-	/* Start run */
-	if (dir)
-	{
+	/* Start or continue run */
+	if (dir) {
 		/* Initialize */
 		run_init(dir);
 
@@ -765,93 +764,73 @@ void run_step(int dir)
 
 		/* Calculate torch radius */
 		player->upkeep->update |= (PU_TORCH);
-	}
-
-	/* Continue run */
-	else
-	{
-		if (!player->upkeep->running_withpathfind)
-		{
-			/* Update run */
-			if (run_test())
-			{
+	} else {
+		/* Continue running */
+		if (!player->upkeep->running_withpathfind) {
+			/* Update regular running */
+			if (run_test()) {
 				/* Disturb */
 				disturb(player, 0);
-	
-				/* Done */
 				return;
 			}
-		}
-		else
-		{
-			/* Abort if we have finished */
-			if (pf_result_index < 0)
-			{
+		} else {
+			/* Pathfinding */
+			if (pf_result_index < 0) {
+				/* Abort if the path is finished */
 				disturb(player, 0);
 				player->upkeep->running_withpathfind = FALSE;
 				return;
-			}
-
-			/* Abort if we would hit a wall */
-			else if (pf_result_index == 0)
-			{
-				/* Get next step */
+			} else if (pf_result_index == 0) {
+				/* Abort if we would hit a wall */
 				y = player->py + ddy[pf_result[pf_result_index] - '0'];
 				x = player->px + ddx[pf_result[pf_result_index] - '0'];
 
 				/* Known wall */
-				if (square_ismark(cave, y, x) && !square_ispassable(cave, y, x))
-				{
+				if (square_ismark(cave, y, x) &&
+					!square_ispassable(cave, y, x)) {
 					disturb(player, 0);
 					player->upkeep->running_withpathfind = FALSE;
 					return;
 				}
-			}
-
-			/*
-			 * Hack -- walking stick lookahead.
-			 *
-			 * If the player has computed a path that is going to end up in a wall,
-			 * we notice this and convert to a normal run. This allows us to click
-			 * on unknown areas to explore the map.
-			 *
-			 * We have to look ahead two, otherwise we don't know which is the last
-			 * direction moved and don't initialise the run properly.
-			 */
-			else if (pf_result_index > 0)
-			{
-				/* Get next step */
+			} else if (pf_result_index > 0) {
+				/* If the player has computed a path that is going to end up
+				 * in a wall, we notice this and convert to a normal run. This
+				 * allows us to click on unknown areas to explore the map.
+				 *
+				 * We have to look ahead two, otherwise we don't know which is
+				 * the last direction moved and don't initialise the run
+				 * properly. */
 				y = player->py + ddy[pf_result[pf_result_index] - '0'];
 				x = player->px + ddx[pf_result[pf_result_index] - '0'];
 
 				/* Known wall */
-				if (square_ismark(cave, y, x) && !square_ispassable(cave, y, x))
-				{
+				if (square_ismark(cave, y, x) &&
+					!square_ispassable(cave, y, x)) {
 					disturb(player, 0);
 					player->upkeep->running_withpathfind = FALSE;
 					return;
 				}
 
 				/* Get step after */
-				y = y + ddy[pf_result[pf_result_index-1] - '0'];
-				x = x + ddx[pf_result[pf_result_index-1] - '0'];
+				y = y + ddy[pf_result[pf_result_index - 1] - '0'];
+				x = x + ddx[pf_result[pf_result_index - 1] - '0'];
 
-				/* Known wall */
-				if (square_ismark(cave, y, x) && !square_ispassable(cave, y, x))
-				{
+				/* Known wall, so run the direction we were going */
+				if (square_ismark(cave, y, x) &&
+					!square_ispassable(cave, y, x)) {
 					player->upkeep->running_withpathfind = FALSE;
-
 					run_init(pf_result[pf_result_index] - '0');
 				}
 			}
 
+			/* Now actually run the step if we're still going */
 			run_cur_dir = pf_result[pf_result_index--] - '0';
 		}
 	}
 
-
-	/* Decrease counter */
-	player->upkeep->running--;
+	/* Decrease counter if it hasn't been cancelled */
+	if (player->upkeep->running)
+		player->upkeep->running--;
 
 	/* Take time */
 	player->upkeep->energy_use = 100;
