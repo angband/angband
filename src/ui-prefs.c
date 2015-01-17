@@ -1201,8 +1201,8 @@ void textui_prefs_init(void)
 	for (f = flavors; f; f = f->next)
 		if (flavor_max < f->fidx)
 			flavor_max = f->fidx;
-	flavor_x_attr = mem_zalloc(flavor_max * sizeof(byte));
-	flavor_x_char = mem_zalloc(flavor_max * sizeof(wchar_t));
+	flavor_x_attr = mem_zalloc((flavor_max + 1) * sizeof(byte));
+	flavor_x_char = mem_zalloc((flavor_max + 1) * sizeof(wchar_t));
 
 	reset_visuals(FALSE);
 }
