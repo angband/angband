@@ -547,6 +547,19 @@ static void refresh(void)
 	Term_fresh();
 }
 
+/**
+ * Prepare for a player command to happen
+ *
+ * Notice the annoying code to handle "pack overflow", which
+ * must come first just in case somebody manages to corrupt
+ * the savefiles by clever use of menu commands or something. (Can go? NRM)
+ *
+ * Notice the annoying code to handle "monster memory" changes,
+ * which allows us to avoid having to update the window flags
+ * every time we change any internal monster memory field, and
+ * also reduces the number of times that the recall window must
+ * be redrawn.
+ */
 static void process_player_pre_command(void)
 {
 	/* Refresh */
@@ -592,6 +605,9 @@ static void process_player_pre_command(void)
 	}
 }
 
+/**
+ * Housekeeping after the processing of a player command
+ */
 static void process_player_post_command(void)
 {
 	int i;
@@ -642,25 +658,18 @@ static void process_player_post_command(void)
 	redraw_stuff(player->upkeep);
 }
 
-/*
- * Process the player
- *
- * Notice the annoying code to handle "pack overflow", which
- * must come first just in case somebody manages to corrupt
- * the savefiles by clever use of menu commands or something.
- *
- * Notice the annoying code to handle "monster memory" changes,
- * which allows us to avoid having to update the window flags
- * every time we change any internal monster memory field, and
- * also reduces the number of times that the recall window must
- * be redrawn.
+/**
+ * Process player commands from the command queue, finishing when there is a
+ * command using energy (any regular game command), or we run out of commands
+ * and need another from the user, or the character changes level or dies, or
+ * the game is stopped.
  *
  * Note that the code to check for user abort during repeated commands
  * and running and resting can be disabled entirely with an option, and
  * even if not disabled, it will only check during every 128th game turn
  * while resting, for efficiency.
  */
-static bool process_player(void)
+static void process_player(void)
 {
 	/*** Check for interrupts ***/
 
@@ -689,25 +698,20 @@ static bool process_player(void)
 	do {
 		process_player_pre_command();
 
-		/* Get and a command from the queue, or failing that the UI */
+		/* Get a command from the queue if there is one */
 		if (!cmdq_pop(CMD_GAME))
-			//cmd_get_hook(CMD_GAME);
-			return FALSE;
+			break;
 
 		if (!player->upkeep->playing)
 			break;
 
 		process_player_post_command();
-	}
-
-	while (!player->upkeep->energy_use &&
-		   !player->is_dead &&
-		   !player->upkeep->generate_level);
+	} while (!player->upkeep->energy_use &&
+			 !player->is_dead &&
+			 !player->upkeep->generate_level);
 
 	/* Notice stuff (if needed) */
 	if (player->upkeep->notice) notice_stuff(player->upkeep);
-
-	return TRUE;
 }
 
 static byte flicker = 0;
@@ -782,6 +786,9 @@ void do_animation(void)
 }
 
 
+/**
+ * Housekeeping on arriving on a new level
+ */
 static void on_new_level(void)
 {
 	/* Play ambient sound on change of level. */
@@ -891,6 +898,9 @@ static void on_new_level(void)
 		player->energy = INITIAL_DUNGEON_ENERGY;
 }
 
+/**
+ * Housekeeping on leaving a level
+ */
 static void on_leave_level(void) {
 	/* Notice stuff */
 	if (player->upkeep->notice) notice_stuff(player->upkeep);
@@ -903,28 +913,13 @@ static void on_leave_level(void) {
 	event_signal(EVENT_MESSAGE_FLUSH);
 }
 
-
-/*
- * Actually play a game.
- *
- * This function is called from a variety of entry points, since both
- * the standard "main.c" file, as well as several platform-specific
- * "main-xxx.c" files, call this function to start a new game with a
- * new savefile, start a new game with an existing savefile, or resume
- * a saved game with an existing savefile.
- *
- * If the "new_game" parameter is true, and the savefile contains a
- * living character, then that character will be killed, so that the
- * player may start a new game with that savefile.  This is only used
- * by the "-n" option in "main.c".
- *
- * If the savefile does not exist, cannot be loaded, or contains a dead
- * character, then a new game will be started.
+/**
+ * Start actually playing a game, either by loading a savefile or creating
+ * a new character
  */
 void start_game(bool new_game)
 {
-	/*** Try to load the savefile ***/
-
+	/* Player will be resuscitated if living in the savefile */
 	player->is_dead = TRUE;
 
 	/* Try loading */
@@ -943,55 +938,50 @@ void start_game(bool new_game)
 
 	/* Save not required yet. */
 	player->upkeep->autosave = FALSE;
+
+	/* Do new level stuff if we have one */
+	if (character_dungeon)
+		on_new_level();
 }
 
-void game_turn(void)
+/**
+ * The character takes their turn, preceded by any monsters with more energy.
+ *
+ * Note that the player's turn will run for as long as there are commands
+ * in the command queue or entered by the player which don't use energy
+ * - that is, interface-only commands
+ */
+void player_turn(void)
 {
-	static bool new_level = TRUE;
+	/* Do any necessary animations */
+	do_animation();
 
-	/* Make a new level if requested */
-	if (player->upkeep->generate_level) {
-		if (character_dungeon)
-			on_leave_level();
-
-		cave_generate(&cave, player);
-
-		new_level = TRUE;
-		player->upkeep->generate_level = FALSE;
-	}
-
-	if (new_level) {
-		on_new_level();
-		new_level = FALSE;
-	}
-
-	/* Can the player move? */
-	while (player->energy >= 100) {
-		/* Do any necessary animations */
-		do_animation();
-
-		/* Process monster with even more energy first */
-		process_monsters(cave, player->energy + 1);
-		if (player->is_dead || !player->upkeep->playing ||
-			player->upkeep->generate_level)
-			break;
-
-		/* Process the player */
-		while (!process_player() && player->upkeep->playing) {
-			cmd_get_hook(CMD_GAME);
-			process_player_post_command();
-		}
-		if (player->is_dead || !player->upkeep->playing ||
-			player->upkeep->generate_level)
-			break;
-	}
-
-	/* Refresh */
-	refresh();
+	/* Process monster with even more energy first */
+	process_monsters(cave, player->energy + 1);
 	if (player->is_dead || !player->upkeep->playing ||
 		player->upkeep->generate_level)
 		return;
 
+	/* Process the player, asking for a command if the queue is empty and
+	 * we haven't used any energy yet */
+	while (player->upkeep->playing) {
+		process_player();
+		if (player->upkeep->energy_use)
+			break;
+		else {
+			cmd_get_hook(CMD_GAME);
+			process_player_post_command();
+		}
+	}
+}
+
+/**
+ * The monsters get to take their turns, the player gets energy, and the
+ * game turn count is incremented; every ten turns world and player 
+ * housekeeping is done.
+ */
+void game_turn(void)
+{
 	/* Process the rest of the monsters */
 	process_monsters(cave, 0);
 
@@ -1032,27 +1022,67 @@ void game_turn(void)
 	turn++;
 }
 
-void stop_game(void)
-{
-	/* Tell the UI we're done with the game state */
-	event_signal(EVENT_LEAVE_GAME);
-
-	/* Close stuff */
-	close_game();
-}
-
+/**
+ * Actually play a game.
+ *
+ * This function is called from a variety of entry points, since both
+ * the standard "main.c" file, as well as several platform-specific
+ * "main-xxx.c" files, call this function to start a new game with a
+ * new savefile, start a new game with an existing savefile, or resume
+ * a saved game with an existing savefile.
+ *
+ * If the "new_game" parameter is true, and the savefile contains a
+ * living character, then that character will be killed, so that the
+ * player may start a new game with that savefile.  This is only used
+ * by the "-n" option in "main.c".
+ *
+ * If the savefile does not exist, cannot be loaded, or contains a dead
+ * character, then a new game will be started.
+ */
 void play_game(bool new_game)
 {
+	/* Load a savefile or birth a character, or both */
 	start_game(new_game);
 
 	/* Process */
-	while (!player->is_dead && player->upkeep->playing)
-		game_turn();
+	while (!player->is_dead && player->upkeep->playing) {
+		/* Make a new level if requested */
+		if (player->upkeep->generate_level) {
+			if (character_dungeon)
+				on_leave_level();
 
-	stop_game();
+			cave_generate(&cave, player);
+			on_new_level();
+
+			player->upkeep->generate_level = FALSE;
+		}
+
+		/* If the player has enough energy to move they now do so, after
+		 * any monsters with more energy take their turns */
+		while (player->energy >= 100) {
+			player_turn();
+
+			if (player->is_dead || !player->upkeep->playing ||
+				player->upkeep->generate_level)
+				break;
+		}
+
+		/* Refresh */
+		refresh();
+		if (player->is_dead || !player->upkeep->playing ||
+			player->upkeep->generate_level)
+			continue;
+
+		/* Process monsters and the world, give the player energy, increment
+		 * the turn counter */
+		game_turn();
+	}
+
+	/* Shut the game down */
+	close_game();
 }
 
-/*
+/**
  * Save the game
  */
 void save_game(void)
@@ -1149,7 +1179,7 @@ static void death_knowledge(void)
 
 
 
-/*
+/**
  * Close up the current game (player may or may not be dead)
  *
  * Note that the savefile is not saved until the tombstone is
@@ -1159,6 +1189,9 @@ static void death_knowledge(void)
  */
 void close_game(void)
 {
+	/* Tell the UI we're done with the game state */
+	event_signal(EVENT_LEAVE_GAME);
+
 	/* Handle stuff */
 	handle_stuff(player->upkeep);
 
