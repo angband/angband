@@ -68,7 +68,9 @@ void cmd_init(void);
 unsigned char cmd_lookup_key(cmd_code lookup_cmd, int mode);
 unsigned char cmd_lookup_key_unktrl(cmd_code lookup_cmd, int mode);
 cmd_code cmd_lookup(unsigned char key, int mode);
+ui_event textui_get_command(int *count);
 bool key_confirm_command(unsigned char c);
-void textui_process_command(void);
+bool textui_process_key(struct keypress kp, struct cmd_info *cmd,
+						int count);
 
 #endif /* INCLUDED_UI_INPUT_H */

@@ -2162,16 +2162,6 @@ static void ui_leave_game(game_event_type type, game_event_data *data,
 	screen_save_depth++;
 }
 
-errr textui_get_cmd(cmd_context context)
-{
-	if (context == CMD_GAME)
-		textui_process_command();
-
-	/* If we've reached here, we haven't got a command. */
-	return 1;
-}
-
-
 void init_display(void)
 {
 	event_add_handler(EVENT_ENTER_INIT, ui_enter_init, NULL);

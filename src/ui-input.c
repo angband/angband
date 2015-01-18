@@ -1632,7 +1632,7 @@ static struct keypress request_command_buffer[256];
  * Note that "backslash" is treated specially, and is used to bypass any
  * keymap entry for the following character.  This is useful for macros.
  */
-static ui_event textui_get_command(int *count)
+ui_event textui_get_command(int *count)
 {
 	int mode = OPT(rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
 
@@ -1761,9 +1761,9 @@ bool key_confirm_command(unsigned char c)
 /**
  * Process a textui keypress.
  */
-static bool textui_process_key(struct keypress kp, int count)
+bool textui_process_key(struct keypress kp, struct cmd_info *cmd,
+							   int count)
 {
-	struct cmd_info *cmd;
 	int mode = OPT(rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
 
 	/* XXXmacro this needs rewriting */
@@ -1789,29 +1789,4 @@ static bool textui_process_key(struct keypress kp, int count)
 	}
 
 	return TRUE;
-}
-
-
-/**
- * Parse and execute the current command
- * Give "Warning" on illegal commands.
- */
-void textui_process_command(void)
-{
-	int count = 0;
-	bool done = TRUE;
-	ui_event e;
-
-	e = textui_get_command(&count);
-
-	switch (e.type) {
-		case EVT_RESIZE: do_cmd_redraw(); break;
-		case EVT_MOUSE: textui_process_click(e); break;
-		case EVT_BUTTON:
-		case EVT_KBRD: done = textui_process_key(e.key, count); break;
-		default: ;
-	}
-
-	if (!done)
-		do_cmd_unknown();
 }

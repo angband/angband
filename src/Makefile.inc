@@ -1130,6 +1130,15 @@ depgen:
  effects.h list-effects.h list-elements.h list-identify-flags.h \
  list-origins.h player-calcs.h list-player-flags.h list-magic-realms.h \
  ui-event.h
+./ui-game.o: ui-game.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
+ z-color.h z-util.h z-rand.h config.h game-event.h z-type.h message.h \
+ message-list.h option.h z-file.h list-options.h player.h guid.h \
+ obj-properties.h list-stats.h list-object-flags.h list-kind-flags.h \
+ list-object-modifiers.h object.h z-quark.h z-dice.h z-expression.h \
+ effects.h list-effects.h list-elements.h list-identify-flags.h \
+ list-origins.h player-calcs.h list-player-flags.h list-magic-realms.h \
+ ui-command.h ui-context.h cave.h list-square-flags.h \
+ list-terrain-flags.h ui-input.h z-term.h ui-event.h cmd-core.h
 ./ui-help.o: ui-help.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
  z-color.h z-util.h z-rand.h config.h game-event.h z-type.h message.h \
  message-list.h option.h z-file.h list-options.h player.h guid.h \
