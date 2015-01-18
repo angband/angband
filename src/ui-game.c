@@ -40,11 +40,22 @@ void textui_process_command(void)
 		case EVT_RESIZE: do_cmd_redraw(); break;
 		case EVT_MOUSE: textui_process_click(e); break;
 		case EVT_BUTTON:
-		case EVT_KBRD: done = textui_process_key(e.key, cmd, count); break;
+		case EVT_KBRD: done = textui_process_key(e.key, &cmd, count); break;
 		default: ;
 	}
 
-	if (!done)
+	if (done) {
+		if (!cmd)
+			/* Null command */
+			return;
+		else if (cmd->hook)
+			/* UI command */
+			cmd->hook();
+		else if (cmd->cmd)
+			/* Game command */
+			cmdq_push_repeat(cmd->cmd, count);
+	} else
+		/* Error */
 		do_cmd_unknown();
 }
 

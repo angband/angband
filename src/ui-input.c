@@ -1761,7 +1761,7 @@ bool key_confirm_command(unsigned char c)
 /**
  * Process a textui keypress.
  */
-bool textui_process_key(struct keypress kp, struct cmd_info *cmd,
+bool textui_process_key(struct keypress kp, struct cmd_info **cmd,
 							   int count)
 {
 	int mode = OPT(rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
@@ -1769,24 +1769,24 @@ bool textui_process_key(struct keypress kp, struct cmd_info *cmd,
 	/* XXXmacro this needs rewriting */
 	keycode_t c = kp.code;
 
+	/* Null command */
 	if (c == '\0' || c == ESCAPE || c == ' ' || c == '\a')
 		return TRUE;
 
 	if (c == KC_ENTER) {
-		cmd = textui_action_menu_choose();
+		/* Use command menus */
+		*cmd = textui_action_menu_choose();
 	} else {
+		/* Command key */
 		if (c > UCHAR_MAX) return FALSE;
-		cmd = converted_list[mode][c];
+		*cmd = converted_list[mode][c];
 	}
 
-	if (!cmd) return FALSE;
+	if (!(*cmd)) return FALSE;
 
-	if (key_confirm_command(c) && (!cmd->prereq || cmd->prereq())) {
-		if (cmd->hook)
-			cmd->hook();
-		else if (cmd->cmd)
-			cmdq_push_repeat(cmd->cmd, count);
-	}
+	/* Confirm for worn equipment inscriptions, check command prerequisites */
+	if (!key_confirm_command(c) || ((*cmd)->prereq && !(*cmd)->prereq()))
+		*cmd = NULL;
 
 	return TRUE;
 }
