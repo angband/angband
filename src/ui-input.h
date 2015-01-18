@@ -64,13 +64,8 @@ bool (*get_file)(const char *suggested_name, char *path, size_t len);
 bool get_com_ex(const char *prompt, ui_event *command);
 void pause_line(struct term *term);
 void textui_input_init(void);
-void cmd_init(void);
-unsigned char cmd_lookup_key(cmd_code lookup_cmd, int mode);
-unsigned char cmd_lookup_key_unktrl(cmd_code lookup_cmd, int mode);
-cmd_code cmd_lookup(unsigned char key, int mode);
 ui_event textui_get_command(int *count);
 bool key_confirm_command(unsigned char c);
-bool textui_process_key(struct keypress kp, struct cmd_info **cmd,
-						int count);
+bool textui_process_key(struct keypress kp, unsigned char *c, int count);
 
 #endif /* INCLUDED_UI_INPUT_H */

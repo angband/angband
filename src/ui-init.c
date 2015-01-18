@@ -27,6 +27,7 @@
 #include "game-input.h"
 #include "game-event.h"
 #include "ui-display.h"
+#include "ui-game.h"
 #include "ui-input.h"
 #include "ui-knowledge.h"
 #include "ui-prefs.h"

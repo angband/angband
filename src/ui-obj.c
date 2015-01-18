@@ -32,6 +32,7 @@
 #include "obj-util.h"
 #include "store.h"
 #include "ui-display.h"
+#include "ui-game.h"
 #include "ui-input.h"
 #include "ui-obj.h"
 #include "ui-prefs.h"

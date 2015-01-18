@@ -38,6 +38,7 @@
 #include "store.h"
 #include "target.h"
 #include "ui-context.h"
+#include "ui-game.h"
 #include "ui-input.h"
 #include "ui-knowledge.h"
 #include "ui-menu.h"
