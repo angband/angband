@@ -13,7 +13,6 @@ extern bool character_saved;
 extern s16b character_xtra;
 extern bool arg_wizard;
 
-extern bool is_daytime(void);
 extern void dungeon_change_level(int dlev);
 void do_animation(void);
 extern void play_game(bool new_game);

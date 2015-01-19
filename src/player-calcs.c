@@ -23,6 +23,7 @@
 #include "dungeon.h"
 #include "game-event.h"
 #include "game-input.h"
+#include "game-world.h"
 #include "init.h"
 #include "mon-msg.h"
 #include "mon-util.h"

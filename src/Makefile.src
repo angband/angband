@@ -97,6 +97,7 @@ ANGFILES = \
 	effects.o \
 	game-event.o \
 	game-input.o \
+	game-world.o \
 	generate.o \
 	gen-cave.o \
 	gen-chunk.o \

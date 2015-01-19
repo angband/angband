@@ -22,6 +22,7 @@
 #include "dungeon.h"
 #include "game-event.h"
 #include "game-input.h"
+#include "game-world.h"
 #include "generate.h"
 #include "grafmode.h"
 #include "init.h"
@@ -71,18 +72,6 @@ bool character_dungeon;		/* The character has a dungeon */
 bool character_saved;		/* The character was just saved to a savefile */
 s16b character_xtra;		/* Depth of the game in startup mode */
 bool arg_wizard;			/* Command arg -- Request wizard mode */
-
-/*
- * Say whether it's daytime or not
- */
-bool is_daytime(void)
-{
-	if ((turn % (10L * z_info->day_length)) < ((10L * z_info->day_length) / 2)) 
-		return TRUE;
-
-	return FALSE;
-} 
-
 
 /*
  * Change dungeon level - e.g. by going up stairs or with WoR.

@@ -18,7 +18,7 @@
 
 #include "angband.h"
 #include "cave.h"
-#include "dungeon.h"
+#include "game-world.h"
 #include "generate.h"
 #include "obj-pile.h"
 #include "obj-util.h"
