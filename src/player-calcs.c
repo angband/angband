@@ -2316,13 +2316,6 @@ void notice_stuff(struct player_upkeep *upkeep)
 	/* Notice stuff */
 	if (!upkeep->notice) return;
 
-	/* Deal with autoinscribe stuff */
-	if (upkeep->notice & PN_AUTOINSCRIBE) {
-		upkeep->notice &= ~(PN_AUTOINSCRIBE);
-		autoinscribe_pack();
-		autoinscribe_ground();
-	}
-
 	/* Deal with ignore stuff */
 	if (upkeep->notice & PN_IGNORE) {
 		upkeep->notice &= ~(PN_IGNORE);

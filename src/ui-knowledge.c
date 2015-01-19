@@ -1947,9 +1947,9 @@ static void o_xtra_act(struct keypress ch, int oid)
 
 			/* Add the autoinscription */
 			add_autoinscription(oid, note_text);
+			cmdq_push(CMD_AUTOINSCRIBE);
 
-			/* Notice stuff (later) */
-			player->upkeep->notice |= (PN_AUTOINSCRIBE);
+			/* Redraw gear */
 			player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
 		}
 

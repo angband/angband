@@ -86,6 +86,7 @@ static const struct command_info game_cmds[] =
 	{ CMD_TAKEOFF, "take off", do_cmd_takeoff, FALSE, 0 },
 	{ CMD_DROP, "drop", do_cmd_drop, FALSE, 0 },
 	{ CMD_UNINSCRIBE, "un-inscribe", do_cmd_uninscribe, FALSE, 0 },
+	{ CMD_AUTOINSCRIBE, "autoinscribe", do_cmd_autoinscribe, FALSE, 0 },
 	{ CMD_EAT, "eat", do_cmd_eat_food, FALSE, 0 },
 	{ CMD_QUAFF, "quaff", do_cmd_quaff_potion, FALSE, 0 },
 	{ CMD_USE_ROD, "zap", do_cmd_zap_rod, FALSE, 0 },

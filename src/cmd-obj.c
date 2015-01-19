@@ -297,6 +297,27 @@ void do_cmd_inscribe(struct command *cmd)
 
 
 /**
+ * Autoinscribe all appropriate objects
+ */
+void do_cmd_autoinscribe(struct command *cmd)
+{
+	int py = player->py;
+	int px = player->px;
+	struct object *obj;
+
+	/* Autoinscribe each object on the floor beneath the player */
+	for (obj = square_object(cave, py, px); obj; obj = obj->next)
+		apply_autoinscription(obj);
+
+	/* Autoinscribe each object in the inventory */
+	for (obj = player->gear; obj; obj = obj->next)
+		apply_autoinscription(obj);
+
+	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
+}
+
+
+/**
  * ------------------------------------------------------------------------
  * Taking off/putting on
  * ------------------------------------------------------------------------
@@ -493,8 +514,6 @@ void do_cmd_drop(struct command *cmd)
 	inven_drop(obj, amt);
 	player->upkeep->energy_use = 50;
 }
-
-
 
 /**
  * ------------------------------------------------------------------------

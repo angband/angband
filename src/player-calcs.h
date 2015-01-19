@@ -102,8 +102,6 @@ enum
  * Bit flags for the "player->notice" variable
  */
 #define PN_COMBINE      0x00000001L    /* Combine the pack */
-#define PN_AUTOINSCRIBE 0x00000002L    /* Autoinscribe items */
-#define PN_PICKUP       0x00000004L    /* Pick stuff up */
 #define PN_IGNORE       0x00000008L    /* Ignore stuff */
 #define PN_MON_MESSAGE	0x00000010L	   /* flush monster pain messages */
 

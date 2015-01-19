@@ -12,6 +12,7 @@
 #include "cmds.h"
 #include "keymap.h"
 #include "ui-event.h"
+#include "ui-game.h"
 #include "ui-input.h"
 #include "z-virt.h"
 
