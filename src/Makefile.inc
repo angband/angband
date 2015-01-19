@@ -158,12 +158,11 @@ depgen:
  mon-blow-effects.h list-blow-effects.h list-mon-temp-flags.h \
  list-mon-race-flags.h list-mon-spells.h grafmode.h init.h parser.h \
  mon-lore.h z-textblock.h mon-make.h mon-move.h mon-spell.h mon-util.h \
- obj-desc.h obj-gear.h list-equip-slots.h obj-identify.h obj-pile.h \
- obj-randart.h obj-tval.h list-tvals.h obj-util.h player-birth.h \
- player-history.h list-history-types.h player-path.h player-timed.h \
- list-player-timed.h player-util.h savefile.h score.h signals.h store.h \
- tables.h target.h ui-birth.h ui-death.h ui-input.h z-term.h ui-event.h \
- ui-map.h ui-mon-list.h ui-prefs.h ui-score.h ui.h
+ obj-gear.h list-equip-slots.h obj-identify.h obj-pile.h obj-randart.h \
+ player-birth.h player-history.h list-history-types.h player-path.h \
+ player-timed.h list-player-timed.h player-util.h savefile.h score.h \
+ signals.h store.h tables.h target.h ui-birth.h ui-death.h ui-input.h \
+ z-term.h ui-event.h ui-map.h ui-mon-list.h ui-prefs.h ui-score.h ui.h
 ./effects.o: effects.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
  z-color.h z-util.h z-rand.h config.h game-event.h z-type.h message.h \
  message-list.h option.h z-file.h list-options.h player.h guid.h \
@@ -202,7 +201,13 @@ depgen:
  list-kind-flags.h list-object-modifiers.h object.h z-quark.h z-dice.h \
  z-expression.h effects.h list-effects.h list-elements.h \
  list-identify-flags.h list-origins.h player-calcs.h list-player-flags.h \
- list-magic-realms.h dungeon.h init.h parser.h
+ list-magic-realms.h dungeon.h game-world.h cave.h list-square-flags.h \
+ list-terrain-flags.h init.h parser.h mon-make.h monster.h mon-timed.h \
+ list-mon-timed.h mon-blow-methods.h list-blow-methods.h \
+ mon-blow-effects.h list-blow-effects.h list-mon-temp-flags.h \
+ list-mon-race-flags.h list-mon-spells.h obj-desc.h obj-gear.h \
+ list-equip-slots.h obj-identify.h obj-tval.h list-tvals.h obj-util.h \
+ player-timed.h list-player-timed.h player-util.h tables.h
 ./generate.o: generate.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
  z-color.h z-util.h z-rand.h config.h game-event.h z-type.h message.h \
  message-list.h option.h z-file.h list-options.h player.h guid.h \

@@ -19,6 +19,10 @@
 #ifndef GAME_WORLD_H
 #define GAME_WORLD_H
 
+#include "cave.h"
+
 bool is_daytime(void);
+void play_ambient_sound(void);
+void process_world(struct chunk *c);
 
 #endif /* !GAME_WORLD_H */
