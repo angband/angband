@@ -234,41 +234,18 @@ static void process_player_post_command(void)
 	redraw_stuff(player->upkeep);
 }
 
+
 /**
  * Process player commands from the command queue, finishing when there is a
  * command using energy (any regular game command), or we run out of commands
  * and need another from the user, or the character changes level or dies, or
  * the game is stopped.
- *
- * Note that the code to check for user abort during repeated commands
- * and running and resting can be disabled entirely with an option, and
- * even if not disabled, it will only check during every 128th game turn
- * while resting, for efficiency.
  */
 static void process_player(void)
 {
-	/*** Check for interrupts ***/
-
+	/* Check for interrupts */
 	player_resting_complete_special(player);
-
-	/* Check for "player abort" */
-	if (player->upkeep->running ||
-	    cmd_get_nrepeats() > 0 ||
-	    (player_is_resting(player) && !(turn & 0x7F))) {
-		ui_event e;
-
-		/* Do not wait */
-		inkey_scan = SCAN_INSTANT;
-
-		/* Check for a key */
-		e = inkey_ex();
-		if (e.type != EVT_NONE) {
-			/* Flush and disturb */
-			event_signal(EVENT_INPUT_FLUSH);
-			disturb(player, 0);
-			msg("Cancelled.");
-		}
-	}
+	event_signal(EVENT_CHECK_INTERRUPT);
 
 	/* Repeat until energy is reduced */
 	do {

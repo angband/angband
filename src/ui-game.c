@@ -312,3 +312,31 @@ errr textui_get_cmd(cmd_context context)
 }
 
 
+/**
+ * Allow for user abort during repeated commands, running and resting.
+ *
+ * This will only check during every 128th game turn while resting.
+ */
+void check_for_player_interrupt(game_event_type type, game_event_data *data,
+								void *user)
+{
+	/* Check for "player abort" */
+	if (player->upkeep->running ||
+	    cmd_get_nrepeats() > 0 ||
+	    (player_is_resting(player) && !(turn & 0x7F))) {
+		ui_event e;
+
+		/* Do not wait */
+		inkey_scan = SCAN_INSTANT;
+
+		/* Check for a key */
+		e = inkey_ex();
+		if (e.type != EVT_NONE) {
+			/* Flush and disturb */
+			event_signal(EVENT_INPUT_FLUSH);
+			disturb(player, 0);
+			msg("Cancelled.");
+		}
+	}
+}
+

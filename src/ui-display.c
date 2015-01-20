@@ -39,6 +39,7 @@
 #include "project.h"
 #include "savefile.h"
 #include "ui-birth.h"
+#include "ui-game.h"
 #include "ui-input.h"
 #include "ui-map.h"
 #include "ui-mon-list.h"
@@ -2117,6 +2118,7 @@ static void ui_enter_game(game_event_type type, game_event_data *data,
 	event_add_handler(EVENT_BELL, bell_message, NULL);
 	event_add_handler(EVENT_INPUT_FLUSH, flush, NULL);
 	event_add_handler(EVENT_MESSAGE_FLUSH, message_flush, NULL);
+	event_add_handler(EVENT_CHECK_INTERRUPT, check_for_player_interrupt, NULL);
 
 	/* Hack -- Decrease "icky" depth */
 	screen_save_depth--;
@@ -2157,6 +2159,7 @@ static void ui_leave_game(game_event_type type, game_event_data *data,
 	event_remove_handler(EVENT_BELL, bell_message, NULL);
 	event_remove_handler(EVENT_INPUT_FLUSH, flush, NULL);
 	event_remove_handler(EVENT_MESSAGE_FLUSH, message_flush, NULL);
+	event_remove_handler(EVENT_CHECK_INTERRUPT, check_for_player_interrupt, NULL);
 
 	/* Hack -- Increase "icky" depth */
 	screen_save_depth++;
