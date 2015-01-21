@@ -239,6 +239,7 @@ typedef struct player_upkeep {
 	bool playing;			/* True if player is playing */
 	bool autosave;			/* True if autosave is pending */
 	bool generate_level;	/* True if level needs regenerating */
+	bool only_partial;		/* True if only partial updates are needed */
 
 	int energy_use;			/* Energy use this turn */
 	int new_spells;			/* Number of spells available */

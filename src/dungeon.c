@@ -67,7 +67,6 @@ s32b turn;				/* Current game turn */
 bool character_generated;	/* The character exists */
 bool character_dungeon;		/* The character has a dungeon */
 bool character_saved;		/* The character was just saved to a savefile */
-s16b character_xtra;		/* Depth of the game in startup mode */
 bool arg_wizard;			/* Command arg -- Request wizard mode */
 
 /*
@@ -358,8 +357,8 @@ static void on_new_level(void)
 	/* Flush messages */
 	event_signal(EVENT_MESSAGE_FLUSH);
 
-	/* Hack -- Increase "xtra" depth */
-	character_xtra++;
+	/* Hack -- Invoke partial update mode */
+	player->upkeep->only_partial = TRUE;
 
 	/* Clear */
 	Term_clear();
@@ -391,8 +390,8 @@ static void on_new_level(void)
 	/* Redraw stuff */
 	redraw_stuff(player->upkeep);
 
-	/* Hack -- Decrease "xtra" depth */
-	character_xtra--;
+	/* Hack -- Kill partial updte mode */
+	player->upkeep->only_partial = FALSE;
 
 	/* Update stuff */
 	player->upkeep->update |= (PU_BONUS | PU_HP | PU_MANA | PU_SPELLS | PU_INVEN);

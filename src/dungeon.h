@@ -10,7 +10,6 @@ extern s32b turn;
 extern bool character_generated;
 extern bool character_dungeon;
 extern bool character_saved;
-extern s16b character_xtra;
 extern bool arg_wizard;
 
 extern void dungeon_change_level(int dlev);

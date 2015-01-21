@@ -1129,8 +1129,8 @@ static void calc_spells(void)
 	/* Hack -- wait for creation */
 	if (!character_generated) return;
 
-	/* Hack -- handle "xtra" mode */
-	if (character_xtra) return;
+	/* Hack -- handle partial mode */
+	if (player->upkeep->only_partial) return;
 
 	/* Save the new_spells value */
 	old_spells = player->upkeep->new_spells;
@@ -1419,8 +1419,8 @@ static void calc_mana(void)
 		player->upkeep->redraw |= (PR_MANA);
 	}
 
-	/* Hack -- handle "xtra" mode */
-	if (character_xtra) return;
+	/* Hack -- handle partial mode */
+	if (player->upkeep->only_partial) return;
 
 	/* Take note when "glove state" changes */
 	if (old_cumber_glove != player->state.cumber_glove) {
@@ -2214,8 +2214,8 @@ static void update_bonuses(void)
 		(known_state->to_a != known_old.to_a))
 		player->upkeep->redraw |= (PR_ARMOR);
 
-	/* Hack -- handle "xtra" mode */
-	if (character_xtra) return;
+	/* Hack -- handle partial mode */
+	if (player->upkeep->only_partial) return;
 
 	/* Take note when "heavy bow" changes */
 	if (old.heavy_shoot != state->heavy_shoot) {
