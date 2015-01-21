@@ -20,6 +20,8 @@
 #ifndef INCLUDED_UI_GAME_H
 #define INCLUDED_UI_GAME_H
 
+#include "game-event.h"
+
 void cmd_init(void);
 unsigned char cmd_lookup_key(cmd_code lookup_cmd, int mode);
 unsigned char cmd_lookup_key_unktrl(cmd_code lookup_cmd, int mode);
