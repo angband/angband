@@ -1946,6 +1946,16 @@ static void refresh(game_event_type type, game_event_data *data, void *user)
 	Term_fresh();
 }
 
+static void repeated_command_display(game_event_type type,
+									 game_event_data *data, void *user)
+{
+	/* Assume messages were seen */
+	msg_flag = FALSE;
+
+	/* Clear the top line */
+	prt("", 0, 0);
+}
+
 /**
  * Housekeeping on arriving on a new level
  */
@@ -2204,6 +2214,7 @@ static void ui_enter_game(game_event_type type, game_event_data *data,
 	event_add_handler(EVENT_CHECK_INTERRUPT, check_for_player_interrupt, NULL);
 	event_add_handler(EVENT_REFRESH, refresh, NULL);
 	event_add_handler(EVENT_NEW_LEVEL_DISPLAY, new_level_display_update, NULL);
+	event_add_handler(EVENT_COMMAND_REPEAT, repeated_command_display, NULL);
 
 	/* Hack -- Decrease "icky" depth */
 	screen_save_depth--;
@@ -2247,6 +2258,7 @@ static void ui_leave_game(game_event_type type, game_event_data *data,
 	event_remove_handler(EVENT_CHECK_INTERRUPT, check_for_player_interrupt, NULL);
 	event_remove_handler(EVENT_REFRESH, refresh, NULL);
 	event_remove_handler(EVENT_NEW_LEVEL_DISPLAY, new_level_display_update, NULL);
+	event_remove_handler(EVENT_COMMAND_REPEAT, repeated_command_display, NULL);
 
 	/* Hack -- Increase "icky" depth */
 	screen_save_depth++;

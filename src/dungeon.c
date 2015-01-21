@@ -91,69 +91,9 @@ void dungeon_change_level(int dlev)
 
 
 /**
- * Prepare for a player command to happen
- *
- * Notice the annoying code to handle "pack overflow", which
- * must come first just in case somebody manages to corrupt
- * the savefiles by clever use of menu commands or something. (Can go? NRM)
- *
- * Notice the annoying code to handle "monster memory" changes,
- * which allows us to avoid having to update the window flags
- * every time we change any internal monster memory field, and
- * also reduces the number of times that the recall window must
- * be redrawn.
- */
-static void process_player_pre_command(void)
-{
-	/* Refresh */
-	notice_stuff(player->upkeep);
-	handle_stuff(player->upkeep);
-	event_signal(EVENT_REFRESH);
-
-	/* Hack -- Pack Overflow */
-	pack_overflow();
-
-	/* Assume free turn */
-	player->upkeep->energy_use = 0;
-
-	/* Dwarves detect treasure */
-	if (player_has(PF_SEE_ORE)) {
-		/* Only if they are in good shape */
-		if (!player->timed[TMD_IMAGE] &&
-			!player->timed[TMD_CONFUSED] &&
-			!player->timed[TMD_AMNESIA] &&
-			!player->timed[TMD_STUN] &&
-			!player->timed[TMD_PARALYZED] &&
-			!player->timed[TMD_TERROR] &&
-			!player->timed[TMD_AFRAID])
-			effect_simple(EF_DETECT_GOLD, "3d3", 1, 0, 0, NULL);
-	}
-
-	/* Paralyzed or Knocked Out player gets no turn */
-	if ((player->timed[TMD_PARALYZED]) || (player->timed[TMD_STUN] >= 100))
-		cmdq_push(CMD_SLEEP);
-
-	/* Prepare for the next command */
-	if (cmd_get_nrepeats() > 0) {
-		/* Hack -- Assume messages were seen */
-		msg_flag = FALSE;
-
-		/* Clear the top line */
-		prt("", 0, 0);
-	} else {
-		/* Check monster recall */
-		if (player->upkeep->monster_race)
-			player->upkeep->redraw |= (PR_MONSTER);
-
-		/* Place cursor on player/target */
-		event_signal(EVENT_REFRESH);
-	}
-}
-
-/**
  * Housekeeping after the processing of a player command
  */
-static void process_player_post_command(void)
+static void process_player_cleanup(void)
 {
 	int i;
 
@@ -209,6 +149,16 @@ static void process_player_post_command(void)
  * command using energy (any regular game command), or we run out of commands
  * and need another from the user, or the character changes level or dies, or
  * the game is stopped.
+ *
+ * Notice the annoying code to handle "pack overflow", which
+ * must come first just in case somebody manages to corrupt
+ * the savefiles by clever use of menu commands or something. (Can go? NRM)
+ *
+ * Notice the annoying code to handle "monster memory" changes,
+ * which allows us to avoid having to update the window flags
+ * every time we change any internal monster memory field, and
+ * also reduces the number of times that the recall window must
+ * be redrawn.
  */
 static void process_player(void)
 {
@@ -218,7 +168,45 @@ static void process_player(void)
 
 	/* Repeat until energy is reduced */
 	do {
-		process_player_pre_command();
+		/* Refresh */
+		notice_stuff(player->upkeep);
+		handle_stuff(player->upkeep);
+		event_signal(EVENT_REFRESH);
+
+		/* Hack -- Pack Overflow */
+		pack_overflow();
+
+		/* Assume free turn */
+		player->upkeep->energy_use = 0;
+
+		/* Dwarves detect treasure */
+		if (player_has(PF_SEE_ORE)) {
+			/* Only if they are in good shape */
+			if (!player->timed[TMD_IMAGE] &&
+				!player->timed[TMD_CONFUSED] &&
+				!player->timed[TMD_AMNESIA] &&
+				!player->timed[TMD_STUN] &&
+				!player->timed[TMD_PARALYZED] &&
+				!player->timed[TMD_TERROR] &&
+				!player->timed[TMD_AFRAID])
+				effect_simple(EF_DETECT_GOLD, "3d3", 1, 0, 0, NULL);
+		}
+
+		/* Paralyzed or Knocked Out player gets no turn */
+		if ((player->timed[TMD_PARALYZED]) || (player->timed[TMD_STUN] >= 100))
+			cmdq_push(CMD_SLEEP);
+
+		/* Prepare for the next command */
+		if (cmd_get_nrepeats() > 0)
+			event_signal(EVENT_COMMAND_REPEAT);
+		else {
+			/* Check monster recall */
+			if (player->upkeep->monster_race)
+				player->upkeep->redraw |= (PR_MONSTER);
+
+			/* Place cursor on player/target */
+			event_signal(EVENT_REFRESH);
+		}
 
 		/* Get a command from the queue if there is one */
 		if (!cmdq_pop(CMD_GAME))
@@ -227,13 +215,13 @@ static void process_player(void)
 		if (!player->upkeep->playing)
 			break;
 
-		process_player_post_command();
+		process_player_cleanup();
 	} while (!player->upkeep->energy_use &&
 			 !player->is_dead &&
 			 !player->upkeep->generate_level);
 
 	/* Notice stuff (if needed) */
-	if (player->upkeep->notice) notice_stuff(player->upkeep);
+	notice_stuff(player->upkeep);
 }
 
 static byte flicker = 0;
@@ -433,7 +421,7 @@ void player_turn(void)
 			break;
 		else {
 			cmd_get_hook(CMD_GAME);
-			process_player_post_command();
+			process_player_cleanup();
 		}
 	}
 }

@@ -49,6 +49,7 @@ typedef enum game_event_type
 	EVENT_CHECK_INTERRUPT,
 	EVENT_REFRESH,
 	EVENT_NEW_LEVEL_DISPLAY,
+	EVENT_COMMAND_REPEAT,
 
 	EVENT_INITSTATUS,	/* New status message for initialisation */
 	EVENT_BIRTHPOINTS,	/* Change in the birth points */
