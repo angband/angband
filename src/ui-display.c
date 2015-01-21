@@ -38,6 +38,7 @@
 #include "player.h"
 #include "project.h"
 #include "savefile.h"
+#include "target.h"
 #include "ui-birth.h"
 #include "ui-game.h"
 #include "ui-input.h"
@@ -1933,6 +1934,18 @@ static void show_splashscreen(game_event_type type, game_event_data *data,
 /* ------------------------------------------------------------------------
  * Temporary (hopefully) hackish solutions.
  * ------------------------------------------------------------------------ */
+static void refresh(game_event_type type, game_event_data *data, void *user)
+{
+	/* Place cursor on player/target */
+	if (OPT(show_target) && target_sighted()) {
+		int col, row;
+		target_get(&col, &row);
+		move_cursor_relative(row, col);
+	}
+
+	Term_fresh();
+}
+
 static void check_panel(game_event_type type, game_event_data *data, void *user)
 {
 	verify_panel();
@@ -2119,6 +2132,7 @@ static void ui_enter_game(game_event_type type, game_event_data *data,
 	event_add_handler(EVENT_INPUT_FLUSH, flush, NULL);
 	event_add_handler(EVENT_MESSAGE_FLUSH, message_flush, NULL);
 	event_add_handler(EVENT_CHECK_INTERRUPT, check_for_player_interrupt, NULL);
+	event_add_handler(EVENT_REFRESH, refresh, NULL);
 
 	/* Hack -- Decrease "icky" depth */
 	screen_save_depth--;
@@ -2160,6 +2174,7 @@ static void ui_leave_game(game_event_type type, game_event_data *data,
 	event_remove_handler(EVENT_INPUT_FLUSH, flush, NULL);
 	event_remove_handler(EVENT_MESSAGE_FLUSH, message_flush, NULL);
 	event_remove_handler(EVENT_CHECK_INTERRUPT, check_for_player_interrupt, NULL);
+	event_remove_handler(EVENT_REFRESH, refresh, NULL);
 
 	/* Hack -- Increase "icky" depth */
 	screen_save_depth++;

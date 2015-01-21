@@ -1132,9 +1132,9 @@ depgen:
  list-mon-spells.h mon-util.h obj-desc.h obj-gear.h list-equip-slots.h \
  obj-pile.h obj-util.h player-timed.h list-player-timed.h player-util.h \
  project.h list-project-environs.h list-project-monsters.h savefile.h \
- ui-birth.h ui-input.h z-term.h ui-event.h ui-map.h ui-mon-list.h \
- ui-mon-lore.h ui-obj.h ui-obj-list.h ui-player.h ui-prefs.h ui-store.h \
- ui.h
+ target.h ui-birth.h ui-game.h ui-input.h z-term.h ui-event.h ui-map.h \
+ ui-mon-list.h ui-mon-lore.h ui-obj.h ui-obj-list.h ui-player.h \
+ ui-prefs.h ui-store.h ui.h
 ./ui-event.o: ui-event.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
  z-color.h z-util.h z-rand.h config.h game-event.h z-type.h message.h \
  message-list.h option.h z-file.h list-options.h player.h guid.h \

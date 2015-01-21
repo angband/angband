@@ -47,6 +47,7 @@ typedef enum game_event_type
 	EVENT_INPUT_FLUSH,
 	EVENT_MESSAGE_FLUSH,
 	EVENT_CHECK_INTERRUPT,
+	EVENT_REFRESH,
 
 	EVENT_INITSTATUS,	/* New status message for initialisation */
 	EVENT_BIRTHPOINTS,	/* Change in the birth points */

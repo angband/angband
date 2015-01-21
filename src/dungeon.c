@@ -91,38 +91,6 @@ void dungeon_change_level(int dlev)
 }
 
 
-/*
- * Place cursor on a monster or the player.
- */
-static void place_cursor(void) {
-	if (OPT(show_target) && target_sighted()) {
-		int col, row;
-		target_get(&col, &row);
-		move_cursor_relative(row, col);
-	}
-}
-
-
-static void refresh(void)
-{
-	/* Notice stuff */
-	if (player->upkeep->notice)
-		notice_stuff(player->upkeep);
-
-	/* Update stuff */
-	if (player->upkeep->update)
-		update_stuff(player->upkeep);
-
-	/* Redraw stuff */
-	if (player->upkeep->redraw)
-		redraw_stuff(player->upkeep);
-
-	/* Place cursor on player/target */
-	place_cursor();
-
-	Term_fresh();
-}
-
 /**
  * Prepare for a player command to happen
  *
@@ -139,7 +107,9 @@ static void refresh(void)
 static void process_player_pre_command(void)
 {
 	/* Refresh */
-	refresh();
+	notice_stuff(player->upkeep);
+	handle_stuff(player->upkeep);
+	event_signal(EVENT_REFRESH);
 
 	/* Hack -- Pack Overflow */
 	pack_overflow();
@@ -177,7 +147,7 @@ static void process_player_pre_command(void)
 			player->upkeep->redraw |= (PR_MONSTER);
 
 		/* Place cursor on player/target */
-		place_cursor();
+		event_signal(EVENT_REFRESH);
 	}
 }
 
@@ -542,7 +512,9 @@ void game_turn(void)
 	reset_monsters();
 
 	/* Refresh */
-	refresh();
+	notice_stuff(player->upkeep);
+	handle_stuff(player->upkeep);
+	event_signal(EVENT_REFRESH);
 	if (player->is_dead || !player->upkeep->playing ||
 		player->upkeep->generate_level)
 		return;
@@ -560,7 +532,9 @@ void game_turn(void)
 		process_world(cave);
 
 		/* Refresh */
-		refresh();
+		notice_stuff(player->upkeep);
+		handle_stuff(player->upkeep);
+		event_signal(EVENT_REFRESH);
 		if (player->is_dead || !player->upkeep->playing ||
 			player->upkeep->generate_level)
 			return;
@@ -621,7 +595,9 @@ void play_game(bool new_game)
 		}
 
 		/* Refresh */
-		refresh();
+		notice_stuff(player->upkeep);
+		handle_stuff(player->upkeep);
+		event_signal(EVENT_REFRESH);
 		if (player->is_dead || !player->upkeep->playing ||
 			player->upkeep->generate_level)
 			continue;
