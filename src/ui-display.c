@@ -1932,7 +1932,7 @@ static void show_splashscreen(game_event_type type, game_event_data *data,
 
 
 /* ------------------------------------------------------------------------
- * Temporary (hopefully) hackish solutions.
+ * Visual updates betweeen player turns.
  * ------------------------------------------------------------------------ */
 static void refresh(game_event_type type, game_event_data *data, void *user)
 {
@@ -1946,6 +1946,76 @@ static void refresh(game_event_type type, game_event_data *data, void *user)
 	Term_fresh();
 }
 
+/**
+ * Housekeeping on arriving on a new level
+ */
+static void new_level_display_update(game_event_type type,
+									 game_event_data *data, void *user)
+{
+	/* Hack -- enforce illegal panel */
+	Term->offset_y = z_info->dungeon_hgt;
+	Term->offset_x = z_info->dungeon_wid;
+
+
+	/*
+	 * Because changing levels doesn't take a turn and PR_MONLIST might not be
+	 * set for a few game turns, manually force an update on level change.
+	 */
+	monster_list_force_subwindow_update();
+
+	/* If autosave is pending, do it now. */
+	if (player->upkeep->autosave) {
+		save_game();
+		player->upkeep->autosave = FALSE;
+	}
+
+	/* Choose panel */
+	verify_panel();
+
+	/* Hack -- Invoke partial update mode */
+	player->upkeep->only_partial = TRUE;
+
+	/* Clear */
+	Term_clear();
+
+	/* Update stuff */
+	player->upkeep->update |= (PU_BONUS | PU_HP | PU_MANA | PU_SPELLS);
+
+	/* Calculate torch radius */
+	player->upkeep->update |= (PU_TORCH);
+
+	/* Update stuff */
+	update_stuff(player->upkeep);
+
+	/* Fully update the visuals (and monster distances) */
+	player->upkeep->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_DISTANCE);
+
+	/* Fully update the flow */
+	player->upkeep->update |= (PU_FORGET_FLOW | PU_UPDATE_FLOW);
+
+	/* Redraw dungeon */
+	player->upkeep->redraw |= (PR_BASIC | PR_EXTRA | PR_MAP);
+
+	/* Redraw "statusy" things */
+	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP | PR_MONSTER | PR_MONLIST | PR_ITEMLIST);
+
+	/* Update stuff */
+	update_stuff(player->upkeep);
+
+	/* Redraw stuff */
+	redraw_stuff(player->upkeep);
+
+	/* Hack -- Kill partial update mode */
+	player->upkeep->only_partial = FALSE;
+
+	/* Refresh */
+	Term_fresh();
+}
+
+
+/* ------------------------------------------------------------------------
+ * Temporary (hopefully) hackish solutions.
+ * ------------------------------------------------------------------------ */
 static void check_panel(game_event_type type, game_event_data *data, void *user)
 {
 	verify_panel();
@@ -2133,6 +2203,7 @@ static void ui_enter_game(game_event_type type, game_event_data *data,
 	event_add_handler(EVENT_MESSAGE_FLUSH, message_flush, NULL);
 	event_add_handler(EVENT_CHECK_INTERRUPT, check_for_player_interrupt, NULL);
 	event_add_handler(EVENT_REFRESH, refresh, NULL);
+	event_add_handler(EVENT_NEW_LEVEL_DISPLAY, new_level_display_update, NULL);
 
 	/* Hack -- Decrease "icky" depth */
 	screen_save_depth--;
@@ -2175,6 +2246,7 @@ static void ui_leave_game(game_event_type type, game_event_data *data,
 	event_remove_handler(EVENT_MESSAGE_FLUSH, message_flush, NULL);
 	event_remove_handler(EVENT_CHECK_INTERRUPT, check_for_player_interrupt, NULL);
 	event_remove_handler(EVENT_REFRESH, refresh, NULL);
+	event_remove_handler(EVENT_NEW_LEVEL_DISPLAY, new_level_display_update, NULL);
 
 	/* Hack -- Increase "icky" depth */
 	screen_save_depth++;

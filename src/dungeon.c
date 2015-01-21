@@ -311,15 +311,10 @@ void do_animation(void)
 /**
  * Housekeeping on arriving on a new level
  */
-static void on_new_level(void)
+void on_new_level(void)
 {
 	/* Play ambient sound on change of level. */
 	play_ambient_sound();
-
-	/* Hack -- enforce illegal panel */
-	Term->offset_y = z_info->dungeon_hgt;
-	Term->offset_x = z_info->dungeon_wid;
-
 
 	/* Cancel the target */
 	target_set_monster(0);
@@ -330,89 +325,34 @@ static void on_new_level(void)
 	/* Disturb */
 	disturb(player, 1);
 
-	/*
-	 * Because changing levels doesn't take a turn and PR_MONLIST might not be
-	 * set for a few game turns, manually force an update on level change.
-	 */
-	monster_list_force_subwindow_update();
-
 	/* Track maximum player level */
 	if (player->max_lev < player->lev)
 		player->max_lev = player->lev;
-
 
 	/* Track maximum dungeon level */
 	if (player->max_depth < player->depth)
 		player->max_depth = player->depth;
 
-	/* If autosave is pending, do it now. */
-	if (player->upkeep->autosave) {
-		save_game();
-		player->upkeep->autosave = FALSE;
-	}
-
-	/* Choose panel */
-	verify_panel();
-
 	/* Flush messages */
 	event_signal(EVENT_MESSAGE_FLUSH);
 
-	/* Hack -- Invoke partial update mode */
-	player->upkeep->only_partial = TRUE;
+	/* Update display */
+	event_signal(EVENT_NEW_LEVEL_DISPLAY);
 
-	/* Clear */
-	Term_clear();
-
-	/* Update stuff */
-	player->upkeep->update |= (PU_BONUS | PU_HP | PU_MANA | PU_SPELLS);
-
-	/* Calculate torch radius */
-	player->upkeep->update |= (PU_TORCH);
-
-	/* Update stuff */
-	update_stuff(player->upkeep);
-
-	/* Fully update the visuals (and monster distances) */
-	player->upkeep->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_DISTANCE);
-
-	/* Fully update the flow */
-	player->upkeep->update |= (PU_FORGET_FLOW | PU_UPDATE_FLOW);
-
-	/* Redraw dungeon */
-	player->upkeep->redraw |= (PR_BASIC | PR_EXTRA | PR_MAP);
-
-	/* Redraw "statusy" things */
-	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP | PR_MONSTER | PR_MONLIST | PR_ITEMLIST);
-
-	/* Update stuff */
-	update_stuff(player->upkeep);
-
-	/* Redraw stuff */
-	redraw_stuff(player->upkeep);
-
-	/* Hack -- Kill partial updte mode */
-	player->upkeep->only_partial = FALSE;
-
-	/* Update stuff */
-	player->upkeep->update |= (PU_BONUS | PU_HP | PU_MANA | PU_SPELLS | PU_INVEN);
-
-	/* Combine the pack */
+	/* Update player */
+	player->upkeep->update |=
+		(PU_BONUS | PU_HP | PU_MANA | PU_SPELLS | PU_INVEN);
 	player->upkeep->notice |= (PN_COMBINE);
-
-	/* Notice stuff */
 	notice_stuff(player->upkeep);
-
-	/* Update stuff */
 	update_stuff(player->upkeep);
-
-	/* Redraw stuff */
 	redraw_stuff(player->upkeep);
 
 	/* Refresh */
-	Term_fresh();
+	event_signal(EVENT_REFRESH);
 
 	/* Announce (or repeat) the feeling */
-	if (player->depth) display_feeling(FALSE);
+	if (player->depth)
+		display_feeling(FALSE);
 
 	/* Give player minimum energy to start a new level, but do not reduce
 	 * higher value from savefile for level in progress */
@@ -424,14 +364,15 @@ static void on_new_level(void)
  * Housekeeping on leaving a level
  */
 static void on_leave_level(void) {
-	/* Notice stuff */
-	if (player->upkeep->notice) notice_stuff(player->upkeep);
-	if (player->upkeep->update) update_stuff(player->upkeep);
-	if (player->upkeep->redraw) redraw_stuff(player->upkeep);
+	/* Any pending processing */
+	notice_stuff(player->upkeep);
+	update_stuff(player->upkeep);
+	redraw_stuff(player->upkeep);
 
+	/* Forget the view */
 	forget_view(cave);
 
-	/* XXX XXX XXX */
+	/* Flush messages */
 	event_signal(EVENT_MESSAGE_FLUSH);
 }
 
