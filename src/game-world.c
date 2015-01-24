@@ -17,10 +17,13 @@
  */
 
 #include "angband.h"
+#include "cmds.h"
 #include "dungeon.h"
 #include "game-world.h"
 #include "init.h"
 #include "mon-make.h"
+#include "mon-move.h"
+#include "mon-util.h"
 #include "obj-desc.h"
 #include "obj-gear.h"
 #include "obj-identify.h"
@@ -29,6 +32,10 @@
 #include "player-timed.h"
 #include "player-util.h"
 #include "tables.h"
+#include "target.h"
+
+/* The minimum amount of energy a player has at the start of a new level */
+#define INITIAL_DUNGEON_ENERGY 100
 
 /**
  * Say whether it's daytime or not
@@ -439,3 +446,337 @@ void process_world(struct chunk *c)
 	}
 }
 
+
+/**
+ * Housekeeping after the processing of a player command
+ */
+static void process_player_cleanup(void)
+{
+	int i;
+
+	/* Significant */
+	if (player->upkeep->energy_use) {
+		/* Use some energy */
+		player->energy -= player->upkeep->energy_use;
+
+		/* Increment the total energy counter */
+		player->total_energy += player->upkeep->energy_use;
+
+		/* Hack -- constant hallucination */
+		if (player->timed[TMD_IMAGE])
+			player->upkeep->redraw |= (PR_MAP);
+
+		/* Shimmer multi-hued monsters */
+		for (i = 1; i < cave_monster_max(cave); i++) {
+			struct monster *mon = cave_monster(cave, i);
+			if (!mon->race)
+				continue;
+			if (!rf_has(mon->race->flags, RF_ATTR_MULTI))
+				continue;
+			square_light_spot(cave, mon->fy, mon->fx);
+		}
+
+		/* Clear NICE flag, and show marked monsters */
+		for (i = 1; i < cave_monster_max(cave); i++) {
+			struct monster *mon = cave_monster(cave, i);
+			mflag_off(mon->mflag, MFLAG_NICE);
+			if (mflag_has(mon->mflag, MFLAG_MARK)) {
+				if (!mflag_has(mon->mflag, MFLAG_SHOW)) {
+					mflag_off(mon->mflag, MFLAG_MARK);
+					update_mon(mon, cave, FALSE);
+				}
+			}
+		}
+	}
+
+	/* Clear SHOW flag */
+	for (i = 1; i < cave_monster_max(cave); i++) {
+		struct monster *mon = cave_monster(cave, i);
+		mflag_off(mon->mflag, MFLAG_SHOW);
+	}
+
+	/* Hack - update needed first because inventory may have changed */
+	update_stuff(player->upkeep);
+	redraw_stuff(player->upkeep);
+}
+
+
+/**
+ * Process player commands from the command queue, finishing when there is a
+ * command using energy (any regular game command), or we run out of commands
+ * and need another from the user, or the character changes level or dies, or
+ * the game is stopped.
+ *
+ * Notice the annoying code to handle "pack overflow", which
+ * must come first just in case somebody manages to corrupt
+ * the savefiles by clever use of menu commands or something. (Can go? NRM)
+ *
+ * Notice the annoying code to handle "monster memory" changes,
+ * which allows us to avoid having to update the window flags
+ * every time we change any internal monster memory field, and
+ * also reduces the number of times that the recall window must
+ * be redrawn.
+ */
+void process_player(void)
+{
+	/* Check for interrupts */
+	player_resting_complete_special(player);
+	event_signal(EVENT_CHECK_INTERRUPT);
+
+	/* Repeat until energy is reduced */
+	do {
+		/* Refresh */
+		notice_stuff(player->upkeep);
+		handle_stuff(player->upkeep);
+		event_signal(EVENT_REFRESH);
+
+		/* Hack -- Pack Overflow */
+		pack_overflow();
+
+		/* Assume free turn */
+		player->upkeep->energy_use = 0;
+
+		/* Dwarves detect treasure */
+		if (player_has(PF_SEE_ORE)) {
+			/* Only if they are in good shape */
+			if (!player->timed[TMD_IMAGE] &&
+				!player->timed[TMD_CONFUSED] &&
+				!player->timed[TMD_AMNESIA] &&
+				!player->timed[TMD_STUN] &&
+				!player->timed[TMD_PARALYZED] &&
+				!player->timed[TMD_TERROR] &&
+				!player->timed[TMD_AFRAID])
+				effect_simple(EF_DETECT_GOLD, "3d3", 1, 0, 0, NULL);
+		}
+
+		/* Paralyzed or Knocked Out player gets no turn */
+		if ((player->timed[TMD_PARALYZED]) || (player->timed[TMD_STUN] >= 100))
+			cmdq_push(CMD_SLEEP);
+
+		/* Prepare for the next command */
+		if (cmd_get_nrepeats() > 0)
+			event_signal(EVENT_COMMAND_REPEAT);
+		else {
+			/* Check monster recall */
+			if (player->upkeep->monster_race)
+				player->upkeep->redraw |= (PR_MONSTER);
+
+			/* Place cursor on player/target */
+			event_signal(EVENT_REFRESH);
+		}
+
+		/* Get a command from the queue if there is one */
+		if (!cmdq_pop(CMD_GAME))
+			break;
+
+		if (!player->upkeep->playing)
+			break;
+
+		process_player_cleanup();
+	} while (!player->upkeep->energy_use &&
+			 !player->is_dead &&
+			 !player->upkeep->generate_level);
+
+	/* Notice stuff (if needed) */
+	notice_stuff(player->upkeep);
+}
+
+/**
+ * Housekeeping on arriving on a new level
+ */
+void on_new_level(void)
+{
+	/* Play ambient sound on change of level. */
+	play_ambient_sound();
+
+	/* Cancel the target */
+	target_set_monster(0);
+
+	/* Cancel the health bar */
+	health_track(player->upkeep, NULL);
+
+	/* Disturb */
+	disturb(player, 1);
+
+	/* Track maximum player level */
+	if (player->max_lev < player->lev)
+		player->max_lev = player->lev;
+
+	/* Track maximum dungeon level */
+	if (player->max_depth < player->depth)
+		player->max_depth = player->depth;
+
+	/* Flush messages */
+	event_signal(EVENT_MESSAGE_FLUSH);
+
+	/* Update display */
+	event_signal(EVENT_NEW_LEVEL_DISPLAY);
+
+	/* Update player */
+	player->upkeep->update |=
+		(PU_BONUS | PU_HP | PU_MANA | PU_SPELLS | PU_INVEN);
+	player->upkeep->notice |= (PN_COMBINE);
+	notice_stuff(player->upkeep);
+	update_stuff(player->upkeep);
+	redraw_stuff(player->upkeep);
+
+	/* Refresh */
+	event_signal(EVENT_REFRESH);
+
+	/* Announce (or repeat) the feeling */
+	if (player->depth)
+		display_feeling(FALSE);
+
+	/* Give player minimum energy to start a new level, but do not reduce
+	 * higher value from savefile for level in progress */
+	if (player->energy < INITIAL_DUNGEON_ENERGY)
+		player->energy = INITIAL_DUNGEON_ENERGY;
+}
+
+/**
+ * Housekeeping on leaving a level
+ */
+static void on_leave_level(void) {
+	/* Any pending processing */
+	notice_stuff(player->upkeep);
+	update_stuff(player->upkeep);
+	redraw_stuff(player->upkeep);
+
+	/* Forget the view */
+	forget_view(cave);
+
+	/* Flush messages */
+	event_signal(EVENT_MESSAGE_FLUSH);
+}
+
+
+/**
+ * The main game loop.
+ *
+ * This function will run until the player needs to enter a command, or closes
+ * the game, or the character dies.
+ */
+void run_game_loop(void)
+{
+	/* Tidy up after the player's command */
+	process_player_cleanup();
+
+	/* Keep processing the player until they use some energy or
+	 * another command is needed */
+	while (player->upkeep->playing) {
+		process_player();
+		if (player->upkeep->energy_use)
+			break;
+		else
+			return;
+	}
+
+	/* The player may still have enough energy to move, so we run another
+	 * player turn before processing the rest of the world */
+	while (player->energy >= 100) {
+		/* Do any necessary animations */
+		do_animation();
+		
+		/* Process monster with even more energy first */
+		process_monsters(cave, player->energy + 1);
+		if (player->is_dead || !player->upkeep->playing ||
+			player->upkeep->generate_level)
+			break;
+
+		/* Process the player until they use some energy */
+		while (player->upkeep->playing) {
+			process_player();
+			if (player->upkeep->energy_use)
+				break;
+			else
+				return;
+		}
+	}
+
+	/* Now that the player's turn is fully complete, we run the main loop 
+	 * until player input is needed again */
+	while (TRUE) {
+		notice_stuff(player->upkeep);
+		handle_stuff(player->upkeep);
+		event_signal(EVENT_REFRESH);
+
+		/* Process the rest of the world, give the player energy and 
+		 * increment the turn counter unless we need to stop playing or
+		 * generate a new level */
+		if (player->is_dead || !player->upkeep->playing)
+			return;
+		else if (!player->upkeep->generate_level) {
+			/* Process the rest of the monsters */
+			process_monsters(cave, 0);
+
+			/* Mark all monsters as ready to act when they have the energy */
+			reset_monsters();
+
+			/* Refresh */
+			notice_stuff(player->upkeep);
+			handle_stuff(player->upkeep);
+			event_signal(EVENT_REFRESH);
+			if (player->is_dead || !player->upkeep->playing)
+				return;
+
+			/* Process the world every ten turns */
+			if (!(turn % 10) && !player->upkeep->generate_level) {
+				/* Compact the monster list if we're approaching the limit */
+				if (cave_monster_count(cave) + 32 > z_info->level_monster_max)
+					compact_monsters(64);
+
+				/* Too many holes in the monster list - compress */
+				if (cave_monster_count(cave) + 32 < cave_monster_max(cave))
+					compact_monsters(0);
+
+				process_world(cave);
+
+				/* Refresh */
+				notice_stuff(player->upkeep);
+				handle_stuff(player->upkeep);
+				event_signal(EVENT_REFRESH);
+				if (player->is_dead || !player->upkeep->playing)
+					return;
+			}
+
+			/* Give the player some energy */
+			player->energy += extract_energy[player->state.speed];
+
+			/* Count game turns */
+			turn++;
+		}
+
+		/* Make a new level if requested */
+		if (player->upkeep->generate_level) {
+			if (character_dungeon)
+				on_leave_level();
+
+			cave_generate(&cave, player);
+			on_new_level();
+
+			player->upkeep->generate_level = FALSE;
+		}
+
+		/* If the player has enough energy to move they now do so, after
+		 * any monsters with more energy take their turns */
+		while (player->energy >= 100) {
+			/* Do any necessary animations */
+			do_animation();
+
+			/* Process monster with even more energy first */
+			process_monsters(cave, player->energy + 1);
+			if (player->is_dead || !player->upkeep->playing ||
+				player->upkeep->generate_level)
+				break;
+
+			/* Process the player until they use some energy */
+			while (player->upkeep->playing) {
+				process_player();
+				if (player->upkeep->energy_use)
+					break;
+				else
+					return;
+			}
+		}
+	}
+}

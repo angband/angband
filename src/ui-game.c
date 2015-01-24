@@ -291,10 +291,10 @@ void textui_process_command(void)
 			cmd = NULL;
 
 		/* Split on type of command */
-		if (cmd->hook)
+		if (cmd && cmd->hook)
 			/* UI command */
 			cmd->hook();
-		else if (cmd->cmd)
+		else if (cmd && cmd->cmd)
 			/* Game command */
 			cmdq_push_repeat(cmd->cmd, count);
 	} else
