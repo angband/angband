@@ -21,8 +21,8 @@
 #include "score.h"
 #include "ui-score.h"
 #include "ui-input.h"
+#include "ui-term.h"
 #include "ui.h"
-#include "z-term.h"
 
 /**
  * Display the scores in a given range.

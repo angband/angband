@@ -38,7 +38,6 @@ HEADERS = \
 	z-queue.h \
 	z-rand.h \
 	z-set.h \
-	z-term.h \
 	z-type.h \
 	z-util.h \
 	z-virt.h
@@ -54,7 +53,6 @@ ZFILES = \
 	z-queue.o \
 	z-rand.o \
 	z-set.o \
-	z-term.o \
 	z-textblock.o \
 	z-type.o \
 	z-util.o \
@@ -194,6 +192,7 @@ ANGFILES = \
 	ui-spell.o \
 	ui-store.o \
 	ui-target.o \
+	ui-term.o \
 	wiz-debug.o \
 	wiz-spoil.o \
 	wiz-stats.o \

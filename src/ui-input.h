@@ -1,10 +1,10 @@
 #ifndef INCLUDED_UI_INPUT_H
 #define INCLUDED_UI_INPUT_H
 
-#include "z-term.h"
-#include "game-event.h"
 #include "cmd-core.h"
+#include "game-event.h"
 #include "ui-event.h"
+#include "ui-term.h"
 
 /**
  * Holds a generic command - if cmd is set to other than CMD_NULL 

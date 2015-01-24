@@ -1552,7 +1552,7 @@ static void record_current_savefile(void)
 }
 
 
-/*** Support for the "z-term.c" package ***/
+/*** Support for the "ui-term.c" package ***/
 
 
 /*

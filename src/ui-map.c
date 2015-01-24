@@ -29,8 +29,8 @@
 #include "ui-map.h"
 #include "ui-obj.h"
 #include "ui-prefs.h"
+#include "ui-term.h"
 #include "ui.h"
-#include "z-term.h"
 
 
 /*

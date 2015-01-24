@@ -1,6 +1,6 @@
-/* File: z-term.h */
-
-/*
+/**
+ * \file ui-term.h
+ *
  * Copyright (c) 1997 Ben Harrison
  *
  * This software may be copied and distributed for educational, research,
@@ -15,7 +15,7 @@
 #include "ui-event.h"
 
 
-/*
+/**
  * A term_win is a "window" for a Term
  *
  *	- Cursor Useless/Visible codes
@@ -57,7 +57,7 @@ struct term_win
 };
 
 
-/*
+/**
  * An actual "term" structure
  *
  *	- Extra "user" info (used by application)
@@ -239,10 +239,15 @@ struct term
 
 
 
-/**** Available Constants ****/
+/**
+ * ------------------------------------------------------------------------
+ * Available Constants
+ * ------------------------------------------------------------------------ */
 
 
-/* Maximum number of Angband windows */
+/**
+ * Maximum number of Angband windows
+ */
 #define ANGBAND_TERM_MAX 8
 
 /**
@@ -264,7 +269,7 @@ struct term
 #define COL_MAP			13
 
 
-/*
+/**
  * Definitions for the "actions" of "Term_xtra()"
  *
  * These values may be used as the first parameter of "Term_xtra()",
@@ -293,7 +298,7 @@ struct term
 #define TERM_XTRA_LEVEL 12    /* Change the "soft" level (optional) */
 #define TERM_XTRA_DELAY 13    /* Delay some milliseconds (optional) */
 
-/*
+/**
  * Bit flags for the "window_flag" variable.
  */
 #define PW_INVEN            0x00000001L /* Display inven/equip */
@@ -313,14 +318,19 @@ struct term
 #define PW_MAX_FLAGS		16
 
 
-/* sketchy key logging pt. 1 */
+/**
+ * sketchy key logging pt. 1
+ */
 #define KEYLOG_SIZE 8
 extern int log_i;
 extern int log_size;
 extern struct keypress keylog[KEYLOG_SIZE];
 
 
-/**** Available Variables ****/
+/**
+ * ------------------------------------------------------------------------
+ *  Available Variables
+ * ------------------------------------------------------------------------ */
 
 extern term *Term;
 extern byte tile_width;
@@ -331,14 +341,17 @@ extern term *angband_term[ANGBAND_TERM_MAX];
 extern char angband_term_name[ANGBAND_TERM_MAX][16];
 extern u32b window_flag[ANGBAND_TERM_MAX];
 
-/*
+/**
  * Hack -- The main "screen"
  */
 #define term_screen	(angband_term[0])
 
 
 
-/**** Available Functions ****/
+/**
+ * ------------------------------------------------------------------------
+ *  Available Functions
+ * ------------------------------------------------------------------------ */
 
 extern errr Term_xtra(int n, int v);
 

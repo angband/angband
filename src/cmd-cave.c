@@ -40,7 +40,6 @@
 #include "store.h"
 #include "tables.h"
 #include "trap.h"
-#include "z-term.h"
 
 /**
  * Go up one level

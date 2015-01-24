@@ -682,7 +682,7 @@ static errr CheckEvents(bool wait)
  * Do a "special thing" to the current "term"
  *
  * This function must react to a large number of possible arguments, each
- * corresponding to a different "action request" by the "z-term.c" package,
+ * corresponding to a different "action request" by the "ui-term.c" package,
  * or by the application itself.
  *
  * The "action type" is specified by the first argument, which must be a

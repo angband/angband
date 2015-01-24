@@ -88,7 +88,6 @@ layer provides:
     * Queues <z-queue.h>
     * Randomness <z-rand.h>
     * Sets <z-set.h>
-    * Terminal support <z-term.h>
     * Wrapped text <z-textblock.h>
     * Basic types <z-type.h>
     * Random utility macros <z-util.h>

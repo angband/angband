@@ -50,8 +50,8 @@
 #include "ui-player.h"
 #include "ui-prefs.h"
 #include "ui-store.h"
+#include "ui-term.h"
 #include "ui.h"
-#include "z-term.h"
 
 /**
  * There are a few functions installed to be triggered by several 

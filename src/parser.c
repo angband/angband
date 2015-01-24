@@ -31,7 +31,6 @@
 #include "parser.h"
 #include "z-file.h"
 #include "z-form.h"
-#include "z-term.h"
 #include "z-util.h"
 #include "z-virt.h"
 

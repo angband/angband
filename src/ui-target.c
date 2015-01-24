@@ -34,12 +34,12 @@
 #include "target.h"
 #include "trap.h"
 #include "ui.h"
+#include "ui-input.h"
 #include "ui-map.h"
 #include "ui-mon-lore.h"
 #include "ui-obj.h"
 #include "ui-target.h"
-#include "ui-input.h"
-#include "z-term.h"
+#include "ui-term.h"
 
 /**
  * Extract a direction (or zero) from a character

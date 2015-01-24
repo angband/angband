@@ -29,7 +29,7 @@
  * actually work, but if the code near "XXX XXX XXX" comments were
  * replaced with functional code, then it probably would.
  *
- * See "z-term.c" for info on the concept of the "generic terminal",
+ * See "ui-term.c" for info on the concept of the "generic terminal",
  * and for more comments about what this file must supply.
  *
  * There are two basic ways to port Angband to a new system.  The
@@ -142,7 +142,7 @@ static local_color_data_type color_data[MAX_COLORS];
  * Init a new "term"
  *
  * This function should do whatever is necessary to prepare a new "term"
- * for use by the "z-term.c" package.  This may include clearing the window,
+ * for use by the "ui-term.c" package.  This may include clearing the window,
  * preparing the cursor, setting the font/colors, etc.  Usually, this
  * function does nothing, and the "init_xxx()" function does it all.
  */
@@ -176,11 +176,11 @@ static void Term_nuke_xxx(term *t)
  * Do a "special thing" to the current "term"
  *
  * This function must react to a large number of possible arguments, each
- * corresponding to a different "action request" by the "z-term.c" package,
+ * corresponding to a different "action request" by the "ui-term.c" package,
  * or by the application itself.
  *
  * The "action type" is specified by the first argument, which must be a
- * constant of the form "TERM_XTRA_*" as given in "z-term.h", and the second
+ * constant of the form "TERM_XTRA_*" as given in "ui-term.h", and the second
  * argument specifies the "information" for that argument, if any, and will
  * vary according to the first argument.
  *
@@ -226,7 +226,7 @@ static errr Term_xtra_xxx(int n, int v)
 			 *
 			 * This action should handle all events waiting on the
 			 * queue, optionally discarding all "keypress" events,
-			 * since they will be discarded anyway in "z-term.c".
+			 * since they will be discarded anyway in "ui-term.c".
 			 *
 			 * This action is required, but may not be "essential".
 			 */
@@ -405,7 +405,7 @@ static errr Term_xtra_xxx(int n, int v)
  * (x,y) in some manner.  On some machines this involves actually
  * moving the physical cursor, on others it involves drawing a fake
  * cursor in some form of graphics mode.  Note the "soft_cursor"
- * flag which tells "z-term.c" to treat the "cursor" as a "visual"
+ * flag which tells "ui-term.c" to treat the "cursor" as a "visual"
  * thing and not as a "hardware" cursor.
  *
  * You may assume "valid" input if the window is properly sized.
@@ -556,7 +556,7 @@ static void term_data_link(int i)
 	/* Choose "soft" or "hard" cursor XXX XXX XXX */
 	/* A "soft" cursor must be explicitly "drawn" by the program */
 	/* while a "hard" cursor has some "physical" existance and is */
-	/* moved whenever text is drawn on the screen.  See "z-term.c". */
+	/* moved whenever text is drawn on the screen.  See "ui-term.c". */
 	/* t->soft_cursor = TRUE; */
 
 	/* Avoid the "corner" of the window XXX XXX XXX */

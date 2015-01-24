@@ -1,8 +1,8 @@
 #ifndef INCLUDED_UI_H
 #define INCLUDED_UI_H
 
-#include "z-term.h"
 #include "ui-event.h"
+#include "ui-term.h"
 
 /* ================== GEOMETRY ====================== */
 

@@ -21,7 +21,7 @@
 #include "savefile.h"
 #include "signals.h"
 #include "ui-game.h"
-#include "z-term.h"
+#include "ui-term.h"
 
 s16b signal_count;		/* Hack -- Count interrupts */
 

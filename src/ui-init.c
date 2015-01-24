@@ -31,8 +31,8 @@
 #include "ui-input.h"
 #include "ui-knowledge.h"
 #include "ui-prefs.h"
+#include "ui-term.h"
 #include "ui.h"
-#include "z-term.h"
 
 /**
  * Initialise the UI

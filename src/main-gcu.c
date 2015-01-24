@@ -873,7 +873,7 @@ static void hook_quit(const char *str) {
 }
 
 /*
- * Prepare "curses" for use by the file "z-term.c"
+ * Prepare "curses" for use by the file "ui-term.c"
  *
  * Installs the "hook" functions defined above, and then activates
  * the main screen "term", which clears the screen and such things.

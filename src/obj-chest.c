@@ -29,7 +29,6 @@
 #include "player-timed.h"
 #include "player-util.h"
 #include "tables.h"
-#include "z-term.h"
 
 /**
  * Each chest has a certain set of traps, determined by pval
@@ -418,9 +417,6 @@ bool do_cmd_open_chest(int y, int x, struct object *obj)
 
 	/* Redraw chest, to be on the safe side (it may have been ignored) */
 	square_light_spot(cave, y, x);
-
-	/* Refresh */
-	Term_fresh();
 
 	/* Result */
 	return (more);

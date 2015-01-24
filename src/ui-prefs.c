@@ -23,7 +23,7 @@
 #include "grafmode.h"
 #include "init.h"
 #include "keymap.h"
-#include "mon-util.h" /* lookup_monster */
+#include "mon-util.h"
 #include "monster.h"
 #include "obj-ignore.h"
 #include "obj-tval.h"
@@ -32,8 +32,8 @@
 #include "project.h"
 #include "trap.h"
 #include "ui-display.h"
-#include "ui-prefs.h" /* subwindows_set_flags */
-#include "z-term.h"
+#include "ui-prefs.h"
+#include "ui-term.h"
 
 int arg_graphics;			/* Command arg -- Request graphics mode */
 bool arg_graphics_nice;		/* Command arg -- Request nice graphics mode */

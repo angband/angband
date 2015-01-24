@@ -85,7 +85,7 @@ bool region_inside(const region *loc, const ui_event *key)
 
 /*
  * These functions are designed to display large blocks of text on the screen
- * all at once.  They are the z-term specific layer on top of the z-textblock.c
+ * all at once.  They are the ui-term specific layer on top of the z-textblock.c
  * functions.
  */
 

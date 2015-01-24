@@ -18,9 +18,8 @@
 
 #include <windows.h>
 #include <windowsx.h>
-//#include "angband.h"
+#include "ui-term.h"
 #include "z-virt.h"
-#include "z-term.h"
 
 typedef unsigned int uint;
 #include "win-term.h"
