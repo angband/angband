@@ -93,7 +93,6 @@ ANGFILES = \
 	cmd-obj.o \
 	cmd-pickup.o \
 	debug.o \
-	dungeon.o \
 	effects.o \
 	game-event.o \
 	game-input.o \

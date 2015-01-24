@@ -17,7 +17,6 @@
  */
 
 #include "angband.h"
-#include "dungeon.h"
 #include "init.h"
 #include "mon-power.h"
 #include "savefile.h"

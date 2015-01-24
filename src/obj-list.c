@@ -17,7 +17,7 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
-#include "dungeon.h"
+#include "game-world.h"
 #include "obj-desc.h"
 #include "obj-identify.h"
 #include "obj-ignore.h"

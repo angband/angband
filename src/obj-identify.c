@@ -19,8 +19,8 @@
 
 #include "angband.h"
 #include "cave.h"
-#include "dungeon.h"
 #include "game-event.h"
+#include "game-world.h"
 #include "obj-desc.h"
 #include "obj-gear.h"
 #include "obj-identify.h"

@@ -17,7 +17,7 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
-#include "dungeon.h"
+#include "game-world.h"
 #include "mon-desc.h"
 #include "mon-list.h"
 #include "project.h"

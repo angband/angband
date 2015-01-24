@@ -17,7 +17,7 @@
  */
 #include "angband.h"
 #include "buildid.h"
-#include "dungeon.h"
+#include "game-world.h"
 #include "score.h"
 #include "ui-score.h"
 #include "ui-input.h"

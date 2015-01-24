@@ -18,7 +18,7 @@
 
 #include "angband.h"
 #include "alloc.h"
-#include "dungeon.h"
+#include "game-world.h"
 #include "init.h"
 #include "target.h"
 #include "mon-desc.h"

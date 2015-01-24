@@ -17,9 +17,10 @@
  */
 #include "angband.h"
 #include "buildid.h"
-#include "dungeon.h"
+#include "game-world.h"
 #include "init.h"
 #include "ui-display.h"
+#include "ui-game.h"
 
 /*
  * This file helps Angband work with UNIX/X11 computers.

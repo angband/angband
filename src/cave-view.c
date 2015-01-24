@@ -19,7 +19,6 @@
 #include "angband.h"
 #include "cave.h"
 #include "cmds.h"
-#include "dungeon.h"
 #include "init.h"
 #include "monster.h"
 #include "player-timed.h"

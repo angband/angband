@@ -19,7 +19,7 @@
 #include "angband.h"
 #include "buildid.h"
 #include "cmds.h"
-#include "dungeon.h"
+#include "game-world.h"
 #include "init.h"
 #include "mon-lore.h"
 #include "monster.h"

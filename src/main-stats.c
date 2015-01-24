@@ -21,7 +21,7 @@
 #ifdef USE_STATS
 
 #include "buildid.h"
-#include "dungeon.h"
+#include "game-world.h"
 #include "init.h"
 #include "main.h"
 #include "mon-make.h"
@@ -35,6 +35,7 @@
 #include "object.h"
 #include "player.h"
 #include "player-birth.h"
+#include "player-util.h"
 #include "project.h"
 #include "stats/db.h"
 #include "stats/structs.h"

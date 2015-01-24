@@ -21,7 +21,6 @@
 #include "buildid.h"
 #include "cmds.h"
 #include "cave.h"
-#include "dungeon.h"
 #include "ui-command.h"
 #include "ui-display.h"
 #include "ui-prefs.h"

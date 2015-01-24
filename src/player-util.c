@@ -27,12 +27,36 @@
 #include "obj-tval.h"
 #include "obj-pile.h"
 #include "obj-util.h"
+#include "player-history.h"
 #include "player-spell.h"
 #include "player-timed.h"
 #include "player-util.h"
+#include "score.h"
+#include "store.h"
 #include "tables.h"
 #include "target.h"
 #include "wizard.h"
+
+/**
+ * Change dungeon level - e.g. by going up stairs or with WoR.
+ */
+void dungeon_change_level(int dlev)
+{
+	/* New depth */
+	player->depth = dlev;
+
+	/* If we're returning to town, update the store contents
+	   according to how long we've been away */
+	if (!dlev && daycount)
+		store_update();
+
+	/* Leaving, make new level */
+	player->upkeep->generate_level = TRUE;
+
+	/* Save the game when we arrive on the new level. */
+	player->upkeep->autosave = TRUE;
+}
+
 
 /**
  * Decreases players hit points and sets death flag if necessary
@@ -100,6 +124,45 @@ void take_hit(struct player *p, int dam, const char *kb_str)
 		msgt(MSG_HITPOINT_WARN, "*** LOW HITPOINT WARNING! ***");
 		event_signal(EVENT_MESSAGE_FLUSH);
 	}
+}
+
+/**
+ * Win or not, know inventory, home items and history upon death, enter score
+ */
+void death_knowledge(void)
+{
+	struct store *home = &stores[STORE_HOME];
+	object_type *obj;
+	time_t death_time = (time_t)0;
+
+	/* Retire in the town in a good state */
+	if (player->total_winner) {
+		player->depth = 0;
+		my_strcpy(player->died_from, "Ripe Old Age", sizeof(player->died_from));
+		player->exp = player->max_exp;
+		player->lev = player->max_lev;
+		player->au += 10000000L;
+	}
+
+	for (obj = player->gear; obj; obj = obj->next) {
+		object_flavor_aware(obj);
+		object_notice_everything(obj);
+	}
+
+	for (obj = home->stock; obj; obj = obj->next) {
+		object_flavor_aware(obj);
+		object_notice_everything(obj);
+	}
+
+	history_unmask_unknown();
+
+	/* Get time of death */
+	(void)time(&death_time);
+	enter_score(&death_time);
+
+	/* Hack -- Recalculate bonuses */
+	player->upkeep->update |= (PU_BONUS);
+	handle_stuff(player->upkeep);
 }
 
 /*

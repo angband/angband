@@ -21,7 +21,6 @@
 #include "cave.h"
 #include "cmd-core.h"
 #include "cmds.h"
-#include "dungeon.h"
 #include "game-input.h"
 #include "init.h"
 #include "mon-lore.h"

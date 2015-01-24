@@ -70,11 +70,10 @@
 #include "buildid.h"
 #include "cmds.h"
 #include "cave.h"
-#include "dungeon.h"
-#include "init.h"
+#include "game-world.h"
 #include "grafmode.h"
+#include "init.h"
 #include "mon-power.h"
-#include "win/win-menu.h"
 #include "savefile.h" /* savefile_set_name() */
 #include "ui-command.h"
 #include "ui-display.h"
@@ -84,6 +83,7 @@
 #include "ui-map.h"
 #include "ui-prefs.h"
 #include "ui.h"
+#include "win/win-menu.h"
 
 /* Make sure the winver allows the AlphaBlend function */
 #if (WINVER < 0x0500)

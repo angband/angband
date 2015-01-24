@@ -24,7 +24,7 @@
 
 #include "angband.h"
 #include "cave.h"
-#include "dungeon.h"
+#include "game-world.h"
 #include "init.h"
 #include "monster.h"
 #include "mon-attack.h"

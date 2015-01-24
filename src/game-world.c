@@ -18,7 +18,6 @@
 
 #include "angband.h"
 #include "cmds.h"
-#include "dungeon.h"
 #include "game-world.h"
 #include "init.h"
 #include "mon-make.h"
@@ -36,6 +35,14 @@
 
 /* The minimum amount of energy a player has at the start of a new level */
 #define INITIAL_DUNGEON_ENERGY 100
+
+u16b daycount = 0;
+u32b seed_randart;		/* Hack -- consistent random artifacts */
+u32b seed_flavor;		/* Hack -- consistent object colors */
+s32b turn;				/* Current game turn */
+bool character_generated;	/* The character exists */
+bool character_dungeon;		/* The character has a dungeon */
+bool character_saved;		/* The character was just saved to a savefile */
 
 /**
  * Say whether it's daytime or not
@@ -229,6 +236,14 @@ static void decrease_timeouts(void)
 void process_world(struct chunk *c)
 {
 	int i;
+
+	/* Compact the monster list if we're approaching the limit */
+	if (cave_monster_count(cave) + 32 > z_info->level_monster_max)
+		compact_monsters(64);
+
+	/* Too many holes in the monster list - compress */
+	if (cave_monster_count(cave) + 32 < cave_monster_max(cave))
+		compact_monsters(0);
 
 	/*** Check the Time ***/
 
@@ -675,7 +690,7 @@ void run_game_loop(void)
 	 * player turn before processing the rest of the world */
 	while (player->energy >= 100) {
 		/* Do any necessary animations */
-		do_animation();
+		event_signal(EVENT_ANIMATE);
 		
 		/* Process monster with even more energy first */
 		process_monsters(cave, player->energy + 1);
@@ -721,14 +736,6 @@ void run_game_loop(void)
 
 			/* Process the world every ten turns */
 			if (!(turn % 10) && !player->upkeep->generate_level) {
-				/* Compact the monster list if we're approaching the limit */
-				if (cave_monster_count(cave) + 32 > z_info->level_monster_max)
-					compact_monsters(64);
-
-				/* Too many holes in the monster list - compress */
-				if (cave_monster_count(cave) + 32 < cave_monster_max(cave))
-					compact_monsters(0);
-
 				process_world(cave);
 
 				/* Refresh */
@@ -761,7 +768,7 @@ void run_game_loop(void)
 		 * any monsters with more energy take their turns */
 		while (player->energy >= 100) {
 			/* Do any necessary animations */
-			do_animation();
+			event_signal(EVENT_ANIMATE);
 
 			/* Process monster with even more energy first */
 			process_monsters(cave, player->energy + 1);

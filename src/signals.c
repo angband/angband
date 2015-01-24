@@ -17,9 +17,10 @@
  */
 
 #include "angband.h"
-#include "dungeon.h"
+#include "game-world.h"
 #include "savefile.h"
 #include "signals.h"
+#include "ui-game.h"
 #include "z-term.h"
 
 s16b signal_count;		/* Hack -- Count interrupts */

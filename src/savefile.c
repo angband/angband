@@ -17,7 +17,7 @@
  */
 #include <errno.h>
 #include "angband.h"
-#include "dungeon.h"
+#include "game-world.h"
 #include "init.h"
 #include "savefile.h"
 

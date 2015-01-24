@@ -17,7 +17,7 @@
  */
 #include "angband.h"
 #include "buildid.h"
-#include "dungeon.h"
+#include "game-world.h"
 #include "init.h"
 #include "obj-desc.h"
 #include "obj-gear.h"

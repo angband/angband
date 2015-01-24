@@ -18,9 +18,9 @@
 
 #include "angband.h"
 #include "cmds.h"
-#include "dungeon.h"
 #include "game-event.h"
 #include "game-input.h"
+#include "game-world.h"
 #include "init.h"
 #include "keymap.h"
 #include "obj-gear.h"

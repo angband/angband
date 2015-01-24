@@ -18,8 +18,8 @@
 
 #include "angband.h"
 #include "cave.h"
-#include "dungeon.h"
 #include "effects.h"
+#include "game-world.h"
 #include "generate.h"
 #include "init.h"
 #include "mon-lore.h"

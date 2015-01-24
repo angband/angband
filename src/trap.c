@@ -18,7 +18,6 @@
 
 #include "angband.h"
 #include "cave.h"
-#include "dungeon.h"
 #include "effects.h"
 #include "init.h"
 #include "player-attack.h"

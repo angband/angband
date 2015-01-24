@@ -18,10 +18,10 @@
 
 #include "angband.h"
 #include "cave.h"
-#include "dungeon.h"
-#include "effects.h"
 #include "cmd-core.h"
+#include "effects.h"
 #include "game-input.h"
+#include "game-world.h"
 #include "generate.h"
 #include "grafmode.h"
 #include "init.h"

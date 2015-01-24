@@ -29,9 +29,9 @@
 
 #include "angband.h"
 #include "cave.h"
-#include "dungeon.h"
 #include "game-event.h"
 #include "game-input.h"
+#include "game-world.h"
 #include "generate.h"
 #include "init.h"
 #include "math.h"

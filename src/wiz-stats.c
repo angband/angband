@@ -18,7 +18,6 @@
 #include "angband.h"
 #include "cave.h"
 #include "cmds.h"
-#include "dungeon.h"
 #include "effects.h"
 #include "game-input.h"
 #include "generate.h"

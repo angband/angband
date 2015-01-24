@@ -20,7 +20,10 @@
 #ifndef INCLUDED_UI_GAME_H
 #define INCLUDED_UI_GAME_H
 
+#include "cmd-core.h"
 #include "game-event.h"
+
+bool arg_wizard;
 
 void cmd_init(void);
 unsigned char cmd_lookup_key(cmd_code lookup_cmd, int mode);
@@ -30,5 +33,8 @@ void textui_process_command(void);
 errr textui_get_cmd(cmd_context context);
 void check_for_player_interrupt(game_event_type type, game_event_data *data,
 								void *user);
+void play_game(bool new_game);
+void save_game(void);
+void close_game(void);
 
 #endif /* INCLUDED_UI_GAME_H */

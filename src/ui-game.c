@@ -19,15 +19,22 @@
 
 #include "angband.h"
 #include "cmds.h"
-#include "dungeon.h"
+#include "game-world.h"
+#include "init.h"
 #include "keymap.h"
+#include "mon-lore.h"
 #include "obj-util.h"
 #include "player-attack.h"
 #include "player-path.h"
 #include "player-util.h"
+#include "savefile.h"
+#include "signals.h"
+#include "ui-birth.h"
 #include "ui-command.h"
 #include "ui-context.h"
+#include "ui-death.h"
 #include "ui-display.h"
+#include "ui-game.h"
 #include "ui-help.h"
 #include "ui-input.h"
 #include "ui-knowledge.h"
@@ -37,10 +44,13 @@
 #include "ui-player.h"
 #include "ui-prefs.h"
 #include "ui-spell.h"
+#include "ui-score.h"
 #include "ui-store.h"
 #include "ui-target.h"
 #include "ui.h"
 
+
+bool arg_wizard;			/* Command arg -- Request wizard mode */
 
 /**
  * Here are lists of commands, stored in this format so that they can be
@@ -340,3 +350,173 @@ void check_for_player_interrupt(game_event_type type, game_event_data *data,
 	}
 }
 
+/**
+ * Start actually playing a game, either by loading a savefile or creating
+ * a new character
+ */
+static void start_game(bool new_game)
+{
+	/* Player will be resuscitated if living in the savefile */
+	player->is_dead = TRUE;
+
+	/* Try loading */
+	if (file_exists(savefile) && !savefile_load(savefile, arg_wizard))
+		quit("Broken savefile");
+
+	/* No living character loaded */
+	if (player->is_dead || new_game) {
+		character_generated = FALSE;
+		textui_do_birth();
+	}
+
+	/* Tell the UI we've started. */
+	event_signal(EVENT_LEAVE_INIT);
+	event_signal(EVENT_ENTER_GAME);
+
+	/* Save not required yet. */
+	player->upkeep->autosave = FALSE;
+
+	/* Do new level stuff if we have one */
+	if (character_dungeon)
+		on_new_level();
+}
+
+/**
+ * Play Angband
+ */
+void play_game(bool new_game)
+{
+	/* Load a savefile or birth a character, or both */
+	start_game(new_game);
+
+	/* Get commands from the user, then process the game world until the
+	 * command queue is empty and a new player command is needed */
+	while (!player->is_dead && player->upkeep->playing) {
+		cmd_get_hook(CMD_GAME);
+		run_game_loop();
+	}
+
+	/* Close game on death or quitting */
+	close_game();
+}
+
+/**
+ * Save the game
+ */
+void save_game(void)
+{
+	char name[80];
+	char path[1024];
+
+	/* Disturb the player */
+	disturb(player, 1);
+
+	/* Clear messages */
+	event_signal(EVENT_MESSAGE_FLUSH);
+
+	/* Handle stuff */
+	handle_stuff(player->upkeep);
+
+	/* Message */
+	prt("Saving game...", 0, 0);
+
+	/* Refresh */
+	Term_fresh();
+
+	/* The player is not dead */
+	my_strcpy(player->died_from, "(saved)", sizeof(player->died_from));
+
+	/* Forbid suspend */
+	signals_ignore_tstp();
+
+	/* Save the player */
+	if (savefile_save(savefile))
+		prt("Saving game... done.", 0, 0);
+	else
+		prt("Saving game... failed!", 0, 0);
+
+	/* Refresh */
+	Term_fresh();
+
+	/* Save the window prefs */
+	strnfmt(name, sizeof(name), "%s.prf", player_safe_name(player, TRUE));
+	path_build(path, sizeof(path), ANGBAND_DIR_USER, name);
+	if (!prefs_save(path, option_dump, "Dump window settings"))
+		prt("Failed to save subwindow preferences", 0, 0);
+
+	/* Allow suspend again */
+	signals_handle_tstp();
+
+	/* Refresh */
+	Term_fresh();
+
+	/* Note that the player is not dead */
+	my_strcpy(player->died_from, "(alive and well)", sizeof(player->died_from));
+}
+
+
+
+/**
+ * Close up the current game (player may or may not be dead)
+ *
+ * Note that the savefile is not saved until the tombstone is
+ * actually displayed and the player has a chance to examine
+ * the inventory and such.  This allows cheating if the game
+ * is equipped with a "quit without save" method.  XXX XXX XXX
+ */
+void close_game(void)
+{
+	/* Tell the UI we're done with the game state */
+	event_signal(EVENT_LEAVE_GAME);
+
+	/* Handle stuff */
+	handle_stuff(player->upkeep);
+
+	/* Flush the messages */
+	event_signal(EVENT_MESSAGE_FLUSH);
+
+	/* Flush the input */
+	event_signal(EVENT_INPUT_FLUSH);
+
+	/* No suspending now */
+	signals_ignore_tstp();
+
+	/* Hack -- Increase "icky" depth */
+	screen_save_depth++;
+
+	/* Save monster memory to user directory */
+	if (!lore_save("lore.txt")) {
+		msg("lore save failed!");
+		event_signal(EVENT_MESSAGE_FLUSH);
+	}
+
+	/* Handle death or life */
+	if (player->is_dead) {
+		death_knowledge();
+		death_screen();
+
+		/* Save dead player */
+		if (!savefile_save(savefile)) {
+			msg("death save failed!");
+			event_signal(EVENT_MESSAGE_FLUSH);
+		}
+	} else {
+		/* Save the game */
+		save_game();
+
+		if (Term->mapped_flag) {
+			struct keypress ch;
+
+			prt("Press Return (or Escape).", 0, 40);
+			ch = inkey();
+			if (ch.code != ESCAPE)
+				predict_score();
+		}
+	}
+
+	/* Hack -- Decrease "icky" depth */
+	screen_save_depth--;
+
+	/* Allow suspending now */
+	signals_handle_tstp();
+}

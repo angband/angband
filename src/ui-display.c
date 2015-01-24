@@ -21,8 +21,8 @@
 #include "buildid.h"
 #include "cave.h"
 #include "cmd-core.h"
-#include "dungeon.h"
 #include "game-event.h"
+#include "game-world.h"
 #include "grafmode.h"
 #include "hint.h"
 #include "init.h"
@@ -934,25 +934,6 @@ static void trace_map_updates(game_event_type type, game_event_data *data,
 #endif
 
 /**
- * This is used when the user is idle to allow for simple animations.
- * Currently the only thing it really does is animate shimmering monsters.
- */
-void idle_update(void)
-{
-	if (!character_dungeon) return;
-
-	if (!OPT(animate_flicker) || (use_graphics != GRAPHICS_NONE)) return;
-
-	/* Animate and redraw if necessary */
-	do_animation();
-	redraw_stuff(player->upkeep);
-
-	/* Refresh the main screen */
-	Term_fresh();
-}
-
-
-/**
  * Update either a single map grid or a whole map
  */
 static void update_maps(game_event_type type, game_event_data *data, void *user)
@@ -1031,6 +1012,105 @@ static void update_maps(game_event_type type, game_event_data *data, void *user)
 /* ------------------------------------------------------------------------
  * Animations.
  * ------------------------------------------------------------------------ */
+
+static byte flicker = 0;
+static byte color_flicker[MAX_COLORS][3] = 
+{
+	{COLOUR_DARK, COLOUR_L_DARK, COLOUR_L_RED},
+	{COLOUR_WHITE, COLOUR_L_WHITE, COLOUR_L_BLUE},
+	{COLOUR_SLATE, COLOUR_WHITE, COLOUR_L_DARK},
+	{COLOUR_ORANGE, COLOUR_YELLOW, COLOUR_L_RED},
+	{COLOUR_RED, COLOUR_L_RED, COLOUR_L_PINK},
+	{COLOUR_GREEN, COLOUR_L_GREEN, COLOUR_L_TEAL},
+	{COLOUR_BLUE, COLOUR_L_BLUE, COLOUR_SLATE},
+	{COLOUR_UMBER, COLOUR_L_UMBER, COLOUR_MUSTARD},
+	{COLOUR_L_DARK, COLOUR_SLATE, COLOUR_L_VIOLET},
+	{COLOUR_WHITE, COLOUR_SLATE, COLOUR_L_WHITE},
+	{COLOUR_L_PURPLE, COLOUR_PURPLE, COLOUR_L_VIOLET},
+	{COLOUR_YELLOW, COLOUR_L_YELLOW, COLOUR_MUSTARD},
+	{COLOUR_L_RED, COLOUR_RED, COLOUR_L_PINK},
+	{COLOUR_L_GREEN, COLOUR_L_TEAL, COLOUR_GREEN},
+	{COLOUR_L_BLUE, COLOUR_DEEP_L_BLUE, COLOUR_BLUE_SLATE},
+	{COLOUR_L_UMBER, COLOUR_UMBER, COLOUR_MUD},
+	{COLOUR_PURPLE, COLOUR_VIOLET, COLOUR_MAGENTA},
+	{COLOUR_VIOLET, COLOUR_L_VIOLET, COLOUR_MAGENTA},
+	{COLOUR_TEAL, COLOUR_L_TEAL, COLOUR_L_GREEN},
+	{COLOUR_MUD, COLOUR_YELLOW, COLOUR_UMBER},
+	{COLOUR_L_YELLOW, COLOUR_WHITE, COLOUR_L_UMBER},
+	{COLOUR_MAGENTA, COLOUR_L_PINK, COLOUR_L_RED},
+	{COLOUR_L_TEAL, COLOUR_L_WHITE, COLOUR_TEAL},
+	{COLOUR_L_VIOLET, COLOUR_L_PURPLE, COLOUR_VIOLET},
+	{COLOUR_L_PINK, COLOUR_L_RED, COLOUR_L_WHITE},
+	{COLOUR_MUSTARD, COLOUR_YELLOW, COLOUR_UMBER},
+	{COLOUR_BLUE_SLATE, COLOUR_BLUE, COLOUR_SLATE},
+	{COLOUR_DEEP_L_BLUE, COLOUR_L_BLUE, COLOUR_BLUE},
+};
+
+static byte get_flicker(byte a)
+{
+	switch(flicker % 3)
+	{
+		case 1: return color_flicker[a][1];
+		case 2: return color_flicker[a][2];
+	}
+	return a;
+}
+
+/**
+ * This animates monsters and/or items as necessary.
+ */
+static void do_animation(void)
+{
+	int i;
+
+	for (i = 1; i < cave_monster_max(cave); i++)
+	{
+		byte attr;
+		monster_type *m_ptr = cave_monster(cave, i);
+
+		if (!m_ptr || !m_ptr->race || !mflag_has(m_ptr->mflag, MFLAG_VISIBLE))
+			continue;
+		else if (rf_has(m_ptr->race->flags, RF_ATTR_MULTI))
+			attr = randint1(BASIC_COLORS - 1);
+		else if (rf_has(m_ptr->race->flags, RF_ATTR_FLICKER))
+			attr = get_flicker(monster_x_attr[m_ptr->race->ridx]);
+		else
+			continue;
+
+		m_ptr->attr = attr;
+		player->upkeep->redraw |= (PR_MAP | PR_MONLIST);
+	}
+
+	flicker++;
+}
+
+
+/**
+ * Update animations on request
+ */
+static void animate(game_event_type type, game_event_data *data, void *user)
+{
+	do_animation();
+}
+
+/**
+ * This is used when the user is idle to allow for simple animations.
+ * Currently the only thing it really does is animate shimmering monsters.
+ */
+void idle_update(void)
+{
+	if (!character_dungeon) return;
+
+	if (!OPT(animate_flicker) || (use_graphics != GRAPHICS_NONE)) return;
+
+	/* Animate and redraw if necessary */
+	do_animation();
+	redraw_stuff(player->upkeep);
+
+	/* Refresh the main screen */
+	Term_fresh();
+}
+
 
 /**
  * Find the attr/char pair to use for a spell effect
@@ -2215,6 +2295,7 @@ static void ui_enter_game(game_event_type type, game_event_data *data,
 	event_add_handler(EVENT_REFRESH, refresh, NULL);
 	event_add_handler(EVENT_NEW_LEVEL_DISPLAY, new_level_display_update, NULL);
 	event_add_handler(EVENT_COMMAND_REPEAT, repeated_command_display, NULL);
+	event_add_handler(EVENT_ANIMATE, animate, NULL);
 
 	/* Hack -- Decrease "icky" depth */
 	screen_save_depth--;
@@ -2259,6 +2340,7 @@ static void ui_leave_game(game_event_type type, game_event_data *data,
 	event_remove_handler(EVENT_REFRESH, refresh, NULL);
 	event_remove_handler(EVENT_NEW_LEVEL_DISPLAY, new_level_display_update, NULL);
 	event_remove_handler(EVENT_COMMAND_REPEAT, repeated_command_display, NULL);
+	event_remove_handler(EVENT_ANIMATE, animate, NULL);
 
 	/* Hack -- Increase "icky" depth */
 	screen_save_depth++;

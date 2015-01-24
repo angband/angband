@@ -46,7 +46,9 @@ enum
  */
 #define REST_REQUIRED_FOR_REGEN 5
 
+void dungeon_change_level(int dlev);
 void take_hit(struct player *p, int dam, const char *kb_str);
+void death_knowledge(void);
 s16b modify_stat_value(int value, int amount);
 void player_regen_hp(void);
 void player_regen_mana(void);

@@ -21,6 +21,14 @@
 
 #include "cave.h"
 
+u16b daycount;
+u32b seed_randart;
+u32b seed_flavor;
+s32b turn;
+bool character_generated;
+bool character_dungeon;
+bool character_saved;
+
 bool is_daytime(void);
 void play_ambient_sound(void);
 void process_world(struct chunk *c);
