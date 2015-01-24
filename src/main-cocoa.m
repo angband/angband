@@ -1017,7 +1017,6 @@ static size_t Term_mbcs_cocoa(wchar_t *dest, const char *src, int n)
 
     /* Initialise game */
     init_angband();
-
 	textui_init();
     
     /* Register the sound hook */
@@ -1058,6 +1057,11 @@ static size_t Term_mbcs_cocoa(wchar_t *dest, const char *src, int n)
 
     Term_fresh();
     play_game(new_game);
+
+	/* Free resources */
+	textui_cleanup();
+	cleanup_angband();
+
     quit(NULL);
 }
 

@@ -10,7 +10,7 @@
 #include "obj-properties.h"
 #include "object.h"
 #include "cmds.h"
-#include "keymap.h"
+#include "ui-keymap.h"
 #include "ui-event.h"
 #include "ui-game.h"
 #include "ui-input.h"

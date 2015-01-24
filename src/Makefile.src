@@ -104,7 +104,6 @@ ANGFILES = \
 	grafmode.o \
 	guid.o \
 	init.o \
-	keymap.o \
 	load.o \
 	message.o \
 	mon-attack.o \
@@ -158,7 +157,6 @@ ANGFILES = \
 	project-obj.o \
 	project-player.o \
 	score.o \
-	signals.o \
 	save.o \
 	savefile.o \
 	store.o \
@@ -177,6 +175,7 @@ ANGFILES = \
 	ui-history.o \
 	ui-init.o \
 	ui-input.o \
+	ui-keymap.o \
 	ui-knowledge.o \
 	ui-map.o \
 	ui-menu.o \
@@ -189,6 +188,7 @@ ANGFILES = \
 	ui-player.o \
 	ui-prefs.o \
 	ui-score.o \
+	ui-signals.o \
 	ui-spell.o \
 	ui-store.o \
 	ui-target.o \

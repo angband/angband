@@ -29,6 +29,7 @@
 #include "ui-display.h"
 #include "ui-game.h"
 #include "ui-input.h"
+#include "ui-keymap.h"
 #include "ui-knowledge.h"
 #include "ui-prefs.h"
 #include "ui-term.h"
@@ -98,5 +99,6 @@ void textui_init(void)
  */
 void textui_cleanup(void)
 {
+	keymap_free();
 	textui_prefs_free();
 }

@@ -1,6 +1,6 @@
-/*
- * File: keymap.c
- * Purpose: Keymap handling
+/**
+ * \file ui-keymap.c
+ * \brief Keymap handling
  *
  * Copyright (c) 2011 Andi Sidwell
  *
@@ -16,7 +16,7 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
-#include "keymap.h"
+#include "ui-keymap.h"
 #include "ui-term.h"
 
 /**
@@ -160,7 +160,7 @@ void keymap_free(void)
 }
 
 
-/*
+/**
  * Append active keymaps to a given file.
  */
 void keymap_dump(ang_file *fff)

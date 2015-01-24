@@ -22,7 +22,6 @@
 #include "game-input.h"
 #include "grafmode.h"
 #include "init.h"
-#include "keymap.h"
 #include "mon-util.h"
 #include "monster.h"
 #include "obj-ignore.h"
@@ -32,6 +31,7 @@
 #include "project.h"
 #include "trap.h"
 #include "ui-display.h"
+#include "ui-keymap.h"
 #include "ui-prefs.h"
 #include "ui-term.h"
 

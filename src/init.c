@@ -31,7 +31,6 @@
 #include "cmd-core.h"
 #include "generate.h"
 #include "hint.h"
-#include "keymap.h"
 #include "init.h"
 #include "mon-init.h"
 #include "mon-list.h"
@@ -4413,9 +4412,6 @@ void cleanup_angband(void)
 	for (i = 0; modules[i]; i++)
 		if (modules[i]->cleanup)
 			modules[i]->cleanup();
-
-	/* Free the macros */
-	keymap_free();
 
 	event_remove_all_handlers();
 

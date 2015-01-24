@@ -1,6 +1,6 @@
-/*
- * File: signals.c
- * Purpose: Handle various OS signals
+/**
+ * \file ui-signals.c
+ * \brief Handle various OS signals
  *
  * Copyright (c) 1997 Ben Harrison
  *
@@ -19,11 +19,11 @@
 #include "angband.h"
 #include "game-world.h"
 #include "savefile.h"
-#include "signals.h"
 #include "ui-game.h"
+#include "ui-signals.h"
 #include "ui-term.h"
 
-s16b signal_count;		/* Hack -- Count interrupts */
+s16b signal_count;		/* Count interrupts ("I'm going to count to five") */
 
 #ifndef WINDOWS
 
@@ -36,7 +36,7 @@ s16b signal_count;		/* Hack -- Count interrupts */
 
 typedef void (*Signal_Handler_t)(int);
 
-/*
+/**
  * Wrapper around signal() which it is safe to take the address
  * of, in case signal itself is hidden by some some macro magic.
  */
@@ -49,7 +49,7 @@ static Signal_Handler_t wrap_signal(int sig, Signal_Handler_t handler)
 static Signal_Handler_t (*signal_aux)(int, Signal_Handler_t) = wrap_signal;
 
 
-/*
+/**
  * Handle signals -- suspend
  *
  * Actually suspend the game, and then resume cleanly
@@ -92,7 +92,7 @@ static void handle_signal_suspend(int sig)
 }
 
 
-/*
+/**
  * Handle signals -- simple (interrupt and quit)
  *
  * This function was causing a *huge* number of problems, so it has
@@ -114,18 +114,14 @@ static void handle_signal_simple(int sig)
 	/* Disable handler */
 	(void)(*signal_aux)(sig, SIG_IGN);
 
-
 	/* Nothing to save, just quit */
 	if (!character_generated || character_saved) quit(NULL);
-
 
 	/* Count the signals */
 	signal_count++;
 
-
-	/* Terminate dead characters */
-	if (player->is_dead)
-	{
+	/* Terminate dead characters, suicide from interrupts (after warnings) */
+	if (player->is_dead) {
 		/* Mark the savefile */
 		my_strcpy(player->died_from, "Abortion", sizeof(player->died_from));
 
@@ -133,11 +129,7 @@ static void handle_signal_simple(int sig)
 
 		/* Quit */
 		quit("interrupt");
-	}
-
-	/* Allow suicide (after 5) */
-	else if (signal_count >= 5)
-	{
+	} else if (signal_count >= 5) {
 		/* Cause of "death" */
 		my_strcpy(player->died_from, "Interrupting", sizeof(player->died_from));
 
@@ -152,11 +144,7 @@ static void handle_signal_simple(int sig)
 
 		/* Quit */
 		quit("interrupt");
-	}
-
-	/* Give warning (after 4) */
-	else if (signal_count >= 4)
-	{
+	} else if (signal_count >= 4) {
 		/* Make a noise */
 		Term_xtra(TERM_XTRA_NOISE, 0);
 
@@ -168,11 +156,7 @@ static void handle_signal_simple(int sig)
 
 		/* Flush */
 		Term_fresh();
-	}
-
-	/* Give warning (after 2) */
-	else if (signal_count >= 2)
-	{
+	} else if (signal_count >= 2) {
 		/* Make a noise */
 		Term_xtra(TERM_XTRA_NOISE, 0);
 	}
@@ -185,7 +169,7 @@ static void handle_signal_simple(int sig)
 }
 
 
-/*
+/**
  * Handle signal -- abort, kill, etc
  */
 static void handle_signal_abort(int sig)
@@ -193,10 +177,8 @@ static void handle_signal_abort(int sig)
 	/* Disable handler */
 	(void)(*signal_aux)(sig, SIG_IGN);
 
-
 	/* Nothing to save, just quit */
 	if (!character_generated || character_saved) quit(NULL);
-
 
 	/* Clear the bottom line */
 	Term_erase(0, 23, 255);
@@ -233,7 +215,7 @@ static void handle_signal_abort(int sig)
 
 
 
-/*
+/**
  * Ignore SIGTSTP signals (keyboard suspend)
  */
 void signals_ignore_tstp(void)
@@ -245,7 +227,7 @@ void signals_ignore_tstp(void)
 
 }
 
-/*
+/**
  * Handle SIGTSTP signals (keyboard suspend)
  */
 void signals_handle_tstp(void)
@@ -258,7 +240,7 @@ void signals_handle_tstp(void)
 }
 
 
-/*
+/**
  * Prepare to handle the relevant signals
  */
 void signals_init(void)
@@ -322,7 +304,7 @@ void signals_init(void)
 	(void)(*signal_aux)(SIGEMT, handle_signal_abort);
 #endif
 
-/*
+/**
  * SIGDANGER:
  * This is not a common (POSIX, SYSV, BSD) signal, it is used by AIX(?) to
  * signal that the system will soon be out of memory.
@@ -349,21 +331,21 @@ void signals_init(void)
 #else	/* !WINDOWS */
 
 
-/*
+/**
  * Do nothing
  */
 void signals_ignore_tstp(void)
 {
 }
 
-/*
+/**
  * Do nothing
  */
 void signals_handle_tstp(void)
 {
 }
 
-/*
+/**
  * Do nothing
  */
 void signals_init(void)

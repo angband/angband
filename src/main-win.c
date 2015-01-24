@@ -4980,6 +4980,7 @@ static void hook_quit(const char *str)
 	string_free(argv0);
 
 #ifdef HAS_CLEANUP
+	textui_cleanup();
 	cleanup_angband();
 #endif /* HAS_CLEANUP */
 
