@@ -1,6 +1,6 @@
-/*
- * File: pathfind.c
- * Purpose: Pathfinding and running code.
+/**
+ * \file player-path.c
+ * \brief Pathfinding and running code.
  *
  * Copyright (c) 1988 Christopher J Stuart (running code)
  * Copyright (c) 2004-2007 Christophe Cavalaria, Leon Marrick (pathfinding)
@@ -27,12 +27,19 @@
 #include "player-path.h"
 #include "player-util.h"
 
-/****** Pathfinding code ******/
+/**
+ * ------------------------------------------------------------------------
+ * Pathfinding code
+ * ------------------------------------------------------------------------ */
 
-/* Maximum size around the player to consider in the pathfinder */
+/**
+ * Maximum size around the player to consider in the pathfinder
+ */
 #define MAX_PF_RADIUS 50
 
-/* Maximum distance to consider in the pathfinder */
+/**
+ * Maximum distance to consider in the pathfinder
+ */
 #define MAX_PF_LENGTH 250
 
 
@@ -74,7 +81,8 @@ static void fill_terrain_info(void)
 	terrain[player->py - oy][player->px - ox] = 1;
 }
 
-#define MARK_DISTANCE(c,d) if ((c <= MAX_PF_LENGTH) && (c > d)) { c = d; try_again = (TRUE); }
+#define MARK_DISTANCE(c,d) if ((c <= MAX_PF_LENGTH) && (c > d)) \
+							{ c = d; try_again = (TRUE); }
 
 bool findpath(int y, int x)
 {
@@ -102,38 +110,35 @@ bool findpath(int y, int x)
 	 * And now starts the very naive and very 
 	 * inefficient pathfinding algorithm
 	 */
-	do
-	{
+	do {
 		try_again = FALSE;
 
-		for (j = oy + 1; j < ey - 1; j++)
-		{
-			for (i = ox + 1; i < ex - 1; i++)
-			{
+		for (j = oy + 1; j < ey - 1; j++) {
+			for (i = ox + 1; i < ex - 1; i++) {
 				cur_distance = terrain[j - oy][i - ox] + 1;
 
-				if ((cur_distance > 0) && (cur_distance < MAX_PF_LENGTH))
-				{
-					for (dir = 1; dir < 10; dir++)
-					{
+				if ((cur_distance > 0) && (cur_distance < MAX_PF_LENGTH)) {
+					for (dir = 1; dir < 10; dir++) {
+						int next_y, next_x;
 						if (dir == 5)
 							dir++;
+						next_y = j - oy + ddy[dir];
+						next_x = i - ox + ddx[dir];
 
-						MARK_DISTANCE(terrain[j - oy + ddy[dir]][i - ox + ddx[dir]], cur_distance);
+						MARK_DISTANCE(terrain[next_y][next_x], cur_distance);
 					}
 				}
 			}
 		}
 
 		if (terrain[y - oy][x - ox] < MAX_PF_LENGTH)
-			try_again = (FALSE);
+			try_again = FALSE;
 
 	}
-	while (try_again);
+	while (try_again) ;
 
 	/* Failure */
-	if (terrain[y - oy][x - ox] == MAX_PF_LENGTH)
-	{
+	if (terrain[y - oy][x - ox] == MAX_PF_LENGTH) {
 		bell("Target space unreachable.");
 		return (FALSE);
 	}
@@ -144,28 +149,16 @@ bool findpath(int y, int x)
 
 	pf_result_index = 0;
 
-	while ((i != player->px) || (j != player->py))
-	{
+	while ((i != player->px) || (j != player->py)) {
 		cur_distance = terrain[j - oy][i - ox] - 1;
-		for (k = 0; k < 8; k++)
-		{
+		for (k = 0; k < 8; k++) {
 			dir = dir_search[k];
 			if (terrain[j - oy + ddy[dir]][i - ox + ddx[dir]] == cur_distance)
 				break;
 		}
 
-		/* Should never happend */
-		if (dir == 10)
-		{
-			bell("Wtf ?");
-			return (FALSE);
-		}
-
-		else if (dir == 5)
-		{
-			bell("Heyyy !");
-			return (FALSE);
-		}
+		/* Should never happen */
+		assert ((dir != 10) && (dir != 5));
 
 		pf_result[pf_result_index++] = '0' + (char)(10 - dir);
 		i += ddx[dir];
@@ -177,9 +170,11 @@ bool findpath(int y, int x)
 	return (TRUE);
 }
 
-/* Compute the direction (in the angband 123456789 sense) from a point to a
+/**
+ * Compute the direction (in the angband 123456789 sense) from a point to a
  * point. We decide to use diagonals if dx and dy are within a factor of two of
- * each other; otherwise we choose a cardinal direction. */
+ * each other; otherwise we choose a cardinal direction.
+ */
 int pathfind_direction_to(struct loc from, struct loc to)
 {
 	int adx = ABS(to.x - from.x);
@@ -190,35 +185,28 @@ int pathfind_direction_to(struct loc from, struct loc to)
 	if (dx == 0 && dy == 0)
 		return DIR_NONE;
 
-	if (dx >= 0 && dy >= 0)
-	{
+	if (dx >= 0 && dy >= 0) {
 		if (adx < ady * 2 && ady < adx * 2)
 			return DIR_SE;
 		else if (adx > ady)
 			return DIR_E;
 		else
 			return DIR_S;
-	}
-	else if (dx > 0 && dy < 0)
-	{
+	} else if (dx > 0 && dy < 0) {
 		if (adx < ady * 2 && ady < adx * 2)
 			return DIR_NE;
 		else if (adx > ady)
 			return DIR_E;
 		else
 			return DIR_N;
-	}
-	else if (dx < 0 && dy > 0)
-	{
+	} else if (dx < 0 && dy > 0) {
 		if (adx < ady * 2 && ady < adx * 2)
 			return DIR_SW;
 		else if (adx > ady)
 			return DIR_W;
 		else
 			return DIR_S;
-	}
-	else if (dx <= 0 && dy <= 0)
-	{
+	} else if (dx <= 0 && dy <= 0) {
 		if (adx < ady * 2 && ady < adx * 2)
 			return DIR_NW;
 		else if (adx > ady)
@@ -231,9 +219,12 @@ int pathfind_direction_to(struct loc from, struct loc to)
 	return DIR_UNKNOWN;
 }
 
-/****** Running code ******/
+/**
+ * ------------------------------------------------------------------------
+ * Running code
+ * ------------------------------------------------------------------------ */
 
-/*
+/**
  * Basically, once you start running, you keep moving until something
  * interesting happens.  In an enclosed space, you run straight, but
  * you follow corners as needed (i.e. hallways).  In an open space,
@@ -385,21 +376,21 @@ bool run_open_area;		/* Looking for an open area */
 bool run_break_right;	/* Looking for a break (right) */
 bool run_break_left;	/* Looking for a break (left) */
 
-/*
+/**
  * Hack -- allow quick "cycling" through the legal directions
  */
 static const byte cycle[] =
 { 1, 2, 3, 6, 9, 8, 7, 4, 1, 2, 3, 6, 9, 8, 7, 4, 1 };
 
 
-/*
+/**
  * Hack -- map each direction into the "middle" of the "cycle[]" array
  */
 static const byte chome[] =
 { 0, 8, 9, 10, 7, 0, 11, 6, 5, 4 };
 
 
-/*
+/**
  * Hack -- Check for a "known wall" (see below)
  */
 static int see_wall(int dir, int y, int x)
@@ -423,7 +414,7 @@ static int see_wall(int dir, int y, int x)
 }
 
 
-/*
+/**
  * Initialize the running algorithm for a new direction.
  *
  * Diagonal Corridor -- allow diaginal entry into corridors.
@@ -474,64 +465,40 @@ static void run_init(int dir)
 	/* Extract cycle index */
 	i = chome[dir];
 
-	/* Check for nearby wall */
-	if (see_wall(cycle[i+1], py, px))
-	{
+	/* Check for nearby or distant wall */
+	if (see_wall(cycle[i+1], py, px)) {
 		run_break_left = TRUE;
 		shortleft = TRUE;
-	}
-
-	/* Check for distant wall */
-	else if (see_wall(cycle[i+1], row, col))
-	{
+	} else if (see_wall(cycle[i+1], row, col)) {
 		run_break_left = TRUE;
 		deepleft = TRUE;
 	}
 
-	/* Check for nearby wall */
-	if (see_wall(cycle[i-1], py, px))
-	{
+	/* Check for nearby or distant wall */
+	if (see_wall(cycle[i-1], py, px)) {
 		run_break_right = TRUE;
 		shortright = TRUE;
-	}
-
-	/* Check for distant wall */
-	else if (see_wall(cycle[i-1], row, col))
-	{
+	} else if (see_wall(cycle[i-1], row, col)) {
 		run_break_right = TRUE;
 		deepright = TRUE;
 	}
 
 	/* Looking for a break */
-	if (run_break_left && run_break_right)
-	{
+	if (run_break_left && run_break_right) {
 		/* Not looking for open area */
 		run_open_area = FALSE;
 
-		/* Hack -- allow angled corridor entry */
-		if (dir & 0x01)
-		{
+		/* Angled or blunt corridor entry */
+		if (dir & 0x01) {
 			if (deepleft && !deepright)
-			{
 				run_old_dir = cycle[i - 1];
-			}
 			else if (deepright && !deepleft)
-			{
 				run_old_dir = cycle[i + 1];
-			}
-		}
-
-		/* Hack -- allow blunt corridor entry */
-		else if (see_wall(cycle[i], row, col))
-		{
+		} else if (see_wall(cycle[i], row, col)) {
 			if (shortleft && !shortright)
-			{
 				run_old_dir = cycle[i - 2];
-			}
 			else if (shortright && !shortleft)
-			{
 				run_old_dir = cycle[i + 2];
-			}
 		}
 	}
 }
@@ -744,7 +711,7 @@ static bool run_test(void)
 
 
 
-/*
+/**
  * Take one step along the current "run" path
  *
  * Called with a real direction to begin a new run, and with zero
