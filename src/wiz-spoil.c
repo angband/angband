@@ -336,37 +336,6 @@ static const grouper group_artifact[] =
 
 
 /**
- * Create a fake artifact
- *
- * Since this is now in no way marked as fake, we must make sure this function
- * is never used to create an actual game object
- */
-bool make_fake_artifact(struct object *obj, struct artifact *artifact)
-{
-	object_kind *kind;
-
-	/* Don't bother with empty artifacts */
-	if (!artifact->tval) return FALSE;
-
-	/* Get the "kind" index */
-	kind = lookup_kind(artifact->tval, artifact->sval);
-	if (!kind) return FALSE;
-
-	/* Create the artifact */
-	object_prep(obj, kind, 0, MAXIMISE);
-
-	/* Save the name */
-	obj->artifact = artifact;
-
-	/* Extract the fields */
-	copy_artifact_data(obj, artifact);
-
-	/* Success */
-	return (TRUE);
-}
-
-
-/**
  * Create a spoiler file for artifacts
  */
 static void spoil_artifact(const char *fname)

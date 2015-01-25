@@ -20,10 +20,10 @@
 #include "cave.h"
 #include "game-world.h"
 #include "obj-desc.h"
+#include "obj-make.h"
 #include "obj-pile.h"
 #include "obj-util.h"
 #include "player-history.h"
-#include "wizard.h"
 
 /**
  * Number of slots available at birth in the player history list.  Defaults to

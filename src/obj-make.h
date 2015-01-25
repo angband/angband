@@ -29,6 +29,7 @@
 
 void ego_apply_magic(struct object *o_ptr, int level);
 void copy_artifact_data(struct object *o_ptr, const struct artifact *a_ptr);
+bool make_fake_artifact(struct object *obj, struct artifact *artifact);
 void object_prep(struct object *o_ptr, struct object_kind *kind, int lev,
 				 aspect rand_aspect);
 int apply_magic(struct object *o_ptr, int lev, bool okay, bool good,

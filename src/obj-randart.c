@@ -1,6 +1,6 @@
 /**
-   \file obj-randart.c
-   \brief Random artifact generation
+ * \file obj-randart.c
+ * \brief Random artifact generation
  *
  * Copyright (c) 1998 Greg Wooledge, Ben Harrison, Robert Ruhlmann
  * Copyright (c) 2001 Chris Carr, Chris Robertson
@@ -23,13 +23,13 @@
 #include "effects.h"
 #include "init.h"
 #include "obj-desc.h"
+#include "obj-make.h"
 #include "obj-power.h"
 #include "obj-randart.h"
 #include "obj-slays.h"
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "randname.h"
-#include "wizard.h" /* make_fake_artifact() */
 
 /* Arrays of indices by item type, used in frequency generation */
 static s16b art_idx_bow[] = {

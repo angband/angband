@@ -30,6 +30,5 @@ void pit_stats(void);
 
 /* wiz-spoil.c */
 void do_cmd_spoilers(void);
-bool make_fake_artifact(struct object *obj, struct artifact *artifact);
 
 #endif /* !INCLUDED_WIZARD_H */
