@@ -28,7 +28,6 @@
 #include "player-history.h"
 #include "obj-util.h"
 #include "target.h"
-#include "wizard.h"
 
 
 /**
