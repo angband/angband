@@ -29,7 +29,6 @@ void do_cmd_feeling(void);
 
 /* cmd-misc.c */
 void do_cmd_wizard(void);
-void do_cmd_try_debug(void);
 void do_cmd_suicide(struct command *cmd);
 void do_cmd_version(void);
 void do_cmd_note(void);

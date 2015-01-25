@@ -173,7 +173,7 @@ struct cmd_info cmd_hidden[] =
 	{ "Toggle wizard mode", { KTRL('W') }, CMD_NULL, do_cmd_wizard },
 	{ "Repeat previous command", { 'n', KTRL('V') }, CMD_REPEAT, NULL },
 	{ "Do autopickup", { KTRL('G') }, CMD_AUTOPICKUP, NULL },
-	{ "Debug mode commands", { KTRL('A') }, CMD_NULL, do_cmd_try_debug },
+	{ "Debug mode commands", { KTRL('A') }, CMD_NULL, textui_cmd_debug },
 };
 
 /**

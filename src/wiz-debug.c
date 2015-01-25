@@ -1771,7 +1771,7 @@ void do_cmd_wiz_effect(void)
  * Main switch for processing debug commands.  This is a step back in time to
  * how all commands used to be processed
  */
-void do_cmd_debug(void)
+void get_debug_command(void)
 {
 	int py = player->py;
 	int px = player->px;

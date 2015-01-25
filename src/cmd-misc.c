@@ -71,31 +71,6 @@ void do_cmd_wizard(void)
 
 
 /**
- * Verify use of "debug" mode
- */
-void do_cmd_try_debug(void)
-{
-	/* Ask first time */
-	if (!(player->noscore & NOSCORE_DEBUG)) {
-		/* Mention effects */
-		msg("You are about to use the dangerous, unsupported, debug commands!");
-		msg("Your machine may crash, and your savefile may become corrupted!");
-		event_signal(EVENT_MESSAGE_FLUSH);
-
-		/* Verify request */
-		if (!get_check("Are you sure you want to use the debug commands? "))
-			return;
-
-		/* Mark savefile */
-		player->noscore |= NOSCORE_DEBUG;
-	}
-
-	/* Okay */
-	do_cmd_debug();
-}
-
-
-/**
  * Commit suicide
  */
 void do_cmd_suicide(struct command *cmd)
