@@ -25,7 +25,6 @@
 #include "mon-util.h"
 #include "player-timed.h"
 #include "project.h"
-#include "tables.h"
 
 /*
  * Specify attr/char pairs for visual special effects for project()

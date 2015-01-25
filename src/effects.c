@@ -42,7 +42,6 @@
 #include "player-timed.h"
 #include "player-util.h"
 #include "project.h"
-#include "tables.h"
 #include "target.h"
 #include "trap.h"
 

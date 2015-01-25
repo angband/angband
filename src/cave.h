@@ -25,6 +25,12 @@
 struct player;
 struct monster;
 
+const s16b ddd[9];
+const s16b ddx[10];
+const s16b ddy[10];
+const s16b ddx_ddd[9];
+const s16b ddy_ddd[9];
+
 /**
  * Square flags
  */

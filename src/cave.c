@@ -30,12 +30,38 @@
 #include "obj-util.h"
 #include "object.h"
 #include "player-timed.h"
-#include "tables.h"
 #include "trap.h"
 
 struct feature *f_info;
 struct chunk *cave = NULL;
 struct chunk *cave_k = NULL;
+
+/**
+ * Global array for looping through the "keypad directions".
+ */
+const s16b ddd[9] =
+{ 2, 8, 6, 4, 3, 1, 9, 7, 5 };
+
+/**
+ * Global arrays for converting "keypad direction" into "offsets".
+ */
+const s16b ddx[10] =
+{ 0, -1, 0, 1, -1, 0, 1, -1, 0, 1 };
+
+const s16b ddy[10] =
+{ 0, 1, 1, 1, 0, 0, 0, -1, -1, -1 };
+
+/**
+ * Global arrays for optimizing "ddx[ddd[i]]" and "ddy[ddd[i]]".
+ *
+ * This means that each entry in this array corresponds to the direction
+ * with the same array index in ddd[].
+ */
+const s16b ddx_ddd[9] =
+{ 0, 0, 1, -1, 1, -1, 1, -1, 0 };
+
+const s16b ddy_ddd[9] =
+{ 1, -1, 0, 0, 1, 1, -1, -1, 0 };
 
 /**
  * Find a terrain feature index by name

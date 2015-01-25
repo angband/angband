@@ -32,7 +32,6 @@
 #include "obj-util.h"
 #include "player-history.h"
 #include "player-quest.h"
-#include "tables.h"
 #include "target.h"
 
 s16b num_repro;

@@ -37,7 +37,6 @@
 #include "object.h"
 #include "player-history.h"
 #include "store.h"
-#include "tables.h"
 #include "target.h"
 #include "ui-context.h"
 #include "ui-history.h"

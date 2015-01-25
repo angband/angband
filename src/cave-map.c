@@ -24,7 +24,6 @@
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "player-timed.h"
-#include "tables.h"
 #include "trap.h"
 
 /**

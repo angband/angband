@@ -26,7 +26,6 @@
 #include "obj-util.h"
 #include "player-path.h"
 #include "player-util.h"
-#include "tables.h"
 
 /****** Pathfinding code ******/
 

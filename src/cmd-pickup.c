@@ -37,7 +37,6 @@
 #include "player-attack.h"
 #include "player-history.h"
 #include "player-util.h"
-#include "tables.h"
 #include "trap.h"
 
 /**

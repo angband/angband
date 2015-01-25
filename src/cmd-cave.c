@@ -38,7 +38,6 @@
 #include "player-timed.h"
 #include "player-util.h"
 #include "store.h"
-#include "tables.h"
 #include "trap.h"
 
 /**

@@ -29,7 +29,6 @@
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "object.h"
-#include "tables.h"
 #include "ui-command.h"
 #include "wizard.h"
 

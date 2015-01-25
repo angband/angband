@@ -33,7 +33,6 @@
 #include "player-util.h"
 #include "score.h"
 #include "store.h"
-#include "tables.h"
 #include "target.h"
 #include "wizard.h"
 

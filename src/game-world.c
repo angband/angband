@@ -30,7 +30,6 @@
 #include "obj-util.h"
 #include "player-timed.h"
 #include "player-util.h"
-#include "tables.h"
 #include "target.h"
 
 u16b daycount = 0;

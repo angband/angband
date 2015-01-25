@@ -26,7 +26,6 @@
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "object.h"
-#include "tables.h"
 #include "ui-display.h"
 #include "ui-help.h"
 #include "ui-input.h"

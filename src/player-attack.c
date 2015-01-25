@@ -38,7 +38,6 @@
 #include "player-attack.h"
 #include "player-util.h"
 #include "project.h"
-#include "tables.h"
 #include "target.h"
 
 /**

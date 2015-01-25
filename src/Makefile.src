@@ -160,7 +160,6 @@ ANGFILES = \
 	save.o \
 	savefile.o \
 	store.o \
-	tables.o \
 	target.o \
 	trap.o \
 	ui.o \

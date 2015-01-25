@@ -29,7 +29,6 @@
 #include "player-attack.h"
 #include "player-timed.h"
 #include "project.h"
-#include "tables.h"
 #include "target.h"
 #include "trap.h"
 #include "ui.h"
