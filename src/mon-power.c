@@ -17,6 +17,7 @@
  */
 
 #include "angband.h"
+#include "game-world.h"
 #include "init.h"
 #include "mon-init.h"
 #include "mon-power.h"
@@ -25,7 +26,6 @@
 #include "mon-blow-effects.h"
 #include "obj-tval.h"
 #include "obj-util.h"
-#include "tables.h"
 #include "z-textblock.h"
 
 bool arg_power;				/* Command arg -- Generate monster power */
@@ -56,7 +56,7 @@ static byte adj_energy(monster_race *r_ptr)
 	unsigned i = r_ptr->speed + (rsf_has(r_ptr->spell_flags,RSF_HASTE) ? 5 : 0);
 
 	/* Fastest monster in the game is currently +30, but bounds check anyway */
-	return extract_energy[MIN(i, N_ELEMENTS(extract_energy) - 1)];
+	return turn_energy(MIN(i, N_ELEMENTS(extract_energy) - 1));
 }
 
 static long eval_max_dam(monster_race *r_ptr, int ridx)

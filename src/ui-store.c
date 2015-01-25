@@ -1193,7 +1193,7 @@ void textui_enter_store(void)
 	mem_free(ctx.list);
 
 	/* Take a turn */
-	player->upkeep->energy_use = 100;
+	player->upkeep->energy_use = z_info->move_energy;
 
 	/* Flush messages */
 	event_signal(EVENT_MESSAGE_FLUSH);

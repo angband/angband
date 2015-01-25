@@ -28,8 +28,10 @@ s32b turn;
 bool character_generated;
 bool character_dungeon;
 bool character_saved;
+const byte extract_energy[200];
 
 bool is_daytime(void);
+int turn_energy(int speed);
 void play_ambient_sound(void);
 void process_world(struct chunk *c);
 void on_new_level(void);

@@ -59,7 +59,7 @@ void do_cmd_go_up(struct command *cmd)
 	}
 
 	/* Take a turn */
-	player->upkeep->energy_use = 100;
+	player->upkeep->energy_use = z_info->move_energy;
 
 	/* Success */
 	msgt(MSG_STAIRS_UP, "You enter a maze of up staircases.");
@@ -103,7 +103,7 @@ void do_cmd_go_down(struct command *cmd)
 	}
 
 	/* Hack -- take a turn */
-	player->upkeep->energy_use = 100;
+	player->upkeep->energy_use = z_info->move_energy;
 
 	/* Success */
 	msgt(MSG_STAIRS_DOWN, "You enter a maze of down staircases.");
@@ -222,7 +222,7 @@ void do_cmd_search(struct command *cmd)
 {
 	/* Only take a turn if attempted */
 	if (search(TRUE))
-		player->upkeep->energy_use = 100;
+		player->upkeep->energy_use = z_info->move_energy;
 }
 
 
@@ -382,7 +382,7 @@ void do_cmd_open(struct command *cmd)
 	}
 
 	/* Take a turn */
-	player->upkeep->energy_use = 100;
+	player->upkeep->energy_use = z_info->move_energy;
 
 	/* Apply confusion */
 	if (player_confuse_dir(player, &dir, FALSE)) {
@@ -517,7 +517,7 @@ void do_cmd_close(struct command *cmd)
 	}
 
 	/* Take a turn */
-	player->upkeep->energy_use = 100;
+	player->upkeep->energy_use = z_info->move_energy;
 
 	/* Apply confusion */
 	if (player_confuse_dir(player, &dir, FALSE)) {
@@ -703,7 +703,7 @@ void do_cmd_tunnel(struct command *cmd)
 	}
 
 	/* Take a turn */
-	player->upkeep->energy_use = 100;
+	player->upkeep->energy_use = z_info->move_energy;
 
 	/* Apply confusion */
 	if (player_confuse_dir(player, &dir, FALSE)) {
@@ -927,7 +927,7 @@ void do_cmd_disarm(struct command *cmd)
 	}
 
 	/* Take a turn */
-	player->upkeep->energy_use = 100;
+	player->upkeep->energy_use = z_info->move_energy;
 
 	/* Apply confusion */
 	if (player_confuse_dir(player, &dir, FALSE)) {
@@ -980,7 +980,7 @@ void do_cmd_alter_aux(int dir)
 	x = player->px + ddx[dir];
 
 	/* Take a turn */
-	player->upkeep->energy_use = 100;
+	player->upkeep->energy_use = z_info->move_energy;
 
 	/* Apply confusion */
 	if (player_confuse_dir(player, &dir, FALSE)) {
@@ -1218,7 +1218,7 @@ void do_cmd_walk(struct command *cmd)
 	/* Apply confusion if necessary */
 	/* Confused movements use energy no matter what */
 	if (player_confuse_dir(player, &dir, FALSE))
-		player->upkeep->energy_use = 100;
+		player->upkeep->energy_use = z_info->move_energy;
 	
 	/* Verify walkability */
 	y = player->py + ddy[dir];
@@ -1226,7 +1226,7 @@ void do_cmd_walk(struct command *cmd)
 	if (!do_cmd_walk_test(y, x))
 		return;
 
-	player->upkeep->energy_use = 100;
+	player->upkeep->energy_use = z_info->move_energy;
 
 	move_player(dir, TRUE);
 }
@@ -1245,7 +1245,7 @@ void do_cmd_jump(struct command *cmd)
 
 	/* Apply confusion if necessary */
 	if (player_confuse_dir(player, &dir, FALSE))
-		player->upkeep->energy_use = 100;
+		player->upkeep->energy_use = z_info->move_energy;
 
 	/* Verify walkability */
 	y = player->py + ddy[dir];
@@ -1253,7 +1253,7 @@ void do_cmd_jump(struct command *cmd)
 	if (!do_cmd_walk_test(y, x))
 		return;
 
-	player->upkeep->energy_use = 100;
+	player->upkeep->energy_use = z_info->move_energy;
 
 	move_player(dir, FALSE);
 }
@@ -1321,7 +1321,7 @@ void do_cmd_pathfind(struct command *cmd)
 void do_cmd_hold(struct command *cmd)
 {
 	/* Take a turn */
-	player->upkeep->energy_use = 100;
+	player->upkeep->energy_use = z_info->move_energy;
 
 	/* Spontaneous Searching */
 	if ((player->state.skills[SKILL_SEARCH_FREQUENCY] >= 50) ||
@@ -1404,7 +1404,7 @@ void do_cmd_rest(struct command *cmd)
 void do_cmd_sleep(struct command *cmd)
 {
 	/* Take a turn */
-	player->upkeep->energy_use = 100;
+	player->upkeep->energy_use = z_info->move_energy;
 }
 
 

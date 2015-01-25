@@ -20,7 +20,6 @@
 #include "alloc.h"
 #include "game-world.h"
 #include "init.h"
-#include "target.h"
 #include "mon-desc.h"
 #include "mon-lore.h"
 #include "mon-make.h"
@@ -34,6 +33,7 @@
 #include "player-history.h"
 #include "player-quest.h"
 #include "tables.h"
+#include "target.h"
 
 s16b num_repro;
 
@@ -964,7 +964,7 @@ static bool place_new_monster_one(struct chunk *c, int y, int x, monster_race *r
 	/* Hack -- small racial variety */
 	if (!rf_has(race->flags, RF_UNIQUE)) {
 		/* Allow some small variation per monster */
-		i = extract_energy[race->speed] / 10;
+		i = turn_energy(race->speed) / 10;
 		if (i) mon->mspeed += rand_spread(0, i);
 	}
 

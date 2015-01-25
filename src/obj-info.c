@@ -18,8 +18,9 @@
  */
 
 #include "angband.h"
-#include "effects.h"
 #include "cmds.h"
+#include "effects.h"
+#include "game-world.h"
 #include "init.h"
 #include "monster.h"
 #include "obj-gear.h"
@@ -31,7 +32,6 @@
 #include "obj-util.h"
 #include "player-attack.h"
 #include "project.h"
-#include "tables.h"
 #include "z-textblock.h"
 
 /**
@@ -1218,7 +1218,7 @@ static bool describe_food(textblock *tb, const object_type *o_ptr,
 
 	if (nourishment) {
 		/* Sometimes adjust for player speed */
-		int multiplier = extract_energy[player->state.speed];
+		int multiplier = turn_energy(player->state.speed);
 		if (!subjective) multiplier = 10;
 
 		if (nourishment == OBJ_KNOWN_PRESENT) {
@@ -1444,7 +1444,7 @@ static bool describe_effect(textblock *tb, const object_type *o_ptr,
 	if (min_time || max_time)
 	{
 		/* Sometimes adjust for player speed */
-		int multiplier = extract_energy[player->state.speed];
+		int multiplier = turn_energy(player->state.speed);
 		if (!subjective) multiplier = 10;
 
 		textblock_append(tb, "Takes ");

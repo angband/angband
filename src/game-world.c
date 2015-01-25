@@ -33,9 +33,6 @@
 #include "tables.h"
 #include "target.h"
 
-/* The minimum amount of energy a player has at the start of a new level */
-#define INITIAL_DUNGEON_ENERGY 100
-
 u16b daycount = 0;
 u32b seed_randart;		/* Hack -- consistent random artifacts */
 u32b seed_flavor;		/* Hack -- consistent object colors */
@@ -43,6 +40,48 @@ s32b turn;				/* Current game turn */
 bool character_generated;	/* The character exists */
 bool character_dungeon;		/* The character has a dungeon */
 bool character_saved;		/* The character was just saved to a savefile */
+
+/**
+ * This table allows quick conversion from "speed" to "energy"
+ * The basic function WAS ((S>=110) ? (S-110) : (100 / (120-S)))
+ * Note that table access is *much* quicker than computation.
+ *
+ * Note that the table has been changed at high speeds.  From
+ * "Slow (-40)" to "Fast (+30)" is pretty much unchanged, but
+ * at speeds above "Fast (+30)", one approaches an asymptotic
+ * effective limit of 50 energy per turn.  This means that it
+ * is relatively easy to reach "Fast (+30)" and get about 40
+ * energy per turn, but then speed becomes very "expensive",
+ * and you must get all the way to "Fast (+50)" to reach the
+ * point of getting 45 energy per turn.  After that point,
+ * furthur increases in speed are more or less pointless,
+ * except to balance out heavy inventory.
+ *
+ * Note that currently the fastest monster is "Fast (+30)".
+ */
+const byte extract_energy[200] =
+{
+	/* Slow */     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+	/* Slow */     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+	/* Slow */     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+	/* Slow */     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+	/* Slow */     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+	/* Slow */     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+	/* S-50 */     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+	/* S-40 */     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,
+	/* S-30 */     2,  2,  2,  2,  2,  2,  2,  3,  3,  3,
+	/* S-20 */     3,  3,  3,  3,  3,  4,  4,  4,  4,  4,
+	/* S-10 */     5,  5,  5,  5,  6,  6,  7,  7,  8,  9,
+	/* Norm */    10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
+	/* F+10 */    20, 21, 22, 23, 24, 25, 26, 27, 28, 29,
+	/* F+20 */    30, 31, 32, 33, 34, 35, 36, 36, 37, 37,
+	/* F+30 */    38, 38, 39, 39, 40, 40, 40, 41, 41, 41,
+	/* F+40 */    42, 42, 42, 43, 43, 43, 44, 44, 44, 44,
+	/* F+50 */    45, 45, 45, 45, 45, 46, 46, 46, 46, 46,
+	/* F+60 */    47, 47, 47, 47, 47, 48, 48, 48, 48, 48,
+	/* F+70 */    49, 49, 49, 49, 49, 49, 49, 49, 49, 49,
+	/* Fast */    49, 49, 49, 49, 49, 49, 49, 49, 49, 49,
+};
 
 /**
  * Say whether it's daytime or not
@@ -53,8 +92,15 @@ bool is_daytime(void)
 		return TRUE;
 
 	return FALSE;
-} 
+}
 
+/**
+ * The amount of energy gained in a turn by a player or monster
+ */
+int turn_energy(int speed)
+{
+	return extract_energy[speed] * z_info->move_energy / 100;
+}
 
 /**
  * If player has inscribed the object with "!!", let him know when it's
@@ -316,7 +362,7 @@ void process_world(struct chunk *c)
 	/* Digest normally */
 	if (!(turn % 100)) {
 		/* Basic digestion rate based on speed */
-		i = extract_energy[player->state.speed] * 2;
+		i = turn_energy(player->state.speed) * 2;
 
 		/* Regeneration takes more food */
 		if (player_of_has(player, OF_REGEN)) i += 30;
@@ -644,8 +690,8 @@ void on_new_level(void)
 
 	/* Give player minimum energy to start a new level, but do not reduce
 	 * higher value from savefile for level in progress */
-	if (player->energy < INITIAL_DUNGEON_ENERGY)
-		player->energy = INITIAL_DUNGEON_ENERGY;
+	if (player->energy < z_info->move_energy)
+		player->energy = z_info->move_energy;
 }
 
 /**
@@ -688,7 +734,7 @@ void run_game_loop(void)
 
 	/* The player may still have enough energy to move, so we run another
 	 * player turn before processing the rest of the world */
-	while (player->energy >= 100) {
+	while (player->energy >= z_info->move_energy) {
 		/* Do any necessary animations */
 		event_signal(EVENT_ANIMATE);
 		
@@ -747,7 +793,7 @@ void run_game_loop(void)
 			}
 
 			/* Give the player some energy */
-			player->energy += extract_energy[player->state.speed];
+			player->energy += turn_energy(player->state.speed);
 
 			/* Count game turns */
 			turn++;
@@ -766,7 +812,7 @@ void run_game_loop(void)
 
 		/* If the player has enough energy to move they now do so, after
 		 * any monsters with more energy take their turns */
-		while (player->energy >= 100) {
+		while (player->energy >= z_info->move_energy) {
 			/* Do any necessary animations */
 			event_signal(EVENT_ANIMATE);
 

@@ -333,13 +333,13 @@ void do_cmd_pickup(struct command *cmd)
 	struct object *obj = square_object(cave, player->py, player->px);
 
 	/* Autopickup first */
-	energy_cost = do_autopickup() * 10;
+	energy_cost = do_autopickup() * z_info->move_energy / 10;
 
 	/* Pick up floor objects with a menu for multiple objects */
-	energy_cost += player_pickup_item(obj, FALSE) * 10;
+	energy_cost += player_pickup_item(obj, FALSE) * z_info->move_energy / 10;
 
 	/* Limit */
-	if (energy_cost > 100) energy_cost = 100;
+	if (energy_cost > z_info->move_energy) energy_cost = z_info->move_energy;
 
 	/* Charge this amount of energy. */
 	player->upkeep->energy_use = energy_cost;
@@ -351,9 +351,9 @@ void do_cmd_pickup(struct command *cmd)
 void do_cmd_autopickup(struct command *cmd)
 {
 	/* Get the obvious things */
-	player->upkeep->energy_use = do_autopickup() * 10;
-	if (player->upkeep->energy_use > 100)
-		player->upkeep->energy_use = 100;
+	player->upkeep->energy_use = do_autopickup() * z_info->move_energy / 10;
+	if (player->upkeep->energy_use > z_info->move_energy)
+		player->upkeep->energy_use = z_info->move_energy;
 
 	/* Look at what's left */
 	event_signal(EVENT_SEEFLOOR);

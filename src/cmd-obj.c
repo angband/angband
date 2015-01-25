@@ -340,7 +340,7 @@ void do_cmd_takeoff(struct command *cmd)
 
 	inven_takeoff(obj);
 	pack_overflow();
-	player->upkeep->energy_use = 50;
+	player->upkeep->energy_use = z_info->move_energy / 2;
 }
 
 
@@ -359,7 +359,7 @@ void wield_item(struct object *obj, int slot)
 		player->upkeep->equip_cnt++;
 
 	/* Take a turn */
-	player->upkeep->energy_use = 100;
+	player->upkeep->energy_use = z_info->move_energy;
 
 	/* Split off a new object if necessary */
 	if (obj->number > 1) {
@@ -512,7 +512,7 @@ void do_cmd_drop(struct command *cmd)
 	}
 
 	inven_drop(obj, amt);
-	player->upkeep->energy_use = 50;
+	player->upkeep->energy_use = z_info->move_energy / 2;
 }
 
 /**
@@ -602,7 +602,7 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 	if (ident) object_notice_effect(obj);
 
 	/* Use the turn */
-	player->upkeep->energy_use = 100;
+	player->upkeep->energy_use = z_info->move_energy;
 
 	/* Mark as tried and redisplay */
 	player->upkeep->notice |= (PN_COMBINE);
@@ -928,7 +928,7 @@ void do_cmd_refill(struct command *cmd)
 		return;
 	}
 
-	player->upkeep->energy_use = 50;
+	player->upkeep->energy_use = z_info->move_energy / 2;
 }
 
 
@@ -992,7 +992,7 @@ void do_cmd_cast(struct command *cmd)
 
 	/* Cast a spell */
 	if (spell_cast(spell, dir))
-		player->upkeep->energy_use = 100;
+		player->upkeep->energy_use = z_info->move_energy;
 }
 
 
@@ -1015,7 +1015,7 @@ void do_cmd_study_spell(struct command *cmd)
 		return;
 
 	spell_learn(spell);
-	player->upkeep->energy_use = 100;
+	player->upkeep->energy_use = z_info->move_energy;
 }
 
 /**
@@ -1059,7 +1059,7 @@ void do_cmd_study_book(struct command *cmd)
 		msg("You cannot learn any %ss in that book.", p);
 	else {
 		spell_learn(spell);
-		player->upkeep->energy_use = 100;
+		player->upkeep->energy_use = z_info->move_energy;
 	}
 }
 

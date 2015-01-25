@@ -1573,14 +1573,14 @@ void process_monsters(struct chunk *c, int minimum_energy)
 			mspeed -= 10;
 
 		/* Give this monster some energy */
-		m_ptr->energy += extract_energy[mspeed];
+		m_ptr->energy += turn_energy(mspeed);
 
 		/* End the turn of monsters without enough energy to move */
-		if (m_ptr->energy < 100)
+		if (m_ptr->energy < z_info->move_energy)
 			continue;
 
 		/* Use up "some" energy */
-		m_ptr->energy -= 100;
+		m_ptr->energy -= z_info->move_energy;
 
 		/* Mimics lie in wait */
 		if (is_mimicking(m_ptr)) continue;

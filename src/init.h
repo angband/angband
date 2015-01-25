@@ -80,6 +80,7 @@ struct angband_constants
 	u16b town_wid;	/**< Maximum number of horizontical grids in the town */
 	u16b feeling_total;	/* Total number of feeling squares per level */
 	u16b feeling_need;	/* Squares needed to see to get first feeling */
+	u16b move_energy;	/* Energy the player or monster needs to move */
 
 	/* Carrying capacity constants, read from constants.txt */
 	u16b pack_size;		/**< Maximum number of pack slots */

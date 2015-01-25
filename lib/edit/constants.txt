@@ -3,12 +3,16 @@
 
 # This file is used to initialize game constants for Angband.
 
-## Level Maxima ##
+#---------------------------------------------------------------------
+# Level Maxima
+#---------------------------------------------------------------------
 
 # Maximum number of monsters on the level
 level-max:monsters:1024
 
-## Monster Generation ##
+#---------------------------------------------------------------------
+# Monster Generation
+#---------------------------------------------------------------------
 
 # 1/per-turn-chance of new monster generation
 mon-gen:chance:500
@@ -31,7 +35,9 @@ mon-gen:ood-chance:25
 # Maximum out-of-depth amount for monster generation
 mon-gen:ood-amount:10
 
-## Monster Gameplay ##
+#---------------------------------------------------------------------
+# Monster Gameplay
+#---------------------------------------------------------------------
 
 # Rune of protection resistance to monster breaking
 mon-play:break-glyph:550
@@ -52,7 +58,9 @@ mon-play:flee-range:5
 # and closer than this distance.
 mon-play:turn-range:5
 
-## Dungeon Generation ##
+#---------------------------------------------------------------------
+# Dungeon Generation
+#---------------------------------------------------------------------
 
 # Number of possible room centres (and hence rooms) on a normal level
 dun-gen:cent-max:100
@@ -78,7 +86,9 @@ dun-gen:amt-gold:3
 # Maximum number of pits or nests allowed per level
 dun-gen:pit-max:2
 
-## Game World ##
+#---------------------------------------------------------------------
+# Game World
+#---------------------------------------------------------------------
 
 # Maximum dungeon level; must be at least 100.
 # Setting it below 128 may prevent the creation of some objects.
@@ -105,7 +115,12 @@ world:feeling-total:100
 # Squares needed to see to get first feeling
 world:feeling-need:10
 
-## Carrying Capacity ##
+# Energy needed by player or monsters to move
+world:move-energy:100
+
+#---------------------------------------------------------------------
+# Carrying Capacity
+#---------------------------------------------------------------------
 
 # Max number of pack slots for carrying inventory
 carry-cap:pack-size:23
@@ -123,7 +138,9 @@ carry-cap:floor-size:23
 carry-cap:stack-size:40
 
 
-## Store Parameters ##
+#---------------------------------------------------------------------
+# Store Parameters
+#---------------------------------------------------------------------
 
 # Maximum number of discrete objects in store inventory
 store:inven-max:24
@@ -138,7 +155,9 @@ store:shuffle:25
 store:magic-level:5
 
 
-## Object generation ##
+#---------------------------------------------------------------------
+# Object generation
+#---------------------------------------------------------------------
 
 # Maximum depth used in object allocation
 obj-make:max-depth:100
@@ -159,7 +178,9 @@ obj-make:fuel-lamp:15000
 obj-make:default-lamp:7500
 
 
-## Player constants ##
+#---------------------------------------------------------------------
+# Player constants
+#---------------------------------------------------------------------
 
 # Maximum visual range
 player:max-sight:20

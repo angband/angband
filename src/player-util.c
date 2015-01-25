@@ -730,7 +730,7 @@ void player_resting_step_turn(struct player *p)
 	}
 
 	/* Take a turn */
-	p->upkeep->energy_use = 100;
+	p->upkeep->energy_use = z_info->move_energy;
 
 	/* Increment the resting counters */
 	p->resting_turn++;

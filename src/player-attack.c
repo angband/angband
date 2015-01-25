@@ -424,7 +424,7 @@ static bool py_attack_real(int y, int x, bool *fear)
  */
 void py_attack(int y, int x)
 {
-	int blow_energy = 10000 / player->state.num_blows;
+	int blow_energy = 100 * z_info->move_energy / player->state.num_blows;
 	int blows = 0;
 	bool fear = FALSE;
 	monster_type *m_ptr = square_monster(cave, y, x);
@@ -440,7 +440,8 @@ void py_attack(int y, int x)
 	while (player->energy >= blow_energy * (blows + 1)) {
 		bool stop = py_attack_real(y, x, &fear);
 		player->upkeep->energy_use += blow_energy;
-		if (stop || player->upkeep->energy_use + blow_energy > 100) break;
+		if (player->upkeep->energy_use + blow_energy > z_info->move_energy ||
+			stop) break;
 		blows++;
 	}
 	
@@ -517,7 +518,7 @@ static void ranged_helper(struct object *obj, int dir, int range, int shots,
 	object_desc(o_name, sizeof(o_name), obj, ODESC_FULL | ODESC_SINGULAR);
 
 	/* Actually "fire" the object -- Take a partial turn */
-	player->upkeep->energy_use = (100 / shots);
+	player->upkeep->energy_use = (z_info->move_energy / shots);
 
 	/* Calculate the path */
 	path_n = project_path(path_g, range, y, x, ty, tx, 0);

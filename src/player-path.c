@@ -20,6 +20,7 @@
 #include "angband.h"
 #include "cmds.h"
 #include "cave.h"
+#include "init.h"
 #include "mon-util.h"
 #include "obj-ignore.h"
 #include "obj-util.h"
@@ -833,7 +834,7 @@ void run_step(int dir)
 		player->upkeep->running--;
 
 	/* Take time */
-	player->upkeep->energy_use = 100;
+	player->upkeep->energy_use = z_info->move_energy;
 
 	/* Move the player */
 	move_player(run_cur_dir, TRUE);
