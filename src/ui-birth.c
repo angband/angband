@@ -836,7 +836,7 @@ static enum birth_stage get_name_command(void)
 	enum birth_stage next;
 	char name[32];
 
-	if (get_name(name, sizeof(name))) {	
+	if (get_character_name(name, sizeof(name))) {
 		cmdq_push(CMD_NAME_CHOICE);
 		cmd_set_arg_string(cmdq_peek(), "name", name);
 		next = BIRTH_HISTORY_CHOICE;

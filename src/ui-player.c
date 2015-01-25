@@ -1160,7 +1160,7 @@ void do_cmd_change_name(void)
 					char namebuf[32] = "";
 
 					/* Set player name */
-					if (get_name(namebuf, sizeof namebuf))
+					if (get_character_name(namebuf, sizeof namebuf))
 						my_strcpy(op_ptr->full_name, namebuf,
 								  sizeof(op_ptr->full_name));
 
