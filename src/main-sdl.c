@@ -21,12 +21,12 @@
 #include "cmds.h"
 #include "game-world.h"
 #include "init.h"
-#include "ui.h"
 #include "ui-command.h"
 #include "ui-display.h"
 #include "ui-game.h"
 #include "ui-input.h"
 #include "ui-map.h"
+#include "ui-output.h"
 #include "ui-prefs.h"
 
 /*

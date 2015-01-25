@@ -22,9 +22,9 @@
 #include "mon-lore.h"
 #include "mon-util.h"
 #include "player-timed.h"
+#include "ui-output.h"
 #include "ui-prefs.h"
 #include "ui-term.h"
-#include "ui.h"
 
 /**
  * Format a section of the monster list: a header followed by monster list

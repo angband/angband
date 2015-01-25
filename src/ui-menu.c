@@ -1,6 +1,6 @@
-/*
- * File: ui-menu.c
- * Purpose: Generic menu interaction functions
+/**
+ * \file ui-menu.c
+ * \brief Generic menu interaction functions
  *
  * Copyright (c) 2007 Pete Mack
  * Copyright (c) 2010 Andi Sidwell

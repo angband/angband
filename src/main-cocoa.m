@@ -22,12 +22,12 @@
 #include "init.h"
 #include "obj-util.h"
 #include "savefile.h"
-#include "ui.h"
 #include "ui-command.h"
 #include "ui-display.h"
 #include "ui-game.h"
 #include "ui-init.h"
 #include "ui-input.h"
+#include "ui-output.h"
 #include "ui-prefs.h"
 
 

@@ -40,6 +40,7 @@
 #include "ui-map.h"
 #include "ui-obj.h"
 #include "ui-object.h"
+#include "ui-output.h"
 #include "ui-player.h"
 #include "ui-prefs.h"
 #include "ui-spell.h"
@@ -47,7 +48,6 @@
 #include "ui-signals.h"
 #include "ui-store.h"
 #include "ui-target.h"
-#include "ui.h"
 
 
 bool arg_wizard;			/* Command arg -- Request wizard mode */

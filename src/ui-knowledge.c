@@ -46,11 +46,11 @@
 #include "ui-obj.h"
 #include "ui-obj-list.h"
 #include "ui-options.h"
+#include "ui-output.h"
 #include "ui-prefs.h"
 #include "ui-score.h"
 #include "ui-store.h"
 #include "ui-target.h"
-#include "ui.h"
 #include "wizard.h"
 
 /* Flag value for missing array entry */

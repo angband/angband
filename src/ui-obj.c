@@ -35,8 +35,8 @@
 #include "ui-input.h"
 #include "ui-keymap.h"
 #include "ui-obj.h"
+#include "ui-output.h"
 #include "ui-prefs.h"
-#include "ui.h"
 
 /**
  * Determine if the attr and char should consider the item's flavor

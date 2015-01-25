@@ -31,9 +31,9 @@
 #include "ui-input.h"
 #include "ui-keymap.h"
 #include "ui-knowledge.h"
+#include "ui-output.h"
 #include "ui-prefs.h"
 #include "ui-term.h"
-#include "ui.h"
 
 /**
  * Initialise the UI

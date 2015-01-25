@@ -1,5 +1,5 @@
 /**
- * \file mon-lore.c
+ * \file ui-mon-lore.c
  * \brief Monster memory UI
  *
  * Copyright (c) 1997-2007 Ben Harrison, James E. Wilson, Robert A. Koeneke
@@ -19,9 +19,9 @@
 #include "angband.h"
 #include "mon-lore.h"
 #include "ui-mon-lore.h"
+#include "ui-output.h"
 #include "ui-prefs.h"
 #include "ui-term.h"
-#include "ui.h"
 #include "z-textblock.h"
 
 /**

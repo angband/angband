@@ -23,7 +23,7 @@
 #include "obj-util.h"
 #include "ui-obj.h"
 #include "ui-obj-list.h"
-#include "ui.h"
+#include "ui-output.h"
 #include "z-textblock.h"
 
 /**

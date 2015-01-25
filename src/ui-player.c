@@ -30,11 +30,11 @@
 #include "store.h"
 #include "ui-display.h"
 #include "ui-history.h"
+#include "ui-input.h"
 #include "ui-menu.h"
 #include "ui-obj.h"
+#include "ui-output.h"
 #include "ui-player.h"
-#include "ui-input.h"
-#include "ui.h"
 
 
 /** Panel utilities **/

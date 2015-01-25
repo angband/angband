@@ -74,15 +74,15 @@
 #include "grafmode.h"
 #include "init.h"
 #include "mon-power.h"
-#include "savefile.h" /* savefile_set_name() */
+#include "savefile.h"
 #include "ui-command.h"
 #include "ui-display.h"
 #include "ui-game.h"
 #include "ui-init.h"
 #include "ui-input.h"
 #include "ui-map.h"
+#include "ui-output.h"
 #include "ui-prefs.h"
-#include "ui.h"
 #include "win/win-menu.h"
 
 /* Make sure the winver allows the AlphaBlend function */

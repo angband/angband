@@ -31,12 +31,12 @@
 #include "project.h"
 #include "target.h"
 #include "trap.h"
-#include "ui.h"
 #include "ui-input.h"
 #include "ui-keymap.h"
 #include "ui-map.h"
 #include "ui-mon-lore.h"
 #include "ui-obj.h"
+#include "ui-output.h"
 #include "ui-target.h"
 #include "ui-term.h"
 

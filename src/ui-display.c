@@ -47,11 +47,11 @@
 #include "ui-mon-lore.h"
 #include "ui-obj.h"
 #include "ui-obj-list.h"
+#include "ui-output.h"
 #include "ui-player.h"
 #include "ui-prefs.h"
 #include "ui-store.h"
 #include "ui-term.h"
-#include "ui.h"
 
 /**
  * There are a few functions installed to be triggered by several 

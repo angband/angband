@@ -1,6 +1,6 @@
-/*
- * File: ui.c
- * Purpose: Generic ui functions
+/**
+ * \file ui-output.c
+ * \brief Putting text on the screen, screen saving and loading, panel handling
  *
  * Copyright (c) 2007 Pete Mack and others.
  *
@@ -18,12 +18,15 @@
 #include "angband.h"
 #include "cave.h"
 #include "ui-input.h"
-#include "ui.h"
+#include "ui-output.h"
 #include "z-textblock.h"
 
-/*** Regions ***/
+/**
+ * ------------------------------------------------------------------------
+ * Regions
+ * ------------------------------------------------------------------------ */
 
-/*
+/**
  * These functions are used for manipulating regions on the screen, used 
  * mostly (but not exclusively) by the menu functions.
  */
@@ -73,22 +76,28 @@ bool region_inside(const region *loc, const ui_event *key)
 	if ((loc->col > key->mouse.x) || (loc->col + loc->width <= key->mouse.x))
 		return FALSE;
 
-	if ((loc->row > key->mouse.y) || (loc->row + loc->page_rows <= key->mouse.y))
+	if ((loc->row > key->mouse.y) ||
+		(loc->row + loc->page_rows <= key->mouse.y))
 		return FALSE;
 
 	return TRUE;
 }
 
 
-/*** Text display ***/
+/**
+ * ------------------------------------------------------------------------
+ * Text display
+ * ------------------------------------------------------------------------ */
 
-/*
+/**
  * These functions are designed to display large blocks of text on the screen
  * all at once.  They are the ui-term specific layer on top of the z-textblock.c
  * functions.
  */
 
-/* Utility function */
+/**
+ * Utility function
+ */
 static void display_area(const wchar_t *text, const byte *attrs,
 		size_t *line_starts, size_t *line_lengths,
 		size_t n_lines,
@@ -108,7 +117,7 @@ static void display_area(const wchar_t *text, const byte *attrs,
 	}
 }
 
-/*
+/**
  * Plonk a textblock on the screen in a certain bounding box.
  */
 void textui_textblock_place(textblock *tb, region orig_area, const char *header)
@@ -138,7 +147,7 @@ void textui_textblock_place(textblock *tb, region orig_area, const char *header)
 	mem_free(line_lengths);
 }
 
-/*
+/**
  * Show a textblock interactively
  */
 void textui_textblock_show(textblock *tb, region orig_area, const char *header)
@@ -211,9 +220,12 @@ void textui_textblock_show(textblock *tb, region orig_area, const char *header)
 }
 
 
-/** text_out hook for screen display **/
+/**
+ * ------------------------------------------------------------------------
+ * text_out hook for screen display
+ * ------------------------------------------------------------------------ */
 
-/*
+/**
  * Print some (colored) text to the screen at the current cursor position,
  * automatically "wrapping" existing text (at spaces) when necessary to
  * avoid placing any text into the last column, and clearing every line
@@ -254,13 +266,11 @@ void text_out_to_screen(byte a, const char *str)
 		wrap = wid;
 
 	/* Process the string */
-	for (s = buf; *s; s++)
-	{
+	for (s = buf; *s; s++) {
 		wchar_t ch;
 
 		/* Force wrap */
-		if (*s == L'\n')
-		{
+		if (*s == L'\n') {
 			/* Wrap */
 			x = text_out_indent;
 			y++;
@@ -278,19 +288,16 @@ void text_out_to_screen(byte a, const char *str)
 		ch = (iswprint(*s) ? *s : L' ');
 
 		/* Wrap words as needed */
-		if ((x >= wrap - 1) && (ch != L' '))
-		{
+		if ((x >= wrap - 1) && (ch != L' ')) {
 			int i, n = 0;
 
 			int av[256];
 			wchar_t cv[256];
 
 			/* Wrap word */
-			if (x < wrap)
-			{
+			if (x < wrap) {
 				/* Scan existing text */
-				for (i = wrap - 2; i >= 0; i--)
-				{
+				for (i = wrap - 2; i >= 0; i--) {
 					/* Grab existing attr/char */
 					Term_what(i, y, &av[i], &cv[i]);
 
@@ -319,8 +326,7 @@ void text_out_to_screen(byte a, const char *str)
 			Term_gotoxy(x, y);
 
 			/* Wrap the word (if any) */
-			for (i = n; i < wrap - 1; i++)
-			{
+			for (i = n; i < wrap - 1; i++) {
 				/* Dump */
 				Term_addch(av[i], cv[i]);
 
@@ -338,9 +344,12 @@ void text_out_to_screen(byte a, const char *str)
 }
 
 
-/** Simple text display **/
+/**
+ * ------------------------------------------------------------------------
+ * Simple text display
+ * ------------------------------------------------------------------------ */
 
-/*
+/**
  * Display a string on the screen using an attribute.
  *
  * At the given location, using the given attribute, if allowed,
@@ -352,13 +361,16 @@ void c_put_str(byte attr, const char *str, int row, int col) {
 }
 
 
-/* As above, but in white */
+/**
+ * As above, but in white
+ */
 void put_str(const char *str, int row, int col) {
 	c_put_str(COLOUR_WHITE, str, row, col);
 }
 
-/*
- * Display a string on the screen using an attribute, and clear to the end of the line.
+/**
+ * Display a string on the screen using an attribute, and clear to the
+ * end of the line.
  */
 void c_prt(byte attr, const char *str, int row, int col) {
 	/* Clear line, position cursor */
@@ -368,16 +380,21 @@ void c_prt(byte attr, const char *str, int row, int col) {
 	Term_addstr(-1, attr, str);
 }
 
-/* As above, but in white */
+/**
+ * As above, but in white
+ */
 void prt(const char *str, int row, int col) {
 	c_prt(COLOUR_WHITE, str, row, col);
 }
 
 
 
-/** Screen loading/saving **/
+/**
+ * ------------------------------------------------------------------------
+ * Screen loading/saving
+ * ------------------------------------------------------------------------ */
 
-/*
+/**
  * Screen loading and saving can be done to an arbitrary depth but it's
  * important that every call to screen_save() is balanced by a call to
  * screen_load() later on.  'screen_save_depth' is used by the game to keep
@@ -387,10 +404,12 @@ void prt(const char *str, int row, int col) {
  * Term_save() / Term_load() do all the heavy lifting here.
  */
 
-/* Depth of the screen_save() stack */
+/**
+ * Depth of the screen_save() stack
+ */
 s16b screen_save_depth;
 
-/*
+/**
  * Save the screen, and increase the "icky" depth.
  */
 void screen_save(void)
@@ -400,7 +419,7 @@ void screen_save(void)
 	screen_save_depth++;
 }
 
-/*
+/**
  * Load the screen, and decrease the "icky" depth.
  */
 void screen_load(void)
@@ -419,9 +438,12 @@ bool textui_map_is_visible(void)
 	return (screen_save_depth == 0);
 }
 
-/*** Miscellaneous things ***/
+/**
+ * ------------------------------------------------------------------------
+ * Miscellaneous things
+ * ------------------------------------------------------------------------ */
 
-/*
+/**
  * A Hengband-like 'window' function, that draws a surround box in ASCII art.
  */
 void window_make(int origin_x, int origin_y, int end_x, int end_y)
@@ -441,20 +463,18 @@ void window_make(int origin_x, int origin_y, int end_x, int end_y)
 	Term_putch(origin_x, end_y, COLOUR_WHITE, '+');
 	Term_putch(end_x, end_y, COLOUR_WHITE, '+');
 
-	for (n = 1; n < (end_x - origin_x); n++)
-	{
+	for (n = 1; n < (end_x - origin_x); n++) {
 		Term_putch(origin_x + n, origin_y, COLOUR_WHITE, '-');
 		Term_putch(origin_x + n, end_y, COLOUR_WHITE, '-');
 	}
 
-	for (n = 1; n < (end_y - origin_y); n++)
-	{
+	for (n = 1; n < (end_y - origin_y); n++) {
 		Term_putch(origin_x, origin_y + n, COLOUR_WHITE, '|');
 		Term_putch(end_x, origin_y + n, COLOUR_WHITE, '|');
 	}
 }
 
-/*
+/**
  * Modify the current panel to the given coordinates, adjusting only to
  * ensure the coordinates are legal, and return TRUE if anything done.
  *
@@ -479,8 +499,7 @@ bool modify_panel(term *t, int wy, int wx)
 	if (wx < 0) wx = 0;
 
 	/* React to changes */
-	if ((t->offset_y != wy) || (t->offset_x != wx))
-	{
+	if ((t->offset_y != wy) || (t->offset_x != wx)) {
 		/* Save wy, wx */
 		t->offset_y = wy;
 		t->offset_x = wx;
@@ -512,8 +531,7 @@ static void verify_panel_int(bool centered)
 	int j;
 
 	/* Scan windows */
-	for (j = 0; j < ANGBAND_TERM_MAX; j++)
-	{
+	for (j = 0; j < ANGBAND_TERM_MAX; j++) {
 		term *t = angband_term[j];
 
 		/* No window */
@@ -555,7 +573,7 @@ static void verify_panel_int(bool centered)
 	}
 }
 
-/*
+/**
  * Change the current panel to the panel lying in the given direction.
  *
  * Return TRUE if the panel was changed.
@@ -594,16 +612,16 @@ bool change_panel(int dir)
 }
 
 
-/*
+/**
  * Verify the current panel (relative to the player location).
  *
  * By default, when the player gets "too close" to the edge of the current
  * panel, the map scrolls one panel in that direction so that the player
  * is no longer so close to the edge.
  *
- * The "OPT(center_player)" option allows the current panel to always be centered
- * around the player, which is very expensive, and also has some interesting
- * gameplay ramifications.
+ * The "OPT(center_player)" option allows the current panel to always be
+ * centered around the player, which is very expensive, and also has some
+ * interesting gameplay ramifications.
  */
 void verify_panel(void)
 {

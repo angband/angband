@@ -28,9 +28,9 @@
 #include "ui-input.h"
 #include "ui-map.h"
 #include "ui-obj.h"
+#include "ui-output.h"
 #include "ui-prefs.h"
 #include "ui-term.h"
-#include "ui.h"
 
 
 /*

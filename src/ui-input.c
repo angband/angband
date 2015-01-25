@@ -36,13 +36,13 @@
 #include "ui-map.h"
 #include "ui-obj.h"
 #include "ui-object.h"
+#include "ui-output.h"
 #include "ui-player.h"
 #include "ui-prefs.h"
 #include "ui-signals.h"
 #include "ui-spell.h"
 #include "ui-store.h"
 #include "ui-target.h"
-#include "ui.h"
 
 static bool inkey_xtra;
 u32b inkey_scan;		/* See the "inkey()" function */

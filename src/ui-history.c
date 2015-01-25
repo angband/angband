@@ -19,7 +19,7 @@
 #include "angband.h"
 #include "player-history.h"
 #include "ui-input.h"
-#include "ui.h"
+#include "ui-output.h"
 
 /**
  * Print the header for the history display

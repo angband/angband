@@ -19,8 +19,8 @@
 #include "buildid.h"
 #include "init.h"
 #include "ui-input.h"
+#include "ui-output.h"
 #include "ui-term.h"
-#include "ui.h"
 
 /*
  * Make a string lower case.

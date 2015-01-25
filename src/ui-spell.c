@@ -24,8 +24,8 @@
 #include "obj-util.h"
 #include "object.h"
 #include "player-spell.h"
-#include "ui.h"
 #include "ui-menu.h"
+#include "ui-output.h"
 
 
 

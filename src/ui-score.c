@@ -19,10 +19,10 @@
 #include "buildid.h"
 #include "game-world.h"
 #include "score.h"
-#include "ui-score.h"
 #include "ui-input.h"
+#include "ui-output.h"
+#include "ui-score.h"
 #include "ui-term.h"
-#include "ui.h"
 
 /**
  * Display the scores in a given range.
