@@ -73,7 +73,7 @@ int timed_protect_flag(int type)
 	return effects[type].fail;
 }
 
-/*
+/**
  * Set a timed event (except timed resists, cutting and stunning).
  */
 bool player_set_timed(struct player *p, int idx, int v, bool notify)
@@ -106,22 +106,14 @@ bool player_set_timed(struct player *p, int idx, int v, bool notify)
 	/* Find the effect */
 	effect = &effects[idx];
 
-	/* Turning off, always mention */
-	if (v == 0)
-	{
+	/* Always mention start or finish, otherwise on request */
+	if (v == 0) {
 		msgt(MSG_RECOVER, "%s", effect->on_end);
 		notify = TRUE;
-	}
-
-	/* Turning on, always mention */
-	else if (p->timed[idx] == 0)
-	{
+	} else if (p->timed[idx] == 0) {
 		msgt(effect->msg, "%s", effect->on_begin);
 		notify = TRUE;
-	}
-
-	else if (notify)
-	{
+	} else if (notify) {
 		/* Decrementing */
 		if (p->timed[idx] > v && effect->on_decrease)
 			msgt(effect->msg, "%s", effect->on_decrease);
@@ -237,7 +229,7 @@ bool player_clear_timed(struct player *p, int idx, bool notify)
 
 
 
-/*
+/**
  * Set "player->timed[TMD_STUN]", notice observable changes
  *
  * Note the special code to only notice "range" changes.
@@ -251,57 +243,36 @@ static bool set_stun(struct player *p, int v)
 	/* Hack -- Force good values */
 	v = (v > 10000) ? 10000 : (v < 0) ? 0 : v;
 
-	/* Knocked out */
+	/* Old state */
 	if (p->timed[TMD_STUN] > 100)
-	{
+		/* Knocked out */
 		old_aux = 3;
-	}
-
-	/* Heavy stun */
 	else if (p->timed[TMD_STUN] > 50)
-	{
+		/* Heavy stun */
 		old_aux = 2;
-	}
-
-	/* Stun */
 	else if (p->timed[TMD_STUN] > 0)
-	{
+		/* Stun */
 		old_aux = 1;
-	}
-
-	/* None */
 	else
-	{
+		/* None */
 		old_aux = 0;
-	}
 
-	/* Knocked out */
+	/* New state */
 	if (v > 100)
-	{
+		/* Knocked out */
 		new_aux = 3;
-	}
-
-	/* Heavy stun */
 	else if (v > 50)
-	{
+		/* Heavy stun */
 		new_aux = 2;
-	}
-
-	/* Stun */
 	else if (v > 0)
-	{
+		/* Stun */
 		new_aux = 1;
-	}
-
-	/* None */
 	else
-	{
+		/* None */
 		new_aux = 0;
-	}
 
-	/* Increase cut */
-	if (new_aux > old_aux)
-	{
+	/* Increase or decrease stun */
+	if (new_aux > old_aux) {
 		/* Describe the state */
 		switch (new_aux)
 		{
@@ -329,11 +300,7 @@ static bool set_stun(struct player *p, int v)
 
 		/* Notice */
 		notice = TRUE;
-	}
-
-	/* Decrease cut */
-	else if (new_aux < old_aux)
-	{
+	} else if (new_aux < old_aux) {
 		/* Describe the state */
 		switch (new_aux)
 		{
@@ -356,16 +323,10 @@ static bool set_stun(struct player *p, int v)
 	/* No change */
 	if (!notice) return (FALSE);
 
-	/* Disturb */
+	/* Disturb and update */
 	disturb(player, 0);
-
-	/* Recalculate bonuses */
 	p->upkeep->update |= (PU_BONUS);
-
-	/* Redraw the "stun" */
 	p->upkeep->redraw |= (PR_STATUS);
-
-	/* Handle stuff */
 	handle_stuff(player->upkeep);
 
 	/* Result */
@@ -373,7 +334,7 @@ static bool set_stun(struct player *p, int v)
 }
 
 
-/*
+/**
  * Set "player->timed[TMD_CUT]", notice observable changes
  *
  * Note the special code to only notice "range" changes.
@@ -387,105 +348,60 @@ static bool set_cut(struct player *p, int v)
 	/* Hack -- Force good values */
 	v = (v > 10000) ? 10000 : (v < 0) ? 0 : v;
 
-	/* Mortal wound */
+	/* Old state */
 	if (p->timed[TMD_CUT] > 1000)
-	{
+		/* Mortal wound */
 		old_aux = 7;
-	}
-
-	/* Deep gash */
 	else if (p->timed[TMD_CUT] > 200)
-	{
+		/* Deep gash */
 		old_aux = 6;
-	}
-
-	/* Severe cut */
 	else if (p->timed[TMD_CUT] > 100)
-	{
+		/* Severe cut */
 		old_aux = 5;
-	}
-
-	/* Nasty cut */
 	else if (p->timed[TMD_CUT] > 50)
-	{
+		/* Nasty cut */
 		old_aux = 4;
-	}
-
-	/* Bad cut */
 	else if (p->timed[TMD_CUT] > 25)
-	{
+		/* Bad cut */
 		old_aux = 3;
-	}
-
-	/* Light cut */
 	else if (p->timed[TMD_CUT] > 10)
-	{
+		/* Light cut */
 		old_aux = 2;
-	}
-
-	/* Graze */
 	else if (p->timed[TMD_CUT] > 0)
-	{
+		/* Graze */
 		old_aux = 1;
-	}
-
-	/* None */
 	else
-	{
+		/* None */
 		old_aux = 0;
-	}
 
-	/* Mortal wound */
+	/* New state */
 	if (v > 1000)
-	{
+		/* Mortal wound */
 		new_aux = 7;
-	}
-
-	/* Deep gash */
 	else if (v > 200)
-	{
+		/* Deep gash */
 		new_aux = 6;
-	}
-
-	/* Severe cut */
 	else if (v > 100)
-	{
+		/* Severe cut */
 		new_aux = 5;
-	}
-
-	/* Nasty cut */
 	else if (v > 50)
-	{
+		/* Nasty cut */
 		new_aux = 4;
-	}
-
-	/* Bad cut */
 	else if (v > 25)
-	{
+		/* Bad cut */
 		new_aux = 3;
-	}
-
-	/* Light cut */
 	else if (v > 10)
-	{
+		/* Light cut */
 		new_aux = 2;
-	}
-
-	/* Graze */
 	else if (v > 0)
-	{
+		/* Graze */
 		new_aux = 1;
-	}
-
-	/* None */
 	else
-	{
+		/* None */
 		new_aux = 0;
-	}
 
-	/* Increase cut */
-	if (new_aux > old_aux)
-	{
+	/* Increase or decrease cut */
+	if (new_aux > old_aux) {
 		/* Describe the state */
 		switch (new_aux)
 		{
@@ -541,11 +457,7 @@ static bool set_cut(struct player *p, int v)
 
 		/* Notice */
 		notice = TRUE;
-	}
-
-	/* Decrease cut */
-	else if (new_aux < old_aux)
-	{
+	} else if (new_aux < old_aux) {
 		/* Describe the state */
 		switch (new_aux)
 		{
@@ -568,16 +480,10 @@ static bool set_cut(struct player *p, int v)
 	/* No change */
 	if (!notice) return (FALSE);
 
-	/* Disturb */
+	/* Disturb and update */
 	disturb(player, 0);
-
-	/* Recalculate bonuses */
 	p->upkeep->update |= (PU_BONUS);
-
-	/* Redraw the "cut" */
 	p->upkeep->redraw |= (PR_STATUS);
-
-	/* Handle stuff */
 	handle_stuff(player->upkeep);
 
 	/* Result */
@@ -585,7 +491,7 @@ static bool set_cut(struct player *p, int v)
 }
 
 
-/*
+/**
  * Set "player->food", notice observable changes
  *
  * The "player->food" variable can get as large as 20000, allowing the
@@ -623,7 +529,7 @@ bool player_set_food(struct player *p, int v)
 	else if (v < PY_FOOD_FULL)  new_aux = 3;
 	else                        new_aux = 4;
 
-	/* Food increase */
+	/* Food increase or decrease */
 	if (new_aux > old_aux) {
 		switch (new_aux) {
 			case 1:
@@ -642,10 +548,7 @@ bool player_set_food(struct player *p, int v)
 
 		/* Change */
 		notice = TRUE;
-	}
-
-	/* Food decrease */
-	else if (new_aux < old_aux) {
+	} else if (new_aux < old_aux) {
 		switch (new_aux) {
 			case 0:
 				msgt(MSG_NOTICE, "You are getting faint from hunger!");
@@ -671,16 +574,10 @@ bool player_set_food(struct player *p, int v)
 	/* Nothing to notice */
 	if (!notice) return (FALSE);
 
-	/* Disturb */
+	/* Disturb and update */
 	disturb(player, 0);
-
-	/* Recalculate bonuses */
 	p->upkeep->update |= (PU_BONUS);
-
-	/* Redraw hunger */
 	p->upkeep->redraw |= (PR_STATUS);
-
-	/* Handle stuff */
 	handle_stuff(player->upkeep);
 
 	/* Result */

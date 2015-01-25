@@ -400,8 +400,8 @@ alloc:1:15 to 100
 pile:70:1d4
 power:5
 effect:SET_NOURISH
-#PY_FOOD_FAINT - 1
-dice:499
+dice:$B
+expr:B:FOOD_FAINT:- 1
 effect:RESTORE_STAT:STR
 effect:RESTORE_STAT:CON
 effect:NOURISH
@@ -2655,8 +2655,8 @@ pile:100:1d2
 msg:The potion makes you vomit!
 power:0
 effect:SET_NOURISH
-#PY_FOOD_STARVE - 1
-dice:99
+dice:$B
+expr:B:FOOD_STARVE:- 1
 effect:CURE:POISONED
 effect:TIMED_INC:PARALYZED
 dice:4

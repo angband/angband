@@ -1268,8 +1268,8 @@ name:SHROOM_PURGING
 aim:0
 power:5
 effect:SET_NOURISH
-#PY_FOOD_FAINT - 1
-dice:499
+dice:$B
+expr:B:FOOD_FAINT:- 1
 effect:RESTORE_STAT:STR
 effect:RESTORE_STAT:CON
 desc:makes you very hungry but restores constitution and strength

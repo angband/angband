@@ -595,6 +595,16 @@ static int spell_value_base_max_sight(void)
 	return z_info->max_sight;
 }
 
+static int spell_value_base_food_faint(void)
+{
+	return PY_FOOD_FAINT;
+}
+
+static int spell_value_base_food_starve(void)
+{
+	return PY_FOOD_STARVE;
+}
+
 expression_base_value_f spell_value_base_by_name(const char *name)
 {
 	static const struct value_base_s {
@@ -604,6 +614,8 @@ expression_base_value_f spell_value_base_by_name(const char *name)
 		{ "MONSTER_LEVEL", spell_value_base_monster_level },
 		{ "PLAYER_LEVEL", spell_value_base_player_level },
 		{ "MAX_SIGHT", spell_value_base_max_sight },
+		{ "FOOD_FAINT", spell_value_base_food_faint },
+		{ "FOOD_STARVE", spell_value_base_food_starve },
 		{ NULL, NULL },
 	};
 	const struct value_base_s *current = value_bases;

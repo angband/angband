@@ -1,5 +1,6 @@
-/** \file: player-timed.h
-	\brief Timed effects handling
+/**
+ * \file player-timed.h
+ * \brief Timed effects handling
  *
  * Copyright (c) 1997 Ben Harrison
  * Copyright (c) 2007 A Sidwell <andi@takkaria.org>
@@ -18,7 +19,9 @@
 
 #include "player.h"
 
-/* Player food values */
+/**
+ * Player food values
+ */
 #define PY_FOOD_MAX 	17000	/* Food value (Bloated) */
 #define PY_FOOD_FULL	10000	/* Food value (Normal) */
 #define PY_FOOD_ALERT	2000	/* Food value (Hungry) */
@@ -26,7 +29,7 @@
 #define PY_FOOD_FAINT	500		/* Food value (Fainting) */
 #define PY_FOOD_STARVE	100		/* Food value (Starving) */
 
-/*
+/**
  * Timed effects
  */
 enum
@@ -37,8 +40,7 @@ enum
 	TMD_MAX
 };
 
-typedef struct
-{
+typedef struct {
 	const char *on_begin;
 	const char *on_end;
 	const char *on_increase;
