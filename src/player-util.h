@@ -77,6 +77,7 @@ bool player_of_has(struct player *p, int flag);
 bool player_resists(struct player *p, int element);
 bool player_is_immune(struct player *p, int element);
 int coords_to_dir(int y, int x);
+void player_place(struct chunk *c, struct player *p, int y, int x);
 void disturb(struct player *p, int stop_search);
 
 #endif /* !PLAYER_UTIL_H */

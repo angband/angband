@@ -40,6 +40,7 @@
 #include "player-quest.h"
 #include "player-spell.h"
 #include "player-timed.h"
+#include "player-util.h"
 #include "player.h"
 #include "savefile.h"
 #include "store.h"

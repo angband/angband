@@ -800,6 +800,25 @@ int coords_to_dir(int y, int x)
 	return (motion_dir(player->py, player->px, y, x));
 }
 
+/**
+ * Places the player at the given coordinates in the cave.
+ */
+void player_place(struct chunk *c, struct player *p, int y, int x)
+{
+	assert(!c->squares[y][x].mon);
+
+	/* Save player location */
+	p->py = y;
+	p->px = x;
+
+	/* Mark cave grid */
+	c->squares[y][x].mon = -1;
+
+	/* Clear stair creation */
+	p->upkeep->create_down_stair = FALSE;
+	p->upkeep->create_up_stair = FALSE;
+}
+
 
 
 /*

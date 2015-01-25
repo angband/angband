@@ -1,6 +1,6 @@
-/*
- * File: mon-make.c
- * Purpose: Monster creation / placement code.
+/**
+ * \file mon-make.c
+ * \brief Monster creation / placement code.
  *
  * Copyright (c) 1997-2007 Ben Harrison, James E. Wilson, Robert A. Koeneke
  *
@@ -41,7 +41,7 @@ static struct alloc_entry *alloc_race_table;
 
 static void init_race_allocs(void) {
 	int i;
-	monster_race *r_ptr;
+	struct monster_race *race;
 	alloc_entry *table;
 	s16b *num = mem_zalloc(z_info->max_depth * sizeof(s16b));
 	s16b *aux = mem_zalloc(z_info->max_depth * sizeof(s16b));
@@ -52,15 +52,15 @@ static void init_race_allocs(void) {
 	/* Scan the monsters (not the ghost) */
 	for (i = 1; i < z_info->r_max - 1; i++) {
 		/* Get the i'th race */
-		r_ptr = &r_info[i];
+		race = &r_info[i];
 
 		/* Legal monsters */
-		if (r_ptr->rarity) {
+		if (race->rarity) {
 			/* Count the entries */
 			alloc_race_size++;
 
 			/* Group by level */
-			num[r_ptr->level]++;
+			num[race->level]++;
 		}
 	}
 
@@ -85,17 +85,17 @@ static void init_race_allocs(void) {
 	/* Scan the monsters (not the ghost) */
 	for (i = 1; i < z_info->r_max - 1; i++) {
 		/* Get the i'th race */
-		r_ptr = &r_info[i];
+		race = &r_info[i];
 
 		/* Count valid pairs */
-		if (r_ptr->rarity) {
+		if (race->rarity) {
 			int p, x, y, z;
 
 			/* Extract the base level */
-			x = r_ptr->level;
+			x = race->level;
 
 			/* Extract the base probability */
-			p = (100 / r_ptr->rarity);
+			p = (100 / race->rarity);
 
 			/* Skip entries preceding our locale */
 			y = (x > 0) ? num[x-1] : 0;
@@ -131,33 +131,33 @@ void delete_monster_idx(int m_idx)
 {
 	int x, y;
 	struct object *obj;
-	monster_type *m_ptr;
+	struct monster *mon;
 
 	assert(m_idx > 0);
 
-	m_ptr = cave_monster(cave, m_idx);
+	mon = cave_monster(cave, m_idx);
 
 	/* Monster location */
-	y = m_ptr->fy;
-	x = m_ptr->fx;
+	y = mon->fy;
+	x = mon->fx;
 
 	/* Hack -- Reduce the racial counter */
-	m_ptr->race->cur_num--;
+	mon->race->cur_num--;
 
 	/* Hack -- count the number of "reproducers" */
-	if (rf_has(m_ptr->race->flags, RF_MULTIPLY)) num_repro--;
+	if (rf_has(mon->race->flags, RF_MULTIPLY)) num_repro--;
 
 	/* Hack -- remove target monster */
-	if (target_get_monster() == m_ptr) target_set_monster(NULL);
+	if (target_get_monster() == mon) target_set_monster(NULL);
 
 	/* Hack -- remove tracked monster */
-	if (player->upkeep->health_who == m_ptr) health_track(player->upkeep, NULL);
+	if (player->upkeep->health_who == mon) health_track(player->upkeep, NULL);
 
 	/* Monster is gone */
 	cave->squares[y][x].mon = 0;
 
 	/* Delete objects */
-	obj = m_ptr->held_obj;
+	obj = mon->held_obj;
 	while (obj) {
 		struct object *next = obj->next;
 
@@ -173,12 +173,12 @@ void delete_monster_idx(int m_idx)
 	}
 
 	/* Delete mimicked objects */
-	if (m_ptr->mimicked_obj) {
-		object_delete(m_ptr->mimicked_obj);
+	if (mon->mimicked_obj) {
+		object_delete(mon->mimicked_obj);
 	}
 
 	/* Wipe the Monster */
-	memset(m_ptr, 0, sizeof(monster_type));
+	memset(mon, 0, sizeof(struct monster));
 
 	/* Count monsters */
 	cave->mon_cnt--;
@@ -207,37 +207,37 @@ void delete_monster(int y, int x)
 static void compact_monsters_aux(int i1, int i2)
 {
 	int y, x;
-	monster_type *m_ptr;
+	struct monster *mon;
 	struct object *obj;
 
 	/* Do nothing */
 	if (i1 == i2) return;
 
 	/* Old monster */
-	m_ptr = cave_monster(cave, i1);
-	y = m_ptr->fy;
-	x = m_ptr->fx;
+	mon = cave_monster(cave, i1);
+	y = mon->fy;
+	x = mon->fx;
 
 	/* Update the cave */
 	cave->squares[y][x].mon = i2;
 	
 	/* Update midx */
-	m_ptr->midx = i2;
+	mon->midx = i2;
 
 	/* Repair objects being carried by monster */
-	for (obj = m_ptr->held_obj; obj; obj = obj->next)
+	for (obj = mon->held_obj; obj; obj = obj->next)
 		obj->held_m_idx = i2;
 
 	/* Move mimicked objects (heh) */
-	if (m_ptr->mimicked_obj)
-		m_ptr->mimicked_obj->mimicking_m_idx = i2;
+	if (mon->mimicked_obj)
+		mon->mimicked_obj->mimicking_m_idx = i2;
 
 	/* Hack -- Update the target */
-	if (target_get_monster() == m_ptr)
+	if (target_get_monster() == mon)
 		target_set_monster(cave_monster(cave, i2));
 
 	/* Hack -- Update the health bar */
-	if (player->upkeep->health_who == m_ptr)
+	if (player->upkeep->health_who == mon)
 		player->upkeep->health_who = cave_monster(cave, i2);
 
 	/* Hack -- move monster */
@@ -285,31 +285,32 @@ void compact_monsters(int num_to_compact)
 
 		/* Check all the monsters */
 		for (m_idx = 1; m_idx < cave_monster_max(cave); m_idx++) {
-			monster_type *m_ptr = cave_monster(cave, m_idx);
+			struct monster *mon = cave_monster(cave, m_idx);
 
 			/* Skip "dead" monsters */
-			if (!m_ptr->race) continue;
+			if (!mon->race) continue;
 
 			/* High level monsters start out "immune" */
-			if (m_ptr->race->level > max_lev) continue;
+			if (mon->race->level > max_lev) continue;
 
 			/* Ignore nearby monsters */
-			if ((min_dis > 0) && (m_ptr->cdis < min_dis)) continue;
+			if ((min_dis > 0) && (mon->cdis < min_dis)) continue;
 
 			/* Saving throw chance */
 			chance = 90;
 
 			/* Only compact "Quest" Monsters in emergencies */
-			if (rf_has(m_ptr->race->flags, RF_QUESTOR) && (iter < 1000)) chance = 100;
+			if (rf_has(mon->race->flags, RF_QUESTOR) && (iter < 1000))
+				chance = 100;
 
 			/* Try not to compact Unique Monsters */
-			if (rf_has(m_ptr->race->flags, RF_UNIQUE)) chance = 99;
+			if (rf_has(mon->race->flags, RF_UNIQUE)) chance = 99;
 
 			/* All monsters get a saving throw */
 			if (randint0(100) < chance) continue;
 
 			/* Delete the monster */
-			delete_monster(m_ptr->fy, m_ptr->fx);
+			delete_monster(mon->fy, mon->fx);
 
 			/* Count the monster */
 			num_compacted++;
@@ -319,10 +320,10 @@ void compact_monsters(int num_to_compact)
 
 	/* Excise dead monsters (backwards!) */
 	for (m_idx = cave_monster_max(cave) - 1; m_idx >= 1; m_idx--) {
-		monster_type *m_ptr = cave_monster(cave, m_idx);
+		struct monster *mon = cave_monster(cave, m_idx);
 
 		/* Skip real monsters */
-		if (m_ptr->race) continue;
+		if (mon->race) continue;
 
 		/* Move last monster into open hole */
 		compact_monsters_aux(cave_monster_max(cave) - 1, m_idx);
@@ -347,21 +348,20 @@ void wipe_mon_list(struct chunk *c, struct player *p)
 	int m_idx;
 
 	/* Delete all the monsters */
-	for (m_idx = cave_monster_max(c) - 1; m_idx >= 1; m_idx--)
-	{
-		monster_type *m_ptr = cave_monster(c, m_idx);
+	for (m_idx = cave_monster_max(c) - 1; m_idx >= 1; m_idx--) {
+		struct monster *mon = cave_monster(c, m_idx);
 
 		/* Skip dead monsters */
-		if (!m_ptr->race) continue;
+		if (!mon->race) continue;
 
 		/* Hack -- Reduce the racial counter */
-		m_ptr->race->cur_num--;
+		mon->race->cur_num--;
 
 		/* Monster is gone */
-		c->squares[m_ptr->fy][m_ptr->fx].mon = 0;
+		c->squares[mon->fy][mon->fx].mon = 0;
 
 		/* Wipe the Monster */
-		(void)WIPE(m_ptr, monster_type);
+		memset(mon, 0, sizeof(struct monster));
 	}
 
 	/* Reset "cave->mon_max" */
@@ -406,10 +406,10 @@ s16b mon_pop(struct chunk *c)
 
 	/* Recycle dead monsters if we've run out of room */
 	for (m_idx = 1; m_idx < cave_monster_max(c); m_idx++) {
-		monster_type *m_ptr = cave_monster(c, m_idx);
+		struct monster *mon = cave_monster(c, m_idx);
 
 		/* Skip live monsters */
-		if (m_ptr->race) continue;
+		if (mon->race) continue;
 
 		/* Count monsters */
 		c->mon_cnt++;
@@ -435,7 +435,7 @@ s16b mon_pop(struct chunk *c)
  * satisfies certain conditions (such as belonging to a particular monster
  * family).
  */
-void get_mon_num_prep(bool (*get_mon_num_hook)(monster_race *race))
+void get_mon_num_prep(bool (*get_mon_num_hook)(struct monster_race *race))
 {
 	int i;
 
@@ -460,7 +460,8 @@ void get_mon_num_prep(bool (*get_mon_num_hook)(monster_race *race))
  * table and picks a random monster. Returns the index of a monster in
  * `table`.
  */
-static monster_race *get_mon_race_aux(long total, const alloc_entry *table)
+static struct monster_race *get_mon_race_aux(long total,
+											 const alloc_entry *table)
 {
 	int i;
 
@@ -501,13 +502,13 @@ static monster_race *get_mon_race_aux(long total, const alloc_entry *table)
  * Note that if no monsters are "appropriate", then this function will
  * fail, and return zero, but this should *almost* never happen.
  */
-monster_race *get_mon_num(int level)
+struct monster_race *get_mon_num(int level)
 {
 	int i, p;
 
 	long total;
 
-	monster_race *race;
+	struct monster_race *race;
 
 	alloc_entry *table = alloc_race_table;
 
@@ -536,7 +537,7 @@ monster_race *get_mon_num(int level)
 
 		/* No seasonal monsters outside of Christmas */
 		if (rf_has(race->flags, RF_SEASONAL) && 
-				!(date->tm_mon == 11 && date->tm_mday >= 24 && date->tm_mday <= 26))
+			!(date->tm_mon == 11 && date->tm_mday >= 24 && date->tm_mday <= 26))
 			continue;
 
 		/* Only one copy of a a unique must be around at the same time */
@@ -545,8 +546,7 @@ monster_race *get_mon_num(int level)
 			continue;
 
 		/* Some monsters never appear out of depth */
-		if (rf_has(race->flags, RF_FORCE_DEPTH) && 
-				race->level > player->depth)
+		if (rf_has(race->flags, RF_FORCE_DEPTH) && race->level > player->depth)
 			continue;
 
 		/* Accept */
@@ -566,7 +566,7 @@ monster_race *get_mon_num(int level)
 	p = randint0(100);
 	
 	if (p < 60) {
-		monster_race *old = race;
+		struct monster_race *old = race;
 
 		/* Pick a new monster */
 		race = get_mon_race_aux(total, table);
@@ -577,7 +577,7 @@ monster_race *get_mon_num(int level)
 
 	/* Try for a "harder" monster twice (10%) */
 	if (p < 10) {
-		monster_race *old = race;
+		struct monster_race *old = race;
 
 		/* Pick a monster */
 		race = get_mon_race_aux(total, table);
@@ -592,29 +592,11 @@ monster_race *get_mon_num(int level)
 
 
 /**
- * Places the player at the given coordinates in the cave.
- */
-void player_place(struct chunk *c, struct player *p, int y, int x)
-{
-	assert(!c->squares[y][x].mon);
-
-	/* Save player location */
-	p->py = y;
-	p->px = x;
-
-	/* Mark cave grid */
-	c->squares[y][x].mon = -1;
-
-	/* Clear stair creation */
-	p->upkeep->create_down_stair = FALSE;
-	p->upkeep->create_up_stair = FALSE;
-}
-
-/**
  * Return the number of things dropped by a monster.
  *
  * \param race is the monster race.
- * \param maximize should be set to FALSE for a random number, TRUE to find out the maximum count.
+ * \param maximize should be set to FALSE for a random number, TRUE to find
+ * out the maximum count.
  */
 int mon_create_drop_count(const struct monster_race *race, bool maximize)
 {
@@ -631,8 +613,7 @@ int mon_create_drop_count(const struct monster_race *race, bool maximize)
 		if (rf_has(race->flags, RF_DROP_3)) number += drop_3_max;
 		if (rf_has(race->flags, RF_DROP_2)) number += drop_2_max;
 		if (rf_has(race->flags, RF_DROP_1)) number++;
-	}
-	else {
+	} else {
 		if (rf_has(race->flags, RF_DROP_20) && randint0(100) < 20) number++;
 		if (rf_has(race->flags, RF_DROP_40) && randint0(100) < 40) number++;
 		if (rf_has(race->flags, RF_DROP_60) && randint0(100) < 60) number++;
@@ -651,7 +632,7 @@ int mon_create_drop_count(const struct monster_race *race, bool maximize)
  *
  * Returns TRUE if anything is created, FALSE if nothing is.
  */
-static bool mon_create_drop(struct chunk *c, struct monster *m_ptr, byte origin)
+static bool mon_create_drop(struct chunk *c, struct monster *mon, byte origin)
 {
 	struct monster_drop *drop;
 
@@ -663,19 +644,19 @@ static bool mon_create_drop(struct chunk *c, struct monster *m_ptr, byte origin)
 
 	object_type *i_ptr;
 	
-	assert(m_ptr);
+	assert(mon);
 
-	great = (rf_has(m_ptr->race->flags, RF_DROP_GREAT));
-	good = great || (rf_has(m_ptr->race->flags, RF_DROP_GOOD));
-	gold_ok = (!rf_has(m_ptr->race->flags, RF_ONLY_ITEM));
-	item_ok = (!rf_has(m_ptr->race->flags, RF_ONLY_GOLD));
+	great = (rf_has(mon->race->flags, RF_DROP_GREAT));
+	good = great || (rf_has(mon->race->flags, RF_DROP_GOOD));
+	gold_ok = (!rf_has(mon->race->flags, RF_ONLY_ITEM));
+	item_ok = (!rf_has(mon->race->flags, RF_ONLY_GOLD));
 
 	/* Determine how much we can drop */
-	number = mon_create_drop_count(m_ptr->race, FALSE);
+	number = mon_create_drop_count(mon->race, FALSE);
 
     /* Give added bonus for unique monters */
-    monlevel = m_ptr->race->level;
-    if (rf_has(m_ptr->race->flags, RF_UNIQUE)) {
+    monlevel = mon->race->level;
+    if (rf_has(mon->race->flags, RF_UNIQUE)) {
         monlevel = MIN(monlevel + 15, monlevel * 2);
         extra_roll = TRUE;
     }
@@ -686,7 +667,7 @@ static bool mon_create_drop(struct chunk *c, struct monster *m_ptr, byte origin)
     level = MIN(level, 100);
 
 	/* Specified drops */
-	for (drop = m_ptr->race->drops; drop; drop = drop->next) {
+	for (drop = mon->race->drops; drop; drop = drop->next) {
 		if ((unsigned int)randint0(100) >= drop->percent_chance)
 			continue;
 
@@ -706,11 +687,11 @@ static bool mon_create_drop(struct chunk *c, struct monster *m_ptr, byte origin)
 		/* Set origin details */
 		i_ptr->origin = origin;
 		i_ptr->origin_depth = player->depth;
-		i_ptr->origin_xtra = m_ptr->race->ridx;
+		i_ptr->origin_xtra = mon->race->ridx;
 		i_ptr->number = randint0(drop->max - drop->min) + drop->min;
 
 		/* Try to carry */
-		if (monster_carry(c, m_ptr, i_ptr))
+		if (monster_carry(c, mon, i_ptr))
 			any = TRUE;
 		else {
 			i_ptr->artifact->created = 0;
@@ -730,10 +711,10 @@ static bool mon_create_drop(struct chunk *c, struct monster *m_ptr, byte origin)
 		/* Set origin details */
 		i_ptr->origin = origin;
 		i_ptr->origin_depth = player->depth;
-		i_ptr->origin_xtra = m_ptr->race->ridx;
+		i_ptr->origin_xtra = mon->race->ridx;
 
 		/* Try to carry */
-		if (monster_carry(c, m_ptr, i_ptr))
+		if (monster_carry(c, mon, i_ptr))
 			any = TRUE;
 		else {
 			i_ptr->artifact->created = 0;
@@ -760,10 +741,11 @@ static bool mon_create_drop(struct chunk *c, struct monster *m_ptr, byte origin)
  *
  * Returns the m_idx of the newly copied monster, or 0 if the placement fails.
  */
-s16b place_monster(struct chunk *c, int y, int x, monster_type *mon, byte origin)
+s16b place_monster(struct chunk *c, int y, int x, struct monster *mon,
+				   byte origin)
 {
 	s16b m_idx;
-	struct monster *m_ptr;
+	struct monster *new_mon;
 
 	assert(square_in_bounds(c, y, x));
 	assert(!square_monster(c, y, x));
@@ -773,39 +755,39 @@ s16b place_monster(struct chunk *c, int y, int x, monster_type *mon, byte origin
 	if (!m_idx) return 0;
 
 	/* Copy the monster */
-	m_ptr = cave_monster(c, m_idx);
-	memcpy(m_ptr, mon, sizeof(struct monster));
+	new_mon = cave_monster(c, m_idx);
+	memcpy(new_mon, mon, sizeof(struct monster));
 
 	/* Set the ID */
-	m_ptr->midx = m_idx;
+	new_mon->midx = m_idx;
 
 	/* Set the location */
-	c->squares[y][x].mon = m_ptr->midx;
-	m_ptr->fy = y;
-	m_ptr->fx = x;
-	assert(square_monster(c, y, x) == m_ptr);
+	c->squares[y][x].mon = new_mon->midx;
+	new_mon->fy = y;
+	new_mon->fx = x;
+	assert(square_monster(c, y, x) == new_mon);
 
-	update_mon(m_ptr, c, TRUE);
+	update_mon(new_mon, c, TRUE);
 
 	/* Hack -- Count the number of "reproducers" */
-	if (rf_has(m_ptr->race->flags, RF_MULTIPLY)) num_repro++;
+	if (rf_has(new_mon->race->flags, RF_MULTIPLY)) num_repro++;
 
 	/* Count racial occurrences */
-	m_ptr->race->cur_num++;
+	new_mon->race->cur_num++;
 
 	/* Create the monster's drop, if any */
 	if (origin)
-		(void)mon_create_drop(c, m_ptr, origin);
+		(void)mon_create_drop(c, new_mon, origin);
 
 	/* Make mimics start mimicking */
-	if (origin && m_ptr->race->mimic_kinds) {
+	if (origin && new_mon->race->mimic_kinds) {
 		struct object *obj;
-		struct object_kind *kind = m_ptr->race->mimic_kinds->kind;
+		struct object_kind *kind = new_mon->race->mimic_kinds->kind;
 		struct monster_mimic *mimic_kind;
 		int i = 1;
 		
 		/* Pick a random object kind to mimic */
-		for (mimic_kind = m_ptr->race->mimic_kinds; mimic_kind; 
+		for (mimic_kind = new_mon->race->mimic_kinds; mimic_kind; 
 				mimic_kind = mimic_kind->next, i++) {
 			if (one_in_(i)) kind = mimic_kind->kind;
 		}
@@ -815,14 +797,14 @@ s16b place_monster(struct chunk *c, int y, int x, monster_type *mon, byte origin
 							  lookup_kind(TV_GOLD, kind->sval)->name);
 		} else {
 			obj = object_new();
-			object_prep(obj, kind, m_ptr->race->level, RANDOMISE);
-			apply_magic(obj, m_ptr->race->level, TRUE, FALSE, FALSE, FALSE);
+			object_prep(obj, kind, new_mon->race->level, RANDOMISE);
+			apply_magic(obj, new_mon->race->level, TRUE, FALSE, FALSE, FALSE);
 			obj->number = 1;
 		}
 
 		obj->origin = origin;
 		obj->mimicking_m_idx = m_idx;
-		m_ptr->mimicked_obj = obj;
+		new_mon->mimicked_obj = obj;
 		floor_carry(c, y, x, obj, FALSE);
 	}
 
@@ -883,7 +865,9 @@ int mon_hp(const struct monster_race *race, aspect hp_aspect)
  * except for the savefile loading code, which calls place_monster()
  * directly.
  */
-static bool place_new_monster_one(struct chunk *c, int y, int x, monster_race *race, bool sleep, byte origin)
+static bool place_new_monster_one(struct chunk *c, int y, int x,
+								  struct monster_race *race, bool sleep,
+								  byte origin)
 {
 	int i;
 
@@ -912,7 +896,7 @@ static bool place_new_monster_one(struct chunk *c, int y, int x, monster_race *r
 	if (rf_has(race->flags, RF_FORCE_DEPTH) && player->depth < race->level)
 		return (FALSE);
 
-	/* Add to level feeling */
+	/* Add to level feeling, note uniques for cheaters */
 	c->mon_rating += race->power / 20;
 
 	/* Check out-of-depth-ness */
@@ -926,16 +910,14 @@ static bool place_new_monster_one(struct chunk *c, int y, int x, monster_race *r
 		}
 		/* Boost rating by power per 10 levels OOD */
 		c->mon_rating += (race->level - player->depth) * race->power / 200;
-	}
-	/* Note uniques for cheaters */
-	else if (rf_has(race->flags, RF_UNIQUE) && OPT(cheat_hear))
+	} else if (rf_has(race->flags, RF_UNIQUE) && OPT(cheat_hear))
 		msg("Unique (%s).", race->name);
 
 	/* Get local monster */
 	mon = &monster_body;
 
 	/* Clean out the monster */
-	(void)WIPE(mon, monster_type);
+	memset(mon, 0, sizeof(struct monster));
 
 	/* Save the race */
 	mon->race = race;
@@ -1014,7 +996,7 @@ static bool place_new_monster_one(struct chunk *c, int y, int x, monster_race *r
  * ORIGIN_DROP_PIT, etc.) 
  */
 static bool place_new_monster_group(struct chunk *c, int y, int x, 
-		monster_race *r_ptr, bool sleep, int total, byte origin)
+		struct monster_race *race, bool sleep, int total, byte origin)
 {
 	int n, i;
 
@@ -1024,7 +1006,7 @@ static bool place_new_monster_group(struct chunk *c, int y, int x,
 	byte hack_y[GROUP_MAX];
 	byte hack_x[GROUP_MAX];
 
-	assert(r_ptr);
+	assert(race);
 	
 	/* Start on the monster */
 	hack_n = 1;
@@ -1046,7 +1028,7 @@ static bool place_new_monster_group(struct chunk *c, int y, int x,
 			if (!square_isempty(c, my, mx)) continue;
 
 			/* Attempt to place another monster */
-			if (place_new_monster_one(c, my, mx, r_ptr, sleep, origin)) {
+			if (place_new_monster_one(c, my, mx, race, sleep, origin)) {
 				/* Add it to the "hack" set */
 				hack_y[hack_n] = my;
 				hack_x[hack_n] = mx;
@@ -1064,11 +1046,12 @@ static bool place_new_monster_group(struct chunk *c, int y, int x,
 
 static monster_base *place_monster_base = NULL;
 
-/* Predicate function for get_mon_num_prep)
+/**
+ * Predicate function for get_mon_num_prep)
  * Check to see if the monster race has the same base as
  * place_monter_base.
  */
-static bool place_monster_base_okay(monster_race *race)
+static bool place_monster_base_okay(struct monster_race *race)
 {
 	assert(place_monster_base);
 	assert(race);
@@ -1082,11 +1065,11 @@ static bool place_monster_base_okay(monster_race *race)
 	return TRUE;
 }
 
-/** 
+/**
  * Helper function to place monsters that appear as friends or escorts
  */
- bool place_friends(struct chunk *c, int y, int x, monster_race *race, 
-		monster_race *friends_race, int total, bool sleep, byte origin)
+ bool place_friends(struct chunk *c, int y, int x, struct monster_race *race, 
+		struct monster_race *friends_race, int total, bool sleep, byte origin)
  {
 	int level_difference, extra_chance, nx, ny;
 	int j;
@@ -1139,9 +1122,9 @@ static bool place_monster_base_okay(monster_race *race)
 		
 	/* Place the monsters */
 	success = place_new_monster_one(c, ny, nx, friends_race, sleep, origin);
-	if (total > 1){
-		success = place_new_monster_group(c, ny, nx, friends_race, sleep, total, origin);
-	}
+	if (total > 1)
+		success = place_new_monster_group(c, ny, nx, friends_race, sleep, total,
+										  origin);
 	
 	return success;
 	
@@ -1160,8 +1143,8 @@ static bool place_monster_base_okay(monster_race *race)
  * `origin` is the item origin to use for any monster drops (e.g. ORIGIN_DROP,
  * ORIGIN_DROP_PIT, etc.) 
  */
-bool place_new_monster(struct chunk *c, int y, int x, monster_race *race, bool sleep,
-	bool group_okay, byte origin)
+bool place_new_monster(struct chunk *c, int y, int x, struct monster_race *race,
+					   bool sleep, bool group_okay, byte origin)
 {
 	struct monster_friends *friends;
 	struct monster_friends_base *friends_base;
@@ -1191,7 +1174,7 @@ bool place_new_monster(struct chunk *c, int y, int x, monster_race *race, bool s
 	/* Go through the friends_base flags */
 	for (friends_base = race->friends_base; friends_base; 
 			friends_base = friends_base->next){
-		monster_race *friends_race;
+		struct monster_race *friends_race;
 
 		/* Check if we pass chance for the monster appearing */
 		if ((unsigned int)randint0(100) >= friends_base->percent_chance)
@@ -1238,11 +1221,11 @@ bool place_new_monster(struct chunk *c, int y, int x, monster_race *race, bool s
  *
  * Returns TRUE if we successfully place a monster.
  */
-bool pick_and_place_monster(struct chunk *c, int y, int x, int depth, bool sleep,
-	bool group_okay, byte origin)
+bool pick_and_place_monster(struct chunk *c, int y, int x, int depth,
+							bool sleep, bool group_okay, byte origin)
 {
 	/* Pick a monster race */
-	monster_race *race = get_mon_num(depth);
+	struct monster_race *race = get_mon_num(depth);
 	if (!race) return (FALSE);
 
 	/* Attempt to place the monster */
@@ -1394,28 +1377,28 @@ void monster_death(struct monster *mon, bool stats)
  * worth more than subsequent monsters.  This would also need to
  * induce changes in the monster recall code.  XXX XXX XXX
  **/
-bool mon_take_hit(struct monster *m_ptr, int dam, bool *fear, const char *note)
+bool mon_take_hit(struct monster *mon, int dam, bool *fear, const char *note)
 {
 	s32b div, new_exp, new_exp_frac;
-	monster_lore *l_ptr = get_lore(m_ptr->race);
+	monster_lore *l_ptr = get_lore(mon->race);
 
 
 	/* Redraw (later) if needed */
-	if (player->upkeep->health_who == m_ptr)
+	if (player->upkeep->health_who == mon)
 		player->upkeep->redraw |= (PR_HEALTH);
 
 	/* Wake it up */
-	mon_clear_timed(m_ptr, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, FALSE);
+	mon_clear_timed(mon, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, FALSE);
 
 	/* Become aware of its presence */
-	if (mflag_has(m_ptr->mflag, MFLAG_UNAWARE))
-		become_aware(m_ptr);
+	if (mflag_has(mon->mflag, MFLAG_UNAWARE))
+		become_aware(mon);
 
 	/* Hurt it */
-	m_ptr->hp -= dam;
+	mon->hp -= dam;
 
 	/* It is dead now */
-	if (m_ptr->hp < 0) {
+	if (mon->hp < 0) {
 		char m_name[80];
 		char buf[80];
 
@@ -1423,19 +1406,19 @@ bool mon_take_hit(struct monster *m_ptr, int dam, bool *fear, const char *note)
 		int soundfx = MSG_KILL;
 
 		/* Play a special sound if the monster was unique */
-		if (rf_has(m_ptr->race->flags, RF_UNIQUE)) {
-			if (m_ptr->race->base == lookup_monster_base("Morgoth"))
+		if (rf_has(mon->race->flags, RF_UNIQUE)) {
+			if (mon->race->base == lookup_monster_base("Morgoth"))
 				soundfx = MSG_KILL_KING;
 			else
 				soundfx = MSG_KILL_UNIQUE;
 		}
 
 		/* Extract monster name */
-		monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_DEFAULT);
+		monster_desc(m_name, sizeof(m_name), mon, MDESC_DEFAULT);
 
-		/* Death by Missile/Spell attack */
+		/* Death */
 		if (note) {
-			/* Hack -- allow message suppression */
+			/* Death by Missile/Spell attack */
 			if (strlen(note) <= 1) {
 				/* Be silent */
 			} else {
@@ -1443,48 +1426,44 @@ bool mon_take_hit(struct monster *m_ptr, int dam, bool *fear, const char *note)
 				my_strcap(str);
 				msgt(soundfx, "%s", str);
 			}
-		}
-
-		/* Death by physical attack -- invisible monster */
-		else if (!mflag_has(m_ptr->mflag, MFLAG_VISIBLE))
+		} else if (!mflag_has(mon->mflag, MFLAG_VISIBLE))
+			/* Death by physical attack -- invisible monster */
 			msgt(soundfx, "You have killed %s.", m_name);
-
-		/* Death by Physical attack -- non-living monster */
-		else if (monster_is_unusual(m_ptr->race))
+		else if (monster_is_unusual(mon->race))
+			/* Death by Physical attack -- non-living monster */
 			msgt(soundfx, "You have destroyed %s.", m_name);
-
-		/* Death by Physical attack -- living monster */
 		else
+			/* Death by Physical attack -- living monster */
 			msgt(soundfx, "You have slain %s.", m_name);
 
 		/* Player level */
 		div = player->lev;
 
 		/* Give some experience for the kill */
-		new_exp = ((long)m_ptr->race->mexp * m_ptr->race->level) / div;
+		new_exp = ((long)mon->race->mexp * mon->race->level) / div;
 
 		/* Handle fractional experience */
-		new_exp_frac = ((((long)m_ptr->race->mexp * m_ptr->race->level) % div)
+		new_exp_frac = ((((long)mon->race->mexp * mon->race->level) % div)
 		                * 0x10000L / div) + player->exp_frac;
 
 		/* Keep track of experience */
 		if (new_exp_frac >= 0x10000L) {
 			new_exp++;
 			player->exp_frac = (u16b)(new_exp_frac - 0x10000L);
-		}
-		else
+		} else
 			player->exp_frac = (u16b)new_exp_frac;
 
 		/* When the player kills a Unique, it stays dead */
-		if (rf_has(m_ptr->race->flags, RF_UNIQUE)) {
+		if (rf_has(mon->race->flags, RF_UNIQUE)) {
 			char unique_name[80];
-			m_ptr->race->max_num = 0;
+			mon->race->max_num = 0;
 
 			/* 
 			 * This gets the correct name if we slay an invisible 
 			 * unique and don't have See Invisible.
 			 */
-			monster_desc(unique_name, sizeof(unique_name), m_ptr, MDESC_DIED_FROM);
+			monster_desc(unique_name, sizeof(unique_name), mon,
+						 MDESC_DIED_FROM);
 
 			/* Log the slaying of a unique */
 			strnfmt(buf, sizeof(buf), "Killed %s", unique_name);
@@ -1495,11 +1474,11 @@ bool mon_take_hit(struct monster *m_ptr, int dam, bool *fear, const char *note)
 		player_exp_gain(player, new_exp);
 
 		/* Generate treasure */
-		monster_death(m_ptr, FALSE);
+		monster_death(mon, FALSE);
 
 		/* Recall even invisible uniques or winners */
-		if (mflag_has(m_ptr->mflag, MFLAG_VISIBLE) ||
-			rf_has(m_ptr->race->flags, RF_UNIQUE)) {
+		if (mflag_has(mon->mflag, MFLAG_VISIBLE) ||
+			rf_has(mon->race->flags, RF_UNIQUE)) {
 			/* Count kills this life */
 			if (l_ptr->pkills < MAX_SHORT) l_ptr->pkills++;
 
@@ -1507,12 +1486,12 @@ bool mon_take_hit(struct monster *m_ptr, int dam, bool *fear, const char *note)
 			if (l_ptr->tkills < MAX_SHORT) l_ptr->tkills++;
 
 			/* Update lore and tracking */
-			lore_update(m_ptr->race, l_ptr);
-			monster_race_track(player->upkeep, m_ptr->race);
+			lore_update(mon->race, l_ptr);
+			monster_race_track(player->upkeep, mon->race);
 		}
 
 		/* Delete the monster */
-		delete_monster_idx(m_ptr->midx);
+		delete_monster_idx(mon->midx);
 
 		/* Not afraid */
 		(*fear) = FALSE;
@@ -1523,20 +1502,17 @@ bool mon_take_hit(struct monster *m_ptr, int dam, bool *fear, const char *note)
 
 
 	/* Mega-Hack -- Pain cancels fear */
-	if (!(*fear) && m_ptr->m_timed[MON_TMD_FEAR] && (dam > 0)) {
+	if (!(*fear) && mon->m_timed[MON_TMD_FEAR] && (dam > 0)) {
 		int tmp = randint1(dam);
 
-		/* Cure a little fear */
-		if (tmp < m_ptr->m_timed[MON_TMD_FEAR]) {
+		/* Cure a little or all fear */
+		if (tmp < mon->m_timed[MON_TMD_FEAR]) {
 			/* Reduce fear */
-			mon_dec_timed(m_ptr, MON_TMD_FEAR, tmp, MON_TMD_FLG_NOMESSAGE,
+			mon_dec_timed(mon, MON_TMD_FEAR, tmp, MON_TMD_FLG_NOMESSAGE,
 				FALSE);
-		}
-
-		/* Cure all the fear */
-		else {
+		} else {
 			/* Cure fear */
-			mon_clear_timed(m_ptr, MON_TMD_FEAR, MON_TMD_FLG_NOMESSAGE, FALSE);
+			mon_clear_timed(mon, MON_TMD_FEAR, MON_TMD_FLG_NOMESSAGE, FALSE);
 
 			/* No more fear */
 			(*fear) = FALSE;
@@ -1544,27 +1520,26 @@ bool mon_take_hit(struct monster *m_ptr, int dam, bool *fear, const char *note)
 	}
 
 	/* Sometimes a monster gets scared by damage */
-	if (!m_ptr->m_timed[MON_TMD_FEAR] && 
-		!rf_has(m_ptr->race->flags, RF_NO_FEAR) &&	dam > 0) {
+	if (!mon->m_timed[MON_TMD_FEAR] && 
+		!rf_has(mon->race->flags, RF_NO_FEAR) &&	dam > 0) {
 		int percentage;
 
 		/* Percentage of fully healthy */
-		percentage = (100L * m_ptr->hp) / m_ptr->maxhp;
+		percentage = (100L * mon->hp) / mon->maxhp;
 
 		/*
 		 * Run (sometimes) if at 10% or less of max hit points,
 		 * or (usually) when hit for half its current hit points
 		 */
 		if ((randint1(10) >= percentage) ||
-		    ((dam >= m_ptr->hp) && (randint0(100) < 80)))
-		{
-			int timer = randint1(10) + (((dam >= m_ptr->hp) && (percentage > 7))
+		    ((dam >= mon->hp) && (randint0(100) < 80))) {
+			int timer = randint1(10) + (((dam >= mon->hp) && (percentage > 7))
 										? 20 : ((11 - percentage) * 5));
 
 			/* Hack -- note fear */
 			(*fear) = TRUE;
 
-			mon_inc_timed(m_ptr, MON_TMD_FEAR, timer,
+			mon_inc_timed(mon, MON_TMD_FEAR, timer,
 					MON_TMD_FLG_NOMESSAGE | MON_TMD_FLG_NOFAIL, FALSE);
 		}
 	}

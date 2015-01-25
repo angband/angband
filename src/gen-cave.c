@@ -68,6 +68,7 @@
 #include "mon-make.h"
 #include "mon-spell.h"
 #include "parser.h"
+#include "player-util.h"
 #include "store.h"
 #include "trap.h"
 #include "z-queue.h"
