@@ -91,7 +91,7 @@ int test_loadgame(void *state) {
 	ok;
 }
 
-int test_stairs(void *state) {
+int test_stairs1(void *state) {
 
 	/* Load the saved game */
 	eq(savefile_load("Test1", FALSE), TRUE);
@@ -103,10 +103,29 @@ int test_stairs(void *state) {
 	ok;
 }
 
+int test_stairs2(void *state) {
+
+	/* Load the saved game */
+	eq(savefile_load("Test1", FALSE), TRUE);
+
+	cmdq_push(CMD_WALK);
+	cmd_set_arg_direction(cmdq_peek(), "direction", 4);
+	run_game_loop();
+	cmdq_push(CMD_WALK);
+	cmd_set_arg_direction(cmdq_peek(), "direction", 6);
+	run_game_loop();
+	cmdq_push(CMD_GO_DOWN);
+	run_game_loop();
+	eq(player->depth, 1);
+
+	ok;
+}
+
 const char *suite_name = "game/basic";
 struct test tests[] = {
 	{ "newgame", test_newgame },
 	{ "loadgame", test_loadgame },
-	{ "stairs", test_stairs },
+	{ "stairs1", test_stairs1 },
+	{ "stairs2", test_stairs2 },
 	{ NULL, NULL }
 };
