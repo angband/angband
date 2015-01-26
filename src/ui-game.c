@@ -376,9 +376,10 @@ static void start_game(bool new_game)
 	/* Save not required yet. */
 	player->upkeep->autosave = FALSE;
 
-	/* Do new level stuff if we have one */
-	if (character_dungeon)
-		on_new_level();
+	/* Enter the level, generating a new one if needed */
+	if (!character_dungeon)
+		cave_generate(&cave, player);
+	on_new_level();
 }
 
 /**

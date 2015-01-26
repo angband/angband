@@ -1122,9 +1122,6 @@ void do_cmd_accept_character(struct command *cmd)
 	character_generated = TRUE;
 	player->upkeep->playing = TRUE;
 
-	/* Generate a new level */
-	player->upkeep->generate_level = TRUE;
-
 	/* Now we're really done.. */
 	event_signal(EVENT_LEAVE_BIRTH);
 }
