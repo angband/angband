@@ -1,6 +1,6 @@
-/*
- * File: game-event.c
- * Purpose: Allows the registering of handlers to be told about game events.
+/**
+ * \file game-event.c
+ * \brief Allows the registering of handlers to be told about game events.
  *
  * Copyright (c) 2007 Antony Sidwell
  *

@@ -580,7 +580,7 @@ bool flags_mask(bitflag *flags, const size_t size, ...)
 	bitflag *mask;
 
 	/* Build the mask */
-	mask = C_ZNEW(size, bitflag);
+	mask = mem_zalloc(size * sizeof(bitflag));
 
 	va_start(args, size);
 
@@ -594,7 +594,7 @@ bool flags_mask(bitflag *flags, const size_t size, ...)
 
 	/* Free the mask */
 
-	FREE(mask);
+	mem_free(mask);
 
 	return delta;
 }

@@ -1,6 +1,6 @@
-/*
- * File: debug.c
- * Purpose: Simple debugging functions
+/**
+ * \file debug.c
+ * \brief Simple debugging functions
  *
  * Copyright (c) 2007 Andi Sidwell
  *
@@ -24,7 +24,7 @@ static void to_stderr(const char *out);
 
 static debug_hook *d_out = to_stderr;
 
-/*
+/**
  * Simple printing to stderr
  */
 static void to_stderr(const char *out)
@@ -33,7 +33,7 @@ static void to_stderr(const char *out)
 	fputs("\n", stderr);
 }
 
-/*
+/**
  * Output some text.
  *
  * Amongst other things, this should use the message package so that ports can

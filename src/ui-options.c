@@ -1058,15 +1058,6 @@ static const char *strip_ego_name(const char *name)
 	return name;
 }
 
-/**
- * Utility function used to find/sort tval names.
- */
-//static int tval_comp_func(const void *a_ptr, const void *b_ptr)
-//{
-//	int a = ((tval_desc *) a_ptr)->tval;
-//	int b = ((tval_desc *) b_ptr)->tval;
-//	return a - b;
-//}
 
 /**
  * Display an ego-item type on the screen.
@@ -1190,7 +1181,7 @@ static void ego_menu(const char *unused, int also_unused)
 	int i;
 
 	/* Create the array */
-	choice = C_ZNEW(z_info->e_max, ego_desc);
+	choice = mem_zalloc(z_info->e_max * sizeof(ego_desc));
 
 	/* Get the valid ego-items */
 	for (i = 0; i < z_info->e_max; i++) {
@@ -1233,7 +1224,7 @@ static void ego_menu(const char *unused, int also_unused)
 
 	/* Return here if there are no objects */
 	if (!max_num) {
-		FREE(choice);
+		mem_free(choice);
 		return;
 	}
 
@@ -1259,7 +1250,7 @@ static void ego_menu(const char *unused, int also_unused)
 	text_out_indent = 0;
 
 	/* Set up the menu */
-	WIPE(&menu, menu);
+	memset(&menu, 0, sizeof(menu));
 	menu_init(&menu, MN_SKIN_SCROLL, &menu_f);
 	menu_setpriv(&menu, max_num, choice);
 	menu_layout(&menu, &area);
@@ -1268,7 +1259,7 @@ static void ego_menu(const char *unused, int also_unused)
 	(void) menu_select(&menu, cursor, FALSE);
 
 	/* Free memory */
-	FREE(choice);
+	mem_free(choice);
 
 	/* Load screen */
 	screen_load();
@@ -1618,7 +1609,7 @@ static bool sval_menu(int tval, const char *desc)
 	menu_select(menu, 0, FALSE);
 
 	/* Free memory */
-	FREE(choices);
+	mem_free(choices);
 
 	/* Load screen */
 	screen_load();

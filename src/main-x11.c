@@ -842,7 +842,7 @@ static errr Infowin_prepare(Window xid)
 static errr Infowin_init_real(Window xid)
 {
 	/* Wipe it clean */
-	(void)WIPE(Infowin, infowin);
+	(void)memset(Infowin, 0, sizeof(infowin));
 
 	/* Start out non-nukable */
 	Infowin->nuke = 0;
@@ -872,7 +872,7 @@ static errr Infowin_init_data(Window dad, int x, int y, int w, int h,
 	Window xid;
 
 	/* Wipe it clean */
-	(void)WIPE(Infowin, infowin);
+	(void)memset(Infowin, 0, sizeof(infowin));
 
 
 	/*** Error Check XXX ***/
@@ -1185,7 +1185,7 @@ static errr Infoclr_init_1(GC gc)
 	infoclr *iclr = Infoclr;
 
 	/* Wipe the iclr clean */
-	(void)WIPE(iclr, infoclr);
+	(void)memset(iclr, 0, sizeof(infoclr));
 
 	/* Assign the GC */
 	iclr->gc = gc;
@@ -1280,7 +1280,7 @@ static errr Infoclr_init_data(Pixell fg, Pixell bg, int op, int stip)
 	/*** Initialize ***/
 
 	/* Wipe the iclr clean */
-	(void)WIPE(iclr, infoclr);
+	(void)memset(iclr, 0, sizeof(infoclr));
 
 	/* Assign the GC */
 	iclr->gc = gc;
@@ -1412,7 +1412,7 @@ static errr Infofnt_init_data(const char *name)
 	/*** Init the font ***/
 
 	/* Wipe the thing */
-	(void)WIPE(Infofnt, infofnt);
+	(void)memset(Infofnt, 0, sizeof(infofnt));
 
 	/* Attempt to prepare it */
 	if (Infofnt_prepare(fs))
@@ -2392,7 +2392,7 @@ static errr term_data_init(term_data *td, int i)
 	}
 
 	/* Prepare the standard font */
-	td->fnt = ZNEW(infofnt);
+	td->fnt = mem_zalloc(sizeof(infofnt));
 	Infofnt_set(td->fnt);
 	if (Infofnt_init_data(font)) quit_fmt("Couldn't load the requested font. (%s)", font);
 
@@ -2411,7 +2411,7 @@ static errr term_data_init(term_data *td, int i)
 	hgt = rows * td->tile_hgt + (oy + oy);
 
 	/* Create a top-window */
-	td->win = ZNEW(infowin);
+	td->win = mem_zalloc(sizeof(infowin));
 	Infowin_set(td->win);
 	Infowin_init_top(x, y, wid, hgt, 0,
 	                 Metadpy->fg, Metadpy->bg);
@@ -2555,12 +2555,12 @@ static void hook_quit(const char *str)
 		/* Free fonts */
 		Infofnt_set(td->fnt);
 		(void)Infofnt_nuke();
-		FREE(td->fnt);
+		mem_free(td->fnt);
 
 		/* Free window */
 		Infowin_set(td->win);
 		(void)Infowin_nuke();
-		FREE(td->win);
+		mem_free(td->win);
 
 		/* Free term */
 		(void)term_nuke(t);
@@ -2569,13 +2569,13 @@ static void hook_quit(const char *str)
 	/* Free colors */
 	Infoclr_set(xor);
 	(void)Infoclr_nuke();
-	FREE(xor);
+	mem_free(xor);
 
 	for (i = 0; i < MAX_COLORS; ++i)
 	{
 		Infoclr_set(clr[i]);
 		(void)Infoclr_nuke();
-		FREE(clr[i]);
+		mem_free(clr[i]);
 	}
 
 	/* Close link to display */
@@ -2679,7 +2679,7 @@ errr init_x11(int argc, char **argv)
 	term_windows_open = num_term;
 
 	/* Prepare cursor color */
-	xor = ZNEW(infoclr);
+	xor = mem_zalloc(sizeof(infoclr));
 	Infoclr_set(xor);
 	Infoclr_init_ppn(Metadpy->fg, Metadpy->bg, "xor", 0);
 
@@ -2689,7 +2689,7 @@ errr init_x11(int argc, char **argv)
 	{
 		Pixell pixel;
 
-		clr[i] = ZNEW(infoclr);
+		clr[i] = mem_zalloc(sizeof(infoclr));
 
 		Infoclr_set(clr[i]);
 

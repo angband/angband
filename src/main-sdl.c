@@ -675,8 +675,8 @@ static void sdl_ButtonVisible(sdl_Button *button, bool visible)
 static void sdl_ButtonBankInit(sdl_ButtonBank *bank, sdl_Window *window)
 {
 	bank->window = window;
-	bank->buttons = C_ZNEW(MAX_BUTTONS, sdl_Button);
-	bank->used = C_ZNEW(MAX_BUTTONS, bool);
+	bank->buttons = mem_zalloc(MAX_BUTTONS * sizeof(sdl_Button));
+	bank->used = mem_zalloc(MAX_BUTTONS * sizeof(bool));
 	bank->need_update = TRUE;
 }
 
@@ -685,8 +685,8 @@ static void sdl_ButtonBankInit(sdl_ButtonBank *bank, sdl_Window *window)
  */
 static void sdl_ButtonBankFree(sdl_ButtonBank *bank)
 {
-	FREE(bank->buttons);
-	FREE(bank->used);
+	mem_free(bank->buttons);
+	mem_free(bank->used);
 }
 
 /*
@@ -731,7 +731,7 @@ static int sdl_ButtonBankNew(sdl_ButtonBank *bank)
 	bank->used[i] = TRUE;
 	
 	/* Clear it */
-	WIPE(new_button, sdl_Button);
+	memset(new_button, 0, sizeof(sdl_Button));
 	
 	/* Mark it as mine */
 	new_button->owner = bank;
@@ -884,7 +884,7 @@ static void sdl_WindowFree(sdl_Window* window)
 		SDL_FreeSurface(window->surface);
 		sdl_ButtonBankFree(&window->buttons);
 		sdl_FontFree(&window->font);
-		WIPE(window, sdl_Window);
+		memset(window, 0, sizeof(sdl_Window));
 	}
 }
 
@@ -939,7 +939,7 @@ static void sdl_WindowUpdate(sdl_Window* window)
 		
 		window->need_update = FALSE;
 		
-		WIPE(&Event, SDL_Event);
+		memset(&Event, 0, sizeof(SDL_Event));
 		
 		Event.type = WINDOW_DRAW;
 		
@@ -993,7 +993,7 @@ static void hook_quit(const char *str)
 	if (GfxSurface) SDL_FreeSurface(GfxSurface);
 
 	close_graphics_modes();
-	if (GfxButtons) FREE(GfxButtons);
+	if (GfxButtons) mem_free(GfxButtons);
 
 	/* Free the 'System font' */
 	sdl_FontFree(&SystemFont);
@@ -1477,7 +1477,7 @@ static void AcceptChanges(sdl_Button *sender)
 	{
 		SDL_Event Event;
 		
-		WIPE(&Event, SDL_Event);
+		memset(&Event, 0, sizeof(SDL_Event));
 		
 		Event.type = SDL_VIDEORESIZE;
 		Event.resize.w = screen_w;
@@ -1876,7 +1876,7 @@ static errr load_prefs(void)
 		win = &windows[i];
 		
 		/* Clear the data */
-		WIPE(win, term_window);
+		memset(win, 0, sizeof(term_window));
 		
 		/* Who? */
 		win->Term_idx = i;

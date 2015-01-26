@@ -648,7 +648,7 @@ char *vformat(const char *fmt, va_list vp)
 
 void vformat_kill(void)
 {
-	FREE(format_buf);
+	mem_free(format_buf);
 }
 
 

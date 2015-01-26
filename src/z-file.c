@@ -363,7 +363,7 @@ void (*file_open_hook)(const char *path, file_type ftype);
  */
 ang_file *file_open(const char *fname, file_mode mode, file_type ftype)
 {
-	ang_file *f = ZNEW(ang_file);
+	ang_file *f = mem_zalloc(sizeof(ang_file));
 	char buf[1024];
 
 	(void)ftype;
@@ -400,7 +400,7 @@ ang_file *file_open(const char *fname, file_mode mode, file_type ftype)
 
 	if (f->fh == NULL)
 	{
-		FREE(f);
+		mem_free(f);
 		return NULL;
 	}
 
@@ -422,8 +422,8 @@ bool file_close(ang_file *f)
 	if (fclose(f->fh) != 0)
 		return FALSE;
 
-	FREE(f->fname);
-	FREE(f);
+	mem_free(f->fname);
+	mem_free(f);
 
 	return TRUE;
 }
@@ -735,7 +735,7 @@ ang_dir *my_dopen(const char *dirname)
 		return NULL;
 
 	/* Set up the handle */
-	dir = ZNEW(ang_dir);
+	dir = mem_zalloc(sizeof(ang_dir));
 	dir->h = h;
 	dir->first_file = string_make(fd.cFileName);
 
@@ -753,7 +753,7 @@ bool my_dread(ang_dir *dir, char *fname, size_t len)
 	{
 		/* Copy the string across, then free it */
 		my_strcpy(fname, dir->first_file, len);
-		FREE(dir->first_file);
+		mem_free(dir->first_file);
 
 		/* Wild success */
 		return TRUE;
@@ -788,8 +788,8 @@ void my_dclose(ang_dir *dir)
 		FindClose(dir->h);
 
 	/* Free memory */
-	FREE(dir->first_file);
-	FREE(dir);
+	mem_free(dir->first_file);
+	mem_free(dir);
 }
 
 #else /* WINDOWS */
@@ -813,7 +813,7 @@ ang_dir *my_dopen(const char *dirname)
 	if (!d) return NULL;
 
 	/* Allocate memory for the handle */
-	dir = ZNEW(ang_dir);
+	dir = mem_zalloc(sizeof(ang_dir));
 	if (!dir) 
 	{
 		closedir(d);
@@ -869,8 +869,8 @@ void my_dclose(ang_dir *dir)
 		closedir(dir->d);
 
 	/* Free memory */
-	FREE(dir->dirname);
-	FREE(dir);
+	mem_free(dir->dirname);
+	mem_free(dir);
 }
 
 #endif /* HAVE_DIRENT_H */

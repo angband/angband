@@ -1172,7 +1172,7 @@ errr init_nds(void)
 
   /* Main window */
   td = &data[0];
-  WIPE(td, term_data);
+  memset(td, 0, sizeof(term_data));
   td->rows = 24;
   td->cols = 37;
   td->tile_height = 8;

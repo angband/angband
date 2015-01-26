@@ -2618,7 +2618,7 @@ static void init_windows(void)
 
 	/* Main window */
 	td = &data[0];
-	WIPE(td, term_data);
+	memset(td, 0, sizeof(term_data));
 	td->s = angband_term_name[0];
 	td->keys = 1024;
 	td->rows = 24;
@@ -2635,7 +2635,7 @@ static void init_windows(void)
 	for (i = 1; i < MAX_TERM_DATA; i++)
 	{
 		td = &data[i];
-		WIPE(td, term_data);
+		memset(td, 0, sizeof(term_data));
 		td->s = angband_term_name[i];
 		td->keys = 16;
 		td->rows = 24;

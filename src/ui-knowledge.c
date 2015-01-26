@@ -417,8 +417,8 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 		sort(obj_list, o_count, sizeof(*obj_list), g_funcs.gcomp);
 
 	/* Sort everything into group order */
-	g_list = C_ZNEW(max_group + 1, int);
-	g_offset = C_ZNEW(max_group + 1, int);
+	g_list = mem_zalloc((max_group + 1) * sizeof(int));
+	g_offset = mem_zalloc((max_group + 1) * sizeof(int));
 
 	for (i = 0; i < o_count; i++)
 	{
@@ -435,7 +435,7 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 
 
 	/* The compact set of group names, in display order */
-	g_names = C_ZNEW(grp_cnt, const char *);
+	g_names = mem_zalloc(grp_cnt * sizeof(char*));
 
 	for (i = 0; i < grp_cnt; i++)
 	{
@@ -707,9 +707,9 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 	if (!grp_cnt)
 		prt(format("No %s known.", title), 15, 0);
 
-	FREE(g_names);
-	FREE(g_offset);
-	FREE(g_list);
+	mem_free(g_names);
+	mem_free(g_offset);
+	mem_free(g_list);
 
 	screen_load();
 }
@@ -1366,8 +1366,8 @@ static void do_cmd_knowledge_monsters(const char *name, int row)
 		}
 	}
 
-	default_join = C_ZNEW(m_count, join_t);
-	monsters = C_ZNEW(m_count, int);
+	default_join = mem_zalloc(m_count * sizeof(join_t));
+	monsters = mem_zalloc(m_count * sizeof(int));
 
 	m_count = 0;
 	for (i = 0; i < z_info->r_max; i++)
@@ -1392,8 +1392,8 @@ static void do_cmd_knowledge_monsters(const char *name, int row)
 
 	display_knowledge("monsters", monsters, m_count, r_funcs, m_funcs,
 			"                   Sym  Kills");
-	FREE(default_join);
-	FREE(monsters);
+	mem_free(default_join);
+	mem_free(monsters);
 }
 
 /* =================== ARTIFACTS ==================================== */
@@ -1577,13 +1577,13 @@ static void do_cmd_knowledge_artifacts(const char *name, int row)
 	int *artifacts;
 	int a_count = 0;
 
-	artifacts = C_ZNEW(z_info->a_max, int);
+	artifacts = mem_zalloc(z_info->a_max * sizeof(int));
 
 	/* Collect valid artifacts */
 	a_count = collect_known_artifacts(artifacts, z_info->a_max);
 
 	display_knowledge("artifacts", artifacts, a_count, obj_f, art_f, NULL);
-	FREE(artifacts);
+	mem_free(artifacts);
 }
 
 /* =================== EGO ITEMS  ==================================== */
@@ -1972,7 +1972,7 @@ void textui_browse_object_knowledge(const char *name, int row)
 	int i;
 	object_kind *kind;
 
-	objects = C_ZNEW(z_info->k_max, int);
+	objects = mem_zalloc(z_info->k_max * sizeof(int));
 
 	for (i = 0; i < z_info->k_max; i++)
 	{
@@ -1993,7 +1993,7 @@ void textui_browse_object_knowledge(const char *name, int row)
 
 	display_knowledge("known objects", objects, o_count, kind_f, obj_f, "Ignore  Inscribed          Sym");
 
-	FREE(objects);
+	mem_free(objects);
 }
 
 /* =================== TERRAIN FEATURES ==================================== */
@@ -2089,7 +2089,7 @@ static void do_cmd_knowledge_features(const char *name, int row)
 	int f_count = 0;
 	int i;
 
-	features = C_ZNEW(z_info->f_max, int);
+	features = mem_zalloc(z_info->f_max * sizeof(int));
 
 	for (i = 0; i < z_info->f_max; i++)
 	{
@@ -2102,7 +2102,7 @@ static void do_cmd_knowledge_features(const char *name, int row)
 
 	display_knowledge("features", features, f_count, fkind_f, feat_f,
 		"                    Sym");
-	FREE(features);
+	mem_free(features);
 }
 
 
@@ -2176,7 +2176,7 @@ void textui_knowledge_init(void)
 		int i;
 		int gid = -1;
 
-		obj_group_order = C_ZNEW(TV_MAX + 1, int);
+		obj_group_order = mem_zalloc((TV_MAX + 1) * sizeof(int));
 		atexit(cleanup_cmds);
 
 		/* Allow for missing values */
@@ -2806,7 +2806,7 @@ void do_cmd_query_symbol(void)
 	prt(buf, 0, 0);
 
 	/* Allocate the "who" array */
-	who = C_ZNEW(z_info->r_max, u16b);
+	who = mem_zalloc(z_info->r_max * sizeof(u16b));
 
 	/* Collect matching monsters */
 	for (n = 0, i = 1; i < z_info->r_max - 1; i++)
@@ -2831,7 +2831,7 @@ void do_cmd_query_symbol(void)
 	if (!n)
 	{
 		/* XXX XXX Free the "who" array */
-		FREE(who);
+		mem_free(who);
 
 		return;
 	}
@@ -2861,7 +2861,7 @@ void do_cmd_query_symbol(void)
 		/* Any unsupported response is "nope, no history please" */
 	
 		/* XXX XXX Free the "who" array */
-		FREE(who);
+		mem_free(who);
 
 		return;
 	}
@@ -2929,7 +2929,7 @@ void do_cmd_query_symbol(void)
 	prt(buf, 0, 0);
 
 	/* Free the "who" array */
-	FREE(who);
+	mem_free(who);
 }
 
 /* Centers the map on the player */

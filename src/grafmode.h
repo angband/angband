@@ -1,6 +1,6 @@
-/*
- * File: grafmode.h
- * Purpose: load a list of possible graphics modes.
+/**
+ * \file grafmode.h
+ * \brief Load a list of possible graphics modes.
  *
  * Copyright (c) 2011 Brett Reid
  *
@@ -20,13 +20,14 @@
 
 #include "h-basic.h"
 
-/*
+/**
  * Default graphic modes
  */
 #define GRAPHICS_NONE           0
 
 
-/* Specifications for graphics modes.
+/**
+ * Specifications for graphics modes.
  * 
  * grafID:      ID of tile set should be >0 and unique for anything new.
  * alphablend:  Bool whether or not the tileset needs alpha blending.

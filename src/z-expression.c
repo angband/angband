@@ -1,6 +1,6 @@
 /**
-   \file z-expression.c
-   \brief Creating, storing, and deserializing simple math expressions
+ * \file z-expression.c
+ * \brief Creating, storing, and deserializing simple math expressions
  *
  * Copyright (c) 2013 Ben Semmler
  *
@@ -129,7 +129,7 @@ static expression_input_t expression_input_for_operator(expression_operator_t op
  */
 expression_t *expression_new(void)
 {
-	expression_t *expression = ZNEW(expression_t);
+	expression_t *expression = mem_zalloc(sizeof(expression_t));
 
 	if (expression == NULL)
 		return NULL;
@@ -137,10 +137,11 @@ expression_t *expression_new(void)
 	expression->base_value = NULL;
 	expression->operation_count = 0;
 	expression->operations_size = EXPRESSION_ALLOC_SIZE;
-	expression->operations = C_ZNEW(expression->operations_size, expression_operation_t);
+	expression->operations = mem_zalloc(expression->operations_size *
+										sizeof(expression_operation_t));
 
 	if (expression->operations == NULL) {
-		FREE(expression);
+		mem_free(expression);
 		return NULL;
 	}
 
@@ -156,11 +157,11 @@ void expression_free(expression_t *expression)
 		return;
 
 	if (expression->operations != NULL) {
-		FREE(expression->operations);
+		mem_free(expression->operations);
 		expression->operations = NULL;
 	}
 
-	FREE(expression);
+	mem_free(expression);
 }
 
 /**
@@ -169,7 +170,7 @@ void expression_free(expression_t *expression)
 expression_t *expression_copy(const expression_t *source)
 {
 	size_t i;
-	expression_t *copy = ZNEW(expression_t);
+	expression_t *copy = mem_zalloc(sizeof(expression_t));
 
 	if (copy == NULL)
 		return NULL;
@@ -183,10 +184,11 @@ expression_t *expression_copy(const expression_t *source)
 		return copy;
 	}
 
-	copy->operations = C_ZNEW(copy->operations_size, expression_operation_t);
+	copy->operations = mem_zalloc(copy->operations_size *
+								  sizeof(expression_operation_t));
 
 	if (copy->operations == NULL && source->operations != NULL) {
-		FREE(copy);
+		mem_free(copy);
 		return NULL;
 	}
 

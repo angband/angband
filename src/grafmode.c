@@ -1,6 +1,6 @@
-/*
- * File: grafmode.c
- * Purpose: load a list of possible graphics modes.
+/**
+ * \file grafmode.c
+ * \brief Load a list of possible graphics modes.
  *
  * Copyright (c) 2011 Brett Reid
  *
@@ -95,7 +95,7 @@ static errr finish_parse_grafmode(struct parser *p) {
 	int count = 0;
 	int i;
 	
-	/* see how many graphics modes we have and what the highest index is */
+	/* See how many graphics modes we have and what the highest index is */
 	if (p) {
 		mode = parser_priv(p);
 		while (mode) {
@@ -107,7 +107,7 @@ static errr finish_parse_grafmode(struct parser *p) {
 		}
 	}
 
-	/* copy the loaded modes to the global variable */
+	/* Copy the loaded modes to the global variable */
 	if (graphics_modes) {
 		close_graphics_modes();
 	}
@@ -121,7 +121,7 @@ static errr finish_parse_grafmode(struct parser *p) {
 		}
 	}
 	
-	/* hardcode the no graphics option */
+	/* Hardcode the no graphics option */
 	graphics_modes[count].pNext = NULL;
 	graphics_modes[count].grafID = GRAPHICS_NONE;
 	graphics_modes[count].alphablend = 0;
@@ -133,7 +133,7 @@ static errr finish_parse_grafmode(struct parser *p) {
 	
 	graphics_mode_high_id = max;
 
-	/* set the default graphics mode to be no graphics */
+	/* Set the default graphics mode to be no graphics */
 	current_graphics_mode = &(graphics_modes[count]);
 	
 	if (p) {
@@ -200,13 +200,6 @@ void close_graphics_modes(void) {
 	if (graphics_modes) {
 		mem_free(graphics_modes);
 		graphics_modes = NULL;
-		/*graphics_mode *test,*next;
-		test = graphics_modes;
-		while (test) {
-			next = test->pNext;
-			delete(test);
-			test = next;
-		}*/
 	}
 }
 

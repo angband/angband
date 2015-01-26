@@ -99,7 +99,7 @@ void lore_description(textblock *tb, const monster_race *race,
 	get_attack_colors(melee_colors, spell_colors);
 
 	/* Hack -- create a copy of the monster-memory that we can modify */
-	COPY(lore, original_lore, monster_lore);
+	memcpy(lore, original_lore, sizeof(monster_lore));
 
 	/* Now get the known monster flags */
 	monster_flags_known(race, lore, known_flags);

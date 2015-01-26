@@ -54,7 +54,7 @@ static msgqueue_t *messages = NULL;
 /* Functions operating on the entire list */
 void messages_init(void)
 {
-	messages = ZNEW(msgqueue_t);
+	messages = mem_zalloc(sizeof(msgqueue_t));
 	messages->max = 2048;
 }
 
@@ -68,19 +68,19 @@ void messages_free(void)
 	while (m)
 	{
 		nextm = m->older;
-		FREE(m->str);
-		FREE(m);
+		mem_free(m->str);
+		mem_free(m);
 		m = nextm;
 	}
 
 	while (c)
 	{
 		nextc = c->next;
-		FREE(c);
+		mem_free(c);
 		c = nextc;
 	}
 
-	FREE(messages);
+	mem_free(messages);
 }
 
 u16b messages_num(void)
@@ -102,7 +102,7 @@ void message_add(const char *str, u16b type)
 		return;
 	}
 
-	m = ZNEW(message_t);
+	m = mem_zalloc(sizeof(message_t));
 	m->str = string_make(str);
 	m->type = type;
 	m->count = 1;
@@ -123,8 +123,8 @@ void message_add(const char *str, u16b type)
 
 		messages->tail = old_tail->newer;
 		messages->tail->older = NULL;
-		FREE(old_tail->str);
-		FREE(old_tail);
+		mem_free(old_tail->str);
+		mem_free(old_tail);
 		messages->count--;
 	}
 }
@@ -173,7 +173,7 @@ void message_color_define(u16b type, byte color)
 
 	if (!messages->colors)
 	{
-		messages->colors = ZNEW(msgcolor_t);
+		messages->colors = mem_zalloc(sizeof(msgcolor_t));
 		messages->colors->type = type;
 		messages->colors->color = color;
 	}
@@ -188,7 +188,7 @@ void message_color_define(u16b type, byte color)
 		mc = mc->next;
 	}
 
-	mc->next = ZNEW(msgcolor_t);
+	mc->next = mem_zalloc(sizeof(msgcolor_t));
 	mc->next->type = type;
 	mc->next->color = color;
 }

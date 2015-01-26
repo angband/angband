@@ -1,6 +1,6 @@
-/*
- * File: src/list-object-flags.h
- * Purpose: object flags for all objects
+/**
+ * \file list-object-flags.h
+ * \brief object flags for all objects
  *
  * Changing flag order will break savefiles. Flags
  * below start from 0 on line 17, so a flag's sequence number is its line

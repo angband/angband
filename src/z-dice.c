@@ -1,6 +1,6 @@
 /**
-   \file z-dice.c
-   \brief Represent more complex dice than random_value
+ * \file z-dice.c
+ * \brief Represent more complex dice than random_value
  *
  * Copyright (c) 2013 Ben Semmler
  *
@@ -191,7 +191,7 @@ static void dice_reset(dice_t *dice)
  */
 dice_t *dice_new(void)
 {
-	dice_t *dice = ZNEW(dice_t);
+	dice_t *dice = mem_zalloc(sizeof(dice_t));
 
 	if (dice == NULL)
 		return NULL;
@@ -213,11 +213,11 @@ void dice_free(dice_t *dice)
 	dice_reset(dice);
 
 	if (dice->expressions != NULL) {
-		FREE(dice->expressions);
+		mem_free(dice->expressions);
 		dice->expressions = NULL;
 	}
 
-	FREE(dice);
+	mem_free(dice);
 }
 
 /**
@@ -232,7 +232,8 @@ static int dice_add_variable(dice_t *dice, const char *name)
 	int i;
 
 	if (dice->expressions == NULL) {
-		dice->expressions = C_ZNEW(DICE_MAX_EXPRESSIONS, dice_expression_entry_t);
+		dice->expressions = mem_zalloc(DICE_MAX_EXPRESSIONS *
+									   sizeof(dice_expression_entry_t));
 	}
 
 	for (i = 0; i < DICE_MAX_EXPRESSIONS; i++) {

@@ -1,6 +1,6 @@
-/*
- * File: load.c
- * Purpose: Savefile loading functions
+/**
+ * \file load.c
+ * \brief Individual loading functions
  *
  * Copyright (c) 1997 Ben Harrison, and others
  *
@@ -46,28 +46,40 @@
 #include "store.h"
 #include "trap.h"
 
-/* Dungeon constants */
+/**
+ * Dungeon constants
+ */
 byte square_size = 0;
 
-/* Player constants */
+/**
+ * Player constants
+ */
 byte hist_size = 0;
 
-/* Object constants */
+/**
+ * Object constants
+ */
 byte obj_mod_max = 0;
 byte of_size = 0;
 byte id_size = 0;
 byte elem_max = 0;
 
-/* Monster constants */
+/**
+ * Monster constants
+ */
 byte monster_blow_max = 0;
 byte rf_size = 0;
 byte rsf_size = 0;
 byte mflag_size = 0;
 
-/* Trap constants */
+/**
+ * Trap constants
+ */
 byte trf_size = 0;
 
-/* Shorthand function pointer for rd_item version */
+/**
+ * Shorthand function pointer for rd_item version
+ */
 typedef struct object *(*rd_item_t)(void);
 
 /**
@@ -82,7 +94,7 @@ static struct ego_item *lookup_ego(int idx)
 }
 
 
-/*
+/**
  * Read an object.
  */
 static struct object *rd_item(void)
@@ -92,16 +104,11 @@ static struct object *rd_item(void)
 	byte tmp8u;
 	u16b tmp16u;
 	s16b tmp16s;
-
 	byte ego_idx;
 	byte art_idx;
-
 	size_t i;
-
 	char buf[128];
-
 	byte ver = 1;
-
 
 	rd_u16b(&tmp16u);
 	rd_byte(&ver);
@@ -348,7 +355,7 @@ int rd_randomizer(void)
 }
 
 
-/*
+/**
  * Read options.
  */
 int rd_options(void)
@@ -372,8 +379,7 @@ int rd_options(void)
 	op_ptr->lazymove_delay = (tmp16u < 1000) ? tmp16u : 0;
 
 
-	/*** Normal Options ***/
-
+	/* Read options */
 	while (1) {
 		byte value;
 		char name[20];
@@ -389,7 +395,7 @@ int rd_options(void)
 	return 0;
 }
 
-/*
+/**
  * Read the saved messages
  */
 int rd_messages(void)
@@ -404,8 +410,7 @@ int rd_messages(void)
 	rd_s16b(&num);
 
 	/* Read the messages */
-	for (i = 0; i < num; i++)
-	{
+	for (i = 0; i < num; i++) {
 		/* Read the message */
 		rd_string(buf, sizeof(buf));
 
@@ -419,7 +424,9 @@ int rd_messages(void)
 	return 0;
 }
 
-/* Read monster memory. */
+/**
+ * Read monster memory.
+ */
 int rd_monster_memory(void)
 {
 	u16b tmp16u;
@@ -430,15 +437,13 @@ int rd_monster_memory(void)
 	rd_byte(&mflag_size);
 
 	/* Incompatible save files */
-	if (mflag_size > MFLAG_SIZE)
-	{
+	if (mflag_size > MFLAG_SIZE) {
 	        note(format("Too many (%u) monster temporary flags!", mflag_size));
 		return (-1);
 	}
 
 	/* Reset maximum numbers per level */
-	for (i = 1; z_info && i < z_info->r_max; i++)
-	{
+	for (i = 1; z_info && i < z_info->r_max; i++) {
 		monster_race *race = &r_info[i];
 		race->max_num = 100;
 		if (rf_has(race->flags, RF_UNIQUE))
@@ -473,40 +478,28 @@ int rd_object_memory(void)
 
 	/* Object Memory */
 	rd_u16b(&tmp16u);
-
-	/* Incompatible save files */
-	if (tmp16u > z_info->k_max)
-	{
+	if (tmp16u > z_info->k_max) {
 		note(format("Too many (%u) object kinds!", tmp16u));
 		return (-1);
 	}
 
 	/* Object flags */
 	rd_byte(&of_size);
-
-	/* Incompatible save files */
-	if (of_size > OF_SIZE)
-	{
+	if (of_size > OF_SIZE) {
 	        note(format("Too many (%u) object flags!", of_size));
 		return (-1);
 	}
 
 	/* Identify flags */
 	rd_byte(&id_size);
-
-	/* Incompatible save files */
-	if (id_size > ID_SIZE)
-	{
+	if (id_size > ID_SIZE) {
 	        note(format("Too many (%u) identify flags!", id_size));
 		return (-1);
 	}
 
 	/* Object modifiers */
 	rd_byte(&obj_mod_max);
-
-	/* Incompatible save files */
-	if (obj_mod_max > OBJ_MOD_MAX)
-	{
+	if (obj_mod_max > OBJ_MOD_MAX) {
 	        note(format("Too many (%u) object modifiers allowed!", 
 						obj_mod_max));
 		return (-1);
@@ -514,18 +507,14 @@ int rd_object_memory(void)
 
 	/* Elements */
 	rd_byte(&elem_max);
-
-	/* Incompatible save files */
-	if (elem_max > ELEM_MAX)
-	{
+	if (elem_max > ELEM_MAX) {
 	        note(format("Too many (%u) elements allowed!", 
 						elem_max));
 		return (-1);
 	}
 
 	/* Read the object memory */
-	for (i = 0; i < tmp16u; i++)
-	{
+	for (i = 0; i < tmp16u; i++) {
 		byte tmp8u;
 		object_kind *k_ptr = &k_info[i];
 
@@ -551,8 +540,6 @@ int rd_quests(void)
 	
 	/* Load the Quests */
 	rd_u16b(&tmp16u);
-	
-	/* Incompatible save files */
 	if (tmp16u > z_info->quest_max) {
 		note(format("Too many (%u) quests!", tmp16u));
 		return (-1);
@@ -577,17 +564,13 @@ int rd_artifacts(void)
 	
 	/* Load the Artifacts */
 	rd_u16b(&tmp16u);
-	
-	/* Incompatible save files */
-	if (tmp16u > z_info->a_max)
-	{
+	if (tmp16u > z_info->a_max) {
 		note(format("Too many (%u) artifacts!", tmp16u));
 		return (-1);
 	}
 	
 	/* Read the artifact flags */
-	for (i = 0; i < tmp16u; i++)
-	{
+	for (i = 0; i < tmp16u; i++) {
 		byte tmp8u;
 		
 		rd_byte(&tmp8u);
@@ -604,7 +587,7 @@ int rd_artifacts(void)
 
 
 
-/*
+/**
  * Read the player information
  */
 int rd_player(void)
@@ -666,15 +649,13 @@ int rd_player(void)
 	rd_string(buf, sizeof(buf));
 	player->body.name = string_make(buf);
 	rd_u16b(&player->body.count);
-
-	/* Incompatible save files */
-	if (player->body.count > z_info->equip_slots_max)
-	{
+	if (player->body.count > z_info->equip_slots_max) {
 		note(format("Too many (%u) body parts!", player->body.count));
 		return (-1);
 	}
 
-	player->body.slots = mem_zalloc(player->body.count * sizeof(struct equip_slot));
+	player->body.slots = mem_zalloc(player->body.count *
+									sizeof(struct equip_slot));
 	for (i = 0; i < player->body.count; i++) {
 		rd_u16b(&player->body.slots[i].type);
 		rd_string(buf, sizeof(buf));
@@ -692,8 +673,7 @@ int rd_player(void)
 	rd_s16b(&player->lev);
 
 	/* Verify player level */
-	if ((player->lev < 1) || (player->lev > PY_MAX_LEVEL))
-	{
+	if ((player->lev < 1) || (player->lev > PY_MAX_LEVEL)) {
 		note(format("Invalid player level (%d).", player->lev));
 		return (-1);
 	}
@@ -717,7 +697,8 @@ int rd_player(void)
 
 	/* Hack -- Reset cause of death */
 	if (player->chp >= 0)
-		my_strcpy(player->died_from, "(alive and well)", sizeof(player->died_from));
+		my_strcpy(player->died_from, "(alive and well)",
+				  sizeof(player->died_from));
 
 	/* More info */
 	strip_bytes(9);
@@ -734,18 +715,15 @@ int rd_player(void)
 	/* Find the number of timed effects */
 	rd_byte(&num);
 
-	if (num <= TMD_MAX)
-	{
+	if (num <= TMD_MAX) {
 		/* Read all the effects */
 		for (i = 0; i < num; i++)
 			rd_s16b(&player->timed[i]);
 
 		/* Initialize any entries not read */
 		if (num < TMD_MAX)
-			C_WIPE(player->timed + num, TMD_MAX - num, s16b);
-	}
-	else
-	{
+			memset(player->timed + num, 0, (TMD_MAX - num) * sizeof(s16b));
+	} else {
 		/* Probably in trouble anyway */
 		for (i = 0; i < TMD_MAX; i++)
 			rd_s16b(&player->timed[i]);
@@ -767,7 +745,7 @@ int rd_player(void)
 }
 
 
-/*
+/**
  * Read ignore and autoinscription submenu for all known objects
  */
 int rd_ignore(void)
@@ -782,12 +760,9 @@ int rd_ignore(void)
 	rd_byte(&tmp8u);
 	
 	/* Check against current number */
-	if (tmp8u != ignore_size)
-	{
+	if (tmp8u != ignore_size) {
 		strip_bytes(tmp8u);
-	}
-	else
-	{
+	} else {
 		for (i = 0; i < ignore_size; i++)
 			rd_byte(&ignore_level[i]);
 	}
@@ -795,18 +770,13 @@ int rd_ignore(void)
 	/* Read the number of saved ego-item */
 	rd_u16b(&file_e_max);
 	rd_u16b(&itype_size);
-
-	/* Incompatible save files */
-	if (itype_size > ITYPE_SIZE)
-	{
+	if (itype_size > ITYPE_SIZE) {
 		note(format("Too many (%u) ignore bytes!", itype_size));
 		return (-1);
 	}
 		
-	for (i = 0; i < file_e_max; i++)
-	{
-		if (i < z_info->e_max)
-		{
+	for (i = 0; i < file_e_max; i++) {
+		if (i < z_info->e_max) {
 			bitflag flags, itypes[itype_size];
 			
 			/* Read and extract the everseen flag */
@@ -827,8 +797,7 @@ int rd_ignore(void)
 	rd_u16b(&inscriptions);
 	
 	/* Read the autoinscriptions array */
-	for (i = 0; i < inscriptions; i++)
-	{
+	for (i = 0; i < inscriptions; i++) {
 		char tmp[80];
 		s16b kidx;
 		struct object_kind *k;
@@ -879,10 +848,7 @@ int rd_player_hp(void)
 
 	/* Read the player_hp array */
 	rd_u16b(&tmp16u);
-
-	/* Incompatible save files */
-	if (tmp16u > PY_MAX_LEVEL)
-	{
+	if (tmp16u > PY_MAX_LEVEL) {
 		note(format("Too many (%u) hitpoint entries!", tmp16u));
 		return (-1);
 	}
@@ -895,6 +861,9 @@ int rd_player_hp(void)
 }
 
 
+/**
+ * Read the player spells
+ */
 int rd_player_spells(void)
 {
 	int i;
@@ -904,8 +873,7 @@ int rd_player_spells(void)
 	
 	/* Read the number of spells */
 	rd_u16b(&tmp16u);
-	if (tmp16u > player->class->magic.total_spells)
-	{
+	if (tmp16u > player->class->magic.total_spells) {
 		note(format("Too many player spells (%d).", tmp16u));
 		return (-1);
 	}
@@ -974,7 +942,7 @@ static int rd_gear_aux(rd_item_t rd_item_version, struct object **gear)
 	return (0);
 }
 
-/*
+/**
  * Read the player gear - wrapper functions
  */
 int rd_gear(void)
@@ -993,7 +961,9 @@ int rd_gear(void)
 }
 
 
-/* Read store contents */
+/**
+ * Read store contents
+ */
 static int rd_stores_aux(rd_item_t rd_item_version)
 {
 	int i;
@@ -1032,13 +1002,13 @@ static int rd_stores_aux(rd_item_t rd_item_version)
 	return 0;
 }
 
-/*
+/**
  * Read the stores - wrapper functions
  */
 int rd_stores(void) { return rd_stores_aux(rd_item); }
 
 
-/*
+/**
  * Read the dungeon
  *
  * The monsters/objects must be loaded in the same order
@@ -1067,20 +1037,16 @@ static int rd_dungeon_aux(struct chunk **c)
 	u16b tmp16u;
 	char name[100];
 
-	/*** Basic info ***/
-
 	/* Header info */
 	rd_string(name, sizeof(name));
 	rd_u16b(&height);
 	rd_u16b(&width);
 
-	/* We need a cave array */
+	/* We need a cave struct */
 	c1 = cave_new(height, width);
 	c1->name = string_make(name);
 
-	/*** Run length decoding ***/
-
-    /* Loop across bytes of cave->squares[y][x].info */
+    /* Run length decoding of cave->squares[y][x].info */
 	for (n = 0; n < square_size; n++) {
 		/* Load the dungeon data */
 		for (x = y = 0; y < c1->height; ) {
@@ -1105,10 +1071,7 @@ static int rd_dungeon_aux(struct chunk **c)
 		}
 	}
 
-
-	/*** Run length decoding ***/
-
-	/* Load the dungeon data */
+	/* Run length decoding of dungeon data */
 	for (x = y = 0; y < c1->height; ) {
 		/* Grab RLE info */
 		rd_byte(&count);
@@ -1183,8 +1146,6 @@ static int rd_monsters_aux(struct chunk *c)
 
 	/* Read the monster count */
 	rd_u16b(&limit);
-
-	/* Hack -- verify */
 	if (limit > z_info->level_monster_max) {
 		note(format("Too many (%d) monster entries!", limit));
 		return (-1);
@@ -1273,9 +1234,7 @@ int rd_dungeon(void)
 		return (1);
 	}
 
-	/*** Player ***/
-
-	/* Load depth */
+	/* Load player depth */
 	player->depth = depth;
 
 	/* Place player in dungeon */
@@ -1288,13 +1247,12 @@ int rd_dungeon(void)
 	if (rd_dungeon_aux(&cave_k))
 		return 1;
 
-	/*** Success ***/
 	return 0;
 }
 
 
-/*
- * Read the object list - wrapper functions
+/**
+ * Read the objects - wrapper functions
  */
 int rd_objects(void)
 {
@@ -1305,6 +1263,9 @@ int rd_objects(void)
 	return 0;
 }
 
+/**
+ * Read the monster list - wrapper functions
+ */
 int rd_monsters (void)
 {
 	if (rd_monsters_aux(cave))
@@ -1314,6 +1275,9 @@ int rd_monsters (void)
 	return 0;
 }
 
+/**
+ * Read the traps - wrapper functions
+ */
 int rd_traps(void)
 {
 	if (rd_traps_aux(cave))
@@ -1323,7 +1287,7 @@ int rd_traps(void)
 	return 0;
 }
 
-/*
+/**
  * Read the chunk list
  */
 int rd_chunks(void)
@@ -1370,16 +1334,13 @@ int rd_history(void)
 
 	/* History type flags */
 	rd_byte(&hist_size);
-
-	/* Incompatible save files */
 	if (hist_size > HIST_SIZE) {
 	        note(format("Too many (%u) history types!", hist_size));
 		return (-1);
 	}
 
 	rd_u32b(&tmp32u);
-	for (i = 0; i < tmp32u; i++)
-	{
+	for (i = 0; i < tmp32u; i++) {
 		s32b turnno;
 		s16b dlev, clev;
 		bitflag type[HIST_SIZE];

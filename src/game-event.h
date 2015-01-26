@@ -1,10 +1,29 @@
+/**
+ * \file game-event.h
+ * \brief Allows the registering of handlers to be told about game events.
+ *
+ * Copyright (c) 2007 Antony Sidwell
+ *
+ * This work is free software; you can redistribute it and/or modify it
+ * under the terms of either:
+ *
+ * a) the GNU General Public License as published by the Free Software
+ *    Foundation, version 2, or
+ *
+ * b) the "Angband licence":
+ *    This software may be copied and distributed for educational, research,
+ *    and not for profit purposes provided that this copyright and statement
+ *    are included in all such copies.  Other copyrights may also apply.
+ */
 
 #ifndef INCLUDED_GAME_EVENT_H
 #define INCLUDED_GAME_EVENT_H
 
 #include "z-type.h"
 
-/* The various events we can send signals about. */
+/**
+ * The various events we can send signals about.
+ */
 typedef enum game_event_type
 {
 	EVENT_MAP = 0,		/* Some part of the map has changed. */
@@ -135,7 +154,7 @@ typedef union
 } game_event_data;
 
 
-/* 
+/**
  * A function called when a game event occurs - these are registered to be
  * called by event_add_handler or event_add_handler_set, and deregistered
  * when they should no longer be called through event_remove_handler or

@@ -1,6 +1,6 @@
-/*
- * File: save.c
- * Purpose: Old-style savefile saving
+/**
+ * \file save.c
+ * \brief Individual saving functions
  *
  * Copyright (c) 1997 Ben Harrison
  *
@@ -37,7 +37,7 @@
 #include "trap.h"
 
 
-/*
+/**
  * Write a description of the character
  */
 void wr_description(void)
@@ -45,7 +45,9 @@ void wr_description(void)
 	char buf[1024];
 
 	if (player->is_dead)
-		strnfmt(buf, sizeof buf, "%s, dead (%s)", op_ptr->full_name, player->died_from);
+		strnfmt(buf, sizeof buf, "%s, dead (%s)",
+				op_ptr->full_name,
+				player->died_from);
 	else
 		strnfmt(buf, sizeof buf, "%s, L%d %s %s, at DL%d",
 				op_ptr->full_name,
@@ -58,7 +60,7 @@ void wr_description(void)
 }
 
 
-/*
+/**
  * Write an "item" record
  */
 static void wr_item(const object_type *o_ptr)
@@ -158,13 +160,9 @@ static void wr_item(const object_type *o_ptr)
 
 	/* Save the inscription (if any) */
 	if (o_ptr->note)
-	{
 		wr_string(quark_str(o_ptr->note));
-	}
 	else
-	{
 		wr_string("");
-	}
 }
 
 
@@ -230,7 +228,7 @@ static void wr_trap(struct trap *trap)
 		wr_byte(trap->flags[i]);
 }
 
-/*
+/**
  * Write RNG state
  *
  * There were originally 64 bytes of randomizer saved. Now we only need
@@ -262,7 +260,7 @@ void wr_randomizer(void)
 }
 
 
-/*
+/**
  * Write the "options"
  */
 void wr_options(void)
@@ -299,8 +297,7 @@ void wr_messages(void)
 	wr_u16b(num);
 
 	/* Dump the messages (oldest first!) */
-	for (i = num - 1; i >= 0; i--)
-	{
+	for (i = num - 1; i >= 0; i--) {
 		wr_string(message_str(i));
 		wr_u16b(message_type(i));
 	}
@@ -336,8 +333,7 @@ void wr_object_memory(void)
 	wr_byte(ID_SIZE);
 	wr_byte(OBJ_MOD_MAX);
 	wr_byte(ELEM_MAX);
-	for (k_idx = 0; k_idx < z_info->k_max; k_idx++)
-	{
+	for (k_idx = 0; k_idx < z_info->k_max; k_idx++) {
 		byte tmp8u = 0;
 		object_kind *k_ptr = &k_info[k_idx];
 
@@ -373,8 +369,7 @@ void wr_artifacts(void)
 	/* Hack -- Dump the artifacts */
 	tmp16u = z_info->a_max;
 	wr_u16b(tmp16u);
-	for (i = 0; i < tmp16u; i++)
-	{
+	for (i = 0; i < tmp16u; i++) {
 		artifact_type *a_ptr = &a_info[i];
 		wr_byte(a_ptr->created);
 		wr_byte(a_ptr->seen);
@@ -492,8 +487,7 @@ void wr_ignore(void)
 	/* Write ego-item ignore bits */
 	wr_u16b(z_info->e_max);
 	wr_u16b(ITYPE_SIZE);
-	for (i = 0; i < z_info->e_max; i++)
-	{
+	for (i = 0; i < z_info->e_max; i++) {
 		bitflag everseen = 0, itypes[ITYPE_SIZE];
 
 		/* Figure out and write the everseen flag */
@@ -644,16 +638,12 @@ static void wr_dungeon_aux(struct chunk *c)
 	byte count;
 	byte prev_char;
 
-	/*** Basic info ***/
-
 	/* Dungeon specific info follows */
 	wr_string(c->name ? c->name : "Blank");
 	wr_u16b(c->height);
 	wr_u16b(c->width);
 
-	/*** Simple "Run-Length-Encoding" of c ***/
-
-	/* Loop across bytes of c->squares[y][x].info */
+	/* Run length encoding of c->squares[y][x].info */
 	for (i = 0; i < SQUARE_SIZE; i++) {
 		count = 0;
 		prev_char = 0;

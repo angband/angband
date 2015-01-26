@@ -1,6 +1,6 @@
-/*
- * File: guid.c
- * Purpose: Entity guids.
+/**
+ * \file guid.c
+ * \brief Entity guids.
  *
  * Copyright (c) 2011 elly+angband@leptoquark.net
  *

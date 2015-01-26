@@ -176,7 +176,7 @@ static void load_roller_data(birther *saved, birther *prev_player)
         (perhaps) not strictly defined to work with uninitialised parts
         of structures. */
 	birther temp;
-	WIPE(&temp, birther);
+	memset(&temp, 0, sizeof(birther));
 
 	/*** Save the current data if we'll need it later ***/
 	if (prev_player) save_roller_data(&temp);

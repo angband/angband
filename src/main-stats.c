@@ -104,8 +104,8 @@ static void create_indices()
 {
 	int i;
 
-	consumables_index = C_ZNEW(z_info->k_max, int);
-	wearables_index = C_ZNEW(z_info->k_max, int);
+	consumables_index = mem_zalloc(z_info->k_max * sizeof(int));
+	wearables_index = mem_zalloc(z_info->k_max * sizeof(int));
 
 	for (i = 0; i < z_info->k_max; i++) {
 
@@ -128,22 +128,25 @@ static void alloc_memory()
 	int i, j, k, l;
 
 	for (i = 0; i < LEVEL_MAX; i++) {
-		level_data[i].monsters = C_ZNEW(z_info->r_max, u32b);
-/*		level_data[i].vaults = C_ZNEW(z_info->v_max, u32b);
-		level_data[i].pits = C_ZNEW(z_info->pit_max, u32b); */
+		level_data[i].monsters = mem_zalloc(z_info->r_max * sizeof(u32b));
+/*		level_data[i].vaults = mem_zalloc(z_info->v_max * sizeof(u32b));
+		level_data[i].pits = mem_zalloc(z_info->pit_max * sizeof(u32b)); */
 
 		for (j = 0; j < ORIGIN_STATS; j++) {
-			level_data[i].artifacts[j] = C_ZNEW(z_info->a_max, u32b);
-			level_data[i].consumables[j] = C_ZNEW(consumable_count + 1, u32b);
+			level_data[i].artifacts[j] = mem_zalloc(z_info->a_max *
+													sizeof(u32b));
+			level_data[i].consumables[j] = mem_zalloc((consumable_count + 1) *
+													  sizeof(u32b));
 			level_data[i].wearables[j]
-				= C_ZNEW(wearable_count + 1, struct wearables_data);
+				= mem_zalloc((wearable_count + 1) *
+							 sizeof(struct wearables_data));
 
 			for (k = 0; k < wearable_count + 1; k++) {
 				level_data[i].wearables[j][k].egos
-					= C_ZNEW(z_info->e_max, u32b);
+					= mem_zalloc(z_info->e_max * sizeof(u32b));
 				for (l = 0; l < TOP_MOD; l++)
 					level_data[i].wearables[j][k].modifiers[l]
-						= C_ZNEW(OBJ_MOD_MAX + 1, u32b);
+						= mem_zalloc((OBJ_MOD_MAX + 1) * sizeof(u32b));
 			}
 		}
 	}
@@ -1535,7 +1538,7 @@ void progress_bar(u32b run, time_t start) {
 
 static void stats_cleanup_angband_run(void)
 {
-	if (player->history) FREE(player->history);
+	if (player->history) mem_free(player->history);
 }
 
 static errr run_stats(void)

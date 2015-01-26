@@ -2337,7 +2337,7 @@ static term *term_data_link(int i)
     }
 
     /* Allocate */
-    term *newterm = ZNEW(term);
+    term *newterm = mem_zalloc(sizeof(term));
 
     /* Initialize the term */
     term_init(newterm, columns, rows, 256 /* keypresses, for some reason? */);

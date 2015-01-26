@@ -942,7 +942,7 @@ static void mutate_cavern(struct chunk *c) {
     int h = c->height;
     int w = c->width;
 
-    int *temp = C_ZNEW(h * w, int);
+    int *temp = mem_zalloc(h * w * sizeof(int));
 
     for (y = 1; y < h - 1; y++) {
 		for (x = 1; x < w - 1; x++) {
@@ -962,7 +962,7 @@ static void mutate_cavern(struct chunk *c) {
 		}
     }
 
-    FREE(temp);
+    mem_free(temp);
 }
 
 /**
@@ -1026,7 +1026,7 @@ static void build_color_point(struct chunk *c, int colors[], int counts[], int y
 
     int dslimit = diagonal ? 8 : 4;
 
-    int *added = C_ZNEW(size, int);
+    int *added = mem_zalloc(size * sizeof(int));
     array_filler(added, 0, size);
 
     q_push_int(queue, yx_to_i(y, x, w));
@@ -1058,7 +1058,7 @@ static void build_color_point(struct chunk *c, int colors[], int counts[], int y
 		}
     }
 
-    FREE(added);
+    mem_free(added);
     q_free(queue);
 }
 
@@ -1096,7 +1096,7 @@ static void clear_small_regions(struct chunk *c, int colors[], int counts[]) {
     int w = c->width;
     int size = h * w;
 
-    int *deleted = C_ZNEW(size, int);
+    int *deleted = mem_zalloc(size * sizeof(int));
     array_filler(deleted, 0, size);
 
     for (i = 0; i < size; i++) {
@@ -1116,7 +1116,7 @@ static void clear_small_regions(struct chunk *c, int colors[], int counts[]) {
 			set_marked_granite(c, y, x, SQUARE_WALL_SOLID);
 		}
     }
-    FREE(deleted);
+    mem_free(deleted);
 }
 
 /**
@@ -1180,7 +1180,7 @@ static void join_region(struct chunk *c, int colors[], int counts[], int color,
     /* Allocate an array to keep track of handled squares, and which square
      * we reached them from.
      */
-    int *previous = C_ZNEW(size, int);
+    int *previous = mem_zalloc(size * sizeof(int));
     array_filler(previous, -1, size);
 
     /* Push all squares of the given color onto the queue */
@@ -1246,7 +1246,7 @@ static void join_region(struct chunk *c, int colors[], int counts[], int color,
 
     /* Free the memory we've allocated */
     q_free(queue);
-    FREE(previous);
+    mem_free(previous);
 }
 
 
@@ -1282,14 +1282,14 @@ static void join_regions(struct chunk *c, int colors[], int counts[]) {
  */
 void ensure_connectedness(struct chunk *c) {
     int size = c->height * c->width;
-    int *colors = C_ZNEW(size, int);
-    int *counts = C_ZNEW(size, int);
+    int *colors = mem_zalloc(size * sizeof(int));
+    int *counts = mem_zalloc(size * sizeof(int));
 
     build_colors(c, colors, counts, TRUE);
     join_regions(c, colors, counts);
 
-    FREE(colors);
-    FREE(counts);
+    mem_free(colors);
+    mem_free(counts);
 }
 
 
