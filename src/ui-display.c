@@ -52,6 +52,7 @@
 #include "ui-prefs.h"
 #include "ui-store.h"
 #include "ui-term.h"
+#include "wizard.h"
 
 /**
  * There are a few functions installed to be triggered by several 
@@ -2106,6 +2107,14 @@ static void new_level_display_update(game_event_type type,
 /* ------------------------------------------------------------------------
  * Temporary (hopefully) hackish solutions.
  * ------------------------------------------------------------------------ */
+static void cheat_death(game_event_type type, game_event_data *data, void *user)
+{
+	msg("You invoke wizard mode and cheat death.");
+	event_signal(EVENT_MESSAGE_FLUSH);
+
+	wiz_cheat_death();
+}
+
 static void check_panel(game_event_type type, game_event_data *data, void *user)
 {
 	verify_panel();
@@ -2282,20 +2291,51 @@ static void ui_enter_game(game_event_type type, game_event_data *data,
 
 	/* Check if the panel should shift when the player's moved */
 	event_add_handler(EVENT_PLAYERMOVED, check_panel, NULL);
+
+	/* Take note of what's on the floor */
 	event_add_handler(EVENT_SEEFLOOR, see_floor_items, NULL);
+
+	/* Enter a store */
 	event_add_handler(EVENT_ENTER_STORE, enter_store, NULL);
+
+	/* Display an explosion */
 	event_add_handler(EVENT_EXPLOSION, display_explosion, NULL);
+
+	/* Display a bolt spell */
 	event_add_handler(EVENT_BOLT, display_bolt, NULL);
+
+	/* Display a physical missile */
 	event_add_handler(EVENT_MISSILE, display_missile, NULL);
+
+	/* Display a message to the player */
 	event_add_handler(EVENT_MESSAGE, display_message, NULL);
+
+	/* Display a message and make a noise to the player */
 	event_add_handler(EVENT_BELL, bell_message, NULL);
+
+	/* Tell the UI to ignore all pending input */
 	event_add_handler(EVENT_INPUT_FLUSH, flush, NULL);
+
+	/* Print all waiting messages */
 	event_add_handler(EVENT_MESSAGE_FLUSH, message_flush, NULL);
+
+	/* Check to see if the player has tried to cancel game processing */
 	event_add_handler(EVENT_CHECK_INTERRUPT, check_for_player_interrupt, NULL);
+
+	/* Refresh the screen and put the cursor in the appropriate place */
 	event_add_handler(EVENT_REFRESH, refresh, NULL);
+
+	/* Do the visual updates required on a new dungeon level */
 	event_add_handler(EVENT_NEW_LEVEL_DISPLAY, new_level_display_update, NULL);
+
+	/* Automatically clear messages while the game is repeating commands */
 	event_add_handler(EVENT_COMMAND_REPEAT, repeated_command_display, NULL);
+
+	/* Do animations (e.g. monster colour changes) */
 	event_add_handler(EVENT_ANIMATE, animate, NULL);
+
+	/* Allow the player to cheat death, if appropriate */
+	event_add_handler(EVENT_CHEAT_DEATH, cheat_death, NULL);
 
 	/* Hack -- Decrease "icky" depth */
 	screen_save_depth--;
@@ -2325,22 +2365,54 @@ static void ui_leave_game(game_event_type type, game_event_data *data,
 #ifdef MAP_DEBUG
 	event_remove_handler(EVENT_MAP, trace_map_updates, angband_term[0]);
 #endif
+
 	/* Check if the panel should shift when the player's moved */
 	event_remove_handler(EVENT_PLAYERMOVED, check_panel, NULL);
+
+	/* Take note of what's on the floor */
 	event_remove_handler(EVENT_SEEFLOOR, see_floor_items, NULL);
-	event_add_handler(EVENT_LEAVE_STORE, leave_store, NULL);
+
+	/* Display an explosion */
 	event_remove_handler(EVENT_EXPLOSION, display_explosion, NULL);
+
+	/* Display a bolt spell */
 	event_remove_handler(EVENT_BOLT, display_bolt, NULL);
+
+	/* Display a physical missile */
 	event_remove_handler(EVENT_MISSILE, display_missile, NULL);
+
+	/* Display a message to the player */
 	event_remove_handler(EVENT_MESSAGE, display_message, NULL);
+
+	/* Display a message and make a noise to the player */
 	event_remove_handler(EVENT_BELL, bell_message, NULL);
+
+	/* Tell the UI to ignore all pending input */
 	event_remove_handler(EVENT_INPUT_FLUSH, flush, NULL);
+
+	/* Print all waiting messages */
 	event_remove_handler(EVENT_MESSAGE_FLUSH, message_flush, NULL);
+
+	/* Check to see if the player has tried to cancel game processing */
 	event_remove_handler(EVENT_CHECK_INTERRUPT, check_for_player_interrupt, NULL);
+
+	/* Refresh the screen and put the cursor in the appropriate place */
 	event_remove_handler(EVENT_REFRESH, refresh, NULL);
+
+	/* Do the visual updates required on a new dungeon level */
 	event_remove_handler(EVENT_NEW_LEVEL_DISPLAY, new_level_display_update, NULL);
+
+	/* Automatically clear messages while the game is repeating commands */
 	event_remove_handler(EVENT_COMMAND_REPEAT, repeated_command_display, NULL);
+
+	/* Do animations (e.g. monster colour changes) */
 	event_remove_handler(EVENT_ANIMATE, animate, NULL);
+
+	/* Allow the player to cheat death, if appropriate */
+	event_remove_handler(EVENT_CHEAT_DEATH, cheat_death, NULL);
+
+	/* If we've gone into a store, we need to know how to leave */
+	event_add_handler(EVENT_LEAVE_STORE, leave_store, NULL);
 
 	/* Hack -- Increase "icky" depth */
 	screen_save_depth++;

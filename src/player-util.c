@@ -34,7 +34,6 @@
 #include "score.h"
 #include "store.h"
 #include "target.h"
-#include "wizard.h"
 
 /**
  * Change dungeon level - e.g. by going up stairs or with WoR.
@@ -88,13 +87,8 @@ void take_hit(struct player *p, int dam, const char *kb_str)
 	/* Dead player */
 	if (p->chp < 0) {
 		/* Allow cheating */
-		if ((p->wizard || OPT(cheat_live)) && !get_check("Die? ")) {
-			msg("You invoke wizard mode and cheat death.");
-			event_signal(EVENT_MESSAGE_FLUSH);
-
-			wiz_cheat_death();
-			return;
-		}
+		if ((p->wizard || OPT(cheat_live)) && !get_check("Die? "))
+			event_signal(EVENT_CHEAT_DEATH);
 
 		/* Hack -- Note death */
 		msgt(MSG_DEATH, "You die.");
