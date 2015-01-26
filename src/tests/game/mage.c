@@ -1,4 +1,4 @@
-/* game/basic.c */
+/* game/mage.c */
 
 #include "unit-test.h"
 #include "unit-test-data.h"
@@ -44,21 +44,20 @@ int teardown_tests(void **state) {
 	return 0;
 }
 
-int test_newgame(void *state) {
+int test_magic_missile(void *state) {
 
 	/* Try making a new game */
-
 	cmdq_push(CMD_BIRTH_INIT);
 	cmdq_push(CMD_BIRTH_RESET);
 	cmdq_push(CMD_CHOOSE_RACE);
-	cmd_set_arg_choice(cmdq_peek(), "choice", 0);
+	cmd_set_arg_choice(cmdq_peek(), "choice", 4);
 
 	cmdq_push(CMD_CHOOSE_CLASS);
-	cmd_set_arg_choice(cmdq_peek(), "choice", 0);
+	cmd_set_arg_choice(cmdq_peek(), "choice", 1);
 
 	cmdq_push(CMD_ROLL_STATS);
 	cmdq_push(CMD_NAME_CHOICE);
-	cmd_set_arg_string(cmdq_peek(), "name", "Tester");
+	cmd_set_arg_string(cmdq_peek(), "name", "Tyrion");
 
 	cmdq_push(CMD_ACCEPT_CHARACTER);
 	cmdq_execute(CMD_BIRTH);
@@ -70,63 +69,20 @@ int test_newgame(void *state) {
 	eq(player->chp, player->mhp);
 	eq(player->food, PY_FOOD_FULL - 1);
 
-	/* Should be all set up to save properly now */
-	eq(savefile_save("Test1"), TRUE);
-
-	/* Make sure it saved properly */
-	eq(file_exists("Test1"), TRUE);
+	cmdq_push(CMD_STUDY);
+	cmd_set_arg_choice(cmdq_peek(), "spell", 0);
+	run_game_loop();
+	cmdq_push(CMD_CAST);
+	cmd_set_arg_choice(cmdq_peek(), "spell", 0);
+	cmd_set_arg_target(cmdq_peek(), "target", 1);
+	run_game_loop();
+	noteq(player->csp, player->msp);
 
 	ok;
 }
 
-int test_loadgame(void *state) {
-
-	/* Try loading the just-saved game */
-	eq(savefile_load("Test1", FALSE), TRUE);
-
-	eq(player->is_dead, FALSE);
-	noteq(cave, NULL);
-	eq(player->chp, player->mhp);
-	eq(player->food, PY_FOOD_FULL - 1);
-
-	ok;
-}
-
-int test_stairs1(void *state) {
-
-	/* Load the saved game */
-	eq(savefile_load("Test1", FALSE), TRUE);
-
-	cmdq_push(CMD_GO_DOWN);
-	run_game_loop();
-	eq(player->depth, 1);
-
-	ok;
-}
-
-int test_stairs2(void *state) {
-
-	/* Load the saved game */
-	eq(savefile_load("Test1", FALSE), TRUE);
-
-	cmdq_push(CMD_WALK);
-	cmd_set_arg_direction(cmdq_peek(), "direction", 4);
-	run_game_loop();
-	cmdq_push(CMD_WALK);
-	cmd_set_arg_direction(cmdq_peek(), "direction", 6);
-	run_game_loop();
-	cmdq_push(CMD_GO_DOWN);
-	run_game_loop();
-	eq(player->depth, 1);
-
-	ok;
-}
-
-const char *suite_name = "game/basic";
+const char *suite_name = "game/mage";
 struct test tests[] = {
-	{ "newgame", test_newgame },
-	{ "loadgame", test_loadgame },
-	{ "stairs1", test_stairs1 },
-	{ "stairs2", test_stairs2 },
+	{ "magic_missile", test_magic_missile },
 	{ NULL, NULL }
 };
