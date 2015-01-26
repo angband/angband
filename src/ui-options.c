@@ -1,6 +1,6 @@
-/* 
- * File: ui-options.c
- * Purpose: Text UI options handling code (everything accessible from '=')
+/**
+ * \file ui-options.c
+ * \brief Text UI options handling code (everything accessible from '=')
  *
  * Copyright (c) 1997-2000 Robert A. Koeneke, James E. Wilson, Ben Harrison
  * Copyright (c) 2007 Pete Mack
@@ -92,11 +92,11 @@ static void do_cmd_pref_file_hack(long row);
 
 
 
-/*** Options display and setting ***/
+/**
+ * ------------------------------------------------------------------------
+ * Options display and setting
+ * ------------------------------------------------------------------------ */
 
-
-
-/*** Boolean option menu code ***/
 
 /**
  * Displays an option entry.
@@ -154,7 +154,9 @@ static bool option_toggle_handle(struct menu *m, const ui_event *event,
 	return TRUE;
 }
 
-/** Toggle option menu display and handling functions */
+/**
+ * Toggle option menu display and handling functions
+ */
 static const menu_iter option_toggle_iter = {
 	NULL,
 	NULL,
@@ -222,41 +224,32 @@ void do_cmd_options_birth(void)
 }
 
 
-/*
+/**
  * Modify the "window" options
  */
 static void do_cmd_options_win(const char *name, int row)
 {
 	int i, j, d;
-
 	int y = 0;
 	int x = 0;
-
 	ui_event ke;
-
 	u32b new_flags[ANGBAND_TERM_MAX];
-
 
 	/* Set new flags to the old values */
 	for (j = 0; j < ANGBAND_TERM_MAX; j++)
-	{
 		new_flags[j] = window_flag[j];
-	}
-
 
 	/* Clear screen */
 	screen_save();
 	clear_from(0);
 
 	/* Interact */
-	while (1)
-	{
+	while (1) {
 		/* Prompt */
 		prt("Window flags (<dir> to move, 't'/Enter to toggle, or ESC)", 0, 0);
 
 		/* Display the windows */
-		for (j = 0; j < ANGBAND_TERM_MAX; j++)
-		{
+		for (j = 0; j < ANGBAND_TERM_MAX; j++) {
 			byte a = COLOUR_WHITE;
 
 			const char *s = angband_term_name[j];
@@ -269,8 +262,7 @@ static void do_cmd_options_win(const char *name, int row)
 		}
 
 		/* Display the options */
-		for (i = 0; i < PW_MAX_FLAGS; i++)
-		{
+		for (i = 0; i < PW_MAX_FLAGS; i++) {
 			byte a = COLOUR_WHITE;
 
 			const char *str = window_flag_desc[i];
@@ -285,8 +277,7 @@ static void do_cmd_options_win(const char *name, int row)
 			Term_putstr(0, i + 5, -1, a, str);
 
 			/* Display the windows */
-			for (j = 0; j < ANGBAND_TERM_MAX; j++)
-			{
+			for (j = 0; j < ANGBAND_TERM_MAX; j++) {
 				char c = '.';
 
 				a = COLOUR_WHITE;
@@ -308,9 +299,8 @@ static void do_cmd_options_win(const char *name, int row)
 		/* Get key */
 		ke = inkey_ex();
 
-		/* Mouse interaction */
-		if (ke.type == EVT_MOUSE)
-		{
+		/* Mouse or keyboard interaction */
+		if (ke.type == EVT_MOUSE) {
 			int choicey = ke.mouse.y - 5;
 			int choicex = (ke.mouse.x - 35)/5;
 
@@ -319,8 +309,7 @@ static void do_cmd_options_win(const char *name, int row)
 
 			if ((choicey >= 0) && (choicey < PW_MAX_FLAGS)
 				&& (choicex > 0) && (choicex < ANGBAND_TERM_MAX)
-				&& !(ke.mouse.x % 5))
-			{
+				&& !(ke.mouse.x % 5)) {
 				if ((choicey == y) && (choicex == x)) {
 					/* Toggle flag (off) */
 					if (new_flags[x] & (1L << y))
@@ -333,18 +322,13 @@ static void do_cmd_options_win(const char *name, int row)
 					x = (ke.mouse.x - 35)/5;
 				}
 			}
-		}
-
-		/* Allow escape */
-		else if (ke.type == EVT_KBRD)
-		{
+		} else if (ke.type == EVT_KBRD) {
 			if (ke.key.code == ESCAPE || ke.key.code == 'q')
 				break;
 
 			/* Toggle */
 			else if (ke.key.code == '5' || ke.key.code == 't' ||
-					ke.key.code == KC_ENTER)
-			{
+					ke.key.code == KC_ENTER) {
 				/* Hack -- ignore the main window */
 				if (x == 0)
 					bell("Cannot set main window flags!");
@@ -365,8 +349,7 @@ static void do_cmd_options_win(const char *name, int row)
 			d = target_dir(ke.key);
 
 			/* Move */
-			if (d != 0)
-			{
+			if (d != 0) {
 				x = (x + ddx[d] + 8) % ANGBAND_TERM_MAX;
 				y = (y + ddy[d] + 16) % PW_MAX_FLAGS;
 			}
@@ -381,15 +364,18 @@ static void do_cmd_options_win(const char *name, int row)
 
 
 
-/*** Interact with keymaps ***/
+/**
+ * ------------------------------------------------------------------------
+ * Interact with keymaps
+ * ------------------------------------------------------------------------ */
 
-/*
+/**
  * Current (or recent) keymap action
  */
 static struct keypress keymap_buffer[KEYMAP_ACTION_MAX];
 
 
-/*
+/**
  * Ask for, and display, a keymap trigger.
  *
  * Returns the trigger input.
@@ -423,8 +409,8 @@ static struct keypress keymap_get_trigger(void)
 }
 
 
-/*
- * Macro menu action functions
+/**
+ * Keymap menu action functions
  */
 
 static void ui_keymap_pref_load(const char *title, int row)
@@ -451,17 +437,12 @@ static void ui_keymap_query(const char *title, int row)
 	c = keymap_get_trigger();
 	act = keymap_find(mode, c);
 	
-	/* Nothing found */
-	if (!act)
-	{
+	/* Keymap found? */
+	if (!act) {
 		/* Prompt */
 		prt("No keymap with that trigger.  Press any key to continue.", 16, 0);
 		inkey();
-	}
-	
-	/* Found one */
-	else
-	{
+	} else {
 		/* Analyze the current action */
 		keypress_to_text(tmp, sizeof(tmp), act, FALSE);
 	
@@ -507,7 +488,8 @@ static void ui_keymap_create(const char *title, int row)
 
 		c_prt(COLOUR_L_BLUE, "  Press '$' when finished.", 17, 0);
 		c_prt(COLOUR_L_BLUE, "  Use 'CTRL-U' to reset.", 18, 0);
-		c_prt(COLOUR_L_BLUE, format("(Maximum keymap length is %d keys.)", KEYMAP_ACTION_MAX), 19, 0);
+		c_prt(COLOUR_L_BLUE, format("(Maximum keymap length is %d keys.)",
+									KEYMAP_ACTION_MAX), 19, 0);
 
 		kp = inkey();
 
@@ -604,8 +586,7 @@ static void do_cmd_keymaps(const char *title, int row)
 	screen_save();
 	clear_from(0);
 
-	if (!keymap_menu)
-	{
+	if (!keymap_menu) {
 		keymap_menu = menu_new_action(keymap_actions,
 				N_ELEMENTS(keymap_actions));
 	
@@ -622,7 +603,10 @@ static void do_cmd_keymaps(const char *title, int row)
 
 
 
-/*** Interact with visuals ***/
+/**
+ * ------------------------------------------------------------------------
+ * Interact with visuals
+ * ------------------------------------------------------------------------ */
 
 static void visuals_pref_load(const char *title, int row)
 {
@@ -680,7 +664,7 @@ static void visuals_browse_hook(int oid, void *db, const region *loc)
 }
 
 
-/*
+/**
  * Interact with "visuals"
  */
 static void do_cmd_visuals(const char *title, int row)
@@ -706,7 +690,10 @@ static void do_cmd_visuals(const char *title, int row)
 }
 
 
-/*** Interact with colours ***/
+/**
+ * ------------------------------------------------------------------------
+ * Interact with colours
+ * ------------------------------------------------------------------------ */
 
 static void colors_pref_load(const char *title, int row)
 {
@@ -735,8 +722,7 @@ static void colors_modify(const char *title, int row)
 	prt("Command: Modify colors", 8, 0);
 
 	/* Hack -- query until done */
-	while (1)
-	{
+	while (1) {
 		const char *name;
 		char index;
 
@@ -746,8 +732,7 @@ static void colors_modify(const char *title, int row)
 		clear_from(10);
 
 		/* Exhibit the normal colors */
-		for (i = 0; i < BASIC_COLORS; i++)
-		{
+		for (i = 0; i < BASIC_COLORS; i++) {
 			/* Exhibit this color */
 			Term_putstr(i*3, 20, -1, a, "##");
 
@@ -765,7 +750,8 @@ static void colors_modify(const char *title, int row)
 
 		/* Describe the color */
 		Term_putstr(5, 10, -1, COLOUR_WHITE,
-					format("Color = %d, Name = %s, Index = %c", a, name, index));
+					format("Color = %d, Name = %s, Index = %c",
+						   a, name, index));
 
 		/* Label the Current values */
 		Term_putstr(5, 12, -1, COLOUR_WHITE,
@@ -786,16 +772,26 @@ static void colors_modify(const char *title, int row)
 		if (cx.code == ESCAPE) break;
 
 		/* Analyze */
-		if (cx.code == 'n') a = (byte)(a + 1);
-		if (cx.code == 'N') a = (byte)(a - 1);
-		if (cx.code == 'k') angband_color_table[a][0] = (byte)(angband_color_table[a][0] + 1);
-		if (cx.code == 'K') angband_color_table[a][0] = (byte)(angband_color_table[a][0] - 1);
-		if (cx.code == 'r') angband_color_table[a][1] = (byte)(angband_color_table[a][1] + 1);
-		if (cx.code == 'R') angband_color_table[a][1] = (byte)(angband_color_table[a][1] - 1);
-		if (cx.code == 'g') angband_color_table[a][2] = (byte)(angband_color_table[a][2] + 1);
-		if (cx.code == 'G') angband_color_table[a][2] = (byte)(angband_color_table[a][2] - 1);
-		if (cx.code == 'b') angband_color_table[a][3] = (byte)(angband_color_table[a][3] + 1);
-		if (cx.code == 'B') angband_color_table[a][3] = (byte)(angband_color_table[a][3] - 1);
+		if (cx.code == 'n')
+			a = (byte)(a + 1);
+		if (cx.code == 'N')
+			a = (byte)(a - 1);
+		if (cx.code == 'k')
+			angband_color_table[a][0] = (byte)(angband_color_table[a][0] + 1);
+		if (cx.code == 'K')
+			angband_color_table[a][0] = (byte)(angband_color_table[a][0] - 1);
+		if (cx.code == 'r')
+			angband_color_table[a][1] = (byte)(angband_color_table[a][1] + 1);
+		if (cx.code == 'R')
+			angband_color_table[a][1] = (byte)(angband_color_table[a][1] - 1);
+		if (cx.code == 'g')
+			angband_color_table[a][2] = (byte)(angband_color_table[a][2] + 1);
+		if (cx.code == 'G')
+			angband_color_table[a][2] = (byte)(angband_color_table[a][2] - 1);
+		if (cx.code == 'b')
+			angband_color_table[a][3] = (byte)(angband_color_table[a][3] + 1);
+		if (cx.code == 'B')
+			angband_color_table[a][3] = (byte)(angband_color_table[a][3] - 1);
 
 		/* Hack -- react to changes */
 		Term_xtra(TERM_XTRA_REACT, 0);
@@ -820,7 +816,7 @@ static menu_action color_events [] =
 	{ 0, 0, "Modify colors",         colors_modify }
 };
 
-/*
+/**
  * Interact with "colors"
  */
 static void do_cmd_colors(const char *title, int row)
@@ -845,7 +841,10 @@ static void do_cmd_colors(const char *title, int row)
 }
 
 
-/*** Non-complex menu actions ***/
+/**
+ * ------------------------------------------------------------------------
+ * Non-complex menu actions
+ * ------------------------------------------------------------------------ */
 
 static bool askfor_aux_numbers(char *buf, size_t buflen, size_t *curs, size_t *len, struct keypress keypress, bool firsttime)
 {
@@ -867,14 +866,15 @@ static bool askfor_aux_numbers(char *buf, size_t buflen, size_t *curs, size_t *l
 		case '7':
 		case '8':
 		case '9':
-			return askfor_aux_keypress(buf, buflen, curs, len, keypress, firsttime);
+			return askfor_aux_keypress(buf, buflen, curs, len, keypress,
+									   firsttime);
 	}
 
 	return FALSE;
 }
 
 
-/*
+/**
  * Set base delay factor
  */
 static void do_cmd_delay(const char *name, int row)
@@ -903,7 +903,7 @@ static void do_cmd_delay(const char *name, int row)
 }
 
 
-/*
+/**
  * Set hitpoint warning level
  */
 static void do_cmd_hp_warn(const char *name, int row)
@@ -927,8 +927,7 @@ static void do_cmd_hp_warn(const char *name, int row)
 	res = askfor_aux(tmp, sizeof(tmp), askfor_aux_numbers);
 
 	/* Process input */
-	if (res)
-	{
+	if (res) {
 		warn = (byte) strtoul(tmp, NULL, 0);
 		
 		/* Reset nonsensical warnings */
@@ -942,7 +941,7 @@ static void do_cmd_hp_warn(const char *name, int row)
 }
 
 
-/*
+/**
  * Set "lazy-movement" delay
  */
 static void do_cmd_lazymove_delay(const char *name, int row)
@@ -966,16 +965,14 @@ static void do_cmd_lazymove_delay(const char *name, int row)
 
 	/* Process input */
 	if (res)
-	{
 		op_ptr->lazymove_delay = (u16b) strtoul(tmp, NULL, 0);
-	}
 
 	screen_load();
 }
 
 
 
-/*
+/**
  * Ask for a "user pref file" and process it.
  *
  * This function should only be used by standard interaction commands,
@@ -999,17 +996,13 @@ static void do_cmd_pref_file_hack(long row)
 	strnfmt(ftmp, sizeof ftmp, "%s.prf", player_safe_name(player, TRUE));
 
 	/* Ask for a file (or cancel) */
-	if (askfor_aux(ftmp, sizeof ftmp, NULL))
-	{
+	if (askfor_aux(ftmp, sizeof ftmp, NULL)) {
 		/* Process the given filename */
-		if (process_pref_file(ftmp, FALSE, TRUE) == FALSE)
-		{
+		if (process_pref_file(ftmp, FALSE, TRUE) == FALSE) {
 			/* Mention failure */
 			prt("", 0, 0);
 			msg("Failed to load '%s'!", ftmp);
-		}
-		else
-		{
+		} else {
 			/* Mention success */
 			prt("", 0, 0);
 			msg("Loaded '%s'.", ftmp);
@@ -1021,18 +1014,21 @@ static void do_cmd_pref_file_hack(long row)
 
  
  
-/*
+/**
  * Write options to a file.
  */
 static void do_dump_options(const char *title, int row) {
 	dump_pref_file(option_dump, "Dump window settings", 20);
 }
 
+/**
+ * Write autoinscriptions to a file.
+ */
 static void do_dump_autoinsc(const char *title, int row) {
 	dump_pref_file(dump_autoinscriptions, "Dump autoinscriptions", 20);
 }
 
-/*
+/**
  * Load a pref file.
  */
 static void options_load_pref_file(const char *n, int row)
@@ -1042,7 +1038,11 @@ static void options_load_pref_file(const char *n, int row)
 
 
 
-/*** Ego item ignore menu ***/
+/**
+ * ------------------------------------------------------------------------
+ * Ego item ignore menu
+ * ------------------------------------------------------------------------ */
+
 #define EGO_MENU_HELPTEXT \
 "{light green}Movement keys{/} scroll the list\n{light red}ESC{/} returns to the previous menu\n{light blue}Enter{/} toggles the current setting."
 
@@ -1268,56 +1268,13 @@ static void ego_menu(const char *unused, int also_unused)
 }
 
 
-/*** Quality-ignore menu ***/
+/**
+ * ------------------------------------------------------------------------
+ * Quality ignore menu
+ * ------------------------------------------------------------------------ */
 
-/* Structure to describe tval/description pairings. */
-typedef struct
-{
-	int tval;
-	const char *desc;
-} tval_desc;
-
-/* Categories for sval-dependent ignore. */
-static tval_desc sval_dependent[] =
-{
-	{ TV_STAFF,			"Staffs" },
-	{ TV_WAND,			"Wands" },
-	{ TV_ROD,			"Rods" },
-	{ TV_SCROLL,		"Scrolls" },
-	{ TV_POTION,		"Potions" },
-	{ TV_RING,			"Rings" },
-	{ TV_AMULET,		"Amulets" },
-	{ TV_FOOD,			"Food" },
-	{ TV_MUSHROOM,		"Mushrooms" },
-	{ TV_MAGIC_BOOK,	"Magic books" },
-	{ TV_PRAYER_BOOK,	"Prayer books" },
-	{ TV_LIGHT,			"Lights" },
-	{ TV_FLASK,			"Flasks of oil" },
-/*	{ TV_DRAG_ARMOR,	"Dragon Mail Armor" }, */
-	{ TV_GOLD,			"Money" },
-};
-
-
-/*
- * Determines whether a tval is eligible for sval-ignore.
- */
-bool ignore_tval(int tval)
-{
-	size_t i;
-
-	/* Only ignore if the tval's allowed */
-	for (i = 0; i < N_ELEMENTS(sval_dependent); i++)
-	{
-		if (tval == sval_dependent[i].tval)
-			return TRUE;
-	}
-
-	return FALSE;
-}
-
-
-/*
- * menu struct for differentiating aware from unaware ignore
+/**
+ * Menu struct for differentiating aware from unaware ignore
  */
 typedef struct
 {
@@ -1325,7 +1282,7 @@ typedef struct
 	bool aware;
 } ignore_choice;
 
-/*
+/**
  * Ordering function for ignore choices.
  * Aware comes before unaware, and then sort alphabetically.
  */
@@ -1347,12 +1304,14 @@ static int cmp_ignore(const void *a, const void *b)
 	return strcmp(bufa, bufb);
 }
 
-/*
+/**
  * Display an entry in the menu.
  */
-static void quality_display(struct menu *menu, int oid, bool cursor, int row, int col, int width)
+static void quality_display(struct menu *menu, int oid, bool cursor, int row,
+							int col, int width)
 {
-	/* Note: the order of the values in quality_choices do not align with the ignore_type_t enum order. */
+	/* Note: the order of the values in quality_choices do not align with the
+	 * ignore_type_t enum order. - fix? NRM*/
 	const char *name = quality_choices[oid].name;
 
 	byte level = ignore_level[oid];
@@ -1365,10 +1324,11 @@ static void quality_display(struct menu *menu, int oid, bool cursor, int row, in
 }
 
 
-/*
+/**
  * Display the quality ignore subtypes.
  */
-static void quality_subdisplay(struct menu *menu, int oid, bool cursor, int row, int col, int width)
+static void quality_subdisplay(struct menu *menu, int oid, bool cursor, int row,
+							   int col, int width)
 {
 	const char *name = quality_values[oid].name;
 	byte attr = (cursor ? COLOUR_L_BLUE : COLOUR_WHITE);
@@ -1377,7 +1337,7 @@ static void quality_subdisplay(struct menu *menu, int oid, bool cursor, int row,
 }
 
 
-/*
+/**
  * Handle keypresses.
  */
 static bool quality_action(struct menu *m, const ui_event *event, int oid)
@@ -1409,7 +1369,8 @@ static bool quality_action(struct menu *m, const ui_event *event, int oid)
 
 	menu_layout(&menu, &area);
 
-	window_make(area.col - 2, area.row - 1, area.col + area.width + 2, area.row + area.page_rows);
+	window_make(area.col - 2, area.row - 1, area.col + area.width + 2,
+				area.row + area.page_rows);
 
 	evt = menu_select(&menu, 0, TRUE);
 
@@ -1422,7 +1383,7 @@ static bool quality_action(struct menu *m, const ui_event *event, int oid)
 	return TRUE;
 }
 
-/*
+/**
  * Display quality ignore menu.
  */
 static void quality_menu(void *unused, const char *also_unused)
@@ -1451,13 +1412,65 @@ static void quality_menu(void *unused, const char *also_unused)
 
 
 
-/*** Sval-dependent menu ***/
+/**
+ * ------------------------------------------------------------------------
+ * Sval ignore menu
+ * ------------------------------------------------------------------------ */
 
-/*
+/**
+ * Structure to describe tval/description pairings.
+ */
+typedef struct
+{
+	int tval;
+	const char *desc;
+} tval_desc;
+
+/**
+ * Categories for sval-dependent ignore.
+ */
+static tval_desc sval_dependent[] =
+{
+	{ TV_STAFF,			"Staffs" },
+	{ TV_WAND,			"Wands" },
+	{ TV_ROD,			"Rods" },
+	{ TV_SCROLL,		"Scrolls" },
+	{ TV_POTION,		"Potions" },
+	{ TV_RING,			"Rings" },
+	{ TV_AMULET,		"Amulets" },
+	{ TV_FOOD,			"Food" },
+	{ TV_MUSHROOM,		"Mushrooms" },
+	{ TV_MAGIC_BOOK,	"Magic books" },
+	{ TV_PRAYER_BOOK,	"Prayer books" },
+	{ TV_LIGHT,			"Lights" },
+	{ TV_FLASK,			"Flasks of oil" },
+	{ TV_GOLD,			"Money" },
+};
+
+
+/**
+ * Determines whether a tval is eligible for sval-ignore.
+ */
+bool ignore_tval(int tval)
+{
+	size_t i;
+
+	/* Only ignore if the tval's allowed */
+	for (i = 0; i < N_ELEMENTS(sval_dependent); i++)
+	{
+		if (tval == sval_dependent[i].tval)
+			return TRUE;
+	}
+
+	return FALSE;
+}
+
+
+/**
  * Display an entry on the sval menu
  */
 static void ignore_sval_menu_display(struct menu *menu, int oid, bool cursor,
-		int row, int col, int width)
+									 int row, int col, int width)
 {
 	char buf[80];
 	const ignore_choice *choice = menu_priv(menu);
@@ -1478,17 +1491,16 @@ static void ignore_sval_menu_display(struct menu *menu, int oid, bool cursor,
 }
 
 
-/*
+/**
  * Deal with events on the sval menu
  */
 static bool ignore_sval_menu_action(struct menu *m, const ui_event *event,
-		int oid)
+									int oid)
 {
 	const ignore_choice *choice = menu_priv(m);
 
 	if (event->type == EVT_SELECT ||
-			(event->type == EVT_KBRD && tolower(event->key.code) == 't'))
-	{
+			(event->type == EVT_KBRD && tolower(event->key.code) == 't')) {
 		object_kind *kind = choice[oid].kind;
 
 		/* Toggle the appropriate flag */
@@ -1527,24 +1539,21 @@ static int ignore_collect_kind(int tval, ignore_choice **ch)
 	/* Create the array, with entries both for aware and unaware ignore */
 	choice = mem_alloc(2 * z_info->k_max * sizeof *choice);
 
-	for (i = 1; i < z_info->k_max; i++)
-	{
+	for (i = 1; i < z_info->k_max; i++) {
 		object_kind *k_ptr = &k_info[i];
 
 		/* Skip empty objects, unseen objects, and incorrect tvals */
 		if (!k_ptr->name || k_ptr->tval != tval)
 			continue;
 
-		if (!k_ptr->aware)
-		{
+		if (!k_ptr->aware) {
 			/* can unaware ignore anything */
 			choice[num].kind = k_ptr;
 			choice[num++].aware = FALSE;
 		}
 
 		if ((k_ptr->everseen && !kf_has(k_ptr->kind_flags, KF_INSTA_ART)) || 
-			tval_is_money_k(k_ptr))
-		{
+			tval_is_money_k(k_ptr)) {
 			/* Do not display the artifact base kinds in this list 
 			 * aware ignore requires everseen 
 			 * do not require awareness for aware ignore, so people can set 
@@ -1562,7 +1571,7 @@ static int ignore_collect_kind(int tval, ignore_choice **ch)
 	return num;
 }
 
-/*
+/**
  * Display list of svals to be ignored.
  */
 static bool sval_menu(int tval, const char *desc)
@@ -1576,7 +1585,8 @@ static bool sval_menu(int tval, const char *desc)
 	if (!n_choices)
 		return FALSE;
 
-	/* sort by name in ignore menus except for categories of items that are aware from the start */
+	/* Sort by name in ignore menus except for categories of items that are
+	 * aware from the start */
 	switch (tval)
 	{
 		case TV_LIGHT:
@@ -1617,13 +1627,14 @@ static bool sval_menu(int tval, const char *desc)
 }
 
 
-/* Returns TRUE if there's anything to display a menu of */
+/**
+ * Returns TRUE if there's anything to display a menu of
+ */
 static bool seen_tval(int tval)
 {
 	int i;
 
-	for (i = 1; i < z_info->k_max; i++)
-	{
+	for (i = 1; i < z_info->k_max; i++) {
 		object_kind *k_ptr = &k_info[i];
 
 		/* Skip empty objects, unseen objects, and incorrect tvals */
@@ -1639,7 +1650,9 @@ static bool seen_tval(int tval)
 }
 
 
-/* Extra options on the "item options" menu */
+/**
+ * Extra options on the "item options" menu
+ */
 static struct
 {
 	char tag;
@@ -1689,21 +1702,18 @@ static int valid_options_item(struct menu *menu, int oid)
 	return 0;
 }
 
-static void display_options_item(struct menu *menu, int oid, bool cursor, int row, int col, int width)
+static void display_options_item(struct menu *menu, int oid, bool cursor,
+								 int row, int col, int width)
 {
 	size_t line = (size_t) oid;
 
-	/* First section of menu - the svals */
-	if (line < N_ELEMENTS(sval_dependent))
-	{
+	/* Most of the menu is svals, with a small "extra options" section below */
+	if (line < N_ELEMENTS(sval_dependent)) {
 		bool known = seen_tval(sval_dependent[line].tval);
 		byte attr = curs_attrs[known ? CURS_KNOWN: CURS_UNKNOWN][(int)cursor];
 
 		c_prt(attr, sval_dependent[line].desc, row, col);
-	}
-	/* Second section - the "extra options" */
-	else
-	{
+	} else {
 		byte attr = curs_attrs[CURS_KNOWN][(int)cursor];
 
 		line = line - N_ELEMENTS(sval_dependent) - 1;
@@ -1713,16 +1723,14 @@ static void display_options_item(struct menu *menu, int oid, bool cursor, int ro
 	}
 }
 
-static bool handle_options_item(struct menu *menu, const ui_event *event, int oid)
+static bool handle_options_item(struct menu *menu, const ui_event *event,
+								int oid)
 {
-	if (event->type == EVT_SELECT)
-	{
+	if (event->type == EVT_SELECT) {
 		if ((size_t) oid < N_ELEMENTS(sval_dependent))
 		{
 			sval_menu(sval_dependent[oid].tval, sval_dependent[oid].desc);
-		}
-		else
-		{
+		} else {
 			oid = oid - (int)N_ELEMENTS(sval_dependent) - 1;
 			assert((size_t) oid < N_ELEMENTS(extra_item_options));
 			extra_item_options[oid].action();
@@ -1745,7 +1753,7 @@ static const menu_iter options_item_iter =
 };
 
 
-/*
+/**
  * Display and handle the main ignoring menu.
  */
 void do_cmd_options_item(const char *title, int row)
@@ -1753,7 +1761,8 @@ void do_cmd_options_item(const char *title, int row)
 	struct menu menu;
 
 	menu_init(&menu, MN_SKIN_SCROLL, &options_item_iter);
-	menu_setpriv(&menu, N_ELEMENTS(sval_dependent) + N_ELEMENTS(extra_item_options) + 1, NULL);
+	menu_setpriv(&menu, N_ELEMENTS(sval_dependent) +
+				 N_ELEMENTS(extra_item_options) + 1, NULL);
 
 	menu.title = title;
 	menu_layout(&menu, &SCREEN_REGION);
@@ -1770,7 +1779,10 @@ void do_cmd_options_item(const char *title, int row)
 
 
 
-/*** Main menu definitions and display ***/
+/**
+ * ------------------------------------------------------------------------
+ * Main menu definitions and display
+ * ------------------------------------------------------------------------ */
 
 static struct menu *option_menu;
 static menu_action option_actions[] = 
@@ -1796,13 +1808,12 @@ static menu_action option_actions[] =
 };
 
 
-/*
+/**
  * Display the options main menu.
  */
 void do_cmd_options(void)
 {
-	if (!option_menu)
-	{
+	if (!option_menu) {
 		/* Main option menu */
 		option_menu = menu_new_action(option_actions,
 				N_ELEMENTS(option_actions));
