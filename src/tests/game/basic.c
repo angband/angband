@@ -8,6 +8,7 @@
 #include "cave.h"
 #include "cmd-core.h"
 #include "game-event.h"
+#include "game-world.h"
 #include "init.h"
 #include "savefile.h"
 #include "player.h"
@@ -90,9 +91,22 @@ int test_loadgame(void *state) {
 	ok;
 }
 
+int test_stairs(void *state) {
+
+	/* Load the saved game */
+	eq(savefile_load("Test1", FALSE), TRUE);
+
+	cmdq_push(CMD_GO_DOWN);
+	run_game_loop();
+	eq(player->depth, 1);
+
+	ok;
+}
+
 const char *suite_name = "game/basic";
 struct test tests[] = {
 	{ "newgame", test_newgame },
 	{ "loadgame", test_loadgame },
+	{ "stairs", test_stairs },
 	{ NULL, NULL }
 };

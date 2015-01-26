@@ -47,7 +47,10 @@ bool (*map_is_visible_hook)(void);
 bool get_string(const char *prompt, char *buf, size_t len)
 {
 	/* Ask the UI for it */
-	return get_string_hook(prompt, buf, len);
+	if (get_string_hook)
+		return get_string_hook(prompt, buf, len);
+	else
+		return FALSE;
 }
 
 /**
@@ -60,7 +63,10 @@ bool get_string(const char *prompt, char *buf, size_t len)
 int get_quantity(const char *prompt, int max)
 {
 	/* Ask the UI for it */
-	return get_quantity_hook(prompt, max);
+	if (get_quantity_hook)
+		return get_quantity_hook(prompt, max);
+	else
+		return 0;
 }
 
 /**
@@ -75,7 +81,10 @@ int get_quantity(const char *prompt, int max)
 bool get_check(const char *prompt)
 {
 	/* Ask the UI for it */
-	return get_check_hook(prompt);
+	if (get_check_hook)
+		return get_check_hook(prompt);
+	else
+		return FALSE;
 }
 
 /**
@@ -88,7 +97,10 @@ bool get_check(const char *prompt)
 bool get_com(const char *prompt, char *command)
 {
 	/* Ask the UI for it */
-	return get_com_hook(prompt, command);
+	if (get_com_hook)
+		return get_com_hook(prompt, command);
+	else
+		return FALSE;
 }
 
 
@@ -102,7 +114,10 @@ bool get_com(const char *prompt, char *command)
 bool get_rep_dir(int *dir, bool allow_none)
 {
 	/* Ask the UI for it */
-	return get_rep_dir_hook(dir, allow_none);
+	if (get_rep_dir_hook)
+		return get_rep_dir_hook(dir, allow_none);
+	else
+		return FALSE;
 }
 
 /**
@@ -114,7 +129,10 @@ bool get_rep_dir(int *dir, bool allow_none)
 bool get_aim_dir(int *dir)
 {
 	/* Ask the UI for it */
-	return get_aim_dir_hook(dir);
+	if (get_aim_dir_hook)
+		return get_aim_dir_hook(dir);
+	else
+		return FALSE;
 }
 
 /**
@@ -124,7 +142,10 @@ int get_spell_from_book(const char *verb, struct object *book,
 		const char *error, bool (*spell_filter)(int spell))
 {
 	/* Ask the UI for it */
-	return get_spell_from_book_hook(verb, book, error, spell_filter);
+	if (get_spell_from_book_hook)
+		return get_spell_from_book_hook(verb, book, error, spell_filter);
+	else
+		return -1;
 }
 
 /**
@@ -135,7 +156,10 @@ int get_spell(const char *verb, item_tester book_filter,
 						bool (*spell_filter)(int spell))
 {
 	/* Ask the UI for it */
-	return get_spell_hook(verb, book_filter, cmd, error, spell_filter);
+	if (get_spell_hook)
+		return get_spell_hook(verb, book_filter, cmd, error, spell_filter);
+	else
+		return -1;
 }
 
 /**
@@ -157,7 +181,10 @@ bool get_item(struct object **choice, const char *pmt, const char *str,
 			  cmd_code cmd, item_tester tester, int mode)
 {
 	/* Ask the UI for it */
-	return get_item_hook(choice, pmt, str, cmd, tester, mode);
+	if (get_item_hook)
+		return get_item_hook(choice, pmt, str, cmd, tester, mode);
+	else
+		return FALSE;
 }
 
 /**
@@ -166,7 +193,8 @@ bool get_item(struct object **choice, const char *pmt, const char *str,
 void get_panel(int *min_y, int *min_x, int *max_y, int *max_x)
 {
 	/* Ask the UI for it */
-	get_panel_hook(min_y, min_x, max_y, max_x);
+	if (get_panel_hook)
+		get_panel_hook(min_y, min_x, max_y, max_x);
 }
 
 /**
@@ -175,7 +203,10 @@ void get_panel(int *min_y, int *min_x, int *max_y, int *max_x)
 bool panel_contains(unsigned int y, unsigned int x)
 {
 	/* Ask the UI for it */
-	return panel_contains_hook(y, x);
+	if (panel_contains_hook)
+		return panel_contains_hook(y, x);
+	else
+		return TRUE;
 }
 
 /**
@@ -184,5 +215,8 @@ bool panel_contains(unsigned int y, unsigned int x)
 bool map_is_visible(void)
 {
 	/* Ask the UI for it */
-	return map_is_visible_hook();
+	if (map_is_visible_hook)
+		return map_is_visible_hook();
+	else
+		return TRUE;
 }
