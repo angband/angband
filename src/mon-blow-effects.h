@@ -1,6 +1,6 @@
-/*
- * File: mon-blow-effects.h
- * Purpose: Functions for managing monster melee effects.
+/**
+ * \file mon-blow-effects.h
+ * \brief Functions for managing monster melee effects.
  *
  * Copyright (c) 1997 Ben Harrison, David Reeve Sward, Keldon Jones.
  *               2013 Ben Semmler
@@ -24,24 +24,22 @@
 #include "mon-blow-methods.h"
 #include "monster.h"
 
-/* Constants */
-
+/**
+ * List of monster blow effects
+ */
 enum monster_blow_effect_e {
 	#define RBE(x, p, e, d) RBE_##x,
 	#include "list-blow-effects.h"
 	#undef RBE
 };
 
-/* Macros */
-
-/* Structures */
-
 /**
- * Storage for context information for effect handlers called in make_attack_normal().
+ * Storage for context information for effect handlers called in
+ * make_attack_normal().
  *
- * The members of this struct are initialized in an order-dependent way (to be more cross-
- * platform). If the members change, make sure to change any initializers. Ideally, this
- * should eventually used named initializers.
+ * The members of this struct are initialized in an order-dependent way
+ * (to be more cross-platform). If the members change, make sure to change
+ * any initializers. Ideally, this should eventually used named initializers.
  */
 typedef struct melee_effect_handler_context_s {
 	struct player * const p;
@@ -65,8 +63,6 @@ typedef void (*melee_effect_handler_f)(melee_effect_handler_context_t *);
  * Storage class for monster_blow_effect_e.
  */
 typedef byte monster_blow_effect_t;
-
-/* Variables */
 
 /* Functions */
 extern int monster_blow_effect_power(monster_blow_effect_t effect);

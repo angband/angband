@@ -1,6 +1,6 @@
-/*
- * File: mon-blow-methods.h
- * Purpose: Functions for managing monster melee methods.
+/**
+ * \file mon-blow-methods.h
+ * \brief Functions for managing monster melee methods.
  *
  * Copyright (c) 1997 Ben Harrison, David Reeve Sward, Keldon Jones.
  *               2013 Ben Semmler
@@ -20,24 +20,19 @@
 #ifndef MON_BLOW_METHODS_H
 #define MON_BLOW_METHODS_H
 
-/* Constants */
-
+/**
+ * List of blow method constants
+ */
 enum monster_blow_method_e {
 	#define RBM(x, c, s, miss, p, m, a, d) RBM_##x,
 	#include "list-blow-methods.h"
 	#undef RBM
 };
 
-/* Macros */
-
-/* Structures */
-
 /**
  * Storage class for monster_blow_method_e.
  */
 typedef byte monster_blow_method_t;
-
-/* Variables */
 
 /* Functions */
 extern bool monster_blow_method_cut(monster_blow_method_t method);

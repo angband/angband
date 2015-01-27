@@ -1,6 +1,6 @@
-/*
- * File: mon-blow-methods.c
- * Purpose: Monster melee methods module.
+/**
+ * \file mon-blow-methods.c
+ * \brief Monster melee methods module.
  *
  * Copyright (c) 1997 Ben Harrison, David Reeve Sward, Keldon Jones.
  *               2013 Ben Semmler
@@ -150,8 +150,7 @@ const char *monster_blow_method_action(monster_blow_method_t method)
 
 	if (method == RBM_INSULT && action == NULL) {
 		action = monster_blow_random_insult();
-	}
-	else if (method == RBM_MOAN && action == NULL) {
+	} else if (method == RBM_MOAN && action == NULL) {
 		action = monster_blow_random_moan();
 	}
 
@@ -203,7 +202,8 @@ bool monster_blow_method_physical(monster_blow_method_t method)
 /**
  * Return a description for the given monster blow method flags.
  *
- * Returns an sensible placeholder string for an out-of-range flag. Descriptions are in list-blow-methods.h.
+ * Returns a sensible placeholder string for an out-of-range flag.
+ * Descriptions are in list-blow-methods.h.
  *
  * \param method is one of the RBM_ flags.
  */
@@ -215,7 +215,8 @@ const char *monster_blow_method_description(monster_blow_method_t method)
 		#undef RBM
 	};
 
-	/* Return a placeholder for RBM_NONE, since it doesn't make sense to describe a blow that doesn't have a method */
+	/* Return a placeholder for RBM_NONE, since it doesn't make sense to
+	 * describe a blow that doesn't have a method */
 	if (method <= RBM_NONE || method >= RBM_MAX)
 		return "do something weird";
 

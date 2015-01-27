@@ -40,9 +40,11 @@
  *
  * \param context is information for the current attack.
  * \param type is the GF_ constant for the element.
- * \param pure_element should be TRUE if no side effects (mostly a hack for poison).
+ * \param pure_element should be TRUE if no side effects (mostly a hack
+ * for poison).
  */
-static void melee_effect_elemental(melee_effect_handler_context_t *context, int type, bool pure_element)
+static void melee_effect_elemental(melee_effect_handler_context_t *context,
+								   int type, bool pure_element)
 {
 	int physical_dam, elemental_dam;
 
@@ -72,10 +74,13 @@ static void melee_effect_elemental(melee_effect_handler_context_t *context, int 
 	elemental_dam = adjust_dam(player, type, context->damage, RANDOMISE, 0);
 
 	/* Take the larger of physical or elemental damage */
-	context->damage = (physical_dam > elemental_dam) ? physical_dam : elemental_dam;
+	context->damage = (physical_dam > elemental_dam) ?
+		physical_dam : elemental_dam;
 
-	if (context->damage > 0) take_hit(context->p, context->damage, context->ddesc);
-	if (elemental_dam > 0) inven_damage(context->p, type, MIN(elemental_dam * 5, 300));
+	if (context->damage > 0)
+		take_hit(context->p, context->damage, context->ddesc);
+	if (elemental_dam > 0)
+		inven_damage(context->p, type, MIN(elemental_dam * 5, 300));
 
 	if (pure_element) {
 		/* Learn about the player */
@@ -89,11 +94,16 @@ static void melee_effect_elemental(melee_effect_handler_context_t *context, int 
  * \param context is the information for the current attack.
  * \param type is the TMD_ constant for the effect.
  * \param amount is the amount that the timer should be increased by.
- * \param of_flag is the OF_ flag that is passed on to monster learning for this effect.
- * \param attempt_save indicates if a saving throw should be attempted for this effect.
- * \param save_msg is the message that is displayed if the saving throw is successful.
+ * \param of_flag is the OF_ flag that is passed on to monster learning for
+ * this effect.
+ * \param attempt_save indicates if a saving throw should be attempted for
+ * this effect.
+ * \param save_msg is the message that is displayed if the saving throw is
+ * successful.
  */
-static void melee_effect_timed(melee_effect_handler_context_t *context, int type, int amount, int of_flag, bool attempt_save, const char *save_msg)
+static void melee_effect_timed(melee_effect_handler_context_t *context,
+							   int type, int amount, int of_flag,
+							   bool attempt_save, const char *save_msg)
 {
 	/* Take damage */
 	take_hit(context->p, context->damage, context->ddesc);
@@ -134,10 +144,12 @@ static void melee_effect_stat(melee_effect_handler_context_t *context, int stat)
  * Do damage as the result of an experience draining melee attack.
  *
  * \param context is the information for the current attack.
- * \param chance is the player's chance of resisting drain if they have OF_HOLD_LIFE.
+ * \param chance is the player's chance of resisting drain if they have
+ * OF_HOLD_LIFE.
  * \param drain_amount is the base amount of experience to drain.
  */
-static void melee_effect_experience(melee_effect_handler_context_t *context, int chance, int drain_amount)
+static void melee_effect_experience(melee_effect_handler_context_t *context,
+									int chance, int drain_amount)
 {
 	/* Obvious */
 	context->obvious = TRUE;
@@ -216,12 +228,9 @@ static void melee_effect_handler_DISENCHANT(melee_effect_handler_context_t *cont
 	/* Take damage */
 	take_hit(context->p, context->damage, context->ddesc);
 
-	/* Allow complete resist */
+	/* Apply disenchantmen if no resist */
 	if (!player_resists(context->p, ELEM_DISEN))
-	{
-		/* Apply disenchantment */
 		effect_simple(EF_DISENCHANT, "0", 0, 0, 0, &context->obvious);
-	}
 
 	/* Learn about the player */
 	update_smart_learn(context->m_ptr, context->p, 0, 0, ELEM_DISEN);
@@ -306,7 +315,7 @@ static void melee_effect_handler_EAT_GOLD(melee_effect_handler_context_t *contex
     /* Obvious */
     context->obvious = TRUE;
 
-    /* Saving throw (unless paralyzed) based on dex and level */
+    /* Attempt saving throw (unless paralyzed) based on dex and level */
     if (!player->timed[TMD_PARALYZED] &&
         (randint0(100) < (adj_dex_safe[player->state.stat_ind[STAT_DEX]]
 						  + player->lev))) {
@@ -315,10 +324,7 @@ static void melee_effect_handler_EAT_GOLD(melee_effect_handler_context_t *contex
 
         /* Occasional blink anyway */
         if (randint0(3)) context->blinked = TRUE;
-    }
-
-    /* Eat gold */
-    else {
+    } else {
         s32b gold = (player->au / 10) + randint1(25);
         if (gold < 2) gold = 2;
         if (gold > 5000) gold = (player->au / 20) + randint1(3000);
@@ -328,6 +334,7 @@ static void melee_effect_handler_EAT_GOLD(melee_effect_handler_context_t *contex
             msg("Nothing was stolen.");
             return;
         }
+
         /* Let the player know they were robbed */
         msg("Your purse feels lighter.");
         if (player->au)
@@ -549,7 +556,8 @@ static void melee_effect_handler_COLD(melee_effect_handler_context_t *context)
  */
 static void melee_effect_handler_BLIND(melee_effect_handler_context_t *context)
 {
-	melee_effect_timed(context, TMD_BLIND, 10 + randint1(context->rlev), OF_PROT_BLIND, FALSE, NULL);
+	melee_effect_timed(context, TMD_BLIND, 10 + randint1(context->rlev),
+					   OF_PROT_BLIND, FALSE, NULL);
 }
 
 /**
@@ -557,7 +565,8 @@ static void melee_effect_handler_BLIND(melee_effect_handler_context_t *context)
  */
 static void melee_effect_handler_CONFUSE(melee_effect_handler_context_t *context)
 {
-	melee_effect_timed(context, TMD_CONFUSED, 3 + randint1(context->rlev), OF_PROT_CONF, FALSE, NULL);
+	melee_effect_timed(context, TMD_CONFUSED, 3 + randint1(context->rlev),
+					   OF_PROT_CONF, FALSE, NULL);
 }
 
 /**
@@ -565,7 +574,8 @@ static void melee_effect_handler_CONFUSE(melee_effect_handler_context_t *context
  */
 static void melee_effect_handler_TERRIFY(melee_effect_handler_context_t *context)
 {
-	melee_effect_timed(context, TMD_AFRAID, 3 + randint1(context->rlev), OF_PROT_FEAR, TRUE, "You stand your ground!");
+	melee_effect_timed(context, TMD_AFRAID, 3 + randint1(context->rlev),
+					   OF_PROT_FEAR, TRUE, "You stand your ground!");
 }
 
 /**
@@ -574,9 +584,11 @@ static void melee_effect_handler_TERRIFY(melee_effect_handler_context_t *context
 static void melee_effect_handler_PARALYZE(melee_effect_handler_context_t *context)
 {
 	/* Hack -- Prevent perma-paralysis via damage */
-	if (context->p->timed[TMD_PARALYZED] && (context->damage < 1)) context->damage = 1;
+	if (context->p->timed[TMD_PARALYZED] && (context->damage < 1))
+		context->damage = 1;
 
-	melee_effect_timed(context, TMD_PARALYZED, 3 + randint1(context->rlev), OF_FREE_ACT, TRUE, "You resist the effects!");
+	melee_effect_timed(context, TMD_PARALYZED, 3 + randint1(context->rlev),
+					   OF_FREE_ACT, TRUE, "You resist the effects!");
 }
 
 /**
@@ -707,7 +719,8 @@ static void melee_effect_handler_HALLU(melee_effect_handler_context_t *context)
 	take_hit(context->p, context->damage, context->ddesc);
 
 	/* Increase "image" */
-	if (player_inc_timed(context->p, TMD_IMAGE, 3 + randint1(context->rlev / 2), TRUE, TRUE))
+	if (player_inc_timed(context->p, TMD_IMAGE, 3 + randint1(context->rlev / 2),
+						 TRUE, TRUE))
 		context->obvious = TRUE;
 
 	/* Learn about the player */
@@ -768,7 +781,8 @@ int monster_blow_effect_power(monster_blow_effect_t effect)
 /**
  * Return a description for the given monster blow effect flags.
  *
- * Returns an sensible placeholder string for an out-of-range flag. Descriptions are in list-blow-effects.h.
+ * Returns an sensible placeholder string for an out-of-range flag.
+ * Descriptions are in list-blow-effects.h.
  *
  * \param effect is one of the RBE_ flags.
  */
@@ -780,7 +794,8 @@ const char *monster_blow_effect_description(monster_blow_effect_t effect)
 		#undef RBE
 	};
 
-	/* Some blows have no effects, so we do want to return whatever is in the table for RBE_NONE */
+	/* Some blows have no effects, so we do want to return whatever is in
+	 * the table for RBE_NONE */
 	if (effect >= RBE_MAX)
 		return "do weird things";
 
