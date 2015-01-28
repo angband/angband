@@ -25,7 +25,7 @@
  */
 enum {
 	#define MSG(x, s) MSG_##x,
-	#include "message-list.h"
+	#include "list-message.h"
 	#undef MSG
 	SOUND_MAX = MSG_MAX,
 };

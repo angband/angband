@@ -1,6 +1,6 @@
-/*
- * File: message-list.h
- * Purpose: List of message types
+/**
+ * \file list-message.h
+ * \brief List of message types
  *
  * sound - the name of the entry in sound.cfg
  */

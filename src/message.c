@@ -279,7 +279,7 @@ int message_lookup_by_name(const char *name)
 {
 	static const char *message_names[] = {
 		#define MSG(x, s) #x,
-		#include "message-list.h"
+		#include "list-message.h"
 		#undef MSG
 	};
 	size_t i;
@@ -306,7 +306,7 @@ int message_lookup_by_sound_name(const char *name)
 {
 	static const char *sound_names[] = {
 		#define MSG(x, s) s,
-		#include "message-list.h"
+		#include "list-message.h"
 		#undef MSG
 	};
 	size_t i;
@@ -329,7 +329,7 @@ const char *message_sound_name(int message)
 {
 	static const char *sound_names[] = {
 		#define MSG(x, s) s,
-		#include "message-list.h"
+		#include "list-message.h"
 		#undef MSG
 	};
 
