@@ -1,6 +1,6 @@
-/*
- * File: mon-msg.c
- * Purpose: Monster message code.
+/**
+ * \file mon-msg.c
+ * \brief Monster message code.
  *
  * Copyright (c) 1997-2007 Ben Harrison, James E. Wilson, Robert A. Koeneke
  *
@@ -29,7 +29,7 @@ static u16b size_mon_msg = 0;
 monster_race_message *mon_msg;
 monster_message_history *mon_message_hist;
 
-/*
+/**
  * The NULL-terminated array of string actions used to format stacked messages.
  * Singular and plural modifiers are encoded in the same string. Example:
  * "[is|are] hurt" is expanded to "is hurt" if you request the singular form.
@@ -40,69 +40,12 @@ monster_message_history *mon_message_hist;
  * string as a whole message, not as a part of a larger message. This
  * is useful to display Moria-like death messages.
  */
-static const char *msg_repository[MAX_MON_MSG + 1] =
-{
-	/* Dummy action */
-	"[is|are] hurt.",    		/* MON_MSG_NONE */
-
-	/* From project_m */
-	"die[s].",   				/* MON_MSG_DIE  */
-	"[is|are] destroyed.",		/* MON_MSG_DESTROYED */
-	"resist[s] a lot.",			/* MON_MSG_RESIST_A_LOT */
-	"[is|are] hit hard.",		/* MON_MSG_HIT_HARD */
-	"resist[s].",				/* MON_MSG_RESIST */
-	"[is|are] immune.",			/* MON_MSG_IMMUNE */
-	"resist[s] somewhat.",		/* MON_MSG_RESIST_SOMEWHAT */
-	"[is|are] unaffected!",		/* MON_MSG_UNAFFECTED */
-	"spawn[s]!",				/* MON_MSG_SPAWN */
-	"look[s] healthier.",		/* MON_MSG_HEALTHIER */
-	"fall[s] asleep!",			/* MON_MSG_FALL_ASLEEP */
-	"wake[s] up.",				/* MON_MSG_WAKES_UP */
-	"cringe[s] from the light!",/* MON_MSG_CRINGE_LIGHT */
-	"shrivel[s] away in the light!",	/* MON_MSG_SHRIVEL_LIGHT */
-	"lose[s] some skin!",		/* MON_MSG_LOSE_SKIN */
-	"dissolve[s]!",				/* MON_MSG_DISSOLVE */
-	"catch[es] fire!",			/* MON_MSG_CATCH_FIRE */
-	"[is|are] badly frozen.", 	 /* MON_MSG_BADLY_FROZEN */
-	"shudder[s].",				/* MON_MSG_SHUDDER */
-	"change[s]!",				/* MON_MSG_CHANGE */
-	"disappear[s]!",			/* MON_MSG_DISAPPEAR */
-	"[is|are] even more stunned.",		/* MON_MSG_MORE_DAZED */
-	"[is|are] stunned.",		/* MON_MSG_DAZED */
-	"[is|are] no longer stunned.",	/* MON_MSG_NOT_DAZED */
-	"look[s] more confused.",	/* MON_MSG_MORE_CONFUSED */
-	"look[s] confused.",		/* MON_MSG_CONFUSED */
-	"[is|are] no longer confused.",/* MON_MSG_NOT_CONFUSED */
-	"look[s] more slowed.",		/* MON_MSG_MORE_SLOWED */
-	"look[s] slowed.",			/* MON_MSG_SLOWED */
-	"speed[s] up.",				/* MON_MSG_NOT_SLOWED */
-	"look[s] even faster!",		/* MON_MSG_MORE_HASTED */
-	"start[s] moving faster.",	/* MON_MSG_HASTED */
-	"slow[s] down.",				/* MON_MSG_NOT_HASTED */
-	"look[s] more terrified!",	/* MON_MSG_MORE_AFRAID */
-	"flee[s] in terror!",		/* MON_MSG_FLEE_IN_TERROR */
-	"[is|are] no longer afraid.",/* MON_MSG_NOT_AFRAID */
-	"~You hear [a|several] scream[|s] of agony!",/* MON_MSG_MORIA_DEATH */
-	"disintegrate[s]!",		/* MON_MSG_DISENTEGRATES */
-	"freeze[s] and shatter[s]!",/* MON_MSG_FREEZE_SHATTER */
-	"lose[s] some mana!",		/* MON_MSG_MANA_DRAIN */
-	"look[s] briefly puzzled.",	/* MON_MSG_BRIEF_PUZZLE */
-	"maintain[s] the same shape.", /* MON_MSG_MAINTAIN_SHAPE */
-
-	/* From message_pain */
-	"[is|are] unharmed.",		/* MON_MSG_UNHARMED  */
-	
-	/* Dummy messages for monster pain - we use edit file info instead. */
-	"",							/* MON_MSG_95 */
-	"",							/* MON_MSG_75 */
-	"",							/* MON_MSG_50 */
-	"",							/* MON_MSG_35 */
-	"",							/* MON_MSG_20 */
-	"",							/* MON_MSG_10 */
-	"",							/* MON_MSG_0 */
-
-	NULL						/* MAX_MON_MSG */
+static const char *msg_repository[] = {
+	#define MON_MSG(x, s) s,
+	#include "list-mon-message.h"
+	#undef MON_MSG
 };
+
 
 
 /**
@@ -117,13 +60,12 @@ void message_pain(struct monster *m_ptr, int dam)
 	int msg_code = MON_MSG_UNHARMED;
 	char m_name[80];
 
-	/* Get the monster name */
-	/* XXX Don't use monster_desc flags because add_monster_message does string processing on m_name */
+	/* Get the monster name  - don't use monster_desc flags because
+	 * add_monster_message does string processing on m_name */
 	monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_DEFAULT);
 
 	/* Notice non-damage */
-	if (dam == 0)
-	{
+	if (dam == 0) {
 		add_monster_message(m_name, m_ptr, msg_code, FALSE);
 		return;
 	}
@@ -162,7 +104,7 @@ void message_pain(struct monster *m_ptr, int dam)
  * to this function
  */
 static char *get_mon_msg_action(byte msg_code, bool do_plural,
-		const struct monster_race *race)
+								const struct monster_race *race)
 {
 	static char buf[200];
 	const char *action;
@@ -171,7 +113,7 @@ static char *get_mon_msg_action(byte msg_code, bool do_plural,
 	/* Regular text */
 	byte flag = 0;
 
-	assert(msg_code < MAX_MON_MSG);
+	assert(msg_code < MON_MSG_MAX);
 	action = msg_repository[msg_code];
 	
 	assert(race->base && race->base->pain);
@@ -222,10 +164,7 @@ static char *get_mon_msg_action(byte msg_code, bool do_plural,
 
 			/* Ignore the character if we need the other part */
 			if ((flag == PLURAL_MON) != do_plural) continue;
-		}
-		   
-		/* Do we need to parse a new quantity modifier? */
-		else if (*action == '[') {
+		} else if (*action == '[') {
 			/* Switch to singular modifier */
 			flag = SINGULAR_MON;
 
@@ -254,7 +193,7 @@ static bool redundant_monster_message(struct monster *m_ptr, int msg_code)
 	int i;
 
 	assert(m_ptr);
-	assert(msg_code >= 0 && msg_code < MAX_MON_MSG);
+	assert(msg_code >= 0 && msg_code < MON_MSG_MAX);
 
 	/* No messages yet */
 	if (!size_mon_hist) return FALSE;
@@ -286,7 +225,7 @@ bool add_monster_message(const char *mon_name, struct monster *m_ptr,
 	int i;
 	byte mon_flags = 0;
 
-	assert(msg_code >= 0 && msg_code < MAX_MON_MSG);
+	assert(msg_code >= 0 && msg_code < MON_MSG_MAX);
 
 	if (redundant_monster_message(m_ptr, msg_code)) return (FALSE);
 
@@ -294,26 +233,23 @@ bool add_monster_message(const char *mon_name, struct monster *m_ptr,
 	if (!mon_name || !mon_name[0]) mon_name = "it";
 
 	/* Save the "hidden" mark, if present */
-	if (strstr(mon_name, "(hidden)")) mon_flags |= 0x01;
+	if (strstr(mon_name, "(hidden)")) mon_flags |= MON_MSG_FLAG_HIDDEN;
 
 	/* Save the "offscreen" mark, if present */
-	if (strstr(mon_name, "(offscreen)")) mon_flags |= 0x02;
+	if (strstr(mon_name, "(offscreen)")) mon_flags |= MON_MSG_FLAG_OFFSCREEN;
 
 	/* Monster is invisible or out of LOS */
 	if (streq(mon_name, "it") || streq(mon_name, "something"))
-		mon_flags |= 0x04;
+		mon_flags |= MON_MSG_FLAG_INVISIBLE;
 
 	/* Query if the message is already stored */
-	for (i = 0; i < size_mon_msg; i++)
-	{
+	for (i = 0; i < size_mon_msg; i++) {
 		/* We found the race and the message code */
 		if ((mon_msg[i].race == m_ptr->race) &&
 			(mon_msg[i].mon_flags == mon_flags) &&
-			(mon_msg[i].msg_code == msg_code))
-		{
+			(mon_msg[i].msg_code == msg_code)) {
 			/* Can we increment the counter? */
-			if (mon_msg[i].mon_count < MAX_UCHAR)
-			{
+			if (mon_msg[i].mon_count < MAX_UCHAR) {
 				/* Stack the message */
 				++(mon_msg[i].mon_count);
 			}
@@ -335,7 +271,8 @@ bool add_monster_message(const char *mon_name, struct monster *m_ptr,
 	/* Just this monster so far */
 	mon_msg[i].mon_count = 1;
 
-	/* Force all death messages to go at the end of the group for logical presentation */
+	/* Force all death messages to go at the end of the group for
+	 * logical presentation */
 	if (msg_code == MON_MSG_DIE || msg_code == MON_MSG_DESTROYED) {
 		mon_msg[i].delay = TRUE;
 		mon_msg[i].delay_tag = MON_DELAY_TAG_DEATH;
@@ -395,50 +332,41 @@ static void flush_monster_messages(bool delay, byte delay_tag)
 		action = get_mon_msg_action(mon_msg[i].msg_code, (count > 1), r_ptr);
 
 		/* Monster is marked as invisible */
-		if (mon_msg[i].mon_flags & 0x04) r_ptr = NULL;
+		if (mon_msg[i].mon_flags & MON_MSG_FLAG_INVISIBLE) r_ptr = NULL;
 
 		/* Special message? */
 		action_only = (*action == '~');
 
-		/* Format the proper message for visible monsters */
-		if (r_ptr && !action_only)
-		{
+		/* Format the proper message depending on type, number and visibility */
+		if (r_ptr && !action_only) {
 			char race_name[80];
 
 			/* Get the race name */
 			my_strcpy(race_name, r_ptr->name, sizeof(race_name));
 
-			/* Uniques */
+			/* Uniques, multiple monsters, or just one */
 			if (rf_has(r_ptr->flags, RF_UNIQUE)) {
 				/* Just copy the race name */
 				my_strcpy(buf, (r_ptr->name), sizeof(buf));
-			}
-			/* We have more than one monster */
-			else if (count > 1) {
+			} else if (count > 1) {
 				/* Get the plural of the race name */
 				if (r_ptr->plural != NULL) {
 					my_strcpy(race_name, r_ptr->plural, sizeof(race_name));
-				}
-				else {
+				} else {
 					plural_aux(race_name, sizeof(race_name));
 				}
 
 				/* Put the count and the race name together */
 				strnfmt(buf, sizeof(buf), "%d %s", count, race_name);
-			}
-			/* Normal lonely monsters */
-			else {
+			} else {
 				/* Just add a slight flavor */
 				strnfmt(buf, sizeof(buf), "the %s", race_name);
 			}
-		}
-		/* Format the message for non-viewable monsters if necessary */
-		else if (!r_ptr && !action_only) {
+		} else if (!r_ptr && !action_only) {
 			if (count > 1) {
 				/* Show the counter */
 				strnfmt(buf, sizeof(buf), "%d monsters", count);
-			}
-			else {
+			} else {
 				/* Just one non-visible monster */
 				my_strcpy(buf, "it", sizeof(buf));
 			}
@@ -450,8 +378,8 @@ static void flush_monster_messages(bool delay, byte delay_tag)
 		/* Regular message */
 		else {
 			/* Add special mark. Monster is offscreen */
-			if (mon_msg[i].mon_flags & 0x02) my_strcat(buf, " (offscreen)",
-					sizeof(buf));
+			if (mon_msg[i].mon_flags & MON_MSG_FLAG_OFFSCREEN)
+				my_strcat(buf, " (offscreen)", sizeof(buf));
         
 			/* Add the separator */
 			my_strcat(buf, " ", sizeof(buf));

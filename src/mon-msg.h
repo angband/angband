@@ -1,6 +1,6 @@
-/*
- * File: mon-msg.h
- * Purpose: Structures and functions for monster messages.
+/**
+ * \file mon-msg.h
+ * \brief Structures and functions for monster messages.
  *
  * Copyright (c) 1997-2007 Ben Harrison, James E. Wilson, Robert A. Koeneke
  *
@@ -23,66 +23,13 @@
 
 /** Constants **/
 
-/* The codified monster messages */
+/**
+ * Monster message constants
+ */
 enum mon_messages {
-	MON_MSG_NONE = 0,
-
-	/* project_m */
-	MON_MSG_DIE,
-	MON_MSG_DESTROYED,
-	MON_MSG_RESIST_A_LOT,
-	MON_MSG_HIT_HARD,
-	MON_MSG_RESIST,
-	MON_MSG_IMMUNE,
-	MON_MSG_RESIST_SOMEWHAT,
-	MON_MSG_UNAFFECTED,
-	MON_MSG_SPAWN,
-	MON_MSG_HEALTHIER,
-	MON_MSG_FALL_ASLEEP,
-	MON_MSG_WAKES_UP,
-	MON_MSG_CRINGE_LIGHT,
-	MON_MSG_SHRIVEL_LIGHT,
-	MON_MSG_LOSE_SKIN,
-	MON_MSG_DISSOLVE,
-	MON_MSG_CATCH_FIRE,
-	MON_MSG_BADLY_FROZEN,
-	MON_MSG_SHUDDER,
-	MON_MSG_CHANGE,
-	MON_MSG_DISAPPEAR,
-	MON_MSG_MORE_DAZED,
-	MON_MSG_DAZED,
-	MON_MSG_NOT_DAZED,
-	MON_MSG_MORE_CONFUSED,
-	MON_MSG_CONFUSED,
-	MON_MSG_NOT_CONFUSED,
-	MON_MSG_MORE_SLOWED,
-	MON_MSG_SLOWED,
-	MON_MSG_NOT_SLOWED,
-	MON_MSG_MORE_HASTED,
-	MON_MSG_HASTED,
-	MON_MSG_NOT_HASTED,
-	MON_MSG_MORE_AFRAID,
-	MON_MSG_FLEE_IN_TERROR,
-	MON_MSG_NOT_AFRAID,
-	MON_MSG_MORIA_DEATH,
-	MON_MSG_DISENTEGRATES,
-	MON_MSG_FREEZE_SHATTER,
-	MON_MSG_MANA_DRAIN,
-	MON_MSG_BRIEF_PUZZLE,
-	MON_MSG_MAINTAIN_SHAPE,
-	
-	/* message_pain */
-	MON_MSG_UNHARMED,
-	MON_MSG_95,
-	MON_MSG_75,
-	MON_MSG_50,
-	MON_MSG_35,
-	MON_MSG_20,
-	MON_MSG_10,
-	MON_MSG_0,
-
-	/* Always leave this at the end */
-	MAX_MON_MSG
+	#define MON_MSG(x, s) MON_MSG_##x,
+	#include "list-mon-message.h"
+	#undef MON_MSG
 };
 
 enum {
@@ -90,26 +37,31 @@ enum {
 	MON_DELAY_TAG_DEATH,
 };
 
-/* Maxinum number of stacked monster messages */
+/**
+ * Maxinum number of stacked monster messages
+ */
 #define MAX_STORED_MON_MSG		200
 #define MAX_STORED_MON_CODES	400
 
-
-
-/** Macros **/
+enum mon_msg_flags {
+	MON_MSG_FLAG_HIDDEN = 0x01, /* What is this? - NRM */
+	MON_MSG_FLAG_OFFSCREEN = 0x02,
+	MON_MSG_FLAG_INVISIBLE = 0x04
+};
 
 /** Structures **/
-/*
+
+/**
  * A stacked monster message entry
  */
 typedef struct monster_race_message
 {
 	monster_race *race;	/* The race of the monster */
-	byte mon_flags;		/* Flags: 0x01 means hidden monster, 0x02 means offscreen monster */
+	byte mon_flags;		/* Flags */
  	int  msg_code;		/* The coded message */
 	byte mon_count;		/* How many monsters triggered this message */
 	bool delay;			/* Should this message be put off to the end */
-	byte delay_tag;		/* Tag to group delayed messages for better presentation */
+	byte delay_tag;		/* To group delayed messages for better presentation */
 } monster_race_message;
 
 typedef struct monster_message_history
@@ -125,7 +77,8 @@ extern monster_message_history *mon_message_hist;
 
 /** Functions **/
 void message_pain(struct monster *m, int dam);
-bool add_monster_message(const char *mon_name, struct monster *m, int msg_code, bool delay);
+bool add_monster_message(const char *mon_name, struct monster *m, int msg_code,
+						 bool delay);
 void flush_all_monster_messages(void);
 
 #endif /* MONSTER_MESSAGE_H */

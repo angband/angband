@@ -1,6 +1,6 @@
-/*
- * File: mon-lore.h
- * Purpose: Structures and functions for monster recall.
+/**
+ * \file mon-lore.h
+ * \brief Structures and functions for monster recall.
  *
  * Copyright (c) 1997-2007 Ben Harrison, James E. Wilson, Robert A. Koeneke
  *
@@ -21,12 +21,6 @@
 
 #include "z-textblock.h"
 #include "monster.h"
-
-/** Constants **/
-
-/** Macros **/
-
-/** Structures **/
 
 /**
  * Monster "lore" information
@@ -71,14 +65,11 @@ typedef struct
 	bool spell_freq_known;
 } monster_lore;
 
-/** Variables **/
-
-/*
+/**
  * Array[z_info->r_max] of monster lore
  */
 extern monster_lore *l_list;
 
-/** Functions **/
 void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MAX]);
 void lore_append_kills(textblock *tb, const monster_race *race,
 					   const monster_lore *lore,
@@ -118,7 +109,8 @@ void lore_update(const monster_race *race, monster_lore *lore);
 void cheat_monster_lore(const monster_race *r_ptr, monster_lore *l_ptr);
 void wipe_monster_lore(const monster_race *r_ptr, monster_lore *l_ptr);
 void lore_do_probe(struct monster *m);
-void monster_flags_known(const monster_race *r_ptr, const monster_lore *l_ptr, bitflag flags[RF_SIZE]);
+void monster_flags_known(const monster_race *r_ptr, const monster_lore *l_ptr,
+						 bitflag flags[RF_SIZE]);
 void lore_treasure(struct monster *m_ptr, int num_item, int num_gold);
 monster_lore *get_lore(const monster_race *race);
 bool lore_save(const char *path);
