@@ -1,6 +1,6 @@
-/*
- * File: main-test.c
- * Purpose: Pseudo-UI for end-to-end testing.
+/**
+ * \file main-test.c
+ * \brief Pseudo-UI for end-to-end testing.
  *
  * Copyright (c) 2011 Elly <elly+angband@leptoquark.net>
  *
@@ -70,7 +70,9 @@ static void c_version(char *rest) {
 	printf("cmd-version: %s %s\n", VERSION_NAME, VERSION_STRING);
 }
 
-/* Player commands */
+/**
+ * Player commands
+ */
 static void c_player_birth(char *rest) {
 	char *race = strtok(rest, " ");
 	char *class = strtok(NULL, " ");

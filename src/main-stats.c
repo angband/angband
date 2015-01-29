@@ -1,6 +1,6 @@
-/*
- * File: main-stats.c
- * Purpose: Pseudo-UI for stats generation (borrows heavily from main-test.c)
+/**
+ * \file main-stats.c
+ * \brief Pseudo-UI for stats generation (borrows heavily from main-test.c)
  *
  * Copyright (c) 2010-11 Robert Au <myshkin+angband@durak.net>
  *
@@ -387,13 +387,9 @@ static void prep_output_dir(void)
 		"%s%sstats", ANGBAND_DIR_USER, PATH_SEP);
 
 	if (dir_create(ANGBAND_DIR_STATS))
-	{
 		return;
-	}
 	else
-	{
 		quit("Couldn't create stats directory!");
-	}
 }
 
 /**
@@ -408,8 +404,7 @@ static int stats_dump_oflags(sqlite3_stmt *flags_stmt, int idx,
 	err = sqlite3_bind_int(flags_stmt, 1, idx);
 	if (err) return err;
 	for (flag = of_next(flags, FLAG_START); flag != FLAG_END;
-		flag = of_next(flags, flag + 1))
-	{
+		flag = of_next(flags, flag + 1)) {
 		err = sqlite3_bind_int(flags_stmt, 2, flag);
 		if (err) return err;
 		STATS_DB_STEP_RESET(flags_stmt)
@@ -437,8 +432,7 @@ static int stats_dump_artifacts(void)
 	err = stats_db_stmt_prep(&mods_stmt, sql_buf);
 	if (err) return err;
 
-	for (idx = 0; idx < z_info->a_max; idx++)
-	{
+	for (idx = 0; idx < z_info->a_max; idx++) {
 		artifact_type *a_ptr = &a_info[idx];
 
 		if (!a_ptr->name) continue;
@@ -496,8 +490,7 @@ static int stats_dump_egos(void)
 	//err = stats_db_stmt_prep(&type_stmt, sql_buf);
 	//if (err) return err;
 
-	for (idx = 0; idx < z_info->e_max; idx++)
-	{
+	for (idx = 0; idx < z_info->e_max; idx++) {
 		ego_item_type *e_ptr = &e_info[idx];
 
 		if (!e_ptr->name) continue;
@@ -523,8 +516,7 @@ static int stats_dump_egos(void)
 		err = stats_dump_oflags(flags_stmt, idx, e_ptr->flags);
 		if (err) return err;
 
-		for (i = 0; i < OBJ_MOD_MAX; i++)
-		{
+		for (i = 0; i < OBJ_MOD_MAX; i++) {
 			err = stats_db_bind_ints(mods_stmt, 3, 0, idx, i, 
 									 e_ptr->min_modifiers[i]);
 				if (err) return err;
@@ -568,8 +560,7 @@ static int stats_dump_objects(void)
 	err = stats_db_stmt_prep(&mods_stmt, sql_buf);
 	if (err) return err;
 
-	for (idx = 0; idx < z_info->k_max; idx++)
-	{
+	for (idx = 0; idx < z_info->k_max; idx++) {
 		object_kind *k_ptr = &k_info[idx];
 
 		if (!k_ptr->name) continue;
@@ -600,8 +591,7 @@ static int stats_dump_objects(void)
 		err = stats_dump_oflags(flags_stmt, idx, k_ptr->flags);
 		if (err) return err;
 
-		for (i = 0; i < OBJ_MOD_MAX; i++)
-		{
+		for (i = 0; i < OBJ_MOD_MAX; i++) {
 			err = stats_db_bind_ints(mods_stmt, 2, 0, idx, i);
 				if (err) return err;
 				err = stats_db_bind_rv(mods_stmt, 3, k_ptr->modifiers[i]);
@@ -624,8 +614,7 @@ static int stats_dump_objects(void)
 	if (err) return err;
 
 	idx = 0;
-	for (idx = 0; idx < TV_MAX; idx++)
-	{
+	for (idx = 0; idx < TV_MAX; idx++) {
 		object_base *kb_ptr = &kb_info[idx];
 
 		if (!kb_ptr->name) continue;
@@ -639,8 +628,7 @@ static int stats_dump_objects(void)
 
 		for (flag = of_next(kb_ptr->flags, FLAG_START);
 			flag != FLAG_END;
-			flag = of_next(kb_ptr->flags, flag + 1))
-		{
+			flag = of_next(kb_ptr->flags, flag + 1)) {
 			err = stats_db_bind_ints(flags_stmt, 2, 0,
 				idx, flag);
 			if (err) return err;
@@ -673,8 +661,7 @@ static int stats_dump_monsters(void)
 	err = stats_db_stmt_prep(&spell_flags_stmt, sql_buf);
 	if (err) return err;
 
-	for (idx = 0; idx < z_info->r_max; idx++)
-	{
+	for (idx = 0; idx < z_info->r_max; idx++) {
 		monster_race *r_ptr = &r_info[idx];
 
 		/* Skip empty entries */
@@ -726,12 +713,10 @@ static int stats_dump_monsters(void)
 	err = stats_db_stmt_prep(&spell_flags_stmt, sql_buf);
 	if (err) return err;
 
-	for (rb_ptr = rb_info, idx = 0; rb_ptr; rb_ptr = rb_ptr->next, idx++)
-	{
+	for (rb_ptr = rb_info, idx = 0; rb_ptr; rb_ptr = rb_ptr->next, idx++) {
 		for (flag = rf_next(rb_ptr->flags, FLAG_START);
 			flag != FLAG_END;
-			flag = rf_next(rb_ptr->flags, flag + 1))
-		{
+			flag = rf_next(rb_ptr->flags, flag + 1)) {
 			err = sqlite3_bind_text(flags_stmt, 1, rb_ptr->name,
 				strlen(rb_ptr->name), SQLITE_STATIC);
 			if (err) return err;
@@ -742,8 +727,7 @@ static int stats_dump_monsters(void)
 
 		for (flag = rsf_next(rb_ptr->spell_flags, FLAG_START);
 			flag != FLAG_END;
-			flag = rsf_next(rb_ptr->spell_flags, flag + 1))
-		{
+			flag = rsf_next(rb_ptr->spell_flags, flag + 1)) {
 			err = sqlite3_bind_text(spell_flags_stmt, 1, 
 				rb_ptr->name, strlen(rb_ptr->name), 
 				SQLITE_STATIC);
@@ -817,8 +801,7 @@ static int stats_dump_lists(void)
 		"INSERT INTO effects_list VALUES(?,?,?,?);");
 	if (err) return err;
 
-	for (idx = 1; idx < EF_MAX; idx++)
-	{
+	for (idx = 1; idx < EF_MAX; idx++) {
 		if (! effects[idx].desc) continue;
 
 		err = stats_db_bind_ints(sql_stmt, 2, 0, idx, 
@@ -836,8 +819,7 @@ static int stats_dump_lists(void)
 		"INSERT INTO monster_flags_list VALUES(?,?);");
 	if (err) return err;
 
-	for (idx = 0; r_info_flags[idx] != NULL; idx++)
-	{
+	for (idx = 0; r_info_flags[idx] != NULL; idx++) {
 		err = sqlite3_bind_int(sql_stmt, 1, idx);
 		if (err) return err;
 		err = sqlite3_bind_text(sql_stmt, 2, r_info_flags[idx],
@@ -852,8 +834,7 @@ static int stats_dump_lists(void)
 		"INSERT INTO object_flags_list VALUES(?,?,?,?);");
 	if (err) return err;
 
-	for (idx = 1; idx < OF_MAX; idx++)
-	{
+	for (idx = 1; idx < OF_MAX; idx++) {
 		struct object_flag *of = &object_flag_table[idx];
 		if (! of->message) continue;
 
@@ -872,8 +853,7 @@ static int stats_dump_lists(void)
 		"INSERT INTO object_mods_list VALUES(?,?,?,?,?);");
 	if (err) return err;
 
-	for (idx = 0; idx < OBJ_MOD_MAX; idx++)
-	{
+	for (idx = 0; idx < OBJ_MOD_MAX; idx++) {
 		struct object_mod *om = &object_mod_table[idx];
 		if (!om->name) continue;
 
@@ -1213,20 +1193,15 @@ static int stats_write_db_level_data(const char *table, int max_idx)
 	offset = stats_level_data_offsetof(table);
 
 	for (level = 1; level < LEVEL_MAX; level++)
-	{
-		for (i = 0; i < max_idx; i++)
-		{
-			/* This arcane expression finds the value of 
+		for (i = 0; i < max_idx; i++) {
+	/* This arcane expression finds the value of 
 			 * level_data[level].<table>[i] */
 			u32b count;
 			if (streq(table, "gold"))
-			{
 				count = *((long long *)((byte *)&level_data[level] + offset) + i);
-			}
 			else
-			{
 				count = *((u32b *)((byte *)&level_data[level] + offset) + i);
-			}
+
 			if (!count) continue;
 
 			err = stats_db_bind_ints(sql_stmt, 3, 0,
@@ -1235,7 +1210,6 @@ static int stats_write_db_level_data(const char *table, int max_idx)
 
 			STATS_DB_STEP_RESET(sql_stmt)
 		}
-	}
 
 	return sqlite3_finalize(sql_stmt);
 }
@@ -1254,25 +1228,18 @@ static int stats_write_db_level_data_items(const char *table, int max_idx,
 	offset = stats_level_data_offsetof(table);
 
 	for (level = 1; level < LEVEL_MAX; level++)
-	{
 		for (origin = 0; origin < ORIGIN_STATS; origin++)
-		{
-			for (i = 0; i < max_idx; i++)
-			{
+			for (i = 0; i < max_idx; i++) {
 				/* This arcane expression finds the value of 
 				 * level_data[level].<table>[origin][i] */
 				u32b count = ((u32b **)((byte *)&level_data[level] + offset))[origin][i];
 				if (!count) continue;
-
-				err = stats_db_bind_ints(sql_stmt, 4, 0,
-					level, count, 
-					translate_consumables ? stats_lookup_index(consumables_index, z_info->k_max, i) : i, origin);
+				
+				err = stats_db_bind_ints(sql_stmt, 4, 0, level, count, translate_consumables ? stats_lookup_index(consumables_index, z_info->k_max, i) : i, origin);
 				if (err) return err;
 
 				STATS_DB_STEP_RESET(sql_stmt)
 			}
-		}
-	}
 
 	return sqlite3_finalize(sql_stmt);
 }
@@ -1287,11 +1254,8 @@ static int stats_write_db_wearables_count(void)
 	if (err) return err;
 
 	for (level = 1; level < LEVEL_MAX; level++)
-	{
 		for (origin = 0; origin < ORIGIN_STATS; origin++)
-		{
-			for (idx = 0; idx < wearable_count + 1; idx++)
-			{
+			for (idx = 0; idx < wearable_count + 1; idx++) {
 				u32b count = level_data[level].wearables[origin][idx].count;
 				/* Skip if object did not appear */
 				if (!count) continue;
@@ -1308,8 +1272,6 @@ static int stats_write_db_wearables_count(void)
 
 				STATS_DB_STEP_RESET(sql_stmt)
 			}
-		}
-	}
 
 	return sqlite3_finalize(sql_stmt);
 }
@@ -1333,30 +1295,23 @@ static int stats_write_db_wearables_array(const char *field, int max_val, bool a
 	offset = stats_wearables_data_offsetof(field);
 
 	for (level = 1; level < LEVEL_MAX; level++)
-	{
 		for (origin = 0; origin < ORIGIN_STATS; origin++)
-		{
-			for (idx = 0; idx < wearable_count + 1; idx++)
-			{
+			for (idx = 0; idx < wearable_count + 1; idx++) {
 				k_idx = stats_lookup_index(wearables_index, 
 					z_info->k_max, idx);
 
 				/* Skip if pile */
 				if (! k_idx) continue;
 
-				for (i = 0; i < max_val; i++)
-				{
+				for (i = 0; i < max_val; i++) {
 					/* This arcane expression finds the value of
 					 * level_data[level].wearables[origin][idx].<field>[i] */
 					u32b count;
 					if (array_p)
-					{
 						count = ((u32b *)((byte *)&level_data[level].wearables[origin][idx] + offset))[i];
-					}
 					else
-					{
 						count = ((u32b *)*((u32b **)((byte *)&level_data[level].wearables[origin][idx] + offset)))[i];
-					}
+
 					if (!count) continue;
 
 					err = stats_db_bind_ints(sql_stmt, 5, 0,
@@ -1366,8 +1321,6 @@ static int stats_write_db_wearables_array(const char *field, int max_val, bool a
 					STATS_DB_STEP_RESET(sql_stmt)
 				}
 			}
-		}
-	}
 
 	return sqlite3_finalize(sql_stmt);
 }
@@ -1385,18 +1338,16 @@ static int stats_write_db_wearables_2d_array(const char *field,
 	sqlite3_stmt *sql_stmt;
 	int err, level, origin, idx, k_idx, i, j, offset;
 
-	strnfmt(sql_buf, 256, "INSERT INTO wearables_%s VALUES(?,?,?,?,?,?);", field);
+	strnfmt(sql_buf, 256, "INSERT INTO wearables_%s VALUES(?,?,?,?,?,?);",
+			field);
 	err = stats_db_stmt_prep(&sql_stmt, sql_buf);
 	if (err) return err;
 
 	offset = stats_wearables_data_offsetof(field);
 
 	for (level = 1; level < LEVEL_MAX; level++)
-	{
 		for (origin = 0; origin < ORIGIN_STATS; origin++)
-		{
-			for (idx = 0; idx < wearable_count + 1; idx++)
-			{
+			for (idx = 0; idx < wearable_count + 1; idx++) {
 				k_idx = stats_lookup_index(wearables_index, 
 					z_info->k_max, idx);
 
@@ -1404,23 +1355,19 @@ static int stats_write_db_wearables_2d_array(const char *field,
 				if (! k_idx) continue;
 
 				for (i = 0; i < max_val1; i++)
-				{
-					for (j = 0; j < max_val2; j++)
-					{
+					for (j = 0; j < max_val2; j++) {
 						/* This arcane expression finds the value of
-				 		* level_data[level].wearables[origin][idx].<field>[i][j] */
+				 		* level_data[level].wearables[origin][idx].<field>[i][j]
+						*/
 						u32b count;
 
 						if (i == 0 && j == 0) continue;
 
 						if (array_p)
-						{
 							count = ((u32b *)((byte *)&level_data[level].wearables[origin][idx] + offset))[i * max_val2 + j];
-						}
 						else
-						{
 							count = *(*((u32b **)((byte *)&level_data[level].wearables[origin][idx] + offset) + i) + j);
-						}
+
 						if (!count) continue;
 
 						err = stats_db_bind_ints(sql_stmt, 6, 0,
@@ -1430,10 +1377,7 @@ static int stats_write_db_wearables_2d_array(const char *field,
 
 						STATS_DB_STEP_RESET(sql_stmt)
 					}
-				}
 			}
-		}
-	}
 
 	return sqlite3_finalize(sql_stmt);
 }
@@ -1493,7 +1437,8 @@ static int stats_write_db(u32b run)
 	err = stats_write_db_wearables_array("flags", OF_MAX, true);
 	if (err) return err;
 
-	err = stats_write_db_wearables_2d_array("mods", TOP_MOD, OBJ_MOD_MAX + 1, false);
+	err = stats_write_db_wearables_2d_array("mods", TOP_MOD, OBJ_MOD_MAX + 1,
+											false);
 	if (err) return err;
 
 	/* Commit transaction */
@@ -1526,7 +1471,8 @@ void progress_bar(u32b run, time_t start) {
 	printf("\r|");
 	for (i = 0; i < n; i++) printf("*");
 	for (i = 0; i < STATS_PROGRESS_BAR_LEN - n; i++) printf(" ");
-	printf("| %d/%d (%5.1f%%) %3d:%02d:%02d ", run, num_runs, p10/10.0, h, m, s);
+	printf("| %d/%d (%5.1f%%) %3d:%02d:%02d ", run, num_runs, p10/10.0, h, m,
+		   s);
 	fflush(stdout);
 }
 
@@ -1554,11 +1500,9 @@ static errr run_stats(void)
 	prep_output_dir();
 	create_indices();
 	alloc_memory();
-	if (randarts)
-	{
+	if (randarts) {
 		a_info_save = mem_zalloc(z_info->a_max * sizeof(artifact_type));
-		for (i = 0; i < z_info->a_max; i++)
-		{
+		for (i = 0; i < z_info->a_max; i++) {
 			if (!a_info[i].name) continue;
 
 			memcpy(&a_info_save[i], &a_info[i], sizeof(artifact_type));
@@ -1575,17 +1519,12 @@ static errr run_stats(void)
 	}
 
 	start = time(NULL);
-	for (run = 1; run <= num_runs; run++)
-	{
+	for (run = 1; run <= num_runs; run++) {
 		if (!quiet) progress_bar(run - 1, start);
 
 		if (randarts)
-		{
 			for (i = 0; i < z_info->a_max; i++)
-			{
 				memcpy(&a_info[i], &a_info_save[i], sizeof(artifact_type));
-			}
-		}
 
 		initialize_character();
 		unkill_uniques();
@@ -1594,13 +1533,12 @@ static errr run_stats(void)
 		stats_cleanup_angband_run();
 
 		/* Checkpoint every so many runs */
-		if (run % RUNS_PER_CHECKPOINT == 0)
-		{
+		if (run % RUNS_PER_CHECKPOINT == 0) {
 			err = stats_write_db(run);
-			if (err)
-			{
+			if (err) {
 				stats_db_close();
-				quit_fmt("Problems writing to database!  sqlite3 errno %d.", err);
+				quit_fmt("Problems writing to database!  sqlite3 errno %d.",
+						 err);
 			}
 		}
 
@@ -1753,7 +1691,7 @@ static void term_data_link(int i) {
 
 const char help_stats[] = "Stats mode, subopts -q(uiet) -r(andarts) -n(# of runs) -s(no selling)";
 
-/*
+/**
  * Usage:
  *
  * angband -mstats -- [-q] [-r] [-nNNNN] [-s]

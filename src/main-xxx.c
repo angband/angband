@@ -1,6 +1,6 @@
-/*
- * File: main-xxx.c
- * Purpose: Outline how to make a new "main-xxx" file.
+/**
+ * \file main-xxx.c
+ * \brief Outline how to make a new "main-xxx" file.
  *
  * Copyright (c) 1997 Ben Harrison
  *
@@ -18,7 +18,7 @@
 #include "angband.h"
 #include "init.h"
 
-/*
+/**
  * This file helps Angband work on non-existant computers.
  *
  * To use this file, use "Makefile.xxx", which defines USE_XXX.
@@ -79,7 +79,7 @@
 
 #include "main.h"
 
-/*
+/**
  * Extra data to associate with each "window"
  *
  * Each "window" is represented by a "term_data" structure, which
@@ -98,7 +98,7 @@ struct term_data
 
 
 
-/*
+/**
  * Number of "term_data" structures to support XXX XXX XXX
  *
  * You MUST support at least one "term_data" structure, and the
@@ -114,7 +114,7 @@ struct term_data
 #define MAX_XXX_TERM 1
 
 
-/*
+/**
  * An array of "term_data" structures, one for each "sub-window"
  */
 static term_data data[MAX_XXX_TERM];
@@ -122,7 +122,7 @@ static term_data data[MAX_XXX_TERM];
 
 #if 0
 
-/*
+/**
  * Often, it is helpful to create an array of "color data" containing
  * a representation of the "angband_color_table" array in some "local" form.
  *
@@ -134,11 +134,13 @@ static local_color_data_type color_data[MAX_COLORS];
 #endif
 
 
+/**
+ * ------------------------------------------------------------------------
+ * Function hooks needed by "Term"
+ * ------------------------------------------------------------------------ */
 
-/*** Function hooks needed by "Term" ***/
 
-
-/*
+/**
  * Init a new "term"
  *
  * This function should do whatever is necessary to prepare a new "term"
@@ -155,7 +157,7 @@ static void Term_init_xxx(term *t)
 
 
 
-/*
+/**
  * Nuke an old "term"
  *
  * This function is called when an old "term" is no longer needed.  It should
@@ -172,7 +174,7 @@ static void Term_nuke_xxx(term *t)
 
 
 
-/*
+/**
  * Do a "special thing" to the current "term"
  *
  * This function must react to a large number of possible arguments, each
@@ -398,7 +400,7 @@ static errr Term_xtra_xxx(int n, int v)
 }
 
 
-/*
+/**
  * Display the cursor
  *
  * This routine should display the cursor at the given location
@@ -425,7 +427,7 @@ static errr Term_curs_xxx(int x, int y)
 }
 
 
-/*
+/**
  * Erase some characters
  *
  * This function should erase "n" characters starting at (x,y).
@@ -443,7 +445,7 @@ static errr Term_wipe_xxx(int x, int y, int n)
 }
 
 
-/*
+/**
  * Draw some text on the screen
  *
  * This function should actually display an array of characters
@@ -486,7 +488,7 @@ static errr Term_text_xxx(int x, int y, int n, int a, const char *cp)
 }
 
 
-/*
+/**
  * Draw some attr/char pairs on the screen
  *
  * This routine should display the given "n" attr/char pairs at
@@ -525,10 +527,13 @@ static errr Term_pict_xxx(int x, int y, int n, const byte *ap, const char *cp,
 
 
 
-/*** Internal Functions ***/
+/**
+ * ------------------------------------------------------------------------
+ * Internal Functions
+ * ------------------------------------------------------------------------ */
 
 
-/*
+/**
  * Instantiate a "term_data" structure
  *
  * This is one way to prepare the "term_data" structures and to
@@ -608,7 +613,7 @@ static void term_data_link(int i)
 }
 
 
-/*
+/**
  * Help message.
  *   1st line = max 68 chars.
  *   Start next lines with 11 spaces
@@ -616,7 +621,7 @@ static void term_data_link(int i)
 const char help_xxx[] = "Describe XXX, subopts -describe suboptions here";
 
 
-/*
+/**
  * Initialization function
  */
 errr init_xxx(int argc, char **argv)
@@ -644,7 +649,7 @@ errr init_xxx(int argc, char **argv)
 #ifdef INTERNAL_MAIN
 
 
-/*
+/**
  * Some special machines need their own "main()" function, which they
  * can provide here, making sure NOT to compile the "main.c" file.
  *
@@ -658,7 +663,7 @@ errr init_xxx(int argc, char **argv)
  */
 
 
-/*
+/**
  * An event handler XXX XXX XXX
  *
  * You may need an event handler, which can be used by both
@@ -677,7 +682,7 @@ static bool CheckEvents(bool wait)
 
 
 
-/*
+/**
  * Make a sound.
  *
  * This action should produce sound number "v", where the
@@ -693,7 +698,7 @@ static void xxx_sound(game_event_type type, game_event_data *data, void *user)
 }
 
 
-/*
+/**
  * Init some stuff
  *
  * This function is used to keep the "path" variable off the stack.
@@ -716,7 +721,7 @@ static void init_stuff(void)
 }
 
 
-/*
+/**
  * Main function
  *
  * This function must do a lot of stuff.

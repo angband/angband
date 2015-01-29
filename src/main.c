@@ -1,6 +1,6 @@
-/*
- * File: main.c
- * Purpose: Core game initialisation for UNIX (and other) machines
+/**
+ * \file main.c
+ * \brief Core game initialisation for UNIX (and other) machines
  *
  * Copyright (c) 1997 Ben Harrison, and others
  *
@@ -28,11 +28,13 @@
 #include "ui-prefs.h"
 #include "ui-signals.h"
 
-/* locale junk */
+/**
+ * locale junk
+ */
 #include "locale.h"
 #include "langinfo.h"
 
-/*
+/**
  * Some machines have a "main()" function in their "main-xxx.c" file,
  * all the others use this file for their "main()" function.
  */
@@ -41,7 +43,7 @@
 
 #include "main.h"
 
-/*
+/**
  * List of the available modules in the order they are tried.
  */
 static const struct module modules[] =
@@ -71,7 +73,7 @@ static int init_sound_dummy(int argc, char *argv[]) {
 	return 0;
 }
 
-/*
+/**
  * List of sound modules in the order they should be tried.
  */
 static const struct module sound_modules[] =
@@ -83,7 +85,7 @@ static const struct module sound_modules[] =
 	{ "none", "No sound", init_sound_dummy },
 };
 
-/*
+/**
  * A hook for "quit()".
  *
  * Close down, then fall back into "quit()".
@@ -96,8 +98,7 @@ static void quit_hook(const char *s)
 	(void)s;
 
 	/* Scan windows */
-	for (j = ANGBAND_TERM_MAX - 1; j >= 0; j--)
-	{
+	for (j = ANGBAND_TERM_MAX - 1; j >= 0; j--) {
 		/* Unused */
 		if (!angband_term[j]) continue;
 
@@ -108,7 +109,7 @@ static void quit_hook(const char *s)
 
 
 
-/*
+/**
  * SDL needs a look-in
  */
 #ifdef USE_SDL
@@ -116,7 +117,7 @@ static void quit_hook(const char *s)
 #endif
 
 
-/*
+/**
  * Initialize and verify the file paths, and the score file.
  *
  * Use the ANGBAND_PATH environment var if possible, else use
@@ -152,9 +153,12 @@ static void init_stuff(void)
 	datapath[511] = '\0';
 
 	/* Hack -- Add a path separator (only if needed) */
-	if (!suffix(configpath, PATH_SEP)) my_strcat(configpath, PATH_SEP, sizeof(configpath));
-	if (!suffix(libpath, PATH_SEP)) my_strcat(libpath, PATH_SEP, sizeof(libpath));
-	if (!suffix(datapath, PATH_SEP)) my_strcat(datapath, PATH_SEP, sizeof(datapath));
+	if (!suffix(configpath, PATH_SEP)) my_strcat(configpath, PATH_SEP,
+												 sizeof(configpath));
+	if (!suffix(libpath, PATH_SEP)) my_strcat(libpath, PATH_SEP,
+											  sizeof(libpath));
+	if (!suffix(datapath, PATH_SEP)) my_strcat(datapath, PATH_SEP,
+											   sizeof(datapath));
 
 	/* Initialize */
 	init_file_paths(configpath, libpath, datapath);
@@ -177,7 +181,7 @@ static const struct {
 	{ "save", &ANGBAND_DIR_SAVE, FALSE },
 };
 
-/*
+/**
  * Handle a "-d<dir>=<path>" option.
  *
  * Sets any of angband's special directories to <path>.
@@ -204,7 +208,8 @@ static void change_path(const char *info)
 		if (my_stricmp(path, change_path_values[i].name) == 0) {
 #ifdef SETGID
 			if (!change_path_values[i].setgid_ok)
-				quit_fmt("Can't redefine path to %s dir on multiuser setup", path);
+				quit_fmt("Can't redefine path to %s dir on multiuser setup",
+						 path);
 #endif
 
 			string_free(*change_path_values[i].path);
@@ -225,7 +230,7 @@ static void change_path(const char *info)
 
 #ifdef UNIX
 
-/*
+/**
  * Find a default user name from the system.
  */
 static void user_name(char *buf, size_t len, int id)
@@ -288,49 +293,6 @@ static void list_saves(void)
 }
 
 
-#ifndef SETGID
-
-/*
- * Transition non-setgid installs away from using uid.name style savefile
- * names.
- */
-static void transition_savefile_names(void)
-{
-	char fname[256];
-	char uid[10];
-
-	ang_dir *d = my_dopen(ANGBAND_DIR_SAVE);
-	if (!d) return;
-
-	strnfmt(uid, sizeof(uid), "%d.", player_uid);
-
-	while (my_dread(d, fname, sizeof fname)) {
-		char *newname = fname+strlen(uid);
-		char oldpath[1024];
-		char newpath[1024];
-
-		/* Check that the savefile name begins with the user'd ID */
-		if (strncmp(fname, uid, strlen(uid)) != 0)
-			continue;
-
-		/* Sanity check - can't rename "1000." to "" */
-		if (!newname[0])
-			continue;
-
-		/* Move the file */
-		path_build(oldpath, sizeof oldpath, ANGBAND_DIR_SAVE, fname);
-		path_build(newpath, sizeof newpath, ANGBAND_DIR_SAVE, newname);
-
-		printf("Moving %s to %s\n", oldpath, newpath);
-		file_move(oldpath, newpath);
-	}
-
-	my_dclose(d);
-}
-
-#endif /* SETGID */
-
-
 
 static bool new_game;
 
@@ -348,7 +310,7 @@ static void debug_opt(const char *arg) {
 	}
 }
 
-/*
+/**
  * Simple "main" function for multiple platforms.
  *
  * Note the special "--" option which terminates the processing of
@@ -366,10 +328,8 @@ int main(int argc, char *argv[])
 
 	bool args = TRUE;
 
-
 	/* Save the "program name" XXX XXX XXX */
 	argv0 = argv[0];
-
 
 #ifdef UNIX
 
@@ -392,14 +352,13 @@ int main(int argc, char *argv[])
 	/* Drop permissions */
 	safe_setuid_drop();
 
-	/* Get the file paths */
-	/* paths may be overriden by -d options, so this has to occur *before* 
-	   processing command line args */
+	/* Get the file paths 
+	 * Paths may be overriden by -d options, so this has to occur *before* 
+	 * processing command line args */
 	init_stuff();
 
 	/* Process the command line arguments */
-	for (i = 1; args && (i < argc); i++)
-	{
+	for (i = 1; args && (i < argc); i++) {
 		const char *arg = argv[i];
 
 		/* Require proper options */
@@ -517,14 +476,8 @@ int main(int argc, char *argv[])
 		if (*arg) goto usage;
 	}
 
-#ifndef SETGID
-	/* Transition from 3.4 to 3.5 - rename savefiles with uid at the beginning */
-	transition_savefile_names();
-#endif
-
 	/* Hack -- Forget standard args */
-	if (args)
-	{
+	if (args) {
 		argc = 1;
 		argv[1] = NULL;
 	}
@@ -543,14 +496,11 @@ int main(int argc, char *argv[])
 	}
 
 	/* Try the modules in the order specified by modules[] */
-	for (i = 0; i < (int)N_ELEMENTS(modules); i++)
-	{
+	for (i = 0; i < (int)N_ELEMENTS(modules); i++) {
 		/* User requested a specific module? */
-		if (!mstr || (streq(mstr, modules[i].name)))
-		{
+		if (!mstr || (streq(mstr, modules[i].name))) {
 			ANGBAND_SYS = modules[i].name;
-			if (0 == modules[i].init(argc, argv))
-			{
+			if (0 == modules[i].init(argc, argv)) {
 				done = TRUE;
 				break;
 			}
@@ -562,7 +512,7 @@ int main(int argc, char *argv[])
 
 #ifdef UNIX
 
-	/* Get the "user name" as a default player name, unless set with -u switch */
+	/* Get the "user name" as default player name, unless set with -u switch */
 	if (!op_ptr->full_name[0]) {
 		user_name(op_ptr->full_name, sizeof(op_ptr->full_name), player_uid);
 
