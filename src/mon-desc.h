@@ -1,6 +1,6 @@
 /**
-   \file mon-desc.h
-   \brief Monster description
+ * \file mon-desc.h
+ * \brief Monster description
  *
  * Copyright (c) 1997-2007 Ben Harrison, James E. Wilson, Robert A. Koeneke
  *
@@ -21,7 +21,7 @@
 
 #include "monster.h"
 
-/*
+/**
  * Bit flags for the "monster_desc" function
  */
 #define MDESC_DEFAULT   0x00    /* "it" or "the kobold" */
@@ -34,8 +34,12 @@
 #define MDESC_HIDE      0x40    /* Assume the monster is hidden */
 #define MDESC_SHOW      0x80    /* Assume the monster is visible */
 #define MDESC_CAPITAL   0x100   /* Capitalise */
-#define MDESC_STANDARD  (MDESC_CAPITAL | MDESC_IND_HID | MDESC_PRO_HID) /* "someone", "something", or "the kobold" at the start of a message */
-#define MDESC_DIED_FROM (MDESC_SHOW | MDESC_IND_VIS) /* Reveal the full, indefinite name of a monster */
+
+/* "someone", "something", or "the kobold" at the start of a message */
+#define MDESC_STANDARD  (MDESC_CAPITAL | MDESC_IND_HID | MDESC_PRO_HID)
+
+ /* Reveal the full, indefinite name of a monster */
+#define MDESC_DIED_FROM (MDESC_SHOW | MDESC_IND_VIS)
 
 void plural_aux(char *name, size_t max);
 void get_mon_name(char *output_name, size_t max, const monster_race *r_ptr,

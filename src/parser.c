@@ -1,6 +1,6 @@
-/*
- * File: parser.c
- * Purpose: Info file parser.
+/**
+ * \file parser.c
+ * \brief Info file parser.
  *
  * Copyright (c) 2011 Elly <elly+angband@leptoquark.net>
  *
@@ -36,48 +36,9 @@
 
 
 const char *parser_error_str[PARSE_ERROR_MAX] = {
-	"(none)",
-	"bad expression string",
-	"field too long",
-	"generic error",
-	"internal error",
-	"invalid allocation",
-	"invalid colour",
-	"invalid dice",
-	"invalid effect",
-	"invalid expression",
-	"invalid flag",
-	"invalid item number",
-	"invalid lighting",
-	"invalid message",
-	"invalid monster race",
-	"invalid option",
-	"invalid spell frequency",
-	"invalid spell name",
-	"invalid value",
-	"missing field",
-	"missing record header",
-	"artifact name not found",
-	"no builder found",
-	"no kind for ego type",
-	"no kind found",
-	"no room found",
-	"non-sequential records",
-	"not a number",
-	"not random",
-	"not a special artifact",
-	"obsolete file",
-	"out of bounds",
-	"out of memory",
-	"too few entries",
-	"too many entries",
-	"unbound expression",
-	"undefined directive",
-	"unrecognized blow",
-	"unrecognized tval",
-	"unrecognized sval",
-	"unrecognized effect parameter",
-	"vault too big",
+	#define PARSE_ERROR(a, b) b,
+	#include "list-parser-errors.h"
+	#undef PARSE_ERROR
 };
 
 enum {
@@ -127,6 +88,9 @@ struct parser {
 	void *priv;
 };
 
+/**
+ * Allocates a new parser.
+ */
 struct parser *parser_new(void) {
 	struct parser *p = mem_zalloc(sizeof *p);
 	return p;
@@ -134,8 +98,7 @@ struct parser *parser_new(void) {
 
 static struct parser_hook *findhook(struct parser *p, const char *dir) {
 	struct parser_hook *h = p->hooks;
-	while (h)
-	{
+	while (h) {
 		if (!strcmp(h->dir, dir))
 			break;
 		h = h->next;
@@ -145,8 +108,7 @@ static struct parser_hook *findhook(struct parser *p, const char *dir) {
 
 static void parser_freeold(struct parser *p) {
 	struct parser_value *v;
-	while (p->fhead)
-	{
+	while (p->fhead) {
 		int t = p->fhead->spec.type & ~PARSE_T_OPT;
 		v = (struct parser_value *)p->fhead->spec.next;
 		if (t == PARSE_T_SYM || t == PARSE_T_STR)
@@ -166,8 +128,7 @@ static bool parse_random(const char *str, random_value *bonus) {
 	char eov;
 
 	/* Entire value may be negated */
-	if (str[0] == '-')
-	{
+	if (str[0] == '-') {
 		negative = TRUE;
 		i++;
 	}
@@ -187,52 +148,39 @@ static bool parse_random(const char *str, random_value *bonus) {
 	buffer[strlen(buffer)] = end_chr;
 
 	/* Scan the value, apply defaults for unspecified components */
-	if (5 == sscanf(buffer, "%d+%dd%dM%d%c", &b, &dn, &ds, &mb, &eov) && eov == end_chr)
-	{
-		/* No defaults */
-	}
-	else if (4 == sscanf(buffer, "%d+d%dM%d%c", &b, &ds, &mb, &eov) && eov == end_chr)
-	{
+	if (5 == sscanf(buffer, "%d+%dd%dM%d%c", &b, &dn, &ds, &mb, &eov) &&
+		eov == end_chr) {
+	} else if (4 == sscanf(buffer, "%d+d%dM%d%c", &b, &ds, &mb, &eov) &&
+			   eov == end_chr) {
 		dn = 1;
-	}
-	else if (3 == sscanf(buffer, "%d+M%d%c", &b, &mb, &eov) && eov == end_chr)
-	{
+	} else if (3 == sscanf(buffer, "%d+M%d%c", &b, &mb, &eov) &&
+			   eov == end_chr) {
 		dn = 0; ds = 0;
-	}
-	else if (4 == sscanf(buffer, "%d+%dd%d%c", &b, &dn, &ds, &eov) && eov == end_chr)
-	{
+	} else if (4 == sscanf(buffer, "%d+%dd%d%c", &b, &dn, &ds, &eov) &&
+			   eov == end_chr) {
 		mb = 0;
-	}
-	else if (3 == sscanf(buffer, "%d+d%d%c", &b, &ds, &eov) && eov == end_chr)
-	{
+	} else if (3 == sscanf(buffer, "%d+d%d%c", &b, &ds, &eov) &&
+			   eov == end_chr) {
 		dn = 1; mb = 0;
-	}
-	else if (4 == sscanf(buffer, "%dd%dM%d%c", &dn, &ds, &mb, &eov) && eov == end_chr)
-	{
+	} else if (4 == sscanf(buffer, "%dd%dM%d%c", &dn, &ds, &mb, &eov) &&
+			   eov == end_chr) {
 		b = 0;
-	}
-	else if (3 == sscanf(buffer, "d%dM%d%c", &ds, &mb, &eov) && eov == end_chr)
-	{
+	} else if (3 == sscanf(buffer, "d%dM%d%c", &ds, &mb, &eov) &&
+			   eov == end_chr) {
 		b = 0; dn = 1;
-	}
-	else if (2 == sscanf(buffer, "M%d%c", &mb, &eov) && eov == end_chr)
-	{
+	} else if (2 == sscanf(buffer, "M%d%c", &mb, &eov) &&
+			   eov == end_chr) {
 		b = 0; dn = 0; ds = 0;
-	}
-	else if (3 == sscanf(buffer, "%dd%d%c", &dn, &ds, &eov) && eov == end_chr)
-	{
+	} else if (3 == sscanf(buffer, "%dd%d%c", &dn, &ds, &eov) &&
+			   eov == end_chr) {
 		b = 0; mb = 0;
-	}
-	else if (2 == sscanf(buffer, "d%d%c", &ds, &eov) && eov == end_chr)
-	{
+	} else if (2 == sscanf(buffer, "d%d%c", &ds, &eov) &&
+			   eov == end_chr) {
 		b = 0; dn = 1; mb = 0;
-	}
-	else if (2 == sscanf(buffer, "%d%c", &b, &eov) && eov == end_chr)
-	{
+	} else if (2 == sscanf(buffer, "%d%c", &b, &eov) &&
+			   eov == end_chr) {
 		dn = 0; ds = 0; mb = 0;
-	}
-	else
-	{
+	} else {
 		return FALSE;
 	}
 
@@ -246,8 +194,7 @@ static bool parse_random(const char *str, random_value *bonus) {
 	 * Handle negation (the random components are always positive, so the base
 	 * must be adjusted as necessary).
 	 */
-	if (negative)
-	{
+	if (negative) {
 		bonus->base *= -1;
 		bonus->base -= bonus->m_bonus;
 		bonus->base -= bonus->dice * (bonus->sides + 1);
@@ -256,7 +203,11 @@ static bool parse_random(const char *str, random_value *bonus) {
 	return TRUE;
 }
 
-/* This is a bit long and should probably be refactored a bit. */
+/**
+ * Parses the provided line.
+ *
+ * This runs the first parser hook registered with `p` that matches `line`.
+ */
 enum parser_error parser_parse(struct parser *p, const char *line) {
 	char *cline;
 	char *tok;
@@ -302,13 +253,14 @@ enum parser_error parser_parse(struct parser *p, const char *line) {
 	 * types. The optional flag has a bit assigned to it in the spec's type
 	 * tag; we compute a temporary type for the spec with that flag removed
 	 * and use that instead. */
-	for (s = h->fhead; s; s = s->next)
-	{
+	for (s = h->fhead; s; s = s->next) {
 		int t = s->type & ~PARSE_T_OPT;
 		p->colno++;
+
 		/* These types are tokenized on ':'; strings are not tokenized
 		 * at all (i.e., they consume the remainder of the line) */
-		if (t == PARSE_T_INT || t == PARSE_T_SYM || t == PARSE_T_RAND || t == PARSE_T_UINT) {
+		if (t == PARSE_T_INT || t == PARSE_T_SYM || t == PARSE_T_RAND ||
+			t == PARSE_T_UINT) {
 			tok = strtok(sp, ":");
 			sp = NULL;
 		} else if (t == PARSE_T_CHAR) {
@@ -319,8 +271,7 @@ enum parser_error parser_parse(struct parser *p, const char *line) {
 			tok = strtok(sp, "");
 			sp = NULL;
 		}
-		if (!tok)
-		{
+		if (!tok) {
 			if (!(s->type & PARSE_T_OPT)) {
 				my_strcpy(p->errmsg, s->name, sizeof(p->errmsg));
 				p->error = PARSE_ERROR_MISSING_FIELD;
@@ -330,50 +281,39 @@ enum parser_error parser_parse(struct parser *p, const char *line) {
 			break;
 		}
 
-		/* Allocate a value node, parse out its value, and link it into
-		 * the value list. */
+		/* Allocate a value node. */
 		v = mem_alloc(sizeof *v);
 		v->spec.next = NULL;
 		v->spec.type = s->type;
 		v->spec.name = s->name;
-		if (t == PARSE_T_INT)
-		{
+
+		/* Parse out its value. */
+		if (t == PARSE_T_INT) {
 			char *z = NULL;
 			v->u.ival = strtol(tok, &z, 0);
-			if (z == tok)
-			{
+			if (z == tok) {
 				mem_free(v);
 				mem_free(cline);
 				my_strcpy(p->errmsg, s->name, sizeof(p->errmsg));
 				p->error = PARSE_ERROR_NOT_NUMBER;
 				return PARSE_ERROR_NOT_NUMBER;
 			}
-		}
-		else if (t == PARSE_T_UINT)
-		{
+		} else if (t == PARSE_T_UINT) {
 			char *z = NULL;
 			v->u.uval = strtoul(tok, &z, 0);
-			if (z == tok || *tok == '-')
-			{
+			if (z == tok || *tok == '-') {
 				mem_free(v);
 				mem_free(cline);
 				my_strcpy(p->errmsg, s->name, sizeof(p->errmsg));
 				p->error = PARSE_ERROR_NOT_NUMBER;
 				return PARSE_ERROR_NOT_NUMBER;
 			}
-		}
-		else if (t == PARSE_T_CHAR)
-		{
+		} else if (t == PARSE_T_CHAR) {
 			text_mbstowcs(&v->u.cval, tok, 1);
-		}
-		else if (t == PARSE_T_SYM || t == PARSE_T_STR)
-		{
+		} else if (t == PARSE_T_SYM || t == PARSE_T_STR) {
 			v->u.sval = string_make(tok);
-		}
-		else if (t == PARSE_T_RAND)
-		{
-			if (!parse_random(tok, &v->u.rval))
-			{
+		} else if (t == PARSE_T_RAND) {
+			if (!parse_random(tok, &v->u.rval)) {
 				mem_free(v);
 				mem_free(cline);
 				my_strcpy(p->errmsg, s->name, sizeof(p->errmsg));
@@ -381,6 +321,8 @@ enum parser_error parser_parse(struct parser *p, const char *line) {
 				return PARSE_ERROR_NOT_RANDOM;
 			}
 		}
+
+		/* Link it into the value list. */
 		if (!p->fhead)
 			p->fhead = v;
 		else
@@ -394,18 +336,25 @@ enum parser_error parser_parse(struct parser *p, const char *line) {
 	return p->error;
 }
 
+/**
+ * Gets parser's private data.
+ */
 void *parser_priv(struct parser *p) {
 	return p->priv;
 }
 
+/**
+ * Sets parser's private data.
+ *
+ * This is commonly used to store context for stateful parsing.
+ */
 void parser_setpriv(struct parser *p, void *v) {
 	p->priv = v;
 }
 
 static int parse_type(const char *s) {
 	int rv = 0;
-	if (s[0] == '?')
-	{
+	if (s[0] == '?') {
 		rv |= PARSE_T_OPT;
 		s++;
 	}
@@ -427,8 +376,7 @@ static int parse_type(const char *s) {
 static void clean_specs(struct parser_hook *h) {
 	struct parser_spec *s;
 	mem_free(h->dir);
-	while (h->fhead)
-	{
+	while (h->fhead) {
 		s = h->fhead;
 		h->fhead = h->fhead->next;
 		mem_free((void*)s->name);
@@ -436,11 +384,13 @@ static void clean_specs(struct parser_hook *h) {
 	}
 }
 
+/**
+ * Destroys a parser.
+ */
 void parser_destroy(struct parser *p) {
 	struct parser_hook *h;
 	parser_freeold(p);
-	while (p->hooks)
-	{
+	while (p->hooks) {
 		h = p->hooks->next;
 		clean_specs(p->hooks);
 		mem_free(p->hooks);
@@ -464,18 +414,15 @@ static errr parse_specs(struct parser_hook *h, char *fmt) {
 	h->dir = string_make(name);
 	h->fhead = NULL;
 	h->ftail = NULL;
-	while (name)
-	{
-		/* Lack of a type is legal; that means we're at the end of the
-		 * line. */
+	while (name) {
+		/* Lack of a type is legal; that means we're at the end of the line. */
 		stype = strtok(NULL, " ");
 		if (!stype)
 			break;
 
 		/* Lack of a name, on the other hand... */
 		name = strtok(NULL, " ");
-		if (!name)
-		{
+		if (!name) {
 			clean_specs(h);
 			return -EINVAL;
 		}
@@ -483,18 +430,16 @@ static errr parse_specs(struct parser_hook *h, char *fmt) {
 		/* Grab a type, check to see if we have a mandatory type
 		 * following an optional type. */
 		type = parse_type(stype);
-		if (type == PARSE_T_NONE)
-		{
+		if (type == PARSE_T_NONE) {
 			clean_specs(h);
 			return -EINVAL;
 		}
-		if (!(type & PARSE_T_OPT) && h->ftail && (h->ftail->type & PARSE_T_OPT))
-		{
+		if (!(type & PARSE_T_OPT) && h->ftail &&
+			(h->ftail->type & PARSE_T_OPT)) {
 			clean_specs(h);
 			return -EINVAL;
 		}
-		if (h->ftail && ((h->ftail->type & ~PARSE_T_OPT) == PARSE_T_STR))
-		{
+		if (h->ftail && ((h->ftail->type & ~PARSE_T_OPT) == PARSE_T_STR)) {
 			clean_specs(h);
 			return -EINVAL;
 		}
@@ -514,6 +459,18 @@ static errr parse_specs(struct parser_hook *h, char *fmt) {
 	return 0;
 }
 
+/**
+ * Registers a parser hook.
+ *
+ * Hooks have the following format:
+ *   <fmt>  ::= <name> [<type> <name>]* [?<type> <name>]*
+ *   <type> ::= int | str | sym | rand | char
+ * The first <name> is called the directive for this hook. Any other hooks with
+ * the same directive are superseded by this hook. It is an error for a
+ * mandatory field to follow an optional field. It is an error for any field to
+ * follow a field of type `str`, since `str` fields are not delimited and will
+ * consume the entire rest of the line.
+ */
 errr parser_reg(struct parser *p, const char *fmt,
                 enum parser_error (*func)(struct parser *p)) {
 	errr r;
@@ -541,14 +498,21 @@ errr parser_reg(struct parser *p, const char *fmt,
 	return 0;
 }
 
+/**
+ * A placeholder parse hook indicating a value is ignored
+ */
 enum parser_error ignored(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+/**
+ * Returns whether the parser has a value named `name`.
+ *
+ * Used to test for presence of optional values.
+ */
 bool parser_hasval(struct parser *p, const char *name) {
 	struct parser_value *v;
-	for (v = p->fhead; v; v = (struct parser_value *)v->spec.next)
-	{
+	for (v = p->fhead; v; v = (struct parser_value *)v->spec.next) {
 		if (!strcmp(v->spec.name, name))
 			return TRUE;
 	}
@@ -557,10 +521,8 @@ bool parser_hasval(struct parser *p, const char *name) {
 
 static struct parser_value *parser_getval(struct parser *p, const char *name) {
 	struct parser_value *v;
-	for (v = p->fhead; v; v = (struct parser_value *)v->spec.next)
-	{
-		if (!strcmp(v->spec.name, name))
-		{
+	for (v = p->fhead; v; v = (struct parser_value *)v->spec.next) {
+		if (!strcmp(v->spec.name, name)) {
 			return v;
 		}
 	}
@@ -568,42 +530,64 @@ static struct parser_value *parser_getval(struct parser *p, const char *name) {
 	return 0; /* Needed to avoid Windows compiler warning */
 }
 
+/**
+ * Returns the symbol named `name`. This symbol must exist.
+ */
 const char *parser_getsym(struct parser *p, const char *name) {
 	struct parser_value *v = parser_getval(p, name);
 	assert((v->spec.type & ~PARSE_T_OPT) == PARSE_T_SYM);
 	return v->u.sval;
 }
 
+/**
+ * Returns the integer named `name`. This symbol must exist.
+ */
 int parser_getint(struct parser *p, const char *name) {
 	struct parser_value *v = parser_getval(p, name);
 	assert((v->spec.type & ~PARSE_T_OPT) == PARSE_T_INT);
 	return v->u.ival;
 }
 
+/**
+ * Returns the unsigned integer named `name`. This symbol must exist.
+ */
 unsigned int parser_getuint(struct parser *p, const char *name) {
 	struct parser_value *v = parser_getval(p, name);
 	assert((v->spec.type & ~PARSE_T_OPT) == PARSE_T_UINT);
 	return v->u.uval;
 }
 
+/**
+ * Returns the string named `name`. This symbol must exist.
+ */
 const char *parser_getstr(struct parser *p, const char *name) {
 	struct parser_value *v = parser_getval(p, name);
 	assert((v->spec.type & ~PARSE_T_OPT) == PARSE_T_STR);
 	return v->u.sval;
 }
 
+/**
+ * Returns the random value named `name`. This symbol must exist.
+ */
 struct random parser_getrand(struct parser *p, const char *name) {
 	struct parser_value *v = parser_getval(p, name);
 	assert((v->spec.type & ~PARSE_T_OPT) == PARSE_T_RAND);
 	return v->u.rval;
 }
 
+/**
+ * Returns the character named `name`. This symbol must exist.
+ */
 wchar_t parser_getchar(struct parser *p, const char *name) {
 	struct parser_value *v = parser_getval(p, name);
 	assert((v->spec.type & ~PARSE_T_OPT) == PARSE_T_CHAR);
 	return v->u.cval;
 }
 
+/**
+ * Fills the provided struct with the parser's state, if any. Returns true if
+ * the parser is in an error state, and false otherwise.
+ */
 int parser_getstate(struct parser *p, struct parser_state *s) {
 	s->error = p->error;
 	s->line = p->lineno;
@@ -612,15 +596,21 @@ int parser_getstate(struct parser *p, struct parser_state *s) {
 	return s->error != PARSE_ERROR_NONE;
 }
 
+/**
+ * Sets the parser's detailed error description and field number.
+ */
 void parser_setstate(struct parser *p, unsigned int col, const char *msg) {
 	p->colno = col;
 	my_strcpy(p->errmsg, msg, sizeof(p->errmsg));
 }
 
-/* More angband-specific bits of the parser
+/**
+ * ------------------------------------------------------------------------
+ * More angband-specific bits of the parser
  * These require hooks into other parts of the code, and are a candidate for
  * moving elsewhere.
- */
+ * ------------------------------------------------------------------------ */
+
 static void print_error(struct file_parser *fp, struct parser *p) {
 	struct parser_state s;
 	parser_getstate(p, &s);
@@ -647,7 +637,9 @@ errr run_parser(struct file_parser *fp) {
 	return r;
 }
 
-/* The basic file parsing function */
+/**
+ * The basic file parsing function
+ */
 errr parse_file(struct parser *p, const char *filename) {
 	char path[1024];
 	char buf[1024];

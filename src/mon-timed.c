@@ -123,8 +123,7 @@ static bool mon_resist_effect(const struct monster *mon, int ef_idx, int timer, 
 	}
 
 	/* Inertia breathers resist slowing */
-	if (ef_idx == MON_TMD_SLOW && rsf_has(mon->race->spell_flags, RSF_BR_INER))
-	{
+	if (ef_idx == MON_TMD_SLOW && rsf_has(mon->race->spell_flags, RSF_BR_INER)){
 		rsf_on(lore->spell_flags, RSF_BR_INER);
 		return (TRUE);
 	}
@@ -217,7 +216,7 @@ static bool mon_set_timed(monster_type *m_ptr, int ef_idx, int timer,
 	 * either the monster is visible, or we're trying to ID something */
 	if (m_note && !(flag & MON_TMD_FLG_NOMESSAGE) && (flag & MON_TMD_FLG_NOTIFY)
 		&& ((mflag_has(m_ptr->mflag, MFLAG_VISIBLE) &&
-			 !mflag_has(m_ptr->mflag, MFLAG_UNAWARE)) || id)){
+			 !mflag_has(m_ptr->mflag, MFLAG_UNAWARE)) || id)) {
 		char m_name[80];
 		monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_IND_HID);
 		add_monster_message(m_name, m_ptr, m_note, TRUE);
