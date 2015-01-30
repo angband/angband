@@ -1,6 +1,6 @@
-/*
- * File: win-term.h
- * Purpose: Windows terminal structure.
+/**
+ * \file win-term.h
+ * \brief Windows terminal structure.
  *
  * Copyright (c) 1997 Ben Harrison, Skirmantas Kligys, Robert Ruehlmann,
  * and others
@@ -17,7 +17,7 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
-/*
+/**
  * Initial framework (and most code) by Ben Harrison (benh@phial.com).
  *
  * Original code by Skirmantas Kligys (kligys@scf.usc.edu).
@@ -29,12 +29,12 @@
  */
 
 
-/*
+/**
  * Forward declare
  */
 typedef struct _term_data term_data;
 
-/*
+/**
  * Extra "term" data
  *
  * Note the use of "font_want" for the names of the font file requested by
@@ -96,7 +96,7 @@ struct _term_data
 };
 
 
-/*
+/**
  * Maximum number of windows XXX XXX XXX
  */
 #define MAX_TERM_DATA 8
