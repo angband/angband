@@ -53,6 +53,12 @@
 bool arg_wizard;			/* Command arg -- Request wizard mode */
 
 /**
+ * Buffer to hold the current savefile name
+ */
+char savefile[1024];
+
+
+/**
  * Here are lists of commands, stored in this format so that they can be
  * easily maniuplated for e.g. help displays, or if a port wants to provide a
  * native menu containing a command list.
@@ -399,6 +405,25 @@ void play_game(bool new_game)
 
 	/* Close game on death or quitting */
 	close_game();
+}
+
+/**
+ * Set the savefile name.
+ */
+void savefile_set_name(const char *fname)
+{
+	char path[128];
+
+#if defined(SETGID)
+	/* Rename the savefile, using the player_uid and base_name */
+	strnfmt(path, sizeof(path), "%d.%s", player_uid, fname);
+#else
+	/* Rename the savefile, using the base name */
+	strnfmt(path, sizeof(path), "%s", fname);
+#endif
+
+	/* Save the path */
+	path_build(savefile, sizeof(savefile), ANGBAND_DIR_SAVE, path);
 }
 
 /**

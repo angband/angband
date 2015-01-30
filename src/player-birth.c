@@ -1107,10 +1107,6 @@ void do_cmd_accept_character(struct command *cmd)
 	if (OPT(birth_randarts))
 		do_randart(seed_randart, TRUE);
 
-	/* Set the savefile name if it's not already set */
-	if (!savefile[0])
-		savefile_set_name(player_safe_name(player, TRUE));
-
 	/* Seed for flavors */
 	seed_flavor = randint0(0x10000000);
 	flavor_init();

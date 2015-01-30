@@ -25,6 +25,7 @@
 #include "player.h"
 #include "ui-birth.h"
 #include "ui-display.h"
+#include "ui-game.h"
 #include "ui-help.h"
 #include "ui-input.h"
 #include "ui-menu.h"
@@ -1247,6 +1248,10 @@ static void ui_enter_birthscreen(game_event_type type, game_event_data *data,
 static void ui_leave_birthscreen(game_event_type type, game_event_data *data,
 								 void *user)
 {
+	/* Set the savefile name if it's not already set */
+	if (!savefile[0])
+		savefile_set_name(player_safe_name(player, TRUE));
+
 	free_birth_menus();
 }
 

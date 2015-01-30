@@ -1,3 +1,20 @@
+/**
+ * \file savefile.h
+ * \brief Savefile loading and saving main routines
+ *
+ * Copyright (c) 2009 Andi Sidwell <andi@takkaria.org>
+ *
+ * This work is free software; you can redistribute it and/or modify it
+ * under the terms of either:
+ *
+ * a) the GNU General Public License as published by the Free Software
+ *    Foundation, version 2, or
+ *
+ * b) the "Angband licence":
+ *    This software may be copied and distributed for educational, research,
+ *    and not for profit purposes provided that this copyright and statement
+ *    are included in all such copies.  Other copyrights may also apply.
+ */
 #ifndef INCLUDED_SAVEFILE_H
 #define INCLUDED_SAVEFILE_H
 
@@ -6,15 +23,11 @@
 #define FINISHED_CODE 3
 #define ITEM_VERSION	5
 
-/*** Savefile API ***/
-
-/* XXX-AS Remove this from the API */
-extern char savefile[1024];
-
 /**
- * Set the filename of the savefile.
- */
-void savefile_set_name(const char *fname);
+ * ------------------------------------------------------------------------
+ * Savefile API
+ * ------------------------------------------------------------------------ */
+
 
 /**
  * Save to the given location.  Returns TRUE on success, FALSE otherwise.
@@ -32,7 +45,11 @@ bool savefile_load(const char *path, bool cheat_death);
 const char *savefile_get_description(const char *path);
 
 
-/*** Ignore these ***/
+/**
+ * ------------------------------------------------------------------------
+ * Detailed saving and loading functions
+ * ------------------------------------------------------------------------ */
+
 
 /* Utility */
 void note(const char *msg);

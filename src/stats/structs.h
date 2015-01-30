@@ -1,6 +1,6 @@
-/*
- * File: stats/structs.h
- * Purpose: data structures for lists not exported in headers elsewhere
+/**
+ * \file stats/structs.h
+ * \brief Data structures for lists not exported in headers elsewhere
  *
  * Copyright (c) 2011 Robert Au
  *
@@ -26,7 +26,7 @@
 #include "mon-spell.h"
 #include "obj-slays.h"
 
-/*
+/**
  * Entries for spell/activation descriptions
  */
 typedef struct

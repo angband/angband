@@ -1,6 +1,6 @@
-/*
- * File: stats/db.c
- * Purpose: SQLite3 database storage functions
+/**
+ * \file stats/db.c
+ * \brief SQLite3 database storage functions
  *
  * Copyright (c) 2011 Robert Au <myshkin+angband@durak.net>
  *
@@ -25,12 +25,16 @@
 #include "angband.h"
 #include "init.h"
 
-/* Module state variables */
+/**
+ * Module state variables
+ */
 static sqlite3 *db;
 static char *ANGBAND_DIR_STATS;
 static char *db_filename;
 
-/* Utility functions */
+/**
+ * Utility functions
+ */
 static bool stats_make_output_dir(void) {
 	size_t size = strlen(ANGBAND_DIR_USER) + strlen(PATH_SEP) + 6;
 	ANGBAND_DIR_STATS = mem_alloc(size * sizeof(char));
@@ -43,7 +47,10 @@ static bool stats_make_output_dir(void) {
 	}
 }
 
-/* Interface functions */
+/**
+ * ------------------------------------------------------------------------
+ *  Interface functions
+ * ------------------------------------------------------------------------ */
 
 /**
  * Call stats_db_open first to create the database file and set up a 
