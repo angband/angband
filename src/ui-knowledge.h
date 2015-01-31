@@ -1,3 +1,21 @@
+/**
+ * \file ui-knowledge.h
+ * \brief Player knowledge functions
+ *
+ * Copyright (c) 2000-2007 Eytan Zweig, Andrew Doull, Pete Mack.
+ * Copyright (c) 2010 Peter Denison, Chris Carr.
+ *
+ * This work is free software; you can redistribute it and/or modify it
+ * under the terms of either:
+ *
+ * a) the GNU General Public License as published by the Free Software
+ *    Foundation, version 2, or
+ *
+ * b) the "Angband licence":
+ *    This software may be copied and distributed for educational, research,
+ *    and not for profit purposes provided that this copyright and statement
+ *    are included in all such copies.  Other copyrights may also apply.
+ */
 #ifndef UI_KNOWLEDGE_H
 #define UI_KNOWLEDGE_H
 
