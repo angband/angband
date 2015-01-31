@@ -1,6 +1,6 @@
-/*
- * File: ui-spell.c
- * Purpose: Spell UI handing
+/**
+ * \file ui-spell.c
+ * \brief Spell UI handing
  *
  * Copyright (c) 2010 Andi Sidwell
  *
@@ -26,8 +26,6 @@
 #include "player-spell.h"
 #include "ui-menu.h"
 #include "ui-output.h"
-
-
 
 
 /**
@@ -155,7 +153,9 @@ static const menu_iter spell_menu_iter = {
 	NULL	/* no resize hook */
 };
 
-/** Create and initialise a spell menu, given an object and a validity hook */
+/**
+ * Create and initialise a spell menu, given an object and a validity hook
+ */
 static struct menu *spell_menu_new(const object_type *o_ptr,
 		bool (*is_valid)(int spell))
 {
@@ -166,14 +166,13 @@ static struct menu *spell_menu_new(const object_type *o_ptr,
 
 	/* collect spells from object */
 	d->n_spells = spell_collect_from_book(o_ptr, &d->spells);
-	if (d->n_spells == 0 || !spell_okay_list(is_valid, d->spells, d->n_spells))
-	{
+	if (d->n_spells == 0 || !spell_okay_list(is_valid, d->spells, d->n_spells)){
 		mem_free(m);
 		mem_free(d);
 		return NULL;
 	}
 
-	/* copy across private data */
+	/* Copy across private data */
 	d->is_valid = is_valid;
 	d->selected_spell = -1;
 	d->browse = FALSE;
@@ -181,21 +180,23 @@ static struct menu *spell_menu_new(const object_type *o_ptr,
 
 	menu_setpriv(m, d->n_spells, d);
 
-	/* set flags */
+	/* Set flags */
 	m->header = "Name                             Lv Mana Fail Info";
 	m->flags = MN_CASELESS_TAGS;
 	m->selections = lower_case;
 	m->browse_hook = spell_menu_browser;
 	m->cmd_keys = "?";
 
-	/* set size */
+	/* Set size */
 	loc.page_rows = d->n_spells + 1;
 	menu_layout(m, &loc);
 
 	return m;
 }
 
-/** Clean up a spell menu instance */
+/**
+ * Clean up a spell menu instance
+ */
 static void spell_menu_destroy(struct menu *m)
 {
 	struct spell_menu_data *d = menu_priv(m);
@@ -215,7 +216,8 @@ static int spell_menu_select(struct menu *m, const char *noun, const char *verb)
 	region_erase_bordered(&m->active);
 
 	/* Format, capitalise and display */
-	strnfmt(buf, sizeof buf, "%s which %s? ('?' to toggle description)", verb, noun);
+	strnfmt(buf, sizeof buf, "%s which %s? ('?' to toggle description)",
+			verb, noun);
 	my_strcap(buf);
 	prt(buf, 0, 0);
 
@@ -268,8 +270,9 @@ void textui_spell_browse(void)
 	struct object *obj;
 
 	if (!get_item(&obj, "Browse which book? ",
-			"You have no books that you can read.",
-			CMD_BROWSE_SPELL, obj_can_browse, (USE_INVEN | USE_FLOOR | IS_HARMLESS)))
+				  "You have no books that you can read.",
+				  CMD_BROWSE_SPELL, obj_can_browse,
+				  (USE_INVEN | USE_FLOOR | IS_HARMLESS)))
 		return;
 
 	/* Track the object kind */
@@ -318,7 +321,7 @@ int textui_get_spell(const char *verb, item_tester book_filter,
 	my_strcap(prompt);
 
 	if (!get_item(&book, prompt, error,
-			cmd, book_filter, (USE_INVEN | USE_FLOOR)))
+				  cmd, book_filter, (USE_INVEN | USE_FLOOR)))
 		return -1;
 
 	return textui_get_spell_from_book(verb, book, error, spell_filter);

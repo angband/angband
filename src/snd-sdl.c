@@ -1,6 +1,6 @@
-/*
- * File: snd-sdl.c
- * Purpose: SDL sound support
+/**
+ * \file snd-sdl.c
+ * \brief SDL sound support
  *
  * Copyright (c) 2004 Brendon Oliver <brendon.oliver@gmail.com>
  * Copyright (c) 2007 Andi Sidwell <andi@takkaria.org>
@@ -27,16 +27,24 @@
 #include "SDL_mixer.h"
 
 
-/* Don't cache audio */
+/**
+ * Don't cache audio
+ */
 static bool no_cache_audio = FALSE;
 
-/* Using mp3s */
+/**
+ * Using mp3s
+ */
 static bool use_mp3 = FALSE;
 
-/* Arbitary limit on number of samples per event */
+/**
+ * Arbitary limit on number of samples per event
+ */
 #define MAX_SAMPLES      16
 
-/* Struct representing all data about an event sample */
+/**
+ * Struct representing all data about an event sample
+ */
 typedef struct
 {
 	int num;                        /* Number of samples for this event */
@@ -46,13 +54,13 @@ typedef struct
 } sample_list;
 
 
-/*
+/**
  * Just need an array of SampInfos
  */
 static sample_list samples[MSG_MAX];
 
 
-/*
+/**
  * Shut down the sound system and free resources.
  */
 static void close_audio(void)
@@ -61,17 +69,15 @@ static void close_audio(void)
 	int j;
 
 	/* Free all the sample data*/
-	for (i = 0; i < MSG_MAX; i++)
-	{
+	for (i = 0; i < MSG_MAX; i++) {
   		sample_list *smp = &samples[i];
 
 		/* Nuke all samples */
-		for (j = 0; j < smp->num; j++)
-		{
-		        if (use_mp3)
-			        Mix_FreeMusic(smp->mp3s[j]);
+		for (j = 0; j < smp->num; j++) {
+			if (use_mp3)
+				Mix_FreeMusic(smp->mp3s[j]);
 			else
-			        Mix_FreeChunk(smp->wavs[j]);
+				Mix_FreeChunk(smp->wavs[j]);
 			string_free(smp->paths[j]);
 		}
 	}
@@ -84,7 +90,7 @@ static void close_audio(void)
 }
 
 
-/*
+/**
  * Initialise SDL and open the mixer
  */
 static bool open_audio(void)
@@ -99,15 +105,13 @@ static bool open_audio(void)
 	audio_channels = 2;
 
 	/* Initialize the SDL library */
-	if (SDL_Init(SDL_INIT_AUDIO) < 0)
-	{
+	if (SDL_Init(SDL_INIT_AUDIO) < 0) {
 		plog_fmt("Couldn't initialize SDL: %s", SDL_GetError());
 		return FALSE;
 	}
 
 	/* Try to open the audio */
-	if (Mix_OpenAudio(audio_rate, audio_format, audio_channels, 4096) < 0)
-	{
+	if (Mix_OpenAudio(audio_rate, audio_format, audio_channels, 4096) < 0) {
 		plog_fmt("Couldn't open mixer: %s", SDL_GetError());
 		return FALSE;
 	}
@@ -118,7 +122,7 @@ static bool open_audio(void)
 
 
 
-/*
+/**
  * Read sound.cfg and map events to sounds; then load all the sounds into
  * memory to avoid I/O latency later.
  */
@@ -145,8 +149,7 @@ static bool sound_sdl_init(bool no_cache)
 	fff = file_open(path, MODE_READ, -1);
 
 	/* Handle errors */
-	if (!fff)
-	{
+	if (!fff) {
 		plog_fmt("Failed to open sound config (%s):\n    %s", 
 		          path, strerror(errno));
 		return FALSE;
@@ -154,8 +157,7 @@ static bool sound_sdl_init(bool no_cache)
 
 	/* Parse the file */
 	/* Lines are always of the form "name = sample [sample ...]" */
-	while (file_getl(fff, buffer, sizeof(buffer)))
-	{
+	while (file_getl(fff, buffer, sizeof(buffer))) {
 		char *msg_name;
 		char *sample_list;
 		char *search;
@@ -188,23 +190,19 @@ static bool sound_sdl_init(bool no_cache)
 		/* Terminate the current token */
 		cur_token = sample_list;
 		search = strchr(cur_token, ' ');
-		if (search)
-		{
+		if (search) {
 			search[0] = '\0';
 			next_token = search + 1;
-		}
-		else
-		{
+		} else {
 			next_token = NULL;
 		}
 
         /*
          * Now we find all the sample names and add them one by one
          */
-        while (cur_token)
-        {
-		int num = samples[event].num;
-		bool got_file_type = FALSE;
+        while (cur_token) {
+			int num = samples[event].num;
+			bool got_file_type = FALSE;
 
 			/* Don't allow too many samples */
 			if (num >= MAX_SAMPLES) break;
@@ -213,38 +211,28 @@ static bool sound_sdl_init(bool no_cache)
 			path_build(path, sizeof(path), ANGBAND_DIR_XTRA_SOUND, cur_token);
 			if (!file_exists(path)) goto next_token;
 
-			if (!got_file_type)
-			{
-			        if (streq(path + strlen(path) - 3, "mp3"))
-				{
+			if (!got_file_type) {
+			        if (streq(path + strlen(path) - 3, "mp3")) {
 				        use_mp3 = TRUE;
 					got_file_type = TRUE;
 				}
 			}
 
 			/* Don't load now if we're not caching */
-			if (no_cache)
-			{
+			if (no_cache) {
 				/* Just save the path for later */
 				samples[event].paths[num] = string_make(path);
-			}
-			else
-			{
+			} else {
 				/* Load the file now */
-			        if (use_mp3)
-				{
-				        samples[event].mp3s[num] = Mix_LoadMUS(path);
-					if (!samples[event].mp3s[num])
-					{
-					        plog_fmt("%s: %s", SDL_GetError(), strerror(errno));
+				if (use_mp3) {
+					samples[event].mp3s[num] = Mix_LoadMUS(path);
+					if (!samples[event].mp3s[num]) {
+						plog_fmt("%s: %s", SDL_GetError(), strerror(errno));
 						goto next_token;
 					}
-				}
-				else
-				{
-				        samples[event].wavs[num] = Mix_LoadWAV(path);
-					if (!samples[event].wavs[num])
-					{
+				} else {
+					samples[event].wavs[num] = Mix_LoadWAV(path);
+					if (!samples[event].wavs[num]) {
 					        plog_fmt("%s: %s", SDL_GetError(), strerror(errno));
 						goto next_token;
 					}
@@ -258,19 +246,15 @@ static bool sound_sdl_init(bool no_cache)
 
 			/* Figure out next token */
 			cur_token = next_token;
-			if (next_token)
-			{
+			if (next_token) {
 				/* Try to find a space */
 				search = strchr(cur_token, ' ');
 
 				/* If we can find one, terminate, and set new "next" */
-				if (search)
-				{
+				if (search) {
 					search[0] = '\0';
 					next_token = search + 1;
-				}
-				else
-				{
+				} else {
 					/* Otherwise prevent infinite looping */
 					next_token = NULL;
 				}
@@ -286,7 +270,7 @@ static bool sound_sdl_init(bool no_cache)
 	return TRUE;
 }
 
-/*
+/**
  * Play a sound of type "event".
  */
 static void play_sound(game_event_type type, game_event_data *data, void *user)
@@ -311,8 +295,7 @@ static void play_sound(game_event_type type, game_event_data *data, void *user)
 	        wave = samples[event].wavs[s];
 
 	/* Try loading it, if it's not cached */
-	if (!(wave || mp3))
-	{
+	if (!(wave || mp3)) {
 		/* Verify it exists */
 		const char *filename = samples[event].paths[s];
 		if (!file_exists(filename)) return;
@@ -325,8 +308,7 @@ static void play_sound(game_event_type type, game_event_data *data, void *user)
 	}
 
 	/* Check to see if we have a sound again */
-	if (!(wave || mp3))
-	{
+	if (!(wave || mp3)) {
 		plog("SDL sound load failed.");
 		return;
 	}
@@ -339,7 +321,7 @@ static void play_sound(game_event_type type, game_event_data *data, void *user)
 }
 
 
-/*
+/**
  * Init the SDL sound "module".
  */
 errr init_sound_sdl(int argc, char **argv)
@@ -347,10 +329,8 @@ errr init_sound_sdl(int argc, char **argv)
 	int i;
 
 	/* Parse args */
-	for (i = 1; i < argc; i++)
-	{
-		if (prefix(argv[i], "-c"))
-		{
+	for (i = 1; i < argc; i++) {
+		if (prefix(argv[i], "-c")) {
 			no_cache_audio = TRUE;
 			plog("Audio cache disabled.");
 			continue;
@@ -358,8 +338,7 @@ errr init_sound_sdl(int argc, char **argv)
 	}
 
 	/* Load sound preferences if requested */
-	if (!sound_sdl_init(no_cache_audio))
-	{
+	if (!sound_sdl_init(no_cache_audio)) {
 		plog("Failed to load sound config");
 
 		/* Failure */

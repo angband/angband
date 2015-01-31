@@ -1,6 +1,6 @@
-/*
- * File: ui-object.c
- * Purpose: Various object-related UI functions
+/**
+ * \file ui-object.c
+ * \brief Various object-related UI functions
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  * Copyright (c) 2007-9 Andi Sidwell, Chris Carr, Ed Graham, Erik Osheim
