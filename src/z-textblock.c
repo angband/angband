@@ -1,6 +1,6 @@
-/*
- * File: z-textblock.c
- * Purpose: Text output bugger code
+/**
+ * \file z-textblock.c
+ * \brief Text output bugger (?NRM) code
  *
  * Copyright (c) 2010 Andi Sidwell
  * Copyright (c) 2011 Peter Denison
@@ -16,7 +16,7 @@
  *    and/or other materials provided with the distribution.
  */
 
-/*
+/**
  * Text blocks now use the internal representation of display characters, i.e.
  * wchar_t, since they are expected to display straight to screen. Conversion
  * from the incoming locale-encoded format is done in textblock_vappend_c().
@@ -65,7 +65,8 @@ void textblock_free(textblock *tb)
 }
 
 /**
- * Resize the internal textblock storage (if needed) to hold additional characters.
+ * Resize the internal textblock storage (if needed) to hold additional
+ * characters.
  *
  * \param tb is the textblock we need to resize.
  * \param additional_size is how many characters we want to add.
@@ -93,16 +94,14 @@ static void textblock_vappend_c(textblock *tb, byte attr, const char *fmt,
 	 * re-allocating the temporary space as necessary. Once it's been
 	 * successfully formatted, we can then do the conversion to wide chars
 	 */
-	while (1)
-	{
+	while (1) {
 		va_list args;
 		size_t len;
 
 		VA_COPY(args, vp);
 		len = vstrnfmt(temp_space, temp_len, fmt, args);
 		va_end(args);
-		if (len < temp_len - 1)
-		{
+		if (len < temp_len - 1) {
 			/* Not using all space, therefore it completed */
 			break;
 		}
@@ -152,7 +151,8 @@ void textblock_append_utf8(textblock *tb, const char *utf8_string)
 
 	textblock_resize_if_needed(tb, new_length);
 
-	/* Append each UTF-8 char one at a time, so we don't trigger any conversions (which would require multiple bytes). */
+	/* Append each UTF-8 char one at a time, so we don't trigger any
+	 * conversions (which would require multiple bytes). */
 	for (i = 0; i < new_length; i++) {
 		tb->text[tb->strlen + i] = (wchar_t)utf8_string[i];
 	}
@@ -303,11 +303,13 @@ void textblock_to_file(textblock *tb, ang_file *f, int indent, int wrap_at)
 	n_lines = textblock_calculate_lines(tb, &line_starts, &line_lengths, width);
 
 	for (i = 0; i < n_lines; i++) {
-		/* For some reason, the %*c part of the format string was still indenting, even when indent was zero */
+		/* For some reason, the %*c part of the format string was still
+		 * indenting, even when indent was zero */
 		if (indent == 0)
 			file_putf(f, "%.*ls\n", line_lengths[i], tb->text + line_starts[i]);
 		else
-			file_putf(f, "%*c%.*ls\n", indent, ' ', line_lengths[i], tb->text + line_starts[i]);
+			file_putf(f, "%*c%.*ls\n", indent, ' ', line_lengths[i],
+					  tb->text + line_starts[i]);
 	}
 
 	mem_free(line_starts);
@@ -317,37 +319,41 @@ void textblock_to_file(textblock *tb, ang_file *f, int indent, int wrap_at)
 
 
 
-/*** text_out() ***/
+/**
+ * ------------------------------------------------------------------------
+ * text_out()
+ * ------------------------------------------------------------------------ */
 
-/*
+
+/**
  * Function hook to output (colored) text to the screen or to a file.
  */
 void (*text_out_hook)(byte a, const char *str);
 
-/*
+/**
  * Hack -- Where to wrap the text when using text_out().  Use the default
  * value (for example the screen width) when 'text_out_wrap' is 0.
  */
 int text_out_wrap = 0;
 
-/*
+/**
  * Hack -- Indentation for the text when using text_out().
  */
 int text_out_indent = 0;
 
-/*
+/**
  * Hack -- Padding after wrapping
  */
 int text_out_pad = 0;
 
 
-/*
+/**
  * Hack - the destination file for text_out_to_file.
  */
 ang_file *text_out_file = NULL;
 
 
-/*
+/**
  * Write text to the given file and apply line-wrapping.
  *
  * Hook function for text_out(). Make sure that text_out_file points
@@ -381,8 +387,7 @@ void text_out_to_file(byte a, const char *str)
  	s = buf;
 
 	/* Process the string */
-	while (*s)
-	{
+	while (*s) {
 		int n = 0;
 		int len = wrap - pos;
 		int l_space = -1;
@@ -394,21 +399,18 @@ void text_out_to_file(byte a, const char *str)
 			len = 0;
 
 		/* If we are at the start of the line... */
-		if (pos == 0)
-		{
+		if (pos == 0) {
 			int i;
 
 			/* Output the indent */
-			for (i = 0; i < text_out_indent; i++)
-			{
+			for (i = 0; i < text_out_indent; i++) {
 				file_writec(text_out_file, ' ');
 				pos++;
 			}
 		}
 
 		/* Find length of line up to next newline or end-of-string */
-		while ((n < len) && !((s[n] == '\n') || (s[n] == '\0')))
-		{
+		while ((n < len) && !((s[n] == '\n') || (s[n] == '\0'))) {
 			/* Mark the most recent space in the string */
 			if (s[n] == ' ') l_space = n;
 
@@ -417,20 +419,14 @@ void text_out_to_file(byte a, const char *str)
 		}
 
 		/* If we have encountered no spaces */
-		if ((l_space == -1) && (n == len))
-		{
+		if ((l_space == -1) && (n == len)) {
 			/* If we are at the start of a new line */
-			if (pos == text_out_indent)
-			{
+			if (pos == text_out_indent) {
 				len = n;
-			}
-			/* HACK - Output punctuation at the end of the line */
-			else if ((s[0] == ' ') || (s[0] == ',') || (s[0] == '.'))
-			{
+			} else if ((s[0] == ' ') || (s[0] == ',') || (s[0] == '.')) {
+				/* HACK - Output punctuation at the end of the line */
 				len = 1;
-			}
-			else
-			{
+			} else {
 				/* Begin a new line */
 				file_writec(text_out_file, '\n');
 
@@ -439,9 +435,7 @@ void text_out_to_file(byte a, const char *str)
 
 				continue;
 			}
-		}
-		else
-		{
+		} else {
 			/* Wrap at the newline */
 			if ((s[n] == '\n') || (s[n] == '\0')) len = n;
 
@@ -477,7 +471,7 @@ void text_out_to_file(byte a, const char *str)
 }
 
 
-/*
+/**
  * Output text to the screen or to a file depending on the selected
  * text_out hook.
  */
@@ -500,7 +494,7 @@ void text_out(const char *fmt, ...)
 }
 
 
-/*
+/**
  * Output text to the screen (in color) or to a file depending on the
  * selected hook.
  */
@@ -522,7 +516,7 @@ void text_out_c(byte a, const char *fmt, ...)
 	text_out_hook(a, buf);
 }
 
-/*
+/**
  * Given a "formatted" chunk of text (i.e. one including tags like {red}{/})
  * in 'source', with starting point 'init', this finds the next section of
  * text and any tag that goes with it, return TRUE if it finds something to 
@@ -538,7 +532,9 @@ void text_out_c(byte a, const char *fmt, ...)
  *
  * See text_out_e for an example of its use.
  */
-static bool next_section(const char *source, size_t init, const char **text, size_t *len, const char **tag, size_t *taglen, const char **end)
+static bool next_section(const char *source, size_t init, const char **text,
+						 size_t *len, const char **tag, size_t *taglen,
+						 const char **end)
 {
 	const char *next;	
 
@@ -551,52 +547,43 @@ static bool next_section(const char *source, size_t init, const char **text, siz
 	{
 		const char *s = next + 1;
 
-		while (*s && (isalpha((unsigned char) *s) || isspace((unsigned char) *s))) s++;
+		while (*s && (isalpha((unsigned char) *s) ||
+					  isspace((unsigned char) *s)))
+			s++;
 
 		/* Woo!  valid opening tag thing */
-		if (*s == '}')
-		{
+		if (*s == '}') {
 			const char *close = strstr(s, "{/}");
 
 			/* There's a closing thing, so it's valid. */
-			if (close)
-			{
+			if (close) {
 				/* If this tag is at the start of the fragment */
-				if (next == *text)
-				{
+				if (next == *text) {
 					*tag = *text + 1;
 					*taglen = s - *text - 1;
 					*text = s + 1;
 					*len = close - *text;
 					*end = close + 3;
 					return TRUE;
-				}
-				/* Otherwise return the chunk up to this */
-				else
-				{
+				} else {
+					/* Otherwise return the chunk up to this */
 					*len = next - *text;
 					*end = *text + *len;
 					return TRUE;
 				}
-			}
-			/* No closing thing, therefore all one lump of text. */
-			else
-			{
+			} else {
+				/* No closing thing, therefore all one lump of text. */
 				*len = strlen(*text);
 				*end = *text + *len;
 				return TRUE;
 			}
-		}
-		/* End of the string, that's fine. */
-		else if (*s == '\0')
-		{
-				*len = strlen(*text);
-				*end = *text + *len;
-				return TRUE;
-		}
-		/* An invalid tag, skip it. */
-		else
-		{
+		} else if (*s == '\0') {
+			/* End of the string, that's fine. */
+			*len = strlen(*text);
+			*end = *text + *len;
+			return TRUE;
+		} else {
+			/* An invalid tag, skip it. */
 			next = next + 1;
 		}
 
@@ -610,7 +597,7 @@ static bool next_section(const char *source, size_t init, const char **text, siz
 	return TRUE;
 }
 
-/*
+/**
  * Output text to the screen or to a file depending on the
  * selected hook.  Takes strings with "embedded formatting",
  * such that something within {red}{/} will be printed in red.
@@ -638,15 +625,13 @@ void text_out_e(const char *fmt, ...)
 	va_end(vp);
 
 	start = buf;
-	while (next_section(start, 0, &text, &textlen, &tag, &taglen, &next))
-	{
+	while (next_section(start, 0, &text, &textlen, &tag, &taglen, &next)) {
 		int a = -1;
 
 		memcpy(smallbuf, text, textlen);
 		smallbuf[textlen] = 0;
 
-		if (tag)
-		{
+		if (tag) {
 			char tagbuffer[16];
 
 			/* Colour names are less than 16 characters long. */

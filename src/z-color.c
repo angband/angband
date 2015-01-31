@@ -19,9 +19,12 @@
 #include "z-color.h"
 #include "z-util.h"
 
-/*** Colour constants ***/
+/**
+ * ------------------------------------------------------------------------
+ * Colour constants
+ * ------------------------------------------------------------------------ */
 
-/*
+/**
  * Global table of color definitions (mostly zeros)
  */
 byte angband_color_table[MAX_COLORS][4] =
@@ -57,7 +60,7 @@ byte angband_color_table[MAX_COLORS][4] =
 	{0x00, 0x28, 0x28, 0x28}, /* 28 COLOUR_SHADE */
 };
 
-/*
+/**
  * Global array of color names and translations.
  */
 color_type color_table[MAX_COLORS] =
@@ -153,7 +156,7 @@ color_type color_table[MAX_COLORS] =
 
 
 
-/*
+/**
  * Accept a color index character; if legal, return the color.  -LM-
  *
  * Unlike Sangband, we don't translate these colours here.
@@ -184,7 +187,7 @@ int color_char_to_attr(char c)
 }
 
 
-/*
+/**
  * Converts a string to a terminal color byte.
  */
 int color_text_to_attr(const char *name)
@@ -201,7 +204,7 @@ int color_text_to_attr(const char *name)
 }
 
 
-/*
+/**
  * Extract a textual representation of an attribute
  */
 const char *attr_to_text(byte a)
@@ -214,7 +217,7 @@ const char *attr_to_text(byte a)
 
 
 
-/*
+/**
  * XXX XXX XXX Important note about "colors" XXX XXX XXX
  *
  * The "COLOUR_*" color definitions list the "composition" of each
@@ -245,10 +248,14 @@ const char *attr_to_text(byte a)
  *   4/4        1.00            1.00            1.00          #ff
  */
 
-/* Table of gamma values */
+/**
+ * Table of gamma values
+ */
 byte gamma_table[256];
 
-/* Table of ln(x / 256) * 256 for x going from 0 -> 255 */
+/**
+ * Table of ln(x / 256) * 256 for x going from 0 -> 255
+ */
 static const s16b gamma_helper[256] =
 {
 	0, -1420, -1242, -1138, -1065, -1007, -961, -921, -887, -857, -830,
@@ -276,7 +283,7 @@ static const s16b gamma_helper[256] =
 };
 
 
-/*
+/**
  * Build the gamma table so that floating point isn't needed.
  *
  * Note gamma goes from 0->256.  The old value of 100 is now 128.
@@ -295,8 +302,7 @@ void build_gamma_table(int gamma)
 	gamma_table[0] = 0;
 	gamma_table[255] = 255;
 
-	for (i = 1; i < 255; i++)
-	{
+	for (i = 1; i < 255; i++) {
 		/*
 		 * Initialise the Taylor series
 		 *
@@ -306,8 +312,7 @@ void build_gamma_table(int gamma)
 		value = 256L * 256L;
 		diff = ((long)gamma_helper[i]) * (gamma - 256);
 
-		while (diff)
-		{
+		while (diff) {
 			value += diff;
 			n++;
 
@@ -331,7 +336,8 @@ void build_gamma_table(int gamma)
 			 * divided by 256*256 each itteration, to get back to
 			 * the original power series.
 			 */
-			diff = (((diff / 256) * gamma_helper[i]) * (gamma - 256)) / (256 * n);
+			diff = (((diff / 256) * gamma_helper[i]) *
+					(gamma - 256)) / (256 * n);
 		}
 
 		/*

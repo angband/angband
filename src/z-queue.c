@@ -1,6 +1,6 @@
-/*
- * File: z-queue.c
- * Purpose: Simple circular integer queue.
+/**
+ * \file z-queue.c
+ * \brief Simple circular integer queue.
  *
  * Copyright (c) 2011 Erik Osheim
  *

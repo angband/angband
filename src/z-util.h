@@ -1,10 +1,32 @@
+/**
+ * \file z-util.c
+ * \brief Low-level string handling and other utilities.
+ *
+ * Copyright (c) 1997-2005 Ben Harrison, Robert Ruehlmann.
+ *
+ * This work is free software; you can redistribute it and/or modify it
+ * under the terms of either:
+ *
+ * a) the GNU General Public License as published by the Free Software
+ *    Foundation, version 2, or
+ *
+ * b) the "Angband licence":
+ *    This software may be copied and distributed for educational, research,
+ *    and not for profit purposes provided that this copyright and statement
+ *    are included in all such copies.  Other copyrights may also apply.
+ */
+
 #ifndef INCLUDED_Z_UTIL_H
 #define INCLUDED_Z_UTIL_H
 
 #include "h-basic.h"
 
 
-/**** Available variables ****/
+/**
+ * ------------------------------------------------------------------------
+ * Available variables
+ * ------------------------------------------------------------------------ */
+
 
 /**
  * The name of the program.
@@ -12,15 +34,21 @@
 extern char *argv0;
 
 
-/* Aux functions */
+/**
+ * Aux functions
+ */
 size_t (*text_mbcs_hook)(wchar_t *dest, const char *src, int n);
 extern void (*plog_aux)(const char *);
 extern void (*quit_aux)(const char *);
 
 
-/**** Available Functions ****/
+/**
+ * ------------------------------------------------------------------------
+ * Available Functions
+ * ------------------------------------------------------------------------ */
 
-/*
+
+/**
  * Return "s" (or not) depending on whether n is singular.
  */
 #define PLURAL(n)		((n) == 1 ? "" : "s")
@@ -71,10 +99,14 @@ extern size_t my_strcpy(char *buf, const char *src, size_t bufsize);
  */
 extern size_t my_strcat(char *buf, const char *src, size_t bufsize);
 
-/* Capitalise string 'buf' */
+/**
+ * Capitalise string 'buf'
+ */
 void my_strcap(char *buf);
 
-/* Test equality, prefix, suffix */
+/**
+ * Test equality, prefix, suffix
+ */
 extern bool streq(const char *s, const char *t);
 extern bool prefix(const char *s, const char *t);
 extern bool prefix_i(const char *s, const char *t);
@@ -82,34 +114,48 @@ extern bool suffix(const char *s, const char *t);
 
 #define streq(s, t)		(!strcmp(s, t))
 
-/* skip occurrences of a characters */
+/**
+ * Skip occurrences of a characters
+ */
 extern void strskip(char *s, const char c);
 extern void strescape(char *s, const char c);
 
-/* determines if a string is "empty" */
+/**
+ * Determines if a string is "empty"
+ */
 bool contains_only_spaces(const char* s);
 
-/* Check if a char is a vowel */
+/**
+ * Check if a char is a vowel
+ */
 bool is_a_vowel(int ch);
 
 
-/*
+/**
  * Allow override of the multi-byte to wide char conversion
  */
 size_t text_mbstowcs(wchar_t *dest, const char *src, int n);
 
-/* Print an error message */
+/**
+ * Print an error message
+ */
 extern void plog(const char *str);
 
-/* Exit, with optional message */
+/**
+ * Exit, with optional message
+ */
 extern void quit(const char *str);
 
 
-/* Sorting functions */
+/**
+ * Sorting functions
+ */
 extern void sort(void *array, size_t nmemb, size_t smemb,
 		 int (*comp)(const void *a, const void *b));
 
-/* Mathematical functions */
+/**
+ * Mathematical functions
+ */
 int mean(int *nums, int size);
 int variance(int *nums, int size);
 

@@ -1,6 +1,6 @@
-/*
- * File: z-util.c
- * Purpose: Low-level string handling and other utilities.
+/**
+ * \file z-util.c
+ * \brief Low-level string handling and other utilities.
  *
  * Copyright (c) 1997-2005 Ben Harrison, Robert Ruehlmann.
  *
@@ -20,17 +20,17 @@
 
 #include "z-util.h"
 
-/*
+/**
  * Convenient storage of the program name
  */
 char *argv0 = NULL;
 
-/*
+/**
  * Hook for platform-specific wide character handling
  */
 size_t (*text_mbcs_hook)(wchar_t *dest, const char *src, int n) = NULL;
 
-/*
+/**
  * Case insensitive comparison between two strings
  */
 int my_stricmp(const char *s1, const char *s2)
@@ -39,11 +39,9 @@ int my_stricmp(const char *s1, const char *s2)
 	char ch2 = 0;
 
 	/* Just loop */
-	while (TRUE)
-	{
+	while (TRUE) {
 		/* We've reached the end of both strings simultaneously */
-		if ((*s1 == 0) && (*s2 == 0))
-		{
+		if ((*s1 == 0) && (*s2 == 0)) {
 			/* We're still here, so s1 and s2 are equal */
 			return (0);
 		}
@@ -52,8 +50,7 @@ int my_stricmp(const char *s1, const char *s2)
 		ch2 = toupper((unsigned char) *s2);
 
 		/* If the characters don't match */
-		if (ch1 != ch2)
-		{
+		if (ch1 != ch2) {
 			/* return the difference between them */
 			return ((int)(ch1 - ch2));
 		}
@@ -65,7 +62,7 @@ int my_stricmp(const char *s1, const char *s2)
 }
 
 
-/*
+/**
  * Case insensitive comparison between the first n characters of two strings
  */
 int my_strnicmp(const char *a, const char *b, int n)
@@ -74,8 +71,7 @@ int my_strnicmp(const char *a, const char *b, int n)
 	char z1, z2;
 
 	/* Scan the strings */
-	for (s1 = a, s2 = b; n > 0; s1++, s2++, n--)
-	{
+	for (s1 = a, s2 = b; n > 0; s1++, s2++, n--) {
 		z1 = toupper((unsigned char)*s1);
 		z2 = toupper((unsigned char)*s2);
 		if (z1 < z2) return (-1);
@@ -86,7 +82,7 @@ int my_strnicmp(const char *a, const char *b, int n)
 	return 0;
 }
 
-/*
+/**
  * An ANSI version of strstr() with case insensitivity.
  *
  * In the public domain; found at:
@@ -97,11 +93,9 @@ char *my_stristr(const char *string, const char *pattern)
 	const char *pptr, *sptr;
 	char *start;
 
-	for (start = (char *)string; *start != 0; start++)
-	{
-		/* find start of pattern in string */
-		for ( ; ((*start != 0) &&
-			 (toupper((unsigned char)*start) != toupper((unsigned char)*pattern))); start++)
+	for (start = (char *)string; *start != 0; start++) {
+		/* Find start of pattern in string */
+		for ( ; ((*start != 0) && (toupper((unsigned char)*start) != toupper((unsigned char)*pattern))); start++)
 			;
 		if (*start == 0)
 			return NULL;
@@ -109,12 +103,11 @@ char *my_stristr(const char *string, const char *pattern)
 		pptr = (const char *)pattern;
 		sptr = (const char *)start;
 
-		while (toupper((unsigned char)*sptr) == toupper((unsigned char)*pptr))
-		{
+		while (toupper((unsigned char)*sptr) == toupper((unsigned char)*pptr)) {
 			sptr++;
 			pptr++;
 
-			/* if end of pattern then pattern was found */
+			/* If end of pattern then pattern was found */
 			if (*pptr == 0)
 				return (start);
 		}
@@ -124,7 +117,7 @@ char *my_stristr(const char *string, const char *pattern)
 }
 
 
-/*
+/**
  * The my_strcpy() function copies up to 'bufsize'-1 characters from 'src'
  * to 'buf' and NUL-terminates the result.  The 'buf' and 'src' strings may
  * not overlap.
@@ -154,10 +147,11 @@ size_t my_strcpy(char *buf, const char *src, size_t bufsize)
 }
 
 
-/*
- * The my_strcat() tries to append a string to an existing NUL-terminated string.
- * It never writes more characters into the buffer than indicated by 'bufsize' and
- * NUL-terminates the buffer.  The 'buf' and 'src' strings may not overlap.
+/**
+ * The my_strcat() tries to append a string to an existing NUL-terminated
+ * string.
+ * It never writes more characters into the buffer than indicated by 'bufsize'
+ * and NUL-terminates the buffer.  The 'buf' and 'src' strings may not overlap.
  *
  * my_strcat() returns strlen(buf) + strlen(src).  This makes checking for
  * truncation easy.  Example:
@@ -170,13 +164,10 @@ size_t my_strcat(char *buf, const char *src, size_t bufsize)
 	size_t dlen = strlen(buf);
 
 	/* Is there room left in the buffer? */
-	if (dlen < bufsize - 1)
-	{
+	if (dlen < bufsize - 1) {
 		/* Append as much as possible  */
 		return (dlen + my_strcpy(buf + dlen, src, bufsize - dlen));
-	}
-	else
-	{
+	} else {
 		/* Return without appending */
 		return (dlen + strlen(src));
 	}
@@ -192,7 +183,7 @@ void my_strcap(char *buf)
 }
 
 
-/*
+/**
  * Determine if string "a" is equal to string "b"
  */
 #undef streq
@@ -202,7 +193,7 @@ bool streq(const char *a, const char *b)
 }
 
 
-/*
+/**
  * Determine if string "t" is a suffix of string "s"
  */
 bool suffix(const char *s, const char *t)
@@ -218,7 +209,7 @@ bool suffix(const char *s, const char *t)
 }
 
 
-/*
+/**
  * Determine if string "t" is a prefix of string "s"
  */
 bool prefix(const char *s, const char *t)
@@ -235,7 +226,7 @@ bool prefix(const char *s, const char *t)
 }
 
 
-/*
+/**
  * Determine if string "t" is a prefix of string "s" - case insensitive.
  */
 bool prefix_i(const char *s, const char *t)
@@ -256,8 +247,8 @@ bool prefix_i(const char *s, const char *t)
 	return (TRUE);
 }
 
-/*
- * rewrite string s in-place "skipping" every occurrence of character c
+/**
+ * Rewrite string s in-place "skipping" every occurrence of character c
  */
 void strskip(char *s, const char c){
 	char *in=s;
@@ -272,8 +263,8 @@ void strskip(char *s, const char c){
 	*out=0;
 }
 
-/*
- * rewrite string s in-place removing escape character c
+/**
+ * Rewrite string s in-place removing escape character c
  * note that pairs of c will leave one instance of c in out
  */
 void strescape(char *s, const char c){
@@ -293,7 +284,7 @@ void strescape(char *s, const char c){
 	*out=0;
 }
 
-/*
+/**
  * returns TRUE if string only contains spaces
  */
 bool contains_only_spaces(const char* s){
@@ -306,7 +297,7 @@ bool contains_only_spaces(const char* s){
 	return TRUE;
 }
 
-/*
+/**
  * Check a char for "vowel-hood"
  */
 bool is_a_vowel(int ch)
@@ -326,7 +317,7 @@ bool is_a_vowel(int ch)
 	return (FALSE);
 }
 
-/*
+/**
  * Allow override of the multi-byte to wide char conversion
  */
 size_t text_mbstowcs(wchar_t *dest, const char *src, int n)
@@ -337,7 +328,7 @@ size_t text_mbstowcs(wchar_t *dest, const char *src, int n)
 		return mbstowcs(dest, src, n);
 }
 
-/*
+/**
  * Redefinable "plog" action
  */
 void (*plog_aux)(const char *) = NULL;
@@ -357,12 +348,12 @@ void plog(const char *str)
 
 
 
-/*
+/**
  * Redefinable "quit" action
  */
 void (*quit_aux)(const char *) = NULL;
 
-/*
+/**
  * Exit (ala "exit()").  If 'str' is NULL, do "exit(EXIT_SUCCESS)".
  * Otherwise, plog() 'str' and exit with an error code of -1.
  * But always use 'quit_aux', if set, before anything else.
@@ -382,7 +373,9 @@ void quit(const char *str)
 	exit(EXIT_FAILURE);
 }
 
-/* Arithmetic mean of the first 'size' entries of the array 'nums' */
+/**
+ * Arithmetic mean of the first 'size' entries of the array 'nums'
+ */
 int mean(int *nums, int size)
 {
 	int i, total = 0;
@@ -392,7 +385,9 @@ int mean(int *nums, int size)
 	return total / size;
 }
 
-/* Variance of the first 'size' entries of the array 'nums'  */
+/**
+ * Variance of the first 'size' entries of the array 'nums'
+ */
 int variance(int *nums, int size)
 {
 	int i, avg, total = 0;

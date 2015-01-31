@@ -1,6 +1,6 @@
-/*
- * File: z-rand.c
- * Purpose: A Random Number Generator for Angband
+/**
+ * \file z-rand.c
+ * \brief A Random Number Generator for Angband
  *
  * Copyright (c) 1997 Ben Harrison, Randy Hutson
  * 
@@ -76,7 +76,7 @@ static u32b WELLRNG1024a (void){
 }
 /* end WELL RNG */
 
-/*
+/**
  * Simple RNG, implemented with a linear congruent algorithm.
  */
 #define LCRNG(X) ((X) * 1103515245 + 12345)
@@ -98,7 +98,8 @@ static u32b rand_fixval = 0;
 /**
  * Initialize the complex RNG using a new seed.
  */
-void Rand_state_init(u32b seed) {
+void Rand_state_init(u32b seed)
+{
 	int i, j;
 
 	/* Seed the table */
@@ -121,14 +122,13 @@ void Rand_state_init(u32b seed) {
 	}
 }
 
-/*
+/**
  * Initialise the RNG
  */
 void Rand_init(void)
 {
 	/* Init RNG */
-	if (Rand_quick)
-	{
+	if (Rand_quick) {
 		u32b seed;
 
 		/* Basic seed */
@@ -161,7 +161,8 @@ void Rand_init(void)
  * This method has no bias, and is much less affected by patterns in the "low"
  * bits of the underlying RNG's. However, it is potentially non-terminating.
  */
-u32b Rand_div(u32b m) {
+u32b Rand_div(u32b m)
+{
 	u32b r, n;
 
 	/* Division by zero will result if m is larger than 0x10000000 */
@@ -279,10 +280,10 @@ static s16b Rand_normal_table[RANDNOR_NUM] = {
  *
  * Note that the binary search takes up to 16 quick iterations.
  */
-s16b Rand_normal(int mean, int stand) {
+s16b Rand_normal(int mean, int stand)
+{
 	s16b tmp, offset;
 
-	// foo
 	s16b low = 0;
 	s16b high = RANDNOR_NUM;
 
@@ -318,7 +319,8 @@ s16b Rand_normal(int mean, int stand) {
 /**
  * Generates damage for "2d6" style dice rolls
  */
-int damroll(int num, int sides) {
+int damroll(int num, int sides)
+{
 	int i;
 	int sum = 0;
 
@@ -334,7 +336,8 @@ int damroll(int num, int sides) {
 /**
  * Calculation helper function for damroll
  */
-int damcalc(int num, int sides, aspect dam_aspect) {
+int damcalc(int num, int sides, aspect dam_aspect)
+{
 	switch (dam_aspect) {
 		case MAXIMISE:
 		case EXTREMIFY: return num * sides;
@@ -354,7 +357,8 @@ int damcalc(int num, int sides, aspect dam_aspect) {
  *
  * Note that "rand_range(0, N-1)" == "randint0(N)".
  */
-int rand_range(int A, int B) {
+int rand_range(int A, int B)
+{
 	if (A == B) return A;
 	assert(A < B);
 
@@ -366,7 +370,8 @@ int rand_range(int A, int B) {
  * Perform division, possibly rounding up or down depending on the size of the
  * remainder and chance.
  */
-static int simulate_division(int dividend, int divisor) {
+static int simulate_division(int dividend, int divisor)
+{
 	int quotient  = dividend / divisor;
 	int remainder = dividend % divisor;
 	if (randint0(divisor) < remainder) quotient++;
@@ -413,7 +418,8 @@ static int simulate_division(int dividend, int divisor) {
  * 120    0.03  0.11  0.31  0.46  1.31  2.48  4.60  7.78 11.67 25.53 45.72
  * 128    0.02  0.01  0.13  0.33  0.83  1.41  3.24  6.17  9.57 14.22 64.07
  */
-s16b m_bonus(int max, int level) {
+s16b m_bonus(int max, int level)
+{
 	int bonus, stand, value;
 
 	/* Make sure level is reasonable */
@@ -441,7 +447,8 @@ s16b m_bonus(int max, int level) {
 /**
  * Calculation helper function for m_bonus
  */
-s16b m_bonus_calc(int max, int level, aspect bonus_aspect) {
+s16b m_bonus_calc(int max, int level, aspect bonus_aspect)
+{
 	switch (bonus_aspect) {
 		case EXTREMIFY:
 		case MAXIMISE:  return max;
@@ -458,7 +465,8 @@ s16b m_bonus_calc(int max, int level, aspect bonus_aspect) {
 /**
  * Calculation helper function for random_value structs
  */
-int randcalc(random_value v, int level, aspect rand_aspect) {
+int randcalc(random_value v, int level, aspect rand_aspect)
+{
 	if (rand_aspect == EXTREMIFY) {
 		int min = randcalc(v, level, MINIMISE);
 		int max = randcalc(v, level, MAXIMISE);
@@ -475,7 +483,8 @@ int randcalc(random_value v, int level, aspect rand_aspect) {
 /**
  * Test to see if a value is within a random_value's range
  */
-bool randcalc_valid(random_value v, int test) {
+bool randcalc_valid(random_value v, int test)
+{
 	if (test < randcalc(v, 0, MINIMISE))
 		return FALSE;
 	else if (test > randcalc(v, 0, MAXIMISE))
@@ -487,11 +496,13 @@ bool randcalc_valid(random_value v, int test) {
 /**
  * Test to see if a random_value actually varies
  */
-bool randcalc_varies(random_value v) {
+bool randcalc_varies(random_value v)
+{
 	return randcalc(v, 0, MINIMISE) != randcalc(v, 0, MAXIMISE);
 }
 
-void rand_fix(u32b val) {
+void rand_fix(u32b val)
+{
 	rand_fixed = TRUE;
 	rand_fixval = val;
 }
@@ -502,7 +513,8 @@ int getpid(void);
  * Another simple RNG that does not use any of the above state
  * (so can be used without disturbing the game's RNG state)
  */
-u32b Rand_simple(u32b m) {
+u32b Rand_simple(u32b m)
+{
 	static time_t seed;
 	time_t v;
 	v = time(NULL);

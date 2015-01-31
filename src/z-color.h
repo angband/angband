@@ -1,6 +1,7 @@
-/* File: z-color.h */
-
-/*
+/**
+ * \file z-color.h
+ * \brief Generic color definitions
+ *
  * Copyright (c) 1997 Ben Harrison
  *
  * This software may be copied and distributed for educational, research,
@@ -13,9 +14,7 @@
 
 #include "h-basic.h"
 
-/*** Colors ***/
-
-/*
+/**
  * Angband "attributes" (with symbols, and base (R,G,B) codes)
  *
  * The "(R,G,B)" codes are given in "fourths" of the "maximal" value,
@@ -52,9 +51,11 @@
 #define COLOUR_DEEP_L_BLUE 27    /* Z */
 #define COLOUR_SHADE       28    /* for shaded backgrounds */
 
-/* The following allow color 'translations' to support environments with a limited color depth
- * as well as translate colours to alternates for e.g. menu highlighting. */
-
+/**
+ * The following allow color 'translations' to support environments with a
+ * limited color depth as well as translate colours to alternates
+ * for e.g. menu highlighting.
+ */
 #define ATTR_FULL        0    /* full color translation */
 #define ATTR_MONO        1    /* mono color translation */
 #define ATTR_VGA         2    /* 16 color translation */
@@ -63,11 +64,11 @@
 #define ATTR_DARK        5    /* "Dark" color translation */
 #define ATTR_HIGH        6    /* "Highlight" color translation */
 #define ATTR_METAL       7    /* "Metallic" color translation */
-#define ATTR_MISC        8    /* "Miscellaneous" color translation - see misc_to_attr */
+#define ATTR_MISC        8    /* "Miscellaneous" - see misc_to_attr */
 
 #define MAX_ATTR        9
 
-/*
+/**
  * Maximum number of colours, and number of "basic" Angband colours
  */ 
 #define MAX_COLORS        256
@@ -77,7 +78,7 @@
 #define BG_DARK  2	/* The set number for the dark-background glyphs */
 #define BG_MAX   3	/* The max number of backgrounds */
 
-/*
+/**
  * A game color.
  */
 typedef struct color_type color_type;
@@ -85,7 +86,7 @@ struct color_type
 {
 	char index_char;            /* Character index:  'r' = red, etc. */
 	char name[32];              /* Color name */
-	byte color_translate[MAX_ATTR];       /* Index for various in-game translations */
+	byte color_translate[MAX_ATTR]; /* Index for various in-game translations */
 };
 
 extern byte angband_color_table[MAX_COLORS][4];

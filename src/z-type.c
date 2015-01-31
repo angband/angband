@@ -1,6 +1,6 @@
-/*
- * File: z-type.c
- * Purpose: Support various data types.
+/**
+ * \file z-type.c
+ * \brief Support various data types.
  *
  * Copyright (c) 2007 Angband Developers
  *
@@ -26,7 +26,7 @@ struct loc loc(int x, int y) {
 	return p;
 }
 
-/*
+/**
  * Utility functions to work with point_sets
  */
 struct point_set *point_set_new(int initial_size)
@@ -44,7 +44,8 @@ void point_set_dispose(struct point_set *ps)
 	mem_free(ps);
 }
 
-/* Add the point to the given point set, making more space if there is
+/**
+ * Add the point to the given point set, making more space if there is
  * no more space left.
  */
 void add_to_point_set(struct point_set *ps, int y, int x)

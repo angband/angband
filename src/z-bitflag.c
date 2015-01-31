@@ -1,6 +1,6 @@
-/*
- * File: z-bitflag.c
- * Purpose: Low-level bit vector manipulation
+/**
+ * \file z-bitflag.c
+ * \brief Low-level bit vector manipulation
  *
  * Copyright (c) 2010 William L Moore
  *
@@ -39,15 +39,15 @@ bool flag_has(const bitflag *flags, const size_t size, const int flag)
 	return FALSE;
 }
 
-bool flag_has_dbg(const bitflag *flags, const size_t size, const int flag, const char *fi, const char *fl)
+bool flag_has_dbg(const bitflag *flags, const size_t size, const int flag,
+				  const char *fi, const char *fl)
 {
 	const size_t flag_offset = FLAG_OFFSET(flag);
 	const int flag_binary = FLAG_BINARY(flag);
 
 	if (flag == FLAG_END) return FALSE;
 
-	if (flag_offset >= size)
-	{
+	if (flag_offset >= size) {
 		quit_fmt("Error in flag_has(%s, %s): FlagID[%d] Size[%u] FlagOff[%u] FlagBV[%d]\n",
 		         fi, fl, flag, (unsigned int) size, (unsigned int) flag_offset, flag_binary);
 	}
@@ -73,8 +73,7 @@ int flag_next(const bitflag *flags, const size_t size, const int flag)
 	const int max_flags = FLAG_MAX(size);
 	int f, flag_offset, flag_binary;
 
-	for (f = flag; f < max_flags; f++)
-	{
+	for (f = flag; f < max_flags; f++) {
 		flag_offset = FLAG_OFFSET(f);
 		flag_binary = FLAG_BINARY(f);
 
@@ -125,7 +124,8 @@ bool flag_is_full(const bitflag *flags, const size_t size)
  * TRUE is returned when any flag is set in both `flags1` and `flags2`, and
  * FALSE otherwise. The size of the bitfields is supplied in `size`.
  */
-bool flag_is_inter(const bitflag *flags1, const bitflag *flags2, const size_t size)
+bool flag_is_inter(const bitflag *flags1, const bitflag *flags2,
+				   const size_t size)
 {
 	size_t i;
 
@@ -142,7 +142,8 @@ bool flag_is_inter(const bitflag *flags1, const bitflag *flags2, const size_t si
  * TRUE is returned when every set flag in `flags2` is also set in `flags1`,
  * and FALSE otherwise. The size of the bitfields is supplied in `size`.
  */
-bool flag_is_subset(const bitflag *flags1, const bitflag *flags2, const size_t size)
+bool flag_is_subset(const bitflag *flags1, const bitflag *flags2,
+					const size_t size)
 {
 	size_t i;
 
@@ -159,7 +160,8 @@ bool flag_is_subset(const bitflag *flags1, const bitflag *flags2, const size_t s
  * TRUE is returned when the flags set in `flags1` and `flags2` are identical,
  * and FALSE otherwise. the size of the bitfields is supplied in `size`.
  */
-bool flag_is_equal(const bitflag *flags1, const bitflag *flags2, const size_t size)
+bool flag_is_equal(const bitflag *flags1, const bitflag *flags2,
+				   const size_t size)
 {
 	return (!memcmp(flags1, flags2, size * sizeof(bitflag)));
 }
@@ -186,13 +188,13 @@ bool flag_on(bitflag *flags, const size_t size, const int flag)
 	return TRUE;
 }
 
-bool flag_on_dbg(bitflag *flags, const size_t size, const int flag, const char *fi, const char *fl)
+bool flag_on_dbg(bitflag *flags, const size_t size, const int flag,
+				 const char *fi, const char *fl)
 {
 	const size_t flag_offset = FLAG_OFFSET(flag);
 	const int flag_binary = FLAG_BINARY(flag);
 
-	if (flag_offset >= size)
-	{
+	if (flag_offset >= size) {
 		quit_fmt("Error in flag_on(%s, %s): FlagID[%d] Size[%u] FlagOff[%u] FlagBV[%d]\n",
 		         fi, fl, flag, (unsigned int) size, (unsigned int) flag_offset, flag_binary);
 	}
@@ -289,8 +291,7 @@ bool flag_union(bitflag *flags1, const bitflag *flags2, const size_t size)
 	size_t i;
 	bool delta = FALSE;
 
-	for (i = 0; i < size; i++)
-	{
+	for (i = 0; i < size; i++) {
 		/* !flag_is_subset() */
 		if (~flags1[i] & flags2[i]) delta = TRUE;
 
@@ -313,8 +314,7 @@ bool flag_comp_union(bitflag *flags1, const bitflag *flags2, const size_t size)
 	size_t i;
 	bool delta = FALSE;
 
-	for (i = 0; i < size; i++)
-	{
+	for (i = 0; i < size; i++) {
 		/* no equivalent fn */
 		if (!(~flags1[i] & ~flags2[i])) delta = TRUE;
 
@@ -337,8 +337,7 @@ bool flag_inter(bitflag *flags1, const bitflag *flags2, const size_t size)
 	size_t i;
 	bool delta = FALSE;
 
-	for (i = 0; i < size; i++)
-	{
+	for (i = 0; i < size; i++) {
 		/* !flag_is_equal() */
 		if (!(flags1[i] == flags2[i])) delta = TRUE;
 
@@ -362,8 +361,7 @@ bool flag_diff(bitflag *flags1, const bitflag *flags2, const size_t size)
 	size_t i;
 	bool delta = FALSE;
 
-	for (i = 0; i < size; i++)
-	{
+	for (i = 0; i < size; i++) {
 		/* flag_is_inter() */
 		if (flags1[i] & flags2[i]) delta = TRUE;
 
@@ -396,16 +394,14 @@ bool flags_test(const bitflag *flags, const size_t size, ...)
 	va_start(args, size);
 
 	/* Process each flag in the va-args */
-	for (f = va_arg(args, int); f != FLAG_END; f = va_arg(args, int))
-	{
+	for (f = va_arg(args, int); f != FLAG_END; f = va_arg(args, int)) {
 		flag_offset = FLAG_OFFSET(f);
 		flag_binary = FLAG_BINARY(f);
 
 		assert(flag_offset < size);
 
 		/* flag_has() */
-		if (flags[flag_offset] & flag_binary)
-		{
+		if (flags[flag_offset] & flag_binary) {
 			delta = TRUE;
 			break;
 		}
@@ -436,16 +432,14 @@ bool flags_test_all(const bitflag *flags, const size_t size, ...)
 	va_start(args, size);
 
 	/* Process each flag in the va-args */
-	for (f = va_arg(args, int); f != FLAG_END; f = va_arg(args, int))
-	{
+	for (f = va_arg(args, int); f != FLAG_END; f = va_arg(args, int)) {
 		flag_offset = FLAG_OFFSET(f);
 		flag_binary = FLAG_BINARY(f);
 
 		assert(flag_offset < size);
 
 		/* !flag_has() */
-		if (!(flags[flag_offset] & flag_binary))
-		{
+		if (!(flags[flag_offset] & flag_binary)) {
 			delta = FALSE;
 			break;
 		}
@@ -477,8 +471,7 @@ bool flags_clear(bitflag *flags, const size_t size, ...)
 	va_start(args, size);
 
 	/* Process each flag in the va-args */
-	for (f = va_arg(args, int); f != FLAG_END; f = va_arg(args, int))
-	{
+	for (f = va_arg(args, int); f != FLAG_END; f = va_arg(args, int)) {
 		flag_offset = FLAG_OFFSET(f);
 		flag_binary = FLAG_BINARY(f);
 
@@ -517,8 +510,7 @@ bool flags_set(bitflag *flags, const size_t size, ...)
 	va_start(args, size);
 
 	/* Process each flag in the va-args */
-	for (f = va_arg(args, int); f != FLAG_END; f = va_arg(args, int))
-	{
+	for (f = va_arg(args, int); f != FLAG_END; f = va_arg(args, int)) {
 		flag_offset = FLAG_OFFSET(f);
 		flag_binary = FLAG_BINARY(f);
 
