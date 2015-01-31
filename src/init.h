@@ -103,8 +103,9 @@ struct angband_constants
 	u16b default_lamp;	/* Default amount of fuel in a lantern  */
 
 	/* Player constants, read from constants.txt */
-	u16b max_sight;	/* Maximum visual range */
-	u16b max_range;	/* Maximum missile and spell range */
+	u16b max_sight;		/* Maximum visual range */
+	u16b max_range;		/* Maximum missile and spell range */
+	u16b start_gold;	/* Amount of gold the player starts with */
 };
 
 struct init_module {

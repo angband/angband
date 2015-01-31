@@ -188,3 +188,5 @@ player:max-sight:20
 # Maximum missile and spell range
 player:max-range:20
 
+# Amount of gold (or value of equipment) the player starts with
+player:start-gold:600
