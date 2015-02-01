@@ -1,6 +1,6 @@
 /**
  * \file player.c
- * \brief  player implementation
+ * \brief Player implementation
  *
  * Copyright (c) 2011 elly+angband@leptoquark.net. See COPYING.
  *

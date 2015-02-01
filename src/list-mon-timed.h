@@ -1,5 +1,14 @@
 /**
  * \file list-mon-timed.h
+ * \brief Monster timed flags
+ *
+ * Fields:
+ * name - the index name for this timed flag
+ * message_begin - the argument to the message code when the effect begins
+ * message_end - the argument to the message code when the effect ends
+ * message_increase - the argument to the message code when the effect increases
+ * resist_flag - monsters with this monster race flag will resist this effect
+ * max_timer - maximum that the timer for this effect can reach 
  */
 /*		name	message_begin			message_end				message_increase		resist_flag		max_timer*/
 MON_TMD(SLEEP,	MON_MSG_FALL_ASLEEP,	MON_MSG_WAKES_UP,		0,					RF_NO_SLEEP,	10000)

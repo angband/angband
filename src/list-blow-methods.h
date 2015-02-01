@@ -1,7 +1,9 @@
-/* list-blow-methods.h - monster race blow methods
+/**
+ * \file list-blow-methods.h
+ * \brief monster race blow methods
  *
  * Adjusting these flags does not break savefiles. Flags below start from 1
- * on line 18, so a flag's sequence number is its line number minus 17.
+ * on line 20, so a flag's sequence number is its line number minus 19.
  *
  * Fields:
  * cut - whether this attack can cause cuts
@@ -9,7 +11,7 @@
  * miss - whether the player is notified when the attack misses
  * phys - whether the attack has physical damage
  * msg - sound/message to display
- * act - action string to be appended (insult and moan are NULL because they are special)
+ * act - action string to append (insult and moan are NULL as they are special)
  * desc - string used in monster recall
  */
 

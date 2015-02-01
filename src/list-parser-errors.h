@@ -1,7 +1,9 @@
 /**
  * \file list-parse-errors.h
  * \brief Parse errors and descriptions
+ *
  */
+
 PARSE_ERROR(NONE,					"(none)")
 PARSE_ERROR(BAD_EXPRESSION_STRING,	"bad expression string")
 PARSE_ERROR(FIELD_TOO_LONG,			"field too long")

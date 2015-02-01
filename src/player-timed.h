@@ -30,6 +30,15 @@
 #define PY_FOOD_STARVE	100		/* Food value (Starving) */
 
 /**
+ * Effect failure flag types
+ */
+enum {
+	TMD_FAIL_FLAG_OBJECT = 1,
+	TMD_FAIL_FLAG_RESIST,
+	TMD_FAIL_FLAG_VULN
+};
+
+/**
  * Timed effects
  */
 enum

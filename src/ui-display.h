@@ -1,5 +1,5 @@
 /**
- * \file ui-display.c
+ * \file ui-display.h
  * \brief Handles the setting up updating, and cleaning up of the game display.
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke

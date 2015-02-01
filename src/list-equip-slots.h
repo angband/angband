@@ -1,4 +1,15 @@
-/* list-equip-slots.h - types of slot for equipment */
+/**
+ * \file list-equip-slots.h
+ * \brief types of slot for equipment
+ *
+ * Fields:
+ * slot - The index name of the slot
+ * acid_v - whether equipment in the slot needs checking for acid damage
+ * name - whether the actual item name is mentioned when things happen to it
+ * mention - description for when the slot is mentioned briefly
+ * heavy describe - description for when the slot item is too heavy
+ * describe - description for when the slot is described at length
+ */
 /* slot				acid_v	name	mention			heavy decribe	describe */
 EQUIP(NONE,			FALSE,	FALSE,	"",				"",				"")
 EQUIP(WEAPON,		FALSE,	FALSE,	"Wielding",		"just lifting",	"attacking monsters with")

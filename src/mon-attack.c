@@ -36,8 +36,8 @@
 #include "player-util.h"
 #include "project.h"
 
-/*
- * And now for Intelligent monster attacks (including spells).
+/**
+ * This file deals with monster attacks (including spells) as follows:
  *
  * Give monsters more intelligent attack/spell selection based on
  * observations of previous attacks on the player, and/or by allowing
@@ -61,7 +61,7 @@
  * Both of them have the same effect on the "choose spell" routine.
  */
 
-/*
+/**
  * Remove the "bad" spells from a spell list
  */
 static void remove_bad_spells(struct monster *m_ptr, bitflag f[RSF_SIZE])
@@ -89,8 +89,7 @@ static void remove_bad_spells(struct monster *m_ptr, bitflag f[RSF_SIZE])
 	/* Update acquired knowledge */
 	of_wipe(ai_flags);
 	pf_wipe(ai_pflags);
-	if (OPT(birth_ai_learn))
-	{
+	if (OPT(birth_ai_learn)) {
 		size_t i;
 
 		/* Occasionally forget player status */
@@ -123,7 +122,7 @@ static void remove_bad_spells(struct monster *m_ptr, bitflag f[RSF_SIZE])
 }
 
 
-/*
+/**
  * Determine if there is a space near the selected spot in which
  * a summoned creature can appear
  */
@@ -132,10 +131,8 @@ static bool summon_possible(int y1, int x1)
 	int y, x;
 
 	/* Start at the location, and check 2 grids in each dir */
-	for (y = y1 - 2; y <= y1 + 2; y++)
-	{
-		for (x = x1 - 2; x <= x1 + 2; x++)
-		{
+	for (y = y1 - 2; y <= y1 + 2; y++) {
+		for (x = x1 - 2; x <= x1 + 2; x++) {
 			/* Ignore illegal locations */
 			if (!square_in_bounds(cave, y, x)) continue;
 
@@ -145,11 +142,9 @@ static bool summon_possible(int y1, int x1)
 			/* Hack: no summon on glyph of warding */
 			if (square_iswarded(cave, y, x)) continue;
 
-			/* Require empty floor grid in line of sight */
+			/* If it's empty floor grid in line of sight, we're good */
 			if (square_isempty(cave, y, x) && los(cave, y1, x1, y, x))
-			{
 				return (TRUE);
-			}
 		}
 	}
 
@@ -157,7 +152,7 @@ static bool summon_possible(int y1, int x1)
 }
 
 
-/*
+/**
  * Have a monster choose a spell to cast.
  *
  * Note that the monster's spell list has already had "useless" spells
@@ -178,9 +173,7 @@ static int choose_attack_spell(struct monster *m_ptr, bitflag f[RSF_SIZE])
 
 	/* Extract all spells: "innate", "normal", "bizarre" */
 	for (i = FLAG_START, num = 0; i < RSF_MAX; i++)
-	{
 		if (rsf_has(f, i)) spells[num++] = i;
-	}
 
 	/* Paranoia */
 	if (num == 0) return 0;
@@ -190,7 +183,7 @@ static int choose_attack_spell(struct monster *m_ptr, bitflag f[RSF_SIZE])
 }
 
 
-/*
+/**
  * Creatures can cast spells, shoot missiles, and breathe.
  *
  * Returns "TRUE" if a spell (or whatever) was (successfully) cast.
@@ -297,8 +290,7 @@ bool make_attack_spell(struct monster *m_ptr)
 	remove_bad_spells(m_ptr, f);
 
 	/* Check whether summons and bolts are worth it. */
-	if (!rf_has(m_ptr->race->flags, RF_STUPID))
-	{
+	if (!rf_has(m_ptr->race->flags, RF_STUPID)) {
 		/* Check for a clean bolt shot */
 		if (test_spells(f, RST_BOLT) &&
 			!projectable(cave, m_ptr->fy, m_ptr->fx, py, px, PROJECT_STOP))
@@ -345,8 +337,7 @@ bool make_attack_spell(struct monster *m_ptr)
 		failrate = 0;
 
 	/* Check for spell failure (innate attacks never fail) */
-	if ((thrown_spell >= MIN_NONINNATE_SPELL) && (randint0(100) < failrate))
-	{
+	if ((thrown_spell >= MIN_NONINNATE_SPELL) && (randint0(100) < failrate)) {
 		/* Message */
 		msg("%s tries to cast a spell, but fails.", m_name);
 
@@ -397,7 +388,7 @@ bool make_attack_spell(struct monster *m_ptr)
 
 
 
-/*
+/**
  * Critical blow.  All hits that do 95% of total possible damage,
  * and which also do at least 20 damage, or, sometimes, N damage.
  * This is used only to determine "cuts" and "stuns".
@@ -418,9 +409,7 @@ static int monster_critical(random_value dice, int rlev, int dam)
 
 	/* Super-charge */
 	if (dam >= 20)
-	{
 		while (randint0(100) < 2) max++;
-	}
 
 	/* Critical damage */
 	if (dam > 45) return (6 + max);
@@ -431,7 +420,7 @@ static int monster_critical(random_value dice, int rlev, int dam)
 	return (1 + max);
 }
 
-/*
+/**
  * Determine if a monster attack against the player succeeds.
  */
 bool check_hit(struct player *p, int power, int level)
@@ -444,15 +433,14 @@ bool check_hit(struct player *p, int power, int level)
 	/* Total armor */
 	ac = p->state.ac + p->state.to_a;
 
-	/* if the monster checks vs ac, the player learns ac bonuses */
-	/* XXX Eddie should you only learn +ac on miss, -ac on hit?  who knows */
+	/* If the monster checks vs ac, the player learns ac bonuses */
 	equip_notice_on_defend(p);
 
 	/* Check if the player was hit */
 	return test_hit(chance, ac, TRUE);
 }
 
-/*
+/**
  * Calculate how much damage remains after armor is taken into account
  * (does for a physical attack what adjust_dam does for an elemental attack).
  */
@@ -461,7 +449,7 @@ int adjust_dam_armor(int damage, int ac)
 	return damage - (damage * ((ac < 240) ? ac : 240) / 400);
 }
 
-/*
+/**
  * Attack the player via physical attacks.
  */
 bool make_attack_normal(struct monster *m_ptr, struct player *p)
@@ -493,8 +481,7 @@ bool make_attack_normal(struct monster *m_ptr, struct player *p)
 	blinked = FALSE;
 
 	/* Scan through all blows */
-	for (ap_cnt = 0; ap_cnt < z_info->mon_blows_max; ap_cnt++)
-	{
+	for (ap_cnt = 0; ap_cnt < z_info->mon_blows_max; ap_cnt++) {
 		bool visible = FALSE;
 		bool obvious = FALSE;
 		bool do_break = FALSE;
@@ -568,7 +555,6 @@ bool make_attack_normal(struct monster *m_ptr, struct player *p)
 
 			/* Perform the actual effect. */
 			effect_handler = melee_handler_for_blow_effect(effect);
-
 			if (effect_handler != NULL) {
 				melee_effect_handler_context_t context = {
 					p,

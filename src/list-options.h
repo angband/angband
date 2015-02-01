@@ -1,4 +1,6 @@
-/* list-options.h - options
+/**
+ * \file list-options.h
+ * \brief options
  *
  * Currently, if there are more than 20 of any option type, the later ones
  * will be ignored

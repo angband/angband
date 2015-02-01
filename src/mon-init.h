@@ -1,9 +1,20 @@
 /**
- * mon-init.h
+ * \file mon-init.h
+ * \brief Parsing functions for monsters and monster base types.
  *
- * noz: 1 Jun 2011
+ * Copyright (c) 1997 Ben Harrison
+ * Copyright (c) 2011 noz
  *
- * Parsing functions for monsters and monster base types
+ * This work is free software; you can redistribute it and/or modify it
+ * under the terms of either:
+ *
+ * a) the GNU General Public License as published by the Free Software
+ *    Foundation, version 2, or
+ *
+ * b) the "Angband licence":
+ *    This software may be copied and distributed for educational, research,
+ *    and not for profit purposes provided that this copyright and statement
+ *    are included in all such copies.  Other copyrights may also apply.
  */
 
 #ifndef MONSTER_INIT_H_

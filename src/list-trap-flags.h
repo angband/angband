@@ -1,7 +1,9 @@
-/* list-trap-flags.h - trap properties
+/**
+ * \file list-trap-flags.h
+ * \brief trap properties
  *
  * Adjusting these flags does not break savefiles. Flags below start from 1
- * on line 11, so a flag's sequence number is its line number minus 10.
+ * on line 13, so a flag's sequence number is its line number minus 12.
  *
  *
  */

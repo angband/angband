@@ -16,14 +16,6 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
-/**
- * A parser has a list of hooks (which are run across new lines given to
- * parser_parse()) and a list of the set of named values for the current line.
- * Each hook has a list of specs, which are essentially named formal parameters;
- * when we run a particular hook across a line, each spec in the hook is
- * assigned a value.
- */
-
 #include "init.h"
 #include "game-event.h"
 #include "message.h"
@@ -34,6 +26,14 @@
 #include "z-util.h"
 #include "z-virt.h"
 
+
+/**
+ * A parser has a list of hooks (which are run across new lines given to
+ * parser_parse()) and a list of the set of named values for the current line.
+ * Each hook has a list of specs, which are essentially named formal parameters;
+ * when we run a particular hook across a line, each spec in the hook is
+ * assigned a value.
+ */
 
 const char *parser_error_str[PARSE_ERROR_MAX] = {
 	#define PARSE_ERROR(a, b) b,

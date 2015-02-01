@@ -1,7 +1,9 @@
-/* list-blow-effects.h - monster race blow effects
+/**
+ * \file list-blow-effects.h
+ * \brief monster race blow effects
  *
  * Adjusting these flags does not break savefiles. Flags below start from 1
- * on line 14, so a flag's sequence number is its line number minus 13.
+ * on line 16, so a flag's sequence number is its line number minus 15.
  *
  * Fields:
  * pow - used for attack quality in check_hit()

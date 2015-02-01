@@ -1,5 +1,5 @@
 /**
- * \file player-timed.h
+ * \file player-timed.c
  * \brief Timed effects handling
  *
  * Copyright (c) 1997 Ben Harrison
@@ -167,9 +167,9 @@ bool player_inc_timed(struct player *p, int idx, int v, bool notify, bool check)
 		struct monster *mon = cave->mon_current > 0 ?
 			cave_monster(cave, cave->mon_current) : NULL;
 
-		/* This is all a bit gross - NRM */
-		if (effects->fail_code == 1) {
-			/* Code 1 is an object flag */
+		/* Determine whether an effect can be prevented by a flag */
+		if (effects->fail_code == TMD_FAIL_FLAG_OBJECT) {
+			/* Effect is inhibited by an object flag */
 			equip_notice_flag(p, effect->fail);
 			if (mon) 
 				update_smart_learn(mon, player, effect->fail, 0, -1);
@@ -178,13 +178,13 @@ bool player_inc_timed(struct player *p, int idx, int v, bool notify, bool check)
 				msg("You resist the effect!");
 				return FALSE;
 			}
-		} else if (effects->fail_code == 2) {
-			/* Code 2 is a resist */
+		} else if (effects->fail_code == TMD_FAIL_FLAG_RESIST) {
+			/* Effect is inhibited by a resist */
 			equip_notice_element(p, effect->fail);
 			if (p->state.el_info[effect->fail].res_level > 0)
 				return FALSE;
-		} else if (effects->fail_code == 2) {
-			/* Code 3 is a vulnerability */
+		} else if (effects->fail_code == TMD_FAIL_FLAG_VULN) {
+			/* Effect is inhibited by a vulnerability */
 			equip_notice_element(p, effect->fail);
 			if (p->state.el_info[effect->fail].res_level < 0)
 				return FALSE;

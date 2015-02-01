@@ -1,7 +1,7 @@
 /**
-   \file mon-attack.c
-   \brief Monster attacks
-
+ * \file mon-attack.c
+ * \brief Monster attacks
+ *
  * Copyright (c) 1997 Ben Harrison, David Reeve Sward, Keldon Jones.
  *
  * This work is free software; you can redistribute it and/or modify it

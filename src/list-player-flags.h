@@ -1,9 +1,14 @@
-/* list-player-flags.h - player race and class flags
+/**
+ * \file list-player-flags.h
+ * \brief player race and class flags
  *
  * Adjusting these flags does not break savefiles. Flags below start from 1
- * on line 11, so a flag's sequence number is its line number minus 10.
+ * on line 16, so a flag's sequence number is its line number minus 15.
  *
- *
+ * Fields:
+ * symbol - the flag name
+ * descr - description of the flag effect
+ * birth-descr - description of the flag for use in the birth menus
  */
 
 /* symbol            descr                                                        birth-descr */

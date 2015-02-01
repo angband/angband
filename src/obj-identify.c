@@ -33,7 +33,9 @@
 #include "player-timed.h"
 #include "player-util.h"
 
-/** Time last item was wielded */
+/**
+ * Time last item was wielded
+ */
 s32b object_last_wield;
 
 /**
@@ -1134,8 +1136,9 @@ obj_pseudo_t object_pseudo(const struct object *obj)
 	if (tval_is_jewelry(obj))
 		return INSCRIP_NULL;
 
-	/* XXX Eddie should also check for flags with pvals where the pval exceeds
-	 * the base pval for things like picks of digging, though for now acid brand gets those
+	/* XXX Should also check for flags with pvals where the pval exceeds
+	 * the base pval for things like picks of digging, though for now acid
+	 * brand gets those
 	 */
 	if (!of_is_empty(flags))
 		return INSCRIP_SPLENDID;
@@ -1144,9 +1147,9 @@ obj_pseudo_t object_pseudo(const struct object *obj)
 		return INSCRIP_NULL;
 
 	if (obj->ego) {
-		/* uncursed bad egos are not excellent */
+		/* Uncursed bad egos are not excellent */
 		if (of_is_inter(obj->ego->flags, f2))
-			return INSCRIP_STRANGE; /* XXX Eddie need something worse */
+			return INSCRIP_STRANGE; /* Need something worse - post 4.0 NRM*/
 		else
 			return INSCRIP_EXCELLENT;
 	}
@@ -1239,9 +1242,7 @@ void do_ident_item(struct object *obj)
 void sense_inventory(void)
 {
 	struct object *obj;
-	
 	char o_name[80];
-	
 	unsigned int rate;
 	
 	/* No ID when confused in a bad state */
@@ -1255,9 +1256,11 @@ void sense_inventory(void)
 
 	/* Get improvement rate */
 	if (player_has(PF_PSEUDO_ID_IMPROV))
-		rate = player->class->sense_base / (player->lev * player->lev + player->class->sense_div);
+		rate = player->class->sense_base /
+			(player->lev * player->lev + player->class->sense_div);
 	else
-		rate = player->class->sense_base / (player->lev + player->class->sense_div);
+		rate = player->class->sense_base /
+			(player->lev + player->class->sense_div);
 
 	/* Check if player may sense anything this time */
 	if (player->lev < 20 && !one_in_(rate)) return;
@@ -1325,7 +1328,6 @@ void sense_inventory(void)
 					 VERB_AGREEMENT(obj->number, "is", "are"), text);
 			}
 		}
-
 
 		/* Set ignore flag as appropriate */
 		if (!equipped)

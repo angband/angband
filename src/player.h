@@ -1,4 +1,22 @@
-/* player.h - player interface */
+/**
+ * \file player.c
+ * \brief Player implementation
+ *
+ * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
+ * Copyright (c) 2011 elly+angband@leptoquark.net. See COPYING.
+ * Copyright (c) 2015 Nick McConnell
+ *
+ * This work is free software; you can redistribute it and/or modify it
+ * under the terms of either:
+ *
+ * a) the GNU General Public License as published by the Free Software
+ *    Foundation, version 2, or
+ *
+ * b) the "Angband licence":
+ *    This software may be copied and distributed for educational, research,
+ *    and not for profit purposes provided that this copyright and statement
+ *    are included in all such copies.  Other copyrights may also apply.
+ */
 
 #ifndef PLAYER_H
 #define PLAYER_H
@@ -10,19 +28,27 @@
 #include "player-calcs.h"
 
 
-/*** Game constants ***/
+/**
+ * ------------------------------------------------------------------------
+ * Player constants
+ * ------------------------------------------------------------------------ */
+
 
 #define PY_MAX_EXP		99999999L	/* Maximum exp */
 #define PY_MAX_LEVEL	50			/* Maximum level */
 
-/* Flags for player.spell_flags[] */
+/**
+ * Flags for player.spell_flags[]
+ */
 #define PY_SPELL_LEARNED    0x01 	/* Spell has been learned */
 #define PY_SPELL_WORKED     0x02 	/* Spell has been successfully tried */
 #define PY_SPELL_FORGOTTEN  0x04 	/* Spell has been forgotten */
 
 #define BTH_PLUS_ADJ    	3 		/* Adjust BTH per plus-to-hit */
 
-/* Player magic realms */
+/**
+ * Player magic realms
+ */
 enum
 {
 	#define REALM(a, b, c, d, e, f) REALM_##a,
@@ -31,13 +57,20 @@ enum
 	REALM_MAX
 };
 
-/* player_type.noscore flags */
+/**
+ * player_type.noscore flags
+ */
 #define NOSCORE_WIZARD		0x0002
 #define NOSCORE_DEBUG		0x0008
 #define NOSCORE_JUMPING     0x0010
 
 extern struct player_body *bodies;
 
+
+/**
+ * ------------------------------------------------------------------------
+ * Player structures
+ * ------------------------------------------------------------------------ */
 
 /**
  * Structure for the "quests"
@@ -53,7 +86,7 @@ struct quest
 	int max_num;				/* Number required (unused) */
 };
 
-/*
+/**
  * Most of the "player" information goes here.
  *
  * This stucture gives us a large collection of player variables.
@@ -155,7 +188,7 @@ typedef struct player {
 
 
 
-/*
+/**
  * Player racial info
  */
 struct player_race {
@@ -296,7 +329,7 @@ typedef struct player_class {
 
 extern struct player_class *classes;
 
-/*
+/**
  * Histories are a graph of charts; each chart contains a set of individual
  * entries for that chart, and each entry contains a text description and a
  * successor chart to move history generation to.
@@ -333,7 +366,7 @@ struct history_chart {
 	unsigned int idx;
 };
 
-/*
+/**
  * Some more player information
  * This information is retained across player lives
  *
@@ -352,14 +385,17 @@ typedef struct {
 } player_other;
 
 
-/*** Externs ***/
+/**
+ * ------------------------------------------------------------------------
+ * Externs
+ * ------------------------------------------------------------------------ */
 
 extern const s32b player_exp[PY_MAX_LEVEL];
 extern player_other *op_ptr;
 extern player_type *player;
 
 
-/* class.c */
+/* player-class.c */
 extern struct player_class *player_id2class(guid id);
 
 /* player.c */
@@ -378,7 +414,7 @@ extern bool player_restore_mana(struct player *p, int amt);
 
 extern const char *player_safe_name(struct player *p, bool strip_suffix);
 
-/* race.c */
+/* player-race.c */
 extern struct player_race *player_id2race(guid id);
 
 #endif /* !PLAYER_H */

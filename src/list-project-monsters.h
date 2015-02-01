@@ -1,7 +1,7 @@
 /**
  * \file list-project_monster.h
  * \brief Spell types directly affecting monsters used by project()
- * and related functions.
+ * \brief and related functions.
  *
  * Fields:
  * name - type name
