@@ -73,14 +73,5 @@
 #endif
 
 
-/**
- * OPTION: Create and use hidden directories in the users home directory
- * for storing save files and high-scores
- */
-#ifdef PRIVATE_USER_PATH
-/* # define USE_PRIVATE_PATHS */
-#endif /* PRIVATE_USER_PATH */
-
-
 
 #endif /* !INCLUDED_CONFIG_H */
