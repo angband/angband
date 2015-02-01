@@ -49,21 +49,12 @@
 
 
 /*
- * OPTION: Create and use a hidden directory in the users home directory
+ * OPTION: Create and use a hidden directory in the user's home directory
  * for storing pref files and character dumps.
  */
 #if defined(UNIX) && !defined(MACH_O_CARBON) && !defined(PRIVATE_USER_PATH)
 # define PRIVATE_USER_PATH "~/.angband"
 #endif
-
-
-/*
- * OPTION: Create and use hidden directories in the users home directory
- * for storing save files and high-scores
- */
-#ifdef PRIVATE_USER_PATH
-/* # define USE_PRIVATE_PATHS */
-#endif /* PRIVATE_USER_PATH */
 
 
 

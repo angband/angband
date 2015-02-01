@@ -183,20 +183,28 @@ void init_file_paths(const char *configpath, const char *libpath, const char *da
 		path_build(buf, sizeof(buf), PRIVATE_USER_PATH, VERSION_NAME);
 	ANGBAND_DIR_USER = string_make(buf);
 
+#else /* !PRIVATE_USER_PATH */
+
+	ANGBAND_DIR_USER = string_make(format("%suser", datapath));
+
+#endif /* PRIVATE_USER_PATH */
+
+#ifdef USE_PRIVATE_PATHS
+
+    /* Build the path to the score and save directories */
 	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, "scores");
 	ANGBAND_DIR_APEX = string_make(buf);
 
 	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, "save");
 	ANGBAND_DIR_SAVE = string_make(buf);
 
-#else /* !PRIVATE_USER_PATH */
+#else /* !USE_PRIVATE_PATHS */
 
 	/* Build pathnames */
-	ANGBAND_DIR_USER = string_make(format("%suser", datapath));
 	ANGBAND_DIR_APEX = string_make(format("%sapex", datapath));
 	ANGBAND_DIR_SAVE = string_make(format("%ssave", datapath));
 
-#endif /* PRIVATE_USER_PATH */
+#endif /* USE_PRIVATE_PATHS */
 }
 
 
