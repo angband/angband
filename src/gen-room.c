@@ -185,7 +185,7 @@ void draw_rectangle(struct chunk *c, int y1, int x1, int y2, int x2, int feat,
  * \param x2 inclusive range boundaries
  * \param feat the terrain feature
  * \param flag the SQUARE_* flag we are marking with
- * \para light lit or not
+ * \param light lit or not
  */
 static void fill_xrange(struct chunk *c, int y, int x1, int x2, int feat, 
 						int flag, bool light)
@@ -209,7 +209,7 @@ static void fill_xrange(struct chunk *c, int y, int x1, int x2, int feat,
  * \param y2 inclusive range boundaries
  * \param feat the terrain feature
  * \param flag the SQUARE_* flag we are marking with
- * \para light lit or not
+ * \param light lit or not
  */
 static void fill_yrange(struct chunk *c, int x, int y1, int y2, int feat, 
 						int flag, bool light)
@@ -234,7 +234,7 @@ static void fill_yrange(struct chunk *c, int x, int y1, int y2, int feat,
  * \param border the width of the circle border
  * \param feat the terrain feature
  * \param flag the SQUARE_* flag we are marking with
- * \para light lit or not
+ * \param light lit or not
  */
 static void fill_circle(struct chunk *c, int y0, int x0, int radius, int border,
 						int feat, int flag, bool light)

@@ -430,7 +430,7 @@ void place_random_stairs(struct chunk *c, int y, int x)
  * \param good is it a good object?
  * \param great is it a great object?
  * \param origin item origin
- * \param specified tval, if any
+ * \param tval specified tval, if any
  */
 void place_object(struct chunk *c, int y, int x, int level, bool good, bool great, byte origin, int tval)
 {
@@ -709,8 +709,8 @@ void vault_traps(struct chunk *c, int y, int x, int yd, int xd, int num)
 /**
  * Place 'num' sleeping monsters near (x, y).
  * \param c the current chunk
- * \param y
- * \param x co-ordinates to place the monsters near
+ * \param y1
+ * \param x1 co-ordinates to place the monsters near
  * \param depth generation depth
  * \param num number of monsters to place
  */

@@ -182,7 +182,8 @@ static void player_pickup_aux(struct object *obj, bool domsg)
  * Note the lack of chance for the character to be disturbed by unmarked
  * objects.  They are truly "unknown".
  *
- * \param item is the floor item index (must be negative) to pick up.
+ * \param obj is the object to pick up.
+ * \param menu is whether to present a menu to the player
  */
 static byte player_pickup_item(struct object *obj, bool menu)
 {

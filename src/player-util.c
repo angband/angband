@@ -385,7 +385,9 @@ void player_update_light(void)
 /**
  * Return TRUE if the player can cast a spell.
  *
- * \param show_msg should be set to TRUE if a failure message should be displayed.
+ * \param p is the player
+ * \param show_msg should be set to TRUE if a failure message should be
+ * displayed.
  */
 bool player_can_cast(struct player *p, bool show_msg)
 {
@@ -419,7 +421,9 @@ bool player_can_cast(struct player *p, bool show_msg)
 /**
  * Return TRUE if the player can study a spell.
  *
- * \param show_msg should be set to TRUE if a failure message should be displayed.
+ * \param p is the player
+ * \param show_msg should be set to TRUE if a failure message should be
+ * displayed.
  */
 bool player_can_study(struct player *p, bool show_msg)
 {
@@ -442,36 +446,34 @@ bool player_can_study(struct player *p, bool show_msg)
 /**
  * Return TRUE if the player can read scrolls or books.
  *
- * \param show_msg should be set to TRUE if a failure message should be displayed.
+ * \param p is the player
+ * \param show_msg should be set to TRUE if a failure message should be
+ * displayed.
  */
 bool player_can_read(struct player *p, bool show_msg)
 {
-	if (p->timed[TMD_BLIND])
-	{
+	if (p->timed[TMD_BLIND]) {
 		if (show_msg)
 			msg("You can't see anything.");
 
 		return FALSE;
 	}
 
-	if (no_light())
-	{
+	if (no_light()) {
 		if (show_msg)
 			msg("You have no light to read by.");
 
 		return FALSE;
 	}
 
-	if (p->timed[TMD_CONFUSED])
-	{
+	if (p->timed[TMD_CONFUSED]) {
 		if (show_msg)
 			msg("You are too confused to read!");
 
 		return FALSE;
 	}
 
-	if (p->timed[TMD_AMNESIA])
-	{
+	if (p->timed[TMD_AMNESIA]) {
 		if (show_msg)
 			msg("You can't remember how to read!");
 
@@ -484,7 +486,9 @@ bool player_can_read(struct player *p, bool show_msg)
 /**
  * Return TRUE if the player can fire something with a launcher.
  *
- * \param show_msg should be set to TRUE if a failure message should be displayed.
+ * \param p is the player
+ * \param show_msg should be set to TRUE if a failure message should be
+ * displayed.
  */
 bool player_can_fire(struct player *p, bool show_msg)
 {
@@ -505,7 +509,9 @@ bool player_can_fire(struct player *p, bool show_msg)
 /**
  * Return TRUE if the player can refuel their light source.
  *
- * \param show_msg should be set to TRUE if a failure message should be displayed.
+ * \param p is the player
+ * \param show_msg should be set to TRUE if a failure message should be
+ * displayed.
  */
 bool player_can_refuel(struct player *p, bool show_msg)
 {
@@ -563,6 +569,8 @@ bool player_can_refuel_prereq(void)
 /**
  * Return TRUE if the player has a book in their inventory that has unlearned
  * spells.
+ *
+ * \param p is the player
  */
 bool player_book_has_unlearned_spells(struct player *p)
 {
@@ -590,7 +598,7 @@ bool player_book_has_unlearned_spells(struct player *p)
 	return FALSE;
 }
 
-/*
+/**
  * Apply confusion, if needed, to a direction
  *
  * Display a message and return TRUE if direction changes.

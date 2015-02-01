@@ -1104,7 +1104,7 @@ void write_character_dump(ang_file *fff)
 /**
  * Save the lore to a file in the user directory.
  *
- * \param name is the filename
+ * \param path is the path to the filename
  *
  * \returns TRUE on success, FALSE otherwise.
  */

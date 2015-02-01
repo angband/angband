@@ -1,7 +1,6 @@
 /**
  * \file list-ignore-types.h
  * \brief types of object used for ignoring by quality or ego
- *
  */
 
 /* index			description */

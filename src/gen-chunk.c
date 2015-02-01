@@ -46,7 +46,6 @@ u16b chunk_list_max = 0;      /**< current max actual chunk index */
  * \param monsters whether monsters get written
  * \param objects whether objects get written
  * \param traps whether traps get written
- * \param delete_old whether monsters/objects/traps get deleted from the source
  * \return the memory location of the chunk
  */
 struct chunk *chunk_write(int y0, int x0, int height, int width, bool monsters,
@@ -212,6 +211,8 @@ bool chunk_find(struct chunk *c)
  * \param x the coordinates being transformed
  * \param y0
  * \param x0 how much the coordinates are being translated
+ * \param height height of the chunk
+ * \param width width of the chunk
  * \param rotate how much to rotate, in multiples of 90 degrees clockwise
  * \param reflect whether to reflect horizontally
  */
@@ -221,8 +222,7 @@ void symmetry_transform(int *y, int *x, int y0, int x0, int height, int width,
 	int i;
 
 	/* Rotate (in multiples of 90 degrees clockwise) */
-    for (i = 0; i < rotate % 4; i++)
-    {
+    for (i = 0; i < rotate % 4; i++) {
         int temp = *x;
         *x = height - 1 - (*y);
         *y = temp;

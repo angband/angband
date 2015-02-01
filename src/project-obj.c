@@ -167,8 +167,8 @@ typedef void (*project_object_handler_f)(project_object_handler_context_t *);
  * Project an effect onto an object.
  *
  * \param context is the project_o context.
- * \param hate_flag is the OF_ flag for elements that will destroy and object.
- * \param ignore_flag is the OF_flag for elements that the object is immunte to.
+ * \param element is for elements that will destroy an object, or that it will
+ * ignore.
  * \param singular_verb is the verb that is displayed when one object is
  * destroyed.
  * \param plural_verb is the verb that is displayed in multiple objects are

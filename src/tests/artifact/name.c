@@ -1,4 +1,4 @@
-/* artifact/randname */
+/* artifact/name */
 
 #include "unit-test.h"
 #include "unit-test-data.h"
@@ -61,7 +61,7 @@ int test_names(void *state) {
 	ok;
 }
 
-const char *suite_name = "artifact/randname";
+const char *suite_name = "artifact/name";
 struct test tests[] = {
 	{ "names", test_names },
 	{ NULL, NULL }

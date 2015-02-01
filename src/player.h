@@ -1,5 +1,5 @@
 /**
- * \file player.c
+ * \file player.h
  * \brief Player implementation
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke

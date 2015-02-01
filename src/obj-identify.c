@@ -913,6 +913,7 @@ static void equip_notice_after_time(void)
 /**
  * Notice a given special flag on wielded items.
  *
+ * \param p is the player
  * \param flag is the flag to notice
  */
 void equip_notice_flag(struct player *p, int flag)
@@ -954,6 +955,7 @@ void equip_notice_flag(struct player *p, int flag)
 /**
  * Notice the elemental resistance properties on wielded items.
  *
+ * \param p is the player
  * \param element is the element to notice
  */
 void equip_notice_element(struct player *p, int element)

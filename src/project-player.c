@@ -29,6 +29,7 @@
 /**
  * Adjust damage according to resistance or vulnerability.
  *
+ * \param p is the player
  * \param type is the attack type we are checking.
  * \param dam is the unadjusted damage.
  * \param dam_aspect is the calc we want (min, avg, max, random).
@@ -91,8 +92,6 @@ int adjust_dam(struct player *p, int type, int dam, aspect dam_aspect, int resis
  * Drain stats at random
  *
  * \param num is the number of points to drain
- * \param sustain is whether sustains will prevent draining
- * \param perma is whether the drains are permanent
  */
 static void project_player_drain_stats(int num)
 {

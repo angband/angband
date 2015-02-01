@@ -1025,6 +1025,7 @@ struct object_kind *get_obj_num(int level, bool good, int tval)
  * \param lev is the creation level of the object (not necessarily == depth).
  * \param good is whether the object is to be good
  * \param great is whether the object is to be great
+ * \param extra_roll is whether we get an extra roll in apply_magic()
  * \param value is the value to be returned to the calling function
  * \param tval is the desired tval, or 0 if we allow any tval
  *

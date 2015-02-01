@@ -1,6 +1,6 @@
 /**
-   \file mon-spell.c
-   \brief functions to deal with spell attacks and effects
+ * \file mon-spell.c
+ * \brief functions to deal with spell attacks and effects
  *
  * Copyright (c) 2010-14 Chris Carr and Nick McConnell
  *
@@ -70,23 +70,23 @@ static const struct monster_spell *monster_spell_by_index(int index)
 /**
  * Process a monster spell 
  *
- * \param spell is the monster spell flag (RSF_FOO)
- * \param m_ptr is the attacking monster
+ * \param index is the monster spell flag (RSF_FOO)
+ * \param mon is the attacking monster
  * \param seen is whether the player can see the monster at this moment
  */
-void do_mon_spell(int index, struct monster *m_ptr, bool seen)
+void do_mon_spell(int index, struct monster *mon, bool seen)
 {
 	char m_name[80];
 	bool ident, hits = FALSE;
 
 	/* Extract the monster level */
-	int rlev = ((m_ptr->race->level >= 1) ? m_ptr->race->level : 1);
+	int rlev = ((mon->race->level >= 1) ? mon->race->level : 1);
 
 	const struct monster_spell *spell = monster_spell_by_index(index);
 	const struct mon_spell_info *info = &mon_spell_info_table[index];
 
 	/* Get the monster name (or "it") */
-	monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_STANDARD);
+	monster_desc(m_name, sizeof(m_name), mon, MDESC_STANDARD);
 
 	/* See if it hits */
 	if (spell->hit == 100)
@@ -161,7 +161,9 @@ void set_spells(bitflag *f, int types)
  * something in flags, subject to intelligence and chance.
  *
  * \param spells is the set of spells we're pruning
- * \param flags is the set of flags we're testing
+ * \param flags is the set of object flags we're testing
+ * \param pflags is the set of player flags we're testing
+ * \param el is what we know about the monster's elemental resists
  * \param r_ptr is the monster type we're operating on
  */
 void unset_spells(bitflag *spells, bitflag *flags, bitflag *pflags,
@@ -219,7 +221,7 @@ static bool monster_spell_is_projectable(int index)
  * (i.e. bolts and balls, including arrows/boulders/storms/etc.)
  *
  * \param spell is the attack type
- * \param rlev is the monster level of the attacker
+ * \param race is the monster race of the attacker
  * \param dam_aspect is the damage calc required (min, avg, max, random)
  */
 static int nonhp_dam(const struct monster_spell *spell, const monster_race *race, aspect dam_aspect)
@@ -268,9 +270,9 @@ int breath_dam(int element, int hp)
 /**
  * Calculate the damage of a monster spell.
  *
- * \param spell is the spell in question.
+ * \param index is the index of the spell in question.
  * \param hp is the hp of the casting monster.
- * \param rlev is the level of the casting monster.
+ * \param race is the race of the casting monster.
  * \param dam_aspect is the damage calc we want (min, max, avg, random).
  */
 static int mon_spell_dam(int index, int hp, const monster_race *race, aspect dam_aspect)

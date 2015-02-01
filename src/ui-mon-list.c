@@ -42,7 +42,7 @@
  * \param list is the monster list to format.
  * \param tb is the textblock to produce or NULL if only the dimensions need to
  * be calculated.
- * \param field is the section of the monster list to format.
+ * \param section is the section of the monster list to format.
  * \param lines_to_display are the number of entries to display (not including
  * the header).
  * \param max_width is the maximum line width.

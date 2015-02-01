@@ -976,6 +976,7 @@ static void project_m_apply_side_effects(project_monster_handler_context_t *cont
  * \param x the coordinates of the grid being handled
  * \param dam is the "damage" from the effect at distance r from the centre
  * \param typ is the projection (GF_) type
+ * \param flg consists of any relevant PROJECT_ flags
  * \return whether the effects were obvious
  *
  * Note that this routine can handle "no damage" attacks (like teleport) by

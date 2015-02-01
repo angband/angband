@@ -266,6 +266,7 @@ int slay_count(struct slay *slays)
  * linked array
  * \param obj1 the first object (not NULL)
  * \param obj2 the second object (can be NULL)
+ * \param total counts the brands found
  * \param known whether we are after only known brands
  * \return a pointer to the first brand
  */
@@ -321,6 +322,7 @@ struct brand *brand_collect(const object_type *obj1, const object_type *obj2,
  * linked array
  * \param obj1 the first object (not NULL)
  * \param obj2 the second object (can be NULL)
+ * \param total counts the slays found
  * \param known whether we are after only known slays
  * \return a pointer to the first slay
  */
