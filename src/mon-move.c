@@ -1293,9 +1293,9 @@ void process_monster_grab_objects(struct chunk *c, struct monster *m_ptr,
 		const char *m_name, int nx, int ny)
 {
 	monster_lore *l_ptr = get_lore(m_ptr->race);
-	struct object *obj;
+	struct object *obj = square_object(c, ny, nx);
 
-	bool is_item = square_object(c, ny, nx);
+	bool is_item = obj ? TRUE : FALSE;;
 	if (is_item && mflag_has(m_ptr->mflag, MFLAG_VISIBLE)) {
 		rf_on(l_ptr->flags, RF_TAKE_ITEM);
 		rf_on(l_ptr->flags, RF_KILL_ITEM);
@@ -1308,12 +1308,16 @@ void process_monster_grab_objects(struct chunk *c, struct monster *m_ptr,
 	}
 
 	/* Take or kill objects on the floor */
-	for (obj = square_object(c, ny, nx); obj; obj = obj->next) {
+	while (obj) {
 		char o_name[80];
 		bool safe = obj->artifact ? TRUE : FALSE;
+		struct object *next = obj->next;
 
 		/* Skip gold */
-		if (tval_is_money(obj)) continue;
+		if (tval_is_money(obj)) {
+			obj = next;
+			continue;
+		}
 
 		/* Get the object name */
 		object_desc(o_name, sizeof(o_name), obj, ODESC_PREFIX | ODESC_FULL);
@@ -1352,6 +1356,9 @@ void process_monster_grab_objects(struct chunk *c, struct monster *m_ptr,
 			square_excise_object(c, ny, nx, obj);
 			object_delete(obj);
 		}
+
+		/* Next object */
+		obj = next;
 	}
 }
 

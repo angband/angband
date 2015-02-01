@@ -1313,6 +1313,7 @@ void monster_death(struct monster *mon, bool stats)
 	/* Delete any mimicked objects */
 	if (mon->mimicked_obj) {
 		object_delete(mon->mimicked_obj);
+		mon->mimicked_obj = NULL;
 	}
 
 	/* Drop objects being carried */

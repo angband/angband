@@ -63,6 +63,7 @@ int test_obj_piles(void *state) {
 	object_delete(o3);
 
 	/* Now put it back, and add another */
+	o3 = object_new();
 	pile_insert_end(&pile, o3);
 	pile_insert_end(&pile, o4);
 

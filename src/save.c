@@ -63,7 +63,7 @@ void wr_description(void)
 /**
  * Write an "item" record
  */
-static void wr_item(const object_type *o_ptr)
+static void wr_item(const object_type *obj)
 {
 	size_t i;
 	struct brand *b;
@@ -73,55 +73,55 @@ static void wr_item(const object_type *o_ptr)
 	wr_byte(ITEM_VERSION);
 
 	/* Location */
-	wr_byte(o_ptr->iy);
-	wr_byte(o_ptr->ix);
+	wr_byte(obj->iy);
+	wr_byte(obj->ix);
 
-	wr_byte(o_ptr->tval);
-	wr_byte(o_ptr->sval);
+	wr_byte(obj->tval);
+	wr_byte(obj->sval);
 
-	wr_s16b(o_ptr->pval);
+	wr_s16b(obj->pval);
 
-	wr_byte(o_ptr->number);
-	wr_s16b(o_ptr->weight);
+	wr_byte(obj->number);
+	wr_s16b(obj->weight);
 
-	if (o_ptr->artifact) wr_byte(o_ptr->artifact->aidx);
+	if (obj->artifact) wr_byte(obj->artifact->aidx);
 	else wr_byte(0);
 
-	if (o_ptr->ego) wr_byte(o_ptr->ego->eidx);
+	if (obj->ego) wr_byte(obj->ego->eidx);
 	else wr_byte(0);
 
-	wr_s16b(o_ptr->timeout);
+	wr_s16b(obj->timeout);
 
-	wr_s16b(o_ptr->to_h);
-	wr_s16b(o_ptr->to_d);
-	wr_s16b(o_ptr->to_a);
-	wr_s16b(o_ptr->ac);
-	wr_byte(o_ptr->dd);
-	wr_byte(o_ptr->ds);
+	wr_s16b(obj->to_h);
+	wr_s16b(obj->to_d);
+	wr_s16b(obj->to_a);
+	wr_s16b(obj->ac);
+	wr_byte(obj->dd);
+	wr_byte(obj->ds);
 
-	wr_byte(o_ptr->marked);
+	wr_byte(obj->marked);
 
-	wr_byte(o_ptr->origin);
-	wr_byte(o_ptr->origin_depth);
-	wr_u16b(o_ptr->origin_xtra);
-	wr_byte(o_ptr->ignore);
-
-	for (i = 0; i < OF_SIZE; i++)
-		wr_byte(o_ptr->flags[i]);
+	wr_byte(obj->origin);
+	wr_byte(obj->origin_depth);
+	wr_u16b(obj->origin_xtra);
+	wr_byte(obj->ignore);
 
 	for (i = 0; i < OF_SIZE; i++)
-		wr_byte(o_ptr->known_flags[i]);
+		wr_byte(obj->flags[i]);
+
+	for (i = 0; i < OF_SIZE; i++)
+		wr_byte(obj->known_flags[i]);
 
 	for (i = 0; i < ID_SIZE; i++)
-		wr_byte(o_ptr->id_flags[i]);
+		wr_byte(obj->id_flags[i]);
 
 	for (i = 0; i < OBJ_MOD_MAX; i++) {
-		wr_s16b(o_ptr->modifiers[i]);
+		wr_s16b(obj->modifiers[i]);
 	}
 
 	/* Write a sentinel byte */
-	wr_byte(o_ptr->brands ? 1 : 0);
-	for (b = o_ptr->brands; b; b = b->next) {
+	wr_byte(obj->brands ? 1 : 0);
+	for (b = obj->brands; b; b = b->next) {
 		wr_string(b->name);
 		wr_s16b(b->element);
 		wr_s16b(b->multiplier);
@@ -130,8 +130,8 @@ static void wr_item(const object_type *o_ptr)
 	}
 
 	/* Write a sentinel byte */
-	wr_byte(o_ptr->slays ? 1 : 0);
-	for (s = o_ptr->slays; s; s = s->next) {
+	wr_byte(obj->slays ? 1 : 0);
+	for (s = obj->slays; s; s = s->next) {
 		wr_string(s->name);
 		wr_s16b(s->race_flag);
 		wr_s16b(s->multiplier);
@@ -140,27 +140,27 @@ static void wr_item(const object_type *o_ptr)
 	}
 
 	for (i = 0; i < ELEM_MAX; i++) {
-		wr_s16b(o_ptr->el_info[i].res_level);
-		wr_byte(o_ptr->el_info[i].flags);
+		wr_s16b(obj->el_info[i].res_level);
+		wr_byte(obj->el_info[i].flags);
 	}
 
 	/* Held by monster index */
-	wr_s16b(o_ptr->held_m_idx);
+	wr_s16b(obj->held_m_idx);
 	
-	wr_s16b(o_ptr->mimicking_m_idx);
+	wr_s16b(obj->mimicking_m_idx);
 
 	/* Activation and effects*/
-	if (o_ptr->activation)
-		wr_u16b(o_ptr->activation->index);
+	if (obj->activation)
+		wr_u16b(obj->activation->index);
 	else
 		wr_u16b(0);
-	wr_u16b(o_ptr->time.base);
-	wr_u16b(o_ptr->time.dice);
-	wr_u16b(o_ptr->time.sides);
+	wr_u16b(obj->time.base);
+	wr_u16b(obj->time.dice);
+	wr_u16b(obj->time.sides);
 
 	/* Save the inscription (if any) */
-	if (o_ptr->note)
-		wr_string(quark_str(o_ptr->note));
+	if (obj->note)
+		wr_string(quark_str(obj->note));
 	else
 		wr_string("");
 }
@@ -169,37 +169,37 @@ static void wr_item(const object_type *o_ptr)
 /**
  * Write a monster record (including held or mimicked objects)
  */
-static void wr_monster(const monster_type *m_ptr)
+static void wr_monster(const monster_type *mon)
 {
 	size_t j;
-	struct object *obj = m_ptr->held_obj; 
+	struct object *obj = mon->held_obj; 
 	struct object *dummy = object_new();
 
-	wr_s16b(m_ptr->race->ridx);
-	wr_byte(m_ptr->fy);
-	wr_byte(m_ptr->fx);
-	wr_s16b(m_ptr->hp);
-	wr_s16b(m_ptr->maxhp);
-	wr_byte(m_ptr->mspeed);
-	wr_byte(m_ptr->energy);
+	wr_s16b(mon->race->ridx);
+	wr_byte(mon->fy);
+	wr_byte(mon->fx);
+	wr_s16b(mon->hp);
+	wr_s16b(mon->maxhp);
+	wr_byte(mon->mspeed);
+	wr_byte(mon->energy);
 	wr_byte(MON_TMD_MAX);
 
 	for (j = 0; j < MON_TMD_MAX; j++)
-		wr_s16b(m_ptr->m_timed[j]);
+		wr_s16b(mon->m_timed[j]);
 
 	for (j = 0; j < MFLAG_SIZE; j++)
-		wr_byte(m_ptr->mflag[j]);
+		wr_byte(mon->mflag[j]);
 
 	for (j = 0; j < OF_SIZE; j++)
-		wr_byte(m_ptr->known_pstate.flags[j]);
+		wr_byte(mon->known_pstate.flags[j]);
 
 	for (j = 0; j < ELEM_MAX; j++)
-		wr_s16b(m_ptr->known_pstate.el_info[j].res_level);
+		wr_s16b(mon->known_pstate.el_info[j].res_level);
 
 	/* Write mimicked object if any */
-	if (m_ptr->mimicked_obj) {
+	if (mon->mimicked_obj) {
 		wr_byte(1);
-		wr_item(m_ptr->mimicked_obj);
+		wr_item(mon->mimicked_obj);
 	} else
 		wr_byte(0);
 
@@ -748,9 +748,9 @@ static void wr_monsters_aux(struct chunk *c)
 
 	/* Dump the monsters */
 	for (i = 1; i < cave_monster_max(c); i++) {
-		const monster_type *m_ptr = cave_monster(c, i);
+		const monster_type *mon = cave_monster(c, i);
 
-		wr_monster(m_ptr);
+		wr_monster(mon);
 	}
 }
 

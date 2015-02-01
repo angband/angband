@@ -201,6 +201,9 @@ struct object *object_new(void)
 
 /**
  * Delete an object and free its memory
+ *
+ * Note that the pointer obj is *not* set to NULL by this function, so
+ * it should *not* be used as an object again without being re-assigned
  */
 void object_delete(struct object *obj)
 {

@@ -99,7 +99,7 @@ static struct ego_item *lookup_ego(int idx)
  */
 static struct object *rd_item(void)
 {
-	struct object *o_ptr = object_new();
+	struct object *obj = object_new();
 
 	byte tmp8u;
 	u16b tmp16u;
@@ -115,51 +115,51 @@ static struct object *rd_item(void)
 	assert(tmp16u == 0xffff);
 
 	/* Location */
-	rd_byte(&o_ptr->iy);
-	rd_byte(&o_ptr->ix);
+	rd_byte(&obj->iy);
+	rd_byte(&obj->ix);
 
 	/* Type/Subtype */
-	rd_byte(&o_ptr->tval);
-	rd_byte(&o_ptr->sval);
-	rd_s16b(&o_ptr->pval);
+	rd_byte(&obj->tval);
+	rd_byte(&obj->sval);
+	rd_s16b(&obj->pval);
 
-	rd_byte(&o_ptr->number);
-	rd_s16b(&o_ptr->weight);
+	rd_byte(&obj->number);
+	rd_s16b(&obj->weight);
 
 	rd_byte(&art_idx);
 	rd_byte(&ego_idx);
 
-	rd_s16b(&o_ptr->timeout);
+	rd_s16b(&obj->timeout);
 
-	rd_s16b(&o_ptr->to_h);
-	rd_s16b(&o_ptr->to_d);
-	rd_s16b(&o_ptr->to_a);
+	rd_s16b(&obj->to_h);
+	rd_s16b(&obj->to_d);
+	rd_s16b(&obj->to_a);
 
-	rd_s16b(&o_ptr->ac);
+	rd_s16b(&obj->ac);
 
-	rd_byte(&o_ptr->dd);
-	rd_byte(&o_ptr->ds);
+	rd_byte(&obj->dd);
+	rd_byte(&obj->ds);
 
-	rd_byte(&o_ptr->marked);
+	rd_byte(&obj->marked);
 
-	rd_byte(&o_ptr->origin);
-	rd_byte(&o_ptr->origin_depth);
-	rd_u16b(&o_ptr->origin_xtra);
-	rd_byte(&o_ptr->ignore);
-
-	for (i = 0; i < of_size; i++)
-		rd_byte(&o_ptr->flags[i]);
-
-	of_wipe(o_ptr->known_flags);
+	rd_byte(&obj->origin);
+	rd_byte(&obj->origin_depth);
+	rd_u16b(&obj->origin_xtra);
+	rd_byte(&obj->ignore);
 
 	for (i = 0; i < of_size; i++)
-		rd_byte(&o_ptr->known_flags[i]);
+		rd_byte(&obj->flags[i]);
+
+	of_wipe(obj->known_flags);
+
+	for (i = 0; i < of_size; i++)
+		rd_byte(&obj->known_flags[i]);
 
 	for (i = 0; i < id_size; i++)
-		rd_byte(&o_ptr->id_flags[i]);
+		rd_byte(&obj->id_flags[i]);
 
 	for (i = 0; i < obj_mod_max; i++) {
-		rd_s16b(&o_ptr->modifiers[i]);
+		rd_s16b(&obj->modifiers[i]);
 	}
 
 	/* Read brands */
@@ -175,8 +175,8 @@ static struct object *rd_item(void)
 		b->multiplier = tmp16s;
 		rd_byte(&tmp8u);
 		b->known = tmp8u ? TRUE : FALSE;
-		b->next = o_ptr->brands;
-		o_ptr->brands = b;
+		b->next = obj->brands;
+		obj->brands = b;
 		rd_byte(&tmp8u);
 	}
 
@@ -193,65 +193,65 @@ static struct object *rd_item(void)
 		s->multiplier = tmp16s;
 		rd_byte(&tmp8u);
 		s->known = tmp8u ? TRUE : FALSE;
-		s->next = o_ptr->slays;
-		o_ptr->slays = s;
+		s->next = obj->slays;
+		obj->slays = s;
 		rd_byte(&tmp8u);
 	}
 
 	for (i = 0; i < elem_max; i++) {
-		rd_s16b(&o_ptr->el_info[i].res_level);
-		rd_byte(&o_ptr->el_info[i].flags);
+		rd_s16b(&obj->el_info[i].res_level);
+		rd_byte(&obj->el_info[i].flags);
 	}
 
 	/* Monster holding object */
-	rd_s16b(&o_ptr->held_m_idx);
+	rd_s16b(&obj->held_m_idx);
 
-	rd_s16b(&o_ptr->mimicking_m_idx);
+	rd_s16b(&obj->mimicking_m_idx);
 
 	/* Activation */
 	rd_u16b(&tmp16u);
 	if (tmp16u)
-		o_ptr->activation = &activations[tmp16u];
+		obj->activation = &activations[tmp16u];
 	rd_u16b(&tmp16u);
-	o_ptr->time.base = tmp16u;
+	obj->time.base = tmp16u;
 	rd_u16b(&tmp16u);
-	o_ptr->time.dice = tmp16u;
+	obj->time.dice = tmp16u;
 	rd_u16b(&tmp16u);
-	o_ptr->time.sides = tmp16u;
+	obj->time.sides = tmp16u;
 
 	/* Save the inscription */
 	rd_string(buf, sizeof(buf));
-	if (buf[0]) o_ptr->note = quark_add(buf);
+	if (buf[0]) obj->note = quark_add(buf);
 
 
 	/* Lookup item kind */
-	o_ptr->kind = lookup_kind(o_ptr->tval, o_ptr->sval);
+	obj->kind = lookup_kind(obj->tval, obj->sval);
 
 	/* Check we have a kind and a valid artifact index */
-	if (!o_ptr->tval || !o_ptr->kind || art_idx >= z_info->a_max) {
-		object_delete(o_ptr);
+	if (!obj->tval || !obj->kind || art_idx >= z_info->a_max) {
+		object_delete(obj);
 		return NULL;
 	}
 
 	/* Lookup ego, set effect */
-	o_ptr->ego = lookup_ego(ego_idx);
-	if (o_ptr->ego)
-		o_ptr->effect = o_ptr->ego->effect;
+	obj->ego = lookup_ego(ego_idx);
+	if (obj->ego)
+		obj->effect = obj->ego->effect;
 	else
-		o_ptr->effect = o_ptr->kind->effect;
+		obj->effect = obj->kind->effect;
 
 	if (art_idx > 0)
-		o_ptr->artifact = &a_info[art_idx];
+		obj->artifact = &a_info[art_idx];
 
 	/* Success */
-	return o_ptr;
+	return obj;
 }
 
 
 /**
  * Read a monster
  */
-static void rd_monster(monster_type *m_ptr)
+static void rd_monster(monster_type *mon)
 {
 	byte tmp8u;
 	s16b r_idx;
@@ -259,33 +259,33 @@ static void rd_monster(monster_type *m_ptr)
 
 	/* Read the monster race */
 	rd_s16b(&r_idx);
-	m_ptr->race = &r_info[r_idx];
+	mon->race = &r_info[r_idx];
 
 	/* Read the other information */
-	rd_byte(&m_ptr->fy);
-	rd_byte(&m_ptr->fx);
-	rd_s16b(&m_ptr->hp);
-	rd_s16b(&m_ptr->maxhp);
-	rd_byte(&m_ptr->mspeed);
-	rd_byte(&m_ptr->energy);
+	rd_byte(&mon->fy);
+	rd_byte(&mon->fx);
+	rd_s16b(&mon->hp);
+	rd_s16b(&mon->maxhp);
+	rd_byte(&mon->mspeed);
+	rd_byte(&mon->energy);
 	rd_byte(&tmp8u);
 
 	for (j = 0; j < tmp8u; j++)
-		rd_s16b(&m_ptr->m_timed[j]);
+		rd_s16b(&mon->m_timed[j]);
 
 	/* Read and extract the flag */
 	for (j = 0; j < mflag_size; j++)
-		rd_byte(&m_ptr->mflag[j]);
+		rd_byte(&mon->mflag[j]);
 
 	for (j = 0; j < of_size; j++)
-		rd_byte(&m_ptr->known_pstate.flags[j]);
+		rd_byte(&mon->known_pstate.flags[j]);
 
 	for (j = 0; j < elem_max; j++)
-		rd_s16b(&m_ptr->known_pstate.el_info[j].res_level);
+		rd_s16b(&mon->known_pstate.el_info[j].res_level);
 
 	rd_byte(&tmp8u);
 	if (tmp8u)
-		m_ptr->mimicked_obj = rd_item();
+		mon->mimicked_obj = rd_item();
 
 	/* Read all the held objects (order is unimportant) */
 	while (TRUE) {
@@ -293,7 +293,7 @@ static void rd_monster(monster_type *m_ptr)
 		if (!obj)
 			break;
 
-		pile_insert(&m_ptr->held_obj, obj);
+		pile_insert(&mon->held_obj, obj);
 	}
 }
 
@@ -1153,18 +1153,18 @@ static int rd_monsters_aux(struct chunk *c)
 
 	/* Read the monsters */
 	for (i = 1; i < limit; i++) {
-		monster_type *m_ptr;
+		monster_type *mon;
 		monster_type monster_type_body;
 
 		/* Get local monster */
-		m_ptr = &monster_type_body;
-		memset(m_ptr, 0, sizeof(*m_ptr));
+		mon = &monster_type_body;
+		memset(mon, 0, sizeof(*mon));
 
 		/* Read the monster */
-		rd_monster(m_ptr);
+		rd_monster(mon);
 
 		/* Place monster in dungeon */
-		if (place_monster(c, m_ptr->fy, m_ptr->fx, m_ptr, 0) != i) {
+		if (place_monster(c, mon->fy, mon->fx, mon, 0) != i) {
 			note(format("Cannot place monster %d", i));
 			return (-1);
 		}

@@ -409,14 +409,15 @@ static const project_object_handler_f object_handlers[] = {
  */
 bool project_o(int who, int r, int y, int x, int dam, int typ)
 {
-	struct object *obj;
+	struct object *obj = square_object(cave, y, x);
 	bool obvious = FALSE;
 
 	/* Scan all objects in the grid */
-	for (obj = square_object(cave, y, x); obj; obj = obj->next) {
+	while (obj) {
 		bool ignore = FALSE;
 		bool do_kill = FALSE;
 		const char *note_kill = NULL;
+		struct object *next = obj->next;
 		project_object_handler_context_t context = {
 			who,
 			r,
@@ -472,6 +473,9 @@ bool project_o(int who, int r, int y, int x, int dam, int typ)
 				square_light_spot(cave, y, x);
 			}
 		}
+
+		/* Next object */
+		obj = next;
 	}
 
 	/* Return "Anything seen?" */
