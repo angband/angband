@@ -3,7 +3,7 @@
  * \brief Store stocking
  *
  * Copyright (c) 1997 Robert A. Koeneke, James E. Wilson, Ben Harrison
- * Copyright (c) 2007 Andi Sidwell, who rewrote a fair portion
+ * Copyright (c) 2007 Andi Sidwell
  *
  * This work is free software; you can redistribute it and/or modify it
  * under the terms of either:
@@ -45,7 +45,11 @@
 
 static void store_maint(struct store *s);
 
-/*** Constants and definitions ***/
+/**
+ * ------------------------------------------------------------------------
+ * Constants and definitions
+ * ------------------------------------------------------------------------ */
+
 
 /**
  * Array[MAX_STORES] of stores
@@ -130,7 +134,11 @@ void cleanup_stores(void)
 }
 
 
-/*** Edit file parsing ***/
+/**
+ * ------------------------------------------------------------------------
+ * Edit file parsing
+ * ------------------------------------------------------------------------ */
+
 
 /** store.txt **/
 
@@ -294,7 +302,11 @@ static struct file_parser store_parser = {
 };
 
 
-/*** Other init stuff ***/
+/**
+ * ------------------------------------------------------------------------
+ * Other init stuff
+ * ------------------------------------------------------------------------ */
+
 
 static struct store *flatten_stores(struct store *store_list) {
 	struct store *s;
@@ -386,13 +398,21 @@ static bool store_can_carry(struct store *store, struct object_kind *kind) {
 
 
 
-/*** Utilities ***/
+/**
+ * ------------------------------------------------------------------------
+ * Utilities
+ * ------------------------------------------------------------------------ */
+
 
 /* Randomly select one of the entries in an array */
 #define ONE_OF(x)	x[randint0(N_ELEMENTS(x))]
 
 
-/*** Flavour text stuff ***/
+/**
+ * ------------------------------------------------------------------------
+ * Flavour text stuff
+ * ------------------------------------------------------------------------ */
+
 
 /**
  * Messages for reacting to purchase prices.
@@ -475,7 +495,11 @@ static void purchase_analyze(s32b price, s32b value, s32b guess)
 
 
 
-/*** Check if a store will buy an object ***/
+/**
+ * ------------------------------------------------------------------------
+ * Check if a store will buy an object
+ * ------------------------------------------------------------------------ */
+
 
 /**
  * Determine if the current store will purchase the given object
@@ -512,7 +536,11 @@ static bool store_will_buy(struct store *store, const struct object *obj)
 }
 
 
-/*** Basics: pricing, generation, etc. ***/
+/**
+ * ------------------------------------------------------------------------
+ * Basics: pricing, generation, etc.
+ * ------------------------------------------------------------------------ */
+
 
 /**
  * Determine the price of an object (qty one) in a store.
@@ -1383,7 +1411,11 @@ void store_shuffle(struct store *store)
 
 
 
-/*** Higher-level code ***/
+/**
+ * ------------------------------------------------------------------------
+ * Higher-level code
+ * ------------------------------------------------------------------------ */
+
 
 /**
  * Return the quantity of a given item in the pack (include quiver).

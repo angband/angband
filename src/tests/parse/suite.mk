@@ -8,8 +8,8 @@ TESTPROGS += parse/a-info \
 	parse/k-info \
 	parse/names \
 	parse/p-info \
-	parse/parser \
+	parse/parse \
 	parse/r-info \
-	parse/store \
+	parse/readstore \
 	parse/v-info \
 	parse/z-info

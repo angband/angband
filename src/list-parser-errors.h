@@ -1,7 +1,6 @@
 /**
- * \file list-parse-errors.h
+ * \file list-parser-errors.h
  * \brief Parse errors and descriptions
- *
  */
 
 PARSE_ERROR(NONE,					"(none)")

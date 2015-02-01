@@ -1,5 +1,5 @@
 /**
- * \file z-debug
+ * \file z-debug.h
  * \brief Debugging support
  *
  * Copyright (c) 2010 elly+angband@leptoquark.net. See COPYING.

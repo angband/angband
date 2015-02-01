@@ -1,5 +1,5 @@
 /**
- * \file mon-list.h
+ * \file ui-mon-list.h
  * \brief Monster list UI.
  *
  * Copyright (c) 1997-2007 Ben Harrison, James E. Wilson, Robert A. Koeneke

@@ -1,4 +1,4 @@
-/* parse/parser */
+/* parse/parse */
 
 #include "unit-test.h"
 

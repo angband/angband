@@ -1,5 +1,5 @@
 /**
- * \file z-queue.c
+ * \file z-queue.h
  * \brief Simple circular integer queue.
  *
  * Copyright (c) 2011 Erik Osheim
@@ -15,6 +15,7 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
+
 #ifndef INCLUDED_Z_QUEUE_H
 #define INCLUDED_Z_QUEUE_H
 

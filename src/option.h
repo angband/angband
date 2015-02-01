@@ -1,5 +1,5 @@
 /**
- * \file options.h
+ * \file option.h
  * \brief Options table and definitions.
  *
  * Copyright (c) 1997 Ben Harrison

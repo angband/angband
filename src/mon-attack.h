@@ -1,5 +1,5 @@
 /**
- * \file mon-attack.c
+ * \file mon-attack.h
  * \brief Monster attacks
  *
  * Copyright (c) 1997 Ben Harrison, David Reeve Sward, Keldon Jones.
@@ -15,6 +15,7 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
+
 #ifndef MONSTER_ATTACK_H
 #define MONSTER_ATTACK_H
 

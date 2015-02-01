@@ -2,7 +2,7 @@
  * \file parser.c
  * \brief Info file parser.
  *
- * Copyright (c) 2011 Elly <elly+angband@leptoquark.net>
+ * Copyright (c) 2011 elly+angband@leptoquark.net
  *
  * This work is free software; you can redistribute it and/or modify it
  * under the terms of either:

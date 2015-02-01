@@ -1,4 +1,4 @@
-/* player/player */
+/* player/playerstat */
 
 #include "unit-test.h"
 #include "unit-test-data.h"

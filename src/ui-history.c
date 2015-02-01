@@ -1,6 +1,6 @@
 /**
- * \file player-history.c
- * \brief Character auto-history display
+ * \file ui-history.c
+ * \brief Character auto-history display UI
  *
  * Copyright (c) 2007 J.D. White
  *

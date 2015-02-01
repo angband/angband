@@ -1,5 +1,5 @@
 /**
- * \file z-rand.c
+ * \file z-rand.h
  * \brief A Random Number Generator for Angband
  *
  * Copyright (c) 1997 Ben Harrison, Randy Hutson

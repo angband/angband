@@ -1,9 +1,25 @@
+/**
+ * \file config.h
+ * \brief Configuration options
+ *
+ * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
+ * Copyright (c) 2013 Chris Carr, Andi Sidwell
+ *
+ * This software may be copied and distributed for educational, research,
+ * and not for profit purposes provided that this copyright and statement
+ * are included in all such copies.  Other copyrights may also apply.
+ */
+
 #ifndef INCLUDED_CONFIG_H
 #define INCLUDED_CONFIG_H
 
-/*** Some really important things you ought to change ***/
+/**
+ * ------------------------------------------------------------------------
+ * Some really important things you ought to change
+ * ------------------------------------------------------------------------ */
 
-/*
+
+/**
  * Defines the default paths to the Angband directories, for ports that use
  * the main.c file.
  *
@@ -48,7 +64,7 @@
 #endif 
 
 
-/*
+/**
  * OPTION: Create and use a hidden directory in the users home directory
  * for storing pref files and character dumps.
  */
@@ -57,7 +73,7 @@
 #endif
 
 
-/*
+/**
  * OPTION: Create and use hidden directories in the users home directory
  * for storing save files and high-scores
  */

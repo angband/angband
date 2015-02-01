@@ -1,5 +1,5 @@
 /**
- * \file z-util.c
+ * \file z-util.h
  * \brief Low-level string handling and other utilities.
  *
  * Copyright (c) 1997-2005 Ben Harrison, Robert Ruehlmann.

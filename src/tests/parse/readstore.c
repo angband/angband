@@ -1,4 +1,4 @@
-/* parse/store */
+/* parse/readstore */
 
 #include "unit-test.h"
 #include "object.h"

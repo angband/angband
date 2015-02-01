@@ -1,3 +1,22 @@
+/**
+ * \file store.h
+ * \brief Store stocking
+ *
+ * Copyright (c) 1997 Robert A. Koeneke, James E. Wilson, Ben Harrison
+ * Copyright (c) 2007 Andi Sidwell
+ *
+ * This work is free software; you can redistribute it and/or modify it
+ * under the terms of either:
+ *
+ * a) the GNU General Public License as published by the Free Software
+ *    Foundation, version 2, or
+ *
+ * b) the "Angband licence":
+ *    This software may be copied and distributed for educational, research,
+ *    and not for profit purposes provided that this copyright and statement
+ *    are included in all such copies.  Other copyrights may also apply.
+ */
+
 #ifndef INCLUDED_STORE_H
 #define INCLUDED_STORE_H
 
@@ -6,7 +25,9 @@
 #include "object.h"
 #include "parser.h"
 
-/* List of store indices */
+/**
+ * List of store indices
+ */
 enum {
 	STORE_NONE      = -1,
 	STORE_GENERAL	= 0,
