@@ -122,11 +122,64 @@ int test_stairs2(void *state) {
 	ok;
 }
 
+int test_drop_pickup(void *state) {
+
+	/* Load the saved game */
+	eq(savefile_load("Test1", FALSE), TRUE);
+
+	cmdq_push(CMD_WALK);
+	cmd_set_arg_direction(cmdq_peek(), "direction", 4);
+	run_game_loop();
+	if (player->upkeep->inven[0]->number > 1) {
+		cmdq_push(CMD_DROP);
+		cmd_set_arg_item(cmdq_peek(), "item", player->upkeep->inven[0]);
+		cmd_set_arg_number(cmdq_peek(), "quantity", 1);
+		run_game_loop();
+		eq(square_object(cave, player->py, player->px)->number, 1);
+		cmdq_push(CMD_AUTOPICKUP);
+		run_game_loop();
+	}
+	eq(square_object(cave, player->py, player->px), NULL);
+
+	ok;
+}
+
+int test_drop_eat(void *state) {
+	int num = 0;
+
+	/* Load the saved game */
+	eq(savefile_load("Test1", FALSE), TRUE);
+	num = player->upkeep->inven[0]->number;
+
+	cmdq_push(CMD_WALK);
+	cmd_set_arg_direction(cmdq_peek(), "direction", 4);
+	run_game_loop();
+	cmdq_push(CMD_DROP);
+	cmd_set_arg_item(cmdq_peek(), "item", player->upkeep->inven[0]);
+	cmd_set_arg_number(cmdq_peek(), "quantity",
+					   player->upkeep->inven[0]->number);
+	run_game_loop();
+	eq(square_object(cave, player->py, player->px)->number, num);
+	cmdq_push(CMD_EAT);
+	cmd_set_arg_item(cmdq_peek(), "item",
+					 square_object(cave, player->py, player->px));
+	run_game_loop();
+	if (num > 1) {
+		eq(square_object(cave, player->py, player->px)->number, num - 1);
+	} else {
+		eq(square_object(cave, player->py, player->px), NULL);
+	}
+
+	ok;
+}
+
 const char *suite_name = "game/basic";
 struct test tests[] = {
 	{ "newgame", test_newgame },
 	{ "loadgame", test_loadgame },
 	{ "stairs1", test_stairs1 },
 	{ "stairs2", test_stairs2 },
+	{ "droppickup", test_drop_pickup },
+	{ "dropeat", test_drop_eat },
 	{ NULL, NULL }
 };

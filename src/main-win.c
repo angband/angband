@@ -15,9 +15,7 @@
  *    This software may be copied and distributed for educational, research,
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
- */
-
-/**
+ *
  * This file helps Angband work with Windows computers.
  *
  * To use this file, use an appropriate "Makefile" or "Project File",

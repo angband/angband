@@ -564,7 +564,7 @@ struct object *floor_object_for_use(struct object *obj, int num, bool message)
 	char name[80];
 
 	/* Bounds check */
-	num = MAX(num, obj->number);
+	num = MIN(num, obj->number);
 
 	/* Split off a usable object if necessary */
 	if (obj->number > num) {
