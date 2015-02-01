@@ -343,9 +343,7 @@ static enum parser_error write_dummy_object_record(struct artifact *art, const c
  */
 void init_file_paths(const char *configpath, const char *libpath, const char *datapath)
 {
-#ifdef PRIVATE_USER_PATH
 	char buf[1024];
-#endif /* PRIVATE_USER_PATH */
 
 	/*** Free everything ***/
 
