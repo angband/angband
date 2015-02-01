@@ -875,13 +875,22 @@ void push_object(int y, int x)
 	/* Save the original terrain feature */
 	struct feature *feat_old = square_feat(cave, y, x);
 
-	struct object *obj;
+	struct object *obj = square_object(cave, y, x);
 
 	struct queue *queue = q_new(z_info->floor_size);
 
-	/* Push all objects on the square into the queue */
-	for (obj = square_object(cave, y, x); obj; obj = obj->next)
+	/* Push all objects on the square, stripped of pile info, into the queue */
+	while (obj) {
+		struct object *next = obj->next;
 		q_push_ptr(queue, obj);
+
+		/* Orphan the object */
+		obj->next = NULL;
+		obj->prev = NULL;
+
+		/* Next object */
+		obj = next;
+	}
 
 	/* Set feature to an open door */
 	square_force_floor(cave, y, x);
