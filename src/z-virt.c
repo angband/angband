@@ -120,6 +120,6 @@ char *string_append(char *s1, const char *s2)
 	}
 	len = strlen(s1);
 	s1 = mem_realloc(s1, len + strlen(s2) + 1);
-	strcpy(s1 + len, s2);
+	my_strcpy(s1 + len, s2, strlen(s2) + 1);
 	return s1;
 }

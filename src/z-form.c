@@ -168,6 +168,8 @@
  *
  * Note that in most cases "just long enough" is probably "too short".
  *
+ * As of 4.0, we use snprintf (for safety, and to quieten picky compilers)
+ *
  * We should also consider extracting and processing the "width" and other
  * "flags" by hand, it might be more "accurate", and it would allow us to
  * remove the limit (1000 chars) on the result of format sequences.
@@ -315,7 +317,7 @@ size_t vstrnfmt(char *buf, size_t max, const char *fmt, va_list vp)
 					arg = va_arg(vp, int);
 
 					/* Hack -- append the "length" */
-					sprintf(aux + q, "%d", arg);
+					snprintf(aux + q, sizeof(aux) - q, "%d", arg);
 
 					/* Hack -- accept the "length" */
 					while (aux[q]) q++;
@@ -346,7 +348,7 @@ size_t vstrnfmt(char *buf, size_t max, const char *fmt, va_list vp)
 				arg = va_arg(vp, int);
 
 				/* Format the argument */
-				sprintf(tmp, aux, arg);
+				snprintf(tmp, sizeof(tmp), aux, arg);
 
 				/* Done */
 				break;
@@ -362,7 +364,7 @@ size_t vstrnfmt(char *buf, size_t max, const char *fmt, va_list vp)
 					arg = va_arg(vp, long);
 
 					/* Format the argument */
-					sprintf(tmp, aux, arg);
+					snprintf(tmp, sizeof(tmp), aux, arg);
 				} else {
 					int arg;
 
@@ -370,7 +372,7 @@ size_t vstrnfmt(char *buf, size_t max, const char *fmt, va_list vp)
 					arg = va_arg(vp, int);
 
 					/* Format the argument */
-					sprintf(tmp, aux, arg);
+					snprintf(tmp, sizeof(tmp), aux, arg);
 				}
 
 				/* Done */
@@ -387,7 +389,7 @@ size_t vstrnfmt(char *buf, size_t max, const char *fmt, va_list vp)
 					arg = va_arg(vp, unsigned long);
 
 					/* Format the argument */
-					sprintf(tmp, aux, arg);
+					snprintf(tmp, sizeof(tmp), aux, arg);
 				} else {
 					unsigned int arg;
 
@@ -395,7 +397,7 @@ size_t vstrnfmt(char *buf, size_t max, const char *fmt, va_list vp)
 					arg = va_arg(vp, unsigned int);
 
 					/* Format the argument */
-					sprintf(tmp, aux, arg);
+					snprintf(tmp, sizeof(tmp), aux, arg);
 				}
 
 				/* Done */
@@ -413,7 +415,7 @@ size_t vstrnfmt(char *buf, size_t max, const char *fmt, va_list vp)
 				arg = va_arg(vp, double);
 
 				/* Format the argument */
-				sprintf(tmp, aux, arg);
+				snprintf(tmp, sizeof(tmp), aux, arg);
 
 				/* Done */
 				break;
@@ -428,7 +430,7 @@ size_t vstrnfmt(char *buf, size_t max, const char *fmt, va_list vp)
 				arg = va_arg(vp, void*);
 
 				/* Format the argument */
-				sprintf(tmp, aux, arg);
+				snprintf(tmp, sizeof(tmp), aux, arg);
 
 				/* Done */
 				break;
@@ -470,7 +472,7 @@ size_t vstrnfmt(char *buf, size_t max, const char *fmt, va_list vp)
 					aux[q-1] = '\0';
 
 					/* Format the argument */
-					sprintf(tmp, aux, arg2);
+					snprintf(tmp, sizeof(tmp), aux, arg2);
 
 					/* Done */
 					break;
@@ -494,7 +496,7 @@ size_t vstrnfmt(char *buf, size_t max, const char *fmt, va_list vp)
 					(void)my_strcpy(arg2, arg, sizeof(arg2));
 
 					/* Format the argument */
-					sprintf(tmp, aux, arg2);
+					snprintf(tmp, sizeof(tmp), aux, arg2);
 
 					/* Done */
 					break;
