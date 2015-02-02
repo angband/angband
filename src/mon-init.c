@@ -1277,7 +1277,11 @@ struct parser *init_parse_lore(void) {
 }
 
 static errr run_parse_lore(struct parser *p) {
-	return parse_file(p, "USER_lore");
+	/* Failure is always an option */
+	if (parse_file(p, "lore")) {
+		event_signal_message(EVENT_INITSTATUS, 0, "No monster lore file found");
+	}
+	return PARSE_ERROR_NONE;
 }
 
 static errr finish_parse_lore(struct parser *p) {

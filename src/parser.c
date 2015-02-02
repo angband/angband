@@ -646,27 +646,27 @@ errr parse_file(struct parser *p, const char *filename) {
 	ang_file *fh;
 	errr r = 0;
 
-	/* Allow parsing of files from user directory */
-	if (strstr(filename, "USER_")) {
-		filename = &filename[5];
-		path_build(path, sizeof(path), ANGBAND_DIR_USER,
-				   format("%s.txt", filename));
-		fh = file_open(path, MODE_READ, FTYPE_TEXT);
+	/* The player can put a customised file in the user directory */
+	path_build(path, sizeof(path), ANGBAND_DIR_USER, format("%s.txt",
+															filename));
+	fh = file_open(path, MODE_READ, FTYPE_TEXT);
 
-		/* Failure is always an option */
-		if (!fh) {
-			msg("No monster lore file found");
-			event_signal(EVENT_MESSAGE_FLUSH);
-			return PARSE_ERROR_NONE;
-		}
-	} else {
+	/* If no custom file, just load the standard one */
+	if (!fh) {
 		path_build(path, sizeof(path), ANGBAND_DIR_EDIT,
 				   format("%s.txt", filename));
 		fh = file_open(path, MODE_READ, FTYPE_TEXT);
 	}
 
-	if (!fh)
-		quit(format("Cannot open '%s.txt'", filename));
+	/* The lore file is optional, lack of others is terminal */
+	if (!fh) {
+		if (streq(filename, "lore"))
+			return PARSE_ERROR_NO_FILE_FOUND;
+		else
+			quit(format("Cannot open '%s.txt'", filename));
+	}
+
+	/* Parse it */
 	while (file_getl(fh, buf, sizeof(buf))) {
 		r = parser_parse(p, buf);
 		if (r)

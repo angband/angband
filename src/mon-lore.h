@@ -113,6 +113,6 @@ void monster_flags_known(const monster_race *r_ptr, const monster_lore *l_ptr,
 						 bitflag flags[RF_SIZE]);
 void lore_treasure(struct monster *m_ptr, int num_item, int num_gold);
 monster_lore *get_lore(const monster_race *race);
-bool lore_save(const char *path);
+bool lore_save(const char *name);
 
 #endif /* MONSTER_LORE_H */
