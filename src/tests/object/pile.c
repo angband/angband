@@ -72,17 +72,17 @@ int test_obj_piles(void *state) {
 	ptreq(pile, o1);
 
 	/* Now the list should look like o1 <-> o2 <-> o4, so check that */
-	ptreq(o1->prev, NULL);
+	null(o1->prev);
 	ptreq(o1->next, o2);
 
 	ptreq(o2->prev, o1);
 	ptreq(o2->next, o4);
 
-	ptreq(o3->prev, NULL);
-	ptreq(o3->next, NULL);
+	null(o3->prev);
+	null(o3->next);
 
 	ptreq(o4->prev, o2);
-	ptreq(o4->next, NULL);
+	null(o4->next);
 
 	/* Free up */
 	object_pile_free(pile);

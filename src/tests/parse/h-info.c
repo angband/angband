@@ -26,7 +26,7 @@ int test_chart0(void *state) {
 	e = c->entries;
 	require(e);
 	eq(c->idx, 1);
-	ptreq(e->next, NULL);
+	null(e->next);
 	ptreq(e->roll, 5);
 	eq(e->isucc, 3);
 	ok;

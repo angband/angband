@@ -65,7 +65,7 @@ int test_magic_missile(void *state) {
 	eq(player->is_dead, FALSE);
 	cave_generate(&cave, player);
 	on_new_level();
-	noteq(cave, NULL);
+	notnull(cave);
 	eq(player->chp, player->mhp);
 	eq(player->food, PY_FOOD_FULL - 1);
 
