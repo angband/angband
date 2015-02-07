@@ -435,7 +435,7 @@ static void project_feature_handler_ARROW(project_feature_handler_context_t *con
 }
 
 static const project_feature_handler_f feature_handlers[] = {
-	#define ELEM(a, b, c, d, e, f, g, col) project_feature_handler_##a,
+	#define ELEM(a, b, c, d, e, f, g, h, i, col) project_feature_handler_##a,
 	#include "list-elements.h"
 	#undef ELEM
 	#define PROJ_ENV(a, col) project_feature_handler_##a,

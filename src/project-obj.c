@@ -376,7 +376,7 @@ static void project_object_handler_MAKE_TRAP(project_object_handler_context_t *c
 }
 
 static const project_object_handler_f object_handlers[] = {
-	#define ELEM(a, b, c, d, e, f, g, col) project_object_handler_##a,
+	#define ELEM(a, b, c, d, e, f, g, h, i, col) project_object_handler_##a,
 	#include "list-elements.h"
 	#undef ELEM
 	#define PROJ_ENV(a, col) project_object_handler_##a,

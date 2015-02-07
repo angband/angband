@@ -72,34 +72,15 @@ struct effect_kind {
 
 
 /**
- * Element info - can be improved NRM
+ * Element info for player breaths
  */
 static struct breath_info {
-	int msgt;            /* Element message type */
 	const char *desc;    /* Element description */
+	int msgt;            /* Element message type */
 } elements[] = {
-	{ MSG_BR_ACID, "acid" },
-	{ MSG_BR_ELEC, "lightning" },
-	{ MSG_BR_FIRE, "fire" },
-	{ MSG_BR_FROST, "frost" },
-	{ MSG_BR_GAS, "poison gas" },
-	{ MSG_BR_LIGHT, "light" },
-	{ MSG_BR_DARK, "dark" },
-	{ MSG_BR_SOUND, "sound" },
-	{ MSG_BR_SHARDS, "shards" },
-	{ MSG_BR_NEXUS, "nexus" },
-	{ MSG_BR_NETHER, "nether" },
-	{ MSG_BR_CHAOS, "chaos" },
-	{ 0, "" },
-	{ 0, "" },
-	{ MSG_BR_DISEN, "disenchantment" },
-	{ MSG_BR_GRAVITY, "gravity" },
-	{ MSG_BR_INERTIA, "inertia" },
-	{ MSG_BR_FORCE, "force" },
-	{ MSG_BR_TIME, "time" },
-	{ MSG_BR_PLASMA, "plasma" },
-	{ 0, "" },
-	{ MSG_BR_ELEMENTS, "the elements" },
+    #define ELEM(a, b, c, d, e, f, g, h, i, col) { c, i },
+    #include "list-elements.h"
+    #undef ELEM
 };
 
 
