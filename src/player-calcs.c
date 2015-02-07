@@ -35,7 +35,7 @@
 #include "player-timed.h"
 #include "player-util.h"
 
-/*
+/**
  * Stat Table (INT) -- Magic devices
  */
 const byte adj_int_dev[STAT_RANGE] =
@@ -80,7 +80,7 @@ const byte adj_int_dev[STAT_RANGE] =
 	13	/* 18/220+ */
 };
 
-/*
+/**
  * Stat Table (WIS) -- Saving throw
  */
 const byte adj_wis_sav[STAT_RANGE] =
@@ -126,7 +126,7 @@ const byte adj_wis_sav[STAT_RANGE] =
 };
 
 
-/*
+/**
  * Stat Table (DEX) -- disarming
  */
 const byte adj_dex_dis[STAT_RANGE] =
@@ -172,7 +172,7 @@ const byte adj_dex_dis[STAT_RANGE] =
 };
 
 
-/*
+/**
  * Stat Table (INT) -- disarming
  */
 const byte adj_int_dis[STAT_RANGE] =
@@ -217,7 +217,7 @@ const byte adj_int_dis[STAT_RANGE] =
 	19	/* 18/220+ */
 };
 
-/*
+/**
  * Stat Table (DEX) -- bonus to ac (plus 128)
  */
 const byte adj_dex_ta[STAT_RANGE] =
@@ -262,7 +262,7 @@ const byte adj_dex_ta[STAT_RANGE] =
 	128 + 15	/* 18/220+ */
 };
 
-/*
+/**
  * Stat Table (STR) -- bonus to dam (plus 128)
  */
 const byte adj_str_td[STAT_RANGE] =
@@ -308,7 +308,7 @@ const byte adj_str_td[STAT_RANGE] =
 };
 
 
-/*
+/**
  * Stat Table (DEX) -- bonus to hit (plus 128)
  */
 const byte adj_dex_th[STAT_RANGE] =
@@ -354,7 +354,7 @@ const byte adj_dex_th[STAT_RANGE] =
 };
 
 
-/*
+/**
  * Stat Table (STR) -- bonus to hit (plus 128)
  */
 const byte adj_str_th[STAT_RANGE] =
@@ -400,7 +400,7 @@ const byte adj_str_th[STAT_RANGE] =
 };
 
 
-/*
+/**
  * Stat Table (STR) -- weight limit in deca-pounds
  */
 const byte adj_str_wgt[STAT_RANGE] =
@@ -446,7 +446,7 @@ const byte adj_str_wgt[STAT_RANGE] =
 };
 
 
-/*
+/**
  * Stat Table (STR) -- weapon weight limit in pounds
  */
 const byte adj_str_hold[STAT_RANGE] =
@@ -492,7 +492,7 @@ const byte adj_str_hold[STAT_RANGE] =
 };
 
 
-/*
+/**
  * Stat Table (STR) -- digging value
  */
 const byte adj_str_dig[STAT_RANGE] =
@@ -538,7 +538,7 @@ const byte adj_str_dig[STAT_RANGE] =
 };
 
 
-/*
+/**
  * Stat Table (STR) -- help index into the "blow" table
  */
 const byte adj_str_blow[STAT_RANGE] =
@@ -584,7 +584,7 @@ const byte adj_str_blow[STAT_RANGE] =
 };
 
 
-/*
+/**
  * Stat Table (DEX) -- index into the "blow" table
  */
 const byte adj_dex_blow[STAT_RANGE] =
@@ -630,7 +630,7 @@ const byte adj_dex_blow[STAT_RANGE] =
 };
 
 
-/*
+/**
  * Stat Table (DEX) -- chance of avoiding "theft" and "falling"
  */
 const byte adj_dex_safe[STAT_RANGE] =
@@ -676,7 +676,7 @@ const byte adj_dex_safe[STAT_RANGE] =
 };
 
 
-/*
+/**
  * Stat Table (CON) -- base regeneration rate
  */
 const byte adj_con_fix[STAT_RANGE] =
@@ -722,7 +722,7 @@ const byte adj_con_fix[STAT_RANGE] =
 };
 
 
-/*
+/**
  * Stat Table (CON) -- extra 1/100th hitpoints per level
  */
 const int adj_con_mhp[STAT_RANGE] =
@@ -809,7 +809,7 @@ const int adj_mag_study[STAT_RANGE] =
 	250	/* 18/220+ */
 };
 
-/*
+/**
  * Stat Table (INT/WIS) -- extra 1/100 mana-points per level
  */
 const int adj_mag_mana[STAT_RANGE] =
@@ -854,7 +854,7 @@ const int adj_mag_mana[STAT_RANGE] =
 	800	/* 18/220+ */
 };
 
-/*
+/**
  * This table is used to help calculate the number of blows the player can
  * make in a single round of attacks (one player turn) with a normal weapon.
  *
@@ -1103,7 +1103,7 @@ int level_spells(struct player *p)
 	return adj_mag_study[player->state.stat_ind[stat]];
 }
 
-/*
+/**
  * Calculate number of spells player should have, and forget,
  * or remember, spells until that number is properly reflected.
  *
@@ -1151,20 +1151,14 @@ static void calc_spells(void)
 
 	/* Count the number of spells we know */
 	for (j = 0; j < num_total; j++)
-	{
-		/* Count known spells */
 		if (player->spell_flags[j] & PY_SPELL_LEARNED)
-		{
 			num_known++;
-		}
-	}
 
 	/* See how many spells we must forget or may learn */
 	player->upkeep->new_spells = num_allowed - num_known;
 
 	/* Forget spells which are too hard */
-	for (i = num_total - 1; i >= 0; i--)
-	{
+	for (i = num_total - 1; i >= 0; i--) {
 		/* Get the spell */
 		j = player->spell_order[i];
 
@@ -1178,8 +1172,7 @@ static void calc_spells(void)
 		if (s_ptr->slevel <= player->lev) continue;
 
 		/* Is it known? */
-		if (player->spell_flags[j] & PY_SPELL_LEARNED)
-		{
+		if (player->spell_flags[j] & PY_SPELL_LEARNED) {
 			/* Mark as forgotten */
 			player->spell_flags[j] |= PY_SPELL_FORGOTTEN;
 
@@ -1195,8 +1188,7 @@ static void calc_spells(void)
 	}
 
 	/* Forget spells if we know too many spells */
-	for (i = num_total - 1; i >= 0; i--)
-	{
+	for (i = num_total - 1; i >= 0; i--) {
 		/* Stop when possible */
 		if (player->upkeep->new_spells >= 0) break;
 
@@ -1210,8 +1202,7 @@ static void calc_spells(void)
 		s_ptr = spell_by_index(j);
 
 		/* Forget it (if learned) */
-		if (player->spell_flags[j] & PY_SPELL_LEARNED)
-		{
+		if (player->spell_flags[j] & PY_SPELL_LEARNED) {
 			/* Mark as forgotten */
 			player->spell_flags[j] |= PY_SPELL_FORGOTTEN;
 
@@ -1227,8 +1218,7 @@ static void calc_spells(void)
 	}
 
 	/* Check for spells to remember */
-	for (i = 0; i < num_total; i++)
-	{
+	for (i = 0; i < num_total; i++) {
 		/* None left to remember */
 		if (player->upkeep->new_spells <= 0) break;
 
@@ -1245,8 +1235,7 @@ static void calc_spells(void)
 		if (s_ptr->slevel > player->lev) continue;
 
 		/* First set of spells */
-		if (player->spell_flags[j] & PY_SPELL_FORGOTTEN)
-		{
+		if (player->spell_flags[j] & PY_SPELL_FORGOTTEN) {
 			/* No longer forgotten */
 			player->spell_flags[j] &= ~PY_SPELL_FORGOTTEN;
 
@@ -1265,8 +1254,7 @@ static void calc_spells(void)
 	k = 0;
 
 	/* Count spells that can be learned */
-	for (j = 0; j < num_total; j++)
-	{
+	for (j = 0; j < num_total; j++) {
 		/* Get the spell */
 		s_ptr = spell_by_index(j);
 
@@ -1276,9 +1264,7 @@ static void calc_spells(void)
 
 		/* Skip spells we already know */
 		if (player->spell_flags[j] & PY_SPELL_LEARNED)
-		{
 			continue;
-		}
 
 		/* Count it */
 		k++;
@@ -1288,16 +1274,12 @@ static void calc_spells(void)
 	if (player->upkeep->new_spells > k) player->upkeep->new_spells = k;
 
 	/* Spell count changed */
-	if (old_spells != player->upkeep->new_spells)
-	{
+	if (old_spells != player->upkeep->new_spells) {
 		/* Message if needed */
 		if (player->upkeep->new_spells)
-		{
 			/* Message */
-			msg("You can learn %d more %s%s.",
-			           player->upkeep->new_spells, p,
-			           (player->upkeep->new_spells != 1) ? "s" : "");
-		}
+			msg("You can learn %d more %s%s.", player->upkeep->new_spells, p,
+				(player->upkeep->new_spells != 1) ? "s" : "");
 
 		/* Redraw Study Status */
 		player->upkeep->redraw |= (PR_STUDY | PR_OBJECT);
@@ -1307,7 +1289,6 @@ static void calc_spells(void)
 
 /**
  * Get the player's max spell points per effective level
- * (will become realm based - NRM)
  */
 int mana_per_level(struct player *p)
 {
@@ -1315,7 +1296,7 @@ int mana_per_level(struct player *p)
 	return adj_mag_mana[player->state.stat_ind[stat]];
 }
 
-/*
+/**
  * Calculate maximum mana.  You do not need to know any spells.
  * Note that mana is lowered by heavy (or inappropriate) armor.
  *
@@ -1441,7 +1422,7 @@ static void calc_mana(void)
 }
 
 
-/*
+/**
  * Calculate the players (maximal) hit points
  *
  * Adjust current hitpoints if necessary
@@ -1461,14 +1442,12 @@ static void calc_hitpoints(void)
 	if (mhp < player->lev + 1) mhp = player->lev + 1;
 
 	/* New maximum hitpoints */
-	if (player->mhp != mhp)
-	{
+	if (player->mhp != mhp) {
 		/* Save new limit */
 		player->mhp = mhp;
 
 		/* Enforce new limit */
-		if (player->chp >= mhp)
-		{
+		if (player->chp >= mhp) {
 			player->chp = mhp;
 			player->chp_frac = 0;
 		}
@@ -1562,7 +1541,7 @@ void calc_digging_chances(player_state *state, int chances[DIGGING_MAX])
 		chances[i] = MAX(0, chances[i]);
 }
 
-/*
+/**
  * Calculate the blows a player would get.
  *
  * \param o_ptr is the object for which we are calculating blows
@@ -1580,8 +1559,8 @@ int calc_blows(const object_type *o_ptr, player_state *state, int extra_blows)
 	int blow_energy;
 
 	/* Enforce a minimum "weight" (tenth pounds) */
-	div = ((o_ptr->weight < player->class->min_weight) ? player->class->min_weight :
-		o_ptr->weight);
+	div = ((o_ptr->weight < player->class->min_weight) ?
+		   player->class->min_weight : o_ptr->weight);
 
 	/* Get the strength vs weight */
 	str_index = adj_str_blow[state->stat_ind[STAT_STR]] *
@@ -1603,7 +1582,7 @@ int calc_blows(const object_type *o_ptr, player_state *state, int extra_blows)
 }
 
 
-/*
+/**
  * Computes current weight limit.
  */
 static int weight_limit(player_state *state)
@@ -1618,7 +1597,7 @@ static int weight_limit(player_state *state)
 }
 
 
-/*
+/**
  * Computes weight remaining before burdened.
  */
 int weight_remaining(void)
@@ -1634,7 +1613,7 @@ int weight_remaining(void)
 }
 
 
-/*
+/**
  * Calculate the players current "state", taking into account
  * not only race/class intrinsics, but also objects being worn
  * and temporary spell effects.
@@ -1670,8 +1649,7 @@ void calc_bonuses(struct object *gear, player_state *state, bool known_only)
 	bitflag collect_f[OF_SIZE];
 	bool vuln[ELEM_MAX];
 
-	/*** Reset ***/
-
+	/* Reset */
 	memset(state, 0, sizeof *state);
 
 	/* Set various defaults */
@@ -1679,7 +1657,9 @@ void calc_bonuses(struct object *gear, player_state *state, bool known_only)
 	state->num_blows = 100;
 
 
-	/*** Extract race/class info ***/
+	/* ------------------------------------
+	 * Extract race/class info
+	 * ------------------------------------ */
 
 	/* Base infravision (purely racial) */
 	state->see_infra = player->race->infra;
@@ -1703,7 +1683,9 @@ void calc_bonuses(struct object *gear, player_state *state, bool known_only)
 	pf_copy(state->pflags, player->race->pflags);
 	pf_union(state->pflags, player->class->pflags);
 
-	/*** Analyze player ***/
+	/* ------------------------------------
+	 * Analyze player
+	 * ------------------------------------ */
 
 	/* Extract the player flags */
 	player_flags(player, collect_f);
@@ -1712,7 +1694,9 @@ void calc_bonuses(struct object *gear, player_state *state, bool known_only)
 	if (!player->csp)
 		pf_on(state->pflags, PF_NO_MANA);
 
-	/*** Analyze equipment ***/
+	/* ------------------------------------
+	 * Analyze equipment
+	 * ------------------------------------ */
 
 	/* Scan the equipment */
 	for (i = 0; i < player->body.count; i++) {
@@ -1800,11 +1784,15 @@ void calc_bonuses(struct object *gear, player_state *state, bool known_only)
 	}
 
 
-	/*** Update all flags ***/
+	/* ------------------------------------
+	 * Update all flags
+	 * ------------------------------------ */
 
 	of_union(state->flags, collect_f);
 
-	/*** Handle stats ***/
+	/* ------------------------------------
+	 * Handle stats
+	 * ------------------------------------ */
 
 	/* Calculate stats */
 	for (i = 0; i < STAT_MAX; i++) {
@@ -1850,7 +1838,9 @@ void calc_bonuses(struct object *gear, player_state *state, bool known_only)
 			state->el_info[i].res_level--;
 	}
 
-	/*** Temporary flags ***/
+	/* ------------------------------------
+	 * Temporary flags
+	 * ------------------------------------ */
 
 	/* Apply temporary "stun" */
 	if (player->timed[TMD_STUN] > 50) {
@@ -1977,7 +1967,9 @@ void calc_bonuses(struct object *gear, player_state *state, bool known_only)
 	if (player->timed[TMD_IMAGE])
 		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE] * 8 / 10;
 
-	/*** Analyze flags ***/
+	/* ------------------------------------
+	 * Analyze flags
+	 * ------------------------------------ */
 
 	/* Check for fear */
 	if (of_has(state->flags, OF_AFRAID)) {
@@ -1986,7 +1978,9 @@ void calc_bonuses(struct object *gear, player_state *state, bool known_only)
 		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE] * 95 / 100;
 	}
 
-	/*** Analyze weight ***/
+	/* ------------------------------------
+	 * Analyze weight
+	 * ------------------------------------ */
 
 	/* Extract the current weight (in tenth pounds) */
 	j = player->upkeep->total_weight;
@@ -2008,7 +2002,9 @@ void calc_bonuses(struct object *gear, player_state *state, bool known_only)
 	if (state->speed > 199)
 		state->speed = 199;
 
-	/*** Apply modifier bonuses ***/
+	/* ------------------------------------
+	 * Apply modifier bonuses
+	 * ------------------------------------ */
 
 	/* Modifier Bonuses (Un-inflate stat bonuses) */
 	state->to_a += ((int)(adj_dex_ta[state->stat_ind[STAT_DEX]]) - 128);
@@ -2017,7 +2013,9 @@ void calc_bonuses(struct object *gear, player_state *state, bool known_only)
 	state->to_h += ((int)(adj_str_th[state->stat_ind[STAT_STR]]) - 128);
 
 
-	/*** Modify skills ***/
+	/* ------------------------------------
+	 * Modify skills
+	 * ------------------------------------ */
 
 	/* Affect Skill -- disarming (DEX and INT) */
 	state->skills[SKILL_DISARM] += adj_dex_dis[state->stat_ind[STAT_DEX]];
@@ -2050,7 +2048,9 @@ void calc_bonuses(struct object *gear, player_state *state, bool known_only)
 	hold = adj_str_hold[state->stat_ind[STAT_STR]];
 
 
-	/*** Analyze current bow ***/
+	/* ------------------------------------
+	 * Analyze current bow
+	 * ------------------------------------ */
 
 	/* Examine the "current bow" */
 	obj = equipped_item_by_slot_name(player, "shooting");
@@ -2105,7 +2105,9 @@ void calc_bonuses(struct object *gear, player_state *state, bool known_only)
 	}
 
 
-	/*** Analyze weapon ***/
+	/* ------------------------------------
+	 * Analyze weapon
+	 * ------------------------------------ */
 
 	/* Examine the "current weapon" */
 	obj = equipped_item_by_slot_name(player, "weapon");
@@ -2150,7 +2152,7 @@ void calc_bonuses(struct object *gear, player_state *state, bool known_only)
 	return;
 }
 
-/*
+/**
  * Calculate bonuses, and print various things on changes.
  */
 static void update_bonuses(void)
@@ -2163,13 +2165,17 @@ static void update_bonuses(void)
 	player_state known_old = player->known_state;
 
 
-	/*** Calculate bonuses ***/
+	/* ------------------------------------
+	 * Calculate bonuses
+	 * ------------------------------------ */
 
 	calc_bonuses(player->gear, &player->state, FALSE);
 	calc_bonuses(player->gear, &player->known_state, TRUE);
 
 
-	/*** Notice changes ***/
+	/* ------------------------------------
+	 * Notice changes
+	 * ------------------------------------ */
 
 	/* Analyze stats */
 	for (i = 0; i < STAT_MAX; i++) {
@@ -2253,9 +2259,12 @@ static void update_bonuses(void)
 
 
 
-/*** Monster and object tracking functions ***/
+/**
+ * ------------------------------------------------------------------------
+ * Monster and object tracking functions
+ * ------------------------------------------------------------------------ */
 
-/*
+/**
  * Track the given monster
  */
 void health_track(struct player_upkeep *upkeep, struct monster *m_ptr)
@@ -2264,7 +2273,7 @@ void health_track(struct player_upkeep *upkeep, struct monster *m_ptr)
 	upkeep->redraw |= PR_HEALTH;
 }
 
-/*
+/**
  * Track the given monster race
  */
 void monster_race_track(struct player_upkeep *upkeep, monster_race *race)
@@ -2276,7 +2285,7 @@ void monster_race_track(struct player_upkeep *upkeep, monster_race *race)
 	upkeep->redraw |= (PR_MONSTER);
 }
 
-/*
+/**
  * Track the given object
  */
 void track_object(struct player_upkeep *upkeep, struct object *obj)
@@ -2286,7 +2295,7 @@ void track_object(struct player_upkeep *upkeep, struct object *obj)
 	upkeep->redraw |= (PR_OBJECT);
 }
 
-/*
+/**
  * Track the given object kind
  */
 void track_object_kind(struct player_upkeep *upkeep, struct object_kind *kind)
@@ -2296,7 +2305,7 @@ void track_object_kind(struct player_upkeep *upkeep, struct object_kind *kind)
 	upkeep->redraw |= (PR_OBJECT);
 }
 
-/*
+/**
  * Is the given item tracked?
  */
 bool tracked_object_is(struct player_upkeep *upkeep, struct object *obj)
@@ -2306,7 +2315,10 @@ bool tracked_object_is(struct player_upkeep *upkeep, struct object *obj)
 
 
 
-/*** Generic "deal with" functions ***/
+/**
+ * ------------------------------------------------------------------------
+ * Generic "deal with" functions
+ * ------------------------------------------------------------------------ */
 
 /**
  * Handle "player->upkeep->notice"
