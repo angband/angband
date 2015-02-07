@@ -66,7 +66,7 @@ int test_newgame(void *state) {
 	eq(player->is_dead, FALSE);
 	cave_generate(&cave, player);
 	on_new_level();
-	noteq(cave, NULL);
+	notnull(cave);
 	eq(player->chp, player->mhp);
 	eq(player->food, PY_FOOD_FULL - 1);
 
@@ -85,7 +85,7 @@ int test_loadgame(void *state) {
 	eq(savefile_load("Test1", FALSE), TRUE);
 
 	eq(player->is_dead, FALSE);
-	noteq(cave, NULL);
+	notnull(cave);
 	eq(player->chp, player->mhp);
 	eq(player->food, PY_FOOD_FULL - 1);
 
@@ -139,7 +139,7 @@ int test_drop_pickup(void *state) {
 		cmdq_push(CMD_AUTOPICKUP);
 		run_game_loop();
 	}
-	eq(square_object(cave, player->py, player->px), NULL);
+	null(square_object(cave, player->py, player->px));
 
 	ok;
 }
@@ -167,7 +167,7 @@ int test_drop_eat(void *state) {
 	if (num > 1) {
 		eq(square_object(cave, player->py, player->px)->number, num - 1);
 	} else {
-		eq(square_object(cave, player->py, player->px), NULL);
+		null(square_object(cave, player->py, player->px));
 	}
 
 	ok;
