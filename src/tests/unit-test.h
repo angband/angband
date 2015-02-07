@@ -93,6 +93,28 @@ const char *suite_name;
 		return 1; \
 	}
 
+#define null(x) \
+	if ((x) != 0) { \
+		if (verbose) { \
+			showfail(); \
+			printf("    %s:%d: requirement '%s' == NULL failed\n", suite_name, \
+		           __LINE__, #x); \
+			printf("      %s: 0x%016lld\n", #x, (unsigned long long)x); \
+		} \
+		return 1; \
+	}
+
+#define notnull(x) \
+	if ((x) == 0) { \
+		if (verbose) { \
+			showfail(); \
+			printf("    %s:%d: requirement '%s' != NULL failed\n", suite_name, \
+		           __LINE__, #x); \
+			printf("      %s: 0x%016lld\n", #x, (unsigned long long)x); \
+		} \
+		return 1; \
+	}
+
 #else
 #define ptreq(x,y) \
 	if ((x) != (y)) { \
@@ -102,6 +124,28 @@ const char *suite_name;
 		           __LINE__, #x, #y); \
 			printf("      %s: 0x%08lx\n", #x, (unsigned long)(x)); \
 			printf("      %s: 0x%08lx\n", #y, (unsigned long)(y)); \
+		} \
+		return 1; \
+	}
+
+#define null(x) \
+	if ((x) != 0) { \
+		if (verbose) { \
+			showfail(); \
+			printf("    %s:%d: requirement '%s' == NULL failed\n", suite_name, \
+		           __LINE__, #x); \
+			printf("      %s: 0x%016lld\n", #x, (unsigned long)x); \
+		} \
+		return 1; \
+	}
+
+#define notnull(x) \
+	if ((x) == 0) { \
+		if (verbose) { \
+			showfail(); \
+			printf("    %s:%d: requirement '%s' != NULL failed\n", suite_name, \
+		           __LINE__, #x); \
+			printf("      %s: 0x%016lld\n", #x, (unsigned long)x); \
 		} \
 		return 1; \
 	}
