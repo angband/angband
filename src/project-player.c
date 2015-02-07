@@ -405,7 +405,7 @@ static void project_player_handler_ARROW(project_player_handler_context_t *conte
 }
 
 static const project_player_handler_f player_handlers[] = {
-	#define ELEM(a, b, c, d, e, f, g, col) project_player_handler_##a,
+	#define ELEM(a, b, c, d, e, f, g, h, i, col) project_player_handler_##a,
 	#include "list-elements.h"
 	#undef ELEM
 	#define PROJ_ENV(a, col) NULL,

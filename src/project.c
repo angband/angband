@@ -323,7 +323,7 @@ static const struct gf_type {
 	bool force_obvious; /* */
  	byte color;			/* */
 } gf_table[] = {
-	#define ELEM(a, b, c, d, e, f, g, col) { c, d, e, FALSE, col },
+	#define ELEM(a, b, c, d, e, f, g, h, i, col) { d, e, f, FALSE, col },
 	#define RV(b, x, y, m) {b, x, y, m}
 	#include "list-elements.h"
 	#undef ELEM
@@ -341,7 +341,7 @@ static const struct gf_type {
 
 static const char *gf_name_list[] =
 {
-	#define ELEM(a, b, c, d, e, f, g, col) #a,
+	#define ELEM(a, b, c, d, e, f, g, h, i, col) #a,
 	#include "list-elements.h"
 	#undef ELEM
 	#define PROJ_ENV(a, col) #a,

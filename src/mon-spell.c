@@ -51,7 +51,7 @@ static const struct breath_damage {
 	int divisor;
 	int cap;
 } breath[] = {
-    #define ELEM(a, b, c, d, e, f, g, col) { f, g },
+    #define ELEM(a, b, c, d, e, f, g, h, i, col) { g, h },
     #include "list-elements.h"
     #undef ELEM
 };

@@ -735,7 +735,7 @@ static void project_monster_handler_OLD_DRAIN(project_monster_handler_context_t 
 }
 
 static const project_monster_handler_f monster_handlers[] = {
-	#define ELEM(a, b, c, d, e, f, g, col) project_monster_handler_##a,
+	#define ELEM(a, b, c, d, e, f, g, h, i, col) project_monster_handler_##a,
 	#include "list-elements.h"
 	#undef ELEM
 	#define PROJ_ENV(a, col) project_monster_handler_##a,

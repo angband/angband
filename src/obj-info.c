@@ -60,7 +60,7 @@ struct blow_info {
 
 static const flag_type elements[] =
 {
-	#define ELEM(a, b, c, d, e, f, g, col)	{ ELEM_##a, b },
+	#define ELEM(a, b, c, d, e, f, g, h, i, col)	{ ELEM_##a, b },
     #include "list-elements.h"
     #undef ELEM
 };
