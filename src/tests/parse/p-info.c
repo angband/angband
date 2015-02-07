@@ -172,7 +172,7 @@ int test_history0(void *state) {
 	eq(r, PARSE_ERROR_NONE);
 	pr = parser_priv(state);
 	require(pr);
-	ptreq(pr->history, NULL);
+	null(pr->history);
 	eq(pr->b_age, 10);
 	eq(pr->m_age, 3);
 	ok;
