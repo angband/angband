@@ -1,6 +1,6 @@
 /**
-   \file src/list-stats.h
-   \brief player stats
+ * \file src/list-stats.h
+ * \brief player stats
  *
  * index: the stat number
  * power: base power rating for the stat as an object modifier

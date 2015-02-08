@@ -37,23 +37,32 @@
 #include "ui-player.h"
 
 
-/** Panel utilities **/
+/**
+ * ------------------------------------------------------------------------
+ * Panel utilities
+ * ------------------------------------------------------------------------ */
 
-/* Panel line type */
+/**
+ * Panel line type
+ */
 struct panel_line {
 	byte attr;
 	const char *label;
 	char value[20];
 };
 
-/* Panel holder type */
+/**
+ * Panel holder type
+ */
 struct panel {
 	size_t len;
 	size_t max;
 	struct panel_line *lines;
 };
 
-/* Allocate some panel lines */
+/**
+ * Allocate some panel lines
+ */
 static struct panel *panel_allocate(int n) {
 	struct panel *p = mem_zalloc(sizeof *p);
 
@@ -64,14 +73,18 @@ static struct panel *panel_allocate(int n) {
 	return p;
 }
 
-/* Free up panel lines */
+/**
+ * Free up panel lines
+ */
 static void panel_free(struct panel *p) {
 	assert(p);
 	mem_free(p->lines);
 	mem_free(p);
 }
 
-/* Add a new line to the panel */
+/**
+ * Add a new line to the panel
+ */
 static void panel_line(struct panel *p, byte attr, const char *label,
 		const char *fmt, ...) {
 	va_list vp;
@@ -93,7 +106,9 @@ static void panel_line(struct panel *p, byte attr, const char *label,
 	va_end(vp);
 }
 
-/* Add a spacer line in a panel */
+/**
+ * Add a spacer line in a panel
+ */
 static void panel_space(struct panel *p) {
 	assert(p);
 	assert(p->len != p->max);
@@ -101,7 +116,7 @@ static void panel_space(struct panel *p) {
 }
 
 
-/*
+/**
  * Returns a "rating" of x depending on y, and sets "attr" to the
  * corresponding "attribute".
  */
@@ -111,8 +126,7 @@ static const char *likert(int x, int y, byte *attr)
 	if (y <= 0) y = 1;
 
 	/* Negative value */
-	if (x < 0)
-	{
+	if (x < 0) {
 		*attr = COLOUR_RED;
 		return ("Very Bad");
 	}
@@ -179,7 +193,7 @@ static const char *likert(int x, int y, byte *attr)
 }
 
 
-/*
+/**
  * Equippy chars
  */
 static void display_player_equippy(int y, int x)
@@ -209,7 +223,7 @@ static void display_player_equippy(int y, int x)
 	}
 }
 
-/*
+/**
  * List of resistances and abilities to display
  */
 #define RES_ROWS 9
@@ -380,7 +394,7 @@ static void display_player_flag_info(void)
 }
 
 
-/*
+/**
  * Special display, part 2b
  */
 void display_player_stat_info(void)
@@ -404,27 +418,18 @@ void display_player_stat_info(void)
 	c_put_str(COLOUR_WHITE, "  Best", row-1, col+24);
 
 	/* Display the stats */
-	for (i = 0; i < STAT_MAX; i++)
-	{
-		/* Reduced */
+	for (i = 0; i < STAT_MAX; i++) {
+		/* Reduced or normal */
 		if (player->stat_cur[i] < player->stat_max[i])
-		{
 			/* Use lowercase stat name */
 			put_str(stat_names_reduced[i], row+i, col);
-		}
-
-		/* Normal */
 		else
-		{
 			/* Assume uppercase stat name */
 			put_str(stat_names[i], row+i, col);
-		}
 
 		/* Indicate natural maximum */
 		if (player->stat_max[i] == 18+100)
-		{
 			put_str("!", row+i, col+3);
-		}
 
 		/* Internal "natural" maximum value */
 		cnv_stat(player->stat_max[i], buf, sizeof(buf));
@@ -447,8 +452,7 @@ void display_player_stat_info(void)
 		c_put_str(COLOUR_L_GREEN, buf, row+i, col+24);
 
 		/* Only display stat_use if there has been draining */
-		if (player->stat_cur[i] < player->stat_max[i])
-		{
+		if (player->stat_cur[i] < player->stat_max[i]) {
 			cnv_stat(player->state.stat_use[i], buf, sizeof(buf));
 			c_put_str(COLOUR_YELLOW, buf, row+i, col+31);
 		}
@@ -456,7 +460,7 @@ void display_player_stat_info(void)
 }
 
 
-/*
+/**
  * Special display, part 2c
  *
  * How to print out the modifications and sustains.
@@ -488,8 +492,7 @@ static void display_player_sust_info(void)
 	c_put_str(COLOUR_WHITE, "abcdefghijkl@", row-1, col);
 
 	/* Process equipment */
-	for (i = 0; i < player->body.count; ++i)
-	{
+	for (i = 0; i < player->body.count; ++i) {
 		/* Get the object */
 		o_ptr = slot_object(player, i);
 
@@ -502,15 +505,13 @@ static void display_player_sust_info(void)
 		object_flags_known(o_ptr, f);
 
 		/* Initialize color based on sign of modifier. */
-		for (stat = 0; stat < STAT_MAX; stat++)
-		{
+		for (stat = OBJ_MOD_MIN_STAT; stat < OBJ_MOD_MIN_STAT + STAT_MAX;
+			 stat++) {
 			/* Default */
 			a = COLOUR_SLATE;
 			c = '.';
 
-			/* Boost */
-			/* Assumption is that stats appear first in list-object-modifiers.h
-			 * This assumption should be removed asap NRM */
+			/* Boosted or reduced */
 			if (o_ptr->modifiers[stat] > 0) {
 				/* Good */
 				a = COLOUR_L_GREEN;
@@ -528,8 +529,7 @@ static void display_player_sust_info(void)
 			}
 
 			/* Sustain */
-			if (of_has(f, sustain_flag(stat)))
-			{
+			if (of_has(f, sustain_flag(stat))) {
 				/* Dark green */
 				a = COLOUR_GREEN;
 
@@ -553,15 +553,13 @@ static void display_player_sust_info(void)
 	player_flags(player, f);
 
 	/* Check stats */
-	for (stat = 0; stat < STAT_MAX; ++stat)
-	{
+	for (stat = 0; stat < STAT_MAX; ++stat) {
 		/* Default */
 		a = COLOUR_SLATE;
 		c = '.';
 
 		/* Sustain */
-		if (of_has(f, sustain_flag(stat)))
-		{
+		if (of_has(f, sustain_flag(stat))) {
 			/* Dark green "s" */
 			a = COLOUR_GREEN;
 			c = 's';
@@ -635,8 +633,7 @@ static const char *show_title(void)
 
 static const char *show_adv_exp(void)
 {
-	if (player->lev < PY_MAX_LEVEL)
-	{
+	if (player->lev < PY_MAX_LEVEL) {
 		static char buffer[30];
 		s32b advance = (player_exp[player->lev - 1] * player->expfact / 100L);
 		strnfmt(buffer, sizeof(buffer), "%d", advance);
@@ -675,7 +672,9 @@ static byte max_color(int val, int max)
 	return val < max ? COLOUR_YELLOW : COLOUR_L_GREEN;
 }
 
-/* colours for table items */
+/**
+ * Colours for table items
+ */
 static const byte colour_table[] =
 {
 	COLOUR_RED, COLOUR_RED, COLOUR_RED, COLOUR_L_RED, COLOUR_ORANGE,
@@ -820,7 +819,9 @@ static struct panel *get_panel_misc(void) {
 	return p;
 }
 
-/* Panels for main character screen */
+/**
+ * Panels for main character screen
+ */
 static const struct {
 	region bounds;
 	bool align_left;
@@ -859,7 +860,7 @@ void display_player_xtra_info(void)
 	return;
 }
 
-/*
+/**
  * Display the character on the screen (two different modes)
  *
  * The top two lines, and the bottom line (or two) are left blank.
@@ -878,8 +879,7 @@ void display_player(int mode)
 	/* Stat info */
 	display_player_stat_info();
 
-	if (mode)
-	{
+	if (mode) {
 		struct panel *p = panels[0].panel();
 		display_panel(p, panels[0].align_left, &panels[0].bounds);
 		panel_free(p);
@@ -889,11 +889,7 @@ void display_player(int mode)
 
 		/* Other flags */
 		display_player_flag_info();
-	}
-
-	/* Standard */
-	else
-	{
+	} else {
 		/* Extra info */
 		display_player_xtra_info();
 	}
@@ -1123,7 +1119,7 @@ bool dump_save(const char *path)
 #define INFO_SCREENS 2 /* Number of screens in character info mode */
 
 
-/*
+/**
  * Hack -- change name
  */
 void do_cmd_change_name(void)
@@ -1142,8 +1138,7 @@ void do_cmd_change_name(void)
 	screen_save();
 
 	/* Forever */
-	while (more)
-	{
+	while (more) {
 		/* Display the player */
 		display_player(mode);
 
@@ -1171,7 +1166,8 @@ void do_cmd_change_name(void)
 					char buf[1024];
 					char fname[80];
 
-					strnfmt(fname, sizeof fname, "%s.txt", player_safe_name(player, FALSE));
+					strnfmt(fname, sizeof fname, "%s.txt",
+							player_safe_name(player, FALSE));
 
 					if (get_file(fname, buf, sizeof buf))
 					{
@@ -1198,12 +1194,10 @@ void do_cmd_change_name(void)
 			if (ke.mouse.button == 1) {
 				/* Flip through the screens */			
 				mode = (mode + 1) % INFO_SCREENS;
-			} else
-			if (ke.mouse.button == 2) {
+			} else if (ke.mouse.button == 2) {
 				/* exit the screen */
 				more = FALSE;
-			} else
-			{
+			} else {
 				/* Flip backwards through the screens */			
 				mode = (mode - 1) % INFO_SCREENS;
 			}

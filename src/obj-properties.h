@@ -21,9 +21,14 @@
 #include "z-file.h"
 #include "z-bitflag.h"
 
-/*** Constants ***/
+/**
+ * ------------------------------------------------------------------------
+ * Constants
+ * ------------------------------------------------------------------------ */
 
-/* The object flags */
+/**
+ * The object flags
+ */
 enum {
 	OF_NONE,
     #define STAT(a, b, c, d, e, f, g, h) OF_##c,
@@ -34,14 +39,18 @@ enum {
     #undef OF
 };
 
-/* The object kind flags */
+/**
+ * The object kind flags
+ */
 enum {
     #define KF(a, b) KF_##a,
     #include "list-kind-flags.h"
     #undef KF
 };
 
-/* The object modifiers */
+/**
+ * The object modifiers
+ */
 enum {
     #define STAT(a, b, c, d, e, f, g, h) OBJ_MOD_##a,
     #include "list-stats.h"
@@ -52,7 +61,12 @@ enum {
 	OBJ_MOD_MAX
 };
 
-/* The object flag types */
+/* Where the stats start in modifiers */
+#define OBJ_MOD_MIN_STAT OBJ_MOD_STR
+
+/**
+ * The object flag types
+ */
 enum object_flag_type {
 	OFT_NONE = 0,	/* placeholder flag */
 	OFT_SUST,		/* sustains a stat */
@@ -66,7 +80,9 @@ enum object_flag_type {
 	OFT_MAX
 };
 
-/* How object flags are IDd */
+/**
+ * How object flags are IDd
+ */
 enum object_flag_id {
 	OFID_NONE = 0,		/* never shown */
 	OFID_NORMAL,		/* normal ID on use */
@@ -115,7 +131,10 @@ enum object_flag_id {
 #define kf_diff(f1, f2)        	flag_diff(f1, f2, KF_SIZE)
 
 
-/*** Structures ***/
+/**
+ * ------------------------------------------------------------------------
+ * Structures
+ * ------------------------------------------------------------------------ */
 
 /**
  * The object flag structure
@@ -139,7 +158,10 @@ struct object_mod {
 };
 
 
-/*** Functions ***/
+/**
+ * ------------------------------------------------------------------------
+ * Functions
+ * ------------------------------------------------------------------------ */
 bool cursed_p(const bitflag *f);
 void create_mask(bitflag *f, bool id, ...);
 s32b flag_power(int flag);

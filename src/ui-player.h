@@ -1,7 +1,7 @@
 /**
-   \file ui-player.h
-   \brief character info
-*/
+ * \file ui-player.h
+ * \brief character info
+ */
 
 #ifndef UI_PLAYER_H
 #define UI_PLAYER_H
