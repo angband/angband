@@ -160,7 +160,7 @@ int test_parse_failure(void *state)
 	ok;
 }
 
-int test_evaluate_base(void)
+s32b test_evaluate_base(void)
 {
 	return 3;
 }
