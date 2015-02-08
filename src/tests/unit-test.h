@@ -47,28 +47,6 @@ const char *suite_name;
 		return 1; \
 	}
 
-#define null(x) \
-	if ((x) != 0) { \
-		if (verbose) { \
-			showfail(); \
-			printf("    %s:%d: requirement '%s' == NULL failed\n", suite_name, \
-		           __LINE__, #x); \
-			printf("      %s: 0x%016lld\n", #x, (long long)x); \
-		} \
-		return 1; \
-	}
-
-#define notnull(x) \
-	if ((x) == 0) { \
-		if (verbose) { \
-			showfail(); \
-			printf("    %s:%d: requirement '%s' != NULL failed\n", suite_name, \
-		           __LINE__, #x); \
-			printf("      %s: 0x%016lld\n", #x, (long long)x); \
-		} \
-		return 1; \
-	}
-
 #define require(x) \
 	do { \
 		if (!(x)) { \
@@ -99,7 +77,7 @@ const char *suite_name;
 			showfail(); \
 			printf("    %s:%d: requirement '%s' == NULL failed\n", suite_name, \
 		           __LINE__, #x); \
-			printf("      %s: 0x%016lld\n", #x, (unsigned long long)x); \
+			printf("      %s: 0x%016llx\n", #x, (unsigned long long)(x)); \
 		} \
 		return 1; \
 	}
@@ -110,7 +88,7 @@ const char *suite_name;
 			showfail(); \
 			printf("    %s:%d: requirement '%s' != NULL failed\n", suite_name, \
 		           __LINE__, #x); \
-			printf("      %s: 0x%016lld\n", #x, (unsigned long long)x); \
+			printf("      %s: 0x%016llx\n", #x, (unsigned long long)(x)); \
 		} \
 		return 1; \
 	}
@@ -134,7 +112,7 @@ const char *suite_name;
 			showfail(); \
 			printf("    %s:%d: requirement '%s' == NULL failed\n", suite_name, \
 		           __LINE__, #x); \
-			printf("      %s: 0x%016lld\n", #x, (unsigned long)x); \
+			printf("      %s: 0x%08lxn", #x, (unsigned long)(x)); \
 		} \
 		return 1; \
 	}
@@ -145,7 +123,7 @@ const char *suite_name;
 			showfail(); \
 			printf("    %s:%d: requirement '%s' != NULL failed\n", suite_name, \
 		           __LINE__, #x); \
-			printf("      %s: 0x%016lld\n", #x, (unsigned long)x); \
+			printf("      %s: 0x%08lx\n", #x, (unsigned long)(x)); \
 		} \
 		return 1; \
 	}
