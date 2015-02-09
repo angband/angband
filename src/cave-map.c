@@ -173,7 +173,7 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 			g->hallucinate = FALSE;
 	}
 
-	assert((int) g->f_idx <= FEAT_PERM);
+	assert((int) g->f_idx <= FEAT_PASS_RUBBLE);
 	if (!g->hallucinate)
 		assert((int)g->m_idx < cave->mon_max);
 	/* All other g fields are 'flags', mostly booleans. */
@@ -516,14 +516,31 @@ void cave_illuminate(struct chunk *c, bool daytime)
 	/* Apply light or darkness */
 	for (y = 0; y < c->height; y++)
 		for (x = 0; x < c->width; x++) {
+			int d;
+			bool light = FALSE;
 			feature_type *f_ptr = &f_info[c->squares[y][x].feat];
 			
+			/* Skip grids with no surrounding floors */
+			for (d = 0; d < 9; d++) {
+				/* Extract adjacent (legal) location */
+				int yy = y + ddy_ddd[d];
+				int xx = x + ddx_ddd[d];
+
+				/* Paranoia */
+				if (!square_in_bounds_fully(c, yy, xx)) continue;
+
+				/* Test */
+				if (square_isfloor(c, yy, xx))
+					light = TRUE;
+			}
+
+			if (!light) continue;
+
 			/* Only interesting grids at night */
 			if (daytime || !tf_has(f_ptr->flags, TF_FLOOR)) {
 				sqinfo_on(c->squares[y][x].info, SQUARE_GLOW);
 				sqinfo_on(c->squares[y][x].info, SQUARE_MARK);
-			}
-			else {
+			} else {
 				sqinfo_off(c->squares[y][x].info, SQUARE_GLOW);
 				sqinfo_off(c->squares[y][x].info, SQUARE_MARK);
 			}

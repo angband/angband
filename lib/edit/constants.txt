@@ -104,10 +104,10 @@ world:dungeon-hgt:66
 world:dungeon-wid:198
 
 # Max number of grids in each town level (vertically)
-world:town-hgt:22
+world:town-hgt:40
 
 # Max number of grids in each town level (horizontally)
-world:town-wid:66
+world:town-wid:50
 
 # Total number of feeling squares per level
 world:feeling-total:100

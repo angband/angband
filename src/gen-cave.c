@@ -1430,26 +1430,12 @@ static void build_store(struct chunk *c, int n, int yy, int xx)
 {
 	int feat;
 
-	/* Determine spacing based on town size */
-	int y_space = z_info->town_hgt / 7;
-	int x_space = z_info->town_wid / ((MAX_STORES / 2.0) + 1);
-
-	/* Find the "center" of the store */
-	int y0 = yy * 3 * y_space + 2 * y_space;
-	int x0 = (xx + 1) * (x_space);
-
-	/* Determine the store boundaries */
-	int y1 = y0 - randint1((yy == 0) ? y_space : y_space * 2 / 3);
-	int y2 = y0 + randint1((yy == 1) ? y_space : y_space * 2 / 3);
-	int x1 = x0 - randint1((x_space - 3) / 2);
-	int x2 = x0 + randint1((x_space - 3) / 2);
-
-	/* Determine door location, based on which side of the street we're on */
-	int dy = (yy == 0) ? y2 : y1;
-	int dx = rand_range(x1, x2);
+	/* Determine door location */
+	int dy = rand_range(yy - 1, yy + 1);
+	int dx = yy == dy ? xx - 1 + 2 * randint0(2) : rand_range(xx - 1, xx + 1);
 
 	/* Build an invulnerable rectangular building */
-	fill_rectangle(c, y1, x1, y2, x2, FEAT_PERM, SQUARE_NONE);
+	fill_rectangle(c, yy - 1, xx - 1, yy + 1, xx + 1, FEAT_PERM, SQUARE_NONE);
 
 	/* Clear previous contents, add a store door */
 	for (feat = 0; feat < z_info->f_max; feat++)
@@ -1465,37 +1451,71 @@ static void build_store(struct chunk *c, int n, int yy, int xx)
  */
 static void town_gen_layout(struct chunk *c, struct player *p)
 {
-	int y, x, n, k;
-	int rooms[MAX_STORES];
-
-	int n_rows = 2;
-	int n_cols = (MAX_STORES + 1) / n_rows;
+	int y, x, n, num = 3 + randint0(3);
 
 	/* Create walls */
 	draw_rectangle(c, 0, 0, c->height - 1, c->width - 1, FEAT_PERM,
 				   SQUARE_NONE);
 
-	/* Create some floor */
-	fill_rectangle(c, 1, 1, c->height - 2, c->width - 2, FEAT_FLOOR,
-				   SQUARE_NONE);
+	/* Make a town-sized starburst room. */
+	(void) generate_starburst_room(c, 1, 1, c->height - 1, c->width - 1, FALSE,
+								   FEAT_FLOOR, FALSE);
 
-	/* Prepare an Array of "remaining stores", and count them */
-	for (n = 0; n < MAX_STORES; n++) rooms[n] = n;
+	/* Make everything else permanent wall or lava */
+	for (y = 0; y < c->height; y++)
+		for (x = 0; x < c->width; x++)
+			if (!square_isfloor(c, y, x)) {
+				if (one_in_(40))
+					square_set_feat(c, y, x, FEAT_LAVA);
+				else
+					square_set_feat(c, y, x, FEAT_PERM);
+			}
 
-	/* Place rows of stores */
-	for (y = 0; y < n_rows; y++) {
-		for (x = 0; x < n_cols; x++) {
-			if (n < 1) break;
+	/* Place stores */
+	for (n = 0; n < MAX_STORES; n++) {
+		bool enough_space = FALSE;
+		int xx, yy;
 
-			/* Pick a remaining store */
-			k = randint0(n);
+		/* Find an empty place */
+		while (!enough_space) {
+			bool found_non_floor = FALSE;
+			find_empty_range(c, &y, 3, z_info->town_hgt - 3, &x, 3,
+							 z_info->town_wid - 3);
+			for (yy = y - 2; yy <= y + 2; yy++)
+				for (xx = x - 2; xx <= x + 2; xx++)
+					if (!square_isfloor(c, yy, xx))
+						found_non_floor = TRUE;
 
-			/* Build that store at the proper location */
-			build_store(c, rooms[k], y, x);
-
-			/* Shift the stores down, remove one store */
-			rooms[k] = rooms[--n];
+			if (!found_non_floor) enough_space = TRUE;
 		}
+
+		/* Build a store */
+		build_store(c, n, y, x);
+	}
+
+	/* Place a few piles of rubble */
+	for (n = 0; n < num; n++) {
+		bool enough_space = FALSE;
+		int xx, yy;
+
+		/* Find an empty place */
+		while (!enough_space) {
+			bool found_non_floor = FALSE;
+			find_empty_range(c, &y, 3, z_info->town_hgt - 3, &x, 3,
+							 z_info->town_wid - 3);
+			for (yy = y - 2; yy <= y + 2; yy++)
+				for (xx = x - 2; xx <= x + 2; xx++)
+					if (!square_isfloor(c, yy, xx))
+						found_non_floor = TRUE;
+
+			if (!found_non_floor) enough_space = TRUE;
+		}
+
+		/* Place rubble at random */
+		for (yy = y - 1; yy <= y + 1; yy++)
+			for (xx = x - 1; xx <= x + 1; xx++)
+				if (one_in_(1 + ABS(x - xx) + ABS(y - yy)))
+					square_set_feat(c, yy, xx, FEAT_PASS_RUBBLE);
 	}
 
 	/* Place the stairs */

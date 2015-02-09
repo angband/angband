@@ -187,6 +187,7 @@ int FEAT_SECRET;
 
 /* Rubble */
 int FEAT_RUBBLE;
+int FEAT_PASS_RUBBLE;
 
 /* Mineral seams */
 int FEAT_MAGMA;
@@ -197,6 +198,7 @@ int FEAT_QUARTZ_K;
 /* Walls */
 int FEAT_GRANITE;
 int FEAT_PERM;
+int FEAT_LAVA;
 
 /* Special trap detect features  - should be replaced with square flags */
 int FEAT_DTRAP_FLOOR;

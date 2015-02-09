@@ -205,4 +205,16 @@ priority:10
 flags:WALL | ROCK | GRANITE | NO_SCENT | NO_FLOW
 info:0:4
 
+## New terrain
+
+name:25:lava
+graphics:#:r
+priority:10
+flags:WALL | ROCK |  PERMANENT | NO_SCENT | NO_FLOW
+
+name:26:passable rubble
+graphics:::u
+priority:13
+flags:ROCK | PASSABLE | NO_SCENT | NO_FLOW
+info:0:1
 
