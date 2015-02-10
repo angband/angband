@@ -500,9 +500,7 @@ static void add_monster_lights(struct chunk *c, struct loc from)
 
 		/* Light a 3x3 box centered on the monster */
 		for (i = -1; i <= 1; i++)
-		{
-			for (j = -1; j <= 1; j++)
-			{
+			for (j = -1; j <= 1; j++) {
 				int sy = m->fy + i;
 				int sx = m->fx + j;
 				
@@ -522,7 +520,6 @@ static void add_monster_lights(struct chunk *c, struct loc from)
 				sqinfo_on(c->squares[sy][sx].info, SQUARE_VIEW);
 				sqinfo_on(c->squares[sy][sx].info, SQUARE_SEEN);
 			}
-		}
 	}
 }
 
@@ -589,6 +586,7 @@ static void become_viewable(struct chunk *c, int y, int x, int lit, int py, int 
  */
 static void update_view_one(struct chunk *c, int y, int x, int radius, int py, int px)
 {
+	int dir;
 	int xc = x;
 	int yc = y;
 
@@ -597,6 +595,14 @@ static void update_view_one(struct chunk *c, int y, int x, int radius, int py, i
 
 	if (d > z_info->max_sight)
 		return;
+
+	/* Light squares with adjacent bright terrain */
+	for (dir = 0; dir < 8; dir++) {
+		if (!square_in_bounds(c, y + ddy_ddd[dir], x + ddx_ddd[dir]))
+			continue;
+		if (square_isbright(c, y + ddy_ddd[dir], x + ddx_ddd[dir]))
+			lit = TRUE;
+	}
 
 	/* Special case for wall lighting. If we are a wall and the square in
 	 * the direction of the player is in LOS, we are in LOS. This avoids

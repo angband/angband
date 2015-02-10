@@ -100,6 +100,14 @@ bool feat_is_projectable(int feat)
 }
 
 /**
+ * True if the feature is internally lit.
+ */
+bool feat_is_bright(int feat)
+{
+	return tf_has(f_info[feat].flags, TF_BRIGHT);
+}
+
+/**
  * SQUARE FEATURE PREDICATES
  *
  * These functions are used to figure out what kind of square something is,
@@ -529,6 +537,14 @@ bool square_iswall(struct chunk *c, int y, int x) {
 bool square_isstrongwall(struct chunk *c, int y, int x) {
 	assert(square_in_bounds(c, y, x));
 	return square_ismineral(c, y, x) || square_isperm(c, y, x);
+}
+
+/**
+ * True if the cave square is internally lit.
+ */
+bool square_isbright(struct chunk *c, int y, int x) {
+	assert(square_in_bounds(c, y, x));
+	return feat_is_bright(c->squares[y][x].feat);
 }
 
 bool square_iswarded(struct chunk *c, int y, int x)

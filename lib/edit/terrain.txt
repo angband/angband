@@ -210,7 +210,7 @@ info:0:4
 name:25:lava
 graphics:#:r
 priority:10
-flags:WALL | ROCK |  PERMANENT | NO_SCENT | NO_FLOW
+flags:WALL | ROCK |  PERMANENT | NO_SCENT | NO_FLOW | BRIGHT
 
 name:26:passable rubble
 graphics:::u
