@@ -263,6 +263,75 @@ static void show_obj(int obj_num, int row, int col, bool cursor,
  * Display of lists of objects
  * ------------------------------------------------------------------------ */
 /**
+ * Clear the object list.
+ */
+static void wipe_obj_list(void)
+{
+	int i;
+
+	/* Zero the constants */
+	num_obj = 0;
+	num_head = 0;
+	max_len = 0;
+	ex_width = 0;
+	ex_offset = 0;
+
+	/* Clear the existing contents */
+	for (i = 0; i < 50; i++) {
+		my_strcpy(items[i].label, "", sizeof(items[i].label));
+		items[i].object = NULL;
+		my_strcpy(items[i].o_name, "", sizeof(items[i].o_name));
+	}
+}
+
+/**
+ * Build the object list.
+ */
+static void build_obj_list(int last, struct object **list, item_tester tester,
+						   olist_detail_t mode)
+{
+	int i;
+	struct object *obj;
+	char buf[80];
+	bool gold_ok = (mode & OLIST_GOLD) ? TRUE : FALSE;
+	bool in_term = (mode & OLIST_WINDOW) ? TRUE : FALSE;
+	bool show_empty = (mode & OLIST_SEMPTY) ? TRUE : FALSE;
+	bool equip = list ? FALSE : TRUE;
+
+	/* Build the object list */
+	for (i = 0; i < last; i++) {
+		obj = equip ? slot_object(player, i) : list[i];
+
+		/* Acceptable items get a label */
+		if (object_test(tester, obj) ||	(obj && tval_is_money(obj) && gold_ok))
+			strnfmt(items[num_obj].label, sizeof(items[num_obj].label), "%c) ",
+					I2A(i));
+
+		/* Unacceptable items are still sometimes shown */
+		else if ((!obj && show_empty) || in_term)
+			my_strcpy(items[num_obj].label, "   ",
+					  sizeof(items[num_obj].label));
+
+		/* Unacceptable items are skipped in the main window */
+		else continue;
+
+		/* Show full slot labels for equipment (or quiver in subwindow) */
+		if (equip) {
+			strnfmt(buf, sizeof(buf), "%-14s: ", equip_mention(player, i));
+			my_strcap(buf);
+			my_strcat(items[num_obj].label, buf, sizeof(items[num_obj].label));
+		} else if (in_term && (num_obj >= player->body.count)) {
+			strnfmt(buf, sizeof(buf), "Slot %-9d: ", i);
+			my_strcat(items[num_obj].label, buf, sizeof(items[num_obj].label));
+		}
+
+		/* Save the object */
+		items[num_obj].object = obj;
+		num_obj++;
+	}
+}
+
+/**
  * Display a list of objects.  Each object may be prefixed with a label.
  * Used by show_inven(), show_equip(), and show_floor().  Mode flags are
  * documented in object.h
@@ -389,12 +458,10 @@ void show_inven(int mode, item_tester tester)
 	int i, last_slot = -1;
 	int diff = weight_remaining();
 
-	object_type *obj;
-
 	bool in_term = (mode & OLIST_WINDOW) ? TRUE : FALSE;
 
-	/* Intiialize */
-	num_obj = 0;
+	/* Intialize */
+	wipe_obj_list();
 
 	/* Include burden for term windows */
 	if (in_term) {
@@ -414,26 +481,7 @@ void show_inven(int mode, item_tester tester)
 		if (player->upkeep->inven[i] != NULL) last_slot = i;
 
 	/* Build the object list */
-	for (i = 0; i <= last_slot; i++) {
-		obj = player->upkeep->inven[i];
-
-		/* Acceptable items get a label */
-		if (object_test(tester, obj))
-			strnfmt(items[num_obj].label, sizeof(items[num_obj].label), "%c) ",
-					I2A(i));
-
-		/* Unacceptable items are still sometimes shown */
-		else if (in_term)
-			my_strcpy(items[num_obj].label, "   ",
-					  sizeof(items[num_obj].label));
-
-		/* Unacceptable items are skipped in the main window */
-		else continue;
-
-		/* Save the object */
-		items[num_obj].object = obj;
-		num_obj++;
-	}
+	build_obj_list(last_slot + 1, player->upkeep->inven, tester, mode);
 
 	/* Term window starts with a burden header */
 	num_head = in_term ? 1 : 0;
@@ -452,38 +500,15 @@ void show_quiver(int mode, item_tester tester)
 {
 	int i, last_slot = -1;
 
-	struct object *obj;
-
-	bool in_term = (mode & OLIST_WINDOW) ? TRUE : FALSE;
-
-	/* Intiialize */
-	num_obj = 0;
+	/* Intialize */
+	wipe_obj_list();
 
 	/* Find the last occupied quiver slot */
 	for (i = 0; i < z_info->quiver_size; i++)
 		if (player->upkeep->quiver[i] != NULL) last_slot = i;
 
 	/* Build the object list */
-	for (i = 0; i <= last_slot; i++) {
-		obj = player->upkeep->quiver[i];
-
-		/* Acceptable items get a label */
-		if (object_test(tester, obj))
-			strnfmt(items[num_obj].label, sizeof(items[num_obj].label), "%c) ",
-					I2A(i));
-
-		/* Unacceptable items are still sometimes shown */
-		else if (in_term)
-			my_strcpy(items[num_obj].label, "   ",
-					  sizeof(items[num_obj].label));
-
-		/* Unacceptable items are skipped in the main window */
-		else continue;
-
-		/* Save the object */
-		items[num_obj].object = obj;
-		num_obj++;
-	}
+	build_obj_list(last_slot + 1, player->upkeep->quiver, tester, mode);
 
 	/* Display the object list */
 	num_head = 0;
@@ -499,43 +524,13 @@ void show_quiver(int mode, item_tester tester)
 void show_equip(int mode, item_tester tester)
 {
 	int i;
-
-	struct object *obj;
-
-	char tmp_val[80];
-
 	bool in_term = (mode & OLIST_WINDOW) ? TRUE : FALSE;
-	bool show_empty = (mode & OLIST_SEMPTY) ? TRUE : FALSE;
 
-	/* Intiialize */
-	num_obj = 0;
+	/* Intialize */
+	wipe_obj_list();
 
 	/* Build the object list */
-	for (i = 0; i < player->body.count; i++) {
-		obj = slot_object(player, i);
-
-		/* Acceptable items get a label */
-		if (object_test(tester, obj))
-			strnfmt(items[num_obj].label, sizeof(items[num_obj].label), "%c) ",
-					I2A(i));
-
-		/* Unacceptable items are still sometimes shown */
-		else if ((!obj && show_empty) || in_term)
-			my_strcpy(items[num_obj].label, "   ",
-					  sizeof(items[num_obj].label));
-
-		/* Unacceptable items are skipped in the main window */
-		else continue;
-
-		/* Show full slot labels */
-		strnfmt(tmp_val, sizeof(tmp_val), "%-14s: ", equip_mention(player, i));
-		my_strcap(tmp_val);
-		my_strcat(items[num_obj].label, tmp_val, sizeof(items[num_obj].label));
-
-		/* Save the object */
-		items[num_obj].object = obj;
-		num_obj++;
-	}
+	build_obj_list(player->body.count, NULL, tester, mode);
 
 	/* Show the quiver in subwindows */
 	if (in_term) {
@@ -551,31 +546,7 @@ void show_equip(int mode, item_tester tester)
 			if (player->upkeep->quiver[i] != NULL) last_slot = i;
 
 		/* Extend the object list */
-		for (i = 0; i <= last_slot; i++) {
-			obj = player->upkeep->quiver[i];
-
-			/* Acceptable items get a label */
-			if (object_test(tester, obj))
-				strnfmt(items[num_obj].label,
-						sizeof(items[num_obj].label), "%c) ", I2A(i));
-
-			/* Unacceptable items are still sometimes shown */
-			else if (in_term)
-				my_strcpy(items[num_obj].label, "   ",
-						  sizeof(items[num_obj].label));
-
-			/* Unacceptable items are skipped in the main window */
-			else continue;
-
-			/* Show full slot labels */
-			strnfmt(tmp_val, sizeof(tmp_val), "Slot %-9d: ", i);
-			my_strcat(items[num_obj].label, tmp_val,
-					  sizeof(items[num_obj].label));
-
-			/* Save the object */
-			items[num_obj].object = obj;
-			num_obj++;
-		}
+		build_obj_list(last_slot + 1, player->upkeep->quiver, tester, mode);
 	}
 
 	/* Display the object list */
@@ -589,36 +560,17 @@ void show_equip(int mode, item_tester tester)
  * off to show_obj_list() for display.  Mode flags documented in
  * object.h
  */
-void show_floor(struct object **floor_list, int floor_num, int mode, item_tester tester)
+void show_floor(struct object **floor_list, int floor_num, int mode,
+				item_tester tester)
 {
-	int i;
-
-	struct object *obj;
-
-	/* Intiialize */
-	num_obj = 0;
+	/* Intialize */
+	wipe_obj_list();
 
 	if (floor_num > z_info->floor_size)
 		floor_num = z_info->floor_size;
 
 	/* Build the object list */
-	for (i = 0; i < floor_num; i++) {
-		obj = (struct object *) floor_list[i];
-
-		/* Tester always skips gold. When gold should be displayed,
-		 * only test items that are not gold.
-		 */
-		if ((!tval_is_money(obj) || !(mode & OLIST_GOLD)) &&
-		    !object_test(tester, obj))
-			continue;
-
-		strnfmt(items[num_obj].label, sizeof(items[num_obj].label), "%c) ",
-				I2A(i));
-
-		/* Save the object */
-		items[num_obj].object = obj;
-		num_obj++;
-	}
+	build_obj_list(floor_num, floor_list, tester, mode);
 
 	/* Display the object list */
 	num_head = 0;
