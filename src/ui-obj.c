@@ -39,6 +39,27 @@
 #include "ui-prefs.h"
 
 /**
+ * ------------------------------------------------------------------------
+ * Variables for object display and selection
+ * ------------------------------------------------------------------------ */
+/**
+ * Info about a particular object
+ */
+struct object_menu_data {
+	char label[80];
+	struct object *object;
+	char o_name[80];
+};
+
+struct object_menu_data items[50];
+int num_obj;
+int num_head;
+
+/**
+ * ------------------------------------------------------------------------
+ * Display of individual objects in lists or for selection
+ * ------------------------------------------------------------------------ */
+/**
  * Determine if the attr and char should consider the item's flavor
  *
  * Identified scrolls should use their own tile.
@@ -75,9 +96,9 @@ wchar_t object_kind_char(const struct object_kind *kind)
  * Use "flavor" if available.
  * Default to user definitions.
  */
-byte object_attr(const struct object *o_ptr)
+byte object_attr(const struct object *obj)
 {
-	return object_kind_attr(o_ptr->kind);
+	return object_kind_attr(obj->kind);
 }
 
 /**
@@ -85,9 +106,9 @@ byte object_attr(const struct object *o_ptr)
  * Use "flavor" if available.
  * Default to user definitions.
  */
-wchar_t object_char(const struct object *o_ptr)
+wchar_t object_char(const struct object *obj)
 {
-	return object_kind_char(o_ptr->kind);
+	return object_kind_char(obj->kind);
 }
 
 /**
@@ -154,12 +175,15 @@ struct object *label_to_quiver(int c)
 
 
 /**
+ * ------------------------------------------------------------------------
+ * Display of lists of objects
+ * ------------------------------------------------------------------------ */
+/**
  * Display a list of objects.  Each object may be prefixed with a label.
  * Used by show_inven(), show_equip(), and show_floor().  Mode flags are
  * documented in object.h
  */
-static void show_obj_list(int num_obj, int num_head, char labels[50][80],
-						  struct object *objects[50], olist_detail_t mode)
+static void show_obj_list(olist_detail_t mode)
 {
 	int i, row = 0, col = 0;
 	int attr;
@@ -167,9 +191,8 @@ static void show_obj_list(int num_obj, int num_head, char labels[50][80],
 	int ex_width = 0, ex_offset, ex_offset_ctr;
 
 	struct object *obj;
-	char o_name[50][80];
 	char tmp_val[80];
-	
+
 	bool in_term = (mode & OLIST_WINDOW) ? TRUE : FALSE;
 	bool terse = FALSE;
 
@@ -180,25 +203,26 @@ static void show_obj_list(int num_obj, int num_head, char labels[50][80],
 
 	/* Calculate name offset and max name length */
 	for (i = 0; i < num_obj; i++) {
-		obj = objects[i];
+		obj = items[i].object;
 
 		/* Null objects are used to skip lines, or display only a label */		
 		if (!obj) {
-			if ((i < num_head) || !strcmp(labels[i], "In quiver"))
-				strnfmt(o_name[i], sizeof(o_name[i]), "");
+			if ((i < num_head) || !strcmp(items[i].label, "In quiver"))
+				strnfmt(items[i].o_name, sizeof(items[i].o_name), "");
 			else
-				strnfmt(o_name[i], sizeof(o_name[i]), "(nothing)");
+				strnfmt(items[i].o_name, sizeof(items[i].o_name), "(nothing)");
 		} else {
 			if (terse)
-				object_desc(o_name[i], sizeof(o_name[i]), obj,
+				object_desc(items[i].o_name, sizeof(items[i].o_name), obj,
 							ODESC_PREFIX | ODESC_FULL | ODESC_TERSE);
 			else
-				object_desc(o_name[i], sizeof(o_name[i]), obj,
+				object_desc(items[i].o_name, sizeof(items[i].o_name), obj,
 							ODESC_PREFIX | ODESC_FULL);
 		}
 
 		/* Max length of label + object name */
-		max_len = MAX(max_len, strlen(labels[i]) + strlen(o_name[i]));
+		max_len = MAX(max_len,
+					  strlen(items[i].label) + strlen(items[i].o_name));
 	}
 
 	/* Take the quiver message into consideration */
@@ -228,26 +252,26 @@ static void show_obj_list(int num_obj, int num_head, char labels[50][80],
 
 	/* Output the list */
 	for (i = 0; i < num_obj; i++) {
-		obj = objects[i];
+		obj = items[i].object;
 		
 		/* Clear the line */
 		prt("", row + i, MAX(col - 2, 0));
 
 		/* If we have no label then we won't display anything */
-		if (!strlen(labels[i])) continue;
+		if (!strlen(items[i].label)) continue;
 
 		/* Print the label */
-		put_str(labels[i], row + i, col);
+		put_str(items[i].label, row + i, col);
 
 		/* Limit object name */
-		if (strlen(labels[i]) + strlen(o_name[i]) > (size_t)ex_offset) {
-			int truncate = ex_offset - strlen(labels[i]);
+		if (strlen(items[i].label) + strlen(items[i].o_name) > (size_t)ex_offset) {
+			int truncate = ex_offset - strlen(items[i].label);
 			
 			if (truncate < 0) truncate = 0;
-			if ((size_t)truncate > sizeof(o_name[i]) - 1)
-				truncate = sizeof(o_name[i]) - 1;
+			if ((size_t)truncate > sizeof(items[i].o_name) - 1)
+				truncate = sizeof(items[i].o_name) - 1;
 
-			o_name[i][truncate] = '\0';
+			items[i].o_name[truncate] = '\0';
 		}
 		
 		/* Item kind determines the color of the output */
@@ -257,7 +281,7 @@ static void show_obj_list(int num_obj, int num_head, char labels[50][80],
 			attr = COLOUR_SLATE;
 
 		/* Object name */
-		c_put_str(attr, o_name[i], row + i, col + strlen(labels[i]));
+		c_put_str(attr, items[i].o_name, row + i, col + strlen(items[i].label));
 
 		/* If we don't have an object, we can skip the rest of the output */
 		if (!obj) continue;
@@ -345,24 +369,23 @@ void show_inven(int mode, item_tester tester)
 	int i, last_slot = -1;
 	int diff = weight_remaining();
 
-	object_type *o_ptr;
-
-	int num_obj = 0;
-	char labels[50][80];
-	object_type *objects[50];
+	object_type *obj;
 
 	bool in_term = (mode & OLIST_WINDOW) ? TRUE : FALSE;
 
+	/* Intiialize */
+	num_obj = 0;
+
 	/* Include burden for term windows */
 	if (in_term) {
-		strnfmt(labels[num_obj], sizeof(labels[num_obj]),
+		strnfmt(items[num_obj].label, sizeof(items[num_obj].label),
 		        "Burden %d.%d lb (%d.%d lb %s) ",
 		        player->upkeep->total_weight / 10,
 				player->upkeep->total_weight % 10,
 		        abs(diff) / 10, abs(diff) % 10,
 		        (diff < 0 ? "overweight" : "remaining"));
 
-		objects[num_obj] = NULL;
+		items[num_obj].object = NULL;
 		num_obj++;
 	}
 
@@ -372,30 +395,31 @@ void show_inven(int mode, item_tester tester)
 
 	/* Build the object list */
 	for (i = 0; i <= last_slot; i++) {
-		o_ptr = player->upkeep->inven[i];
+		obj = player->upkeep->inven[i];
 
 		/* Acceptable items get a label */
-		if (object_test(tester, o_ptr))
-			strnfmt(labels[num_obj], sizeof(labels[num_obj]), "%c) ", I2A(i));
+		if (object_test(tester, obj))
+			strnfmt(items[num_obj].label, sizeof(items[num_obj].label), "%c) ",
+					I2A(i));
 
 		/* Unacceptable items are still sometimes shown */
 		else if (in_term)
-			my_strcpy(labels[num_obj], "   ", sizeof(labels[num_obj]));
+			my_strcpy(items[num_obj].label, "   ",
+					  sizeof(items[num_obj].label));
 
 		/* Unacceptable items are skipped in the main window */
 		else continue;
 
 		/* Save the object */
-		objects[num_obj] = o_ptr;
+		items[num_obj].object = obj;
 		num_obj++;
 	}
 
+	/* Term window starts with a burden header */
+	num_head = in_term ? 1 : 0;
+
 	/* Display the object list */
-	if (in_term)
-		/* Term window starts with a burden header */
-		show_obj_list(num_obj, 1, labels, objects, mode);
-	else
-		show_obj_list(num_obj, 0, labels, objects, mode);
+	show_obj_list(mode);
 }
 
 
@@ -410,11 +434,10 @@ void show_quiver(int mode, item_tester tester)
 
 	struct object *obj;
 
-	int num_obj = 0;
-	char labels[50][80];
-	struct object *objects[50];
-
 	bool in_term = (mode & OLIST_WINDOW) ? TRUE : FALSE;
+
+	/* Intiialize */
+	num_obj = 0;
 
 	/* Find the last occupied quiver slot */
 	for (i = 0; i < z_info->quiver_size; i++)
@@ -426,22 +449,25 @@ void show_quiver(int mode, item_tester tester)
 
 		/* Acceptable items get a label */
 		if (object_test(tester, obj))
-			strnfmt(labels[num_obj], sizeof(labels[num_obj]), "%c) ", I2A(i));
+			strnfmt(items[num_obj].label, sizeof(items[num_obj].label), "%c) ",
+					I2A(i));
 
 		/* Unacceptable items are still sometimes shown */
 		else if (in_term)
-			my_strcpy(labels[num_obj], "   ", sizeof(labels[num_obj]));
+			my_strcpy(items[num_obj].label, "   ",
+					  sizeof(items[num_obj].label));
 
 		/* Unacceptable items are skipped in the main window */
 		else continue;
 
 		/* Save the object */
-		objects[num_obj] = obj;
+		items[num_obj].object = obj;
 		num_obj++;
 	}
 
 	/* Display the object list */
-	show_obj_list(num_obj, 0, labels, objects, mode);
+	num_head = 0;
+	show_obj_list(mode);
 }
 
 
@@ -456,14 +482,13 @@ void show_equip(int mode, item_tester tester)
 
 	struct object *obj;
 
-	int num_obj = 0;
-	char labels[50][80];
-	struct object *objects[50];
-
 	char tmp_val[80];
 
 	bool in_term = (mode & OLIST_WINDOW) ? TRUE : FALSE;
 	bool show_empty = (mode & OLIST_SEMPTY) ? TRUE : FALSE;
+
+	/* Intiialize */
+	num_obj = 0;
 
 	/* Build the object list */
 	for (i = 0; i < player->body.count; i++) {
@@ -471,11 +496,13 @@ void show_equip(int mode, item_tester tester)
 
 		/* Acceptable items get a label */
 		if (object_test(tester, obj))
-			strnfmt(labels[num_obj], sizeof(labels[num_obj]), "%c) ", I2A(i));
+			strnfmt(items[num_obj].label, sizeof(items[num_obj].label), "%c) ",
+					I2A(i));
 
 		/* Unacceptable items are still sometimes shown */
 		else if ((!obj && show_empty) || in_term)
-			my_strcpy(labels[num_obj], "   ", sizeof(labels[num_obj]));
+			my_strcpy(items[num_obj].label, "   ",
+					  sizeof(items[num_obj].label));
 
 		/* Unacceptable items are skipped in the main window */
 		else continue;
@@ -483,10 +510,10 @@ void show_equip(int mode, item_tester tester)
 		/* Show full slot labels */
 		strnfmt(tmp_val, sizeof(tmp_val), "%-14s: ", equip_mention(player, i));
 		my_strcap(tmp_val);
-		my_strcat(labels[num_obj], tmp_val, sizeof(labels[num_obj]));
+		my_strcat(items[num_obj].label, tmp_val, sizeof(items[num_obj].label));
 
 		/* Save the object */
-		objects[num_obj] = obj;
+		items[num_obj].object = obj;
 		num_obj++;
 	}
 
@@ -494,8 +521,9 @@ void show_equip(int mode, item_tester tester)
 	if (in_term) {
 		int last_slot = -1;
 
-		strnfmt(labels[num_obj], sizeof(labels[num_obj]), "In quiver");
-		objects[num_obj] = NULL;
+		strnfmt(items[num_obj].label, sizeof(items[num_obj].label),
+				"In quiver");
+		items[num_obj].object = NULL;
 		num_obj++;
 
 		/* Find the last occupied quiver slot */
@@ -508,28 +536,31 @@ void show_equip(int mode, item_tester tester)
 
 			/* Acceptable items get a label */
 			if (object_test(tester, obj))
-				strnfmt(labels[num_obj], sizeof(labels[num_obj]), "%c) ",
-						I2A(i));
+				strnfmt(items[num_obj].label,
+						sizeof(items[num_obj].label), "%c) ", I2A(i));
 
 			/* Unacceptable items are still sometimes shown */
 			else if (in_term)
-				my_strcpy(labels[num_obj], "   ", sizeof(labels[num_obj]));
+				my_strcpy(items[num_obj].label, "   ",
+						  sizeof(items[num_obj].label));
 
 			/* Unacceptable items are skipped in the main window */
 			else continue;
 
 			/* Show full slot labels */
 			strnfmt(tmp_val, sizeof(tmp_val), "Slot %-9d: ", i);
-			my_strcat(labels[num_obj], tmp_val, sizeof(labels[num_obj]));
+			my_strcat(items[num_obj].label, tmp_val,
+					  sizeof(items[num_obj].label));
 
 			/* Save the object */
-			objects[num_obj] = obj;
+			items[num_obj].object = obj;
 			num_obj++;
 		}
 	}
 
 	/* Display the object list */
-	show_obj_list(num_obj, 0, labels, objects, mode);
+	num_head = 0;
+	show_obj_list(mode);
 }
 
 
@@ -544,9 +575,8 @@ void show_floor(struct object **floor_list, int floor_num, int mode, item_tester
 
 	struct object *obj;
 
-	int num_obj = 0;
-	char labels[50][80];
-	struct object *objects[50];
+	/* Intiialize */
+	num_obj = 0;
 
 	if (floor_num > z_info->floor_size)
 		floor_num = z_info->floor_size;
@@ -562,17 +592,24 @@ void show_floor(struct object **floor_list, int floor_num, int mode, item_tester
 		    !object_test(tester, obj))
 			continue;
 
-		strnfmt(labels[num_obj], sizeof(labels[num_obj]), "%c) ", I2A(i));
+		strnfmt(items[num_obj].label, sizeof(items[num_obj].label), "%c) ",
+				I2A(i));
 
 		/* Save the object */
-		objects[num_obj] = obj;
+		items[num_obj].object = obj;
 		num_obj++;
 	}
 
 	/* Display the object list */
-	show_obj_list(num_obj, 0, labels, objects, mode);
+	num_head = 0;
+	show_obj_list(mode);
 }
 
+
+/**
+ * ------------------------------------------------------------------------
+ * Object selection
+ * ------------------------------------------------------------------------ */
 
 /**
  * Prevent certain choices depending on the inscriptions on the item.
@@ -1548,12 +1585,12 @@ bool textui_get_item(struct object **choice, const char *pmt, const char *str,
  * This draws the Object Recall subwindow when displaying a particular object
  * (e.g. a helmet in the backpack, or a scroll on the ground)
  */
-void display_object_recall(struct object *o_ptr)
+void display_object_recall(struct object *obj)
 {
 	char header[120];
 
-	textblock *tb = object_info(o_ptr, OINFO_NONE);
-	object_desc(header, sizeof(header), o_ptr, ODESC_PREFIX | ODESC_FULL);
+	textblock *tb = object_info(obj, OINFO_NONE);
+	object_desc(header, sizeof(header), obj, ODESC_PREFIX | ODESC_FULL);
 
 	clear_from(0);
 	textui_textblock_place(tb, SCREEN_REGION, header);
@@ -1580,17 +1617,17 @@ void display_object_kind_recall(struct object_kind *kind)
  *
  * This is set up for use in look mode (see target_set_interactive_aux()).
  *
- * \param o_ptr is the object to be described.
+ * \param obj is the object to be described.
  */
-void display_object_recall_interactive(struct object *o_ptr)
+void display_object_recall_interactive(struct object *obj)
 {
 	char header[120];
 	textblock *tb;
 
 	event_signal(EVENT_MESSAGE_FLUSH);
 
-	tb = object_info(o_ptr, OINFO_NONE);
-	object_desc(header, sizeof(header), o_ptr, ODESC_PREFIX | ODESC_FULL);
+	tb = object_info(obj, OINFO_NONE);
+	object_desc(header, sizeof(header), obj, ODESC_PREFIX | ODESC_FULL);
 	textui_textblock_show(tb, SCREEN_REGION, header);
 	textblock_free(tb);
 }
