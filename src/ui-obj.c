@@ -54,6 +54,9 @@ struct object_menu_data {
 struct object_menu_data items[50];
 int num_obj;
 int num_head;
+size_t max_len;
+int ex_width;
+int ex_offset;
 
 /**
  * ------------------------------------------------------------------------
@@ -173,6 +176,87 @@ struct object *label_to_quiver(int c)
 }
 
 
+/**
+ * Display an object.  Each object may be prefixed with a label.
+ * Used by show_inven(), show_equip(), show_quiver() and show_floor().
+ * Mode flags are documented in object.h
+ */
+static void show_obj(int obj_num, int row, int col, bool cursor,
+					 olist_detail_t mode)
+{
+	int attr;
+	int ex_offset_ctr;
+	char buf[80];
+	struct object *obj = items[obj_num].object;
+		
+	/* Clear the line */
+	prt("", row + obj_num, MAX(col - 2, 0));
+
+	/* If we have no label then we won't display anything */
+	if (!strlen(items[obj_num].label)) return;
+
+	/* Print the label */
+	put_str(items[obj_num].label, row + obj_num, col);
+
+	/* Limit object name */
+	if (strlen(items[obj_num].label) + strlen(items[obj_num].o_name)
+		> (size_t)ex_offset) {
+		int truncate = ex_offset - strlen(items[obj_num].label);
+
+		if (truncate < 0) truncate = 0;
+		if ((size_t)truncate > sizeof(items[obj_num].o_name) - 1)
+			truncate = sizeof(items[obj_num].o_name) - 1;
+
+		items[obj_num].o_name[truncate] = '\0';
+	}
+	
+	/* Item kind determines the color of the output */
+	if (obj)
+		attr = obj->kind->base->attr;
+	else
+		attr = COLOUR_SLATE;
+
+	/* Object name */
+	c_put_str(attr, items[obj_num].o_name, row + obj_num,
+			  col + strlen(items[obj_num].label));
+
+	/* If we don't have an object, we can skip the rest of the output */
+	if (!obj) return;
+
+	/* Extra fields */
+	ex_offset_ctr = ex_offset;
+
+	/* Price */
+	if (mode & OLIST_PRICE) {
+		struct store *store = store_at(cave, player->py, player->px);
+		if (store) {
+			int price = price_item(store, obj, TRUE, obj->number);
+
+			strnfmt(buf, sizeof(buf), "%6d au", price);
+			put_str(buf, row + obj_num, col + ex_offset_ctr);
+			ex_offset_ctr += 9;
+		}
+	}
+
+	/* Failure chance for magic devices and activations */
+	if (mode & OLIST_FAIL && obj_can_fail(obj)) {
+		int fail = (9 + get_use_device_chance(obj)) / 10;
+		if (object_effect_is_known(obj))
+			strnfmt(buf, sizeof(buf), "%4d%% fail", fail);
+		else
+			my_strcpy(buf, "    ? fail", sizeof(buf));
+		put_str(buf, row + obj_num, col + ex_offset_ctr);
+		ex_offset_ctr += 10;
+	}
+
+	/* Weight */
+	if (mode & OLIST_WEIGHT) {
+		int weight = obj->weight * obj->number;
+		strnfmt(buf, sizeof(buf), "%4d.%1d lb", weight / 10, weight % 10);
+		put_str(buf, row + obj_num, col + ex_offset_ctr);
+		ex_offset_ctr += 9;
+	}
+}
 
 /**
  * ------------------------------------------------------------------------
@@ -186,15 +270,16 @@ struct object *label_to_quiver(int c)
 static void show_obj_list(olist_detail_t mode)
 {
 	int i, row = 0, col = 0;
-	int attr;
-	size_t max_len = 0;
-	int ex_width = 0, ex_offset, ex_offset_ctr;
-
 	struct object *obj;
 	char tmp_val[80];
 
 	bool in_term = (mode & OLIST_WINDOW) ? TRUE : FALSE;
 	bool terse = FALSE;
+
+	/* Initialize */
+	max_len = 0;
+	ex_width = 0;
+	ex_offset = 0;
 
 	if (in_term) max_len = 40;
 	if (in_term && Term->wid < 40) mode &= ~(OLIST_WEIGHT);
@@ -251,73 +336,8 @@ static void show_obj_list(olist_detail_t mode)
 	ex_offset = MIN(max_len, (size_t)(Term->wid - 1 - ex_width - col));
 
 	/* Output the list */
-	for (i = 0; i < num_obj; i++) {
-		obj = items[i].object;
-		
-		/* Clear the line */
-		prt("", row + i, MAX(col - 2, 0));
-
-		/* If we have no label then we won't display anything */
-		if (!strlen(items[i].label)) continue;
-
-		/* Print the label */
-		put_str(items[i].label, row + i, col);
-
-		/* Limit object name */
-		if (strlen(items[i].label) + strlen(items[i].o_name) > (size_t)ex_offset) {
-			int truncate = ex_offset - strlen(items[i].label);
-			
-			if (truncate < 0) truncate = 0;
-			if ((size_t)truncate > sizeof(items[i].o_name) - 1)
-				truncate = sizeof(items[i].o_name) - 1;
-
-			items[i].o_name[truncate] = '\0';
-		}
-		
-		/* Item kind determines the color of the output */
-		if (obj)
-			attr = obj->kind->base->attr;
-		else
-			attr = COLOUR_SLATE;
-
-		/* Object name */
-		c_put_str(attr, items[i].o_name, row + i, col + strlen(items[i].label));
-
-		/* If we don't have an object, we can skip the rest of the output */
-		if (!obj) continue;
-
-		/* Extra fields */
-		ex_offset_ctr = ex_offset;
-		
-		if (mode & OLIST_PRICE) {
-			struct store *store = store_at(cave, player->py, player->px);
-			if (store) {
-				int price = price_item(store, obj, TRUE, obj->number);
-
-				strnfmt(tmp_val, sizeof(tmp_val), "%6d au", price);
-				put_str(tmp_val, row + i, col + ex_offset_ctr);
-				ex_offset_ctr += 9;
-			}
-		}
-
-		if (mode & OLIST_FAIL && obj_can_fail(obj)) {
-			int fail = (9 + get_use_device_chance(obj)) / 10;
-			if (object_effect_is_known(obj))
-				strnfmt(tmp_val, sizeof(tmp_val), "%4d%% fail", fail);
-			else
-				my_strcpy(tmp_val, "    ? fail", sizeof(tmp_val));
-			put_str(tmp_val, row + i, col + ex_offset_ctr);
-			ex_offset_ctr += 10;
-		}
-
-		if (mode & OLIST_WEIGHT) {
-			int weight = obj->weight * obj->number;
-			strnfmt(tmp_val, sizeof(tmp_val), "%4d.%1d lb",
-					weight / 10, weight % 10);
-			put_str(tmp_val, row + i, col + ex_offset_ctr);
-			ex_offset_ctr += 9;
-		}
-	}
+	for (i = 0; i < num_obj; i++)
+		show_obj(i, row, col, FALSE, mode);
 
 	/* For the inventory: print the quiver count */
 	if (mode & OLIST_QUIVER) {
