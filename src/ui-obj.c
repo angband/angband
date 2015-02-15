@@ -42,6 +42,8 @@
  * ------------------------------------------------------------------------
  * Variables for object display and selection
  * ------------------------------------------------------------------------ */
+#define MAX_ITEMS 50
+
 /**
  * Info about a particular object
  */
@@ -51,12 +53,19 @@ struct object_menu_data {
 	char o_name[80];
 };
 
-struct object_menu_data items[50];
+struct object_menu_data items[MAX_ITEMS];
 int num_obj;
 int num_head;
 size_t max_len;
 int ex_width;
 int ex_offset;
+const char *prompt;
+int i1, i2;
+int e1, e2;
+int q1, q2;
+int f1, f2;
+static bool show_list;
+struct object **floor_list;
 
 /**
  * ------------------------------------------------------------------------
@@ -277,7 +286,7 @@ static void wipe_obj_list(void)
 	ex_offset = 0;
 
 	/* Clear the existing contents */
-	for (i = 0; i < 50; i++) {
+	for (i = 0; i < MAX_ITEMS; i++) {
 		my_strcpy(items[i].label, "", sizeof(items[i].label));
 		items[i].object = NULL;
 		my_strcpy(items[i].o_name, "", sizeof(items[i].o_name));
@@ -709,6 +718,149 @@ static int get_tag(struct object **tagged_obj, char tag, cmd_code cmd,
 }
 
 
+/**
+ * Make the correct prompt for items
+ */
+static void item_prompt(int mode)
+{
+	char tmp_val[160];
+	char out_val[160];
+
+	bool use_inven = ((mode & USE_INVEN) ? TRUE : FALSE);
+	bool use_equip = ((mode & USE_EQUIP) ? TRUE : FALSE);
+	bool use_quiver = ((mode & USE_QUIVER) ? TRUE : FALSE);
+	bool allow_floor = (f1 <= f2);
+
+	/* Viewing inventory */
+	if (player->upkeep->command_wrk == USE_INVEN) {
+		/* Begin the prompt */
+		strnfmt(out_val, sizeof(out_val), "Inven:");
+
+		/* List choices */
+		if (i1 <= i2) {
+			/* Build the prompt */
+			strnfmt(tmp_val, sizeof(tmp_val), " %c-%c,", I2A(i1), I2A(i2));
+
+			/* Append */
+			my_strcat(out_val, tmp_val, sizeof(out_val));
+		}
+
+		/* Indicate ability to "view" */
+		if (!show_list)
+			my_strcat(out_val, " * to see,", sizeof(out_val));
+
+		/* Indicate legality of equipment */
+		if (use_equip)
+			my_strcat(out_val, " / for Equip,", sizeof(out_val));
+
+		/* Indicate legality of quiver */
+		if (use_quiver)
+			my_strcat(out_val, " . for Quiver,", sizeof(out_val));
+
+		/* Indicate legality of the "floor" */
+		if (allow_floor)
+			my_strcat(out_val, " - for floor,", sizeof(out_val));
+	}
+
+	/* Viewing equipment */
+	else if (player->upkeep->command_wrk == USE_EQUIP) {
+		/* Begin the prompt */
+		strnfmt(out_val, sizeof(out_val), "Equip:");
+
+		/* List choices */
+		if (e1 <= e2) {
+			/* Build the prompt */
+			strnfmt(tmp_val, sizeof(tmp_val), " %c-%c,", I2A(e1), I2A(e2));
+
+			/* Append */
+			my_strcat(out_val, tmp_val, sizeof(out_val));
+		}
+
+		/* Indicate ability to "view" */
+		if (!show_list)
+			my_strcat(out_val, " * to see,", sizeof(out_val));
+
+		/* Indicate legality of inventory */
+		if (use_inven)
+			my_strcat(out_val, " / for Inven,", sizeof(out_val));
+
+		/* Indicate legality of quiver */
+		if (use_quiver)
+			my_strcat(out_val, " . for Quiver,", sizeof(out_val));
+
+		/* Indicate legality of the "floor" */
+		if (allow_floor)
+			my_strcat(out_val, " - for floor,", sizeof(out_val));
+	}
+
+	/* Viewing quiver */
+	else if (player->upkeep->command_wrk == USE_QUIVER) {
+		/* Begin the prompt */
+		strnfmt(out_val, sizeof(out_val), "Quiver:");
+
+		/* List choices */
+		if (q1 <= q2) {
+			/* Build the prompt */
+			strnfmt(tmp_val, sizeof(tmp_val), " %c-%c,", I2A(q1), I2A(q2));
+
+			/* Append */
+			my_strcat(out_val, tmp_val, sizeof(out_val));
+		}
+
+		/* Indicate ability to "view" */
+		if (!show_list)
+			my_strcat(out_val, " * to see,", sizeof(out_val));
+
+		/* Indicate legality of inventory */
+		if (use_inven)
+			my_strcat(out_val, " / for Inven,", sizeof(out_val));
+
+		/* Indicate legality of the "floor" */
+		if (allow_floor)
+			my_strcat(out_val, " - for floor,", sizeof(out_val));
+	}
+
+	/* Viewing floor */
+	else {
+		/* Begin the prompt */
+		strnfmt(out_val, sizeof(out_val), "Floor:");
+
+		/* List choices */
+		if (f1 <= f2) {
+			/* Build the prompt */
+			strnfmt(tmp_val, sizeof(tmp_val), " %c-%c,", I2A(f1), I2A(f2));
+
+			/* Append */
+			my_strcat(out_val, tmp_val, sizeof(out_val));
+		}
+
+		/* Indicate ability to "view" */
+		if (!show_list)
+			my_strcat(out_val, " * to see,", sizeof(out_val));
+
+		/* Append */
+		if (use_inven)
+			my_strcat(out_val, " / for Inven,", sizeof(out_val));
+
+		/* Append */
+		else if (use_equip)
+			my_strcat(out_val, " / for Equip,", sizeof(out_val));
+
+		/* Indicate legality of quiver */
+		if (use_quiver)
+			my_strcat(out_val, " . for Quiver,", sizeof(out_val));
+	}
+
+	/* Finish the prompt */
+	my_strcat(out_val, " ESC", sizeof(out_val));
+
+	/* Build the prompt */
+	strnfmt(tmp_val, sizeof(tmp_val), "(%s) %s", out_val, prompt);
+
+	/* Show the prompt */
+	prt(tmp_val, 0, 0);
+}
+
 
 /**
  * Let the user select an object, save its address
@@ -762,11 +914,6 @@ bool textui_get_item(struct object **choice, const char *pmt, const char *str,
 	int j;
 	struct object *obj;
 
-	int i1, i2;
-	int e1, e2;
-	int f1, f2;
-	int q1, q2;
-
 	bool done, item;
 
 	bool oops = FALSE;
@@ -787,14 +934,12 @@ bool textui_get_item(struct object **choice, const char *pmt, const char *str,
 
 	bool toggle = FALSE;
 
-	char tmp_val[160];
-	char out_val[160];
-
 	int floor_max = z_info->floor_size;
-	struct object **floor_list = mem_zalloc(floor_max * sizeof(*floor_list));
 	int floor_num;
 
-	bool show_list = TRUE;
+	floor_list = mem_zalloc(floor_max * sizeof(*floor_list));
+	show_list = TRUE;
+	prompt = pmt;
 
 	/* Hack - Only shift the command key if it actually needs to be shifted. */
 	if (cmdkey < 0x20)
@@ -959,7 +1104,7 @@ bool textui_get_item(struct object **choice, const char *pmt, const char *str,
 		/* Redraw windows */
 		redraw_stuff(player->upkeep);
 
-		/* Viewing inventory */
+		/* View the correct list */
 		if (player->upkeep->command_wrk == USE_INVEN) {
 			int nmode = olist_mode;
 
@@ -971,148 +1116,26 @@ bool textui_get_item(struct object **choice, const char *pmt, const char *str,
 			if (show_list)
 				show_inven(nmode, tester);
 
-			/* Begin the prompt */
-			strnfmt(out_val, sizeof(out_val), "Inven:");
-
-			/* List choices */
-			if (i1 <= i2) {
-				/* Build the prompt */
-				strnfmt(tmp_val, sizeof(tmp_val), " %c-%c,", I2A(i1), I2A(i2));
-
-				/* Append */
-				my_strcat(out_val, tmp_val, sizeof(out_val));
-			}
-
-			/* Indicate ability to "view" */
-			if (!show_list)
-				my_strcat(out_val, " * to see,", sizeof(out_val));
-
-			/* Indicate legality of equipment */
-			if (use_equip)
-				my_strcat(out_val, " / for Equip,", sizeof(out_val));
-
-			/* Indicate legality of quiver */
-			if (use_quiver)
-				my_strcat(out_val, " . for Quiver,", sizeof(out_val));
-
-			/* Indicate legality of the "floor" */
-			if (allow_floor)
-				my_strcat(out_val, " - for floor,", sizeof(out_val));
-		}
-
-		/* Viewing equipment */
-		else if (player->upkeep->command_wrk == USE_EQUIP) {
+		} else if (player->upkeep->command_wrk == USE_EQUIP) {
 			/* Redraw if needed */
 			if (show_list)
 				show_equip(olist_mode, tester);
 
-			/* Begin the prompt */
-			strnfmt(out_val, sizeof(out_val), "Equip:");
-
-			/* List choices */
-			if (e1 <= e2) {
-				/* Build the prompt */
-				strnfmt(tmp_val, sizeof(tmp_val), " %c-%c,", I2A(e1), I2A(e2));
-
-				/* Append */
-				my_strcat(out_val, tmp_val, sizeof(out_val));
-			}
-
-			/* Indicate ability to "view" */
-			if (!show_list)
-				my_strcat(out_val, " * to see,", sizeof(out_val));
-
-			/* Indicate legality of inventory */
-			if (use_inven)
-				my_strcat(out_val, " / for Inven,", sizeof(out_val));
-
-			/* Indicate legality of quiver */
-			if (use_quiver)
-				my_strcat(out_val, " . for Quiver,", sizeof(out_val));
-
-			/* Indicate legality of the "floor" */
-			if (allow_floor)
-				my_strcat(out_val, " - for floor,", sizeof(out_val));
-		}
-
-		/* Viewing quiver */
-		else if (player->upkeep->command_wrk == USE_QUIVER) {
+		} else if (player->upkeep->command_wrk == USE_QUIVER) {
 			/* Redraw if needed */
 			if (show_list)
 				show_quiver(olist_mode, tester);
 
-			/* Begin the prompt */
-			strnfmt(out_val, sizeof(out_val), "Quiver:");
-
-			/* List choices */
-			if (q1 <= q2) {
-				/* Build the prompt */
-				strnfmt(tmp_val, sizeof(tmp_val), " %c-%c,", I2A(q1), I2A(q2));
-
-				/* Append */
-				my_strcat(out_val, tmp_val, sizeof(out_val));
-			}
-
-			/* Indicate ability to "view" */
-			if (!show_list)
-				my_strcat(out_val, " * to see,", sizeof(out_val));
-
-			/* Indicate legality of inventory */
-			if (use_inven)
-				my_strcat(out_val, " / for Inven,", sizeof(out_val));
-
-			/* Indicate legality of the "floor" */
-			if (allow_floor)
-				my_strcat(out_val, " - for floor,", sizeof(out_val));
-		}
-
-		/* Viewing floor */
-		else {
+		} else {
 			/* Redraw if needed */
 			if (show_list)
 				show_floor(floor_list, floor_num, olist_mode, tester);
 
-			/* Begin the prompt */
-			strnfmt(out_val, sizeof(out_val), "Floor:");
-
-			/* List choices */
-			if (f1 <= f2) {
-				/* Build the prompt */
-				strnfmt(tmp_val, sizeof(tmp_val), " %c-%c,", I2A(f1), I2A(f2));
-
-				/* Append */
-				my_strcat(out_val, tmp_val, sizeof(out_val));
-			}
-
-			/* Indicate ability to "view" */
-			if (!show_list)
-				my_strcat(out_val, " * to see,", sizeof(out_val));
-
-			/* Append */
-			if (use_inven)
-				my_strcat(out_val, " / for Inven,", sizeof(out_val));
-
-			/* Append */
-			else if (use_equip)
-				my_strcat(out_val, " / for Equip,", sizeof(out_val));
-
-			/* Indicate legality of quiver */
-			if (use_quiver)
-				my_strcat(out_val, " . for Quiver,", sizeof(out_val));
-
 		}
 
-		/* Finish the prompt */
-		my_strcat(out_val, " ESC", sizeof(out_val));
-
-		/* if we have a prompt header, show the part that we just built */
-		if (pmt) {
-			/* Build the prompt */
-			strnfmt(tmp_val, sizeof(tmp_val), "(%s) %s", out_val, pmt);
-
-			/* Show the prompt */
-			prt(tmp_val, 0, 0);
-		}
+		/* Show the prompt */
+		if (pmt)
+			item_prompt(mode);
 
 		/* Get a key */
 		press = inkey_m();
