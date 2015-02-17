@@ -42,7 +42,7 @@
 #include "ui-object.h"
 #include "ui-options.h"
 #include "ui-knowledge.h"
-#include "ui-obj.h"
+#include "ui-object.h"
 #include "ui-player.h"
 #include "ui-spell.h"
 #include "ui-command.h"

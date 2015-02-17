@@ -43,7 +43,6 @@
 #include "ui-knowledge.h"
 #include "ui-menu.h"
 #include "ui-mon-lore.h"
-#include "ui-obj.h"
 #include "ui-object.h"
 #include "ui-player.h"
 #include "ui-spell.h"
