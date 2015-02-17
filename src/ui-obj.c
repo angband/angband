@@ -50,6 +50,7 @@
  */
 struct object_menu_data {
 	char label[80];
+	char equip_label[80];
 	struct object *object;
 	char o_name[80];
 	char key;
@@ -205,6 +206,7 @@ static void show_obj(int obj_num, int row, int col, bool cursor,
 	struct object *obj = items[obj_num].object;
 	bool show_label = (mode & OLIST_WINDOW || player->is_dead) ? TRUE : FALSE;
 	int label_size = show_label ? strlen(items[obj_num].label) : 0;
+	int equip_label_size = strlen(items[obj_num].equip_label);
 
 	/* Clear the line */
 	prt("", row + obj_num, MAX(col - 1, 0));
@@ -216,9 +218,14 @@ static void show_obj(int obj_num, int row, int col, bool cursor,
 	if (show_label)
 		c_put_str(label_attr, items[obj_num].label, row + obj_num, col);
 
+	/* Print the equipment label */
+	c_put_str(label_attr, items[obj_num].equip_label, row + obj_num,
+			  col + label_size);
+
 	/* Limit object name */
-	if (label_size + strlen(items[obj_num].o_name) > (size_t)ex_offset) {
-		int truncate = ex_offset - label_size;
+	if (label_size + equip_label_size + strlen(items[obj_num].o_name) >
+		(size_t)ex_offset) {
+		int truncate = ex_offset - label_size - equip_label_size;
 
 		if (truncate < 0) truncate = 0;
 		if ((size_t)truncate > sizeof(items[obj_num].o_name) - 1)
@@ -226,7 +233,7 @@ static void show_obj(int obj_num, int row, int col, bool cursor,
 
 		items[obj_num].o_name[truncate] = '\0';
 	}
- 
+
 	/* Item kind determines the color of the output */
 	if (obj)
 		attr = obj->kind->base->attr;
@@ -235,7 +242,7 @@ static void show_obj(int obj_num, int row, int col, bool cursor,
 
 	/* Object name */
 	c_put_str(attr, items[obj_num].o_name, row + obj_num,
-			  col + label_size);
+			  col + label_size + equip_label_size);
 
 	/* If we don't have an object, we can skip the rest of the output */
 	if (!obj) return;
@@ -296,6 +303,7 @@ static void wipe_obj_list(void)
 	/* Clear the existing contents */
 	for (i = 0; i < MAX_ITEMS; i++) {
 		my_strcpy(items[i].label, "", sizeof(items[i].label));
+		my_strcpy(items[i].equip_label, "", sizeof(items[i].equip_label));
 		items[i].object = NULL;
 		my_strcpy(items[i].o_name, "", sizeof(items[i].o_name));
 		items[i].key = '\0';
@@ -337,10 +345,15 @@ static void build_obj_list(int last, struct object **list, item_tester tester,
 		if (equip) {
 			strnfmt(buf, sizeof(buf), "%-14s: ", equip_mention(player, i));
 			my_strcap(buf);
-			my_strcat(items[num_obj].label, buf, sizeof(items[num_obj].label));
+			my_strcpy(items[num_obj].equip_label, buf,
+					  sizeof(items[num_obj].equip_label));
 		} else if (in_term && (num_obj >= player->body.count)) {
 			strnfmt(buf, sizeof(buf), "Slot %-9d: ", i);
-			my_strcat(items[num_obj].label, buf, sizeof(items[num_obj].label));
+			my_strcpy(items[num_obj].equip_label, buf,
+					  sizeof(items[num_obj].equip_label));
+		} else {
+			strnfmt(items[num_obj].equip_label,
+					sizeof(items[num_obj].equip_label), "");
 		}
 
 		/* Save the object */
@@ -380,7 +393,8 @@ static void set_obj_names(bool terse)
 
 		/* Max length of label + object name */
 		max_len = MAX(max_len,
-					  strlen(items[i].label) + strlen(items[i].o_name));
+					  strlen(items[i].label) + strlen(items[i].equip_label) +
+					  strlen(items[i].o_name));
 	}
 }
 
@@ -743,7 +757,7 @@ static int get_tag(struct object **tagged_obj, char tag, cmd_code cmd,
 /**
  * Make the correct prompt for items
  */
-static void item_prompt(int mode)
+static const char *item_prompt(int mode)
 {
 	char tmp_val[160];
 	char out_val[160];
@@ -877,10 +891,10 @@ static void item_prompt(int mode)
 	my_strcat(out_val, " ESC", sizeof(out_val));
 
 	/* Build the prompt */
-	strnfmt(tmp_val, sizeof(tmp_val), "(%s) %s", out_val, prompt);
+	strnfmt(tmp_val, sizeof(tmp_val), "(%s)", out_val);
 
-	/* Show the prompt */
-	prt(tmp_val, 0, 0);
+	/* Return the prompt */
+	return string_make(tmp_val);
 }
 
 
@@ -888,7 +902,7 @@ cmd_code menu_cmd;
 int menu_mode;
 item_tester tester_m;
 static region area = { 20, 1, -1, -2 };
-static char selection;
+static struct object *selection;
 
 /**
  * Gat an item tag
@@ -929,15 +943,14 @@ void get_item_display(struct menu *menu, int oid, bool cursor, int row,
  */
 bool get_item_action(struct menu *menu, const ui_event *event, int oid)
 {
-	bool refresh = FALSE;
 	struct object_menu_data *choice = menu_priv(menu);
 	struct object *obj;
 	char key = event->key.code;
 	int i;
+	bool refresh = FALSE;
 
 	if (event->type == EVT_SELECT) {
-		selection = choice[oid].key;
-		return FALSE;
+		selection = choice[oid].object;
 	}
 
 	if (event->type == EVT_KBRD) {
@@ -1003,7 +1016,7 @@ bool get_item_action(struct menu *menu, const ui_event *event, int oid)
 			}
 		}
 
-
+		/* Redraw the menu */
 		if (refresh) {
 			/* Load screen */
 			screen_load();
@@ -1012,10 +1025,10 @@ bool get_item_action(struct menu *menu, const ui_event *event, int oid)
 			/* Save screen */
 			screen_save();
 
-			/* Show the prompt */
-			item_prompt(item_mode);
-
+			/* Menu data and header */
 			menu_setpriv(menu, num_obj, items);
+			mem_free(menu->header);
+			menu->header = item_prompt(item_mode);
 			set_obj_names(FALSE);
 			if (item_mode & OLIST_QUIVER && player->upkeep->quiver[0] != NULL)
 				max_len = MAX(max_len, 24);
@@ -1028,11 +1041,13 @@ bool get_item_action(struct menu *menu, const ui_event *event, int oid)
 			if (olist_mode & OLIST_FAIL)
 				ex_width += 10;
 
+			/* Redo the layout */
 			area.page_rows = menu->count + 1;
 			area.width = max_len;
 			area.row = 1;
-			area.col = Term->wid - 1 - (int) max_len - ex_width;
-			if (area.col == 3)
+			area.col = MIN(Term->wid - 1 - (int) max_len - ex_width,
+						   MAX(strlen(prompt), 15) - 2);
+			if (area.col <= 3)
 				area.col = 0;
 			ex_offset = MIN(max_len,
 							(size_t)(Term->wid - 1 - ex_width - area.col));
@@ -1040,31 +1055,30 @@ bool get_item_action(struct menu *menu, const ui_event *event, int oid)
 			menu_refresh(menu, TRUE);
 			redraw_stuff(player->upkeep);
 		}
-
-		return FALSE;
-
 	}
 
-	return TRUE;
+	return FALSE;
 }
 
 /**
  * Display list items to choose from
  */
-ui_event item_menu(cmd_code cmd, int mode)
+struct object *item_menu(cmd_code cmd, int prompt_size, int mode)
 {
-	menu_iter menu_f = { 0, get_item_validity, get_item_display,
+	menu_iter menu_f = { get_item_tag, get_item_validity, get_item_display,
 						 get_item_action, 0 };
 	struct menu *m = menu_new(MN_SKIN_SCROLL, &menu_f);
 	ui_event evt = { 0 };
 
 	/* Set up the menu */
 	menu_setpriv(m, num_obj, items);
-	m->flags = MN_CASELESS_TAGS;
+	m->header = item_prompt(item_mode);
 	m->selections = lower_case;
+	m->flags = MN_PVT_TAGS;
 	m->cmd_keys = "/.-0123456789";
 
 	/* Set up the item list variables */
+	selection = NULL;
 	set_obj_names(FALSE);
 
 	if (mode & OLIST_QUIVER && player->upkeep->quiver[0] != NULL)
@@ -1081,8 +1095,9 @@ ui_event item_menu(cmd_code cmd, int mode)
 	area.page_rows = m->count + 1;
 	area.width = max_len;
 	area.row = 1;
-	area.col = Term->wid - 1 - (int) max_len - ex_width;
-	if (area.col == 3)
+	area.col = MIN(Term->wid - 1 - (int) max_len - ex_width,
+				   MAX(strlen(prompt), 15) - 2);
+	if (area.col <= 3)
 		area.col = 0;
 	ex_offset = MIN(max_len, (size_t)(Term->wid - 1 - ex_width - area.col));
 	menu_layout(m, &area);
@@ -1090,14 +1105,11 @@ ui_event item_menu(cmd_code cmd, int mode)
 	/* Choose */
 	evt = menu_select(m, 0, TRUE);
 
-	if (evt.type != EVT_ESCAPE) {
-		evt.key.code = selection;
-	}
-
+	mem_free(m->header);
 	mem_free(m);
 
 	/* Result */
-	return (evt);
+	return (evt.type == EVT_ESCAPE) ? NULL : selection;
 }
 
 
@@ -1118,17 +1130,12 @@ ui_event item_menu(cmd_code cmd, int mode)
  * not NULL, then it will be used as the text of a warning message
  * before the function returns.
  *
- * Note that the user must press "-" to specify the item on the floor,
- * and there is no way to "examine" the item on the floor, while the
- * use of "capital" letters will "examine" an inventory/equipment item,
- * and prompt for its use.
+ * If a legal item is selected , we save it in "choice" and return TRUE.
  *
- * If a legal item is selected , we save it in "obj" and return TRUE.
- *
- * If no item is available, we do nothing to "obj", and we display a
+ * If no item is available, we do nothing to "choice", and we display a
  * warning message, using "str" if available, and return FALSE.
  *
- * If no item is selected, we do nothing to "obj", and return FALSE.
+ * If no item is selected, we do nothing to "choice", and return FALSE.
  *
  * Global "player->upkeep->command_wrk" is used to choose between
  * equip/inven/quiver/floor listings.  It is equal to USE_INVEN or USE_EQUIP or
@@ -1181,6 +1188,7 @@ bool textui_get_item(struct object **choice, const char *pmt, const char *str,
 	item_cmd = cmd;
 	show_list = TRUE;
 	tester_m = tester;
+	prompt = pmt;
 
 	/* Hack - Only shift the command key if it actually needs to be shifted. */
 	if (cmdkey < 0x20)
@@ -1276,6 +1284,10 @@ bool textui_get_item(struct object **choice, const char *pmt, const char *str,
 		oops = TRUE;
 		done = TRUE;
 	} else {
+		int j;
+		int ni = 0;
+		int ne = 0;
+
 		/* Start where requested if possible */
 		if ((player->upkeep->command_wrk == USE_EQUIP) && allow_equip)
 			player->upkeep->command_wrk = USE_EQUIP;
@@ -1303,19 +1315,9 @@ bool textui_get_item(struct object **choice, const char *pmt, const char *str,
 		/* If nothing to choose, use (empty) inventory */
 		else
 			player->upkeep->command_wrk = USE_INVEN;
-	}
 
-	/* Start out in "display" mode */
-	if (show_list)
-		/* Save screen */
-		screen_save();
-
-	/* Repeat until done */
-	while (!done) {
-		int ni = 0;
-		int ne = 0;
-
-		/* Scan windows */
+		/* If inven or equip is on the main screen, and only one of them
+		 * is slated for a subwindow, we should show the opposite there */
 		for (j = 0; j < ANGBAND_TERM_MAX; j++) {
 			/* Unused */
 			if (!angband_term[j]) continue;
@@ -1327,14 +1329,19 @@ bool textui_get_item(struct object **choice, const char *pmt, const char *str,
 			if (window_flag[j] & (PW_EQUIP)) ne++;
 		}
 
-		/* Toggle if needed */
-		if (((player->upkeep->command_wrk == USE_EQUIP) && ni && !ne) ||
-		    ((player->upkeep->command_wrk == USE_INVEN) && !ni && ne)) {
-			/* Toggle */
-			toggle_inven_equip();
-
-			/* Track toggles */
-			toggle = !toggle;
+		/* Are we in the situation where toggling makes sense? */
+		if ((ni && !ne) || (!ni && ne)) {
+			if ((player->upkeep->command_wrk == USE_EQUIP) &&
+				((ne && !toggle) || (ni && toggle))) {
+				/* Main screen is equipment, so is subwindow */
+				toggle_inven_equip();
+				toggle = !toggle;
+			} else if ((player->upkeep->command_wrk == USE_INVEN) &&
+					   ((ni && !toggle) || (ne && toggle))) {
+				/* Main screen is inventory, so is subwindow */
+				toggle_inven_equip();
+				toggle = !toggle;
+			}
 		}
 
 		/* Redraw */
@@ -1342,315 +1349,32 @@ bool textui_get_item(struct object **choice, const char *pmt, const char *str,
 
 		/* Redraw windows */
 		redraw_stuff(player->upkeep);
-
-		/* Rebuild object list */
-		wipe_obj_list();
-		if (player->upkeep->command_wrk == USE_INVEN)
-			build_obj_list(i2, player->upkeep->inven, tester_m, olist_mode);
-		else if (player->upkeep->command_wrk == USE_EQUIP)
-			build_obj_list(e2, NULL, tester_m, olist_mode);
-		else if (player->upkeep->command_wrk == USE_QUIVER)
-			build_obj_list(q2, player->upkeep->quiver, tester_m,olist_mode);
-		else if (player->upkeep->command_wrk == USE_FLOOR)
-			build_obj_list(f2, floor_list, tester_m, olist_mode);
-
-		/* Show the prompt */
-		if (pmt) {
-			prompt = pmt;
-			item_prompt(mode);
-		}
-		redraw_stuff(player->upkeep);
-
-		/* Menu if requested, or get a key */
-		if (show_list) {
-			press = item_menu(cmd, mode);
-			if (press.type == EVT_ESCAPE)
-				press.key.code = ESCAPE;
-		} else
-			press = inkey_m();
-
-		/* Parse it */
-		if (press.type == EVT_MOUSE) {
-			if (press.mouse.button == 2) {
-				done = TRUE;
-			} else if (press.mouse.button == 1) {
-				obj = NULL;
-				if (player->upkeep->command_wrk == USE_INVEN) {
-					if (press.mouse.y == 0) {
-						if (allow_equip) {
-							player->upkeep->command_wrk = USE_EQUIP;
-						} else if (allow_quiver) {
-							player->upkeep->command_wrk = USE_QUIVER;
-						} else if (allow_floor) {
-							player->upkeep->command_wrk = USE_FLOOR;
-						}
-					} else if ((press.mouse.y <= i2 - i1 + 1) ) {
-						/* Get the item index, allowing for skipped indices */
-						for (j = i1; j <= i2; j++) {
-							struct object *test = player->upkeep->inven[j];
-							if (object_test(tester, test)) {
-								if (press.mouse.y == 1) {
-									obj = test;
-									break;
-								}
-								press.mouse.y--;
-							}
-						}
-					}
-				} else if (player->upkeep->command_wrk == USE_EQUIP) {
-					if (press.mouse.y == 0) {
-						if (allow_quiver) {
-							player->upkeep->command_wrk = USE_QUIVER;
-						} else if (allow_floor) {
-							player->upkeep->command_wrk = USE_FLOOR;
-						} else if (allow_inven) {
-							player->upkeep->command_wrk = USE_INVEN;
-						}
-					} else if (press.mouse.y <= e2 - e1 + 1) {
-						if (olist_mode & OLIST_SEMPTY) {
-							/* If we are showing empties, just set the object
-							 * (empty objects will just keep the loop going) */
-							obj = label_to_equip('a' + e1 + press.mouse.y - 1);
-						} else {
-							/* get the item index, allow for skipped indices */
-							for (j = e1; j <= e2; j++) {
-								struct object *test = slot_object(player, j);
-								if (object_test(tester, test)) {
-									if (press.mouse.y == 1) {
-										obj = test;
-										break;
-									}
-									press.mouse.y--;
-								}
-							}
-						}
-					}
-				} else if (player->upkeep->command_wrk == USE_QUIVER) {
-					if (press.mouse.y == 0) {
-						if (allow_floor) {
-							player->upkeep->command_wrk = USE_FLOOR;
-						} else if (allow_inven) {
-							player->upkeep->command_wrk = USE_INVEN;
-						} else if (allow_equip) {
-							player->upkeep->command_wrk = USE_EQUIP;
-						}
-					} else if (press.mouse.y <= q2 - q1 + 1) {
-						/* get the item index, allow for skipped indices */
-						for (j = q1; j <= q2; j++) {
-							struct object *test = player->upkeep->quiver[j];
-							if (object_test(tester, test)) {
-								if (press.mouse.y == 1) {
-									obj = test;
-									break;
-								}
-								press.mouse.y--;
-							}
-						}
-					}
-				} else if (player->upkeep->command_wrk == USE_FLOOR) {
-					if (press.mouse.y == 0) {
-						if (allow_inven) {
-							player->upkeep->command_wrk = USE_INVEN;
-						} else if (allow_equip) {
-							player->upkeep->command_wrk = USE_EQUIP;
-						} else if (allow_quiver) {
-							player->upkeep->command_wrk = USE_QUIVER;
-						}
-					} else if ((press.mouse.y <= floor_num)
-							   && (press.mouse.y >= 1)) {
-						/* Get the item index, allowing for skipped indices */
-						for (j = f1; j <= f2; j++) {
-							struct object *test = floor_list[j];
-							if (object_test(tester, test)) {
-								if (press.mouse.y == 1) {
-									obj = test;
-									break;
-								}
-								press.mouse.y--;
-							}
-						}
-					}
-				}
-				if (obj) {
-					/* Validate the item */
-					if (!object_test(tester, obj)) {
-						bell("Illegal object choice (normal)!");
-					}
-
-					/* Allow player to "refuse" certain actions */
-					if (!get_item_allow(obj, cmdkey, cmd, is_harmless))
-						done = TRUE;
-
-					/* Accept that choice */
-					(*choice) = obj;
-					item = TRUE;
-					done = TRUE;
-				} else if (press.mouse.y == 0) {
-					/* Hack -- Fix screen */
-					if (show_list) {
-						/* Load screen */
-						screen_load();
-
-						/* Save screen */
-						screen_save();
-					}
-				}
-			}
-		} else
-		switch (press.key.code)
-		{
-			case ESCAPE:
-			case ' ':
-			{
-				done = TRUE;
-				break;
-			}
-
-			case KC_ENTER:
-			{
-				/* Choose "default" inventory item */
-				if (player->upkeep->command_wrk == USE_INVEN) {
-					if (i1 != i2) {
-						bell("Illegal object choice (default)!");
-						break;
-					}
-
-					obj = player->upkeep->inven[i1];
-				}
-
-				/* Choose the "default" slot (0) of the quiver */
-				else if (quiver_tags)
-					obj = player->upkeep->quiver[q1];
-
-				/* Choose "default" equipment item */
-				else if (player->upkeep->command_wrk == USE_EQUIP) {
-					if (e1 != e2) {
-						bell("Illegal object choice (default)!");
-						break;
-					}
-
-					obj = slot_object(player, e1);
-				}
-
-				/* Choose "default" quiver item */
-				else if (player->upkeep->command_wrk == USE_QUIVER) {
-					if (q1 != q2) {
-						bell("Illegal object choice (default)!");
-						break;
-					}
-
-					obj = player->upkeep->quiver[q1];
-				}
-
-				/* Choose "default" floor item */
-				else {
-					if (f1 != f2) {
-						bell("Illegal object choice (default)!");
-						break;
-					}
-
-					obj = floor_list[f1];
-				}
-
-				/* Validate the item */
-				if (!object_test(tester, obj)) {
-					bell("Illegal object choice (default)!");
-					break;
-				}
-
-				/* Allow player to "refuse" certain actions */
-				if (!get_item_allow(obj, cmdkey, cmd, is_harmless)) {
-					done = TRUE;
-					break;
-				}
-
-				/* Accept that choice */
-				(*choice) = obj;
-				item = TRUE;
-				done = TRUE;
-				break;
-			}
-
-			default:
-			{
-				bool verify;
-
-				/* Note verify */
-				verify = (isupper((unsigned char)press.key.code) ? TRUE : FALSE);
-
-				/* Lowercase */
-				press.key.code = tolower((unsigned char)press.key.code);
-
-				/* Convert letter to inventory object */
-				if (player->upkeep->command_wrk == USE_INVEN) {
-					obj = label_to_inven(press.key.code);
-
-					if (!obj) {
-						bell("Illegal object choice (inven)!");
-						break;
-					}
-				}
-
-				/* Convert letter to equipment object */
-				else if (player->upkeep->command_wrk == USE_EQUIP) {
-					obj = label_to_equip(press.key.code);
-
-					if (!obj) {
-						bell("Illegal object choice (equip)!");
-						break;
-					}
-				}
-
-				/* Convert letter to quiver object */
-				else if (player->upkeep->command_wrk == USE_QUIVER) {
-					obj = label_to_quiver(press.key.code);
-
-					if (!obj) {
-						bell("Illegal object choice (quiver)!");
-						break;
-					}
-				}
-
-				/* Convert letter to floor object */
-				else {
-					int k = (islower((unsigned char)press.key.code) ?
-							 A2I((unsigned char)press.key.code) : -1);
-
-					if (k < 0 || k >= floor_num) {
-						bell("Illegal object choice (floor)!");
-						break;
-					}
-
-					obj = floor_list[k];
-				}
-
-				/* Validate the item */
-				if (!object_test(tester, obj)) {
-					bell("Illegal object choice (normal)!");
-					break;
-				}
-
-				/* Verify the item */
-				if (verify && !verify_object("Try", obj)) {
-					done = TRUE;
-					break;
-				}
-
-				/* Allow player to "refuse" certain actions */
-				if (!get_item_allow(obj, cmdkey, cmd, is_harmless)) {
-					done = TRUE;
-					break;
-				}
-
-				/* Accept that choice */
-				(*choice) = obj;
-				item = TRUE;
-				done = TRUE;
-				break;
-			}
-		}
 	}
 
+	/* Start out in "display" mode */
+	if (show_list)
+		/* Save screen */
+		screen_save();
+
+	/* Build object list */
+	wipe_obj_list();
+	if (player->upkeep->command_wrk == USE_INVEN)
+		build_obj_list(i2, player->upkeep->inven, tester_m, olist_mode);
+	else if (player->upkeep->command_wrk == USE_EQUIP)
+		build_obj_list(e2, NULL, tester_m, olist_mode);
+	else if (player->upkeep->command_wrk == USE_QUIVER)
+		build_obj_list(q2, player->upkeep->quiver, tester_m,olist_mode);
+	else if (player->upkeep->command_wrk == USE_FLOOR)
+		build_obj_list(f2, floor_list, tester_m, olist_mode);
+
+	/* Show the prompt */
+	if (pmt)
+		prt(pmt, 0, 0);
+
+	/* Menu if requested, or get a key */
+	if (show_list) {
+		*choice = item_menu(cmd, MAX(strlen(pmt), 15), mode);
+	}
 
 	/* Fix the screen if necessary */
 	if (show_list)
@@ -1673,7 +1397,7 @@ bool textui_get_item(struct object **choice, const char *pmt, const char *str,
 	mem_free(floor_list);
 
 	/* Result */
-	return (item);
+return (*choice != NULL) ? TRUE : FALSE;
 }
 
 
