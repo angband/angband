@@ -333,7 +333,7 @@ static void cave_unlight(struct point_set *ps)
 		sqinfo_off(cave->squares[y][x].info, SQUARE_GLOW);
 
 		/* Hack -- Forget "boring" grids */
-		if (!square_isinteresting(cave, y, x))
+		if (!square_isfloor(cave, y, x))
 			sqinfo_off(cave->squares[y][x].info, SQUARE_MARK);
 	}
 
