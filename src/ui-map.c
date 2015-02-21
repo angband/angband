@@ -33,13 +33,12 @@
 #include "ui-term.h"
 
 
-/*
+/**
  * Hack -- Hallucinatory monster
  */
 static void hallucinatory_monster(int *a, wchar_t *c)
 {
-	while (1)
-	{
+	while (1) {
 		/* Select a random monster */
 		monster_race *r_ptr = &r_info[randint0(z_info->r_max)];
 		
@@ -54,14 +53,13 @@ static void hallucinatory_monster(int *a, wchar_t *c)
 }
 
 
-/*
+/**
  * Hack -- Hallucinatory object
  */
 static void hallucinatory_object(int *a, wchar_t *c)
 {
 	
-	while (1)
-	{
+	while (1) {
 		/* Select a random object */
 		object_kind *k_ptr = &k_info[randint0(z_info->k_max - 1) + 1];
 
@@ -86,14 +84,13 @@ static void hallucinatory_object(int *a, wchar_t *c)
  * We should probably have better handling of stacked traps, but that can
  * wait until we do, in fact, have stacked traps under normal conditions.
  */
-static void get_trap_graphics(struct chunk *c, struct trap *trap, int *a,
-							  wchar_t *ch)
+static void get_trap_graphics(struct chunk *c, grid_data *g, int *a, wchar_t *w)
 {
     /* Trap is visible */
-    if (trf_has(trap->flags, TRF_VISIBLE)) {
+    if (trf_has(g->trap->flags, TRF_VISIBLE)) {
 		/* Get the graphics */
-		*a = trap_x_attr[trap->kind->tidx];
-		*ch = trap_x_char[trap->kind->tidx];
+		*a = trap_x_attr[g->lighting][g->trap->kind->tidx];
+		*w = trap_x_char[g->lighting][g->trap->kind->tidx];
     }
 }
 
@@ -106,9 +103,6 @@ static void grid_get_attr(grid_data *g, int *a)
 
 	/* Save the high-bit, since it's used for attr inversion in GCU */
 	int a0 = *a & 0x80;
-
-	/* We will never tint traps or treasure */
-	//if (feat_is_known_trap(g->f_idx)) return;
 
 	/* Remove the high bit so we can add it back again at the end */
 	*a = (*a & 0x7F);
@@ -136,8 +130,7 @@ static void grid_get_attr(grid_data *g, int *a)
 			else if (g->lighting == LIGHTING_DARK ||
 					 g->lighting == LIGHTING_LIT)
 				*a = COLOUR_L_DARK;
-		}
-		else if (feat_is_magma(g->f_idx) || feat_is_quartz(g->f_idx)) {
+		} else if (feat_is_magma(g->f_idx) || feat_is_quartz(g->f_idx)) {
 			if (!g->in_view) {
 				*a = COLOUR_L_DARK;
 			}
@@ -155,7 +148,7 @@ static void grid_get_attr(grid_data *g, int *a)
 	}
 }
 
-/*
+/**
  * This function takes a pointer to a grid info struct describing the 
  * contents of a grid location (as obtained through the function map_info)
  * and fills in the character and attr pairs for display.
@@ -215,7 +208,7 @@ void grid_data_as_text(grid_data *g, int *ap, wchar_t *cp, int *tap, wchar_t *tc
 	/* There is a trap in this grid, and we are not hallucinating */
 	if (g->trap && (!g->hallucinate))
 	    /* Change graphics to indicate a trap (if visible) */
-	    get_trap_graphics(cave, g->trap, &a, &c);
+	    get_trap_graphics(cave, g, &a, &c);
 
 	/* If there's an object, deal with that. */
 	if (g->unseen_money) {
@@ -245,7 +238,7 @@ void grid_data_as_text(grid_data *g, int *ap, wchar_t *cp, int *tap, wchar_t *tc
 		}
 	}
 
-	/* If there's a monster */
+	/* Handle monsters, the player and trap borders */
 	if (g->m_idx > 0) {
 		if (g->hallucinate) {
 			/* Just pick a random monster to display. */
@@ -260,89 +253,51 @@ void grid_data_as_text(grid_data *g, int *ap, wchar_t *cp, int *tap, wchar_t *tc
 			da = monster_x_attr[m_ptr->race->ridx];
 			dc = monster_x_char[m_ptr->race->ridx];
 
-			/* Special attr/char codes */
+			/* Special handling of attrs and/or chars */
 			if (da & 0x80) {
-				/* Use attr */
+				/* Special attr/char codes */
 				a = da;
-
-				/* Use char */
 				c = dc;
-			}
-
-			/* Turn uniques purple if desired (violet, actually) */
-			else if (OPT(purple_uniques) &&
-					 rf_has(m_ptr->race->flags, RF_UNIQUE)) {
-				/* Use (light) violet attr */
+			} else if (OPT(purple_uniques) && 
+					   rf_has(m_ptr->race->flags, RF_UNIQUE)) {
+				/* Turn uniques purple if desired (violet, actually) */
 				a = COLOUR_VIOLET;
-
-				/* Use char */
 				c = dc;
-			}
-
-			/* Multi-hued monster */
-			else if (rf_has(m_ptr->race->flags, RF_ATTR_MULTI) ||
-					 rf_has(m_ptr->race->flags, RF_ATTR_FLICKER) ||
-					 rf_has(m_ptr->race->flags, RF_ATTR_RAND)) {
-				/* Multi-hued attr */
+			} else if (rf_has(m_ptr->race->flags, RF_ATTR_MULTI) ||
+					   rf_has(m_ptr->race->flags, RF_ATTR_FLICKER) ||
+					   rf_has(m_ptr->race->flags, RF_ATTR_RAND)) {
+				/* Multi-hued monster */
 				a = m_ptr->attr ? m_ptr->attr : da;
-				
-				/* Normal char */
 				c = dc;
-			}
-			
-			/* Normal monster (not "clear" in any way) */
-			else if (!flags_test(m_ptr->race->flags, RF_SIZE,
-								 RF_ATTR_CLEAR, RF_CHAR_CLEAR, FLAG_END))
-			{
-				/* Use attr */
+			} else if (!flags_test(m_ptr->race->flags, RF_SIZE,
+								   RF_ATTR_CLEAR, RF_CHAR_CLEAR, FLAG_END)) {
+				/* Normal monster (not "clear" in any way) */
 				a = da;
-
-				/* Desired attr & char. da is not used, but should a be set to it? */
+				/* Desired attr & char. da is not used, should a be set to it?*/
 				/*da = monster_x_attr[m_ptr->race->ridx];*/
 				dc = monster_x_char[m_ptr->race->ridx];
-				
-				/* Use char */
 				c = dc;
-			}
-			
-			/* Hack -- Bizarre grid under monster */
-			else if (a & 0x80)
-			{
-				/* Use attr */
+			} else if (a & 0x80) {
+				/* Hack -- Bizarre grid under monster */
 				a = da;
-				
-				/* Use char */
 				c = dc;
-			}
-			
-			/* Normal char, Clear attr, monster */
-			else if (!rf_has(m_ptr->race->flags, RF_CHAR_CLEAR))
-			{
-				/* Normal char */
+			} else if (!rf_has(m_ptr->race->flags, RF_CHAR_CLEAR)) {
+				/* Normal char, Clear attr, monster */
 				c = dc;
-			}
-				
-			/* Normal attr, Clear char, monster */
-			else if (!rf_has(m_ptr->race->flags, RF_ATTR_CLEAR))
-			{
-				/* Normal attr */
+			} else if (!rf_has(m_ptr->race->flags, RF_ATTR_CLEAR)) {
+				/* Normal attr, Clear char, monster */
 				a = da;
 			}
 
 			/* Store the drawing attr so we can use it elsewhere */
 			m_ptr->attr = a;
 		}
-	}
-
-	/* Handle "player" */
-	else if (g->is_player)
-	{
+	} else if (g->is_player) {
 		monster_race *r_ptr = &r_info[0];
 
 		/* Get the "player" attr */
 		a = monster_x_attr[r_ptr->ridx];
-		if ((OPT(hp_changes_color)) && !(a & 0x80))
-		{
+		if ((OPT(hp_changes_color)) && !(a & 0x80)) {
 			switch(player->chp * 10 / player->mhp)
 			{
 			case 10:
@@ -386,10 +341,9 @@ void grid_data_as_text(grid_data *g, int *ap, wchar_t *cp, int *tap, wchar_t *tc
 
 		/* Get the "player" char */
 		c = monster_x_char[r_ptr->ridx];
-	}
-	else if (g->trapborder && (g->f_idx) && !(g->first_kind)
-			 && (use_graphics != GRAPHICS_NONE)) {
-		/* no overlay is used, so we can use the trap border overlay */
+	} else if (g->trapborder && (g->f_idx) && !(g->first_kind)
+			   && (use_graphics != GRAPHICS_NONE)) {
+		/* No overlay is used, so we can use the trap border overlay */
 		a = feat_x_attr[g->lighting][FEAT_DTRAP_WALL];
 		c = feat_x_char[g->lighting][FEAT_DTRAP_WALL];
 	}
@@ -400,7 +354,7 @@ void grid_data_as_text(grid_data *g, int *ap, wchar_t *cp, int *tap, wchar_t *tc
 }
 
 
-/*
+/**
  * Move the cursor to a given map location.
  */
 static void move_cursor_relative_map(int y, int x)
@@ -412,8 +366,7 @@ static void move_cursor_relative_map(int y, int x)
 	int j;
 
 	/* Scan windows */
-	for (j = 0; j < ANGBAND_TERM_MAX; j++)
-	{
+	for (j = 0; j < ANGBAND_TERM_MAX; j++) {
 		term *t = angband_term[j];
 
 		/* No window */
@@ -426,9 +379,7 @@ static void move_cursor_relative_map(int y, int x)
 		ky = y - t->offset_y;
 
 		if (tile_height > 1)
-		{
 			ky = tile_height * ky;
-		}
 
 		/* Verify location */
 		if ((ky < 0) || (ky >= t->hgt)) continue;
@@ -437,9 +388,7 @@ static void move_cursor_relative_map(int y, int x)
 		kx = x - t->offset_x;
 
 		if (tile_width > 1)
-		{
 			kx = tile_width * kx;
-		}
 
 		/* Verify location */
 		if ((kx < 0) || (kx >= t->wid)) continue;
@@ -453,7 +402,7 @@ static void move_cursor_relative_map(int y, int x)
 }
 
 
-/*
+/**
  * Move the cursor to a given map location.
  *
  * The main screen will always be at least 24x80 in size.
@@ -485,20 +434,17 @@ void move_cursor_relative(int y, int x)
 	vx = kx + COL_MAP;
 
 	if (tile_width > 1)
-	{
 		vx += (tile_width - 1) * kx;
-	}
+
 	if (tile_height > 1)
-	{
 		vy += (tile_height - 1) * ky;
-	}
 
 	/* Go there */
 	(void)Term_gotoxy(vx, vy);
 }
 
 
-/*
+/**
  * Display an attr/char pair at the given map location
  *
  * Note the inline use of "panel_contains()" for efficiency.
@@ -512,8 +458,7 @@ static void print_rel_map(wchar_t c, byte a, int y, int x)
 	int j;
 
 	/* Scan windows */
-	for (j = 0; j < ANGBAND_TERM_MAX; j++)
-	{
+	for (j = 0; j < ANGBAND_TERM_MAX; j++) {
 		term *t = angband_term[j];
 
 		/* No window */
@@ -525,8 +470,7 @@ static void print_rel_map(wchar_t c, byte a, int y, int x)
 		/* Location relative to panel */
 		ky = y - t->offset_y;
 
-		if (tile_height > 1)
-		{
+		if (tile_height > 1) {
 			ky = tile_height * ky;
 			if (ky + 1 >= t->hgt) continue;
 		}
@@ -537,8 +481,7 @@ static void print_rel_map(wchar_t c, byte a, int y, int x)
 		/* Location relative to panel */
 		kx = x - t->offset_x;
 
-		if (tile_width > 1)
-		{
+		if (tile_width > 1) {
 			kx = tile_width * kx;
 			if (kx + 1 >= t->wid) continue;
 		}
@@ -556,7 +499,7 @@ static void print_rel_map(wchar_t c, byte a, int y, int x)
 
 
 
-/*
+/**
  * Display an attr/char pair at the given map location
  *
  * Note the inline use of "panel_contains()" for efficiency.
@@ -611,8 +554,7 @@ static void prt_map_aux(void)
 	int j;
 
 	/* Scan windows */
-	for (j = 0; j < ANGBAND_TERM_MAX; j++)
-	{
+	for (j = 0; j < ANGBAND_TERM_MAX; j++) {
 		term *t = angband_term[j];
 
 		/* No window */
@@ -626,11 +568,9 @@ static void prt_map_aux(void)
 		tx = t->offset_x + (t->wid / tile_width);
 
 		/* Dump the map */
-		for (y = t->offset_y, vy = 0; y < ty; vy++, y++)
-		{
+		for (y = t->offset_y, vy = 0; y < ty; vy++, y++) {
 			if (vy + tile_height - 1 >= t->hgt) continue;
-			for (x = t->offset_x, vx = 0; x < tx; vx++, x++)
-			{
+			for (x = t->offset_x, vx = 0; x < tx; vx++, x++) {
 				/* Check bounds */
 				if (!square_in_bounds(cave, y, x)) continue;
 				if (vx + tile_width - 1 >= t->wid) continue;
@@ -649,7 +589,7 @@ static void prt_map_aux(void)
 
 
 
-/*
+/**
  * Redraw (on the screen) the current map panel
  *
  * Note the inline use of "light_spot()" for efficiency.
@@ -675,9 +615,7 @@ void prt_map(void)
 
 	/* Dump the map */
 	for (y = Term->offset_y, vy = ROW_MAP; y < ty; vy+=tile_height, y++)
-	{
-		for (x = Term->offset_x, vx = COL_MAP; x < tx; vx+=tile_width, x++)
-		{
+		for (x = Term->offset_x, vx = COL_MAP; x < tx; vx+=tile_width, x++) {
 			/* Check bounds */
 			if (!square_in_bounds(cave, y, x)) continue;
 
@@ -689,14 +627,11 @@ void prt_map(void)
 			Term_queue_char(Term, vx, vy, a, c, ta, tc);
 
 			if ((tile_width > 1) || (tile_height > 1))
-			{
 				Term_big_queue_char(Term, vx, vy, a, c, COLOUR_WHITE, L' ');
-			}
 		}
-	}
 }
 
-/*
+/**
  * Display a "small-scale" map of the dungeon in the active Term.
  *
  * Note that this function must "disable" the special lighting effects so
@@ -761,9 +696,7 @@ void display_map(int *cy, int *cx)
 
 	/* Analyze the actual map */
 	for (y = 0; y < cave->height; y++)
-	{
-		for (x = 0; x < cave->width; x++)
-		{
+		for (x = 0; x < cave->width; x++) {
 			row = (y * map_hgt / cave->height);
 			col = (x * map_wid / cave->width);
 
@@ -783,8 +716,7 @@ void display_map(int *cy, int *cx)
 			if ((a != ta) || (c != tc)) tp = 20;
 
 			/* Save "best" */
-			if (mp[row][col] < tp)
-			{
+			if (mp[row][col] < tp) {
 				/* Hack - make every grid on the map lit */
 				g.lighting = LIGHTING_LIT;
 				grid_data_as_text(&g, &a, &c, &ta, &tc);
@@ -798,7 +730,6 @@ void display_map(int *cy, int *cx)
 				mp[row][col] = tp;
 			}
 		}
-	}
 
 	/*** Display the player ***/
 

@@ -45,8 +45,8 @@ byte *kind_x_attr;
 wchar_t *kind_x_char;
 byte *feat_x_attr[LIGHTING_MAX];
 wchar_t *feat_x_char[LIGHTING_MAX];
-byte *trap_x_attr;
-wchar_t *trap_x_char;
+byte *trap_x_attr[LIGHTING_MAX];
+wchar_t *trap_x_char[LIGHTING_MAX];
 byte *flavor_x_attr;
 wchar_t *flavor_x_char;
 size_t flavor_max = 0;
@@ -634,6 +634,8 @@ static enum parser_error parse_prefs_monster(struct parser *p)
 static enum parser_error parse_prefs_trap(struct parser *p)
 {
 	int idx;
+	const char *lighting;
+	int light_idx;
 
 	struct prefs_data *d = parser_priv(p);
 	assert(d != NULL);
@@ -643,10 +645,29 @@ static enum parser_error parse_prefs_trap(struct parser *p)
 	if (idx >= z_info->trap_max)
 		return PARSE_ERROR_OUT_OF_BOUNDS;
 
-	trap_x_attr[idx] = (byte)parser_getint(p, "attr");
-	trap_x_char[idx] = (wchar_t)parser_getint(p, "char");
+	lighting = parser_getsym(p, "lighting");
+	if (streq(lighting, "torch"))
+		light_idx = LIGHTING_TORCH;
+	else if (streq(lighting, "los"))
+		light_idx = LIGHTING_LOS;
+	else if (streq(lighting, "lit"))
+		light_idx = LIGHTING_LIT;
+	else if (streq(lighting, "dark"))
+		light_idx = LIGHTING_DARK;
+	else if (streq(lighting, "all"))
+		light_idx = LIGHTING_MAX;
+	else
+		return PARSE_ERROR_INVALID_LIGHTING;
 
-	/* XXX We need to do something about lighting! */
+	if (light_idx < LIGHTING_MAX) {
+		trap_x_attr[light_idx][idx] = (byte)parser_getint(p, "attr");
+		trap_x_char[light_idx][idx] = (wchar_t)parser_getint(p, "char");
+	} else {
+		for (light_idx = 0; light_idx < LIGHTING_MAX; light_idx++) {
+			trap_x_attr[light_idx][idx] = (byte)parser_getint(p, "attr");
+			trap_x_char[light_idx][idx] = (wchar_t)parser_getint(p, "char");
+		}
+	}
 
 	return PARSE_ERROR_NONE;
 }
@@ -1116,12 +1137,11 @@ bool process_pref_file(const char *name, bool quiet, bool user)
  */
 void reset_visuals(bool load_prefs)
 {
-	int i;
+	int i, j;
 	struct flavor *f;
 
 	/* Extract default attr/char code for features */
 	for (i = 0; i < z_info->f_max; i++) {
-		int j;
 		feature_type *f_ptr = &f_info[i];
 
 		/* Assume we will use the underlying values */
@@ -1154,8 +1174,10 @@ void reset_visuals(bool load_prefs)
 		struct trap_kind *trap = &trap_info[i];
 
 		/* Default attr/char */
-		trap_x_attr[i] = trap->d_attr;
-		trap_x_char[i] = trap->d_char;
+		for (j = 0; j < LIGHTING_MAX; j++) {
+			trap_x_attr[j][i] = trap->d_attr;
+			trap_x_char[j][i] = trap->d_char;
+		}
 	}
 
 	/* Extract default attr/char code for flavors */
@@ -1196,8 +1218,10 @@ void textui_prefs_init(void)
 		feat_x_attr[i] = mem_zalloc(z_info->f_max * sizeof(byte));
 		feat_x_char[i] = mem_zalloc(z_info->f_max * sizeof(wchar_t));
 	}
-	trap_x_attr = mem_zalloc(z_info->trap_max * sizeof(byte));
-	trap_x_char = mem_zalloc(z_info->trap_max * sizeof(wchar_t));
+	for (i = 0; i < LIGHTING_MAX; i++) {
+		trap_x_attr[i] = mem_zalloc(z_info->trap_max * sizeof(byte));
+		trap_x_char[i] = mem_zalloc(z_info->trap_max * sizeof(wchar_t));
+	}
 	for (f = flavors; f; f = f->next)
 		if (flavor_max < f->fidx)
 			flavor_max = f->fidx;
@@ -1222,8 +1246,10 @@ void textui_prefs_free(void)
 		mem_free(feat_x_attr[i]);
 		mem_free(feat_x_char[i]);
 	}
-	mem_free(trap_x_attr);
-	mem_free(trap_x_char);
+	for (i = 0; i < LIGHTING_MAX; i++) {
+		mem_free(trap_x_attr[i]);
+		mem_free(trap_x_char[i]);
+	}
 	mem_free(flavor_x_attr);
 	mem_free(flavor_x_char);
 }

@@ -34,8 +34,8 @@ byte *kind_x_attr;
 wchar_t *kind_x_char;
 byte *feat_x_attr[LIGHTING_MAX];
 wchar_t *feat_x_char[LIGHTING_MAX];
-byte *trap_x_attr;
-wchar_t *trap_x_char;
+byte *trap_x_attr[LIGHTING_MAX];
+wchar_t *trap_x_char[LIGHTING_MAX];
 byte *flavor_x_attr;
 wchar_t *flavor_x_char;
 
