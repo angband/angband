@@ -890,8 +890,7 @@ bool effect_handler_MAP_AREA(effect_handler_context_t *context)
 				if (!square_in_bounds_fully(cave, y, x)) continue;
 
 				/* Memorize normal features */
-				if (square_isinteresting(cave, y, x)) {
-					/* Memorize the object */
+				if (!square_isfloor(cave, y, x)) {
 					sqinfo_on(cave->squares[y][x].info, SQUARE_MARK);
 					square_light_spot(cave, y, x);
 				}
@@ -903,7 +902,6 @@ bool effect_handler_MAP_AREA(effect_handler_context_t *context)
 
 					/* Memorize walls (etc) */
 					if (square_seemslikewall(cave, yy, xx)) {
-						/* Memorize the walls */
 						sqinfo_on(cave->squares[yy][xx].info, SQUARE_MARK);
 						cave_k->squares[yy][xx].feat = cave->squares[yy][xx].feat;
 						square_light_spot(cave, yy, xx);
