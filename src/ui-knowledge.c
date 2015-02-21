@@ -2568,16 +2568,7 @@ void do_cmd_look(void)
  */
 void do_cmd_locate(void)
 {
-	int dir, y1, x1, y2, x2;
-
-	char tmp_val[80];
-
-	char out_val[160];
-
-	/* Adjust for tiles */
-	int panel_hgt = (int)(PANEL_SIZE / tile_height);
-	int panel_wid = (int)(PANEL_SIZE / tile_width);
-
+	int y1, x1;
 
 	/* Start at current panel */
 	y1 = Term->offset_y;
@@ -2585,10 +2576,20 @@ void do_cmd_locate(void)
 
 	/* Show panels until done */
 	while (1) {
+		char tmp_val[80];
+		char out_val[160];
+
+		/* Assume no direction */
+		int dir = 0;
+
 		/* Get the current panel */
-		y2 = Term->offset_y;
-		x2 = Term->offset_x;
+		int y2 = Term->offset_y;
+		int x2 = Term->offset_x;
 		
+		/* Adjust for tiles */
+		int panel_hgt = (int)(PANEL_SIZE / tile_height);
+		int panel_wid = (int)(PANEL_SIZE / tile_width);
+
 		/* Describe the location */
 		if ((y2 == y1) && (x2 == x1)) {
 			tmp_val[0] = '\0';
@@ -2611,12 +2612,9 @@ void do_cmd_locate(void)
 					(x2 / panel_wid), (x2 % panel_wid), tmp_val);
 		}
 
-		/* Assume no direction */
-		dir = 0;
-
 		/* Get a direction */
 		while (!dir) {
-			struct keypress command;
+			struct keypress command = { 0 };
 
 			/* Get a command (or Cancel) */
 			if (!get_com(out_val, (char *)&command.code)) break;
