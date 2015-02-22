@@ -1,6 +1,6 @@
 /**
-   \file obj-power.h
-   \brief calculation of object power and value
+ * \file obj-power.h
+ * \brief calculation of object power and value
  *
  * Copyright (c) 2001 Chris Carr, Chris Robertson
  * Revised in 2009-11 by Chris Carr, Peter Denison
@@ -65,11 +65,11 @@
 
 /*** Functions ***/
 
-s32b object_power(const object_type *o_ptr, int verbose, ang_file *log_file,
+s32b object_power(const object_type *obj, int verbose, ang_file *log_file,
 				  bool known);
-s32b object_value_real(const object_type *o_ptr, int qty, int verbose,
+s32b object_value_real(const object_type *obj, int qty, int verbose,
 					   bool known);
-s32b object_value(const object_type *o_ptr, int qty, int verbose);
+s32b object_value(const object_type *obj, int qty, int verbose);
 
 
 #endif /* OBJECT_POWER_H */

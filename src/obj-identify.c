@@ -1003,7 +1003,7 @@ void equip_notice_to_hit_on_attack(struct player *p)
 	for (i = 0; i < p->body.count; i++) {
 		struct object *obj = slot_object(p, i);
 		if (i == slot_by_name(p, "weapon")) continue;
-		if (i == slot_by_name(p, "bow")) continue;
+		if (i == slot_by_name(p, "shooting")) continue;
 		if (obj && obj->to_h)
 			object_notice_attack_plusses(obj);
 	}
@@ -1023,7 +1023,7 @@ void equip_notice_on_attack(struct player *p)
 	for (i = 0; i < p->body.count; i++) {
 		struct object *obj = slot_object(p, i);
 		if (i == slot_by_name(p, "weapon")) continue;
-		if (i == slot_by_name(p, "bow")) continue;
+		if (i == slot_by_name(p, "shooting")) continue;
 		if (obj)
 			object_notice_attack_plusses(obj);
 	}
