@@ -21,7 +21,7 @@
 #include "init.h"
 #include "obj-list.h"
 #include "obj-util.h"
-#include "ui-obj.h"
+#include "ui-object.h"
 #include "ui-obj-list.h"
 #include "ui-output.h"
 #include "z-textblock.h"

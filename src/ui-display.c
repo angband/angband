@@ -45,7 +45,7 @@
 #include "ui-map.h"
 #include "ui-mon-list.h"
 #include "ui-mon-lore.h"
-#include "ui-obj.h"
+#include "ui-object.h"
 #include "ui-obj-list.h"
 #include "ui-output.h"
 #include "ui-player.h"

@@ -43,7 +43,7 @@
 #include "ui-menu.h"
 #include "ui-mon-list.h"
 #include "ui-mon-lore.h"
-#include "ui-obj.h"
+#include "ui-object.h"
 #include "ui-obj-list.h"
 #include "ui-options.h"
 #include "ui-output.h"
@@ -2457,6 +2457,7 @@ void do_cmd_inven(void)
 	struct object *obj;
 	int ret = 3;
 	int diff = weight_remaining();
+	char buf[80];
 
 	if (player->upkeep->inven[0] == NULL) {
 		msg("You have nothing in your inventory.");
@@ -2472,14 +2473,15 @@ void do_cmd_inven(void)
 		screen_save();
 
 		/* Prompt for a command */
-		prt(format("(Inventory) Burden %d.%d lb (%d.%d lb %s). Select Item: ",
-			        player->upkeep->total_weight / 10,
-				   player->upkeep->total_weight % 10,
-			        abs(diff) / 10, abs(diff) % 10,
-			        (diff < 0 ? "overweight" : "remaining")), 0, 0);
+		strnfmt(buf, sizeof(buf),
+				format("(Inventory) Burden %d.%d lb (%d.%d lb %s). Select Item: ",
+					   player->upkeep->total_weight / 10,
+					   player->upkeep->total_weight % 10,
+					   abs(diff) / 10, abs(diff) % 10,
+					   (diff < 0 ? "overweight" : "remaining")), 0, 0);
 
 		/* Get an item to use a context command on (Display the inventory) */
-		if (get_item(&obj, NULL, NULL, CMD_NULL, NULL, GET_ITEM_PARAMS)) {
+		if (get_item(&obj, buf, NULL, CMD_NULL, NULL, GET_ITEM_PARAMS)) {
 			/* Load screen */
 			screen_load();
 

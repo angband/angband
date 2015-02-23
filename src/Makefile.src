@@ -178,7 +178,6 @@ ANGFILES = \
 	ui-menu.o \
 	ui-mon-list.o \
 	ui-mon-lore.o \
-	ui-obj.o \
 	ui-obj-list.o \
 	ui-object.o \
 	ui-options.o \
