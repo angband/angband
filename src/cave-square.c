@@ -100,14 +100,6 @@ bool feat_is_projectable(int feat)
 }
 
 /**
- * True if the feature is "boring".
- */
-bool feat_is_boring(int feat)
-{
-	return !tf_has(f_info[feat].flags, TF_INTERESTING);
-}
-
-/**
  * SQUARE FEATURE PREDICATES
  *
  * These functions are used to figure out what kind of square something is,
@@ -268,11 +260,6 @@ bool square_isdownstairs(struct chunk *c, int y, int x)
 bool square_isshop(struct chunk *c, int y, int x)
 {
 	return feat_is_shop(c->squares[y][x].feat);
-}
-
-bool square_noticeable(struct chunk *c, int y, int x)
-{
-	return tf_has(f_info[c->squares[y][x].feat].flags, TF_INTERESTING);
 }
 
 /**
@@ -542,14 +529,6 @@ bool square_iswall(struct chunk *c, int y, int x) {
 bool square_isstrongwall(struct chunk *c, int y, int x) {
 	assert(square_in_bounds(c, y, x));
 	return square_ismineral(c, y, x) || square_isperm(c, y, x);
-}
-
-/**
- * True if the cave square is "boring".
- */
-bool square_isboring(struct chunk *c, int y, int x) {
-	assert(square_in_bounds(c, y, x));
-	return feat_is_boring(c->squares[y][x].feat);
 }
 
 bool square_iswarded(struct chunk *c, int y, int x)

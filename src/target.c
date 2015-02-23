@@ -342,7 +342,7 @@ bool target_accept(int y, int x)
 		if (obj->marked && !ignore_item_ok(obj)) return (TRUE);
 
 	/* Interesting memorized features */
-	if (square_ismark(cave, y, x) && !square_isboring(cave, y, x))
+	if (square_ismark(cave, y, x) && square_isinteresting(cave, y, x))
 		return (TRUE);
 
 	/* Nope */

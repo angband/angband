@@ -152,7 +152,7 @@ flags:WALL | ROCK | DOOR_ANY | GRANITE
 name:16:pile of rubble
 graphics:::w
 priority:13
-flags:ROCK | NO_SCENT | NO_FLOW
+flags:ROCK | NO_SCENT | NO_FLOW | INTERESTING
 info:0:1
 
 name:17:magma vein

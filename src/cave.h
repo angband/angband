@@ -246,7 +246,6 @@ bool feat_is_monster_walkable(int feat);
 bool feat_is_shop(int feat);
 bool feat_is_passable(int feat);
 bool feat_is_projectable(int feat);
-bool feat_isboring(feature_type *f_ptr);
 
 /* SQUARE FEATURE PREDICATES */
 bool square_isfloor(struct chunk *c, int y, int x);
@@ -267,7 +266,6 @@ bool square_isstairs(struct chunk *c, int y, int x);
 bool square_isupstairs(struct chunk *c, int y, int x);
 bool square_isdownstairs(struct chunk *c, int y, int x);
 bool square_isshop(struct chunk *c, int y, int x);
-bool square_noticeable(struct chunk *c, int y, int x);
 bool square_isplayer(struct chunk *c, int y, int x);
 
 /* SQUARE INFO PREDICATES */
@@ -302,7 +300,6 @@ bool square_ispassable(struct chunk *c, int y, int x);
 bool square_isprojectable(struct chunk *c, int y, int x);
 bool square_iswall(struct chunk *c, int y, int x);
 bool square_isstrongwall(struct chunk *c, int y, int x);
-bool square_isboring(struct chunk *c, int y, int x);
 bool square_iswarded(struct chunk *c, int y, int x);
 bool square_canward(struct chunk *c, int y, int x);
 bool square_seemslikewall(struct chunk *c, int y, int x);

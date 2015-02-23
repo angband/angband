@@ -119,7 +119,7 @@ desc:A trap which shoots slowing darts.
 
 name:25:dart trap:strength loss dart
 graphics:^:r
-appear:0:2:0
+appear:0:6:0
 flags:TRAP | FLOOR 
 effect:TRAP_DART_LOSE_STR
 desc:A trap which shoots damaging darts.
@@ -128,7 +128,7 @@ desc:A trap which shoots damaging darts.
 
 name:26:dart trap:dexterity loss dart
 graphics:^:r
-appear:0:2:0
+appear:0:6:0
 flags:TRAP | FLOOR 
 effect:TRAP_DART_LOSE_DEX
 desc:A trap which shoots damaging darts.
@@ -137,7 +137,7 @@ desc:A trap which shoots damaging darts.
 
 name:27:dart trap:constitution loss dart
 graphics:^:r
-appear:0:2:0
+appear:0:6:0
 flags:TRAP | FLOOR 
 effect:TRAP_DART_LOSE_CON
 desc:A trap which shoots damaging darts.
@@ -155,7 +155,7 @@ desc:A trap that releases gas to blind you.
 
 name:29:gas trap:confusion gas
 graphics:^:g
-appear:0:2:0
+appear:0:1:0
 flags:TRAP | FLOOR 
 effect:TRAP_GAS_CONFUSE
 desc:A trap that releases gas to confuse you.

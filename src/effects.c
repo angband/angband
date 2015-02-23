@@ -429,7 +429,7 @@ bool effect_handler_RUNE(effect_handler_context_t *context)
 	/* See if the effect works */
 	if (!square_canward(cave, py, px)) {
 		msg("There is no clear floor on which to cast the spell.");
-		return TRUE;
+		return FALSE;
 	}
 
 	/* Create a glyph */
@@ -439,7 +439,7 @@ bool effect_handler_RUNE(effect_handler_context_t *context)
 	if (square_object(cave, py, px))
 		push_object(py, px);
 
-	return (TRUE);
+	return TRUE;
 }
 
 /**
@@ -791,8 +791,7 @@ bool effect_handler_RECALL(effect_handler_context_t *context)
 	if (OPT(birth_force_descend) && !(player->depth) &&
 			(is_quest(player->max_depth + 1))) {
 		if (!get_check("Are you sure you want to descend? ")) {
-			msg("You prevent the recall from taking place.");
-			return TRUE;
+			return FALSE;
 		}
 	}
 
@@ -810,7 +809,7 @@ bool effect_handler_RECALL(effect_handler_context_t *context)
 	} else {
 		/* Deactivate recall */
 		if (!get_check("Word of Recall is already active.  Do you want to cancel it? "))
-			return TRUE;
+			return FALSE;
 
 		player->word_recall = 0;
 		msg("A tension leaves the air around you...");
@@ -857,7 +856,8 @@ bool effect_handler_ALTER_REALITY(effect_handler_context_t *context)
 
 /**
  * Map an area around the player.  The height to map above and below the player
- * is context->value.dice, the width either side of the player context->value.sides.
+ * is context->value.dice, the width either side of the player
+ * context->value.sides.
  *
  */
 bool effect_handler_MAP_AREA(effect_handler_context_t *context)
@@ -890,8 +890,7 @@ bool effect_handler_MAP_AREA(effect_handler_context_t *context)
 				if (!square_in_bounds_fully(cave, y, x)) continue;
 
 				/* Memorize normal features */
-				if (square_isinteresting(cave, y, x)) {
-					/* Memorize the object */
+				if (!square_isfloor(cave, y, x)) {
 					sqinfo_on(cave->squares[y][x].info, SQUARE_MARK);
 					square_light_spot(cave, y, x);
 				}
@@ -903,7 +902,6 @@ bool effect_handler_MAP_AREA(effect_handler_context_t *context)
 
 					/* Memorize walls (etc) */
 					if (square_seemslikewall(cave, yy, xx)) {
-						/* Memorize the walls */
 						sqinfo_on(cave->squares[yy][xx].info, SQUARE_MARK);
 						cave_k->squares[yy][xx].feat = cave->squares[yy][xx].feat;
 						square_light_spot(cave, yy, xx);
@@ -1521,10 +1519,9 @@ bool effect_handler_CREATE_STAIRS(effect_handler_context_t *context)
 	context->ident = TRUE;
 
 	/* Only allow stairs to be created on empty floor */
-	if (!square_isfloor(cave, py, px))
-	{
+	if (!square_isfloor(cave, py, px)) {
 		msg("There is no empty floor here.");
-		return TRUE;
+		return FALSE;
 	}
 
 	/* Push objects off the grid */
@@ -1640,7 +1637,7 @@ static const int enchant_table[16] =
 	1000
 };
 
-/*
+/**
  * Hook to specify "weapon"
  */
 static bool item_tester_hook_weapon(const object_type *o_ptr)
@@ -1649,7 +1646,7 @@ static bool item_tester_hook_weapon(const object_type *o_ptr)
 }
 
 
-/*
+/**
  * Hook to specify "armour"
  */
 static bool item_tester_hook_armour(const object_type *o_ptr)
@@ -1891,8 +1888,6 @@ void brand_object(object_type *obj, const char *name)
 }
 
 
-
-
 /**
  * Enchant an item (in the inventory or on the floor)
  * Note that armour, to hit or to dam is controlled by context->p1
@@ -1902,19 +1897,26 @@ void brand_object(object_type *obj, const char *name)
 bool effect_handler_ENCHANT(effect_handler_context_t *context)
 {
 	int value = randcalc(context->value, player->depth, RANDOMISE);
+	bool used = context->aware ? FALSE : TRUE;
 	context->ident = TRUE;
 
-	if (context->p1 & ENCH_TOHIT)
-		enchant_spell(value, 0, 0);
-	if (context->p1 & ENCH_TODAM)
-		enchant_spell(0, value, 0);
-	if (context->p1 & ENCH_TOAC)
-		enchant_spell(0, 0, value);
+	if (context->p1 & ENCH_TOHIT) {
+		if (enchant_spell(value, 0, 0))
+			used = TRUE;
+	}
+	if (context->p1 & ENCH_TODAM) {
+		if (enchant_spell(0, value, 0))
+			used = TRUE;
+	}
+	if (context->p1 & ENCH_TOAC) {
+		if (enchant_spell(0, 0, value))
+			used = TRUE;
+	}
 
-	return TRUE;
+	return used;
 }
 
-/*
+/**
  * Hopefully this is OK now
  */
 static bool item_tester_unknown(const object_type *o_ptr)
@@ -1929,6 +1931,7 @@ bool effect_handler_IDENTIFY(effect_handler_context_t *context)
 {
 	struct object *obj;
 	const char *q, *s;
+	bool used = context->aware ? FALSE : TRUE;
 
 	context->ident = TRUE;
 
@@ -1937,7 +1940,7 @@ bool effect_handler_IDENTIFY(effect_handler_context_t *context)
 	s = "You have nothing to identify.";
 	if (!get_item(&obj, q, s, 0, item_tester_unknown,
 				  (USE_EQUIP | USE_INVEN | USE_QUIVER | USE_FLOOR)))
-		return TRUE;
+		return used;
 
 	/* Identify the object */
 	do_ident_item(obj);
@@ -1989,6 +1992,7 @@ bool effect_handler_RECHARGE(effect_handler_context_t *context)
 	int i, t, lev;
 	int strength = context->value.base;
 	object_type *obj;
+	bool used = context->ident ? FALSE : TRUE;
 	const char *q, *s;
 
 	/* Immediately obvious */
@@ -1999,7 +2003,7 @@ bool effect_handler_RECHARGE(effect_handler_context_t *context)
 	s = "You have nothing to recharge.";
 	if (!get_item(&obj, q, s, 0, item_tester_hook_recharge,
 				  (USE_INVEN | USE_FLOOR)))
-		return TRUE;
+		return (used);
 
 	/* Extract the object "level" */
 	lev = obj->kind->level;
@@ -2317,7 +2321,7 @@ bool effect_handler_MASS_BANISH(effect_handler_context_t *context)
 	return TRUE;
 }
 
-/*
+/**
  * Probe nearby monsters
  */
 bool effect_handler_PROBE(effect_handler_context_t *context)
@@ -2337,8 +2341,7 @@ bool effect_handler_PROBE(effect_handler_context_t *context)
 		if (!player_has_los_bold(m_ptr->fy, m_ptr->fx)) continue;
 
 		/* Probe visible monsters */
-		if (mflag_has(m_ptr->mflag, MFLAG_VISIBLE))
-		{
+		if (mflag_has(m_ptr->mflag, MFLAG_VISIBLE)) {
 			char m_name[80];
 
 			/* Start the message */
@@ -3329,8 +3332,7 @@ bool effect_handler_SWARM(effect_handler_context_t *context)
 	if ((context->dir == 5) && target_okay())
 		target_get(&tx, &ty);
 
-	while (num--)
-	{
+	while (num--) {
 		/* Aim at the target.  Hurt items on floor. */
 		if (project(-1, context->p2, ty, tx, dam, context->p1, flg, 0, 0))
 			context->ident = TRUE;
@@ -3647,6 +3649,7 @@ bool effect_handler_BRAND_AMMO(effect_handler_context_t *context)
 {
 	struct object *obj;
 	const char *q, *s;
+	bool used = context->aware ? FALSE : TRUE;
 
 	/* Select the brand */
 	const char *brand = one_in_(3) ? "Flame" : (one_in_(2) ? "Frost" : "Venom");
@@ -3657,7 +3660,7 @@ bool effect_handler_BRAND_AMMO(effect_handler_context_t *context)
 	q = "Brand which kind of ammunition? ";
 	s = "You have nothing to brand.";
 	if (!get_item(&obj, q, s, 0, item_tester_hook_ammo, (USE_INVEN | USE_QUIVER | USE_FLOOR)))
-		return TRUE;
+		return used;
 
 	/* Brand the ammo */
 	brand_object(obj, brand);
@@ -3678,6 +3681,7 @@ bool effect_handler_BRAND_BOLTS(effect_handler_context_t *context)
 {
 	object_type *obj;
 	const char *q, *s;
+	bool used = context->aware ? FALSE : TRUE;
 
 	context->ident = TRUE;
 
@@ -3685,7 +3689,7 @@ bool effect_handler_BRAND_BOLTS(effect_handler_context_t *context)
 	q = "Brand which bolts? ";
 	s = "You have no bolts to brand.";
 	if (!get_item(&obj, q, s, 0, item_tester_hook_bolt, (USE_INVEN | USE_QUIVER | USE_FLOOR)))
-		return TRUE;
+		return used;
 
 	/* Brand the bolts */
 	brand_object(obj, "Flame");
@@ -3991,8 +3995,10 @@ bool effect_handler_TRAP_PIT_POISON(effect_handler_context_t *context)
 		/* Extra spike damage */
 		if (one_in_(2)) {
 			msg("You are impaled on poisonous spikes!");
-			(void)player_inc_timed(player, TMD_CUT, randint1(dam * 2), TRUE, TRUE);
-			(void)player_inc_timed(player, TMD_POISONED, randint1(dam * 4), TRUE, TRUE);
+			(void)player_inc_timed(player, TMD_CUT, randint1(dam * 2),
+								   TRUE, TRUE);
+			(void)player_inc_timed(player, TMD_POISONED, randint1(dam * 4),
+								   TRUE, TRUE);
 		}
 
 		take_hit(player, dam, "a trap");
@@ -4280,7 +4286,7 @@ int effect_param(const char *type)
  */
 bool effect_do(struct effect *effect, bool *ident, bool aware, int dir, int beam, int boost)
 {
-	bool handled = FALSE;
+	bool completed = FALSE;
 	effect_handler_f handler;
 	random_value value = { 0, 0, 0, 0 };
 
@@ -4322,13 +4328,8 @@ bool effect_do(struct effect *effect, bool *ident, bool aware, int dir, int beam
 				*ident,
 			};
 
-			handled = handler(&context);
+			completed = handler(&context) || completed;
 			*ident = context.ident;
-		}
-
-		if (!handled) {
-			msg("Effect not handled.");
-			break;
 		}
 
 		/* Get the next effect, if there is one */
@@ -4340,7 +4341,7 @@ bool effect_do(struct effect *effect, bool *ident, bool aware, int dir, int beam
 			effect = effect->next;
 	} while (effect);
 
-	return handled;
+	return completed;
 }
 
 /**

@@ -564,7 +564,7 @@ static bool run_test(void)
 
 		/* Check memorized grids */
 		if (square_ismark(cave, row, col)) {
-			bool notice = square_noticeable(cave, row, col);
+			bool notice = square_isinteresting(cave, row, col);
 
 			/* Interesting feature */
 			if (notice) return (TRUE);
