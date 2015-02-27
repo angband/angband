@@ -722,7 +722,7 @@ void combine_pack(void)
 		assert(!tval_is_money(obj1));
 
 		/* Scan the items above that item */
-		for (obj2 = player->gear; obj2 != obj1; obj2 = obj2->next) {
+		for (obj2 = player->gear; obj2 && obj2 != obj1; obj2 = obj2->next) {
 			assert(obj2->kind);
 
 			/* Can we drop "obj1" onto "obj2"? */
