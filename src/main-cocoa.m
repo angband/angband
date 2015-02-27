@@ -2813,16 +2813,6 @@ static void init_windows(void)
     Term_activate(primary);
 }
 
-
-
-/**
- * Return the directory into which we put data (save and config)
- */
-static NSString *get_data_directory(void)
-{
-    return [@"~/Documents/Angband/" stringByExpandingTildeInPath];
-}
-
 /**
  * Handle the "open_when_ready" flag
  */
@@ -3302,10 +3292,9 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
     NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
     BOOL selectedSomething = NO;
     int panelResult;
-    NSString* startingDirectory;
     
     /* Get where we think the save files are */
-    startingDirectory = [get_data_directory() stringByAppendingPathComponent:@"/save/"];
+    NSURL *startingDirectoryURL = [NSURL fileURLWithPath:[NSString stringWithCString:ANGBAND_DIR_SAVE encoding:NSASCIIStringEncoding] isDirectory:YES];
     
     /* Get what we think the default save file name is.
 	 * Default to the empty string. */
@@ -3317,9 +3306,9 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
     [panel setCanChooseFiles:YES];
     [panel setCanChooseDirectories:NO];
     [panel setResolvesAliases:YES];
-    [panel setAllowsMultipleSelection:YES];
+    [panel setAllowsMultipleSelection:NO];
     [panel setTreatsFilePackagesAsDirectories:YES];
-	[panel setDirectoryURL:[NSURL URLWithString:startingDirectory]];
+    [panel setDirectoryURL:startingDirectoryURL];
     
     /* Run it */
     panelResult = [panel runModal];
@@ -3328,7 +3317,13 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
         NSArray* fileURLs = [panel URLs];
         if ([fileURLs count] > 0)
         {
-            selectedSomething = [(NSURL *)[fileURLs objectAtIndex:0] getFileSystemRepresentation:savefile maxLength:sizeof savefile];
+            NSURL* savefileURL = (NSURL *)[fileURLs objectAtIndex:0];
+            /* The path property doesn't do the right thing except for
+             * URLs with the file scheme. We had getFileSystemRepresentation
+             * here before, but that wasn't introduced until OS X 10.9. */
+            assert([[savefileURL scheme] isEqualToString:@"file"]);
+            selectedSomething = [[savefileURL path] getCString:savefile 
+                maxLength:sizeof savefile encoding:NSMacOSRomanStringEncoding];
         }
     }
     
