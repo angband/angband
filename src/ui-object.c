@@ -348,7 +348,7 @@ static void build_obj_list(int last, struct object **list, item_tester tester,
 			my_strcap(buf);
 			my_strcpy(items[num_obj].equip_label, buf,
 					  sizeof(items[num_obj].equip_label));
-		} else if (in_term && (num_obj >= player->body.count)) {
+		} else if (in_term && (list == player->upkeep->quiver)) {
 			strnfmt(buf, sizeof(buf), "Slot %-9d: ", i);
 			my_strcpy(items[num_obj].equip_label, buf,
 					  sizeof(items[num_obj].equip_label));
@@ -1009,6 +1009,8 @@ bool get_item_action(struct menu *menu, const ui_event *event, int oid)
 
 		/* Redraw the menu */
 		if (refresh) {
+			int ex_offset_ctr = 0;
+
 			/* Load screen */
 			screen_load();
 			Term_fresh();
@@ -1025,16 +1027,21 @@ bool get_item_action(struct menu *menu, const ui_event *event, int oid)
 				max_len = MAX(max_len, 24);
 
 			/* Width of extra fields */
-			if (olist_mode & OLIST_WEIGHT)
+			if (olist_mode & OLIST_WEIGHT) {
 				ex_width += 9;
-			if (olist_mode & OLIST_PRICE)
+				ex_offset_ctr += 9;
+			}
+			if (olist_mode & OLIST_PRICE) {
 				ex_width += 9;
-			if (olist_mode & OLIST_FAIL)
+				ex_offset_ctr += 9;
+			}
+			if (olist_mode & OLIST_FAIL) {
 				ex_width += 10;
+				ex_offset_ctr += 10;
+			}
 
 			/* Redo the layout */
 			area.page_rows = menu->count + 1;
-			area.width = MAX(max_len, strlen(header));
 			area.row = 1;
 			area.col = MIN(Term->wid - 1 - (int) max_len - ex_width,
 						   prompt_size - 2);
@@ -1042,6 +1049,9 @@ bool get_item_action(struct menu *menu, const ui_event *event, int oid)
 				area.col = 0;
 			ex_offset = MIN(max_len,
 							(size_t)(Term->wid - 1 - ex_width - area.col));
+			while (strlen(header) < max_len + ex_width + ex_offset_ctr)
+				my_strcat(header, " ", sizeof(header));
+			area.width = MAX(max_len, strlen(header));
 			menu_layout(menu, &area);
 			menu_refresh(menu, TRUE);
 			redraw_stuff(player->upkeep);
@@ -1060,6 +1070,7 @@ struct object *item_menu(cmd_code cmd, int prompt_size, int mode)
 						 get_item_action, 0 };
 	struct menu *m = menu_new(MN_SKIN_SCROLL, &menu_f);
 	ui_event evt = { 0 };
+	int ex_offset_ctr = 0;
 
 	/* Set up the menu */
 	menu_setpriv(m, num_obj, items);
@@ -1076,21 +1087,29 @@ struct object *item_menu(cmd_code cmd, int prompt_size, int mode)
 	if (mode & OLIST_QUIVER && player->upkeep->quiver[0] != NULL)
 		max_len = MAX(max_len, 24);
 
-	if (olist_mode & OLIST_WEIGHT)
+	if (olist_mode & OLIST_WEIGHT) {
 		ex_width += 9;
-	if (olist_mode & OLIST_PRICE)
+		ex_offset_ctr += 9;
+	}
+	if (olist_mode & OLIST_PRICE) {
 		ex_width += 9;
-	if (olist_mode & OLIST_FAIL)
+		ex_offset_ctr += 9;
+	}
+	if (olist_mode & OLIST_FAIL) {
 		ex_width += 10;
+		ex_offset_ctr += 10;
+	}
 
 	/* Set up the menu region */
 	area.page_rows = m->count + 1;
-	area.width = MAX(max_len, strlen(header));
 	area.row = 1;
 	area.col = MIN(Term->wid - 1 - (int) max_len - ex_width, prompt_size - 2);
 	if (area.col <= 3)
 		area.col = 0;
 	ex_offset = MIN(max_len, (size_t)(Term->wid - 1 - ex_width - area.col));
+	while (strlen(header) < max_len + ex_width + ex_offset_ctr)
+		my_strcat(header, " ", sizeof(header));
+	area.width = MAX(max_len, strlen(header));
 	menu_layout(m, &area);
 
 	/* Choose */
