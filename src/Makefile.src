@@ -6,7 +6,7 @@
 #
 
 NAME = Angband
-VERSION = TNG
+VERSION = 4.0beta
 COPYRIGHT = (c) 1995-2014 Angband contributors
 PROGNAME = angband
 
