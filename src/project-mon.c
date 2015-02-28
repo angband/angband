@@ -1105,12 +1105,12 @@ bool project_m(int who, int r, int y, int x, int dam, int typ, int flg)
 	if (monster_is_unusual(m_ptr->race))
 		context.die_msg = MON_MSG_DESTROYED;
 
-	if (monster_handler != NULL)
-		monster_handler(&context);
-
 	/* Force obviousness for certain types if seen. */
 	if (gf_force_obvious(typ) && context.seen)
 		context.obvious = TRUE;
+
+	if (monster_handler != NULL)
+		monster_handler(&context);
 
 	dam = context.dam;
 	obvious = context.obvious;
