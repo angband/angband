@@ -100,14 +100,14 @@ void set_terrain(void)
 	FEAT_MORE = lookup_feat("down staircase");
 	FEAT_SECRET = lookup_feat("secret door");
 	FEAT_RUBBLE = lookup_feat("pile of rubble");
-	FEAT_PASS_RUBBLE = lookup_feat("passable rubble");
+	FEAT_PASS_RUBBLE = lookup_feat("pile of passable rubble");
 	FEAT_MAGMA = lookup_feat("magma vein");
 	FEAT_QUARTZ = lookup_feat("quartz vein");
 	FEAT_MAGMA_K = lookup_feat("magma vein with treasure");
 	FEAT_QUARTZ_K = lookup_feat("quartz vein with treasure");
 	FEAT_GRANITE = lookup_feat("granite wall");
 	FEAT_PERM = lookup_feat("permanent wall");
-	FEAT_LAVA = lookup_feat("lava");
+	FEAT_LAVA = lookup_feat("lava flow");
 	FEAT_DTRAP_FLOOR = lookup_feat("dtrap edge - floor");
 	FEAT_DTRAP_WALL = lookup_feat("dtrap edge - wall");
 }

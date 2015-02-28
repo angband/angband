@@ -207,12 +207,12 @@ info:0:4
 
 ## New terrain
 
-name:25:lava
+name:25:lava flow
 graphics:#:r
 priority:10
-flags:WALL | ROCK |  PERMANENT | NO_SCENT | NO_FLOW | BRIGHT
+flags:PROJECT | WALL | ROCK | PERMANENT | NO_SCENT | NO_FLOW | BRIGHT
 
-name:26:passable rubble
+name:26:pile of passable rubble
 graphics:::u
 priority:13
 flags:ROCK | PASSABLE | NO_SCENT | NO_FLOW
