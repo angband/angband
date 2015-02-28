@@ -87,7 +87,7 @@ typedef struct project_monster_handler_context_s {
 	bool obvious;
 	bool skipped;
 	u16b flag;
-	bool do_poly;
+	int do_poly;
 	int teleport_distance;
 	enum mon_messages hurt_msg;
 	enum mon_messages die_msg;
@@ -455,9 +455,9 @@ static void project_monster_handler_CHAOS(project_monster_handler_context_t *con
 
 	/* Prevent polymorph on chaos breathers. */
 	if (rsf_has(context->m_ptr->race->spell_flags, RSF_BR_CHAO))
-		context->do_poly = FALSE;
+		context->do_poly = 0;
 	else
-		context->do_poly = TRUE;
+		context->do_poly = 1;
 
 	/* Hide resistance message (as assigned in project_monster_breath()). */
 	project_monster_timed_damage(context, MON_TMD_CONF, player_amount, monster_amount);
@@ -898,7 +898,7 @@ static void project_m_apply_side_effects(project_monster_handler_context_t *cont
 		enum mon_messages hurt_msg = MON_MSG_UNAFFECTED;
 		const int x = context->x;
 		const int y = context->y;
-		int savelvl = typ == GF_OLD_POLY ? 11 : randint1(90);
+		int savelvl = 0;
 		monster_race *old;
 		monster_race *new;
 
@@ -910,7 +910,11 @@ static void project_m_apply_side_effects(project_monster_handler_context_t *cont
 
 		if (context->seen) context->obvious = TRUE;
 
-		/* Saving throws are allowed */
+		/* Saving throws depend on damage for direct poly, random for chaos */
+		if (typ == GF_OLD_POLY)
+			savelvl = randint1(MAX(1, context->do_poly - 10)) + 10;
+		else
+			savelvl = randint1(90);
 		if (m_ptr->race->level > savelvl) {
 			if (typ == GF_OLD_POLY) hurt_msg = MON_MSG_MAINTAIN_SHAPE;
 			add_monster_message(m_name, m_ptr, hurt_msg, FALSE);
@@ -1059,7 +1063,7 @@ bool project_m(int who, int r, int y, int x, int dam, int typ, int flg)
 		obvious,
 		FALSE, /* skipped */
 		0, /* flag */
-		FALSE, /* do_poly */
+		0, /* do_poly */
 		0, /* teleport_distance */
 		MON_MSG_NONE, /* hurt_msg */
 		MON_MSG_DIE, /* die_msg */
