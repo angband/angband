@@ -457,7 +457,7 @@ static void show_obj_list(olist_detail_t mode)
 	/* For the inventory: print the quiver count */
 	if (mode & OLIST_QUIVER) {
 		int count, j;
-		int quiver_slots = player->upkeep->quiver_cnt / (z_info->stack_size);
+		int quiver_slots = 1 + player->upkeep->quiver_cnt / z_info->stack_size;
 
 		/* Quiver may take multiple lines */
 		for (j = 0; j < quiver_slots; j++, i++) {
