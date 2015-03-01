@@ -1049,8 +1049,10 @@ bool get_item_action(struct menu *menu, const ui_event *event, int oid)
 				area.col = 0;
 			ex_offset = MIN(max_len,
 							(size_t)(Term->wid - 1 - ex_width - area.col));
-			while (strlen(header) < max_len + ex_width + ex_offset_ctr)
+			while (strlen(header) < max_len + ex_width + ex_offset_ctr) {
 				my_strcat(header, " ", sizeof(header));
+				if (strlen(header) > sizeof(header) - 2) break;
+			}
 			area.width = MAX(max_len, strlen(header));
 			menu_layout(menu, &area);
 			menu_refresh(menu, TRUE);
@@ -1107,8 +1109,10 @@ struct object *item_menu(cmd_code cmd, int prompt_size, int mode)
 	if (area.col <= 3)
 		area.col = 0;
 	ex_offset = MIN(max_len, (size_t)(Term->wid - 1 - ex_width - area.col));
-	while (strlen(header) < max_len + ex_width + ex_offset_ctr)
+	while (strlen(header) < max_len + ex_width + ex_offset_ctr) {
 		my_strcat(header, " ", sizeof(header));
+		if (strlen(header) > sizeof(header) - 2) break;
+	}
 	area.width = MAX(max_len, strlen(header));
 	menu_layout(m, &area);
 
