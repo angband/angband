@@ -444,24 +444,29 @@ void do_cmd_wield(struct command *cmd)
 			/* Choice */ USE_INVEN | USE_FLOOR) != CMD_OK)
 		return;
 
-	/* Usually if the slot is taken we'll just replace the item in the slot,
-	 * but in some cases we need to ask the user which slot they actually
-	 * want to replace */
+	/* Get the slot the object wants to go in, and the item currently there */
 	slot = wield_slot(obj);
 	equip_obj = slot_object(player, slot);
-	if (equip_obj) {
-		if (tval_is_ring(obj) && cmd_get_item(cmd, "replace", &obj,
-					/* Prompt */ "Replace which ring? ",
-					/* Error  */ "Error in do_cmd_wield(), please report.",
-					/* Filter */ tval_is_ring,
-					/* Choice */ USE_EQUIP) != CMD_OK)
-				return;
-	}
 
 	/* If the slot is open, wield and be done */
 	if (!equip_obj) {
 		wield_item(obj, slot);
 		return;
+	}
+
+	/* Usually if the slot is taken we'll just replace the item in the slot,
+	 * but for rings we need to ask the user which slot they actually
+	 * want to replace */
+	if (tval_is_ring(obj)) {
+		if (cmd_get_item(cmd, "replace", &equip_obj,
+						 /* Prompt */ "Replace which ring? ",
+						 /* Error  */ "Error in do_cmd_wield(), please report.",
+						 /* Filter */ tval_is_ring,
+						 /* Choice */ USE_EQUIP) != CMD_OK)
+			return;
+
+		/* Change slot if necessary */
+		slot = equipped_item_slot(player->body, equip_obj);
 	}
 
 	/* Prevent wielding into a cursed slot */
