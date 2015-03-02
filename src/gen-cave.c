@@ -1432,7 +1432,7 @@ static void build_store(struct chunk *c, int n, int yy, int xx)
 
 	/* Determine spacing based on town size */
 	int y_space = z_info->town_hgt / 7;
-	int x_space = z_info->town_wid / ((MAX_STORES / 2) + 1);
+	int x_space = z_info->town_wid / ((MAX_STORES / 2.0) + 1);
 
 	/* Find the "center" of the store */
 	int y0 = yy * 3 * y_space + 2 * y_space;

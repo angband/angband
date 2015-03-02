@@ -147,7 +147,7 @@ static enum parser_error parse_store(struct parser *p) {
 	struct store *s;
 	unsigned int idx = parser_getuint(p, "index") - 1;
 
-	if (idx > STORE_HOME)
+	if (idx >= MAX_STORES)
 		return PARSE_ERROR_OUT_OF_BOUNDS;
 
 	s = store_new(parser_getuint(p, "index") - 1);
