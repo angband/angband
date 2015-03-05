@@ -543,7 +543,6 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 	bool was_aware;
 	int dir = 5;
 	int px = player->px, py = player->py;
-	int boost, level;
 	enum use;
 	struct trap_kind *rune = lookup_trap("glyph of warding");
 
@@ -563,7 +562,10 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 	track_object(player->upkeep, obj);
 
 	/* Figure out effect to use */
-	effect = obj->effect;
+	if (obj->activation)
+		effect = obj->activation->effect;
+	else
+		effect = obj->effect;
 
 	/* Check for unknown objects to prevent wasted player turns. */
 	if (effect->index == EF_IDENTIFY &&
@@ -575,16 +577,23 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 	/* Check for use if necessary, and execute the effect */
 	if ((use != USE_CHARGE && use != USE_TIMEOUT) || check_devices(obj)) {
 		int beam = beam_chance(obj->tval);
+		int boost, level;
 
-		/* Special message for artifacts */
-		if (obj->artifact) {
+		/* Get the level */
+		if (obj->artifact)
+			level = obj->artifact->level;
+		else if (obj->ego)
+			level = obj->ego->level;
+		else
+			level = obj->kind->level;
+
+		/* Sound and/or message */
+		if (obj->activation) {
 			msgt(snd, "You activate it.");
 			activation_message(obj);
-			level = obj->artifact->level;
 		} else {
 			/* Make a noise! */
 			sound(snd);
-			level = obj->kind->level;
 		}
 
 		/* A bit of a hack to make ID work better.
@@ -765,7 +774,7 @@ void do_cmd_activate(struct command *cmd)
 
 	/* Get an item */
 	if (cmd_get_item(cmd, "item", &obj,
-			"Active which item? ",
+			"Activate which item? ",
 			"You have no items to activate.",
 			obj_is_activatable,
 			USE_EQUIP | SHOW_FAIL) != CMD_OK) return;

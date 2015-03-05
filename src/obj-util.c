@@ -608,8 +608,12 @@ bool obj_is_useable(const struct object *o_ptr)
  */
 u16b object_effect(const struct object *o_ptr)
 {
-	if (!o_ptr->effect) return 0;
-	return o_ptr->effect->index;
+	if (o_ptr->activation)
+		return o_ptr->activation->effect->index;
+	else if (o_ptr->effect)
+		return o_ptr->effect->index;
+	else
+		return 0;
 }
 
 /**
