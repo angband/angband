@@ -1167,8 +1167,6 @@ bool textui_get_item(struct object **choice, const char *pmt, const char *str,
 	int py = player->py;
 	int px = player->px;
 
-	bool oops = FALSE;
-
 	bool use_inven = ((mode & USE_INVEN) ? TRUE : FALSE);
 	bool use_equip = ((mode & USE_EQUIP) ? TRUE : FALSE);
 	bool use_quiver = ((mode & USE_QUIVER) ? TRUE : FALSE);
@@ -1271,10 +1269,7 @@ bool textui_get_item(struct object **choice, const char *pmt, const char *str,
 	if (f1 <= f2) allow_floor = TRUE;
 
 	/* Require at least one legal choice */
-	if (!allow_inven && !allow_equip && !allow_quiver && !allow_floor) {
-		/* Oops */
-		oops = TRUE;
-	} else {
+	if (allow_inven || allow_equip || allow_quiver || allow_floor) {
 		int j;
 		int ni = 0;
 		int ne = 0;
@@ -1340,44 +1335,45 @@ bool textui_get_item(struct object **choice, const char *pmt, const char *str,
 
 		/* Redraw windows */
 		redraw_stuff(player->upkeep);
+
+		/* Save screen */
+		screen_save();
+
+		/* Build object list */
+		wipe_obj_list();
+		if (player->upkeep->command_wrk == USE_INVEN)
+			build_obj_list(i2, player->upkeep->inven, tester_m, olist_mode);
+		else if (player->upkeep->command_wrk == USE_EQUIP)
+			build_obj_list(e2, NULL, tester_m, olist_mode);
+		else if (player->upkeep->command_wrk == USE_QUIVER)
+			build_obj_list(q2, player->upkeep->quiver, tester_m,olist_mode);
+		else if (player->upkeep->command_wrk == USE_FLOOR)
+			build_obj_list(f2, floor_list, tester_m, olist_mode);
+
+		/* Show the prompt */
+		if (pmt)
+			prt(pmt, 0, 0);
+
+		/* Get an item choice */
+		*choice = item_menu(cmd, MAX(strlen(pmt), 15), mode);
+
+		/* Fix the screen */
+		screen_load();
+
+		/* Toggle again if needed */
+		if (toggle) toggle_inven_equip();
+
+		/* Update */
+		player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
+		redraw_stuff(player->upkeep);
+
+		/* Clear the prompt line */
+		prt("", 0, 0);
+	} else {
+		/* Warning if needed */
+		if (str) msg("%s", str);
+		*choice = NULL;
 	}
-
-	/* Save screen */
-	screen_save();
-
-	/* Build object list */
-	wipe_obj_list();
-	if (player->upkeep->command_wrk == USE_INVEN)
-		build_obj_list(i2, player->upkeep->inven, tester_m, olist_mode);
-	else if (player->upkeep->command_wrk == USE_EQUIP)
-		build_obj_list(e2, NULL, tester_m, olist_mode);
-	else if (player->upkeep->command_wrk == USE_QUIVER)
-		build_obj_list(q2, player->upkeep->quiver, tester_m,olist_mode);
-	else if (player->upkeep->command_wrk == USE_FLOOR)
-		build_obj_list(f2, floor_list, tester_m, olist_mode);
-
-	/* Show the prompt */
-	if (pmt)
-		prt(pmt, 0, 0);
-
-	/* Get an item choice */
-	*choice = item_menu(cmd, MAX(strlen(pmt), 15), mode);
-
-	/* Fix the screen */
-	screen_load();
-
-	/* Toggle again if needed */
-	if (toggle) toggle_inven_equip();
-
-	/* Update */
-	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
-	redraw_stuff(player->upkeep);
-
-	/* Clear the prompt line */
-	prt("", 0, 0);
-
-	/* Warning if needed */
-	if (oops && str) msg("%s", str);
 
 	mem_free(floor_list);
 
