@@ -342,6 +342,7 @@ byte ignore_level_of(const object_type *o_ptr)
 	byte value = 0;
 	bitflag f[OF_SIZE], f2[OF_SIZE];
 	int i;
+	bool negative_mod = FALSE;
 
 	object_flags_known(o_ptr, f);
 
@@ -384,9 +385,12 @@ byte ignore_level_of(const object_type *o_ptr)
 		if (!object_this_mod_is_visible(o_ptr, i) ||
 			(o_ptr->modifiers[i] > 0))
 			break;
+
+		if (o_ptr->modifiers[i] < 0)
+			negative_mod = TRUE;
 	}
 
-	if (i == OBJ_MOD_MAX)
+	if ((i == OBJ_MOD_MAX) && negative_mod)
 		return IGNORE_BAD;
 
 	if (object_was_sensed(o_ptr)) {
