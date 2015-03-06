@@ -283,9 +283,10 @@ static enum parser_error write_dummy_object_record(struct artifact *art, const c
 	dummy->tval = art->tval;
 	dummy->base = &kb_info[dummy->tval];
 
-	/* Make the name */
+	/* Make the name and index */
 	my_strcpy(mod_name, format("& %s~", name), sizeof(mod_name));
 	dummy->name = string_make(mod_name);
+	dummy->kidx = z_info->k_max - 1;
 
 	/* Increase the sval count for this tval, set the new one to the max */
 	for (i = 0; i < TV_MAX; i++)
