@@ -14,10 +14,10 @@ enum
 	#define ELEM(a, b, c, d, e, f, g, h, i, col) GF_##a,
 	#include "list-elements.h"
 	#undef ELEM
-	#define PROJ_ENV(a, col) GF_##a,
+	#define PROJ_ENV(a, col, desc) GF_##a,
 	#include "list-project-environs.h"
 	#undef PROJ_ENV
-	#define PROJ_MON(a, obv) GF_##a,
+	#define PROJ_MON(a, obv, desc) GF_##a,
 	#include "list-project-monsters.h"
 	#undef PROJ_MON
 	GF_MAX

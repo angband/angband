@@ -60,7 +60,7 @@ struct blow_info {
 
 static const flag_type elements[] =
 {
-	#define ELEM(a, b, c, d, e, f, g, h, i, col)	{ ELEM_##a, b },
+	#define ELEM(a, b, c, d, e, f, g, h, i, col)	{ ELEM_##a, c },
     #include "list-elements.h"
     #undef ELEM
 };
@@ -1436,22 +1436,25 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 	while (e) {
 		char *next_char = desc;
 		random_value value;
+		char dice_string[20];
 		if (e->dice != NULL)
 			(void) dice_roll(e->dice, &value);
 
+		/* Get the possible dice strings */
+		if (value.dice && value.base)
+			strnfmt(dice_string, sizeof(dice_string), "%d+%dd%d",
+					value.base, value.dice, value.sides);
+		else if (value.dice)
+			strnfmt(dice_string, sizeof(dice_string), "%dd%d",
+					value.dice, value.sides);
+		else
+			strnfmt(dice_string, sizeof(dice_string), "%d", value.base);
+
+		/* Check all the possible types of description format */
 		switch (base_descs[e->index].efinfo_flag) {
+			/* Healing sometimes has a minimum percentage */
 			case EFINFO_HEAL: {
-				char dice_string[20];
 				char min_string[50];
-				if (value.dice && value.base)
-					strnfmt(dice_string, sizeof(dice_string), "%d+%dd%d",
-							value.base, value.dice, value.sides);
-				else if (value.dice)
-					strnfmt(dice_string, sizeof(dice_string), "%dd%d",
-							value.base, value.dice, value.sides);
-				else
-					strnfmt(dice_string, sizeof(dice_string), "%d",
-						value.base);
 				if (value.m_bonus)
 					strnfmt(min_string, sizeof(min_string),
 							" (or %d%%, whichever is greater)", value.m_bonus);
@@ -1461,6 +1464,8 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 						min_string);
 				break;
 			}
+
+			/* Nourishment is just a flat amount */
 			case EFINFO_FEED: {
 				strnfmt(desc, sizeof(desc), effect_desc(e), value.base);
 				break;
@@ -1473,7 +1478,7 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 				strnfmt(desc, sizeof(desc), effect_desc(e), "");
 				break;
 			}
-			case EFINFO_HURT: {
+			case EFINFO_SEEN: {
 				strnfmt(desc, sizeof(desc), effect_desc(e), "", "");
 				break;
 			}
@@ -1481,6 +1486,8 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 				strnfmt(desc, sizeof(desc), effect_desc(e), "");
 				break;
 			}
+
+			/* Only currently used for the player, but can handle monsters */
 			case EFINFO_TELE: {
 				if (e->params[0])
 					strnfmt(desc, sizeof(desc), effect_desc(e), "a monster", 
@@ -1495,13 +1502,19 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 				break;
 			}
 			case EFINFO_LIGHT: {
-				strnfmt(desc, sizeof(desc), effect_desc(e), "", "");
+				strnfmt(desc, sizeof(desc), effect_desc(e), dice_string,
+						e->params[1]);
 				break;
 			}
+
+			/* Object generated balls are elemental */
 			case EFINFO_BALL: {
-				strnfmt(desc, sizeof(desc), effect_desc(e), "", "", "");
+				strnfmt(desc, sizeof(desc), effect_desc(e),
+						elements[e->params[0]].name, e->params[1], dice_string);
 				break;
 			}
+
+			/* Bolts and beams do all sorts of things */
 			case EFINFO_BOLT: {
 				strnfmt(desc, sizeof(desc), effect_desc(e), "", "");
 				break;

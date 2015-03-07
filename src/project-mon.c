@@ -738,10 +738,10 @@ static const project_monster_handler_f monster_handlers[] = {
 	#define ELEM(a, b, c, d, e, f, g, h, i, col) project_monster_handler_##a,
 	#include "list-elements.h"
 	#undef ELEM
-	#define PROJ_ENV(a, col) project_monster_handler_##a,
+	#define PROJ_ENV(a, col, desc) project_monster_handler_##a,
 	#include "list-project-environs.h"
 	#undef PROJ_ENV
-	#define PROJ_MON(a, obv) project_monster_handler_##a,
+	#define PROJ_MON(a, obv, desc) project_monster_handler_##a,
 	#include "list-project-monsters.h"
 	#undef PROJ_MON
 	NULL

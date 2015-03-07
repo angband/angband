@@ -438,10 +438,10 @@ static const project_feature_handler_f feature_handlers[] = {
 	#define ELEM(a, b, c, d, e, f, g, h, i, col) project_feature_handler_##a,
 	#include "list-elements.h"
 	#undef ELEM
-	#define PROJ_ENV(a, col) project_feature_handler_##a,
+	#define PROJ_ENV(a, col, desc) project_feature_handler_##a,
 	#include "list-project-environs.h"
 	#undef PROJ_ENV
-	#define PROJ_MON(a, obv) NULL, 
+	#define PROJ_MON(a, obv, desc) NULL, 
 	#include "list-project-monsters.h"
 	#undef PROJ_MON
 	NULL

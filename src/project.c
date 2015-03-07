@@ -329,11 +329,11 @@ static const struct gf_type {
 	#undef ELEM
 	#undef RV
 
-	#define PROJ_ENV(a, col) { NULL, 0, {0, 0, 0, 0}, FALSE, col },
+	#define PROJ_ENV(a, col, desc) { NULL, 0, {0, 0, 0, 0}, FALSE, col },
 	#include "list-project-environs.h"
 	#undef PROJ_ENV
 
-	#define PROJ_MON(a, obv) { NULL, 0, {0, 0, 0, 0}, obv, COLOUR_WHITE }, 
+	#define PROJ_MON(a, obv, desc) { NULL, 0, {0, 0, 0, 0}, obv, COLOUR_WHITE }, 
 	#include "list-project-monsters.h"
 	#undef PROJ_MON
 	{ NULL, 0, {0, 0, 0, 0}, FALSE, COLOUR_WHITE }
@@ -344,10 +344,10 @@ static const char *gf_name_list[] =
 	#define ELEM(a, b, c, d, e, f, g, h, i, col) #a,
 	#include "list-elements.h"
 	#undef ELEM
-	#define PROJ_ENV(a, col) #a,
+	#define PROJ_ENV(a, col, desc) #a,
 	#include "list-project-environs.h"
 	#undef PROJ_ENV
-	#define PROJ_MON(a, obv) #a,
+	#define PROJ_MON(a, obv, desc) #a,
 	#include "list-project-monsters.h"
 	#undef PROJ_MON
 	"MAX",
