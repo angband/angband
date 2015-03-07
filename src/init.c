@@ -157,7 +157,7 @@ static const char *slay_names[] = {
 
 static const char *effect_list[] = {
 	"NONE",
-	#define EFFECT(x, a, b, d)	#x,
+	#define EFFECT(x, a, b, c, d, e)	#x,
 	#include "list-effects.h"
 	#undef EFFECT
 	"MAX"

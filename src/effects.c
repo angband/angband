@@ -4143,7 +4143,7 @@ static const struct effect_kind effects[] =
 {
 	{ EF_NONE, FALSE, NULL, NULL, NULL },
 	#define F(x) effect_handler_##x
-	#define EFFECT(x, a, b, d)    { EF_##x, a, b, F(x), d },
+	#define EFFECT(x, a, b, c, d, e)    { EF_##x, a, b, F(x), e },
 	#include "list-effects.h"
 	#undef EFFECT
 	#undef F
@@ -4153,7 +4153,7 @@ static const struct effect_kind effects[] =
 
 static const char *effect_names[] = {
 	NULL,
-	#define EFFECT(x, a, b, d)	#x,
+	#define EFFECT(x, a, b, c, d, e)	#x,
 	#include "list-effects.h"
 	#undef EFFECT
 };

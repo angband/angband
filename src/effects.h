@@ -1,6 +1,6 @@
 /**
-   \file effects.h
-   \brief effect handling
+ * \file effects.h
+ * \brief effect handling
  *
  * Copyright (c) 2007 Andi Sidwell
  * Copyright (c) 2014 Ben Semmler, Nick McConnell
@@ -23,7 +23,7 @@
 typedef enum
 {
 	EF_NONE,
-	#define EFFECT(x, a, b, d)	EF_##x,
+	#define EFFECT(x, a, b, c, d, e)	EF_##x,
 	#include "list-effects.h"
 	#undef EFFECT
 	EF_MAX

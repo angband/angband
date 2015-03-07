@@ -58,7 +58,7 @@ const char *r_info_spell_flags[] =
 
 static const char *effect_list[] = {
 	"NONE",
-	#define EFFECT(x, a, b, d)	#x,
+	#define EFFECT(x, a, b, c, d, e)	#x,
 	#include "list-effects.h"
 	#undef EFFECT
 	"MAX"

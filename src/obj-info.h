@@ -33,6 +33,13 @@ typedef enum {
 } oinfo_detail_t;
 
 
+/**
+ * Flags for effect descriptions
+ */
+enum {
+	EFINFO_NONE
+};
+
 textblock *object_info(const object_type *o_ptr, oinfo_detail_t mode);
 textblock *object_info_ego(struct ego_item *ego);
 void object_info_spoil(ang_file *f, const object_type *o_ptr, int wrap);
