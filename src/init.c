@@ -1411,6 +1411,27 @@ static enum parser_error parse_act_effect(struct parser *p) {
 	return grab_effect_data(p, new_effect);
 }
 
+static enum parser_error parse_act_param(struct parser *p) {
+	struct activation *act = parser_priv(p);
+	struct effect *effect = act->effect;
+
+	if (!act)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	/* If there is no effect, assume that this is human and not parser error. */
+	if (effect == NULL)
+		return PARSE_ERROR_NONE;
+
+	while (effect->next) effect = effect->next;
+	effect->params[1] = parser_getint(p, "p2");
+
+	if (parser_hasval(p, "p3"))
+		effect->params[2] = parser_getint(p, "p3");
+
+	return PARSE_ERROR_NONE;
+}
+
+
 static enum parser_error parse_act_dice(struct parser *p) {
 	struct activation *act = parser_priv(p);
 	dice_t *dice = NULL;
@@ -1500,6 +1521,7 @@ struct parser *init_parse_act(void) {
 	parser_reg(p, "aim uint aim", parse_act_aim);
 	parser_reg(p, "power uint power", parse_act_power);
 	parser_reg(p, "effect sym eff ?sym type ?int xtra", parse_act_effect);
+	parser_reg(p, "param int p2 ?int p3", parse_act_param);
 	parser_reg(p, "dice str dice", parse_act_dice);
 	parser_reg(p, "expr sym name sym base str expr", parse_act_expr);
 	parser_reg(p, "msg str msg", parse_act_msg);

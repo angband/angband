@@ -2103,7 +2103,7 @@ properties:40:5:1000
 alloc:30:40 to 100
 power:12
 effect:DESTRUCTION
-
+param:15
 
 ### Bad scrolls ###
 
@@ -3097,6 +3097,7 @@ combat:0:1d2:0:0:0
 charges:3+d5
 power:5
 effect:EARTHQUAKE
+param:10
 
 name:404:*Destruction*
 graphics:_:d
@@ -3107,7 +3108,7 @@ combat:0:1d2:0:0:0
 charges:1+d3
 power:12
 effect:DESTRUCTION
-
+param:15
 
 ### Monster-affecting ###
 

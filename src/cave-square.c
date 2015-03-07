@@ -699,6 +699,14 @@ void square_excise_object(struct chunk *c, int y, int x, struct object *obj) {
 	pile_excise(&c->squares[y][x].obj, obj);
 }
 
+/**
+ * Excise an entire floor pile.
+ */
+void square_excise_pile(struct chunk *c, int y, int x) {
+	object_pile_free(square_object(cave, y, x));
+	c->squares[y][x].obj = NULL;
+}
+
 
 void square_set_feat(struct chunk *c, int y, int x, int feat)
 {

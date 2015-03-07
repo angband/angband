@@ -2823,7 +2823,7 @@ bool effect_handler_DESTRUCTION(effect_handler_context_t *context)
 			/* Destroy any grid that isn't a permament wall */
 			if (!square_isperm(cave, y, x)) {
 				/* Delete objects */
-				object_pile_free(square_object(cave, y, x));
+				square_excise_pile(cave, y, x);
 				square_destroy(cave, y, x);
 			}
 		}
@@ -3127,7 +3127,7 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 
 			/* Destroy location and all objects (if valid) */
 			else if (square_changeable(cave, yy, xx)) {
-				object_pile_free(square_object(cave, yy, xx));
+				square_excise_pile(cave, yy, xx);
 				square_earthquake(cave, yy, xx);
 			}
 		}

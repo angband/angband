@@ -638,6 +638,7 @@ name:DESTRUCTION2
 aim:0
 power:12
 effect:DESTRUCTION
+param:15
 desc:destroys an area around you in the shape of a circle radius 15, and blinds you for 1d10+10 turns
 
 

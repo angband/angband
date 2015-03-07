@@ -52,9 +52,9 @@ enum {
 	EFINFO_TOUCH
 };
 
-textblock *object_info(const object_type *o_ptr, oinfo_detail_t mode);
+textblock *object_info(const struct object *obj, oinfo_detail_t mode);
 textblock *object_info_ego(struct ego_item *ego);
-void object_info_spoil(ang_file *f, const object_type *o_ptr, int wrap);
-void object_info_chardump(ang_file *f, const object_type *o_ptr, int indent, int wrap);
+void object_info_spoil(ang_file *f, const struct object *obj, int wrap);
+void object_info_chardump(ang_file *f, const struct object *obj, int indent, int wrap);
 
 #endif /* OBJECT_INFO_H */

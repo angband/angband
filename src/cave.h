@@ -318,6 +318,7 @@ struct monster *square_monster(struct chunk *c, int y, int x);
 struct object *square_object(struct chunk *c, int y, int x);
 bool square_holds_object(struct chunk *c, int y, int x, struct object *obj);
 void square_excise_object(struct chunk *c, int y, int x, struct object *obj);
+void square_excise_pile(struct chunk *c, int y, int x);
 
 void square_set_feat(struct chunk *c, int y, int x, int feat);
 
