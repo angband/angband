@@ -78,9 +78,9 @@ static struct breath_info {
 	const char *desc;    /* Element description */
 	int msgt;            /* Element message type */
 } elements[] = {
-    #define ELEM(a, b, c, d, e, f, g, h, i, col) { c, i },
-    #include "list-elements.h"
-    #undef ELEM
+	#define ELEM(a, b, c, d, e, f, g, h, i, col) { c, i },
+	#include "list-elements.h"
+	#undef ELEM
 };
 
 
@@ -492,7 +492,7 @@ bool effect_handler_DRAIN_STAT(effect_handler_context_t *context)
 
 		/* Message */
 		msg("You feel very %s for a moment, but the feeling passes.",
-		           desc_stat_neg[stat]);
+				   desc_stat_neg[stat]);
 
 		/* Notice */
 		context->ident = TRUE;
@@ -572,8 +572,8 @@ bool effect_handler_RESTORE_EXP(effect_handler_context_t *context)
 			msg("You feel your life energies returning.");
 		player_exp_gain(player, player->max_exp - player->exp);
 
-        /* Recalculate max. hitpoints */
-        update_stuff(player->upkeep);
+		/* Recalculate max. hitpoints */
+		update_stuff(player->upkeep);
 
 		/* Did something */
 		context->ident = TRUE;
@@ -780,14 +780,14 @@ bool effect_handler_RECALL(effect_handler_context_t *context)
 		msg("Nothing happens.");
 		return TRUE;
 	}
-    
+
 	/* No recall from quest levels with force_descend */
 	if (OPT(birth_force_descend) && (is_quest(player->depth))) {
 		msg("Nothing happens.");
 		return TRUE;
 	}
 
-    /* Warn the player if they're descending to an unrecallable level */
+	/* Warn the player if they're descending to an unrecallable level */
 	if (OPT(birth_force_descend) && !(player->depth) &&
 			(is_quest(player->max_depth + 1))) {
 		if (!get_check("Are you sure you want to descend? ")) {
@@ -1624,7 +1624,7 @@ bool effect_handler_DISENCHANT(effect_handler_context_t *context)
  */
 #define ENCH_TOHIT   0x01
 #define ENCH_TODAM   0x02
-#define ENCH_TOAC    0x04
+#define ENCH_TOAC	0x04
 
 /**
  * Used by the enchant() function (chance of failure)
@@ -1805,7 +1805,7 @@ bool enchant_spell(int num_hit, int num_dam, int num_ac)
 	/* Describe */
 	msg("%s %s glow%s brightly!",
 		(object_is_carried(player, obj) ? "Your" : "The"), o_name,
-	           ((obj->number > 1) ? "" : "s"));
+			   ((obj->number > 1) ? "" : "s"));
 
 	/* Enchant */
 	if (enchant(obj, num_hit, ENCH_TOHIT)) okay = TRUE;
@@ -1839,7 +1839,7 @@ void brand_object(object_type *obj, const char *name)
 	/* you can never modify artifacts / ego-items */
 	/* you can never modify cursed / worthless items */
 	if (obj && !cursed_p(obj->flags) && obj->kind->cost &&
-	    !obj->artifact && !obj->ego) {
+		!obj->artifact && !obj->ego) {
 		char o_name[80];
 		char brand[20];
 
@@ -2235,7 +2235,7 @@ bool effect_handler_SUMMON(effect_handler_context_t *context)
  * Delete all non-unique monsters of a given "type" from the level
  * -------
  * Warning - this function assumes that the entered monster symbol is an ASCII
- *           character, which may not be true in the future - NRM
+ *		   character, which may not be true in the future - NRM
  * -------
  */
 bool effect_handler_BANISH(effect_handler_context_t *context)
@@ -2576,9 +2576,9 @@ bool effect_handler_TELEPORT(effect_handler_context_t *context)
 		}
 	} else {
 		mon = cave_monster(cave, midx);
-        if (!mon->race) return TRUE;
-        y_start = mon->fy;
-        x_start = mon->fx;
+		if (!mon->race) return TRUE;
+		y_start = mon->fy;
+		x_start = mon->fx;
 	}
 
 	/* Initialize */
@@ -3535,7 +3535,7 @@ bool effect_handler_CURSE_ARMOR(effect_handler_context_t *context)
 	if (obj->artifact && (randint0(100) < 50))
 		/* Cool */
 		msg("A %s tries to %s, but your %s resists the effects!",
-		           "terrible black aura", "surround your armor", o_name);
+				   "terrible black aura", "surround your armor", o_name);
 
 	/* not artifact or failed save... */
 	else {
@@ -3586,7 +3586,7 @@ bool effect_handler_CURSE_WEAPON(effect_handler_context_t *context)
 	if (obj->artifact && (randint0(100) < 50))
 		/* Cool */
 		msg("A %s tries to %s, but your %s resists the effects!",
-		           "terrible black aura", "surround your weapon", o_name);
+				   "terrible black aura", "surround your weapon", o_name);
 
 	/* not artifact or failed save... */
 	else {
@@ -4143,7 +4143,7 @@ static const struct effect_kind effects[] =
 {
 	{ EF_NONE, FALSE, NULL, NULL, NULL },
 	#define F(x) effect_handler_##x
-	#define EFFECT(x, a, b, c, d, e)    { EF_##x, a, b, F(x), e },
+	#define EFFECT(x, a, b, c, d, e)	{ EF_##x, a, b, F(x), e },
 	#include "list-effects.h"
 	#undef EFFECT
 	#undef F
