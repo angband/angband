@@ -37,7 +37,19 @@ typedef enum {
  * Flags for effect descriptions
  */
 enum {
-	EFINFO_NONE
+	EFINFO_NONE,
+	EFINFO_HEAL,
+	EFINFO_FEED,
+	EFINFO_TIMED,
+	EFINFO_STAT,
+	EFINFO_HURT,
+	EFINFO_SUMM,
+	EFINFO_TELE,
+	EFINFO_QUAKE,
+	EFINFO_LIGHT,
+	EFINFO_BALL,
+	EFINFO_BOLT,
+	EFINFO_TOUCH
 };
 
 textblock *object_info(const object_type *o_ptr, oinfo_detail_t mode);
