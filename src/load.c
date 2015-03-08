@@ -251,7 +251,7 @@ static struct object *rd_item(void)
 /**
  * Read a monster
  */
-static void rd_monster(monster_type *mon)
+static void rd_monster(struct chunk *c, monster_type *mon)
 {
 	byte tmp8u;
 	s16b r_idx;
@@ -284,8 +284,20 @@ static void rd_monster(monster_type *mon)
 		rd_s16b(&mon->known_pstate.el_info[j].res_level);
 
 	rd_byte(&tmp8u);
-	if (tmp8u)
-		mon->mimicked_obj = rd_item();
+	if (tmp8u) {
+		/* Find the mimicked object */
+		struct object *obj = rd_item();
+		struct object *square_obj = square_object(c, mon->fy, mon->fx);
+
+		while (square_obj) {
+			if (square_obj->mimicking_m_idx == obj->mimicking_m_idx) break;
+			square_obj = square_obj->next;
+		}
+
+		/* Set the mimicked object, or quit on failure */
+		assert(square_obj);
+		mon->mimicked_obj = square_obj;
+	}
 
 	/* Read all the held objects (order is unimportant) */
 	while (TRUE) {
@@ -1161,7 +1173,7 @@ static int rd_monsters_aux(struct chunk *c)
 		memset(mon, 0, sizeof(*mon));
 
 		/* Read the monster */
-		rd_monster(mon);
+		rd_monster(c, mon);
 
 		/* Place monster in dungeon */
 		if (place_monster(c, mon->fy, mon->fx, mon, 0) != i) {
