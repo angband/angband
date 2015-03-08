@@ -670,16 +670,14 @@ void inven_drop(struct object *obj, int amt)
 	if (object_is_equipped(player->body, obj))
 		inven_takeoff(obj);
 
-	/* Describe object */
-	num = obj->number;
-	object_desc(o_name, sizeof(o_name), obj, ODESC_PREFIX | ODESC_FULL);
-	obj->number = num;
+	/* Get the object */
+	dropped = gear_object_for_use(obj, amt, TRUE);
+
+	/* Describe the dropped object */
+	object_desc(o_name, sizeof(o_name), dropped, ODESC_PREFIX | ODESC_FULL);
 
 	/* Message */
 	msg("You drop %s (%c).", o_name, gear_to_label(obj));
-
-	/* Get the object */
-	dropped = gear_object_for_use(obj, amt, TRUE);
 
 	/* Drop it near the player */
 	drop_near(cave, dropped, 0, py, px, FALSE);
