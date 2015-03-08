@@ -593,6 +593,8 @@ void become_aware(struct monster *m_ptr)
 			obj->mimicking_m_idx = 0;
 			m_ptr->mimicked_obj = NULL;
 
+			square_excise_object(cave, obj->iy, obj->ix, obj);
+
 			/* Give the object to the monster if appropriate */
 			if (rf_has(m_ptr->race->flags, RF_MIMIC_INV))
 				monster_carry(cave, m_ptr, obj);
